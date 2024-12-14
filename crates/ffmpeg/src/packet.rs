@@ -1,4 +1,4 @@
-use ffmpeg_sys_next::*;
+use scuffle_ffmpeg_sys::*;
 
 use crate::error::FfmpegError;
 use crate::smart_object::SmartPtr;

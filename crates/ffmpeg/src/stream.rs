@@ -1,4 +1,4 @@
-use ffmpeg_sys_next::*;
+use scuffle_ffmpeg_sys::*;
 
 use crate::consts::{Const, Mut};
 use crate::dict::Dictionary;

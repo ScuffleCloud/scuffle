@@ -27,7 +27,6 @@ config = { version = "0.14", default-features = false, features = ["ini", "json"
 crossbeam-utils = { version = "0.8" }
 either = { version = "1", default-features = false, features = ["use_std"] }
 fastrand = { version = "2" }
-ffmpeg-sys-next = { version = "7", features = ["build"] }
 futures-channel = { version = "0.3", features = ["sink"] }
 futures-core = { version = "0.3" }
 futures-executor = { version = "0.3" }
@@ -93,7 +92,6 @@ config = { version = "0.14", default-features = false, features = ["ini", "json"
 crossbeam-utils = { version = "0.8" }
 either = { version = "1", default-features = false, features = ["use_std"] }
 fastrand = { version = "2" }
-ffmpeg-sys-next = { version = "7", features = ["build"] }
 futures-channel = { version = "0.3", features = ["sink"] }
 futures-core = { version = "0.3" }
 futures-executor = { version = "0.3" }

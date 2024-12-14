@@ -78,6 +78,7 @@ impl PowerSet {
 		for (package, xtask_metadata) in metadata.workspace_packages().iter().zip(xtask_metadata.iter()) {
 			if ignored_packages.contains(&package.name.to_lowercase())
 				|| !(packages.is_empty() || packages.contains(&package.name.to_lowercase()))
+				|| xtask_metadata.skip
 			{
 				continue;
 			}

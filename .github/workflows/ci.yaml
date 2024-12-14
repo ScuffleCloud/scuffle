@@ -110,7 +110,7 @@ jobs:
       # Note; we don't run the powerset here because it's very slow on CI
       # Perhaps we should consider it at some point.
       - name: Run tests
-        run: cargo +nightly llvm-cov nextest --branch --no-fail-fast --all-features --lcov --output-path ./lcov.info --profile ci
+        run: cargo +nightly llvm-cov nextest --branch --no-fail-fast --lcov --output-path ./lcov.info --profile ci
 
       - uses: codecov/codecov-action@v5
         with:

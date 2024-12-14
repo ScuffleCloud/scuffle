@@ -25,6 +25,7 @@ pub struct XTaskMetadata {
 	pub allow_list: BTreeSet<String>,
 	#[serde(alias = "addative-features")]
 	pub addative_features: BTreeSet<String>,
+	pub skip: bool,
 }
 
 impl Default for XTaskMetadata {
@@ -38,6 +39,7 @@ impl Default for XTaskMetadata {
 			max_combination_size: None,
 			allow_list: Default::default(),
 			addative_features: Default::default(),
+			skip: false,
 		}
 	}
 }

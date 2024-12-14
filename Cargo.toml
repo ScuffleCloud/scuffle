@@ -26,6 +26,7 @@ members = [
     "apps/image-processor/examples",
     "crates/workspace-hack",
     "dev-tools/xtask",
+    "crates/ffmpeg-sys",
 ]
 
 resolver = "2"
@@ -48,6 +49,7 @@ scuffle-postcompile = { path = "crates/postcompile", version = "0.0.5" }
 scuffle-ffmpeg = { path = "crates/ffmpeg", version = "0.0.2" }
 scuffle-h3-webtransport = { path = "crates/h3-webtransport", version = "0.0.2" }
 scuffle-metrics-derive = { path = "crates/metrics/derive", version = "0.0.2" }
+scuffle-ffmpeg-sys = { path = "crates/ffmpeg-sys", version = "7.1.0" }
 
 [profile.release-debug]
 inherits = "release"

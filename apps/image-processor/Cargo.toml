@@ -58,3 +58,20 @@ scuffle-image-processor-proto = { workspace = true, features = ["server", "serde
 scuffle-metrics = { workspace = true }
 scuffle-settings = { workspace = true, features = ["full"] }
 scuffle-workspace-hack.workspace = true
+
+[dependencies.scuffle-ffmpeg-sys]
+optional = true
+workspace = true
+features = [
+    "build-lib-x264",
+    "build-lib-x265",
+    "build-lib-vpx",
+    "build-zlib",
+    "build-license-gpl",
+    "build-license-nonfree",
+    "build-license-version3",
+    "build-pic"
+]
+
+[features]
+build = ["scuffle-ffmpeg-sys", "scuffle-ffmpeg/build"]

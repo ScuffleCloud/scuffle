@@ -9,3 +9,7 @@ node_modules/
 lcov.info
 local/
 coverage/
+**/Dockerfile
+**/.dockerignore
+**/*.dockerfile
+**/*.docker

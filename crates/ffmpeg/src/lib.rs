@@ -16,6 +16,6 @@ pub mod scalar;
 pub mod stream;
 pub mod utils;
 
-pub use ffmpeg_sys_next as ffi;
+pub use scuffle_ffmpeg_sys as ffi;
 
 mod smart_object;

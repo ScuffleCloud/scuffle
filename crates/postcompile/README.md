@@ -19,8 +19,6 @@ This is particularly useful when making snapshot tests of proc-macros, look belo
 #[test]
 fn some_cool_test() {
     insta::assert_snapshot!(postcompile::compile! {
-        #![allow(unused)]
-
         #[derive(Debug, Clone)]
         struct Test {
             a: u32,

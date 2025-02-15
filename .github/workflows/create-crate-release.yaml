@@ -13,7 +13,7 @@ env:
 jobs:
   create-release:
     name: Create Release
-    runs-on: ubuntu-24.04
+    runs-on: ubicloud-standard-8
     permissions:
       contents: write
       pull-requests: write
@@ -26,14 +26,16 @@ jobs:
         with:
           toolchain: ${{ env.RUST_TOOLCHAIN }}
           shared-key: create-release
-          tools: just,release-plz
+          tools: just,release-plz,cargo-hakari
+          cache-backend: ubicloud
 
       - name: Create release
         id: create
         run: |
           set -eo pipefail
-          release=$(just create-release ${{ inputs.crate }}
-          echo "release=$release" >> $GITHUB_OUTPUT
+          release=$(just create-release ${{ inputs.crate }})
+          echo "Release workflow triggered by @${{ github.actor }}" > /tmp/pr-body.txt
+          echo $release >> /tmp/pr-body.txt
           echo $release > $GITHUB_STEP_SUMMARY
 
       # Check if any files changed
@@ -48,9 +50,12 @@ jobs:
         if: ${{ steps.changed.outputs.result == 1 }}
         with:
           title: Automated release of ${{ inputs.crate }}
-          body: ${{ steps.create.outputs.release }}
-          team-reviewers: developers
+          body-path: /tmp/pr-body.txt
           branch: create-release/${{ inputs.crate }}
           commit-message: |
             Automated release of ${{ inputs.crate }}
-            ${{ steps.create.outputs.release }}
+
+            Release triggered by @${{ github.actor }}
+          author: github-actions[bot] <41898282+github-actions[bot]@users.noreply.github.com>
+          sign-commits: true
+          reviewers: ${{ github.actor }}

@@ -16,7 +16,7 @@ http = { version = "1" }
 http-body = { version = "1" }
 pin-project-lite = { version = "0.2" }
 thiserror = { version = "2.0.0" }
-derive_more = { version = "1.0.0", features = ["debug", "from"] }
+derive_more = { version = "2.0.0", features = ["debug", "from"] }
 futures = { version = "0.3" }
 bytes = { version = "1" }
 libc = { version = "0.2" }

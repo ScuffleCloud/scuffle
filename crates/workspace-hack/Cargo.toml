@@ -63,7 +63,7 @@ tracing-core = { version = "0.1" }
 tracing-log = { version = "0.2", default-features = false, features = ["log-tracer", "std"] }
 tracing-subscriber = { version = "0.3", features = ["env-filter"] }
 uuid = { version = "1", features = ["v4"] }
-zerocopy = { version = "0.7", features = ["derive", "simd"] }
+zerocopy = { version = "0.8", features = ["derive", "simd"] }
 
 [build-dependencies]
 bitflags = { version = "2", default-features = false, features = ["serde"] }
@@ -117,7 +117,7 @@ tracing-core = { version = "0.1" }
 tracing-log = { version = "0.2", default-features = false, features = ["log-tracer", "std"] }
 tracing-subscriber = { version = "0.3", features = ["env-filter"] }
 uuid = { version = "1", features = ["v4"] }
-zerocopy = { version = "0.7", features = ["derive", "simd"] }
+zerocopy = { version = "0.8", features = ["derive", "simd"] }
 
 [target.x86_64-unknown-linux-gnu.dependencies]
 bitflags = { version = "2", default-features = false, features = ["std"] }

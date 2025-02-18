@@ -21,7 +21,7 @@ camino = { version = "1", default-features = false, features = ["serde1"] }
 chrono = { version = "0.4", default-features = false, features = ["clock"] }
 clap = { version = "4" }
 clap_builder = { version = "4", default-features = false, features = ["color", "help", "std", "suggestions", "usage"] }
-config = { version = "0.14", default-features = false, features = ["ini", "json", "json5", "ron", "toml", "yaml"] }
+config = { version = "0.15", default-features = false, features = ["ini", "json", "json5", "ron", "toml", "yaml"] }
 crossbeam-utils = { version = "0.8" }
 digest = { version = "0.10", features = ["mac", "std"] }
 either = { version = "1", default-features = false, features = ["use_std"] }
@@ -74,7 +74,7 @@ cc = { version = "1", default-features = false, features = ["parallel"] }
 chrono = { version = "0.4", default-features = false, features = ["clock"] }
 clap = { version = "4" }
 clap_builder = { version = "4", default-features = false, features = ["color", "help", "std", "suggestions", "usage"] }
-config = { version = "0.14", default-features = false, features = ["ini", "json", "json5", "ron", "toml", "yaml"] }
+config = { version = "0.15", default-features = false, features = ["ini", "json", "json5", "ron", "toml", "yaml"] }
 crossbeam-utils = { version = "0.8" }
 digest = { version = "0.10", features = ["mac", "std"] }
 either = { version = "1", default-features = false, features = ["use_std"] }

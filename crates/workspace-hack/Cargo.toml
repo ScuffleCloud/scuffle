@@ -87,7 +87,7 @@ futures-sink = { version = "0.3" }
 futures-util = { version = "0.3", default-features = false, features = ["async-await-macro", "channel", "io", "sink"] }
 getrandom = { version = "0.2", default-features = false, features = ["std"] }
 insta = { version = "1", features = ["filters"] }
-itertools = { version = "0.12", default-features = false, features = ["use_alloc"] }
+itertools = { version = "0.14", default-features = false, features = ["use_alloc"] }
 libc = { version = "0.2", features = ["extra_traits"] }
 log = { version = "0.4", default-features = false, features = ["std"] }
 memchr = { version = "2" }

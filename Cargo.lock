@@ -1880,12 +1880,26 @@ dependencies = [
 ]
 
 [[package]]
-name = "opentelemetry-appender-tracing"
-version = "0.27.0"
+name = "opentelemetry"
+version = "0.28.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "ab5feffc321035ad94088a7e5333abb4d84a8726e54a802e736ce9dd7237e85b"
+checksum = "236e667b670a5cdf90c258f5a55794ec5ac5027e960c224bff8367a59e1e6426"
 dependencies = [
- "opentelemetry",
+ "futures-core",
+ "futures-sink",
+ "js-sys",
+ "pin-project-lite",
+ "thiserror 2.0.7",
+ "tracing",
+]
+
+[[package]]
+name = "opentelemetry-appender-tracing"
+version = "0.28.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "c513c7af3bec30113f3d4620134ff923295f1e9c580fda2b8abe0831f925ddc0"
+dependencies = [
+ "opentelemetry 0.28.0",
  "tracing",
  "tracing-core",
  "tracing-subscriber",
@@ -1900,7 +1914,7 @@ dependencies = [
  "async-trait",
  "chrono",
  "futures-util",
- "opentelemetry",
+ "opentelemetry 0.27.1",
  "opentelemetry_sdk",
  "ordered-float",
  "serde",
@@ -1919,7 +1933,7 @@ dependencies = [
  "futures-executor",
  "futures-util",
  "glob",
- "opentelemetry",
+ "opentelemetry 0.27.1",
  "percent-encoding",
  "rand",
  "serde_json",
@@ -2779,7 +2793,7 @@ dependencies = [
  "http",
  "http-body",
  "http-body-util",
- "opentelemetry",
+ "opentelemetry 0.27.1",
  "opentelemetry-appender-tracing",
  "opentelemetry_sdk",
  "prometheus-client",
@@ -2968,7 +2982,7 @@ name = "scuffle-metrics"
 version = "0.1.0"
 dependencies = [
  "insta",
- "opentelemetry",
+ "opentelemetry 0.27.1",
  "opentelemetry_sdk",
  "parking_lot",
  "postcompile",
@@ -2994,7 +3008,7 @@ dependencies = [
 name = "scuffle-metrics-examples"
 version = "0.1.0"
 dependencies = [
- "opentelemetry",
+ "opentelemetry 0.27.1",
  "opentelemetry-stdout",
  "opentelemetry_sdk",
  "prometheus-client",
@@ -3158,7 +3172,7 @@ dependencies = [
  "nom",
  "num-traits",
  "once_cell",
- "opentelemetry",
+ "opentelemetry 0.27.1",
  "opentelemetry_sdk",
  "percent-encoding",
  "prettyplease",
@@ -3736,7 +3750,7 @@ checksum = "97a971f6058498b5c0f1affa23e7ea202057a7301dbff68e968b2d578bcbd053"
 dependencies = [
  "js-sys",
  "once_cell",
- "opentelemetry",
+ "opentelemetry 0.27.1",
  "opentelemetry_sdk",
  "smallvec",
  "tracing",

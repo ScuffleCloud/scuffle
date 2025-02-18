@@ -28,7 +28,7 @@ async-trait = { version = "0.1" }
 scuffle-future-ext.workspace = true
 # For extra services features
 tower-service = { version = "0.3", optional = true }
-axum-core = { version = "0.4", optional = true }
+axum-core = { version = "0.5", optional = true }
 
 # for tls-rustls features
 rustls = { version = "0.23", optional = true }

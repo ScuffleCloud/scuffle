@@ -37,7 +37,7 @@ insta = { version = "1", features = ["filters"] }
 libc = { version = "0.2", features = ["extra_traits"] }
 log = { version = "0.4", default-features = false, features = ["std"] }
 memchr = { version = "2" }
-nom = { version = "7" }
+nom = { version = "8" }
 num-traits = { version = "0.2" }
 opentelemetry = { version = "0.27", features = ["spec_unstable_logs_enabled"] }
 opentelemetry_sdk = { version = "0.27", features = ["rt-tokio", "spec_unstable_logs_enabled"] }
@@ -91,7 +91,7 @@ itertools = { version = "0.12", default-features = false, features = ["use_alloc
 libc = { version = "0.2", features = ["extra_traits"] }
 log = { version = "0.4", default-features = false, features = ["std"] }
 memchr = { version = "2" }
-nom = { version = "7" }
+nom = { version = "8" }
 num-traits = { version = "0.2" }
 opentelemetry = { version = "0.27", features = ["spec_unstable_logs_enabled"] }
 opentelemetry_sdk = { version = "0.27", features = ["rt-tokio", "spec_unstable_logs_enabled"] }

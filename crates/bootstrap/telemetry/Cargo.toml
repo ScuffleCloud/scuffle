@@ -16,7 +16,7 @@ unexpected_cfgs = { level = "warn", check-cfg = ['cfg(coverage_nightly)', 'cfg(v
 [dependencies]
 tracing = "0.1"
 anyhow = "1"
-prometheus-client = { version = "0.22.3", optional = true }
+prometheus-client = { version = "0.23.0", optional = true }
 http = "1"
 http-body = "1"
 http-body-util = "0.1.2"

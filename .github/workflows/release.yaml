@@ -57,7 +57,7 @@ jobs:
 
       - name: Download Artifact
         id: download-artifact
-        uses: dawidd6/action-download-artifact@v7
+        uses: dawidd6/action-download-artifact@v8
         with:
           workflow: ci.yaml
           workflow_conclusion: success

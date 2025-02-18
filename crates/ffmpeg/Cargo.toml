@@ -23,7 +23,7 @@ arc-swap = { version = "1.7" }
 rusty_ffmpeg = "0.16.1"
 scuffle-workspace-hack.workspace = true
 nutype-enum.workspace = true
-rand = "0.8"
+rand = "0.9"
 bon = "3.3.2"
 thiserror = "2.0"
 

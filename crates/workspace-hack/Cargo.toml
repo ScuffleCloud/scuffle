@@ -45,7 +45,7 @@ percent-encoding = { version = "2" }
 prettyplease = { version = "0.2", default-features = false, features = ["verbatim"] }
 proc-macro2 = { version = "1" }
 quote = { version = "1" }
-rand = { version = "0.8", features = ["small_rng"] }
+rand = { version = "0.9", features = ["small_rng"] }
 regex = { version = "1", default-features = false, features = ["std", "unicode"] }
 regex-automata = { version = "0.4", default-features = false, features = ["meta", "std", "unicode"] }
 regex-syntax = { version = "0.8", default-features = false, features = ["std", "unicode"] }
@@ -99,7 +99,7 @@ percent-encoding = { version = "2" }
 prettyplease = { version = "0.2", default-features = false, features = ["verbatim"] }
 proc-macro2 = { version = "1" }
 quote = { version = "1" }
-rand = { version = "0.8", features = ["small_rng"] }
+rand = { version = "0.9", features = ["small_rng"] }
 regex = { version = "1", default-features = false, features = ["std", "unicode"] }
 regex-automata = { version = "0.4", default-features = false, features = ["meta", "std", "unicode"] }
 regex-syntax = { version = "0.8", default-features = false, features = ["std", "unicode"] }

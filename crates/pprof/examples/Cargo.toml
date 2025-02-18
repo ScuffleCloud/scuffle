@@ -16,5 +16,5 @@ path = "src/cpu.rs"
 [dependencies]
 scuffle-pprof.workspace = true
 flate2 = "1.0"
-rand = "0.8"
+rand = "0.9"
 scuffle-workspace-hack.workspace = true

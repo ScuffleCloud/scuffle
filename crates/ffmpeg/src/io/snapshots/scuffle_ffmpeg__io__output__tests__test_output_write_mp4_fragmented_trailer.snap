@@ -1,7 +1,6 @@
 ---
 source: crates/ffmpeg/src/io/output.rs
 expression: get_boxes!(output)
-snapshot_kind: text
 ---
 [
     Ftyp(
@@ -329,7 +328,7 @@ snapshot_kind: text
                                                         ],
                                                         extended_config: Some(
                                                             AvccExtendedConfig {
-                                                                chroma_format: 1,
+                                                                chroma_format_idc: 1,
                                                                 bit_depth_luma_minus8: 0,
                                                                 bit_depth_chroma_minus8: 0,
                                                                 sequence_parameter_set_ext: [],

@@ -7,30 +7,48 @@ use bytes::{Buf, Bytes};
 use scuffle_bytes_util::{BitWriter, BytesCursorExt};
 
 #[derive(Debug, Clone, PartialEq)]
-/// AVC (H.264) Decoder Configuration Record
+/// The AVC (H.264) Decoder Configuration Record.
 /// ISO/IEC 14496-15:2022(E) - 5.3.2.1.2
 pub struct AVCDecoderConfigurationRecord {
+    /// By default, this is set to 1. TODO: I couldn't find more info about this in the docs; ctrl+f couldn't find any more instances.
     pub configuration_version: u8,
+    /// The `profile_indication` (aka AVCProfileIndication) contains the `profile_idc` u8 from SPS.
     pub profile_indication: u8,
+    /// The `profile_compatibility` is a u8, similar to the `profile_idc` and `level_idc` bytes from SPS.
     pub profile_compatibility: u8,
+    /// The `level_indication` (aka AVCLevelIndication) contains the `level_idc` u8 from SPS.
     pub level_indication: u8,
+    /// The `length_size_minus_one` is the u8 length of the NALUnitLength minus one.
     pub length_size_minus_one: u8,
+    /// The `sps` is a vec of SPS, each of which is a u64.
+    /// Refer to the SPS struct in the SPS docs for more info.
     pub sps: Vec<Bytes>,
+    /// The `pps` is a vec of PPS, each of which is a u64.
+    /// These contain syntax elements that can apply layer repesentation(s).
+    /// Note that they are supposed to be ordered by ascending PPS ID.
     pub pps: Vec<Bytes>,
+    /// An optional `AvccExtendedConfig`. Refer to the AvccExtendedConfig for more info.
     pub extended_config: Option<AvccExtendedConfig>,
 }
 
 #[derive(Debug, Clone, PartialEq)]
-/// AVC (H.264) Extended Configuration
+/// The AVC (H.264) Extended Configuration.
 /// ISO/IEC 14496-15:2022(E) - 5.3.2.1.2
 pub struct AvccExtendedConfig {
-    pub chroma_format: u8,
+    /// The `chroma_format_idc` as a u8.
+    pub chroma_format_idc: u8,
+    /// The `bit_depth_luma_minus8` as a u8.
     pub bit_depth_luma_minus8: u8,
+    /// The `bit_depth_chroma_minus8` as a u8.
     pub bit_depth_chroma_minus8: u8,
+    /// The `sequence_parameter_set_ext` is a vec of SpsExtended, each of which is a u64.
+    /// Refer to the SpsExtended struct in the SPS docs for more info.
     pub sequence_parameter_set_ext: Vec<Bytes>,
 }
 
 impl AVCDecoderConfigurationRecord {
+    /// Demuxes an AVCDecoderConfigurationRecord from a byte stream.
+    /// Returns a demuxed AVCDecoderConfigurationRecord.
     pub fn demux(reader: &mut io::Cursor<Bytes>) -> io::Result<Self> {
         let configuration_version = reader.read_u8()?;
         let profile_indication = reader.read_u8()?;
@@ -61,7 +79,7 @@ impl AVCDecoderConfigurationRecord {
             66 | 77 | 88 => None,
             _ => {
                 if reader.has_remaining() {
-                    let chroma_format = reader.read_u8()? & 0b00000011; // 2 bits (6 bits reserved)
+                    let chroma_format_idc = reader.read_u8()? & 0b00000011; // 2 bits (6 bits reserved)
                     let bit_depth_luma_minus8 = reader.read_u8()? & 0b00000111; // 3 bits (5 bits reserved)
                     let bit_depth_chroma_minus8 = reader.read_u8()? & 0b00000111; // 3 bits (5 bits reserved)
                     let number_of_sequence_parameter_set_ext = reader.read_u8()?; // 8 bits
@@ -74,7 +92,7 @@ impl AVCDecoderConfigurationRecord {
                     }
 
                     Some(AvccExtendedConfig {
-                        chroma_format,
+                        chroma_format_idc,
                         bit_depth_luma_minus8,
                         bit_depth_chroma_minus8,
                         sequence_parameter_set_ext,
@@ -99,6 +117,7 @@ impl AVCDecoderConfigurationRecord {
         })
     }
 
+    /// Returns the total byte size of the AVCDecoderConfigurationRecord.
     pub fn size(&self) -> u64 {
         1 // configuration_version
         + 1 // avc_profile_indication
@@ -117,7 +136,7 @@ impl AVCDecoderConfigurationRecord {
         }).sum::<u64>() // pps
         + match &self.extended_config {
             Some(config) => {
-                1 // chroma_format (6 bits reserved, 2 bits)
+                1 // chroma_format_idc (6 bits reserved, 2 bits)
                 + 1 // bit_depth_luma_minus8 (5 bits reserved, 3 bits)
                 + 1 // bit_depth_chroma_minus8 (5 bits reserved, 3 bits)
                 + 1 // number_of_sequence_parameter_set_ext
@@ -130,6 +149,8 @@ impl AVCDecoderConfigurationRecord {
         }
     }
 
+    /// Muxes the AVCDecoderConfigurationRecord into a byte stream.
+    /// Returns a muxed byte stream.
     pub fn mux<T: io::Write>(&self, writer: &mut T) -> io::Result<()> {
         let mut bit_writer = BitWriter::new(writer);
 
@@ -155,7 +176,7 @@ impl AVCDecoderConfigurationRecord {
 
         if let Some(config) = &self.extended_config {
             bit_writer.write_bits(0b111111, 6)?;
-            bit_writer.write_bits(config.chroma_format as u64, 2)?;
+            bit_writer.write_bits(config.chroma_format_idc as u64, 2)?;
             bit_writer.write_bits(0b11111, 5)?;
             bit_writer.write_bits(config.bit_depth_luma_minus8 as u64, 3)?;
             bit_writer.write_bits(0b11111, 5)?;
@@ -171,5 +192,97 @@ impl AVCDecoderConfigurationRecord {
         bit_writer.finish()?;
 
         Ok(())
+    }
+}
+
+#[cfg(test)]
+#[cfg_attr(all(test, coverage_nightly), coverage(off))]
+mod tests {
+    use std::io;
+
+    use bytes::Bytes;
+
+    use crate::{config::{AVCDecoderConfigurationRecord, AvccExtendedConfig}, sps::{ColorConfig, Sps, SpsExtended}};
+
+    #[test]
+    fn test_config_demux() {
+        let data = Bytes::from(b"\x01d\0\x1f\xff\xe1\0\x1dgd\0\x1f\xac\xd9A\xe0m\xf9\xe6\xa0  (\0\0\x03\0\x08\0\0\x03\x01\xe0x\xc1\x8c\xb0\x01\0\x06h\xeb\xe3\xcb\"\xc0\xfd\xf8\xf8\0".to_vec());
+
+        let config = AVCDecoderConfigurationRecord::demux(&mut io::Cursor::new(data)).unwrap();
+
+        assert_eq!(config.configuration_version, 1);
+        assert_eq!(config.profile_indication, 100);
+        assert_eq!(config.profile_compatibility, 0);
+        assert_eq!(config.level_indication, 31);
+        assert_eq!(config.length_size_minus_one, 3);
+        assert_eq!(
+            config.extended_config,
+            Some(AvccExtendedConfig {
+                bit_depth_chroma_minus8: 0,
+                bit_depth_luma_minus8: 0,
+                chroma_format_idc: 1,
+                sequence_parameter_set_ext: vec![],
+            })
+        );
+
+        assert_eq!(config.sps.len(), 1);
+        assert_eq!(config.pps.len(), 1);
+
+        let sps = &config.sps[0];
+        let sps = Sps::parse(sps.clone()).unwrap();
+
+        assert_eq!(sps.profile_idc, 100);
+        assert_eq!(sps.level_idc, 31);
+        assert_eq!(
+            sps.ext,
+            Some(SpsExtended {
+                chroma_format_idc: 1,
+                bit_depth_luma_minus8: 0,
+                bit_depth_chroma_minus8: 0,
+            })
+        );
+
+        assert_eq!(sps.width, 480);
+        assert_eq!(sps.height, 852);
+        assert_eq!(sps.frame_rate, 30.0);
+        assert_eq!(
+            sps.color_config,
+            Some(ColorConfig {
+                full_range: false,
+                matrix_coefficients: 1,
+                color_primaries: 1,
+                transfer_characteristics: 1,
+            })
+        )
+    }
+
+    #[test]
+    fn test_config_mux() {
+        let data = Bytes::from(b"\x01d\0\x1f\xff\xe1\0\x1dgd\0\x1f\xac\xd9A\xe0m\xf9\xe6\xa0  (\0\0\x03\0\x08\0\0\x03\x01\xe0x\xc1\x8c\xb0\x01\0\x06h\xeb\xe3\xcb\"\xc0\xfd\xf8\xf8\0".to_vec());
+
+        let config = AVCDecoderConfigurationRecord::demux(&mut io::Cursor::new(data.clone())).unwrap();
+
+        assert_eq!(config.size(), data.len() as u64);
+
+        let mut buf = Vec::new();
+        config.mux(&mut buf).unwrap();
+
+        assert_eq!(buf, data.to_vec());
+    }
+
+    #[test]
+    fn test_parse_sps_with_zero_num_units_in_tick() {
+        let sps = Bytes::from(b"gd\0\x1f\xac\xd9A\xe0m\xf9\xe6\xa0  (\0\0\x03\0\0\0\0\x03\x01\xe0x\xc1\x8c\xb0 ".to_vec());
+        let sps = Sps::parse(sps);
+
+        match sps {
+            Ok(_) => panic!("Expected error for num_units_in_tick = 0, but got Ok"),
+            Err(e) => assert_eq!(
+                e.kind(),
+                std::io::ErrorKind::InvalidData,
+                "Expected InvalidData error, got {:?}",
+                e
+            ),
+        }
     }
 }

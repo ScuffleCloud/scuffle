@@ -6,28 +6,92 @@ use scuffle_bytes_util::BitReader;
 use scuffle_expgolomb::BitReaderExpGolombExt;
 
 #[derive(Debug, Clone, PartialEq)]
-/// Sequence parameter set
+/// The Sequence Parameter Set.
 /// ISO/IEC-14496-10-2022 - 7.3.2
 pub struct Sps {
+    /// Comprised of 6 `constraint_setn_flag`s where `n` ranges from [0, 5]
+    /// (ex: `constraint_set0_flag`, `constraint_set1_flag`, etc.) followed
+    /// by 2 reserved zero bits. Each flag is a singular unsigned bit.
+    /// `constraint_set0_flag`: `1` if it abides by the constraints in A.2.1, `0` if unsure or otherwise.
+    /// `constraint_set1_flag`: `1` if it abides by the constraints in A.2.2, `0` if unsure or otherwise.
+    /// `constraint_set2_flag`: `1` if it abides by the constraints in A.2.3, `0` if unsure or otherwise.
+    /// `constraint_set3_flag`:
+    ///     ```
+    ///     if (`profile_idc` == 66, 77, or 88) AND (`level_idc` == 11):
+    ///         `1` if it abides by the constraints in Annex A for level 1b
+    ///         `0` if it abides by the constraints in Annex A for level 1.1
+    ///     elif `profile_idc` == 100 or 110:
+    ///         `1` if it abides by the constraints for the "High 10 Intra profile"
+    ///         `0` if unsure or otherwise
+    ///     elif `profile_idc` == 122:
+    ///         `1` if it abides by the constraints in Annex A for the "High 4:2:2 Intra profile"
+    ///         `0` if unsure or otherwise
+    ///     elif `profile_idc` == 44:
+    ///         `1` by default
+    ///         `0` is not possible.
+    ///     elif `profile_idc` == 244:
+    ///         `1` if it abides by the constraints in Annex A for the "High 4:4:4 Intra profile"
+    ///         `0` if unsure or otherwise
+    ///     else:
+    ///         `1` is reserved for future use
+    ///         `0` otherwise
+    ///     ```
+    /// `constraint_set4_flag`:
+    ///     ```
+    ///     if (`profile_idc` == 77, 88, 100, or 110):
+    ///         `1` if `frame_mbs_only_flag` == 1
+    ///         `0` if unsure or otherwise
+    ///     elif (`profile_idc` == 118, 128, or 134):
+    ///         `1` if it abides by the constraints in G.6.1.1
+    ///         `0` if unsure or otherwise
+    ///     else:
+    ///         `1` is reserved for future use
+    ///         `0` otherwise
+    ///     ```
+    /// `constraint_set5_flag`:
+    ///     ```
+    ///     if (`profile_idc` == 77, 88, or 100):
+    ///         `1` if there are no B slice types
+    ///         `0` if unsure or otherwise
+    ///     elif `profile_idc` == 118:
+    ///         `1` if it abides by the constraints in G.6.1.2
+    ///         `0` if unsure or otherwise
+    ///     else:
+    ///         `1` is reserved for future use
+    ///         `0` otherwise
+    ///     ```
+    /// The last two bits in the u8 are set to be 0. They are reserved for future use.
     pub profile_idc: u8,
+    /// The level_idc as a u8.
     pub level_idc: u8,
+    /// An optional `SpsExtended`. Refer to the SpsExtended struct for more info.
     pub ext: Option<SpsExtended>,
+    /// The width as a u64,
     pub width: u64,
+    /// The height as a u64.
     pub height: u64,
+    /// The framerate as a f64.
     pub frame_rate: f64,
+    /// An optional `ColorConfig`. Refer to the ColorConfig struct for more info.
     pub color_config: Option<ColorConfig>,
 }
 
 #[derive(Debug, Clone, PartialEq)]
-/// Color config for SPS
+/// The color config for SPS.
 pub struct ColorConfig {
+    /// The `video_full_range_flag` as a bool.
     pub full_range: bool,
+    /// The `colour_primaries` bits as a u8.
     pub color_primaries: u8,
+    /// The `transfer_characteristics` bits as a u8.
     pub transfer_characteristics: u8,
+    /// The `matrix_coefficients` bits as a u8.
     pub matrix_coefficients: u8,
 }
 
 impl Sps {
+    /// Parses an SPS from the input bytes.
+    /// Returns an `Sps` struct.
     pub fn parse(data: Bytes) -> io::Result<Self> {
         let mut vec = Vec::with_capacity(data.len());
 
@@ -96,7 +160,7 @@ impl Sps {
         bit_reader.read_exp_golomb()?; // max_num_ref_frames
         bit_reader.read_bit()?; // gaps_in_frame_num_value_allowed_flag
         let pic_width_in_mbs_minus1 = bit_reader.read_exp_golomb()?; // pic_width_in_mbs_minus1
-        let pic_height_in_map_units_minus1 = bit_reader.read_exp_golomb()?; // pic_height_in_map_units_minus1
+        let pic_height_in_map_units_minus1 = bit_reader.read_exp_golomb()?;// pic_height_in_map_units_minus1
         let frame_mbs_only_flag = bit_reader.read_bit()?;
         if !frame_mbs_only_flag {
             bit_reader.seek_bits(1)?; // mb_adaptive_frame_field_flag
@@ -205,15 +269,20 @@ impl Sps {
 }
 
 #[derive(Debug, Clone, PartialEq)]
-/// Sequence parameter set extension.
+/// The Sequence Parameter Set extension.
 /// ISO/IEC-14496-10-2022 - 7.3.2
 pub struct SpsExtended {
+    /// The `chroma_format_idc` as a u64.
     pub chroma_format_idc: u64,       // ue(v)
+    /// The `bit_depth_luma_minus8` as a u64.
     pub bit_depth_luma_minus8: u64,   // ue(v)
+    /// The `bit_depth_chroma_minus8` as a u64.
     pub bit_depth_chroma_minus8: u64, // ue(v)
 }
 
 impl SpsExtended {
+    /// Parses an extended SPS from a bitstream.
+    /// Returns an `SpsExtended` struct.
     pub fn parse<T: io::Read>(reader: &mut BitReader<T>) -> io::Result<Self> {
         let chroma_format_idc = reader.read_exp_golomb()?;
         if chroma_format_idc == 3 {
@@ -249,5 +318,86 @@ impl SpsExtended {
             bit_depth_luma_minus8,
             bit_depth_chroma_minus8,
         })
+    }
+}
+
+#[cfg(test)]
+#[cfg_attr(all(test, coverage_nightly), coverage(off))]
+mod tests {
+    use bytes::Bytes;
+
+    use crate::sps::{ColorConfig, Sps, SpsExtended};
+
+    #[test]
+    fn test_parse_sps() {
+        let sps = Bytes::from(vec![
+            103, 100, 0, 51, 172, 202, 80, 15, 0, 16, 251, 1, 16, 0, 0, 3, 0, 16, 0, 0, 7, 136, 241, 131, 25, 96,
+        ]);
+
+        let sps = Sps::parse(sps).unwrap();
+
+        assert_eq!(sps.profile_idc, 100);
+        assert_eq!(sps.level_idc, 51);
+        assert_eq!(
+            sps.ext,
+            Some(SpsExtended {
+                chroma_format_idc: 1,
+                bit_depth_luma_minus8: 0,
+                bit_depth_chroma_minus8: 0,
+            })
+        );
+        assert_eq!(sps.width, 3840);
+        assert_eq!(sps.height, 2160);
+        assert_eq!(sps.frame_rate, 60.0);
+        assert_eq!(sps.color_config, None);
+    }
+
+    #[test]
+    fn test_parse_sps2() {
+        let sps = Bytes::from(vec![
+            0x67, 0x42, 0xc0, 0x1f, 0x8c, 0x8d, 0x40, 0x50, 0x1e, 0x90, 0x0f, 0x08, 0x84, 0x6a,
+        ]);
+
+        let sps = Sps::parse(sps).unwrap();
+
+        assert_eq!(sps.profile_idc, 66);
+        assert_eq!(sps.level_idc, 31);
+        assert_eq!(sps.ext, None);
+        assert_eq!(sps.width, 640);
+        assert_eq!(sps.height, 480);
+        assert_eq!(sps.frame_rate, 0.0);
+        assert_eq!(sps.color_config, None);
+    }
+
+    #[test]
+    fn test_parse_sps3() {
+        let sps = Bytes::from(vec![
+            103, 100, 0, 42, 172, 178, 0, 240, 4, 79, 203, 128, 181, 1, 1, 1, 64, 0, 0, 3, 0, 64, 0, 0, 30, 35, 198, 12, 146,
+        ]);
+
+        let sps = Sps::parse(sps).unwrap();
+
+        assert_eq!(sps.profile_idc, 100);
+        assert_eq!(sps.level_idc, 42);
+        assert_eq!(
+            sps.ext,
+            Some(SpsExtended {
+                chroma_format_idc: 1,
+                bit_depth_luma_minus8: 0,
+                bit_depth_chroma_minus8: 0,
+            })
+        );
+        assert_eq!(sps.width, 1920);
+        assert_eq!(sps.height, 1080);
+        assert_eq!(sps.frame_rate, 60.0);
+        assert_eq!(
+            sps.color_config,
+            Some(ColorConfig {
+                full_range: false,
+                matrix_coefficients: 1,
+                color_primaries: 1,
+                transfer_characteristics: 1,
+            })
+        );
     }
 }

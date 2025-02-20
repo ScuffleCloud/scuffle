@@ -70,7 +70,7 @@ pub struct Sps {
     pub level_idc: u8,
     /// An optional `SpsExtended`. Refer to the SpsExtended struct for more info.
     pub ext: Option<SpsExtended>,
-    /// The width as a u64,
+    /// The width as a u64.
     pub width: u64,
     /// The height as a u64.
     pub height: u64,

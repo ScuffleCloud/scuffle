@@ -1,8 +1,8 @@
-//! A crate designed to provide a simple interface for h264.
+//! A crate designed to provide a simple and safe interface to encode and decode H.264 headers.
 //!
 //! ## Why do we need this?
 //!
-//! This crate aims to provide a simple-safe interface for h264.
+//! This crate aims to provides a simple and safe interface for h264.
 //!
 //! ## How is this different from other h264 crates?
 //!
@@ -10,7 +10,7 @@
 //!
 //! ## Notable features
 //!
-//! TODO
+//! This crate contains only safe code.
 //!
 //! ## Examples
 //!

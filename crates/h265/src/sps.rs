@@ -6,7 +6,7 @@ use scuffle_bytes_util::BitReader;
 use scuffle_expgolomb::BitReaderExpGolombExt;
 
 #[derive(Debug, Clone, PartialEq)]
-/// Sequence parameter set
+/// The Sequence Parameter Set.
 /// ISO/IEC-14496-10-2022 - 7.3.2
 pub struct Sps {
     /// The width as a u64.
@@ -20,7 +20,7 @@ pub struct Sps {
 }
 
 #[derive(Debug, Clone, PartialEq)]
-/// Color Config for SPS
+/// The color config for SPS.
 pub struct ColorConfig {
     /// The `video_full_range_flag` as a bool.
     pub full_range: bool,

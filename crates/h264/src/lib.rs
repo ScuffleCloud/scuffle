@@ -33,9 +33,7 @@
 #![cfg_attr(all(coverage_nightly, test), feature(coverage_attribute))]
 #![cfg_attr(docsrs, feature(doc_cfg))]
 #![deny(missing_docs)]
-#![deny(clippy::undocumented_unsafe_blocks)]
-#![deny(clippy::multiple_unsafe_ops_per_block)]
-#![deny(clippy::missing_const_for_fn)]
+#![deny(unsafe_code)]
 
 /// Config functionality.
 pub mod config;

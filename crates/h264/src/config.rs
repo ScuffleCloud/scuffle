@@ -20,10 +20,10 @@ pub struct AVCDecoderConfigurationRecord {
     pub level_indication: u8,
     /// The `length_size_minus_one` is the u8 length of the NALUnitLength minus one.
     pub length_size_minus_one: u8,
-    /// The `sps` is a vec of SPS, each of which is a u64.
+    /// The `sps` is a vec of SPS.
     /// Refer to the SPS struct in the SPS docs for more info.
     pub sps: Vec<Bytes>,
-    /// The `pps` is a vec of PPS, each of which is a u64.
+    /// The `pps` is a vec of PPS.
     /// These contain syntax elements that can apply layer repesentation(s).
     /// Note that they are supposed to be ordered by ascending PPS ID.
     pub pps: Vec<Bytes>,

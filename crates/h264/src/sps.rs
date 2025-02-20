@@ -93,17 +93,25 @@ impl Sps {
     /// Parses an SPS from the input bytes.
     /// Returns an `Sps` struct.
     pub fn parse(data: Bytes) -> io::Result<Self> {
+        // Returns an error if there aren't enough bytes.
+        if data.len() < 4 {
+            return Err(io::Error::new(
+                io::ErrorKind::InvalidData,
+                "Insufficient data: SPS must be at least 4 bytes long",
+            ));
+        }
+
         let mut vec = Vec::with_capacity(data.len());
 
         // We need to remove the emulation prevention byte
         // This is BARELY documented in the spec, but it's there.
         // ISO/IEC-14496-10-2022 - 3.1.48
         let mut i = 0;
-        while i < data.len() - 3 {
-            if data[i] == 0x00 && data[i + 1] == 0x00 && data[i + 2] == 0x03 {
+        while i < data.len() {
+            if i + 2 < data.len() && data[i] == 0x00 && data[i + 1] == 0x00 && data[i + 2] == 0x03 {
                 vec.push(0x00);
                 vec.push(0x00);
-                i += 3;
+                i += 3; // Skip the emulation prevention byte.
             } else {
                 vec.push(data[i]);
                 i += 1;
@@ -160,7 +168,7 @@ impl Sps {
         bit_reader.read_exp_golomb()?; // max_num_ref_frames
         bit_reader.read_bit()?; // gaps_in_frame_num_value_allowed_flag
         let pic_width_in_mbs_minus1 = bit_reader.read_exp_golomb()?; // pic_width_in_mbs_minus1
-        let pic_height_in_map_units_minus1 = bit_reader.read_exp_golomb()?;// pic_height_in_map_units_minus1
+        let pic_height_in_map_units_minus1 = bit_reader.read_exp_golomb()?; // pic_height_in_map_units_minus1
         let frame_mbs_only_flag = bit_reader.read_bit()?;
         if !frame_mbs_only_flag {
             bit_reader.seek_bits(1)?; // mb_adaptive_frame_field_flag
@@ -273,9 +281,9 @@ impl Sps {
 /// ISO/IEC-14496-10-2022 - 7.3.2
 pub struct SpsExtended {
     /// The `chroma_format_idc` as a u64.
-    pub chroma_format_idc: u64,       // ue(v)
+    pub chroma_format_idc: u64, // ue(v)
     /// The `bit_depth_luma_minus8` as a u64.
-    pub bit_depth_luma_minus8: u64,   // ue(v)
+    pub bit_depth_luma_minus8: u64, // ue(v)
     /// The `bit_depth_chroma_minus8` as a u64.
     pub bit_depth_chroma_minus8: u64, // ue(v)
 }
@@ -324,14 +332,69 @@ impl SpsExtended {
 #[cfg(test)]
 #[cfg_attr(all(test, coverage_nightly), coverage(off))]
 mod tests {
+    use std::io;
+
     use bytes::Bytes;
+    use scuffle_bytes_util::BitReader;
 
     use crate::sps::{ColorConfig, Sps, SpsExtended};
 
     #[test]
-    fn test_parse_sps() {
+    fn test_parse_sps_insufficient_bytes_() {
+        let sps = Bytes::from(vec![0xFF]);
+        let result = Sps::parse(sps);
+
+        assert!(result.is_err());
+        let err = result.unwrap_err();
+
+        assert_eq!(err.kind(), io::ErrorKind::InvalidData);
+        assert_eq!(err.to_string(), "Insufficient data: SPS must be at least 4 bytes long");
+    }
+
+    #[test]
+    fn test_parse_sps_set_forbidden_bit() {
         let sps = Bytes::from(vec![
-            103, 100, 0, 51, 172, 202, 80, 15, 0, 16, 251, 1, 16, 0, 0, 3, 0, 16, 0, 0, 7, 136, 241, 131, 25, 96,
+            0xFF, // forbidden bit is set
+            0xFF, // dummy data
+            0xFF, 0xFF,
+        ]);
+        let result = Sps::parse(sps);
+
+        assert!(result.is_err());
+        let err = result.unwrap_err();
+
+        assert_eq!(err.kind(), io::ErrorKind::InvalidData);
+        assert_eq!(err.to_string(), "Forbidden zero bit is set");
+    }
+
+    #[test]
+    fn test_parse_sps_invalid_nal() {
+        let data = Bytes::from(vec![
+            // NAL Header: forbidden_zero_bit (0) + nal_ref_idc (11) + nal_unit_type (5 = non-SPS)
+            0x65, // 01100101 -> nal_unit_type = 5 (not 7, so invalid)
+            0xFF, // dummy data
+            0xFF, 0xFF,
+        ]);
+        let result = Sps::parse(data);
+
+        assert!(result.is_err());
+        let err = result.unwrap_err();
+
+        assert_eq!(err.kind(), io::ErrorKind::InvalidData);
+        assert_eq!(err.to_string(), "NAL unit type is not SPS");
+    }
+
+    #[test]
+    fn test_parse_sps_4k_60fps() {
+        let sps = Bytes::from(vec![
+            // NAL Header: forbidden_zero_bit (0), nal_ref_idc (11), nal_unit_type (7 = SPS)
+            0x67, // Profile IDC (High Profile = 100)
+            0x64, // Constraint flags and reserved bits
+            0x00, // Level IDC (51)
+            0x33, // Sequence Parameter Set ID, log2_max_frame_num_minus4, pic_order_cnt_type
+            0xAC, 0xCA, 0x50, 0x0F, // Reserved bits and emulation prevention
+            0x00, 0x10, 0xFB, 0x01, 0x10, // Frame dimensions: width = 3840, height = 2160
+            0x00, 0x00, 0x03, 0x00, 0x10, 0x00, 0x00, 0x07, 0x88, 0xF1, 0x83, 0x19, 0x60,
         ]);
 
         let sps = Sps::parse(sps).unwrap();
@@ -353,9 +416,15 @@ mod tests {
     }
 
     #[test]
-    fn test_parse_sps2() {
+    fn test_parse_sps_480p_0fps() {
         let sps = Bytes::from(vec![
-            0x67, 0x42, 0xc0, 0x1f, 0x8c, 0x8d, 0x40, 0x50, 0x1e, 0x90, 0x0f, 0x08, 0x84, 0x6a,
+            // NAL Header: nal_unit_type (7 = SPS)
+            0x67, // Profile IDC (Baseline = 66)
+            0x42, // Constraint flags and reserved bits
+            0xC0, // Level IDC (31)
+            0x1F, // Sequence Parameter Set ID, log2_max_frame_num_minus4, pic_order_cnt_type
+            0x8C, 0x8D, 0x40, 0x50, // Frame dimensions: width = 640, height = 480
+            0x1E, 0x90, 0x0F, 0x08, 0x84, 0x6A,
         ]);
 
         let sps = Sps::parse(sps).unwrap();
@@ -370,9 +439,17 @@ mod tests {
     }
 
     #[test]
-    fn test_parse_sps3() {
+    fn test_parse_sps_1080p_60fps_with_color_config() {
         let sps = Bytes::from(vec![
-            103, 100, 0, 42, 172, 178, 0, 240, 4, 79, 203, 128, 181, 1, 1, 1, 64, 0, 0, 3, 0, 64, 0, 0, 30, 35, 198, 12, 146,
+            // NAL Header: nal_unit_type (7 = SPS)
+            0x67, // Profile IDC (High Profile = 100)
+            0x64, // Constraint flags and reserved bits
+            0x00, // Level IDC (42)
+            0x2A, // Sequence Parameter Set ID, log2_max_frame_num_minus4, pic_order_cnt_type
+            0xAC, 0xB2, 0x00, 0xF0, // Color configuration present
+            0x04, 0x4F, 0xCB, 0x80, 0xB5, 0x01, 0x01, 0x01, 0x40,
+            // Emulation prevention bytes removal and frame rate
+            0x00, 0x00, 0x03, 0x00, 0x40, 0x00, 0x00, 0x1E, 0x23, 0xC6, 0x0C, 0x92,
         ]);
 
         let sps = Sps::parse(sps).unwrap();
@@ -399,5 +476,103 @@ mod tests {
                 transfer_characteristics: 1,
             })
         );
+    }
+
+    #[test]
+    fn test_parse_sps_pic_order_cnt_type_set() {
+        let sps = bytes::Bytes::from(vec![
+            // NAL header, profile (66), constraint flags + reserved bits, level idc (31)
+            0x67, 0x42, 0xC0, 0x1F, 0xD3, 0x58, // sps_id (0), log2_max_frame_num_minus4 (0)
+            0x14, // pic_order_cnt_type (1)
+            0x07, // delta_pic_order_always_zero_flag (0) and offset_for_non_ref_pic (0)
+            // offset_for_top_to_bottom_field (0) and num_ref_frames... (1) and offset_for_ref_frame (0)
+            0xB0,
+            // max_num_ref_frames (0) and gaps_in_frame_num_value_allowed_flag (0) and begins pic_width_in_mbs_minus1 (39)
+            0x1E, 0x90, // pic_width_in_mbs_minus1 encoding (39, so width = 40 * 16 = 640)
+            0x0F, // pic_height_in_map_units_minus1 = 29 (so height = 30 * 16 = 480)
+            0x08, // frame_mbs_only_flag = 1
+            0x84, // direct_8x8_inference_flag = 1; frame_cropping_flag = 0
+            0x6A, // vui_parameters_present_flag = 0; end of SPS data
+        ]);
+
+        let sps = crate::sps::Sps::parse(sps).unwrap();
+
+        assert_eq!(sps.profile_idc, 66);
+        assert_eq!(sps.level_idc, 31);
+        assert_eq!(sps.ext, None);
+        assert_eq!(sps.width, 640);
+        assert_eq!(sps.height, 480);
+        assert_eq!(sps.frame_rate, 0.0);
+        assert_eq!(sps.color_config, None);
+    }
+
+    #[test]
+    fn test_parse_sps_vui_and_interlaced() {
+        let sps = bytes::Bytes::from(vec![
+            // NAL header, profile idc = 66, constraint flags and reserved bits, level idc = 31
+            0x67, 0x42, 0x00, 0x1F, 0xF8, // first bits of pic_width_in_mbs_minus1
+            0x14, // next 8 bits of pic_width_in_mbs_minus1
+            // remainder of pic_width_in_mbs_minus1 + first 7 bits of pic_height_in_map_units_minus1
+            0x07,
+            // last bits of pic_height_in_map_units_minus1 + flags (frame_mbs_only_flag, etc.) + VUI start bits
+            0x8B, 0xFF, // aspect_ratio_idc = 255
+            0x01, 0x23, // sar_width high byte (0x0123)
+            0x04, 0x56, // sar_height high byte (0x0456)
+            0xA0, // overscan and video signal type flags
+            0xE0, // chroma loc info and timing flag (plus padding)
+        ]);
+        let result = Sps::parse(sps).unwrap();
+
+        assert_eq!(result.width, 640);
+        assert_eq!(result.height, 960);
+        assert_eq!(result.frame_rate, 0.0);
+        assert_eq!(
+            result.color_config,
+            Some(crate::sps::ColorConfig {
+                full_range: false,
+                color_primaries: 2,
+                transfer_characteristics: 2,
+                matrix_coefficients: 2,
+            })
+        );
+    }
+
+    #[test]
+    fn test_parse_sps_ext_chroma_format_3() {
+        let sps = Bytes::from_static(&[
+            0x67, 0x64, 0x00, 0x1F, // NAL/profile/constraints/level
+            0x91, 0x9E, 0xF0, // chroma_format_idc=3
+        ]);
+
+        let result = Sps::parse(sps).expect("Failed to parse SPS");
+        assert_eq!(result.profile_idc, 100);
+
+        let ext = result.ext.expect("Expected SpsExtended, got None");
+        assert_eq!(ext.chroma_format_idc, 3);
+
+        assert_eq!(ext.bit_depth_luma_minus8, 0);
+        assert_eq!(ext.bit_depth_chroma_minus8, 0);
+    }
+
+    #[test]
+    fn test_parse_sps_ext_scaling_matrix() {
+        let data = Bytes::from(vec![0x23, 0x7F, 0xFF, 0xE0, 0x00]);
+        let mut reader = BitReader::new_from_slice(data);
+        let ext = SpsExtended::parse(&mut reader).unwrap();
+
+        assert_eq!(ext.chroma_format_idc, 3);
+        assert_eq!(ext.bit_depth_luma_minus8, 0);
+        assert_eq!(ext.bit_depth_chroma_minus8, 0);
+    }
+
+    #[test]
+    fn test_parse_sps_ext_break() {
+        let data = Bytes::from(vec![0x5B, 0x08, 0x80]);
+        let mut reader = BitReader::new_from_slice(data);
+        let ext = SpsExtended::parse(&mut reader).unwrap();
+
+        assert_eq!(ext.chroma_format_idc, 1);
+        assert_eq!(ext.bit_depth_luma_minus8, 0);
+        assert_eq!(ext.bit_depth_chroma_minus8, 0);
     }
 }

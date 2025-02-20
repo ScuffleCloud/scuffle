@@ -12,54 +12,58 @@ pub struct Sps {
     /// Comprised of 6 `constraint_setn_flag`s where `n` ranges from [0, 5]
     /// (ex: `constraint_set0_flag`, `constraint_set1_flag`, etc.) followed
     /// by 2 reserved zero bits. Each flag is a singular unsigned bit.
+    ///
     /// `constraint_set0_flag`: `1` if it abides by the constraints in A.2.1, `0` if unsure or otherwise.
+    ///
     /// `constraint_set1_flag`: `1` if it abides by the constraints in A.2.2, `0` if unsure or otherwise.
+    ///
     /// `constraint_set2_flag`: `1` if it abides by the constraints in A.2.3, `0` if unsure or otherwise.
+    ///
     /// `constraint_set3_flag`:
-    ///     ```
-    ///     if (`profile_idc` == 66, 77, or 88) AND (`level_idc` == 11):
-    ///         `1` if it abides by the constraints in Annex A for level 1b
-    ///         `0` if it abides by the constraints in Annex A for level 1.1
-    ///     elif `profile_idc` == 100 or 110:
-    ///         `1` if it abides by the constraints for the "High 10 Intra profile"
-    ///         `0` if unsure or otherwise
-    ///     elif `profile_idc` == 122:
-    ///         `1` if it abides by the constraints in Annex A for the "High 4:2:2 Intra profile"
-    ///         `0` if unsure or otherwise
-    ///     elif `profile_idc` == 44:
-    ///         `1` by default
-    ///         `0` is not possible.
-    ///     elif `profile_idc` == 244:
-    ///         `1` if it abides by the constraints in Annex A for the "High 4:4:4 Intra profile"
-    ///         `0` if unsure or otherwise
+    /// ```text
+    ///     if (profile_idc == 66, 77, or 88) AND (level_idc == 11):
+    ///         1 if it abides by the constraints in Annex A for level 1b
+    ///         0 if it abides by the constraints in Annex A for level 1.1
+    ///     elif profile_idc == 100 or 110:
+    ///         1 if it abides by the constraints for the "High 10 Intra profile"
+    ///         0 if unsure or otherwise
+    ///     elif profile_idc == 122:
+    ///         1 if it abides by the constraints in Annex A for the "High 4:2:2 Intra profile"
+    ///         0 if unsure or otherwise
+    ///     elif profile_idc == 44:
+    ///         1 by default
+    ///         0 is not possible.
+    ///     elif profile_idc == 244:
+    ///         1 if it abides by the constraints in Annex A for the "High 4:4:4 Intra profile"
+    ///         0 if unsure or otherwise
     ///     else:
-    ///         `1` is reserved for future use
-    ///         `0` otherwise
-    ///     ```
+    ///         1 is reserved for future use
+    ///         0 otherwise
+    /// ```
     /// `constraint_set4_flag`:
-    ///     ```
-    ///     if (`profile_idc` == 77, 88, 100, or 110):
-    ///         `1` if `frame_mbs_only_flag` == 1
-    ///         `0` if unsure or otherwise
-    ///     elif (`profile_idc` == 118, 128, or 134):
-    ///         `1` if it abides by the constraints in G.6.1.1
-    ///         `0` if unsure or otherwise
+    /// ```text
+    ///     if (profile_idc == 77, 88, 100, or 110):
+    ///         1 if frame_mbs_only_flag == 1
+    ///         0 if unsure or otherwise
+    ///     elif (profile_idc == 118, 128, or 134):
+    ///         1 if it abides by the constraints in G.6.1.1
+    ///         0 if unsure or otherwise
     ///     else:
-    ///         `1` is reserved for future use
-    ///         `0` otherwise
-    ///     ```
+    ///         1 is reserved for future use
+    ///         0 otherwise
+    /// ```
     /// `constraint_set5_flag`:
-    ///     ```
-    ///     if (`profile_idc` == 77, 88, or 100):
-    ///         `1` if there are no B slice types
-    ///         `0` if unsure or otherwise
-    ///     elif `profile_idc` == 118:
-    ///         `1` if it abides by the constraints in G.6.1.2
-    ///         `0` if unsure or otherwise
+    /// ```text
+    ///     if (profile_idc == 77, 88, or 100):
+    ///         1 if there are no B slice types
+    ///         0 if unsure or otherwise
+    ///     elif profile_idc == 118:
+    ///         1 if it abides by the constraints in G.6.1.2
+    ///         0 if unsure or otherwise
     ///     else:
-    ///         `1` is reserved for future use
-    ///         `0` otherwise
-    ///     ```
+    ///         1 is reserved for future use
+    ///         0 otherwise
+    /// ```
     /// The last two bits in the u8 are set to be 0. They are reserved for future use.
     pub profile_idc: u8,
     /// The level_idc as a u8.

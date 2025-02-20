@@ -1,4 +1,6 @@
-//! A crate designed to provide a simple and safe interface to encode and decode H.264 headers.
+//! A pure Rust implementation of the H.264 encoder and decoder.
+//!
+//! This crate is designed to provide a simple and safe interface to encode and decode H.264 headers.
 //!
 //! ## Why do we need this?
 //!
@@ -10,7 +12,7 @@
 //!
 //! ## Notable features
 //!
-//! This crate contains only safe code.
+//! This crate is a completely safe implementation of H264 encoding and decoding, which means there is no unsafe code!
 //!
 //! ## Examples
 //!

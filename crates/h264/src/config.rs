@@ -10,7 +10,7 @@ use scuffle_bytes_util::{BitWriter, BytesCursorExt};
 /// The AVC (H.264) Decoder Configuration Record.
 /// ISO/IEC 14496-15:2022(E) - 5.3.2.1.2
 pub struct AVCDecoderConfigurationRecord {
-    /// By default, this is set to 1. TODO: I couldn't find more info about this in the docs; ctrl+f couldn't find any more instances.
+    /// The `configuration_version` is set to 1 as defined by h264 until future notice.
     pub configuration_version: u8,
     /// The `profile_indication` (aka AVCProfileIndication) contains the `profile_idc` u8 from SPS.
     pub profile_indication: u8,

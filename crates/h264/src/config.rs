@@ -202,7 +202,8 @@ mod tests {
 
     use bytes::Bytes;
 
-    use crate::{config::{AVCDecoderConfigurationRecord, AvccExtendedConfig}, sps::{ColorConfig, Sps, SpsExtended}};
+    use crate::config::{AVCDecoderConfigurationRecord, AvccExtendedConfig};
+    use crate::sps::{ColorConfig, Sps, SpsExtended};
 
     #[test]
     fn test_config_demux() {
@@ -284,5 +285,111 @@ mod tests {
                 e
             ),
         }
+    }
+
+    #[test]
+    fn test_no_ext_cfg_for_profiles_66_77_88() {
+        let data = Bytes::from(b"\x01B\x00\x1F\xFF\xE1\x00\x1Dgd\x00\x1F\xAC\xD9A\xE0m\xF9\xE6\xA0  (\x00\x00\x03\x00\x08\x00\x00\x03\x01\xE0x\xC1\x8C\xB0\x01\x00\x06h\xEB\xE3\xCB\"\xC0\xFD\xF8\xF8\x00".to_vec());
+        let config = AVCDecoderConfigurationRecord::demux(&mut io::Cursor::new(data)).unwrap();
+
+        assert_eq!(config.extended_config, None);
+    }
+
+    #[test]
+    fn test_size_calculation_with_sequence_parameter_set_ext() {
+        let extended_config = AvccExtendedConfig {
+            chroma_format_idc: 1,
+            bit_depth_luma_minus8: 0,
+            bit_depth_chroma_minus8: 0,
+            sequence_parameter_set_ext: vec![Bytes::from_static(b"extra")],
+        };
+        let config = AVCDecoderConfigurationRecord {
+            configuration_version: 1,
+            profile_indication: 100,
+            profile_compatibility: 0,
+            level_indication: 31,
+            length_size_minus_one: 3,
+            sps: vec![Bytes::from_static(b"spsdata")],
+            pps: vec![Bytes::from_static(b"ppsdata")],
+            extended_config: Some(extended_config),
+        };
+
+        assert_eq!(config.size(), 36);
+        insta::assert_debug_snapshot!(config, @r#"
+        AVCDecoderConfigurationRecord {
+            configuration_version: 1,
+            profile_indication: 100,
+            profile_compatibility: 0,
+            level_indication: 31,
+            length_size_minus_one: 3,
+            sps: [
+                b"spsdata",
+            ],
+            pps: [
+                b"ppsdata",
+            ],
+            extended_config: Some(
+                AvccExtendedConfig {
+                    chroma_format_idc: 1,
+                    bit_depth_luma_minus8: 0,
+                    bit_depth_chroma_minus8: 0,
+                    sequence_parameter_set_ext: [
+                        b"extra",
+                    ],
+                },
+            ),
+        }
+        "#);
+    }
+
+    #[test]
+    fn test_mux_with_sequence_parameter_set_ext() {
+        let extended_config = AvccExtendedConfig {
+            chroma_format_idc: 1,
+            bit_depth_luma_minus8: 0,
+            bit_depth_chroma_minus8: 0,
+            sequence_parameter_set_ext: vec![Bytes::from_static(b"extra")],
+        };
+        let config = AVCDecoderConfigurationRecord {
+            configuration_version: 1,
+            profile_indication: 100,
+            profile_compatibility: 0,
+            level_indication: 31,
+            length_size_minus_one: 3,
+            sps: vec![Bytes::from_static(b"spsdata")],
+            pps: vec![Bytes::from_static(b"ppsdata")],
+            extended_config: Some(extended_config),
+        };
+
+        let mut buf = Vec::new();
+        config.mux(&mut buf).unwrap();
+
+        let demuxed = AVCDecoderConfigurationRecord::demux(&mut io::Cursor::new(buf.into())).unwrap();
+        assert_eq!(demuxed.extended_config.unwrap().sequence_parameter_set_ext.len(), 1);
+        insta::assert_debug_snapshot!(config, @r#"
+        AVCDecoderConfigurationRecord {
+            configuration_version: 1,
+            profile_indication: 100,
+            profile_compatibility: 0,
+            level_indication: 31,
+            length_size_minus_one: 3,
+            sps: [
+                b"spsdata",
+            ],
+            pps: [
+                b"ppsdata",
+            ],
+            extended_config: Some(
+                AvccExtendedConfig {
+                    chroma_format_idc: 1,
+                    bit_depth_luma_minus8: 0,
+                    bit_depth_chroma_minus8: 0,
+                    sequence_parameter_set_ext: [
+                        b"extra",
+                    ],
+                },
+            ),
+        }
+        "#);
     }
 }

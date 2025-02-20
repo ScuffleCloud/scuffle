@@ -19,3 +19,6 @@ byteorder = "1.5"
 scuffle-expgolomb.workspace = true
 scuffle-bytes-util.workspace = true
 scuffle-workspace-hack.workspace = true
+
+[dev-dependencies]
+insta = "1.42"

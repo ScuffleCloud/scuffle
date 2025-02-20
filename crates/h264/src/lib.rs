@@ -35,10 +35,8 @@
 #![deny(missing_docs)]
 #![deny(unsafe_code)]
 
-/// Config functionality.
-pub mod config;
-/// Sequence Parameter Set (SPS) functionality.
-pub mod sps;
+mod config;
+mod sps;
 
 pub use self::config::{AVCDecoderConfigurationRecord, AvccExtendedConfig};
 pub use self::sps::{ColorConfig, Sps, SpsExtended};

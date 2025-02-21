@@ -44,6 +44,7 @@ impl Sps {
             if i + 2 < data.len() && data[i] == 0x00 && data[i + 1] == 0x00 && data[i + 2] == 0x03 {
                 vec.push(0x00);
                 vec.push(0x00);
+                i += 3; // Skip the emulation prevention byte.
             } else {
                 vec.push(data[i]);
                 i += 1;
@@ -356,6 +357,8 @@ impl Sps {
 #[cfg(test)]
 #[cfg_attr(all(test, coverage_nightly), coverage(off))]
 mod tests {
+    use std::io;
+
     use bytes::Bytes;
 
     use crate::{ColorConfig, Sps};
@@ -395,5 +398,169 @@ mod tests {
                 e
             ),
         }
+    }
+
+    #[test]
+    fn test_forbidden_zero_bit() {
+        // 0x80 = 1000 0000: forbidden_zero_bit (first bit) is 1.
+        let data = Bytes::from(vec![0x80]);
+        let err = Sps::parse(data).unwrap_err();
+        assert_eq!(err.kind(), io::ErrorKind::InvalidData);
+        assert_eq!(err.to_string(), "forbidden_zero_bit is not zero");
+    }
+
+    #[test]
+    fn test_invalid_nalu_type() {
+        // 0x40 = 0100 0000:
+        //   forbidden_zero_bit = 0;
+        //   next 6 bits (100000) = 32 ≠ 33.
+        let data = Bytes::from(vec![0x40]);
+        let err = Sps::parse(data).unwrap_err();
+        assert_eq!(err.kind(), io::ErrorKind::InvalidData);
+        assert_eq!(err.to_string(), "nalu_type is not 33");
+    }
+
+    #[test]
+    fn test_sub_layer_for_loop() {
+        let data = b"\x42\x00\x03\
+                    \x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\
+                    \x40\
+                    \x00\
+                    \x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\
+                    \xC0\x16\x88\x07\xC5\xDF\x84\x00"
+            .to_vec();
+        let data = bytes::Bytes::from(data);
+        let result = Sps::parse(data).unwrap();
+
+        insta::assert_debug_snapshot!(result, @r"
+        Sps {
+            width: 720,
+            height: 496,
+            frame_rate: 0.0,
+            color_config: None,
+        }
+        ");
+    }
+
+    #[test]
+    fn test_sub_layer_loop_without_level_idc() {
+        let data = b"\x42\x00\x03\
+                    \x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\
+                    \x00\
+                    \x00\
+                    \x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\
+                    \xC0\x0F\x02\x00\x43\x97\x7E\x10"
+            .to_vec();
+        let data = bytes::Bytes::from(data);
+        let result = Sps::parse(data).unwrap();
+
+        insta::assert_debug_snapshot!(result, @r"
+        Sps {
+            width: 1920,
+            height: 1080,
+            frame_rate: 0.0,
+            color_config: None,
+        }
+        ");
+    }
+
+    #[test]
+    fn test_chroma_format_idc_3() {
+        let data = b"\x42\x00\x03\
+                    \x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\
+                    \x40\
+                    \x00\
+                    \x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\
+                    \x90\x00\xA0\x40\x2D\x2E\xFC\x20"
+            .to_vec();
+        let data = bytes::Bytes::from(data);
+        let result = Sps::parse(data).unwrap();
+
+        insta::assert_debug_snapshot!(result, @r"
+        Sps {
+            width: 640,
+            height: 360,
+            frame_rate: 0.0,
+            color_config: None,
+        }
+        ");
+    }
+
+    #[test]
+    fn test_conformance_window_and_chroma_format_idc_2() {
+        let data = b"\x42\x00\x03\
+                    \x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\
+                    \x40\
+                    \x00\
+                    \x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\
+                    \xB0\x0A\x48\x0F\x5B\x6D\xF7\xF1\x20\
+                    \x00\x80\x00\x00\x00\x01\x00\x00\x00\x0F\
+                    \x00"
+            .to_vec();
+        let data = bytes::Bytes::from(data);
+        let result = Sps::parse(data).unwrap();
+
+        insta::assert_debug_snapshot!(result, @r"
+        Sps {
+            width: 320,
+            height: 240,
+            frame_rate: 0.0,
+            color_config: None,
+        }
+        ");
+    }
+
+    #[test]
+    fn test_invalid_chroma_format_idc() {
+        let data = b"\x42\x00\x03\
+                    \x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\
+                    \x40\
+                    \x00\
+                    \x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\
+                    \x97\x00"
+            .to_vec();
+        let data = bytes::Bytes::from(data);
+        let err = Sps::parse(data).unwrap_err();
+
+        assert_eq!(err.kind(), std::io::ErrorKind::InvalidData);
+        assert_eq!(err.to_string(), "chroma_format_idc is not 0-3");
+    }
+
+    #[test]
+    fn test_scaling_list_pred_mode_flag_false() {
+        let data = b"\x42\x00\x00\
+            \x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\
+            \xA0\x03\xC0\x80\x10\xE5\xDF\xEA\xAA\xAA\xAA\xAA\xA2\x20\x10\x00\x00\x06\x40\x00\x05\xDC\x00"
+            .to_vec();
+
+        let data = bytes::Bytes::from(data);
+        let result = Sps::parse(data).unwrap();
+
+        insta::assert_debug_snapshot!(result, @r"
+        Sps {
+            width: 1920,
+            height: 1080,
+            frame_rate: 240.0,
+            color_config: None,
+        }
+        ");
+    }
+
+    #[test]
+    fn test_nonzero_st_rps_idx() {
+        let data = b"\x42\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\
+                 \xA0\x32\x83\x37\x7E\x0D\x6A\xA0"
+            .to_vec();
+
+        let sps = Sps::parse(bytes::Bytes::from(data)).unwrap();
+
+        insta::assert_debug_snapshot!(sps, @r"
+        Sps {
+            width: 100,
+            height: 50,
+            frame_rate: 0.0,
+            color_config: None,
+        }
+        ");
     }
 }

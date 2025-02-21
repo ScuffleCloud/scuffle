@@ -1,0 +1,37 @@
+runners:
+  ubuntu24-x64:
+    cpu: [8, 16]
+    ram: [7, 8, 16, 32, 64]
+    disk: default
+    image: ubuntu24-full-x64
+    family: ["c1", "c5", "c7i-flex", "c6a", "m6i", "c6i", "c5a", "m5", "c7i", "c7a"]
+    spot: pco
+    extras:
+      - s3-cache
+    retry: when-interrupted
+    preinstall: |
+      cat > /etc/docker/daemon.json <<EOF
+      {
+        "ipv6": true,
+        "fixed-cidr-v6": "2001:db8:1::/64"
+      }
+      EOF
+      systemctl restart docker
+  ubuntu24-arm64:
+    cpu: [8, 16]
+    ram: [7, 8, 16, 32, 64]
+    disk: default
+    image: ubuntu24-full-arm64
+    family: ["c6g", "c7g", "c6gn", "c6gd", "c8g", "m6g", "c7gd", "m7g"]
+    spot: pco
+    extras:
+      - s3-cache
+    retry: when-interrupted
+    preinstall: |
+      cat > /etc/docker/daemon.json <<EOF
+      {
+        "ipv6": true,
+        "fixed-cidr-v6": "2001:db8:1::/64"
+      }
+      EOF
+      systemctl restart docker

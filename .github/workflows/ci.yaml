@@ -22,7 +22,7 @@ env:
 jobs:
   clippy:
     name: Clippy
-    runs-on: ubicloud-standard-8
+    runs-on: runs-on=${{ github.run_id }}/runner=ubuntu24-x64
     steps:
       - uses: actions/checkout@v4
         with:
@@ -38,7 +38,6 @@ jobs:
           components: clippy
           shared-key: clippy
           tools: just,cargo-hakari
-          cache-backend: ubicloud
 
       - name: Disable Hakari
         if: ${{ github.event_name == 'push' }}
@@ -95,7 +94,7 @@ jobs:
 
   test:
     name: Test
-    runs-on: ubicloud-standard-8
+    runs-on: runs-on=${{ github.run_id }}/runner=ubuntu24-x64
     env:
       RUSTFLAGS: "--cfg reqwest_unstable"
     steps:
@@ -113,7 +112,6 @@ jobs:
           tools: cargo-nextest,cargo-llvm-cov
           components: llvm-tools-preview
           shared-key: test
-          cache-backend: ubicloud
 
       # Note; we don't run the powerset here because it's very slow on CI
       # Perhaps we should consider it at some point.
@@ -156,7 +154,7 @@ jobs:
   grind:
     name: Grind
     if: ${{ github.event_name == 'push' }}
-    runs-on: ubicloud-standard-8
+    runs-on: runs-on=${{ github.run_id }}/runner=ubuntu24-x64
     env:
       RUSTFLAGS: "--cfg reqwest_unstable --cfg valgrind"
     steps:
@@ -174,7 +172,6 @@ jobs:
           tools: cargo-nextest,cargo-llvm-cov
           components: llvm-tools-preview
           shared-key: grind
-          cache-backend: ubicloud
 
       - name: Install Valgrind
         run: |
@@ -190,7 +187,7 @@ jobs:
 
   docs:
     name: Docs
-    runs-on: ubicloud-standard-8
+    runs-on: runs-on=${{ github.run_id }}/runner=ubuntu24-x64
     permissions:
       pull-requests: write
     env:
@@ -209,7 +206,6 @@ jobs:
           toolchain: ${{ env.RUST_TOOLCHAIN }}
           components: rust-docs
           shared-key: docs
-          cache-backend: ubicloud
 
       - name: Build docs
         run: |

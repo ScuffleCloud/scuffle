@@ -1,6 +1,6 @@
 [profile.ci]
 fail-fast = false
-test-threads = "64"
+test-threads = 64
 
 [profile.ci.junit]
 path = "junit.xml"

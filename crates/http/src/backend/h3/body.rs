@@ -1,3 +1,4 @@
+//! Types for parsing HTTP/3 bodies.
 use std::future::Future;
 use std::pin::Pin;
 use std::task::{Context, Poll};

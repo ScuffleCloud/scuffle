@@ -1,3 +1,4 @@
+//! Hyper backend.
 use std::fmt::Debug;
 use std::net::SocketAddr;
 

@@ -87,6 +87,7 @@ impl<F: Future> Future for FutureWithContext<'_, F> {
     }
 }
 
+/// Extends a future with useful functions.
 pub trait ContextFutExt<Fut> {
     /// Wraps a future with a context and cancels the future when the context is
     /// done.
@@ -156,6 +157,7 @@ impl<F: Stream> Stream for StreamWithContext<'_, F> {
     }
 }
 
+/// Extends a stream with useful functions.
 pub trait ContextStreamExt<Stream> {
     /// Wraps a stream with a context and stops the stream when the context is
     /// done.

@@ -1,9 +1,28 @@
+//! A proc-macro to generate the main function for the application.
+//!
+//! For more information checkout the [scuffle-bootstrap](../README.md) crate.
+//!
+//! ## Status
+//!
+//! This crate is currently under development and is not yet stable, unit tests are not yet fully implemented.
+//!
+//! Unit tests are not yet fully implemented. Use at your own risk.
+//!
+//! ## License
+//!
+//! This project is licensed under the [MIT](./LICENSE.MIT) or [Apache-2.0](./LICENSE.Apache-2.0) license.
+//! You can choose between one of them if you use this work.
+//!
+//! `SPDX-License-Identifier: MIT OR Apache-2.0`
 #![cfg_attr(all(coverage_nightly, test), feature(coverage_attribute))]
+#![deny(missing_docs)]
+#![deny(unsafe_code)]
 
 use proc_macro::TokenStream;
 
 mod main_impl;
 
+/// Can be used to generate the main function for the application.
 #[proc_macro]
 pub fn main(input: TokenStream) -> TokenStream {
     handle_error(main_impl::impl_main(input.into()))

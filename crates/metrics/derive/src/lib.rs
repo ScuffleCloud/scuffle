@@ -18,6 +18,8 @@
 //! them if you use this work.
 //!
 //! `SPDX-License-Identifier: MIT OR Apache-2.0`
+#![deny(missing_docs)]
+#![deny(unsafe_code)]
 
 use enum_impl::metric_enum_impl;
 use metrics_impl::metrics_impl;

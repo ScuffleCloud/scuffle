@@ -8,12 +8,16 @@ use scuffle_bytes_util::{BitReader, BitWriter, BytesCursorExt};
 /// <https://aomediacodec.github.io/av1-mpeg2-ts/#av1-video-descriptor>
 #[derive(Debug, Clone, PartialEq)]
 pub struct AV1VideoDescriptor {
+    /// `descriptor_tag`
     pub tag: u8,
+    /// `descriptor_length`
     pub length: u8,
+    /// AV1 Codec Configuration Record
     pub codec_configuration_record: AV1CodecConfigurationRecord,
 }
 
 impl AV1VideoDescriptor {
+    /// Demuxes the AV1 Video Descriptor from the given reader.
     pub fn demux(reader: &mut io::Cursor<Bytes>) -> io::Result<Self> {
         let tag = reader.read_u8()?;
         if tag != 0x80 {
@@ -40,21 +44,36 @@ impl AV1VideoDescriptor {
 /// AV1 Codec Configuration Record
 /// <https://aomediacodec.github.io/av1-isobmff/#av1codecconfigurationbox-syntax>
 pub struct AV1CodecConfigurationRecord {
+    /// `seq_profile`
     pub seq_profile: u8,
+    /// `seq_level_idx_0`
     pub seq_level_idx_0: u8,
+    /// `seq_tier_0`
     pub seq_tier_0: bool,
+    /// `high_bitdepth`
     pub high_bitdepth: bool,
+    /// `twelve_bit`
     pub twelve_bit: bool,
+    /// `monochrome`
     pub monochrome: bool,
+    /// `chroma_subsampling_x`
     pub chroma_subsampling_x: bool,
+    /// `chroma_subsampling_y`
     pub chroma_subsampling_y: bool,
+    /// `chroma_sample_position`
     pub chroma_sample_position: u8,
+    /// `hdr_wcg_idc`
+    ///
+    /// From a newer spec: <https://aomediacodec.github.io/av1-mpeg2-ts/#av1-video-descriptor>
     pub hdr_wcg_idc: u8,
+    /// `initial_presentation_delay_minus_one`
     pub initial_presentation_delay_minus_one: Option<u8>,
+    /// `configOBUs[]`
     pub config_obu: Bytes,
 }
 
 impl AV1CodecConfigurationRecord {
+    /// Demuxes the AV1 Codec Configuration Record from the given reader.
     pub fn demux(reader: &mut io::Cursor<Bytes>) -> io::Result<Self> {
         let mut bit_reader = BitReader::new(reader);
 
@@ -116,6 +135,7 @@ impl AV1CodecConfigurationRecord {
         })
     }
 
+    /// Returns the size of the AV1 Codec Configuration Record.
     pub fn size(&self) -> u64 {
         1 // marker, version
         + 1 // seq_profile, seq_level_idx_0
@@ -124,6 +144,7 @@ impl AV1CodecConfigurationRecord {
         + self.config_obu.len() as u64
     }
 
+    /// Muxes the AV1 Codec Configuration Record to the given writer.
     pub fn mux<T: io::Write>(&self, writer: &mut T) -> io::Result<()> {
         let mut bit_writer = BitWriter::new(writer);
 

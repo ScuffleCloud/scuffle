@@ -1,3 +1,5 @@
+//! Types related to the batcher and batch executor.
+
 use std::future::Future;
 use std::sync::Arc;
 

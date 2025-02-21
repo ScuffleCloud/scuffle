@@ -2,11 +2,15 @@ use std::io;
 
 use bytes::Bytes;
 
+/// A cursor for reading bytes.
+///
+/// This cursor is a [`io::Cursor`] where the underlying type is a [`Bytes`] object
+/// which enables zero copy decoding.
 pub type BytesCursor = io::Cursor<Bytes>;
 
-/// A helper trait to implement zero copy reads on a `Cursor<Bytes>` type.
+/// A helper trait to implement zero copy reads on a [`BytesCursor`] type.
 ///
-/// Allowing for zero copy reads from a `Cursor<Bytes>` type.
+/// Allowing for zero copy reads from a [`BytesCursor`] type.
 pub trait BytesCursorExt {
     /// Extracts the remaining bytes from the cursor.
     ///

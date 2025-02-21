@@ -68,6 +68,8 @@
 //! `SPDX-License-Identifier: MIT OR Apache-2.0`
 #![cfg_attr(docsrs, feature(doc_cfg))]
 #![cfg_attr(all(coverage_nightly, test), feature(coverage_attribute))]
+#![deny(missing_docs)]
+#![deny(unsafe_code)]
 
 #[cfg(all(feature = "http3", not(feature = "tls-rustls")))]
 compile_error!("feature \"tls-rustls\" must be enabled when \"http3\" is enabled.");
@@ -84,6 +86,7 @@ pub use http;
 pub use http::Response;
 pub use server::{HttpServer, HttpServerBuilder};
 
+/// An incoming request.
 pub type IncomingRequest = http::Request<body::IncomingBody>;
 
 #[cfg(test)]

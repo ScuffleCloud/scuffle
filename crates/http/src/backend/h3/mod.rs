@@ -1,3 +1,4 @@
+//! HTTP3 backend.
 use std::fmt::Debug;
 use std::io;
 use std::net::SocketAddr;

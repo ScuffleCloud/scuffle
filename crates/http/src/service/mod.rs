@@ -1,3 +1,4 @@
+//! HTTP service and service factory traits.
 use std::future::Future;
 use std::net::SocketAddr;
 
@@ -21,7 +22,9 @@ pub use tower_factory::*;
 /// It is very similar to tower's service trait and implemented
 /// for all types that implement [`tower::Service<IncomingRequest>`](https://docs.rs/tower/latest/tower/trait.Service.html).
 pub trait HttpService {
+    /// The error type that can be returned by [`call`](HttpService::call).
     type Error;
+    /// The response body type that is returned by [`call`](HttpService::call).
     type ResBody: http_body::Body;
 
     /// Handle an incoming request.
@@ -62,7 +65,9 @@ where
 /// It is intended to create a new service for each incoming connection.
 /// If you don't need to implement any custom factory logic, you can use [`ServiceCloneFactory`] to make a factory that clones the given service for each new connection.
 pub trait HttpServiceFactory {
+    /// The error type that can be returned by [`new_service`](HttpServiceFactory::new_service).
     type Error;
+    /// The service type that is created by this factory.
     type Service: HttpService;
 
     /// Create a new service for a new connection.

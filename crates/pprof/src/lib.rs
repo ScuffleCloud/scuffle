@@ -36,6 +36,8 @@
 //!
 //! `SPDX-License-Identifier: MIT OR Apache-2.0`
 #![cfg_attr(all(coverage_nightly, test), feature(coverage_attribute))]
+#![deny(missing_docs)]
+#![deny(unsafe_code)]
 
 mod cpu;
 
@@ -44,8 +46,10 @@ pub use cpu::Cpu;
 /// An error that can occur while profiling.
 #[derive(Debug, thiserror::Error)]
 pub enum PprofError {
+    /// An I/O error.
     #[error(transparent)]
     Io(#[from] std::io::Error),
+    /// A pprof error.
     #[error(transparent)]
     Pprof(#[from] pprof::Error),
 }

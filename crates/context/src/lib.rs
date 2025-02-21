@@ -35,6 +35,8 @@
 //!
 //! `SPDX-License-Identifier: MIT OR Apache-2.0`
 #![cfg_attr(all(coverage_nightly, test), feature(coverage_attribute))]
+#![deny(missing_docs)]
+#![deny(unsafe_code)]
 
 use std::sync::Arc;
 use std::sync::atomic::{AtomicBool, AtomicUsize};
@@ -211,6 +213,7 @@ impl Drop for TokenDropGuard {
     }
 }
 
+/// A handler is used to manage contexts and to cancel them.
 #[derive(Debug, Clone)]
 pub struct Handler {
     token: Arc<TokenDropGuard>,

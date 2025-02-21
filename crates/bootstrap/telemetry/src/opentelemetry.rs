@@ -1,3 +1,5 @@
+//! Opentelemetry support
+
 pub use ::opentelemetry::*;
 
 /// OpenTelemetry configuration.

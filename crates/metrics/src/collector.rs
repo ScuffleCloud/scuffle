@@ -1,3 +1,5 @@
+//! Metrics collectors.
+
 use std::borrow::Cow;
 
 use opentelemetry::KeyValue;

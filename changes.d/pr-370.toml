@@ -1,0 +1,24 @@
+[[scuffle-h264]]
+category = "fix"
+description = "Fixes a bug with removing the emu prevention byte causing other bytes to be lost by accident"
+breaking = false
+authors = ["@philipch07"]
+
+[[scuffle-h264]]
+category = "refactor"
+description = "Refactored how tests work so they work similarly to the tests in our other crates"
+breaking = false
+authors = ["@philipch07"]
+
+[[scuffle-h264]]
+category = "test"
+description = "Improved test coverage for sps and config"
+breaking = false
+authors = ["@philipch07"]
+
+[[scuffle-h264]]
+category = "docs"
+description = "Added docs for the crate, sps, and config"
+breaking = false
+authors = ["@philipch07"]
+

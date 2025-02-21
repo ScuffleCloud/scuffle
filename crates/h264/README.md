@@ -7,7 +7,25 @@
 
 ---
 
-A crate for encoding and decoding H.264 video headers.
+A pure Rust implementation of the H.264 encoder and decoder.
+
+This crate is designed to provide a simple and safe interface to encode and decode H.264 headers.
+
+## Why do we need this?
+
+This crate aims to provides a simple and safe interface for h264.
+
+## How is this different from other h264 crates?
+
+The other main h264 crate is TODO.
+
+## Notable features
+
+This crate is a completely safe implementation of H264 encoding and decoding, which means there is no unsafe code!
+
+## Examples
+
+TODO
 
 ## Status
 
@@ -18,6 +36,7 @@ Unit tests are not yet fully implemented. Use at your own risk.
 ## License
 
 This project is licensed under the [MIT](./LICENSE.MIT) or [Apache-2.0](./LICENSE.Apache-2.0) license.
+
 You can choose between one of them if you use this work.
 
 `SPDX-License-Identifier: MIT OR Apache-2.0`

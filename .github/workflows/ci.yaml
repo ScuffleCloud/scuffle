@@ -22,7 +22,7 @@ env:
 jobs:
   clippy:
     name: Clippy
-    runs-on: runs-on=${{ github.run_id }}/runner=8cpu-linux-x64/extras=s3-cache/spot=pco
+    runs-on: runs-on=${{ github.run_id }}/runner=8cpu-linux-x64/extras=s3-cache/spot=pco/tag=clippy
     steps:
       - uses: runs-on/action@v1
 
@@ -96,7 +96,7 @@ jobs:
 
   test:
     name: Test
-    runs-on: runs-on=${{ github.run_id }}/runner=8cpu-linux-x64/extras=s3-cache/spot=pco
+    runs-on: runs-on=${{ github.run_id }}/runner=8cpu-linux-x64/extras=s3-cache/spot=pco/tag=test
     env:
       RUSTFLAGS: "--cfg reqwest_unstable"
     steps:
@@ -158,7 +158,7 @@ jobs:
   grind:
     name: Grind
     if: ${{ github.event_name == 'push' }}
-    runs-on: runs-on=${{ github.run_id }}/runner=8cpu-linux-x64/extras=s3-cache/spot=pco
+    runs-on: runs-on=${{ github.run_id }}/runner=8cpu-linux-x64/extras=s3-cache/spot=pco/tag=grind
     env:
       RUSTFLAGS: "--cfg reqwest_unstable --cfg valgrind"
     steps:
@@ -189,11 +189,11 @@ jobs:
         run: |
           set -xeo pipefail
           export CARGO_TARGET_X86_64_UNKNOWN_LINUX_GNU_RUNNER="valgrind --error-exitcode=1 --leak-check=full --gen-suppressions=all --suppressions=$(pwd)/valgrind_suppressions.log"
-          cargo +${{ env.RUST_TOOLCHAIN }} nextest run --all-features --no-fail-fast --profile ci
+          cargo +${{ env.RUST_TOOLCHAIN }} nextest run --all-features --no-fail-fast --profile ci --test-threads 64
 
   docs:
     name: Docs
-    runs-on: runs-on=${{ github.run_id }}/runner=8cpu-linux-x64/extras=s3-cache/spot=pco
+    runs-on: runs-on=${{ github.run_id }}/runner=8cpu-linux-x64/extras=s3-cache/spot=pco/tag=docs
     permissions:
       pull-requests: write
     env:

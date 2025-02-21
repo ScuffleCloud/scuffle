@@ -22,7 +22,7 @@ env:
 jobs:
   clippy:
     name: Clippy
-    runs-on: runs-on=${{ github.run_id }}/runner=8cpu-linux-x64/extras=s3-cache/spot=true
+    runs-on: runs-on=${{ github.run_id }}/runner=8cpu-linux-x64/extras=s3-cache/spot=pco
     steps:
       - uses: runs-on/action@v1
 
@@ -96,7 +96,7 @@ jobs:
 
   test:
     name: Test
-    runs-on: runs-on=${{ github.run_id }}/runner=8cpu-linux-x64/extras=s3-cache/spot=true
+    runs-on: runs-on=${{ github.run_id }}/runner=8cpu-linux-x64/extras=s3-cache/spot=pco
     env:
       RUSTFLAGS: "--cfg reqwest_unstable"
     steps:
@@ -158,7 +158,7 @@ jobs:
   grind:
     name: Grind
     if: ${{ github.event_name == 'push' }}
-    runs-on: runs-on=${{ github.run_id }}/runner=8cpu-linux-x64/extras=s3-cache/spot=true
+    runs-on: runs-on=${{ github.run_id }}/runner=8cpu-linux-x64/extras=s3-cache/spot=pco
     env:
       RUSTFLAGS: "--cfg reqwest_unstable --cfg valgrind"
     steps:
@@ -193,7 +193,7 @@ jobs:
 
   docs:
     name: Docs
-    runs-on: runs-on=${{ github.run_id }}/runner=8cpu-linux-x64/extras=s3-cache/spot=true
+    runs-on: runs-on=${{ github.run_id }}/runner=8cpu-linux-x64/extras=s3-cache/spot=pco
     permissions:
       pull-requests: write
     env:

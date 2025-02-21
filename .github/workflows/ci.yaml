@@ -24,6 +24,8 @@ jobs:
     name: Clippy
     runs-on: runs-on=${{ github.run_id }}/runner=8cpu-linux-x64/extras=s3-cache
     steps:
+      - uses: runs-on/action@v1
+
       - uses: actions/checkout@v4
         with:
           ref: ${{ env.SHA }}
@@ -98,6 +100,8 @@ jobs:
     env:
       RUSTFLAGS: "--cfg reqwest_unstable"
     steps:
+      - uses: runs-on/action@v1
+
       - uses: actions/checkout@v4
         with:
           ref: ${{ env.SHA }}
@@ -158,6 +162,8 @@ jobs:
     env:
       RUSTFLAGS: "--cfg reqwest_unstable --cfg valgrind"
     steps:
+      - uses: runs-on/action@v1
+
       - uses: actions/checkout@v4
         with:
           ref: ${{ env.SHA }}
@@ -193,6 +199,8 @@ jobs:
     env:
       RUSTDOCFLAGS: "-D warnings --cfg docsrs --enable-index-page -Zunstable-options"
     steps:
+      - uses: runs-on/action@v1
+
       - uses: actions/checkout@v4
         with:
           ref: ${{ env.SHA }}

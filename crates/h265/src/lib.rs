@@ -35,7 +35,6 @@
 #![deny(missing_docs)]
 #![deny(unsafe_code)]
 
-
 mod config;
 mod sps;
 

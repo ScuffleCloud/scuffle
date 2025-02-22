@@ -30,13 +30,13 @@ runs:
     - uses: Swatinem/rust-cache@v2
       if: ${{ inputs.shared-key && inputs.cache-backend == 'github' }}
       with:
-        prefix-key: "v1-rust-${{ steps.setup-rust.outputs.cachekey }}"
+        prefix-key: "v3-rust-${{ steps.setup-rust.outputs.cachekey }}"
         shared-key: ${{ inputs.shared-key }}
 
     - uses: ubicloud/rust-cache@v2
       if: ${{ inputs.shared-key && inputs.cache-backend == 'ubicloud' }}
       with:
-        prefix-key: "v1-rust-${{ steps.setup-rust.outputs.cachekey }}"
+        prefix-key: "v3-rust-${{ steps.setup-rust.outputs.cachekey }}"
         shared-key: ${{ inputs.shared-key }}
 
     - uses: taiki-e/install-action@v2

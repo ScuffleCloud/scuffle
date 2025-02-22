@@ -22,7 +22,12 @@ env:
 jobs:
   clippy:
     name: Clippy
-    runs-on: runs-on=${{ github.run_id }}/runner=8cpu-linux-x64/extras=s3-cache/spot=pco/tag=clippy
+    strategy:
+      matrix:
+        runner:
+          - runs-on=${{ github.run_id }}/runner=8cpu-linux-x64/extras=s3-cache/spot=pco/tag=clippy
+          - ubicloud-standard-8
+    runs-on: ${{ matrix.runner }}
     steps:
       - uses: runs-on/action@v1
 
@@ -40,6 +45,7 @@ jobs:
           components: clippy
           shared-key: clippy
           tools: just,cargo-hakari
+          cache-backend: ${{ matrix.runner == 'ubicloud-standard-8' && 'ubicloud' || 'github' }}
 
       - name: Disable Hakari
         if: ${{ github.event_name == 'push' }}
@@ -96,7 +102,12 @@ jobs:
 
   test:
     name: Test
-    runs-on: runs-on=${{ github.run_id }}/runner=8cpu-linux-x64/extras=s3-cache/spot=pco/tag=test
+    strategy:
+      matrix:
+        runner:
+          - runs-on=${{ github.run_id }}/runner=8cpu-linux-x64/extras=s3-cache/spot=pco/tag=test
+          - ubicloud-standard-8
+    runs-on: ${{ matrix.runner }}
     env:
       RUSTFLAGS: "--cfg reqwest_unstable"
     steps:
@@ -116,6 +127,7 @@ jobs:
           tools: cargo-nextest,cargo-llvm-cov
           components: llvm-tools-preview
           shared-key: test
+          cache-backend: ${{ matrix.runner == 'ubicloud-standard-8' && 'ubicloud' || 'github' }}
 
       # Note; we don't run the powerset here because it's very slow on CI
       # Perhaps we should consider it at some point.
@@ -158,7 +170,12 @@ jobs:
   grind:
     name: Grind
     if: ${{ github.event_name == 'push' }}
-    runs-on: runs-on=${{ github.run_id }}/runner=8cpu-linux-x64/extras=s3-cache/spot=pco/tag=grind
+    strategy:
+      matrix:
+        runner:
+          - runs-on=${{ github.run_id }}/runner=8cpu-linux-x64/extras=s3-cache/spot=pco/tag=grind
+          - ubicloud-standard-8
+    runs-on: ${{ matrix.runner }}
     env:
       RUSTFLAGS: "--cfg reqwest_unstable --cfg valgrind"
     steps:
@@ -178,6 +195,7 @@ jobs:
           tools: cargo-nextest,cargo-llvm-cov
           components: llvm-tools-preview
           shared-key: grind
+          cache-backed: ${{ matrix.runner == 'ubicloud-standard-8' && 'ubicloud' || 'github' }}
 
       - name: Install Valgrind
         run: |
@@ -189,11 +207,16 @@ jobs:
         run: |
           set -xeo pipefail
           export CARGO_TARGET_X86_64_UNKNOWN_LINUX_GNU_RUNNER="valgrind --error-exitcode=1 --leak-check=full --gen-suppressions=all --suppressions=$(pwd)/valgrind_suppressions.log"
-          cargo +${{ env.RUST_TOOLCHAIN }} nextest run --all-features --no-fail-fast --profile ci
+          cargo +${{ env.RUST_TOOLCHAIN }} nextest run --all-features --no-fail-fast --profile ci --cargo-profile release-debug
 
   docs:
     name: Docs
-    runs-on: runs-on=${{ github.run_id }}/runner=8cpu-linux-x64/extras=s3-cache/spot=pco/tag=docs
+    strategy:
+      matrix:
+        runner:
+          - runs-on=${{ github.run_id }}/runner=8cpu-linux-x64/extras=s3-cache/spot=pco/tag=docs
+          - ubicloud-standard-8
+    runs-on: ${{ matrix.runner }}
     permissions:
       pull-requests: write
     env:
@@ -214,6 +237,7 @@ jobs:
           toolchain: ${{ env.RUST_TOOLCHAIN }}
           components: rust-docs
           shared-key: docs
+          cache-backend: ${{ matrix.runner == 'ubicloud-standard-8' && 'ubicloud' || 'github' }}
 
       - name: Build docs
         run: |

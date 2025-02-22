@@ -189,7 +189,7 @@ jobs:
         run: |
           set -xeo pipefail
           export CARGO_TARGET_X86_64_UNKNOWN_LINUX_GNU_RUNNER="valgrind --error-exitcode=1 --leak-check=full --gen-suppressions=all --suppressions=$(pwd)/valgrind_suppressions.log"
-          cargo +${{ env.RUST_TOOLCHAIN }} nextest run --all-features --no-fail-fast --profile ci --test-threads 64
+          cargo +${{ env.RUST_TOOLCHAIN }} nextest run --all-features --no-fail-fast --profile ci
 
   docs:
     name: Docs

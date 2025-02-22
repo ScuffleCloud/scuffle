@@ -18,6 +18,10 @@ inputs:
     description: "The backend to use for the cache"
     required: false
     default: github
+  cache-version:
+    description: "The version of the cache"
+    required: false
+    default: "v5"
 runs:
   using: "composite"
   steps:
@@ -30,13 +34,13 @@ runs:
     - uses: Swatinem/rust-cache@v2
       if: ${{ inputs.shared-key && inputs.cache-backend == 'github' }}
       with:
-        prefix-key: "v3-rust-${{ steps.setup-rust.outputs.cachekey }}"
+        prefix-key: "${{ inputs.cache-version }}-rust-${{ steps.setup-rust.outputs.cachekey }}"
         shared-key: ${{ inputs.shared-key }}
 
     - uses: ubicloud/rust-cache@v2
       if: ${{ inputs.shared-key && inputs.cache-backend == 'ubicloud' }}
       with:
-        prefix-key: "v3-rust-${{ steps.setup-rust.outputs.cachekey }}"
+        prefix-key: "${{ inputs.cache-version }}-rust-${{ steps.setup-rust.outputs.cachekey }}"
         shared-key: ${{ inputs.shared-key }}
 
     - uses: taiki-e/install-action@v2

@@ -12,26 +12,38 @@ use scuffle_bytes_util::{BitReader, BitWriter};
 pub struct HEVCDecoderConfigurationRecord {
     /// The `configuration_version` as a u8. Matches the field as defined in ISO/IEC 23008-2.
     pub configuration_version: u8,
+
     /// The `general_profile_space` as a u8. Matches the field as defined in ISO/IEC 23008-2.
     pub general_profile_space: u8,
+
     /// The `general_tier_flag` as a bool. Matches the field as defined in ISO/IEC 23008-2.
     pub general_tier_flag: bool,
+
     /// The `general_profile_idc` as a u8. Matches the field as defined in ISO/IEC 23008-2.
     pub general_profile_idc: u8,
+
     /// The `general_profile_compatibility_flags` as a u32. Matches the field as defined in ISO/IEC 23008-2.
     pub general_profile_compatibility_flags: u32,
+
     /// The `general_constraint_indicator_flags` as a u64. Matches the field as defined in ISO/IEC 23008-2.
     pub general_constraint_indicator_flags: u64,
+
     /// The `general_level_idc` as a u32. Matches the field as defined in ISO/IEC 23008-2.
     pub general_level_idc: u8,
+
     /// The `min_spatial_segmentation_idc` as a u16. Matches the field as defined in ISO/IEC 23008-2.
     pub min_spatial_segmentation_idc: u16,
+
     /// The `chroma_format_idc` as a u8. Matches the field as defined in ISO/IEC 23008-2.
     pub chroma_format_idc: u8,
+
     /// The `bit_depth_luma_minus8` as a u8. Matches the field as defined in ISO/IEC 23008-2.
     pub bit_depth_luma_minus8: u8,
+
     /// The `bit_depth_chroma_minus8` as a u8. Matches the field as defined in ISO/IEC 23008-2.
     pub bit_depth_chroma_minus8: u8,
+
+    // TODO: nutype enum
     /// The `parallelism_type` as a u8.
     ///
     /// 0 means the stream supports mixed types of parallel decoding or otherwise.
@@ -42,8 +54,11 @@ pub struct HEVCDecoderConfigurationRecord {
     ///
     /// 3 means the stream supports entropy coding sync based parallel decoding.
     pub parallelism_type: u8,
+
+    // definitely shouldn't be a u16. prolly f64
     /// The `avg_frame_rate` as a u16.
     pub avg_frame_rate: u16,
+
     /// The `constant_frame_rate` as a u8.
     ///
     /// 0 means the stream might have a constant frame rate.
@@ -52,6 +67,8 @@ pub struct HEVCDecoderConfigurationRecord {
     ///
     /// 2 means the representation of each temporal layer in the stream has a constant framerate.
     pub constant_frame_rate: u8,
+
+    // make this a nutype enum
     /// The `num_temporal_layers` as a u8. This is the count of tepmoral layers or `sub-layer`s as defined in ISO/IEC 23008-2.
     ///
     /// 0 means the stream might be temporally scalable.
@@ -60,19 +77,23 @@ pub struct HEVCDecoderConfigurationRecord {
     ///
     /// 2 or more means the stream is temporally scalable, and the count of temporal layers is equal to this value.
     pub num_temporal_layers: u8,
+
     /// The `temporal_id_nested` as a bool.
     ///
     /// 0 means means the opposite might not be true (refer to what 1 means for this flag).
     ///
     /// 1 means all the activated SPS have `sps_temporal_id_nesting_flag` (as defined in ISC/IEC 23008-2) set to 1 and that temporal sub-layer up-switching to a higehr temporal layer can be done at any sample.
     pub temporal_id_nested: bool,
+
     /// The `length_size_minus_one` is the u8 length of the NALUnitLength minus one.
     pub length_size_minus_one: u8,
+
     /// The `arrays` is a vec of NaluArray.
     /// Refer to the NaluArray struct in the NaluArray docs for more info.
     pub arrays: Vec<NaluArray>,
 }
 
+// turn into nutype enum
 #[derive(Debug, Clone, PartialEq)]
 /// Nalu Array Structure
 /// ISO/IEC 14496-15:2022(E) - 8.3.2.1

@@ -1,3 +1,5 @@
+//! Service types.
+
 use std::pin::Pin;
 use std::sync::Arc;
 use std::task::{Context, Poll, ready};
@@ -72,6 +74,7 @@ where
 }
 
 pin_project_lite::pin_project! {
+    /// A future that can be named yielding the name and the result of the inner future.
     #[must_use = "futures do nothing unless polled"]
     pub struct NamedFuture<T> {
         name: &'static str,
@@ -81,6 +84,7 @@ pin_project_lite::pin_project! {
 }
 
 impl<T> NamedFuture<T> {
+    /// Create a new named future from the given name and future.
     pub fn new(name: &'static str, fut: T) -> Self {
         Self { name, fut }
     }

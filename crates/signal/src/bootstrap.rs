@@ -4,10 +4,15 @@ use scuffle_bootstrap::global::Global;
 use scuffle_bootstrap::service::Service;
 use scuffle_context::ContextFutExt;
 
+/// A [`Service`] that listens for signals and cancels the context when a signal is received.
 #[derive(Default, Debug, Clone, Copy)]
 pub struct SignalSvc;
 
+/// Configuration for the signal service.
 pub trait SignalConfig: Global {
+    /// The signals to listen for.
+    ///
+    /// By default, listens for `SIGTERM` and `SIGINT`.
     fn signals(&self) -> Vec<tokio::signal::unix::SignalKind> {
         vec![
             tokio::signal::unix::SignalKind::terminate(),
@@ -15,14 +20,17 @@ pub trait SignalConfig: Global {
         ]
     }
 
+    /// The timeout before forcing a shutdown.
     fn timeout(&self) -> Option<std::time::Duration> {
         Some(std::time::Duration::from_secs(30))
     }
 
+    /// Called when the service is shutting down.
     fn on_shutdown(self: &Arc<Self>) -> impl std::future::Future<Output = anyhow::Result<()>> + Send {
         std::future::ready(Ok(()))
     }
 
+    /// Called when the service is force shutting down.
     fn on_force_shutdown(
         &self,
         signal: Option<tokio::signal::unix::SignalKind>,

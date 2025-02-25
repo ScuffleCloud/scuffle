@@ -213,7 +213,6 @@
 #![deny(missing_docs)]
 #![deny(clippy::undocumented_unsafe_blocks)]
 #![deny(clippy::multiple_unsafe_ops_per_block)]
-#![deny(clippy::missing_const_for_fn)]
 
 /// Codec specific functionality.
 pub mod codec;

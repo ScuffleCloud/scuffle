@@ -8,6 +8,8 @@
 //!
 //! `SPDX-License-Identifier: MIT OR Apache-2.0`
 #![cfg_attr(all(coverage_nightly, test), feature(coverage_attribute))]
+#![deny(missing_docs)]
+#![deny(unsafe_code)]
 
 use std::io;
 
@@ -36,8 +38,11 @@ pub struct PartialAudioSpecificConfig {
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 #[must_use]
 pub enum AudioObjectType {
+    /// AAC main
     AacMain,
+    /// AAC LC
     AacLowComplexity,
+    /// Any other object type
     Unknown(u16),
 }
 

@@ -1,3 +1,5 @@
+//! Types for working with HTTP bodies.
+
 use std::fmt::Debug;
 use std::pin::Pin;
 use std::task::{Context, Poll};
@@ -8,10 +10,12 @@ use http_body::Frame;
 /// An error that can occur when reading the body of an incoming request.
 #[derive(thiserror::Error, Debug)]
 pub enum IncomingBodyError {
+    /// An error that occurred while reading a hyper body.
     #[error("hyper error: {0}")]
     #[cfg(any(feature = "http1", feature = "http2"))]
     #[cfg_attr(docsrs, doc(cfg(any(feature = "http1", feature = "http2"))))]
     Hyper(#[from] hyper::Error),
+    /// An error that occurred while reading a quic body.
     #[error("quic error: {0}")]
     #[cfg(feature = "http3")]
     #[cfg_attr(docsrs, doc(cfg(feature = "http3")))]
@@ -23,9 +27,11 @@ pub enum IncomingBodyError {
 /// This enum is used to abstract away the differences between the body types of HTTP/1, HTTP/2 and HTTP/3.
 /// It implements the [`http_body::Body`] trait.
 pub enum IncomingBody {
+    /// The body of an incoming hyper request.
     #[cfg(any(feature = "http1", feature = "http2"))]
     #[cfg_attr(docsrs, doc(cfg(any(feature = "http1", feature = "http2"))))]
     Hyper(hyper::body::Incoming),
+    /// The body of an incoming h3 request.
     #[cfg(feature = "http3")]
     #[cfg_attr(docsrs, doc(cfg(feature = "http3")))]
     Quic(crate::backend::h3::body::QuicIncomingBody<h3_quinn::RecvStream>),
@@ -98,6 +104,7 @@ pin_project_lite::pin_project! {
 }
 
 impl<B, T> TrackedBody<B, T> {
+    /// Create a new [`TrackedBody`] with the given body and tracker.
     pub fn new(body: B, tracker: T) -> Self {
         Self { body, tracker }
     }
@@ -110,8 +117,10 @@ where
     B: http_body::Body,
     T: Tracker,
 {
+    /// An error that occurred while reading the body.
     #[error("body error: {0}")]
     Body(B::Error),
+    /// An error that occurred while calling [`Tracker::on_data`].
     #[error("tracker error: {0}")]
     Tracker(T::Error),
 }
@@ -133,6 +142,7 @@ where
 
 /// A trait for tracking the size of the data that is read from an HTTP body.
 pub trait Tracker: Send + Sync + 'static {
+    /// The error type that can occur when [`Tracker::on_data`] is called.
     type Error;
 
     /// Called when data is read from the body.

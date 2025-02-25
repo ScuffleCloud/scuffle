@@ -7,8 +7,7 @@
 
 ---
 
-
-A proc-macro to derive the `#[service]` attribute as well as the `main!` macro.
+A proc-macro to generate the main function for the application.
 
 For more information checkout the [scuffle-bootstrap](../README.md) crate.
 

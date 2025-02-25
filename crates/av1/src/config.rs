@@ -5,15 +5,24 @@ use bytes::Bytes;
 use scuffle_bytes_util::{BitReader, BitWriter, BytesCursorExt};
 
 /// AV1 Video Descriptor
+///
 /// <https://aomediacodec.github.io/av1-mpeg2-ts/#av1-video-descriptor>
 #[derive(Debug, Clone, PartialEq)]
 pub struct AV1VideoDescriptor {
+    /// `descriptor_tag`
+    ///
+    /// 8 bits
     pub tag: u8,
+    /// `descriptor_length`
+    ///
+    /// 8 bits
     pub length: u8,
+    /// AV1 Codec Configuration Record
     pub codec_configuration_record: AV1CodecConfigurationRecord,
 }
 
 impl AV1VideoDescriptor {
+    /// Demuxes the AV1 Video Descriptor from the given reader.
     pub fn demux(reader: &mut io::Cursor<Bytes>) -> io::Result<Self> {
         let tag = reader.read_u8()?;
         if tag != 0x80 {
@@ -38,23 +47,63 @@ impl AV1VideoDescriptor {
 
 #[derive(Debug, Clone, PartialEq)]
 /// AV1 Codec Configuration Record
+///
 /// <https://aomediacodec.github.io/av1-isobmff/#av1codecconfigurationbox-syntax>
 pub struct AV1CodecConfigurationRecord {
+    /// `seq_profile`
+    ///
+    /// 3 bits
     pub seq_profile: u8,
+    /// `seq_level_idx_0`
+    ///
+    /// 5 bits
     pub seq_level_idx_0: u8,
+    /// `seq_tier_0`
+    ///
+    /// 1 bit
     pub seq_tier_0: bool,
+    /// `high_bitdepth`
+    ///
+    /// 1 bit
     pub high_bitdepth: bool,
+    /// `twelve_bit`
+    ///
+    /// 1 bit
     pub twelve_bit: bool,
+    /// `monochrome`
+    ///
+    /// 1 bit
     pub monochrome: bool,
+    /// `chroma_subsampling_x`
+    ///
+    /// 1 bit
     pub chroma_subsampling_x: bool,
+    /// `chroma_subsampling_y`
+    ///
+    /// 1 bit
     pub chroma_subsampling_y: bool,
+    /// `chroma_sample_position`
+    ///
+    /// 2 bits
     pub chroma_sample_position: u8,
+    /// `hdr_wcg_idc`
+    ///
+    /// 2 bits
+    ///
+    /// From a newer spec: <https://aomediacodec.github.io/av1-mpeg2-ts/#av1-video-descriptor>
     pub hdr_wcg_idc: u8,
+    /// `initial_presentation_delay_minus_one`
+    ///
+    /// 4 bits
     pub initial_presentation_delay_minus_one: Option<u8>,
+    /// `configOBUs[]`
+    ///
+    /// 8 bits
     pub config_obu: Bytes,
 }
 
 impl AV1CodecConfigurationRecord {
+    /// Demuxes the AV1 Codec Configuration Record from the given reader.
     pub fn demux(reader: &mut io::Cursor<Bytes>) -> io::Result<Self> {
         let mut bit_reader = BitReader::new(reader);
 
@@ -116,6 +165,7 @@ impl AV1CodecConfigurationRecord {
         })
     }
 
+    /// Returns the size of the AV1 Codec Configuration Record.
     pub fn size(&self) -> u64 {
         1 // marker, version
         + 1 // seq_profile, seq_level_idx_0
@@ -124,6 +174,7 @@ impl AV1CodecConfigurationRecord {
         + self.config_obu.len() as u64
     }
 
+    /// Muxes the AV1 Codec Configuration Record to the given writer.
     pub fn mux<T: io::Write>(&self, writer: &mut T) -> io::Result<()> {
         let mut bit_writer = BitWriter::new(writer);
 

@@ -94,6 +94,9 @@ fn default_runtime_builder() -> tokio::runtime::Builder {
 /// - [`Service`](crate::Service)
 /// - [`main`](crate::main)
 pub trait Global: Send + Sync + 'static {
+    /// The config type for the global.
+    ///
+    /// This type is expected to implement [`ConfigParser`].
     type Config: ConfigParser + Send + 'static;
 
     /// Pre-initialization.

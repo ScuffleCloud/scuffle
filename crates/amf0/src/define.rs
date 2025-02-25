@@ -7,24 +7,48 @@ use num_derive::FromPrimitive;
 #[derive(Debug, PartialEq, Eq, Clone, Copy, FromPrimitive)]
 #[repr(u8)]
 pub enum Amf0Marker {
+    /// number-marker
     Number = 0x00,
+    /// boolean-marker
     Boolean = 0x01,
+    /// string-marker
     String = 0x02,
+    /// object-marker
     Object = 0x03,
-    MovieClipMarker = 0x04, // reserved, not supported
+    /// movieclip-marker
+    ///
+    /// reserved, not supported
+    MovieClipMarker = 0x04,
+    /// null-marker
     Null = 0x05,
+    /// undefined-marker
     Undefined = 0x06,
+    /// reference-marker
     Reference = 0x07,
+    /// ecma-array-marker
     EcmaArray = 0x08,
+    /// object-end-marker
     ObjectEnd = 0x09,
+    /// strict-array-marker
     StrictArray = 0x0a,
+    /// date-marker
     Date = 0x0b,
+    /// long-string-marker
     LongString = 0x0c,
+    /// unsupported-marker
     Unsupported = 0x0d,
-    Recordset = 0x0e, // reserved, not supported
+    /// recordset-marker
+    ///
+    /// reserved, not supported
+    Recordset = 0x0e,
+    /// xml-document-marker
     XmlDocument = 0x0f,
+    /// typed-object-marker
     TypedObject = 0x10,
-    AVMPlusObject = 0x11, // AMF3 marker
+    /// avmplus-object-marker
+    ///
+    /// AMF3 marker
+    AVMPlusObject = 0x11,
 }
 
 /// AMF0 value types.

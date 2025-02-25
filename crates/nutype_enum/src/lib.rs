@@ -1,3 +1,31 @@
+//! The crate provides a macro to create a new enum type with a single field.
+//!
+//! ## Why do we need this?
+//!
+//! This is useful when you have a value and you want to have enum like behavior and have a catch all case for all other values.
+//!
+//! ## Examples
+//!
+//! ```rust
+//! use nutype_enum::nutype_enum;
+//!
+//! nutype_enum! {
+//!     pub enum AacPacketType(u8) {
+//!         SeqHdr = 0x0,
+//!         Raw = 0x1,
+//!     }
+//! }
+//! ```
+//!
+//! ## License
+//!
+//! This project is licensed under the [MIT](./LICENSE.MIT) or [Apache-2.0](./LICENSE.Apache-2.0) license.
+//! You can choose between one of them if you use this work.
+//!
+//! `SPDX-License-Identifier: MIT OR Apache-2.0`
+#![deny(missing_docs)]
+#![deny(unsafe_code)]
+
 /// Helper macro to create a new enum type with a single field.
 ///
 /// The enum type is derived with the `Clone`, `Copy`, `PartialEq`, `Eq`,

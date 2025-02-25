@@ -10,8 +10,15 @@ mod utils;
 /// AV1-Spec-2 - 5.3.2
 #[derive(Debug, Clone, PartialEq, Eq, Copy)]
 pub struct ObuHeader {
+    /// `obu_type`
+    ///
+    /// 4 bits
     pub obu_type: ObuType,
+    /// `obu_size` if `obu_has_size_field` is 1
+    ///
+    /// leb128()
     pub size: Option<u64>,
+    /// `obu_extension_header()` if `obu_extension_flag` is 1
     pub extension_header: Option<ObuExtensionHeader>,
 }
 
@@ -19,11 +26,14 @@ pub struct ObuHeader {
 /// AV1-Spec-2 - 5.3.3
 #[derive(Debug, Clone, PartialEq, Eq, Copy)]
 pub struct ObuExtensionHeader {
+    /// `temporal_id`
     pub temporal_id: u8,
+    /// `spatial_id`
     pub spatial_id: u8,
 }
 
 impl ObuHeader {
+    /// Parses an OBU header from the given `cursor`.
     pub fn parse(cursor: &mut impl io::Read) -> io::Result<Self> {
         let mut bit_reader = BitReader::new(cursor);
         let forbidden_bit = bit_reader.read_bit()?;
@@ -72,15 +82,25 @@ impl ObuHeader {
 /// AV1-Spec-2 - 6.2.2
 #[derive(Debug, Clone, PartialEq, Eq, Copy)]
 pub enum ObuType {
+    /// `OBU_SEQUENCE_HEADER`
     SequenceHeader,
+    /// `OBU_TEMPORAL_DELIMITER`
     TemporalDelimiter,
+    /// `OBU_FRAME_HEADER`
     FrameHeader,
+    /// `OBU_TILE_GROUP`
     TileGroup,
+    /// `OBU_METADATA`
     Metadata,
+    /// `OBU_FRAME`
     Frame,
+    /// `OBU_REDUNDANT_FRAME_HEADER`
     RedundantFrameHeader,
+    /// `OBU_TILE_LIST`
     TileList,
+    /// `OBU_PADDING`
     Padding,
+    /// Reserved
     Reserved(u8),
 }
 

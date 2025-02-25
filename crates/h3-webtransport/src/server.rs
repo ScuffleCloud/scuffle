@@ -116,15 +116,15 @@ where
     },
 }
 
-// A WebTransport server that allows incoming requests to be upgraded to
-// `WebTransportSessions`
-//
-// The [`WebTransportServer`] struct manages a connection from the side of the
-// HTTP/3 server
-//
-// Create a new Instance with [`WebTransportServer::new()`].
-// Accept incoming requests with [`WebTransportServer::accept()`].
-// And shutdown a connection with [`WebTransportServer::shutdown()`].
+/// A WebTransport server that allows incoming requests to be upgraded to
+/// `WebTransportSessions`
+///
+/// The [`Connection`] struct manages a connection from the side of the
+/// HTTP/3 server
+///
+/// Create a new Instance with [`Connection::new`].
+/// Accept incoming requests with [`Connection::accept`].
+/// And shutdown a connection with [`ConnectionDriver::close`].
 pub struct Connection<C, B>
 where
     C: quic::Connection<B>,

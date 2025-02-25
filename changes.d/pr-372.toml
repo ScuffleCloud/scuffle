@@ -1,0 +1,134 @@
+[[scuffle-aac]]
+category = "docs"
+description = "improved documentation"
+authors = ["@lennartkloock"]
+
+[[scuffle-amf0]]
+category = "docs"
+description = "improved documentation"
+authors = ["@lennartkloock"]
+
+[[scuffle-av1]]
+category = "docs"
+description = "improved documentation"
+authors = ["@lennartkloock"]
+
+[[scuffle-batching]]
+category = "docs"
+description = "improved documentation"
+authors = ["@lennartkloock"]
+
+[[scuffle-bootstrap]]
+category = "docs"
+description = "improved documentation"
+authors = ["@lennartkloock"]
+
+[[scuffle-bootstrap-derive]]
+category = "docs"
+description = "improved documentation"
+authors = ["@lennartkloock"]
+
+[[scuffle-bootstrap-telemetry]]
+category = "docs"
+description = "improved documentation"
+authors = ["@lennartkloock"]
+
+[[scuffle-bytes-util]]
+category = "docs"
+description = "improved documentation"
+authors = ["@lennartkloock"]
+
+[[scuffle-context]]
+category = "docs"
+description = "improved documentation"
+authors = ["@lennartkloock"]
+
+[[scuffle-expgolomb]]
+category = "docs"
+description = "improved documentation"
+authors = ["@lennartkloock"]
+
+[[scuffle-ffmpeg]]
+category = "docs"
+description = "improved documentation"
+authors = ["@lennartkloock"]
+
+[[scuffle-flv]]
+category = "docs"
+description = "improved documentation"
+authors = ["@lennartkloock"]
+
+[[scuffle-future-ext]]
+category = "docs"
+description = "improved documentation"
+authors = ["@lennartkloock"]
+
+[[scuffle-h3-webtransport]]
+category = "docs"
+description = "improved documentation"
+authors = ["@lennartkloock"]
+
+[[scuffle-h264]]
+category = "docs"
+description = "improved documentation"
+authors = ["@lennartkloock"]
+
+[[scuffle-h265]]
+category = "docs"
+description = "improved documentation"
+authors = ["@lennartkloock"]
+
+[[scuffle-http]]
+category = "docs"
+description = "improved documentation"
+authors = ["@lennartkloock"]
+
+[[scuffle-metrics]]
+category = "docs"
+description = "improved documentation"
+authors = ["@lennartkloock"]
+
+[[scuffle-metrics-derive]]
+category = "docs"
+description = "improved documentation"
+authors = ["@lennartkloock"]
+
+[[scuffle-mp4]]
+category = "docs"
+description = "improved documentation"
+authors = ["@lennartkloock"]
+
+[[nutype-enum]]
+category = "docs"
+description = "improved documentation"
+authors = ["@lennartkloock"]
+
+[[postcompile]]
+category = "docs"
+description = "improved documentation"
+authors = ["@lennartkloock"]
+
+[[scuffle-pprof]]
+category = "docs"
+description = "improved documentation"
+authors = ["@lennartkloock"]
+
+[[scuffle-rtmp]]
+category = "docs"
+description = "improved documentation"
+authors = ["@lennartkloock"]
+
+[[scuffle-settings]]
+category = "docs"
+description = "improved documentation"
+authors = ["@lennartkloock"]
+
+[[scuffle-signal]]
+category = "docs"
+description = "improved documentation"
+authors = ["@lennartkloock"]
+
+[[scuffle-transmuxer]]
+category = "docs"
+description = "improved documentation"
+authors = ["@lennartkloock"]

@@ -1,3 +1,5 @@
+//! Sequence Header
+
 use std::io;
 
 use byteorder::{BigEndian, ReadBytesExt};
@@ -7,62 +9,166 @@ use super::ObuHeader;
 use crate::obu::utils::read_uvlc;
 
 /// Sequence Header OBU
+///
 /// AV1-Spec-2 - 5.5
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct SequenceHeaderObu {
+    /// The OBU header that precedes the sequence header
     pub header: ObuHeader,
+    /// `seq_profile`
+    ///
+    /// 3 bits
     pub seq_profile: u8,
+    /// `still_picture`
+    ///
+    /// 1 bit
     pub still_picture: bool,
+    /// `reduced_still_picture_header`
+    ///
+    /// 1 bit
     pub reduced_still_picture_header: bool,
+    /// `timing_info` if `reduced_still_picture_header` is 0 and `timing_info_present_flag` is 1
     pub timing_info: Option<TimingInfo>,
+    /// `decoder_model_info` if
+    /// - `reduced_still_picture_header` is 0
+    /// - `timing_info_present_flag` is 1
+    /// - `decoder_model_info_present_flag` is 1
     pub decoder_model_info: Option<DecoderModelInfo>,
+    /// All operating points
     pub operating_points: Vec<OperatingPoint>,
+    /// `max_frame_width_minus_1 + 1`
     pub max_frame_width: u64,
+    /// `max_frame_height_minus_1 + 1`
     pub max_frame_height: u64,
+    /// The [`FrameIds`] if `reduced_still_picture_header` is 0 and `frame_id_numbers_present_flag` is 1
     pub frame_ids: Option<FrameIds>,
+    /// `use_128x128_superblock`
+    ///
+    /// 1 bit
     pub use_128x128_superblock: bool,
+    /// `enable_filter_intra`
+    ///
+    /// 1 bit
     pub enable_filter_intra: bool,
+    /// `enable_intra_edge_filter`
+    ///
+    /// 1 bit
     pub enable_intra_edge_filter: bool,
+    /// `enable_interintra_compound`
+    ///
+    /// 1 bit
     pub enable_interintra_compound: bool,
+    /// `enable_masked_compound`
+    ///
+    /// 1 bit
     pub enable_masked_compound: bool,
+    /// `enable_warped_motion`
+    ///
+    /// 1 bit
     pub enable_warped_motion: bool,
+    /// `enable_dual_filter`
+    ///
+    /// 1 bit
     pub enable_dual_filter: bool,
+    /// `enable_order_hint`
+    ///
+    /// 1 bit
     pub enable_order_hint: bool,
+    /// `enable_jnt_comp`
+    ///
+    /// 1 bit
     pub enable_jnt_comp: bool,
+    /// `enable_ref_frame_mvs`
+    ///
+    /// 1 bit
     pub enable_ref_frame_mvs: bool,
+    /// `seq_force_screen_content_tools`
     pub seq_force_screen_content_tools: u8,
+    /// `seq_force_integer_mv`
     pub seq_force_integer_mv: u8,
+    /// `OrderHintBits`
+    ///
+    /// 3 bits
     pub order_hint_bits: u8,
+    /// `enable_superres`
+    ///
+    /// 1 bit
     pub enable_superres: bool,
+    /// `enable_cdef`
+    ///
+    /// 1 bit
     pub enable_cdef: bool,
+    /// `enable_restoration`
+    ///
+    /// 1 bit
     pub enable_restoration: bool,
+    /// `color_config()`
     pub color_config: ColorConfig,
+    /// `film_grain_params_present`
     pub film_grain_params_present: bool,
 }
 
+/// Frame IDs
+///
+/// Can be part of the [`SequenceHeaderObu`].
 #[derive(Debug, Clone, PartialEq, Eq, Copy)]
 pub struct FrameIds {
+    /// `delta_frame_id_length_minus_2 + 2`
+    ///
+    /// 4 bits
     pub delta_frame_id_length: u8,
+    /// `additional_frame_id_length_minus_1 + 1`
+    ///
+    /// 3 bits
     pub additional_frame_id_length: u8,
 }
 
+/// Operating Point
+///
+/// Part of the [`SequenceHeaderObu`].
 #[derive(Debug, Clone, PartialEq, Eq, Copy)]
 pub struct OperatingPoint {
+    /// `operating_point_idc`
+    ///
+    /// 12 bits
     pub idc: u16,
+    /// `seq_level_idx`
+    ///
+    /// 5 bits
     pub seq_level_idx: u8,
+    /// `seq_tier`
+    ///
+    /// 1 bit
     pub seq_tier: bool,
+    /// `operating_parameters_info` if `decoder_model_info_present_flag` is 1
     pub operating_parameters_info: Option<OperatingParametersInfo>,
+    /// `initial_display_delay_minus_1 + 1` if `initial_display_delay_present_flag` is 1 and `initial_display_delay_present_for_this_op` is 1
+    ///
+    /// 4 bits
     pub initial_display_delay: Option<u8>,
 }
 
+/// Timing info
+///
+/// AV1-Spec-2 - 5.5.3
 #[derive(Debug, Clone, PartialEq, Eq, Copy)]
 pub struct TimingInfo {
+    /// `num_units_in_display_tick`
+    ///
+    /// 32 bits
     pub num_units_in_display_tick: u32,
+    /// `time_scale`
+    ///
+    /// 32 bits
     pub time_scale: u32,
+    /// `num_ticks_per_picture_minus_1 + 1` if `equal_picture_interval` is 1
+    ///
+    /// uvlc()
     pub num_ticks_per_picture: Option<u64>,
 }
 
 impl TimingInfo {
+    /// Parses the timing info from the given reader.
     pub fn parse(bit_reader: &mut BitReader<impl io::Read>) -> io::Result<Self> {
         let num_units_in_display_tick = bit_reader.read_u32::<BigEndian>()?;
         let time_scale = bit_reader.read_u32::<BigEndian>()?;
@@ -79,15 +185,31 @@ impl TimingInfo {
     }
 }
 
+/// Decoder model info
+///
+/// AV1-Spec-2 - 5.5.4
 #[derive(Debug, Clone, PartialEq, Eq, Copy)]
 pub struct DecoderModelInfo {
+    /// `buffer_delay_length_minus_1 + 1`
+    ///
+    /// 5 bits
     pub buffer_delay_length: u8,
+    /// `num_units_in_decoding_tick`
+    ///
+    /// 32 bits
     pub num_units_in_decoding_tick: u32,
+    /// `buffer_removal_time_length_minus_1 + 1`
+    ///
+    /// 5 bits
     pub buffer_removal_time_length: u8,
+    /// `frame_presentation_time_length_minus_1 + 1`
+    ///
+    /// 5 bits
     pub frame_presentation_time_length: u8,
 }
 
 impl DecoderModelInfo {
+    /// Parses the decoder model info from the given reader.
     pub fn parse(bit_reader: &mut BitReader<impl io::Read>) -> io::Result<Self> {
         let buffer_delay_length = bit_reader.read_bits(5)? as u8 + 1;
         let num_units_in_decoding_tick = bit_reader.read_u32::<BigEndian>()?;
@@ -102,18 +224,28 @@ impl DecoderModelInfo {
     }
 }
 
+/// Operating parameters info
+///
+///  AV1-Spec-2 - 5.5.5
 #[derive(Debug, Clone, PartialEq, Eq, Copy)]
 pub struct OperatingParametersInfo {
+    /// `decoder_buffer_delay`
     pub decoder_buffer_delay: u64,
+    /// `encoder_buffer_delay`
     pub encoder_buffer_delay: u64,
+    /// `low_delay_mode_flag`
+    ///
+    /// 1 bit
     pub low_delay_mode_flag: bool,
 }
 
 impl OperatingParametersInfo {
+    /// Parses the operating parameters info from the given reader.
     pub fn parse(delay_bit_length: u8, bit_reader: &mut BitReader<impl io::Read>) -> io::Result<Self> {
         let decoder_buffer_delay = bit_reader.read_bits(delay_bit_length)?;
         let encoder_buffer_delay = bit_reader.read_bits(delay_bit_length)?;
         let low_delay_mode_flag = bit_reader.read_bit()?;
+
         Ok(Self {
             decoder_buffer_delay,
             encoder_buffer_delay,
@@ -122,18 +254,50 @@ impl OperatingParametersInfo {
     }
 }
 
+/// Color config
+///
+/// AV1-Spec-2 - 5.5.2
 #[derive(Debug, Clone, PartialEq, Eq, Copy)]
 pub struct ColorConfig {
+    /// `BitDepth`
     pub bit_depth: i32,
+    /// `mono_chrome`
+    ///
+    /// 1 bit
     pub mono_chrome: bool,
+    /// `NumPlanes`
     pub num_planes: u8,
+    /// `color_primaries`
+    ///
+    /// 8 bits
     pub color_primaries: u8,
+    /// `transfer_characteristics`
+    ///
+    /// 8 bits
     pub transfer_characteristics: u8,
+    /// `matrix_coefficients`
+    ///
+    /// 8 bits
     pub matrix_coefficients: u8,
+    /// `color_range`
+    ///
+    /// 1 bit
     pub full_color_range: bool,
+    /// `subsampling_x`
+    ///
+    /// 1 bit
     pub subsampling_x: bool,
+    /// `subsampling_y`
+    ///
+    /// 1 bit
     pub subsampling_y: bool,
+    /// `chroma_sample_position`
+    ///
+    /// 2 bits
     pub chroma_sample_position: u8,
+    /// `separate_uv_delta_q`
+    ///
+    /// 1 bit
     pub separate_uv_delta_q: bool,
 }
 
@@ -193,6 +357,7 @@ impl ColorConfig {
         })
     }
 
+    /// Parses the color config from the given reader.
     pub fn parse(seq_profile: u8, bit_reader: &mut BitReader<impl io::Read>) -> io::Result<Self> {
         let high_bitdepth = bit_reader.read_bit()?;
         let bit_depth = match (seq_profile, high_bitdepth) {
@@ -273,10 +438,14 @@ impl ColorConfig {
 }
 
 impl SequenceHeaderObu {
+    /// Returns a reference to the header of the OBU.
     pub const fn header(&self) -> &ObuHeader {
         &self.header
     }
 
+    /// Parses the sequence header from the given reader.
+    ///
+    /// The given header will be part of the returned struct and can be accessed through the [`SequenceHeaderObu::header`] function.
     pub fn parse(header: ObuHeader, reader: &mut impl io::Read) -> io::Result<Self> {
         let mut bit_reader = BitReader::new(reader);
 

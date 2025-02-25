@@ -1,3 +1,5 @@
+//! Types related to the dataloader.
+
 use std::collections::{HashMap, HashSet};
 use std::future::Future;
 use std::sync::Arc;

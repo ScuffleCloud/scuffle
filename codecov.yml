@@ -75,10 +75,10 @@ component_management:
       name: nutype-enum
       paths:
         - crates/nutype_enum/**
-    # - component_id: scuffle-h264
-    #   name: scuffle-h264
-    #   paths:
-    #     - crates/h264/**
+    - component_id: scuffle-h264
+      name: scuffle-h264
+      paths:
+        - crates/h264/**
     # - component_id: scuffle-h265
     #   name: scuffle-h265
     #   paths:

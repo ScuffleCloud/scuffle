@@ -4,7 +4,9 @@ use std::io::{
 
 use byteorder::{BigEndian, ReadBytesExt, WriteBytesExt};
 use bytes::{Buf, Bytes};
-use scuffle_bytes_util::{BitWriter, BytesCursorExt};
+use scuffle_bytes_util::{BitReader, BitWriter, BytesCursorExt};
+
+use crate::{Sps, SpsExtended};
 
 /// The AVC (H.264) Decoder Configuration Record.
 /// ISO/IEC 14496-15:2022(E) - 5.3.2.1.2
@@ -40,7 +42,7 @@ pub struct AVCDecoderConfigurationRecord {
     /// Note that these should be ordered by ascending SPS ID.
     ///
     /// Refer to the [`crate::Sps`] struct in the SPS docs for more info.
-    pub sps: Vec<Bytes>,
+    pub sps: Vec<Sps>,
 
     /// The `pps` is a vec of PPS Bytes.
     ///
@@ -86,12 +88,12 @@ pub struct AvccExtendedConfig {
     /// The `sequence_parameter_set_ext` is a vec of SpsExtended Bytes.
     ///
     /// Refer to the [`crate::SpsExtended`] struct in the SPS docs for more info.
-    pub sequence_parameter_set_ext: Vec<Bytes>,
+    pub sequence_parameter_set_ext: Vec<SpsExtended>,
 }
 
 impl AVCDecoderConfigurationRecord {
-    /// Parsees an AVCDecoderConfigurationRecord from a byte stream.
-    /// Returns a parseed AVCDecoderConfigurationRecord.
+    /// Parses an AVCDecoderConfigurationRecord from a byte stream.
+    /// Returns a parsed AVCDecoderConfigurationRecord.
     pub fn parse(reader: &mut io::Cursor<Bytes>) -> io::Result<Self> {
         let configuration_version = reader.read_u8()?;
         let profile_indication = reader.read_u8()?;
@@ -104,7 +106,8 @@ impl AVCDecoderConfigurationRecord {
         for _ in 0..num_of_sequence_parameter_sets {
             let sps_length = reader.read_u16::<BigEndian>()?;
             let sps_data = reader.extract_bytes(sps_length as usize)?;
-            sps.push(sps_data);
+            let sps_parsed = Sps::parse(&sps_data)?;
+            sps.push(sps_parsed);
         }
 
         let num_of_picture_parameter_sets = reader.read_u8()?;
@@ -131,7 +134,10 @@ impl AVCDecoderConfigurationRecord {
                     for _ in 0..number_of_sequence_parameter_set_ext {
                         let sps_ext_length = reader.read_u16::<BigEndian>()?;
                         let sps_ext_data = reader.extract_bytes(sps_ext_length as usize)?;
-                        sequence_parameter_set_ext.push(sps_ext_data);
+
+                        let mut bit_reader = BitReader::new_from_slice(sps_ext_data);
+                        let sps_ext_parsed = SpsExtended::parse(&mut bit_reader)?;
+                        sequence_parameter_set_ext.push(sps_ext_parsed);
                     }
 
                     Some(AvccExtendedConfig {
@@ -170,7 +176,7 @@ impl AVCDecoderConfigurationRecord {
         + 1 // num_of_sequence_parameter_sets (5 bits reserved, 3 bits)
         + self.sps.iter().map(|sps| {
             2 // sps_length
-            + sps.len() as u64
+            + sps.size()
         }).sum::<u64>() // sps
         + 1 // num_of_picture_parameter_sets
         + self.pps.iter().map(|pps| {
@@ -185,8 +191,8 @@ impl AVCDecoderConfigurationRecord {
                 + 1 // number_of_sequence_parameter_set_ext
                 + config.sequence_parameter_set_ext.iter().map(|sps_ext| {
                     2 // sps_ext_length
-                    + sps_ext.len() as u64
-                }).sum::<u64>() // sps_ext
+                    + sps_ext.bytesize() // sps_ext
+                }).sum::<u64>()
             }
             None => 0,
         }
@@ -207,8 +213,9 @@ impl AVCDecoderConfigurationRecord {
 
         bit_writer.write_bits(self.sps.len() as u64, 5)?;
         for sps in &self.sps {
-            bit_writer.write_u16::<BigEndian>(sps.len() as u16)?;
-            bit_writer.write_all(sps)?;
+            bit_writer.write_u16::<BigEndian>(sps.size() as u16)?;
+            // Sps::build() automatically aligns the writer.
+            sps.build(&mut bit_writer)?;
         }
 
         bit_writer.write_bits(self.pps.len() as u64, 8)?;
@@ -227,8 +234,17 @@ impl AVCDecoderConfigurationRecord {
 
             bit_writer.write_bits(config.sequence_parameter_set_ext.len() as u64, 8)?;
             for sps_ext in &config.sequence_parameter_set_ext {
-                bit_writer.write_u16::<BigEndian>(sps_ext.len() as u16)?;
-                bit_writer.write_all(sps_ext)?;
+                bit_writer.write_u16::<BigEndian>(sps_ext.bytesize() as u16)?;
+                // SpsExtended::build() does not automatically align the writer
+                // due to the fact that it's used when building the Sps.
+                // If SpsExtended::build() were to align the writer, it could
+                // potentially cause a mismatch as it might introduce 0-padding in
+                // the middle of the bytestream, as the bytestream should only be aligned
+                // at the very end.
+                // In this case however, we want to intentionally align the writer as
+                // the sps is the only thing here.
+                sps_ext.build(&mut bit_writer)?;
+                bit_writer.align()?;
             }
         }
 
@@ -247,10 +263,12 @@ mod tests {
     use scuffle_bytes_util::BitWriter;
 
     use crate::config::{AVCDecoderConfigurationRecord, AvccExtendedConfig};
-    use crate::sps::Sps;
+    use crate::{Sps, SpsExtended};
 
     #[test]
     fn test_config_parse() {
+        let sample_sps = b"gd\0\x1f\xac\xd9A\xe0m\xf9\xe6\xa0  (\0\0\x03\0\x08\0\0\x03\x01\xe0x\xc1\x8c\xb0";
+        let reduced_sps = Sps::reduce(sample_sps).unwrap();
         let mut data = Vec::new();
         let mut writer = BitWriter::new(&mut data);
 
@@ -268,18 +286,15 @@ mod tests {
         // num_of_sequence_parameter_sets
         writer.write_bits(1, 8).unwrap();
         // sps_length
-        writer.write_bits(29, 16).unwrap();
+        writer.write_bits(reduced_sps.len() as u64, 16).unwrap();
         // sps
         // this was from the old test
-        writer
-            .write_all(b"gd\0\x1f\xac\xd9A\xe0m\xf9\xe6\xa0  (\0\0\x03\0\x08\0\0\x03\x01\xe0x\xc1\x8c\xb0")
-            .unwrap();
+        writer.write_all(&reduced_sps).unwrap();
 
         // num_of_picture_parameter_sets
         writer.write_bits(1, 8).unwrap();
         // pps_length
         writer.write_bits(6, 16).unwrap();
-        // pps
         writer.write_all(b"h\xeb\xe3\xcb\"\xc0\x00\x00").unwrap();
 
         // chroma_format_idc
@@ -294,10 +309,11 @@ mod tests {
 
         let result = AVCDecoderConfigurationRecord::parse(&mut io::Cursor::new(data.into())).unwrap();
 
-        let sps = Sps::parse(&result.sps[0]).unwrap();
+        let sps = &result.sps[0];
 
         insta::assert_debug_snapshot!(sps, @r"
         Sps {
+            emu_bytes: 2,
             forbidden_zero_bit: false,
             nal_ref_idc: 3,
             nal_unit_type: NALUnitType::SPS,
@@ -317,7 +333,7 @@ mod tests {
                     bit_depth_luma_minus8: 0,
                     bit_depth_chroma_minus8: 0,
                     qpprime_y_zero_transform_bypass_flag: false,
-                    seq_scaling_matrix_present_flag: false,
+                    scaling_matrix: [],
                 },
             ),
             log2_max_frame_num_minus4: 0,
@@ -364,7 +380,10 @@ mod tests {
 
     #[test]
     fn test_config_build() {
-        let data = Bytes::from(b"\x01d\0\x1f\xff\xe1\0\x1dgd\0\x1f\xac\xd9A\xe0m\xf9\xe6\xa0  (\0\0\x03\0\x08\0\0\x03\x01\xe0x\xc1\x8c\xb0\x01\0\x06h\xeb\xe3\xcb\"\xc0\xfd\xf8\xf8\0".to_vec());
+        // these may not be the same size due to the natural reduction from the SPS parsing.
+        // in specific, the sps size function may return a lower size than the original bitstring.
+        // reduction will occur from rebuilding the sps and from rebuilding the sps_ext.
+        let data = Bytes::from(b"\x01d\0\x1f\xff\xe1\0\x19\x67\x64\x00\x1F\xAC\xD9\x41\xE0\x6D\xF9\xE6\xA0\x20\x20\x28\x00\x00\x03\x00\x08\x00\x00\x03\x01\xE0\x01\0\x06h\xeb\xe3\xcb\"\xc0\xfd\xf8\xf8\0".to_vec());
 
         let config = AVCDecoderConfigurationRecord::parse(&mut io::Cursor::new(data.clone())).unwrap();
 
@@ -390,7 +409,14 @@ mod tests {
             chroma_format_idc: 1,
             bit_depth_luma_minus8: 0,
             bit_depth_chroma_minus8: 0,
-            sequence_parameter_set_ext: vec![Bytes::from_static(b"extra")],
+            sequence_parameter_set_ext: vec![SpsExtended {
+                chroma_format_idc: 1,
+                separate_color_plane_flag: false,
+                bit_depth_luma_minus8: 2,
+                bit_depth_chroma_minus8: 3,
+                qpprime_y_zero_transform_bypass_flag: false,
+                scaling_matrix: vec![],
+            }],
         };
         let config = AVCDecoderConfigurationRecord {
             configuration_version: 1,
@@ -398,12 +424,15 @@ mod tests {
             profile_compatibility: 0,
             level_indication: 31,
             length_size_minus_one: 3,
-            sps: vec![Bytes::from_static(b"spsdata")],
+            sps: vec![
+                Sps::parse(b"\x67\x64\x00\x1F\xAC\xD9\x41\xE0\x6D\xF9\xE6\xA0\x20\x20\x28\x00\x00\x00\x08\x00\x00\x01\xE0")
+                    .unwrap(),
+            ],
             pps: vec![Bytes::from_static(b"ppsdata")],
             extended_config: Some(extended_config),
         };
 
-        assert_eq!(config.size(), 36);
+        assert_eq!(config.size(), 49);
         insta::assert_debug_snapshot!(config, @r#"
         AVCDecoderConfigurationRecord {
             configuration_version: 1,
@@ -412,7 +441,69 @@ mod tests {
             level_indication: 31,
             length_size_minus_one: 3,
             sps: [
-                b"spsdata",
+                Sps {
+                    emu_bytes: 0,
+                    forbidden_zero_bit: false,
+                    nal_ref_idc: 3,
+                    nal_unit_type: NALUnitType::SPS,
+                    profile_idc: 100,
+                    constraint_set0_flag: false,
+                    constraint_set1_flag: false,
+                    constraint_set2_flag: false,
+                    constraint_set3_flag: false,
+                    constraint_set4_flag: false,
+                    constraint_set5_flag: false,
+                    level_idc: 31,
+                    seq_parameter_set_id: 0,
+                    ext: Some(
+                        SpsExtended {
+                            chroma_format_idc: 1,
+                            separate_color_plane_flag: false,
+                            bit_depth_luma_minus8: 0,
+                            bit_depth_chroma_minus8: 0,
+                            qpprime_y_zero_transform_bypass_flag: false,
+                            scaling_matrix: [],
+                        },
+                    ),
+                    log2_max_frame_num_minus4: 0,
+                    pic_order_cnt_type: 0,
+                    log2_max_pic_order_cnt_lsb_minus4: Some(
+                        2,
+                    ),
+                    pic_order_cnt_type1: None,
+                    max_num_ref_frames: 4,
+                    gaps_in_frame_num_value_allowed_flag: false,
+                    pic_width_in_mbs_minus1: 29,
+                    pic_height_in_map_units_minus1: 53,
+                    mb_adaptive_frame_field_flag: None,
+                    direct_8x8_inference_flag: true,
+                    frame_crop_info: Some(
+                        FrameCropInfo {
+                            frame_crop_left_offset: 0,
+                            frame_crop_right_offset: 0,
+                            frame_crop_top_offset: 0,
+                            frame_crop_bottom_offset: 6,
+                        },
+                    ),
+                    sample_aspect_ratio: None,
+                    overscan_appropriate_flag: None,
+                    color_config: Some(
+                        ColorConfig {
+                            video_format: VideoFormat::Unspecified,
+                            video_full_range_flag: false,
+                            color_primaries: 1,
+                            transfer_characteristics: 1,
+                            matrix_coefficients: 1,
+                        },
+                    ),
+                    chroma_sample_loc: None,
+                    timing_info: Some(
+                        TimingInfo {
+                            num_units_in_tick: 1,
+                            time_scale: 60,
+                        },
+                    ),
+                },
             ],
             pps: [
                 b"ppsdata",
@@ -423,7 +514,14 @@ mod tests {
                     bit_depth_luma_minus8: 0,
                     bit_depth_chroma_minus8: 0,
                     sequence_parameter_set_ext: [
-                        b"extra",
+                        SpsExtended {
+                            chroma_format_idc: 1,
+                            separate_color_plane_flag: false,
+                            bit_depth_luma_minus8: 2,
+                            bit_depth_chroma_minus8: 3,
+                            qpprime_y_zero_transform_bypass_flag: false,
+                            scaling_matrix: [],
+                        },
                     ],
                 },
             ),
@@ -437,7 +535,14 @@ mod tests {
             chroma_format_idc: 1,
             bit_depth_luma_minus8: 0,
             bit_depth_chroma_minus8: 0,
-            sequence_parameter_set_ext: vec![Bytes::from_static(b"extra")],
+            sequence_parameter_set_ext: vec![SpsExtended {
+                chroma_format_idc: 1,
+                separate_color_plane_flag: false,
+                bit_depth_luma_minus8: 2,
+                bit_depth_chroma_minus8: 3,
+                qpprime_y_zero_transform_bypass_flag: false,
+                scaling_matrix: vec![],
+            }],
         };
         let config = AVCDecoderConfigurationRecord {
             configuration_version: 1,
@@ -445,7 +550,9 @@ mod tests {
             profile_compatibility: 0,
             level_indication: 31,
             length_size_minus_one: 3,
-            sps: vec![Bytes::from_static(b"spsdata")],
+            sps: vec![
+                Sps::parse(b"gd\0\x1f\xac\xd9A\xe0m\xf9\xe6\xa0  (\0\0\x03\0\x08\0\0\x03\x01\xe0x\xc1\x8c\xb0").unwrap(),
+            ],
             pps: vec![Bytes::from_static(b"ppsdata")],
             extended_config: Some(extended_config),
         };
@@ -453,8 +560,8 @@ mod tests {
         let mut buf = Vec::new();
         config.build(&mut buf).unwrap();
 
-        let parseed = AVCDecoderConfigurationRecord::parse(&mut io::Cursor::new(buf.into())).unwrap();
-        assert_eq!(parseed.extended_config.unwrap().sequence_parameter_set_ext.len(), 1);
+        let parsed = AVCDecoderConfigurationRecord::parse(&mut io::Cursor::new(buf.into())).unwrap();
+        assert_eq!(parsed.extended_config.unwrap().sequence_parameter_set_ext.len(), 1);
         insta::assert_debug_snapshot!(config, @r#"
         AVCDecoderConfigurationRecord {
             configuration_version: 1,
@@ -463,7 +570,69 @@ mod tests {
             level_indication: 31,
             length_size_minus_one: 3,
             sps: [
-                b"spsdata",
+                Sps {
+                    emu_bytes: 2,
+                    forbidden_zero_bit: false,
+                    nal_ref_idc: 3,
+                    nal_unit_type: NALUnitType::SPS,
+                    profile_idc: 100,
+                    constraint_set0_flag: false,
+                    constraint_set1_flag: false,
+                    constraint_set2_flag: false,
+                    constraint_set3_flag: false,
+                    constraint_set4_flag: false,
+                    constraint_set5_flag: false,
+                    level_idc: 31,
+                    seq_parameter_set_id: 0,
+                    ext: Some(
+                        SpsExtended {
+                            chroma_format_idc: 1,
+                            separate_color_plane_flag: false,
+                            bit_depth_luma_minus8: 0,
+                            bit_depth_chroma_minus8: 0,
+                            qpprime_y_zero_transform_bypass_flag: false,
+                            scaling_matrix: [],
+                        },
+                    ),
+                    log2_max_frame_num_minus4: 0,
+                    pic_order_cnt_type: 0,
+                    log2_max_pic_order_cnt_lsb_minus4: Some(
+                        2,
+                    ),
+                    pic_order_cnt_type1: None,
+                    max_num_ref_frames: 4,
+                    gaps_in_frame_num_value_allowed_flag: false,
+                    pic_width_in_mbs_minus1: 29,
+                    pic_height_in_map_units_minus1: 53,
+                    mb_adaptive_frame_field_flag: None,
+                    direct_8x8_inference_flag: true,
+                    frame_crop_info: Some(
+                        FrameCropInfo {
+                            frame_crop_left_offset: 0,
+                            frame_crop_right_offset: 0,
+                            frame_crop_top_offset: 0,
+                            frame_crop_bottom_offset: 6,
+                        },
+                    ),
+                    sample_aspect_ratio: None,
+                    overscan_appropriate_flag: None,
+                    color_config: Some(
+                        ColorConfig {
+                            video_format: VideoFormat::Unspecified,
+                            video_full_range_flag: false,
+                            color_primaries: 1,
+                            transfer_characteristics: 1,
+                            matrix_coefficients: 1,
+                        },
+                    ),
+                    chroma_sample_loc: None,
+                    timing_info: Some(
+                        TimingInfo {
+                            num_units_in_tick: 1,
+                            time_scale: 60,
+                        },
+                    ),
+                },
             ],
             pps: [
                 b"ppsdata",
@@ -474,7 +643,14 @@ mod tests {
                     bit_depth_luma_minus8: 0,
                     bit_depth_chroma_minus8: 0,
                     sequence_parameter_set_ext: [
-                        b"extra",
+                        SpsExtended {
+                            chroma_format_idc: 1,
+                            separate_color_plane_flag: false,
+                            bit_depth_luma_minus8: 2,
+                            bit_depth_chroma_minus8: 3,
+                            qpprime_y_zero_transform_bypass_flag: false,
+                            scaling_matrix: [],
+                        },
                     ],
                 },
             ),

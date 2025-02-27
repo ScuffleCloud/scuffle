@@ -31,3 +31,9 @@ nutype_enum! {
         Reserved2 = 7,
     }
 }
+
+impl From<VideoFormat> for u64 {
+    fn from(value: VideoFormat) -> Self {
+        value.0 as u64
+    }
+}

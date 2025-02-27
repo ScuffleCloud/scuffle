@@ -430,8 +430,7 @@ impl Transmuxer {
                     profile: config.profile_indication,
                 };
 
-                let (entry, sps) = codecs::avc::stsd_entry(config)?;
-
+                let sps = &config.sps[0];
                 video_width = sps.width() as u32;
                 video_height = sps.height() as u32;
 
@@ -440,7 +439,7 @@ impl Transmuxer {
                     video_fps = frame_rate;
                 }
 
-                entry
+                codecs::avc::stsd_entry(config)?
             }
             VideoSequenceHeader::Av1(config) => {
                 compatiable_brands.push(FourCC::Av01);

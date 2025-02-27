@@ -115,3 +115,9 @@ nutype_enum! {
         ExtendedSar = 255
     }
 }
+
+impl From<AspectRatioIdc> for u64 {
+    fn from(value: AspectRatioIdc) -> Self {
+        value.0 as u64
+    }
+}

@@ -89,3 +89,9 @@ nutype_enum! {
         Unspecified2 = 24
     }
 }
+
+impl From<NALUnitType> for u64 {
+    fn from(value: NALUnitType) -> Self {
+        value.0 as u64
+    }
+}

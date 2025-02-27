@@ -122,13 +122,40 @@ impl<W: io::Write> BitWriterExpGolombExt for BitWriter<W> {
     }
 }
 
+/// Returns the number of bits that a signed Exp-Golomb encoded number would take up.
+///
+/// See: <https://en.wikipedia.org/wiki/Exponential-Golomb_coding>
+pub fn size_of_signed_exp_golomb(number: i64) -> u64 {
+    let number = if number <= 0 {
+        -number as u64 * 2
+    } else {
+        number as u64 * 2 - 1
+    };
+
+    size_of_exp_golomb(number)
+}
+
+/// Returns the number of bits that an Exp-Golomb encoded number would take up.
+///
+/// See: <https://en.wikipedia.org/wiki/Exponential-Golomb_coding>
+pub fn size_of_exp_golomb(number: u64) -> u64 {
+    let mut number = number + 1;
+    let mut leading_zeros = 0;
+    while number > 1 {
+        number >>= 1;
+        leading_zeros += 1;
+    }
+
+    leading_zeros * 2 + 1
+}
+
 #[cfg(test)]
 #[cfg_attr(all(test, coverage_nightly), coverage(off))]
 mod tests {
     use bytes::Buf;
     use scuffle_bytes_util::{BitReader, BitWriter};
 
-    use crate::{BitReaderExpGolombExt, BitWriterExpGolombExt};
+    use crate::{BitReaderExpGolombExt, BitWriterExpGolombExt, size_of_exp_golomb, size_of_signed_exp_golomb};
 
     pub fn get_remaining_bits(reader: &BitReader<std::io::Cursor<Vec<u8>>>) -> usize {
         let remaining = reader.get_ref().remaining();
@@ -336,5 +363,24 @@ mod tests {
         let result = bit_reader.read_signed_exp_golomb().unwrap();
         assert_eq!(result, i64::MAX);
         assert_eq!(get_remaining_bits(&bit_reader), remaining_bits - 154);
+    }
+
+    #[test]
+    fn test_expg_sizes() {
+        assert_eq!(1, size_of_exp_golomb(0)); // 0b1
+        assert_eq!(3, size_of_exp_golomb(1)); // 0b010
+        assert_eq!(3, size_of_exp_golomb(2)); // 0b011
+        assert_eq!(5, size_of_exp_golomb(3)); // 0b00100
+        assert_eq!(5, size_of_exp_golomb(4)); // 0b00101
+        assert_eq!(5, size_of_exp_golomb(5)); // 0b00110
+        assert_eq!(5, size_of_exp_golomb(6)); // 0b00111
+
+        assert_eq!(1, size_of_signed_exp_golomb(0)); // 0b1
+        assert_eq!(3, size_of_signed_exp_golomb(1)); // 0b010
+        assert_eq!(3, size_of_signed_exp_golomb(-1)); // 0b011
+        assert_eq!(5, size_of_signed_exp_golomb(2)); // 0b00100
+        assert_eq!(5, size_of_signed_exp_golomb(-2)); // 0b00101
+        assert_eq!(5, size_of_signed_exp_golomb(3)); // 0b00110
+        assert_eq!(5, size_of_signed_exp_golomb(-3)); // 0b00111
     }
 }

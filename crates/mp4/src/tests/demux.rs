@@ -7,7 +7,7 @@ use std::process::{Command, Stdio};
 use bytes::{Buf, Bytes};
 use fixed::FixedI32;
 use scuffle_av1::AV1CodecConfigurationRecord;
-use scuffle_h264::AVCDecoderConfigurationRecord;
+use scuffle_h264::{AVCDecoderConfigurationRecord, Sps};
 use scuffle_h265::{HEVCDecoderConfigurationRecord, NaluArray, NaluType};
 
 use crate::boxes::DynBox;
@@ -280,10 +280,13 @@ fn test_demux_avc_aac() {
                                 length_size_minus_one: 3,
                                 profile_compatibility: 0,
                                 extended_config: None,
-                                sps: vec![Bytes::from(vec![
-                                    103, 100, 0, 51, 172, 202, 80, 15, 0, 16, 251, 1, 16, 0, 0, 3, 0, 16, 0, 0, 7, 136, 241,
-                                    131, 25, 96
-                                ])],
+                                sps: vec![
+                                    Sps::parse(&[
+                                        103, 100, 0, 51, 172, 202, 80, 15, 0, 16, 251, 1, 16, 0, 0, 3, 0, 16, 0, 0, 7, 136,
+                                        241, 131, 25, 96
+                                    ])
+                                    .unwrap()
+                                ],
                                 pps: vec![Bytes::from(vec![104, 233, 59, 44, 139])],
                             },
                         },

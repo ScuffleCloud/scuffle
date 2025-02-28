@@ -296,3 +296,473 @@ macro_rules! impl_updowncounter {
 
 impl_updowncounter!(i64);
 impl_updowncounter!(f64);
+
+#[cfg(test)]
+#[cfg_attr(all(test, coverage_nightly), coverage(off))]
+mod tests {
+    use std::sync::Arc;
+
+    use opentelemetry::{KeyValue, Value};
+    use opentelemetry_sdk::Resource;
+    use opentelemetry_sdk::metrics::data::{Histogram, ResourceMetrics, Sum};
+    use opentelemetry_sdk::metrics::reader::MetricReader;
+    use opentelemetry_sdk::metrics::{ManualReader, ManualReaderBuilder, SdkMeterProvider};
+
+    use crate::HistogramF64;
+    use crate::collector::{Collector, IsCollector};
+
+    #[derive(Debug, Clone)]
+    struct TestReader(Arc<ManualReader>);
+
+    impl TestReader {
+        fn new() -> Self {
+            Self(Arc::new(ManualReaderBuilder::new().build()))
+        }
+
+        fn read(&self) -> ResourceMetrics {
+            let mut metrics = ResourceMetrics {
+                resource: Resource::builder_empty().build(),
+                scope_metrics: vec![],
+            };
+
+            self.0.collect(&mut metrics).expect("collect");
+
+            metrics
+        }
+    }
+
+    impl opentelemetry_sdk::metrics::reader::MetricReader for TestReader {
+        fn register_pipeline(&self, pipeline: std::sync::Weak<opentelemetry_sdk::metrics::Pipeline>) {
+            self.0.register_pipeline(pipeline)
+        }
+
+        fn collect(
+            &self,
+            rm: &mut opentelemetry_sdk::metrics::data::ResourceMetrics,
+        ) -> opentelemetry_sdk::metrics::MetricResult<()> {
+            self.0.collect(rm)
+        }
+
+        fn force_flush(&self) -> opentelemetry_sdk::error::OTelSdkResult {
+            self.0.force_flush()
+        }
+
+        fn shutdown(&self) -> opentelemetry_sdk::error::OTelSdkResult {
+            self.0.shutdown()
+        }
+
+        fn temporality(&self, kind: opentelemetry_sdk::metrics::InstrumentKind) -> opentelemetry_sdk::metrics::Temporality {
+            self.0.temporality(kind)
+        }
+    }
+
+    fn setup_reader() -> TestReader {
+        let reader = TestReader::new();
+        let provider = SdkMeterProvider::builder()
+            .with_resource(
+                Resource::builder()
+                    .with_attribute(KeyValue::new("service.name", "test_service"))
+                    .build(),
+            )
+            .with_reader(reader.clone())
+            .build();
+        opentelemetry::global::set_meter_provider(provider);
+        reader
+    }
+
+    fn find_metric<'a>(metrics: &'a ResourceMetrics, name: &str) -> Option<&'a opentelemetry_sdk::metrics::data::Metric> {
+        metrics
+            .scope_metrics
+            .iter()
+            .find(|sm| sm.scope.name() == "scuffle-metrics")
+            .and_then(|sm| sm.metrics.iter().find(|m| m.name == name))
+    }
+
+    fn get_data_point_value<T: PartialEq + std::fmt::Debug + Clone>(
+        data_points: &[opentelemetry_sdk::metrics::data::SumDataPoint<T>],
+        attr_key: &str,
+        attr_value: &str,
+    ) -> T {
+        data_points
+            .iter()
+            .find(|dp| {
+                dp.attributes
+                    .iter()
+                    .any(|kv| kv.key.as_str() == attr_key && kv.value.as_str() == attr_value)
+            })
+            .map(|dp| dp.value.clone())
+            .expect("Data point not found")
+    }
+
+    fn get_histogram_sum(
+        data_points: &[opentelemetry_sdk::metrics::data::HistogramDataPoint<u64>],
+        attr_key: &str,
+        attr_value: &str,
+    ) -> u64 {
+        data_points
+            .iter()
+            .find(|dp| {
+                dp.attributes
+                    .iter()
+                    .any(|kv| kv.key.as_str() == attr_key && kv.value.as_str() == attr_value)
+            })
+            .map(|dp| dp.sum)
+            .expect("Histogram data point not found")
+    }
+
+    fn get_data_point_value_with_two_attrs<T: PartialEq + std::fmt::Debug + Clone>(
+        data_points: &[opentelemetry_sdk::metrics::data::SumDataPoint<T>],
+        key1: &str,
+        val1: &str,
+        key2: &str,
+        val2: impl Into<Value> + Clone,
+    ) -> T {
+        data_points
+            .iter()
+            .find(|dp| {
+                dp.attributes
+                    .iter()
+                    .any(|kv| kv.key.as_str() == key1 && kv.value.as_str() == val1)
+                    && dp
+                        .attributes
+                        .iter()
+                        .any(|kv| kv.key.as_str() == key2 && kv.value == val2.clone().into())
+            })
+            .map(|dp| dp.value.clone())
+            .expect("Data point not found")
+    }
+
+    #[test]
+    fn test_counter_metric() {
+        #[crate::metrics(crate_path = "crate")]
+        mod example {
+            use crate::{CounterU64, MetricEnum};
+
+            #[derive(MetricEnum)]
+            #[metrics(crate_path = "crate")]
+            pub enum Kind {
+                Http,
+                Grpc,
+            }
+
+            #[metrics(unit = "requests")]
+            pub fn request(kind: Kind) -> CounterU64;
+        }
+
+        let reader = setup_reader();
+        example::request(example::Kind::Http).incr();
+        example::request(example::Kind::Http).incr();
+        example::request(example::Kind::Grpc).incr();
+
+        let metrics = reader.read();
+        let metric = find_metric(&metrics, "example_request").unwrap();
+        assert_eq!(metric.unit, "requests");
+
+        let sum: &Sum<u64> = metric.data.as_any().downcast_ref().unwrap();
+        assert_eq!(sum.data_points.len(), 2);
+        assert_eq!(get_data_point_value(&sum.data_points, "kind", "Http"), 2);
+        assert_eq!(get_data_point_value(&sum.data_points, "kind", "Grpc"), 1);
+    }
+
+    #[test]
+    fn test_gauge_metric() {
+        #[crate::metrics(crate_path = "crate")]
+        mod example {
+            use crate::GaugeU64;
+
+            #[metrics(unit = "connections")]
+            pub fn current_connections() -> GaugeU64;
+        }
+
+        let reader = setup_reader();
+        example::current_connections().record(10);
+        example::current_connections().record(20);
+
+        let metrics = reader.read();
+        let metric = find_metric(&metrics, "example_current_connections").unwrap();
+        assert_eq!(metric.unit, "connections");
+
+        let gauge = metric
+            .data
+            .as_any()
+            .downcast_ref::<opentelemetry_sdk::metrics::data::Gauge<u64>>()
+            .unwrap();
+        assert_eq!(gauge.data_points.len(), 1);
+        assert_eq!(gauge.data_points[0].value, 20);
+        assert_eq!(gauge.data_points[0].attributes.len(), 0);
+    }
+
+    #[test]
+    fn test_histogram_metric() {
+        #[crate::metrics(crate_path = "crate")]
+        mod example {
+            use crate::{HistogramU64, MetricEnum};
+
+            #[derive(MetricEnum)]
+            #[metrics(crate_path = "crate")]
+            pub enum Kind {
+                Http,
+                Grpc,
+            }
+
+            #[metrics(unit = "bytes")]
+            pub fn data_transfer(kind: Kind) -> HistogramU64;
+        }
+
+        let reader = setup_reader();
+        example::data_transfer(example::Kind::Http).observe(100);
+        example::data_transfer(example::Kind::Http).observe(200);
+        example::data_transfer(example::Kind::Grpc).observe(150);
+
+        let metrics = reader.read();
+        let metric = find_metric(&metrics, "example_data_transfer").unwrap();
+        assert_eq!(metric.unit, "bytes");
+
+        let histogram = metric
+            .data
+            .as_any()
+            .downcast_ref::<opentelemetry_sdk::metrics::data::Histogram<u64>>()
+            .unwrap();
+        assert_eq!(histogram.data_points.len(), 2);
+        assert_eq!(get_histogram_sum(&histogram.data_points, "kind", "Http"), 300);
+        assert_eq!(get_histogram_sum(&histogram.data_points, "kind", "Grpc"), 150);
+    }
+
+    #[test]
+    fn test_updowncounter_metric() {
+        #[crate::metrics(crate_path = "crate")]
+        mod example {
+            use crate::{MetricEnum, UpDownCounterI64};
+
+            #[derive(MetricEnum)]
+            #[metrics(crate_path = "crate")]
+            pub enum Kind {
+                Http,
+                Grpc,
+            }
+
+            #[metrics(unit = "requests")]
+            pub fn active_requests(kind: Kind) -> UpDownCounterI64;
+        }
+
+        let reader = setup_reader();
+        example::active_requests(example::Kind::Http).incr();
+        example::active_requests(example::Kind::Http).incr();
+        example::active_requests(example::Kind::Http).decr();
+        example::active_requests(example::Kind::Grpc).incr();
+
+        let metrics = reader.read();
+        let metric = find_metric(&metrics, "example_active_requests").unwrap();
+        assert_eq!(metric.unit, "requests");
+
+        let sum: &Sum<i64> = metric.data.as_any().downcast_ref().unwrap();
+        assert_eq!(sum.data_points.len(), 2);
+        assert_eq!(get_data_point_value(&sum.data_points, "kind", "Http"), 1);
+        assert_eq!(get_data_point_value(&sum.data_points, "kind", "Grpc"), 1);
+    }
+
+    #[test]
+    fn test_metric_with_multiple_attributes() {
+        #[crate::metrics(crate_path = "crate")]
+        mod example {
+            use crate::{CounterU64, MetricEnum};
+
+            #[derive(MetricEnum)]
+            #[metrics(crate_path = "crate")]
+            pub enum Kind {
+                Http,
+                Grpc,
+            }
+
+            #[metrics(unit = "requests")]
+            pub fn request_with_status(kind: Kind, status: u32) -> CounterU64;
+        }
+
+        let reader = setup_reader();
+        example::request_with_status(example::Kind::Http, 200).incr();
+        example::request_with_status(example::Kind::Http, 404).incr();
+        example::request_with_status(example::Kind::Grpc, 200).incr();
+
+        let metrics = reader.read();
+        let metric = find_metric(&metrics, "example_request_with_status").unwrap();
+        assert_eq!(metric.unit, "requests");
+
+        let sum: &Sum<u64> = metric.data.as_any().downcast_ref().unwrap();
+        assert_eq!(sum.data_points.len(), 3);
+        assert_eq!(
+            get_data_point_value_with_two_attrs(&sum.data_points, "kind", "Http", "status", 200),
+            1
+        );
+        assert_eq!(
+            get_data_point_value_with_two_attrs(&sum.data_points, "kind", "Http", "status", 404),
+            1
+        );
+        assert_eq!(
+            get_data_point_value_with_two_attrs(&sum.data_points, "kind", "Grpc", "status", 200),
+            1
+        );
+    }
+
+    #[test]
+    fn test_metric_with_string_attribute() {
+        #[crate::metrics(crate_path = "crate")]
+        mod example {
+            use crate::{CounterU64, MetricEnum};
+
+            #[derive(MetricEnum)]
+            #[metrics(crate_path = "crate")]
+            pub enum Kind {
+                Http,
+                Grpc,
+            }
+
+            #[metrics(unit = "requests")]
+            pub fn request_with_method(kind: Kind, method: &str) -> CounterU64;
+        }
+
+        let reader = setup_reader();
+        example::request_with_method(example::Kind::Http, "GET").incr();
+        example::request_with_method(example::Kind::Http, "POST").incr();
+        example::request_with_method(example::Kind::Grpc, "GET").incr();
+
+        let metrics = reader.read();
+        let metric = find_metric(&metrics, "example_request_with_method").unwrap();
+        assert_eq!(metric.unit, "requests");
+
+        let sum: &Sum<u64> = metric.data.as_any().downcast_ref().unwrap();
+        assert_eq!(sum.data_points.len(), 3);
+        assert_eq!(
+            get_data_point_value_with_two_attrs(&sum.data_points, "kind", "Http", "method", "GET"),
+            1
+        );
+        assert_eq!(
+            get_data_point_value_with_two_attrs(&sum.data_points, "kind", "Http", "method", "POST"),
+            1
+        );
+        assert_eq!(
+            get_data_point_value_with_two_attrs(&sum.data_points, "kind", "Grpc", "method", "GET"),
+            1
+        );
+    }
+
+    #[test]
+    fn test_metric_with_no_attributes() {
+        #[crate::metrics(crate_path = "crate")]
+        mod example {
+            use crate::CounterU64;
+
+            #[metrics(unit = "events")]
+            pub fn total_events() -> CounterU64;
+        }
+
+        let reader = setup_reader();
+        example::total_events().incr();
+        example::total_events().incr();
+
+        let metrics = reader.read();
+        let metric = find_metric(&metrics, "example_total_events").unwrap();
+        assert_eq!(metric.unit, "events");
+
+        let sum: &Sum<u64> = metric.data.as_any().downcast_ref().unwrap();
+        assert_eq!(sum.data_points.len(), 1);
+        assert_eq!(sum.data_points[0].value, 2);
+        assert_eq!(sum.data_points[0].attributes.len(), 0);
+    }
+
+    #[test]
+    fn test_metric_with_zero_values() {
+        #[crate::metrics(crate_path = "crate")]
+        mod example {
+            use crate::GaugeU64;
+
+            #[metrics(unit = "connections")]
+            pub fn current_connections() -> GaugeU64;
+        }
+
+        let reader = setup_reader();
+        example::current_connections().record(0);
+
+        let metrics = reader.read();
+        let metric = find_metric(&metrics, "example_current_connections").unwrap();
+        assert_eq!(metric.unit, "connections");
+
+        let gauge = metric
+            .data
+            .as_any()
+            .downcast_ref::<opentelemetry_sdk::metrics::data::Gauge<u64>>()
+            .unwrap();
+        assert_eq!(gauge.data_points.len(), 1);
+        assert_eq!(gauge.data_points[0].value, 0);
+        assert_eq!(gauge.data_points[0].attributes.len(), 0);
+    }
+
+    #[test]
+    fn test_metric_with_negative_increments() {
+        #[crate::metrics(crate_path = "crate")]
+        mod example {
+            use crate::{MetricEnum, UpDownCounterI64};
+
+            #[derive(MetricEnum)]
+            #[metrics(crate_path = "crate")]
+            pub enum Kind {
+                Http,
+                Grpc,
+            }
+
+            #[metrics(unit = "requests")]
+            pub fn active_requests(kind: Kind) -> UpDownCounterI64;
+        }
+
+        let reader = setup_reader();
+        example::active_requests(example::Kind::Http).incr();
+        example::active_requests(example::Kind::Http).decr();
+        example::active_requests(example::Kind::Http).decr();
+
+        let metrics = reader.read();
+        let metric = find_metric(&metrics, "example_active_requests").unwrap();
+        assert_eq!(metric.unit, "requests");
+
+        let sum: &Sum<i64> = metric.data.as_any().downcast_ref().unwrap();
+        assert_eq!(sum.data_points.len(), 1);
+        assert_eq!(get_data_point_value(&sum.data_points, "kind", "Http"), -1);
+    }
+
+    #[test]
+    fn test_histogram_f64_builder() {
+        let reader = setup_reader();
+        let meter = opentelemetry::global::meter("scuffle-metrics");
+        let name = "test_histogram_f64";
+
+        let builder = HistogramF64::builder(&meter, name);
+        let histogram = builder.build();
+
+        histogram.record(1.5, &[]);
+
+        let metrics = reader.read();
+        let metric = find_metric(&metrics, name).expect("histogram metric not found");
+
+        assert_eq!(metric.name, name);
+        assert_eq!(metric.unit, "");
+
+        let histogram_data = metric
+            .data
+            .as_any()
+            .downcast_ref::<Histogram<f64>>()
+            .expect("expected histogram data");
+
+        assert_eq!(histogram_data.data_points.len(), 1);
+        assert_eq!(histogram_data.data_points[0].sum, 1.5);
+        assert_eq!(histogram_data.data_points[0].attributes.len(), 0);
+    }
+
+    #[test]
+    fn test_collector_inner() {
+        let meter = opentelemetry::global::meter("test_meter");
+        let histogram = HistogramF64::builder(&meter, "inner_test_histogram").build();
+
+        let attributes = vec![KeyValue::new("key", "value")];
+        let collector = Collector::new(attributes.clone(), &histogram);
+
+        assert_eq!(collector.inner() as *const HistogramF64, &histogram as *const HistogramF64);
+    }
+}

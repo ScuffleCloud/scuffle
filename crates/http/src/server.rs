@@ -40,13 +40,70 @@ pub struct HttpServer<F> {
     #[cfg(feature = "http3")]
     #[cfg_attr(docsrs, doc(cfg(feature = "http3")))]
     enable_http3: bool,
+    #[builder(setters(vis = "", name = onion_service_config_internal))]
+    #[cfg(feature = "arti")]
+    #[cfg_attr(docsrs, doc(cfg(feature = "arti")))]
+    onion_service_config: Option<tor_hsservice::OnionServiceConfig>,
+    #[builder(setters(vis = "", name = tor_client_config_internal))]
+    #[cfg(feature = "arti")]
+    #[cfg_attr(docsrs, doc(cfg(feature = "arti")))]
+    tor_client_config: Option<arti_client::TorClientConfig>,
     /// rustls config.
     ///
     /// Use this field to set the server into TLS mode.
     /// It will only accept TLS connections when this is set.
+    #[builder(setters(vis = "", name = rustls_config_internal))]
     #[cfg(feature = "tls-rustls")]
     #[cfg_attr(docsrs, doc(cfg(feature = "tls-rustls")))]
     rustls_config: Option<rustls::ServerConfig>,
+}
+
+#[cfg(feature = "tls-rustls")]
+#[cfg_attr(docsrs, doc(cfg(feature = "tls-rustls")))]
+impl<F, S> HttpServerBuilder<F, S>
+where
+    S: http_server_builder::State,
+    S::RustlsConfig: http_server_builder::IsUnset,
+    S::OnionServiceConfig: http_server_builder::IsUnset,
+{
+    pub fn rustls_config(
+        self,
+        rustls_config: rustls::ServerConfig,
+    ) -> HttpServerBuilder<F, http_server_builder::SetRustlsConfig<S>> {
+        self.rustls_config_internal(rustls_config)
+    }
+}
+
+#[cfg(feature = "arti")]
+#[cfg_attr(docsrs, doc(cfg(feature = "arti")))]
+impl<F, S> HttpServerBuilder<F, S>
+where
+    S: http_server_builder::State,
+    S::OnionServiceConfig: http_server_builder::IsUnset,
+    S::RustlsConfig: http_server_builder::IsUnset,
+{
+    pub fn onion_service_config(
+        self,
+        onion_service_config: tor_hsservice::OnionServiceConfig,
+    ) -> HttpServerBuilder<F, http_server_builder::SetOnionServiceConfig<S>> {
+        self.onion_service_config_internal(onion_service_config)
+    }
+}
+
+#[cfg(feature = "arti")]
+#[cfg_attr(docsrs, doc(cfg(feature = "arti")))]
+impl<F, S> HttpServerBuilder<F, S>
+where
+    S: http_server_builder::State,
+    S::OnionServiceConfig: http_server_builder::IsSet,
+    S::TorClientConfig: http_server_builder::IsUnset,
+{
+    pub fn tor_client_config(
+        self,
+        tor_client_config: arti_client::TorClientConfig,
+    ) -> HttpServerBuilder<F, http_server_builder::SetTorClientConfig<S>> {
+        self.tor_client_config_internal(tor_client_config)
+    }
 }
 
 #[cfg(feature = "http3")]
@@ -187,6 +244,18 @@ where
     pub async fn run(#[allow(unused_mut)] mut self) -> Result<(), Error<F>> {
         #[cfg(feature = "tls-rustls")]
         self.set_alpn_protocols();
+
+        #[cfg(feature = "arti")]
+        if let Some(onion_service_config) = self.onion_service_config {
+            let backend = crate::backend::arti::ArtiBackend::builder()
+                .ctx(self.ctx)
+                .service_factory(self.service_factory)
+                .bind_port(self.bind.port())
+                .onion_service_config(onion_service_config)
+                .build();
+
+            return backend.run().await;
+        }
 
         #[cfg(all(not(any(feature = "http1", feature = "http2")), feature = "tls-rustls"))]
         let start_tcp_backend = false;

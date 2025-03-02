@@ -2,6 +2,9 @@
 //!
 //! You probably don't want to use this module directly and should instead use the [`HttpServer`](crate::HttpServer) struct.
 
+#[cfg(feature = "arti")]
+#[cfg_attr(docsrs, doc(cfg(feature = "arti")))]
+pub mod arti;
 #[cfg(feature = "http3")]
 #[cfg_attr(docsrs, doc(cfg(feature = "http3")))]
 pub mod h3;

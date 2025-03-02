@@ -8,7 +8,7 @@ use tracing::Instrument;
 use crate::error::Error;
 use crate::service::{HttpService, HttpServiceFactory};
 
-mod handler;
+pub(crate) mod handler;
 mod stream;
 mod utils;
 

@@ -29,6 +29,10 @@ where
     #[cfg(feature = "http3")]
     #[cfg_attr(docsrs, doc(cfg(feature = "http3")))]
     QuinnConnection(#[from] h3_quinn::quinn::ConnectionError),
+    #[error("arti error: {0}")]
+    #[cfg(feature = "arti")]
+    #[cfg_attr(docsrs, doc(cfg(feature = "arti")))]
+    Arti(#[from] arti_client::Error),
     #[error("make service error: {0}")]
     ServiceFactoryError(F::Error),
     #[error("service error: {0}")]

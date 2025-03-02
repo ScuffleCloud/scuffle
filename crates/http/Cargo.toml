@@ -46,6 +46,12 @@ rustls = { version = "0.23.21", default-features = false, features = ["aws_lc_rs
 # Tower Services
 tower = { version = "0.5.2", default-features = false, features = ["make"], optional = true }
 
+# Arti
+arti-client = { version = "0.27.0", features = ["onion-service-service"], optional = true }
+tor-hsservice = { version = "0.27.0", optional = true }
+tor-proto = { version = "0.27.0", optional = true }
+tor-cell = { version = "0.27.0", optional = true }
+
 scuffle-workspace-hack.workspace = true
 
 [dev-dependencies]
@@ -66,6 +72,7 @@ http3 = ["dep:quinn", "dep:h3-quinn", "dep:h3"]
 tls-rustls = ["dep:tokio-rustls", "dep:rustls"]
 http3-tls-rustls = ["http3", "tls-rustls"]
 tower = ["dep:tower"]
+arti = ["dep:arti-client", "dep:tor-hsservice", "dep:tor-proto", "dep:tor-cell"]
 
 [package.metadata.docs.rs]
 all-features = true

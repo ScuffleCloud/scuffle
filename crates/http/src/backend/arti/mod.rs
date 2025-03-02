@@ -64,7 +64,13 @@ where
 
             let connection_fut = async move {
                 match stream_request.request() {
-                    IncomingStreamRequest::Begin(begin) if begin.port() == self.bind_port => {
+                    IncomingStreamRequest::Begin(begin) => {
+                        if begin.port() != self.bind_port {
+                            #[cfg(feature = "tracing")]
+                            tracing::warn!(incoming_port = %begin.port(), bind_port = %self.bind_port, "port mismatch");
+                            return;
+                        }
+
                         #[cfg(feature = "tracing")]
                         tracing::trace!("accepting new connection");
 

@@ -18,6 +18,10 @@ path = "src/axum.rs"
 name = "scuffle-http-simple-service"
 path = "src/simple_service.rs"
 
+[[example]]
+name = "scuffle-http-axum-onion"
+path = "src/axum_onion.rs"
+
 [dev-dependencies]
 axum = { version = "0.8.1", features = ["macros", "ws"] }
 tokio = { version = "1.43.0", features = ["macros", "rt-multi-thread"] }

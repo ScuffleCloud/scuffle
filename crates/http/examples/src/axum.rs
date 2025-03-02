@@ -46,29 +46,15 @@ async fn main() {
         .route("/ws", axum::routing::get(ws))
         .into_make_service();
 
-    // scuffle_http::HttpServer::builder()
-    //     .rustls_config(get_tls_config().expect("failed to load tls config"))
-    //     .tower_make_service_factory(make_service)
-    //     .bind("[::]:443".parse().unwrap())
-    //     .enable_http3(true)
-    //     .build()
-    //     .run()
-    //     .await
-    //     .expect("server failed");
-
-    scuffle_http::backend::arti::ArtiBackend::builder()
-        .service_factory(scuffle_http::service::tower_make_service_factory(make_service))
-        .bind_port(8000)
-        .onion_service_config(
-            scuffle_http::backend::arti::OnionServiceConfigBuilder::default()
-                .nickname("test".parse().unwrap())
-                .build()
-                .unwrap(),
-        )
+    scuffle_http::HttpServer::builder()
+        .rustls_config(get_tls_config().expect("failed to load tls config"))
+        .tower_make_service_factory(make_service)
+        .bind("[::]:443".parse().unwrap())
+        .enable_http3(true)
         .build()
         .run()
         .await
-        .unwrap();
+        .expect("server failed");
 }
 
 pub fn get_tls_config() -> io::Result<rustls::ServerConfig> {

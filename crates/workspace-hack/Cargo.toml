@@ -26,7 +26,6 @@ crossbeam-utils = { version = "0.8" }
 digest = { version = "0.10", features = ["mac", "oid", "std"] }
 either = { version = "1" }
 fastrand = { version = "2" }
-form_urlencoded = { version = "1" }
 futures = { version = "0.3" }
 futures-channel = { version = "0.3", features = ["sink"] }
 futures-core = { version = "0.3" }
@@ -61,7 +60,7 @@ regex = { version = "1", default-features = false, features = ["std", "unicode"]
 regex-automata = { version = "0.4", default-features = false, features = ["dfa-search", "meta", "std", "unicode"] }
 regex-syntax = { version = "0.8", default-features = false, features = ["std", "unicode"] }
 reqwest = { version = "0.12", default-features = false, features = ["http2", "http3", "rustls-tls"] }
-rustls = { version = "0.23", features = ["aws-lc-rs"] }
+rustls = { version = "0.23", features = ["aws-lc-rs", "ring"] }
 rusty_ffmpeg = { version = "0.16", default-features = false, features = ["link_system_ffmpeg", "link_vcpkg_ffmpeg"] }
 scopeguard = { version = "1" }
 semver = { version = "1", features = ["serde"] }
@@ -99,7 +98,6 @@ digest = { version = "0.10", features = ["mac", "oid", "std"] }
 displaydoc = { version = "0.2" }
 either = { version = "1" }
 fastrand = { version = "2" }
-form_urlencoded = { version = "1" }
 futures = { version = "0.3" }
 futures-channel = { version = "0.3", features = ["sink"] }
 futures-core = { version = "0.3" }
@@ -135,7 +133,7 @@ regex = { version = "1", default-features = false, features = ["std", "unicode"]
 regex-automata = { version = "0.4", default-features = false, features = ["dfa-search", "meta", "std", "unicode"] }
 regex-syntax = { version = "0.8", default-features = false, features = ["std", "unicode"] }
 reqwest = { version = "0.12", default-features = false, features = ["http2", "http3", "rustls-tls"] }
-rustls = { version = "0.23", features = ["aws-lc-rs"] }
+rustls = { version = "0.23", features = ["aws-lc-rs", "ring"] }
 rusty_ffmpeg = { version = "0.16", default-features = false, features = ["link_system_ffmpeg", "link_vcpkg_ffmpeg"] }
 scopeguard = { version = "1" }
 semver = { version = "1", features = ["serde"] }
@@ -172,7 +170,6 @@ once_cell = { version = "1" }
 quinn = { version = "0.11", default-features = false, features = ["futures-io", "log", "platform-verifier", "runtime-tokio", "rustls", "rustls-aws-lc-rs"] }
 quinn-proto = { version = "0.11", default-features = false, features = ["log", "platform-verifier", "rustls-aws-lc-rs", "rustls-ring"] }
 quinn-udp = { version = "0.5", default-features = false, features = ["log"] }
-rustls = { version = "0.23", default-features = false, features = ["ring"] }
 rustls-webpki = { version = "0.102", default-features = false, features = ["aws_lc_rs", "ring", "std"] }
 stable_deref_trait = { version = "1" }
 tokio-rustls = { version = "0.26", default-features = false, features = ["aws_lc_rs", "logging", "ring", "tls12"] }
@@ -193,7 +190,6 @@ once_cell = { version = "1" }
 quinn = { version = "0.11", default-features = false, features = ["futures-io", "log", "platform-verifier", "runtime-tokio", "rustls", "rustls-aws-lc-rs"] }
 quinn-proto = { version = "0.11", default-features = false, features = ["log", "platform-verifier", "rustls-aws-lc-rs", "rustls-ring"] }
 quinn-udp = { version = "0.5", default-features = false, features = ["log"] }
-rustls = { version = "0.23", default-features = false, features = ["ring"] }
 rustls-webpki = { version = "0.102", default-features = false, features = ["aws_lc_rs", "ring", "std"] }
 stable_deref_trait = { version = "1" }
 tokio-rustls = { version = "0.26", default-features = false, features = ["aws_lc_rs", "logging", "ring", "tls12"] }
@@ -213,7 +209,6 @@ once_cell = { version = "1" }
 quinn = { version = "0.11", default-features = false, features = ["futures-io", "log", "platform-verifier", "runtime-tokio", "rustls", "rustls-aws-lc-rs"] }
 quinn-proto = { version = "0.11", default-features = false, features = ["log", "platform-verifier", "rustls-aws-lc-rs", "rustls-ring"] }
 quinn-udp = { version = "0.5", default-features = false, features = ["log"] }
-rustls = { version = "0.23", default-features = false, features = ["ring"] }
 rustls-webpki = { version = "0.102", default-features = false, features = ["aws_lc_rs", "ring", "std"] }
 stable_deref_trait = { version = "1" }
 tokio-rustls = { version = "0.26", default-features = false, features = ["aws_lc_rs", "logging", "ring", "tls12"] }
@@ -234,7 +229,6 @@ once_cell = { version = "1" }
 quinn = { version = "0.11", default-features = false, features = ["futures-io", "log", "platform-verifier", "runtime-tokio", "rustls", "rustls-aws-lc-rs"] }
 quinn-proto = { version = "0.11", default-features = false, features = ["log", "platform-verifier", "rustls-aws-lc-rs", "rustls-ring"] }
 quinn-udp = { version = "0.5", default-features = false, features = ["log"] }
-rustls = { version = "0.23", default-features = false, features = ["ring"] }
 rustls-webpki = { version = "0.102", default-features = false, features = ["aws_lc_rs", "ring", "std"] }
 stable_deref_trait = { version = "1" }
 tokio-rustls = { version = "0.26", default-features = false, features = ["aws_lc_rs", "logging", "ring", "tls12"] }
@@ -254,7 +248,6 @@ once_cell = { version = "1" }
 quinn = { version = "0.11", default-features = false, features = ["futures-io", "log", "platform-verifier", "runtime-tokio", "rustls", "rustls-aws-lc-rs"] }
 quinn-proto = { version = "0.11", default-features = false, features = ["log", "platform-verifier", "rustls-aws-lc-rs", "rustls-ring"] }
 quinn-udp = { version = "0.5", default-features = false, features = ["log"] }
-rustls = { version = "0.23", default-features = false, features = ["ring"] }
 rustls-webpki = { version = "0.102", default-features = false, features = ["aws_lc_rs", "ring", "std"] }
 stable_deref_trait = { version = "1" }
 tokio-rustls = { version = "0.26", default-features = false, features = ["aws_lc_rs", "logging", "ring", "tls12"] }
@@ -275,7 +268,6 @@ once_cell = { version = "1" }
 quinn = { version = "0.11", default-features = false, features = ["futures-io", "log", "platform-verifier", "runtime-tokio", "rustls", "rustls-aws-lc-rs"] }
 quinn-proto = { version = "0.11", default-features = false, features = ["log", "platform-verifier", "rustls-aws-lc-rs", "rustls-ring"] }
 quinn-udp = { version = "0.5", default-features = false, features = ["log"] }
-rustls = { version = "0.23", default-features = false, features = ["ring"] }
 rustls-webpki = { version = "0.102", default-features = false, features = ["aws_lc_rs", "ring", "std"] }
 stable_deref_trait = { version = "1" }
 tokio-rustls = { version = "0.26", default-features = false, features = ["aws_lc_rs", "logging", "ring", "tls12"] }
@@ -295,7 +287,6 @@ once_cell = { version = "1" }
 quinn = { version = "0.11", default-features = false, features = ["futures-io", "log", "platform-verifier", "runtime-tokio", "rustls", "rustls-aws-lc-rs"] }
 quinn-proto = { version = "0.11", default-features = false, features = ["log", "platform-verifier", "rustls-aws-lc-rs", "rustls-ring"] }
 quinn-udp = { version = "0.5", default-features = false, features = ["log"] }
-rustls = { version = "0.23", default-features = false, features = ["ring"] }
 rustls-webpki = { version = "0.102", default-features = false, features = ["aws_lc_rs", "ring", "std"] }
 stable_deref_trait = { version = "1" }
 tokio-rustls = { version = "0.26", default-features = false, features = ["aws_lc_rs", "logging", "ring", "tls12"] }
@@ -316,7 +307,6 @@ once_cell = { version = "1" }
 quinn = { version = "0.11", default-features = false, features = ["futures-io", "log", "platform-verifier", "runtime-tokio", "rustls", "rustls-aws-lc-rs"] }
 quinn-proto = { version = "0.11", default-features = false, features = ["log", "platform-verifier", "rustls-aws-lc-rs", "rustls-ring"] }
 quinn-udp = { version = "0.5", default-features = false, features = ["log"] }
-rustls = { version = "0.23", default-features = false, features = ["ring"] }
 rustls-webpki = { version = "0.102", default-features = false, features = ["aws_lc_rs", "ring", "std"] }
 stable_deref_trait = { version = "1" }
 tokio-rustls = { version = "0.26", default-features = false, features = ["aws_lc_rs", "logging", "ring", "tls12"] }
@@ -330,12 +320,11 @@ hyper-util = { version = "0.1", default-features = false, features = ["client-le
 quinn = { version = "0.11", default-features = false, features = ["futures-io", "log", "platform-verifier", "runtime-tokio", "rustls", "rustls-aws-lc-rs"] }
 quinn-proto = { version = "0.11", default-features = false, features = ["log", "platform-verifier", "rustls-aws-lc-rs", "rustls-ring"] }
 quinn-udp = { version = "0.5", default-features = false, features = ["log"] }
-rustls = { version = "0.23", default-features = false, features = ["ring"] }
 rustls-webpki = { version = "0.102", default-features = false, features = ["aws_lc_rs", "ring", "std"] }
 tokio-rustls = { version = "0.26", default-features = false, features = ["aws_lc_rs", "logging", "ring", "tls12"] }
 tower = { version = "0.5", default-features = false, features = ["timeout"] }
-winapi = { version = "0.3", default-features = false, features = ["consoleapi", "errhandlingapi", "fileapi", "handleapi", "minwinbase", "minwindef", "processenv", "processthreadsapi", "synchapi", "winbase", "winerror", "winnt"] }
-windows-sys-73dcd821b1037cfd = { package = "windows-sys", version = "0.59", features = ["Win32_Globalization", "Win32_Networking_WinSock", "Win32_Security_Authentication_Identity", "Win32_Security_Credentials", "Win32_Security_Cryptography", "Win32_Storage_FileSystem", "Win32_System_Com", "Win32_System_Console", "Win32_System_IO", "Win32_System_LibraryLoader", "Win32_System_Memory", "Win32_System_SystemInformation", "Win32_UI_Input_KeyboardAndMouse", "Win32_UI_Shell"] }
+winapi = { version = "0.3", default-features = false, features = ["consoleapi", "errhandlingapi", "fileapi", "handleapi", "minwinbase", "minwindef", "ntsecapi", "processenv", "processthreadsapi", "synchapi", "winbase", "winerror", "winnt", "wtypesbase"] }
+windows-sys-73dcd821b1037cfd = { package = "windows-sys", version = "0.59", features = ["Win32_Globalization", "Win32_Networking_WinSock", "Win32_Storage_FileSystem", "Win32_System_Com", "Win32_System_Console", "Win32_System_IO", "Win32_System_SystemInformation", "Win32_UI_Input_KeyboardAndMouse", "Win32_UI_Shell"] }
 windows-sys-b21d60becc0929df = { package = "windows-sys", version = "0.52", features = ["Wdk_Foundation", "Wdk_Storage_FileSystem", "Wdk_System_IO", "Win32_Foundation", "Win32_Networking_WinSock", "Win32_Security_Cryptography", "Win32_Storage_FileSystem", "Win32_System_Console", "Win32_System_IO", "Win32_System_Pipes", "Win32_System_SystemServices", "Win32_System_Threading", "Win32_System_WindowsProgramming"] }
 
 [target.x86_64-pc-windows-msvc.build-dependencies]
@@ -346,12 +335,11 @@ hyper-util = { version = "0.1", default-features = false, features = ["client-le
 quinn = { version = "0.11", default-features = false, features = ["futures-io", "log", "platform-verifier", "runtime-tokio", "rustls", "rustls-aws-lc-rs"] }
 quinn-proto = { version = "0.11", default-features = false, features = ["log", "platform-verifier", "rustls-aws-lc-rs", "rustls-ring"] }
 quinn-udp = { version = "0.5", default-features = false, features = ["log"] }
-rustls = { version = "0.23", default-features = false, features = ["ring"] }
 rustls-webpki = { version = "0.102", default-features = false, features = ["aws_lc_rs", "ring", "std"] }
 tokio-rustls = { version = "0.26", default-features = false, features = ["aws_lc_rs", "logging", "ring", "tls12"] }
 tower = { version = "0.5", default-features = false, features = ["timeout"] }
-winapi = { version = "0.3", default-features = false, features = ["consoleapi", "errhandlingapi", "fileapi", "handleapi", "minwinbase", "minwindef", "processenv", "processthreadsapi", "synchapi", "winbase", "winerror", "winnt"] }
-windows-sys-73dcd821b1037cfd = { package = "windows-sys", version = "0.59", features = ["Win32_Globalization", "Win32_Networking_WinSock", "Win32_Security_Authentication_Identity", "Win32_Security_Credentials", "Win32_Security_Cryptography", "Win32_Storage_FileSystem", "Win32_System_Com", "Win32_System_Console", "Win32_System_IO", "Win32_System_LibraryLoader", "Win32_System_Memory", "Win32_System_SystemInformation", "Win32_UI_Input_KeyboardAndMouse", "Win32_UI_Shell"] }
+winapi = { version = "0.3", default-features = false, features = ["consoleapi", "errhandlingapi", "fileapi", "handleapi", "minwinbase", "minwindef", "ntsecapi", "processenv", "processthreadsapi", "synchapi", "winbase", "winerror", "winnt", "wtypesbase"] }
+windows-sys-73dcd821b1037cfd = { package = "windows-sys", version = "0.59", features = ["Win32_Globalization", "Win32_Networking_WinSock", "Win32_Storage_FileSystem", "Win32_System_Com", "Win32_System_Console", "Win32_System_IO", "Win32_System_SystemInformation", "Win32_UI_Input_KeyboardAndMouse", "Win32_UI_Shell"] }
 windows-sys-b21d60becc0929df = { package = "windows-sys", version = "0.52", features = ["Wdk_Foundation", "Wdk_Storage_FileSystem", "Wdk_System_IO", "Win32_Foundation", "Win32_Networking_WinSock", "Win32_Security_Cryptography", "Win32_Storage_FileSystem", "Win32_System_Console", "Win32_System_IO", "Win32_System_Pipes", "Win32_System_SystemServices", "Win32_System_Threading", "Win32_System_WindowsProgramming"] }
 
 [target.x86_64-pc-windows-gnu.dependencies]
@@ -361,12 +349,11 @@ hyper-util = { version = "0.1", default-features = false, features = ["client-le
 quinn = { version = "0.11", default-features = false, features = ["futures-io", "log", "platform-verifier", "runtime-tokio", "rustls", "rustls-aws-lc-rs"] }
 quinn-proto = { version = "0.11", default-features = false, features = ["log", "platform-verifier", "rustls-aws-lc-rs", "rustls-ring"] }
 quinn-udp = { version = "0.5", default-features = false, features = ["log"] }
-rustls = { version = "0.23", default-features = false, features = ["ring"] }
 rustls-webpki = { version = "0.102", default-features = false, features = ["aws_lc_rs", "ring", "std"] }
 tokio-rustls = { version = "0.26", default-features = false, features = ["aws_lc_rs", "logging", "ring", "tls12"] }
 tower = { version = "0.5", default-features = false, features = ["timeout"] }
-winapi = { version = "0.3", default-features = false, features = ["consoleapi", "errhandlingapi", "fileapi", "handleapi", "minwinbase", "minwindef", "processenv", "processthreadsapi", "synchapi", "winbase", "winerror", "winnt"] }
-windows-sys-73dcd821b1037cfd = { package = "windows-sys", version = "0.59", features = ["Win32_Globalization", "Win32_Networking_WinSock", "Win32_Security_Authentication_Identity", "Win32_Security_Credentials", "Win32_Security_Cryptography", "Win32_Storage_FileSystem", "Win32_System_Com", "Win32_System_Console", "Win32_System_IO", "Win32_System_LibraryLoader", "Win32_System_Memory", "Win32_System_SystemInformation", "Win32_UI_Input_KeyboardAndMouse", "Win32_UI_Shell"] }
+winapi = { version = "0.3", default-features = false, features = ["consoleapi", "errhandlingapi", "fileapi", "handleapi", "minwinbase", "minwindef", "ntsecapi", "processenv", "processthreadsapi", "synchapi", "winbase", "winerror", "winnt", "wtypesbase"] }
+windows-sys-73dcd821b1037cfd = { package = "windows-sys", version = "0.59", features = ["Win32_Globalization", "Win32_Networking_WinSock", "Win32_Storage_FileSystem", "Win32_System_Com", "Win32_System_Console", "Win32_System_IO", "Win32_System_SystemInformation", "Win32_UI_Input_KeyboardAndMouse", "Win32_UI_Shell"] }
 windows-sys-b21d60becc0929df = { package = "windows-sys", version = "0.52", features = ["Wdk_Foundation", "Wdk_Storage_FileSystem", "Wdk_System_IO", "Win32_Foundation", "Win32_Networking_WinSock", "Win32_Security_Cryptography", "Win32_Storage_FileSystem", "Win32_System_Console", "Win32_System_IO", "Win32_System_Pipes", "Win32_System_SystemServices", "Win32_System_Threading", "Win32_System_WindowsProgramming"] }
 
 [target.x86_64-pc-windows-gnu.build-dependencies]
@@ -377,12 +364,11 @@ hyper-util = { version = "0.1", default-features = false, features = ["client-le
 quinn = { version = "0.11", default-features = false, features = ["futures-io", "log", "platform-verifier", "runtime-tokio", "rustls", "rustls-aws-lc-rs"] }
 quinn-proto = { version = "0.11", default-features = false, features = ["log", "platform-verifier", "rustls-aws-lc-rs", "rustls-ring"] }
 quinn-udp = { version = "0.5", default-features = false, features = ["log"] }
-rustls = { version = "0.23", default-features = false, features = ["ring"] }
 rustls-webpki = { version = "0.102", default-features = false, features = ["aws_lc_rs", "ring", "std"] }
 tokio-rustls = { version = "0.26", default-features = false, features = ["aws_lc_rs", "logging", "ring", "tls12"] }
 tower = { version = "0.5", default-features = false, features = ["timeout"] }
-winapi = { version = "0.3", default-features = false, features = ["consoleapi", "errhandlingapi", "fileapi", "handleapi", "minwinbase", "minwindef", "processenv", "processthreadsapi", "synchapi", "winbase", "winerror", "winnt"] }
-windows-sys-73dcd821b1037cfd = { package = "windows-sys", version = "0.59", features = ["Win32_Globalization", "Win32_Networking_WinSock", "Win32_Security_Authentication_Identity", "Win32_Security_Credentials", "Win32_Security_Cryptography", "Win32_Storage_FileSystem", "Win32_System_Com", "Win32_System_Console", "Win32_System_IO", "Win32_System_LibraryLoader", "Win32_System_Memory", "Win32_System_SystemInformation", "Win32_UI_Input_KeyboardAndMouse", "Win32_UI_Shell"] }
+winapi = { version = "0.3", default-features = false, features = ["consoleapi", "errhandlingapi", "fileapi", "handleapi", "minwinbase", "minwindef", "ntsecapi", "processenv", "processthreadsapi", "synchapi", "winbase", "winerror", "winnt", "wtypesbase"] }
+windows-sys-73dcd821b1037cfd = { package = "windows-sys", version = "0.59", features = ["Win32_Globalization", "Win32_Networking_WinSock", "Win32_Storage_FileSystem", "Win32_System_Com", "Win32_System_Console", "Win32_System_IO", "Win32_System_SystemInformation", "Win32_UI_Input_KeyboardAndMouse", "Win32_UI_Shell"] }
 windows-sys-b21d60becc0929df = { package = "windows-sys", version = "0.52", features = ["Wdk_Foundation", "Wdk_Storage_FileSystem", "Wdk_System_IO", "Win32_Foundation", "Win32_Networking_WinSock", "Win32_Security_Cryptography", "Win32_Storage_FileSystem", "Win32_System_Console", "Win32_System_IO", "Win32_System_Pipes", "Win32_System_SystemServices", "Win32_System_Threading", "Win32_System_WindowsProgramming"] }
 
 ### END HAKARI SECTION

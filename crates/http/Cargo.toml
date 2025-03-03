@@ -47,7 +47,7 @@ rustls = { version = "0.23.21", default-features = false, features = ["aws_lc_rs
 tower = { version = "0.5.2", default-features = false, features = ["make"], optional = true }
 
 # Arti
-arti-client = { version = "0.27.0", features = ["onion-service-service"], optional = true }
+arti-client = { version = "0.27.0", default-features = false, features = ["compression", "rustls", "tokio", "onion-service-service"], optional = true }
 tor-hsservice = { version = "0.27.0", optional = true }
 tor-proto = { version = "0.27.0", optional = true }
 tor-cell = { version = "0.27.0", optional = true }

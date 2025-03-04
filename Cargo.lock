@@ -3159,7 +3159,7 @@ dependencies = [
  "scuffle-workspace-hack",
  "serde_json",
  "sha2",
- "thiserror 2.0.11",
+ "thiserror 2.0.12",
  "tokio",
  "tracing",
  "uuid",

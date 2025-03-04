@@ -13,11 +13,8 @@ pub trait SignalConfig: Global {
     /// The signals to listen for.
     ///
     /// By default, listens for `SIGTERM` and `SIGINT`.
-    fn signals(&self) -> Vec<tokio::signal::unix::SignalKind> {
-        vec![
-            tokio::signal::unix::SignalKind::terminate(),
-            tokio::signal::unix::SignalKind::interrupt(),
-        ]
+    fn signals(&self) -> Vec<crate::SignalKind> {
+        vec![crate::SignalKind::Terminate, crate::SignalKind::Interrupt]
     }
 
     /// The timeout before forcing a shutdown.
@@ -33,7 +30,7 @@ pub trait SignalConfig: Global {
     /// Called when the service is force shutting down.
     fn on_force_shutdown(
         &self,
-        signal: Option<tokio::signal::unix::SignalKind>,
+        signal: Option<crate::SignalKind>,
     ) -> impl std::future::Future<Output = anyhow::Result<()>> + Send {
         let err = if let Some(signal) = signal {
             anyhow::anyhow!("received signal, shutting down immediately: {:?}", signal)
@@ -90,11 +87,9 @@ mod tests {
     use scuffle_bootstrap::Service;
     use scuffle_bootstrap::global::GlobalWithoutConfig;
     use scuffle_future_ext::FutureExt;
-    use tokio::signal::unix::SignalKind;
 
-    use super::{SignalConfig, SignalSvc};
-    use crate::SignalHandler;
-    use crate::tests::raise_signal;
+    use crate::test::raise_signal;
+    use crate::{SignalConfig, SignalHandler, SignalSvc};
 
     async fn force_shutdown_two_signals<Global: GlobalWithoutConfig + SignalConfig>() {
         let (ctx, handler) = scuffle_context::Context::new();
@@ -111,13 +106,13 @@ mod tests {
         // Wait for the service to start
         tokio::time::sleep(tokio::time::Duration::from_millis(10)).await;
 
-        raise_signal(tokio::signal::unix::SignalKind::interrupt());
+        raise_signal(crate::SignalKind::Interrupt);
         tokio::time::sleep(tokio::time::Duration::from_millis(10)).await;
-        raise_signal(tokio::signal::unix::SignalKind::interrupt());
+        raise_signal(crate::SignalKind::Interrupt);
 
         match result.with_timeout(tokio::time::Duration::from_millis(100)).await {
             Ok(Ok(Err(e))) => {
-                assert_eq!(e.to_string(), "received signal, shutting down immediately: SignalKind(2)");
+                assert_eq!(e.to_string(), "received signal, shutting down immediately: Interrupt");
             }
             _ => panic!("unexpected result"),
         }
@@ -171,7 +166,7 @@ mod tests {
         // Wait for the service to start
         tokio::time::sleep(tokio::time::Duration::from_millis(5)).await;
 
-        raise_signal(tokio::signal::unix::SignalKind::interrupt());
+        raise_signal(crate::SignalKind::Interrupt);
         assert!(result.await.is_ok());
 
         assert!(
@@ -197,7 +192,7 @@ mod tests {
     }
 
     impl SignalConfig for NoSignalsTestGlobal {
-        fn signals(&self) -> Vec<tokio::signal::unix::SignalKind> {
+        fn signals(&self) -> Vec<crate::SignalKind> {
             vec![]
         }
 
@@ -220,12 +215,12 @@ mod tests {
 
         // Make a new handler to catch the raised signal as it is expected to not be
         // caught by the service
-        let mut signal_handler = SignalHandler::new().with_signal(SignalKind::terminate());
+        let mut signal_handler = SignalHandler::new().with_signal(crate::SignalKind::Interrupt);
 
-        raise_signal(tokio::signal::unix::SignalKind::terminate());
+        raise_signal(crate::SignalKind::Interrupt);
 
         // Wait for a signal to be received
-        assert_eq!(signal_handler.recv().await, SignalKind::terminate());
+        assert_eq!(signal_handler.recv().await, crate::SignalKind::Interrupt);
 
         // Expected to timeout
         assert!(result.with_timeout(tokio::time::Duration::from_millis(100)).await.is_err());
@@ -269,7 +264,7 @@ mod tests {
         // Wait for the service to start
         tokio::time::sleep(tokio::time::Duration::from_millis(10)).await;
 
-        raise_signal(tokio::signal::unix::SignalKind::terminate());
+        raise_signal(crate::SignalKind::Interrupt);
 
         match result.with_timeout(tokio::time::Duration::from_millis(100)).await {
             Ok(Ok(Err(e))) => {

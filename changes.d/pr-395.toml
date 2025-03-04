@@ -1,0 +1,5 @@
+[[scuffle-signal]]
+category = "feat"
+description = "add windows support"
+breaking = true
+authors = ["@SimaoMoreira5228"]

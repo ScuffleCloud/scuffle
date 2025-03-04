@@ -9,8 +9,6 @@
 
 A crate designed to provide a more user friendly interface to `tokio::signal`.
 
-Currently only supported on Unix systems. (Windows is planned but not yet implemented)
-
 ## Why do we need this?
 
 The `tokio::signal` module provides a way for us to wait for a signal to be received in a non-blocking way.

@@ -34,8 +34,8 @@ impl Default for ComplexHandshakeServer {
             state: ServerHandshakeState::ReadC0C1,
             c1_digest: Bytes::default(),
             c1_timestamp: 0,
-            version: RtmpVersion::Unknown,
-            requested_version: RtmpVersion::Unknown,
+            version: RtmpVersion::Version3,
+            requested_version: RtmpVersion(0),
             c1_version: 0,
             schema_version: SchemaVersion::Schema0,
         }
@@ -66,11 +66,7 @@ impl ComplexHandshakeServer {
     fn read_c0(&mut self, input: &mut io::Cursor<Bytes>) -> Result<(), HandshakeError> {
         // Version (8 bits): In C0, this field identifies the RTMP version
         //  requested by the client.
-        let requested_version = input.read_u8()?;
-        self.requested_version = match requested_version {
-            3 => RtmpVersion::Version3,
-            _ => RtmpVersion::Unknown,
-        };
+        self.requested_version = RtmpVersion(input.read_u8()?);
 
         // We only support version 3 for now.
         // Therefore we set the version to 3.
@@ -110,7 +106,7 @@ impl ComplexHandshakeServer {
     fn write_s0(&mut self, output: &mut Vec<u8>) -> Result<(), HandshakeError> {
         // The version of the protocol used in the handshake.
         // This server is using version 3 of the protocol.
-        output.write_u8(self.version as u8)?; // 8 bits version
+        output.write_u8(self.version.0)?; // 8 bits version
 
         Ok(())
     }

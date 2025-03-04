@@ -30,6 +30,7 @@ async-trait = "0.1"
 tracing = "0.1"
 thiserror = "2.0"
 
+nutype-enum.workspace = true
 scuffle-amf0.workspace = true
 scuffle-workspace-hack.workspace = true
 scuffle-bytes-util.workspace = true

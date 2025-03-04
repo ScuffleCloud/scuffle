@@ -4,7 +4,7 @@ use bytes::Bytes;
 use scuffle_amf0::{Amf0Encoder, Amf0Value};
 
 use super::errors::NetStreamError;
-use crate::chunk::{Chunk, ChunkEncoder, DefinedChunkStreamID};
+use crate::chunk::{COMMAND_CHUNK_STREAM_ID, Chunk, ChunkEncoder};
 use crate::messages::MessageTypeID;
 
 pub struct NetStreamWriter {}
@@ -13,13 +13,7 @@ impl NetStreamWriter {
     fn write_chunk(encoder: &ChunkEncoder, amf0_writer: Bytes, writer: &mut impl io::Write) -> Result<(), NetStreamError> {
         encoder.write_chunk(
             writer,
-            Chunk::new(
-                DefinedChunkStreamID::Command as u32,
-                0,
-                MessageTypeID::CommandAMF0,
-                0,
-                amf0_writer,
-            ),
+            Chunk::new(COMMAND_CHUNK_STREAM_ID, 0, MessageTypeID::CommandAMF0, 0, amf0_writer),
         )?;
 
         Ok(())

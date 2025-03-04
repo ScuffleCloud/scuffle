@@ -27,8 +27,8 @@ impl Default for SimpleHandshakeServer {
             state: ServerHandshakeState::ReadC0C1,
             c1_bytes: Bytes::new(),
             c1_timestamp: 0,
-            version: RtmpVersion::Unknown,
-            requested_version: RtmpVersion::Unknown,
+            version: RtmpVersion::Version3,
+            requested_version: RtmpVersion(0),
         }
     }
 }
@@ -58,11 +58,7 @@ impl SimpleHandshakeServer {
     fn read_c0(&mut self, input: &mut io::Cursor<Bytes>) -> Result<(), HandshakeError> {
         // Version (8 bits): In C0, this field identifies the RTMP version
         //  requested by the client.
-        let requested_version = input.read_u8()?;
-        self.requested_version = match requested_version {
-            3 => RtmpVersion::Version3,
-            _ => RtmpVersion::Unknown,
-        };
+        self.requested_version = RtmpVersion::from(input.read_u8()?);
 
         // We only support version 3 for now.
         // Therefore we set the version to 3.
@@ -113,7 +109,7 @@ impl SimpleHandshakeServer {
         //  specification is 3. A server that does not recognize the
         //  client’s requested version SHOULD respond with 3. The client MAY
         //  choose to degrade to version 3, or to abandon the handshake.
-        output.write_u8(self.version as u8)?;
+        output.write_u8(self.version.0)?;
 
         Ok(())
     }

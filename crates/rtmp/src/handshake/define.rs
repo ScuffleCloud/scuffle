@@ -1,5 +1,3 @@
-use num_derive::FromPrimitive;
-
 /// The schema version.
 /// For the complex handshake the schema is either 0 or 1.
 /// A chunk is 764 bytes. (1536 - 8) / 2 = 764
@@ -14,13 +12,12 @@ pub enum SchemaVersion {
     Schema1,
 }
 
-/// The RTMP version.
-/// We only support version 3.
-#[derive(Copy, Clone, PartialEq, Eq, FromPrimitive)]
-#[repr(u8)]
-pub enum RtmpVersion {
-    Unknown = 0x0,
-    Version3 = 0x3,
+nutype_enum::nutype_enum! {
+    /// The RTMP version.
+    /// We only support version 3.
+    pub enum RtmpVersion(u8) {
+        Version3 = 0x3,
+    }
 }
 
 /// The state of the handshake.

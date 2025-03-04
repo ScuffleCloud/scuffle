@@ -1,23 +1,14 @@
 use bytes::Bytes;
-use num_derive::FromPrimitive;
 
 use crate::messages::MessageTypeID;
 
-#[derive(Debug, PartialEq, Eq, Clone, Copy, FromPrimitive, Hash)]
-#[repr(u8)]
-/// These channel ids are user defined and are not part of the protocol.
-/// We just have to send different data on different channels.
-/// This is just a easy way to make sure we do not mix up the data.
-pub enum DefinedChunkStreamID {
-    /// ChannelId for sending commands
-    Command = 3,
-    /// ChannelId for sending audio
-    Audio = 4,
-    /// ChannelId for sending video
-    Video = 5,
-}
+// common chunk stream ids
 
-#[derive(Debug, PartialEq, Eq, Clone, Copy, FromPrimitive, Hash)]
+pub const COMMAND_CHUNK_STREAM_ID: u32 = 3;
+pub const AUDIO_CHUNK_STREAM_ID: u32 = 4;
+pub const VIDEO_CHUNK_STREAM_ID: u32 = 5;
+
+#[derive(Debug, PartialEq, Eq, Clone, Copy, num_derive::FromPrimitive, Hash)]
 #[repr(u8)]
 /// A chunk type represents the format of the chunk header.
 pub enum ChunkType {

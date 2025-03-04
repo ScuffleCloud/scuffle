@@ -1,5 +1,4 @@
 use bytes::Bytes;
-use num_derive::FromPrimitive;
 use scuffle_amf0::Amf0Value;
 
 #[derive(Debug)]
@@ -24,7 +23,7 @@ pub enum MessageData<'a> {
     },
 }
 
-#[derive(Debug, PartialEq, Eq, Clone, Copy, FromPrimitive)]
+#[derive(Debug, PartialEq, Eq, Clone, Copy, num_derive::FromPrimitive)]
 #[repr(u8)]
 pub enum MessageTypeID {
     SetChunkSize = 1,

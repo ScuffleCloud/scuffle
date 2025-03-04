@@ -28,6 +28,17 @@ export const theme = {
         rose500: '#F6765F',
         white: '#FFFFFF',
         black: '#000000',
+        tan100: '#B08972',
+        tan200: '#CFB6AA',
+        tan300: '#D9C3B9',
+        tan400: '#E4D5CE',
+        tan500: '#EADFDA',
+        tan600: '#EEE5E1',
+        tan700: '#F1EAE7',
+        tan800: '#F7F0ED',
+        tan850: '#FAF5F1',
+        tan900: '#FEFAF7',
+        tan950: '#FEFCFB',
     },
 } as const;
 

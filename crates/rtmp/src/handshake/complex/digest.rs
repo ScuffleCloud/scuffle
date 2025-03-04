@@ -4,7 +4,7 @@ use sha2::Sha256;
 
 use super::define;
 use super::define::SchemaVersion;
-use super::errors::DigestError;
+use crate::handshake::errors::DigestError;
 
 /// A digest processor.
 ///

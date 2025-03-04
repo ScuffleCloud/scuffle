@@ -8,7 +8,7 @@ use num_traits::FromPrimitive;
 
 use super::define::{Chunk, ChunkBasicHeader, ChunkMessageHeader, ChunkType, INIT_CHUNK_SIZE, MAX_CHUNK_SIZE};
 use super::errors::ChunkDecodeError;
-use crate::messages::MessageTypeID;
+use crate::messages::MessageTypeId;
 
 // These constants are used to limit the amount of memory we use for partial
 // chunks on normal operations we should never hit these limits
@@ -299,7 +299,7 @@ impl ChunkDecoder {
                 // We validate the message type id. If it is invalid we return an error. (this
                 // is a real error)
                 let msg_type_id =
-                    MessageTypeID::from_u8(msg_type_id).ok_or(ChunkDecodeError::InvalidMessageTypeID(msg_type_id))?;
+                    MessageTypeId::from_u8(msg_type_id).ok_or(ChunkDecodeError::InvalidMessageTypeID(msg_type_id))?;
 
                 // We then read the message stream id. (According to spec this is stored in
                 // LittleEndian, no idea why.)
@@ -346,7 +346,7 @@ impl ChunkDecoder {
                 // We validate the message type id. If it is invalid we return an error. (this
                 // is a real error)
                 let msg_type_id =
-                    MessageTypeID::from_u8(msg_type_id).ok_or(ChunkDecodeError::InvalidMessageTypeID(msg_type_id))?;
+                    MessageTypeId::from_u8(msg_type_id).ok_or(ChunkDecodeError::InvalidMessageTypeID(msg_type_id))?;
 
                 // Again as mentioned above we sometimes have a delta timestamp larger than 3
                 // bytes.

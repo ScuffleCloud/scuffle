@@ -20,7 +20,7 @@ use crate::netconnection::NetConnection;
 use crate::netstream::NetStreamWriter;
 use crate::protocol_control_messages::{
     ProtocolControlMessageSetChunkSize, ProtocolControlMessageSetPeerBandwidth,
-    ProtocolControlMessageWindowAcknowledgementSize,
+    ProtocolControlMessageSetPeerBandwidthLimitType, ProtocolControlMessageWindowAcknowledgementSize,
 };
 use crate::user_control_messages::EventMessagesWriter;
 
@@ -230,7 +230,7 @@ impl<S: tokio::io::AsyncRead + tokio::io::AsyncWrite + Unpin, H: SessionHandler>
                 self.on_amf0_command_message(stream_id, command_name, transaction_id, command_object, others)
                     .await?
             }
-            MessageData::SetChunkSize { chunk_size } => {
+            MessageData::SetChunkSize(ProtocolControlMessageSetChunkSize { chunk_size }) => {
                 self.on_set_chunk_size(chunk_size as usize)?;
             }
             MessageData::AudioData { data } => {
@@ -246,6 +246,7 @@ impl<S: tokio::io::AsyncRead + tokio::io::AsyncWrite + Unpin, H: SessionHandler>
             MessageData::Amf0Data { data } => {
                 self.handler.on_data(stream_id, SessionData::Amf0 { timestamp, data }).await?;
             }
+            _ => {}
         }
 
         Ok(())
@@ -253,7 +254,10 @@ impl<S: tokio::io::AsyncRead + tokio::io::AsyncWrite + Unpin, H: SessionHandler>
 
     /// Set the server chunk size to the client
     async fn send_set_chunk_size(&mut self) -> Result<(), SessionError> {
-        ProtocolControlMessageSetChunkSize(CHUNK_SIZE as u32).write(&self.chunk_encoder, &mut self.write_buf)?;
+        ProtocolControlMessageSetChunkSize {
+            chunk_size: CHUNK_SIZE as u32,
+        }
+        .write(&self.chunk_encoder, &mut self.write_buf)?;
         self.chunk_encoder.set_chunk_size(CHUNK_SIZE);
 
         Ok(())
@@ -329,12 +333,14 @@ impl<S: tokio::io::AsyncRead + tokio::io::AsyncWrite + Unpin, H: SessionHandler>
         command_obj: &[(Cow<'_, str>, Amf0Value<'_>)],
         _others: Vec<Amf0Value<'_>>,
     ) -> Result<(), SessionError> {
-        ProtocolControlMessageWindowAcknowledgementSize(CHUNK_SIZE as u32)
-            .write(&self.chunk_encoder, &mut self.write_buf)?;
+        ProtocolControlMessageWindowAcknowledgementSize {
+            acknowledgement_window_size: CHUNK_SIZE as u32,
+        }
+        .write(&self.chunk_encoder, &mut self.write_buf)?;
 
         ProtocolControlMessageSetPeerBandwidth {
-            window_size: CHUNK_SIZE as u32,
-            limit_type: 2, // 2 = dynamic
+            acknowledgement_window_size: CHUNK_SIZE as u32,
+            limit_type: ProtocolControlMessageSetPeerBandwidthLimitType::Dynamic,
         }
         .write(&self.chunk_encoder, &mut self.write_buf)?;
 

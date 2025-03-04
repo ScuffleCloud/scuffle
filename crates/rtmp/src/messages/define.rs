@@ -1,8 +1,18 @@
 use bytes::Bytes;
 use scuffle_amf0::Amf0Value;
 
+use crate::protocol_control_messages::{
+    ProtocolControlMessageSetChunkSize, ProtocolControlMessageSetPeerBandwidth,
+    ProtocolControlMessageWindowAcknowledgementSize,
+};
+
 #[derive(Debug)]
 pub enum MessageData<'a> {
+    // Protocol Control Messages
+    SetChunkSize(ProtocolControlMessageSetChunkSize),
+    WindowAcknowledgementSize(ProtocolControlMessageWindowAcknowledgementSize),
+    SetPeerBandwidth(ProtocolControlMessageSetPeerBandwidth),
+    // RTMP Command Messages
     Amf0Command {
         command_name: Amf0Value<'a>,
         transaction_id: Amf0Value<'a>,
@@ -11,9 +21,6 @@ pub enum MessageData<'a> {
     },
     Amf0Data {
         data: Bytes,
-    },
-    SetChunkSize {
-        chunk_size: u32,
     },
     AudioData {
         data: Bytes,
@@ -25,13 +32,15 @@ pub enum MessageData<'a> {
 
 #[derive(Debug, PartialEq, Eq, Clone, Copy, num_derive::FromPrimitive)]
 #[repr(u8)]
-pub enum MessageTypeID {
+pub enum MessageTypeId {
+    // Protocol Control Messages
     SetChunkSize = 1,
     Abort = 2,
     Acknowledgement = 3,
     UserControlEvent = 4,
     WindowAcknowledgementSize = 5,
     SetPeerBandwidth = 6,
+    // RTMP Command Messages
     Audio = 8,
     Video = 9,
     DataAMF3 = 15,

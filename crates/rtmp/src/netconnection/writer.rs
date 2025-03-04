@@ -5,7 +5,7 @@ use scuffle_amf0::{Amf0Encoder, Amf0Value};
 
 use super::errors::NetConnectionError;
 use crate::chunk::{COMMAND_CHUNK_STREAM_ID, Chunk, ChunkEncoder};
-use crate::messages::MessageTypeID;
+use crate::messages::MessageTypeId;
 
 pub struct NetConnection;
 
@@ -13,7 +13,7 @@ impl NetConnection {
     fn write_chunk(encoder: &ChunkEncoder, amf0: Bytes, writer: &mut impl io::Write) -> Result<(), NetConnectionError> {
         encoder.write_chunk(
             writer,
-            Chunk::new(COMMAND_CHUNK_STREAM_ID, 0, MessageTypeID::CommandAMF0, 0, amf0),
+            Chunk::new(COMMAND_CHUNK_STREAM_ID, 0, MessageTypeId::CommandAMF0, 0, amf0),
         )?;
 
         Ok(())

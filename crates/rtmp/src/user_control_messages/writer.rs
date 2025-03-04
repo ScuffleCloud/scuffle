@@ -5,7 +5,7 @@ use byteorder::{BigEndian, WriteBytesExt};
 use super::define;
 use super::errors::EventMessagesError;
 use crate::chunk::{Chunk, ChunkEncoder};
-use crate::messages::MessageTypeID;
+use crate::messages::MessageTypeId;
 
 pub struct EventMessagesWriter;
 
@@ -21,7 +21,7 @@ impl EventMessagesWriter {
             .expect("write u16");
         data.write_u32::<BigEndian>(stream_id).expect("write u32");
 
-        encoder.write_chunk(writer, Chunk::new(0x02, 0, MessageTypeID::UserControlEvent, 0, data.into()))?;
+        encoder.write_chunk(writer, Chunk::new(0x02, 0, MessageTypeId::UserControlEvent, 0, data.into()))?;
 
         Ok(())
     }

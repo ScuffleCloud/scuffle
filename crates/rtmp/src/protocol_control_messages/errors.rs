@@ -8,6 +8,8 @@ pub enum ProtocolControlMessageError {
     Io(#[from] io::Error),
     #[error("chunk encode error: {0}")]
     ChunkEncode(#[from] ChunkEncodeError),
+    #[error("invalid limit type: {0}")]
+    InvalidLimitType(u8),
 }
 
 #[cfg(test)]

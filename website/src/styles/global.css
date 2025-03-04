@@ -1,0 +1,74 @@
+/* Put */
+:root {
+    --font-body: 'Archivo Variable', sans-serif;
+    --color-text: var(--color-brown800);
+    font-size: 16px;
+
+    /* Default font */
+    font-family: var(--font-body);
+    color: var(--color-text);
+    --layout-width: 70rem;
+    --layout-padding: 2rem;
+    --mobile-width: 768px;
+}
+
+* {
+    box-sizing: border-box;
+}
+
+html,
+body {
+    overscroll-behavior: auto;
+    background-color: #fcf3f0;
+}
+
+h1,
+h2,
+h3,
+hr,
+p {
+    margin: 0;
+}
+
+h1 {
+    font-size: 4rem;
+}
+
+h2 {
+    font-size: 2.5rem;
+}
+
+h3 {
+    font-size: 1.5rem;
+}
+
+body {
+    margin: 0;
+    background-size: 100vw 100vh;
+    overflow: auto;
+    height: 100%;
+}
+
+p {
+    line-height: 1.5;
+}
+
+a {
+    color: var(--color-text);
+    text-decoration: none;
+}
+
+a:hover {
+    text-decoration: underline;
+}
+
+input,
+button {
+    font-size: inherit;
+    font-family: inherit;
+}
+
+/* Preserve focus outline when the button is focused via keyboard navigation but not on click */
+button:focus:not(:focus-visible) {
+    outline: none;
+}

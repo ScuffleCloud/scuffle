@@ -27,10 +27,9 @@ pub struct ChunkDecoder {
     /// chunk header)
     previous_chunk_headers: HashMap<u32, ChunkMessageHeader>,
 
-    /// Technically according to the spec, we can have multiple message_streams
-    /// in a single chunk_stream Because of this we actually have to have a map
-    /// of chunk streams to message streams to bytes The first u32 is the chunk
-    /// stream id, the second is the message stream id
+    /// Technically according to the spec, we can have multiple message streams
+    /// in a single chunk stream. Because of this the key of this map is a tuple
+    /// (chunk stream id, message stream id).
     partial_chunks: HashMap<(u32, u32), BytesMut>,
 
     /// This is the max chunk size that the client has specified.
@@ -49,10 +48,13 @@ impl Default for ChunkDecoder {
 }
 
 impl ChunkDecoder {
-    /// Sometimes a client will request a chunk size change.
+    /// Call when a client requests a chunk size change.
+    ///
+    /// Returns `false` if the chunk size is out of bounds.
+    /// The connection should be closed in this case.
     pub fn update_max_chunk_size(&mut self, chunk_size: usize) -> bool {
         // We need to make sure that the chunk size is within the allowed range.
-        // Returning false here will close the connection.
+        // Returning false here should close the connection.
         if !(INIT_CHUNK_SIZE..=MAX_CHUNK_SIZE).contains(&chunk_size) {
             false
         } else {
@@ -62,9 +64,16 @@ impl ChunkDecoder {
     }
 
     /// This function is used to read a chunk from the buffer.
-    /// - will return Ok(None) if the buffer is empty.
-    /// - will return Ok(Some(Chunk)) if we have a full chunk.
-    /// - Err(UnpackError) if we have an error. This will close the connection.
+    ///
+    /// Returns:
+    /// - `Ok(None)` if the buffer does not contain enough data to read a full chunk.
+    /// - `Ok(Some(Chunk))` if a full chunk is read.
+    /// - `Err(ChunkDecodeError)` if there is an error decoding a chunk. The connection should be closed.
+    ///
+    /// # See also
+    ///
+    /// - [`Chunk`]
+    /// - [`ChunkDecodeError`]
     pub fn read_chunk(&mut self, buffer: &mut BytesMut) -> Result<Option<Chunk>, ChunkDecodeError> {
         // We do this in a loop because we may have multiple chunks in the buffer,
         // And those chunks may be partial chunks thus we need to keep reading until we

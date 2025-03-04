@@ -13,7 +13,8 @@ use super::errors::SessionError;
 use super::handler::SessionData;
 use crate::chunk::{CHUNK_SIZE, ChunkDecoder, ChunkEncoder};
 use crate::handshake;
-use crate::handshake::{HandshakeServer, ServerHandshakeState};
+use crate::handshake::HandshakeServer;
+use crate::handshake::define::ServerHandshakeState;
 use crate::messages::{MessageParser, RtmpMessageData};
 use crate::netconnection::NetConnection;
 use crate::netstream::NetStreamWriter;
@@ -125,7 +126,7 @@ impl<S: tokio::io::AsyncRead + tokio::io::AsyncWrite + Unpin, H: SessionHandler>
     /// If the handshake is not complete yet, this function should be called again.
     async fn drive_handshake(&mut self, handshaker: &mut HandshakeServer) -> Result<bool, SessionError> {
         // Read the handshake data + 1 byte for the version
-        const READ_SIZE: usize = handshake::RTMP_HANDSHAKE_SIZE + 1;
+        const READ_SIZE: usize = handshake::define::RTMP_HANDSHAKE_SIZE + 1;
         self.read_buf.reserve(READ_SIZE);
 
         let mut bytes_read = 0;

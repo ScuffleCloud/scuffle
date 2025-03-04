@@ -15,7 +15,7 @@ importers:
         specifier: ^3.0.8
         version: 3.0.8(@sveltejs/kit@2.17.3(@sveltejs/vite-plugin-svelte@5.0.3(svelte@5.21.0)(vite@6.2.0))(svelte@5.21.0)(vite@6.2.0))
       '@sveltejs/kit':
-        specifier: ^2.0.0
+        specifier: ^2.16.0
         version: 2.17.3(@sveltejs/vite-plugin-svelte@5.0.3(svelte@5.21.0)(vite@6.2.0))(svelte@5.21.0)(vite@6.2.0)
       '@sveltejs/vite-plugin-svelte':
         specifier: ^5.0.3
@@ -23,9 +23,6 @@ importers:
       eslint:
         specifier: ^9.21.0
         version: 9.21.0
-      eslint-config-prettier:
-        specifier: ^10.0.2
-        version: 10.0.2(eslint@9.21.0)
       eslint-plugin-svelte:
         specifier: ^3.0.2
         version: 3.0.2(eslint@9.21.0)(svelte@5.21.0)
@@ -54,7 +51,7 @@ importers:
         specifier: ^5.7.2
         version: 5.8.2
       typescript-eslint:
-        specifier: ^8.17.0
+        specifier: ^8.26.0
         version: 8.26.0(eslint@9.21.0)(typescript@5.8.2)
       vite:
         specifier: 6.2.0
@@ -687,12 +684,6 @@ packages:
     engines: {node: '>=12'}
     peerDependencies:
       eslint: '>=6.0.0'
-
-  eslint-config-prettier@10.0.2:
-    resolution: {integrity: sha512-1105/17ZIMjmCOJOPNfVdbXafLCLj3hPmkmB7dLgt7XsQ/zkxSuDerE/xgO3RxoHysR1N1whmquY0lSn2O0VLg==}
-    hasBin: true
-    peerDependencies:
-      eslint: '>=7.0.0'
 
   eslint-plugin-svelte@3.0.2:
     resolution: {integrity: sha512-+0QglmWNryvXXxRQKzLF3i+AreTsueCw7PBb0nGVBq+F9HoYqAjQeJ/9N6vFAtjMjK3wgsETrLVyBKPdeufN6Q==}
@@ -1877,10 +1868,6 @@ snapshots:
     dependencies:
       eslint: 9.21.0
       semver: 7.7.1
-
-  eslint-config-prettier@10.0.2(eslint@9.21.0):
-    dependencies:
-      eslint: 9.21.0
 
   eslint-plugin-svelte@3.0.2(eslint@9.21.0)(svelte@5.21.0):
     dependencies:

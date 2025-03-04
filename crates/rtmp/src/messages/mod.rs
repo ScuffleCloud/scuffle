@@ -2,6 +2,5 @@ mod define;
 mod errors;
 mod parser;
 
-pub use self::define::{MessageTypeID, RtmpMessageData};
+pub use self::define::{MessageData, MessageTypeID};
 pub use self::errors::MessageError;
-pub use self::parser::MessageParser;

@@ -3,7 +3,7 @@ use num_derive::FromPrimitive;
 use scuffle_amf0::Amf0Value;
 
 #[derive(Debug)]
-pub enum RtmpMessageData<'a> {
+pub enum MessageData<'a> {
     Amf0Command {
         command_name: Amf0Value<'a>,
         transaction_id: Amf0Value<'a>,

@@ -2,15 +2,14 @@ use std::io::Cursor;
 
 use byteorder::{BigEndian, ReadBytesExt};
 
+use super::define::ProtocolControlMessageSetChunkSize;
 use super::errors::ProtocolControlMessageError;
 
-pub struct ProtocolControlMessageReader;
-
-impl ProtocolControlMessageReader {
-    pub fn read_set_chunk_size(data: &[u8]) -> Result<u32, ProtocolControlMessageError> {
+impl ProtocolControlMessageSetChunkSize {
+    pub fn read(data: &[u8]) -> Result<ProtocolControlMessageSetChunkSize, ProtocolControlMessageError> {
         let mut cursor = Cursor::new(data);
         let chunk_size = cursor.read_u32::<BigEndian>()?;
-        Ok(chunk_size)
+        Ok(ProtocolControlMessageSetChunkSize(chunk_size))
     }
 }
 
@@ -22,7 +21,7 @@ mod tests {
     #[test]
     fn test_reader_read_set_chunk_size() {
         let data = vec![0x00, 0x00, 0x00, 0x01];
-        let chunk_size = ProtocolControlMessageReader::read_set_chunk_size(&data).unwrap();
-        assert_eq!(chunk_size, 1);
+        let chunk_size = ProtocolControlMessageSetChunkSize::read(&data).unwrap();
+        assert_eq!(chunk_size.0, 1);
     }
 }

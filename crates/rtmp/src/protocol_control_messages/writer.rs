@@ -3,20 +3,18 @@ use std::io;
 use byteorder::{BigEndian, WriteBytesExt};
 use bytes::Bytes;
 
+use super::define::{
+    ProtocolControlMessageSetChunkSize, ProtocolControlMessageSetPeerBandwidth,
+    ProtocolControlMessageWindowAcknowledgementSize,
+};
 use super::errors::ProtocolControlMessageError;
 use crate::chunk::{Chunk, ChunkEncoder};
 use crate::messages::MessageTypeID;
 
-pub struct ProtocolControlMessagesWriter;
-
-impl ProtocolControlMessagesWriter {
-    pub fn write_set_chunk_size(
-        encoder: &ChunkEncoder,
-        writer: &mut impl io::Write,
-        chunk_size: u32, // 31 bits
-    ) -> Result<(), ProtocolControlMessageError> {
+impl ProtocolControlMessageSetChunkSize {
+    pub fn write(&self, encoder: &ChunkEncoder, writer: &mut impl io::Write) -> Result<(), ProtocolControlMessageError> {
         // According to spec the first bit must be 0.
-        let chunk_size = chunk_size & 0x7FFFFFFF; // 31 bits only
+        let chunk_size = self.0 & 0x7FFFFFFF; // 31 bits only
 
         encoder.write_chunk(
             writer,
@@ -31,12 +29,10 @@ impl ProtocolControlMessagesWriter {
 
         Ok(())
     }
+}
 
-    pub fn write_window_acknowledgement_size(
-        encoder: &ChunkEncoder,
-        writer: &mut impl io::Write,
-        window_size: u32,
-    ) -> Result<(), ProtocolControlMessageError> {
+impl ProtocolControlMessageWindowAcknowledgementSize {
+    pub fn write(&self, encoder: &ChunkEncoder, writer: &mut impl io::Write) -> Result<(), ProtocolControlMessageError> {
         encoder.write_chunk(
             writer,
             Chunk::new(
@@ -44,22 +40,20 @@ impl ProtocolControlMessagesWriter {
                 0, // timestamps are ignored
                 MessageTypeID::WindowAcknowledgementSize,
                 0, // message stream id is ignored
-                Bytes::from(window_size.to_be_bytes().to_vec()),
+                Bytes::from(self.0.to_be_bytes().to_vec()),
             ),
         )?;
 
         Ok(())
     }
+}
 
-    pub fn write_set_peer_bandwidth(
-        encoder: &ChunkEncoder,
-        writer: &mut impl io::Write,
-        window_size: u32,
-        limit_type: u8,
-    ) -> Result<(), ProtocolControlMessageError> {
+impl ProtocolControlMessageSetPeerBandwidth {
+    pub fn write(&self, encoder: &ChunkEncoder, writer: &mut impl io::Write) -> Result<(), ProtocolControlMessageError> {
         let mut data = Vec::new();
-        data.write_u32::<BigEndian>(window_size).expect("Failed to write window size");
-        data.write_u8(limit_type).expect("Failed to write limit type");
+        data.write_u32::<BigEndian>(self.window_size)
+            .expect("Failed to write window size");
+        data.write_u8(self.limit_type).expect("Failed to write limit type");
 
         encoder.write_chunk(
             writer,
@@ -89,7 +83,9 @@ mod tests {
         let encoder = ChunkEncoder::default();
         let mut buf = BytesMut::new();
 
-        ProtocolControlMessagesWriter::write_set_chunk_size(&encoder, &mut (&mut buf).writer(), 1).unwrap();
+        ProtocolControlMessageSetChunkSize(1)
+            .write(&encoder, &mut (&mut buf).writer())
+            .unwrap();
 
         let mut decoder = ChunkDecoder::default();
 
@@ -105,7 +101,9 @@ mod tests {
         let encoder = ChunkEncoder::default();
         let mut buf = BytesMut::new();
 
-        ProtocolControlMessagesWriter::write_window_acknowledgement_size(&encoder, &mut (&mut buf).writer(), 1).unwrap();
+        ProtocolControlMessageWindowAcknowledgementSize(1)
+            .write(&encoder, &mut (&mut buf).writer())
+            .unwrap();
 
         let mut decoder = ChunkDecoder::default();
 
@@ -121,7 +119,12 @@ mod tests {
         let encoder = ChunkEncoder::default();
         let mut buf = BytesMut::new();
 
-        ProtocolControlMessagesWriter::write_set_peer_bandwidth(&encoder, &mut (&mut buf).writer(), 1, 2).unwrap();
+        ProtocolControlMessageSetPeerBandwidth {
+            window_size: 1,
+            limit_type: 2,
+        }
+        .write(&encoder, &mut (&mut buf).writer())
+        .unwrap();
 
         let mut decoder = ChunkDecoder::default();
 

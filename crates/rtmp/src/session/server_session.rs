@@ -15,10 +15,13 @@ use crate::chunk::{CHUNK_SIZE, ChunkDecoder, ChunkEncoder};
 use crate::handshake;
 use crate::handshake::HandshakeServer;
 use crate::handshake::define::ServerHandshakeState;
-use crate::messages::{MessageParser, RtmpMessageData};
+use crate::messages::MessageData;
 use crate::netconnection::NetConnection;
 use crate::netstream::NetStreamWriter;
-use crate::protocol_control_messages::ProtocolControlMessagesWriter;
+use crate::protocol_control_messages::{
+    ProtocolControlMessageSetChunkSize, ProtocolControlMessageSetPeerBandwidth,
+    ProtocolControlMessageWindowAcknowledgementSize,
+};
 use crate::user_control_messages::EventMessagesWriter;
 
 pub struct Session<S, H> {
@@ -202,7 +205,7 @@ impl<S: tokio::io::AsyncRead + tokio::io::AsyncWrite + Unpin, H: SessionHandler>
             let timestamp = chunk.message_header.timestamp;
             let msg_stream_id = chunk.message_header.msg_stream_id;
 
-            if let Some(msg) = MessageParser::parse(&chunk)? {
+            if let Some(msg) = MessageData::parse(&chunk)? {
                 self.process_messages(msg, msg_stream_id, timestamp).await?;
             }
         }
@@ -213,12 +216,12 @@ impl<S: tokio::io::AsyncRead + tokio::io::AsyncWrite + Unpin, H: SessionHandler>
     /// Process rtmp messages
     async fn process_messages(
         &mut self,
-        rtmp_msg: RtmpMessageData<'_>,
+        rtmp_msg: MessageData<'_>,
         stream_id: u32,
         timestamp: u32,
     ) -> Result<(), SessionError> {
         match rtmp_msg {
-            RtmpMessageData::Amf0Command {
+            MessageData::Amf0Command {
                 command_name,
                 transaction_id,
                 command_object,
@@ -227,20 +230,20 @@ impl<S: tokio::io::AsyncRead + tokio::io::AsyncWrite + Unpin, H: SessionHandler>
                 self.on_amf0_command_message(stream_id, command_name, transaction_id, command_object, others)
                     .await?
             }
-            RtmpMessageData::SetChunkSize { chunk_size } => {
+            MessageData::SetChunkSize { chunk_size } => {
                 self.on_set_chunk_size(chunk_size as usize)?;
             }
-            RtmpMessageData::AudioData { data } => {
+            MessageData::AudioData { data } => {
                 self.handler
                     .on_data(stream_id, SessionData::Audio { timestamp, data })
                     .await?;
             }
-            RtmpMessageData::VideoData { data } => {
+            MessageData::VideoData { data } => {
                 self.handler
                     .on_data(stream_id, SessionData::Video { timestamp, data })
                     .await?;
             }
-            RtmpMessageData::Amf0Data { data } => {
+            MessageData::Amf0Data { data } => {
                 self.handler.on_data(stream_id, SessionData::Amf0 { timestamp, data }).await?;
             }
         }
@@ -250,7 +253,7 @@ impl<S: tokio::io::AsyncRead + tokio::io::AsyncWrite + Unpin, H: SessionHandler>
 
     /// Set the server chunk size to the client
     async fn send_set_chunk_size(&mut self) -> Result<(), SessionError> {
-        ProtocolControlMessagesWriter::write_set_chunk_size(&self.chunk_encoder, &mut self.write_buf, CHUNK_SIZE as u32)?;
+        ProtocolControlMessageSetChunkSize(CHUNK_SIZE as u32).write(&self.chunk_encoder, &mut self.write_buf)?;
         self.chunk_encoder.set_chunk_size(CHUNK_SIZE);
 
         Ok(())
@@ -326,18 +329,14 @@ impl<S: tokio::io::AsyncRead + tokio::io::AsyncWrite + Unpin, H: SessionHandler>
         command_obj: &[(Cow<'_, str>, Amf0Value<'_>)],
         _others: Vec<Amf0Value<'_>>,
     ) -> Result<(), SessionError> {
-        ProtocolControlMessagesWriter::write_window_acknowledgement_size(
-            &self.chunk_encoder,
-            &mut self.write_buf,
-            CHUNK_SIZE as u32,
-        )?;
+        ProtocolControlMessageWindowAcknowledgementSize(CHUNK_SIZE as u32)
+            .write(&self.chunk_encoder, &mut self.write_buf)?;
 
-        ProtocolControlMessagesWriter::write_set_peer_bandwidth(
-            &self.chunk_encoder,
-            &mut self.write_buf,
-            CHUNK_SIZE as u32,
-            2, // 2 = dynamic
-        )?;
+        ProtocolControlMessageSetPeerBandwidth {
+            window_size: CHUNK_SIZE as u32,
+            limit_type: 2, // 2 = dynamic
+        }
+        .write(&self.chunk_encoder, &mut self.write_buf)?;
 
         let app_name = command_obj.iter().find(|(key, _)| key == "app");
         let app_name = match app_name {

@@ -1,14 +1,12 @@
 use scuffle_amf0::{Amf0Decoder, Amf0Marker};
 
-use super::define::{MessageTypeID, RtmpMessageData};
+use super::define::{MessageData, MessageTypeID};
 use super::errors::MessageError;
 use crate::chunk::Chunk;
-use crate::protocol_control_messages::ProtocolControlMessageReader;
+use crate::protocol_control_messages::ProtocolControlMessageSetChunkSize;
 
-pub struct MessageParser;
-
-impl MessageParser {
-    pub fn parse(chunk: &Chunk) -> Result<Option<RtmpMessageData<'_>>, MessageError> {
+impl MessageData<'_> {
+    pub fn parse(chunk: &Chunk) -> Result<Option<MessageData<'_>>, MessageError> {
         match chunk.message_header.msg_type_id {
             // Protocol Control Messages
             MessageTypeID::CommandAMF0 => {
@@ -22,7 +20,7 @@ impl MessageParser {
 
                 let others = amf_reader.decode_all()?;
 
-                Ok(Some(RtmpMessageData::Amf0Command {
+                Ok(Some(MessageData::Amf0Command {
                     command_name,
                     transaction_id,
                     command_object,
@@ -30,21 +28,22 @@ impl MessageParser {
                 }))
             }
             // Data Messages - AUDIO
-            MessageTypeID::Audio => Ok(Some(RtmpMessageData::AudioData {
+            MessageTypeID::Audio => Ok(Some(MessageData::AudioData {
                 data: chunk.payload.clone(),
             })),
             // Data Messages - VIDEO
-            MessageTypeID::Video => Ok(Some(RtmpMessageData::VideoData {
+            MessageTypeID::Video => Ok(Some(MessageData::VideoData {
                 data: chunk.payload.clone(),
             })),
             // Protocol Control Messages
             MessageTypeID::SetChunkSize => {
-                let chunk_size = ProtocolControlMessageReader::read_set_chunk_size(&chunk.payload)?;
+                let ProtocolControlMessageSetChunkSize(chunk_size) =
+                    ProtocolControlMessageSetChunkSize::read(&chunk.payload)?;
 
-                Ok(Some(RtmpMessageData::SetChunkSize { chunk_size }))
+                Ok(Some(MessageData::SetChunkSize { chunk_size }))
             }
             // Metadata
-            MessageTypeID::DataAMF0 => Ok(Some(RtmpMessageData::Amf0Data {
+            MessageTypeID::DataAMF0 => Ok(Some(MessageData::Amf0Data {
                 data: chunk.payload.clone(),
             })),
             _ => Ok(None),
@@ -74,9 +73,9 @@ mod tests {
 
         let chunk = Chunk::new(0, 0, MessageTypeID::CommandAMF0, 0, amf_data);
 
-        let message = MessageParser::parse(&chunk).expect("no errors").expect("message");
+        let message = MessageData::parse(&chunk).expect("no errors").expect("message");
         match message {
-            RtmpMessageData::Amf0Command {
+            MessageData::Amf0Command {
                 command_name,
                 transaction_id,
                 command_object,
@@ -95,9 +94,9 @@ mod tests {
     fn test_parse_audio_packet() {
         let chunk = Chunk::new(0, 0, MessageTypeID::Audio, 0, vec![0x00, 0x00, 0x00, 0x00].into());
 
-        let message = MessageParser::parse(&chunk).expect("no errors").expect("message");
+        let message = MessageData::parse(&chunk).expect("no errors").expect("message");
         match message {
-            RtmpMessageData::AudioData { data } => {
+            MessageData::AudioData { data } => {
                 assert_eq!(data, vec![0x00, 0x00, 0x00, 0x00]);
             }
             _ => unreachable!("wrong message type"),
@@ -108,9 +107,9 @@ mod tests {
     fn test_parse_video_packet() {
         let chunk = Chunk::new(0, 0, MessageTypeID::Video, 0, vec![0x00, 0x00, 0x00, 0x00].into());
 
-        let message = MessageParser::parse(&chunk).expect("no errors").expect("message");
+        let message = MessageData::parse(&chunk).expect("no errors").expect("message");
         match message {
-            RtmpMessageData::VideoData { data } => {
+            MessageData::VideoData { data } => {
                 assert_eq!(data, vec![0x00, 0x00, 0x00, 0x00]);
             }
             _ => unreachable!("wrong message type"),
@@ -121,9 +120,9 @@ mod tests {
     fn test_parse_set_chunk_size() {
         let chunk = Chunk::new(0, 0, MessageTypeID::SetChunkSize, 0, vec![0x00, 0xFF, 0xFF, 0xFF].into());
 
-        let message = MessageParser::parse(&chunk).expect("no errors").expect("message");
+        let message = MessageData::parse(&chunk).expect("no errors").expect("message");
         match message {
-            RtmpMessageData::SetChunkSize { chunk_size } => {
+            MessageData::SetChunkSize { chunk_size } => {
                 assert_eq!(chunk_size, 0x00FFFFFF);
             }
             _ => unreachable!("wrong message type"),
@@ -140,9 +139,9 @@ mod tests {
         let amf_data = Bytes::from(amf0_writer);
         let chunk = Chunk::new(0, 0, MessageTypeID::DataAMF0, 0, amf_data.clone());
 
-        let message = MessageParser::parse(&chunk).expect("no errors").expect("message");
+        let message = MessageData::parse(&chunk).expect("no errors").expect("message");
         match message {
-            RtmpMessageData::Amf0Data { data } => {
+            MessageData::Amf0Data { data } => {
                 assert_eq!(data, amf_data);
             }
             _ => unreachable!("wrong message type"),
@@ -153,6 +152,6 @@ mod tests {
     fn test_unsupported_message_type() {
         let chunk = Chunk::new(0, 0, MessageTypeID::Aggregate, 0, vec![0x00, 0x00, 0x00, 0x00].into());
 
-        assert!(MessageParser::parse(&chunk).expect("no errors").is_none())
+        assert!(MessageData::parse(&chunk).expect("no errors").is_none())
     }
 }

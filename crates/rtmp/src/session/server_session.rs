@@ -83,7 +83,7 @@ impl<S: tokio::io::AsyncRead + tokio::io::AsyncWrite + Unpin, H: SessionHandler>
     pub async fn run(&mut self) -> Result<bool, SessionError> {
         let mut handshaker = HandshakeServer::default();
         // Run the handshake to completion
-        while !self.do_handshake(&mut handshaker).await? {
+        while !self.drive_handshake(&mut handshaker).await? {
             self.flush().await?;
         }
 
@@ -93,8 +93,8 @@ impl<S: tokio::io::AsyncRead + tokio::io::AsyncWrite + Unpin, H: SessionHandler>
 
         tracing::debug!("Handshake complete");
 
-        // Run the session to completion
-        while match self.do_ready().await {
+        // Drive the session to completion
+        while match self.drive().await {
             Ok(v) => v,
             Err(err) if err.is_client_closed() => {
                 // The client closed the connection
@@ -116,11 +116,14 @@ impl<S: tokio::io::AsyncRead + tokio::io::AsyncWrite + Unpin, H: SessionHandler>
         Ok(self.publishing_stream_ids.is_empty())
     }
 
-    /// This is the first stage of the session
-    /// It is used to do the handshake with the client
-    /// The handshake is the first thing that happens when you connect to an
-    /// rtmp server
-    async fn do_handshake(&mut self, handshaker: &mut HandshakeServer) -> Result<bool, SessionError> {
+    /// This drives the first stage of the session.
+    /// It is used to do the handshake with the client.
+    /// The handshake is the first thing that happens when a client connects to a
+    /// RTMP server.
+    ///
+    /// Returns true if the handshake is complete, false if the handshake is not complete yet.
+    /// If the handshake is not complete yet, this function should be called again.
+    async fn drive_handshake(&mut self, handshaker: &mut HandshakeServer) -> Result<bool, SessionError> {
         // Read the handshake data + 1 byte for the version
         const READ_SIZE: usize = handshake::RTMP_HANDSHAKE_SIZE + 1;
         self.read_buf.reserve(READ_SIZE);
@@ -161,10 +164,15 @@ impl<S: tokio::io::AsyncRead + tokio::io::AsyncWrite + Unpin, H: SessionHandler>
         }
     }
 
-    /// This is the second stage of the session
-    /// It is used to read data from the stream and parse it into rtmp messages
-    /// We also send data to the client if they are playing a stream
-    async fn do_ready(&mut self) -> Result<bool, SessionError> {
+    /// This drives the second and main stage of the session.
+    /// It is used to read data from the stream and parse it into RTMP messages.
+    /// We also send data to the client if they are playing a stream.
+    ///
+    /// Finish the handshake first by repeatedly calling [`drive_handshake`](Session::drive_handshake)
+    /// until it returns true before calling this function.
+    ///
+    /// Returns true if the session is still active, false if the client has closed the connection.
+    async fn drive(&mut self) -> Result<bool, SessionError> {
         // If we have data ready to parse, parse it
         if self.skip_read {
             self.skip_read = false;
@@ -187,7 +195,7 @@ impl<S: tokio::io::AsyncRead + tokio::io::AsyncWrite + Unpin, H: SessionHandler>
         Ok(true)
     }
 
-    /// Parse data from the client into rtmp messages and process them
+    /// Parse data from the client into RTMP messages and process them.
     async fn parse_chunks(&mut self) -> Result<(), SessionError> {
         while let Some(chunk) = self.chunk_decoder.read_chunk(&mut self.read_buf)? {
             let timestamp = chunk.message_header.timestamp;

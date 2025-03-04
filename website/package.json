@@ -10,10 +10,7 @@
         "check:watch": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json --watch",
         "format": "prettier --write .",
         "format:check": "prettier --check .",
-        "lint": "eslint .",
-        "test": "vitest run --coverage",
-        "test:ui": "vitest --ui",
-        "test:watch": "vitest"
+        "lint": "eslint ."
     },
     "devDependencies": {
         "@eslint/js": "^9.16.0",
@@ -34,6 +31,6 @@
         "vite": "6.2.0"
     },
     "dependenciesComments": {
-        "svelte-eslint-parser": "New version of parser has errors with pnpm lint"
+        "svelte-eslint-parser": "New version has errors with `pnpm lint`. Can resolve later."
     }
 }

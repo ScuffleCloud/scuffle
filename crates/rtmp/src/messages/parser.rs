@@ -3,10 +3,7 @@ use scuffle_amf0::{Amf0Decoder, Amf0Marker};
 use super::define::{MessageData, MessageTypeId};
 use super::errors::MessageError;
 use crate::chunk::Chunk;
-use crate::protocol_control_messages::{
-    ProtocolControlMessageSetChunkSize, ProtocolControlMessageSetPeerBandwidth,
-    ProtocolControlMessageWindowAcknowledgementSize,
-};
+use crate::protocol_control_messages::ProtocolControlMessageSetChunkSize;
 
 impl MessageData<'_> {
     pub fn parse(chunk: &Chunk) -> Result<Option<MessageData<'_>>, MessageError> {
@@ -16,14 +13,7 @@ impl MessageData<'_> {
                 let data = ProtocolControlMessageSetChunkSize::read(&chunk.payload)?;
                 Ok(Some(MessageData::SetChunkSize(data)))
             }
-            MessageTypeId::WindowAcknowledgementSize => {
-                let data = ProtocolControlMessageWindowAcknowledgementSize::read(&chunk.payload)?;
-                Ok(Some(MessageData::WindowAcknowledgementSize(data)))
-            }
-            MessageTypeId::SetPeerBandwidth => {
-                let data = ProtocolControlMessageSetPeerBandwidth::read(&chunk.payload)?;
-                Ok(Some(MessageData::SetPeerBandwidth(data)))
-            }
+            // RTMP Command Messages
             MessageTypeId::CommandAMF0 => {
                 let mut amf_reader = Amf0Decoder::new(&chunk.payload);
                 let command_name = amf_reader.decode_with_type(Amf0Marker::String)?;

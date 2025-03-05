@@ -246,7 +246,6 @@ impl<S: tokio::io::AsyncRead + tokio::io::AsyncWrite + Unpin, H: SessionHandler>
             MessageData::Amf0Data { data } => {
                 self.handler.on_data(stream_id, SessionData::Amf0 { timestamp, data }).await?;
             }
-            _ => {}
         }
 
         Ok(())

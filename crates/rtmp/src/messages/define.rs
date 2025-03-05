@@ -1,17 +1,14 @@
 use bytes::Bytes;
 use scuffle_amf0::Amf0Value;
 
-use crate::protocol_control_messages::{
-    ProtocolControlMessageSetChunkSize, ProtocolControlMessageSetPeerBandwidth,
-    ProtocolControlMessageWindowAcknowledgementSize,
-};
+use crate::protocol_control_messages::ProtocolControlMessageSetChunkSize;
 
 #[derive(Debug)]
 pub enum MessageData<'a> {
     // Protocol Control Messages
+    // The other protocol control messages are not implemented here
+    // because they are not needed in this implementation.
     SetChunkSize(ProtocolControlMessageSetChunkSize),
-    WindowAcknowledgementSize(ProtocolControlMessageWindowAcknowledgementSize),
-    SetPeerBandwidth(ProtocolControlMessageSetPeerBandwidth),
     // RTMP Command Messages
     Amf0Command {
         command_name: Amf0Value<'a>,

@@ -1,4 +1,3 @@
-mod define;
 mod errors;
 mod handler;
 mod server_session;

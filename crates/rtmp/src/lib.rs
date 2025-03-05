@@ -17,10 +17,9 @@
 #![deny(unsafe_code)]
 
 mod chunk;
+mod command_messages;
 mod handshake;
 mod messages;
-mod netconnection;
-mod netstream;
 mod protocol_control_messages;
 mod session;
 mod user_control_messages;
@@ -110,6 +109,8 @@ mod tests {
 
         let _ffmpeg = Command::new("ffmpeg")
             .args([
+                "-loglevel",
+                "debug",
                 "-re",
                 "-i",
                 dir.join("avc_aac.mp4").to_str().expect("failed to get path"),
@@ -132,7 +133,7 @@ mod tests {
             .accept()
             .with_timeout(Duration::from_millis(1000))
             .await
-            .expect("timedout")
+            .expect("timed out")
             .expect("failed to accept");
 
         let (ffmpeg_handle, mut ffmpeg_event_reciever) = {
@@ -142,7 +143,7 @@ mod tests {
             (
                 tokio::spawn(async move {
                     let r = session.run().await;
-                    tracing::debug!("ffmpeg session ended: {:?}", r);
+                    println!("ffmpeg session ended: {:?}", r);
                     r
                 }),
                 ffmpeg_event_reciever,
@@ -153,7 +154,7 @@ mod tests {
             .recv()
             .with_timeout(Duration::from_millis(1000))
             .await
-            .expect("timedout")
+            .expect("timed out")
             .expect("failed to recv event");
 
         match event {
@@ -179,7 +180,7 @@ mod tests {
             .recv()
             .with_timeout(Duration::from_millis(1000))
             .await
-            .expect("timedout")
+            .expect("timed out")
         {
             match data {
                 Event::Data {
@@ -213,7 +214,7 @@ mod tests {
             .recv()
             .with_timeout(Duration::from_millis(1000))
             .await
-            .expect("timedout")
+            .expect("timed out")
             .is_some()
         {
             panic!("unexpected event");
@@ -242,6 +243,8 @@ mod tests {
 
         let mut ffmpeg = Command::new("ffmpeg")
             .args([
+                "-loglevel",
+                "debug",
                 "-re",
                 "-i",
                 dir.join("avc_aac.mp4").to_str().expect("failed to get path"),
@@ -264,7 +267,7 @@ mod tests {
             .accept()
             .with_timeout(Duration::from_millis(1000))
             .await
-            .expect("timedout")
+            .expect("timed out")
             .expect("failed to accept");
 
         let (ffmpeg_handle, mut ffmpeg_event_reciever) = {
@@ -274,7 +277,7 @@ mod tests {
             (
                 tokio::spawn(async move {
                     let r = session.run().await;
-                    tracing::debug!("ffmpeg session ended: {:?}", r);
+                    println!("ffmpeg session ended: {:?}", r);
                     r
                 }),
                 ffmpeg_event_reciever,
@@ -285,7 +288,7 @@ mod tests {
             .recv()
             .with_timeout(Duration::from_millis(1000))
             .await
-            .expect("timedout")
+            .expect("timed out")
             .expect("failed to recv event");
 
         match event {
@@ -311,7 +314,7 @@ mod tests {
             .recv()
             .with_timeout(Duration::from_millis(1000))
             .await
-            .expect("timedout")
+            .expect("timed out")
         {
             match data {
                 Event::Data {
@@ -346,7 +349,7 @@ mod tests {
             .recv()
             .with_timeout(Duration::from_millis(1000))
             .await
-            .expect("timedout")
+            .expect("timed out")
         {
             match data {
                 Event::Data { response, .. } => {

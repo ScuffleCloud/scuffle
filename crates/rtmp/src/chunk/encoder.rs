@@ -119,7 +119,7 @@ mod tests {
     use bytes::Bytes;
 
     use super::*;
-    use crate::messages::MessageTypeId;
+    use crate::messages::MessageType;
 
     #[test]
     fn test_encoder_error_display() {
@@ -138,7 +138,7 @@ mod tests {
         let chunk = Chunk::new(
             0,
             0,
-            MessageTypeId::Abort,
+            MessageType::Abort,
             0,
             Bytes::from(vec![0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07]),
         );
@@ -169,7 +169,7 @@ mod tests {
             payload.push(i);
         }
 
-        let chunk = Chunk::new(10, 100, MessageTypeId::Audio, 13, Bytes::from(payload));
+        let chunk = Chunk::new(10, 100, MessageType::Audio, 13, Bytes::from(payload));
 
         encoder.write_chunk(&mut writer, chunk).unwrap();
 
@@ -200,7 +200,7 @@ mod tests {
         let chunk = Chunk::new(
             0,
             0xFFFFFFFF,
-            MessageTypeId::Abort,
+            MessageType::Abort,
             0,
             Bytes::from(vec![0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07]),
         );
@@ -234,7 +234,7 @@ mod tests {
             payload.push(i);
         }
 
-        let chunk = Chunk::new(0, 0xFFFFFFFF, MessageTypeId::Abort, 0, Bytes::from(payload));
+        let chunk = Chunk::new(0, 0xFFFFFFFF, MessageType::Abort, 0, Bytes::from(payload));
 
         encoder.write_chunk(&mut writer, chunk).unwrap();
 
@@ -267,7 +267,7 @@ mod tests {
         let chunk = Chunk::new(
             64,
             0,
-            MessageTypeId::Abort,
+            MessageType::Abort,
             0,
             Bytes::from(vec![0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07]),
         );
@@ -297,7 +297,7 @@ mod tests {
         let chunk = Chunk::new(
             320,
             0,
-            MessageTypeId::Abort,
+            MessageType::Abort,
             0,
             Bytes::from(vec![0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07]),
         );

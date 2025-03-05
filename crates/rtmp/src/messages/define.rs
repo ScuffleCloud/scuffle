@@ -1,35 +1,24 @@
 use bytes::Bytes;
-use scuffle_amf0::Amf0Value;
 
+use crate::command_messages::Command;
 use crate::protocol_control_messages::ProtocolControlMessageSetChunkSize;
 
 #[derive(Debug)]
-pub enum MessageData<'a> {
+pub enum MessageData {
     // Protocol Control Messages
     // The other protocol control messages are not implemented here
     // because they are not needed in this implementation.
     SetChunkSize(ProtocolControlMessageSetChunkSize),
     // RTMP Command Messages
-    Amf0Command {
-        command_name: Amf0Value<'a>,
-        transaction_id: Amf0Value<'a>,
-        command_object: Amf0Value<'a>,
-        others: Vec<Amf0Value<'a>>,
-    },
-    Amf0Data {
-        data: Bytes,
-    },
-    AudioData {
-        data: Bytes,
-    },
-    VideoData {
-        data: Bytes,
-    },
+    Amf0Command(Command),
+    Amf0Data { data: Bytes },
+    AudioData { data: Bytes },
+    VideoData { data: Bytes },
 }
 
 #[derive(Debug, PartialEq, Eq, Clone, Copy, num_derive::FromPrimitive)]
 #[repr(u8)]
-pub enum MessageTypeId {
+pub enum MessageType {
     // Protocol Control Messages
     SetChunkSize = 1,
     Abort = 2,

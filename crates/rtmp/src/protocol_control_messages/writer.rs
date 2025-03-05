@@ -9,10 +9,10 @@ use super::define::{
 };
 use super::errors::ProtocolControlMessageError;
 use crate::chunk::{Chunk, ChunkEncoder};
-use crate::messages::MessageTypeId;
+use crate::messages::MessageType;
 
 impl ProtocolControlMessageSetChunkSize {
-    pub fn write(&self, encoder: &ChunkEncoder, writer: &mut impl io::Write) -> Result<(), ProtocolControlMessageError> {
+    pub fn write(&self, writer: &mut impl io::Write, encoder: &ChunkEncoder) -> Result<(), ProtocolControlMessageError> {
         // According to spec the first bit must be 0.
         let chunk_size = self.chunk_size & 0x7FFFFFFF; // 31 bits only
 
@@ -21,7 +21,7 @@ impl ProtocolControlMessageSetChunkSize {
             Chunk::new(
                 2, // chunk stream must be 2
                 0, // timestamps are ignored
-                MessageTypeId::SetChunkSize,
+                MessageType::SetChunkSize,
                 0, // message stream id is ignored
                 Bytes::from(chunk_size.to_be_bytes().to_vec()),
             ),
@@ -32,13 +32,13 @@ impl ProtocolControlMessageSetChunkSize {
 }
 
 impl ProtocolControlMessageWindowAcknowledgementSize {
-    pub fn write(&self, encoder: &ChunkEncoder, writer: &mut impl io::Write) -> Result<(), ProtocolControlMessageError> {
+    pub fn write(&self, writer: &mut impl io::Write, encoder: &ChunkEncoder) -> Result<(), ProtocolControlMessageError> {
         encoder.write_chunk(
             writer,
             Chunk::new(
                 2, // chunk stream must be 2
                 0, // timestamps are ignored
-                MessageTypeId::WindowAcknowledgementSize,
+                MessageType::WindowAcknowledgementSize,
                 0, // message stream id is ignored
                 Bytes::from(self.acknowledgement_window_size.to_be_bytes().to_vec()),
             ),
@@ -49,7 +49,7 @@ impl ProtocolControlMessageWindowAcknowledgementSize {
 }
 
 impl ProtocolControlMessageSetPeerBandwidth {
-    pub fn write(&self, encoder: &ChunkEncoder, writer: &mut impl io::Write) -> Result<(), ProtocolControlMessageError> {
+    pub fn write(&self, writer: &mut impl io::Write, encoder: &ChunkEncoder) -> Result<(), ProtocolControlMessageError> {
         let mut data = Vec::new();
         data.write_u32::<BigEndian>(self.acknowledgement_window_size)
             .expect("Failed to write window size");
@@ -60,7 +60,7 @@ impl ProtocolControlMessageSetPeerBandwidth {
             Chunk::new(
                 2, // chunk stream must be 2
                 0, // timestamps are ignored
-                MessageTypeId::SetPeerBandwidth,
+                MessageType::SetPeerBandwidth,
                 0, // message stream id is ignored
                 Bytes::from(data),
             ),
@@ -85,7 +85,7 @@ mod tests {
         let mut buf = BytesMut::new();
 
         ProtocolControlMessageSetChunkSize { chunk_size: 1 }
-            .write(&encoder, &mut (&mut buf).writer())
+            .write(&mut (&mut buf).writer(), &encoder)
             .unwrap();
 
         let mut decoder = ChunkDecoder::default();
@@ -105,7 +105,7 @@ mod tests {
         ProtocolControlMessageWindowAcknowledgementSize {
             acknowledgement_window_size: 1,
         }
-        .write(&encoder, &mut (&mut buf).writer())
+        .write(&mut (&mut buf).writer(), &encoder)
         .unwrap();
 
         let mut decoder = ChunkDecoder::default();
@@ -126,7 +126,7 @@ mod tests {
             acknowledgement_window_size: 1,
             limit_type: ProtocolControlMessageSetPeerBandwidthLimitType::Dynamic,
         }
-        .write(&encoder, &mut (&mut buf).writer())
+        .write(&mut (&mut buf).writer(), &encoder)
         .unwrap();
 
         let mut decoder = ChunkDecoder::default();

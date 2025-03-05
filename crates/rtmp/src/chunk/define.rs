@@ -1,6 +1,6 @@
 use bytes::Bytes;
 
-use crate::messages::MessageTypeId;
+use crate::messages::MessageType;
 
 // common chunk stream ids
 
@@ -40,7 +40,7 @@ pub struct ChunkMessageHeader {
     /// The length of the message.
     pub msg_length: u32, // 3 bytes
     /// The type of the message.
-    pub msg_type_id: MessageTypeId, // 1 byte
+    pub msg_type_id: MessageType, // 1 byte
     /// The stream id of the message.
     pub msg_stream_id: u32, // 4 bytes
     /// Whether the timestamp is extended.
@@ -71,13 +71,7 @@ pub struct Chunk {
 impl Chunk {
     /// new creates a new chunk.
     /// Helper function to create a new chunk.
-    pub fn new(
-        chunk_stream_id: u32,
-        timestamp: u32,
-        msg_type_id: MessageTypeId,
-        msg_stream_id: u32,
-        payload: Bytes,
-    ) -> Self {
+    pub fn new(chunk_stream_id: u32, timestamp: u32, msg_type_id: MessageType, msg_stream_id: u32, payload: Bytes) -> Self {
         Self {
             basic_header: ChunkBasicHeader {
                 chunk_stream_id,

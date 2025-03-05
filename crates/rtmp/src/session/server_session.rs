@@ -1,28 +1,26 @@
-use std::borrow::Cow;
 use std::time::Duration;
 
 use bytes::BytesMut;
-use scuffle_amf0::Amf0Value;
 use scuffle_bytes_util::BytesCursorExt;
 use scuffle_future_ext::FutureExt;
 use tokio::io::{AsyncReadExt, AsyncWriteExt};
 
 use super::SessionHandler;
-use super::define::RtmpCommand;
 use super::errors::SessionError;
 use super::handler::SessionData;
 use crate::chunk::{CHUNK_SIZE, ChunkDecoder, ChunkEncoder};
+use crate::command_messages::netconnection::NetConnectionCommand;
+use crate::command_messages::netstream::{NetStreamCommand, NetStreamCommandPublishPublishingType};
+use crate::command_messages::{Command, CommandResultLevel, CommandType};
 use crate::handshake;
 use crate::handshake::HandshakeServer;
 use crate::handshake::define::ServerHandshakeState;
 use crate::messages::MessageData;
-use crate::netconnection::NetConnection;
-use crate::netstream::NetStreamWriter;
 use crate::protocol_control_messages::{
     ProtocolControlMessageSetChunkSize, ProtocolControlMessageSetPeerBandwidth,
     ProtocolControlMessageSetPeerBandwidthLimitType, ProtocolControlMessageWindowAcknowledgementSize,
 };
-use crate::user_control_messages::EventMessagesWriter;
+use crate::user_control_messages::EventMessageStreamBegin;
 
 pub struct Session<S, H> {
     /// When you connect via rtmp, you specify the app name in the url
@@ -206,30 +204,17 @@ impl<S: tokio::io::AsyncRead + tokio::io::AsyncWrite + Unpin, H: SessionHandler>
             let msg_stream_id = chunk.message_header.msg_stream_id;
 
             if let Some(msg) = MessageData::parse(&chunk)? {
-                self.process_messages(msg, msg_stream_id, timestamp).await?;
+                self.process_message(msg, msg_stream_id, timestamp).await?;
             }
         }
 
         Ok(())
     }
 
-    /// Process rtmp messages
-    async fn process_messages(
-        &mut self,
-        rtmp_msg: MessageData<'_>,
-        stream_id: u32,
-        timestamp: u32,
-    ) -> Result<(), SessionError> {
-        match rtmp_msg {
-            MessageData::Amf0Command {
-                command_name,
-                transaction_id,
-                command_object,
-                others,
-            } => {
-                self.on_amf0_command_message(stream_id, command_name, transaction_id, command_object, others)
-                    .await?
-            }
+    /// Process one RTMP message
+    async fn process_message(&mut self, msg: MessageData, stream_id: u32, timestamp: u32) -> Result<(), SessionError> {
+        match msg {
+            MessageData::Amf0Command(command) => self.on_command_message(stream_id, command).await?,
             MessageData::SetChunkSize(ProtocolControlMessageSetChunkSize { chunk_size }) => {
                 self.on_set_chunk_size(chunk_size as usize)?;
             }
@@ -256,7 +241,7 @@ impl<S: tokio::io::AsyncRead + tokio::io::AsyncWrite + Unpin, H: SessionHandler>
         ProtocolControlMessageSetChunkSize {
             chunk_size: CHUNK_SIZE as u32,
         }
-        .write(&self.chunk_encoder, &mut self.write_buf)?;
+        .write(&mut self.write_buf, &self.chunk_encoder)?;
         self.chunk_encoder.set_chunk_size(CHUNK_SIZE);
 
         Ok(())
@@ -264,49 +249,35 @@ impl<S: tokio::io::AsyncRead + tokio::io::AsyncWrite + Unpin, H: SessionHandler>
 
     /// on_amf0_command_message is called when we receive an AMF0 command
     /// message from the client We then handle the command message
-    async fn on_amf0_command_message(
-        &mut self,
-        stream_id: u32,
-        command_name: Amf0Value<'_>,
-        transaction_id: Amf0Value<'_>,
-        command_object: Amf0Value<'_>,
-        others: Vec<Amf0Value<'_>>,
-    ) -> Result<(), SessionError> {
-        let cmd = RtmpCommand::from(match command_name {
-            Amf0Value::String(ref s) => s,
-            _ => "",
-        });
-
-        let transaction_id = match transaction_id {
-            Amf0Value::Number(number) => number,
-            _ => 0.0,
-        };
-
-        let obj = match command_object {
-            Amf0Value::Object(obj) => obj,
-            _ => Cow::Owned(Vec::new()),
-        };
-
-        match cmd {
-            RtmpCommand::Connect => {
-                self.on_command_connect(transaction_id, stream_id, &obj, others).await?;
+    async fn on_command_message(&mut self, stream_id: u32, command: Command) -> Result<(), SessionError> {
+        match command.net_command {
+            CommandType::NetConnection(NetConnectionCommand::Connect { app }) => {
+                self.on_command_connect(stream_id, command.transaction_id, app).await?;
             }
-            RtmpCommand::CreateStream => {
-                self.on_command_create_stream(transaction_id, stream_id, &obj, others).await?;
+            CommandType::NetConnection(NetConnectionCommand::CreateStream) => {
+                self.on_command_create_stream(stream_id, command.transaction_id).await?;
             }
-            RtmpCommand::DeleteStream => {
-                self.on_command_delete_stream(transaction_id, stream_id, &obj, others).await?;
+            CommandType::NetStream(NetStreamCommand::DeleteStream {
+                stream_id: delete_stream_id,
+            }) => {
+                self.on_command_delete_stream(stream_id, command.transaction_id, delete_stream_id)
+                    .await?;
             }
-            RtmpCommand::Play => {
+            CommandType::NetStream(NetStreamCommand::Play) | CommandType::NetStream(NetStreamCommand::Play2) => {
                 return Err(SessionError::PlayNotSupported);
             }
-            RtmpCommand::Publish => {
-                self.on_command_publish(transaction_id, stream_id, &obj, others).await?;
+            CommandType::NetStream(NetStreamCommand::Publish {
+                publishing_name,
+                publishing_type,
+            }) => {
+                self.on_command_publish(stream_id, command.transaction_id, publishing_name, publishing_type)
+                    .await?;
             }
-            RtmpCommand::CloseStream | RtmpCommand::ReleaseStream => {
+            CommandType::NetStream(NetStreamCommand::CloseStream) => {
                 // Not sure what this is for
             }
-            RtmpCommand::Unknown(_) => {}
+            // ignore everything else
+            _ => {}
         }
 
         Ok(())
@@ -325,54 +296,34 @@ impl<S: tokio::io::AsyncRead + tokio::io::AsyncWrite + Unpin, H: SessionHandler>
     /// on_command_connect is called when we receive a amf0 command message with
     /// the name "connect" We then handle the connect message
     /// This is called when the client first connects to the server
-    async fn on_command_connect(
-        &mut self,
-        transaction_id: f64,
-        _stream_id: u32,
-        command_obj: &[(Cow<'_, str>, Amf0Value<'_>)],
-        _others: Vec<Amf0Value<'_>>,
-    ) -> Result<(), SessionError> {
+    async fn on_command_connect(&mut self, _stream_id: u32, transaction_id: f64, app: String) -> Result<(), SessionError> {
         ProtocolControlMessageWindowAcknowledgementSize {
             acknowledgement_window_size: CHUNK_SIZE as u32,
         }
-        .write(&self.chunk_encoder, &mut self.write_buf)?;
+        .write(&mut self.write_buf, &self.chunk_encoder)?;
 
         ProtocolControlMessageSetPeerBandwidth {
             acknowledgement_window_size: CHUNK_SIZE as u32,
             limit_type: ProtocolControlMessageSetPeerBandwidthLimitType::Dynamic,
         }
-        .write(&self.chunk_encoder, &mut self.write_buf)?;
+        .write(&mut self.write_buf, &self.chunk_encoder)?;
 
-        let app_name = command_obj.iter().find(|(key, _)| key == "app");
-        let app_name = match app_name {
-            Some((_, Amf0Value::String(app))) => app,
-            _ => {
-                return Err(SessionError::NoAppName);
-            }
+        self.app_name = Some(Box::from(app));
+
+        let result = NetConnectionCommand::ConnectResult {
+            fmsver: "FMS/3,0,1,123".to_string(), // flash version (this value is used by other media servers as well)
+            capabilities: 31.0,                  // No idea what this means, but it is used by other media servers as well
+            level: CommandResultLevel::Status,
+            code: "NetConnection.Connect.Success".to_string(),
+            description: "Connection Succeeded.".to_string(),
+            encoding: 0.0,
         };
 
-        self.app_name = Some(Box::from(app_name.as_ref()));
-
-        // The only AMF encoding supported by this server is AMF0
-        // So we ignore the objectEncoding value sent by the client
-        // and always use AMF0
-        // - OBS does not support AMF3 (https://github.com/obsproject/obs-studio/blob/1be1f51635ac85b3ad768a88b3265b192bd0bf18/plugins/obs-outputs/librtmp/rtmp.c#L1737)
-        // - Ffmpeg does not support AMF3 either (https://github.com/FFmpeg/FFmpeg/blob/c125860892e931d9b10f88ace73c91484815c3a8/libavformat/rtmpproto.c#L569)
-        // - NginxRTMP does not support AMF3 (https://github.com/arut/nginx-rtmp-module/issues/313)
-        // - SRS does not support AMF3 (https://github.com/ossrs/srs/blob/dcd02fe69cdbd7f401a7b8d139d95b522deb55b1/trunk/src/protocol/srs_protocol_rtmp_stack.cpp#L599)
-        // However, the new enhanced-rtmp-v1 spec from YouTube does encourage the use of AMF3 over AMF0 (https://github.com/veovera/enhanced-rtmp)
-        // We will eventually support this spec but for now we will stick to AMF0
-        NetConnection::write_connect_response(
-            &self.chunk_encoder,
-            &mut self.write_buf,
+        Command {
+            net_command: CommandType::NetConnection(result),
             transaction_id,
-            "FMS/3,0,1,123", // flash version (this value is used by other media servers as well)
-            31.0,            // No idea what this is, but it is used by other media servers as well
-            "NetConnection.Connect.Success",
-            "status", // Again not sure what this is but other media servers use it.
-            "Connection Succeeded.",
-            0.0,
-        )?;
+        }
+        .write(&mut self.write_buf, &self.chunk_encoder)?;
 
         Ok(())
     }
@@ -381,15 +332,13 @@ impl<S: tokio::io::AsyncRead + tokio::io::AsyncWrite + Unpin, H: SessionHandler>
     /// message with the name "createStream" We then handle the createStream
     /// message This is called when the client wants to create a stream
     /// A NetStream is used to start publishing or playing a stream
-    async fn on_command_create_stream(
-        &mut self,
-        transaction_id: f64,
-        _stream_id: u32,
-        _command_obj: &[(Cow<'_, str>, Amf0Value<'_>)],
-        _others: Vec<Amf0Value<'_>>,
-    ) -> Result<(), SessionError> {
+    async fn on_command_create_stream(&mut self, _stream_id: u32, transaction_id: f64) -> Result<(), SessionError> {
         // 1.0 is the Stream ID of the stream we are creating
-        NetConnection::write_create_stream_response(&self.chunk_encoder, &mut self.write_buf, transaction_id, 1.0)?;
+        Command {
+            net_command: CommandType::NetConnection(NetConnectionCommand::CreateStreamResult { stream_id: 1.0 }),
+            transaction_id,
+        }
+        .write(&mut self.write_buf, &self.chunk_encoder)?;
 
         Ok(())
     }
@@ -400,29 +349,26 @@ impl<S: tokio::io::AsyncRead + tokio::io::AsyncWrite + Unpin, H: SessionHandler>
     /// from its list of streams.
     async fn on_command_delete_stream(
         &mut self,
-        transaction_id: f64,
         _stream_id: u32,
-        _command_obj: &[(Cow<'_, str>, Amf0Value<'_>)],
-        others: Vec<Amf0Value<'_>>,
+        transaction_id: f64,
+        delete_stream_id: f64,
     ) -> Result<(), SessionError> {
-        let stream_id = match others.first() {
-            Some(Amf0Value::Number(stream_id)) => *stream_id,
-            _ => 0.0,
-        } as u32;
+        let stream_id = delete_stream_id as u32;
 
         self.handler.on_unpublish(stream_id).await?;
 
         // Remove the stream id from the list of publishing stream ids
         self.publishing_stream_ids.retain(|id| *id != stream_id);
 
-        NetStreamWriter::write_on_status(
-            &self.chunk_encoder,
-            &mut self.write_buf,
+        Command {
+            net_command: CommandType::NetStream(NetStreamCommand::OnStatus {
+                level: CommandResultLevel::Status,
+                code: "NetStream.DeleteStream.Suceess".to_string(),
+                description: "".to_string(),
+            }),
             transaction_id,
-            "status",
-            "NetStream.DeleteStream.Suceess",
-            "",
-        )?;
+        }
+        .write(&mut self.write_buf, &self.chunk_encoder)?;
 
         Ok(())
     }
@@ -432,38 +378,32 @@ impl<S: tokio::io::AsyncRead + tokio::io::AsyncWrite + Unpin, H: SessionHandler>
     /// server ie. the user wants to start streaming to the server
     async fn on_command_publish(
         &mut self,
-        transaction_id: f64,
         stream_id: u32,
-        _command_obj: &[(Cow<'_, str>, Amf0Value<'_>)],
-        others: Vec<Amf0Value<'_>>,
+        transaction_id: f64,
+        publishing_name: String,
+        _publishing_type: NetStreamCommandPublishPublishingType,
     ) -> Result<(), SessionError> {
-        let stream_name = match others.first() {
-            Some(Amf0Value::String(val)) => val,
-            _ => {
-                return Err(SessionError::NoStreamName);
-            }
-        };
-
         let Some(app_name) = &self.app_name else {
             return Err(SessionError::NoAppName);
         };
 
         self.handler
-            .on_publish(stream_id, app_name.as_ref(), stream_name.as_ref())
+            .on_publish(stream_id, app_name.as_ref(), publishing_name.as_ref())
             .await?;
 
         self.publishing_stream_ids.push(stream_id);
 
-        EventMessagesWriter::write_stream_begin(&self.chunk_encoder, &mut self.write_buf, stream_id)?;
+        EventMessageStreamBegin { stream_id }.write(&self.chunk_encoder, &mut self.write_buf)?;
 
-        NetStreamWriter::write_on_status(
-            &self.chunk_encoder,
-            &mut self.write_buf,
+        Command {
+            net_command: CommandType::NetStream(NetStreamCommand::OnStatus {
+                level: CommandResultLevel::Status,
+                code: "NetStream.Publish.Start".to_string(),
+                description: "".to_string(),
+            }),
             transaction_id,
-            "status",
-            "NetStream.Publish.Start",
-            "",
-        )?;
+        }
+        .write(&mut self.write_buf, &self.chunk_encoder)?;
 
         Ok(())
     }

@@ -1,8 +1,7 @@
 use crate::chunk::ChunkDecodeError;
+use crate::command_messages::CommandError;
 use crate::handshake::HandshakeError;
 use crate::messages::MessageError;
-use crate::netconnection::NetConnectionError;
-use crate::netstream::NetStreamError;
 use crate::protocol_control_messages::ProtocolControlMessageError;
 use crate::user_control_messages::EventMessagesError;
 
@@ -16,10 +15,8 @@ pub enum SessionError {
     ChunkDecode(#[from] ChunkDecodeError),
     #[error("protocol control message error: {0}")]
     ProtocolControlMessage(#[from] ProtocolControlMessageError),
-    #[error("netstream error: {0}")]
-    NetStream(#[from] NetStreamError),
-    #[error("netconnection error: {0}")]
-    NetConnection(#[from] NetConnectionError),
+    #[error("command error: {0}")]
+    Command(#[from] CommandError),
     #[error("event messages error: {0}")]
     EventMessages(#[from] EventMessagesError),
     #[error("unknown stream id: {0}")]
@@ -64,8 +61,6 @@ impl SessionError {
 #[cfg(test)]
 #[cfg_attr(all(test, coverage_nightly), coverage(off))]
 mod tests {
-    use scuffle_amf0::Amf0Marker;
-
     use super::*;
     use crate::chunk::ChunkEncodeError;
     use crate::handshake::DigestError;
@@ -78,15 +73,6 @@ mod tests {
         let error = SessionError::Handshake(HandshakeError::Digest(DigestError::NotEnoughData));
         assert_eq!(error.to_string(), "handshake error: digest error: not enough data");
 
-        let error = SessionError::Message(MessageError::Amf0Read(scuffle_amf0::Amf0ReadError::WrongType(
-            Amf0Marker::String,
-            Amf0Marker::EcmaArray,
-        )));
-        assert_eq!(
-            error.to_string(),
-            "message error: amf0 read error: wrong type: expected String, got EcmaArray"
-        );
-
         let error = SessionError::ChunkDecode(ChunkDecodeError::TooManyPreviousChunkHeaders);
         assert_eq!(error.to_string(), "chunk decode error: too many previous chunk headers");
 
@@ -96,15 +82,6 @@ mod tests {
         assert_eq!(
             error.to_string(),
             "protocol control message error: chunk encode error: unknown read state"
-        );
-
-        let error = SessionError::NetStream(NetStreamError::ChunkEncode(ChunkEncodeError::UnknownReadState));
-        assert_eq!(error.to_string(), "netstream error: chunk encode error: unknown read state");
-
-        let error = SessionError::NetConnection(NetConnectionError::ChunkEncode(ChunkEncodeError::UnknownReadState));
-        assert_eq!(
-            error.to_string(),
-            "netconnection error: chunk encode error: unknown read state"
         );
 
         let error = SessionError::EventMessages(EventMessagesError::ChunkEncode(ChunkEncodeError::UnknownReadState));

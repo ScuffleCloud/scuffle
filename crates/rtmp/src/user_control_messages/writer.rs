@@ -2,26 +2,20 @@ use std::io;
 
 use byteorder::{BigEndian, WriteBytesExt};
 
-use super::define;
+use super::define::{self, EventMessageStreamBegin};
 use super::errors::EventMessagesError;
 use crate::chunk::{Chunk, ChunkEncoder};
-use crate::messages::MessageTypeId;
+use crate::messages::MessageType;
 
-pub struct EventMessagesWriter;
-
-impl EventMessagesWriter {
-    pub fn write_stream_begin(
-        encoder: &ChunkEncoder,
-        writer: &mut impl io::Write,
-        stream_id: u32,
-    ) -> Result<(), EventMessagesError> {
+impl EventMessageStreamBegin {
+    pub fn write(&self, encoder: &ChunkEncoder, writer: &mut impl io::Write) -> Result<(), EventMessagesError> {
         let mut data = Vec::new();
 
-        data.write_u16::<BigEndian>(define::RTMP_EVENT_STREAM_BEGIN)
+        data.write_u16::<BigEndian>(define::EventType::StreamBegin as u16)
             .expect("write u16");
-        data.write_u32::<BigEndian>(stream_id).expect("write u32");
+        data.write_u32::<BigEndian>(self.stream_id).expect("write u32");
 
-        encoder.write_chunk(writer, Chunk::new(0x02, 0, MessageTypeId::UserControlEvent, 0, data.into()))?;
+        encoder.write_chunk(writer, Chunk::new(0x02, 0, MessageType::UserControlEvent, 0, data.into()))?;
 
         Ok(())
     }
@@ -34,13 +28,16 @@ mod tests {
 
     use super::*;
     use crate::chunk::ChunkDecoder;
+    use crate::user_control_messages::define::EventMessageStreamBegin;
 
     #[test]
     fn test_write_stream_begin() {
         let mut buf = BytesMut::new();
         let encoder = ChunkEncoder::default();
 
-        EventMessagesWriter::write_stream_begin(&encoder, &mut (&mut buf).writer(), 1).unwrap();
+        EventMessageStreamBegin { stream_id: 1 }
+            .write(&encoder, &mut (&mut buf).writer())
+            .unwrap();
 
         let mut decoder = ChunkDecoder::default();
 

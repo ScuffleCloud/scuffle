@@ -4,7 +4,7 @@ use bytes::Bytes;
 
 use super::define::CommandResultLevel;
 use super::{Command, CommandError, CommandType};
-use crate::chunk::{COMMAND_CHUNK_STREAM_ID, Chunk, ChunkWriteError, ChunkWriter};
+use crate::chunk::{Chunk, ChunkStreamId, ChunkWriteError, ChunkWriter};
 use crate::messages::MessageType;
 
 impl CommandResultLevel {
@@ -21,7 +21,7 @@ impl Command<'_> {
     fn write_amf0_chunk(io: &mut impl io::Write, writer: &ChunkWriter, payload: Bytes) -> Result<(), ChunkWriteError> {
         writer.write_chunk(
             io,
-            Chunk::new(COMMAND_CHUNK_STREAM_ID, 0, MessageType::CommandAMF0, 0, payload),
+            Chunk::new(ChunkStreamId::Command.0, 0, MessageType::CommandAMF0, 0, payload),
         )
     }
 

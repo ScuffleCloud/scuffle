@@ -2,11 +2,14 @@ use bytes::Bytes;
 
 use crate::messages::MessageType;
 
-// common chunk stream ids
-
-pub const COMMAND_CHUNK_STREAM_ID: u32 = 3;
-pub const AUDIO_CHUNK_STREAM_ID: u32 = 4;
-pub const VIDEO_CHUNK_STREAM_ID: u32 = 5;
+nutype_enum::nutype_enum! {
+    /// Common chunk stream ids
+    pub enum ChunkStreamId(u32) {
+        Command = 3,
+        Audio = 4,
+        Video = 5,
+    }
+}
 
 #[derive(Debug, PartialEq, Eq, Clone, Copy, num_derive::FromPrimitive, Hash)]
 #[repr(u8)]

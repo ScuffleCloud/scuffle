@@ -57,6 +57,7 @@ impl<'a> NetStreamCommand<'a> {
                 let Amf0Value::Object(info_object) = decoder.decode_with_type(Amf0Marker::Object)? else {
                     unreachable!();
                 };
+                // we have to get ownership here because we have to own the inner Cows
                 let mut info_object = info_object.into_owned();
 
                 let (_, Amf0Value::String(level)) = info_object

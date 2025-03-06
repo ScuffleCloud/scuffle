@@ -12,7 +12,7 @@ impl<'a> NetConnectionCommand<'a> {
                 };
 
                 let (_, Amf0Value::String(app)) = command_object
-                    .into_owned()
+                    .into_owned() // we have to get ownership here because we have to own the inner Cows
                     .into_iter()
                     .find(|(k, _)| k == "app")
                     .ok_or(CommandError::NoAppName)?

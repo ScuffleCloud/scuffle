@@ -5,8 +5,8 @@ use scuffle_amf0::{Amf0Encoder, Amf0Value};
 use super::NetConnectionCommand;
 use crate::command_messages::CommandError;
 
-impl NetConnectionCommand {
-    pub fn write(&self, buf: &mut impl io::Write, transaction_id: f64) -> Result<(), CommandError> {
+impl NetConnectionCommand<'_> {
+    pub fn write(self, buf: &mut impl io::Write, transaction_id: f64) -> Result<(), CommandError> {
         match self {
             Self::ConnectResult {
                 fmsver,
@@ -21,17 +21,17 @@ impl NetConnectionCommand {
                 Amf0Encoder::encode_object(
                     buf,
                     &[
-                        ("fmsVer".into(), Amf0Value::String(fmsver.into())),
-                        ("capabilities".into(), Amf0Value::Number(*capabilities)),
+                        ("fmsVer".into(), Amf0Value::String(fmsver)),
+                        ("capabilities".into(), Amf0Value::Number(capabilities)),
                     ],
                 )?;
                 Amf0Encoder::encode_object(
                     buf,
                     &[
                         ("level".into(), Amf0Value::String(level.to_str().into())),
-                        ("code".into(), Amf0Value::String(code.into())),
-                        ("description".into(), Amf0Value::String(description.into())),
-                        ("objectEncoding".into(), Amf0Value::Number(*encoding)),
+                        ("code".into(), Amf0Value::String(code)),
+                        ("description".into(), Amf0Value::String(description)),
+                        ("objectEncoding".into(), Amf0Value::Number(encoding)),
                     ],
                 )?;
             }
@@ -39,7 +39,7 @@ impl NetConnectionCommand {
                 Amf0Encoder::encode_string(buf, "_result")?;
                 Amf0Encoder::encode_number(buf, transaction_id)?;
                 Amf0Encoder::encode_null(buf)?;
-                Amf0Encoder::encode_number(buf, *stream_id)?;
+                Amf0Encoder::encode_number(buf, stream_id)?;
             }
             _ => unimplemented!("the rtmp client is not implemented yet"),
         }

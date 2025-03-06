@@ -3,8 +3,8 @@ use scuffle_amf0::{Amf0Decoder, Amf0Value};
 use super::NetConnectionCommand;
 use crate::command_messages::errors::CommandError;
 
-impl NetConnectionCommand {
-    pub fn read(command_name: &str, decoder: &mut Amf0Decoder) -> Result<Option<Self>, CommandError> {
+impl<'a> NetConnectionCommand<'a> {
+    pub fn read(command_name: &str, decoder: &mut Amf0Decoder<'a>) -> Result<Option<Self>, CommandError> {
         match command_name {
             "connect" => {
                 let Amf0Value::Object(command_object) = decoder.decode_with_type(scuffle_amf0::Amf0Marker::Object)? else {
@@ -12,14 +12,15 @@ impl NetConnectionCommand {
                 };
 
                 let (_, Amf0Value::String(app)) = command_object
-                    .iter()
-                    .find(|(key, _)| key == "app")
+                    .into_owned()
+                    .into_iter()
+                    .find(|(k, _)| k == "app")
                     .ok_or(CommandError::NoAppName)?
                 else {
                     return Err(CommandError::NoAppName);
                 };
 
-                Ok(Some(Self::Connect { app: app.to_string() }))
+                Ok(Some(Self::Connect { app }))
             }
             "call" => Ok(Some(Self::Call)),
             "close" => Ok(Some(Self::Close)),

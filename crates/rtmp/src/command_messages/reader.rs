@@ -1,3 +1,4 @@
+use std::borrow::Cow;
 use std::str::FromStr;
 
 use bytes::Bytes;
@@ -8,9 +9,10 @@ use super::errors::CommandError;
 use super::netconnection::NetConnectionCommand;
 use super::netstream::NetStreamCommand;
 
-impl Command {
-    pub fn read(payload: &Bytes) -> Result<Command, CommandError> {
+impl<'a> Command<'a> {
+    pub fn read(payload: &'a Bytes) -> Result<Self, CommandError> {
         let mut amf_reader = Amf0Decoder::new(payload);
+
         let Amf0Value::String(command_name) = amf_reader.decode_with_type(Amf0Marker::String)? else {
             unreachable!();
         };
@@ -18,28 +20,26 @@ impl Command {
             unreachable!();
         };
 
-        let net_command = CommandType::read(&command_name, &mut amf_reader)?;
+        let net_command = CommandType::read(command_name, &mut amf_reader)?;
 
-        Ok(Command {
+        Ok(Self {
             transaction_id,
             net_command,
         })
     }
 }
 
-impl CommandType {
-    fn read(command_name: &str, decoder: &mut Amf0Decoder) -> Result<Self, CommandError> {
-        if let Some(command) = NetConnectionCommand::read(command_name, decoder)? {
+impl<'a> CommandType<'a> {
+    fn read(command_name: Cow<'a, str>, decoder: &mut Amf0Decoder<'a>) -> Result<Self, CommandError> {
+        if let Some(command) = NetConnectionCommand::read(&command_name, decoder)? {
             return Ok(Self::NetConnection(command));
         }
 
-        if let Some(command) = NetStreamCommand::read(command_name, decoder)? {
+        if let Some(command) = NetStreamCommand::read(&command_name, decoder)? {
             return Ok(Self::NetStream(command));
         }
 
-        Ok(Self::Unknown {
-            command_name: command_name.to_string(),
-        })
+        Ok(Self::Unknown { command_name })
     }
 }
 

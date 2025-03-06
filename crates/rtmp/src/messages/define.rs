@@ -4,13 +4,13 @@ use crate::command_messages::Command;
 use crate::protocol_control_messages::ProtocolControlMessageSetChunkSize;
 
 #[derive(Debug)]
-pub enum MessageData {
+pub enum MessageData<'a> {
     // Protocol Control Messages
     // The other protocol control messages are not implemented here
     // because they are not needed in this implementation.
     SetChunkSize(ProtocolControlMessageSetChunkSize),
     // RTMP Command Messages
-    Amf0Command(Command),
+    Amf0Command(Command<'a>),
     Amf0Data { data: Bytes },
     AudioData { data: Bytes },
     VideoData { data: Bytes },

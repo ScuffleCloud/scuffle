@@ -5,8 +5,8 @@ use scuffle_amf0::{Amf0Encoder, Amf0Value};
 use super::NetStreamCommand;
 use crate::command_messages::CommandError;
 
-impl NetStreamCommand {
-    pub fn write(&self, buf: &mut impl io::Write, transaction_id: f64) -> Result<(), CommandError> {
+impl NetStreamCommand<'_> {
+    pub fn write(self, buf: &mut impl io::Write, transaction_id: f64) -> Result<(), CommandError> {
         match self {
             Self::OnStatus {
                 level,
@@ -20,8 +20,8 @@ impl NetStreamCommand {
                     buf,
                     &[
                         ("level".into(), Amf0Value::String(level.to_str().into())),
-                        ("code".into(), Amf0Value::String(code.into())),
-                        ("description".into(), Amf0Value::String(description.into())),
+                        ("code".into(), Amf0Value::String(code)),
+                        ("description".into(), Amf0Value::String(description)),
                     ],
                 )?;
             }

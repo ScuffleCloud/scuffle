@@ -4,7 +4,7 @@ use crate::chunk::Chunk;
 use crate::command_messages::Command;
 use crate::protocol_control_messages::ProtocolControlMessageSetChunkSize;
 
-impl MessageData {
+impl MessageData<'_> {
     pub fn parse(chunk: &Chunk) -> Result<Option<MessageData>, MessageError> {
         match chunk.message_header.msg_type_id {
             // Protocol Control Messages

@@ -17,7 +17,7 @@ impl CommandResultLevel {
     }
 }
 
-impl Command {
+impl Command<'_> {
     fn write_amf0_chunk(
         writer: &mut impl io::Write,
         encoder: &ChunkEncoder,
@@ -38,10 +38,10 @@ impl Command {
     // - SRS does not support AMF3 (https://github.com/ossrs/srs/blob/dcd02fe69cdbd7f401a7b8d139d95b522deb55b1/trunk/src/protocol/srs_protocol_rtmp_stack.cpp#L599)
     // However, the new enhanced-rtmp-v1 spec from YouTube does encourage the use of AMF3 over AMF0 (https://github.com/veovera/enhanced-rtmp)
     // We will eventually support this spec but for now we will stick to AMF0
-    pub fn write(&self, writer: &mut impl io::Write, encoder: &ChunkEncoder) -> Result<(), CommandError> {
+    pub fn write(self, writer: &mut impl io::Write, encoder: &ChunkEncoder) -> Result<(), CommandError> {
         let mut buf = Vec::new();
 
-        match &self.net_command {
+        match self.net_command {
             CommandType::NetConnection(command) => {
                 command.write(&mut buf, self.transaction_id)?;
             }

@@ -212,7 +212,7 @@ impl<S: tokio::io::AsyncRead + tokio::io::AsyncWrite + Unpin, H: SessionHandler>
     }
 
     /// Process one RTMP message
-    async fn process_message(&mut self, msg: MessageData, stream_id: u32, timestamp: u32) -> Result<(), SessionError> {
+    async fn process_message(&mut self, msg: MessageData<'_>, stream_id: u32, timestamp: u32) -> Result<(), SessionError> {
         match msg {
             MessageData::Amf0Command(command) => self.on_command_message(stream_id, command).await?,
             MessageData::SetChunkSize(ProtocolControlMessageSetChunkSize { chunk_size }) => {
@@ -249,10 +249,10 @@ impl<S: tokio::io::AsyncRead + tokio::io::AsyncWrite + Unpin, H: SessionHandler>
 
     /// on_amf0_command_message is called when we receive an AMF0 command
     /// message from the client We then handle the command message
-    async fn on_command_message(&mut self, stream_id: u32, command: Command) -> Result<(), SessionError> {
+    async fn on_command_message(&mut self, stream_id: u32, command: Command<'_>) -> Result<(), SessionError> {
         match command.net_command {
             CommandType::NetConnection(NetConnectionCommand::Connect { app }) => {
-                self.on_command_connect(stream_id, command.transaction_id, app).await?;
+                self.on_command_connect(stream_id, command.transaction_id, &app).await?;
             }
             CommandType::NetConnection(NetConnectionCommand::CreateStream) => {
                 self.on_command_create_stream(stream_id, command.transaction_id).await?;
@@ -270,7 +270,7 @@ impl<S: tokio::io::AsyncRead + tokio::io::AsyncWrite + Unpin, H: SessionHandler>
                 publishing_name,
                 publishing_type,
             }) => {
-                self.on_command_publish(stream_id, command.transaction_id, publishing_name, publishing_type)
+                self.on_command_publish(stream_id, command.transaction_id, &publishing_name, publishing_type)
                     .await?;
             }
             CommandType::NetStream(NetStreamCommand::CloseStream) => {
@@ -296,7 +296,7 @@ impl<S: tokio::io::AsyncRead + tokio::io::AsyncWrite + Unpin, H: SessionHandler>
     /// on_command_connect is called when we receive a amf0 command message with
     /// the name "connect" We then handle the connect message
     /// This is called when the client first connects to the server
-    async fn on_command_connect(&mut self, _stream_id: u32, transaction_id: f64, app: String) -> Result<(), SessionError> {
+    async fn on_command_connect(&mut self, _stream_id: u32, transaction_id: f64, app: &str) -> Result<(), SessionError> {
         ProtocolControlMessageWindowAcknowledgementSize {
             acknowledgement_window_size: CHUNK_SIZE as u32,
         }
@@ -311,11 +311,11 @@ impl<S: tokio::io::AsyncRead + tokio::io::AsyncWrite + Unpin, H: SessionHandler>
         self.app_name = Some(Box::from(app));
 
         let result = NetConnectionCommand::ConnectResult {
-            fmsver: "FMS/3,0,1,123".to_string(), // flash version (this value is used by other media servers as well)
-            capabilities: 31.0,                  // No idea what this means, but it is used by other media servers as well
+            fmsver: "FMS/3,0,1,123".into(), // flash version (this value is used by other media servers as well)
+            capabilities: 31.0,             // No idea what this means, but it is used by other media servers as well
             level: CommandResultLevel::Status,
-            code: "NetConnection.Connect.Success".to_string(),
-            description: "Connection Succeeded.".to_string(),
+            code: "NetConnection.Connect.Success".into(),
+            description: "Connection Succeeded.".into(),
             encoding: 0.0,
         };
 
@@ -363,8 +363,8 @@ impl<S: tokio::io::AsyncRead + tokio::io::AsyncWrite + Unpin, H: SessionHandler>
         Command {
             net_command: CommandType::NetStream(NetStreamCommand::OnStatus {
                 level: CommandResultLevel::Status,
-                code: "NetStream.DeleteStream.Suceess".to_string(),
-                description: "".to_string(),
+                code: "NetStream.DeleteStream.Suceess".into(),
+                description: "".into(),
             }),
             transaction_id,
         }
@@ -380,7 +380,7 @@ impl<S: tokio::io::AsyncRead + tokio::io::AsyncWrite + Unpin, H: SessionHandler>
         &mut self,
         stream_id: u32,
         transaction_id: f64,
-        publishing_name: String,
+        publishing_name: &str,
         _publishing_type: NetStreamCommandPublishPublishingType,
     ) -> Result<(), SessionError> {
         let Some(app_name) = &self.app_name else {
@@ -398,8 +398,8 @@ impl<S: tokio::io::AsyncRead + tokio::io::AsyncWrite + Unpin, H: SessionHandler>
         Command {
             net_command: CommandType::NetStream(NetStreamCommand::OnStatus {
                 level: CommandResultLevel::Status,
-                code: "NetStream.Publish.Start".to_string(),
-                description: "".to_string(),
+                code: "NetStream.Publish.Start".into(),
+                description: "".into(),
             }),
             transaction_id,
         }

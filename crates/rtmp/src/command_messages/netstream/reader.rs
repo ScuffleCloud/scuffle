@@ -7,8 +7,8 @@ use super::define::NetStreamCommandPublishPublishingType;
 use crate::command_messages::define::CommandResultLevel;
 use crate::command_messages::errors::CommandError;
 
-impl NetStreamCommand {
-    pub fn read(command_name: &str, decoder: &mut Amf0Decoder) -> Result<Option<Self>, CommandError> {
+impl<'a> NetStreamCommand<'a> {
+    pub fn read(command_name: &str, decoder: &mut Amf0Decoder<'a>) -> Result<Option<Self>, CommandError> {
         match command_name {
             "play" => Ok(Some(Self::Play)),
             "play2" => Ok(Some(Self::Play2)),
@@ -42,7 +42,7 @@ impl NetStreamCommand {
                 let publishing_type = NetStreamCommandPublishPublishingType::from_str(&publishing_type)?;
 
                 Ok(Some(Self::Publish {
-                    publishing_name: publishing_name.to_string(),
+                    publishing_name,
                     publishing_type,
                 }))
             }
@@ -57,6 +57,7 @@ impl NetStreamCommand {
                 let Amf0Value::Object(info_object) = decoder.decode_with_type(Amf0Marker::Object)? else {
                     unreachable!();
                 };
+                let mut info_object = info_object.into_owned();
 
                 let (_, Amf0Value::String(level)) = info_object
                     .iter()
@@ -68,26 +69,28 @@ impl NetStreamCommand {
 
                 let level = CommandResultLevel::from_str(level)?;
 
-                let (_, Amf0Value::String(code)) = info_object
-                    .iter()
-                    .find(|(k, _)| k == "code")
-                    .ok_or(CommandError::InvalidOnStatusInfoObject)?
-                else {
+                let (_, Amf0Value::String(code)) = info_object.remove(
+                    info_object
+                        .iter()
+                        .position(|(k, _)| k == "code")
+                        .ok_or(CommandError::InvalidOnStatusInfoObject)?,
+                ) else {
                     return Err(CommandError::InvalidOnStatusInfoObject);
                 };
 
-                let (_, Amf0Value::String(description)) = info_object
-                    .iter()
-                    .find(|(k, _)| k == "description")
-                    .ok_or(CommandError::InvalidOnStatusInfoObject)?
-                else {
+                let (_, Amf0Value::String(description)) = info_object.remove(
+                    info_object
+                        .iter()
+                        .position(|(k, _)| k == "description")
+                        .ok_or(CommandError::InvalidOnStatusInfoObject)?,
+                ) else {
                     return Err(CommandError::InvalidOnStatusInfoObject);
                 };
 
                 Ok(Some(Self::OnStatus {
                     level,
-                    code: code.to_string(),
-                    description: description.to_string(),
+                    code,
+                    description,
                 }))
             }
             _ => Ok(None),

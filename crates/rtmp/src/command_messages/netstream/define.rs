@@ -1,8 +1,10 @@
+use std::borrow::Cow;
+
 use crate::command_messages::define::CommandResultLevel;
 
 /// NetStream commands as defined in 7.2.2.
 #[derive(Debug, Clone)]
-pub enum NetStreamCommand {
+pub enum NetStreamCommand<'a> {
     Play,
     Play2,
     DeleteStream {
@@ -12,15 +14,15 @@ pub enum NetStreamCommand {
     ReceiveAudio,
     ReceiveVideo,
     Publish {
-        publishing_name: String,
+        publishing_name: Cow<'a, str>,
         publishing_type: NetStreamCommandPublishPublishingType,
     },
     Seek,
     Pause,
     OnStatus {
         level: CommandResultLevel,
-        code: String,
-        description: String,
+        code: Cow<'a, str>,
+        description: Cow<'a, str>,
     },
 }
 

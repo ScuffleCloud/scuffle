@@ -7,7 +7,7 @@ use bytes::BytesMut;
 use num_traits::FromPrimitive;
 
 use super::define::{Chunk, ChunkBasicHeader, ChunkMessageHeader, ChunkType, INIT_CHUNK_SIZE, MAX_CHUNK_SIZE};
-use super::errors::ChunkDecodeError;
+use super::errors::ChunkReadError;
 use crate::messages::MessageType;
 
 // These constants are used to limit the amount of memory we use for partial
@@ -17,10 +17,10 @@ const MAX_PARTIAL_CHUNK_SIZE: usize = 10 * 1024 * 1024; // 10MB (should be more 
 const MAX_PREVIOUS_CHUNK_HEADERS: usize = 100; // 100 chunks
 const MAX_PARTIAL_CHUNK_COUNT: usize = 4; // 4 chunks
 
-/// A chunk decoder.
+/// A chunk reader.
 ///
-/// This is used to decode chunks from a stream.
-pub struct ChunkDecoder {
+/// This is used to read chunks from a stream.
+pub struct ChunkReader {
     /// According to the spec chunk streams are identified by the chunk stream
     /// ID. In this case that is our key.
     /// We then have a chunk header (since some chunks refer to the previous
@@ -37,7 +37,7 @@ pub struct ChunkDecoder {
     max_chunk_size: usize,
 }
 
-impl Default for ChunkDecoder {
+impl Default for ChunkReader {
     fn default() -> Self {
         Self {
             previous_chunk_headers: HashMap::with_capacity(MAX_PREVIOUS_CHUNK_HEADERS),
@@ -47,7 +47,7 @@ impl Default for ChunkDecoder {
     }
 }
 
-impl ChunkDecoder {
+impl ChunkReader {
     /// Call when a client requests a chunk size change.
     ///
     /// Returns `false` if the chunk size is out of bounds.
@@ -68,13 +68,13 @@ impl ChunkDecoder {
     /// Returns:
     /// - `Ok(None)` if the buffer does not contain enough data to read a full chunk.
     /// - `Ok(Some(Chunk))` if a full chunk is read.
-    /// - `Err(ChunkDecodeError)` if there is an error decoding a chunk. The connection should be closed.
+    /// - `Err(ChunkReadError)` if there is an error decoding a chunk. The connection should be closed.
     ///
     /// # See also
     ///
     /// - [`Chunk`]
-    /// - [`ChunkDecodeError`]
-    pub fn read_chunk(&mut self, buffer: &mut BytesMut) -> Result<Option<Chunk>, ChunkDecodeError> {
+    /// - [`ChunkReadError`]
+    pub fn read_chunk(&mut self, buffer: &mut BytesMut) -> Result<Option<Chunk>, ChunkReadError> {
         // We do this in a loop because we may have multiple chunks in the buffer,
         // And those chunks may be partial chunks thus we need to keep reading until we
         // have a full chunk or we run out of data.
@@ -159,7 +159,7 @@ impl ChunkDecoder {
             // memory. And the client is probably trying to DoS us.
             // We return an error and the connection will be closed.
             if count > MAX_PREVIOUS_CHUNK_HEADERS {
-                return Err(ChunkDecodeError::TooManyPreviousChunkHeaders);
+                return Err(ChunkReadError::TooManyPreviousChunkHeaders);
             }
 
             // We insert the chunk header into our map.
@@ -192,7 +192,7 @@ impl ChunkDecoder {
                         // Since the client is probably trying to DoS us.
                         // The connection will be closed.
                         if self.partial_chunks.len() >= MAX_PARTIAL_CHUNK_COUNT {
-                            return Err(ChunkDecodeError::TooManyPartialChunks);
+                            return Err(ChunkReadError::TooManyPartialChunks);
                         }
 
                         // Insert a new empty BytesMut into the map.
@@ -208,7 +208,7 @@ impl ChunkDecoder {
                     // If the length of a single chunk is larger than the max partial chunk size
                     // we return an error. The client is probably trying to DoS us.
                     if partial_chunk.len() + payload.len() > MAX_PARTIAL_CHUNK_SIZE {
-                        return Err(ChunkDecodeError::PartialChunkTooLarge(partial_chunk.len() + payload.len()));
+                        return Err(ChunkReadError::PartialChunkTooLarge(partial_chunk.len() + payload.len()));
                     }
 
                     // Extend the partial chunk with the payload.
@@ -240,7 +240,7 @@ impl ChunkDecoder {
     }
 
     /// Internal function used to read the basic chunk header.
-    fn read_header(&self, cursor: &mut Cursor<&[u8]>) -> Result<ChunkBasicHeader, Option<ChunkDecodeError>> {
+    fn read_header(&self, cursor: &mut Cursor<&[u8]>) -> Result<ChunkBasicHeader, Option<ChunkReadError>> {
         // The first byte of the basic header is the format of the chunk and the stream
         // id. Mapping the error to none means that this isn't a real error but we dont
         // have enough data.
@@ -254,7 +254,7 @@ impl ChunkDecoder {
         // will be closed. It should not be possible to get an invalid chunk type
         // because, we bitshift the byte 6 bits to the right. Leaving 2 bits which can
         // only be 0, 1 or 2 or 3 which is the only valid chunk types.
-        let format = ChunkType::from_u8(format).ok_or(ChunkDecodeError::InvalidChunkType(format))?;
+        let format = ChunkType::from_u8(format).ok_or(ChunkReadError::InvalidChunkType(format))?;
 
         // We then check the chunk stream id.
         let chunk_stream_id = match (byte & 0b00111111) as u32 {
@@ -278,7 +278,7 @@ impl ChunkDecoder {
         &self,
         header: &ChunkBasicHeader,
         cursor: &mut Cursor<&[u8]>,
-    ) -> Result<ChunkMessageHeader, Option<ChunkDecodeError>> {
+    ) -> Result<ChunkMessageHeader, Option<ChunkReadError>> {
         // Each format has a different message header length.
         match header.format {
             // Type0 headers have the most information and can be compared to keyframes in video.
@@ -290,7 +290,7 @@ impl ChunkDecoder {
                 // payload not just this chunk)
                 let msg_length = cursor.read_u24::<BigEndian>().map_err(|_| None)?;
                 if msg_length as usize > MAX_PARTIAL_CHUNK_SIZE {
-                    return Err(Some(ChunkDecodeError::PartialChunkTooLarge(msg_length as usize)));
+                    return Err(Some(ChunkReadError::PartialChunkTooLarge(msg_length as usize)));
                 }
 
                 // We then have a 1 byte message type id.
@@ -299,7 +299,7 @@ impl ChunkDecoder {
                 // We validate the message type id. If it is invalid we return an error. (this
                 // is a real error)
                 let msg_type_id =
-                    MessageType::from_u8(msg_type_id).ok_or(ChunkDecodeError::InvalidMessageTypeID(msg_type_id))?;
+                    MessageType::from_u8(msg_type_id).ok_or(ChunkReadError::InvalidMessageTypeID(msg_type_id))?;
 
                 // We then read the message stream id. (According to spec this is stored in
                 // LittleEndian, no idea why.)
@@ -337,7 +337,7 @@ impl ChunkDecoder {
                 // payload not just this chunk)
                 let msg_length = cursor.read_u24::<BigEndian>().map_err(|_| None)?;
                 if msg_length as usize > MAX_PARTIAL_CHUNK_SIZE {
-                    return Err(Some(ChunkDecodeError::PartialChunkTooLarge(msg_length as usize)));
+                    return Err(Some(ChunkReadError::PartialChunkTooLarge(msg_length as usize)));
                 }
 
                 // We then have a 1 byte message type id.
@@ -346,7 +346,7 @@ impl ChunkDecoder {
                 // We validate the message type id. If it is invalid we return an error. (this
                 // is a real error)
                 let msg_type_id =
-                    MessageType::from_u8(msg_type_id).ok_or(ChunkDecodeError::InvalidMessageTypeID(msg_type_id))?;
+                    MessageType::from_u8(msg_type_id).ok_or(ChunkReadError::InvalidMessageTypeID(msg_type_id))?;
 
                 // Again as mentioned above we sometimes have a delta timestamp larger than 3
                 // bytes.
@@ -362,7 +362,7 @@ impl ChunkDecoder {
                 let previous_header = self
                     .previous_chunk_headers
                     .get(&header.chunk_stream_id)
-                    .ok_or(ChunkDecodeError::MissingPreviousChunkHeader(header.chunk_stream_id))?;
+                    .ok_or(ChunkReadError::MissingPreviousChunkHeader(header.chunk_stream_id))?;
 
                 // We calculate the timestamp by adding the delta timestamp to the previous
                 // timestamp. We need to make sure this does not overflow.
@@ -406,7 +406,7 @@ impl ChunkDecoder {
                 let previous_header = self
                     .previous_chunk_headers
                     .get(&header.chunk_stream_id)
-                    .ok_or(ChunkDecodeError::MissingPreviousChunkHeader(header.chunk_stream_id))?;
+                    .ok_or(ChunkReadError::MissingPreviousChunkHeader(header.chunk_stream_id))?;
 
                 // We calculate the timestamp by adding the delta timestamp to the previous
                 // timestamp.
@@ -428,7 +428,7 @@ impl ChunkDecoder {
                 let previous_header = self
                     .previous_chunk_headers
                     .get(&header.chunk_stream_id)
-                    .ok_or(ChunkDecodeError::MissingPreviousChunkHeader(header.chunk_stream_id))?
+                    .ok_or(ChunkReadError::MissingPreviousChunkHeader(header.chunk_stream_id))?
                     .clone();
 
                 // Now this is truely stupid.
@@ -453,7 +453,7 @@ impl ChunkDecoder {
         header: &ChunkBasicHeader,
         message_header: &ChunkMessageHeader,
         cursor: &mut Cursor<&'_ [u8]>,
-    ) -> Result<(usize, usize), Option<ChunkDecodeError>> {
+    ) -> Result<(usize, usize), Option<ChunkReadError>> {
         // We find out if the chunk is a partial chunk (and if we have already read some
         // of it).
         let key = (header.chunk_stream_id, message_header.msg_stream_id);
@@ -488,34 +488,34 @@ mod tests {
     use super::*;
 
     #[test]
-    fn test_decoder_error_display() {
-        let error = ChunkDecodeError::Io(std::io::Error::new(std::io::ErrorKind::Other, "test"));
+    fn test_reader_error_display() {
+        let error = ChunkReadError::Io(std::io::Error::new(std::io::ErrorKind::Other, "test"));
         assert_eq!(format!("{}", error), "io error: test");
 
-        let error = ChunkDecodeError::InvalidChunkType(123);
+        let error = ChunkReadError::InvalidChunkType(123);
         assert_eq!(format!("{}", error), "invalid chunk type: 123");
 
-        let error = ChunkDecodeError::InvalidMessageTypeID(123);
+        let error = ChunkReadError::InvalidMessageTypeID(123);
         assert_eq!(format!("{}", error), "invalid message type id: 123");
 
-        let error = ChunkDecodeError::MissingPreviousChunkHeader(123);
+        let error = ChunkReadError::MissingPreviousChunkHeader(123);
         assert_eq!(format!("{}", error), "missing previous chunk header: 123");
 
-        let error = ChunkDecodeError::TooManyPartialChunks;
+        let error = ChunkReadError::TooManyPartialChunks;
         assert_eq!(format!("{}", error), "too many partial chunks");
 
-        let error = ChunkDecodeError::TooManyPreviousChunkHeaders;
+        let error = ChunkReadError::TooManyPreviousChunkHeaders;
         assert_eq!(format!("{}", error), "too many previous chunk headers");
 
-        let error = ChunkDecodeError::PartialChunkTooLarge(100);
+        let error = ChunkReadError::PartialChunkTooLarge(100);
         assert_eq!(format!("{}", error), "partial chunk too large: 100");
 
-        let error = ChunkDecodeError::TimestampOverflow(100, 200);
+        let error = ChunkReadError::TimestampOverflow(100, 200);
         assert_eq!(format!("{}", error), "timestamp overflow: timestamp: 100, delta: 200");
     }
 
     #[test]
-    fn test_decoder_chunk_type0_single_sized() {
+    fn test_reader_chunk_type0_single_sized() {
         let mut buf = BytesMut::new();
 
         #[rustfmt::skip]
@@ -531,7 +531,7 @@ mod tests {
             (&mut buf).writer().write_u8(i as u8).unwrap();
         }
 
-        let mut unpacker = ChunkDecoder::default();
+        let mut unpacker = ChunkReader::default();
         let chunk = unpacker.read_chunk(&mut buf).expect("read chunk").expect("chunk");
         assert_eq!(chunk.basic_header.chunk_stream_id, 3);
         assert_eq!(chunk.message_header.msg_type_id as u8, 0x09);
@@ -542,7 +542,7 @@ mod tests {
     }
 
     #[test]
-    fn test_decoder_chunk_type0_double_sized() {
+    fn test_reader_chunk_type0_double_sized() {
         let mut buf = BytesMut::new();
         #[rustfmt::skip]
         buf.extend_from_slice(&[
@@ -557,7 +557,7 @@ mod tests {
             (&mut buf).writer().write_u8(i as u8).unwrap();
         }
 
-        let mut unpacker = ChunkDecoder::default();
+        let mut unpacker = ChunkReader::default();
 
         let chunk = buf.as_ref().to_vec();
 
@@ -580,7 +580,7 @@ mod tests {
     }
 
     #[test]
-    fn test_decoder_chunk_mutli_streams() {
+    fn test_reader_chunk_mutli_streams() {
         let mut buf = BytesMut::new();
 
         #[rustfmt::skip]
@@ -609,7 +609,7 @@ mod tests {
             (&mut buf).writer().write_u8(4).unwrap();
         }
 
-        let mut unpacker = ChunkDecoder::default();
+        let mut unpacker = ChunkReader::default();
 
         // We wrote 2 chunks but neither of them are complete
         assert!(unpacker.read_chunk(&mut buf).expect("read chunk").is_none());
@@ -663,7 +663,7 @@ mod tests {
     }
 
     #[test]
-    fn test_decoder_extended_timestamp() {
+    fn test_reader_extended_timestamp() {
         let mut buf = BytesMut::new();
 
         #[rustfmt::skip]
@@ -680,7 +680,7 @@ mod tests {
             (&mut buf).writer().write_u8(i as u8).unwrap();
         }
 
-        let mut unpacker = ChunkDecoder::default();
+        let mut unpacker = ChunkReader::default();
 
         // We should not have enough data to read the chunk
         // But the chunk is valid, so we should not get an error
@@ -730,7 +730,7 @@ mod tests {
     }
 
     #[test]
-    fn test_decoder_extended_timestamp_ext() {
+    fn test_reader_extended_timestamp_ext() {
         let mut buf = BytesMut::new();
 
         #[rustfmt::skip]
@@ -747,7 +747,7 @@ mod tests {
             (&mut buf).writer().write_u8(i as u8).unwrap();
         }
 
-        let mut unpacker = ChunkDecoder::default();
+        let mut unpacker = ChunkReader::default();
 
         // We should not have enough data to read the chunk
         // But the chunk is valid, so we should not get an error
@@ -791,7 +791,7 @@ mod tests {
             0x00, 0x01, 0x00, 0x00, // message stream id
         ]);
 
-        let mut unpacker = ChunkDecoder::default();
+        let mut unpacker = ChunkReader::default();
         let chunk = unpacker.read_chunk(&mut buf).expect("read chunk").expect("chunk");
 
         assert_eq!(chunk.basic_header.chunk_stream_id, 64 + 10);
@@ -812,7 +812,7 @@ mod tests {
             0x00, 0x01, 0x00, 0x00, // message stream id
         ]);
 
-        let mut unpacker = ChunkDecoder::default();
+        let mut unpacker = ChunkReader::default();
 
         let chunk = unpacker.read_chunk(&mut buf).expect("read chunk").expect("chunk");
 
@@ -820,7 +820,7 @@ mod tests {
     }
 
     #[test]
-    fn test_decoder_error_no_previous_chunk() {
+    fn test_reader_error_no_previous_chunk() {
         let mut buf = BytesMut::new();
 
         // Write a chunk with type 3 but no previous chunk
@@ -829,16 +829,16 @@ mod tests {
             (3 << 6) | 3, // chunk type 0, chunk stream id 3
         ]);
 
-        let mut unpacker = ChunkDecoder::default();
+        let mut unpacker = ChunkReader::default();
         let err = unpacker.read_chunk(&mut buf).unwrap_err();
         match err {
-            ChunkDecodeError::MissingPreviousChunkHeader(3) => {}
+            ChunkReadError::MissingPreviousChunkHeader(3) => {}
             _ => panic!("Unexpected error: {:?}", err),
         }
     }
 
     #[test]
-    fn test_decoder_error_partial_chunk_too_large() {
+    fn test_reader_error_partial_chunk_too_large() {
         let mut buf = BytesMut::new();
 
         // Write a chunk that has a message size that is too large
@@ -852,17 +852,17 @@ mod tests {
             0x01, 0x00, 0x00, 0x00, // extended timestamp
         ]);
 
-        let mut unpacker = ChunkDecoder::default();
+        let mut unpacker = ChunkReader::default();
 
         let err = unpacker.read_chunk(&mut buf).unwrap_err();
         match err {
-            ChunkDecodeError::PartialChunkTooLarge(16777215) => {}
+            ChunkReadError::PartialChunkTooLarge(16777215) => {}
             _ => panic!("Unexpected error: {:?}", err),
         }
     }
 
     #[test]
-    fn test_decoder_error_invalid_message_type_id() {
+    fn test_reader_error_invalid_message_type_id() {
         let mut buf = BytesMut::new();
 
         // Write a chunk with an invalid message type id
@@ -876,21 +876,21 @@ mod tests {
             0x01, 0x00, 0x00, 0x00, // extended timestamp
         ]);
 
-        let mut unpacker = ChunkDecoder::default();
+        let mut unpacker = ChunkReader::default();
 
         let err = unpacker.read_chunk(&mut buf).unwrap_err();
 
         match err {
-            ChunkDecodeError::InvalidMessageTypeID(0xFF) => {}
+            ChunkReadError::InvalidMessageTypeID(0xFF) => {}
             _ => panic!("Unexpected error: {:?}", err),
         }
     }
 
     #[test]
-    fn test_decoder_error_too_many_partial_chunks() {
+    fn test_reader_error_too_many_partial_chunks() {
         let mut buf = BytesMut::new();
 
-        let mut unpacker = ChunkDecoder::default();
+        let mut unpacker = ChunkReader::default();
 
         for i in 0..4 {
             // Write another chunk with a different chunk stream id
@@ -934,16 +934,16 @@ mod tests {
 
         let err = unpacker.read_chunk(&mut buf).unwrap_err();
         match err {
-            ChunkDecodeError::TooManyPartialChunks => {}
+            ChunkReadError::TooManyPartialChunks => {}
             _ => panic!("Unexpected error: {:?}", err),
         }
     }
 
     #[test]
-    fn test_decoder_error_too_many_chunk_headers() {
+    fn test_reader_error_too_many_chunk_headers() {
         let mut buf = BytesMut::new();
 
-        let mut unpacker = ChunkDecoder::default();
+        let mut unpacker = ChunkReader::default();
 
         for i in 0..100 {
             // Write another chunk with a different chunk stream id
@@ -980,13 +980,13 @@ mod tests {
 
         let err = unpacker.read_chunk(&mut buf).unwrap_err();
         match err {
-            ChunkDecodeError::TooManyPreviousChunkHeaders => {}
+            ChunkReadError::TooManyPreviousChunkHeaders => {}
             _ => panic!("Unexpected error: {:?}", err),
         }
     }
 
     #[test]
-    fn test_decoder_larger_chunk_size() {
+    fn test_reader_larger_chunk_size() {
         let mut buf = BytesMut::new();
 
         // Write a chunk that has a message size that is too large
@@ -1003,7 +1003,7 @@ mod tests {
             (&mut buf).writer().write_u8(i as u8).unwrap();
         }
 
-        let mut unpacker = ChunkDecoder::default();
+        let mut unpacker = ChunkReader::default();
         unpacker.update_max_chunk_size(4096);
 
         let chunk = unpacker.read_chunk(&mut buf).expect("failed").expect("chunk");

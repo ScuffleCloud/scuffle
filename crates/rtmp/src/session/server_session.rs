@@ -8,7 +8,7 @@ use tokio::io::{AsyncReadExt, AsyncWriteExt};
 use super::SessionHandler;
 use super::errors::SessionError;
 use super::handler::SessionData;
-use crate::chunk::{CHUNK_SIZE, ChunkDecoder, ChunkEncoder};
+use crate::chunk::{CHUNK_SIZE, ChunkReader, ChunkWriter};
 use crate::command_messages::netconnection::NetConnectionCommand;
 use crate::command_messages::netstream::{NetStreamCommand, NetStreamCommandPublishPublishingType};
 use crate::command_messages::{Command, CommandResultLevel, CommandType};
@@ -51,9 +51,9 @@ pub struct Session<S, H> {
 
     /// This is used to read the data from the stream and convert it into rtmp
     /// messages
-    chunk_decoder: ChunkDecoder,
+    chunk_reader: ChunkReader,
     /// This is used to convert rtmp messages into chunks
-    chunk_encoder: ChunkEncoder,
+    chunk_writer: ChunkWriter,
 
     /// Is Publishing
     publishing_stream_ids: Vec<u32>,
@@ -67,8 +67,8 @@ impl<S, H> Session<S, H> {
             io,
             handler,
             skip_read: false,
-            chunk_decoder: ChunkDecoder::default(),
-            chunk_encoder: ChunkEncoder::default(),
+            chunk_reader: ChunkReader::default(),
+            chunk_writer: ChunkWriter::default(),
             read_buf: BytesMut::new(),
             write_buf: Vec::new(),
             publishing_stream_ids: Vec::new(),
@@ -192,18 +192,18 @@ impl<S: tokio::io::AsyncRead + tokio::io::AsyncWrite + Unpin, H: SessionHandler>
             }
         }
 
-        self.parse_chunks().await?;
+        self.process_chunks().await?;
 
         Ok(true)
     }
 
     /// Parse data from the client into RTMP messages and process them.
-    async fn parse_chunks(&mut self) -> Result<(), SessionError> {
-        while let Some(chunk) = self.chunk_decoder.read_chunk(&mut self.read_buf)? {
+    async fn process_chunks(&mut self) -> Result<(), SessionError> {
+        while let Some(chunk) = self.chunk_reader.read_chunk(&mut self.read_buf)? {
             let timestamp = chunk.message_header.timestamp;
             let msg_stream_id = chunk.message_header.msg_stream_id;
 
-            if let Some(msg) = MessageData::parse(&chunk)? {
+            if let Some(msg) = MessageData::read(&chunk)? {
                 self.process_message(msg, msg_stream_id, timestamp).await?;
             }
         }
@@ -241,8 +241,8 @@ impl<S: tokio::io::AsyncRead + tokio::io::AsyncWrite + Unpin, H: SessionHandler>
         ProtocolControlMessageSetChunkSize {
             chunk_size: CHUNK_SIZE as u32,
         }
-        .write(&mut self.write_buf, &self.chunk_encoder)?;
-        self.chunk_encoder.set_chunk_size(CHUNK_SIZE);
+        .write(&mut self.write_buf, &self.chunk_writer)?;
+        self.chunk_writer.set_chunk_size(CHUNK_SIZE);
 
         Ok(())
     }
@@ -286,7 +286,7 @@ impl<S: tokio::io::AsyncRead + tokio::io::AsyncWrite + Unpin, H: SessionHandler>
     /// on_set_chunk_size is called when we receive a set chunk size message
     /// from the client We then update the chunk size of the unpacketizer
     fn on_set_chunk_size(&mut self, chunk_size: usize) -> Result<(), SessionError> {
-        if self.chunk_decoder.update_max_chunk_size(chunk_size) {
+        if self.chunk_reader.update_max_chunk_size(chunk_size) {
             Ok(())
         } else {
             Err(SessionError::InvalidChunkSize(chunk_size))
@@ -300,13 +300,13 @@ impl<S: tokio::io::AsyncRead + tokio::io::AsyncWrite + Unpin, H: SessionHandler>
         ProtocolControlMessageWindowAcknowledgementSize {
             acknowledgement_window_size: CHUNK_SIZE as u32,
         }
-        .write(&mut self.write_buf, &self.chunk_encoder)?;
+        .write(&mut self.write_buf, &self.chunk_writer)?;
 
         ProtocolControlMessageSetPeerBandwidth {
             acknowledgement_window_size: CHUNK_SIZE as u32,
             limit_type: ProtocolControlMessageSetPeerBandwidthLimitType::Dynamic,
         }
-        .write(&mut self.write_buf, &self.chunk_encoder)?;
+        .write(&mut self.write_buf, &self.chunk_writer)?;
 
         self.app_name = Some(Box::from(app));
 
@@ -323,7 +323,7 @@ impl<S: tokio::io::AsyncRead + tokio::io::AsyncWrite + Unpin, H: SessionHandler>
             net_command: CommandType::NetConnection(result),
             transaction_id,
         }
-        .write(&mut self.write_buf, &self.chunk_encoder)?;
+        .write(&mut self.write_buf, &self.chunk_writer)?;
 
         Ok(())
     }
@@ -338,7 +338,7 @@ impl<S: tokio::io::AsyncRead + tokio::io::AsyncWrite + Unpin, H: SessionHandler>
             net_command: CommandType::NetConnection(NetConnectionCommand::CreateStreamResult { stream_id: 1.0 }),
             transaction_id,
         }
-        .write(&mut self.write_buf, &self.chunk_encoder)?;
+        .write(&mut self.write_buf, &self.chunk_writer)?;
 
         Ok(())
     }
@@ -368,7 +368,7 @@ impl<S: tokio::io::AsyncRead + tokio::io::AsyncWrite + Unpin, H: SessionHandler>
             }),
             transaction_id,
         }
-        .write(&mut self.write_buf, &self.chunk_encoder)?;
+        .write(&mut self.write_buf, &self.chunk_writer)?;
 
         Ok(())
     }
@@ -393,7 +393,7 @@ impl<S: tokio::io::AsyncRead + tokio::io::AsyncWrite + Unpin, H: SessionHandler>
 
         self.publishing_stream_ids.push(stream_id);
 
-        EventMessageStreamBegin { stream_id }.write(&self.chunk_encoder, &mut self.write_buf)?;
+        EventMessageStreamBegin { stream_id }.write(&self.chunk_writer, &mut self.write_buf)?;
 
         Command {
             net_command: CommandType::NetStream(NetStreamCommand::OnStatus {
@@ -403,7 +403,7 @@ impl<S: tokio::io::AsyncRead + tokio::io::AsyncWrite + Unpin, H: SessionHandler>
             }),
             transaction_id,
         }
-        .write(&mut self.write_buf, &self.chunk_encoder)?;
+        .write(&mut self.write_buf, &self.chunk_writer)?;
 
         Ok(())
     }

@@ -1,7 +1,7 @@
 use std::io;
 
 #[derive(Debug, thiserror::Error)]
-pub enum ChunkDecodeError {
+pub enum ChunkReadError {
     #[error("io error: {0}")]
     Io(#[from] io::Error),
     #[error("invalid chunk type: {0}")]
@@ -21,7 +21,7 @@ pub enum ChunkDecodeError {
 }
 
 #[derive(Debug, thiserror::Error)]
-pub enum ChunkEncodeError {
+pub enum ChunkWriteError {
     #[error("unknown read state")]
     UnknownReadState,
     #[error("io error: {0}")]

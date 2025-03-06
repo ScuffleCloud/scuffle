@@ -1,4 +1,4 @@
-use crate::chunk::ChunkDecodeError;
+use crate::chunk::ChunkReadError;
 use crate::command_messages::CommandError;
 use crate::handshake::HandshakeError;
 use crate::messages::MessageError;
@@ -11,8 +11,8 @@ pub enum SessionError {
     Handshake(#[from] HandshakeError),
     #[error("message error: {0}")]
     Message(#[from] MessageError),
-    #[error("chunk decode error: {0}")]
-    ChunkDecode(#[from] ChunkDecodeError),
+    #[error("chunk read error: {0}")]
+    ChunkRead(#[from] ChunkReadError),
     #[error("protocol control message error: {0}")]
     ProtocolControlMessage(#[from] ProtocolControlMessageError),
     #[error("command error: {0}")]
@@ -62,7 +62,7 @@ impl SessionError {
 #[cfg_attr(all(test, coverage_nightly), coverage(off))]
 mod tests {
     use super::*;
-    use crate::chunk::ChunkEncodeError;
+    use crate::chunk::ChunkWriteError;
     use crate::handshake::DigestError;
 
     #[test]
@@ -73,21 +73,20 @@ mod tests {
         let error = SessionError::Handshake(HandshakeError::Digest(DigestError::NotEnoughData));
         assert_eq!(error.to_string(), "handshake error: digest error: not enough data");
 
-        let error = SessionError::ChunkDecode(ChunkDecodeError::TooManyPreviousChunkHeaders);
-        assert_eq!(error.to_string(), "chunk decode error: too many previous chunk headers");
+        let error = SessionError::ChunkRead(ChunkReadError::TooManyPreviousChunkHeaders);
+        assert_eq!(error.to_string(), "chunk read error: too many previous chunk headers");
 
-        let error = SessionError::ProtocolControlMessage(ProtocolControlMessageError::ChunkEncode(
-            ChunkEncodeError::UnknownReadState,
-        ));
+        let error =
+            SessionError::ProtocolControlMessage(ProtocolControlMessageError::ChunkWrite(ChunkWriteError::UnknownReadState));
         assert_eq!(
             error.to_string(),
-            "protocol control message error: chunk encode error: unknown read state"
+            "protocol control message error: chunk write error: unknown read state"
         );
 
-        let error = SessionError::EventMessages(EventMessagesError::ChunkEncode(ChunkEncodeError::UnknownReadState));
+        let error = SessionError::EventMessages(EventMessagesError::ChunkWrite(ChunkWriteError::UnknownReadState));
         assert_eq!(
             error.to_string(),
-            "event messages error: chunk encode error: unknown read state"
+            "event messages error: chunk write error: unknown read state"
         );
 
         let error = SessionError::UnknownStreamID(0);

@@ -8,16 +8,16 @@ use super::define::{
     ProtocolControlMessageWindowAcknowledgementSize,
 };
 use super::errors::ProtocolControlMessageError;
-use crate::chunk::{Chunk, ChunkEncoder};
+use crate::chunk::{Chunk, ChunkWriter};
 use crate::messages::MessageType;
 
 impl ProtocolControlMessageSetChunkSize {
-    pub fn write(&self, writer: &mut impl io::Write, encoder: &ChunkEncoder) -> Result<(), ProtocolControlMessageError> {
+    pub fn write(&self, io: &mut impl io::Write, writer: &ChunkWriter) -> Result<(), ProtocolControlMessageError> {
         // According to spec the first bit must be 0.
         let chunk_size = self.chunk_size & 0x7FFFFFFF; // 31 bits only
 
-        encoder.write_chunk(
-            writer,
+        writer.write_chunk(
+            io,
             Chunk::new(
                 2, // chunk stream must be 2
                 0, // timestamps are ignored
@@ -32,9 +32,9 @@ impl ProtocolControlMessageSetChunkSize {
 }
 
 impl ProtocolControlMessageWindowAcknowledgementSize {
-    pub fn write(&self, writer: &mut impl io::Write, encoder: &ChunkEncoder) -> Result<(), ProtocolControlMessageError> {
-        encoder.write_chunk(
-            writer,
+    pub fn write(&self, io: &mut impl io::Write, writer: &ChunkWriter) -> Result<(), ProtocolControlMessageError> {
+        writer.write_chunk(
+            io,
             Chunk::new(
                 2, // chunk stream must be 2
                 0, // timestamps are ignored
@@ -49,14 +49,14 @@ impl ProtocolControlMessageWindowAcknowledgementSize {
 }
 
 impl ProtocolControlMessageSetPeerBandwidth {
-    pub fn write(&self, writer: &mut impl io::Write, encoder: &ChunkEncoder) -> Result<(), ProtocolControlMessageError> {
+    pub fn write(&self, io: &mut impl io::Write, writer: &ChunkWriter) -> Result<(), ProtocolControlMessageError> {
         let mut data = Vec::new();
         data.write_u32::<BigEndian>(self.acknowledgement_window_size)
             .expect("Failed to write window size");
         data.write_u8(self.limit_type as u8).expect("Failed to write limit type");
 
-        encoder.write_chunk(
-            writer,
+        writer.write_chunk(
+            io,
             Chunk::new(
                 2, // chunk stream must be 2
                 0, // timestamps are ignored
@@ -76,21 +76,21 @@ mod tests {
     use bytes::{BufMut, BytesMut};
 
     use super::*;
-    use crate::chunk::ChunkDecoder;
+    use crate::chunk::ChunkReader;
     use crate::protocol_control_messages::ProtocolControlMessageSetPeerBandwidthLimitType;
 
     #[test]
     fn test_writer_write_set_chunk_size() {
-        let encoder = ChunkEncoder::default();
+        let writer = ChunkWriter::default();
         let mut buf = BytesMut::new();
 
         ProtocolControlMessageSetChunkSize { chunk_size: 1 }
-            .write(&mut (&mut buf).writer(), &encoder)
+            .write(&mut (&mut buf).writer(), &writer)
             .unwrap();
 
-        let mut decoder = ChunkDecoder::default();
+        let mut reader = ChunkReader::default();
 
-        let chunk = decoder.read_chunk(&mut buf).expect("read chunk").expect("chunk");
+        let chunk = reader.read_chunk(&mut buf).expect("read chunk").expect("chunk");
         assert_eq!(chunk.basic_header.chunk_stream_id, 0x02);
         assert_eq!(chunk.message_header.msg_type_id as u8, 0x01);
         assert_eq!(chunk.message_header.msg_stream_id, 0);
@@ -99,18 +99,18 @@ mod tests {
 
     #[test]
     fn test_writer_window_acknowledgement_size() {
-        let encoder = ChunkEncoder::default();
+        let writer = ChunkWriter::default();
         let mut buf = BytesMut::new();
 
         ProtocolControlMessageWindowAcknowledgementSize {
             acknowledgement_window_size: 1,
         }
-        .write(&mut (&mut buf).writer(), &encoder)
+        .write(&mut (&mut buf).writer(), &writer)
         .unwrap();
 
-        let mut decoder = ChunkDecoder::default();
+        let mut reader = ChunkReader::default();
 
-        let chunk = decoder.read_chunk(&mut buf).expect("read chunk").expect("chunk");
+        let chunk = reader.read_chunk(&mut buf).expect("read chunk").expect("chunk");
         assert_eq!(chunk.basic_header.chunk_stream_id, 0x02);
         assert_eq!(chunk.message_header.msg_type_id as u8, 0x05);
         assert_eq!(chunk.message_header.msg_stream_id, 0);
@@ -119,19 +119,19 @@ mod tests {
 
     #[test]
     fn test_writer_set_peer_bandwidth() {
-        let encoder = ChunkEncoder::default();
+        let writer = ChunkWriter::default();
         let mut buf = BytesMut::new();
 
         ProtocolControlMessageSetPeerBandwidth {
             acknowledgement_window_size: 1,
             limit_type: ProtocolControlMessageSetPeerBandwidthLimitType::Dynamic,
         }
-        .write(&mut (&mut buf).writer(), &encoder)
+        .write(&mut (&mut buf).writer(), &writer)
         .unwrap();
 
-        let mut decoder = ChunkDecoder::default();
+        let mut reader = ChunkReader::default();
 
-        let chunk = decoder.read_chunk(&mut buf).expect("read chunk").expect("chunk");
+        let chunk = reader.read_chunk(&mut buf).expect("read chunk").expect("chunk");
         assert_eq!(chunk.basic_header.chunk_stream_id, 0x02);
         assert_eq!(chunk.message_header.msg_type_id as u8, 0x06);
         assert_eq!(chunk.message_header.msg_stream_id, 0);

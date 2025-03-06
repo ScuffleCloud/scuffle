@@ -1,6 +1,6 @@
 mod define;
 mod errors;
-mod parser;
+mod reader;
 
 pub use self::define::{MessageData, MessageType};
 pub use self::errors::MessageError;

@@ -1,9 +1,9 @@
-use crate::chunk::ChunkEncodeError;
+use crate::chunk::ChunkWriteError;
 
 #[derive(Debug, thiserror::Error)]
 pub enum EventMessagesError {
-    #[error("chunk encode error: {0}")]
-    ChunkEncode(#[from] ChunkEncodeError),
+    #[error("chunk write error: {0}")]
+    ChunkWrite(#[from] ChunkWriteError),
 }
 
 #[cfg(test)]
@@ -13,7 +13,7 @@ mod tests {
 
     #[test]
     fn test_error_display() {
-        let error = EventMessagesError::ChunkEncode(ChunkEncodeError::UnknownReadState);
-        assert_eq!(format!("{}", error), "chunk encode error: unknown read state");
+        let error = EventMessagesError::ChunkWrite(ChunkWriteError::UnknownReadState);
+        assert_eq!(format!("{}", error), "chunk write error: unknown read state");
     }
 }

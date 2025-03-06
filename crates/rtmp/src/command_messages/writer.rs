@@ -4,7 +4,7 @@ use bytes::Bytes;
 
 use super::define::CommandResultLevel;
 use super::{Command, CommandError, CommandType};
-use crate::chunk::{COMMAND_CHUNK_STREAM_ID, Chunk, ChunkEncodeError, ChunkEncoder};
+use crate::chunk::{COMMAND_CHUNK_STREAM_ID, Chunk, ChunkWriteError, ChunkWriter};
 use crate::messages::MessageType;
 
 impl CommandResultLevel {
@@ -18,13 +18,9 @@ impl CommandResultLevel {
 }
 
 impl Command<'_> {
-    fn write_amf0_chunk(
-        writer: &mut impl io::Write,
-        encoder: &ChunkEncoder,
-        payload: Bytes,
-    ) -> Result<(), ChunkEncodeError> {
-        encoder.write_chunk(
-            writer,
+    fn write_amf0_chunk(io: &mut impl io::Write, writer: &ChunkWriter, payload: Bytes) -> Result<(), ChunkWriteError> {
+        writer.write_chunk(
+            io,
             Chunk::new(COMMAND_CHUNK_STREAM_ID, 0, MessageType::CommandAMF0, 0, payload),
         )
     }
@@ -38,7 +34,7 @@ impl Command<'_> {
     // - SRS does not support AMF3 (https://github.com/ossrs/srs/blob/dcd02fe69cdbd7f401a7b8d139d95b522deb55b1/trunk/src/protocol/srs_protocol_rtmp_stack.cpp#L599)
     // However, the new enhanced-rtmp-v1 spec from YouTube does encourage the use of AMF3 over AMF0 (https://github.com/veovera/enhanced-rtmp)
     // We will eventually support this spec but for now we will stick to AMF0
-    pub fn write(self, writer: &mut impl io::Write, encoder: &ChunkEncoder) -> Result<(), CommandError> {
+    pub fn write(self, io: &mut impl io::Write, writer: &ChunkWriter) -> Result<(), CommandError> {
         let mut buf = Vec::new();
 
         match self.net_command {
@@ -52,7 +48,7 @@ impl Command<'_> {
             CommandType::Unknown { .. } => {}
         }
 
-        Self::write_amf0_chunk(writer, encoder, Bytes::from(buf))?;
+        Self::write_amf0_chunk(io, writer, Bytes::from(buf))?;
 
         Ok(())
     }

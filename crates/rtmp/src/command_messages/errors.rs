@@ -10,8 +10,8 @@ pub enum CommandError {
     InvalidCommandResultLevel(String),
     #[error("invalid onStatus info object")]
     InvalidOnStatusInfoObject,
-    #[error("chunk encode: {0}")]
-    ChunkEncode(#[from] crate::chunk::ChunkEncodeError),
+    #[error("chunk write: {0}")]
+    ChunkWrite(#[from] crate::chunk::ChunkWriteError),
     #[error("amf0 write: {0}")]
     Amf0Write(#[from] scuffle_amf0::Amf0WriteError),
 }

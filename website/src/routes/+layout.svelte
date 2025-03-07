@@ -1,7 +1,9 @@
 <script lang="ts">
     import { theme } from '$lib/theme';
-    import '../styles/global.css';
-
+    import '$styles/global.css';
+    import Navbar from '$components/left-nav/Navbar.svelte';
+    import TopNav from '$components/top-nav/TopNav.svelte';
+    import '@fontsource-variable/archivo';
     const { children } = $props();
 
     const cssVariables = Object.entries(theme.colors)
@@ -10,8 +12,12 @@
 </script>
 
 <div class="app" style={cssVariables}>
+    <Navbar />
     <main>
-        {@render children()}
+        <TopNav />
+        <div class="content">
+            {@render children()}
+        </div>
     </main>
 </div>
 
@@ -19,7 +25,6 @@
     .app {
         position: relative;
         display: flex;
-        flex-direction: column;
         min-height: 100vh;
         background-color: var(--color-light100);
     }
@@ -30,5 +35,9 @@
         display: flex;
         flex-direction: column;
         box-sizing: border-box;
+
+        .content {
+            padding: 2rem;
+        }
     }
 </style>

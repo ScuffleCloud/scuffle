@@ -29,3 +29,23 @@ impl<'a> NetConnectionCommand<'a> {
         }
     }
 }
+
+#[cfg(test)]
+#[cfg_attr(all(test, coverage_nightly), coverage(off))]
+mod tests {
+    use scuffle_amf0::{Amf0Decoder, Amf0Encoder};
+
+    use super::NetConnectionCommand;
+    use crate::command_messages::CommandError;
+
+    #[test]
+    fn test_read_no_app() {
+        let mut command_object = Vec::new();
+        Amf0Encoder::encode_object(&mut command_object, &[]).unwrap();
+
+        let mut decoder = Amf0Decoder::new(&command_object);
+        let result = NetConnectionCommand::read("connect", &mut decoder).unwrap_err();
+
+        assert!(matches!(result, CommandError::NoAppName));
+    }
+}

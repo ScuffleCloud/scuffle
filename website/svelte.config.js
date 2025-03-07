@@ -18,6 +18,11 @@ const config = {
             assets: 'build',
             trailingSlash: 'ignore',
         }),
+        alias: {
+            $components: 'src/components',
+            $styles: 'src/styles',
+            $lib: 'src/lib',
+        },
     },
     // Enforcing runes for external libraries https://github.com/sveltejs/svelte/issues/9632
     vitePlugin: {

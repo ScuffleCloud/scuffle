@@ -501,6 +501,12 @@ mod tests {
     }
 
     #[test]
+    fn test_reader_chunk_size_out_of_bounds() {
+        let mut reader = ChunkReader::default();
+        assert!(!reader.update_max_chunk_size(MAX_CHUNK_SIZE + 1));
+    }
+
+    #[test]
     fn test_reader_chunk_type0_single_sized() {
         let mut buf = BytesMut::new();
 

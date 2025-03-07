@@ -23,7 +23,7 @@ pub enum CommandType<'a> {
 }
 
 /// NetStream onStatus level (7.2.2.) and NetConnection connect result level (7.2.1.1.)
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, PartialEq, Eq)]
 pub enum CommandResultLevel {
     Warning,
     Status,

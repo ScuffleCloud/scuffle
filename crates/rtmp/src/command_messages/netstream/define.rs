@@ -3,7 +3,7 @@ use std::borrow::Cow;
 use crate::command_messages::define::CommandResultLevel;
 
 /// NetStream commands as defined in 7.2.2.
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, PartialEq)]
 pub enum NetStreamCommand<'a> {
     Play,
     Play2,
@@ -27,7 +27,7 @@ pub enum NetStreamCommand<'a> {
 }
 
 /// NetStream command publish publishing type
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, PartialEq, Eq)]
 pub enum NetStreamCommandPublishPublishingType {
     Live,
     Record,

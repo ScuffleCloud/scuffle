@@ -104,3 +104,123 @@ impl From<&str> for NetStreamCommandPublishPublishingType {
         }
     }
 }
+
+#[cfg(test)]
+#[cfg_attr(all(test, coverage_nightly), coverage(off))]
+mod tests {
+    use scuffle_amf0::{Amf0Decoder, Amf0Encoder, Amf0Marker, Amf0Value};
+
+    use super::NetStreamCommandPublishPublishingType;
+    use crate::command_messages::netstream::NetStreamCommand;
+
+    #[test]
+    fn test_command_no_payload() {
+        let command = NetStreamCommand::read("play", &mut Amf0Decoder::new(&[])).unwrap().unwrap();
+        assert_eq!(command, NetStreamCommand::Play);
+
+        let command = NetStreamCommand::read("play2", &mut Amf0Decoder::new(&[])).unwrap().unwrap();
+        assert_eq!(command, NetStreamCommand::Play2);
+
+        let command = NetStreamCommand::read("closeStream", &mut Amf0Decoder::new(&[]))
+            .unwrap()
+            .unwrap();
+        assert_eq!(command, NetStreamCommand::CloseStream);
+
+        let command = NetStreamCommand::read("receiveAudio", &mut Amf0Decoder::new(&[]))
+            .unwrap()
+            .unwrap();
+        assert_eq!(command, NetStreamCommand::ReceiveAudio);
+
+        let command = NetStreamCommand::read("receiveVideo", &mut Amf0Decoder::new(&[]))
+            .unwrap()
+            .unwrap();
+        assert_eq!(command, NetStreamCommand::ReceiveVideo);
+
+        let command = NetStreamCommand::read("seek", &mut Amf0Decoder::new(&[])).unwrap().unwrap();
+        assert_eq!(command, NetStreamCommand::Seek);
+
+        let command = NetStreamCommand::read("pause", &mut Amf0Decoder::new(&[])).unwrap().unwrap();
+        assert_eq!(command, NetStreamCommand::Pause);
+    }
+
+    #[test]
+    fn test_command_delete_stream() {
+        let mut payload = vec![Amf0Marker::Null as u8, Amf0Marker::Number as u8];
+        payload.extend_from_slice(0.0f64.to_be_bytes().as_ref());
+
+        let command = NetStreamCommand::read("deleteStream", &mut Amf0Decoder::new(&payload))
+            .unwrap()
+            .unwrap();
+        assert_eq!(command, NetStreamCommand::DeleteStream { stream_id: 0.0 });
+    }
+
+    #[test]
+    fn test_command_publish() {
+        let mut payload = Vec::new();
+
+        Amf0Encoder::encode_null(&mut payload).unwrap();
+        Amf0Encoder::encode_string(&mut payload, "live").unwrap();
+        Amf0Encoder::encode_string(&mut payload, "record").unwrap();
+
+        let command = NetStreamCommand::read("publish", &mut Amf0Decoder::new(&payload))
+            .unwrap()
+            .unwrap();
+
+        assert_eq!(
+            command,
+            NetStreamCommand::Publish {
+                publishing_name: "live".into(),
+                publishing_type: NetStreamCommandPublishPublishingType::Record
+            }
+        );
+    }
+
+    #[test]
+    fn test_command_on_status() {
+        let mut payload = Vec::new();
+
+        Amf0Encoder::encode_null(&mut payload).unwrap();
+        Amf0Encoder::encode_object(
+            &mut payload,
+            &[
+                ("level".into(), Amf0Value::String("error".into())),
+                ("code".into(), Amf0Value::String("NetStream.Play.StreamNotFound".into())),
+                ("description".into(), Amf0Value::String("Stream not found".into())),
+            ],
+        )
+        .unwrap();
+
+        let command = NetStreamCommand::read("onStatus", &mut Amf0Decoder::new(&payload))
+            .unwrap()
+            .unwrap();
+
+        assert_eq!(
+            command,
+            NetStreamCommand::OnStatus {
+                level: "error".into(),
+                code: "NetStream.Play.StreamNotFound".into(),
+                description: "Stream not found".into()
+            }
+        );
+    }
+
+    #[test]
+    fn test_parse_publishing_type() {
+        assert_eq!(
+            NetStreamCommandPublishPublishingType::from("live"),
+            NetStreamCommandPublishPublishingType::Live
+        );
+        assert_eq!(
+            NetStreamCommandPublishPublishingType::from("record"),
+            NetStreamCommandPublishPublishingType::Record
+        );
+        assert_eq!(
+            NetStreamCommandPublishPublishingType::from("append"),
+            NetStreamCommandPublishPublishingType::Append
+        );
+        assert_eq!(
+            NetStreamCommandPublishPublishingType::from("unknown"),
+            NetStreamCommandPublishPublishingType::Unknown("unknown".to_string())
+        );
+    }
+}

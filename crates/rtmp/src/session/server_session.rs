@@ -14,7 +14,6 @@ use crate::command_messages::netstream::{NetStreamCommand, NetStreamCommandPubli
 use crate::command_messages::{Command, CommandResultLevel, CommandType};
 use crate::handshake;
 use crate::handshake::HandshakeServer;
-use crate::handshake::define::ServerHandshakeState;
 use crate::messages::MessageData;
 use crate::protocol_control_messages::{
     ProtocolControlMessageSetChunkSize, ProtocolControlMessageSetPeerBandwidth,
@@ -284,6 +283,9 @@ impl<S: tokio::io::AsyncRead + tokio::io::AsyncWrite + Unpin, H: SessionHandler>
             }
             CommandType::NetStream(NetStreamCommand::CloseStream) => {
                 // Not sure what this is for
+            }
+            CommandType::Unknown { command_name } => {
+                tracing::warn!(command_name = ?command_name, "unknown command");
             }
             // ignore everything else
             _ => {}

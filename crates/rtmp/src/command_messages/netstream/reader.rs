@@ -34,6 +34,10 @@ impl<'a> NetStreamCommand<'a> {
                 };
                 let publishing_type = From::<&str>::from(&publishing_type);
 
+                if let NetStreamCommandPublishPublishingType::Unknown(publishing_type) = &publishing_type {
+                    tracing::warn!(publishing_type = ?publishing_type, "unknown publishing type in publish command");
+                }
+
                 Ok(Some(Self::Publish {
                     publishing_name,
                     publishing_type,

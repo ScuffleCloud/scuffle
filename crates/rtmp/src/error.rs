@@ -54,7 +54,7 @@ mod tests {
 
         assert!(Error::Session(SessionError::Timeout(elapsed)).is_client_closed());
 
-        assert!(!Error::Io(std::io::Error::new(ErrorKind::Other, "test")).is_client_closed());
+        assert!(!Error::Io(std::io::Error::other("test")).is_client_closed());
         assert!(!Error::Session(SessionError::ConnectRequestDenied).is_client_closed());
     }
 }

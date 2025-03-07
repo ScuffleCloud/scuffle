@@ -54,3 +54,17 @@ impl Command<'_> {
         Ok(())
     }
 }
+
+#[cfg(test)]
+#[cfg_attr(all(test, coverage_nightly), coverage(off))]
+mod tests {
+    use super::super::CommandResultLevel;
+
+    #[test]
+    fn test_command_result_level_to_str() {
+        assert_eq!(CommandResultLevel::Warning.to_str(), "warning");
+        assert_eq!(CommandResultLevel::Status.to_str(), "status");
+        assert_eq!(CommandResultLevel::Error.to_str(), "error");
+        assert_eq!(CommandResultLevel::Unknown("custom".to_string()).to_str(), "custom");
+    }
+}

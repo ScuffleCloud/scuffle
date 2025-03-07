@@ -3,12 +3,11 @@ use std::io;
 use byteorder::{BigEndian, WriteBytesExt};
 
 use super::define::{EventMessageStreamBegin, EventType};
-use super::errors::EventMessagesError;
 use crate::chunk::{Chunk, ChunkWriter};
 use crate::messages::MessageType;
 
 impl EventMessageStreamBegin {
-    pub fn write(&self, writer: &ChunkWriter, io: &mut impl io::Write) -> Result<(), EventMessagesError> {
+    pub fn write(&self, writer: &ChunkWriter, io: &mut impl io::Write) -> io::Result<()> {
         let mut data = Vec::new();
 
         data.write_u16::<BigEndian>(EventType::StreamBegin.0).expect("write u16");

@@ -1,7 +1,7 @@
 use scuffle_amf0::{Amf0Decoder, Amf0Value};
 
 use super::NetConnectionCommand;
-use crate::command_messages::errors::CommandError;
+use crate::command_messages::error::CommandError;
 
 impl<'a> NetConnectionCommand<'a> {
     pub fn read(command_name: &str, decoder: &mut Amf0Decoder<'a>) -> Result<Option<Self>, CommandError> {

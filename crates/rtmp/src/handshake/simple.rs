@@ -7,7 +7,6 @@ use scuffle_bytes_util::BytesCursorExt;
 
 use super::current_time;
 use super::define::{self, RtmpVersion, ServerHandshakeState};
-use crate::handshake::HandshakeError;
 
 /// Simple Handshake Server
 /// RTMP Spec 1.0 - 5.2
@@ -35,7 +34,7 @@ impl Default for SimpleHandshakeServer {
 
 impl SimpleHandshakeServer {
     /// Perform the handshake, writing to the output and reading from the input.
-    pub fn handshake(&mut self, input: &mut io::Cursor<Bytes>, output: &mut Vec<u8>) -> Result<(), HandshakeError> {
+    pub fn handshake(&mut self, input: &mut io::Cursor<Bytes>, output: &mut Vec<u8>) -> Result<(), crate::error::Error> {
         match self.state {
             ServerHandshakeState::ReadC0C1 => {
                 self.read_c0(input)?;
@@ -55,7 +54,7 @@ impl SimpleHandshakeServer {
         Ok(())
     }
 
-    fn read_c0(&mut self, input: &mut io::Cursor<Bytes>) -> Result<(), HandshakeError> {
+    fn read_c0(&mut self, input: &mut io::Cursor<Bytes>) -> Result<(), crate::error::Error> {
         // Version (8 bits): In C0, this field identifies the RTMP version
         //  requested by the client.
         self.requested_version = RtmpVersion::from(input.read_u8()?);
@@ -67,7 +66,7 @@ impl SimpleHandshakeServer {
         Ok(())
     }
 
-    fn read_c1(&mut self, input: &mut io::Cursor<Bytes>) -> Result<(), HandshakeError> {
+    fn read_c1(&mut self, input: &mut io::Cursor<Bytes>) -> Result<(), crate::error::Error> {
         // Time (4 bytes): This field contains a timestamp, which SHOULD be
         //  used as the epoch for all future chunks sent from this endpoint.
         //  This may be 0, or some arbitrary value. To synchronize multiple
@@ -89,7 +88,7 @@ impl SimpleHandshakeServer {
         Ok(())
     }
 
-    fn read_c2(&mut self, input: &mut io::Cursor<Bytes>) -> Result<(), HandshakeError> {
+    fn read_c2(&mut self, input: &mut io::Cursor<Bytes>) -> Result<(), crate::error::Error> {
         // We don't care too much about the data in C2, so we just read it
         //  and discard it.
         // We should technically check that the timestamp is the same as
@@ -103,7 +102,7 @@ impl SimpleHandshakeServer {
     }
 
     /// Defined in RTMP Specification 1.0 - 5.2.2
-    fn write_s0(&mut self, output: &mut Vec<u8>) -> Result<(), HandshakeError> {
+    fn write_s0(&mut self, output: &mut Vec<u8>) -> Result<(), crate::error::Error> {
         // Version (8 bits): In S0, this field identifies the RTMP
         //  version selected by the server. The version defined by this
         //  specification is 3. A server that does not recognize the
@@ -115,7 +114,7 @@ impl SimpleHandshakeServer {
     }
 
     /// Defined in RTMP Specification 1.0 - 5.2.3
-    fn write_s1(&mut self, output: &mut Vec<u8>) -> Result<(), HandshakeError> {
+    fn write_s1(&mut self, output: &mut Vec<u8>) -> Result<(), crate::error::Error> {
         // Time (4 bytes): This field contains a timestamp, which SHOULD be
         //  used as the epoch for all future chunks sent from this endpoint.
         //  This may be 0, or some arbitrary value. To synchronize multiple
@@ -140,7 +139,7 @@ impl SimpleHandshakeServer {
         Ok(())
     }
 
-    fn write_s2(&mut self, output: &mut Vec<u8>) -> Result<(), HandshakeError> {
+    fn write_s2(&mut self, output: &mut Vec<u8>) -> Result<(), crate::error::Error> {
         // Time (4 bytes): This field MUST contain the timestamp sent by the C1 (for
         // S2).
         output.write_u32::<BigEndian>(self.c1_timestamp)?;

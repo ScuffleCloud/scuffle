@@ -3,22 +3,23 @@ use std::io;
 use bytes::Bytes;
 
 use super::define::CommandResultLevel;
-use super::{Command, CommandError, CommandType};
-use crate::chunk::{Chunk, ChunkStreamId, ChunkWriteError, ChunkWriter};
+use super::{Command, CommandType};
+use crate::chunk::{Chunk, ChunkStreamId, ChunkWriter};
 use crate::messages::MessageType;
 
 impl CommandResultLevel {
-    pub fn to_str(&self) -> &'static str {
+    pub fn to_str(&self) -> &str {
         match self {
             CommandResultLevel::Warning => "warning",
             CommandResultLevel::Status => "status",
             CommandResultLevel::Error => "error",
+            CommandResultLevel::Unknown(s) => s,
         }
     }
 }
 
 impl Command<'_> {
-    fn write_amf0_chunk(io: &mut impl io::Write, writer: &ChunkWriter, payload: Bytes) -> Result<(), ChunkWriteError> {
+    fn write_amf0_chunk(io: &mut impl io::Write, writer: &ChunkWriter, payload: Bytes) -> io::Result<()> {
         writer.write_chunk(
             io,
             Chunk::new(ChunkStreamId::Command.0, 0, MessageType::CommandAMF0, 0, payload),
@@ -34,7 +35,7 @@ impl Command<'_> {
     // - SRS does not support AMF3 (https://github.com/ossrs/srs/blob/dcd02fe69cdbd7f401a7b8d139d95b522deb55b1/trunk/src/protocol/srs_protocol_rtmp_stack.cpp#L599)
     // However, the new enhanced-rtmp-v1 spec from YouTube does encourage the use of AMF3 over AMF0 (https://github.com/veovera/enhanced-rtmp)
     // We will eventually support this spec but for now we will stick to AMF0
-    pub fn write(self, io: &mut impl io::Write, writer: &ChunkWriter) -> Result<(), CommandError> {
+    pub fn write(self, io: &mut impl io::Write, writer: &ChunkWriter) -> Result<(), crate::error::Error> {
         let mut buf = Vec::new();
 
         match self.net_command {

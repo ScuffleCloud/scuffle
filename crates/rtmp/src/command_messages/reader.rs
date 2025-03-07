@@ -1,11 +1,10 @@
 use std::borrow::Cow;
-use std::str::FromStr;
 
 use bytes::Bytes;
 use scuffle_amf0::{Amf0Decoder, Amf0Marker, Amf0Value};
 
 use super::define::{Command, CommandResultLevel, CommandType};
-use super::errors::CommandError;
+use super::error::CommandError;
 use super::netconnection::NetConnectionCommand;
 use super::netstream::NetStreamCommand;
 
@@ -43,15 +42,13 @@ impl<'a> CommandType<'a> {
     }
 }
 
-impl FromStr for CommandResultLevel {
-    type Err = CommandError;
-
-    fn from_str(s: &str) -> Result<Self, Self::Err> {
+impl From<&str> for CommandResultLevel {
+    fn from(s: &str) -> Self {
         match s {
-            "warning" => Ok(Self::Warning),
-            "status" => Ok(Self::Status),
-            "error" => Ok(Self::Error),
-            _ => Err(CommandError::InvalidCommandResultLevel(s.to_string())),
+            "warning" => Self::Warning,
+            "status" => Self::Status,
+            "error" => Self::Error,
+            _ => Self::Unknown(s.to_string()),
         }
     }
 }

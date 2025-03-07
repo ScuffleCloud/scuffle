@@ -7,12 +7,11 @@ use super::define::{
     ProtocolControlMessageSetChunkSize, ProtocolControlMessageSetPeerBandwidth,
     ProtocolControlMessageWindowAcknowledgementSize,
 };
-use super::errors::ProtocolControlMessageError;
 use crate::chunk::{Chunk, ChunkWriter};
 use crate::messages::MessageType;
 
 impl ProtocolControlMessageSetChunkSize {
-    pub fn write(&self, io: &mut impl io::Write, writer: &ChunkWriter) -> Result<(), ProtocolControlMessageError> {
+    pub fn write(&self, io: &mut impl io::Write, writer: &ChunkWriter) -> Result<(), crate::error::Error> {
         // According to spec the first bit must be 0.
         let chunk_size = self.chunk_size & 0x7FFFFFFF; // 31 bits only
 
@@ -32,7 +31,7 @@ impl ProtocolControlMessageSetChunkSize {
 }
 
 impl ProtocolControlMessageWindowAcknowledgementSize {
-    pub fn write(&self, io: &mut impl io::Write, writer: &ChunkWriter) -> Result<(), ProtocolControlMessageError> {
+    pub fn write(&self, io: &mut impl io::Write, writer: &ChunkWriter) -> Result<(), crate::error::Error> {
         writer.write_chunk(
             io,
             Chunk::new(
@@ -49,7 +48,7 @@ impl ProtocolControlMessageWindowAcknowledgementSize {
 }
 
 impl ProtocolControlMessageSetPeerBandwidth {
-    pub fn write(&self, io: &mut impl io::Write, writer: &ChunkWriter) -> Result<(), ProtocolControlMessageError> {
+    pub fn write(&self, io: &mut impl io::Write, writer: &ChunkWriter) -> Result<(), crate::error::Error> {
         let mut data = Vec::new();
         data.write_u32::<BigEndian>(self.acknowledgement_window_size)
             .expect("Failed to write window size");

@@ -28,4 +28,5 @@ pub enum CommandResultLevel {
     Warning,
     Status,
     Error,
+    Unknown(String),
 }

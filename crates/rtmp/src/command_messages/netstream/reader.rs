@@ -1,11 +1,8 @@
-use std::str::FromStr;
-
 use scuffle_amf0::{Amf0Decoder, Amf0Marker, Amf0Value};
 
 use super::NetStreamCommand;
 use super::define::NetStreamCommandPublishPublishingType;
-use crate::command_messages::define::CommandResultLevel;
-use crate::command_messages::errors::CommandError;
+use crate::command_messages::error::CommandError;
 
 impl<'a> NetStreamCommand<'a> {
     pub fn read(command_name: &str, decoder: &mut Amf0Decoder<'a>) -> Result<Option<Self>, CommandError> {
@@ -35,7 +32,7 @@ impl<'a> NetStreamCommand<'a> {
                 let Amf0Value::String(publishing_type) = decoder.decode_with_type(Amf0Marker::String)? else {
                     unreachable!();
                 };
-                let publishing_type = NetStreamCommandPublishPublishingType::from_str(&publishing_type)?;
+                let publishing_type = From::<&str>::from(&publishing_type);
 
                 Ok(Some(Self::Publish {
                     publishing_name,
@@ -62,7 +59,7 @@ impl<'a> NetStreamCommand<'a> {
                     return Err(CommandError::InvalidOnStatusInfoObject);
                 };
 
-                let level = CommandResultLevel::from_str(level)?;
+                let level = From::<&str>::from(level);
 
                 let (_, Amf0Value::String(code)) = info_object.remove(
                     info_object
@@ -93,15 +90,13 @@ impl<'a> NetStreamCommand<'a> {
     }
 }
 
-impl FromStr for NetStreamCommandPublishPublishingType {
-    type Err = CommandError;
-
-    fn from_str(s: &str) -> Result<Self, Self::Err> {
+impl From<&str> for NetStreamCommandPublishPublishingType {
+    fn from(s: &str) -> Self {
         match s {
-            "live" => Ok(Self::Live),
-            "record" => Ok(Self::Record),
-            "append" => Ok(Self::Append),
-            _ => Err(CommandError::InvalidPublishingType(s.to_string())),
+            "live" => Self::Live,
+            "record" => Self::Record,
+            "append" => Self::Append,
+            _ => Self::Unknown(s.to_string()),
         }
     }
 }

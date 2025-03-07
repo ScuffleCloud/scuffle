@@ -8,10 +8,9 @@ use simple::SimpleHandshakeServer;
 
 mod complex;
 pub mod define;
-mod errors;
 mod simple;
 
-pub use errors::*;
+pub use complex::error::ComplexHandshakeError;
 
 // Order of messages:
 // Client -> C0 -> Server
@@ -42,7 +41,7 @@ impl HandshakeServer {
     }
 
     /// Perform the handshake.
-    pub fn handshake(&mut self, input: &mut io::Cursor<Bytes>, writer: &mut Vec<u8>) -> Result<(), HandshakeError> {
+    pub fn handshake(&mut self, input: &mut io::Cursor<Bytes>, writer: &mut Vec<u8>) -> Result<(), crate::error::Error> {
         match self {
             HandshakeServer::Complex(handshaker) => {
                 // We need to be able to go back if the handshake isn't complex.

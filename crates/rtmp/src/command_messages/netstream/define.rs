@@ -32,4 +32,5 @@ pub enum NetStreamCommandPublishPublishingType {
     Live,
     Record,
     Append,
+    Unknown(String),
 }

@@ -1,9 +1,9 @@
 mod define;
-mod errors;
+mod error;
 pub mod netconnection;
 pub mod netstream;
 mod reader;
 mod writer;
 
 pub use define::{CommandType, *};
-pub use errors::CommandError;
+pub use error::CommandError;

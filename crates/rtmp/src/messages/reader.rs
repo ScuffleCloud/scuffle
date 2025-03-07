@@ -1,11 +1,10 @@
 use super::define::{MessageData, MessageType};
-use super::errors::MessageError;
 use crate::chunk::Chunk;
 use crate::command_messages::Command;
 use crate::protocol_control_messages::ProtocolControlMessageSetChunkSize;
 
 impl<'a> MessageData<'a> {
-    pub fn read(chunk: &'a Chunk) -> Result<Self, MessageError> {
+    pub fn read(chunk: &'a Chunk) -> Result<Self, crate::error::Error> {
         match chunk.message_header.msg_type_id {
             // Protocol Control Messages
             MessageType::SetChunkSize => {

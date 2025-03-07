@@ -18,6 +18,7 @@
 
 mod chunk;
 mod command_messages;
+mod error;
 mod handshake;
 mod messages;
 mod protocol_control_messages;

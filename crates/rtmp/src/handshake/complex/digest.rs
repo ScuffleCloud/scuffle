@@ -4,7 +4,7 @@ use sha2::Sha256;
 
 use super::define;
 use super::define::SchemaVersion;
-use crate::handshake::errors::DigestError;
+use super::error::ComplexHandshakeError;
 
 /// A digest processor.
 ///
@@ -25,7 +25,7 @@ impl<'a> DigestProcessor<'a> {
     ///   time, version, key, digest (schema 0)
     /// or
     ///   time, version, digest, key (schema 1)
-    pub fn read_digest(&self) -> Result<(Bytes, SchemaVersion), DigestError> {
+    pub fn read_digest(&self) -> Result<(Bytes, SchemaVersion), ComplexHandshakeError> {
         if let Ok(digest) = self.generate_and_validate(SchemaVersion::Schema0) {
             Ok((digest, SchemaVersion::Schema0))
         } else {
@@ -35,7 +35,10 @@ impl<'a> DigestProcessor<'a> {
     }
 
     /// Generate and fill digest based on the schema version.
-    pub fn generate_and_fill_digest(&self, version: SchemaVersion) -> Result<(Bytes, [u8; 32], Bytes), DigestError> {
+    pub fn generate_and_fill_digest(
+        &self,
+        version: SchemaVersion,
+    ) -> Result<(Bytes, [u8; 32], Bytes), ComplexHandshakeError> {
         let (left_part, _, right_part) = self.cook_raw_message(version)?;
         let computed_digest = self.make_digest(&left_part, &right_part)?;
 
@@ -45,7 +48,7 @@ impl<'a> DigestProcessor<'a> {
         Ok((left_part, computed_digest, right_part))
     }
 
-    fn find_digest_offset(&self, version: SchemaVersion) -> Result<usize, DigestError> {
+    fn find_digest_offset(&self, version: SchemaVersion) -> Result<usize, ComplexHandshakeError> {
         const OFFSET_LENGTH: usize = 4;
 
         // in schema 0 the digest is after the key (which is after the time and version)
@@ -68,7 +71,7 @@ impl<'a> DigestProcessor<'a> {
             + OFFSET_LENGTH)
     }
 
-    fn cook_raw_message(&self, version: SchemaVersion) -> Result<(Bytes, Bytes, Bytes), DigestError> {
+    fn cook_raw_message(&self, version: SchemaVersion) -> Result<(Bytes, Bytes, Bytes), ComplexHandshakeError> {
         let digest_offset = self.find_digest_offset(version)?;
 
         // We split the message into 3 parts:
@@ -88,7 +91,7 @@ impl<'a> DigestProcessor<'a> {
     }
 
     /// Make a digest from the left and right parts using the key.
-    pub fn make_digest(&self, left: &[u8], right: &[u8]) -> Result<[u8; 32], DigestError> {
+    pub fn make_digest(&self, left: &[u8], right: &[u8]) -> Result<[u8; 32], ComplexHandshakeError> {
         // New hmac from the key
         let mut mac = Hmac::<Sha256>::new_from_slice(self.key).unwrap();
         // Update the hmac with the left and right parts
@@ -98,14 +101,14 @@ impl<'a> DigestProcessor<'a> {
         // Finalize the hmac and get the digest
         let result = mac.finalize().into_bytes();
         if result.len() != define::RTMP_DIGEST_LENGTH {
-            return Err(DigestError::DigestLengthNotCorrect);
+            return Err(ComplexHandshakeError::DigestLengthNotCorrect);
         }
 
         // This does a copy of the memory but its only 32 bytes so its not a big deal.
         Ok(result.into())
     }
 
-    fn generate_and_validate(&self, version: SchemaVersion) -> Result<Bytes, DigestError> {
+    fn generate_and_validate(&self, version: SchemaVersion) -> Result<Bytes, ComplexHandshakeError> {
         // We need the 3 parts so we can calculate the digest and compare it to the
         // digest we read from the message.
         let (left_part, digest_data, right_part) = self.cook_raw_message(version)?;
@@ -118,7 +121,7 @@ impl<'a> DigestProcessor<'a> {
             // This does not mean the message is invalid, it just means we need to try the
             // other schema. If both schemas fail then the message is invalid and its likely
             // a simple handshake.
-            Err(DigestError::CannotGenerate)
+            Err(ComplexHandshakeError::CannotGenerate)
         }
     }
 }

@@ -3,7 +3,6 @@ use std::io;
 use byteorder::{BigEndian, LittleEndian, WriteBytesExt};
 
 use super::define::{Chunk, ChunkMessageHeader, ChunkType, INIT_CHUNK_SIZE};
-use super::errors::ChunkWriteError;
 
 /// A chunk writer.
 ///
@@ -28,7 +27,7 @@ impl ChunkWriter {
 
     /// Internal function to write the basic header.
     #[inline]
-    fn write_basic_header(io: &mut impl io::Write, fmt: ChunkType, csid: u32) -> Result<(), ChunkWriteError> {
+    fn write_basic_header(io: &mut impl io::Write, fmt: ChunkType, csid: u32) -> io::Result<()> {
         let fmt = fmt as u8;
 
         if csid >= 64 + 255 {
@@ -52,7 +51,7 @@ impl ChunkWriter {
 
     /// Internal function to write the message header.
     #[inline]
-    fn write_message_header(io: &mut impl io::Write, message_header: &ChunkMessageHeader) -> Result<(), ChunkWriteError> {
+    fn write_message_header(io: &mut impl io::Write, message_header: &ChunkMessageHeader) -> io::Result<()> {
         let timestamp = if message_header.timestamp >= 0xFFFFFF {
             0xFFFFFF
         } else {
@@ -73,14 +72,14 @@ impl ChunkWriter {
 
     /// Internal function to write the extended timestamp.
     #[inline]
-    fn write_extened_timestamp(io: &mut impl io::Write, timestamp: u32) -> Result<(), ChunkWriteError> {
+    fn write_extened_timestamp(io: &mut impl io::Write, timestamp: u32) -> io::Result<()> {
         io.write_u32::<BigEndian>(timestamp)?;
 
         Ok(())
     }
 
     /// Write a chunk into some writer.
-    pub fn write_chunk(&self, io: &mut impl io::Write, mut chunk_info: Chunk) -> Result<(), ChunkWriteError> {
+    pub fn write_chunk(&self, io: &mut impl io::Write, mut chunk_info: Chunk) -> io::Result<()> {
         Self::write_basic_header(io, ChunkType::Type0, chunk_info.basic_header.chunk_stream_id)?;
 
         Self::write_message_header(io, &chunk_info.message_header)?;
@@ -111,21 +110,10 @@ impl ChunkWriter {
 #[cfg(test)]
 #[cfg_attr(all(test, coverage_nightly), coverage(off))]
 mod tests {
-    use std::io;
-
     use bytes::Bytes;
 
     use super::*;
     use crate::messages::MessageType;
-
-    #[test]
-    fn test_writer_error_display() {
-        let error = ChunkWriteError::UnknownReadState;
-        assert_eq!(format!("{}", error), "unknown read state");
-
-        let error = ChunkWriteError::Io(io::Error::from(io::ErrorKind::Other));
-        assert_eq!(format!("{}", error), "io error: other error");
-    }
 
     #[test]
     fn test_writer_write_small_chunk() {

@@ -6,7 +6,7 @@ use scuffle_future_ext::FutureExt;
 use tokio::io::{AsyncReadExt, AsyncWriteExt};
 
 use super::SessionHandler;
-use super::errors::SessionError;
+use super::error::SessionError;
 use super::handler::SessionData;
 use crate::chunk::{CHUNK_SIZE, ChunkReader, ChunkWriter};
 use crate::command_messages::netconnection::NetConnectionCommand;
@@ -82,7 +82,7 @@ impl<S: tokio::io::AsyncRead + tokio::io::AsyncWrite + Unpin, H: SessionHandler>
     /// disconnected If any publishers are still connected, the result will be
     /// false This can be used to detect non-graceful disconnects (ie. the
     /// client crashed)
-    pub async fn run(&mut self) -> Result<bool, SessionError> {
+    pub async fn run(&mut self) -> Result<bool, crate::error::Error> {
         let mut handshaker = HandshakeServer::default();
         // Run the handshake to completion
         while !self.drive_handshake(&mut handshaker).await? {
@@ -125,7 +125,7 @@ impl<S: tokio::io::AsyncRead + tokio::io::AsyncWrite + Unpin, H: SessionHandler>
     ///
     /// Returns true if the handshake is complete, false if the handshake is not complete yet.
     /// If the handshake is not complete yet, this function should be called again.
-    async fn drive_handshake(&mut self, handshaker: &mut HandshakeServer) -> Result<bool, SessionError> {
+    async fn drive_handshake(&mut self, handshaker: &mut HandshakeServer) -> Result<bool, crate::error::Error> {
         // Read the handshake data + 1 byte for the version
         const READ_SIZE: usize = handshake::define::RTMP_HANDSHAKE_SIZE + 1;
         self.read_buf.reserve(READ_SIZE);
@@ -136,7 +136,8 @@ impl<S: tokio::io::AsyncRead + tokio::io::AsyncWrite + Unpin, H: SessionHandler>
                 .io
                 .read_buf(&mut self.read_buf)
                 .with_timeout(Duration::from_secs(2))
-                .await??;
+                .await
+                .map_err(SessionError::Timeout)??;
             bytes_read += n;
         }
 
@@ -174,7 +175,7 @@ impl<S: tokio::io::AsyncRead + tokio::io::AsyncWrite + Unpin, H: SessionHandler>
     /// until it returns true before calling this function.
     ///
     /// Returns true if the session is still active, false if the client has closed the connection.
-    async fn drive(&mut self) -> Result<bool, SessionError> {
+    async fn drive(&mut self) -> Result<bool, crate::error::Error> {
         // If we have data ready to parse, parse it
         if self.skip_read {
             self.skip_read = false;
@@ -185,7 +186,8 @@ impl<S: tokio::io::AsyncRead + tokio::io::AsyncWrite + Unpin, H: SessionHandler>
                 .io
                 .read_buf(&mut self.read_buf)
                 .with_timeout(Duration::from_millis(2500))
-                .await??;
+                .await
+                .map_err(SessionError::Timeout)??;
 
             if n == 0 {
                 return Ok(false);
@@ -198,7 +200,7 @@ impl<S: tokio::io::AsyncRead + tokio::io::AsyncWrite + Unpin, H: SessionHandler>
     }
 
     /// Parse data from the client into RTMP messages and process them.
-    async fn process_chunks(&mut self) -> Result<(), SessionError> {
+    async fn process_chunks(&mut self) -> Result<(), crate::error::Error> {
         while let Some(chunk) = self.chunk_reader.read_chunk(&mut self.read_buf)? {
             let timestamp = chunk.message_header.timestamp;
             let msg_stream_id = chunk.message_header.msg_stream_id;
@@ -211,7 +213,12 @@ impl<S: tokio::io::AsyncRead + tokio::io::AsyncWrite + Unpin, H: SessionHandler>
     }
 
     /// Process one RTMP message
-    async fn process_message(&mut self, msg: MessageData<'_>, stream_id: u32, timestamp: u32) -> Result<(), SessionError> {
+    async fn process_message(
+        &mut self,
+        msg: MessageData<'_>,
+        stream_id: u32,
+        timestamp: u32,
+    ) -> Result<(), crate::error::Error> {
         match msg {
             MessageData::Amf0Command(command) => self.on_command_message(stream_id, command).await?,
             MessageData::SetChunkSize(ProtocolControlMessageSetChunkSize { chunk_size }) => {
@@ -239,7 +246,7 @@ impl<S: tokio::io::AsyncRead + tokio::io::AsyncWrite + Unpin, H: SessionHandler>
     }
 
     /// Set the server chunk size to the client
-    async fn send_set_chunk_size(&mut self) -> Result<(), SessionError> {
+    async fn send_set_chunk_size(&mut self) -> Result<(), crate::error::Error> {
         ProtocolControlMessageSetChunkSize {
             chunk_size: CHUNK_SIZE as u32,
         }
@@ -251,7 +258,7 @@ impl<S: tokio::io::AsyncRead + tokio::io::AsyncWrite + Unpin, H: SessionHandler>
 
     /// on_amf0_command_message is called when we receive an AMF0 command
     /// message from the client We then handle the command message
-    async fn on_command_message(&mut self, stream_id: u32, command: Command<'_>) -> Result<(), SessionError> {
+    async fn on_command_message(&mut self, stream_id: u32, command: Command<'_>) -> Result<(), crate::error::Error> {
         match command.net_command {
             CommandType::NetConnection(NetConnectionCommand::Connect { app }) => {
                 self.on_command_connect(stream_id, command.transaction_id, &app).await?;
@@ -266,7 +273,7 @@ impl<S: tokio::io::AsyncRead + tokio::io::AsyncWrite + Unpin, H: SessionHandler>
                     .await?;
             }
             CommandType::NetStream(NetStreamCommand::Play) | CommandType::NetStream(NetStreamCommand::Play2) => {
-                return Err(SessionError::PlayNotSupported);
+                return Err(crate::error::Error::Session(SessionError::PlayNotSupported));
             }
             CommandType::NetStream(NetStreamCommand::Publish {
                 publishing_name,
@@ -287,18 +294,23 @@ impl<S: tokio::io::AsyncRead + tokio::io::AsyncWrite + Unpin, H: SessionHandler>
 
     /// on_set_chunk_size is called when we receive a set chunk size message
     /// from the client We then update the chunk size of the unpacketizer
-    fn on_set_chunk_size(&mut self, chunk_size: usize) -> Result<(), SessionError> {
+    fn on_set_chunk_size(&mut self, chunk_size: usize) -> Result<(), crate::error::Error> {
         if self.chunk_reader.update_max_chunk_size(chunk_size) {
             Ok(())
         } else {
-            Err(SessionError::InvalidChunkSize(chunk_size))
+            Err(crate::error::Error::Session(SessionError::InvalidChunkSize(chunk_size)))
         }
     }
 
     /// on_command_connect is called when we receive a amf0 command message with
     /// the name "connect" We then handle the connect message
     /// This is called when the client first connects to the server
-    async fn on_command_connect(&mut self, _stream_id: u32, transaction_id: f64, app: &str) -> Result<(), SessionError> {
+    async fn on_command_connect(
+        &mut self,
+        _stream_id: u32,
+        transaction_id: f64,
+        app: &str,
+    ) -> Result<(), crate::error::Error> {
         ProtocolControlMessageWindowAcknowledgementSize {
             acknowledgement_window_size: CHUNK_SIZE as u32,
         }
@@ -334,7 +346,7 @@ impl<S: tokio::io::AsyncRead + tokio::io::AsyncWrite + Unpin, H: SessionHandler>
     /// message with the name "createStream" We then handle the createStream
     /// message This is called when the client wants to create a stream
     /// A NetStream is used to start publishing or playing a stream
-    async fn on_command_create_stream(&mut self, _stream_id: u32, transaction_id: f64) -> Result<(), SessionError> {
+    async fn on_command_create_stream(&mut self, _stream_id: u32, transaction_id: f64) -> Result<(), crate::error::Error> {
         // 1.0 is the Stream ID of the stream we are creating
         Command {
             net_command: CommandType::NetConnection(NetConnectionCommand::CreateStreamResult { stream_id: 1.0 }),
@@ -354,7 +366,7 @@ impl<S: tokio::io::AsyncRead + tokio::io::AsyncWrite + Unpin, H: SessionHandler>
         _stream_id: u32,
         transaction_id: f64,
         delete_stream_id: f64,
-    ) -> Result<(), SessionError> {
+    ) -> Result<(), crate::error::Error> {
         let stream_id = delete_stream_id as u32;
 
         self.handler.on_unpublish(stream_id).await?;
@@ -384,9 +396,10 @@ impl<S: tokio::io::AsyncRead + tokio::io::AsyncWrite + Unpin, H: SessionHandler>
         transaction_id: f64,
         publishing_name: &str,
         _publishing_type: NetStreamCommandPublishPublishingType,
-    ) -> Result<(), SessionError> {
+    ) -> Result<(), crate::error::Error> {
         let Some(app_name) = &self.app_name else {
-            return Err(SessionError::NoAppName);
+            // The app name is not set yet
+            return Err(crate::error::Error::Session(SessionError::PublishBeforeConnect));
         };
 
         self.handler
@@ -410,12 +423,13 @@ impl<S: tokio::io::AsyncRead + tokio::io::AsyncWrite + Unpin, H: SessionHandler>
         Ok(())
     }
 
-    async fn flush(&mut self) -> Result<(), SessionError> {
+    async fn flush(&mut self) -> Result<(), crate::error::Error> {
         if !self.write_buf.is_empty() {
             self.io
                 .write_all(self.write_buf.as_ref())
                 .with_timeout(Duration::from_secs(2))
-                .await??;
+                .await
+                .map_err(SessionError::Timeout)??;
             self.write_buf.clear();
         }
 

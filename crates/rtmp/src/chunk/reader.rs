@@ -7,7 +7,7 @@ use bytes::BytesMut;
 use num_traits::FromPrimitive;
 
 use super::define::{Chunk, ChunkBasicHeader, ChunkMessageHeader, ChunkType, INIT_CHUNK_SIZE, MAX_CHUNK_SIZE};
-use super::errors::ChunkReadError;
+use super::error::ChunkReadError;
 use crate::messages::MessageType;
 
 // These constants are used to limit the amount of memory we use for partial
@@ -481,14 +481,8 @@ mod tests {
 
     #[test]
     fn test_reader_error_display() {
-        let error = ChunkReadError::Io(std::io::Error::other("test"));
-        assert_eq!(format!("{}", error), "io error: test");
-
         let error = ChunkReadError::InvalidChunkType(123);
         assert_eq!(format!("{}", error), "invalid chunk type: 123");
-
-        let error = ChunkReadError::InvalidMessageTypeID(123);
-        assert_eq!(format!("{}", error), "invalid message type id: 123");
 
         let error = ChunkReadError::MissingPreviousChunkHeader(123);
         assert_eq!(format!("{}", error), "missing previous chunk header: 123");
@@ -849,31 +843,6 @@ mod tests {
         let err = unpacker.read_chunk(&mut buf).unwrap_err();
         match err {
             ChunkReadError::PartialChunkTooLarge(16777215) => {}
-            _ => panic!("Unexpected error: {:?}", err),
-        }
-    }
-
-    #[test]
-    fn test_reader_error_invalid_message_type_id() {
-        let mut buf = BytesMut::new();
-
-        // Write a chunk with an invalid message type id
-        #[rustfmt::skip]
-        buf.extend_from_slice(&[
-            3, // chunk type 0, chunk stream id 3
-            0xFF, 0xFF, 0xFF, // timestamp
-            0x08, 0x00, 0x00, // message length (max chunk size is set to 128)
-            0xFF, // message type id (invalid)
-            0x00, 0x01, 0x00, 0x00, // message stream id
-            0x01, 0x00, 0x00, 0x00, // extended timestamp
-        ]);
-
-        let mut unpacker = ChunkReader::default();
-
-        let err = unpacker.read_chunk(&mut buf).unwrap_err();
-
-        match err {
-            ChunkReadError::InvalidMessageTypeID(0xFF) => {}
             _ => panic!("Unexpected error: {:?}", err),
         }
     }

@@ -1,7 +1,5 @@
 #[derive(Debug, thiserror::Error)]
 pub enum ChunkReadError {
-    #[error("invalid chunk type: {0}")]
-    InvalidChunkType(u8),
     #[error("missing previous chunk header: {0}")]
     MissingPreviousChunkHeader(u32),
     #[error("too many partial chunks")]

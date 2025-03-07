@@ -19,10 +19,8 @@ pub mod error;
 pub struct ComplexHandshakeServer {
     version: RtmpVersion,
     requested_version: RtmpVersion,
-
-    pub(super) state: ServerHandshakeState,
+    state: ServerHandshakeState,
     schema_version: SchemaVersion,
-
     c1_digest: Bytes,
     c1_timestamp: u32,
     c1_version: u32,
@@ -43,6 +41,11 @@ impl Default for ComplexHandshakeServer {
 }
 
 impl ComplexHandshakeServer {
+    /// Returns true if the handshake is finished.
+    pub fn is_finished(&self) -> bool {
+        self.state == ServerHandshakeState::Finish
+    }
+
     pub fn handshake(&mut self, input: &mut io::Cursor<Bytes>, output: &mut Vec<u8>) -> Result<(), crate::error::Error> {
         match self.state {
             ServerHandshakeState::ReadC0C1 => {

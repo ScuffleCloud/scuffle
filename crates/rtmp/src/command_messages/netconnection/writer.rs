@@ -41,7 +41,9 @@ impl NetConnectionCommand<'_> {
                 Amf0Encoder::encode_null(buf)?;
                 Amf0Encoder::encode_number(buf, stream_id)?;
             }
-            _ => unimplemented!("the rtmp client is not implemented yet"),
+            Self::Connect { .. } | Self::Call | Self::Close | Self::CreateStream => {
+                return Err(CommandError::NoClientImplementation);
+            }
         }
 
         Ok(())

@@ -25,7 +25,15 @@ impl NetStreamCommand<'_> {
                     ],
                 )?;
             }
-            _ => unimplemented!("the rtmp client is not implemented yet"),
+            Self::Play
+            | Self::Play2
+            | Self::DeleteStream { .. }
+            | Self::CloseStream
+            | Self::ReceiveAudio
+            | Self::ReceiveVideo
+            | Self::Publish { .. }
+            | Self::Seek
+            | Self::Pause => return Err(CommandError::NoClientImplementation),
         }
 
         Ok(())

@@ -145,7 +145,7 @@ impl<S: tokio::io::AsyncRead + tokio::io::AsyncWrite + Unpin, H: SessionHandler>
 
         handshaker.handshake(&mut cursor, &mut self.write_buf)?;
 
-        if handshaker.state() == ServerHandshakeState::Finish {
+        if handshaker.is_finished() {
             let over_read = cursor.extract_remaining();
 
             if !over_read.is_empty() {

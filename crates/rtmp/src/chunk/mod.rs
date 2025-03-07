@@ -3,7 +3,7 @@ mod error;
 mod reader;
 mod writer;
 
-pub use self::define::{CHUNK_SIZE, Chunk, ChunkStreamId};
-pub use self::error::ChunkReadError;
-pub use self::reader::ChunkReader;
-pub use self::writer::ChunkWriter;
+pub use define::{CHUNK_SIZE, Chunk, ChunkStreamId};
+pub use error::ChunkReadError;
+pub use reader::ChunkReader;
+pub use writer::ChunkWriter;

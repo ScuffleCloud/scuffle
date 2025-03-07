@@ -13,9 +13,7 @@ use super::define::{self, RtmpVersion, ServerHandshakeState};
 pub struct SimpleHandshakeServer {
     version: RtmpVersion,
     requested_version: RtmpVersion,
-
-    pub(super) state: ServerHandshakeState,
-
+    state: ServerHandshakeState,
     c1_bytes: Bytes,
     c1_timestamp: u32,
 }
@@ -33,6 +31,11 @@ impl Default for SimpleHandshakeServer {
 }
 
 impl SimpleHandshakeServer {
+    /// Returns true if the handshake is finished.
+    pub fn is_finished(&self) -> bool {
+        self.state == ServerHandshakeState::Finish
+    }
+
     /// Perform the handshake, writing to the output and reading from the input.
     pub fn handshake(&mut self, input: &mut io::Cursor<Bytes>, output: &mut Vec<u8>) -> Result<(), crate::error::Error> {
         match self.state {

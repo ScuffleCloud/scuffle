@@ -8,4 +8,6 @@ pub enum CommandError {
     NoAppName,
     #[error("invalid onStatus info object")]
     InvalidOnStatusInfoObject,
+    #[error("the rtmp client is not implemented yet")]
+    NoClientImplementation,
 }

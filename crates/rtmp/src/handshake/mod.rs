@@ -3,7 +3,6 @@ use std::time::SystemTime;
 
 use bytes::Bytes;
 use complex::ComplexHandshakeServer;
-use define::ServerHandshakeState;
 use simple::SimpleHandshakeServer;
 
 mod complex;
@@ -32,11 +31,11 @@ impl Default for HandshakeServer {
 }
 
 impl HandshakeServer {
-    /// Get the state of the handshake.
-    pub fn state(&mut self) -> ServerHandshakeState {
+    /// Returns true if the handshake is finished.
+    pub fn is_finished(&self) -> bool {
         match self {
-            HandshakeServer::Simple(handshaker) => handshaker.state,
-            HandshakeServer::Complex(handshaker) => handshaker.state,
+            HandshakeServer::Simple(handshaker) => handshaker.is_finished(),
+            HandshakeServer::Complex(handshaker) => handshaker.is_finished(),
         }
     }
 
@@ -138,7 +137,7 @@ mod tests {
             .handshake(&mut std::io::Cursor::new(Bytes::from(c2)), &mut writer)
             .unwrap();
 
-        assert_eq!(handshake_server.state(), ServerHandshakeState::Finish)
+        assert!(handshake_server.is_finished());
     }
 
     #[test]
@@ -212,6 +211,6 @@ mod tests {
             .handshake(&mut std::io::Cursor::new(Bytes::from(c2)), &mut writer)
             .unwrap();
 
-        assert_eq!(handshake_server.state(), ServerHandshakeState::Finish)
+        assert!(handshake_server.is_finished());
     }
 }

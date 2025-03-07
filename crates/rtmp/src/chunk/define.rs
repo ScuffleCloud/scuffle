@@ -29,8 +29,7 @@ pub enum ChunkType {
 /// A chunk basic header.
 pub struct ChunkBasicHeader {
     /// Used for decoding the header only.
-    pub(super) format: ChunkType, // 2 bits
-
+    pub format: ChunkType, // 2 bits
     pub chunk_stream_id: u32, // 6 bits (if format == 0, 8 bits, if format == 1, 16 bits)
 }
 
@@ -47,7 +46,7 @@ pub struct ChunkMessageHeader {
     /// The stream id of the message.
     pub msg_stream_id: u32, // 4 bytes
     /// Whether the timestamp is extended.
-    pub(super) was_extended_timestamp: bool, // used for reading the header only
+    pub was_extended_timestamp: bool, // used for reading the header only
 }
 
 impl ChunkMessageHeader {

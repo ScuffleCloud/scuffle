@@ -481,7 +481,7 @@ mod tests {
 
     #[test]
     fn test_reader_error_display() {
-        let error = ChunkReadError::Io(std::io::Error::new(std::io::ErrorKind::Other, "test"));
+        let error = ChunkReadError::Io(std::io::Error::other("test"));
         assert_eq!(format!("{}", error), "io error: test");
 
         let error = ChunkReadError::InvalidChunkType(123);

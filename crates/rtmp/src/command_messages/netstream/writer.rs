@@ -80,4 +80,55 @@ mod tests {
             )
         ); // info object
     }
+
+    #[test]
+    fn test_not_implemented() {
+        let err = NetStreamCommand::Play
+            .write(&mut (&mut BytesMut::new()).writer(), 1.0)
+            .unwrap_err();
+        assert!(matches!(err, CommandError::NoClientImplementation));
+
+        let err = NetStreamCommand::Play2
+            .write(&mut (&mut BytesMut::new()).writer(), 1.0)
+            .unwrap_err();
+        assert!(matches!(err, CommandError::NoClientImplementation));
+
+        let err = NetStreamCommand::DeleteStream { stream_id: 1.0 }
+            .write(&mut (&mut BytesMut::new()).writer(), 1.0)
+            .unwrap_err();
+        assert!(matches!(err, CommandError::NoClientImplementation));
+
+        let err = NetStreamCommand::CloseStream
+            .write(&mut (&mut BytesMut::new()).writer(), 1.0)
+            .unwrap_err();
+        assert!(matches!(err, CommandError::NoClientImplementation));
+
+        let err = NetStreamCommand::ReceiveAudio
+            .write(&mut (&mut BytesMut::new()).writer(), 1.0)
+            .unwrap_err();
+        assert!(matches!(err, CommandError::NoClientImplementation));
+
+        let err = NetStreamCommand::ReceiveVideo
+            .write(&mut (&mut BytesMut::new()).writer(), 1.0)
+            .unwrap_err();
+        assert!(matches!(err, CommandError::NoClientImplementation));
+
+        let err = NetStreamCommand::Publish {
+            publishing_name: "name".into(),
+            publishing_type: "type".into(),
+        }
+        .write(&mut (&mut BytesMut::new()).writer(), 1.0)
+        .unwrap_err();
+        assert!(matches!(err, CommandError::NoClientImplementation));
+
+        let err = NetStreamCommand::Seek
+            .write(&mut (&mut BytesMut::new()).writer(), 1.0)
+            .unwrap_err();
+        assert!(matches!(err, CommandError::NoClientImplementation));
+
+        let err = NetStreamCommand::Pause
+            .write(&mut (&mut BytesMut::new()).writer(), 1.0)
+            .unwrap_err();
+        assert!(matches!(err, CommandError::NoClientImplementation));
+    }
 }

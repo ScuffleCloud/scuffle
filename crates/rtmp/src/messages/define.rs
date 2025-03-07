@@ -16,24 +16,24 @@ pub enum MessageData<'a> {
     VideoData { data: Bytes },
 }
 
-#[derive(Debug, PartialEq, Eq, Clone, Copy, num_derive::FromPrimitive)]
-#[repr(u8)]
-pub enum MessageType {
-    // Protocol Control Messages
-    SetChunkSize = 1,
-    Abort = 2,
-    Acknowledgement = 3,
-    UserControlEvent = 4,
-    WindowAcknowledgementSize = 5,
-    SetPeerBandwidth = 6,
-    // RTMP Command Messages
-    Audio = 8,
-    Video = 9,
-    DataAMF3 = 15,
-    SharedObjAMF3 = 16,
-    CommandAMF3 = 17,
-    DataAMF0 = 18,
-    SharedObjAMF0 = 19,
-    CommandAMF0 = 20,
-    Aggregate = 22,
+nutype_enum::nutype_enum! {
+    pub enum MessageType(u8) {
+        // Protocol Control Messages
+        SetChunkSize = 1,
+        Abort = 2,
+        Acknowledgement = 3,
+        UserControlEvent = 4,
+        WindowAcknowledgementSize = 5,
+        SetPeerBandwidth = 6,
+        // RTMP Command Messages
+        Audio = 8,
+        Video = 9,
+        DataAMF3 = 15,
+        SharedObjAMF3 = 16,
+        CommandAMF3 = 17,
+        DataAMF0 = 18,
+        SharedObjAMF0 = 19,
+        CommandAMF0 = 20,
+        Aggregate = 22,
+    }
 }

@@ -92,7 +92,7 @@ mod tests {
 
         let chunk = reader.read_chunk(&mut buf).expect("read chunk").expect("chunk");
         assert_eq!(chunk.basic_header.chunk_stream_id, 0x02);
-        assert_eq!(chunk.message_header.msg_type_id as u8, 0x01);
+        assert_eq!(chunk.message_header.msg_type_id.0, 0x01);
         assert_eq!(chunk.message_header.msg_stream_id, 0);
         assert_eq!(chunk.payload, vec![0x00, 0x00, 0x00, 0x01]);
     }
@@ -112,7 +112,7 @@ mod tests {
 
         let chunk = reader.read_chunk(&mut buf).expect("read chunk").expect("chunk");
         assert_eq!(chunk.basic_header.chunk_stream_id, 0x02);
-        assert_eq!(chunk.message_header.msg_type_id as u8, 0x05);
+        assert_eq!(chunk.message_header.msg_type_id.0, 0x05);
         assert_eq!(chunk.message_header.msg_stream_id, 0);
         assert_eq!(chunk.payload, vec![0x00, 0x00, 0x00, 0x01]);
     }
@@ -133,7 +133,7 @@ mod tests {
 
         let chunk = reader.read_chunk(&mut buf).expect("read chunk").expect("chunk");
         assert_eq!(chunk.basic_header.chunk_stream_id, 0x02);
-        assert_eq!(chunk.message_header.msg_type_id as u8, 0x06);
+        assert_eq!(chunk.message_header.msg_type_id.0, 0x06);
         assert_eq!(chunk.message_header.msg_stream_id, 0);
         assert_eq!(chunk.payload, vec![0x00, 0x00, 0x00, 0x01, 0x02]);
     }

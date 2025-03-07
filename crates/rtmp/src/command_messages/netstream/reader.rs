@@ -14,9 +14,7 @@ impl<'a> NetStreamCommand<'a> {
             "play2" => Ok(Some(Self::Play2)),
             "deleteStream" => {
                 // skip command object
-                let Amf0Value::Null = decoder.decode_with_type(Amf0Marker::Null)? else {
-                    unreachable!();
-                };
+                decoder.decode_with_type(Amf0Marker::Null)?;
 
                 let Amf0Value::Number(stream_id) = decoder.decode_with_type(Amf0Marker::Number)? else {
                     unreachable!();
@@ -29,9 +27,7 @@ impl<'a> NetStreamCommand<'a> {
             "receiveVideo" => Ok(Some(Self::ReceiveVideo)),
             "publish" => {
                 // skip command object
-                let Amf0Value::Null = decoder.decode_with_type(Amf0Marker::Null)? else {
-                    unreachable!();
-                };
+                decoder.decode_with_type(Amf0Marker::Null)?;
 
                 let Amf0Value::String(publishing_name) = decoder.decode_with_type(Amf0Marker::String)? else {
                     unreachable!();
@@ -50,9 +46,7 @@ impl<'a> NetStreamCommand<'a> {
             "pause" => Ok(Some(Self::Pause)),
             "onStatus" => {
                 // skip command object
-                let Amf0Value::Null = decoder.decode_with_type(Amf0Marker::Null)? else {
-                    unreachable!();
-                };
+                decoder.decode_with_type(Amf0Marker::Null)?;
 
                 let Amf0Value::Object(info_object) = decoder.decode_with_type(Amf0Marker::Object)? else {
                     unreachable!();

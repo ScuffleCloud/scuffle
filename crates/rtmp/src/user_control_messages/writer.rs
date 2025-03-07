@@ -2,7 +2,7 @@ use std::io;
 
 use byteorder::{BigEndian, WriteBytesExt};
 
-use super::define::{self, EventMessageStreamBegin};
+use super::define::{EventMessageStreamBegin, EventType};
 use super::errors::EventMessagesError;
 use crate::chunk::{Chunk, ChunkWriter};
 use crate::messages::MessageType;
@@ -11,8 +11,7 @@ impl EventMessageStreamBegin {
     pub fn write(&self, writer: &ChunkWriter, io: &mut impl io::Write) -> Result<(), EventMessagesError> {
         let mut data = Vec::new();
 
-        data.write_u16::<BigEndian>(define::EventType::StreamBegin as u16)
-            .expect("write u16");
+        data.write_u16::<BigEndian>(EventType::StreamBegin.0).expect("write u16");
         data.write_u32::<BigEndian>(self.stream_id).expect("write u32");
 
         writer.write_chunk(io, Chunk::new(0x02, 0, MessageType::UserControlEvent, 0, data.into()))?;
@@ -43,7 +42,7 @@ mod tests {
 
         let chunk = reader.read_chunk(&mut buf).expect("read chunk").expect("chunk");
         assert_eq!(chunk.basic_header.chunk_stream_id, 0x02);
-        assert_eq!(chunk.message_header.msg_type_id as u8, 0x04);
+        assert_eq!(chunk.message_header.msg_type_id.0, 0x04);
         assert_eq!(chunk.message_header.msg_stream_id, 0);
         assert_eq!(chunk.payload, Bytes::from(vec![0x00, 0x00, 0x00, 0x00, 0x00, 0x01]));
     }

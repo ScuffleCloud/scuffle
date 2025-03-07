@@ -295,11 +295,7 @@ impl ChunkReader {
 
                 // We then have a 1 byte message type id.
                 let msg_type_id = cursor.read_u8().map_err(|_| None)?;
-
-                // We validate the message type id. If it is invalid we return an error. (this
-                // is a real error)
-                let msg_type_id =
-                    MessageType::from_u8(msg_type_id).ok_or(ChunkReadError::InvalidMessageTypeID(msg_type_id))?;
+                let msg_type_id = MessageType::from(msg_type_id);
 
                 // We then read the message stream id. (According to spec this is stored in
                 // LittleEndian, no idea why.)
@@ -342,11 +338,7 @@ impl ChunkReader {
 
                 // We then have a 1 byte message type id.
                 let msg_type_id = cursor.read_u8().map_err(|_| None)?;
-
-                // We validate the message type id. If it is invalid we return an error. (this
-                // is a real error)
-                let msg_type_id =
-                    MessageType::from_u8(msg_type_id).ok_or(ChunkReadError::InvalidMessageTypeID(msg_type_id))?;
+                let msg_type_id = MessageType::from(msg_type_id);
 
                 // Again as mentioned above we sometimes have a delta timestamp larger than 3
                 // bytes.
@@ -534,7 +526,7 @@ mod tests {
         let mut unpacker = ChunkReader::default();
         let chunk = unpacker.read_chunk(&mut buf).expect("read chunk").expect("chunk");
         assert_eq!(chunk.basic_header.chunk_stream_id, 3);
-        assert_eq!(chunk.message_header.msg_type_id as u8, 0x09);
+        assert_eq!(chunk.message_header.msg_type_id.0, 0x09);
         assert_eq!(chunk.message_header.timestamp, 0);
         assert_eq!(chunk.message_header.msg_length, 128);
         assert_eq!(chunk.message_header.msg_stream_id, 0x0100); // since it's little endian, it's 0x0100
@@ -572,7 +564,7 @@ mod tests {
         let chunk = unpacker.read_chunk(&mut buf).expect("read chunk").expect("chunk");
 
         assert_eq!(chunk.basic_header.chunk_stream_id, 3);
-        assert_eq!(chunk.message_header.msg_type_id as u8, 0x09);
+        assert_eq!(chunk.message_header.msg_type_id.0, 0x09);
         assert_eq!(chunk.message_header.timestamp, 0);
         assert_eq!(chunk.message_header.msg_length, 256);
         assert_eq!(chunk.message_header.msg_stream_id, 0x0100); // since it's little endian, it's 0x0100
@@ -628,7 +620,7 @@ mod tests {
         let chunk = unpacker.read_chunk(&mut buf).expect("read chunk").expect("chunk");
 
         assert_eq!(chunk.basic_header.chunk_stream_id, 4);
-        assert_eq!(chunk.message_header.msg_type_id as u8, 0x08);
+        assert_eq!(chunk.message_header.msg_type_id.0, 0x08);
         assert_eq!(chunk.message_header.timestamp, 0);
         assert_eq!(chunk.message_header.msg_length, 256);
         assert_eq!(chunk.message_header.msg_stream_id, 0x0300); // since it's little endian, it's 0x0100
@@ -652,7 +644,7 @@ mod tests {
         let chunk = unpacker.read_chunk(&mut buf).expect("read chunk").expect("chunk");
 
         assert_eq!(chunk.basic_header.chunk_stream_id, 3);
-        assert_eq!(chunk.message_header.msg_type_id as u8, 0x09);
+        assert_eq!(chunk.message_header.msg_type_id.0, 0x09);
         assert_eq!(chunk.message_header.timestamp, 0);
         assert_eq!(chunk.message_header.msg_length, 256);
         assert_eq!(chunk.message_header.msg_stream_id, 0x0100); // since it's little endian, it's 0x0100
@@ -722,7 +714,7 @@ mod tests {
         let chunk = unpacker.read_chunk(&mut buf).expect("read chunk").expect("chunk");
 
         assert_eq!(chunk.basic_header.chunk_stream_id, 3);
-        assert_eq!(chunk.message_header.msg_type_id as u8, 0x09);
+        assert_eq!(chunk.message_header.msg_type_id.0, 0x09);
         assert_eq!(chunk.message_header.timestamp, 0x02000001);
         assert_eq!(chunk.message_header.msg_length, 512);
         assert_eq!(chunk.message_header.msg_stream_id, 0x0100); // since it's little endian, it's 0x0100
@@ -770,7 +762,7 @@ mod tests {
         let chunk = unpacker.read_chunk(&mut buf).expect("read chunk").expect("chunk");
 
         assert_eq!(chunk.basic_header.chunk_stream_id, 3);
-        assert_eq!(chunk.message_header.msg_type_id as u8, 0x09);
+        assert_eq!(chunk.message_header.msg_type_id.0, 0x09);
         assert_eq!(chunk.message_header.timestamp, 0x01000000);
         assert_eq!(chunk.message_header.msg_length, 256);
         assert_eq!(chunk.message_header.msg_stream_id, 0x0100); // since it's little endian, it's 0x0100
@@ -1010,7 +1002,7 @@ mod tests {
         assert_eq!(chunk.basic_header.chunk_stream_id, 3);
         assert_eq!(chunk.message_header.timestamp, 255);
         assert_eq!(chunk.message_header.msg_length, 3840);
-        assert_eq!(chunk.message_header.msg_type_id as u8, 0x09);
+        assert_eq!(chunk.message_header.msg_type_id.0, 0x09);
         assert_eq!(chunk.message_header.msg_stream_id, 1); // little endian
         assert_eq!(chunk.payload.len(), 3840);
 

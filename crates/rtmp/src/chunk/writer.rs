@@ -61,7 +61,7 @@ impl ChunkWriter {
 
         io.write_u24::<BigEndian>(timestamp)?;
         io.write_u24::<BigEndian>(message_header.msg_length)?;
-        io.write_u8(message_header.msg_type_id as u8)?;
+        io.write_u8(message_header.msg_type_id.0)?;
         io.write_u32::<LittleEndian>(message_header.msg_stream_id)?;
 
         if message_header.is_extended_timestamp() {

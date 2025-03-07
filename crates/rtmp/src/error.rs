@@ -31,3 +31,30 @@ impl Error {
         }
     }
 }
+
+#[cfg(test)]
+#[cfg_attr(all(test, coverage_nightly), coverage(off))]
+mod tests {
+    use std::future;
+    use std::io::ErrorKind;
+    use std::time::Duration;
+
+    use crate::SessionError;
+    use crate::error::Error;
+
+    #[tokio::test]
+    async fn test_is_client_closed() {
+        assert!(Error::Io(std::io::Error::new(ErrorKind::ConnectionAborted, "test")).is_client_closed());
+        assert!(Error::Io(std::io::Error::new(ErrorKind::ConnectionReset, "test")).is_client_closed());
+        assert!(Error::Io(std::io::Error::new(ErrorKind::UnexpectedEof, "test")).is_client_closed());
+
+        let elapsed = tokio::time::timeout(Duration::ZERO, future::pending::<()>())
+            .await
+            .unwrap_err();
+
+        assert!(Error::Session(SessionError::Timeout(elapsed)).is_client_closed());
+
+        assert!(!Error::Io(std::io::Error::new(ErrorKind::Other, "test")).is_client_closed());
+        assert!(!Error::Session(SessionError::ConnectRequestDenied).is_client_closed());
+    }
+}

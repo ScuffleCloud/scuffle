@@ -1,0 +1,5 @@
+[[scuffle-rtmp]]
+category = "feat"
+description = "refactor to be more ergonomic and efficient"
+breaking = true
+authors = ["@TroyKomodo", "@lennartkloock"]

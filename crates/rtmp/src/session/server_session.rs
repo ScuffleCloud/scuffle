@@ -203,9 +203,8 @@ impl<S: tokio::io::AsyncRead + tokio::io::AsyncWrite + Unpin, H: SessionHandler>
             let timestamp = chunk.message_header.timestamp;
             let msg_stream_id = chunk.message_header.msg_stream_id;
 
-            if let Some(msg) = MessageData::read(&chunk)? {
-                self.process_message(msg, msg_stream_id, timestamp).await?;
-            }
+            let msg = MessageData::read(&chunk)?;
+            self.process_message(msg, msg_stream_id, timestamp).await?;
         }
 
         Ok(())
@@ -230,6 +229,9 @@ impl<S: tokio::io::AsyncRead + tokio::io::AsyncWrite + Unpin, H: SessionHandler>
             }
             MessageData::Amf0Data { data } => {
                 self.handler.on_data(stream_id, SessionData::Amf0 { timestamp, data }).await?;
+            }
+            MessageData::Unknown { data } => {
+                tracing::warn!(data = ?data, "unknown message type");
             }
         }
 

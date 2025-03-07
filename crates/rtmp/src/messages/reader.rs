@@ -5,26 +5,28 @@ use crate::command_messages::Command;
 use crate::protocol_control_messages::ProtocolControlMessageSetChunkSize;
 
 impl<'a> MessageData<'a> {
-    pub fn read(chunk: &'a Chunk) -> Result<Option<Self>, MessageError> {
+    pub fn read(chunk: &'a Chunk) -> Result<Self, MessageError> {
         match chunk.message_header.msg_type_id {
             // Protocol Control Messages
             MessageType::SetChunkSize => {
                 let data = ProtocolControlMessageSetChunkSize::read(&chunk.payload)?;
-                Ok(Some(Self::SetChunkSize(data)))
+                Ok(Self::SetChunkSize(data))
             }
             // RTMP Command Messages
-            MessageType::CommandAMF0 => Ok(Some(Self::Amf0Command(Command::read(&chunk.payload)?))),
+            MessageType::CommandAMF0 => Ok(Self::Amf0Command(Command::read(&chunk.payload)?)),
             // Metadata
-            MessageType::DataAMF0 => Ok(Some(Self::Amf0Data {
+            MessageType::DataAMF0 => Ok(Self::Amf0Data {
                 data: chunk.payload.clone(),
-            })),
-            MessageType::Audio => Ok(Some(Self::AudioData {
+            }),
+            MessageType::Audio => Ok(Self::AudioData {
                 data: chunk.payload.clone(),
-            })),
-            MessageType::Video => Ok(Some(Self::VideoData {
+            }),
+            MessageType::Video => Ok(Self::VideoData {
                 data: chunk.payload.clone(),
-            })),
-            _ => Ok(None),
+            }),
+            _ => Ok(Self::Unknown {
+                data: chunk.payload.clone(),
+            }),
         }
     }
 }
@@ -51,7 +53,7 @@ mod tests {
 
         let chunk = Chunk::new(0, 0, MessageType::CommandAMF0, 0, amf_data);
 
-        let message = MessageData::read(&chunk).expect("no errors").expect("message");
+        let message = MessageData::read(&chunk).expect("no errors");
         match message {
             MessageData::Amf0Command(command) => {
                 let Command {
@@ -74,7 +76,7 @@ mod tests {
     fn test_parse_audio_packet() {
         let chunk = Chunk::new(0, 0, MessageType::Audio, 0, vec![0x00, 0x00, 0x00, 0x00].into());
 
-        let message = MessageData::read(&chunk).expect("no errors").expect("message");
+        let message = MessageData::read(&chunk).expect("no errors");
         match message {
             MessageData::AudioData { data } => {
                 assert_eq!(data, vec![0x00, 0x00, 0x00, 0x00]);
@@ -87,7 +89,7 @@ mod tests {
     fn test_parse_video_packet() {
         let chunk = Chunk::new(0, 0, MessageType::Video, 0, vec![0x00, 0x00, 0x00, 0x00].into());
 
-        let message = MessageData::read(&chunk).expect("no errors").expect("message");
+        let message = MessageData::read(&chunk).expect("no errors");
         match message {
             MessageData::VideoData { data } => {
                 assert_eq!(data, vec![0x00, 0x00, 0x00, 0x00]);
@@ -100,7 +102,7 @@ mod tests {
     fn test_parse_set_chunk_size() {
         let chunk = Chunk::new(0, 0, MessageType::SetChunkSize, 0, vec![0x00, 0xFF, 0xFF, 0xFF].into());
 
-        let message = MessageData::read(&chunk).expect("no errors").expect("message");
+        let message = MessageData::read(&chunk).expect("no errors");
         match message {
             MessageData::SetChunkSize(ProtocolControlMessageSetChunkSize { chunk_size }) => {
                 assert_eq!(chunk_size, 0x00FFFFFF);
@@ -119,7 +121,7 @@ mod tests {
         let amf_data = Bytes::from(amf0_writer);
         let chunk = Chunk::new(0, 0, MessageType::DataAMF0, 0, amf_data.clone());
 
-        let message = MessageData::read(&chunk).expect("no errors").expect("message");
+        let message = MessageData::read(&chunk).expect("no errors");
         match message {
             MessageData::Amf0Data { data } => {
                 assert_eq!(data, amf_data);
@@ -132,6 +134,9 @@ mod tests {
     fn test_unsupported_message_type() {
         let chunk = Chunk::new(0, 0, MessageType::Aggregate, 0, vec![0x00, 0x00, 0x00, 0x00].into());
 
-        assert!(MessageData::read(&chunk).expect("no errors").is_none())
+        assert!(matches!(
+            MessageData::read(&chunk).expect("no errors"),
+            MessageData::Unknown { data: _ }
+        ));
     }
 }

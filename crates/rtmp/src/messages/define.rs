@@ -11,9 +11,19 @@ pub enum MessageData<'a> {
     SetChunkSize(ProtocolControlMessageSetChunkSize),
     // RTMP Command Messages
     Amf0Command(Command<'a>),
-    Amf0Data { data: Bytes },
-    AudioData { data: Bytes },
-    VideoData { data: Bytes },
+    Amf0Data {
+        data: Bytes,
+    },
+    AudioData {
+        data: Bytes,
+    },
+    VideoData {
+        data: Bytes,
+    },
+    /// Unknown
+    Unknown {
+        data: Bytes,
+    },
 }
 
 nutype_enum::nutype_enum! {

@@ -1,6 +1,7 @@
 <script lang="ts">
     import IconSwitch from '$lib/images/IconSwitch.svelte';
     import { userStore } from '$lib/stores/userStore.svelte';
+    import OrganizationDropdown from './OrganizationDropdown.svelte';
 
     // Props for organization info
 
@@ -15,7 +16,7 @@
     const user = $derived(userStore.user);
     // const user = userStore.user;
 
-    let expanded = $state(true);
+    let expanded = $state(false);
 
     // Toggle expanded state
     function toggleExpanded() {
@@ -33,7 +34,7 @@
 <div class="organization-info">
     <button
         type="button"
-        class="org-header"
+        class="org-header-button"
         onclick={toggleExpanded}
         onkeydown={handleKeyDown}
         aria-expanded={expanded}
@@ -48,33 +49,28 @@
     </button>
 
     {#if expanded}
-        <div class="org-content">
-            <!-- This should loop over all organizations that aren't currently selected and display them -->
-            <p>Organization content</p>
-            {#if user?.organizations}
-                <ul>
-                    {#each user?.organizations as org}
-                        <li>{org.name}</li>
-                    {/each}
-                </ul>
-            {/if}
-        </div>
+        <OrganizationDropdown organizations={user?.organizations} />
     {/if}
 </div>
 
 <style>
     .organization-info {
-        background-color: #f9f5f5;
         margin-bottom: 1rem;
-        padding: 0.5rem 0.75rem;
+        padding: 0 0.19rem;
+        position: relative;
 
-        .org-header {
+        .org-header-button {
             display: flex;
             align-items: center;
             cursor: pointer;
             gap: 0.5rem;
             width: 100%;
-
+            padding: 0.5rem 0.56rem;
+            border: none;
+            background-color: transparent;
+            &:hover {
+                background-color: rgba(0, 0, 0, 0.05);
+            }
             .avatar {
                 width: 2rem;
                 height: 2rem;
@@ -106,12 +102,6 @@
                     white-space: nowrap;
                 }
             }
-        }
-
-        .org-content {
-            margin-top: 1rem;
-            padding-top: 1rem;
-            border-top: 1px solid rgba(0, 0, 0, 0.1);
         }
     }
 </style>

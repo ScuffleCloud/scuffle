@@ -19,7 +19,8 @@
 html,
 body {
     overscroll-behavior: auto;
-    background-color: #fcf3f0;
+    /* Define in hex as globals aren't loaded in time*/
+    background-color: #f1eae7;
 }
 
 h1,

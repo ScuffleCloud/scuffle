@@ -32,3 +32,19 @@ tokio-stream = { version = "0.1", features = ["sync"] }
 
 [features]
 bootstrap = ["scuffle-bootstrap", "scuffle-context", "anyhow", "tokio/macros"]
+
+[package.metadata.cargo_check_external_types]
+allowed_external_types = [
+  # major released
+  "tokio::*",
+  "anyhow::*",
+  "futures::*",
+  "libc::*",
+  "tokio_stream::*",
+
+  # workspace-specific (safe to expose within the same ecosystem)
+  "scuffle_bootstrap::*",
+  "scuffle_context::*",
+  "scuffle_workspace_hack::*",
+  "scuffle_future_ext::*",
+]

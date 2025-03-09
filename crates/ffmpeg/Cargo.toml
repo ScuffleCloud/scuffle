@@ -63,3 +63,28 @@ always_include_features = [
 [package.metadata.docs.rs]
 features = ["channel", "tokio-channel", "crossbeam-channel", "tracing"]
 rustdoc-args = ["--cfg", "docsrs"]
+
+[package.metadata.cargo_check_external_types]
+allowed_external_types = [
+  # major released
+  "libc::*",
+  "bytes::*",
+  "tokio::*",
+  "crossbeam_channel::*",
+  "tracing::*",
+  "arc_swap::*",
+  "rusty_ffmpeg::*",
+  "rand::*",
+  "bon::*",
+  "thiserror::*",
+  "va_list::*",
+  "tempfile::*",
+  "tracing_test::*",
+  "tracing_subscriber::*",
+  "sha2::*",
+
+  # workspace-specific (safe to expose within the same ecosystem)
+  "scuffle_workspace_hack::*",
+  "nutype_enum::*",
+  "scuffle_mp4::*",
+]

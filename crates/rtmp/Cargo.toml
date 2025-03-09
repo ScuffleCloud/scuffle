@@ -48,3 +48,28 @@ serde_json = "1.0"
 tracing = "0.1.41"
 tracing-subscriber = "0.3.19"
 scuffle-flv = { workspace = true }
+
+[package.metadata.cargo_check_external_types]
+allowed_external_types = [
+  # major released
+  "byteorder::*",
+  "bytes::*",
+  "rand::*",
+  "hmac::*",
+  "sha2::*",
+  "uuid::*",
+  "chrono::*",
+  "num_traits::*",
+  "num_derive::*",
+  "tokio::*",
+  "futures::*",
+  "async_trait::*",
+  "tracing::*",
+  "serde_json::*",
+
+  # workspace-specific (safe to expose within the same ecosystem)
+  "scuffle_amf0::*",
+  "scuffle_workspace_hack::*",
+  "scuffle_bytes_util::*",
+  "scuffle_future_ext::*",
+]

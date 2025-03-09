@@ -6,8 +6,82 @@
 name = "scuffle-workspace-hack"
 version = "0.1.0"
 edition = "2024"
+publish = false
 description = "workspace-hack package, managed by hakari"
 license = "MIT OR Apache-2.0"
+
+[package.metadata.cargo_check_external_types]
+allowed_external_types = [
+  # major released
+  "axum::*",
+  "bitflags::*",
+  "byteorder::*",
+  "camino::*",
+  "chrono::*",
+  "clap::*",
+  "clap_builder::*",
+  "config::*",
+  "crossbeam_utils::*",
+  "digest::*",
+  "either::*",
+  "fastrand::*",
+  "futures::*",
+  "futures_channel::*",
+  "futures_core::*",
+  "futures_executor::*",
+  "futures_io::*",
+  "futures_sink::*",
+  "futures_task::*",
+  "futures_util::*",
+  "getrandom::*",
+  "hashbrown::*",
+  "hyper::*",
+  "hyper_util::*",
+  "insta::*",
+  "libc::*",
+  "log::*",
+  "memchr::*",
+  "num_traits::*",
+  "opentelemetry::*",
+  "opentelemetry_sdk::*",
+  "percent_encoding::*",
+  "prettyplease::*",
+  "proc_macro2::*",
+  "quote::*",
+  "rand::*",
+  "regex::*",
+  "regex_automata::*",
+  "regex_syntax::*",
+  "reqwest::*",
+  "rustls::*",
+  "rusty_ffmpeg::*",
+  "serde::*",
+  "serde_json::*",
+  "smallvec::*",
+  "syn::*",
+  "sync_wrapper::*",
+  "thiserror::*",
+  "tokio::*",
+  "tokio_util::*",
+  "tower::*",
+  "tracing::*",
+  "tracing_core::*",
+  "tracing_log::*",
+  "tracing_subscriber::*",
+
+  # platform-specific
+  "h3::*",
+  "h3_quinn::*",
+  "quinn::*",
+  "quinn_proto::*",
+  "quinn_udp::*",
+  "rustls_webpki::*",
+  "tokio_rustls::*",
+  "uuid::*",
+
+  # Windows-specific
+  "windows_sys::*",
+]
 
 # The parts of the file between the BEGIN HAKARI SECTION and END HAKARI SECTION comments
 # are managed by hakari.

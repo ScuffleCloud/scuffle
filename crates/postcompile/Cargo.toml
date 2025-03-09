@@ -29,3 +29,19 @@ insta = "1.42.0"
 
 [features]
 prettyplease = ["dep:prettyplease"]
+
+[package.metadata.cargo_check_external_types]
+allowed_external_types = [
+  # major released
+  "serde_json::*",
+  "cargo_metadata::*",
+  "cargo_platform::*",
+  "target_triple::*",
+  "serde_derive::*",
+  "serde::*",
+  "prettyplease::*",
+  "syn::*",
+
+  # workspace-specific (safe to expose within the same ecosystem)
+  "scuffle_workspace_hack::*",
+]

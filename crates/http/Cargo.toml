@@ -94,3 +94,31 @@ rustdoc-args = ["--cfg", "docsrs"]
 [package.metadata.xtask.powerset]
 additive-features = ["tracing", "tower"]
 ignore-features = ["http3"]
+
+[package.metadata.cargo_check_external_types]
+allowed_external_types = [
+  # major released
+  "tokio::*",
+  "thiserror::*",
+  "futures::*",
+  "bon::*",
+  "pin_project_lite::*",
+  "http::*",
+  "http_body::*",
+  "bytes::*",
+  "tracing::*",
+  "hyper::*",
+  "hyper_util::*",
+  "libc::*",
+  "quinn::*",
+  "h3_quinn::*",
+  "h3::*",
+  "tokio_rustls::*",
+  "rustls::*",
+  "tower::*",
+
+  # workspace-specific (safe to expose within the same ecosystem)
+  "scuffle_context::*",
+  "scuffle_workspace_hack::*",
+  "scuffle_future_ext::*",
+]

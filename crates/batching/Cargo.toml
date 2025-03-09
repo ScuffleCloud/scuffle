@@ -32,3 +32,13 @@ scuffle-workspace-hack.workspace = true
 criterion = { version = "0.5.1", features = ["async_tokio"] }
 futures = "0.3"
 tokio-test = "0.4.4"
+
+[package.metadata.cargo_check_external_types]
+allowed_external_types = [
+  # major released
+  "tokio::*",
+  "tokio_util::*",
+
+  # workspace-specific (safe to expose within the same ecosystem)
+  "scuffle_workspace_hack::*",
+]

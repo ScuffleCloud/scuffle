@@ -26,3 +26,12 @@ serde = ["dep:serde"]
 [package.metadata.docs.rs]
 all-features = true
 rustdoc-args = ["--cfg", "docsrs"]
+
+[package.metadata.cargo_check_external_types]
+allowed_external_types = [
+  # major released
+  "bytes::*",
+
+  # workspace-specific (safe to expose within the same ecosystem)
+  "scuffle_workspace_hack::*",
+]

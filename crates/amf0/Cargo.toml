@@ -30,3 +30,19 @@ serde = ["dep:serde", "scuffle-bytes-util/serde"]
 [package.metadata.docs.rs]
 all-features = true
 rustdoc-args = ["--cfg", "docsrs"]
+
+[package.metadata.cargo_check_external_types]
+allowed_external_types = [
+  # major released
+  "bytes::*",
+
+  # not major released
+  "byteorder::*",
+  "num_traits::*",
+  "num_derive::*",
+  "thiserror::*",
+
+  # workspace-specific (safe to expose within the same ecosystem)
+  "scuffle_bytes_util::*",
+  "scuffle_workspace_hack::*",
+]

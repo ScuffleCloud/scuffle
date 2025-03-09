@@ -40,10 +40,25 @@ insta = "1.42"
 postcompile = { workspace = true, features = ["prettyplease"] }
 scuffle-future-ext.workspace = true
 scuffle-signal = { workspace = true, features = ["bootstrap"] }
-
 # For examples:
 serde = { version = "1", features = ["derive"] }
 smart-default = "0.7"
 tracing = "0.1"
 tracing-subscriber = "0.3"
 scuffle-settings = { workspace = true, features = ["bootstrap"] }
+
+[package.metadata.cargo_check_external_types]
+allowed_external_types = [
+  # major released
+  "anyhow::*",
+  "tokio::*",
+  "futures::*",
+  "pin_project_lite::*",
+
+  # workspace-specific (safe to expose within the same ecosystem)
+  "scuffle_context::*",
+  "scuffle_bootstrap_derive::*",
+  "scuffle_workspace_hack::*",
+  "scuffle_future_ext::*",
+  "scuffle_signal::*",
+]

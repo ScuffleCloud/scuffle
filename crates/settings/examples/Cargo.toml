@@ -1,0 +1,21 @@
+[package]
+name = "scuffle-settings-examples"
+version = "0.1.0"
+edition = "2024"
+publish = false
+repository = "https://github.com/scufflecloud/scuffle"
+authors = ["Scuffle <opensource@scuffle.cloud>"]
+readme = "README.md"
+license = "MIT OR Apache-2.0"
+
+[[example]]
+name = "scuffle-settings-cli"
+path = "src/cli.rs"
+
+[dependencies]
+scuffle-settings = { workspace = true, features = ["cli"] }
+serde = "1"
+serde_derive = "1"
+smart-default = "0.7"
+scuffle-workspace-hack.workspace = true
+

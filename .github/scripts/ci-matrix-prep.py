@@ -102,13 +102,24 @@ class HakariMatrix:
 
 
 @dataclass
+class SemverChecksMatrix:
+    pass
+
+
+@dataclass
 class Job:
     runner: str
     job_name: str
     rust: Optional[RustSetup]
     ffmpeg: Optional[FfmpegSetup]
     inputs: (
-        GrindMatrix | DocsMatrix | ClippyMatrix | TestMatrix | FmtMatrix | HakariMatrix
+        GrindMatrix
+        | DocsMatrix
+        | ClippyMatrix
+        | TestMatrix
+        | FmtMatrix
+        | HakariMatrix
+        | SemverChecksMatrix
     )
     job: str
     secrets: Optional[list[str]] = None
@@ -147,7 +158,7 @@ def create_docs_jobs() -> list[Job]:
         jobs.append(
             Job(
                 runner=LINUX_ARM64,
-                job_name=f"Docs (Linux arm64)",
+                job_name="Docs (Linux arm64)",
                 job="docs",
                 ffmpeg=FfmpegSetup(),
                 inputs=DocsMatrix(
@@ -168,7 +179,7 @@ def create_docs_jobs() -> list[Job]:
         jobs.append(
             Job(
                 runner=WINDOWS_X86_64,
-                job_name=f"Docs (Windows x86_64)",
+                job_name="Docs (Windows x86_64)",
                 job="docs",
                 ffmpeg=FfmpegSetup(),
                 inputs=DocsMatrix(
@@ -189,7 +200,7 @@ def create_docs_jobs() -> list[Job]:
         jobs.append(
             Job(
                 runner=MACOS_X86_64,
-                job_name=f"Docs (macOS x86_64)",
+                job_name="Docs (macOS x86_64)",
                 job="docs",
                 ffmpeg=FfmpegSetup(),
                 inputs=DocsMatrix(
@@ -210,7 +221,7 @@ def create_docs_jobs() -> list[Job]:
         jobs.append(
             Job(
                 runner=MACOS_ARM64,
-                job_name=f"Docs (macOS arm64)",
+                job_name="Docs (macOS arm64)",
                 job="docs",
                 ffmpeg=FfmpegSetup(),
                 inputs=DocsMatrix(
@@ -237,7 +248,7 @@ def create_clippy_jobs() -> list[Job]:
     jobs.append(
         Job(
             runner=LINUX_X86_64,
-            job_name=f"Clippy (Linux x86_64)",
+            job_name="Clippy (Linux x86_64)",
             job="clippy",
             ffmpeg=FfmpegSetup(),
             inputs=ClippyMatrix(
@@ -257,7 +268,7 @@ def create_clippy_jobs() -> list[Job]:
         jobs.append(
             Job(
                 runner=LINUX_ARM64,
-                job_name=f"Clippy (Linux arm64)",
+                job_name="Clippy (Linux arm64)",
                 job="clippy",
                 ffmpeg=FfmpegSetup(),
                 inputs=ClippyMatrix(
@@ -276,7 +287,7 @@ def create_clippy_jobs() -> list[Job]:
         jobs.append(
             Job(
                 runner=WINDOWS_X86_64,
-                job_name=f"Clippy (Windows x86_64)",
+                job_name="Clippy (Windows x86_64)",
                 job="clippy",
                 ffmpeg=FfmpegSetup(),
                 inputs=ClippyMatrix(
@@ -295,7 +306,7 @@ def create_clippy_jobs() -> list[Job]:
         jobs.append(
             Job(
                 runner=MACOS_X86_64,
-                job_name=f"Clippy (macOS x86_64)",
+                job_name="Clippy (macOS x86_64)",
                 job="clippy",
                 ffmpeg=FfmpegSetup(),
                 inputs=ClippyMatrix(
@@ -314,7 +325,7 @@ def create_clippy_jobs() -> list[Job]:
         jobs.append(
             Job(
                 runner=MACOS_ARM64,
-                job_name=f"Clippy (macOS arm64)",
+                job_name="Clippy (macOS arm64)",
                 job="clippy",
                 ffmpeg=FfmpegSetup(),
                 inputs=ClippyMatrix(
@@ -349,7 +360,7 @@ def create_test_jobs() -> list[Job]:
     jobs.append(
         Job(
             runner=LINUX_X86_64,
-            job_name=f"Test (Linux x86_64)",
+            job_name="Test (Linux x86_64)",
             job="test",
             ffmpeg=FfmpegSetup(),
             inputs=TestMatrix(
@@ -371,7 +382,7 @@ def create_test_jobs() -> list[Job]:
         jobs.append(
             Job(
                 runner=LINUX_ARM64,
-                job_name=f"Test (Linux arm64)",
+                job_name="Test (Linux arm64)",
                 job="test",
                 ffmpeg=FfmpegSetup(),
                 inputs=TestMatrix(
@@ -392,7 +403,7 @@ def create_test_jobs() -> list[Job]:
         jobs.append(
             Job(
                 runner=WINDOWS_X86_64,
-                job_name=f"Test (Windows x86_64)",
+                job_name="Test (Windows x86_64)",
                 job="test",
                 ffmpeg=FfmpegSetup(),
                 inputs=TestMatrix(
@@ -413,7 +424,7 @@ def create_test_jobs() -> list[Job]:
         jobs.append(
             Job(
                 runner=MACOS_X86_64,
-                job_name=f"Test (macOS x86_64)",
+                job_name="Test (macOS x86_64)",
                 job="test",
                 ffmpeg=FfmpegSetup(),
                 inputs=TestMatrix(
@@ -434,7 +445,7 @@ def create_test_jobs() -> list[Job]:
         jobs.append(
             Job(
                 runner=MACOS_ARM64,
-                job_name=f"Test (macOS arm64)",
+                job_name="Test (macOS arm64)",
                 job="test",
                 ffmpeg=FfmpegSetup(),
                 inputs=TestMatrix(
@@ -462,7 +473,7 @@ def create_grind_jobs() -> list[Job]:
         jobs.append(
             Job(
                 runner=LINUX_X86_64,
-                job_name=f"Grind (Linux x86_64)",
+                job_name="Grind (Linux x86_64)",
                 job="grind",
                 ffmpeg=FfmpegSetup(),
                 inputs=GrindMatrix(
@@ -484,7 +495,7 @@ def create_grind_jobs() -> list[Job]:
         jobs.append(
             Job(
                 runner=LINUX_ARM64,
-                job_name=f"Grind (Linux arm64)",
+                job_name="Grind (Linux arm64)",
                 job="grind",
                 ffmpeg=FfmpegSetup(),
                 inputs=GrindMatrix(
@@ -512,7 +523,7 @@ def create_fmt_jobs() -> list[Job]:
     jobs.append(
         Job(
             runner=GITHUB_DEFAULT_RUNNER,
-            job_name=f"Fmt",
+            job_name="Fmt",
             job="fmt",
             ffmpeg=None,
             inputs=FmtMatrix(),
@@ -534,7 +545,7 @@ def create_hakari_jobs() -> list[Job]:
     jobs.append(
         Job(
             runner=GITHUB_DEFAULT_RUNNER,
-            job_name=f"Hakari",
+            job_name="Hakari",
             job="hakari",
             ffmpeg=None,
             inputs=HakariMatrix(),
@@ -551,6 +562,29 @@ def create_hakari_jobs() -> list[Job]:
     return jobs
 
 
+def create_semver_checks_jobs() -> list[Job]:
+    jobs: list[Job] = []
+
+    jobs.append(
+        Job(
+            runner=GITHUB_DEFAULT_RUNNER,
+            job_name="Semver-checks",
+            job="semver-checks",
+            ffmpeg=FfmpegSetup(),
+            inputs=SemverChecksMatrix(),
+            rust=RustSetup(
+                toolchain="stable",
+                components="rust-docs",
+                tools="cargo-semver-checks",
+                shared_key="cargo-semver-checks",
+                cache_backend="ubicloud",
+            ),
+        )
+    )
+
+    return jobs
+
+
 def create_jobs() -> list[Job]:
     jobs = (
         create_docs_jobs()
@@ -559,6 +593,7 @@ def create_jobs() -> list[Job]:
         + create_grind_jobs()
         + create_fmt_jobs()
         + create_hakari_jobs()
+        + create_semver_checks_jobs()
     )
 
     return jobs

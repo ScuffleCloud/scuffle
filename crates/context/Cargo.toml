@@ -23,3 +23,16 @@ scuffle-workspace-hack.workspace = true
 [dev-dependencies]
 tokio-test = "0.4.4"
 scuffle-future-ext.workspace = true
+
+[package.metadata.cargo_check_external_types]
+allowed_external_types = [
+  # major released
+  "futures_lite::*",
+  "pin_project_lite::*",
+  "tokio_util::*",
+  "tokio::*",
+
+  # workspace-specific (safe to expose within the same ecosystem)
+  "scuffle_workspace_hack::*",
+  "scuffle_future_ext::*",
+]

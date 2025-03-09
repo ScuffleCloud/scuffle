@@ -23,3 +23,16 @@ nutype-enum.workspace = true
 
 [dev-dependencies]
 insta = "1.42"
+
+[package.metadata.cargo_check_external_types]
+allowed_external_types = [
+  # major released
+  "bytes::*",
+  "byteorder::*",
+
+  # workspace-specific (safe to expose within the same ecosystem)
+  "scuffle_expgolomb::*",
+  "scuffle_bytes_util::*",
+  "scuffle_workspace_hack::*",
+  "nutype_enum::*",
+]

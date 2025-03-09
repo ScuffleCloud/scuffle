@@ -13,3 +13,12 @@ keywords = ["future", "async", "await"]
 [dependencies]
 tokio = { version = "1", features = ["time"] }
 scuffle-workspace-hack.workspace = true
+
+[package.metadata.cargo_check_external_types]
+allowed_external_types = [
+  # major released
+  "tokio::*",
+
+  # workspace-specific (safe to expose within the same ecosystem)
+  "scuffle_workspace_hack::*",
+]

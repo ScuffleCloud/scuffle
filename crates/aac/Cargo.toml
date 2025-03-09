@@ -20,3 +20,18 @@ num-traits = "0.2"
 num-derive = "0.4"
 scuffle-workspace-hack.workspace = true
 scuffle-bytes-util.workspace = true
+
+[package.metadata.cargo_check_external_types]
+allowed_external_types = [
+  # major released
+  "bytes::*",
+
+  # not major released
+  "byteorder::*",
+  "num_traits::*",
+  "num_derive::*",
+
+  # workspace-specific (safe to expose within the same ecosystem)
+  "scuffle_workspace_hack::*",
+  "scuffle_bytes_util::*",
+]

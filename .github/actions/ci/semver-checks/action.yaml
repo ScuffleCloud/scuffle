@@ -1,0 +1,15 @@
+name: Semver-checks
+runs:
+  using: "composite"
+  steps:
+    # - name: Checkout repository (with full history)
+    #   uses: actions/checkout@v4
+    #   with:
+    #     fetch-depth: 0
+
+    - name: Run xtask semver checks (against main branch)
+      shell: bash
+      env:
+        RUSTFLAGS: "--cfg reqwest_unstable"
+      run:
+        cargo xtask semver-checks

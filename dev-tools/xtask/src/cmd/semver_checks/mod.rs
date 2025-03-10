@@ -23,6 +23,9 @@ pub struct SemverChecks {
     /// Baseline git revision branch to compare against
     #[clap(long, default_value = "main")]
     baseline: String,
+
+    #[clap(long, default_value = "false")]
+    disable_hakari: bool,
 }
 
 impl SemverChecks {
@@ -46,6 +49,11 @@ impl SemverChecks {
             .collect();
 
         println!("Semver-checks will run on crates: {:?}", common_crates);
+
+        if self.disable_hakari {
+            println!("Disabling hakari");
+            cargo_cmd().args(["hakari", "disable"]).status().context("disabling hakari")?;
+        }
 
         for package in &common_crates {
             println!("Running semver-checks for {}", package);

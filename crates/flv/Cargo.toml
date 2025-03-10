@@ -42,14 +42,4 @@ allowed_external_types = [
   "num_traits::*",
   "num_derive::*",
   "thiserror::*",
-
-  # workspace-specific (safe to expose within the same ecosystem)
-  "scuffle_h264::*",
-  "scuffle_h265::*",
-  "scuffle_aac::*",
-  "scuffle_bytes_util::*",
-  "scuffle_av1::*",
-  "scuffle_amf0::*",
-  "nutype_enum::*",
-  "scuffle_workspace_hack::*",
 ]

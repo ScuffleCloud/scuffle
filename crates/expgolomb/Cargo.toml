@@ -24,8 +24,4 @@ bytes = "1.5"
 allowed_external_types = [
   # major released
   "bytes::*",
-
-  # workspace-specific (safe to expose within the same ecosystem)
-  "scuffle_bytes_util::*",
-  "scuffle_workspace_hack::*",
 ]

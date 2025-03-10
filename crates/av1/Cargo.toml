@@ -29,8 +29,4 @@ allowed_external_types = [
 
   # not major released
   "byteorder::*",
-
-  # workspace-specific (safe to expose within the same ecosystem)
-  "scuffle_bytes_util::*",
-  "scuffle_workspace_hack::*",
 ]

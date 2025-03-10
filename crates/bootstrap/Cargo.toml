@@ -54,11 +54,4 @@ allowed_external_types = [
   "tokio::*",
   "futures::*",
   "pin_project_lite::*",
-
-  # workspace-specific (safe to expose within the same ecosystem)
-  "scuffle_context::*",
-  "scuffle_bootstrap_derive::*",
-  "scuffle_workspace_hack::*",
-  "scuffle_future_ext::*",
-  "scuffle_signal::*",
 ]

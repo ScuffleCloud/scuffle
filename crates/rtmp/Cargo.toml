@@ -66,10 +66,4 @@ allowed_external_types = [
   "async_trait::*",
   "tracing::*",
   "serde_json::*",
-
-  # workspace-specific (safe to expose within the same ecosystem)
-  "scuffle_amf0::*",
-  "scuffle_workspace_hack::*",
-  "scuffle_bytes_util::*",
-  "scuffle_future_ext::*",
 ]

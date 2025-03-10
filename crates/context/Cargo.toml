@@ -31,8 +31,4 @@ allowed_external_types = [
   "pin_project_lite::*",
   "tokio_util::*",
   "tokio::*",
-
-  # workspace-specific (safe to expose within the same ecosystem)
-  "scuffle_workspace_hack::*",
-  "scuffle_future_ext::*",
 ]

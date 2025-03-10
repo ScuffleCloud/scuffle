@@ -38,7 +38,4 @@ allowed_external_types = [
   # major released
   "tokio::*",
   "tokio_util::*",
-
-  # workspace-specific (safe to expose within the same ecosystem)
-  "scuffle_workspace_hack::*",
 ]

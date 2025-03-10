@@ -575,7 +575,7 @@ def create_semver_checks_jobs() -> list[Job]:
             rust=RustSetup(
                 toolchain="stable",
                 components="rust-docs",
-                tools="cargo-semver-checks",
+                tools="cargo-semver-checks,cargo-hakari",
                 shared_key="cargo-semver-checks",
                 cache_backend="ubicloud",
             ),

@@ -35,15 +35,4 @@ allowed_external_types = [
   "bytes::*",
   "serde::*",
   "serde_json::*",
-
-  # workspace-specific (safe to expose within the same ecosystem)
-  "scuffle_h264::*",
-  "scuffle_h265::*",
-  "scuffle_mp4::*",
-  "scuffle_aac::*",
-  "scuffle_av1::*",
-  "scuffle_flv::*",
-  "scuffle_amf0::*",
-  "scuffle_bytes_util::*",
-  "scuffle_workspace_hack::*",
 ]

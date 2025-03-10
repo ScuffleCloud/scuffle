@@ -116,9 +116,4 @@ allowed_external_types = [
   "tokio_rustls::*",
   "rustls::*",
   "tower::*",
-
-  # workspace-specific (safe to expose within the same ecosystem)
-  "scuffle_context::*",
-  "scuffle_workspace_hack::*",
-  "scuffle_future_ext::*",
 ]

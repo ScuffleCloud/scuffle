@@ -31,7 +31,4 @@ rustdoc-args = ["--cfg", "docsrs"]
 allowed_external_types = [
   # major released
   "bytes::*",
-
-  # workspace-specific (safe to expose within the same ecosystem)
-  "scuffle_workspace_hack::*",
 ]

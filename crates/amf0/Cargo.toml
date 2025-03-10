@@ -29,8 +29,4 @@ allowed_external_types = [
   "num_traits::*",
   "num_derive::*",
   "thiserror::*",
-
-  # workspace-specific (safe to expose within the same ecosystem)
-  "scuffle_bytes_util::*",
-  "scuffle_workspace_hack::*",
 ]

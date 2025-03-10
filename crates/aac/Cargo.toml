@@ -30,8 +30,4 @@ allowed_external_types = [
   "byteorder::*",
   "num_traits::*",
   "num_derive::*",
-
-  # workspace-specific (safe to expose within the same ecosystem)
-  "scuffle_workspace_hack::*",
-  "scuffle_bytes_util::*",
 ]

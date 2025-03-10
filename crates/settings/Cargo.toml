@@ -72,8 +72,4 @@ allowed_external_types = [
   "serde::*",
   "thiserror::*",
   "anyhow::*",
-
-  # workspace-specific (safe to expose within the same ecosystem)
-  "scuffle_bootstrap::*",
-  "scuffle_workspace_hack::*",
 ]

@@ -14,7 +14,4 @@ keywords = ["enum", "nutype"]
 scuffle-workspace-hack.workspace = true
 
 [package.metadata.cargo_check_external_types]
-allowed_external_types = [
-  # workspace-specific (safe to expose within the same ecosystem)
-  "scuffle_workspace_hack::*",
-]
+allowed_external_types = []

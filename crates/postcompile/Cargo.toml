@@ -41,7 +41,4 @@ allowed_external_types = [
   "serde::*",
   "prettyplease::*",
   "syn::*",
-
-  # workspace-specific (safe to expose within the same ecosystem)
-  "scuffle_workspace_hack::*",
 ]

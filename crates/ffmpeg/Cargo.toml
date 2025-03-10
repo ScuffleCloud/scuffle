@@ -82,9 +82,4 @@ allowed_external_types = [
   "tracing_test::*",
   "tracing_subscriber::*",
   "sha2::*",
-
-  # workspace-specific (safe to expose within the same ecosystem)
-  "scuffle_workspace_hack::*",
-  "nutype_enum::*",
-  "scuffle_mp4::*",
 ]

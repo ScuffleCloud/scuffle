@@ -2,12 +2,9 @@ name: Semver-checks
 runs:
   using: "composite"
   steps:
-    - name: Cargo Hackari disable
-      run: cargo hakari disable
-
     - name: Run xtask semver checks (against main branch)
       shell: bash
       env:
         RUSTFLAGS: "--cfg reqwest_unstable"
       run:
-        cargo xtask semver-checks
+        cargo xtask semver-checks --disable-hakari true

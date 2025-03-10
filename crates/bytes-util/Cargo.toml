@@ -21,7 +21,4 @@ scuffle-workspace-hack.workspace = true
 allowed_external_types = [
   # major released
   "bytes::*",
-
-  # workspace-specific (safe to expose within the same ecosystem)
-  "scuffle_workspace_hack::*",
 ]

@@ -41,10 +41,4 @@ allowed_external_types = [
   "futures::*",
   "libc::*",
   "tokio_stream::*",
-
-  # workspace-specific (safe to expose within the same ecosystem)
-  "scuffle_bootstrap::*",
-  "scuffle_context::*",
-  "scuffle_workspace_hack::*",
-  "scuffle_future_ext::*",
 ]

@@ -29,6 +29,10 @@ extend google.protobuf.ServiceOptions {
     HttpRouterOptions http_router = 15506;
 }
 
+extend google.protobuf.OneofOptions {
+    SchemaOneofOptions schema_oneof = 15507;
+}
+
 message HttpRouterOptions {
     optional string prefix = 1;
     optional string description = 2;
@@ -49,7 +53,7 @@ enum NameStyle {
 }
 
 message SchemaMessageOptions {
-    bool skip_derive = 1;
+    optional bool custom_impl = 1;
     optional NameStyle style = 2;
 }
 
@@ -103,8 +107,8 @@ message SchemaFieldOptions {
 }
 
 message SchemaEnumOptions {
-    bool skip_derive = 1;
-    bool integer_enum = 2;
+    optional bool custom_impl = 1;
+    optional bool integer_enum = 2;
     optional NameStyle style = 3;
 }
 
@@ -170,4 +174,12 @@ message SecurityOptions {
     string name = 1;
     repeated string scope = 2;
     repeated SecurityOptions and = 3;
+}
+
+message SchemaOneofOptions {
+    optional string rename = 1;
+    optional bool custom_impl = 2;
+    optional bool no_flatten = 3;
+    optional NameStyle style = 4;
+    optional bool required = 5;
 }

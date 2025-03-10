@@ -122,6 +122,14 @@ impl ProstExtension for tinc_pb::HttpRouterOptions {
     }
 }
 
+impl ProstExtension for tinc_pb::SchemaOneofOptions {
+    type Incoming = prost_reflect::OneofDescriptor;
+
+    fn get_options(incoming: &Self::Incoming) -> Option<prost_reflect::DynamicMessage> {
+        Some(incoming.options())
+    }
+}
+
 #[derive(Debug, Clone)]
 pub enum FieldKind {
     Primitive(PrimitiveKind),
@@ -209,37 +217,37 @@ impl FieldKind {
         }
     }
 
-    pub fn schemars_with(&self, current_namespace: &str) -> Option<String> {
-        match self {
-            FieldKind::WellKnown(well_known) => Some(format!("::tinc::serde_helpers::well_known::{}", well_known.name())),
-            FieldKind::Optional(inner) => Some(format!(
-                "::tinc::serde_helpers::SchemaOptional<{}>",
-                inner.schemars_with(current_namespace)?
-            )),
-            FieldKind::List(inner) => Some(format!(
-                "::tinc::serde_helpers::SchemaList<{}>",
-                inner.schemars_with(current_namespace)?
-            )),
-            FieldKind::Map(key, inner) => Some(format!(
-                "::tinc::serde_helpers::SchemaMap<::tinc::serde_helpers::primitive_types::{}, {}>",
-                match key {
-                    PrimitiveKind::String => "String",
-                    PrimitiveKind::Bytes => "Bytes",
-                    PrimitiveKind::Bool => "Bool",
-                    PrimitiveKind::I32 => "I32",
-                    PrimitiveKind::I64 => "I64",
-                    PrimitiveKind::U32 => "U32",
-                    PrimitiveKind::U64 => "U64",
-                    PrimitiveKind::F32 => "F32",
-                    PrimitiveKind::F64 => "F64",
-                },
-                inner.schemars_with(current_namespace)?,
-            )),
-            FieldKind::Enum(name) => Some(get_common_import(current_namespace, name)),
-            FieldKind::Primitive(_) => None,
-            FieldKind::Message(_) => None,
-        }
-    }
+    // pub fn schemars_with(&self, current_namespace: &str) -> Option<String> {
+    //     match self {
+    //         FieldKind::WellKnown(well_known) => Some(format!("::tinc::serde_helpers::well_known::{}", well_known.name())),
+    //         FieldKind::Optional(inner) => Some(format!(
+    //             "::tinc::serde_helpers::SchemaOptional<{}>",
+    //             inner.schemars_with(current_namespace)?
+    //         )),
+    //         FieldKind::List(inner) => Some(format!(
+    //             "::tinc::serde_helpers::SchemaList<{}>",
+    //             inner.schemars_with(current_namespace)?
+    //         )),
+    //         FieldKind::Map(key, inner) => Some(format!(
+    //             "::tinc::serde_helpers::SchemaMap<::tinc::serde_helpers::primitive_types::{}, {}>",
+    //             match key {
+    //                 PrimitiveKind::String => "String",
+    //                 PrimitiveKind::Bytes => "Bytes",
+    //                 PrimitiveKind::Bool => "Bool",
+    //                 PrimitiveKind::I32 => "I32",
+    //                 PrimitiveKind::I64 => "I64",
+    //                 PrimitiveKind::U32 => "U32",
+    //                 PrimitiveKind::U64 => "U64",
+    //                 PrimitiveKind::F32 => "F32",
+    //                 PrimitiveKind::F64 => "F64",
+    //             },
+    //             inner.schemars_with(current_namespace)?,
+    //         )),
+    //         FieldKind::Enum(name) => Some(get_common_import(current_namespace, name)),
+    //         FieldKind::Primitive(_) => None,
+    //         FieldKind::Message(_) => None,
+    //     }
+    // }
 
     pub fn enum_name(&self) -> Option<&str> {
         match self {
@@ -351,6 +359,7 @@ pub struct Extensions {
     // Message extensions
     schema_message: Extension<tinc_pb::SchemaMessageOptions>,
     schema_field: Extension<tinc_pb::SchemaFieldOptions>,
+    schema_oneof: Extension<tinc_pb::SchemaOneofOptions>,
 
     // Enum extensions
     schema_enum: Extension<tinc_pb::SchemaEnumOptions>,
@@ -369,12 +378,14 @@ pub struct Extensions {
 pub struct MessageOpts {
     pub opts: tinc_pb::SchemaMessageOptions,
     pub fields: BTreeMap<String, FieldOpts>,
+    pub oneofs: BTreeMap<String, OneofOpts>,
 }
 
 #[derive(Debug)]
 pub struct FieldOpts {
     pub kind: FieldKind,
     pub json_name: String,
+    pub one_of: Option<String>,
     pub opts: tinc_pb::SchemaFieldOptions,
 }
 
@@ -402,6 +413,11 @@ pub struct MethodOpts {
     pub output: String,
 }
 
+#[derive(Default, Debug)]
+pub struct OneofOpts {
+    pub opts: tinc_pb::SchemaOneofOptions,
+}
+
 impl Extensions {
     pub fn new(pool: &DescriptorPool) -> Self {
         Self {
@@ -411,6 +427,7 @@ impl Extensions {
             schema_variant: Extension::new("tinc.schema_variant", pool),
             http_endpoint: Extension::new("tinc.http_endpoint", pool),
             http_router: Extension::new("tinc.http_router", pool),
+            schema_oneof: Extension::new("tinc.schema_oneof", pool),
             messages: BTreeMap::new(),
             enums: BTreeMap::new(),
             services: BTreeMap::new(),
@@ -518,7 +535,20 @@ impl Extensions {
             })
             .collect::<anyhow::Result<Vec<_>>>()?;
 
-        if !insert && opts.is_none() && fields.iter().all(|(_, opts)| opts.is_none()) {
+        let oneofs = fields
+            .iter()
+            .filter_map(|(field, _)| field.containing_oneof())
+            .map(|oneof| {
+                let opts = self.schema_oneof.decode(&oneof)?;
+                Ok((oneof, opts))
+            })
+            .collect::<anyhow::Result<Vec<_>>>()?;
+
+        if !insert
+            && opts.is_none()
+            && fields.iter().all(|(_, opts)| opts.is_none())
+            && oneofs.iter().all(|(_, opts)| opts.is_none())
+        {
             return Ok(());
         }
 
@@ -527,16 +557,20 @@ impl Extensions {
             MessageOpts {
                 opts: opts.unwrap_or_default(),
                 fields: BTreeMap::new(),
+                oneofs: BTreeMap::new(),
             },
         );
 
         for (field, opts) in fields {
             let opts = opts.unwrap_or_default();
-            let kind = FieldKind::from_field(&field, opts.required).with_context(|| field.full_name().to_owned())?;
+
+            let kind = FieldKind::from_field(&field, opts.required || field.containing_oneof().is_some())
+                .with_context(|| field.full_name().to_owned())?;
             self.messages.get_mut(message.full_name()).unwrap().fields.insert(
                 field.name().to_owned(),
                 FieldOpts {
                     kind: kind.clone(),
+                    one_of: field.containing_oneof().map(|f| f.name().to_owned()),
                     json_name: field.json_name().to_owned(),
                     opts,
                 },
@@ -551,6 +585,15 @@ impl Extensions {
                     .with_context(|| field.full_name().to_owned())
                     .with_context(|| name.to_owned())?;
             }
+        }
+
+        for (oneof, opts) in oneofs {
+            self.messages.get_mut(message.full_name()).unwrap().oneofs.insert(
+                oneof.name().to_owned(),
+                OneofOpts {
+                    opts: opts.unwrap_or_default(),
+                },
+            );
         }
 
         Ok(())

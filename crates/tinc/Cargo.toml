@@ -13,3 +13,4 @@ prost-types = "0.13.5"
 serde_json = "1.0.115"
 itoa = "1.0.1"
 ryu = "1.0.14"
+scuffle-workspace-hack.workspace = true

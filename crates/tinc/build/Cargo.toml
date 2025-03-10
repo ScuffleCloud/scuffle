@@ -10,3 +10,4 @@ prost = "0.13.5"
 prost-reflect = "0.14.7"
 anyhow = "1.0.79"
 oas3 = "0.15.0"
+scuffle-workspace-hack.workspace = true

@@ -1253,7 +1253,7 @@ dependencies = [
  "futures-core",
  "futures-sink",
  "http",
- "indexmap 2.7.1",
+ "indexmap 2.8.0",
  "slab",
  "tokio",
  "tokio-util",
@@ -1657,7 +1657,7 @@ dependencies = [
 
 [[package]]
 name = "indexmap"
-version = "2.7.1"
+version = "2.8.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "3954d50fe15b02142bf25d3b8bdadb634ec3948f103d04ffe3031bc8fe9d7058"
 dependencies = [
@@ -2093,7 +2093,7 @@ dependencies = [
  "glob",
  "opentelemetry",
  "percent-encoding",
- "rand",
+ "rand 0.9.0",
  "serde_json",
  "thiserror 2.0.12",
  "tokio",
@@ -2216,7 +2216,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "b4c5cc86750666a3ed20bdaf5ca2a0344f9c67674cae0515bec2da16fbaa47db"
 dependencies = [
  "fixedbitset",
- "indexmap 2.7.1",
+ "indexmap 2.8.0",
 ]
 
 [[package]]
@@ -2529,7 +2529,7 @@ dependencies = [
  "aws-lc-rs",
  "bytes",
  "getrandom 0.3.2",
- "rand",
+ "rand 0.9.0",
  "ring",
  "rustc-hash 2.1.1",
  "rustls",
@@ -2573,13 +2573,34 @@ checksum = "74765f6d916ee2faa39bc8e68e4f3ed8949b48cccdac59983d287a7cb71ce9c5"
 
 [[package]]
 name = "rand"
+version = "0.8.5"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "34af8d1a0e25924bc5b7c43c079c942339d8f0a8b57c39049bef581b46327404"
+dependencies = [
+ "libc",
+ "rand_chacha 0.3.1",
+ "rand_core 0.6.4",
+]
+
+[[package]]
+name = "rand"
 version = "0.9.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "3779b94aeb87e8bd4e834cee3650289ee9e0d5677f976ecdb6d219e5f4f6cd94"
 dependencies = [
- "rand_chacha",
- "rand_core",
+ "rand_chacha 0.9.0",
+ "rand_core 0.9.3",
  "zerocopy",
+]
+
+[[package]]
+name = "rand_chacha"
+version = "0.3.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "e6c10a63a0fa32252be49d21e7709d4d4baf8d231c2dbce1eaa8141b9b127d88"
+dependencies = [
+ "ppv-lite86",
+ "rand_core 0.6.4",
 ]
 
 [[package]]
@@ -2589,7 +2610,16 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "d3022b5f1df60f26e1ffddd6c66e8aa15de382ae63b3a0c1bfc0e4d3e3f325cb"
 dependencies = [
  "ppv-lite86",
- "rand_core",
+ "rand_core 0.9.3",
+]
+
+[[package]]
+name = "rand_core"
+version = "0.6.4"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "ec0be4795e2f6a28069bec0b5ff3e2ac9bafc99e6a9a7dc3547996c5c816922c"
+dependencies = [
+ "getrandom 0.2.15",
 ]
 
 [[package]]
@@ -3135,7 +3165,7 @@ dependencies = [
  "insta",
  "libc",
  "nutype-enum",
- "rand",
+ "rand 0.9.0",
  "rusty_ffmpeg",
  "scuffle-mp4",
  "scuffle-workspace-hack",
@@ -3320,7 +3350,7 @@ name = "scuffle-pprof-examples"
 version = "0.1.0"
 dependencies = [
  "flate2",
- "rand",
+ "rand 0.9.0",
  "scuffle-pprof",
  "scuffle-workspace-hack",
 ]
@@ -3339,7 +3369,7 @@ dependencies = [
  "num-derive",
  "num-traits",
  "nutype-enum",
- "rand",
+ "rand 0.9.0",
  "scuffle-amf0",
  "scuffle-bytes-util",
  "scuffle-context",
@@ -3429,6 +3459,7 @@ dependencies = [
 name = "scuffle-workspace-hack"
 version = "0.1.0"
 dependencies = [
+ "aho-corasick",
  "axum 0.8.1",
  "bitflags 2.9.0",
  "bytes",
@@ -3442,6 +3473,7 @@ dependencies = [
  "digest",
  "either",
  "fastrand",
+ "form_urlencoded",
  "futures",
  "futures-channel",
  "futures-executor",
@@ -3449,6 +3481,7 @@ dependencies = [
  "futures-sink",
  "futures-task",
  "futures-util",
+ "getrandom 0.2.15",
  "getrandom 0.3.2",
  "h3",
  "h3-quinn",
@@ -3456,6 +3489,7 @@ dependencies = [
  "hyper",
  "hyper-util",
  "insta",
+ "itertools 0.13.0",
  "libc",
  "log",
  "memchr",
@@ -3465,11 +3499,13 @@ dependencies = [
  "percent-encoding",
  "prettyplease",
  "proc-macro2",
+ "prost 0.13.5",
+ "prost-types 0.13.5",
  "quinn",
  "quinn-proto",
  "quinn-udp",
  "quote",
- "rand",
+ "rand 0.9.0",
  "regex",
  "regex-automata 0.4.9",
  "regex-syntax 0.8.5",
@@ -3477,6 +3513,7 @@ dependencies = [
  "rustls",
  "rustls-webpki",
  "rusty_ffmpeg",
+ "semver",
  "serde",
  "serde_json",
  "smallvec",
@@ -3493,6 +3530,7 @@ dependencies = [
  "tracing-core",
  "tracing-log",
  "tracing-subscriber",
+ "url",
  "uuid",
  "windows-sys 0.52.0",
  "windows-sys 0.59.0",
@@ -3843,6 +3881,7 @@ dependencies = [
  "prost-types 0.13.5",
  "ryu",
  "schemars",
+ "scuffle-workspace-hack",
  "serde",
  "serde_json",
  "tonic",
@@ -3856,6 +3895,7 @@ dependencies = [
  "oas3",
  "prost 0.13.5",
  "prost-reflect",
+ "scuffle-workspace-hack",
  "tinc-pb",
  "tonic-build",
 ]
@@ -3867,6 +3907,7 @@ dependencies = [
  "prost 0.13.5",
  "prost-build 0.13.5",
  "prost-types 0.13.5",
+ "scuffle-workspace-hack",
 ]
 
 [[package]]
@@ -4029,7 +4070,7 @@ version = "0.22.24"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "17b4795ff5edd201c7cd6dca065ae59972ce77d1b80fa0a84d94950ece7d1474"
 dependencies = [
- "indexmap 2.7.1",
+ "indexmap 2.8.0",
  "serde",
  "serde_spanned",
  "toml_datetime",
@@ -4252,7 +4293,7 @@ dependencies = [
  "http",
  "httparse",
  "log",
- "rand",
+ "rand 0.9.0",
  "sha1",
  "thiserror 2.0.12",
  "utf-8",

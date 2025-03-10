@@ -1,33 +1,41 @@
+//! This file is a bit of a hack to implement a general purpose Serde helper for
+//! the generated code.
+//!
+//! The goal is to make it so that we only need to tell serde to use `::tinc::serde_helpers::_` to serialize / deserialize our types.
+//! Even if they are nested in Option, Vec, HashMap, etc.
+//!
+//! It is subject to change at any time.
+
 use std::collections::HashMap;
 use std::marker::PhantomData;
 
 macro_rules! defer_schemars_impl {
     ($defer:ty) => {
-        fn is_referenceable() -> bool {
-            <$defer as ::schemars::JsonSchema>::is_referenceable()
-        }
+        // fn is_referenceable() -> bool {
+        //     <$defer as ::schemars::JsonSchema>::is_referenceable()
+        // }
 
-        fn schema_name() -> ::std::string::String {
-            <$defer as ::schemars::JsonSchema>::schema_name()
-        }
+        // fn schema_name() -> ::std::string::String {
+        //     <$defer as ::schemars::JsonSchema>::schema_name()
+        // }
 
-        fn schema_id() -> ::std::borrow::Cow<'static, str> {
-            <$defer as ::schemars::JsonSchema>::schema_id()
-        }
+        // fn schema_id() -> ::std::borrow::Cow<'static, str> {
+        //     <$defer as ::schemars::JsonSchema>::schema_id()
+        // }
 
-        fn json_schema(generator: &mut ::schemars::r#gen::SchemaGenerator) -> ::schemars::schema::Schema {
-            <$defer as ::schemars::JsonSchema>::json_schema(generator)
-        }
+        // fn json_schema(generator: &mut ::schemars::r#gen::SchemaGenerator) -> ::schemars::schema::Schema {
+        //     <$defer as ::schemars::JsonSchema>::json_schema(generator)
+        // }
 
-        fn _schemars_private_non_optional_json_schema(
-            generator: &mut ::schemars::r#gen::SchemaGenerator,
-        ) -> ::schemars::schema::Schema {
-            <$defer as ::schemars::JsonSchema>::_schemars_private_non_optional_json_schema(generator)
-        }
+        // fn _schemars_private_non_optional_json_schema(
+        //     generator: &mut ::schemars::r#gen::SchemaGenerator,
+        // ) -> ::schemars::schema::Schema {
+        //     <$defer as ::schemars::JsonSchema>::_schemars_private_non_optional_json_schema(generator)
+        // }
 
-        fn _schemars_private_is_option() -> bool {
-            <$defer as ::schemars::JsonSchema>::_schemars_private_is_option()
-        }
+        // fn _schemars_private_is_option() -> bool {
+        //     <$defer as ::schemars::JsonSchema>::_schemars_private_is_option()
+        // }
     };
 }
 
@@ -36,9 +44,9 @@ pub mod primitive_types {
         ($name:ident, $type:ty) => {
             pub struct $name;
 
-            impl ::schemars::JsonSchema for $name {
-                defer_schemars_impl!($type);
-            }
+            // impl ::schemars::JsonSchema for $name {
+            //     defer_schemars_impl!($type);
+            // }
         };
     }
 
@@ -54,31 +62,31 @@ pub mod primitive_types {
 
 pub struct SchemaMap<K, V>(PhantomData<HashMap<K, V>>);
 
-impl<K, V> schemars::JsonSchema for SchemaMap<K, V>
-where
-    K: schemars::JsonSchema,
-    V: schemars::JsonSchema,
-{
-    defer_schemars_impl!(::std::collections::HashMap<K, V>);
-}
+// impl<K, V> schemars::JsonSchema for SchemaMap<K, V>
+// where
+//     K: schemars::JsonSchema,
+//     V: schemars::JsonSchema,
+// {
+//     defer_schemars_impl!(::std::collections::HashMap<K, V>);
+// }
 
 pub struct SchemaList<T>(PhantomData<Vec<T>>);
 
-impl<T> schemars::JsonSchema for SchemaList<T>
-where
-    T: schemars::JsonSchema,
-{
-    defer_schemars_impl!(::std::vec::Vec<T>);
-}
+// impl<T> schemars::JsonSchema for SchemaList<T>
+// where
+//     T: schemars::JsonSchema,
+// {
+//     defer_schemars_impl!(::std::vec::Vec<T>);
+// }
 
 pub struct SchemaOptional<T>(PhantomData<Option<T>>);
 
-impl<T> schemars::JsonSchema for SchemaOptional<T>
-where
-    T: schemars::JsonSchema,
-{
-    defer_schemars_impl!(::core::option::Option<T>);
-}
+// impl<T> schemars::JsonSchema for SchemaOptional<T>
+// where
+//     T: schemars::JsonSchema,
+// {
+//     defer_schemars_impl!(::core::option::Option<T>);
+// }
 
 trait SerdeHelper<T>: Sized {
     fn serialize<S>(value: &Self, serializer: S) -> Result<S::Ok, S::Error>
@@ -253,9 +261,9 @@ pub mod well_known {
         }
     }
 
-    impl schemars::JsonSchema for Timestamp {
-        defer_schemars_impl!(::chrono::DateTime<chrono::Utc>);
-    }
+    // impl schemars::JsonSchema for Timestamp {
+    //     defer_schemars_impl!(::chrono::DateTime<chrono::Utc>);
+    // }
 
     impl_serde_helper!(Duration, prost_types::Duration);
 
@@ -323,27 +331,27 @@ pub mod well_known {
         }
     }
 
-    impl schemars::JsonSchema for Duration {
-        fn is_referenceable() -> bool {
-            false
-        }
+    // impl schemars::JsonSchema for Duration {
+    //     fn is_referenceable() -> bool {
+    //         false
+    //     }
 
-        fn schema_name() -> String {
-            "Duration".to_string()
-        }
+    //     fn schema_name() -> String {
+    //         "Duration".to_string()
+    //     }
 
-        fn schema_id() -> std::borrow::Cow<'static, str> {
-            std::borrow::Cow::Borrowed("google.protobuf.Duration")
-        }
+    //     fn schema_id() -> std::borrow::Cow<'static, str> {
+    //         std::borrow::Cow::Borrowed("google.protobuf.Duration")
+    //     }
 
-        fn json_schema(_: &mut schemars::r#gen::SchemaGenerator) -> schemars::schema::Schema {
-            schemars::schema::SchemaObject {
-                instance_type: Some(schemars::schema::InstanceType::String.into()),
-                ..Default::default()
-            }
-            .into()
-        }
-    }
+    //     fn json_schema(_: &mut schemars::r#gen::SchemaGenerator) -> schemars::schema::Schema {
+    //         schemars::schema::SchemaObject {
+    //             instance_type: Some(schemars::schema::InstanceType::String.into()),
+    //             ..Default::default()
+    //         }
+    //         .into()
+    //     }
+    // }
 
     impl_serde_helper!(Struct, prost_types::Struct);
 
@@ -366,9 +374,9 @@ pub mod well_known {
         }
     }
 
-    impl schemars::JsonSchema for Struct {
-        defer_schemars_impl!(::std::collections::HashMap<::std::string::String, Value>);
-    }
+    // impl schemars::JsonSchema for Struct {
+    //     defer_schemars_impl!(::std::collections::HashMap<::std::string::String, Value>);
+    // }
 
     impl_serde_helper!(Value, prost_types::Value);
 
@@ -519,9 +527,9 @@ pub mod well_known {
         }
     }
 
-    impl schemars::JsonSchema for Value {
-        defer_schemars_impl!(::serde_json::Value);
-    }
+    // impl schemars::JsonSchema for Value {
+    //     defer_schemars_impl!(::serde_json::Value);
+    // }
 
     impl_serde_helper!(Empty, ());
 
@@ -543,9 +551,9 @@ pub mod well_known {
         }
     }
 
-    impl schemars::JsonSchema for Empty {
-        defer_schemars_impl!(());
-    }
+    // impl schemars::JsonSchema for Empty {
+    //     defer_schemars_impl!(());
+    // }
 
     impl_serde_helper!(List, prost_types::ListValue);
 
@@ -568,16 +576,16 @@ pub mod well_known {
         }
     }
 
-    impl schemars::JsonSchema for List {
-        defer_schemars_impl!(::std::vec::Vec<Value>);
-    }
+    // impl schemars::JsonSchema for List {
+    //     defer_schemars_impl!(::std::vec::Vec<Value>);
+    // }
 }
 
 pub struct Enum<T>(PhantomData<T>);
 
-impl<T: schemars::JsonSchema> schemars::JsonSchema for Enum<T> {
-    defer_schemars_impl!(T);
-}
+// impl<T: schemars::JsonSchema> schemars::JsonSchema for Enum<T> {
+//     defer_schemars_impl!(T);
+// }
 
 const _: () = {
     #[repr(transparent)]

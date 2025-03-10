@@ -20,3 +20,11 @@ scuffle-workspace-hack.workspace = true
 pprof = { version = "0.14", features = ["prost-codec"] }
 flate2 = "1.0"
 thiserror = "2"
+
+[package.metadata.cargo_check_external_types]
+allowed_external_types = [
+  # major released
+  "pprof::*",
+  "flate2::*",
+  "thiserror::*",
+]

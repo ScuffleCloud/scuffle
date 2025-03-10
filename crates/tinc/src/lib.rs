@@ -3,9 +3,3 @@ pub mod reexports {
 }
 
 pub mod serde_helpers;
-
-pub struct Schema {}
-
-pub trait HasSchema<K> {
-    fn schema() -> Schema;
-}

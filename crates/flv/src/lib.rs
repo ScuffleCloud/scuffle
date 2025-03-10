@@ -165,6 +165,7 @@ mod tests {
 
             insta::assert_debug_snapshot!(sps, @r"
             Sps {
+                test_change_for_semver_check: true,
                 nal_ref_idc: 3,
                 nal_unit_type: NALUnitType::SPS,
                 profile_idc: 100,

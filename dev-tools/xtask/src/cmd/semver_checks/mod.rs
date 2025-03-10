@@ -55,24 +55,26 @@ impl SemverChecks {
             cargo_cmd().args(["hakari", "disable"]).status().context("disabling hakari")?;
         }
 
-        for package in &common_crates {
-            println!("Running semver-checks for {}", package);
-            let status = cargo_cmd()
-                .args([
-                    "semver-checks",
-                    "check-release",
-                    "--package",
-                    package,
-                    "--baseline-root",
-                    tmp_dir.to_str().unwrap(),
-                    "--all-features",
-                ])
-                .status()
-                .context("running semver-checks")?;
+        let mut args = vec![
+            "semver-checks",
+            "check-release",
+            "--baseline-root",
+            tmp_dir.to_str().unwrap(),
+            "--all-features",
+        ];
 
-            if !status.success() {
-                anyhow::bail!("Semver check failed for crate '{}'", package);
-            }
+        for package in &common_crates {
+            args.push("--package");
+            args.push(package);
+        }
+
+        let status = cargo_cmd()
+            .args(&args)
+            .status()
+            .context("running semver-checks")?;
+
+        if !status.success() {
+            anyhow::bail!("Semver checks failed for one or more crates");
         }
 
         Ok(())

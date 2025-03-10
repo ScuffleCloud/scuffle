@@ -4,13 +4,38 @@ version = "0.1.0"
 edition = "2024"
 
 [dependencies]
-serde = { version = "1.0.215", features = ["derive"] }
-schemars = { version = "0.8.22", features = ["chrono"] }
-tonic = "0.12.3"
+http = "1"
+axum = "0.8"
+http-body = "1"
+http-body-util = "0.1.0"
+bytes = "1.6.0"
+
+tonic = "0.13.0"
 prost = "0.13.5"
-chrono = "0.4.36"
 prost-types = "0.13.5"
+
+serde = { version = "1.0.215", features = ["derive"] }
 serde_json = "1.0.115"
+serde_repr = "0.1.20"
+
+schemars = { version = "1.0.0-alpha.17", features = ["chrono04"] }
+
+chrono = "0.4.36"
+thiserror = "2"
+
+# Media Types
+multer = "3.1"
+headers-accept = "0.1.4"
+mediatype = "0.19.20"
+serde_urlencoded = "0.7.1"
+
+ordered-float = "5.0.0"
+num-traits = "0.2.19"
+
+# Parsing / Formatting numbers
 itoa = "1.0.1"
 ryu = "1.0.14"
+
+scuffle-bytes-util = { workspace = true, features = ["serde"] }
+
 scuffle-workspace-hack.workspace = true

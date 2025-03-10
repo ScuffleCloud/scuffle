@@ -3,7 +3,6 @@ syntax = "proto3";
 package tinc;
 
 import "google/protobuf/descriptor.proto";
-import "google/protobuf/empty.proto";
 
 extend google.protobuf.MessageOptions {
     SchemaMessageOptions schema_message = 15501;
@@ -29,145 +28,328 @@ extend google.protobuf.ServiceOptions {
     HttpRouterOptions http_router = 15506;
 }
 
-message HttpRouterOptions {
-    optional string prefix = 1;
-    optional string description = 2;
-    repeated string tag = 3;
-    message ExternalDocs {
-        string text = 1;
-        string url = 2;
-    }
-    ExternalDocs external_docs = 4;
+extend google.protobuf.OneofOptions {
+    SchemaOneofOptions schema_oneof = 15507;
 }
 
-enum NameStyle {
-    NAME_STYLE_UNSPECIFIED = 0;
-    SNAKE_CASE = 1;
-    CAMEL_CASE = 2;
+message HttpRouterOptions {
+    optional string prefix = 1;
+}
+
+enum RenameAll {
+    RENAME_ALL_UNSPECIFIED = 0;
+    LOWER_CASE = 1;
+    UPPER_CASE = 2;
     PASCAL_CASE = 3;
-    KEBAB_CASE = 4;
+    CAMEL_CASE = 4;
+    SNAKE_CASE = 5;
+    SCREAMING_SNAKE_CASE = 6;
+    KEBAB_CASE = 7;
+    SCREAMING_KEBAB_CASE = 8;
 }
 
 message SchemaMessageOptions {
-    bool skip_derive = 1;
-    optional NameStyle style = 2;
+    optional bool custom_impl = 1;
+    optional RenameAll rename_all = 2;
 }
 
 message SchemaFieldOptions {
     optional string rename = 1;
-    repeated string content_type = 2;
-    // optional string default = 3;
-    repeated string example = 4;
-    repeated string description = 5;
-    bool read_only = 6;
-    bool write_only = 7;
-    bool required = 8;
-
-    message NumberConstraint {
-        optional double min = 1;
-        optional double max = 2;
-        optional double multiple_of = 3;
-        optional bool exclusive_min = 4;
-        optional bool exclusive_max = 5;
+    optional bool omitable = 200;
+    oneof visibility {
+        bool skip = 101;
+        bool input_only = 102;
+        bool output_only = 103;
     }
 
-    message StringConstraint {
-        optional int32 min_length = 1;
-        optional int32 max_length = 2;
-        optional string pattern = 3;
-        optional string format = 4;
-    }
+    // message NumberConstraint {
+    //     optional double min = 1;
+    //     optional double max = 2;
+    //     optional double multiple_of = 3;
+    //     optional bool exclusive_min = 4;
+    //     optional bool exclusive_max = 5;
+    // }
 
-    message BytesConstraint {
-        optional int32 min_length = 1;
-        optional int32 max_length = 2;
-    }
+    // message StringConstraint {
+    //     optional int32 min_length = 1;
+    //     optional int32 max_length = 2;
+    //     optional string pattern = 3;
+    //     optional string format = 4;
+    // }
 
-    message RepeatedConstraint {
-        optional int32 min_length = 1;
-        optional int32 max_length = 2;
-        optional bool unique_items = 3;
-        oneof constraint {
-            NumberConstraint number = 4;
-            StringConstraint string = 5;
-            BytesConstraint bytes = 6;
-        }
-    }
+    // message BytesConstraint {
+    //     optional int32 min_length = 1;
+    //     optional int32 max_length = 2;
+    // }
 
-    oneof constraint {
-        NumberConstraint number = 9;
-        StringConstraint string = 10;
-        BytesConstraint bytes = 11;
-        RepeatedConstraint repeated = 12;
-    }
+    // message RepeatedConstraint {
+    //     optional int32 min_length = 1;
+    //     optional int32 max_length = 2;
+    //     optional bool unique_items = 3;
+    //     oneof constraint {
+    //         NumberConstraint number = 4;
+    //         StringConstraint string = 5;
+    //         BytesConstraint bytes = 6;
+    //     }
+    // }
+
+    // oneof constraint {
+    //     NumberConstraint number = 9;
+    //     StringConstraint string = 10;
+    //     BytesConstraint bytes = 11;
+    //     RepeatedConstraint repeated = 12;
+    // }
 }
 
 message SchemaEnumOptions {
-    bool skip_derive = 1;
-    bool integer_enum = 2;
-    optional NameStyle style = 3;
+    optional bool custom_impl = 1;
+    optional bool repr_enum = 2;
+    optional RenameAll rename_all = 3;
 }
 
 message SchemaVariantOptions {
     optional string rename = 1;
+    oneof visibility {
+        bool skip = 101;
+        bool input_only = 102;
+        bool output_only = 103;
+    }
 }
 
 message HttpEndpointOptions {
-    oneof pattern {
-        string get = 1;
-        string post = 2;
-        string put = 3;
-        string delete = 4;
-        string patch = 5;
+    // A custom HTTP method.
+    message CustomMethod {
+        // HTTP method
+        string method = 1;
+        // Path parameters can be specified using `{param}` syntax.
+        string path = 2;
     }
 
-    repeated string description = 6;
-    optional string summary = 7;
+    // HTTP method - Path parameters can be specified using `{param}` syntax.
+    oneof method {
+        // GET method
+        string get = 1;
+        // POST method
+        string post = 2;
+        // PUT method
+        string put = 3;
+        // DELETE method
+        string delete = 4;
+        // PATCH method
+        string patch = 5;
+        // Custom method
+        CustomMethod custom = 6;
+    }
 
-    message RequestBody {
-        repeated string description = 1;
+    // Enables query string parsing.
+    // The default behavior is dependent on the method:
+    // - GET, DELETE: enabled by default
+    // - any other method: disabled by default
+    optional bool query_string = 7;
 
-        message ContentType {
-            string kind = 1;
-            string body = 2;
-            message AdditionalFields {
-                oneof location {
-                    google.protobuf.Empty query = 1;
-                    string header = 2;
+    // Allow query string to be parsed into the request body.
+    // setting this to "*" will allow all fields to be parsed from the query string.
+    // setting this to a comma separated list of field names will only allow the specified fields to be parsed from the query string.
+    // Note: Fields which appear in the path cannot be parsed from the query string and they will be ignored.
+    string query_string_fields = 8;
+
+    // Enables request body parsing.
+    // The default behavior is dependent on the method:
+    // - GET, DELETE: disabled by default
+    // - any other method: enabled by default
+    // There are also some cases where the request body is always disabled:
+    // - There are no fields in the Message type (google.protobuf.Empty)
+    // - All fields in the message type are output only or skipped
+    // - All fields in the message type are used by path parameters
+    optional bool request_body = 9;
+
+    message Header {
+        // The name of the header.
+        string name = 1;
+        // The field to parse the header into.
+        string field = 2;
+
+        enum ContentType {
+            CONTENT_TYPE_UNSPECIFIED = 0;
+            JSON = 1;
+            FORM_URL_ENCODED = 2;
+            TEXT = 3;
+        }
+
+        // The encoding to use when parsing the header.
+        // The default behavior changes depending on the type of field.
+        // - for scalar/enum fields: `content_type: TEXT`
+        // - for repeated fields: `content_type: TEXT` and we add the value to the list, you can specify headers multiple times to add additional values
+        // - for map fields: `content_type: FORM_URL_ENCODED`
+        // - for message fields: `content_type: FORM_URL_ENCODED`
+        oneof encoding {
+            // The delimiter to use when parsing the header. (repeated fields only)
+            // This is useful for parsing comma separated values.
+            // ```proto
+            // header: {
+            //     name: "X-Custom-Header"
+            //     field: "field1"
+            //     // optional delimiter if the field is a repeated field
+            //     delimiter: ","
+            // }
+            // ```
+            string delimiter = 3;
+
+            // The encoding to use when parsing the header.
+            // If you want to use a custom encoding, you can specify it here.
+            // For example if your header is of type `application/json`, you can specify `content_type: JSON`
+            // Then we will parse headers like this:
+            // ```text
+            // Some-Header: {"field1": "value1", "field2": "value2"}
+            // ```
+            ContentType content_type = 4;
+
+            // Take the content of a parameter.
+            // This is useful for parsing headers like `Content-Disposition` which contain a filename.
+            // ```proto
+            // header: {
+            //     name: "Content-Disposition"
+            //     param: "filename"
+            //     field: "filename"
+            // }
+            // ```
+            // This will parse the `filename` parameter from the `Content-Disposition` header and store it in the `filename` field.
+            string param = 5;
+        }
+    }
+
+    // Specify additional headers to be parsed from the request.
+    repeated Header header = 11;
+
+    message ContentType {
+        // The mime type of the content.
+        // This will be a match against the `Content-Type` header and supports wildcards when
+        // using `body: "field1"`.
+        repeated string accept = 1;
+
+        // Change the way the request body is parsed.
+        // By default the request body, in its entirety, is parsed into the request body.
+        // is equivalent to setting `include_fields: "*"`.
+        oneof content {
+            // Allow request body to be parsed into the request body.
+            // setting this to "*" will allow all fields to be parsed from the request body.
+            // setting this to a comma separated list of field names will only allow the specified fields to be parsed from the request body.
+            // Note: Fields which appear in the path cannot be parsed from the request body and they will be ignored.
+            // ```proto
+            // include_fields: "field1,field2"
+            // ```
+            // This will be parsed as a Object with the fields `field1` and `field2`.
+            // In json this will look like:
+            // ```json
+            // {
+            //     "field1": "value1",
+            //     "field2": "value2"
+            // }
+            // ```
+            string include_fields = 2;
+
+            // Allow request body to include all fields except for the ones specified.
+            // This is equivalent to setting:
+            // ```proto
+            // include_fields: "*"
+            // ```
+            // and then excluding the fields you don't want.
+            // ```proto
+            // exclude_fields: "field1,field2"
+            // ```
+            // This will be parsed as a Object with the fields `field1` and `field2` omitted.
+            // In json this will look like:
+            // ```json
+            // {
+            //     "field3": "value3"
+            // }
+            // ```
+            string exclude_fields = 3;
+
+            // If you want a specific field to be parsed from the body, you can specify it here.
+            // for example, lets say Message looks like this:
+            // ```proto
+            // message Message {
+            //     string field1 = 1;
+            //     string field2 = 2;
+            // }
+            // ```
+            // if you want to parse field1 from the body, you can specify it like this:
+            // ```proto
+            // body: "field1"
+            // ```
+            // This will then be parsed and stored in field1.
+            // This will still respect the content-type header, so if the content-type is `application/json`, it will be parsed as a JSON string.
+            // ```json
+            // "content of field 1"
+            // ```
+            // Or if the content-type is `text/plain`, it will be parsed as a string.
+            // ```text
+            // content of field 1
+            // ```
+            // For binary field types, the body will be returned as is (without any modifications).
+            // The body will respect the omittable status of the field.
+            // Note: This field cannot be used in the path parameters.
+            string body = 4;
+        }
+
+        // Specify additional headers to be parsed from the request.
+        // Unlike the root `header` field, this will only be used for the content type specified.
+        repeated Header header = 5;
+
+        // Special options for multipart/form-data requests.
+        message Multipart {
+            message Field {
+                // The name of the field.
+                string name = 1;
+
+                // The field to parse the header into.
+                // If not provided, the field will be the same as the name.
+                optional string field = 2;
+
+                // Specify additional headers to be parsed from the request.
+                repeated Header header = 3;
+
+                enum ContentType {
+                    CONTENT_TYPE_UNSPECIFIED = 0;
+                    JSON = 1;
+                    TEXT = 2;
                 }
-                string encoding = 3;
+
+                // The encoding to use when parsing the field.
+                ContentType content_type = 5;
             }
 
-            AdditionalFields additional_fields = 3;
+            // Specify additional fields to be parsed from the request.
+            repeated Field field = 1;
         }
-        repeated ContentType content_type = 2;
+
+        optional Multipart multipart = 6;
     }
 
-    optional RequestBody request = 8;
-    repeated SecurityOptions security = 9;
-
-    message ResponseOptions {
-        string status_code = 1;
-        string description = 2;
-        message Headers {
-            string name = 1;
-            string description = 2;
-            string type = 3;
-        }
-        repeated Headers headers = 3;
-
-        message ContentType {
-            string kind = 1;
-            string description = 2;
-        }
-        repeated ContentType content_type = 4;
-    }
-
-    repeated ResponseOptions response = 10;
+    // Specify additional content types to be parsed from the request.
+    // By default if no content types are specified, the default behavior is to only accept `application/json`
+    // and parse it into the request body with all fields.
+    // This is equivalent to specifying the following:
+    // ```proto
+    // content_type: {
+    //     mime: "application/json"
+    // }
+    // ```
+    repeated ContentType content_type = 10;
 }
 
-message SecurityOptions {
-    string name = 1;
-    repeated string scope = 2;
-    repeated SecurityOptions and = 3;
+message SchemaOneofOptions {
+    optional string rename = 1;
+    optional bool custom_impl = 2;
+    optional RenameAll rename_all = 4;
+    optional bool omitable = 5;
+    optional bool nullable = 6;
+
+    message Tagged {
+        string tag = 1;
+        optional string content = 2;
+    }
+
+    optional Tagged tagged = 100;
 }

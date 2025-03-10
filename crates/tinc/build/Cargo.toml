@@ -4,10 +4,16 @@ version = "0.1.0"
 edition = "2024"
 
 [dependencies]
+scuffle-workspace-hack.workspace = true
 tinc-pb.workspace = true
-tonic-build = "0.12.3"
+tonic-build = "0.13.0"
 prost = "0.13.5"
 prost-reflect = "0.14.7"
 anyhow = "1.0.79"
-oas3 = "0.15.0"
-scuffle-workspace-hack.workspace = true
+convert_case = "0.8.0"
+quote = "1"
+syn = "2"
+proc-macro2 = "1"
+prettyplease = "0.2"
+mediatype = "0.19.20"
+headers-accept = "0.1.0"

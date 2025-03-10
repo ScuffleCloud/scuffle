@@ -14,11 +14,13 @@ license = "MIT OR Apache-2.0"
 
 ### BEGIN HAKARI SECTION
 [dependencies]
+aho-corasick = { version = "1", default-features = false, features = ["perf-literal", "std"] }
 axum = { version = "0.8", features = ["macros", "ws"] }
 bitflags = { version = "2", default-features = false, features = ["serde"] }
 byteorder = { version = "1" }
+bytes = { version = "1" }
 camino = { version = "1", default-features = false, features = ["serde1"] }
-chrono = { version = "0.4", default-features = false, features = ["clock"] }
+chrono = { version = "0.4" }
 clap = { version = "4" }
 clap_builder = { version = "4", default-features = false, features = ["color", "help", "std", "suggestions", "usage"] }
 config = { version = "0.15", default-features = false, features = ["ini", "json", "json5", "ron", "toml", "yaml"] }
@@ -26,6 +28,7 @@ crossbeam-utils = { version = "0.8" }
 digest = { version = "0.10", features = ["mac", "std"] }
 either = { version = "1", default-features = false, features = ["use_std"] }
 fastrand = { version = "2" }
+form_urlencoded = { version = "1" }
 futures = { version = "0.3" }
 futures-channel = { version = "0.3", features = ["sink"] }
 futures-core = { version = "0.3" }
@@ -36,9 +39,10 @@ futures-task = { version = "0.3", default-features = false, features = ["std"] }
 futures-util = { version = "0.3", default-features = false, features = ["async-await-macro", "channel", "io", "sink"] }
 getrandom-6f8ce4dd05d13bba = { package = "getrandom", version = "0.2", default-features = false, features = ["std"] }
 hashbrown = { version = "0.15", default-features = false, features = ["default-hasher", "inline-more"] }
-hyper = { version = "1", features = ["http1", "http2", "server"] }
-hyper-util = { version = "0.1", features = ["http1", "http2", "server", "service", "tokio"] }
+hyper = { version = "1", features = ["client", "http1", "http2", "server"] }
+hyper-util = { version = "0.1", features = ["client-legacy", "server-auto", "service"] }
 insta = { version = "1", features = ["filters"] }
+itertools = { version = "0.13" }
 libc = { version = "0.2" }
 log = { version = "0.4", default-features = false, features = ["std"] }
 memchr = { version = "2" }
@@ -48,34 +52,42 @@ opentelemetry_sdk = { version = "0.28", features = ["rt-tokio", "spec_unstable_l
 percent-encoding = { version = "2" }
 prettyplease = { version = "0.2", default-features = false, features = ["verbatim"] }
 proc-macro2 = { version = "1" }
+prost = { version = "0.13", features = ["prost-derive"] }
+prost-types = { version = "0.13" }
 quote = { version = "1" }
 rand = { version = "0.8", features = ["small_rng"] }
-regex = { version = "1", default-features = false, features = ["std", "unicode"] }
-regex-automata = { version = "0.4", default-features = false, features = ["meta", "std", "unicode"] }
-regex-syntax = { version = "0.8", default-features = false, features = ["std", "unicode"] }
+regex = { version = "1" }
+regex-automata = { version = "0.4", default-features = false, features = ["dfa-onepass", "hybrid", "meta", "nfa-backtrack", "perf-inline", "perf-literal", "unicode"] }
+regex-syntax = { version = "0.8" }
 reqwest = { version = "0.12", default-features = false, features = ["http2", "http3", "rustls-tls"] }
 rustls = { version = "0.23", features = ["aws-lc-rs"] }
 rusty_ffmpeg = { version = "0.16", default-features = false, features = ["link_system_ffmpeg", "link_vcpkg_ffmpeg"] }
+semver = { version = "1", features = ["serde"] }
 serde = { version = "1", features = ["alloc", "derive"] }
 serde_json = { version = "1", features = ["raw_value", "unbounded_depth"] }
 smallvec = { version = "1", default-features = false, features = ["const_new"] }
+socket2 = { version = "0.5", default-features = false, features = ["all"] }
 syn = { version = "2", features = ["extra-traits", "fold", "full", "visit", "visit-mut"] }
 sync_wrapper = { version = "1", default-features = false, features = ["futures"] }
 thiserror = { version = "2" }
 tokio = { version = "1", features = ["full", "test-util"] }
+tokio-stream = { version = "0.1", features = ["net"] }
 tokio-util = { version = "0.7", features = ["codec", "io"] }
 tower = { version = "0.5", default-features = false, features = ["log", "make", "util"] }
 tracing = { version = "0.1", features = ["log"] }
 tracing-core = { version = "0.1" }
 tracing-log = { version = "0.2", default-features = false, features = ["log-tracer", "std"] }
 tracing-subscriber = { version = "0.3", features = ["env-filter"] }
+url = { version = "2", features = ["serde"] }
 
 [build-dependencies]
+aho-corasick = { version = "1", default-features = false, features = ["perf-literal", "std"] }
 axum = { version = "0.8", features = ["macros", "ws"] }
 bitflags = { version = "2", default-features = false, features = ["serde"] }
 byteorder = { version = "1" }
+bytes = { version = "1" }
 camino = { version = "1", default-features = false, features = ["serde1"] }
-chrono = { version = "0.4", default-features = false, features = ["clock"] }
+chrono = { version = "0.4" }
 clap = { version = "4" }
 clap_builder = { version = "4", default-features = false, features = ["color", "help", "std", "suggestions", "usage"] }
 config = { version = "0.15", default-features = false, features = ["ini", "json", "json5", "ron", "toml", "yaml"] }
@@ -83,6 +95,7 @@ crossbeam-utils = { version = "0.8" }
 digest = { version = "0.10", features = ["mac", "std"] }
 either = { version = "1", default-features = false, features = ["use_std"] }
 fastrand = { version = "2" }
+form_urlencoded = { version = "1" }
 futures = { version = "0.3" }
 futures-channel = { version = "0.3", features = ["sink"] }
 futures-core = { version = "0.3" }
@@ -93,9 +106,10 @@ futures-task = { version = "0.3", default-features = false, features = ["std"] }
 futures-util = { version = "0.3", default-features = false, features = ["async-await-macro", "channel", "io", "sink"] }
 getrandom-6f8ce4dd05d13bba = { package = "getrandom", version = "0.2", default-features = false, features = ["std"] }
 hashbrown = { version = "0.15", default-features = false, features = ["default-hasher", "inline-more"] }
-hyper = { version = "1", features = ["http1", "http2", "server"] }
-hyper-util = { version = "0.1", features = ["http1", "http2", "server", "service", "tokio"] }
+hyper = { version = "1", features = ["client", "http1", "http2", "server"] }
+hyper-util = { version = "0.1", features = ["client-legacy", "server-auto", "service"] }
 insta = { version = "1", features = ["filters"] }
+itertools = { version = "0.13" }
 libc = { version = "0.2" }
 log = { version = "0.4", default-features = false, features = ["std"] }
 memchr = { version = "2" }
@@ -105,36 +119,39 @@ opentelemetry_sdk = { version = "0.28", features = ["rt-tokio", "spec_unstable_l
 percent-encoding = { version = "2" }
 prettyplease = { version = "0.2", default-features = false, features = ["verbatim"] }
 proc-macro2 = { version = "1" }
+prost = { version = "0.13", features = ["prost-derive"] }
+prost-types = { version = "0.13" }
 quote = { version = "1" }
 rand = { version = "0.8", features = ["small_rng"] }
-regex = { version = "1", default-features = false, features = ["std", "unicode"] }
-regex-automata = { version = "0.4", default-features = false, features = ["meta", "std", "unicode"] }
-regex-syntax = { version = "0.8", default-features = false, features = ["std", "unicode"] }
+regex = { version = "1" }
+regex-automata = { version = "0.4", default-features = false, features = ["dfa-onepass", "hybrid", "meta", "nfa-backtrack", "perf-inline", "perf-literal", "unicode"] }
+regex-syntax = { version = "0.8" }
 reqwest = { version = "0.12", default-features = false, features = ["http2", "http3", "rustls-tls"] }
 rustls = { version = "0.23", features = ["aws-lc-rs"] }
 rusty_ffmpeg = { version = "0.16", default-features = false, features = ["link_system_ffmpeg", "link_vcpkg_ffmpeg"] }
+semver = { version = "1", features = ["serde"] }
 serde = { version = "1", features = ["alloc", "derive"] }
 serde_json = { version = "1", features = ["raw_value", "unbounded_depth"] }
 smallvec = { version = "1", default-features = false, features = ["const_new"] }
+socket2 = { version = "0.5", default-features = false, features = ["all"] }
 syn = { version = "2", features = ["extra-traits", "fold", "full", "visit", "visit-mut"] }
 sync_wrapper = { version = "1", default-features = false, features = ["futures"] }
 thiserror = { version = "2" }
 tokio = { version = "1", features = ["full", "test-util"] }
+tokio-stream = { version = "0.1", features = ["net"] }
 tokio-util = { version = "0.7", features = ["codec", "io"] }
 tower = { version = "0.5", default-features = false, features = ["log", "make", "util"] }
 tracing = { version = "0.1", features = ["log"] }
 tracing-core = { version = "0.1" }
 tracing-log = { version = "0.2", default-features = false, features = ["log-tracer", "std"] }
 tracing-subscriber = { version = "0.3", features = ["env-filter"] }
+url = { version = "2", features = ["serde"] }
 
 [target.x86_64-unknown-linux-gnu.dependencies]
 bitflags = { version = "2", default-features = false, features = ["std"] }
-bytes = { version = "1" }
 getrandom-468e82937335b1c9 = { package = "getrandom", version = "0.3", default-features = false, features = ["std"] }
 h3 = { version = "0.0.6", default-features = false, features = ["tracing"] }
 h3-quinn = { version = "0.0.7", default-features = false, features = ["tracing"] }
-hyper = { version = "1", default-features = false, features = ["client"] }
-hyper-util = { version = "0.1", default-features = false, features = ["client-legacy"] }
 libc = { version = "0.2", default-features = false, features = ["extra_traits"] }
 quinn = { version = "0.11", default-features = false, features = ["futures-io", "log", "platform-verifier", "runtime-tokio", "rustls", "rustls-aws-lc-rs"] }
 quinn-proto = { version = "0.11", default-features = false, features = ["log", "platform-verifier", "rustls-aws-lc-rs", "rustls-ring"] }
@@ -148,13 +165,10 @@ uuid = { version = "1", features = ["v4"] }
 
 [target.x86_64-unknown-linux-gnu.build-dependencies]
 bitflags = { version = "2", default-features = false, features = ["std"] }
-bytes = { version = "1" }
 cc = { version = "1", default-features = false, features = ["parallel"] }
 getrandom-468e82937335b1c9 = { package = "getrandom", version = "0.3", default-features = false, features = ["std"] }
 h3 = { version = "0.0.6", default-features = false, features = ["tracing"] }
 h3-quinn = { version = "0.0.7", default-features = false, features = ["tracing"] }
-hyper = { version = "1", default-features = false, features = ["client"] }
-hyper-util = { version = "0.1", default-features = false, features = ["client-legacy"] }
 libc = { version = "0.2", default-features = false, features = ["extra_traits"] }
 quinn = { version = "0.11", default-features = false, features = ["futures-io", "log", "platform-verifier", "runtime-tokio", "rustls", "rustls-aws-lc-rs"] }
 quinn-proto = { version = "0.11", default-features = false, features = ["log", "platform-verifier", "rustls-aws-lc-rs", "rustls-ring"] }
@@ -168,12 +182,9 @@ uuid = { version = "1", features = ["v4"] }
 
 [target.aarch64-unknown-linux-gnu.dependencies]
 bitflags = { version = "2", default-features = false, features = ["std"] }
-bytes = { version = "1" }
 getrandom-468e82937335b1c9 = { package = "getrandom", version = "0.3", default-features = false, features = ["std"] }
 h3 = { version = "0.0.6", default-features = false, features = ["tracing"] }
 h3-quinn = { version = "0.0.7", default-features = false, features = ["tracing"] }
-hyper = { version = "1", default-features = false, features = ["client"] }
-hyper-util = { version = "0.1", default-features = false, features = ["client-legacy"] }
 libc = { version = "0.2", default-features = false, features = ["extra_traits"] }
 quinn = { version = "0.11", default-features = false, features = ["futures-io", "log", "platform-verifier", "runtime-tokio", "rustls", "rustls-aws-lc-rs"] }
 quinn-proto = { version = "0.11", default-features = false, features = ["log", "platform-verifier", "rustls-aws-lc-rs", "rustls-ring"] }
@@ -187,13 +198,10 @@ uuid = { version = "1", features = ["v4"] }
 
 [target.aarch64-unknown-linux-gnu.build-dependencies]
 bitflags = { version = "2", default-features = false, features = ["std"] }
-bytes = { version = "1" }
 cc = { version = "1", default-features = false, features = ["parallel"] }
 getrandom-468e82937335b1c9 = { package = "getrandom", version = "0.3", default-features = false, features = ["std"] }
 h3 = { version = "0.0.6", default-features = false, features = ["tracing"] }
 h3-quinn = { version = "0.0.7", default-features = false, features = ["tracing"] }
-hyper = { version = "1", default-features = false, features = ["client"] }
-hyper-util = { version = "0.1", default-features = false, features = ["client-legacy"] }
 libc = { version = "0.2", default-features = false, features = ["extra_traits"] }
 quinn = { version = "0.11", default-features = false, features = ["futures-io", "log", "platform-verifier", "runtime-tokio", "rustls", "rustls-aws-lc-rs"] }
 quinn-proto = { version = "0.11", default-features = false, features = ["log", "platform-verifier", "rustls-aws-lc-rs", "rustls-ring"] }
@@ -207,12 +215,9 @@ uuid = { version = "1", features = ["v4"] }
 
 [target.x86_64-apple-darwin.dependencies]
 bitflags = { version = "2", default-features = false, features = ["std"] }
-bytes = { version = "1" }
 getrandom-468e82937335b1c9 = { package = "getrandom", version = "0.3", default-features = false, features = ["std"] }
 h3 = { version = "0.0.6", default-features = false, features = ["tracing"] }
 h3-quinn = { version = "0.0.7", default-features = false, features = ["tracing"] }
-hyper = { version = "1", default-features = false, features = ["client"] }
-hyper-util = { version = "0.1", default-features = false, features = ["client-legacy"] }
 libc = { version = "0.2", default-features = false, features = ["extra_traits"] }
 num-traits = { version = "0.2", default-features = false, features = ["i128"] }
 quinn = { version = "0.11", default-features = false, features = ["futures-io", "log", "platform-verifier", "runtime-tokio", "rustls", "rustls-aws-lc-rs"] }
@@ -227,13 +232,10 @@ uuid = { version = "1", features = ["v4"] }
 
 [target.x86_64-apple-darwin.build-dependencies]
 bitflags = { version = "2", default-features = false, features = ["std"] }
-bytes = { version = "1" }
 cc = { version = "1", default-features = false, features = ["parallel"] }
 getrandom-468e82937335b1c9 = { package = "getrandom", version = "0.3", default-features = false, features = ["std"] }
 h3 = { version = "0.0.6", default-features = false, features = ["tracing"] }
 h3-quinn = { version = "0.0.7", default-features = false, features = ["tracing"] }
-hyper = { version = "1", default-features = false, features = ["client"] }
-hyper-util = { version = "0.1", default-features = false, features = ["client-legacy"] }
 libc = { version = "0.2", default-features = false, features = ["extra_traits"] }
 num-traits = { version = "0.2", default-features = false, features = ["i128"] }
 quinn = { version = "0.11", default-features = false, features = ["futures-io", "log", "platform-verifier", "runtime-tokio", "rustls", "rustls-aws-lc-rs"] }
@@ -248,12 +250,9 @@ uuid = { version = "1", features = ["v4"] }
 
 [target.aarch64-apple-darwin.dependencies]
 bitflags = { version = "2", default-features = false, features = ["std"] }
-bytes = { version = "1" }
 getrandom-468e82937335b1c9 = { package = "getrandom", version = "0.3", default-features = false, features = ["std"] }
 h3 = { version = "0.0.6", default-features = false, features = ["tracing"] }
 h3-quinn = { version = "0.0.7", default-features = false, features = ["tracing"] }
-hyper = { version = "1", default-features = false, features = ["client"] }
-hyper-util = { version = "0.1", default-features = false, features = ["client-legacy"] }
 libc = { version = "0.2", default-features = false, features = ["extra_traits"] }
 num-traits = { version = "0.2", default-features = false, features = ["i128"] }
 quinn = { version = "0.11", default-features = false, features = ["futures-io", "log", "platform-verifier", "runtime-tokio", "rustls", "rustls-aws-lc-rs"] }
@@ -268,13 +267,10 @@ uuid = { version = "1", features = ["v4"] }
 
 [target.aarch64-apple-darwin.build-dependencies]
 bitflags = { version = "2", default-features = false, features = ["std"] }
-bytes = { version = "1" }
 cc = { version = "1", default-features = false, features = ["parallel"] }
 getrandom-468e82937335b1c9 = { package = "getrandom", version = "0.3", default-features = false, features = ["std"] }
 h3 = { version = "0.0.6", default-features = false, features = ["tracing"] }
 h3-quinn = { version = "0.0.7", default-features = false, features = ["tracing"] }
-hyper = { version = "1", default-features = false, features = ["client"] }
-hyper-util = { version = "0.1", default-features = false, features = ["client-legacy"] }
 libc = { version = "0.2", default-features = false, features = ["extra_traits"] }
 num-traits = { version = "0.2", default-features = false, features = ["i128"] }
 quinn = { version = "0.11", default-features = false, features = ["futures-io", "log", "platform-verifier", "runtime-tokio", "rustls", "rustls-aws-lc-rs"] }
@@ -288,67 +284,63 @@ tower = { version = "0.5", default-features = false, features = ["timeout"] }
 uuid = { version = "1", features = ["v4"] }
 
 [target.x86_64-pc-windows-msvc.dependencies]
+getrandom-468e82937335b1c9 = { package = "getrandom", version = "0.3", default-features = false, features = ["std"] }
 h3 = { version = "0.0.6", default-features = false, features = ["tracing"] }
 h3-quinn = { version = "0.0.7", default-features = false, features = ["tracing"] }
-hyper = { version = "1", default-features = false, features = ["client"] }
-hyper-util = { version = "0.1", default-features = false, features = ["client-legacy"] }
 quinn = { version = "0.11", default-features = false, features = ["futures-io", "log", "platform-verifier", "runtime-tokio", "rustls", "rustls-aws-lc-rs"] }
 quinn-proto = { version = "0.11", default-features = false, features = ["log", "platform-verifier", "rustls-aws-lc-rs", "rustls-ring"] }
 quinn-udp = { version = "0.5", default-features = false, features = ["log"] }
 rustls = { version = "0.23", default-features = false, features = ["ring"] }
 rustls-webpki = { version = "0.102", default-features = false, features = ["aws_lc_rs", "ring", "std"] }
 tokio-rustls = { version = "0.26", default-features = false, features = ["aws_lc_rs", "logging", "ring", "tls12"] }
-tokio-stream = { version = "0.1", features = ["sync"] }
+tokio-stream = { version = "0.1", default-features = false, features = ["sync"] }
 tower = { version = "0.5", default-features = false, features = ["timeout"] }
 windows-sys-73dcd821b1037cfd = { package = "windows-sys", version = "0.59", features = ["Win32_Networking_WinSock", "Win32_Storage_FileSystem", "Win32_System_Console", "Win32_System_IO", "Win32_System_SystemInformation", "Win32_UI_Input_KeyboardAndMouse"] }
 windows-sys-b21d60becc0929df = { package = "windows-sys", version = "0.52", features = ["Wdk_Foundation", "Wdk_Storage_FileSystem", "Wdk_System_IO", "Win32_Foundation", "Win32_Networking_WinSock", "Win32_Security_Cryptography", "Win32_Storage_FileSystem", "Win32_System_Console", "Win32_System_IO", "Win32_System_Pipes", "Win32_System_SystemServices", "Win32_System_Threading", "Win32_System_WindowsProgramming"] }
 
 [target.x86_64-pc-windows-msvc.build-dependencies]
 cc = { version = "1", default-features = false, features = ["parallel"] }
+getrandom-468e82937335b1c9 = { package = "getrandom", version = "0.3", default-features = false, features = ["std"] }
 h3 = { version = "0.0.6", default-features = false, features = ["tracing"] }
 h3-quinn = { version = "0.0.7", default-features = false, features = ["tracing"] }
-hyper = { version = "1", default-features = false, features = ["client"] }
-hyper-util = { version = "0.1", default-features = false, features = ["client-legacy"] }
 quinn = { version = "0.11", default-features = false, features = ["futures-io", "log", "platform-verifier", "runtime-tokio", "rustls", "rustls-aws-lc-rs"] }
 quinn-proto = { version = "0.11", default-features = false, features = ["log", "platform-verifier", "rustls-aws-lc-rs", "rustls-ring"] }
 quinn-udp = { version = "0.5", default-features = false, features = ["log"] }
 rustls = { version = "0.23", default-features = false, features = ["ring"] }
 rustls-webpki = { version = "0.102", default-features = false, features = ["aws_lc_rs", "ring", "std"] }
 tokio-rustls = { version = "0.26", default-features = false, features = ["aws_lc_rs", "logging", "ring", "tls12"] }
-tokio-stream = { version = "0.1", features = ["sync"] }
+tokio-stream = { version = "0.1", default-features = false, features = ["sync"] }
 tower = { version = "0.5", default-features = false, features = ["timeout"] }
 windows-sys-73dcd821b1037cfd = { package = "windows-sys", version = "0.59", features = ["Win32_Networking_WinSock", "Win32_Storage_FileSystem", "Win32_System_Console", "Win32_System_IO", "Win32_System_SystemInformation", "Win32_UI_Input_KeyboardAndMouse"] }
 windows-sys-b21d60becc0929df = { package = "windows-sys", version = "0.52", features = ["Wdk_Foundation", "Wdk_Storage_FileSystem", "Wdk_System_IO", "Win32_Foundation", "Win32_Networking_WinSock", "Win32_Security_Cryptography", "Win32_Storage_FileSystem", "Win32_System_Console", "Win32_System_IO", "Win32_System_Pipes", "Win32_System_SystemServices", "Win32_System_Threading", "Win32_System_WindowsProgramming"] }
 
 [target.x86_64-pc-windows-gnu.dependencies]
+getrandom-468e82937335b1c9 = { package = "getrandom", version = "0.3", default-features = false, features = ["std"] }
 h3 = { version = "0.0.6", default-features = false, features = ["tracing"] }
 h3-quinn = { version = "0.0.7", default-features = false, features = ["tracing"] }
-hyper = { version = "1", default-features = false, features = ["client"] }
-hyper-util = { version = "0.1", default-features = false, features = ["client-legacy"] }
 quinn = { version = "0.11", default-features = false, features = ["futures-io", "log", "platform-verifier", "runtime-tokio", "rustls", "rustls-aws-lc-rs"] }
 quinn-proto = { version = "0.11", default-features = false, features = ["log", "platform-verifier", "rustls-aws-lc-rs", "rustls-ring"] }
 quinn-udp = { version = "0.5", default-features = false, features = ["log"] }
 rustls = { version = "0.23", default-features = false, features = ["ring"] }
 rustls-webpki = { version = "0.102", default-features = false, features = ["aws_lc_rs", "ring", "std"] }
 tokio-rustls = { version = "0.26", default-features = false, features = ["aws_lc_rs", "logging", "ring", "tls12"] }
-tokio-stream = { version = "0.1", features = ["sync"] }
+tokio-stream = { version = "0.1", default-features = false, features = ["sync"] }
 tower = { version = "0.5", default-features = false, features = ["timeout"] }
 windows-sys-73dcd821b1037cfd = { package = "windows-sys", version = "0.59", features = ["Win32_Networking_WinSock", "Win32_Storage_FileSystem", "Win32_System_Console", "Win32_System_IO", "Win32_System_SystemInformation", "Win32_UI_Input_KeyboardAndMouse"] }
 windows-sys-b21d60becc0929df = { package = "windows-sys", version = "0.52", features = ["Wdk_Foundation", "Wdk_Storage_FileSystem", "Wdk_System_IO", "Win32_Foundation", "Win32_Networking_WinSock", "Win32_Security_Cryptography", "Win32_Storage_FileSystem", "Win32_System_Console", "Win32_System_IO", "Win32_System_Pipes", "Win32_System_SystemServices", "Win32_System_Threading", "Win32_System_WindowsProgramming"] }
 
 [target.x86_64-pc-windows-gnu.build-dependencies]
 cc = { version = "1", default-features = false, features = ["parallel"] }
+getrandom-468e82937335b1c9 = { package = "getrandom", version = "0.3", default-features = false, features = ["std"] }
 h3 = { version = "0.0.6", default-features = false, features = ["tracing"] }
 h3-quinn = { version = "0.0.7", default-features = false, features = ["tracing"] }
-hyper = { version = "1", default-features = false, features = ["client"] }
-hyper-util = { version = "0.1", default-features = false, features = ["client-legacy"] }
 quinn = { version = "0.11", default-features = false, features = ["futures-io", "log", "platform-verifier", "runtime-tokio", "rustls", "rustls-aws-lc-rs"] }
 quinn-proto = { version = "0.11", default-features = false, features = ["log", "platform-verifier", "rustls-aws-lc-rs", "rustls-ring"] }
 quinn-udp = { version = "0.5", default-features = false, features = ["log"] }
 rustls = { version = "0.23", default-features = false, features = ["ring"] }
 rustls-webpki = { version = "0.102", default-features = false, features = ["aws_lc_rs", "ring", "std"] }
 tokio-rustls = { version = "0.26", default-features = false, features = ["aws_lc_rs", "logging", "ring", "tls12"] }
-tokio-stream = { version = "0.1", features = ["sync"] }
+tokio-stream = { version = "0.1", default-features = false, features = ["sync"] }
 tower = { version = "0.5", default-features = false, features = ["timeout"] }
 windows-sys-73dcd821b1037cfd = { package = "windows-sys", version = "0.59", features = ["Win32_Networking_WinSock", "Win32_Storage_FileSystem", "Win32_System_Console", "Win32_System_IO", "Win32_System_SystemInformation", "Win32_UI_Input_KeyboardAndMouse"] }
 windows-sys-b21d60becc0929df = { package = "windows-sys", version = "0.52", features = ["Wdk_Foundation", "Wdk_Storage_FileSystem", "Wdk_System_IO", "Win32_Foundation", "Win32_Networking_WinSock", "Win32_Security_Cryptography", "Win32_Storage_FileSystem", "Win32_System_Console", "Win32_System_IO", "Win32_System_Pipes", "Win32_System_SystemServices", "Win32_System_Threading", "Win32_System_WindowsProgramming"] }

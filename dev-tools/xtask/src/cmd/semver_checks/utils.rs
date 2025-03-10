@@ -1,9 +1,34 @@
 use std::collections::HashSet;
-use std::path::Path;
+use std::path::{Path, PathBuf};
 use std::process::Command;
 
 use anyhow::{Context, Result};
 use cargo_metadata::{Metadata, MetadataCommand};
+
+pub struct WorktreeCleanup {
+    path: PathBuf,
+}
+
+impl Drop for WorktreeCleanup {
+    fn drop(&mut self) {
+        println!("Cleaning up git worktree at {:?}", self.path);
+        let status = Command::new("git")
+            .args(["worktree", "remove", "--force", self.path.to_str().unwrap()])
+            .status();
+
+        match status {
+            Ok(status) if status.success() => {
+                println!("Successfully removed git worktree");
+            }
+            Ok(status) => {
+                eprintln!("Failed to remove git worktree. Exit code: {}", status);
+            }
+            Err(e) => {
+                eprintln!("Error removing git worktree: {:?}", e);
+            }
+        }
+    }
+}
 
 pub fn metadata_from_dir(dir: impl AsRef<Path>) -> Result<Metadata> {
     MetadataCommand::new()
@@ -12,7 +37,7 @@ pub fn metadata_from_dir(dir: impl AsRef<Path>) -> Result<Metadata> {
         .context("fetching cargo metadata from directory")
 }
 
-pub fn checkout_baseline(baseline_rev_or_hash: &str, target_dir: &Path) -> Result<()> {
+pub fn checkout_baseline(baseline_rev_or_hash: &str, target_dir: &PathBuf) -> Result<WorktreeCleanup> {
     if target_dir.exists() {
         std::fs::remove_dir_all(target_dir)?;
     }
@@ -26,7 +51,6 @@ pub fn checkout_baseline(baseline_rev_or_hash: &str, target_dir: &Path) -> Resul
     let commit_hash = if rev_parse_output.status.success() {
         String::from_utf8(rev_parse_output.stdout)?.trim().to_string()
     } else {
-        // If not found locally, fetch it explicitly from origin
         println!("Revision {} not found locally. Fetching from origin...", baseline_rev_or_hash);
 
         Command::new("git")
@@ -58,7 +82,11 @@ pub fn checkout_baseline(baseline_rev_or_hash: &str, target_dir: &Path) -> Resul
         .context("git worktree add failed")?
         .success()
         .then_some(())
-        .context("git worktree add unsuccessful")
+        .context("git worktree add unsuccessful")?;
+
+    Ok(WorktreeCleanup {
+        path: target_dir.clone(),
+    })
 }
 
 pub fn workspace_crates_in_folder(meta: &Metadata, folder: &str) -> HashSet<String> {

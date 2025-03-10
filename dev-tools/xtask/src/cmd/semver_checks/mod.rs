@@ -12,21 +12,17 @@ use utils::{checkout_baseline, metadata_from_dir, workspace_crates_in_folder};
 
 /// Semver-checks can run in two ways:
 /// 1. Provide a baseline git revision branch to compare against, such as `main`:
-///    `cargo xtask semver-checks --baseline-rev main`
+///    `cargo xtask semver-checks --baseline main`
 ///
 /// 2. Provide a hash to compare against:
-///    `cargo xtask semver-checks --baseline-hash some_hash`
+///    `cargo xtask semver-checks --baseline some_hash`
 ///
 /// By default, cargo-semver-checks will run against the `main` branch.
 #[derive(Debug, Clone, Parser)]
 pub struct SemverChecks {
     /// Baseline git revision branch to compare against
     #[clap(long, default_value = "main")]
-    baseline_rev: String,
-
-    #[clap(long)]
-    /// If provided, explicitly sets the baseline commit hash, skipping lookup
-    baseline_hash: Option<String>,
+    baseline: String,
 }
 
 impl SemverChecks {
@@ -36,15 +32,8 @@ impl SemverChecks {
 
         let tmp_dir = PathBuf::from("target/semver-baseline");
 
-        match self.baseline_hash {
-            Some(hash) => {
-                println!("Using explicitly provided commit hash: {}", hash);
-                checkout_baseline(&hash, &tmp_dir).context("checking out baseline by hash")?;
-            }
-            None => {
-                checkout_baseline(&self.baseline_rev, &tmp_dir).context("checking out baseline")?;
-            }
-        };
+        // Checkout baseline (auto-cleanup on Drop)
+        let _worktree_cleanup = checkout_baseline(&self.baseline, &tmp_dir).context("checking out baseline")?;
 
         let baseline_metadata = metadata_from_dir(&tmp_dir).context("baseline metadata")?;
         let baseline_crates_set = workspace_crates_in_folder(&baseline_metadata, &tmp_dir.join("crates").to_string_lossy());

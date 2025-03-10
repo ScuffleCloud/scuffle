@@ -1,0 +1,173 @@
+syntax = "proto3";
+
+package tinc;
+
+import "google/protobuf/descriptor.proto";
+import "google/protobuf/empty.proto";
+
+extend google.protobuf.MessageOptions {
+    SchemaMessageOptions schema_message = 15501;
+}
+
+extend google.protobuf.FieldOptions {
+    SchemaFieldOptions schema_field = 15502;
+}
+
+extend google.protobuf.EnumOptions {
+    SchemaEnumOptions schema_enum = 15503;
+}
+
+extend google.protobuf.EnumValueOptions {
+    SchemaVariantOptions schema_variant = 15504;
+}
+
+extend google.protobuf.MethodOptions {
+    repeated HttpEndpointOptions http_endpoint = 15505;
+}
+
+extend google.protobuf.ServiceOptions {
+    HttpRouterOptions http_router = 15506;
+}
+
+message HttpRouterOptions {
+    optional string prefix = 1;
+    optional string description = 2;
+    repeated string tag = 3;
+    message ExternalDocs {
+        string text = 1;
+        string url = 2;
+    }
+    ExternalDocs external_docs = 4;
+}
+
+enum NameStyle {
+    NAME_STYLE_UNSPECIFIED = 0;
+    SNAKE_CASE = 1;
+    CAMEL_CASE = 2;
+    PASCAL_CASE = 3;
+    KEBAB_CASE = 4;
+}
+
+message SchemaMessageOptions {
+    bool skip_derive = 1;
+    optional NameStyle style = 2;
+}
+
+message SchemaFieldOptions {
+    optional string rename = 1;
+    repeated string content_type = 2;
+    // optional string default = 3;
+    repeated string example = 4;
+    repeated string description = 5;
+    bool read_only = 6;
+    bool write_only = 7;
+    bool required = 8;
+
+    message NumberConstraint {
+        optional double min = 1;
+        optional double max = 2;
+        optional double multiple_of = 3;
+        optional bool exclusive_min = 4;
+        optional bool exclusive_max = 5;
+    }
+
+    message StringConstraint {
+        optional int32 min_length = 1;
+        optional int32 max_length = 2;
+        optional string pattern = 3;
+        optional string format = 4;
+    }
+
+    message BytesConstraint {
+        optional int32 min_length = 1;
+        optional int32 max_length = 2;
+    }
+
+    message RepeatedConstraint {
+        optional int32 min_length = 1;
+        optional int32 max_length = 2;
+        optional bool unique_items = 3;
+        oneof constraint {
+            NumberConstraint number = 4;
+            StringConstraint string = 5;
+            BytesConstraint bytes = 6;
+        }
+    }
+
+    oneof constraint {
+        NumberConstraint number = 9;
+        StringConstraint string = 10;
+        BytesConstraint bytes = 11;
+        RepeatedConstraint repeated = 12;
+    }
+}
+
+message SchemaEnumOptions {
+    bool skip_derive = 1;
+    bool integer_enum = 2;
+    optional NameStyle style = 3;
+}
+
+message SchemaVariantOptions {
+    optional string rename = 1;
+}
+
+message HttpEndpointOptions {
+    oneof pattern {
+        string get = 1;
+        string post = 2;
+        string put = 3;
+        string delete = 4;
+        string patch = 5;
+    }
+
+    repeated string description = 6;
+    optional string summary = 7;
+
+    message RequestBody {
+        repeated string description = 1;
+
+        message ContentType {
+            string kind = 1;
+            string body = 2;
+            message AdditionalFields {
+                oneof location {
+                    google.protobuf.Empty query = 1;
+                    string header = 2;
+                }
+                string encoding = 3;
+            }
+
+            AdditionalFields additional_fields = 3;
+        }
+        repeated ContentType content_type = 2;
+    }
+
+    optional RequestBody request = 8;
+    repeated SecurityOptions security = 9;
+
+    message ResponseOptions {
+        string status_code = 1;
+        string description = 2;
+        message Headers {
+            string name = 1;
+            string description = 2;
+            string type = 3;
+        }
+        repeated Headers headers = 3;
+
+        message ContentType {
+            string kind = 1;
+            string description = 2;
+        }
+        repeated ContentType content_type = 4;
+    }
+
+    repeated ResponseOptions response = 10;
+}
+
+message SecurityOptions {
+    string name = 1;
+    repeated string scope = 2;
+    repeated SecurityOptions and = 3;
+}

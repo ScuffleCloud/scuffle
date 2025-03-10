@@ -4,34 +4,55 @@ use prost_reflect::DescriptorPool;
 
 mod extensions;
 
-#[derive(Debug, Default)]
+#[derive(Debug)]
 pub struct Config {
-    tonic: tonic_build::Config,
+    tonic: tonic_build::Builder,
+    prost: tonic_build::Config,
     disable_tinc_include: bool,
+}
+
+impl Default for Config {
+    fn default() -> Self {
+        Self::new()
+    }
 }
 
 impl Config {
     pub fn new() -> Self {
-        Self::default()
+        Self {
+            tonic: tonic_build::configure(),
+            disable_tinc_include: false,
+            prost: tonic_build::Config::new(),
+        }
     }
 
-    pub fn with_config(mut self, config: tonic_build::Config) -> Self {
+    pub fn with_tonic(mut self, config: tonic_build::Builder) -> Self {
         self.tonic = config;
         self
     }
 
-    pub fn generate(&mut self, protos: &[&str], includes: &[&str]) -> anyhow::Result<()> {
+    pub fn with_prost(mut self, config: tonic_build::Config) -> Self {
+        self.prost = config;
+        self
+    }
+
+    pub fn disable_tinc_include(mut self) -> Self {
+        self.disable_tinc_include = true;
+        self
+    }
+
+    pub fn compile_protos(mut self, protos: &[&str], includes: &[&str]) -> anyhow::Result<()> {
         let out_dir_str = std::env::var("OUT_DIR").context("OUT_DIR must be set, typically set by a cargo build script")?;
         let out_dir = std::path::PathBuf::from(&out_dir_str);
 
         let ft_path = out_dir.join("tinc.fd.bin");
-        self.tonic.file_descriptor_set_path(&ft_path);
+        self.prost.file_descriptor_set_path(&ft_path);
 
         let mut includes = includes.to_vec();
 
         if !self.disable_tinc_include {
             let extra_includes = out_dir.join("tinc");
-            self.tonic.extern_path(".tinc", "::tinc::reexports::tinc_pb");
+            self.prost.extern_path(".tinc", "::tinc::reexports::tinc_pb");
             std::fs::create_dir_all(&extra_includes).context("failed to create tinc directory")?;
             std::fs::write(extra_includes.join("annotations.proto"), tinc_pb::TINC_ANNOTATIONS)
                 .context("failed to write tinc_annotations.rs")?;
@@ -39,7 +60,7 @@ impl Config {
         }
 
         let fds = self
-            .tonic
+            .prost
             .load_fds(protos, &includes)
             .context("failed to generate tonic fds")?;
 
@@ -58,11 +79,11 @@ impl Config {
 
                 if !message_custom_impl {
                     if !oneof_opts.opts.no_flatten.unwrap_or(false) {
-                        self.tonic.field_attribute(&oneof_key, "#[serde(flatten)]");
+                        self.prost.field_attribute(&oneof_key, "#[serde(flatten)]");
                     }
 
                     if let Some(rename) = &oneof_opts.opts.rename {
-                        self.tonic
+                        self.prost
                             .field_attribute(&oneof_key, format!("#[serde(rename = \"{rename}\")]"));
                     }
                 }
@@ -71,11 +92,11 @@ impl Config {
                     continue;
                 }
 
-                self.tonic
+                self.prost
                     .enum_attribute(&oneof_key, "#[derive(::tinc::reexports::serde::Serialize)]");
-                self.tonic
+                self.prost
                     .enum_attribute(&oneof_key, "#[derive(::tinc::reexports::serde::Deserialize)]");
-                self.tonic
+                self.prost
                     .enum_attribute(&oneof_key, "#[serde(crate = \"::tinc::reexports::serde\")]");
             }
 
@@ -83,13 +104,13 @@ impl Config {
                 continue;
             }
 
-            self.tonic
+            self.prost
                 .message_attribute(key, "#[derive(::tinc::reexports::serde::Serialize)]");
-            self.tonic
+            self.prost
                 .message_attribute(key, "#[derive(::tinc::reexports::serde::Deserialize)]");
-            self.tonic
+            self.prost
                 .message_attribute(key, "#[serde(crate = \"::tinc::reexports::serde\")]");
-            self.tonic.message_attribute(key, "#[serde(default)]");
+            self.prost.message_attribute(key, "#[serde(default)]");
             for (field, field_opts) in &message.fields {
                 if field_opts
                     .one_of
@@ -106,10 +127,10 @@ impl Config {
                     format!("{key}.{field}")
                 };
 
-                self.tonic
+                self.prost
                     .field_attribute(&field_key, format!("#[serde(rename = \"{name}\")]"));
                 if let Some(serde_with) = field_opts.kind.serde_with(key) {
-                    self.tonic
+                    self.prost
                         .field_attribute(&field_key, format!("#[serde(with = \"{serde_with}\")]"));
                 }
             }
@@ -120,21 +141,25 @@ impl Config {
                 continue;
             }
 
-            self.tonic
+            self.prost
                 .enum_attribute(key, "#[derive(::tinc::reexports::serde::Serialize)]");
-            self.tonic
+            self.prost
                 .enum_attribute(key, "#[derive(::tinc::reexports::serde::Deserialize)]");
-            self.tonic
+            self.prost
                 .enum_attribute(key, "#[serde(crate = \"::tinc::reexports::serde\")]");
             for (variant, variant_opts) in &enum_.variants {
                 if let Some(rename) = &variant_opts.opts.rename {
-                    self.tonic
+                    self.prost
                         .field_attribute(format!("{}.{}", key, variant), format!("#[serde(rename = \"{}\")]", rename));
                 }
             }
         }
 
-        self.tonic.compile_fds(fds).context("failed to compile tonic fds")?;
+        for file in &fds.file {
+            dbg!(&file);
+        }
+
+        self.tonic.compile_fds_with_config(self.prost, fds).context("failed to compile tonic fds")?;
 
         Ok(())
     }

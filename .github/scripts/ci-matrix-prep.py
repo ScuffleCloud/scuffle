@@ -567,7 +567,7 @@ def create_semver_checks_jobs() -> list[Job]:
 
     jobs.append(
         Job(
-            runner=GITHUB_DEFAULT_RUNNER,
+            runner=LINUX_X86_64,
             job_name="Semver-checks",
             job="semver-checks",
             ffmpeg=FfmpegSetup(),

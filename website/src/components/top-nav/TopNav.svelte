@@ -48,7 +48,10 @@
     <div class="actions">
         <button class="search-button" aria-label="Search" onclick={() => (showSearchModal = true)}>
             <Search />
-            <span class="keyboard-shortcut">⌘K</span>
+            <span class="keyboard-shortcut">
+                <span class="command">⌘</span>
+                <span class="key">K</span>
+            </span>
         </button>
     </div>
 </header>
@@ -104,17 +107,27 @@
                 background: none;
                 border: none;
                 cursor: pointer;
-                color: var(--color-dark100);
                 padding: 0.5rem 0.75rem;
                 border-radius: 6px;
                 transition: background-color 0.2s;
 
                 .keyboard-shortcut {
-                    font-size: 0.75rem;
+                    display: flex;
+                    align-items: center;
+                    gap: 0.125rem;
+                    justify-content: center;
                     opacity: 0.7;
                     background-color: rgba(0, 0, 0, 0.05);
                     padding: 2px 6px;
-                    border-radius: 4px;
+                    border-radius: 0.25rem;
+
+                    .command {
+                        font-size: 0.625rem;
+                    }
+
+                    .key {
+                        font-size: 0.75rem;
+                    }
                 }
 
                 &:hover {

@@ -21,10 +21,10 @@
 #![cfg_attr(all(coverage_nightly, test), feature(coverage_attribute))]
 #![deny(unsafe_code)]
 
-pub mod aac;
 pub mod audio;
 pub mod av1;
 pub mod avc;
+pub mod error;
 pub mod file;
 pub mod header;
 pub mod hevc;
@@ -50,15 +50,17 @@ mod tests {
     use scuffle_av1::seq::SequenceHeaderObu;
     use scuffle_h264::Sps;
 
-    use crate::aac::AacPacket;
-    use crate::audio::{AudioData, AudioDataBody, SoundRate, SoundSize, SoundType};
+    use crate::audio::AudioData;
+    use crate::audio::aac::AacAudioData;
+    use crate::audio::body::{AudioTagBody, LegacyAudioTagBody};
+    use crate::audio::header::{AudioTagHeader, LegacyAudioTagHeader, SoundRate, SoundSize, SoundType};
     use crate::av1::Av1Packet;
     use crate::avc::AvcPacket;
     use crate::file::FlvFile;
     use crate::hevc::HevcPacket;
     use crate::script::ScriptData;
     use crate::tag::FlvTagData;
-    use crate::video::{EnhancedPacket, FrameType, VideoFourCC, VideoTagBody, VideoTagHeader};
+    use crate::video::{EnhancedPacket, FrameType, VideoData, VideoFourCC, VideoTagBody};
 
     #[test]
     fn test_demux_flv_avc_aac() {
@@ -70,8 +72,8 @@ mod tests {
         let flv = FlvFile::demux(&mut reader).expect("failed to demux flv");
 
         assert_eq!(flv.header.version, 1);
-        assert!(flv.header.has_audio);
-        assert!(flv.header.has_video);
+        assert!(flv.header.is_audio_present);
+        assert!(flv.header.is_video_present);
         assert_eq!(flv.header.extra.len(), 0);
 
         let mut tags = flv.tags.into_iter();
@@ -216,7 +218,7 @@ mod tests {
 
             // This is a video tag
             let (frame_type, video_data) = match tag.data {
-                FlvTagData::Video(VideoTagHeader { frame_type, body }) => (frame_type, body),
+                FlvTagData::Video(VideoData { frame_type, body }) => (frame_type, body),
                 _ => panic!("expected video data"),
             };
 
@@ -306,9 +308,13 @@ mod tests {
 
             let (data, sound_rate, sound_size, sound_type) = match tag.data {
                 FlvTagData::Audio(AudioData {
-                    sound_rate,
-                    sound_size,
-                    sound_type,
+                    header:
+                        AudioTagHeader::Legacy(LegacyAudioTagHeader {
+                            sound_rate,
+                            sound_size,
+                            sound_type,
+                            ..
+                        }),
                     body,
                 }) => (body, sound_rate, sound_size, sound_type),
                 _ => panic!("expected audio data"),
@@ -320,7 +326,7 @@ mod tests {
 
             // Audio data should be an AAC sequence header
             let data = match data {
-                AudioDataBody::Aac(AacPacket::SequenceHeader(data)) => data,
+                AudioTagBody::Legacy(LegacyAudioTagBody::Aac(AacAudioData::SequenceHeader(data))) => data,
                 _ => panic!("expected aac sequence header"),
             };
 
@@ -349,19 +355,23 @@ mod tests {
             match tag.data {
                 FlvTagData::Audio(AudioData {
                     body,
-                    sound_rate,
-                    sound_size,
-                    sound_type,
+                    header:
+                        AudioTagHeader::Legacy(LegacyAudioTagHeader {
+                            sound_rate,
+                            sound_size,
+                            sound_type,
+                            ..
+                        }),
                 }) => {
                     assert_eq!(sound_rate, SoundRate::Hz44000);
                     assert_eq!(sound_size, SoundSize::Bit16);
                     assert_eq!(sound_type, SoundType::Stereo);
                     match body {
-                        AudioDataBody::Aac(AacPacket::Raw(data)) => data,
+                        AudioTagBody::Legacy(LegacyAudioTagBody::Aac(AacAudioData::Raw(data))) => data,
                         _ => panic!("expected aac raw packet"),
                     };
                 }
-                FlvTagData::Video(VideoTagHeader { frame_type, body }) => {
+                FlvTagData::Video(VideoData { frame_type, body }) => {
                     match frame_type {
                         FrameType::Keyframe => (),
                         FrameType::Interframe => (),
@@ -394,8 +404,8 @@ mod tests {
         let flv = FlvFile::demux(&mut reader).expect("failed to demux flv");
 
         assert_eq!(flv.header.version, 1);
-        assert!(flv.header.has_audio);
-        assert!(flv.header.has_video);
+        assert!(flv.header.is_audio_present);
+        assert!(flv.header.is_video_present);
         assert_eq!(flv.header.extra.len(), 0);
 
         let mut tags = flv.tags.into_iter();
@@ -517,9 +527,13 @@ mod tests {
             let (body, sound_rate, sound_size, sound_type) = match tag.data {
                 FlvTagData::Audio(AudioData {
                     body,
-                    sound_rate,
-                    sound_size,
-                    sound_type,
+                    header:
+                        AudioTagHeader::Legacy(LegacyAudioTagHeader {
+                            sound_rate,
+                            sound_size,
+                            sound_type,
+                            ..
+                        }),
                 }) => (body, sound_rate, sound_size, sound_type),
                 _ => panic!("expected audio data"),
             };
@@ -530,7 +544,7 @@ mod tests {
 
             // Audio data should be an AAC sequence header
             let data = match body {
-                AudioDataBody::Aac(AacPacket::SequenceHeader(data)) => data,
+                AudioTagBody::Legacy(LegacyAudioTagBody::Aac(AacAudioData::SequenceHeader(data))) => data,
                 _ => panic!("expected aac sequence header"),
             };
 
@@ -555,7 +569,7 @@ mod tests {
 
             // This is a video tag
             let (frame_type, video_data) = match tag.data {
-                FlvTagData::Video(VideoTagHeader { frame_type, body }) => (frame_type, body),
+                FlvTagData::Video(VideoData { frame_type, body }) => (frame_type, body),
                 _ => panic!("expected video data"),
             };
 
@@ -597,19 +611,23 @@ mod tests {
             match tag.data {
                 FlvTagData::Audio(AudioData {
                     body,
-                    sound_rate,
-                    sound_size,
-                    sound_type,
+                    header:
+                        AudioTagHeader::Legacy(LegacyAudioTagHeader {
+                            sound_rate,
+                            sound_size,
+                            sound_type,
+                            ..
+                        }),
                 }) => {
                     assert_eq!(sound_rate, SoundRate::Hz44000);
                     assert_eq!(sound_size, SoundSize::Bit16);
                     assert_eq!(sound_type, SoundType::Stereo);
                     match body {
-                        AudioDataBody::Aac(AacPacket::Raw(data)) => data,
+                        AudioTagBody::Legacy(LegacyAudioTagBody::Aac(AacAudioData::Raw(data))) => data,
                         _ => panic!("expected aac raw packet"),
                     };
                 }
-                FlvTagData::Video(VideoTagHeader { frame_type, body }) => {
+                FlvTagData::Video(VideoData { frame_type, body }) => {
                     match frame_type {
                         FrameType::Keyframe => (),
                         FrameType::Interframe => (),
@@ -645,8 +663,8 @@ mod tests {
         let flv = FlvFile::demux(&mut reader).expect("failed to demux flv");
 
         assert_eq!(flv.header.version, 1);
-        assert!(flv.header.has_audio);
-        assert!(flv.header.has_video);
+        assert!(flv.header.is_audio_present);
+        assert!(flv.header.is_video_present);
         assert_eq!(flv.header.extra.len(), 0);
 
         let mut tags = flv.tags.into_iter();
@@ -768,9 +786,13 @@ mod tests {
             let (body, sound_rate, sound_size, sound_type) = match tag.data {
                 FlvTagData::Audio(AudioData {
                     body,
-                    sound_rate,
-                    sound_size,
-                    sound_type,
+                    header:
+                        AudioTagHeader::Legacy(LegacyAudioTagHeader {
+                            sound_rate,
+                            sound_size,
+                            sound_type,
+                            ..
+                        }),
                 }) => (body, sound_rate, sound_size, sound_type),
                 _ => panic!("expected audio data"),
             };
@@ -781,7 +803,7 @@ mod tests {
 
             // Audio data should be an AAC sequence header
             let data = match body {
-                AudioDataBody::Aac(AacPacket::SequenceHeader(data)) => data,
+                AudioTagBody::Legacy(LegacyAudioTagBody::Aac(AacAudioData::SequenceHeader(data))) => data,
                 _ => panic!("expected aac sequence header"),
             };
 
@@ -806,7 +828,7 @@ mod tests {
 
             // This is a video tag
             let (frame_type, video_data) = match tag.data {
-                FlvTagData::Video(VideoTagHeader { frame_type, body }) => (frame_type, body),
+                FlvTagData::Video(VideoData { frame_type, body }) => (frame_type, body),
                 _ => panic!("expected video data"),
             };
 
@@ -874,19 +896,23 @@ mod tests {
             match tag.data {
                 FlvTagData::Audio(AudioData {
                     body,
-                    sound_rate,
-                    sound_size,
-                    sound_type,
+                    header:
+                        AudioTagHeader::Legacy(LegacyAudioTagHeader {
+                            sound_rate,
+                            sound_size,
+                            sound_type,
+                            ..
+                        }),
                 }) => {
                     assert_eq!(sound_rate, SoundRate::Hz44000);
                     assert_eq!(sound_size, SoundSize::Bit16);
                     assert_eq!(sound_type, SoundType::Stereo);
                     match body {
-                        AudioDataBody::Aac(AacPacket::Raw(data)) => data,
+                        AudioTagBody::Legacy(LegacyAudioTagBody::Aac(AacAudioData::Raw(data))) => data,
                         _ => panic!("expected aac raw packet"),
                     };
                 }
-                FlvTagData::Video(VideoTagHeader { frame_type, body }) => {
+                FlvTagData::Video(VideoData { frame_type, body }) => {
                     match frame_type {
                         FrameType::Keyframe => (),
                         FrameType::Interframe => (),

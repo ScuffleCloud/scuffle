@@ -3,52 +3,8 @@ use std::io;
 use byteorder::ReadBytesExt;
 use bytes::Bytes;
 use nutype_enum::nutype_enum;
-use scuffle_bytes_util::BytesCursorExt;
 
-use super::aac::{AacPacket, AacPacketType};
-
-/// FLV Tag Audio Data
-///
-/// This is the container for the audio data.
-///
-/// Defined by:
-/// - video_file_format_spec_v10.pdf (Chapter 1 - The FLV File Format - Audio tags)
-/// - video_file_format_spec_v10_1.pdf (Annex E.4.2.1 - AUDIODATA)
-#[derive(Debug, Clone, PartialEq)]
-pub struct AudioData {
-    /// The sound rate of the audio data. (2 bits)
-    pub sound_rate: SoundRate,
-    /// The sound size of the audio data. (1 bit)
-    pub sound_size: SoundSize,
-    /// The sound type of the audio data. (1 bit)
-    pub sound_type: SoundType,
-    /// The body of the audio data.
-    pub body: AudioDataBody,
-}
-
-impl AudioData {
-    pub fn demux(reader: &mut io::Cursor<Bytes>) -> io::Result<Self> {
-        let byte = reader.read_u8()?;
-        // SoundFormat is the first 4 bits of the byte
-        let sound_format = SoundFormat::from(byte >> 4);
-        // SoundRate is the next 2 bits of the byte
-        let sound_rate = SoundRate::from((byte >> 2) & 0b11);
-        // SoundSize is the next bit of the byte
-        let sound_size = SoundSize::from((byte >> 1) & 0b1);
-        // SoundType is the last bit of the byte
-        let sound_type = SoundType::from(byte & 0b1);
-
-        // Now we can demux the body of the audio data
-        let body = AudioDataBody::demux(sound_format, reader)?;
-
-        Ok(AudioData {
-            sound_rate,
-            sound_size,
-            sound_type,
-            body,
-        })
-    }
-}
+use crate::error::Error;
 
 nutype_enum! {
     /// FLV Sound Format
@@ -77,6 +33,10 @@ nutype_enum! {
         G711ALaw = 7,
         /// G.711 Mu-Law logarithmic PCM
         G711MuLaw = 8,
+        /// The `ExAudioTagHeader` is present
+        ///
+        /// Defined by: Enhanced RTMP v2 (Enhanced Audio section)
+        ExHeader = 9,
         /// AAC
         Aac = 10,
         /// Speex
@@ -85,41 +45,6 @@ nutype_enum! {
         Mp38Khz = 14,
         /// Device specific sound
         DeviceSpecificSound = 15,
-    }
-}
-
-/// FLV Tag Audio Data Body
-///
-/// This is the container for the audio data body.
-///
-/// Defined by:
-/// - video_file_format_spec_v10.pdf (Chapter 1 - The FLV File Format - Audio tags)
-/// - video_file_format_spec_v10_1.pdf (Annex E.4.2.1 - AUDIODATA)
-#[derive(Debug, Clone, PartialEq)]
-pub enum AudioDataBody {
-    /// AAC Audio Packet
-    Aac(AacPacket),
-    /// Some other audio format we don't know how to parse
-    Unknown { sound_format: SoundFormat, data: Bytes },
-}
-
-impl AudioDataBody {
-    /// Demux the audio data body from the given reader
-    ///
-    /// The reader will be entirely consumed.
-    pub fn demux(sound_format: SoundFormat, reader: &mut io::Cursor<Bytes>) -> io::Result<Self> {
-        match sound_format {
-            SoundFormat::Aac => {
-                // For some reason the spec adds a specific byte before the AAC data.
-                // This byte is the AAC packet type.
-                let aac_packet_type = AacPacketType::from(reader.read_u8()?);
-                Ok(Self::Aac(AacPacket::new(aac_packet_type, reader.extract_remaining())))
-            }
-            _ => Ok(Self::Unknown {
-                sound_format,
-                data: reader.extract_remaining(),
-            }),
-        }
     }
 }
 
@@ -172,6 +97,44 @@ nutype_enum! {
         Mono = 0,
         /// Stereo
         Stereo = 1,
+    }
+}
+
+/// The legacy FLV `AudioTagHeader` as defined by the original spec.
+///
+/// Defined by video_file_format_spec_v10_1.pdf (Annex E.4.2.1 - AUDIODATA).
+#[derive(Debug, Clone, PartialEq)]
+pub struct LegacyAudioTagHeader {
+    /// The sound format of the audio data. (4 bits)
+    pub sound_format: SoundFormat,
+    /// The sound rate of the audio data. (2 bits)
+    pub sound_rate: SoundRate,
+    /// The sound size of the audio data. (1 bit)
+    pub sound_size: SoundSize,
+    /// The sound type of the audio data. (1 bit)
+    pub sound_type: SoundType,
+}
+
+impl LegacyAudioTagHeader {
+    #[allow(clippy::unusual_byte_groupings)]
+    pub fn demux(reader: &mut io::Cursor<Bytes>) -> Result<Self, Error> {
+        let byte = reader.read_u8()?;
+
+        // SoundFormat is the first 4 bits of the byte
+        let sound_format = SoundFormat::from(byte >> 4); // 0b1111_00_0_0
+        // SoundRate is the next 2 bits of the byte
+        let sound_rate = SoundRate::from((byte & 0b0000_11_0_0) >> 2);
+        // SoundSize is the next bit of the byte
+        let sound_size = SoundSize::from((byte & 0b0000_00_1_0) >> 1);
+        // SoundType is the last bit of the byte
+        let sound_type = SoundType::from(byte & 0b0000_00_0_1);
+
+        Ok(Self {
+            sound_format,
+            sound_rate,
+            sound_size,
+            sound_type,
+        })
     }
 }
 
@@ -251,44 +214,5 @@ mod tests {
             assert_eq!(sound_type, expected);
             assert_eq!(format!("{:?}", sound_type), name);
         }
-    }
-
-    #[test]
-    fn test_audio_data_demux() {
-        let mut reader = io::Cursor::new(Bytes::from(vec![0b10101101, 0b00000000, 1, 2, 3]));
-
-        let audio_data = AudioData::demux(&mut reader).unwrap();
-        assert_eq!(audio_data.sound_rate, SoundRate::Hz44000);
-        assert_eq!(audio_data.sound_size, SoundSize::Bit8);
-        assert_eq!(audio_data.sound_type, SoundType::Stereo);
-        assert_eq!(
-            audio_data.body,
-            AudioDataBody::Aac(AacPacket::SequenceHeader(Bytes::from(vec![1, 2, 3])))
-        );
-
-        let mut reader = io::Cursor::new(Bytes::from(vec![0b10101101, 0b00100000, 1, 2, 3]));
-
-        let audio_data = AudioData::demux(&mut reader).unwrap();
-        assert_eq!(audio_data.sound_rate, SoundRate::Hz44000);
-        assert_eq!(audio_data.sound_size, SoundSize::Bit8);
-        assert_eq!(audio_data.sound_type, SoundType::Stereo);
-        assert_eq!(
-            audio_data.body,
-            AudioDataBody::Aac(AacPacket::Unknown {
-                aac_packet_type: AacPacketType(0b00100000),
-                data: Bytes::from(vec![1, 2, 3])
-            })
-        );
-
-        let mut reader = io::Cursor::new(Bytes::from(vec![0b10001101, 0b00000000, 1, 2, 3]));
-
-        let audio_data = AudioData::demux(&mut reader).unwrap();
-        assert_eq!(
-            audio_data.body,
-            AudioDataBody::Unknown {
-                sound_format: SoundFormat(8),
-                data: Bytes::from(vec![0, 1, 2, 3])
-            }
-        );
     }
 }

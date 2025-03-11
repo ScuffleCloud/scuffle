@@ -32,36 +32,40 @@ nutype_enum! {
     }
 }
 
-/// FLV Tag Video Header
+/// FLV `VIDEODATA` tag
+///
 /// This is a container for video data.
 /// This enum contains the data for the different types of video tags.
 /// Defined by:
 /// - video_file_format_spec_v10.pdf (Chapter 1 - The FLV File Format - Video tags)
 /// - video_file_format_spec_v10_1.pdf (Annex E.4.3.1 - VIDEODATA)
 #[derive(Debug, Clone, PartialEq)]
-pub struct VideoTagHeader {
+pub struct VideoData {
     /// The frame type of the video data. (4 bits)
     pub frame_type: FrameType,
     /// The body of the video data.
     pub body: VideoTagBody,
 }
 
-impl VideoTagHeader {
+impl VideoData {
     /// Demux a video data from the given reader
+    #[allow(clippy::unusual_byte_groupings)]
     pub fn demux(reader: &mut io::Cursor<Bytes>) -> io::Result<Self> {
+        // Read the `VideoTagHeader`
         let byte = reader.read_u8()?;
-        let enhanced = (byte & 0b1000_0000) != 0;
-        let frame_type_byte = (byte >> 4) & 0b0111;
-        let packet_type_byte = byte & 0b0000_1111;
-        let frame_type = FrameType::from(frame_type_byte);
+        let frame_type = FrameType::from((byte & 0b0_111_0000) >> 4);
+
+        // Read the `VideoTagBody`
         let body = if frame_type == FrameType::VideoInfoOrCommandFrame {
             let command_packet = CommandPacket::from(reader.read_u8()?);
             VideoTagBody::Command(command_packet)
         } else {
-            VideoTagBody::demux(VideoPacketType::new(packet_type_byte, enhanced), reader)?
+            let enhanced = (byte & 0b1_000_0000) != 0;
+            let packet_type = VideoPacketType::new(byte & 0b0_000_1111, enhanced);
+            VideoTagBody::demux(packet_type, reader)?
         };
 
-        Ok(VideoTagHeader { frame_type, body })
+        Ok(VideoData { frame_type, body })
     }
 }
 
@@ -502,10 +506,10 @@ mod tests {
             0b01010000, // frame type (5)
             0x01,       // command packet
         ]));
-        let body = VideoTagHeader::demux(&mut reader).unwrap();
+        let body = VideoData::demux(&mut reader).unwrap();
         assert_eq!(
             body,
-            VideoTagHeader {
+            VideoData {
                 frame_type: FrameType::VideoInfoOrCommandFrame,
                 body: VideoTagBody::Command(CommandPacket::StartOfClientSeeking),
             }
@@ -518,10 +522,10 @@ mod tests {
             0b10010010, // enhanced + keyframe
             b'a', b'v', b'0', b'1', // video codec
         ]));
-        let body = VideoTagHeader::demux(&mut reader).unwrap();
+        let body = VideoData::demux(&mut reader).unwrap();
         assert_eq!(
             body,
-            VideoTagHeader {
+            VideoData {
                 frame_type: FrameType::Keyframe,
                 body: VideoTagBody::Enhanced(EnhancedPacket::SequenceEnd {
                     video_codec: VideoFourCC([b'a', b'v', b'0', b'1']),
@@ -536,10 +540,10 @@ mod tests {
             0b00010010, // enhanced + keyframe
             0, 1, 2, 3, // data
         ]));
-        let body = VideoTagHeader::demux(&mut reader).unwrap();
+        let body = VideoData::demux(&mut reader).unwrap();
         assert_eq!(
             body,
-            VideoTagHeader {
+            VideoData {
                 frame_type: FrameType::Keyframe,
                 body: VideoTagBody::Unknown {
                     codec_id: VideoCodecId::SorensonH263,
@@ -557,10 +561,10 @@ mod tests {
             0x80, 0x4, 129, 13, 12, 0, 10, 15, 0, 0, 0, 106, 239, 191, 225, 188, 2, 25, 144, 16, 16, 16, 64,
         ]));
 
-        let body = VideoTagHeader::demux(&mut reader).unwrap();
+        let body = VideoData::demux(&mut reader).unwrap();
         assert_eq!(
             body,
-            VideoTagHeader {
+            VideoData {
                 frame_type: FrameType::Keyframe,
                 body: VideoTagBody::Enhanced(EnhancedPacket::Av1(Av1Packet::SequenceStart(AV1CodecConfigurationRecord {
                     seq_profile: 0,

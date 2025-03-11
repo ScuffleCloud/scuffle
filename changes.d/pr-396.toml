@@ -1,5 +1,11 @@
 [[scuffle-rtmp]]
-category = "feat"
+category = "refactor"
 description = "refactor to be more ergonomic and efficient"
 breaking = true
 authors = ["@TroyKomodo", "@lennartkloock"]
+
+[[scuffle-flv]]
+category = "refactor"
+description = "refactor to be more ergonomic and efficient"
+breaking = true
+authors = ["@lennartkloock"]

@@ -5,7 +5,8 @@ use scuffle_bytes_util::BytesCursorExt;
 
 use super::audio::AudioData;
 use super::script::ScriptData;
-use super::video::VideoTagHeader;
+use super::video::VideoData;
+use crate::error::Error;
 
 /// An FLV Tag
 ///
@@ -40,8 +41,16 @@ impl FlvTag {
     ///
     /// The reader needs to be a [`std::io::Cursor`] with a [`Bytes`] buffer because we
     /// take advantage of zero-copy reading.
-    pub fn demux(reader: &mut std::io::Cursor<Bytes>) -> std::io::Result<Self> {
-        let tag_type = FlvTagType::from(reader.read_u8()?);
+    pub fn demux(reader: &mut std::io::Cursor<Bytes>) -> Result<Self, Error> {
+        let first_byte = reader.read_u8()?;
+
+        if (first_byte & 0b0010_0000) != 0 {
+            // The tag is encrypted, we dont support this.
+            return Err(Error::UnsupportedTagEncryption);
+        }
+
+        // Only the last 5 bits are the tag type.
+        let tag_type = FlvTagType::from(first_byte & 0b00011111);
 
         let data_size = reader.read_u24::<BigEndian>()?;
         // The timestamp bit is weird. Its 24bits but then there is an extended 8 bit
@@ -106,7 +115,7 @@ pub enum FlvTagData {
     /// Defined by:
     /// - video_file_format_spec_v10.pdf (Chapter 1 - The FLV File Format - Video tags)
     /// - video_file_format_spec_v10_1.pdf (Annex E.4.3.1 - VIDEODATA)
-    Video(VideoTagHeader),
+    Video(VideoData),
     /// ScriptData when the FlvTagType is ScriptData(18)
     /// Defined by:
     /// - video_file_format_spec_v10.pdf (Chapter 1 - The FLV File Format - Data tags)
@@ -124,10 +133,10 @@ impl FlvTagData {
     ///
     /// The reader needs to be a [`std::io::Cursor`] with a [`Bytes`] buffer because we
     /// take advantage of zero-copy reading.
-    pub fn demux(tag_type: FlvTagType, reader: &mut std::io::Cursor<Bytes>) -> std::io::Result<Self> {
+    pub fn demux(tag_type: FlvTagType, reader: &mut std::io::Cursor<Bytes>) -> Result<Self, Error> {
         match tag_type {
             FlvTagType::Audio => Ok(FlvTagData::Audio(AudioData::demux(reader)?)),
-            FlvTagType::Video => Ok(FlvTagData::Video(VideoTagHeader::demux(reader)?)),
+            FlvTagType::Video => Ok(FlvTagData::Video(VideoData::demux(reader)?)),
             FlvTagType::ScriptData => Ok(FlvTagData::ScriptData(ScriptData::demux(reader)?)),
             _ => Ok(FlvTagData::Unknown {
                 tag_type,

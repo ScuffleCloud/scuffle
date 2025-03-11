@@ -1,6 +1,6 @@
 use bytes::Bytes;
 use scuffle_aac::PartialAudioSpecificConfig;
-use scuffle_flv::audio::{SoundSize, SoundType};
+use scuffle_flv::audio::header::{SoundSize, SoundType};
 use scuffle_mp4::DynBox;
 use scuffle_mp4::types::esds::Esds;
 use scuffle_mp4::types::esds::descriptor::header::DescriptorHeader;

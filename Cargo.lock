@@ -353,6 +353,16 @@ dependencies = [
 ]
 
 [[package]]
+name = "bitmask-enum"
+version = "2.2.5"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "e6cbbb8f56245b5a479b30a62cdc86d26e2f35c2b9f594bc4671654b03851380"
+dependencies = [
+ "quote",
+ "syn",
+]
+
+[[package]]
 name = "block-buffer"
 version = "0.10.4"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -2969,6 +2979,7 @@ dependencies = [
 name = "scuffle-flv"
 version = "0.1.1"
 dependencies = [
+ "bitmask-enum",
  "byteorder",
  "bytes",
  "insta",
@@ -3224,6 +3235,7 @@ dependencies = [
  "scuffle-workspace-hack",
  "serde",
  "serde_json",
+ "thiserror 2.0.12",
 ]
 
 [[package]]

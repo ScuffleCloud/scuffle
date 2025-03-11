@@ -23,14 +23,16 @@ use std::io;
 use byteorder::{BigEndian, ReadBytesExt};
 use bytes::{Buf, Bytes};
 use scuffle_amf0::Amf0Value;
-use scuffle_flv::aac::AacPacket;
-use scuffle_flv::audio::{AudioData, AudioDataBody, SoundType};
+use scuffle_flv::audio::AudioData;
+use scuffle_flv::audio::aac::AacAudioData;
+use scuffle_flv::audio::body::{AudioTagBody, LegacyAudioTagBody};
+use scuffle_flv::audio::header::{AudioTagHeader, LegacyAudioTagHeader, SoundType};
 use scuffle_flv::av1::Av1Packet;
 use scuffle_flv::avc::AvcPacket;
 use scuffle_flv::hevc::HevcPacket;
 use scuffle_flv::script::ScriptData;
 use scuffle_flv::tag::{FlvTag, FlvTagData};
-use scuffle_flv::video::{EnhancedPacket, FrameType, VideoTagBody, VideoTagHeader};
+use scuffle_flv::video::{EnhancedPacket, FrameType, VideoData, VideoTagBody};
 use scuffle_h264::Sps;
 use scuffle_mp4::BoxType;
 use scuffle_mp4::codec::{AudioCodec, VideoCodec};
@@ -187,7 +189,7 @@ impl Transmuxer {
 
             match tag.data {
                 FlvTagData::Audio(AudioData {
-                    body: AudioDataBody::Aac(AacPacket::Raw(data)),
+                    body: AudioTagBody::Legacy(LegacyAudioTagBody::Aac(AacAudioData::Raw(data))),
                     ..
                 }) => {
                     let (sample, duration) = codecs::aac::trun_sample(&data)?;
@@ -197,7 +199,7 @@ impl Transmuxer {
                     total_duration = duration;
                     is_audio = true;
                 }
-                FlvTagData::Video(VideoTagHeader {
+                FlvTagData::Video(VideoData {
                     frame_type,
                     body: VideoTagBody::Avc(AvcPacket::Nalu { composition_time, data }),
                     ..
@@ -212,7 +214,7 @@ impl Transmuxer {
 
                     is_keyframe = frame_type == FrameType::Keyframe;
                 }
-                FlvTagData::Video(VideoTagHeader {
+                FlvTagData::Video(VideoData {
                     frame_type,
                     body: VideoTagBody::Enhanced(EnhancedPacket::Av1(Av1Packet::Raw(data))),
                     ..
@@ -225,7 +227,7 @@ impl Transmuxer {
 
                     is_keyframe = frame_type == FrameType::Keyframe;
                 }
-                FlvTagData::Video(VideoTagHeader {
+                FlvTagData::Video(VideoData {
                     frame_type,
                     body: VideoTagBody::Enhanced(EnhancedPacket::Hevc(HevcPacket::Nalu { composition_time, data })),
                     ..
@@ -325,21 +327,21 @@ impl Transmuxer {
             }
 
             match &tag.data {
-                FlvTagData::Video(VideoTagHeader {
+                FlvTagData::Video(VideoData {
                     frame_type: _,
                     body: VideoTagBody::Avc(AvcPacket::SequenceHeader(data)),
                     ..
                 }) => {
                     video_sequence_header = Some(VideoSequenceHeader::Avc(data.clone()));
                 }
-                FlvTagData::Video(VideoTagHeader {
+                FlvTagData::Video(VideoData {
                     frame_type: _,
                     body: VideoTagBody::Enhanced(EnhancedPacket::Av1(Av1Packet::SequenceStart(config))),
                     ..
                 }) => {
                     video_sequence_header = Some(VideoSequenceHeader::Av1(config.clone()));
                 }
-                FlvTagData::Video(VideoTagHeader {
+                FlvTagData::Video(VideoData {
                     frame_type: _,
                     body: VideoTagBody::Enhanced(EnhancedPacket::Hevc(HevcPacket::SequenceStart(config))),
                     ..
@@ -347,9 +349,11 @@ impl Transmuxer {
                     video_sequence_header = Some(VideoSequenceHeader::Hevc(config.clone()));
                 }
                 FlvTagData::Audio(AudioData {
-                    body: AudioDataBody::Aac(AacPacket::SequenceHeader(data)),
-                    sound_size,
-                    sound_type,
+                    body: AudioTagBody::Legacy(LegacyAudioTagBody::Aac(AacAudioData::SequenceHeader(data))),
+                    header:
+                        AudioTagHeader::Legacy(LegacyAudioTagHeader {
+                            sound_size, sound_type, ..
+                        }),
                     ..
                 }) => {
                     audio_sequence_header = Some(AudioSequenceHeader {

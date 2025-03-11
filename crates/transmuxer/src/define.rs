@@ -1,6 +1,6 @@
 use bytes::Bytes;
 use scuffle_av1::AV1CodecConfigurationRecord;
-use scuffle_flv::audio::{SoundSize, SoundType};
+use scuffle_flv::audio::header::{SoundSize, SoundType};
 use scuffle_h264::AVCDecoderConfigurationRecord;
 use scuffle_h265::HEVCDecoderConfigurationRecord;
 use scuffle_mp4::codec::{AudioCodec, VideoCodec};

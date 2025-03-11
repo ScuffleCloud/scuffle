@@ -13,8 +13,11 @@
         "lint": "eslint ."
     },
     "devDependencies": {
-        "@fontsource-variable/archivo": "^5.1.0",
         "@eslint/js": "^9.16.0",
+        "@floating-ui/dom": "^1.6.13",
+        "@fontsource-variable/archivo": "^5.1.0",
+        "@melt-ui/pp": "^0.3.2",
+        "@melt-ui/svelte": "^0.86.4",
         "@sveltejs/adapter-static": "^3.0.8",
         "@sveltejs/kit": "^2.16.0",
         "@sveltejs/vite-plugin-svelte": "^5.0.3",
@@ -35,5 +38,8 @@
     },
     "dependenciesComments": {
         "svelte-eslint-parser": "New version has errors with `pnpm lint`. Can resolve later."
+    },
+    "dependencies": {
+        "melt": "^0.17.1"
     }
 }

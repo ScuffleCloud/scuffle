@@ -80,8 +80,8 @@ mod tests {
                 5,
                 "VideoPacketType::Mpeg2TsSequenceStart",
             ),
-            (VideoPacketType(6), 6, "VideoPacketType(6)"),
-            (VideoPacketType(7), 7, "VideoPacketType(7)"),
+            (VideoPacketType::Multitrack, 6, "VideoPacketType::Multitrack"),
+            (VideoPacketType::ModEx, 7, "VideoPacketType::ModEx"),
         ];
 
         for (expected, value, name) in cases {
@@ -93,7 +93,7 @@ mod tests {
     #[test]
     fn test_frame_type() {
         let cases = [
-            (VideoFrameType::KeyFrame, 1, "FrameType::KeyFrame"),
+            (VideoFrameType::KeyFrame, 1, "VideoFrameType::KeyFrame"),
             (VideoFrameType::InterFrame, 2, "VideoFrameType::InterFrame"),
             (
                 VideoFrameType::DisposableInterFrame,
@@ -139,8 +139,8 @@ mod tests {
     #[test]
     fn test_command_packet() {
         let cases = [
-            (VideoCommand::StartSeek, 1, "VideoCommand::StartSeek"),
-            (VideoCommand::EndSeek, 2, "VideoCommand::EndSeek"),
+            (VideoCommand::StartSeek, 0, "VideoCommand::StartSeek"),
+            (VideoCommand::EndSeek, 1, "VideoCommand::EndSeek"),
             (VideoCommand(3), 3, "VideoCommand(3)"),
             (VideoCommand(4), 4, "VideoCommand(4)"),
         ];
@@ -161,7 +161,10 @@ mod tests {
             4,
             Amf0Marker::String as u8,
             0,
+            0,
             Amf0Marker::Object as u8,
+            0,
+            0,
             Amf0Marker::ObjectEnd as u8,
         ]));
         let video = VideoData::demux(&mut reader).unwrap();
@@ -366,7 +369,7 @@ mod tests {
             VideoTagHeader {
                 frame_type: VideoFrameType::KeyFrame,
                 data: VideoTagHeaderData::Enhanced(ExVideoTagHeader {
-                    video_packet_type: VideoPacketType::Metadata,
+                    video_packet_type: VideoPacketType::CodedFrames,
                     video_packet_mod_exs: vec![],
                     content: ExVideoTagHeaderContent::NoMultiTrack(VideoFourCc::Av1)
                 })
@@ -387,7 +390,7 @@ mod tests {
     fn test_video_data_command_packet() {
         let mut reader = io::Cursor::new(Bytes::from_static(&[
             0b0101_0000, // legacy + command
-            0x01,
+            0x00,
         ]));
 
         let video = VideoData::demux(&mut reader).unwrap();
@@ -465,15 +468,13 @@ mod tests {
     }
 
     #[test]
-    fn test_av1_mpeg2_sequence_start() {
+    fn test_av1_sequence_start() {
         let mut reader = io::Cursor::new(Bytes::from_static(&[
-            0b1001_0101, // enhanced + keyframe + MPEG2TSSequenceStart
-            b'a',
+            0b1001_0000, // enhanced + keyframe + sequence start
+            b'a',        // video codec
             b'v',
             b'0',
-            b'1', // video codec
-            0x80,
-            0x4,
+            b'1',
             129,
             13,
             12,

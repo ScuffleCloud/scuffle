@@ -127,7 +127,7 @@ impl ExAudioTagBody {
 
         let is_audio_multitrack = !matches!(header.content, ExAudioTagHeaderContent::NoMultiTrack(_));
 
-        while reader.has_remaining() {
+        loop {
             let audio_four_cc = match header.content {
                 ExAudioTagHeaderContent::ManyTracksManyCodecs => {
                     let mut audio_four_cc = [0; 4];
@@ -210,6 +210,9 @@ impl ExAudioTagBody {
             }
 
             // the loop only continues if there is still data to read
+            if !reader.has_remaining() {
+                break;
+            }
         }
 
         // at this point we know this is a multitrack audio because a single track audio would have exited early

@@ -116,14 +116,13 @@ impl TryFrom<Amf0Object<'_>> for MetadataColorInfo {
                     }
 
                     color_config = Some(MetadataColorInfoColorConfig {
-                        bit_depth: bit_depth.ok_or_else(|| MetadataColorInfoError::MissingField("bitDepth"))?,
-                        color_space: color_space.ok_or_else(|| MetadataColorInfoError::MissingField("colorSpace"))?,
-                        color_primaries: color_primaries
-                            .ok_or_else(|| MetadataColorInfoError::MissingField("colorPrimaries"))?,
+                        bit_depth: bit_depth.ok_or(MetadataColorInfoError::MissingField("bitDepth"))?,
+                        color_space: color_space.ok_or(MetadataColorInfoError::MissingField("colorSpace"))?,
+                        color_primaries: color_primaries.ok_or(MetadataColorInfoError::MissingField("colorPrimaries"))?,
                         transfer_characteristics: transfer_characteristics
-                            .ok_or_else(|| MetadataColorInfoError::MissingField("transferCharacteristics"))?,
+                            .ok_or(MetadataColorInfoError::MissingField("transferCharacteristics"))?,
                         matrix_coefficients: matrix_coefficients
-                            .ok_or_else(|| MetadataColorInfoError::MissingField("matrixCoefficients"))?,
+                            .ok_or(MetadataColorInfoError::MissingField("matrixCoefficients"))?,
                     });
                 }
                 "hdrCll" => {
@@ -157,8 +156,8 @@ impl TryFrom<Amf0Object<'_>> for MetadataColorInfo {
                     }
 
                     hdr_cll = Some(MetadataColorInfoHdrCll {
-                        max_fall: max_fall.ok_or_else(|| MetadataColorInfoError::MissingField("maxFall"))?,
-                        max_cll: max_cll.ok_or_else(|| MetadataColorInfoError::MissingField("maxCll"))?,
+                        max_fall: max_fall.ok_or(MetadataColorInfoError::MissingField("maxFall"))?,
+                        max_cll: max_cll.ok_or(MetadataColorInfoError::MissingField("maxCll"))?,
                     });
                 }
                 "hdrMdcv" => {
@@ -251,16 +250,16 @@ impl TryFrom<Amf0Object<'_>> for MetadataColorInfo {
                     }
 
                     hdr_mdcv = Some(MetadataColorInfoHdrMdcv {
-                        red_x: red_x.ok_or_else(|| MetadataColorInfoError::MissingField("redX"))?,
-                        red_y: red_y.ok_or_else(|| MetadataColorInfoError::MissingField("redY"))?,
-                        green_x: green_x.ok_or_else(|| MetadataColorInfoError::MissingField("greenX"))?,
-                        green_y: green_y.ok_or_else(|| MetadataColorInfoError::MissingField("greenY"))?,
-                        blue_x: blue_x.ok_or_else(|| MetadataColorInfoError::MissingField("blueX"))?,
-                        blue_y: blue_y.ok_or_else(|| MetadataColorInfoError::MissingField("blueY"))?,
-                        white_point_x: white_point_x.ok_or_else(|| MetadataColorInfoError::MissingField("whitePointX"))?,
-                        white_point_y: white_point_y.ok_or_else(|| MetadataColorInfoError::MissingField("whitePointY"))?,
-                        max_luminance: max_luminance.ok_or_else(|| MetadataColorInfoError::MissingField("maxLuminance"))?,
-                        min_luminance: min_luminance.ok_or_else(|| MetadataColorInfoError::MissingField("minLuminance"))?,
+                        red_x: red_x.ok_or(MetadataColorInfoError::MissingField("redX"))?,
+                        red_y: red_y.ok_or(MetadataColorInfoError::MissingField("redY"))?,
+                        green_x: green_x.ok_or(MetadataColorInfoError::MissingField("greenX"))?,
+                        green_y: green_y.ok_or(MetadataColorInfoError::MissingField("greenY"))?,
+                        blue_x: blue_x.ok_or(MetadataColorInfoError::MissingField("blueX"))?,
+                        blue_y: blue_y.ok_or(MetadataColorInfoError::MissingField("blueY"))?,
+                        white_point_x: white_point_x.ok_or(MetadataColorInfoError::MissingField("whitePointX"))?,
+                        white_point_y: white_point_y.ok_or(MetadataColorInfoError::MissingField("whitePointY"))?,
+                        max_luminance: max_luminance.ok_or(MetadataColorInfoError::MissingField("maxLuminance"))?,
+                        min_luminance: min_luminance.ok_or(MetadataColorInfoError::MissingField("minLuminance"))?,
                     });
                 }
                 _ => {}
@@ -268,9 +267,9 @@ impl TryFrom<Amf0Object<'_>> for MetadataColorInfo {
         }
 
         Ok(MetadataColorInfo {
-            color_config: color_config.ok_or_else(|| MetadataColorInfoError::MissingField("colorConfig"))?,
-            hdr_cll: hdr_cll.ok_or_else(|| MetadataColorInfoError::MissingField("hdrCll"))?,
-            hdr_mdcv: hdr_mdcv.ok_or_else(|| MetadataColorInfoError::MissingField("hdrMdcv"))?,
+            color_config: color_config.ok_or(MetadataColorInfoError::MissingField("colorConfig"))?,
+            hdr_cll: hdr_cll.ok_or(MetadataColorInfoError::MissingField("hdrCll"))?,
+            hdr_mdcv: hdr_mdcv.ok_or(MetadataColorInfoError::MissingField("hdrMdcv"))?,
         })
     }
 }

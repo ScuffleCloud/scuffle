@@ -667,6 +667,10 @@ mod tests {
                         } => {
                             assert!(!read_seq_end);
                         }
+                        ExVideoTagBody::ManyTracks(tracks) => {
+                            assert!(!read_seq_end);
+                            assert!(tracks.is_empty());
+                        }
                         ExVideoTagBody::NoMultitrack {
                             video_four_cc: VideoFourCc::Av1,
                             packet: VideoPacket::SequenceEnd,

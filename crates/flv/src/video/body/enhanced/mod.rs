@@ -79,7 +79,7 @@ impl ExVideoTagBody {
 
         let is_video_multitrack = !matches!(header.content, ExVideoTagHeaderContent::NoMultiTrack(_));
 
-        while reader.has_remaining() {
+        loop {
             let video_four_cc = match header.content {
                 ExVideoTagHeaderContent::VideoCommand(_) => return Ok(ExVideoTagBody::Command),
                 ExVideoTagHeaderContent::ManyTracksManyCodecs => {
@@ -154,12 +154,12 @@ impl ExVideoTagBody {
                     VideoPacket::Mpeg2TsSequenceStart(seq_start)
                 }
                 VideoPacketType::CodedFrames => {
-                    let data =
-                        reader.extract_bytes(size_of_video_track.map(|s| s as usize).unwrap_or(reader.remaining()))?;
-
                     let coded_frames = match video_four_cc {
                         VideoFourCc::Avc => {
                             let composition_time_offset = reader.read_i24::<BigEndian>()?;
+                            let data = reader
+                                .extract_bytes(size_of_video_track.map(|s| s as usize).unwrap_or(reader.remaining()))?;
+
                             VideoPacketCodedFrames::Avc {
                                 composition_time_offset,
                                 data,
@@ -167,12 +167,20 @@ impl ExVideoTagBody {
                         }
                         VideoFourCc::Hevc => {
                             let composition_time_offset = reader.read_i24::<BigEndian>()?;
+                            let data = reader
+                                .extract_bytes(size_of_video_track.map(|s| s as usize).unwrap_or(reader.remaining()))?;
+
                             VideoPacketCodedFrames::Hevc {
                                 composition_time_offset,
                                 data,
                             }
                         }
-                        _ => VideoPacketCodedFrames::Other(data),
+                        _ => {
+                            let data = reader
+                                .extract_bytes(size_of_video_track.map(|s| s as usize).unwrap_or(reader.remaining()))?;
+
+                            VideoPacketCodedFrames::Other(data)
+                        }
                     };
 
                     VideoPacket::CodedFrames(coded_frames)
@@ -203,6 +211,9 @@ impl ExVideoTagBody {
             }
 
             // the loop only continues if there is still data to read
+            if !reader.has_remaining() {
+                break;
+            }
         }
 
         // at this point we know this is a multitrack video because a single track video would have exited early

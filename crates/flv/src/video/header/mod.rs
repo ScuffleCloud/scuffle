@@ -66,7 +66,7 @@ impl VideoTagHeader {
         };
 
         Ok(VideoTagHeader {
-            frame_type: VideoFrameType::from(byte & 0b1111_0000),
+            frame_type: VideoFrameType::from((byte & 0b0_111_0000) >> 4),
             data,
         })
     }

@@ -98,6 +98,7 @@ pub struct ExVideoTagHeader {
 }
 
 impl ExVideoTagHeader {
+    #[allow(clippy::unusual_byte_groupings)]
     pub fn demux(reader: &mut io::Cursor<Bytes>) -> Result<Self, Error> {
         let byte = reader.read_u8()?;
         let video_frame_type = VideoFrameType::from((byte & 0b0_111_0000) >> 4);

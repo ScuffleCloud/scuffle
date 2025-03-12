@@ -27,12 +27,15 @@ use scuffle_flv::audio::AudioData;
 use scuffle_flv::audio::aac::AacAudioData;
 use scuffle_flv::audio::body::{AudioTagBody, LegacyAudioTagBody};
 use scuffle_flv::audio::header::{AudioTagHeader, LegacyAudioTagHeader, SoundType};
-use scuffle_flv::av1::Av1Packet;
-use scuffle_flv::avc::AvcPacket;
-use scuffle_flv::hevc::HevcPacket;
 use scuffle_flv::script::ScriptData;
 use scuffle_flv::tag::{FlvTag, FlvTagData};
-use scuffle_flv::video::{EnhancedPacket, FrameType, VideoData, VideoTagBody};
+use scuffle_flv::video::VideoData;
+use scuffle_flv::video::body::VideoTagBody;
+use scuffle_flv::video::body::enhanced::{ExVideoTagBody, VideoPacket, VideoPacketCodedFrames, VideoPacketSequenceStart};
+use scuffle_flv::video::body::legacy::LegacyVideoTagBody;
+use scuffle_flv::video::header::enhanced::VideoFourCc;
+use scuffle_flv::video::header::legacy::{LegacyVideoTagHeader, LegacyVideoTagHeaderAvcPacket};
+use scuffle_flv::video::header::{VideoFrameType, VideoTagHeader, VideoTagHeaderData};
 use scuffle_h264::Sps;
 use scuffle_mp4::BoxType;
 use scuffle_mp4::codec::{AudioCodec, VideoCodec};
@@ -200,8 +203,15 @@ impl Transmuxer {
                     is_audio = true;
                 }
                 FlvTagData::Video(VideoData {
-                    frame_type,
-                    body: VideoTagBody::Avc(AvcPacket::Nalu { composition_time, data }),
+                    header:
+                        VideoTagHeader {
+                            frame_type,
+                            data:
+                                VideoTagHeaderData::Legacy(LegacyVideoTagHeader::AvcPacket(
+                                    LegacyVideoTagHeaderAvcPacket::Nalu { composition_time },
+                                )),
+                        },
+                    body: VideoTagBody::Legacy(LegacyVideoTagBody::Other { data }),
                     ..
                 }) => {
                     let composition_time = ((composition_time as f64 * video_settings.framerate) / 1000.0).floor() * 1000.0;
@@ -212,11 +222,15 @@ impl Transmuxer {
                     total_duration = duration;
                     mdat_data = data;
 
-                    is_keyframe = frame_type == FrameType::Keyframe;
+                    is_keyframe = frame_type == VideoFrameType::KeyFrame;
                 }
                 FlvTagData::Video(VideoData {
-                    frame_type,
-                    body: VideoTagBody::Enhanced(EnhancedPacket::Av1(Av1Packet::Raw(data))),
+                    header: VideoTagHeader { frame_type, .. },
+                    body:
+                        VideoTagBody::Enhanced(ExVideoTagBody::NoMultitrack {
+                            video_four_cc: VideoFourCc::Av1,
+                            packet: VideoPacket::CodedFrames(VideoPacketCodedFrames::Other(data)),
+                        }),
                     ..
                 }) => {
                     let sample = codecs::av1::trun_sample(frame_type, duration, &data)?;
@@ -225,13 +239,26 @@ impl Transmuxer {
                     total_duration = duration;
                     mdat_data = data;
 
-                    is_keyframe = frame_type == FrameType::Keyframe;
+                    is_keyframe = frame_type == VideoFrameType::KeyFrame;
                 }
                 FlvTagData::Video(VideoData {
-                    frame_type,
-                    body: VideoTagBody::Enhanced(EnhancedPacket::Hevc(HevcPacket::Nalu { composition_time, data })),
+                    header: VideoTagHeader { frame_type, .. },
+                    body:
+                        VideoTagBody::Enhanced(ExVideoTagBody::NoMultitrack {
+                            video_four_cc: VideoFourCc::Hevc,
+                            packet,
+                        }),
                     ..
                 }) => {
+                    let (composition_time, data) = match packet {
+                        VideoPacket::CodedFrames(VideoPacketCodedFrames::Hevc {
+                            composition_time_offset,
+                            data,
+                        }) => (Some(composition_time_offset), data),
+                        VideoPacket::CodedFramesX(data) => (None, data),
+                        _ => continue,
+                    };
+
                     let composition_time =
                         ((composition_time.unwrap_or_default() as f64 * video_settings.framerate) / 1000.0).floor() * 1000.0;
 
@@ -241,7 +268,7 @@ impl Transmuxer {
                     total_duration = duration;
                     mdat_data = data;
 
-                    is_keyframe = frame_type == FrameType::Keyframe;
+                    is_keyframe = frame_type == VideoFrameType::KeyFrame;
                 }
                 _ => {
                     // We don't support anything else
@@ -328,22 +355,27 @@ impl Transmuxer {
 
             match &tag.data {
                 FlvTagData::Video(VideoData {
-                    frame_type: _,
-                    body: VideoTagBody::Avc(AvcPacket::SequenceHeader(data)),
+                    body: VideoTagBody::Legacy(LegacyVideoTagBody::AvcVideoPacketSeqHdr(data)),
                     ..
                 }) => {
                     video_sequence_header = Some(VideoSequenceHeader::Avc(data.clone()));
                 }
                 FlvTagData::Video(VideoData {
-                    frame_type: _,
-                    body: VideoTagBody::Enhanced(EnhancedPacket::Av1(Av1Packet::SequenceStart(config))),
+                    body:
+                        VideoTagBody::Enhanced(ExVideoTagBody::NoMultitrack {
+                            video_four_cc: VideoFourCc::Av1,
+                            packet: VideoPacket::SequenceStart(VideoPacketSequenceStart::Av1(config)),
+                        }),
                     ..
                 }) => {
                     video_sequence_header = Some(VideoSequenceHeader::Av1(config.clone()));
                 }
                 FlvTagData::Video(VideoData {
-                    frame_type: _,
-                    body: VideoTagBody::Enhanced(EnhancedPacket::Hevc(HevcPacket::SequenceStart(config))),
+                    body:
+                        VideoTagBody::Enhanced(ExVideoTagBody::NoMultitrack {
+                            video_four_cc: VideoFourCc::Hevc,
+                            packet: VideoPacket::SequenceStart(VideoPacketSequenceStart::Hevc(config)),
+                        }),
                     ..
                 }) => {
                     video_sequence_header = Some(VideoSequenceHeader::Hevc(config.clone()));

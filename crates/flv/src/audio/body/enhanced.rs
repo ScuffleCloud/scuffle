@@ -5,7 +5,7 @@ use bytes::{Buf, Bytes};
 use nutype_enum::nutype_enum;
 use scuffle_bytes_util::BytesCursorExt;
 
-use crate::audio::header::{AudioFourCc, AudioPacketType, ExAudioTagHeader, MultitrackTypeAndFourCc};
+use crate::audio::header::{AudioFourCc, AudioPacketType, ExAudioTagHeader, ExAudioTagHeaderContent};
 
 nutype_enum! {
     pub enum AudioChannelOrder(u8) {
@@ -100,6 +100,9 @@ pub enum AudioPacket {
     CodedFrames {
         data: Bytes,
     },
+    Other {
+        data: Bytes,
+    },
 }
 
 #[derive(Debug, Clone, PartialEq)]
@@ -110,41 +113,43 @@ pub struct AudioTrack {
 }
 
 #[derive(Debug, Clone, PartialEq)]
-pub struct EnhancedAudioTagBody {
-    pub tracks: Vec<AudioTrack>,
+pub enum ExAudioTagBody {
+    NoMultitrack {
+        audio_four_cc: AudioFourCc,
+        packet: AudioPacket,
+    },
+    ManyTracks(Vec<AudioTrack>),
 }
 
-impl EnhancedAudioTagBody {
+impl ExAudioTagBody {
     pub fn demux(header: &ExAudioTagHeader, reader: &mut io::Cursor<Bytes>) -> io::Result<Self> {
         let mut tracks = Vec::new();
 
-        let has_one_track = matches!(
-            header.multitrack_type_and_four_cc,
-            MultitrackTypeAndFourCc::NoMultiTrack(_) | MultitrackTypeAndFourCc::OneTrack(_)
-        );
+        let is_audio_multitrack = !matches!(header.content, ExAudioTagHeaderContent::NoMultiTrack(_));
 
-        loop {
-            let audio_four_cc = match header.multitrack_type_and_four_cc {
-                MultitrackTypeAndFourCc::ManyTracksManyCodecs => {
+        while reader.has_remaining() {
+            let audio_four_cc = match header.content {
+                ExAudioTagHeaderContent::ManyTracksManyCodecs => {
                     let mut audio_four_cc = [0; 4];
                     reader.read_exact(&mut audio_four_cc)?;
                     AudioFourCc::from(audio_four_cc)
                 }
-                MultitrackTypeAndFourCc::OneTrack(audio_four_cc) => audio_four_cc,
-                MultitrackTypeAndFourCc::ManyTracks(audio_four_cc) => audio_four_cc,
-                MultitrackTypeAndFourCc::NoMultiTrack(audio_four_cc) => audio_four_cc,
-                MultitrackTypeAndFourCc::Other { audio_four_cc, .. } => audio_four_cc,
+                ExAudioTagHeaderContent::OneTrack(audio_four_cc) => audio_four_cc,
+                ExAudioTagHeaderContent::ManyTracks(audio_four_cc) => audio_four_cc,
+                ExAudioTagHeaderContent::NoMultiTrack(audio_four_cc) => audio_four_cc,
+                ExAudioTagHeaderContent::Other { audio_four_cc, .. } => audio_four_cc,
             };
 
-            let audio_track_id = reader.read_u8()?;
+            let audio_track_id = if is_audio_multitrack { Some(reader.read_u8()?) } else { None };
 
-            let size_of_audio_track = if !has_one_track {
-                Some(reader.read_u24::<BigEndian>()?)
-            } else {
-                None
-            };
+            let size_of_audio_track =
+                if is_audio_multitrack && !matches!(header.content, ExAudioTagHeaderContent::OneTrack(_)) {
+                    Some(reader.read_u24::<BigEndian>()?)
+                } else {
+                    None
+                };
 
-            match header.audio_packet_type {
+            let packet = match header.audio_packet_type {
                 AudioPacketType::MultichannelConfig => {
                     let audio_channel_order = AudioChannelOrder::from(reader.read_u8()?);
                     let channel_count = reader.read_u8()?;
@@ -164,55 +169,50 @@ impl EnhancedAudioTagBody {
                         _ => MultichannelConfig::Unknown(audio_channel_order),
                     };
 
-                    let packet = AudioPacket::MultichannelConfig {
+                    AudioPacket::MultichannelConfig {
                         channel_count,
                         multichannel_config,
-                    };
-
-                    tracks.push(AudioTrack {
-                        audio_four_cc,
-                        audio_track_id,
-                        packet,
-                    });
+                    }
                 }
-                AudioPacketType::SeguenceEnd => {
-                    tracks.push(AudioTrack {
-                        audio_four_cc,
-                        audio_track_id,
-                        packet: AudioPacket::SequenceEnd,
-                    });
-                }
+                AudioPacketType::SeguenceEnd => AudioPacket::SequenceEnd,
                 AudioPacketType::SeguenceStart => {
                     let header_data =
                         reader.extract_bytes(size_of_audio_track.map(|s| s as usize).unwrap_or(reader.remaining()))?;
 
-                    tracks.push(AudioTrack {
-                        audio_four_cc,
-                        audio_track_id,
-                        packet: AudioPacket::SequenceStart { header_data },
-                    });
+                    AudioPacket::SequenceStart { header_data }
                 }
                 AudioPacketType::CodedFrames => {
                     let data =
                         reader.extract_bytes(size_of_audio_track.map(|s| s as usize).unwrap_or(reader.remaining()))?;
 
-                    tracks.push(AudioTrack {
-                        audio_four_cc,
-                        audio_track_id,
-                        packet: AudioPacket::CodedFrames { data },
-                    });
+                    AudioPacket::CodedFrames { data }
                 }
                 // skip all unhandled packet types
-                _ => {}
+                _ => {
+                    let data =
+                        reader.extract_bytes(size_of_audio_track.map(|s| s as usize).unwrap_or(reader.remaining()))?;
+
+                    AudioPacket::Other { data }
+                }
+            };
+
+            if let Some(audio_track_id) = audio_track_id {
+                // audio_track_id is only set if this is a multitrack audio, in other words, if this is true:
+                // `isAudioMultitrack && audioMultitrackType != AvMultitrackType.OneTrack`
+                tracks.push(AudioTrack {
+                    audio_four_cc,
+                    audio_track_id,
+                    packet,
+                });
+            } else {
+                // exit early if this is a single track audio only completing one loop iteration
+                return Ok(Self::NoMultitrack { audio_four_cc, packet });
             }
 
-            if !has_one_track && reader.remaining() > 0 {
-                continue;
-            }
-
-            break;
+            // the loop only continues if there is still data to read
         }
 
-        Ok(Self { tracks })
+        // at this point we know this is a multitrack audio because a single track audio would have exited early
+        Ok(Self::ManyTracks(tracks))
     }
 }

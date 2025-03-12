@@ -5,6 +5,7 @@ use bytes::Bytes;
 use nutype_enum::nutype_enum;
 use scuffle_bytes_util::BytesCursorExt;
 
+use crate::common::AvMultitrackType;
 use crate::error::Error;
 
 nutype_enum! {
@@ -27,19 +28,13 @@ nutype_enum! {
 /// This is a helper enum to represent the different types of audio packet modifier extensions.
 #[derive(Debug, Clone, PartialEq)]
 pub enum AudioPacketModEx {
-    TimestampOffsetNano(u32),
+    TimestampOffsetNano {
+        audio_timestamp_nano_offset: u32,
+    },
     Other {
         audio_packet_mod_ex_type: AudioPacketModExType,
         mod_ex_data: Bytes,
     },
-}
-
-nutype_enum! {
-    pub enum AvMultitrackType(u8) {
-        OneTrack = 0,
-        ManyTracks = 1,
-        ManyTracksManyCodecs = 2,
-    }
 }
 
 nutype_enum! {
@@ -55,7 +50,7 @@ nutype_enum! {
 
 /// This is a helper enum to represent the different types of multitrack audio.
 #[derive(Debug, Clone, PartialEq)]
-pub enum MultitrackTypeAndFourCc {
+pub enum ExAudioTagHeaderContent {
     NoMultiTrack(AudioFourCc),
     OneTrack(AudioFourCc),
     ManyTracks(AudioFourCc),
@@ -73,7 +68,7 @@ pub enum MultitrackTypeAndFourCc {
 pub struct ExAudioTagHeader {
     pub audio_packet_mod_exs: Vec<AudioPacketModEx>,
     pub audio_packet_type: AudioPacketType,
-    pub multitrack_type_and_four_cc: MultitrackTypeAndFourCc,
+    pub content: ExAudioTagHeaderContent,
 }
 
 impl ExAudioTagHeader {
@@ -97,11 +92,13 @@ impl ExAudioTagHeader {
             if audio_packet_mod_ex_type == AudioPacketModExType::TimestampOffsetNano {
                 if mod_ex_data_size < 3 {
                     // too few data bytes for the timestamp offset
-                    return Err(Error::AudioInvalidModExData { expected_bytes: 3 });
+                    return Err(Error::InvalidModExData { expected_bytes: 3 });
                 }
 
                 let mod_ex_data = &mut io::Cursor::new(mod_ex_data);
-                audio_packet_mod_exs.push(AudioPacketModEx::TimestampOffsetNano(mod_ex_data.read_u24::<BigEndian>()?));
+                audio_packet_mod_exs.push(AudioPacketModEx::TimestampOffsetNano {
+                    audio_timestamp_nano_offset: mod_ex_data.read_u24::<BigEndian>()?,
+                });
             } else {
                 audio_packet_mod_exs.push(AudioPacketModEx::Other {
                     audio_packet_mod_ex_type,
@@ -117,7 +114,7 @@ impl ExAudioTagHeader {
 
             if audio_packet_type == AudioPacketType::Multitrack {
                 // nested multitracks are not allowed
-                return Err(Error::AudioNestedMultitracks);
+                return Err(Error::NestedMultitracks);
             }
 
             let mut audio_four_cc = [0; 4];
@@ -126,12 +123,12 @@ impl ExAudioTagHeader {
                 reader.read_exact(&mut audio_four_cc)?;
             }
 
-            let multitrack_type_and_four_cc = match audio_multitrack_type {
-                AvMultitrackType::OneTrack => MultitrackTypeAndFourCc::OneTrack(AudioFourCc::from(audio_four_cc)),
-                AvMultitrackType::ManyTracks => MultitrackTypeAndFourCc::ManyTracks(AudioFourCc::from(audio_four_cc)),
-                AvMultitrackType::ManyTracksManyCodecs => MultitrackTypeAndFourCc::ManyTracksManyCodecs,
-                other => MultitrackTypeAndFourCc::Other {
-                    audio_multitrack_type: other,
+            let content = match audio_multitrack_type {
+                AvMultitrackType::OneTrack => ExAudioTagHeaderContent::OneTrack(AudioFourCc::from(audio_four_cc)),
+                AvMultitrackType::ManyTracks => ExAudioTagHeaderContent::ManyTracks(AudioFourCc::from(audio_four_cc)),
+                AvMultitrackType::ManyTracksManyCodecs => ExAudioTagHeaderContent::ManyTracksManyCodecs,
+                _ => ExAudioTagHeaderContent::Other {
+                    audio_multitrack_type,
                     audio_four_cc: AudioFourCc::from(audio_four_cc),
                 },
             };
@@ -139,7 +136,7 @@ impl ExAudioTagHeader {
             Ok(Self {
                 audio_packet_mod_exs,
                 audio_packet_type,
-                multitrack_type_and_four_cc,
+                content,
             })
         } else {
             let mut audio_four_cc = [0; 4];
@@ -149,7 +146,7 @@ impl ExAudioTagHeader {
             Ok(Self {
                 audio_packet_mod_exs,
                 audio_packet_type,
-                multitrack_type_and_four_cc: MultitrackTypeAndFourCc::NoMultiTrack(audio_four_cc),
+                content: ExAudioTagHeaderContent::NoMultiTrack(audio_four_cc),
             })
         }
     }

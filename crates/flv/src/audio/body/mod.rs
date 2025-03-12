@@ -13,7 +13,7 @@ use super::header::AudioTagHeader;
 #[derive(Debug, Clone, PartialEq)]
 pub enum AudioTagBody {
     Legacy(LegacyAudioTagBody),
-    Enhanced(EnhancedAudioTagBody),
+    Enhanced(ExAudioTagBody),
 }
 
 impl AudioTagBody {
@@ -22,8 +22,8 @@ impl AudioTagBody {
     /// The reader will be entirely consumed.
     pub fn demux(header: &AudioTagHeader, reader: &mut io::Cursor<Bytes>) -> io::Result<Self> {
         match header {
-            AudioTagHeader::Legacy(header) => LegacyAudioTagBody::demux(header, reader).map(AudioTagBody::Legacy),
-            AudioTagHeader::Enhanced(header) => EnhancedAudioTagBody::demux(header, reader).map(AudioTagBody::Enhanced),
+            AudioTagHeader::Legacy(header) => LegacyAudioTagBody::demux(header, reader).map(Self::Legacy),
+            AudioTagHeader::Enhanced(header) => ExAudioTagBody::demux(header, reader).map(Self::Enhanced),
         }
     }
 }

@@ -22,12 +22,10 @@
 #![deny(unsafe_code)]
 
 pub mod audio;
-pub mod av1;
-pub mod avc;
+pub mod common;
 pub mod error;
 pub mod file;
 pub mod header;
-pub mod hevc;
 pub mod script;
 pub mod tag;
 pub mod video;
@@ -54,13 +52,16 @@ mod tests {
     use crate::audio::aac::AacAudioData;
     use crate::audio::body::{AudioTagBody, LegacyAudioTagBody};
     use crate::audio::header::{AudioTagHeader, LegacyAudioTagHeader, SoundRate, SoundSize, SoundType};
-    use crate::av1::Av1Packet;
-    use crate::avc::AvcPacket;
     use crate::file::FlvFile;
-    use crate::hevc::HevcPacket;
     use crate::script::ScriptData;
     use crate::tag::FlvTagData;
-    use crate::video::{EnhancedPacket, FrameType, VideoData, VideoFourCC, VideoTagBody};
+    use crate::video::VideoData;
+    use crate::video::body::VideoTagBody;
+    use crate::video::body::enhanced::{ExVideoTagBody, VideoPacket, VideoPacketSequenceStart};
+    use crate::video::body::legacy::LegacyVideoTagBody;
+    use crate::video::header::enhanced::VideoFourCc;
+    use crate::video::header::legacy::{LegacyVideoTagHeader, LegacyVideoTagHeaderAvcPacket};
+    use crate::video::header::{VideoFrameType, VideoTagHeader, VideoTagHeaderData};
 
     #[test]
     fn test_demux_flv_avc_aac() {
@@ -217,18 +218,15 @@ mod tests {
             assert_eq!(tag.stream_id, 0);
 
             // This is a video tag
-            let (frame_type, video_data) = match tag.data {
-                FlvTagData::Video(VideoData { frame_type, body }) => (frame_type, body),
+            let (frame_type, avc_decoder_configuration_record) = match tag.data {
+                FlvTagData::Video(VideoData {
+                    header: VideoTagHeader { frame_type, .. },
+                    body: VideoTagBody::Legacy(LegacyVideoTagBody::AvcVideoPacketSeqHdr(avc_decoder_configuration_record)),
+                }) => (frame_type, avc_decoder_configuration_record),
                 _ => panic!("expected video data"),
             };
 
-            assert_eq!(frame_type, FrameType::Keyframe);
-
-            // Video data should be an AVC sequence header
-            let avc_decoder_configuration_record = match video_data {
-                VideoTagBody::Avc(AvcPacket::SequenceHeader(data)) => data,
-                _ => panic!("expected avc sequence header"),
-            };
+            assert_eq!(frame_type, VideoFrameType::KeyFrame);
 
             // The avc sequence header should be able to be decoded into an avc decoder
             // configuration record
@@ -371,23 +369,32 @@ mod tests {
                         _ => panic!("expected aac raw packet"),
                     };
                 }
-                FlvTagData::Video(VideoData { frame_type, body }) => {
+                FlvTagData::Video(VideoData {
+                    header:
+                        VideoTagHeader {
+                            frame_type,
+                            data: VideoTagHeaderData::Legacy(data),
+                        },
+                    ..
+                }) => {
                     match frame_type {
-                        FrameType::Keyframe => (),
-                        FrameType::Interframe => (),
+                        VideoFrameType::KeyFrame => (),
+                        VideoFrameType::InterFrame => (),
                         _ => panic!("expected keyframe or interframe"),
                     }
 
-                    match body {
-                        VideoTagBody::Avc(AvcPacket::Nalu { .. }) => assert!(!read_seq_end),
-                        VideoTagBody::Avc(AvcPacket::EndOfSequence) => {
+                    match data {
+                        LegacyVideoTagHeader::AvcPacket(LegacyVideoTagHeaderAvcPacket::Nalu { .. }) => {
+                            assert!(!read_seq_end)
+                        }
+                        LegacyVideoTagHeader::AvcPacket(LegacyVideoTagHeaderAvcPacket::EndOfSequence) => {
                             assert!(!read_seq_end);
                             read_seq_end = true;
                         }
-                        _ => panic!("expected avc nalu packet: {:?}", body),
-                    };
+                        _ => panic!("expected avc nalu packet: {:?}", data),
+                    }
                 }
-                _ => panic!("expected audio data"),
+                _ => panic!("unexpected data"),
             };
         }
 
@@ -568,17 +575,27 @@ mod tests {
             assert_eq!(tag.stream_id, 0);
 
             // This is a video tag
-            let (frame_type, video_data) = match tag.data {
-                FlvTagData::Video(VideoData { frame_type, body }) => (frame_type, body),
+            let frame_type = match tag.data {
+                FlvTagData::Video(VideoData {
+                    header: VideoTagHeader { frame_type, .. },
+                    ..
+                }) => frame_type,
                 _ => panic!("expected video data"),
             };
 
-            assert_eq!(frame_type, FrameType::Keyframe);
+            assert_eq!(frame_type, VideoFrameType::KeyFrame);
 
             // Video data should be an AVC sequence header
-            let config = match video_data {
-                VideoTagBody::Enhanced(EnhancedPacket::Av1(Av1Packet::SequenceStart(config))) => config,
-                _ => panic!("expected av1 sequence header found {:?}", video_data),
+            let config = match tag.data {
+                FlvTagData::Video(VideoData {
+                    body:
+                        VideoTagBody::Enhanced(ExVideoTagBody::NoMultitrack {
+                            video_four_cc: VideoFourCc::Av1,
+                            packet: VideoPacket::SequenceStart(VideoPacketSequenceStart::Av1(config)),
+                        }),
+                    ..
+                }) => config,
+                _ => panic!("expected video data"),
             };
 
             assert_eq!(config.chroma_sample_position, 0);
@@ -627,26 +644,40 @@ mod tests {
                         _ => panic!("expected aac raw packet"),
                     };
                 }
-                FlvTagData::Video(VideoData { frame_type, body }) => {
+                FlvTagData::Video(VideoData {
+                    header: VideoTagHeader { frame_type, .. },
+                    body: VideoTagBody::Enhanced(body),
+                }) => {
                     match frame_type {
-                        FrameType::Keyframe => (),
-                        FrameType::Interframe => (),
+                        VideoFrameType::KeyFrame => (),
+                        VideoFrameType::InterFrame => (),
                         _ => panic!("expected keyframe or interframe"),
                     }
 
                     match body {
-                        VideoTagBody::Enhanced(EnhancedPacket::Av1(Av1Packet::Raw(_))) => {
-                            assert!(!read_seq_end)
-                        }
-                        VideoTagBody::Enhanced(EnhancedPacket::SequenceEnd { video_codec }) => {
+                        ExVideoTagBody::NoMultitrack {
+                            video_four_cc: VideoFourCc::Av1,
+                            packet: VideoPacket::CodedFrames(_),
+                        } => {
                             assert!(!read_seq_end);
-                            assert_eq!(video_codec, VideoFourCC::Av1);
+                        }
+                        ExVideoTagBody::NoMultitrack {
+                            video_four_cc: VideoFourCc::Av1,
+                            packet: VideoPacket::CodedFramesX(_),
+                        } => {
+                            assert!(!read_seq_end);
+                        }
+                        ExVideoTagBody::NoMultitrack {
+                            video_four_cc: VideoFourCc::Av1,
+                            packet: VideoPacket::SequenceEnd,
+                        } => {
+                            assert!(!read_seq_end);
                             read_seq_end = true;
                         }
                         _ => panic!("expected av1 raw packet: {:?}", body),
                     };
                 }
-                _ => panic!("expected audio data"),
+                _ => panic!("unexpected data"),
             };
         }
 
@@ -827,18 +858,19 @@ mod tests {
             assert_eq!(tag.stream_id, 0);
 
             // This is a video tag
-            let (frame_type, video_data) = match tag.data {
-                FlvTagData::Video(VideoData { frame_type, body }) => (frame_type, body),
+            let (frame_type, config) = match tag.data {
+                FlvTagData::Video(VideoData {
+                    header: VideoTagHeader { frame_type, .. },
+                    body:
+                        VideoTagBody::Enhanced(ExVideoTagBody::NoMultitrack {
+                            video_four_cc: VideoFourCc::Hevc,
+                            packet: VideoPacket::SequenceStart(VideoPacketSequenceStart::Hevc(config)),
+                        }),
+                }) => (frame_type, config),
                 _ => panic!("expected video data"),
             };
 
-            assert_eq!(frame_type, FrameType::Keyframe);
-
-            // Video data should be an AVC sequence header
-            let config = match video_data {
-                VideoTagBody::Enhanced(EnhancedPacket::Hevc(HevcPacket::SequenceStart(config))) => config,
-                _ => panic!("expected hevc sequence header found {:?}", video_data),
-            };
+            assert_eq!(frame_type, VideoFrameType::KeyFrame);
 
             assert_eq!(config.configuration_version, 1);
             assert_eq!(config.avg_frame_rate, 0);
@@ -912,24 +944,31 @@ mod tests {
                         _ => panic!("expected aac raw packet"),
                     };
                 }
-                FlvTagData::Video(VideoData { frame_type, body }) => {
+                FlvTagData::Video(VideoData {
+                    header: VideoTagHeader { frame_type, .. },
+                    body:
+                        VideoTagBody::Enhanced(ExVideoTagBody::NoMultitrack {
+                            video_four_cc: VideoFourCc::Hevc,
+                            packet,
+                        }),
+                }) => {
                     match frame_type {
-                        FrameType::Keyframe => (),
-                        FrameType::Interframe => (),
+                        VideoFrameType::KeyFrame => (),
+                        VideoFrameType::InterFrame => (),
                         _ => panic!("expected keyframe or interframe"),
                     }
 
-                    match body {
-                        VideoTagBody::Enhanced(EnhancedPacket::Hevc(HevcPacket::Nalu { .. })) => assert!(!read_seq_end),
-                        VideoTagBody::Enhanced(EnhancedPacket::SequenceEnd { video_codec }) => {
+                    match packet {
+                        VideoPacket::CodedFrames(_) => assert!(!read_seq_end),
+                        VideoPacket::CodedFramesX(_) => assert!(!read_seq_end),
+                        VideoPacket::SequenceEnd => {
                             assert!(!read_seq_end);
-                            assert_eq!(video_codec, VideoFourCC::Hevc);
                             read_seq_end = true;
                         }
-                        _ => panic!("expected hevc nalu packet: {:?}", body),
+                        _ => panic!("expected hevc nalu packet: {:?}", packet),
                     };
                 }
-                _ => panic!("expected audio data"),
+                _ => panic!("unexpected data"),
             };
         }
 

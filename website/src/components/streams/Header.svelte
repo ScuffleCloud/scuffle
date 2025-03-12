@@ -13,24 +13,26 @@
         </p>
     </div>
 
-    <button class="create-button" onclick={createNewStream}>
-        Create New
-        <svg
-            xmlns="http://www.w3.org/2000/svg"
-            width="20"
-            height="20"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            stroke-width="2"
-            stroke-linecap="round"
-            stroke-linejoin="round"
-        >
-            <circle cx="12" cy="12" r="10"></circle>
-            <path d="M12 8v8"></path>
-            <path d="M8 12h8"></path>
-        </svg>
-    </button>
+    <a href="/video/streams/new" class="create-button-link">
+        <button class="create-button">
+            Create New
+            <svg
+                xmlns="http://www.w3.org/2000/svg"
+                width="20"
+                height="20"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+            >
+                <circle cx="12" cy="12" r="10"></circle>
+                <path d="M12 8v8"></path>
+                <path d="M8 12h8"></path>
+            </svg>
+        </button>
+    </a>
 </div>
 
 <style>
@@ -57,25 +59,29 @@
             }
         }
 
-        .create-button {
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
-            background-color: #ffd280;
-            color: #000;
-            border: none;
-            border-radius: 2rem;
-            padding: 0.75rem 1.25rem;
-            font-weight: 600;
-            cursor: pointer;
-            transition: background-color 0.2s;
+        .create-button-link {
+            text-decoration: none;
 
-            &:hover {
-                background-color: #ffc966;
-            }
+            .create-button {
+                display: flex;
+                align-items: center;
+                gap: 0.5rem;
+                background-color: #ffd280;
+                color: #000;
+                border: none;
+                border-radius: 2rem;
+                padding: 0.75rem 1.25rem;
+                font-weight: 600;
+                cursor: pointer;
+                transition: background-color 0.2s;
 
-            svg {
-                stroke-width: 2.5;
+                &:hover {
+                    background-color: #ffc966;
+                }
+
+                svg {
+                    stroke-width: 2.5;
+                }
             }
         }
     }

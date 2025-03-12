@@ -65,6 +65,7 @@
                                 <polygon points="5 3 19 12 5 21 5 3"></polygon>
                             </svg>
                         </div>
+                        <div class="duration">64.62</div>
                     </div>
                 </div>
             {/if}

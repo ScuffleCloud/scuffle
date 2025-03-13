@@ -30,9 +30,7 @@ pub mod script;
 pub mod tag;
 pub mod video;
 
-pub use crate::file::FlvFile;
-pub use crate::header::FlvHeader;
-pub use crate::tag::{FlvTag, FlvTagData, FlvTagType};
+pub use bytes;
 
 #[cfg(test)]
 #[cfg_attr(all(test, coverage_nightly), coverage(off))]

@@ -100,7 +100,7 @@ pub enum AudioPacket {
     CodedFrames {
         data: Bytes,
     },
-    Other {
+    Unknown {
         data: Bytes,
     },
 }
@@ -187,12 +187,13 @@ impl ExAudioTagBody {
 
                     AudioPacket::CodedFrames { data }
                 }
-                // skip all unhandled packet types
                 _ => {
+                    tracing::warn!(audio_packet_type = ?header.audio_packet_type, "unknown audio packet type");
+
                     let data =
                         reader.extract_bytes(size_of_audio_track.map(|s| s as usize).unwrap_or(reader.remaining()))?;
 
-                    AudioPacket::Other { data }
+                    AudioPacket::Unknown { data }
                 }
             };
 

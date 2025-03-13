@@ -1,5 +1,3 @@
-use crate::video::body::enhanced::metadata::MetadataColorInfoError;
-
 #[derive(Debug, thiserror::Error)]
 pub enum Error {
     #[error("io: {0}")]
@@ -16,6 +14,4 @@ pub enum Error {
     InvalidModExData { expected_bytes: usize },
     #[error("amf0 read: {0}")]
     Amf0Read(#[from] scuffle_amf0::Amf0ReadError),
-    #[error("color info metadata: {0}")]
-    ColorInfoMetadata(#[from] MetadataColorInfoError),
 }

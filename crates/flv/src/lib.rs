@@ -35,7 +35,6 @@ pub use bytes;
 #[cfg(test)]
 #[cfg_attr(all(test, coverage_nightly), coverage(off))]
 mod tests {
-    use std::collections::HashMap;
     use std::io;
     use std::path::PathBuf;
 
@@ -84,108 +83,25 @@ mod tests {
             assert_eq!(tag.stream_id, 0);
 
             // This is a metadata tag
-            let script_data = match tag.data {
-                FlvTagData::ScriptData(ScriptData { name, data }) => {
-                    assert_eq!(name, "onMetaData");
-                    data
-                }
+            let on_meta_data = match tag.data {
+                FlvTagData::ScriptData(ScriptData::OnMetaData(data)) => data,
                 _ => panic!("expected script data"),
             };
 
-            // Script data should be an AMF0 object
-            let object = match &script_data[0] {
-                Amf0Value::Object(object) => object,
-                _ => panic!("expected object"),
-            };
-
-            let object = object.iter().map(|(k, v)| (k.as_ref(), v)).collect::<HashMap<_, _>>();
-
-            // Should have a audio sample size property
-            let audio_sample_size = match object.get("audiosamplesize") {
-                Some(Amf0Value::Number(number)) => number,
-                _ => panic!("expected audio sample size"),
-            };
-
-            assert_eq!(audio_sample_size, &16.0);
-
-            // Should have a audio sample rate property
-            let audio_sample_rate = match object.get("audiosamplerate") {
-                Some(Amf0Value::Number(number)) => number,
-                _ => panic!("expected audio sample rate"),
-            };
-
-            assert_eq!(audio_sample_rate, &48000.0);
-
-            // Should have a stereo property
-            let stereo = match object.get("stereo") {
-                Some(Amf0Value::Boolean(boolean)) => boolean,
-                _ => panic!("expected stereo"),
-            };
-
-            assert_eq!(stereo, &true);
-
-            // Should have an audio codec id property
-            let audio_codec_id = match object.get("audiocodecid") {
-                Some(Amf0Value::Number(number)) => number,
-                _ => panic!("expected audio codec id"),
-            };
-
-            assert_eq!(audio_codec_id, &10.0); // AAC
-
-            // Should have a video codec id property
-            let video_codec_id = match object.get("videocodecid") {
-                Some(Amf0Value::Number(number)) => number,
-                _ => panic!("expected video codec id"),
-            };
-
-            assert_eq!(video_codec_id, &7.0); // AVC
-
-            // Should have a duration property
-            let duration = match object.get("duration") {
-                Some(Amf0Value::Number(number)) => number,
-                _ => panic!("expected duration"),
-            };
-
-            assert_eq!(duration, &1.088); // 1.088 seconds
-
-            // Should have a width property
-            let width = match object.get("width") {
-                Some(Amf0Value::Number(number)) => number,
-                _ => panic!("expected width"),
-            };
-
-            assert_eq!(width, &3840.0);
-
-            // Should have a height property
-            let height = match object.get("height") {
-                Some(Amf0Value::Number(number)) => number,
-                _ => panic!("expected height"),
-            };
-
-            assert_eq!(height, &2160.0);
-
-            // Should have a framerate property
-            let framerate = match object.get("framerate") {
-                Some(Amf0Value::Number(number)) => number,
-                _ => panic!("expected framerate"),
-            };
-
-            assert_eq!(framerate, &60.0);
-
-            // Should have a videodatarate property
-            match object.get("videodatarate") {
-                Some(Amf0Value::Number(number)) => number,
-                _ => panic!("expected videodatarate"),
-            };
-
-            // Should have a audiodatarate property
-            match object.get("audiodatarate") {
-                Some(Amf0Value::Number(number)) => number,
-                _ => panic!("expected audiodatarate"),
-            };
+            assert_eq!(on_meta_data.audiosamplesize, Some(16.0));
+            assert_eq!(on_meta_data.audiosamplerate, Some(48000.0));
+            assert_eq!(on_meta_data.stereo, Some(true));
+            assert_eq!(on_meta_data.audiocodecid, Some(10.0)); // AAC
+            assert_eq!(on_meta_data.videocodecid, Some(7.0)); // AVC
+            assert_eq!(on_meta_data.duration, Some(1.088)); // 1.088 seconds
+            assert_eq!(on_meta_data.width, Some(3840.0));
+            assert_eq!(on_meta_data.height, Some(2160.0));
+            assert_eq!(on_meta_data.framerate, Some(60.0));
+            assert!(on_meta_data.videodatarate.is_some());
+            assert!(on_meta_data.audiodatarate.is_some());
 
             // Should have a minor version property
-            let minor_version = match object.get("minor_version") {
+            let minor_version = match on_meta_data.other.get("minor_version") {
                 Some(Amf0Value::String(number)) => number,
                 _ => panic!("expected minor version"),
             };
@@ -193,7 +109,7 @@ mod tests {
             assert_eq!(minor_version, "512");
 
             // Should have a major brand property
-            let major_brand = match object.get("major_brand") {
+            let major_brand = match on_meta_data.other.get("major_brand") {
                 Some(Amf0Value::String(string)) => string,
                 _ => panic!("expected major brand"),
             };
@@ -201,7 +117,7 @@ mod tests {
             assert_eq!(major_brand, "iso5");
 
             // Should have a compatible_brands property
-            let compatible_brands = match object.get("compatible_brands") {
+            let compatible_brands = match on_meta_data.other.get("compatible_brands") {
                 Some(Amf0Value::String(string)) => string,
                 _ => panic!("expected compatible brands"),
             };
@@ -422,105 +338,22 @@ mod tests {
             assert_eq!(tag.stream_id, 0);
 
             // This is a metadata tag
-            let script_data = match tag.data {
-                FlvTagData::ScriptData(ScriptData { name, data }) => {
-                    assert_eq!(name, "onMetaData");
-                    data
-                }
+            let on_meta_data = match tag.data {
+                FlvTagData::ScriptData(ScriptData::OnMetaData(data)) => data,
                 _ => panic!("expected script data"),
             };
 
-            // Script data should be an AMF0 object
-            let object = match &script_data[0] {
-                Amf0Value::Object(object) => object,
-                _ => panic!("expected object"),
-            };
-
-            let object = object.iter().map(|(k, v)| (k.as_ref(), v)).collect::<HashMap<_, _>>();
-
-            // Should have a audio sample size property
-            let audio_sample_size = match object.get("audiosamplesize") {
-                Some(Amf0Value::Number(number)) => number,
-                _ => panic!("expected audio sample size"),
-            };
-
-            assert_eq!(audio_sample_size, &16.0);
-
-            // Should have a audio sample rate property
-            let audio_sample_rate = match object.get("audiosamplerate") {
-                Some(Amf0Value::Number(number)) => number,
-                _ => panic!("expected audio sample rate"),
-            };
-
-            assert_eq!(audio_sample_rate, &48000.0);
-
-            // Should have a stereo property
-            let stereo = match object.get("stereo") {
-                Some(Amf0Value::Boolean(boolean)) => boolean,
-                _ => panic!("expected stereo"),
-            };
-
-            assert_eq!(stereo, &true);
-
-            // Should have an audio codec id property
-            let audio_codec_id = match object.get("audiocodecid") {
-                Some(Amf0Value::Number(number)) => number,
-                _ => panic!("expected audio codec id"),
-            };
-
-            assert_eq!(audio_codec_id, &10.0); // AAC
-
-            // Should have a video codec id property
-            let video_codec_id = match object.get("videocodecid") {
-                Some(Amf0Value::Number(number)) => number,
-                _ => panic!("expected video codec id"),
-            };
-
-            assert_eq!(video_codec_id, &7.0); // AVC
-
-            // Should have a duration property
-            let duration = match object.get("duration") {
-                Some(Amf0Value::Number(number)) => number,
-                _ => panic!("expected duration"),
-            };
-
-            assert_eq!(duration, &0.0); // 0 seconds (this was a live stream)
-
-            // Should have a width property
-            let width = match object.get("width") {
-                Some(Amf0Value::Number(number)) => number,
-                _ => panic!("expected width"),
-            };
-
-            assert_eq!(width, &2560.0);
-
-            // Should have a height property
-            let height = match object.get("height") {
-                Some(Amf0Value::Number(number)) => number,
-                _ => panic!("expected height"),
-            };
-
-            assert_eq!(height, &1440.0);
-
-            // Should have a framerate property
-            let framerate = match object.get("framerate") {
-                Some(Amf0Value::Number(number)) => number,
-                _ => panic!("expected framerate"),
-            };
-
-            assert_eq!(framerate, &144.0);
-
-            // Should have a videodatarate property
-            match object.get("videodatarate") {
-                Some(Amf0Value::Number(number)) => number,
-                _ => panic!("expected videodatarate"),
-            };
-
-            // Should have a audiodatarate property
-            match object.get("audiodatarate") {
-                Some(Amf0Value::Number(number)) => number,
-                _ => panic!("expected audiodatarate"),
-            };
+            assert_eq!(on_meta_data.audiosamplesize, Some(16.0));
+            assert_eq!(on_meta_data.audiosamplerate, Some(48000.0));
+            assert_eq!(on_meta_data.stereo, Some(true));
+            assert_eq!(on_meta_data.audiocodecid, Some(10.0)); // AAC
+            assert_eq!(on_meta_data.videocodecid, Some(7.0)); // AVC
+            assert_eq!(on_meta_data.duration, Some(0.0)); // 0 seconds (this was a live stream)
+            assert_eq!(on_meta_data.width, Some(2560.0));
+            assert_eq!(on_meta_data.height, Some(1440.0));
+            assert_eq!(on_meta_data.framerate, Some(144.0));
+            assert!(on_meta_data.videodatarate.is_some());
+            assert!(on_meta_data.audiodatarate.is_some());
         }
 
         // Audio Sequence Header Tag
@@ -708,106 +541,22 @@ mod tests {
             assert_eq!(tag.timestamp_ms, 0);
             assert_eq!(tag.stream_id, 0);
 
-            // This is a metadata tag
-            let script_data = match tag.data {
-                FlvTagData::ScriptData(ScriptData { name, data }) => {
-                    assert_eq!(name, "onMetaData");
-                    data
-                }
+            let on_metadata = match tag.data {
+                FlvTagData::ScriptData(ScriptData::OnMetaData(data)) => data,
                 _ => panic!("expected script data"),
             };
 
-            // Script data should be an AMF0 object
-            let object = match &script_data[0] {
-                Amf0Value::Object(object) => object,
-                _ => panic!("expected object"),
-            };
-
-            let object = object.iter().map(|(k, v)| (k.as_ref(), v)).collect::<HashMap<_, _>>();
-
-            // Should have a audio sample size property
-            let audio_sample_size = match object.get("audiosamplesize") {
-                Some(Amf0Value::Number(number)) => number,
-                _ => panic!("expected audio sample size"),
-            };
-
-            assert_eq!(audio_sample_size, &16.0);
-
-            // Should have a audio sample rate property
-            let audio_sample_rate = match object.get("audiosamplerate") {
-                Some(Amf0Value::Number(number)) => number,
-                _ => panic!("expected audio sample rate"),
-            };
-
-            assert_eq!(audio_sample_rate, &48000.0);
-
-            // Should have a stereo property
-            let stereo = match object.get("stereo") {
-                Some(Amf0Value::Boolean(boolean)) => boolean,
-                _ => panic!("expected stereo"),
-            };
-
-            assert_eq!(stereo, &true);
-
-            // Should have an audio codec id property
-            let audio_codec_id = match object.get("audiocodecid") {
-                Some(Amf0Value::Number(number)) => number,
-                _ => panic!("expected audio codec id"),
-            };
-
-            assert_eq!(audio_codec_id, &10.0); // AAC
-
-            // Should have a video codec id property
-            let video_codec_id = match object.get("videocodecid") {
-                Some(Amf0Value::Number(number)) => number,
-                _ => panic!("expected video codec id"),
-            };
-
-            assert_eq!(video_codec_id, &7.0); // AVC
-
-            // Should have a duration property
-            let duration = match object.get("duration") {
-                Some(Amf0Value::Number(number)) => number,
-                _ => panic!("expected duration"),
-            };
-
-            assert_eq!(duration, &0.0); // 0 seconds (this was a live stream)
-
-            // Should have a width property
-            let width = match object.get("width") {
-                Some(Amf0Value::Number(number)) => number,
-                _ => panic!("expected width"),
-            };
-
-            assert_eq!(width, &2560.0);
-
-            // Should have a height property
-            let height = match object.get("height") {
-                Some(Amf0Value::Number(number)) => number,
-                _ => panic!("expected height"),
-            };
-
-            assert_eq!(height, &1440.0);
-
-            // Should have a framerate property
-            let framerate = match object.get("framerate") {
-                Some(Amf0Value::Number(number)) => number,
-                _ => panic!("expected framerate"),
-            };
-
-            assert_eq!(framerate, &144.0);
-
-            // Should have a videodatarate property
-            match object.get("videodatarate") {
-                Some(Amf0Value::Number(number)) => number,
-                _ => panic!("expected videodatarate"),
-            };
-
-            // Should have a audiodatarate property
-            match object.get("audiodatarate") {
-                Some(Amf0Value::Number(number)) => number,
-                _ => panic!("expected audiodatarate"),
-            };
+            assert_eq!(on_metadata.audiosamplesize, Some(16.0));
+            assert_eq!(on_metadata.audiosamplerate, Some(48000.0));
+            assert_eq!(on_metadata.stereo, Some(true));
+            assert_eq!(on_metadata.audiocodecid, Some(10.0)); // AAC
+            assert_eq!(on_metadata.videocodecid, Some(7.0)); // AVC
+            assert_eq!(on_metadata.duration, Some(0.0)); // 0 seconds (this was a live stream)
+            assert_eq!(on_metadata.width, Some(2560.0));
+            assert_eq!(on_metadata.height, Some(1440.0));
+            assert_eq!(on_metadata.framerate, Some(144.0));
+            assert!(on_metadata.videodatarate.is_some());
+            assert!(on_metadata.audiodatarate.is_some());
         }
 
         // Audio Sequence Header Tag

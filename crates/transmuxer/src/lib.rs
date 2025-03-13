@@ -15,19 +15,17 @@
 #![allow(clippy::single_match)]
 #![deny(unsafe_code)]
 
-use std::borrow::Cow;
-use std::collections::{HashMap, VecDeque};
+use std::collections::VecDeque;
 use std::fmt::Debug;
 use std::io;
 
 use byteorder::{BigEndian, ReadBytesExt};
 use bytes::{Buf, Bytes};
-use scuffle_amf0::Amf0Value;
 use scuffle_flv::audio::AudioData;
 use scuffle_flv::audio::aac::AacAudioData;
 use scuffle_flv::audio::body::{AudioTagBody, LegacyAudioTagBody};
 use scuffle_flv::audio::header::{AudioTagHeader, LegacyAudioTagHeader, SoundType};
-use scuffle_flv::script::ScriptData;
+use scuffle_flv::script::{OnMetaData, ScriptData};
 use scuffle_flv::tag::{FlvTag, FlvTagData};
 use scuffle_flv::video::VideoData;
 use scuffle_flv::video::body::VideoTagBody;
@@ -76,7 +74,7 @@ pub use errors::TransmuxError;
 struct Tags {
     video_sequence_header: Option<VideoSequenceHeader>,
     audio_sequence_header: Option<AudioSequenceHeader>,
-    scriptdata_tag: Option<HashMap<Cow<'static, str>, Amf0Value<'static>>>,
+    scriptdata_tag: Option<OnMetaData>,
 }
 
 #[derive(Debug, Clone)]
@@ -394,14 +392,8 @@ impl Transmuxer {
                         sound_type: *sound_type,
                     });
                 }
-                FlvTagData::ScriptData(ScriptData { data, name }) => {
-                    if name == "@setDataFrame" || name == "onMetaData" {
-                        let meta_object = data.iter().find(|v| matches!(v, Amf0Value::Object(_)));
-
-                        if let Some(Amf0Value::Object(meta_object)) = meta_object {
-                            scriptdata_tag = Some(meta_object.iter().map(|(k, v)| (k.clone(), v.clone())).collect());
-                        }
-                    }
+                FlvTagData::ScriptData(ScriptData::OnMetaData(metadata)) => {
+                    scriptdata_tag = Some(metadata.clone());
                 }
                 _ => {}
             }
@@ -446,29 +438,9 @@ impl Transmuxer {
         let mut estimated_audio_bitrate = 0;
 
         if let Some(scriptdata_tag) = scriptdata_tag {
-            video_fps = scriptdata_tag
-                .get("framerate")
-                .and_then(|v| match v {
-                    Amf0Value::Number(v) => Some(*v),
-                    _ => None,
-                })
-                .unwrap_or(0.0);
-
-            estimated_video_bitrate = scriptdata_tag
-                .get("videodatarate")
-                .and_then(|v| match v {
-                    Amf0Value::Number(v) => Some((*v * 1024.0) as u32),
-                    _ => None,
-                })
-                .unwrap_or(0);
-
-            estimated_audio_bitrate = scriptdata_tag
-                .get("audiodatarate")
-                .and_then(|v| match v {
-                    Amf0Value::Number(v) => Some((*v * 1024.0) as u32),
-                    _ => None,
-                })
-                .unwrap_or(0);
+            video_fps = scriptdata_tag.framerate.unwrap_or(0.0);
+            estimated_video_bitrate = scriptdata_tag.videodatarate.map(|v| (v * 1024.0) as u32).unwrap_or(0);
+            estimated_audio_bitrate = scriptdata_tag.audiodatarate.map(|v| (v * 1024.0) as u32).unwrap_or(0);
         }
 
         let mut compatiable_brands = vec![FourCC::Iso5, FourCC::Iso6];

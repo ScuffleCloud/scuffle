@@ -4,53 +4,45 @@ use crate::error::Error;
 
 #[derive(Debug, Clone, PartialEq)]
 pub struct MetadataColorInfoColorConfig {
-    pub bit_depth: f64,
-    pub color_space: f64,
-    pub color_primaries: f64,
-    pub transfer_characteristics: f64,
-    pub matrix_coefficients: f64,
+    pub bit_depth: Option<f64>,
+    pub color_space: Option<f64>,
+    pub color_primaries: Option<f64>,
+    pub transfer_characteristics: Option<f64>,
+    pub matrix_coefficients: Option<f64>,
 }
 
 #[derive(Debug, Clone, PartialEq)]
 pub struct MetadataColorInfoHdrCll {
-    pub max_fall: f64,
-    pub max_cll: f64,
+    pub max_fall: Option<f64>,
+    pub max_cll: Option<f64>,
 }
 
 #[derive(Debug, Clone, PartialEq)]
 pub struct MetadataColorInfoHdrMdcv {
-    pub red_x: f64,
-    pub red_y: f64,
-    pub green_x: f64,
-    pub green_y: f64,
-    pub blue_x: f64,
-    pub blue_y: f64,
-    pub white_point_x: f64,
-    pub white_point_y: f64,
-    pub max_luminance: f64,
-    pub min_luminance: f64,
+    pub red_x: Option<f64>,
+    pub red_y: Option<f64>,
+    pub green_x: Option<f64>,
+    pub green_y: Option<f64>,
+    pub blue_x: Option<f64>,
+    pub blue_y: Option<f64>,
+    pub white_point_x: Option<f64>,
+    pub white_point_y: Option<f64>,
+    pub max_luminance: Option<f64>,
+    pub min_luminance: Option<f64>,
 }
 
 #[derive(Debug, Clone, PartialEq)]
 pub struct MetadataColorInfo {
-    pub color_config: MetadataColorInfoColorConfig,
-    pub hdr_cll: MetadataColorInfoHdrCll,
-    pub hdr_mdcv: MetadataColorInfoHdrMdcv,
-}
-
-#[derive(Debug, thiserror::Error)]
-pub enum MetadataColorInfoError {
-    #[error("unexpected type, expected {expected:?}, found {found:?}")]
-    UnexpectedType { expected: Amf0Marker, found: Amf0Marker },
-    #[error("missing field {0}")]
-    MissingField(&'static str),
+    pub color_config: Option<MetadataColorInfoColorConfig>,
+    pub hdr_cll: Option<MetadataColorInfoHdrCll>,
+    pub hdr_mdcv: Option<MetadataColorInfoHdrMdcv>,
 }
 
 // Be warned: Insanely ugly code ahead
 // We should maybe implement serde support in the amf0 crate
 
 impl TryFrom<Amf0Object<'_>> for MetadataColorInfo {
-    type Error = MetadataColorInfoError;
+    type Error = Error;
 
     fn try_from(value: Amf0Object<'_>) -> Result<Self, Self::Error> {
         // let value = value.into_owned();
@@ -61,12 +53,7 @@ impl TryFrom<Amf0Object<'_>> for MetadataColorInfo {
         for (key, value) in value.iter() {
             match key.as_ref() {
                 "colorConfig" => {
-                    let Amf0Value::Object(color_config_object) = value else {
-                        return Err(MetadataColorInfoError::UnexpectedType {
-                            expected: Amf0Marker::Object,
-                            found: value.marker(),
-                        });
-                    };
+                    let color_config_object = value.as_object()?;
 
                     let mut bit_depth = None;
                     let mut color_space = None;
@@ -77,61 +64,34 @@ impl TryFrom<Amf0Object<'_>> for MetadataColorInfo {
                     for (key, value) in color_config_object.iter() {
                         match key.as_ref() {
                             "bitDepth" => {
-                                bit_depth =
-                                    Some(value.as_number().ok_or_else(|| MetadataColorInfoError::UnexpectedType {
-                                        expected: Amf0Marker::Number,
-                                        found: value.marker(),
-                                    })?);
+                                bit_depth = Some(value.as_number()?);
                             }
                             "colorSpace" => {
-                                color_space =
-                                    Some(value.as_number().ok_or_else(|| MetadataColorInfoError::UnexpectedType {
-                                        expected: Amf0Marker::Number,
-                                        found: value.marker(),
-                                    })?);
+                                color_space = Some(value.as_number()?);
                             }
                             "colorPrimaries" => {
-                                color_primaries =
-                                    Some(value.as_number().ok_or_else(|| MetadataColorInfoError::UnexpectedType {
-                                        expected: Amf0Marker::Number,
-                                        found: value.marker(),
-                                    })?);
+                                color_primaries = Some(value.as_number()?);
                             }
                             "transferCharacteristics" => {
-                                transfer_characteristics =
-                                    Some(value.as_number().ok_or_else(|| MetadataColorInfoError::UnexpectedType {
-                                        expected: Amf0Marker::Number,
-                                        found: value.marker(),
-                                    })?);
+                                transfer_characteristics = Some(value.as_number()?);
                             }
                             "matrixCoefficients" => {
-                                matrix_coefficients =
-                                    Some(value.as_number().ok_or_else(|| MetadataColorInfoError::UnexpectedType {
-                                        expected: Amf0Marker::Number,
-                                        found: value.marker(),
-                                    })?);
+                                matrix_coefficients = Some(value.as_number()?);
                             }
                             _ => {}
                         }
                     }
 
                     color_config = Some(MetadataColorInfoColorConfig {
-                        bit_depth: bit_depth.ok_or(MetadataColorInfoError::MissingField("bitDepth"))?,
-                        color_space: color_space.ok_or(MetadataColorInfoError::MissingField("colorSpace"))?,
-                        color_primaries: color_primaries.ok_or(MetadataColorInfoError::MissingField("colorPrimaries"))?,
-                        transfer_characteristics: transfer_characteristics
-                            .ok_or(MetadataColorInfoError::MissingField("transferCharacteristics"))?,
-                        matrix_coefficients: matrix_coefficients
-                            .ok_or(MetadataColorInfoError::MissingField("matrixCoefficients"))?,
+                        bit_depth,
+                        color_space,
+                        color_primaries,
+                        transfer_characteristics,
+                        matrix_coefficients,
                     });
                 }
                 "hdrCll" => {
-                    let Amf0Value::Object(hdr_cll_object) = value else {
-                        return Err(MetadataColorInfoError::UnexpectedType {
-                            expected: Amf0Marker::Object,
-                            found: value.marker(),
-                        });
-                    };
+                    let hdr_cll_object = value.as_object()?;
 
                     let mut max_fall = None;
                     let mut max_cll = None;
@@ -139,34 +99,19 @@ impl TryFrom<Amf0Object<'_>> for MetadataColorInfo {
                     for (key, value) in hdr_cll_object.iter() {
                         match key.as_ref() {
                             "maxFall" => {
-                                max_fall =
-                                    Some(value.as_number().ok_or_else(|| MetadataColorInfoError::UnexpectedType {
-                                        expected: Amf0Marker::Number,
-                                        found: value.marker(),
-                                    })?);
+                                max_fall = Some(value.as_number()?);
                             }
                             "maxCll" => {
-                                max_cll = Some(value.as_number().ok_or_else(|| MetadataColorInfoError::UnexpectedType {
-                                    expected: Amf0Marker::Number,
-                                    found: value.marker(),
-                                })?);
+                                max_cll = Some(value.as_number()?);
                             }
                             _ => {}
                         }
                     }
 
-                    hdr_cll = Some(MetadataColorInfoHdrCll {
-                        max_fall: max_fall.ok_or(MetadataColorInfoError::MissingField("maxFall"))?,
-                        max_cll: max_cll.ok_or(MetadataColorInfoError::MissingField("maxCll"))?,
-                    });
+                    hdr_cll = Some(MetadataColorInfoHdrCll { max_fall, max_cll });
                 }
                 "hdrMdcv" => {
-                    let Amf0Value::Object(hdr_mdcv_object) = value else {
-                        return Err(MetadataColorInfoError::UnexpectedType {
-                            expected: Amf0Marker::Object,
-                            found: value.marker(),
-                        });
-                    };
+                    let hdr_mdcv_object = value.as_object()?;
 
                     let mut red_x = None;
                     let mut red_y = None;
@@ -182,84 +127,50 @@ impl TryFrom<Amf0Object<'_>> for MetadataColorInfo {
                     for (key, value) in hdr_mdcv_object.iter() {
                         match key.as_ref() {
                             "redX" => {
-                                red_x = Some(value.as_number().ok_or_else(|| MetadataColorInfoError::UnexpectedType {
-                                    expected: Amf0Marker::Number,
-                                    found: value.marker(),
-                                })?);
+                                red_x = Some(value.as_number()?);
                             }
                             "redY" => {
-                                red_y = Some(value.as_number().ok_or_else(|| MetadataColorInfoError::UnexpectedType {
-                                    expected: Amf0Marker::Number,
-                                    found: value.marker(),
-                                })?);
+                                red_y = Some(value.as_number()?);
                             }
                             "greenX" => {
-                                green_x = Some(value.as_number().ok_or_else(|| MetadataColorInfoError::UnexpectedType {
-                                    expected: Amf0Marker::Number,
-                                    found: value.marker(),
-                                })?);
+                                green_x = Some(value.as_number()?);
                             }
                             "greenY" => {
-                                green_y = Some(value.as_number().ok_or_else(|| MetadataColorInfoError::UnexpectedType {
-                                    expected: Amf0Marker::Number,
-                                    found: value.marker(),
-                                })?);
+                                green_y = Some(value.as_number()?);
                             }
                             "blueX" => {
-                                blue_x = Some(value.as_number().ok_or_else(|| MetadataColorInfoError::UnexpectedType {
-                                    expected: Amf0Marker::Number,
-                                    found: value.marker(),
-                                })?);
+                                blue_x = Some(value.as_number()?);
                             }
                             "blueY" => {
-                                blue_y = Some(value.as_number().ok_or_else(|| MetadataColorInfoError::UnexpectedType {
-                                    expected: Amf0Marker::Number,
-                                    found: value.marker(),
-                                })?);
+                                blue_y = Some(value.as_number()?);
                             }
                             "whitePointX" => {
-                                white_point_x =
-                                    Some(value.as_number().ok_or_else(|| MetadataColorInfoError::UnexpectedType {
-                                        expected: Amf0Marker::Number,
-                                        found: value.marker(),
-                                    })?);
+                                white_point_x = Some(value.as_number()?);
                             }
                             "whitePointY" => {
-                                white_point_y =
-                                    Some(value.as_number().ok_or_else(|| MetadataColorInfoError::UnexpectedType {
-                                        expected: Amf0Marker::Number,
-                                        found: value.marker(),
-                                    })?);
+                                white_point_y = Some(value.as_number()?);
                             }
                             "maxLuminance" => {
-                                max_luminance =
-                                    Some(value.as_number().ok_or_else(|| MetadataColorInfoError::UnexpectedType {
-                                        expected: Amf0Marker::Number,
-                                        found: value.marker(),
-                                    })?);
+                                max_luminance = Some(value.as_number()?);
                             }
                             "minLuminance" => {
-                                min_luminance =
-                                    Some(value.as_number().ok_or_else(|| MetadataColorInfoError::UnexpectedType {
-                                        expected: Amf0Marker::Number,
-                                        found: value.marker(),
-                                    })?);
+                                min_luminance = Some(value.as_number()?);
                             }
                             _ => {}
                         }
                     }
 
                     hdr_mdcv = Some(MetadataColorInfoHdrMdcv {
-                        red_x: red_x.ok_or(MetadataColorInfoError::MissingField("redX"))?,
-                        red_y: red_y.ok_or(MetadataColorInfoError::MissingField("redY"))?,
-                        green_x: green_x.ok_or(MetadataColorInfoError::MissingField("greenX"))?,
-                        green_y: green_y.ok_or(MetadataColorInfoError::MissingField("greenY"))?,
-                        blue_x: blue_x.ok_or(MetadataColorInfoError::MissingField("blueX"))?,
-                        blue_y: blue_y.ok_or(MetadataColorInfoError::MissingField("blueY"))?,
-                        white_point_x: white_point_x.ok_or(MetadataColorInfoError::MissingField("whitePointX"))?,
-                        white_point_y: white_point_y.ok_or(MetadataColorInfoError::MissingField("whitePointY"))?,
-                        max_luminance: max_luminance.ok_or(MetadataColorInfoError::MissingField("maxLuminance"))?,
-                        min_luminance: min_luminance.ok_or(MetadataColorInfoError::MissingField("minLuminance"))?,
+                        red_x,
+                        red_y,
+                        green_x,
+                        green_y,
+                        blue_x,
+                        blue_y,
+                        white_point_x,
+                        white_point_y,
+                        max_luminance,
+                        min_luminance,
                     });
                 }
                 _ => {}
@@ -267,13 +178,15 @@ impl TryFrom<Amf0Object<'_>> for MetadataColorInfo {
         }
 
         Ok(MetadataColorInfo {
-            color_config: color_config.ok_or(MetadataColorInfoError::MissingField("colorConfig"))?,
-            hdr_cll: hdr_cll.ok_or(MetadataColorInfoError::MissingField("hdrCll"))?,
-            hdr_mdcv: hdr_mdcv.ok_or(MetadataColorInfoError::MissingField("hdrMdcv"))?,
+            color_config,
+            hdr_cll,
+            hdr_mdcv,
         })
     }
 }
 
+// It will almost always be ColorInfo, so it's fine that it wastes space when it's the other variant
+#[allow(clippy::large_enum_variant)]
 #[derive(Debug, Clone, PartialEq)]
 pub enum VideoPacketMetadataEntry {
     ColorInfo(MetadataColorInfo),

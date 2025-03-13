@@ -2,6 +2,7 @@
     import Header from './Header.svelte';
     import StreamsTable from './StreamsTable.svelte';
 
+    import type { Streamed } from '$lib/types';
     // Define types
     type VideoStatus = 'Live' | 'Finished';
 
@@ -11,6 +12,10 @@
         status: VideoStatus;
         created: string;
     }
+
+    const { streamedData } = $props<{
+        streamedData: Streamed<VideoStream[]>;
+    }>();
 
     let streams: VideoStream[] = $state([
         {
@@ -42,10 +47,6 @@
     // Search functionality
     let searchQuery = $state('');
 
-    $effect(() => {
-        console.log(`Searching for: ${searchQuery}`);
-    });
-
     // Sort functionality
     function toggleSort(column: keyof VideoStream) {
         // Implement sorting logic
@@ -60,6 +61,13 @@
 </script>
 
 <Header />
+{#await streamedData}
+    Loading streams...dwq
+{:then resolvedStreams}
+    <pre>{JSON.stringify(resolvedStreams, null, 2)}</pre>
+{:catch error}
+    <p>error loading streams: {error.message}</p>
+{/await}
 <div class="search-container">
     <div class="search-input">
         <svg

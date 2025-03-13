@@ -1,12 +1,17 @@
 <script lang="ts">
+    import type { VideoStream } from '$components/streams/types';
     import VideoStreams from '$components/streams/VideoStreams.svelte';
+    import type { Streamed } from '$lib/types';
+
+    const { data: pageData } = $props<{
+        data: {
+            streams: Streamed<VideoStream[]>;
+        };
+    }>();
 </script>
 
-<svelte:head>
-    <title>Scuffle - Video Streams</title>
-</svelte:head>
 <div class="page-bg">
-    <VideoStreams />
+    <VideoStreams streamedData={pageData.streams} />
 </div>
 
 <style>

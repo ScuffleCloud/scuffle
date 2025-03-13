@@ -1,7 +1,9 @@
 use super::define::{MessageData, MessageType};
 use crate::chunk::Chunk;
 use crate::command_messages::Command;
-use crate::protocol_control_messages::ProtocolControlMessageSetChunkSize;
+use crate::protocol_control_messages::{
+    ProtocolControlMessageSetChunkSize, ProtocolControlMessageWindowAcknowledgementSize,
+};
 
 impl<'a> MessageData<'a> {
     pub fn read(chunk: &'a Chunk) -> Result<Self, crate::error::Error> {
@@ -10,6 +12,10 @@ impl<'a> MessageData<'a> {
             MessageType::SetChunkSize => {
                 let data = ProtocolControlMessageSetChunkSize::read(&chunk.payload)?;
                 Ok(Self::SetChunkSize(data))
+            }
+            MessageType::WindowAcknowledgementSize => {
+                let data = ProtocolControlMessageWindowAcknowledgementSize::read(&chunk.payload)?;
+                Ok(Self::SetAcknowledgementWindowSize(data))
             }
             // RTMP Command Messages
             MessageType::CommandAMF0 => Ok(Self::Amf0Command(Command::read(&chunk.payload)?)),
@@ -23,7 +29,8 @@ impl<'a> MessageData<'a> {
             MessageType::Video => Ok(Self::VideoData {
                 data: chunk.payload.clone(),
             }),
-            _ => Ok(Self::Unknown {
+            msg_type_id => Ok(Self::Unknown {
+                msg_type_id,
                 data: chunk.payload.clone(),
             }),
         }
@@ -135,7 +142,10 @@ mod tests {
 
         assert!(matches!(
             MessageData::read(&chunk).expect("no errors"),
-            MessageData::Unknown { data: _ }
+            MessageData::Unknown {
+                msg_type_id: MessageType::Aggregate,
+                ..
+            }
         ));
     }
 }

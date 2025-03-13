@@ -6,8 +6,13 @@ pub struct ProtocolControlMessageSetChunkSize {
     pub chunk_size: u32,
 }
 
-// 5.4.2. Abort Message (2)
+// Missing: 5.4.2. Abort Message (2)
+
 // 5.4.3. Acknowledgement (3)
+#[derive(Debug)]
+pub struct ProtocolControlMessageAcknowledgement {
+    pub sequence_number: u32,
+}
 
 /// 5.4.4. Window Acknowledgement Size (5)
 #[derive(Debug)]

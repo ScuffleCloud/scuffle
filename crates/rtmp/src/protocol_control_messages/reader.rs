@@ -2,6 +2,7 @@ use std::io::{self, Cursor};
 
 use byteorder::{BigEndian, ReadBytesExt};
 
+use super::ProtocolControlMessageWindowAcknowledgementSize;
 use super::define::ProtocolControlMessageSetChunkSize;
 
 impl ProtocolControlMessageSetChunkSize {
@@ -9,6 +10,16 @@ impl ProtocolControlMessageSetChunkSize {
         let mut cursor = Cursor::new(data);
         let chunk_size = cursor.read_u32::<BigEndian>()?;
         Ok(Self { chunk_size })
+    }
+}
+
+impl ProtocolControlMessageWindowAcknowledgementSize {
+    pub fn read(data: &[u8]) -> io::Result<Self> {
+        let mut cursor = Cursor::new(data);
+        let acknowledgement_window_size = cursor.read_u32::<BigEndian>()?;
+        Ok(Self {
+            acknowledgement_window_size,
+        })
     }
 }
 

@@ -8,6 +8,7 @@ use tracing::Instrument;
 
 use crate::error::Error;
 use crate::service::{HttpService, HttpServiceFactory};
+use crate::server::ConfigureSocketCallback;
 
 mod handler;
 mod stream;
@@ -33,6 +34,8 @@ pub struct HyperBackend<F> {
     /// Use `[::]` for a dual-stack listener.
     /// For example, use `[::]:80` to bind to port 80 on both IPv4 and IPv6.
     bind: SocketAddr,
+    /// Callback to configure socket
+    configure_sock: Option<ConfigureSocketCallback>,
     /// rustls config.
     ///
     /// Use this field to set the server into TLS mode.
@@ -79,7 +82,27 @@ where
         }
 
         // We have to create an std listener first because the tokio listener isn't clonable
-        let listener = tokio::net::TcpListener::bind(self.bind).await?.into_std()?;
+        let listener = {
+            let mut sock = socket2::Socket::new(
+                match self.bind {
+                    SocketAddr::V4(_) => socket2::Domain::IPV4,
+                    SocketAddr::V6(_) => socket2::Domain::IPV6,
+                },
+                socket2::Type::STREAM,
+                Some(socket2::Protocol::TCP),
+            )?;
+
+            sock.set_nonblocking(true)?;
+            sock.set_only_v6(false)?;
+            if let Some(cfg_fn) = self.configure_sock.as_ref() {
+                sock = cfg_fn.call(sock)?;
+            }
+
+            sock.bind(&socket2::SockAddr::from(self.bind))?;
+            sock.listen(128)?;
+
+            std::net::TcpListener::from(sock)
+        };
 
         #[cfg(feature = "tls-rustls")]
         let tls_acceptor = self

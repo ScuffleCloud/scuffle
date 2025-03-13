@@ -13,6 +13,7 @@ keywords = ["transmuxer", "media", "streaming"]
 [dependencies]
 byteorder = "1.5"
 bytes = "1.5"
+thiserror = "2.0.12"
 
 scuffle-h264.workspace = true
 scuffle-h265.workspace = true

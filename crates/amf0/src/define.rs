@@ -51,6 +51,9 @@ pub enum Amf0Marker {
     AVMPlusObject = 0x11,
 }
 
+/// AMF0 object type.
+pub type Amf0Object<'a> = Cow<'a, [(Cow<'a, str>, Amf0Value<'a>)]>;
+
 /// AMF0 value types.
 /// Defined in amf0_spec_121207.pdf section 2.2-2.14
 #[derive(PartialEq, Clone, Debug)]
@@ -62,7 +65,7 @@ pub enum Amf0Value<'a> {
     /// String Type defined section 2.4
     String(Cow<'a, str>),
     /// Object Type defined section 2.5
-    Object(Cow<'a, [(Cow<'a, str>, Amf0Value<'a>)]>),
+    Object(Amf0Object<'a>),
     /// Null Type defined section 2.7
     Null,
     /// Undefined Type defined section 2.8
@@ -95,6 +98,49 @@ impl Amf0Value<'_> {
             Self::Boolean(b) => Amf0Value::Boolean(*b),
             Self::Null => Amf0Value::Null,
             Self::ObjectEnd => Amf0Value::ObjectEnd,
+        }
+    }
+
+    /// Get the value as a number.
+    ///
+    /// Returns `None` if the value is not a number.
+    pub fn as_number(&self) -> Option<f64> {
+        match self {
+            Self::Number(n) => Some(*n),
+            _ => None,
+        }
+    }
+
+    /// Get the value as a boolean.
+    ///
+    /// Returns `None` if the value is not a boolean.
+    pub fn as_boolean(&self) -> Option<bool> {
+        match self {
+            Self::Boolean(b) => Some(*b),
+            _ => None,
+        }
+    }
+}
+
+impl<'a> Amf0Value<'a> {
+    /// Get the value as a string.
+    ///
+    /// Returns `None` if the value is not a string.
+    pub fn as_string(&self) -> Option<&Cow<'a, str>> {
+        match self {
+            Self::String(s) => Some(s),
+            Self::LongString(s) => Some(s),
+            _ => None,
+        }
+    }
+
+    /// Get the value as an object.
+    ///
+    /// Returns `None` if the value is not an object.
+    pub fn as_object(&self) -> Option<&Amf0Object<'a>> {
+        match self {
+            Self::Object(o) => Some(o),
+            _ => None,
         }
     }
 }

@@ -1,12 +1,9 @@
-mod decoder;
 mod define;
-mod encoder;
-mod errors;
+mod error;
+mod reader;
+mod writer;
 
-pub use self::decoder::ChunkDecoder;
-pub use self::define::{CHUNK_SIZE, Chunk, DefinedChunkStreamID};
-pub use self::encoder::ChunkEncoder;
-pub use self::errors::{ChunkDecodeError, ChunkEncodeError};
-
-#[cfg(test)]
-mod tests;
+pub use define::{CHUNK_SIZE, Chunk, ChunkStreamId};
+pub use error::ChunkReadError;
+pub use reader::ChunkReader;
+pub use writer::ChunkWriter;

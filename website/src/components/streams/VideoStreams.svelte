@@ -46,18 +46,6 @@
 
     // Search functionality
     let searchQuery = $state('');
-
-    // Sort functionality
-    function toggleSort(column: keyof VideoStream) {
-        // Implement sorting logic
-        console.log(`Sorting by ${column}`);
-    }
-
-    // Create new stream
-    function createNewStream() {
-        // Implement create new stream logic
-        console.log('Creating new stream');
-    }
 </script>
 
 <Header />

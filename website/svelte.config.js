@@ -1,6 +1,7 @@
 import { preprocessMeltUI, sequence } from '@melt-ui/pp';
 import adapter from '@sveltejs/adapter-static';
 import { vitePreprocess } from '@sveltejs/vite-plugin-svelte';
+import path from 'path';
 /** @type {import('@sveltejs/kit').Config}*/
 const config = {
     // Consult https://svelte.dev/docs/kit/integrations
@@ -21,6 +22,7 @@ const config = {
             $components: 'src/components',
             $styles: 'src/styles',
             $lib: 'src/lib',
+            $msw: 'src/msw',
         },
     },
     // Enforcing runes for external libraries https://github.com/sveltejs/svelte/issues/9632

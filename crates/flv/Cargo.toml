@@ -20,6 +20,7 @@ num-traits = "0.2"
 num-derive = "0.4"
 thiserror = "2.0"
 bitmask-enum = "2.2.5"
+tracing = "0.1"
 
 scuffle-h264.workspace = true
 scuffle-h265.workspace = true

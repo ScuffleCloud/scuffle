@@ -100,6 +100,8 @@ impl ExAudioTagHeader {
                     audio_timestamp_nano_offset: mod_ex_data.read_u24::<BigEndian>()?,
                 });
             } else {
+                tracing::warn!(audio_packet_mod_ex_type = ?audio_packet_mod_ex_type, "unknown audio packet modifier extension type");
+
                 audio_packet_mod_exs.push(AudioPacketModEx::Other {
                     audio_packet_mod_ex_type,
                     mod_ex_data,
@@ -127,10 +129,14 @@ impl ExAudioTagHeader {
                 AvMultitrackType::OneTrack => ExAudioTagHeaderContent::OneTrack(AudioFourCc::from(audio_four_cc)),
                 AvMultitrackType::ManyTracks => ExAudioTagHeaderContent::ManyTracks(AudioFourCc::from(audio_four_cc)),
                 AvMultitrackType::ManyTracksManyCodecs => ExAudioTagHeaderContent::ManyTracksManyCodecs,
-                _ => ExAudioTagHeaderContent::Other {
-                    audio_multitrack_type,
-                    audio_four_cc: AudioFourCc::from(audio_four_cc),
-                },
+                _ => {
+                    tracing::warn!(audio_multitrack_type = ?audio_multitrack_type, "unknown audio multitrack type");
+
+                    ExAudioTagHeaderContent::Other {
+                        audio_multitrack_type,
+                        audio_four_cc: AudioFourCc::from(audio_four_cc),
+                    }
+                }
             };
 
             Ok(Self {

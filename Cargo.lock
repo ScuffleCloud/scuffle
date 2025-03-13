@@ -2983,6 +2983,7 @@ dependencies = [
  "scuffle-h265",
  "scuffle-workspace-hack",
  "thiserror 2.0.12",
+ "tracing",
 ]
 
 [[package]]
@@ -3214,7 +3215,6 @@ dependencies = [
  "byteorder",
  "bytes",
  "scuffle-aac",
- "scuffle-amf0",
  "scuffle-av1",
  "scuffle-bytes-util",
  "scuffle-flv",

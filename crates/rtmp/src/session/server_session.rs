@@ -216,7 +216,7 @@ impl<S: tokio::io::AsyncRead + tokio::io::AsyncWrite + Unpin, H: SessionHandler>
                 ProtocolControlMessageAcknowledgement {
                     sequence_number: self.sequence_number,
                 }
-                .write(&mut self.write_buf, &mut self.chunk_writer)?;
+                .write(&mut self.write_buf, &self.chunk_writer)?;
             }
 
             self.sequence_number = self.sequence_number.wrapping_add(n);

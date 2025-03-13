@@ -2,6 +2,8 @@ use std::borrow::Cow;
 
 use num_derive::FromPrimitive;
 
+use crate::Amf0ReadError;
+
 /// AMF0 marker types.
 /// Defined in amf0_spec_121207.pdf section 2.1
 #[derive(Debug, PartialEq, Eq, Clone, Copy, FromPrimitive)]
@@ -104,20 +106,20 @@ impl Amf0Value<'_> {
     /// Get the value as a number.
     ///
     /// Returns `None` if the value is not a number.
-    pub fn as_number(&self) -> Option<f64> {
+    pub fn as_number(&self) -> Result<f64, Amf0ReadError> {
         match self {
-            Self::Number(n) => Some(*n),
-            _ => None,
+            Self::Number(n) => Ok(*n),
+            _ => Err(Amf0ReadError::WrongType(Amf0Marker::Number, self.marker())),
         }
     }
 
     /// Get the value as a boolean.
     ///
     /// Returns `None` if the value is not a boolean.
-    pub fn as_boolean(&self) -> Option<bool> {
+    pub fn as_boolean(&self) -> Result<bool, Amf0ReadError> {
         match self {
-            Self::Boolean(b) => Some(*b),
-            _ => None,
+            Self::Boolean(b) => Ok(*b),
+            _ => Err(Amf0ReadError::WrongType(Amf0Marker::Boolean, self.marker())),
         }
     }
 }
@@ -126,21 +128,21 @@ impl<'a> Amf0Value<'a> {
     /// Get the value as a string.
     ///
     /// Returns `None` if the value is not a string.
-    pub fn as_string(&self) -> Option<&Cow<'a, str>> {
+    pub fn as_string(&self) -> Result<&Cow<'a, str>, Amf0ReadError> {
         match self {
-            Self::String(s) => Some(s),
-            Self::LongString(s) => Some(s),
-            _ => None,
+            Self::String(s) => Ok(s),
+            Self::LongString(s) => Ok(s),
+            _ => Err(Amf0ReadError::WrongType(Amf0Marker::String, self.marker())),
         }
     }
 
     /// Get the value as an object.
     ///
     /// Returns `None` if the value is not an object.
-    pub fn as_object(&self) -> Option<&Amf0Object<'a>> {
+    pub fn as_object(&self) -> Result<&Amf0Object<'a>, Amf0ReadError> {
         match self {
-            Self::Object(o) => Some(o),
-            _ => None,
+            Self::Object(o) => Ok(o),
+            _ => Err(Amf0ReadError::WrongType(Amf0Marker::Object, self.marker())),
         }
     }
 }

@@ -44,7 +44,7 @@ pub enum VideoPacket {
     Mpeg2TsSequenceStart(VideoPacketMpeg2TsSequenceStart),
     CodedFrames(VideoPacketCodedFrames),
     CodedFramesX(Bytes),
-    Other { packet_type: VideoPacketType, data: Bytes },
+    Unknown { packet_type: VideoPacketType, data: Bytes },
 }
 
 #[derive(Debug, Clone, PartialEq)]
@@ -191,9 +191,11 @@ impl ExVideoTagBody {
                     VideoPacket::CodedFramesX(data)
                 }
                 packet_type => {
+                    tracing::warn!(packet_type = ?packet_type, "unknown video packet type");
+
                     let data =
                         reader.extract_bytes(size_of_video_track.map(|s| s as usize).unwrap_or(reader.remaining()))?;
-                    VideoPacket::Other { packet_type, data }
+                    VideoPacket::Unknown { packet_type, data }
                 }
             };
 

@@ -21,7 +21,6 @@ scuffle-mp4.workspace = true
 scuffle-aac.workspace = true
 scuffle-av1.workspace = true
 scuffle-flv.workspace = true
-scuffle-amf0.workspace = true
 scuffle-bytes-util.workspace = true
 scuffle-workspace-hack.workspace = true
 

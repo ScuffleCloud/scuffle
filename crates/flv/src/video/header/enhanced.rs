@@ -130,6 +130,8 @@ impl ExVideoTagHeader {
                     video_timestamp_nano_offset: mod_ex_data.read_u24::<BigEndian>()?,
                 });
             } else {
+                tracing::warn!(video_packet_mod_ex_type = ?video_packet_mod_ex_type, "unknown video packet modifier extension type");
+
                 video_packet_mod_exs.push(VideoPacketModEx::Other {
                     video_packet_mod_ex_type,
                     mod_ex_data,
@@ -160,10 +162,14 @@ impl ExVideoTagHeader {
                 AvMultitrackType::OneTrack => ExVideoTagHeaderContent::OneTrack(VideoFourCc::from(video_four_cc)),
                 AvMultitrackType::ManyTracks => ExVideoTagHeaderContent::ManyTracks(VideoFourCc::from(video_four_cc)),
                 AvMultitrackType::ManyTracksManyCodecs => ExVideoTagHeaderContent::ManyTracksManyCodecs,
-                _ => ExVideoTagHeaderContent::Other {
-                    video_multitrack_type,
-                    video_four_cc: VideoFourCc::from(video_four_cc),
-                },
+                _ => {
+                    tracing::warn!(video_multitrack_type = ?video_multitrack_type, "unknown video multitrack type");
+
+                    ExVideoTagHeaderContent::Other {
+                        video_multitrack_type,
+                        video_four_cc: VideoFourCc::from(video_four_cc),
+                    }
+                }
             }
         } else {
             let mut video_four_cc = [0; 4];

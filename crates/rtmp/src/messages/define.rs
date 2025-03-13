@@ -1,7 +1,9 @@
 use bytes::Bytes;
 
 use crate::command_messages::Command;
-use crate::protocol_control_messages::ProtocolControlMessageSetChunkSize;
+use crate::protocol_control_messages::{
+    ProtocolControlMessageSetChunkSize, ProtocolControlMessageWindowAcknowledgementSize,
+};
 
 #[derive(Debug)]
 pub enum MessageData<'a> {
@@ -9,6 +11,7 @@ pub enum MessageData<'a> {
     // The other protocol control messages are not implemented here
     // because they are not needed in this implementation.
     SetChunkSize(ProtocolControlMessageSetChunkSize),
+    SetAcknowledgementWindowSize(ProtocolControlMessageWindowAcknowledgementSize),
     // RTMP Command Messages
     Amf0Command(Command<'a>),
     Amf0Data {
@@ -22,6 +25,7 @@ pub enum MessageData<'a> {
     },
     /// Unknown
     Unknown {
+        msg_type_id: MessageType,
         data: Bytes,
     },
 }

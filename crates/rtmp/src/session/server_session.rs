@@ -16,10 +16,16 @@ use crate::handshake;
 use crate::handshake::HandshakeServer;
 use crate::messages::MessageData;
 use crate::protocol_control_messages::{
-    ProtocolControlMessageSetChunkSize, ProtocolControlMessageSetPeerBandwidth,
+    ProtocolControlMessageAcknowledgement, ProtocolControlMessageSetChunkSize, ProtocolControlMessageSetPeerBandwidth,
     ProtocolControlMessageSetPeerBandwidthLimitType, ProtocolControlMessageWindowAcknowledgementSize,
 };
 use crate::user_control_messages::EventMessageStreamBegin;
+
+// The default acknowledgement window size that is used until the client sends a
+// new acknowledgement window size.
+// This is a common value used by other media servers as well.
+// - https://github.com/FFmpeg/FFmpeg/blob/154c00514d889d27ae84a1001e00f9032fdc1c54/libavformat/rtmpproto.c#L2850
+const DEFAULT_ACKNOWLEDGEMENT_WINDOW_SIZE: u32 = 2_500_000; // 2.5 MB
 
 pub struct Session<S, H> {
     /// When you connect via rtmp, you specify the app name in the url
@@ -38,6 +44,11 @@ pub struct Session<S, H> {
 
     handler: H,
 
+    /// The size of the acknowledgement window
+    acknowledgement_window_size: u32,
+    /// The number of bytes read from the stream. Value wraps when reaching u32::MAX.
+    /// This is used to know when to send acknoledgements.
+    sequence_number: u32,
     /// Buffer to read data into
     read_buf: BytesMut,
     /// Buffer to write data to
@@ -65,6 +76,8 @@ impl<S, H> Session<S, H> {
             app_name: None,
             io,
             handler,
+            acknowledgement_window_size: DEFAULT_ACKNOWLEDGEMENT_WINDOW_SIZE,
+            sequence_number: 0,
             skip_read: false,
             chunk_reader: ChunkReader::default(),
             chunk_writer: ChunkWriter::default(),
@@ -138,6 +151,8 @@ impl<S: tokio::io::AsyncRead + tokio::io::AsyncWrite + Unpin, H: SessionHandler>
                 .await
                 .map_err(SessionError::Timeout)??;
             bytes_read += n;
+
+            self.sequence_number = self.sequence_number.wrapping_add(n.try_into().unwrap_or(u32::MAX));
         }
 
         let mut cursor = std::io::Cursor::new(self.read_buf.split().freeze());
@@ -191,6 +206,20 @@ impl<S: tokio::io::AsyncRead + tokio::io::AsyncWrite + Unpin, H: SessionHandler>
             if n == 0 {
                 return Ok(false);
             }
+
+            let n = n.try_into().unwrap_or(u32::MAX);
+
+            if (self.sequence_number % self.acknowledgement_window_size) + n >= self.acknowledgement_window_size {
+                tracing::trace!(sequence_number = %self.sequence_number, "sending acknowledgement");
+
+                // Send acknowledgement
+                ProtocolControlMessageAcknowledgement {
+                    sequence_number: self.sequence_number,
+                }
+                .write(&mut self.write_buf, &mut self.chunk_writer)?;
+            }
+
+            self.sequence_number = self.sequence_number.wrapping_add(n);
         }
 
         self.process_chunks().await?;
@@ -223,6 +252,11 @@ impl<S: tokio::io::AsyncRead + tokio::io::AsyncWrite + Unpin, H: SessionHandler>
             MessageData::SetChunkSize(ProtocolControlMessageSetChunkSize { chunk_size }) => {
                 self.on_set_chunk_size(chunk_size as usize)?;
             }
+            MessageData::SetAcknowledgementWindowSize(ProtocolControlMessageWindowAcknowledgementSize {
+                acknowledgement_window_size,
+            }) => {
+                self.on_acknowledgement_window_size(acknowledgement_window_size)?;
+            }
             MessageData::AudioData { data } => {
                 self.handler
                     .on_data(stream_id, SessionData::Audio { timestamp, data })
@@ -236,8 +270,8 @@ impl<S: tokio::io::AsyncRead + tokio::io::AsyncWrite + Unpin, H: SessionHandler>
             MessageData::Amf0Data { data } => {
                 self.handler.on_data(stream_id, SessionData::Amf0 { timestamp, data }).await?;
             }
-            MessageData::Unknown { data } => {
-                tracing::warn!(data = ?data, "unknown message type");
+            MessageData::Unknown { msg_type_id, data } => {
+                tracing::warn!(msg_type_id = ?msg_type_id, data = ?data, "unknown message type");
             }
         }
 
@@ -302,6 +336,14 @@ impl<S: tokio::io::AsyncRead + tokio::io::AsyncWrite + Unpin, H: SessionHandler>
         } else {
             Err(crate::error::Error::Session(SessionError::InvalidChunkSize(chunk_size)))
         }
+    }
+
+    /// on_acknowledgement_window_size is called when we receive a new acknowledgement window size
+    /// from the client.
+    fn on_acknowledgement_window_size(&mut self, acknowledgement_window_size: u32) -> Result<(), crate::error::Error> {
+        tracing::trace!(acknowledgement_window_size = %acknowledgement_window_size, "received new acknowledgement window size");
+        self.acknowledgement_window_size = acknowledgement_window_size;
+        Ok(())
     }
 
     /// on_command_connect is called when we receive a amf0 command message with

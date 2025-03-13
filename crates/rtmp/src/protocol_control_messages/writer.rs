@@ -4,7 +4,7 @@ use byteorder::{BigEndian, WriteBytesExt};
 use bytes::Bytes;
 
 use super::define::{
-    ProtocolControlMessageSetChunkSize, ProtocolControlMessageSetPeerBandwidth,
+    ProtocolControlMessageAcknowledgement, ProtocolControlMessageSetChunkSize, ProtocolControlMessageSetPeerBandwidth,
     ProtocolControlMessageWindowAcknowledgementSize,
 };
 use crate::chunk::{Chunk, ChunkWriter};
@@ -23,6 +23,23 @@ impl ProtocolControlMessageSetChunkSize {
                 MessageType::SetChunkSize,
                 0, // message stream id is ignored
                 Bytes::from(chunk_size.to_be_bytes().to_vec()),
+            ),
+        )?;
+
+        Ok(())
+    }
+}
+
+impl ProtocolControlMessageAcknowledgement {
+    pub fn write(&self, io: &mut impl io::Write, writer: &ChunkWriter) -> Result<(), crate::error::Error> {
+        writer.write_chunk(
+            io,
+            Chunk::new(
+                2, // chunk stream must be 2
+                0, // timestamps are ignored
+                MessageType::Acknowledgement,
+                0, // message stream id is ignored
+                Bytes::from(self.sequence_number.to_be_bytes().to_vec()),
             ),
         )?;
 

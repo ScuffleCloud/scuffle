@@ -3040,6 +3040,7 @@ dependencies = [
  "scuffle-context",
  "scuffle-future-ext",
  "scuffle-workspace-hack",
+ "socket2",
  "thiserror 2.0.12",
  "tokio",
  "tokio-rustls",

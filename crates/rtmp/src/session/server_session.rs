@@ -105,7 +105,7 @@ impl<S: tokio::io::AsyncRead + tokio::io::AsyncWrite + Unpin, H: SessionHandler>
         // We can get rid of the memory that was allocated for it
         drop(handshaker);
 
-        tracing::debug!("Handshake complete");
+        tracing::debug!("handshake complete");
 
         // Drive the session to completion
         while match self.drive().await {
@@ -420,9 +420,10 @@ impl<S: tokio::io::AsyncRead + tokio::io::AsyncWrite + Unpin, H: SessionHandler>
 
         Command {
             net_command: CommandType::NetStream(NetStreamCommand::OnStatus {
+                tc_url: None,
                 level: CommandResultLevel::Status,
                 code: "NetStream.DeleteStream.Suceess".into(),
-                description: "".into(),
+                description: None,
             }),
             transaction_id,
         }
@@ -456,9 +457,10 @@ impl<S: tokio::io::AsyncRead + tokio::io::AsyncWrite + Unpin, H: SessionHandler>
 
         Command {
             net_command: CommandType::NetStream(NetStreamCommand::OnStatus {
+                tc_url: None,
                 level: CommandResultLevel::Status,
                 code: "NetStream.Publish.Start".into(),
-                description: "".into(),
+                description: None,
             }),
             transaction_id,
         }

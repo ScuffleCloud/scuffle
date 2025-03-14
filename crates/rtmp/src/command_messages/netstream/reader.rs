@@ -55,6 +55,15 @@ impl<'a> NetStreamCommand<'a> {
                 // we have to get ownership here because we have to own the inner Cows
                 let mut info_object = info_object.into_owned();
 
+                let tc_url = if let Some(idx) = info_object.iter().position(|(k, _)| k == "tcUrl") {
+                    let (_, Amf0Value::String(tc_url)) = info_object.remove(idx) else {
+                        return Err(CommandError::InvalidOnStatusInfoObject);
+                    };
+                    Some(tc_url)
+                } else {
+                    None
+                };
+
                 let (_, Amf0Value::String(level)) = info_object
                     .iter()
                     .find(|(k, _)| k == "level")
@@ -74,16 +83,17 @@ impl<'a> NetStreamCommand<'a> {
                     return Err(CommandError::InvalidOnStatusInfoObject);
                 };
 
-                let (_, Amf0Value::String(description)) = info_object.remove(
-                    info_object
-                        .iter()
-                        .position(|(k, _)| k == "description")
-                        .ok_or(CommandError::InvalidOnStatusInfoObject)?,
-                ) else {
-                    return Err(CommandError::InvalidOnStatusInfoObject);
+                let description = if let Some(idx) = info_object.iter().position(|(k, _)| k == "description") {
+                    let (_, Amf0Value::String(description)) = info_object.remove(idx) else {
+                        return Err(CommandError::InvalidOnStatusInfoObject);
+                    };
+                    Some(description)
+                } else {
+                    None
                 };
 
                 Ok(Some(Self::OnStatus {
+                    tc_url,
                     level,
                     code,
                     description,
@@ -197,9 +207,10 @@ mod tests {
         assert_eq!(
             command,
             NetStreamCommand::OnStatus {
+                tc_url: None,
                 level: "error".into(),
                 code: "NetStream.Play.StreamNotFound".into(),
-                description: "Stream not found".into()
+                description: Some("Stream not found".into())
             }
         );
     }

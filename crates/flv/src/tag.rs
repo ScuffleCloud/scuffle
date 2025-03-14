@@ -107,16 +107,19 @@ nutype_enum! {
 #[derive(Debug, Clone, PartialEq)]
 pub enum FlvTagData {
     /// AudioData when the FlvTagType is Audio(8)
+    ///
     /// Defined by:
     /// - video_file_format_spec_v10.pdf (Chapter 1 - The FLV File Format - Audio tags)
     /// - video_file_format_spec_v10_1.pdf (Annex E.4.2.1 - AUDIODATA)
     Audio(AudioData),
     /// VideoData when the FlvTagType is Video(9)
+    ///
     /// Defined by:
     /// - video_file_format_spec_v10.pdf (Chapter 1 - The FLV File Format - Video tags)
     /// - video_file_format_spec_v10_1.pdf (Annex E.4.3.1 - VIDEODATA)
     Video(VideoData),
     /// ScriptData when the FlvTagType is ScriptData(18)
+    ///
     /// Defined by:
     /// - video_file_format_spec_v10.pdf (Chapter 1 - The FLV File Format - Data tags)
     /// - video_file_format_spec_v10_1.pdf (Annex E.4.4.1 - SCRIPTDATA)
@@ -138,10 +141,14 @@ impl FlvTagData {
             FlvTagType::Audio => Ok(FlvTagData::Audio(AudioData::demux(reader)?)),
             FlvTagType::Video => Ok(FlvTagData::Video(VideoData::demux(reader)?)),
             FlvTagType::ScriptData => Ok(FlvTagData::ScriptData(ScriptData::demux(reader)?)),
-            _ => Ok(FlvTagData::Unknown {
-                tag_type,
-                data: reader.extract_remaining(),
-            }),
+            _ => {
+                tracing::warn!(tag_type = ?tag_type, "unknown tag type");
+
+                Ok(FlvTagData::Unknown {
+                    tag_type,
+                    data: reader.extract_remaining(),
+                })
+            }
         }
     }
 }

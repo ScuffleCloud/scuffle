@@ -48,16 +48,16 @@ mod tests {
     use crate::audio::AudioData;
     use crate::audio::aac::AacAudioData;
     use crate::audio::body::{AudioTagBody, LegacyAudioTagBody};
-    use crate::audio::header::{AudioTagHeader, LegacyAudioTagHeader, SoundRate, SoundSize, SoundType};
+    use crate::audio::header::{AudioTagHeader, LegacyAudioTagHeader, SoundFormat, SoundRate, SoundSize, SoundType};
     use crate::file::FlvFile;
-    use crate::script::ScriptData;
+    use crate::script::{OnMetaDataAudioCodecId, OnMetaDataVideoCodecId, ScriptData};
     use crate::tag::FlvTagData;
     use crate::video::VideoData;
     use crate::video::body::VideoTagBody;
     use crate::video::body::enhanced::{ExVideoTagBody, VideoPacket, VideoPacketSequenceStart};
     use crate::video::body::legacy::LegacyVideoTagBody;
     use crate::video::header::enhanced::VideoFourCc;
-    use crate::video::header::legacy::{LegacyVideoTagHeader, LegacyVideoTagHeaderAvcPacket};
+    use crate::video::header::legacy::{LegacyVideoTagHeader, LegacyVideoTagHeaderAvcPacket, VideoCodecId};
     use crate::video::header::{VideoFrameType, VideoTagHeader, VideoTagHeaderData};
 
     #[test]
@@ -91,8 +91,14 @@ mod tests {
             assert_eq!(on_meta_data.audiosamplesize, Some(16.0));
             assert_eq!(on_meta_data.audiosamplerate, Some(48000.0));
             assert_eq!(on_meta_data.stereo, Some(true));
-            assert_eq!(on_meta_data.audiocodecid, Some(10.0)); // AAC
-            assert_eq!(on_meta_data.videocodecid, Some(7.0)); // AVC
+            assert_eq!(
+                on_meta_data.audiocodecid,
+                Some(OnMetaDataAudioCodecId::Legacy(SoundFormat::Aac))
+            ); // AAC
+            assert_eq!(
+                on_meta_data.videocodecid,
+                Some(OnMetaDataVideoCodecId::Legacy(VideoCodecId::Avc))
+            ); // AVC
             assert_eq!(on_meta_data.duration, Some(1.088)); // 1.088 seconds
             assert_eq!(on_meta_data.width, Some(3840.0));
             assert_eq!(on_meta_data.height, Some(2160.0));
@@ -346,8 +352,14 @@ mod tests {
             assert_eq!(on_meta_data.audiosamplesize, Some(16.0));
             assert_eq!(on_meta_data.audiosamplerate, Some(48000.0));
             assert_eq!(on_meta_data.stereo, Some(true));
-            assert_eq!(on_meta_data.audiocodecid, Some(10.0)); // AAC
-            assert_eq!(on_meta_data.videocodecid, Some(7.0)); // AVC
+            assert_eq!(
+                on_meta_data.audiocodecid,
+                Some(OnMetaDataAudioCodecId::Legacy(SoundFormat::Aac))
+            ); // AAC
+            assert_eq!(
+                on_meta_data.videocodecid,
+                Some(OnMetaDataVideoCodecId::Legacy(VideoCodecId::Avc))
+            ); // AVC
             assert_eq!(on_meta_data.duration, Some(0.0)); // 0 seconds (this was a live stream)
             assert_eq!(on_meta_data.width, Some(2560.0));
             assert_eq!(on_meta_data.height, Some(1440.0));
@@ -541,22 +553,28 @@ mod tests {
             assert_eq!(tag.timestamp_ms, 0);
             assert_eq!(tag.stream_id, 0);
 
-            let on_metadata = match tag.data {
+            let on_meta_data = match tag.data {
                 FlvTagData::ScriptData(ScriptData::OnMetaData(data)) => data,
                 _ => panic!("expected script data"),
             };
 
-            assert_eq!(on_metadata.audiosamplesize, Some(16.0));
-            assert_eq!(on_metadata.audiosamplerate, Some(48000.0));
-            assert_eq!(on_metadata.stereo, Some(true));
-            assert_eq!(on_metadata.audiocodecid, Some(10.0)); // AAC
-            assert_eq!(on_metadata.videocodecid, Some(7.0)); // AVC
-            assert_eq!(on_metadata.duration, Some(0.0)); // 0 seconds (this was a live stream)
-            assert_eq!(on_metadata.width, Some(2560.0));
-            assert_eq!(on_metadata.height, Some(1440.0));
-            assert_eq!(on_metadata.framerate, Some(144.0));
-            assert!(on_metadata.videodatarate.is_some());
-            assert!(on_metadata.audiodatarate.is_some());
+            assert_eq!(on_meta_data.audiosamplesize, Some(16.0));
+            assert_eq!(on_meta_data.audiosamplerate, Some(48000.0));
+            assert_eq!(on_meta_data.stereo, Some(true));
+            assert_eq!(
+                on_meta_data.audiocodecid,
+                Some(OnMetaDataAudioCodecId::Legacy(SoundFormat::Aac))
+            ); // AAC
+            assert_eq!(
+                on_meta_data.videocodecid,
+                Some(OnMetaDataVideoCodecId::Legacy(VideoCodecId::Avc))
+            ); // AVC
+            assert_eq!(on_meta_data.duration, Some(0.0)); // 0 seconds (this was a live stream)
+            assert_eq!(on_meta_data.width, Some(2560.0));
+            assert_eq!(on_meta_data.height, Some(1440.0));
+            assert_eq!(on_meta_data.framerate, Some(144.0));
+            assert!(on_meta_data.videodatarate.is_some());
+            assert!(on_meta_data.audiodatarate.is_some());
         }
 
         // Audio Sequence Header Tag

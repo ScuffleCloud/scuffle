@@ -9,21 +9,29 @@ impl NetStreamCommand<'_> {
     pub fn write(self, buf: &mut impl io::Write, transaction_id: f64) -> Result<(), CommandError> {
         match self {
             Self::OnStatus {
-                level,
+                tc_url,
                 code,
                 description,
+                level,
             } => {
                 Amf0Encoder::encode_string(buf, "onStatus")?;
                 Amf0Encoder::encode_number(buf, transaction_id)?;
                 Amf0Encoder::encode_null(buf)?;
-                Amf0Encoder::encode_object(
-                    buf,
-                    &[
-                        ("level".into(), Amf0Value::String(level.to_str().into())),
-                        ("code".into(), Amf0Value::String(code)),
-                        ("description".into(), Amf0Value::String(description)),
-                    ],
-                )?;
+
+                let mut command_object = vec![
+                    ("level".into(), Amf0Value::String(level.to_str().into())),
+                    ("code".into(), Amf0Value::String(code)),
+                ];
+
+                if let Some(tc_url) = tc_url {
+                    command_object.push(("tcUrl".into(), Amf0Value::String(tc_url)));
+                }
+
+                if let Some(description) = description {
+                    command_object.push(("description".into(), Amf0Value::String(description)));
+                }
+
+                Amf0Encoder::encode_object(buf, &command_object)?;
             }
             Self::Play
             | Self::Play2
@@ -56,7 +64,8 @@ mod tests {
         NetStreamCommand::OnStatus {
             level: CommandResultLevel::Status,
             code: "idk".into(),
-            description: "description".into(),
+            description: Some("description".into()),
+            tc_url: None,
         }
         .write(&mut (&mut buf).writer(), 1.0)
         .expect("write");

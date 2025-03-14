@@ -20,9 +20,10 @@ pub enum NetStreamCommand<'a> {
     Seek,
     Pause,
     OnStatus {
-        level: CommandResultLevel,
+        tc_url: Option<Cow<'a, str>>,
         code: Cow<'a, str>,
-        description: Cow<'a, str>,
+        description: Option<Cow<'a, str>>,
+        level: CommandResultLevel,
     },
 }
 

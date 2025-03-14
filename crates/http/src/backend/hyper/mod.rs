@@ -7,8 +7,8 @@ use scuffle_context::ContextFutExt;
 use tracing::Instrument;
 
 use crate::error::Error;
-use crate::service::{HttpService, HttpServiceFactory};
 use crate::server::ConfigureSocketCallback;
+use crate::service::{HttpService, HttpServiceFactory};
 
 mod handler;
 mod stream;

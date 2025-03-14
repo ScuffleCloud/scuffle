@@ -393,7 +393,7 @@ impl Transmuxer {
                     });
                 }
                 FlvTagData::ScriptData(ScriptData::OnMetaData(metadata)) => {
-                    scriptdata_tag = Some(metadata.clone());
+                    scriptdata_tag = Some(*metadata.clone());
                 }
                 _ => {}
             }

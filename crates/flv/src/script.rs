@@ -5,11 +5,50 @@ use bytes::Bytes;
 use scuffle_amf0::{Amf0Decoder, Amf0Marker, Amf0Object, Amf0Value};
 use scuffle_bytes_util::BytesCursorExt;
 
+use crate::audio::header::{AudioFourCc, SoundFormat};
 use crate::error::Error;
+use crate::video::header::enhanced::VideoFourCc;
+use crate::video::header::legacy::VideoCodecId;
+
+#[derive(Debug, Clone, PartialEq)]
+pub enum OnMetaDataAudioCodecId {
+    Legacy(SoundFormat),
+    Enhanced(AudioFourCc),
+}
+
+impl OnMetaDataAudioCodecId {
+    fn from_amf0(value: &Amf0Value<'_>) -> Result<Self, Error> {
+        let n = value.as_number()? as u32;
+
+        if n > u8::MAX as u32 {
+            Ok(Self::Enhanced(AudioFourCc::from(n.to_be_bytes())))
+        } else {
+            Ok(Self::Legacy(SoundFormat::from(n as u8)))
+        }
+    }
+}
+
+#[derive(Debug, Clone, PartialEq)]
+pub enum OnMetaDataVideoCodecId {
+    Legacy(VideoCodecId),
+    Enhanced(VideoFourCc),
+}
+
+impl OnMetaDataVideoCodecId {
+    fn from_amf0(value: &Amf0Value<'_>) -> Result<Self, Error> {
+        let n = value.as_number()? as u32;
+
+        if n > u8::MAX as u32 {
+            Ok(Self::Enhanced(VideoFourCc::from(n.to_be_bytes())))
+        } else {
+            Ok(Self::Legacy(VideoCodecId::from(n as u8)))
+        }
+    }
+}
 
 #[derive(Debug, Clone, PartialEq)]
 pub struct OnMetaData {
-    pub audiocodecid: Option<f64>,
+    pub audiocodecid: Option<OnMetaDataAudioCodecId>,
     pub audiodatarate: Option<f64>,
     pub audiodelay: Option<f64>,
     pub audiosamplerate: Option<f64>,
@@ -21,9 +60,11 @@ pub struct OnMetaData {
     pub framerate: Option<f64>,
     pub height: Option<f64>,
     pub stereo: Option<bool>,
-    pub videocodecid: Option<f64>,
+    pub videocodecid: Option<OnMetaDataVideoCodecId>,
     pub videodatarate: Option<f64>,
     pub width: Option<f64>,
+    pub audio_track_id_info_map: Option<HashMap<String, Amf0Value<'static>>>,
+    pub video_track_id_info_map: Option<HashMap<String, Amf0Value<'static>>>,
     pub other: HashMap<String, Amf0Value<'static>>,
 }
 
@@ -51,10 +92,12 @@ impl TryFrom<Amf0Object<'_>> for OnMetaData {
         let mut videocodecid = None;
         let mut videodatarate = None;
         let mut width = None;
+        let mut audio_track_id_info_map = None;
+        let mut video_track_id_info_map = None;
 
         for (key, value) in value.iter() {
             match key.as_ref() {
-                "audiocodecid" => audiocodecid = Some(value.as_number()?),
+                "audiocodecid" => audiocodecid = Some(OnMetaDataAudioCodecId::from_amf0(value)?),
                 "audiodatarate" => audiodatarate = Some(value.as_number()?),
                 "audiodelay" => audiodelay = Some(value.as_number()?),
                 "audiosamplerate" => audiosamplerate = Some(value.as_number()?),
@@ -66,9 +109,29 @@ impl TryFrom<Amf0Object<'_>> for OnMetaData {
                 "framerate" => framerate = Some(value.as_number()?),
                 "height" => height = Some(value.as_number()?),
                 "stereo" => stereo = Some(value.as_boolean()?),
-                "videocodecid" => videocodecid = Some(value.as_number()?),
+                "videocodecid" => videocodecid = Some(OnMetaDataVideoCodecId::from_amf0(value)?),
                 "videodatarate" => videodatarate = Some(value.as_number()?),
                 "width" => width = Some(value.as_number()?),
+                "audioTrackIdInfoMap" => {
+                    let mut map = HashMap::new();
+
+                    let object = value.as_object()?;
+                    for (key, value) in object.iter() {
+                        map.insert(key.to_string(), value.to_owned());
+                    }
+
+                    audio_track_id_info_map = Some(map);
+                }
+                "videoTrackIdInfoMap" => {
+                    let mut map = HashMap::new();
+
+                    let object = value.as_object()?;
+                    for (key, value) in object.iter() {
+                        map.insert(key.to_string(), value.to_owned());
+                    }
+
+                    video_track_id_info_map = Some(map);
+                }
                 _ => {
                     other.insert(key.to_string(), value.to_owned());
                 }
@@ -91,6 +154,8 @@ impl TryFrom<Amf0Object<'_>> for OnMetaData {
             videocodecid,
             videodatarate,
             width,
+            audio_track_id_info_map,
+            video_track_id_info_map,
             other,
         })
     }
@@ -124,7 +189,8 @@ impl TryFrom<Amf0Object<'_>> for OnXmpData {
 
 #[derive(Debug, Clone, PartialEq)]
 pub enum ScriptData {
-    OnMetaData(OnMetaData),
+    // Boxed because it's so big
+    OnMetaData(Box<OnMetaData>),
     OnXmpData(OnXmpData),
     Other {
         /// The name of the script data
@@ -153,7 +219,7 @@ impl ScriptData {
                 let Amf0Value::Object(data) = value else { unreachable!() };
                 let data = OnMetaData::try_from(data)?;
 
-                Ok(Self::OnMetaData(data))
+                Ok(Self::OnMetaData(Box::new(data)))
             }
             "onXMPData" => {
                 let value = amf0_reader.decode()?;

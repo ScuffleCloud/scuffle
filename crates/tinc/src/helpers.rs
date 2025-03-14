@@ -6,87 +6,25 @@
 //!
 //! It is subject to change at any time.
 
-use std::collections::HashMap;
 use std::marker::PhantomData;
 
-macro_rules! defer_schemars_impl {
-    ($defer:ty) => {
-        // fn is_referenceable() -> bool {
-        //     <$defer as ::schemars::JsonSchema>::is_referenceable()
-        // }
+use axum::extract::FromRequestParts;
+use axum::extract::path::ErrorKind;
+use axum::extract::rejection::PathRejection;
+use http::StatusCode;
+use http::request::Parts;
+use serde::de::DeserializeOwned;
 
-        // fn schema_name() -> ::std::string::String {
-        //     <$defer as ::schemars::JsonSchema>::schema_name()
-        // }
+pub trait SerdeTransform<T> {
+    fn serialize<S>(value: &Self, serializer: S) -> Result<S::Ok, S::Error>
+    where
+        S: serde::Serializer;
 
-        // fn schema_id() -> ::std::borrow::Cow<'static, str> {
-        //     <$defer as ::schemars::JsonSchema>::schema_id()
-        // }
-
-        // fn json_schema(generator: &mut ::schemars::r#gen::SchemaGenerator) -> ::schemars::schema::Schema {
-        //     <$defer as ::schemars::JsonSchema>::json_schema(generator)
-        // }
-
-        // fn _schemars_private_non_optional_json_schema(
-        //     generator: &mut ::schemars::r#gen::SchemaGenerator,
-        // ) -> ::schemars::schema::Schema {
-        //     <$defer as ::schemars::JsonSchema>::_schemars_private_non_optional_json_schema(generator)
-        // }
-
-        // fn _schemars_private_is_option() -> bool {
-        //     <$defer as ::schemars::JsonSchema>::_schemars_private_is_option()
-        // }
-    };
+    fn deserialize<'de, D>(deserializer: D) -> Result<Self, D::Error>
+    where
+        D: serde::Deserializer<'de>,
+        Self: Sized;
 }
-
-pub mod primitive_types {
-    macro_rules! impl_primitive_type {
-        ($name:ident, $type:ty) => {
-            pub struct $name;
-
-            // impl ::schemars::JsonSchema for $name {
-            //     defer_schemars_impl!($type);
-            // }
-        };
-    }
-
-    impl_primitive_type!(I32, ::core::primitive::i32);
-    impl_primitive_type!(I64, ::core::primitive::i64);
-    impl_primitive_type!(U32, ::core::primitive::u32);
-    impl_primitive_type!(U64, ::core::primitive::u64);
-    impl_primitive_type!(F32, ::core::primitive::f32);
-    impl_primitive_type!(F64, ::core::primitive::f64);
-    impl_primitive_type!(String, ::std::string::String);
-    // impl_primitive_type!(Bytes, ::std::vec::Vec<u8>);
-}
-
-pub struct SchemaMap<K, V>(PhantomData<HashMap<K, V>>);
-
-// impl<K, V> schemars::JsonSchema for SchemaMap<K, V>
-// where
-//     K: schemars::JsonSchema,
-//     V: schemars::JsonSchema,
-// {
-//     defer_schemars_impl!(::std::collections::HashMap<K, V>);
-// }
-
-pub struct SchemaList<T>(PhantomData<Vec<T>>);
-
-// impl<T> schemars::JsonSchema for SchemaList<T>
-// where
-//     T: schemars::JsonSchema,
-// {
-//     defer_schemars_impl!(::std::vec::Vec<T>);
-// }
-
-pub struct SchemaOptional<T>(PhantomData<Option<T>>);
-
-// impl<T> schemars::JsonSchema for SchemaOptional<T>
-// where
-//     T: schemars::JsonSchema,
-// {
-//     defer_schemars_impl!(::core::option::Option<T>);
-// }
 
 trait SerdeHelper<T>: Sized {
     fn serialize<S>(value: &Self, serializer: S) -> Result<S::Ok, S::Error>
@@ -123,18 +61,16 @@ trait Cast<T> {
 
 macro_rules! cast_asserts {
     ($helper:ty, $type:ty) => {
-        debug_assert!(
-            std::mem::size_of::<$helper>() == std::mem::size_of::<$type>(),
-            "Size of {} must be the same as {}",
-            std::any::type_name::<$helper>(),
-            std::any::type_name::<$type>(),
-        );
-        debug_assert!(
-            std::mem::align_of::<$helper>() == std::mem::align_of::<$type>(),
-            "Alignment of {} must be the same as {}",
-            std::any::type_name::<$helper>(),
-            std::any::type_name::<$type>(),
-        );
+        const {
+            assert!(
+                std::mem::size_of::<$helper>() == std::mem::size_of::<$type>(),
+                "Size of $helper must be the same as $type",
+            );
+            assert!(
+                std::mem::align_of::<$helper>() == std::mem::align_of::<$type>(),
+                "Alignment of $helper must be the same as $type",
+            );
+        };
     };
 }
 
@@ -161,6 +97,47 @@ pub mod well_known {
         T::deserialize(deserializer)
     }
 
+    #[allow(private_bounds)]
+    #[inline(always)]
+    pub fn deserialize_non_optional<'de, D, T, X>(deserializer: D) -> Result<Option<T>, D::Error>
+    where
+        D: serde::Deserializer<'de>,
+        T: SerdeHelper<X>,
+    {
+        let t = T::deserialize(deserializer)?;
+        Ok(Some(t))
+    }
+
+    macro_rules! forward_schema {
+        ($ty:ty) => {
+            fn always_inline_schema() -> bool {
+                <$ty as ::schemars::JsonSchema>::always_inline_schema()
+            }
+
+            fn schema_name() -> std::borrow::Cow<'static, str> {
+                <$ty as ::schemars::JsonSchema>::schema_name()
+            }
+
+            fn schema_id() -> std::borrow::Cow<'static, str> {
+                <$ty as ::schemars::JsonSchema>::schema_id()
+            }
+
+            fn json_schema(generator: &mut ::schemars::SchemaGenerator) -> ::schemars::Schema {
+                <$ty as ::schemars::JsonSchema>::json_schema(generator)
+            }
+
+            fn _schemars_private_non_optional_json_schema(
+                generator: &mut ::schemars::SchemaGenerator,
+            ) -> ::schemars::Schema {
+                <$ty as ::schemars::JsonSchema>::_schemars_private_non_optional_json_schema(generator)
+            }
+
+            fn _schemars_private_is_option() -> bool {
+                <$ty as ::schemars::JsonSchema>::_schemars_private_is_option()
+            }
+        };
+    }
+
     macro_rules! impl_cast {
         ($raw:ty, $type:ty, $helper:ty $(: $($tt:tt)*)?) => {
             impl<$($($tt)*)?> Cast<$type> for $helper {
@@ -174,15 +151,15 @@ pub mod well_known {
             impl<'a, $($($tt)*)?> Cast<&'a $type> for &'a $helper {
                 #[inline(always)]
                 fn cast(self) -> &'a $type {
-                    cast_asserts!(&$helper, &$type);
-                    unsafe { std::mem::transmute::<&'a $helper, &'a $type>(self) }
+                    cast_asserts!($helper, $type);
+                    unsafe { &*(self as *const $helper as *const $type) }
                 }
             }
 
             impl<$($($tt)*)?> Cast<$helper> for $type {
                 #[inline(always)]
                 fn cast(self) -> $helper {
-                    cast_asserts!($type, $helper);
+                    cast_asserts!($helper, $type);
                     unsafe { std::mem::transmute::<$type, $helper>(self) }
                 }
             }
@@ -190,8 +167,8 @@ pub mod well_known {
             impl<'a, $($($tt)*)?> Cast<&'a $helper> for &'a $type {
                 #[inline(always)]
                 fn cast(self) -> &'a $helper {
-                    cast_asserts!(&$type, &$helper);
-                    unsafe { std::mem::transmute::<&'a $type, &'a $helper>(self) }
+                    cast_asserts!($helper, $type);
+                    unsafe { &*(self as *const $type as *const $helper) }
                 }
             }
 
@@ -261,11 +238,32 @@ pub mod well_known {
         }
     }
 
-    // impl schemars::JsonSchema for Timestamp {
-    //     defer_schemars_impl!(::chrono::DateTime<chrono::Utc>);
-    // }
+    impl schemars::JsonSchema for Timestamp {
+        forward_schema!(chrono::DateTime<chrono::Utc>);
+    }
 
     impl_serde_helper!(Duration, prost_types::Duration);
+
+    impl schemars::JsonSchema for Duration {
+        fn always_inline_schema() -> bool {
+            true
+        }
+
+        fn schema_id() -> std::borrow::Cow<'static, str> {
+            "Duration".into()
+        }
+
+        fn schema_name() -> std::borrow::Cow<'static, str> {
+            "Duration".into()
+        }
+
+        fn json_schema(_: &mut schemars::SchemaGenerator) -> schemars::Schema {
+            schemars::json_schema!({
+                "type": "string",
+                "pattern": r"^\d+(\.\d+)?s$",
+            })
+        }
+    }
 
     impl serde::Serialize for Duration {
         fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
@@ -331,28 +329,6 @@ pub mod well_known {
         }
     }
 
-    // impl schemars::JsonSchema for Duration {
-    //     fn is_referenceable() -> bool {
-    //         false
-    //     }
-
-    //     fn schema_name() -> String {
-    //         "Duration".to_string()
-    //     }
-
-    //     fn schema_id() -> std::borrow::Cow<'static, str> {
-    //         std::borrow::Cow::Borrowed("google.protobuf.Duration")
-    //     }
-
-    //     fn json_schema(_: &mut schemars::r#gen::SchemaGenerator) -> schemars::schema::Schema {
-    //         schemars::schema::SchemaObject {
-    //             instance_type: Some(schemars::schema::InstanceType::String.into()),
-    //             ..Default::default()
-    //         }
-    //         .into()
-    //     }
-    // }
-
     impl_serde_helper!(Struct, prost_types::Struct);
 
     impl serde::Serialize for Struct {
@@ -374,9 +350,9 @@ pub mod well_known {
         }
     }
 
-    // impl schemars::JsonSchema for Struct {
-    //     defer_schemars_impl!(::std::collections::HashMap<::std::string::String, Value>);
-    // }
+    impl schemars::JsonSchema for Struct {
+        forward_schema!(std::collections::BTreeMap<String, Value>);
+    }
 
     impl_serde_helper!(Value, prost_types::Value);
 
@@ -527,11 +503,15 @@ pub mod well_known {
         }
     }
 
-    // impl schemars::JsonSchema for Value {
-    //     defer_schemars_impl!(::serde_json::Value);
-    // }
+    impl schemars::JsonSchema for Value {
+        forward_schema!(serde_json::Value);
+    }
 
     impl_serde_helper!(Empty, ());
+
+    impl schemars::JsonSchema for Empty {
+        forward_schema!(());
+    }
 
     impl serde::Serialize for Empty {
         fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
@@ -551,11 +531,11 @@ pub mod well_known {
         }
     }
 
-    // impl schemars::JsonSchema for Empty {
-    //     defer_schemars_impl!(());
-    // }
-
     impl_serde_helper!(List, prost_types::ListValue);
+
+    impl schemars::JsonSchema for List {
+        forward_schema!(Vec<Value>);
+    }
 
     impl serde::Serialize for List {
         fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
@@ -575,17 +555,9 @@ pub mod well_known {
             Ok(List(prost_types::ListValue { values: values.cast() }))
         }
     }
-
-    // impl schemars::JsonSchema for List {
-    //     defer_schemars_impl!(::std::vec::Vec<Value>);
-    // }
 }
 
 pub struct Enum<T>(PhantomData<T>);
-
-// impl<T: schemars::JsonSchema> schemars::JsonSchema for Enum<T> {
-//     defer_schemars_impl!(T);
-// }
 
 const _: () = {
     #[repr(transparent)]
@@ -604,8 +576,8 @@ const _: () = {
             impl<'a, E, $($($tt)*)?> Cast<&'a $type> for &'a $helper {
                 #[inline(always)]
                 fn cast(self) -> &'a $type {
-                    cast_asserts!(&$helper, &$type);
-                    unsafe { std::mem::transmute::<&'a $helper, &'a $type>(self) }
+                    cast_asserts!($helper, $type);
+                    unsafe { &*(self as *const $helper as *const $type) }
                 }
             }
 
@@ -619,9 +591,9 @@ const _: () = {
 
             impl<'a, E, $($($tt)*)?> Cast<&'a $helper> for &'a $type {
                 #[inline(always)]
-                    fn cast(self) -> &'a $helper {
-                    cast_asserts!(&$type, &$helper);
-                    unsafe { std::mem::transmute::<&'a $type, &'a $helper>(self) }
+                fn cast(self) -> &'a $helper {
+                    cast_asserts!($type, $helper);
+                    unsafe { &*(self as *const $type as *const $helper) }
                 }
             }
 
@@ -705,5 +677,143 @@ impl<E> Enum<E> {
         I: SerdeHelper<Enum<E>>,
     {
         I::deserialize(deserializer)
+    }
+}
+
+pub fn deserialize_non_omitable<'de, D, T>(deserializer: D) -> Result<T, D::Error>
+where
+    D: serde::Deserializer<'de>,
+    T: serde::Deserialize<'de>,
+{
+    T::deserialize(deserializer)
+}
+
+pub fn deserialize_non_null_option<'de, D, T>(deserializer: D) -> Result<Option<T>, D::Error>
+where
+    D: serde::Deserializer<'de>,
+    T: serde::Deserialize<'de>,
+{
+    let value = T::deserialize(deserializer)?;
+    Ok(Some(value))
+}
+
+pub fn schemars_non_omitable(schema: &mut ::schemars::Schema) {
+    let Some(as_object) = schema.as_object_mut() else {
+        return;
+    };
+
+    if let Some(ty) = as_object.get_mut("type") {
+        match ty {
+            serde_json::Value::String(s) => {
+                if s != "null" {
+                    *ty = serde_json::Value::Array(vec![
+                        serde_json::Value::String(s.clone()),
+                        serde_json::Value::String("null".to_string()),
+                    ]);
+                }
+            }
+            serde_json::Value::Array(a) => {
+                if a.iter().all(|v| v != &serde_json::Value::String("null".to_string())) {
+                    a.push(serde_json::Value::String("null".to_string()));
+                }
+            }
+            _ => {}
+        }
+    } else if let Some(ty) = as_object.get_mut("oneOf") {
+        let array = ty.as_array_mut().expect("oneOf must be an array");
+        let null_type = serde_json::json!({
+            "type": "null",
+        });
+        if !array.iter().any(|v| v == &null_type) {
+            array.push(null_type);
+        }
+    }
+}
+
+#[derive(Debug, serde::Serialize)]
+pub struct PathError {
+    pub message: String,
+    pub location: Option<String>,
+}
+
+pub async fn parse_path<T>(parts: &mut Parts) -> Result<T, (StatusCode, PathError)>
+where
+    T: DeserializeOwned + Send + 'static,
+{
+    match axum::extract::Path::<T>::from_request_parts(parts, &()).await {
+        Ok(value) => Ok(value.0),
+        Err(rejection) => {
+            let (status, err) = match rejection {
+                PathRejection::FailedToDeserializePathParams(inner) => {
+                    let mut status = StatusCode::BAD_REQUEST;
+
+                    let kind = inner.into_kind();
+                    let err = match &kind {
+                        ErrorKind::WrongNumberOfParameters { .. } => PathError {
+                            message: kind.to_string(),
+                            location: None,
+                        },
+
+                        ErrorKind::ParseErrorAtKey { key, .. } => PathError {
+                            message: kind.to_string(),
+                            location: Some(key.clone()),
+                        },
+
+                        ErrorKind::ParseErrorAtIndex { index, .. } => PathError {
+                            message: kind.to_string(),
+                            location: Some(index.to_string()),
+                        },
+
+                        ErrorKind::ParseError { .. } => PathError {
+                            message: kind.to_string(),
+                            location: None,
+                        },
+
+                        ErrorKind::InvalidUtf8InPathParam { key } => PathError {
+                            message: kind.to_string(),
+                            location: Some(key.clone()),
+                        },
+
+                        ErrorKind::UnsupportedType { .. } => {
+                            // this error is caused by the programmer using an unsupported type
+                            // (such as nested maps) so respond with `500` instead
+                            status = StatusCode::INTERNAL_SERVER_ERROR;
+                            PathError {
+                                message: kind.to_string(),
+                                location: None,
+                            }
+                        }
+
+                        ErrorKind::Message(msg) => PathError {
+                            message: msg.clone(),
+                            location: None,
+                        },
+
+                        _ => PathError {
+                            message: format!("Unhandled deserialization error: {kind}"),
+                            location: None,
+                        },
+                    };
+
+                    (status, err)
+                }
+                PathRejection::MissingPathParams(error) => (
+                    StatusCode::INTERNAL_SERVER_ERROR,
+                    PathError {
+                        message: error.to_string(),
+                        location: None,
+                    },
+                ),
+                _ => (
+                    StatusCode::INTERNAL_SERVER_ERROR,
+                    PathError {
+                        message: format!("Unhandled path rejection: {rejection}"),
+                        location: None,
+                    },
+                ),
+            };
+
+            Err((status, err))
+        }
     }
 }

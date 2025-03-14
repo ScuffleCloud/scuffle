@@ -183,71 +183,13 @@ impl PrimitiveKind {
 //     Map(PrimitiveKind, Box<WellKnown>),
 // }
 
-fn get_common_import(start: &str, end: &str) -> String {
-    let start_parts: Vec<&str> = start.split('.').collect();
-    let end_parts: Vec<&str> = end.split('.').collect();
-
-    // Find common prefix length
-    let common_len = start_parts.iter().zip(&end_parts).take_while(|(a, b)| a == b).count();
-
-    // Number of `super::` needed
-    let num_supers = start_parts.len() - common_len - 1;
-    let super_prefix = "super::".repeat(num_supers);
-
-    // Remaining path from the common ancestor
-    let relative_path = end_parts[common_len..].join("::");
-
-    // Construct the final result
-    format!("{}{}", super_prefix, relative_path)
-}
-
 impl FieldKind {
-    pub fn serde_with(&self, current_namespace: &str) -> Option<String> {
+    pub fn strip_option(&self) -> &Self {
         match self {
-            FieldKind::WellKnown(_) => Some("::tinc::serde_helpers::well_known".to_owned()),
-            FieldKind::Optional(inner) => Some(inner.serde_with(current_namespace)?),
-            FieldKind::List(inner) => Some(inner.serde_with(current_namespace)?),
-            FieldKind::Map(_, inner) => Some(inner.serde_with(current_namespace)?),
-            FieldKind::Enum(name) => Some(format!(
-                "::tinc::serde_helpers::Enum::<{}>",
-                get_common_import(current_namespace, name)
-            )),
-            FieldKind::Primitive(_) => None,
-            FieldKind::Message(_) => None,
+            FieldKind::Optional(kind) => kind,
+            _ => self,
         }
     }
-
-    // pub fn schemars_with(&self, current_namespace: &str) -> Option<String> {
-    //     match self {
-    //         FieldKind::WellKnown(well_known) => Some(format!("::tinc::serde_helpers::well_known::{}", well_known.name())),
-    //         FieldKind::Optional(inner) => Some(format!(
-    //             "::tinc::serde_helpers::SchemaOptional<{}>",
-    //             inner.schemars_with(current_namespace)?
-    //         )),
-    //         FieldKind::List(inner) => Some(format!(
-    //             "::tinc::serde_helpers::SchemaList<{}>",
-    //             inner.schemars_with(current_namespace)?
-    //         )),
-    //         FieldKind::Map(key, inner) => Some(format!(
-    //             "::tinc::serde_helpers::SchemaMap<::tinc::serde_helpers::primitive_types::{}, {}>",
-    //             match key {
-    //                 PrimitiveKind::String => "String",
-    //                 PrimitiveKind::Bytes => "Bytes",
-    //                 PrimitiveKind::Bool => "Bool",
-    //                 PrimitiveKind::I32 => "I32",
-    //                 PrimitiveKind::I64 => "I64",
-    //                 PrimitiveKind::U32 => "U32",
-    //                 PrimitiveKind::U64 => "U64",
-    //                 PrimitiveKind::F32 => "F32",
-    //                 PrimitiveKind::F64 => "F64",
-    //             },
-    //             inner.schemars_with(current_namespace)?,
-    //         )),
-    //         FieldKind::Enum(name) => Some(get_common_import(current_namespace, name)),
-    //         FieldKind::Primitive(_) => None,
-    //         FieldKind::Message(_) => None,
-    //     }
-    // }
 
     pub fn enum_name(&self) -> Option<&str> {
         match self {
@@ -266,6 +208,51 @@ impl FieldKind {
             FieldKind::Map(_, value) => value.message_name(),
             FieldKind::Optional(kind) => kind.message_name(),
             _ => None,
+        }
+    }
+
+    pub fn from_field(field: &prost_reflect::FieldDescriptor) -> anyhow::Result<Self> {
+        let kind = match field.kind() {
+            prost_reflect::Kind::Message(message) if field.is_map() => {
+                let key =
+                    PrimitiveKind::from_field(&message.map_entry_key_field()).context("map key is not a valid primitive")?;
+                let value = Self::from_field(&message.map_entry_value_field()).context("map value")?;
+                FieldKind::Map(key, Box::new(value))
+            }
+            prost_reflect::Kind::Message(message) => match WellKnownType::from_proto_name(message.full_name()) {
+                Some(well_known) => FieldKind::WellKnown(well_known),
+                None if message.full_name().starts_with("google.protobuf.") => {
+                    anyhow::bail!("well-known type not supported: {}", message.full_name());
+                }
+                _ => FieldKind::Message(message.full_name().to_owned()),
+            },
+            prost_reflect::Kind::Enum(enum_) => FieldKind::Enum(enum_.full_name().to_owned()),
+            _ => {
+                let kind = PrimitiveKind::from_field(field).context("unknown field kind")?;
+                FieldKind::Primitive(kind)
+            }
+        };
+
+        if field.is_list() {
+            Ok(FieldKind::List(Box::new(kind)))
+        } else if field.supports_presence()
+            && (field.containing_oneof().is_none() || field.field_descriptor_proto().proto3_optional())
+        {
+            Ok(FieldKind::Optional(Box::new(kind)))
+        } else {
+            Ok(kind)
+        }
+    }
+
+    pub fn inner(&self) -> Option<&FieldKind> {
+        let mut this = self;
+        loop {
+            this = match this {
+                FieldKind::List(kind) => kind,
+                FieldKind::Map(_, value) => value,
+                FieldKind::Optional(kind) => kind,
+                _ => return Some(this),
+            }
         }
     }
 }
@@ -322,39 +309,6 @@ impl WellKnownType {
     }
 }
 
-impl FieldKind {
-    pub fn from_field(field: &prost_reflect::FieldDescriptor, required: bool) -> anyhow::Result<Self> {
-        let (kind, optional) = match field.kind() {
-            prost_reflect::Kind::Message(message) if field.is_map() => {
-                let key =
-                    PrimitiveKind::from_field(&message.map_entry_key_field()).context("map key is not a valid primitive")?;
-                let value = Self::from_field(&message.map_entry_value_field(), true).context("map value")?;
-                (FieldKind::Map(key, Box::new(value)), field.supports_presence())
-            }
-            prost_reflect::Kind::Message(message) => match WellKnownType::from_proto_name(message.full_name()) {
-                Some(well_known) => (FieldKind::WellKnown(well_known), true),
-                None if message.full_name().starts_with("google.protobuf.") => {
-                    anyhow::bail!("well-known type not supported: {}", message.full_name());
-                }
-                _ => (FieldKind::Message(message.full_name().to_owned()), true),
-            },
-            prost_reflect::Kind::Enum(enum_) => (FieldKind::Enum(enum_.full_name().to_owned()), field.supports_presence()),
-            _ => {
-                let kind = PrimitiveKind::from_field(field).context("unknown field kind")?;
-                (FieldKind::Primitive(kind), field.supports_presence())
-            }
-        };
-
-        if field.is_list() {
-            Ok(FieldKind::List(Box::new(kind)))
-        } else if optional && !required {
-            Ok(FieldKind::Optional(Box::new(kind)))
-        } else {
-            Ok(kind)
-        }
-    }
-}
-
 pub struct Extensions {
     // Message extensions
     schema_message: Extension<tinc_pb::SchemaMessageOptions>,
@@ -376,9 +330,17 @@ pub struct Extensions {
 
 #[derive(Default, Debug)]
 pub struct MessageOpts {
+    pub package: String,
     pub opts: tinc_pb::SchemaMessageOptions,
     pub fields: BTreeMap<String, FieldOpts>,
     pub oneofs: BTreeMap<String, OneofOpts>,
+}
+
+#[derive(Debug, Clone, Copy)]
+pub enum FieldVisibility {
+    Skip,
+    InputOnly,
+    OutputOnly,
 }
 
 #[derive(Debug)]
@@ -386,11 +348,15 @@ pub struct FieldOpts {
     pub kind: FieldKind,
     pub json_name: String,
     pub one_of: Option<String>,
+    pub omitable: bool,
+    pub nullable: bool,
+    pub visibility: Option<FieldVisibility>,
     pub opts: tinc_pb::SchemaFieldOptions,
 }
 
 #[derive(Default, Debug)]
 pub struct EnumOpts {
+    pub package: String,
     pub opts: tinc_pb::SchemaEnumOptions,
     pub variants: BTreeMap<String, VariantOpts>,
 }
@@ -398,10 +364,12 @@ pub struct EnumOpts {
 #[derive(Default, Debug)]
 pub struct VariantOpts {
     pub opts: tinc_pb::SchemaVariantOptions,
+    pub visibility: Option<FieldVisibility>,
 }
 
 #[derive(Default, Debug)]
 pub struct ServiceOpts {
+    pub package: String,
     pub opts: tinc_pb::HttpRouterOptions,
     pub methods: BTreeMap<String, MethodOpts>,
 }
@@ -479,6 +447,7 @@ impl Extensions {
         insert = insert || opts.is_some();
 
         let mut service_opts = ServiceOpts {
+            package: service.parent_file().package_name().to_owned(),
             opts: opts.unwrap_or_default(),
             methods: BTreeMap::new(),
         };
@@ -491,22 +460,24 @@ impl Extensions {
 
             insert = insert || !opts.is_empty();
 
-            let input = method.input();
-            let output = method.output();
+            if !opts.is_empty() {
+                let input = method.input();
+                let output = method.output();
 
-            service_opts.methods.insert(
-                method.name().to_owned(),
-                MethodOpts {
-                    opts,
-                    input: input.full_name().to_owned(),
-                    output: output.full_name().to_owned(),
-                },
-            );
+                service_opts.methods.insert(
+                    method.name().to_owned(),
+                    MethodOpts {
+                        opts,
+                        input: input.full_name().to_owned(),
+                        output: output.full_name().to_owned(),
+                    },
+                );
 
-            for message in [input, output] {
-                self.process_message(pool, &message, true)
-                    .with_context(|| method.name().to_owned())
-                    .with_context(|| message.full_name().to_owned())?;
+                for message in [input, output] {
+                    self.process_message(pool, &message, true)
+                        .with_context(|| method.name().to_owned())
+                        .with_context(|| message.full_name().to_owned())?;
+                }
             }
         }
 
@@ -537,6 +508,7 @@ impl Extensions {
 
         let oneofs = fields
             .iter()
+            .filter(|(field, _)| !field.field_descriptor_proto().proto3_optional())
             .filter_map(|(field, _)| field.containing_oneof())
             .map(|oneof| {
                 let opts = self.schema_oneof.decode(&oneof)?;
@@ -555,6 +527,7 @@ impl Extensions {
         self.messages.insert(
             message.full_name().to_owned(),
             MessageOpts {
+                package: message.parent_file().package_name().to_owned(),
                 opts: opts.unwrap_or_default(),
                 fields: BTreeMap::new(),
                 oneofs: BTreeMap::new(),
@@ -564,13 +537,34 @@ impl Extensions {
         for (field, opts) in fields {
             let opts = opts.unwrap_or_default();
 
-            let kind = FieldKind::from_field(&field, opts.required || field.containing_oneof().is_some())
-                .with_context(|| field.full_name().to_owned())?;
+            // This means the field is nullable, and can be omitted from the payload.
+            let nullable = field.field_descriptor_proto().proto3_optional();
+
+            // If the field is marked `is_optional` but presence is `Required` then the field is nullable but needs to be present in the payload.
+            // If the field is marked `Optional` and is not nullable it will be defaulted if not provided.
+            // if the field is `nullable` & `optional` then it will be defaulted (null) if not provided.
+            let omitable = opts.omitable.unwrap_or(nullable);
+            let visibility = opts.visibility.and_then(|v| match v {
+                tinc_pb::schema_field_options::Visibility::Skip(true) => Some(FieldVisibility::Skip),
+                tinc_pb::schema_field_options::Visibility::InputOnly(true) => Some(FieldVisibility::InputOnly),
+                tinc_pb::schema_field_options::Visibility::OutputOnly(true) => Some(FieldVisibility::OutputOnly),
+                _ => None,
+            });
+
+            let kind = FieldKind::from_field(&field).with_context(|| field.full_name().to_owned())?;
+
             self.messages.get_mut(message.full_name()).unwrap().fields.insert(
                 field.name().to_owned(),
                 FieldOpts {
                     kind: kind.clone(),
-                    one_of: field.containing_oneof().map(|f| f.name().to_owned()),
+                    omitable,
+                    nullable,
+                    visibility,
+                    one_of: if !nullable {
+                        field.containing_oneof().map(|f| f.name().to_owned())
+                    } else {
+                        None
+                    },
                     json_name: field.json_name().to_owned(),
                     opts,
                 },
@@ -599,7 +593,7 @@ impl Extensions {
         Ok(())
     }
 
-    fn process_enum(&mut self, pool: &DescriptorPool, enum_: &EnumDescriptor, insert: bool) -> anyhow::Result<()> {
+    fn process_enum(&mut self, _pool: &DescriptorPool, enum_: &EnumDescriptor, insert: bool) -> anyhow::Result<()> {
         if self.enums.contains_key(enum_.full_name()) {
             return Ok(());
         }
@@ -624,6 +618,7 @@ impl Extensions {
         self.enums.insert(
             enum_.full_name().to_owned(),
             EnumOpts {
+                package: enum_.parent_file().package_name().to_owned(),
                 opts: opts.unwrap_or_default(),
                 variants: BTreeMap::new(),
             },
@@ -632,12 +627,18 @@ impl Extensions {
         let enum_opts = self.enums.get_mut(enum_.full_name()).unwrap();
 
         for (variant, opts) in values {
-            enum_opts.variants.insert(
-                variant.name().to_owned(),
-                VariantOpts {
-                    opts: opts.unwrap_or_default(),
-                },
-            );
+            let opts = opts.unwrap_or_default();
+
+            let visibility = opts.visibility.and_then(|v| match v {
+                tinc_pb::schema_variant_options::Visibility::Skip(true) => Some(FieldVisibility::Skip),
+                tinc_pb::schema_variant_options::Visibility::InputOnly(true) => Some(FieldVisibility::InputOnly),
+                tinc_pb::schema_variant_options::Visibility::OutputOnly(true) => Some(FieldVisibility::OutputOnly),
+                _ => None,
+            });
+
+            enum_opts
+                .variants
+                .insert(variant.name().to_owned(), VariantOpts { visibility, opts });
         }
 
         Ok(())

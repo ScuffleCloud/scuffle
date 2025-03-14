@@ -14,7 +14,7 @@ license = "MIT OR Apache-2.0"
 
 ### BEGIN HAKARI SECTION
 [dependencies]
-aho-corasick = { version = "1", default-features = false, features = ["perf-literal", "std"] }
+axum = { version = "0.8", features = ["ws"] }
 bitflags = { version = "2", default-features = false, features = ["serde"] }
 bytes = { version = "1" }
 camino = { version = "1", default-features = false, features = ["serde1"] }
@@ -26,7 +26,6 @@ crossbeam-utils = { version = "0.8" }
 digest = { version = "0.10", features = ["mac", "std"] }
 either = { version = "1", default-features = false, features = ["use_std"] }
 fastrand = { version = "2" }
-form_urlencoded = { version = "1" }
 futures = { version = "0.3" }
 futures-channel = { version = "0.3", features = ["sink"] }
 futures-executor = { version = "0.3" }
@@ -53,14 +52,13 @@ prost = { version = "0.13", features = ["prost-derive"] }
 prost-types = { version = "0.13" }
 quote = { version = "1" }
 rand = { version = "0.9" }
-regex = { version = "1" }
-regex-automata = { version = "0.4", default-features = false, features = ["dfa-onepass", "hybrid", "meta", "nfa-backtrack", "perf-inline", "perf-literal", "unicode"] }
-regex-syntax = { version = "0.8" }
+regex = { version = "1", default-features = false, features = ["std", "unicode"] }
+regex-automata = { version = "0.4", default-features = false, features = ["meta", "std", "unicode"] }
+regex-syntax = { version = "0.8", default-features = false, features = ["std", "unicode"] }
 reqwest = { version = "0.12", default-features = false, features = ["http2", "http3", "rustls-tls"] }
 rusty_ffmpeg = { version = "0.16", default-features = false, features = ["link_system_ffmpeg", "link_vcpkg_ffmpeg"] }
-semver = { version = "1", features = ["serde"] }
 serde = { version = "1", features = ["alloc", "derive"] }
-serde_json = { version = "1", features = ["raw_value", "unbounded_depth"] }
+serde_json = { version = "1", features = ["alloc", "raw_value", "unbounded_depth"] }
 smallvec = { version = "1", default-features = false, features = ["const_new"] }
 syn = { version = "2", features = ["extra-traits", "fold", "full", "visit", "visit-mut"] }
 sync_wrapper = { version = "1", default-features = false, features = ["futures"] }
@@ -73,10 +71,9 @@ tracing = { version = "0.1", features = ["log"] }
 tracing-core = { version = "0.1" }
 tracing-log = { version = "0.2", default-features = false, features = ["log-tracer", "std"] }
 tracing-subscriber = { version = "0.3", features = ["env-filter"] }
-url = { version = "2", features = ["serde"] }
 
 [build-dependencies]
-aho-corasick = { version = "1", default-features = false, features = ["perf-literal", "std"] }
+axum = { version = "0.8", features = ["ws"] }
 bitflags = { version = "2", default-features = false, features = ["serde"] }
 bytes = { version = "1" }
 camino = { version = "1", default-features = false, features = ["serde1"] }
@@ -88,7 +85,6 @@ crossbeam-utils = { version = "0.8" }
 digest = { version = "0.10", features = ["mac", "std"] }
 either = { version = "1", default-features = false, features = ["use_std"] }
 fastrand = { version = "2" }
-form_urlencoded = { version = "1" }
 futures = { version = "0.3" }
 futures-channel = { version = "0.3", features = ["sink"] }
 futures-executor = { version = "0.3" }
@@ -115,14 +111,13 @@ prost = { version = "0.13", features = ["prost-derive"] }
 prost-types = { version = "0.13" }
 quote = { version = "1" }
 rand = { version = "0.9" }
-regex = { version = "1" }
-regex-automata = { version = "0.4", default-features = false, features = ["dfa-onepass", "hybrid", "meta", "nfa-backtrack", "perf-inline", "perf-literal", "unicode"] }
-regex-syntax = { version = "0.8" }
+regex = { version = "1", default-features = false, features = ["std", "unicode"] }
+regex-automata = { version = "0.4", default-features = false, features = ["meta", "std", "unicode"] }
+regex-syntax = { version = "0.8", default-features = false, features = ["std", "unicode"] }
 reqwest = { version = "0.12", default-features = false, features = ["http2", "http3", "rustls-tls"] }
 rusty_ffmpeg = { version = "0.16", default-features = false, features = ["link_system_ffmpeg", "link_vcpkg_ffmpeg"] }
-semver = { version = "1", features = ["serde"] }
 serde = { version = "1", features = ["alloc", "derive"] }
-serde_json = { version = "1", features = ["raw_value", "unbounded_depth"] }
+serde_json = { version = "1", features = ["alloc", "raw_value", "unbounded_depth"] }
 smallvec = { version = "1", default-features = false, features = ["const_new"] }
 syn = { version = "2", features = ["extra-traits", "fold", "full", "visit", "visit-mut"] }
 sync_wrapper = { version = "1", default-features = false, features = ["futures"] }
@@ -135,7 +130,6 @@ tracing = { version = "0.1", features = ["log"] }
 tracing-core = { version = "0.1" }
 tracing-log = { version = "0.2", default-features = false, features = ["log-tracer", "std"] }
 tracing-subscriber = { version = "0.3", features = ["env-filter"] }
-url = { version = "2", features = ["serde"] }
 
 [target.x86_64-unknown-linux-gnu.dependencies]
 bitflags = { version = "2", default-features = false, features = ["std"] }

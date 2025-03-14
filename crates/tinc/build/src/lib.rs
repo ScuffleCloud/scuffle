@@ -2,6 +2,7 @@ use anyhow::Context;
 use extensions::Extensions;
 use prost_reflect::DescriptorPool;
 
+mod codegen;
 mod extensions;
 
 #[derive(Debug)]
@@ -72,95 +73,27 @@ impl Config {
 
         extensions.process(&pool).context("failed to process extensions")?;
 
-        for (key, message) in extensions.messages() {
-            let message_custom_impl = message.opts.custom_impl.unwrap_or(false);
-            for (oneof, oneof_opts) in &message.oneofs {
-                let oneof_key = format!("{key}.{oneof}");
+        let modules = codegen::generate_modules(&extensions, &mut self.prost)?;
 
-                if !message_custom_impl {
-                    if !oneof_opts.opts.no_flatten.unwrap_or(false) {
-                        self.prost.field_attribute(&oneof_key, "#[serde(flatten)]");
-                    }
+        self.tonic
+            .compile_fds_with_config(self.prost, fds)
+            .context("failed to compile tonic fds")?;
 
-                    if let Some(rename) = &oneof_opts.opts.rename {
-                        self.prost
-                            .field_attribute(&oneof_key, format!("#[serde(rename = \"{rename}\")]"));
-                    }
-                }
-
-                if oneof_opts.opts.custom_impl.unwrap_or(message_custom_impl) {
-                    continue;
-                }
-
-                self.prost
-                    .enum_attribute(&oneof_key, "#[derive(::tinc::reexports::serde::Serialize)]");
-                self.prost
-                    .enum_attribute(&oneof_key, "#[derive(::tinc::reexports::serde::Deserialize)]");
-                self.prost
-                    .enum_attribute(&oneof_key, "#[serde(crate = \"::tinc::reexports::serde\")]");
-            }
-
-            if message_custom_impl {
-                continue;
-            }
-
-            self.prost
-                .message_attribute(key, "#[derive(::tinc::reexports::serde::Serialize)]");
-            self.prost
-                .message_attribute(key, "#[derive(::tinc::reexports::serde::Deserialize)]");
-            self.prost
-                .message_attribute(key, "#[serde(crate = \"::tinc::reexports::serde\")]");
-            self.prost.message_attribute(key, "#[serde(default)]");
-            for (field, field_opts) in &message.fields {
-                if field_opts
-                    .one_of
-                    .as_ref()
-                    .is_some_and(|oneof| message.oneofs.get(oneof).unwrap().opts.custom_impl.unwrap_or(false))
-                {
-                    continue;
-                }
-
-                let name = field_opts.opts.rename.as_ref().unwrap_or(&field_opts.json_name);
-                let field_key = if let Some(oneof) = &field_opts.one_of {
-                    format!("{key}.{oneof}.{field}")
-                } else {
-                    format!("{key}.{field}")
-                };
-
-                self.prost
-                    .field_attribute(&field_key, format!("#[serde(rename = \"{name}\")]"));
-                if let Some(serde_with) = field_opts.kind.serde_with(key) {
-                    self.prost
-                        .field_attribute(&field_key, format!("#[serde(with = \"{serde_with}\")]"));
-                }
-            }
+        for (package, module) in modules {
+            let path = out_dir.join(format!("{package}.rs"));
+            write_module(&path, module).with_context(|| package.to_owned())?;
         }
-
-        for (key, enum_) in extensions.enums() {
-            if enum_.opts.custom_impl.unwrap_or(false) {
-                continue;
-            }
-
-            self.prost
-                .enum_attribute(key, "#[derive(::tinc::reexports::serde::Serialize)]");
-            self.prost
-                .enum_attribute(key, "#[derive(::tinc::reexports::serde::Deserialize)]");
-            self.prost
-                .enum_attribute(key, "#[serde(crate = \"::tinc::reexports::serde\")]");
-            for (variant, variant_opts) in &enum_.variants {
-                if let Some(rename) = &variant_opts.opts.rename {
-                    self.prost
-                        .field_attribute(format!("{}.{}", key, variant), format!("#[serde(rename = \"{}\")]", rename));
-                }
-            }
-        }
-
-        for file in &fds.file {
-            dbg!(&file);
-        }
-
-        self.tonic.compile_fds_with_config(self.prost, fds).context("failed to compile tonic fds")?;
 
         Ok(())
     }
+}
+
+fn write_module(path: &std::path::Path, module: Vec<syn::Item>) -> anyhow::Result<()> {
+    let file = std::fs::read_to_string(path).context("read")?;
+    let mut file = syn::parse_file(&file).context("parse")?;
+
+    file.items.extend(module);
+    std::fs::write(path, prettyplease::unparse(&file)).context("write")?;
+
+    Ok(())
 }

@@ -220,7 +220,7 @@ where
                         .rustls_config(_rustls_config)
                         .maybe_configure_sock(self.configure_h3_sock.clone())
                         .build();
-                    
+
                     return backend.run().await;
                 }
                 #[cfg(any(feature = "http1", feature = "http2"))]
@@ -331,4 +331,3 @@ impl std::fmt::Debug for ConfigureSocketCallback {
         write!(f, "ConfigureSocketCallback ")
     }
 }
-

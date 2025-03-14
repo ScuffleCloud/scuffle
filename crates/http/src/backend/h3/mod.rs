@@ -11,8 +11,8 @@ use tracing::Instrument;
 use utils::copy_response_body;
 
 use crate::error::Error;
-use crate::service::{HttpService, HttpServiceFactory};
 use crate::server::ConfigureSocketCallback;
+use crate::service::{HttpService, HttpServiceFactory};
 
 pub mod body;
 mod utils;
@@ -85,7 +85,7 @@ where
             if let Some(cfg_fn) = self.configure_sock.as_ref() {
                 sock = cfg_fn.call(sock)?;
             }
-            
+
             sock.bind(&socket2::SockAddr::from(self.bind))?;
             sock.listen(128)?;
 

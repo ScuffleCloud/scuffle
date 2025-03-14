@@ -3285,6 +3285,7 @@ dependencies = [
  "serde",
  "serde_json",
  "smallvec",
+ "socket2",
  "stable_deref_trait",
  "syn",
  "sync_wrapper",

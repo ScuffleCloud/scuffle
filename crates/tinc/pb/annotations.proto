@@ -44,28 +44,34 @@ message HttpRouterOptions {
     ExternalDocs external_docs = 4;
 }
 
-enum NameStyle {
-    NAME_STYLE_UNSPECIFIED = 0;
-    SNAKE_CASE = 1;
-    CAMEL_CASE = 2;
+enum RenameAll {
+    RENAME_ALL_UNSPECIFIED = 0;
+    LOWER_CASE = 1;
+    UPPER_CASE = 2;
     PASCAL_CASE = 3;
-    KEBAB_CASE = 4;
+    CAMEL_CASE = 4;
+    SNAKE_CASE = 5;
+    SCREAMING_SNAKE_CASE = 6;
+    KEBAB_CASE = 7;
+    SCREAMING_KEBAB_CASE = 8;
 }
 
 message SchemaMessageOptions {
     optional bool custom_impl = 1;
-    optional NameStyle style = 2;
+    optional RenameAll rename_all = 2;
 }
 
 message SchemaFieldOptions {
     optional string rename = 1;
     repeated string content_type = 2;
-    // optional string default = 3;
     repeated string example = 4;
     repeated string description = 5;
-    bool read_only = 6;
-    bool write_only = 7;
-    bool required = 8;
+    optional bool omitable = 200;
+    oneof visibility {
+        bool skip = 101;
+        bool input_only = 102;
+        bool output_only = 103;
+    }
 
     message NumberConstraint {
         optional double min = 1;
@@ -108,16 +114,22 @@ message SchemaFieldOptions {
 
 message SchemaEnumOptions {
     optional bool custom_impl = 1;
-    optional bool integer_enum = 2;
-    optional NameStyle style = 3;
+    optional bool repr_enum = 2;
+    optional RenameAll rename_all = 3;
 }
 
 message SchemaVariantOptions {
     optional string rename = 1;
+    oneof visibility {
+        bool skip = 101;
+        bool input_only = 102;
+        bool output_only = 103;
+    }
 }
 
 message HttpEndpointOptions {
-    oneof pattern {
+    // HTTP method
+    oneof method {
         string get = 1;
         string post = 2;
         string put = 3;
@@ -125,8 +137,17 @@ message HttpEndpointOptions {
         string patch = 5;
     }
 
-    repeated string description = 6;
+    // Short summary of the endpoint
     optional string summary = 7;
+
+    // Long description of the endpoint
+    // Supports markdown
+    repeated string description = 6;
+
+    // optional ExternalDocs external_docs = 7;
+
+    optional string operation_id = 8;
+
 
     message RequestBody {
         repeated string description = 1;
@@ -147,7 +168,7 @@ message HttpEndpointOptions {
         repeated ContentType content_type = 2;
     }
 
-    optional RequestBody request = 8;
+    optional RequestBody request = 13;
     repeated SecurityOptions security = 9;
 
     message ResponseOptions {
@@ -179,7 +200,14 @@ message SecurityOptions {
 message SchemaOneofOptions {
     optional string rename = 1;
     optional bool custom_impl = 2;
-    optional bool no_flatten = 3;
-    optional NameStyle style = 4;
-    optional bool required = 5;
+    optional RenameAll rename_all = 4;
+    optional bool omitable = 5;
+    optional bool nullable = 6;
+
+    message Tagged {
+        string tag = 1;
+        optional string content = 2;
+    }
+
+    optional Tagged tagged = 100;
 }

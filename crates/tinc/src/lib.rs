@@ -1,5 +1,5 @@
 pub mod reexports {
-    pub use {chrono, serde, tinc_pb};
+    pub use {chrono, schemars, serde, serde_repr, tinc_pb};
 }
 
-pub mod serde_helpers;
+pub mod helpers;

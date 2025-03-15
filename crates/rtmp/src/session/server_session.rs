@@ -201,14 +201,22 @@ impl<S: tokio::io::AsyncRead + tokio::io::AsyncWrite + Unpin, H: SessionHandler>
                 .read_buf(&mut self.read_buf)
                 .with_timeout(Duration::from_millis(2500))
                 .await
-                .map_err(SessionError::Timeout)??;
+                .map_err(SessionError::Timeout)?? as u32;
 
             if n == 0 {
                 return Ok(false);
             }
 
-            let n = n.try_into().unwrap_or(u32::MAX);
+            // We have to send an acknowledgement every `self.acknowledgement_window_size` bytes.
+            // We also have to keep track of the total number of bytes read from the stream in `self.sequence_number`
+            // because it has to be sent as part of an acknowledgement message.
 
+            // This condition checks if we have read enough bytes to send the next acknowledgement.
+            // - `self.sequence_number % self.acknowledgement_window_size` calculates the number of bytes read since
+            //   the last acknowledgement.
+            // - `n` is the number of bytes read in this read operation.
+            // If the sum of the two is greater than or equal to the window size, we know that
+            // we just exceeded the window size and we need to send an acknowledgement again.
             if (self.sequence_number % self.acknowledgement_window_size) + n >= self.acknowledgement_window_size {
                 tracing::trace!(sequence_number = %self.sequence_number, "sending acknowledgement");
 
@@ -219,6 +227,7 @@ impl<S: tokio::io::AsyncRead + tokio::io::AsyncWrite + Unpin, H: SessionHandler>
                 .write(&mut self.write_buf, &self.chunk_writer)?;
             }
 
+            // Wrap back to 0 when we reach u32::MAX
             self.sequence_number = self.sequence_number.wrapping_add(n);
         }
 

@@ -1,5 +1,4 @@
-use std::io::Seek;
-
+use byteorder::{BigEndian, ReadBytesExt};
 use bytes::{Buf, Bytes};
 
 use super::header::FlvHeader;
@@ -29,7 +28,7 @@ impl FlvFile {
         while reader.has_remaining() {
             // We don't care about the previous tag size, its only really used for seeking
             // backwards.
-            reader.seek_relative(4)?;
+            reader.read_u32::<BigEndian>()?;
 
             // If there is no more data, we can stop reading.
             if !reader.has_remaining() {

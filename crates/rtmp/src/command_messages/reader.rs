@@ -1,4 +1,6 @@
 use std::borrow::Cow;
+use std::convert::Infallible;
+use std::str::FromStr;
 
 use bytes::Bytes;
 use scuffle_amf0::{Amf0Decoder, Amf0Marker, Amf0Value};
@@ -42,13 +44,15 @@ impl<'a> CommandType<'a> {
     }
 }
 
-impl From<&str> for CommandResultLevel {
-    fn from(s: &str) -> Self {
+impl FromStr for CommandResultLevel {
+    type Err = Infallible;
+
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
         match s {
-            "warning" => Self::Warning,
-            "status" => Self::Status,
-            "error" => Self::Error,
-            _ => Self::Unknown(s.to_string()),
+            "warning" => Ok(Self::Warning),
+            "status" => Ok(Self::Status),
+            "error" => Ok(Self::Error),
+            _ => Ok(Self::Unknown(s.to_string())),
         }
     }
 }

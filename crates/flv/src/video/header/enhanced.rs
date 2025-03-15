@@ -130,7 +130,7 @@ impl ExVideoTagHeader {
                     video_timestamp_nano_offset: mod_ex_data.read_u24::<BigEndian>()?,
                 });
             } else {
-                tracing::warn!(video_packet_mod_ex_type = ?video_packet_mod_ex_type, "unknown video packet modifier extension type");
+                tracing::trace!(video_packet_mod_ex_type = ?video_packet_mod_ex_type, "unknown video packet modifier extension type");
 
                 video_packet_mod_exs.push(VideoPacketModEx::Other {
                     video_packet_mod_ex_type,

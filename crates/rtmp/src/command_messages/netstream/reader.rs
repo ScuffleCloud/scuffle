@@ -1,7 +1,11 @@
+use std::convert::Infallible;
+use std::str::FromStr;
+
 use scuffle_amf0::{Amf0Decoder, Amf0Marker, Amf0Value};
 
 use super::NetStreamCommand;
 use super::define::NetStreamCommandPublishPublishingType;
+use crate::command_messages::CommandResultLevel;
 use crate::command_messages::error::CommandError;
 
 impl<'a> NetStreamCommand<'a> {
@@ -32,7 +36,7 @@ impl<'a> NetStreamCommand<'a> {
                 let Amf0Value::String(publishing_type) = decoder.decode_with_type(Amf0Marker::String)? else {
                     unreachable!();
                 };
-                let publishing_type = From::<&str>::from(&publishing_type);
+                let publishing_type = NetStreamCommandPublishPublishingType::from_str(&publishing_type).unwrap();
 
                 if let NetStreamCommandPublishPublishingType::Unknown(publishing_type) = &publishing_type {
                     tracing::warn!(publishing_type = ?publishing_type, "unknown publishing type in publish command");
@@ -72,7 +76,7 @@ impl<'a> NetStreamCommand<'a> {
                     return Err(CommandError::InvalidOnStatusInfoObject);
                 };
 
-                let level = From::<&str>::from(level);
+                let level = CommandResultLevel::from_str(level).unwrap();
 
                 let (_, Amf0Value::String(code)) = info_object.remove(
                     info_object
@@ -104,13 +108,15 @@ impl<'a> NetStreamCommand<'a> {
     }
 }
 
-impl From<&str> for NetStreamCommandPublishPublishingType {
-    fn from(s: &str) -> Self {
+impl FromStr for NetStreamCommandPublishPublishingType {
+    type Err = Infallible;
+
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
         match s {
-            "live" => Self::Live,
-            "record" => Self::Record,
-            "append" => Self::Append,
-            _ => Self::Unknown(s.to_string()),
+            "live" => Ok(Self::Live),
+            "record" => Ok(Self::Record),
+            "append" => Ok(Self::Append),
+            _ => Ok(Self::Unknown(s.to_string())),
         }
     }
 }
@@ -118,9 +124,12 @@ impl From<&str> for NetStreamCommandPublishPublishingType {
 #[cfg(test)]
 #[cfg_attr(all(test, coverage_nightly), coverage(off))]
 mod tests {
+    use std::str::FromStr;
+
     use scuffle_amf0::{Amf0Decoder, Amf0Encoder, Amf0Marker, Amf0Value};
 
     use super::NetStreamCommandPublishPublishingType;
+    use crate::command_messages::CommandResultLevel;
     use crate::command_messages::netstream::NetStreamCommand;
 
     #[test]
@@ -208,7 +217,7 @@ mod tests {
             command,
             NetStreamCommand::OnStatus {
                 tc_url: None,
-                level: "error".into(),
+                level: CommandResultLevel::Error,
                 code: "NetStream.Play.StreamNotFound".into(),
                 description: Some("Stream not found".into())
             }
@@ -218,19 +227,19 @@ mod tests {
     #[test]
     fn test_parse_publishing_type() {
         assert_eq!(
-            NetStreamCommandPublishPublishingType::from("live"),
+            NetStreamCommandPublishPublishingType::from_str("live").unwrap(),
             NetStreamCommandPublishPublishingType::Live
         );
         assert_eq!(
-            NetStreamCommandPublishPublishingType::from("record"),
+            NetStreamCommandPublishPublishingType::from_str("record").unwrap(),
             NetStreamCommandPublishPublishingType::Record
         );
         assert_eq!(
-            NetStreamCommandPublishPublishingType::from("append"),
+            NetStreamCommandPublishPublishingType::from_str("append").unwrap(),
             NetStreamCommandPublishPublishingType::Append
         );
         assert_eq!(
-            NetStreamCommandPublishPublishingType::from("unknown"),
+            NetStreamCommandPublishPublishingType::from_str("unknown").unwrap(),
             NetStreamCommandPublishPublishingType::Unknown("unknown".to_string())
         );
     }

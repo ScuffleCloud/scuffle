@@ -142,7 +142,7 @@ impl FlvTagData {
             FlvTagType::Video => Ok(FlvTagData::Video(VideoData::demux(reader)?)),
             FlvTagType::ScriptData => Ok(FlvTagData::ScriptData(ScriptData::demux(reader)?)),
             _ => {
-                tracing::warn!(tag_type = ?tag_type, "unknown tag type");
+                tracing::trace!(tag_type = ?tag_type, "unknown tag type");
 
                 Ok(FlvTagData::Unknown {
                     tag_type,

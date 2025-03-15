@@ -51,11 +51,14 @@ impl NetStreamCommand<'_> {
 #[cfg(test)]
 #[cfg_attr(all(test, coverage_nightly), coverage(off))]
 mod tests {
+    use std::str::FromStr;
+
     use bytes::{BufMut, BytesMut};
     use scuffle_amf0::Amf0Decoder;
 
     use super::*;
     use crate::command_messages::define::CommandResultLevel;
+    use crate::command_messages::netstream::NetStreamCommandPublishPublishingType;
 
     #[test]
     fn test_netstream_write_on_status() {
@@ -124,7 +127,7 @@ mod tests {
 
         let err = NetStreamCommand::Publish {
             publishing_name: "name".into(),
-            publishing_type: "type".into(),
+            publishing_type: NetStreamCommandPublishPublishingType::from_str("type").unwrap(),
         }
         .write(&mut (&mut BytesMut::new()).writer(), 1.0)
         .unwrap_err();

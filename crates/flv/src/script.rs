@@ -20,6 +20,10 @@ impl OnMetaDataAudioCodecId {
     fn from_amf0(value: &Amf0Value<'_>) -> Result<Self, Error> {
         let n = value.as_number()? as u32;
 
+        // Since SoundFormat is a u8, we can be sure that the number represents an AudioFourCc if it is greater
+        // than u8::MAX.
+        // Additionally, since the smallest possible AudioFourCc (4 spaces) is greater than u8::MAX,
+        // we can be sure that the number cannot represent an AudioFourCc if it is smaller than u8::MAX.
         if n > u8::MAX as u32 {
             Ok(Self::Enhanced(AudioFourCc::from(n.to_be_bytes())))
         } else {
@@ -38,6 +42,10 @@ impl OnMetaDataVideoCodecId {
     fn from_amf0(value: &Amf0Value<'_>) -> Result<Self, Error> {
         let n = value.as_number()? as u32;
 
+        // Since VideoCodecId is a u8, we can be sure that the number represents an VideoFourCc if it is greater
+        // than u8::MAX.
+        // Additionally, since the smallest possible VideoFourCc (4 spaces) is greater than u8::MAX,
+        // we can be sure that the number cannot represent an VideoFourCc if it is smaller than u8::MAX.
         if n > u8::MAX as u32 {
             Ok(Self::Enhanced(VideoFourCc::from(n.to_be_bytes())))
         } else {
@@ -214,7 +222,6 @@ impl ScriptData {
             // I'm not sure right now if that is the intended behavior though.
             "onMetaData" => {
                 let value = amf0_reader.decode()?;
-                println!("{:?}", value);
 
                 let Amf0Value::Object(data) = value else { unreachable!() };
                 let data = OnMetaData::try_from(data)?;
@@ -223,7 +230,6 @@ impl ScriptData {
             }
             "onXMPData" => {
                 let value = amf0_reader.decode()?;
-                println!("{:?}", value);
 
                 let Amf0Value::Object(data) = value else { unreachable!() };
                 let data = OnXmpData::try_from(data)?;
@@ -231,7 +237,7 @@ impl ScriptData {
                 Ok(Self::OnXmpData(data))
             }
             _ => {
-                tracing::warn!(name = %name, "unknown script data");
+                tracing::trace!(name = %name, "unknown script data");
 
                 let data = amf0_reader.decode_all()?;
 
@@ -252,28 +258,14 @@ mod tests {
     #[test]
     fn test_script_data() {
         let width = 1280.0f64.to_be_bytes();
+        #[rustfmt::skip]
         let data = [
             Amf0Marker::String as u8,
-            0, // Length (10 bytes)
-            10,
-            b'o', // "onMetaData"
-            b'n',
-            b'M',
-            b'e',
-            b't',
-            b'a',
-            b'D',
-            b'a',
-            b't',
-            b'a',
+            0, 10, // Length (10 bytes)
+            b'o', b'n', b'M', b'e', b't', b'a', b'D', b'a', b't', b'a',// "onMetaData"
             Amf0Marker::Object as u8,
-            0, // Length (5 bytes)
-            5,
-            b'w', // "width"
-            b'i',
-            b'd',
-            b't',
-            b'h',
+            0, 5, // Length (5 bytes)
+            b'w', b'i', b'd', b't', b'h', // "width"
             Amf0Marker::Number as u8,
             width[0],
             width[1],
@@ -283,9 +275,7 @@ mod tests {
             width[5],
             width[6],
             width[7],
-            0,
-            0,
-            Amf0Marker::ObjectEnd as u8,
+            0, 0, Amf0Marker::ObjectEnd as u8,
         ];
 
         let mut reader = io::Cursor::new(Bytes::from_owner(data));
@@ -296,20 +286,28 @@ mod tests {
             panic!("expected onMetaData");
         };
 
-        assert_eq!(metadata.audiocodecid, None);
-        assert_eq!(metadata.audiodatarate, None);
-        assert_eq!(metadata.audiodelay, None);
-        assert_eq!(metadata.audiosamplerate, None);
-        assert_eq!(metadata.audiosamplesize, None);
-        assert_eq!(metadata.can_seek_to_end, None);
-        assert_eq!(metadata.creationdate, None);
-        assert_eq!(metadata.duration, None);
-        assert_eq!(metadata.filesize, None);
-        assert_eq!(metadata.framerate, None);
-        assert_eq!(metadata.height, None);
-        assert_eq!(metadata.stereo, None);
-        assert_eq!(metadata.videocodecid, None);
-        assert_eq!(metadata.videodatarate, None);
-        assert_eq!(metadata.width, Some(1280.0));
+        assert_eq!(
+            *metadata,
+            OnMetaData {
+                audiocodecid: None,
+                audiodatarate: None,
+                audiodelay: None,
+                audiosamplerate: None,
+                audiosamplesize: None,
+                can_seek_to_end: None,
+                creationdate: None,
+                duration: None,
+                filesize: None,
+                framerate: None,
+                height: None,
+                stereo: None,
+                videocodecid: None,
+                videodatarate: None,
+                width: Some(1280.0),
+                audio_track_id_info_map: None,
+                video_track_id_info_map: None,
+                other: HashMap::new(),
+            }
+        );
     }
 }

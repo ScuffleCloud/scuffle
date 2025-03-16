@@ -2,6 +2,7 @@ use std::borrow::Cow;
 
 use super::netconnection::NetConnectionCommand;
 use super::netstream::NetStreamCommand;
+use super::on_status::OnStatus;
 
 #[derive(Debug, Clone)]
 pub struct Command<'a> {
@@ -16,6 +17,8 @@ pub enum CommandType<'a> {
     NetConnection(NetConnectionCommand<'a>),
     /// NetStream command
     NetStream(NetStreamCommand<'a>),
+    /// onStatus command
+    OnStatus(OnStatus<'a>),
     /// Any unknown command
     ///
     /// e.g. FFmpeg sends some commands that don't appear in any spec, so we need to handle them.

@@ -11,6 +11,8 @@ use super::handler::SessionData;
 use crate::chunk::{CHUNK_SIZE, ChunkReader, ChunkWriter};
 use crate::command_messages::netconnection::NetConnectionCommand;
 use crate::command_messages::netstream::{NetStreamCommand, NetStreamCommandPublishPublishingType};
+use crate::command_messages::on_status::OnStatus;
+use crate::command_messages::on_status::codes::{NET_STREAM_DELETE_STREAM_SUCCESS, NET_STREAM_PUBLISH_START};
 use crate::command_messages::{Command, CommandResultLevel, CommandType};
 use crate::handshake;
 use crate::handshake::HandshakeServer;
@@ -302,7 +304,7 @@ impl<S: tokio::io::AsyncRead + tokio::io::AsyncWrite + Unpin, H: SessionHandler>
     /// message from the client We then handle the command message
     async fn on_command_message(&mut self, stream_id: u32, command: Command<'_>) -> Result<(), crate::error::Error> {
         match command.net_command {
-            CommandType::NetConnection(NetConnectionCommand::Connect { app }) => {
+            CommandType::NetConnection(NetConnectionCommand::Connect { app, .. }) => {
                 self.on_command_connect(stream_id, command.transaction_id, &app).await?;
             }
             CommandType::NetConnection(NetConnectionCommand::CreateStream) => {
@@ -428,11 +430,11 @@ impl<S: tokio::io::AsyncRead + tokio::io::AsyncWrite + Unpin, H: SessionHandler>
         self.publishing_stream_ids.retain(|id| *id != stream_id);
 
         Command {
-            net_command: CommandType::NetStream(NetStreamCommand::OnStatus {
-                tc_url: None,
+            net_command: CommandType::OnStatus(OnStatus {
                 level: CommandResultLevel::Status,
-                code: "NetStream.DeleteStream.Suceess".into(),
+                code: NET_STREAM_DELETE_STREAM_SUCCESS.into(),
                 description: None,
+                others: None,
             }),
             transaction_id,
         }
@@ -465,11 +467,11 @@ impl<S: tokio::io::AsyncRead + tokio::io::AsyncWrite + Unpin, H: SessionHandler>
         EventMessageStreamBegin { stream_id }.write(&self.chunk_writer, &mut self.write_buf)?;
 
         Command {
-            net_command: CommandType::NetStream(NetStreamCommand::OnStatus {
-                tc_url: None,
+            net_command: CommandType::OnStatus(OnStatus {
                 level: CommandResultLevel::Status,
-                code: "NetStream.Publish.Start".into(),
+                code: NET_STREAM_PUBLISH_START.into(),
                 description: None,
+                others: None,
             }),
             transaction_id,
         }

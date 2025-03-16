@@ -1,7 +1,5 @@
 use std::borrow::Cow;
 
-use crate::command_messages::define::CommandResultLevel;
-
 /// NetStream commands as defined in 7.2.2.
 #[derive(Debug, Clone, PartialEq)]
 pub enum NetStreamCommand<'a> {
@@ -19,12 +17,6 @@ pub enum NetStreamCommand<'a> {
     },
     Seek,
     Pause,
-    OnStatus {
-        tc_url: Option<Cow<'a, str>>,
-        code: Cow<'a, str>,
-        description: Option<Cow<'a, str>>,
-        level: CommandResultLevel,
-    },
 }
 
 /// NetStream command publish publishing type

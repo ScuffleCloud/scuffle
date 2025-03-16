@@ -3,7 +3,7 @@ use std::io;
 use bytes::Bytes;
 
 use super::define::CommandResultLevel;
-use super::{Command, CommandType};
+use super::{Command, CommandError, CommandType};
 use crate::chunk::{Chunk, ChunkStreamId, ChunkWriter};
 use crate::messages::MessageType;
 
@@ -13,6 +13,15 @@ impl CommandResultLevel {
             CommandResultLevel::Warning => "warning",
             CommandResultLevel::Status => "status",
             CommandResultLevel::Error => "error",
+            CommandResultLevel::Unknown(s) => s,
+        }
+    }
+
+    pub fn into_string(self) -> String {
+        match self {
+            CommandResultLevel::Warning => "warning".to_string(),
+            CommandResultLevel::Status => "status".to_string(),
+            CommandResultLevel::Error => "error".to_string(),
             CommandResultLevel::Unknown(s) => s,
         }
     }
@@ -42,7 +51,10 @@ impl Command<'_> {
             CommandType::NetConnection(command) => {
                 command.write(&mut buf, self.transaction_id)?;
             }
-            CommandType::NetStream(command) => {
+            CommandType::NetStream(_) => {
+                return Err(crate::error::Error::from(CommandError::NoClientImplementation));
+            }
+            CommandType::OnStatus(command) => {
                 command.write(&mut buf, self.transaction_id)?;
             }
             // don't write unknown commands

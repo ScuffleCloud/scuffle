@@ -5,7 +5,6 @@ use scuffle_amf0::{Amf0Decoder, Amf0Marker, Amf0Value};
 
 use super::NetStreamCommand;
 use super::define::NetStreamCommandPublishPublishingType;
-use crate::command_messages::CommandResultLevel;
 use crate::command_messages::error::CommandError;
 
 impl<'a> NetStreamCommand<'a> {
@@ -49,60 +48,6 @@ impl<'a> NetStreamCommand<'a> {
             }
             "seek" => Ok(Some(Self::Seek)),
             "pause" => Ok(Some(Self::Pause)),
-            "onStatus" => {
-                // skip command object
-                decoder.decode_with_type(Amf0Marker::Null)?;
-
-                let Amf0Value::Object(info_object) = decoder.decode_with_type(Amf0Marker::Object)? else {
-                    unreachable!();
-                };
-                // we have to get ownership here because we have to own the inner Cows
-                let mut info_object = info_object.into_owned();
-
-                let tc_url = if let Some(idx) = info_object.iter().position(|(k, _)| k == "tcUrl") {
-                    let (_, Amf0Value::String(tc_url)) = info_object.remove(idx) else {
-                        return Err(CommandError::InvalidOnStatusInfoObject);
-                    };
-                    Some(tc_url)
-                } else {
-                    None
-                };
-
-                let (_, Amf0Value::String(level)) = info_object
-                    .iter()
-                    .find(|(k, _)| k == "level")
-                    .ok_or(CommandError::InvalidOnStatusInfoObject)?
-                else {
-                    return Err(CommandError::InvalidOnStatusInfoObject);
-                };
-
-                let level = CommandResultLevel::from_str(level).unwrap();
-
-                let (_, Amf0Value::String(code)) = info_object.remove(
-                    info_object
-                        .iter()
-                        .position(|(k, _)| k == "code")
-                        .ok_or(CommandError::InvalidOnStatusInfoObject)?,
-                ) else {
-                    return Err(CommandError::InvalidOnStatusInfoObject);
-                };
-
-                let description = if let Some(idx) = info_object.iter().position(|(k, _)| k == "description") {
-                    let (_, Amf0Value::String(description)) = info_object.remove(idx) else {
-                        return Err(CommandError::InvalidOnStatusInfoObject);
-                    };
-                    Some(description)
-                } else {
-                    None
-                };
-
-                Ok(Some(Self::OnStatus {
-                    tc_url,
-                    level,
-                    code,
-                    description,
-                }))
-            }
             _ => Ok(None),
         }
     }
@@ -126,10 +71,9 @@ impl FromStr for NetStreamCommandPublishPublishingType {
 mod tests {
     use std::str::FromStr;
 
-    use scuffle_amf0::{Amf0Decoder, Amf0Encoder, Amf0Marker, Amf0Value};
+    use scuffle_amf0::{Amf0Decoder, Amf0Encoder, Amf0Marker};
 
     use super::NetStreamCommandPublishPublishingType;
-    use crate::command_messages::CommandResultLevel;
     use crate::command_messages::netstream::NetStreamCommand;
 
     #[test]
@@ -190,36 +134,6 @@ mod tests {
             NetStreamCommand::Publish {
                 publishing_name: "live".into(),
                 publishing_type: NetStreamCommandPublishPublishingType::Record
-            }
-        );
-    }
-
-    #[test]
-    fn test_command_on_status() {
-        let mut payload = Vec::new();
-
-        Amf0Encoder::encode_null(&mut payload).unwrap();
-        Amf0Encoder::encode_object(
-            &mut payload,
-            &[
-                ("level".into(), Amf0Value::String("error".into())),
-                ("code".into(), Amf0Value::String("NetStream.Play.StreamNotFound".into())),
-                ("description".into(), Amf0Value::String("Stream not found".into())),
-            ],
-        )
-        .unwrap();
-
-        let command = NetStreamCommand::read("onStatus", &mut Amf0Decoder::new(&payload))
-            .unwrap()
-            .unwrap();
-
-        assert_eq!(
-            command,
-            NetStreamCommand::OnStatus {
-                tc_url: None,
-                level: CommandResultLevel::Error,
-                code: "NetStream.Play.StreamNotFound".into(),
-                description: Some("Stream not found".into())
             }
         );
     }

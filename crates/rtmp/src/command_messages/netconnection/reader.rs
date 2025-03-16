@@ -11,16 +11,21 @@ impl<'a> NetConnectionCommand<'a> {
                     unreachable!();
                 };
 
-                let (_, Amf0Value::String(app)) = command_object
-                    .into_owned() // we have to get ownership here because we have to own the inner Cows
-                    .into_iter()
-                    .find(|(k, _)| k == "app")
-                    .ok_or(CommandError::NoAppName)?
-                else {
+                let mut command_object = command_object.into_owned();
+
+                let (_, Amf0Value::String(app)) = command_object.remove(
+                    command_object
+                        .iter()
+                        .position(|(k, _)| k == "app")
+                        .ok_or(CommandError::NoAppName)?,
+                ) else {
                     return Err(CommandError::NoAppName);
                 };
 
-                Ok(Some(Self::Connect { app }))
+                Ok(Some(Self::Connect {
+                    app,
+                    others: command_object.into(),
+                }))
             }
             "call" => Ok(Some(Self::Call)),
             "close" => Ok(Some(Self::Close)),

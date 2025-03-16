@@ -68,7 +68,7 @@ mod tests {
                 } = command;
                 assert_eq!(transaction_id, 1.0);
 
-                let CommandType::NetConnection(NetConnectionCommand::Connect { app }) = net_command else {
+                let CommandType::NetConnection(NetConnectionCommand::Connect { app, .. }) = net_command else {
                     panic!("wrong command");
                 };
 

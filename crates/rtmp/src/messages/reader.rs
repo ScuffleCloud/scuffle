@@ -64,11 +64,11 @@ mod tests {
             MessageData::Amf0Command(command) => {
                 let Command {
                     transaction_id,
-                    net_command,
+                    command_type,
                 } = command;
                 assert_eq!(transaction_id, 1.0);
 
-                let CommandType::NetConnection(NetConnectionCommand::Connect(connect)) = net_command else {
+                let CommandType::NetConnection(NetConnectionCommand::Connect(connect)) = command_type else {
                     panic!("wrong command");
                 };
 

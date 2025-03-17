@@ -76,6 +76,35 @@ pub enum Amf0Value<'a> {
     LongString(Cow<'a, str>),
 }
 
+impl From<f64> for Amf0Value<'_> {
+    fn from(value: f64) -> Self {
+        Amf0Value::Number(value)
+    }
+}
+
+impl From<bool> for Amf0Value<'_> {
+    fn from(value: bool) -> Self {
+        Amf0Value::Boolean(value)
+    }
+}
+
+impl<'a> From<Cow<'a, str>> for Amf0Value<'a> {
+    fn from(value: Cow<'a, str>) -> Self {
+        // Check if the string is too long to fit in a normal amf0 string (2 bytes length)
+        if value.len() > u16::MAX as usize {
+            Amf0Value::LongString(value)
+        } else {
+            Amf0Value::String(value)
+        }
+    }
+}
+
+impl<'a> From<Amf0Object<'a>> for Amf0Value<'a> {
+    fn from(value: Amf0Object<'a>) -> Self {
+        Amf0Value::Object(value)
+    }
+}
+
 impl Amf0Value<'_> {
     /// Get the marker of the value.
     pub fn marker(&self) -> Amf0Marker {

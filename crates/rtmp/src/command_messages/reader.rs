@@ -21,11 +21,11 @@ impl<'a> Command<'a> {
             unreachable!();
         };
 
-        let net_command = CommandType::read(command_name, &mut amf_reader)?;
+        let command_type = CommandType::read(command_name, &mut amf_reader)?;
 
         Ok(Self {
             transaction_id,
-            net_command,
+            command_type,
         })
     }
 }
@@ -54,5 +54,22 @@ impl FromStr for CommandResultLevel {
             "error" => Ok(Self::Error),
             _ => Ok(Self::Unknown(s.to_string())),
         }
+    }
+}
+
+#[cfg(test)]
+#[cfg_attr(all(test, coverage_nightly), coverage(off))]
+mod tests {
+    use super::CommandResultLevel;
+
+    #[test]
+    fn test_command_result_level() {
+        assert_eq!("warning".parse::<CommandResultLevel>().unwrap(), CommandResultLevel::Warning);
+        assert_eq!("status".parse::<CommandResultLevel>().unwrap(), CommandResultLevel::Status);
+        assert_eq!("error".parse::<CommandResultLevel>().unwrap(), CommandResultLevel::Error);
+        assert_eq!(
+            "unknown".parse::<CommandResultLevel>().unwrap(),
+            CommandResultLevel::Unknown("unknown".to_string())
+        );
     }
 }

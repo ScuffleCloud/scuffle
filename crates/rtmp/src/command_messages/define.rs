@@ -7,7 +7,7 @@ use super::on_status::OnStatus;
 #[derive(Debug, Clone)]
 pub struct Command<'a> {
     pub transaction_id: f64,
-    pub net_command: CommandType<'a>,
+    pub command_type: CommandType<'a>,
 }
 
 /// This enum wraps the [`NetConnectionCommand`] and [`NetStreamCommand`] enums.

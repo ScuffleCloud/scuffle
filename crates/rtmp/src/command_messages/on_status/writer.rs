@@ -48,7 +48,7 @@ mod tests {
             level: CommandResultLevel::Status,
             code: "idk".into(),
             description: Some("description".into()),
-            others: None,
+            others: Some(vec![("testkey".into(), Amf0Value::String("testvalue".into()))].into()),
         }
         .write(&mut (&mut buf).writer(), 1.0)
         .expect("write");
@@ -67,6 +67,7 @@ mod tests {
                     ("level".into(), Amf0Value::String("status".into())),
                     ("code".into(), Amf0Value::String("idk".into())),
                     ("description".into(), Amf0Value::String("description".into())),
+                    ("testkey".into(), Amf0Value::String("testvalue".into())),
                 ]
                 .into()
             )

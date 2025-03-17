@@ -337,7 +337,7 @@ impl<S: tokio::io::AsyncRead + tokio::io::AsyncWrite + Unpin, H: SessionHandler>
     /// on_amf0_command_message is called when we receive an AMF0 command
     /// message from the client We then handle the command message
     async fn on_command_message(&mut self, stream_id: u32, command: Command<'_>) -> Result<(), crate::error::Error> {
-        match command.net_command {
+        match command.command_type {
             CommandType::NetConnection(NetConnectionCommand::Connect(connect)) => {
                 self.on_command_connect(stream_id, command.transaction_id, connect).await?;
             }
@@ -424,7 +424,7 @@ impl<S: tokio::io::AsyncRead + tokio::io::AsyncWrite + Unpin, H: SessionHandler>
         };
 
         Command {
-            net_command: CommandType::NetConnection(result),
+            command_type: CommandType::NetConnection(result),
             transaction_id,
         }
         .write(&mut self.write_buf, &self.chunk_writer)?;
@@ -439,7 +439,7 @@ impl<S: tokio::io::AsyncRead + tokio::io::AsyncWrite + Unpin, H: SessionHandler>
     async fn on_command_create_stream(&mut self, _stream_id: u32, transaction_id: f64) -> Result<(), crate::error::Error> {
         // 1.0 is the Stream ID of the stream we are creating
         Command {
-            net_command: CommandType::NetConnection(NetConnectionCommand::CreateStreamResult { stream_id: 1.0 }),
+            command_type: CommandType::NetConnection(NetConnectionCommand::CreateStreamResult { stream_id: 1.0 }),
             transaction_id,
         }
         .write(&mut self.write_buf, &self.chunk_writer)?;
@@ -465,7 +465,7 @@ impl<S: tokio::io::AsyncRead + tokio::io::AsyncWrite + Unpin, H: SessionHandler>
         self.publishing_stream_ids.retain(|id| *id != stream_id);
 
         Command {
-            net_command: CommandType::OnStatus(OnStatus {
+            command_type: CommandType::OnStatus(OnStatus {
                 level: CommandResultLevel::Status,
                 code: NET_STREAM_DELETE_STREAM_SUCCESS.into(),
                 description: None,
@@ -502,7 +502,7 @@ impl<S: tokio::io::AsyncRead + tokio::io::AsyncWrite + Unpin, H: SessionHandler>
         EventMessageStreamBegin { stream_id }.write(&self.chunk_writer, &mut self.write_buf)?;
 
         Command {
-            net_command: CommandType::OnStatus(OnStatus {
+            command_type: CommandType::OnStatus(OnStatus {
                 level: CommandResultLevel::Status,
                 code: NET_STREAM_PUBLISH_START.into(),
                 description: None,

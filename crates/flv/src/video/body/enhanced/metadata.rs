@@ -223,3 +223,89 @@ impl VideoPacketMetadataEntry {
         }
     }
 }
+
+#[cfg(test)]
+#[cfg_attr(all(test, coverage_nightly), coverage(off))]
+mod tests {
+    use std::borrow::Cow;
+
+    use scuffle_amf0::{Amf0Decoder, Amf0Object, Amf0Value};
+
+    use super::VideoPacketMetadataEntry;
+    use crate::video::body::enhanced::metadata::MetadataColorInfo;
+
+    #[test]
+    fn metadata_color_info() {
+        let object: Amf0Object = Cow::Owned(vec![
+            (
+                "colorConfig".into(),
+                Amf0Value::Object(Cow::Owned(vec![
+                    ("bitDepth".into(), 10.0.into()),
+                    ("colorSpace".into(), 1.0.into()),
+                    ("colorPrimaries".into(), 1.0.into()),
+                    ("transferCharacteristics".into(), 1.0.into()),
+                    ("matrixCoefficients".into(), 1.0.into()),
+                ])),
+            ),
+            (
+                "hdrCll".into(),
+                Amf0Value::Object(Cow::Owned(vec![
+                    ("maxFall".into(), 1000.0.into()),
+                    ("maxCll".into(), 1000.0.into()),
+                ])),
+            ),
+            (
+                "hdrMdcv".into(),
+                Amf0Value::Object(Cow::Owned(vec![
+                    ("redX".into(), 0.0.into()),
+                    ("redY".into(), 0.0.into()),
+                    ("greenX".into(), 0.0.into()),
+                    ("greenY".into(), 0.0.into()),
+                    ("blueX".into(), 0.0.into()),
+                    ("blueY".into(), 0.0.into()),
+                    ("whitePointX".into(), 0.0.into()),
+                    ("whitePointY".into(), 0.0.into()),
+                    ("maxLuminance".into(), 0.0.into()),
+                    ("minLuminance".into(), 0.0.into()),
+                ])),
+            ),
+        ]);
+
+        let mut buf = Vec::new();
+        scuffle_amf0::Amf0Encoder::encode_string(&mut buf, "colorInfo").unwrap();
+        scuffle_amf0::Amf0Encoder::encode_object(&mut buf, &object).unwrap();
+
+        let mut reader = Amf0Decoder::new(&buf);
+
+        let entry = VideoPacketMetadataEntry::read(&mut reader).unwrap();
+
+        assert_eq!(
+            entry,
+            VideoPacketMetadataEntry::ColorInfo(MetadataColorInfo {
+                color_config: Some(super::MetadataColorInfoColorConfig {
+                    bit_depth: Some(10.0),
+                    color_space: Some(1.0),
+                    color_primaries: Some(1.0),
+                    transfer_characteristics: Some(1.0),
+                    matrix_coefficients: Some(1.0),
+                }),
+                hdr_cll: Some(super::MetadataColorInfoHdrCll {
+                    max_fall: Some(1000.0),
+                    max_cll: Some(1000.0),
+                }),
+                hdr_mdcv: Some(super::MetadataColorInfoHdrMdcv {
+                    red_x: Some(0.0),
+                    red_y: Some(0.0),
+                    green_x: Some(0.0),
+                    green_y: Some(0.0),
+                    blue_x: Some(0.0),
+                    blue_y: Some(0.0),
+                    white_point_x: Some(0.0),
+                    white_point_y: Some(0.0),
+                    max_luminance: Some(0.0),
+                    min_luminance: Some(0.0),
+                }),
+            })
+        )
+    }
+}

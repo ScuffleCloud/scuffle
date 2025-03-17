@@ -5,6 +5,7 @@ use bytes::Bytes;
 use super::define::CommandResultLevel;
 use super::{Command, CommandError, CommandType};
 use crate::chunk::{Chunk, ChunkStreamId, ChunkWriter};
+use crate::error::Error;
 use crate::messages::MessageType;
 
 impl CommandResultLevel {
@@ -44,15 +45,15 @@ impl Command<'_> {
     // - SRS does not support AMF3 (https://github.com/ossrs/srs/blob/dcd02fe69cdbd7f401a7b8d139d95b522deb55b1/trunk/src/protocol/srs_protocol_rtmp_stack.cpp#L599)
     // However, the new enhanced-rtmp-v1 spec from YouTube does encourage the use of AMF3 over AMF0 (https://github.com/veovera/enhanced-rtmp)
     // We will eventually support this spec but for now we will stick to AMF0
-    pub fn write(self, io: &mut impl io::Write, writer: &ChunkWriter) -> Result<(), crate::error::Error> {
+    pub fn write(self, io: &mut impl io::Write, writer: &ChunkWriter) -> Result<(), Error> {
         let mut buf = Vec::new();
 
-        match self.net_command {
+        match self.command_type {
             CommandType::NetConnection(command) => {
                 command.write(&mut buf, self.transaction_id)?;
             }
             CommandType::NetStream(_) => {
-                return Err(crate::error::Error::from(CommandError::NoClientImplementation));
+                return Err(Error::from(CommandError::NoClientImplementation));
             }
             CommandType::OnStatus(command) => {
                 command.write(&mut buf, self.transaction_id)?;
@@ -70,13 +71,40 @@ impl Command<'_> {
 #[cfg(test)]
 #[cfg_attr(all(test, coverage_nightly), coverage(off))]
 mod tests {
-    use super::super::CommandResultLevel;
+    use super::super::{Command, CommandResultLevel};
+    use crate::chunk::ChunkWriter;
+    use crate::command_messages::netstream::NetStreamCommand;
+    use crate::command_messages::{CommandError, CommandType};
+    use crate::error::Error;
 
     #[test]
-    fn test_command_result_level_to_str() {
+    fn command_result_level_to_str() {
         assert_eq!(CommandResultLevel::Warning.to_str(), "warning");
         assert_eq!(CommandResultLevel::Status.to_str(), "status");
         assert_eq!(CommandResultLevel::Error.to_str(), "error");
         assert_eq!(CommandResultLevel::Unknown("custom".to_string()).to_str(), "custom");
+    }
+
+    #[test]
+    fn command_result_level_into_string() {
+        assert_eq!(CommandResultLevel::Warning.into_string(), "warning");
+        assert_eq!(CommandResultLevel::Status.into_string(), "status");
+        assert_eq!(CommandResultLevel::Error.into_string(), "error");
+        assert_eq!(CommandResultLevel::Unknown("custom".to_string()).into_string(), "custom");
+    }
+
+    #[test]
+    fn netstream_command_write() {
+        let mut buf = Vec::new();
+        let writer = ChunkWriter::default();
+
+        let err = Command {
+            command_type: CommandType::NetStream(NetStreamCommand::Play),
+            transaction_id: 1.0,
+        }
+        .write(&mut buf, &writer)
+        .unwrap_err();
+
+        assert!(matches!(err, Error::Command(CommandError::NoClientImplementation)));
     }
 }

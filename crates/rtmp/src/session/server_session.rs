@@ -10,7 +10,7 @@ use super::SessionHandler;
 use super::error::SessionError;
 use super::handler::SessionData;
 use crate::chunk::{CHUNK_SIZE, ChunkReader, ChunkWriter};
-use crate::command_messages::netconnection::NetConnectionCommand;
+use crate::command_messages::netconnection::{CapsExMask, NetConnectionCommand, NetConnectionCommandConnect};
 use crate::command_messages::netstream::{NetStreamCommand, NetStreamCommandPublishPublishingType};
 use crate::command_messages::on_status::OnStatus;
 use crate::command_messages::on_status::codes::{
@@ -48,6 +48,7 @@ pub struct Session<S, H> {
     /// connection (using different stream keys) and or play multiple streams
     /// per RTMP connection (using different stream keys) as per the RTMP spec.
     app_name: Option<Box<str>>,
+    caps_ex: Option<CapsExMask>,
     /// Used to read and write data
     io: S,
     handler: H,
@@ -80,6 +81,7 @@ impl<S, H> Session<S, H> {
             ctx: None,
             reconnect_request_sent: false,
             app_name: None,
+            caps_ex: None,
             io,
             handler,
             acknowledgement_window_size: DEFAULT_ACKNOWLEDGEMENT_WINDOW_SIZE,
@@ -208,8 +210,11 @@ impl<S: tokio::io::AsyncRead + tokio::io::AsyncWrite + Unpin, H: SessionHandler>
     ///
     /// Returns true if the session is still active, false if the client has closed the connection.
     async fn drive(&mut self) -> Result<bool, crate::error::Error> {
-        // Send a reconnect request if the context is cancelled
-        if !self.reconnect_request_sent && self.ctx.as_ref().is_some_and(|ctx| ctx.is_done()) {
+        // Send a reconnect request if we haven't yet, the client supports it and the context is cancelled
+        if !self.reconnect_request_sent
+            && self.caps_ex.is_some_and(|c| c.intersects(CapsExMask::Reconnect))
+            && self.ctx.as_ref().is_some_and(|ctx| ctx.is_done())
+        {
             OnStatus {
                 code: NET_CONNECTION_CONNECT_RECONNECT_REQUEST.into(),
                 level: CommandResultLevel::Status,
@@ -333,8 +338,8 @@ impl<S: tokio::io::AsyncRead + tokio::io::AsyncWrite + Unpin, H: SessionHandler>
     /// message from the client We then handle the command message
     async fn on_command_message(&mut self, stream_id: u32, command: Command<'_>) -> Result<(), crate::error::Error> {
         match command.net_command {
-            CommandType::NetConnection(NetConnectionCommand::Connect { app, .. }) => {
-                self.on_command_connect(stream_id, command.transaction_id, &app).await?;
+            CommandType::NetConnection(NetConnectionCommand::Connect(connect)) => {
+                self.on_command_connect(stream_id, command.transaction_id, connect).await?;
             }
             CommandType::NetConnection(NetConnectionCommand::CreateStream) => {
                 self.on_command_create_stream(stream_id, command.transaction_id).await?;
@@ -393,7 +398,7 @@ impl<S: tokio::io::AsyncRead + tokio::io::AsyncWrite + Unpin, H: SessionHandler>
         &mut self,
         _stream_id: u32,
         transaction_id: f64,
-        app: &str,
+        connect: NetConnectionCommandConnect<'_>,
     ) -> Result<(), crate::error::Error> {
         ProtocolControlMessageWindowAcknowledgementSize {
             acknowledgement_window_size: CHUNK_SIZE as u32,
@@ -406,7 +411,8 @@ impl<S: tokio::io::AsyncRead + tokio::io::AsyncWrite + Unpin, H: SessionHandler>
         }
         .write(&mut self.write_buf, &self.chunk_writer)?;
 
-        self.app_name = Some(Box::from(app));
+        self.app_name = Some(Box::from(connect.app));
+        self.caps_ex = connect.caps_ex;
 
         let result = NetConnectionCommand::ConnectResult {
             fmsver: "FMS/3,0,1,123".into(), // flash version (this value is used by other media servers as well)

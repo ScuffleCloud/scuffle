@@ -3157,6 +3157,7 @@ name = "scuffle-rtmp"
 version = "0.1.1"
 dependencies = [
  "async-trait",
+ "bitmask-enum",
  "byteorder",
  "bytes",
  "chrono",

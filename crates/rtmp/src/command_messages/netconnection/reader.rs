@@ -1,6 +1,7 @@
 use scuffle_amf0::{Amf0Decoder, Amf0Value};
 
 use super::NetConnectionCommand;
+use super::define::{CapsExMask, NetConnectionCommandConnect};
 use crate::command_messages::error::CommandError;
 
 impl<'a> NetConnectionCommand<'a> {
@@ -22,10 +23,22 @@ impl<'a> NetConnectionCommand<'a> {
                     return Err(CommandError::NoAppName);
                 };
 
-                Ok(Some(Self::Connect {
+                let caps_ex = command_object
+                    .iter()
+                    .position(|(k, _)| k == "capsEx")
+                    .map(|idx| command_object.remove(idx).1);
+
+                let caps_ex = if let Some(caps_ex) = caps_ex {
+                    Some(CapsExMask::from(caps_ex.as_number()? as u8))
+                } else {
+                    None
+                };
+
+                Ok(Some(Self::Connect(NetConnectionCommandConnect {
                     app,
+                    caps_ex,
                     others: command_object.into(),
-                }))
+                })))
             }
             "call" => Ok(Some(Self::Call)),
             "close" => Ok(Some(Self::Close)),

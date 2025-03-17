@@ -139,7 +139,7 @@ mod tests {
 
         let (ffmpeg_handle, mut ffmpeg_event_reciever) = {
             let (ffmpeg_event_producer, ffmpeg_event_reciever) = mpsc::channel(1);
-            let mut session = Session::new(ffmpeg_stream, Handler(ffmpeg_event_producer));
+            let session = Session::new(ffmpeg_stream, Handler(ffmpeg_event_producer));
 
             (
                 tokio::spawn(async move {
@@ -273,7 +273,7 @@ mod tests {
 
         let (ffmpeg_handle, mut ffmpeg_event_reciever) = {
             let (ffmpeg_event_producer, ffmpeg_event_reciever) = mpsc::channel(1);
-            let mut session = Session::new(ffmpeg_stream, Handler(ffmpeg_event_producer));
+            let session = Session::new(ffmpeg_stream, Handler(ffmpeg_event_producer));
 
             (
                 tokio::spawn(async move {

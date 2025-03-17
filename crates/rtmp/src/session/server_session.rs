@@ -2,6 +2,7 @@ use std::time::Duration;
 
 use bytes::BytesMut;
 use scuffle_bytes_util::BytesCursorExt;
+use scuffle_context::ContextFutExt;
 use scuffle_future_ext::FutureExt;
 use tokio::io::{AsyncReadExt, AsyncWriteExt};
 
@@ -12,7 +13,9 @@ use crate::chunk::{CHUNK_SIZE, ChunkReader, ChunkWriter};
 use crate::command_messages::netconnection::NetConnectionCommand;
 use crate::command_messages::netstream::{NetStreamCommand, NetStreamCommandPublishPublishingType};
 use crate::command_messages::on_status::OnStatus;
-use crate::command_messages::on_status::codes::{NET_STREAM_DELETE_STREAM_SUCCESS, NET_STREAM_PUBLISH_START};
+use crate::command_messages::on_status::codes::{
+    NET_CONNECTION_CONNECT_RECONNECT_REQUEST, NET_STREAM_DELETE_STREAM_SUCCESS, NET_STREAM_PUBLISH_START,
+};
 use crate::command_messages::{Command, CommandResultLevel, CommandType};
 use crate::handshake;
 use crate::handshake::HandshakeServer;
@@ -30,6 +33,11 @@ use crate::user_control_messages::EventMessageStreamBegin;
 const DEFAULT_ACKNOWLEDGEMENT_WINDOW_SIZE: u32 = 2_500_000; // 2.5 MB
 
 pub struct Session<S, H> {
+    /// The context of the session
+    /// A reconnect request will be sent if this context gets cancelled.
+    ctx: Option<scuffle_context::Context>,
+    /// Keep track of whether a reconnect request has already been sent.
+    reconnect_request_sent: bool,
     /// When you connect via rtmp, you specify the app name in the url
     /// For example: rtmp://localhost:1935/live/xyz
     /// The app name is "live"
@@ -40,12 +48,9 @@ pub struct Session<S, H> {
     /// connection (using different stream keys) and or play multiple streams
     /// per RTMP connection (using different stream keys) as per the RTMP spec.
     app_name: Option<Box<str>>,
-
     /// Used to read and write data
     io: S,
-
     handler: H,
-
     /// The size of the acknowledgement window
     acknowledgement_window_size: u32,
     /// The number of bytes read from the stream. Value wraps when reaching u32::MAX.
@@ -55,18 +60,15 @@ pub struct Session<S, H> {
     read_buf: BytesMut,
     /// Buffer to write data to
     write_buf: Vec<u8>,
-
     /// Sometimes when doing the handshake we read too much data,
     /// this flag is used to indicate that we have data ready to parse and we
     /// should not read more data from the stream
     skip_read: bool,
-
     /// This is used to read the data from the stream and convert it into rtmp
     /// messages
     chunk_reader: ChunkReader,
     /// This is used to convert rtmp messages into chunks
     chunk_writer: ChunkWriter,
-
     /// Is Publishing
     publishing_stream_ids: Vec<u32>,
 }
@@ -75,6 +77,8 @@ impl<S, H> Session<S, H> {
     /// Create a new session.
     pub fn new(io: S, handler: H) -> Self {
         Self {
+            ctx: None,
+            reconnect_request_sent: false,
             app_name: None,
             io,
             handler,
@@ -88,6 +92,12 @@ impl<S, H> Session<S, H> {
             publishing_stream_ids: Vec::new(),
         }
     }
+
+    /// Set the context of the session.
+    pub fn with_context(mut self, ctx: scuffle_context::Context) -> Self {
+        self.ctx = Some(ctx);
+        self
+    }
 }
 
 impl<S: tokio::io::AsyncRead + tokio::io::AsyncWrite + Unpin, H: SessionHandler> Session<S, H> {
@@ -96,11 +106,18 @@ impl<S: tokio::io::AsyncRead + tokio::io::AsyncWrite + Unpin, H: SessionHandler>
     /// disconnected If any publishers are still connected, the result will be
     /// false This can be used to detect non-graceful disconnects (ie. the
     /// client crashed)
-    pub async fn run(&mut self) -> Result<bool, crate::error::Error> {
+    pub async fn run(mut self) -> Result<bool, crate::error::Error> {
+        let ctx = self.ctx.clone().unwrap_or_else(scuffle_context::Context::global);
+
         let mut handshaker = HandshakeServer::default();
         // Run the handshake to completion
-        while !self.drive_handshake(&mut handshaker).await? {
-            self.flush().await?;
+        loop {
+            match self.drive_handshake(&mut handshaker).with_context(&ctx).await {
+                Some(Ok(false)) => self.flush().await?, // Continue driving
+                Some(Ok(true)) => break,                // Handshake is complete
+                Some(Err(e)) => return Err(e),
+                None => return Ok(false), // Context was cancelled
+            }
         }
 
         // Drop the handshaker, we don't need it anymore
@@ -110,19 +127,18 @@ impl<S: tokio::io::AsyncRead + tokio::io::AsyncWrite + Unpin, H: SessionHandler>
         tracing::debug!("handshake complete");
 
         // Drive the session to completion
-        while match self.drive().await {
-            Ok(v) => v,
-            Err(err) if err.is_client_closed() => {
-                // The client closed the connection
-                // We are done with the session
-                tracing::debug!("Client closed the connection");
-                false
+        loop {
+            match self.drive().await {
+                Ok(true) => self.flush().await?, // Continue driving
+                Ok(false) => break,              // Client has closed the connection
+                Err(err) if err.is_client_closed() => {
+                    // The client closed the connection
+                    // We are done with the session
+                    tracing::debug!("client closed the connection");
+                    break;
+                }
+                Err(e) => return Err(e),
             }
-            Err(e) => {
-                return Err(e);
-            }
-        } {
-            self.flush().await?;
         }
 
         // We should technically check the stream_map here
@@ -192,6 +208,19 @@ impl<S: tokio::io::AsyncRead + tokio::io::AsyncWrite + Unpin, H: SessionHandler>
     ///
     /// Returns true if the session is still active, false if the client has closed the connection.
     async fn drive(&mut self) -> Result<bool, crate::error::Error> {
+        // Send a reconnect request if the context is cancelled
+        if !self.reconnect_request_sent && self.ctx.as_ref().is_some_and(|ctx| ctx.is_done()) {
+            OnStatus {
+                code: NET_CONNECTION_CONNECT_RECONNECT_REQUEST.into(),
+                level: CommandResultLevel::Status,
+                description: None,
+                others: None,
+            }
+            .write(&mut self.write_buf, 0.0)?;
+
+            self.reconnect_request_sent = true;
+        }
+
         // If we have data ready to parse, parse it
         if self.skip_read {
             self.skip_read = false;

@@ -27,7 +27,6 @@ either = { version = "1", default-features = false, features = ["use_std"] }
 fastrand = { version = "2" }
 futures = { version = "0.3" }
 futures-channel = { version = "0.3", features = ["sink"] }
-futures-core = { version = "0.3" }
 futures-executor = { version = "0.3" }
 futures-io = { version = "0.3" }
 futures-sink = { version = "0.3" }
@@ -83,7 +82,6 @@ either = { version = "1", default-features = false, features = ["use_std"] }
 fastrand = { version = "2" }
 futures = { version = "0.3" }
 futures-channel = { version = "0.3", features = ["sink"] }
-futures-core = { version = "0.3" }
 futures-executor = { version = "0.3" }
 futures-io = { version = "0.3" }
 futures-sink = { version = "0.3" }

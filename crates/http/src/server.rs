@@ -316,11 +316,11 @@ where
 ///
 /// This can be used to tweak options on the TCP/UDP layer
 #[derive(Clone)]
-pub struct ConfigureSocketCallback(Arc<dyn Fn(socket2::Socket) -> std::io::Result<socket2::Socket> + Send>);
+pub struct ConfigureSocketCallback(Arc<dyn Fn(socket2::Socket) -> std::io::Result<socket2::Socket> + Send + Sync>);
 
 impl ConfigureSocketCallback {
     /// Create a new `ConfigureSocketCallback` from the given callback function.
-    pub fn new<F: Fn(socket2::Socket) -> std::io::Result<socket2::Socket> + 'static + Send>(f: F) -> Self {
+    pub fn new<F: Fn(socket2::Socket) -> std::io::Result<socket2::Socket> + 'static + Send + Sync>(f: F) -> Self {
         Self(Arc::new(f))
     }
 

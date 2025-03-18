@@ -10,9 +10,9 @@ use crate::error::Error;
 
 nutype_enum! {
     pub enum AudioPacketType(u8) {
-        SeguenceStart = 0,
+        SequenceStart = 0,
         CodedFrames = 1,
-        SeguenceEnd = 2,
+        SequenceEnd = 2,
         MultichannelConfig = 4,
         Multitrack = 5,
         ModEx = 7,
@@ -224,7 +224,7 @@ mod tests {
                 audio_timestamp_nano_offset: 1
             },
         );
-        assert_eq!(next_packet, AudioPacketType::SeguenceStart);
+        assert_eq!(next_packet, AudioPacketType::SequenceStart);
     }
 
     #[test]
@@ -276,7 +276,7 @@ mod tests {
         let header = ExAudioTagHeader::demux(&mut std::io::Cursor::new(Bytes::from_static(data))).unwrap();
 
         assert_eq!(header.audio_packet_mod_exs.len(), 0);
-        assert_eq!(header.audio_packet_type, AudioPacketType::SeguenceStart);
+        assert_eq!(header.audio_packet_type, AudioPacketType::SequenceStart);
         assert_eq!(header.content, ExAudioTagHeaderContent::NoMultiTrack(AudioFourCc::Aac));
     }
 
@@ -322,7 +322,7 @@ mod tests {
         let header = ExAudioTagHeader::demux(&mut std::io::Cursor::new(Bytes::from_static(data))).unwrap();
 
         assert_eq!(header.audio_packet_mod_exs.len(), 0);
-        assert_eq!(header.audio_packet_type, AudioPacketType::SeguenceStart);
+        assert_eq!(header.audio_packet_type, AudioPacketType::SequenceStart);
         assert_eq!(header.content, ExAudioTagHeaderContent::OneTrack(AudioFourCc::Aac));
     }
 
@@ -340,7 +340,7 @@ mod tests {
         let header = ExAudioTagHeader::demux(&mut std::io::Cursor::new(Bytes::from_static(data))).unwrap();
 
         assert_eq!(header.audio_packet_mod_exs.len(), 0);
-        assert_eq!(header.audio_packet_type, AudioPacketType::SeguenceStart);
+        assert_eq!(header.audio_packet_type, AudioPacketType::SequenceStart);
         assert_eq!(header.content, ExAudioTagHeaderContent::ManyTracks(AudioFourCc::Aac));
     }
 
@@ -358,7 +358,7 @@ mod tests {
         let header = ExAudioTagHeader::demux(&mut std::io::Cursor::new(Bytes::from_static(data))).unwrap();
 
         assert_eq!(header.audio_packet_mod_exs.len(), 0);
-        assert_eq!(header.audio_packet_type, AudioPacketType::SeguenceStart);
+        assert_eq!(header.audio_packet_type, AudioPacketType::SequenceStart);
         assert_eq!(header.content, ExAudioTagHeaderContent::ManyTracksManyCodecs);
     }
 
@@ -376,7 +376,7 @@ mod tests {
         let header = ExAudioTagHeader::demux(&mut std::io::Cursor::new(Bytes::from_static(data))).unwrap();
 
         assert_eq!(header.audio_packet_mod_exs.len(), 0);
-        assert_eq!(header.audio_packet_type, AudioPacketType::SeguenceStart);
+        assert_eq!(header.audio_packet_type, AudioPacketType::SequenceStart);
         assert_eq!(
             header.content,
             ExAudioTagHeaderContent::Unknown {

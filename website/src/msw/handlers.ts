@@ -1,31 +1,41 @@
-// Sample mock data
-export const mockStreams: VideoStream[] = [
-    {
-        id: 'mock-1',
-        name: 'Test Stream 1',
-        status: 'Live',
-        created: '2023-01-01',
-    },
-    {
-        id: 'mock-2',
-        name: 'Test Stream 2',
-        status: 'Finished',
-        created: '2023-01-02',
-    },
-];
+export const mockStreams: ListResponse<VideoStream> = {
+    count: 6,
+    next: null,
+    previous: null,
+    results: [
+        {
+            id: '8a28e4dbd6...',
+            name: 'purple-angry-bottle...',
+            status: 'Live',
+            created: '2min ago',
+        },
+        {
+            id: '8a28e499d61...',
+            name: 'orange-fluffy-chair...',
+            status: 'Live',
+            created: '1.2.2025',
+        },
+        {
+            id: '8a28e4dbd62...',
+            name: 'purple-angry-bottle...',
+            status: 'Finished',
+            created: '1.1.2025',
+        },
+        {
+            id: '8a28e4dbd63...',
+            name: 'purple-angry-bottle...',
+            status: 'Finished',
+            created: '1.1.2025',
+        },
+    ],
+};
 
 import type { VideoStream } from '$components/streams/types';
+import type { ListResponse } from '$lib/types';
 import { http, HttpResponse } from 'msw';
 
 export const handlers = [
-    http.get('https://swapi.dev/api/films/', ({ request, params }) => {
-        return HttpResponse.json({
-            results: mockStreams.map((stream) => ({
-                id: stream.id,
-                name: stream.name,
-                status: stream.status,
-                created: stream.created,
-            })),
-        });
+    http.get('/api/v1/video-streams/', ({ request, params }) => {
+        return HttpResponse.json(mockStreams);
     }),
 ];

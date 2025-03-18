@@ -1,11 +1,11 @@
 <script lang="ts">
     import type { VideoStream } from '$components/streams/types';
     import VideoStreams from '$components/streams/VideoStreams.svelte';
-    import type { Streamed } from '$lib/types';
+    import type { ListResponse, Streamed } from '$lib/types';
 
     const { data: pageData } = $props<{
         data: {
-            streams: Streamed<VideoStream[]>;
+            streams: Streamed<ListResponse<VideoStream>>;
         };
     }>();
 </script>

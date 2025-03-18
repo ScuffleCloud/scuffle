@@ -2,60 +2,18 @@
     import Header from './Header.svelte';
     import StreamsTable from './StreamsTable.svelte';
 
-    import type { Streamed } from '$lib/types';
-    // Define types
-    type VideoStatus = 'Live' | 'Finished';
-
-    interface VideoStream {
-        id: string;
-        name: string;
-        status: VideoStatus;
-        created: string;
-    }
+    import type { ListResponse, Streamed } from '$lib/types';
+    import type { VideoStream } from './types';
 
     const { streamedData } = $props<{
-        streamedData: Streamed<VideoStream[]>;
+        streamedData: Streamed<ListResponse<VideoStream>>;
     }>();
-
-    let streams: VideoStream[] = $state([
-        {
-            id: '8a28e4dbd6...',
-            name: 'purple-angry-bottle...',
-            status: 'Live',
-            created: '2min ago',
-        },
-        {
-            id: '8a28e499d61...',
-            name: 'orange-fluffy-chair...',
-            status: 'Live',
-            created: '1.2.2025',
-        },
-        {
-            id: '8a28e4dbd62...',
-            name: 'purple-angry-bottle...',
-            status: 'Finished',
-            created: '1.1.2025',
-        },
-        {
-            id: '8a28e4dbd63...',
-            name: 'purple-angry-bottle...',
-            status: 'Finished',
-            created: '1.1.2025',
-        },
-    ]);
 
     // Search functionality
     let searchQuery = $state('');
 </script>
 
 <Header />
-{#await streamedData}
-    Loading streams...dwq
-{:then resolvedStreams}
-    <pre>{JSON.stringify(resolvedStreams, null, 2)}</pre>
-{:catch error}
-    <p>error loading streams: {error.message}</p>
-{/await}
 <div class="search-container">
     <div class="search-input">
         <svg
@@ -75,7 +33,13 @@
         <input type="text" placeholder="Search..." bind:value={searchQuery} />
     </div>
 </div>
-<StreamsTable {streams} />
+{#await streamedData}
+    <div>Loading...</div>
+{:then resolvedStreams}
+    <StreamsTable streams={resolvedStreams.results} />
+{:catch error}
+    <p>{error.message}</p>
+{/await}
 
 <style>
     .search-container {

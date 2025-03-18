@@ -137,7 +137,7 @@ impl ExAudioTagBody {
                 ExAudioTagHeaderContent::OneTrack(audio_four_cc) => audio_four_cc,
                 ExAudioTagHeaderContent::ManyTracks(audio_four_cc) => audio_four_cc,
                 ExAudioTagHeaderContent::NoMultiTrack(audio_four_cc) => audio_four_cc,
-                ExAudioTagHeaderContent::Other { audio_four_cc, .. } => audio_four_cc,
+                ExAudioTagHeaderContent::Unknown { audio_four_cc, .. } => audio_four_cc,
             };
 
             let audio_track_id = if is_audio_multitrack { Some(reader.read_u8()?) } else { None };

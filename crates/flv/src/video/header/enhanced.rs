@@ -54,6 +54,47 @@ pub enum VideoPacketModEx {
     },
 }
 
+impl VideoPacketModEx {
+    pub fn demux(reader: &mut io::Cursor<Bytes>) -> Result<(Self, VideoPacketType), Error> {
+        let mut mod_ex_data_size = reader.read_u8()? as usize + 1;
+        if mod_ex_data_size == 256 {
+            mod_ex_data_size = reader.read_u16::<BigEndian>()? as usize + 1;
+        }
+
+        let mod_ex_data = reader.extract_bytes(mod_ex_data_size)?;
+
+        let next_byte = reader.read_u8()?;
+        let video_packet_mod_ex_type = VideoPacketModExType::from(next_byte >> 4); // 0b1111_0000
+        let video_packet_type = VideoPacketType::from(next_byte & 0b0000_1111);
+
+        if video_packet_mod_ex_type == VideoPacketModExType::TimestampOffsetNano {
+            if mod_ex_data_size < 3 {
+                // too few data bytes for the timestamp offset
+                return Err(Error::InvalidModExData { expected_bytes: 3 });
+            }
+
+            let mod_ex_data = &mut io::Cursor::new(mod_ex_data);
+
+            Ok((
+                VideoPacketModEx::TimestampOffsetNano {
+                    video_timestamp_nano_offset: mod_ex_data.read_u24::<BigEndian>()?,
+                },
+                video_packet_type,
+            ))
+        } else {
+            tracing::trace!(video_packet_mod_ex_type = ?video_packet_mod_ex_type, "unknown video packet modifier extension type");
+
+            Ok((
+                VideoPacketModEx::Other {
+                    video_packet_mod_ex_type,
+                    mod_ex_data,
+                },
+                video_packet_type,
+            ))
+        }
+    }
+}
+
 nutype_enum! {
     /// FLV Video FourCC
     ///
@@ -84,7 +125,7 @@ pub enum ExVideoTagHeaderContent {
     OneTrack(VideoFourCc),
     ManyTracks(VideoFourCc),
     ManyTracksManyCodecs,
-    Other {
+    Unknown {
         video_multitrack_type: AvMultitrackType,
         video_four_cc: VideoFourCc,
     },
@@ -108,35 +149,9 @@ impl ExVideoTagHeader {
 
         // Read all modifier extensions
         while video_packet_type == VideoPacketType::ModEx {
-            let mut mod_ex_data_size = reader.read_u8()? as usize + 1;
-            if mod_ex_data_size == 256 {
-                mod_ex_data_size = reader.read_u16::<BigEndian>()? as usize + 1;
-            }
-
-            let mod_ex_data = reader.extract_bytes(mod_ex_data_size)?;
-
-            let next_byte = reader.read_u8()?;
-            let video_packet_mod_ex_type = VideoPacketModExType::from(next_byte >> 4); // 0b1111_0000
-            video_packet_type = VideoPacketType::from(next_byte & 0b0000_1111);
-
-            if video_packet_mod_ex_type == VideoPacketModExType::TimestampOffsetNano {
-                if mod_ex_data_size < 3 {
-                    // too few data bytes for the timestamp offset
-                    return Err(Error::InvalidModExData { expected_bytes: 3 });
-                }
-
-                let mod_ex_data = &mut io::Cursor::new(mod_ex_data);
-                video_packet_mod_exs.push(VideoPacketModEx::TimestampOffsetNano {
-                    video_timestamp_nano_offset: mod_ex_data.read_u24::<BigEndian>()?,
-                });
-            } else {
-                tracing::trace!(video_packet_mod_ex_type = ?video_packet_mod_ex_type, "unknown video packet modifier extension type");
-
-                video_packet_mod_exs.push(VideoPacketModEx::Other {
-                    video_packet_mod_ex_type,
-                    mod_ex_data,
-                });
-            }
+            let (mod_ex, next_video_packet_type) = VideoPacketModEx::demux(reader)?;
+            video_packet_mod_exs.push(mod_ex);
+            video_packet_type = next_video_packet_type;
         }
 
         let content = if video_packet_type != VideoPacketType::Metadata && video_frame_type == VideoFrameType::Command {
@@ -165,7 +180,7 @@ impl ExVideoTagHeader {
                 _ => {
                     tracing::warn!(video_multitrack_type = ?video_multitrack_type, "unknown video multitrack type");
 
-                    ExVideoTagHeaderContent::Other {
+                    ExVideoTagHeaderContent::Unknown {
                         video_multitrack_type,
                         video_four_cc: VideoFourCc::from(video_four_cc),
                     }
@@ -183,5 +198,245 @@ impl ExVideoTagHeader {
             video_packet_mod_exs,
             content,
         })
+    }
+}
+
+#[cfg(test)]
+#[cfg_attr(all(test, coverage_nightly), coverage(off))]
+mod tests {
+    use bytes::Bytes;
+
+    use crate::common::AvMultitrackType;
+    use crate::error::Error;
+    use crate::video::header::VideoCommand;
+    use crate::video::header::enhanced::{
+        ExVideoTagHeader, ExVideoTagHeaderContent, VideoFourCc, VideoPacketModEx, VideoPacketModExType, VideoPacketType,
+    };
+
+    #[test]
+    fn small_mod_ex_demux() {
+        let data = &[
+            1,  // size 2
+            42, // data
+            42,
+            0b0001_0001, // type 1, next packet 1
+        ];
+
+        let (mod_ex, next_packet) = VideoPacketModEx::demux(&mut std::io::Cursor::new(Bytes::from_static(data))).unwrap();
+
+        assert_eq!(
+            mod_ex,
+            VideoPacketModEx::Other {
+                video_packet_mod_ex_type: VideoPacketModExType(1),
+                mod_ex_data: Bytes::from_static(&[42, 42])
+            }
+        );
+        assert_eq!(next_packet, VideoPacketType::CodedFrames);
+    }
+
+    #[test]
+    fn timestamp_offset_mod_ex_demux() {
+        let data = &[
+            2, // size 3
+            0, // data
+            0,
+            1,
+            0b0000_0000, // type 0, next packet 0
+        ];
+
+        let (mod_ex, next_packet) = VideoPacketModEx::demux(&mut std::io::Cursor::new(Bytes::from_static(data))).unwrap();
+
+        assert_eq!(
+            mod_ex,
+            VideoPacketModEx::TimestampOffsetNano {
+                video_timestamp_nano_offset: 1
+            },
+        );
+        assert_eq!(next_packet, VideoPacketType::SequenceStart);
+    }
+
+    #[test]
+    fn big_mod_ex_demux() {
+        let data = &[
+            255, // size 2
+            0,
+            1,
+            42, // data
+            42,
+            0b0001_0001, // type 1, next packet 1
+        ];
+
+        let (mod_ex, next_packet) = VideoPacketModEx::demux(&mut std::io::Cursor::new(Bytes::from_static(data))).unwrap();
+
+        assert_eq!(
+            mod_ex,
+            VideoPacketModEx::Other {
+                video_packet_mod_ex_type: VideoPacketModExType(1),
+                mod_ex_data: Bytes::from_static(&[42, 42])
+            }
+        );
+        assert_eq!(next_packet, VideoPacketType::CodedFrames);
+    }
+
+    #[test]
+    fn mod_ex_demux_error() {
+        let data = &[
+            0, // size 1
+            42,
+            0b0000_0010, // type 0, next packet 2
+        ];
+
+        let err = VideoPacketModEx::demux(&mut std::io::Cursor::new(Bytes::from_static(data))).unwrap_err();
+
+        assert!(matches!(err, Error::InvalidModExData { expected_bytes: 3 },));
+    }
+
+    #[test]
+    fn minimal_header() {
+        let data = &[
+            0b0000_0000, // type 0
+            b'a',        // four cc
+            b'v',
+            b'c',
+            b'1',
+        ];
+
+        let header = ExVideoTagHeader::demux(&mut std::io::Cursor::new(Bytes::from_static(data))).unwrap();
+
+        assert_eq!(header.video_packet_mod_exs.len(), 0);
+        assert_eq!(header.video_packet_type, VideoPacketType::SequenceStart);
+        assert_eq!(header.content, ExVideoTagHeaderContent::NoMultiTrack(VideoFourCc::Avc));
+    }
+
+    #[test]
+    fn header_small_mod_ex() {
+        let data = &[
+            0b0000_0111, // type 7
+            1,           // modex size 2
+            42,          // modex data
+            42,
+            0b0001_0001, // type 1, next packet 1
+            b'a',        // four cc
+            b'v',
+            b'c',
+            b'1',
+        ];
+
+        let header = ExVideoTagHeader::demux(&mut std::io::Cursor::new(Bytes::from_static(data))).unwrap();
+
+        assert_eq!(header.video_packet_mod_exs.len(), 1);
+        assert_eq!(
+            header.video_packet_mod_exs[0],
+            VideoPacketModEx::Other {
+                video_packet_mod_ex_type: VideoPacketModExType(1),
+                mod_ex_data: Bytes::from_static(&[42, 42])
+            }
+        );
+        assert_eq!(header.video_packet_type, VideoPacketType::CodedFrames);
+        assert_eq!(header.content, ExVideoTagHeaderContent::NoMultiTrack(VideoFourCc::Avc));
+    }
+
+    #[test]
+    fn header_multitrack_one_track() {
+        let data = &[
+            0b0000_0110, // type 6
+            0b0000_0000, // one track, type 0
+            b'a',        // four cc
+            b'v',
+            b'c',
+            b'1',
+        ];
+
+        let header = ExVideoTagHeader::demux(&mut std::io::Cursor::new(Bytes::from_static(data))).unwrap();
+
+        assert_eq!(header.video_packet_mod_exs.len(), 0);
+        assert_eq!(header.video_packet_type, VideoPacketType::SequenceStart);
+        assert_eq!(header.content, ExVideoTagHeaderContent::OneTrack(VideoFourCc::Avc));
+    }
+
+    #[test]
+    fn header_multitrack_many_tracks() {
+        let data = &[
+            0b0000_0110, // type 6
+            0b0001_0000, // many tracks, type 0
+            b'a',        // four cc
+            b'v',
+            b'c',
+            b'1',
+        ];
+
+        let header = ExVideoTagHeader::demux(&mut std::io::Cursor::new(Bytes::from_static(data))).unwrap();
+
+        assert_eq!(header.video_packet_mod_exs.len(), 0);
+        assert_eq!(header.video_packet_type, VideoPacketType::SequenceStart);
+        assert_eq!(header.content, ExVideoTagHeaderContent::ManyTracks(VideoFourCc::Avc));
+    }
+
+    #[test]
+    fn header_multitrack_many_tracks_many_codecs() {
+        let data = &[
+            0b0000_0110, // type 6
+            0b0010_0000, // many tracks many codecs, type 0
+            b'a',        // four cc, should be ignored
+            b'v',
+            b'c',
+            b'1',
+        ];
+
+        let header = ExVideoTagHeader::demux(&mut std::io::Cursor::new(Bytes::from_static(data))).unwrap();
+
+        assert_eq!(header.video_packet_mod_exs.len(), 0);
+        assert_eq!(header.video_packet_type, VideoPacketType::SequenceStart);
+        assert_eq!(header.content, ExVideoTagHeaderContent::ManyTracksManyCodecs);
+    }
+
+    #[test]
+    fn header_multitrack_unknown() {
+        let data = &[
+            0b0000_0110, // type 6
+            0b0011_0000, // unknown, type 0
+            b'a',        // four cc
+            b'v',
+            b'c',
+            b'1',
+        ];
+
+        let header = ExVideoTagHeader::demux(&mut std::io::Cursor::new(Bytes::from_static(data))).unwrap();
+
+        assert_eq!(header.video_packet_mod_exs.len(), 0);
+        assert_eq!(header.video_packet_type, VideoPacketType::SequenceStart);
+        assert_eq!(
+            header.content,
+            ExVideoTagHeaderContent::Unknown {
+                video_multitrack_type: AvMultitrackType(3),
+                video_four_cc: VideoFourCc::Avc,
+            }
+        );
+    }
+
+    #[test]
+    fn nested_multitrack_error() {
+        let data = &[
+            0b0000_0110, // type 6
+            0b0000_0110, // one track, type 5
+        ];
+
+        let err = ExVideoTagHeader::demux(&mut std::io::Cursor::new(Bytes::from_static(data))).unwrap_err();
+        assert!(matches!(err, Error::NestedMultitracks));
+    }
+
+    #[test]
+    fn video_command() {
+        let data = &[
+            0b0101_0000, // frame type 5, type 0
+            0,           // video command 0
+            42,          // should be ignored
+        ];
+
+        let header = ExVideoTagHeader::demux(&mut std::io::Cursor::new(Bytes::from_static(data))).unwrap();
+
+        assert_eq!(header.video_packet_mod_exs.len(), 0);
+        assert_eq!(header.video_packet_type, VideoPacketType::SequenceStart);
+        assert_eq!(header.content, ExVideoTagHeaderContent::VideoCommand(VideoCommand::StartSeek));
     }
 }

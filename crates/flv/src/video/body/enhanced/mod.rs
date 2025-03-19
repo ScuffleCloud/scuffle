@@ -90,7 +90,7 @@ impl ExVideoTagBody {
                 ExVideoTagHeaderContent::OneTrack(video_four_cc) => video_four_cc,
                 ExVideoTagHeaderContent::ManyTracks(video_four_cc) => video_four_cc,
                 ExVideoTagHeaderContent::NoMultiTrack(video_four_cc) => video_four_cc,
-                ExVideoTagHeaderContent::Other { video_four_cc, .. } => video_four_cc,
+                ExVideoTagHeaderContent::Unknown { video_four_cc, .. } => video_four_cc,
             };
 
             let video_track_id = if is_video_multitrack { Some(reader.read_u8()?) } else { None };

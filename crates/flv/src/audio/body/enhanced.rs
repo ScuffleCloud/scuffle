@@ -446,7 +446,7 @@ mod tests {
             ExAudioTagBody::NoMultitrack {
                 audio_four_cc: AudioFourCc::Aac,
                 packet: AudioPacket::CodedFrames {
-                    data: Bytes::from_static(&[42, 42])
+                    data: Bytes::from_static(data)
                 },
             },
         );

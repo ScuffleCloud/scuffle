@@ -200,21 +200,22 @@ impl ExVideoTagBody {
             };
 
             if let Some(video_track_id) = video_track_id {
-                // video_track_id is only set if this is a multitrack video, in other words, if this is true:
-                // `isVideoMultitrack && videoMultitrackType != AvMultitrackType.OneTrack`
+                // video_track_id is only set if this is a multitrack video, in other words, if `isVideoMultitrack` is true
                 tracks.push(VideoTrack {
                     video_four_cc,
                     video_track_id,
                     packet,
                 });
+
+                // the loop only continues if there is still data to read and this is a video with multiple tracks
+                if !matches!(header.content, ExVideoTagHeaderContent::OneTrack(_)) && reader.has_remaining() {
+                    continue;
+                }
+
+                break;
             } else {
                 // exit early if this is a single track video only completing one loop iteration
                 return Ok(Self::NoMultitrack { video_four_cc, packet });
-            }
-
-            // the loop only continues if there is still data to read
-            if !reader.has_remaining() {
-                break;
             }
         }
 

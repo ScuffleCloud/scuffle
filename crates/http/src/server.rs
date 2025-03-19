@@ -42,8 +42,8 @@ pub struct HttpServer<F> {
     #[cfg_attr(docsrs, doc(cfg(feature = "http3")))]
     enable_http3: bool,
     /// Callback to configure socket used for http1 and http2
-    #[cfg(any(feature = "http1", feature = "http1"))]
-    #[cfg_attr(docsrs, doc(cfg(any(feature = "http1", feature = "http1"))))]
+    #[cfg(any(feature = "http1", feature = "http2"))]
+    #[cfg_attr(docsrs, doc(cfg(any(feature = "http1", feature = "http2"))))]
     configure_h12_sock: Option<ConfigureSocketCallback>,
     /// Callback to configure socket used for http3
     #[cfg(feature = "http3")]

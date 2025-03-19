@@ -93,7 +93,7 @@ where
             )?;
 
             sock.set_nonblocking(true)?;
-            sock.set_only_v6(false)?;
+
             if let Some(cfg_fn) = self.configure_sock.as_ref() {
                 sock = cfg_fn.call(sock)?;
             }

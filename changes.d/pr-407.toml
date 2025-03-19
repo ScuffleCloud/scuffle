@@ -1,0 +1,4 @@
+[[scuffle-http]]
+category = "feat"
+description = "add ability to configure sockets using callbacks"
+authors = ["@DrSloth", "@lennartkloock"]

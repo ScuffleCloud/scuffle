@@ -87,7 +87,6 @@ where
             }
 
             sock.bind(&socket2::SockAddr::from(self.bind))?;
-            sock.listen(128)?;
 
             std::net::UdpSocket::from(sock)
         };

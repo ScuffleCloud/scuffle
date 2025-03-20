@@ -96,7 +96,7 @@ mod tests {
     use crate::protocol_control_messages::ProtocolControlMessageSetPeerBandwidthLimitType;
 
     #[test]
-    fn test_writer_write_set_chunk_size() {
+    fn write_set_chunk_size() {
         let writer = ChunkWriter::default();
         let mut buf = BytesMut::new();
 
@@ -114,7 +114,25 @@ mod tests {
     }
 
     #[test]
-    fn test_writer_window_acknowledgement_size() {
+    fn write_acknowledgement() {
+        let writer = ChunkWriter::default();
+        let mut buf = BytesMut::new();
+
+        ProtocolControlMessageAcknowledgement { sequence_number: 1 }
+            .write(&mut (&mut buf).writer(), &writer)
+            .unwrap();
+
+        let mut reader = ChunkReader::default();
+
+        let chunk = reader.read_chunk(&mut buf).expect("read chunk").expect("chunk");
+        assert_eq!(chunk.basic_header.chunk_stream_id, 0x02);
+        assert_eq!(chunk.message_header.msg_type_id.0, 0x03);
+        assert_eq!(chunk.message_header.msg_stream_id, 0);
+        assert_eq!(chunk.payload, vec![0x00, 0x00, 0x00, 0x01]);
+    }
+
+    #[test]
+    fn window_acknowledgement_size() {
         let writer = ChunkWriter::default();
         let mut buf = BytesMut::new();
 
@@ -134,7 +152,7 @@ mod tests {
     }
 
     #[test]
-    fn test_writer_set_peer_bandwidth() {
+    fn set_peer_bandwidth() {
         let writer = ChunkWriter::default();
         let mut buf = BytesMut::new();
 

@@ -14,3 +14,9 @@ authors = ["@lennartkloock"]
 category = "feat"
 description = "add utility functions and types"
 authors = ["@lennartkloock"]
+
+[[scuffle-amf0]]
+category = "feat"
+description = "refactor error type to be clearer"
+breaking = true
+authors = ["@lennartkloock"]

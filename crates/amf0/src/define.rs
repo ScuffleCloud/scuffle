@@ -134,21 +134,27 @@ impl Amf0Value<'_> {
 
     /// Get the value as a number.
     ///
-    /// Returns `None` if the value is not a number.
+    /// Returns [`Amf0ReadError::WrongType`] if the value is not a number.
     pub fn as_number(&self) -> Result<f64, Amf0ReadError> {
         match self {
             Self::Number(n) => Ok(*n),
-            _ => Err(Amf0ReadError::WrongType(Amf0Marker::Number, self.marker())),
+            _ => Err(Amf0ReadError::WrongType {
+                expected: Amf0Marker::Number,
+                got: self.marker(),
+            }),
         }
     }
 
     /// Get the value as a boolean.
     ///
-    /// Returns `None` if the value is not a boolean.
+    /// Returns [`Amf0ReadError::WrongType`] if the value is not a boolean.
     pub fn as_boolean(&self) -> Result<bool, Amf0ReadError> {
         match self {
             Self::Boolean(b) => Ok(*b),
-            _ => Err(Amf0ReadError::WrongType(Amf0Marker::Boolean, self.marker())),
+            _ => Err(Amf0ReadError::WrongType {
+                expected: Amf0Marker::Boolean,
+                got: self.marker(),
+            }),
         }
     }
 }
@@ -156,22 +162,28 @@ impl Amf0Value<'_> {
 impl<'a> Amf0Value<'a> {
     /// Get the value as a string.
     ///
-    /// Returns `None` if the value is not a string.
+    /// Returns [`Amf0ReadError::WrongType`] if the value is not a string.
     pub fn as_string(&self) -> Result<&Cow<'a, str>, Amf0ReadError> {
         match self {
             Self::String(s) => Ok(s),
             Self::LongString(s) => Ok(s),
-            _ => Err(Amf0ReadError::WrongType(Amf0Marker::String, self.marker())),
+            _ => Err(Amf0ReadError::WrongType {
+                expected: Amf0Marker::String,
+                got: self.marker(),
+            }),
         }
     }
 
     /// Get the value as an object.
     ///
-    /// Returns `None` if the value is not an object.
+    /// Returns [`Amf0ReadError::WrongType`] if the value is not an object.
     pub fn as_object(&self) -> Result<&Amf0Object<'a>, Amf0ReadError> {
         match self {
             Self::Object(o) => Ok(o),
-            _ => Err(Amf0ReadError::WrongType(Amf0Marker::Object, self.marker())),
+            _ => Err(Amf0ReadError::WrongType {
+                expected: Amf0Marker::Object,
+                got: self.marker(),
+            }),
         }
     }
 }
@@ -268,5 +280,85 @@ mod tests {
         }
 
         assert!(Amf0Marker::from_u8(0x12).is_none());
+    }
+
+    #[test]
+    fn from_impls() {
+        let number = Amf0Value::from(1.0);
+        assert_eq!(number, Amf0Value::Number(1.0));
+
+        let boolean = Amf0Value::from(true);
+        assert_eq!(boolean, Amf0Value::Boolean(true));
+
+        let string = Amf0Value::from(Cow::Borrowed("test"));
+        assert_eq!(string, Amf0Value::String(Cow::Borrowed("test")));
+
+        // long string
+        let long_string: Cow<'_, str> = Cow::Owned("a".repeat(u16::MAX as usize + 1));
+        let string = Amf0Value::from(long_string.clone());
+        assert_eq!(string, Amf0Value::LongString(long_string));
+
+        let object: Amf0Object = vec![(Cow::Borrowed("test"), Amf0Value::Number(1.0))].into();
+        let object = Amf0Value::from(object);
+        assert_eq!(
+            object,
+            Amf0Value::Object(Cow::Borrowed(&[(Cow::Borrowed("test"), Amf0Value::Number(1.0))]))
+        );
+    }
+
+    #[test]
+    fn as_functions() {
+        let number = Amf0Value::from(1.0);
+        assert_eq!(number.as_number().unwrap(), 1.0);
+        assert!(matches!(
+            number.as_boolean(),
+            Err(Amf0ReadError::WrongType {
+                expected: Amf0Marker::Boolean,
+                got: Amf0Marker::Number
+            })
+        ));
+
+        let boolean = Amf0Value::from(true);
+        assert!(boolean.as_boolean().unwrap());
+        assert!(matches!(
+            boolean.as_number(),
+            Err(Amf0ReadError::WrongType {
+                expected: Amf0Marker::Number,
+                got: Amf0Marker::Boolean
+            })
+        ));
+
+        let string = Amf0Value::from(Cow::Borrowed("test"));
+        assert_eq!(string.as_string().unwrap(), &Cow::Borrowed("test"));
+        assert!(matches!(
+            string.as_boolean(),
+            Err(Amf0ReadError::WrongType {
+                expected: Amf0Marker::Boolean,
+                got: Amf0Marker::String
+            })
+        ));
+
+        // long string
+        let long_string: Cow<'_, str> = Cow::Owned("a".repeat(u16::MAX as usize + 1));
+        let long_string_value = Amf0Value::from(long_string.clone());
+        assert_eq!(long_string_value.as_string().unwrap(), &long_string);
+        assert!(matches!(
+            long_string_value.as_object(),
+            Err(Amf0ReadError::WrongType {
+                expected: Amf0Marker::Object,
+                got: Amf0Marker::LongString
+            })
+        ));
+
+        let object: Amf0Object = Cow::Owned(vec![(Cow::Borrowed("test"), Amf0Value::Number(1.0))]);
+        let object_value = Amf0Value::from(object.clone());
+        assert_eq!(object_value.as_object().unwrap(), &object);
+        assert!(matches!(
+            object_value.as_string(),
+            Err(Amf0ReadError::WrongType {
+                expected: Amf0Marker::String,
+                got: Amf0Marker::Object
+            })
+        ));
     }
 }

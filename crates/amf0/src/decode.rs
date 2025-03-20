@@ -70,7 +70,10 @@ impl<'a> Amf0Decoder<'a> {
 
         let marker = Amf0Marker::from_u8(marker).ok_or(Amf0ReadError::UnknownMarker(marker))?;
         if marker != specified_marker {
-            return Err(Amf0ReadError::WrongType(specified_marker, marker));
+            return Err(Amf0ReadError::WrongType {
+                expected: specified_marker,
+                got: marker,
+            });
         }
 
         self.decode()

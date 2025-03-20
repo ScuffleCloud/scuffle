@@ -9,3 +9,8 @@ category = "refactor"
 description = "refactor to be more ergonomic and efficient"
 breaking = true
 authors = ["@lennartkloock"]
+
+[[scuffle-amf0]]
+category = "feat"
+description = "add utility functions and types"
+authors = ["@lennartkloock"]

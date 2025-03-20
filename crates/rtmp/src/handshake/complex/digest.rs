@@ -1,3 +1,5 @@
+use std::io;
+
 use bytes::Bytes;
 use hmac::{Hmac, Mac};
 use sha2::Sha256;
@@ -12,6 +14,26 @@ use super::error::ComplexHandshakeError;
 pub struct DigestProcessor<'a> {
     data: Bytes,
     key: &'a [u8],
+}
+
+/// The result of a digest.
+///
+/// Implements `AsRef<[u8]>` so it can be written to a buffer.
+pub struct DigestResult {
+    pub left: Bytes,
+    pub digest: [u8; 32],
+    pub right: Bytes,
+}
+
+impl DigestResult {
+    /// Write the digest result to a given buffer.
+    pub fn write_to(&self, writer: &mut impl io::Write) -> io::Result<()> {
+        writer.write_all(&self.left)?;
+        writer.write_all(&self.digest)?;
+        writer.write_all(&self.right)?;
+
+        Ok(())
+    }
 }
 
 impl<'a> DigestProcessor<'a> {
@@ -35,17 +57,18 @@ impl<'a> DigestProcessor<'a> {
     }
 
     /// Generate and fill digest based on the schema version.
-    pub fn generate_and_fill_digest(
-        &self,
-        version: SchemaVersion,
-    ) -> Result<(Bytes, [u8; 32], Bytes), ComplexHandshakeError> {
-        let (left_part, _, right_part) = self.cook_raw_message(version)?;
+    pub fn generate_and_fill_digest(&self, version: SchemaVersion) -> Result<DigestResult, ComplexHandshakeError> {
+        let (left_part, _, right_part) = self.split_message(version)?;
         let computed_digest = self.make_digest(&left_part, &right_part)?;
 
         // The reason we return 3 parts vs 1 is because if we return 1 part we need to
         // copy the memory But this is unnecessary because we are just going to write it
         // into a buffer.
-        Ok((left_part, computed_digest, right_part))
+        Ok(DigestResult {
+            left: left_part,
+            digest: computed_digest,
+            right: right_part,
+        })
     }
 
     fn find_digest_offset(&self, version: SchemaVersion) -> Result<usize, ComplexHandshakeError> {
@@ -71,7 +94,7 @@ impl<'a> DigestProcessor<'a> {
             + OFFSET_LENGTH)
     }
 
-    fn cook_raw_message(&self, version: SchemaVersion) -> Result<(Bytes, Bytes, Bytes), ComplexHandshakeError> {
+    fn split_message(&self, version: SchemaVersion) -> Result<(Bytes, Bytes, Bytes), ComplexHandshakeError> {
         let digest_offset = self.find_digest_offset(version)?;
 
         // We split the message into 3 parts:
@@ -111,7 +134,7 @@ impl<'a> DigestProcessor<'a> {
     fn generate_and_validate(&self, version: SchemaVersion) -> Result<Bytes, ComplexHandshakeError> {
         // We need the 3 parts so we can calculate the digest and compare it to the
         // digest we read from the message.
-        let (left_part, digest_data, right_part) = self.cook_raw_message(version)?;
+        let (left_part, digest_data, right_part) = self.split_message(version)?;
 
         // If the digest we calculated is the same as the digest we read from the
         // message we have a valid message.

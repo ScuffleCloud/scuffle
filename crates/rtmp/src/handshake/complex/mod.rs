@@ -133,15 +133,8 @@ impl ComplexHandshakeServer {
         // The digest is loaded with the data that we just generated.
         let data_digest = DigestProcessor::new(writer.into_inner().freeze(), define::RTMP_SERVER_KEY_FIRST_HALF);
 
-        // We use the same schema version as the client.
-        let (first, second, third) = data_digest.generate_and_fill_digest(self.schema_version)?;
-
-        // We then write the parts of the digest to the main writer.
-        // Note: this is not a security issue since we do not flush the buffer until we
-        // are done  with the handshake.
-        output.write_all(&first)?;
-        output.write_all(&second)?;
-        output.write_all(&third)?;
+        // We use the same schema version as the client and then write the result of the digest to the main writer.
+        data_digest.generate_and_fill_digest(self.schema_version)?.write_to(output)?;
 
         Ok(())
     }

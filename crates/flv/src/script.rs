@@ -253,10 +253,14 @@ impl ScriptData {
 #[cfg(test)]
 #[cfg_attr(all(test, coverage_nightly), coverage(off))]
 mod tests {
+    use std::borrow::Cow;
+
+    use scuffle_amf0::Amf0Encoder;
+
     use super::*;
 
     #[test]
-    fn test_script_data() {
+    fn script_on_meta_data() {
         let width = 1280.0f64.to_be_bytes();
         #[rustfmt::skip]
         let data = [
@@ -309,5 +313,143 @@ mod tests {
                 other: HashMap::new(),
             }
         );
+    }
+
+    #[test]
+    fn script_on_meta_data_full() {
+        let mut data = Vec::new();
+
+        let audio_track_id_info_map = vec![("test".into(), Amf0Value::Number(1.0))].into();
+        let video_track_id_info_map = vec![("test2".into(), Amf0Value::Number(2.0))].into();
+
+        Amf0Encoder::encode_string(&mut data, "onMetaData").unwrap();
+        Amf0Encoder::encode_object(
+            &mut data,
+            &[
+                (
+                    "audiocodecid".into(),
+                    Amf0Value::Number(u32::from_be_bytes(AudioFourCc::Aac.0) as f64),
+                ),
+                ("audiodatarate".into(), Amf0Value::Number(128.0)),
+                ("audiodelay".into(), Amf0Value::Number(0.0)),
+                ("audiosamplerate".into(), Amf0Value::Number(44100.0)),
+                ("audiosamplesize".into(), Amf0Value::Number(16.0)),
+                ("canSeekToEnd".into(), Amf0Value::Boolean(true)),
+                ("creationdate".into(), Amf0Value::String("2025-01-01T00:00:00Z".into())),
+                ("duration".into(), Amf0Value::Number(60.0)),
+                ("filesize".into(), Amf0Value::Number(1024.0)),
+                ("framerate".into(), Amf0Value::Number(30.0)),
+                ("height".into(), Amf0Value::Number(720.0)),
+                ("stereo".into(), Amf0Value::Boolean(true)),
+                (
+                    "videocodecid".into(),
+                    Amf0Value::Number(u32::from_be_bytes(VideoFourCc::Avc.0) as f64),
+                ),
+                ("videodatarate".into(), Amf0Value::Number(1024.0)),
+                ("width".into(), Amf0Value::Number(1280.0)),
+                ("audioTrackIdInfoMap".into(), Amf0Value::Object(audio_track_id_info_map)),
+                ("videoTrackIdInfoMap".into(), Amf0Value::Object(video_track_id_info_map)),
+            ],
+        )
+        .unwrap();
+
+        let mut reader = io::Cursor::new(Bytes::from_owner(data));
+
+        let script_data = ScriptData::demux(&mut reader).unwrap();
+
+        let ScriptData::OnMetaData(metadata) = script_data else {
+            panic!("expected onMetaData");
+        };
+
+        assert_eq!(
+            *metadata,
+            OnMetaData {
+                audiocodecid: Some(OnMetaDataAudioCodecId::Enhanced(AudioFourCc::Aac)),
+                audiodatarate: Some(128.0),
+                audiodelay: Some(0.0),
+                audiosamplerate: Some(44100.0),
+                audiosamplesize: Some(16.0),
+                can_seek_to_end: Some(true),
+                creationdate: Some("2025-01-01T00:00:00Z".to_string()),
+                duration: Some(60.0),
+                filesize: Some(1024.0),
+                framerate: Some(30.0),
+                height: Some(720.0),
+                stereo: Some(true),
+                videocodecid: Some(OnMetaDataVideoCodecId::Enhanced(VideoFourCc::Avc)),
+                videodatarate: Some(1024.0),
+                width: Some(1280.0),
+                audio_track_id_info_map: Some([("test".to_string(), Amf0Value::Number(1.0))].into()),
+                video_track_id_info_map: Some([("test2".to_string(), Amf0Value::Number(2.0))].into()),
+                other: HashMap::new(),
+            }
+        );
+    }
+
+    #[test]
+    fn script_on_xmp_data() {
+        #[rustfmt::skip]
+        let data = [
+            Amf0Marker::String as u8,
+            0, 9, // Length (9 bytes)
+            b'o', b'n', b'X', b'M', b'P', b'D', b'a', b't', b'a',// "onXMPData"
+            Amf0Marker::Object as u8,
+            0, 7, // Length (7 bytes)
+            b'l', b'i', b'v', b'e', b'X', b'M', b'L', // "liveXML"
+            Amf0Marker::String as u8,
+            0, 5, // Length (5 bytes)
+            b'h', b'e', b'l', b'l', b'o', // "hello"
+            0, 4, // Length (7 bytes)
+            b't', b'e', b's', b't', // "test"
+            Amf0Marker::Null as u8,
+            0, 0, Amf0Marker::ObjectEnd as u8,
+        ];
+
+        let mut reader = io::Cursor::new(Bytes::from_owner(data));
+
+        let script_data = ScriptData::demux(&mut reader).unwrap();
+
+        let ScriptData::OnXmpData(xmp_data) = script_data else {
+            panic!("expected onXMPData");
+        };
+
+        assert_eq!(
+            xmp_data,
+            OnXmpData {
+                live_xml: Some("hello".to_string()),
+                other: [("test".to_string(), Amf0Value::Null)].into(),
+            }
+        );
+    }
+
+    #[test]
+    fn script_other() {
+        #[rustfmt::skip]
+        let data = [
+            Amf0Marker::String as u8,
+            0, 10, // Length (10 bytes)
+            b'o', b'n', b'W', b'h', b'a', b't', b'e', b'v', b'e', b'r',// "onWhatever"
+            Amf0Marker::Object as u8,
+            0, 4, // Length (4 bytes)
+            b't', b'e', b's', b't', // "test"
+            Amf0Marker::String as u8,
+            0, 5, // Length (5 bytes)
+            b'h', b'e', b'l', b'l', b'o', // "hello"
+            0, 0, Amf0Marker::ObjectEnd as u8,
+        ];
+
+        let mut reader = io::Cursor::new(Bytes::from_owner(data));
+
+        let script_data = ScriptData::demux(&mut reader).unwrap();
+
+        let ScriptData::Other { name, data } = script_data else {
+            panic!("expected onXMPData");
+        };
+
+        let object: Amf0Object = vec![(Cow::Borrowed("test"), Amf0Value::String(Cow::Borrowed("hello")))].into();
+
+        assert_eq!(name, "onWhatever");
+        assert_eq!(data.len(), 1);
+        assert_eq!(data[0], Amf0Value::Object(object));
     }
 }

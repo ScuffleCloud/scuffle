@@ -32,6 +32,7 @@ use crate::user_control_messages::EventMessageStreamBegin;
 // - https://github.com/FFmpeg/FFmpeg/blob/154c00514d889d27ae84a1001e00f9032fdc1c54/libavformat/rtmpproto.c#L2850
 const DEFAULT_ACKNOWLEDGEMENT_WINDOW_SIZE: u32 = 2_500_000; // 2.5 MB
 
+/// A RTMP server session that is used to communicate with a client.
 pub struct Session<S, H> {
     /// The context of the session
     /// A reconnect request will be sent if this context gets cancelled.

@@ -18,10 +18,14 @@ pub struct DigestProcessor<'a> {
 
 /// The result of a digest.
 ///
-/// Implements `AsRef<[u8]>` so it can be written to a buffer.
+/// Use [`DigestProcessor::generate_and_fill_digest`] to create a `DigestResult`
+/// and [`DigestResult::write_to`] to write the result to a buffer.
 pub struct DigestResult {
+    /// The left part.
     pub left: Bytes,
+    /// The digest.
     pub digest: [u8; 32],
+    /// The right part.
     pub right: Bytes,
 }
 

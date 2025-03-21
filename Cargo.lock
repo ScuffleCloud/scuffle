@@ -2994,7 +2994,6 @@ dependencies = [
  "scuffle-h265",
  "scuffle-workspace-hack",
  "thiserror 2.0.12",
- "tracing",
 ]
 
 [[package]]

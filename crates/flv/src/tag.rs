@@ -146,14 +146,10 @@ impl FlvTagData {
             FlvTagType::Audio => Ok(FlvTagData::Audio(AudioData::demux(reader)?)),
             FlvTagType::Video => Ok(FlvTagData::Video(VideoData::demux(reader)?)),
             FlvTagType::ScriptData => Ok(FlvTagData::ScriptData(ScriptData::demux(reader)?)),
-            _ => {
-                tracing::trace!(tag_type = ?tag_type, "unknown tag type");
-
-                Ok(FlvTagData::Unknown {
-                    tag_type,
-                    data: reader.extract_remaining(),
-                })
-            }
+            _ => Ok(FlvTagData::Unknown {
+                tag_type,
+                data: reader.extract_remaining(),
+            }),
         }
     }
 }

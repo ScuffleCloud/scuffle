@@ -279,8 +279,6 @@ impl AudioPacket {
                 Ok(Self::CodedFrames { data })
             }
             _ => {
-                tracing::warn!(audio_packet_type = ?header.audio_packet_type, "unknown audio packet type");
-
                 let data = reader.extract_bytes(size_of_audio_track.unwrap_or(reader.remaining()))?;
 
                 Ok(Self::Unknown { data })

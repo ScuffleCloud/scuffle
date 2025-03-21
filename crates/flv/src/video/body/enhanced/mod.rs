@@ -194,8 +194,6 @@ impl VideoPacket {
                 Ok(Self::CodedFramesX { data })
             }
             _ => {
-                tracing::warn!(packet_type = ?header.video_packet_type, "unknown video packet type");
-
                 let data = reader.extract_bytes(size_of_video_track.unwrap_or(reader.remaining()))?;
 
                 Ok(Self::Unknown { data })

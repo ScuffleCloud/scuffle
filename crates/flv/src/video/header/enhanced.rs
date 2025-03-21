@@ -93,8 +93,6 @@ impl VideoPacketModEx {
                 video_packet_type,
             ))
         } else {
-            tracing::trace!(video_packet_mod_ex_type = ?video_packet_mod_ex_type, "unknown video packet modifier extension type");
-
             Ok((
                 VideoPacketModEx::Other {
                     video_packet_mod_ex_type,
@@ -206,14 +204,10 @@ impl ExVideoTagHeader {
                 AvMultitrackType::OneTrack => ExVideoTagHeaderContent::OneTrack(VideoFourCc::from(video_four_cc)),
                 AvMultitrackType::ManyTracks => ExVideoTagHeaderContent::ManyTracks(VideoFourCc::from(video_four_cc)),
                 AvMultitrackType::ManyTracksManyCodecs => ExVideoTagHeaderContent::ManyTracksManyCodecs,
-                _ => {
-                    tracing::warn!(video_multitrack_type = ?video_multitrack_type, "unknown video multitrack type");
-
-                    ExVideoTagHeaderContent::Unknown {
-                        video_multitrack_type,
-                        video_four_cc: VideoFourCc::from(video_four_cc),
-                    }
-                }
+                _ => ExVideoTagHeaderContent::Unknown {
+                    video_multitrack_type,
+                    video_four_cc: VideoFourCc::from(video_four_cc),
+                },
             }
         } else {
             let mut video_four_cc = [0; 4];

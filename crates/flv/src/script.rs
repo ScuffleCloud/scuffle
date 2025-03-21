@@ -324,8 +324,6 @@ impl ScriptData {
                 Ok(Self::OnXmpData(data))
             }
             _ => {
-                tracing::trace!(name = %name, "unknown script data");
-
                 let data = amf0_reader.decode_all()?;
 
                 Ok(Self::Other {

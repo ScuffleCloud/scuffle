@@ -87,8 +87,6 @@ impl AudioPacketModEx {
                 audio_packet_type,
             ))
         } else {
-            tracing::trace!(audio_packet_mod_ex_type = ?audio_packet_mod_ex_type, "unknown audio packet modifier extension type");
-
             Ok((
                 Self::Other {
                     audio_packet_mod_ex_type,
@@ -204,14 +202,10 @@ impl ExAudioTagHeader {
                 AvMultitrackType::OneTrack => ExAudioTagHeaderContent::OneTrack(AudioFourCc::from(audio_four_cc)),
                 AvMultitrackType::ManyTracks => ExAudioTagHeaderContent::ManyTracks(AudioFourCc::from(audio_four_cc)),
                 AvMultitrackType::ManyTracksManyCodecs => ExAudioTagHeaderContent::ManyTracksManyCodecs,
-                _ => {
-                    tracing::warn!(audio_multitrack_type = ?audio_multitrack_type, "unknown audio multitrack type");
-
-                    ExAudioTagHeaderContent::Unknown {
-                        audio_multitrack_type,
-                        audio_four_cc: AudioFourCc::from(audio_four_cc),
-                    }
-                }
+                _ => ExAudioTagHeaderContent::Unknown {
+                    audio_multitrack_type,
+                    audio_four_cc: AudioFourCc::from(audio_four_cc),
+                },
             };
 
             Ok(Self {

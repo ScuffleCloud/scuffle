@@ -80,14 +80,10 @@ impl LegacyVideoTagHeaderAvcPacket {
             AvcPacketType::SeqHdr => Ok(Self::SequenceHeader),
             AvcPacketType::Nalu => Ok(Self::Nalu { composition_time_offset }),
             AvcPacketType::EndOfSequence => Ok(Self::EndOfSequence),
-            _ => {
-                tracing::warn!(avc_packet_type = ?avc_packet_type, "unknown AVC packet type");
-
-                Ok(Self::Unknown {
-                    avc_packet_type,
-                    composition_time_offset,
-                })
-            }
+            _ => Ok(Self::Unknown {
+                avc_packet_type,
+                composition_time_offset,
+            }),
         }
     }
 }

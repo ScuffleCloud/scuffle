@@ -82,7 +82,7 @@ pub mod service;
 
 pub use http;
 pub use http::Response;
-pub use server::{HttpServer, HttpServerBuilder};
+pub use server::{ConfigureSocketCallback, HttpServer, HttpServerBuilder};
 
 /// An incoming request.
 pub type IncomingRequest = http::Request<body::IncomingBody>;

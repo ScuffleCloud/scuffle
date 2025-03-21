@@ -157,11 +157,9 @@ mod tests {
 
         let data_digest = DigestProcessor::new(Bytes::from(c0c1), define::RTMP_CLIENT_KEY_FIRST_HALF);
 
-        let (first, second, third) = data_digest.generate_and_fill_digest(SchemaVersion::Schema1).unwrap();
+        let res = data_digest.generate_and_fill_digest(SchemaVersion::Schema1).unwrap();
 
-        writer.extend_from_slice(&first);
-        writer.extend_from_slice(&second);
-        writer.extend_from_slice(&third);
+        res.write_to(&mut writer).unwrap();
 
         let mut bytes = Vec::new();
         handshake_server
@@ -186,7 +184,7 @@ mod tests {
 
         let key_digest = DigestProcessor::new(Bytes::new(), define::RTMP_SERVER_KEY);
 
-        let key = key_digest.make_digest(&second, &[]).unwrap();
+        let key = key_digest.make_digest(&res.digest, &[]).unwrap();
         let data_digest = DigestProcessor::new(Bytes::new(), &key);
 
         assert_eq!(data_digest.make_digest(&s2[..1504], &[]).unwrap(), s2[1504..]);

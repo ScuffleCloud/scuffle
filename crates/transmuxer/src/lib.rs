@@ -22,9 +22,11 @@ use std::io;
 use byteorder::{BigEndian, ReadBytesExt};
 use bytes::{Buf, Bytes};
 use scuffle_flv::audio::AudioData;
-use scuffle_flv::audio::aac::AacAudioData;
-use scuffle_flv::audio::body::{AudioTagBody, LegacyAudioTagBody};
-use scuffle_flv::audio::header::{AudioTagHeader, LegacyAudioTagHeader, SoundType};
+use scuffle_flv::audio::body::AudioTagBody;
+use scuffle_flv::audio::body::legacy::LegacyAudioTagBody;
+use scuffle_flv::audio::body::legacy::aac::AacAudioData;
+use scuffle_flv::audio::header::AudioTagHeader;
+use scuffle_flv::audio::header::legacy::{LegacyAudioTagHeader, SoundType};
 use scuffle_flv::script::{OnMetaData, ScriptData};
 use scuffle_flv::tag::{FlvTag, FlvTagData};
 use scuffle_flv::video::VideoData;
@@ -206,13 +208,14 @@ impl Transmuxer {
                             frame_type,
                             data:
                                 VideoTagHeaderData::Legacy(LegacyVideoTagHeader::AvcPacket(
-                                    LegacyVideoTagHeaderAvcPacket::Nalu { composition_time },
+                                    LegacyVideoTagHeaderAvcPacket::Nalu { composition_time_offset },
                                 )),
                         },
                     body: VideoTagBody::Legacy(LegacyVideoTagBody::Other { data }),
                     ..
                 }) => {
-                    let composition_time = ((composition_time as f64 * video_settings.framerate) / 1000.0).floor() * 1000.0;
+                    let composition_time =
+                        ((composition_time_offset as f64 * video_settings.framerate) / 1000.0).floor() * 1000.0;
 
                     let sample = codecs::avc::trun_sample(frame_type, composition_time as u32, duration, &data)?;
 
@@ -253,7 +256,7 @@ impl Transmuxer {
                             composition_time_offset,
                             data,
                         }) => (Some(composition_time_offset), data),
-                        VideoPacket::CodedFramesX(data) => (None, data),
+                        VideoPacket::CodedFramesX { data } => (None, data),
                         _ => continue,
                     };
 

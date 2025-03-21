@@ -1,3 +1,5 @@
+//! Enhanced audio header types and functions.
+
 use std::io::{self, Read};
 
 use byteorder::{BigEndian, ReadBytesExt};
@@ -9,18 +11,30 @@ use crate::common::AvMultitrackType;
 use crate::error::Error;
 
 nutype_enum! {
+    /// Different types of audio packets.
+    ///
+    /// Defined by:
+    /// - Enhanced RTMP spec, page 20-21, Enhanced Audio
     pub enum AudioPacketType(u8) {
+        /// Sequence start.
         SequenceStart = 0,
+        /// Coded frames.
         CodedFrames = 1,
+        /// Sequence end.
         SequenceEnd = 2,
+        /// Multichannel configuration.
         MultichannelConfig = 4,
+        /// Turns on audio multitrack mode.
         Multitrack = 5,
+        /// Modifier extension.
         ModEx = 7,
     }
 }
 
 nutype_enum! {
+    /// Different types of audio packet modifier extensions.
     pub enum AudioPacketModExType(u8) {
+        /// Timestamp offset in nanoseconds.
         TimestampOffsetNano = 0,
     }
 }
@@ -28,16 +42,24 @@ nutype_enum! {
 /// This is a helper enum to represent the different types of audio packet modifier extensions.
 #[derive(Debug, Clone, PartialEq)]
 pub enum AudioPacketModEx {
+    /// Timestamp offset in nanoseconds.
     TimestampOffsetNano {
+        /// The timestamp offset in nanoseconds.
         audio_timestamp_nano_offset: u32,
     },
+    /// Any other modifier extension.
     Other {
+        /// The type of the modifier extension.
         audio_packet_mod_ex_type: AudioPacketModExType,
+        /// The data of the modifier extension.
         mod_ex_data: Bytes,
     },
 }
 
 impl AudioPacketModEx {
+    /// Demux a [`AudioPacketModEx`] from the given reader.
+    ///
+    /// Returns the demuxed [`AudioPacketModEx`] and the next [`AudioPacketType`], if successful.
     pub fn demux(reader: &mut io::Cursor<Bytes>) -> Result<(Self, AudioPacketType), Error> {
         let mut mod_ex_data_size = reader.read_u8()? as usize + 1;
         if mod_ex_data_size == 256 {
@@ -79,12 +101,34 @@ impl AudioPacketModEx {
 }
 
 nutype_enum! {
+    /// Valid FOURCC values for signaling support of audio codecs in the enhanced FourCC pipeline.
+    ///
+    /// Defined by:
+    /// - Enhanced RTMP spec, page 21-22, Enhanced Audio
     pub enum AudioFourCc([u8; 4]) {
+        /// Dolby AC-3
+        ///
+        /// <https://en.wikipedia.org/wiki/Dolby_Digital>
         Ac3 = *b"ac-3",
+        /// Dolby Digital Plus (E-AC-3)
+        ///
+        /// <https://en.wikipedia.org/wiki/Dolby_Digital>
         Eac3 = *b"ec-3",
+        /// Opus audio
+        ///
+        /// <https://opus-codec.org/>
         Opus = *b"Opus",
+        /// Mp3 audio
+        ///
+        /// <https://en.wikipedia.org/wiki/MP3>
         Mp3 = *b".mp3",
+        /// Free Lossless Audio Codec
+        ///
+        /// <https://xiph.org/flac/format.html>
         Flac = *b"fLaC",
+        /// Advanced Audio Coding
+        ///
+        /// <https://en.wikipedia.org/wiki/Advanced_Audio_Coding>
         Aac = *b"mp4a",
     }
 }
@@ -92,27 +136,43 @@ nutype_enum! {
 /// This is a helper enum to represent the different types of multitrack audio.
 #[derive(Debug, Clone, PartialEq)]
 pub enum ExAudioTagHeaderContent {
+    /// Not multitrack.
     NoMultiTrack(AudioFourCc),
+    /// Multirack with one track.
     OneTrack(AudioFourCc),
+    /// Multitrack with many tracks of the same codec.
     ManyTracks(AudioFourCc),
+    /// Multitrack with many tracks of different codecs.
     ManyTracksManyCodecs,
+    /// Unknown multitrack type.
     Unknown {
+        /// The type of the multitrack audio.
         audio_multitrack_type: AvMultitrackType,
+        /// The FOURCC of the audio codec.
         audio_four_cc: AudioFourCc,
     },
 }
 
-/// FLV `ExAudioTagHeader`
+/// `ExAudioTagHeader`
 ///
-/// Defined by Enhanced RTMP v2 (Enhanced Audio section).
+/// Defined by:
+/// - Enhanced RTMP spec, page 20-22, Enhanced Audio
 #[derive(Debug, Clone, PartialEq)]
 pub struct ExAudioTagHeader {
+    /// The modifier extensions of the audio packet.
+    ///
+    /// This can be empty if there are no modifier extensions.
     pub audio_packet_mod_exs: Vec<AudioPacketModEx>,
+    /// The type of the audio packet.
     pub audio_packet_type: AudioPacketType,
+    /// The content of the audio packet which contains more information about the multitrack configuration.
     pub content: ExAudioTagHeaderContent,
 }
 
 impl ExAudioTagHeader {
+    /// Demux an [`ExAudioTagHeader`] from the given reader.
+    ///
+    /// This is implemented as per Enhanced RTMP spec, page 20-21, ExAudioTagHeader.
     pub fn demux(reader: &mut io::Cursor<Bytes>) -> Result<Self, Error> {
         let mut audio_packet_type = AudioPacketType::from(reader.read_u8()? & 0b0000_1111);
 
@@ -135,7 +195,7 @@ impl ExAudioTagHeader {
             }
 
             let mut audio_four_cc = [0; 4];
-            // Only read the four cc if it's not ManyTracksManyCodecs
+            // Only read the FOURCC if it's not ManyTracksManyCodecs
             if audio_multitrack_type != AvMultitrackType::ManyTracksManyCodecs {
                 reader.read_exact(&mut audio_four_cc)?;
             }
@@ -179,7 +239,7 @@ mod tests {
     use bytes::Bytes;
 
     use super::AudioPacketModEx;
-    use crate::audio::header::{
+    use crate::audio::header::enhanced::{
         AudioFourCc, AudioPacketModExType, AudioPacketType, ExAudioTagHeader, ExAudioTagHeaderContent,
     };
     use crate::common::AvMultitrackType;

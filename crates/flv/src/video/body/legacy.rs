@@ -1,3 +1,7 @@
+//! Legacy video tag body
+//!
+//! Types and functions defined by the legacy FLV spec, Annex E.4.3.1.
+
 use std::io;
 
 use bytes::Bytes;
@@ -19,15 +23,19 @@ use crate::video::header::legacy::{LegacyVideoTagHeader, LegacyVideoTagHeaderAvc
 pub enum LegacyVideoTagBody {
     /// Empty body because the header contains a [`VideoCommand`](crate::video::header::VideoCommand)
     Command,
+    /// AVC/H.264 configuration record
     AvcVideoPacketSeqHdr(AVCDecoderConfigurationRecord),
+    /// Any other video data
     Other {
+        /// The video data
         data: Bytes,
     },
 }
 
 impl LegacyVideoTagBody {
-    /// Demux a video packet from the given reader.
-    /// The reader will consume all the data from the reader.
+    /// Demux the video tag body from the given reader.
+    ///
+    /// The reader will be consumed entirely.
     pub fn demux(header: &LegacyVideoTagHeader, reader: &mut io::Cursor<Bytes>) -> io::Result<Self> {
         match header {
             LegacyVideoTagHeader::VideoCommand(_) => Ok(Self::Command),

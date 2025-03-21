@@ -1,3 +1,5 @@
+//! Script data structures
+
 use std::collections::HashMap;
 use std::io;
 
@@ -5,18 +7,26 @@ use bytes::Bytes;
 use scuffle_amf0::{Amf0Decoder, Amf0Marker, Amf0Object, Amf0Value};
 use scuffle_bytes_util::BytesCursorExt;
 
-use crate::audio::header::{AudioFourCc, SoundFormat};
+use crate::audio::header::enhanced::AudioFourCc;
+use crate::audio::header::legacy::SoundFormat;
 use crate::error::Error;
 use crate::video::header::enhanced::VideoFourCc;
 use crate::video::header::legacy::VideoCodecId;
 
+/// FLV `onMetaData` audio codec ID.
+///
+/// Either a legacy [`SoundFormat`] or an enhanced [`AudioFourCc`].
+/// Appears as `audiocodecid` in the [`OnMetaData`] script data.
 #[derive(Debug, Clone, PartialEq)]
 pub enum OnMetaDataAudioCodecId {
+    /// Legacy audio codec ID.
     Legacy(SoundFormat),
+    /// Enhanced audio codec ID.
     Enhanced(AudioFourCc),
 }
 
 impl OnMetaDataAudioCodecId {
+    /// Read the audio codec ID from the given AMF0 value.
     fn from_amf0(value: &Amf0Value<'_>) -> Result<Self, Error> {
         let n = value.as_number()? as u32;
 
@@ -32,13 +42,20 @@ impl OnMetaDataAudioCodecId {
     }
 }
 
+/// FLV `onMetaData` video codec ID.
+///
+/// Either a legacy [`VideoCodecId`] or an enhanced [`VideoFourCc`].
+/// Appears as `videocodecid` in the [`OnMetaData`] script data.
 #[derive(Debug, Clone, PartialEq)]
 pub enum OnMetaDataVideoCodecId {
+    /// Legacy video codec ID.
     Legacy(VideoCodecId),
+    /// Enhanced video codec ID.
     Enhanced(VideoFourCc),
 }
 
 impl OnMetaDataVideoCodecId {
+    /// Read the video codec ID from the given AMF0 value.
     fn from_amf0(value: &Amf0Value<'_>) -> Result<Self, Error> {
         let n = value.as_number()? as u32;
 
@@ -54,25 +71,78 @@ impl OnMetaDataVideoCodecId {
     }
 }
 
+/// FLV `onMetaData` script data
+///
+/// Defined by:
+/// - Legacy FLV spec, Annex E.5
+/// - Enhanced RTMP spec, page 13-16, Enhancing onMetaData
 #[derive(Debug, Clone, PartialEq)]
 pub struct OnMetaData {
+    /// Audio codec ID used in the file.
     pub audiocodecid: Option<OnMetaDataAudioCodecId>,
+    /// Audio bitrate, in kilobits per second.
     pub audiodatarate: Option<f64>,
+    /// Delay introduced by the audio codec, in seconds.
     pub audiodelay: Option<f64>,
+    /// Frequency at which the audio stream is replayed.
     pub audiosamplerate: Option<f64>,
+    /// Resolution of a single audio sample.
     pub audiosamplesize: Option<f64>,
+    /// Indicating the last video frame is a key frame.
     pub can_seek_to_end: Option<bool>,
+    /// Creation date and time.
     pub creationdate: Option<String>,
+    /// Total duration of the file, in seconds.
     pub duration: Option<f64>,
+    /// Total size of the file, in bytes.
     pub filesize: Option<f64>,
+    /// Number of frames per second.
     pub framerate: Option<f64>,
+    /// Height of the video, in pixels.
     pub height: Option<f64>,
+    /// Indicates stereo audio.
     pub stereo: Option<bool>,
+    /// Video codec ID used in the file.
     pub videocodecid: Option<OnMetaDataVideoCodecId>,
+    /// Video bitrate, in kilobits per second.
     pub videodatarate: Option<f64>,
+    /// Width of the video, in pixels.
     pub width: Option<f64>,
+    /// The audioTrackIdInfoMap and videoTrackIdInfoMap objects are designed to store
+    /// metadata for audio and video tracks respectively. Each object uses a TrackId as
+    /// a key to map to properties that detail the unique characteristics of each
+    /// individual track, diverging from the default configurations.
+    ///
+    /// Key-Value Structure:
+    /// - Keys: Each TrackId acts as a unique identifier for a specific audio or video track.
+    /// - Values: Track Objects containing metadata that specify characteristics which deviate from the default track settings.
+    ///
+    /// Properties of Each Track Object:
+    /// - These properties detail non-standard configurations needed for
+    ///   custom handling of the track, facilitating specific adjustments
+    ///   to enhance track performance and quality for varied conditions.
+    /// - For videoTrackIdInfoMap:
+    ///   - Properties such as width, height, videodatarate, etc.
+    ///     specify video characteristics that differ from standard
+    ///     settings.
+    /// - For audioTrackIdInfoMap:
+    ///   - Properties such as audiodatarate, channels, etc., define
+    ///     audio characteristics that differ from standard
+    ///     configurations.
+    ///
+    /// Purpose:
+    /// - The purpose of these maps is to specify unique properties for
+    ///   each track, ensuring tailored configurations that optimize
+    ///   performance and quality for specific media content and delivery
+    ///   scenarios.
+    ///
+    /// This structure provides a framework for detailed customization and control over
+    /// the media tracks, ensuring optimal management and delivery across various types
+    /// of content and platforms.
     pub audio_track_id_info_map: Option<HashMap<String, Amf0Value<'static>>>,
+    /// See [`OnMetaData::audio_track_id_info_map`].
     pub video_track_id_info_map: Option<HashMap<String, Amf0Value<'static>>>,
+    /// Any other metadata contained in the script data.
     pub other: HashMap<String, Amf0Value<'static>>,
 }
 
@@ -169,9 +239,17 @@ impl TryFrom<Amf0Object<'_>> for OnMetaData {
     }
 }
 
+/// XMP Metadata
+///
+/// Defined by:
+/// - Legacy FLV spec, Annex E.6
 #[derive(Debug, Clone, PartialEq)]
 pub struct OnXmpData {
+    /// XMP metadata, formatted according to the XMP metadata specification.
+    ///
+    /// For further details, see [www.adobe.com/devnet/xmp/pdfs/XMPSpecificationPart3.pdf](https://web.archive.org/web/20090306165322/https://www.adobe.com/devnet/xmp/pdfs/XMPSpecificationPart3.pdf).
     live_xml: Option<String>,
+    /// Any other metadata contained in the script data.
     other: HashMap<String, Amf0Value<'static>>,
 }
 
@@ -195,20 +273,29 @@ impl TryFrom<Amf0Object<'_>> for OnXmpData {
     }
 }
 
+/// FLV `SCRIPTDATA` tag
+///
+/// Defined by:
+/// - Legacy FLV spec, Annex E.4.4.1
 #[derive(Debug, Clone, PartialEq)]
 pub enum ScriptData {
-    // Boxed because it's so big
+    /// `onMetaData` script data.
+    ///
+    /// Boxed because it's so big.
     OnMetaData(Box<OnMetaData>),
+    /// `onXMPData` script data.
     OnXmpData(OnXmpData),
+    /// Any other script data.
     Other {
-        /// The name of the script data
+        /// The name of the script data.
         name: String,
-        /// The data of the script data
+        /// The data of the script data.
         data: Vec<Amf0Value<'static>>,
     },
 }
 
 impl ScriptData {
+    /// Demux the [`ScriptData`] from the given reader.
     pub fn demux(reader: &mut io::Cursor<Bytes>) -> Result<Self, Error> {
         let buf = reader.extract_remaining();
         let mut amf0_reader = Amf0Decoder::new(&buf);

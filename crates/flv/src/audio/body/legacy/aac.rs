@@ -1,12 +1,15 @@
+//! FLV AAC audio data types as defined in the legacy FLV spec.
+
 use bytes::Bytes;
 use nutype_enum::nutype_enum;
 
 nutype_enum! {
     /// FLV `AACPacketType`
     ///
-    /// Defined in the FLV specification. Chapter 1 - AACAUDIODATA
+    /// Indicates the type of data in [`AacAudioData`].
     ///
-    /// The AACPacketType indicates the type of data in the AACAUDIODATA.
+    /// Defined by:
+    /// - Legacy FLV spec, Annex E.4.2.1
     pub enum AacPacketType(u8) {
         /// Sequence Header
         SequenceHeader = 0,
@@ -15,11 +18,13 @@ nutype_enum! {
     }
 }
 
-/// FLV `AACAUDIODATA` tag
+/// FLV `AACAUDIODATA`
 ///
-/// This is a container for aac data.
-/// This enum contains the data for the different types of aac packets.
-/// Defined in the FLV specification. Chapter 1 - AACAUDIODATA
+/// This is a container for AAC data.
+/// This enum contains the data for the different types of AAC packets.
+///
+/// Defined by:
+/// - Legacy FLV spec, Annex E.4.2.2
 #[derive(Debug, Clone, PartialEq)]
 pub enum AacAudioData {
     /// AAC Sequence Header
@@ -27,11 +32,16 @@ pub enum AacAudioData {
     /// AAC Raw
     Raw(Bytes),
     /// Data we don't know how to parse
-    Unknown { aac_packet_type: AacPacketType, data: Bytes },
+    Unknown {
+        /// The type of AAC packet
+        aac_packet_type: AacPacketType,
+        /// The data in the packet
+        data: Bytes,
+    },
 }
 
 impl AacAudioData {
-    /// Create a new AAC packet from the given data and packet type
+    /// Create a new AAC packet from the given data and packet type.
     pub fn new(aac_packet_type: AacPacketType, data: Bytes) -> Self {
         match aac_packet_type {
             AacPacketType::Raw => AacAudioData::Raw(data),

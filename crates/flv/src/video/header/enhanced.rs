@@ -1,3 +1,5 @@
+//! Enhanced video header types and functions.
+
 use std::io::{self, Read};
 
 use byteorder::{BigEndian, ReadBytesExt};
@@ -11,33 +13,34 @@ use crate::error::Error;
 use crate::video::header::VideoCommand;
 
 nutype_enum! {
-    /// The type of video packet in an enhanced FLV file.
+    /// Different types of video packets.
     ///
     /// Defined by:
-    /// - enhanced_rtmp-v1.pdf (Defining Additional Video Codecs)
-    /// - enhanced_rtmp-v2.pdf (Enhanced Video)
+    /// - Enhanced RTMP spec, page 27-28, Enhanced Video
     pub enum VideoPacketType(u8) {
-        /// Sequence Start
+        /// Sequence start.
         SequenceStart = 0,
-        /// Coded Frames
+        /// Coded frames.
         CodedFrames = 1,
-        /// Sequence End
+        /// Sequence end.
         SequenceEnd = 2,
-        /// Coded Frames X
+        /// Coded frames without extra data.
         CodedFramesX = 3,
-        /// Metadata
+        /// Metadata.
         Metadata = 4,
-        /// MPEG-2 TS Sequence Start
+        /// MPEG-2 TS sequence start.
         Mpeg2TsSequenceStart = 5,
-        /// Multitrack mode
+        /// Turns on audio multitrack mode.
         Multitrack = 6,
-        /// Modifier extensions
+        /// Modifier extension.
         ModEx = 7,
     }
 }
 
 nutype_enum! {
+    /// Different types of audio packet modifier extensions.
     pub enum VideoPacketModExType(u8) {
+        /// Timestamp offset in nanoseconds.
         TimestampOffsetNano = 0,
     }
 }
@@ -45,16 +48,24 @@ nutype_enum! {
 /// This is a helper enum to represent the different types of video packet modifier extensions.
 #[derive(Debug, Clone, PartialEq)]
 pub enum VideoPacketModEx {
+    /// Timestamp offset in nanoseconds.
     TimestampOffsetNano {
+        /// The timestamp offset in nanoseconds.
         video_timestamp_nano_offset: u32,
     },
+    /// Any other modifier extension.
     Other {
+        /// The type of the modifier extension.
         video_packet_mod_ex_type: VideoPacketModExType,
+        /// The data of the modifier extension.
         mod_ex_data: Bytes,
     },
 }
 
 impl VideoPacketModEx {
+    /// Demux a [`VideoPacketModEx`] from the given reader.
+    ///
+    /// Returns the demuxed [`VideoPacketModEx`] and the next [`VideoPacketType`], if successful.
     pub fn demux(reader: &mut io::Cursor<Bytes>) -> Result<(Self, VideoPacketType), Error> {
         let mut mod_ex_data_size = reader.read_u8()? as usize + 1;
         if mod_ex_data_size == 256 {
@@ -96,13 +107,11 @@ impl VideoPacketModEx {
 }
 
 nutype_enum! {
-    /// FLV Video FourCC
-    ///
-    /// Denotes the different types of video codecs that can be used in a FLV file.
+    /// Valid FOURCC values for signaling support of video codecs
+    /// in the enhanced FourCC pipeline.
     ///
     /// Defined by:
-    /// - enhanced_rtmp-v1.pdf (Defining Additional Video Codecs)
-    /// - enhanced_rtmp-v2.pdf (Enhanced Video)
+    /// - Enhanced RTMP spec, page 28, Enhanced Video
     pub enum VideoFourCc([u8; 4]) {
         /// VP8
         Vp8 = *b"vp08",
@@ -120,25 +129,45 @@ nutype_enum! {
 /// This is a helper enum to represent the different types of enhanced video headers.
 #[derive(Debug, Clone, PartialEq)]
 pub enum ExVideoTagHeaderContent {
+    /// Video command.
     VideoCommand(VideoCommand),
+    /// Not multitrack.
     NoMultiTrack(VideoFourCc),
+    /// Multirack with one track.
     OneTrack(VideoFourCc),
+    /// Multitrack with many tracks of the same codec.
     ManyTracks(VideoFourCc),
+    /// Multitrack with many tracks of different codecs.
     ManyTracksManyCodecs,
+    /// Unknown multitrack type.
     Unknown {
+        /// The type of the multitrack video.
         video_multitrack_type: AvMultitrackType,
+        /// The FOURCC of the video codec.
         video_four_cc: VideoFourCc,
     },
 }
 
+/// `ExVideoTagHeader`
+///
+/// Defined by:
+/// - Enhanced RTMP spec, page 27-28, Enhanced Video
 #[derive(Debug, Clone, PartialEq)]
 pub struct ExVideoTagHeader {
-    pub video_packet_type: VideoPacketType,
+    /// The modifier extensions of the video packet.
+    ///
+    /// This can be empty if there are no modifier extensions.
     pub video_packet_mod_exs: Vec<VideoPacketModEx>,
+    /// The type of the video packet.
+    pub video_packet_type: VideoPacketType,
+    /// The content of the video packet which contains more information about the multitrack configuration.
     pub content: ExVideoTagHeaderContent,
 }
 
 impl ExVideoTagHeader {
+    /// Demux an [`ExVideoTagHeader`] from the given reader.
+    ///
+    /// This is implemented as per Enhanced RTMP spec, page 27-28, ExVideoTagHeader.
     #[allow(clippy::unusual_byte_groupings)]
     pub fn demux(reader: &mut io::Cursor<Bytes>) -> Result<Self, Error> {
         let byte = reader.read_u8()?;
@@ -168,7 +197,7 @@ impl ExVideoTagHeader {
             }
 
             let mut video_four_cc = [0; 4];
-            // Only read the four cc if it's not ManyTracksManyCodecs
+            // Only read the FOURCC if it's not ManyTracksManyCodecs
             if video_multitrack_type != AvMultitrackType::ManyTracksManyCodecs {
                 reader.read_exact(&mut video_four_cc)?;
             }

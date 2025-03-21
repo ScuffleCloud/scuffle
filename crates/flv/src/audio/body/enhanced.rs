@@ -1,3 +1,7 @@
+//! Enhanced audio tag body
+//!
+//! Types and functions defined by the enhanced RTMP spec, page 19, ExAudioTagBody.
+
 use std::io::{self, Read};
 
 use byteorder::{BigEndian, ReadBytesExt};
@@ -5,12 +9,19 @@ use bytes::{Buf, Bytes};
 use nutype_enum::nutype_enum;
 use scuffle_bytes_util::BytesCursorExt;
 
-use crate::audio::header::{AudioFourCc, AudioPacketType, ExAudioTagHeader, ExAudioTagHeaderContent};
+use crate::audio::header::enhanced::{AudioFourCc, AudioPacketType, ExAudioTagHeader, ExAudioTagHeaderContent};
 
 nutype_enum! {
+    /// Audio channel order
+    ///
+    /// Defined by:
+    /// - Enhanced RTMP spec, page 22-23, ExAudioTagBody
     pub enum AudioChannelOrder(u8) {
+        /// Only the channel count is specified, without any further information about the channel order.
         Unspecified = 0,
+        /// The native channel order (i.e., the channels are in the same order in which as defined in the [`AudioChannel`] enum).
         Native = 1,
+        /// The channel order does not correspond to any predefined order and is stored as an explicit map.
         Custom = 2,
     }
 }
@@ -18,94 +29,207 @@ nutype_enum! {
 nutype_enum! {
     /// Channel mappings enum
     ///
-    /// commonly used speaker configurations
-    ///
-    /// see - <https://en.wikipedia.org/wiki/Surround_sound#Standard_speaker_channels>
+    /// See <https://en.wikipedia.org/wiki/Surround_sound#Standard_speaker_channels> and
+    /// <https://en.wikipedia.org/wiki/22.2_surround_sound> for more information.
     pub enum AudioChannel(u8) {
+        // commonly used speaker configurations
+        //
+        // see - <https://en.wikipedia.org/wiki/Surround_sound#Standard_speaker_channels>
+
+        /// Front left
         FrontLeft = 0,
+        /// Front right
         FrontRight = 1,
+        /// Front center
         FrontCenter = 2,
+        /// Low frequency
         LowFrequency1 = 3,
+        /// Back left
         BackLeft = 4,
+        /// Back right
         BackRight = 5,
+        /// Front left of center
         FrontLeftCenter = 6,
+        /// Front right of center
         FrontRightCenter = 7,
+        /// Back center
         BackCenter = 8,
+        /// Side left
         SideLeft = 9,
+        /// Side right
         SideRight = 10,
+        /// Top center
         TopCenter = 11,
+        /// Front left height
         TopFrontLeft = 12,
+        /// Front center height
         TopFrontCenter = 13,
+        /// Front right height
         TopFrontRight = 14,
+        /// Rear left height
         TopBackLeft = 15,
+        /// Rear center height
         TopBackCenter = 16,
+        /// Rear right height
         TopBackRight = 17,
+
+        // mappings to complete 22.2 multichannel audio, as standardized in SMPTE ST2036-2-2008
+        //
+        // see - <https://en.wikipedia.org/wiki/22.2_surround_sound>
+
+        /// Low frequency 2
         LowFrequency2 = 18,
+        /// Top side left
         TopSideLeft = 19,
+        /// Top side right
         TopSideRight = 20,
+        /// Bottom front center
         BottomFrontCenter = 21,
+        /// Bottom front left
         BottomFrontLeft = 22,
+        /// Bottom front right
         BottomFrontRight = 23,
+        /// Channel is empty and can be safely skipped.
         Unused = 0xfe,
+        /// Channel contains data, but its speaker configuration is unknown.
         Unknown = 0xff,
     }
 }
 
+/// Mask used to indicate which channels are present in the stream.
+///
+/// See <https://en.wikipedia.org/wiki/Surround_sound#Standard_speaker_channels> and
+/// <https://en.wikipedia.org/wiki/22.2_surround_sound> for more information.
 #[bitmask_enum::bitmask(u32)]
 pub enum AudioChannelMask {
+    // masks for commonly used speaker configurations
+    // <https://en.wikipedia.org/wiki/Surround_sound#Standard_speaker_channels>
+    /// Front left
     FrontLeft = 0x000001,
+    /// Front right
     FrontRight = 0x000002,
+    /// Front center
     FrontCenter = 0x000004,
+    /// Low frequency
     LowFrequency1 = 0x000008,
+    /// Back left
     BackLeft = 0x000010,
+    /// Back right
     BackRight = 0x000020,
+    /// Front left of center
     FrontLeftCenter = 0x000040,
+    /// Front right of center
     FrontRightCenter = 0x000080,
+    /// Back center
     BackCenter = 0x000100,
+    /// Side left
     SideLeft = 0x000200,
+    /// Side right
     SideRight = 0x000400,
+    /// Top center
     TopCenter = 0x000800,
+    /// Front left height
     TopFrontLeft = 0x001000,
+    /// Front center height
     TopFrontCenter = 0x002000,
+    /// Front right height
     TopFrontRight = 0x004000,
+    /// Rear left height
     TopBackLeft = 0x008000,
+    /// Rear center height
     TopBackCenter = 0x010000,
+    /// Rear right height
     TopBackRight = 0x020000,
+
+    // Completes 22.2 multichannel audio, as
+    // standardized in SMPTE ST2036-2-2008
+    // see - <https://en.wikipedia.org/wiki/22.2_surround_sound>
+    /// Low frequency 2
     LowFrequency2 = 0x040000,
+    /// Top side left
     TopSideLeft = 0x080000,
+    /// Top side right
     TopSideRight = 0x100000,
+    /// Bottom front center
     BottomFrontCenter = 0x200000,
+    /// Bottom front left
     BottomFrontLeft = 0x400000,
+    /// Bottom front right
     BottomFrontRight = 0x800000,
 }
 
+/// Multichannel configuration
+///
+/// Describes the configuration of the audio channels in a multichannel audio stream.
+///
+/// Contained in an [`AudioPacket::MultichannelConfig`].
 #[derive(Debug, Clone, PartialEq)]
-pub enum MultichannelConfig {
+pub enum MultichannelConfigOrder {
+    /// Custom channel order
+    ///
+    /// The channels have a custom order that is explicitly defined by this packet.
     Custom(Vec<AudioChannel>),
+    /// Native channel order
+    ///
+    /// Only the channels flagged in this packet are present in the stream
+    /// in the order they are defined by the [`AudioChannelMask`].
+    ///
+    /// > You can perform a Bitwise AND
+    /// > (i.e., audioChannelFlags & AudioChannelMask.xxx) to see if a
+    /// > specific audio channel is present.
     Native(AudioChannelMask),
+    /// The channel order is unspecified, only the channel count is known.
     Unspecified,
+    /// An unknown channel order.
+    ///
+    /// Neither [`Unspecified`](AudioChannelOrder::Unspecified), [`Native`](AudioChannelOrder::Native),
+    /// nor [`Custom`](AudioChannelOrder::Custom).
     Unknown(AudioChannelOrder),
 }
 
+/// Audio packet
+///
+/// Appears as part of the [`ExAudioTagBody`].
+///
+/// Defined by:
+/// - Enhanced RTMP spec, page 23-25, ExAudioTagBody
 #[derive(Debug, Clone, PartialEq)]
 pub enum AudioPacket {
+    /// Multichannel configuration
+    ///
+    /// > Specify a speaker for a channel as it appears in the bitstream.
+    /// > This is needed if the codec is not self-describing for channel mapping.
     MultichannelConfig {
+        /// The number of channels in the audio stream.
         channel_count: u8,
-        multichannel_config: MultichannelConfig,
+        /// The multichannel configuration.
+        ///
+        /// Specifies the order of the channels in the audio stream.
+        multichannel_config: MultichannelConfigOrder,
     },
+    /// Indicates the end of a sequence of audio packets.
     SequenceEnd,
+    /// Indicates the start of a sequence of audio packets.
     SequenceStart {
+        /// The header data for the sequence.
         header_data: Bytes,
     },
+    /// Coded audio frames.
     CodedFrames {
+        /// The audio data.
         data: Bytes,
     },
+    /// An unknown [`AudioPacketType`].
     Unknown {
+        /// The data.
         data: Bytes,
     },
 }
 
 impl AudioPacket {
+    /// Demux an [`AudioPacket`] from the given reader.
+    ///
+    /// This is implemented as per spec, Enhanced RTMP page 23-25, ExAudioTagBody.
     pub fn demux(header: &ExAudioTagHeader, reader: &mut io::Cursor<Bytes>) -> io::Result<Self> {
         let has_multiple_tracks = !matches!(
             header.content,
@@ -127,15 +251,15 @@ impl AudioPacket {
                     AudioChannelOrder::Custom => {
                         let channels = reader.extract_bytes(channel_count as usize)?;
 
-                        MultichannelConfig::Custom(channels.into_iter().map(AudioChannel::from).collect())
+                        MultichannelConfigOrder::Custom(channels.into_iter().map(AudioChannel::from).collect())
                     }
                     AudioChannelOrder::Native => {
                         let audio_channel_flags = AudioChannelMask::from(reader.read_u32::<BigEndian>()?);
 
-                        MultichannelConfig::Native(audio_channel_flags)
+                        MultichannelConfigOrder::Native(audio_channel_flags)
                     }
-                    AudioChannelOrder::Unspecified => MultichannelConfig::Unspecified,
-                    _ => MultichannelConfig::Unknown(audio_channel_order),
+                    AudioChannelOrder::Unspecified => MultichannelConfigOrder::Unspecified,
+                    _ => MultichannelConfigOrder::Unknown(audio_channel_order),
                 };
 
                 Ok(Self::MultichannelConfig {
@@ -165,23 +289,51 @@ impl AudioPacket {
     }
 }
 
+/// One audio track contained in a multitrack audio.
 #[derive(Debug, Clone, PartialEq)]
 pub struct AudioTrack {
+    /// The audio FOURCC of this track.
     pub audio_four_cc: AudioFourCc,
+    /// The audio track ID.
+    ///
+    /// > For identifying the highest priority (a.k.a., default track)
+    /// > or highest quality track, it is RECOMMENDED to use trackId
+    /// > set to zero. For tracks of lesser priority or quality, use
+    /// > multiple instances of trackId with ascending numerical values.
+    /// > The concept of priority or quality can have multiple
+    /// > interpretations, including but not limited to bitrate,
+    /// > resolution, default angle, and language. This recommendation
+    /// > serves as a guideline intended to standardize track numbering
+    /// > across various applications.
     pub audio_track_id: u8,
+    /// The audio packet contained in this track.
     pub packet: AudioPacket,
 }
 
+/// `ExAudioTagBody`
+///
+/// Defined by:
+/// - Enhanced RTMP spec, page 22-25, ExAudioTagBody
 #[derive(Debug, Clone, PartialEq)]
 pub enum ExAudioTagBody {
+    /// The body is not a multitrack body.
     NoMultitrack {
+        /// The audio FOURCC of this body.
         audio_four_cc: AudioFourCc,
+        /// The audio packet contained in this body.
         packet: AudioPacket,
     },
+    /// The body is a multitrack body.
+    ///
+    /// This variant contains multiple audio tracks.
+    /// See [`AudioTrack`] for more information.
     ManyTracks(Vec<AudioTrack>),
 }
 
 impl ExAudioTagBody {
+    /// Demux an [`ExAudioTagBody`] from the given reader.
+    ///
+    /// This is implemented as per Enhanced RTMP spec, page 22-25, ExAudioTagBody.
     pub fn demux(header: &ExAudioTagHeader, reader: &mut io::Cursor<Bytes>) -> io::Result<Self> {
         let mut tracks = Vec::new();
 
@@ -238,10 +390,10 @@ mod tests {
     use bytes::Bytes;
 
     use super::AudioPacket;
-    use crate::audio::body::{
-        AudioChannel, AudioChannelMask, AudioChannelOrder, AudioTrack, ExAudioTagBody, MultichannelConfig,
+    use crate::audio::body::enhanced::{
+        AudioChannel, AudioChannelMask, AudioChannelOrder, AudioTrack, ExAudioTagBody, MultichannelConfigOrder,
     };
-    use crate::audio::header::{AudioFourCc, AudioPacketType, ExAudioTagHeader, ExAudioTagHeaderContent};
+    use crate::audio::header::enhanced::{AudioFourCc, AudioPacketType, ExAudioTagHeader, ExAudioTagHeaderContent};
     use crate::common::AvMultitrackType;
 
     #[test]
@@ -352,7 +504,10 @@ mod tests {
             packet,
             AudioPacket::MultichannelConfig {
                 channel_count: 2,
-                multichannel_config: MultichannelConfig::Custom(vec![AudioChannel::FrontLeft, AudioChannel::FrontRight])
+                multichannel_config: MultichannelConfigOrder::Custom(vec![
+                    AudioChannel::FrontLeft,
+                    AudioChannel::FrontRight
+                ])
             },
         );
     }
@@ -377,7 +532,9 @@ mod tests {
             packet,
             AudioPacket::MultichannelConfig {
                 channel_count: 2,
-                multichannel_config: MultichannelConfig::Native(AudioChannelMask::FrontLeft | AudioChannelMask::FrontRight)
+                multichannel_config: MultichannelConfigOrder::Native(
+                    AudioChannelMask::FrontLeft | AudioChannelMask::FrontRight
+                )
             },
         );
     }
@@ -401,7 +558,7 @@ mod tests {
             packet,
             AudioPacket::MultichannelConfig {
                 channel_count: 2,
-                multichannel_config: MultichannelConfig::Unspecified,
+                multichannel_config: MultichannelConfigOrder::Unspecified,
             },
         );
 
@@ -422,7 +579,7 @@ mod tests {
             packet,
             AudioPacket::MultichannelConfig {
                 channel_count: 2,
-                multichannel_config: MultichannelConfig::Unknown(AudioChannelOrder(4)),
+                multichannel_config: MultichannelConfigOrder::Unknown(AudioChannelOrder(4)),
             },
         );
     }

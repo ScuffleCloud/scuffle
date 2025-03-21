@@ -1,3 +1,5 @@
+//! FLV video tag headers.
+
 use std::io::{self, Seek};
 
 use byteorder::ReadBytesExt;
@@ -11,10 +13,11 @@ pub mod legacy;
 
 nutype_enum! {
     /// FLV Frame Type
+    ///
     /// This enum represents the different types of frames in a FLV file.
+    ///
     /// Defined by:
-    /// - video_file_format_spec_v10.pdf (Chapter 1 - The FLV File Format - Video tags)
-    /// - video_file_format_spec_v10_1.pdf (Annex E.4.3.1 - VIDEODATA)
+    /// - Legacy FLV spec, Annex E.4.3.1
     pub enum VideoFrameType(u8) {
         /// A keyframe is a frame that is a complete representation of the video content.
         KeyFrame = 1,
@@ -31,26 +34,49 @@ nutype_enum! {
 }
 
 nutype_enum! {
+    /// FLV Video Command
+    ///
+    /// Defined by:
+    /// - Legacy FLV spec, Annex E.4.3.1, VideoTagBody
+    /// - Enhanced RTMP spec, page 26, Enhanced Video
     pub enum VideoCommand(u8) {
+        /// Start of client-side seeking video frame sequence
         StartSeek = 0,
+        /// End of client-side seeking video frame sequence
         EndSeek = 1,
     }
 }
 
+/// A wrapper for the different types of video tag header data.
 #[derive(Debug, Clone, PartialEq)]
 pub enum VideoTagHeaderData {
+    /// Legacy video tag header.
     Legacy(legacy::LegacyVideoTagHeader),
+    /// Enhanced video tag header.
     Enhanced(enhanced::ExVideoTagHeader),
 }
 
+/// FLV `VideoTagHeader`
+///
+/// This only describes the video tag header, see [`VideoData`](super::VideoData) for the full video data container.
+///
+/// Defined by:
+/// - Legacy FLV spec, Annex E.4.3.1
+/// - Enhanced RTMP spec, page 26-28, Enhanced Video
 #[derive(Debug, Clone, PartialEq)]
 pub struct VideoTagHeader {
-    /// The frame type of the video data. (4 bits)
+    /// The frame type of the video data.
     pub frame_type: VideoFrameType,
+    /// The data of the video tag header.
     pub data: VideoTagHeaderData,
 }
 
 impl VideoTagHeader {
+    /// Demux the video tag header from the given reader.
+    ///
+    /// If you want to demux the full video data tag, use [`VideoData::demux`](super::VideoData::demux) instead.
+    /// This function will automatically determine whether the given data represents a legacy or an enhanced video tag header
+    /// and demux it accordingly.
     #[allow(clippy::unusual_byte_groupings)]
     pub fn demux(reader: &mut io::Cursor<Bytes>) -> Result<Self, Error> {
         let byte = reader.read_u8()?;

@@ -1,40 +1,117 @@
+//! Types and functions for working with metadata video packets.
+
 use scuffle_amf0::{Amf0Decoder, Amf0Marker, Amf0Object, Amf0Value};
 
 use crate::error::Error;
 
+/// Color configuration metadata.
+///
+/// > `colorPrimaries`, `transferCharacteristics` and `matrixCoefficients` are defined
+/// > in ISO/IEC 23091-4/ITU-T H.273. The values are an index into
+/// > respective tables which are described in "Colour primaries",
+/// > "Transfer characteristics" and "Matrix coefficients" sections.
+/// > It is RECOMMENDED to provide these values.
 #[derive(Debug, Clone, PartialEq)]
 pub struct MetadataColorInfoColorConfig {
+    /// Number of bits used to record the color channels for each pixel.
+    ///
+    /// SHOULD be 8, 10 or 12
     pub bit_depth: Option<f64>,
-    pub color_space: Option<f64>,
+    /// Indicates the chromaticity coordinates of the source color primaries.
+    ///
+    /// enumeration [0-255]
     pub color_primaries: Option<f64>,
+    /// Opto-electronic transfer characteristic function (e.g., PQ, HLG).
+    ///
+    /// enumeration [0-255]
     pub transfer_characteristics: Option<f64>,
+    /// Matrix coefficients used in deriving luma and chroma signals.
+    ///
+    /// enumeration [0-255]
     pub matrix_coefficients: Option<f64>,
 }
 
+/// HDR content light level metadata.
 #[derive(Debug, Clone, PartialEq)]
 pub struct MetadataColorInfoHdrCll {
+    /// Maximum value of the frame average light level
+    /// (in 1 cd/m2) of the entire playback sequence.
+    ///
+    /// [0.0001-10000]
     pub max_fall: Option<f64>,
+    /// Maximum light level of any single pixel (in 1 cd/m2)
+    /// of the entire playback sequence.
+    ///
+    /// [0.0001-10000]
     pub max_cll: Option<f64>,
 }
 
+/// HDR mastering display color volume metadata.
+///
+/// > The hdrMdcv object defines mastering display (i.e., where
+/// > creative work is done during the mastering process) color volume (a.k.a., mdcv)
+/// > metadata which describes primaries, white point and min/max luminance. The
+/// > hdrMdcv object SHOULD be provided.
+/// >
+/// > Specification of the metadata along with its ranges adhere to the
+/// > ST 2086:2018 - SMPTE Standard (except for minLuminance see
+/// > comments below)
+///
+/// > Mastering display color volume (mdcv) xy Chromaticity Coordinates within CIE
+/// > 1931 color space.
+///
+/// > Values SHALL be specified with four decimal places. The x coordinate SHALL
+/// > be in the range [0.0001, 0.7400]. The y coordinate SHALL be
+/// > in the range [0.0001, 0.8400].
 #[derive(Debug, Clone, PartialEq)]
 pub struct MetadataColorInfoHdrMdcv {
+    /// Red x coordinate.
     pub red_x: Option<f64>,
+    /// Red y coordinate.
     pub red_y: Option<f64>,
+    /// Green x coordinate.
     pub green_x: Option<f64>,
+    /// Green y coordinate.
     pub green_y: Option<f64>,
+    /// Blue x coordinate.
     pub blue_x: Option<f64>,
+    /// Blue y coordinate.
     pub blue_y: Option<f64>,
+    /// White point x coordinate.
     pub white_point_x: Option<f64>,
+    /// White point y coordinate.
     pub white_point_y: Option<f64>,
+    /// Max display luminance of the mastering display (in 1 cd/m2 ie. nits).
+    ///
+    /// > note: ST 2086:2018 - SMPTE Standard specifies minimum display mastering
+    /// > luminance in multiples of 0.0001 cd/m2.
+    ///
+    /// > For consistency we specify all values
+    /// > in 1 cd/m2. Given that a hypothetical perfect screen has a peak brightness
+    /// > of 10,000 nits and a black level of .0005 nits we do not need to
+    /// > switch units to 0.0001 cd/m2 to increase resolution on the lower end of the
+    /// > minLuminance property. The ranges (in nits) mentioned below suffice
+    /// > the theoretical limit for Mastering Reference Displays and adhere to the
+    /// > SMPTE ST 2084 standard (a.k.a., PQ) which is capable of representing full gamut
+    /// > of luminance level.
     pub max_luminance: Option<f64>,
+    /// Min display luminance of the mastering display (in 1 cd/m2 ie. nits).
+    ///
+    /// See [`max_luminance`](MetadataColorInfoHdrMdcv::max_luminance) for details.
     pub min_luminance: Option<f64>,
 }
 
+/// Color info metadata.
+///
+/// Defined by:
+/// - Enhanced RTMP spec, page 32-34, Metadata Frame
 #[derive(Debug, Clone, PartialEq)]
 pub struct MetadataColorInfo {
+    /// Color configuration metadata.
     pub color_config: Option<MetadataColorInfoColorConfig>,
+    /// HDR content light level metadata.
     pub hdr_cll: Option<MetadataColorInfoHdrCll>,
+    /// HDR mastering display color volume metadata.
     pub hdr_mdcv: Option<MetadataColorInfoHdrMdcv>,
 }
 
@@ -45,7 +122,6 @@ impl TryFrom<Amf0Object<'_>> for MetadataColorInfo {
     type Error = Error;
 
     fn try_from(value: Amf0Object<'_>) -> Result<Self, Self::Error> {
-        // let value = value.into_owned();
         let mut color_config = None;
         let mut hdr_cll = None;
         let mut hdr_mdcv = None;
@@ -56,7 +132,6 @@ impl TryFrom<Amf0Object<'_>> for MetadataColorInfo {
                     let color_config_object = value.as_object()?;
 
                     let mut bit_depth = None;
-                    let mut color_space = None;
                     let mut color_primaries = None;
                     let mut transfer_characteristics = None;
                     let mut matrix_coefficients = None;
@@ -65,9 +140,6 @@ impl TryFrom<Amf0Object<'_>> for MetadataColorInfo {
                         match key.as_ref() {
                             "bitDepth" => {
                                 bit_depth = Some(value.as_number()?);
-                            }
-                            "colorSpace" => {
-                                color_space = Some(value.as_number()?);
                             }
                             "colorPrimaries" => {
                                 color_primaries = Some(value.as_number()?);
@@ -84,7 +156,6 @@ impl TryFrom<Amf0Object<'_>> for MetadataColorInfo {
 
                     color_config = Some(MetadataColorInfoColorConfig {
                         bit_depth,
-                        color_space,
                         color_primaries,
                         transfer_characteristics,
                         matrix_coefficients,
@@ -185,18 +256,24 @@ impl TryFrom<Amf0Object<'_>> for MetadataColorInfo {
     }
 }
 
+/// A single entry in a metadata video packet.
 // It will almost always be ColorInfo, so it's fine that it wastes space when it's the other variant
 #[allow(clippy::large_enum_variant)]
 #[derive(Debug, Clone, PartialEq)]
 pub enum VideoPacketMetadataEntry {
+    /// Color info metadata.
     ColorInfo(MetadataColorInfo),
+    /// Any other metadata entry.
     Other {
+        /// The key of the metadata entry.
         key: String,
+        /// The metadata object.
         object: Vec<(String, Amf0Value<'static>)>,
     },
 }
 
 impl VideoPacketMetadataEntry {
+    /// Read a video packet metadata entry from the given [`Amf0Decoder`].
     pub fn read(reader: &mut Amf0Decoder<'_>) -> Result<Self, Error> {
         let Amf0Value::String(key) = reader.decode_with_type(Amf0Marker::String)? else {
             unreachable!()
@@ -241,7 +318,6 @@ mod tests {
                 "colorConfig".into(),
                 Amf0Value::Object(Cow::Owned(vec![
                     ("bitDepth".into(), 10.0.into()),
-                    ("colorSpace".into(), 1.0.into()),
                     ("colorPrimaries".into(), 1.0.into()),
                     ("transferCharacteristics".into(), 1.0.into()),
                     ("matrixCoefficients".into(), 1.0.into()),
@@ -284,7 +360,6 @@ mod tests {
             VideoPacketMetadataEntry::ColorInfo(MetadataColorInfo {
                 color_config: Some(super::MetadataColorInfoColorConfig {
                     bit_depth: Some(10.0),
-                    color_space: Some(1.0),
                     color_primaries: Some(1.0),
                     transfer_characteristics: Some(1.0),
                     matrix_coefficients: Some(1.0),

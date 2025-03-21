@@ -1,24 +1,38 @@
+//! FLV audio tag headers.
+
 use std::io::{self, Seek};
 
 use byteorder::ReadBytesExt;
 use bytes::Bytes;
+use enhanced::ExAudioTagHeader;
+use legacy::{LegacyAudioTagHeader, SoundFormat};
 
 use crate::error::Error;
 
-mod enhanced;
-mod legacy;
+pub mod enhanced;
+pub mod legacy;
 
-pub use enhanced::*;
-pub use legacy::*;
-
-/// This is a helper enum to represent the different types of audio tag headers.
+/// FLV `AudioTagHeader`
+///
+/// This only describes the audio tag header, see [`AudioData`](super::AudioData) for the full audio data container.
+///
+/// Defined by:
+/// - Legacy FLV spec, Annex E.4.2.1
+/// - Enhanced RTMP spec, page 19, Enhanced Audio
 #[derive(Debug, Clone, PartialEq)]
 pub enum AudioTagHeader {
+    /// Legacy audio tag header.
     Legacy(LegacyAudioTagHeader),
+    /// Enhanced audio tag header.
     Enhanced(ExAudioTagHeader),
 }
 
 impl AudioTagHeader {
+    /// Demux the audio tag header from the given reader.
+    ///
+    /// If you want to demux the full audio data tag, use [`AudioData::demux`](super::AudioData::demux) instead.
+    /// This function will automatically determine whether the given data represents a legacy or an enhanced audio tag header
+    /// and demux it accordingly.
     #[allow(clippy::unusual_byte_groupings)]
     pub fn demux(reader: &mut io::Cursor<Bytes>) -> Result<Self, Error> {
         let byte = reader.read_u8()?;

@@ -1,3 +1,5 @@
+//! FLV Tag processing
+
 use byteorder::{BigEndian, ReadBytesExt};
 use bytes::Bytes;
 use nutype_enum::nutype_enum;
@@ -14,9 +16,7 @@ use crate::error::Error;
 /// this the [`FlvTagData`] enum is used.
 ///
 /// Defined by:
-/// - video_file_format_spec_v10.pdf (Chapter 1 - The FLV File Format - FLV
-///   tags)
-/// - video_file_format_spec_v10_1.pdf (Annex E.4.1 - FLV Tag)
+/// - Legacy FLV spec, Annex E.4.1
 ///
 /// The v10.1 spec adds some additional fields to the tag to accomodate
 /// encryption. We dont support this because it is not needed for our use case.
@@ -27,10 +27,11 @@ use crate::error::Error;
 /// used.
 #[derive(Debug, Clone, PartialEq)]
 pub struct FlvTag {
-    /// A timestamp in milliseconds
+    /// The timestamp of this tag in milliseconds
     pub timestamp_ms: u32,
-    /// A stream id
+    /// The stream id of this tag
     pub stream_id: u32,
+    /// The actual data of the tag
     pub data: FlvTagData,
 }
 
@@ -90,8 +91,11 @@ nutype_enum! {
     /// - ScriptData(18)
     ///
     pub enum FlvTagType(u8) {
+        /// [`AudioData`]
         Audio = 8,
+        /// [`VideoData`]
         Video = 9,
+        /// [`ScriptData`]
         ScriptData = 18,
     }
 }
@@ -102,31 +106,32 @@ nutype_enum! {
 /// This enum contains the data for the different types of tags.
 ///
 /// Defined by:
-/// - video_file_format_spec_v10.pdf (Chapter 1 - The FLV File Format - FLV tags)
-/// - video_file_format_spec_v10_1.pdf (Annex E.4.1 - FLV Tag)
+/// - Legacy FLV spec, Annex E.4.1
 #[derive(Debug, Clone, PartialEq)]
 pub enum FlvTagData {
     /// AudioData when the FlvTagType is Audio(8)
     ///
     /// Defined by:
-    /// - video_file_format_spec_v10.pdf (Chapter 1 - The FLV File Format - Audio tags)
-    /// - video_file_format_spec_v10_1.pdf (Annex E.4.2.1 - AUDIODATA)
+    /// - Legacy FLV spec, Annex E.4.2.1
     Audio(AudioData),
     /// VideoData when the FlvTagType is Video(9)
     ///
     /// Defined by:
-    /// - video_file_format_spec_v10.pdf (Chapter 1 - The FLV File Format - Video tags)
-    /// - video_file_format_spec_v10_1.pdf (Annex E.4.3.1 - VIDEODATA)
+    /// - Legacy FLV spec, Annex E.4.3.1
     Video(VideoData),
     /// ScriptData when the FlvTagType is ScriptData(18)
     ///
     /// Defined by:
-    /// - video_file_format_spec_v10.pdf (Chapter 1 - The FLV File Format - Data tags)
-    /// - video_file_format_spec_v10_1.pdf (Annex E.4.4.1 - SCRIPTDATA)
+    /// - Legacy FLV spec, Annex E.4.4.1
     ScriptData(ScriptData),
-    /// Any tag type that we dont know how to parse, with the corresponding data
-    /// being the raw bytes of the tag
-    Unknown { tag_type: FlvTagType, data: Bytes },
+    /// Any tag type that we dont know how to demux, with the corresponding data
+    /// being the raw bytes of the tag.
+    Unknown {
+        /// The tag type
+        tag_type: FlvTagType,
+        /// The raw data of the tag
+        data: Bytes,
+    },
 }
 
 impl FlvTagData {

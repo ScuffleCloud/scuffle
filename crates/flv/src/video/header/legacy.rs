@@ -1,3 +1,5 @@
+//! Legacy video header types and functions.
+
 use std::io;
 
 use byteorder::{BigEndian, ReadBytesExt};
@@ -9,12 +11,10 @@ use super::{VideoCommand, VideoFrameType};
 nutype_enum! {
     /// FLV Video Codec ID
     ///
-    /// Denotes the different types of video codecs that can be used in a FLV file.
-    /// This is a legacy enum for older codecs; for modern codecs, the [`EnhancedPacketType`] is used which uses a [`VideoFourCC`] identifier.
+    /// Denotes the different types of video codecs.
     ///
     /// Defined by:
-    /// - video_file_format_spec_v10.pdf (Chapter 1 - The FLV File Format - Video tags)
-    /// - video_file_format_spec_v10_1.pdf (Annex E.4.3.1 - VIDEODATA)
+    /// - Legacy FLV spec, Annex E.4.3.1
     pub enum VideoCodecId(u8) {
         /// Sorenson H.263
         SorensonH263 = 2,
@@ -33,65 +33,84 @@ nutype_enum! {
 
 nutype_enum! {
     /// FLV AVC Packet Type
-    /// Defined in the FLV specification. Chapter 1 - AVCVIDEODATA
+    ///
     /// The AVC packet type is used to determine if the video data is a sequence
     /// header or a NALU.
+    ///
+    /// Defined by:
+    /// - Legacy FLV spec, Annex E.4.3.1
     pub enum AvcPacketType(u8) {
+        /// AVC sequence header
         SeqHdr = 0,
+        /// AVC NALU
         Nalu = 1,
+        /// AVC end of sequence (lower level NALU sequence ender is not required or supported)
         EndOfSequence = 2,
     }
 }
 
-/// AVC Packet header
+/// AVC packet header
 #[derive(Debug, Clone, PartialEq)]
 pub enum LegacyVideoTagHeaderAvcPacket {
-    /// AVC Sequence Header
+    /// AVC sequence header
     SequenceHeader,
     /// AVC NALU
-    Nalu { composition_time: u32 },
-    /// AVC End of Sequence
+    Nalu {
+        /// The composition time offset of the NALU.
+        composition_time_offset: u32,
+    },
+    /// AVC end of sequence
     EndOfSequence,
-    /// AVC Unknown (we don't know how to parse it)
+    /// Unknown
     Unknown {
+        /// The AVC packet type.
         avc_packet_type: AvcPacketType,
-        composition_time: u32,
+        /// The composition time offset of the packet.
+        composition_time_offset: u32,
     },
 }
 
 impl LegacyVideoTagHeaderAvcPacket {
+    /// Demux the AVC packet header from the given reader.
     pub fn demux(reader: &mut io::Cursor<Bytes>) -> io::Result<Self> {
         let avc_packet_type = AvcPacketType::from(reader.read_u8()?);
-        let composition_time = reader.read_u24::<BigEndian>()?;
+        let composition_time_offset = reader.read_u24::<BigEndian>()?;
 
         match avc_packet_type {
             AvcPacketType::SeqHdr => Ok(Self::SequenceHeader),
-            AvcPacketType::Nalu => Ok(Self::Nalu { composition_time }),
+            AvcPacketType::Nalu => Ok(Self::Nalu { composition_time_offset }),
             AvcPacketType::EndOfSequence => Ok(Self::EndOfSequence),
             _ => {
                 tracing::warn!(avc_packet_type = ?avc_packet_type, "unknown AVC packet type");
 
                 Ok(Self::Unknown {
                     avc_packet_type,
-                    composition_time,
+                    composition_time_offset,
                 })
             }
         }
     }
 }
 
+/// FLV `VideoTagHeader`
+///
+/// Defined by:
+/// - Legacy FLV spec, Annex E.4.3.1
 #[derive(Debug, Clone, PartialEq)]
 pub enum LegacyVideoTagHeader {
-    /// A video command with frame type `VideoFrameType::Command`.
+    /// A video command with frame type [`VideoFrameType::Command`].
     VideoCommand(VideoCommand),
+    /// AVC video packet.
     AvcPacket(LegacyVideoTagHeaderAvcPacket),
+    /// Any other video data.
     Other {
-        /// The codec id of the video data. (4 bits)
+        /// The codec id of the video data.
         video_codec_id: VideoCodecId,
     },
 }
 
 impl LegacyVideoTagHeader {
+    /// Demux the video tag header from the given reader.
     pub fn demux(reader: &mut io::Cursor<Bytes>) -> io::Result<Self> {
         let first_byte = reader.read_u8()?;
         let frame_type = VideoFrameType::from(first_byte >> 4); // 0b1111_0000

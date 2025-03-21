@@ -1,3 +1,5 @@
+//! Legacy audio header types and functions.
+
 use std::io;
 
 use byteorder::ReadBytesExt;
@@ -7,13 +9,12 @@ use nutype_enum::nutype_enum;
 use crate::error::Error;
 
 nutype_enum! {
-    /// FLV Sound Format
+    /// FLV `SoundFormat`
     ///
-    /// Denotes the type of the underlying data packet
+    /// Denotes the type of the underlying data packet.
     ///
     /// Defined by:
-    /// - video_file_format_spec_v10.pdf (Chapter 1 - The FLV File Format - Audio tags)
-    /// - video_file_format_spec_v10_1.pdf (Annex E.4.2.1 - AUDIODATA)
+    /// - Legacy FLV spec, Annex E.4.2.1
     pub enum SoundFormat(u8) {
         /// Linear PCM, platform endian
         LinearPcmPlatformEndian = 0,
@@ -49,13 +50,12 @@ nutype_enum! {
 }
 
 nutype_enum! {
-    /// FLV Sound Rate
+    /// FLV `SoundRate`
     ///
     /// Denotes the sampling rate of the audio data.
     ///
     /// Defined by:
-    /// - video_file_format_spec_v10.pdf (Chapter 1 - The FLV File Format - Audio tags)
-    /// - video_file_format_spec_v10_1.pdf (Annex E.4.2.1 - AUDIODATA)
+    /// - Legacy FLV spec, Annex E.4.2.1
     pub enum SoundRate(u8) {
         /// 5.5 KHz
         Hz5500 = 0,
@@ -69,13 +69,14 @@ nutype_enum! {
 }
 
 nutype_enum! {
-    /// FLV Sound Size
+    /// FLV `SoundSize`
     ///
-    /// Denotes the size of each sample in the audio data.
+    /// Size of each audio sample. This parameter only pertains to
+    /// uncompressed formats. Compressed formats always decode
+    /// to 16 bits internally.
     ///
     /// Defined by:
-    /// - video_file_format_spec_v10.pdf (Chapter 1 - The FLV File Format - Audio tags)
-    /// - video_file_format_spec_v10_1.pdf (Annex E.4.2.1 - AUDIODATA)
+    /// - Legacy FLV spec, Annex E.4.2.1
     pub enum SoundSize(u8) {
         /// 8 bit
         Bit8 = 0,
@@ -85,13 +86,12 @@ nutype_enum! {
 }
 
 nutype_enum! {
-    /// FLV Sound Type
+    /// FLV `SoundType`
     ///
     /// Denotes the number of channels in the audio data.
     ///
     /// Defined by:
-    /// - video_file_format_spec_v10.pdf (Chapter 1 - The FLV File Format - Audio tags)
-    /// - video_file_format_spec_v10_1.pdf (Annex E.4.2.1 - AUDIODATA)
+    /// - Legacy FLV spec, Annex E.4.2.1
     pub enum SoundType(u8) {
         /// Mono
         Mono = 0,
@@ -100,9 +100,10 @@ nutype_enum! {
     }
 }
 
-/// The legacy FLV `AudioTagHeader` as defined by the original spec.
+/// FLV `AudioTagHeader`
 ///
-/// Defined by video_file_format_spec_v10_1.pdf (Annex E.4.2.1 - AUDIODATA).
+/// Defined by:
+/// - Legacy FLV spec, Annex E.4.2.1
 #[derive(Debug, Clone, PartialEq)]
 pub struct LegacyAudioTagHeader {
     /// The sound format of the audio data. (4 bits)
@@ -116,6 +117,7 @@ pub struct LegacyAudioTagHeader {
 }
 
 impl LegacyAudioTagHeader {
+    /// Demux the audio tag header from the given reader.
     #[allow(clippy::unusual_byte_groupings)]
     pub fn demux(reader: &mut io::Cursor<Bytes>) -> Result<Self, Error> {
         let byte = reader.read_u8()?;

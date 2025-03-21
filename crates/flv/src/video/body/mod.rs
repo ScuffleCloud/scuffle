@@ -1,3 +1,5 @@
+//! FLV video tag bodies.
+
 use std::io;
 
 use bytes::Bytes;
@@ -10,14 +12,27 @@ use crate::error::Error;
 pub mod enhanced;
 pub mod legacy;
 
+/// FLV `VideoTagBody`
+///
+/// This only describes the video tag body, see [`VideoData`](super::VideoData) for the full video data container.
+///
+/// Defined by:
+/// - Legacy FLV spec, Annex E.4.3.1
+/// - Enhanced RTMP spec, page 27-31, Enhanced Video
 #[derive(Debug, Clone, PartialEq)]
 pub enum VideoTagBody {
+    /// Legacy video tag body.
     Legacy(LegacyVideoTagBody),
+    /// Enhanced video tag body.
     Enhanced(ExVideoTagBody),
 }
 
 impl VideoTagBody {
     /// Demux the video tag body from the given reader.
+    ///
+    /// If you want to demux the full video data tag, use [`VideoData::demux`](super::VideoData::demux) instead.
+    /// This function will automatically determine whether the given data represents a legacy or an enhanced video tag body
+    /// and demux it accordingly.
     ///
     /// The reader will be entirely consumed.
     pub fn demux(header: &VideoTagHeader, reader: &mut io::Cursor<Bytes>) -> Result<Self, Error> {

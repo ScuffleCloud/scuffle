@@ -1,3 +1,5 @@
+//! FLV header processing
+
 use std::io;
 
 use byteorder::{BigEndian, ReadBytesExt};

@@ -1,3 +1,7 @@
+//! Enhanced video tag body
+//!
+//! Types and functions defined by the enhanced RTMP spec, page 29-31, ExVideoTagBody.
+
 use std::io::{self, Read};
 
 use byteorder::{BigEndian, ReadBytesExt};
@@ -14,40 +18,83 @@ use crate::video::header::enhanced::{ExVideoTagHeader, ExVideoTagHeaderContent, 
 
 pub mod metadata;
 
+/// Sequence start video packet
 #[derive(Debug, Clone, PartialEq)]
 pub enum VideoPacketSequenceStart {
+    /// Av1 codec configuration record
     Av1(AV1CodecConfigurationRecord),
+    /// H.264/AVC codec configuration record
     Avc(AVCDecoderConfigurationRecord),
+    /// H.265/HEVC codec configuration record
     Hevc(HEVCDecoderConfigurationRecord),
-    /// For unsupported codecs like VP8 and VP9
+    /// Other codecs like VP8 and VP9
     Other(Bytes),
 }
 
+/// MPEG2-TS sequence start video packet
 #[derive(Debug, Clone, PartialEq)]
 pub enum VideoPacketMpeg2TsSequenceStart {
+    /// Av1 video descriptor
     Av1(AV1VideoDescriptor),
+    /// Any other codecs
     Other(Bytes),
 }
 
+/// Coded frames video packet
 #[derive(Debug, Clone, PartialEq)]
 pub enum VideoPacketCodedFrames {
-    Avc { composition_time_offset: i32, data: Bytes },
-    Hevc { composition_time_offset: i32, data: Bytes },
+    /// H.264/AVC coded frames
+    Avc {
+        /// Composition time offset
+        composition_time_offset: i32,
+        /// Data
+        data: Bytes,
+    },
+    /// H.265/HEVC coded frames
+    Hevc {
+        /// Composition time offset
+        composition_time_offset: i32,
+        /// Data
+        data: Bytes,
+    },
+    /// Coded frames of any other codec
     Other(Bytes),
 }
 
+/// Video packet
+///
+/// Appears as part of the [`ExVideoTagBody`].
+///
+/// Defined by:
+/// - Enhanced RTMP spec, page 29-31, ExVideoTagBody
 #[derive(Debug, Clone, PartialEq)]
 pub enum VideoPacket {
+    /// Metadata
     Metadata(Vec<VideoPacketMetadataEntry>),
+    /// Indicates the end of a sequence of video packets.
     SequenceEnd,
+    /// Indicates the start of a sequence of video packets.
     SequenceStart(VideoPacketSequenceStart),
+    /// Indicates the start of a sequence of video packets in MPEG2-TS format.
     Mpeg2TsSequenceStart(VideoPacketMpeg2TsSequenceStart),
+    /// Coded video frames.
     CodedFrames(VideoPacketCodedFrames),
-    CodedFramesX(Bytes),
-    Unknown { packet_type: VideoPacketType, data: Bytes },
+    /// Coded video frames without extra data.
+    CodedFramesX {
+        /// The video data.
+        data: Bytes,
+    },
+    /// An unknown [`VideoPacketType`].
+    Unknown {
+        /// The data.
+        data: Bytes,
+    },
 }
 
 impl VideoPacket {
+    /// Demux a [`VideoPacket`] from the given reader.
+    ///
+    /// This is implemented as per spec, Enhanced RTMP page 29-31, ExVideoTagBody.
     pub fn demux(
         header: &ExVideoTagHeader,
         video_four_cc: VideoFourCc,
@@ -144,46 +191,66 @@ impl VideoPacket {
             VideoPacketType::CodedFramesX => {
                 let data = reader.extract_bytes(size_of_video_track.unwrap_or(reader.remaining()))?;
 
-                Ok(Self::CodedFramesX(data))
+                Ok(Self::CodedFramesX { data })
             }
-            packet_type => {
-                tracing::warn!(packet_type = ?packet_type, "unknown video packet type");
+            _ => {
+                tracing::warn!(packet_type = ?header.video_packet_type, "unknown video packet type");
 
                 let data = reader.extract_bytes(size_of_video_track.unwrap_or(reader.remaining()))?;
 
-                Ok(Self::Unknown { packet_type, data })
+                Ok(Self::Unknown { data })
             }
         }
     }
 }
 
+/// One video track contained in a multitrack video.
 #[derive(Debug, Clone, PartialEq)]
 pub struct VideoTrack {
+    /// The video FOURCC of this track.
     pub video_four_cc: VideoFourCc,
+    /// The video track ID.
+    ///
+    /// > For identifying the highest priority (a.k.a., default track)
+    /// > or highest quality track, it is RECOMMENDED to use trackId
+    /// > set to zero. For tracks of lesser priority or quality, use
+    /// > multiple instances of trackId with ascending numerical values.
+    /// > The concept of priority or quality can have multiple
+    /// > interpretations, including but not limited to bitrate,
+    /// > resolution, default angle, and language. This recommendation
+    /// > serves as a guideline intended to standardize track numbering
+    /// > across various applications.
     pub video_track_id: u8,
+    /// The video packet contained in this track.
     pub packet: VideoPacket,
 }
 
-/// An Enhanced FLV Packet
-///
-/// This is a container for enhanced video packets.
-/// The enchanced spec adds modern codecs to the FLV file format.
+/// `ExVideoTagBody`
 ///
 /// Defined by:
-/// - enhanced_rtmp-v1.pdf (Defining Additional Video Codecs)
-/// - enhanced_rtmp-v2.pdf (Enhanced Video)
+/// - Enhanced RTMP spec, page 29-31, ExVideoTagBody
 #[derive(Debug, Clone, PartialEq)]
 pub enum ExVideoTagBody {
-    /// Empty body because the header contains a [`VideoCommand`](crate::video::header::VideoCommand)
+    /// Empty body because the header contains a [`VideoCommand`](crate::video::header::VideoCommand).
     Command,
+    /// The body is not a multitrack body.
     NoMultitrack {
+        /// The video FOURCC of this body.
         video_four_cc: VideoFourCc,
+        /// The video packet contained in this body.
         packet: VideoPacket,
     },
+    /// The body is a multitrack body.
+    ///
+    /// This variant contains multiple video tracks.
+    /// See [`VideoTrack`] for more information.
     ManyTracks(Vec<VideoTrack>),
 }
 
 impl ExVideoTagBody {
+    /// Demux an [`ExVideoTagBody`] from the given reader.
+    ///
+    /// This is implemented as per Enhanced RTMP spec, page 29-31, ExVideoTagBody.
     pub fn demux(header: &ExVideoTagHeader, reader: &mut io::Cursor<Bytes>) -> Result<Self, Error> {
         let mut tracks = Vec::new();
 
@@ -306,8 +373,7 @@ mod tests {
         assert_eq!(
             packet,
             VideoPacket::Unknown {
-                packet_type: VideoPacketType(8),
-                data: Bytes::from_static(data)
+                data: Bytes::from_static(data),
             },
         );
     }

@@ -1,3 +1,7 @@
+//! FLV video processing
+//!
+//! Use [`VideoData`] to demux video data contained in an RTMP video message.
+
 use std::io;
 
 use body::VideoTagBody;
@@ -11,11 +15,11 @@ pub mod header;
 
 /// FLV `VIDEODATA` tag
 ///
-/// This is a container for video data.
-/// This enum contains the data for the different types of video tags.
+/// This is a container for legacy as well as enhanced video data.
+///
 /// Defined by:
-/// - video_file_format_spec_v10.pdf (Chapter 1 - The FLV File Format - Video tags)
-/// - video_file_format_spec_v10_1.pdf (Annex E.4.3.1 - VIDEODATA)
+/// - Legacy FLV spec, Annex E.4.3.1
+/// - Enhanced RTMP spec, page 26-31, Enhanced Video
 #[derive(Debug, Clone, PartialEq)]
 pub struct VideoData {
     /// The header of the video data.
@@ -25,7 +29,12 @@ pub struct VideoData {
 }
 
 impl VideoData {
-    /// Demux a video data from the given reader
+    /// Demux video data from a given reader.
+    ///
+    /// This function will automatically determine whether the given data represents a legacy or enhanced video data
+    /// and demux it accordingly.
+    ///
+    /// Returns a new instance of [`VideoData`] if successful.
     #[allow(clippy::unusual_byte_groupings)]
     pub fn demux(reader: &mut io::Cursor<Bytes>) -> Result<Self, Error> {
         let header = VideoTagHeader::demux(reader)?;
@@ -220,7 +229,7 @@ mod tests {
             VideoTagHeader {
                 frame_type: VideoFrameType::KeyFrame,
                 data: VideoTagHeaderData::Legacy(LegacyVideoTagHeader::AvcPacket(LegacyVideoTagHeaderAvcPacket::Nalu {
-                    composition_time: 0x020304
+                    composition_time_offset: 0x020304
                 }))
             }
         );
@@ -252,7 +261,7 @@ mod tests {
                 frame_type: VideoFrameType::KeyFrame,
                 data: VideoTagHeaderData::Legacy(LegacyVideoTagHeader::AvcPacket(LegacyVideoTagHeaderAvcPacket::Unknown {
                     avc_packet_type: AvcPacketType(0x05),
-                    composition_time: 0x020304
+                    composition_time_offset: 0x020304
                 })),
             }
         );
@@ -301,7 +310,9 @@ mod tests {
             video.body,
             VideoTagBody::Enhanced(ExVideoTagBody::NoMultitrack {
                 video_four_cc: VideoFourCc([b'h', b'v', b'c', b'1']),
-                packet: VideoPacket::CodedFramesX(Bytes::from_static(&[0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08])),
+                packet: VideoPacket::CodedFramesX {
+                    data: Bytes::from_static(&[0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08])
+                },
             })
         );
 
@@ -339,7 +350,9 @@ mod tests {
             video.body,
             VideoTagBody::Enhanced(ExVideoTagBody::NoMultitrack {
                 video_four_cc: VideoFourCc::Hevc,
-                packet: VideoPacket::CodedFramesX(Bytes::from_static(&[0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08])),
+                packet: VideoPacket::CodedFramesX {
+                    data: Bytes::from_static(&[0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08])
+                },
             })
         );
     }

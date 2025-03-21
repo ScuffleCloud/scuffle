@@ -1,24 +1,23 @@
 //! A pure Rust implementation of the FLV format, allowing for demuxing of FLV
-//! files or streams.
-//!
-//! This does not support all FLV features (mainly those from FLV 10.1), however
-//! it does support some newer features, from the enhanced FLV specification.
+//! files and streams.
 //!
 //! ## Specifications
 //!
-//! - <https://github.com/veovera/enhanced-rtmp/blob/main/docs/legacy/video-file-format-v10-0-spec.pdf>
-//! - <https://github.com/veovera/enhanced-rtmp/blob/main/docs/legacy/video-file-format-v10-1-spec.pdf>
-//! - <https://github.com/veovera/enhanced-rtmp/blob/main/docs/enhanced/enhanced-rtmp-v1.pdf>
-//! - <https://github.com/veovera/enhanced-rtmp/blob/main/docs/enhanced/enhanced-rtmp-v2.pdf>
+//! | Name | Version | Link | Comments |
+//! | --- | --- | --- | --- |
+//! | Video File Format Specification | `10` | <https://github.com/veovera/enhanced-rtmp/blob/main/docs/legacy/video-file-format-v10-0-spec.pdf> | |
+//! | Adobe Flash Video File Format Specification | `10.1` | <https://github.com/veovera/enhanced-rtmp/blob/main/docs/legacy/video-file-format-v10-1-spec.pdf> | Refered to as 'Legacy FLV spec' in this documentation |
+//! | Enhancing RTMP, FLV | `v1-2024-02-29-r1` | <https://github.com/veovera/enhanced-rtmp/blob/main/docs/enhanced/enhanced-rtmp-v1.pdf> | |
+//! | Enhanced RTMP | `v2-2024-10-22-b1` | <https://github.com/veovera/enhanced-rtmp/blob/main/docs/enhanced/enhanced-rtmp-v2.pdf> | Refered to as 'Enhanced RTMP spec' in this documentation |
 //!
 //! ## License
 //!
-//! This project is licensed under the [MIT](./LICENSE.MIT) or
-//! [Apache-2.0](./LICENSE.Apache-2.0) license. You can choose between one of
-//! them if you use this work.
+//! This project is licensed under the [MIT](./LICENSE.MIT) or [Apache-2.0](./LICENSE.Apache-2.0) license.
+//! You can choose between one of them if you use this work.
 //!
 //! `SPDX-License-Identifier: MIT OR Apache-2.0`
 #![cfg_attr(all(coverage_nightly, test), feature(coverage_attribute))]
+#![deny(missing_docs)]
 #![deny(unsafe_code)]
 
 pub mod audio;
@@ -46,9 +45,11 @@ mod tests {
     use scuffle_h264::Sps;
 
     use crate::audio::AudioData;
-    use crate::audio::aac::AacAudioData;
-    use crate::audio::body::{AudioTagBody, LegacyAudioTagBody};
-    use crate::audio::header::{AudioTagHeader, LegacyAudioTagHeader, SoundFormat, SoundRate, SoundSize, SoundType};
+    use crate::audio::body::AudioTagBody;
+    use crate::audio::body::legacy::LegacyAudioTagBody;
+    use crate::audio::body::legacy::aac::AacAudioData;
+    use crate::audio::header::AudioTagHeader;
+    use crate::audio::header::legacy::{LegacyAudioTagHeader, SoundFormat, SoundRate, SoundSize, SoundType};
     use crate::file::FlvFile;
     use crate::script::{OnMetaDataAudioCodecId, OnMetaDataVideoCodecId, ScriptData};
     use crate::tag::FlvTagData;
@@ -506,7 +507,7 @@ mod tests {
                         }
                         ExVideoTagBody::NoMultitrack {
                             video_four_cc: VideoFourCc::Av1,
-                            packet: VideoPacket::CodedFramesX(_),
+                            packet: VideoPacket::CodedFramesX { .. },
                         } => {
                             assert!(!read_seq_end);
                         }
@@ -729,7 +730,7 @@ mod tests {
 
                     match packet {
                         VideoPacket::CodedFrames(_) => assert!(!read_seq_end),
-                        VideoPacket::CodedFramesX(_) => assert!(!read_seq_end),
+                        VideoPacket::CodedFramesX { .. } => assert!(!read_seq_end),
                         VideoPacket::SequenceEnd => {
                             assert!(!read_seq_end);
                             read_seq_end = true;

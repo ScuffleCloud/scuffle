@@ -28,3 +28,12 @@ insta = "1.42"
 postcompile = { workspace = true, features = ["prettyplease"] }
 scuffle-future-ext.workspace = true
 scuffle-signal = { workspace = true, features = ["bootstrap"] }
+
+[package.metadata.cargo_check_external_types]
+allowed_external_types = [
+  # major released
+  "anyhow::*",
+  "tokio::*",
+  "futures::*",
+  "pin_project_lite::*",
+]

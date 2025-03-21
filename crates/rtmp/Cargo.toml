@@ -37,3 +37,22 @@ scuffle-future-ext.workspace = true
 [dev-dependencies]
 tokio = { version = "1.36", features = ["full"] }
 serde_json = "1.0"
+
+[package.metadata.cargo_check_external_types]
+allowed_external_types = [
+  # major released
+  "byteorder::*",
+  "bytes::*",
+  "rand::*",
+  "hmac::*",
+  "sha2::*",
+  "uuid::*",
+  "chrono::*",
+  "num_traits::*",
+  "num_derive::*",
+  "tokio::*",
+  "futures::*",
+  "async_trait::*",
+  "tracing::*",
+  "serde_json::*",
+]

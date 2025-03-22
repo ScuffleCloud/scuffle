@@ -1,5 +1,6 @@
 use std::fmt::Debug;
 use std::net::SocketAddr;
+use std::sync::Arc;
 
 use crate::error::Error;
 use crate::service::{HttpService, HttpServiceFactory};
@@ -40,6 +41,14 @@ pub struct HttpServer<F> {
     #[cfg(feature = "http3")]
     #[cfg_attr(docsrs, doc(cfg(feature = "http3")))]
     enable_http3: bool,
+    /// Callback to configure socket used for http1 and http2
+    #[cfg(any(feature = "http1", feature = "http2"))]
+    #[cfg_attr(docsrs, doc(cfg(any(feature = "http1", feature = "http2"))))]
+    configure_h12_sock: Option<ConfigureSocketCallback>,
+    /// Callback to configure socket used for http3
+    #[cfg(feature = "http3")]
+    #[cfg_attr(docsrs, doc(cfg(feature = "http3")))]
+    configure_h3_sock: Option<ConfigureSocketCallback>,
     /// rustls config.
     ///
     /// Use this field to set the server into TLS mode.
@@ -213,6 +222,7 @@ where
                         .service_factory(self.service_factory)
                         .bind(self.bind)
                         .rustls_config(_rustls_config)
+                        .maybe_configure_sock(self.configure_h3_sock.clone())
                         .build();
 
                     return backend.run().await;
@@ -224,6 +234,7 @@ where
                         .worker_tasks(self.worker_tasks)
                         .service_factory(self.service_factory)
                         .bind(self.bind)
+                        .maybe_configure_sock(self.configure_h12_sock.clone())
                         .rustls_config(_rustls_config);
 
                     #[cfg(feature = "http1")]
@@ -241,6 +252,7 @@ where
                         .worker_tasks(self.worker_tasks)
                         .service_factory(self.service_factory.clone())
                         .bind(self.bind)
+                        .maybe_configure_sock(self.configure_h12_sock.clone())
                         .rustls_config(_rustls_config.clone());
 
                     #[cfg(feature = "http1")]
@@ -256,6 +268,7 @@ where
                         .worker_tasks(self.worker_tasks)
                         .service_factory(self.service_factory)
                         .bind(self.bind)
+                        .maybe_configure_sock(self.configure_h3_sock.clone())
                         .rustls_config(_rustls_config)
                         .build()
                         .run();
@@ -283,6 +296,7 @@ where
                 .ctx(self.ctx)
                 .worker_tasks(self.worker_tasks)
                 .service_factory(self.service_factory)
+                .maybe_configure_sock(self.configure_h12_sock.clone())
                 .bind(self.bind);
 
             #[cfg(feature = "http1")]
@@ -295,5 +309,29 @@ where
         }
 
         Ok(())
+    }
+}
+
+/// A callback used to configure a socket2 instance.
+///
+/// This can be used to tweak options on the TCP/UDP layer
+#[derive(Clone)]
+pub struct ConfigureSocketCallback(Arc<dyn Fn(socket2::Socket) -> std::io::Result<socket2::Socket> + Send + Sync>);
+
+impl ConfigureSocketCallback {
+    /// Create a new `ConfigureSocketCallback` from the given callback function.
+    pub fn new<F: Fn(socket2::Socket) -> std::io::Result<socket2::Socket> + 'static + Send + Sync>(f: F) -> Self {
+        Self(Arc::new(f))
+    }
+
+    /// Create a new `ConfigureSocketCallback` from the given callback function.
+    pub fn call(&self, sock: socket2::Socket) -> std::io::Result<socket2::Socket> {
+        (self.0)(sock)
+    }
+}
+
+impl std::fmt::Debug for ConfigureSocketCallback {
+    fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
+        write!(f, "ConfigureSocketCallback ")
     }
 }

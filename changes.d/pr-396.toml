@@ -1,0 +1,22 @@
+[[scuffle-rtmp]]
+category = "refactor"
+description = "refactor to be more ergonomic and efficient"
+breaking = true
+authors = ["@TroyKomodo", "@lennartkloock"]
+
+[[scuffle-flv]]
+category = "refactor"
+description = "refactor to be more ergonomic and efficient"
+breaking = true
+authors = ["@lennartkloock"]
+
+[[scuffle-amf0]]
+category = "feat"
+description = "add utility functions and types"
+authors = ["@lennartkloock"]
+
+[[scuffle-amf0]]
+category = "feat"
+description = "refactor error type to be clearer"
+breaking = true
+authors = ["@lennartkloock"]

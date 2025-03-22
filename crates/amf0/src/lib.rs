@@ -35,6 +35,6 @@ mod encode;
 mod errors;
 
 pub use crate::decode::Amf0Decoder;
-pub use crate::define::{Amf0Marker, Amf0Value};
+pub use crate::define::{Amf0Marker, Amf0Object, Amf0Value};
 pub use crate::encode::Amf0Encoder;
 pub use crate::errors::{Amf0ReadError, Amf0WriteError};

@@ -70,7 +70,10 @@ impl<'a> Amf0Decoder<'a> {
 
         let marker = Amf0Marker::from_u8(marker).ok_or(Amf0ReadError::UnknownMarker(marker))?;
         if marker != specified_marker {
-            return Err(Amf0ReadError::WrongType(specified_marker, marker));
+            return Err(Amf0ReadError::WrongType {
+                expected: specified_marker,
+                got: marker,
+            });
         }
 
         self.decode()
@@ -169,7 +172,7 @@ mod tests {
     use super::*;
 
     #[test]
-    fn test_reader_bool() {
+    fn reader_bool() {
         let amf0_bool = vec![0x01, 0x01]; // true
         let mut amf_reader = Amf0Decoder::new(&amf0_bool);
         let value = amf_reader.decode_with_type(Amf0Marker::Boolean).unwrap();
@@ -177,7 +180,7 @@ mod tests {
     }
 
     #[test]
-    fn test_reader_number() {
+    fn reader_number() {
         let mut amf0_number = vec![0x00];
         amf0_number.extend_from_slice(&772.161_f64.to_be_bytes());
 
@@ -187,7 +190,7 @@ mod tests {
     }
 
     #[test]
-    fn test_reader_string() {
+    fn reader_string() {
         let mut amf0_string = vec![0x02, 0x00, 0x0b]; // 11 bytes
         amf0_string.extend_from_slice(b"Hello World");
 
@@ -197,7 +200,7 @@ mod tests {
     }
 
     #[test]
-    fn test_reader_long_string() {
+    fn reader_long_string() {
         let mut amf0_string = vec![0x0c, 0x00, 0x00, 0x00, 0x0b]; // 11 bytes
         amf0_string.extend_from_slice(b"Hello World");
 
@@ -207,7 +210,7 @@ mod tests {
     }
 
     #[test]
-    fn test_reader_object() {
+    fn reader_object() {
         let mut amf0_object = vec![0x03, 0x00, 0x04]; // 1 property with 4 bytes
         amf0_object.extend_from_slice(b"test");
         amf0_object.extend_from_slice(&[0x05]); // null
@@ -220,7 +223,7 @@ mod tests {
     }
 
     #[test]
-    fn test_reader_ecma_array() {
+    fn reader_ecma_array() {
         let mut amf0_object = vec![0x08, 0x00, 0x00, 0x00, 0x01]; // 1 property
         amf0_object.extend_from_slice(&[0x00, 0x04]); // 4 bytes
         amf0_object.extend_from_slice(b"test");
@@ -233,7 +236,7 @@ mod tests {
     }
 
     #[test]
-    fn test_reader_multi_value() {
+    fn reader_multi_value() {
         let mut amf0_multi = vec![0x00];
         amf0_multi.extend_from_slice(&772.161_f64.to_be_bytes());
         amf0_multi.extend_from_slice(&[0x01, 0x01]); // true
@@ -256,7 +259,7 @@ mod tests {
     }
 
     #[test]
-    fn test_reader_iterator() {
+    fn reader_iterator() {
         let mut amf0_multi = vec![0x00];
         amf0_multi.extend_from_slice(&772.161_f64.to_be_bytes());
         amf0_multi.extend_from_slice(&[0x01, 0x01]); // true
@@ -274,11 +277,26 @@ mod tests {
     }
 
     #[test]
-    fn test_reader_invalid_marker() {
+    fn reader_invalid_marker() {
         let amf0_unsupported_marker = vec![Amf0Marker::Unsupported as u8];
         let mut amf_reader = Amf0Decoder::new(&amf0_unsupported_marker);
         let result = amf_reader.decode();
 
         assert!(matches!(result, Err(Amf0ReadError::UnsupportedType(Amf0Marker::Unsupported))));
+    }
+
+    #[test]
+    fn reader_wrong_type() {
+        let data = vec![Amf0Marker::Null as u8];
+        let mut amf_reader = Amf0Decoder::new(&data);
+        let result = amf_reader.decode_with_type(Amf0Marker::Boolean);
+
+        assert!(matches!(
+            result,
+            Err(Amf0ReadError::WrongType {
+                expected: Amf0Marker::Boolean,
+                got: Amf0Marker::Null
+            })
+        ));
     }
 }

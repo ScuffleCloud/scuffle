@@ -1,10 +1,4 @@
 mod define;
-mod errors;
-mod parser;
+mod reader;
 
-pub use self::define::{MessageTypeID, RtmpMessageData};
-pub use self::errors::MessageError;
-pub use self::parser::MessageParser;
-
-#[cfg(test)]
-mod tests;
+pub use self::define::{MessageData, MessageType};

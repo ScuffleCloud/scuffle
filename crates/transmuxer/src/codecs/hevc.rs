@@ -1,5 +1,5 @@
 use bytes::Bytes;
-use scuffle_flv::video::FrameType;
+use scuffle_flv::video::header::VideoFrameType;
 use scuffle_h265::{HEVCDecoderConfigurationRecord, Sps};
 use scuffle_mp4::DynBox;
 use scuffle_mp4::types::colr::{ColorType, Colr};
@@ -43,7 +43,7 @@ pub fn stsd_entry(config: HEVCDecoderConfigurationRecord) -> Result<(DynBox, Sps
 }
 
 pub fn trun_sample(
-    frame_type: FrameType,
+    frame_type: VideoFrameType,
     composition_time: i32,
     duration: u32,
     data: &Bytes,
@@ -55,10 +55,10 @@ pub fn trun_sample(
             reserved: 0,
             is_leading: 0,
             sample_degradation_priority: 0,
-            sample_depends_on: if frame_type == FrameType::Keyframe { 2 } else { 1 },
+            sample_depends_on: if frame_type == VideoFrameType::KeyFrame { 2 } else { 1 },
             sample_has_redundancy: 0,
             sample_is_depended_on: 0,
-            sample_is_non_sync_sample: frame_type != FrameType::Keyframe,
+            sample_is_non_sync_sample: frame_type != VideoFrameType::KeyFrame,
             sample_padding_value: 0,
         }),
         size: Some(data.len() as u32),

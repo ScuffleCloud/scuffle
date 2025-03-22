@@ -2,7 +2,7 @@ use bytes::{Buf, Bytes};
 use scuffle_av1::seq::SequenceHeaderObu;
 use scuffle_av1::{AV1CodecConfigurationRecord, ObuHeader, ObuType};
 use scuffle_bytes_util::BytesCursorExt;
-use scuffle_flv::video::FrameType;
+use scuffle_flv::video::header::VideoFrameType;
 use scuffle_mp4::DynBox;
 use scuffle_mp4::types::av01::Av01;
 use scuffle_mp4::types::av1c::Av1C;
@@ -48,7 +48,7 @@ pub fn stsd_entry(config: AV1CodecConfigurationRecord) -> Result<(DynBox, Sequen
     ))
 }
 
-pub fn trun_sample(frame_type: FrameType, duration: u32, data: &Bytes) -> Result<TrunSample, TransmuxError> {
+pub fn trun_sample(frame_type: VideoFrameType, duration: u32, data: &Bytes) -> Result<TrunSample, TransmuxError> {
     Ok(TrunSample {
         composition_time_offset: None,
         duration: Some(duration),
@@ -56,10 +56,10 @@ pub fn trun_sample(frame_type: FrameType, duration: u32, data: &Bytes) -> Result
             reserved: 0,
             is_leading: 0,
             sample_degradation_priority: 0,
-            sample_depends_on: if frame_type == FrameType::Keyframe { 2 } else { 1 },
+            sample_depends_on: if frame_type == VideoFrameType::KeyFrame { 2 } else { 1 },
             sample_has_redundancy: 0,
             sample_is_depended_on: 0,
-            sample_is_non_sync_sample: frame_type != FrameType::Keyframe,
+            sample_is_non_sync_sample: frame_type != VideoFrameType::KeyFrame,
             sample_padding_value: 0,
         }),
         size: Some(data.len() as u32),

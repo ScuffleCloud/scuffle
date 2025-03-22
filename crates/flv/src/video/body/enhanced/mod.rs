@@ -86,6 +86,8 @@ pub enum VideoPacket {
     },
     /// An unknown [`VideoPacketType`].
     Unknown {
+        /// The unknown packet type.
+        video_packet_type: VideoPacketType,
         /// The data.
         data: Bytes,
     },
@@ -196,7 +198,10 @@ impl VideoPacket {
             _ => {
                 let data = reader.extract_bytes(size_of_video_track.unwrap_or(reader.remaining()))?;
 
-                Ok(Self::Unknown { data })
+                Ok(Self::Unknown {
+                    video_packet_type: header.video_packet_type,
+                    data,
+                })
             }
         }
     }
@@ -371,6 +376,7 @@ mod tests {
         assert_eq!(
             packet,
             VideoPacket::Unknown {
+                video_packet_type: VideoPacketType(8),
                 data: Bytes::from_static(data),
             },
         );

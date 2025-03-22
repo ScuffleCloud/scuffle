@@ -21,10 +21,6 @@ use crate::error::Error;
 /// The v10.1 spec adds some additional fields to the tag to accomodate
 /// encryption. We dont support this because it is not needed for our use case.
 /// (and I suspect it is not used anywhere anymore.)
-///
-/// However if the Tag is encrypted the tag_type will be a larger number (one we
-/// dont support), and therefore the [`FlvTagData::Unknown`] variant will be
-/// used.
 #[derive(Debug, Clone, PartialEq)]
 pub struct FlvTag {
     /// The timestamp of this tag in milliseconds
@@ -45,10 +41,8 @@ impl FlvTag {
     pub fn demux(reader: &mut std::io::Cursor<Bytes>) -> Result<Self, Error> {
         let first_byte = reader.read_u8()?;
 
-        if (first_byte & 0b0010_0000) != 0 {
-            // The tag is encrypted, we dont support this.
-            return Err(Error::UnsupportedTagEncryption);
-        }
+        // encrypted
+        let filter = (first_byte & 0b0010_0000) != 0;
 
         // Only the last 5 bits are the tag type.
         let tag_type = FlvTagType::from(first_byte & 0b00011111);
@@ -65,8 +59,13 @@ impl FlvTag {
         // the tag)
         let data = reader.extract_bytes(data_size as usize)?;
 
-        // Finally we demux the data.
-        let data = FlvTagData::demux(tag_type, &mut std::io::Cursor::new(data))?;
+        let data = if !filter {
+            // Finally we demux the data.
+            FlvTagData::demux(tag_type, &mut std::io::Cursor::new(data))?
+        } else {
+            // If the tag is encrypted we just return the data as is.
+            FlvTagData::Encrypted { data }
+        };
 
         Ok(FlvTag {
             timestamp_ms,
@@ -124,12 +123,22 @@ pub enum FlvTagData {
     /// Defined by:
     /// - Legacy FLV spec, Annex E.4.4.1
     ScriptData(ScriptData),
+    /// Encrypted tag.
+    ///
+    /// This library neither supports demuxing nor decrypting encrypted tags.
+    Encrypted {
+        /// The raw unencrypted tag data.
+        ///
+        /// This includes all data that follows the StreamID field.
+        /// See the legacy FLV spec, Annex E.4.1 for more information.
+        data: Bytes,
+    },
     /// Any tag type that we dont know how to demux, with the corresponding data
     /// being the raw bytes of the tag.
     Unknown {
-        /// The tag type
+        /// The tag type.
         tag_type: FlvTagType,
-        /// The raw data of the tag
+        /// The raw data of the tag.
         data: Bytes,
     },
 }

@@ -29,8 +29,6 @@ pub mod script;
 pub mod tag;
 pub mod video;
 
-pub use bytes;
-
 #[cfg(test)]
 #[cfg_attr(all(test, coverage_nightly), coverage(off))]
 mod tests {

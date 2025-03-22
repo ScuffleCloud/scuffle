@@ -221,6 +221,8 @@ pub enum AudioPacket {
     },
     /// An unknown [`AudioPacketType`].
     Unknown {
+        /// The unknown packet type.
+        audio_packet_type: AudioPacketType,
         /// The data.
         data: Bytes,
     },
@@ -281,7 +283,10 @@ impl AudioPacket {
             _ => {
                 let data = reader.extract_bytes(size_of_audio_track.unwrap_or(reader.remaining()))?;
 
-                Ok(Self::Unknown { data })
+                Ok(Self::Unknown {
+                    audio_packet_type: header.audio_packet_type,
+                    data,
+                })
             }
         }
     }
@@ -453,7 +458,8 @@ mod tests {
         assert_eq!(
             packet,
             AudioPacket::Unknown {
-                data: Bytes::from_static(data)
+                audio_packet_type: AudioPacketType(8),
+                data: Bytes::from_static(data),
             },
         );
     }

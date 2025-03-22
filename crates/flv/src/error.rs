@@ -12,9 +12,6 @@ pub enum Error {
     /// The data offset in the FLV header is invalid.
     #[error("invalid data offset: {0}")]
     InvalidDataOffset(u32),
-    /// Tag decryption and encryption is not supported.
-    #[error("tag encryption is not supported")]
-    UnsupportedTagEncryption,
     /// Multitracks cannot be nested.
     #[error("nested multitracks are not allowed")]
     NestedMultitracks,

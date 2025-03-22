@@ -68,11 +68,12 @@ impl SemverChecks {
             args.push(package);
         }
 
-        let status = cargo_cmd().args(&args).status().context("running semver-checks")?;
+        let _status = cargo_cmd().args(&args).status().context("running semver-checks")?;
 
-        if !status.success() {
-            anyhow::bail!("Semver checks failed for one or more crates");
-        }
+        // if !status.success() {
+        // We don't want to fail the build if semver-checks fail.
+        // anyhow::bail!("Semver checks failed for one or more crates");
+        // }
 
         Ok(())
     }

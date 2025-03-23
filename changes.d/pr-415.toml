@@ -1,0 +1,4 @@
+[[postcompile]]
+category = "chore"
+description = "bump cargo-platform to 0.2"
+authors = ["@troykomodo"]

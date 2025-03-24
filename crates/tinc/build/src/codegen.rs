@@ -188,8 +188,6 @@ fn rename_all_to_serde_rename_all(style: tinc_pb::RenameAll) -> Option<&'static 
 }
 
 fn object_type_path(key: &str, package: &str) -> syn::Path {
-    println!("key: {key} package: {package}");
-
     let mut key = key
         .strip_prefix(package)
         .expect("key not in package")
@@ -238,15 +236,6 @@ fn handle_message(
         if oneof.opts.custom_impl.unwrap_or(message_custom_impl) {
             continue;
         }
-
-        // let type_path = object_type_path(&oneof_key, &message.package);
-
-        // modules.entry(message.package.clone()).or_default().push(parse_quote! {
-        //     const _: () = {
-        //         impl ::tinc::Schema for #type_path {
-        //         }
-        //     };
-        // });
 
         enum_attributes(&oneof_key, prost, false);
         rename_all(&oneof_key, oneof.opts.rename_all, prost, true);
@@ -425,7 +414,6 @@ fn handle_service(
 
             // Check that the params are valid
             let mut path_params = Vec::new();
-            let mut path_build_input = Vec::new();
             for param in &params {
                 let Some(field) = input_message.fields.get(param) else {
                     anyhow::bail!("param {} not found in {}", param, method.input);
@@ -460,47 +448,38 @@ fn handle_service(
                 }
 
                 path_params.push(path_param(&ident, &field.kind)?);
-                path_build_input.push(quote! {
-                    input.#ident = ::core::convert::Into::into(path_params.#ident);
-                });
             }
 
             let path_params = if !path_params.is_empty() {
                 quote! {
-                    #[derive(::tinc::reexports::serde::Deserialize)]
-                    struct PathParams {
-                        #(#path_params)*
-                    }
-
-                    let path_params = match ::tinc::helpers::parse_path::<PathParams>(&mut parts).await {
-                        Ok(path_params) => path_params,
+                    match ::tinc::helpers::parse_path::<::tinc::value::Object>(&mut parts).await {
+                        Ok(path_params) => {
+                            input.merge(path_params);
+                        },
                         Err((status, err)) => {
-                            return ::tinc::reexports::axum::response::IntoResponse::into_response((status, ::tinc::reexports::axum::Json(err)));
+                            return ::tinc::helpers::handle_error(status, err);
                         }
-                    };
-
-                    #(#path_build_input)*
+                    }
                 }
             } else {
                 quote! {}
             };
 
-            let request_body = quote! {
-                #[derive(::tinc::reexports::serde::Deserialize)]
-                struct RequestBody {
-                }
-            };
+            let request_body = quote! {};
 
             let function_impl = quote! {
-                let mut input: super::#input_message_name = ::std::default::Default::default();
+                let mut input = ::tinc::value::Object::new();
 
-                {
-                    #path_params
-                }
+                #path_params
 
-                {
-                    #request_body
-                }
+                #request_body
+
+                let input: super::#input_message_name = match ::tinc::reexports::serde::Deserialize::deserialize(input) {
+                    Ok(input) => input,
+                    Err(err) => {
+                        return ::tinc::helpers::handle_error(::tinc::reexports::axum::http::StatusCode::BAD_REQUEST, err);
+                    }
+                };
 
                 let request = ::tinc::reexports::tonic::Request::from_parts(
                     ::tinc::reexports::tonic::metadata::MetadataMap::from_headers(parts.headers),

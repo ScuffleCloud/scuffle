@@ -2,11 +2,11 @@ use core::fmt;
 use std::borrow::Cow;
 
 use ordered_float::OrderedFloat;
-use serde::Deserializer;
 use serde::de::{self, IntoDeserializer, SeqAccess};
+use serde::{Deserialize, Deserializer};
 
-use super::{Object, Value, ValueError, ValueKind};
-use crate::value::Map;
+use super::{Object, Value, ValueError};
+use crate::value::{Map, ValueOwned, ValuePrimitive};
 
 impl<'de, K, V> serde::Deserialize<'de> for Map<K, V>
 where
@@ -52,7 +52,7 @@ where
     }
 }
 
-impl<'de> serde::Deserializer<'de> for Object<'de, '_> {
+impl<'de> serde::Deserializer<'de> for Object<'de> {
     type Error = ValueError;
 
     serde::forward_to_deserialize_any! {
@@ -61,33 +61,20 @@ impl<'de> serde::Deserializer<'de> for Object<'de, '_> {
         tuple_struct map struct enum identifier ignored_any
     }
 
+    #[inline]
     fn deserialize_any<V>(self, visitor: V) -> Result<V::Value, Self::Error>
     where
         V: serde::de::Visitor<'de>,
     {
         let count = self.0.len();
         visitor.visit_map(MapDeserializer::new(
-            self.0.into_iter().flat_map(|(k, v)| {
-                [
-                    Value::new(
-                        match k {
-                            Cow::Borrowed(k) => ValueKind::StringRef(k),
-                            Cow::Owned(k) => ValueKind::String(k),
-                        },
-                        match &v.config {
-                            Cow::Borrowed(config) => Cow::Borrowed(*config),
-                            Cow::Owned(config) => Cow::Owned(config.clone()),
-                        },
-                    ),
-                    v,
-                ]
-            }),
+            self.0.into_iter().map(|(k, v)| (k.into(), v)),
             Some(count),
         ))
     }
 }
 
-impl<'de> de::IntoDeserializer<'de, ValueError> for Value<'de, '_> {
+impl<'de> de::IntoDeserializer<'de, ValueError> for Value<'de> {
     type Deserializer = Self;
 
     #[inline]
@@ -96,7 +83,7 @@ impl<'de> de::IntoDeserializer<'de, ValueError> for Value<'de, '_> {
     }
 }
 
-impl<'de> serde::de::Deserialize<'de> for ValueKind<'de> {
+impl<'de> serde::de::Deserialize<'de> for Value<'de> {
     #[inline]
     fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
     where
@@ -105,7 +92,7 @@ impl<'de> serde::de::Deserialize<'de> for ValueKind<'de> {
         struct ValueKindVisitor;
 
         impl<'de> serde::de::Visitor<'de> for ValueKindVisitor {
-            type Value = ValueKind<'de>;
+            type Value = Value<'de>;
 
             #[inline]
             fn expecting(&self, formatter: &mut fmt::Formatter) -> fmt::Result {
@@ -117,7 +104,7 @@ impl<'de> serde::de::Deserialize<'de> for ValueKind<'de> {
             where
                 E: de::Error,
             {
-                Ok(ValueKind::Bool(v))
+                Ok(Value::Primitive(ValuePrimitive::Bool(v)))
             }
 
             #[inline]
@@ -125,7 +112,7 @@ impl<'de> serde::de::Deserialize<'de> for ValueKind<'de> {
             where
                 E: de::Error,
             {
-                Ok(ValueKind::I8(v))
+                Ok(Value::Primitive(ValuePrimitive::I8(v)))
             }
 
             #[inline]
@@ -133,7 +120,7 @@ impl<'de> serde::de::Deserialize<'de> for ValueKind<'de> {
             where
                 E: de::Error,
             {
-                Ok(ValueKind::Char(v))
+                Ok(Value::Primitive(ValuePrimitive::Char(v)))
             }
 
             #[inline]
@@ -141,7 +128,7 @@ impl<'de> serde::de::Deserialize<'de> for ValueKind<'de> {
             where
                 E: de::Error,
             {
-                Ok(ValueKind::U8(v))
+                Ok(Value::Primitive(ValuePrimitive::U8(v)))
             }
 
             #[inline]
@@ -149,7 +136,7 @@ impl<'de> serde::de::Deserialize<'de> for ValueKind<'de> {
             where
                 E: de::Error,
             {
-                Ok(ValueKind::F32(OrderedFloat(v)))
+                Ok(Value::Primitive(ValuePrimitive::F32(OrderedFloat(v))))
             }
 
             #[inline]
@@ -157,7 +144,7 @@ impl<'de> serde::de::Deserialize<'de> for ValueKind<'de> {
             where
                 E: de::Error,
             {
-                Ok(ValueKind::F64(OrderedFloat(v)))
+                Ok(Value::Primitive(ValuePrimitive::F64(OrderedFloat(v))))
             }
 
             #[inline]
@@ -165,7 +152,7 @@ impl<'de> serde::de::Deserialize<'de> for ValueKind<'de> {
             where
                 E: de::Error,
             {
-                Ok(ValueKind::String(v.to_string()))
+                Ok(Value::String(Cow::Owned(v.to_owned())))
             }
 
             #[inline]
@@ -173,7 +160,7 @@ impl<'de> serde::de::Deserialize<'de> for ValueKind<'de> {
             where
                 E: de::Error,
             {
-                Ok(ValueKind::StringRef(v))
+                Ok(Value::String(Cow::Borrowed(v)))
             }
 
             #[inline]
@@ -181,7 +168,7 @@ impl<'de> serde::de::Deserialize<'de> for ValueKind<'de> {
             where
                 E: de::Error,
             {
-                Ok(ValueKind::I128(v))
+                Ok(Value::Primitive(ValuePrimitive::I128(v)))
             }
 
             #[inline]
@@ -189,7 +176,7 @@ impl<'de> serde::de::Deserialize<'de> for ValueKind<'de> {
             where
                 E: de::Error,
             {
-                Ok(ValueKind::I16(v))
+                Ok(Value::Primitive(ValuePrimitive::I16(v)))
             }
 
             #[inline]
@@ -197,7 +184,7 @@ impl<'de> serde::de::Deserialize<'de> for ValueKind<'de> {
             where
                 E: de::Error,
             {
-                Ok(ValueKind::I32(v))
+                Ok(Value::Primitive(ValuePrimitive::I32(v)))
             }
 
             #[inline]
@@ -205,7 +192,7 @@ impl<'de> serde::de::Deserialize<'de> for ValueKind<'de> {
             where
                 E: de::Error,
             {
-                Ok(ValueKind::I64(v))
+                Ok(Value::Primitive(ValuePrimitive::I64(v)))
             }
 
             #[inline]
@@ -213,7 +200,7 @@ impl<'de> serde::de::Deserialize<'de> for ValueKind<'de> {
             where
                 E: de::Error,
             {
-                Ok(ValueKind::Null)
+                Ok(Value::Primitive(ValuePrimitive::Null))
             }
 
             fn visit_seq<V>(self, mut visitor: V) -> Result<Self::Value, V::Error>
@@ -224,7 +211,7 @@ impl<'de> serde::de::Deserialize<'de> for ValueKind<'de> {
                 while let Some(value) = visitor.next_element()? {
                     values.push(value);
                 }
-                Ok(ValueKind::Array(values))
+                Ok(Value::Array(values))
             }
 
             fn visit_map<V>(self, mut visitor: V) -> Result<Self::Value, V::Error>
@@ -235,7 +222,7 @@ impl<'de> serde::de::Deserialize<'de> for ValueKind<'de> {
                 while let Some((key, value)) = visitor.next_entry()? {
                     map.push(key, value);
                 }
-                Ok(ValueKind::Map(map))
+                Ok(Value::Map(map))
             }
 
             #[inline]
@@ -243,7 +230,7 @@ impl<'de> serde::de::Deserialize<'de> for ValueKind<'de> {
             where
                 E: de::Error,
             {
-                Ok(ValueKind::Unit)
+                Ok(Value::Primitive(ValuePrimitive::Unit))
             }
 
             #[inline]
@@ -259,7 +246,7 @@ impl<'de> serde::de::Deserialize<'de> for ValueKind<'de> {
             where
                 E: de::Error,
             {
-                Ok(ValueKind::Bytes(v.to_vec()))
+                Ok(Value::Bytes(Cow::Owned(v.to_vec())))
             }
 
             #[inline]
@@ -267,7 +254,7 @@ impl<'de> serde::de::Deserialize<'de> for ValueKind<'de> {
             where
                 E: de::Error,
             {
-                Ok(ValueKind::BytesRef(v))
+                Ok(Value::Bytes(Cow::Borrowed(v)))
             }
 
             #[inline]
@@ -275,7 +262,7 @@ impl<'de> serde::de::Deserialize<'de> for ValueKind<'de> {
             where
                 E: de::Error,
             {
-                Ok(ValueKind::Bytes(v))
+                Ok(Value::Bytes(Cow::Owned(v)))
             }
 
             #[inline]
@@ -283,7 +270,7 @@ impl<'de> serde::de::Deserialize<'de> for ValueKind<'de> {
             where
                 E: de::Error,
             {
-                Ok(ValueKind::String(v))
+                Ok(Value::String(Cow::Owned(v)))
             }
 
             #[inline]
@@ -291,7 +278,7 @@ impl<'de> serde::de::Deserialize<'de> for ValueKind<'de> {
             where
                 E: de::Error,
             {
-                Ok(ValueKind::U128(v))
+                Ok(Value::Primitive(ValuePrimitive::U128(v)))
             }
 
             #[inline]
@@ -299,7 +286,7 @@ impl<'de> serde::de::Deserialize<'de> for ValueKind<'de> {
             where
                 E: de::Error,
             {
-                Ok(ValueKind::U16(v))
+                Ok(Value::Primitive(ValuePrimitive::U16(v)))
             }
 
             #[inline]
@@ -307,7 +294,7 @@ impl<'de> serde::de::Deserialize<'de> for ValueKind<'de> {
             where
                 E: de::Error,
             {
-                Ok(ValueKind::U32(v))
+                Ok(Value::Primitive(ValuePrimitive::U32(v)))
             }
 
             #[inline]
@@ -315,7 +302,7 @@ impl<'de> serde::de::Deserialize<'de> for ValueKind<'de> {
             where
                 E: de::Error,
             {
-                Ok(ValueKind::U64(v))
+                Ok(Value::Primitive(ValuePrimitive::U64(v)))
             }
         }
 
@@ -323,55 +310,104 @@ impl<'de> serde::de::Deserialize<'de> for ValueKind<'de> {
     }
 }
 
-macro_rules! impl_deserialize_primitive {
-    ($variant:ident, $deserialize_fn:ident, $visit_fn:ident, $parse_fn:path) => {
+impl<'de> Deserialize<'de> for ValueOwned {
+    fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
+    where
+        D: Deserializer<'de>,
+    {
+        Value::deserialize(deserializer).map(|v| match v {
+            Value::String(s) => ValueOwned::String(s.into_owned()),
+            Value::Bytes(b) => ValueOwned::Bytes(b.into_owned()),
+            Value::Primitive(p) => ValueOwned::Primitive(p),
+            Value::Array(a) => ValueOwned::Array(a.into_iter().map(|v| v.into_owned()).collect()),
+            Value::Map(m) => ValueOwned::Map(m.into_iter().map(|(k, v)| (k.into_owned(), v.into_owned())).collect()),
+        })
+    }
+}
+
+trait PrimParse: Sized {
+    const NAME: &'static str;
+
+    fn parse_prim(s: &str) -> Result<Self, impl std::fmt::Display>;
+}
+
+macro_rules! impl_prim_parse_number {
+    ($parse_fn:path, $($ty:ty),*) => {
+        $(
+            impl PrimParse for $ty {
+                const NAME: &'static str = stringify!($ty);
+
+                fn parse_prim(s: &str) -> Result<Self, impl std::fmt::Display> {
+                    $parse_fn(s)
+                }
+            }
+        )*
+    };
+}
+
+impl_prim_parse_number!(std::str::FromStr::from_str, u8, u16, u32, u64, u128, i8, i16, i32, i64, i128);
+impl_prim_parse_number!(std::str::FromStr::from_str, f32, f64);
+
+macro_rules! impl_deserialize_number {
+    ($ty:ty, $deserialize_fn:ident, $visit_fn:ident) => {
+        #[inline]
         fn $deserialize_fn<V>(self, visitor: V) -> Result<V::Value, Self::Error>
         where
             V: de::Visitor<'de>,
         {
-            let v = match self.kind {
-                ValueKind::U8(v) => num_traits::cast::cast(v),
-                ValueKind::U16(v) => num_traits::cast::cast(v),
-                ValueKind::U32(v) => num_traits::cast::cast(v),
-                ValueKind::U64(v) => num_traits::cast::cast(v),
-                ValueKind::U128(v) => num_traits::cast::cast(v),
-                ValueKind::I8(v) => num_traits::cast::cast(v),
-                ValueKind::I16(v) => num_traits::cast::cast(v),
-                ValueKind::I32(v) => num_traits::cast::cast(v),
-                ValueKind::I64(v) => num_traits::cast::cast(v),
-                ValueKind::I128(v) => num_traits::cast::cast(v),
-                ValueKind::F32(OrderedFloat(v)) => num_traits::cast::cast(v),
-                ValueKind::F64(OrderedFloat(v)) => num_traits::cast::cast(v),
-                ValueKind::StringRef(s) if self.config.parse_string_primitive => {
-                    Some($parse_fn(s).map_err(serde::de::Error::custom)?)
-                }
-                ValueKind::String(ref s) if self.config.parse_string_primitive => {
-                    Some($parse_fn(s.as_str()).map_err(serde::de::Error::custom)?)
-                }
-                _ => {
-                    return Err(serde::de::Error::invalid_type(
-                        self.kind.unexpected(),
-                        &stringify!($variant),
-                    ))
-                }
-            };
-
-            let v = v.ok_or_else(|| serde::de::Error::invalid_value(self.kind.unexpected(), &stringify!($variant)))?;
-
-            visitor.$visit_fn(v)
+            match self {
+                Self::Primitive(p) => p.$deserialize_fn(visitor),
+                Self::String(s) => visitor.$visit_fn(<$ty as PrimParse>::parse_prim(&s).map_err(serde::de::Error::custom)?),
+                _ => Err(serde::de::Error::invalid_type(
+                    self.unexpected(),
+                    &<$ty as PrimParse>::NAME,
+                )),
+            }
         }
     };
 }
 
-fn parse_bool_primitive(s: &str) -> Result<bool, ValueError> {
-    const TRUE_VALUES: &[&str] = &["true", "1", "yes", "on", "enable", "enabled", "t", "y"];
-    const FALSE_VALUES: &[&str] = &["false", "0", "no", "off", "disable", "disabled", "f", "n"];
-    if TRUE_VALUES.contains(&s) {
-        Ok(true)
-    } else if FALSE_VALUES.contains(&s) {
-        Ok(false)
-    } else {
-        Err(ValueError::Custom(format!("expected bool, got {}", s)))
+macro_rules! impl_deserialize_number_primitive {
+    ($ty:ty, $deserialize_fn:ident, $visit_fn:ident) => {
+        #[inline]
+        fn $deserialize_fn<V>(self, visitor: V) -> Result<V::Value, Self::Error>
+        where
+            V: de::Visitor<'de>,
+        {
+            let v = match self {
+                Self::U8(v) => num_traits::cast::cast(v),
+                Self::U16(v) => num_traits::cast::cast(v),
+                Self::U32(v) => num_traits::cast::cast(v),
+                Self::U64(v) => num_traits::cast::cast(v),
+                Self::U128(v) => num_traits::cast::cast(v),
+                Self::I8(v) => num_traits::cast::cast(v),
+                Self::I16(v) => num_traits::cast::cast(v),
+                Self::I32(v) => num_traits::cast::cast(v),
+                Self::I64(v) => num_traits::cast::cast(v),
+                Self::I128(v) => num_traits::cast::cast(v),
+                Self::F32(v) => num_traits::cast::cast(v),
+                Self::F64(v) => num_traits::cast::cast(v),
+                Self::Bool(v) => num_traits::cast::cast(v as u8),
+                _ => None,
+            };
+
+            if let Some(v) = v {
+                visitor.$visit_fn(v)
+            } else {
+                Err(serde::de::Error::invalid_type(
+                    self.unexpected(),
+                    &<$ty as PrimParse>::NAME,
+                ))
+            }
+        }
+    };
+}
+
+fn parse_bool_primitive(s: &str) -> Option<bool> {
+    match s {
+        "true" | "1" | "yes" | "on" | "enable" | "enabled" | "t" | "y" => Some(true),
+        "false" | "0" | "no" | "off" | "disable" | "disabled" | "f" | "n" => Some(false),
+        _ => None,
     }
 }
 
@@ -390,130 +426,192 @@ fn parse_char_primitive(s: &str) -> Result<char, ValueError> {
     Ok(c)
 }
 
-impl<'de> de::Deserializer<'de> for Value<'de, '_> {
+impl<'de> de::Deserialize<'de> for ValuePrimitive {
+    fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
+    where
+        D: de::Deserializer<'de>,
+    {
+        struct ValuePrimitiveVisitor;
+
+        impl de::Visitor<'_> for ValuePrimitiveVisitor {
+            type Value = ValuePrimitive;
+
+            fn expecting(&self, formatter: &mut fmt::Formatter) -> fmt::Result {
+                write!(formatter, "a primitive value")
+            }
+
+            fn visit_bool<E>(self, v: bool) -> Result<Self::Value, E>
+            where
+                E: de::Error,
+            {
+                Ok(ValuePrimitive::Bool(v))
+            }
+
+            fn visit_char<E>(self, v: char) -> Result<Self::Value, E>
+            where
+                E: de::Error,
+            {
+                Ok(ValuePrimitive::Char(v))
+            }
+
+            fn visit_u8<E>(self, v: u8) -> Result<Self::Value, E>
+            where
+                E: de::Error,
+            {
+                Ok(ValuePrimitive::U8(v))
+            }
+
+            fn visit_u16<E>(self, v: u16) -> Result<Self::Value, E>
+            where
+                E: de::Error,
+            {
+                Ok(ValuePrimitive::U16(v))
+            }
+
+            fn visit_u32<E>(self, v: u32) -> Result<Self::Value, E>
+            where
+                E: de::Error,
+            {
+                Ok(ValuePrimitive::U32(v))
+            }
+
+            fn visit_u64<E>(self, v: u64) -> Result<Self::Value, E>
+            where
+                E: de::Error,
+            {
+                Ok(ValuePrimitive::U64(v))
+            }
+
+            fn visit_u128<E>(self, v: u128) -> Result<Self::Value, E>
+            where
+                E: de::Error,
+            {
+                Ok(ValuePrimitive::U128(v))
+            }
+
+            fn visit_i8<E>(self, v: i8) -> Result<Self::Value, E>
+            where
+                E: de::Error,
+            {
+                Ok(ValuePrimitive::I8(v))
+            }
+
+            fn visit_i16<E>(self, v: i16) -> Result<Self::Value, E>
+            where
+                E: de::Error,
+            {
+                Ok(ValuePrimitive::I16(v))
+            }
+
+            fn visit_i32<E>(self, v: i32) -> Result<Self::Value, E>
+            where
+                E: de::Error,
+            {
+                Ok(ValuePrimitive::I32(v))
+            }
+
+            fn visit_i64<E>(self, v: i64) -> Result<Self::Value, E>
+            where
+                E: de::Error,
+            {
+                Ok(ValuePrimitive::I64(v))
+            }
+
+            fn visit_i128<E>(self, v: i128) -> Result<Self::Value, E>
+            where
+                E: de::Error,
+            {
+                Ok(ValuePrimitive::I128(v))
+            }
+
+            fn visit_f32<E>(self, v: f32) -> Result<Self::Value, E>
+            where
+                E: de::Error,
+            {
+                Ok(ValuePrimitive::F32(v.into()))
+            }
+
+            fn visit_f64<E>(self, v: f64) -> Result<Self::Value, E>
+            where
+                E: de::Error,
+            {
+                Ok(ValuePrimitive::F64(v.into()))
+            }
+
+            fn visit_unit<E>(self) -> Result<Self::Value, E>
+            where
+                E: de::Error,
+            {
+                Ok(ValuePrimitive::Unit)
+            }
+
+            fn visit_none<E>(self) -> Result<Self::Value, E>
+            where
+                E: de::Error,
+            {
+                Ok(ValuePrimitive::Null)
+            }
+        }
+
+        deserializer.deserialize_any(ValuePrimitiveVisitor)
+    }
+}
+
+impl<'de> de::Deserializer<'de> for ValuePrimitive {
     type Error = ValueError;
 
     serde::forward_to_deserialize_any! {
-        newtype_struct seq
+        newtype_struct seq byte_buf
         tuple tuple_struct map struct
-        identifier ignored_any
+        identifier ignored_any bytes
+        enum
     }
 
-    impl_deserialize_primitive!(u8, deserialize_u8, visit_u8, parse_int::parse);
+    impl_deserialize_number_primitive!(u8, deserialize_u8, visit_u8);
 
-    impl_deserialize_primitive!(u16, deserialize_u16, visit_u16, parse_int::parse);
+    impl_deserialize_number_primitive!(u16, deserialize_u16, visit_u16);
 
-    impl_deserialize_primitive!(u32, deserialize_u32, visit_u32, parse_int::parse);
+    impl_deserialize_number_primitive!(u32, deserialize_u32, visit_u32);
 
-    impl_deserialize_primitive!(u64, deserialize_u64, visit_u64, parse_int::parse);
+    impl_deserialize_number_primitive!(u64, deserialize_u64, visit_u64);
 
-    impl_deserialize_primitive!(u128, deserialize_u128, visit_u128, parse_int::parse);
+    impl_deserialize_number_primitive!(u128, deserialize_u128, visit_u128);
 
-    impl_deserialize_primitive!(i8, deserialize_i8, visit_i8, parse_int::parse);
+    impl_deserialize_number_primitive!(i8, deserialize_i8, visit_i8);
 
-    impl_deserialize_primitive!(i16, deserialize_i16, visit_i16, parse_int::parse);
+    impl_deserialize_number_primitive!(i16, deserialize_i16, visit_i16);
 
-    impl_deserialize_primitive!(i32, deserialize_i32, visit_i32, parse_int::parse);
+    impl_deserialize_number_primitive!(i32, deserialize_i32, visit_i32);
 
-    impl_deserialize_primitive!(i64, deserialize_i64, visit_i64, parse_int::parse);
+    impl_deserialize_number_primitive!(i64, deserialize_i64, visit_i64);
 
-    impl_deserialize_primitive!(i128, deserialize_i128, visit_i128, parse_int::parse);
+    impl_deserialize_number_primitive!(i128, deserialize_i128, visit_i128);
 
-    impl_deserialize_primitive!(f32, deserialize_f32, visit_f32, fast_float2::parse);
+    impl_deserialize_number_primitive!(f32, deserialize_f32, visit_f32);
 
-    impl_deserialize_primitive!(f64, deserialize_f64, visit_f64, fast_float2::parse);
-
-    fn deserialize_option<V>(self, visitor: V) -> Result<V::Value, Self::Error>
-    where
-        V: de::Visitor<'de>,
-    {
-        match self.kind {
-            ValueKind::Null | ValueKind::Unit => visitor.visit_none(),
-            _ => visitor.visit_some(self),
-        }
-    }
-
-    fn deserialize_enum<V>(
-        self,
-        _name: &'static str,
-        _variants: &'static [&'static str],
-        visitor: V,
-    ) -> Result<V::Value, Self::Error>
-    where
-        V: de::Visitor<'de>,
-    {
-        match self.kind {
-            ValueKind::Map(m) => {
-                let mut iter = m.into_iter();
-                let (key, value) = iter
-                    .next()
-                    .ok_or(serde::de::Error::invalid_type(de::Unexpected::Map, &"map with single key"))?;
-
-                if iter.next().is_some() {
-                    return Err(serde::de::Error::invalid_type(de::Unexpected::Map, &"map with single key"));
-                }
-
-                visitor.visit_enum(EnumDeserializer {
-                    variant: Value::new(key, Cow::Borrowed(self.config.as_ref())),
-                    value: Some(Value::new(value, Cow::Borrowed(self.config.as_ref()))),
-                })
-            }
-            ValueKind::String(s) => visitor.visit_enum(EnumDeserializer {
-                variant: Value::new(ValueKind::String(s), Cow::Borrowed(self.config.as_ref())),
-                value: None,
-            }),
-            ValueKind::StringRef(s) => visitor.visit_enum(EnumDeserializer {
-                variant: Value::new(ValueKind::StringRef(s), Cow::Borrowed(self.config.as_ref())),
-                value: None,
-            }),
-            other => Err(serde::de::Error::invalid_type(other.unexpected(), &"map or string")),
-        }
-    }
+    impl_deserialize_number_primitive!(f64, deserialize_f64, visit_f64);
 
     fn deserialize_any<V>(self, visitor: V) -> Result<V::Value, Self::Error>
     where
         V: de::Visitor<'de>,
     {
-        match self.kind {
-            ValueKind::String(s) => visitor.visit_string(s),
-            ValueKind::StringRef(s) => visitor.visit_borrowed_str(s),
-            ValueKind::F64(f) => visitor.visit_f64(f.into_inner()),
-            ValueKind::F32(f) => visitor.visit_f32(f.into_inner()),
-            ValueKind::U8(u) => visitor.visit_u8(u),
-            ValueKind::U16(u) => visitor.visit_u16(u),
-            ValueKind::U32(u) => visitor.visit_u32(u),
-            ValueKind::U64(u) => visitor.visit_u64(u),
-            ValueKind::U128(u) => visitor.visit_u128(u),
-            ValueKind::I8(i) => visitor.visit_i8(i),
-            ValueKind::I16(i) => visitor.visit_i16(i),
-            ValueKind::I32(i) => visitor.visit_i32(i),
-            ValueKind::I64(i) => visitor.visit_i64(i),
-            ValueKind::I128(i) => visitor.visit_i128(i),
-            ValueKind::Bool(b) => visitor.visit_bool(b),
-            ValueKind::Char(c) => visitor.visit_char(c),
-            ValueKind::Array(a) => {
-                let count = a.len();
-                visitor.visit_seq(SeqDeserializer::new(
-                    a.into_iter().map(|v| Value::new(v, Cow::Borrowed(self.config.as_ref()))),
-                    Some(count),
-                ))
-            }
-            ValueKind::Map(m) => {
-                let count = m.len();
-                visitor.visit_map(MapDeserializer::new(
-                    m.into_iter().flat_map(|(k, v)| {
-                        [
-                            Value::new(k, Cow::Borrowed(self.config.as_ref())),
-                            Value::new(v, Cow::Borrowed(self.config.as_ref())),
-                        ]
-                    }),
-                    Some(count),
-                ))
-            }
-            ValueKind::Bytes(b) => visitor.visit_byte_buf(b),
-            ValueKind::BytesRef(b) => visitor.visit_borrowed_bytes(b),
-            ValueKind::Null => visitor.visit_none(),
-            ValueKind::Unit => visitor.visit_unit(),
+        match self {
+            Self::U8(v) => visitor.visit_u8(v),
+            Self::U16(v) => visitor.visit_u16(v),
+            Self::U32(v) => visitor.visit_u32(v),
+            Self::U64(v) => visitor.visit_u64(v),
+            Self::U128(v) => visitor.visit_u128(v),
+            Self::I8(v) => visitor.visit_i8(v),
+            Self::I16(v) => visitor.visit_i16(v),
+            Self::I32(v) => visitor.visit_i32(v),
+            Self::I64(v) => visitor.visit_i64(v),
+            Self::I128(v) => visitor.visit_i128(v),
+            Self::F32(OrderedFloat(v)) => visitor.visit_f32(v),
+            Self::F64(OrderedFloat(v)) => visitor.visit_f64(v),
+            Self::Bool(v) => visitor.visit_bool(v),
+            Self::Char(v) => visitor.visit_char(v),
+            Self::Null => visitor.visit_unit(),
+            Self::Unit => visitor.visit_unit(),
         }
     }
 
@@ -521,23 +619,23 @@ impl<'de> de::Deserializer<'de> for Value<'de, '_> {
     where
         V: de::Visitor<'de>,
     {
-        let v = match self.kind {
-            ValueKind::Bool(b) => b,
-            ValueKind::String(s) => parse_bool_primitive(s.as_str()).map_err(serde::de::Error::custom)?,
-            ValueKind::StringRef(s) => parse_bool_primitive(s).map_err(serde::de::Error::custom)?,
-            ValueKind::U8(u) => u != 0,
-            ValueKind::U16(u) => u != 0,
-            ValueKind::U32(u) => u != 0,
-            ValueKind::U64(u) => u != 0,
-            ValueKind::U128(u) => u != 0,
-            ValueKind::I8(i) => i != 0,
-            ValueKind::I16(i) => i != 0,
-            ValueKind::I32(i) => i != 0,
-            ValueKind::I64(i) => i != 0,
-            ValueKind::I128(i) => i != 0,
-            ValueKind::F32(OrderedFloat(f)) => f != 0.0,
-            ValueKind::F64(OrderedFloat(f)) => f != 0.0,
-            _ => return Err(serde::de::Error::custom("expected bool")),
+        let v = match self {
+            Self::Bool(v) => v,
+            Self::U8(v) => v != 0,
+            Self::U16(v) => v != 0,
+            Self::U32(v) => v != 0,
+            Self::U64(v) => v != 0,
+            Self::U128(v) => v != 0,
+            Self::I8(v) => v != 0,
+            Self::I16(v) => v != 0,
+            Self::I32(v) => v != 0,
+            Self::I64(v) => v != 0,
+            Self::I128(v) => v != 0,
+            Self::F32(v) => v != 0.0,
+            Self::F64(v) => v != 0.0,
+            Self::Char('t' | 'T' | '1' | 'y' | 'Y') => true,
+            Self::Char('f' | 'F' | '0' | 'n' | 'N') => false,
+            _ => return Err(serde::de::Error::invalid_type(self.unexpected(), &"bool")),
         };
 
         visitor.visit_bool(v)
@@ -554,36 +652,27 @@ impl<'de> de::Deserializer<'de> for Value<'de, '_> {
             char: std::convert::TryFrom<T>,
             <char as std::convert::TryFrom<T>>::Error: std::fmt::Display,
         {
-            let u = num_traits::cast::cast::<U, T>(v).ok_or(serde::de::Error::custom("expected char"))?;
+            let u = num_traits::cast::cast::<U, T>(v).ok_or_else(|| serde::de::Error::custom("expected char"))?;
             char::try_from(u).map_err(serde::de::Error::custom)
         }
 
-        let v = match self.kind {
-            ValueKind::Char(c) => c,
-            ValueKind::String(s) => parse_char_primitive(s.as_str()).map_err(serde::de::Error::custom)?,
-            ValueKind::StringRef(s) => parse_char_primitive(s).map_err(serde::de::Error::custom)?,
-            ValueKind::Bytes(b) => {
-                let s = String::from_utf8(b).map_err(serde::de::Error::custom)?;
-                parse_char_primitive(s.as_str()).map_err(serde::de::Error::custom)?
-            }
-            ValueKind::BytesRef(b) => {
-                let s = std::str::from_utf8(b).map_err(serde::de::Error::custom)?;
-                parse_char_primitive(s).map_err(serde::de::Error::custom)?
-            }
-            ValueKind::U8(u) => try_char::<_, u8>(u)?,
-            ValueKind::U16(u) => try_char::<_, u32>(u)?,
-            ValueKind::U32(u) => try_char::<_, u32>(u)?,
-            ValueKind::U64(u) => try_char::<_, u32>(u)?,
-            ValueKind::U128(u) => try_char::<_, u32>(u)?,
-            ValueKind::I8(u) => try_char::<_, u8>(u)?,
-            ValueKind::I16(u) => try_char::<_, u32>(u)?,
-            ValueKind::I32(u) => try_char::<_, u32>(u)?,
-            ValueKind::I64(u) => try_char::<_, u32>(u)?,
-            ValueKind::I128(u) => try_char::<_, u32>(u)?,
-            ValueKind::F32(OrderedFloat(f)) => try_char::<_, u32>(f)?,
-            ValueKind::F64(OrderedFloat(f)) => try_char::<_, u32>(f)?,
-            _ => return Err(serde::de::Error::custom("expected char")),
+        let v = match self {
+            Self::Char(v) => v,
+            Self::U8(v) => try_char::<_, u8>(v)?,
+            Self::U16(v) => try_char::<_, u32>(v)?,
+            Self::U32(v) => try_char::<_, u32>(v)?,
+            Self::U64(v) => try_char::<_, u32>(v)?,
+            Self::U128(v) => try_char::<_, u32>(v)?,
+            Self::I8(v) => try_char::<_, u8>(v)?,
+            Self::I16(v) => try_char::<_, u32>(v)?,
+            Self::I32(v) => try_char::<_, u32>(v)?,
+            Self::I64(v) => try_char::<_, u32>(v)?,
+            Self::I128(v) => try_char::<_, u32>(v)?,
+            Self::F32(v) => try_char::<_, u32>(v)?,
+            Self::F64(v) => try_char::<_, u32>(v)?,
+            _ => return Err(serde::de::Error::invalid_type(self.unexpected(), &"char")),
         };
+
         visitor.visit_char(v)
     }
 
@@ -591,113 +680,32 @@ impl<'de> de::Deserializer<'de> for Value<'de, '_> {
     where
         V: de::Visitor<'de>,
     {
-        match self.kind {
-            ValueKind::String(s) => visitor.visit_string(s),
-            ValueKind::StringRef(s) => visitor.visit_borrowed_str(s),
-            ValueKind::Bytes(b) => {
-                let s = String::from_utf8(b).map_err(serde::de::Error::custom)?;
-                visitor.visit_string(s)
-            }
-            ValueKind::BytesRef(b) => {
-                let s = std::str::from_utf8(b).map_err(serde::de::Error::custom)?;
-                visitor.visit_borrowed_str(s)
-            }
-            ValueKind::F32(OrderedFloat(f)) => visitor.visit_str(ryu::Buffer::new().format(f)),
-            ValueKind::F64(OrderedFloat(f)) => visitor.visit_str(ryu::Buffer::new().format(f)),
-            ValueKind::U8(u) => visitor.visit_str(itoa::Buffer::new().format(u)),
-            ValueKind::U16(u) => visitor.visit_str(itoa::Buffer::new().format(u)),
-            ValueKind::U32(u) => visitor.visit_str(itoa::Buffer::new().format(u)),
-            ValueKind::U64(u) => visitor.visit_str(itoa::Buffer::new().format(u)),
-            ValueKind::U128(u) => visitor.visit_str(itoa::Buffer::new().format(u)),
-            ValueKind::I8(i) => visitor.visit_str(itoa::Buffer::new().format(i)),
-            ValueKind::I16(i) => visitor.visit_str(itoa::Buffer::new().format(i)),
-            ValueKind::I32(i) => visitor.visit_str(itoa::Buffer::new().format(i)),
-            ValueKind::I64(i) => visitor.visit_str(itoa::Buffer::new().format(i)),
-            ValueKind::I128(i) => visitor.visit_str(itoa::Buffer::new().format(i)),
-            ValueKind::Bool(b) => visitor.visit_str(if b { "true" } else { "false" }),
-            ValueKind::Char(c) => visitor.visit_str(c.encode_utf8(&mut [0; 4])),
-            _ => Err(serde::de::Error::custom("expected string")),
+        match self {
+            Self::Char(c) => visitor.visit_str(c.encode_utf8(&mut [0; 4])),
+            Self::Bool(b) => visitor.visit_borrowed_str(if b { "true" } else { "false" }),
+            Self::U8(v) => visitor.visit_str(itoa::Buffer::new().format(v)),
+            Self::U16(v) => visitor.visit_str(itoa::Buffer::new().format(v)),
+            Self::U32(v) => visitor.visit_str(itoa::Buffer::new().format(v)),
+            Self::U64(v) => visitor.visit_str(itoa::Buffer::new().format(v)),
+            Self::U128(v) => visitor.visit_str(itoa::Buffer::new().format(v)),
+            Self::I8(v) => visitor.visit_str(itoa::Buffer::new().format(v)),
+            Self::I16(v) => visitor.visit_str(itoa::Buffer::new().format(v)),
+            Self::I32(v) => visitor.visit_str(itoa::Buffer::new().format(v)),
+            Self::I64(v) => visitor.visit_str(itoa::Buffer::new().format(v)),
+            Self::I128(v) => visitor.visit_str(itoa::Buffer::new().format(v)),
+            Self::F32(OrderedFloat(v)) => visitor.visit_str(ryu::Buffer::new().format(v)),
+            Self::F64(OrderedFloat(v)) => visitor.visit_str(ryu::Buffer::new().format(v)),
+            _ => Err(serde::de::Error::invalid_type(self.unexpected(), &"str")),
         }
     }
 
-    fn deserialize_byte_buf<V>(self, visitor: V) -> Result<V::Value, Self::Error>
+    fn deserialize_option<V>(self, visitor: V) -> Result<V::Value, Self::Error>
     where
         V: de::Visitor<'de>,
     {
-        match self.kind {
-            ValueKind::Bytes(b) => visitor.visit_byte_buf(b),
-            ValueKind::BytesRef(b) => visitor.visit_borrowed_bytes(b),
-            ValueKind::String(s) => visitor.visit_byte_buf(s.into_bytes()),
-            ValueKind::StringRef(s) => visitor.visit_borrowed_bytes(s.as_bytes()),
-            ValueKind::Array(a) => {
-                let count = a.len();
-                let mut seq = SeqDeserializer::new(
-                    a.into_iter().map(|v| Value::new(v, Cow::Borrowed(self.config.as_ref()))),
-                    Some(count),
-                );
-                let mut bytes = Vec::new();
-                while let Some(value) = seq.next_element::<u8>()? {
-                    bytes.push(value);
-                }
-                visitor.visit_byte_buf(bytes)
-            }
-            _ => Err(serde::de::Error::custom("expected bytes")),
-        }
-    }
-
-    fn deserialize_bytes<V>(self, visitor: V) -> Result<V::Value, Self::Error>
-    where
-        V: de::Visitor<'de>,
-    {
-        match self.kind {
-            ValueKind::Bytes(b) => visitor.visit_byte_buf(b),
-            ValueKind::BytesRef(b) => visitor.visit_borrowed_bytes(b),
-            ValueKind::String(s) => visitor.visit_bytes(s.as_bytes()),
-            ValueKind::StringRef(s) => visitor.visit_borrowed_bytes(s.as_bytes()),
-            ValueKind::Array(a) => {
-                let count = a.len();
-                let mut seq = SeqDeserializer::new(
-                    a.into_iter().map(|v| Value::new(v, Cow::Borrowed(self.config.as_ref()))),
-                    Some(count),
-                );
-                let mut bytes = Vec::new();
-                while let Some(value) = seq.next_element::<u8>()? {
-                    bytes.push(value);
-                }
-                visitor.visit_byte_buf(bytes)
-            }
-            _ => Err(serde::de::Error::custom("expected bytes")),
-        }
-    }
-
-    fn deserialize_string<V>(self, visitor: V) -> Result<V::Value, Self::Error>
-    where
-        V: de::Visitor<'de>,
-    {
-        match self.kind {
-            ValueKind::String(s) => visitor.visit_string(s),
-            ValueKind::StringRef(s) => visitor.visit_borrowed_str(s),
-            ValueKind::Bytes(b) => {
-                let s = String::from_utf8(b).map_err(serde::de::Error::custom)?;
-                visitor.visit_string(s)
-            }
-            ValueKind::BytesRef(b) => {
-                let s = std::str::from_utf8(b).map_err(serde::de::Error::custom)?;
-                visitor.visit_borrowed_str(s)
-            }
-            ValueKind::U8(u) => visitor.visit_str(itoa::Buffer::new().format(u)),
-            ValueKind::U16(u) => visitor.visit_str(itoa::Buffer::new().format(u)),
-            ValueKind::U32(u) => visitor.visit_str(itoa::Buffer::new().format(u)),
-            ValueKind::U64(u) => visitor.visit_str(itoa::Buffer::new().format(u)),
-            ValueKind::U128(u) => visitor.visit_str(itoa::Buffer::new().format(u)),
-            ValueKind::I8(i) => visitor.visit_str(itoa::Buffer::new().format(i)),
-            ValueKind::I16(i) => visitor.visit_str(itoa::Buffer::new().format(i)),
-            ValueKind::I32(i) => visitor.visit_str(itoa::Buffer::new().format(i)),
-            ValueKind::I64(i) => visitor.visit_str(itoa::Buffer::new().format(i)),
-            ValueKind::I128(i) => visitor.visit_str(itoa::Buffer::new().format(i)),
-            ValueKind::Bool(b) => visitor.visit_str(if b { "true" } else { "false" }),
-            ValueKind::Char(c) => visitor.visit_str(c.encode_utf8(&mut [0; 4])),
-            _ => Err(serde::de::Error::custom("expected string")),
+        match self {
+            Self::Null | Self::Unit => visitor.visit_none(),
+            _ => visitor.visit_some(self),
         }
     }
 
@@ -705,9 +713,240 @@ impl<'de> de::Deserializer<'de> for Value<'de, '_> {
     where
         V: de::Visitor<'de>,
     {
-        match self.kind {
-            ValueKind::Unit | ValueKind::Null => visitor.visit_unit(),
-            _ => Err(serde::de::Error::custom("expected unit")),
+        visitor.visit_unit()
+    }
+
+    fn deserialize_unit_struct<V>(self, _name: &'static str, visitor: V) -> Result<V::Value, Self::Error>
+    where
+        V: de::Visitor<'de>,
+    {
+        visitor.visit_unit()
+    }
+
+    fn deserialize_string<V>(self, visitor: V) -> Result<V::Value, Self::Error>
+    where
+        V: de::Visitor<'de>,
+    {
+        self.deserialize_str(visitor)
+    }
+}
+
+impl<'de> de::Deserializer<'de> for Value<'de> {
+    type Error = ValueError;
+
+    serde::forward_to_deserialize_any! {
+        newtype_struct seq
+        tuple tuple_struct map struct
+        identifier ignored_any
+    }
+
+    impl_deserialize_number!(u8, deserialize_u8, visit_u8);
+
+    impl_deserialize_number!(u16, deserialize_u16, visit_u16);
+
+    impl_deserialize_number!(u32, deserialize_u32, visit_u32);
+
+    impl_deserialize_number!(u64, deserialize_u64, visit_u64);
+
+    impl_deserialize_number!(u128, deserialize_u128, visit_u128);
+
+    impl_deserialize_number!(i8, deserialize_i8, visit_i8);
+
+    impl_deserialize_number!(i16, deserialize_i16, visit_i16);
+
+    impl_deserialize_number!(i32, deserialize_i32, visit_i32);
+
+    impl_deserialize_number!(i64, deserialize_i64, visit_i64);
+
+    impl_deserialize_number!(i128, deserialize_i128, visit_i128);
+
+    impl_deserialize_number!(f32, deserialize_f32, visit_f32);
+
+    impl_deserialize_number!(f64, deserialize_f64, visit_f64);
+
+    fn deserialize_option<V>(self, visitor: V) -> Result<V::Value, Self::Error>
+    where
+        V: de::Visitor<'de>,
+    {
+        match self {
+            Value::Primitive(p) => p.deserialize_option(visitor),
+            _ => visitor.visit_some(self),
+        }
+    }
+
+    fn deserialize_enum<V>(
+        self,
+        name: &'static str,
+        variants: &'static [&'static str],
+        visitor: V,
+    ) -> Result<V::Value, Self::Error>
+    where
+        V: de::Visitor<'de>,
+    {
+        match self {
+            Value::Map(m) => {
+                let mut iter = m.into_iter();
+                let (key, value) = iter
+                    .next()
+                    .ok_or(serde::de::Error::invalid_type(de::Unexpected::Map, &"map with single key"))?;
+
+                if iter.next().is_some() {
+                    return Err(serde::de::Error::invalid_type(de::Unexpected::Map, &"map with single key"));
+                }
+
+                visitor.visit_enum(EnumDeserializer {
+                    variant: key,
+                    value: Some(value),
+                })
+            }
+            Value::String(_) => visitor.visit_enum(EnumDeserializer {
+                variant: self,
+                value: None,
+            }),
+            Value::Primitive(p) => p.deserialize_enum(name, variants, visitor),
+            other => Err(serde::de::Error::invalid_type(other.unexpected(), &"map or string")),
+        }
+    }
+
+    fn deserialize_any<V>(self, visitor: V) -> Result<V::Value, Self::Error>
+    where
+        V: de::Visitor<'de>,
+    {
+        match self {
+            Value::String(Cow::Borrowed(s)) => visitor.visit_borrowed_str(s),
+            Value::String(Cow::Owned(s)) => visitor.visit_string(s),
+            Value::Bytes(Cow::Borrowed(b)) => visitor.visit_borrowed_bytes(b),
+            Value::Bytes(Cow::Owned(b)) => visitor.visit_byte_buf(b),
+            Value::Primitive(primitive) => primitive.deserialize_any(visitor),
+            Value::Array(a) => {
+                let count = a.len();
+                visitor.visit_seq(SeqDeserializer::new(a.into_iter(), Some(count)))
+            }
+            Value::Map(m) => {
+                let count = m.len();
+                visitor.visit_map(MapDeserializer::new(m.into_iter(), Some(count)))
+            }
+        }
+    }
+
+    fn deserialize_bool<V>(self, visitor: V) -> Result<V::Value, Self::Error>
+    where
+        V: de::Visitor<'de>,
+    {
+        match self {
+            Value::String(ref s) => visitor.visit_bool(
+                parse_bool_primitive(s).ok_or_else(|| serde::de::Error::invalid_type(self.unexpected(), &"bool"))?,
+            ),
+            Value::Primitive(p) => p.deserialize_bool(visitor),
+            _ => Err(serde::de::Error::invalid_type(self.unexpected(), &"bool")),
+        }
+    }
+
+    fn deserialize_char<V>(self, visitor: V) -> Result<V::Value, Self::Error>
+    where
+        V: de::Visitor<'de>,
+    {
+        match self {
+            Value::String(s) => visitor.visit_char(parse_char_primitive(&s).map_err(serde::de::Error::custom)?),
+            Value::Bytes(b) => {
+                let s = std::str::from_utf8(&b).map_err(serde::de::Error::custom)?;
+                visitor.visit_char(parse_char_primitive(s).map_err(serde::de::Error::custom)?)
+            }
+            Value::Primitive(p) => p.deserialize_char(visitor),
+            _ => Err(serde::de::Error::invalid_type(self.unexpected(), &"char")),
+        }
+    }
+
+    fn deserialize_str<V>(self, visitor: V) -> Result<V::Value, Self::Error>
+    where
+        V: de::Visitor<'de>,
+    {
+        match self {
+            Value::String(Cow::Borrowed(s)) => visitor.visit_borrowed_str(s),
+            Value::String(Cow::Owned(s)) => visitor.visit_string(s),
+            Value::Bytes(Cow::Borrowed(b)) => {
+                let s = std::str::from_utf8(b).map_err(serde::de::Error::custom)?;
+                visitor.visit_borrowed_str(s)
+            }
+            Value::Bytes(Cow::Owned(b)) => {
+                let s = String::from_utf8(b).map_err(serde::de::Error::custom)?;
+                visitor.visit_string(s)
+            }
+            Value::Primitive(p) => p.deserialize_str(visitor),
+            _ => Err(serde::de::Error::invalid_type(self.unexpected(), &"string")),
+        }
+    }
+
+    fn deserialize_byte_buf<V>(self, visitor: V) -> Result<V::Value, Self::Error>
+    where
+        V: de::Visitor<'de>,
+    {
+        match self {
+            Value::Bytes(Cow::Borrowed(b)) => visitor.visit_borrowed_bytes(b),
+            Value::Bytes(Cow::Owned(b)) => visitor.visit_byte_buf(b),
+            Value::Array(a) => {
+                let count = a.len();
+                let mut seq = SeqDeserializer::new(a.into_iter(), Some(count));
+                let mut bytes = Vec::new();
+                while let Some(value) = seq.next_element::<u8>()? {
+                    bytes.push(value);
+                }
+
+                visitor.visit_byte_buf(bytes)
+            }
+            Value::Primitive(p) => p.deserialize_bytes(visitor),
+            _ => Err(serde::de::Error::invalid_type(self.unexpected(), &"bytes")),
+        }
+    }
+
+    fn deserialize_bytes<V>(self, visitor: V) -> Result<V::Value, Self::Error>
+    where
+        V: de::Visitor<'de>,
+    {
+        match self {
+            Value::Bytes(Cow::Borrowed(b)) => visitor.visit_borrowed_bytes(b),
+            Value::Bytes(Cow::Owned(b)) => visitor.visit_byte_buf(b),
+            Value::Array(a) => {
+                let count = a.len();
+                let mut seq = SeqDeserializer::new(a.into_iter(), Some(count));
+                let mut bytes = Vec::new();
+                while let Some(value) = seq.next_element::<u8>()? {
+                    bytes.push(value);
+                }
+                visitor.visit_byte_buf(bytes)
+            }
+            Value::Primitive(p) => p.deserialize_bytes(visitor),
+            _ => Err(serde::de::Error::invalid_type(self.unexpected(), &"bytes")),
+        }
+    }
+
+    fn deserialize_string<V>(self, visitor: V) -> Result<V::Value, Self::Error>
+    where
+        V: de::Visitor<'de>,
+    {
+        match self {
+            Value::String(Cow::Borrowed(s)) => visitor.visit_borrowed_str(s),
+            Value::String(Cow::Owned(s)) => visitor.visit_string(s),
+            Value::Bytes(Cow::Borrowed(b)) => {
+                let s = std::str::from_utf8(b).map_err(serde::de::Error::custom)?;
+                visitor.visit_borrowed_str(s)
+            }
+            Value::Bytes(Cow::Owned(b)) => {
+                let s = String::from_utf8(b).map_err(serde::de::Error::custom)?;
+                visitor.visit_string(s)
+            }
+            Value::Primitive(p) => p.deserialize_string(visitor),
+            _ => Err(serde::de::Error::invalid_type(self.unexpected(), &"string")),
+        }
+    }
+
+    fn deserialize_unit<V>(self, visitor: V) -> Result<V::Value, Self::Error>
+    where
+        V: de::Visitor<'de>,
+    {
+        match self {
+            Value::Primitive(p) => p.deserialize_unit(visitor),
+            _ => Err(serde::de::Error::invalid_type(self.unexpected(), &"unit")),
         }
     }
 
@@ -720,14 +959,14 @@ impl<'de> de::Deserializer<'de> for Value<'de, '_> {
     }
 }
 
-struct EnumDeserializer<'de, 'b> {
-    variant: Value<'de, 'b>,
-    value: Option<Value<'de, 'b>>,
+struct EnumDeserializer<'de> {
+    variant: Value<'de>,
+    value: Option<Value<'de>>,
 }
 
-impl<'de, 'b> de::EnumAccess<'de> for EnumDeserializer<'de, 'b> {
+impl<'de> de::EnumAccess<'de> for EnumDeserializer<'de> {
     type Error = ValueError;
-    type Variant = VariantDeserializer<'de, 'b>;
+    type Variant = VariantDeserializer<'de>;
 
     fn variant_seed<V>(self, seed: V) -> Result<(V::Value, Self::Variant), Self::Error>
     where
@@ -739,11 +978,11 @@ impl<'de, 'b> de::EnumAccess<'de> for EnumDeserializer<'de, 'b> {
     }
 }
 
-struct VariantDeserializer<'de, 'b> {
-    value: Option<Value<'de, 'b>>,
+struct VariantDeserializer<'de> {
+    value: Option<Value<'de>>,
 }
 
-impl<'de> de::VariantAccess<'de> for VariantDeserializer<'de, '_> {
+impl<'de> de::VariantAccess<'de> for VariantDeserializer<'de> {
     type Error = ValueError;
 
     #[inline]
@@ -768,7 +1007,7 @@ impl<'de> de::VariantAccess<'de> for VariantDeserializer<'de, '_> {
         }
     }
 
-    fn tuple_variant<V>(self, _len: usize, visitor: V) -> Result<V::Value, Self::Error>
+    fn tuple_variant<V>(self, len: usize, visitor: V) -> Result<V::Value, Self::Error>
     where
         V: de::Visitor<'de>,
     {
@@ -776,16 +1015,17 @@ impl<'de> de::VariantAccess<'de> for VariantDeserializer<'de, '_> {
             return Err(serde::de::Error::invalid_type(de::Unexpected::UnitVariant, &"tuple variant"));
         };
 
-        match value.kind {
-            ValueKind::Array(v) => {
+        match value {
+            Value::Array(v) => {
+                if v.len() != len {
+                    return Err(serde::de::Error::invalid_length(v.len(), &"tuple variant"));
+                }
+
                 if v.is_empty() {
                     visitor.visit_unit()
                 } else {
                     let count = v.len();
-                    visitor.visit_seq(SeqDeserializer::new(
-                        v.into_iter().map(|v| Value::new(v, Cow::Borrowed(value.config.as_ref()))),
-                        Some(count),
-                    ))
+                    visitor.visit_seq(SeqDeserializer::new(v.into_iter(), Some(count)))
                 }
             }
             other => Err(serde::de::Error::invalid_type(other.unexpected(), &"tuple variant")),
@@ -800,10 +1040,10 @@ impl<'de> de::VariantAccess<'de> for VariantDeserializer<'de, '_> {
             return Err(serde::de::Error::invalid_type(de::Unexpected::UnitVariant, &"struct variant"));
         };
 
-        if matches!(value.kind, ValueKind::Map(_)) {
-            value.deserialize_any(visitor)
+        if matches!(value, Value::Map(_)) {
+            value.deserialize_map(visitor)
         } else {
-            Err(serde::de::Error::invalid_type(value.kind.unexpected(), &"struct variant"))
+            Err(serde::de::Error::invalid_type(value.unexpected(), &"struct variant"))
         }
     }
 }
@@ -820,9 +1060,9 @@ impl<I> SeqDeserializer<I> {
     }
 }
 
-impl<'de, 'b, I> de::SeqAccess<'de> for SeqDeserializer<I>
+impl<'de, I> de::SeqAccess<'de> for SeqDeserializer<I>
 where
-    I: Iterator<Item = Value<'de, 'b>>,
+    I: Iterator<Item = Value<'de>>,
 {
     type Error = ValueError;
 
@@ -844,21 +1084,26 @@ where
     }
 }
 
-struct MapDeserializer<I> {
+struct MapDeserializer<'de, I> {
     iter: I,
+    value: Option<Value<'de>>,
     size: Option<usize>,
 }
 
-impl<I> MapDeserializer<I> {
+impl<I> MapDeserializer<'_, I> {
     #[inline]
     fn new(values: I, size: Option<usize>) -> Self {
-        Self { iter: values, size }
+        Self {
+            iter: values,
+            value: None,
+            size,
+        }
     }
 }
 
-impl<'de, 'b, I> de::MapAccess<'de> for MapDeserializer<I>
+impl<'de, I> de::MapAccess<'de> for MapDeserializer<'de, I>
 where
-    I: Iterator<Item = Value<'de, 'b>>,
+    I: Iterator<Item = (Value<'de>, Value<'de>)>,
 {
     type Error = ValueError;
 
@@ -867,11 +1112,13 @@ where
     where
         K: de::DeserializeSeed<'de>,
     {
-        let Some(value) = self.iter.next() else {
+        let Some((key, value)) = self.iter.next() else {
             return Ok(None);
         };
 
-        seed.deserialize(value).map(Some)
+        self.value = Some(value);
+
+        seed.deserialize(key).map(Some)
     }
 
     #[inline]
@@ -879,7 +1126,7 @@ where
     where
         V: de::DeserializeSeed<'de>,
     {
-        let Some(value) = self.iter.next() else {
+        let Some(value) = self.value.take() else {
             return Err(serde::de::Error::invalid_value(de::Unexpected::Map, &"missing map value"));
         };
 
@@ -889,5 +1136,15 @@ where
     #[inline]
     fn size_hint(&self) -> Option<usize> {
         self.size.or_else(|| self.iter.size_hint().1.map(|s| s / 2))
+    }
+}
+
+impl<'de> de::Deserialize<'de> for Object<'de> {
+    #[inline]
+    fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
+    where
+        D: de::Deserializer<'de>,
+    {
+        serde::de::Deserialize::deserialize(deserializer).map(Object)
     }
 }

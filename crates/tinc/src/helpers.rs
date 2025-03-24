@@ -64,11 +64,21 @@ macro_rules! cast_asserts {
         const {
             assert!(
                 std::mem::size_of::<$helper>() == std::mem::size_of::<$type>(),
-                "Size of $helper must be the same as $type",
+                concat!(
+                    "Size of ",
+                    stringify!($helper),
+                    " must be the same as ",
+                    stringify!($type)
+                ),
             );
             assert!(
                 std::mem::align_of::<$helper>() == std::mem::align_of::<$type>(),
-                "Alignment of $helper must be the same as $type",
+                concat!(
+                    "Alignment of ",
+                    stringify!($helper),
+                    " must be the same as ",
+                    stringify!($type)
+                ),
             );
         };
     };

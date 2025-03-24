@@ -168,7 +168,6 @@ impl<'de, 'b> PartialObject<'de> {
         Self(Map::new())
     }
 
-    #[inline]
     pub fn into_object(self, config: &'b ValueConfig) -> Object<'de, 'b> {
         Object(
             self.0
@@ -180,12 +179,12 @@ impl<'de, 'b> PartialObject<'de> {
 }
 
 impl<'de> serde::Deserialize<'de> for PartialObject<'de> {
+    #[inline]
     fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
     where
         D: serde::Deserializer<'de>,
     {
-        let map = serde::Deserialize::deserialize(deserializer)?;
-        Ok(Self(map))
+        serde::Deserialize::deserialize(deserializer).map(Self)
     }
 }
 
@@ -242,7 +241,6 @@ impl<'de, 'b> Object<'de, 'b> {
         Self(Map::new())
     }
 
-    #[inline]
     pub fn extend(&mut self, config: &'b ValueConfig, iter: impl IntoIterator<Item = (Cow<'de, str>, ValueKind<'de>)>) {
         self.merge(iter.into_iter().map(|(k, v)| (k, Value::new(v, Cow::Borrowed(config)))));
     }

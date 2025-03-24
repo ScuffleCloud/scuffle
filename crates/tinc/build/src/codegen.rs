@@ -1,4 +1,4 @@
-use std::collections::{BTreeMap, HashMap, HashSet};
+use std::collections::BTreeMap;
 
 use convert_case::{Boundary, Case, Casing};
 use proc_macro2::TokenStream;

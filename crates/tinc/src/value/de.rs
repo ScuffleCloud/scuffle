@@ -61,7 +61,6 @@ impl<'de> serde::Deserializer<'de> for Object<'de, '_> {
         tuple_struct map struct enum identifier ignored_any
     }
 
-    #[inline]
     fn deserialize_any<V>(self, visitor: V) -> Result<V::Value, Self::Error>
     where
         V: serde::de::Visitor<'de>,
@@ -603,6 +602,20 @@ impl<'de> de::Deserializer<'de> for Value<'de, '_> {
                 let s = std::str::from_utf8(b).map_err(serde::de::Error::custom)?;
                 visitor.visit_borrowed_str(s)
             }
+            ValueKind::F32(OrderedFloat(f)) => visitor.visit_str(ryu::Buffer::new().format(f)),
+            ValueKind::F64(OrderedFloat(f)) => visitor.visit_str(ryu::Buffer::new().format(f)),
+            ValueKind::U8(u) => visitor.visit_str(itoa::Buffer::new().format(u)),
+            ValueKind::U16(u) => visitor.visit_str(itoa::Buffer::new().format(u)),
+            ValueKind::U32(u) => visitor.visit_str(itoa::Buffer::new().format(u)),
+            ValueKind::U64(u) => visitor.visit_str(itoa::Buffer::new().format(u)),
+            ValueKind::U128(u) => visitor.visit_str(itoa::Buffer::new().format(u)),
+            ValueKind::I8(i) => visitor.visit_str(itoa::Buffer::new().format(i)),
+            ValueKind::I16(i) => visitor.visit_str(itoa::Buffer::new().format(i)),
+            ValueKind::I32(i) => visitor.visit_str(itoa::Buffer::new().format(i)),
+            ValueKind::I64(i) => visitor.visit_str(itoa::Buffer::new().format(i)),
+            ValueKind::I128(i) => visitor.visit_str(itoa::Buffer::new().format(i)),
+            ValueKind::Bool(b) => visitor.visit_str(if b { "true" } else { "false" }),
+            ValueKind::Char(c) => visitor.visit_str(c.encode_utf8(&mut [0; 4])),
             _ => Err(serde::de::Error::custom("expected string")),
         }
     }
@@ -672,11 +685,22 @@ impl<'de> de::Deserializer<'de> for Value<'de, '_> {
                 let s = std::str::from_utf8(b).map_err(serde::de::Error::custom)?;
                 visitor.visit_borrowed_str(s)
             }
+            ValueKind::U8(u) => visitor.visit_str(itoa::Buffer::new().format(u)),
+            ValueKind::U16(u) => visitor.visit_str(itoa::Buffer::new().format(u)),
+            ValueKind::U32(u) => visitor.visit_str(itoa::Buffer::new().format(u)),
+            ValueKind::U64(u) => visitor.visit_str(itoa::Buffer::new().format(u)),
+            ValueKind::U128(u) => visitor.visit_str(itoa::Buffer::new().format(u)),
+            ValueKind::I8(i) => visitor.visit_str(itoa::Buffer::new().format(i)),
+            ValueKind::I16(i) => visitor.visit_str(itoa::Buffer::new().format(i)),
+            ValueKind::I32(i) => visitor.visit_str(itoa::Buffer::new().format(i)),
+            ValueKind::I64(i) => visitor.visit_str(itoa::Buffer::new().format(i)),
+            ValueKind::I128(i) => visitor.visit_str(itoa::Buffer::new().format(i)),
+            ValueKind::Bool(b) => visitor.visit_str(if b { "true" } else { "false" }),
+            ValueKind::Char(c) => visitor.visit_str(c.encode_utf8(&mut [0; 4])),
             _ => Err(serde::de::Error::custom("expected string")),
         }
     }
 
-    #[inline]
     fn deserialize_unit<V>(self, visitor: V) -> Result<V::Value, Self::Error>
     where
         V: de::Visitor<'de>,
@@ -705,7 +729,6 @@ impl<'de, 'b> de::EnumAccess<'de> for EnumDeserializer<'de, 'b> {
     type Error = ValueError;
     type Variant = VariantDeserializer<'de, 'b>;
 
-    #[inline]
     fn variant_seed<V>(self, seed: V) -> Result<(V::Value, Self::Variant), Self::Error>
     where
         V: de::DeserializeSeed<'de>,

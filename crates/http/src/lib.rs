@@ -194,10 +194,10 @@ mod tests {
             server.run().await.expect("server run failed");
         });
 
-        test_tls_server_inner(addr, versions).await;
-
         // Wait for the server to start
         tokio::time::sleep(std::time::Duration::from_millis(100)).await;
+
+        test_tls_server_inner(addr, versions).await;
 
         handler.shutdown().await;
         handle.await.expect("task failed");
@@ -231,7 +231,7 @@ mod tests {
             let resp = client
                 .execute(request)
                 .await
-                .unwrap_or_else(|_| panic!("failed to get response version {:?}", version))
+                .unwrap_or_else(|e| panic!("failed to get response version {:?}: {}", version, e))
                 .text()
                 .await
                 .expect("failed to get text");

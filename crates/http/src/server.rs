@@ -334,6 +334,6 @@ impl CreateSocketCallback {
 
 impl std::fmt::Debug for CreateSocketCallback {
     fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
-        write!(f, "ConfigureSocketCallback ")
+        write!(f, "CreateSocketCallback ")
     }
 }

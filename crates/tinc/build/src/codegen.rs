@@ -452,7 +452,7 @@ fn handle_service(
 
             let path_params = if !path_params.is_empty() {
                 quote! {
-                    match ::tinc::helpers::parse_path::<::tinc::value::Object>(&mut parts).await {
+                    match ::tinc::helpers::parse_path::<::tinc::value::ObjectOwned>(&mut parts).await {
                         Ok(path_params) => {
                             input.merge(path_params);
                         },

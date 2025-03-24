@@ -5,8 +5,34 @@ use ordered_float::OrderedFloat;
 pub mod de;
 pub mod ser;
 
-#[derive(Debug, PartialEq, Eq, Hash, Clone, Copy)]
-pub enum ValuePrimitive {
+#[derive(Debug, PartialEq, Eq, Hash)]
+pub struct ValueOwned(pub Value<'static>);
+
+impl std::ops::Deref for ValueOwned {
+    type Target = Value<'static>;
+
+    fn deref(&self) -> &Self::Target {
+        &self.0
+    }
+}
+
+impl std::ops::DerefMut for ValueOwned {
+    fn deref_mut(&mut self) -> &mut Self::Target {
+        &mut self.0
+    }
+}
+
+impl ValueOwned {
+    #[inline]
+    pub fn into_inner(self) -> Value<'static> {
+        self.0
+    }
+}
+
+#[derive(Debug, PartialEq, Eq, Hash)]
+pub enum Value<'de> {
+    String(Cow<'de, str>),
+    Bytes(Cow<'de, [u8]>),
     F64(OrderedFloat<f64>),
     F32(OrderedFloat<f32>),
     U8(u8),
@@ -23,70 +49,43 @@ pub enum ValuePrimitive {
     Char(char),
     Null,
     Unit,
-}
-
-#[derive(Debug, PartialEq, Eq, Hash)]
-pub enum Value<'de> {
-    String(Cow<'de, str>),
-    Bytes(Cow<'de, [u8]>),
-    Primitive(ValuePrimitive),
     Array(Vec<Value<'de>>),
     Map(Map<Value<'de>>),
 }
 
-#[derive(Debug, PartialEq, Eq, Hash)]
-pub enum ValueOwned {
-    String(String),
-    Bytes(Vec<u8>),
-    Primitive(ValuePrimitive),
-    Array(Vec<ValueOwned>),
-    Map(Map<ValueOwned>),
-}
-
-impl ValueOwned {
-    pub fn into_value(self) -> Value<'static> {
+impl Value<'_> {
+    pub fn into_owned(self) -> Value<'static> {
         match self {
-            Self::String(s) => Value::String(Cow::Owned(s)),
-            Self::Bytes(b) => Value::Bytes(Cow::Owned(b)),
-            Self::Primitive(p) => Value::Primitive(p),
-            Self::Array(a) => Value::Array(a.into_iter().map(|v| v.into_value()).collect()),
-            Self::Map(m) => Value::Map(m.into_iter().map(|(k, v)| (k.into_value(), v.into_value())).collect()),
-        }
-    }
-}
-
-impl<'de> Value<'de> {
-    pub fn into_owned(self) -> ValueOwned {
-        match self {
-            Self::String(s) => ValueOwned::String(s.into_owned()),
-            Self::Bytes(b) => ValueOwned::Bytes(b.into_owned()),
-            Self::Primitive(p) => ValueOwned::Primitive(p),
-            Self::Array(a) => ValueOwned::Array(a.into_iter().map(|v| v.into_owned()).collect()),
-            Self::Map(m) => ValueOwned::Map(m.into_iter().map(|(k, v)| (k.into_owned(), v.into_owned())).collect()),
+            Self::String(s) => Value::String(Cow::Owned(s.into_owned())),
+            Self::Bytes(b) => Value::Bytes(Cow::Owned(b.into_owned())),
+            Self::F64(f) => Value::F64(f),
+            Self::F32(f) => Value::F32(f),
+            Self::U8(u) => Value::U8(u),
+            Self::U16(u) => Value::U16(u),
+            Self::U32(u) => Value::U32(u),
+            Self::U64(u) => Value::U64(u),
+            Self::U128(u) => Value::U128(u),
+            Self::I8(i) => Value::I8(i),
+            Self::I16(i) => Value::I16(i),
+            Self::I32(i) => Value::I32(i),
+            Self::I64(i) => Value::I64(i),
+            Self::I128(i) => Value::I128(i),
+            Self::Bool(b) => Value::Bool(b),
+            Self::Char(c) => Value::Char(c),
+            Self::Null => Value::Null,
+            Self::Unit => Value::Unit,
+            Self::Array(a) => Value::Array(a.into_iter().map(|v| v.into_owned()).collect()),
+            Self::Map(m) => Value::Map(m.into_iter().map(|(k, v)| (k.into_owned(), v.into_owned())).collect()),
         }
     }
 }
 
 macro_rules! impl_from_primitive {
     ($variant:ident, $ty:ty) => {
-        impl From<$ty> for ValuePrimitive {
-            #[inline]
-            fn from(value: $ty) -> Self {
-                Self::$variant(value.into())
-            }
-        }
-
-        impl From<$ty> for ValueOwned {
-            #[inline]
-            fn from(value: $ty) -> Self {
-                Self::Primitive(value.into())
-            }
-        }
-
         impl From<$ty> for Value<'static> {
             #[inline]
             fn from(value: $ty) -> Self {
-                Self::Primitive(value.into())
+                Self::$variant(value.into())
             }
         }
     };
@@ -106,20 +105,6 @@ impl_from_primitive!(F32, f32);
 impl_from_primitive!(F64, f64);
 impl_from_primitive!(Bool, bool);
 impl_from_primitive!(Char, char);
-
-impl From<String> for ValueOwned {
-    #[inline]
-    fn from(value: String) -> Self {
-        Self::String(value)
-    }
-}
-
-impl From<Vec<u8>> for ValueOwned {
-    #[inline]
-    fn from(value: Vec<u8>) -> Self {
-        Self::Bytes(value)
-    }
-}
 
 impl From<String> for Value<'static> {
     #[inline]
@@ -180,7 +165,7 @@ impl<'de> From<Cow<'de, str>> for Value<'de> {
 impl From<()> for Value<'_> {
     #[inline]
     fn from(_: ()) -> Self {
-        Self::Primitive(ValuePrimitive::Unit)
+        Self::Unit
     }
 }
 
@@ -191,33 +176,26 @@ impl Value<'_> {
             Value::Bytes(b) => serde::de::Unexpected::Bytes(b),
             Value::Array(_) => serde::de::Unexpected::Seq,
             Value::Map(_) => serde::de::Unexpected::Map,
-            Value::Primitive(p) => p.unexpected(),
+            Value::Unit => serde::de::Unexpected::Unit,
+            Value::Null => serde::de::Unexpected::Option,
+            Value::F64(OrderedFloat(f)) => serde::de::Unexpected::Float(*f as _),
+            Value::F32(OrderedFloat(f)) => serde::de::Unexpected::Float(*f as _),
+            Value::U8(u) => serde::de::Unexpected::Unsigned(*u as _),
+            Value::U16(u) => serde::de::Unexpected::Unsigned(*u as _),
+            Value::U32(u) => serde::de::Unexpected::Unsigned(*u as _),
+            Value::U64(u) => serde::de::Unexpected::Unsigned(*u as _),
+            Value::U128(u) => serde::de::Unexpected::Unsigned(*u as _),
+            Value::I8(i) => serde::de::Unexpected::Signed(*i as _),
+            Value::I16(i) => serde::de::Unexpected::Signed(*i as _),
+            Value::I32(i) => serde::de::Unexpected::Signed(*i as _),
+            Value::I64(i) => serde::de::Unexpected::Signed(*i as _),
+            Value::I128(i) => serde::de::Unexpected::Signed(*i as _),
+            Value::Bool(b) => serde::de::Unexpected::Bool(*b),
+            Value::Char(c) => serde::de::Unexpected::Char(*c),
         }
     }
 }
 
-impl ValuePrimitive {
-    fn unexpected(&self) -> serde::de::Unexpected<'_> {
-        match self {
-            ValuePrimitive::Null => serde::de::Unexpected::Option,
-            ValuePrimitive::Unit => serde::de::Unexpected::Unit,
-            ValuePrimitive::F64(OrderedFloat(f)) => serde::de::Unexpected::Float(*f as _),
-            ValuePrimitive::F32(OrderedFloat(f)) => serde::de::Unexpected::Float(*f as _),
-            ValuePrimitive::U8(u) => serde::de::Unexpected::Unsigned(*u as _),
-            ValuePrimitive::U16(u) => serde::de::Unexpected::Unsigned(*u as _),
-            ValuePrimitive::U32(u) => serde::de::Unexpected::Unsigned(*u as _),
-            ValuePrimitive::U64(u) => serde::de::Unexpected::Unsigned(*u as _),
-            ValuePrimitive::U128(u) => serde::de::Unexpected::Unsigned(*u as _),
-            ValuePrimitive::I8(i) => serde::de::Unexpected::Signed(*i as _),
-            ValuePrimitive::I16(i) => serde::de::Unexpected::Signed(*i as _),
-            ValuePrimitive::I32(i) => serde::de::Unexpected::Signed(*i as _),
-            ValuePrimitive::I64(i) => serde::de::Unexpected::Signed(*i as _),
-            ValuePrimitive::I128(i) => serde::de::Unexpected::Signed(*i as _),
-            ValuePrimitive::Bool(b) => serde::de::Unexpected::Bool(*b),
-            ValuePrimitive::Char(c) => serde::de::Unexpected::Char(*c),
-        }
-    }
-}
 #[derive(Debug, thiserror::Error)]
 pub enum ValueError {
     #[error("{0}")]
@@ -310,6 +288,9 @@ impl<K, V> FromIterator<(K, V)> for Map<K, V> {
 #[derive(Debug)]
 pub struct Object<'de>(pub Map<Cow<'de, str>, Value<'de>>);
 
+#[derive(Debug)]
+pub struct ObjectOwned(pub Object<'static>);
+
 impl<'de> IntoIterator for Object<'de> {
     type IntoIter = std::vec::IntoIter<(Cow<'de, str>, Value<'de>)>;
     type Item = (Cow<'de, str>, Value<'de>);
@@ -320,13 +301,33 @@ impl<'de> IntoIterator for Object<'de> {
     }
 }
 
-impl<'de> IntoIterator for &'de Object<'de> {
-    type IntoIter = std::slice::Iter<'de, (Cow<'de, str>, Value<'de>)>;
-    type Item = &'de (Cow<'de, str>, Value<'de>);
+impl IntoIterator for ObjectOwned {
+    type IntoIter = std::vec::IntoIter<(Cow<'static, str>, Value<'static>)>;
+    type Item = (Cow<'static, str>, Value<'static>);
+
+    #[inline]
+    fn into_iter(self) -> Self::IntoIter {
+        self.0.into_iter()
+    }
+}
+
+impl<'a, 'de> IntoIterator for &'a Object<'de> {
+    type IntoIter = std::slice::Iter<'a, (Cow<'de, str>, Value<'de>)>;
+    type Item = &'a (Cow<'de, str>, Value<'de>);
 
     #[inline]
     fn into_iter(self) -> Self::IntoIter {
         self.0.iter()
+    }
+}
+
+impl<'a> IntoIterator for &'a ObjectOwned {
+    type IntoIter = std::slice::Iter<'a, (Cow<'static, str>, Value<'static>)>;
+    type Item = &'a (Cow<'static, str>, Value<'static>);
+
+    #[inline]
+    fn into_iter(self) -> Self::IntoIter {
+        self.0.0.iter()
     }
 }
 
@@ -346,5 +347,38 @@ impl<'de> Object<'de> {
     #[inline]
     pub fn merge(&mut self, iter: impl IntoIterator<Item = (Cow<'de, str>, Value<'de>)>) {
         self.0.extend(iter);
+    }
+}
+
+impl Object<'_> {
+    #[inline]
+    pub fn into_owned(self) -> ObjectOwned {
+        ObjectOwned(Object(
+            self.0
+                .into_iter()
+                .map(|(k, v)| (Cow::Owned(k.into_owned()), v.into_owned()))
+                .collect(),
+        ))
+    }
+}
+
+impl ObjectOwned {
+    #[inline]
+    pub fn into_inner(self) -> Object<'static> {
+        self.0
+    }
+}
+
+impl std::ops::Deref for ObjectOwned {
+    type Target = Object<'static>;
+
+    fn deref(&self) -> &Self::Target {
+        &self.0
+    }
+}
+
+impl std::ops::DerefMut for ObjectOwned {
+    fn deref_mut(&mut self) -> &mut Self::Target {
+        &mut self.0
     }
 }

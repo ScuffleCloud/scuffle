@@ -1,81 +1,78 @@
+use ordered_float::OrderedFloat;
 use serde::ser::SerializeMap;
+use serde::{Serialize, Serializer};
 
-use super::{Map, Object, PartialObject, Value, ValueKind};
+use super::{Map, Object, Value, ValueOwned, ValuePrimitive};
 
-impl<K, V> serde::Serialize for Map<K, V>
+macro_rules! impl_serialize_for_value_like {
+    ($type:ty) => {
+        impl Serialize for $type {
+            fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+            where
+                S: Serializer,
+            {
+                match self {
+                    Self::String(s) => serializer.serialize_str(s),
+                    Self::Bytes(b) => serializer.serialize_bytes(b),
+                    Self::Primitive(p) => p.serialize(serializer),
+                    Self::Array(a) => a.serialize(serializer),
+                    Self::Map(m) => m.serialize(serializer),
+                }
+            }
+        }
+    };
+}
+
+impl_serialize_for_value_like!(Value<'_>);
+impl_serialize_for_value_like!(ValueOwned);
+
+impl Serialize for ValuePrimitive {
+    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+    where
+        S: Serializer,
+    {
+        match *self {
+            Self::U8(v) => serializer.serialize_u8(v),
+            Self::U16(v) => serializer.serialize_u16(v),
+            Self::U32(v) => serializer.serialize_u32(v),
+            Self::U64(v) => serializer.serialize_u64(v),
+            Self::U128(v) => serializer.serialize_u128(v),
+            Self::I8(v) => serializer.serialize_i8(v),
+            Self::I16(v) => serializer.serialize_i16(v),
+            Self::I32(v) => serializer.serialize_i32(v),
+            Self::I64(v) => serializer.serialize_i64(v),
+            Self::I128(v) => serializer.serialize_i128(v),
+            Self::Bool(v) => serializer.serialize_bool(v),
+            Self::Char(c) => serializer.serialize_char(c),
+            Self::Null => serializer.serialize_none(),
+            Self::Unit => serializer.serialize_unit(),
+            Self::F32(OrderedFloat(f)) => serializer.serialize_f32(f),
+            Self::F64(OrderedFloat(f)) => serializer.serialize_f64(f),
+        }
+    }
+}
+
+impl<K, V> Serialize for Map<K, V>
 where
-    K: serde::Serialize,
-    V: serde::Serialize,
+    K: Serialize,
+    V: Serialize,
 {
     fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
     where
-        S: serde::Serializer,
+        S: Serializer,
     {
         let mut map = serializer.serialize_map(Some(self.len()))?;
-        for (key, value) in self {
-            map.serialize_entry(key, value)?;
+        for (k, v) in self {
+            map.serialize_entry(k, v)?;
         }
         map.end()
     }
 }
 
-impl serde::ser::Serialize for ValueKind<'_> {
+impl Serialize for Object<'_> {
     fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
     where
-        S: serde::ser::Serializer,
-    {
-        match self {
-            ValueKind::String(s) => serializer.serialize_str(s),
-            ValueKind::StringRef(s) => serializer.serialize_str(s),
-            ValueKind::F64(f) => serializer.serialize_f64(f.into_inner()),
-            ValueKind::F32(f) => serializer.serialize_f32(f.into_inner()),
-            ValueKind::U8(u) => serializer.serialize_u8(*u),
-            ValueKind::U16(u) => serializer.serialize_u16(*u),
-            ValueKind::U32(u) => serializer.serialize_u32(*u),
-            ValueKind::U64(u) => serializer.serialize_u64(*u),
-            ValueKind::U128(u) => serializer.serialize_u128(*u),
-            ValueKind::I8(i) => serializer.serialize_i8(*i),
-            ValueKind::I16(i) => serializer.serialize_i16(*i),
-            ValueKind::I32(i) => serializer.serialize_i32(*i),
-            ValueKind::I64(i) => serializer.serialize_i64(*i),
-            ValueKind::I128(i) => serializer.serialize_i128(*i),
-            ValueKind::Bool(b) => serializer.serialize_bool(*b),
-            ValueKind::Char(c) => serializer.serialize_char(*c),
-            ValueKind::Array(a) => a.serialize(serializer),
-            ValueKind::Map(m) => m.serialize(serializer),
-            ValueKind::Bytes(b) => serializer.serialize_bytes(b),
-            ValueKind::BytesRef(b) => serializer.serialize_bytes(b),
-            ValueKind::Null => serializer.serialize_none(),
-            ValueKind::Unit => serializer.serialize_unit(),
-        }
-    }
-}
-
-impl serde::ser::Serialize for Object<'_, '_> {
-    #[inline]
-    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
-    where
-        S: serde::ser::Serializer,
-    {
-        self.0.serialize(serializer)
-    }
-}
-
-impl serde::ser::Serialize for Value<'_, '_> {
-    #[inline]
-    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
-    where
-        S: serde::ser::Serializer,
-    {
-        self.kind.serialize(serializer)
-    }
-}
-
-impl serde::ser::Serialize for PartialObject<'_> {
-    #[inline]
-    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
-    where
-        S: serde::ser::Serializer,
+        S: Serializer,
     {
         self.0.serialize(serializer)
     }

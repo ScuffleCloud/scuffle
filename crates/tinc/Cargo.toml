@@ -33,7 +33,5 @@ num-traits = "0.2.19"
 # Parsing / Formatting numbers
 itoa = "1.0.1"
 ryu = "1.0.14"
-parse_int = "0.6.0"
-fast-float2 = "0.2.3"
 
 scuffle-workspace-hack.workspace = true

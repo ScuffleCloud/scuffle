@@ -5,10 +5,8 @@ use ordered_float::OrderedFloat;
 pub mod de;
 pub mod ser;
 
-#[derive(Debug)]
-pub enum ValueKind<'de> {
-    String(String),
-    StringRef(&'de str),
+#[derive(Debug, PartialEq, Eq, Hash, Clone, Copy)]
+pub enum ValuePrimitive {
     F64(OrderedFloat<f64>),
     F32(OrderedFloat<f32>),
     U8(u8),
@@ -23,43 +21,203 @@ pub enum ValueKind<'de> {
     I128(i128),
     Bool(bool),
     Char(char),
-    Array(Vec<ValueKind<'de>>),
-    Map(Map<ValueKind<'de>>),
-    Bytes(Vec<u8>),
-    BytesRef(&'de [u8]),
     Null,
     Unit,
 }
 
-impl ValueKind<'_> {
-    fn unexpected(&self) -> serde::de::Unexpected<'_> {
+#[derive(Debug, PartialEq, Eq, Hash)]
+pub enum Value<'de> {
+    String(Cow<'de, str>),
+    Bytes(Cow<'de, [u8]>),
+    Primitive(ValuePrimitive),
+    Array(Vec<Value<'de>>),
+    Map(Map<Value<'de>>),
+}
+
+#[derive(Debug, PartialEq, Eq, Hash)]
+pub enum ValueOwned {
+    String(String),
+    Bytes(Vec<u8>),
+    Primitive(ValuePrimitive),
+    Array(Vec<ValueOwned>),
+    Map(Map<ValueOwned>),
+}
+
+impl ValueOwned {
+    pub fn into_value(self) -> Value<'static> {
         match self {
-            ValueKind::String(s) => serde::de::Unexpected::Str(s),
-            ValueKind::StringRef(s) => serde::de::Unexpected::Str(s),
-            ValueKind::Bytes(b) => serde::de::Unexpected::Bytes(b),
-            ValueKind::BytesRef(b) => serde::de::Unexpected::Bytes(b),
-            ValueKind::Array(_) => serde::de::Unexpected::Seq,
-            ValueKind::Map(_) => serde::de::Unexpected::Map,
-            ValueKind::Null => serde::de::Unexpected::Option,
-            ValueKind::Unit => serde::de::Unexpected::Unit,
-            ValueKind::F32(OrderedFloat(f)) => serde::de::Unexpected::Float(*f as _),
-            ValueKind::F64(OrderedFloat(f)) => serde::de::Unexpected::Float(*f),
-            ValueKind::U8(u) => serde::de::Unexpected::Unsigned(*u as _),
-            ValueKind::U16(u) => serde::de::Unexpected::Unsigned(*u as _),
-            ValueKind::U32(u) => serde::de::Unexpected::Unsigned(*u as _),
-            ValueKind::U64(u) => serde::de::Unexpected::Unsigned(*u as _),
-            ValueKind::U128(u) => serde::de::Unexpected::Unsigned(*u as _),
-            ValueKind::I8(i) => serde::de::Unexpected::Signed(*i as _),
-            ValueKind::I16(i) => serde::de::Unexpected::Signed(*i as _),
-            ValueKind::I32(i) => serde::de::Unexpected::Signed(*i as _),
-            ValueKind::I64(i) => serde::de::Unexpected::Signed(*i as _),
-            ValueKind::I128(i) => serde::de::Unexpected::Signed(*i as _),
-            ValueKind::Bool(b) => serde::de::Unexpected::Bool(*b),
-            ValueKind::Char(c) => serde::de::Unexpected::Char(*c),
+            Self::String(s) => Value::String(Cow::Owned(s)),
+            Self::Bytes(b) => Value::Bytes(Cow::Owned(b)),
+            Self::Primitive(p) => Value::Primitive(p),
+            Self::Array(a) => Value::Array(a.into_iter().map(|v| v.into_value()).collect()),
+            Self::Map(m) => Value::Map(m.into_iter().map(|(k, v)| (k.into_value(), v.into_value())).collect()),
         }
     }
 }
 
+impl<'de> Value<'de> {
+    pub fn into_owned(self) -> ValueOwned {
+        match self {
+            Self::String(s) => ValueOwned::String(s.into_owned()),
+            Self::Bytes(b) => ValueOwned::Bytes(b.into_owned()),
+            Self::Primitive(p) => ValueOwned::Primitive(p),
+            Self::Array(a) => ValueOwned::Array(a.into_iter().map(|v| v.into_owned()).collect()),
+            Self::Map(m) => ValueOwned::Map(m.into_iter().map(|(k, v)| (k.into_owned(), v.into_owned())).collect()),
+        }
+    }
+}
+
+macro_rules! impl_from_primitive {
+    ($variant:ident, $ty:ty) => {
+        impl From<$ty> for ValuePrimitive {
+            #[inline]
+            fn from(value: $ty) -> Self {
+                Self::$variant(value.into())
+            }
+        }
+
+        impl From<$ty> for ValueOwned {
+            #[inline]
+            fn from(value: $ty) -> Self {
+                Self::Primitive(value.into())
+            }
+        }
+
+        impl From<$ty> for Value<'static> {
+            #[inline]
+            fn from(value: $ty) -> Self {
+                Self::Primitive(value.into())
+            }
+        }
+    };
+}
+
+impl_from_primitive!(U8, u8);
+impl_from_primitive!(U16, u16);
+impl_from_primitive!(U32, u32);
+impl_from_primitive!(U64, u64);
+impl_from_primitive!(U128, u128);
+impl_from_primitive!(I8, i8);
+impl_from_primitive!(I16, i16);
+impl_from_primitive!(I32, i32);
+impl_from_primitive!(I64, i64);
+impl_from_primitive!(I128, i128);
+impl_from_primitive!(F32, f32);
+impl_from_primitive!(F64, f64);
+impl_from_primitive!(Bool, bool);
+impl_from_primitive!(Char, char);
+
+impl From<String> for ValueOwned {
+    #[inline]
+    fn from(value: String) -> Self {
+        Self::String(value)
+    }
+}
+
+impl From<Vec<u8>> for ValueOwned {
+    #[inline]
+    fn from(value: Vec<u8>) -> Self {
+        Self::Bytes(value)
+    }
+}
+
+impl From<String> for Value<'static> {
+    #[inline]
+    fn from(value: String) -> Self {
+        Self::String(Cow::Owned(value))
+    }
+}
+
+impl From<Vec<u8>> for Value<'static> {
+    #[inline]
+    fn from(value: Vec<u8>) -> Self {
+        Self::Bytes(Cow::Owned(value))
+    }
+}
+
+impl<'de> From<&'de str> for Value<'de> {
+    #[inline]
+    fn from(value: &'de str) -> Self {
+        Self::String(Cow::Borrowed(value))
+    }
+}
+
+impl<'de> From<&'de [u8]> for Value<'de> {
+    #[inline]
+    fn from(value: &'de [u8]) -> Self {
+        Self::Bytes(Cow::Borrowed(value))
+    }
+}
+
+impl<'de> From<Vec<Value<'de>>> for Value<'de> {
+    #[inline]
+    fn from(value: Vec<Value<'de>>) -> Self {
+        Self::Array(value)
+    }
+}
+
+impl<'de> From<Map<Value<'de>>> for Value<'de> {
+    #[inline]
+    fn from(value: Map<Value<'de>>) -> Self {
+        Self::Map(value)
+    }
+}
+
+impl<'de> From<Object<'de>> for Value<'de> {
+    #[inline]
+    fn from(value: Object<'de>) -> Self {
+        Self::Map(value.into_iter().map(|(k, v)| (k.into(), v)).collect())
+    }
+}
+
+impl<'de> From<Cow<'de, str>> for Value<'de> {
+    #[inline]
+    fn from(value: Cow<'de, str>) -> Self {
+        Self::String(value)
+    }
+}
+
+impl From<()> for Value<'_> {
+    #[inline]
+    fn from(_: ()) -> Self {
+        Self::Primitive(ValuePrimitive::Unit)
+    }
+}
+
+impl Value<'_> {
+    fn unexpected(&self) -> serde::de::Unexpected<'_> {
+        match self {
+            Value::String(s) => serde::de::Unexpected::Str(s),
+            Value::Bytes(b) => serde::de::Unexpected::Bytes(b),
+            Value::Array(_) => serde::de::Unexpected::Seq,
+            Value::Map(_) => serde::de::Unexpected::Map,
+            Value::Primitive(p) => p.unexpected(),
+        }
+    }
+}
+
+impl ValuePrimitive {
+    fn unexpected(&self) -> serde::de::Unexpected<'_> {
+        match self {
+            ValuePrimitive::Null => serde::de::Unexpected::Option,
+            ValuePrimitive::Unit => serde::de::Unexpected::Unit,
+            ValuePrimitive::F64(OrderedFloat(f)) => serde::de::Unexpected::Float(*f as _),
+            ValuePrimitive::F32(OrderedFloat(f)) => serde::de::Unexpected::Float(*f as _),
+            ValuePrimitive::U8(u) => serde::de::Unexpected::Unsigned(*u as _),
+            ValuePrimitive::U16(u) => serde::de::Unexpected::Unsigned(*u as _),
+            ValuePrimitive::U32(u) => serde::de::Unexpected::Unsigned(*u as _),
+            ValuePrimitive::U64(u) => serde::de::Unexpected::Unsigned(*u as _),
+            ValuePrimitive::U128(u) => serde::de::Unexpected::Unsigned(*u as _),
+            ValuePrimitive::I8(i) => serde::de::Unexpected::Signed(*i as _),
+            ValuePrimitive::I16(i) => serde::de::Unexpected::Signed(*i as _),
+            ValuePrimitive::I32(i) => serde::de::Unexpected::Signed(*i as _),
+            ValuePrimitive::I64(i) => serde::de::Unexpected::Signed(*i as _),
+            ValuePrimitive::I128(i) => serde::de::Unexpected::Signed(*i as _),
+            ValuePrimitive::Bool(b) => serde::de::Unexpected::Bool(*b),
+            ValuePrimitive::Char(c) => serde::de::Unexpected::Char(*c),
+        }
+    }
+}
 #[derive(Debug, thiserror::Error)]
 pub enum ValueError {
     #[error("{0}")]
@@ -73,7 +231,7 @@ impl serde::de::Error for ValueError {
     }
 }
 
-#[derive(Debug)]
+#[derive(Debug, PartialEq, Eq, Hash)]
 pub struct Map<K, V = K>(pub Vec<(K, V)>);
 
 impl<K, V> Default for Map<K, V> {
@@ -150,47 +308,11 @@ impl<K, V> FromIterator<(K, V)> for Map<K, V> {
 }
 
 #[derive(Debug)]
-pub struct Object<'de, 'b>(pub Map<Cow<'de, str>, Value<'de, 'b>>);
+pub struct Object<'de>(pub Map<Cow<'de, str>, Value<'de>>);
 
-#[derive(Debug)]
-pub struct PartialObject<'de>(pub Map<Cow<'de, str>, ValueKind<'de>>);
-
-impl Default for PartialObject<'_> {
-    #[inline]
-    fn default() -> Self {
-        Self::new()
-    }
-}
-
-impl<'de, 'b> PartialObject<'de> {
-    #[inline]
-    pub fn new() -> Self {
-        Self(Map::new())
-    }
-
-    pub fn into_object(self, config: &'b ValueConfig) -> Object<'de, 'b> {
-        Object(
-            self.0
-                .into_iter()
-                .map(|(k, v)| (k, Value::new(v, Cow::Borrowed(config))))
-                .collect(),
-        )
-    }
-}
-
-impl<'de> serde::Deserialize<'de> for PartialObject<'de> {
-    #[inline]
-    fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
-    where
-        D: serde::Deserializer<'de>,
-    {
-        serde::Deserialize::deserialize(deserializer).map(Self)
-    }
-}
-
-impl<'de> IntoIterator for PartialObject<'de> {
-    type IntoIter = std::vec::IntoIter<(Cow<'de, str>, ValueKind<'de>)>;
-    type Item = (Cow<'de, str>, ValueKind<'de>);
+impl<'de> IntoIterator for Object<'de> {
+    type IntoIter = std::vec::IntoIter<(Cow<'de, str>, Value<'de>)>;
+    type Item = (Cow<'de, str>, Value<'de>);
 
     #[inline]
     fn into_iter(self) -> Self::IntoIter {
@@ -198,9 +320,9 @@ impl<'de> IntoIterator for PartialObject<'de> {
     }
 }
 
-impl<'de> IntoIterator for &'de PartialObject<'de> {
-    type IntoIter = std::slice::Iter<'de, (Cow<'de, str>, ValueKind<'de>)>;
-    type Item = &'de (Cow<'de, str>, ValueKind<'de>);
+impl<'de> IntoIterator for &'de Object<'de> {
+    type IntoIter = std::slice::Iter<'de, (Cow<'de, str>, Value<'de>)>;
+    type Item = &'de (Cow<'de, str>, Value<'de>);
 
     #[inline]
     fn into_iter(self) -> Self::IntoIter {
@@ -208,82 +330,21 @@ impl<'de> IntoIterator for &'de PartialObject<'de> {
     }
 }
 
-impl<'de, 'b> IntoIterator for Object<'de, 'b> {
-    type IntoIter = std::vec::IntoIter<(Cow<'de, str>, Value<'de, 'b>)>;
-    type Item = (Cow<'de, str>, Value<'de, 'b>);
-
-    #[inline]
-    fn into_iter(self) -> Self::IntoIter {
-        self.0.into_iter()
-    }
-}
-
-impl<'de, 'b> IntoIterator for &'de Object<'de, 'b> {
-    type IntoIter = std::slice::Iter<'de, (Cow<'de, str>, Value<'de, 'b>)>;
-    type Item = &'de (Cow<'de, str>, Value<'de, 'b>);
-
-    #[inline]
-    fn into_iter(self) -> Self::IntoIter {
-        self.0.iter()
-    }
-}
-
-impl Default for Object<'_, '_> {
+impl Default for Object<'_> {
     #[inline]
     fn default() -> Self {
         Self::new()
     }
 }
 
-impl<'de, 'b> Object<'de, 'b> {
+impl<'de> Object<'de> {
     #[inline]
     pub fn new() -> Self {
         Self(Map::new())
     }
 
-    pub fn extend(&mut self, config: &'b ValueConfig, iter: impl IntoIterator<Item = (Cow<'de, str>, ValueKind<'de>)>) {
-        self.merge(iter.into_iter().map(|(k, v)| (k, Value::new(v, Cow::Borrowed(config)))));
-    }
-
     #[inline]
-    pub fn merge(&mut self, iter: impl IntoIterator<Item = (Cow<'de, str>, Value<'de, 'b>)>) {
+    pub fn merge(&mut self, iter: impl IntoIterator<Item = (Cow<'de, str>, Value<'de>)>) {
         self.0.extend(iter);
     }
-}
-
-impl<'de, 'b> std::ops::Deref for Object<'de, 'b> {
-    type Target = Map<Cow<'de, str>, Value<'de, 'b>>;
-
-    #[inline]
-    fn deref(&self) -> &Self::Target {
-        &self.0
-    }
-}
-
-impl std::ops::DerefMut for Object<'_, '_> {
-    #[inline]
-    fn deref_mut(&mut self) -> &mut Self::Target {
-        &mut self.0
-    }
-}
-
-#[derive(Debug)]
-pub struct Value<'de, 'b> {
-    pub kind: ValueKind<'de>,
-    pub config: Cow<'b, ValueConfig>,
-}
-
-impl<'de, 'b> Value<'de, 'b> {
-    #[inline]
-    fn new(kind: ValueKind<'de>, config: impl Into<Cow<'b, ValueConfig>>) -> Self {
-        Self {
-            kind,
-            config: config.into(),
-        }
-    }
-}
-
-#[derive(Debug, Clone, Default)]
-pub struct ValueConfig {
-    pub parse_string_primitive: bool,
 }

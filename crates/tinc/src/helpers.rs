@@ -11,9 +11,12 @@ use std::marker::PhantomData;
 use axum::extract::FromRequestParts;
 use axum::extract::path::ErrorKind;
 use axum::extract::rejection::PathRejection;
+use axum::response::IntoResponse;
 use http::StatusCode;
 use http::request::Parts;
 use serde::de::DeserializeOwned;
+
+use crate::value::ValueError;
 
 pub trait SerdeTransform<T> {
     fn serialize<S>(value: &Self, serializer: S) -> Result<S::Ok, S::Error>
@@ -740,15 +743,21 @@ pub fn schemars_non_omitable(schema: &mut ::schemars::Schema) {
     }
 }
 
-#[derive(Debug, serde::Serialize)]
+#[derive(Debug, thiserror::Error, serde::Serialize)]
 pub struct PathError {
     pub message: String,
     pub location: Option<String>,
 }
 
+impl std::fmt::Display for PathError {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "path error: {}", self.message)
+    }
+}
+
 pub async fn parse_path<T>(parts: &mut Parts) -> Result<T, (StatusCode, PathError)>
 where
-    T: DeserializeOwned + Send + 'static,
+    T: for<'de> serde::Deserialize<'de> + Send + 'static,
 {
     match axum::extract::Path::<T>::from_request_parts(parts, &()).await {
         Ok(value) => Ok(value.0),
@@ -763,27 +772,22 @@ where
                             message: kind.to_string(),
                             location: None,
                         },
-
                         ErrorKind::ParseErrorAtKey { key, .. } => PathError {
                             message: kind.to_string(),
                             location: Some(key.clone()),
                         },
-
                         ErrorKind::ParseErrorAtIndex { index, .. } => PathError {
                             message: kind.to_string(),
                             location: Some(index.to_string()),
                         },
-
                         ErrorKind::ParseError { .. } => PathError {
                             message: kind.to_string(),
                             location: None,
                         },
-
                         ErrorKind::InvalidUtf8InPathParam { key } => PathError {
                             message: kind.to_string(),
                             location: Some(key.clone()),
                         },
-
                         ErrorKind::UnsupportedType { .. } => {
                             // this error is caused by the programmer using an unsupported type
                             // (such as nested maps) so respond with `500` instead
@@ -793,12 +797,10 @@ where
                                 location: None,
                             }
                         }
-
                         ErrorKind::Message(msg) => PathError {
                             message: msg.clone(),
                             location: None,
                         },
-
                         _ => PathError {
                             message: format!("Unhandled deserialization error: {kind}"),
                             location: None,
@@ -824,6 +826,34 @@ where
             };
 
             Err((status, err))
+        }
+    }
+}
+
+#[derive(Debug, thiserror::Error)]
+pub enum RequestError {
+    #[error("path error: {0}")]
+    Path(#[from] PathError),
+    #[error("deserialization error: {0}")]
+    Deserialization(#[from] ValueError),
+}
+
+pub fn handle_error(status: StatusCode, err: impl Into<RequestError>) -> axum::response::Response {
+    match err.into() {
+        RequestError::Path(err) => (status, axum::Json(err)).into_response(),
+        RequestError::Deserialization(err) => {
+            #[derive(Debug, serde::Serialize)]
+            struct ErrorResponse {
+                message: String,
+            }
+
+            (
+                status,
+                axum::Json(ErrorResponse {
+                    message: err.to_string(),
+                }),
+            )
+                .into_response()
         }
     }
 }

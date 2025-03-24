@@ -2,53 +2,44 @@ use ordered_float::OrderedFloat;
 use serde::ser::SerializeMap;
 use serde::{Serialize, Serializer};
 
-use super::{Map, Object, Value, ValueOwned, ValuePrimitive};
+use super::{Map, Object, Value, ValueOwned};
 
-macro_rules! impl_serialize_for_value_like {
-    ($type:ty) => {
-        impl Serialize for $type {
-            fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
-            where
-                S: Serializer,
-            {
-                match self {
-                    Self::String(s) => serializer.serialize_str(s),
-                    Self::Bytes(b) => serializer.serialize_bytes(b),
-                    Self::Primitive(p) => p.serialize(serializer),
-                    Self::Array(a) => a.serialize(serializer),
-                    Self::Map(m) => m.serialize(serializer),
-                }
-            }
-        }
-    };
-}
-
-impl_serialize_for_value_like!(Value<'_>);
-impl_serialize_for_value_like!(ValueOwned);
-
-impl Serialize for ValuePrimitive {
+impl Serialize for Value<'_> {
     fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
     where
         S: Serializer,
     {
-        match *self {
-            Self::U8(v) => serializer.serialize_u8(v),
-            Self::U16(v) => serializer.serialize_u16(v),
-            Self::U32(v) => serializer.serialize_u32(v),
-            Self::U64(v) => serializer.serialize_u64(v),
-            Self::U128(v) => serializer.serialize_u128(v),
-            Self::I8(v) => serializer.serialize_i8(v),
-            Self::I16(v) => serializer.serialize_i16(v),
-            Self::I32(v) => serializer.serialize_i32(v),
-            Self::I64(v) => serializer.serialize_i64(v),
-            Self::I128(v) => serializer.serialize_i128(v),
-            Self::Bool(v) => serializer.serialize_bool(v),
-            Self::Char(c) => serializer.serialize_char(c),
+        match self {
+            Self::String(s) => serializer.serialize_str(s),
+            Self::Bytes(b) => serializer.serialize_bytes(b),
+            Self::U8(v) => serializer.serialize_u8(*v),
+            Self::U16(v) => serializer.serialize_u16(*v),
+            Self::U32(v) => serializer.serialize_u32(*v),
+            Self::U64(v) => serializer.serialize_u64(*v),
+            Self::U128(v) => serializer.serialize_u128(*v),
+            Self::I8(v) => serializer.serialize_i8(*v),
+            Self::I16(v) => serializer.serialize_i16(*v),
+            Self::I32(v) => serializer.serialize_i32(*v),
+            Self::I64(v) => serializer.serialize_i64(*v),
+            Self::I128(v) => serializer.serialize_i128(*v),
+            Self::Bool(v) => serializer.serialize_bool(*v),
+            Self::Char(c) => serializer.serialize_char(*c),
             Self::Null => serializer.serialize_none(),
             Self::Unit => serializer.serialize_unit(),
-            Self::F32(OrderedFloat(f)) => serializer.serialize_f32(f),
-            Self::F64(OrderedFloat(f)) => serializer.serialize_f64(f),
+            Self::F32(OrderedFloat(f)) => serializer.serialize_f32(*f),
+            Self::F64(OrderedFloat(f)) => serializer.serialize_f64(*f),
+            Self::Array(a) => a.serialize(serializer),
+            Self::Map(m) => m.serialize(serializer),
         }
+    }
+}
+
+impl Serialize for ValueOwned {
+    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+    where
+        S: Serializer,
+    {
+        self.0.serialize(serializer)
     }
 }
 

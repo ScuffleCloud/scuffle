@@ -757,7 +757,7 @@ impl std::fmt::Display for PathError {
 
 pub async fn parse_path<T>(parts: &mut Parts) -> Result<T, (StatusCode, PathError)>
 where
-    T: for<'de> serde::Deserialize<'de> + Send + 'static,
+    T: DeserializeOwned + Send + 'static,
 {
     match axum::extract::Path::<T>::from_request_parts(parts, &()).await {
         Ok(value) => Ok(value.0),

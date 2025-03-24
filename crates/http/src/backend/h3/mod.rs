@@ -11,7 +11,7 @@ use tracing::Instrument;
 use utils::copy_response_body;
 
 use crate::error::Error;
-use crate::server::ConfigureSocketCallback;
+use crate::server::CreateSocketCallback;
 use crate::service::{HttpService, HttpServiceFactory};
 
 pub mod body;
@@ -38,7 +38,7 @@ pub struct Http3Backend<F> {
     /// For example, use `[::]:80` to bind to port 80 on both IPv4 and IPv6.
     bind: SocketAddr,
     /// Callback to configure socket
-    configure_sock: Option<ConfigureSocketCallback>,
+    create_custom_sock: Option<CreateSocketCallback>,
     /// rustls config.
     ///
     /// Use this field to set the server into TLS mode.
@@ -71,22 +71,23 @@ where
 
         // Bind the UDP socket
         let socket = {
-            let mut sock = socket2::Socket::new(
-                match self.bind {
-                    SocketAddr::V4(_) => socket2::Domain::IPV4,
-                    SocketAddr::V6(_) => socket2::Domain::IPV6,
-                },
-                socket2::Type::DGRAM,
-                Some(socket2::Protocol::UDP),
-            )?;
+            let sock = if let Some(cfg_fn) = self.create_custom_sock.as_ref() {
+                cfg_fn.call(self.bind)?
+            } else {
+                let sock = socket2::Socket::new(
+                    match self.bind {
+                        SocketAddr::V4(_) => socket2::Domain::IPV4,
+                        SocketAddr::V6(_) => socket2::Domain::IPV6,
+                    },
+                    socket2::Type::DGRAM,
+                    Some(socket2::Protocol::UDP),
+                )?;
 
-            sock.set_nonblocking(true)?;
+                sock.set_nonblocking(true)?;
+                sock.bind(&socket2::SockAddr::from(self.bind))?;
 
-            if let Some(cfg_fn) = self.configure_sock.as_ref() {
-                sock = cfg_fn.call(sock)?;
-            }
-
-            sock.bind(&socket2::SockAddr::from(self.bind))?;
+                sock
+            };
 
             std::net::UdpSocket::from(sock)
         };

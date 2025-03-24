@@ -41,14 +41,16 @@ pub struct HttpServer<F> {
     #[cfg(feature = "http3")]
     #[cfg_attr(docsrs, doc(cfg(feature = "http3")))]
     enable_http3: bool,
-    /// Callback to configure socket used for http1 and http2
+    /// Callback to create a custom socket used for http1 and http2.
+    /// The socket should be a tcp socket which is already bound and listening.
     #[cfg(any(feature = "http1", feature = "http2"))]
     #[cfg_attr(docsrs, doc(cfg(any(feature = "http1", feature = "http2"))))]
-    configure_h12_sock: Option<ConfigureSocketCallback>,
+    create_custom_h12_sock: Option<CreateSocketCallback>,
     /// Callback to configure socket used for http3
+    /// The socket should be a udp socket which is already bound (don't call listen for udp).
     #[cfg(feature = "http3")]
     #[cfg_attr(docsrs, doc(cfg(feature = "http3")))]
-    configure_h3_sock: Option<ConfigureSocketCallback>,
+    create_custom_h3_sock: Option<CreateSocketCallback>,
     /// rustls config.
     ///
     /// Use this field to set the server into TLS mode.
@@ -222,7 +224,7 @@ where
                         .service_factory(self.service_factory)
                         .bind(self.bind)
                         .rustls_config(_rustls_config)
-                        .maybe_configure_sock(self.configure_h3_sock.clone())
+                        .maybe_create_custom_sock(self.create_custom_h3_sock.clone())
                         .build();
 
                     return backend.run().await;
@@ -234,7 +236,7 @@ where
                         .worker_tasks(self.worker_tasks)
                         .service_factory(self.service_factory)
                         .bind(self.bind)
-                        .maybe_configure_sock(self.configure_h12_sock.clone())
+                        .maybe_create_custom_sock(self.create_custom_h12_sock.clone())
                         .rustls_config(_rustls_config);
 
                     #[cfg(feature = "http1")]
@@ -252,7 +254,7 @@ where
                         .worker_tasks(self.worker_tasks)
                         .service_factory(self.service_factory.clone())
                         .bind(self.bind)
-                        .maybe_configure_sock(self.configure_h12_sock.clone())
+                        .maybe_create_custom_sock(self.create_custom_h12_sock.clone())
                         .rustls_config(_rustls_config.clone());
 
                     #[cfg(feature = "http1")]
@@ -268,7 +270,7 @@ where
                         .worker_tasks(self.worker_tasks)
                         .service_factory(self.service_factory)
                         .bind(self.bind)
-                        .maybe_configure_sock(self.configure_h3_sock.clone())
+                        .maybe_create_custom_sock(self.create_custom_h3_sock.clone())
                         .rustls_config(_rustls_config)
                         .build()
                         .run();
@@ -296,7 +298,7 @@ where
                 .ctx(self.ctx)
                 .worker_tasks(self.worker_tasks)
                 .service_factory(self.service_factory)
-                .maybe_configure_sock(self.configure_h12_sock.clone())
+                .maybe_create_custom_sock(self.create_custom_h12_sock.clone())
                 .bind(self.bind);
 
             #[cfg(feature = "http1")]
@@ -316,21 +318,21 @@ where
 ///
 /// This can be used to tweak options on the TCP/UDP layer
 #[derive(Clone)]
-pub struct ConfigureSocketCallback(Arc<dyn Fn(socket2::Socket) -> std::io::Result<socket2::Socket> + Send + Sync>);
+pub struct CreateSocketCallback(Arc<dyn Fn(SocketAddr) -> std::io::Result<socket2::Socket> + Send + Sync>);
 
-impl ConfigureSocketCallback {
+impl CreateSocketCallback {
     /// Create a new `ConfigureSocketCallback` from the given callback function.
-    pub fn new<F: Fn(socket2::Socket) -> std::io::Result<socket2::Socket> + 'static + Send + Sync>(f: F) -> Self {
+    pub fn new<F: Fn(SocketAddr) -> std::io::Result<socket2::Socket> + Send + Sync + 'static>(f: F) -> Self {
         Self(Arc::new(f))
     }
 
     /// Create a new `ConfigureSocketCallback` from the given callback function.
-    pub fn call(&self, sock: socket2::Socket) -> std::io::Result<socket2::Socket> {
+    pub fn call(&self, sock: SocketAddr) -> std::io::Result<socket2::Socket> {
         (self.0)(sock)
     }
 }
 
-impl std::fmt::Debug for ConfigureSocketCallback {
+impl std::fmt::Debug for CreateSocketCallback {
     fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
         write!(f, "ConfigureSocketCallback ")
     }

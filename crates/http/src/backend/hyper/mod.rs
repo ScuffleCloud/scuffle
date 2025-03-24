@@ -7,7 +7,7 @@ use scuffle_context::ContextFutExt;
 use tracing::Instrument;
 
 use crate::error::Error;
-use crate::server::ConfigureSocketCallback;
+use crate::server::CreateSocketCallback;
 use crate::service::{HttpService, HttpServiceFactory};
 
 mod handler;
@@ -34,8 +34,8 @@ pub struct HyperBackend<F> {
     /// Use `[::]` for a dual-stack listener.
     /// For example, use `[::]:80` to bind to port 80 on both IPv4 and IPv6.
     bind: SocketAddr,
-    /// Callback to configure socket
-    configure_sock: Option<ConfigureSocketCallback>,
+    /// Callback to create a custom socket
+    create_custom_sock: Option<CreateSocketCallback>,
     /// rustls config.
     ///
     /// Use this field to set the server into TLS mode.
@@ -83,23 +83,24 @@ where
 
         // We have to create an std listener first because the tokio listener isn't clonable
         let listener = {
-            let mut sock = socket2::Socket::new(
-                match self.bind {
-                    SocketAddr::V4(_) => socket2::Domain::IPV4,
-                    SocketAddr::V6(_) => socket2::Domain::IPV6,
-                },
-                socket2::Type::STREAM,
-                Some(socket2::Protocol::TCP),
-            )?;
+            let sock = if let Some(cfg_fn) = self.create_custom_sock.as_ref() {
+                cfg_fn.call(self.bind)?
+            } else {
+                let mut sock = socket2::Socket::new(
+                    match self.bind {
+                        SocketAddr::V4(_) => socket2::Domain::IPV4,
+                        SocketAddr::V6(_) => socket2::Domain::IPV6,
+                    },
+                    socket2::Type::STREAM,
+                    Some(socket2::Protocol::TCP),
+                )?;
 
-            sock.set_nonblocking(true)?;
+                sock.set_nonblocking(true)?;
+                sock.bind(&socket2::SockAddr::from(self.bind))?;
+                sock.listen(128)?;
 
-            if let Some(cfg_fn) = self.configure_sock.as_ref() {
-                sock = cfg_fn.call(sock)?;
-            }
-
-            sock.bind(&socket2::SockAddr::from(self.bind))?;
-            sock.listen(128)?;
+                sock
+            };
 
             std::net::TcpListener::from(sock)
         };

@@ -82,7 +82,7 @@ pub mod service;
 
 pub use http;
 pub use http::Response;
-pub use server::{ConfigureSocketCallback, HttpServer, HttpServerBuilder};
+pub use server::{CreateSocketCallback, HttpServer, HttpServerBuilder};
 
 /// An incoming request.
 pub type IncomingRequest = http::Request<body::IncomingBody>;
@@ -194,9 +194,18 @@ mod tests {
             server.run().await.expect("server run failed");
         });
 
+        test_tls_server_inner(addr, versions).await;
+
         // Wait for the server to start
         tokio::time::sleep(std::time::Duration::from_millis(100)).await;
 
+        handler.shutdown().await;
+        handle.await.expect("task failed");
+    }
+
+    #[cfg(feature = "tls-rustls")]
+    #[allow(dead_code)]
+    async fn test_tls_server_inner(addr: std::net::SocketAddr, versions: &[reqwest::Version]) {
         let url = format!("https://{}/", addr);
 
         for version in versions {
@@ -229,9 +238,6 @@ mod tests {
 
             assert_eq!(resp, RESPONSE_TEXT);
         }
-
-        handler.shutdown().await;
-        handle.await.expect("task failed");
     }
 
     #[tokio::test]
@@ -604,5 +610,62 @@ mod tests {
         let builder = builder.enable_http1(false);
 
         test_tls_server(builder, &[reqwest::Version::HTTP_2, reqwest::Version::HTTP_3]).await;
+    }
+
+    #[tokio::test]
+    #[should_panic(expected="Address already in use")]
+    #[cfg(all(feature = "http2", feature = "http3", feature = "tls-rustls"))]
+    async fn multi_bind_no_reuseport_fails() {
+        struct TestBody;
+
+        impl http_body::Body for TestBody {
+            type Data = bytes::Bytes;
+            type Error = Infallible;
+
+            fn poll_frame(
+                self: std::pin::Pin<&mut Self>,
+                _cx: &mut std::task::Context<'_>,
+            ) -> std::task::Poll<Option<Result<http_body::Frame<Self::Data>, Self::Error>>> {
+                std::task::Poll::Ready(Some(Ok(http_body::Frame::data(bytes::Bytes::from(RESPONSE_TEXT)))))
+            }
+        }
+
+        let addr = get_available_addr().expect("failed to get available address");
+
+        let addr0 = addr.clone();
+
+        let t0 = tokio::spawn(async move {
+            let builder = HttpServer::builder()
+                .service_factory(service_clone_factory(fn_http_service(|_req| async {
+                    Ok::<_, Infallible>(http::Response::new(TestBody))
+                })))
+                .rustls_config(rustls_config())
+                .enable_http3(true)
+                .enable_http2(true)
+                .bind(addr0);
+            builder.build().run().await.expect("")
+        });
+        let addr1 = addr.clone();
+        let t1 = tokio::spawn(async move {
+            // Wait for a short time to definitely create this server AFTER the other
+            let builder = HttpServer::builder()
+                .service_factory(service_clone_factory(fn_http_service(|_req| async {
+                    Ok::<_, Infallible>(http::Response::new(TestBody))
+                })))
+                .rustls_config(rustls_config())
+                .enable_http3(true)
+                .enable_http2(true)
+                .bind(addr1);
+            builder.build().run().await.expect("")
+        });
+
+        tokio::select! {
+            res0 = t0 => {
+                res0.unwrap()
+            }
+            res1 = t1 => {
+                res1.unwrap()
+            }
+        }
     }
 }

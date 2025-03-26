@@ -1,5 +1,6 @@
-use std::{collections::HashSet, process::Stdio};
+use std::collections::HashSet;
 use std::path::PathBuf;
+use std::process::Stdio;
 
 use anyhow::{Context, Result};
 use clap::Parser;
@@ -70,11 +71,12 @@ impl SemverChecks {
             args.push(package);
         }
 
-        let output = cargo_cmd().args(&args)
-                                .stdout(Stdio::piped())
-                                .stderr(Stdio::piped())
-                                .output()
-                                .context("running semver-checks")?;
+        let output = cargo_cmd()
+            .args(&args)
+            .stdout(Stdio::piped())
+            .stderr(Stdio::piped())
+            .output()
+            .context("running semver-checks")?;
 
         // Combine both stdout and stderr.
         let mut semver_output = String::new();

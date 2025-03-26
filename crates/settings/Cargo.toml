@@ -62,3 +62,14 @@ additive-features = [
     "full",
     "bootstrap",
 ]
+
+[package.metadata.cargo_check_external_types]
+allowed_external_types = [
+  # major released
+  "config::*",
+  "clap::*",
+  "minijinja::*",
+  "serde::*",
+  "thiserror::*",
+  "anyhow::*",
+]

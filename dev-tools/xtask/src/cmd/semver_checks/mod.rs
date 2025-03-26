@@ -97,7 +97,6 @@ impl SemverChecks {
                 let update_type = caps.name("update_type").unwrap().as_str();
 
                 if let Some((crate_name, current_version)) = current_crate.take() {
-
                     let new_version = Self::new_version_number(&current_version, update_type)
                         .with_context(|| format!("bumping version for crate {crate_name} with update_type {update_type}"))?;
 

@@ -1,4 +1,4 @@
-use std::collections::HashSet;
+use std::{collections::HashSet, process::Stdio};
 use std::path::PathBuf;
 
 use anyhow::{Context, Result};
@@ -70,7 +70,11 @@ impl SemverChecks {
             args.push(package);
         }
 
-        let output = cargo_cmd().args(&args).output().context("running semver-checks")?;
+        let output = cargo_cmd().args(&args)
+                                .stdout(Stdio::piped())
+                                .stderr(Stdio::piped())
+                                .output()
+                                .context("running semver-checks")?;
 
         // Combine both stdout and stderr.
         let mut semver_output = String::new();

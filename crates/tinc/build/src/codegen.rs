@@ -1,12 +1,14 @@
 use std::collections::BTreeMap;
 
+use anyhow::Context;
 use convert_case::{Boundary, Case, Casing};
-use proc_macro2::TokenStream;
 use quote::quote;
 use syn::{Ident, parse_quote};
 use tinc_pb::schema_oneof_options::Tagged;
 
-use crate::extensions::{EnumOpts, Extensions, FieldKind, FieldVisibility, MessageOpts, PrimitiveKind, ServiceOpts};
+use crate::extensions::{
+    EnumOpts, Extensions, FieldKind, FieldVisibility, MessageOpts, MethodIo, PrimitiveKind, ServiceOpts, WellKnownType,
+};
 
 fn message_attributes(key: &str, prost: &mut tonic_build::Config) {
     prost.message_attribute(key, "#[derive(::tinc::reexports::serde::Serialize)]");
@@ -121,7 +123,7 @@ fn with_attr(key: &str, mut field_kind: &FieldKind, nullable: bool, omitable: bo
     match field_kind.inner() {
         // Well known types are `Message` types which get generated as `Option<T>`
         // Therefore we need to strip this option when its !nullable
-        Some(FieldKind::WellKnown(_)) => {
+        FieldKind::WellKnown(_) => {
             prost.field_attribute(key, "#[serde(serialize_with = \"::tinc::helpers::well_known::serialize\")]");
             prost.field_attribute(
                 key,
@@ -135,7 +137,7 @@ fn with_attr(key: &str, mut field_kind: &FieldKind, nullable: bool, omitable: bo
                 ),
             );
         }
-        Some(FieldKind::Enum(name)) => {
+        FieldKind::Enum(name) => {
             prost.field_attribute(
                 key,
                 format!(
@@ -190,7 +192,7 @@ fn rename_all_to_serde_rename_all(style: tinc_pb::RenameAll) -> Option<&'static 
 fn object_type_path(key: &str, package: &str) -> syn::Path {
     let mut key = key
         .strip_prefix(package)
-        .expect("key not in package")
+        .unwrap_or(key)
         .split('.')
         .filter(|s| !s.is_empty())
         .map(|s| s.to_owned())
@@ -329,7 +331,7 @@ fn handle_enum(
     Ok(())
 }
 
-fn sanitize_route(route: &str) -> Vec<String> {
+fn parse_route(route: &str) -> Vec<String> {
     let mut params = Vec::new();
     let mut chars = route.chars().peekable();
 
@@ -377,87 +379,320 @@ fn handle_service(
     let snake_name = name.to_case(convert_case::Case::Snake);
     let pascal_name = name.to_case(convert_case::Case::Pascal);
 
-    fn ident_from_str(s: &str) -> Ident {
-        Ident::new(s, proc_macro2::Span::call_site())
+    fn ident_from_str(s: impl AsRef<str>) -> Ident {
+        // if s is a keyword we need to escape it with r#
+        if let Ok(ident) = syn::parse_str(s.as_ref()) {
+            ident
+        } else {
+            Ident::new_raw(s.as_ref(), proc_macro2::Span::call_site())
+        }
     }
 
     let service_trait = &ident_from_str(&pascal_name);
-    let tinc_module_name = &ident_from_str(&format!("{}_tinc", snake_name));
-    let server_module_name = &ident_from_str(&format!("{}_server", snake_name));
-    let tinc_struct_name = &ident_from_str(&format!("{}Tinc", pascal_name));
+    let tinc_module_name = &ident_from_str(format!("{}_tinc", snake_name));
+    let server_module_name = &ident_from_str(format!("{}_server", snake_name));
+    let tinc_struct_name = &ident_from_str(format!("{}Tinc", pascal_name));
 
     let mut methods = Vec::new();
     let mut routes = Vec::new();
 
     for (name, method) in service.methods.iter() {
         for (idx, endpoint) in method.opts.iter().enumerate() {
-            let (http_method, path) = match endpoint.method.as_ref() {
+            let (http_method_str, path) = match endpoint.method.as_ref() {
                 Some(tinc_pb::http_endpoint_options::Method::Get(path)) => ("get", path),
                 Some(tinc_pb::http_endpoint_options::Method::Post(path)) => ("post", path),
                 Some(tinc_pb::http_endpoint_options::Method::Put(path)) => ("put", path),
                 Some(tinc_pb::http_endpoint_options::Method::Delete(path)) => ("delete", path),
                 Some(tinc_pb::http_endpoint_options::Method::Patch(path)) => ("patch", path),
+                Some(tinc_pb::http_endpoint_options::Method::Custom(method)) => (method.method.as_str(), &method.path),
                 _ => continue,
             };
 
-            let service_method_name = ident_from_str(&name.to_case(Case::Snake));
-            let function_name = ident_from_str(&format!("{name}_{http_method}_{idx}"));
-            let http_method = ident_from_str(http_method);
-            let params = sanitize_route(path);
+            let path = if let Some(prefix) = &service.opts.prefix {
+                format!(
+                    "/{prefix}/{path}",
+                    prefix = prefix.trim_end_matches('/'),
+                    path = path.trim_start_matches('/')
+                )
+            } else {
+                format!("/{path}", path = path.trim_start_matches('/'))
+            };
 
-            let input_message = extensions
-                .messages()
-                .get(method.input.as_str())
-                .expect("input message not found");
+            let service_method_name = ident_from_str(name.to_case(Case::Snake));
+            let function_name = ident_from_str(format!("{name}_{http_method_str}_{idx}"));
+            let http_method = ident_from_str(http_method_str);
+            let params = parse_route(&path);
 
-            let input_message_name = object_type_path(method.input.as_str(), &service.package);
+            enum IoOptions<'a> {
+                Message(String, &'a MessageOpts),
+                WellKnown(WellKnownType),
+            }
 
-            // Check that the params are valid
-            let mut path_params = Vec::new();
-            for param in &params {
-                let Some(field) = input_message.fields.get(param) else {
-                    anyhow::bail!("param {} not found in {}", param, method.input);
-                };
-
-                let ident = ident_from_str(param);
-
-                fn path_param(ident: &Ident, kind: &FieldKind) -> anyhow::Result<TokenStream> {
-                    match kind {
-                        FieldKind::Primitive(PrimitiveKind::String) => Ok(quote! { #ident: ::std::string::String }),
-                        FieldKind::Primitive(PrimitiveKind::Bool) => Ok(quote! { #ident: ::core::primitive::bool }),
-                        FieldKind::Primitive(PrimitiveKind::I32) => Ok(quote! { #ident: ::core::primitive::i32 }),
-                        FieldKind::Primitive(PrimitiveKind::I64) => Ok(quote! { #ident: ::core::primitive::i64 }),
-                        FieldKind::Primitive(PrimitiveKind::U32) => Ok(quote! { #ident: ::core::primitive::u32 }),
-                        FieldKind::Primitive(PrimitiveKind::U64) => Ok(quote! { #ident: ::core::primitive::u64 }),
-                        FieldKind::Primitive(PrimitiveKind::F32) => Ok(quote! { #ident: ::core::primitive::f32 }),
-                        FieldKind::Primitive(PrimitiveKind::F64) => Ok(quote! { #ident: ::core::primitive::f64 }),
-                        FieldKind::Primitive(PrimitiveKind::Bytes) => Ok(quote! { #ident: ::std::vec::Vec<u8> }),
-                        FieldKind::Enum(name) => Ok(quote! { #ident: ::#name }),
-                        FieldKind::Optional(inner) => {
-                            let inner = path_param(ident, inner)?;
-                            Ok(quote! {
-                                #[serde(deserialize_with = "::tinc::helpers::deserialize_non_null_option")]
-                                #ident: ::core::option::Option<#inner>
-                            })
+            impl IoOptions<'_> {
+                fn path(&self, package: &str) -> syn::Path {
+                    match self {
+                        IoOptions::Message(name, _) => {
+                            let path = object_type_path(name.as_str(), package);
+                            parse_quote! {
+                                super::#path
+                            }
                         }
-                        FieldKind::List(_) => anyhow::bail!("list params are not supported"),
-                        FieldKind::Map(_, _) => anyhow::bail!("map params are not supported"),
-                        FieldKind::WellKnown(_) => anyhow::bail!("well known params are not supported"),
-                        FieldKind::Message(_) => anyhow::bail!("message params are not supported"),
+                        IoOptions::WellKnown(well_known) => {
+                            let well_known = ident_from_str(well_known.name());
+                            syn::parse_quote! {
+                                ::tinc::helpers::well_known::#well_known
+                            }
+                        }
                     }
                 }
 
-                path_params.push(path_param(&ident, &field.kind)?);
+                fn has_content(&self, excluding: impl IntoIterator<Item = impl AsRef<str>>) -> bool {
+                    let excluding: Vec<_> = excluding.into_iter().collect();
+                    match self {
+                        IoOptions::Message(_, message) => message
+                            .fields
+                            .keys()
+                            .any(|name| excluding.iter().all(|exclude| exclude.as_ref() != name)),
+                        IoOptions::WellKnown(WellKnownType::Empty) => false,
+                        IoOptions::WellKnown(_) => true,
+                    }
+                }
+
+                fn has_fields(&self, fields: impl IntoIterator<Item = impl AsRef<str>>) -> bool {
+                    let fields: Vec<_> = fields.into_iter().collect();
+                    if fields.is_empty() {
+                        return true;
+                    }
+
+                    match self {
+                        IoOptions::Message(_, message) => {
+                            fields.into_iter().all(|field| message.fields.contains_key(field.as_ref()))
+                        }
+                        IoOptions::WellKnown(WellKnownType::Struct) => true, // maps always can take fields
+                        IoOptions::WellKnown(_) => false,
+                    }
+                }
+
+                fn field_type(&self, field: &str) -> Option<&FieldKind> {
+                    match self {
+                        IoOptions::Message(_, message) => message.fields.get(field).map(|field| &field.kind),
+                        IoOptions::WellKnown(WellKnownType::Struct) => Some(&FieldKind::WellKnown(WellKnownType::Value)),
+                        IoOptions::WellKnown(_) => None,
+                    }
+                }
             }
 
-            let path_params = if !path_params.is_empty() {
+            fn parse_header(
+                header: &tinc_pb::http_endpoint_options::Header,
+                input_message: &IoOptions,
+            ) -> anyhow::Result<proc_macro2::TokenStream> {
+                use tinc_pb::http_endpoint_options::header;
+
+                let header_name = header.name.as_str();
+                let field_str = header.field.as_str();
+
+                let field_type = input_message
+                    .field_type(field_str)
+                    .with_context(|| format!("header field {field_str} not found in input message"))?;
+
+                let encoding = header.encoding.clone().unwrap_or_else(|| match field_type.strip_option() {
+                    FieldKind::Map(_, _) | FieldKind::Message(_) | FieldKind::WellKnown(WellKnownType::Struct) => {
+                        header::Encoding::ContentType(header::ContentType::FormUrlEncoded as i32)
+                    }
+                    _ => header::Encoding::ContentType(header::ContentType::Text as i32),
+                });
+
+                let header_value = match encoding {
+                    header::Encoding::Delimiter(delimiter) => {
+                        quote! {
+                            ::tinc::helpers::header_decode::text(&parts.headers, #header_name, #field_str, ::core::option::Option::Some(#delimiter))
+                        }
+                    }
+                    header::Encoding::ContentType(content_type) => {
+                        let content_type = header::ContentType::try_from(content_type)
+                            .with_context(|| format!("invalid header content type value: {content_type}"))?;
+
+                        match content_type {
+                            header::ContentType::FormUrlEncoded => {
+                                quote! {
+                                    ::tinc::helpers::header_decode::form_url_encoded(&parts.headers, #header_name, #field_str)
+                                }
+                            }
+                            header::ContentType::Json => {
+                                quote! {
+                                    ::tinc::helpers::header_decode::json(&parts.headers, #header_name, #field_str)
+                                }
+                            }
+                            header::ContentType::Unspecified | header::ContentType::Text => {
+                                quote! {
+                                    ::tinc::helpers::header_decode::text(&parts.headers, #header_name, #field_str, ::core::option::Option::None)
+                                }
+                            }
+                        }
+                    }
+                };
+
+                Ok(quote! {
+                    input.merge(match #header_value {
+                        Ok(input) => input,
+                        Err(err) => return err,
+                    });
+                })
+            }
+
+            let input_message = match &method.input {
+                MethodIo::Message(name) => {
+                    let input_message = extensions.messages().get(name.as_str()).expect("input message not found");
+
+                    IoOptions::Message(name.clone(), input_message)
+                }
+                MethodIo::WellKnown(well_known) => IoOptions::WellKnown(*well_known),
+            };
+
+            let endpoint_headers = endpoint
+                .header
+                .iter()
+                .map(|header| parse_header(header, &input_message))
+                .collect::<anyhow::Result<Vec<_>>>()?;
+
+            anyhow::ensure!(
+                input_message.has_fields(&params),
+                "input message {} has missing fields: {:?}",
+                name,
+                params
+            );
+
+            let path_params = if !params.is_empty() {
                 quote! {
-                    match ::tinc::helpers::parse_path::<::tinc::value::ObjectOwned>(&mut parts).await {
+                    match ::tinc::helpers::parse_path(&mut parts).await {
                         Ok(path_params) => {
                             input.merge(path_params);
                         },
-                        Err((status, err)) => {
-                            return ::tinc::helpers::handle_error(status, err);
+                        Err(err) => return err,
+                    }
+                }
+            } else {
+                quote! {}
+            };
+
+            let is_get_or_delete = matches!(http_method_str, "get" | "delete");
+
+            let use_query_string = endpoint.query_string.unwrap_or(is_get_or_delete);
+            let query_string = if use_query_string {
+                quote! {
+                    match ::tinc::helpers::parse_query(&mut parts).await {
+                        Ok(query_string) => {
+                            input.merge(query_string);
+                        },
+                        Err(err) => return err,
+                    }
+                }
+            } else {
+                quote! {}
+            };
+
+            let use_request_body = endpoint.request_body.unwrap_or(!is_get_or_delete) && input_message.has_content(&params);
+            let request_body = if use_request_body {
+                let mut content_types = endpoint.content_type.clone();
+                if content_types.is_empty() {
+                    content_types.push(tinc_pb::http_endpoint_options::ContentType {
+                        accept: vec!["application/json".to_string()],
+                        content: None,
+                        header: Vec::new(),
+                        multipart: None,
+                    });
+                }
+
+                let ct_idents = &content_types
+                    .iter()
+                    .enumerate()
+                    .map(|(idx, _)| ident_from_str(format!("ACCEPT_{idx}")))
+                    .collect::<Vec<_>>();
+
+                let const_cts = content_types
+                    .iter()
+                    .zip(ct_idents.iter())
+                    .map(|(content_type, ct_ident)| {
+                        let content_type =
+                            content_type
+                                .accept
+                                .iter()
+                                .map(|mime| {
+                                    Ok(mime.parse::<mediatype::MediaTypeBuf>().context("invalid mime type")?.to_string())
+                                })
+                                .collect::<anyhow::Result<Vec<_>>>()?;
+
+                        Ok(quote! {
+                            static #ct_ident: ::std::sync::LazyLock<::tinc::reexports::headers_accept::Accept> = ::std::sync::LazyLock::new(|| {
+                                ::std::iter::FromIterator::from_iter([
+                                    #(
+                                        ::tinc::reexports::mediatype::MediaTypeBuf::from_string(#content_type.to_owned()).expect("invalid mime type this is a bug, please report it")
+                                    ),*
+                                ])
+                            });
+                        })
+                    })
+                    .collect::<anyhow::Result<Vec<_>>>()?;
+
+                let matchers = content_types
+                    .iter()
+                    .zip(ct_idents.iter())
+                    .map(|(content_type, ct_ident)| {
+                        let headers = content_type
+                            .header
+                            .iter()
+                            .map(|header| parse_header(header, &input_message))
+                            .collect::<anyhow::Result<Vec<_>>>()?;
+
+                        let merge = content_type
+                            .content
+                            .as_ref()
+                            .and_then(|content| match content {
+                                tinc_pb::http_endpoint_options::content_type::Content::Body(field) => Some(quote! {
+                                    input.merge(
+                                        ::std::iter::once((::core::convert::Into::into(#field), body))
+                                    )
+                                }),
+                                _ => None,
+                            })
+                            .unwrap_or_else(|| {
+                                quote! {
+                                    match body {
+                                        ::tinc::value::Value::Object(object) => {
+                                            input.merge(object);
+                                        }
+                                        _ => return ::tinc::helpers::bad_request_not_object(body),
+                                    }
+                                }
+                            });
+
+                        Ok(quote! {
+                            if let Some(accept) = #ct_ident.negotiate([content_type]) {
+                                #(#headers)*
+
+                                match ::tinc::helpers::parse_body(accept, body).await {
+                                    Ok(body) => #merge,
+                                    Err(err) => return err,
+                                }
+                            }
+                        })
+                    })
+                    .collect::<anyhow::Result<Vec<_>>>()?;
+
+                quote! {
+                    #(#const_cts)*
+
+                    let content_type = match ::tinc::helpers::header_decode::content_type(&parts.headers) {
+                        Ok(content_type) => content_type,
+                        Err(err) => return err,
+                    };
+
+                    if let Some(content_type) = &content_type {
+                        // the matchers expand to `else if ...` statements, so we start with if false {}
+                        #(#matchers else)* {
+                            return ::tinc::helpers::no_valid_content_type(content_type, &[
+                                #(&*#ct_idents),*
+                            ]);
                         }
                     }
                 }
@@ -465,26 +700,28 @@ fn handle_service(
                 quote! {}
             };
 
-            let request_body = quote! {};
+            let input_path = input_message.path(service.package.as_str());
 
             let function_impl = quote! {
                 let mut input = ::tinc::value::Object::new();
 
                 #path_params
 
+                #query_string
+
+                #(#endpoint_headers)*
+
                 #request_body
 
-                let input: super::#input_message_name = match ::tinc::reexports::serde::Deserialize::deserialize(input) {
+                let input: #input_path = match ::tinc::helpers::decode_input(input) {
                     Ok(input) => input,
-                    Err(err) => {
-                        return ::tinc::helpers::handle_error(::tinc::reexports::axum::http::StatusCode::BAD_REQUEST, err);
-                    }
+                    Err(err) => return err,
                 };
 
                 let request = ::tinc::reexports::tonic::Request::from_parts(
                     ::tinc::reexports::tonic::metadata::MetadataMap::from_headers(parts.headers),
                     parts.extensions,
-                    input,
+                    ::core::convert::Into::into(input),
                 );
 
                 let (metadata, body, extensions) = match service.inner.#service_method_name(request).await {

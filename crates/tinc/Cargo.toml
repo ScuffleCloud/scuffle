@@ -10,7 +10,7 @@ http-body = "1"
 http-body-util = "0.1.0"
 bytes = "1.6.0"
 
-tonic = "0.12.3"
+tonic = "0.13.0"
 prost = "0.13.5"
 prost-types = "0.13.5"
 
@@ -23,9 +23,11 @@ schemars = { version = "1.0.0-alpha.17", features = ["chrono04"] }
 chrono = "0.4.36"
 thiserror = "2"
 
-mime = "0.3"
+# Media Types
 multer = "3.1"
-accept-header = "0.2.3"
+headers-accept = "0.1.4"
+mediatype = "0.19.20"
+serde_urlencoded = "0.7.1"
 
 ordered-float = "5.0.0"
 num-traits = "0.2.19"
@@ -33,5 +35,6 @@ num-traits = "0.2.19"
 # Parsing / Formatting numbers
 itoa = "1.0.1"
 ryu = "1.0.14"
+
 
 scuffle-workspace-hack.workspace = true

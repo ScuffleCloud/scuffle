@@ -33,7 +33,6 @@ futures-io = { version = "0.3" }
 futures-sink = { version = "0.3" }
 futures-task = { version = "0.3", default-features = false, features = ["std"] }
 futures-util = { version = "0.3", default-features = false, features = ["async-await-macro", "channel", "io", "sink"] }
-getrandom-6f8ce4dd05d13bba = { package = "getrandom", version = "0.2", default-features = false, features = ["std"] }
 hashbrown = { version = "0.15", default-features = false, features = ["default-hasher", "inline-more"] }
 hyper = { version = "1", features = ["client", "http1", "http2", "server"] }
 hyper-util = { version = "0.1", features = ["client-legacy", "server-auto", "service"] }
@@ -66,7 +65,7 @@ thiserror = { version = "2" }
 tokio = { version = "1", features = ["full", "test-util"] }
 tokio-stream = { version = "0.1", features = ["net"] }
 tokio-util = { version = "0.7", features = ["codec", "io"] }
-tower = { version = "0.5", default-features = false, features = ["log", "make", "util"] }
+tower = { version = "0.5", default-features = false, features = ["balance", "buffer", "limit", "log"] }
 tracing = { version = "0.1", features = ["log"] }
 tracing-core = { version = "0.1" }
 tracing-log = { version = "0.2", default-features = false, features = ["log-tracer", "std"] }
@@ -92,7 +91,6 @@ futures-io = { version = "0.3" }
 futures-sink = { version = "0.3" }
 futures-task = { version = "0.3", default-features = false, features = ["std"] }
 futures-util = { version = "0.3", default-features = false, features = ["async-await-macro", "channel", "io", "sink"] }
-getrandom-6f8ce4dd05d13bba = { package = "getrandom", version = "0.2", default-features = false, features = ["std"] }
 hashbrown = { version = "0.15", default-features = false, features = ["default-hasher", "inline-more"] }
 hyper = { version = "1", features = ["client", "http1", "http2", "server"] }
 hyper-util = { version = "0.1", features = ["client-legacy", "server-auto", "service"] }
@@ -125,7 +123,7 @@ thiserror = { version = "2" }
 tokio = { version = "1", features = ["full", "test-util"] }
 tokio-stream = { version = "0.1", features = ["net"] }
 tokio-util = { version = "0.7", features = ["codec", "io"] }
-tower = { version = "0.5", default-features = false, features = ["log", "make", "util"] }
+tower = { version = "0.5", default-features = false, features = ["balance", "buffer", "limit", "log"] }
 tracing = { version = "0.1", features = ["log"] }
 tracing-core = { version = "0.1" }
 tracing-log = { version = "0.2", default-features = false, features = ["log-tracer", "std"] }
@@ -133,7 +131,7 @@ tracing-subscriber = { version = "0.3", features = ["env-filter"] }
 
 [target.x86_64-unknown-linux-gnu.dependencies]
 bitflags = { version = "2", default-features = false, features = ["std"] }
-getrandom-468e82937335b1c9 = { package = "getrandom", version = "0.3", default-features = false, features = ["std"] }
+getrandom = { version = "0.3", default-features = false, features = ["std"] }
 h3 = { version = "0.0.7", default-features = false, features = ["tracing"] }
 h3-quinn = { version = "0.0.9", default-features = false, features = ["tracing"] }
 libc = { version = "0.2", default-features = false, features = ["extra_traits"] }
@@ -150,7 +148,7 @@ uuid = { version = "1", features = ["v4"] }
 [target.x86_64-unknown-linux-gnu.build-dependencies]
 bitflags = { version = "2", default-features = false, features = ["std"] }
 cc = { version = "1", default-features = false, features = ["parallel"] }
-getrandom-468e82937335b1c9 = { package = "getrandom", version = "0.3", default-features = false, features = ["std"] }
+getrandom = { version = "0.3", default-features = false, features = ["std"] }
 h3 = { version = "0.0.7", default-features = false, features = ["tracing"] }
 h3-quinn = { version = "0.0.9", default-features = false, features = ["tracing"] }
 libc = { version = "0.2", default-features = false, features = ["extra_traits"] }
@@ -166,7 +164,7 @@ uuid = { version = "1", features = ["v4"] }
 
 [target.aarch64-unknown-linux-gnu.dependencies]
 bitflags = { version = "2", default-features = false, features = ["std"] }
-getrandom-468e82937335b1c9 = { package = "getrandom", version = "0.3", default-features = false, features = ["std"] }
+getrandom = { version = "0.3", default-features = false, features = ["std"] }
 h3 = { version = "0.0.7", default-features = false, features = ["tracing"] }
 h3-quinn = { version = "0.0.9", default-features = false, features = ["tracing"] }
 libc = { version = "0.2", default-features = false, features = ["extra_traits"] }
@@ -183,7 +181,7 @@ uuid = { version = "1", features = ["v4"] }
 [target.aarch64-unknown-linux-gnu.build-dependencies]
 bitflags = { version = "2", default-features = false, features = ["std"] }
 cc = { version = "1", default-features = false, features = ["parallel"] }
-getrandom-468e82937335b1c9 = { package = "getrandom", version = "0.3", default-features = false, features = ["std"] }
+getrandom = { version = "0.3", default-features = false, features = ["std"] }
 h3 = { version = "0.0.7", default-features = false, features = ["tracing"] }
 h3-quinn = { version = "0.0.9", default-features = false, features = ["tracing"] }
 libc = { version = "0.2", default-features = false, features = ["extra_traits"] }
@@ -199,7 +197,7 @@ uuid = { version = "1", features = ["v4"] }
 
 [target.x86_64-apple-darwin.dependencies]
 bitflags = { version = "2", default-features = false, features = ["std"] }
-getrandom-468e82937335b1c9 = { package = "getrandom", version = "0.3", default-features = false, features = ["std"] }
+getrandom = { version = "0.3", default-features = false, features = ["std"] }
 h3 = { version = "0.0.7", default-features = false, features = ["tracing"] }
 h3-quinn = { version = "0.0.9", default-features = false, features = ["tracing"] }
 libc = { version = "0.2", default-features = false, features = ["extra_traits"] }
@@ -216,7 +214,7 @@ uuid = { version = "1", features = ["v4"] }
 [target.x86_64-apple-darwin.build-dependencies]
 bitflags = { version = "2", default-features = false, features = ["std"] }
 cc = { version = "1", default-features = false, features = ["parallel"] }
-getrandom-468e82937335b1c9 = { package = "getrandom", version = "0.3", default-features = false, features = ["std"] }
+getrandom = { version = "0.3", default-features = false, features = ["std"] }
 h3 = { version = "0.0.7", default-features = false, features = ["tracing"] }
 h3-quinn = { version = "0.0.9", default-features = false, features = ["tracing"] }
 libc = { version = "0.2", default-features = false, features = ["extra_traits"] }
@@ -232,7 +230,7 @@ uuid = { version = "1", features = ["v4"] }
 
 [target.aarch64-apple-darwin.dependencies]
 bitflags = { version = "2", default-features = false, features = ["std"] }
-getrandom-468e82937335b1c9 = { package = "getrandom", version = "0.3", default-features = false, features = ["std"] }
+getrandom = { version = "0.3", default-features = false, features = ["std"] }
 h3 = { version = "0.0.7", default-features = false, features = ["tracing"] }
 h3-quinn = { version = "0.0.9", default-features = false, features = ["tracing"] }
 libc = { version = "0.2", default-features = false, features = ["extra_traits"] }
@@ -249,7 +247,7 @@ uuid = { version = "1", features = ["v4"] }
 [target.aarch64-apple-darwin.build-dependencies]
 bitflags = { version = "2", default-features = false, features = ["std"] }
 cc = { version = "1", default-features = false, features = ["parallel"] }
-getrandom-468e82937335b1c9 = { package = "getrandom", version = "0.3", default-features = false, features = ["std"] }
+getrandom = { version = "0.3", default-features = false, features = ["std"] }
 h3 = { version = "0.0.7", default-features = false, features = ["tracing"] }
 h3-quinn = { version = "0.0.9", default-features = false, features = ["tracing"] }
 libc = { version = "0.2", default-features = false, features = ["extra_traits"] }
@@ -264,7 +262,7 @@ tower = { version = "0.5", default-features = false, features = ["timeout"] }
 uuid = { version = "1", features = ["v4"] }
 
 [target.x86_64-pc-windows-msvc.dependencies]
-getrandom-468e82937335b1c9 = { package = "getrandom", version = "0.3", default-features = false, features = ["std"] }
+getrandom = { version = "0.3", default-features = false, features = ["std"] }
 h3 = { version = "0.0.7", default-features = false, features = ["tracing"] }
 h3-quinn = { version = "0.0.9", default-features = false, features = ["tracing"] }
 quinn = { version = "0.11", default-features = false, features = ["futures-io", "log", "platform-verifier", "runtime-tokio", "rustls", "rustls-aws-lc-rs"] }
@@ -280,7 +278,7 @@ windows-sys-b21d60becc0929df = { package = "windows-sys", version = "0.52", feat
 
 [target.x86_64-pc-windows-msvc.build-dependencies]
 cc = { version = "1", default-features = false, features = ["parallel"] }
-getrandom-468e82937335b1c9 = { package = "getrandom", version = "0.3", default-features = false, features = ["std"] }
+getrandom = { version = "0.3", default-features = false, features = ["std"] }
 h3 = { version = "0.0.7", default-features = false, features = ["tracing"] }
 h3-quinn = { version = "0.0.9", default-features = false, features = ["tracing"] }
 quinn = { version = "0.11", default-features = false, features = ["futures-io", "log", "platform-verifier", "runtime-tokio", "rustls", "rustls-aws-lc-rs"] }
@@ -295,7 +293,7 @@ windows-sys-73dcd821b1037cfd = { package = "windows-sys", version = "0.59", feat
 windows-sys-b21d60becc0929df = { package = "windows-sys", version = "0.52", features = ["Wdk_Foundation", "Wdk_Storage_FileSystem", "Wdk_System_IO", "Win32_Foundation", "Win32_Networking_WinSock", "Win32_Security", "Win32_Storage_FileSystem", "Win32_System_Console", "Win32_System_IO", "Win32_System_Pipes", "Win32_System_SystemServices", "Win32_System_Threading", "Win32_System_WindowsProgramming"] }
 
 [target.x86_64-pc-windows-gnu.dependencies]
-getrandom-468e82937335b1c9 = { package = "getrandom", version = "0.3", default-features = false, features = ["std"] }
+getrandom = { version = "0.3", default-features = false, features = ["std"] }
 h3 = { version = "0.0.7", default-features = false, features = ["tracing"] }
 h3-quinn = { version = "0.0.9", default-features = false, features = ["tracing"] }
 quinn = { version = "0.11", default-features = false, features = ["futures-io", "log", "platform-verifier", "runtime-tokio", "rustls", "rustls-aws-lc-rs"] }
@@ -311,7 +309,7 @@ windows-sys-b21d60becc0929df = { package = "windows-sys", version = "0.52", feat
 
 [target.x86_64-pc-windows-gnu.build-dependencies]
 cc = { version = "1", default-features = false, features = ["parallel"] }
-getrandom-468e82937335b1c9 = { package = "getrandom", version = "0.3", default-features = false, features = ["std"] }
+getrandom = { version = "0.3", default-features = false, features = ["std"] }
 h3 = { version = "0.0.7", default-features = false, features = ["tracing"] }
 h3-quinn = { version = "0.0.9", default-features = false, features = ["tracing"] }
 quinn = { version = "0.11", default-features = false, features = ["futures-io", "log", "platform-verifier", "runtime-tokio", "rustls", "rustls-aws-lc-rs"] }

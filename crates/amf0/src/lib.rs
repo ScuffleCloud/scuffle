@@ -2,6 +2,11 @@
 //!
 //! This crate provides a simple interface for encoding and decoding AMF0 data.
 //!
+//! # Limitations
+//!
+//! - Does not support deserializing of AMF0 references.
+//! - Does not support the AVM+ Type Marker. (see AMF 0 spec, 3.1)
+//!
 //! # Examples
 //!
 //! ```rust
@@ -26,16 +31,65 @@
 //! # test().expect("test failed");
 //! ```
 #![cfg_attr(all(coverage_nightly, test), feature(coverage_attribute))]
-#![deny(missing_docs)]
+// #![deny(missing_docs)]
 #![deny(unsafe_code)]
 #![deny(unreachable_pub)]
 
-mod decode;
-mod define;
-mod encode;
-mod errors;
+pub mod de;
+pub mod error;
+pub mod ser;
 
-pub use crate::decode::Amf0Decoder;
-pub use crate::define::{Amf0Marker, Amf0Object, Amf0Value};
-pub use crate::encode::Amf0Encoder;
-pub use crate::errors::{Amf0ReadError, Amf0WriteError};
+pub use de::{from_bytes, from_reader};
+pub use error::{Amf0Error, Result};
+pub use ser::{to_bytes, to_writer};
+
+/// AMF0 marker types.
+///
+/// Defined by:
+/// - AMF 0 spec, 2.1.
+#[derive(Debug, PartialEq, Eq, Clone, Copy, num_derive::FromPrimitive)]
+#[repr(u8)]
+pub enum Amf0Marker {
+    /// number-marker
+    Number = 0x00,
+    /// boolean-marker
+    Boolean = 0x01,
+    /// string-marker
+    String = 0x02,
+    /// object-marker
+    Object = 0x03,
+    /// movieclip-marker
+    ///
+    /// reserved, not supported
+    MovieClipMarker = 0x04,
+    /// null-marker
+    Null = 0x05,
+    /// undefined-marker
+    Undefined = 0x06,
+    /// reference-marker
+    Reference = 0x07,
+    /// ecma-array-marker
+    EcmaArray = 0x08,
+    /// object-end-marker
+    ObjectEnd = 0x09,
+    /// strict-array-marker
+    StrictArray = 0x0a,
+    /// date-marker
+    Date = 0x0b,
+    /// long-string-marker
+    LongString = 0x0c,
+    /// unsupported-marker
+    Unsupported = 0x0d,
+    /// recordset-marker
+    ///
+    /// reserved, not supported
+    Recordset = 0x0e,
+    /// xml-document-marker
+    XmlDocument = 0x0f,
+    /// typed-object-marker
+    TypedObject = 0x10,
+    /// avmplus-object-marker
+    ///
+    /// AMF3 marker
+    AVMPlusObject = 0x11,
+}

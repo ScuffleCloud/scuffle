@@ -2749,11 +2749,10 @@ name = "scuffle-amf0"
 version = "0.1.1"
 dependencies = [
  "byteorder",
- "bytes",
  "num-derive",
  "num-traits",
- "scuffle-bytes-util",
  "scuffle-workspace-hack",
+ "serde",
  "thiserror 2.0.12",
 ]
 

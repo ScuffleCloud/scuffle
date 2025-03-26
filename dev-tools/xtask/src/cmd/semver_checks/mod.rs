@@ -4,7 +4,6 @@ use std::process::Stdio;
 
 use anyhow::{Context, Result};
 use clap::Parser;
-use console::Term;
 use regex::Regex;
 
 use crate::utils::{cargo_cmd, metadata};
@@ -83,11 +82,8 @@ impl SemverChecks {
         semver_output.push_str(&String::from_utf8_lossy(&output.stdout));
         semver_output.push_str(&String::from_utf8_lossy(&output.stderr));
 
-        let stdout_term = Term::stdout();
-
-        // If there's no output, warn the user.
         if semver_output.trim().is_empty() {
-            stdout_term.write_line("No semver-checks output received. The command may have failed.")?;
+            println!("No semver-checks output received. The command may have failed.");
         } else {
             // Regex to capture "Checking" lines in two formats:
             // 1. "Checking <crate> vX.Y.Z (current)"
@@ -113,20 +109,17 @@ impl SemverChecks {
                         let current_version = caps.name("curr").unwrap().as_str().to_string();
                         current_crate = Some((crate_name, current_version));
                     }
-                    stdout_term.write_line(line)?;
+                    println!("{line}");
                 } else if trimmed.starts_with("Checked") {
-                    stdout_term.write_line(line)?;
+                    println!("{line}");
                 } else if let Some(caps) = summary_re.captures(line) {
                     let update_type = caps.name("update_type").unwrap().as_str();
                     if let Some((crate_name, current_version)) = current_crate.take() {
                         let new_version = Self::new_version_number(&current_version, update_type).with_context(|| {
                             format!("bumping version for crate {} with update_type {}", crate_name, update_type)
                         })?;
-                        stdout_term.write_line(&format!("⚠️ -> {} update required for `{}`.", update_type, crate_name))?;
-                        stdout_term.write_line(&format!(
-                            "🛠️ -> Please update the version from {} to {}.",
-                            current_version, new_version
-                        ))?;
+                        println!("⚠️ -> {update_type} update required for `{crate_name}`.");
+                        println!("🛠️ -> Please update the version from {current_version} to {new_version}.");
                     }
                 }
             }

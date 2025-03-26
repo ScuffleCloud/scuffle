@@ -70,9 +70,7 @@ impl SemverChecks {
             args.push(package);
         }
 
-        let output = cargo_cmd().args(&args)
-            .output()
-            .context("running semver-checks")?;
+        let output = cargo_cmd().args(&args).output().context("running semver-checks")?;
 
         // Combine both stdout and stderr.
         let mut semver_output = String::new();
@@ -95,10 +93,8 @@ impl SemverChecks {
 
             // Regex for a summary line that indicates an update is required.
             // Example: "Summary semver requires new major version: 1 major and 0 minor checks failed"
-            let summary_re = Regex::new(
-                r"^Summary semver requires new (?P<update_type>major|minor) version:"
-            )
-            .context("compiling summary regex")?;
+            let summary_re = Regex::new(r"^Summary semver requires new (?P<update_type>major|minor) version:")
+                .context("compiling summary regex")?;
 
             let mut current_crate: Option<(String, String)> = None;
 
@@ -118,15 +114,14 @@ impl SemverChecks {
                 } else if let Some(caps) = summary_re.captures(line) {
                     let update_type = caps.name("update_type").unwrap().as_str();
                     if let Some((crate_name, current_version)) = current_crate.take() {
-                        let new_version = Self::new_version_number(&current_version, update_type)
-                            .with_context(|| {
-                                format!(
-                                    "bumping version for crate {} with update_type {}",
-                                    crate_name, update_type
-                                )
-                            })?;
+                        let new_version = Self::new_version_number(&current_version, update_type).with_context(|| {
+                            format!("bumping version for crate {} with update_type {}", crate_name, update_type)
+                        })?;
                         stdout_term.write_line(&format!("⚠️ -> {} update required for `{}`.", update_type, crate_name))?;
-                        stdout_term.write_line(&format!("🛠️ -> Please update the version from {} to {}.", current_version, new_version))?;
+                        stdout_term.write_line(&format!(
+                            "🛠️ -> Please update the version from {} to {}.",
+                            current_version, new_version
+                        ))?;
                     }
                 }
             }

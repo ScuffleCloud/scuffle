@@ -9,14 +9,14 @@
 use std::marker::PhantomData;
 
 use axum::extract::FromRequestParts;
-use axum::extract::path::ErrorKind;
-use axum::extract::rejection::PathRejection;
-use axum::response::IntoResponse;
-use http::StatusCode;
+use bytes::Buf;
+use headers_accept::Accept;
 use http::request::Parts;
-use serde::de::DeserializeOwned;
+use http_body_util::BodyExt;
+use mediatype::{MediaType, ReadParams};
+use multer::Constraints;
 
-use crate::value::ValueError;
+use crate::value::{Object, ObjectOwned, Value, ValueOwned};
 
 pub trait SerdeTransform<T> {
     fn serialize<S>(value: &Self, serializer: S) -> Result<S::Ok, S::Error>
@@ -211,6 +211,18 @@ pub mod well_known {
             #[repr(transparent)]
             pub struct $helper($type);
 
+            impl From<$type> for $helper {
+                fn from(value: $type) -> Self {
+                    $helper(value)
+                }
+            }
+
+            impl From<$helper> for $type {
+                fn from(value: $helper) -> Self {
+                    value.0
+                }
+            }
+
             const _: () = {
                 impl_cast!($type, $type, $helper);
                 impl_cast!($type, Option<$type>, Option<$helper>);
@@ -253,6 +265,30 @@ pub mod well_known {
 
     impl schemars::JsonSchema for Timestamp {
         forward_schema!(chrono::DateTime<chrono::Utc>);
+    }
+
+    impl_serde_helper!(BytesVecU8, Vec<u8>);
+
+    impl serde::Serialize for BytesVecU8 {
+        fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+        where
+            S: serde::Serializer,
+        {
+            self.0.serialize(serializer)
+        }
+    }
+
+    impl<'de> serde::Deserialize<'de> for BytesVecU8 {
+        fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
+        where
+            D: serde::Deserializer<'de>,
+        {
+            serde::Deserialize::deserialize(deserializer).map(Self)
+        }
+    }
+
+    impl schemars::JsonSchema for BytesVecU8 {
+        forward_schema!(Vec<u8>);
     }
 
     impl_serde_helper!(Duration, prost_types::Duration);
@@ -743,117 +779,380 @@ pub fn schemars_non_omitable(schema: &mut ::schemars::Schema) {
     }
 }
 
-#[derive(Debug, thiserror::Error, serde::Serialize)]
-pub struct PathError {
-    pub message: String,
-    pub location: Option<String>,
-}
-
-impl std::fmt::Display for PathError {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        write!(f, "path error: {}", self.message)
+pub async fn parse_path(parts: &mut Parts) -> Result<Value<'static>, axum::response::Response> {
+    match axum::extract::Path::<ValueOwned>::from_request_parts(parts, &()).await {
+        Ok(value) => Ok(value.0.into_inner()),
+        Err(rejection) => todo!("todo handle error: {:?}", rejection),
     }
 }
 
-pub async fn parse_path<T>(parts: &mut Parts) -> Result<T, (StatusCode, PathError)>
+pub async fn parse_query(parts: &mut Parts) -> Result<Value<'static>, axum::response::Response> {
+    match axum::extract::Query::<ValueOwned>::from_request_parts(parts, &()).await {
+        Ok(value) => Ok(value.0.into_inner()),
+        Err(rejection) => todo!("todo handle error: {:?}", rejection),
+    }
+}
+
+pub fn decode_input<'de, T>(input: Object<'de>) -> Result<T, axum::response::Response>
 where
-    T: DeserializeOwned + Send + 'static,
+    T: serde::Deserialize<'de>,
 {
-    match axum::extract::Path::<T>::from_request_parts(parts, &()).await {
-        Ok(value) => Ok(value.0),
-        Err(rejection) => {
-            let (status, err) = match rejection {
-                PathRejection::FailedToDeserializePathParams(inner) => {
-                    let mut status = StatusCode::BAD_REQUEST;
+    match serde::Deserialize::deserialize(input) {
+        Ok(value) => Ok(value),
+        Err(err) => todo!("todo handle error: {:?}", err),
+    }
+}
 
-                    let kind = inner.into_kind();
-                    let err = match &kind {
-                        ErrorKind::WrongNumberOfParameters { .. } => PathError {
-                            message: kind.to_string(),
-                            location: None,
-                        },
-                        ErrorKind::ParseErrorAtKey { key, .. } => PathError {
-                            message: kind.to_string(),
-                            location: Some(key.clone()),
-                        },
-                        ErrorKind::ParseErrorAtIndex { index, .. } => PathError {
-                            message: kind.to_string(),
-                            location: Some(index.to_string()),
-                        },
-                        ErrorKind::ParseError { .. } => PathError {
-                            message: kind.to_string(),
-                            location: None,
-                        },
-                        ErrorKind::InvalidUtf8InPathParam { key } => PathError {
-                            message: kind.to_string(),
-                            location: Some(key.clone()),
-                        },
-                        ErrorKind::UnsupportedType { .. } => {
-                            // this error is caused by the programmer using an unsupported type
-                            // (such as nested maps) so respond with `500` instead
-                            status = StatusCode::INTERNAL_SERVER_ERROR;
-                            PathError {
-                                message: kind.to_string(),
-                                location: None,
-                            }
-                        }
-                        ErrorKind::Message(msg) => PathError {
-                            message: msg.clone(),
-                            location: None,
-                        },
-                        _ => PathError {
-                            message: format!("Unhandled deserialization error: {kind}"),
-                            location: None,
-                        },
-                    };
+pub mod header_decode {
+    use mediatype::MediaType;
 
-                    (status, err)
-                }
-                PathRejection::MissingPathParams(error) => (
-                    StatusCode::INTERNAL_SERVER_ERROR,
-                    PathError {
-                        message: error.to_string(),
-                        location: None,
-                    },
-                ),
-                _ => (
-                    StatusCode::INTERNAL_SERVER_ERROR,
-                    PathError {
-                        message: format!("Unhandled path rejection: {rejection}"),
-                        location: None,
-                    },
-                ),
+    use crate::value::{Object, Value, ValueOwned};
+
+    pub fn form_url_encoded<'a>(
+        headers: &'a http::HeaderMap,
+        header_name: &'static str,
+        field_name: &'static str,
+    ) -> Result<Object<'a>, axum::response::Response> {
+        let mut values = Vec::new();
+        for value in headers.get_all(header_name) {
+            let header_str = match value.to_str() {
+                Ok(s) => s,
+                Err(err) => todo!("todo handle error: {:?}", err),
             };
 
-            Err((status, err))
+            match serde_urlencoded::from_str(header_str) {
+                Ok(ValueOwned(value)) => values.push(value),
+                Err(err) => todo!("todo handle error: {:?}", err),
+            }
         }
+
+        let mut object = Object::new();
+        match values.len() {
+            0 => {}
+            1 => object.insert(field_name.into(), values.remove(0)),
+            _ => object.insert(field_name.into(), Value::Array(values)),
+        }
+
+        Ok(object)
+    }
+
+    pub fn json(
+        headers: &http::HeaderMap,
+        header_name: &'static str,
+        field_name: &'static str,
+    ) -> Result<Object<'static>, axum::response::Response> {
+        let mut values = Vec::new();
+        for value in headers.get_all(header_name) {
+            let header_str = match value.to_str() {
+                Ok(s) => s,
+                Err(err) => todo!("todo handle error: {:?}", err),
+            };
+
+            match serde_json::from_str(header_str) {
+                Ok(ValueOwned(value)) => values.push(value),
+                Err(err) => todo!("todo handle error: {:?}", err),
+            }
+        }
+
+        let mut object = Object::new();
+        match values.len() {
+            0 => {}
+            1 => object.insert(field_name.into(), values.remove(0)),
+            _ => object.insert(field_name.into(), Value::Array(values)),
+        }
+
+        Ok(object)
+    }
+
+    pub fn text<'a>(
+        headers: &'a http::HeaderMap,
+        header_name: &'static str,
+        field_name: &'static str,
+        delimiter: Option<&'static str>,
+    ) -> Result<Object<'a>, axum::response::Response> {
+        let mut values = Vec::new();
+        for value in headers.get_all(header_name) {
+            let header_str = match value.to_str() {
+                Ok(s) => s,
+                Err(err) => todo!("todo handle error: {:?}", err),
+            };
+
+            if let Some(delimiter) = delimiter {
+                values.extend(header_str.split(delimiter).map(|s| Value::String(s.into())));
+            } else {
+                values.push(Value::String(header_str.into()));
+            }
+        }
+
+        let mut object = Object::new();
+        match values.len() {
+            0 => {}
+            1 => object.insert(field_name.into(), values.remove(0)),
+            _ => object.insert(field_name.into(), Value::Array(values)),
+        }
+
+        Ok(object)
+    }
+
+    pub fn content_type(headers: &http::HeaderMap) -> Result<Option<MediaType<'_>>, axum::response::Response> {
+        let Some(content_type) = headers.get("content-type") else {
+            return Ok(None);
+        };
+
+        let content_type_str = match content_type.to_str() {
+            Ok(s) => s,
+            Err(err) => todo!("todo handle error: {:?}", err),
+        };
+
+        let media_type = match MediaType::parse(content_type_str) {
+            Ok(media_type) => media_type,
+            Err(err) => todo!("todo handle error: {:?}", err),
+        };
+
+        Ok(Some(media_type))
     }
 }
 
-#[derive(Debug, thiserror::Error)]
-pub enum RequestError {
-    #[error("path error: {0}")]
-    Path(#[from] PathError),
-    #[error("deserialization error: {0}")]
-    Deserialization(#[from] ValueError),
+pub fn no_valid_content_type(content_type: &MediaType<'_>, content_types: &[&Accept]) -> axum::response::Response {
+    todo!(
+        "todo handle error: no valid content type: {:?} - {:?}",
+        content_type,
+        content_types
+    )
 }
 
-pub fn handle_error(status: StatusCode, err: impl Into<RequestError>) -> axum::response::Response {
-    match err.into() {
-        RequestError::Path(err) => (status, axum::Json(err)).into_response(),
-        RequestError::Deserialization(err) => {
-            #[derive(Debug, serde::Serialize)]
-            struct ErrorResponse {
-                message: String,
+pub fn bad_request_not_object(body: Value<'_>) -> axum::response::Response {
+    todo!("todo handle error: body is not an object: {:?}", body)
+}
+
+async fn read_body(body: axum::body::Body) -> Result<impl bytes::Buf, axum::response::Response> {
+    match body.collect().await {
+        Ok(bytes) => Ok(bytes.aggregate()),
+        Err(err) => todo!("todo handle error: {:?}", err),
+    }
+}
+
+async fn parse_body_string(
+    content_type: &MediaType<'_>,
+    body: axum::body::Body,
+) -> Result<String, axum::response::Response> {
+    let charset = content_type
+        .params()
+        .find(|(k, _)| k == "charset")
+        .map(|(_, v)| v.as_str())
+        .unwrap_or("utf-8");
+
+    fn parse_utf8(bytes: Vec<u8>) -> Option<String> {
+        String::from_utf8(bytes).ok()
+    }
+
+    fn parse_utf16(bytes: Vec<u8>) -> Option<String> {
+        if bytes.len() % 2 != 0 {
+            return None;
+        }
+
+        String::from_utf16({
+            let ptr = bytes.as_ptr().cast::<u16>();
+            let len = bytes.len() / 2;
+            unsafe { std::slice::from_raw_parts(ptr, len) }
+        }).ok()
+    }
+
+    let parse_fn = if charset.eq_ignore_ascii_case("utf-8") || charset.eq_ignore_ascii_case("us-ascii") {
+        parse_utf8
+    } else if charset.eq_ignore_ascii_case("utf-16") {
+        parse_utf16
+    } else {
+        todo!("todo handle error: unsupported charset")
+    };
+
+    let body_str = match read_body(body).await {
+        Ok(mut bytes) => {
+            let mut data = vec![0; bytes.remaining()];
+            bytes.copy_to_slice(&mut data);
+            parse_fn(data)
+        }
+        Err(err) => return Err(err),
+    };
+
+    let Some(body_str) = body_str else {
+        todo!("todo handle error: invalid body")
+    };
+
+    Ok(body_str)
+}
+
+
+pub async fn parse_body(
+    content_type: &MediaType<'_>,
+    body: axum::body::Body,
+) -> Result<Value<'static>, axum::response::Response> {
+    const JSON: MediaType<'_> = MediaType::new(mediatype::names::APPLICATION, mediatype::names::JSON);
+    const FORM_URL_ENCODED: MediaType<'_> = MediaType::new(
+        mediatype::names::APPLICATION,
+        mediatype::Name::new_unchecked("x-www-form-urlencoded"),
+    );
+    const TEXT: MediaType<'_> = MediaType::new(mediatype::names::TEXT, mediatype::names::PLAIN);
+    const MULTIPART: MediaType<'_> = MediaType::new(mediatype::names::MULTIPART, mediatype::names::FORM_DATA);
+
+    let essence = content_type.essence();
+    if essence == JSON {
+        match serde_json::from_str(&parse_body_string(content_type, body).await?) {
+            Ok(ObjectOwned(value)) => Ok(Value::Object(value)),
+            Err(err) => todo!("todo handle error: {:?}", err),
+        }
+    } else if essence == FORM_URL_ENCODED {
+        let body_str = parse_body_string(content_type, body).await?;
+        match serde_urlencoded::from_str(&body_str) {
+            Ok(ObjectOwned(value)) => Ok(Value::Object(value)),
+            Err(err) => todo!("todo handle error: {:?}", err),
+        }
+    } else if essence == TEXT {
+        let body_str = parse_body_string(content_type, body).await?;
+        Ok(Value::String(body_str.into()))
+    } else if essence == MULTIPART {
+        let Some(boundary) = content_type.params().find(|(k, _)| k == "boundary").map(|(_, v)| v.as_str()) else {
+            todo!("todo handle error: missing boundary")
+        };
+
+        let mut multipart = multer::Multipart::with_constraints(body.into_data_stream(), boundary, Constraints::new());
+        let mut form = Vec::new();
+        while let Some(field) = multipart.next_field().await.transpose() {
+            let field = match field {
+                Ok(field) => field,
+                Err(err) => todo!("todo handle error: {:?}", err),
+            };
+
+            let Some(name) = field.name().map(|s| s.to_owned()) else {
+                todo!("todo handle error: missing name")
+            };
+
+            let value = match field.bytes().await {
+                Ok(value) => value,
+                Err(err) => todo!("todo handle error: {:?}", err),
+            };
+            form.push((name, value));
+        }
+
+        let form = match multipart::parse_form_fields(form) {
+            Ok(form) => form,
+            Err(err) => todo!("todo handle error: {:?}", err),
+        };
+
+        Ok(Value::Object(form))
+    } else {
+        let mut body_bytes = read_body(body).await?;
+        Ok(Value::BytesOwned(body_bytes.copy_to_bytes(body_bytes.remaining())))
+    }
+}
+
+mod multipart {
+    use bytes::Bytes;
+
+    use crate::value::{Object, Value};
+
+    fn parse_key(key: &str) -> Vec<String> {
+        let mut parts = Vec::new();
+        let mut current = String::new();
+        let mut chars = key.chars().peekable();
+
+        while let Some(c) = chars.next() {
+            match c {
+                '[' => {
+                    if !current.is_empty() {
+                        parts.push(current.clone());
+                        current.clear();
+                    }
+                    while let Some(&next) = chars.peek() {
+                        chars.next(); // consume
+                        if next == ']' {
+                            break;
+                        } else {
+                            current.push(next);
+                        }
+                    }
+                    parts.push(current.clone());
+                    current.clear();
+                }
+                _ => current.push(c),
+            }
+        }
+
+        if !current.is_empty() {
+            parts.push(current);
+        }
+
+        parts
+    }
+
+    fn insert_path(root: &mut Value<'static>, path: Vec<String>, value: Bytes) -> Result<(), &'static str> {
+        let mut current = root;
+        let length = path.len();
+
+        for (i, key) in path.into_iter().enumerate() {
+            let is_last = i == length - 1;
+
+            match current {
+                Value::Object(map) => {
+                    if key.is_empty() {
+                        return Err("empty key in object");
+                    }
+                    if is_last {
+                        map.insert(key.into(), Value::BytesOwned(value));
+                        return Ok(());
+                    }
+
+                    current = map.entry(key.into()).or_insert_with(|| Value::Object(Object::new()));
+                }
+                Value::Array(arr) => {
+                    if key.is_empty() {
+                        if is_last {
+                            arr.push(Value::BytesOwned(value));
+                            return Ok(());
+                        } else {
+                            arr.push(Value::Object(Object::new()));
+                            current = arr.last_mut().unwrap();
+                        }
+                    } else if let Ok(index) = key.parse::<usize>() {
+                        if arr.len() <= index {
+                            arr.resize_with(index + 1, || Value::Null);
+                        }
+
+                        if is_last {
+                            arr[index] = Value::BytesOwned(value);
+                            return Ok(());
+                        } else {
+                            if matches!(arr[index], Value::Null) {
+                                arr[index] = Value::Object(Object::new());
+                            }
+                            current = &mut arr[index];
+                        }
+                    } else {
+                        return Err("invalid array key");
+                    }
+                }
+                _ => return Err("type conflict during insert"),
             }
 
-            (
-                status,
-                axum::Json(ErrorResponse {
-                    message: err.to_string(),
-                }),
-            )
-                .into_response()
+            // Convert from string to object/array if needed
+            if !is_last && matches!(current, Value::Null) {
+                *current = Value::Object(Object::new());
+            }
         }
+
+        Ok(())
+    }
+
+    pub fn parse_form_fields(fields: Vec<(String, Bytes)>) -> Result<Object<'static>, &'static str> {
+        let mut root = Value::Object(Object::new());
+
+        for (key, value) in fields {
+            insert_path(&mut root, parse_key(&key), value)?;
+        }
+
+        Ok(match root {
+            Value::Object(object) => object,
+            _ => unreachable!(),
+        })
     }
 }

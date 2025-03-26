@@ -170,18 +170,11 @@ impl PrimitiveKind {
             prost_reflect::Kind::Bool => Some(PrimitiveKind::Bool),
             prost_reflect::Kind::String => Some(PrimitiveKind::String),
             prost_reflect::Kind::Bytes => Some(PrimitiveKind::Bytes),
-            _ => None,
+            prost_reflect::Kind::Message(_) => None,
+            prost_reflect::Kind::Enum(_) => None,
         }
     }
 }
-
-// #[derive(Debug, Clone)]
-// pub enum WellKnown {
-//     Raw(WellKnownType),
-//     Option(Box<WellKnown>),
-//     List(Box<WellKnown>),
-//     Map(PrimitiveKind, Box<WellKnown>),
-// }
 
 impl FieldKind {
     pub fn strip_option(&self) -> &Self {
@@ -244,14 +237,14 @@ impl FieldKind {
         }
     }
 
-    pub fn inner(&self) -> Option<&FieldKind> {
+    pub fn inner(&self) -> &FieldKind {
         let mut this = self;
         loop {
             this = match this {
                 FieldKind::List(kind) => kind,
                 FieldKind::Map(_, value) => value,
                 FieldKind::Optional(kind) => kind,
-                _ => return Some(this),
+                _ => return this,
             }
         }
     }
@@ -263,14 +256,18 @@ pub enum WellKnownType {
     Timestamp,
     // Duration (3.0000s)
     Duration,
-    // Struct (map<string, any>)
+    // Struct (map<string, Value>)
     Struct,
-    // Value (any)
+    // Value (untyped)
     Value,
     // Empty (no fields)
     Empty,
-    // List (repeated any)
+    // List (repeated Value)
     List,
+    // Any (strict typed)
+    Any,
+    // Primitive (strict typed)
+    Primitive(PrimitiveKind),
 }
 
 impl WellKnownType {
@@ -282,6 +279,16 @@ impl WellKnownType {
             WellKnownType::Value => "google.protobuf.Value",
             WellKnownType::Empty => "google.protobuf.Empty",
             WellKnownType::List => "google.protobuf.ListValue",
+            WellKnownType::Any => "google.protobuf.Any",
+            WellKnownType::Primitive(PrimitiveKind::Bool) => "google.protobuf.BoolValue",
+            WellKnownType::Primitive(PrimitiveKind::I32) => "google.protobuf.Int32Value",
+            WellKnownType::Primitive(PrimitiveKind::I64) => "google.protobuf.Int64Value",
+            WellKnownType::Primitive(PrimitiveKind::U32) => "google.protobuf.UInt32Value",
+            WellKnownType::Primitive(PrimitiveKind::U64) => "google.protobuf.UInt64Value",
+            WellKnownType::Primitive(PrimitiveKind::F32) => "google.protobuf.FloatValue",
+            WellKnownType::Primitive(PrimitiveKind::F64) => "google.protobuf.DoubleValue",
+            WellKnownType::Primitive(PrimitiveKind::String) => "google.protobuf.StringValue",
+            WellKnownType::Primitive(PrimitiveKind::Bytes) => "google.protobuf.BytesValue",
         }
     }
 
@@ -293,6 +300,16 @@ impl WellKnownType {
             "google.protobuf.Value" => Some(WellKnownType::Value),
             "google.protobuf.Empty" => Some(WellKnownType::Empty),
             "google.protobuf.ListValue" => Some(WellKnownType::List),
+            "google.protobuf.Any" => Some(WellKnownType::Any),
+            "google.protobuf.BoolValue" => Some(WellKnownType::Primitive(PrimitiveKind::Bool)),
+            "google.protobuf.Int32Value" => Some(WellKnownType::Primitive(PrimitiveKind::I32)),
+            "google.protobuf.Int64Value" => Some(WellKnownType::Primitive(PrimitiveKind::I64)),
+            "google.protobuf.UInt32Value" => Some(WellKnownType::Primitive(PrimitiveKind::U32)),
+            "google.protobuf.UInt64Value" => Some(WellKnownType::Primitive(PrimitiveKind::U64)),
+            "google.protobuf.FloatValue" => Some(WellKnownType::Primitive(PrimitiveKind::F32)),
+            "google.protobuf.DoubleValue" => Some(WellKnownType::Primitive(PrimitiveKind::F64)),
+            "google.protobuf.StringValue" => Some(WellKnownType::Primitive(PrimitiveKind::String)),
+            "google.protobuf.BytesValue" => Some(WellKnownType::Primitive(PrimitiveKind::Bytes)),
             _ => None,
         }
     }
@@ -305,6 +322,16 @@ impl WellKnownType {
             WellKnownType::Value => "Value",
             WellKnownType::Empty => "Empty",
             WellKnownType::List => "List",
+            WellKnownType::Any => "Any",
+            WellKnownType::Primitive(PrimitiveKind::Bool) => "bool",
+            WellKnownType::Primitive(PrimitiveKind::I32) => "i32",
+            WellKnownType::Primitive(PrimitiveKind::I64) => "i64",
+            WellKnownType::Primitive(PrimitiveKind::U32) => "u32",
+            WellKnownType::Primitive(PrimitiveKind::U64) => "u64",
+            WellKnownType::Primitive(PrimitiveKind::F32) => "f32",
+            WellKnownType::Primitive(PrimitiveKind::F64) => "f64",
+            WellKnownType::Primitive(PrimitiveKind::String) => "String",
+            WellKnownType::Primitive(PrimitiveKind::Bytes) => "BytesVecU8",
         }
     }
 }
@@ -374,17 +401,25 @@ pub struct ServiceOpts {
     pub methods: BTreeMap<String, MethodOpts>,
 }
 
-#[derive(Default, Debug)]
+#[derive(Debug, Clone)]
+pub enum MethodIo {
+    Message(String),
+    WellKnown(WellKnownType),
+}
+
+#[derive(Debug)]
 pub struct MethodOpts {
     pub opts: Vec<tinc_pb::HttpEndpointOptions>,
-    pub input: String,
-    pub output: String,
+    pub input: MethodIo,
+    pub output: MethodIo,
 }
 
 #[derive(Default, Debug)]
 pub struct OneofOpts {
     pub opts: tinc_pb::SchemaOneofOptions,
 }
+
+const ANY_NOT_SUPPORTED_ERROR: &str = "uses `google.protobuf.Any`, this is currently not supported.";
 
 impl Extensions {
     pub fn new(pool: &DescriptorPool) -> Self {
@@ -417,17 +452,17 @@ impl Extensions {
     pub fn process(&mut self, pool: &DescriptorPool) -> anyhow::Result<()> {
         for service in pool.services() {
             self.process_service(pool, &service, false)
-                .with_context(|| service.full_name().to_owned())?;
+                .with_context(|| format!("service {}", service.full_name()))?;
         }
 
         for message in pool.all_messages() {
             self.process_message(pool, &message, false)
-                .with_context(|| message.full_name().to_owned())?;
+                .with_context(|| format!("message {}", message.full_name()))?;
         }
 
         for enum_ in pool.all_enums() {
             self.process_enum(pool, &enum_, false)
-                .with_context(|| enum_.full_name().to_owned())?;
+                .with_context(|| format!("enum {}", enum_.full_name()))?;
         }
 
         Ok(())
@@ -456,7 +491,7 @@ impl Extensions {
             let opts = self
                 .http_endpoint
                 .decode_all(&method)
-                .with_context(|| method.name().to_owned())?;
+                .with_context(|| format!("method {}", method.full_name()))?;
 
             insert = insert || !opts.is_empty();
 
@@ -464,20 +499,44 @@ impl Extensions {
                 let input = method.input();
                 let output = method.output();
 
+                let method_input = WellKnownType::from_proto_name(input.full_name())
+                    .map(MethodIo::WellKnown)
+                    .unwrap_or_else(|| MethodIo::Message(input.full_name().to_owned()));
+                let method_output = WellKnownType::from_proto_name(output.full_name())
+                    .map(MethodIo::WellKnown)
+                    .unwrap_or_else(|| MethodIo::Message(output.full_name().to_owned()));
+
+                anyhow::ensure!(
+                    !matches!(method_input, MethodIo::WellKnown(WellKnownType::Any)),
+                    "method {} {ANY_NOT_SUPPORTED_ERROR}",
+                    method.full_name()
+                );
+                anyhow::ensure!(
+                    !matches!(method_output, MethodIo::WellKnown(WellKnownType::Any)),
+                    "method {} {ANY_NOT_SUPPORTED_ERROR}",
+                    method.full_name()
+                );
+
+                if matches!(method_input, MethodIo::Message(_)) {
+                    self.process_message(pool, &input, true)
+                        .with_context(|| format!("message {}", input.full_name()))
+                        .with_context(|| format!("method {}", method.full_name()))?;
+                }
+
+                if matches!(method_output, MethodIo::Message(_)) {
+                    self.process_message(pool, &output, true)
+                        .with_context(|| format!("message {}", output.full_name()))
+                        .with_context(|| format!("method {}", method.full_name()))?;
+                }
+
                 service_opts.methods.insert(
                     method.name().to_owned(),
                     MethodOpts {
                         opts,
-                        input: input.full_name().to_owned(),
-                        output: output.full_name().to_owned(),
+                        input: method_input,
+                        output: method_output,
                     },
                 );
-
-                for message in [input, output] {
-                    self.process_message(pool, &message, true)
-                        .with_context(|| method.name().to_owned())
-                        .with_context(|| message.full_name().to_owned())?;
-                }
             }
         }
 
@@ -552,6 +611,9 @@ impl Extensions {
             });
 
             let kind = FieldKind::from_field(&field).with_context(|| field.full_name().to_owned())?;
+            if matches!(kind.inner(), FieldKind::WellKnown(WellKnownType::Any)) {
+                anyhow::bail!("field {} {ANY_NOT_SUPPORTED_ERROR}", field.full_name());
+            }
 
             self.messages.get_mut(message.full_name()).unwrap().fields.insert(
                 field.name().to_owned(),
@@ -572,12 +634,12 @@ impl Extensions {
 
             if let Some(name) = kind.message_name() {
                 self.process_message(pool, &pool.get_message_by_name(name).unwrap(), true)
-                    .with_context(|| field.full_name().to_owned())
-                    .with_context(|| name.to_owned())?;
+                    .with_context(|| format!("message {}", name))
+                    .with_context(|| format!("field {}", field.full_name()))?;
             } else if let Some(name) = kind.enum_name() {
                 self.process_enum(pool, &pool.get_enum_by_name(name).unwrap(), true)
-                    .with_context(|| field.full_name().to_owned())
-                    .with_context(|| name.to_owned())?;
+                    .with_context(|| format!("field {}", field.full_name()))
+                    .with_context(|| format!("enum {}", name))?;
             }
         }
 

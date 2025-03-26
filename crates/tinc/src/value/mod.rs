@@ -1,11 +1,14 @@
 use std::borrow::Cow;
+use std::collections::BTreeMap;
 
+use bytes::Bytes;
 use ordered_float::OrderedFloat;
 
 pub mod de;
 pub mod ser;
 
 #[derive(Debug, PartialEq, Eq, Hash)]
+#[repr(transparent)]
 pub struct ValueOwned(pub Value<'static>);
 
 impl std::ops::Deref for ValueOwned {
@@ -30,9 +33,10 @@ impl ValueOwned {
 }
 
 #[derive(Debug, PartialEq, Eq, Hash)]
-pub enum Value<'de> {
-    String(Cow<'de, str>),
-    Bytes(Cow<'de, [u8]>),
+pub enum Value<'a> {
+    String(Cow<'a, str>),
+    Bytes(Cow<'a, [u8]>),
+    BytesOwned(Bytes),
     F64(OrderedFloat<f64>),
     F32(OrderedFloat<f32>),
     U8(u8),
@@ -49,15 +53,17 @@ pub enum Value<'de> {
     Char(char),
     Null,
     Unit,
-    Array(Vec<Value<'de>>),
-    Map(Map<Value<'de>>),
+    Array(Vec<Value<'a>>),
+    Map(Map<Value<'a>>),
+    Object(Object<'a>),
 }
 
 impl Value<'_> {
-    pub fn into_owned(self) -> Value<'static> {
+    pub fn into_static(self) -> Value<'static> {
         match self {
             Self::String(s) => Value::String(Cow::Owned(s.into_owned())),
             Self::Bytes(b) => Value::Bytes(Cow::Owned(b.into_owned())),
+            Self::BytesOwned(b) => Value::BytesOwned(b),
             Self::F64(f) => Value::F64(f),
             Self::F32(f) => Value::F32(f),
             Self::U8(u) => Value::U8(u),
@@ -74,9 +80,14 @@ impl Value<'_> {
             Self::Char(c) => Value::Char(c),
             Self::Null => Value::Null,
             Self::Unit => Value::Unit,
-            Self::Array(a) => Value::Array(a.into_iter().map(|v| v.into_owned()).collect()),
-            Self::Map(m) => Value::Map(m.into_iter().map(|(k, v)| (k.into_owned(), v.into_owned())).collect()),
+            Self::Array(a) => Value::Array(a.into_iter().map(|v| v.into_static()).collect()),
+            Self::Map(m) => Value::Map(m.into_iter().map(|(k, v)| (k.into_static(), v.into_static())).collect()),
+            Self::Object(o) => Value::Object(o.into_static()),
         }
+    }
+
+    pub fn into_owned(self) -> ValueOwned {
+        ValueOwned(self.into_static())
     }
 }
 
@@ -105,60 +116,69 @@ impl_from_primitive!(F32, f32);
 impl_from_primitive!(F64, f64);
 impl_from_primitive!(Bool, bool);
 impl_from_primitive!(Char, char);
+impl_from_primitive!(String, String);
+impl_from_primitive!(Bytes, Vec<u8>);
 
-impl From<String> for Value<'static> {
+impl<'a> From<&'a str> for Value<'a> {
     #[inline]
-    fn from(value: String) -> Self {
-        Self::String(Cow::Owned(value))
+    fn from(value: &'a str) -> Self {
+        Value::String(Cow::Borrowed(value))
     }
 }
 
-impl From<Vec<u8>> for Value<'static> {
+impl<'a> From<&'a [u8]> for Value<'a> {
     #[inline]
-    fn from(value: Vec<u8>) -> Self {
-        Self::Bytes(Cow::Owned(value))
+    fn from(value: &'a [u8]) -> Self {
+        Value::Bytes(Cow::Borrowed(value))
     }
 }
 
-impl<'de> From<&'de str> for Value<'de> {
+impl<'a> From<Vec<Value<'a>>> for Value<'a> {
     #[inline]
-    fn from(value: &'de str) -> Self {
-        Self::String(Cow::Borrowed(value))
+    fn from(value: Vec<Value<'a>>) -> Self {
+        Value::Array(value)
     }
 }
 
-impl<'de> From<&'de [u8]> for Value<'de> {
+impl<'a> From<Map<Value<'a>>> for Value<'a> {
     #[inline]
-    fn from(value: &'de [u8]) -> Self {
-        Self::Bytes(Cow::Borrowed(value))
+    fn from(value: Map<Value<'a>>) -> Self {
+        Value::Map(value)
     }
 }
 
-impl<'de> From<Vec<Value<'de>>> for Value<'de> {
+impl<'a> From<Object<'a>> for Value<'a> {
     #[inline]
-    fn from(value: Vec<Value<'de>>) -> Self {
-        Self::Array(value)
+    fn from(value: Object<'a>) -> Self {
+        Value::Map(value.0.into_iter().map(|(k, v)| (k.into(), v)).collect())
     }
 }
 
-impl<'de> From<Map<Value<'de>>> for Value<'de> {
+impl From<ObjectOwned> for Value<'static> {
     #[inline]
-    fn from(value: Map<Value<'de>>) -> Self {
-        Self::Map(value)
+    fn from(value: ObjectOwned) -> Self {
+        Value::Map(value.0.0.into_iter().map(|(k, v)| (k.into(), v)).collect())
     }
 }
 
-impl<'de> From<Object<'de>> for Value<'de> {
+impl<'a> From<Cow<'a, str>> for Value<'a> {
     #[inline]
-    fn from(value: Object<'de>) -> Self {
-        Self::Map(value.into_iter().map(|(k, v)| (k.into(), v)).collect())
+    fn from(value: Cow<'a, str>) -> Self {
+        Value::String(value)
     }
 }
 
-impl<'de> From<Cow<'de, str>> for Value<'de> {
+impl From<ValueOwned> for Value<'static> {
     #[inline]
-    fn from(value: Cow<'de, str>) -> Self {
-        Self::String(value)
+    fn from(value: ValueOwned) -> Self {
+        value.into_inner()
+    }
+}
+
+impl From<Value<'_>> for ValueOwned {
+    #[inline]
+    fn from(value: Value<'_>) -> Self {
+        value.into_owned()
     }
 }
 
@@ -174,8 +194,9 @@ impl Value<'_> {
         match self {
             Value::String(s) => serde::de::Unexpected::Str(s),
             Value::Bytes(b) => serde::de::Unexpected::Bytes(b),
+            Value::BytesOwned(b) => serde::de::Unexpected::Bytes(b),
             Value::Array(_) => serde::de::Unexpected::Seq,
-            Value::Map(_) => serde::de::Unexpected::Map,
+            Value::Map(_) | Value::Object(_) => serde::de::Unexpected::Map,
             Value::Unit => serde::de::Unexpected::Unit,
             Value::Null => serde::de::Unexpected::Option,
             Value::F64(OrderedFloat(f)) => serde::de::Unexpected::Float(*f as _),
@@ -205,11 +226,12 @@ pub enum ValueError {
 impl serde::de::Error for ValueError {
     #[inline]
     fn custom<T: std::fmt::Display>(msg: T) -> Self {
-        Self::Custom(msg.to_string())
+        ValueError::Custom(msg.to_string())
     }
 }
 
 #[derive(Debug, PartialEq, Eq, Hash)]
+#[repr(transparent)]
 pub struct Map<K, V = K>(pub Vec<(K, V)>);
 
 impl<K, V> Default for Map<K, V> {
@@ -249,6 +271,21 @@ impl<K, V> Map<K, V> {
     pub fn iter(&self) -> std::slice::Iter<'_, (K, V)> {
         self.0.iter()
     }
+
+    #[inline]
+    pub fn reserve(&mut self, additional: usize) {
+        self.0.reserve(additional)
+    }
+
+    #[inline]
+    pub fn capacity(&self) -> usize {
+        self.0.capacity()
+    }
+
+    #[inline]
+    pub fn with_entries(entries: Vec<(K, V)>) -> Self {
+        Self(entries)
+    }
 }
 
 impl<K, V> IntoIterator for Map<K, V> {
@@ -274,6 +311,10 @@ impl<'a, K, V> IntoIterator for &'a Map<K, V> {
 impl<K, V> Extend<(K, V)> for Map<K, V> {
     #[inline]
     fn extend<T: IntoIterator<Item = (K, V)>>(&mut self, iter: T) {
+        let iter = iter.into_iter();
+        if let (_, Some(upper)) = iter.size_hint() {
+            self.reserve(upper);
+        }
         self.0.extend(iter);
     }
 }
@@ -285,49 +326,50 @@ impl<K, V> FromIterator<(K, V)> for Map<K, V> {
     }
 }
 
-#[derive(Debug)]
-pub struct Object<'de>(pub Map<Cow<'de, str>, Value<'de>>);
+#[derive(Debug, PartialEq, Eq, Hash)]
+#[repr(transparent)]
+pub struct Object<'ir>(pub BTreeMap<Cow<'ir, str>, Value<'ir>>);
 
-#[derive(Debug)]
+#[derive(Debug, PartialEq, Eq, Hash)]
+#[repr(transparent)]
 pub struct ObjectOwned(pub Object<'static>);
 
-impl<'de> IntoIterator for Object<'de> {
-    type IntoIter = std::vec::IntoIter<(Cow<'de, str>, Value<'de>)>;
-    type Item = (Cow<'de, str>, Value<'de>);
-
+impl<'ir> Object<'ir> {
     #[inline]
-    fn into_iter(self) -> Self::IntoIter {
-        self.0.into_iter()
+    pub fn new() -> Self {
+        Self(BTreeMap::new())
     }
-}
-
-impl IntoIterator for ObjectOwned {
-    type IntoIter = std::vec::IntoIter<(Cow<'static, str>, Value<'static>)>;
-    type Item = (Cow<'static, str>, Value<'static>);
 
     #[inline]
-    fn into_iter(self) -> Self::IntoIter {
-        self.0.into_iter()
+    pub fn merge(&mut self, iter: impl IntoIterator<Item = (Cow<'ir, str>, Value<'ir>)>) {
+        self.0.extend(iter);
     }
-}
-
-impl<'a, 'de> IntoIterator for &'a Object<'de> {
-    type IntoIter = std::slice::Iter<'a, (Cow<'de, str>, Value<'de>)>;
-    type Item = &'a (Cow<'de, str>, Value<'de>);
 
     #[inline]
-    fn into_iter(self) -> Self::IntoIter {
+    pub fn insert(&mut self, key: Cow<'ir, str>, value: Value<'ir>) {
+        self.0.insert(key, value);
+    }
+
+    #[inline]
+    pub fn into_owned(self) -> ObjectOwned {
+        ObjectOwned(self.into_static())
+    }
+
+    pub fn into_static(self) -> Object<'static> {
+        Object(
+            self.0
+                .into_iter()
+                .map(|(k, v)| (Cow::Owned(k.into_owned()), v.into_static()))
+                .collect(),
+        )
+    }
+
+    pub fn entry(&mut self, key: Cow<'ir, str>) -> std::collections::btree_map::Entry<'_, Cow<'ir, str>, Value<'ir>> {
+        self.0.entry(key)
+    }
+
+    pub fn iter(&self) -> std::collections::btree_map::Iter<'_, Cow<'ir, str>, Value<'ir>> {
         self.0.iter()
-    }
-}
-
-impl<'a> IntoIterator for &'a ObjectOwned {
-    type IntoIter = std::slice::Iter<'a, (Cow<'static, str>, Value<'static>)>;
-    type Item = &'a (Cow<'static, str>, Value<'static>);
-
-    #[inline]
-    fn into_iter(self) -> Self::IntoIter {
-        self.0.0.iter()
     }
 }
 
@@ -338,27 +380,23 @@ impl Default for Object<'_> {
     }
 }
 
-impl<'de> Object<'de> {
-    #[inline]
-    pub fn new() -> Self {
-        Self(Map::new())
-    }
+impl<'ir> IntoIterator for Object<'ir> {
+    type IntoIter = std::collections::btree_map::IntoIter<Cow<'ir, str>, Value<'ir>>;
+    type Item = (Cow<'ir, str>, Value<'ir>);
 
     #[inline]
-    pub fn merge(&mut self, iter: impl IntoIterator<Item = (Cow<'de, str>, Value<'de>)>) {
-        self.0.extend(iter);
+    fn into_iter(self) -> Self::IntoIter {
+        self.0.into_iter()
     }
 }
 
-impl Object<'_> {
+impl<'a, 'ir> IntoIterator for &'a Object<'ir> {
+    type IntoIter = std::collections::btree_map::Iter<'a, Cow<'ir, str>, Value<'ir>>;
+    type Item = (&'a Cow<'ir, str>, &'a Value<'ir>);
+
     #[inline]
-    pub fn into_owned(self) -> ObjectOwned {
-        ObjectOwned(Object(
-            self.0
-                .into_iter()
-                .map(|(k, v)| (Cow::Owned(k.into_owned()), v.into_owned()))
-                .collect(),
-        ))
+    fn into_iter(self) -> Self::IntoIter {
+        self.0.iter()
     }
 }
 
@@ -372,13 +410,35 @@ impl ObjectOwned {
 impl std::ops::Deref for ObjectOwned {
     type Target = Object<'static>;
 
+    #[inline]
     fn deref(&self) -> &Self::Target {
         &self.0
     }
 }
 
 impl std::ops::DerefMut for ObjectOwned {
+    #[inline]
     fn deref_mut(&mut self) -> &mut Self::Target {
         &mut self.0
+    }
+}
+
+impl IntoIterator for ObjectOwned {
+    type IntoIter = <Object<'static> as IntoIterator>::IntoIter;
+    type Item = <Object<'static> as IntoIterator>::Item;
+
+    #[inline]
+    fn into_iter(self) -> Self::IntoIter {
+        self.0.into_iter()
+    }
+}
+
+impl<'a> IntoIterator for &'a ObjectOwned {
+    type IntoIter = <&'a Object<'static> as IntoIterator>::IntoIter;
+    type Item = <&'a Object<'static> as IntoIterator>::Item;
+
+    #[inline]
+    fn into_iter(self) -> Self::IntoIter {
+        self.0.iter()
     }
 }

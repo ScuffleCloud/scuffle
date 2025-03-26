@@ -955,7 +955,8 @@ async fn parse_body_string(
             let ptr = bytes.as_ptr().cast::<u16>();
             let len = bytes.len() / 2;
             unsafe { std::slice::from_raw_parts(ptr, len) }
-        }).ok()
+        })
+        .ok()
     }
 
     let parse_fn = if charset.eq_ignore_ascii_case("utf-8") || charset.eq_ignore_ascii_case("us-ascii") {
@@ -981,7 +982,6 @@ async fn parse_body_string(
 
     Ok(body_str)
 }
-
 
 pub async fn parse_body(
     content_type: &MediaType<'_>,

@@ -23,24 +23,25 @@ impl<T> Extension<T> {
         T: ProstExtension,
     {
         let mut messages = self.decode_all(incoming)?;
-        if messages.is_empty() {
-            Ok(None)
+        Ok(if messages.is_empty() {
+            None
         } else {
-            Ok(Some(messages.swap_remove(0)))
-        }
+            Some(messages.swap_remove(0))
+        })
     }
 
     fn decode_all(&self, incoming: &T::Incoming) -> anyhow::Result<Vec<T>>
     where
         T: ProstExtension,
     {
-        let Some(extension) = &self.descriptor else {
-            return Ok(Vec::new());
+        let extension = match &self.descriptor {
+            Some(ext) => ext,
+            None => return Ok(Vec::new()),
         };
 
-        let descriptor = T::get_options(incoming);
-        let Some(descriptor) = descriptor else {
-            return Ok(Vec::new());
+        let descriptor = match T::get_options(incoming) {
+            Some(desc) => desc,
+            None => return Ok(Vec::new()),
         };
 
         let message = descriptor.get_extension(extension);
@@ -50,7 +51,6 @@ impl<T> Extension<T> {
                     let message = message
                         .transcode_to::<T>()
                         .with_context(|| format!("{} is not a valid {}", self.name, std::any::type_name::<T>()))?;
-
                     Ok(vec![message])
                 } else {
                     Ok(Vec::new())
@@ -60,7 +60,7 @@ impl<T> Extension<T> {
                 .iter()
                 .map(|value| {
                     let message = value.as_message().context("expected a message")?;
-                    Ok(message.transcode_to::<T>()?)
+                    message.transcode_to::<T>().context("transcoding failed")
                 })
                 .collect(),
             _ => anyhow::bail!("expected a message or list of messages"),
@@ -70,7 +70,6 @@ impl<T> Extension<T> {
 
 trait ProstExtension: prost::Message + Default {
     type Incoming;
-
     fn get_options(incoming: &Self::Incoming) -> Option<prost_reflect::DynamicMessage>;
 }
 
@@ -174,22 +173,41 @@ impl PrimitiveKind {
             prost_reflect::Kind::Enum(_) => None,
         }
     }
+
+    pub fn path(&self) -> &'static str {
+        match self {
+            PrimitiveKind::Bool => "::core::primitive::bool",
+            PrimitiveKind::I32 => "::core::primitive::i32",
+            PrimitiveKind::I64 => "::core::primitive::i64",
+            PrimitiveKind::U32 => "::core::primitive::u32",
+            PrimitiveKind::U64 => "::core::primitive::u64",
+            PrimitiveKind::F32 => "::core::primitive::f32",
+            PrimitiveKind::F64 => "::core::primitive::f64",
+            PrimitiveKind::String => "::std::string::String",
+            PrimitiveKind::Bytes => "::tinc::helpers::well_known::BytesVecU8",
+        }
+    }
 }
 
 impl FieldKind {
     pub fn strip_option(&self) -> &Self {
-        match self {
-            FieldKind::Optional(kind) => kind,
-            _ => self,
+        let mut current = self;
+        loop {
+            current = match current {
+                FieldKind::List(inner) => inner,
+                FieldKind::Map(_, inner) => inner,
+                FieldKind::Optional(inner) => inner,
+                _ => return current,
+            }
         }
     }
 
     pub fn enum_name(&self) -> Option<&str> {
         match self {
             FieldKind::Enum(name) => Some(name),
-            FieldKind::List(kind) => kind.enum_name(),
+            FieldKind::List(inner) => inner.enum_name(),
             FieldKind::Map(_, value) => value.enum_name(),
-            FieldKind::Optional(kind) => kind.enum_name(),
+            FieldKind::Optional(inner) => inner.enum_name(),
             _ => None,
         }
     }
@@ -197,9 +215,9 @@ impl FieldKind {
     pub fn message_name(&self) -> Option<&str> {
         match self {
             FieldKind::Message(name) => Some(name),
-            FieldKind::List(kind) => kind.message_name(),
+            FieldKind::List(inner) => inner.message_name(),
             FieldKind::Map(_, value) => value.message_name(),
-            FieldKind::Optional(kind) => kind.message_name(),
+            FieldKind::Optional(inner) => inner.message_name(),
             _ => None,
         }
     }
@@ -212,17 +230,19 @@ impl FieldKind {
                 let value = Self::from_field(&message.map_entry_value_field()).context("map value")?;
                 FieldKind::Map(key, Box::new(value))
             }
-            prost_reflect::Kind::Message(message) => match WellKnownType::from_proto_name(message.full_name()) {
-                Some(well_known) => FieldKind::WellKnown(well_known),
-                None if message.full_name().starts_with("google.protobuf.") => {
+            prost_reflect::Kind::Message(message) => {
+                if let Some(well_known) = WellKnownType::from_proto_name(message.full_name()) {
+                    FieldKind::WellKnown(well_known)
+                } else if message.full_name().starts_with("google.protobuf.") {
                     anyhow::bail!("well-known type not supported: {}", message.full_name());
+                } else {
+                    FieldKind::Message(message.full_name().to_owned())
                 }
-                _ => FieldKind::Message(message.full_name().to_owned()),
-            },
+            }
             prost_reflect::Kind::Enum(enum_) => FieldKind::Enum(enum_.full_name().to_owned()),
             _ => {
-                let kind = PrimitiveKind::from_field(field).context("unknown field kind")?;
-                FieldKind::Primitive(kind)
+                let primitive = PrimitiveKind::from_field(field).context("unknown field kind")?;
+                FieldKind::Primitive(primitive)
             }
         };
 
@@ -238,13 +258,13 @@ impl FieldKind {
     }
 
     pub fn inner(&self) -> &FieldKind {
-        let mut this = self;
+        let mut current = self;
         loop {
-            this = match this {
-                FieldKind::List(kind) => kind,
-                FieldKind::Map(_, value) => value,
-                FieldKind::Optional(kind) => kind,
-                _ => return this,
+            current = match current {
+                FieldKind::List(inner) => inner,
+                FieldKind::Map(_, inner) => inner,
+                FieldKind::Optional(inner) => inner,
+                _ => return current,
             }
         }
     }
@@ -252,21 +272,13 @@ impl FieldKind {
 
 #[derive(Debug, Clone, Copy)]
 pub enum WellKnownType {
-    // RFC 3339
     Timestamp,
-    // Duration (3.0000s)
     Duration,
-    // Struct (map<string, Value>)
     Struct,
-    // Value (untyped)
     Value,
-    // Empty (no fields)
     Empty,
-    // List (repeated Value)
     List,
-    // Any (strict typed)
     Any,
-    // Primitive (strict typed)
     Primitive(PrimitiveKind),
 }
 
@@ -314,39 +326,31 @@ impl WellKnownType {
         }
     }
 
-    pub fn name(&self) -> &str {
+    pub fn path(&self) -> &'static str {
         match self {
-            WellKnownType::Timestamp => "Timestamp",
-            WellKnownType::Duration => "Duration",
-            WellKnownType::Struct => "Struct",
-            WellKnownType::Value => "Value",
-            WellKnownType::Empty => "Empty",
-            WellKnownType::List => "List",
-            WellKnownType::Any => "Any",
-            WellKnownType::Primitive(PrimitiveKind::Bool) => "bool",
-            WellKnownType::Primitive(PrimitiveKind::I32) => "i32",
-            WellKnownType::Primitive(PrimitiveKind::I64) => "i64",
-            WellKnownType::Primitive(PrimitiveKind::U32) => "u32",
-            WellKnownType::Primitive(PrimitiveKind::U64) => "u64",
-            WellKnownType::Primitive(PrimitiveKind::F32) => "f32",
-            WellKnownType::Primitive(PrimitiveKind::F64) => "f64",
-            WellKnownType::Primitive(PrimitiveKind::String) => "String",
-            WellKnownType::Primitive(PrimitiveKind::Bytes) => "BytesVecU8",
+            WellKnownType::Timestamp => "::tinc::helpers::well_known::Timestamp",
+            WellKnownType::Duration => "::tinc::helpers::well_known::Duration",
+            WellKnownType::Struct => "::tinc::helpers::well_known::Struct",
+            WellKnownType::Value => "::tinc::helpers::well_known::Value",
+            WellKnownType::Empty => "::tinc::helpers::well_known::Empty",
+            WellKnownType::List => "::tinc::helpers::well_known::List",
+            WellKnownType::Any => "::tinc::helpers::well_known::Any",
+            WellKnownType::Primitive(kind) => kind.path(),
         }
     }
 }
 
 pub struct Extensions {
-    // Message extensions
+    // Message extensions.
     schema_message: Extension<tinc_pb::SchemaMessageOptions>,
     schema_field: Extension<tinc_pb::SchemaFieldOptions>,
     schema_oneof: Extension<tinc_pb::SchemaOneofOptions>,
 
-    // Enum extensions
+    // Enum extensions.
     schema_enum: Extension<tinc_pb::SchemaEnumOptions>,
     schema_variant: Extension<tinc_pb::SchemaVariantOptions>,
 
-    // Service extensions
+    // Service extensions.
     http_endpoint: Extension<tinc_pb::HttpEndpointOptions>,
     http_router: Extension<tinc_pb::HttpRouterOptions>,
 
@@ -568,10 +572,11 @@ impl Extensions {
         let oneofs = fields
             .iter()
             .filter(|(field, _)| !field.field_descriptor_proto().proto3_optional())
-            .filter_map(|(field, _)| field.containing_oneof())
-            .map(|oneof| {
-                let opts = self.schema_oneof.decode(&oneof)?;
-                Ok((oneof, opts))
+            .filter_map(|(field, _)| {
+                field.containing_oneof().map(|oneof| {
+                    let opts = self.schema_oneof.decode(&oneof)?;
+                    Ok((oneof, opts))
+                })
             })
             .collect::<anyhow::Result<Vec<_>>>()?;
 

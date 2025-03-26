@@ -88,8 +88,7 @@ impl SemverChecks {
             // 2. "Checking <crate> vX.Y.Z -> vX.Y.Z (no change)"
             let check_re = Regex::new(
                 r"^Checking\s+(?P<crate>[^\s]+)\s+v(?P<curr>\d+\.\d+\.\d+)(?:\s+->\s+v(?P<baseline>\d+\.\d+\.\d+))?\s+\((?P<status>[^)]+)\)"
-            )
-            .context("compiling checking regex")?;
+            ).context("compiling checking regex")?;
 
             // Regex for a summary line that indicates an update is required.
             // Example: "Summary semver requires new major version: 1 major and 0 minor checks failed"
@@ -126,6 +125,8 @@ impl SemverChecks {
                 }
             }
         }
+
+        println!("i survived");
 
         Ok(())
     }

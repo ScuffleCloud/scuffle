@@ -3,6 +3,7 @@ use std::path::PathBuf;
 
 use anyhow::{Context, Result};
 use clap::Parser;
+use regex::Regex;
 
 use crate::utils::{cargo_cmd, metadata};
 
@@ -68,13 +69,83 @@ impl SemverChecks {
             args.push(package);
         }
 
-        let _status = cargo_cmd().args(&args).status().context("running semver-checks")?;
+        let output = cargo_cmd().args(&args).output().context("running semver-checks")?;
+        let stdout = String::from_utf8(output.stdout).context("parsing semver-checks output")?;
 
-        // if !status.success() {
-        // We don't want to fail the build if semver-checks fail.
-        // anyhow::bail!("Semver checks failed for one or more crates");
-        // }
+        // We use two regexes:
+        // 1. One to capture the "Checking" line.
+        //    Example: "Checking scuffle-h264 v0.1.1 -> v0.1.1 (no change)"
+        let check_re = Regex::new(
+            r"^Checking\s+(?P<crate>[^\s]+)\s+v(?P<curr>\d+\.\d+\.\d+)\s+->\s+v(?P<baseline>\d+\.\d+\.\d+)\s+\((?P<status>[^)]+)\)"
+        )
+        .context("compiling checking regex")?;
+
+        // 2. One to capture a summary line that indicates an update is required.
+        //    Example: "Summary semver requires new major version: 1 major and 0 minor checks failed"
+        let summary_re = Regex::new(r"^Summary semver requires new (?P<update_type>major|minor) version:")
+            .context("compiling summary regex")?;
+
+        let mut current_crate: Option<(String, String)> = None;
+
+        for line in stdout.lines() {
+            if let Some(caps) = check_re.captures(line) {
+                let crate_name = caps.name("crate").unwrap().as_str().to_string();
+                let current_version = caps.name("curr").unwrap().as_str().to_string();
+                // Store the current crate info.
+                current_crate = Some((crate_name, current_version));
+            } else if let Some(caps) = summary_re.captures(line) {
+                let update_type = caps.name("update_type").unwrap().as_str();
+
+                if let Some((crate_name, current_version)) = current_crate.take() {
+
+                    let new_version = Self::new_version_number(&current_version, update_type)
+                        .with_context(|| format!("bumping version for crate {crate_name} with update_type {update_type}"))?;
+
+                    println!("⚠️ -> {update_type} update required for `{crate_name}`.");
+                    println!("🛠️ -> Please update the version from {current_version} to {new_version}.");
+                } else {
+                    eprintln!("Semver-checks found an update but no associated crate was found.");
+                }
+            }
+        }
 
         Ok(())
+    }
+
+    /// Bumps the version based on the update type.
+    ///
+    /// For a minor update required, the patch is incremented:
+    ///   vX.Y.Z -> vX.Y.(Z+1)
+    ///
+    /// For a major update required, the minor is incremented:
+    ///   vX.Y.Z -> vX.(Y+1).Z
+    fn new_version_number(version: &str, update_type: &str) -> Result<String> {
+        // Remove leading 'v' if present.
+        let version = version.strip_prefix('v').unwrap_or(version);
+        let mut parts: Vec<u64> = version
+            .split('.')
+            .map(|s| s.parse::<u64>())
+            .collect::<Result<_, _>>()
+            .context("parsing version numbers")?;
+
+        if parts.len() != 3 {
+            anyhow::bail!("expected version format vX.Y.Z, got: {}", version);
+        }
+
+        match update_type {
+            // bump patch version: vX.Y.Z -> vX.Y.(Z+1)
+            "minor" => {
+                parts[2] += 1;
+            }
+            // bump minor version: vX.Y.Z -> vX.(Y+1).Z
+            "major" => {
+                parts[1] += 1;
+            }
+            _ => {
+                anyhow::bail!("Failed to parse update type: {update_type}");
+            }
+        }
+
+        Ok(format!("v{}.{}.{}", parts[0], parts[1], parts[2]))
     }
 }

@@ -8,6 +8,7 @@
     import { browser, dev } from '$app/environment';
     import { PUBLIC_VITE_MSW_ENABLED } from '$env/static/public';
     import { enableMocking } from '$msw/setup';
+    import RightNav from '$components/right-nav/RightNav.svelte';
 
     const requireMsw = dev && browser && PUBLIC_VITE_MSW_ENABLED === 'true';
     let mockingReady = $state(!requireMsw);
@@ -31,7 +32,10 @@
         <main>
             <TopNav />
             <div class="content">
-                {@render children()}
+                <div class="main-content">
+                    {@render children()}
+                </div>
+                <RightNav />
             </div>
         </main>
     </div>
@@ -55,7 +59,14 @@
         box-sizing: border-box;
 
         .content {
+            display: flex;
+            flex-direction: row;
             padding: 2rem;
+
+            .main-content {
+                flex: 1;
+                width: 100%;
+            }
         }
     }
 </style>

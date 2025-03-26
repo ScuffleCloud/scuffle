@@ -5,9 +5,11 @@
     import type { ListResponse, Streamed } from '$lib/types';
     import type { VideoStream } from './types';
 
-    const { streamedData } = $props<{
+    type Props = {
         streamedData: Streamed<ListResponse<VideoStream>>;
-    }>();
+    };
+
+    const { streamedData }: Props = $props();
 
     // Search functionality
     let searchQuery = $state('');

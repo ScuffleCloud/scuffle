@@ -3,13 +3,18 @@
     import VideoStreams from '$components/streams/VideoStreams.svelte';
     import type { ListResponse, Streamed } from '$lib/types';
 
-    const { data: pageData } = $props<{
+    type Props = {
         data: {
             streams: Streamed<ListResponse<VideoStream>>;
         };
-    }>();
+    };
+
+    const { data: pageData }: Props = $props();
 </script>
 
+<svelte:head>
+    <title>Video | Live Streams | Scuffle</title>
+</svelte:head>
 <div class="page-bg">
     <VideoStreams streamedData={pageData.streams} />
 </div>

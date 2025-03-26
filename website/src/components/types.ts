@@ -2,7 +2,8 @@ export type NavItem = {
     id: string;
     label: string;
     path: string;
-    children: NavItemChild[];
+    children?: NavItemChild[];
+    icon?: any;
 };
 
 export type NavItemChild = {

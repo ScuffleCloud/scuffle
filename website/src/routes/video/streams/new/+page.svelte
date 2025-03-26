@@ -3,7 +3,7 @@
 </script>
 
 <svelte:head>
-    <title>Scuffle - Video Streams</title>
+    <title>Video | Live Streams | Scuffle</title>
 </svelte:head>
 <div class="page-bg">
     <NewStream />

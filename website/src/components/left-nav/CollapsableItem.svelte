@@ -1,21 +1,31 @@
 <script lang="ts">
     import type { NavItem } from '$components/types';
-
+    import { page } from '$app/state';
     import { Collapsible } from 'melt/builders';
+    import NavItemHeader from './NavItemHeader.svelte';
 
     const collapsible = new Collapsible();
-    const { navItem } = $props<{ navItem: NavItem }>();
+
+    type Props = {
+        navItem: NavItem;
+    };
+
+    const { navItem }: Props = $props();
 </script>
 
 <div class="root">
-    <div class="header" {...collapsible.trigger}>
-        <span class="label">{navItem.label}</span>
+    <div {...collapsible.trigger}>
+        <NavItemHeader {navItem} isCollapsible />
     </div>
     {#if collapsible.open}
         <div {...collapsible.content}>
             <div class="collapsible">
-                {#each navItem.children as child}
-                    <a class="item" href={child.path}>
+                {#each navItem.children ?? [] as child}
+                    <a
+                        class="item"
+                        href={child.path}
+                        class:active={page.url.pathname.includes(child.path)}
+                    >
                         <span>{child.label}</span>
                     </a>
                 {/each}
@@ -24,37 +34,46 @@
     {/if}
 </div>
 
+<!-- TODO: Fix alignment on some of these components -->
 <style>
     .root {
         width: 100%;
-
-        .header {
+        .collapsible {
             display: flex;
-            align-items: center;
-            justify-content: space-between;
-            cursor: pointer;
-            padding: 0.75rem 0rem;
-            border-radius: 0.25rem;
+            flex-direction: column;
+            gap: 0.25rem;
 
-            .label {
-                font-size: 1rem;
-                line-height: 1.5rem;
+            .item {
+                padding: 0.75rem 2rem;
+                border-radius: 0.25rem;
+                text-decoration: none;
+                color: inherit;
+                display: block;
+
+                span {
+                    font-size: 1rem;
+                }
+
+                &:hover {
+                    background-color: rgba(0, 0, 0, 0.05);
+                }
+
+                &.active {
+                    background-color: #fff3e0;
+                    position: relative;
+
+                    &::before {
+                        content: '';
+                        position: absolute;
+                        left: 1rem;
+                        top: 20%;
+                        bottom: 20%;
+                        width: 3px;
+                        background-color: #f9a825;
+                        border-radius: 1.5px;
+                    }
+                }
             }
-        }
-    }
-
-    .collapsible {
-        display: flex;
-        flex-direction: column;
-        gap: 0.5rem;
-
-        .item {
-            padding: 0.75rem;
-            border-radius: 0.25rem;
-        }
-
-        .item span {
-            font-size: 1rem;
         }
     }
 </style>

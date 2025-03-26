@@ -105,6 +105,7 @@
                 border-bottom: 1px solid #eee;
                 align-items: center;
                 transition: background-color 0.2s;
+                cursor: pointer;
 
                 &:hover {
                     background-color: #fafafa;

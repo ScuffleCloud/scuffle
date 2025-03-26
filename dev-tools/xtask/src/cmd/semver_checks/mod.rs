@@ -71,6 +71,7 @@ impl SemverChecks {
         }
 
         let output = cargo_cmd()
+            .env("CARGO_TERM_COLOR", "never")
             .args(&args)
             .stdout(Stdio::piped())
             .stderr(Stdio::piped())

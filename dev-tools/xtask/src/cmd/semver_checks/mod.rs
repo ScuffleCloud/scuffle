@@ -3,6 +3,7 @@ use std::path::PathBuf;
 
 use anyhow::{Context, Result};
 use clap::Parser;
+use console::Term;
 use regex::Regex;
 
 use crate::utils::{cargo_cmd, metadata};
@@ -70,40 +71,52 @@ impl SemverChecks {
         }
 
         let output = cargo_cmd().args(&args).output().context("running semver-checks")?;
-        let stdout = String::from_utf8(output.stdout).context("parsing semver-checks output")?;
+        let mut semver_output = String::new();
+        semver_output.push_str(&String::from_utf8_lossy(&output.stdout));
+        semver_output.push_str(&String::from_utf8_lossy(&output.stderr));
 
-        // We use two regexes:
-        // 1. One to capture the "Checking" line.
-        //    Example: "Checking scuffle-h264 v0.1.1 -> v0.1.1 (no change)"
-        let check_re = Regex::new(
-            r"^Checking\s+(?P<crate>[^\s]+)\s+v(?P<curr>\d+\.\d+\.\d+)\s+->\s+v(?P<baseline>\d+\.\d+\.\d+)\s+\((?P<status>[^)]+)\)"
-        )
-        .context("compiling checking regex")?;
+        let stdout_term = Term::stdout();
 
-        // 2. One to capture a summary line that indicates an update is required.
-        //    Example: "Summary semver requires new major version: 1 major and 0 minor checks failed"
-        let summary_re = Regex::new(r"^Summary semver requires new (?P<update_type>major|minor) version:")
-            .context("compiling summary regex")?;
+        // If there's no output, warn the user.
+        if semver_output.trim().is_empty() {
+            stdout_term.write_line("No semver-checks output received. The command may have failed.")?;
+        } else {
+            // We use two regexes:
+            // 1. One to capture the "Checking" line.
+            //    Example: "Checking scuffle-h264 v0.1.1 -> v0.1.1 (no change)"
+            let check_re = Regex::new(
+                r"^Checking\s+(?P<crate>[^\s]+)\s+v(?P<curr>\d+\.\d+\.\d+)\s+->\s+v(?P<baseline>\d+\.\d+\.\d+)\s+\((?P<status>[^)]+)\)"
+            )
+            .context("compiling checking regex")?;
 
-        let mut current_crate: Option<(String, String)> = None;
+            // 2. One to capture a summary line that indicates an update is required.
+            //    Example: "Summary semver requires new major version: 1 major and 0 minor checks failed"
+            let summary_re = Regex::new(r"^Summary semver requires new (?P<update_type>major|minor) version:")
+                .context("compiling summary regex")?;
 
-        for line in stdout.lines() {
-            if let Some(caps) = check_re.captures(line) {
-                let crate_name = caps.name("crate").unwrap().as_str().to_string();
-                let current_version = caps.name("curr").unwrap().as_str().to_string();
-                // Store the current crate info.
-                current_crate = Some((crate_name, current_version));
-            } else if let Some(caps) = summary_re.captures(line) {
-                let update_type = caps.name("update_type").unwrap().as_str();
+            let mut current_crate: Option<(String, String)> = None;
 
-                if let Some((crate_name, current_version)) = current_crate.take() {
-                    let new_version = Self::new_version_number(&current_version, update_type)
-                        .with_context(|| format!("bumping version for crate {crate_name} with update_type {update_type}"))?;
+            for line in semver_output.lines() {
+                if let Some(caps) = check_re.captures(line) {
+                    let crate_name = caps.name("crate").unwrap().as_str().to_string();
+                    let current_version = caps.name("curr").unwrap().as_str().to_string();
+                    // Store the current crate info.
+                    current_crate = Some((crate_name, current_version));
+                } else if let Some(caps) = summary_re.captures(line) {
+                    let update_type = caps.name("update_type").unwrap().as_str();
 
-                    println!("⚠️ -> {update_type} update required for `{crate_name}`.");
-                    println!("🛠️ -> Please update the version from {current_version} to {new_version}.");
-                } else {
-                    eprintln!("Semver-checks found an update but no associated crate was found.");
+                    if let Some((crate_name, current_version)) = current_crate.take() {
+                        let new_version = Self::new_version_number(&current_version, update_type).with_context(|| {
+                            format!("bumping version for crate {crate_name} with update_type {update_type}")
+                        })?;
+
+                        stdout_term.write_line(&format!("⚠️ -> {update_type} update required for `{crate_name}`."))?;
+                        stdout_term.write_line(&format!(
+                            "🛠️ -> Please update the version from {current_version} to {new_version}."
+                        ))?;
+                    } else {
+                        stdout_term.write_line("Semver-checks found an update but no associated crate was found.")?;
+                    }
                 }
             }
         }

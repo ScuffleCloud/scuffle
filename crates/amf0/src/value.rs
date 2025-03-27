@@ -177,7 +177,7 @@ impl<'de> serde::de::Deserialize<'de> for Amf0Value {
 }
 
 #[cfg(test)]
-#[cfg_attr(all(coverage_nightly, test), instrument)]
+#[cfg_attr(all(test, coverage_nightly), coverage(off))]
 mod tests {
     use super::Amf0Value;
     use crate::{Amf0Marker, from_bytes};

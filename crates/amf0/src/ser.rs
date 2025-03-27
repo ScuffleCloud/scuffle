@@ -652,7 +652,6 @@ mod tests {
         #[rustfmt::skip]
         let mut expected = vec![
             Amf0Marker::Object as u8,
-            Amf0Marker::String as u8,
             0, 1, // length
             b'a',
             Amf0Marker::Number as u8,
@@ -660,7 +659,6 @@ mod tests {
         expected.extend(&1.0f64.to_be_bytes());
         #[rustfmt::skip]
         expected.extend_from_slice(&[
-            Amf0Marker::String as u8,
             0, 1, // length
             b'b',
             Amf0Marker::String as u8,

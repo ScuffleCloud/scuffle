@@ -1,16 +1,26 @@
+//! AMF0 value types.
+
 use std::collections::BTreeMap;
 
 use serde::ser::{SerializeMap, SerializeSeq};
 
+/// Represents any AMF0 object.
 pub type Amf0Object = BTreeMap<String, Amf0Value>;
 
+/// Represents any AMF0 value.
 #[derive(Debug, PartialEq, Clone)]
 pub enum Amf0Value {
+    /// AMF0 Number.
     Number(f64),
+    /// AMF0 Boolean.
     Boolean(bool),
+    /// AMF0 String.
     String(String),
+    /// AMF0 Object.
     Object(Amf0Object),
+    /// AMF0 Null.
     Null,
+    /// AMF0 Array.
     Array(Vec<Amf0Value>),
 }
 

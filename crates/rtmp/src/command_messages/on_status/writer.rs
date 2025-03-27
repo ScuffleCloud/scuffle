@@ -66,7 +66,7 @@ mod tests {
         .expect("write");
 
         let values = scuffle_amf0::Deserializer::new(io::Cursor::new(buf))
-            .deserialize_remaining()
+            .deserialize_all()
             .unwrap();
 
         assert_eq!(values.len(), 4);

@@ -24,7 +24,7 @@ impl NetStreamCommand {
                 // skip command object
                 <()>::deserialize(&mut *deserializer)?;
 
-                let values = deserializer.deserialize_remaining()?;
+                let values = deserializer.deserialize_all()?;
                 Ok(Some(Self::Play { values }))
             }
             "play2" => {

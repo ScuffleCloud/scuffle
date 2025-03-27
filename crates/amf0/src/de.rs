@@ -1,3 +1,5 @@
+//! Deserialize AMF0 data to a Rust data structure.
+
 use std::io;
 
 use byteorder::{BigEndian, ReadBytesExt};
@@ -6,6 +8,7 @@ use serde::de::{EnumAccess, IntoDeserializer, MapAccess, SeqAccess, VariantAcces
 
 use crate::{Amf0Error, Amf0Marker, Amf0Value};
 
+/// Deserialize a value from a reader.
 pub fn from_reader<'de, T, R>(reader: R) -> crate::Result<T>
 where
     T: serde::de::Deserialize<'de>,
@@ -16,6 +19,7 @@ where
     Ok(value)
 }
 
+/// Deserialize a value from bytes.
 pub fn from_bytes<'de, T>(bytes: &'de [u8]) -> crate::Result<T>
 where
     T: serde::de::Deserialize<'de>,
@@ -23,6 +27,7 @@ where
     from_reader(std::io::Cursor::new(bytes))
 }
 
+/// Deserializer for AMF0 data.
 pub struct Deserializer<R> {
     reader: R,
 }
@@ -31,6 +36,7 @@ impl<R> Deserializer<R>
 where
     R: io::Read + io::Seek,
 {
+    /// Create a new deserializer from a reader.
     pub fn new(reader: R) -> Self {
         Deserializer { reader }
     }
@@ -105,7 +111,8 @@ impl<B> Deserializer<B>
 where
     B: io::Read + io::Seek + bytes::Buf,
 {
-    pub fn deserialize_remaining(&mut self) -> Result<Vec<Amf0Value>, Amf0Error> {
+    /// Deserialize the remaining values from the reader and return them as a vector of [`Amf0Value`]s.
+    pub fn deserialize_all(&mut self) -> Result<Vec<Amf0Value>, Amf0Error> {
         let mut values = Vec::new();
 
         while self.reader.has_remaining() {
@@ -869,7 +876,7 @@ mod tests {
         ];
 
         let mut de = Deserializer::new(io::Cursor::new(bytes));
-        let values = de.deserialize_remaining().unwrap();
+        let values = de.deserialize_all().unwrap();
         assert_eq!(
             values,
             vec![

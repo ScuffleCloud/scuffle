@@ -210,7 +210,7 @@ impl ScriptData {
                 Ok(Self::OnXmpData(data))
             }
             _ => {
-                let data = amf0_deserializer.deserialize_remaining()?;
+                let data = amf0_deserializer.deserialize_all()?;
                 Ok(Self::Other { name, data })
             }
         }

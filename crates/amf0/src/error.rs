@@ -1,3 +1,5 @@
+//! AMF0 error type.
+
 use std::fmt::Display;
 use std::io;
 use std::num::TryFromIntError;
@@ -5,8 +7,10 @@ use std::string::FromUtf8Error;
 
 use crate::Amf0Marker;
 
+/// Result type.
 pub type Result<T> = std::result::Result<T, Amf0Error>;
 
+/// AMF0 error.
 #[derive(thiserror::Error, Debug)]
 pub enum Amf0Error {
     /// IO error.
@@ -27,6 +31,7 @@ pub enum Amf0Error {
     /// Unknown marker.
     #[error("unknown marker: {0}")]
     UnknownMarker(u8),
+    /// This marker cannot be deserialized.
     #[error("this marker cannot be deserialized: {0:?}")]
     UnsupportedMarker(Amf0Marker),
     /// String parse error.
@@ -42,7 +47,12 @@ pub enum Amf0Error {
     },
     /// Wrong array length.
     #[error("wrong array length: expected {expected}, got {got}")]
-    WrongArrayLength { expected: usize, got: usize },
+    WrongArrayLength {
+        /// The expected length.
+        expected: usize,
+        /// The actual length.
+        got: usize,
+    },
     /// Custom error message.
     #[error("{0}")]
     Custom(String),

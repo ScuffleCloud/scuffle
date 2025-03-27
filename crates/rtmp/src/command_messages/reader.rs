@@ -42,7 +42,7 @@ impl CommandType {
             return Ok(Self::NetStream(command));
         }
 
-        let values = deserializer.deserialize_remaining()?;
+        let values = deserializer.deserialize_all()?;
         Ok(Self::Unknown(UnknownCommand { command_name, values }))
     }
 }

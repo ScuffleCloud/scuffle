@@ -1,3 +1,5 @@
+//! Serialize a Rust data structure into AMF0 data.
+
 use std::io;
 
 use byteorder::{BigEndian, WriteBytesExt};
@@ -9,6 +11,7 @@ use serde::ser::{
 
 use crate::{Amf0Error, Amf0Marker};
 
+/// Serialize a value into a given writer.
 pub fn to_writer<W>(writer: W, value: &impl serde::Serialize) -> crate::Result<()>
 where
     W: io::Write,
@@ -17,17 +20,20 @@ where
     value.serialize(&mut serializer)
 }
 
+/// Serialize a value into a new byte vector.
 pub fn to_bytes(value: &impl serde::Serialize) -> crate::Result<Vec<u8>> {
     let mut writer = Vec::new();
     to_writer(&mut writer, value)?;
     Ok(writer)
 }
 
+/// Serializer for AMF0 data.
 pub struct Serializer<W> {
     writer: W,
 }
 
 impl<W> Serializer<W> {
+    /// Create a new AMF0 serializer from a writer.
     pub fn new(writer: W) -> Self {
         Self { writer }
     }

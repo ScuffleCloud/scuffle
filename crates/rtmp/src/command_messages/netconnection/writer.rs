@@ -81,7 +81,7 @@ mod tests {
         .expect("write");
 
         let mut deserializer = scuffle_amf0::Deserializer::new(io::Cursor::new(buf));
-        let values = deserializer.deserialize_remaining().unwrap();
+        let values = deserializer.deserialize_all().unwrap();
 
         assert_eq!(values.len(), 4);
         assert_eq!(values[0], Amf0Value::String("_result".into())); // command name
@@ -121,7 +121,7 @@ mod tests {
             .expect("write");
 
         let mut deserializer = scuffle_amf0::Deserializer::new(io::Cursor::new(buf));
-        let values = deserializer.deserialize_remaining().unwrap();
+        let values = deserializer.deserialize_all().unwrap();
 
         assert_eq!(values.len(), 4);
         assert_eq!(values[0], Amf0Value::String("_result".into())); // command name

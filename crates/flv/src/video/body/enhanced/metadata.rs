@@ -1,6 +1,9 @@
 //! Types and functions for working with metadata video packets.
 
-use scuffle_amf0::{Amf0Decoder, Amf0Marker, Amf0Object, Amf0Value};
+use std::io;
+
+use scuffle_amf0::Amf0Object;
+use serde::Deserialize;
 
 use crate::error::FlvError;
 
@@ -11,7 +14,8 @@ use crate::error::FlvError;
 /// > respective tables which are described in "Colour primaries",
 /// > "Transfer characteristics" and "Matrix coefficients" sections.
 /// > It is RECOMMENDED to provide these values.
-#[derive(Debug, Clone, PartialEq)]
+#[derive(Debug, Clone, PartialEq, serde::Deserialize)]
+#[serde(rename_all = "camelCase")]
 pub struct MetadataColorInfoColorConfig {
     /// Number of bits used to record the color channels for each pixel.
     ///
@@ -32,7 +36,8 @@ pub struct MetadataColorInfoColorConfig {
 }
 
 /// HDR content light level metadata.
-#[derive(Debug, Clone, PartialEq)]
+#[derive(Debug, Clone, PartialEq, serde::Deserialize)]
+#[serde(rename_all = "camelCase")]
 pub struct MetadataColorInfoHdrCll {
     /// Maximum value of the frame average light level
     /// (in 1 cd/m2) of the entire playback sequence.
@@ -63,7 +68,8 @@ pub struct MetadataColorInfoHdrCll {
 /// > Values SHALL be specified with four decimal places. The x coordinate SHALL
 /// > be in the range [0.0001, 0.7400]. The y coordinate SHALL be
 /// > in the range [0.0001, 0.8400].
-#[derive(Debug, Clone, PartialEq)]
+#[derive(Debug, Clone, PartialEq, serde::Deserialize)]
+#[serde(rename_all = "camelCase")]
 pub struct MetadataColorInfoHdrMdcv {
     /// Red x coordinate.
     pub red_x: Option<f64>,
@@ -105,7 +111,8 @@ pub struct MetadataColorInfoHdrMdcv {
 ///
 /// Defined by:
 /// - Enhanced RTMP spec, page 32-34, Metadata Frame
-#[derive(Debug, Clone, PartialEq)]
+#[derive(Debug, Clone, PartialEq, serde::Deserialize)]
+#[serde(rename_all = "camelCase")]
 pub struct MetadataColorInfo {
     /// Color configuration metadata.
     pub color_config: Option<MetadataColorInfoColorConfig>,
@@ -113,147 +120,6 @@ pub struct MetadataColorInfo {
     pub hdr_cll: Option<MetadataColorInfoHdrCll>,
     /// HDR mastering display color volume metadata.
     pub hdr_mdcv: Option<MetadataColorInfoHdrMdcv>,
-}
-
-// Be warned: Insanely ugly code ahead
-// We should maybe implement serde support in the amf0 crate
-
-impl TryFrom<Amf0Object<'_>> for MetadataColorInfo {
-    type Error = FlvError;
-
-    fn try_from(value: Amf0Object<'_>) -> Result<Self, Self::Error> {
-        let mut color_config = None;
-        let mut hdr_cll = None;
-        let mut hdr_mdcv = None;
-
-        for (key, value) in value.iter() {
-            match key.as_ref() {
-                "colorConfig" => {
-                    let color_config_object = value.as_object()?;
-
-                    let mut bit_depth = None;
-                    let mut color_primaries = None;
-                    let mut transfer_characteristics = None;
-                    let mut matrix_coefficients = None;
-
-                    for (key, value) in color_config_object.iter() {
-                        match key.as_ref() {
-                            "bitDepth" => {
-                                bit_depth = Some(value.as_number()?);
-                            }
-                            "colorPrimaries" => {
-                                color_primaries = Some(value.as_number()?);
-                            }
-                            "transferCharacteristics" => {
-                                transfer_characteristics = Some(value.as_number()?);
-                            }
-                            "matrixCoefficients" => {
-                                matrix_coefficients = Some(value.as_number()?);
-                            }
-                            _ => {}
-                        }
-                    }
-
-                    color_config = Some(MetadataColorInfoColorConfig {
-                        bit_depth,
-                        color_primaries,
-                        transfer_characteristics,
-                        matrix_coefficients,
-                    });
-                }
-                "hdrCll" => {
-                    let hdr_cll_object = value.as_object()?;
-
-                    let mut max_fall = None;
-                    let mut max_cll = None;
-
-                    for (key, value) in hdr_cll_object.iter() {
-                        match key.as_ref() {
-                            "maxFall" => {
-                                max_fall = Some(value.as_number()?);
-                            }
-                            "maxCll" => {
-                                max_cll = Some(value.as_number()?);
-                            }
-                            _ => {}
-                        }
-                    }
-
-                    hdr_cll = Some(MetadataColorInfoHdrCll { max_fall, max_cll });
-                }
-                "hdrMdcv" => {
-                    let hdr_mdcv_object = value.as_object()?;
-
-                    let mut red_x = None;
-                    let mut red_y = None;
-                    let mut green_x = None;
-                    let mut green_y = None;
-                    let mut blue_x = None;
-                    let mut blue_y = None;
-                    let mut white_point_x = None;
-                    let mut white_point_y = None;
-                    let mut max_luminance = None;
-                    let mut min_luminance = None;
-
-                    for (key, value) in hdr_mdcv_object.iter() {
-                        match key.as_ref() {
-                            "redX" => {
-                                red_x = Some(value.as_number()?);
-                            }
-                            "redY" => {
-                                red_y = Some(value.as_number()?);
-                            }
-                            "greenX" => {
-                                green_x = Some(value.as_number()?);
-                            }
-                            "greenY" => {
-                                green_y = Some(value.as_number()?);
-                            }
-                            "blueX" => {
-                                blue_x = Some(value.as_number()?);
-                            }
-                            "blueY" => {
-                                blue_y = Some(value.as_number()?);
-                            }
-                            "whitePointX" => {
-                                white_point_x = Some(value.as_number()?);
-                            }
-                            "whitePointY" => {
-                                white_point_y = Some(value.as_number()?);
-                            }
-                            "maxLuminance" => {
-                                max_luminance = Some(value.as_number()?);
-                            }
-                            "minLuminance" => {
-                                min_luminance = Some(value.as_number()?);
-                            }
-                            _ => {}
-                        }
-                    }
-
-                    hdr_mdcv = Some(MetadataColorInfoHdrMdcv {
-                        red_x,
-                        red_y,
-                        green_x,
-                        green_y,
-                        blue_x,
-                        blue_y,
-                        white_point_x,
-                        white_point_y,
-                        max_luminance,
-                        min_luminance,
-                    });
-                }
-                _ => {}
-            }
-        }
-
-        Ok(MetadataColorInfo {
-            color_config,
-            hdr_cll,
-            hdr_mdcv,
-        })
-    }
 }
 
 /// A single entry in a metadata video packet.
@@ -268,31 +134,21 @@ pub enum VideoPacketMetadataEntry {
         /// The key of the metadata entry.
         key: String,
         /// The metadata object.
-        object: Vec<(String, Amf0Value<'static>)>,
+        object: Amf0Object,
     },
 }
 
 impl VideoPacketMetadataEntry {
     /// Read a video packet metadata entry from the given [`Amf0Decoder`].
-    pub fn read(reader: &mut Amf0Decoder<'_>) -> Result<Self, FlvError> {
-        let Amf0Value::String(key) = reader.decode_with_type(Amf0Marker::String)? else {
-            // TODO: CLOUD-91
-            unreachable!();
-        };
-
-        let Amf0Value::Object(value) = reader.decode_with_type(Amf0Marker::Object)? else {
-            // TODO: CLOUD-91
-            unreachable!();
-        };
+    pub fn read<R: io::Read + io::Seek>(deserializer: &mut scuffle_amf0::Deserializer<R>) -> Result<Self, FlvError> {
+        let key = String::deserialize(&mut *deserializer)?;
 
         match key.as_ref() {
-            "colorInfo" => Ok(VideoPacketMetadataEntry::ColorInfo(MetadataColorInfo::try_from(value)?)),
+            "colorInfo" => Ok(VideoPacketMetadataEntry::ColorInfo(MetadataColorInfo::deserialize(
+                deserializer,
+            )?)),
             _ => {
-                let object = value
-                    .into_owned()
-                    .into_iter()
-                    .map(|(k, v)| (k.to_string(), v.to_owned()))
-                    .collect();
+                let object = Amf0Object::deserialize(deserializer)?;
 
                 Ok(VideoPacketMetadataEntry::Other {
                     key: key.to_string(),
@@ -306,56 +162,68 @@ impl VideoPacketMetadataEntry {
 #[cfg(test)]
 #[cfg_attr(all(test, coverage_nightly), coverage(off))]
 mod tests {
-    use std::borrow::Cow;
+    use std::io;
 
-    use scuffle_amf0::{Amf0Decoder, Amf0Object, Amf0Value};
+    use scuffle_amf0::{Amf0Object, Amf0Value};
+    use serde::Serialize;
 
     use super::VideoPacketMetadataEntry;
     use crate::video::body::enhanced::metadata::MetadataColorInfo;
 
     #[test]
     fn metadata_color_info() {
-        let object: Amf0Object = Cow::Owned(vec![
+        let object: Amf0Object = [
             (
                 "colorConfig".into(),
-                Amf0Value::Object(Cow::Owned(vec![
-                    ("bitDepth".into(), 10.0.into()),
-                    ("colorPrimaries".into(), 1.0.into()),
-                    ("transferCharacteristics".into(), 1.0.into()),
-                    ("matrixCoefficients".into(), 1.0.into()),
-                ])),
+                Amf0Value::Object(
+                    [
+                        ("bitDepth".into(), 10.0.into()),
+                        ("colorPrimaries".into(), 1.0.into()),
+                        ("transferCharacteristics".into(), 1.0.into()),
+                        ("matrixCoefficients".into(), 1.0.into()),
+                    ]
+                    .into_iter()
+                    .collect(),
+                ),
             ),
             (
                 "hdrCll".into(),
-                Amf0Value::Object(Cow::Owned(vec![
-                    ("maxFall".into(), 1000.0.into()),
-                    ("maxCll".into(), 1000.0.into()),
-                ])),
+                Amf0Value::Object(
+                    [("maxFall".into(), 1000.0.into()), ("maxCll".into(), 1000.0.into())]
+                        .into_iter()
+                        .collect(),
+                ),
             ),
             (
                 "hdrMdcv".into(),
-                Amf0Value::Object(Cow::Owned(vec![
-                    ("redX".into(), 0.0.into()),
-                    ("redY".into(), 0.0.into()),
-                    ("greenX".into(), 0.0.into()),
-                    ("greenY".into(), 0.0.into()),
-                    ("blueX".into(), 0.0.into()),
-                    ("blueY".into(), 0.0.into()),
-                    ("whitePointX".into(), 0.0.into()),
-                    ("whitePointY".into(), 0.0.into()),
-                    ("maxLuminance".into(), 0.0.into()),
-                    ("minLuminance".into(), 0.0.into()),
-                ])),
+                Amf0Value::Object(
+                    [
+                        ("redX".into(), 0.0.into()),
+                        ("redY".into(), 0.0.into()),
+                        ("greenX".into(), 0.0.into()),
+                        ("greenY".into(), 0.0.into()),
+                        ("blueX".into(), 0.0.into()),
+                        ("blueY".into(), 0.0.into()),
+                        ("whitePointX".into(), 0.0.into()),
+                        ("whitePointY".into(), 0.0.into()),
+                        ("maxLuminance".into(), 0.0.into()),
+                        ("minLuminance".into(), 0.0.into()),
+                    ]
+                    .into_iter()
+                    .collect(),
+                ),
             ),
-        ]);
+        ]
+        .into_iter()
+        .collect();
 
         let mut buf = Vec::new();
-        scuffle_amf0::Amf0Encoder::encode_string(&mut buf, "colorInfo").unwrap();
-        scuffle_amf0::Amf0Encoder::encode_object(&mut buf, &object).unwrap();
+        let mut serializer = scuffle_amf0::Serializer::new(&mut buf);
+        "colorInfo".serialize(&mut serializer).unwrap();
+        object.serialize(&mut serializer).unwrap();
 
-        let mut reader = Amf0Decoder::new(&buf);
-
-        let entry = VideoPacketMetadataEntry::read(&mut reader).unwrap();
+        let mut deserializer = scuffle_amf0::Deserializer::new(io::Cursor::new(buf));
+        let entry = VideoPacketMetadataEntry::read(&mut deserializer).unwrap();
 
         assert_eq!(
             entry,

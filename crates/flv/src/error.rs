@@ -21,7 +21,7 @@ pub enum FlvError {
         /// The expected number of bytes.
         expected_bytes: usize,
     },
-    /// AMF0 read error.
-    #[error("amf0 read: {0}")]
-    Amf0Read(#[from] scuffle_amf0::Amf0ReadError),
+    /// AMF0 error.
+    #[error("amf0: {0}")]
+    Amf0(#[from] scuffle_amf0::Amf0Error),
 }

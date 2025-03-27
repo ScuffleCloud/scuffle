@@ -1,11 +1,11 @@
 //! Script data structures
 
-use std::collections::HashMap;
 use std::io;
 
 use bytes::Bytes;
-use scuffle_amf0::{Amf0Decoder, Amf0Marker, Amf0Object, Amf0Value};
+use scuffle_amf0::{Amf0Object, Amf0Value};
 use scuffle_bytes_util::BytesCursorExt;
+use serde::Deserialize;
 
 use crate::audio::header::enhanced::AudioFourCc;
 use crate::audio::header::legacy::SoundFormat;
@@ -25,10 +25,12 @@ pub enum OnMetaDataAudioCodecId {
     Enhanced(AudioFourCc),
 }
 
-impl OnMetaDataAudioCodecId {
-    /// Read the audio codec ID from the given AMF0 value.
-    fn from_amf0(value: &Amf0Value<'_>) -> Result<Self, FlvError> {
-        let n = value.as_number()? as u32;
+impl<'de> serde::Deserialize<'de> for OnMetaDataAudioCodecId {
+    fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
+    where
+        D: serde::Deserializer<'de>,
+    {
+        let n: u32 = serde::Deserialize::deserialize(deserializer)?;
 
         // Since SoundFormat is a u8, we can be sure that the number represents an AudioFourCc if it is greater
         // than u8::MAX.
@@ -54,10 +56,12 @@ pub enum OnMetaDataVideoCodecId {
     Enhanced(VideoFourCc),
 }
 
-impl OnMetaDataVideoCodecId {
-    /// Read the video codec ID from the given AMF0 value.
-    fn from_amf0(value: &Amf0Value<'_>) -> Result<Self, FlvError> {
-        let n = value.as_number()? as u32;
+impl<'de> serde::Deserialize<'de> for OnMetaDataVideoCodecId {
+    fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
+    where
+        D: serde::Deserializer<'de>,
+    {
+        let n: u32 = serde::Deserialize::deserialize(deserializer)?;
 
         // Since VideoCodecId is a u8, we can be sure that the number represents an VideoFourCc if it is greater
         // than u8::MAX.
@@ -76,7 +80,8 @@ impl OnMetaDataVideoCodecId {
 /// Defined by:
 /// - Legacy FLV spec, Annex E.5
 /// - Enhanced RTMP spec, page 13-16, Enhancing onMetaData
-#[derive(Debug, Clone, PartialEq)]
+#[derive(Debug, Clone, PartialEq, serde::Deserialize)]
+#[serde(rename_all = "camelCase")]
 pub struct OnMetaData {
     /// Audio codec ID used in the file.
     pub audiocodecid: Option<OnMetaDataAudioCodecId>,
@@ -139,138 +144,29 @@ pub struct OnMetaData {
     /// This structure provides a framework for detailed customization and control over
     /// the media tracks, ensuring optimal management and delivery across various types
     /// of content and platforms.
-    pub audio_track_id_info_map: Option<HashMap<String, Amf0Value<'static>>>,
+    pub audio_track_id_info_map: Option<Amf0Object>,
     /// See [`OnMetaData::audio_track_id_info_map`].
-    pub video_track_id_info_map: Option<HashMap<String, Amf0Value<'static>>>,
+    pub video_track_id_info_map: Option<Amf0Object>,
     /// Any other metadata contained in the script data.
-    pub other: HashMap<String, Amf0Value<'static>>,
-}
-
-// Be warned: Insanely ugly code ahead
-// We should maybe implement serde support in the amf0 crate
-
-impl TryFrom<Amf0Object<'_>> for OnMetaData {
-    type Error = FlvError;
-
-    fn try_from(value: Amf0Object) -> Result<Self, Self::Error> {
-        let mut other = HashMap::new();
-
-        let mut audiocodecid = None;
-        let mut audiodatarate = None;
-        let mut audiodelay = None;
-        let mut audiosamplerate = None;
-        let mut audiosamplesize = None;
-        let mut can_seek_to_end = None;
-        let mut creationdate = None;
-        let mut duration = None;
-        let mut filesize = None;
-        let mut framerate = None;
-        let mut height = None;
-        let mut stereo = None;
-        let mut videocodecid = None;
-        let mut videodatarate = None;
-        let mut width = None;
-        let mut audio_track_id_info_map = None;
-        let mut video_track_id_info_map = None;
-
-        for (key, value) in value.iter() {
-            match key.as_ref() {
-                "audiocodecid" => audiocodecid = Some(OnMetaDataAudioCodecId::from_amf0(value)?),
-                "audiodatarate" => audiodatarate = Some(value.as_number()?),
-                "audiodelay" => audiodelay = Some(value.as_number()?),
-                "audiosamplerate" => audiosamplerate = Some(value.as_number()?),
-                "audiosamplesize" => audiosamplesize = Some(value.as_number()?),
-                "canSeekToEnd" => can_seek_to_end = Some(value.as_boolean()?),
-                "creationdate" => creationdate = Some(value.as_string()?.to_string()),
-                "duration" => duration = Some(value.as_number()?),
-                "filesize" => filesize = Some(value.as_number()?),
-                "framerate" => framerate = Some(value.as_number()?),
-                "height" => height = Some(value.as_number()?),
-                "stereo" => stereo = Some(value.as_boolean()?),
-                "videocodecid" => videocodecid = Some(OnMetaDataVideoCodecId::from_amf0(value)?),
-                "videodatarate" => videodatarate = Some(value.as_number()?),
-                "width" => width = Some(value.as_number()?),
-                "audioTrackIdInfoMap" => {
-                    let mut map = HashMap::new();
-
-                    let object = value.as_object()?;
-                    for (key, value) in object.iter() {
-                        map.insert(key.to_string(), value.to_owned());
-                    }
-
-                    audio_track_id_info_map = Some(map);
-                }
-                "videoTrackIdInfoMap" => {
-                    let mut map = HashMap::new();
-
-                    let object = value.as_object()?;
-                    for (key, value) in object.iter() {
-                        map.insert(key.to_string(), value.to_owned());
-                    }
-
-                    video_track_id_info_map = Some(map);
-                }
-                _ => {
-                    other.insert(key.to_string(), value.to_owned());
-                }
-            }
-        }
-
-        Ok(Self {
-            audiocodecid,
-            audiodatarate,
-            audiodelay,
-            audiosamplerate,
-            audiosamplesize,
-            can_seek_to_end,
-            creationdate,
-            duration,
-            filesize,
-            framerate,
-            height,
-            stereo,
-            videocodecid,
-            videodatarate,
-            width,
-            audio_track_id_info_map,
-            video_track_id_info_map,
-            other,
-        })
-    }
+    #[serde(flatten)]
+    pub other: Amf0Object,
 }
 
 /// XMP Metadata
 ///
 /// Defined by:
 /// - Legacy FLV spec, Annex E.6
-#[derive(Debug, Clone, PartialEq)]
+#[derive(Debug, Clone, PartialEq, serde::Deserialize)]
+#[serde(rename_all = "camelCase")]
 pub struct OnXmpData {
     /// XMP metadata, formatted according to the XMP metadata specification.
     ///
     /// For further details, see [www.adobe.com/devnet/xmp/pdfs/XMPSpecificationPart3.pdf](https://web.archive.org/web/20090306165322/https://www.adobe.com/devnet/xmp/pdfs/XMPSpecificationPart3.pdf).
+    #[serde(rename = "liveXML")]
     live_xml: Option<String>,
     /// Any other metadata contained in the script data.
-    other: HashMap<String, Amf0Value<'static>>,
-}
-
-impl TryFrom<Amf0Object<'_>> for OnXmpData {
-    type Error = FlvError;
-
-    fn try_from(value: Amf0Object<'_>) -> Result<Self, Self::Error> {
-        let mut other = HashMap::new();
-
-        let mut live_xml = None;
-
-        for (key, value) in value.iter() {
-            if key == "liveXML" {
-                live_xml = Some(value.as_string()?.to_string());
-            } else {
-                other.insert(key.to_string(), value.to_owned());
-            }
-        }
-
-        Ok(Self { live_xml, other })
-    }
+    #[serde(flatten)]
+    other: Amf0Object,
 }
 
 /// FLV `SCRIPTDATA` tag
@@ -290,7 +186,7 @@ pub enum ScriptData {
         /// The name of the script data.
         name: String,
         /// The data of the script data.
-        data: Vec<Amf0Value<'static>>,
+        data: Vec<Amf0Value>,
     },
 }
 
@@ -298,45 +194,24 @@ impl ScriptData {
     /// Demux the [`ScriptData`] from the given reader.
     pub fn demux(reader: &mut io::Cursor<Bytes>) -> Result<Self, FlvError> {
         let buf = reader.extract_remaining();
-        let mut amf0_reader = Amf0Decoder::new(&buf);
+        let mut amf0_deserializer = scuffle_amf0::Deserializer::new(io::Cursor::new(buf));
 
-        let Amf0Value::String(name) = amf0_reader.decode_with_type(Amf0Marker::String)? else {
-            // TODO: CLOUD-91
-            unreachable!();
-        };
+        let name = String::deserialize(&mut amf0_deserializer)?;
 
         match name.as_ref() {
             // We might also want to handle "@setDataFrame" the same way as onMetaData.
             // I'm not sure right now if that is the intended behavior though.
             "onMetaData" => {
-                let value = amf0_reader.decode()?;
-
-                let Amf0Value::Object(data) = value else {
-                    // TODO: CLOUD-91
-                    unreachable!();
-                };
-                let data = OnMetaData::try_from(data)?;
-
+                let data = OnMetaData::deserialize(&mut amf0_deserializer)?;
                 Ok(Self::OnMetaData(Box::new(data)))
             }
             "onXMPData" => {
-                let value = amf0_reader.decode()?;
-
-                let Amf0Value::Object(data) = value else {
-                    // TODO: CLOUD-91
-                    unreachable!();
-                };
-                let data = OnXmpData::try_from(data)?;
-
+                let data = OnXmpData::deserialize(&mut amf0_deserializer)?;
                 Ok(Self::OnXmpData(data))
             }
             _ => {
-                let data = amf0_reader.decode_all()?;
-
-                Ok(Self::Other {
-                    name: name.into_owned(),
-                    data: data.into_iter().map(|v| v.to_owned()).collect(),
-                })
+                let data = amf0_deserializer.deserialize_remaining()?;
+                Ok(Self::Other { name, data })
             }
         }
     }
@@ -345,9 +220,8 @@ impl ScriptData {
 #[cfg(test)]
 #[cfg_attr(all(test, coverage_nightly), coverage(off))]
 mod tests {
-    use std::borrow::Cow;
-
-    use scuffle_amf0::Amf0Encoder;
+    use scuffle_amf0::Amf0Marker;
+    use serde::Serialize;
 
     use super::*;
 
@@ -402,7 +276,7 @@ mod tests {
                 width: Some(1280.0),
                 audio_track_id_info_map: None,
                 video_track_id_info_map: None,
-                other: HashMap::new(),
+                other: Amf0Object::new(),
             }
         );
     }
@@ -410,40 +284,40 @@ mod tests {
     #[test]
     fn script_on_meta_data_full() {
         let mut data = Vec::new();
+        let mut serializer = scuffle_amf0::Serializer::new(&mut data);
 
-        let audio_track_id_info_map = vec![("test".into(), Amf0Value::Number(1.0))].into();
-        let video_track_id_info_map = vec![("test2".into(), Amf0Value::Number(2.0))].into();
+        let audio_track_id_info_map = [("test".into(), Amf0Value::Number(1.0))].into_iter().collect();
+        let video_track_id_info_map = [("test2".into(), Amf0Value::Number(2.0))].into_iter().collect();
 
-        Amf0Encoder::encode_string(&mut data, "onMetaData").unwrap();
-        Amf0Encoder::encode_object(
-            &mut data,
-            &[
-                (
-                    "audiocodecid".into(),
-                    Amf0Value::Number(u32::from_be_bytes(AudioFourCc::Aac.0) as f64),
-                ),
-                ("audiodatarate".into(), Amf0Value::Number(128.0)),
-                ("audiodelay".into(), Amf0Value::Number(0.0)),
-                ("audiosamplerate".into(), Amf0Value::Number(44100.0)),
-                ("audiosamplesize".into(), Amf0Value::Number(16.0)),
-                ("canSeekToEnd".into(), Amf0Value::Boolean(true)),
-                ("creationdate".into(), Amf0Value::String("2025-01-01T00:00:00Z".into())),
-                ("duration".into(), Amf0Value::Number(60.0)),
-                ("filesize".into(), Amf0Value::Number(1024.0)),
-                ("framerate".into(), Amf0Value::Number(30.0)),
-                ("height".into(), Amf0Value::Number(720.0)),
-                ("stereo".into(), Amf0Value::Boolean(true)),
-                (
-                    "videocodecid".into(),
-                    Amf0Value::Number(u32::from_be_bytes(VideoFourCc::Avc.0) as f64),
-                ),
-                ("videodatarate".into(), Amf0Value::Number(1024.0)),
-                ("width".into(), Amf0Value::Number(1280.0)),
-                ("audioTrackIdInfoMap".into(), Amf0Value::Object(audio_track_id_info_map)),
-                ("videoTrackIdInfoMap".into(), Amf0Value::Object(video_track_id_info_map)),
-            ],
-        )
-        .unwrap();
+        "onMetaData".serialize(&mut serializer).unwrap();
+        let object: Amf0Object = [
+            (
+                "audiocodecid".into(),
+                Amf0Value::Number(u32::from_be_bytes(AudioFourCc::Aac.0) as f64),
+            ),
+            ("audiodatarate".into(), Amf0Value::Number(128.0)),
+            ("audiodelay".into(), Amf0Value::Number(0.0)),
+            ("audiosamplerate".into(), Amf0Value::Number(44100.0)),
+            ("audiosamplesize".into(), Amf0Value::Number(16.0)),
+            ("canSeekToEnd".into(), Amf0Value::Boolean(true)),
+            ("creationdate".into(), Amf0Value::String("2025-01-01T00:00:00Z".into())),
+            ("duration".into(), Amf0Value::Number(60.0)),
+            ("filesize".into(), Amf0Value::Number(1024.0)),
+            ("framerate".into(), Amf0Value::Number(30.0)),
+            ("height".into(), Amf0Value::Number(720.0)),
+            ("stereo".into(), Amf0Value::Boolean(true)),
+            (
+                "videocodecid".into(),
+                Amf0Value::Number(u32::from_be_bytes(VideoFourCc::Avc.0) as f64),
+            ),
+            ("videodatarate".into(), Amf0Value::Number(1024.0)),
+            ("width".into(), Amf0Value::Number(1280.0)),
+            ("audioTrackIdInfoMap".into(), Amf0Value::Object(audio_track_id_info_map)),
+            ("videoTrackIdInfoMap".into(), Amf0Value::Object(video_track_id_info_map)),
+        ]
+        .into_iter()
+        .collect();
+        object.serialize(&mut serializer).unwrap();
 
         let mut reader = io::Cursor::new(Bytes::from_owner(data));
 
@@ -473,7 +347,7 @@ mod tests {
                 width: Some(1280.0),
                 audio_track_id_info_map: Some([("test".to_string(), Amf0Value::Number(1.0))].into()),
                 video_track_id_info_map: Some([("test2".to_string(), Amf0Value::Number(2.0))].into()),
-                other: HashMap::new(),
+                other: Amf0Object::new(),
             }
         );
     }
@@ -538,7 +412,7 @@ mod tests {
             panic!("expected onXMPData");
         };
 
-        let object: Amf0Object = vec![(Cow::Borrowed("test"), Amf0Value::String(Cow::Borrowed("hello")))].into();
+        let object: Amf0Object = [("test".into(), Amf0Value::String("hello".into()))].into_iter().collect();
 
         assert_eq!(name, "onWhatever");
         assert_eq!(data.len(), 1);

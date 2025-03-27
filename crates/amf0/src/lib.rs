@@ -1,35 +1,51 @@
 //! A pure-rust implementation of AMF0 encoder and decoder.
 //!
-//! This crate provides a simple interface for encoding and decoding AMF0 data.
+//! This crate provides serde support for serialization and deserialization of AMF0 data.
 //!
-//! # Limitations
+//! ## Specification
 //!
-//! - Does not support deserializing of AMF0 references.
+//! | Name | Version | Link | Comments |
+//! | --- | --- | --- | --- |
+//! | Action Message Format -- AMF 0 | - | <https://rtmp.veriskope.com/pdf/amf0-file-format-specification.pdf> | Refered to as 'AMF0 spec' in this documentation |
+//!
+//! ## Limitations
+//!
+//! - Does not support AMF0 references.
 //! - Does not support the AVM+ Type Marker. (see AMF 0 spec, 3.1)
 //!
-//! # Examples
+//! ## Example
 //!
 //! ```rust
 //! # fn test() -> Result<(), Box<dyn std::error::Error>> {
-//! use scuffle_amf0::Amf0Decoder;
-//! use scuffle_amf0::Amf0Encoder;
-//! # let bytes = &[0x01, 0x01];
+//! use scuffle_amf0::{Deserializer, Serializer};
+//! # let bytes = &[0x02, 0, 1, b'a'];
 //! # let mut writer = Vec::new();
 //!
-//! // Create a new decoder
-//! let mut reader = Amf0Decoder::new(bytes);
-//! let value = reader.decode()?;
+//! // Decode a string value from bytes
+//! let value: String = scuffle_amf0::from_bytes(bytes)?;
 //!
 //! // .. do something with the value
 //!
 //! // Encode a value into a writer
-//! Amf0Encoder::encode(&mut writer, &value)?;
-//!
+//! scuffle_amf0::to_writer(&mut writer, &value)?;
 //! # assert_eq!(writer, bytes);
 //! # Ok(())
 //! # }
 //! # test().expect("test failed");
 //! ```
+//!
+//! ## Status
+//!
+//! This crate is currently under development and is not yet stable.
+//!
+//! Unit tests are not yet fully implemented. Use at your own risk.
+//!
+//! ## License
+//!
+//! This project is licensed under the [MIT](./LICENSE.MIT) or [Apache-2.0](./LICENSE.Apache-2.0) license.
+//! You can choose between one of them if you use this work.
+//!
+//! `SPDX-License-Identifier: MIT OR Apache-2.0`
 #![cfg_attr(all(coverage_nightly, test), feature(coverage_attribute))]
 // #![deny(missing_docs)]
 #![deny(unsafe_code)]

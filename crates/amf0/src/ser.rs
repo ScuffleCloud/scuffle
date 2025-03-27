@@ -27,6 +27,12 @@ pub struct Serializer<W> {
     writer: W,
 }
 
+impl<W> Serializer<W> {
+    pub fn new(writer: W) -> Self {
+        Self { writer }
+    }
+}
+
 impl<W> serde::ser::Serializer for &mut Serializer<W>
 where
     W: io::Write,
@@ -195,11 +201,8 @@ where
     where
         T: ?Sized + serde::Serialize,
     {
-        self.writer.write_u8(Amf0Marker::Object as u8)?;
-        self.writer.write_u16::<BigEndian>(variant.len() as u16)?; // key
-        self.writer.write_all(variant.as_bytes())?;
-        value.serialize(&mut *self)?; // value
-        self.writer.write_u24::<BigEndian>(Amf0Marker::ObjectEnd as u32)?;
+        variant.serialize(&mut *self)?;
+        value.serialize(&mut *self)?;
 
         Ok(())
     }
@@ -213,10 +216,8 @@ where
     ) -> Result<Self::SerializeTupleVariant, Self::Error> {
         let len: u32 = len.try_into()?;
 
-        self.writer.write_u8(Amf0Marker::Object as u8)?;
-        self.writer.write_u16::<BigEndian>(variant.len() as u16)?; // key
-        self.writer.write_all(variant.as_bytes())?;
-        self.writer.write_u8(Amf0Marker::StrictArray as u8)?; // value
+        variant.serialize(&mut *self)?;
+        self.writer.write_u8(Amf0Marker::StrictArray as u8)?;
         self.writer.write_u32::<BigEndian>(len)?;
 
         Ok(self)
@@ -229,10 +230,8 @@ where
         variant: &'static str,
         _len: usize,
     ) -> Result<Self::SerializeStructVariant, Self::Error> {
+        variant.serialize(&mut *self)?;
         self.writer.write_u8(Amf0Marker::Object as u8)?;
-        self.writer.write_u16::<BigEndian>(variant.len() as u16)?; // key
-        self.writer.write_all(variant.as_bytes())?;
-        self.writer.write_u8(Amf0Marker::Object as u8)?; // value
 
         Ok(self)
     }
@@ -551,7 +550,6 @@ where
     }
 
     fn end(self) -> Result<Self::Ok, Self::Error> {
-        self.writer.write_u24::<BigEndian>(Amf0Marker::ObjectEnd as u32)?;
         Ok(())
     }
 }
@@ -576,9 +574,6 @@ where
     }
 
     fn end(self) -> Result<Self::Ok, Self::Error> {
-        // Close the inner value object
-        self.writer.write_u24::<BigEndian>(Amf0Marker::ObjectEnd as u32)?;
-        // Close the outer object
         self.writer.write_u24::<BigEndian>(Amf0Marker::ObjectEnd as u32)?;
         Ok(())
     }
@@ -711,21 +706,20 @@ mod tests {
     fn complex_enum() {
         #[derive(serde::Serialize)]
         enum Test {
-            A(bool),                    // transparent
-            B { a: String, b: String }, // object
-            C(bool, String),            // array
+            A(bool),
+            B { a: String, b: String },
+            C(bool, String),
         }
 
         let value = Test::A(true);
         let bytes = to_bytes(&value).unwrap();
         #[rustfmt::skip]
         let expected = vec![
-            Amf0Marker::Object as u8,
+            Amf0Marker::String as u8,
             0, 1, // length
             b'A',
             Amf0Marker::Boolean as u8,
             1,
-            0, 0, Amf0Marker::ObjectEnd as u8,
         ];
         assert_eq!(bytes, expected);
 
@@ -736,7 +730,7 @@ mod tests {
         let bytes = to_bytes(&value).unwrap();
         #[rustfmt::skip]
         let expected = vec![
-            Amf0Marker::Object as u8,
+            Amf0Marker::String as u8,
             0, 1, // length
             b'B',
             Amf0Marker::Object as u8,
@@ -751,7 +745,6 @@ mod tests {
             0, 5, // length
             b'w', b'o', b'r', b'l', b'd',
             0, 0, Amf0Marker::ObjectEnd as u8,
-            0, 0, Amf0Marker::ObjectEnd as u8,
         ];
         assert_eq!(bytes, expected);
 
@@ -759,7 +752,7 @@ mod tests {
         let bytes = to_bytes(&value).unwrap();
         #[rustfmt::skip]
         let expected = vec![
-            Amf0Marker::Object as u8,
+            Amf0Marker::String as u8,
             0, 1, // length
             b'C',
             Amf0Marker::StrictArray as u8,
@@ -769,7 +762,6 @@ mod tests {
             Amf0Marker::String as u8,
             0, 5, // length
             b'h', b'e', b'l', b'l', b'o',
-            0, 0, Amf0Marker::ObjectEnd as u8,
         ];
         assert_eq!(bytes, expected);
     }

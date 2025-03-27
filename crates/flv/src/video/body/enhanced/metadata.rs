@@ -139,7 +139,7 @@ pub enum VideoPacketMetadataEntry {
 }
 
 impl VideoPacketMetadataEntry {
-    /// Read a video packet metadata entry from the given [`Amf0Decoder`].
+    /// Read a video packet metadata entry from the given [`scuffle_amf0::Deserializer`].
     pub fn read<R: io::Read + io::Seek>(deserializer: &mut scuffle_amf0::Deserializer<R>) -> Result<Self, FlvError> {
         let key = String::deserialize(&mut *deserializer)?;
 

@@ -17,8 +17,6 @@ pub mod writer;
 #[derive(Debug, Clone, PartialEq)]
 pub struct OnStatus {
     /// The status code.
-    ///
-    /// See the [`codes`] module for common status codes.
     pub code: OnStatusCode,
     /// The description of the status update.
     pub description: Option<String>,

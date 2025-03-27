@@ -1,7 +1,5 @@
 //! Command messages.
 
-use std::borrow::Cow;
-
 use netconnection::NetConnectionCommand;
 use netstream::NetStreamCommand;
 use on_status::OnStatus;
@@ -24,40 +22,40 @@ pub mod writer;
 /// - Legacy RTMP spec, section 7.1.1
 /// - Legacy RTMP spec, section 7.2
 #[derive(Debug, Clone)]
-pub struct Command<'a> {
+pub struct Command {
     /// Transaction ID.
     ///
     /// > The receiver processes the command and sends back the response with the
     /// > same transaction ID.
     pub transaction_id: f64,
     /// Command type.
-    pub command_type: CommandType<'a>,
+    pub command_type: CommandType,
 }
 
 /// This enum wraps the [`NetConnectionCommand`], [`NetStreamCommand`] and [`OnStatus`] enums.
 #[derive(Debug, Clone)]
-pub enum CommandType<'a> {
+pub enum CommandType {
     /// NetConnection command
-    NetConnection(NetConnectionCommand<'a>),
+    NetConnection(NetConnectionCommand),
     /// NetStream command
-    NetStream(NetStreamCommand<'a>),
+    NetStream(NetStreamCommand),
     /// onStatus command
-    OnStatus(OnStatus<'a>),
+    OnStatus(OnStatus),
     /// Any unknown command
     ///
     /// e.g. FFmpeg sends some commands that don't appear in any spec, so we need to handle them.
-    Unknown(UnknownCommand<'a>),
+    Unknown(UnknownCommand),
 }
 
 /// Any unknown command
 ///
 /// e.g. FFmpeg sends some commands that don't appear in any spec, so we need to handle them.
 #[derive(Debug, Clone)]
-pub struct UnknownCommand<'a> {
+pub struct UnknownCommand {
     /// Name of the unknown command.
-    pub command_name: Cow<'a, str>,
+    pub command_name: String,
     /// All other values of the command including the command object.
-    pub values: Vec<Amf0Value<'a>>,
+    pub values: Vec<Amf0Value>,
 }
 
 /// NetStream onStatus level (7.2.2.) and NetConnection connect result level (7.2.1.1.)

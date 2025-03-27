@@ -2749,6 +2749,7 @@ name = "scuffle-amf0"
 version = "0.1.1"
 dependencies = [
  "byteorder",
+ "bytes",
  "num-derive",
  "num-traits",
  "scuffle-workspace-hack",
@@ -2914,6 +2915,7 @@ dependencies = [
  "scuffle-h264",
  "scuffle-h265",
  "scuffle-workspace-hack",
+ "serde",
  "thiserror 2.0.12",
 ]
 
@@ -3060,6 +3062,7 @@ dependencies = [
  "scuffle-flv",
  "scuffle-future-ext",
  "scuffle-workspace-hack",
+ "serde",
  "serde_json",
  "sha2",
  "thiserror 2.0.12",

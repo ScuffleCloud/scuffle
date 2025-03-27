@@ -15,10 +15,7 @@ use crate::command_messages::netconnection::{
     CapsExMask, NetConnectionCommand, NetConnectionCommandConnect, NetConnectionCommandConnectResult,
 };
 use crate::command_messages::netstream::{NetStreamCommand, NetStreamCommandPublishPublishingType};
-use crate::command_messages::on_status::OnStatus;
-use crate::command_messages::on_status::codes::{
-    NET_CONNECTION_CONNECT_RECONNECT_REQUEST, NET_STREAM_DELETE_STREAM_SUCCESS, NET_STREAM_PUBLISH_START,
-};
+use crate::command_messages::on_status::{OnStatus, OnStatusCode};
 use crate::command_messages::{Command, CommandResultLevel, CommandType};
 use crate::handshake;
 use crate::handshake::HandshakeServer;
@@ -228,7 +225,7 @@ impl<S: tokio::io::AsyncRead + tokio::io::AsyncWrite + Unpin, H: SessionHandler>
             && self.ctx.as_ref().is_some_and(|ctx| ctx.is_done())
         {
             OnStatus {
-                code: NET_CONNECTION_CONNECT_RECONNECT_REQUEST.into(),
+                code: OnStatusCode::NET_CONNECTION_CONNECT_RECONNECT_REQUEST,
                 level: CommandResultLevel::Status,
                 description: None,
                 others: None,
@@ -300,7 +297,7 @@ impl<S: tokio::io::AsyncRead + tokio::io::AsyncWrite + Unpin, H: SessionHandler>
     /// Process one RTMP message
     async fn process_message(
         &mut self,
-        msg: MessageData<'_>,
+        msg: MessageData,
         stream_id: u32,
         timestamp: u32,
     ) -> Result<(), crate::error::RtmpError> {
@@ -350,7 +347,7 @@ impl<S: tokio::io::AsyncRead + tokio::io::AsyncWrite + Unpin, H: SessionHandler>
 
     /// on_amf0_command_message is called when we receive an AMF0 command
     /// message from the client We then handle the command message
-    async fn on_command_message(&mut self, stream_id: u32, command: Command<'_>) -> Result<(), crate::error::RtmpError> {
+    async fn on_command_message(&mut self, stream_id: u32, command: Command) -> Result<(), crate::error::RtmpError> {
         match command.command_type {
             CommandType::NetConnection(NetConnectionCommand::Connect(connect)) => {
                 self.on_command_connect(stream_id, command.transaction_id, connect).await?;
@@ -415,7 +412,7 @@ impl<S: tokio::io::AsyncRead + tokio::io::AsyncWrite + Unpin, H: SessionHandler>
         &mut self,
         _stream_id: u32,
         transaction_id: f64,
-        connect: NetConnectionCommandConnect<'_>,
+        connect: NetConnectionCommandConnect,
     ) -> Result<(), crate::error::RtmpError> {
         ProtocolControlMessageWindowAcknowledgementSize {
             acknowledgement_window_size: CHUNK_SIZE as u32,
@@ -481,7 +478,7 @@ impl<S: tokio::io::AsyncRead + tokio::io::AsyncWrite + Unpin, H: SessionHandler>
         Command {
             command_type: CommandType::OnStatus(OnStatus {
                 level: CommandResultLevel::Status,
-                code: NET_STREAM_DELETE_STREAM_SUCCESS.into(),
+                code: OnStatusCode::NET_STREAM_DELETE_STREAM_SUCCESS,
                 description: None,
                 others: None,
             }),
@@ -518,7 +515,7 @@ impl<S: tokio::io::AsyncRead + tokio::io::AsyncWrite + Unpin, H: SessionHandler>
         Command {
             command_type: CommandType::OnStatus(OnStatus {
                 level: CommandResultLevel::Status,
-                code: NET_STREAM_PUBLISH_START.into(),
+                code: OnStatusCode::NET_STREAM_PUBLISH_START,
                 description: None,
                 others: None,
             }),

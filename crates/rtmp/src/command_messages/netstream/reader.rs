@@ -1,82 +1,67 @@
 //! Reading [`NetStreamCommand`].
 
-use std::convert::Infallible;
-use std::str::FromStr;
+use std::io;
 
-use scuffle_amf0::{Amf0Decoder, Amf0Marker, Amf0Value};
+use scuffle_amf0::Amf0Object;
+use serde::Deserialize;
 
 use super::{NetStreamCommand, NetStreamCommandPublishPublishingType};
 use crate::command_messages::error::CommandError;
 
-impl<'a> NetStreamCommand<'a> {
+impl NetStreamCommand {
     /// Reads a [`NetStreamCommand`] from the given decoder.
     ///
     /// Returns `Ok(None)` if the `command_name` is not recognized.
-    pub fn read(command_name: &str, decoder: &mut Amf0Decoder<'a>) -> Result<Option<Self>, CommandError> {
+    pub fn read<R>(
+        command_name: &str,
+        deserializer: &mut scuffle_amf0::Deserializer<R>,
+    ) -> Result<Option<Self>, CommandError>
+    where
+        R: io::Read + io::Seek + bytes::Buf,
+    {
         match command_name {
             "play" => {
                 // skip command object
-                decoder.decode_with_type(Amf0Marker::Null)?;
+                <()>::deserialize(&mut *deserializer)?;
 
-                let values = decoder.decode_all()?;
-
+                let values = deserializer.deserialize_remaining()?;
                 Ok(Some(Self::Play { values }))
             }
             "play2" => {
                 // skip command object
-                decoder.decode_with_type(Amf0Marker::Null)?;
+                <()>::deserialize(&mut *deserializer)?;
 
-                let Amf0Value::Object(parameters) = decoder.decode_with_type(Amf0Marker::Object)? else {
-                    // TODO: CLOUD-91
-                    unreachable!();
-                };
-
+                let parameters = Amf0Object::deserialize(deserializer)?;
                 Ok(Some(Self::Play2 { parameters }))
             }
             "deleteStream" => {
                 // skip command object
-                decoder.decode_with_type(Amf0Marker::Null)?;
+                <()>::deserialize(&mut *deserializer)?;
 
-                let Amf0Value::Number(stream_id) = decoder.decode_with_type(Amf0Marker::Number)? else {
-                    // TODO: CLOUD-91
-                    unreachable!();
-                };
-
+                let stream_id = f64::deserialize(deserializer)?;
                 Ok(Some(Self::DeleteStream { stream_id }))
             }
             "closeStream" => Ok(Some(Self::CloseStream)),
             "receiveAudio" => {
                 // skip command object
-                decoder.decode_with_type(Amf0Marker::Null)?;
+                <()>::deserialize(&mut *deserializer)?;
 
-                let receive_audio = decoder.decode_with_type(Amf0Marker::Boolean)?.as_boolean()?;
-
+                let receive_audio = bool::deserialize(deserializer)?;
                 Ok(Some(Self::ReceiveAudio { receive_audio }))
             }
             "receiveVideo" => {
                 // skip command object
-                decoder.decode_with_type(Amf0Marker::Null)?;
+                <()>::deserialize(&mut *deserializer)?;
 
-                let receive_video = decoder.decode_with_type(Amf0Marker::Boolean)?.as_boolean()?;
-
+                let receive_video = bool::deserialize(deserializer)?;
                 Ok(Some(Self::ReceiveVideo { receive_video }))
             }
             "publish" => {
                 // skip command object
-                decoder.decode_with_type(Amf0Marker::Null)?;
+                <()>::deserialize(&mut *deserializer)?;
 
-                let Amf0Value::String(publishing_name) = decoder.decode_with_type(Amf0Marker::String)? else {
-                    // TODO: CLOUD-91
-                    unreachable!();
-                };
-                let Amf0Value::String(publishing_type) = decoder.decode_with_type(Amf0Marker::String)? else {
-                    // TODO: CLOUD-91
-                    unreachable!();
-                };
-                // TODO: change expect to into_ok once stabliized
-                // https://doc.rust-lang.org/std/result/enum.Result.html#method.into_ok
-                let publishing_type =
-                    NetStreamCommandPublishPublishingType::from_str(&publishing_type).expect("infalible error");
+                let publishing_name = String::deserialize(&mut *deserializer)?;
+                let publishing_type = NetStreamCommandPublishPublishingType::deserialize(deserializer)?;
 
                 Ok(Some(Self::Publish {
                     publishing_name,
@@ -85,19 +70,17 @@ impl<'a> NetStreamCommand<'a> {
             }
             "seek" => {
                 // skip command object
-                decoder.decode_with_type(Amf0Marker::Null)?;
+                <()>::deserialize(&mut *deserializer)?;
 
-                let milliseconds = decoder.decode_with_type(Amf0Marker::Number)?.as_number()?;
-
+                let milliseconds = f64::deserialize(deserializer)?;
                 Ok(Some(Self::Seek { milliseconds }))
             }
             "pause" => {
                 // skip command object
-                decoder.decode_with_type(Amf0Marker::Null)?;
+                <()>::deserialize(&mut *deserializer)?;
 
-                let pause = decoder.decode_with_type(Amf0Marker::Boolean)?.as_boolean()?;
-                let milliseconds = decoder.decode_with_type(Amf0Marker::Number)?.as_number()?;
-
+                let pause = bool::deserialize(&mut *deserializer)?;
+                let milliseconds = f64::deserialize(deserializer)?;
                 Ok(Some(Self::Pause { pause, milliseconds }))
             }
             _ => Ok(None),
@@ -105,32 +88,20 @@ impl<'a> NetStreamCommand<'a> {
     }
 }
 
-impl FromStr for NetStreamCommandPublishPublishingType {
-    type Err = Infallible;
-
-    fn from_str(s: &str) -> Result<Self, Self::Err> {
-        match s {
-            "live" => Ok(Self::Live),
-            "record" => Ok(Self::Record),
-            "append" => Ok(Self::Append),
-            _ => Ok(Self::Unknown(s.to_string())),
-        }
-    }
-}
-
 #[cfg(test)]
 #[cfg_attr(all(test, coverage_nightly), coverage(off))]
 mod tests {
-    use std::str::FromStr;
+    use std::io;
 
-    use scuffle_amf0::{Amf0Decoder, Amf0Encoder, Amf0Marker};
+    use scuffle_amf0::Amf0Marker;
+    use serde::Serialize;
 
     use super::NetStreamCommandPublishPublishingType;
     use crate::command_messages::netstream::NetStreamCommand;
 
     #[test]
     fn test_command_no_payload() {
-        let command = NetStreamCommand::read("closeStream", &mut Amf0Decoder::new(&[]))
+        let command = NetStreamCommand::read("closeStream", &mut scuffle_amf0::Deserializer::new(io::Cursor::new(&[])))
             .unwrap()
             .unwrap();
         assert_eq!(command, NetStreamCommand::CloseStream);
@@ -141,9 +112,12 @@ mod tests {
         let mut payload = vec![Amf0Marker::Null as u8, Amf0Marker::Number as u8];
         payload.extend_from_slice(0.0f64.to_be_bytes().as_ref());
 
-        let command = NetStreamCommand::read("deleteStream", &mut Amf0Decoder::new(&payload))
-            .unwrap()
-            .unwrap();
+        let command = NetStreamCommand::read(
+            "deleteStream",
+            &mut scuffle_amf0::Deserializer::new(io::Cursor::new(&payload)),
+        )
+        .unwrap()
+        .unwrap();
         assert_eq!(command, NetStreamCommand::DeleteStream { stream_id: 0.0 });
     }
 
@@ -151,11 +125,14 @@ mod tests {
     fn test_command_publish() {
         let mut payload = Vec::new();
 
-        Amf0Encoder::encode_null(&mut payload).unwrap();
-        Amf0Encoder::encode_string(&mut payload, "live").unwrap();
-        Amf0Encoder::encode_string(&mut payload, "record").unwrap();
+        let mut serializer = scuffle_amf0::Serializer::new(&mut payload);
+        ().serialize(&mut serializer).unwrap();
+        "live".serialize(&mut serializer).unwrap();
+        NetStreamCommandPublishPublishingType::Record
+            .serialize(&mut serializer)
+            .unwrap();
 
-        let command = NetStreamCommand::read("publish", &mut Amf0Decoder::new(&payload))
+        let command = NetStreamCommand::read("publish", &mut scuffle_amf0::Deserializer::new(io::Cursor::new(&payload)))
             .unwrap()
             .unwrap();
 
@@ -165,26 +142,6 @@ mod tests {
                 publishing_name: "live".into(),
                 publishing_type: NetStreamCommandPublishPublishingType::Record
             }
-        );
-    }
-
-    #[test]
-    fn test_parse_publishing_type() {
-        assert_eq!(
-            NetStreamCommandPublishPublishingType::from_str("live").unwrap(),
-            NetStreamCommandPublishPublishingType::Live
-        );
-        assert_eq!(
-            NetStreamCommandPublishPublishingType::from_str("record").unwrap(),
-            NetStreamCommandPublishPublishingType::Record
-        );
-        assert_eq!(
-            NetStreamCommandPublishPublishingType::from_str("append").unwrap(),
-            NetStreamCommandPublishPublishingType::Append
-        );
-        assert_eq!(
-            NetStreamCommandPublishPublishingType::from_str("unknown").unwrap(),
-            NetStreamCommandPublishPublishingType::Unknown("unknown".to_string())
         );
     }
 }

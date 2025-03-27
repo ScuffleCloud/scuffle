@@ -6,8 +6,7 @@
 //! In reality, it is used as a response message to both NetConnection and NetStream commands received from the client.
 //! This is why we have decided to put it in its own module.
 
-use std::borrow::Cow;
-
+use nutype_enum::nutype_enum;
 use scuffle_amf0::Amf0Object;
 
 use crate::command_messages::CommandResultLevel;
@@ -16,44 +15,43 @@ pub mod writer;
 
 /// The `onStatus` command is used to send status information from the server to the client.
 #[derive(Debug, Clone, PartialEq)]
-pub struct OnStatus<'a> {
+pub struct OnStatus {
     /// The status code.
     ///
     /// See the [`codes`] module for common status codes.
-    pub code: Cow<'a, str>,
+    pub code: OnStatusCode,
     /// The description of the status update.
-    pub description: Option<Cow<'a, str>>,
+    pub description: Option<String>,
     /// The level of the status update.
     pub level: CommandResultLevel,
     /// Any other additional information that should be sent as part of the object.
-    pub others: Option<Amf0Object<'a>>,
+    pub others: Option<Amf0Object>,
 }
 
-// We can't use a nutype enum here because it would have to wrap a Cow<'a, str>.
-// TODO: CLOUD-90
-/// Common status codes used in the `onStatus` command.
-#[allow(unused)]
-pub mod codes {
-    /// The `NetConnection.call()` method was not able to invoke the server-side method or command.
-    pub const NET_CONNECTION_CALL_FAILED: &str = "NetConnection.Call.Failed";
-    /// The application has been shut down (for example, if the application is out of memory resources
-    /// and must shut down to prevent the server from crashing) or the server has shut down.
-    pub const NET_CONNECTION_CONNECT_APP_SHUTDOWN: &str = "NetConnection.Connect.AppShutdown";
-    /// The connection was closed successfully.
-    pub const NET_CONNECTION_CONNECT_CLOSED: &str = "NetConnection.Connect.Closed";
-    /// The connection attempt failed.
-    pub const NET_CONNECTION_CONNECT_FAILED: &str = "NetConnection.Connect.Failed";
-    /// The client does not have permission to connect to the application.
-    pub const NET_CONNECTION_CONNECT_REJECTED: &str = "NetConnection.Connect.Rejected";
-    /// The connection attempt succeeded.
-    pub const NET_CONNECTION_CONNECT_SUCCESS: &str = "NetConnection.Connect.Success";
-    /// The server is requesting the client to reconnect.
-    pub const NET_CONNECTION_CONNECT_RECONNECT_REQUEST: &str = "NetConnection.Connect.ReconnectRequest";
-    /// The proxy server is not responding. See the ProxyStream class.
-    pub const NET_CONNECTION_PROXY_NOT_RESPONDING: &str = "NetConnection.Proxy.NotResponding";
+nutype_enum! {
+    /// Common status codes used in the `onStatus` command.
+    pub enum OnStatusCode(&'static str) {
+        /// The `NetConnection.call()` method was not able to invoke the server-side method or command.
+        NET_CONNECTION_CALL_FAILED = "NetConnection.Call.Failed",
+        /// The application has been shut down (for example, if the application is out of memory resources
+        /// and must shut down to prevent the server from crashing) or the server has shut down.
+        NET_CONNECTION_CONNECT_APP_SHUTDOWN = "NetConnection.Connect.AppShutdown",
+        /// The connection was closed successfully.
+        NET_CONNECTION_CONNECT_CLOSED = "NetConnection.Connect.Closed",
+        /// The connection attempt failed.
+        NET_CONNECTION_CONNECT_FAILED = "NetConnection.Connect.Failed",
+        /// The client does not have permission to connect to the application.
+        NET_CONNECTION_CONNECT_REJECTED = "NetConnection.Connect.Rejected",
+        /// The connection attempt succeeded.
+        NET_CONNECTION_CONNECT_SUCCESS = "NetConnection.Connect.Success",
+        /// The server is requesting the client to reconnect.
+        NET_CONNECTION_CONNECT_RECONNECT_REQUEST = "NetConnection.Connect.ReconnectRequest",
+        /// The proxy server is not responding. See the ProxyStream class.
+        NET_CONNECTION_PROXY_NOT_RESPONDING = "NetConnection.Proxy.NotResponding",
 
-    /// Publishing has started.
-    pub const NET_STREAM_PUBLISH_START: &str = "NetStream.Publish.Start";
-    /// Stream was successfully deleted.
-    pub const NET_STREAM_DELETE_STREAM_SUCCESS: &str = "NetStream.DeleteStream.Suceess";
+        /// Publishing has started.
+        NET_STREAM_PUBLISH_START = "NetStream.Publish.Start",
+        /// Stream was successfully deleted.
+        NET_STREAM_DELETE_STREAM_SUCCESS = "NetStream.DeleteStream.Suceess",
+    }
 }

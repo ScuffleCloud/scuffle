@@ -1,27 +1,25 @@
 //! NetStream command messages.
 
-use std::borrow::Cow;
-
 use scuffle_amf0::{Amf0Object, Amf0Value};
 
 pub mod reader;
 
 /// NetStream commands as defined in 7.2.2.
 #[derive(Debug, Clone, PartialEq)]
-pub enum NetStreamCommand<'a> {
+pub enum NetStreamCommand {
     /// Play command.
     Play {
         /// All values in the command.
         ///
         /// See the legacy RTMP spec for details.
-        values: Vec<Amf0Value<'a>>,
+        values: Vec<Amf0Value>,
     },
     /// Play2 command.
     Play2 {
         /// All values in the command.
         ///
         /// See the legacy RTMP spec for details.
-        parameters: Amf0Object<'a>,
+        parameters: Amf0Object,
     },
     /// Delete stream command.
     DeleteStream {
@@ -43,7 +41,7 @@ pub enum NetStreamCommand<'a> {
     /// Publish command.
     Publish {
         /// Name with which the stream is published.
-        publishing_name: Cow<'a, str>,
+        publishing_name: String,
         /// Type of publishing.
         publishing_type: NetStreamCommandPublishPublishingType,
     },
@@ -70,7 +68,8 @@ pub enum NetStreamCommand<'a> {
 /// Type of publishing.
 ///
 /// Appears as part of the [`NetStreamCommand::Publish`] command.
-#[derive(Debug, Clone, PartialEq, Eq)]
+#[derive(Debug, Clone, PartialEq, Eq, serde::Deserialize, serde::Serialize)]
+#[serde(rename_all = "camelCase")]
 pub enum NetStreamCommandPublishPublishingType {
     /// Citing the legacy RTMP spec, page 46:
     /// Live data is published without recording it in a file.
@@ -89,5 +88,6 @@ pub enum NetStreamCommandPublishPublishingType {
     /// is found, it is created.
     Append,
     /// Any other value.
+    #[serde(untagged)]
     Unknown(String),
 }

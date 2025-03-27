@@ -2,7 +2,6 @@
     import CollapsableItem from './CollapsableItem.svelte';
     import { NAV_ITEMS } from '$components/consts.svelte';
     import NavItemHeader from './NavItemHeader.svelte';
-    // Call CollapsableItem for each item in NAV_ITEMS
 </script>
 
 <ul class="nav-links">
@@ -10,7 +9,7 @@
         {#if item.children}
             <CollapsableItem navItem={item} />
         {:else}
-            <a href={item.path} class="nav-link">
+            <a href={item.path}>
                 <NavItemHeader navItem={item} isCollapsible />
             </a>
         {/if}
@@ -22,5 +21,8 @@
         list-style: none;
         margin: 0rem 0rem;
         padding: 0rem 0.5rem;
+        a {
+            text-decoration: none;
+        }
     }
 </style>

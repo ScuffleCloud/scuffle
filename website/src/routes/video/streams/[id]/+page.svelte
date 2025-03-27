@@ -1,11 +1,11 @@
 <script lang="ts">
     import type { VideoStream } from '$components/streams/types';
-    import AllVideoStreams from '$components/streams/AllVideoStreams.svelte';
-    import type { ListResponse, Streamed } from '$lib/types';
+    import VideoStreamDetails from '$components/streams/VideoStreamDetails.svelte';
+    import type { Streamed } from '$lib/types';
 
     type Props = {
         data: {
-            streams: Streamed<ListResponse<VideoStream>>;
+            stream: Streamed<VideoStream>;
         };
     };
 
@@ -16,7 +16,7 @@
     <title>Video | Live Streams | Scuffle</title>
 </svelte:head>
 <div class="page-bg">
-    <AllVideoStreams streamedData={pageData.streams} />
+    <VideoStreamDetails streamedData={pageData.stream} />
 </div>
 
 <style>

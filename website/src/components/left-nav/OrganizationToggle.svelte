@@ -67,7 +67,7 @@
                 }
 
                 .org-username {
-                    color: var(--color-brown700);
+                    color: var(--color-brown-700);
                     font-size: 1rem;
                     font-weight: 700;
                     line-height: normal;

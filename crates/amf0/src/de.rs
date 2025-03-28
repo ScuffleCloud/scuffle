@@ -255,18 +255,18 @@ where
         self.deserialize_string(visitor)
     }
 
-    fn deserialize_bytes<V>(self, _visitor: V) -> Result<V::Value, Self::Error>
+    fn deserialize_bytes<V>(self, visitor: V) -> Result<V::Value, Self::Error>
     where
         V: serde::de::Visitor<'de>,
     {
-        Err(Amf0Error::UnsupportedType("bytes"))
+        self.deserialize_seq(visitor)
     }
 
-    fn deserialize_byte_buf<V>(self, _visitor: V) -> Result<V::Value, Self::Error>
+    fn deserialize_byte_buf<V>(self, visitor: V) -> Result<V::Value, Self::Error>
     where
         V: serde::de::Visitor<'de>,
     {
-        Err(Amf0Error::UnsupportedType("bytes"))
+        self.deserialize_seq(visitor)
     }
 
     fn deserialize_option<V>(self, visitor: V) -> Result<V::Value, Self::Error>

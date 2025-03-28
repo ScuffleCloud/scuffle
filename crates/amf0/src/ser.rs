@@ -16,7 +16,7 @@ pub fn to_writer<W>(writer: W, value: &impl serde::Serialize) -> crate::Result<(
 where
     W: io::Write,
 {
-    let mut serializer = Serializer { writer };
+    let mut serializer = Serializer::new(writer);
     value.serialize(&mut serializer)
 }
 
@@ -101,8 +101,8 @@ where
         Ok(())
     }
 
-    fn serialize_char(self, _v: char) -> Result<Self::Ok, Self::Error> {
-        Err(Amf0Error::UnsupportedType("char"))
+    fn serialize_char(self, v: char) -> Result<Self::Ok, Self::Error> {
+        self.serialize_u8(v as u8)
     }
 
     fn serialize_str(self, v: &str) -> Result<Self::Ok, Self::Error> {
@@ -123,8 +123,14 @@ where
         Ok(())
     }
 
-    fn serialize_bytes(self, _v: &[u8]) -> Result<Self::Ok, Self::Error> {
-        Err(Amf0Error::UnsupportedType("bytes (&[u8])"))
+    fn serialize_bytes(self, v: &[u8]) -> Result<Self::Ok, Self::Error> {
+        let mut seq = self.serialize_seq(Some(v.len()))?;
+
+        for b in v {
+            SerializeSeq::serialize_element(&mut seq, b)?;
+        }
+
+        SerializeSeq::end(seq)
     }
 
     fn serialize_none(self) -> Result<Self::Ok, Self::Error> {
@@ -593,7 +599,94 @@ mod tests {
     #[test]
     fn string() {
         let value = "hello";
+        let bytes = to_bytes(&value).unwrap();
 
+        #[rustfmt::skip]
+        assert_eq!(
+            bytes,
+            [
+                Amf0Marker::String as u8,
+                0, 5, // length
+                b'h', b'e', b'l', b'l', b'o',
+            ]
+        );
+
+        let value = "a".repeat(u16::MAX as usize + 1);
+        let bytes = to_bytes(&value).unwrap();
+
+        let mut expected = vec![Amf0Marker::LongString as u8];
+        expected.extend_from_slice(&(value.len() as u32).to_be_bytes());
+        expected.extend(value.as_bytes());
+        assert_eq!(bytes, expected);
+    }
+
+    #[test]
+    fn char() {
+        let value = 'a';
+        let bytes = to_bytes(&value).unwrap();
+
+        let mut expected = vec![Amf0Marker::Number as u8];
+        expected.extend((b'a' as f64).to_be_bytes());
+        #[rustfmt::skip]
+        assert_eq!(bytes, expected);
+    }
+
+    #[test]
+    fn bool() {
+        let bytes = to_bytes(&true).unwrap();
+        assert_eq!(bytes, [Amf0Marker::Boolean as u8, 1]);
+
+        let bytes = to_bytes(&false).unwrap();
+        assert_eq!(bytes, [Amf0Marker::Boolean as u8, 0]);
+    }
+
+    #[test]
+    fn optional() {
+        let bytes = to_bytes(&()).unwrap();
+        assert_eq!(bytes, [Amf0Marker::Null as u8]);
+
+        let bytes = to_bytes(&None::<String>).unwrap();
+        assert_eq!(bytes, [Amf0Marker::Null as u8]);
+
+        #[derive(serde::Serialize)]
+        struct Unit;
+        let bytes = to_bytes(&Unit).unwrap();
+        assert_eq!(bytes, [Amf0Marker::Null as u8]);
+
+        let bytes = to_bytes(&Some("abc")).unwrap();
+        assert_eq!(bytes, [Amf0Marker::String as u8, 0, 3, b'a', b'b', b'c']);
+    }
+
+    #[test]
+    fn tuple_struct() {
+        #[derive(serde::Serialize)]
+        struct TupleStruct(String, String);
+
+        let value = TupleStruct("hello".to_string(), "world".to_string());
+        let bytes = to_bytes(&value).unwrap();
+
+        #[rustfmt::skip]
+        assert_eq!(
+            bytes,
+            [
+                Amf0Marker::StrictArray as u8,
+                0, 0, 0, 2, // array length
+                Amf0Marker::String as u8,
+                0, 5, // length
+                b'h', b'e', b'l', b'l', b'o',
+                Amf0Marker::String as u8,
+                0, 5, // length
+                b'w', b'o', b'r', b'l', b'd',
+            ]
+        );
+    }
+
+    #[test]
+    fn newtype_struct() {
+        #[derive(serde::Serialize)]
+        struct NewtypeStruct(String);
+
+        let value = NewtypeStruct("hello".to_string());
         let bytes = to_bytes(&value).unwrap();
 
         #[rustfmt::skip]
@@ -608,12 +701,53 @@ mod tests {
     }
 
     #[test]
-    fn bool() {
-        let bytes = to_bytes(&true).unwrap();
-        assert_eq!(bytes, [Amf0Marker::Boolean as u8, 1]);
+    fn array() {
+        let bytes = to_bytes(&[false, true, false]).unwrap();
+        #[rustfmt::skip]
+        assert_eq!(
+            bytes,
+            [
+                Amf0Marker::StrictArray as u8,
+                0, 0, 0, 3, // array length
+                Amf0Marker::Boolean as u8,
+                0,
+                Amf0Marker::Boolean as u8,
+                1,
+                Amf0Marker::Boolean as u8,
+                0,
+            ]
+        );
 
-        let bytes = to_bytes(&false).unwrap();
-        assert_eq!(bytes, [Amf0Marker::Boolean as u8, 0]);
+        let byte_array: [u8; 2] = [0, 1]; // 2 bytes
+        let bytes = to_bytes(&byte_array).unwrap();
+
+        #[rustfmt::skip]
+        let mut expected = vec![
+            Amf0Marker::StrictArray as u8,
+            0, 0, 0, 2, // array length
+            Amf0Marker::Number as u8,
+        ];
+        expected.extend(&0.0f64.to_be_bytes());
+        expected.push(Amf0Marker::Number as u8);
+        expected.extend(&1.0f64.to_be_bytes());
+        assert_eq!(bytes, expected,);
+
+        let bytes = to_bytes(&("a", false, true)).unwrap();
+        #[rustfmt::skip]
+        assert_eq!(
+            bytes,
+            [
+                Amf0Marker::StrictArray as u8,
+                0, 0, 0, 3, // array length
+                Amf0Marker::String as u8,
+                0, 1, // length
+                b'a',
+                Amf0Marker::Boolean as u8,
+                0,
+                Amf0Marker::Boolean as u8,
+                1,
+            ]
+        );
     }
 
     fn number_test<T>(one: T)

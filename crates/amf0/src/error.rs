@@ -16,9 +16,6 @@ pub enum Amf0Error {
     /// IO error.
     #[error("io error: {0}")]
     Io(#[from] io::Error),
-    /// Unsupported type.
-    #[error("this type is not supported: {0}")]
-    UnsupportedType(&'static str),
     /// Element (string or sequence) is too long.
     #[error("element is too long: {0}")]
     TooLong(#[from] TryFromIntError),

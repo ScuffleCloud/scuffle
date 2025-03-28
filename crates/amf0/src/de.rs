@@ -1,8 +1,9 @@
 //! Deserialize AMF0 data to a Rust data structure.
 
-use std::io;
+use std::io::{self, Seek};
 
 use byteorder::{BigEndian, ReadBytesExt};
+use bytes::Buf;
 use num_traits::FromPrimitive;
 use serde::de::{EnumAccess, IntoDeserializer, MapAccess, SeqAccess, VariantAccess};
 
@@ -12,7 +13,7 @@ use crate::{Amf0Error, Amf0Marker, Amf0Value};
 pub fn from_reader<'de, T, R>(reader: R) -> crate::Result<T>
 where
     T: serde::de::Deserialize<'de>,
-    R: io::Read + io::Seek,
+    R: io::Read + AsRef<[u8]> + 'de,
 {
     let mut de = Deserializer::new(reader);
     let value = T::deserialize(&mut de)?;
@@ -24,21 +25,25 @@ pub fn from_bytes<'de, T>(bytes: &'de [u8]) -> crate::Result<T>
 where
     T: serde::de::Deserialize<'de>,
 {
-    from_reader(std::io::Cursor::new(bytes))
+    let mut de = Deserializer::new(bytes);
+    let value = T::deserialize(&mut de)?;
+    Ok(value)
 }
 
 /// Deserializer for AMF0 data.
 pub struct Deserializer<R> {
-    reader: R,
+    reader: io::Cursor<R>,
 }
 
-impl<R> Deserializer<R>
+impl<'de, R> Deserializer<R>
 where
-    R: io::Read + io::Seek,
+    R: io::Read + AsRef<[u8]> + 'de,
 {
     /// Create a new deserializer from a reader.
     pub fn new(reader: R) -> Self {
-        Deserializer { reader }
+        Deserializer {
+            reader: io::Cursor::new(reader),
+        }
     }
 
     fn expect_marker(&mut self, expect: &'static [Amf0Marker]) -> Result<(), Amf0Error> {
@@ -76,15 +81,14 @@ where
         Ok(number)
     }
 
-    fn read_normal_string(&mut self) -> Result<String, Amf0Error> {
+    fn read_normal_string(&mut self) -> Result<&'de str, Amf0Error> {
         let len = self.reader.read_u16::<BigEndian>()? as usize;
-        let mut buf = vec![0; len];
-        self.reader.read_exact(&mut buf)?;
-        let s = String::from_utf8(buf)?;
+        let slice = &self.reader.get_ref().as_ref()[..len];
+        let s = std::str::from_utf8(slice)?;
         Ok(s)
     }
 
-    fn read_string(&mut self) -> Result<String, Amf0Error> {
+    fn read_borrowed_string<'a>(&'a mut self) -> Result<&'de str, Amf0Error> {
         let marker = self.reader.read_u8()?;
         let marker = Amf0Marker::from_u8(marker).ok_or(Amf0Error::UnknownMarker(marker))?;
 
@@ -99,17 +103,17 @@ where
             });
         };
 
-        // TODO: we allocate here. Do we have to?
-        let mut buf = vec![0; len];
-        self.reader.read_exact(&mut buf)?;
-        let s = String::from_utf8(buf)?;
+        let slice = self.reader.get_ref();
+        let slice = slice.as_ref();
+        let slice = &slice[..len];
+        let s = std::str::from_utf8(slice)?;
         Ok(s)
     }
 }
 
-impl<B> Deserializer<B>
+impl<'de, B> Deserializer<B>
 where
-    B: io::Read + io::Seek + bytes::Buf,
+    B: io::Read + AsRef<[u8]>,
 {
     /// Deserialize the remaining values from the reader and return them as a vector of [`Amf0Value`]s.
     pub fn deserialize_all(&mut self) -> Result<Vec<Amf0Value>, Amf0Error> {
@@ -124,9 +128,9 @@ where
     }
 }
 
-impl<'de, R> serde::de::Deserializer<'de> for &mut Deserializer<R>
+impl<'a, 'de, R> serde::de::Deserializer<'de> for &'a mut Deserializer<R>
 where
-    R: io::Read + io::Seek,
+    R: io::Read + AsRef<[u8]> + 'de,
 {
     type Error = Amf0Error;
 
@@ -244,15 +248,16 @@ where
     where
         V: serde::de::Visitor<'de>,
     {
-        let s = self.read_string()?;
-        visitor.visit_string(s)
+        let s = self.read_borrowed_string()?;
+        visitor.visit_string(s.to_string())
     }
 
     fn deserialize_str<V>(self, visitor: V) -> Result<V::Value, Self::Error>
     where
         V: serde::de::Visitor<'de>,
     {
-        self.deserialize_string(visitor)
+        let s = self.read_borrowed_string()?;
+        visitor.visit_borrowed_str(s)
     }
 
     fn deserialize_bytes<V>(self, visitor: V) -> Result<V::Value, Self::Error>
@@ -276,7 +281,7 @@ where
         let marker = self.reader.read_u8()?;
         let marker = Amf0Marker::from_u8(marker).ok_or(Amf0Error::UnknownMarker(marker))?;
 
-        if marker == Amf0Marker::Null {
+        if marker == Amf0Marker::Null || marker == Amf0Marker::Undefined {
             visitor.visit_none()
         } else {
             // We have to seek back because the marker is part of the next value
@@ -412,8 +417,8 @@ where
     where
         V: serde::de::Visitor<'de>,
     {
-        let s = self.read_normal_string()?;
-        visitor.visit_string(s)
+        let s = self.read_borrowed_string()?;
+        visitor.visit_borrowed_str(s)
     }
 
     fn deserialize_ignored_any<V>(self, visitor: V) -> Result<V::Value, Self::Error>
@@ -431,7 +436,7 @@ struct StrictArray<'a, R> {
 
 impl<'a, 'de, R> SeqAccess<'de> for StrictArray<'a, R>
 where
-    R: io::Read + io::Seek,
+    R: io::Read + AsRef<[u8]> + 'de,
 {
     type Error = Amf0Error;
 
@@ -458,7 +463,7 @@ struct Object<'a, R> {
 
 impl<'a, 'de, R> MapAccess<'de> for Object<'a, R>
 where
-    R: io::Read + io::Seek,
+    R: io::Read + AsRef<[u8]> + 'de,
 {
     type Error = Amf0Error;
 
@@ -495,7 +500,7 @@ struct EcmaArray<'a, R> {
 
 impl<'a, 'de, R> MapAccess<'de> for EcmaArray<'a, R>
 where
-    R: io::Read + io::Seek,
+    R: io::Read + AsRef<[u8]> + 'de,
 {
     type Error = Amf0Error;
 
@@ -542,7 +547,7 @@ struct Enum<'a, R> {
 
 impl<'a, 'de, R> EnumAccess<'de> for Enum<'a, R>
 where
-    R: io::Read + io::Seek,
+    R: io::Read + AsRef<[u8]> + 'de,
 {
     type Error = Amf0Error;
     type Variant = Self;
@@ -551,7 +556,7 @@ where
     where
         V: serde::de::DeserializeSeed<'de>,
     {
-        let variant = self.de.read_string()?;
+        let variant = self.de.read_borrowed_string()?;
         let string_de = IntoDeserializer::<Self::Error>::into_deserializer(variant);
         let value = seed.deserialize(string_de)?;
 
@@ -561,7 +566,7 @@ where
 
 impl<'a, 'de, R> VariantAccess<'de> for Enum<'a, R>
 where
-    R: io::Read + io::Seek,
+    R: io::Read + AsRef<[u8]> + 'de,
 {
     type Error = Amf0Error;
 
@@ -596,10 +601,9 @@ where
 mod tests {
     use core::f64;
     use std::fmt::Debug;
-    use std::io;
 
     use super::Deserializer;
-    use crate::{Amf0Marker, Amf0Object, Amf0Value, from_bytes};
+    use crate::{Amf0Error, Amf0Marker, Amf0Object, Amf0Value, from_bytes};
 
     #[test]
     fn string() {
@@ -611,6 +615,9 @@ mod tests {
         ];
 
         let value: String = from_bytes(&bytes).unwrap();
+        assert_eq!(value, "hello");
+
+        let value: &str = from_bytes(&bytes).unwrap();
         assert_eq!(value, "hello");
     }
 
@@ -647,6 +654,7 @@ mod tests {
     #[test]
     fn numbers() {
         number_test(1u8);
+        number_test(1u8 as char);
         number_test(1u16);
         number_test(1u32);
         number_test(1u64);
@@ -656,6 +664,108 @@ mod tests {
         number_test(1i64);
         number_test(1f32);
         number_test(1f64);
+    }
+
+    #[test]
+    fn optional() {
+        let bytes = [Amf0Marker::Null as u8];
+        let value: Option<bool> = from_bytes(&bytes).unwrap();
+        assert_eq!(value, None);
+
+        let bytes = [Amf0Marker::Null as u8];
+        from_bytes::<()>(&bytes).unwrap();
+
+        let bytes = [Amf0Marker::String as u8];
+        let err = from_bytes::<()>(&bytes).unwrap_err();
+        assert!(matches!(
+            err,
+            Amf0Error::UnexpectedType {
+                expected: [Amf0Marker::Null, Amf0Marker::Undefined],
+                got: Amf0Marker::String
+            }
+        ));
+
+        let bytes = [Amf0Marker::Undefined as u8];
+        let value: Option<bool> = from_bytes(&bytes).unwrap();
+        assert_eq!(value, None);
+
+        let bytes = [Amf0Marker::Boolean as u8, 0];
+        let value: Option<bool> = from_bytes(&bytes).unwrap();
+        assert_eq!(value, Some(false));
+
+        #[derive(serde::Deserialize, PartialEq, Debug)]
+        struct Unit;
+
+        let bytes = [Amf0Marker::Null as u8];
+        let value: Unit = from_bytes(&bytes).unwrap();
+        assert_eq!(value, Unit);
+    }
+
+    #[test]
+    fn newtype_struct() {
+        #[derive(serde::Deserialize, Debug, PartialEq)]
+        struct Test(String);
+
+        #[rustfmt::skip]
+        let bytes = [
+            Amf0Marker::String as u8,
+            0, 5, // length
+            b'h', b'e', b'l', b'l', b'o',
+        ];
+        let value: Test = from_bytes(&bytes).unwrap();
+        assert_eq!(value, Test("hello".to_string()));
+    }
+
+    #[test]
+    fn tuple_struct() {
+        #[derive(serde::Deserialize, Debug, PartialEq)]
+        struct Test(bool, String);
+
+        #[rustfmt::skip]
+        let bytes = [
+            Amf0Marker::StrictArray as u8,
+            0, 0, 0, 2, // length
+            Amf0Marker::Boolean as u8,
+            1,
+            Amf0Marker::String as u8,
+            0, 5, // length
+            b'h', b'e', b'l', b'l', b'o',
+        ];
+        let value: Test = from_bytes(&bytes).unwrap();
+        assert_eq!(value, Test(true, "hello".to_string()));
+    }
+
+    #[test]
+    fn typed_object() {
+        #[derive(serde::Deserialize, Debug, PartialEq)]
+        struct Test {
+            a: bool,
+            b: String,
+        }
+
+        #[rustfmt::skip]
+        let bytes = [
+            Amf0Marker::TypedObject as u8,
+            0, 1, // name length
+            b'a', // name
+            0, 1, // length
+            b'a', // key
+            Amf0Marker::Boolean as u8,
+            1,
+            0, 1, // length
+            b'b', // key
+            Amf0Marker::String as u8,
+            0, 5, // length
+            b'h', b'e', b'l', b'l', b'o',
+        ];
+        let value: Test = from_bytes(&bytes).unwrap();
+        assert_eq!(
+            value,
+            Test {
+                a: true,
+                b: "hello".to_string()
+            }
+        );
     }
 
     #[test]
@@ -801,7 +911,7 @@ mod tests {
         ];
         bytes.extend_from_slice(&f64::consts::PI.to_be_bytes());
 
-        let mut de = Deserializer::new(io::Cursor::new(bytes));
+        let mut de = Deserializer::new(&*bytes);
         let value: String = serde::de::Deserialize::deserialize(&mut de).unwrap();
         assert_eq!(value, "hello");
         let value: bool = serde::de::Deserialize::deserialize(&mut de).unwrap();
@@ -852,7 +962,7 @@ mod tests {
     }
 
     #[test]
-    fn remaining() {
+    fn all() {
         let bytes = [
             Amf0Marker::String as u8,
             0,
@@ -875,7 +985,7 @@ mod tests {
             Amf0Marker::ObjectEnd as u8,
         ];
 
-        let mut de = Deserializer::new(io::Cursor::new(bytes));
+        let mut de = Deserializer::new(&bytes[..]);
         let values = de.deserialize_all().unwrap();
         assert_eq!(
             values,

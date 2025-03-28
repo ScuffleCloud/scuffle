@@ -3,7 +3,7 @@
 use std::fmt::Display;
 use std::io;
 use std::num::TryFromIntError;
-use std::str::Utf8Error;
+use std::string::FromUtf8Error;
 
 use crate::Amf0Marker;
 
@@ -31,9 +31,9 @@ pub enum Amf0Error {
     /// This marker cannot be deserialized.
     #[error("this marker cannot be deserialized: {0:?}")]
     UnsupportedMarker(Amf0Marker),
-    /// &str parse error.
-    #[error("&str parse error: {0}")]
-    StrParseError(#[from] Utf8Error),
+    /// String parse error.
+    #[error("string parse error: {0}")]
+    StringParseError(#[from] FromUtf8Error),
     /// Unexpected type.
     #[error("unexpected type: expected one of {expected:?}, got {got:?}")]
     UnexpectedType {

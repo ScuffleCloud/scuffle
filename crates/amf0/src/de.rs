@@ -248,11 +248,11 @@ where
         visitor.visit_string(s)
     }
 
-    fn deserialize_str<V>(self, visitor: V) -> Result<V::Value, Self::Error>
+    fn deserialize_str<V>(self, _visitor: V) -> Result<V::Value, Self::Error>
     where
         V: serde::de::Visitor<'de>,
     {
-        self.deserialize_string(visitor)
+        unimplemented!("zero-copy deserialization is not supported")
     }
 
     fn deserialize_bytes<V>(self, visitor: V) -> Result<V::Value, Self::Error>
@@ -599,7 +599,7 @@ mod tests {
     use std::io;
 
     use super::Deserializer;
-    use crate::{Amf0Marker, Amf0Object, Amf0Value, from_bytes};
+    use crate::{Amf0Error, Amf0Marker, Amf0Object, Amf0Value, from_bytes};
 
     #[test]
     fn string() {
@@ -647,6 +647,7 @@ mod tests {
     #[test]
     fn numbers() {
         number_test(1u8);
+        number_test(1u8 as char);
         number_test(1u16);
         number_test(1u32);
         number_test(1u64);
@@ -656,6 +657,109 @@ mod tests {
         number_test(1i64);
         number_test(1f32);
         number_test(1f64);
+    }
+
+    #[test]
+    fn optional() {
+        let bytes = [Amf0Marker::Null as u8];
+        let value: Option<bool> = from_bytes(&bytes).unwrap();
+        assert_eq!(value, None);
+
+        let bytes = [Amf0Marker::Null as u8];
+        from_bytes::<()>(&bytes).unwrap();
+
+        let bytes = [Amf0Marker::String as u8];
+        let err = from_bytes::<()>(&bytes).unwrap_err();
+        assert!(matches!(
+            err,
+            Amf0Error::UnexpectedType {
+                expected: [Amf0Marker::Null, Amf0Marker::Undefined],
+                got: Amf0Marker::String
+            }
+        ));
+
+        let bytes = [Amf0Marker::Undefined as u8];
+        let value: Option<bool> = from_bytes(&bytes).unwrap();
+        assert_eq!(value, None);
+
+        let bytes = [Amf0Marker::Boolean as u8, 0];
+        let value: Option<bool> = from_bytes(&bytes).unwrap();
+        assert_eq!(value, Some(false));
+
+        #[derive(serde::Deserialize, PartialEq, Debug)]
+        struct Unit;
+
+        let bytes = [Amf0Marker::Null as u8];
+        let value: Unit = from_bytes(&bytes).unwrap();
+        assert_eq!(value, Unit);
+    }
+
+    #[test]
+    fn newtype_struct() {
+        #[derive(serde::Deserialize, Debug, PartialEq)]
+        struct Test(String);
+
+        #[rustfmt::skip]
+        let bytes = [
+            Amf0Marker::String as u8,
+            0, 5, // length
+            b'h', b'e', b'l', b'l', b'o',
+        ];
+        let value: Test = from_bytes(&bytes).unwrap();
+        assert_eq!(value, Test("hello".to_string()));
+    }
+
+    #[test]
+    fn tuple_struct() {
+        #[derive(serde::Deserialize, Debug, PartialEq)]
+        struct Test(bool, String);
+
+        #[rustfmt::skip]
+        let bytes = [
+            Amf0Marker::StrictArray as u8,
+            0, 0, 0, 2, // length
+            Amf0Marker::Boolean as u8,
+            1,
+            Amf0Marker::String as u8,
+            0, 5, // length
+            b'h', b'e', b'l', b'l', b'o',
+        ];
+        let value: Test = from_bytes(&bytes).unwrap();
+        assert_eq!(value, Test(true, "hello".to_string()));
+    }
+
+    #[test]
+    fn typed_object() {
+        #[derive(serde::Deserialize, Debug, PartialEq)]
+        struct Test {
+            a: bool,
+            b: String,
+        }
+
+        #[rustfmt::skip]
+        let bytes = [
+            Amf0Marker::TypedObject as u8,
+            0, 1, // name length
+            b'a', // name
+            0, 1, // length
+            b'a', // key
+            Amf0Marker::Boolean as u8,
+            1,
+            0, 1, // length
+            b'b', // key
+            Amf0Marker::String as u8,
+            0, 5, // length
+            b'h', b'e', b'l', b'l', b'o',
+            0, 0, Amf0Marker::ObjectEnd as u8,
+        ];
+        let value: Test = from_bytes(&bytes).unwrap();
+        assert_eq!(
+            value,
+            Test {
+                a: true,
+                b: "hello".to_string()
+            }
+        );
     }
 
     #[test]
@@ -852,7 +956,7 @@ mod tests {
     }
 
     #[test]
-    fn remaining() {
+    fn all() {
         let bytes = [
             Amf0Marker::String as u8,
             0,

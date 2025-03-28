@@ -7,9 +7,9 @@ use crate::protocol_control_messages::{
     ProtocolControlMessageSetChunkSize, ProtocolControlMessageWindowAcknowledgementSize,
 };
 
-impl<'a> MessageData<'a> {
+impl MessageData {
     /// Reads [`MessageData`] from the given chunk.
-    pub fn read(chunk: &'a Chunk) -> Result<Self, crate::error::RtmpError> {
+    pub fn read(chunk: &Chunk) -> Result<Self, crate::error::RtmpError> {
         match chunk.message_header.msg_type_id {
             // Protocol Control Messages
             MessageType::SetChunkSize => {
@@ -53,7 +53,8 @@ impl<'a> MessageData<'a> {
 #[cfg_attr(all(test, coverage_nightly), coverage(off))]
 mod tests {
     use bytes::Bytes;
-    use scuffle_amf0::{Amf0Encoder, Amf0Value};
+    use scuffle_amf0::{Amf0Object, Amf0Value};
+    use serde::Serialize;
 
     use super::*;
     use crate::command_messages::CommandType;
@@ -61,13 +62,18 @@ mod tests {
 
     #[test]
     fn test_parse_command() {
-        let mut amf0_writer = Vec::new();
+        let mut buf = Vec::new();
+        let mut serializer = scuffle_amf0::Serializer::new(&mut buf);
 
-        Amf0Encoder::encode_string(&mut amf0_writer, "connect").unwrap();
-        Amf0Encoder::encode_number(&mut amf0_writer, 1.0).unwrap();
-        Amf0Encoder::encode_object(&mut amf0_writer, &[("app".into(), Amf0Value::String("testapp".into()))]).unwrap();
+        "connect".serialize(&mut serializer).unwrap();
+        1.0f64.serialize(&mut serializer).unwrap();
+        [("app".into(), Amf0Value::String("testapp".into()))]
+            .into_iter()
+            .collect::<Amf0Object>()
+            .serialize(&mut serializer)
+            .unwrap();
 
-        let amf_data = Bytes::from(amf0_writer);
+        let amf_data = Bytes::from(buf);
 
         let chunk = Chunk::new(0, 0, MessageType::CommandAMF0, 0, amf_data);
 
@@ -152,12 +158,17 @@ mod tests {
 
     #[test]
     fn test_parse_metadata() {
-        let mut amf0_writer = Vec::new();
+        let mut buf = Vec::new();
 
-        Amf0Encoder::encode_string(&mut amf0_writer, "onMetaData").unwrap();
-        Amf0Encoder::encode_object(&mut amf0_writer, &[("duration".into(), Amf0Value::Number(0.0))]).unwrap();
+        let mut serializer = scuffle_amf0::Serializer::new(&mut buf);
+        "onMetaData".serialize(&mut serializer).unwrap();
+        [("duration".into(), Amf0Value::Number(0.0))]
+            .into_iter()
+            .collect::<Amf0Object>()
+            .serialize(&mut serializer)
+            .unwrap();
 
-        let amf_data = Bytes::from(amf0_writer);
+        let amf_data = Bytes::from(buf);
         let chunk = Chunk::new(0, 0, MessageType::DataAMF0, 0, amf_data.clone());
 
         let message = MessageData::read(&chunk).expect("no errors");

@@ -1,0 +1,15 @@
+[[scuffle-amf0]]
+category = "feat"
+description = "rewrite with serde support"
+breaking = true
+authors = ["@lennartkloock"]
+
+[[scuffle-flv]]
+category = "chore"
+description = "update to use new version of scuffle-amf0"
+authors = ["@lennartkloock"]
+
+[[scuffle-rtmp]]
+category = "chore"
+description = "update to use new version of scuffle-amf0"
+authors = ["@lennartkloock"]

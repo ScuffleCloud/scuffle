@@ -3,7 +3,7 @@
 use std::fmt::Display;
 use std::io;
 
-use bytes::Bytes;
+use bytes::{BufMut, Bytes, BytesMut};
 
 use super::error::CommandError;
 use super::{Command, CommandResultLevel, CommandType};
@@ -34,7 +34,7 @@ impl Display for CommandResultLevel {
     }
 }
 
-impl Command<'_> {
+impl Command {
     fn write_amf0_chunk(io: &mut impl io::Write, writer: &ChunkWriter, payload: Bytes) -> io::Result<()> {
         writer.write_chunk(
             io,
@@ -46,23 +46,24 @@ impl Command<'_> {
     ///
     /// Skips unknown commands.
     pub fn write(self, io: &mut impl io::Write, writer: &ChunkWriter) -> Result<(), RtmpError> {
-        let mut buf = Vec::new();
+        let mut buf = BytesMut::new();
+        let mut buf_writer = (&mut buf).writer();
 
         match self.command_type {
             CommandType::NetConnection(command) => {
-                command.write(&mut buf, self.transaction_id)?;
+                command.write(&mut buf_writer, self.transaction_id)?;
             }
             CommandType::NetStream(_) => {
                 return Err(RtmpError::from(CommandError::NoClientImplementation));
             }
             CommandType::OnStatus(command) => {
-                command.write(&mut buf, self.transaction_id)?;
+                command.write(&mut buf_writer, self.transaction_id)?;
             }
             // don't write unknown commands
             CommandType::Unknown { .. } => {}
         }
 
-        Self::write_amf0_chunk(io, writer, Bytes::from(buf))?;
+        Self::write_amf0_chunk(io, writer, buf.freeze())?;
 
         Ok(())
     }

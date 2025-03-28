@@ -47,7 +47,7 @@ impl VideoData {
 #[cfg(test)]
 #[cfg_attr(all(test, coverage_nightly), coverage(off))]
 mod tests {
-    use scuffle_amf0::Amf0Marker;
+    use scuffle_amf0::{Amf0Marker, Amf0Object};
     use scuffle_av1::AV1CodecConfigurationRecord;
 
     use super::header::enhanced::{VideoFourCc, VideoPacketType};
@@ -203,7 +203,7 @@ mod tests {
             metadata[0],
             VideoPacketMetadataEntry::Other {
                 key: "".to_string(),
-                object: vec![], // empty object
+                object: Amf0Object::new(), // empty object
             }
         );
     }

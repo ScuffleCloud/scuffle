@@ -1,51 +1,196 @@
 use std::io;
+use std::num::NonZero;
 
 use byteorder::ReadBytesExt;
 use bytes::Bytes;
-use scuffle_bytes_util::BitReader;
-use scuffle_expgolomb::BitReaderExpGolombExt;
+use scuffle_bytes_util::{BitReader, BitWriter};
+use scuffle_expgolomb::{BitReaderExpGolombExt, BitWriterExpGolombExt};
 
-#[derive(Debug, Clone, PartialEq)]
 /// The Sequence Parameter Set.
 /// ISO/IEC-14496-10-2022 - 7.3.2
+#[derive(Debug, Clone, PartialEq)]
 pub struct Sps {
-    /// The `forbidden_zero_bit` is a single bit that must be set to 0. Otherwise
-    /// `parse()` will return an error.
-    ///
-    /// 7.4.2.2
-    pub forbidden_zero_bit: bool,
-    // TODO: make this a nutype enum. but also apparently we only accept 33 so... ??
+    // TODO: make this a nutype enum.
     /// cannot be 33
+    ///
+    /// 6 bits
     pub nalu_type: u8,
 
+    /// The `nuh_layer_id` is 6 bits containing the id of the layer that a non/VCL NAL unit belongs to.
+    ///
+    /// This value ranges from \[0, 62\], with 63 being reserved for future use.
+    ///
+    /// If nalu_type is equal to EOB_NUT then this is set to 0.
     pub nuh_layer_id: u8,
 
-    pub nuh_temporal_id_plus1: u8,
+    /// The `nuh_temporal_id_plus1` is 3 bits, where the value minus 1 is the temporal id for the NAL unit.
+    ///
+    /// This value cannot be 0.
+    pub nuh_temporal_id_plus1: NonZero<u8>,
 
+    /// The `sps_video_parameter_set_id` is 4 bits, and is the value of the
+    /// `vps_video_parameter_set_id` of the active VPS.
+    ///
+    /// ISO/IEC-23008-2-2020 - 7.4.3.2.1
     pub sps_video_parameter_set_id: u8,
 
+    /// The `sps_max_sub_layers_minus1` is 3 bits, where the value plus 1 is the max number of temporal
+    /// sub-layers that might be in each CVS referring to the SPS.
+    ///
+    /// The value ranges from \[0, 6\]. The value must be less than or equal to `vps_max_sub_layers_minus1`.
+    ///
+    /// ISO/IEC-23008-2-2020 - 7.4.3.2.1
     pub sps_max_sub_layers_minus1: u8,
 
-    /// The `sps_temporal_id_nesting_flag` is a single bit. TODO: this
+    /// The `sps_temporal_id_nesting_flag` is a single bit.
     ///
-    /// After this field is read, `profile_tier_level(1, sps_max_sub_layers_minus1)` will be read.
+    /// When `sps_max_sub_layers_minus1 > 0`, this means inter-prediction is restricted for
+    /// CVSs that refer to the Sps.
     ///
-    /// The parse function will still read the values if passed in correctly,
-    /// but the values will not be stored. This is because the reading and writing is supported by the mux
-    /// and demuxing functions of this crate instead.
+    /// When `vps_temporal_id_nesting_flag == 1`, this flag is 1.
+    ///
+    /// When `sps_max_sub_layers_minus1 == 0`, this flag is 1.
+    ///
+    /// ISO/IEC-23008-2-2020 - 7.4.3.2.1
     pub sps_temporal_id_nesting_flag: bool,
+
+    pub sub_layer_profile_present_flags: Vec<bool>, // size is sps_max_sub_layers_minus1
+
+    pub sub_layer_level_present_flags: Vec<bool>, // size is sps_max_sub_layers_minus1
+
+    pub sub_layer_level_idcs: Vec<u8>, // size is sum of sub_layer_level_level_present_flags
+
+    /// The `sps_seq_parameter_set_id` is an id for the SPS.
+    ///
+    /// The value of this ranges from \[0, 15\].
+    ///
+    /// This is a variable number of bits as it is encoded by an exp golomb (unsigned).
+    /// The smallest encoding would be for `0` which is encoded as `1`, which is a single bit.
+    /// The largest encoding would be for `15` which is encoded as `0 0001 0000`, which is 9 bits.
+    ///
+    /// For more information:
+    ///
+    /// <https://en.wikipedia.org/wiki/Exponential-Golomb_coding>
+    ///
+    /// ISO/IEC-23008-2-2020 - 7.4.3.2.1
     pub sps_seq_parameter_set_id: u8,
+
+    /// The `chroma_format_idc` is the chroma sampling relative to the luma sampling from 6.2.
+    ///
+    /// The value of this ranges from \[0, 3\].
+    ///
+    /// This is a variable number of bits as it is encoded by an exp golomb (unsigned).
+    /// The smallest encoding would be for `0` which is encoded as `1`, which is a single bit.
+    /// The largest encoding would be for `3` which is encoded as `0 0100`, which is 5 bits.
+    ///
+    /// For more information:
+    ///
+    /// <https://en.wikipedia.org/wiki/Exponential-Golomb_coding>
+    ///
+    /// ISO/IEC-23008-2-2020 - 7.4.3.2.1
     pub chroma_format_idc: u8,
-    pub separate_color_plane_flag: bool, // defaults to 0
-    pub pic_width_in_luma_samples: u8,
-    pub pic_height_in_luma_samples: u8,
-    pub conformance_window_flag: u8,
-    pub conf_win_left_offset: u8,
-    pub conf_win_right_offset: u8,
-    pub conf_win_top_offset: u8,
-    pub conf_win_bottom_offset: u8,
+
+    /// The `separate_colour_plane_flag` is a single bit.
+    ///
+    /// 0 means the the color components aren't coded separately and `ChromaArrayType` is set to `chroma_format_idc`.
+    ///
+    /// 1 means the 3 color components of the 4:4:4 chroma format are coded separately and
+    /// `ChromaArrayType` is set to 0.
+    ///
+    /// ISO/IEC-23008-2-2020 - 7.4.3.2.1
+    pub separate_color_plane_flag: bool,
+
+    /// The `pic_width_in_luma_samples` is the width of each decoded picture in units of luma samples.
+    ///
+    /// The value cannot be 0 and must be an integer multiple of `MinCbSizeY`.
+    ///
+    /// This is a variable number of bits as it is encoded by an exp golomb (unsigned).
+    ///
+    /// For more information:
+    ///
+    /// <https://en.wikipedia.org/wiki/Exponential-Golomb_coding>
+    ///
+    /// ISO/IEC-23008-2-2020 - 7.4.3.2.1
+    pub pic_width_in_luma_samples: u64,
+
+    /// The `pic_height_in_luma_samples` is the height of each decoded picture in units of luma samples.
+    ///
+    /// The value cannot be 0 and must be an integer multiple of `MinCbSizeY`.
+    ///
+    /// This is a variable number of bits as it is encoded by an exp golomb (unsigned).
+    ///
+    /// For more information:
+    ///
+    /// <https://en.wikipedia.org/wiki/Exponential-Golomb_coding>
+    ///
+    /// ISO/IEC-23008-2-2020 - 7.4.3.2.1
+    pub pic_height_in_luma_samples: u64,
+
+    /// An optional `conf_win_info` struct. This is computed by other fields, and isn't directly set.
+    ///
+    /// If the `conformance_window_flag` is set, then `conf_win_left_offset`, `conf_win_right_offset`,
+    /// `conf_win_top_offset`, and `conf_win_bottom_offset` will be read and stored.
+    ///
+    /// Refer to the [`ConfWindowInfo`] struct for more info.
+    pub conf_win_info: Option<ConfWindowInfo>,
+
+    /// The `bit_depth_luma_minus8` defines the BitDepth_Y and QpBdOffset_Y as:
+    ///
+    /// `BitDepth_Y = 8 + bit_depth_luma_minus8`
+    ///
+    /// and
+    ///
+    /// `QpBdOffset_Y = 6 * bit_depth_luma_minus8`
+    ///
+    /// The value of this ranges from \[0, 8\].
+    ///
+    /// This is a variable number of bits as it is encoded by an exp golomb (unsigned).
+    /// The smallest encoding would be for `0` which is encoded as `1`, which is a single bit.
+    /// The largest encoding would be for `8` which is encoded as `000 1001`, which is 7 bits.
+    ///
+    /// For more information:
+    ///
+    /// <https://en.wikipedia.org/wiki/Exponential-Golomb_coding>
+    ///
+    /// ISO/IEC-23008-2-2020 - 7.4.3.2.1
     pub bit_depth_luma_minus8: u8,
+
+    /// The `bit_depth_luma_minus8` defines the BitDepth_C and QpBdOffset_C as:
+    ///
+    /// `BitDepth_C = 8 + bit_depth_chroma_minus8`
+    ///
+    /// and
+    ///
+    /// `QpBdOffset_C = 6 * bit_depth_chroma_minus8`
+    ///
+    /// The value of this ranges from \[0, 8\].
+    ///
+    /// This is a variable number of bits as it is encoded by an exp golomb (unsigned).
+    /// The smallest encoding would be for `0` which is encoded as `1`, which is a single bit.
+    /// The largest encoding would be for `8` which is encoded as `000 1001`, which is 7 bits.
+    ///
+    /// For more information:
+    ///
+    /// <https://en.wikipedia.org/wiki/Exponential-Golomb_coding>
+    ///
+    /// ISO/IEC-23008-2-2020 - 7.4.3.2.1
     pub bit_depth_chroma_minus8: u8,
+
+    /// The `log2_max_pic_order_cnt_lsb_minus4` defines the MaxPicOrderCntLsb as:
+    ///
+    /// `MaxPicOrderCntLsb = 2^(log2_max_pic_order_cnt_lsb_minus4 + 4)`
+    ///
+    /// The value of this ranges from \[0, 12\].
+    ///
+    /// This is a variable number of bits as it is encoded by an exp golomb (unsigned).
+    /// The smallest encoding would be for `0` which is encoded as `1`, which is a single bit.
+    /// The largest encoding would be for `12` which is encoded as `000 1101`, which is 7 bits.
+    ///
+    /// For more information:
+    ///
+    /// <https://en.wikipedia.org/wiki/Exponential-Golomb_coding>
+    ///
+    /// ISO/IEC-23008-2-2020 - 7.4.3.2.1
     pub log2_max_pic_order_cnt_lsb_minus4: u8,
 
     /// The `sps_temporal_id_nesting_flag` is a single bit.
@@ -56,25 +201,78 @@ pub struct Sps {
     /// will be read for each sps_max_sub_layers_minus1.
     ///
     /// ISO/IEC-14496-10-2022 - 7.4.3.2.1
-    ///
-    /// Note that this crate does NOT use any of the aforementioned fields for decoding.
-    /// The parse function will still read the values if passed in correctly,
-    /// but the values will not be stored.
-    /// If you have an application that requires this feature, please reach out to us at <https://scuffle.cloud>.
     pub sps_sub_layer_ordering_info_present_flag: bool,
 
-    // 7.4.3.2.1
-    pub log2_min_luma_coding_block_size_minus3: u8,
-    pub log2_diff_max_min_luma_coding_block_size: u8,
-    pub log2_min_transform_block_size_minus2: u8,
-    pub log2_diff_max_min_transform_block_size: u8,
-    pub max_transform_hierarchy_depth_inter: u8,
-    pub max_transform_hierarchy_depth_intra: u8,
+    /// The `log2_min_luma_coding_block_size_minus3` plus 3defines the minimum luma coding block size.
+    ///
+    /// This is a variable number of bits as it is encoded by an exp golomb (unsigned).
+    ///
+    /// For more information:
+    ///
+    /// <https://en.wikipedia.org/wiki/Exponential-Golomb_coding>
+    ///
+    /// ISO/IEC-23008-2-2020 - 7.4.3.2.1
+    pub log2_min_luma_coding_block_size_minus3: u64,
 
+    /// The `log2_diff_max_min_luma_coding_block_size` defines the difference between the maximum and minimum luma coding block size.
+    ///
+    /// This is a variable number of bits as it is encoded by an exp golomb (unsigned).
+    ///
+    /// For more information:
+    ///
+    /// <https://en.wikipedia.org/wiki/Exponential-Golomb_coding>
+    ///
+    /// ISO/IEC-23008-2-2020 - 7.4.3.2.1
+    pub log2_diff_max_min_luma_coding_block_size: u64,
+
+    /// The `log2_min_transform_block_size_minus2` plus 2 defines the minimum luma transform block size.
+    ///
+    /// This is a variable number of bits as it is encoded by an exp golomb (unsigned).
+    ///
+    /// For more information:
+    ///
+    /// <https://en.wikipedia.org/wiki/Exponential-Golomb_coding>
+    ///
+    /// ISO/IEC-23008-2-2020 - 7.4.3.2.1
+    pub log2_min_transform_block_size_minus2: u64,
+
+    /// The `log2_diff_max_min_transform_block_size` defines the difference between the maximum and minimum luma transform block size.
+    ///
+    /// This is a variable number of bits as it is encoded by an exp golomb (unsigned).
+    ///
+    /// For more information:
+    ///
+    /// <https://en.wikipedia.org/wiki/Exponential-Golomb_coding>
+    ///
+    /// ISO/IEC-23008-2-2020 - 7.4.3.2.1
+    pub log2_diff_max_min_transform_block_size: u64,
+
+    /// The `max_transform_hierarchy_depth_inter` defines the maximum transform hierarchy depth for inter prediction.
+    ///
+    /// This is a variable number of bits as it is encoded by an exp golomb (unsigned).
+    ///
+    /// For more information:
+    ///
+    /// <https://en.wikipedia.org/wiki/Exponential-Golomb_coding>
+    ///
+    /// ISO/IEC-23008-2-2020 - 7.4.3.2.1
+    pub max_transform_hierarchy_depth_inter: u64,
+
+    /// The `max_transform_hierarchy_depth_intra` defines the maximum transform hierarchy depth for intra prediction.
+    ///
+    /// This is a variable number of bits as it is encoded by an exp golomb (unsigned).
+    ///
+    /// For more information:
+    ///
+    /// <https://en.wikipedia.org/wiki/Exponential-Golomb_coding>
+    ///
+    /// ISO/IEC-23008-2-2020 - 7.4.3.2.1
+    pub max_transform_hierarchy_depth_intra: u64,
+
+    // 7.3.4
     // 7.4.3.2.1
-    pub scaling_list_enabled_flag: bool,
-    pub sps_scaling_list_data_present_flag: bool, // defaults to 0
-    pub scaling_list_pred_mode_flag: Option<bool>,
+    // TODO: this
+    pub scaling_list: Option<ScalingList>,
 
     // 7.4.3.2.1
     pub amp_enabled_flag: bool,
@@ -87,31 +285,8 @@ pub struct Sps {
     pub log2_diff_max_min_pcm_luma_coding_block_size: Option<u8>,
     pub pcm_loop_filter_disabled_flag: bool, // defaults to 0
 
-
-    /// The width as a u64.
-    pub width: u64,
-
-    /// The height as a u64.
-    pub height: u64,
-
-    /// The framerate as a f64.
-    pub frame_rate: f64,
-
     /// An optional `ColorConfig`. Refer to the ColorConfig struct for more info.
     pub color_config: Option<ColorConfig>,
-}
-
-#[derive(Debug, Clone, PartialEq)]
-/// The color config for SPS.
-pub struct ColorConfig {
-    /// The `video_full_range_flag` as a bool.
-    pub full_range: bool,
-    /// The `colour_primaries` bits as a u8.
-    pub color_primaries: u8,
-    /// The `transfer_characteristics` bits as a u8.
-    pub transfer_characteristics: u8,
-    /// The `matrix_coefficients` bits as a u8.
-    pub matrix_coefficients: u8,
 }
 
 impl Sps {
@@ -147,19 +322,19 @@ impl Sps {
 
         // nal unit header (excluding forbidden zero bit and nal_unit_type)
         // ISO/IEC-23008-2-2020 - 7.3.1.2
-        bit_reader.seek_bits(
-            6 // nuh_layer_id
-            + 3 // nuh_temporal_id_plus1
-            // begin ISO/IEC-23008-2-2020 - 7.3.2.2.1
-            + 4, // sps_video_parameter_set_id
-        )?;
+        let nuh_layer_id = bit_reader.read_bits(6)?;
+        // nuh_temporal_id_plus1 TODO a lot of logic for this apparently, 7.4.2.2
+        let nuh_temporal_id_plus1 = bit_reader.read_bits(3)?;
+
+        // begin ISO/IEC-23008-2-2020 - 7.3.2.2.1
+        // semantics in ISO/IEC-23008-2-2020 - 7.4.3.2.1
+        let sps_video_parameter_set_id = bit_reader.read_bits(4)?;
 
         let sps_max_sub_layers_minus1 = bit_reader.read_bits(3)?;
-        bit_reader.seek_bits(1)?; // sps_temporal_id_nesting_flag
+        let sps_temporal_id_nesting_flag = bit_reader.read_bits(1)?;
 
         // ISO/IEC-23008-2-2020 - 7.3.3
-        // we read but do not store the profile_tier_level()
-        // 96 bits
+        // we read these 96 bits but do not store the profile_tier_level() since we dont use this.
         bit_reader.seek_bits(
             2 // general_profile_space
             + 1 // general_tier_flag
@@ -175,9 +350,10 @@ impl Sps {
         )?;
 
         // 2 * sps_max_sub_layers_minus1 bits
+        let mut sub_layer_profile_present_flags = Vec::new();
         let mut sub_layer_level_present_flags = vec![false; sps_max_sub_layers_minus1 as usize];
         for v in sub_layer_level_present_flags.iter_mut() {
-            bit_reader.seek_bits(1)?; // sub_layer_profile_present_flag
+            sub_layer_profile_present_flags.push(bit_reader.read_bit()?); // sub_layer_profile_present_flag
             *v = bit_reader.read_bit()?; // sub_layer_level_present_flag
         }
 
@@ -189,6 +365,7 @@ impl Sps {
 
         // (sps_max_sub_layers_minus1 * 88) +
         // (sps_max_sub_layers_minus1 * number of times sub_layer_level_present_flag is 1) bits
+        let mut sub_layer_level_idcs = Vec::new();
         for v in sub_layer_level_present_flags.drain(..) {
             bit_reader.seek_bits(
                 2 // sub_layer_profile_space
@@ -203,63 +380,69 @@ impl Sps {
                 + 1, // sub_layer_reserved_zero_bit
             )?;
             if v {
-                bit_reader.seek_bits(8)?; // sub_layer_level_idc
+                sub_layer_level_idcs.push(bit_reader.read_bits(8)?); // sub_layer_level_idc
             }
         }
 
         // back to ISO/IEC-23008-2-2020 - 7.3.2.2.1
-        bit_reader.read_exp_golomb()?; // sps_seq_parameter_set_id
+        let sps_seq_parameter_set_id = bit_reader.read_exp_golomb()?;
+
         let chroma_format_idc = bit_reader.read_exp_golomb()?;
+        let separate_color_plane_flag;
+
         if chroma_format_idc == 3 {
-            bit_reader.read_bit()?; // separate_color_plane_flag
+            separate_color_plane_flag = bit_reader.read_bit()?;
+        } else if !(0..=3).contains(&chroma_format_idc) {
+            return Err(io::Error::new(io::ErrorKind::InvalidData, "chroma_format_idc is not 0-3"));
         }
+
         let pic_width_in_luma_samples = bit_reader.read_exp_golomb()?;
         let pic_height_in_luma_samples = bit_reader.read_exp_golomb()?;
-        let conformance_window_flag = bit_reader.read_bit()?;
 
-        let mut conf_win_left_offset = 0;
-        let mut conf_win_right_offset = 0;
-        let mut conf_win_top_offset = 0;
-        let mut conf_win_bottom_offset = 0;
+        let conformance_window_flag = bit_reader.read_bit()?;
+        let mut conf_win_info = None;
 
         if conformance_window_flag {
-            conf_win_left_offset = bit_reader.read_exp_golomb()?;
-            conf_win_right_offset = bit_reader.read_exp_golomb()?;
-            conf_win_top_offset = bit_reader.read_exp_golomb()?;
-            conf_win_bottom_offset = bit_reader.read_exp_golomb()?;
+            conf_win_info = Some(ConfWindowInfo::parse(&mut bit_reader)?)
         }
 
-        let (sub_width_c, sub_height_c) = match chroma_format_idc {
-            0 => (1, 1),
-            1 => (2, 2),
-            2 => (2, 1),
-            3 => (1, 1),
-            _ => return Err(io::Error::new(io::ErrorKind::InvalidData, "chroma_format_idc is not 0-3")),
-        };
-
-        let width = pic_width_in_luma_samples - sub_width_c * (conf_win_left_offset + conf_win_right_offset);
-        let height = pic_height_in_luma_samples - sub_height_c * (conf_win_top_offset + conf_win_bottom_offset);
-
-        bit_reader.read_exp_golomb()?; // bit_depth_luma_minus8
-        bit_reader.read_exp_golomb()?; // bit_depth_chroma_minus8
-        bit_reader.read_exp_golomb()?; // log2_max_pic_order_cnt_lsb_minus4
+        let bit_depth_luma_minus8 = bit_reader.read_exp_golomb()?;
+        let bit_depth_chroma_minus8 = bit_reader.read_exp_golomb()?;
+        let log2_max_pic_order_cnt_lsb_minus4 = bit_reader.read_exp_golomb()?;
         let sps_sub_layer_ordering_info_present_flag = bit_reader.read_bit()?;
 
-        if sps_sub_layer_ordering_info_present_flag {
-            for _ in 0..=sps_max_sub_layers_minus1 {
-                bit_reader.read_exp_golomb()?; // sps_max_dec_pic_buffering_minus1
-                bit_reader.read_exp_golomb()?; // sps_max_num_reorder_pics
-                bit_reader.read_exp_golomb()?; // sps_max_latency_increase_plus1
-            }
-        };
+        let sps_max_dec_pic_buffering_minus1 = Vec::new();
+        let sps_max_num_reorder_pics = Vec::new();
+        let sps_max_latency_increase_plus1 = Vec::new();
 
-        bit_reader.read_exp_golomb()?; // log2_min_luma_coding_block_size_minus3
-        bit_reader.read_exp_golomb()?; // log2_diff_max_min_luma_coding_block_size
-        bit_reader.read_exp_golomb()?; // log2_min_transform_block_size_minus2
-        bit_reader.read_exp_golomb()?; // log2_diff_max_min_transform_block_size
-        bit_reader.read_exp_golomb()?; // max_transform_hierarchy_depth_inter
-        bit_reader.read_exp_golomb()?; // max_transform_hierarchy_depth_intra
+        let start = if sps_sub_layer_ordering_info_present_flag { 0 } else { sps_max_sub_layers_minus1 };
+        for _ in start..=sps_max_sub_layers_minus1 {
+            // sps_max_dec_pic_buffering_minus1[i]
+            sps_max_dec_pic_buffering_minus1.push(bit_reader.read_exp_golomb()?);
+            // sps_max_num_reorder_pics[i]
+            sps_max_num_reorder_pics.push(bit_reader.read_exp_golomb()?);
+            // sps_max_latency_increase_plus1[i]
+            sps_max_latency_increase_plus1.push(bit_reader.read_exp_golomb()?);
+        }
 
+        let log2_min_luma_coding_block_size_minus3 = bit_reader.read_exp_golomb()?;
+        let log2_diff_max_min_luma_coding_block_size = bit_reader.read_exp_golomb()?;
+        let log2_min_transform_block_size_minus2 = bit_reader.read_exp_golomb()?;
+        let log2_diff_max_min_transform_block_size = bit_reader.read_exp_golomb()?;
+        let max_transform_hierarchy_depth_inter = bit_reader.read_exp_golomb()?;
+        let max_transform_hierarchy_depth_intra = bit_reader.read_exp_golomb()?;
+
+        // sanity check: ISO/IEC-23008-2-2020 - 7.3.2.2.1
+        // the scaling list is referred to at the bottom of the next page
+        // the scaling list is defined in 7.3.4
+
+        // the approach will be:
+        // 1) read bit -> scaling list struct's parse fn
+        // 2) in the fn: optional vec of vec of ????
+        // 3a) if optional vec is None, write false
+        // 3b) if optional vec is Some, write true
+        // 3b1) for each subvec: if optional unsigned exp is Some then write false then write the value
+        // 3b2) otherwise write true then write the entire signed expg subvec
         let scaling_list_enabled_flag = bit_reader.read_bit()?;
         if scaling_list_enabled_flag {
             let sps_scaling_list_data_present_flag = bit_reader.read_bit()?;
@@ -437,6 +620,154 @@ impl Sps {
             color_config,
         })
     }
+
+    /// The height as a u64. This is computed from other fields, and isn't directly set.
+    ///
+    /// `height = pic_height_in_luma_samples - sub_height_c * (conf_win_top_offset + conf_win_bottom_offset)`
+    pub fn height(&self) -> u64 {
+        let sub_height_c = if matches!(self.chroma_format_idc, 1) { 2 } else { 1 };
+
+        let sum = self
+            .conf_win_info
+            .as_ref()
+            .map_or(0, |cwi| (cwi.conf_win_top_offset + cwi.conf_win_bottom_offset));
+
+        self.pic_height_in_luma_samples - sub_height_c * sum
+    }
+
+    /// The width as a u64. This is computed from other fields, and isn't directly set.
+    ///
+    /// `width = pic_width_in_luma_samples - sub_width_c * (conf_win_left_offset + conf_win_right_offset)`
+    pub fn width(&self) -> u64 {
+        let sub_width_c = if matches!(self.chroma_format_idc, 1 | 2) { 2 } else { 1 };
+
+        let sum = self
+            .conf_win_info
+            .as_ref()
+            .map_or(0, |cwi| (cwi.conf_win_left_offset + cwi.conf_win_right_offset));
+
+        self.pic_width_in_luma_samples - sub_width_c * sum
+    }
+}
+
+/// `ConfWindowInfo` contains the frame cropping info.
+///
+/// This includes `conf_win_left_offset`, `conf_win_right_offset`, `conf_win_top_offset`,
+/// and `conf_win_bottom_offset`.
+#[derive(Debug, Clone, PartialEq)]
+pub struct ConfWindowInfo {
+    /// The `conf_win_left_offset` is the the left crop offset which is used to compute the width:
+    ///
+    /// `width = pic_width_in_luma_samples - sub_width_c * (conf_win_left_offset + conf_win_right_offset)`
+    ///
+    /// This is a variable number of bits as it is encoded by an exp golomb (unsigned).
+    ///
+    /// For more information:
+    ///
+    /// <https://en.wikipedia.org/wiki/Exponential-Golomb_coding>
+    ///
+    /// ISO/IEC-23008-2-2020 - 7.4.3.2.1
+    pub conf_win_left_offset: u64,
+
+    /// The `conf_win_right_offset` is the the right crop offset which is used to compute the width:
+    ///
+    /// `width = pic_width_in_luma_samples - sub_width_c * (conf_win_left_offset + conf_win_right_offset)`
+    ///
+    /// This is a variable number of bits as it is encoded by an exp golomb (unsigned).
+    ///
+    /// For more information:
+    ///
+    /// <https://en.wikipedia.org/wiki/Exponential-Golomb_coding>
+    ///
+    /// ISO/IEC-23008-2-2020 - 7.4.3.2.1
+    pub conf_win_right_offset: u64,
+
+    /// The `conf_win_top_offset` is the the top crop offset which is used to compute the height:
+    ///
+    /// `height = pic_height_in_luma_samples - sub_height_c * (conf_win_top_offset + conf_win_bottom_offset)`
+    ///
+    /// This is a variable number of bits as it is encoded by an exp golomb (unsigned).
+    ///
+    /// For more information:
+    ///
+    /// <https://en.wikipedia.org/wiki/Exponential-Golomb_coding>
+    ///
+    /// ISO/IEC-23008-2-2020 - 7.4.3.2.1
+    pub conf_win_top_offset: u64,
+
+    /// The `conf_win_bottom_offset` is the the bottom crop offset which is used to compute the height:
+    ///
+    /// `height = pic_height_in_luma_samples - sub_height_c * (conf_win_top_offset + conf_win_bottom_offset)`
+    ///
+    /// This is a variable number of bits as it is encoded by an exp golomb (unsigned).
+    ///
+    /// For more information:
+    ///
+    /// <https://en.wikipedia.org/wiki/Exponential-Golomb_coding>
+    ///
+    /// ISO/IEC-23008-2-2020 - 7.4.3.2.1
+    pub conf_win_bottom_offset: u64,
+}
+
+impl ConfWindowInfo {
+    /// Parses the fields defined when the `conformance_window_flag == 1` from a bitstream.
+    /// Returns a `ConfWindowInfo` struct.
+    pub fn parse<T: io::Read>(reader: &mut BitReader<T>) -> io::Result<Self> {
+        let conf_win_left_offset = reader.read_exp_golomb()?;
+        let conf_win_right_offset = reader.read_exp_golomb()?;
+        let conf_win_top_offset = reader.read_exp_golomb()?;
+        let conf_win_bottom_offset = reader.read_exp_golomb()?;
+
+        Ok(ConfWindowInfo {
+            conf_win_left_offset,
+            conf_win_right_offset,
+            conf_win_top_offset,
+            conf_win_bottom_offset,
+        })
+    }
+
+    /// Builds the ConfWindowInfo struct into a byte stream.
+    /// Returns a built byte stream.
+    pub fn build<T: io::Write>(&self, writer: &mut BitWriter<T>) -> io::Result<()> {
+        writer.write_exp_golomb(self.conf_win_left_offset)?;
+        writer.write_exp_golomb(self.conf_win_right_offset)?;
+        writer.write_exp_golomb(self.conf_win_top_offset)?;
+        writer.write_exp_golomb(self.conf_win_bottom_offset)?;
+        Ok(())
+    }
+
+    // /// Returns the total bits of the ConfWindowInfo struct.
+    // ///
+    // /// Note that this isn't the bytesize since aligning it may cause some values to be different.
+    // ///
+    // pub fn bitsize(&self) -> u64 {
+    //     size_of_exp_golomb(self.conf_win_left_offset)
+    //         + size_of_exp_golomb(self.conf_win_right_offset)
+    //         + size_of_exp_golomb(self.conf_win_top_offset)
+    //         + size_of_exp_golomb(self.conf_win_bottom_offset)
+    // }
+
+    // /// Returns the total bytes of the ConfWindowInfo struct.
+    // ///
+    // /// Note that this calls [`ConfWindowInfo::bitsize()`] and calculates the number of bytes
+    // /// including any necessary padding such that the bitstream is byte aligned.
+    // ///
+    // pub fn bytesize(&self) -> u64 {
+    //     self.bitsize().div_ceil(8)
+    // }
+}
+
+/// The color config for SPS.
+#[derive(Debug, Clone, PartialEq)]
+pub struct ColorConfig {
+    /// The `video_full_range_flag` as a bool.
+    pub full_range: bool,
+    /// The `colour_primaries` bits as a u8.
+    pub color_primaries: u8,
+    /// The `transfer_characteristics` bits as a u8.
+    pub transfer_characteristics: u8,
+    /// The `matrix_coefficients` bits as a u8.
+    pub matrix_coefficients: u8,
 }
 
 #[cfg(test)]

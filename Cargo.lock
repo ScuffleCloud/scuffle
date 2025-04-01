@@ -3771,6 +3771,7 @@ dependencies = [
  "prost-types 0.13.5",
  "ryu",
  "schemars",
+ "scuffle-bytes-util",
  "scuffle-workspace-hack",
  "serde",
  "serde_json",

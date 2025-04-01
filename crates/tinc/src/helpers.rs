@@ -15,6 +15,7 @@ use http::request::Parts;
 use http_body_util::BodyExt;
 use mediatype::{MediaType, ReadParams};
 use multer::Constraints;
+use scuffle_bytes_util::BytesCow;
 use serde::de::IntoDeserializer;
 
 use crate::value::{Value, ValueOwned};
@@ -806,10 +807,10 @@ where
 }
 
 pub mod header_decode {
-    use std::borrow::Cow;
     use std::collections::HashMap;
 
     use mediatype::MediaType;
+    use scuffle_bytes_util::StringCow;
 
     use crate::value::{Key, Value, ValueOwned};
 
@@ -835,10 +836,10 @@ pub mod header_decode {
         match values.len() {
             0 => {}
             1 => {
-                object.insert(Key::String(Cow::Borrowed(field_name)), values.remove(0));
+                object.insert(Key::String(StringCow::from_static(field_name)), values.remove(0));
             }
             _ => {
-                object.insert(Key::String(Cow::Borrowed(field_name)), Value::Array(values));
+                object.insert(Key::String(StringCow::from_static(field_name)), Value::Array(values));
             }
         }
 
@@ -867,10 +868,10 @@ pub mod header_decode {
         match values.len() {
             0 => {}
             1 => {
-                object.insert(Key::String(Cow::Borrowed(field_name)), values.remove(0));
+                object.insert(Key::String(StringCow::from_static(field_name)), values.remove(0));
             }
             _ => {
-                object.insert(Key::String(Cow::Borrowed(field_name)), Value::Array(values));
+                object.insert(Key::String(StringCow::from_static(field_name)), Value::Array(values));
             }
         }
 
@@ -901,10 +902,10 @@ pub mod header_decode {
         match values.len() {
             0 => {}
             1 => {
-                object.insert(Key::String(Cow::Borrowed(field_name)), values.remove(0));
+                object.insert(Key::String(StringCow::from_static(field_name)), values.remove(0));
             }
             _ => {
-                object.insert(Key::String(Cow::Borrowed(field_name)), Value::Array(values));
+                object.insert(Key::String(StringCow::from_static(field_name)), Value::Array(values));
             }
         }
 
@@ -1057,15 +1058,17 @@ pub async fn parse_body(
         }
     } else {
         let mut body_bytes = read_body(body).await?;
-        Ok(Value::BytesOwned(body_bytes.copy_to_bytes(body_bytes.remaining())))
+        Ok(Value::Bytes(BytesCow::from_bytes(
+            body_bytes.copy_to_bytes(body_bytes.remaining()),
+        )))
     }
 }
 
 mod multipart {
-    use std::borrow::Cow;
     use std::collections::HashMap;
 
     use bytes::Bytes;
+    use scuffle_bytes_util::{BytesCow, StringCow};
 
     use crate::value::{Key, Value};
 
@@ -1116,18 +1119,21 @@ mod multipart {
                         return Err("empty key in object");
                     }
                     if is_last {
-                        map.insert(Key::String(Cow::Owned(key)), Value::BytesOwned(value));
+                        map.insert(
+                            Key::String(StringCow::from_string(key)),
+                            Value::Bytes(BytesCow::from_bytes(value)),
+                        );
                         return Ok(());
                     }
 
                     current = map
-                        .entry(Key::String(Cow::Owned(key)))
+                        .entry(Key::String(StringCow::from_string(key)))
                         .or_insert_with(|| Value::Map(HashMap::new()));
                 }
                 Value::Array(arr) => {
                     if key.is_empty() {
                         if is_last {
-                            arr.push(Value::BytesOwned(value));
+                            arr.push(Value::Bytes(BytesCow::from_bytes(value)));
                             return Ok(());
                         } else {
                             arr.push(Value::Map(HashMap::new()));
@@ -1139,7 +1145,7 @@ mod multipart {
                         }
 
                         if is_last {
-                            arr[index] = Value::BytesOwned(value);
+                            arr[index] = Value::Bytes(BytesCow::from_bytes(value));
                             return Ok(());
                         } else {
                             if matches!(arr[index], Value::Null) {

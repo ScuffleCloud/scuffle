@@ -1,8 +1,8 @@
 use std::borrow::Cow;
 use std::collections::HashMap;
 
-use bytes::Bytes;
 use ordered_float::OrderedFloat;
+use scuffle_bytes_util::{BytesCow, StringCow};
 
 pub mod de;
 pub mod ser;
@@ -13,7 +13,7 @@ pub struct ValueOwned(pub Value<'static>);
 
 #[derive(Debug, Hash, PartialEq, Eq)]
 pub enum Key<'a> {
-    String(Cow<'a, str>),
+    String(StringCow<'a>),
     U8(u8),
     U16(u16),
     U32(u32),
@@ -28,7 +28,7 @@ pub enum Key<'a> {
 impl<'a> Key<'a> {
     pub fn into_static(self) -> Key<'static> {
         match self {
-            Self::String(s) => Key::String(Cow::Owned(s.into_owned())),
+            Self::String(s) => Key::String(s.to_owned()),
             Self::U8(u) => Key::U8(u),
             Self::U16(u) => Key::U16(u),
             Self::U32(u) => Key::U32(u),
@@ -57,11 +57,10 @@ impl<'a> Key<'a> {
     }
 }
 
-#[derive(Debug)]
+#[derive(Debug, Default)]
 pub enum Value<'a> {
-    String(Cow<'a, str>),
-    Bytes(Cow<'a, [u8]>),
-    BytesOwned(Bytes),
+    String(StringCow<'a>),
+    Bytes(BytesCow<'a>),
     F64(OrderedFloat<f64>),
     F32(OrderedFloat<f32>),
     U8(u8),
@@ -73,6 +72,7 @@ pub enum Value<'a> {
     I32(i32),
     I64(i64),
     Bool(bool),
+    #[default]
     Null,
     Array(Vec<Value<'a>>),
     Map(HashMap<Key<'a>, Value<'a>>),
@@ -81,9 +81,8 @@ pub enum Value<'a> {
 impl Value<'_> {
     pub fn into_static(self) -> Value<'static> {
         match self {
-            Self::String(s) => Value::String(Cow::Owned(s.into_owned())),
-            Self::Bytes(b) => Value::Bytes(Cow::Owned(b.into_owned())),
-            Self::BytesOwned(b) => Value::BytesOwned(b),
+            Self::String(s) => Value::String(s.to_owned()),
+            Self::Bytes(b) => Value::Bytes(b.to_owned()),
             Self::F64(f) => Value::F64(f),
             Self::F32(f) => Value::F32(f),
             Self::U8(u) => Value::U8(u),
@@ -103,6 +102,10 @@ impl Value<'_> {
 
     pub fn into_owned(self) -> ValueOwned {
         ValueOwned(self.into_static())
+    }
+
+    pub fn take(&mut self) -> Self {
+        std::mem::take(self)
     }
 }
 
@@ -134,14 +137,14 @@ impl_from_primitive!(Bytes, Vec<u8>);
 impl<'a> From<&'a str> for Value<'a> {
     #[inline]
     fn from(value: &'a str) -> Self {
-        Value::String(Cow::Borrowed(value))
+        Value::String(StringCow::from_ref(value))
     }
 }
 
 impl<'a> From<&'a [u8]> for Value<'a> {
     #[inline]
     fn from(value: &'a [u8]) -> Self {
-        Value::Bytes(Cow::Borrowed(value))
+        Value::Bytes(BytesCow::from_slice(value))
     }
 }
 
@@ -162,7 +165,7 @@ impl<'a> From<HashMap<Key<'a>, Value<'a>>> for Value<'a> {
 impl<'a> From<Cow<'a, str>> for Value<'a> {
     #[inline]
     fn from(value: Cow<'a, str>) -> Self {
-        Value::String(value)
+        Value::String(StringCow::from_cow(value))
     }
 }
 
@@ -183,9 +186,8 @@ impl From<Value<'_>> for ValueOwned {
 impl Value<'_> {
     fn unexpected(&self) -> serde::de::Unexpected<'_> {
         match self {
-            Value::String(s) => serde::de::Unexpected::Str(s),
-            Value::Bytes(b) => serde::de::Unexpected::Bytes(b),
-            Value::BytesOwned(b) => serde::de::Unexpected::Bytes(b),
+            Value::String(s) => serde::de::Unexpected::Str(s.as_ref()),
+            Value::Bytes(b) => serde::de::Unexpected::Bytes(b.as_ref()),
             Value::Array(_) => serde::de::Unexpected::Seq,
             Value::Map(_) => serde::de::Unexpected::Map,
             Value::Null => serde::de::Unexpected::Option,

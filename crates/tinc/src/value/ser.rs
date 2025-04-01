@@ -17,8 +17,7 @@ impl Serialize for Value<'_> {
             Self::F64(OrderedFloat(f)) => serializer.serialize_f64(*f),
             Self::F32(OrderedFloat(f)) => serializer.serialize_f32(*f),
             Self::Bool(v) => serializer.serialize_bool(*v),
-            Self::Bytes(b) => serializer.serialize_bytes(b),
-            Self::BytesOwned(b) => serializer.serialize_bytes(b),
+            Self::Bytes(b) => b.serialize(serializer),
             Self::U8(v) => serializer.serialize_u8(*v),
             Self::U16(v) => serializer.serialize_u16(*v),
             Self::U32(v) => serializer.serialize_u32(*v),
@@ -46,7 +45,7 @@ impl Serialize for Key<'_> {
         S: Serializer,
     {
         match self {
-            Self::String(s) => serializer.serialize_str(s),
+            Self::String(s) => s.serialize(serializer),
             Self::U8(v) => serializer.serialize_u8(*v),
             Self::U16(v) => serializer.serialize_u16(*v),
             Self::U32(v) => serializer.serialize_u32(*v),

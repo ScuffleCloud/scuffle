@@ -1,8 +1,8 @@
 use core::fmt;
-use std::borrow::Cow;
 use std::collections::HashMap;
 
 use ordered_float::OrderedFloat;
+use scuffle_bytes_util::{BytesCow, BytesCowVisitor, StringCow, StringCowVisitor};
 use serde::de::value::{MapDeserializer, SeqDeserializer};
 use serde::de::{self, IntoDeserializer, SeqAccess};
 use serde::{Deserialize, Deserializer};
@@ -54,20 +54,6 @@ fn parse_bool_primitive(s: &str) -> Option<bool> {
     }
 }
 
-/// Parses a string into a single character, returning an error if the string is empty or too long.
-fn parse_char_primitive(s: &str) -> Option<char> {
-    let mut chars = s.chars();
-    let Some(c) = chars.next() else {
-        return None;
-    };
-
-    if chars.next().is_some() {
-        return None;
-    }
-
-    Some(c)
-}
-
 /// Deserialize implementation for `Value<'de>`.
 impl<'de> de::Deserialize<'de> for Value<'de> {
     #[inline]
@@ -106,7 +92,7 @@ impl<'de> de::Deserialize<'de> for Value<'de> {
             where
                 E: de::Error,
             {
-                Ok(Value::String(Cow::Owned(v.to_string())))
+                Ok(Value::String(StringCow::from_string(v.to_string())))
             }
 
             #[inline]
@@ -138,7 +124,7 @@ impl<'de> de::Deserialize<'de> for Value<'de> {
             where
                 E: de::Error,
             {
-                Ok(Value::String(Cow::Owned(v.to_owned())))
+                Ok(Value::String(StringCow::from_string(v.to_owned())))
             }
 
             #[inline]
@@ -146,7 +132,7 @@ impl<'de> de::Deserialize<'de> for Value<'de> {
             where
                 E: de::Error,
             {
-                Ok(Value::String(Cow::Borrowed(v)))
+                Ok(Value::String(StringCow::from_ref(v)))
             }
 
             #[inline]
@@ -216,7 +202,7 @@ impl<'de> de::Deserialize<'de> for Value<'de> {
             where
                 E: de::Error,
             {
-                Ok(Value::Bytes(Cow::Owned(v.to_vec())))
+                Ok(Value::Bytes(BytesCow::from_vec(v.to_vec())))
             }
 
             #[inline]
@@ -224,7 +210,7 @@ impl<'de> de::Deserialize<'de> for Value<'de> {
             where
                 E: de::Error,
             {
-                Ok(Value::Bytes(Cow::Borrowed(v)))
+                Ok(Value::Bytes(BytesCow::from_slice(v)))
             }
 
             #[inline]
@@ -232,7 +218,7 @@ impl<'de> de::Deserialize<'de> for Value<'de> {
             where
                 E: de::Error,
             {
-                Ok(Value::Bytes(Cow::Owned(v)))
+                Ok(Value::Bytes(BytesCow::from_vec(v)))
             }
 
             #[inline]
@@ -240,7 +226,7 @@ impl<'de> de::Deserialize<'de> for Value<'de> {
             where
                 E: de::Error,
             {
-                Ok(Value::String(Cow::Owned(v)))
+                Ok(Value::String(StringCow::from_string(v)))
             }
 
             #[inline]
@@ -326,8 +312,7 @@ where
     type Error = E;
 
     serde::forward_to_deserialize_any! {
-        newtype_struct unit_struct
-        tuple tuple_struct map struct
+        unit_struct tuple tuple_struct map struct
         identifier ignored_any unit
         char
     }
@@ -361,11 +346,12 @@ where
         V: de::Visitor<'de>,
     {
         match self.value {
-            Value::String(Cow::Borrowed(s)) => visitor.visit_borrowed_str(s),
-            Value::String(Cow::Owned(s)) => visitor.visit_string(s),
-            Value::Bytes(Cow::Borrowed(b)) => visitor.visit_borrowed_bytes(b),
-            Value::Bytes(Cow::Owned(b)) => visitor.visit_byte_buf(b),
-            Value::BytesOwned(b) => visitor.visit_bytes(b.as_ref()),
+            Value::String(StringCow::Ref(s) | StringCow::StaticRef(s)) => visitor.visit_borrowed_str(s),
+            Value::String(StringCow::Bytes(s)) => visitor.visit_str(&s),
+            Value::String(StringCow::String(s)) => visitor.visit_string(s),
+            Value::Bytes(BytesCow::Slice(b) | BytesCow::StaticSlice(b)) => visitor.visit_borrowed_bytes(b),
+            Value::Bytes(BytesCow::Vec(b)) => visitor.visit_byte_buf(b),
+            Value::Bytes(BytesCow::Bytes(b)) => visitor.visit_bytes(b.as_ref()),
             Value::U8(v) => visitor.visit_u8(v),
             Value::U16(v) => visitor.visit_u16(v),
             Value::U32(v) => visitor.visit_u32(v),
@@ -444,6 +430,7 @@ where
     {
         let v = match self.value {
             Value::String(ref s) => parse_bool_primitive(s),
+            Value::Bytes(ref b) => b.as_str().map(parse_bool_primitive).ok().flatten(),
             Value::Bool(v) => Some(v),
             Value::U8(v) => Some(v != 0),
             Value::U16(v) => Some(v != 0),
@@ -470,8 +457,8 @@ where
         V: de::Visitor<'de>,
     {
         match self.value {
-            Value::Bytes(Cow::Borrowed(b)) => visitor.visit_borrowed_bytes(b),
-            Value::Bytes(Cow::Owned(b)) => visitor.visit_byte_buf(b),
+            Value::Bytes(bytes) => bytes.handle_visitor(visitor),
+            Value::String(string) => string.into_bytes_cow().handle_visitor(visitor),
             Value::Array(a) => {
                 let mut seq = SeqDeserializer::new(a.into_iter());
                 let mut bytes = Vec::new();
@@ -480,8 +467,6 @@ where
                 }
                 visitor.visit_byte_buf(bytes)
             }
-            Value::String(Cow::Borrowed(s)) => visitor.visit_borrowed_bytes(s.as_bytes()),
-            Value::String(Cow::Owned(s)) => visitor.visit_byte_buf(s.into_bytes()),
             _ => Err(serde::de::Error::invalid_type(self.value.unexpected(), &"bytes")),
         }
     }
@@ -491,16 +476,11 @@ where
         V: de::Visitor<'de>,
     {
         match self.value {
-            Value::String(Cow::Borrowed(s)) => visitor.visit_borrowed_str(s),
-            Value::String(Cow::Owned(s)) => visitor.visit_string(s),
-            Value::Bytes(Cow::Borrowed(b)) => {
-                let s = std::str::from_utf8(b).map_err(serde::de::Error::custom)?;
-                visitor.visit_borrowed_str(s)
-            }
-            Value::Bytes(Cow::Owned(b)) => {
-                let s = String::from_utf8(b).map_err(serde::de::Error::custom)?;
-                visitor.visit_string(s)
-            }
+            Value::String(string) => string.handle_visitor(visitor),
+            Value::Bytes(bytes) => bytes
+                .into_string_cow()
+                .map(|string| string.handle_visitor(visitor))
+                .map_err(|e| serde::de::Error::invalid_type(de::Unexpected::Bytes(&e), &"string"))?,
             Value::Bool(b) => visitor.visit_borrowed_str(if b { "true" } else { "false" }),
             Value::U8(v) => visitor.visit_str(itoa::Buffer::new().format(v)),
             Value::U16(v) => visitor.visit_str(itoa::Buffer::new().format(v)),
@@ -530,6 +510,25 @@ where
         V: de::Visitor<'de>,
     {
         self.deserialize_bytes(visitor)
+    }
+
+    fn deserialize_newtype_struct<V>(mut self, name: &'static str, mut visitor: V) -> Result<V::Value, Self::Error>
+    where
+        V: de::Visitor<'de>,
+    {
+        match (name, self.value.take()) {
+            (BytesCowVisitor::NEW_TYPE_NAME, Value::Bytes(bytes)) => unsafe {
+                let visitor = &mut *(&raw mut visitor as *mut BytesCowVisitor<'de>);
+                visitor.set(bytes);
+            },
+            (StringCowVisitor::NEW_TYPE_NAME, Value::String(string)) => unsafe {
+                let visitor = &mut *(&raw mut visitor as *mut StringCowVisitor<'de>);
+                visitor.set(string);
+            },
+            (_, value) => self.value = value,
+        }
+
+        visitor.visit_newtype_struct(self)
     }
 }
 

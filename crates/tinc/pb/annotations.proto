@@ -199,10 +199,22 @@ message HttpEndpointOptions {
             // If you want to use a custom encoding, you can specify it here.
             // For example if your header is of type `application/json`, you can specify `content_type: JSON`
             // Then we will parse headers like this:
-            // ```json
+            // ```text
             // Some-Header: {"field1": "value1", "field2": "value2"}
             // ```
             ContentType content_type = 4;
+
+            // Take the content of a parameter.
+            // This is useful for parsing headers like `Content-Disposition` which contain a filename.
+            // ```proto
+            // header: {
+            //     name: "Content-Disposition"
+            //     param: "filename"
+            //     field: "filename"
+            // }
+            // ```
+            // This will parse the `filename` parameter from the `Content-Disposition` header and store it in the `filename` field.
+            string param = 5;
         }
     }
 
@@ -297,9 +309,6 @@ message HttpEndpointOptions {
 
                 // Specify additional headers to be parsed from the request.
                 repeated Header header = 3;
-
-                // The field to parse the filename into.
-                optional string filename_field = 4;
 
                 enum ContentType {
                     CONTENT_TYPE_UNSPECIFIED = 0;

@@ -165,6 +165,11 @@ fn parse_header(
                 }
             }
         }
+        header::Encoding::Param(param) => {
+            quote! {
+                ::tinc::helpers::header_decode::param(&parts.headers, #header_name, #param, #field_str)
+            }
+        }
     };
 
     Ok(quote! {

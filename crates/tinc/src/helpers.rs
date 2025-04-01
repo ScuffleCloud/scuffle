@@ -15,8 +15,9 @@ use http::request::Parts;
 use http_body_util::BodyExt;
 use mediatype::{MediaType, ReadParams};
 use multer::Constraints;
+use serde::de::IntoDeserializer;
 
-use crate::value::{Object, ObjectOwned, Value, ValueOwned};
+use crate::value::{Value, ValueOwned};
 
 pub trait SerdeTransform<T> {
     fn serialize<S>(value: &Self, serializer: S) -> Result<S::Ok, S::Error>
@@ -781,38 +782,42 @@ pub fn schemars_non_omitable(schema: &mut ::schemars::Schema) {
 
 pub async fn parse_path(parts: &mut Parts) -> Result<Value<'static>, axum::response::Response> {
     match axum::extract::Path::<ValueOwned>::from_request_parts(parts, &()).await {
-        Ok(value) => Ok(value.0.into_inner()),
+        Ok(value) => Ok(value.0.0),
         Err(rejection) => todo!("todo handle error: {:?}", rejection),
     }
 }
 
 pub async fn parse_query(parts: &mut Parts) -> Result<Value<'static>, axum::response::Response> {
     match axum::extract::Query::<ValueOwned>::from_request_parts(parts, &()).await {
-        Ok(value) => Ok(value.0.into_inner()),
+        Ok(value) => Ok(value.0.0),
         Err(rejection) => todo!("todo handle error: {:?}", rejection),
     }
 }
 
-pub fn decode_input<'de, T>(input: Object<'de>) -> Result<T, axum::response::Response>
+pub fn decode_input<'de, T>(input: Value<'de>) -> Result<T, axum::response::Response>
 where
     T: serde::Deserialize<'de>,
 {
-    match serde::Deserialize::deserialize(input) {
+    let result: Result<T, serde::de::value::Error> = serde::Deserialize::deserialize(input.into_deserializer());
+    match result {
         Ok(value) => Ok(value),
         Err(err) => todo!("todo handle error: {:?}", err),
     }
 }
 
 pub mod header_decode {
+    use std::borrow::Cow;
+    use std::collections::HashMap;
+
     use mediatype::MediaType;
 
-    use crate::value::{Object, Value, ValueOwned};
+    use crate::value::{Key, Value, ValueOwned};
 
     pub fn form_url_encoded<'a>(
         headers: &'a http::HeaderMap,
         header_name: &'static str,
         field_name: &'static str,
-    ) -> Result<Object<'a>, axum::response::Response> {
+    ) -> Result<Value<'a>, axum::response::Response> {
         let mut values = Vec::new();
         for value in headers.get_all(header_name) {
             let header_str = match value.to_str() {
@@ -826,21 +831,25 @@ pub mod header_decode {
             }
         }
 
-        let mut object = Object::new();
+        let mut object = HashMap::new();
         match values.len() {
             0 => {}
-            1 => object.insert(field_name.into(), values.remove(0)),
-            _ => object.insert(field_name.into(), Value::Array(values)),
+            1 => {
+                object.insert(Key::String(Cow::Borrowed(field_name)), values.remove(0));
+            }
+            _ => {
+                object.insert(Key::String(Cow::Borrowed(field_name)), Value::Array(values));
+            }
         }
 
-        Ok(object)
+        Ok(Value::Map(object))
     }
 
     pub fn json(
         headers: &http::HeaderMap,
         header_name: &'static str,
         field_name: &'static str,
-    ) -> Result<Object<'static>, axum::response::Response> {
+    ) -> Result<Value<'static>, axum::response::Response> {
         let mut values = Vec::new();
         for value in headers.get_all(header_name) {
             let header_str = match value.to_str() {
@@ -854,14 +863,18 @@ pub mod header_decode {
             }
         }
 
-        let mut object = Object::new();
+        let mut object = HashMap::new();
         match values.len() {
             0 => {}
-            1 => object.insert(field_name.into(), values.remove(0)),
-            _ => object.insert(field_name.into(), Value::Array(values)),
+            1 => {
+                object.insert(Key::String(Cow::Borrowed(field_name)), values.remove(0));
+            }
+            _ => {
+                object.insert(Key::String(Cow::Borrowed(field_name)), Value::Array(values));
+            }
         }
 
-        Ok(object)
+        Ok(Value::Map(object))
     }
 
     pub fn text<'a>(
@@ -869,7 +882,7 @@ pub mod header_decode {
         header_name: &'static str,
         field_name: &'static str,
         delimiter: Option<&'static str>,
-    ) -> Result<Object<'a>, axum::response::Response> {
+    ) -> Result<Value<'a>, axum::response::Response> {
         let mut values = Vec::new();
         for value in headers.get_all(header_name) {
             let header_str = match value.to_str() {
@@ -884,14 +897,18 @@ pub mod header_decode {
             }
         }
 
-        let mut object = Object::new();
+        let mut object = HashMap::new();
         match values.len() {
             0 => {}
-            1 => object.insert(field_name.into(), values.remove(0)),
-            _ => object.insert(field_name.into(), Value::Array(values)),
+            1 => {
+                object.insert(Key::String(Cow::Borrowed(field_name)), values.remove(0));
+            }
+            _ => {
+                object.insert(Key::String(Cow::Borrowed(field_name)), Value::Array(values));
+            }
         }
 
-        Ok(object)
+        Ok(Value::Map(object))
     }
 
     pub fn content_type(headers: &http::HeaderMap) -> Result<Option<MediaType<'_>>, axum::response::Response> {
@@ -998,13 +1015,13 @@ pub async fn parse_body(
     let essence = content_type.essence();
     if essence == JSON {
         match serde_json::from_str(&parse_body_string(content_type, body).await?) {
-            Ok(ObjectOwned(value)) => Ok(Value::Object(value)),
+            Ok(ValueOwned(value)) => Ok(value),
             Err(err) => todo!("todo handle error: {:?}", err),
         }
     } else if essence == FORM_URL_ENCODED {
         let body_str = parse_body_string(content_type, body).await?;
         match serde_urlencoded::from_str(&body_str) {
-            Ok(ObjectOwned(value)) => Ok(Value::Object(value)),
+            Ok(ValueOwned(value)) => Ok(value),
             Err(err) => todo!("todo handle error: {:?}", err),
         }
     } else if essence == TEXT {
@@ -1034,12 +1051,10 @@ pub async fn parse_body(
             form.push((name, value));
         }
 
-        let form = match multipart::parse_form_fields(form) {
-            Ok(form) => form,
+        match multipart::parse_form_fields(form) {
+            Ok(form) => Ok(form),
             Err(err) => todo!("todo handle error: {:?}", err),
-        };
-
-        Ok(Value::Object(form))
+        }
     } else {
         let mut body_bytes = read_body(body).await?;
         Ok(Value::BytesOwned(body_bytes.copy_to_bytes(body_bytes.remaining())))
@@ -1047,9 +1062,12 @@ pub async fn parse_body(
 }
 
 mod multipart {
+    use std::borrow::Cow;
+    use std::collections::HashMap;
+
     use bytes::Bytes;
 
-    use crate::value::{Object, Value};
+    use crate::value::{Key, Value};
 
     fn parse_key(key: &str) -> Vec<String> {
         let mut parts = Vec::new();
@@ -1093,16 +1111,18 @@ mod multipart {
             let is_last = i == length - 1;
 
             match current {
-                Value::Object(map) => {
+                Value::Map(map) => {
                     if key.is_empty() {
                         return Err("empty key in object");
                     }
                     if is_last {
-                        map.insert(key.into(), Value::BytesOwned(value));
+                        map.insert(Key::String(Cow::Owned(key)), Value::BytesOwned(value));
                         return Ok(());
                     }
 
-                    current = map.entry(key.into()).or_insert_with(|| Value::Object(Object::new()));
+                    current = map
+                        .entry(Key::String(Cow::Owned(key)))
+                        .or_insert_with(|| Value::Map(HashMap::new()));
                 }
                 Value::Array(arr) => {
                     if key.is_empty() {
@@ -1110,7 +1130,7 @@ mod multipart {
                             arr.push(Value::BytesOwned(value));
                             return Ok(());
                         } else {
-                            arr.push(Value::Object(Object::new()));
+                            arr.push(Value::Map(HashMap::new()));
                             current = arr.last_mut().unwrap();
                         }
                     } else if let Ok(index) = key.parse::<usize>() {
@@ -1123,7 +1143,7 @@ mod multipart {
                             return Ok(());
                         } else {
                             if matches!(arr[index], Value::Null) {
-                                arr[index] = Value::Object(Object::new());
+                                arr[index] = Value::Map(HashMap::new());
                             }
                             current = &mut arr[index];
                         }
@@ -1136,23 +1156,20 @@ mod multipart {
 
             // Convert from string to object/array if needed
             if !is_last && matches!(current, Value::Null) {
-                *current = Value::Object(Object::new());
+                *current = Value::Map(HashMap::new());
             }
         }
 
         Ok(())
     }
 
-    pub fn parse_form_fields(fields: Vec<(String, Bytes)>) -> Result<Object<'static>, &'static str> {
-        let mut root = Value::Object(Object::new());
+    pub fn parse_form_fields(fields: Vec<(String, Bytes)>) -> Result<Value<'static>, &'static str> {
+        let mut root = Value::Map(HashMap::new());
 
         for (key, value) in fields {
             insert_path(&mut root, parse_key(&key), value)?;
         }
 
-        Ok(match root {
-            Value::Object(object) => object,
-            _ => unreachable!(),
-        })
+        Ok(root)
     }
 }

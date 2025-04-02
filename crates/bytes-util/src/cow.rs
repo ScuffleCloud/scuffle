@@ -1,4 +1,5 @@
-use std::{borrow::Cow, hash::Hash};
+use std::borrow::Cow;
+use std::hash::Hash;
 
 use bytes::Bytes;
 use bytestring::ByteString;

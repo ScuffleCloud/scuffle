@@ -292,7 +292,7 @@ impl<'de> serde::Deserialize<'de> for BytesCow<'de> {
 }
 
 /// A helper wrapper around a [`Cow`] of a [`ByteString`] object.
-#[derive(Debug, Clone, Eq, Ord)]
+#[derive(Debug, Clone, Eq)]
 pub enum StringCow<'a> {
     /// A borrowed [`ByteString`] object.
     Ref(&'a str),
@@ -310,7 +310,7 @@ impl Hash for StringCow<'_> {
     }
 }
 
-impl<'a> PartialOrd for StringCow<'a> {
+impl PartialOrd for StringCow<'_> {
     fn partial_cmp(&self, other: &Self) -> Option<std::cmp::Ordering> {
         Some(self.cmp(other))
     }

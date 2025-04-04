@@ -89,9 +89,8 @@ impl SemverChecks {
             // Regex to capture "Checking" lines in two formats:
             // 1. "Checking <crate> vX.Y.Z (current)"
             // 2. "Checking <crate> vX.Y.Z -> vX.Y.Z (no change)"
-            let check_re = Regex::new(
-                r"^Checking\s+(?P<crate>[^\s]+)\s+v(?P<curr>\d+\.\d+\.\d+)(?:\s+->\s+v(?P<baseline>\d+\.\d+\.\d+))?\s+\((?P<status>[^)]+)\)"
-            ).context("compiling checking regex")?;
+            let check_re = Regex::new(r"^Checking\s+(?P<crate>\S+)\s+v(?P<curr>\d+\.\d+\.\d+)(?:\s+->\s+v\d+\.\d+\.\d+)?")
+                .context("compiling check regex")?;
 
             // Regex for a summary line that indicates an update is required.
             // Example: "Summary semver requires new major version: 1 major and 0 minor checks failed"
@@ -99,12 +98,13 @@ impl SemverChecks {
                 .context("compiling summary regex")?;
 
             let mut current_crate: Option<(String, String)> = None;
+            let mut summary_errors: Vec<String> = Vec::new();
 
-            // Process output line-by-line.
-            for line in semver_output.lines() {
+            // Use a peekable iterator to be able to capture failure blocks.
+            let mut lines = semver_output.lines().peekable();
+            while let Some(line) = lines.next() {
                 let trimmed = line.trim_start();
                 if trimmed.starts_with("Checking") {
-                    // Try to capture crate name and version.
                     if let Some(caps) = check_re.captures(line) {
                         let crate_name = caps.name("crate").unwrap().as_str().to_string();
                         let current_version = caps.name("curr").unwrap().as_str().to_string();
@@ -113,20 +113,46 @@ impl SemverChecks {
                     println!("{line}");
                 } else if trimmed.starts_with("Checked") {
                     println!("{line}");
-                } else if let Some(caps) = summary_re.captures(line) {
-                    let update_type = caps.name("update_type").unwrap().as_str();
-                    if let Some((crate_name, current_version)) = current_crate.take() {
-                        let new_version = Self::new_version_number(&current_version, update_type).with_context(|| {
-                            format!("bumping version for crate {} with update_type {}", crate_name, update_type)
-                        })?;
-                        println!("⚠️ -> {update_type} update required for `{crate_name}`.");
-                        println!("🛠️ -> Please update the version from {current_version} to {new_version}.");
+                } else if trimmed.starts_with("Summary") {
+                    if let Some(caps) = summary_re.captures(line) {
+                        let update_type = caps.name("update_type").unwrap().as_str();
+                        if let Some((crate_name, current_version)) = current_crate.take() {
+                            let new_version =
+                                Self::new_version_number(&current_version, update_type).with_context(|| {
+                                    format!("bumping version for crate {} with update_type {}", crate_name, update_type)
+                                })?;
+                            summary_errors.push(format!(
+                                "⚠️ -> {update_type} update required for `{crate_name}`.\n🛠️ -> Please update the version from {current_version} to {new_version}."
+                            ));
+                        }
+                    } else {
+                        // For non-update summary lines, print immediately.
+                        println!("{line}");
                     }
+                } else if trimmed.starts_with("---") {
+                    // Process a failure block.
+                    println!("{line}");
+                    while let Some(next_line) = lines.next() {
+                        println!("{next_line}");
+                        let next_trimmed = next_line.trim_start();
+                        if next_trimmed.starts_with("Failed in:") {
+                            if let Some(following_line) = lines.next() {
+                                println!("{following_line}");
+                            }
+                            break;
+                        }
+                    }
+                } else {
+                    // Print any other line.
+                    println!("{line}");
                 }
             }
-        }
 
-        println!("i survived");
+            // At the end, print any semver update messages.
+            for error in summary_errors {
+                println!("{error}");
+            }
+        }
 
         Ok(())
     }

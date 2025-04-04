@@ -89,12 +89,13 @@ impl SemverChecks {
             // Regex to capture "Checking" lines in two formats:
             // 1. "Checking <crate> vX.Y.Z (current)"
             // 2. "Checking <crate> vX.Y.Z -> vX.Y.Z (no change)"
-            let check_re = Regex::new(r"^Checking\s+(?P<crate>\S+)\s+v(?P<curr>\d+\.\d+\.\d+)(?:\s+->\s+v\d+\.\d+\.\d+)?")
-                .context("compiling check regex")?;
+            let check_re =
+                Regex::new(r"^\s*Checking\s+(?P<crate>\S+)\s+v(?P<curr>\d+\.\d+\.\d+)(?:\s+->\s+v\d+\.\d+\.\d+)?")
+                    .context("compiling check regex")?;
 
             // Regex for a summary line that indicates an update is required.
             // Example: "Summary semver requires new major version: 1 major and 0 minor checks failed"
-            let summary_re = Regex::new(r"^Summary semver requires new (?P<update_type>major|minor) version:")
+            let summary_re = Regex::new(r"^\s*Summary semver requires new (?P<update_type>major|minor) version:")
                 .context("compiling summary regex")?;
 
             let mut current_crate: Option<(String, String)> = None;

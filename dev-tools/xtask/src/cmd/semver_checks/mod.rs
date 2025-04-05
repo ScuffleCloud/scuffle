@@ -131,8 +131,7 @@ fn process_semver_output(output: &str) -> Result<()> {
                     error_count += 1;
 
                     // now add the description
-                    summary.extend(description);
-                    description = Vec::new();
+                    summary.append(&mut description);
                 }
             }
         } else if trimmed.starts_with("---") {

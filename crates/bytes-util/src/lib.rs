@@ -6,6 +6,7 @@
 //! You can choose between one of them if you use this work.
 //!
 //! `SPDX-License-Identifier: MIT OR Apache-2.0`
+#![cfg_attr(docsrs, feature(doc_cfg))]
 #![cfg_attr(all(coverage_nightly, test), feature(coverage_attribute))]
 #![deny(missing_docs)]
 #![deny(unsafe_code)]
@@ -14,7 +15,14 @@
 mod bit_read;
 mod bit_write;
 mod bytes_cursor;
+mod cow;
+pub mod zero_copy;
 
 pub use bit_read::BitReader;
 pub use bit_write::BitWriter;
 pub use bytes_cursor::{BytesCursor, BytesCursorExt};
+pub use cow::bytes::BytesCow;
+pub use cow::string::StringCow;
+#[cfg(feature = "serde")]
+#[cfg_attr(docsrs, doc(cfg(feature = "serde")))]
+pub use cow::string::serde::StringCowDeserializer;

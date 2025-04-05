@@ -41,6 +41,7 @@ mod tests {
     use scuffle_amf0::Amf0Value;
     use scuffle_av1::ObuHeader;
     use scuffle_av1::seq::SequenceHeaderObu;
+    use scuffle_bytes_util::StringCow;
     use scuffle_h264::Sps;
 
     use crate::audio::AudioData;
@@ -107,7 +108,7 @@ mod tests {
             assert!(on_meta_data.audiodatarate.is_some());
 
             // Should have a minor version property
-            let minor_version = match on_meta_data.other.get("minor_version") {
+            let minor_version = match on_meta_data.other.get(&StringCow::from_static("minor_version")) {
                 Some(Amf0Value::String(number)) => number,
                 _ => panic!("expected minor version"),
             };
@@ -115,7 +116,7 @@ mod tests {
             assert_eq!(minor_version, "512");
 
             // Should have a major brand property
-            let major_brand = match on_meta_data.other.get("major_brand") {
+            let major_brand = match on_meta_data.other.get(&StringCow::from_static("major_brand")) {
                 Some(Amf0Value::String(string)) => string,
                 _ => panic!("expected major brand"),
             };
@@ -123,7 +124,7 @@ mod tests {
             assert_eq!(major_brand, "iso5");
 
             // Should have a compatible_brands property
-            let compatible_brands = match on_meta_data.other.get("compatible_brands") {
+            let compatible_brands = match on_meta_data.other.get(&StringCow::from_static("compatible_brands")) {
                 Some(Amf0Value::String(string)) => string,
                 _ => panic!("expected compatible brands"),
             };

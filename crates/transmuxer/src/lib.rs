@@ -75,14 +75,14 @@ mod errors;
 pub use define::*;
 pub use errors::TransmuxError;
 
-struct Tags {
+struct Tags<'a> {
     video_sequence_header: Option<VideoSequenceHeader>,
     audio_sequence_header: Option<AudioSequenceHeader>,
-    scriptdata_tag: Option<OnMetaData>,
+    scriptdata_tag: Option<OnMetaData<'a>>,
 }
 
 #[derive(Debug, Clone)]
-pub struct Transmuxer {
+pub struct Transmuxer<'a> {
     // These durations are measured in timescales
     /// sample_freq * 1000
     audio_duration: u64,
@@ -91,16 +91,16 @@ pub struct Transmuxer {
     sequence_number: u32,
     last_video_timestamp: u32,
     settings: Option<(VideoSettings, AudioSettings)>,
-    tags: VecDeque<FlvTag>,
+    tags: VecDeque<FlvTag<'a>>,
 }
 
-impl Default for Transmuxer {
+impl Default for Transmuxer<'_> {
     fn default() -> Self {
         Self::new()
     }
 }
 
-impl Transmuxer {
+impl<'a> Transmuxer<'a> {
     pub fn new() -> Self {
         Self {
             sequence_number: 1,
@@ -129,7 +129,7 @@ impl Transmuxer {
     }
 
     /// Feed a single FLV tag to the transmuxer.
-    pub fn add_tag(&mut self, tag: FlvTag) {
+    pub fn add_tag(&mut self, tag: FlvTag<'a>) {
         self.tags.push_back(tag);
     }
 
@@ -345,7 +345,7 @@ impl Transmuxer {
     }
 
     /// Internal function to find the tags we need to create the init segment.
-    fn find_tags(&self) -> Tags {
+    fn find_tags(&self) -> Tags<'a> {
         let tags = self.tags.iter();
         let mut video_sequence_header = None;
         let mut audio_sequence_header = None;

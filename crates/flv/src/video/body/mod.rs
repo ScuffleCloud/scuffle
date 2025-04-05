@@ -20,14 +20,14 @@ pub mod legacy;
 /// - Legacy FLV spec, Annex E.4.3.1
 /// - Enhanced RTMP spec, page 27-31, Enhanced Video
 #[derive(Debug, Clone, PartialEq)]
-pub enum VideoTagBody {
+pub enum VideoTagBody<'a> {
     /// Legacy video tag body.
     Legacy(LegacyVideoTagBody),
     /// Enhanced video tag body.
-    Enhanced(ExVideoTagBody),
+    Enhanced(ExVideoTagBody<'a>),
 }
 
-impl VideoTagBody {
+impl VideoTagBody<'_> {
     /// Demux the video tag body from the given reader.
     ///
     /// If you want to demux the full video data tag, use [`VideoData::demux`](super::VideoData::demux) instead.

@@ -21,14 +21,14 @@ pub mod header;
 /// - Legacy FLV spec, Annex E.4.3.1
 /// - Enhanced RTMP spec, page 26-31, Enhanced Video
 #[derive(Debug, Clone, PartialEq)]
-pub struct VideoData {
+pub struct VideoData<'a> {
     /// The header of the video data.
     pub header: VideoTagHeader,
     /// The body of the video data.
-    pub body: VideoTagBody,
+    pub body: VideoTagBody<'a>,
 }
 
-impl VideoData {
+impl VideoData<'_> {
     /// Demux video data from a given reader.
     ///
     /// This function will automatically determine whether the given data represents a legacy or enhanced video data
@@ -47,7 +47,7 @@ impl VideoData {
 #[cfg(test)]
 #[cfg_attr(all(test, coverage_nightly), coverage(off))]
 mod tests {
-    use scuffle_amf0::Amf0Marker;
+    use scuffle_amf0::{Amf0Marker, Amf0Object};
     use scuffle_av1::AV1CodecConfigurationRecord;
 
     use super::header::enhanced::{VideoFourCc, VideoPacketType};
@@ -202,8 +202,8 @@ mod tests {
         assert_eq!(
             metadata[0],
             VideoPacketMetadataEntry::Other {
-                key: "".to_string(),
-                object: vec![], // empty object
+                key: "".into(),
+                object: Amf0Object::new(), // empty object
             }
         );
     }

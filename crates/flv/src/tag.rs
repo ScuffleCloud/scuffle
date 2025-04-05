@@ -22,16 +22,16 @@ use crate::error::FlvError;
 /// encryption. We dont support this because it is not needed for our use case.
 /// (and I suspect it is not used anywhere anymore.)
 #[derive(Debug, Clone, PartialEq)]
-pub struct FlvTag {
+pub struct FlvTag<'a> {
     /// The timestamp of this tag in milliseconds
     pub timestamp_ms: u32,
     /// The stream id of this tag
     pub stream_id: u32,
     /// The actual data of the tag
-    pub data: FlvTagData,
+    pub data: FlvTagData<'a>,
 }
 
-impl FlvTag {
+impl FlvTag<'_> {
     /// Demux a FLV tag from the given reader.
     ///
     /// The reader will be advanced to the end of the tag.
@@ -106,7 +106,7 @@ nutype_enum! {
 /// Defined by:
 /// - Legacy FLV spec, Annex E.4.1
 #[derive(Debug, Clone, PartialEq)]
-pub enum FlvTagData {
+pub enum FlvTagData<'a> {
     /// AudioData when the FlvTagType is Audio(8)
     ///
     /// Defined by:
@@ -116,12 +116,12 @@ pub enum FlvTagData {
     ///
     /// Defined by:
     /// - Legacy FLV spec, Annex E.4.3.1
-    Video(VideoData),
+    Video(VideoData<'a>),
     /// ScriptData when the FlvTagType is ScriptData(18)
     ///
     /// Defined by:
     /// - Legacy FLV spec, Annex E.4.4.1
-    ScriptData(ScriptData),
+    ScriptData(ScriptData<'a>),
     /// Encrypted tag.
     ///
     /// This library neither supports demuxing nor decrypting encrypted tags.
@@ -142,7 +142,7 @@ pub enum FlvTagData {
     },
 }
 
-impl FlvTagData {
+impl FlvTagData<'_> {
     /// Demux a FLV tag data from the given reader.
     ///
     /// The reader will be enirely consumed.

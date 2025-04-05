@@ -1,32 +1,27 @@
 //! Reading [`Command`].
 
-use std::borrow::Cow;
 use std::convert::Infallible;
 use std::str::FromStr;
 
 use bytes::Bytes;
-use scuffle_amf0::{Amf0Decoder, Amf0Marker, Amf0Value};
+use scuffle_amf0::decoder::Amf0Decoder;
+use scuffle_bytes_util::StringCow;
+use scuffle_bytes_util::zero_copy::BytesBuf;
 
 use super::error::CommandError;
 use super::netconnection::NetConnectionCommand;
 use super::netstream::NetStreamCommand;
 use super::{Command, CommandResultLevel, CommandType, UnknownCommand};
 
-impl<'a> Command<'a> {
+impl Command<'_> {
     /// Reads a [`Command`] from the given payload.
-    pub fn read(payload: &'a Bytes) -> Result<Self, CommandError> {
-        let mut amf_reader = Amf0Decoder::new(payload);
+    pub fn read(payload: Bytes) -> Result<Self, CommandError> {
+        let mut decoder = Amf0Decoder::from_buf(payload);
 
-        let Amf0Value::String(command_name) = amf_reader.decode_with_type(Amf0Marker::String)? else {
-            // TODO: CLOUD-91
-            unreachable!();
-        };
-        let Amf0Value::Number(transaction_id) = amf_reader.decode_with_type(Amf0Marker::Number)? else {
-            // TODO: CLOUD-91
-            unreachable!();
-        };
+        let command_name = decoder.decode_string()?;
+        let transaction_id = decoder.decode_number()?;
 
-        let command_type = CommandType::read(command_name, &mut amf_reader)?;
+        let command_type = CommandType::read(command_name, &mut decoder)?;
 
         Ok(Self {
             transaction_id,
@@ -36,12 +31,12 @@ impl<'a> Command<'a> {
 }
 
 impl<'a> CommandType<'a> {
-    fn read(command_name: Cow<'a, str>, decoder: &mut Amf0Decoder<'a>) -> Result<Self, CommandError> {
-        if let Some(command) = NetConnectionCommand::read(&command_name, decoder)? {
+    fn read(command_name: StringCow<'a>, decoder: &mut Amf0Decoder<BytesBuf<Bytes>>) -> Result<Self, CommandError> {
+        if let Some(command) = NetConnectionCommand::read(command_name.as_str(), decoder)? {
             return Ok(Self::NetConnection(command));
         }
 
-        if let Some(command) = NetStreamCommand::read(&command_name, decoder)? {
+        if let Some(command) = NetStreamCommand::read(command_name.as_str(), decoder)? {
             return Ok(Self::NetStream(command));
         }
 

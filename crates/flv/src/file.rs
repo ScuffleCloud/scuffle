@@ -13,14 +13,14 @@ use crate::error::FlvError;
 /// The FLV File Body is defined by:
 /// - Legacy FLV spec, Annex E.3
 #[derive(Debug, Clone, PartialEq)]
-pub struct FlvFile {
+pub struct FlvFile<'a> {
     /// The header of the FLV file.
     pub header: FlvHeader,
     /// The tags in the FLV file.
-    pub tags: Vec<FlvTag>,
+    pub tags: Vec<FlvTag<'a>>,
 }
 
-impl FlvFile {
+impl FlvFile<'_> {
     /// Demux an FLV file from a reader.
     ///
     /// The reader needs to be a [`std::io::Cursor`] with a [`Bytes`] buffer because we

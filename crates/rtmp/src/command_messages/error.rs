@@ -3,15 +3,9 @@
 /// Errors that can occur when processing command messages.
 #[derive(Debug, thiserror::Error)]
 pub enum CommandError {
-    /// Amf0 read error.
-    #[error("amf0 read: {0}")]
-    Amf0Read(#[from] scuffle_amf0::Amf0ReadError),
-    /// Amf0 write error.
-    #[error("amf0 write: {0}")]
-    Amf0Write(#[from] scuffle_amf0::Amf0WriteError),
-    /// No app name of type string in connect command.
-    #[error("no app name of type string in connect command")]
-    NoAppName,
+    /// Amf0 error.
+    #[error("amf0: {0}")]
+    Amf0(#[from] scuffle_amf0::Amf0Error),
     /// Received an invalid onStatus info object.
     #[error("invalid onStatus info object")]
     InvalidOnStatusInfoObject,

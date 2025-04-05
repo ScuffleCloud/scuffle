@@ -3,7 +3,7 @@
 use std::time::Duration;
 
 use bytes::BytesMut;
-use scuffle_bytes_util::BytesCursorExt;
+use scuffle_bytes_util::{BytesCursorExt, StringCow};
 use scuffle_context::ContextFutExt;
 use scuffle_future_ext::FutureExt;
 use tokio::io::{AsyncReadExt, AsyncWriteExt};
@@ -15,10 +15,7 @@ use crate::command_messages::netconnection::{
     CapsExMask, NetConnectionCommand, NetConnectionCommandConnect, NetConnectionCommandConnectResult,
 };
 use crate::command_messages::netstream::{NetStreamCommand, NetStreamCommandPublishPublishingType};
-use crate::command_messages::on_status::OnStatus;
-use crate::command_messages::on_status::codes::{
-    NET_CONNECTION_CONNECT_RECONNECT_REQUEST, NET_STREAM_DELETE_STREAM_SUCCESS, NET_STREAM_PUBLISH_START,
-};
+use crate::command_messages::on_status::{OnStatus, OnStatusCode};
 use crate::command_messages::{Command, CommandResultLevel, CommandType};
 use crate::handshake;
 use crate::handshake::HandshakeServer;
@@ -59,7 +56,7 @@ pub struct ServerSession<S, H> {
     /// RTMP connection, However we can publish multiple streams per RTMP
     /// connection (using different stream keys) and or play multiple streams
     /// per RTMP connection (using different stream keys) as per the RTMP spec.
-    app_name: Option<Box<str>>,
+    app_name: Option<StringCow<'static>>,
     caps_ex: Option<CapsExMask>,
     /// Used to read and write data
     io: S,
@@ -227,8 +224,10 @@ impl<S: tokio::io::AsyncRead + tokio::io::AsyncWrite + Unpin, H: SessionHandler>
             && self.caps_ex.is_some_and(|c| c.intersects(CapsExMask::Reconnect))
             && self.ctx.as_ref().is_some_and(|ctx| ctx.is_done())
         {
+            tracing::debug!("sending reconnect request");
+
             OnStatus {
-                code: NET_CONNECTION_CONNECT_RECONNECT_REQUEST.into(),
+                code: OnStatusCode::NET_CONNECTION_CONNECT_RECONNECT_REQUEST,
                 level: CommandResultLevel::Status,
                 description: None,
                 others: None,
@@ -375,7 +374,7 @@ impl<S: tokio::io::AsyncRead + tokio::io::AsyncWrite + Unpin, H: SessionHandler>
                 publishing_name,
                 publishing_type,
             }) => {
-                self.on_command_publish(stream_id, command.transaction_id, &publishing_name, publishing_type)
+                self.on_command_publish(stream_id, command.transaction_id, publishing_name.as_str(), publishing_type)
                     .await?;
             }
             CommandType::Unknown(unknown_command) => {
@@ -428,7 +427,7 @@ impl<S: tokio::io::AsyncRead + tokio::io::AsyncWrite + Unpin, H: SessionHandler>
         }
         .write(&mut self.write_buf, &self.chunk_writer)?;
 
-        self.app_name = Some(Box::from(connect.app));
+        self.app_name = Some(connect.app.into_owned());
         self.caps_ex = connect.caps_ex;
 
         let result = NetConnectionCommand::ConnectResult(NetConnectionCommandConnectResult::default());
@@ -481,7 +480,7 @@ impl<S: tokio::io::AsyncRead + tokio::io::AsyncWrite + Unpin, H: SessionHandler>
         Command {
             command_type: CommandType::OnStatus(OnStatus {
                 level: CommandResultLevel::Status,
-                code: NET_STREAM_DELETE_STREAM_SUCCESS.into(),
+                code: OnStatusCode::NET_STREAM_DELETE_STREAM_SUCCESS,
                 description: None,
                 others: None,
             }),
@@ -500,16 +499,14 @@ impl<S: tokio::io::AsyncRead + tokio::io::AsyncWrite + Unpin, H: SessionHandler>
         stream_id: u32,
         transaction_id: f64,
         publishing_name: &str,
-        _publishing_type: NetStreamCommandPublishPublishingType,
+        _publishing_type: NetStreamCommandPublishPublishingType<'_>,
     ) -> Result<(), crate::error::RtmpError> {
         let Some(app_name) = &self.app_name else {
             // The app name is not set yet
             return Err(crate::error::RtmpError::Session(ServerSessionError::PublishBeforeConnect));
         };
 
-        self.handler
-            .on_publish(stream_id, app_name.as_ref(), publishing_name.as_ref())
-            .await?;
+        self.handler.on_publish(stream_id, app_name.as_ref(), publishing_name).await?;
 
         self.publishing_stream_ids.push(stream_id);
 
@@ -518,7 +515,7 @@ impl<S: tokio::io::AsyncRead + tokio::io::AsyncWrite + Unpin, H: SessionHandler>
         Command {
             command_type: CommandType::OnStatus(OnStatus {
                 level: CommandResultLevel::Status,
-                code: NET_STREAM_PUBLISH_START.into(),
+                code: OnStatusCode::NET_STREAM_PUBLISH_START,
                 description: None,
                 others: None,
             }),

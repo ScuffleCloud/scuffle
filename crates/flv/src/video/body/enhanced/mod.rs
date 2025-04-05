@@ -7,7 +7,7 @@ use std::io::{self, Read};
 use byteorder::{BigEndian, ReadBytesExt};
 use bytes::{Buf, Bytes};
 use metadata::VideoPacketMetadataEntry;
-use scuffle_amf0::Amf0Decoder;
+use scuffle_amf0::decoder::Amf0Decoder;
 use scuffle_av1::{AV1CodecConfigurationRecord, AV1VideoDescriptor};
 use scuffle_bytes_util::BytesCursorExt;
 use scuffle_h264::AVCDecoderConfigurationRecord;
@@ -68,9 +68,9 @@ pub enum VideoPacketCodedFrames {
 /// Defined by:
 /// - Enhanced RTMP spec, page 29-31, ExVideoTagBody
 #[derive(Debug, Clone, PartialEq)]
-pub enum VideoPacket {
+pub enum VideoPacket<'a> {
     /// Metadata
-    Metadata(Vec<VideoPacketMetadataEntry>),
+    Metadata(Vec<VideoPacketMetadataEntry<'a>>),
     /// Indicates the end of a sequence of video packets.
     SequenceEnd,
     /// Indicates the start of a sequence of video packets.
@@ -93,7 +93,7 @@ pub enum VideoPacket {
     },
 }
 
-impl VideoPacket {
+impl VideoPacket<'_> {
     /// Demux a [`VideoPacket`] from the given reader.
     ///
     /// This is implemented as per spec, Enhanced RTMP page 29-31, ExVideoTagBody.
@@ -114,13 +114,11 @@ impl VideoPacket {
         match header.video_packet_type {
             VideoPacketType::Metadata => {
                 let data = reader.extract_bytes(size_of_video_track.unwrap_or(reader.remaining()))?;
-                let mut amf_reader = Amf0Decoder::new(&data);
+                let mut decoder = Amf0Decoder::from_buf(data);
 
-                let mut metadata = Vec::new();
-
-                while !amf_reader.is_empty() {
-                    metadata.push(metadata::VideoPacketMetadataEntry::read(&mut amf_reader)?);
-                }
+                let metadata = decoder
+                    .deserialize_stream::<metadata::VideoPacketMetadataEntry>()
+                    .collect::<Result<Vec<_>, _>>()?;
 
                 Ok(Self::Metadata(metadata))
             }
@@ -209,7 +207,7 @@ impl VideoPacket {
 
 /// One video track contained in a multitrack video.
 #[derive(Debug, Clone, PartialEq)]
-pub struct VideoTrack {
+pub struct VideoTrack<'a> {
     /// The video FOURCC of this track.
     pub video_four_cc: VideoFourCc,
     /// The video track ID.
@@ -225,7 +223,7 @@ pub struct VideoTrack {
     /// > across various applications.
     pub video_track_id: u8,
     /// The video packet contained in this track.
-    pub packet: VideoPacket,
+    pub packet: VideoPacket<'a>,
 }
 
 /// `ExVideoTagBody`
@@ -233,7 +231,7 @@ pub struct VideoTrack {
 /// Defined by:
 /// - Enhanced RTMP spec, page 29-31, ExVideoTagBody
 #[derive(Debug, Clone, PartialEq)]
-pub enum ExVideoTagBody {
+pub enum ExVideoTagBody<'a> {
     /// Empty body because the header contains a [`VideoCommand`](crate::video::header::VideoCommand).
     Command,
     /// The body is not a multitrack body.
@@ -241,16 +239,16 @@ pub enum ExVideoTagBody {
         /// The video FOURCC of this body.
         video_four_cc: VideoFourCc,
         /// The video packet contained in this body.
-        packet: VideoPacket,
+        packet: VideoPacket<'a>,
     },
     /// The body is a multitrack body.
     ///
     /// This variant contains multiple video tracks.
     /// See [`VideoTrack`] for more information.
-    ManyTracks(Vec<VideoTrack>),
+    ManyTracks(Vec<VideoTrack<'a>>),
 }
 
-impl ExVideoTagBody {
+impl ExVideoTagBody<'_> {
     /// Demux an [`ExVideoTagBody`] from the given reader.
     ///
     /// This is implemented as per Enhanced RTMP spec, page 29-31, ExVideoTagBody.

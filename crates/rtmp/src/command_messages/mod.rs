@@ -1,11 +1,10 @@
 //! Command messages.
 
-use std::borrow::Cow;
-
 use netconnection::NetConnectionCommand;
 use netstream::NetStreamCommand;
 use on_status::OnStatus;
 use scuffle_amf0::Amf0Value;
+use scuffle_bytes_util::StringCow;
 
 pub mod error;
 pub mod netconnection;
@@ -55,13 +54,14 @@ pub enum CommandType<'a> {
 #[derive(Debug, Clone)]
 pub struct UnknownCommand<'a> {
     /// Name of the unknown command.
-    pub command_name: Cow<'a, str>,
+    pub command_name: StringCow<'a>,
     /// All other values of the command including the command object.
-    pub values: Vec<Amf0Value<'a>>,
+    pub values: Vec<Amf0Value<'static>>,
 }
 
 /// NetStream onStatus level (7.2.2.) and NetConnection connect result level (7.2.1.1.)
-#[derive(Debug, Clone, PartialEq, Eq)]
+#[derive(Debug, Clone, PartialEq, Eq, serde::Serialize)]
+#[serde(rename_all = "camelCase")]
 pub enum CommandResultLevel {
     /// Warning level.
     ///
@@ -76,5 +76,6 @@ pub enum CommandResultLevel {
     /// Not further explained in any spec.
     Error,
     /// Any other level.
+    #[serde(untagged)]
     Unknown(String),
 }

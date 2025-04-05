@@ -2,7 +2,7 @@
 
 use std::io;
 
-use scuffle_amf0::{Amf0Encoder, Amf0Value};
+use scuffle_amf0::encoder::Amf0Encoder;
 
 use super::OnStatus;
 use crate::command_messages::error::CommandError;
@@ -10,25 +10,13 @@ use crate::command_messages::error::CommandError;
 impl OnStatus<'_> {
     /// Writes an [`OnStatus`] command to the given writer.
     pub fn write(self, buf: &mut impl io::Write, transaction_id: f64) -> Result<(), CommandError> {
-        Amf0Encoder::encode_string(buf, "onStatus")?;
-        Amf0Encoder::encode_number(buf, transaction_id)?;
-        // command object
-        Amf0Encoder::encode_null(buf)?;
+        let mut encoder = Amf0Encoder::new(buf);
 
-        let mut info_object = vec![
-            ("level".into(), Amf0Value::String(self.level.to_string().into())),
-            ("code".into(), Amf0Value::String(self.code.clone())),
-        ];
-
-        if let Some(description) = self.description.as_ref() {
-            info_object.push(("description".into(), Amf0Value::String(description.clone())));
-        }
-
-        if let Some(others) = self.others.as_ref() {
-            info_object.extend_from_slice(others);
-        }
-
-        Amf0Encoder::encode_object(buf, &info_object)?;
+        encoder.encode_string("onStatus")?;
+        encoder.encode_number(transaction_id)?;
+        // command object is null
+        encoder.encode_null()?;
+        encoder.serialize(self)?;
 
         Ok(())
     }
@@ -38,7 +26,8 @@ impl OnStatus<'_> {
 #[cfg_attr(all(test, coverage_nightly), coverage(off))]
 mod tests {
     use bytes::{BufMut, BytesMut};
-    use scuffle_amf0::{Amf0Decoder, Amf0Value};
+    use scuffle_amf0::Amf0Value;
+    use scuffle_amf0::decoder::Amf0Decoder;
 
     use crate::command_messages::CommandResultLevel;
     use crate::command_messages::on_status::OnStatus;
@@ -51,13 +40,16 @@ mod tests {
             level: CommandResultLevel::Status,
             code: "idk".into(),
             description: Some("description".into()),
-            others: Some(vec![("testkey".into(), Amf0Value::String("testvalue".into()))].into()),
+            others: Some(
+                [("testkey".into(), Amf0Value::String("testvalue".into()))]
+                    .into_iter()
+                    .collect(),
+            ),
         }
         .write(&mut (&mut buf).writer(), 1.0)
         .expect("write");
 
-        let mut amf0_reader = Amf0Decoder::new(&buf);
-        let values = amf0_reader.decode_all().unwrap();
+        let values = Amf0Decoder::from_buf(buf.freeze()).decode_all().unwrap();
 
         assert_eq!(values.len(), 4);
         assert_eq!(values[0], Amf0Value::String("onStatus".into())); // command name
@@ -66,13 +58,14 @@ mod tests {
         assert_eq!(
             values[3],
             Amf0Value::Object(
-                vec![
+                [
                     ("level".into(), Amf0Value::String("status".into())),
                     ("code".into(), Amf0Value::String("idk".into())),
                     ("description".into(), Amf0Value::String("description".into())),
                     ("testkey".into(), Amf0Value::String("testvalue".into())),
                 ]
-                .into()
+                .into_iter()
+                .collect()
             )
         ); // info object
     }

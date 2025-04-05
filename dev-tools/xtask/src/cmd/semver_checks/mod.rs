@@ -105,6 +105,7 @@ fn process_semver_output(output: &str) -> Result<()> {
     let mut lines = output.lines().peekable();
     while let Some(line) = lines.next() {
         let trimmed = line.trim_start();
+
         if trimmed.starts_with("Checking") {
             // Capture crate name and version without printing.
             if let Some(caps) = check_re.captures(line) {
@@ -112,10 +113,7 @@ fn process_semver_output(output: &str) -> Result<()> {
                 let current_version = caps.name("curr").unwrap().as_str().to_string();
                 current_crate = Some((crate_name, current_version));
             }
-        } else if trimmed.starts_with("Checked") {
-            println!("{}", line);
         } else if trimmed.starts_with("Summary") {
-            println!("{}", line);
             // If summary indicates an update, capture details.
             if let Some(caps) = summary_re.captures(line) {
                 let update_type = caps.name("update_type").unwrap().as_str();
@@ -131,8 +129,6 @@ fn process_semver_output(output: &str) -> Result<()> {
         } else if trimmed.starts_with("---") {
             println!("{}", line);
             process_failure_block(&mut lines)?;
-        } else {
-            println!("{}", line);
         }
     }
 
@@ -142,13 +138,17 @@ fn process_semver_output(output: &str) -> Result<()> {
         for error in summary_errors {
             println!("{}", error);
         }
+    } else {
+        println!("\nNo errors found!\n");
     }
+
     Ok(())
 }
 
 // Process failure blocks by printing lines until a new section is encountered.
 fn process_failure_block<'a>(lines: &mut Peekable<impl Iterator<Item = &'a str>>) -> Result<()> {
     // Continue printing lines until a new section is encountered.
+    let mut i = 0;
     while let Some(&next_line) = lines.peek() {
         let trimmed = next_line.trim_start();
         if trimmed.starts_with("Checking")
@@ -159,7 +159,8 @@ fn process_failure_block<'a>(lines: &mut Peekable<impl Iterator<Item = &'a str>>
         {
             break;
         }
-        println!("{}", lines.next().unwrap());
+        i += 1;
+        println!("{}, {}", lines.next().unwrap(), i);
     }
     Ok(())
 }

@@ -131,12 +131,12 @@ fn process_semver_output(output: &str) -> Result<()> {
 
                     // Capture summary description
                     let next_trimmed = lines.peek().unwrap().trim_start();
-                    println!("test1: {}", next_trimmed); // this should have "---"
+                    summary.push(format!("test1: {next_trimmed}")); // this should have "---"
                     if next_trimmed.starts_with("---") {
                         lines.next(); // consume the line with '---'
                         while let Some(&desc_line) = lines.peek() {
                             let desc_trimmed = desc_line.trim_start();
-                            println!("test2: {}", desc_trimmed);
+                            summary.push(format!("test2: {desc_trimmed}"));
                             if desc_trimmed.starts_with("Checking")
                                 || desc_trimmed.starts_with("Built")
                                 || desc_trimmed.starts_with("Building")

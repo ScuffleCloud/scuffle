@@ -64,7 +64,7 @@ impl SemverChecks {
         args.push("--package");
         args.push("scuffle-h264");
 
-        cargo_cmd().args(&args);
+        let _ = cargo_cmd().args(&args).status().context("hi");
 
         // let output = cargo_cmd()
         //     .env("CARGO_TERM_COLOR", "never")

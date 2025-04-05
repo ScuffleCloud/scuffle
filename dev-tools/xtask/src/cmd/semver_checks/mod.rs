@@ -132,8 +132,8 @@ fn process_semver_output(output: &str) -> Result<()> {
                     let mut i = 0;
 
                     // Capture summary description
-                    'outer: loop {
-                        let next_trimmed = lines.next().unwrap_or("").trim_start();
+                    while let Some(next_line) = lines.next() {
+                        let next_trimmed = next_line.trim_start();
                         summary.push(format!("test1: {next_trimmed}")); // this should have "---"
 
                         if next_trimmed.starts_with("---") {
@@ -151,7 +151,7 @@ fn process_semver_output(output: &str) -> Result<()> {
                                     || desc_trimmed.starts_with("Finished")
                                     || desc_trimmed.starts_with("Summary")
                                 {
-                                    break 'outer;
+                                    break;
                                 }
                                 summary.push(desc_trimmed.into());
                             }

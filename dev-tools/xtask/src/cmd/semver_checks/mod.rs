@@ -104,8 +104,8 @@ fn process_semver_output(output: &str) -> Result<()> {
 
     let mut current_crate: Option<(String, String)> = None;
     let mut summary: Vec<String> = Vec::new();
+    let mut description: Vec<String> = Vec::new();
     let mut error_count = 0;
-    let mut err_insert_index = 0;
 
     let mut lines = output.lines().peekable();
     while let Some(line) = lines.next() {
@@ -123,23 +123,23 @@ fn process_semver_output(output: &str) -> Result<()> {
                 let update_type = caps.name("update_type").unwrap().as_str();
                 if let Some((crate_name, current_version)) = current_crate.take() {
                     let new_version = new_version_number(&current_version, update_type)?;
-                    summary.insert(
-                        err_insert_index,
+                    summary.push(
                         format!("⚠️ -> {} update required for `{}`.", update_type, crate_name),
                     );
-                    summary.insert(
-                        err_insert_index + 1,
+                    summary.push(
                         format!(
                             "🛠️ -> Please update the version from {} to {}.\n",
                             current_version, new_version
                         ),
                     );
                     error_count += 1;
+
+                    // now add the description
+                    summary.extend(description);
+                    description = Vec::new();
                 }
             }
         } else if trimmed.starts_with("---") {
-            err_insert_index = summary.len() - 1;
-
             while let Some(&desc_line) = lines.peek() {
                 let desc_trimmed = desc_line.trim_start();
 
@@ -153,7 +153,8 @@ fn process_semver_output(output: &str) -> Result<()> {
                 {
                     break;
                 }
-                summary.push(desc_trimmed.into());
+                // store the lines into a separate vec
+                description.push(desc_trimmed.into());
             }
         }
     }

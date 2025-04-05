@@ -133,7 +133,7 @@ fn process_semver_output(output: &str) -> Result<()> {
 
                     // Capture summary description
                     'outer: loop {
-                        let next_trimmed = lines.next().unwrap().trim_start();
+                        let next_trimmed = lines.next().unwrap_or("").trim_start();
                         summary.push(format!("test1: {next_trimmed}")); // this should have "---"
 
                         if next_trimmed.starts_with("---") {
@@ -159,7 +159,7 @@ fn process_semver_output(output: &str) -> Result<()> {
 
                         i += 1;
 
-                        if i > 10 {
+                        if i > 3 {
                             break;
                         }
                     }

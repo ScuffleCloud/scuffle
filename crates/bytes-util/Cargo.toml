@@ -16,3 +16,8 @@ unexpected_cfgs = { level = "warn", check-cfg = ['cfg(coverage_nightly)'] }
 [dependencies]
 bytes = "1.5"
 scuffle-workspace-hack.workspace = true
+serde = { version = "1.0.215", optional = true }
+bytestring = "1.4.0"
+
+[features]
+serde = ["dep:serde"]

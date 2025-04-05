@@ -138,8 +138,7 @@ fn process_semver_output(output: &str) -> Result<()> {
                 }
             }
         } else if trimmed.starts_with("---") {
-            lines.next(); // consume the line with '---'
-            err_insert_index = summary.len();
+            err_insert_index = summary.len() - 1;
 
             while let Some(&desc_line) = lines.peek() {
                 let desc_trimmed = desc_line.trim_start();

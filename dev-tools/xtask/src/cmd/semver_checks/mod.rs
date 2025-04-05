@@ -133,7 +133,8 @@ fn process_semver_output(output: &str) -> Result<()> {
 
                     // Capture summary description
                     'outer: loop {
-                        let next_trimmed = lines.peek().unwrap().trim_start();
+                        let mut copy_lines = lines.clone();
+                        let next_trimmed = copy_lines.next().unwrap().trim_start();
                         summary.push(format!("test1: {next_trimmed}")); // this should have "---"
 
                         if next_trimmed.starts_with("---") {

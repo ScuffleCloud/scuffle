@@ -89,13 +89,13 @@ fn process_semver_output(output: &str) -> Result<()> {
     // Supports both formats:
     //   "Checking <crate> vX.Y.Z (current)"
     //   "Checking <crate> vX.Y.Z -> vX.Y.Z (no change)"
-    let check_re = Regex::new(r"^\s*Checking\s+(?P<crate>\S+)\s+v(?P<curr>\d+\.\d+\.\d+)(?:\s+->\s+v\d+\.\d+\.\d+)?")
+    let check_re = Regex::new(r"^Checking\s+(?P<crate>\S+)\s+v(?P<curr>\d+\.\d+\.\d+)(?:\s+->\s+v\d+\.\d+\.\d+)?")
         .context("compiling check regex")?;
 
     // Regex for summary lines that indicate an update is required.
     // Example:
     //   "Summary semver requires new major version: 1 major and 0 minor checks failed"
-    let summary_re = Regex::new(r"^\s*Summary semver requires new (?P<update_type>major|minor) version:")
+    let summary_re = Regex::new(r"^Summary semver requires new (?P<update_type>major|minor) version:")
         .context("compiling summary regex")?;
 
     let mut current_crate: Option<(String, String)> = None;
@@ -108,46 +108,56 @@ fn process_semver_output(output: &str) -> Result<()> {
 
         if trimmed.starts_with("Checking") {
             // Capture crate name and version without printing.
-            if let Some(caps) = check_re.captures(line) {
+            if let Some(caps) = check_re.captures(trimmed) {
                 let crate_name = caps.name("crate").unwrap().as_str().to_string();
                 let current_version = caps.name("curr").unwrap().as_str().to_string();
                 current_crate = Some((crate_name, current_version));
             }
         } else if trimmed.starts_with("Summary") {
-            // If summary indicates an update, capture details.
-            if let Some(caps) = summary_re.captures(line) {
+            if let Some(caps) = summary_re.captures(trimmed) {
                 let update_type = caps.name("update_type").unwrap().as_str();
                 if let Some((crate_name, current_version)) = current_crate.take() {
-                    let new_version = new_version_number(&current_version, update_type).with_context(|| {
-                        format!("bumping version for crate {} with update_type {}", crate_name, update_type)
-                    })?;
+                    let new_version = new_version_number(&current_version, update_type)?;
                     summary.push(format!(
-                        "⚠️ -> {update_type} update required for `{crate_name}`.\n🛠️ -> Please update the version from {current_version} to {new_version}."
+                        "⚠️ -> {} update required for `{}`.",
+                        update_type, crate_name
+                    ));
+                    summary.push(format!(
+                        "🛠️ -> Please update the version from {} to {}.\n",
+                        current_version, new_version
                     ));
                     error_count += 1;
                 }
-            }
-        } else if trimmed.starts_with("---") {
-            while let Some(&next_line) = lines.peek() {
-                let next_trimmed = next_line.trim_start();
-                if next_trimmed.starts_with("Checking")
-                    || next_trimmed.starts_with("Built")
-                    || next_trimmed.starts_with("Builing")
-                    || next_trimmed.starts_with("Parsing")
-                    || next_trimmed.starts_with("Finished")
-                    || next_trimmed.starts_with("Summary")
-                {
-                    break;
+
+                // Capture description and related lines
+                while let Some(&next_line) = lines.peek() {
+                    let next_trimmed = next_line.trim_start();
+                    if next_trimmed.starts_with("---") {
+                        lines.next(); // consume the line with '---'
+                        while let Some(&desc_line) = lines.peek() {
+                            let desc_trimmed = desc_line.trim_start();
+                            if desc_trimmed.starts_with("Checking")
+                                || desc_trimmed.starts_with("Built")
+                                || desc_trimmed.starts_with("Building")
+                                || desc_trimmed.starts_with("Parsing")
+                                || desc_trimmed.starts_with("Finished")
+                                || desc_trimmed.starts_with("Summary")
+                            {
+                                break;
+                            }
+                            summary.push(lines.next().unwrap().to_string());
+                        }
+                    } else {
+                        break;
+                    }
                 }
-                summary.push(lines.next().unwrap().to_string());
             }
-            summary.push("\n".to_string());
         }
     }
 
     // Print deferred update and failure block messages.
-    if !summary.is_empty() {
-        println!("🚩 --- {} ERRORS FOUND --- 🚩", error_count);
+    if error_count > 0 {
+        println!("🚩 --- {} ERROR(S) FOUND --- 🚩", error_count);
 
         for line in summary {
             println!("{}", line);

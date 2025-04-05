@@ -133,16 +133,18 @@ fn process_semver_output(output: &str) -> Result<()> {
                         lines.next(); // consume the line with '---'
                         while let Some(&desc_line) = lines.peek() {
                             let desc_trimmed = desc_line.trim_start();
+                            println!("test: {}", desc_trimmed);
                             if desc_trimmed.starts_with("Checking")
                                 || desc_trimmed.starts_with("Built")
                                 || desc_trimmed.starts_with("Building")
                                 || desc_trimmed.starts_with("Parsing")
+                                || desc_trimmed.starts_with("Parsed")
                                 || desc_trimmed.starts_with("Finished")
                                 || desc_trimmed.starts_with("Summary")
                             {
                                 break;
                             }
-                            summary.push(lines.next().unwrap().to_string());
+                            summary.push(desc_trimmed.into());
                         }
                     } else {
                         break;

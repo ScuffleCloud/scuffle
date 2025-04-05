@@ -105,6 +105,7 @@ fn process_semver_output(output: &str) -> Result<()> {
     let mut current_crate: Option<(String, String)> = None;
     let mut summary: Vec<String> = Vec::new();
     let mut error_count = 0;
+    let mut err_insert_index = 0;
 
     let mut lines = output.lines().peekable();
     while let Some(line) = lines.next() {
@@ -122,48 +123,38 @@ fn process_semver_output(output: &str) -> Result<()> {
                 let update_type = caps.name("update_type").unwrap().as_str();
                 if let Some((crate_name, current_version)) = current_crate.take() {
                     let new_version = new_version_number(&current_version, update_type)?;
-                    summary.push(format!("⚠️ -> {} update required for `{}`.", update_type, crate_name));
-                    summary.push(format!(
-                        "🛠️ -> Please update the version from {} to {}.\n",
-                        current_version, new_version
-                    ));
+                    summary.insert(
+                        err_insert_index,
+                        format!("⚠️ -> {} update required for `{}`.", update_type, crate_name),
+                    );
+                    summary.insert(
+                        err_insert_index + 1,
+                        format!(
+                            "🛠️ -> Please update the version from {} to {}.\n",
+                            current_version, new_version
+                        ),
+                    );
                     error_count += 1;
-
-                    let mut i = 0;
-
-                    // Capture summary description
-                    while let Some(next_line) = lines.next() {
-                        let next_trimmed = next_line.trim_start();
-                        summary.push(format!("test1: {next_trimmed}")); // this should have "---"
-
-                        if next_trimmed.starts_with("---") {
-                            lines.next(); // consume the line with '---'
-
-                            while let Some(&desc_line) = lines.peek() {
-                                let desc_trimmed = desc_line.trim_start();
-                                summary.push(format!("test2: {desc_trimmed}"));
-
-                                if desc_trimmed.starts_with("Checking")
-                                    || desc_trimmed.starts_with("Built")
-                                    || desc_trimmed.starts_with("Building")
-                                    || desc_trimmed.starts_with("Parsing")
-                                    || desc_trimmed.starts_with("Parsed")
-                                    || desc_trimmed.starts_with("Finished")
-                                    || desc_trimmed.starts_with("Summary")
-                                {
-                                    break;
-                                }
-                                summary.push(desc_trimmed.into());
-                            }
-                        }
-
-                        i += 1;
-
-                        if i > 30 {
-                            break;
-                        }
-                    }
                 }
+            }
+        } else if trimmed.starts_with("---") {
+            lines.next(); // consume the line with '---'
+            err_insert_index = summary.len();
+
+            while let Some(&desc_line) = lines.peek() {
+                let desc_trimmed = desc_line.trim_start();
+
+                if desc_trimmed.starts_with("Checking")
+                    || desc_trimmed.starts_with("Built")
+                    || desc_trimmed.starts_with("Building")
+                    || desc_trimmed.starts_with("Parsing")
+                    || desc_trimmed.starts_with("Parsed")
+                    || desc_trimmed.starts_with("Finished")
+                    || desc_trimmed.starts_with("Summary")
+                {
+                    break;
+                }
+                summary.push(desc_trimmed.into());
             }
         }
     }

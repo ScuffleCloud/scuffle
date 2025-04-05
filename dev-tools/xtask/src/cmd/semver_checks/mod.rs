@@ -61,7 +61,7 @@ impl SemverChecks {
         //     args.push("--package");
         //     args.push(package);
         // }
-        args.push("-- package");
+        args.push("--package");
         args.push("scuffle-h264");
 
         let output = cargo_cmd()
@@ -80,6 +80,8 @@ impl SemverChecks {
             anyhow::bail!("No semver-checks output received. The command may have failed.");
         }
 
+        // empty print to separate from "info: contents updated"
+        println!();
         process_semver_output(&semver_output)?;
 
         Ok(())

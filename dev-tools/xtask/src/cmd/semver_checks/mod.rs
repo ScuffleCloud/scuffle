@@ -130,24 +130,29 @@ fn process_semver_output(output: &str) -> Result<()> {
                     error_count += 1;
 
                     // Capture summary description
-                    let next_trimmed = lines.peek().unwrap().trim_start();
-                    summary.push(format!("test1: {next_trimmed}")); // this should have "---"
-                    if next_trimmed.starts_with("---") {
-                        lines.next(); // consume the line with '---'
-                        while let Some(&desc_line) = lines.peek() {
-                            let desc_trimmed = desc_line.trim_start();
-                            summary.push(format!("test2: {desc_trimmed}"));
-                            if desc_trimmed.starts_with("Checking")
-                                || desc_trimmed.starts_with("Built")
-                                || desc_trimmed.starts_with("Building")
-                                || desc_trimmed.starts_with("Parsing")
-                                || desc_trimmed.starts_with("Parsed")
-                                || desc_trimmed.starts_with("Finished")
-                                || desc_trimmed.starts_with("Summary")
-                            {
-                                break;
+                    'outer: loop {
+                        let next_trimmed = lines.peek().unwrap().trim_start();
+                        summary.push(format!("test1: {next_trimmed}")); // this should have "---"
+
+                        if next_trimmed.starts_with("---") {
+                            lines.next(); // consume the line with '---'
+
+                            while let Some(&desc_line) = lines.peek() {
+                                let desc_trimmed = desc_line.trim_start();
+                                summary.push(format!("test2: {desc_trimmed}"));
+
+                                if desc_trimmed.starts_with("Checking")
+                                    || desc_trimmed.starts_with("Built")
+                                    || desc_trimmed.starts_with("Building")
+                                    || desc_trimmed.starts_with("Parsing")
+                                    || desc_trimmed.starts_with("Parsed")
+                                    || desc_trimmed.starts_with("Finished")
+                                    || desc_trimmed.starts_with("Summary")
+                                {
+                                    break 'outer;
+                                }
+                                summary.push(desc_trimmed.into());
                             }
-                            summary.push(desc_trimmed.into());
                         }
                     }
                 }

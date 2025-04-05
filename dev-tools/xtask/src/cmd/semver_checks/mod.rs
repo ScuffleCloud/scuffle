@@ -1,5 +1,4 @@
 use std::collections::HashSet;
-use std::iter::Peekable;
 use std::path::PathBuf;
 use std::process::Stdio;
 
@@ -127,12 +126,23 @@ fn process_semver_output(output: &str) -> Result<()> {
                 }
             }
         } else if trimmed.starts_with("---") {
-            println!("{}", line);
-            process_failure_block(&mut lines)?;
+            while let Some(&next_line) = lines.peek() {
+                let next_trimmed = next_line.trim_start();
+                if next_trimmed.starts_with("Checking")
+                    || next_trimmed.starts_with("Built")
+                    || next_trimmed.starts_with("Parsing")
+                    || next_trimmed.starts_with("Finished")
+                    || next_trimmed.starts_with("Summary")
+                {
+                    break;
+                }
+                summary_errors.push(lines.next().unwrap().to_string());
+            }
+            summary_errors.push("\n".to_string());
         }
     }
 
-    // Print deferred update messages.
+    // Print deferred update and failure block messages.
     if !summary_errors.is_empty() {
         println!("\n--- ERRORS FOUND ---\n");
         for error in summary_errors {
@@ -142,26 +152,6 @@ fn process_semver_output(output: &str) -> Result<()> {
         println!("\nNo errors found!\n");
     }
 
-    Ok(())
-}
-
-// Process failure blocks by printing lines until a new section is encountered.
-fn process_failure_block<'a>(lines: &mut Peekable<impl Iterator<Item = &'a str>>) -> Result<()> {
-    // Continue printing lines until a new section is encountered.
-    let mut i = 0;
-    while let Some(&next_line) = lines.peek() {
-        let trimmed = next_line.trim_start();
-        if trimmed.starts_with("Checking")
-            || trimmed.starts_with("Built")
-            || trimmed.starts_with("Parsing")
-            || trimmed.starts_with("Finished")
-            || trimmed.starts_with("Summary")
-        {
-            break;
-        }
-        i += 1;
-        println!("{}, {}", lines.next().unwrap(), i);
-    }
     Ok(())
 }
 

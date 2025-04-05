@@ -86,35 +86,46 @@ impl SemverChecks {
         if semver_output.trim().is_empty() {
             println!("No semver-checks output received. The command may have failed.");
         } else {
-            // Regex to capture "Checking" lines in two formats:
-            // 1. "Checking <crate> vX.Y.Z (current)"
-            // 2. "Checking <crate> vX.Y.Z -> vX.Y.Z (no change)"
+            // Regex to capture "Checking" lines (used for capturing crate name and version).
+            // It ignores any starting whitespace.
+            // Supports both:
+            //    "Checking <crate> vX.Y.Z (current)"
+            //    "Checking <crate> vX.Y.Z -> vX.Y.Z (no change)"
             let check_re =
                 Regex::new(r"^\s*Checking\s+(?P<crate>\S+)\s+v(?P<curr>\d+\.\d+\.\d+)(?:\s+->\s+v\d+\.\d+\.\d+)?")
                     .context("compiling check regex")?;
 
             // Regex for a summary line that indicates an update is required.
-            // Example: "Summary semver requires new major version: 1 major and 0 minor checks failed"
+            // It ignores any leading whitespace.
+            // Example:
+            //   "Summary semver requires new major version: 1 major and 0 minor checks failed"
             let summary_re = Regex::new(r"^\s*Summary semver requires new (?P<update_type>major|minor) version:")
                 .context("compiling summary regex")?;
 
+            // Hold the current crate (captured from a "Checking" line)
+            // and a vector for deferred update messages.
             let mut current_crate: Option<(String, String)> = None;
             let mut summary_errors: Vec<String> = Vec::new();
 
-            // Use a peekable iterator to be able to capture failure blocks.
+            // Process output line-by-line using a peekable iterator.
             let mut lines = semver_output.lines().peekable();
             while let Some(line) = lines.next() {
                 let trimmed = line.trim_start();
                 if trimmed.starts_with("Checking") {
+                    // Capture the crate info without printing the "Checking" line.
                     if let Some(caps) = check_re.captures(line) {
                         let crate_name = caps.name("crate").unwrap().as_str().to_string();
                         let current_version = caps.name("curr").unwrap().as_str().to_string();
                         current_crate = Some((crate_name, current_version));
                     }
-                    println!("{line}");
+                    // (Do not print "Checking" lines.)
                 } else if trimmed.starts_with("Checked") {
+                    // Print "Checked" lines immediately.
                     println!("{line}");
                 } else if trimmed.starts_with("Summary") {
+                    // Always print the summary line.
+                    println!("{line}");
+                    // If the summary indicates an update is required, capture the update info.
                     if let Some(caps) = summary_re.captures(line) {
                         let update_type = caps.name("update_type").unwrap().as_str();
                         if let Some((crate_name, current_version)) = current_crate.take() {
@@ -126,9 +137,6 @@ impl SemverChecks {
                                 "⚠️ -> {update_type} update required for `{crate_name}`.\n🛠️ -> Please update the version from {current_version} to {new_version}."
                             ));
                         }
-                    } else {
-                        // For non-update summary lines, print immediately.
-                        println!("{line}");
                     }
                 } else if trimmed.starts_with("---") {
                     // Process a failure block.
@@ -144,14 +152,16 @@ impl SemverChecks {
                         }
                     }
                 } else {
-                    // Print any other line.
-                    println!("{line}");
+                    // For all other lines, do nothing.
                 }
             }
 
-            // At the end, print any semver update messages.
-            for error in summary_errors {
-                println!("{error}");
+            // After processing all lines, if any update messages were captured, print them.
+            if !summary_errors.is_empty() {
+                println!(); // print an empty line before deferred update messages.
+                for error in summary_errors {
+                    println!("{error}");
+                }
             }
         }
 

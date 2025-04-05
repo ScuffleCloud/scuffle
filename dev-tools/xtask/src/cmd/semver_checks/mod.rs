@@ -99,7 +99,8 @@ fn process_semver_output(output: &str) -> Result<()> {
         .context("compiling summary regex")?;
 
     let mut current_crate: Option<(String, String)> = None;
-    let mut summary_errors: Vec<String> = Vec::new();
+    let mut summary: Vec<String> = Vec::new();
+    let mut error_count = 0;
 
     let mut lines = output.lines().peekable();
     while let Some(line) = lines.next() {
@@ -120,9 +121,10 @@ fn process_semver_output(output: &str) -> Result<()> {
                     let new_version = new_version_number(&current_version, update_type).with_context(|| {
                         format!("bumping version for crate {} with update_type {}", crate_name, update_type)
                     })?;
-                    summary_errors.push(format!(
+                    summary.push(format!(
                         "⚠️ -> {update_type} update required for `{crate_name}`.\n🛠️ -> Please update the version from {current_version} to {new_version}."
                     ));
+                    error_count += 1;
                 }
             }
         } else if trimmed.starts_with("---") {
@@ -130,28 +132,32 @@ fn process_semver_output(output: &str) -> Result<()> {
                 let next_trimmed = next_line.trim_start();
                 if next_trimmed.starts_with("Checking")
                     || next_trimmed.starts_with("Built")
+                    || next_trimmed.starts_with("Builing")
                     || next_trimmed.starts_with("Parsing")
                     || next_trimmed.starts_with("Finished")
                     || next_trimmed.starts_with("Summary")
                 {
                     break;
                 }
-                summary_errors.push(lines.next().unwrap().to_string());
+                summary.push(lines.next().unwrap().to_string());
             }
-            summary_errors.push("\n".to_string());
+            summary.push("\n".to_string());
         }
     }
 
     // Print deferred update and failure block messages.
-    if !summary_errors.is_empty() {
-        println!("\n--- ERRORS FOUND ---\n");
-        for error in summary_errors {
-            println!("{}", error);
+    if !summary.is_empty() {
+        println!("🚩 --- {} ERRORS FOUND --- 🚩", error_count);
+
+        for line in summary {
+            println!("{}", line);
         }
     } else {
-        println!("\nNo errors found!\n");
+        println!("✅ No errors found! ✅");
     }
 
+    // print an empty line to separate output from worktree cleanup line
+    println!();
     Ok(())
 }
 

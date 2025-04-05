@@ -36,6 +36,8 @@ num-traits = "0.2.19"
 itoa = "1.0.1"
 ryu = "1.0.14"
 
+linear-map = "1.2.0"
+
 scuffle-bytes-util = { workspace = true, features = ["serde"] }
 
 scuffle-workspace-hack.workspace = true

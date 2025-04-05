@@ -1,15 +1,11 @@
 use std::collections::BTreeMap;
 
 use anyhow::Context;
-use convert_case::{Boundary, Case, Casing};
 use quote::quote;
 use syn::{Ident, parse_quote};
 
+use crate::codegen::{field_ident_from_str, ident_from_str};
 use crate::extensions::{Extensions, FieldKind, MessageOpts, MethodIo, MethodOpts, ServiceOpts, WellKnownType};
-
-fn ident_from_str(s: impl AsRef<str>) -> Ident {
-    syn::parse_str(s.as_ref()).unwrap_or_else(|_| Ident::new_raw(s.as_ref(), proc_macro2::Span::call_site()))
-}
 
 // Define a helper enum for input message options.
 enum IoOptions<'a> {
@@ -25,8 +21,9 @@ impl IoOptions<'_> {
                 parse_quote! { super::#path }
             }
             IoOptions::WellKnown(well_known) => {
-                let id = ident_from_str(well_known.path());
-                parse_quote! { #id }
+                // let id = ident_from_str(well_known.path());
+                todo!();
+                parse_quote! {  }
             }
         }
     }
@@ -78,10 +75,10 @@ fn object_type_path(key: &str, package: &str) -> syn::Path {
     let len = parts.len();
     if len > 1 {
         for part in &mut parts[..len - 1] {
-            *part = part.with_boundaries(&Boundary::digit_letter()).to_case(Case::Snake);
+            *part = super::field_ident_from_str(&part).to_string();
         }
 
-        parts[len - 1] = parts[len - 1].to_case(Case::Pascal);
+        parts[len - 1] = super::type_ident_from_str(&parts[len - 1]).to_string();
     }
 
     syn::parse_str::<syn::Path>(&parts.join("::")).unwrap()
@@ -393,7 +390,7 @@ impl GeneratedMethod {
             .transpose()?;
 
         let input_path = input_message.path(service.package.as_str());
-        let service_method_name = ident_from_str(name.to_case(Case::Snake));
+        let service_method_name = field_ident_from_str(name);
 
         let function_impl = quote! {
             let mut input = ::tinc::value::Object::new();
@@ -482,6 +479,7 @@ pub(super) fn handle_service(
     _: &mut tonic_build::Config,
     modules: &mut BTreeMap<String, Vec<syn::Item>>,
 ) -> anyhow::Result<()> {
+    return Ok(());
     const EXPECT_FMT: &str = "service should be in the format <package>.<service>";
 
     let name = service_key
@@ -489,10 +487,9 @@ pub(super) fn handle_service(
         .and_then(|s| s.strip_prefix('.'))
         .expect(EXPECT_FMT);
 
-    let snake_name = name.to_case(Case::Snake);
-    let pascal_name = name.to_case(Case::Pascal);
+    let snake_name = super::field_ident_from_str(name);
+    let pascal_name = super::type_ident_from_str(name);
 
-    let service_trait = ident_from_str(&pascal_name);
     let tinc_module_name = ident_from_str(format!("{}_tinc", snake_name));
     let server_module_name = ident_from_str(format!("{}_server", snake_name));
     let tinc_struct_name = ident_from_str(format!("{}Tinc", pascal_name));
@@ -508,7 +505,7 @@ pub(super) fn handle_service(
 
             let function_name = ident_from_str(format!("{name}_{idx}"));
 
-            methods.push(method.method_handler(&function_name, &server_module_name, &service_trait, &tinc_struct_name));
+            methods.push(method.method_handler(&function_name, &server_module_name, &pascal_name, &tinc_struct_name));
             routes.push(method.route(&function_name));
         }
     }
@@ -547,7 +544,7 @@ pub(super) fn handle_service(
 
             impl<T> ::tinc::TincService for #tinc_struct_name<T>
             where
-                T: super::#server_module_name::#service_trait
+                T: super::#server_module_name::#pascal_name
             {
                 fn into_router(self) -> ::tinc::reexports::axum::Router {
                     #(#methods)*

@@ -1780,6 +1780,12 @@ dependencies = [
 ]
 
 [[package]]
+name = "linear-map"
+version = "1.2.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "bfae20f6b19ad527b550c223fddc3077a547fc70cda94b9b566575423fd303ee"
+
+[[package]]
 name = "linux-raw-sys"
 version = "0.4.15"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -3807,6 +3813,7 @@ dependencies = [
  "http-body",
  "http-body-util",
  "itoa",
+ "linear-map",
  "mediatype",
  "multer",
  "num-traits",
@@ -3832,6 +3839,8 @@ dependencies = [
  "anyhow",
  "convert_case",
  "headers-accept",
+ "heck",
+ "indexmap",
  "mediatype",
  "prettyplease",
  "proc-macro2",

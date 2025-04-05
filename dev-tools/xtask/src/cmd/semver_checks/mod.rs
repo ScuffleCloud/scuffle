@@ -159,7 +159,7 @@ fn process_semver_output(output: &str) -> Result<()> {
 
                         i += 1;
 
-                        if i > 3 {
+                        if i > 30 {
                             break;
                         }
                     }

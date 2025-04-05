@@ -155,11 +155,12 @@ fn process_semver_output(output: &str) -> Result<()> {
                                 }
                                 summary.push(desc_trimmed.into());
                             }
-                            i += 1;
+                        }
 
-                            if i > 10 {
-                                break;
-                            }
+                        i += 1;
+
+                        if i > 10 {
+                            break;
                         }
                     }
                 }

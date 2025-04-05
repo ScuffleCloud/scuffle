@@ -57,12 +57,10 @@ impl SemverChecks {
             "--all-features",
         ];
 
-        // for package in &common_crates {
-        //     args.push("--package");
-        //     args.push(package);
-        // }
-        args.push("--package");
-        args.push("scuffle-h264");
+        for package in &common_crates {
+            args.push("--package");
+            args.push(package);
+        }
 
         let output = cargo_cmd()
             .env("CARGO_TERM_COLOR", "never")

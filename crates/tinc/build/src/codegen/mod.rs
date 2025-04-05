@@ -1,11 +1,17 @@
 use std::collections::BTreeMap;
 
+use syn::Ident;
+
 use self::serde::{handle_enum, handle_message};
 use self::service::handle_service;
 use crate::extensions::Extensions;
 
 mod serde;
 mod service;
+
+fn ident_from_str(s: impl AsRef<str>) -> Ident {
+    syn::parse_str(s.as_ref()).unwrap_or_else(|_| Ident::new_raw(s.as_ref(), proc_macro2::Span::call_site()))
+}
 
 fn get_common_import(start: &str, end: &str) -> String {
     let start_parts: Vec<&str> = start.split('.').collect();

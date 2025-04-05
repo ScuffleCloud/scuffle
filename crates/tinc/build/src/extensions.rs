@@ -1,6 +1,7 @@
 use std::collections::BTreeMap;
 
 use anyhow::Context;
+use indexmap::IndexMap;
 use prost_reflect::{DescriptorPool, EnumDescriptor, ExtensionDescriptor, MessageDescriptor, ServiceDescriptor};
 
 pub struct Extension<T> {
@@ -363,8 +364,8 @@ pub struct Extensions {
 pub struct MessageOpts {
     pub package: String,
     pub opts: tinc_pb::SchemaMessageOptions,
-    pub fields: BTreeMap<String, FieldOpts>,
-    pub oneofs: BTreeMap<String, OneofOpts>,
+    pub fields: IndexMap<String, FieldOpts>,
+    pub oneofs: IndexMap<String, OneofOpts>,
 }
 
 #[derive(Debug, Clone, Copy)]
@@ -593,8 +594,8 @@ impl Extensions {
             MessageOpts {
                 package: message.parent_file().package_name().to_owned(),
                 opts: opts.unwrap_or_default(),
-                fields: BTreeMap::new(),
-                oneofs: BTreeMap::new(),
+                fields: IndexMap::new(),
+                oneofs: IndexMap::new(),
             },
         );
 

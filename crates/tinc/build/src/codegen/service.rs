@@ -5,11 +5,8 @@ use convert_case::{Boundary, Case, Casing};
 use quote::quote;
 use syn::{Ident, parse_quote};
 
+use crate::codegen::ident_from_str;
 use crate::extensions::{Extensions, FieldKind, MessageOpts, MethodIo, MethodOpts, ServiceOpts, WellKnownType};
-
-fn ident_from_str(s: impl AsRef<str>) -> Ident {
-    syn::parse_str(s.as_ref()).unwrap_or_else(|_| Ident::new_raw(s.as_ref(), proc_macro2::Span::call_site()))
-}
 
 // Define a helper enum for input message options.
 enum IoOptions<'a> {
@@ -482,6 +479,7 @@ pub(super) fn handle_service(
     _: &mut tonic_build::Config,
     modules: &mut BTreeMap<String, Vec<syn::Item>>,
 ) -> anyhow::Result<()> {
+    return Ok(());
     const EXPECT_FMT: &str = "service should be in the format <package>.<service>";
 
     let name = service_key

@@ -123,15 +123,11 @@ fn process_semver_output(output: &str) -> Result<()> {
                 let update_type = caps.name("update_type").unwrap().as_str();
                 if let Some((crate_name, current_version)) = current_crate.take() {
                     let new_version = new_version_number(&current_version, update_type)?;
-                    summary.push(
-                        format!("⚠️ -> {} update required for `{}`.", update_type, crate_name),
-                    );
-                    summary.push(
-                        format!(
-                            "🛠️ -> Please update the version from {} to {}.\n",
-                            current_version, new_version
-                        ),
-                    );
+                    summary.push(format!("⚠️ -> {} update required for `{}`.", update_type, crate_name));
+                    summary.push(format!(
+                        "🛠️ -> Please update the version from {} to {}.\n",
+                        current_version, new_version
+                    ));
                     error_count += 1;
 
                     // now add the description

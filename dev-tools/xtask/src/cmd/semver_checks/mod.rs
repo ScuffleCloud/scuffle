@@ -1,11 +1,11 @@
 use std::collections::HashSet;
 use std::path::PathBuf;
+use std::process::Stdio;
 
-// use std::process::Stdio;
 use anyhow::{Context, Result};
 use clap::Parser;
+use regex::Regex;
 
-// use regex::Regex;
 use crate::utils::{cargo_cmd, metadata};
 
 mod utils;
@@ -64,133 +64,131 @@ impl SemverChecks {
         args.push("--package");
         args.push("scuffle-h264");
 
-        let _ = cargo_cmd().args(&args).status().context("hi");
+        let output = cargo_cmd()
+            .env("CARGO_TERM_COLOR", "never")
+            .args(&args)
+            .stdout(Stdio::piped())
+            .stderr(Stdio::piped())
+            .output()
+            .context("running semver-checks")?;
 
-        // let output = cargo_cmd()
-        //     .env("CARGO_TERM_COLOR", "never")
-        //     .args(&args)
-        //     .stdout(Stdio::piped())
-        //     .stderr(Stdio::piped())
-        //     .output()
-        //     .context("running semver-checks")?;
+        let mut semver_output = String::new();
+        semver_output.push_str(&String::from_utf8_lossy(&output.stdout));
+        semver_output.push_str(&String::from_utf8_lossy(&output.stderr));
 
-        // let mut semver_output = String::new();
-        // semver_output.push_str(&String::from_utf8_lossy(&output.stdout));
-        // semver_output.push_str(&String::from_utf8_lossy(&output.stderr));
-
-        // if semver_output.trim().is_empty() {
-        //     anyhow::bail!("No semver-checks output received. The command may have failed.");
-        // }
+        if semver_output.trim().is_empty() {
+            anyhow::bail!("No semver-checks output received. The command may have failed.");
+        }
 
         // empty print to separate from "info: contents updated"
         println!();
-        // process_semver_output(&semver_output)?;
+        process_semver_output(&semver_output)?;
 
         Ok(())
     }
 }
 
-// fn process_semver_output(output: &str) -> Result<()> {
-//     // Regex to capture "Checking" lines (ignoring leading whitespace).
-//     // Supports both formats:
-//     //   "Checking <crate> vX.Y.Z (current)"
-//     //   "Checking <crate> vX.Y.Z -> vX.Y.Z (no change)"
-//     let check_re = Regex::new(r"^Checking\s+(?P<crate>\S+)\s+v(?P<curr>\d+\.\d+\.\d+)(?:\s+->\s+v\d+\.\d+\.\d+)?")
-//         .context("compiling check regex")?;
+fn process_semver_output(output: &str) -> Result<()> {
+    // Regex to capture "Checking" lines (ignoring leading whitespace).
+    // Supports both formats:
+    //   "Checking <crate> vX.Y.Z (current)"
+    //   "Checking <crate> vX.Y.Z -> vX.Y.Z (no change)"
+    let check_re = Regex::new(r"^Checking\s+(?P<crate>\S+)\s+v(?P<curr>\d+\.\d+\.\d+)(?:\s+->\s+v\d+\.\d+\.\d+)?")
+        .context("compiling check regex")?;
 
-//     // Regex for summary lines that indicate an update is required.
-//     // Example:
-//     //   "Summary semver requires new major version: 1 major and 0 minor checks failed"
-//     let summary_re = Regex::new(r"^Summary semver requires new (?P<update_type>major|minor) version:")
-//         .context("compiling summary regex")?;
+    // Regex for summary lines that indicate an update is required.
+    // Example:
+    //   "Summary semver requires new major version: 1 major and 0 minor checks failed"
+    let summary_re = Regex::new(r"^Summary semver requires new (?P<update_type>major|minor) version:")
+        .context("compiling summary regex")?;
 
-//     let mut current_crate: Option<(String, String)> = None;
-//     let mut summary: Vec<String> = Vec::new();
-//     let mut error_count = 0;
-//     let mut err_insert_index = 0;
+    let mut current_crate: Option<(String, String)> = None;
+    let mut summary: Vec<String> = Vec::new();
+    let mut error_count = 0;
+    let mut err_insert_index = 0;
 
-//     let mut lines = output.lines().peekable();
-//     while let Some(line) = lines.next() {
-//         let trimmed = line.trim_start();
+    let mut lines = output.lines().peekable();
+    while let Some(line) = lines.next() {
+        let trimmed = line.trim_start();
 
-//         if trimmed.starts_with("Checking") {
-//             // Capture crate name and version without printing.
-//             if let Some(caps) = check_re.captures(trimmed) {
-//                 let crate_name = caps.name("crate").unwrap().as_str().to_string();
-//                 let current_version = caps.name("curr").unwrap().as_str().to_string();
-//                 current_crate = Some((crate_name, current_version));
-//             }
-//         } else if trimmed.starts_with("Summary") {
-//             if let Some(caps) = summary_re.captures(trimmed) {
-//                 let update_type = caps.name("update_type").unwrap().as_str();
-//                 if let Some((crate_name, current_version)) = current_crate.take() {
-//                     let new_version = new_version_number(&current_version, update_type)?;
-//                     summary.insert(
-//                         err_insert_index,
-//                         format!("⚠️ -> {} update required for `{}`.", update_type, crate_name),
-//                     );
-//                     summary.insert(
-//                         err_insert_index + 1,
-//                         format!(
-//                             "🛠️ -> Please update the version from {} to {}.\n",
-//                             current_version, new_version
-//                         ),
-//                     );
-//                     error_count += 1;
-//                 }
-//             }
-//         } else if trimmed.starts_with("---") {
-//             lines.next(); // consume the line with '---'
-//             err_insert_index = summary.len();
+        if trimmed.starts_with("Checking") {
+            // Capture crate name and version without printing.
+            if let Some(caps) = check_re.captures(trimmed) {
+                let crate_name = caps.name("crate").unwrap().as_str().to_string();
+                let current_version = caps.name("curr").unwrap().as_str().to_string();
+                current_crate = Some((crate_name, current_version));
+            }
+        } else if trimmed.starts_with("Summary") {
+            if let Some(caps) = summary_re.captures(trimmed) {
+                let update_type = caps.name("update_type").unwrap().as_str();
+                if let Some((crate_name, current_version)) = current_crate.take() {
+                    let new_version = new_version_number(&current_version, update_type)?;
+                    summary.insert(
+                        err_insert_index,
+                        format!("⚠️ -> {} update required for `{}`.", update_type, crate_name),
+                    );
+                    summary.insert(
+                        err_insert_index + 1,
+                        format!(
+                            "🛠️ -> Please update the version from {} to {}.\n",
+                            current_version, new_version
+                        ),
+                    );
+                    error_count += 1;
+                }
+            }
+        } else if trimmed.starts_with("---") {
+            lines.next(); // consume the line with '---'
+            err_insert_index = summary.len();
 
-//             while let Some(&desc_line) = lines.peek() {
-//                 let desc_trimmed = desc_line.trim_start();
+            while let Some(&desc_line) = lines.peek() {
+                let desc_trimmed = desc_line.trim_start();
 
-//                 if desc_trimmed.starts_with("Checking")
-//                     || desc_trimmed.starts_with("Built")
-//                     || desc_trimmed.starts_with("Building")
-//                     || desc_trimmed.starts_with("Parsing")
-//                     || desc_trimmed.starts_with("Parsed")
-//                     || desc_trimmed.starts_with("Finished")
-//                     || desc_trimmed.starts_with("Summary")
-//                 {
-//                     break;
-//                 }
-//                 summary.push(desc_trimmed.into());
-//             }
-//         }
-//     }
+                if desc_trimmed.starts_with("Checking")
+                    || desc_trimmed.starts_with("Built")
+                    || desc_trimmed.starts_with("Building")
+                    || desc_trimmed.starts_with("Parsing")
+                    || desc_trimmed.starts_with("Parsed")
+                    || desc_trimmed.starts_with("Finished")
+                    || desc_trimmed.starts_with("Summary")
+                {
+                    break;
+                }
+                summary.push(desc_trimmed.into());
+            }
+        }
+    }
 
-//     // Print deferred update and failure block messages.
-//     if error_count > 0 {
-//         println!("🚩 --- {} ERROR(S) FOUND --- 🚩", error_count);
+    // Print deferred update and failure block messages.
+    if error_count > 0 {
+        println!("🚩 --- {} ERROR(S) FOUND --- 🚩", error_count);
 
-//         for line in summary {
-//             println!("{}", line);
-//         }
-//     } else {
-//         println!("✅ No errors found! ✅");
-//     }
+        for line in summary {
+            println!("{}", line);
+        }
+    } else {
+        println!("✅ No errors found! ✅");
+    }
 
-//     // print an empty line to separate output from worktree cleanup line
-//     println!();
-//     Ok(())
-// }
+    // print an empty line to separate output from worktree cleanup line
+    println!();
+    Ok(())
+}
 
-// fn new_version_number(version: &str, update_type: &str) -> Result<String> {
-//     let version = version.strip_prefix('v').unwrap_or(version);
-//     let mut parts: Vec<u64> = version
-//         .split('.')
-//         .map(|s| s.parse::<u64>())
-//         .collect::<Result<_, _>>()
-//         .context("parsing version numbers")?;
-//     if parts.len() != 3 {
-//         anyhow::bail!("expected version format vX.Y.Z, got: {}", version);
-//     }
-//     match update_type {
-//         "minor" => parts[2] += 1,
-//         "major" => parts[1] += 1,
-//         _ => anyhow::bail!("Failed to parse update type: {update_type}"),
-//     }
-//     Ok(format!("v{}.{}.{}", parts[0], parts[1], parts[2]))
-// }
+fn new_version_number(version: &str, update_type: &str) -> Result<String> {
+    let version = version.strip_prefix('v').unwrap_or(version);
+    let mut parts: Vec<u64> = version
+        .split('.')
+        .map(|s| s.parse::<u64>())
+        .collect::<Result<_, _>>()
+        .context("parsing version numbers")?;
+    if parts.len() != 3 {
+        anyhow::bail!("expected version format vX.Y.Z, got: {}", version);
+    }
+    match update_type {
+        "minor" => parts[2] += 1,
+        "major" => parts[1] += 1,
+        _ => anyhow::bail!("Failed to parse update type: {update_type}"),
+    }
+    Ok(format!("v{}.{}.{}", parts[0], parts[1], parts[2]))
+}

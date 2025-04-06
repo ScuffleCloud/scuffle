@@ -17,5 +17,3 @@ runs:
       uses: thollander/actions-comment-pull-request@v1
       with:
         message: ${{ steps.semver_checks.outputs.checks_output }}
-        permissions:
-          pull-requests: write

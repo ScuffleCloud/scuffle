@@ -2,7 +2,7 @@ use serde::Deserialize;
 
 use super::struct_::{StructDeserializer, TrackerStruct};
 use super::{ErrorLocation, StoreError, Tracker, TrackerError};
-use crate::de::map::{Map, MappableKey};
+use crate::__private::de::map::{Map, MappableKey};
 
 #[derive(Debug, Clone, Default)]
 pub struct TrackerMapStruct {

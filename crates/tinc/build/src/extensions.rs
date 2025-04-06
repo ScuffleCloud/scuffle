@@ -141,6 +141,19 @@ pub enum FieldKind {
     WellKnown(WellKnownType),
 }
 
+pub enum FieldModifier {
+    Map,
+    List,
+    Optional,
+}
+
+pub enum FieldType {
+    Enum(String),
+    Primitive(PrimitiveKind),
+    Message(String),
+    WellKnown(WellKnownType),
+}
+
 #[derive(Debug, Clone, Copy)]
 pub enum PrimitiveKind {
     Bool,
@@ -191,6 +204,25 @@ impl PrimitiveKind {
 }
 
 impl FieldKind {
+    pub fn modifier(&self) -> Option<FieldModifier> {
+        match self {
+            FieldKind::List(_) => Some(FieldModifier::List),
+            FieldKind::Map(_, _) => Some(FieldModifier::Map),
+            FieldKind::Optional(_) => Some(FieldModifier::Optional),
+            _ => None,
+        }
+    }
+
+    pub fn field_type(&self) -> FieldType {
+        match self.inner() {
+            FieldKind::Enum(name) => FieldType::Enum(name.to_owned()),
+            FieldKind::Primitive(kind) | FieldKind::WellKnown(WellKnownType::Primitive(kind)) => FieldType::Primitive(*kind),
+            FieldKind::Message(name) => FieldType::Message(name.to_owned()),
+            FieldKind::WellKnown(kind) => FieldType::WellKnown(*kind),
+            _ => unreachable!(),
+        }
+    }
+
     pub fn strip_option(&self) -> &Self {
         let mut current = self;
         loop {
@@ -324,19 +356,6 @@ impl WellKnownType {
             "google.protobuf.StringValue" => Some(WellKnownType::Primitive(PrimitiveKind::String)),
             "google.protobuf.BytesValue" => Some(WellKnownType::Primitive(PrimitiveKind::Bytes)),
             _ => None,
-        }
-    }
-
-    pub fn path(&self) -> &'static str {
-        match self {
-            WellKnownType::Timestamp => "::tinc::helpers::well_known::Timestamp",
-            WellKnownType::Duration => "::tinc::helpers::well_known::Duration",
-            WellKnownType::Struct => "::tinc::helpers::well_known::Struct",
-            WellKnownType::Value => "::tinc::helpers::well_known::Value",
-            WellKnownType::Empty => "::tinc::helpers::well_known::Empty",
-            WellKnownType::List => "::tinc::helpers::well_known::List",
-            WellKnownType::Any => "::tinc::helpers::well_known::Any",
-            WellKnownType::Primitive(kind) => kind.path(),
         }
     }
 }

@@ -1,5 +1,5 @@
 use super::{ErrorLocation, StoreError, Tracker, TrackerError};
-use crate::de::map::{Map, MappableKey};
+use crate::__private::de::map::{Map, MappableKey};
 
 #[derive(Debug, Clone, Default)]
 pub struct TrackerMap {
@@ -31,7 +31,7 @@ impl<'a, M, K, V> MapDeserializer<'a, M, K, V, V> {
 
 impl<'a, M, K, U> MapDeserializer<'a, M, K, i32, U> {
     #[inline]
-    pub fn new_enum(value: &'a mut M, tracker: Tracker<'a, TrackerMap>, _: std::marker::PhantomData<U>) -> Self {
+    pub fn new_with_helper(value: &'a mut M, tracker: Tracker<'a, TrackerMap>, _: std::marker::PhantomData<U>) -> Self {
         Self {
             value,
             tracker,

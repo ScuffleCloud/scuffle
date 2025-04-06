@@ -93,7 +93,7 @@ pub trait TrackedStructDeserializer<'de>: Sized {
     fn deserialize<D>(
         &mut self,
         field: Self::Field,
-        tracker: &mut Tracker<'_, TrackerStruct>,
+        tracker: Tracker<'_, TrackerStruct>,
         deserializer: D,
     ) -> Result<(), D::Error>
     where
@@ -109,7 +109,7 @@ pub trait TrackedStructDeserializer<'de>: Sized {
         Ok(())
     }
 
-    fn validate_tracker<E>(&self, tracker: Tracker<'_, TrackerStruct>) -> Result<(), E>
+    fn verify_deserialize<E>(&self, tracker: Tracker<'_, TrackerStruct>) -> Result<(), E>
     where
         E: serde::de::Error,
     {
@@ -131,7 +131,7 @@ where
     fn deserialize<D>(
         &mut self,
         field: Self::Field,
-        tracker: &mut Tracker<'_, TrackerStruct>,
+        tracker: Tracker<'_, TrackerStruct>,
         deserializer: D,
     ) -> Result<(), D::Error>
     where
@@ -149,11 +149,11 @@ where
     }
 
     #[inline(always)]
-    fn validate_tracker<E>(&self, tracker: Tracker<'_, TrackerStruct>) -> Result<(), E>
+    fn verify_deserialize<E>(&self, tracker: Tracker<'_, TrackerStruct>) -> Result<(), E>
     where
         E: serde::de::Error,
     {
-        T::validate_tracker(self, tracker)
+        T::verify_deserialize(self, tracker)
     }
 }
 
@@ -178,4 +178,18 @@ pub trait DeserializeFieldValue<'de> {
     fn deserialize_seed<T>(self, seed: T) -> Result<T::Value, Self::Error>
     where
         T: serde::de::DeserializeSeed<'de>;
+}
+
+#[macro_export]
+#[doc(hidden)]
+macro_rules! __tinc_field_from_str {
+    (
+        $s:expr,
+        $($literal:literal => $expr:expr),*$(,)?
+    ) => {
+        match $s {
+            $($literal => Some($expr),)*
+            _ => None,
+        }
+    };
 }

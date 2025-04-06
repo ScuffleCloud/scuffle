@@ -4,9 +4,9 @@ use super::map::TrackerMap;
 use super::map_struct::TrackerMapStruct;
 use super::repeated::TrackerRepeated;
 use super::repeated_struct::TrackerRepeatedStruct;
-use super::{StoreError, Tracker, TrackerAny, TrackerError};
-use crate::de::bit_field::BitField;
-use crate::de::{
+use super::{ErrorLocation, StoreError, Tracker, TrackerAny, TrackerError};
+use crate::__private::de::bit_field::BitField;
+use crate::__private::de::{
     DeserializeFieldValue, StructField, StructIdentifier, StructIdentifierDeserializer, TrackedStructDeserializer,
 };
 
@@ -186,13 +186,17 @@ impl<'de, T: TrackedStructDeserializer<'de>> serde::de::Visitor<'de> for &mut St
     where
         A: serde::de::MapAccess<'de>,
     {
-        while let Some(field) = map.next_key_seed(StructIdentifierDeserializer::new()).transpose() {
+        while let Some(field) = map.next_key_seed(StructIdentifierDeserializer::<T::Field>::new()).transpose() {
             let mut was_read = false;
             match field {
                 Ok(StructIdentifier::Field(field)) => {
+                    let name = field.name();
                     match self.value.deserialize(
                         field,
-                        &mut self.tracker,
+                        Tracker {
+                            inner: self.tracker.inner,
+                            shared: self.tracker.shared,
+                        },
                         MapAccessNextValue {
                             map: &mut map,
                             was_read: &mut was_read,
@@ -200,13 +204,18 @@ impl<'de, T: TrackedStructDeserializer<'de>> serde::de::Visitor<'de> for &mut St
                     ) {
                         Ok(_) => {}
                         Err(err) => {
-                            self.tracker.report_error(None, err)?;
+                            self.tracker.report_error(Some(ErrorLocation::StructField { name }), err)?;
                         }
                     }
                 }
                 Ok(StructIdentifier::Unknown(unknown)) => {
-                    // todo: handle unknown fields
-                    println!("unknown field: {}", unknown);
+                    self.value.handle_unknown_field(
+                        &unknown,
+                        Tracker {
+                            inner: self.tracker.inner,
+                            shared: self.tracker.shared,
+                        },
+                    )?;
                 }
                 Err(err) => {
                     self.tracker.report_error(None, err)?;

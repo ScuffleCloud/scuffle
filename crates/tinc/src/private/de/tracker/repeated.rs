@@ -30,7 +30,7 @@ impl<'a, V> RepeatedDeserializer<'a, V, V> {
 
 impl<'a, U> RepeatedDeserializer<'a, i32, U> {
     #[inline]
-    pub fn new_enum(value: &'a mut Vec<i32>, tracker: Tracker<'a, TrackerRepeated>, _: std::marker::PhantomData<U>) -> Self {
+    pub fn new_with_helper(value: &'a mut Vec<i32>, tracker: Tracker<'a, TrackerRepeated>, _: std::marker::PhantomData<U>) -> Self {
         Self {
             value,
             tracker,

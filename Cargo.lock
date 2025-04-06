@@ -3795,6 +3795,7 @@ dependencies = [
  "anyhow",
  "convert_case",
  "headers-accept",
+ "heck",
  "indexmap",
  "mediatype",
  "prettyplease",

@@ -28,3 +28,11 @@ thiserror = "2"
 [dev-dependencies]
 # For examples:
 rand = "0.9"
+
+[package.metadata.cargo_check_external_types]
+allowed_external_types = [
+  # major released
+  "pprof::*",
+  "flate2::*",
+  "thiserror::*",
+]

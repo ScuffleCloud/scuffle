@@ -57,3 +57,13 @@ additive-features = [
     "internal-logs",
     "default",
 ]
+
+[package.metadata.cargo_check_external_types]
+allowed_external_types = [
+  # major released
+  "prometheus_client::*",
+  "opentelemetry::*",
+  "opentelemetry_sdk::*",
+  "tracing::*",
+  "parking_lot::*",
+]

@@ -4359,6 +4359,7 @@ dependencies = [
  "anyhow",
  "cargo_metadata",
  "clap",
+ "regex",
  "serde",
  "serde_json",
  "toml_edit",

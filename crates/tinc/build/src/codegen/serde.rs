@@ -452,17 +452,27 @@ pub(super) fn handle_message(
                 #(#field_enum_variants),*
             }
 
-            impl ::tinc::__private::de::StructField for #field_enum_ident {
-                fn idx(&self) -> usize {
+            impl #field_enum_ident {
+                pub const fn idx(&self) -> usize {
                     match self {
                         #(#field_enum_idx_fn)*
                     }
                 }
 
-                fn name(&self) -> &'static str {
+                pub const fn name(&self) -> &'static str {
                     match self {
                         #(#field_enum_name_fn)*
                     }
+                }
+            }
+
+            impl ::tinc::__private::de::StructField for #field_enum_ident {
+                fn idx(&self) -> usize {
+                    #field_enum_ident::idx(self)
+                }
+
+                fn name(&self) -> &'static str {
+                    #field_enum_ident::name(self)
                 }
 
                 fn from_str(s: &str) -> Option<Self> {

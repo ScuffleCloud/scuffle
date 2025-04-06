@@ -14,7 +14,7 @@ use crate::__private::de::{
 pub struct TrackerStruct {
     fields: BitField,
     nulled: bool,
-    children: linear_map::LinearMap<&'static str, TrackerAny>,
+    children: Vec<Option<TrackerAny>>,
     errors: Vec<TrackerError>,
 }
 
@@ -28,105 +28,84 @@ impl TrackerStruct {
     }
 
     pub fn get_child(&mut self, name: &impl StructField) -> Option<&mut TrackerAny> {
-        self.children.get_mut(name.name())
+        self.children.get_mut(name.idx()).and_then(|child| child.as_mut())
     }
 
-    pub fn push_child_struct<E>(&mut self, name: &impl StructField) -> Result<&mut TrackerStruct, E>
+    fn push_child(&mut self, field: &impl StructField, or_insert: impl FnOnce() -> TrackerAny) -> &mut TrackerAny {
+        self.set_field_present(field);
+
+        if self.children.len() <= field.idx() {
+            self.children.resize(field.idx() + 1, None);
+        }
+
+        self.children[field.idx()].get_or_insert_with(or_insert)
+    }
+
+    pub fn push_child_struct<E>(&mut self, field: &impl StructField) -> Result<&mut TrackerStruct, E>
     where
         E: serde::de::Error,
     {
-        self.set_field_present(name);
-        let name = name.name();
-        match self
-            .children
-            .entry(name)
-            .or_insert_with(|| TrackerAny::Struct(TrackerStruct::default()))
-        {
+        match self.push_child(field, || TrackerAny::Struct(TrackerStruct::default())) {
             TrackerAny::Struct(tracker) => Ok(tracker),
             v => Err(serde::de::Error::custom(format!(
                 "bad field type: {}, expected Struct, got {}",
-                name,
+                field.name(),
                 v.name()
             ))),
         }
     }
 
-    pub fn push_child_map_struct<E>(&mut self, name: &impl StructField) -> Result<&mut TrackerMapStruct, E>
+    pub fn push_child_map_struct<E>(&mut self, field: &impl StructField) -> Result<&mut TrackerMapStruct, E>
     where
         E: serde::de::Error,
     {
-        self.set_field_present(name);
-        let name = name.name();
-
-        match self
-            .children
-            .entry(name)
-            .or_insert_with(|| TrackerAny::MapStruct(TrackerMapStruct::default()))
-        {
+        match self.push_child(field, || TrackerAny::MapStruct(TrackerMapStruct::default())) {
             TrackerAny::MapStruct(tracker) => Ok(tracker),
             v => Err(serde::de::Error::custom(format!(
                 "bad field type: {}, expected MapStruct, got {}",
-                name,
+                field.name(),
                 v.name()
             ))),
         }
     }
 
-    pub fn push_child_map<E>(&mut self, name: &impl StructField) -> Result<&mut TrackerMap, E>
+    pub fn push_child_map<E>(&mut self, field: &impl StructField) -> Result<&mut TrackerMap, E>
     where
         E: serde::de::Error,
     {
-        self.set_field_present(name);
-        let name = name.name();
-        match self
-            .children
-            .entry(name)
-            .or_insert_with(|| TrackerAny::Map(TrackerMap::default()))
-        {
+        match self.push_child(field, || TrackerAny::Map(TrackerMap::default())) {
             TrackerAny::Map(tracker) => Ok(tracker),
             v => Err(serde::de::Error::custom(format!(
                 "bad field type: {}, expected Map, got {}",
-                name,
+                field.name(),
                 v.name()
             ))),
         }
     }
 
-    pub fn push_child_repeated_struct<E>(&mut self, name: &impl StructField) -> Result<&mut TrackerRepeatedStruct, E>
+    pub fn push_child_repeated_struct<E>(&mut self, field: &impl StructField) -> Result<&mut TrackerRepeatedStruct, E>
     where
         E: serde::de::Error,
     {
-        self.set_field_present(name);
-        let name = name.name();
-        match self
-            .children
-            .entry(name)
-            .or_insert_with(|| TrackerAny::RepeatedStruct(TrackerRepeatedStruct::default()))
-        {
+        match self.push_child(field, || TrackerAny::RepeatedStruct(TrackerRepeatedStruct::default())) {
             TrackerAny::RepeatedStruct(tracker) => Ok(tracker),
             v => Err(serde::de::Error::custom(format!(
                 "bad field type: {}, expected RepeatedStruct, got {}",
-                name,
+                field.name(),
                 v.name()
             ))),
         }
     }
 
-    pub fn push_child_repeated<E>(&mut self, name: &impl StructField) -> Result<&mut TrackerRepeated, E>
+    pub fn push_child_repeated<E>(&mut self, field: &impl StructField) -> Result<&mut TrackerRepeated, E>
     where
         E: serde::de::Error,
     {
-        self.set_field_present(name);
-        let name = name.name();
-        match self
-            .children
-            .entry(name)
-            .or_insert_with(|| TrackerAny::Repeated(TrackerRepeated::default()))
-        {
+        match self.push_child(field, || TrackerAny::Repeated(TrackerRepeated::default())) {
             TrackerAny::Repeated(tracker) => Ok(tracker),
             v => Err(serde::de::Error::custom(format!(
                 "bad field type: {}, expected Repeated, got {}",
-                name,
+                field.name(),
                 v.name()
             ))),
         }

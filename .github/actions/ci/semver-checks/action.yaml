@@ -3,8 +3,17 @@ runs:
   using: "composite"
   steps:
     - name: Run xtask semver checks (against main branch)
+      id: semver_checks
       shell: bash
       env:
         RUSTFLAGS: "--cfg reqwest_unstable"
-      run:
-        cargo xtask semver-checks --disable-hakari
+      run: |
+        result=$(cargo xtask semver-checks --disable-hakari)
+        echo "checks_output=$result" >> $GITHUB_OUTPUT
+
+    - name: Add/update PR comment
+      uses: thollander/actions-comment-pull-request@v1
+      with:
+        message: ${{ steps.semver_checks.outputs.checks_output }}
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

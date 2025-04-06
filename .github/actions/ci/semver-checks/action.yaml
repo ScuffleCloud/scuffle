@@ -18,3 +18,5 @@ runs:
       with:
         # github-token: ${{ secrets.GITHUB_TOKEN }}
         message: ${{ steps.semver_checks.outputs.checks_output }}
+      permissions:
+        pull-requests: write

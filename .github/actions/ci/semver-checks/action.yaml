@@ -9,7 +9,9 @@ runs:
         RUSTFLAGS: "--cfg reqwest_unstable"
       run: |
         result=$(cargo xtask semver-checks --disable-hakari)
-        echo "checks_output=$result" >> $GITHUB_OUTPUT
+        echo "checks_output<<EOF" >> $GITHUB_OUTPUT
+        echo "$result" >> $GITHUB_OUTPUT
+        echo "EOF" >> $GITHUB_OUTPUT
 
     - name: Add/update PR comment
       uses: thollander/actions-comment-pull-request@v1

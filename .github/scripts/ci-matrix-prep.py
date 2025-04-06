@@ -564,6 +564,7 @@ def create_hakari_jobs() -> list[Job]:
 
 def create_semver_checks_jobs() -> list[Job]:
     jobs: list[Job] = []
+    secrets = ["CODECOV_TOKEN"] if not is_fork_pr() else None
 
     jobs.append(
         Job(
@@ -579,6 +580,7 @@ def create_semver_checks_jobs() -> list[Job]:
                 shared_key="cargo-semver-checks",
                 cache_backend="ubicloud",
             ),
+            secrets=secrets
         )
     )
 

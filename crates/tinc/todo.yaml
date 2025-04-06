@@ -13,10 +13,10 @@
 - well_known<struct> X
 - well_known<value> X
 - well_known<empty> X
+- tracker also tracks SOURCE of field / error? X
 
 - unknown_fields ?
 
-- tracker also tracks SOURCE of field / error?
 - pass information into de for specific fields / sub fields
 
 - tests

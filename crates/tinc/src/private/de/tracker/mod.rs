@@ -1,3 +1,5 @@
+use std::sync::Arc;
+
 use map::TrackerMap;
 use map_struct::TrackerMapStruct;
 use repeated::TrackerRepeated;
@@ -16,6 +18,7 @@ pub mod struct_;
 pub struct Shared {
     pub fail_fast: bool,
     pub failed: bool,
+    pub source: Option<Arc<str>>,
 }
 
 impl Default for Shared {
@@ -23,6 +26,7 @@ impl Default for Shared {
         Self {
             fail_fast: true,
             failed: false,
+            source: None,
         }
     }
 }
@@ -39,9 +43,9 @@ impl<T> Tracker<'_, T> {
         T: StoreError,
         E: serde::de::Error,
     {
-        let boxed = error.to_string().into_boxed_str();
-        if !self.shared.fail_fast || self.shared.failed {
-            self.inner.store_error(TrackerError { location, error: boxed });
+        if !self.shared.fail_fast {
+            let boxed = error.to_string().into_boxed_str();
+            self.inner.store_error(TrackerError { location, source: self.shared.source.clone(), error: boxed });
         }
 
         self.shared.failed = true;
@@ -92,6 +96,7 @@ pub enum ErrorLocation {
 #[derive(Debug, Clone)]
 pub struct TrackerError {
     pub location: Option<ErrorLocation>,
+    pub source: Option<Arc<str>>,
     pub error: Box<str>,
 }
 

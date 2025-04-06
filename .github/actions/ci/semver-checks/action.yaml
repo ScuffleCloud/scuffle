@@ -14,6 +14,5 @@ runs:
     - name: Add/update PR comment
       uses: thollander/actions-comment-pull-request@v1
       with:
+        # github-token: ${{ secrets.GITHUB_TOKEN }}
         message: ${{ steps.semver_checks.outputs.checks_output }}
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

@@ -103,7 +103,7 @@ class HakariMatrix:
 
 @dataclass
 class SemverChecksMatrix:
-    permissions: str = "pull-requests: write"
+    pass
 
 
 @dataclass
@@ -123,6 +123,7 @@ class Job:
     )
     job: str
     secrets: Optional[list[str]] = None
+    permissions: Optional[str] = None
 
 
 def create_docs_jobs() -> list[Job]:
@@ -579,6 +580,7 @@ def create_semver_checks_jobs() -> list[Job]:
                 shared_key="cargo-semver-checks",
                 cache_backend="ubicloud",
             ),
+            permissions="pull-requests: write"
         )
     )
 

@@ -3,12 +3,15 @@ name = "scuffle-h265"
 version = "0.1.1"
 edition = "2024"
 license = "MIT OR Apache-2.0"
-description = "A pure Rust H.265 header decoder."
 repository = "https://github.com/scufflecloud/scuffle"
 authors = ["Scuffle <opensource@scuffle.cloud>"]
 readme = "README.md"
 documentation = "https://docs.rs/scuffle-h265"
+description = "A pure Rust H.265 header decoder."
 keywords = ["h265", "video", "codec"]
+
+[lints.rust]
+unexpected_cfgs = { level = "warn", check-cfg = ['cfg(coverage_nightly)'] }
 
 [dependencies]
 bytes = "1.5"
@@ -16,3 +19,6 @@ byteorder = "1.5"
 scuffle-expgolomb.workspace = true
 scuffle-bytes-util.workspace = true
 scuffle-workspace-hack.workspace = true
+
+[dev-dependencies]
+insta = "1.42"

@@ -11,6 +11,9 @@ pub struct WorktreeCleanup {
 
 impl Drop for WorktreeCleanup {
     fn drop(&mut self) {
+        println!("---");
+        println!("<details>");
+        println!("<summary> Cleanup details </summary>");
         println!("Cleaning up git worktree at {:?}", self.path);
         let status = Command::new("git")
             .args(["worktree", "remove", "--force", self.path.to_str().unwrap()])
@@ -27,6 +30,8 @@ impl Drop for WorktreeCleanup {
                 eprintln!("Error removing git worktree: {:?}", e);
             }
         }
+
+        println!("</details>");
     }
 }
 

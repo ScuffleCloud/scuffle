@@ -2,7 +2,7 @@ import sys
 import os
 import json
 import subprocess
-from typing import Optional
+from typing import Optional # Dict
 from dataclasses import dataclass, asdict
 
 # Stdin is the github context
@@ -578,7 +578,7 @@ def create_semver_checks_jobs() -> list[Job]:
                 tools="cargo-semver-checks,cargo-hakari",
                 shared_key="cargo-semver-checks",
                 cache_backend="ubicloud",
-            ),
+            )
         )
     )
 

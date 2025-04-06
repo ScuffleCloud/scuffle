@@ -24,6 +24,8 @@ pub struct SemverChecks {
 
 impl SemverChecks {
     pub fn run(self) -> Result<()> {
+        println!("<details>");
+        println!("<summary> Startup details </summary>");
         let current_metadata = metadata().context("getting current metadata")?;
         let current_crates_set = workspace_crates_in_folder(&current_metadata, "crates");
 
@@ -42,10 +44,14 @@ impl SemverChecks {
             .filter(|name| current_crates_set.contains(name) && baseline_crates_set.contains(name))
             .collect();
 
-        println!("Semver-checks will run on crates: {:?}", common_crates);
+        let mut crates: Vec<_> = common_crates.iter().cloned().collect();
+        crates.sort();
+        for krate in crates {
+            println!("- {}", krate);
+        }
+        println!("</details>");
 
         if self.disable_hakari {
-            println!("Disabling hakari");
             cargo_cmd().args(["hakari", "disable"]).status().context("disabling hakari")?;
         }
 
@@ -115,14 +121,14 @@ impl SemverChecks {
                     let update_type = caps.name("update_type").unwrap().as_str();
                     if let Some((crate_name, current_version)) = current_crate.take() {
                         let new_version = new_version_number(&current_version, update_type)?;
-                        summary.push(format!("⚠️ -> {} update required for `{}`.", update_type, crate_name));
-                        summary.push(format!(
-                            "🛠️ -> Please update the version from {} to {}.",
-                            current_version, new_version
-                        ));
                         error_count += 1;
 
-                        summary.push(format!("🔖 Error #{error_count}"));
+                        summary.push(format!("### 🔖 Error `#{error_count}`"));
+                        summary.push(format!("⚠️ -> {} update required for `{}`.", update_type, crate_name));
+                        summary.push(format!(
+                            "🛠️ -> Please update the version from `v{}` to `{}`.",
+                            current_version, new_version
+                        ));
                         summary.append(&mut description);
                         // add a new line after the description
                         summary.push("".to_string());
@@ -149,16 +155,15 @@ impl SemverChecks {
         }
 
         // Print deferred update and failure block messages.
+        println!("# Semver-checks summary");
         if error_count > 0 {
-            println!("\n🚩 --- {} ERROR(S) FOUND --- 🚩", error_count);
+            println!("\n### 🚩 --- {} ERROR(S) FOUND --- 🚩", error_count);
 
             for line in summary {
                 println!("{}", line);
             }
-
-            println!("\n🚩 --- END OF ERROR OUTPUT --- 🚩");
         } else {
-            println!("✅ No errors found! ✅");
+            println!("##✅ No errors found! ✅");
         }
 
         // print an empty line to separate output from worktree cleanup line

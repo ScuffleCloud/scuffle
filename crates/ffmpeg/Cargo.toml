@@ -17,7 +17,7 @@ unexpected_cfgs = { level = "warn", check-cfg = ['cfg(coverage_nightly)'] }
 libc = "0.2"
 bytes = { optional = true, version = "1" }
 tokio = { optional = true, version = "1", features = ["sync"]}
-crossbeam-channel = { optional = true, version = "0.5.13" }
+crossbeam-channel = { optional = true, version = "0.5.15" }
 tracing = { optional = true, version = "0.1" }
 arc-swap = { version = "1.7" }
 rusty_ffmpeg = "0.16.1"

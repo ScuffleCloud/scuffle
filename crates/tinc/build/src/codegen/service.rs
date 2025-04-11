@@ -23,7 +23,7 @@ impl IoOptions<'_> {
             IoOptions::WellKnown(well_known) => {
                 // let id = ident_from_str(well_known.path());
                 todo!();
-                parse_quote! {  }
+                parse_quote! {}
             }
         }
     }

@@ -6,9 +6,9 @@ use self::serde::{handle_enum, handle_message};
 use self::service::handle_service;
 use crate::extensions::Extensions;
 
+mod prost_sanatize;
 mod serde;
 mod service;
-mod prost_sanatize;
 
 fn ident_from_str(s: impl AsRef<str>) -> Ident {
     Ident::new(s.as_ref(), proc_macro2::Span::call_site())
@@ -28,7 +28,11 @@ fn get_common_import_path(start: &str, end: &str) -> syn::Path {
     let common_len = start_parts.iter().zip(&end_parts).take_while(|(a, b)| a == b).count();
     let num_supers = start_parts.len().saturating_sub(common_len + 2);
     let super_prefix = "super::".repeat(num_supers);
-    let mut parts = end_parts[common_len..].iter().copied().map(|part| part.to_owned()).collect::<Vec<_>>();
+    let mut parts = end_parts[common_len..]
+        .iter()
+        .copied()
+        .map(|part| part.to_owned())
+        .collect::<Vec<_>>();
     if let Some(last) = parts.last_mut() {
         *last = type_ident_from_str(&last).to_string();
     }

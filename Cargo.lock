@@ -622,6 +622,12 @@ dependencies = [
 ]
 
 [[package]]
+name = "concat_const"
+version = "0.2.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "60c92cd5ec953d0542f48d2a90a25aa2828ab1c03217c1ca077000f3af15997d"
+
+[[package]]
 name = "config"
 version = "0.15.11"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -3808,6 +3814,7 @@ dependencies = [
  "axum",
  "bytes",
  "chrono",
+ "concat_const",
  "headers-accept",
  "http",
  "http-body",
@@ -3829,6 +3836,7 @@ dependencies = [
  "serde_repr",
  "serde_urlencoded",
  "thiserror 2.0.12",
+ "tinc-derive",
  "tonic",
 ]
 
@@ -3851,6 +3859,15 @@ dependencies = [
  "syn",
  "tinc-pb",
  "tonic-build",
+]
+
+[[package]]
+name = "tinc-derive"
+version = "0.1.0"
+dependencies = [
+ "proc-macro2",
+ "quote",
+ "syn",
 ]
 
 [[package]]

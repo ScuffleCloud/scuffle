@@ -32,6 +32,7 @@ members = [
     "crates/tinc",
     "crates/tinc/pb",
     "crates/tinc/build",
+    "crates/tinc/derive",
 ]
 
 resolver = "2"
@@ -67,6 +68,7 @@ scuffle-workspace-hack = { version = "0.1.0" }
 tinc = { path = "crates/tinc", version = "0.1.0" }
 tinc-pb = { path = "crates/tinc/pb", version = "0.1.0" }
 tinc-build = { path = "crates/tinc/build", version = "0.1.0" }
+tinc-derive = { path = "crates/tinc/derive", version = "0.1.0" }
 
 [profile.release-debug]
 inherits = "release"

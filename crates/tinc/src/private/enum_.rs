@@ -41,11 +41,11 @@ unsafe impl<T: Serialize + TryFrom<i32>> EnumSerialize<T> for Vec<i32> {
     type Helper = Vec<Enum<T>>;
 }
 
-unsafe impl<K: Serialize + TryFrom<i32>, V: Serialize + TryFrom<i32>> EnumSerialize<V> for BTreeMap<K, i32> {
+unsafe impl<K: Serialize, V: Serialize + TryFrom<i32>> EnumSerialize<V> for BTreeMap<K, i32> {
     type Helper = BTreeMap<K, Enum<V>>;
 }
 
-unsafe impl<K: Serialize + TryFrom<i32>, V: Serialize + TryFrom<i32>> EnumSerialize<V> for HashMap<K, i32> {
+unsafe impl<K: Serialize, V: Serialize + TryFrom<i32>> EnumSerialize<V> for HashMap<K, i32> {
     type Helper = HashMap<K, Enum<V>>;
 }
 

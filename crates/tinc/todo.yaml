@@ -1,19 +1,21 @@
 - map<_, primtive> X
-- map<_, enum> X
 - map<_, message> X
 - repeated<primitive> X
-- repeated<enum> X
 - repeated<message> X
 - optional<primitive> X
-- optional<enum> X
 - optional<message> X
-- verify_deserialize X
+- map<_, enum> X
+- repeated<enum> X
+- optional<enum> X
 - well_known<timestamp> X
 - well_known<duration> X
 - well_known<struct> X
 - well_known<value> X
 - well_known<empty> X
-- tracker also tracks SOURCE of field / error? X
+- verify_deserialize X
+
+- errors
+- oneof
 
 - unknown_fields ?
 

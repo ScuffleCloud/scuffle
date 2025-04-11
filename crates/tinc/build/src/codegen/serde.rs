@@ -4,10 +4,9 @@ use convert_case::{Case, Casing};
 use quote::quote;
 use syn::parse_quote;
 
-use crate::codegen::get_common_import_path;
-use crate::extensions::{EnumOpts, FieldKind, FieldModifier, FieldType, FieldVisibility, MessageOpts, WellKnownType};
-
 use super::{field_ident_from_str, ident_from_str};
+use crate::codegen::get_common_import_path;
+use crate::extensions::{EnumOpts, FieldKind, FieldModifier, FieldType, FieldVisibility, MessageOpts};
 
 fn message_attributes(key: &str, prost: &mut tonic_build::Config) {
     let attrs = [
@@ -180,269 +179,139 @@ pub(super) fn handle_message(
             #json_name,
         });
 
-        let set_field_present = quote! {
-            tracker.inner.set_field_present(&field)
-        };
-
-        let duplicate_check = quote! {
-            if !#set_field_present {
-                return Err(::tinc::reexports::serde::de::Error::duplicate_field(::tinc::__private::de::StructField::name(&field)));
-            }
-        };
-
         let field_name = field_ident_from_str(field_name);
 
-        let enum_or_well_known_helper = |modifier: Option<FieldModifier>, nullable: bool, path: &syn::Path| {
-            match (modifier, nullable) {
-                (Some(FieldModifier::Optional), true) => quote! {
-                    #duplicate_check
-                    self.#field_name = ::tinc::__private::de::DeserializeFieldValue::deserialize::<#path>(
-                        deserializer
-                    )?.map(::core::convert::Into::into);
-                },
-                (Some(FieldModifier::Optional), false) => quote! {
-                    #duplicate_check
-                    self.#field_name = ::core::option::Option::Some(::core::convert::Into::into(
-                        ::tinc::__private::de::DeserializeFieldValue::deserialize::<#path>(deserializer)?
-                    ));
-                },
-                (Some(FieldModifier::Map), _) => quote! {
-                    #set_field_present;
-                    ::tinc::__private::de::DeserializeFieldValue::deserialize_seed(
-                        deserializer,
-                        ::tinc::__private::de::tracker::map::MapDeserializer::new_with_helper(
-                            &mut self.#field_name,
-                            ::tinc::__private::de::tracker::Tracker {
-                                inner: tracker.inner.push_child_map(&field)?,
-                                shared: tracker.shared,
-                            },
-                            ::core::marker::PhantomData::<#path>,
-                        ),
-                    )?;
-                },
-                (Some(FieldModifier::List), _) => quote! {
-                    #duplicate_check
-
-                    ::tinc::__private::de::DeserializeFieldValue::deserialize_seed(
-                        deserializer,
-                        ::tinc::__private::de::tracker::repeated::RepeatedDeserializer::new_with_helper(
-                            &mut self.#field_name,
-                            ::tinc::__private::de::tracker::Tracker {
-                                inner: tracker.inner.push_child_repeated(&field)?,
-                                shared: tracker.shared,
-                            },
-                            ::core::marker::PhantomData::<#path>,
-                        ),
-                    )?;
-                },
-                (None, _) => quote! {
-                    #duplicate_check
-                    self.#field_name = ::core::convert::Into::into(
-                        ::tinc::__private::de::DeserializeFieldValue::deserialize::<#path>(deserializer)?
-                    );
-                },
-            }
-        };
-
-        let deserialize_impl = match (field.kind.field_type(), field.kind.modifier(), field.nullable) {
-            (FieldType::Enum(path), modifier, nullable) => {
+        match field.kind.field_type() {
+            FieldType::Enum(path) => {
                 let path = get_common_import_path(message.package.as_str(), &path);
                 let path_str = quote! { #path };
-                prost.field_attribute(format!("{message_key}.{field_name}"), format!("#[serde(serialize_with = \"::tinc::__private::enum_::serialize::<{path_str}, _, _>\")]"));
-                enum_or_well_known_helper(modifier, nullable, &path)
-            }
-            (FieldType::WellKnown(well_known), modifier, nullable) => {
-                let path = match well_known {
-                    WellKnownType::Duration => parse_quote! { ::tinc::__private::well_known::Duration },
-                    WellKnownType::Empty => parse_quote! { ::tinc::__private::well_known::Empty },
-                    WellKnownType::Timestamp => parse_quote! { ::tinc::__private::well_known::Timestamp },
-                    WellKnownType::Any => parse_quote! { ::tinc::__private::well_known::Any },
-                    WellKnownType::List => parse_quote! { ::tinc::__private::well_known::List },
-                    WellKnownType::Struct => parse_quote! { ::tinc::__private::well_known::Struct },
-                    WellKnownType::Value => parse_quote! { ::tinc::__private::well_known::Value },
-                    _ => unreachable!("well-known type not supported: {:?}", well_known),
-                };
-
-                prost.field_attribute(format!("{message_key}.{field_name}"), "#[serde(serialize_with = \"::tinc::__private::well_known::serialize\")]");
-                enum_or_well_known_helper(modifier, nullable, &path)
-            }
-            (FieldType::Message(_), Some(FieldModifier::Optional), true) => quote! {
-                #set_field_present;
-                ::tinc::__private::de::DeserializeFieldValue::deserialize_seed(
-                    deserializer,
-                    ::tinc::__private::de::tracker::struct_::OptionalStructDeserializer::new(
-                        &mut self.#field_name,
-                        ::tinc::__private::de::StructField::name(&field),
-                        ::tinc::__private::de::tracker::Tracker {
-                            inner: tracker.inner.push_child_struct(&field)?,
-                            shared: tracker.shared,
-                        },
-                    ),
-                )?;
-            },
-            (FieldType::Message(_), Some(FieldModifier::Optional), false) => quote! {
-                #set_field_present;
-                ::tinc::__private::de::DeserializeFieldValue::deserialize_seed(
-                    deserializer,
-                    ::tinc::__private::de::tracker::struct_::StructDeserializer::new(
-                        self.#field_name.get_or_insert_default(),
-                        ::tinc::__private::de::StructField::name(&field),
-                        ::tinc::__private::de::tracker::Tracker {
-                            inner: tracker.inner.push_child_struct(&field)?,
-                            shared: tracker.shared,
-                        },
-                    ),
-                )?;
-            },
-            (FieldType::Message(_), Some(FieldModifier::Map), _) => quote! {
-                #set_field_present;
-                ::tinc::__private::de::DeserializeFieldValue::deserialize_seed(
-                    deserializer,
-                    ::tinc::__private::de::tracker::map_struct::MapStructDeserializer::new(
-                        &mut self.#field_name,
-                        ::tinc::__private::de::tracker::Tracker {
-                        inner: tracker.inner.push_child_map_struct(&field)?,
-                        shared: tracker.shared,
-                        },
-                    ),
-                )?;
-            },
-            (FieldType::Message(_), Some(FieldModifier::List), _) => quote! {
-                #duplicate_check
-                ::tinc::__private::de::DeserializeFieldValue::deserialize_seed(
-                    deserializer,
-                    ::tinc::__private::de::tracker::repeated_struct::RepeatedStructDeserializer::new(
-                        &mut self.#field_name,
-                        ::tinc::__private::de::tracker::Tracker {
-                            inner: tracker.inner.push_child_repeated_struct(&field)?,
-                            shared: tracker.shared,
-                        },
-                    ),
-                )?;
-            },
-            (FieldType::Message(_), None, _) => quote! {
-                #set_field_present;
-                ::tinc::__private::de::DeserializeFieldValue::deserialize_seed(
-                    deserializer,
-                    ::tinc::__private::de::tracker::struct_::StructDeserializer::new(
-                        &mut self.#field_name,
-                        ::tinc::__private::de::StructField::name(&field),
-                        ::tinc::__private::de::tracker::Tracker {
-                        inner: tracker.inner.push_child_struct(&field)?,
-                        shared: tracker.shared,
-                        },
-                    ),
-                )?;
-            },
-            (FieldType::Primitive(_), Some(FieldModifier::Optional), true) | (FieldType::Primitive(_), None, _) => quote! {
-                #duplicate_check
-                self.#field_name = ::tinc::__private::de::DeserializeFieldValue::deserialize(
-                    deserializer
-                )?;
-            },
-            (FieldType::Primitive(_), Some(FieldModifier::Optional), false) => quote! {
-                #duplicate_check
-                self.#field_name = ::core::option::Option::Some(
-                    ::tinc::__private::de::DeserializeFieldValue::deserialize(deserializer)?
+                prost.field_attribute(
+                    format!("{message_key}.{field_name}"),
+                    format!("#[serde(serialize_with = \"::tinc::__private::enum_::serialize::<{path_str}, _, _>\")]"),
                 );
-            },
-            (FieldType::Primitive(_), Some(FieldModifier::Map), _) => quote! {
-                #set_field_present;
-                ::tinc::__private::de::DeserializeFieldValue::deserialize_seed(
-                    deserializer,
-                    ::tinc::__private::de::tracker::map::MapDeserializer::new(
-                        &mut self.#field_name,
-                        ::tinc::__private::de::tracker::Tracker {
-                            inner: tracker.inner.push_child_map(&field)?,
-                            shared: tracker.shared,
-                        },
-                    ),
-                )?;
-            },
-            (FieldType::Primitive(_), Some(FieldModifier::List), _) => quote! {
-                #duplicate_check
-                ::tinc::__private::de::DeserializeFieldValue::deserialize_seed(
-                    deserializer,
-                    ::tinc::__private::de::tracker::repeated::RepeatedDeserializer::new(
-                        &mut self.#field_name,
-                        ::tinc::__private::de::tracker::Tracker {
-                            inner: tracker.inner.push_child_repeated(&field)?,
-                            shared: tracker.shared,
-                        },
-                    ),
-                )?;
-            },
+                prost.field_attribute(
+                    format!("{message_key}.{field_name}"),
+                    format!("#[tinc(enum = \"{path_str}\")]"),
+                );
+            }
+            FieldType::WellKnown(_) => {
+                prost.field_attribute(
+                    format!("{message_key}.{field_name}"),
+                    "#[serde(serialize_with = \"::tinc::__private::well_known::serialize\")]",
+                );
+            }
+            _ => {}
         };
+
+        let mut tracker = quote! {
+            &mut tracker.value.#field_name
+        };
+
+        let mut value = quote! {
+            &mut self.#field_name
+        };
+
+        // When a field is not nullable but prost generates an option<T>, we need to
+        // remove the option before deserializing otherwise null will be a valid input.
+        if matches!(field.kind, FieldKind::Optional(_)) && !field.nullable {
+            tracker = quote! {
+                &mut tracker.value.#field_name.get_or_insert_default().0
+            };
+
+            value = quote! {
+                self.#field_name.get_or_insert_default()
+            };
+        }
 
         deserializer_fn.push(quote! {
             #field_enum_ident::#ident => {
-                #deserialize_impl
+                let tracker = #tracker;
+
+                if !::tinc::__private::de::tracker_allow_duplicates(tracker.as_ref()) {
+                    return Err(::tinc::reexports::serde::de::Error::duplicate_field(
+                        #field_enum_ident::#ident.name(),
+                    ));
+                }
+
+                ::tinc::__private::de::DeserializeFieldValue::deserialize_seed(
+                    deserializer,
+                    ::tinc::__private::de::DeserializeHelper {
+                        value: #value,
+                        tracker: tracker.get_or_insert_default(),
+                    },
+                )?;
             }
         });
 
         if !field.omitable {
             verify_deserialize_fn.push(quote! {
-                if !tracker.inner.get_field_presence(&#field_enum_ident::#ident) {
-                    tracker.report_error(
-                        ::core::option::Option::Some(
-                            ::tinc::__private::de::tracker::ErrorLocation::StructField {
-                                name: ::tinc::__private::de::StructField::name(&#field_enum_ident::#ident),
-                            },
-                        ),
-                        ::tinc::reexports::serde::de::Error::missing_field(
-                            ::tinc::__private::de::StructField::name(&#field_enum_ident::#ident),
-                        ),
+                if tracker.value.#field_name.is_none() {
+                    let _token = ::tinc::__private::de::PathToken::push_field(stringify!(#field_name));
+                    ::tinc::__private::de::report_error(
+                        ::tinc::__private::de::TrackedError::missing_field(),
                     )?;
                 }
             });
         }
 
-        let common = quote! {
-            ::tinc::__private::de::TrackedStructDeserializer::verify_deserialize(
-                field,
-                ::tinc::__private::de::tracker::Tracker {
-                    inner,
-                    shared: tracker.shared,
-                },
-            )?;
-        };
-
-        match (&field.kind, field.kind.inner()) {
-            (FieldKind::Map(_, _), FieldKind::Message(_)) => verify_deserialize_fn.push(quote! {
-                if let ::core::option::Option::Some(::tinc::__private::de::tracker::TrackerAny::MapStruct(map)) = tracker.inner.get_child(&#field_enum_ident::#ident) {
-                    for (key, inner) in map.children.iter_mut() {
-                        if let Some(field) = key.get_value(&self.#field_name) {
-                            #common
+        if matches!(field.kind.field_type(), FieldType::Message(_)) {
+            let validation = match field.kind.modifier() {
+                Some(FieldModifier::Optional) => quote! {
+                    if let Some(tracker) = tracker.value.#field_name.as_mut().and_then(|tracker| tracker.0.as_mut()) {
+                        if let Some(value) = self.#field_name.as_ref() {
+                            let _token = ::tinc::__private::de::PathToken::push_field(stringify!(#field_name));
+                            ::tinc::__private::de::TrackedStructDeserializer::<'de>::verify_deserialize(
+                                value,
+                                tracker,
+                            )?;
                         }
                     }
-                }
-            }),
-            (FieldKind::List(_), FieldKind::Message(_)) => verify_deserialize_fn.push(quote! {
-                if let ::core::option::Option::Some(::tinc::__private::de::tracker::TrackerAny::RepeatedStruct(repeated)) = tracker.inner.get_child(&#field_enum_ident::#ident) {
-                    for (inner, field) in ::core::iter::Iterator::zip(repeated.children.iter_mut(), self.#field_name.iter()) {
-                        #common
+                },
+                Some(FieldModifier::List) => quote! {
+                    if let Some(trackers) = tracker.value.#field_name.as_mut().map(|tracker| tracker.vec.iter_mut()) {
+                        let _token = ::tinc::__private::de::PathToken::push_field(stringify!(#field_name));
+                        for (idx, (value, tracker)) in self.#field_name.iter().zip(trackers).enumerate() {
+                            let _token = ::tinc::__private::de::PathToken::push_index(idx);
+                            ::tinc::__private::de::TrackedStructDeserializer::<'de>::verify_deserialize(
+                                value,
+                                tracker,
+                            )?;
+                        }
                     }
-                }
-            }),
-            (FieldKind::Optional(_), FieldKind::Message(_)) => verify_deserialize_fn.push(quote! {
-                if let ::core::option::Option::Some(::tinc::__private::de::tracker::TrackerAny::Struct(inner)) = tracker.inner.get_child(&#field_enum_ident::#ident) {
-                    if let ::core::option::Option::Some(field) = &self.#field_name {
-                        #common
+                },
+                Some(FieldModifier::Map) => quote! {
+                    if let Some(trackers) = tracker.value.#field_name.as_mut().map(|tracker| tracker.map.iter_mut()) {
+                        let _token = ::tinc::__private::de::PathToken::push_field(stringify!(#field_name));
+                        for (key, tracker) in trackers {
+                            if let Some(value) = self.#field_name.get(key) {
+                                let _token = ::tinc::__private::de::PathToken::push_key(key);
+                                ::tinc::__private::de::TrackedStructDeserializer::<'de>::verify_deserialize(
+                                    value,
+                                    tracker,
+                                )?;
+                            }
+                        }
                     }
-                }
-            }),
-            (FieldKind::Message(_), _) => verify_deserialize_fn.push(quote! {
-                if let ::core::option::Option::Some(::tinc::__private::de::tracker::TrackerAny::Struct(inner)) = tracker.inner.get_child(&#field_enum_ident::#ident) {
-                    let field = &self.#field_name;
-                    #common
-                }
-            }),
-            _ => {},
+                },
+                None => quote! {
+                    if let Some(tracker) = tracker.value.#field_name.as_mut() {
+                        let mut _token = ::tinc::__private::de::PathToken::push_field(stringify!(#field_name));
+                        ::tinc::__private::de::TrackedStructDeserializer::<'de>::verify_deserialize(
+                            &mut self.#field_name,
+                            tracker,
+                        )?;
+                    }
+                },
+            };
+
+            verify_deserialize_fn.push(validation);
         }
     }
 
     let message_path = get_common_import_path(message.package.as_str(), message_key);
     let message_ident = message_path.segments.last().unwrap().ident.clone();
+
+    prost.message_attribute(message_key, "#[derive(::tinc::__private::de::TincMessageTracker)]");
 
     let field_enum_impl = parse_quote! {
         const _: () = {
@@ -450,6 +319,12 @@ pub(super) fn handle_message(
             #[allow(non_camel_case_types)]
             pub enum #field_enum_ident {
                 #(#field_enum_variants),*
+            }
+
+            impl ::tinc::__private::de::StructField for #field_enum_ident {
+                fn name(&self) -> &'static str {
+                    #field_enum_ident::name(self)
+                }
             }
 
             impl #field_enum_ident {
@@ -466,20 +341,11 @@ pub(super) fn handle_message(
                 }
             }
 
-            impl ::tinc::__private::de::StructField for #field_enum_ident {
-                fn idx(&self) -> usize {
-                    #field_enum_ident::idx(self)
-                }
+            impl ::core::str::FromStr for #field_enum_ident {
+                type Err = ();
 
-                fn name(&self) -> &'static str {
-                    #field_enum_ident::name(self)
-                }
-
-                fn from_str(s: &str) -> Option<Self> {
-                    ::tinc::__tinc_field_from_str!(
-                        s,
-                        #(#field_enum_from_str_fn)*
-                    )
+                fn from_str(s: &str) -> Result<Self, Self::Err> {
+                    ::tinc::__tinc_field_from_str!(s, #(#field_enum_from_str_fn)*)
                 }
             }
 
@@ -493,7 +359,7 @@ pub(super) fn handle_message(
                 fn deserialize<D>(
                     &mut self,
                     field: Self::Field,
-                    mut tracker: ::tinc::__private::de::tracker::Tracker<'_, ::tinc::__private::de::tracker::struct_::TrackerStruct>,
+                    mut tracker: &mut Self::Tracker,
                     deserializer: D,
                 ) -> Result<(), D::Error>
                 where
@@ -509,7 +375,7 @@ pub(super) fn handle_message(
                 #[allow(unused_mut, dead_code)]
                 fn verify_deserialize<E>(
                     &self,
-                    mut tracker: ::tinc::__private::de::tracker::Tracker<'_, ::tinc::__private::de::tracker::struct_::TrackerStruct>,
+                    mut tracker: &mut Self::Tracker,
                 ) -> Result<(), E>
                 where
                     E: ::tinc::reexports::serde::de::Error,
@@ -517,6 +383,12 @@ pub(super) fn handle_message(
                     #(#verify_deserialize_fn)*
 
                     ::core::result::Result::Ok(())
+                }
+            }
+
+            impl ::tinc::__private::de::Expected for #message_path {
+                fn expecting(formatter: &mut std::fmt::Formatter) -> std::fmt::Result {
+                    write!(formatter, stringify!(#message_ident))
                 }
             }
         };
@@ -566,7 +438,7 @@ pub(super) fn handle_enum(
     enum_key: &str,
     enum_: &EnumOpts,
     prost: &mut tonic_build::Config,
-    _: &mut BTreeMap<String, Vec<syn::Item>>,
+    modules: &mut BTreeMap<String, Vec<syn::Item>>,
 ) -> anyhow::Result<()> {
     if enum_.opts.custom_impl.unwrap_or(false) {
         return Ok(());
@@ -589,6 +461,21 @@ pub(super) fn handle_enum(
 
         field_visibility(&variant_key, prost, variant_opts.visibility);
     }
+
+    let enum_path = get_common_import_path(enum_.package.as_str(), enum_key);
+    let enum_ident = enum_path.segments.last().unwrap().ident.clone();
+
+    let enum_impl = parse_quote! {
+        impl ::tinc::__private::de::Expected for #enum_path {
+            fn expecting(formatter: &mut std::fmt::Formatter) -> std::fmt::Result {
+                write!(formatter, "an enum of `")?;
+                write!(formatter, stringify!(#enum_ident))?;
+                write!(formatter, "`")
+            }
+        }
+    };
+
+    modules.entry(enum_.package.clone()).or_default().push(enum_impl);
 
     Ok(())
 }

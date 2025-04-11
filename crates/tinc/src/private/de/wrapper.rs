@@ -50,14 +50,7 @@ where
     where
         T: serde::de::DeserializeSeed<'de>,
     {
-        self.access.next_element_seed(seed)
-    }
-
-    fn next_element<T>(&mut self) -> Result<Option<T>, Self::Error>
-    where
-        T: serde::Deserialize<'de>,
-    {
-        self.access.next_element()
+        self.access.next_element_seed(DeserializeWrapper(seed))
     }
 
     fn size_hint(&self) -> Option<usize> {
@@ -89,7 +82,7 @@ where
         V: serde::de::DeserializeSeed<'de>,
     {
         if !self.next_key {
-            Err(serde::de::Error::custom("expected key"))
+            Err(serde::de::Error::custom("invalid call to next_entry_seed"))
         } else {
             self.access
                 .next_entry_seed(DeserializeWrapper(kseed), DeserializeWrapper(vseed))
@@ -102,8 +95,9 @@ where
         K: serde::de::DeserializeSeed<'de>,
     {
         if !self.next_key {
-            Err(serde::de::Error::custom("expected key"))
+            Err(serde::de::Error::custom("invalid call to next_key_seed"))
         } else {
+            self.next_key = false;
             self.access.next_key_seed(DeserializeWrapper(seed))
         }
     }
@@ -113,9 +107,10 @@ where
     where
         V: serde::de::DeserializeSeed<'de>,
     {
-        if !self.next_key {
-            Err(serde::de::Error::custom("expected value"))
+        if self.next_key {
+            Err(serde::de::Error::custom("invalid call to next_value_seed"))
         } else {
+            self.next_key = true;
             self.access.next_value_seed(DeserializeWrapper(seed))
         }
     }
@@ -149,18 +144,14 @@ where
         A: serde::de::MapAccess<'de>,
     {
         let mut access = MapAccessWrapper::new(access);
-        match self.visitor.visit_map(&mut access) {
-            Ok(value) => Ok(value),
-            Err(e) => {
-                if !access.next_key && access.access.next_key::<serde::de::IgnoredAny>().is_err() {
-                    return Err(e);
-                }
-
-                serde::de::IgnoredAny.visit_map(access.access).ok();
-
-                Err(e)
-            }
+        let result = self.visitor.visit_map(&mut access);
+        if !access.next_key && access.access.next_key::<serde::de::IgnoredAny>().is_err() {
+            return result;
         }
+
+        serde::de::IgnoredAny.visit_map(access.access).ok();
+
+        result
     }
 
     #[inline]
@@ -215,8 +206,8 @@ where
     where
         A: serde::de::EnumAccess<'de>,
     {
-        // wrap this??
-        self.visitor.visit_enum(data)
+        println!("visit_enum");
+        self.visitor.visit_enum(EnumAccessWrapper::new(data))
     }
 
     #[inline]
@@ -296,13 +287,9 @@ where
         A: serde::de::SeqAccess<'de>,
     {
         let mut seq = SeqAccessWrapper::new(seq);
-        match self.visitor.visit_seq(&mut seq) {
-            Ok(value) => Ok(value),
-            Err(e) => {
-                serde::de::IgnoredAny.visit_seq(seq.access).ok();
-                Err(e)
-            }
-        }
+        let result = self.visitor.visit_seq(&mut seq);
+        serde::de::IgnoredAny.visit_seq(seq.access).ok();
+        result
     }
 
     #[inline]
@@ -375,6 +362,31 @@ where
         E: serde::de::Error,
     {
         self.visitor.visit_unit()
+    }
+}
+
+struct EnumAccessWrapper<A> {
+    access: A,
+}
+
+impl<A> EnumAccessWrapper<A> {
+    fn new(access: A) -> Self {
+        Self { access }
+    }
+}
+
+impl<'de, A> serde::de::EnumAccess<'de> for EnumAccessWrapper<A>
+where
+    A: serde::de::EnumAccess<'de>,
+{
+    type Error = A::Error;
+    type Variant = A::Variant;
+
+    fn variant_seed<V>(self, seed: V) -> Result<(V::Value, Self::Variant), Self::Error>
+    where
+        V: serde::de::DeserializeSeed<'de>,
+    {
+        self.access.variant_seed(DeserializeWrapper(seed))
     }
 }
 

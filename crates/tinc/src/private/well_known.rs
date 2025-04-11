@@ -1,7 +1,9 @@
 use core::fmt;
 use std::collections::{BTreeMap, HashMap};
+use std::mem::ManuallyDrop;
 
-use serde::{ser::{SerializeMap, SerializeSeq}, Deserialize, Serialize};
+use serde::ser::{SerializeMap, SerializeSeq};
+use serde::{Deserialize, Serialize};
 
 #[repr(transparent)]
 pub struct List(pub prost_types::ListValue);
@@ -75,7 +77,6 @@ impl From<Empty> for () {
     }
 }
 
-
 impl<'de> serde::Deserialize<'de> for List {
     fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
     where
@@ -116,7 +117,7 @@ impl serde::Serialize for List {
         let mut seq = serializer.serialize_seq(Some(self.0.values.len()))?;
 
         for value in self.0.values.iter() {
-            seq.serialize_element(SerializeWellKnown::cast(value))?;
+            seq.serialize_element(WellKnownAlias::cast_ref(value))?;
         }
 
         seq.end()
@@ -164,7 +165,7 @@ impl serde::Serialize for Struct {
 
         for (key, value) in self.0.fields.iter() {
             map.serialize_key(key)?;
-            map.serialize_value(SerializeWellKnown::cast(value))?;
+            map.serialize_value(WellKnownAlias::cast_ref(value))?;
         }
 
         map.end()
@@ -317,8 +318,8 @@ impl serde::Serialize for Value {
             Some(prost_types::value::Kind::NumberValue(value)) => serializer.serialize_f64(*value),
             Some(prost_types::value::Kind::StringValue(value)) => serializer.serialize_str(value),
             Some(prost_types::value::Kind::BoolValue(value)) => serializer.serialize_bool(*value),
-            Some(prost_types::value::Kind::StructValue(value)) => SerializeWellKnown::cast(value).serialize(serializer),
-            Some(prost_types::value::Kind::ListValue(value)) => SerializeWellKnown::cast(value).serialize(serializer),
+            Some(prost_types::value::Kind::StructValue(value)) => WellKnownAlias::cast_ref(value).serialize(serializer),
+            Some(prost_types::value::Kind::ListValue(value)) => WellKnownAlias::cast_ref(value).serialize(serializer),
         }
     }
 }
@@ -392,14 +393,12 @@ impl<'de> serde::Deserialize<'de> for Duration {
                     b'-' => {
                         v = &v[1..];
                         -1
-                    },
+                    }
                     b'+' => {
                         v = &v[1..];
                         1
-                    },
-                    b'0'..=b'9' => {
-                        1
-                    },
+                    }
+                    b'0'..=b'9' => 1,
                     _ => {
                         return Err(E::custom("invalid duration format"));
                     }
@@ -420,7 +419,6 @@ impl<'de> serde::Deserialize<'de> for Duration {
                 let nanos = &nanos[..nanos_size];
                 // convert the string to an i32
                 let nanos = nanos.parse::<i32>().map_err(|_| E::custom("invalid duration format"))?;
-
 
                 // We now need to scale the nanos by the number of digits in the nanos string
                 let multiplier = 10_i32.pow(9 - nanos_size as u32);
@@ -472,8 +470,9 @@ impl<'de> serde::Deserialize<'de> for Empty {
             }
 
             fn visit_none<E>(self) -> Result<Self::Value, E>
-                where
-                    E: serde::de::Error, {
+            where
+                E: serde::de::Error,
+            {
                 Ok(Empty(()))
             }
         }
@@ -494,71 +493,83 @@ impl serde::Serialize for Empty {
 /// # Safety
 /// This trait is marked as unsafe because the implementator
 /// must ensure that Helper has the same layout & memory representation as Self.
-unsafe trait SerializeWellKnown {
-    type Helper: serde::Serialize;
+pub(crate) unsafe trait WellKnownAlias: Sized {
+    type Helper: Sized;
 
-    fn cast(value: &Self) -> &Self::Helper {
+    fn reverse_cast(value: Self::Helper) -> Self {
+        const {
+            assert!(std::mem::size_of::<Self>() == std::mem::size_of::<Self::Helper>());
+            assert!(std::mem::align_of::<Self>() == std::mem::align_of::<Self::Helper>());
+        };
+
+        let mut value = ManuallyDrop::new(value);
+        let casted = unsafe { &mut *(&mut value as *mut _ as *mut ManuallyDrop<Self>) };
+        unsafe { ManuallyDrop::take(casted) }
+    }
+
+    fn cast_ref(value: &Self) -> &Self::Helper {
         unsafe { &*(value as *const Self as *const Self::Helper) }
     }
 }
 
 /// Safety: [`List`] is `#[repr(transparent)]` for [`prost_types::ListValue`]
-unsafe impl SerializeWellKnown for prost_types::ListValue {
+unsafe impl WellKnownAlias for prost_types::ListValue {
     type Helper = List;
 }
 
 /// Safety: [`Struct`] is `#[repr(transparent)]` for [`prost_types::Struct`]
-unsafe impl SerializeWellKnown for prost_types::Struct {
+unsafe impl WellKnownAlias for prost_types::Struct {
     type Helper = Struct;
 }
 
 /// Safety: [`Value`] is `#[repr(transparent)]` for [`prost_types::Value`]
-unsafe impl SerializeWellKnown for prost_types::Value {
+unsafe impl WellKnownAlias for prost_types::Value {
     type Helper = Value;
 }
 
 /// Safety: [`Timestamp`] is `#[repr(transparent)]` for [`prost_types::Timestamp`]
-unsafe impl SerializeWellKnown for prost_types::Timestamp {
+unsafe impl WellKnownAlias for prost_types::Timestamp {
     type Helper = Timestamp;
 }
 
 /// Safety: [`Duration`] is `#[repr(transparent)]` for [`prost_types::Duration`]
-unsafe impl SerializeWellKnown for prost_types::Duration {
+unsafe impl WellKnownAlias for prost_types::Duration {
     type Helper = Duration;
 }
 
 /// Safety: [`Empty`] is `#[repr(transparent)]` for `()`
-unsafe impl SerializeWellKnown for () {
+unsafe impl WellKnownAlias for () {
     type Helper = Empty;
 }
 
 /// Safety: If `T` is a [`SerializeWellKnown`] type, then its safe to cast `Option<T>` to `Option<T::Helper>`.
-unsafe impl<T: SerializeWellKnown> SerializeWellKnown for Option<T> {
+unsafe impl<T: WellKnownAlias> WellKnownAlias for Option<T> {
     type Helper = Option<T::Helper>;
 }
 
 /// Safety: If `T` is a [`SerializeWellKnown`] type, then its safe to cast `Vec<T>` to `Vec<T::Helper>`.
-unsafe impl<T: SerializeWellKnown> SerializeWellKnown for Vec<T> {
+unsafe impl<T: WellKnownAlias> WellKnownAlias for Vec<T> {
     type Helper = Vec<T::Helper>;
 }
 
-/// Safety: If `K` is a [`serde::Serialize`] type and `V` is a [`SerializeWellKnown`] type, then its safe to cast `BTreeMap<K, V>` to `BTreeMap<K, V::Helper>`.
-unsafe impl<K: serde::Serialize, V: SerializeWellKnown> SerializeWellKnown for BTreeMap<K, V> {
+/// Safety: `V` is a [`SerializeWellKnown`] type, then its safe to cast `BTreeMap<K, V>` to `BTreeMap<K, V::Helper>`.
+unsafe impl<K, V: WellKnownAlias> WellKnownAlias for BTreeMap<K, V> {
     type Helper = BTreeMap<K, V::Helper>;
 }
 
-/// Safety: If `K` is a [`serde::Serialize`] type and `V` is a [`SerializeWellKnown`] type, then its safe to cast `HashMap<K, V>` to `HashMap<K, V::Helper>`.
-unsafe impl<K: serde::Serialize, V: SerializeWellKnown> SerializeWellKnown for HashMap<K, V> {
-    type Helper = HashMap<K, V::Helper>;
+/// Safety: `V` is a [`SerializeWellKnown`] type, then its safe to cast `HashMap<K, V>` to `HashMap<K, V::Helper>`.
+unsafe impl<K, V: WellKnownAlias, S> WellKnownAlias for HashMap<K, V, S> {
+    type Helper = HashMap<K, V::Helper, S>;
 }
 
 #[allow(private_bounds)]
 pub fn serialize<V, S>(value: &V, serializer: S) -> Result<S::Ok, S::Error>
 where
-    V: SerializeWellKnown,
+    V: WellKnownAlias,
+    V::Helper: serde::Serialize,
     S: serde::Serializer,
 {
-    V::cast(value).serialize(serializer)
+    V::cast_ref(value).serialize(serializer)
 }
 
 #[cfg(test)]
@@ -571,79 +582,296 @@ mod tests {
             // Basic positive and negative cases
             ("1s", prost_types::Duration { seconds: 1, nanos: 0 }),
             ("-1s", prost_types::Duration { seconds: -1, nanos: 0 }),
-
             // Zero cases
             ("0s", prost_types::Duration { seconds: 0, nanos: 0 }),
             ("-0s", prost_types::Duration { seconds: 0, nanos: 0 }),
-
             // Positive fractions
-            ("0.5s", prost_types::Duration { seconds: 0, nanos: 500_000_000 }),
-            ("1.5s", prost_types::Duration { seconds: 1, nanos: 500_000_000 }),
+            (
+                "0.5s",
+                prost_types::Duration {
+                    seconds: 0,
+                    nanos: 500_000_000,
+                },
+            ),
+            (
+                "1.5s",
+                prost_types::Duration {
+                    seconds: 1,
+                    nanos: 500_000_000,
+                },
+            ),
             ("0.000000001s", prost_types::Duration { seconds: 0, nanos: 1 }),
             ("0.000000123s", prost_types::Duration { seconds: 0, nanos: 123 }),
-            ("0.999999999s", prost_types::Duration { seconds: 0, nanos: 999_999_999 }),
+            (
+                "0.999999999s",
+                prost_types::Duration {
+                    seconds: 0,
+                    nanos: 999_999_999,
+                },
+            ),
             ("1.000000001s", prost_types::Duration { seconds: 1, nanos: 1 }),
-            ("1.234567890s", prost_types::Duration { seconds: 1, nanos: 234_567_890 }),
-
+            (
+                "1.234567890s",
+                prost_types::Duration {
+                    seconds: 1,
+                    nanos: 234_567_890,
+                },
+            ),
             // Negative fractions
-            ("-0.5s", prost_types::Duration { seconds: 0, nanos: -500_000_000 }),
-            ("-1.5s", prost_types::Duration { seconds: -1, nanos: -500_000_000 }),
+            (
+                "-0.5s",
+                prost_types::Duration {
+                    seconds: 0,
+                    nanos: -500_000_000,
+                },
+            ),
+            (
+                "-1.5s",
+                prost_types::Duration {
+                    seconds: -1,
+                    nanos: -500_000_000,
+                },
+            ),
             ("-0.000000001s", prost_types::Duration { seconds: 0, nanos: -1 }),
             ("-0.000000123s", prost_types::Duration { seconds: 0, nanos: -123 }),
-            ("-0.999999999s", prost_types::Duration { seconds: 0, nanos: -999_999_999 }),
+            (
+                "-0.999999999s",
+                prost_types::Duration {
+                    seconds: 0,
+                    nanos: -999_999_999,
+                },
+            ),
             ("-1.000000001s", prost_types::Duration { seconds: -1, nanos: -1 }),
-            ("-1.234567890s", prost_types::Duration { seconds: -1, nanos: -234_567_890 }),
-
+            (
+                "-1.234567890s",
+                prost_types::Duration {
+                    seconds: -1,
+                    nanos: -234_567_890,
+                },
+            ),
             // Large positive integers
             ("1000s", prost_types::Duration { seconds: 1000, nanos: 0 }),
-            ("3155695200s", prost_types::Duration { seconds: 3155695200, nanos: 0 }), // 100 years
-            ("1000000000s", prost_types::Duration { seconds: 1_000_000_000, nanos: 0 }),
-            ("9223372036s", prost_types::Duration { seconds: 9223372036, nanos: 0 }),
-
+            (
+                "3155695200s",
+                prost_types::Duration {
+                    seconds: 3155695200,
+                    nanos: 0,
+                },
+            ), // 100 years
+            (
+                "1000000000s",
+                prost_types::Duration {
+                    seconds: 1_000_000_000,
+                    nanos: 0,
+                },
+            ),
+            (
+                "9223372036s",
+                prost_types::Duration {
+                    seconds: 9223372036,
+                    nanos: 0,
+                },
+            ),
             // Large negative integers
-            ("-1000s", prost_types::Duration { seconds: -1000, nanos: 0 }),
-            ("-3155695200s", prost_types::Duration { seconds: -3155695200, nanos: 0 }), // -100 years
-            ("-1000000000s", prost_types::Duration { seconds: -1_000_000_000, nanos: 0 }),
-            ("-9223372036s", prost_types::Duration { seconds: -9223372036, nanos: 0 }),
-
+            (
+                "-1000s",
+                prost_types::Duration {
+                    seconds: -1000,
+                    nanos: 0,
+                },
+            ),
+            (
+                "-3155695200s",
+                prost_types::Duration {
+                    seconds: -3155695200,
+                    nanos: 0,
+                },
+            ), // -100 years
+            (
+                "-1000000000s",
+                prost_types::Duration {
+                    seconds: -1_000_000_000,
+                    nanos: 0,
+                },
+            ),
+            (
+                "-9223372036s",
+                prost_types::Duration {
+                    seconds: -9223372036,
+                    nanos: 0,
+                },
+            ),
             // Large positive fractions
-            ("3155695200.987654321s", prost_types::Duration { seconds: 3155695200, nanos: 987_654_321 }),
-            ("1000000000.123456789s", prost_types::Duration { seconds: 1_000_000_000, nanos: 123_456_789 }),
-            ("9223372036.854775807s", prost_types::Duration { seconds: 9223372036, nanos: 854_775_807 }),
-            ("9223372036.999999999s", prost_types::Duration { seconds: 9223372036, nanos: 999_999_999 }),
-
+            (
+                "3155695200.987654321s",
+                prost_types::Duration {
+                    seconds: 3155695200,
+                    nanos: 987_654_321,
+                },
+            ),
+            (
+                "1000000000.123456789s",
+                prost_types::Duration {
+                    seconds: 1_000_000_000,
+                    nanos: 123_456_789,
+                },
+            ),
+            (
+                "9223372036.854775807s",
+                prost_types::Duration {
+                    seconds: 9223372036,
+                    nanos: 854_775_807,
+                },
+            ),
+            (
+                "9223372036.999999999s",
+                prost_types::Duration {
+                    seconds: 9223372036,
+                    nanos: 999_999_999,
+                },
+            ),
             // Large negative fractions
-            ("-3155695200.987654321s", prost_types::Duration { seconds: -3155695200, nanos: -987_654_321 }),
-            ("-1000000000.123456789s", prost_types::Duration { seconds: -1_000_000_000, nanos: -123_456_789 }),
-            ("-9223372036.854775807s", prost_types::Duration { seconds: -9223372036, nanos: -854_775_807 }),
-            ("-9223372036.999999999s", prost_types::Duration { seconds: -9223372036, nanos: -999_999_999 }),
-
+            (
+                "-3155695200.987654321s",
+                prost_types::Duration {
+                    seconds: -3155695200,
+                    nanos: -987_654_321,
+                },
+            ),
+            (
+                "-1000000000.123456789s",
+                prost_types::Duration {
+                    seconds: -1_000_000_000,
+                    nanos: -123_456_789,
+                },
+            ),
+            (
+                "-9223372036.854775807s",
+                prost_types::Duration {
+                    seconds: -9223372036,
+                    nanos: -854_775_807,
+                },
+            ),
+            (
+                "-9223372036.999999999s",
+                prost_types::Duration {
+                    seconds: -9223372036,
+                    nanos: -999_999_999,
+                },
+            ),
             // Near-boundary handling
-            ("9223372036.854775807s", prost_types::Duration { seconds: 9223372036, nanos: 854_775_807 }),
-            ("-9223372036.854775807s", prost_types::Duration { seconds: -9223372036, nanos: -854_775_807 }),
-            ("9223372036.999999999s", prost_types::Duration { seconds: 9223372036, nanos: 999_999_999 }),
-            ("-9223372036.999999999s", prost_types::Duration { seconds: -9223372036, nanos: -999_999_999 }),
-
+            (
+                "9223372036.854775807s",
+                prost_types::Duration {
+                    seconds: 9223372036,
+                    nanos: 854_775_807,
+                },
+            ),
+            (
+                "-9223372036.854775807s",
+                prost_types::Duration {
+                    seconds: -9223372036,
+                    nanos: -854_775_807,
+                },
+            ),
+            (
+                "9223372036.999999999s",
+                prost_types::Duration {
+                    seconds: 9223372036,
+                    nanos: 999_999_999,
+                },
+            ),
+            (
+                "-9223372036.999999999s",
+                prost_types::Duration {
+                    seconds: -9223372036,
+                    nanos: -999_999_999,
+                },
+            ),
             // Exact integers with max precision
             ("1.000000000s", prost_types::Duration { seconds: 1, nanos: 0 }),
             ("-1.000000000s", prost_types::Duration { seconds: -1, nanos: 0 }),
             ("0.000000000s", prost_types::Duration { seconds: 0, nanos: 0 }),
             ("-0.000000000s", prost_types::Duration { seconds: 0, nanos: 0 }),
-
             // Various decimal precision levels
-            ("1.2s", prost_types::Duration { seconds: 1, nanos: 200_000_000 }),
-            ("1.23s", prost_types::Duration { seconds: 1, nanos: 230_000_000 }),
-            ("1.234s", prost_types::Duration { seconds: 1, nanos: 234_000_000 }),
-            ("1.2345s", prost_types::Duration { seconds: 1, nanos: 234_500_000 }),
-            ("1.23456s", prost_types::Duration { seconds: 1, nanos: 234_560_000 }),
-            ("1.234567s", prost_types::Duration { seconds: 1, nanos: 234_567_000 }),
-            ("1.2345678s", prost_types::Duration { seconds: 1, nanos: 234_567_800 }),
-            ("1.23456789s", prost_types::Duration { seconds: 1, nanos: 234_567_890 }),
-            ("1.234567891s", prost_types::Duration { seconds: 1, nanos: 234_567_891 }),
-
+            (
+                "1.2s",
+                prost_types::Duration {
+                    seconds: 1,
+                    nanos: 200_000_000,
+                },
+            ),
+            (
+                "1.23s",
+                prost_types::Duration {
+                    seconds: 1,
+                    nanos: 230_000_000,
+                },
+            ),
+            (
+                "1.234s",
+                prost_types::Duration {
+                    seconds: 1,
+                    nanos: 234_000_000,
+                },
+            ),
+            (
+                "1.2345s",
+                prost_types::Duration {
+                    seconds: 1,
+                    nanos: 234_500_000,
+                },
+            ),
+            (
+                "1.23456s",
+                prost_types::Duration {
+                    seconds: 1,
+                    nanos: 234_560_000,
+                },
+            ),
+            (
+                "1.234567s",
+                prost_types::Duration {
+                    seconds: 1,
+                    nanos: 234_567_000,
+                },
+            ),
+            (
+                "1.2345678s",
+                prost_types::Duration {
+                    seconds: 1,
+                    nanos: 234_567_800,
+                },
+            ),
+            (
+                "1.23456789s",
+                prost_types::Duration {
+                    seconds: 1,
+                    nanos: 234_567_890,
+                },
+            ),
+            (
+                "1.234567891s",
+                prost_types::Duration {
+                    seconds: 1,
+                    nanos: 234_567_891,
+                },
+            ),
             // this will be truncated to 1.23456789s
-            ("1.2345678901s", prost_types::Duration { seconds: 1, nanos: 234_567_890 }),
-            ("1.23456789055s", prost_types::Duration { seconds: 1, nanos: 234_567_890 }),
+            (
+                "1.2345678901s",
+                prost_types::Duration {
+                    seconds: 1,
+                    nanos: 234_567_890,
+                },
+            ),
+            (
+                "1.23456789055s",
+                prost_types::Duration {
+                    seconds: 1,
+                    nanos: 234_567_890,
+                },
+            ),
         ];
 
         for (idx, (input, expected)) in cases.into_iter().enumerate() {
@@ -666,7 +894,6 @@ mod tests {
             ("s", "invalid duration format"),
             ("1.s", "invalid duration format"),
             ("1.0.s", "invalid duration format"),
-
             // Invalid number formats
             ("1..0s", "invalid duration format"),
             ("1..s", "invalid duration format"),
@@ -678,69 +905,58 @@ mod tests {
             ("-1.s", "invalid duration format"),
             ("1.0.0s", "invalid duration format"),
             ("1.0.s", "invalid duration format"),
-
             // Invalid negative signs
             ("--1s", "invalid duration format"),
             ("-s", "invalid duration format"),
             ("--0.5s", "invalid duration format"),
-
             // Incorrect use of decimal points
             ("1..s", "invalid duration format"),
             ("-1..s", "invalid duration format"),
             ("0..0s", "invalid duration format"),
             ("0.0.0s", "invalid duration format"),
             ("1.0.0s", "invalid duration format"),
-
             // Missing unit
             ("1", "invalid duration format"),
             ("0.5", "invalid duration format"),
             ("-0.5", "invalid duration format"),
             ("1.", "invalid duration format"),
             ("-1.", "invalid duration format"),
-
             // Extra characters
             ("1sabc", "invalid duration format"),
             ("-1sabc", "invalid duration format"),
             ("1.0sabc", "invalid duration format"),
             ("0.5sab", "invalid duration format"),
             ("-0.5sxyz", "invalid duration format"),
-
             // Misplaced 's' character
             ("1s1s", "invalid duration format"),
             ("1.0ss", "invalid duration format"),
             ("-1s1", "invalid duration format"),
             ("-0.5s0.5s", "invalid duration format"),
-
             // Multiple decimals
             ("1.1.1s", "invalid duration format"),
             ("-1.1.1s", "invalid duration format"),
             ("0.1.1s", "invalid duration format"),
             ("-0.1.1s", "invalid duration format"),
-
             // Overflow beyond maximum supported range
             ("9223372036854775808s", "invalid duration format"), // One more than i64::MAX
             ("-9223372036854775809s", "invalid duration format"), // One less than i64::MIN
             ("10000000000000000000.0s", "invalid duration format"), // Excessively large number
             ("-10000000000000000000.0s", "invalid duration format"), // Excessively large negative number
-
             // Non-numeric characters in numbers
             ("1a.0s", "invalid duration format"),
             ("1.0as", "invalid duration format"),
             ("-1.a0s", "invalid duration format"),
             ("1.0a0s", "invalid duration format"),
             ("1a0s", "invalid duration format"),
-
             // Empty fraction part
             ("1.s", "invalid duration format"),
             ("-1.s", "invalid duration format"),
-
             // Invalid leading/trailing spaces
             (" 1s", "invalid duration format"),
             ("1s ", "invalid duration format"),
             ("- 1s", "invalid duration format"),
             ("1s s", "invalid duration format"),
             ("1 .0s", "invalid duration format"),
-
             // Misuse of signs
             ("1.+0s", "invalid duration format"),
             ("-+1s", "invalid duration format"),

@@ -327,20 +327,12 @@ impl Sps {
         let sps_max_sub_layers_minus1 = bit_reader.read_bits(3)? as u8;
         let sps_temporal_id_nesting_flag = bit_reader.read_bit()?;
 
-        dbg!(
-            sps_video_parameter_set_id,
-            sps_max_sub_layers_minus1,
-            sps_temporal_id_nesting_flag
-        );
-
         // ISO/IEC-23008-2-2020 - 7.3.3
         let profile_tier_level = ProfileTierLevel::parse(
             &mut bit_reader,
             true, // profile_present_flag
             sps_max_sub_layers_minus1,
         )?;
-
-        dbg!(&profile_tier_level);
 
         // back to ISO/IEC-23008-2-2020 - 7.3.2.2.1
         let sps_seq_parameter_set_id = bit_reader.read_exp_golomb()?;

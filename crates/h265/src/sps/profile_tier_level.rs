@@ -43,7 +43,6 @@ impl ProfileTierLevel {
             sub_layer_profile_present_flags.push(bit_reader.read_bit()?); // sub_layer_profile_present_flag
             sub_layer_level_present_flags.push(bit_reader.read_bit()?); // sub_layer_level_present_flag
         }
-        dbg!(&sub_layer_profile_present_flags, &sub_layer_level_present_flags);
 
         // reserved_zero_2bits
         if max_num_sub_layers_minus_1 > 0 && max_num_sub_layers_minus_1 < 8 {

@@ -43,6 +43,7 @@ mod tests {
     use scuffle_av1::seq::SequenceHeaderObu;
     use scuffle_bytes_util::StringCow;
     use scuffle_h264::Sps;
+    use scuffle_h265::{ConstantFrameRate, NumTemporalLayers};
 
     use crate::audio::AudioData;
     use crate::audio::body::AudioTagBody;
@@ -568,14 +569,66 @@ mod tests {
             ); // AAC
             assert_eq!(
                 on_meta_data.videocodecid,
-                Some(OnMetaDataVideoCodecId::Legacy(VideoCodecId::Avc))
-            ); // AVC
-            assert_eq!(on_meta_data.duration, Some(0.0)); // 0 seconds (this was a live stream)
-            assert_eq!(on_meta_data.width, Some(2560.0));
-            assert_eq!(on_meta_data.height, Some(1440.0));
-            assert_eq!(on_meta_data.framerate, Some(144.0));
+                Some(OnMetaDataVideoCodecId::Enhanced(VideoFourCc::Hevc))
+            ); // HEVC
+            assert_eq!(on_meta_data.duration, Some(2.038));
+            assert_eq!(on_meta_data.width, Some(3840.0));
+            assert_eq!(on_meta_data.height, Some(2160.0));
+            assert_eq!(on_meta_data.framerate, Some(60.0));
             assert!(on_meta_data.videodatarate.is_some());
             assert!(on_meta_data.audiodatarate.is_some());
+        }
+
+        // Video Sequence Header Tag
+        {
+            let tag = tags.next().expect("expected tag");
+            assert_eq!(tag.timestamp_ms, 0);
+            assert_eq!(tag.stream_id, 0);
+
+            // This is a video tag
+            let (frame_type, config) = match tag.data {
+                FlvTagData::Video(VideoData {
+                    header: VideoTagHeader { frame_type, .. },
+                    body:
+                        VideoTagBody::Enhanced(ExVideoTagBody::NoMultitrack {
+                            video_four_cc: VideoFourCc::Hevc,
+                            packet: VideoPacket::SequenceStart(VideoPacketSequenceStart::Hevc(config)),
+                        }),
+                }) => (frame_type, config),
+                _ => panic!("expected video data"),
+            };
+
+            assert_eq!(frame_type, VideoFrameType::KeyFrame);
+
+            assert_eq!(config.avg_frame_rate, 0);
+            assert_eq!(config.constant_frame_rate, ConstantFrameRate::Unknown);
+            assert_eq!(config.num_temporal_layers, NumTemporalLayers::NotScalable);
+
+            // We should be able to find a SPS NAL unit in the sequence header
+            let Some(sps) = config
+                .arrays
+                .iter()
+                .find(|a| a.nal_unit_type == scuffle_h265::NALUnitType::SpsNut)
+                .and_then(|v| v.nalus.first())
+            else {
+                panic!("expected sps");
+            };
+
+            // We should be able to find a PPS NAL unit in the sequence header
+            let Some(_) = config
+                .arrays
+                .iter()
+                .find(|a| a.nal_unit_type == scuffle_h265::NALUnitType::PpsNut)
+                .and_then(|v| v.nalus.first())
+            else {
+                panic!("expected pps");
+            };
+
+            // We should be able to decode the SPS NAL unit
+            let sps =
+                scuffle_h265::Sps::parse_with_emulation_prevention(io::Cursor::new(sps.clone())).expect("expected sps");
+
+            insta::assert_debug_snapshot!(sps);
         }
 
         // Audio Sequence Header Tag
@@ -621,72 +674,8 @@ mod tests {
             assert_eq!(aac_decoder_configuration_record.channel_configuration, 2);
         }
 
-        // Video Sequence Header Tag
-        {
-            let tag = tags.next().expect("expected tag");
-            assert_eq!(tag.timestamp_ms, 0);
-            assert_eq!(tag.stream_id, 0);
-
-            // This is a video tag
-            let (frame_type, config) = match tag.data {
-                FlvTagData::Video(VideoData {
-                    header: VideoTagHeader { frame_type, .. },
-                    body:
-                        VideoTagBody::Enhanced(ExVideoTagBody::NoMultitrack {
-                            video_four_cc: VideoFourCc::Hevc,
-                            packet: VideoPacket::SequenceStart(VideoPacketSequenceStart::Hevc(config)),
-                        }),
-                }) => (frame_type, config),
-                _ => panic!("expected video data"),
-            };
-
-            assert_eq!(frame_type, VideoFrameType::KeyFrame);
-
-            assert_eq!(config.configuration_version, 1);
-            assert_eq!(config.avg_frame_rate, 0);
-            assert_eq!(config.constant_frame_rate, 0);
-            assert_eq!(config.num_temporal_layers, 1);
-
-            // We should be able to find a SPS NAL unit in the sequence header
-            let Some(sps) = config
-                .arrays
-                .iter()
-                .find(|a| a.nal_unit_type == scuffle_h265::NaluType::Sps)
-                .and_then(|v| v.nalus.first())
-            else {
-                panic!("expected sps");
-            };
-
-            // We should be able to find a PPS NAL unit in the sequence header
-            let Some(_) = config
-                .arrays
-                .iter()
-                .find(|a| a.nal_unit_type == scuffle_h265::NaluType::Pps)
-                .and_then(|v| v.nalus.first())
-            else {
-                panic!("expected pps");
-            };
-
-            // We should be able to decode the SPS NAL unit
-            let sps = scuffle_h265::Sps::parse(sps.clone()).expect("expected sps");
-
-            assert_eq!(sps.frame_rate, 144.0);
-            assert_eq!(sps.width, 2560);
-            assert_eq!(sps.height, 1440);
-            assert_eq!(
-                sps.color_config,
-                Some(scuffle_h265::ColorConfig {
-                    full_range: false,
-                    color_primaries: 1,
-                    transfer_characteristics: 1,
-                    matrix_coefficients: 1,
-                })
-            )
-        }
-
         // Rest of the tags should be video / audio data
         let mut last_timestamp = 0;
-        let mut read_seq_end = false;
         for tag in tags {
             assert!(tag.timestamp_ms >= last_timestamp || tag.timestamp_ms == 0); // Timestamps should be monotonically increasing or 0
             assert_eq!(tag.stream_id, 0);
@@ -719,29 +708,16 @@ mod tests {
                     body:
                         VideoTagBody::Enhanced(ExVideoTagBody::NoMultitrack {
                             video_four_cc: VideoFourCc::Hevc,
-                            packet,
+                            ..
                         }),
-                }) => {
-                    match frame_type {
-                        VideoFrameType::KeyFrame => (),
-                        VideoFrameType::InterFrame => (),
-                        _ => panic!("expected keyframe or interframe"),
-                    }
-
-                    match packet {
-                        VideoPacket::CodedFrames(_) => assert!(!read_seq_end),
-                        VideoPacket::CodedFramesX { .. } => assert!(!read_seq_end),
-                        VideoPacket::SequenceEnd => {
-                            assert!(!read_seq_end);
-                            read_seq_end = true;
-                        }
-                        _ => panic!("expected hevc nalu packet: {:?}", packet),
-                    };
-                }
+                }) => match frame_type {
+                    VideoFrameType::KeyFrame => (),
+                    VideoFrameType::InterFrame => (),
+                    VideoFrameType::Command => (),
+                    _ => panic!("expected keyframe, interframe or command"),
+                },
                 _ => panic!("unexpected data"),
             };
         }
-
-        assert!(read_seq_end);
     }
 }

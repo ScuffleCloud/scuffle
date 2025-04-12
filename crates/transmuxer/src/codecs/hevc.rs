@@ -1,3 +1,5 @@
+use std::io;
+
 use bytes::Bytes;
 use scuffle_flv::video::header::VideoFrameType;
 use scuffle_h265::{HEVCDecoderConfigurationRecord, Sps};
@@ -14,26 +16,30 @@ pub(crate) fn stsd_entry(config: HEVCDecoderConfigurationRecord) -> Result<(DynB
     let Some(sps) = config
         .arrays
         .iter()
-        .find(|a| a.nal_unit_type == scuffle_h265::NaluType::Sps)
+        .find(|a| a.nal_unit_type == scuffle_h265::NALUnitType::SpsNut)
         .and_then(|v| v.nalus.first())
     else {
         return Err(TransmuxError::InvalidHEVCDecoderConfigurationRecord);
     };
 
-    let sps = scuffle_h265::Sps::parse(sps.clone())?;
+    let sps = scuffle_h265::Sps::parse_with_emulation_prevention(io::Cursor::new(sps.clone()))?;
 
-    let colr = sps.color_config.as_ref().map(|color_config| {
-        Colr::new(ColorType::Nclx {
-            color_primaries: color_config.color_primaries as u16,
-            matrix_coefficients: color_config.matrix_coefficients as u16,
-            transfer_characteristics: color_config.transfer_characteristics as u16,
-            full_range_flag: color_config.full_range,
-        })
-    });
+    let colr = sps
+        .vui_parameters
+        .as_ref()
+        .and_then(|v| v.video_signal_type.as_ref())
+        .map(|color_config| {
+            Colr::new(ColorType::Nclx {
+                color_primaries: color_config.color_primaries as u16,
+                matrix_coefficients: color_config.matrix_coeffs as u16,
+                transfer_characteristics: color_config.transfer_characteristics as u16,
+                full_range_flag: color_config.video_full_range_flag,
+            })
+        });
 
     Ok((
         Hev1::new(
-            SampleEntry::new(VisualSampleEntry::new(sps.width as u16, sps.height as u16, colr)),
+            SampleEntry::new(VisualSampleEntry::new(sps.width() as u16, sps.height() as u16, colr)),
             HvcC::new(config),
             None,
         )

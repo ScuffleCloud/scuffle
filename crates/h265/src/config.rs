@@ -6,13 +6,12 @@ use byteorder::{BigEndian, LittleEndian, ReadBytesExt, WriteBytesExt};
 use bytes::Bytes;
 use scuffle_bytes_util::{BitReader, BitWriter};
 
-#[derive(Debug, Clone, PartialEq)]
+use crate::{ConstantFrameRate, NALUnitType, NumTemporalLayers, ParallelismType};
+
 /// HEVC Decoder Configuration Record
 /// ISO/IEC 14496-15:2022(E) - 8.3.2.1
+#[derive(Debug, Clone, PartialEq)]
 pub struct HEVCDecoderConfigurationRecord {
-    /// The `configuration_version` as a u8. Matches the field as defined in ISO/IEC 23008-2.
-    pub configuration_version: u8,
-
     /// The `general_profile_space` as a u8. Matches the field as defined in ISO/IEC 23008-2.
     pub general_profile_space: u8,
 
@@ -34,6 +33,11 @@ pub struct HEVCDecoderConfigurationRecord {
     /// The `min_spatial_segmentation_idc` as a u16. Matches the field as defined in ISO/IEC 23008-2.
     pub min_spatial_segmentation_idc: u16,
 
+    /// The `parallelism_type`.
+    ///
+    /// See [`ParallelismType`] for more info.
+    pub parallelism_type: ParallelismType,
+
     /// The `chroma_format_idc` as a u8. Matches the field as defined in ISO/IEC 23008-2.
     pub chroma_format_idc: u8,
 
@@ -43,32 +47,15 @@ pub struct HEVCDecoderConfigurationRecord {
     /// The `bit_depth_chroma_minus8` as a u8. Matches the field as defined in ISO/IEC 23008-2.
     pub bit_depth_chroma_minus8: u8,
 
-    // TODO: nutype enum
-    /// The `parallelism_type` as a u8.
-    ///
-    /// 0 means the stream supports mixed types of parallel decoding or otherwise.
-    ///
-    /// 1 means the stream supports slice based parallel decoding.
-    ///
-    /// 2 means the stream supports tile based parallel decoding.
-    ///
-    /// 3 means the stream supports entropy coding sync based parallel decoding.
-    pub parallelism_type: u8,
-
     // definitely shouldn't be a u16. prolly f64
     /// The `avg_frame_rate` as a u16.
     pub avg_frame_rate: u16,
 
-    /// The `constant_frame_rate` as a u8.
+    /// The `constant_frame_rate`.
     ///
-    /// 0 means the stream might have a constant frame rate.
-    ///
-    /// 1 means the stream has a constant framerate.
-    ///
-    /// 2 means the representation of each temporal layer in the stream has a constant framerate.
-    pub constant_frame_rate: u8,
+    /// See [`ConstantFrameRate`] for more info.
+    pub constant_frame_rate: ConstantFrameRate,
 
-    // make this a nutype enum
     /// The `num_temporal_layers` as a u8. This is the count of tepmoral layers or `sub-layer`s as defined in ISO/IEC 23008-2.
     ///
     /// 0 means the stream might be temporally scalable.
@@ -76,13 +63,13 @@ pub struct HEVCDecoderConfigurationRecord {
     /// 1 means the stream is NOT temporally scalable.
     ///
     /// 2 or more means the stream is temporally scalable, and the count of temporal layers is equal to this value.
-    pub num_temporal_layers: u8,
+    pub num_temporal_layers: NumTemporalLayers,
 
     /// The `temporal_id_nested` as a bool.
     ///
-    /// 0 means means the opposite might not be true (refer to what 1 means for this flag).
+    /// `false` means means the opposite might not be true (refer to what 1 means for this flag).
     ///
-    /// 1 means all the activated SPS have `sps_temporal_id_nesting_flag` (as defined in ISC/IEC 23008-2) set to 1 and that temporal sub-layer up-switching to a higehr temporal layer can be done at any sample.
+    /// `true` means all the activated SPS have `sps_temporal_id_nesting_flag` (as defined in ISC/IEC 23008-2) set to 1 and that temporal sub-layer up-switching to a higehr temporal layer can be done at any sample.
     pub temporal_id_nested: bool,
 
     /// The `length_size_minus_one` is the u8 length of the NALUnitLength minus one.
@@ -93,64 +80,31 @@ pub struct HEVCDecoderConfigurationRecord {
     pub arrays: Vec<NaluArray>,
 }
 
-// turn into nutype enum
-#[derive(Debug, Clone, PartialEq)]
 /// Nalu Array Structure
 /// ISO/IEC 14496-15:2022(E) - 8.3.2.1
+#[derive(Debug, Clone, PartialEq)]
 pub struct NaluArray {
     /// The `array_completeness` is a flag set to 1 when all NAL units are in the array and none are in the stream. It is set to 0 if otherwise.
     pub array_completeness: bool,
     /// The `nal_unit_type` is the type of the NAL units in the `nalus` vec, as defined in ISO/IEC 23008-2.
     /// Refer to the `NaluType` enum for more info.
-    pub nal_unit_type: NaluType,
+    pub nal_unit_type: NALUnitType,
     /// `nalus` is a vec of NAL units. Each of these will contain either a VPS, PPS, SPS, or an unknown u8 as specified in ISO/IEC 23008-2.
     /// Refer to the `NaluType` enum for more info.
     pub nalus: Vec<Bytes>,
 }
 
-#[derive(Debug, Clone, PartialEq, Copy)]
-/// The Nalu Type.
-/// ISO/IEC 23008-2:2020(E) - 7.4.2.2 (Table 7-1)
-pub enum NaluType {
-    /// The Video Parameter Set.
-    Vps,
-    /// The Picture Parameter Set.
-    Pps,
-    /// The Sequence Parameter Set.
-    Sps,
-    /// An unknown u8. This is the default value if the NaluType is set to something other than VPS, PPS, or SPS.
-    Unknown(u8),
-}
-
-impl From<u8> for NaluType {
-    fn from(value: u8) -> Self {
-        match value {
-            32 => NaluType::Vps,
-            33 => NaluType::Sps,
-            34 => NaluType::Pps,
-            _ => NaluType::Unknown(value),
-        }
-    }
-}
-
-impl From<NaluType> for u8 {
-    fn from(value: NaluType) -> Self {
-        match value {
-            NaluType::Vps => 32,
-            NaluType::Sps => 33,
-            NaluType::Pps => 34,
-            NaluType::Unknown(value) => value,
-        }
-    }
-}
-
 impl HEVCDecoderConfigurationRecord {
     /// Demuxes an HEVCDecoderConfigurationRecord from a byte stream.
     /// Returns a demuxed HEVCDecoderConfigurationRecord.
-    pub fn demux(data: &mut io::Cursor<Bytes>) -> io::Result<Self> {
+    pub fn demux(data: impl io::Read) -> io::Result<Self> {
         let mut bit_reader = BitReader::new(data);
 
         let configuration_version = bit_reader.read_u8()?;
+        if configuration_version != 1 {
+            return Err(io::Error::new(io::ErrorKind::InvalidData, "invalid configuration version"));
+        }
+
         let general_profile_space = bit_reader.read_bits(2)? as u8;
         let general_tier_flag = bit_reader.read_bit()?;
         let general_profile_idc = bit_reader.read_bits(5)? as u8;
@@ -158,19 +112,19 @@ impl HEVCDecoderConfigurationRecord {
         let general_constraint_indicator_flags = bit_reader.read_u48::<LittleEndian>()?;
         let general_level_idc = bit_reader.read_u8()?;
 
-        bit_reader.seek_bits(4)?; // reserved_4bits
+        bit_reader.read_bits(4)?; // reserved_4bits
         let min_spatial_segmentation_idc = bit_reader.read_bits(12)? as u16;
 
-        bit_reader.seek_bits(6)?; // reserved_6bits
+        bit_reader.read_bits(6)?; // reserved_6bits
         let parallelism_type = bit_reader.read_bits(2)? as u8;
 
-        bit_reader.seek_bits(6)?; // reserved_6bits
+        bit_reader.read_bits(6)?; // reserved_6bits
         let chroma_format_idc = bit_reader.read_bits(2)? as u8;
 
-        bit_reader.seek_bits(5)?; // reserved_5bits
+        bit_reader.read_bits(5)?; // reserved_5bits
         let bit_depth_luma_minus8 = bit_reader.read_bits(3)? as u8;
 
-        bit_reader.seek_bits(5)?; // reserved_5bits
+        bit_reader.read_bits(5)?; // reserved_5bits
         let bit_depth_chroma_minus8 = bit_reader.read_bits(3)? as u8;
 
         let avg_frame_rate = bit_reader.read_u16::<BigEndian>()?;
@@ -185,14 +139,12 @@ impl HEVCDecoderConfigurationRecord {
 
         for _ in 0..num_of_arrays {
             let array_completeness = bit_reader.read_bit()?;
-            bit_reader.seek_bits(1)?; // reserved
+            bit_reader.read_bits(1)?; // reserved
 
             let nal_unit_type = bit_reader.read_bits(6)? as u8;
 
             let num_nalus = bit_reader.read_u16::<BigEndian>()?;
-
             let mut nalus = Vec::with_capacity(num_nalus as usize);
-
             for _ in 0..num_nalus {
                 let nal_unit_length = bit_reader.read_u16::<BigEndian>()?;
                 let mut data = vec![0; nal_unit_length as usize];
@@ -208,7 +160,6 @@ impl HEVCDecoderConfigurationRecord {
         }
 
         Ok(HEVCDecoderConfigurationRecord {
-            configuration_version,
             general_profile_space,
             general_tier_flag,
             general_profile_idc,
@@ -216,13 +167,13 @@ impl HEVCDecoderConfigurationRecord {
             general_constraint_indicator_flags,
             general_level_idc,
             min_spatial_segmentation_idc,
-            parallelism_type,
+            parallelism_type: ParallelismType(parallelism_type),
             chroma_format_idc,
             bit_depth_luma_minus8,
             bit_depth_chroma_minus8,
             avg_frame_rate,
-            constant_frame_rate,
-            num_temporal_layers,
+            constant_frame_rate: ConstantFrameRate(constant_frame_rate),
+            num_temporal_layers: NumTemporalLayers(num_temporal_layers),
             temporal_id_nested,
             length_size_minus_one,
             arrays,
@@ -259,7 +210,7 @@ impl HEVCDecoderConfigurationRecord {
     pub fn mux<T: io::Write>(&self, writer: &mut T) -> io::Result<()> {
         let mut bit_writer = BitWriter::new(writer);
 
-        bit_writer.write_u8(self.configuration_version)?;
+        bit_writer.write_u8(1)?;
         bit_writer.write_bits(self.general_profile_space as u64, 2)?;
         bit_writer.write_bit(self.general_tier_flag)?;
         bit_writer.write_bits(self.general_profile_idc as u64, 5)?;
@@ -271,7 +222,7 @@ impl HEVCDecoderConfigurationRecord {
         bit_writer.write_bits(self.min_spatial_segmentation_idc as u64, 12)?;
 
         bit_writer.write_bits(0b111111, 6)?; // reserved_6bits
-        bit_writer.write_bits(self.parallelism_type as u64, 2)?;
+        bit_writer.write_bits(self.parallelism_type.0 as u64, 2)?;
 
         bit_writer.write_bits(0b111111, 6)?; // reserved_6bits
         bit_writer.write_bits(self.chroma_format_idc as u64, 2)?;
@@ -283,9 +234,9 @@ impl HEVCDecoderConfigurationRecord {
         bit_writer.write_bits(self.bit_depth_chroma_minus8 as u64, 3)?;
 
         bit_writer.write_u16::<BigEndian>(self.avg_frame_rate)?;
-        bit_writer.write_bits(self.constant_frame_rate as u64, 2)?;
+        bit_writer.write_bits(self.constant_frame_rate.0 as u64, 2)?;
 
-        bit_writer.write_bits(self.num_temporal_layers as u64, 3)?;
+        bit_writer.write_bits(self.num_temporal_layers.0 as u64, 3)?;
         bit_writer.write_bit(self.temporal_id_nested)?;
         bit_writer.write_bits(self.length_size_minus_one as u64, 2)?;
 
@@ -316,7 +267,7 @@ mod tests {
 
     use bytes::Bytes;
 
-    use crate::{ColorConfig, HEVCDecoderConfigurationRecord, NaluType, Sps};
+    use crate::{ConstantFrameRate, HEVCDecoderConfigurationRecord, NALUnitType, NumTemporalLayers, ParallelismType, Sps};
 
     #[test]
     fn test_config_demux() {
@@ -325,7 +276,6 @@ mod tests {
 
         let config = HEVCDecoderConfigurationRecord::demux(&mut io::Cursor::new(data)).unwrap();
 
-        assert_eq!(config.configuration_version, 1);
         assert_eq!(config.general_profile_space, 0);
         assert!(!config.general_tier_flag);
         assert_eq!(config.general_profile_idc, 1);
@@ -333,45 +283,32 @@ mod tests {
         assert_eq!(config.general_constraint_indicator_flags, 144);
         assert_eq!(config.general_level_idc, 153);
         assert_eq!(config.min_spatial_segmentation_idc, 0);
-        assert_eq!(config.parallelism_type, 0);
+        assert_eq!(config.parallelism_type, ParallelismType::MixedOrUnknown);
         assert_eq!(config.chroma_format_idc, 1);
         assert_eq!(config.bit_depth_luma_minus8, 0);
         assert_eq!(config.bit_depth_chroma_minus8, 0);
         assert_eq!(config.avg_frame_rate, 0);
-        assert_eq!(config.constant_frame_rate, 0);
-        assert_eq!(config.num_temporal_layers, 1);
+        assert_eq!(config.constant_frame_rate, ConstantFrameRate::Unknown);
+        assert_eq!(config.num_temporal_layers, NumTemporalLayers::NotScalable);
         assert!(config.temporal_id_nested);
         assert_eq!(config.length_size_minus_one, 3);
         assert_eq!(config.arrays.len(), 3);
 
         let vps = &config.arrays[0];
         assert!(!vps.array_completeness);
-        assert_eq!(vps.nal_unit_type, NaluType::Vps);
+        assert_eq!(vps.nal_unit_type, NALUnitType::VpsNut);
         assert_eq!(vps.nalus.len(), 1);
 
         let sps = &config.arrays[1];
         assert!(!sps.array_completeness);
-        assert_eq!(sps.nal_unit_type, NaluType::Sps);
+        assert_eq!(sps.nal_unit_type, NALUnitType::SpsNut);
         assert_eq!(sps.nalus.len(), 1);
-        let sps = Sps::parse(sps.nalus[0].clone()).unwrap();
-        assert_eq!(
-            sps,
-            Sps {
-                color_config: Some(ColorConfig {
-                    full_range: false,
-                    color_primaries: 1,
-                    matrix_coefficients: 1,
-                    transfer_characteristics: 1,
-                }),
-                frame_rate: 144.0,
-                width: 2560,
-                height: 1440,
-            }
-        );
+        let sps = Sps::parse_with_emulation_prevention(io::Cursor::new(sps.nalus[0].clone())).unwrap();
+        insta::assert_debug_snapshot!(sps);
 
         let pps = &config.arrays[2];
         assert!(!pps.array_completeness);
-        assert_eq!(pps.nal_unit_type, NaluType::Pps);
+        assert_eq!(pps.nal_unit_type, NALUnitType::PpsNut);
         assert_eq!(pps.nalus.len(), 1);
     }
 

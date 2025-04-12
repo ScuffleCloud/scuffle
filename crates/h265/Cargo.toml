@@ -18,6 +18,8 @@ bytes = "1.5"
 byteorder = "1.5"
 scuffle-expgolomb.workspace = true
 scuffle-bytes-util.workspace = true
+nutype-enum.workspace = true
+scuffle-h264.workspace = true
 scuffle-workspace-hack.workspace = true
 
 [dev-dependencies]

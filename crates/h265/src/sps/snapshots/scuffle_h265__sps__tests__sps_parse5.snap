@@ -1,0 +1,63 @@
+---
+source: crates/h265/src/sps/mod.rs
+expression: sps
+snapshot_kind: text
+---
+Sps {
+    nuh_layer_id: 0,
+    nuh_temporal_id_plus1: 1,
+    sps_video_parameter_set_id: 0,
+    sps_max_sub_layers_minus1: 0,
+    sps_temporal_id_nesting_flag: true,
+    profile_tier_level: ProfileTierLevel {
+        sub_layer_profile_present_flags: [],
+        sub_layer_level_present_flags: [],
+        sub_layer_level_idcs: [],
+    },
+    sps_seq_parameter_set_id: 0,
+    chroma_format_idc: 1,
+    separate_color_plane_flag: None,
+    pic_width_in_luma_samples: 1920,
+    pic_height_in_luma_samples: 1080,
+    conformance_window: Some(
+        ConformanceWindow {
+            conf_win_left_offset: 0,
+            conf_win_right_offset: 0,
+            conf_win_top_offset: 0,
+            conf_win_bottom_offset: 0,
+        },
+    ),
+    bit_depth_luma_minus8: 0,
+    bit_depth_chroma_minus8: 0,
+    log2_max_pic_order_cnt_lsb_minus4: 4,
+    sub_layer_ordering_info: SubLayerOrderingInfo {
+        sps_max_dec_pic_buffering_minus1: [
+            0,
+        ],
+        sps_max_num_reorder_pics: [
+            0,
+        ],
+        sps_max_latency_increase_plus1: [
+            0,
+        ],
+    },
+    log2_min_luma_coding_block_size_minus3: 0,
+    log2_diff_max_min_luma_coding_block_size: 3,
+    log2_min_luma_transform_block_size_minus2: 0,
+    log2_diff_max_min_luma_transform_block_size: 3,
+    max_transform_hierarchy_depth_inter: 2,
+    max_transform_hierarchy_depth_intra: 2,
+    scaling_list_data: None,
+    amp_enabled_flag: true,
+    sample_adaptive_offset_enabled_flag: true,
+    pcm: None,
+    num_short_term_ref_pic_sets: 1,
+    long_term_ref_pics_present_flag: false,
+    sps_temporal_mvp_enabled_flag: true,
+    strong_intra_smoothing_enabled_flag: true,
+    vui_parameters: None,
+    range_extension: None,
+    multilayer_extension: None,
+    sps_3d_extension: None,
+    scc_extension: None,
+}

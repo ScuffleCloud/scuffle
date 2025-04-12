@@ -12,9 +12,9 @@
 - well_known<struct> X
 - well_known<value> X
 - well_known<empty> X
+- verify_deserialize X
 
-- verify_deserialize
-- tracker also tracks SOURCE of field / error?
+- errors
 - oneof
 
 - unknown_fields ?

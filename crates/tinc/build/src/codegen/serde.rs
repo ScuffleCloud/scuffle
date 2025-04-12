@@ -246,11 +246,10 @@ pub(super) fn handle_message(
         if !field.omitable {
             verify_deserialize_fn.push(quote! {
                 if tracker.value.#field_name.is_none() {
-                    return Err(
-                        ::tinc::reexports::serde::de::Error::missing_field(
-                            #field_enum_ident::#ident.name(),
-                        ),
-                    );
+                    let _token = ::tinc::__private::de::PathToken::push_field(stringify!(#field_name));
+                    ::tinc::__private::de::report_error(
+                        ::tinc::__private::de::TrackedError::missing_field(),
+                    )?;
                 }
             });
         }
@@ -260,6 +259,7 @@ pub(super) fn handle_message(
                 Some(FieldModifier::Optional) => quote! {
                     if let Some(tracker) = tracker.value.#field_name.as_mut().and_then(|tracker| tracker.0.as_mut()) {
                         if let Some(value) = self.#field_name.as_ref() {
+                            let _token = ::tinc::__private::de::PathToken::push_field(stringify!(#field_name));
                             ::tinc::__private::de::TrackedStructDeserializer::<'de>::verify_deserialize(
                                 value,
                                 tracker,
@@ -269,7 +269,9 @@ pub(super) fn handle_message(
                 },
                 Some(FieldModifier::List) => quote! {
                     if let Some(trackers) = tracker.value.#field_name.as_mut().map(|tracker| tracker.vec.iter_mut()) {
-                        for (value, tracker) in self.#field_name.iter().zip(trackers) {
+                        let _token = ::tinc::__private::de::PathToken::push_field(stringify!(#field_name));
+                        for (idx, (value, tracker)) in self.#field_name.iter().zip(trackers).enumerate() {
+                            let _token = ::tinc::__private::de::PathToken::push_index(idx);
                             ::tinc::__private::de::TrackedStructDeserializer::<'de>::verify_deserialize(
                                 value,
                                 tracker,
@@ -279,8 +281,10 @@ pub(super) fn handle_message(
                 },
                 Some(FieldModifier::Map) => quote! {
                     if let Some(trackers) = tracker.value.#field_name.as_mut().map(|tracker| tracker.map.iter_mut()) {
+                        let _token = ::tinc::__private::de::PathToken::push_field(stringify!(#field_name));
                         for (key, tracker) in trackers {
                             if let Some(value) = self.#field_name.get(key) {
+                                let _token = ::tinc::__private::de::PathToken::push_key(key);
                                 ::tinc::__private::de::TrackedStructDeserializer::<'de>::verify_deserialize(
                                     value,
                                     tracker,
@@ -291,6 +295,7 @@ pub(super) fn handle_message(
                 },
                 None => quote! {
                     if let Some(tracker) = tracker.value.#field_name.as_mut() {
+                        let mut _token = ::tinc::__private::de::PathToken::push_field(stringify!(#field_name));
                         ::tinc::__private::de::TrackedStructDeserializer::<'de>::verify_deserialize(
                             &mut self.#field_name,
                             tracker,
@@ -314,6 +319,12 @@ pub(super) fn handle_message(
             #[allow(non_camel_case_types)]
             pub enum #field_enum_ident {
                 #(#field_enum_variants),*
+            }
+
+            impl ::tinc::__private::de::StructField for #field_enum_ident {
+                fn name(&self) -> &'static str {
+                    #field_enum_ident::name(self)
+                }
             }
 
             impl #field_enum_ident {
@@ -374,6 +385,12 @@ pub(super) fn handle_message(
                     ::core::result::Result::Ok(())
                 }
             }
+
+            impl ::tinc::__private::de::Expected for #message_path {
+                fn expecting(formatter: &mut std::fmt::Formatter) -> std::fmt::Result {
+                    write!(formatter, stringify!(#message_ident))
+                }
+            }
         };
     };
 
@@ -421,7 +438,7 @@ pub(super) fn handle_enum(
     enum_key: &str,
     enum_: &EnumOpts,
     prost: &mut tonic_build::Config,
-    _: &mut BTreeMap<String, Vec<syn::Item>>,
+    modules: &mut BTreeMap<String, Vec<syn::Item>>,
 ) -> anyhow::Result<()> {
     if enum_.opts.custom_impl.unwrap_or(false) {
         return Ok(());
@@ -444,6 +461,21 @@ pub(super) fn handle_enum(
 
         field_visibility(&variant_key, prost, variant_opts.visibility);
     }
+
+    let enum_path = get_common_import_path(enum_.package.as_str(), enum_key);
+    let enum_ident = enum_path.segments.last().unwrap().ident.clone();
+
+    let enum_impl = parse_quote! {
+        impl ::tinc::__private::de::Expected for #enum_path {
+            fn expecting(formatter: &mut std::fmt::Formatter) -> std::fmt::Result {
+                write!(formatter, "an enum of `")?;
+                write!(formatter, stringify!(#enum_ident))?;
+                write!(formatter, "`")
+            }
+        }
+    };
+
+    modules.entry(enum_.package.clone()).or_default().push(enum_impl);
 
     Ok(())
 }

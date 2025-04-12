@@ -2,6 +2,7 @@ pub mod reexports {
     pub use {axum, chrono, headers_accept, http, mediatype, schemars, serde, serde_repr, tonic};
 }
 
+#[doc(hidden)]
 #[path = "private/mod.rs"]
 pub mod __private;
 

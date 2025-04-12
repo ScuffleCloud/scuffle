@@ -1,4 +1,5 @@
 use std::borrow::Cow;
+use std::cell::RefCell;
 use std::collections::{BTreeMap, HashMap};
 use std::marker::PhantomData;
 use std::str::FromStr;
@@ -6,6 +7,252 @@ use std::str::FromStr;
 pub use wrapper::DeserializerWrapper;
 
 pub mod wrapper;
+
+pub struct TrackerStateGuard {
+    state: Option<TrackerSharedState>,
+    _marker: PhantomData<*const ()>,
+}
+
+impl TrackerStateGuard {
+    pub fn new(mut state: TrackerSharedState) -> Self {
+        STATE.with_borrow_mut(|current| {
+            std::mem::swap(current, &mut state);
+            TrackerStateGuard {
+                state: Some(state),
+                _marker: PhantomData,
+            }
+        })
+    }
+
+    pub fn finish(mut self) -> TrackerSharedState {
+        let mut old = self.state.take().unwrap();
+        STATE.with_borrow_mut(|current| {
+            std::mem::swap(current, &mut old);
+        });
+        old
+    }
+}
+
+impl Drop for TrackerStateGuard {
+    fn drop(&mut self) {
+        if let Some(old) = self.state.take() {
+            STATE.with_borrow_mut(|state| {
+                *state = old;
+            });
+        }
+    }
+}
+
+#[derive(Debug)]
+pub enum TrackedErrorKind {
+    DuplicateField,
+    UnknownField,
+    MissingField,
+    InvalidField { message: Box<str> },
+}
+
+#[derive(Debug)]
+pub struct TrackedError {
+    pub kind: TrackedErrorKind,
+    pub fatal: bool,
+    pub path: Box<str>,
+}
+
+impl std::fmt::Display for TrackedError {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        match &self.kind {
+            TrackedErrorKind::DuplicateField => write!(f, "`{}` was already provided", self.path),
+            TrackedErrorKind::UnknownField => write!(f, "unknown field `{}`", self.path),
+            TrackedErrorKind::MissingField => write!(f, "missing field `{}`", self.path),
+            TrackedErrorKind::InvalidField { message } => write!(f, "`{}`: {}", self.path, message),
+        }
+    }
+}
+
+impl TrackedError {
+    fn new(kind: TrackedErrorKind, fatal: bool) -> Self {
+        Self {
+            kind,
+            fatal,
+            path: current_path().into_boxed_str(),
+        }
+    }
+
+    pub fn unknown_field(fatal: bool) -> Self {
+        Self::new(TrackedErrorKind::UnknownField, fatal)
+    }
+
+    pub fn invalid_field(message: impl Into<Box<str>>) -> Self {
+        Self::new(TrackedErrorKind::InvalidField { message: message.into() }, true)
+    }
+
+    pub fn duplicate_field() -> Self {
+        Self::new(TrackedErrorKind::DuplicateField, true)
+    }
+
+    pub fn missing_field() -> Self {
+        Self::new(TrackedErrorKind::MissingField, true)
+    }
+}
+
+#[derive(Debug)]
+pub struct TrackerSharedState {
+    pub fail_fast: bool,
+    pub irrecoverable: bool,
+    pub errors: Vec<TrackedError>,
+    pub path_allowed: fn(&[PathItem]) -> bool,
+}
+
+impl TrackerSharedState {
+    pub fn into_guard(self) -> TrackerStateGuard {
+        TrackerStateGuard::new(self)
+    }
+}
+
+impl Default for TrackerSharedState {
+    fn default() -> Self {
+        Self {
+            fail_fast: true,
+            irrecoverable: false,
+            errors: Vec::new(),
+            path_allowed: |_| true,
+        }
+    }
+}
+
+pub struct MapKey(&'static dyn std::fmt::Display);
+
+impl std::fmt::Debug for MapKey {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "MapKey({})", self.0)
+    }
+}
+
+#[derive(Debug)]
+pub enum PathItem {
+    Field(&'static str),
+    Index(usize),
+    Key(MapKey),
+}
+
+pub struct PathToken<'a> {
+    _marker: PhantomData<&'a ()>,
+    _no_send: PhantomData<*const ()>,
+}
+
+fn current_path() -> String {
+    PATH_BUFFER.with(|buffer| {
+        let mut path = String::new();
+        for token in buffer.borrow().iter() {
+            match token {
+                PathItem::Field(field) => {
+                    if !path.is_empty() {
+                        path.push('.');
+                    }
+                    path.push_str(field);
+                }
+                PathItem::Key(key) => {
+                    if !path.is_empty() {
+                        path.push('.');
+                    }
+                    path.push_str(&key.0.to_string());
+                }
+                PathItem::Index(index) => {
+                    path.push('[');
+                    path.push_str(&index.to_string());
+                    path.push(']');
+                }
+            }
+        }
+
+        path
+    })
+}
+
+pub fn report_error<E>(error: TrackedError) -> Result<(), E>
+where
+    E: serde::de::Error,
+{
+    STATE.with_borrow_mut(|settings| {
+        if settings.irrecoverable {
+            return Err(E::custom(&error));
+        }
+
+        let result = if settings.fail_fast && error.fatal {
+            Err(E::custom(&error))
+        } else {
+            Ok(())
+        };
+
+        settings.errors.push(error);
+        result
+    })
+}
+
+fn is_path_allowed() -> bool {
+    PATH_BUFFER.with(|buffer| STATE.with_borrow(|settings| (settings.path_allowed)(&buffer.borrow())))
+}
+
+#[track_caller]
+fn set_irrecoverable() {
+    STATE.with_borrow_mut(|settings| settings.irrecoverable = true);
+}
+
+impl<'a> PathToken<'a> {
+    pub fn push_field(field: &'a str) -> Self {
+        PATH_BUFFER.with(|buffer| {
+            buffer.borrow_mut().push(PathItem::Field(
+                // SAFETY: `field` has a lifetime of `'a`, field-name hides the field so it cannot be accessed outside of this module.
+                // We return a `PathToken` that has a lifetime of `'a` which makes it impossible to access this field after its lifetime ends.
+                unsafe { std::mem::transmute::<&'a str, &'static str>(field) },
+            ))
+        });
+        Self {
+            _marker: PhantomData,
+            _no_send: PhantomData,
+        }
+    }
+
+    pub fn push_index(index: usize) -> Self {
+        PATH_BUFFER.with(|buffer| buffer.borrow_mut().push(PathItem::Index(index)));
+        Self {
+            _marker: PhantomData,
+            _no_send: PhantomData,
+        }
+    }
+
+    pub fn push_key(key: &'a dyn std::fmt::Display) -> Self {
+        PATH_BUFFER.with(|buffer| {
+            buffer.borrow_mut().push(PathItem::Key(
+                // SAFETY: `key` has a lifetime of `'a`, map-key hides the key so it cannot be accessed outside of this module.
+                // We return a `PathToken` that has a lifetime of `'a` which makes it impossible to access this key after its lifetime ends.
+                MapKey(unsafe { std::mem::transmute::<&'a dyn std::fmt::Display, &'static dyn std::fmt::Display>(key) }),
+            ))
+        });
+        Self {
+            _marker: PhantomData,
+            _no_send: PhantomData,
+        }
+    }
+}
+
+impl Drop for PathToken<'_> {
+    fn drop(&mut self) {
+        PATH_BUFFER.with(|buffer| buffer.borrow_mut().pop());
+    }
+}
+
+thread_local! {
+    static PATH_BUFFER: RefCell<Vec<PathItem>> = const { RefCell::new(Vec::new()) };
+    static STATE: RefCell<TrackerSharedState> = const {
+        RefCell::new(TrackerSharedState {
+            fail_fast: true,
+            irrecoverable: false,
+            errors: Vec::new(),
+            path_allowed: |_| true,
+        })
+    };
+}
 
 pub struct StructIdentifierDeserializer<F>(std::marker::PhantomData<F>);
 
@@ -60,7 +307,7 @@ impl<'a, F: FromStr> serde::de::Visitor<'a> for StructIdentifierDeserializer<F> 
     }
 
     fn expecting(&self, formatter: &mut std::fmt::Formatter) -> std::fmt::Result {
-        write!(formatter, "a valid field name")
+        write!(formatter, "a field name")
     }
 }
 
@@ -79,18 +326,16 @@ where
     }
 }
 
-#[derive(Debug)]
-pub struct TrackedError {
-    pub fatal: bool,
-    pub message: Box<str>,
+pub trait StructField: FromStr {
+    fn name(&self) -> &'static str;
 }
 
-pub trait TrackedStructDeserializer<'de>: Sized + TrackerFor {
+pub trait TrackedStructDeserializer<'de>: Sized + TrackerFor + Expected {
     const NAME: &'static str;
     const FIELDS: &'static [&'static str];
     const DENY_UNKNOWN_FIELDS: bool = false;
 
-    type Field: FromStr;
+    type Field: StructField;
 
     fn deserialize<D>(&mut self, field: Self::Field, tracker: &mut Self::Tracker, deserializer: D) -> Result<(), D::Error>
     where
@@ -112,9 +357,9 @@ where
 {
     type Field = T::Field;
 
+    const DENY_UNKNOWN_FIELDS: bool = T::DENY_UNKNOWN_FIELDS;
     const FIELDS: &'static [&'static str] = T::FIELDS;
     const NAME: &'static str = T::NAME;
-    const DENY_UNKNOWN_FIELDS: bool = T::DENY_UNKNOWN_FIELDS;
 
     #[inline(always)]
     fn deserialize<D>(&mut self, field: Self::Field, tracker: &mut Self::Tracker, deserializer: D) -> Result<(), D::Error>
@@ -136,7 +381,6 @@ where
 #[derive(Debug, Default)]
 pub struct MessageTracker<T> {
     pub value: T,
-    pub errors: Vec<TrackedError>,
 }
 
 #[derive(Debug, Default)]
@@ -158,7 +402,7 @@ where
 impl<S, T> Tracker for BoxedStructHelper<S, T>
 where
     Box<T>: Tracker<Target = Box<S>>,
-    S: Default,
+    S: Default + Expected,
     T: Default,
 {
     type Target = Box<S>;
@@ -191,28 +435,52 @@ where
     type Value = ();
 
     fn expecting(&self, formatter: &mut std::fmt::Formatter) -> std::fmt::Result {
-        formatter.write_str("a struct")
+        S::expecting(formatter)
     }
 
     fn visit_map<A>(self, mut map: A) -> Result<Self::Value, A::Error>
     where
         A: serde::de::MapAccess<'de>,
     {
-        while let Some(key) = map.next_key_seed(StructIdentifierDeserializer(PhantomData))? {
+        while let Some(key) = map
+            .next_key_seed(StructIdentifierDeserializer(PhantomData::<S::Field>))
+            .inspect_err(|_| {
+                set_irrecoverable();
+            })?
+        {
             let mut deserialized = false;
             match key {
                 StructIdentifier::Field(field) => {
-                    S::deserialize(self.value, field, self.tracker, DeserializeFieldValueImpl { map: &mut map, deserialized: &mut deserialized })?;
+                    let mut _token = PathToken::push_field(field.name());
+                    let result = if is_path_allowed() {
+                        S::deserialize(
+                            self.value,
+                            field,
+                            self.tracker,
+                            DeserializeFieldValueImpl {
+                                map: &mut map,
+                                deserialized: &mut deserialized,
+                            },
+                        )
+                        .map_err(|e| TrackedError::invalid_field(e.to_string()))
+                    } else {
+                        Err(TrackedError::unknown_field(S::DENY_UNKNOWN_FIELDS))
+                    };
+
+                    if let Err(e) = result {
+                        report_error(e)?;
+                    }
                 }
                 StructIdentifier::Unknown(field) => {
-                    if S::DENY_UNKNOWN_FIELDS {
-                        return Err(serde::de::Error::custom(format!("unknown field: {field}")));
-                    }
+                    let mut _token = PathToken::push_field(&field);
+                    report_error(TrackedError::unknown_field(S::DENY_UNKNOWN_FIELDS))?;
                 }
             }
 
             if !deserialized {
-                map.next_value::<serde::de::IgnoredAny>()?;
+                map.next_value::<serde::de::IgnoredAny>().inspect_err(|_| {
+                    set_irrecoverable();
+                })?;
             }
         }
 
@@ -287,7 +555,7 @@ pub use tinc_derive::TincMessageTracker;
 use super::well_known::WellKnownAlias;
 
 pub trait Tracker: Default {
-    type Target: Default;
+    type Target: Default + Expected;
 
     fn allow_duplicates(&self) -> bool;
 }
@@ -322,7 +590,53 @@ impl<T> Default for PrimitiveTracker<T> {
     }
 }
 
-impl<T: Default> Tracker for PrimitiveTracker<T> {
+pub trait Expected {
+    fn expecting(formatter: &mut std::fmt::Formatter) -> std::fmt::Result;
+}
+
+impl<V: Expected> Expected for Box<V> {
+    fn expecting(formatter: &mut std::fmt::Formatter) -> std::fmt::Result {
+        V::expecting(formatter)
+    }
+}
+
+impl<V: Expected> Expected for Option<V> {
+    fn expecting(formatter: &mut std::fmt::Formatter) -> std::fmt::Result {
+        write!(formatter, "an optional `")?;
+        V::expecting(formatter)?;
+        write!(formatter, "`")
+    }
+}
+
+impl<V: Expected> Expected for Vec<V> {
+    fn expecting(formatter: &mut std::fmt::Formatter) -> std::fmt::Result {
+        write!(formatter, "a sequence of `")?;
+        V::expecting(formatter)?;
+        write!(formatter, "`s")
+    }
+}
+
+impl<K: Expected, V: Expected> Expected for BTreeMap<K, V> {
+    fn expecting(formatter: &mut std::fmt::Formatter) -> std::fmt::Result {
+        write!(formatter, "a map of `")?;
+        K::expecting(formatter)?;
+        write!(formatter, "`s to `")?;
+        V::expecting(formatter)?;
+        write!(formatter, "`s")
+    }
+}
+
+impl<K: Expected, V: Expected, S> Expected for HashMap<K, V, S> {
+    fn expecting(formatter: &mut std::fmt::Formatter) -> std::fmt::Result {
+        write!(formatter, "a map of `")?;
+        K::expecting(formatter)?;
+        write!(formatter, "`s to `")?;
+        V::expecting(formatter)?;
+        write!(formatter, "`s")
+    }
+}
+
+impl<T: Default + Expected> Tracker for PrimitiveTracker<T> {
     type Target = T;
 
     #[inline(always)]
@@ -336,6 +650,12 @@ macro_rules! impl_tracker_for_primitive {
         $(
             impl TrackerFor for $ty {
                 type Tracker = PrimitiveTracker<$ty>;
+            }
+
+            impl Expected for $ty {
+                fn expecting(formatter: &mut std::fmt::Formatter) -> std::fmt::Result {
+                    write!(formatter, stringify!($ty))
+                }
             }
         )*
     };
@@ -367,15 +687,11 @@ impl<T: TrackerFor> TrackerFor for Option<T> {
 #[derive(Debug)]
 pub struct RepeatedVecTracker<T> {
     pub vec: Vec<T>,
-    pub errors: Vec<TrackedError>,
 }
 
 impl<T> Default for RepeatedVecTracker<T> {
     fn default() -> Self {
-        Self {
-            vec: Default::default(),
-            errors: Default::default(),
-        }
+        Self { vec: Default::default() }
     }
 }
 
@@ -394,7 +710,6 @@ impl<T: TrackerFor> TrackerFor for Vec<T> {
 
 pub struct MapTracker<K: Eq, V, M> {
     pub map: linear_map::LinearMap<K, V>,
-    pub errors: Vec<TrackedError>,
     _marker: PhantomData<M>,
 }
 
@@ -412,18 +727,18 @@ impl<K: Eq, V, M> Default for MapTracker<K, V, M> {
     fn default() -> Self {
         Self {
             map: Default::default(),
-            errors: Default::default(),
             _marker: PhantomData,
         }
     }
 }
 
 pub trait Map<K, V> {
-    fn entry(&mut self, key: K) -> &mut V;
+    fn get_mut(&mut self, key: &K) -> Option<&mut V>;
+    fn insert(&mut self, key: K, value: V);
     fn reserve(&mut self, additional: usize);
 }
 
-impl<K: Eq, V: Tracker, M: Default> Tracker for MapTracker<K, V, M> {
+impl<K: Eq, V: Tracker, M: Default + Expected> Tracker for MapTracker<K, V, M> {
     type Target = M;
 
     fn allow_duplicates(&self) -> bool {
@@ -431,17 +746,21 @@ impl<K: Eq, V: Tracker, M: Default> Tracker for MapTracker<K, V, M> {
     }
 }
 
-impl<K: std::hash::Hash + Eq, V: TrackerFor + Default, S: Default> TrackerFor for HashMap<K, V, S> {
+impl<K: std::hash::Hash + Eq + Expected, V: TrackerFor + Default + Expected, S: Default> TrackerFor for HashMap<K, V, S> {
     type Tracker = MapTracker<K, V::Tracker, HashMap<K, <V::Tracker as Tracker>::Target, S>>;
 }
 
-impl<K: Ord, V: TrackerFor + Default> TrackerFor for BTreeMap<K, V> {
+impl<K: Ord + Expected, V: TrackerFor + Default + Expected> TrackerFor for BTreeMap<K, V> {
     type Tracker = MapTracker<K, V::Tracker, BTreeMap<K, <V::Tracker as Tracker>::Target>>;
 }
 
 impl<K: std::hash::Hash + Eq, V: Default> Map<K, V> for HashMap<K, V> {
-    fn entry(&mut self, key: K) -> &mut V {
-        self.entry(key).or_default()
+    fn get_mut(&mut self, key: &K) -> Option<&mut V> {
+        self.get_mut(key)
+    }
+
+    fn insert(&mut self, key: K, value: V) {
+        self.insert(key, value);
     }
 
     fn reserve(&mut self, additional: usize) {
@@ -450,8 +769,12 @@ impl<K: std::hash::Hash + Eq, V: Default> Map<K, V> for HashMap<K, V> {
 }
 
 impl<K: Ord, V: Default> Map<K, V> for BTreeMap<K, V> {
-    fn entry(&mut self, key: K) -> &mut V {
-        self.entry(key).or_default()
+    fn get_mut(&mut self, key: &K) -> Option<&mut V> {
+        self.get_mut(key)
+    }
+
+    fn insert(&mut self, key: K, value: V) {
+        self.insert(key, value);
     }
 
     fn reserve(&mut self, _: usize) {}
@@ -464,9 +787,9 @@ pub struct DeserializeHelper<'a, T: Tracker> {
 
 impl<'de, T: Tracker> serde::de::DeserializeSeed<'de> for DeserializeHelper<'_, Box<T>>
 where
-    for<'a> DeserializeHelper<'a, T>: serde::de::DeserializeSeed<'de, Value = Result<(), TrackedError>>,
+    for<'a> DeserializeHelper<'a, T>: serde::de::DeserializeSeed<'de, Value = ()>,
 {
-    type Value = Result<(), TrackedError>;
+    type Value = ();
 
     fn deserialize<D>(self, de: D) -> Result<Self::Value, D::Error>
     where
@@ -485,23 +808,23 @@ where
     T: serde::Deserialize<'de>,
     PrimitiveTracker<T>: Tracker<Target = T>,
 {
-    type Value = Result<(), TrackedError>;
+    type Value = ();
 
     fn deserialize<D>(self, de: D) -> Result<Self::Value, D::Error>
     where
         D: serde::Deserializer<'de>,
     {
         *self.value = serde::Deserialize::deserialize(de)?;
-        Ok(Ok(()))
+        Ok(())
     }
 }
 
 impl<'de, T> serde::de::DeserializeSeed<'de> for DeserializeHelper<'_, RepeatedVecTracker<T>>
 where
-    for<'a> DeserializeHelper<'a, T>: serde::de::DeserializeSeed<'de, Value = Result<(), TrackedError>>,
+    for<'a> DeserializeHelper<'a, T>: serde::de::DeserializeSeed<'de, Value = ()>,
     T: Tracker,
 {
-    type Value = Result<(), TrackedError>;
+    type Value = ();
 
     fn deserialize<D>(self, de: D) -> Result<Self::Value, D::Error>
     where
@@ -513,13 +836,13 @@ where
 
 impl<'de, T> serde::de::Visitor<'de> for DeserializeHelper<'_, RepeatedVecTracker<T>>
 where
-    for<'a> DeserializeHelper<'a, T>: serde::de::DeserializeSeed<'de, Value = Result<(), TrackedError>>,
+    for<'a> DeserializeHelper<'a, T>: serde::de::DeserializeSeed<'de, Value = ()>,
     T: Tracker,
 {
-    type Value = Result<(), TrackedError>;
+    type Value = ();
 
     fn expecting(&self, formatter: &mut std::fmt::Formatter) -> std::fmt::Result {
-        formatter.write_str("a sequence")
+        Vec::<T::Target>::expecting(formatter)
     }
 
     fn visit_seq<A>(self, mut seq: A) -> Result<Self::Value, A::Error>
@@ -534,27 +857,43 @@ where
             self.value.reserve(size);
         }
 
-        while let Some(result) = seq.next_element_seed(DeserializeHelper {
-            value: &mut value,
-            tracker: &mut tracker,
-        })? {
+        let mut index = 0;
+
+        loop {
+            let mut _token = PathToken::push_index(index);
+
+            let Some(result) = seq
+                .next_element_seed(DeserializeHelper {
+                    value: &mut value,
+                    tracker: &mut tracker,
+                })
+                .transpose()
+            else {
+                break;
+            };
+
+            if let Err(error) = result {
+                report_error(TrackedError::invalid_field(error.to_string()))?;
+            }
+
             self.value.push(std::mem::take(&mut value));
             self.tracker.vec.push(std::mem::take(&mut tracker));
+            index += 1;
         }
 
-        Ok(Ok(()))
+        Ok(())
     }
 }
 
 impl<'de, K, T, M> serde::de::DeserializeSeed<'de> for DeserializeHelper<'_, MapTracker<K, T, M>>
 where
-    for<'a> DeserializeHelper<'a, T>: serde::de::DeserializeSeed<'de, Value = Result<(), TrackedError>>,
+    for<'a> DeserializeHelper<'a, T>: serde::de::DeserializeSeed<'de, Value = ()>,
     T: Tracker,
-    K: serde::de::Deserialize<'de> + std::cmp::Eq + Clone + std::fmt::Display,
+    K: serde::de::Deserialize<'de> + std::cmp::Eq + Clone + std::fmt::Display + Expected,
     M: Map<K, T::Target>,
     MapTracker<K, T, M>: Tracker<Target = M>,
 {
-    type Value = Result<(), TrackedError>;
+    type Value = ();
 
     fn deserialize<D>(self, de: D) -> Result<Self::Value, D::Error>
     where
@@ -566,16 +905,16 @@ where
 
 impl<'de, K, T, M> serde::de::Visitor<'de> for DeserializeHelper<'_, MapTracker<K, T, M>>
 where
-    for<'a> DeserializeHelper<'a, T>: serde::de::DeserializeSeed<'de, Value = Result<(), TrackedError>>,
+    for<'a> DeserializeHelper<'a, T>: serde::de::DeserializeSeed<'de, Value = ()>,
     T: Tracker,
-    K: serde::de::Deserialize<'de> + std::cmp::Eq + Clone + std::fmt::Display,
+    K: serde::de::Deserialize<'de> + std::cmp::Eq + Clone + std::fmt::Display + Expected,
     M: Map<K, T::Target>,
     MapTracker<K, T, M>: Tracker<Target = M>,
 {
-    type Value = Result<(), TrackedError>;
+    type Value = ();
 
     fn expecting(&self, formatter: &mut std::fmt::Formatter) -> std::fmt::Result {
-        formatter.write_str("a sequence")
+        HashMap::<K, T::Target>::expecting(formatter)
     }
 
     fn visit_map<A>(self, mut map: A) -> Result<Self::Value, A::Error>
@@ -587,30 +926,52 @@ where
             self.value.reserve(size);
         }
 
-        while let Some(key) = map.next_key::<K>()? {
+        let mut new_value = T::Target::default();
+
+        while let Some(key) = map.next_key::<K>().inspect_err(|_| {
+            set_irrecoverable();
+        })? {
+            let mut _token = PathToken::push_key(&key);
             let entry = self.tracker.map.entry(key.clone());
             if let linear_map::Entry::Occupied(entry) = &entry {
                 if !entry.get().allow_duplicates() {
-                    return Err(serde::de::Error::custom(format!("duplicate key: {}", key)));
+                    report_error(TrackedError::duplicate_field())?;
+                    map.next_value::<serde::de::IgnoredAny>().inspect_err(|_| {
+                        set_irrecoverable();
+                    })?;
+                    continue;
                 }
             }
 
             let tracker = entry.or_insert_with(Default::default);
-            let value = self.value.entry(key);
+            let value = self.value.get_mut(&key);
+            let used_new = value.is_none();
+            let value = value.unwrap_or(&mut new_value);
+            match map.next_value_seed(DeserializeHelper { value, tracker }) {
+                Ok(_) => {}
+                Err(error) => {
+                    report_error(TrackedError::invalid_field(error.to_string()))?;
+                    break;
+                }
+            }
 
-            let v = map.next_value_seed(DeserializeHelper { value, tracker })?;
+            drop(_token);
+
+            if used_new {
+                self.value.insert(key, std::mem::take(&mut new_value));
+            }
         }
 
-        Ok(Ok(()))
+        Ok(())
     }
 }
 
 impl<'de, T> serde::de::DeserializeSeed<'de> for DeserializeHelper<'_, OptionalTracker<T>>
 where
-    for<'a> DeserializeHelper<'a, T>: serde::de::DeserializeSeed<'de, Value = Result<(), TrackedError>>,
+    for<'a> DeserializeHelper<'a, T>: serde::de::DeserializeSeed<'de, Value = ()>,
     T: Tracker,
 {
-    type Value = Result<(), TrackedError>;
+    type Value = ();
 
     fn deserialize<D>(self, de: D) -> Result<Self::Value, D::Error>
     where
@@ -630,20 +991,20 @@ where
 
 impl<'de, T> serde::de::Visitor<'de> for DeserializeHelper<'_, OptionalTracker<T>>
 where
-    for<'a> DeserializeHelper<'a, T>: serde::de::DeserializeSeed<'de, Value = Result<(), TrackedError>>,
+    for<'a> DeserializeHelper<'a, T>: serde::de::DeserializeSeed<'de, Value = ()>,
     T: Tracker,
 {
-    type Value = Result<(), TrackedError>;
+    type Value = ();
 
     fn expecting(&self, formatter: &mut std::fmt::Formatter) -> std::fmt::Result {
-        formatter.write_str("an optional value")
+        Option::<T::Target>::expecting(formatter)
     }
 
     fn visit_none<E>(self) -> Result<Self::Value, E>
     where
         E: serde::de::Error,
     {
-        Ok(Ok(()))
+        Ok(())
     }
 
     fn visit_some<D>(self, de: D) -> Result<Self::Value, D::Error>
@@ -693,6 +1054,14 @@ impl<T: TryFrom<i32> + Default + std::fmt::Debug> std::fmt::Debug for Enum<T> {
     }
 }
 
+impl<T: Expected> Expected for Enum<T> {
+    fn expecting(formatter: &mut std::fmt::Formatter) -> std::fmt::Result {
+        write!(formatter, "an enum of `")?;
+        T::expecting(formatter)?;
+        write!(formatter, "`")
+    }
+}
+
 impl<T> Default for Enum<T> {
     fn default() -> Self {
         Self {
@@ -734,14 +1103,14 @@ impl<'de, T> serde::de::DeserializeSeed<'de> for DeserializeHelper<'_, EnumTrack
 where
     T: serde::Deserialize<'de> + Into<i32>,
 {
-    type Value = Result<(), TrackedError>;
+    type Value = ();
 
     fn deserialize<D>(self, deserializer: D) -> Result<Self::Value, D::Error>
     where
         D: serde::Deserializer<'de>,
     {
         *self.value = T::deserialize(deserializer)?.into();
-        Ok(Ok(()))
+        Ok(())
     }
 }
 
@@ -758,13 +1127,19 @@ impl<T> std::fmt::Debug for WellKnownTracker<T> {
     }
 }
 
+impl<T: Expected> Expected for WellKnownTracker<T> {
+    fn expecting(formatter: &mut std::fmt::Formatter) -> std::fmt::Result {
+        T::expecting(formatter)
+    }
+}
+
 impl<T> Default for WellKnownTracker<T> {
     fn default() -> Self {
         Self(PhantomData)
     }
 }
 
-impl<T: Default> Tracker for WellKnownTracker<T> {
+impl<T: Default + Expected> Tracker for WellKnownTracker<T> {
     type Target = T;
 
     fn allow_duplicates(&self) -> bool {
@@ -776,32 +1151,68 @@ impl TrackerFor for prost_types::Struct {
     type Tracker = WellKnownTracker<prost_types::Struct>;
 }
 
+impl Expected for prost_types::Struct {
+    fn expecting(formatter: &mut std::fmt::Formatter) -> std::fmt::Result {
+        write!(formatter, "struct")
+    }
+}
+
 impl TrackerFor for prost_types::ListValue {
     type Tracker = WellKnownTracker<prost_types::ListValue>;
+}
+
+impl Expected for prost_types::ListValue {
+    fn expecting(formatter: &mut std::fmt::Formatter) -> std::fmt::Result {
+        write!(formatter, "list")
+    }
 }
 
 impl TrackerFor for prost_types::Timestamp {
     type Tracker = WellKnownTracker<prost_types::Timestamp>;
 }
 
+impl Expected for prost_types::Timestamp {
+    fn expecting(formatter: &mut std::fmt::Formatter) -> std::fmt::Result {
+        write!(formatter, "timestamp")
+    }
+}
+
 impl TrackerFor for prost_types::Duration {
     type Tracker = WellKnownTracker<prost_types::Duration>;
+}
+
+impl Expected for prost_types::Duration {
+    fn expecting(formatter: &mut std::fmt::Formatter) -> std::fmt::Result {
+        write!(formatter, "duration")
+    }
 }
 
 impl TrackerFor for prost_types::Value {
     type Tracker = WellKnownTracker<prost_types::Value>;
 }
 
+impl Expected for prost_types::Value {
+    fn expecting(formatter: &mut std::fmt::Formatter) -> std::fmt::Result {
+        write!(formatter, "value")
+    }
+}
+
 impl TrackerFor for () {
     type Tracker = WellKnownTracker<()>;
 }
 
+impl Expected for () {
+    fn expecting(formatter: &mut std::fmt::Formatter) -> std::fmt::Result {
+        write!(formatter, "empty object")
+    }
+}
+
 impl<'de, T> serde::de::DeserializeSeed<'de> for DeserializeHelper<'_, WellKnownTracker<T>>
 where
-    T: WellKnownAlias + Default,
+    T: WellKnownAlias + Default + Expected,
     T::Helper: serde::Deserialize<'de>,
 {
-    type Value = Result<(), TrackedError>;
+    type Value = ();
 
     fn deserialize<D>(self, deserializer: D) -> Result<Self::Value, D::Error>
     where
@@ -809,6 +1220,6 @@ where
     {
         let value: T::Helper = serde::Deserialize::deserialize(deserializer)?;
         *self.value = T::reverse_cast(value);
-        Ok(Ok(()))
+        Ok(())
     }
 }

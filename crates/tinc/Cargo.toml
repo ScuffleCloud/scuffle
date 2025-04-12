@@ -37,7 +37,7 @@ itoa = "1.0.1"
 ryu = "1.0.14"
 
 linear-map = "1.2.0"
-smallvec = "1.15.0"
+concat_const = "0.2"
 
 tinc-derive.workspace = true
 

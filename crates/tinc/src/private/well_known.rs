@@ -496,17 +496,6 @@ impl serde::Serialize for Empty {
 pub(crate) unsafe trait WellKnownAlias: Sized {
     type Helper: Sized;
 
-    fn cast(value: Self) -> Self::Helper {
-        const {
-            assert!(std::mem::size_of::<Self>() == std::mem::size_of::<Self::Helper>());
-            assert!(std::mem::align_of::<Self>() == std::mem::align_of::<Self::Helper>());
-        };
-
-        let mut value = ManuallyDrop::new(value);
-        let casted = unsafe { &mut *(&mut value as *mut _ as *mut ManuallyDrop<Self::Helper>) };
-        unsafe { ManuallyDrop::take(casted) }
-    }
-
     fn reverse_cast(value: Self::Helper) -> Self {
         const {
             assert!(std::mem::size_of::<Self>() == std::mem::size_of::<Self::Helper>());
@@ -520,18 +509,6 @@ pub(crate) unsafe trait WellKnownAlias: Sized {
 
     fn cast_ref(value: &Self) -> &Self::Helper {
         unsafe { &*(value as *const Self as *const Self::Helper) }
-    }
-
-    fn cast_mut(value: &mut Self) -> &mut Self::Helper {
-        unsafe { &mut *(value as *mut Self as *mut Self::Helper) }
-    }
-
-    fn reverse_cast_ref(value: &Self::Helper) -> &Self {
-        unsafe { &*(value as *const Self::Helper as *const Self) }
-    }
-
-    fn reverse_cast_mut(value: &mut Self::Helper) -> &mut Self {
-        unsafe { &mut *(value as *mut Self::Helper as *mut Self) }
     }
 }
 
@@ -575,14 +552,14 @@ unsafe impl<T: WellKnownAlias> WellKnownAlias for Vec<T> {
     type Helper = Vec<T::Helper>;
 }
 
-/// Safety: If `K` is a [`serde::Serialize`] type and `V` is a [`SerializeWellKnown`] type, then its safe to cast `BTreeMap<K, V>` to `BTreeMap<K, V::Helper>`.
-unsafe impl<K: serde::Serialize, V: WellKnownAlias> WellKnownAlias for BTreeMap<K, V> {
+/// Safety: `V` is a [`SerializeWellKnown`] type, then its safe to cast `BTreeMap<K, V>` to `BTreeMap<K, V::Helper>`.
+unsafe impl<K, V: WellKnownAlias> WellKnownAlias for BTreeMap<K, V> {
     type Helper = BTreeMap<K, V::Helper>;
 }
 
-/// Safety: If `K` is a [`serde::Serialize`] type and `V` is a [`SerializeWellKnown`] type, then its safe to cast `HashMap<K, V>` to `HashMap<K, V::Helper>`.
-unsafe impl<K: serde::Serialize, V: WellKnownAlias> WellKnownAlias for HashMap<K, V> {
-    type Helper = HashMap<K, V::Helper>;
+/// Safety: `V` is a [`SerializeWellKnown`] type, then its safe to cast `HashMap<K, V>` to `HashMap<K, V::Helper>`.
+unsafe impl<K, V: WellKnownAlias, S> WellKnownAlias for HashMap<K, V, S> {
+    type Helper = HashMap<K, V::Helper, S>;
 }
 
 #[allow(private_bounds)]

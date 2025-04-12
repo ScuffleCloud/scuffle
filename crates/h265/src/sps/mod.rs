@@ -2,20 +2,9 @@ use std::io;
 use std::num::NonZero;
 
 use byteorder::ReadBytesExt;
-use conformance_window::ConformanceWindow;
-use pcm::Pcm;
-use profile_tier_level::ProfileTierLevel;
-use scaling_list::ScalingListData;
 use scuffle_bytes_util::BitReader;
 use scuffle_expgolomb::BitReaderExpGolombExt;
 use scuffle_h264::EmulationPreventionIo;
-use sps_3d_extension::Sps3dExtension;
-use sps_multilayer_extension::SpsMultilayerExtension;
-use sps_range_extension::SpsRangeExtension;
-use sps_scc_extension::SpsSccExtension;
-use st_ref_pic_set::ShortTermRefPicSets;
-use sub_layer_ordering_info::SubLayerOrderingInfo;
-use vui_parameters::VuiParameters;
 
 use crate::NALUnitType;
 
@@ -30,6 +19,18 @@ mod sps_scc_extension;
 mod st_ref_pic_set;
 mod sub_layer_ordering_info;
 mod vui_parameters;
+
+pub use conformance_window::ConformanceWindow;
+pub use pcm::Pcm;
+pub use profile_tier_level::ProfileTierLevel;
+pub use scaling_list::ScalingListData;
+pub use sps_3d_extension::Sps3dExtension;
+pub use sps_multilayer_extension::SpsMultilayerExtension;
+pub use sps_range_extension::SpsRangeExtension;
+pub use sps_scc_extension::SpsSccExtension;
+pub use st_ref_pic_set::ShortTermRefPicSets;
+pub use sub_layer_ordering_info::SubLayerOrderingInfo;
+pub use vui_parameters::VuiParameters;
 
 /// The Sequence Parameter Set.
 /// ISO/IEC-14496-10-2022 - 7.3.2.2
@@ -146,7 +147,7 @@ pub struct Sps {
     /// If the `conformance_window_flag` is set, then `conf_win_left_offset`, `conf_win_right_offset`,
     /// `conf_win_top_offset`, and `conf_win_bottom_offset` will be read and stored.
     ///
-    /// Refer to the [`ConfWindowInfo`] struct for more info.
+    /// Refer to the [`ConformanceWindow`] struct for more info.
     pub conformance_window: Option<ConformanceWindow>,
 
     /// The `bit_depth_luma_minus8` defines the BitDepth_Y and QpBdOffset_Y as:

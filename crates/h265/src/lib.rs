@@ -34,6 +34,7 @@
 #![cfg_attr(docsrs, feature(doc_cfg))]
 // #![deny(missing_docs)]
 #![deny(unsafe_code)]
+#![deny(unreachable_pub)]
 
 mod config;
 mod enums;
@@ -41,4 +42,4 @@ mod sps;
 
 pub use config::{HEVCDecoderConfigurationRecord, NaluArray};
 pub use enums::*;
-pub use sps::Sps;
+pub use sps::*;

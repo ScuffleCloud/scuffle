@@ -140,11 +140,6 @@ pub struct SubPicHrdParams {
 }
 
 #[derive(Debug, Clone, PartialEq)]
-pub struct SubLayer {
-    pub parameters: SubLayerHrdParameters,
-}
-
-#[derive(Debug, Clone, PartialEq)]
 pub struct SubLayerHrdParameters {
     pub bit_rate_value_minus1: u64,
     pub cpb_size_value_minus1: u64,

@@ -42,7 +42,7 @@ impl ScalingListData {
     pub fn parse<R: io::Read>(bit_reader: &mut BitReader<R>) -> io::Result<Self> {
         let mut scaling_list = [[[0; 64]; 6]; 4];
 
-        for (size_id, scaling_row) in scaling_list.iter_mut().enumerate() {
+        for (size_id, scaling_column) in scaling_list.iter_mut().enumerate() {
             let mut matrix_id = 0;
 
             while matrix_id < 6 {
@@ -56,20 +56,20 @@ impl ScalingListData {
                     if scaling_list_pred_matrix_id_delta == 0 {
                         // the scaling list is inferred from the default scaling list
                         if size_id == 0 {
-                            scaling_row[matrix_id][0..16].copy_from_slice(&TABLE_7_5);
+                            scaling_column[matrix_id][0..16].copy_from_slice(&TABLE_7_5);
                         } else {
                             let end = usize::min(63, (1 << (4 + (size_id << 1))) - 1);
-                            scaling_row[matrix_id][0..end].copy_from_slice(&TABLE_7_6[matrix_id][0..end]);
+                            scaling_column[matrix_id][0..end].copy_from_slice(&TABLE_7_6[matrix_id][0..end]);
                         }
                     } else {
                         // the scaling list is inferred from the reference scaling list
                         if size_id == 0 {
-                            scaling_row[matrix_id][0..16].copy_from_slice(&TABLE_7_5);
+                            scaling_column[matrix_id][0..16].copy_from_slice(&TABLE_7_5);
                         } else {
                             let ref_matrix_id =
                                 matrix_id - scaling_list_pred_matrix_id_delta * (if size_id == 3 { 3 } else { 1 });
                             let end = usize::min(63, (1 << (4 + (size_id << 1))) - 1);
-                            scaling_row[matrix_id][0..end].copy_from_slice(&TABLE_7_6[ref_matrix_id][0..end]);
+                            scaling_column[matrix_id][0..end].copy_from_slice(&TABLE_7_6[ref_matrix_id][0..end]);
                         }
                     }
                 } else {
@@ -86,7 +86,7 @@ impl ScalingListData {
                     for i in 0..coef_num {
                         let scaling_list_delta_coef = bit_reader.read_signed_exp_golomb()?;
                         next_coef = (next_coef + scaling_list_delta_coef + 256) % 256;
-                        scaling_row[matrix_id][i] = next_coef;
+                        scaling_column[matrix_id][i] = next_coef;
                     }
                 }
 

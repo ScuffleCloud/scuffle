@@ -43,6 +43,57 @@ fn signed_exp_golomb_value(ref SignedExpGolomb signed_exp_golomb) {
     }
 };
 
+enum NALUnitType : u8 {
+    TrailN = 0,
+    TrailR = 1,
+    TsaN = 2,
+    TsaR = 3,
+    StsaN = 4,
+    StsaR = 5,
+    RadlN = 6,
+    RadlR = 7,
+    RaslN = 8,
+    RaslR = 9,
+    RsvVclN10 = 10,
+    RsvVclR11 = 11,
+    RsvVclN12 = 12,
+    RsvVclR13 = 13,
+    RsvVclN14 = 14,
+    RsvVclR15 = 15,
+    BlaWLp = 16,
+    BlaWRadl = 17,
+    BlaNLp = 18,
+    IdrWRadl = 19,
+    IdrNLp = 20,
+    CraNut = 21,
+    RsvIrapVcl22 = 22,
+    RsvIrapVcl23 = 23,
+    RsvVcl24 = 24,
+    RsvVcl25 = 25,
+    RsvVcl26 = 26,
+    RsvVcl27 = 27,
+    RsvVcl28 = 28,
+    RsvVcl29 = 29,
+    RsvVcl30 = 30,
+    RsvVcl31 = 31,
+    VpsNut = 32,
+    SpsNut = 33,
+    PpsNut = 34,
+    AudNut = 35,
+    EosNut = 36,
+    EobNut = 37,
+    FdNut = 38,
+    PrefixSeiNut = 39,
+    SuffixSeiNut = 40,
+    RsvNvcl41 = 41,
+    RsvNvcl42 = 42,
+    RsvNvcl43 = 43,
+    RsvNvcl44 = 44,
+    RsvNvcl45 = 45,
+    RsvNvcl46 = 46,
+    RsvNvcl47 = 47,
+};
+
 bitfield ProfileTierLevelSubLayerPresent {
     bool sub_layer_profile_present_flag : 1;
     bool sub_layer_level_present_flag : 1;
@@ -111,9 +162,9 @@ bitfield ScalingListDataInnerLoopDeltaCoef {
     SignedExpGolomb scaling_list_delta_coef;
 };
 
-bitfield ScalingListDataInnerLoop {
+bitfield ScalingListDataMatrixColumn {
     bool scaling_list_pred_mode_flag : 1;
-    if (scaling_list_pred_mode_flag) {
+    if (!scaling_list_pred_mode_flag) {
         ExpGolomb scaling_list_pred_matrix_id_delta;
     } else {
         u64 coefNum = std::math::min(64, (1 << (4 + (parent.sizeId << 1))));
@@ -124,17 +175,17 @@ bitfield ScalingListDataInnerLoop {
     }
 };
 
-bitfield ScalingListDataOuterLoop {
+bitfield ScalingListDataMatrix {
     u8 sizeId = std::core::array_index();
     u8 len = 6;
     if (sizeId == 3) {
         len = 2;
     };
-    ScalingListDataInnerLoop loop[len];
+    ScalingListDataMatrixColumn column[len];
 };
 
 bitfield ScalingListData {
-    ScalingListDataOuterLoop loop[4];
+    ScalingListDataMatrix matrix[4];
 };
 
 bitfield StRefPicSetNegativePic {
@@ -228,11 +279,41 @@ bitfield HrdParameters {
     HrdParametersSubLayer sub_layers[parent.parent.sps_max_sub_layers_minus1];
 };
 
+enum VideoFormat : u8 {
+    Component = 0,
+    PAL = 1,
+    NTSC = 2,
+    SECAM = 3,
+    MAC = 4,
+    Unspecified = 5,
+};
+
+enum AspectRatioIdc : u8 {
+    Unspecified = 0,
+    Square = 1,
+    Aspect12_11 = 2,
+    Aspect10_11 = 3,
+    Aspect16_11 = 4,
+    Aspect40_33 = 5,
+    Aspect24_11 = 6,
+    Aspect20_11 = 7,
+    Aspect32_11 = 8,
+    Aspect80_33 = 9,
+    Aspect18_11 = 10,
+    Aspect15_11 = 11,
+    Aspect64_33 = 12,
+    Aspect160_99 = 13,
+    Aspect4_3 = 14,
+    Aspect3_2 = 15,
+    Aspect2_1 = 16,
+    ExtendedSar = 255,
+};
+
 bitfield VuiParameters {
     bool aspect_ratio_info_present_flag : 1;
     if (aspect_ratio_info_present_flag) {
-        aspect_ratio_idc : 8;
-        if (aspect_ratio_idc == 255) {
+        AspectRatioIdc aspect_ratio_idc : 8;
+        if (aspect_ratio_idc == AspectRatioIdc::ExtendedSar) {
             sar_width : 16;
             sar_height : 16;
         }
@@ -243,7 +324,7 @@ bitfield VuiParameters {
     }
     bool video_signal_type_present_flag : 1;
     if (video_signal_type_present_flag) {
-        video_format : 3;
+        VideoFormat video_format : 3;
         bool video_full_range_flag : 1;
         bool colour_description_present_flag : 1;
         if (colour_description_present_flag) {
@@ -295,7 +376,7 @@ bitfield VuiParameters {
 
 bitfield SPS {
     forbidden_zero_bit : 1;
-    nal_unit_type : 6;
+    NALUnitType nal_unit_type : 6;
     nuh_layer_id : 6;
     nuh_temporal_id_plus1 : 3;
     sps_video_parameter_set_id : 4;
@@ -382,4 +463,6 @@ bitfield SPS {
     }
 };
 
+// Make sure that the SPS is already processed by emulation prevention.
+// This script does not support doing emulation prevention.
 SPS sps @ 0x00;

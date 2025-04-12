@@ -1,0 +1,5 @@
+[[scuffle-h265]]
+category = "refactor"
+description = "reimplement h265 SPS parsing"
+breaking = true
+authors = ["@lennartkloock"]

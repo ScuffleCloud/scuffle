@@ -1,0 +1,88 @@
+---
+source: crates/h265/src/sps/mod.rs
+expression: sps
+snapshot_kind: text
+---
+Sps {
+    nuh_layer_id: 0,
+    nuh_temporal_id_plus1: 1,
+    sps_video_parameter_set_id: 0,
+    sps_max_sub_layers_minus1: 0,
+    sps_temporal_id_nesting_flag: true,
+    profile_tier_level: ProfileTierLevel {
+        sub_layer_profile_present_flags: [],
+        sub_layer_level_present_flags: [],
+        sub_layer_level_idcs: [],
+    },
+    sps_seq_parameter_set_id: 0,
+    chroma_format_idc: 1,
+    separate_color_plane_flag: None,
+    pic_width_in_luma_samples: 7680,
+    pic_height_in_luma_samples: 4320,
+    conformance_window: None,
+    bit_depth_luma_minus8: 0,
+    bit_depth_chroma_minus8: 0,
+    log2_max_pic_order_cnt_lsb_minus4: 4,
+    sub_layer_ordering_info: SubLayerOrderingInfo {
+        sps_max_dec_pic_buffering_minus1: [
+            4,
+        ],
+        sps_max_num_reorder_pics: [
+            2,
+        ],
+        sps_max_latency_increase_plus1: [
+            5,
+        ],
+    },
+    log2_min_luma_coding_block_size_minus3: 0,
+    log2_diff_max_min_luma_coding_block_size: 3,
+    log2_min_luma_transform_block_size_minus2: 0,
+    log2_diff_max_min_luma_transform_block_size: 3,
+    max_transform_hierarchy_depth_inter: 0,
+    max_transform_hierarchy_depth_intra: 0,
+    scaling_list_data: None,
+    amp_enabled_flag: false,
+    sample_adaptive_offset_enabled_flag: false,
+    pcm: None,
+    num_short_term_ref_pic_sets: 0,
+    long_term_ref_pics_present_flag: false,
+    sps_temporal_mvp_enabled_flag: true,
+    strong_intra_smoothing_enabled_flag: false,
+    vui_parameters: Some(
+        VuiParameters {
+            aspect_ratio_info: Some(
+                Predefined(
+                    AspectRatioIdc::Square,
+                ),
+            ),
+            overscan_appropriate_flag: None,
+            video_signal_type: Some(
+                VideoSignalType {
+                    video_format: VideoFormat::Unspecified,
+                    video_full_range_flag: false,
+                    color_primaries: 2,
+                    transfer_characteristics: 2,
+                    matrix_coeffs: 2,
+                },
+            ),
+            chroma_loc_info: None,
+            neutral_chroma_indication_flag: false,
+            field_seq_flag: false,
+            frame_field_info_present_flag: false,
+            default_display_window: None,
+            vui_timing_info: Some(
+                VuiTimingInfo {
+                    num_units_in_tick: 1,
+                    time_scale: 10,
+                    num_ticks_poc_diff_one_minus1: None,
+                    hrd_parameters: None,
+                },
+            ),
+            bitstream_restriction: None,
+        },
+    ),
+    range_extension: None,
+    multilayer_extension: None,
+    sps_3d_extension: None,
+    scc_extension: None,
+}

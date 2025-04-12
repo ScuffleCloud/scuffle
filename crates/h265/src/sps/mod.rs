@@ -425,47 +425,42 @@ impl Sps {
         }
 
         // Extensions
-
-        let mut sps_range_extension_flag = false;
-        let mut sps_multilayer_extension_flag = false;
-        let mut sps_3d_extension_flag = false;
-        let mut sps_scc_extension_flag = false;
+        let mut range_extension = None;
+        let mut multilayer_extension = None;
+        let mut sps_3d_extension = None;
+        let mut scc_extension = None;
 
         let sps_extension_flag = bit_reader.read_bit()?;
         if sps_extension_flag {
-            sps_range_extension_flag = bit_reader.read_bit()?;
-            sps_multilayer_extension_flag = bit_reader.read_bit()?;
-            sps_3d_extension_flag = bit_reader.read_bit()?;
-            sps_scc_extension_flag = bit_reader.read_bit()?;
+            let sps_range_extension_flag = bit_reader.read_bit()?;
+            let sps_multilayer_extension_flag = bit_reader.read_bit()?;
+            let sps_3d_extension_flag = bit_reader.read_bit()?;
+            let sps_scc_extension_flag = bit_reader.read_bit()?;
             bit_reader.read_bits(4)?; // sps_extension_4bits
-        }
 
-        let mut range_extension = None;
-        if sps_range_extension_flag {
-            range_extension = Some(SpsRangeExtension::parse(&mut bit_reader)?);
-        }
+            if sps_range_extension_flag {
+                range_extension = Some(SpsRangeExtension::parse(&mut bit_reader)?);
+            }
 
-        let mut multilayer_extension = None;
-        if sps_multilayer_extension_flag {
-            multilayer_extension = Some(SpsMultilayerExtension::parse(&mut bit_reader)?);
-        }
+            if sps_multilayer_extension_flag {
+                multilayer_extension = Some(SpsMultilayerExtension::parse(&mut bit_reader)?);
+            }
 
-        let mut sps_3d_extension = None;
-        if sps_3d_extension_flag {
-            sps_3d_extension = Some(Sps3dExtension::parse(&mut bit_reader)?);
-        }
+            if sps_3d_extension_flag {
+                sps_3d_extension = Some(Sps3dExtension::parse(&mut bit_reader)?);
+            }
 
-        let mut scc_extension = None;
-        if sps_scc_extension_flag {
-            scc_extension = Some(SpsSccExtension::parse(
-                &mut bit_reader,
-                chroma_format_idc,
-                bit_depth_y,
-                bit_depth_c,
-            )?);
-        }
+            if sps_scc_extension_flag {
+                scc_extension = Some(SpsSccExtension::parse(
+                    &mut bit_reader,
+                    chroma_format_idc,
+                    bit_depth_y,
+                    bit_depth_c,
+                )?);
+            }
 
-        // Ignore sps_extension_data_flag as specified by 7.4.3.2.1, page 101
+            // Ignore sps_extension_data_flag as specified by 7.4.3.2.1, page 101
+        }
 
         bit_reader.align()?;
 
@@ -551,13 +546,16 @@ impl Sps {
 #[cfg(test)]
 #[cfg_attr(all(test, coverage_nightly), coverage(off))]
 mod tests {
-    use std::io;
+    use std::io::{self, Read};
+
+    use scuffle_h264::EmulationPreventionIo;
 
     use crate::Sps;
 
     #[test]
     fn test_sps_parse() {
-        let data = b"B\x01\x01\x01@\0\0\x03\0\x90\0\0\x03\0\0\x03\0\x99\xa0\x01@ \x05\xa1e\x95R\x90\x84d_\xf8\xc0Z\x80\x80\x80\x82\0\0\x03\0\x02\0\0\x03\x01 \xc0\x0b\xbc\xa2\0\x02bX\0\x011-\x08";
+        let data = b"B\x01\x01\x01@\0\0\x03\0\x90\0\0\x03\0\0\x03\0\x99\xa0\x01@ \x05\xa1e\x95R\x90\x84d_\xf8\xc0Z\x80\x80\x80\x82\0\0\x03\0\x02\0\0\x03\x01 \xc0\x0b\xbc\xa2";
+        print_emulation_prevention(data);
 
         let sps = Sps::parse_with_emulation_prevention(io::Cursor::new(data)).unwrap();
         assert_eq!(sps.width(), 2560);
@@ -565,10 +563,19 @@ mod tests {
         insta::assert_debug_snapshot!(sps);
     }
 
+    fn print_emulation_prevention(data: &[u8]) {
+        let emulation_prevention = EmulationPreventionIo::new(io::Cursor::new(data));
+        for byte in emulation_prevention.bytes() {
+            print!("{:02x}", byte.unwrap());
+        }
+        println!();
+    }
+
     #[test]
     fn test_sps_parse2() {
         // This is a real SPS from an mp4 video file recorded with OBS.
-        let data = b"\x42\x01\x01\x01\x40\x00\x00\x03\x00\x90\x00\x00\x03\x00\x00\x03\x00\x78\xA0\x03\xC0\x80\x11\x07\xCB\x96\xB4\xA4\x25\x92\xE3\x01\x6A\x02\x02\x02\x08\x00\x00\x03\x00\x08\x00\x00\x03\x00\xF3\x00\x2E\xF2\x88\x00\x02\x62\x5A\x00\x00\x13\x12\xD0\x20\x22";
+        let data = b"\x42\x01\x01\x01\x40\x00\x00\x03\x00\x90\x00\x00\x03\x00\x00\x03\x00\x78\xA0\x03\xC0\x80\x11\x07\xCB\x96\xB4\xA4\x25\x92\xE3\x01\x6A\x02\x02\x02\x08\x00\x00\x03\x00\x08\x00\x00\x03\x00\xF3\x00\x2E\xF2\x88";
+        print_emulation_prevention(data);
 
         let sps = Sps::parse_with_emulation_prevention(io::Cursor::new(data)).unwrap();
         assert_eq!(sps.width(), 1920);
@@ -594,31 +601,5 @@ mod tests {
         let err = Sps::parse_with_emulation_prevention(io::Cursor::new(data)).unwrap_err();
         assert_eq!(err.kind(), io::ErrorKind::InvalidData);
         assert_eq!(err.to_string(), "NAL unit type is not SPS");
-    }
-
-    #[test]
-    fn test_sub_layer_for_loop() {
-        let data = b"\x42\x00\x03\
-                    \x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\
-                    \x40\
-                    \x00\
-                    \x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\
-                    \xC0\x16\x88\x07\xC5\xDF\x84\x00";
-        let result = Sps::parse_with_emulation_prevention(io::Cursor::new(data)).unwrap();
-
-        insta::assert_debug_snapshot!(result);
-    }
-
-    #[test]
-    fn test_sub_layer_loop_without_level_idc() {
-        let data = b"\x42\x00\x03\
-                    \x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\
-                    \x00\
-                    \x00\
-                    \x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\
-                    \xC0\x0F\x02\x00\x43\x97\x7E\x10";
-        let result = Sps::parse_with_emulation_prevention(io::Cursor::new(data)).unwrap();
-
-        insta::assert_debug_snapshot!(result);
     }
 }

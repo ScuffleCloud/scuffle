@@ -6,6 +6,7 @@ use std::str::FromStr;
 
 pub use wrapper::DeserializerWrapper;
 
+pub mod buffer;
 pub mod wrapper;
 
 pub struct TrackerStateGuard {
@@ -254,56 +255,82 @@ thread_local! {
     };
 }
 
-pub struct StructIdentifierDeserializer<F>(std::marker::PhantomData<F>);
+pub struct IdentifierDeserializer<F>(std::marker::PhantomData<F>);
 
-impl<F> Default for StructIdentifierDeserializer<F> {
+impl<F> Default for IdentifierDeserializer<F> {
     fn default() -> Self {
         Self(std::marker::PhantomData)
     }
 }
 
-impl<F> StructIdentifierDeserializer<F> {
+impl<F> IdentifierDeserializer<F> {
     pub const fn new() -> Self {
         Self(std::marker::PhantomData)
     }
 }
 
-pub enum StructIdentifier<'a, F> {
-    Field(F),
+enum OwnedBorrowedOrRef<'de, 'a> {
+    Owned(String),
+    Borrowed(&'de str),
+    Ref(&'a str),
+}
+
+impl AsRef<str> for OwnedBorrowedOrRef<'_, '_> {
+    fn as_ref(&self) -> &str {
+        match self {
+            Self::Owned(s) => s.as_str(),
+            Self::Borrowed(s) => s,
+            Self::Ref(s) => s,
+        }
+    }
+}
+
+impl<'de> OwnedBorrowedOrRef<'de, '_> {
+    fn into_cow(self) -> Cow<'de, str> {
+        match self {
+            Self::Owned(s) => Cow::Owned(s),
+            Self::Borrowed(s) => Cow::Borrowed(s),
+            Self::Ref(s) => Cow::Owned(s.to_string()),
+        }
+    }
+}
+
+pub enum IdentifiedValue<'a, F> {
+    Found(F),
     Unknown(Cow<'a, str>),
 }
 
-impl<'a, F: FromStr> serde::de::Visitor<'a> for StructIdentifierDeserializer<F> {
-    type Value = StructIdentifier<'a, F>;
+impl<F: Identifier> IdentifierDeserializer<F> {
+    fn visit_owned_borrowed_or_ref<'de>(self, v: OwnedBorrowedOrRef<'de, '_>) -> IdentifiedValue<'de, F> {
+        F::from_str(v.as_ref()).map_or_else(
+            |_| IdentifiedValue::Unknown(v.into_cow()),
+            |field| IdentifiedValue::Found(field),
+        )
+    }
+}
+
+impl<'a, F: Identifier> serde::de::Visitor<'a> for IdentifierDeserializer<F> {
+    type Value = IdentifiedValue<'a, F>;
 
     fn visit_str<E>(self, v: &str) -> Result<Self::Value, E>
     where
         E: serde::de::Error,
     {
-        Ok(F::from_str(v).map_or_else(
-            |_| StructIdentifier::Unknown(v.to_owned().into()),
-            |field| StructIdentifier::Field(field),
-        ))
+        Ok(self.visit_owned_borrowed_or_ref(OwnedBorrowedOrRef::Ref(v)))
     }
 
     fn visit_string<E>(self, v: String) -> Result<Self::Value, E>
     where
         E: serde::de::Error,
     {
-        Ok(F::from_str(&v).map_or_else(
-            |_| StructIdentifier::Unknown(v.into()),
-            |field| StructIdentifier::Field(field),
-        ))
+        Ok(self.visit_owned_borrowed_or_ref(OwnedBorrowedOrRef::Owned(v)))
     }
 
     fn visit_borrowed_str<E>(self, v: &'a str) -> Result<Self::Value, E>
     where
         E: serde::de::Error,
     {
-        Ok(F::from_str(v).map_or_else(
-            |_| StructIdentifier::Unknown(v.to_owned().into()),
-            |field| StructIdentifier::Field(field),
-        ))
+        Ok(self.visit_owned_borrowed_or_ref(OwnedBorrowedOrRef::Borrowed(v)))
     }
 
     fn expecting(&self, formatter: &mut std::fmt::Formatter) -> std::fmt::Result {
@@ -311,11 +338,11 @@ impl<'a, F: FromStr> serde::de::Visitor<'a> for StructIdentifierDeserializer<F> 
     }
 }
 
-impl<'de, F> serde::de::DeserializeSeed<'de> for StructIdentifierDeserializer<F>
+impl<'de, F> serde::de::DeserializeSeed<'de> for IdentifierDeserializer<F>
 where
-    F: FromStr,
+    F: Identifier,
 {
-    type Value = StructIdentifier<'de, F>;
+    type Value = IdentifiedValue<'de, F>;
 
     #[inline]
     fn deserialize<D>(self, deserializer: D) -> Result<Self::Value, D::Error>
@@ -326,20 +353,34 @@ where
     }
 }
 
-pub trait StructField: FromStr {
+pub trait Identifier: FromStr {
+    const OPTIONS: &'static [&'static str];
     fn name(&self) -> &'static str;
 }
 
-pub trait TrackedStructDeserializer<'de>: Sized + TrackerFor + Expected {
+pub trait IdentifierFor {
     const NAME: &'static str;
-    const FIELDS: &'static [&'static str];
+
+    type Identifier: Identifier;
+}
+
+impl<T: IdentifierFor> IdentifierFor for Box<T> {
+    type Identifier = T::Identifier;
+
+    const NAME: &'static str = T::NAME;
+}
+
+pub trait TrackedStructDeserializer<'de>: Sized + TrackerFor + IdentifierFor + Expected {
     const DENY_UNKNOWN_FIELDS: bool = false;
 
-    type Field: StructField;
-
-    fn deserialize<D>(&mut self, field: Self::Field, tracker: &mut Self::Tracker, deserializer: D) -> Result<(), D::Error>
+    fn deserialize<D>(
+        &mut self,
+        field: Self::Identifier,
+        tracker: &mut Self::Tracker,
+        deserializer: D,
+    ) -> Result<(), D::Error>
     where
-        D: DeserializeFieldValue<'de>;
+        D: DeserializeContent<'de>;
 
     fn verify_deserialize<E>(&self, tracker: &mut Self::Tracker) -> Result<(), E>
     where
@@ -355,16 +396,17 @@ where
     T: TrackedStructDeserializer<'de> + Default,
     T::Tracker: Tracker<Target = T> + Default,
 {
-    type Field = T::Field;
-
     const DENY_UNKNOWN_FIELDS: bool = T::DENY_UNKNOWN_FIELDS;
-    const FIELDS: &'static [&'static str] = T::FIELDS;
-    const NAME: &'static str = T::NAME;
 
     #[inline(always)]
-    fn deserialize<D>(&mut self, field: Self::Field, tracker: &mut Self::Tracker, deserializer: D) -> Result<(), D::Error>
+    fn deserialize<D>(
+        &mut self,
+        field: Self::Identifier,
+        tracker: &mut Self::Tracker,
+        deserializer: D,
+    ) -> Result<(), D::Error>
     where
-        D: DeserializeFieldValue<'de>,
+        D: DeserializeContent<'de>,
     {
         T::deserialize(self.as_mut(), field, tracker.as_mut(), deserializer)
     }
@@ -423,7 +465,7 @@ where
     where
         D: serde::Deserializer<'de>,
     {
-        deserializer.deserialize_struct(S::NAME, S::FIELDS, &mut self)
+        deserializer.deserialize_struct(S::NAME, S::Identifier::OPTIONS, &mut self)
     }
 }
 
@@ -443,21 +485,21 @@ where
         A: serde::de::MapAccess<'de>,
     {
         while let Some(key) = map
-            .next_key_seed(StructIdentifierDeserializer(PhantomData::<S::Field>))
+            .next_key_seed(IdentifierDeserializer(PhantomData::<S::Identifier>))
             .inspect_err(|_| {
                 set_irrecoverable();
             })?
         {
             let mut deserialized = false;
             match key {
-                StructIdentifier::Field(field) => {
+                IdentifiedValue::Found(field) => {
                     let mut _token = PathToken::push_field(field.name());
                     let result = if is_path_allowed() {
                         S::deserialize(
                             self.value,
                             field,
                             self.tracker,
-                            DeserializeFieldValueImpl {
+                            MapAccessValueDeserializer {
                                 map: &mut map,
                                 deserialized: &mut deserialized,
                             },
@@ -471,7 +513,7 @@ where
                         report_error(e)?;
                     }
                 }
-                StructIdentifier::Unknown(field) => {
+                IdentifiedValue::Unknown(field) => {
                     let mut _token = PathToken::push_field(&field);
                     report_error(TrackedError::unknown_field(S::DENY_UNKNOWN_FIELDS))?;
                 }
@@ -488,28 +530,16 @@ where
     }
 }
 
-struct DeserializeFieldValueImpl<'a, T> {
+struct MapAccessValueDeserializer<'a, T> {
     map: &'a mut T,
     deserialized: &'a mut bool,
 }
 
-impl<'de, M> DeserializeFieldValue<'de> for DeserializeFieldValueImpl<'_, M>
+impl<'de, M> DeserializeContent<'de> for MapAccessValueDeserializer<'_, M>
 where
     M: serde::de::MapAccess<'de>,
 {
     type Error = M::Error;
-
-    fn deserialize<T>(self) -> Result<T, Self::Error>
-    where
-        T: serde::de::Deserialize<'de>,
-    {
-        if *self.deserialized {
-            return Err(serde::de::Error::custom("invalid state: field already deserialized"));
-        }
-
-        *self.deserialized = true;
-        self.map.next_value()
-    }
 
     fn deserialize_seed<T>(self, seed: T) -> Result<T::Value, Self::Error>
     where
@@ -524,16 +554,37 @@ where
     }
 }
 
-pub trait DeserializeFieldValue<'de> {
+pub trait DeserializeContent<'de>: Sized {
     type Error: serde::de::Error;
 
     fn deserialize<T>(self) -> Result<T, Self::Error>
     where
-        T: serde::de::Deserialize<'de>;
+        T: serde::de::Deserialize<'de>,
+    {
+        self.deserialize_seed(PhantomData)
+    }
 
     fn deserialize_seed<T>(self, seed: T) -> Result<T::Value, Self::Error>
     where
         T: serde::de::DeserializeSeed<'de>;
+}
+
+struct SerdeDeserializer<D> {
+    deserializer: D,
+}
+
+impl<'de, D> DeserializeContent<'de> for SerdeDeserializer<D>
+where
+    D: serde::Deserializer<'de>,
+{
+    type Error = D::Error;
+
+    fn deserialize_seed<T>(self, seed: T) -> Result<T::Value, Self::Error>
+    where
+        T: serde::de::DeserializeSeed<'de>,
+    {
+        seed.deserialize(self.deserializer)
+    }
 }
 
 #[macro_export]
@@ -554,8 +605,8 @@ pub use tinc_derive::TincMessageTracker;
 
 use super::well_known::WellKnownAlias;
 
-pub trait Tracker: Default {
-    type Target: Default + Expected;
+pub trait Tracker {
+    type Target: Expected;
 
     fn allow_duplicates(&self) -> bool;
 }
@@ -822,7 +873,8 @@ where
 impl<'de, T> serde::de::DeserializeSeed<'de> for DeserializeHelper<'_, RepeatedVecTracker<T>>
 where
     for<'a> DeserializeHelper<'a, T>: serde::de::DeserializeSeed<'de, Value = ()>,
-    T: Tracker,
+    T: Tracker + Default,
+    T::Target: Default,
 {
     type Value = ();
 
@@ -837,7 +889,8 @@ where
 impl<'de, T> serde::de::Visitor<'de> for DeserializeHelper<'_, RepeatedVecTracker<T>>
 where
     for<'a> DeserializeHelper<'a, T>: serde::de::DeserializeSeed<'de, Value = ()>,
-    T: Tracker,
+    T: Tracker + Default,
+    T::Target: Default,
 {
     type Value = ();
 
@@ -888,10 +941,11 @@ where
 impl<'de, K, T, M> serde::de::DeserializeSeed<'de> for DeserializeHelper<'_, MapTracker<K, T, M>>
 where
     for<'a> DeserializeHelper<'a, T>: serde::de::DeserializeSeed<'de, Value = ()>,
-    T: Tracker,
+    T: Tracker + Default,
     K: serde::de::Deserialize<'de> + std::cmp::Eq + Clone + std::fmt::Display + Expected,
     M: Map<K, T::Target>,
     MapTracker<K, T, M>: Tracker<Target = M>,
+    T::Target: Default,
 {
     type Value = ();
 
@@ -906,10 +960,11 @@ where
 impl<'de, K, T, M> serde::de::Visitor<'de> for DeserializeHelper<'_, MapTracker<K, T, M>>
 where
     for<'a> DeserializeHelper<'a, T>: serde::de::DeserializeSeed<'de, Value = ()>,
-    T: Tracker,
+    T: Tracker + Default,
     K: serde::de::Deserialize<'de> + std::cmp::Eq + Clone + std::fmt::Display + Expected,
     M: Map<K, T::Target>,
     MapTracker<K, T, M>: Tracker<Target = M>,
+    T::Target: Default,
 {
     type Value = ();
 
@@ -969,7 +1024,8 @@ where
 impl<'de, T> serde::de::DeserializeSeed<'de> for DeserializeHelper<'_, OptionalTracker<T>>
 where
     for<'a> DeserializeHelper<'a, T>: serde::de::DeserializeSeed<'de, Value = ()>,
-    T: Tracker,
+    T: Tracker + Default,
+    T::Target: Default,
 {
     type Value = ();
 
@@ -992,7 +1048,8 @@ where
 impl<'de, T> serde::de::Visitor<'de> for DeserializeHelper<'_, OptionalTracker<T>>
 where
     for<'a> DeserializeHelper<'a, T>: serde::de::DeserializeSeed<'de, Value = ()>,
-    T: Tracker,
+    T: Tracker + Default,
+    T::Target: Default,
 {
     type Value = ();
 
@@ -1222,4 +1279,342 @@ where
         *self.value = T::reverse_cast(value);
         Ok(())
     }
+}
+
+#[derive(Debug)]
+pub struct OneOfTracker<T> {
+    pub value: Option<T>,
+}
+
+impl<T> Default for OneOfTracker<T> {
+    fn default() -> Self {
+        Self { value: None }
+    }
+}
+
+impl<T: Tracker> Tracker for OneOfTracker<T> {
+    type Target = Option<T::Target>;
+
+    fn allow_duplicates(&self) -> bool {
+        self.value.as_ref().is_none_or(|value| value.allow_duplicates())
+    }
+}
+
+impl<'de, T> serde::de::DeserializeSeed<'de> for DeserializeHelper<'_, OneOfTracker<T>>
+where
+    T: Tracker,
+    T::Target: TrackedOneOfDeserializer<'de, Tracker = T>,
+{
+    type Value = ();
+
+    fn deserialize<D>(self, deserializer: D) -> Result<Self::Value, D::Error>
+    where
+        D: serde::Deserializer<'de>,
+    {
+        if let Some(tag_content) = T::Target::OPTIONS.tag_content {
+            deserializer.deserialize_struct(
+                T::Target::NAME,
+                tag_content,
+                OneOfTaggedStyle {
+                    value: self.value,
+                    tracker: &mut self.tracker.value,
+                    tag_key: tag_content[0],
+                    content_key: tag_content[1],
+                },
+            )
+        } else {
+            deserializer.deserialize_enum(
+                T::Target::NAME,
+                <T::Target as IdentifierFor>::Identifier::OPTIONS,
+                OneOfEnumStyle {
+                    value: self.value,
+                    tracker: &mut self.tracker.value,
+                },
+            )
+        }
+    }
+}
+
+pub struct OneOfEnumStyle<'a, T: TrackerFor> {
+    value: &'a mut Option<T>,
+    tracker: &'a mut Option<T::Tracker>,
+}
+
+impl<'de, T> serde::de::Visitor<'de> for OneOfEnumStyle<'_, T>
+where
+    T: TrackedOneOfDeserializer<'de>,
+{
+    type Value = ();
+
+    fn expecting(&self, formatter: &mut std::fmt::Formatter) -> std::fmt::Result {
+        write!(formatter, "one of")
+    }
+
+    fn visit_enum<A>(self, data: A) -> Result<Self::Value, A::Error>
+    where
+        A: serde::de::EnumAccess<'de>,
+    {
+        let (variant, variant_access) = data.variant_seed(IdentifierDeserializer::<T::Identifier>::new())?;
+        match variant {
+            IdentifiedValue::Found(variant) => T::deserialize(
+                self.value,
+                self.tracker,
+                variant,
+                VariantAccessDeserializer { de: variant_access },
+            ),
+            IdentifiedValue::Unknown(variant) => {
+                todo!("unknown variant: {}", variant)
+            }
+        }
+    }
+}
+
+struct VariantAccessDeserializer<D> {
+    de: D,
+}
+
+impl<'de, D> DeserializeContent<'de> for VariantAccessDeserializer<D>
+where
+    D: serde::de::VariantAccess<'de>,
+{
+    type Error = D::Error;
+
+    fn deserialize_seed<T>(self, seed: T) -> Result<T::Value, Self::Error>
+    where
+        T: serde::de::DeserializeSeed<'de>,
+    {
+        self.de.newtype_variant_seed(seed)
+    }
+}
+
+pub struct OneOfTaggedStyle<'a, T: TrackerFor> {
+    value: &'a mut Option<T>,
+    tracker: &'a mut Option<T::Tracker>,
+    tag_key: &'static str,
+    content_key: &'static str,
+}
+
+impl<'de, T> serde::de::Visitor<'de> for OneOfTaggedStyle<'_, T>
+where
+    T: TrackedOneOfDeserializer<'de>,
+{
+    type Value = ();
+
+    fn expecting(&self, formatter: &mut std::fmt::Formatter) -> std::fmt::Result {
+        write!(formatter, "one of")
+    }
+
+    fn visit_map<A>(self, mut map: A) -> Result<Self::Value, A::Error>
+    where
+        A: serde::de::MapAccess<'de>,
+    {
+        enum TagOrContent<'de> {
+            Tag,
+            Content,
+            Unknown(Cow<'de, str>),
+        }
+
+        struct IdentifierVisitor {
+            tag: &'static str,
+            content: &'static str,
+        }
+
+        impl IdentifierVisitor {
+            fn visit_owned_borrowed_or_ref<'de>(self, v: OwnedBorrowedOrRef<'de, '_>) -> TagOrContent<'de> {
+                if v.as_ref() == self.tag {
+                    TagOrContent::Tag
+                } else if v.as_ref() == self.content {
+                    TagOrContent::Content
+                } else {
+                    TagOrContent::Unknown(v.into_cow())
+                }
+            }
+        }
+
+        impl<'de> serde::de::Visitor<'de> for IdentifierVisitor {
+            type Value = TagOrContent<'de>;
+
+            fn expecting(&self, formatter: &mut std::fmt::Formatter) -> std::fmt::Result {
+                write!(formatter, "{} or {}", self.tag, self.content)
+            }
+
+            fn visit_str<E>(self, v: &str) -> Result<Self::Value, E>
+            where
+                E: serde::de::Error,
+            {
+                Ok(self.visit_owned_borrowed_or_ref(OwnedBorrowedOrRef::Ref(v)))
+            }
+
+            fn visit_borrowed_str<E>(self, v: &'de str) -> Result<Self::Value, E>
+            where
+                E: serde::de::Error,
+            {
+                Ok(self.visit_owned_borrowed_or_ref(OwnedBorrowedOrRef::Borrowed(v)))
+            }
+
+            fn visit_string<E>(self, v: String) -> Result<Self::Value, E>
+            where
+                E: serde::de::Error,
+            {
+                Ok(self.visit_owned_borrowed_or_ref(OwnedBorrowedOrRef::Owned(v)))
+            }
+        }
+
+        impl<'de> serde::de::DeserializeSeed<'de> for IdentifierVisitor {
+            type Value = TagOrContent<'de>;
+
+            fn deserialize<D>(self, deserializer: D) -> Result<Self::Value, D::Error>
+            where
+                D: serde::Deserializer<'de>,
+            {
+                deserializer.deserialize_identifier(self)
+            }
+        }
+
+        let mut tag_buffer = None;
+        let mut content_buffer: Option<buffer::Value<'_>> = None;
+        let mut has_content = false;
+        let mut has_tag = false;
+        while let Some(key) = map
+            .next_key_seed(IdentifierVisitor {
+                tag: self.tag_key,
+                content: self.content_key,
+            })
+            .inspect_err(|_| {
+                set_irrecoverable();
+            })?
+        {
+            let _token = PathToken::push_field(match &key {
+                TagOrContent::Tag => self.tag_key,
+                TagOrContent::Content => self.content_key,
+                TagOrContent::Unknown(v) => v.as_ref(),
+            });
+
+            match &key {
+                TagOrContent::Tag if !has_tag => {
+                    has_tag = true;
+                    let tag = map.next_value_seed(IdentifierDeserializer::<T::Identifier>::new())?;
+                    match content_buffer.take() {
+                        None => {
+                            tag_buffer = Some(tag);
+                        }
+                        Some(content) => match tag {
+                            IdentifiedValue::Found(tag) => {
+                                drop(_token);
+                                let _token = PathToken::push_field(self.content_key);
+                                let result: Result<(), A::Error> = T::deserialize(
+                                    self.value,
+                                    self.tracker,
+                                    tag,
+                                    SerdeDeserializer {
+                                        deserializer: serde::de::IntoDeserializer::into_deserializer(content),
+                                    },
+                                );
+
+                                if let Err(e) = result {
+                                    report_error(TrackedError::invalid_field(e.to_string()))?;
+                                }
+                            }
+                            IdentifiedValue::Unknown(v) => {
+                                let error =
+                                    <A::Error as serde::de::Error>::unknown_variant(v.as_ref(), T::Identifier::OPTIONS);
+                                report_error(TrackedError::invalid_field(error.to_string()))?;
+                            }
+                        },
+                    }
+                }
+                TagOrContent::Content if !has_content => {
+                    has_content = true;
+                    match tag_buffer.take() {
+                        Some(IdentifiedValue::Found(tag)) => {
+                            let mut deserialized = false;
+                            T::deserialize(
+                                self.value,
+                                self.tracker,
+                                tag,
+                                MapAccessValueDeserializer {
+                                    map: &mut map,
+                                    deserialized: &mut deserialized,
+                                },
+                            )?;
+
+                            if !deserialized {
+                                map.next_value::<serde::de::IgnoredAny>().inspect_err(|_| {
+                                    set_irrecoverable();
+                                })?;
+                            }
+                        }
+                        Some(IdentifiedValue::Unknown(v)) => {
+                            drop(_token);
+                            let _token = PathToken::push_field(self.tag_key);
+                            let error = <A::Error as serde::de::Error>::unknown_variant(v.as_ref(), T::Identifier::OPTIONS);
+                            report_error(TrackedError::invalid_field(error.to_string()))?;
+                            map.next_value::<serde::de::IgnoredAny>().inspect_err(|_| {
+                                set_irrecoverable();
+                            })?;
+                        }
+                        None => {
+                            content_buffer = Some(map.next_value::<buffer::Value>().inspect_err(|_| {
+                                set_irrecoverable();
+                            })?);
+                        }
+                    }
+                }
+                TagOrContent::Content => {
+                    report_error(TrackedError::duplicate_field())?;
+                    map.next_value::<serde::de::IgnoredAny>().inspect_err(|_| {
+                        set_irrecoverable();
+                    })?;
+                }
+                TagOrContent::Tag => {
+                    report_error(TrackedError::duplicate_field())?;
+                    map.next_value::<serde::de::IgnoredAny>().inspect_err(|_| {
+                        set_irrecoverable();
+                    })?;
+                }
+                TagOrContent::Unknown(_) => {
+                    report_error(TrackedError::unknown_field(T::DENY_UNKNOWN_FIELDS))?;
+                    map.next_value::<serde::de::IgnoredAny>().inspect_err(|_| {
+                        set_irrecoverable();
+                    })?;
+                }
+            }
+        }
+
+        Ok(())
+    }
+}
+
+pub struct OneofOptions {
+    /// the tag & content field if the enum is adjacently tagged
+    pub tag_content: Option<&'static [&'static str; 2]>,
+}
+
+pub trait TrackedOneOfDeserializer<'de>: TrackerFor + IdentifierFor + Sized {
+    const OPTIONS: OneofOptions = OneofOptions { tag_content: None };
+
+    const DENY_UNKNOWN_FIELDS: bool = false;
+
+    fn deserialize<D>(
+        value: &mut Option<Self>,
+        tracker: &mut Option<Self::Tracker>,
+        variant: Self::Identifier,
+        deserializer: D,
+    ) -> Result<(), D::Error>
+    where
+        D: DeserializeContent<'de>;
+}
+
+pub trait OneOfHelper {
+    type Target;
+}
+
+impl<T> OneOfHelper for Option<T> {
+    type Target = TrackerForOneOf<T>;
+}
+
+pub struct TrackerForOneOf<T>(PhantomData<T>);
+
+impl<T: TrackerFor> TrackerFor for TrackerForOneOf<T> {
+    type Tracker = OneOfTracker<T::Tracker>;
 }

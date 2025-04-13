@@ -348,8 +348,9 @@ message SchemaOneofOptions {
 
     message Tagged {
         string tag = 1;
-        optional string content = 2;
+        string content = 2;
     }
 
     optional Tagged tagged = 100;
+    optional bool flatten = 101;
 }

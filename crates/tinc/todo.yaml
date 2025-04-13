@@ -13,13 +13,10 @@
 - well_known<value> X
 - well_known<empty> X
 - verify_deserialize X
-
-- errors
-- oneof
-
-- unknown_fields ?
-
-- pass information into de for specific fields / sub fields
+- errors x
+- pass information into de for specific fields / sub fields x
+- unknown_fields x
+- oneof X
 
 - tests
 - benchmarks

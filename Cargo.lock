@@ -2427,11 +2427,10 @@ dependencies = [
 
 [[package]]
 name = "prost-reflect"
-version = "0.14.7"
+version = "0.15.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "7b5edd582b62f5cde844716e66d92565d7faf7ab1445c8cebce6e00fba83ddb2"
+checksum = "134584672a2f89128da60df70d4b9d2eddfeb3ab00ab9c854ee7ee360ea7a7fc"
 dependencies = [
- "once_cell",
  "prost 0.13.5",
  "prost-types 0.13.5",
 ]
@@ -3824,6 +3823,20 @@ dependencies = [
  "proc-macro2",
  "quote",
  "syn",
+]
+
+[[package]]
+name = "tinc-integration-tests"
+version = "0.0.0"
+dependencies = [
+ "insta",
+ "prost 0.13.5",
+ "prost-build 0.13.5",
+ "serde",
+ "serde_json",
+ "tinc",
+ "tinc-build",
+ "tonic",
 ]
 
 [[package]]

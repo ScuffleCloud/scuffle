@@ -1,0 +1,40 @@
+syntax = "proto3";
+
+import "tinc/annotations.proto";
+
+package nested;
+
+message NestedMessage {
+    option (tinc.schema_message) = {
+        custom_impl: false
+    };
+
+    SomeOtherMessage some_other = 1;
+    SomeOtherMessage.NestedMessage.NestedEnum nested_enum = 2;
+}
+
+message SomeOtherMessage {
+    string name = 1;
+    int32 id = 2;
+
+    message NestedMessage {
+        enum NestedEnum {
+            NESTED_ENUM_UNSPECIFIED = 0;
+            NESTED_ENUM_SOME_VALUE = 1;
+            NESTED_ENUM_ANOTHER_VALUE = 2;
+            NESTED_ENUM_YET_ANOTHER_VALUE = 3;
+        }
+
+        message NestedNestedMessage {
+            int32 depth = 1;
+        }
+
+        NestedEnum nested_enum = 1;
+        string name = 2;
+        int32 id = 3;
+        int32 age = 4;
+        NestedNestedMessage nested = 5;
+    }
+
+    NestedMessage nested = 3;
+}

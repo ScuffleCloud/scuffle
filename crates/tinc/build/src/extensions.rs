@@ -659,7 +659,7 @@ impl Extensions {
                 opts,
             };
 
-            if let Some(oneof) = field.containing_oneof() {
+            if let Some(Some(oneof)) = (!nullable).then(|| field.containing_oneof()) {
                 self.messages
                     .get_mut(message.full_name())
                     .unwrap()

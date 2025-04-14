@@ -98,12 +98,21 @@ impl TrackedError {
     }
 }
 
-#[derive(Debug)]
 pub struct TrackerSharedState {
     pub fail_fast: bool,
     pub irrecoverable: bool,
     pub errors: Vec<TrackedError>,
     pub path_allowed: fn(&[PathItem]) -> bool,
+}
+
+impl std::fmt::Debug for TrackerSharedState {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        let mut s = f.debug_struct("TrackerSharedState");
+        s.field("fail_fast", &self.fail_fast);
+        s.field("irrecoverable", &self.irrecoverable);
+        s.field("errors", &self.errors);
+        s.finish()
+    }
 }
 
 impl TrackerSharedState {
@@ -479,24 +488,6 @@ where
         self.0.allow_duplicates()
     }
 }
-
-// #[derive(Debug, Default)]
-// pub struct BoxedStructHelper<S, T>(pub Box<T>)
-// where
-//     Box<T>: Tracker<Target = Box<S>>;
-
-// impl<S, T> Tracker for BoxedStructHelper<S, T>
-// where
-//     Box<T>: Tracker<Target = Box<S>>,
-//     S: Default + Expected,
-//     T: Default,
-// {
-//     type Target = Box<S>;
-
-//     fn allow_duplicates(&self) -> bool {
-//         self.0.allow_duplicates()
-//     }
-// }
 
 impl<'de, T, S> serde::de::DeserializeSeed<'de> for DeserializeHelper<'_, MessageTracker<T>>
 where
@@ -1037,6 +1028,7 @@ where
 
             if let Err(error) = result {
                 report_error(TrackedError::invalid_field(error.to_string()))?;
+                break;
             }
 
             self.value.push(std::mem::take(&mut value));
@@ -1428,7 +1420,7 @@ impl<T: Tracker> Tracker for OneOfTracker<T> {
 
 impl<'de, T> serde::de::DeserializeSeed<'de> for DeserializeHelper<'_, OneOfTracker<T>>
 where
-    T: Tracker + TrackerDeserializeIdentifier<'de>,
+    T: Tracker,
     T::Target: TrackedOneOfDeserializer<'de, Tracker = OneOfTracker<T>, Variant = <T::Target as IdentifierFor>::Identifier>,
 {
     type Value = ();
@@ -1443,7 +1435,7 @@ where
 
 impl<'de, T> serde::de::Visitor<'de> for DeserializeHelper<'_, OneOfTracker<T>>
 where
-    T: Tracker + TrackerDeserializeIdentifier<'de>,
+    T: Tracker,
     T::Target: TrackedOneOfDeserializer<'de, Tracker = OneOfTracker<T>, Variant = <T::Target as IdentifierFor>::Identifier>,
 {
     type Value = ();
@@ -1592,7 +1584,7 @@ where
     where
         D: DeserializeContent<'de>;
 
-    fn verify_deserialize<E>(&self, tracker: &mut Self::Tracker) -> Result<(), E>
+    fn verify_deserialize<E>(&self, tracker: &mut <Self::Tracker as TrackerWrapper>::Tracker) -> Result<(), E>
     where
         E: serde::de::Error,
     {
@@ -1606,7 +1598,7 @@ pub trait OneOfHelper {
 }
 
 impl<T> OneOfHelper for Option<T> {
-    type Target = TrackerForOneOf<T>;
+    type Target = T;
 }
 
 pub struct TrackerForOneOf<T>(PhantomData<T>);
@@ -1840,24 +1832,6 @@ where
     {
         deserializer.deserialize_struct(T::Target::NAME, <T::Target as IdentifierFor>::Identifier::OPTIONS, self)
     }
-}
-
-pub trait TaggedOneOfHelper {
-    type Target;
-}
-
-impl<T> TaggedOneOfHelper for Option<T> {
-    type Target = TrackerForTaggedOneOf<T>;
-}
-
-pub struct TrackerForTaggedOneOf<T>(PhantomData<T>);
-
-impl<T: TrackerFor> TrackerFor for TrackerForTaggedOneOf<T>
-where
-    T::Tracker: Tracker,
-    <T::Tracker as Tracker>::Target: TrackedOneOfVariant,
-{
-    type Tracker = TaggedOneOfTracker<T::Tracker>;
 }
 
 pub trait TaggedOneOfIdentifier: Identifier {

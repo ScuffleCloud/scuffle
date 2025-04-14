@@ -1,0 +1,620 @@
+use serde::de::DeserializeSeed;
+use tinc::__private::de::{
+    DeserializeHelper, DeserializerWrapper, TrackedStructDeserializer, TrackerFor, TrackerSharedState, TrackerStateGuard,
+};
+
+#[test]
+fn test_simple_single_pass() {
+    mod pb {
+        tonic::include_proto!("simple");
+    }
+
+    let mut message = pb::SimpleMessage::default();
+    let mut tracker = <pb::SimpleMessage as TrackerFor>::Tracker::default();
+    let guard = TrackerStateGuard::new(TrackerSharedState::default());
+
+    let mut de = serde_json::Deserializer::from_str(
+        r#"{
+        "name": "test",
+        "values": ["value1", "value2"],
+        "keyValues": {
+            "key1": "value1",
+            "key2": "value2"
+        }
+    }"#,
+    );
+
+    DeserializeHelper {
+        tracker: &mut tracker,
+        value: &mut message,
+    }
+    .deserialize(DeserializerWrapper::new(&mut de))
+    .unwrap();
+
+    TrackedStructDeserializer::verify_deserialize::<serde::de::value::Error>(&message, &mut tracker).unwrap();
+
+    let state = guard.finish();
+    insta::assert_debug_snapshot!(state, @r"
+    TrackerSharedState {
+        fail_fast: true,
+        irrecoverable: false,
+        errors: [],
+    }
+    ");
+    insta::assert_debug_snapshot!(message, @r#"
+    SimpleMessage {
+        name: "test",
+        values: [
+            "value1",
+            "value2",
+        ],
+        key_values: {
+            "key1": "value1",
+            "key2": "value2",
+        },
+    }
+    "#);
+    insta::assert_debug_snapshot!(tracker, @r#"
+    MessageTracker(
+        SimpleMessageTracker {
+            name: Some(
+                PrimitiveTracker<alloc::string::String>,
+            ),
+            values: Some(
+                RepeatedVecTracker(
+                    [
+                        PrimitiveTracker<alloc::string::String>,
+                        PrimitiveTracker<alloc::string::String>,
+                    ],
+                ),
+            ),
+            key_values: Some(
+                {
+                    "key1": PrimitiveTracker<alloc::string::String>,
+                    "key2": PrimitiveTracker<alloc::string::String>,
+                },
+            ),
+        },
+    )
+    "#);
+}
+
+#[test]
+fn test_simple_multiple_passes() {
+    mod pb {
+        tonic::include_proto!("simple");
+    }
+
+    let mut message = pb::SimpleMessage::default();
+    let mut tracker = <pb::SimpleMessage as TrackerFor>::Tracker::default();
+    let guard = TrackerStateGuard::new(TrackerSharedState::default());
+
+    let mut de = serde_json::Deserializer::from_str(
+        r#"{
+        "name": "test",
+        "keyValues": {
+            "key1": "value1"
+        }
+    }"#,
+    );
+
+    DeserializeHelper {
+        tracker: &mut tracker,
+        value: &mut message,
+    }
+    .deserialize(DeserializerWrapper::new(&mut de))
+    .unwrap();
+
+    insta::assert_debug_snapshot!(message, @r#"
+    SimpleMessage {
+        name: "test",
+        values: [],
+        key_values: {
+            "key1": "value1",
+        },
+    }
+    "#);
+    insta::assert_debug_snapshot!(tracker, @r#"
+    MessageTracker(
+        SimpleMessageTracker {
+            name: Some(
+                PrimitiveTracker<alloc::string::String>,
+            ),
+            values: None,
+            key_values: Some(
+                {
+                    "key1": PrimitiveTracker<alloc::string::String>,
+                },
+            ),
+        },
+    )
+    "#);
+
+    let mut de = serde_json::Deserializer::from_str(
+        r#"{
+        "values": ["value1", "value2"],
+        "keyValues": {
+            "key2": "value2"
+        }
+    }"#,
+    );
+
+    DeserializeHelper {
+        tracker: &mut tracker,
+        value: &mut message,
+    }
+    .deserialize(DeserializerWrapper::new(&mut de))
+    .unwrap();
+
+    TrackedStructDeserializer::verify_deserialize::<serde::de::value::Error>(&message, &mut tracker).unwrap();
+
+    insta::assert_debug_snapshot!(message, @r#"
+    SimpleMessage {
+        name: "test",
+        values: [
+            "value1",
+            "value2",
+        ],
+        key_values: {
+            "key1": "value1",
+            "key2": "value2",
+        },
+    }
+    "#);
+    insta::assert_debug_snapshot!(tracker, @r#"
+    MessageTracker(
+        SimpleMessageTracker {
+            name: Some(
+                PrimitiveTracker<alloc::string::String>,
+            ),
+            values: Some(
+                RepeatedVecTracker(
+                    [
+                        PrimitiveTracker<alloc::string::String>,
+                        PrimitiveTracker<alloc::string::String>,
+                    ],
+                ),
+            ),
+            key_values: Some(
+                {
+                    "key1": PrimitiveTracker<alloc::string::String>,
+                    "key2": PrimitiveTracker<alloc::string::String>,
+                },
+            ),
+        },
+    )
+    "#);
+
+    let guard = guard.finish();
+    insta::assert_debug_snapshot!(guard, @r"
+    TrackerSharedState {
+        fail_fast: true,
+        irrecoverable: false,
+        errors: [],
+    }
+    ");
+}
+
+#[test]
+fn test_simple_missing_fields() {
+    mod pb {
+        tonic::include_proto!("simple");
+    }
+
+    let mut message = pb::SimpleMessage::default();
+    let mut tracker = <pb::SimpleMessage as TrackerFor>::Tracker::default();
+    let guard = TrackerStateGuard::new(TrackerSharedState::default());
+
+    let mut de = serde_json::Deserializer::from_str(
+        r#"{
+        "keyValues": {
+        }
+    }"#,
+    );
+
+    DeserializeHelper {
+        tracker: &mut tracker,
+        value: &mut message,
+    }
+    .deserialize(DeserializerWrapper::new(&mut de))
+    .unwrap();
+
+    insta::assert_debug_snapshot!(message, @r#"
+    SimpleMessage {
+        name: "",
+        values: [],
+        key_values: {},
+    }
+    "#);
+    insta::assert_debug_snapshot!(tracker, @r"
+    MessageTracker(
+        SimpleMessageTracker {
+            name: None,
+            values: None,
+            key_values: Some(
+                {},
+            ),
+        },
+    )
+    ");
+
+    let mut de = serde_json::Deserializer::from_str(
+        r#"{
+        "values": ["value1", "value2"],
+        "keyValues": {
+            "key2": "value2"
+        }
+    }"#,
+    );
+
+    DeserializeHelper {
+        tracker: &mut tracker,
+        value: &mut message,
+    }
+    .deserialize(DeserializerWrapper::new(&mut de))
+    .unwrap();
+
+    let err = TrackedStructDeserializer::verify_deserialize::<serde::de::value::Error>(&message, &mut tracker).unwrap_err();
+    insta::assert_snapshot!(err, @"missing field `name`");
+
+    insta::assert_debug_snapshot!(message, @r#"
+    SimpleMessage {
+        name: "",
+        values: [
+            "value1",
+            "value2",
+        ],
+        key_values: {
+            "key2": "value2",
+        },
+    }
+    "#);
+    insta::assert_debug_snapshot!(tracker, @r#"
+    MessageTracker(
+        SimpleMessageTracker {
+            name: None,
+            values: Some(
+                RepeatedVecTracker(
+                    [
+                        PrimitiveTracker<alloc::string::String>,
+                        PrimitiveTracker<alloc::string::String>,
+                    ],
+                ),
+            ),
+            key_values: Some(
+                {
+                    "key2": PrimitiveTracker<alloc::string::String>,
+                },
+            ),
+        },
+    )
+    "#);
+
+    let guard = guard.finish();
+    insta::assert_debug_snapshot!(guard, @r#"
+    TrackerSharedState {
+        fail_fast: true,
+        irrecoverable: false,
+        errors: [
+            TrackedError {
+                kind: MissingField,
+                fatal: true,
+                path: "name",
+            },
+        ],
+    }
+    "#);
+}
+
+#[test]
+fn test_simple_duplicate_fields() {
+    mod pb {
+        tonic::include_proto!("simple");
+    }
+
+    let mut message = pb::SimpleMessage::default();
+    let mut tracker = <pb::SimpleMessage as TrackerFor>::Tracker::default();
+    let guard = TrackerStateGuard::new(TrackerSharedState {
+        fail_fast: false,
+        ..Default::default()
+    });
+
+    let mut de = serde_json::Deserializer::from_str(
+        r#"{
+        "name": "test",
+        "values": ["value1", "value2"],
+        "keyValues": {
+            "key1": "value1",
+            "key2": "value2"
+        }
+    }"#,
+    );
+
+    DeserializeHelper {
+        tracker: &mut tracker,
+        value: &mut message,
+    }
+    .deserialize(DeserializerWrapper::new(&mut de))
+    .unwrap();
+
+    insta::assert_debug_snapshot!(message, @r#"
+    SimpleMessage {
+        name: "test",
+        values: [
+            "value1",
+            "value2",
+        ],
+        key_values: {
+            "key1": "value1",
+            "key2": "value2",
+        },
+    }
+    "#);
+    insta::assert_debug_snapshot!(tracker, @r#"
+    MessageTracker(
+        SimpleMessageTracker {
+            name: Some(
+                PrimitiveTracker<alloc::string::String>,
+            ),
+            values: Some(
+                RepeatedVecTracker(
+                    [
+                        PrimitiveTracker<alloc::string::String>,
+                        PrimitiveTracker<alloc::string::String>,
+                    ],
+                ),
+            ),
+            key_values: Some(
+                {
+                    "key1": PrimitiveTracker<alloc::string::String>,
+                    "key2": PrimitiveTracker<alloc::string::String>,
+                },
+            ),
+        },
+    )
+    "#);
+
+    let mut de = serde_json::Deserializer::from_str(
+        r#"{
+        "values": ["value1", "value2"],
+        "keyValues": {
+            "key1": "value1",
+            "key2": "value2"
+        }
+    }"#,
+    );
+
+    DeserializeHelper {
+        tracker: &mut tracker,
+        value: &mut message,
+    }
+    .deserialize(DeserializerWrapper::new(&mut de))
+    .unwrap();
+
+    TrackedStructDeserializer::verify_deserialize::<serde::de::value::Error>(&message, &mut tracker).unwrap();
+
+    insta::assert_debug_snapshot!(message, @r#"
+    SimpleMessage {
+        name: "test",
+        values: [
+            "value1",
+            "value2",
+        ],
+        key_values: {
+            "key1": "value1",
+            "key2": "value2",
+        },
+    }
+    "#);
+    insta::assert_debug_snapshot!(tracker, @r#"
+    MessageTracker(
+        SimpleMessageTracker {
+            name: Some(
+                PrimitiveTracker<alloc::string::String>,
+            ),
+            values: Some(
+                RepeatedVecTracker(
+                    [
+                        PrimitiveTracker<alloc::string::String>,
+                        PrimitiveTracker<alloc::string::String>,
+                    ],
+                ),
+            ),
+            key_values: Some(
+                {
+                    "key1": PrimitiveTracker<alloc::string::String>,
+                    "key2": PrimitiveTracker<alloc::string::String>,
+                },
+            ),
+        },
+    )
+    "#);
+
+    let guard = guard.finish();
+    insta::assert_debug_snapshot!(guard, @r#"
+    TrackerSharedState {
+        fail_fast: false,
+        irrecoverable: false,
+        errors: [
+            TrackedError {
+                kind: DuplicateField,
+                fatal: true,
+                path: "values",
+            },
+            TrackedError {
+                kind: DuplicateField,
+                fatal: true,
+                path: "keyValues.key1",
+            },
+            TrackedError {
+                kind: DuplicateField,
+                fatal: true,
+                path: "keyValues.key2",
+            },
+        ],
+    }
+    "#);
+}
+
+#[test]
+fn test_simple_invalid_type() {
+    mod pb {
+        tonic::include_proto!("simple");
+    }
+
+    let mut message = pb::SimpleMessage::default();
+    let mut tracker = <pb::SimpleMessage as TrackerFor>::Tracker::default();
+    let guard = TrackerStateGuard::new(TrackerSharedState {
+        fail_fast: false,
+        ..Default::default()
+    });
+
+    let mut de = serde_json::Deserializer::from_str(
+        r#"{
+        "name": 123,
+        "values": [1, 2, {}],
+        "keyValues": null
+    }"#,
+    );
+
+    DeserializeHelper {
+        tracker: &mut tracker,
+        value: &mut message,
+    }
+    .deserialize(DeserializerWrapper::new(&mut de))
+    .unwrap();
+
+    TrackedStructDeserializer::verify_deserialize::<serde::de::value::Error>(&message, &mut tracker).unwrap();
+
+    insta::assert_debug_snapshot!(message, @r#"
+    SimpleMessage {
+        name: "",
+        values: [],
+        key_values: {},
+    }
+    "#);
+    insta::assert_debug_snapshot!(tracker, @r"
+    MessageTracker(
+        SimpleMessageTracker {
+            name: Some(
+                PrimitiveTracker<alloc::string::String>,
+            ),
+            values: Some(
+                RepeatedVecTracker(
+                    [],
+                ),
+            ),
+            key_values: Some(
+                {},
+            ),
+        },
+    )
+    ");
+
+    let guard = guard.finish();
+    insta::assert_debug_snapshot!(guard, @r#"
+    TrackerSharedState {
+        fail_fast: false,
+        irrecoverable: false,
+        errors: [
+            TrackedError {
+                kind: InvalidField {
+                    message: "invalid type: integer `123`, expected a string at line 2 column 19",
+                },
+                fatal: true,
+                path: "name",
+            },
+            TrackedError {
+                kind: InvalidField {
+                    message: "invalid type: integer `1`, expected a string at line 3 column 20",
+                },
+                fatal: true,
+                path: "values[0]",
+            },
+            TrackedError {
+                kind: InvalidField {
+                    message: "invalid type: null, expected a map of `String`s to `String`s at line 4 column 25",
+                },
+                fatal: true,
+                path: "keyValues",
+            },
+        ],
+    }
+    "#);
+}
+
+#[test]
+fn test_simple_renamed_field() {
+    mod pb {
+        tonic::include_proto!("simple");
+    }
+
+    let mut message = pb::SimpleMessageRenamed::default();
+    let mut tracker = <pb::SimpleMessageRenamed as TrackerFor>::Tracker::default();
+    let guard = TrackerStateGuard::new(TrackerSharedState::default());
+
+    let mut de = serde_json::Deserializer::from_str(
+        r#"{
+        "name": "test",
+        "values": ["value1", "value2"],
+        "key_values": {
+            "key1": "value1",
+            "key2": "value2"
+        }
+    }"#,
+    );
+
+    DeserializeHelper {
+        tracker: &mut tracker,
+        value: &mut message,
+    }
+    .deserialize(DeserializerWrapper::new(&mut de))
+    .unwrap();
+
+    TrackedStructDeserializer::verify_deserialize::<serde::de::value::Error>(&message, &mut tracker).unwrap();
+
+    let state = guard.finish();
+    insta::assert_debug_snapshot!(state, @r"
+    TrackerSharedState {
+        fail_fast: true,
+        irrecoverable: false,
+        errors: [],
+    }
+    ");
+    insta::assert_debug_snapshot!(message, @r#"
+    SimpleMessageRenamed {
+        name: "test",
+        values: [
+            "value1",
+            "value2",
+        ],
+        key_values: {
+            "key1": "value1",
+            "key2": "value2",
+        },
+    }
+    "#);
+    insta::assert_debug_snapshot!(tracker, @r#"
+    MessageTracker(
+        SimpleMessageRenamedTracker {
+            name: Some(
+                PrimitiveTracker<alloc::string::String>,
+            ),
+            values: Some(
+                RepeatedVecTracker(
+                    [
+                        PrimitiveTracker<alloc::string::String>,
+                        PrimitiveTracker<alloc::string::String>,
+                    ],
+                ),
+            ),
+            key_values: Some(
+                {
+                    "key1": PrimitiveTracker<alloc::string::String>,
+                    "key2": PrimitiveTracker<alloc::string::String>,
+                },
+            ),
+        },
+    )
+    "#);
+}

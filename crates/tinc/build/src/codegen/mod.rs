@@ -22,28 +22,35 @@ fn type_ident_from_str(s: impl AsRef<str>) -> Ident {
     Ident::new(&prost_sanatize::to_upper_camel(s.as_ref()), proc_macro2::Span::call_site())
 }
 
-fn get_common_import_path(start: &str, end: &str) -> syn::Path {
-    let start_parts: Vec<&str> = start.split('.').collect();
-    let end_parts: Vec<&str> = end.split('.').collect();
+fn strip_last_path_part(s: &str) -> &str {
+    let mut parts = s.rsplitn(2, '.');
+    parts.next();
+    parts.next().unwrap_or(s)
+}
+
+fn get_common_import_path(package: &str, end: &str) -> syn::Path {
+    let start_parts: Vec<&str> = package.split('.').collect();
+    let mut end_parts: Vec<&str> = end.split('.').collect();
+
+    let end_part = type_ident_from_str(end_parts.pop().expect("end path must not be empty")).to_string();
+
     let common_len = start_parts.iter().zip(&end_parts).take_while(|(a, b)| a == b).count();
-    let num_supers = start_parts.len().saturating_sub(common_len + 2);
-    let super_prefix = "super::".repeat(num_supers);
-    let mut parts = end_parts[common_len..]
-        .iter()
-        .copied()
-        .map(|part| part.to_owned())
-        .collect::<Vec<_>>();
 
-    for part in parts.iter_mut().rev().skip(1) {
-        *part = field_ident_from_str(&part).to_string();
+    let num_supers = start_parts.len().saturating_sub(common_len);
+
+    let mut path_parts = Vec::new();
+
+    for _ in 0..num_supers {
+        path_parts.push("super".to_string());
     }
 
-    if let Some(last) = parts.last_mut() {
-        *last = type_ident_from_str(&last).to_string();
+    for end_part in end_parts[common_len..].iter() {
+        path_parts.push(field_ident_from_str(end_part).to_string());
     }
-    let relative_path = parts.join("::");
 
-    syn::parse_str(&format!("{}{}", super_prefix, relative_path)).expect("failed to parse path")
+    path_parts.push(end_part);
+
+    syn::parse_str(&path_parts.join("::")).expect("failed to parse path")
 }
 
 pub fn generate_modules(
@@ -68,4 +75,20 @@ pub fn generate_modules(
         .try_for_each(|(key, service)| handle_service(key, service, extensions, prost, &mut modules))?;
 
     Ok(modules)
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_get_common_import_path() {
+        assert_eq!(get_common_import_path("a.b.c", "a.b.d"), syn::parse_str("super::D").unwrap());
+        assert_eq!(get_common_import_path("a.b.c", "a.b.c.d"), syn::parse_str("D").unwrap());
+        assert_eq!(get_common_import_path("a.b.c", "a.b.c"), syn::parse_str("super::C").unwrap());
+        assert_eq!(
+            get_common_import_path("a.b.c", "a.b"),
+            syn::parse_str("super::super::B").unwrap()
+        );
+    }
 }

@@ -63,11 +63,13 @@ impl Default for TincContainerOptions {
 #[derive(Default)]
 struct TincFieldOptions {
     pub enum_path: Option<syn::Path>,
+    pub oneof: bool,
 }
 
 impl TincFieldOptions {
     pub fn from_attributes<'a>(attrs: impl IntoIterator<Item = &'a syn::Attribute>) -> syn::Result<Self> {
         let mut enum_ = None;
+        let mut oneof = false;
 
         for attr in attrs {
             let syn::Meta::List(list) = &attr.meta else {
@@ -84,6 +86,8 @@ impl TincFieldOptions {
                         let _: syn::token::Eq = meta.input.parse()?;
                         let path: syn::LitStr = meta.input.parse()?;
                         enum_ = Some(syn::parse_str(&path.value())?);
+                    } else if meta.path.is_ident("oneof") {
+                        oneof = true;
                     } else {
                         return Err(meta.error("unsupported attribute"));
                     }
@@ -96,6 +100,10 @@ impl TincFieldOptions {
         let mut options = TincFieldOptions::default();
         if let Some(enum_) = enum_ {
             options.enum_path = Some(enum_);
+        }
+
+        if oneof {
+            options.oneof = true;
         }
 
         Ok(options)
@@ -143,10 +151,15 @@ fn derive_message_tracker_struct(ident: syn::Ident, opts: TincContainerOptions, 
             let field_ident = f.ident.as_ref().expect("field must have an identifier");
             let ty = &f.ty;
 
-            let TincFieldOptions { enum_path } = TincFieldOptions::from_attributes(&f.attrs)?;
+            let TincFieldOptions { enum_path, oneof } = TincFieldOptions::from_attributes(&f.attrs)?;
+
+            if enum_path.is_some() && oneof {
+                return Err(syn::Error::new(f.span(), "enum and oneof cannot both be set"));
+            }
 
             let ty = match enum_path {
                 Some(enum_path) => quote! { <#ty as #crate_path::__private::de::EnumHelper>::Target<#enum_path> },
+                None if oneof => quote! { <#ty as #crate_path::__private::de::OneOfHelper>::Target },
                 None => quote! { #ty },
             };
 
@@ -210,8 +223,15 @@ fn derive_message_tracker_enum(ident: syn::Ident, opts: TincContainerOptions, da
             let field = &unnamed.unnamed[0];
             let ty = &field.ty;
 
-            let TincFieldOptions { enum_path } =
+            let TincFieldOptions { enum_path, oneof } =
                 TincFieldOptions::from_attributes(v.attrs.iter().chain(field.attrs.iter()))?;
+
+            if oneof {
+                return Err(syn::Error::new(
+                    v.span(),
+                    "oneof can only be used on struct fields, not on enum variants",
+                ));
+            }
 
             let ty = match enum_path {
                 Some(enum_path) => quote! {

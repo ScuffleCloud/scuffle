@@ -1,0 +1,19 @@
+[package]
+name = "tinc-integration-tests"
+edition = "2024"
+publish = false
+
+[lints.rust]
+unexpected_cfgs = { level = "warn", check-cfg = ['cfg(coverage_nightly)'] }
+
+[dependencies]
+tonic = "0.13.0"
+prost = "0.13.5"
+tinc.workspace = true
+insta = "1.30.0"
+serde_json = "1.0.115"
+serde = "1.0.215"
+
+[build-dependencies]
+tinc-build.workspace = true
+prost-build = "0.13.5"

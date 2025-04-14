@@ -33,6 +33,7 @@ members = [
     "crates/tinc/pb",
     "crates/tinc/build",
     "crates/tinc/derive",
+    "crates/tinc/integration",
 ]
 
 resolver = "2"

@@ -398,7 +398,6 @@ pub enum FieldVisibility {
 pub struct FieldOpts {
     pub kind: FieldKind,
     pub json_name: String,
-    pub one_of: Option<String>,
     pub omitable: bool,
     pub nullable: bool,
     pub visibility: Option<FieldVisibility>,
@@ -441,6 +440,7 @@ pub struct MethodOpts {
 #[derive(Default, Debug)]
 pub struct OneofOpts {
     pub opts: tinc_pb::SchemaOneofOptions,
+    pub fields: BTreeMap<String, FieldOpts>,
 }
 
 const ANY_NOT_SUPPORTED_ERROR: &str = "uses `google.protobuf.Any`, this is currently not supported.";
@@ -618,6 +618,16 @@ impl Extensions {
             },
         );
 
+        for (oneof, opts) in oneofs {
+            self.messages.get_mut(message.full_name()).unwrap().oneofs.insert(
+                oneof.name().to_owned(),
+                OneofOpts {
+                    opts: opts.unwrap_or_default(),
+                    fields: BTreeMap::new(),
+                },
+            );
+        }
+
         for (field, opts) in fields {
             let opts = opts.unwrap_or_default();
 
@@ -640,22 +650,31 @@ impl Extensions {
                 anyhow::bail!("field {} {ANY_NOT_SUPPORTED_ERROR}", field.full_name());
             }
 
-            self.messages.get_mut(message.full_name()).unwrap().fields.insert(
-                field.name().to_owned(),
-                FieldOpts {
-                    kind: kind.clone(),
-                    omitable,
-                    nullable,
-                    visibility,
-                    one_of: if !nullable {
-                        field.containing_oneof().map(|f| f.name().to_owned())
-                    } else {
-                        None
-                    },
-                    json_name: field.json_name().to_owned(),
-                    opts,
-                },
-            );
+            let field_opts = FieldOpts {
+                kind: kind.clone(),
+                omitable,
+                nullable,
+                visibility,
+                json_name: field.json_name().to_owned(),
+                opts,
+            };
+
+            if let Some(oneof) = field.containing_oneof() {
+                self.messages
+                    .get_mut(message.full_name())
+                    .unwrap()
+                    .oneofs
+                    .get_mut(&oneof.name().to_owned())
+                    .unwrap()
+                    .fields
+                    .insert(field.name().to_owned(), field_opts);
+            } else {
+                self.messages
+                    .get_mut(message.full_name())
+                    .unwrap()
+                    .fields
+                    .insert(field.name().to_owned(), field_opts);
+            }
 
             if let Some(name) = kind.message_name() {
                 self.process_message(pool, &pool.get_message_by_name(name).unwrap(), true)
@@ -666,15 +685,6 @@ impl Extensions {
                     .with_context(|| format!("field {}", field.full_name()))
                     .with_context(|| format!("enum {}", name))?;
             }
-        }
-
-        for (oneof, opts) in oneofs {
-            self.messages.get_mut(message.full_name()).unwrap().oneofs.insert(
-                oneof.name().to_owned(),
-                OneofOpts {
-                    opts: opts.unwrap_or_default(),
-                },
-            );
         }
 
         Ok(())

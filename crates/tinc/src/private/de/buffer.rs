@@ -108,6 +108,87 @@ pub enum Value<'de> {
     },
 }
 
+impl Value<'_> {
+    pub fn into_static(self) -> Value<'static> {
+        match self {
+            Value::Str(Cow::Borrowed(s)) => Value::Str(Cow::Owned(s.to_string())),
+            Value::Str(Cow::Owned(s)) => Value::Str(Cow::Owned(s)),
+            Value::Bytes(Cow::Borrowed(b)) => Value::Bytes(Cow::Owned(b.to_vec())),
+            Value::Bytes(Cow::Owned(b)) => Value::Bytes(Cow::Owned(b)),
+            Value::Seq(seq) => Value::Seq(seq.into_iter().map(|v| v.into_static()).collect()),
+            Value::Map(map) => Value::Map(map.into_iter().map(|(k, v)| (k.into_static(), v.into_static())).collect()),
+            Value::Struct(name, fields) => {
+                Value::Struct(name, fields.into_iter().map(|(k, v)| (k, v.into_static())).collect())
+            }
+            Value::StructVariant {
+                name,
+                variant_index,
+                variant,
+                fields,
+            } => Value::StructVariant {
+                name,
+                variant_index,
+                variant,
+                fields: fields.into_iter().map(|(k, v)| (k, v.into_static())).collect(),
+            },
+            Value::Tuple(tuple) => Value::Tuple(tuple.into_iter().map(|v| v.into_static()).collect()),
+            Value::TupleStruct(name, tuple) => {
+                Value::TupleStruct(name, tuple.into_iter().map(|v| v.into_static()).collect())
+            }
+            Value::TupleVariant {
+                name,
+                variant_index,
+                variant,
+                fields,
+            } => Value::TupleVariant {
+                name,
+                variant_index,
+                variant,
+                fields: fields.into_iter().map(|v| v.into_static()).collect(),
+            },
+            Value::UnitVariant {
+                name,
+                variant_index,
+                variant,
+            } => Value::UnitVariant {
+                name,
+                variant_index,
+                variant,
+            },
+            Value::NewtypeStruct(name, value) => Value::NewtypeStruct(name, Box::new(value.into_static())),
+            Value::NewtypeVariant {
+                name,
+                variant_index,
+                variant,
+                value,
+            } => Value::NewtypeVariant {
+                name,
+                variant_index,
+                variant,
+                value: Box::new(value.into_static()),
+            },
+            Value::Unit => Value::Unit,
+            Value::Bool(v) => Value::Bool(v),
+            Value::I8(v) => Value::I8(v),
+            Value::I16(v) => Value::I16(v),
+            Value::I32(v) => Value::I32(v),
+            Value::I64(v) => Value::I64(v),
+            Value::I128(v) => Value::I128(v),
+            Value::U8(v) => Value::U8(v),
+            Value::U16(v) => Value::U16(v),
+            Value::U32(v) => Value::U32(v),
+            Value::U64(v) => Value::U64(v),
+            Value::U128(v) => Value::U128(v),
+            Value::F32(v) => Value::F32(v),
+            Value::F64(v) => Value::F64(v),
+            Value::Char(v) => Value::Char(v),
+            Value::None => Value::None,
+            Value::Some(v) => Value::Some(Box::new(v.into_static())),
+            Value::UnitStruct(name) => Value::UnitStruct(name),
+        }
+    }
+}
+
 struct ValueVisitor;
 
 impl<'de> serde::de::Visitor<'de> for ValueVisitor {

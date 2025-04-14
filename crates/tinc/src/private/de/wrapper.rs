@@ -206,7 +206,6 @@ where
     where
         A: serde::de::EnumAccess<'de>,
     {
-        println!("visit_enum");
         self.visitor.visit_enum(EnumAccessWrapper::new(data))
     }
 

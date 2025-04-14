@@ -1,14 +1,17 @@
 use proc_macro2::TokenStream;
-use quote::{ToTokens, quote};
+use quote::quote;
 use syn::spanned::Spanned;
 
 struct TincContainerOptions {
     pub crate_path: syn::Path,
+    pub tagged: bool,
 }
 
 impl TincContainerOptions {
     pub fn from_attributes<'a>(attrs: impl IntoIterator<Item = &'a syn::Attribute>) -> syn::Result<Self> {
         let mut crate_ = None;
+        let mut tagged = false;
+
         for attr in attrs {
             let syn::Meta::List(list) = &attr.meta else {
                 continue;
@@ -24,6 +27,8 @@ impl TincContainerOptions {
                         let _: syn::token::Eq = meta.input.parse()?;
                         let path: syn::LitStr = meta.input.parse()?;
                         crate_ = Some(syn::parse_str(&path.value())?);
+                    } else if meta.path.is_ident("tagged") {
+                        tagged = true;
                     } else {
                         return Err(meta.error("unsupported attribute"));
                     }
@@ -38,6 +43,10 @@ impl TincContainerOptions {
             options.crate_path = crate_;
         }
 
+        if tagged {
+            options.tagged = true;
+        }
+
         Ok(options)
     }
 }
@@ -46,6 +55,7 @@ impl Default for TincContainerOptions {
     fn default() -> Self {
         Self {
             crate_path: syn::parse_str("::tinc").unwrap(),
+            tagged: false,
         }
     }
 }
@@ -53,13 +63,11 @@ impl Default for TincContainerOptions {
 #[derive(Default)]
 struct TincFieldOptions {
     pub enum_path: Option<syn::Path>,
-    pub is_one_of: bool,
 }
 
 impl TincFieldOptions {
     pub fn from_attributes<'a>(attrs: impl IntoIterator<Item = &'a syn::Attribute>) -> syn::Result<Self> {
         let mut enum_ = None;
-        let mut is_one_of = false;
 
         for attr in attrs {
             let syn::Meta::List(list) = &attr.meta else {
@@ -69,11 +77,13 @@ impl TincFieldOptions {
             if list.path.is_ident("tinc") {
                 list.parse_nested_meta(|meta| {
                     if meta.path.is_ident("enum") {
+                        if enum_.is_some() {
+                            return Err(meta.error("enum option already set"));
+                        }
+
                         let _: syn::token::Eq = meta.input.parse()?;
                         let path: syn::LitStr = meta.input.parse()?;
-                        enum_ = Some(syn::parse2(path.to_token_stream())?);
-                    } else if meta.path.is_ident("oneof") {
-                        is_one_of = true;
+                        enum_ = Some(syn::parse_str(&path.value())?);
                     } else {
                         return Err(meta.error("unsupported attribute"));
                     }
@@ -88,8 +98,6 @@ impl TincFieldOptions {
             options.enum_path = Some(enum_);
         }
 
-        options.is_one_of = is_one_of;
-
         Ok(options)
     }
 }
@@ -100,19 +108,24 @@ pub fn derive_message_tracker(input: TokenStream) -> TokenStream {
         Err(e) => return e.to_compile_error(),
     };
 
-    let TincContainerOptions { crate_path } = match TincContainerOptions::from_attributes(&input.attrs) {
+    let opts = match TincContainerOptions::from_attributes(&input.attrs) {
         Ok(options) => options,
         Err(e) => return e.to_compile_error(),
     };
 
     match &input.data {
-        syn::Data::Struct(data) => derive_message_tracker_struct(input.ident, crate_path, data),
-        syn::Data::Enum(data) => derive_message_tracker_enum(input.ident, crate_path, data),
+        syn::Data::Struct(data) => derive_message_tracker_struct(input.ident, opts, data),
+        syn::Data::Enum(data) => derive_message_tracker_enum(input.ident, opts, data),
         _ => syn::Error::new(input.span(), "MessageTracker can only be derived for structs or enums").into_compile_error(),
     }
 }
 
-fn derive_message_tracker_struct(ident: syn::Ident, crate_path: syn::Path, data: &syn::DataStruct) -> TokenStream {
+fn derive_message_tracker_struct(ident: syn::Ident, opts: TincContainerOptions, data: &syn::DataStruct) -> TokenStream {
+    let TincContainerOptions { crate_path, tagged } = opts;
+    if tagged {
+        return syn::Error::new(ident.span(), "tagged can only be used on enums").into_compile_error();
+    }
+
     let syn::Fields::Named(fields) = &data.fields else {
         return syn::Error::new(
             ident.span(),
@@ -122,6 +135,7 @@ fn derive_message_tracker_struct(ident: syn::Ident, crate_path: syn::Path, data:
     };
 
     let tracker_ident = syn::Ident::new(&format!("{ident}Tracker"), ident.span());
+
     let struct_fields = fields
         .named
         .iter()
@@ -129,30 +143,11 @@ fn derive_message_tracker_struct(ident: syn::Ident, crate_path: syn::Path, data:
             let field_ident = f.ident.as_ref().expect("field must have an identifier");
             let ty = &f.ty;
 
-            let TincFieldOptions { enum_path, is_one_of } = TincFieldOptions::from_attributes(&f.attrs)?;
+            let TincFieldOptions { enum_path } = TincFieldOptions::from_attributes(&f.attrs)?;
 
-            let ty = match (enum_path, is_one_of) {
-                (Some(enum_path), false) => {
-                    quote! {
-                        <#ty as #crate_path::__private::de::EnumHelper>::Target<#enum_path>
-                    }
-                }
-                (None, true) => {
-                    quote! {
-                        <#ty as #crate_path::__private::de::OneOfHelper>::Target
-                    }
-                }
-                (None, false) => {
-                    quote! {
-                        #ty
-                    }
-                }
-                _ => {
-                    return Err(syn::Error::new(
-                        f.span(),
-                        "only one of enum or one_of can be specified for a field",
-                    ));
-                }
+            let ty = match enum_path {
+                Some(enum_path) => quote! { <#ty as #crate_path::__private::de::EnumHelper>::Target<#enum_path> },
+                None => quote! { #ty },
             };
 
             Ok(quote! {
@@ -189,7 +184,8 @@ fn derive_message_tracker_struct(ident: syn::Ident, crate_path: syn::Path, data:
     }
 }
 
-fn derive_message_tracker_enum(ident: syn::Ident, crate_path: syn::Path, data: &syn::DataEnum) -> TokenStream {
+fn derive_message_tracker_enum(ident: syn::Ident, opts: TincContainerOptions, data: &syn::DataEnum) -> TokenStream {
+    let TincContainerOptions { crate_path, tagged } = opts;
     let tracker_ident = syn::Ident::new(&format!("{ident}Tracker"), ident.span());
 
     let variants = data
@@ -214,23 +210,16 @@ fn derive_message_tracker_enum(ident: syn::Ident, crate_path: syn::Path, data: &
             let field = &unnamed.unnamed[0];
             let ty = &field.ty;
 
-            let TincFieldOptions { enum_path, is_one_of } =
+            let TincFieldOptions { enum_path } =
                 TincFieldOptions::from_attributes(v.attrs.iter().chain(field.attrs.iter()))?;
-            if is_one_of {
-                return Err(syn::Error::new(v.span(), "one_of is not supported for enum variants"));
-            }
 
             let ty = match enum_path {
-                Some(enum_path) => {
-                    quote! {
-                        <#ty as #crate_path::__private::de::EnumHelper>::Target<#enum_path>
-                    }
-                }
-                None => {
-                    quote! {
-                        #ty
-                    }
-                }
+                Some(enum_path) => quote! {
+                    <#ty as #crate_path::__private::de::EnumHelper>::Target<#enum_path>
+                },
+                None => quote! {
+                    #ty
+                },
             };
 
             Ok((
@@ -249,9 +238,19 @@ fn derive_message_tracker_enum(ident: syn::Ident, crate_path: syn::Path, data: &
         Err(e) => return e.to_compile_error(),
     };
 
+    let tracker = if tagged {
+        quote! {
+            #crate_path::__private::de::TaggedOneOfTracker<#tracker_ident>
+        }
+    } else {
+        quote! {
+            #crate_path::__private::de::OneOfTracker<#tracker_ident>
+        }
+    };
+
     quote! {
         const _: () = {
-            #[derive(Debug)]
+            #[derive(std::fmt::Debug)]
             pub enum #tracker_ident {
                 #(#variants),*
             }
@@ -268,7 +267,7 @@ fn derive_message_tracker_enum(ident: syn::Ident, crate_path: syn::Path, data: &
             }
 
             impl #crate_path::__private::de::TrackerFor for #ident {
-                type Tracker = #tracker_ident;
+                type Tracker = #tracker;
             }
         };
     }

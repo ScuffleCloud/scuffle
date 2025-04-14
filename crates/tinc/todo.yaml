@@ -17,6 +17,7 @@
 - pass information into de for specific fields / sub fields x
 - unknown_fields x
 - oneof X
+- flatten messages / oneofs X
 
 - tests
 - benchmarks

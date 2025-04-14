@@ -33,6 +33,11 @@ fn get_common_import_path(start: &str, end: &str) -> syn::Path {
         .copied()
         .map(|part| part.to_owned())
         .collect::<Vec<_>>();
+
+    for part in parts.iter_mut().rev().skip(1) {
+        *part = field_ident_from_str(&part).to_string();
+    }
+
     if let Some(last) = parts.last_mut() {
         *last = type_ident_from_str(&last).to_string();
     }

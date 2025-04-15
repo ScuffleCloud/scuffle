@@ -1,4 +1,5 @@
 use std::io;
+use std::num::NonZero;
 
 use byteorder::ReadBytesExt;
 use scuffle_bytes_util::BitReader;
@@ -120,7 +121,7 @@ pub struct Sps {
     /// <https://en.wikipedia.org/wiki/Exponential-Golomb_coding>
     ///
     /// ISO/IEC-23008-2-2020 - 7.4.3.2.1
-    pub pic_width_in_luma_samples: u64,
+    pub pic_width_in_luma_samples: NonZero<u64>,
 
     /// The `pic_height_in_luma_samples` is the height of each decoded picture in units of luma samples.
     ///
@@ -133,7 +134,7 @@ pub struct Sps {
     /// <https://en.wikipedia.org/wiki/Exponential-Golomb_coding>
     ///
     /// ISO/IEC-23008-2-2020 - 7.4.3.2.1
-    pub pic_height_in_luma_samples: u64,
+    pub pic_height_in_luma_samples: NonZero<u64>,
 
     /// The [`ConformanceWindow`].
     pub conformance_window: ConformanceWindow,
@@ -346,21 +347,11 @@ impl Sps {
         };
         let sub_height_c = if chroma_format_idc == 1 { 2 } else { 1 };
 
-        let pic_width_in_luma_samples = bit_reader.read_exp_golomb()?;
-        if pic_width_in_luma_samples == 0 {
-            return Err(io::Error::new(
-                io::ErrorKind::InvalidData,
-                "pic_width_in_luma_samples must not be 0",
-            ));
-        }
+        let pic_width_in_luma_samples = NonZero::new(bit_reader.read_exp_golomb()?)
+            .ok_or_else(|| io::Error::new(io::ErrorKind::InvalidData, "pic_width_in_luma_samples must not be 0"))?;
 
-        let pic_height_in_luma_samples = bit_reader.read_exp_golomb()?;
-        if pic_height_in_luma_samples == 0 {
-            return Err(io::Error::new(
-                io::ErrorKind::InvalidData,
-                "pic_height_in_luma_samples must not be 0",
-            ));
-        }
+        let pic_height_in_luma_samples = NonZero::new(bit_reader.read_exp_golomb()?)
+            .ok_or_else(|| io::Error::new(io::ErrorKind::InvalidData, "pic_height_in_luma_samples must not be 0"))?;
 
         let conformance_window_flag = bit_reader.read_bit()?;
 
@@ -570,7 +561,7 @@ impl Sps {
     ///
     /// `height = pic_height_in_luma_samples - sub_height_c * (conf_win_top_offset + conf_win_bottom_offset)`
     pub fn height(&self) -> u64 {
-        self.pic_height_in_luma_samples
+        self.pic_height_in_luma_samples.get()
             - self.sub_height_c() as u64
                 * (self.conformance_window.conf_win_top_offset + self.conformance_window.conf_win_bottom_offset)
     }
@@ -579,7 +570,7 @@ impl Sps {
     ///
     /// `width = pic_width_in_luma_samples - sub_width_c * (conf_win_left_offset + conf_win_right_offset)`
     pub fn width(&self) -> u64 {
-        self.pic_width_in_luma_samples
+        self.pic_width_in_luma_samples.get()
             - self.sub_width_c() as u64
                 * (self.conformance_window.conf_win_left_offset + self.conformance_window.conf_win_right_offset)
     }
@@ -638,24 +629,24 @@ impl Sps {
         1 << self.min_cb_log2_size_y()
     }
 
-    pub fn ctb_size_y(&self) -> u64 {
-        1 << self.ctb_log2_size_y()
+    pub fn ctb_size_y(&self) -> NonZero<u64> {
+        NonZero::new(1 << self.ctb_log2_size_y()).unwrap()
     }
 
     pub fn pic_width_in_min_cbs_y(&self) -> f64 {
-        self.pic_width_in_luma_samples as f64 / self.min_cb_size_y() as f64
+        self.pic_width_in_luma_samples.get() as f64 / self.min_cb_size_y() as f64
     }
 
     pub fn pic_width_in_ctbs_y(&self) -> u64 {
-        (self.pic_width_in_luma_samples / self.ctb_size_y()) + 1
+        (self.pic_width_in_luma_samples.get() / self.ctb_size_y()) + 1
     }
 
     pub fn pic_height_in_min_cbs_y(&self) -> f64 {
-        self.pic_height_in_luma_samples as f64 / self.min_cb_size_y() as f64
+        self.pic_height_in_luma_samples.get() as f64 / self.min_cb_size_y() as f64
     }
 
     pub fn pic_height_in_ctbs_y(&self) -> u64 {
-        (self.pic_height_in_luma_samples / self.ctb_size_y()) + 1
+        (self.pic_height_in_luma_samples.get() / self.ctb_size_y()) + 1
     }
 
     pub fn pic_size_in_min_cbs_y(&self) -> f64 {
@@ -667,22 +658,22 @@ impl Sps {
     }
 
     pub fn pic_size_in_samples_y(&self) -> u64 {
-        self.pic_width_in_luma_samples * self.pic_height_in_luma_samples
+        self.pic_width_in_luma_samples.get() * self.pic_height_in_luma_samples.get()
     }
 
     pub fn pic_width_in_samples_c(&self) -> u64 {
-        self.pic_width_in_luma_samples / self.sub_width_c() as u64
+        self.pic_width_in_luma_samples.get() / self.sub_width_c() as u64
     }
 
     pub fn pic_height_in_samples_c(&self) -> u64 {
-        self.pic_height_in_luma_samples / self.sub_height_c() as u64
+        self.pic_height_in_luma_samples.get() / self.sub_height_c() as u64
     }
 
     pub fn ctb_width_c(&self) -> u64 {
         if self.chroma_format_idc == 0 || self.separate_color_plane_flag {
             0
         } else {
-            self.ctb_size_y() / self.sub_width_c() as u64
+            self.ctb_size_y().get() / self.sub_width_c() as u64
         }
     }
 
@@ -690,7 +681,7 @@ impl Sps {
         if self.chroma_format_idc == 0 || self.separate_color_plane_flag {
             0
         } else {
-            self.ctb_size_y() / self.sub_height_c() as u64
+            self.ctb_size_y().get() / self.sub_height_c() as u64
         }
     }
 
@@ -708,7 +699,8 @@ impl Sps {
 
     pub fn raw_ctu_bits(&self) -> u64 {
         // defined by A-1
-        self.ctb_size_y() * self.ctb_size_y() * self.bit_depth_y() as u64
+        let ctb_size_y = self.ctb_size_y().get();
+        ctb_size_y * ctb_size_y * self.bit_depth_y() as u64
             + 2 * (self.ctb_width_c() * self.ctb_height_c()) * self.bit_depth_c() as u64
     }
 }

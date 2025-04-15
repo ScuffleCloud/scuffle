@@ -40,9 +40,9 @@ impl VuiParameters {
         general_interlaced_source_flag: bool,
         conformance_window: &ConformanceWindow,
         sub_width_c: u8,
-        pic_width_in_luma_samples: u64,
+        pic_width_in_luma_samples: NonZero<u64>,
         sub_height_c: u8,
-        pic_height_in_luma_samples: u64,
+        pic_height_in_luma_samples: NonZero<u64>,
     ) -> io::Result<Self> {
         let mut aspect_ratio_info = AspectRatioInfo::Predefined(AspectRatioIdc::Unspecified);
         let mut overscan_appropriate_flag = None;
@@ -162,14 +162,14 @@ impl VuiParameters {
             let top_offset = conformance_window.conf_win_top_offset + def_disp_win_top_offset;
             let bottom_offset = conformance_window.conf_win_bottom_offset + def_disp_win_bottom_offset;
 
-            if sub_width_c as u64 * (left_offset + right_offset) >= pic_width_in_luma_samples {
+            if sub_width_c as u64 * (left_offset + right_offset) >= pic_width_in_luma_samples.get() {
                 return Err(io::Error::new(
                     io::ErrorKind::InvalidData,
                     "sub_width_c * (left_offset + right_offset) must be less than pic_width_in_luma_samples",
                 ));
             }
 
-            if sub_height_c as u64 * (top_offset + bottom_offset) >= pic_height_in_luma_samples {
+            if sub_height_c as u64 * (top_offset + bottom_offset) >= pic_height_in_luma_samples.get() {
                 return Err(io::Error::new(
                     io::ErrorKind::InvalidData,
                     "sub_height_c * (top_offset + bottom_offset) must be less than pic_height_in_luma_samples",

@@ -24,17 +24,4 @@ mod tests {
         let i = 2u64;
         range_check!(i, 0, 63).unwrap();
     }
-
-    // Cannot be tested with postcompile because it's a private macro
-    // #[test]
-    // fn i64() {
-    //     insta::assert_snapshot!(postcompile::compile! {
-    //         use scuffle_h265::range_check;
-
-    //         fn test() {
-    //             let i = 2i64;
-    //             range_check::range_check!(i, 0, 63);
-    //         }
-    //     });
-    // }
 }

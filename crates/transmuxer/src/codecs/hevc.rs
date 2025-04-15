@@ -24,18 +24,14 @@ pub(crate) fn stsd_entry(config: HEVCDecoderConfigurationRecord) -> Result<(DynB
 
     let sps = scuffle_h265::Sps::parse_with_emulation_prevention(io::Cursor::new(sps.clone()))?;
 
-    let colr = sps
-        .vui_parameters
-        .as_ref()
-        .and_then(|v| v.video_signal_type.as_ref())
-        .map(|color_config| {
-            Colr::new(ColorType::Nclx {
-                color_primaries: color_config.color_primaries as u16,
-                matrix_coefficients: color_config.matrix_coeffs as u16,
-                transfer_characteristics: color_config.transfer_characteristics as u16,
-                full_range_flag: color_config.video_full_range_flag,
-            })
-        });
+    let colr = sps.vui_parameters.as_ref().map(|v| &v.video_signal_type).map(|color_config| {
+        Colr::new(ColorType::Nclx {
+            color_primaries: color_config.color_primaries as u16,
+            matrix_coefficients: color_config.matrix_coeffs as u16,
+            transfer_characteristics: color_config.transfer_characteristics as u16,
+            full_range_flag: color_config.video_full_range_flag,
+        })
+    });
 
     Ok((
         Hev1::new(

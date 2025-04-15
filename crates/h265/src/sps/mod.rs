@@ -1,5 +1,4 @@
 use std::io;
-use std::num::NonZero;
 
 use byteorder::ReadBytesExt;
 use scuffle_bytes_util::BitReader;
@@ -7,6 +6,8 @@ use scuffle_expgolomb::BitReaderExpGolombExt;
 use scuffle_h264::EmulationPreventionIo;
 
 use crate::NALUnitType;
+use crate::nal_unit_header::NALUnitHeader;
+use crate::range_check::range_check;
 
 mod conformance_window;
 mod pcm;
@@ -33,20 +34,12 @@ pub use sub_layer_ordering_info::SubLayerOrderingInfo;
 pub use vui_parameters::VuiParameters;
 
 /// The Sequence Parameter Set.
+///
 /// ISO/IEC-14496-10-2022 - 7.3.2.2
 #[derive(Debug, Clone, PartialEq)]
 pub struct Sps {
-    /// The `nuh_layer_id` is 6 bits containing the id of the layer that a non/VCL NAL unit belongs to.
-    ///
-    /// This value ranges from \[0, 62\], with 63 being reserved for future use.
-    ///
-    /// If nalu_type is equal to EOB_NUT then this is set to 0.
-    pub nuh_layer_id: u8,
-
-    /// The `nuh_temporal_id_plus1` is 3 bits, where the value minus 1 is the temporal id for the NAL unit.
-    ///
-    /// This value cannot be 0.
-    pub nuh_temporal_id_plus1: NonZero<u8>,
+    /// The NAL unit header.
+    pub nal_unit_header: NALUnitHeader,
 
     /// The `sps_video_parameter_set_id` is 4 bits, and is the value of the
     /// `vps_video_parameter_set_id` of the active VPS.
@@ -104,7 +97,7 @@ pub struct Sps {
     /// <https://en.wikipedia.org/wiki/Exponential-Golomb_coding>
     ///
     /// ISO/IEC-23008-2-2020 - 7.4.3.2.1
-    pub chroma_format_idc: u64,
+    pub chroma_format_idc: u8,
 
     /// The `separate_colour_plane_flag` is a single bit.
     ///
@@ -114,7 +107,7 @@ pub struct Sps {
     /// `ChromaArrayType` is set to 0.
     ///
     /// ISO/IEC-23008-2-2020 - 7.4.3.2.1
-    pub separate_color_plane_flag: Option<bool>,
+    pub separate_color_plane_flag: bool,
 
     /// The `pic_width_in_luma_samples` is the width of each decoded picture in units of luma samples.
     ///
@@ -142,13 +135,8 @@ pub struct Sps {
     /// ISO/IEC-23008-2-2020 - 7.4.3.2.1
     pub pic_height_in_luma_samples: u64,
 
-    /// An optional [`ConformanceWindow`] struct. This is computed by other fields, and isn't directly set.
-    ///
-    /// If the `conformance_window_flag` is set, then `conf_win_left_offset`, `conf_win_right_offset`,
-    /// `conf_win_top_offset`, and `conf_win_bottom_offset` will be read and stored.
-    ///
-    /// Refer to the [`ConformanceWindow`] struct for more info.
-    pub conformance_window: Option<ConformanceWindow>,
+    /// The [`ConformanceWindow`].
+    pub conformance_window: ConformanceWindow,
 
     /// The `bit_depth_luma_minus8` defines the BitDepth_Y and QpBdOffset_Y as:
     ///
@@ -169,7 +157,7 @@ pub struct Sps {
     /// <https://en.wikipedia.org/wiki/Exponential-Golomb_coding>
     ///
     /// ISO/IEC-23008-2-2020 - 7.4.3.2.1
-    pub bit_depth_luma_minus8: u64,
+    pub bit_depth_luma_minus8: u8,
 
     /// The `bit_depth_luma_minus8` defines the BitDepth_C and QpBdOffset_C as:
     ///
@@ -190,7 +178,7 @@ pub struct Sps {
     /// <https://en.wikipedia.org/wiki/Exponential-Golomb_coding>
     ///
     /// ISO/IEC-23008-2-2020 - 7.4.3.2.1
-    pub bit_depth_chroma_minus8: u64,
+    pub bit_depth_chroma_minus8: u8,
 
     /// The `log2_max_pic_order_cnt_lsb_minus4` defines the MaxPicOrderCntLsb as:
     ///
@@ -207,7 +195,7 @@ pub struct Sps {
     /// <https://en.wikipedia.org/wiki/Exponential-Golomb_coding>
     ///
     /// ISO/IEC-23008-2-2020 - 7.4.3.2.1
-    pub log2_max_pic_order_cnt_lsb_minus4: u64,
+    pub log2_max_pic_order_cnt_lsb_minus4: u8,
 
     pub sub_layer_ordering_info: SubLayerOrderingInfo,
 
@@ -284,8 +272,7 @@ pub struct Sps {
 
     pub pcm: Option<Pcm>,
 
-    pub num_short_term_ref_pic_sets: u64,
-
+    pub short_term_ref_pic_sets: ShortTermRefPicSets,
     pub long_term_ref_pics_present_flag: bool,
 
     pub sps_temporal_mvp_enabled_flag: bool,
@@ -297,70 +284,103 @@ pub struct Sps {
     pub multilayer_extension: Option<SpsMultilayerExtension>,
     pub sps_3d_extension: Option<Sps3dExtension>,
     pub scc_extension: Option<SpsSccExtension>,
+
+    // Calculated fields
+    sub_width_c: u8,
+    sub_height_c: u8,
+    bit_depth_y: u8,
+    bit_depth_c: u8,
+    min_cb_log2_size_y: u64,
+    ctb_log2_size_y: u64,
+    min_tb_log2_size_y: u64,
 }
 
 impl Sps {
     /// Parses an SPS from the input bytes.
-    /// Returns an `Sps` struct.
+    ///
+    /// Returns an [`Sps`] struct.
     pub fn parse(reader: impl io::Read) -> io::Result<Self> {
         let mut bit_reader = BitReader::new(reader);
 
-        let forbidden_zero_bit = bit_reader.read_bit()?;
-        if forbidden_zero_bit {
-            return Err(io::Error::new(io::ErrorKind::InvalidData, "forbidden_zero_bit is not zero"));
+        let nal_unit_header = NALUnitHeader::parse(&mut bit_reader)?;
+        if nal_unit_header.nal_unit_type != NALUnitType::SpsNut {
+            return Err(io::Error::new(io::ErrorKind::InvalidData, "nal_unit_type is not SPS_NUT"));
         }
-
-        let nalu_type = bit_reader.read_bits(6)? as u8;
-        if nalu_type != NALUnitType::SpsNut.0 {
-            return Err(io::Error::new(io::ErrorKind::InvalidData, "NAL unit type is not SPS"));
-        }
-
-        // nal unit header (excluding forbidden zero bit and nal_unit_type)
-        // ISO/IEC-23008-2-2020 - 7.3.1.2
-        let nuh_layer_id = bit_reader.read_bits(6)? as u8;
-        // nuh_temporal_id_plus1 TODO a lot of logic for this apparently, 7.4.2.2
-        let nuh_temporal_id_plus1 = bit_reader.read_bits(3)? as u8;
 
         // begin ISO/IEC-23008-2-2020 - 7.3.2.2.1
         // semantics in ISO/IEC-23008-2-2020 - 7.4.3.2.1
         let sps_video_parameter_set_id = bit_reader.read_bits(4)? as u8;
 
         let sps_max_sub_layers_minus1 = bit_reader.read_bits(3)? as u8;
+        range_check!(sps_max_sub_layers_minus1, 0, 6)?;
+
         let sps_temporal_id_nesting_flag = bit_reader.read_bit()?;
 
+        if sps_max_sub_layers_minus1 == 0 && !sps_temporal_id_nesting_flag {
+            return Err(io::Error::new(
+                io::ErrorKind::InvalidData,
+                "sps_temporal_id_nesting_flag must be 1 when sps_max_sub_layers_minus1 is 0",
+            ));
+        }
+
         // ISO/IEC-23008-2-2020 - 7.3.3
-        let profile_tier_level = ProfileTierLevel::parse(
-            &mut bit_reader,
-            true, // profile_present_flag
-            sps_max_sub_layers_minus1,
-        )?;
+        let profile_tier_level = ProfileTierLevel::parse(&mut bit_reader, sps_max_sub_layers_minus1)?;
 
         // back to ISO/IEC-23008-2-2020 - 7.3.2.2.1
         let sps_seq_parameter_set_id = bit_reader.read_exp_golomb()?;
+        range_check!(sps_seq_parameter_set_id, 0, 15)?;
 
         let chroma_format_idc = bit_reader.read_exp_golomb()?;
+        range_check!(chroma_format_idc, 0, 3)?;
+        let chroma_format_idc = chroma_format_idc as u8;
 
-        let mut separate_color_plane_flag = None;
+        let mut separate_color_plane_flag = false;
         if chroma_format_idc == 3 {
-            separate_color_plane_flag = Some(bit_reader.read_bit()?);
+            separate_color_plane_flag = bit_reader.read_bit()?;
         }
 
+        let sub_width_c = if chroma_format_idc == 1 || chroma_format_idc == 2 {
+            2
+        } else {
+            1
+        };
+        let sub_height_c = if chroma_format_idc == 1 { 2 } else { 1 };
+
         let pic_width_in_luma_samples = bit_reader.read_exp_golomb()?;
+        if pic_width_in_luma_samples == 0 {
+            return Err(io::Error::new(
+                io::ErrorKind::InvalidData,
+                "pic_width_in_luma_samples must not be 0",
+            ));
+        }
+
         let pic_height_in_luma_samples = bit_reader.read_exp_golomb()?;
+        if pic_height_in_luma_samples == 0 {
+            return Err(io::Error::new(
+                io::ErrorKind::InvalidData,
+                "pic_height_in_luma_samples must not be 0",
+            ));
+        }
 
         let conformance_window_flag = bit_reader.read_bit()?;
 
-        let mut conformance_window = None;
-        if conformance_window_flag {
-            conformance_window = Some(ConformanceWindow::parse(&mut bit_reader)?)
-        }
+        let conformance_window = conformance_window_flag
+            .then(|| ConformanceWindow::parse(&mut bit_reader))
+            .transpose()?
+            .unwrap_or_default();
 
         let bit_depth_luma_minus8 = bit_reader.read_exp_golomb()?;
+        range_check!(bit_depth_luma_minus8, 0, 8)?;
+        let bit_depth_luma_minus8 = bit_depth_luma_minus8 as u8;
         let bit_depth_y = 8 + bit_depth_luma_minus8; // BitDepth_Y
         let bit_depth_chroma_minus8 = bit_reader.read_exp_golomb()?;
+        range_check!(bit_depth_chroma_minus8, 0, 8)?;
+        let bit_depth_chroma_minus8 = bit_depth_chroma_minus8 as u8;
         let bit_depth_c = 8 + bit_depth_chroma_minus8; // BitDepth_C
 
         let log2_max_pic_order_cnt_lsb_minus4 = bit_reader.read_exp_golomb()?;
+        range_check!(log2_max_pic_order_cnt_lsb_minus4, 0, 12)?;
+        let log2_max_pic_order_cnt_lsb_minus4 = log2_max_pic_order_cnt_lsb_minus4 as u8;
 
         let sps_sub_layer_ordering_info_present_flag = bit_reader.read_bit()?;
         let sub_layer_ordering_info = SubLayerOrderingInfo::parse(
@@ -371,10 +391,19 @@ impl Sps {
 
         let log2_min_luma_coding_block_size_minus3 = bit_reader.read_exp_golomb()?;
         let log2_diff_max_min_luma_coding_block_size = bit_reader.read_exp_golomb()?;
+
+        let min_cb_log2_size_y = log2_min_luma_coding_block_size_minus3 + 3;
+        let ctb_log2_size_y = min_cb_log2_size_y + log2_diff_max_min_luma_coding_block_size;
+
         let log2_min_luma_transform_block_size_minus2 = bit_reader.read_exp_golomb()?;
+
+        let min_tb_log2_size_y = log2_min_luma_transform_block_size_minus2 + 2;
+
         let log2_diff_max_min_luma_transform_block_size = bit_reader.read_exp_golomb()?;
         let max_transform_hierarchy_depth_inter = bit_reader.read_exp_golomb()?;
+        range_check!(max_transform_hierarchy_depth_inter, 0, ctb_log2_size_y - min_tb_log2_size_y)?;
         let max_transform_hierarchy_depth_intra = bit_reader.read_exp_golomb()?;
+        range_check!(max_transform_hierarchy_depth_intra, 0, ctb_log2_size_y - min_tb_log2_size_y)?;
 
         let scaling_list_enabled_flag = bit_reader.read_bit()?;
 
@@ -393,17 +422,26 @@ impl Sps {
         let mut pcm = None;
         let pcm_enabled_flag = bit_reader.read_bit()?;
         if pcm_enabled_flag {
-            pcm = Some(Pcm::parse(&mut bit_reader)?);
+            pcm = Some(Pcm::parse(
+                &mut bit_reader,
+                bit_depth_y,
+                bit_depth_c,
+                min_cb_log2_size_y,
+                ctb_log2_size_y,
+            )?);
         }
 
         let num_short_term_ref_pic_sets = bit_reader.read_exp_golomb()?;
-        ShortTermRefPicSets::skip(&mut bit_reader, num_short_term_ref_pic_sets as usize)?;
+        range_check!(num_short_term_ref_pic_sets, 0, 64)?;
+        let num_short_term_ref_pic_sets = num_short_term_ref_pic_sets as u8;
+        let short_term_ref_pic_sets = ShortTermRefPicSets::parse(&mut bit_reader, num_short_term_ref_pic_sets as usize)?;
 
         let long_term_ref_pics_present_flag = bit_reader.read_bit()?;
         if long_term_ref_pics_present_flag {
             let num_long_term_ref_pics_sps = bit_reader.read_exp_golomb()?;
+            range_check!(num_long_term_ref_pics_sps, 0, 32)?;
             for _ in 0..num_long_term_ref_pics_sps {
-                bit_reader.read_bits((log2_max_pic_order_cnt_lsb_minus4 + 4).try_into().unwrap_or(0))?; // lt_ref_pic_poc_lsb_sps
+                bit_reader.read_bits(log2_max_pic_order_cnt_lsb_minus4 + 4)?; // lt_ref_pic_poc_lsb_sps
                 bit_reader.read_bits(1)?; // used_by_curr_pic_lt_sps_flag
             }
         }
@@ -414,7 +452,21 @@ impl Sps {
         let mut vui_parameters = None;
         let vui_parameters_present_flag = bit_reader.read_bit()?;
         if vui_parameters_present_flag {
-            vui_parameters = Some(VuiParameters::parse(&mut bit_reader, sps_max_sub_layers_minus1)?);
+            vui_parameters = Some(VuiParameters::parse(
+                &mut bit_reader,
+                sps_max_sub_layers_minus1,
+                bit_depth_y,
+                bit_depth_c,
+                chroma_format_idc,
+                profile_tier_level.general_profile.frame_only_constraint_flag,
+                profile_tier_level.general_profile.progressive_source_flag,
+                profile_tier_level.general_profile.interlaced_source_flag,
+                &conformance_window,
+                sub_width_c,
+                pic_width_in_luma_samples,
+                sub_height_c,
+                pic_height_in_luma_samples,
+            )?);
         }
 
         // Extensions
@@ -440,7 +492,7 @@ impl Sps {
             }
 
             if sps_3d_extension_flag {
-                sps_3d_extension = Some(Sps3dExtension::parse(&mut bit_reader)?);
+                sps_3d_extension = Some(Sps3dExtension::parse(&mut bit_reader, min_cb_log2_size_y, ctb_log2_size_y)?);
             }
 
             if sps_scc_extension_flag {
@@ -465,8 +517,7 @@ impl Sps {
         } {}
 
         Ok(Sps {
-            nuh_layer_id,
-            nuh_temporal_id_plus1: NonZero::new(nuh_temporal_id_plus1).unwrap(),
+            nal_unit_header,
             sps_video_parameter_set_id,
             sps_max_sub_layers_minus1,
             sps_temporal_id_nesting_flag,
@@ -491,7 +542,7 @@ impl Sps {
             amp_enabled_flag,
             sample_adaptive_offset_enabled_flag,
             pcm,
-            num_short_term_ref_pic_sets,
+            short_term_ref_pic_sets,
             long_term_ref_pics_present_flag,
             sps_temporal_mvp_enabled_flag,
             strong_intra_smoothing_enabled_flag,
@@ -500,6 +551,14 @@ impl Sps {
             multilayer_extension,
             sps_3d_extension,
             scc_extension,
+            // Calculated fields
+            sub_width_c,
+            sub_height_c,
+            bit_depth_y,
+            bit_depth_c,
+            min_cb_log2_size_y,
+            ctb_log2_size_y,
+            min_tb_log2_size_y,
         })
     }
 
@@ -511,28 +570,146 @@ impl Sps {
     ///
     /// `height = pic_height_in_luma_samples - sub_height_c * (conf_win_top_offset + conf_win_bottom_offset)`
     pub fn height(&self) -> u64 {
-        let sub_height_c = if matches!(self.chroma_format_idc, 1) { 2 } else { 1 };
-
-        let sum = self
-            .conformance_window
-            .as_ref()
-            .map_or(0, |cwi| (cwi.conf_win_top_offset + cwi.conf_win_bottom_offset));
-
-        self.pic_height_in_luma_samples - sub_height_c * sum
+        self.pic_height_in_luma_samples
+            - self.sub_height_c() as u64
+                * (self.conformance_window.conf_win_top_offset + self.conformance_window.conf_win_bottom_offset)
     }
 
     /// The width as a u64. This is computed from other fields, and isn't directly set.
     ///
     /// `width = pic_width_in_luma_samples - sub_width_c * (conf_win_left_offset + conf_win_right_offset)`
     pub fn width(&self) -> u64 {
-        let sub_width_c = if matches!(self.chroma_format_idc, 1 | 2) { 2 } else { 1 };
+        self.pic_width_in_luma_samples
+            - self.sub_width_c() as u64
+                * (self.conformance_window.conf_win_left_offset + self.conformance_window.conf_win_right_offset)
+    }
 
-        let sum = self
-            .conformance_window
-            .as_ref()
-            .map_or(0, |cwi| (cwi.conf_win_left_offset + cwi.conf_win_right_offset));
+    pub fn chroma_array_type(&self) -> u8 {
+        if self.separate_color_plane_flag {
+            0
+        } else {
+            self.chroma_format_idc
+        }
+    }
 
-        self.pic_width_in_luma_samples - sub_width_c * sum
+    #[inline]
+    pub fn sub_width_c(&self) -> u8 {
+        self.sub_width_c
+    }
+
+    #[inline]
+    pub fn sub_height_c(&self) -> u8 {
+        self.sub_height_c
+    }
+
+    #[inline]
+    pub fn bit_depth_y(&self) -> u8 {
+        self.bit_depth_y
+    }
+
+    pub fn qp_bd_offset_y(&self) -> u8 {
+        6 * self.bit_depth_y
+    }
+
+    #[inline]
+    pub fn bit_depth_c(&self) -> u8 {
+        self.bit_depth_c
+    }
+
+    pub fn qp_bd_offset_c(&self) -> u8 {
+        6 * self.bit_depth_c
+    }
+
+    pub fn max_pic_order_cnt_lsb(&self) -> u32 {
+        2u32.pow(self.log2_max_pic_order_cnt_lsb_minus4 as u32 + 4)
+    }
+
+    #[inline]
+    pub fn min_cb_log2_size_y(&self) -> u64 {
+        self.min_cb_log2_size_y
+    }
+
+    #[inline]
+    pub fn ctb_log2_size_y(&self) -> u64 {
+        self.ctb_log2_size_y
+    }
+
+    pub fn min_cb_size_y(&self) -> u64 {
+        1 << self.min_cb_log2_size_y()
+    }
+
+    pub fn ctb_size_y(&self) -> u64 {
+        1 << self.ctb_log2_size_y()
+    }
+
+    pub fn pic_width_in_min_cbs_y(&self) -> f64 {
+        self.pic_width_in_luma_samples as f64 / self.min_cb_size_y() as f64
+    }
+
+    pub fn pic_width_in_ctbs_y(&self) -> u64 {
+        (self.pic_width_in_luma_samples / self.ctb_size_y()) + 1
+    }
+
+    pub fn pic_height_in_min_cbs_y(&self) -> f64 {
+        self.pic_height_in_luma_samples as f64 / self.min_cb_size_y() as f64
+    }
+
+    pub fn pic_height_in_ctbs_y(&self) -> u64 {
+        (self.pic_height_in_luma_samples / self.ctb_size_y()) + 1
+    }
+
+    pub fn pic_size_in_min_cbs_y(&self) -> f64 {
+        self.pic_width_in_min_cbs_y() * self.pic_height_in_min_cbs_y()
+    }
+
+    pub fn pic_size_in_ctbs_y(&self) -> u64 {
+        self.pic_width_in_ctbs_y() * self.pic_height_in_ctbs_y()
+    }
+
+    pub fn pic_size_in_samples_y(&self) -> u64 {
+        self.pic_width_in_luma_samples * self.pic_height_in_luma_samples
+    }
+
+    pub fn pic_width_in_samples_c(&self) -> u64 {
+        self.pic_width_in_luma_samples / self.sub_width_c() as u64
+    }
+
+    pub fn pic_height_in_samples_c(&self) -> u64 {
+        self.pic_height_in_luma_samples / self.sub_height_c() as u64
+    }
+
+    pub fn ctb_width_c(&self) -> u64 {
+        if self.chroma_format_idc == 0 || self.separate_color_plane_flag {
+            0
+        } else {
+            self.ctb_size_y() / self.sub_width_c() as u64
+        }
+    }
+
+    pub fn ctb_height_c(&self) -> u64 {
+        if self.chroma_format_idc == 0 || self.separate_color_plane_flag {
+            0
+        } else {
+            self.ctb_size_y() / self.sub_height_c() as u64
+        }
+    }
+
+    pub fn min_tb_log2_size_y(&self) -> u64 {
+        self.min_tb_log2_size_y
+    }
+
+    pub fn max_tb_log2_size_y(&self) -> u64 {
+        self.log2_min_luma_transform_block_size_minus2 + 2 + self.log2_diff_max_min_luma_transform_block_size
+    }
+
+    pub fn scan_order(&self) {
+        todo!()
+    }
+
+    pub fn raw_ctu_bits(&self) -> u64 {
+        // defined by A-1
+        self.ctb_size_y() * self.ctb_size_y() * self.bit_depth_y() as u64
+            + 2 * (self.ctb_width_c() * self.ctb_height_c()) * self.bit_depth_c() as u64
     }
 }
 
@@ -619,12 +796,14 @@ mod tests {
 
     #[test]
     fn test_invalid_nalu_type() {
-        // 0x40 = 0100 0000:
-        //   forbidden_zero_bit = 0;
-        //   next 6 bits (100000) = 32 ≠ 33.
-        let data = [0x40];
+        // 1 forbidden_zero_bit = 0
+        // nal_unit_type (100000) = 32 ≠ 33
+        // nuh_layer_id (000000) = 0
+        // nuh_temporal_id_plus1 (001) = 1
+        #[allow(clippy::unusual_byte_groupings)]
+        let data = [0b0_100000_0, 0b00000_001];
         let err = Sps::parse_with_emulation_prevention(io::Cursor::new(data)).unwrap_err();
         assert_eq!(err.kind(), io::ErrorKind::InvalidData);
-        assert_eq!(err.to_string(), "NAL unit type is not SPS");
+        assert_eq!(err.to_string(), "nal_unit_type is not SPS_NUT");
     }
 }

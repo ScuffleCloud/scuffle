@@ -509,7 +509,7 @@ impl<'a> Transmuxer<'a> {
 
                 let (entry, sps) = codecs::hevc::stsd_entry(config)?;
                 if let Some(info) = sps.vui_parameters.as_ref().and_then(|p| p.vui_timing_info.as_ref()) {
-                    video_fps = info.time_scale as f64 / info.num_units_in_tick as f64;
+                    video_fps = info.time_scale.get() as f64 / info.num_units_in_tick as f64;
                 }
 
                 video_width = sps.width() as u32;

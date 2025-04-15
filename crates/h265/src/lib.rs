@@ -38,6 +38,8 @@
 
 mod config;
 mod enums;
+mod nal_unit_header;
+mod range_check;
 mod sps;
 
 pub use config::{HEVCDecoderConfigurationRecord, NaluArray};

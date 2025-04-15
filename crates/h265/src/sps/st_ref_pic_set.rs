@@ -5,10 +5,18 @@ use scuffle_bytes_util::BitReader;
 use scuffle_expgolomb::BitReaderExpGolombExt;
 
 #[derive(Debug, Clone, PartialEq)]
-pub struct ShortTermRefPicSets;
+pub struct ShortTermRefPicSets {
+    pub num_delta_pocs: Vec<u64>,
+    pub num_positive_pics: Vec<u64>,
+    pub num_negative_pics: Vec<u64>,
+    pub delta_poc_s1: Vec<Vec<i64>>,
+    pub delta_poc_s0: Vec<Vec<i64>>,
+    pub used_by_curr_pic_s0: Vec<Vec<bool>>,
+    pub used_by_curr_pic_s1: Vec<Vec<bool>>,
+}
 
 impl ShortTermRefPicSets {
-    pub fn skip<R: io::Read>(bit_reader: &mut BitReader<R>, num_short_term_ref_pic_sets: usize) -> io::Result<Self> {
+    pub fn parse<R: io::Read>(bit_reader: &mut BitReader<R>, num_short_term_ref_pic_sets: usize) -> io::Result<Self> {
         let mut num_delta_pocs = Vec::with_capacity(num_short_term_ref_pic_sets);
 
         let mut num_positive_pics = vec![0u64; num_short_term_ref_pic_sets];
@@ -142,6 +150,14 @@ impl ShortTermRefPicSets {
             }
         }
 
-        Ok(Self)
+        Ok(Self {
+            num_delta_pocs,
+            num_positive_pics,
+            num_negative_pics,
+            delta_poc_s1,
+            delta_poc_s0,
+            used_by_curr_pic_s0,
+            used_by_curr_pic_s1,
+        })
     }
 }

@@ -7,7 +7,7 @@ use scuffle_expgolomb::{BitReaderExpGolombExt, BitWriterExpGolombExt};
 ///
 /// This includes `conf_win_left_offset`, `conf_win_right_offset`, `conf_win_top_offset`,
 /// and `conf_win_bottom_offset`.
-#[derive(Debug, Clone, PartialEq)]
+#[derive(Debug, Clone, PartialEq, Default)]
 pub struct ConformanceWindow {
     /// The `conf_win_left_offset` is the the left crop offset which is used to compute the width:
     ///

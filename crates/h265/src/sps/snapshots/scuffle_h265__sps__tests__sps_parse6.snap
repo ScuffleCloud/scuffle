@@ -1735,10 +1735,78 @@ Sps {
             0,
             0,
         ],
-        delta_poc_s1: [],
-        delta_poc_s0: [],
-        used_by_curr_pic_s0: [],
-        used_by_curr_pic_s1: [],
+        delta_poc_s1: [
+            [],
+            [
+                4,
+            ],
+            [
+                2,
+            ],
+            [
+                4,
+            ],
+            [
+                2,
+            ],
+            [],
+            [],
+        ],
+        delta_poc_s0: [
+            [
+                6,
+            ],
+            [
+                2,
+            ],
+            [
+                4,
+            ],
+            [],
+            [],
+            [
+                2,
+            ],
+            [
+                6,
+            ],
+        ],
+        used_by_curr_pic_s0: [
+            [
+                true,
+            ],
+            [
+                true,
+            ],
+            [
+                true,
+            ],
+            [],
+            [],
+            [
+                true,
+            ],
+            [
+                false,
+            ],
+        ],
+        used_by_curr_pic_s1: [
+            [],
+            [
+                true,
+            ],
+            [
+                true,
+            ],
+            [
+                true,
+            ],
+            [
+                true,
+            ],
+            [],
+            [],
+        ],
     },
     long_term_ref_pics_present_flag: false,
     sps_temporal_mvp_enabled_flag: false,

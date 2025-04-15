@@ -26,6 +26,10 @@ impl SpsSccExtension {
         let palette_mode_enabled_flag = bit_reader.read_bit()?;
         if palette_mode_enabled_flag {
             let palette_max_size = bit_reader.read_exp_golomb()?;
+
+            // This check is not part of the spec but is added to ensure that the value is within a reasonable range
+            range_check!(palette_max_size, 0, 1000)?;
+
             let delta_palette_max_predictor_size = bit_reader.read_exp_golomb()?;
 
             if palette_max_size == 0 && delta_palette_max_predictor_size != 0 {

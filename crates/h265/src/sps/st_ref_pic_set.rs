@@ -4,6 +4,8 @@ use std::io;
 use scuffle_bytes_util::BitReader;
 use scuffle_expgolomb::BitReaderExpGolombExt;
 
+use crate::range_check::range_check;
+
 #[derive(Debug, Clone, PartialEq)]
 pub struct ShortTermRefPicSets {
     pub num_delta_pocs: Vec<u64>,
@@ -16,7 +18,12 @@ pub struct ShortTermRefPicSets {
 }
 
 impl ShortTermRefPicSets {
-    pub fn parse<R: io::Read>(bit_reader: &mut BitReader<R>, num_short_term_ref_pic_sets: usize) -> io::Result<Self> {
+    pub fn parse<R: io::Read>(
+        bit_reader: &mut BitReader<R>,
+        num_short_term_ref_pic_sets: usize,
+        nuh_layer_id: u8,
+        sps_max_dec_pic_buffering_minus1_at_sps_max_sub_layers_minus1: u64,
+    ) -> io::Result<Self> {
         let mut num_delta_pocs = Vec::with_capacity(num_short_term_ref_pic_sets);
 
         let mut num_positive_pics = vec![0u64; num_short_term_ref_pic_sets];
@@ -33,7 +40,6 @@ impl ShortTermRefPicSets {
             }
 
             if inter_ref_pic_set_prediction_flag {
-                // inter_ref_pic_set_prediction_flag
                 let mut delta_idx_minus1 = 0;
                 if st_rps_idx == num_short_term_ref_pic_sets {
                     delta_idx_minus1 = bit_reader.read_exp_golomb()? as usize;
@@ -137,13 +143,44 @@ impl ShortTermRefPicSets {
                 let num_negative_pics = bit_reader.read_exp_golomb()?;
                 let num_positive_pics = bit_reader.read_exp_golomb()?;
 
-                for _ in 0..num_negative_pics {
-                    bit_reader.read_exp_golomb()?; // delta_poc_s0_minus1
-                    bit_reader.read_bit()?; // used_by_curr_pic_s0_flag
+                let upper_bound = if nuh_layer_id == 0 {
+                    sps_max_dec_pic_buffering_minus1_at_sps_max_sub_layers_minus1
+                } else {
+                    // The spec does not limit the value in this case so we set it to a reasonable value
+                    1000
+                };
+                range_check!(num_negative_pics, 0, upper_bound)?;
+
+                let upper_bound = if nuh_layer_id == 0 {
+                    sps_max_dec_pic_buffering_minus1_at_sps_max_sub_layers_minus1.saturating_sub(num_negative_pics)
+                } else {
+                    // The spec does not limit the value in this case so we set it to a reasonable value
+                    1000
+                };
+                range_check!(num_positive_pics, 0, upper_bound)?;
+
+                delta_poc_s0.push(vec![0; num_negative_pics as usize]);
+                used_by_curr_pic_s0.push(vec![false; num_negative_pics as usize]);
+
+                for i in 0..num_negative_pics as usize {
+                    let delta_poc_s0_minus1 = bit_reader.read_exp_golomb()?;
+                    range_check!(delta_poc_s0_minus1, 0, 2u64.pow(15) - 1)?;
+                    delta_poc_s0[st_rps_idx][i] = delta_poc_s0_minus1 as i64 + 1;
+
+                    let used_by_curr_pic_s0_flag = bit_reader.read_bit()?;
+                    used_by_curr_pic_s0[st_rps_idx][i] = used_by_curr_pic_s0_flag;
                 }
-                for _ in 0..num_positive_pics {
-                    bit_reader.read_exp_golomb()?; // delta_poc_s1_minus1
-                    bit_reader.read_bit()?; // used_by_curr_pic_s1_flag
+
+                delta_poc_s1.push(vec![0; num_positive_pics as usize]);
+                used_by_curr_pic_s1.push(vec![false; num_positive_pics as usize]);
+
+                for i in 0..num_positive_pics as usize {
+                    let delta_poc_s1_minus1 = bit_reader.read_exp_golomb()?;
+                    range_check!(delta_poc_s1_minus1, 0, 2u64.pow(15) - 1)?;
+                    delta_poc_s1[st_rps_idx][i] = delta_poc_s1_minus1 as i64 + 1;
+
+                    let used_by_curr_pic_s1_flag = bit_reader.read_bit()?;
+                    used_by_curr_pic_s1[st_rps_idx][i] = used_by_curr_pic_s1_flag;
                 }
 
                 num_delta_pocs.push(num_negative_pics + num_positive_pics);

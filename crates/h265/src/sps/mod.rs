@@ -425,7 +425,15 @@ impl Sps {
         let num_short_term_ref_pic_sets = bit_reader.read_exp_golomb()?;
         range_check!(num_short_term_ref_pic_sets, 0, 64)?;
         let num_short_term_ref_pic_sets = num_short_term_ref_pic_sets as u8;
-        let short_term_ref_pic_sets = ShortTermRefPicSets::parse(&mut bit_reader, num_short_term_ref_pic_sets as usize)?;
+        let short_term_ref_pic_sets = ShortTermRefPicSets::parse(
+            &mut bit_reader,
+            num_short_term_ref_pic_sets as usize,
+            nal_unit_header.nuh_layer_id,
+            *sub_layer_ordering_info
+                .sps_max_dec_pic_buffering_minus1
+                .last()
+                .expect("unreachable: cannot be empty"),
+        )?;
 
         let long_term_ref_pics_present_flag = bit_reader.read_bit()?;
         if long_term_ref_pics_present_flag {

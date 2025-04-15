@@ -83,6 +83,7 @@ impl HrdParameters {
             let mut cpb_cnt_minus1 = 0;
             if !low_delay_hrd_flag {
                 cpb_cnt_minus1 = bit_reader.read_exp_golomb()?;
+                range_check!(cpb_cnt_minus1, 0, 31)?;
             }
 
             let mut sub_layer_parameters = Vec::new();

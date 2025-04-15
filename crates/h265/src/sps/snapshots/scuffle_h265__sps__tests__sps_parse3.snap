@@ -1714,10 +1714,42 @@ Sps {
             0,
             0,
         ],
-        delta_poc_s1: [],
-        delta_poc_s0: [],
-        used_by_curr_pic_s0: [],
-        used_by_curr_pic_s1: [],
+        delta_poc_s1: [
+            [],
+            [
+                2,
+            ],
+            [],
+        ],
+        delta_poc_s0: [
+            [
+                3,
+            ],
+            [
+                1,
+            ],
+            [
+                1,
+            ],
+        ],
+        used_by_curr_pic_s0: [
+            [
+                true,
+            ],
+            [
+                true,
+            ],
+            [
+                true,
+            ],
+        ],
+        used_by_curr_pic_s1: [
+            [],
+            [
+                true,
+            ],
+            [],
+        ],
     },
     long_term_ref_pics_present_flag: false,
     sps_temporal_mvp_enabled_flag: true,

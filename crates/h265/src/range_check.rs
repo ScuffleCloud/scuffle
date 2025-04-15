@@ -2,7 +2,7 @@ macro_rules! range_check {
     ($n:expr, $lower:expr, $upper:expr) => {{
         let n = $n;
 
-        #[allow(unused_comparisons)]
+        #[allow(unused_comparisons, clippy::manual_range_contains)]
         if n < $lower || n > $upper {
             ::std::result::Result::Err(::std::io::Error::new(
                 ::std::io::ErrorKind::InvalidData,

@@ -20,12 +20,12 @@ bitfield ExpGolomb {
 
 fn exp_golomb_value(ref ExpGolomb exp_golomb) {
     u64 result = 1;
-    
+
     for (u64 i = 0, i < std::core::member_count(exp_golomb.exp_golomb_1), i = i + 1) {
         result = result << 1;
         result = result | exp_golomb.exp_golomb_1[i].bit;
     }
-    
+
     return result - 1;
 };
 
@@ -200,12 +200,12 @@ bitfield StRefPicSetPositivePic {
 
 bitfield StRefPicSet {
     u64 stRpsIdx = std::core::array_index();
-    
+
     bool inter_ref_pic_set_prediction_flag = false;
     if (stRpsIdx != 0) {
         bool inter_ref_pic_set_prediction_flag : 1;
     };
-    
+
     if (inter_ref_pic_set_prediction_flag) {
         std::unimplemented();
     } else {
@@ -276,7 +276,7 @@ bitfield HrdParameters {
         au_cpb_removal_delay_length_minus1: 5;
         dpb_output_delay_length_minus1 : 5;
     }
-    HrdParametersSubLayer sub_layers[parent.parent.sps_max_sub_layers_minus1];
+    HrdParametersSubLayer sub_layers[parent.parent.sps_max_sub_layers_minus1 + 1];
 };
 
 enum VideoFormat : u8 {
@@ -437,7 +437,7 @@ bitfield SPS {
     if (vui_parameters_present_flag) {
         VuiParameters vui_parameters;
     }
-    
+
     bool sps_extension_present_flag : 1;
     if (sps_extension_present_flag) {
         bool sps_range_extension_flag : 1;

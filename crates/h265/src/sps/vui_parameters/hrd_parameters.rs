@@ -62,9 +62,9 @@ impl HrdParameters {
             }
         }
 
-        let mut sub_layers = Vec::with_capacity(max_num_sub_layers_minus1 as usize);
+        let mut sub_layers = Vec::with_capacity(max_num_sub_layers_minus1 as usize + 1);
 
-        for _ in 0..max_num_sub_layers_minus1 {
+        for _ in 0..=max_num_sub_layers_minus1 {
             let mut fixed_pic_rate_within_cvs_flag = true;
 
             let fixed_pic_rate_general_flag = bit_reader.read_bit()?;

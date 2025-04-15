@@ -163,7 +163,18 @@ Sps {
                                 au_cpb_removal_delay_length_minus1: 15,
                                 dpb_output_delay_length_minus1: 5,
                             },
-                            sub_layers: [],
+                            sub_layers: [
+                                [
+                                    SubLayerHrdParameters {
+                                        nal_hrd: true,
+                                        bit_rate_value_minus1: 39061,
+                                        cpb_size_value_minus1: 156249,
+                                        cpb_size_du_value_minus1: None,
+                                        bit_rate_du_value_minus1: None,
+                                        cbr_flag: false,
+                                    },
+                                ],
+                            ],
                         },
                     ),
                 },

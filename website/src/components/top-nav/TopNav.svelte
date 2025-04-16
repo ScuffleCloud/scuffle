@@ -3,7 +3,7 @@
     import { onMount } from 'svelte';
     import { fade } from 'svelte/transition';
     // TODO: Configure routing from root
-    const { pageTitle = 'Dashboard' } = $props();
+    import { page } from '$app/state';
 
     let showSearchModal = $state(false);
     let searchInput = $state<HTMLInputElement | null>(null);
@@ -39,12 +39,30 @@
     function closeModal() {
         showSearchModal = false;
     }
+
+    let breadcrumbs = $derived(
+        page.url.pathname
+            .split('/')
+            .filter(Boolean)
+            .map((segment, index, segments) => ({
+                label: segment.replace(/[-_]/g, ' ').replace(/\b\w/g, (c) => c.toUpperCase()),
+                href: '/' + segments.slice(0, index + 1).join('/'),
+            })),
+    );
 </script>
 
 <header class="top-nav">
-    <div class="breadcrumb">
-        <span>{pageTitle}</span>
-    </div>
+    <nav class="breadcrumb">
+        <a href="/" class="breadcrumb-link">Home</a>
+        {#each breadcrumbs as { label, href }, i}
+            <span class="breadcrumb-separator">/</span>
+            {#if i === breadcrumbs.length - 1}
+                <span class="breadcrumb-text" aria-current="page">{label}</span>
+            {:else}
+                <a {href} class="breadcrumb-link">{label}</a>
+            {/if}
+        {/each}
+    </nav>
     <div class="actions">
         <button class="search-button" aria-label="Search" onclick={() => (showSearchModal = true)}>
             <Search />

@@ -59,7 +59,7 @@
                 }
 
                 &.active {
-                    background-color: #fff3e0;
+                    background-color: #fed48b4d;
                     position: relative;
 
                     &::before {

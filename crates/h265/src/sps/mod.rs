@@ -565,15 +565,6 @@ impl Sps {
         Self::parse(EmulationPreventionIo::new(reader))
     }
 
-    /// The height as a u64. This is computed from other fields, and isn't directly set.
-    ///
-    /// `height = pic_height_in_luma_samples - sub_height_c * (conf_win_top_offset + conf_win_bottom_offset)`
-    pub fn height(&self) -> u64 {
-        self.pic_height_in_luma_samples.get()
-            - self.sub_height_c() as u64
-                * (self.conformance_window.conf_win_top_offset + self.conformance_window.conf_win_bottom_offset)
-    }
-
     /// The width as a u64. This is computed from other fields, and isn't directly set.
     ///
     /// `width = pic_width_in_luma_samples - sub_width_c * (conf_win_left_offset + conf_win_right_offset)`
@@ -581,6 +572,15 @@ impl Sps {
         self.pic_width_in_luma_samples.get()
             - self.sub_width_c() as u64
                 * (self.conformance_window.conf_win_left_offset + self.conformance_window.conf_win_right_offset)
+    }
+
+    /// The height as a u64. This is computed from other fields, and isn't directly set.
+    ///
+    /// `height = pic_height_in_luma_samples - sub_height_c * (conf_win_top_offset + conf_win_bottom_offset)`
+    pub fn height(&self) -> u64 {
+        self.pic_height_in_luma_samples.get()
+            - self.sub_height_c() as u64
+                * (self.conformance_window.conf_win_top_offset + self.conformance_window.conf_win_bottom_offset)
     }
 
     pub fn chroma_array_type(&self) -> u8 {
@@ -727,6 +727,32 @@ mod tests {
         let sps = Sps::parse_with_emulation_prevention(io::Cursor::new(data)).unwrap();
         assert_eq!(sps.width(), 2560);
         assert_eq!(sps.height(), 1440);
+        assert_eq!(sps.chroma_array_type(), 1);
+        assert_eq!(sps.sub_width_c(), 2);
+        assert_eq!(sps.sub_height_c(), 2);
+        assert_eq!(sps.bit_depth_y(), 8);
+        assert_eq!(sps.qp_bd_offset_y(), 48);
+        assert_eq!(sps.bit_depth_c(), 8);
+        assert_eq!(sps.qp_bd_offset_c(), 48);
+        assert_eq!(sps.max_pic_order_cnt_lsb(), 256);
+        assert_eq!(sps.min_cb_log2_size_y(), 4);
+        assert_eq!(sps.ctb_log2_size_y(), 5);
+        assert_eq!(sps.min_cb_size_y(), 16);
+        assert_eq!(sps.ctb_size_y().get(), 32);
+        assert_eq!(sps.pic_width_in_min_cbs_y(), 160.0);
+        assert_eq!(sps.pic_width_in_ctbs_y(), 81);
+        assert_eq!(sps.pic_height_in_min_cbs_y(), 90.0);
+        assert_eq!(sps.pic_height_in_ctbs_y(), 46);
+        assert_eq!(sps.pic_size_in_min_cbs_y(), 14400.0);
+        assert_eq!(sps.pic_size_in_ctbs_y(), 3726);
+        assert_eq!(sps.pic_size_in_samples_y(), 3686400);
+        assert_eq!(sps.pic_width_in_samples_c(), 1280);
+        assert_eq!(sps.pic_height_in_samples_c(), 720);
+        assert_eq!(sps.ctb_width_c(), 16);
+        assert_eq!(sps.ctb_height_c(), 16);
+        assert_eq!(sps.min_tb_log2_size_y(), 2);
+        assert_eq!(sps.max_tb_log2_size_y(), 5);
+        assert_eq!(sps.raw_ctu_bits(), 12288);
         insta::assert_debug_snapshot!(sps);
     }
 
@@ -738,6 +764,32 @@ mod tests {
         let sps = Sps::parse_with_emulation_prevention(io::Cursor::new(data)).unwrap();
         assert_eq!(sps.width(), 1920);
         assert_eq!(sps.height(), 1080);
+        assert_eq!(sps.chroma_array_type(), 1);
+        assert_eq!(sps.sub_width_c(), 2);
+        assert_eq!(sps.sub_height_c(), 2);
+        assert_eq!(sps.bit_depth_y(), 8);
+        assert_eq!(sps.qp_bd_offset_y(), 48);
+        assert_eq!(sps.bit_depth_c(), 8);
+        assert_eq!(sps.qp_bd_offset_c(), 48);
+        assert_eq!(sps.max_pic_order_cnt_lsb(), 256);
+        assert_eq!(sps.min_cb_log2_size_y(), 4);
+        assert_eq!(sps.ctb_log2_size_y(), 5);
+        assert_eq!(sps.min_cb_size_y(), 16);
+        assert_eq!(sps.ctb_size_y().get(), 32);
+        assert_eq!(sps.pic_width_in_min_cbs_y(), 120.0);
+        assert_eq!(sps.pic_width_in_ctbs_y(), 61);
+        assert_eq!(sps.pic_height_in_min_cbs_y(), 68.0);
+        assert_eq!(sps.pic_height_in_ctbs_y(), 35);
+        assert_eq!(sps.pic_size_in_min_cbs_y(), 8160.0);
+        assert_eq!(sps.pic_size_in_ctbs_y(), 2135);
+        assert_eq!(sps.pic_size_in_samples_y(), 2088960);
+        assert_eq!(sps.pic_width_in_samples_c(), 960);
+        assert_eq!(sps.pic_height_in_samples_c(), 544);
+        assert_eq!(sps.ctb_width_c(), 16);
+        assert_eq!(sps.ctb_height_c(), 16);
+        assert_eq!(sps.min_tb_log2_size_y(), 2);
+        assert_eq!(sps.max_tb_log2_size_y(), 5);
+        assert_eq!(sps.raw_ctu_bits(), 12288);
         insta::assert_debug_snapshot!(sps);
     }
 
@@ -749,6 +801,32 @@ mod tests {
         let sps = Sps::parse_with_emulation_prevention(io::Cursor::new(data)).unwrap();
         assert_eq!(sps.width(), 3840);
         assert_eq!(sps.height(), 2160);
+        assert_eq!(sps.chroma_array_type(), 1);
+        assert_eq!(sps.sub_width_c(), 2);
+        assert_eq!(sps.sub_height_c(), 2);
+        assert_eq!(sps.bit_depth_y(), 10);
+        assert_eq!(sps.qp_bd_offset_y(), 60);
+        assert_eq!(sps.bit_depth_c(), 10);
+        assert_eq!(sps.qp_bd_offset_c(), 60);
+        assert_eq!(sps.max_pic_order_cnt_lsb(), 65536);
+        assert_eq!(sps.min_cb_log2_size_y(), 3);
+        assert_eq!(sps.ctb_log2_size_y(), 6);
+        assert_eq!(sps.min_cb_size_y(), 8);
+        assert_eq!(sps.ctb_size_y().get(), 64);
+        assert_eq!(sps.pic_width_in_min_cbs_y(), 480.0);
+        assert_eq!(sps.pic_width_in_ctbs_y(), 61);
+        assert_eq!(sps.pic_height_in_min_cbs_y(), 270.0);
+        assert_eq!(sps.pic_height_in_ctbs_y(), 34);
+        assert_eq!(sps.pic_size_in_min_cbs_y(), 129600.0);
+        assert_eq!(sps.pic_size_in_ctbs_y(), 2074);
+        assert_eq!(sps.pic_size_in_samples_y(), 8294400);
+        assert_eq!(sps.pic_width_in_samples_c(), 1920);
+        assert_eq!(sps.pic_height_in_samples_c(), 1080);
+        assert_eq!(sps.ctb_width_c(), 32);
+        assert_eq!(sps.ctb_height_c(), 32);
+        assert_eq!(sps.min_tb_log2_size_y(), 2);
+        assert_eq!(sps.max_tb_log2_size_y(), 5);
+        assert_eq!(sps.raw_ctu_bits(), 61440);
         insta::assert_debug_snapshot!(sps);
     }
 
@@ -760,6 +838,32 @@ mod tests {
         let sps = Sps::parse_with_emulation_prevention(io::Cursor::new(data)).unwrap();
         assert_eq!(sps.width(), 7680);
         assert_eq!(sps.height(), 4320);
+        assert_eq!(sps.chroma_array_type(), 1);
+        assert_eq!(sps.sub_width_c(), 2);
+        assert_eq!(sps.sub_height_c(), 2);
+        assert_eq!(sps.bit_depth_y(), 8);
+        assert_eq!(sps.qp_bd_offset_y(), 48);
+        assert_eq!(sps.bit_depth_c(), 8);
+        assert_eq!(sps.qp_bd_offset_c(), 48);
+        assert_eq!(sps.max_pic_order_cnt_lsb(), 256);
+        assert_eq!(sps.min_cb_log2_size_y(), 3);
+        assert_eq!(sps.ctb_log2_size_y(), 6);
+        assert_eq!(sps.min_cb_size_y(), 8);
+        assert_eq!(sps.ctb_size_y().get(), 64);
+        assert_eq!(sps.pic_width_in_min_cbs_y(), 960.0);
+        assert_eq!(sps.pic_width_in_ctbs_y(), 121);
+        assert_eq!(sps.pic_height_in_min_cbs_y(), 540.0);
+        assert_eq!(sps.pic_height_in_ctbs_y(), 68);
+        assert_eq!(sps.pic_size_in_min_cbs_y(), 518400.0);
+        assert_eq!(sps.pic_size_in_ctbs_y(), 8228);
+        assert_eq!(sps.pic_size_in_samples_y(), 33177600);
+        assert_eq!(sps.pic_width_in_samples_c(), 3840);
+        assert_eq!(sps.pic_height_in_samples_c(), 2160);
+        assert_eq!(sps.ctb_width_c(), 32);
+        assert_eq!(sps.ctb_height_c(), 32);
+        assert_eq!(sps.min_tb_log2_size_y(), 2);
+        assert_eq!(sps.max_tb_log2_size_y(), 5);
+        assert_eq!(sps.raw_ctu_bits(), 49152);
         insta::assert_debug_snapshot!(sps);
     }
 
@@ -771,6 +875,32 @@ mod tests {
         let sps = Sps::parse_with_emulation_prevention(io::Cursor::new(data)).unwrap();
         assert_eq!(sps.width(), 1920);
         assert_eq!(sps.height(), 1080);
+        assert_eq!(sps.chroma_array_type(), 1);
+        assert_eq!(sps.sub_width_c(), 2);
+        assert_eq!(sps.sub_height_c(), 2);
+        assert_eq!(sps.bit_depth_y(), 8);
+        assert_eq!(sps.qp_bd_offset_y(), 48);
+        assert_eq!(sps.bit_depth_c(), 8);
+        assert_eq!(sps.qp_bd_offset_c(), 48);
+        assert_eq!(sps.max_pic_order_cnt_lsb(), 256);
+        assert_eq!(sps.min_cb_log2_size_y(), 3);
+        assert_eq!(sps.ctb_log2_size_y(), 6);
+        assert_eq!(sps.min_cb_size_y(), 8);
+        assert_eq!(sps.ctb_size_y().get(), 64);
+        assert_eq!(sps.pic_width_in_min_cbs_y(), 240.0);
+        assert_eq!(sps.pic_width_in_ctbs_y(), 31);
+        assert_eq!(sps.pic_height_in_min_cbs_y(), 135.0);
+        assert_eq!(sps.pic_height_in_ctbs_y(), 17);
+        assert_eq!(sps.pic_size_in_min_cbs_y(), 32400.0);
+        assert_eq!(sps.pic_size_in_ctbs_y(), 527);
+        assert_eq!(sps.pic_size_in_samples_y(), 2073600);
+        assert_eq!(sps.pic_width_in_samples_c(), 960);
+        assert_eq!(sps.pic_height_in_samples_c(), 540);
+        assert_eq!(sps.ctb_width_c(), 32);
+        assert_eq!(sps.ctb_height_c(), 32);
+        assert_eq!(sps.min_tb_log2_size_y(), 2);
+        assert_eq!(sps.max_tb_log2_size_y(), 5);
+        assert_eq!(sps.raw_ctu_bits(), 49152);
         insta::assert_debug_snapshot!(sps);
     }
 
@@ -782,6 +912,32 @@ mod tests {
         let sps = Sps::parse_with_emulation_prevention(io::Cursor::new(data)).unwrap();
         assert_eq!(sps.width(), 3840);
         assert_eq!(sps.height(), 2160);
+        assert_eq!(sps.chroma_array_type(), 2);
+        assert_eq!(sps.sub_width_c(), 2);
+        assert_eq!(sps.sub_height_c(), 1);
+        assert_eq!(sps.bit_depth_y(), 10);
+        assert_eq!(sps.qp_bd_offset_y(), 60);
+        assert_eq!(sps.bit_depth_c(), 10);
+        assert_eq!(sps.qp_bd_offset_c(), 60);
+        assert_eq!(sps.max_pic_order_cnt_lsb(), 256);
+        assert_eq!(sps.min_cb_log2_size_y(), 3);
+        assert_eq!(sps.ctb_log2_size_y(), 5);
+        assert_eq!(sps.min_cb_size_y(), 8);
+        assert_eq!(sps.ctb_size_y().get(), 32);
+        assert_eq!(sps.pic_width_in_min_cbs_y(), 480.0);
+        assert_eq!(sps.pic_width_in_ctbs_y(), 121);
+        assert_eq!(sps.pic_height_in_min_cbs_y(), 270.0);
+        assert_eq!(sps.pic_height_in_ctbs_y(), 68);
+        assert_eq!(sps.pic_size_in_min_cbs_y(), 129600.0);
+        assert_eq!(sps.pic_size_in_ctbs_y(), 8228);
+        assert_eq!(sps.pic_size_in_samples_y(), 8294400);
+        assert_eq!(sps.pic_width_in_samples_c(), 1920);
+        assert_eq!(sps.pic_height_in_samples_c(), 2160);
+        assert_eq!(sps.ctb_width_c(), 16);
+        assert_eq!(sps.ctb_height_c(), 32);
+        assert_eq!(sps.min_tb_log2_size_y(), 2);
+        assert_eq!(sps.max_tb_log2_size_y(), 4);
+        assert_eq!(sps.raw_ctu_bits(), 20480);
         insta::assert_debug_snapshot!(sps);
     }
 

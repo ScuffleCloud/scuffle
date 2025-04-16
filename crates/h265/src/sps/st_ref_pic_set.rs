@@ -43,16 +43,14 @@ impl ShortTermRefPicSets {
                 let mut delta_idx_minus1 = 0;
                 if st_rps_idx == num_short_term_ref_pic_sets {
                     delta_idx_minus1 = bit_reader.read_exp_golomb()? as usize;
-
-                    if (0..=st_rps_idx - 1).contains(&delta_idx_minus1) {
-                        return Err(io::Error::new(io::ErrorKind::InvalidData, "delta_idx_minus1 is out of range"));
-                    }
+                    range_check!(delta_idx_minus1, 0, st_rps_idx - 1)?;
                 }
 
                 let ref_rps_idx = st_rps_idx - (delta_idx_minus1 + 1);
 
                 let delta_rps_sign = bit_reader.read_bit()?;
                 let abs_delta_rps_minus1 = bit_reader.read_exp_golomb()?;
+                range_check!(abs_delta_rps_minus1, 0, 2u64.pow(15) - 1)?;
                 let delta_rps = (1 - 2 * delta_rps_sign as i64) * (abs_delta_rps_minus1 + 1) as i64;
 
                 let len = num_delta_pocs[ref_rps_idx] as usize;

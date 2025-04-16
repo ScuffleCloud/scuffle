@@ -448,13 +448,13 @@ const ANY_NOT_SUPPORTED_ERROR: &str = "uses `google.protobuf.Any`, this is curre
 impl Extensions {
     pub fn new(pool: &DescriptorPool) -> Self {
         Self {
-            schema_message: Extension::new("tinc.schema_message", pool),
-            schema_field: Extension::new("tinc.schema_field", pool),
-            schema_enum: Extension::new("tinc.schema_enum", pool),
-            schema_variant: Extension::new("tinc.schema_variant", pool),
+            schema_message: Extension::new("tinc.message", pool),
+            schema_field: Extension::new("tinc.field", pool),
+            schema_enum: Extension::new("tinc.enum", pool),
+            schema_variant: Extension::new("tinc.variant", pool),
             http_endpoint: Extension::new("tinc.http_endpoint", pool),
             http_router: Extension::new("tinc.http_router", pool),
-            schema_oneof: Extension::new("tinc.schema_oneof", pool),
+            schema_oneof: Extension::new("tinc.oneof", pool),
             messages: BTreeMap::new(),
             enums: BTreeMap::new(),
             services: BTreeMap::new(),

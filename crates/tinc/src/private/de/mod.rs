@@ -1618,7 +1618,7 @@ where
     tracker: Option<T>,
     state: u8,
     tag_buffer: Option<<T::Target as TrackedOneOfVariant>::Variant>,
-    content_buffer: Vec<buffer::Value<'static>>,
+    content_buffer: Vec<buffer::Content<'static>>,
 }
 
 impl<T: Tracker> TrackerWrapper for TaggedOneOfTracker<T>
@@ -1716,7 +1716,7 @@ where
                 } else {
                     self.content_buffer.push(
                         deserializer
-                            .deserialize::<buffer::Value>()
+                            .deserialize::<buffer::Content>()
                             .inspect_err(|_| {
                                 set_irrecoverable();
                             })?

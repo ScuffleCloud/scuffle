@@ -1,38 +1,32 @@
 syntax = "proto3";
 
-import "tinc/annotations.proto";
-
 package flattened;
 
-message FlattenedMessage {
-    option (tinc.schema_message) = {
-        custom_impl: false
-    };
+import "tinc/annotations.proto";
 
-    SomeOtherMessage some_other = 1 [(tinc.schema_field) = {
-        flatten: true
-    }];
+message FlattenedMessage {
+  option (tinc.message) = {
+    custom_impl: false
+  };
+
+  SomeOtherMessage some_other = 1 [(tinc.field) = { flatten: true }];
 }
 
 message SomeOtherMessage {
-    string name = 1;
-    int32 id = 2;
-    int32 age = 3;
-    message NestedMessage {
-        int32 depth = 1;
-    }
-    NestedMessage nested = 4 [(tinc.schema_field) = {
-        flatten: true
-    }];
-    SomeOtherMessage2 address = 5 [(tinc.schema_field) = {
-        flatten: true
-    }];
+  string name = 1;
+  int32 id = 2;
+  int32 age = 3;
+  message NestedMessage {
+    int32 depth = 1;
+  }
+  NestedMessage nested = 4 [(tinc.field) = { flatten: true }];
+  SomeOtherMessage2 address = 5 [(tinc.field) = { flatten: true }];
 }
 
 message SomeOtherMessage2 {
-    string house_number = 1;
-    string street = 2;
-    string city = 3;
-    string state = 4;
-    string zip_code = 5;
+  string house_number = 1;
+  string street = 2;
+  string city = 3;
+  string state = 4;
+  string zip_code = 5;
 }

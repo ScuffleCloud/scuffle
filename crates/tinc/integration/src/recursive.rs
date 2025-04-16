@@ -15,7 +15,7 @@ fn test_recursive() {
 
     let mut de = serde_json::Deserializer::from_str(
         r#"{
-        "another": [
+        "anothers": [
             {
                 "another": null,
                 "nested": null
@@ -30,7 +30,7 @@ fn test_recursive() {
             "key2": {
                 "another": null,
                 "nested": {
-                    "another": [],
+                    "anothers": [],
                     "anotherOptional": null,
                     "anotherMap": {},
                     "depth": 2
@@ -60,7 +60,7 @@ fn test_recursive() {
     ");
     insta::assert_debug_snapshot!(message, @r#"
     RecursiveMessage {
-        another: [
+        anothers: [
             AnotherMessage {
                 another: None,
                 nested: None,
@@ -76,7 +76,7 @@ fn test_recursive() {
                 another: None,
                 nested: Some(
                     RecursiveMessage {
-                        another: [],
+                        anothers: [],
                         another_optional: None,
                         another_map: {},
                         depth: 2,
@@ -90,7 +90,7 @@ fn test_recursive() {
     insta::assert_debug_snapshot!(tracker, @r#"
     MessageTracker(
         RecursiveMessageTracker {
-            another: Some(
+            anothers: Some(
                 RepeatedVecTracker(
                     [
                         MessageTracker(
@@ -143,7 +143,7 @@ fn test_recursive() {
                                     Some(
                                         MessageTracker(
                                             RecursiveMessageTracker {
-                                                another: Some(
+                                                anothers: Some(
                                                     RepeatedVecTracker(
                                                         [],
                                                     ),

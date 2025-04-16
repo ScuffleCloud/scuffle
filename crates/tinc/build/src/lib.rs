@@ -1,3 +1,5 @@
+#![cfg_attr(coverage_nightly, feature(coverage_attribute))]
+
 use anyhow::Context;
 use extensions::Extensions;
 use prost_reflect::DescriptorPool;

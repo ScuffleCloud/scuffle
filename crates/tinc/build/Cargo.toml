@@ -3,6 +3,9 @@ name = "tinc-build"
 version = "0.1.0"
 edition = "2024"
 
+[lints.rust]
+unexpected_cfgs = { level = "warn", check-cfg = ['cfg(coverage_nightly)'] }
+
 [dependencies]
 scuffle-workspace-hack.workspace = true
 tinc-pb.workspace = true

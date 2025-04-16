@@ -4,7 +4,7 @@ use anyhow::Context;
 use quote::quote;
 use syn::{Ident, parse_quote};
 
-use crate::codegen::{field_ident_from_str, ident_from_str};
+use crate::codegen::{field_ident_from_str, ident_from_str, type_ident_from_str};
 use crate::extensions::{Extensions, FieldKind, MessageOpts, MethodIo, MethodOpts, ServiceOpts, WellKnownType};
 
 // Define a helper enum for input message options.
@@ -291,7 +291,7 @@ impl GeneratedMethod {
         };
 
         let trimmed_path = path.trim_start_matches('/');
-        let full_path = if let Some(prefix) = &service.opts.prefix {
+        let full_path = if let Some(prefix) = &service.prefix {
             format!("/{}/{}", prefix.trim_end_matches('/'), trimmed_path)
         } else {
             format!("/{}", trimmed_path)
@@ -479,7 +479,6 @@ pub(super) fn handle_service(
     _: &mut tonic_build::Config,
     modules: &mut BTreeMap<String, Vec<syn::Item>>,
 ) -> anyhow::Result<()> {
-    return Ok(());
     const EXPECT_FMT: &str = "service should be in the format <package>.<service>";
 
     let name = service_key
@@ -487,8 +486,8 @@ pub(super) fn handle_service(
         .and_then(|s| s.strip_prefix('.'))
         .expect(EXPECT_FMT);
 
-    let snake_name = super::field_ident_from_str(name);
-    let pascal_name = super::type_ident_from_str(name);
+    let snake_name = field_ident_from_str(name);
+    let pascal_name = type_ident_from_str(name);
 
     let tinc_module_name = ident_from_str(format!("{}_tinc", snake_name));
     let server_module_name = ident_from_str(format!("{}_server", snake_name));
@@ -532,7 +531,7 @@ pub(super) fn handle_service(
 
             impl<T> ::std::clone::Clone for #tinc_struct_name<T> {
                 fn clone(&self) -> Self {
-                    Self { inner: self.inner.clone() }
+                    Self { inner: ::std::clone::Clone::clone(&self.inner) }
                 }
             }
 

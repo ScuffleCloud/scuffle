@@ -39,3 +39,23 @@ macro_rules! __private_const_concat_str_array {
         $crate::__private_const_concat_str_array!($($rest),*)
     };
 }
+
+#[cfg(test)]
+#[cfg_attr(coverage_nightly, coverage(off))]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_len_sum() {
+        const TO_CONCAT: &[&[&str]] = &[&["a", "b"], &["c"]];
+        assert_eq!(len_sum(TO_CONCAT), 3);
+    }
+
+    #[test]
+    fn test_concat_array() {
+        const TO_CONCAT: &[&[&str]] = &[&["a", "b"], &["c"]];
+        const LEN: usize = len_sum(TO_CONCAT);
+        let result = concat_array::<LEN>(TO_CONCAT);
+        assert_eq!(result, ["a", "b", "c"]);
+    }
+}

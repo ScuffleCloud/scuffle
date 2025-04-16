@@ -139,6 +139,7 @@ pub enum FieldKind {
     Map(PrimitiveKind, Box<FieldKind>),
     Optional(Box<FieldKind>),
     WellKnown(WellKnownType),
+    OneOf(String),
 }
 
 pub enum FieldModifier {
@@ -151,6 +152,7 @@ pub enum FieldType {
     Enum(String),
     Primitive(PrimitiveKind),
     Message(String),
+    OneOf(String),
     WellKnown(WellKnownType),
 }
 
@@ -187,20 +189,6 @@ impl PrimitiveKind {
             prost_reflect::Kind::Enum(_) => None,
         }
     }
-
-    pub fn path(&self) -> &'static str {
-        match self {
-            PrimitiveKind::Bool => "::core::primitive::bool",
-            PrimitiveKind::I32 => "::core::primitive::i32",
-            PrimitiveKind::I64 => "::core::primitive::i64",
-            PrimitiveKind::U32 => "::core::primitive::u32",
-            PrimitiveKind::U64 => "::core::primitive::u64",
-            PrimitiveKind::F32 => "::core::primitive::f32",
-            PrimitiveKind::F64 => "::core::primitive::f64",
-            PrimitiveKind::String => "::std::string::String",
-            PrimitiveKind::Bytes => "::tinc::helpers::well_known::BytesVecU8",
-        }
-    }
 }
 
 impl FieldKind {
@@ -219,6 +207,7 @@ impl FieldKind {
             FieldKind::Primitive(kind) | FieldKind::WellKnown(WellKnownType::Primitive(kind)) => FieldType::Primitive(*kind),
             FieldKind::Message(name) => FieldType::Message(name.to_owned()),
             FieldKind::WellKnown(kind) => FieldType::WellKnown(*kind),
+            FieldKind::OneOf(name) => FieldType::OneOf(name.to_owned()),
             _ => unreachable!(),
         }
     }
@@ -316,27 +305,6 @@ pub enum WellKnownType {
 }
 
 impl WellKnownType {
-    pub fn proto_name(&self) -> &str {
-        match self {
-            WellKnownType::Timestamp => "google.protobuf.Timestamp",
-            WellKnownType::Duration => "google.protobuf.Duration",
-            WellKnownType::Struct => "google.protobuf.Struct",
-            WellKnownType::Value => "google.protobuf.Value",
-            WellKnownType::Empty => "google.protobuf.Empty",
-            WellKnownType::List => "google.protobuf.ListValue",
-            WellKnownType::Any => "google.protobuf.Any",
-            WellKnownType::Primitive(PrimitiveKind::Bool) => "google.protobuf.BoolValue",
-            WellKnownType::Primitive(PrimitiveKind::I32) => "google.protobuf.Int32Value",
-            WellKnownType::Primitive(PrimitiveKind::I64) => "google.protobuf.Int64Value",
-            WellKnownType::Primitive(PrimitiveKind::U32) => "google.protobuf.UInt32Value",
-            WellKnownType::Primitive(PrimitiveKind::U64) => "google.protobuf.UInt64Value",
-            WellKnownType::Primitive(PrimitiveKind::F32) => "google.protobuf.FloatValue",
-            WellKnownType::Primitive(PrimitiveKind::F64) => "google.protobuf.DoubleValue",
-            WellKnownType::Primitive(PrimitiveKind::String) => "google.protobuf.StringValue",
-            WellKnownType::Primitive(PrimitiveKind::Bytes) => "google.protobuf.BytesValue",
-        }
-    }
-
     pub fn from_proto_name(name: &str) -> Option<Self> {
         match name {
             "google.protobuf.Timestamp" => Some(WellKnownType::Timestamp),
@@ -382,7 +350,8 @@ pub struct Extensions {
 #[derive(Default, Debug)]
 pub struct MessageOpts {
     pub package: String,
-    pub opts: tinc_pb::SchemaMessageOptions,
+    pub custom_impl: bool,
+    pub rename_all: Option<tinc_pb::RenameAll>,
     pub fields: IndexMap<String, FieldOpts>,
     pub oneofs: IndexMap<String, OneofOpts>,
 }
@@ -397,30 +366,32 @@ pub enum FieldVisibility {
 #[derive(Debug)]
 pub struct FieldOpts {
     pub kind: FieldKind,
-    pub json_name: String,
+    pub rename: Option<String>,
     pub omitable: bool,
     pub nullable: bool,
+    pub flatten: bool,
     pub visibility: Option<FieldVisibility>,
-    pub opts: tinc_pb::SchemaFieldOptions,
 }
 
 #[derive(Default, Debug)]
 pub struct EnumOpts {
     pub package: String,
-    pub opts: tinc_pb::SchemaEnumOptions,
+    pub custom_impl: bool,
+    pub repr_enum: bool,
+    pub rename_all: tinc_pb::RenameAll,
     pub variants: BTreeMap<String, VariantOpts>,
 }
 
 #[derive(Default, Debug)]
 pub struct VariantOpts {
-    pub opts: tinc_pb::SchemaVariantOptions,
+    pub rename: Option<String>,
     pub visibility: Option<FieldVisibility>,
 }
 
 #[derive(Default, Debug)]
 pub struct ServiceOpts {
     pub package: String,
-    pub opts: tinc_pb::HttpRouterOptions,
+    pub prefix: Option<String>,
     pub methods: BTreeMap<String, MethodOpts>,
 }
 
@@ -439,7 +410,10 @@ pub struct MethodOpts {
 
 #[derive(Default, Debug)]
 pub struct OneofOpts {
-    pub opts: tinc_pb::SchemaOneofOptions,
+    pub custom_impl: bool,
+    pub rename: Option<String>,
+    pub tagged: Option<tinc_pb::schema_oneof_options::Tagged>,
+    pub rename_all: Option<tinc_pb::RenameAll>,
     pub fields: BTreeMap<String, FieldOpts>,
 }
 
@@ -448,13 +422,13 @@ const ANY_NOT_SUPPORTED_ERROR: &str = "uses `google.protobuf.Any`, this is curre
 impl Extensions {
     pub fn new(pool: &DescriptorPool) -> Self {
         Self {
-            schema_message: Extension::new("tinc.schema_message", pool),
-            schema_field: Extension::new("tinc.schema_field", pool),
-            schema_enum: Extension::new("tinc.schema_enum", pool),
-            schema_variant: Extension::new("tinc.schema_variant", pool),
+            schema_message: Extension::new("tinc.message", pool),
+            schema_field: Extension::new("tinc.field", pool),
+            schema_enum: Extension::new("tinc.enum", pool),
+            schema_variant: Extension::new("tinc.variant", pool),
             http_endpoint: Extension::new("tinc.http_endpoint", pool),
             http_router: Extension::new("tinc.http_router", pool),
-            schema_oneof: Extension::new("tinc.schema_oneof", pool),
+            schema_oneof: Extension::new("tinc.oneof", pool),
             messages: BTreeMap::new(),
             enums: BTreeMap::new(),
             services: BTreeMap::new(),
@@ -507,7 +481,7 @@ impl Extensions {
 
         let mut service_opts = ServiceOpts {
             package: service.parent_file().package_name().to_owned(),
-            opts: opts.unwrap_or_default(),
+            prefix: opts.as_ref().and_then(|opts| opts.prefix.clone()),
             methods: BTreeMap::new(),
         };
 
@@ -589,22 +563,7 @@ impl Extensions {
             })
             .collect::<anyhow::Result<Vec<_>>>()?;
 
-        let oneofs = fields
-            .iter()
-            .filter(|(field, _)| !field.field_descriptor_proto().proto3_optional())
-            .filter_map(|(field, _)| {
-                field.containing_oneof().map(|oneof| {
-                    let opts = self.schema_oneof.decode(&oneof)?;
-                    Ok((oneof, opts))
-                })
-            })
-            .collect::<anyhow::Result<Vec<_>>>()?;
-
-        if !insert
-            && opts.is_none()
-            && fields.iter().all(|(_, opts)| opts.is_none())
-            && oneofs.iter().all(|(_, opts)| opts.is_none())
-        {
+        if !insert && opts.is_none() && fields.iter().all(|(_, opts)| opts.is_none()) {
             return Ok(());
         }
 
@@ -612,23 +571,18 @@ impl Extensions {
             message.full_name().to_owned(),
             MessageOpts {
                 package: message.parent_file().package_name().to_owned(),
-                opts: opts.unwrap_or_default(),
+                custom_impl: opts.as_ref().is_some_and(|opts| opts.custom_impl()),
+                rename_all: opts
+                    .as_ref()
+                    .and_then(|opts| opts.rename_all.and_then(|v| tinc_pb::RenameAll::try_from(v).ok())),
                 fields: IndexMap::new(),
                 oneofs: IndexMap::new(),
             },
         );
 
-        for (oneof, opts) in oneofs {
-            self.messages.get_mut(message.full_name()).unwrap().oneofs.insert(
-                oneof.name().to_owned(),
-                OneofOpts {
-                    opts: opts.unwrap_or_default(),
-                    fields: BTreeMap::new(),
-                },
-            );
-        }
-
         for (field, opts) in fields {
+            let message = self.messages.get_mut(message.full_name()).unwrap();
+
             let opts = opts.unwrap_or_default();
 
             // This means the field is nullable, and can be omitted from the payload.
@@ -655,25 +609,40 @@ impl Extensions {
                 omitable,
                 nullable,
                 visibility,
-                json_name: field.json_name().to_owned(),
-                opts,
+                flatten: opts.flatten(),
+                rename: opts.rename,
             };
 
             if let Some(Some(oneof)) = (!nullable).then(|| field.containing_oneof()) {
-                self.messages
-                    .get_mut(message.full_name())
-                    .unwrap()
-                    .oneofs
-                    .get_mut(&oneof.name().to_owned())
-                    .unwrap()
-                    .fields
-                    .insert(field.name().to_owned(), field_opts);
+                let opts = self.schema_oneof.decode(&oneof)?;
+                let oneof = message.oneofs.entry(oneof.name().to_owned()).or_insert_with(|| {
+                    let nullable = opts.as_ref().is_none_or(|opts| opts.nullable());
+                    message.fields.insert(
+                        oneof.name().to_owned(),
+                        FieldOpts {
+                            flatten: opts.as_ref().is_some_and(|opts| opts.flatten()),
+                            kind: FieldKind::Optional(Box::new(FieldKind::OneOf(oneof.full_name().to_owned()))),
+                            nullable,
+                            omitable: opts.as_ref().map_or(nullable, |opts| opts.omitable()),
+                            rename: opts.as_ref().and_then(|opts| opts.rename.clone()),
+                            visibility: None,
+                        },
+                    );
+
+                    OneofOpts {
+                        custom_impl: opts.as_ref().is_some_and(|opts| opts.custom_impl()),
+                        rename: opts.as_ref().and_then(|opts| opts.rename.clone()),
+                        rename_all: opts
+                            .as_ref()
+                            .and_then(|opts| opts.rename_all.and_then(|v| tinc_pb::RenameAll::try_from(v).ok())),
+                        tagged: opts.as_ref().and_then(|opts| opts.tagged.clone()),
+                        fields: BTreeMap::new(),
+                    }
+                });
+
+                oneof.fields.insert(field.name().to_owned(), field_opts);
             } else {
-                self.messages
-                    .get_mut(message.full_name())
-                    .unwrap()
-                    .fields
-                    .insert(field.name().to_owned(), field_opts);
+                message.fields.insert(field.name().to_owned(), field_opts);
             }
 
             if let Some(name) = kind.message_name() {
@@ -715,8 +684,13 @@ impl Extensions {
         self.enums.insert(
             enum_.full_name().to_owned(),
             EnumOpts {
+                custom_impl: opts.as_ref().is_some_and(|opts| opts.custom_impl()),
+                rename_all: opts
+                    .as_ref()
+                    .and_then(|opts| opts.rename_all.and_then(|v| tinc_pb::RenameAll::try_from(v).ok()))
+                    .unwrap_or(tinc_pb::RenameAll::ScreamingSnakeCase),
+                repr_enum: opts.as_ref().is_some_and(|opts| opts.repr_enum()),
                 package: enum_.parent_file().package_name().to_owned(),
-                opts: opts.unwrap_or_default(),
                 variants: BTreeMap::new(),
             },
         );
@@ -733,9 +707,13 @@ impl Extensions {
                 _ => None,
             });
 
-            enum_opts
-                .variants
-                .insert(variant.name().to_owned(), VariantOpts { visibility, opts });
+            enum_opts.variants.insert(
+                variant.name().to_owned(),
+                VariantOpts {
+                    visibility,
+                    rename: opts.rename,
+                },
+            );
         }
 
         Ok(())

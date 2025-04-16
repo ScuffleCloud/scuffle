@@ -1,21 +1,21 @@
 syntax = "proto3";
 
-import "tinc/annotations.proto";
-
 package recursive;
 
-message RecursiveMessage {
-    option (tinc.schema_message) = {
-        custom_impl: false
-    };
+import "tinc/annotations.proto";
 
-    repeated AnotherMessage another = 1;
-    optional AnotherMessage another_optional = 2;
-    map<string, AnotherMessage> another_map = 3;
-    int32 depth = 4;
+message RecursiveMessage {
+  option (tinc.message) = {
+    custom_impl: false
+  };
+
+  repeated AnotherMessage anothers = 1;
+  optional AnotherMessage another_optional = 2;
+  map<string, AnotherMessage> another_map = 3;
+  int32 depth = 4;
 }
 
 message AnotherMessage {
-    optional AnotherMessage another = 1;
-    optional RecursiveMessage nested = 2;
+  optional AnotherMessage another = 1;
+  optional RecursiveMessage nested = 2;
 }

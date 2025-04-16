@@ -1,7 +1,4 @@
-use serde::de::DeserializeSeed;
-use tinc::__private::de::{
-    DeserializeHelper, DeserializerWrapper, TrackedStructDeserializer, TrackerFor, TrackerSharedState, TrackerStateGuard,
-};
+use tinc::__private::de::{TrackedStructDeserializer, TrackerFor, TrackerSharedState, deserialize};
 
 #[test]
 fn test_simple_enum() {
@@ -11,7 +8,7 @@ fn test_simple_enum() {
 
     let mut message = pb::Simple::default();
     let mut tracker = <pb::Simple as TrackerFor>::Tracker::default();
-    let guard = TrackerStateGuard::new(TrackerSharedState::default());
+    let mut state = TrackerSharedState::default();
 
     let mut de = serde_json::Deserializer::from_str(
         r#"{
@@ -25,20 +22,15 @@ fn test_simple_enum() {
     }"#,
     );
 
-    DeserializeHelper {
-        tracker: &mut tracker,
-        value: &mut message,
-    }
-    .deserialize(DeserializerWrapper::new(&mut de))
-    .unwrap();
+    state.in_scope(|| {
+        deserialize(&mut de, &mut message, &mut tracker).unwrap();
 
-    TrackedStructDeserializer::verify_deserialize::<serde::de::value::Error>(&message, &mut tracker).unwrap();
+        TrackedStructDeserializer::validate::<serde::de::value::Error>(&message, &mut tracker).unwrap();
+    });
 
-    let state = guard.finish();
     insta::assert_debug_snapshot!(state, @r"
     TrackerSharedState {
         fail_fast: true,
-        irrecoverable: false,
         errors: [],
     }
     ");
@@ -59,7 +51,7 @@ fn test_simple_enum() {
     }
     "#);
     insta::assert_debug_snapshot!(tracker, @r#"
-    MessageTracker(
+    StructTracker(
         SimpleTracker {
             value: Some(
                 EnumTracker<tinc_integration_tests::simple_enum::test_simple_enum::pb::SimpleEnum>,
@@ -98,7 +90,7 @@ fn test_simple_enum_renamed() {
 
     let mut message = pb::SimpleRenamed::default();
     let mut tracker = <pb::SimpleRenamed as TrackerFor>::Tracker::default();
-    let guard = TrackerStateGuard::new(TrackerSharedState::default());
+    let mut state = TrackerSharedState::default();
 
     let mut de = serde_json::Deserializer::from_str(
         r#"{
@@ -112,20 +104,15 @@ fn test_simple_enum_renamed() {
     }"#,
     );
 
-    DeserializeHelper {
-        tracker: &mut tracker,
-        value: &mut message,
-    }
-    .deserialize(DeserializerWrapper::new(&mut de))
-    .unwrap();
+    state.in_scope(|| {
+        deserialize(&mut de, &mut message, &mut tracker).unwrap();
 
-    TrackedStructDeserializer::verify_deserialize::<serde::de::value::Error>(&message, &mut tracker).unwrap();
+        TrackedStructDeserializer::validate::<serde::de::value::Error>(&message, &mut tracker).unwrap();
+    });
 
-    let state = guard.finish();
     insta::assert_debug_snapshot!(state, @r"
     TrackerSharedState {
         fail_fast: true,
-        irrecoverable: false,
         errors: [],
     }
     ");
@@ -146,7 +133,7 @@ fn test_simple_enum_renamed() {
     }
     "#);
     insta::assert_debug_snapshot!(tracker, @r#"
-    MessageTracker(
+    StructTracker(
         SimpleRenamedTracker {
             value: Some(
                 EnumTracker<tinc_integration_tests::simple_enum::test_simple_enum_renamed::pb::SimpleEnumRenamed>,
@@ -185,7 +172,7 @@ fn test_simple_enum_repr() {
 
     let mut message = pb::SimpleRepr::default();
     let mut tracker = <pb::SimpleRepr as TrackerFor>::Tracker::default();
-    let guard = TrackerStateGuard::new(TrackerSharedState::default());
+    let mut state = TrackerSharedState::default();
 
     let mut de = serde_json::Deserializer::from_str(
         r#"{
@@ -199,20 +186,15 @@ fn test_simple_enum_repr() {
     }"#,
     );
 
-    DeserializeHelper {
-        tracker: &mut tracker,
-        value: &mut message,
-    }
-    .deserialize(DeserializerWrapper::new(&mut de))
-    .unwrap();
+    state.in_scope(|| {
+        deserialize(&mut de, &mut message, &mut tracker).unwrap();
 
-    TrackedStructDeserializer::verify_deserialize::<serde::de::value::Error>(&message, &mut tracker).unwrap();
+        TrackedStructDeserializer::validate::<serde::de::value::Error>(&message, &mut tracker).unwrap();
+    });
 
-    let state = guard.finish();
     insta::assert_debug_snapshot!(state, @r"
     TrackerSharedState {
         fail_fast: true,
-        irrecoverable: false,
         errors: [],
     }
     ");
@@ -233,7 +215,7 @@ fn test_simple_enum_repr() {
     }
     "#);
     insta::assert_debug_snapshot!(tracker, @r#"
-    MessageTracker(
+    StructTracker(
         SimpleReprTracker {
             value: Some(
                 EnumTracker<tinc_integration_tests::simple_enum::test_simple_enum_repr::pb::SimpleEnumRepr>,
@@ -272,10 +254,10 @@ fn test_simple_enum_invalid() {
 
     let mut message = pb::Simple::default();
     let mut tracker = <pb::Simple as TrackerFor>::Tracker::default();
-    let guard = TrackerStateGuard::new(TrackerSharedState {
+    let mut state = TrackerSharedState {
         fail_fast: false,
         ..Default::default()
-    });
+    };
 
     let mut de = serde_json::Deserializer::from_str(
         r#"{
@@ -283,20 +265,15 @@ fn test_simple_enum_invalid() {
     }"#,
     );
 
-    DeserializeHelper {
-        tracker: &mut tracker,
-        value: &mut message,
-    }
-    .deserialize(DeserializerWrapper::new(&mut de))
-    .unwrap();
+    state.in_scope(|| {
+        deserialize(&mut de, &mut message, &mut tracker).unwrap();
 
-    TrackedStructDeserializer::verify_deserialize::<serde::de::value::Error>(&message, &mut tracker).unwrap();
+        TrackedStructDeserializer::validate::<serde::de::value::Error>(&message, &mut tracker).unwrap();
+    });
 
-    let state = guard.finish();
     insta::assert_debug_snapshot!(state, @r#"
     TrackerSharedState {
         fail_fast: false,
-        irrecoverable: false,
         errors: [
             TrackedError {
                 kind: InvalidField {
@@ -327,7 +304,7 @@ fn test_simple_enum_invalid() {
     }
     ");
     insta::assert_debug_snapshot!(tracker, @r"
-    MessageTracker(
+    StructTracker(
         SimpleTracker {
             value: Some(
                 EnumTracker<tinc_integration_tests::simple_enum::test_simple_enum_invalid::pb::SimpleEnum>,
@@ -348,10 +325,10 @@ fn test_simple_enum_renamed_invalid() {
 
     let mut message = pb::SimpleRenamed::default();
     let mut tracker = <pb::SimpleRenamed as TrackerFor>::Tracker::default();
-    let guard = TrackerStateGuard::new(TrackerSharedState {
+    let mut state = TrackerSharedState {
         fail_fast: false,
         ..Default::default()
-    });
+    };
 
     let mut de = serde_json::Deserializer::from_str(
         r#"{
@@ -359,20 +336,15 @@ fn test_simple_enum_renamed_invalid() {
     }"#,
     );
 
-    DeserializeHelper {
-        tracker: &mut tracker,
-        value: &mut message,
-    }
-    .deserialize(DeserializerWrapper::new(&mut de))
-    .unwrap();
+    state.in_scope(|| {
+        deserialize(&mut de, &mut message, &mut tracker).unwrap();
 
-    TrackedStructDeserializer::verify_deserialize::<serde::de::value::Error>(&message, &mut tracker).unwrap();
+        TrackedStructDeserializer::validate::<serde::de::value::Error>(&message, &mut tracker).unwrap();
+    });
 
-    let state = guard.finish();
     insta::assert_debug_snapshot!(state, @r#"
     TrackerSharedState {
         fail_fast: false,
-        irrecoverable: false,
         errors: [
             TrackedError {
                 kind: InvalidField {
@@ -403,7 +375,7 @@ fn test_simple_enum_renamed_invalid() {
     }
     ");
     insta::assert_debug_snapshot!(tracker, @r"
-    MessageTracker(
+    StructTracker(
         SimpleRenamedTracker {
             value: Some(
                 EnumTracker<tinc_integration_tests::simple_enum::test_simple_enum_renamed_invalid::pb::SimpleEnumRenamed>,
@@ -424,10 +396,10 @@ fn test_simple_enum_repr_invalid() {
 
     let mut message = pb::SimpleRepr::default();
     let mut tracker = <pb::SimpleRepr as TrackerFor>::Tracker::default();
-    let guard = TrackerStateGuard::new(TrackerSharedState {
+    let mut state = TrackerSharedState {
         fail_fast: false,
         ..Default::default()
-    });
+    };
 
     let mut de = serde_json::Deserializer::from_str(
         r#"{
@@ -435,20 +407,15 @@ fn test_simple_enum_repr_invalid() {
     }"#,
     );
 
-    DeserializeHelper {
-        tracker: &mut tracker,
-        value: &mut message,
-    }
-    .deserialize(DeserializerWrapper::new(&mut de))
-    .unwrap();
+    state.in_scope(|| {
+        deserialize(&mut de, &mut message, &mut tracker).unwrap();
 
-    TrackedStructDeserializer::verify_deserialize::<serde::de::value::Error>(&message, &mut tracker).unwrap();
+        TrackedStructDeserializer::validate::<serde::de::value::Error>(&message, &mut tracker).unwrap();
+    });
 
-    let state = guard.finish();
     insta::assert_debug_snapshot!(state, @r#"
     TrackerSharedState {
         fail_fast: false,
-        irrecoverable: false,
         errors: [
             TrackedError {
                 kind: InvalidField {
@@ -479,7 +446,7 @@ fn test_simple_enum_repr_invalid() {
     }
     ");
     insta::assert_debug_snapshot!(tracker, @r"
-    MessageTracker(
+    StructTracker(
         SimpleReprTracker {
             value: Some(
                 EnumTracker<tinc_integration_tests::simple_enum::test_simple_enum_repr_invalid::pb::SimpleEnumRepr>,

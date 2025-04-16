@@ -375,3 +375,113 @@ impl BitStreamRestriction {
         self.min_spatial_segmentation_idc + 4
     }
 }
+
+#[cfg(test)]
+#[cfg_attr(all(test, coverage_nightly), coverage(off))]
+mod tests {
+    use std::io::{Read, Write};
+    use std::num::NonZero;
+
+    use byteorder::{BigEndian, WriteBytesExt};
+    use scuffle_bytes_util::{BitReader, BitWriter};
+    use scuffle_expgolomb::BitWriterExpGolombExt;
+
+    use crate::sps::vui_parameters::{BitStreamRestriction, DefaultDisplayWindow};
+    use crate::{AspectRatioIdc, ConformanceWindow, VideoFormat, VuiParameters};
+
+    #[test]
+    fn vui_parameters() {
+        let mut data = Vec::new();
+        let mut writer = BitWriter::new(&mut data);
+
+        writer.write_bit(true).unwrap(); // aspect_ratio_info_present_flag
+        writer.write_u8(AspectRatioIdc::ExtendedSar.0).unwrap(); // aspect_ratio_idc
+        writer.write_u16::<BigEndian>(1).unwrap(); // sar_width
+        writer.write_u16::<BigEndian>(1).unwrap(); // sar_height
+
+        writer.write_bit(true).unwrap(); // overscan_info_present_flag
+        writer.write_bit(true).unwrap(); // overscan_appropriate_flag
+
+        writer.write_bit(false).unwrap(); // video_signal_type_present_flag
+        writer.write_bit(false).unwrap(); // chroma_loc_info_present_flag
+        writer.write_bit(false).unwrap(); // neutral_chroma_indication_flag
+        writer.write_bit(false).unwrap(); // field_seq_flag
+        writer.write_bit(false).unwrap(); // frame_field_info_present_flag
+
+        writer.write_bit(true).unwrap(); // default_display_window_flag
+        writer.write_exp_golomb(0).unwrap(); // def_disp_win_left_offset
+        writer.write_exp_golomb(10).unwrap(); // def_disp_win_right_offset
+        writer.write_exp_golomb(0).unwrap(); // def_disp_win_top_offset
+        writer.write_exp_golomb(10).unwrap(); // def_disp_win_bottom_offset
+
+        writer.write_bit(false).unwrap(); // vui_timing_info_present_flag
+        writer.write_bit(false).unwrap(); // bitstream_restriction_flag
+
+        writer.write_bits(0, 5).unwrap(); // fill the byte
+        writer.flush().unwrap();
+
+        for b in data.bytes() {
+            print!("{:08b} ", b.unwrap());
+        }
+
+        let vui_parameters = VuiParameters::parse(
+            &mut BitReader::new(data.as_slice()),
+            0,
+            8,
+            8,
+            1,
+            false,
+            false,
+            false,
+            &ConformanceWindow {
+                conf_win_left_offset: 2,
+                conf_win_right_offset: 2,
+                conf_win_top_offset: 2,
+                conf_win_bottom_offset: 2,
+            },
+            1,
+            NonZero::new(1920).unwrap(),
+            1,
+            NonZero::new(1080).unwrap(),
+        )
+        .unwrap();
+
+        assert_eq!(
+            vui_parameters.aspect_ratio_info,
+            super::AspectRatioInfo::ExtendedSar {
+                sar_width: 1,
+                sar_height: 1
+            }
+        );
+        assert_eq!(vui_parameters.overscan_appropriate_flag, Some(true));
+        assert_eq!(vui_parameters.video_signal_type.video_format, VideoFormat::Unspecified);
+        assert!(!vui_parameters.video_signal_type.video_full_range_flag);
+        assert_eq!(vui_parameters.video_signal_type.color_primaries, 2);
+        assert_eq!(vui_parameters.video_signal_type.transfer_characteristics, 2);
+        assert_eq!(vui_parameters.video_signal_type.matrix_coeffs, 2);
+        assert_eq!(vui_parameters.chroma_loc_info, None);
+        assert!(!vui_parameters.neutral_chroma_indication_flag);
+        assert!(!vui_parameters.field_seq_flag);
+        assert!(!vui_parameters.frame_field_info_present_flag);
+        assert_eq!(
+            vui_parameters.default_display_window,
+            DefaultDisplayWindow {
+                def_disp_win_left_offset: 0,
+                def_disp_win_right_offset: 10,
+                def_disp_win_top_offset: 0,
+                def_disp_win_bottom_offset: 10,
+                left_offset: 2,
+                right_offset: 12,
+                top_offset: 2,
+                bottom_offset: 12
+            }
+        );
+        assert_eq!(vui_parameters.default_display_window.left_offset(), 2);
+        assert_eq!(vui_parameters.default_display_window.right_offset(), 12);
+        assert_eq!(vui_parameters.default_display_window.top_offset(), 2);
+        assert_eq!(vui_parameters.default_display_window.bottom_offset(), 12);
+        assert_eq!(vui_parameters.vui_timing_info, None);
+        assert_eq!(vui_parameters.bitstream_restriction, BitStreamRestriction::default());
+        assert_eq!(vui_parameters.bitstream_restriction.min_spatial_segmentation_times4(), 4);
+    }
+}

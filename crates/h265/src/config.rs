@@ -13,55 +13,53 @@ use crate::{ConstantFrameRate, NALUnitType, NumTemporalLayers, ParallelismType};
 /// ISO/IEC 14496-15 - 8.3.2.1
 #[derive(Debug, Clone, PartialEq)]
 pub struct HEVCDecoderConfigurationRecord {
-    /// The `general_profile_space` as a u8. Matches the field as defined in ISO/IEC 23008-2.
+    /// Matches the [`general_profile_space`](crate::Profile::profile_space) field as defined in ISO/IEC 23008-2.
     pub general_profile_space: u8,
-    /// The `general_tier_flag` as a bool. Matches the field as defined in ISO/IEC 23008-2.
+    /// Matches the [`general_tier_flag`](crate::Profile::tier_flag) field as defined in ISO/IEC 23008-2.
     pub general_tier_flag: bool,
-    /// The `general_profile_idc` as a u8. Matches the field as defined in ISO/IEC 23008-2.
+    /// Matches the [`general_profile_idc`](crate::Profile::profile_idc) field as defined in ISO/IEC 23008-2.
     pub general_profile_idc: u8,
-    /// The `general_profile_compatibility_flags` as a u32. Matches the field as defined in ISO/IEC 23008-2.
+    /// Matches the [`general_profile_compatibility_flag`](crate::Profile::profile_compatibility_flag) field as defined in ISO/IEC 23008-2.
     pub general_profile_compatibility_flags: u32,
-    /// The `general_constraint_indicator_flags` as a u64. Matches the field as defined in ISO/IEC 23008-2.
+    /// Only the first 48 bits are used.
     pub general_constraint_indicator_flags: u64,
-    /// The `general_level_idc` as a u32. Matches the field as defined in ISO/IEC 23008-2.
+    /// Matches the [`general_level_idc`](crate::Profile::level_idc) field as defined in ISO/IEC 23008-2.
     pub general_level_idc: u8,
-    /// The `min_spatial_segmentation_idc` as a u16. Matches the field as defined in ISO/IEC 23008-2.
+    /// Matches the [`min_spatial_segmentation_idc`](crate::BitStreamRestriction::min_spatial_segmentation_idc) field as defined in ISO/IEC 23008-2.
     pub min_spatial_segmentation_idc: u16,
-    /// The `parallelism_type`.
-    ///
     /// See [`ParallelismType`] for more info.
     pub parallelism_type: ParallelismType,
-    /// The `chroma_format_idc` as a u8. Matches the field as defined in ISO/IEC 23008-2.
+    /// Matches the [`chroma_format_idc`](crate::Sps::chroma_format_idc) field as defined in ISO/IEC 23008-2.
     pub chroma_format_idc: u8,
-    /// The `bit_depth_luma_minus8` as a u8. Matches the field as defined in ISO/IEC 23008-2.
+    /// Matches the [`bit_depth_luma_minus8`](crate::Sps::bit_depth_luma_minus8) field as defined in ISO/IEC 23008-2.
     pub bit_depth_luma_minus8: u8,
-    /// The `bit_depth_chroma_minus8` as a u8. Matches the field as defined in ISO/IEC 23008-2.
+    /// Matches the [`bit_depth_chroma_minus8`](crate::Sps::bit_depth_chroma_minus8) field as defined in ISO/IEC 23008-2.
     pub bit_depth_chroma_minus8: u8,
-    // definitely shouldn't be a u16. prolly f64
-    /// The `avg_frame_rate` as a u16.
-    pub avg_frame_rate: u16,
-    /// The `constant_frame_rate`.
+    /// Gives the average frame rate in units of frames/(256 seconds), for the stream to
+    /// which this configuration record applies.
     ///
+    /// Value 0 indicates an unspecified average frame rate.
+    pub avg_frame_rate: u16,
     /// See [`ConstantFrameRate`] for more info.
     pub constant_frame_rate: ConstantFrameRate,
-    /// The `num_temporal_layers` as a u8. This is the count of tepmoral layers or `sub-layer`s as defined in ISO/IEC 23008-2.
-    ///
-    /// 0 means the stream might be temporally scalable.
-    ///
-    /// 1 means the stream is NOT temporally scalable.
-    ///
-    /// 2 or more means the stream is temporally scalable, and the count of temporal layers is equal to this value.
+    /// This is the count of tepmoral layers or sub-layers as defined in ISO/IEC 23008-2.
     pub num_temporal_layers: NumTemporalLayers,
-    /// The `temporal_id_nested` as a bool.
+    /// Equal to `true` indicates that all SPSs that are activated when the stream to which
+    /// this configuration record applies is decoded have
+    /// [`sps_temporal_id_nesting_flag`](crate::Sps::sps_temporal_id_nesting_flag) as defined in
+    /// ISO/IEC 23008-2 equal to `true` and temporal sub-layer up-switching to any higher temporal layer
+    /// can be performed at any sample.
     ///
-    /// `false` means means the opposite might not be true (refer to what 1 means for this flag).
-    ///
-    /// `true` means all the activated SPS have `sps_temporal_id_nesting_flag` (as defined in ISC/IEC 23008-2) set to 1 and that temporal sub-layer up-switching to a higehr temporal layer can be done at any sample.
+    /// Value `false` indicates that the conditions above are not or may not be met.
     pub temporal_id_nested: bool,
-    /// The `length_size_minus_one` is the u8 length of the NALUnitLength minus one.
+    /// This value plus 1 indicates the length in bytes of the `NALUnitLength` field in an
+    /// HEVC video sample in the stream to which this configuration record applies.
+    ///
+    /// For example, a size of one byte is indicated with a value of 0.
+    /// The value of this field is one of 0, 1, or 3
+    /// corresponding to a length encoded with 1, 2, or 4 bytes, respectively.
     pub length_size_minus_one: u8,
-    /// The `arrays` is a vec of NaluArray.
-    /// Refer to the NaluArray struct in the NaluArray docs for more info.
+    /// [`NaluArray`]s in that are part of this configuration record.
     pub arrays: Vec<NaluArray>,
 }
 
@@ -70,13 +68,19 @@ pub struct HEVCDecoderConfigurationRecord {
 /// ISO/IEC 14496-15 - 8.3.2.1
 #[derive(Debug, Clone, PartialEq)]
 pub struct NaluArray {
-    /// The `array_completeness` is a flag set to 1 when all NAL units are in the array and none are in the stream. It is set to 0 if otherwise.
+    /// When equal to `true` indicates that all NAL units of the given type are in the
+    /// following array and none are in the stream; when equal to `false` indicates that additional NAL units
+    /// of the indicated type may be in the stream; the default and permitted values are constrained by
+    /// the sample entry name.
     pub array_completeness: bool,
-    /// The `nal_unit_type` is the type of the NAL units in the `nalus` vec, as defined in ISO/IEC 23008-2.
-    /// Refer to the `NaluType` enum for more info.
+    /// Indicates the type of the NAL units in the following array (which shall be all of
+    /// that type); it takes a value as defined in ISO/IEC 23008-2; it is restricted to take one of the
+    /// values indicating a VPS, SPS, PPS, prefix SEI, or suffix SEI NAL unit.
     pub nal_unit_type: NALUnitType,
-    /// `nalus` is a vec of NAL units. Each of these will contain either a VPS, PPS, SPS, or an unknown u8 as specified in ISO/IEC 23008-2.
-    /// Refer to the `NaluType` enum for more info.
+    /// The raw byte stream of NAL units.
+    ///
+    /// You might want to use [`Sps::parse_with_emulation_prevention`](crate::Sps::parse_with_emulation_prevention)
+    /// to parse an SPS NAL unit.
     pub nalus: Vec<Bytes>,
 }
 
@@ -120,6 +124,13 @@ impl HEVCDecoderConfigurationRecord {
         let temporal_id_nested = bit_reader.read_bit()?;
         let length_size_minus_one = bit_reader.read_bits(2)? as u8;
 
+        if length_size_minus_one == 2 {
+            return Err(io::Error::new(
+                io::ErrorKind::InvalidData,
+                "length_size_minus_one must be 0, 1, or 3",
+            ));
+        }
+
         let num_of_arrays = bit_reader.read_u8()?;
 
         let mut arrays = Vec::with_capacity(num_of_arrays as usize);
@@ -129,6 +140,15 @@ impl HEVCDecoderConfigurationRecord {
             bit_reader.read_bits(1)?; // reserved
 
             let nal_unit_type = bit_reader.read_bits(6)? as u8;
+            let nal_unit_type = NALUnitType::from(nal_unit_type);
+            if nal_unit_type != NALUnitType::VpsNut
+                && nal_unit_type != NALUnitType::SpsNut
+                && nal_unit_type != NALUnitType::PpsNut
+                && nal_unit_type != NALUnitType::PrefixSeiNut
+                && nal_unit_type != NALUnitType::SuffixSeiNut
+            {
+                return Err(io::Error::new(io::ErrorKind::InvalidData, "invalid nal_unit_type"));
+            }
 
             let num_nalus = bit_reader.read_u16::<BigEndian>()?;
             let mut nalus = Vec::with_capacity(num_nalus as usize);
@@ -141,7 +161,7 @@ impl HEVCDecoderConfigurationRecord {
 
             arrays.push(NaluArray {
                 array_completeness,
-                nal_unit_type: nal_unit_type.into(),
+                nal_unit_type,
                 nalus,
             });
         }

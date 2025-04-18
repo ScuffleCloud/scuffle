@@ -1,7 +1,9 @@
 use nutype_enum::nutype_enum;
 
 nutype_enum! {
-    /// Table E.1 - Interpretation of sample aspect ratio indicator
+    /// Interpretation of sample aspect ratio indicator.
+    ///
+    /// ISO/IEC 23008-2 - Table E.1
     pub enum AspectRatioIdc(u8) {
         /// Unspecified
         Unspecified = 0,
@@ -37,7 +39,7 @@ nutype_enum! {
         Aspect3_2 = 15,
         /// 2:1
         Aspect2_1 = 16,
-        /// Extended SAR (use `sar_width` & `sar_height` from bitstream)
+        /// EXTENDED_SAR
         ExtendedSar = 255,
     }
 }

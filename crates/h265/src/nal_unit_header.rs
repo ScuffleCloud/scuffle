@@ -6,19 +6,22 @@ use scuffle_bytes_util::BitReader;
 use crate::NALUnitType;
 use crate::range_check::range_check;
 
+/// NAL unit header.
+///
+/// - ISO/IEC 23008-2 - 7.3.1.2
+/// - ISO/IEC 23008-2 - 7.4.2.2
 #[derive(Debug, Clone, PartialEq)]
 pub struct NALUnitHeader {
+    /// Specifies the type of RBSP data structure contained in the NAL unit as specified in ISO/IEC 23008-2 Table 7-1.
     pub nal_unit_type: NALUnitType,
-
     /// Specifies the identifier of the layer to which a VCL NAL unit belongs or the identifier of a
     /// layer to which a non-VCL NAL unit applies.
     ///
-    /// This value ranges from \[0, 63\], with 63 being reserved for future use.
+    /// This value is in range \[0, 63\], with 63 being reserved for future use.
     pub nuh_layer_id: u8,
-
-    /// The `nuh_temporal_id_plus1` is 3 bits, where the value minus 1 is the temporal id for the NAL unit.
+    /// This value minus 1 specifies a temporal identifier for the NAL unit.
     ///
-    /// This value cannot be 0.
+    /// This value is in range from \[1, 7\].
     pub nuh_temporal_id_plus1: NonZero<u8>,
 }
 
@@ -86,7 +89,7 @@ impl NALUnitHeader {
 
     /// Returns the temporal id of the NAL unit.
     ///
-    /// Defined as `TemporalId` (7-1) in the spec.
+    /// Defined as `TemporalId` (7-1) by ISO/IEC 23008-2 - 7.4.2.2.
     pub fn temporal_id(&self) -> u8 {
         self.nuh_temporal_id_plus1.get() - 1
     }

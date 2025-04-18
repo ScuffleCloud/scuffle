@@ -5,15 +5,28 @@ use scuffle_expgolomb::BitReaderExpGolombExt;
 
 use crate::range_check::range_check;
 
+/// Info for each sub-layer in the SPS.
+///
+/// Directly part of [SPS](crate::sps::Sps).
 #[derive(Debug, Clone, PartialEq)]
 pub struct SubLayerOrderingInfo {
+    /// `sps_max_dec_pic_buffering_minus1[i]` plus 1 specifies the maximum required size of the decoded
+    /// picture buffer for the CVS in units of picture storage buffers when `HighestTid` is equal to `i`.
     pub sps_max_dec_pic_buffering_minus1: Vec<u64>,
+    /// `sps_max_num_reorder_pics[i]` indicates the maximum allowed number of pictures with `PicOutputFlag`
+    /// equal to 1 that can precede any picture with `PicOutputFlag` equal to 1 in the CVS in decoding order and
+    /// follow that picture with `PicOutputFlag` equal to 1 in output order when `HighestTid` is equal to i.
     pub sps_max_num_reorder_pics: Vec<u64>,
+    /// `sps_max_latency_increase_plus1[i]` not equal to 0 is used to compute the value of
+    /// [`SpsMaxLatencyPictures[i]`](SubLayerOrderingInfo::sps_max_latency_pictures_at),
+    /// which specifies the maximum number of pictures with `PicOutputFlag` equal
+    /// to 1 that can precede any picture with `PicOutputFlag` equal to 1 in the CVS in output order and follow that
+    /// picture with `PicOutputFlag` equal to 1 in decoding order when `HighestTid` is equal to i.
     pub sps_max_latency_increase_plus1: Vec<u32>,
 }
 
 impl SubLayerOrderingInfo {
-    pub fn parse<R: io::Read>(
+    pub(crate) fn parse<R: io::Read>(
         bit_reader: &mut BitReader<R>,
         sps_sub_layer_ordering_info_present_flag: bool,
         sps_max_sub_layers_minus1: u8,
@@ -70,6 +83,17 @@ impl SubLayerOrderingInfo {
         })
     }
 
+    /// Specifies the maximum number of pictures with `PicOutputFlag` equal
+    /// to 1 that can precede any picture with `PicOutputFlag` equal to 1 in the CVS in output order and follow that
+    /// picture with `PicOutputFlag` equal to 1 in decoding order when `HighestTid` is equal to i.
+    ///
+    /// Calculates the full `SpsMaxLatencyPictures` array.
+    ///
+    /// Use [`SubLayerOrderingInfo::sps_max_latency_pictures_at`] to only calculate one specific value `SpsMaxLatencyPictures[i]`.
+    ///
+    /// `SpsMaxLatencyPictures[i] = sps_max_num_reorder_pics[i] + sps_max_latency_increase_plus1[i] − 1` (7-9)
+    ///
+    /// ISO/IEC 23008-2 - 7.4.3.2
     pub fn sps_max_latency_pictures(&self) -> Vec<Option<u64>> {
         self.sps_max_num_reorder_pics
             .iter()
@@ -78,6 +102,13 @@ impl SubLayerOrderingInfo {
             .collect()
     }
 
+    /// Calculates `SpsMaxLatencyPictures[i]`.
+    ///
+    /// See [`sps_max_latency_pictures`](SubLayerOrderingInfo::sps_max_latency_pictures) for details.
+    ///
+    /// `SpsMaxLatencyPictures[i] = sps_max_num_reorder_pics[i] + sps_max_latency_increase_plus1[i] − 1` (7-9)
+    ///
+    /// ISO/IEC 23008-2 - 7.4.3.2
     pub fn sps_max_latency_pictures_at(&self, i: usize) -> Option<u64> {
         Some(self.sps_max_num_reorder_pics.get(i)? + self.sps_max_latency_increase_plus1.get(i)?.checked_sub(1)? as u64)
     }

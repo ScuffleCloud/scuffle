@@ -5,16 +5,36 @@ use scuffle_expgolomb::BitReaderExpGolombExt;
 
 use crate::range_check::range_check;
 
+/// Sequence parameter set screen content coding extension.
+///
+/// `sps_scc_extension()`
+///
+/// - ISO/IEC 23008-2 - 7.3.2.2.3
+/// - ISO/IEC 23008-2 - 7.4.3.2.3
 #[derive(Debug, Clone, PartialEq)]
 pub struct SpsSccExtension {
+    /// Equal to `true` specifies that a picture in the CVS may be included in a
+    /// reference picture list of a slice of the picture itself.
+    ///
+    /// Equal to `false` specifies that a picture in the CVS is never included in a
+    /// reference picture list of a slice of the picture itself.
     pub sps_curr_pic_ref_enabled_flag: bool,
+    /// Palette mode information, if `palette_mode_enabled_flag` is `true`.
     pub palette_mode: Option<SpsSccExtensionPaletteMode>,
+    /// Controls the presence and inference of the `use_integer_mv_flag`
+    /// that specifies the resolution of motion vectors for inter prediction.
+    ///
+    /// The value is in range \[0, 2\].
     pub motion_vector_resolution_control_idc: u8,
+    /// Equal to `true` specifies that the intra boundary filtering process is
+    /// unconditionally disabled for intra prediction.
+    ///
+    /// Equal to `false` specifies that the intra boundary filtering process may be used.
     pub intra_boundary_filtering_disabled_flag: bool,
 }
 
 impl SpsSccExtension {
-    pub fn parse<R: io::Read>(
+    pub(crate) fn parse<R: io::Read>(
         bit_reader: &mut BitReader<R>,
         chroma_format_idc: u8,
         bit_depth_y: u8,
@@ -95,14 +115,33 @@ impl SpsSccExtension {
     }
 }
 
+/// Directly part of [`SpsSccExtension`].
 #[derive(Debug, Clone, PartialEq)]
 pub struct SpsSccExtensionPaletteMode {
+    /// Specifies the maximum allowed palette size.
     pub palette_max_size: u64,
+    /// Specifies the difference between the maximum allowed palette predictor size and the maximum allowed palette size.
+    ///
+    /// Defines [`PaletteMaxPredictorSize`](SpsSccExtensionPaletteMode::palette_max_predictor_size).
     pub delta_palette_max_predictor_size: u64,
+    /// `sps_palette_predictor_initializer[comp][i]`, if `sps_palette_predictor_initializers_present_flag` is `true`.
+    ///
+    /// Specifies the value of the `comp`-th component of the `i`-th
+    /// palette entry in the SPS that is used to initialize the array PredictorPaletteEntries.
+    ///
+    /// The value of `sps_palette_predictor_initializer[0][i]` is in range \[0, `(1 << BitDepthY) − 1`\].
+    /// See [`BitDepthY`](crate::Sps::bit_depth_y).
+    ///
+    /// The values of `sps_palette_predictor_initializer[1][i]` and `sps_palette_predictor_initializer[2][i]`
+    /// is in range \[0, `(1 << BitDepthC) − 1`\].
+    /// See [`BitDepthC`](crate::Sps::bit_depth_c).
     pub sps_palette_predictor_initializers: Option<Vec<Vec<u64>>>,
 }
 
 impl SpsSccExtensionPaletteMode {
+    /// `PaletteMaxPredictorSize = palette_max_size + delta_palette_max_predictor_size` (7-35)
+    ///
+    /// ISO/IEC 23008-2 - 7.4.3.2.3
     pub fn palette_max_predictor_size(&self) -> u64 {
         self.palette_max_size + self.delta_palette_max_predictor_size
     }

@@ -6,14 +6,22 @@ use scuffle_expgolomb::BitReaderExpGolombExt;
 
 use crate::range_check::range_check;
 
+/// HRD parameters.
+///
+/// `hrd_parameters(commonInfPresentFlag, maxNumSubLayersMinus1)`
+///
+/// - ISO/IEC 23008-2 - E.2.2
+/// - ISO/IEC 23008-2 - E.3.2
 #[derive(Debug, Clone, PartialEq)]
 pub struct HrdParameters {
+    /// HRD parameters information unrelated to sub-layers.
     pub common_inf: CommonInf,
-    pub sub_layers: Vec<Vec<SubLayerHrdParameters>>,
+    /// Sub-layer HRD parameters.
+    pub sub_layers: Vec<HrdParametersSubLayer>,
 }
 
 impl HrdParameters {
-    pub fn parse<R: io::Read>(
+    pub(crate) fn parse<R: io::Read>(
         bit_reader: &mut BitReader<R>,
         common_inf_present_flag: bool,
         max_num_sub_layers_minus1: u8,
@@ -65,63 +73,40 @@ impl HrdParameters {
         let mut sub_layers = Vec::with_capacity(max_num_sub_layers_minus1 as usize + 1);
 
         for _ in 0..=max_num_sub_layers_minus1 {
-            let mut fixed_pic_rate_within_cvs_flag = true;
-
-            let fixed_pic_rate_general_flag = bit_reader.read_bit()?;
-            if !fixed_pic_rate_general_flag {
-                fixed_pic_rate_within_cvs_flag = bit_reader.read_bit()?;
-            }
-
-            let mut low_delay_hrd_flag = false;
-            if fixed_pic_rate_within_cvs_flag {
-                let elemental_duration_in_tc_minus1 = bit_reader.read_exp_golomb()?;
-                range_check!(elemental_duration_in_tc_minus1, 0, 2047)?;
-            } else {
-                low_delay_hrd_flag = bit_reader.read_bit()?;
-            }
-
-            let mut cpb_cnt_minus1 = 0;
-            if !low_delay_hrd_flag {
-                cpb_cnt_minus1 = bit_reader.read_exp_golomb()?;
-                range_check!(cpb_cnt_minus1, 0, 31)?;
-            }
-
-            let mut sub_layer_parameters = Vec::new();
-
-            let sub_pic_hrd_params_present_flag = common_inf.sub_pic_hrd_params.is_some();
-
-            if nal_hrd_parameters_present_flag {
-                sub_layer_parameters.append(&mut SubLayerHrdParameters::parse(
-                    bit_reader,
-                    true,
-                    cpb_cnt_minus1 + 1,
-                    sub_pic_hrd_params_present_flag,
-                )?);
-            }
-
-            if vcl_hrd_parameters_present_flag {
-                sub_layer_parameters.append(&mut SubLayerHrdParameters::parse(
-                    bit_reader,
-                    false,
-                    cpb_cnt_minus1 + 1,
-                    sub_pic_hrd_params_present_flag,
-                )?);
-            }
-
-            sub_layers.push(sub_layer_parameters);
+            sub_layers.push(HrdParametersSubLayer::parse(
+                bit_reader,
+                common_inf.sub_pic_hrd_params.is_some(),
+                nal_hrd_parameters_present_flag,
+                vcl_hrd_parameters_present_flag,
+            )?);
         }
 
         Ok(HrdParameters { common_inf, sub_layers })
     }
 }
 
+/// Directly part of [`HrdParameters`].
 #[derive(Debug, Clone, PartialEq)]
 pub struct CommonInf {
+    /// Sub-picture HRD parameters, if `sub_pic_hrd_params_present_flag` is `true`.
     pub sub_pic_hrd_params: Option<SubPicHrdParams>,
+    /// Specifies (together with [`bit_rate_value_minus1[i]`](SubLayerHrdParameters::bit_rate_value_minus1)) the maximum
+    /// input bit rate of the i-th CPB.
     pub bit_rate_scale: Option<u8>,
+    /// Specifies ((together with [`cpb_size_value_minus1[i]`](SubLayerHrdParameters::cpb_size_value_minus1))) the CPB size
+    /// of the i-th CPB when the CPB operates at the access unit level.
     pub cpb_size_scale: Option<u8>,
+    /// This value plus 1 specifies the length, in bits, of the
+    /// `nal_initial_cpb_removal_delay[i]`, `nal_initial_cpb_removal_offset[i]`, `vcl_initial_cpb_removal_delay[i]`,
+    /// and `vcl_initial_cpb_removal_offset[i]` syntax elements of the buffering period SEI message.
     pub initial_cpb_removal_delay_length_minus1: u8,
+    /// This value plus 1 specifies the length, in bits, of the cpb_delay_offset syntax
+    /// element in the buffering period SEI message and the au_cpb_removal_delay_minus1 syntax element in
+    /// the picture timing SEI message.
     pub au_cpb_removal_delay_length_minus1: u8,
+    /// This value plus 1 specifies the length, in bits, of the dpb_delay_offset syntax
+    /// element in the buffering period SEI message and the pic_dpb_output_delay syntax element in the picture
+    /// timing SEI message.
     pub dpb_output_delay_length_minus1: u8,
 }
 
@@ -138,23 +123,176 @@ impl Default for CommonInf {
     }
 }
 
+/// Directly part of [`HrdParameters`].
 #[derive(Debug, Clone, PartialEq)]
 pub struct SubPicHrdParams {
+    /// Used to specify the clock sub-tick. A clock sub-tick is the minimum interval of
+    /// time that can be represented in the coded data.
     pub tick_divisor_minus2: u8,
+    /// This value plus 1 specifies the length, in bits, of the
+    /// `du_cpb_removal_delay_increment_minus1[i]` and `du_common_cpb_removal_delay_increment_minus1`
+    /// syntax elements of the picture timing SEI message and the `du_spt_cpb_removal_delay_increment` syntax
+    /// element in the decoding unit information SEI message.
     pub du_cpb_removal_delay_increment_length_minus1: u8,
+    /// Equal to `true` specifies that sub-picture level CPB removal
+    /// delay parameters are present in picture timing SEI messages and no decoding unit information SEI
+    /// message is available (in the CVS or provided through external means not specified in this document).
+    ///
+    /// Equal to `false` specifies that sub-picture level CPB removal delay
+    /// parameters are present in decoding unit information SEI messages and picture timing SEI messages do
+    /// not include sub-picture level CPB removal delay parameters.
     pub sub_pic_cpb_params_in_pic_timing_sei_flag: bool,
+    /// This value plus 1 specifies the length, in bits, of
+    /// `pic_dpb_output_du_delay` syntax element in the picture timing SEI message and
+    /// `pic_spt_dpb_output_du_delay` syntax element in the decoding unit information SEI message.
     pub dpb_output_delay_du_length_minus1: u8,
+    /// Specifies (together with [`cpb_size_du_value_minus1[i]`](SubLayerHrdParameters::cpb_size_du_value_minus1))
+    /// the CPB size of the i-th CPB when the CPB operates at sub-picture level.
     pub cpb_size_du_scale: u8,
 }
 
+/// Directly part of [`HrdParameters`].
+#[derive(Debug, Clone, PartialEq)]
+pub struct HrdParametersSubLayer {
+    /// Equal to `true` indicates that, when `HighestTid` is equal to `i`, the temporal
+    /// distance between the HRD output times of consecutive pictures in output order is constrained as specified.
+    ///
+    /// Equal to `false` indicates that this constraint may not apply.
+    pub fixed_pic_rate_general_flag: bool,
+    /// Equal to `true` indicates that, when `HighestTid` is equal to `i`, the temporal
+    /// distance between the HRD output times of consecutive pictures in output order is constrained as specified.
+    ///
+    /// Equal to `false` indicates that this constraint may not apply.
+    pub fixed_pic_rate_within_cvs_flag: bool,
+    /// This value plus 1 (when present) specifies, when `HighestTid` is equal to `i`,
+    /// the temporal distance, in clock ticks, between the elemental units that specify the HRD output times of
+    /// consecutive pictures in output order as specified.
+    ///
+    /// The value is in range \[0, 2047\].
+    pub elemental_duration_in_tc_minus1: Option<u64>,
+    /// Specifies the HRD operational mode, when `HighestTid` is equal to `i`, as specified in
+    /// ISO/IEC 23008-2 Annex C or ISO/IEC 23008-2 F.13.
+    pub low_delay_hrd_flag: bool,
+    /// This value plus 1 specifies the number of alternative CPB specifications in the bitstream of the
+    /// CVS when `HighestTid` is equal to `i`.
+    ///
+    /// The value is in range \[0, 31\].
+    pub cpb_cnt_minus1: u64,
+    /// Sub-layer HRD parameters.
+    pub sub_layer_parameters: Vec<SubLayerHrdParameters>,
+}
+
+impl HrdParametersSubLayer {
+    fn parse(
+        bit_reader: &mut BitReader<impl io::Read>,
+        sub_pic_hrd_params_present_flag: bool,
+        nal_hrd_parameters_present_flag: bool,
+        vcl_hrd_parameters_present_flag: bool,
+    ) -> io::Result<Self> {
+        let mut fixed_pic_rate_within_cvs_flag = true;
+
+        let fixed_pic_rate_general_flag = bit_reader.read_bit()?;
+        if !fixed_pic_rate_general_flag {
+            fixed_pic_rate_within_cvs_flag = bit_reader.read_bit()?;
+        }
+
+        let mut elemental_duration_in_tc_minus1_value = None;
+        let mut low_delay_hrd_flag = false;
+        if fixed_pic_rate_within_cvs_flag {
+            let elemental_duration_in_tc_minus1 = bit_reader.read_exp_golomb()?;
+            range_check!(elemental_duration_in_tc_minus1, 0, 2047)?;
+            elemental_duration_in_tc_minus1_value = Some(elemental_duration_in_tc_minus1);
+        } else {
+            low_delay_hrd_flag = bit_reader.read_bit()?;
+        }
+
+        let mut cpb_cnt_minus1 = 0;
+        if !low_delay_hrd_flag {
+            cpb_cnt_minus1 = bit_reader.read_exp_golomb()?;
+            range_check!(cpb_cnt_minus1, 0, 31)?;
+        }
+
+        let mut sub_layer_parameters = Vec::new();
+
+        if nal_hrd_parameters_present_flag {
+            sub_layer_parameters.append(&mut SubLayerHrdParameters::parse(
+                bit_reader,
+                true,
+                cpb_cnt_minus1 + 1,
+                sub_pic_hrd_params_present_flag,
+            )?);
+        }
+
+        if vcl_hrd_parameters_present_flag {
+            sub_layer_parameters.append(&mut SubLayerHrdParameters::parse(
+                bit_reader,
+                false,
+                cpb_cnt_minus1 + 1,
+                sub_pic_hrd_params_present_flag,
+            )?);
+        }
+
+        Ok(Self {
+            fixed_pic_rate_general_flag,
+            fixed_pic_rate_within_cvs_flag,
+            elemental_duration_in_tc_minus1: elemental_duration_in_tc_minus1_value,
+            low_delay_hrd_flag,
+            cpb_cnt_minus1,
+            sub_layer_parameters,
+        })
+    }
+}
+
+/// Sub-layer HRD parameters.
+///
+/// `sub_layer_hrd_parameters(subLayerId)`
+///
+/// - ISO/IEC 23008-2 - E.2.3
+/// - ISO/IEC 23008-2 - E.3.3
 #[derive(Debug, Clone, PartialEq)]
 pub struct SubLayerHrdParameters {
     /// Internal field to store if this is a NAL or VCL HRD
     nal_hrd: bool,
+    /// Specifies (together with [`bit_rate_scale`](CommonInf::bit_rate_scale)) the maximum input bit rate
+    /// for the i-th CPB when the CPB operates at the access unit level.
+    ///
+    /// For any `i > 0`, `bit_rate_value_minus1[i]` is greater than `bit_rate_value_minus1[i − 1]`.
+    ///
+    /// The value is in range \[0, 2^32 - 2\].
+    ///
+    /// Defines [`BitRate[i]`](SubLayerHrdParameters::bit_rate).
     pub bit_rate_value_minus1: u32,
+    /// Used together with [`cpb_size_scale`](CommonInf::cpb_size_scale) to specify
+    /// the i-th CPB size when the CPB operates at the access unit level.
+    ///
+    /// For any `i > 0`, `cpb_size_value_minus1[i]` is less than or equal to `cpb_size_value_minus1[i − 1]`.
+    ///
+    /// The value is in range \[0, 2^32 - 2\].
+    ///
+    /// Defines [`CpbSize[i]`](SubLayerHrdParameters::cpb_size).
     pub cpb_size_value_minus1: u32,
+    /// Used together with [`cpb_size_du_scale`](SubPicHrdParams::cpb_size_du_scale) to specify
+    /// the i-th CPB size when the CPB operates at sub-picture level.
+    ///
+    /// For any `i > 0`, `cpb_size_du_value_minus1[i]` is less than or equal to `cpb_size_du_value_minus1[i − 1]`.
+    ///
+    /// The value is in range \[0, 2^32 - 2\].
+    ///
+    /// Defines [`CpbSize[i]`](SubLayerHrdParameters::cpb_size).
     pub cpb_size_du_value_minus1: Option<u64>,
+    /// Specifies (together with [`bit_rate_scale`](CommonInf::bit_rate_scale)) the maximum input bit rate for
+    /// the i-th CPB when the CPB operates at the sub-picture level.
+    ///
+    /// For any `i > 0`, `bit_rate_du_value_minus1[i]` shall be greater than `bit_rate_du_value_minus1[i − 1]`.
+    ///
+    /// The value is in range \[0, 2^32 - 2\].
+    ///
+    /// Defines [`BitRate[i]`](SubLayerHrdParameters::bit_rate).
     pub bit_rate_du_value_minus1: Option<u64>,
+    /// Equal to `false` specifies that to decode this CVS by the HRD using the i-th CPB specification, the
+    /// hypothetical stream scheduler (HSS) operates in an intermittent bit rate mode.
+    ///
+    /// Equal to `true` specifies that the HSS operates in a constant bit rate (CBR) mode.
     pub cbr_flag: bool,
 }
 
@@ -210,6 +348,16 @@ impl SubLayerHrdParameters {
         Ok(parameters)
     }
 
+    /// When `SubPicHrdFlag` is equal to `false`, the bit rate in bits per second is given by:
+    /// `BitRate[i] = (bit_rate_value_minus1[ i ] + 1) * 2^(6 + bit_rate_scale)` (E-77)
+    ///
+    /// When `SubPicHrdFlag` is equal to `true`, the bit rate in bits per second is given by:
+    /// `BitRate[i] = (bit_rate_du_value_minus1[ i ] + 1) * 2^(6 + bit_rate_scale)` (E-80)
+    ///
+    /// When `SubPicHrdFlag` is equal to `true` and the `bit_rate_du_value_minus1[i]` syntax element is not present,
+    /// the value of `BitRate[i]` is inferred to be equal to `BrVclFactor * MaxBR` for VCL HRD parameters and to be
+    /// equal to `BrNalFactor * MaxBR` for NAL HRD parameters, where `MaxBR`, `BrVclFactor` and `BrNalFactor` are
+    /// specified in ISO/IEC 23008-2 - A.4.
     pub fn bit_rate(
         &self,
         sub_pic_hrd_flag: bool,
@@ -232,6 +380,16 @@ impl SubLayerHrdParameters {
         (value + 1) * 2u64.pow(6 + bit_rate_scale as u32)
     }
 
+    /// When `SubPicHrdFlag` is equal to `false`, the CPB size in bits is given by:
+    /// `CpbSize[i] = (cpb_size_value_minus1[ i ] + 1) * 2^(4 + cpb_size_scale)` (E-78)
+    ///
+    /// When `SubPicHrdFlag` is equal to `true`, the CPB size in bits is given by:
+    /// `CpbSize[i] = (cpb_size_du_value_minus1[ i ] + 1) * 2^(4 + cpb_size_du_scale)` (E-79)
+    ///
+    /// When `SubPicHrdFlag` is equal to `true` and the `cpb_size_du_value_minus1[i]` syntax element is not present,
+    /// the value of `CpbSize[i]` is inferred to be equal to `CpbVclFactor * MaxCPB` for VCL HRD parameters and to
+    /// be equal to `CpbNalFactor * MaxCPB` for NAL HRD parameters, where `MaxCPB`, `CpbVclFactor` and
+    /// `CpbNalFactor` are specified in ISO/IEC 23008-2 - A.4.
     pub fn cpb_size(
         &self,
         sub_pic_hrd_flag: bool,

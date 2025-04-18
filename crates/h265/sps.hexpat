@@ -328,7 +328,7 @@ bitfield VuiParameters {
         bool video_full_range_flag : 1;
         bool colour_description_present_flag : 1;
         if (colour_description_present_flag) {
-            color_primaries : 8;
+            colour_primaries : 8;
             transfer_characteristics : 8;
             matrix_coeffs : 8;
         }

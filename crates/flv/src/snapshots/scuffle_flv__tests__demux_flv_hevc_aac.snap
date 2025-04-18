@@ -61,14 +61,15 @@ Sps {
             inbld_flag: Some(
                 false,
             ),
+            level_idc: Some(
+                153,
+            ),
         },
-        general_level_idc: 153,
         sub_layer_profiles: [],
-        sub_layer_level_idcs: [],
     },
     sps_seq_parameter_set_id: 0,
     chroma_format_idc: 1,
-    separate_color_plane_flag: false,
+    separate_colour_plane_flag: false,
     pic_width_in_luma_samples: 3840,
     pic_height_in_luma_samples: 2160,
     conformance_window: ConformanceWindow {
@@ -110,7 +111,7 @@ Sps {
         used_by_curr_pic_s0: [],
         used_by_curr_pic_s1: [],
     },
-    long_term_ref_pics_present_flag: false,
+    long_term_ref_pics: None,
     sps_temporal_mvp_enabled_flag: true,
     strong_intra_smoothing_enabled_flag: true,
     vui_parameters: Some(
@@ -122,7 +123,7 @@ Sps {
             video_signal_type: VideoSignalType {
                 video_format: VideoFormat::Unspecified,
                 video_full_range_flag: false,
-                color_primaries: 2,
+                colour_primaries: 2,
                 transfer_characteristics: 2,
                 matrix_coeffs: 2,
             },
@@ -144,6 +145,7 @@ Sps {
                 VuiTimingInfo {
                     num_units_in_tick: 1,
                     time_scale: 60,
+                    poc_proportional_to_timing_flag: false,
                     num_ticks_poc_diff_one_minus1: None,
                     hrd_parameters: None,
                 },

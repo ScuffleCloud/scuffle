@@ -3,9 +3,14 @@ use std::io;
 use scuffle_bytes_util::BitReader;
 use scuffle_expgolomb::BitReaderExpGolombExt;
 
-/// ScalingList[0][0..5][i]
+/// `ScalingList[0][0..5][i]`
+///
+/// ISO/IEC 23008-2 - Table 7-5
 const TABLE_7_5: [i64; 16] = [16; 16];
-/// ScalingList[1..3][0..2][i]
+
+/// `ScalingList[1..3][0..2][i]`
+///
+/// /// ISO/IEC 23008-2 - Table 7-6
 #[rustfmt::skip]
 const TABLE_7_6_02: [i64; 64] = [
     //0  1   2   3   4   5   6   7   8   9  10  11  12  13  14  15
@@ -14,7 +19,10 @@ const TABLE_7_6_02: [i64; 64] = [
     24, 22, 22, 24, 25, 25, 27, 30, 27, 25, 25, 29, 31, 35, 35, 31,
     29, 36, 41, 44, 41, 36, 47, 54, 54, 47, 65, 70, 65, 88, 88, 115,
 ];
+
 /// ScalingList[1..3][3..5][i]
+///
+/// ISO/IEC 23008-2 - Table 7-6
 #[rustfmt::skip]
 const TABLE_7_6_35: [i64; 64] = [
     //0  1   2   3   4   5   6   7   8   9  10  11  12  13  14  15
@@ -23,7 +31,10 @@ const TABLE_7_6_35: [i64; 64] = [
     24, 24, 24, 24, 25, 25, 25, 25, 25, 25, 25, 28, 28, 28, 28, 28,
     28, 33, 33, 33, 33, 33, 41, 41, 41, 41, 54, 54, 54, 71, 71, 91,
 ];
+
 /// ScalingList[1..3][i][j]
+///
+/// ISO/IEC 23008-2 - 7.4.5
 const TABLE_7_6: [[i64; 64]; 6] = [
     TABLE_7_6_02,
     TABLE_7_6_02,
@@ -33,13 +44,22 @@ const TABLE_7_6: [[i64; 64]; 6] = [
     TABLE_7_6_35,
 ];
 
+/// Scaling list data.
+///
+/// `scaling_list_data()`
+///
+/// - ISO/IEC 23008-2 - 7.3.4
+/// - ISO/IEC 23008-2 - 7.4.5
 #[derive(Debug, Clone, PartialEq)]
 pub struct ScalingListData {
+    /// The resulting scaling list.
+    ///
+    /// `ScalingList[0..3][0..5][0..63]`
     pub scaling_list: [[[i64; 64]; 6]; 4],
 }
 
 impl ScalingListData {
-    pub fn parse<R: io::Read>(bit_reader: &mut BitReader<R>) -> io::Result<Self> {
+    pub(crate) fn parse<R: io::Read>(bit_reader: &mut BitReader<R>) -> io::Result<Self> {
         let mut scaling_list = [[[0; 64]; 6]; 4];
 
         for (size_id, scaling_column) in scaling_list.iter_mut().enumerate() {

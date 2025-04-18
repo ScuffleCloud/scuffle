@@ -59,14 +59,15 @@ Sps {
             inbld_flag: Some(
                 false,
             ),
+            level_idc: Some(
+                120,
+            ),
         },
-        general_level_idc: 120,
         sub_layer_profiles: [],
-        sub_layer_level_idcs: [],
     },
     sps_seq_parameter_set_id: 0,
     chroma_format_idc: 1,
-    separate_color_plane_flag: false,
+    separate_colour_plane_flag: false,
     pic_width_in_luma_samples: 1920,
     pic_height_in_luma_samples: 1088,
     conformance_window: ConformanceWindow {
@@ -126,7 +127,7 @@ Sps {
             [],
         ],
     },
-    long_term_ref_pics_present_flag: false,
+    long_term_ref_pics: None,
     sps_temporal_mvp_enabled_flag: false,
     strong_intra_smoothing_enabled_flag: false,
     vui_parameters: Some(
@@ -138,7 +139,7 @@ Sps {
             video_signal_type: VideoSignalType {
                 video_format: VideoFormat::Unspecified,
                 video_full_range_flag: false,
-                color_primaries: 1,
+                colour_primaries: 1,
                 transfer_characteristics: 1,
                 matrix_coeffs: 1,
             },
@@ -160,6 +161,7 @@ Sps {
                 VuiTimingInfo {
                     num_units_in_tick: 1,
                     time_scale: 30,
+                    poc_proportional_to_timing_flag: false,
                     num_ticks_poc_diff_one_minus1: None,
                     hrd_parameters: Some(
                         HrdParameters {
@@ -176,16 +178,23 @@ Sps {
                                 dpb_output_delay_length_minus1: 5,
                             },
                             sub_layers: [
-                                [
-                                    SubLayerHrdParameters {
-                                        nal_hrd: true,
-                                        bit_rate_value_minus1: 156249,
-                                        cpb_size_value_minus1: 624999,
-                                        cpb_size_du_value_minus1: None,
-                                        bit_rate_du_value_minus1: None,
-                                        cbr_flag: false,
-                                    },
-                                ],
+                                HrdParametersSubLayer {
+                                    fixed_pic_rate_general_flag: false,
+                                    fixed_pic_rate_within_cvs_flag: false,
+                                    elemental_duration_in_tc_minus1: None,
+                                    low_delay_hrd_flag: false,
+                                    cpb_cnt_minus1: 0,
+                                    sub_layer_parameters: [
+                                        SubLayerHrdParameters {
+                                            nal_hrd: true,
+                                            bit_rate_value_minus1: 156249,
+                                            cpb_size_value_minus1: 624999,
+                                            cpb_size_du_value_minus1: None,
+                                            bit_rate_du_value_minus1: None,
+                                            cbr_flag: false,
+                                        },
+                                    ],
+                                },
                             ],
                         },
                     ),

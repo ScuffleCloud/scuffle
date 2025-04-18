@@ -8,54 +8,42 @@ use scuffle_bytes_util::{BitReader, BitWriter};
 
 use crate::{ConstantFrameRate, NALUnitType, NumTemporalLayers, ParallelismType};
 
-/// HEVC Decoder Configuration Record
-/// ISO/IEC 14496-15:2022(E) - 8.3.2.1
+/// HEVC Decoder Configuration Record.
+///
+/// ISO/IEC 14496-15 - 8.3.2.1
 #[derive(Debug, Clone, PartialEq)]
 pub struct HEVCDecoderConfigurationRecord {
     /// The `general_profile_space` as a u8. Matches the field as defined in ISO/IEC 23008-2.
     pub general_profile_space: u8,
-
     /// The `general_tier_flag` as a bool. Matches the field as defined in ISO/IEC 23008-2.
     pub general_tier_flag: bool,
-
     /// The `general_profile_idc` as a u8. Matches the field as defined in ISO/IEC 23008-2.
     pub general_profile_idc: u8,
-
     /// The `general_profile_compatibility_flags` as a u32. Matches the field as defined in ISO/IEC 23008-2.
     pub general_profile_compatibility_flags: u32,
-
     /// The `general_constraint_indicator_flags` as a u64. Matches the field as defined in ISO/IEC 23008-2.
     pub general_constraint_indicator_flags: u64,
-
     /// The `general_level_idc` as a u32. Matches the field as defined in ISO/IEC 23008-2.
     pub general_level_idc: u8,
-
     /// The `min_spatial_segmentation_idc` as a u16. Matches the field as defined in ISO/IEC 23008-2.
     pub min_spatial_segmentation_idc: u16,
-
     /// The `parallelism_type`.
     ///
     /// See [`ParallelismType`] for more info.
     pub parallelism_type: ParallelismType,
-
     /// The `chroma_format_idc` as a u8. Matches the field as defined in ISO/IEC 23008-2.
     pub chroma_format_idc: u8,
-
     /// The `bit_depth_luma_minus8` as a u8. Matches the field as defined in ISO/IEC 23008-2.
     pub bit_depth_luma_minus8: u8,
-
     /// The `bit_depth_chroma_minus8` as a u8. Matches the field as defined in ISO/IEC 23008-2.
     pub bit_depth_chroma_minus8: u8,
-
     // definitely shouldn't be a u16. prolly f64
     /// The `avg_frame_rate` as a u16.
     pub avg_frame_rate: u16,
-
     /// The `constant_frame_rate`.
     ///
     /// See [`ConstantFrameRate`] for more info.
     pub constant_frame_rate: ConstantFrameRate,
-
     /// The `num_temporal_layers` as a u8. This is the count of tepmoral layers or `sub-layer`s as defined in ISO/IEC 23008-2.
     ///
     /// 0 means the stream might be temporally scalable.
@@ -64,24 +52,22 @@ pub struct HEVCDecoderConfigurationRecord {
     ///
     /// 2 or more means the stream is temporally scalable, and the count of temporal layers is equal to this value.
     pub num_temporal_layers: NumTemporalLayers,
-
     /// The `temporal_id_nested` as a bool.
     ///
     /// `false` means means the opposite might not be true (refer to what 1 means for this flag).
     ///
     /// `true` means all the activated SPS have `sps_temporal_id_nesting_flag` (as defined in ISC/IEC 23008-2) set to 1 and that temporal sub-layer up-switching to a higehr temporal layer can be done at any sample.
     pub temporal_id_nested: bool,
-
     /// The `length_size_minus_one` is the u8 length of the NALUnitLength minus one.
     pub length_size_minus_one: u8,
-
     /// The `arrays` is a vec of NaluArray.
     /// Refer to the NaluArray struct in the NaluArray docs for more info.
     pub arrays: Vec<NaluArray>,
 }
 
 /// Nalu Array Structure
-/// ISO/IEC 14496-15:2022(E) - 8.3.2.1
+///
+/// ISO/IEC 14496-15 - 8.3.2.1
 #[derive(Debug, Clone, PartialEq)]
 pub struct NaluArray {
     /// The `array_completeness` is a flag set to 1 when all NAL units are in the array and none are in the stream. It is set to 0 if otherwise.
@@ -95,8 +81,9 @@ pub struct NaluArray {
 }
 
 impl HEVCDecoderConfigurationRecord {
-    /// Demuxes an HEVCDecoderConfigurationRecord from a byte stream.
-    /// Returns a demuxed HEVCDecoderConfigurationRecord.
+    /// Demuxes an [`HEVCDecoderConfigurationRecord`] from a byte stream.
+    ///
+    /// Returns a demuxed [`HEVCDecoderConfigurationRecord`].
     pub fn demux(data: impl io::Read) -> io::Result<Self> {
         let mut bit_reader = BitReader::new(data);
 
@@ -180,7 +167,7 @@ impl HEVCDecoderConfigurationRecord {
         })
     }
 
-    /// Returns the total byte size of the HEVCDecoderConfigurationRecord.
+    /// Returns the total byte size of the [`HEVCDecoderConfigurationRecord`].
     pub fn size(&self) -> u64 {
         1 // configuration_version
         + 1 // general_profile_space, general_tier_flag, general_profile_idc
@@ -205,7 +192,8 @@ impl HEVCDecoderConfigurationRecord {
         }).sum::<u64>()
     }
 
-    /// Muxes the HEVCDecoderConfigurationRecord into a byte stream.
+    /// Muxes the [`HEVCDecoderConfigurationRecord`] into a byte stream.
+    ///
     /// Returns a muxed byte stream.
     pub fn mux<T: io::Write>(&self, writer: &mut T) -> io::Result<()> {
         let mut bit_writer = BitWriter::new(writer);

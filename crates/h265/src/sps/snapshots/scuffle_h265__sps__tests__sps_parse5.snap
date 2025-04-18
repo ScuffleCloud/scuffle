@@ -61,14 +61,15 @@ Sps {
             inbld_flag: Some(
                 false,
             ),
+            level_idc: Some(
+                120,
+            ),
         },
-        general_level_idc: 120,
         sub_layer_profiles: [],
-        sub_layer_level_idcs: [],
     },
     sps_seq_parameter_set_id: 0,
     chroma_format_idc: 1,
-    separate_color_plane_flag: false,
+    separate_colour_plane_flag: false,
     pic_width_in_luma_samples: 1920,
     pic_height_in_luma_samples: 1080,
     conformance_window: ConformanceWindow {
@@ -124,7 +125,7 @@ Sps {
             [],
         ],
     },
-    long_term_ref_pics_present_flag: false,
+    long_term_ref_pics: None,
     sps_temporal_mvp_enabled_flag: true,
     strong_intra_smoothing_enabled_flag: true,
     vui_parameters: None,

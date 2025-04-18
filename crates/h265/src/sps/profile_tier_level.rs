@@ -3,22 +3,54 @@ use std::io;
 use byteorder::{BigEndian, ReadBytesExt};
 use scuffle_bytes_util::BitReader;
 
+use crate::range_check::range_check;
+
+/// Profile, tier and level.
+///
+/// `profile_tier_level(profilePresentFlag, maxNumSubLayersMinus1)`
+///
+/// - ISO/IEC 23008-2 - 7.3.3
+/// - ISO/IEC 23008-2 - 7.4.4
 #[derive(Debug, Clone, PartialEq)]
 pub struct ProfileTierLevel {
+    /// `general_profile_space`, `general_tier_flag`, `general_profile_idc`, `general_profile_compatibility_flag[j]`,
+    /// `general_progressive_source_flag`, `general_interlaced_source_flag`, `general_non_packed_constraint_flag`,
+    /// `general_frame_only_constraint_flag`, `general_max_12bit_constraint_flag`, `general_max_10bit_constraint_flag`,
+    /// `general_max_8bit_constraint_flag`, `general_max_422chroma_constraint_flag`,
+    /// `general_max_420chroma_constraint_flag`, `general_max_monochrome_constraint_flag`,
+    /// `general_intra_constraint_flag`, `general_one_picture_only_constraint_flag`,
+    /// `general_lower_bit_rate_constraint_flag`, `general_max_14bit_constraint_flag`, `general_inbld_flag`
+    /// and `general_level_idc`.
     pub general_profile: Profile,
-    pub general_level_idc: u8,
+    /// `sub_layer_profile_space[i]`, `sub_layer_tier_flag[i]`,
+    /// `sub_layer_profile_idc[i]`,
+    /// `sub_layer_profile_compatibility_flag[i][j]`,
+    /// `sub_layer_progressive_source_flag[i]`,
+    /// `sub_layer_interlaced_source_flag[i]`,
+    /// `sub_layer_non_packed_constraint_flag[i]`,
+    /// `sub_layer_frame_only_constraint_flag[i]`,
+    /// `sub_layer_max_12bit_constraint_flag[i]`,
+    /// `sub_layer_max_10bit_constraint_flag[i]`,
+    /// `sub_layer_max_8bit_constraint_flag[i]`,
+    /// `sub_layer_max_422chroma_constraint_flag[i]`,
+    /// `sub_layer_max_420chroma_constraint_flag[i]`,
+    /// `sub_layer_max_monochrome_constraint_flag[i]`,
+    /// `sub_layer_intra_constraint_flag[i]`,
+    /// `sub_layer_one_picture_only_constraint_flag[i]`,
+    /// `sub_layer_lower_bit_rate_constraint_flag[i]`,
+    /// `sub_layer_max_14bit_constraint_flag[i]`,
+    /// `sub_layer_inbld_flag[i]`, and
+    /// `sub_layer_level_idc[i]`.
     pub sub_layer_profiles: Vec<Profile>,
-    pub sub_layer_level_idcs: Vec<u8>,
 }
 
 impl ProfileTierLevel {
-    pub fn parse<R: io::Read>(bit_reader: &mut BitReader<R>, max_num_sub_layers_minus_1: u8) -> io::Result<Self> {
-        // profile_present_flag is always true when parsing SPSs only
-        let mut general_profile = Profile::parse(bit_reader)?;
+    pub(crate) fn parse<R: io::Read>(bit_reader: &mut BitReader<R>, max_num_sub_layers_minus_1: u8) -> io::Result<Self> {
+        // profile_present_flag is always true when only parsing SPSs
+
+        let mut general_profile = Profile::parse(bit_reader, true)?;
         // inbld_flag is inferred to be 0 when not present for the genral profile
         general_profile.inbld_flag = Some(general_profile.inbld_flag.unwrap_or(false));
-
-        let general_level_idc = bit_reader.read_bits(8)? as u8;
 
         let mut sub_layer_profile_present_flags = Vec::with_capacity(max_num_sub_layers_minus_1 as usize);
         let mut sub_layer_level_present_flags = Vec::with_capacity(max_num_sub_layers_minus_1 as usize);
@@ -37,7 +69,7 @@ impl ProfileTierLevel {
 
         for i in 0..max_num_sub_layers_minus_1 as usize {
             if sub_layer_profile_present_flags[i] {
-                sub_layer_profiles[i] = Some(Profile::parse(bit_reader)?);
+                sub_layer_profiles[i] = Some(Profile::parse(bit_reader, sub_layer_level_present_flags[i])?);
             }
 
             if sub_layer_level_present_flags[i] {
@@ -58,47 +90,74 @@ impl ProfileTierLevel {
                 None => last_profile.clone(),
             })
             .collect();
-        sub_layer_profiles.reverse();
-
-        let mut last_level_idc = general_level_idc;
-        let mut sub_layer_level_idcs: Vec<_> = sub_layer_level_idcs
-            .into_iter()
-            .rev()
-            .map(|idc| match idc {
-                Some(idc) => {
-                    last_level_idc = idc;
-                    idc
-                }
-                None => last_level_idc,
-            })
-            .collect();
-        sub_layer_level_idcs.reverse();
+        sub_layer_profiles.reverse(); // reverse back to original order
 
         Ok(ProfileTierLevel {
             general_profile,
-            general_level_idc,
             sub_layer_profiles,
-            sub_layer_level_idcs,
         })
     }
 }
 
+/// Profile part of the Profile, tier and level structure.
 #[derive(Debug, Clone, PartialEq)]
 pub struct Profile {
+    /// Decoders shall ignore the CVS when `general_profile_space` is not equal to 0.
     pub profile_space: u8,
+    /// Specifies the tier context for the interpretation of `general_level_idc` as specified in ISO/IEC 23008-2 - Annex A.
     pub tier_flag: bool,
+    /// When `general_profile_space` is equal to 0, indicates a profile to which the CVS
+    /// conforms as specified in ISO/IEC 23008-2 - Annex A.
     pub profile_idc: u8,
+    /// `profile_compatibility_flag[j]` equal to `true`, when `general_profile_space` is equal to 0, indicates
+    /// that the CVS conforms to the profile indicated by `general_profile_idc` equal to `j`
+    /// as specified in ISO/IEC 23008-2 - Annex A.
     pub profile_compatibility_flag: [bool; 32],
+    /// - If `general_progressive_source_flag` is equal to `true` and
+    ///   [`general_interlaced_source_flag`](Profile::interlaced_source_flag) is equal to `false`, the
+    ///   source scan type of the pictures in the CVS should be interpreted as progressive only.
+    /// - Otherwise, if `general_progressive_source_flag` is equal to `false` and
+    ///   [`general_interlaced_source_flag`](Profile::interlaced_source_flag) is equal to `true`, the
+    ///   source scan type of the pictures in the CVS should be interpreted as interlaced only.
+    /// - Otherwise, if `general_progressive_source_flag` is equal to `false` and
+    ///   [`general_interlaced_source_flag`](Profile::interlaced_source_flag) is equal to `false`, the
+    ///   source scan type of the pictures in the CVS should be interpreted as unknown or
+    ///   unspecified.
+    /// - Otherwise (`general_progressive_source_flag` is equal to `true` and
+    ///   [`general_interlaced_source_flag`](Profile::interlaced_source_flag) is equal to `true`),
+    ///   the source scan type of each picture in the CVS is indicated at the picture level using the syntax
+    ///   element `source_scan_type` in a picture timing SEI message.
     pub progressive_source_flag: bool,
+    /// See [`progressive_source_flag`](Profile::progressive_source_flag).
     pub interlaced_source_flag: bool,
+    /// Equal to `true` specifies that there are no frame packing arrangement
+    /// SEI messages, segmented rectangular frame packing arrangement SEI messages, equirectangular
+    /// projection SEI messages, or cubemap projection SEI messages present in the CVS.
+    ///
+    /// Equal to `false` indicates that there may or may not be one or more frame
+    /// packing arrangement SEI messages, segmented rectangular frame packing arrangement SEI messages,
+    /// equirectangular projection SEI messages, or cubemap projection SEI messages present in the CVS.
     pub non_packed_constraint_flag: bool,
+    /// Equal to `true` specifies that `field_seq_flag` is equal to 0.
+    ///
+    /// Equal to `false` indicates that `field_seq_flag` may or may not be equal to 0.
     pub frame_only_constraint_flag: bool,
+    /// Any additional flags that may be present in the profile.
     pub additional_flags: ProfileAdditionalFlags,
+    /// Equal to `true` specifies that the INBLD capability as specified in ISO/IEC 23008-2 - Annex F is required for
+    /// decoding of the layer to which the `profile_tier_level( )` syntax structure applies.
+    ///
+    /// Equal to `false` specifies that the INBLD capability as specified in ISO/IEC 23008-2 - Annex F is not required for
+    /// decoding of the layer to which the profile_tier_level( ) syntax structure applies.
     pub inbld_flag: Option<bool>,
+    /// Indicates a level to which the CVS conforms as specified in ISO/IEC 23008-2 - Annex A.
+    ///
+    /// Always present for the general profile.
+    pub level_idc: Option<u8>,
 }
 
 impl Profile {
-    fn parse<R: io::Read>(bit_reader: &mut BitReader<R>) -> io::Result<Self> {
+    fn parse<R: io::Read>(bit_reader: &mut BitReader<R>, level_present: bool) -> io::Result<Self> {
         let profile_space = bit_reader.read_bits(2)? as u8;
         let tier_flag = bit_reader.read_bit()?;
         let profile_idc = bit_reader.read_bits(5)? as u8;
@@ -170,6 +229,13 @@ impl Profile {
             None
         };
 
+        let mut level_idc_value = None;
+        if level_present {
+            let level_idc = bit_reader.read_bits(8)? as u8;
+            range_check!(level_idc, 0, 254)?;
+            level_idc_value = Some(level_idc);
+        }
+
         Ok(Profile {
             profile_space,
             tier_flag,
@@ -181,40 +247,57 @@ impl Profile {
             frame_only_constraint_flag,
             additional_flags,
             inbld_flag,
+            level_idc: level_idc_value,
         })
     }
 
-    pub fn merge(self, defaults: &Self) -> Self {
+    fn merge(self, defaults: &Self) -> Self {
         Self {
             additional_flags: self.additional_flags.merge(&defaults.additional_flags),
             inbld_flag: self.inbld_flag.or(defaults.inbld_flag),
+            level_idc: self.level_idc.or(defaults.level_idc),
             ..self
         }
     }
 }
 
+/// Additional profile flags that can be present in the [profile](Profile).
 #[derive(Debug, Clone, PartialEq)]
 pub enum ProfileAdditionalFlags {
+    /// All additional flags are present.
     Full {
+        /// Semantics specified in ISO/IEC 23008-2 - Annex A.
         max_12bit_constraint_flag: bool,
+        /// Semantics specified in ISO/IEC 23008-2 - Annex A.
         max_10bit_constraint_flag: bool,
+        /// Semantics specified in ISO/IEC 23008-2 - Annex A.
         max_8bit_constraint_flag: bool,
+        /// Semantics specified in ISO/IEC 23008-2 - Annex A.
         max_422chroma_constraint_flag: bool,
+        /// Semantics specified in ISO/IEC 23008-2 - Annex A.
         max_420chroma_constraint_flag: bool,
+        /// Semantics specified in ISO/IEC 23008-2 - Annex A.
         max_monochrome_constraint_flag: bool,
+        /// Semantics specified in ISO/IEC 23008-2 - Annex A.
         intra_constraint_flag: bool,
+        /// Semantics specified in ISO/IEC 23008-2 - Annex A.
         one_picture_only_constraint_flag: bool,
+        /// Semantics specified in ISO/IEC 23008-2 - Annex A.
         lower_bit_rate_constraint_flag: bool,
+        /// Semantics specified in ISO/IEC 23008-2 - Annex A.
         max_14bit_constraint_flag: Option<bool>,
     },
+    /// Only the `one_picture_only_constraint_flag` is present because `profile_idc` is 2 or `general_profile_compatibility_flag[2]` is `true`.
     Profile2 {
+        /// Semantics specified in ISO/IEC 23008-2 - Annex A.
         one_picture_only_constraint_flag: bool,
     },
+    /// No additional flags are present.
     None,
 }
 
 impl ProfileAdditionalFlags {
-    pub fn merge(self, defaults: &Self) -> Self {
+    fn merge(self, defaults: &Self) -> Self {
         match (&self, defaults) {
             (Self::Full { .. }, _) => self,
             (

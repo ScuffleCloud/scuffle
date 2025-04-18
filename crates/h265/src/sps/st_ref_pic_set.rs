@@ -6,19 +6,32 @@ use scuffle_expgolomb::BitReaderExpGolombExt;
 
 use crate::range_check::range_check;
 
+/// Short-term reference picture set syntax.
+///
+/// `st_ref_pic_set(stRpsIdx)`
+///
+/// - ISO/IEC 23008-2 - 7.3.7
+/// - ISO/IEC 23008-2 - 7.4.8
 #[derive(Debug, Clone, PartialEq)]
 pub struct ShortTermRefPicSets {
+    /// `NumDeltaPocs[stRpsIdx]`
     pub num_delta_pocs: Vec<u64>,
+    /// `NumPositivePics[stRpsIdx]`
     pub num_positive_pics: Vec<u64>,
+    /// `NumNegativePics[stRpsIdx]`
     pub num_negative_pics: Vec<u64>,
+    /// `DeltaPocS1[stRpsIdx][j]`
     pub delta_poc_s1: Vec<Vec<i64>>,
+    /// `DeltaPocS0[stRpsIdx][j]`
     pub delta_poc_s0: Vec<Vec<i64>>,
+    /// `UsedByCurrPicS0[stRpsIdx][j]`
     pub used_by_curr_pic_s0: Vec<Vec<bool>>,
+    /// `UsedByCurrPicS1[stRpsIdx][j]`
     pub used_by_curr_pic_s1: Vec<Vec<bool>>,
 }
 
 impl ShortTermRefPicSets {
-    pub fn parse<R: io::Read>(
+    pub(crate) fn parse<R: io::Read>(
         bit_reader: &mut BitReader<R>,
         num_short_term_ref_pic_sets: usize,
         nuh_layer_id: u8,

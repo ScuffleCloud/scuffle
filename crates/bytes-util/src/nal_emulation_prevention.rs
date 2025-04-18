@@ -1,5 +1,9 @@
 /// A wrapper around a [`std::io::Read`] or [`std::io::Write`] that automatically inserts or removes
-/// emulation prevention bytes, when reading or writing respectively.
+/// [NAL](https://en.wikipedia.org/wiki/Network_Abstraction_Layer) emulation prevention bytes, when reading or writing respectively.
+///
+/// Defined by:
+/// - ISO/IEC 14496-10 - 7.4.1.1
+/// - ISO/IEC 23008-2 - 7.4.2.3
 pub struct EmulationPreventionIo<I> {
     inner: I,
     zero_count: u8,

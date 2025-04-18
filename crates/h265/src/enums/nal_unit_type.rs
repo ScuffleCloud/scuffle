@@ -1,7 +1,7 @@
 use nutype_enum::nutype_enum;
 
 nutype_enum! {
-    /// NAL (Network Abstraction Layer) unit types as defined by ISO/IEC 23008-2:2020(E) (Table 7-1).
+    /// NAL (Network Abstraction Layer) unit types as defined by ISO/IEC 23008-2 Table 7-1.
     pub enum NALUnitType(u8) {
         /// Coded slice segment of a non-TSA, non-STSA trailing picture
         ///
@@ -195,5 +195,14 @@ nutype_enum! {
         ///
         /// NAL unit type class: non-VCL
         RsvNvcl47 = 47,
+    }
+}
+
+impl NALUnitType {
+    /// Returns `true` if the NAL unit type class of this NAL unit type is VCL (Video Coding Layer).
+    ///
+    /// See ISO/IEC 23008-2 - Table 7-1, NAL unit type class column.
+    pub fn is_vcl(&self) -> bool {
+        (0..=31).contains(&self.0)
     }
 }

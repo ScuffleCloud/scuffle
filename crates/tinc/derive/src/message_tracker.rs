@@ -124,7 +124,7 @@ pub fn derive_message_tracker(input: TokenStream) -> TokenStream {
     match &input.data {
         syn::Data::Struct(data) => derive_message_tracker_struct(input.ident, opts, data),
         syn::Data::Enum(data) => derive_message_tracker_enum(input.ident, opts, data),
-        _ => syn::Error::new(input.span(), "MessageTracker can only be derived for structs or enums").into_compile_error(),
+        _ => syn::Error::new(input.span(), "Tracker can only be derived for structs or enums").into_compile_error(),
     }
 }
 
@@ -135,11 +135,8 @@ fn derive_message_tracker_struct(ident: syn::Ident, opts: TincContainerOptions, 
     }
 
     let syn::Fields::Named(fields) = &data.fields else {
-        return syn::Error::new(
-            ident.span(),
-            "MessageTracker can only be derived for structs with named fields",
-        )
-        .into_compile_error();
+        return syn::Error::new(ident.span(), "Tracker can only be derived for structs with named fields")
+            .into_compile_error();
     };
 
     let tracker_ident = syn::Ident::new(&format!("{ident}Tracker"), ident.span());
@@ -191,7 +188,7 @@ fn derive_message_tracker_struct(ident: syn::Ident, opts: TincContainerOptions, 
             }
 
             impl #crate_path::__private::de::TrackerFor for #ident {
-                type Tracker = #crate_path::__private::de::MessageTracker<#tracker_ident>;
+                type Tracker = #crate_path::__private::de::StructTracker<#tracker_ident>;
             }
         };
     }
@@ -209,14 +206,14 @@ fn derive_message_tracker_enum(ident: syn::Ident, opts: TincContainerOptions, da
             let syn::Fields::Unnamed(unnamed) = &v.fields else {
                 return Err(syn::Error::new(
                     v.span(),
-                    "MessageTracker can only be derived for enums with unnamed variants",
+                    "Tracker can only be derived for enums with unnamed variants",
                 ));
             };
 
             if unnamed.unnamed.len() != 1 {
                 return Err(syn::Error::new(
                     v.span(),
-                    "MessageTracker can only be derived for enums with a single field variants",
+                    "Tracker can only be derived for enums with a single field variants",
                 ));
             }
 

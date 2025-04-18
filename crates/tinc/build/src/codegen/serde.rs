@@ -117,7 +117,7 @@ pub(super) fn handle_message(
         }
 
         prost.enum_attribute(&oneof_key, "#[derive(::tinc::reexports::serde::Serialize)]");
-        prost.enum_attribute(&oneof_key, "#[derive(::tinc::__private::de::TincMessageTracker)]");
+        prost.enum_attribute(&oneof_key, "#[derive(::tinc::__private::de::Tracker)]");
         prost.field_attribute(&oneof_key, "#[tinc(oneof)]");
         rename_all(&oneof_key, oneof.opts.rename_all, prost, true);
 
@@ -133,6 +133,7 @@ pub(super) fn handle_message(
         let mut variant_fields = Vec::new();
         let mut variant_enum_ident = Vec::new();
         let mut deserializer_impl = Vec::new();
+        let mut validation_impl = Vec::new();
 
         let tagged_impl = if let Some(Tagged { tag, content }) = &oneof.opts.tagged {
             prost.enum_attribute(&oneof_key, format!("#[serde(tag = \"{tag}\", content = \"{content}\")]"));
@@ -262,13 +263,17 @@ pub(super) fn handle_message(
                         }
                     };
 
-                    ::tinc::__private::de::DeserializeContent::deserialize_seed(
+                    ::tinc::__private::de::TrackerDeserializer::deserialize(
+                        tracker,
+                        value,
                         deserializer,
-                        ::tinc::__private::de::DeserializeHelper {
-                            value,
-                            tracker,
-                        },
                     )?;
+                }
+            });
+
+            validation_impl.push(quote! {
+                (Self::#enum_ident(value), ___Tracker::#enum_ident(tracker)) => {
+                    ::tinc::__private::de::TrackerValidation::validate(tracker, value)?;
                 }
             });
 
@@ -335,6 +340,18 @@ pub(super) fn handle_message(
 
                 type ___Tracker = <<#oneof_path as ::tinc::__private::de::TrackerFor>::Tracker as ::tinc::__private::de::TrackerWrapper>::Tracker;
 
+                fn ___tracker_to_identifier(v: &___Tracker) -> #variant_identifier_ident {
+                    match v {
+                        #(___Tracker::#variant_enum_ident(_) => #variant_identifier_ident::#variant_idents),*
+                    }
+                }
+
+                fn ___value_to_identifier(v: &#oneof_path) -> #variant_identifier_ident {
+                    match v {
+                        #(#oneof_path::#variant_enum_ident(_) => #variant_identifier_ident::#variant_idents),*
+                    }
+                }
+
                 impl<'de> ::tinc::__private::de::TrackedOneOfDeserializer<'de> for #oneof_path {
                     fn deserialize<D>(
                         value: &mut ::core::option::Option<#oneof_path>,
@@ -345,20 +362,28 @@ pub(super) fn handle_message(
                     where
                         D: ::tinc::__private::de::DeserializeContent<'de>
                     {
-                        fn ___tracker_to_identifier(v: &___Tracker) -> #variant_identifier_ident {
-                            match v {
-                                #(___Tracker::#variant_enum_ident(_) => #variant_identifier_ident::#variant_idents),*
-                            }
-                        }
-
-                        fn ___value_to_identifier(v: &#oneof_path) -> #variant_identifier_ident {
-                            match v {
-                                #(#oneof_path::#variant_enum_ident(_) => #variant_identifier_ident::#variant_idents),*
-                            }
-                        }
-
                         match variant {
                             #(#deserializer_impl),*
+                        }
+
+                        ::core::result::Result::Ok(())
+                    }
+
+                    fn validate<E>(&self, tracker: &mut <Self::Tracker as ::tinc::__private::de::TrackerWrapper>::Tracker) -> Result<(), E>
+                    where
+                        E: serde::de::Error
+                    {
+                        match (self, tracker) {
+                            #(#validation_impl),*
+                            (_, tracker) => {
+                                return ::core::result::Result::Err(
+                                    ::tinc::reexports::serde::de::Error::custom(format!(
+                                        "tracker and value do not match: {:?} != {:?}",
+                                        ::tinc::__private::de::Identifier::name(&___tracker_to_identifier(tracker)),
+                                        ::tinc::__private::de::Identifier::name(&___value_to_identifier(self)),
+                                    )),
+                                );
+                            }
                         }
 
                         ::core::result::Result::Ok(())
@@ -502,12 +527,10 @@ pub(super) fn handle_message(
                         );
                     }
 
-                    ::tinc::__private::de::DeserializeContent::deserialize_seed(
+                    ::tinc::__private::de::TrackerDeserializer::deserialize(
+                        tracker.get_or_insert_default(),
+                        #value,
                         deserializer,
-                        ::tinc::__private::de::DeserializeHelper {
-                            value: #value,
-                            tracker: tracker.get_or_insert_default(),
-                        },
                     )?;
                 }
             });
@@ -526,79 +549,70 @@ pub(super) fn handle_message(
             });
         }
 
+        let push_field_token = if field.opts.flatten() {
+            quote! {}
+        } else {
+            quote! {
+                let _token = ::tinc::__private::de::PathToken::push_field(
+                    ::tinc::__private::de::Identifier::name(&#field_enum_ident::#ident),
+                );
+            }
+        };
+
         if matches!(field.kind.field_type(), FieldType::Message(_)) {
             let validation = match (field.kind.modifier(), field.opts.flatten()) {
                 (Some(FieldModifier::List), _) => quote! {
-                    if let Some(trackers) = tracker.#field_name.as_mut().map(|tracker| tracker.iter_mut()) {
-                        let _token = ::tinc::__private::de::PathToken::push_field(
-                            ::tinc::__private::de::Identifier::name(&#field_enum_ident::#ident),
-                        );
-                        for (idx, (value, tracker)) in self.#field_name.iter().zip(trackers).enumerate() {
+                    if let Some(trackers) = tracker.#field_name.as_mut() {
+                        #push_field_token
+                        for (idx, (value, tracker)) in self.#field_name.iter().zip(trackers.iter_mut()).enumerate() {
                             let _token = ::tinc::__private::de::PathToken::push_index(idx);
-                            ::tinc::__private::de::TrackedStructDeserializer::<'de>::verify_deserialize(
-                                value,
-                                tracker,
-                            )?;
+                            ::tinc::__private::de::TrackerValidation::validate(tracker, value)?;
                         }
                     }
                 },
                 (Some(FieldModifier::Map), _) => quote! {
-                    if let Some(trackers) = tracker.#field_name.as_mut().map(|tracker| tracker.iter_mut()) {
-                        let _token = ::tinc::__private::de::PathToken::push_field(
-                            ::tinc::__private::de::Identifier::name(&#field_enum_ident::#ident),
-                        );
-                        for (key, tracker) in trackers {
+                    if let Some(trackers) = tracker.#field_name.as_mut() {
+                        #push_field_token
+                        for (key, tracker) in trackers.iter_mut() {
                             if let Some(value) = self.#field_name.get(key) {
                                 let _token = ::tinc::__private::de::PathToken::push_key(key);
-                                ::tinc::__private::de::TrackedStructDeserializer::<'de>::verify_deserialize(
-                                    value,
-                                    tracker,
-                                )?;
+                                ::tinc::__private::de::TrackerValidation::validate(tracker, value)?;
                             }
                         }
                     }
                 },
-                (Some(FieldModifier::Optional), false) => quote! {
-                    if let Some(tracker) = tracker.#field_name.as_mut().and_then(|tracker| tracker.as_mut()) {
-                        if let Some(value) = self.#field_name.as_ref() {
-                            let _token = ::tinc::__private::de::PathToken::push_field(
-                                ::tinc::__private::de::Identifier::name(&#field_enum_ident::#ident),
-                            );
-                            ::tinc::__private::de::TrackedStructDeserializer::<'de>::verify_deserialize(
-                                value,
-                                tracker,
-                            )?;
-                        }
+                (Some(FieldModifier::Optional), _) => quote! {
+                    match (self.#field_name.as_ref(), tracker.#field_name.as_mut().and_then(|tracker| tracker.as_mut())) {
+                        (Some(value), Some(tracker)) => {
+                            #push_field_token
+                            ::tinc::__private::de::TrackerValidation::validate(tracker, value)?;
+                        },
+                        (None, Some(_)) => {
+                            return Err(::serde::de::Error::custom("tracker is Some while value is None"));
+                        },
+                        (Some(_), None) => {
+                            return Err(::serde::de::Error::custom("tracker is None while value is set"));
+                        },
+                        (None, None) => {}
                     }
                 },
-                (Some(FieldModifier::Optional), true) => quote! {{
-                    let mut default_tracker = Default::default();
-                    let default_value = Default::default();
-                    let tracker = tracker.#field_name.as_mut().and_then(|tracker| tracker.as_mut()).unwrap_or(&mut default_tracker);
-                    let value = self.#field_name.as_ref().unwrap_or(&default_value);
-                    ::tinc::__private::de::TrackedStructDeserializer::<'de>::verify_deserialize(
-                        value,
-                        tracker,
-                    )?;
-                }},
                 (None, false) => quote! {
                     if let Some(tracker) = tracker.#field_name.as_mut() {
-                        let mut _token = ::tinc::__private::de::PathToken::push_field(
-                            ::tinc::__private::de::Identifier::name(&#field_enum_ident::#ident),
-                        );
-                        ::tinc::__private::de::TrackedStructDeserializer::<'de>::verify_deserialize(
-                            &mut self.#field_name,
+                        #push_field_token
+                        ::tinc::__private::de::TrackerValidation::validate(
                             tracker,
+                            &self.#field_name,
                         )?;
                     }
                 },
                 (None, true) => quote! {{
-                    let mut default_tracker = Default::default();
-                    let tracker = tracker.#field_name.as_mut().unwrap_or(&mut default_tracker);
-                    ::tinc::__private::de::TrackedStructDeserializer::<'de>::verify_deserialize(
-                        &mut self.#field_name,
-                        tracker,
-                    )?;
+                    if let Some(tracker) = tracker.#field_name.as_mut() {
+                        #push_field_token
+                        ::tinc::__private::de::TrackerValidation::validate(
+                            &self.#field_name,
+                            tracker,
+                        )?;
+                    }
                 }},
             };
 
@@ -683,47 +697,48 @@ pub(super) fn handle_message(
                         );
                     }
 
-                    ::tinc::__private::de::DeserializeContent::deserialize_seed(
+                    ::tinc::__private::de::TrackerDeserializer::deserialize(
+                        tracker.get_or_insert_default(),
+                        #value,
                         deserializer,
-                        ::tinc::__private::de::DeserializeHelper {
-                            value: #value,
-                            tracker: tracker.get_or_insert_default(),
-                        },
                     )?;
                 }
             });
         }
+
+        let push_field_token = if oneof.opts.flatten() {
+            quote! {}
+        } else {
+            quote! {
+                let _token = ::tinc::__private::de::PathToken::push_field(
+                    ::tinc::__private::de::Identifier::name(&#field_enum_ident::#ident),
+                );
+            }
+        };
 
         if !oneof.opts.omitable.unwrap_or(false) && !oneof.opts.flatten() {
             verify_deserialize_fn.push(quote! {
                 if tracker.#field_name.as_ref().and_then(|tracker| tracker.as_ref()).is_none() {
-                    let _token = ::tinc::__private::de::PathToken::push_field(
-                        ::tinc::__private::de::Identifier::name(&#field_enum_ident::#ident),
-                    );
+                    #push_field_token
                     ::tinc::__private::de::report_error(
                         ::tinc::__private::de::TrackedError::missing_field(),
                     )?;
                 }
-
-                if let Some(value) = self.#field_name.as_ref() {
-                    if let Some(tracker) = tracker.#field_name.as_mut().and_then(|tracker| tracker.as_mut()) {
-                        let _token = ::tinc::__private::de::PathToken::push_field(
-                            ::tinc::__private::de::Identifier::name(&#field_enum_ident::#ident),
-                        );
-                        ::tinc::__private::de::TrackedOneOfDeserializer::<'de>::verify_deserialize(
-                            value,
-                            tracker,
-                        )?;
-                    }
-                }
             });
         }
+
+        verify_deserialize_fn.push(quote! {
+            if let Some(tracker) = tracker.#field_name.as_mut() {
+                #push_field_token
+                ::tinc::__private::de::TrackerValidation::validate(tracker, &self.#field_name)?;
+            }
+        });
     }
 
     let message_path = get_common_import_path(message.package.as_str(), message_key);
     let message_ident = message_path.segments.last().unwrap().ident.clone();
 
-    prost.message_attribute(message_key, "#[derive(::tinc::__private::de::TincMessageTracker)]");
+    prost.message_attribute(message_key, "#[derive(::tinc::__private::de::Tracker)]");
 
     let field_enum_impl = parse_quote! {
         const _: () = {
@@ -784,7 +799,7 @@ pub(super) fn handle_message(
                 }
 
                 #[allow(unused_mut, dead_code)]
-                fn verify_deserialize<E>(
+                fn validate<E>(
                     &self,
                     mut tracker: &mut <Self::Tracker as ::tinc::__private::de::TrackerWrapper>::Tracker,
                 ) -> Result<(), E>

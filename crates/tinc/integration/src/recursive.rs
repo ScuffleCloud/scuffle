@@ -1,7 +1,4 @@
-use serde::de::DeserializeSeed;
-use tinc::__private::de::{
-    DeserializeHelper, DeserializerWrapper, TrackedStructDeserializer, TrackerFor, TrackerSharedState, TrackerStateGuard,
-};
+use tinc::__private::de::{TrackedStructDeserializer, TrackerFor, TrackerSharedState, deserialize};
 
 #[test]
 fn test_recursive() {
@@ -11,7 +8,7 @@ fn test_recursive() {
 
     let mut message = pb::RecursiveMessage::default();
     let mut tracker = <pb::RecursiveMessage as TrackerFor>::Tracker::default();
-    let guard = TrackerStateGuard::new(TrackerSharedState::default());
+    let mut state = TrackerSharedState::default();
 
     let mut de = serde_json::Deserializer::from_str(
         r#"{
@@ -41,16 +38,12 @@ fn test_recursive() {
     }"#,
     );
 
-    DeserializeHelper {
-        tracker: &mut tracker,
-        value: &mut message,
-    }
-    .deserialize(DeserializerWrapper::new(&mut de))
-    .unwrap();
+    state.in_scope(|| {
+        deserialize(&mut de, &mut message, &mut tracker).unwrap();
 
-    TrackedStructDeserializer::verify_deserialize::<serde::de::value::Error>(&message, &mut tracker).unwrap();
+        TrackedStructDeserializer::validate::<serde::de::value::Error>(&message, &mut tracker).unwrap();
+    });
 
-    let state = guard.finish();
     insta::assert_debug_snapshot!(state, @r"
     TrackerSharedState {
         fail_fast: true,
@@ -88,12 +81,12 @@ fn test_recursive() {
     }
     "#);
     insta::assert_debug_snapshot!(tracker, @r#"
-    MessageTracker(
+    StructTracker(
         RecursiveMessageTracker {
             anothers: Some(
                 RepeatedVecTracker(
                     [
-                        MessageTracker(
+                        StructTracker(
                             AnotherMessageTracker {
                                 another: Some(
                                     OptionalTracker(
@@ -117,7 +110,7 @@ fn test_recursive() {
             ),
             another_map: Some(
                 {
-                    "key1": MessageTracker(
+                    "key1": StructTracker(
                         AnotherMessageTracker {
                             another: Some(
                                 OptionalTracker(
@@ -131,7 +124,7 @@ fn test_recursive() {
                             ),
                         },
                     ),
-                    "key2": MessageTracker(
+                    "key2": StructTracker(
                         AnotherMessageTracker {
                             another: Some(
                                 OptionalTracker(
@@ -141,7 +134,7 @@ fn test_recursive() {
                             nested: Some(
                                 OptionalTracker(
                                     Some(
-                                        MessageTracker(
+                                        StructTracker(
                                             RecursiveMessageTracker {
                                                 anothers: Some(
                                                     RepeatedVecTracker(

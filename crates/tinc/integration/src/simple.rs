@@ -1,7 +1,4 @@
-use serde::de::DeserializeSeed;
-use tinc::__private::de::{
-    DeserializeHelper, DeserializerWrapper, TrackedStructDeserializer, TrackerFor, TrackerSharedState, TrackerStateGuard,
-};
+use tinc::__private::de::{TrackedStructDeserializer, TrackerFor, TrackerSharedState, deserialize};
 
 #[test]
 fn test_simple_single_pass() {
@@ -11,7 +8,7 @@ fn test_simple_single_pass() {
 
     let mut message = pb::SimpleMessage::default();
     let mut tracker = <pb::SimpleMessage as TrackerFor>::Tracker::default();
-    let guard = TrackerStateGuard::new(TrackerSharedState::default());
+    let mut state = TrackerSharedState::default();
 
     let mut de = serde_json::Deserializer::from_str(
         r#"{
@@ -24,16 +21,12 @@ fn test_simple_single_pass() {
     }"#,
     );
 
-    DeserializeHelper {
-        tracker: &mut tracker,
-        value: &mut message,
-    }
-    .deserialize(DeserializerWrapper::new(&mut de))
-    .unwrap();
+    state.in_scope(|| {
+        deserialize(&mut de, &mut message, &mut tracker).unwrap();
 
-    TrackedStructDeserializer::verify_deserialize::<serde::de::value::Error>(&message, &mut tracker).unwrap();
+        TrackedStructDeserializer::validate::<serde::de::value::Error>(&message, &mut tracker).unwrap();
+    });
 
-    let state = guard.finish();
     insta::assert_debug_snapshot!(state, @r"
     TrackerSharedState {
         fail_fast: true,
@@ -55,7 +48,7 @@ fn test_simple_single_pass() {
     }
     "#);
     insta::assert_debug_snapshot!(tracker, @r#"
-    MessageTracker(
+    StructTracker(
         SimpleMessageTracker {
             name: Some(
                 PrimitiveTracker<alloc::string::String>,
@@ -87,7 +80,7 @@ fn test_simple_multiple_passes() {
 
     let mut message = pb::SimpleMessage::default();
     let mut tracker = <pb::SimpleMessage as TrackerFor>::Tracker::default();
-    let guard = TrackerStateGuard::new(TrackerSharedState::default());
+    let mut state = TrackerSharedState::default();
 
     let mut de = serde_json::Deserializer::from_str(
         r#"{
@@ -98,12 +91,9 @@ fn test_simple_multiple_passes() {
     }"#,
     );
 
-    DeserializeHelper {
-        tracker: &mut tracker,
-        value: &mut message,
-    }
-    .deserialize(DeserializerWrapper::new(&mut de))
-    .unwrap();
+    state.in_scope(|| {
+        deserialize(&mut de, &mut message, &mut tracker).unwrap();
+    });
 
     insta::assert_debug_snapshot!(message, @r#"
     SimpleMessage {
@@ -115,7 +105,7 @@ fn test_simple_multiple_passes() {
     }
     "#);
     insta::assert_debug_snapshot!(tracker, @r#"
-    MessageTracker(
+    StructTracker(
         SimpleMessageTracker {
             name: Some(
                 PrimitiveTracker<alloc::string::String>,
@@ -139,14 +129,10 @@ fn test_simple_multiple_passes() {
     }"#,
     );
 
-    DeserializeHelper {
-        tracker: &mut tracker,
-        value: &mut message,
-    }
-    .deserialize(DeserializerWrapper::new(&mut de))
-    .unwrap();
-
-    TrackedStructDeserializer::verify_deserialize::<serde::de::value::Error>(&message, &mut tracker).unwrap();
+    state.in_scope(|| {
+        deserialize(&mut de, &mut message, &mut tracker).unwrap();
+        TrackedStructDeserializer::validate::<serde::de::value::Error>(&message, &mut tracker).unwrap();
+    });
 
     insta::assert_debug_snapshot!(message, @r#"
     SimpleMessage {
@@ -162,7 +148,7 @@ fn test_simple_multiple_passes() {
     }
     "#);
     insta::assert_debug_snapshot!(tracker, @r#"
-    MessageTracker(
+    StructTracker(
         SimpleMessageTracker {
             name: Some(
                 PrimitiveTracker<alloc::string::String>,
@@ -185,8 +171,7 @@ fn test_simple_multiple_passes() {
     )
     "#);
 
-    let guard = guard.finish();
-    insta::assert_debug_snapshot!(guard, @r"
+    insta::assert_debug_snapshot!(state, @r"
     TrackerSharedState {
         fail_fast: true,
         irrecoverable: false,
@@ -203,7 +188,7 @@ fn test_simple_missing_fields() {
 
     let mut message = pb::SimpleMessage::default();
     let mut tracker = <pb::SimpleMessage as TrackerFor>::Tracker::default();
-    let guard = TrackerStateGuard::new(TrackerSharedState::default());
+    let mut state = TrackerSharedState::default();
 
     let mut de = serde_json::Deserializer::from_str(
         r#"{
@@ -212,12 +197,9 @@ fn test_simple_missing_fields() {
     }"#,
     );
 
-    DeserializeHelper {
-        tracker: &mut tracker,
-        value: &mut message,
-    }
-    .deserialize(DeserializerWrapper::new(&mut de))
-    .unwrap();
+    state.in_scope(|| {
+        deserialize(&mut de, &mut message, &mut tracker).unwrap();
+    });
 
     insta::assert_debug_snapshot!(message, @r#"
     SimpleMessage {
@@ -227,7 +209,7 @@ fn test_simple_missing_fields() {
     }
     "#);
     insta::assert_debug_snapshot!(tracker, @r"
-    MessageTracker(
+    StructTracker(
         SimpleMessageTracker {
             name: None,
             values: None,
@@ -247,14 +229,11 @@ fn test_simple_missing_fields() {
     }"#,
     );
 
-    DeserializeHelper {
-        tracker: &mut tracker,
-        value: &mut message,
-    }
-    .deserialize(DeserializerWrapper::new(&mut de))
-    .unwrap();
+    let err = state.in_scope(|| {
+        deserialize(&mut de, &mut message, &mut tracker).unwrap();
+        TrackedStructDeserializer::validate::<serde::de::value::Error>(&message, &mut tracker).unwrap_err()
+    });
 
-    let err = TrackedStructDeserializer::verify_deserialize::<serde::de::value::Error>(&message, &mut tracker).unwrap_err();
     insta::assert_snapshot!(err, @"missing field `name`");
 
     insta::assert_debug_snapshot!(message, @r#"
@@ -270,7 +249,7 @@ fn test_simple_missing_fields() {
     }
     "#);
     insta::assert_debug_snapshot!(tracker, @r#"
-    MessageTracker(
+    StructTracker(
         SimpleMessageTracker {
             name: None,
             values: Some(
@@ -290,8 +269,7 @@ fn test_simple_missing_fields() {
     )
     "#);
 
-    let guard = guard.finish();
-    insta::assert_debug_snapshot!(guard, @r#"
+    insta::assert_debug_snapshot!(state, @r#"
     TrackerSharedState {
         fail_fast: true,
         irrecoverable: false,
@@ -314,10 +292,10 @@ fn test_simple_duplicate_fields() {
 
     let mut message = pb::SimpleMessage::default();
     let mut tracker = <pb::SimpleMessage as TrackerFor>::Tracker::default();
-    let guard = TrackerStateGuard::new(TrackerSharedState {
+    let mut state = TrackerSharedState {
         fail_fast: false,
         ..Default::default()
-    });
+    };
 
     let mut de = serde_json::Deserializer::from_str(
         r#"{
@@ -330,12 +308,9 @@ fn test_simple_duplicate_fields() {
     }"#,
     );
 
-    DeserializeHelper {
-        tracker: &mut tracker,
-        value: &mut message,
-    }
-    .deserialize(DeserializerWrapper::new(&mut de))
-    .unwrap();
+    state.in_scope(|| {
+        deserialize(&mut de, &mut message, &mut tracker).unwrap();
+    });
 
     insta::assert_debug_snapshot!(message, @r#"
     SimpleMessage {
@@ -351,7 +326,7 @@ fn test_simple_duplicate_fields() {
     }
     "#);
     insta::assert_debug_snapshot!(tracker, @r#"
-    MessageTracker(
+    StructTracker(
         SimpleMessageTracker {
             name: Some(
                 PrimitiveTracker<alloc::string::String>,
@@ -384,14 +359,10 @@ fn test_simple_duplicate_fields() {
     }"#,
     );
 
-    DeserializeHelper {
-        tracker: &mut tracker,
-        value: &mut message,
-    }
-    .deserialize(DeserializerWrapper::new(&mut de))
-    .unwrap();
-
-    TrackedStructDeserializer::verify_deserialize::<serde::de::value::Error>(&message, &mut tracker).unwrap();
+    state.in_scope(|| {
+        deserialize(&mut de, &mut message, &mut tracker).unwrap();
+        TrackedStructDeserializer::validate::<serde::de::value::Error>(&message, &mut tracker).unwrap();
+    });
 
     insta::assert_debug_snapshot!(message, @r#"
     SimpleMessage {
@@ -407,7 +378,7 @@ fn test_simple_duplicate_fields() {
     }
     "#);
     insta::assert_debug_snapshot!(tracker, @r#"
-    MessageTracker(
+    StructTracker(
         SimpleMessageTracker {
             name: Some(
                 PrimitiveTracker<alloc::string::String>,
@@ -430,8 +401,7 @@ fn test_simple_duplicate_fields() {
     )
     "#);
 
-    let guard = guard.finish();
-    insta::assert_debug_snapshot!(guard, @r#"
+    insta::assert_debug_snapshot!(state, @r#"
     TrackerSharedState {
         fail_fast: false,
         irrecoverable: false,
@@ -464,10 +434,10 @@ fn test_simple_invalid_type() {
 
     let mut message = pb::SimpleMessage::default();
     let mut tracker = <pb::SimpleMessage as TrackerFor>::Tracker::default();
-    let guard = TrackerStateGuard::new(TrackerSharedState {
+    let mut state = TrackerSharedState {
         fail_fast: false,
         ..Default::default()
-    });
+    };
 
     let mut de = serde_json::Deserializer::from_str(
         r#"{
@@ -477,14 +447,10 @@ fn test_simple_invalid_type() {
     }"#,
     );
 
-    DeserializeHelper {
-        tracker: &mut tracker,
-        value: &mut message,
-    }
-    .deserialize(DeserializerWrapper::new(&mut de))
-    .unwrap();
-
-    TrackedStructDeserializer::verify_deserialize::<serde::de::value::Error>(&message, &mut tracker).unwrap();
+    state.in_scope(|| {
+        deserialize(&mut de, &mut message, &mut tracker).unwrap();
+        TrackedStructDeserializer::validate::<serde::de::value::Error>(&message, &mut tracker).unwrap();
+    });
 
     insta::assert_debug_snapshot!(message, @r#"
     SimpleMessage {
@@ -494,7 +460,7 @@ fn test_simple_invalid_type() {
     }
     "#);
     insta::assert_debug_snapshot!(tracker, @r"
-    MessageTracker(
+    StructTracker(
         SimpleMessageTracker {
             name: Some(
                 PrimitiveTracker<alloc::string::String>,
@@ -511,8 +477,7 @@ fn test_simple_invalid_type() {
     )
     ");
 
-    let guard = guard.finish();
-    insta::assert_debug_snapshot!(guard, @r#"
+    insta::assert_debug_snapshot!(state, @r#"
     TrackerSharedState {
         fail_fast: false,
         irrecoverable: false,
@@ -551,7 +516,7 @@ fn test_simple_renamed_field() {
 
     let mut message = pb::SimpleMessageRenamed::default();
     let mut tracker = <pb::SimpleMessageRenamed as TrackerFor>::Tracker::default();
-    let guard = TrackerStateGuard::new(TrackerSharedState::default());
+    let mut state = TrackerSharedState::default();
 
     let mut de = serde_json::Deserializer::from_str(
         r#"{
@@ -564,16 +529,12 @@ fn test_simple_renamed_field() {
     }"#,
     );
 
-    DeserializeHelper {
-        tracker: &mut tracker,
-        value: &mut message,
-    }
-    .deserialize(DeserializerWrapper::new(&mut de))
-    .unwrap();
+    state.in_scope(|| {
+        deserialize(&mut de, &mut message, &mut tracker).unwrap();
 
-    TrackedStructDeserializer::verify_deserialize::<serde::de::value::Error>(&message, &mut tracker).unwrap();
+        TrackedStructDeserializer::validate::<serde::de::value::Error>(&message, &mut tracker).unwrap();
+    });
 
-    let state = guard.finish();
     insta::assert_debug_snapshot!(state, @r"
     TrackerSharedState {
         fail_fast: true,
@@ -595,7 +556,7 @@ fn test_simple_renamed_field() {
     }
     "#);
     insta::assert_debug_snapshot!(tracker, @r#"
-    MessageTracker(
+    StructTracker(
         SimpleMessageRenamedTracker {
             name: Some(
                 PrimitiveTracker<alloc::string::String>,

@@ -1,7 +1,4 @@
-use serde::de::DeserializeSeed;
-use tinc::__private::de::{
-    DeserializeHelper, DeserializerWrapper, TrackedStructDeserializer, TrackerFor, TrackerSharedState, TrackerStateGuard,
-};
+use tinc::__private::de::{TrackedStructDeserializer, TrackerFor, TrackerSharedState, deserialize};
 
 #[test]
 fn test_oneof() {
@@ -11,10 +8,10 @@ fn test_oneof() {
 
     let mut message = pb::OneofMessage::default();
     let mut tracker = <pb::OneofMessage as TrackerFor>::Tracker::default();
-    let guard = TrackerStateGuard::new(TrackerSharedState {
+    let mut state = TrackerSharedState {
         fail_fast: false,
         ..Default::default()
-    });
+    };
 
     let mut de = serde_json::Deserializer::from_str(
         r#"{
@@ -28,7 +25,8 @@ fn test_oneof() {
         "tagged_nested": {
             "tag": "nestedMessage",
             "value": {
-                "string": "nested"
+                "string": "nested",
+                "int32": 50
             }
         },
         "nested": {
@@ -43,16 +41,12 @@ fn test_oneof() {
     }"#,
     );
 
-    DeserializeHelper {
-        tracker: &mut tracker,
-        value: &mut message,
-    }
-    .deserialize(DeserializerWrapper::new(&mut de))
-    .unwrap();
+    state.in_scope(|| {
+        deserialize(&mut de, &mut message, &mut tracker).unwrap();
 
-    TrackedStructDeserializer::verify_deserialize::<serde::de::value::Error>(&message, &mut tracker).unwrap();
+        TrackedStructDeserializer::validate::<serde::de::value::Error>(&message, &mut tracker).unwrap();
+    });
 
-    let state = guard.finish();
     insta::assert_debug_snapshot!(state, @r"
     TrackerSharedState {
         fail_fast: false,
@@ -76,7 +70,7 @@ fn test_oneof() {
             NestedMessage(
                 NestedMessage {
                     string: "nested",
-                    int32: 0,
+                    int32: 50,
                 },
             ),
         ),
@@ -102,7 +96,7 @@ fn test_oneof() {
     "#);
 
     insta::assert_debug_snapshot!(tracker, @r#"
-    MessageTracker(
+    StructTracker(
         OneofMessageTracker {
             string_or_int32: Some(
                 OneOfTracker(
@@ -131,12 +125,14 @@ fn test_oneof() {
                 TaggedOneOfTracker {
                     tracker: Some(
                         NestedMessage(
-                            MessageTracker(
+                            StructTracker(
                                 NestedMessageTracker {
                                     string: Some(
                                         PrimitiveTracker<alloc::string::String>,
                                     ),
-                                    int32: None,
+                                    int32: Some(
+                                        PrimitiveTracker<i32>,
+                                    ),
                                 },
                             ),
                         ),
@@ -161,7 +157,7 @@ fn test_oneof() {
                 OneOfTracker(
                     Some(
                         MagicNested(
-                            MessageTracker(
+                            StructTracker(
                                 NestedMessageTracker {
                                     string: Some(
                                         PrimitiveTracker<alloc::string::String>,
@@ -202,10 +198,10 @@ fn test_oneof_buffering() {
 
     let mut message = pb::OneofMessage::default();
     let mut tracker = <pb::OneofMessage as TrackerFor>::Tracker::default();
-    let guard = TrackerStateGuard::new(TrackerSharedState {
+    let mut state = TrackerSharedState {
         fail_fast: false,
         ..Default::default()
-    });
+    };
 
     let mut de = serde_json::Deserializer::from_str(
         r#"{
@@ -221,12 +217,9 @@ fn test_oneof_buffering() {
     }"#,
     );
 
-    DeserializeHelper {
-        tracker: &mut tracker,
-        value: &mut message,
-    }
-    .deserialize(DeserializerWrapper::new(&mut de))
-    .unwrap();
+    state.in_scope(|| {
+        deserialize(&mut de, &mut message, &mut tracker).unwrap();
+    });
 
     let mut de = serde_json::Deserializer::from_str(
         r#"{
@@ -237,7 +230,10 @@ fn test_oneof_buffering() {
             "tag": "int322"
         },
         "tagged_nested": {
-            "tag": "nestedMessage"
+            "tag": "nestedMessage",
+            "value": {
+                "int32": 100
+            }
         },
         "nested": {
             "customEnum2": "VALUE"
@@ -250,15 +246,12 @@ fn test_oneof_buffering() {
     }"#,
     );
 
-    DeserializeHelper {
-        tracker: &mut tracker,
-        value: &mut message,
-    }
-    .deserialize(DeserializerWrapper::new(&mut de))
-    .unwrap();
+    state.in_scope(|| {
+        deserialize(&mut de, &mut message, &mut tracker).unwrap();
 
-    TrackedStructDeserializer::verify_deserialize::<serde::de::value::Error>(&message, &mut tracker).unwrap();
-    let state = guard.finish();
+        TrackedStructDeserializer::validate::<serde::de::value::Error>(&message, &mut tracker).unwrap();
+    });
+
     insta::assert_debug_snapshot!(state, @r"
     TrackerSharedState {
         fail_fast: false,
@@ -282,7 +275,7 @@ fn test_oneof_buffering() {
             NestedMessage(
                 NestedMessage {
                     string: "nested",
-                    int32: 0,
+                    int32: 100,
                 },
             ),
         ),
@@ -307,7 +300,7 @@ fn test_oneof_buffering() {
     }
     "#);
     insta::assert_debug_snapshot!(tracker, @r#"
-    MessageTracker(
+    StructTracker(
         OneofMessageTracker {
             string_or_int32: Some(
                 OneOfTracker(
@@ -336,12 +329,14 @@ fn test_oneof_buffering() {
                 TaggedOneOfTracker {
                     tracker: Some(
                         NestedMessage(
-                            MessageTracker(
+                            StructTracker(
                                 NestedMessageTracker {
                                     string: Some(
                                         PrimitiveTracker<alloc::string::String>,
                                     ),
-                                    int32: None,
+                                    int32: Some(
+                                        PrimitiveTracker<i32>,
+                                    ),
                                 },
                             ),
                         ),
@@ -366,7 +361,7 @@ fn test_oneof_buffering() {
                 OneOfTracker(
                     Some(
                         MagicNested(
-                            MessageTracker(
+                            StructTracker(
                                 NestedMessageTracker {
                                     string: Some(
                                         PrimitiveTracker<alloc::string::String>,

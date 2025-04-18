@@ -1,7 +1,4 @@
-use serde::de::DeserializeSeed;
-use tinc::__private::de::{
-    DeserializeHelper, DeserializerWrapper, TrackedStructDeserializer, TrackerFor, TrackerSharedState, TrackerStateGuard,
-};
+use tinc::__private::de::{TrackedStructDeserializer, TrackerFor, TrackerSharedState, deserialize};
 
 #[test]
 fn test_nested() {
@@ -11,8 +8,7 @@ fn test_nested() {
 
     let mut message = pb::FlattenedMessage::default();
     let mut tracker = <pb::FlattenedMessage as TrackerFor>::Tracker::default();
-    let guard = TrackerStateGuard::new(TrackerSharedState::default());
-
+    let mut state = TrackerSharedState::default();
     let mut de = serde_json::Deserializer::from_str(
         r#"{
         "name": "test",
@@ -27,16 +23,11 @@ fn test_nested() {
     }"#,
     );
 
-    DeserializeHelper {
-        tracker: &mut tracker,
-        value: &mut message,
-    }
-    .deserialize(DeserializerWrapper::new(&mut de))
-    .unwrap();
+    state.in_scope(|| {
+        deserialize(&mut de, &mut message, &mut tracker).unwrap();
+        TrackedStructDeserializer::validate::<serde::de::value::Error>(&message, &mut tracker).unwrap();
+    });
 
-    TrackedStructDeserializer::verify_deserialize::<serde::de::value::Error>(&message, &mut tracker).unwrap();
-
-    let state = guard.finish();
     insta::assert_debug_snapshot!(state, @r"
     TrackerSharedState {
         fail_fast: true,
@@ -70,12 +61,12 @@ fn test_nested() {
     }
     "#);
     insta::assert_debug_snapshot!(tracker, @r"
-    MessageTracker(
+    StructTracker(
         FlattenedMessageTracker {
             some_other: Some(
                 OptionalTracker(
                     Some(
-                        MessageTracker(
+                        StructTracker(
                             SomeOtherMessageTracker {
                                 name: Some(
                                     PrimitiveTracker<alloc::string::String>,
@@ -89,7 +80,7 @@ fn test_nested() {
                                 nested: Some(
                                     OptionalTracker(
                                         Some(
-                                            MessageTracker(
+                                            StructTracker(
                                                 NestedMessageTracker {
                                                     depth: Some(
                                                         PrimitiveTracker<i32>,
@@ -102,7 +93,7 @@ fn test_nested() {
                                 address: Some(
                                     OptionalTracker(
                                         Some(
-                                            MessageTracker(
+                                            StructTracker(
                                                 SomeOtherMessage2Tracker {
                                                     house_number: Some(
                                                         PrimitiveTracker<alloc::string::String>,

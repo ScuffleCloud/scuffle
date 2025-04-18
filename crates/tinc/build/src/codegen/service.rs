@@ -291,7 +291,7 @@ impl GeneratedMethod {
         };
 
         let trimmed_path = path.trim_start_matches('/');
-        let full_path = if let Some(prefix) = &service.opts.prefix {
+        let full_path = if let Some(prefix) = &service.prefix {
             format!("/{}/{}", prefix.trim_end_matches('/'), trimmed_path)
         } else {
             format!("/{}", trimmed_path)

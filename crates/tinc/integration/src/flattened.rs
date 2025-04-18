@@ -15,11 +15,11 @@ fn test_nested() {
         "id": 1,
         "age": 2,
         "depth": 3,
-        "houseNumber": "123",
+        "house_number": "123",
         "street": "Main St",
         "city": "Anytown",
         "state": "CA",
-        "zipCode": "12345"
+        "zip_code": "12345"
     }"#,
     );
 

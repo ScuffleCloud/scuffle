@@ -18,8 +18,8 @@ fn test_recursive() {
                 "nested": null
             }
         ],
-        "anotherOptional": null,
-        "anotherMap": {
+        "another_optional": null,
+        "another_map": {
             "key1": {
                 "another": null,
                 "nested": null
@@ -28,8 +28,8 @@ fn test_recursive() {
                 "another": null,
                 "nested": {
                     "anothers": [],
-                    "anotherOptional": null,
-                    "anotherMap": {},
+                    "another_optional": null,
+                    "another_map": {},
                     "depth": 2
                 }
             }

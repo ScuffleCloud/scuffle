@@ -23,20 +23,20 @@ fn test_oneof() {
             "value": 1
         },
         "tagged_nested": {
-            "tag": "nestedMessage",
+            "tag": "nested_message",
             "value": {
                 "string": "nested",
                 "int32": 50
             }
         },
         "nested": {
-            "customEnum2": "VALUE"
+            "custom_enum2": "VALUE"
         },
-        "magicNested": {
+        "magic_nested": {
             "string": "magic",
             "int32": 1
         },
-        "flattened_tag": "magicEnum3",
+        "flattened_tag": "magic_enum3",
         "flattened_value": "VALUE"
     }"#,
     );
@@ -139,7 +139,7 @@ fn test_oneof() {
                     ),
                     state: 2,
                     tag_buffer: Some(
-                        "nestedMessage",
+                        "nested_message",
                     ),
                     value_buffer: [],
                 },
@@ -180,7 +180,7 @@ fn test_oneof() {
                     ),
                     state: 2,
                     tag_buffer: Some(
-                        "magicEnum3",
+                        "magic_enum3",
                     ),
                     value_buffer: [],
                 },
@@ -230,19 +230,19 @@ fn test_oneof_buffering() {
             "tag": "int322"
         },
         "tagged_nested": {
-            "tag": "nestedMessage",
+            "tag": "nested_message",
             "value": {
                 "int32": 100
             }
         },
         "nested": {
-            "customEnum2": "VALUE"
+            "custom_enum2": "VALUE"
         },
-        "magicNested": {
+        "magic_nested": {
             "string": "magic",
             "int32": 1
         },
-        "flattened_tag": "magicEnum3"
+        "flattened_tag": "magic_enum3"
     }"#,
     );
 
@@ -343,7 +343,7 @@ fn test_oneof_buffering() {
                     ),
                     state: 2,
                     tag_buffer: Some(
-                        "nestedMessage",
+                        "nested_message",
                     ),
                     value_buffer: [],
                 },
@@ -384,7 +384,7 @@ fn test_oneof_buffering() {
                     ),
                     state: 2,
                     tag_buffer: Some(
-                        "magicEnum3",
+                        "magic_enum3",
                     ),
                     value_buffer: [],
                 },

@@ -228,7 +228,7 @@ where
                     self.set_tag_invalid();
                     let error = <D::Error as serde::de::Error>::unknown_variant(
                         v.as_ref(),
-                        <T::Target as IdentifierFor>::Identifier::OPTIONS,
+                        <T::Target as TrackedOneOfVariant>::Variant::OPTIONS,
                     );
                     report_error(TrackedError::invalid_field(error.to_string()))?;
                 }

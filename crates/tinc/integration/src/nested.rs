@@ -11,20 +11,20 @@ fn test_nested() {
     let mut state = TrackerSharedState::default();
     let mut de = serde_json::Deserializer::from_str(
         r#"{
-        "someOther": {
+        "some_other": {
             "name": "test",
             "id": 1,
             "nested": {
                 "name": "nested",
                 "id": 2,
                 "age": 3,
-                "nestedEnum": "SOME_VALUE",
+                "nested_enum": "SOME_VALUE",
                 "nested": {
                     "depth": 100
                 }
             }
         },
-        "nestedEnum": "YET_ANOTHER_VALUE"
+        "nested_enum": "YET_ANOTHER_VALUE"
     }"#,
     );
 

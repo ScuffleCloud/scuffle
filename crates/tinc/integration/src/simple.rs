@@ -14,7 +14,7 @@ fn test_simple_single_pass() {
         r#"{
         "name": "test",
         "values": ["value1", "value2"],
-        "keyValues": {
+        "key_values": {
             "key1": "value1",
             "key2": "value2"
         }
@@ -85,7 +85,7 @@ fn test_simple_multiple_passes() {
     let mut de = serde_json::Deserializer::from_str(
         r#"{
         "name": "test",
-        "keyValues": {
+        "key_values": {
             "key1": "value1"
         }
     }"#,
@@ -123,7 +123,7 @@ fn test_simple_multiple_passes() {
     let mut de = serde_json::Deserializer::from_str(
         r#"{
         "values": ["value1", "value2"],
-        "keyValues": {
+        "key_values": {
             "key2": "value2"
         }
     }"#,
@@ -192,7 +192,7 @@ fn test_simple_missing_fields() {
 
     let mut de = serde_json::Deserializer::from_str(
         r#"{
-        "keyValues": {
+        "key_values": {
         }
     }"#,
     );
@@ -223,7 +223,7 @@ fn test_simple_missing_fields() {
     let mut de = serde_json::Deserializer::from_str(
         r#"{
         "values": ["value1", "value2"],
-        "keyValues": {
+        "key_values": {
             "key2": "value2"
         }
     }"#,
@@ -301,7 +301,7 @@ fn test_simple_duplicate_fields() {
         r#"{
         "name": "test",
         "values": ["value1", "value2"],
-        "keyValues": {
+        "key_values": {
             "key1": "value1",
             "key2": "value2"
         }
@@ -352,7 +352,7 @@ fn test_simple_duplicate_fields() {
     let mut de = serde_json::Deserializer::from_str(
         r#"{
         "values": ["value1", "value2"],
-        "keyValues": {
+        "key_values": {
             "key1": "value1",
             "key2": "value2"
         }
@@ -414,12 +414,12 @@ fn test_simple_duplicate_fields() {
             TrackedError {
                 kind: DuplicateField,
                 fatal: true,
-                path: "keyValues.key1",
+                path: "key_values.key1",
             },
             TrackedError {
                 kind: DuplicateField,
                 fatal: true,
-                path: "keyValues.key2",
+                path: "key_values.key2",
             },
         ],
     }
@@ -443,7 +443,7 @@ fn test_simple_invalid_type() {
         r#"{
         "name": 123,
         "values": [1, 2, {}],
-        "keyValues": null
+        "key_values": null
     }"#,
     );
 
@@ -498,10 +498,10 @@ fn test_simple_invalid_type() {
             },
             TrackedError {
                 kind: InvalidField {
-                    message: "invalid type: null, expected a map of `String`s to `String`s at line 4 column 25",
+                    message: "invalid type: null, expected a map of `String`s to `String`s at line 4 column 26",
                 },
                 fatal: true,
-                path: "keyValues",
+                path: "key_values",
             },
         ],
     }

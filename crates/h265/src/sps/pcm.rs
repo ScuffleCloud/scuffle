@@ -23,9 +23,6 @@ pub struct Pcm {
     /// Specifies whether the loop filter process is disabled on reconstructed
     /// samples in a coding unit with `pcm_flag` equal to `true`.
     pub pcm_loop_filter_disabled_flag: bool,
-    // Calculated values
-    log2_min_ipcm_cb_size_y: u64,
-    log2_max_ipcm_cb_size_y: u64,
 }
 
 impl Pcm {
@@ -71,8 +68,6 @@ impl Pcm {
             log2_min_pcm_luma_coding_block_size_minus3,
             log2_diff_max_min_pcm_luma_coding_block_size,
             pcm_loop_filter_disabled_flag: bit_reader.read_bit()?,
-            log2_min_ipcm_cb_size_y,
-            log2_max_ipcm_cb_size_y,
         })
     }
 
@@ -106,7 +101,7 @@ impl Pcm {
     ///
     /// ISO/IEC 23008-2 - 7.4.3.2.1
     pub fn log2_min_ipcm_cb_size_y(&self) -> u64 {
-        self.log2_min_ipcm_cb_size_y
+        self.log2_min_pcm_luma_coding_block_size_minus3 + 3
     }
 
     /// The value is less than or equal to [`Min(CtbLog2SizeY, 5)`](crate::Sps::ctb_log2_size_y).
@@ -115,6 +110,6 @@ impl Pcm {
     ///
     /// ISO/IEC 23008-2 - 7.4.3.2.1
     pub fn log2_max_ipcm_cb_size_y(&self) -> u64 {
-        self.log2_max_ipcm_cb_size_y
+        self.log2_diff_max_min_pcm_luma_coding_block_size + self.log2_min_ipcm_cb_size_y()
     }
 }

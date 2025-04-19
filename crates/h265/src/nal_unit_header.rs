@@ -56,14 +56,20 @@ impl NALUnitHeader {
         {
             return Err(io::Error::new(
                 io::ErrorKind::InvalidData,
-                format!("TemporalId must be 0 for nal_unit_type {:?}", nal_unit_type),
+                format!(
+                    "nuh_temporal_id_plus1 must be 1 (TemporalId = 0) for nal_unit_type {:?}",
+                    nal_unit_type
+                ),
             ));
         }
 
         if (nal_unit_type == NALUnitType::TsaR || nal_unit_type == NALUnitType::TsaN) && nuh_temporal_id_plus1.get() == 1 {
             return Err(io::Error::new(
                 io::ErrorKind::InvalidData,
-                format!("TemporalId must not be 0 for nal_unit_type {:?}", nal_unit_type),
+                format!(
+                    "nuh_temporal_id_plus1 must not be 1 (TemporalId != 0) for nal_unit_type {:?}",
+                    nal_unit_type
+                ),
             ));
         }
 
@@ -74,7 +80,7 @@ impl NALUnitHeader {
             return Err(io::Error::new(
                 io::ErrorKind::InvalidData,
                 format!(
-                    "TemporalId must not be 0 for nuh_layer_id 0 and nal_unit_type {:?}",
+                    "nuh_temporal_id_plus1 must not be 1 (TemporalId != 0) for nuh_layer_id 0 and nal_unit_type {:?}",
                     nal_unit_type
                 ),
             ));

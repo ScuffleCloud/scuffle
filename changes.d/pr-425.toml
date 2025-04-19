@@ -1,5 +1,31 @@
+[[scuffle-bytes-util]]
+category = "feat"
+description = "add nal emulation prevention io"
+authors = ["@lennartkloock"]
+
+[[scuffle-flv]]
+category = "chore"
+description = "update tests to use new h265 version"
+authors = ["@lennartkloock"]
+
+[[scuffle-h264]]
+category = "refactor"
+description = "remove nal emulation prevention io"
+breaking = true
+authors = ["@lennartkloock"]
+
 [[scuffle-h265]]
 category = "refactor"
 description = "reimplement h265 SPS parsing"
 breaking = true
+authors = ["@lennartkloock"]
+
+[[scuffle-mp4]]
+category = "chore"
+description = "update to use new h265 version"
+authors = ["@lennartkloock"]
+
+[[scuffle-transmuxer]]
+category = "chore"
+description = "update to use new h265 version"
 authors = ["@lennartkloock"]

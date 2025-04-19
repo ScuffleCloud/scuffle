@@ -173,14 +173,6 @@ pub struct Sps {
     pub sps_3d_extension: Option<Sps3dExtension>,
     /// The [`SpsSccExtension`] structure contained in this SPS, if present.
     pub scc_extension: Option<SpsSccExtension>,
-    // Calculated fields
-    sub_width_c: u8,
-    sub_height_c: u8,
-    bit_depth_y: u8,
-    bit_depth_c: u8,
-    min_cb_log2_size_y: u64,
-    ctb_log2_size_y: u64,
-    min_tb_log2_size_y: u64,
 }
 
 impl Sps {
@@ -434,14 +426,6 @@ impl Sps {
             multilayer_extension,
             sps_3d_extension,
             scc_extension,
-            // Calculated fields
-            sub_width_c,
-            sub_height_c,
-            bit_depth_y,
-            bit_depth_c,
-            min_cb_log2_size_y,
-            ctb_log2_size_y,
-            min_tb_log2_size_y,
         })
     }
 
@@ -491,15 +475,17 @@ impl Sps {
     }
 
     /// ISO/IEC 23008-2 - Table 6-1
-    #[inline]
     pub fn sub_width_c(&self) -> u8 {
-        self.sub_width_c
+        if self.chroma_format_idc == 1 || self.chroma_format_idc == 2 {
+            2
+        } else {
+            1
+        }
     }
 
     /// ISO/IEC 23008-2 - Table 6-1
-    #[inline]
     pub fn sub_height_c(&self) -> u8 {
-        self.sub_height_c
+        if self.chroma_format_idc == 1 { 2 } else { 1 }
     }
 
     /// The bit depth of the samples of the luma array.
@@ -507,9 +493,8 @@ impl Sps {
     /// `BitDepth_Y = 8 + bit_depth_luma_minus8` (7-4)
     ///
     /// ISO/IEC 23008-2 - 7.4.3.2.1
-    #[inline]
     pub fn bit_depth_y(&self) -> u8 {
-        self.bit_depth_y
+        8 + self.bit_depth_luma_minus8
     }
 
     /// The luma quantization parameter range offset.
@@ -518,7 +503,7 @@ impl Sps {
     ///
     /// ISO/IEC 23008-2 - 7.4.3.2.1
     pub fn qp_bd_offset_y(&self) -> u8 {
-        6 * self.bit_depth_y
+        6 * self.bit_depth_y()
     }
 
     /// The bit depth of the samples of the chroma arrays.
@@ -528,7 +513,7 @@ impl Sps {
     /// ISO/IEC 23008-2 - 7.4.3.2.1
     #[inline]
     pub fn bit_depth_c(&self) -> u8 {
-        self.bit_depth_c
+        8 + self.bit_depth_chroma_minus8
     }
 
     /// The chroma quantization parameter range offset.
@@ -537,7 +522,7 @@ impl Sps {
     ///
     /// ISO/IEC 23008-2 - 7.4.3.2.1
     pub fn qp_bd_offset_c(&self) -> u8 {
-        6 * self.bit_depth_c
+        6 * self.bit_depth_c()
     }
 
     /// Used in the decoding process for picture order count.
@@ -552,17 +537,15 @@ impl Sps {
     /// `MinCbLog2SizeY = log2_min_luma_coding_block_size_minus3 + 3` (7-10)
     ///
     /// ISO/IEC 23008-2 - 7.4.3.2.1
-    #[inline]
     pub fn min_cb_log2_size_y(&self) -> u64 {
-        self.min_cb_log2_size_y
+        self.log2_min_luma_coding_block_size_minus3 + 3
     }
 
     /// `CtbLog2SizeY = MinCbLog2SizeY + log2_diff_max_min_luma_coding_block_size` (7-11)
     ///
     /// ISO/IEC 23008-2 - 7.4.3.2.1
-    #[inline]
     pub fn ctb_log2_size_y(&self) -> u64 {
-        self.ctb_log2_size_y
+        self.min_cb_log2_size_y() + self.log2_diff_max_min_luma_coding_block_size
     }
 
     /// `MinCbSizeY = 1 << MinCbLog2SizeY` (7-12)
@@ -675,7 +658,7 @@ impl Sps {
     ///
     /// ISO/IEC 23008-2 - 7.4.3.2.1
     pub fn min_tb_log2_size_y(&self) -> u64 {
-        self.min_tb_log2_size_y
+        self.log2_min_luma_transform_block_size_minus2 + 2
     }
 
     /// `MaxTbLog2SizeY = log2_min_luma_transform_block_size_minus2 + 2 + log2_diff_max_min_luma_transform_block_size`

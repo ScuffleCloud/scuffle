@@ -236,10 +236,6 @@ impl VuiParameters {
                 def_disp_win_right_offset,
                 def_disp_win_top_offset,
                 def_disp_win_bottom_offset,
-                left_offset,
-                right_offset,
-                top_offset,
-                bottom_offset,
             });
         }
 
@@ -408,44 +404,35 @@ pub struct DefaultDisplayWindow {
     pub def_disp_win_top_offset: u64,
     /// `def_disp_win_bottom_offset`
     pub def_disp_win_bottom_offset: u64,
-    // Calculated values
-    left_offset: u64,
-    right_offset: u64,
-    top_offset: u64,
-    bottom_offset: u64,
 }
 
 impl DefaultDisplayWindow {
     /// `leftOffset = conf_win_left_offset + def_disp_win_left_offset` (E-68)
     ///
     /// ISO/IEC 23008-2 - E.3.1
-    #[inline]
-    pub fn left_offset(&self) -> u64 {
-        self.left_offset
+    pub fn left_offset(&self, conformance_window: &ConformanceWindow) -> u64 {
+        conformance_window.conf_win_left_offset + self.def_disp_win_left_offset
     }
 
     /// `rightOffset = conf_win_right_offset + def_disp_win_right_offset` (E-69)
     ///
     /// ISO/IEC 23008-2 - E.3.1
-    #[inline]
-    pub fn right_offset(&self) -> u64 {
-        self.right_offset
+    pub fn right_offset(&self, conformance_window: &ConformanceWindow) -> u64 {
+        conformance_window.conf_win_right_offset + self.def_disp_win_right_offset
     }
 
     /// `topOffset = conf_win_top_offset + def_disp_win_top_offset` (E-70)
     ///
     /// ISO/IEC 23008-2 - E.3.1
-    #[inline]
-    pub fn top_offset(&self) -> u64 {
-        self.top_offset
+    pub fn top_offset(&self, conformance_window: &ConformanceWindow) -> u64 {
+        conformance_window.conf_win_top_offset + self.def_disp_win_top_offset
     }
 
     /// `bottomOffset = conf_win_bottom_offset + def_disp_win_bottom_offset` (E-71)
     ///
     /// ISO/IEC 23008-2 - E.3.1
-    #[inline]
-    pub fn bottom_offset(&self) -> u64 {
-        self.bottom_offset
+    pub fn bottom_offset(&self, conformance_window: &ConformanceWindow) -> u64 {
+        conformance_window.conf_win_bottom_offset + self.def_disp_win_bottom_offset
     }
 }
 
@@ -613,6 +600,13 @@ mod tests {
             print!("{:08b} ", b.unwrap());
         }
 
+        let conf_window = ConformanceWindow {
+            conf_win_left_offset: 2,
+            conf_win_right_offset: 2,
+            conf_win_top_offset: 2,
+            conf_win_bottom_offset: 2,
+        };
+
         let vui_parameters = VuiParameters::parse(
             &mut BitReader::new(data.as_slice()),
             0,
@@ -622,12 +616,7 @@ mod tests {
             false,
             false,
             false,
-            &ConformanceWindow {
-                conf_win_left_offset: 2,
-                conf_win_right_offset: 2,
-                conf_win_top_offset: 2,
-                conf_win_bottom_offset: 2,
-            },
+            &conf_window,
             1,
             NonZero::new(1920).unwrap(),
             1,
@@ -659,16 +648,12 @@ mod tests {
                 def_disp_win_right_offset: 10,
                 def_disp_win_top_offset: 0,
                 def_disp_win_bottom_offset: 10,
-                left_offset: 2,
-                right_offset: 12,
-                top_offset: 2,
-                bottom_offset: 12
             }
         );
-        assert_eq!(vui_parameters.default_display_window.left_offset(), 2);
-        assert_eq!(vui_parameters.default_display_window.right_offset(), 12);
-        assert_eq!(vui_parameters.default_display_window.top_offset(), 2);
-        assert_eq!(vui_parameters.default_display_window.bottom_offset(), 12);
+        assert_eq!(vui_parameters.default_display_window.left_offset(&conf_window), 2);
+        assert_eq!(vui_parameters.default_display_window.right_offset(&conf_window), 12);
+        assert_eq!(vui_parameters.default_display_window.top_offset(&conf_window), 2);
+        assert_eq!(vui_parameters.default_display_window.bottom_offset(&conf_window), 12);
         assert_eq!(vui_parameters.vui_timing_info, None);
         assert_eq!(vui_parameters.bitstream_restriction, BitStreamRestriction::default());
         assert_eq!(vui_parameters.bitstream_restriction.min_spatial_segmentation_times4(), 4);

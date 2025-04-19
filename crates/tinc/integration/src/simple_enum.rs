@@ -31,7 +31,6 @@ fn test_simple_enum() {
     insta::assert_debug_snapshot!(state, @r"
     TrackerSharedState {
         fail_fast: true,
-        irrecoverable: false,
         errors: [],
     }
     ");
@@ -114,7 +113,6 @@ fn test_simple_enum_renamed() {
     insta::assert_debug_snapshot!(state, @r"
     TrackerSharedState {
         fail_fast: true,
-        irrecoverable: false,
         errors: [],
     }
     ");
@@ -197,7 +195,6 @@ fn test_simple_enum_repr() {
     insta::assert_debug_snapshot!(state, @r"
     TrackerSharedState {
         fail_fast: true,
-        irrecoverable: false,
         errors: [],
     }
     ");
@@ -277,7 +274,6 @@ fn test_simple_enum_invalid() {
     insta::assert_debug_snapshot!(state, @r#"
     TrackerSharedState {
         fail_fast: false,
-        irrecoverable: false,
         errors: [
             TrackedError {
                 kind: InvalidField {
@@ -349,7 +345,6 @@ fn test_simple_enum_renamed_invalid() {
     insta::assert_debug_snapshot!(state, @r#"
     TrackerSharedState {
         fail_fast: false,
-        irrecoverable: false,
         errors: [
             TrackedError {
                 kind: InvalidField {
@@ -421,7 +416,6 @@ fn test_simple_enum_repr_invalid() {
     insta::assert_debug_snapshot!(state, @r#"
     TrackerSharedState {
         fail_fast: false,
-        irrecoverable: false,
         errors: [
             TrackedError {
                 kind: InvalidField {

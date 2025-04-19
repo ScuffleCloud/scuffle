@@ -37,7 +37,6 @@ fn test_nested() {
     insta::assert_debug_snapshot!(state, @r"
     TrackerSharedState {
         fail_fast: true,
-        irrecoverable: false,
         errors: [],
     }
     ");

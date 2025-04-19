@@ -4,7 +4,7 @@ use std::marker::PhantomData;
 
 use super::{
     DeserializeHelper, Expected, PathToken, TrackedError, Tracker, TrackerDeserializer, TrackerFor, TrackerValidation,
-    report_error, set_irrecoverable,
+    report_error, report_serde_error, set_irrecoverable,
 };
 
 pub struct MapTracker<K: Eq, T, M> {
@@ -150,7 +150,7 @@ where
         while let Some(key) = map.next_key::<K>().inspect_err(|_| {
             set_irrecoverable();
         })? {
-            let mut _token = PathToken::push_key(&key);
+            let _token = PathToken::push_key(&key);
             let entry = self.tracker.entry(key.clone());
             if let linear_map::Entry::Occupied(entry) = &entry {
                 if !entry.get().allow_duplicates() {
@@ -169,7 +169,7 @@ where
             match map.next_value_seed(DeserializeHelper { value, tracker }) {
                 Ok(_) => {}
                 Err(error) => {
-                    report_error(TrackedError::invalid_field(error.to_string()))?;
+                    report_serde_error(error)?;
                     break;
                 }
             }
@@ -215,7 +215,7 @@ where
         E: serde::de::Error,
     {
         for (key, tracker) in self.iter_mut() {
-            let mut _token = PathToken::push_key(key);
+            let _token = PathToken::push_key(key);
             if let Some(value) = value.get(key) {
                 tracker.validate(value)?;
             }

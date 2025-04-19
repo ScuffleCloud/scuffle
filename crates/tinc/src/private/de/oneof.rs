@@ -6,7 +6,7 @@ use super::buffer::Content;
 use super::{
     DeserializeContent, DeserializeHelper, Expected, IdentifiedValue, Identifier, IdentifierDeserializer, IdentifierFor,
     MapAccessValueDeserializer, PathToken, SerdeDeserializer, TrackedError, Tracker, TrackerDeserializer, TrackerFor,
-    TrackerValidation, TrackerWrapper, report_error, set_irrecoverable,
+    TrackerValidation, TrackerWrapper, report_error, report_serde_error, set_irrecoverable,
 };
 
 pub trait OneOfHelper {
@@ -202,7 +202,7 @@ where
                                 Unexpected::Str(tag.name()),
                                 &existing_tag.name(),
                             );
-                            report_error(TrackedError::invalid_field(error.to_string()))?;
+                            report_serde_error(error)?;
                         }
                     } else {
                         self.tag_buffer = Some(tag);
@@ -220,7 +220,7 @@ where
                         );
 
                         if let Err(e) = result {
-                            report_error(TrackedError::invalid_field(e.to_string()))?;
+                            report_serde_error(e)?;
                         }
                     }
                 }
@@ -230,12 +230,12 @@ where
                         v.as_ref(),
                         <T::Target as TrackedOneOfVariant>::Variant::OPTIONS,
                     );
-                    report_error(TrackedError::invalid_field(error.to_string()))?;
+                    report_serde_error(error)?;
                 }
                 (IdentifiedValue::Unknown(v), Some(tag)) => {
                     self.set_tag_invalid();
                     let error = <D::Error as serde::de::Error>::invalid_value(Unexpected::Str(v.as_ref()), &tag.name());
-                    report_error(TrackedError::invalid_field(error.to_string()))?;
+                    report_serde_error(error)?;
                 }
                 _ => {}
             }
@@ -245,7 +245,7 @@ where
                 if let Some(tag) = self.tag_buffer {
                     let result: Result<(), D::Error> = T::Target::deserialize(value, tag, &mut self.tracker, deserializer);
                     if let Err(e) = result {
-                        report_error(TrackedError::invalid_field(e.to_string()))?;
+                        report_serde_error(e)?;
                     }
                 } else {
                     self.content_buffer.push(
@@ -492,7 +492,7 @@ where
                     variant.as_ref(),
                     <T::Target as IdentifierFor>::Identifier::OPTIONS,
                 );
-                report_error(TrackedError::invalid_field(error.to_string()))?;
+                report_serde_error(error)?;
                 variant_access.newtype_variant::<serde::de::IgnoredAny>().inspect_err(|_| {
                     set_irrecoverable();
                 })?;

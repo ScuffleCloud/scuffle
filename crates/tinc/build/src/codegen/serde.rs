@@ -7,7 +7,7 @@ use tinc_pb::schema_oneof_options::Tagged;
 
 use super::{field_ident_from_str, ident_from_str, strip_last_path_part, type_ident_from_str};
 use crate::codegen::get_common_import_path;
-use crate::extensions::{EnumOpts, FieldKind, FieldModifier, FieldOpts, FieldType, FieldVisibility, MessageOpts, OneofOpts};
+use crate::extensions::{EnumOpts, FieldModifier, FieldOpts, FieldType, FieldVisibility, MessageOpts, OneofOpts};
 
 fn message_attributes(key: &str, prost: &mut tonic_build::Config) {
     let attrs = [
@@ -490,7 +490,10 @@ fn handle_message_field(
 
     // When a field is not nullable but prost generates an option<T>, we need to
     // remove the option before deserializing otherwise null will be a valid input.
-    if matches!(field.kind.modifier(), Some(FieldModifier::Optional)) && (!field.nullable || field.flatten) && !matches!(field.kind.field_type(), FieldType::OneOf(_)) {
+    if matches!(field.kind.modifier(), Some(FieldModifier::Optional))
+        && (!field.nullable || field.flatten)
+        && !matches!(field.kind.field_type(), FieldType::OneOf(_))
+    {
         tracker = quote! {
             (#tracker).get_or_insert_default()
         };
@@ -503,6 +506,7 @@ fn handle_message_field(
     if field.flatten {
         builder.deserializer_fn.push(quote! {
             #field_enum_ident::#ident(field) => {
+                let _token = ::tinc::__private::de::PathAllowerToken::push(#name)?;
                 ::tinc::__private::de::TrackerDeserializeIdentifier::<'de>::deserialize(
                     (#tracker).get_or_insert_default(),
                     #value,
@@ -514,6 +518,7 @@ fn handle_message_field(
     } else {
         builder.deserializer_fn.push(quote! {
             #field_enum_ident::#ident => {
+                let _token = ::tinc::__private::de::PathAllowerToken::push(#name)?;
                 let tracker = #tracker;
 
                 if !::tinc::__private::de::tracker_allow_duplicates(tracker.as_ref()) {
@@ -625,7 +630,7 @@ pub(super) fn handle_message(
 ) -> anyhow::Result<()> {
     // Process oneof fields.
     for (oneof_name, oneof) in &message.oneofs {
-        handle_oneof(prost, modules, message_key, message, oneof, &oneof_name)?;
+        handle_oneof(prost, modules, message_key, message, oneof, oneof_name)?;
     }
 
     if message.custom_impl {
@@ -650,7 +655,7 @@ pub(super) fn handle_message(
             prost,
             message,
             message_key,
-            &field,
+            field,
             field_name,
             FieldBuilder {
                 deserializer_fields: &mut deserializer_fields,

@@ -50,7 +50,6 @@ fn test_oneof() {
     insta::assert_debug_snapshot!(state, @r"
     TrackerSharedState {
         fail_fast: false,
-        irrecoverable: false,
         errors: [],
     }
     ");
@@ -255,7 +254,6 @@ fn test_oneof_buffering() {
     insta::assert_debug_snapshot!(state, @r"
     TrackerSharedState {
         fail_fast: false,
-        irrecoverable: false,
         errors: [],
     }
     ");

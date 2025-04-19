@@ -1,7 +1,7 @@
 use super::{
     DeserializeContent, DeserializeHelper, Expected, IdentifiedValue, Identifier, IdentifierDeserializer, IdentifierFor,
     MapAccessValueDeserializer, PathToken, TrackedError, Tracker, TrackerDeserializeIdentifier, TrackerDeserializer,
-    TrackerFor, TrackerValidation, TrackerWrapper, is_path_allowed, report_error, set_irrecoverable,
+    TrackerFor, TrackerValidation, TrackerWrapper, report_error, report_serde_error, set_irrecoverable,
 };
 
 pub trait TrackedStructDeserializer<'de>: Sized + TrackerFor + IdentifierFor + Expected
@@ -150,28 +150,23 @@ where
             let mut deserialized = false;
             match key {
                 IdentifiedValue::Found(field) => {
-                    let mut _token = PathToken::push_field(field.name());
-                    let result = if is_path_allowed() {
-                        S::deserialize(
-                            self.value,
-                            field,
-                            self.tracker,
-                            MapAccessValueDeserializer {
-                                map: &mut map,
-                                deserialized: &mut deserialized,
-                            },
-                        )
-                        .map_err(|e| TrackedError::invalid_field(e.to_string()))
-                    } else {
-                        Err(TrackedError::unknown_field(S::DENY_UNKNOWN_FIELDS))
-                    };
+                    let _token = PathToken::push_field(field.name());
+                    let result = S::deserialize(
+                        self.value,
+                        field,
+                        self.tracker,
+                        MapAccessValueDeserializer {
+                            map: &mut map,
+                            deserialized: &mut deserialized,
+                        },
+                    );
 
                     if let Err(e) = result {
-                        report_error(e)?;
+                        report_serde_error(e)?;
                     }
                 }
                 IdentifiedValue::Unknown(field) => {
-                    let mut _token = PathToken::push_field(&field);
+                    let _token = PathToken::push_field(&field);
                     report_error(TrackedError::unknown_field(S::DENY_UNKNOWN_FIELDS))?;
                 }
             }

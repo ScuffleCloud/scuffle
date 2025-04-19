@@ -30,7 +30,6 @@ fn test_simple_single_pass() {
     insta::assert_debug_snapshot!(state, @r"
     TrackerSharedState {
         fail_fast: true,
-        irrecoverable: false,
         errors: [],
     }
     ");
@@ -174,7 +173,6 @@ fn test_simple_multiple_passes() {
     insta::assert_debug_snapshot!(state, @r"
     TrackerSharedState {
         fail_fast: true,
-        irrecoverable: false,
         errors: [],
     }
     ");
@@ -272,7 +270,6 @@ fn test_simple_missing_fields() {
     insta::assert_debug_snapshot!(state, @r#"
     TrackerSharedState {
         fail_fast: true,
-        irrecoverable: false,
         errors: [
             TrackedError {
                 kind: MissingField,
@@ -404,7 +401,6 @@ fn test_simple_duplicate_fields() {
     insta::assert_debug_snapshot!(state, @r#"
     TrackerSharedState {
         fail_fast: false,
-        irrecoverable: false,
         errors: [
             TrackedError {
                 kind: DuplicateField,
@@ -480,7 +476,6 @@ fn test_simple_invalid_type() {
     insta::assert_debug_snapshot!(state, @r#"
     TrackerSharedState {
         fail_fast: false,
-        irrecoverable: false,
         errors: [
             TrackedError {
                 kind: InvalidField {
@@ -538,7 +533,6 @@ fn test_simple_renamed_field() {
     insta::assert_debug_snapshot!(state, @r"
     TrackerSharedState {
         fail_fast: true,
-        irrecoverable: false,
         errors: [],
     }
     ");

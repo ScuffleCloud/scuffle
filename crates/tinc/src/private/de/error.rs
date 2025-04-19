@@ -8,6 +8,30 @@ pub enum PathItem {
     Key(MapKey),
 }
 
+pub struct PathAllowerToken {
+    _marker: PhantomData<()>,
+}
+
+impl PathAllowerToken {
+    pub fn push<E>(field: &'static str) -> Result<Self, E>
+    where
+        E: serde::de::Error,
+    {
+        PATH_BUFFER.with(|buffer| {
+            buffer.borrow_mut().push(field);
+        });
+        Ok(Self { _marker: PhantomData })
+    }
+}
+
+impl Drop for PathAllowerToken {
+    fn drop(&mut self) {
+        PATH_BUFFER.with(|buffer| {
+            buffer.borrow_mut().pop();
+        });
+    }
+}
+
 pub struct PathToken<'a> {
     previous: Option<PathItem>,
     _marker: PhantomData<&'a ()>,
@@ -15,7 +39,7 @@ pub struct PathToken<'a> {
 }
 
 fn current_path() -> String {
-    PATH_BUFFER.with(|buffer| {
+    ERROR_PATH_BUFFER.with(|buffer| {
         let mut path = String::new();
         for token in buffer.borrow().iter() {
             match token {
@@ -43,23 +67,56 @@ fn current_path() -> String {
     })
 }
 
+pub fn report_serde_error<E>(error: E) -> Result<(), E>
+where
+    E: serde::de::Error,
+{
+    STATE.with_borrow_mut(|state| {
+        if let Some(state) = state {
+            if state.irrecoverable || state.unwinding {
+                state.unwinding = true;
+                return Err(error);
+            }
+
+            state
+                .inner
+                .errors
+                .push(TrackedError::invalid_field(error.to_string().into_boxed_str()));
+
+            
+
+            if state.inner.fail_fast {
+                state.unwinding = true;
+                Err(error)
+            } else {
+                Ok(())
+            }
+        } else {
+            Err(error)
+        }
+    })
+}
+
 pub fn report_error<E>(error: TrackedError) -> Result<(), E>
 where
     E: serde::de::Error,
 {
     STATE.with_borrow_mut(|state| {
         if let Some(state) = state {
-            if state.irrecoverable {
+            if state.irrecoverable || state.unwinding {
+                state.unwinding = true;
                 return Err(E::custom(&error));
             }
 
-            let result = if state.fail_fast && error.fatal {
+            let result = if state.inner.fail_fast && error.fatal {
+                state.unwinding = true;
                 Err(E::custom(&error))
             } else {
                 Ok(())
             };
 
-            state.errors.push(error);
+            state.inner.errors.push(error);
+
             result
         } else {
             Err(E::custom(&error))
@@ -68,8 +125,13 @@ where
 }
 
 pub fn is_path_allowed() -> bool {
-    PATH_BUFFER
-        .with(|buffer| STATE.with_borrow(|settings| settings.as_ref().is_none_or(|s| (s.path_allowed)(&buffer.borrow()))))
+    PATH_BUFFER.with(|buffer| {
+        STATE.with_borrow(|settings| {
+            settings
+                .as_ref()
+                .is_none_or(|state| (state.inner.path_allowed)(&buffer.borrow()))
+        })
+    })
 }
 
 #[track_caller]
@@ -83,7 +145,7 @@ pub fn set_irrecoverable() {
 
 impl<'a> PathToken<'a> {
     pub fn push_field(field: &'a str) -> Self {
-        PATH_BUFFER.with(|buffer| {
+        ERROR_PATH_BUFFER.with(|buffer| {
             buffer.borrow_mut().push(PathItem::Field(
                 // SAFETY: `field` has a lifetime of `'a`, field-name hides the field so it cannot be accessed outside of this module.
                 // We return a `PathToken` that has a lifetime of `'a` which makes it impossible to access this field after its lifetime ends.
@@ -98,7 +160,7 @@ impl<'a> PathToken<'a> {
     }
 
     pub fn replace_field(field: &'a str) -> Self {
-        let previous = PATH_BUFFER.with(|buffer| buffer.borrow_mut().pop());
+        let previous = ERROR_PATH_BUFFER.with(|buffer| buffer.borrow_mut().pop());
         Self {
             previous,
             ..Self::push_field(field)
@@ -106,7 +168,7 @@ impl<'a> PathToken<'a> {
     }
 
     pub fn push_index(index: usize) -> Self {
-        PATH_BUFFER.with(|buffer| buffer.borrow_mut().push(PathItem::Index(index)));
+        ERROR_PATH_BUFFER.with(|buffer| buffer.borrow_mut().push(PathItem::Index(index)));
         Self {
             _marker: PhantomData,
             _no_send: PhantomData,
@@ -115,7 +177,7 @@ impl<'a> PathToken<'a> {
     }
 
     pub fn push_key(key: &'a dyn std::fmt::Display) -> Self {
-        PATH_BUFFER.with(|buffer| {
+        ERROR_PATH_BUFFER.with(|buffer| {
             buffer.borrow_mut().push(PathItem::Key(
                 // SAFETY: `key` has a lifetime of `'a`, map-key hides the key so it cannot be accessed outside of this module.
                 // We return a `PathToken` that has a lifetime of `'a` which makes it impossible to access this key after its lifetime ends.
@@ -132,7 +194,7 @@ impl<'a> PathToken<'a> {
 
 impl Drop for PathToken<'_> {
     fn drop(&mut self) {
-        PATH_BUFFER.with(|buffer| {
+        ERROR_PATH_BUFFER.with(|buffer| {
             buffer.borrow_mut().pop();
             if let Some(previous) = self.previous.take() {
                 buffer.borrow_mut().push(previous);
@@ -142,10 +204,15 @@ impl Drop for PathToken<'_> {
 }
 
 thread_local! {
-    static PATH_BUFFER: RefCell<Vec<PathItem>> = const { RefCell::new(Vec::new()) };
-    static STATE: RefCell<Option<TrackerSharedState>> = const {
-        RefCell::new(None)
-    };
+    static ERROR_PATH_BUFFER: RefCell<Vec<PathItem>> = const { RefCell::new(Vec::new()) };
+    static PATH_BUFFER: RefCell<Vec<&'static str>> = const { RefCell::new(Vec::new()) };
+    static STATE: RefCell<Option<InternalTrackerState>> = const { RefCell::new(None) };
+}
+
+struct InternalTrackerState {
+    irrecoverable: bool,
+    unwinding: bool,
+    inner: TrackerSharedState,
 }
 
 struct TrackerStateGuard<'a> {
@@ -157,7 +224,11 @@ impl<'a> TrackerStateGuard<'a> {
     fn new(state: &'a mut TrackerSharedState) -> Self {
         STATE.with_borrow_mut(|current| {
             if current.is_none() {
-                *current = Some(std::mem::take(state));
+                *current = Some(InternalTrackerState {
+                    irrecoverable: false,
+                    unwinding: false,
+                    inner: std::mem::take(state),
+                });
             } else {
                 panic!("TrackerStateGuard: already in use");
             }
@@ -172,8 +243,8 @@ impl<'a> TrackerStateGuard<'a> {
 impl Drop for TrackerStateGuard<'_> {
     fn drop(&mut self) {
         STATE.with_borrow_mut(|state| {
-            if let Some(current) = state.take() {
-                *self.state = current;
+            if let Some(InternalTrackerState { inner, .. }) = state.take() {
+                *self.state = inner;
             } else {
                 panic!("TrackerStateGuard: already dropped");
             }
@@ -235,9 +306,8 @@ impl TrackedError {
 
 pub struct TrackerSharedState {
     pub fail_fast: bool,
-    pub irrecoverable: bool,
     pub errors: Vec<TrackedError>,
-    pub path_allowed: fn(&[PathItem]) -> bool,
+    pub path_allowed: fn(&[&'static str]) -> bool,
 }
 
 impl TrackerSharedState {
@@ -254,7 +324,6 @@ impl std::fmt::Debug for TrackerSharedState {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         let mut s = f.debug_struct("TrackerSharedState");
         s.field("fail_fast", &self.fail_fast);
-        s.field("irrecoverable", &self.irrecoverable);
         s.field("errors", &self.errors);
         s.finish()
     }
@@ -264,7 +333,6 @@ impl Default for TrackerSharedState {
     fn default() -> Self {
         Self {
             fail_fast: true,
-            irrecoverable: false,
             errors: Vec::new(),
             path_allowed: |_| true,
         }

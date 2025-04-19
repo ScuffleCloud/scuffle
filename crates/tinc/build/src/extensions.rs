@@ -563,10 +563,7 @@ impl Extensions {
             })
             .collect::<anyhow::Result<Vec<_>>>()?;
 
-        if !insert
-            && opts.is_none()
-            && fields.iter().all(|(_, opts)| opts.is_none())
-        {
+        if !insert && opts.is_none() && fields.iter().all(|(_, opts)| opts.is_none()) {
             return Ok(());
         }
 
@@ -582,7 +579,6 @@ impl Extensions {
                 oneofs: IndexMap::new(),
             },
         );
-
 
         for (field, opts) in fields {
             let message = self.messages.get_mut(message.full_name()).unwrap();
@@ -644,13 +640,9 @@ impl Extensions {
                     }
                 });
 
-                oneof
-                    .fields
-                    .insert(field.name().to_owned(), field_opts);
+                oneof.fields.insert(field.name().to_owned(), field_opts);
             } else {
-                message
-                    .fields
-                    .insert(field.name().to_owned(), field_opts);
+                message.fields.insert(field.name().to_owned(), field_opts);
             }
 
             if let Some(name) = kind.message_name() {
@@ -697,7 +689,7 @@ impl Extensions {
                     .as_ref()
                     .and_then(|opts| opts.rename_all.and_then(|v| tinc_pb::RenameAll::try_from(v).ok()))
                     .unwrap_or(tinc_pb::RenameAll::ScreamingSnakeCase),
-                repr_enum: opts.as_ref().map_or(false, |opts| opts.repr_enum()),
+                repr_enum: opts.as_ref().is_some_and(|opts| opts.repr_enum()),
                 package: enum_.parent_file().package_name().to_owned(),
                 variants: BTreeMap::new(),
             },

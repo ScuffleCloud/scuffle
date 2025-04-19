@@ -35,6 +35,42 @@ pub use st_ref_pic_set::*;
 pub use sub_layer_ordering_info::*;
 pub use vui_parameters::*;
 
+// Some notes on the spec:
+//
+// The data appears like this on the wire: `NALU(RBSP(SODB))`
+//
+// NALU: NAL unit
+// This is the outer most encapsulation layer and what is sent over the wire.
+//
+// RBSP: Raw byte sequence payload
+// Additional encapsulation layer that adds trailing bits and emulation prevention.
+//
+// SODB: String of data bits
+// This is the actual payload data.
+
+/// Sequence parameter set in a NAL unit.
+#[derive(Debug, Clone, PartialEq)]
+pub struct SpsNALUnit {
+    /// The NAL unit header.
+    pub nal_unit_header: NALUnitHeader,
+    /// The SPS RBSP.
+    pub rbsp: SpsRbsp,
+}
+
+impl SpsNALUnit {
+    /// Parses an SPS NAL unit from the given reader.
+    pub fn parse(mut reader: impl io::Read) -> io::Result<Self> {
+        let nal_unit_header = NALUnitHeader::parse(&mut reader)?;
+        if nal_unit_header.nal_unit_type != NALUnitType::SpsNut {
+            return Err(io::Error::new(io::ErrorKind::InvalidData, "nal_unit_type is not SPS_NUT"));
+        }
+
+        let rbsp = SpsRbsp::parse(reader, nal_unit_header.nuh_layer_id)?;
+
+        Ok(SpsNALUnit { nal_unit_header, rbsp })
+    }
+}
+
 /// Sequence parameter set RBSP.
 ///
 /// This only represents sequence parameter sets that are part of NAL units.
@@ -45,9 +81,7 @@ pub use vui_parameters::*;
 /// - ISO/IEC 23008-2 - 7.3.2.2
 /// - ISO/IEC 23008-2 - 7.4.3.2
 #[derive(Debug, Clone, PartialEq)]
-pub struct Sps {
-    /// NAL unit header.
-    pub nal_unit_header: NALUnitHeader,
+pub struct SpsRbsp {
     /// Specifies the value of the vps_video_parameter_set_id of the active VPS.
     pub sps_video_parameter_set_id: u8,
     /// This value plus 1 specifies the maximum number of temporal sub-layers that may be
@@ -175,20 +209,15 @@ pub struct Sps {
     pub scc_extension: Option<SpsSccExtension>,
 }
 
-impl Sps {
-    /// Parses an SPS NAL unit from the given reader.
+impl SpsRbsp {
+    /// Parses an SPS RBSP from the given reader.
     ///
-    /// Returns an [`Sps`] struct.
-    pub fn parse(reader: impl io::Read) -> io::Result<Self> {
-        let mut bit_reader = BitReader::new(reader);
+    /// Uses [`EmulationPreventionIo`] to handle emulation prevention bytes.
+    ///
+    /// Returns an [`SpsRbsp`] struct.
+    pub fn parse(reader: impl io::Read, nuh_layer_id: u8) -> io::Result<Self> {
+        let mut bit_reader = BitReader::new(EmulationPreventionIo::new(reader));
 
-        let nal_unit_header = NALUnitHeader::parse(&mut bit_reader)?;
-        if nal_unit_header.nal_unit_type != NALUnitType::SpsNut {
-            return Err(io::Error::new(io::ErrorKind::InvalidData, "nal_unit_type is not SPS_NUT"));
-        }
-
-        // begin ISO/IEC-23008-2-2020 - 7.3.2.2.1
-        // semantics in ISO/IEC-23008-2-2020 - 7.4.3.2.1
         let sps_video_parameter_set_id = bit_reader.read_bits(4)? as u8;
 
         let sps_max_sub_layers_minus1 = bit_reader.read_bits(3)? as u8;
@@ -203,10 +232,8 @@ impl Sps {
             ));
         }
 
-        // ISO/IEC-23008-2-2020 - 7.3.3
         let profile_tier_level = ProfileTierLevel::parse(&mut bit_reader, sps_max_sub_layers_minus1)?;
 
-        // back to ISO/IEC-23008-2-2020 - 7.3.2.2.1
         let sps_seq_parameter_set_id = bit_reader.read_exp_golomb()?;
         range_check!(sps_seq_parameter_set_id, 0, 15)?;
 
@@ -308,7 +335,7 @@ impl Sps {
         let short_term_ref_pic_sets = ShortTermRefPicSets::parse(
             &mut bit_reader,
             num_short_term_ref_pic_sets as usize,
-            nal_unit_header.nuh_layer_id,
+            nuh_layer_id,
             *sub_layer_ordering_info
                 .sps_max_dec_pic_buffering_minus1
                 .last()
@@ -391,8 +418,7 @@ impl Sps {
             Err(e) => return Err(e),
         } {}
 
-        Ok(Sps {
-            nal_unit_header,
+        Ok(SpsRbsp {
             sps_video_parameter_set_id,
             sps_max_sub_layers_minus1,
             sps_temporal_id_nesting_flag,
@@ -427,13 +453,6 @@ impl Sps {
             sps_3d_extension,
             scc_extension,
         })
-    }
-
-    /// Parses an SPS NAL unit from the given reader with emulation prevention.
-    ///
-    /// Uses [`EmulationPreventionIo`] to handle emulation prevention bytes.
-    pub fn parse_with_emulation_prevention(reader: impl io::Read) -> io::Result<Self> {
-        Self::parse(EmulationPreventionIo::new(reader))
     }
 
     /// The `croppedWidth` as a [`u64`].
@@ -685,13 +704,13 @@ impl Sps {
 mod tests {
     use std::io;
 
-    use crate::Sps;
+    use crate::SpsNALUnit;
 
     #[test]
     fn test_sps_parse() {
         let data = b"B\x01\x01\x01@\0\0\x03\0\x90\0\0\x03\0\0\x03\0\x99\xa0\x01@ \x05\xa1e\x95R\x90\x84d_\xf8\xc0Z\x80\x80\x80\x82\0\0\x03\0\x02\0\0\x03\x01 \xc0\x0b\xbc\xa2\0\x02bX\0\x011-\x08";
 
-        let sps = Sps::parse_with_emulation_prevention(io::Cursor::new(data)).unwrap();
+        let sps = SpsNALUnit::parse(io::Cursor::new(data)).unwrap().rbsp;
         assert_eq!(sps.cropped_width(), 2560);
         assert_eq!(sps.cropped_height(), 1440);
         assert_eq!(sps.chroma_array_type(), 1);
@@ -728,7 +747,7 @@ mod tests {
         // This is a real SPS from an mp4 video file recorded with OBS.
         let data = b"\x42\x01\x01\x01\x40\x00\x00\x03\x00\x90\x00\x00\x03\x00\x00\x03\x00\x78\xa0\x03\xc0\x80\x11\x07\xcb\x96\xb4\xa4\x25\x92\xe3\x01\x6a\x02\x02\x02\x08\x00\x00\x03\x00\x08\x00\x00\x03\x00\xf3\x00\x2e\xf2\x88\x00\x02\x62\x5a\x00\x00\x13\x12\xd0\x20";
 
-        let sps = Sps::parse_with_emulation_prevention(io::Cursor::new(data)).unwrap();
+        let sps = SpsNALUnit::parse(io::Cursor::new(data)).unwrap().rbsp;
         assert_eq!(sps.cropped_width(), 1920);
         assert_eq!(sps.cropped_height(), 1080);
         assert_eq!(sps.chroma_array_type(), 1);
@@ -765,7 +784,7 @@ mod tests {
         // This is a real SPS from here: https://kodi.wiki/view/Samples
         let data = b"\x42\x01\x01\x22\x20\x00\x00\x03\x00\x90\x00\x00\x03\x00\x00\x03\x00\x99\xA0\x01\xE0\x20\x02\x1C\x4D\x8D\x35\x92\x4F\x84\x14\x70\xF1\xC0\x90\x3B\x0E\x18\x36\x1A\x08\x42\xF0\x81\x21\x00\x88\x40\x10\x06\xE1\xA3\x06\xC3\x41\x08\x5C\xA0\xA0\x21\x04\x41\x70\xB0\x2A\x0A\xC2\x80\x35\x40\x70\x80\xE0\x07\xD0\x2B\x41\x80\xA8\x20\x0B\x85\x81\x50\x56\x14\x01\xAA\x03\x84\x07\x00\x3E\x81\x58\xA1\x0D\x35\xE9\xE8\x60\xD7\x43\x03\x41\xB1\xB8\xC0\xD0\x70\x3A\x1B\x1B\x18\x1A\x0E\x43\x21\x30\xC8\x60\x24\x18\x10\x1F\x1F\x1C\x1E\x30\x74\x26\x12\x0E\x0C\x04\x30\x40\x38\x10\x82\x00\x94\x0F\xF0\x86\x9A\xF2\x17\x20\x48\x26\x59\x02\x41\x20\x98\x4F\x09\x04\x83\x81\xD0\x98\x4E\x12\x09\x07\x21\x90\x98\x5C\x2C\x12\x0C\x08\x0F\x8F\x8E\x0F\x18\x3A\x13\x09\x07\x06\x02\x18\x20\x1C\x08\x41\x00\x4A\x07\xF2\x86\x89\x4D\x08\x2C\x83\x8E\x52\x18\x17\x02\xF2\xC8\x0B\x80\xDC\x06\xB0\x5F\x82\xE0\x35\x03\xA0\x66\x06\xB0\x63\x06\x00\x6A\x06\x40\xE0\x0B\x20\x73\x06\x60\xC8\x0E\x40\x58\x03\x90\x0A\xB0\x77\x07\x40\x2A\x81\xC7\xFF\xC1\x24\x34\x49\x8E\x61\x82\x62\x0C\x72\x90\xC0\xB8\x17\x96\x40\x5C\x06\xE0\x35\x82\xFC\x17\x01\xA8\x1D\x03\x30\x35\x83\x18\x30\x03\x50\x32\x07\x00\x59\x03\x98\x33\x06\x40\x72\x02\xC0\x1C\x80\x55\x83\xB8\x3A\x01\x54\x0E\x3F\xFE\x09\x0A\x10\xE9\xAF\x4F\x43\x06\xBA\x18\x1A\x0D\x8D\xC6\x06\x83\x81\xD0\xD8\xD8\xC0\xD0\x72\x19\x09\x86\x43\x01\x20\xC0\x80\xF8\xF8\xE0\xF1\x83\xA1\x30\x90\x70\x60\x21\x82\x01\xC0\x84\x10\x04\xA0\x7F\x84\x3A\x6B\xC8\x5C\x81\x20\x99\x64\x09\x04\x82\x61\x3C\x24\x12\x0E\x07\x42\x61\x38\x48\x24\x1C\x86\x42\x61\x70\xB0\x48\x30\x20\x3E\x3E\x38\x3C\x60\xE8\x4C\x24\x1C\x18\x08\x60\x80\x70\x21\x04\x01\x28\x1F\xCA\x1A\x92\x9A\x10\x59\x07\x1C\xA4\x30\x2E\x05\xE5\x90\x17\x01\xB8\x0D\x60\xBF\x05\xC0\x6A\x07\x40\xCC\x0D\x60\xC6\x0C\x00\xD4\x0C\x81\xC0\x16\x40\xE6\x0C\xC1\x90\x1C\x80\xB0\x07\x20\x15\x60\xEE\x0E\x80\x55\x03\x8F\xFF\x82\x48\x6A\x49\x8E\x61\x82\x62\x0C\x72\x90\xC0\xB8\x17\x96\x40\x5C\x06\xE0\x35\x82\xFC\x17\x01\xA8\x1D\x03\x30\x35\x83\x18\x30\x03\x50\x32\x07\x00\x59\x03\x98\x33\x06\x40\x72\x02\xC0\x1C\x80\x55\x83\xB8\x3A\x01\x54\x0E\x3F\xFE\x09\x0A\x10\xE9\xAF\x4F\x43\x06\xBA\x18\x1A\x0D\x8D\xC6\x06\x83\x81\xD0\xD8\xD8\xC0\xD0\x72\x19\x09\x86\x43\x01\x20\xC0\x80\xF8\xF8\xE0\xF1\x83\xA1\x30\x90\x70\x60\x21\x82\x01\xC0\x84\x10\x04\xA0\x7F\x86\xA4\x98\xE6\x18\x26\x20\xC7\x29\x0C\x0B\x81\x79\x64\x05\xC0\x6E\x03\x58\x2F\xC1\x70\x1A\x81\xD0\x33\x03\x58\x31\x83\x00\x35\x03\x20\x70\x05\x90\x39\x83\x30\x64\x07\x20\x2C\x01\xC8\x05\x58\x3B\x83\xA0\x15\x40\xE3\xFF\xE0\x91\x11\x5C\x96\xA5\xDE\x02\xD4\x24\x40\x26\xD9\x40\x00\x07\xD2\x00\x01\xD4\xC0\x3E\x46\x81\x8D\xC0\x00\x26\x25\xA0\x00\x13\x12\xD0\x00\x04\xC4\xB4\x00\x02\x62\x5A\x8B\x84\x02\x08\xA2\x00\x01\x00\x08\x44\x01\xC1\x72\x43\x8D\x62\x24\x00\x00\x00\x14";
 
-        let sps = Sps::parse_with_emulation_prevention(io::Cursor::new(data)).unwrap();
+        let sps = SpsNALUnit::parse(io::Cursor::new(data)).unwrap().rbsp;
         assert_eq!(sps.cropped_width(), 3840);
         assert_eq!(sps.cropped_height(), 2160);
         assert_eq!(sps.chroma_array_type(), 1);
@@ -802,7 +821,7 @@ mod tests {
         // This is a real SPS from here: https://lf-tk-sg.ibytedtos.com/obj/tcs-client-sg/resources/video_demo_hevc.html#main-bt709-sample-5
         let data = b"\x42\x01\x01\x01\x60\x00\x00\x03\x00\x90\x00\x00\x03\x00\x00\x03\x00\xB4\xA0\x00\xF0\x08\x00\x43\x85\x96\x56\x69\x24\xC2\xB0\x16\x80\x80\x00\x00\x03\x00\x80\x00\x00\x05\x04\x22\x00\x01";
 
-        let sps = Sps::parse_with_emulation_prevention(io::Cursor::new(data)).unwrap();
+        let sps = SpsNALUnit::parse(io::Cursor::new(data)).unwrap().rbsp;
         assert_eq!(sps.cropped_width(), 7680);
         assert_eq!(sps.cropped_height(), 4320);
         assert_eq!(sps.chroma_array_type(), 1);
@@ -839,7 +858,7 @@ mod tests {
         // This is a real SPS from here: https://lf-tk-sg.ibytedtos.com/obj/tcs-client-sg/resources/video_demo_hevc.html#msp-bt709-sample-1
         let data = b"\x42\x01\x01\x03\x70\x00\x00\x03\x00\x00\x03\x00\x00\x03\x00\x00\x03\x00\x78\xA0\x03\xC0\x80\x10\xE7\xF9\x7E\x49\x1B\x65\xB2\x22\x00\x01\x00\x07\x44\x01\xC1\x90\x95\x81\x12\x00\x00\x00\x14";
 
-        let sps = Sps::parse_with_emulation_prevention(io::Cursor::new(data)).unwrap();
+        let sps = SpsNALUnit::parse(io::Cursor::new(data)).unwrap().rbsp;
         assert_eq!(sps.cropped_width(), 1920);
         assert_eq!(sps.cropped_height(), 1080);
         assert_eq!(sps.chroma_array_type(), 1);
@@ -876,7 +895,7 @@ mod tests {
         // This is a real SPS from here: https://lf-tk-sg.ibytedtos.com/obj/tcs-client-sg/resources/video_demo_hevc.html#rext-bt709-sample-1
         let data = b"\x42\x01\x01\x24\x08\x00\x00\x03\x00\x9D\x08\x00\x00\x03\x00\x00\x99\xB0\x01\xE0\x20\x02\x1C\x4D\x94\xD6\xED\xBE\x41\x12\x64\xEB\x25\x11\x44\x1A\x6C\x9D\x64\xA2\x29\x09\x26\xBA\xF5\xFF\xEB\xFA\xFD\x7F\xEB\xF5\x44\x51\x04\x93\x5D\x7A\xFF\xF5\xFD\x7E\xBF\xF5\xFA\xC8\xA4\x92\x4D\x75\xEB\xFF\xD7\xF5\xFA\xFF\xD7\xEA\x88\xA2\x24\x93\x5D\x7A\xFF\xF5\xFD\x7E\xBF\xF5\xFA\xC8\x94\x08\x53\x49\x29\x24\x89\x55\x12\xA5\x2A\x94\xC1\x35\x01\x01\x01\x03\xB8\x40\x20\x80\xA2\x00\x01\x00\x07\x44\x01\xC0\x72\xB0\x3C\x90\x00\x00\x00\x13\x63\x6F\x6C\x72\x6E\x63\x6C\x78\x00\x01\x00\x01\x00\x01\x00\x00\x00\x00\x18";
 
-        let sps = Sps::parse_with_emulation_prevention(io::Cursor::new(data)).unwrap();
+        let sps = SpsNALUnit::parse(io::Cursor::new(data)).unwrap().rbsp;
         assert_eq!(sps.cropped_width(), 3840);
         assert_eq!(sps.cropped_height(), 2160);
         assert_eq!(sps.chroma_array_type(), 2);
@@ -912,7 +931,7 @@ mod tests {
     fn test_forbidden_zero_bit() {
         // 0x80 = 1000 0000: forbidden_zero_bit (first bit) is 1.
         let data = [0x80];
-        let err = Sps::parse_with_emulation_prevention(io::Cursor::new(data)).unwrap_err();
+        let err = SpsNALUnit::parse(io::Cursor::new(data)).unwrap_err();
         assert_eq!(err.kind(), io::ErrorKind::InvalidData);
         assert_eq!(err.to_string(), "forbidden_zero_bit is not zero");
     }
@@ -925,7 +944,7 @@ mod tests {
         // nuh_temporal_id_plus1 (001) = 1
         #[allow(clippy::unusual_byte_groupings)]
         let data = [0b0_100000_0, 0b00000_001];
-        let err = Sps::parse_with_emulation_prevention(io::Cursor::new(data)).unwrap_err();
+        let err = SpsNALUnit::parse(io::Cursor::new(data)).unwrap_err();
         assert_eq!(err.kind(), io::ErrorKind::InvalidData);
         assert_eq!(err.to_string(), "nal_unit_type is not SPS_NUT");
     }

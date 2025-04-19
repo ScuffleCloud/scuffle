@@ -26,7 +26,10 @@ pub struct NALUnitHeader {
 }
 
 impl NALUnitHeader {
-    pub fn parse<R: io::Read>(bit_reader: &mut BitReader<R>) -> io::Result<Self> {
+    pub fn parse(reader: impl io::Read) -> io::Result<Self> {
+        // The header is exactly 2 bytes
+        let mut bit_reader = BitReader::new(reader);
+
         let forbidden_zero_bit = bit_reader.read_bit()?;
         if forbidden_zero_bit {
             return Err(io::Error::new(io::ErrorKind::InvalidData, "forbidden_zero_bit is not zero"));

@@ -275,7 +275,9 @@ mod tests {
 
     use bytes::Bytes;
 
-    use crate::{ConstantFrameRate, HEVCDecoderConfigurationRecord, NALUnitType, NumTemporalLayers, ParallelismType, Sps};
+    use crate::{
+        ConstantFrameRate, HEVCDecoderConfigurationRecord, NALUnitType, NumTemporalLayers, ParallelismType, SpsNALUnit,
+    };
 
     #[test]
     fn test_config_demux() {
@@ -311,7 +313,7 @@ mod tests {
         assert!(!sps.array_completeness);
         assert_eq!(sps.nal_unit_type, NALUnitType::SpsNut);
         assert_eq!(sps.nalus.len(), 1);
-        let sps = Sps::parse_with_emulation_prevention(io::Cursor::new(sps.nalus[0].clone())).unwrap();
+        let sps = SpsNALUnit::parse(io::Cursor::new(sps.nalus[0].clone())).unwrap();
         insta::assert_debug_snapshot!(sps);
 
         let pps = &config.arrays[2];

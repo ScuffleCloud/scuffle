@@ -2,7 +2,7 @@ use std::io;
 
 use bytes::Bytes;
 use scuffle_flv::video::header::VideoFrameType;
-use scuffle_h265::{HEVCDecoderConfigurationRecord, Sps};
+use scuffle_h265::{HEVCDecoderConfigurationRecord, SpsRbsp};
 use scuffle_mp4::DynBox;
 use scuffle_mp4::types::colr::{ColorType, Colr};
 use scuffle_mp4::types::hev1::Hev1;
@@ -12,7 +12,7 @@ use scuffle_mp4::types::trun::{TrunSample, TrunSampleFlag};
 
 use crate::TransmuxError;
 
-pub(crate) fn stsd_entry(config: HEVCDecoderConfigurationRecord) -> Result<(DynBox, Sps), TransmuxError> {
+pub(crate) fn stsd_entry(config: HEVCDecoderConfigurationRecord) -> Result<(DynBox, SpsRbsp), TransmuxError> {
     let Some(sps) = config
         .arrays
         .iter()
@@ -22,7 +22,7 @@ pub(crate) fn stsd_entry(config: HEVCDecoderConfigurationRecord) -> Result<(DynB
         return Err(TransmuxError::InvalidHEVCDecoderConfigurationRecord);
     };
 
-    let sps = scuffle_h265::Sps::parse_with_emulation_prevention(io::Cursor::new(sps.clone()))?;
+    let sps = scuffle_h265::SpsNALUnit::parse(io::Cursor::new(sps.clone()))?.rbsp;
 
     let colr = sps.vui_parameters.as_ref().map(|v| &v.video_signal_type).map(|color_config| {
         Colr::new(ColorType::Nclx {

@@ -2910,6 +2910,8 @@ version = "0.1.1"
 dependencies = [
  "byteorder",
  "bytes",
+ "insta",
+ "nutype-enum",
  "scuffle-bytes-util",
  "scuffle-expgolomb",
  "scuffle-workspace-hack",

@@ -508,12 +508,12 @@ impl<'a> Transmuxer<'a> {
                 };
 
                 let (entry, sps) = codecs::hevc::stsd_entry(config)?;
-                if sps.frame_rate != 0.0 {
-                    video_fps = sps.frame_rate;
+                if let Some(info) = sps.vui_parameters.as_ref().and_then(|p| p.vui_timing_info.as_ref()) {
+                    video_fps = info.time_scale.get() as f64 / info.num_units_in_tick.get() as f64;
                 }
 
-                video_width = sps.width as u32;
-                video_height = sps.height as u32;
+                video_width = sps.cropped_width() as u32;
+                video_height = sps.cropped_height() as u32;
 
                 entry
             }

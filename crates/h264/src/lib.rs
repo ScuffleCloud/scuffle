@@ -105,11 +105,9 @@
 
 mod config;
 mod enums;
-mod io;
 mod sps;
 
 pub use enums::*;
-pub use io::EmulationPreventionIo;
 pub use sps::*;
 
 pub use self::config::{AVCDecoderConfigurationRecord, AvccExtendedConfig};

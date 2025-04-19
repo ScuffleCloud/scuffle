@@ -20,11 +20,11 @@ mod timing_info;
 use std::io;
 
 use byteorder::ReadBytesExt;
-use scuffle_bytes_util::{BitReader, BitWriter};
+use scuffle_bytes_util::{BitReader, BitWriter, EmulationPreventionIo};
 use scuffle_expgolomb::{BitReaderExpGolombExt, BitWriterExpGolombExt, size_of_exp_golomb};
 
 pub use self::timing_info::TimingInfo;
-use crate::{EmulationPreventionIo, NALUnitType};
+use crate::NALUnitType;
 
 /// The Sequence Parameter Set.
 /// ISO/IEC-14496-10-2022 - 7.3.2

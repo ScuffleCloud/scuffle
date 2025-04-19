@@ -625,9 +625,7 @@ mod tests {
             };
 
             // We should be able to decode the SPS NAL unit
-            let sps = scuffle_h265::SpsNALUnit::parse(io::Cursor::new(sps.clone()))
-                .expect("expected sps")
-                .rbsp;
+            let sps = scuffle_h265::SpsNALUnit::parse(io::Cursor::new(sps.clone())).expect("expected sps");
 
             insta::assert_debug_snapshot!(sps);
         }

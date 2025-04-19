@@ -562,7 +562,7 @@ mod tests {
     use scuffle_bytes_util::{BitReader, BitWriter};
     use scuffle_expgolomb::BitWriterExpGolombExt;
 
-    use crate::SpsRbsp::vui_parameters::{BitStreamRestriction, DefaultDisplayWindow};
+    use crate::sps::vui_parameters::{BitStreamRestriction, DefaultDisplayWindow};
     use crate::{AspectRatioIdc, ConformanceWindow, VideoFormat, VuiParameters};
 
     #[test]

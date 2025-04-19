@@ -10,7 +10,7 @@ authors = ["@lennartkloock"]
 
 [[scuffle-h264]]
 category = "refactor"
-description = "remove nal emulation prevention io"
+description = "move nal emulation prevention io to scuffle-bytes-util"
 breaking = true
 authors = ["@lennartkloock"]
 

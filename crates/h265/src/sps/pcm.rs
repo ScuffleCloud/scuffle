@@ -5,7 +5,7 @@ use scuffle_expgolomb::BitReaderExpGolombExt;
 
 use crate::range_check::range_check;
 
-/// Directly part of [SPS](crate::sps::Sps).
+/// Directly part of [SPS RBSP](crate::SpsRbsp).
 #[derive(Debug, Clone, PartialEq)]
 pub struct Pcm {
     /// Defines [`PcmBitDepth_Y`](Pcm::pcm_bit_depth_y).
@@ -73,7 +73,7 @@ impl Pcm {
 
     /// Specifies the number of bits used to represent each of PCM sample values of the luma component.
     ///
-    /// The value of `PcmBitDepthY` is less than or equal to the value of [`BitDepthY`](crate::Sps::bit_depth_y).
+    /// The value of `PcmBitDepthY` is less than or equal to the value of [`BitDepthY`](crate::SpsRbsp::bit_depth_y).
     ///
     /// `PcmBitDepthY = pcm_sample_bit_depth_luma_minus1 + 1` (7-25)
     ///
@@ -84,8 +84,8 @@ impl Pcm {
 
     /// Specifies the number of bits used to represent each of PCM sample values of the chroma components.
     ///
-    /// The value of `PcmBitDepthC` is less than or equal to the value of [`BitDepthC`](crate::Sps::bit_depth_c).
-    /// When [`ChromaArrayType`](crate::Sps::chroma_array_type) is equal to 0, decoders shall ignore its value.
+    /// The value of `PcmBitDepthC` is less than or equal to the value of [`BitDepthC`](crate::SpsRbsp::bit_depth_c).
+    /// When [`ChromaArrayType`](crate::SpsRbsp::chroma_array_type) is equal to 0, decoders shall ignore its value.
     ///
     /// `PcmBitDepthC = pcm_sample_bit_depth_chroma_minus1 + 1` (7-26)
     ///
@@ -95,7 +95,7 @@ impl Pcm {
     }
 
     /// The value is range
-    /// \[[`Min(MinCbLog2SizeY, 5)`](crate::Sps::min_cb_log2_size_y), [`Min(CtbLog2SizeY, 5)`](crate::Sps::ctb_log2_size_y)\].
+    /// \[[`Min(MinCbLog2SizeY, 5)`](crate::SpsRbsp::min_cb_log2_size_y), [`Min(CtbLog2SizeY, 5)`](crate::SpsRbsp::ctb_log2_size_y)\].
     ///
     /// `Log2MinIpcmCbSizeY = log2_min_pcm_luma_coding_block_size_minus3 + 3`
     ///
@@ -104,7 +104,7 @@ impl Pcm {
         self.log2_min_pcm_luma_coding_block_size_minus3 + 3
     }
 
-    /// The value is less than or equal to [`Min(CtbLog2SizeY, 5)`](crate::Sps::ctb_log2_size_y).
+    /// The value is less than or equal to [`Min(CtbLog2SizeY, 5)`](crate::SpsRbsp::ctb_log2_size_y).
     ///
     /// `Log2MaxIpcmCbSizeY = log2_diff_max_min_pcm_luma_coding_block_size + Log2MinIpcmCbSizeY`
     ///

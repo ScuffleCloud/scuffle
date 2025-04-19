@@ -43,7 +43,7 @@ pub struct Sps3dExtensionD0 {
     /// with `DepthFlag` equal to 0.
     ///
     /// The value is in range
-    /// \[[`MinCbLog2SizeY`](crate::Sps::min_cb_log2_size_y) - 3, [`CtbLog2SizeY`](crate::Sps::ctb_log2_size_y) - 3\].
+    /// \[[`MinCbLog2SizeY`](crate::SpsRbsp::min_cb_log2_size_y) - 3, [`CtbLog2SizeY`](crate::SpsRbsp::ctb_log2_size_y) - 3\].
     pub log2_ivmc_sub_pb_size_minus3: u64,
     /// Equal to `true` specifies that the `iv_res_pred_weight_idx` syntax element may
     /// be present in coding units of layers with `DepthFlag` equal to 0.
@@ -103,7 +103,7 @@ pub struct Sps3dExtensionD1 {
     /// equal to 1.
     ///
     /// The value is in range
-    /// \[[`MinCbLog2SizeY`](crate::Sps::min_cb_log2_size_y) - 3, [`CtbLog2SizeY`](crate::Sps::ctb_log2_size_y) - 3\].
+    /// \[[`MinCbLog2SizeY`](crate::SpsRbsp::min_cb_log2_size_y) - 3, [`CtbLog2SizeY`](crate::SpsRbsp::ctb_log2_size_y) - 3\].
     pub log2_texmc_sub_pb_size_minus3: u64,
     /// Equal to `true` specifies that the intra prediction mode `INTRA_CONTOUR`
     /// using depth intra contour prediction may be used in the decoding process of layers with `DepthFlag` equal

@@ -6,16 +6,16 @@ use scuffle_expgolomb::BitReaderExpGolombExt;
 /// Specifies the samples of the pictures in the CVS that are output from the decoding process, in terms of a rectangular
 /// region specified in picture coordinates for output.
 ///
-/// Directly part of [SPS](crate::sps::Sps).
+/// Directly part of [SPS RBSP](crate::SpsRbsp).
 #[derive(Debug, Clone, PartialEq, Default)]
 pub struct ConformanceWindow {
-    /// The the left crop offset which is used to compute the [`croppedWidth`](crate::Sps::cropped_width).
+    /// The the left crop offset which is used to compute the [`croppedWidth`](crate::SpsRbsp::cropped_width).
     pub conf_win_left_offset: u64,
-    /// The the right crop offset which is used to compute the [`croppedWidth`](crate::Sps::cropped_width).
+    /// The the right crop offset which is used to compute the [`croppedWidth`](crate::SpsRbsp::cropped_width).
     pub conf_win_right_offset: u64,
-    /// The top crop offset which is used to compute the [`croppedHeight`](crate::Sps::cropped_height).
+    /// The top crop offset which is used to compute the [`croppedHeight`](crate::SpsRbsp::cropped_height).
     pub conf_win_top_offset: u64,
-    /// The bottom crop offset which is used to compute the [`croppedHeight`](crate::Sps::cropped_height).
+    /// The bottom crop offset which is used to compute the [`croppedHeight`](crate::SpsRbsp::cropped_height).
     pub conf_win_bottom_offset: u64,
 }
 

@@ -7,7 +7,7 @@ use crate::range_check::range_check;
 
 /// Info for each sub-layer in the SPS.
 ///
-/// Directly part of [SPS](crate::sps::Sps).
+/// Directly part of [SPS RBSP](crate::SpsRbsp).
 #[derive(Debug, Clone, PartialEq)]
 pub struct SubLayerOrderingInfo {
     /// `sps_max_dec_pic_buffering_minus1[i]` plus 1 specifies the maximum required size of the decoded

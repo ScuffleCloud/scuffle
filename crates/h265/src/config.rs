@@ -29,11 +29,11 @@ pub struct HEVCDecoderConfigurationRecord {
     pub min_spatial_segmentation_idc: u16,
     /// See [`ParallelismType`] for more info.
     pub parallelism_type: ParallelismType,
-    /// Matches the [`chroma_format_idc`](crate::Sps::chroma_format_idc) field as defined in ISO/IEC 23008-2.
+    /// Matches the [`chroma_format_idc`](crate::SpsRbsp::chroma_format_idc) field as defined in ISO/IEC 23008-2.
     pub chroma_format_idc: u8,
-    /// Matches the [`bit_depth_luma_minus8`](crate::Sps::bit_depth_luma_minus8) field as defined in ISO/IEC 23008-2.
+    /// Matches the [`bit_depth_luma_minus8`](crate::SpsRbsp::bit_depth_luma_minus8) field as defined in ISO/IEC 23008-2.
     pub bit_depth_luma_minus8: u8,
-    /// Matches the [`bit_depth_chroma_minus8`](crate::Sps::bit_depth_chroma_minus8) field as defined in ISO/IEC 23008-2.
+    /// Matches the [`bit_depth_chroma_minus8`](crate::SpsRbsp::bit_depth_chroma_minus8) field as defined in ISO/IEC 23008-2.
     pub bit_depth_chroma_minus8: u8,
     /// Gives the average frame rate in units of frames/(256 seconds), for the stream to
     /// which this configuration record applies.
@@ -46,7 +46,7 @@ pub struct HEVCDecoderConfigurationRecord {
     pub num_temporal_layers: NumTemporalLayers,
     /// Equal to `true` indicates that all SPSs that are activated when the stream to which
     /// this configuration record applies is decoded have
-    /// [`sps_temporal_id_nesting_flag`](crate::Sps::sps_temporal_id_nesting_flag) as defined in
+    /// [`sps_temporal_id_nesting_flag`](crate::SpsRbsp::sps_temporal_id_nesting_flag) as defined in
     /// ISO/IEC 23008-2 equal to `true` and temporal sub-layer up-switching to any higher temporal layer
     /// can be performed at any sample.
     ///
@@ -79,7 +79,7 @@ pub struct NaluArray {
     pub nal_unit_type: NALUnitType,
     /// The raw byte stream of NAL units.
     ///
-    /// You might want to use [`Sps::parse_with_emulation_prevention`](crate::Sps::parse_with_emulation_prevention)
+    /// You might want to use [`SpsNALUnit::parse`](crate::SpsNALUnit::parse)
     /// to parse an SPS NAL unit.
     pub nalus: Vec<Bytes>,
 }

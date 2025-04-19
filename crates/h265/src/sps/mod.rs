@@ -48,7 +48,10 @@ pub use vui_parameters::*;
 // SODB: String of data bits
 // This is the actual payload data.
 
-/// Sequence parameter set in a NAL unit.
+/// Sequence parameter set contained in a NAL unit.
+///
+/// This only represents sequence parameter sets that are part of NAL units.
+/// Therefore the NAL unit header is included in this struct as [`SpsNALUnit::nal_unit_header`].
 #[derive(Debug, Clone, PartialEq)]
 pub struct SpsNALUnit {
     /// The NAL unit header.
@@ -73,8 +76,7 @@ impl SpsNALUnit {
 
 /// Sequence parameter set RBSP.
 ///
-/// This only represents sequence parameter sets that are part of NAL units.
-/// Therefore the NAL unit header is included in this struct as [`Sps::nal_unit_header`].
+/// For parsing SPS RBSPs that are part of NAL units, please use [`SpsNALUnit::parse`].
 ///
 /// `seq_parameter_set_rbsp()`
 ///
@@ -107,31 +109,31 @@ pub struct SpsRbsp {
     ///
     /// Equal to `false` specifies that the colour components are not coded separately.
     ///
-    /// Defines [`ChromaArrayType`](Sps::chroma_array_type).
+    /// Defines [`ChromaArrayType`](Self::chroma_array_type).
     pub separate_colour_plane_flag: bool,
     /// Specifies the width of each decoded picture in units of luma samples.
     ///
-    /// This value is never zero and an integer multiple of [`MinCbSizeY`](Sps::min_cb_size_y).
+    /// This value is never zero and an integer multiple of [`MinCbSizeY`](Self::min_cb_size_y).
     pub pic_width_in_luma_samples: NonZero<u64>,
     /// Specifies the height of each decoded picture in units of luma samples.
     ///
-    /// This value is never zero and an integer multiple of [`MinCbSizeY`](Sps::min_cb_size_y).
+    /// This value is never zero and an integer multiple of [`MinCbSizeY`](Self::min_cb_size_y).
     pub pic_height_in_luma_samples: NonZero<u64>,
     /// `conf_win_left_offset`, `conf_win_right_offset`, `conf_win_top_offset`, and `conf_win_bottom_offset`.
     ///
     /// See [`ConformanceWindow`] for details.
     pub conformance_window: ConformanceWindow,
-    /// Specifies the bit depth of the samples of the luma array [`BitDepth_Y`](Sps::bit_depth_y) and
-    /// the value of the luma quantization parameter range offset [`QpBdOffset_Y`](Sps::qp_bd_offset_y).
+    /// Specifies the bit depth of the samples of the luma array [`BitDepth_Y`](Self::bit_depth_y) and
+    /// the value of the luma quantization parameter range offset [`QpBdOffset_Y`](Self::qp_bd_offset_y).
     ///
     /// The value is in range \[0, 8\].
     pub bit_depth_luma_minus8: u8,
-    /// specifies the bit depth of the samples of the chroma arrays [`BitDepth_C`](Sps::bit_depth_c) and
-    /// the value of the chroma quantization parameter range offset [`QpBdOffset_C`](Sps::qp_bd_offset_c)
+    /// specifies the bit depth of the samples of the chroma arrays [`BitDepth_C`](Self::bit_depth_c) and
+    /// the value of the chroma quantization parameter range offset [`QpBdOffset_C`](Self::qp_bd_offset_c)
     ///
     /// The value is in range \[0, 8\].
     pub bit_depth_chroma_minus8: u8,
-    /// Specifies the value of the variable [`MaxPicOrderCntLsb`](Sps::max_pic_order_cnt_lsb) that is used
+    /// Specifies the value of the variable [`MaxPicOrderCntLsb`](Self::max_pic_order_cnt_lsb) that is used
     /// in the decoding process for picture order count.
     ///
     /// The value is in range \[0, 12\].
@@ -142,25 +144,25 @@ pub struct SpsRbsp {
     pub sub_layer_ordering_info: SubLayerOrderingInfo,
     /// This value plus 3 defines the minimum luma coding block size.
     ///
-    /// Defines [`MinCbLog2SizeY`](Sps::min_cb_log2_size_y).
+    /// Defines [`MinCbLog2SizeY`](Self::min_cb_log2_size_y).
     pub log2_min_luma_coding_block_size_minus3: u64,
     /// Specifies the difference between the maximum and minimum luma coding block size.
     pub log2_diff_max_min_luma_coding_block_size: u64,
     /// This value plus 2 specifies the minimum luma transform block size.
     ///
-    /// Defines [`MinTbLog2SizeY`](Sps::min_tb_log2_size_y).
+    /// Defines [`MinTbLog2SizeY`](Self::min_tb_log2_size_y).
     pub log2_min_luma_transform_block_size_minus2: u64,
     /// Specifies the difference between the maximum and minimum luma transform block size.
     ///
-    /// Defines [`MaxTbLog2SizeY`](Sps::max_tb_log2_size_y).
+    /// Defines [`MaxTbLog2SizeY`](Self::max_tb_log2_size_y).
     pub log2_diff_max_min_luma_transform_block_size: u64,
     /// Specifies the maximum hierarchy depth for transform units of coding units coded in inter prediction mode.
     ///
-    /// This value is in range \[0, [`CtbLog2SizeY`](Sps::ctb_log2_size_y) - [`MinTbLog2SizeY`](Sps::min_tb_log2_size_y)\].
+    /// This value is in range \[0, [`CtbLog2SizeY`](Self::ctb_log2_size_y) - [`MinTbLog2SizeY`](Self::min_tb_log2_size_y)\].
     pub max_transform_hierarchy_depth_inter: u64,
     /// Specifies the maximum hierarchy depth for transform units of coding units coded in intra prediction mode.
     ///
-    /// This value is in range \[0, [`CtbLog2SizeY`](Sps::ctb_log2_size_y) - [`MinTbLog2SizeY`](Sps::min_tb_log2_size_y)\].
+    /// This value is in range \[0, [`CtbLog2SizeY`](Self::ctb_log2_size_y) - [`MinTbLog2SizeY`](Self::min_tb_log2_size_y)\].
     pub max_transform_hierarchy_depth_intra: u64,
     /// The [`ScalingListData`] structure contained in this SPS, if present.
     pub scaling_list_data: Option<ScalingListData>,
@@ -481,8 +483,8 @@ impl SpsRbsp {
                 * (self.conformance_window.conf_win_top_offset + self.conformance_window.conf_win_bottom_offset)
     }
 
-    /// - If [`separate_colour_plane_flag`](Sps::separate_colour_plane_flag) is equal to `false`, `ChromaArrayType` is set equal to [`chroma_format_idc`](Sps::chroma_format_idc).
-    /// - Otherwise ([`separate_colour_plane_flag`](Sps::separate_colour_plane_flag) is equal to `true`), `ChromaArrayType` is set equal to 0.
+    /// - If [`separate_colour_plane_flag`](Self::separate_colour_plane_flag) is equal to `false`, `ChromaArrayType` is set equal to [`chroma_format_idc`](Self::chroma_format_idc).
+    /// - Otherwise ([`separate_colour_plane_flag`](Self::separate_colour_plane_flag) is equal to `true`), `ChromaArrayType` is set equal to 0.
     ///
     /// ISO/IEC 23008-2 - 7.4.3.2.1
     pub fn chroma_array_type(&self) -> u8 {
@@ -644,7 +646,7 @@ impl SpsRbsp {
         self.pic_height_in_luma_samples.get() / self.sub_height_c() as u64
     }
 
-    /// - If `chroma_format_idc` is equal to 0 (monochrome) or [`separate_colour_plane_flag`](Sps::separate_colour_plane_flag) is equal to `true`,
+    /// - If `chroma_format_idc` is equal to 0 (monochrome) or [`separate_colour_plane_flag`](Self::separate_colour_plane_flag) is equal to `true`,
     ///   `CtbWidthC` is equal to 0.
     /// - Otherwise, `CtbWidthC` is derived as follows: `CtbWidthC = CtbSizeY / SubWidthC` (7-23)
     ///
@@ -657,7 +659,7 @@ impl SpsRbsp {
         }
     }
 
-    /// - If `chroma_format_idc` is equal to 0 (monochrome) or [`separate_colour_plane_flag`](Sps::separate_colour_plane_flag) is equal to `true`,
+    /// - If `chroma_format_idc` is equal to 0 (monochrome) or [`separate_colour_plane_flag`](Self::separate_colour_plane_flag) is equal to `true`,
     ///   `CtbHeightC` is equal to 0.
     /// - Otherwise, `CtbHeightC` is derived as follows: `CtbHeightC = CtbSizeY / SubHeightC` (7-24)
     ///
@@ -670,10 +672,10 @@ impl SpsRbsp {
         }
     }
 
-    /// `MinTbLog2SizeY` is set equal to [`log2_min_luma_transform_block_size_minus2 + 2`](Sps::log2_min_luma_transform_block_size_minus2).
+    /// `MinTbLog2SizeY` is set equal to [`log2_min_luma_transform_block_size_minus2 + 2`](Self::log2_min_luma_transform_block_size_minus2).
     ///
     /// The CVS shall not contain data that result in `MinTbLog2SizeY`
-    /// greater than or equal to [`MinCbLog2SizeY`](Sps::min_cb_log2_size_y).
+    /// greater than or equal to [`MinCbLog2SizeY`](Self::min_cb_log2_size_y).
     ///
     /// ISO/IEC 23008-2 - 7.4.3.2.1
     pub fn min_tb_log2_size_y(&self) -> u64 {
@@ -682,7 +684,7 @@ impl SpsRbsp {
 
     /// `MaxTbLog2SizeY = log2_min_luma_transform_block_size_minus2 + 2 + log2_diff_max_min_luma_transform_block_size`
     ///
-    /// The CVS shall not contain data that result in `MaxTbLog2SizeY` greater than [`Min(CtbLog2SizeY, 5)`](Sps::ctb_log2_size_y).
+    /// The CVS shall not contain data that result in `MaxTbLog2SizeY` greater than [`Min(CtbLog2SizeY, 5)`](Self::ctb_log2_size_y).
     ///
     /// ISO/IEC 23008-2 - 7.4.3.2.1
     pub fn max_tb_log2_size_y(&self) -> u64 {

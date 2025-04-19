@@ -130,11 +130,11 @@ pub struct SpsSccExtensionPaletteMode {
     /// palette entry in the SPS that is used to initialize the array PredictorPaletteEntries.
     ///
     /// The value of `sps_palette_predictor_initializer[0][i]` is in range \[0, `(1 << BitDepthY) − 1`\].
-    /// See [`BitDepthY`](crate::Sps::bit_depth_y).
+    /// See [`BitDepthY`](crate::SpsRbsp::bit_depth_y).
     ///
     /// The values of `sps_palette_predictor_initializer[1][i]` and `sps_palette_predictor_initializer[2][i]`
     /// is in range \[0, `(1 << BitDepthC) − 1`\].
-    /// See [`BitDepthC`](crate::Sps::bit_depth_c).
+    /// See [`BitDepthC`](crate::SpsRbsp::bit_depth_c).
     pub sps_palette_predictor_initializers: Option<Vec<Vec<u64>>>,
 }
 

@@ -5,7 +5,7 @@ use scuffle_expgolomb::BitReaderExpGolombExt;
 
 use crate::range_check::range_check;
 
-/// Directly part of [SPS](crate::sps::Sps).
+/// Directly part of [SPS RBSP](crate::SpsRbsp).
 #[derive(Debug, Clone, PartialEq)]
 pub struct LongTermRefPics {
     /// Specifies the picture order count modulo `MaxPicOrderCntLsb` of the `i`-th

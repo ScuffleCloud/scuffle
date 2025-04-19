@@ -47,7 +47,7 @@ pub struct VuiParameters {
     /// See [`ChromaLocInfo`] for details.
     pub chroma_loc_info: Option<ChromaLocInfo>,
     /// Equal to `true` indicates that the value of all decoded chroma samples is
-    /// equal to [`1 << (BitDepthC − 1)`](crate::Sps::bit_depth_c).
+    /// equal to [`1 << (BitDepthC − 1)`](crate::SpsRbsp::bit_depth_c).
     ///
     /// Equal to `false` provides no indication of decoded chroma sample values.
     pub neutral_chroma_indication_flag: bool,
@@ -372,16 +372,16 @@ impl Default for VideoSignalType {
 /// Directly part of [`VuiParameters`].
 ///
 /// Specifies the location of chroma samples as follows:
-/// - If [`chroma_format_idc`](crate::Sps::chroma_format_idc) is equal to 1 (4:2:0 chroma format),
+/// - If [`chroma_format_idc`](crate::SpsRbsp::chroma_format_idc) is equal to 1 (4:2:0 chroma format),
 ///   [`chroma_sample_loc_type_top_field`](ChromaLocInfo::top_field) and
 ///   [`chroma_sample_loc_type_bottom_field`](ChromaLocInfo::bottom_field) specify the location of chroma samples
 ///   for the top field and the bottom field, respectively, as shown in ISO/IEC 23008-2 - Figure E.1.
-/// - Otherwise ([`chroma_format_idc`](crate::Sps::chroma_format_idc) is not equal to 1), the values of the syntax elements
+/// - Otherwise ([`chroma_format_idc`](crate::SpsRbsp::chroma_format_idc) is not equal to 1), the values of the syntax elements
 ///   [`chroma_sample_loc_type_top_field`](ChromaLocInfo::top_field) and
 ///   [`chroma_sample_loc_type_bottom_field`](ChromaLocInfo::bottom_field) shall be ignored.
-///   When [`chroma_format_idc`](crate::Sps::chroma_format_idc) is equal to 2 (4:2:2 chroma format) or 3 (4:4:4 chroma format),
+///   When [`chroma_format_idc`](crate::SpsRbsp::chroma_format_idc) is equal to 2 (4:2:2 chroma format) or 3 (4:4:4 chroma format),
 ///   the location of chroma samples is specified in ISO/IEC 23008-2 - 6.2.
-///   When [`chroma_format_idc`](crate::Sps::chroma_format_idc) is equal to 0, there is no chroma sample array.
+///   When [`chroma_format_idc`](crate::SpsRbsp::chroma_format_idc) is equal to 0, there is no chroma sample array.
 #[derive(Debug, Clone, PartialEq)]
 pub struct ChromaLocInfo {
     /// `chroma_sample_loc_type_top_field`
@@ -562,7 +562,7 @@ mod tests {
     use scuffle_bytes_util::{BitReader, BitWriter};
     use scuffle_expgolomb::BitWriterExpGolombExt;
 
-    use crate::sps::vui_parameters::{BitStreamRestriction, DefaultDisplayWindow};
+    use crate::SpsRbsp::vui_parameters::{BitStreamRestriction, DefaultDisplayWindow};
     use crate::{AspectRatioIdc, ConformanceWindow, VideoFormat, VuiParameters};
 
     #[test]

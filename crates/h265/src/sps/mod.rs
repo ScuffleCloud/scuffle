@@ -1,13 +1,13 @@
 use std::io;
 use std::num::NonZero;
 
-use byteorder::ReadBytesExt;
 use scuffle_bytes_util::{BitReader, EmulationPreventionIo};
 use scuffle_expgolomb::BitReaderExpGolombExt;
 
 use crate::NALUnitType;
 use crate::nal_unit_header::NALUnitHeader;
 use crate::range_check::range_check;
+use crate::rbsp_trailing_bits::rbsp_trailing_bits;
 
 mod conformance_window;
 mod long_term_ref_pics;
@@ -385,7 +385,11 @@ impl SpsRbsp {
             let sps_multilayer_extension_flag = bit_reader.read_bit()?;
             let sps_3d_extension_flag = bit_reader.read_bit()?;
             let sps_scc_extension_flag = bit_reader.read_bit()?;
-            bit_reader.read_bits(4)?; // sps_extension_4bits
+            let sps_extension_4bits = bit_reader.read_bits(4)? as u8;
+
+            if sps_extension_4bits != 0 {
+                return Err(io::Error::new(io::ErrorKind::InvalidData, "sps_extension_4bits must be 0"));
+            }
 
             if sps_range_extension_flag {
                 range_extension = Some(SpsRangeExtension::parse(&mut bit_reader)?);
@@ -408,17 +412,10 @@ impl SpsRbsp {
                 )?);
             }
 
-            // Ignore sps_extension_data_flag as specified by 7.4.3.2.1, page 101
+            // No sps_extension_data_flag is present because sps_extension_4bits is 0.
         }
 
-        bit_reader.align()?;
-
-        // Skip to the end or rbsp_trailing_bits()
-        while match bit_reader.read_u8() {
-            Ok(byte) => byte & 0b0000_0001 == 0,
-            Err(e) if e.kind() == io::ErrorKind::UnexpectedEof => false,
-            Err(e) => return Err(e),
-        } {}
+        rbsp_trailing_bits(&mut bit_reader)?;
 
         Ok(SpsRbsp {
             sps_video_parameter_set_id,

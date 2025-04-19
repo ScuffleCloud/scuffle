@@ -1,7 +1,7 @@
 use nutype_enum::nutype_enum;
 
 nutype_enum! {
-    /// Represents all possbile values of the `constant_frame_rate` field in the
+    /// Represents all possible values of the `constant_frame_rate` field in the
     /// [`HEVCDecoderConfigurationRecord`](crate::config::HEVCDecoderConfigurationRecord).
     ///
     /// ISO/IEC 14496-15 - 8.3.2.1.3

@@ -1,4 +1,4 @@
-use tinc::__private::de::{TrackedStructDeserializer, TrackerFor, TrackerSharedState, deserialize};
+use tinc::__private::{TrackedStructDeserializer, TrackerFor, TrackerSharedState, deserialize_tracker_target};
 
 #[test]
 fn test_simple_single_pass() {
@@ -22,14 +22,14 @@ fn test_simple_single_pass() {
     );
 
     state.in_scope(|| {
-        deserialize(&mut de, &mut message, &mut tracker).unwrap();
+        deserialize_tracker_target(&mut de, &mut message, &mut tracker).unwrap();
 
         TrackedStructDeserializer::validate::<serde::de::value::Error>(&message, &mut tracker).unwrap();
     });
 
     insta::assert_debug_snapshot!(state, @r"
     TrackerSharedState {
-        fail_fast: true,
+        fail_fast: false,
         errors: [],
     }
     ");
@@ -91,7 +91,7 @@ fn test_simple_multiple_passes() {
     );
 
     state.in_scope(|| {
-        deserialize(&mut de, &mut message, &mut tracker).unwrap();
+        deserialize_tracker_target(&mut de, &mut message, &mut tracker).unwrap();
     });
 
     insta::assert_debug_snapshot!(message, @r#"
@@ -129,7 +129,7 @@ fn test_simple_multiple_passes() {
     );
 
     state.in_scope(|| {
-        deserialize(&mut de, &mut message, &mut tracker).unwrap();
+        deserialize_tracker_target(&mut de, &mut message, &mut tracker).unwrap();
         TrackedStructDeserializer::validate::<serde::de::value::Error>(&message, &mut tracker).unwrap();
     });
 
@@ -172,7 +172,7 @@ fn test_simple_multiple_passes() {
 
     insta::assert_debug_snapshot!(state, @r"
     TrackerSharedState {
-        fail_fast: true,
+        fail_fast: false,
         errors: [],
     }
     ");
@@ -196,7 +196,7 @@ fn test_simple_missing_fields() {
     );
 
     state.in_scope(|| {
-        deserialize(&mut de, &mut message, &mut tracker).unwrap();
+        deserialize_tracker_target(&mut de, &mut message, &mut tracker).unwrap();
     });
 
     insta::assert_debug_snapshot!(message, @r#"
@@ -227,12 +227,10 @@ fn test_simple_missing_fields() {
     }"#,
     );
 
-    let err = state.in_scope(|| {
-        deserialize(&mut de, &mut message, &mut tracker).unwrap();
-        TrackedStructDeserializer::validate::<serde::de::value::Error>(&message, &mut tracker).unwrap_err()
+    state.in_scope(|| {
+        deserialize_tracker_target(&mut de, &mut message, &mut tracker).unwrap();
+        TrackedStructDeserializer::validate::<serde::de::value::Error>(&message, &mut tracker).unwrap()
     });
-
-    insta::assert_snapshot!(err, @"missing field `name`");
 
     insta::assert_debug_snapshot!(message, @r#"
     SimpleMessage {
@@ -269,7 +267,7 @@ fn test_simple_missing_fields() {
 
     insta::assert_debug_snapshot!(state, @r#"
     TrackerSharedState {
-        fail_fast: true,
+        fail_fast: false,
         errors: [
             TrackedError {
                 kind: MissingField,
@@ -306,7 +304,7 @@ fn test_simple_duplicate_fields() {
     );
 
     state.in_scope(|| {
-        deserialize(&mut de, &mut message, &mut tracker).unwrap();
+        deserialize_tracker_target(&mut de, &mut message, &mut tracker).unwrap();
     });
 
     insta::assert_debug_snapshot!(message, @r#"
@@ -357,7 +355,7 @@ fn test_simple_duplicate_fields() {
     );
 
     state.in_scope(|| {
-        deserialize(&mut de, &mut message, &mut tracker).unwrap();
+        deserialize_tracker_target(&mut de, &mut message, &mut tracker).unwrap();
         TrackedStructDeserializer::validate::<serde::de::value::Error>(&message, &mut tracker).unwrap();
     });
 
@@ -444,7 +442,7 @@ fn test_simple_invalid_type() {
     );
 
     state.in_scope(|| {
-        deserialize(&mut de, &mut message, &mut tracker).unwrap();
+        deserialize_tracker_target(&mut de, &mut message, &mut tracker).unwrap();
         TrackedStructDeserializer::validate::<serde::de::value::Error>(&message, &mut tracker).unwrap();
     });
 
@@ -525,14 +523,14 @@ fn test_simple_renamed_field() {
     );
 
     state.in_scope(|| {
-        deserialize(&mut de, &mut message, &mut tracker).unwrap();
+        deserialize_tracker_target(&mut de, &mut message, &mut tracker).unwrap();
 
         TrackedStructDeserializer::validate::<serde::de::value::Error>(&message, &mut tracker).unwrap();
     });
 
     insta::assert_debug_snapshot!(state, @r"
     TrackerSharedState {
-        fail_fast: true,
+        fail_fast: false,
         errors: [],
     }
     ");

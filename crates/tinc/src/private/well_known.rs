@@ -1,9 +1,139 @@
 use core::fmt;
 use std::collections::{BTreeMap, HashMap};
+use std::marker::PhantomData;
 use std::mem::ManuallyDrop;
 
 use serde::ser::{SerializeMap, SerializeSeq};
 use serde::{Deserialize, Serialize};
+
+use super::{DeserializeContent, DeserializeHelper, Expected, Tracker, TrackerDeserializer, TrackerFor, TrackerValidation};
+
+pub struct WellKnownTracker<T>(PhantomData<T>);
+
+impl<T> std::fmt::Debug for WellKnownTracker<T> {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "WellKnownTracker<{}>", std::any::type_name::<T>())
+    }
+}
+
+impl<T: Expected> Expected for WellKnownTracker<T> {
+    fn expecting(formatter: &mut std::fmt::Formatter) -> std::fmt::Result {
+        T::expecting(formatter)
+    }
+}
+
+impl<T> Default for WellKnownTracker<T> {
+    fn default() -> Self {
+        Self(PhantomData)
+    }
+}
+
+impl<T: Default + Expected> Tracker for WellKnownTracker<T> {
+    type Target = T;
+
+    fn allow_duplicates(&self) -> bool {
+        false
+    }
+}
+
+impl TrackerFor for prost_types::Struct {
+    type Tracker = WellKnownTracker<prost_types::Struct>;
+}
+
+impl Expected for prost_types::Struct {
+    fn expecting(formatter: &mut std::fmt::Formatter) -> std::fmt::Result {
+        write!(formatter, "struct")
+    }
+}
+
+impl TrackerFor for prost_types::ListValue {
+    type Tracker = WellKnownTracker<prost_types::ListValue>;
+}
+
+impl Expected for prost_types::ListValue {
+    fn expecting(formatter: &mut std::fmt::Formatter) -> std::fmt::Result {
+        write!(formatter, "list")
+    }
+}
+
+impl TrackerFor for prost_types::Timestamp {
+    type Tracker = WellKnownTracker<prost_types::Timestamp>;
+}
+
+impl Expected for prost_types::Timestamp {
+    fn expecting(formatter: &mut std::fmt::Formatter) -> std::fmt::Result {
+        write!(formatter, "timestamp")
+    }
+}
+
+impl TrackerFor for prost_types::Duration {
+    type Tracker = WellKnownTracker<prost_types::Duration>;
+}
+
+impl Expected for prost_types::Duration {
+    fn expecting(formatter: &mut std::fmt::Formatter) -> std::fmt::Result {
+        write!(formatter, "duration")
+    }
+}
+
+impl TrackerFor for prost_types::Value {
+    type Tracker = WellKnownTracker<prost_types::Value>;
+}
+
+impl Expected for prost_types::Value {
+    fn expecting(formatter: &mut std::fmt::Formatter) -> std::fmt::Result {
+        write!(formatter, "value")
+    }
+}
+
+impl TrackerFor for () {
+    type Tracker = WellKnownTracker<()>;
+}
+
+impl Expected for () {
+    fn expecting(formatter: &mut std::fmt::Formatter) -> std::fmt::Result {
+        write!(formatter, "empty object")
+    }
+}
+
+impl<'de, T> serde::de::DeserializeSeed<'de> for DeserializeHelper<'_, WellKnownTracker<T>>
+where
+    T: WellKnownAlias + Default + Expected,
+    T::Helper: serde::Deserialize<'de>,
+{
+    type Value = ();
+
+    fn deserialize<D>(self, deserializer: D) -> Result<Self::Value, D::Error>
+    where
+        D: serde::Deserializer<'de>,
+    {
+        let value: T::Helper = serde::Deserialize::deserialize(deserializer)?;
+        *self.value = T::reverse_cast(value);
+        Ok(())
+    }
+}
+
+impl<'de, T> TrackerDeserializer<'de> for WellKnownTracker<T>
+where
+    T: WellKnownAlias + Default + Expected,
+    T::Helper: serde::Deserialize<'de>,
+{
+    fn deserialize<D>(&mut self, value: &mut Self::Target, deserializer: D) -> Result<(), D::Error>
+    where
+        D: DeserializeContent<'de>,
+    {
+        deserializer.deserialize_seed(DeserializeHelper { tracker: self, value })
+    }
+}
+
+impl<T: Default + Expected> TrackerValidation for WellKnownTracker<T> {
+    fn validate<E>(&mut self, _: &Self::Target) -> Result<(), E>
+    where
+        E: serde::de::Error,
+    {
+        Ok(())
+    }
+}
 
 #[repr(transparent)]
 pub struct List(pub prost_types::ListValue);
@@ -440,11 +570,32 @@ impl serde::Serialize for Duration {
         let seconds = self.0.seconds;
         let nanos = self.0.nanos;
 
-        if nanos == 0 {
-            serializer.serialize_str(&format!("{}s", seconds))
+        let mut s = seconds.to_string();
+
+        if nanos != 0 {
+            // Convert nanos to 9-digit zero-padded string
+            let mut buf = [b'0'; 9];
+            let mut n = nanos;
+            let mut i = 9;
+            let mut first_non_zero = None;
+            while n != 0 && i > 0 {
+                i -= 1;
+                let modulus = n % 10;
+                if modulus != 0 && first_non_zero.is_none() {
+                    first_non_zero = Some(i);
+                }
+                buf[i] = b'0' + (n % 10) as u8;
+                n /= 10;
+            }
+
+            s.push('.');
+            s.push_str(unsafe { std::str::from_utf8_unchecked(&buf[..first_non_zero.unwrap_or(8) + 1]) });
+            s.push('s');
         } else {
-            serializer.serialize_str(&format!("{}.{:09}s", seconds, nanos))
+            s.push('s');
         }
+
+        serializer.serialize_str(&s)
     }
 }
 
@@ -455,11 +606,61 @@ impl<'de> serde::Deserialize<'de> for Empty {
     {
         struct Visitor;
 
-        impl serde::de::Visitor<'_> for Visitor {
+        impl<'de> serde::de::Visitor<'de> for Visitor {
             type Value = Empty;
 
             fn expecting(&self, formatter: &mut fmt::Formatter) -> fmt::Result {
                 formatter.write_str("an empty value")
+            }
+
+            fn visit_seq<A>(self, mut seq: A) -> Result<Self::Value, A::Error>
+            where
+                A: serde::de::SeqAccess<'de>,
+            {
+                if seq.next_element::<serde::de::IgnoredAny>()?.is_some() {
+                    return Err(serde::de::Error::custom("expected empty sequence"));
+                }
+
+                Ok(Empty(()))
+            }
+
+            fn visit_map<A>(self, mut map: A) -> Result<Self::Value, A::Error>
+            where
+                A: serde::de::MapAccess<'de>,
+            {
+                if map.next_key::<serde::de::IgnoredAny>()?.is_some() {
+                    return Err(serde::de::Error::custom("expected empty map"));
+                }
+
+                Ok(Empty(()))
+            }
+
+            fn visit_str<E>(self, v: &str) -> Result<Self::Value, E>
+            where
+                E: serde::de::Error,
+            {
+                if v.is_empty() {
+                    return Ok(Empty(()));
+                }
+                Err(E::custom("expected empty string"))
+            }
+
+            fn visit_some<D>(self, deserializer: D) -> Result<Self::Value, D::Error>
+            where
+                D: serde::Deserializer<'de>,
+            {
+                deserializer.deserialize_any(self)
+            }
+
+            fn visit_bytes<E>(self, v: &[u8]) -> Result<Self::Value, E>
+            where
+                E: serde::de::Error,
+            {
+                if v.is_empty() {
+                    return Ok(Empty(()));
+                }
+
+                Err(E::custom("expected empty bytes"))
             }
 
             fn visit_unit<E>(self) -> Result<Self::Value, E>
@@ -477,7 +678,7 @@ impl<'de> serde::Deserialize<'de> for Empty {
             }
         }
 
-        deserializer.deserialize_unit(Visitor)
+        deserializer.deserialize_any(Visitor)
     }
 }
 
@@ -486,7 +687,7 @@ impl serde::Serialize for Empty {
     where
         S: serde::Serializer,
     {
-        serializer.serialize_unit()
+        serializer.serialize_map(Some(0))?.end()
     }
 }
 
@@ -563,7 +764,7 @@ unsafe impl<K, V: WellKnownAlias, S> WellKnownAlias for HashMap<K, V, S> {
 }
 
 #[allow(private_bounds)]
-pub fn serialize<V, S>(value: &V, serializer: S) -> Result<S::Ok, S::Error>
+pub fn serialize_well_known<V, S>(value: &V, serializer: S) -> Result<S::Ok, S::Error>
 where
     V: WellKnownAlias,
     V::Helper: serde::Serialize,

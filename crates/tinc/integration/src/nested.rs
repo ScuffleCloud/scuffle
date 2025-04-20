@@ -1,4 +1,4 @@
-use tinc::__private::de::{TrackedStructDeserializer, TrackerFor, TrackerSharedState, deserialize};
+use tinc::__private::{TrackedStructDeserializer, TrackerFor, TrackerSharedState, deserialize_tracker_target};
 
 #[test]
 fn test_nested() {
@@ -29,14 +29,14 @@ fn test_nested() {
     );
 
     state.in_scope(|| {
-        deserialize(&mut de, &mut message, &mut tracker).unwrap();
+        deserialize_tracker_target(&mut de, &mut message, &mut tracker).unwrap();
 
         TrackedStructDeserializer::validate::<serde::de::value::Error>(&message, &mut tracker).unwrap();
     });
 
     insta::assert_debug_snapshot!(state, @r"
     TrackerSharedState {
-        fail_fast: true,
+        fail_fast: false,
         errors: [],
     }
     ");
@@ -124,4 +124,23 @@ fn test_nested() {
         },
     )
     ");
+
+    insta::assert_json_snapshot!(message, @r#"
+    {
+      "some_other": {
+        "name": "test",
+        "id": 1,
+        "nested": {
+          "nested_enum": "SOME_VALUE",
+          "name": "nested",
+          "id": 2,
+          "age": 3,
+          "nested": {
+            "depth": 100
+          }
+        }
+      },
+      "nested_enum": "YET_ANOTHER_VALUE"
+    }
+    "#);
 }

@@ -363,6 +363,16 @@ pub enum FieldVisibility {
     OutputOnly,
 }
 
+impl FieldVisibility {
+    pub fn has_output(&self) -> bool {
+        matches!(self, FieldVisibility::OutputOnly)
+    }
+
+    pub fn has_input(&self) -> bool {
+        matches!(self, FieldVisibility::InputOnly)
+    }
+}
+
 #[derive(Debug)]
 pub struct FieldOpts {
     pub kind: FieldKind,
@@ -371,6 +381,16 @@ pub struct FieldOpts {
     pub nullable: bool,
     pub flatten: bool,
     pub visibility: Option<FieldVisibility>,
+}
+
+impl FieldOpts {
+    pub fn has_output(&self) -> bool {
+        self.visibility.is_none_or(|v| v.has_output())
+    }
+
+    pub fn has_input(&self) -> bool {
+        self.visibility.is_none_or(|v| v.has_input())
+    }
 }
 
 #[derive(Default, Debug)]
@@ -592,12 +612,14 @@ impl Extensions {
             // If the field is marked `Optional` and is not nullable it will be defaulted if not provided.
             // if the field is `nullable` & `optional` then it will be defaulted (null) if not provided.
             let omitable = opts.omitable.unwrap_or(nullable);
-            let visibility = opts.visibility.and_then(|v| match v {
-                tinc_pb::schema_field_options::Visibility::Skip(true) => Some(FieldVisibility::Skip),
-                tinc_pb::schema_field_options::Visibility::InputOnly(true) => Some(FieldVisibility::InputOnly),
-                tinc_pb::schema_field_options::Visibility::OutputOnly(true) => Some(FieldVisibility::OutputOnly),
-                _ => None,
-            });
+            let visibility = opts
+                .visibility
+                .and_then(|v| match tinc_pb::Visibility::try_from(v).unwrap_or_default() {
+                    tinc_pb::Visibility::Skip => Some(FieldVisibility::Skip),
+                    tinc_pb::Visibility::InputOnly => Some(FieldVisibility::InputOnly),
+                    tinc_pb::Visibility::OutputOnly => Some(FieldVisibility::OutputOnly),
+                    _ => None,
+                });
 
             let kind = FieldKind::from_field(&field).with_context(|| field.full_name().to_owned())?;
             if matches!(kind.inner(), FieldKind::WellKnown(WellKnownType::Any)) {
@@ -617,6 +639,15 @@ impl Extensions {
                 let opts = self.schema_oneof.decode(&oneof)?;
                 let oneof = message.oneofs.entry(oneof.name().to_owned()).or_insert_with(|| {
                     let nullable = opts.as_ref().is_none_or(|opts| opts.nullable());
+                    let visibility = opts.as_ref().and_then(|opts| opts.visibility).and_then(|v| {
+                        match tinc_pb::Visibility::try_from(v).unwrap_or_default() {
+                            tinc_pb::Visibility::Skip => Some(FieldVisibility::Skip),
+                            tinc_pb::Visibility::InputOnly => Some(FieldVisibility::InputOnly),
+                            tinc_pb::Visibility::OutputOnly => Some(FieldVisibility::OutputOnly),
+                            _ => None,
+                        }
+                    });
+
                     message.fields.insert(
                         oneof.name().to_owned(),
                         FieldOpts {
@@ -625,7 +656,7 @@ impl Extensions {
                             nullable,
                             omitable: opts.as_ref().map_or(nullable, |opts| opts.omitable()),
                             rename: opts.as_ref().and_then(|opts| opts.rename.clone()),
-                            visibility: None,
+                            visibility,
                         },
                     );
 
@@ -700,12 +731,14 @@ impl Extensions {
         for (variant, opts) in values {
             let opts = opts.unwrap_or_default();
 
-            let visibility = opts.visibility.and_then(|v| match v {
-                tinc_pb::schema_variant_options::Visibility::Skip(true) => Some(FieldVisibility::Skip),
-                tinc_pb::schema_variant_options::Visibility::InputOnly(true) => Some(FieldVisibility::InputOnly),
-                tinc_pb::schema_variant_options::Visibility::OutputOnly(true) => Some(FieldVisibility::OutputOnly),
-                _ => None,
-            });
+            let visibility = opts
+                .visibility
+                .and_then(|v| match tinc_pb::Visibility::try_from(v).unwrap_or_default() {
+                    tinc_pb::Visibility::Skip => Some(FieldVisibility::Skip),
+                    tinc_pb::Visibility::InputOnly => Some(FieldVisibility::InputOnly),
+                    tinc_pb::Visibility::OutputOnly => Some(FieldVisibility::OutputOnly),
+                    _ => None,
+                });
 
             enum_opts.variants.insert(
                 variant.name().to_owned(),

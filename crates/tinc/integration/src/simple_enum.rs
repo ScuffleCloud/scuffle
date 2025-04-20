@@ -1,4 +1,4 @@
-use tinc::__private::de::{TrackedStructDeserializer, TrackerFor, TrackerSharedState, deserialize};
+use tinc::__private::{TrackedStructDeserializer, TrackerFor, TrackerSharedState, deserialize_tracker_target};
 
 #[test]
 fn test_simple_enum() {
@@ -23,14 +23,14 @@ fn test_simple_enum() {
     );
 
     state.in_scope(|| {
-        deserialize(&mut de, &mut message, &mut tracker).unwrap();
+        deserialize_tracker_target(&mut de, &mut message, &mut tracker).unwrap();
 
         TrackedStructDeserializer::validate::<serde::de::value::Error>(&message, &mut tracker).unwrap();
     });
 
     insta::assert_debug_snapshot!(state, @r"
     TrackerSharedState {
-        fail_fast: true,
+        fail_fast: false,
         errors: [],
     }
     ");
@@ -80,6 +80,21 @@ fn test_simple_enum() {
         },
     )
     "#);
+
+    insta::assert_json_snapshot!(message, @r#"
+    {
+      "value": "ONE",
+      "values": [
+        "ONE",
+        "TWO"
+      ],
+      "map": {
+        "key1": "ONE",
+        "key2": "TWO"
+      },
+      "optional": "THREE"
+    }
+    "#);
 }
 
 #[test]
@@ -105,14 +120,14 @@ fn test_simple_enum_renamed() {
     );
 
     state.in_scope(|| {
-        deserialize(&mut de, &mut message, &mut tracker).unwrap();
+        deserialize_tracker_target(&mut de, &mut message, &mut tracker).unwrap();
 
         TrackedStructDeserializer::validate::<serde::de::value::Error>(&message, &mut tracker).unwrap();
     });
 
     insta::assert_debug_snapshot!(state, @r"
     TrackerSharedState {
-        fail_fast: true,
+        fail_fast: false,
         errors: [],
     }
     ");
@@ -162,6 +177,20 @@ fn test_simple_enum_renamed() {
         },
     )
     "#);
+    insta::assert_json_snapshot!(message, @r#"
+    {
+      "value": "one",
+      "values": [
+        "one",
+        "two"
+      ],
+      "map": {
+        "key1": "one",
+        "key2": "two"
+      },
+      "optional": "three"
+    }
+    "#);
 }
 
 #[test]
@@ -187,14 +216,14 @@ fn test_simple_enum_repr() {
     );
 
     state.in_scope(|| {
-        deserialize(&mut de, &mut message, &mut tracker).unwrap();
+        deserialize_tracker_target(&mut de, &mut message, &mut tracker).unwrap();
 
         TrackedStructDeserializer::validate::<serde::de::value::Error>(&message, &mut tracker).unwrap();
     });
 
     insta::assert_debug_snapshot!(state, @r"
     TrackerSharedState {
-        fail_fast: true,
+        fail_fast: false,
         errors: [],
     }
     ");
@@ -244,6 +273,20 @@ fn test_simple_enum_repr() {
         },
     )
     "#);
+    insta::assert_json_snapshot!(message, @r#"
+    {
+      "value": 1,
+      "values": [
+        1,
+        2
+      ],
+      "map": {
+        "key1": 1,
+        "key2": 2
+      },
+      "optional": 3
+    }
+    "#);
 }
 
 #[test]
@@ -266,7 +309,7 @@ fn test_simple_enum_invalid() {
     );
 
     state.in_scope(|| {
-        deserialize(&mut de, &mut message, &mut tracker).unwrap();
+        deserialize_tracker_target(&mut de, &mut message, &mut tracker).unwrap();
 
         TrackedStructDeserializer::validate::<serde::de::value::Error>(&message, &mut tracker).unwrap();
     });
@@ -315,6 +358,14 @@ fn test_simple_enum_invalid() {
         },
     )
     ");
+    insta::assert_json_snapshot!(message, @r#"
+    {
+      "value": "UNSPECIFIED",
+      "values": [],
+      "map": {},
+      "optional": null
+    }
+    "#);
 }
 
 #[test]
@@ -337,7 +388,7 @@ fn test_simple_enum_renamed_invalid() {
     );
 
     state.in_scope(|| {
-        deserialize(&mut de, &mut message, &mut tracker).unwrap();
+        deserialize_tracker_target(&mut de, &mut message, &mut tracker).unwrap();
 
         TrackedStructDeserializer::validate::<serde::de::value::Error>(&message, &mut tracker).unwrap();
     });
@@ -386,6 +437,14 @@ fn test_simple_enum_renamed_invalid() {
         },
     )
     ");
+    insta::assert_json_snapshot!(message, @r#"
+    {
+      "value": "unspecified",
+      "values": [],
+      "map": {},
+      "optional": null
+    }
+    "#);
 }
 
 #[test]
@@ -408,7 +467,7 @@ fn test_simple_enum_repr_invalid() {
     );
 
     state.in_scope(|| {
-        deserialize(&mut de, &mut message, &mut tracker).unwrap();
+        deserialize_tracker_target(&mut de, &mut message, &mut tracker).unwrap();
 
         TrackedStructDeserializer::validate::<serde::de::value::Error>(&message, &mut tracker).unwrap();
     });
@@ -457,4 +516,12 @@ fn test_simple_enum_repr_invalid() {
         },
     )
     ");
+    insta::assert_json_snapshot!(message, @r#"
+    {
+      "value": 0,
+      "values": [],
+      "map": {},
+      "optional": null
+    }
+    "#);
 }

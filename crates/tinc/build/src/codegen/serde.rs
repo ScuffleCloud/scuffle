@@ -5,6 +5,7 @@ use quote::quote;
 use syn::parse_quote;
 use tinc_pb::schema_oneof_options::Tagged;
 
+use super::prost_sanatize::{strip_enum_prefix, to_upper_camel};
 use super::{field_ident_from_str, ident_from_str, strip_last_path_part, type_ident_from_str};
 use crate::codegen::get_common_import_path;
 use crate::extensions::{EnumOpts, FieldModifier, FieldOpts, FieldType, FieldVisibility, MessageOpts, OneofOpts};
@@ -32,37 +33,10 @@ fn enum_attributes(key: &str, prost: &mut tonic_build::Config, repr_enum: bool) 
     prost.enum_attribute(key, "#[serde(crate = \"::tinc::reexports::serde\")]");
 }
 
-fn field_visibility(key: &str, prost: &mut tonic_build::Config, visibility: Option<FieldVisibility>) {
-    if let Some(visibility) = visibility {
-        let attr = match visibility {
-            FieldVisibility::Skip => "#[serde(skip)]",
-            FieldVisibility::InputOnly => "#[serde(skip_serializing)]",
-            FieldVisibility::OutputOnly => return,
-        };
-
-        prost.field_attribute(key, attr);
-    }
-}
-
-fn rename_all(key: &str, style: Option<tinc_pb::RenameAll>, prost: &mut tonic_build::Config, is_enum: bool) -> bool {
-    if let Some(style) = style.and_then(rename_all_to_serde_rename_all) {
-        let attr = format!("#[serde(rename_all = \"{style}\")]");
-        if is_enum {
-            prost.enum_attribute(key, &attr);
-        } else {
-            prost.message_attribute(key, &attr);
-        }
-
-        true
-    } else {
-        false
-    }
-}
-
 fn rename_field(field: &str, style: tinc_pb::RenameAll) -> Option<String> {
     match style {
-        tinc_pb::RenameAll::LowerCase => Some(field.to_case(Case::Lower)),
-        tinc_pb::RenameAll::UpperCase => Some(field.to_case(Case::Upper)),
+        tinc_pb::RenameAll::LowerCase => Some(field.to_lowercase()),
+        tinc_pb::RenameAll::UpperCase => Some(field.to_uppercase()),
         tinc_pb::RenameAll::PascalCase => Some(field.to_case(Case::Pascal)),
         tinc_pb::RenameAll::CamelCase => Some(field.to_case(Case::Camel)),
         tinc_pb::RenameAll::SnakeCase => Some(field.to_case(Case::Snake)),
@@ -75,20 +49,6 @@ fn rename_field(field: &str, style: tinc_pb::RenameAll) -> Option<String> {
 
 fn serde_rename(key: &str, name: &str, prost: &mut tonic_build::Config) {
     prost.field_attribute(key, format!("#[serde(rename = \"{name}\")]"));
-}
-
-fn rename_all_to_serde_rename_all(style: tinc_pb::RenameAll) -> Option<&'static str> {
-    match style {
-        tinc_pb::RenameAll::LowerCase => Some("lowercase"),
-        tinc_pb::RenameAll::UpperCase => Some("uppercase"),
-        tinc_pb::RenameAll::PascalCase => Some("PascalCase"),
-        tinc_pb::RenameAll::CamelCase => Some("camelCase"),
-        tinc_pb::RenameAll::SnakeCase => Some("snake_case"),
-        tinc_pb::RenameAll::KebabCase => Some("kebab-case"),
-        tinc_pb::RenameAll::ScreamingSnakeCase => Some("SCREAMING_SNAKE_CASE"),
-        tinc_pb::RenameAll::ScreamingKebabCase => Some("SCREAMING-KEBAB-CASE"),
-        tinc_pb::RenameAll::Unspecified => None,
-    }
 }
 
 fn handle_oneof(
@@ -112,9 +72,8 @@ fn handle_oneof(
     }
 
     prost.enum_attribute(&oneof_key, "#[derive(::tinc::reexports::serde::Serialize)]");
-    prost.enum_attribute(&oneof_key, "#[derive(::tinc::__private::de::Tracker)]");
+    prost.enum_attribute(&oneof_key, "#[derive(::tinc::__private::Tracker)]");
     prost.field_attribute(&oneof_key, "#[tinc(oneof)]");
-    rename_all(&oneof_key, oneof.rename_all, prost, true);
 
     let oneof_path = get_common_import_path(&message.package, &oneof_key);
     let oneof_ident = oneof_path.segments.last().unwrap().ident.clone();
@@ -122,7 +81,6 @@ fn handle_oneof(
     let variant_identifier_ident = ident_from_str("___identifier");
     let mut oneof_identifier_for_ident = variant_identifier_ident.clone();
     let mut variant_idents = Vec::new();
-    let mut variant_idx_fn = Vec::new();
     let mut variant_name_fn = Vec::new();
     let mut variant_from_str_fn = Vec::new();
     let mut variant_fields = Vec::new();
@@ -151,7 +109,7 @@ fn handle_oneof(
                 ___content,
             }
 
-            impl ::tinc::__private::de::Identifier for #oneof_identifier_for_ident {
+            impl ::tinc::__private::Identifier for #oneof_identifier_for_ident {
                 const OPTIONS: &'static [&'static str] = &[
                     #tag,
                     #content,
@@ -176,7 +134,7 @@ fn handle_oneof(
                 }
             }
 
-            impl ::tinc::__private::de::TaggedOneOfIdentifier for #oneof_identifier_for_ident {
+            impl ::tinc::__private::TaggedOneOfIdentifier for #oneof_identifier_for_ident {
                 const TAG: Self = #oneof_identifier_for_ident::___tag;
                 const CONTENT: Self = #oneof_identifier_for_ident::___content;
             }
@@ -185,93 +143,97 @@ fn handle_oneof(
         quote! {}
     };
 
-    oneof.fields.iter().enumerate().for_each(|(idx, (name, field))| {
-        let ident = ident_from_str(format!("__field_{idx}"));
+    oneof.fields.iter().for_each(|(name, field)| {
+        let ident = ident_from_str(format!("__field_{name}"));
         let json_name = field
             .rename
             .clone()
             .or_else(|| rename_field(name, oneof.rename_all?))
             .unwrap_or_else(|| name.clone());
 
-        variant_idents.push(ident.clone());
-        variant_idx_fn.push(quote! {
-            #variant_identifier_ident::#ident => #idx
-        });
-        variant_name_fn.push(quote! {
-            #variant_identifier_ident::#ident => #json_name
-        });
-        variant_from_str_fn.push(quote! {
-            #json_name => #variant_identifier_ident::#ident
-        });
-        variant_fields.push(quote! {
-            #json_name
-        });
-        let enum_ident = type_ident_from_str(name);
-        variant_enum_ident.push(enum_ident.clone());
-        deserializer_impl.push(quote! {
-            #variant_identifier_ident::#ident => {
-                let tracker = match tracker {
-                    ::core::option::Option::None => {
-                        let ___Tracker::#enum_ident(tracker) = tracker.get_or_insert_with(|| ___Tracker::#enum_ident(Default::default())) else {
-                            ::core::unreachable!()
-                        };
+        prost.field_attribute(format!("{oneof_key}.{name}"), format!("#[serde(rename = \"{json_name}\")]"));
+        if !field.has_input() {
+            prost.field_attribute(format!("{oneof_key}.{name}"), "#[serde(skip_serializing)]");
+        }
 
-                        tracker
-                    },
-                    ::core::option::Option::Some(___Tracker::#enum_ident(tracker)) => {
-                        if !::tinc::__private::de::tracker_allow_duplicates(Some(tracker)) {
-                            return ::tinc::__private::de::report_error(
-                                ::tinc::__private::de::TrackedError::duplicate_field(),
+        if field.has_output() {
+            variant_idents.push(ident.clone());
+            variant_name_fn.push(quote! {
+                #variant_identifier_ident::#ident => #json_name
+            });
+            variant_from_str_fn.push(quote! {
+                #json_name => #variant_identifier_ident::#ident
+            });
+            variant_fields.push(quote! {
+                #json_name
+            });
+            let enum_ident = type_ident_from_str(name);
+            variant_enum_ident.push(enum_ident.clone());
+            deserializer_impl.push(quote! {
+                #variant_identifier_ident::#ident => {
+                    let tracker = match tracker {
+                        ::core::option::Option::None => {
+                            let ___Tracker::#enum_ident(tracker) = tracker.get_or_insert_with(|| ___Tracker::#enum_ident(Default::default())) else {
+                                ::core::unreachable!()
+                            };
+
+                            tracker
+                        },
+                        ::core::option::Option::Some(___Tracker::#enum_ident(tracker)) => {
+                            if !::tinc::__private::tracker_allow_duplicates(Some(tracker)) {
+                                return ::tinc::__private::report_error(
+                                    ::tinc::__private::TrackedError::duplicate_field(),
+                                );
+                            }
+
+                            tracker
+                        },
+                        ::core::option::Option::Some(tracker) => {
+                            return ::core::result::Result::Err(
+                                ::tinc::reexports::serde::de::Error::invalid_type(
+                                    ::tinc::reexports::serde::de::Unexpected::Other(
+                                        ::tinc::__private::Identifier::name(&___tracker_to_identifier(tracker)),
+                                    ),
+                                    &::tinc::__private::Identifier::name(&#variant_identifier_ident::#ident),
+                                ),
                             );
                         }
+                    };
 
-                        tracker
-                    },
-                    ::core::option::Option::Some(tracker) => {
-                        return ::core::result::Result::Err(
-                            ::tinc::reexports::serde::de::Error::invalid_type(
-                                ::tinc::reexports::serde::de::Unexpected::Other(
-                                    ::tinc::__private::de::Identifier::name(&___tracker_to_identifier(tracker)),
+                    let value = match value.get_or_insert_with(|| Self::#enum_ident(Default::default())) {
+                        Self::#enum_ident(value) => value,
+                        value => {
+                            return ::core::result::Result::Err(
+                                ::tinc::reexports::serde::de::Error::invalid_type(
+                                    ::tinc::reexports::serde::de::Unexpected::Other(
+                                        ::tinc::__private::Identifier::name(&___value_to_identifier(value)),
+                                    ),
+                                    &::tinc::__private::Identifier::name(&#variant_identifier_ident::#ident),
                                 ),
-                                &::tinc::__private::de::Identifier::name(&#variant_identifier_ident::#ident),
-                            ),
-                        );
-                    }
-                };
+                            );
+                        }
+                    };
 
-                let value = match value.get_or_insert_with(|| Self::#enum_ident(Default::default())) {
-                    Self::#enum_ident(value) => value,
-                    value => {
-                        return ::core::result::Result::Err(
-                            ::tinc::reexports::serde::de::Error::invalid_type(
-                                ::tinc::reexports::serde::de::Unexpected::Other(
-                                    ::tinc::__private::de::Identifier::name(&___value_to_identifier(value)),
-                                ),
-                                &::tinc::__private::de::Identifier::name(&#variant_identifier_ident::#ident),
-                            ),
-                        );
-                    }
-                };
+                    ::tinc::__private::TrackerDeserializer::deserialize(
+                        tracker,
+                        value,
+                        deserializer,
+                    )?;
+                }
+            });
 
-                ::tinc::__private::de::TrackerDeserializer::deserialize(
-                    tracker,
-                    value,
-                    deserializer,
-                )?;
-            }
-        });
-
-        validation_impl.push(quote! {
-            (Self::#enum_ident(value), ___Tracker::#enum_ident(tracker)) => {
-                ::tinc::__private::de::TrackerValidation::validate(tracker, value)?;
-            }
-        });
+            validation_impl.push(quote! {
+                (Self::#enum_ident(value), ___Tracker::#enum_ident(tracker)) => {
+                    ::tinc::__private::TrackerValidation::validate(tracker, value)?;
+                }
+            });
+        }
 
         if let FieldType::Enum(path) = field.kind.field_type() {
             let path = get_common_import_path(message_key, &path);
             let path_str = quote! { #path };
             let field_key = format!("{oneof_key}.{name}");
-            prost.field_attribute(&field_key, format!("#[serde(serialize_with = \"::tinc::__private::enum_::serialize::<{path_str}, _, _>\")]"));
+            prost.field_attribute(&field_key, format!("#[serde(serialize_with = \"::tinc::__private::serialize_enum::<{path_str}, _, _>\")]"));
             prost.field_attribute(&field_key, format!("#[tinc(enum = \"{path_str}\")]"));
         }
     });
@@ -295,7 +257,7 @@ fn handle_oneof(
                 #(#variant_idents),*
             }
 
-            impl ::tinc::__private::de::Identifier for #variant_identifier_ident {
+            impl ::tinc::__private::Identifier for #variant_identifier_ident {
                 const OPTIONS: &'static [&'static str] = &[#(#variant_fields),*];
 
                 fn name(&self) -> &'static str {
@@ -313,22 +275,22 @@ fn handle_oneof(
                 }
             }
 
-            impl ::tinc::__private::de::Expected for #oneof_path {
+            impl ::tinc::__private::Expected for #oneof_path {
                 fn expecting(formatter: &mut std::fmt::Formatter) -> std::fmt::Result {
                     write!(formatter, stringify!(#oneof_ident))
                 }
             }
 
-            impl ::tinc::__private::de::IdentifierFor for #oneof_path {
+            impl ::tinc::__private::IdentifierFor for #oneof_path {
                 const NAME: &'static str = stringify!(#oneof_ident);
                 type Identifier = #oneof_identifier_for_ident;
             }
 
-            impl ::tinc::__private::de::TrackedOneOfVariant for #oneof_path {
+            impl ::tinc::__private::TrackedOneOfVariant for #oneof_path {
                 type Variant = #variant_identifier_ident;
             }
 
-            type ___Tracker = <<#oneof_path as ::tinc::__private::de::TrackerFor>::Tracker as ::tinc::__private::de::TrackerWrapper>::Tracker;
+            type ___Tracker = <<#oneof_path as ::tinc::__private::TrackerFor>::Tracker as ::tinc::__private::TrackerWrapper>::Tracker;
 
             fn ___tracker_to_identifier(v: &___Tracker) -> #variant_identifier_ident {
                 match v {
@@ -342,7 +304,7 @@ fn handle_oneof(
                 }
             }
 
-            impl<'de> ::tinc::__private::de::TrackedOneOfDeserializer<'de> for #oneof_path {
+            impl<'de> ::tinc::__private::TrackedOneOfDeserializer<'de> for #oneof_path {
                 fn deserialize<D>(
                     value: &mut ::core::option::Option<#oneof_path>,
                     variant: #variant_identifier_ident,
@@ -350,7 +312,7 @@ fn handle_oneof(
                     deserializer: D,
                 ) -> ::core::result::Result<(), D::Error>
                 where
-                    D: ::tinc::__private::de::DeserializeContent<'de>
+                    D: ::tinc::__private::DeserializeContent<'de>
                 {
                     match variant {
                         #(#deserializer_impl),*
@@ -359,9 +321,9 @@ fn handle_oneof(
                     ::core::result::Result::Ok(())
                 }
 
-                fn validate<E>(&self, tracker: &mut <Self::Tracker as ::tinc::__private::de::TrackerWrapper>::Tracker) -> Result<(), E>
+                fn validate<E>(&self, tracker: &mut <Self::Tracker as ::tinc::__private::TrackerWrapper>::Tracker) -> Result<(), E>
                 where
-                    E: serde::de::Error
+                    E: ::tinc::reexports::serde::de::Error
                 {
                     match (self, tracker) {
                         #(#validation_impl),*
@@ -369,8 +331,8 @@ fn handle_oneof(
                             return ::core::result::Result::Err(
                                 ::tinc::reexports::serde::de::Error::custom(format!(
                                     "tracker and value do not match: {:?} != {:?}",
-                                    ::tinc::__private::de::Identifier::name(&___tracker_to_identifier(tracker)),
-                                    ::tinc::__private::de::Identifier::name(&___value_to_identifier(self)),
+                                    ::tinc::__private::Identifier::name(&___tracker_to_identifier(tracker)),
+                                    ::tinc::__private::Identifier::name(&___value_to_identifier(self)),
                                 )),
                             );
                         }
@@ -410,6 +372,10 @@ fn handle_message_field(
         .or_else(|| rename_field(name, message.rename_all?))
         .unwrap_or_else(|| name.to_owned());
 
+    let field_key = format!("{message_key}.{name}");
+
+    prost.field_attribute(&field_key, format!("#[serde(rename = \"{json_name}\")]"));
+
     let ident = ident_from_str(format!("__field_{name}"));
     if field.flatten {
         let key = match field.kind.field_type() {
@@ -425,23 +391,27 @@ fn handle_message_field(
 
         let message_path = get_common_import_path(message.package.as_str(), &key);
 
-        let flattened_identifier = quote! {
-            <#message_path as ::tinc::__private::de::IdentifierFor>::Identifier
-        };
+        prost.field_attribute(&field_key, "#[serde(flatten)]");
 
-        builder.deserializer_fields.push(quote! {
-            <#flattened_identifier as ::tinc::__private::de::Identifier>::OPTIONS
-        });
-        builder.field_enum_variants.push(quote! {
-            #ident(#flattened_identifier)
-        });
-        builder.field_enum_name_fn.push(quote! {
-            #field_enum_ident::#ident(flatten) => ::tinc::__private::de::Identifier::name(flatten)
-        });
-        builder.field_enum_from_str_flattened_fn.push(quote! {
-            #ident
-        });
-    } else {
+        if field.has_input() {
+            let flattened_identifier = quote! {
+                <#message_path as ::tinc::__private::IdentifierFor>::Identifier
+            };
+
+            builder.deserializer_fields.push(quote! {
+                <#flattened_identifier as ::tinc::__private::Identifier>::OPTIONS
+            });
+            builder.field_enum_variants.push(quote! {
+                #ident(#flattened_identifier)
+            });
+            builder.field_enum_name_fn.push(quote! {
+                #field_enum_ident::#ident(flatten) => ::tinc::__private::Identifier::name(flatten)
+            });
+            builder.field_enum_from_str_flattened_fn.push(quote! {
+                #ident
+            });
+        }
+    } else if field.has_input() {
         builder.deserializer_fields.push(quote! {
             &[#json_name]
         });
@@ -456,29 +426,34 @@ fn handle_message_field(
         });
     }
 
-    let field_name = field_ident_from_str(name);
+    if !field.has_output() {
+        prost.field_attribute(&field_key, "#[serde(skip_serializing)]");
+    }
+
+    if !field.has_input() {
+        return Ok(());
+    }
 
     match field.kind.field_type() {
         FieldType::Enum(path) => {
             let path = get_common_import_path(strip_last_path_part(message_key), &path);
             let path_str = quote! { #path };
             prost.field_attribute(
-                format!("{message_key}.{field_name}"),
-                format!("#[serde(serialize_with = \"::tinc::__private::enum_::serialize::<{path_str}, _, _>\")]"),
+                &field_key,
+                format!("#[serde(serialize_with = \"::tinc::__private::serialize_enum::<{path_str}, _, _>\")]"),
             );
-            prost.field_attribute(
-                format!("{message_key}.{field_name}"),
-                format!("#[tinc(enum = \"{path_str}\")]"),
-            );
+            prost.field_attribute(&field_key, format!("#[tinc(enum = \"{path_str}\")]"));
         }
         FieldType::WellKnown(_) => {
             prost.field_attribute(
-                format!("{message_key}.{field_name}"),
-                "#[serde(serialize_with = \"::tinc::__private::well_known::serialize\")]",
+                &field_key,
+                "#[serde(serialize_with = \"::tinc::__private::serialize_well_known\")]",
             );
         }
         _ => {}
     };
+
+    let field_name = field_ident_from_str(name);
 
     let mut tracker = quote! {
         &mut tracker.#field_name
@@ -506,8 +481,8 @@ fn handle_message_field(
     if field.flatten {
         builder.deserializer_fn.push(quote! {
             #field_enum_ident::#ident(field) => {
-                let _token = ::tinc::__private::de::PathAllowerToken::push(#name)?;
-                ::tinc::__private::de::TrackerDeserializeIdentifier::<'de>::deserialize(
+                let _token = ::tinc::__private::PathAllowerToken::push(#name)?;
+                ::tinc::__private::TrackerDeserializeIdentifier::<'de>::deserialize(
                     (#tracker).get_or_insert_default(),
                     #value,
                     field,
@@ -518,32 +493,19 @@ fn handle_message_field(
     } else {
         builder.deserializer_fn.push(quote! {
             #field_enum_ident::#ident => {
-                let _token = ::tinc::__private::de::PathAllowerToken::push(#name)?;
+                let _token = ::tinc::__private::PathAllowerToken::push(#name)?;
                 let tracker = #tracker;
 
-                if !::tinc::__private::de::tracker_allow_duplicates(tracker.as_ref()) {
-                    return ::tinc::__private::de::report_error(
-                        ::tinc::__private::de::TrackedError::duplicate_field(),
+                if !::tinc::__private::tracker_allow_duplicates(tracker.as_ref()) {
+                    return ::tinc::__private::report_error(
+                        ::tinc::__private::TrackedError::duplicate_field(),
                     );
                 }
 
-                ::tinc::__private::de::TrackerDeserializer::deserialize(
+                ::tinc::__private::TrackerDeserializer::deserialize(
                     tracker.get_or_insert_default(),
                     #value,
                     deserializer,
-                )?;
-            }
-        });
-    }
-
-    if !field.omitable && !field.flatten {
-        builder.verify_deserialize_fn.push(quote! {
-            if tracker.#field_name.is_none() {
-                let _token = ::tinc::__private::de::PathToken::push_field(
-                    ::tinc::__private::de::Identifier::name(&#field_enum_ident::#ident),
-                );
-                ::tinc::__private::de::report_error(
-                    ::tinc::__private::de::TrackedError::missing_field(),
                 )?;
             }
         });
@@ -553,71 +515,31 @@ fn handle_message_field(
         quote! {}
     } else {
         quote! {
-            let _token = ::tinc::__private::de::PathToken::push_field(
-                ::tinc::__private::de::Identifier::name(&#field_enum_ident::#ident),
+            let _token = ::tinc::__private::PathToken::push_field(
+                ::tinc::__private::Identifier::name(&#field_enum_ident::#ident),
             );
         }
     };
 
-    if matches!(field.kind.field_type(), FieldType::Message(_)) {
-        let validation = match (field.kind.modifier(), field.flatten) {
-            (Some(FieldModifier::List), _) => quote! {
-                if let Some(trackers) = tracker.#field_name.as_mut() {
-                    #push_field_token
-                    for (idx, (value, tracker)) in self.#field_name.iter().zip(trackers.iter_mut()).enumerate() {
-                        let _token = ::tinc::__private::de::PathToken::push_index(idx);
-                        ::tinc::__private::de::TrackerValidation::validate(tracker, value)?;
-                    }
-                }
-            },
-            (Some(FieldModifier::Map), _) => quote! {
-                if let Some(trackers) = tracker.#field_name.as_mut() {
-                    #push_field_token
-                    for (key, tracker) in trackers.iter_mut() {
-                        if let Some(value) = self.#field_name.get(key) {
-                            let _token = ::tinc::__private::de::PathToken::push_key(key);
-                            ::tinc::__private::de::TrackerValidation::validate(tracker, value)?;
-                        }
-                    }
-                }
-            },
-            (Some(FieldModifier::Optional), _) => quote! {
-                match (self.#field_name.as_ref(), tracker.#field_name.as_mut().and_then(|tracker| tracker.as_mut())) {
-                    (Some(value), Some(tracker)) => {
-                        #push_field_token
-                        ::tinc::__private::de::TrackerValidation::validate(tracker, value)?;
-                    },
-                    (None, Some(_)) => {
-                        return Err(::serde::de::Error::custom("tracker is Some while value is None"));
-                    },
-                    (Some(_), None) => {
-                        return Err(::serde::de::Error::custom("tracker is None while value is set"));
-                    },
-                    (None, None) => {}
-                }
-            },
-            (None, false) => quote! {
-                if let Some(tracker) = tracker.#field_name.as_mut() {
-                    #push_field_token
-                    ::tinc::__private::de::TrackerValidation::validate(
-                        tracker,
-                        &self.#field_name,
-                    )?;
-                }
-            },
-            (None, true) => quote! {{
-                if let Some(tracker) = tracker.#field_name.as_mut() {
-                    #push_field_token
-                    ::tinc::__private::de::TrackerValidation::validate(
-                        &self.#field_name,
-                        tracker,
-                    )?;
-                }
-            }},
-        };
+    let missing = if !field.omitable && !field.flatten {
+        quote! {
+            #push_field_token
+            ::tinc::__private::report_error(
+                ::tinc::__private::TrackedError::missing_field(),
+            )?;
+        }
+    } else {
+        quote! {}
+    };
 
-        builder.verify_deserialize_fn.push(validation);
-    }
+    builder.verify_deserialize_fn.push(quote! {
+        if let Some(tracker) = tracker.#field_name.as_mut() {
+            #push_field_token
+            ::tinc::__private::TrackerValidation::validate(tracker, &self.#field_name)?;
+        } else {
+            #missing
+        }
+    });
 
     Ok(())
 }
@@ -638,7 +560,6 @@ pub(super) fn handle_message(
     }
 
     message_attributes(message_key, prost);
-    rename_all(message_key, message.rename_all, prost, false);
 
     let field_enum_ident = ident_from_str("___field_enum");
 
@@ -672,7 +593,7 @@ pub(super) fn handle_message(
     let message_path = get_common_import_path(message.package.as_str(), message_key);
     let message_ident = message_path.segments.last().unwrap().ident.clone();
 
-    prost.message_attribute(message_key, "#[derive(::tinc::__private::de::Tracker)]");
+    prost.message_attribute(message_key, "#[derive(::tinc::__private::Tracker)]");
 
     let field_enum_impl = parse_quote! {
         const _: () = {
@@ -691,7 +612,7 @@ pub(super) fn handle_message(
                 #(#field_enum_variants),*
             }
 
-            impl ::tinc::__private::de::Identifier for #field_enum_ident {
+            impl ::tinc::__private::Identifier for #field_enum_ident {
                 const OPTIONS: &'static [&'static str] = ::tinc::__private_const_concat_str_array!(#(#deserializer_fields),*);
 
                 fn name(&self) -> &'static str {
@@ -709,21 +630,21 @@ pub(super) fn handle_message(
                 }
             }
 
-            impl ::tinc::__private::de::IdentifierFor for #message_path {
+            impl ::tinc::__private::IdentifierFor for #message_path {
                 const NAME: &'static str = stringify!(#message_ident);
                 type Identifier = #field_enum_ident;
             }
 
-            impl<'de> ::tinc::__private::de::TrackedStructDeserializer<'de> for #message_path {
+            impl<'de> ::tinc::__private::TrackedStructDeserializer<'de> for #message_path {
                 #[allow(unused_mut, dead_code)]
                 fn deserialize<D>(
                     &mut self,
                     field: Self::Identifier,
-                    mut tracker: &mut <Self::Tracker as ::tinc::__private::de::TrackerWrapper>::Tracker,
+                    mut tracker: &mut <Self::Tracker as ::tinc::__private::TrackerWrapper>::Tracker,
                     deserializer: D,
                 ) -> Result<(), D::Error>
                 where
-                    D: ::tinc::__private::de::DeserializeContent<'de>,
+                    D: ::tinc::__private::DeserializeContent<'de>,
                 {
                     match field {
                         #(#deserializer_fn),*
@@ -735,7 +656,7 @@ pub(super) fn handle_message(
                 #[allow(unused_mut, dead_code)]
                 fn validate<E>(
                     &self,
-                    mut tracker: &mut <Self::Tracker as ::tinc::__private::de::TrackerWrapper>::Tracker,
+                    mut tracker: &mut <Self::Tracker as ::tinc::__private::TrackerWrapper>::Tracker,
                 ) -> Result<(), E>
                 where
                     E: ::tinc::reexports::serde::de::Error,
@@ -746,7 +667,7 @@ pub(super) fn handle_message(
                 }
             }
 
-            impl ::tinc::__private::de::Expected for #message_path {
+            impl ::tinc::__private::Expected for #message_path {
                 fn expecting(formatter: &mut std::fmt::Formatter) -> std::fmt::Result {
                     write!(formatter, stringify!(#message_ident))
                 }
@@ -769,28 +690,41 @@ pub(super) fn handle_enum(
         return Ok(());
     }
 
-    enum_attributes(enum_key, prost, enum_.repr_enum);
-    if !enum_.repr_enum {
-        rename_all(enum_key, Some(enum_.rename_all), prost, true);
-    }
+    let enum_path = get_common_import_path(enum_.package.as_str(), enum_key);
+    let enum_ident = enum_path.segments.last().unwrap().ident.clone();
+    let enum_ident_str = enum_ident.to_string();
 
+    enum_attributes(enum_key, prost, enum_.repr_enum);
     for (variant, variant_opts) in &enum_.variants {
         let variant_key = format!("{enum_key}.{variant}");
 
         if !enum_.repr_enum {
             if let Some(rename) = &variant_opts.rename {
                 serde_rename(&variant_key, rename, prost);
+            } else if let Some(renamed) = rename_field(
+                &strip_enum_prefix(&enum_ident_str, &to_upper_camel(variant)),
+                enum_.rename_all,
+            ) {
+                serde_rename(&variant_key, &renamed, prost);
             }
         }
 
-        field_visibility(&variant_key, prost, variant_opts.visibility);
+        match variant_opts.visibility {
+            Some(FieldVisibility::InputOnly) => {
+                prost.field_attribute(&variant_key, "#[serde(skip_serializing)]");
+            }
+            Some(FieldVisibility::OutputOnly) => {
+                prost.field_attribute(&variant_key, "#[serde(skip_deserializing)]");
+            }
+            Some(FieldVisibility::Skip) => {
+                prost.field_attribute(&variant_key, "#[serde(skip)]");
+            }
+            _ => {}
+        }
     }
 
-    let enum_path = get_common_import_path(enum_.package.as_str(), enum_key);
-    let enum_ident = enum_path.segments.last().unwrap().ident.clone();
-
     let enum_impl = parse_quote! {
-        impl ::tinc::__private::de::Expected for #enum_path {
+        impl ::tinc::__private::Expected for #enum_path {
             fn expecting(formatter: &mut std::fmt::Formatter) -> std::fmt::Result {
                 write!(formatter, "an enum of `")?;
                 write!(formatter, stringify!(#enum_ident))?;

@@ -1,4 +1,4 @@
-use tinc::__private::de::{TrackedStructDeserializer, TrackerFor, TrackerSharedState, deserialize};
+use tinc::__private::{TrackedStructDeserializer, TrackerFor, TrackerSharedState, deserialize_tracker_target};
 
 #[test]
 fn test_recursive() {
@@ -39,14 +39,14 @@ fn test_recursive() {
     );
 
     state.in_scope(|| {
-        deserialize(&mut de, &mut message, &mut tracker).unwrap();
+        deserialize_tracker_target(&mut de, &mut message, &mut tracker).unwrap();
 
         TrackedStructDeserializer::validate::<serde::de::value::Error>(&message, &mut tracker).unwrap();
     });
 
     insta::assert_debug_snapshot!(state, @r"
     TrackerSharedState {
-        fail_fast: true,
+        fail_fast: false,
         errors: [],
     }
     ");
@@ -165,5 +165,33 @@ fn test_recursive() {
             ),
         },
     )
+    "#);
+
+    insta::assert_json_snapshot!(message, @r#"
+    {
+      "anothers": [
+        {
+          "another": null,
+          "nested": null
+        }
+      ],
+      "another_optional": null,
+      "another_map": {
+        "key1": {
+          "another": null,
+          "nested": null
+        },
+        "key2": {
+          "another": null,
+          "nested": {
+            "anothers": [],
+            "another_optional": null,
+            "another_map": {},
+            "depth": 2
+          }
+        }
+      },
+      "depth": 1
+    }
     "#);
 }

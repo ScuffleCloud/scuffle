@@ -10,9 +10,10 @@ unexpected_cfgs = { level = "warn", check-cfg = ['cfg(coverage_nightly)'] }
 tonic = "0.13.0"
 prost = "0.13.5"
 tinc.workspace = true
-insta = "1.30.0"
+insta = { version = "1.30.0", features = ["json"] }
 serde_json = "1.0.115"
 serde = "1.0.215"
+prost-types = "0.13.5"
 
 [build-dependencies]
 tinc-build.workspace = true

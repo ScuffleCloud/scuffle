@@ -32,8 +32,8 @@ pub const fn concat_array<const LEN: usize>(to_concat: &'static [&'static [&'sta
 macro_rules! __private_const_concat_str_array {
     ($($rest:expr),*) => {{
         const TO_CONCAT: &[&[&str]] = &[$($rest),*];
-        const LEN: usize = $crate::__private::de::const_macros::len_sum(TO_CONCAT);
-        &$crate::__private::de::const_macros::concat_array::<LEN>(TO_CONCAT)
+        const LEN: usize = $crate::__private::const_macros::len_sum(TO_CONCAT);
+        &$crate::__private::const_macros::concat_array::<LEN>(TO_CONCAT)
     }};
     ($($rest:expr),*,) => {
         $crate::__private_const_concat_str_array!($($rest),*)

@@ -155,13 +155,13 @@ fn derive_message_tracker_struct(ident: syn::Ident, opts: TincContainerOptions, 
             }
 
             let ty = match enum_path {
-                Some(enum_path) => quote! { <#ty as #crate_path::__private::de::EnumHelper>::Target<#enum_path> },
-                None if oneof => quote! { <#ty as #crate_path::__private::de::OneOfHelper>::Target },
+                Some(enum_path) => quote! { <#ty as #crate_path::__private::EnumHelper>::Target<#enum_path> },
+                None if oneof => quote! { <#ty as #crate_path::__private::OneOfHelper>::Target },
                 None => quote! { #ty },
             };
 
             Ok(quote! {
-                pub #field_ident: Option<<#ty as #crate_path::__private::de::TrackerFor>::Tracker>
+                pub #field_ident: Option<<#ty as #crate_path::__private::TrackerFor>::Tracker>
             })
         })
         .collect::<syn::Result<Vec<_>>>();
@@ -178,7 +178,7 @@ fn derive_message_tracker_struct(ident: syn::Ident, opts: TincContainerOptions, 
                 #(#struct_fields),*
             }
 
-            impl #crate_path::__private::de::Tracker for #tracker_ident {
+            impl #crate_path::__private::Tracker for #tracker_ident {
                 type Target = #ident;
 
                 #[inline(always)]
@@ -187,8 +187,8 @@ fn derive_message_tracker_struct(ident: syn::Ident, opts: TincContainerOptions, 
                 }
             }
 
-            impl #crate_path::__private::de::TrackerFor for #ident {
-                type Tracker = #crate_path::__private::de::StructTracker<#tracker_ident>;
+            impl #crate_path::__private::TrackerFor for #ident {
+                type Tracker = #crate_path::__private::StructTracker<#tracker_ident>;
             }
         };
     }
@@ -232,7 +232,7 @@ fn derive_message_tracker_enum(ident: syn::Ident, opts: TincContainerOptions, da
 
             let ty = match enum_path {
                 Some(enum_path) => quote! {
-                    <#ty as #crate_path::__private::de::EnumHelper>::Target<#enum_path>
+                    <#ty as #crate_path::__private::EnumHelper>::Target<#enum_path>
                 },
                 None => quote! {
                     #ty
@@ -241,7 +241,7 @@ fn derive_message_tracker_enum(ident: syn::Ident, opts: TincContainerOptions, da
 
             Ok((
                 quote! {
-                    #variant_ident(<#ty as #crate_path::__private::de::TrackerFor>::Tracker)
+                    #variant_ident(<#ty as #crate_path::__private::TrackerFor>::Tracker)
                 },
                 quote! {
                     #variant_ident
@@ -257,11 +257,11 @@ fn derive_message_tracker_enum(ident: syn::Ident, opts: TincContainerOptions, da
 
     let tracker = if tagged {
         quote! {
-            #crate_path::__private::de::TaggedOneOfTracker<#tracker_ident>
+            #crate_path::__private::TaggedOneOfTracker<#tracker_ident>
         }
     } else {
         quote! {
-            #crate_path::__private::de::OneOfTracker<#tracker_ident>
+            #crate_path::__private::OneOfTracker<#tracker_ident>
         }
     };
 
@@ -272,7 +272,7 @@ fn derive_message_tracker_enum(ident: syn::Ident, opts: TincContainerOptions, da
                 #(#variants),*
             }
 
-            impl #crate_path::__private::de::Tracker for #tracker_ident {
+            impl #crate_path::__private::Tracker for #tracker_ident {
                 type Target = #ident;
 
                 #[inline(always)]
@@ -283,7 +283,7 @@ fn derive_message_tracker_enum(ident: syn::Ident, opts: TincContainerOptions, da
                 }
             }
 
-            impl #crate_path::__private::de::TrackerFor for #ident {
+            impl #crate_path::__private::TrackerFor for #ident {
                 type Tracker = #tracker;
             }
         };

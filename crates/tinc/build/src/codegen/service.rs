@@ -3,14 +3,66 @@ use std::collections::BTreeMap;
 use anyhow::Context;
 use quote::quote;
 use syn::{Ident, parse_quote};
+use tinc_pb::http_endpoint_options;
 
 use crate::codegen::{field_ident_from_str, ident_from_str, type_ident_from_str};
-use crate::extensions::{Extensions, FieldKind, MessageOpts, MethodIo, MethodOpts, ServiceOpts, WellKnownType};
+use crate::extensions::{
+    Extensions, FieldKind, FieldModifier, FieldType, MessageOpts, MethodIo, MethodOpts, PrimitiveKind, ServiceOpts,
+    WellKnownType,
+};
 
 // Define a helper enum for input message options.
 enum IoOptions<'a> {
     Message(String, &'a MessageOpts),
     WellKnown(WellKnownType),
+}
+
+struct PathFields {
+    defs: Vec<proc_macro2::TokenStream>,
+    mappings: Vec<proc_macro2::TokenStream>,
+}
+
+fn field_extractor_generator(
+    field_str: &str,
+    extensions: &Extensions,
+    message: &MessageOpts,
+) -> anyhow::Result<(proc_macro2::TokenStream, FieldKind)> {
+    let mut next_message = Some(message);
+    let mut is_optional = false;
+    let mut kind = None;
+    let mut mapping = quote! {(&mut tracker, &mut target)};
+    for part in field_str.split('.') {
+        let Some(field) = next_message.and_then(|message| message.fields.get(part)) else {
+            anyhow::bail!("message does not have field: {field_str}");
+        };
+
+        let field_ident = field_ident_from_str(part);
+
+        let optional_unwrap = is_optional.then(|| {
+            quote! {
+                let mut tracker = tracker.get_or_insert_default();
+                let mut target = target.get_or_insert_default();
+            }
+        });
+
+        kind = Some(field.kind.clone());
+        mapping = quote! {{
+            let (tracker, target) = #mapping;
+            #optional_unwrap
+            let tracker = tracker.#field_ident.get_or_insert_default();
+            let target = &mut target.#field_ident;
+            (tracker, target)
+        }};
+
+        is_optional = matches!(field.kind.modifier(), Some(FieldModifier::Optional));
+        if matches!(field.kind.modifier(), Some(FieldModifier::Optional) | None) {
+            next_message = field.kind.message_name().and_then(|key| extensions.messages().get(key))
+        } else {
+            next_message = None;
+        }
+    }
+
+    Ok((mapping, kind.unwrap()))
 }
 
 impl IoOptions<'_> {
@@ -21,36 +73,161 @@ impl IoOptions<'_> {
                 parse_quote! { super::#path }
             }
             IoOptions::WellKnown(well_known) => {
-                // let id = ident_from_str(well_known.path());
-                todo!();
-                parse_quote! {}
+                todo!("handle well-known types");
             }
         }
     }
 
-    fn has_content(&self, excluding: impl IntoIterator<Item = impl AsRef<str>>) -> bool {
-        let excluding: Vec<_> = excluding.into_iter().collect();
-
-        match self {
-            IoOptions::Message(_, message) => message
-                .fields
-                .keys()
-                .any(|name| excluding.iter().all(|ex| ex.as_ref() != name)),
-            IoOptions::WellKnown(WellKnownType::Empty) => false,
-            IoOptions::WellKnown(_) => true,
-        }
-    }
-
-    fn has_fields(&self, fields: impl IntoIterator<Item = impl AsRef<str>>) -> bool {
+    fn path_struct(
+        &self,
+        extensions: &Extensions,
+        fields: impl IntoIterator<Item = impl AsRef<str>>,
+    ) -> anyhow::Result<Option<PathFields>> {
         let fields: Vec<_> = fields.into_iter().collect();
         if fields.is_empty() {
-            return true;
+            return Ok(None);
         }
 
+        let mut defs = Vec::new();
+        let mut mappings = Vec::new();
+
         match self {
-            IoOptions::Message(_, message) => fields.into_iter().all(|field| message.fields.contains_key(field.as_ref())),
-            IoOptions::WellKnown(WellKnownType::Struct) => true,
-            IoOptions::WellKnown(_) => false,
+            IoOptions::Message(_, message) => {
+                for (idx, field) in fields.iter().enumerate() {
+                    let field_str = field.as_ref();
+                    let path_field_ident = ident_from_str(format!("field_{idx}"));
+
+                    let (path_mapping, field_kind) = field_extractor_generator(field_str, extensions, message)?;
+
+                    let setter = match field_kind.modifier() {
+                        Some(FieldModifier::Optional) => quote! {
+                            tracker.get_or_insert_default();
+                            target.insert(path.#path_field_ident.into());
+                        },
+                        _ => quote! {
+                            *target = path.#path_field_ident.into();
+                        },
+                    };
+
+                    mappings.push(quote! {{
+                        let (tracker, target) = #path_mapping;
+                        #setter;
+                    }});
+
+                    let ty = match field_kind.field_type() {
+                        FieldType::Enum(path) => {
+                            let path = object_type_path(path.as_str(), message.package.as_str());
+                            quote! {
+                                super::#path
+                            }
+                        }
+                        FieldType::Message(m) => anyhow::bail!("message type cannot be mapped: {m}"),
+                        FieldType::Primitive(prim) | FieldType::WellKnown(WellKnownType::Primitive(prim)) => match prim {
+                            PrimitiveKind::Bool => quote! {
+                                ::core::primitive::bool
+                            },
+                            PrimitiveKind::F32 => quote! {
+                                ::core::primitive::f32
+                            },
+                            PrimitiveKind::F64 => quote! {
+                                ::core::primitive::f64
+                            },
+                            PrimitiveKind::I32 => quote! {
+                                ::core::primitive::i32
+                            },
+                            PrimitiveKind::I64 => quote! {
+                                ::core::primitive::i64
+                            },
+                            PrimitiveKind::U32 => quote! {
+                                ::core::primitive::u32
+                            },
+                            PrimitiveKind::U64 => quote! {
+                                ::core::primitive::u64
+                            },
+                            PrimitiveKind::String => quote! {
+                                ::std::string::String
+                            },
+                            PrimitiveKind::Bytes => anyhow::bail!("bytes type cannot be mapped"),
+                        },
+                        FieldType::WellKnown(wk) => match wk {
+                            WellKnownType::Duration => quote! {
+                                ::tinc::__private::well_known::Duration
+                            },
+                            WellKnownType::Timestamp => quote! {
+                                ::tinc::__private::well_known::Timestamp
+                            },
+                            WellKnownType::Value => quote! {
+                                ::tinc::__private::well_known::Value
+                            },
+                            t => {
+                                anyhow::bail!("well-known type cannot be mapped: {t:?}");
+                            }
+                        },
+                        FieldType::OneOf(_) => {
+                            anyhow::bail!("oneof type cannot be mapped");
+                        }
+                    };
+
+                    defs.push(quote! {
+                        #[serde(rename = #field_str)]
+                        #path_field_ident: #ty
+                    });
+                }
+            }
+            IoOptions::WellKnown(wk) => {
+                if fields.len() != 1 {
+                    anyhow::bail!("well-known type can only have one field");
+                }
+
+                let field = &fields[0];
+                if field.as_ref() != "value" {
+                    anyhow::bail!("well-known type can only have field 'value'");
+                }
+
+                mappings.push(quote! {
+                    *target = path.value.into();
+                });
+
+                match wk {
+                    WellKnownType::Duration => {
+                        defs.push(quote! {
+                            #[serde(rename = "value")]
+                            value: ::tinc::__private::well_known::Duration
+                        });
+                    }
+                    WellKnownType::Timestamp => {
+                        defs.push(quote! {
+                            #[serde(rename = "value")]
+                            value: ::tinc::__private::well_known::Timestamp
+                        });
+                    }
+                    WellKnownType::Value => {
+                        defs.push(quote! {
+                            #[serde(rename = "value")]
+                            value: ::tinc::__private::well_known::Value
+                        });
+                    }
+                    t => anyhow::bail!("well-known type cannot be mapped: {t:?}"),
+                }
+            }
+        }
+
+        Ok(Some(PathFields { defs, mappings }))
+    }
+
+    fn field_extract(
+        &self,
+        field_str: &str,
+        extensions: &Extensions,
+    ) -> anyhow::Result<(proc_macro2::TokenStream, FieldKind)> {
+        match self {
+            IoOptions::Message(_, message) => {
+                let (path_mapping, field_kind) = field_extractor_generator(field_str, extensions, message)?;
+                Ok((path_mapping, field_kind))
+            }
+            IoOptions::WellKnown(_) => {
+                anyhow::bail!("well-known type cannot be mapped");
+            }
         }
     }
 
@@ -113,163 +290,10 @@ fn parse_route(route: &str) -> Vec<String> {
     params
 }
 
-// Helper to parse headers.
-fn parse_header(
-    header: &tinc_pb::http_endpoint_options::Header,
-    input_message: &IoOptions,
-) -> anyhow::Result<proc_macro2::TokenStream> {
-    use tinc_pb::http_endpoint_options::header;
-
-    let header_name = header.name.as_str();
-    let field_str = header.field.as_str();
-
-    let field_type = input_message
-        .field_type(field_str)
-        .with_context(|| format!("header field {} not found in input message", field_str))?;
-
-    let encoding = header.encoding.clone().unwrap_or_else(|| match field_type.strip_option() {
-        FieldKind::Map(_, _) | FieldKind::Message(_) | FieldKind::WellKnown(WellKnownType::Struct) => {
-            header::Encoding::ContentType(header::ContentType::FormUrlEncoded as i32)
-        }
-        _ => header::Encoding::ContentType(header::ContentType::Text as i32),
-    });
-
-    let header_value = match encoding {
-        header::Encoding::Delimiter(delimiter) => {
-            quote! {
-                ::tinc::helpers::header_decode::text(&parts.headers, #header_name, #field_str, ::core::option::Option::Some(#delimiter))
-            }
-        }
-        header::Encoding::ContentType(content_type) => {
-            let content_type = header::ContentType::try_from(content_type)
-                .with_context(|| format!("invalid header content type value: {}", content_type))?;
-
-            match content_type {
-                header::ContentType::FormUrlEncoded => {
-                    quote! {
-                        ::tinc::helpers::header_decode::form_url_encoded(&parts.headers, #header_name, #field_str)
-                    }
-                }
-                header::ContentType::Json => {
-                    quote! {
-                        ::tinc::helpers::header_decode::json(&parts.headers, #header_name, #field_str)
-                    }
-                }
-                header::ContentType::Unspecified | header::ContentType::Text => {
-                    quote! {
-                        ::tinc::helpers::header_decode::text(&parts.headers, #header_name, #field_str, ::core::option::Option::None)
-                    }
-                }
-            }
-        }
-        header::Encoding::Param(param) => {
-            quote! {
-                ::tinc::helpers::header_decode::param(&parts.headers, #header_name, #param, #field_str)
-            }
-        }
-    };
-
-    Ok(quote! {
-        input.merge(match #header_value {
-            Ok(input) => input,
-            Err(err) => return err,
-        });
-    })
-}
-
 struct GeneratedMethod {
     function_body: proc_macro2::TokenStream,
     http_method: Ident,
     path: String,
-}
-
-fn generate_content_constants<'a>(
-    content_types: impl IntoIterator<Item = (&'a tinc_pb::http_endpoint_options::ContentType, &'a Ident)>,
-) -> anyhow::Result<proc_macro2::TokenStream> {
-    let const_cts = content_types
-        .into_iter()
-        .map(|(content_type, ct_ident)| {
-            let content_type_strs = content_type
-                .accept
-                .iter()
-                .map(|mime| {
-                    Ok(mime
-                        .parse::<mediatype::MediaTypeBuf>()
-                        .context("invalid mime type")?
-                        .to_string())
-                })
-                .collect::<anyhow::Result<Vec<_>>>()?;
-
-            Ok(quote! {
-                static #ct_ident: ::std::sync::LazyLock<::tinc::reexports::headers_accept::Accept> =
-                    ::std::sync::LazyLock::new(|| {
-                        ::std::iter::FromIterator::from_iter([
-                            #(
-                                ::tinc::reexports::mediatype::MediaTypeBuf::from_string(#content_type_strs.to_owned())
-                                    .expect("invalid mime type this is a bug, please report it")
-                            ),*
-                        ])
-                    });
-            })
-        })
-        .collect::<anyhow::Result<Vec<_>>>()?;
-
-    Ok(quote! {
-        #(#const_cts)*
-    })
-}
-
-fn generate_content_matchers<'a>(
-    content_types: impl IntoIterator<Item = (&'a tinc_pb::http_endpoint_options::ContentType, &'a Ident)>,
-    input_message: &IoOptions,
-) -> anyhow::Result<proc_macro2::TokenStream> {
-    let matchers = content_types
-        .into_iter()
-        .map(|(content_type, ct_ident)| {
-            let headers = content_type
-                .header
-                .iter()
-                .map(|header| parse_header(header, input_message))
-                .collect::<anyhow::Result<Vec<_>>>()?;
-
-            let merge = content_type
-                .content
-                .as_ref()
-                .and_then(|content| match content {
-                    tinc_pb::http_endpoint_options::content_type::Content::Body(field) => Some(quote! {
-                        input.merge(
-                            ::std::iter::once((::core::convert::Into::into(#field), body))
-                        )
-                    }),
-                    _ => None,
-                })
-                .unwrap_or_else(|| {
-                    quote! {
-                        match body {
-                            ::tinc::value::Value::Object(object) => {
-                                input.merge(object);
-                            }
-                            _ => return ::tinc::helpers::bad_request_not_object(body),
-                        }
-                    }
-                });
-
-            Ok(quote! {
-                if let Some(accept) = #ct_ident.negotiate([content_type]) {
-                    #(#headers)*
-
-                    match ::tinc::helpers::parse_body(accept, body).await {
-                        Ok(body) => #merge,
-                        Err(err) => return err,
-                    }
-                }
-            })
-        })
-        .collect::<anyhow::Result<Vec<_>>>()?;
-
-    Ok(quote! {
-        #(#matchers else)*
-    })
 }
 
 impl GeneratedMethod {
@@ -286,7 +310,10 @@ impl GeneratedMethod {
             Some(tinc_pb::http_endpoint_options::Method::Put(path)) => ("put", path),
             Some(tinc_pb::http_endpoint_options::Method::Delete(path)) => ("delete", path),
             Some(tinc_pb::http_endpoint_options::Method::Patch(path)) => ("patch", path),
-            Some(tinc_pb::http_endpoint_options::Method::Custom(method)) => (method.method.as_str(), &method.path),
+            Some(tinc_pb::http_endpoint_options::Method::Custom(method)) => {
+                todo!("custom method not implemented: {:?}", method);
+                // (method.method.as_str(), &method.path)
+            }
             _ => return Ok(None),
         };
 
@@ -309,116 +336,168 @@ impl GeneratedMethod {
             MethodIo::WellKnown(well_known) => IoOptions::WellKnown(*well_known),
         };
 
-        anyhow::ensure!(
-            input_message.has_fields(&params),
-            "input message {} has missing fields: {:?}",
-            name,
-            params
-        );
+        let path_struct = input_message
+            .path_struct(extensions, &params)
+            .with_context(|| format!("failed to generate path struct for method: {name}"))?;
 
-        let endpoint_headers = endpoint
-            .header
-            .iter()
-            .map(|header| parse_header(header, &input_message))
-            .collect::<anyhow::Result<Vec<_>>>()?;
+        let path_params = path_struct.map(|PathFields { defs, mappings }| {
+            quote! {{
+                let mut tracker = &mut tracker;
+                let mut target = &mut target;
 
-        let path_params = if !params.is_empty() {
-            quote! {
-                match ::tinc::helpers::parse_path(&mut parts).await {
-                    Ok(path_params) => {
-                        input.merge(path_params);
-                    },
-                    Err(err) => return err,
+                #[derive(::tinc::reexports::serde::Deserialize)]
+                #[allow(non_snake_case, dead_code)]
+                struct PathContent {
+                    #(#defs),*
                 }
-            }
-        } else {
-            quote! {}
-        };
+
+                let path = match ::tinc::__private::deserialize_path::<PathContent>(&mut parts).await {
+                    Ok(path) => path,
+                    Err(err) => return err,
+                };
+
+                #(#mappings)*
+            }}
+        });
 
         let is_get_or_delete = matches!(http_method_str, "get" | "delete");
-        let use_query_string = endpoint.query_string.unwrap_or(is_get_or_delete);
-        let query_string = use_query_string.then(|| {
-            quote! {
-                match ::tinc::helpers::parse_query(&mut parts).await {
-                    Ok(query_string) => {
-                        input.merge(query_string);
-                    },
-                    Err(err) => return err,
-                }
+        let input = endpoint.input.clone().unwrap_or_else(|| {
+            if is_get_or_delete {
+                http_endpoint_options::Input::Query(http_endpoint_options::QueryParams::default())
+            } else {
+                http_endpoint_options::Input::Body(http_endpoint_options::RequestBody::default())
             }
         });
 
-        let use_request_body = endpoint.request_body.unwrap_or(!is_get_or_delete) && input_message.has_content(&params);
-        let request_body = use_request_body
-            .then(|| {
-                let mut content_types = endpoint.content_type.clone();
-                if content_types.is_empty() {
-                    content_types.push(tinc_pb::http_endpoint_options::ContentType {
-                        accept: vec!["application/json".to_string()],
-                        content: None,
-                        header: Vec::new(),
-                        multipart: None,
-                    });
-                }
+        let input = match input {
+            http_endpoint_options::Input::Query(http_endpoint_options::QueryParams { field }) => {
+                let extract = if field.is_empty() {
+                    quote! {}
+                } else {
+                    let (extract, _) = input_message.field_extract(&field, extensions)?;
+                    extract
+                };
+                quote! {{
+                    let mut tracker = &mut tracker;
+                    let mut target = &mut target;
 
-                let ct_idents: Vec<_> = content_types
-                    .iter()
-                    .enumerate()
-                    .map(|(idx, _)| ident_from_str(format!("ACCEPT_{idx}")))
-                    .collect();
+                    #extract
+                    if let Err(err) = ::tinc::__private::deserialize_query_string(
+                        &parts,
+                        tracker,
+                        target
+                    ) {
+                        return err;
+                    }
+                }}
+            }
+            http_endpoint_options::Input::Body(http_endpoint_options::RequestBody {
+                field,
+                content_type_field,
+            }) => {
+                let content_type = if !content_type_field.is_empty() {
+                    if content_type_field == field {
+                        anyhow::bail!("content type field cannot be the same as the body field");
+                    }
 
-                let zipped_iter = content_types.iter().zip(ct_idents.iter());
+                    let (extract, kind) = input_message.field_extract(&content_type_field, extensions)?;
+                    if !matches!(kind.field_type(), FieldType::Primitive(PrimitiveKind::String)) {
+                        anyhow::bail!("content type field must be a string");
+                    }
 
-                let constants = generate_content_constants(zipped_iter.clone())?;
-                let matchers = generate_content_matchers(zipped_iter, &input_message)?;
-
-                anyhow::Ok(quote! {
-                    let content_type = match ::tinc::helpers::header_decode::content_type(&parts.headers) {
-                        Ok(content_type) => content_type,
-                        Err(err) => return err,
+                    let modifier = match kind.modifier() {
+                        Some(FieldModifier::Optional) => quote! {
+                            let (mut tracker, mut target) = #extract;
+                            tracker.get_or_insert_default();
+                            target.insert(content_type.into());
+                        },
+                        None => quote! {
+                            let (_, mut target) = #extract;
+                            *target = content_type.into();
+                        },
+                        _ => anyhow::bail!("content type field cannot be repeated or map"),
                     };
 
-                    if let Some(content_type) = &content_type {
-                        #constants
-
-                        #matchers {
-                            return ::tinc::helpers::no_valid_content_type(content_type, &[#(&*#ct_idents),*]);
+                    quote! {{
+                        if let Some(content_type) = parts.headers.get(::tinc::reexports::http::header::CONTENT_TYPE).and_then(|h| h.to_str().ok()) {
+                            #extract
+                            #modifier
                         }
+                    }}
+                } else {
+                    quote! {}
+                };
+
+                let (extract, is_raw_bytes) = if field.is_empty() {
+                    (
+                        quote! {},
+                        matches!(
+                            input_message,
+                            IoOptions::WellKnown(WellKnownType::Primitive(PrimitiveKind::Bytes))
+                        ),
+                    )
+                } else {
+                    let (extract, kind) = input_message.field_extract(&field, extensions)?;
+                    (
+                        extract,
+                        matches!(
+                            (kind.field_type(), kind.modifier()),
+                            (
+                                FieldType::Primitive(PrimitiveKind::Bytes),
+                                Some(FieldModifier::Optional) | None
+                            )
+                        ),
+                    )
+                };
+
+                let de_func = if is_raw_bytes {
+                    quote! {
+                        deserialize_body_bytes
                     }
-                })
-            })
-            .transpose()?;
+                } else {
+                    quote! {
+                        deserialize_body_json
+                    }
+                };
+
+                let body = quote! {{
+                    #extract
+                    if let Err(err) = ::tinc::__private::#de_func(&parts, body, tracker, target, &mut state).await {
+                        return err;
+                    }
+                }};
+
+                quote! {{
+                    let mut tracker = &mut tracker;
+                    let mut target = &mut target;
+
+                    #body
+                    #content_type
+                }}
+            }
+        };
 
         let input_path = input_message.path(service.package.as_str());
         let service_method_name = field_ident_from_str(name);
 
         let function_impl = quote! {
-            let mut input = ::tinc::value::Object::new();
+            let mut state = ::tinc::__private::TrackerSharedState::default();
+            let mut tracker = <<#input_path as ::tinc::__private::TrackerFor>::Tracker as ::core::default::Default>::default();
+            let mut target = <#input_path as ::core::default::Default>::default();
 
             #path_params
 
-            #query_string
-
-            #(#endpoint_headers)*
-
-            #request_body
-
-            let input: #input_path = match ::tinc::helpers::decode_input(input) {
-                Ok(input) => input,
-                Err(err) => return err,
-            };
+            #input
 
             let request = ::tinc::reexports::tonic::Request::from_parts(
                 ::tinc::reexports::tonic::metadata::MetadataMap::from_headers(parts.headers),
                 parts.extensions,
-                ::core::convert::Into::into(input),
+                target,
             );
 
             let (metadata, body, extensions) = match service.inner.#service_method_name(request).await {
                 ::core::result::Result::Ok(response) => response.into_parts(),
-                ::core::result::Result::Err(status) => {
-                    todo!("todo map errors: {:?}", status);
-                }
+                ::core::result::Result::Err(status) => return ::tinc::__private::error::handle_status(&status),
             };
 
             let mut response = ::tinc::reexports::axum::response::IntoResponse::into_response(

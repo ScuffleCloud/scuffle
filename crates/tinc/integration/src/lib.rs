@@ -6,5 +6,8 @@ mod flattened;
 mod nested;
 mod oneof;
 mod recursive;
+mod renamed;
 mod simple;
 mod simple_enum;
+mod visibility;
+mod well_known;

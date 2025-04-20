@@ -18,6 +18,9 @@ fn main() {
                 "pb/nested.proto",
                 "pb/flattened.proto",
                 "pb/oneof.proto",
+                "pb/renamed.proto",
+                "pb/visibility.proto",
+                "pb/well_known.proto",
             ],
             &["pb"],
         )

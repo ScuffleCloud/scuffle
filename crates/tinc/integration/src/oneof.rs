@@ -1,4 +1,4 @@
-use tinc::__private::de::{TrackedStructDeserializer, TrackerFor, TrackerSharedState, deserialize};
+use tinc::__private::{TrackedStructDeserializer, TrackerFor, TrackerSharedState, deserialize_tracker_target};
 
 #[test]
 fn test_oneof() {
@@ -42,7 +42,7 @@ fn test_oneof() {
     );
 
     state.in_scope(|| {
-        deserialize(&mut de, &mut message, &mut tracker).unwrap();
+        deserialize_tracker_target(&mut de, &mut message, &mut tracker).unwrap();
 
         TrackedStructDeserializer::validate::<serde::de::value::Error>(&message, &mut tracker).unwrap();
     });
@@ -187,6 +187,34 @@ fn test_oneof() {
         },
     )
     "#);
+
+    insta::assert_json_snapshot!(message, @r#"
+    {
+      "string_or_int32": {
+        "string": "test"
+      },
+      "string_or_int32_tagged": {
+        "tag": "int322",
+        "value": 1
+      },
+      "tagged_nested": {
+        "tag": "nested_message",
+        "value": {
+          "string": "nested",
+          "int32": 50
+        }
+      },
+      "nested": {
+        "custom_enum2": "VALUE"
+      },
+      "magic_nested": {
+        "string": "magic",
+        "int32": 1
+      },
+      "flattened_tag": "magic_enum3",
+      "flattened_value": "VALUE"
+    }
+    "#);
 }
 
 #[test]
@@ -217,7 +245,7 @@ fn test_oneof_buffering() {
     );
 
     state.in_scope(|| {
-        deserialize(&mut de, &mut message, &mut tracker).unwrap();
+        deserialize_tracker_target(&mut de, &mut message, &mut tracker).unwrap();
     });
 
     let mut de = serde_json::Deserializer::from_str(
@@ -246,7 +274,7 @@ fn test_oneof_buffering() {
     );
 
     state.in_scope(|| {
-        deserialize(&mut de, &mut message, &mut tracker).unwrap();
+        deserialize_tracker_target(&mut de, &mut message, &mut tracker).unwrap();
 
         TrackedStructDeserializer::validate::<serde::de::value::Error>(&message, &mut tracker).unwrap();
     });
@@ -389,5 +417,33 @@ fn test_oneof_buffering() {
             ),
         },
     )
+    "#);
+
+    insta::assert_json_snapshot!(message, @r#"
+    {
+      "string_or_int32": {
+        "string": "test"
+      },
+      "string_or_int32_tagged": {
+        "tag": "int322",
+        "value": 1
+      },
+      "tagged_nested": {
+        "tag": "nested_message",
+        "value": {
+          "string": "nested",
+          "int32": 100
+        }
+      },
+      "nested": {
+        "custom_enum2": "VALUE"
+      },
+      "magic_nested": {
+        "string": "magic",
+        "int32": 1
+      },
+      "flattened_tag": "magic_enum3",
+      "flattened_value": "VALUE"
+    }
     "#);
 }

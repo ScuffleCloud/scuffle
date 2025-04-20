@@ -11,15 +11,15 @@ mod serde;
 mod service;
 
 fn ident_from_str(s: impl AsRef<str>) -> Ident {
-    Ident::new(s.as_ref(), proc_macro2::Span::call_site())
+    syn::parse_str(s.as_ref()).unwrap()
 }
 
 fn field_ident_from_str(s: impl AsRef<str>) -> Ident {
-    Ident::new(&prost_sanatize::to_snake(s.as_ref()), proc_macro2::Span::call_site())
+    syn::parse_str(&prost_sanatize::to_snake(s.as_ref())).unwrap()
 }
 
 fn type_ident_from_str(s: impl AsRef<str>) -> Ident {
-    Ident::new(&prost_sanatize::to_upper_camel(s.as_ref()), proc_macro2::Span::call_site())
+    syn::parse_str(&prost_sanatize::to_upper_camel(s.as_ref())).unwrap()
 }
 
 fn strip_last_path_part(s: &str) -> &str {

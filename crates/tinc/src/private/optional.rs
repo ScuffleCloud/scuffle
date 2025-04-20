@@ -1,4 +1,4 @@
-use super::{DeserializeHelper, Expected, Tracker, TrackerDeserializer, TrackerFor, TrackerWrapper};
+use super::{DeserializeHelper, Expected, Tracker, TrackerDeserializer, TrackerFor, TrackerValidation, TrackerWrapper};
 
 #[derive(Debug)]
 pub struct OptionalTracker<T>(pub Option<T>);
@@ -107,5 +107,22 @@ where
         D: super::DeserializeContent<'de>,
     {
         deserializer.deserialize_seed(DeserializeHelper { value, tracker: self })
+    }
+}
+
+impl<T> TrackerValidation for OptionalTracker<T>
+where
+    T: TrackerValidation,
+{
+    fn validate<E>(&mut self, value: &Self::Target) -> Result<(), E>
+    where
+        E: serde::de::Error,
+    {
+        match (&mut self.0, value) {
+            (None, None) => Ok(()),
+            (Some(tracker), Some(value)) => tracker.validate(value),
+            (None, Some(_)) => Err(E::custom("tracker is None but value is Some")),
+            (Some(_), None) => Err(E::custom("tracker is Some but value is None")),
+        }
     }
 }

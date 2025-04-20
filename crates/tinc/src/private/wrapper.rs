@@ -64,9 +64,15 @@ impl<A> SeqAccessWrapper<A> {
     }
 }
 
+enum State {
+    Key,
+    Value,
+    Finished,
+}
+
 struct MapAccessWrapper<A> {
     access: A,
-    next_key: bool,
+    state: State,
 }
 
 impl<'de, A> serde::de::MapAccess<'de> for &mut MapAccessWrapper<A>
@@ -76,29 +82,22 @@ where
     type Error = A::Error;
 
     #[inline]
-    fn next_entry_seed<K, V>(&mut self, kseed: K, vseed: V) -> Result<Option<(K::Value, V::Value)>, Self::Error>
-    where
-        K: serde::de::DeserializeSeed<'de>,
-        V: serde::de::DeserializeSeed<'de>,
-    {
-        if !self.next_key {
-            Err(serde::de::Error::custom("invalid call to next_entry_seed"))
-        } else {
-            self.access
-                .next_entry_seed(DeserializeWrapper(kseed), DeserializeWrapper(vseed))
-        }
-    }
-
-    #[inline]
     fn next_key_seed<K>(&mut self, seed: K) -> Result<Option<K::Value>, Self::Error>
     where
         K: serde::de::DeserializeSeed<'de>,
     {
-        if !self.next_key {
-            Err(serde::de::Error::custom("invalid call to next_key_seed"))
-        } else {
-            self.next_key = false;
-            self.access.next_key_seed(DeserializeWrapper(seed))
+        match self.state {
+            State::Key => {
+                let value = self.access.next_key_seed(DeserializeWrapper(seed));
+                if value.as_ref().is_ok_and(|v| v.is_none()) {
+                    self.state = State::Finished;
+                } else {
+                    self.state = State::Value;
+                }
+                value
+            }
+            State::Value => Err(serde::de::Error::custom("invalid call to next_key_seed")),
+            State::Finished => Ok(None),
         }
     }
 
@@ -107,11 +106,12 @@ where
     where
         V: serde::de::DeserializeSeed<'de>,
     {
-        if self.next_key {
-            Err(serde::de::Error::custom("invalid call to next_value_seed"))
-        } else {
-            self.next_key = true;
-            self.access.next_value_seed(DeserializeWrapper(seed))
+        match self.state {
+            State::Key | State::Finished => Err(serde::de::Error::custom("invalid call to next_value_seed")),
+            State::Value => {
+                self.state = State::Key;
+                self.access.next_value_seed(DeserializeWrapper(seed))
+            }
         }
     }
 
@@ -124,7 +124,10 @@ where
 impl<A> MapAccessWrapper<A> {
     #[inline]
     fn new(access: A) -> Self {
-        Self { access, next_key: true }
+        Self {
+            access,
+            state: State::Key,
+        }
     }
 }
 
@@ -145,7 +148,7 @@ where
     {
         let mut access = MapAccessWrapper::new(access);
         let result = self.visitor.visit_map(&mut access);
-        if !access.next_key && access.access.next_key::<serde::de::IgnoredAny>().is_err() {
+        if matches!(access.state, State::Value) && access.access.next_value::<serde::de::IgnoredAny>().is_err() {
             return result;
         }
 

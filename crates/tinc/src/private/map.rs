@@ -170,7 +170,7 @@ where
                 Ok(_) => {}
                 Err(error) => {
                     report_serde_error(error)?;
-                    break;
+                    continue;
                 }
             }
 

@@ -10,6 +10,7 @@ extend google.protobuf.MessageOptions {
 
 extend google.protobuf.FieldOptions {
   SchemaFieldOptions field = 15502;
+  optional PredefinedConstraint predefined = 15508;
 }
 
 extend google.protobuf.EnumOptions {
@@ -38,7 +39,7 @@ message HttpRouterOptions {
 }
 
 enum RenameAll {
-  // Normally we should have prefix'd enums however in this case
+  // Normally we should have prefix'd enums however in input case
   // we want to allow for easier use by just saying `LOWER_CASE` instead
   // of `RENAME_ALL_LOWER_CASE`.
   // protolint:disable ENUM_FIELD_NAMES_PREFIX
@@ -56,6 +57,10 @@ enum RenameAll {
 message SchemaMessageOptions {
   optional bool custom_impl = 1;
   optional RenameAll rename_all = 2;
+  optional bool skip_validation = 101;
+
+  //protolint:disable:next REPEATED_FIELD_NAMES_PLURALIZED
+  repeated CelExpression cel = 100;
 }
 
 enum Visibility {
@@ -65,49 +70,552 @@ enum Visibility {
   OUTPUT_ONLY = 3;
 }
 
+message PredefinedConstraint {
+  //protolint:disable:next REPEATED_FIELD_NAMES_PLURALIZED
+  repeated CelExpression cel = 1;
+  enum Type {
+    TYPE_UNSPECIFIED = 0;
+    WRAPPER_REPEATED_ITEM = 1;
+    WRAPPER_MAP_KEY = 2;
+    WRAPPER_MAP_VALUE = 3;
+    CUSTOM_EXPRESSION = 4;
+  }
+  Type type = 2;
+}
+
 message SchemaFieldOptions {
   optional string rename = 1;
   optional bool omitable = 200;
   optional bool flatten = 201;
   optional Visibility visibility = 202;
 
-  // message NumberConstraint {
-  //     optional double min = 1;
-  //     optional double max = 2;
-  //     optional double multiple_of = 3;
-  //     optional bool exclusive_min = 4;
-  //     optional bool exclusive_max = 5;
-  // }
+  optional FieldConstraints constraint = 101;
+}
 
-  // message StringConstraint {
-  //     optional int32 min_length = 1;
-  //     optional int32 max_length = 2;
-  //     optional string pattern = 3;
-  //     optional string format = 4;
-  // }
+message FloatConstraint {
+  oneof greater {
+    float gt = 1 [(predefined).cel = {
+      message: "value must be greater than `{this}`"
+      expression: "input > this"
+      jsonschemas: '{ "exclusiveMinimum": this }'
+    }];
+    float gte = 2 [(predefined).cel = {
+      message: "value must be greater than or equal to `{this}`"
+      expression: "input >= this"
+      jsonschemas: '{ "minimum": this }'
+    }];
+  }
 
-  // message BytesConstraint {
-  //     optional int32 min_length = 1;
-  //     optional int32 max_length = 2;
-  // }
+  oneof less {
+    float lt = 3 [(predefined).cel = {
+      message: "value must be less than `{this}`"
+      expression: "input < this"
+      jsonschemas: '{ "exclusiveMaximum": this }'
+    }];
+    float lte = 4 [(predefined).cel = {
+      message: "value must be less than or equal to {this}"
+      expression: "input <= this"
+      jsonschemas: '{ "maximum": this }'
+    }];
+  }
 
-  // message RepeatedConstraint {
-  //     optional int32 min_length = 1;
-  //     optional int32 max_length = 2;
-  //     optional bool unique_items = 3;
-  //     oneof constraint {
-  //         NumberConstraint number = 4;
-  //         StringConstraint string = 5;
-  //         BytesConstraint bytes = 6;
-  //     }
-  // }
+  // protolint:disable:next REPEATED_FIELD_NAMES_PLURALIZED
+  repeated float in = 5 [(predefined).cel = {
+    message: "value must be one of `{this}`"
+    expression: "this.contains(input)"
+    jsonschemas: '{ "enum": this }'
+  }];
+  // protolint:disable:next REPEATED_FIELD_NAMES_PLURALIZED
+  repeated float not_in = 6 [(predefined).cel = {
+    message: "value must not be one of `{this}`"
+    expression: "!this.contains(input)"
+    jsonschemas: '{ "not": { "enum": this }}'
+  }];
+  optional bool finite = 7 [(predefined).cel = {
+    message: "value must be finite"
+    expression: "!this || input.is_finite()"
+  }];
+  optional float const = 8 [(predefined).cel = {
+    message: "value must be equal to `{this}`"
+    expression: "input == this"
+    jsonschemas: '{ "const": this }'
+  }];
+}
 
-  // oneof constraint {
-  //     NumberConstraint number = 9;
-  //     StringConstraint string = 10;
-  //     BytesConstraint bytes = 11;
-  //     RepeatedConstraint repeated = 12;
-  // }
+message DoubleConstraint {
+  oneof greater {
+    double gt = 1 [(predefined).cel = {
+      message: "value must be greater than `{this}`"
+      expression: "input > this"
+      jsonschemas: '{ "exclusiveMinimum": this }'
+    }];
+    double gte = 2 [(predefined).cel = {
+      message: "value must be greater than or equal to `{this}`"
+      expression: "input >= this"
+      jsonschemas: '{ "minimum": this }'
+    }];
+  }
+
+  oneof less {
+    double lt = 3 [(predefined).cel = {
+      message: "value must be less than `{this}`"
+      expression: "input < this"
+      jsonschemas: '{ "exclusiveMaximum": this }'
+    }];
+    double lte = 4 [(predefined).cel = {
+      message: "value must be less than or equal to `{this}`"
+      expression: "input <= this"
+      jsonschemas: '{ "maximum": this }'
+    }];
+  }
+
+  // protolint:disable:next REPEATED_FIELD_NAMES_PLURALIZED
+  repeated double in = 5 [(predefined).cel = {
+    message: "value must be one of `{this}`"
+    expression: "this.contains(input)"
+    jsonschemas: '{ "enum": this }'
+  }];
+  // protolint:disable:next REPEATED_FIELD_NAMES_PLURALIZED
+  repeated double not_in = 6 [(predefined).cel = {
+    message: "value must not be one of `{this}`"
+    expression: "!this.contains(input)"
+    jsonschemas: '{ "not": { "enum": this }}'
+  }];
+  optional bool finite = 7 [(predefined).cel = {
+    message: "value must be finite"
+    expression: "!this || input.is_finite()"
+  }];
+  optional double const = 8 [(predefined).cel = {
+    message: "value must be equal to `{this}`"
+    expression: "input == this"
+    jsonschemas: '{ "const": this }'
+  }];
+}
+
+message Int32Constraints {
+  oneof greater {
+    int32 gt = 1 [(predefined).cel = {
+      message: "value must be greater than `{this}`"
+      expression: "input > this"
+      jsonschemas: '{ "exclusiveMinimum": this }'
+    }];
+    int32 gte = 2 [(predefined).cel = {
+      message: "value must be greater than or equal to `{this}`"
+      expression: "input >= this"
+      jsonschemas: '{ "minimum": this }'
+    }];
+  }
+
+  oneof less {
+    int32 lt = 3 [(predefined).cel = {
+      message: "value must be less than `{this}`"
+      expression: "input < this"
+      jsonschemas: '{ "exclusiveMaximum": this }'
+    }];
+    int32 lte = 4 [(predefined).cel = {
+      message: "value must be less than or equal to `{this}`"
+      expression: "input <= this"
+      jsonschemas: '{ "maximum": this }'
+    }];
+  }
+  // protolint:disable:next REPEATED_FIELD_NAMES_PLURALIZED
+  repeated int32 in = 5 [(predefined).cel = {
+    message: "value must be one of `{this}`"
+    expression: "this.contains(input)"
+    jsonschemas: '{ "enum": this }'
+  }];
+  // protolint:disable:next REPEATED_FIELD_NAMES_PLURALIZED
+  repeated int32 not_in = 6 [(predefined).cel = {
+    message: "value must not be one of `{this}`"
+    expression: "!this.contains(input)"
+    jsonschemas: '{ "not": { "enum": this }}'
+  }];
+  optional int32 const = 8 [(predefined).cel = {
+    message: "value must be equal to `{this}`"
+    expression: "input == this"
+    jsonschemas: '{ "const": this }'
+  }];
+}
+
+message Int64Constraints {
+  oneof greater {
+    int64 gt = 1 [(predefined).cel = {
+      message: "value must be greater than `{this}`"
+      expression: "input > this"
+      jsonschemas: '{ "exclusiveMinimum": this }'
+    }];
+    int64 gte = 2 [(predefined).cel = {
+      message: "value must be greater than or equal to `{this}`"
+      expression: "input >= this"
+      jsonschemas: '{ "minimum": this }'
+    }];
+  }
+
+  oneof less {
+    int64 lt = 3 [(predefined).cel = {
+      message: "value must be less than `{this}`"
+      expression: "input < this"
+      jsonschemas: '{ "exclusiveMaximum": this }'
+    }];
+    int64 lte = 4 [(predefined).cel = {
+      message: "value must be less than or equal to `{this}`"
+      expression: "input <= this"
+      jsonschemas: '{ "maximum": this }'
+    }];
+  }
+  // protolint:disable:next REPEATED_FIELD_NAMES_PLURALIZED
+  repeated int64 in = 5 [(predefined).cel = {
+    message: "value must be one of `{this}`"
+    expression: "this.contains(input)"
+    jsonschemas: '{ "enum": this }'
+  }];
+  // protolint:disable:next REPEATED_FIELD_NAMES_PLURALIZED
+  repeated int64 not_in = 6 [(predefined).cel = {
+    message: "value must not be one of `{this}`"
+    expression: "!this.contains(input)"
+    jsonschemas: '{ "not": { "enum": this }}'
+  }];
+  optional int64 const = 8 [(predefined).cel = {
+    message: "value must be equal to `{this}`"
+    expression: "input == this"
+    jsonschemas: '{ "const": this }'
+  }];
+}
+
+message UInt32Constraints {
+  oneof greater {
+    uint32 gt = 1 [(predefined).cel = {
+      message: "value must be greater than `{this}`"
+      expression: "input > this"
+      jsonschemas: '{ "exclusiveMinimum": this }'
+    }];
+    uint32 gte = 2 [(predefined).cel = {
+      message: "value must be greater than or equal to `{this}`"
+      expression: "input >= this"
+      jsonschemas: '{ "minimum": this }'
+    }];
+  }
+
+  oneof less {
+    uint32 lt = 3 [(predefined).cel = {
+      message: "value must be less than `{this}`"
+      expression: "input < this"
+      jsonschemas: '{ "exclusiveMaximum": this }'
+    }];
+    uint32 lte = 4 [(predefined).cel = {
+      message: "value must be less than or equal to `{this}`"
+      expression: "input <= this"
+      jsonschemas: '{ "maximum": this }'
+    }];
+  }
+  // protolint:disable:next REPEATED_FIELD_NAMES_PLURALIZED
+  repeated uint32 in = 5 [(predefined).cel = {
+    message: "value must be one of `{this}`"
+    expression: "this.contains(input)"
+    jsonschemas: '{ "enum": this }'
+  }];
+  // protolint:disable:next REPEATED_FIELD_NAMES_PLURALIZED
+  repeated uint32 not_in = 6 [(predefined).cel = {
+    message: "value must not be one of `{this}`"
+    expression: "!this.contains(input)"
+    jsonschemas: '{ "not": { "enum": this }}'
+  }];
+  optional uint32 const = 8 [(predefined).cel = {
+    message: "value must be equal to `{this}`"
+    expression: "input == this"
+    jsonschemas: '{ "const": this }'
+  }];
+}
+
+message UInt64Constraints {
+  oneof greater {
+    int64 gt = 1 [(predefined).cel = {
+      message: "value must be greater than `{this}`"
+      expression: "input > this"
+      jsonschemas: '{ "exclusiveMinimum": this }'
+    }];
+    uint64 gte = 2 [(predefined).cel = {
+      message: "value must be greater than or equal to `{this}`"
+      expression: "input >= this"
+      jsonschemas: '{ "minimum": this }'
+    }];
+  }
+
+  oneof less {
+    uint64 lt = 3 [(predefined).cel = {
+      message: "value must be less than `{this}`"
+      expression: "input < this"
+      jsonschemas: '{ "exclusiveMaximum": this }'
+    }];
+    uint64 lte = 4 [(predefined).cel = {
+      message: "value must be less than or equal to `{this}`"
+      expression: "input <= this"
+      jsonschemas: '{ "maximum": this }'
+    }];
+  }
+  // protolint:disable:next REPEATED_FIELD_NAMES_PLURALIZED
+  repeated uint64 in = 5 [(predefined).cel = {
+    message: "value must be one of `{this}`"
+    expression: "this.contains(input)"
+    jsonschemas: '{ "enum": this }'
+  }];
+  // protolint:disable:next REPEATED_FIELD_NAMES_PLURALIZED
+  repeated uint64 not_in = 6 [(predefined).cel = {
+    message: "value must not be one of `{this}`"
+    expression: "!this.contains(input)"
+    jsonschemas: '{ "not": { "enum": this }}'
+  }];
+  optional uint64 const = 8 [(predefined).cel = {
+    message: "value must be equal to `{this}`"
+    expression: "input == this"
+    jsonschemas: '{ "const": this }'
+  }];
+}
+
+message StringConstraints {
+  optional string const = 1 [(predefined).cel = {
+    message: "value must equal `{this}`"
+    expression: "input == this"
+    jsonschemas: '{"const": this }'
+  }];
+  optional uint64 len = 2 [(predefined).cel = {
+    message: "value must be exactly `{this}` character{this > 1 ? 's' : ''} long"
+    expression: "input.size() == this"
+    jsonschemas: '{ "maxLength": this }'
+    jsonschemas: '{ "minLength": this }'
+  }];
+  optional uint64 min_len = 3 [(predefined).cel = {
+    message: "value must be at least `{this}` character{this > 1 ? 's' : ''} long"
+    expression: "input.size() >= this"
+    jsonschemas: '{ "minLength": this }'
+  }];
+  optional uint64 max_len = 4 [(predefined).cel = {
+    message: "value must be at most `{this}` character{this > 1 ? 's' : ''} long"
+    expression: "input.size() <= this"
+    jsonschemas: '{ "maxLength": this }'
+  }];
+  optional string match = 5 [(predefined).cel = {
+    message: "value must match the pattern `{this}`"
+    expression: "input.matches(this)"
+    jsonschemas: '{ "pattern": this }'
+  }];
+  optional string not_match = 6 [(predefined).cel = {
+    message: "value must not match the pattern `{this}`"
+    expression: "!(input.matches(this))"
+    jsonschemas: '{ "not": { "pattern": this }}'
+  }];
+  optional string prefix = 7 [(predefined).cel = {
+    message: "value must start with `{this}`"
+    expression: "input.startsWith(this)"
+    jsonschemas: '{ "pattern": "^" + this }'
+  }];
+  optional string suffix = 8 [(predefined).cel = {
+    message: "value must end with `{this}`"
+    expression: "input.endsWith(this)"
+    jsonschemas: '{ "pattern": this + "$" }'
+  }];
+  optional string contains = 9 [(predefined).cel = {
+    message: "value must contain `{this}`"
+    expression: "input.contains(this)"
+    jsonschemas: '{ "pattern": this }'
+  }];
+  optional string not_contains = 10 [(predefined).cel = {
+    message: "value must not contain `{this}`"
+    expression: "!input.contains(this)"
+    jsonschemas: '{ "not": { "pattern": this }}'
+  }];
+  // protolint:disable:next REPEATED_FIELD_NAMES_PLURALIZED
+  repeated string in = 11 [(predefined).cel = {
+    message: "value must be one of `{this}`"
+    expression: "this.contains(input)"
+    jsonschemas: '{ "enum": this }'
+  }];
+  // protolint:disable:next REPEATED_FIELD_NAMES_PLURALIZED
+  repeated string not_in = 12 [(predefined).cel = {
+    message: "value must not be one of `{this}`"
+    expression: "!this.contains(input)"
+    jsonschemas: '{ "not": { "enum": this }}'
+  }];
+  oneof well_known {
+    bool email = 13 [(predefined).cel = {
+      message: "value must be a valid email address"
+      expression: "!this || input.isEmail()"
+      jsonschemas: 'this ? { "format": "email" } : {}'
+    }];
+  }
+}
+
+message BytesConstraints {
+  optional bytes const = 1 [(predefined).cel = {
+    message: "value must equal `{this}`"
+    expression: "input == this"
+    jsonschemas: '{"const": this }'
+  }];
+  optional uint64 len = 2 [(predefined).cel = {
+    message: "value must be exactly `{this}` bytes long"
+    expression: "input.size() == this"
+    jsonschemas: '{ "minLength": this }'
+    jsonschemas: '{ "maxLength": this }'
+  }];
+  optional uint64 min_len = 3 [(predefined).cel = {
+    message: "value must be at least `{this}` bytes long"
+    expression: "input.size() >= this"
+    jsonschemas: '{ "minLength": this }'
+  }];
+  optional uint64 max_len = 4 [(predefined).cel = {
+    message: "value must be at most `{this}` bytes long"
+    expression: "input.size() <= this"
+    jsonschemas: '{ "maxLength": this }'
+  }];
+}
+
+message EnumConstraints {
+  optional int32 const = 1 [(predefined).cel = {
+    message: "value must be equal to `{this.enum()}`"
+    expression: "input == this"
+    jsonschemas: '{ "const": this.enum() }'
+  }];
+  optional bool defined = 2 [(predefined).cel = {
+    message: "value must be defined in the enum"
+    expression: "!this || input.enum() != null"
+  }];
+  // protolint:disable:next REPEATED_FIELD_NAMES_PLURALIZED
+  repeated int32 in = 3 [(predefined).cel = {
+    message: "value must be one of `{this.map(e, e.enum())}`"
+    expression: "this.contains(input)"
+    jsonschemas: '{ "enum": this.map(e, e.enum()) }'
+  }];
+  // protolint:disable:next REPEATED_FIELD_NAMES_PLURALIZED
+  repeated int32 not_in = 4 [(predefined).cel = {
+    message: "value must not be one of `{this.map(e, e.enum())}`"
+    expression: "!this.contains(input)"
+    jsonschemas: '{ "not": { "enum": this.map(e, e.enum()) }}'
+  }];
+}
+
+message RepeatedConstraints {
+  optional uint64 min_len = 1 [(predefined).cel = {
+    message: "value must have at least `{this}` elements"
+    expression: "input.size() >= this"
+    jsonschemas: '{ "minItems": this }'
+  }];
+  optional uint64 max_len = 2 [(predefined).cel = {
+    message: "value must have at most `{this}` elements"
+    expression: "input.size() <= this"
+    jsonschemas: '{ "maxItems": this }'
+  }];
+  optional uint64 len = 3 [(predefined).cel = {
+    message: "value must have exactly `{this}` elements"
+    expression: "input.size() == this"
+    jsonschemas: '{ "maxItems": this }'
+    jsonschemas: '{ "minItems": this }'
+  }];
+  optional bool unique = 4 [(predefined).cel = {
+    message: "value must be unique"
+    expression: "!this || input.isUnique()"
+    jsonschemas: 'this ? { "uniqueItems": this } : {}'
+  }];
+  optional PrimitiveConstraints items = 5 [
+    (predefined).type = WRAPPER_REPEATED_ITEM
+  ];
+}
+
+enum Ignore {
+  IGNORE_UNSPECIFIED = 0;
+  ALWAYS = 1;
+  DEFAULT = 2;
+}
+
+message MapConstraints {
+  optional uint64 min_len = 1 [(predefined).cel = {
+    message: "value must have at least `{this}` elements"
+    expression: "input.size() >= this"
+    jsonschemas: '{ "minProperties": this }'
+  }];
+  optional uint64 max_len = 2 [(predefined).cel = {
+    message: "value must have at most `{this}` elements"
+    expression: "input.size() <= this"
+    jsonschemas: '{ "maxProperties": this }'
+  }];
+  optional uint64 len = 3 [(predefined).cel = {
+    message: "value must have exactly `{this}` elements"
+    expression: "input.size() == this"
+    jsonschemas: '{ "minProperties": this }'
+    jsonschemas: '{ "maxProperties": this }'
+  }];
+
+  message MapKeyConstraints {
+    oneof constraint {
+      Int32Constraints int32 = 1;
+      Int64Constraints int64 = 2;
+      UInt32Constraints uint32 = 3;
+      UInt64Constraints uint64 = 4;
+      StringConstraints string = 5;
+      // EnumConstraints enum = 6;
+    }
+    optional Ignore ignore = 7;
+    //protolint:disable:next REPEATED_FIELD_NAMES_PLURALIZED
+    repeated CelExpression cel = 8 [
+      (predefined).type = CUSTOM_EXPRESSION
+    ];
+  }
+
+  optional MapKeyConstraints key = 4 [
+    (predefined).type = WRAPPER_MAP_KEY
+  ];
+  optional PrimitiveConstraints value = 5 [
+    (predefined).type = WRAPPER_MAP_VALUE
+  ];
+}
+
+message PrimitiveConstraints {
+  oneof constraint {
+    FloatConstraint float = 1;
+    DoubleConstraint double = 2;
+    Int32Constraints int32 = 3;
+    Int64Constraints int64 = 4;
+    UInt32Constraints uint32 = 5;
+    UInt64Constraints uint64 = 6;
+    StringConstraints string = 7;
+    BytesConstraints bytes = 8;
+    EnumConstraints enum = 9;
+  }
+  optional Ignore ignore = 10;
+  //protolint:disable:next REPEATED_FIELD_NAMES_PLURALIZED
+  repeated CelExpression cel = 11 [
+      (predefined).type = CUSTOM_EXPRESSION
+    ];
+}
+
+message FieldConstraints {
+  oneof constraint {
+    FloatConstraint float = 1;
+    DoubleConstraint double = 2;
+    Int32Constraints int32 = 3;
+    Int64Constraints int64 = 4;
+    UInt32Constraints uint32 = 5;
+    UInt64Constraints uint64 = 6;
+    StringConstraints string = 7;
+    BytesConstraints bytes = 8;
+    EnumConstraints enum = 9;
+    RepeatedConstraints repeated = 10;
+    MapConstraints map = 11;
+  }
+  optional Ignore ignore = 12;
+  //protolint:disable:next REPEATED_FIELD_NAMES_PLURALIZED
+  repeated CelExpression cel = 13 [
+    (predefined).type = CUSTOM_EXPRESSION
+  ];
+}
+
+message CelExpression {
+  string message = 2;
+  string expression = 3;
+  message Variable {
+    string name = 1;
+    string rust_path = 2;
+  }
+  repeated string jsonschemas = 5;
 }
 
 message SchemaEnumOptions {
@@ -156,9 +664,9 @@ message HttpEndpointOptions {
   }
 
   // The default input for `GET` and `DELETE` methods is `query`
-  // where field is empty denoting the message itself.
+  // where field is empty denoting the message itthis.
   // Otherwise the default is `body` where field is empty denoting
-  // the message itself. Content-type by default is not saved in the message.
+  // the message itthis. Content-type by default is not saved in the message.
   oneof input {
     RequestBody body = 7;
     QueryParams query = 8;
@@ -170,6 +678,11 @@ message HttpEndpointOptions {
   }
 
   Response response = 9;
+
+  //protolint:disable:next REPEATED_FIELD_NAMES_PLURALIZED
+  // Custom expressions evaluated on the incoming request
+  // specific for this endpoint.
+  repeated CelExpression cel = 10;
 }
 
 message SchemaOneofOptions {

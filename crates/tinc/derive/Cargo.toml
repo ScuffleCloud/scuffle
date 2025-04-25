@@ -10,3 +10,4 @@ proc-macro = true
 syn = { version = "2" }
 quote = { version = "1.0" }
 proc-macro2 = { version = "1.0" }
+scuffle-workspace-hack.workspace = true

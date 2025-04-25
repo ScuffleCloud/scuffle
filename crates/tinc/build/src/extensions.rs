@@ -4,6 +4,8 @@ use anyhow::Context;
 use indexmap::IndexMap;
 use prost_reflect::{DescriptorPool, EnumDescriptor, ExtensionDescriptor, MessageDescriptor, ServiceDescriptor};
 
+use crate::cel::{CelExpression, CelInput, gather_cel_expressions};
+
 pub struct Extension<T> {
     name: &'static str,
     descriptor: Option<ExtensionDescriptor>,
@@ -17,6 +19,14 @@ impl<T> Extension<T> {
             descriptor: pool.get_extension_by_name(name),
             _marker: std::marker::PhantomData,
         }
+    }
+
+    pub fn descriptor(&self) -> Option<&ExtensionDescriptor> {
+        self.descriptor.as_ref()
+    }
+
+    pub fn name(&self) -> &'static str {
+        self.name
     }
 
     fn decode(&self, incoming: &T::Incoming) -> anyhow::Result<Option<T>>
@@ -83,6 +93,14 @@ impl ProstExtension for tinc_pb::SchemaMessageOptions {
 }
 
 impl ProstExtension for tinc_pb::SchemaFieldOptions {
+    type Incoming = prost_reflect::FieldDescriptor;
+
+    fn get_options(incoming: &Self::Incoming) -> Option<prost_reflect::DynamicMessage> {
+        Some(incoming.options())
+    }
+}
+
+impl ProstExtension for tinc_pb::PredefinedConstraint {
     type Incoming = prost_reflect::FieldDescriptor;
 
     fn get_options(incoming: &Self::Incoming) -> Option<prost_reflect::DynamicMessage> {
@@ -330,17 +348,18 @@ impl WellKnownType {
 
 pub struct Extensions {
     // Message extensions.
-    schema_message: Extension<tinc_pb::SchemaMessageOptions>,
-    schema_field: Extension<tinc_pb::SchemaFieldOptions>,
-    schema_oneof: Extension<tinc_pb::SchemaOneofOptions>,
+    ext_message: Extension<tinc_pb::SchemaMessageOptions>,
+    ext_field: Extension<tinc_pb::SchemaFieldOptions>,
+    ext_oneof: Extension<tinc_pb::SchemaOneofOptions>,
+    ext_predefined: Extension<tinc_pb::PredefinedConstraint>,
 
     // Enum extensions.
-    schema_enum: Extension<tinc_pb::SchemaEnumOptions>,
-    schema_variant: Extension<tinc_pb::SchemaVariantOptions>,
+    ext_enum: Extension<tinc_pb::SchemaEnumOptions>,
+    ext_variant: Extension<tinc_pb::SchemaVariantOptions>,
 
     // Service extensions.
-    http_endpoint: Extension<tinc_pb::HttpEndpointOptions>,
-    http_router: Extension<tinc_pb::HttpRouterOptions>,
+    ext_http_endpoint: Extension<tinc_pb::HttpEndpointOptions>,
+    ext_http_router: Extension<tinc_pb::HttpRouterOptions>,
 
     messages: BTreeMap<String, MessageOpts>,
     enums: BTreeMap<String, EnumOpts>,
@@ -354,6 +373,7 @@ pub struct MessageOpts {
     pub rename_all: Option<tinc_pb::RenameAll>,
     pub fields: IndexMap<String, FieldOpts>,
     pub oneofs: IndexMap<String, OneofOpts>,
+    pub cel: Vec<CelExpression>,
 }
 
 #[derive(Debug, Clone, Copy)]
@@ -381,6 +401,7 @@ pub struct FieldOpts {
     pub nullable: bool,
     pub flatten: bool,
     pub visibility: Option<FieldVisibility>,
+    pub cel_exprs: BTreeMap<CelInput, Vec<CelExpression>>,
 }
 
 impl FieldOpts {
@@ -442,13 +463,14 @@ const ANY_NOT_SUPPORTED_ERROR: &str = "uses `google.protobuf.Any`, this is curre
 impl Extensions {
     pub fn new(pool: &DescriptorPool) -> Self {
         Self {
-            schema_message: Extension::new("tinc.message", pool),
-            schema_field: Extension::new("tinc.field", pool),
-            schema_enum: Extension::new("tinc.enum", pool),
-            schema_variant: Extension::new("tinc.variant", pool),
-            http_endpoint: Extension::new("tinc.http_endpoint", pool),
-            http_router: Extension::new("tinc.http_router", pool),
-            schema_oneof: Extension::new("tinc.oneof", pool),
+            ext_message: Extension::new("tinc.message", pool),
+            ext_field: Extension::new("tinc.field", pool),
+            ext_predefined: Extension::new("tinc.predefined", pool),
+            ext_enum: Extension::new("tinc.enum", pool),
+            ext_variant: Extension::new("tinc.variant", pool),
+            ext_http_endpoint: Extension::new("tinc.http_endpoint", pool),
+            ext_http_router: Extension::new("tinc.http_router", pool),
+            ext_oneof: Extension::new("tinc.oneof", pool),
             messages: BTreeMap::new(),
             enums: BTreeMap::new(),
             services: BTreeMap::new(),
@@ -496,7 +518,7 @@ impl Extensions {
             return Ok(());
         }
 
-        let opts = self.http_router.decode(service)?;
+        let opts = self.ext_http_router.decode(service)?;
         insert = insert || opts.is_some();
 
         let mut service_opts = ServiceOpts {
@@ -507,7 +529,7 @@ impl Extensions {
 
         for method in service.methods() {
             let opts = self
-                .http_endpoint
+                .ext_http_endpoint
                 .decode_all(&method)
                 .with_context(|| format!("method {}", method.full_name()))?;
 
@@ -570,15 +592,12 @@ impl Extensions {
             return Ok(());
         }
 
-        let opts = self.schema_message.decode(message)?;
+        let opts = self.ext_message.decode(message)?;
 
         let fields = message
             .fields()
             .map(|field| {
-                let opts = self
-                    .schema_field
-                    .decode(&field)
-                    .with_context(|| field.full_name().to_owned())?;
+                let opts = self.ext_field.decode(&field).with_context(|| field.full_name().to_owned())?;
                 Ok((field, opts))
             })
             .collect::<anyhow::Result<Vec<_>>>()?;
@@ -597,6 +616,13 @@ impl Extensions {
                     .and_then(|opts| opts.rename_all.and_then(|v| tinc_pb::RenameAll::try_from(v).ok())),
                 fields: IndexMap::new(),
                 oneofs: IndexMap::new(),
+                cel: opts
+                    .as_ref()
+                    .map(|opts| opts.cel.as_slice())
+                    .unwrap_or_default()
+                    .iter()
+                    .map(|expr| CelExpression::new(expr, None))
+                    .collect::<anyhow::Result<_>>()?,
             },
         );
 
@@ -633,43 +659,52 @@ impl Extensions {
                 visibility,
                 flatten: opts.flatten(),
                 rename: opts.rename,
+                cel_exprs: gather_cel_expressions(&self.ext_predefined, &field.options())
+                    .context("gathering cel expressions")?,
             };
 
             if let Some(Some(oneof)) = (!nullable).then(|| field.containing_oneof()) {
-                let opts = self.schema_oneof.decode(&oneof)?;
-                let oneof = message.oneofs.entry(oneof.name().to_owned()).or_insert_with(|| {
-                    let nullable = opts.as_ref().is_none_or(|opts| opts.nullable());
-                    let visibility = opts.as_ref().and_then(|opts| opts.visibility).and_then(|v| {
-                        match tinc_pb::Visibility::try_from(v).unwrap_or_default() {
-                            tinc_pb::Visibility::Skip => Some(FieldVisibility::Skip),
-                            tinc_pb::Visibility::InputOnly => Some(FieldVisibility::InputOnly),
-                            tinc_pb::Visibility::OutputOnly => Some(FieldVisibility::OutputOnly),
-                            _ => None,
-                        }
-                    });
+                let opts = self.ext_oneof.decode(&oneof)?;
+                let mut entry = message.oneofs.entry(oneof.name().to_owned());
+                let oneof = match entry {
+                    indexmap::map::Entry::Occupied(ref mut entry) => entry.get_mut(),
+                    indexmap::map::Entry::Vacant(entry) => {
+                        let nullable = opts.as_ref().is_none_or(|opts| opts.nullable());
+                        let visibility =
+                            opts.as_ref().and_then(|opts| opts.visibility).and_then(
+                                |v| match tinc_pb::Visibility::try_from(v).unwrap_or_default() {
+                                    tinc_pb::Visibility::Skip => Some(FieldVisibility::Skip),
+                                    tinc_pb::Visibility::InputOnly => Some(FieldVisibility::InputOnly),
+                                    tinc_pb::Visibility::OutputOnly => Some(FieldVisibility::OutputOnly),
+                                    _ => None,
+                                },
+                            );
 
-                    message.fields.insert(
-                        oneof.name().to_owned(),
-                        FieldOpts {
-                            flatten: opts.as_ref().is_some_and(|opts| opts.flatten()),
-                            kind: FieldKind::Optional(Box::new(FieldKind::OneOf(oneof.full_name().to_owned()))),
-                            nullable,
-                            omitable: opts.as_ref().map_or(nullable, |opts| opts.omitable()),
+                        message.fields.insert(
+                            oneof.name().to_owned(),
+                            FieldOpts {
+                                flatten: opts.as_ref().is_some_and(|opts| opts.flatten()),
+                                kind: FieldKind::Optional(Box::new(FieldKind::OneOf(oneof.full_name().to_owned()))),
+                                nullable,
+                                omitable: opts.as_ref().map_or(nullable, |opts| opts.omitable()),
+                                rename: opts.as_ref().and_then(|opts| opts.rename.clone()),
+                                visibility,
+                                cel_exprs: gather_cel_expressions(&self.ext_predefined, &field.options())
+                                    .context("gathering cel expressions")?,
+                            },
+                        );
+
+                        entry.insert(OneofOpts {
+                            custom_impl: opts.as_ref().is_some_and(|opts| opts.custom_impl()),
                             rename: opts.as_ref().and_then(|opts| opts.rename.clone()),
-                            visibility,
-                        },
-                    );
-
-                    OneofOpts {
-                        custom_impl: opts.as_ref().is_some_and(|opts| opts.custom_impl()),
-                        rename: opts.as_ref().and_then(|opts| opts.rename.clone()),
-                        rename_all: opts
-                            .as_ref()
-                            .and_then(|opts| opts.rename_all.and_then(|v| tinc_pb::RenameAll::try_from(v).ok())),
-                        tagged: opts.as_ref().and_then(|opts| opts.tagged.clone()),
-                        fields: BTreeMap::new(),
+                            rename_all: opts
+                                .as_ref()
+                                .and_then(|opts| opts.rename_all.and_then(|v| tinc_pb::RenameAll::try_from(v).ok())),
+                            tagged: opts.as_ref().and_then(|opts| opts.tagged.clone()),
+                            fields: BTreeMap::new(),
+                        })
                     }
-                });
+                };
 
                 oneof.fields.insert(field.name().to_owned(), field_opts);
             } else {
@@ -695,13 +730,13 @@ impl Extensions {
             return Ok(());
         }
 
-        let opts = self.schema_enum.decode(enum_)?;
+        let opts = self.ext_enum.decode(enum_)?;
 
         let values = enum_
             .values()
             .map(|value| {
                 let opts = self
-                    .schema_variant
+                    .ext_variant
                     .decode(&value)
                     .with_context(|| value.full_name().to_owned())?;
                 Ok((value, opts))

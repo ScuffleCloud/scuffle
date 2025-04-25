@@ -4,6 +4,7 @@ use anyhow::Context;
 use extensions::Extensions;
 use prost_reflect::DescriptorPool;
 
+pub mod cel;
 mod codegen;
 mod extensions;
 

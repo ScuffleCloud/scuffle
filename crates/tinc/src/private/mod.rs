@@ -46,6 +46,8 @@ pub use deserializer::*;
 mod http;
 pub use http::*;
 
+pub mod cel;
+
 #[macro_export]
 #[doc(hidden)]
 macro_rules! __tinc_field_from_str {

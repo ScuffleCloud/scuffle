@@ -57,6 +57,7 @@ rust_library(
         "@rules_rust//rust/platform:aarch64-apple-darwin": [],
         "@rules_rust//rust/platform:aarch64-pc-windows-msvc": [],
         "@rules_rust//rust/platform:aarch64-unknown-linux-gnu": [],
+        "@rules_rust//rust/platform:wasm32-unknown-unknown": [],
         "@rules_rust//rust/platform:x86_64-apple-darwin": [],
         "@rules_rust//rust/platform:x86_64-pc-windows-msvc": [],
         "@rules_rust//rust/platform:x86_64-unknown-linux-gnu": [],
@@ -66,9 +67,9 @@ rust_library(
     deps = [
         "@cargo_vendor__fnv-1.0.7//:fnv",
         "@cargo_vendor__ident_case-1.0.1//:ident_case",
-        "@cargo_vendor__proc-macro2-1.0.101//:proc_macro2",
+        "@cargo_vendor__proc-macro2-1.0.95//:proc_macro2",
         "@cargo_vendor__quote-1.0.40//:quote",
         "@cargo_vendor__strsim-0.11.1//:strsim",
-        "@cargo_vendor__syn-2.0.106//:syn",
+        "@cargo_vendor__syn-2.0.101//:syn",
     ],
 )

@@ -4,11 +4,11 @@ version = "0.1.5"
 authors = ["Scuffle <opensource@scuffle.cloud>"]
 documentation = "https://docs.rs/scuffle-mp4"
 edition = "2024"
-keywords = ["mp4", "video", "codec"]
+keywords = ["mp4", "video", "codec", "isobmff"]
 license = "MIT OR Apache-2.0"
 readme = "README.md"
 repository = "https://github.com/scufflecloud/scuffle"
-description = "A pure Rust MP4 parser and writer."
+description = "A pure Rust implementation of MP4 file format ISOBMFF boxes"
 
 [lints.rust]
 unexpected_cfgs = { level = "warn", check-cfg = ['cfg(coverage_nightly)'] }
@@ -18,17 +18,12 @@ unexpected_cfgs = { level = "warn", check-cfg = ['cfg(coverage_nightly)'] }
 docs = ["dep:scuffle-changelog", "dep:document-features"]
 
 [dependencies]
-byteorder = "1"
-bytes = "1"
 document-features = { optional = true, version = "0.2" }
-fixed = "1"
-paste = "1"
-scuffle-aac = { path = "../aac", version = "0.1" }
-scuffle-av1 = { path = "../av1", version = "0.1" }
+isobmff = { path = "../isobmff", version = "0.1" }
+isobmff-derive = { path = "../isobmff/derive", version = "0.1" }
+nutype-enum = { path = "../nutype-enum", version = "0.1" }
 scuffle-bytes-util = { path = "../bytes-util", version = "0.1" }
 scuffle-changelog = { optional = true, path = "../changelog", version = "0.1" }
-scuffle-h264 = { path = "../h264", version = "0.2" }
-scuffle-h265 = { path = "../h265", version = "0.2" }
 
 [dev-dependencies]
 serde = { features = ["derive"], version = "1" }

@@ -68,6 +68,6 @@ rust_library(
     version = "0.7.5",
     deps = [
         "@cargo_vendor__num-traits-0.2.19//:num_traits",
-        "@cargo_vendor__pxfm-0.1.23//:pxfm",
+        "@cargo_vendor__pxfm-0.1.24//:pxfm",
     ],
 )

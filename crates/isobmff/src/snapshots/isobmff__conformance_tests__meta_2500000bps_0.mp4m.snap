@@ -1,0 +1,1800 @@
+---
+source: crates/isobmff/src/conformance_tests.rs
+expression: redeserialized_file
+snapshot_kind: text
+---
+IsobmffFile {
+    ftyp: Some(
+        FileTypeBox {
+            major_brand: Brand::Iso5,
+            minor_version: 1,
+            compatible_brands: [
+                Brand::Iso5,
+                Brand([100, 115, 109, 115]),
+                Brand([109, 115, 105, 120]),
+                Brand([100, 97, 115, 104]),
+            ],
+        },
+    ),
+    etyp: [],
+    otyp: [],
+    pdin: None,
+    moov: Some(
+        MovieBox {
+            mvhd: MovieHeaderBox {
+                full_header: FullBoxHeader {
+                    version: 0,
+                    flags: U24Be(
+                        0,
+                    ),
+                },
+                creation_time: 3496985606,
+                modification_time: 3496985606,
+                timescale: 600,
+                duration: 0,
+                rate: 1,
+                volume: 1,
+                reserved1: 0,
+                reserved2: 0,
+                matrix: [
+                    65536,
+                    0,
+                    0,
+                    0,
+                    65536,
+                    0,
+                    0,
+                    0,
+                    1073741824,
+                ],
+                pre_defined: [
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                ],
+                next_track_id: 2,
+            },
+            meta: None,
+            trak: [
+                TrackBox {
+                    tkhd: TrackHeaderBox {
+                        version: 0,
+                        flags: TrackHeaderBoxFlags(
+                            TrackEnabled,
+                        ),
+                        creation_time: 3496985606,
+                        modification_time: 3496985606,
+                        track_id: 1,
+                        reserved1: 0,
+                        duration: 0,
+                        reserved2: 0,
+                        layer: 0,
+                        alternate_group: 0,
+                        volume: 0,
+                        reserved3: 0,
+                        matrix: [
+                            65536,
+                            0,
+                            0,
+                            0,
+                            65536,
+                            0,
+                            0,
+                            0,
+                            1073741824,
+                        ],
+                        width: 320,
+                        height: 240,
+                    },
+                    tref: None,
+                    trgr: None,
+                    edts: None,
+                    ttyp: None,
+                    meta: None,
+                    mdia: MediaBox {
+                        mdhd: MediaHeaderBox {
+                            full_header: FullBoxHeader {
+                                version: 0,
+                                flags: U24Be(
+                                    0,
+                                ),
+                            },
+                            creation_time: 3496985606,
+                            modification_time: 3496985606,
+                            timescale: 1000,
+                            duration: 0,
+                            language: Langauge(
+                                [
+                                    21,
+                                    14,
+                                    4,
+                                ],
+                            ),
+                            pre_defined: 0,
+                        },
+                        hdlr: HandlerBox {
+                            full_header: FullBoxHeader {
+                                version: 0,
+                                flags: U24Be(
+                                    0,
+                                ),
+                            },
+                            pre_defined: 0,
+                            handler_type: HandlerType::Text,
+                            reserved: [
+                                0,
+                                0,
+                                0,
+                            ],
+                            name: Utf8String(
+                                "nhml@GPAC0.5.1-DEV-rev5339",
+                            ),
+                        },
+                        elng: None,
+                        minf: MediaInformationBox {
+                            vmhd: None,
+                            smhd: None,
+                            hmhd: None,
+                            sthd: None,
+                            vvhd: None,
+                            unknown_boxes: [
+                                UnknownBox {
+                                    header: BoxHeader {
+                                        size: Short(
+                                            12,
+                                        ),
+                                        box_type: FourCc(
+                                            "nmhd",
+                                        ),
+                                    },
+                                    data.len: 4,
+                                },
+                            ],
+                            dinf: DataInformationBox {
+                                dref: DataReferenceBox {
+                                    full_header: FullBoxHeader {
+                                        version: 0,
+                                        flags: U24Be(
+                                            0,
+                                        ),
+                                    },
+                                    entry_count: 1,
+                                    url: [
+                                        DataEntryUrlBox {
+                                            full_header: FullBoxHeader {
+                                                version: 0,
+                                                flags: U24Be(
+                                                    1,
+                                                ),
+                                            },
+                                            location: None,
+                                        },
+                                    ],
+                                    urn: [],
+                                    imda: [],
+                                    snim: [],
+                                    unknown_boxes: [],
+                                },
+                            },
+                            stbl: SampleTableBox {
+                                stsd: SampleDescriptionBox {
+                                    full_header: FullBoxHeader {
+                                        version: 0,
+                                        flags: U24Be(
+                                            0,
+                                        ),
+                                    },
+                                    entry_count: 1,
+                                    boxes: [
+                                        UnknownBox {
+                                            header: BoxHeader {
+                                                size: Short(
+                                                    19,
+                                                ),
+                                                box_type: FourCc(
+                                                    "depi",
+                                                ),
+                                            },
+                                            data.len: 11,
+                                        },
+                                    ],
+                                },
+                                stts: TimeToSampleBox {
+                                    full_header: FullBoxHeader {
+                                        version: 0,
+                                        flags: U24Be(
+                                            0,
+                                        ),
+                                    },
+                                    entry_count: 0,
+                                    entries: [],
+                                },
+                                ctts: None,
+                                cslg: None,
+                                stsc: SampleToChunkBox {
+                                    full_header: FullBoxHeader {
+                                        version: 0,
+                                        flags: U24Be(
+                                            0,
+                                        ),
+                                    },
+                                    entry_count: 0,
+                                    entries.len: 0,
+                                },
+                                stsz: Some(
+                                    SampleSizeBox {
+                                        full_header: FullBoxHeader {
+                                            version: 0,
+                                            flags: U24Be(
+                                                0,
+                                            ),
+                                        },
+                                        sample_size: 0,
+                                        sample_count: 0,
+                                        entry_size.len: 0,
+                                    },
+                                ),
+                                stz2: None,
+                                stco: Some(
+                                    ChunkOffsetBox {
+                                        full_header: FullBoxHeader {
+                                            version: 0,
+                                            flags: U24Be(
+                                                0,
+                                            ),
+                                        },
+                                        entry_count: 0,
+                                        chunk_offset.len: 0,
+                                    },
+                                ),
+                                co64: None,
+                                stss: None,
+                                stsh: None,
+                                padb: None,
+                                stdp: None,
+                                sdtp: None,
+                                sbgp: [],
+                                sgpd: [],
+                                subs: [],
+                                saiz: [],
+                                saio: [],
+                                csgp: [],
+                            },
+                        },
+                        unknown_boxes: [],
+                    },
+                    unknown_boxes: [],
+                    udta: None,
+                },
+            ],
+            mvex: Some(
+                MovieExtendsBox {
+                    mehd: Some(
+                        MovieExtendsHeaderBox {
+                            full_header: FullBoxHeader {
+                                version: 0,
+                                flags: U24Be(
+                                    0,
+                                ),
+                            },
+                            fragment_duration: 18600,
+                        },
+                    ),
+                    trex: [
+                        TrackExtendsBox {
+                            full_header: FullBoxHeader {
+                                version: 0,
+                                flags: U24Be(
+                                    0,
+                                ),
+                            },
+                            track_id: 1,
+                            default_sample_description_index: 1,
+                            default_sample_duration: 2000,
+                            default_sample_size: 3,
+                            default_sample_flags: SampleFlags {
+                                reserved: 0,
+                                is_leading: 0,
+                                sample_depends_on: 0,
+                                sample_is_depended_on: 0,
+                                sample_has_redundancy: 0,
+                                sample_padding_value: 0,
+                                sample_is_non_sync_sample: false,
+                                sample_degradation_priority: 0,
+                            },
+                        },
+                    ],
+                    leva: None,
+                },
+            ),
+            unknown_boxes: [],
+            udta: None,
+        },
+    ),
+    moof: [
+        MovieFragmentBox {
+            mfhd: MovieFragmentHeaderBox {
+                full_header: FullBoxHeader {
+                    version: 0,
+                    flags: U24Be(
+                        0,
+                    ),
+                },
+                sequence_number: 1,
+            },
+            meta: None,
+            traf: [
+                TrackFragmentBox {
+                    tfhd: TrackFragmentHeaderBox {
+                        version: 0,
+                        flags: TfFlags(
+                            DefaultSampleDurationPresent | DefaultSampleFlagsPresent | DefaultBaseIsMoof,
+                        ),
+                        track_id: 1,
+                        base_data_offset: None,
+                        sample_description_index: None,
+                        default_sample_duration: Some(
+                            1000,
+                        ),
+                        default_sample_size: None,
+                        default_sample_flags: Some(
+                            SampleFlags {
+                                reserved: 0,
+                                is_leading: 0,
+                                sample_depends_on: 2,
+                                sample_is_depended_on: 0,
+                                sample_has_redundancy: 0,
+                                sample_padding_value: 0,
+                                sample_is_non_sync_sample: false,
+                                sample_degradation_priority: 0,
+                            },
+                        ),
+                    },
+                    trun: [
+                        TrackRunBox {
+                            version: 0,
+                            flags: TrFlags(
+                                DataOffsetPresent,
+                            ),
+                            sample_count: 1,
+                            data_offset: Some(
+                                100,
+                            ),
+                            first_sample_flags: None,
+                            samples: [
+                                TrackRunBoxSample {
+                                    sample_duration: None,
+                                    sample_size: None,
+                                    sample_flags: None,
+                                    sample_composition_time_offset: None,
+                                },
+                            ],
+                        },
+                    ],
+                    sbgp: [],
+                    sgpd: [],
+                    subs: [],
+                    saiz: [],
+                    saio: [],
+                    tfdt: Some(
+                        TrackFragmentBaseMediaDecodeTimeBox {
+                            full_header: FullBoxHeader {
+                                version: 0,
+                                flags: U24Be(
+                                    0,
+                                ),
+                            },
+                            base_media_decode_time: 0,
+                        },
+                    ),
+                    meta: None,
+                    udta: None,
+                },
+            ],
+            udta: None,
+        },
+        MovieFragmentBox {
+            mfhd: MovieFragmentHeaderBox {
+                full_header: FullBoxHeader {
+                    version: 0,
+                    flags: U24Be(
+                        0,
+                    ),
+                },
+                sequence_number: 2,
+            },
+            meta: None,
+            traf: [
+                TrackFragmentBox {
+                    tfhd: TrackFragmentHeaderBox {
+                        version: 0,
+                        flags: TfFlags(
+                            DefaultSampleFlagsPresent | DefaultBaseIsMoof,
+                        ),
+                        track_id: 1,
+                        base_data_offset: None,
+                        sample_description_index: None,
+                        default_sample_duration: None,
+                        default_sample_size: None,
+                        default_sample_flags: Some(
+                            SampleFlags {
+                                reserved: 0,
+                                is_leading: 0,
+                                sample_depends_on: 2,
+                                sample_is_depended_on: 0,
+                                sample_has_redundancy: 0,
+                                sample_padding_value: 0,
+                                sample_is_non_sync_sample: false,
+                                sample_degradation_priority: 0,
+                            },
+                        ),
+                    },
+                    trun: [
+                        TrackRunBox {
+                            version: 0,
+                            flags: TrFlags(
+                                DataOffsetPresent,
+                            ),
+                            sample_count: 1,
+                            data_offset: Some(
+                                96,
+                            ),
+                            first_sample_flags: None,
+                            samples: [
+                                TrackRunBoxSample {
+                                    sample_duration: None,
+                                    sample_size: None,
+                                    sample_flags: None,
+                                    sample_composition_time_offset: None,
+                                },
+                            ],
+                        },
+                    ],
+                    sbgp: [],
+                    sgpd: [],
+                    subs: [],
+                    saiz: [],
+                    saio: [],
+                    tfdt: Some(
+                        TrackFragmentBaseMediaDecodeTimeBox {
+                            full_header: FullBoxHeader {
+                                version: 0,
+                                flags: U24Be(
+                                    0,
+                                ),
+                            },
+                            base_media_decode_time: 1000,
+                        },
+                    ),
+                    meta: None,
+                    udta: None,
+                },
+            ],
+            udta: None,
+        },
+        MovieFragmentBox {
+            mfhd: MovieFragmentHeaderBox {
+                full_header: FullBoxHeader {
+                    version: 0,
+                    flags: U24Be(
+                        0,
+                    ),
+                },
+                sequence_number: 3,
+            },
+            meta: None,
+            traf: [
+                TrackFragmentBox {
+                    tfhd: TrackFragmentHeaderBox {
+                        version: 0,
+                        flags: TfFlags(
+                            DefaultSampleFlagsPresent | DefaultBaseIsMoof,
+                        ),
+                        track_id: 1,
+                        base_data_offset: None,
+                        sample_description_index: None,
+                        default_sample_duration: None,
+                        default_sample_size: None,
+                        default_sample_flags: Some(
+                            SampleFlags {
+                                reserved: 0,
+                                is_leading: 0,
+                                sample_depends_on: 2,
+                                sample_is_depended_on: 0,
+                                sample_has_redundancy: 0,
+                                sample_padding_value: 0,
+                                sample_is_non_sync_sample: false,
+                                sample_degradation_priority: 0,
+                            },
+                        ),
+                    },
+                    trun: [
+                        TrackRunBox {
+                            version: 0,
+                            flags: TrFlags(
+                                DataOffsetPresent,
+                            ),
+                            sample_count: 1,
+                            data_offset: Some(
+                                96,
+                            ),
+                            first_sample_flags: None,
+                            samples: [
+                                TrackRunBoxSample {
+                                    sample_duration: None,
+                                    sample_size: None,
+                                    sample_flags: None,
+                                    sample_composition_time_offset: None,
+                                },
+                            ],
+                        },
+                    ],
+                    sbgp: [],
+                    sgpd: [],
+                    subs: [],
+                    saiz: [],
+                    saio: [],
+                    tfdt: Some(
+                        TrackFragmentBaseMediaDecodeTimeBox {
+                            full_header: FullBoxHeader {
+                                version: 0,
+                                flags: U24Be(
+                                    0,
+                                ),
+                            },
+                            base_media_decode_time: 3000,
+                        },
+                    ),
+                    meta: None,
+                    udta: None,
+                },
+            ],
+            udta: None,
+        },
+        MovieFragmentBox {
+            mfhd: MovieFragmentHeaderBox {
+                full_header: FullBoxHeader {
+                    version: 0,
+                    flags: U24Be(
+                        0,
+                    ),
+                },
+                sequence_number: 4,
+            },
+            meta: None,
+            traf: [
+                TrackFragmentBox {
+                    tfhd: TrackFragmentHeaderBox {
+                        version: 0,
+                        flags: TfFlags(
+                            DefaultSampleFlagsPresent | DefaultBaseIsMoof,
+                        ),
+                        track_id: 1,
+                        base_data_offset: None,
+                        sample_description_index: None,
+                        default_sample_duration: None,
+                        default_sample_size: None,
+                        default_sample_flags: Some(
+                            SampleFlags {
+                                reserved: 0,
+                                is_leading: 0,
+                                sample_depends_on: 2,
+                                sample_is_depended_on: 0,
+                                sample_has_redundancy: 0,
+                                sample_padding_value: 0,
+                                sample_is_non_sync_sample: false,
+                                sample_degradation_priority: 0,
+                            },
+                        ),
+                    },
+                    trun: [
+                        TrackRunBox {
+                            version: 0,
+                            flags: TrFlags(
+                                DataOffsetPresent,
+                            ),
+                            sample_count: 1,
+                            data_offset: Some(
+                                96,
+                            ),
+                            first_sample_flags: None,
+                            samples: [
+                                TrackRunBoxSample {
+                                    sample_duration: None,
+                                    sample_size: None,
+                                    sample_flags: None,
+                                    sample_composition_time_offset: None,
+                                },
+                            ],
+                        },
+                    ],
+                    sbgp: [],
+                    sgpd: [],
+                    subs: [],
+                    saiz: [],
+                    saio: [],
+                    tfdt: Some(
+                        TrackFragmentBaseMediaDecodeTimeBox {
+                            full_header: FullBoxHeader {
+                                version: 0,
+                                flags: U24Be(
+                                    0,
+                                ),
+                            },
+                            base_media_decode_time: 5000,
+                        },
+                    ),
+                    meta: None,
+                    udta: None,
+                },
+            ],
+            udta: None,
+        },
+        MovieFragmentBox {
+            mfhd: MovieFragmentHeaderBox {
+                full_header: FullBoxHeader {
+                    version: 0,
+                    flags: U24Be(
+                        0,
+                    ),
+                },
+                sequence_number: 5,
+            },
+            meta: None,
+            traf: [
+                TrackFragmentBox {
+                    tfhd: TrackFragmentHeaderBox {
+                        version: 0,
+                        flags: TfFlags(
+                            DefaultSampleFlagsPresent | DefaultBaseIsMoof,
+                        ),
+                        track_id: 1,
+                        base_data_offset: None,
+                        sample_description_index: None,
+                        default_sample_duration: None,
+                        default_sample_size: None,
+                        default_sample_flags: Some(
+                            SampleFlags {
+                                reserved: 0,
+                                is_leading: 0,
+                                sample_depends_on: 2,
+                                sample_is_depended_on: 0,
+                                sample_has_redundancy: 0,
+                                sample_padding_value: 0,
+                                sample_is_non_sync_sample: false,
+                                sample_degradation_priority: 0,
+                            },
+                        ),
+                    },
+                    trun: [
+                        TrackRunBox {
+                            version: 0,
+                            flags: TrFlags(
+                                DataOffsetPresent,
+                            ),
+                            sample_count: 1,
+                            data_offset: Some(
+                                96,
+                            ),
+                            first_sample_flags: None,
+                            samples: [
+                                TrackRunBoxSample {
+                                    sample_duration: None,
+                                    sample_size: None,
+                                    sample_flags: None,
+                                    sample_composition_time_offset: None,
+                                },
+                            ],
+                        },
+                    ],
+                    sbgp: [],
+                    sgpd: [],
+                    subs: [],
+                    saiz: [],
+                    saio: [],
+                    tfdt: Some(
+                        TrackFragmentBaseMediaDecodeTimeBox {
+                            full_header: FullBoxHeader {
+                                version: 0,
+                                flags: U24Be(
+                                    0,
+                                ),
+                            },
+                            base_media_decode_time: 7000,
+                        },
+                    ),
+                    meta: None,
+                    udta: None,
+                },
+            ],
+            udta: None,
+        },
+        MovieFragmentBox {
+            mfhd: MovieFragmentHeaderBox {
+                full_header: FullBoxHeader {
+                    version: 0,
+                    flags: U24Be(
+                        0,
+                    ),
+                },
+                sequence_number: 6,
+            },
+            meta: None,
+            traf: [
+                TrackFragmentBox {
+                    tfhd: TrackFragmentHeaderBox {
+                        version: 0,
+                        flags: TfFlags(
+                            DefaultSampleFlagsPresent | DefaultBaseIsMoof,
+                        ),
+                        track_id: 1,
+                        base_data_offset: None,
+                        sample_description_index: None,
+                        default_sample_duration: None,
+                        default_sample_size: None,
+                        default_sample_flags: Some(
+                            SampleFlags {
+                                reserved: 0,
+                                is_leading: 0,
+                                sample_depends_on: 2,
+                                sample_is_depended_on: 0,
+                                sample_has_redundancy: 0,
+                                sample_padding_value: 0,
+                                sample_is_non_sync_sample: false,
+                                sample_degradation_priority: 0,
+                            },
+                        ),
+                    },
+                    trun: [
+                        TrackRunBox {
+                            version: 0,
+                            flags: TrFlags(
+                                DataOffsetPresent,
+                            ),
+                            sample_count: 1,
+                            data_offset: Some(
+                                96,
+                            ),
+                            first_sample_flags: None,
+                            samples: [
+                                TrackRunBoxSample {
+                                    sample_duration: None,
+                                    sample_size: None,
+                                    sample_flags: None,
+                                    sample_composition_time_offset: None,
+                                },
+                            ],
+                        },
+                    ],
+                    sbgp: [],
+                    sgpd: [],
+                    subs: [],
+                    saiz: [],
+                    saio: [],
+                    tfdt: Some(
+                        TrackFragmentBaseMediaDecodeTimeBox {
+                            full_header: FullBoxHeader {
+                                version: 0,
+                                flags: U24Be(
+                                    0,
+                                ),
+                            },
+                            base_media_decode_time: 9000,
+                        },
+                    ),
+                    meta: None,
+                    udta: None,
+                },
+            ],
+            udta: None,
+        },
+        MovieFragmentBox {
+            mfhd: MovieFragmentHeaderBox {
+                full_header: FullBoxHeader {
+                    version: 0,
+                    flags: U24Be(
+                        0,
+                    ),
+                },
+                sequence_number: 7,
+            },
+            meta: None,
+            traf: [
+                TrackFragmentBox {
+                    tfhd: TrackFragmentHeaderBox {
+                        version: 0,
+                        flags: TfFlags(
+                            DefaultSampleFlagsPresent | DefaultBaseIsMoof,
+                        ),
+                        track_id: 1,
+                        base_data_offset: None,
+                        sample_description_index: None,
+                        default_sample_duration: None,
+                        default_sample_size: None,
+                        default_sample_flags: Some(
+                            SampleFlags {
+                                reserved: 0,
+                                is_leading: 0,
+                                sample_depends_on: 2,
+                                sample_is_depended_on: 0,
+                                sample_has_redundancy: 0,
+                                sample_padding_value: 0,
+                                sample_is_non_sync_sample: false,
+                                sample_degradation_priority: 0,
+                            },
+                        ),
+                    },
+                    trun: [
+                        TrackRunBox {
+                            version: 0,
+                            flags: TrFlags(
+                                DataOffsetPresent,
+                            ),
+                            sample_count: 1,
+                            data_offset: Some(
+                                96,
+                            ),
+                            first_sample_flags: None,
+                            samples: [
+                                TrackRunBoxSample {
+                                    sample_duration: None,
+                                    sample_size: None,
+                                    sample_flags: None,
+                                    sample_composition_time_offset: None,
+                                },
+                            ],
+                        },
+                    ],
+                    sbgp: [],
+                    sgpd: [],
+                    subs: [],
+                    saiz: [],
+                    saio: [],
+                    tfdt: Some(
+                        TrackFragmentBaseMediaDecodeTimeBox {
+                            full_header: FullBoxHeader {
+                                version: 0,
+                                flags: U24Be(
+                                    0,
+                                ),
+                            },
+                            base_media_decode_time: 11000,
+                        },
+                    ),
+                    meta: None,
+                    udta: None,
+                },
+            ],
+            udta: None,
+        },
+        MovieFragmentBox {
+            mfhd: MovieFragmentHeaderBox {
+                full_header: FullBoxHeader {
+                    version: 0,
+                    flags: U24Be(
+                        0,
+                    ),
+                },
+                sequence_number: 8,
+            },
+            meta: None,
+            traf: [
+                TrackFragmentBox {
+                    tfhd: TrackFragmentHeaderBox {
+                        version: 0,
+                        flags: TfFlags(
+                            DefaultSampleFlagsPresent | DefaultBaseIsMoof,
+                        ),
+                        track_id: 1,
+                        base_data_offset: None,
+                        sample_description_index: None,
+                        default_sample_duration: None,
+                        default_sample_size: None,
+                        default_sample_flags: Some(
+                            SampleFlags {
+                                reserved: 0,
+                                is_leading: 0,
+                                sample_depends_on: 2,
+                                sample_is_depended_on: 0,
+                                sample_has_redundancy: 0,
+                                sample_padding_value: 0,
+                                sample_is_non_sync_sample: false,
+                                sample_degradation_priority: 0,
+                            },
+                        ),
+                    },
+                    trun: [
+                        TrackRunBox {
+                            version: 0,
+                            flags: TrFlags(
+                                DataOffsetPresent,
+                            ),
+                            sample_count: 1,
+                            data_offset: Some(
+                                96,
+                            ),
+                            first_sample_flags: None,
+                            samples: [
+                                TrackRunBoxSample {
+                                    sample_duration: None,
+                                    sample_size: None,
+                                    sample_flags: None,
+                                    sample_composition_time_offset: None,
+                                },
+                            ],
+                        },
+                    ],
+                    sbgp: [],
+                    sgpd: [],
+                    subs: [],
+                    saiz: [],
+                    saio: [],
+                    tfdt: Some(
+                        TrackFragmentBaseMediaDecodeTimeBox {
+                            full_header: FullBoxHeader {
+                                version: 0,
+                                flags: U24Be(
+                                    0,
+                                ),
+                            },
+                            base_media_decode_time: 13000,
+                        },
+                    ),
+                    meta: None,
+                    udta: None,
+                },
+            ],
+            udta: None,
+        },
+        MovieFragmentBox {
+            mfhd: MovieFragmentHeaderBox {
+                full_header: FullBoxHeader {
+                    version: 0,
+                    flags: U24Be(
+                        0,
+                    ),
+                },
+                sequence_number: 9,
+            },
+            meta: None,
+            traf: [
+                TrackFragmentBox {
+                    tfhd: TrackFragmentHeaderBox {
+                        version: 0,
+                        flags: TfFlags(
+                            DefaultSampleFlagsPresent | DefaultBaseIsMoof,
+                        ),
+                        track_id: 1,
+                        base_data_offset: None,
+                        sample_description_index: None,
+                        default_sample_duration: None,
+                        default_sample_size: None,
+                        default_sample_flags: Some(
+                            SampleFlags {
+                                reserved: 0,
+                                is_leading: 0,
+                                sample_depends_on: 2,
+                                sample_is_depended_on: 0,
+                                sample_has_redundancy: 0,
+                                sample_padding_value: 0,
+                                sample_is_non_sync_sample: false,
+                                sample_degradation_priority: 0,
+                            },
+                        ),
+                    },
+                    trun: [
+                        TrackRunBox {
+                            version: 0,
+                            flags: TrFlags(
+                                DataOffsetPresent,
+                            ),
+                            sample_count: 1,
+                            data_offset: Some(
+                                96,
+                            ),
+                            first_sample_flags: None,
+                            samples: [
+                                TrackRunBoxSample {
+                                    sample_duration: None,
+                                    sample_size: None,
+                                    sample_flags: None,
+                                    sample_composition_time_offset: None,
+                                },
+                            ],
+                        },
+                    ],
+                    sbgp: [],
+                    sgpd: [],
+                    subs: [],
+                    saiz: [],
+                    saio: [],
+                    tfdt: Some(
+                        TrackFragmentBaseMediaDecodeTimeBox {
+                            full_header: FullBoxHeader {
+                                version: 0,
+                                flags: U24Be(
+                                    0,
+                                ),
+                            },
+                            base_media_decode_time: 15000,
+                        },
+                    ),
+                    meta: None,
+                    udta: None,
+                },
+            ],
+            udta: None,
+        },
+        MovieFragmentBox {
+            mfhd: MovieFragmentHeaderBox {
+                full_header: FullBoxHeader {
+                    version: 0,
+                    flags: U24Be(
+                        0,
+                    ),
+                },
+                sequence_number: 10,
+            },
+            meta: None,
+            traf: [
+                TrackFragmentBox {
+                    tfhd: TrackFragmentHeaderBox {
+                        version: 0,
+                        flags: TfFlags(
+                            DefaultSampleFlagsPresent | DefaultBaseIsMoof,
+                        ),
+                        track_id: 1,
+                        base_data_offset: None,
+                        sample_description_index: None,
+                        default_sample_duration: None,
+                        default_sample_size: None,
+                        default_sample_flags: Some(
+                            SampleFlags {
+                                reserved: 0,
+                                is_leading: 0,
+                                sample_depends_on: 2,
+                                sample_is_depended_on: 0,
+                                sample_has_redundancy: 0,
+                                sample_padding_value: 0,
+                                sample_is_non_sync_sample: false,
+                                sample_degradation_priority: 0,
+                            },
+                        ),
+                    },
+                    trun: [
+                        TrackRunBox {
+                            version: 0,
+                            flags: TrFlags(
+                                DataOffsetPresent,
+                            ),
+                            sample_count: 1,
+                            data_offset: Some(
+                                96,
+                            ),
+                            first_sample_flags: None,
+                            samples: [
+                                TrackRunBoxSample {
+                                    sample_duration: None,
+                                    sample_size: None,
+                                    sample_flags: None,
+                                    sample_composition_time_offset: None,
+                                },
+                            ],
+                        },
+                    ],
+                    sbgp: [],
+                    sgpd: [],
+                    subs: [],
+                    saiz: [],
+                    saio: [],
+                    tfdt: Some(
+                        TrackFragmentBaseMediaDecodeTimeBox {
+                            full_header: FullBoxHeader {
+                                version: 0,
+                                flags: U24Be(
+                                    0,
+                                ),
+                            },
+                            base_media_decode_time: 17000,
+                        },
+                    ),
+                    meta: None,
+                    udta: None,
+                },
+            ],
+            udta: None,
+        },
+        MovieFragmentBox {
+            mfhd: MovieFragmentHeaderBox {
+                full_header: FullBoxHeader {
+                    version: 0,
+                    flags: U24Be(
+                        0,
+                    ),
+                },
+                sequence_number: 11,
+            },
+            meta: None,
+            traf: [
+                TrackFragmentBox {
+                    tfhd: TrackFragmentHeaderBox {
+                        version: 0,
+                        flags: TfFlags(
+                            DefaultSampleFlagsPresent | DefaultBaseIsMoof,
+                        ),
+                        track_id: 1,
+                        base_data_offset: None,
+                        sample_description_index: None,
+                        default_sample_duration: None,
+                        default_sample_size: None,
+                        default_sample_flags: Some(
+                            SampleFlags {
+                                reserved: 0,
+                                is_leading: 0,
+                                sample_depends_on: 2,
+                                sample_is_depended_on: 0,
+                                sample_has_redundancy: 0,
+                                sample_padding_value: 0,
+                                sample_is_non_sync_sample: false,
+                                sample_degradation_priority: 0,
+                            },
+                        ),
+                    },
+                    trun: [
+                        TrackRunBox {
+                            version: 0,
+                            flags: TrFlags(
+                                DataOffsetPresent,
+                            ),
+                            sample_count: 1,
+                            data_offset: Some(
+                                96,
+                            ),
+                            first_sample_flags: None,
+                            samples: [
+                                TrackRunBoxSample {
+                                    sample_duration: None,
+                                    sample_size: None,
+                                    sample_flags: None,
+                                    sample_composition_time_offset: None,
+                                },
+                            ],
+                        },
+                    ],
+                    sbgp: [],
+                    sgpd: [],
+                    subs: [],
+                    saiz: [],
+                    saio: [],
+                    tfdt: Some(
+                        TrackFragmentBaseMediaDecodeTimeBox {
+                            full_header: FullBoxHeader {
+                                version: 0,
+                                flags: U24Be(
+                                    0,
+                                ),
+                            },
+                            base_media_decode_time: 19000,
+                        },
+                    ),
+                    meta: None,
+                    udta: None,
+                },
+            ],
+            udta: None,
+        },
+        MovieFragmentBox {
+            mfhd: MovieFragmentHeaderBox {
+                full_header: FullBoxHeader {
+                    version: 0,
+                    flags: U24Be(
+                        0,
+                    ),
+                },
+                sequence_number: 12,
+            },
+            meta: None,
+            traf: [
+                TrackFragmentBox {
+                    tfhd: TrackFragmentHeaderBox {
+                        version: 0,
+                        flags: TfFlags(
+                            DefaultSampleFlagsPresent | DefaultBaseIsMoof,
+                        ),
+                        track_id: 1,
+                        base_data_offset: None,
+                        sample_description_index: None,
+                        default_sample_duration: None,
+                        default_sample_size: None,
+                        default_sample_flags: Some(
+                            SampleFlags {
+                                reserved: 0,
+                                is_leading: 0,
+                                sample_depends_on: 2,
+                                sample_is_depended_on: 0,
+                                sample_has_redundancy: 0,
+                                sample_padding_value: 0,
+                                sample_is_non_sync_sample: false,
+                                sample_degradation_priority: 0,
+                            },
+                        ),
+                    },
+                    trun: [
+                        TrackRunBox {
+                            version: 0,
+                            flags: TrFlags(
+                                DataOffsetPresent,
+                            ),
+                            sample_count: 1,
+                            data_offset: Some(
+                                96,
+                            ),
+                            first_sample_flags: None,
+                            samples: [
+                                TrackRunBoxSample {
+                                    sample_duration: None,
+                                    sample_size: None,
+                                    sample_flags: None,
+                                    sample_composition_time_offset: None,
+                                },
+                            ],
+                        },
+                    ],
+                    sbgp: [],
+                    sgpd: [],
+                    subs: [],
+                    saiz: [],
+                    saio: [],
+                    tfdt: Some(
+                        TrackFragmentBaseMediaDecodeTimeBox {
+                            full_header: FullBoxHeader {
+                                version: 0,
+                                flags: U24Be(
+                                    0,
+                                ),
+                            },
+                            base_media_decode_time: 21000,
+                        },
+                    ),
+                    meta: None,
+                    udta: None,
+                },
+            ],
+            udta: None,
+        },
+        MovieFragmentBox {
+            mfhd: MovieFragmentHeaderBox {
+                full_header: FullBoxHeader {
+                    version: 0,
+                    flags: U24Be(
+                        0,
+                    ),
+                },
+                sequence_number: 13,
+            },
+            meta: None,
+            traf: [
+                TrackFragmentBox {
+                    tfhd: TrackFragmentHeaderBox {
+                        version: 0,
+                        flags: TfFlags(
+                            DefaultSampleFlagsPresent | DefaultBaseIsMoof,
+                        ),
+                        track_id: 1,
+                        base_data_offset: None,
+                        sample_description_index: None,
+                        default_sample_duration: None,
+                        default_sample_size: None,
+                        default_sample_flags: Some(
+                            SampleFlags {
+                                reserved: 0,
+                                is_leading: 0,
+                                sample_depends_on: 2,
+                                sample_is_depended_on: 0,
+                                sample_has_redundancy: 0,
+                                sample_padding_value: 0,
+                                sample_is_non_sync_sample: false,
+                                sample_degradation_priority: 0,
+                            },
+                        ),
+                    },
+                    trun: [
+                        TrackRunBox {
+                            version: 0,
+                            flags: TrFlags(
+                                DataOffsetPresent,
+                            ),
+                            sample_count: 1,
+                            data_offset: Some(
+                                96,
+                            ),
+                            first_sample_flags: None,
+                            samples: [
+                                TrackRunBoxSample {
+                                    sample_duration: None,
+                                    sample_size: None,
+                                    sample_flags: None,
+                                    sample_composition_time_offset: None,
+                                },
+                            ],
+                        },
+                    ],
+                    sbgp: [],
+                    sgpd: [],
+                    subs: [],
+                    saiz: [],
+                    saio: [],
+                    tfdt: Some(
+                        TrackFragmentBaseMediaDecodeTimeBox {
+                            full_header: FullBoxHeader {
+                                version: 0,
+                                flags: U24Be(
+                                    0,
+                                ),
+                            },
+                            base_media_decode_time: 23000,
+                        },
+                    ),
+                    meta: None,
+                    udta: None,
+                },
+            ],
+            udta: None,
+        },
+        MovieFragmentBox {
+            mfhd: MovieFragmentHeaderBox {
+                full_header: FullBoxHeader {
+                    version: 0,
+                    flags: U24Be(
+                        0,
+                    ),
+                },
+                sequence_number: 14,
+            },
+            meta: None,
+            traf: [
+                TrackFragmentBox {
+                    tfhd: TrackFragmentHeaderBox {
+                        version: 0,
+                        flags: TfFlags(
+                            DefaultSampleFlagsPresent | DefaultBaseIsMoof,
+                        ),
+                        track_id: 1,
+                        base_data_offset: None,
+                        sample_description_index: None,
+                        default_sample_duration: None,
+                        default_sample_size: None,
+                        default_sample_flags: Some(
+                            SampleFlags {
+                                reserved: 0,
+                                is_leading: 0,
+                                sample_depends_on: 2,
+                                sample_is_depended_on: 0,
+                                sample_has_redundancy: 0,
+                                sample_padding_value: 0,
+                                sample_is_non_sync_sample: false,
+                                sample_degradation_priority: 0,
+                            },
+                        ),
+                    },
+                    trun: [
+                        TrackRunBox {
+                            version: 0,
+                            flags: TrFlags(
+                                DataOffsetPresent,
+                            ),
+                            sample_count: 1,
+                            data_offset: Some(
+                                96,
+                            ),
+                            first_sample_flags: None,
+                            samples: [
+                                TrackRunBoxSample {
+                                    sample_duration: None,
+                                    sample_size: None,
+                                    sample_flags: None,
+                                    sample_composition_time_offset: None,
+                                },
+                            ],
+                        },
+                    ],
+                    sbgp: [],
+                    sgpd: [],
+                    subs: [],
+                    saiz: [],
+                    saio: [],
+                    tfdt: Some(
+                        TrackFragmentBaseMediaDecodeTimeBox {
+                            full_header: FullBoxHeader {
+                                version: 0,
+                                flags: U24Be(
+                                    0,
+                                ),
+                            },
+                            base_media_decode_time: 25000,
+                        },
+                    ),
+                    meta: None,
+                    udta: None,
+                },
+            ],
+            udta: None,
+        },
+        MovieFragmentBox {
+            mfhd: MovieFragmentHeaderBox {
+                full_header: FullBoxHeader {
+                    version: 0,
+                    flags: U24Be(
+                        0,
+                    ),
+                },
+                sequence_number: 15,
+            },
+            meta: None,
+            traf: [
+                TrackFragmentBox {
+                    tfhd: TrackFragmentHeaderBox {
+                        version: 0,
+                        flags: TfFlags(
+                            DefaultSampleFlagsPresent | DefaultBaseIsMoof,
+                        ),
+                        track_id: 1,
+                        base_data_offset: None,
+                        sample_description_index: None,
+                        default_sample_duration: None,
+                        default_sample_size: None,
+                        default_sample_flags: Some(
+                            SampleFlags {
+                                reserved: 0,
+                                is_leading: 0,
+                                sample_depends_on: 2,
+                                sample_is_depended_on: 0,
+                                sample_has_redundancy: 0,
+                                sample_padding_value: 0,
+                                sample_is_non_sync_sample: false,
+                                sample_degradation_priority: 0,
+                            },
+                        ),
+                    },
+                    trun: [
+                        TrackRunBox {
+                            version: 0,
+                            flags: TrFlags(
+                                DataOffsetPresent,
+                            ),
+                            sample_count: 1,
+                            data_offset: Some(
+                                96,
+                            ),
+                            first_sample_flags: None,
+                            samples: [
+                                TrackRunBoxSample {
+                                    sample_duration: None,
+                                    sample_size: None,
+                                    sample_flags: None,
+                                    sample_composition_time_offset: None,
+                                },
+                            ],
+                        },
+                    ],
+                    sbgp: [],
+                    sgpd: [],
+                    subs: [],
+                    saiz: [],
+                    saio: [],
+                    tfdt: Some(
+                        TrackFragmentBaseMediaDecodeTimeBox {
+                            full_header: FullBoxHeader {
+                                version: 0,
+                                flags: U24Be(
+                                    0,
+                                ),
+                            },
+                            base_media_decode_time: 27000,
+                        },
+                    ),
+                    meta: None,
+                    udta: None,
+                },
+            ],
+            udta: None,
+        },
+        MovieFragmentBox {
+            mfhd: MovieFragmentHeaderBox {
+                full_header: FullBoxHeader {
+                    version: 0,
+                    flags: U24Be(
+                        0,
+                    ),
+                },
+                sequence_number: 16,
+            },
+            meta: None,
+            traf: [
+                TrackFragmentBox {
+                    tfhd: TrackFragmentHeaderBox {
+                        version: 0,
+                        flags: TfFlags(
+                            DefaultSampleFlagsPresent | DefaultBaseIsMoof,
+                        ),
+                        track_id: 1,
+                        base_data_offset: None,
+                        sample_description_index: None,
+                        default_sample_duration: None,
+                        default_sample_size: None,
+                        default_sample_flags: Some(
+                            SampleFlags {
+                                reserved: 0,
+                                is_leading: 0,
+                                sample_depends_on: 2,
+                                sample_is_depended_on: 0,
+                                sample_has_redundancy: 0,
+                                sample_padding_value: 0,
+                                sample_is_non_sync_sample: false,
+                                sample_degradation_priority: 0,
+                            },
+                        ),
+                    },
+                    trun: [
+                        TrackRunBox {
+                            version: 0,
+                            flags: TrFlags(
+                                DataOffsetPresent,
+                            ),
+                            sample_count: 1,
+                            data_offset: Some(
+                                96,
+                            ),
+                            first_sample_flags: None,
+                            samples: [
+                                TrackRunBoxSample {
+                                    sample_duration: None,
+                                    sample_size: None,
+                                    sample_flags: None,
+                                    sample_composition_time_offset: None,
+                                },
+                            ],
+                        },
+                    ],
+                    sbgp: [],
+                    sgpd: [],
+                    subs: [],
+                    saiz: [],
+                    saio: [],
+                    tfdt: Some(
+                        TrackFragmentBaseMediaDecodeTimeBox {
+                            full_header: FullBoxHeader {
+                                version: 0,
+                                flags: U24Be(
+                                    0,
+                                ),
+                            },
+                            base_media_decode_time: 29000,
+                        },
+                    ),
+                    meta: None,
+                    udta: None,
+                },
+            ],
+            udta: None,
+        },
+    ],
+    mdat: [
+        MediaDataBox {
+            data.len: 3,
+        },
+        MediaDataBox {
+            data.len: 3,
+        },
+        MediaDataBox {
+            data.len: 3,
+        },
+        MediaDataBox {
+            data.len: 3,
+        },
+        MediaDataBox {
+            data.len: 3,
+        },
+        MediaDataBox {
+            data.len: 3,
+        },
+        MediaDataBox {
+            data.len: 3,
+        },
+        MediaDataBox {
+            data.len: 3,
+        },
+        MediaDataBox {
+            data.len: 3,
+        },
+        MediaDataBox {
+            data.len: 3,
+        },
+        MediaDataBox {
+            data.len: 3,
+        },
+        MediaDataBox {
+            data.len: 3,
+        },
+        MediaDataBox {
+            data.len: 3,
+        },
+        MediaDataBox {
+            data.len: 3,
+        },
+        MediaDataBox {
+            data.len: 3,
+        },
+        MediaDataBox {
+            data.len: 3,
+        },
+    ],
+    imda: [],
+    meta: None,
+    styp: [],
+    sidx: [
+        SegmentIndexBox {
+            full_header: FullBoxHeader {
+                version: 0,
+                flags: U24Be(
+                    0,
+                ),
+            },
+            reference_id: 1,
+            timescale: 1000,
+            earliest_presentation_time: 0,
+            first_offset: 0,
+            reserved: 0,
+            reference_count: 16,
+            references: [
+                SegmentIndexBoxReference {
+                    reference_type: false,
+                    referenced_size: 103,
+                    subsegment_duration: 1000,
+                    starts_with_sap: true,
+                    sap_type: 1,
+                    sap_delta_time: 0,
+                },
+                SegmentIndexBoxReference {
+                    reference_type: false,
+                    referenced_size: 99,
+                    subsegment_duration: 2000,
+                    starts_with_sap: true,
+                    sap_type: 1,
+                    sap_delta_time: 0,
+                },
+                SegmentIndexBoxReference {
+                    reference_type: false,
+                    referenced_size: 99,
+                    subsegment_duration: 2000,
+                    starts_with_sap: true,
+                    sap_type: 1,
+                    sap_delta_time: 0,
+                },
+                SegmentIndexBoxReference {
+                    reference_type: false,
+                    referenced_size: 99,
+                    subsegment_duration: 2000,
+                    starts_with_sap: true,
+                    sap_type: 1,
+                    sap_delta_time: 0,
+                },
+                SegmentIndexBoxReference {
+                    reference_type: false,
+                    referenced_size: 99,
+                    subsegment_duration: 2000,
+                    starts_with_sap: true,
+                    sap_type: 1,
+                    sap_delta_time: 0,
+                },
+                SegmentIndexBoxReference {
+                    reference_type: false,
+                    referenced_size: 99,
+                    subsegment_duration: 2000,
+                    starts_with_sap: true,
+                    sap_type: 1,
+                    sap_delta_time: 0,
+                },
+                SegmentIndexBoxReference {
+                    reference_type: false,
+                    referenced_size: 99,
+                    subsegment_duration: 2000,
+                    starts_with_sap: true,
+                    sap_type: 1,
+                    sap_delta_time: 0,
+                },
+                SegmentIndexBoxReference {
+                    reference_type: false,
+                    referenced_size: 99,
+                    subsegment_duration: 2000,
+                    starts_with_sap: true,
+                    sap_type: 1,
+                    sap_delta_time: 0,
+                },
+                SegmentIndexBoxReference {
+                    reference_type: false,
+                    referenced_size: 99,
+                    subsegment_duration: 2000,
+                    starts_with_sap: true,
+                    sap_type: 1,
+                    sap_delta_time: 0,
+                },
+                SegmentIndexBoxReference {
+                    reference_type: false,
+                    referenced_size: 99,
+                    subsegment_duration: 2000,
+                    starts_with_sap: true,
+                    sap_type: 1,
+                    sap_delta_time: 0,
+                },
+                SegmentIndexBoxReference {
+                    reference_type: false,
+                    referenced_size: 99,
+                    subsegment_duration: 2000,
+                    starts_with_sap: true,
+                    sap_type: 1,
+                    sap_delta_time: 0,
+                },
+                SegmentIndexBoxReference {
+                    reference_type: false,
+                    referenced_size: 99,
+                    subsegment_duration: 2000,
+                    starts_with_sap: true,
+                    sap_type: 1,
+                    sap_delta_time: 0,
+                },
+                SegmentIndexBoxReference {
+                    reference_type: false,
+                    referenced_size: 99,
+                    subsegment_duration: 2000,
+                    starts_with_sap: true,
+                    sap_type: 1,
+                    sap_delta_time: 0,
+                },
+                SegmentIndexBoxReference {
+                    reference_type: false,
+                    referenced_size: 99,
+                    subsegment_duration: 2000,
+                    starts_with_sap: true,
+                    sap_type: 1,
+                    sap_delta_time: 0,
+                },
+                SegmentIndexBoxReference {
+                    reference_type: false,
+                    referenced_size: 99,
+                    subsegment_duration: 2000,
+                    starts_with_sap: true,
+                    sap_type: 1,
+                    sap_delta_time: 0,
+                },
+                SegmentIndexBoxReference {
+                    reference_type: false,
+                    referenced_size: 99,
+                    subsegment_duration: 2000,
+                    starts_with_sap: true,
+                    sap_type: 1,
+                    sap_delta_time: 0,
+                },
+            ],
+        },
+    ],
+    ssix: [],
+    prft: [],
+    unknown_boxes: [
+        UnknownBox {
+            header: BoxHeader {
+                size: Short(
+                    59,
+                ),
+                box_type: FourCc(
+                    "free",
+                ),
+            },
+            data.len: 51,
+        },
+    ],
+    mfra: None,
+}

@@ -27,6 +27,7 @@ See the [changelog](./CHANGELOG.md) for a full release history.
 ### Feature flags
 
 * **`docs`** —  Enables changelog and documentation of feature flags
+* **`isobmff`** —  Enables isobmff boxes
 
 ### Examples
 
@@ -35,14 +36,14 @@ See the [changelog](./CHANGELOG.md) for a full release history.
 ````rust
 use std::io;
 
-use bytes::Bytes;
+use scuffle_bytes_util::zero_copy::Deserialize;
 
 use scuffle_h264::{AVCDecoderConfigurationRecord, Sps};
 
 // A sample h264 bytestream to parse
 
 // Parsing
-let result = AVCDecoderConfigurationRecord::parse(&mut io::Cursor::new(bytes)).unwrap();
+let result = AVCDecoderConfigurationRecord::deserialize(scuffle_bytes_util::zero_copy::Slice::from(&bytes[..])).unwrap();
 
 // Do something with it!
 
@@ -55,7 +56,8 @@ For more examples, check out the tests in the source code for the parse function
 #### Building
 
 ````rust
-use bytes::Bytes;
+use scuffle_bytes_util::BytesCow;
+use scuffle_bytes_util::zero_copy::Serialize;
 
 use scuffle_h264::{AVCDecoderConfigurationRecord, AvccExtendedConfig, Sps, SpsExtended};
 
@@ -79,9 +81,9 @@ let config = AVCDecoderConfigurationRecord {
     level_indication: 31,
     length_size_minus_one: 3,
     sps: vec![
-        Bytes::from_static(b"spsdata"),
+        BytesCow::from_static(b"spsdata"),
     ],
-    pps: vec![Bytes::from_static(b"ppsdata")],
+    pps: vec![BytesCow::from_static(b"ppsdata")],
     extended_config: Some(extended_config),
 };
 
@@ -89,7 +91,7 @@ let config = AVCDecoderConfigurationRecord {
 let mut built = Vec::new();
 
 // Building
-config.build(&mut built).unwrap();
+config.serialize(&mut built).unwrap();
 
 // Do something with it!
 ````

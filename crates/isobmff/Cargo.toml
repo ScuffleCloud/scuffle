@@ -1,0 +1,58 @@
+[package]
+name = "isobmff"
+version = "0.1.0"
+authors = ["Scuffle <opensource@scuffle.cloud>"]
+documentation = "https://docs.rs/isobmff"
+edition = "2024"
+keywords = ["isobmff", "mp4", "video", "container", "iso-14496-12"]
+license = "MIT OR Apache-2.0"
+readme = "README.md"
+repository = "https://github.com/scufflecloud/scuffle"
+description = "A pure Rust ISO base media file format parser and writer."
+
+[lints.rust]
+unexpected_cfgs = { level = "warn", check-cfg = ['cfg(coverage_nightly)'] }
+
+[dependencies]
+base64 = "0.22.1"
+bitflags = "2.9.0"
+byteorder = "1.5.0"
+bytes = "1.10.1"
+document-features = { optional = true, version = "0.2" }
+fixed = "1.29.0"
+isobmff-derive = { path = "./derive", version = "0.1.0" }
+nutype-enum = { path = "../nutype-enum", version = "0.1.5" }
+scuffle-bytes-util = { path = "../bytes-util", version = "0.1.5" }
+scuffle-changelog = { optional = true, path = "../changelog", version = "0.1.1" }
+uuid = "1.16.0"
+
+[dev-dependencies]
+insta = "1.42"
+serde = "1.0.219"
+serde_derive = "1.0.219"
+serde_json = "1.0.140"
+
+[features]
+## Enables changelog and documentation of feature flags
+docs = ["dep:scuffle-changelog", "dep:document-features"]
+
+[package.metadata.docs.rs]
+all-features = true
+rustdoc-args = [
+    "--cfg",
+    "docsrs",
+    "--sort-modules-by-appearance",
+    "--generate-link-to-definition",
+]
+
+[package.metadata.xtask.powerset]
+additive-features = ["docs", "serde"]
+
+[package.metadata.sync-readme.rustdoc-mappings]
+changelog = "./CHANGELOG.md"
+
+[package.metadata.sync-readme.badges]
+license = true
+docs-rs = true
+crates-io = true
+codecov = true

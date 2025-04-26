@@ -68,7 +68,7 @@ rust_library(
     version = "0.8.1",
     deps = [
         "@cargo_vendor__base64-0.21.7//:base64",
-        "@cargo_vendor__bitflags-2.9.4//:bitflags",
+        "@cargo_vendor__bitflags-2.9.1//:bitflags",
         "@cargo_vendor__serde-1.0.228//:serde",
     ],
 )

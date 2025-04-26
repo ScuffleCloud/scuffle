@@ -61,6 +61,6 @@ rust_library(
     version = "0.10.1",
     deps = [
         "@cargo_vendor__core-foundation-sys-0.8.7//:core_foundation_sys",
-        "@cargo_vendor__libc-0.2.175//:libc",
+        "@cargo_vendor__libc-0.2.176//:libc",
     ],
 )

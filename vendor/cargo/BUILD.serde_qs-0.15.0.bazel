@@ -64,8 +64,8 @@ rust_library(
     }),
     version = "0.15.0",
     deps = [
-        "@cargo_vendor__percent-encoding-2.3.2//:percent_encoding",
+        "@cargo_vendor__percent-encoding-2.3.1//:percent_encoding",
         "@cargo_vendor__serde-1.0.228//:serde",
-        "@cargo_vendor__thiserror-2.0.16//:thiserror",
+        "@cargo_vendor__thiserror-2.0.17//:thiserror",
     ],
 )

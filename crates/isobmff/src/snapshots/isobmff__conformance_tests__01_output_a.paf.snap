@@ -1,0 +1,217 @@
+---
+source: crates/isobmff/src/conformance_tests.rs
+expression: redeserialized_file
+snapshot_kind: text
+---
+IsobmffFile {
+    ftyp: Some(
+        FileTypeBox {
+            major_brand: Brand([109, 112, 50, 49]),
+            minor_version: 1885431348,
+            compatible_brands: [
+                Brand::Iso2,
+                Brand([109, 112, 50, 49]),
+            ],
+        },
+    ),
+    etyp: [],
+    otyp: [],
+    pdin: None,
+    moov: None,
+    moof: [],
+    mdat: [
+        MediaDataBox {
+            data.len: 4613519,
+        },
+    ],
+    imda: [],
+    meta: Some(
+        MetaBox {
+            full_header: FullBoxHeader {
+                version: 0,
+                flags: U24Be(
+                    0,
+                ),
+            },
+            hdlr: HandlerBox {
+                full_header: FullBoxHeader {
+                    version: 0,
+                    flags: U24Be(
+                        0,
+                    ),
+                },
+                pre_defined: 0,
+                handler_type: HandlerType([109, 112, 50, 49]),
+                reserved: [
+                    0,
+                    0,
+                    0,
+                ],
+                name: Utf8String(
+                    "",
+                ),
+            },
+            dinf: None,
+            iloc: Some(
+                ItemLocationBox {
+                    full_header: FullBoxHeader {
+                        version: 0,
+                        flags: U24Be(
+                            0,
+                        ),
+                    },
+                    offset_size: 8,
+                    length_size: 8,
+                    base_offset_size: 8,
+                    index_size: 0,
+                    item_count: Some(
+                        7,
+                    ),
+                    items: [
+                        ItemLocationBoxItem {
+                            item_id: Some(
+                                1,
+                            ),
+                            construction_method: None,
+                            data_reference_index: 0,
+                            base_offset: 32,
+                            extent_count: 1,
+                            extents: [
+                                ItemLocationBoxExtent {
+                                    item_reference_index: None,
+                                    extent_offset: 32,
+                                    extent_length: 850,
+                                },
+                            ],
+                        },
+                        ItemLocationBoxItem {
+                            item_id: Some(
+                                2,
+                            ),
+                            construction_method: None,
+                            data_reference_index: 0,
+                            base_offset: 882,
+                            extent_count: 1,
+                            extents: [
+                                ItemLocationBoxExtent {
+                                    item_reference_index: None,
+                                    extent_offset: 882,
+                                    extent_length: 706,
+                                },
+                            ],
+                        },
+                        ItemLocationBoxItem {
+                            item_id: Some(
+                                3,
+                            ),
+                            construction_method: None,
+                            data_reference_index: 0,
+                            base_offset: 1588,
+                            extent_count: 1,
+                            extents: [
+                                ItemLocationBoxExtent {
+                                    item_reference_index: None,
+                                    extent_offset: 1588,
+                                    extent_length: 51650,
+                                },
+                            ],
+                        },
+                        ItemLocationBoxItem {
+                            item_id: Some(
+                                4,
+                            ),
+                            construction_method: None,
+                            data_reference_index: 0,
+                            base_offset: 53238,
+                            extent_count: 1,
+                            extents: [
+                                ItemLocationBoxExtent {
+                                    item_reference_index: None,
+                                    extent_offset: 53238,
+                                    extent_length: 1148,
+                                },
+                            ],
+                        },
+                        ItemLocationBoxItem {
+                            item_id: Some(
+                                5,
+                            ),
+                            construction_method: None,
+                            data_reference_index: 0,
+                            base_offset: 54386,
+                            extent_count: 1,
+                            extents: [
+                                ItemLocationBoxExtent {
+                                    item_reference_index: None,
+                                    extent_offset: 54386,
+                                    extent_length: 189,
+                                },
+                            ],
+                        },
+                        ItemLocationBoxItem {
+                            item_id: Some(
+                                6,
+                            ),
+                            construction_method: None,
+                            data_reference_index: 0,
+                            base_offset: 54575,
+                            extent_count: 1,
+                            extents: [
+                                ItemLocationBoxExtent {
+                                    item_reference_index: None,
+                                    extent_offset: 54575,
+                                    extent_length: 2237529,
+                                },
+                            ],
+                        },
+                        ItemLocationBoxItem {
+                            item_id: Some(
+                                7,
+                            ),
+                            construction_method: None,
+                            data_reference_index: 0,
+                            base_offset: 2292104,
+                            extent_count: 1,
+                            extents: [
+                                ItemLocationBoxExtent {
+                                    item_reference_index: None,
+                                    extent_offset: 2292104,
+                                    extent_length: 2321447,
+                                },
+                            ],
+                        },
+                    ],
+                },
+            ),
+            ipro: None,
+            iinf: None,
+            xml: Some(
+                XmlBox {
+                    full_header: FullBoxHeader {
+                        version: 0,
+                        flags: U24Be(
+                            0,
+                        ),
+                    },
+                    xml: Utf8String(
+                        "<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"no\" ?><DIDL xmlns=\"urn:mpeg:mpeg21:2002:02-DIDL-NS\" xmlns:dii=\"urn:mpeg:mpeg21:2002:01-DII-NS\" xmlns:mpeg7=\"urn:mpeg:mpeg7:schema:2001\" xmlns:paaf=\"urn:mpeg:mpeg21:2007:01-PAAF-NS\" xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\" xsi:schemaLocation=\"urn:mpeg:mpeg21:2002:01-DII-NS schema/DII.xsd urn:mpeg:mpeg21:2007:01-PAAF-NS schema/PAAF-FileAttribute.xsd urn:mpeg:mpeg7:schema:2001 schema/Mpeg7MDSforPAAF.xsd urn:mpeg:mpeg21:2002:02-DIDL-NS schema/DIDLforPAAF.xsd\"><Container><Container><Descriptor><Statement mimeType=\"text/xml\"><paaf:FileSystemAttributes><paaf:Name>01_input</paaf:Name><paaf:EncodedPath charset=\"US-ASCII\" original=\"true\">MDFfaW5wdXQ=</paaf:EncodedPath><paaf:EncodedPath charset=\"UTF-8\" default=\"true\">MDFfaW5wdXQ=</paaf:EncodedPath><paaf:OriginalTimestamp>2010-07-25T09:58:40:930000000F1000000000+00:00</paaf:OriginalTimestamp><paaf:OriginalAttributes><paaf:OwnerRestrictions/><paaf:GroupRestrictions><paaf:NoWrite/></paaf:GroupRestrictions><paaf:OtherRestrictions><paaf:NoWrite/></paaf:OtherRestrictions></paaf:OriginalAttributes><paaf:DefaultAttributes/></paaf:FileSystemAttributes></Statement></Descriptor><Container><Descriptor><Statement mimeType=\"text/xml\"><paaf:FileSystemAttributes><paaf:Name>images</paaf:Name><paaf:EncodedPath charset=\"US-ASCII\" original=\"true\">MDFfaW5wdXQvaW1hZ2Vz</paaf:EncodedPath><paaf:EncodedPath charset=\"UTF-8\" default=\"true\">MDFfaW5wdXQvaW1hZ2Vz</paaf:EncodedPath><paaf:OriginalTimestamp>2010-07-25T09:58:40:896000000F1000000000+00:00</paaf:OriginalTimestamp><paaf:OriginalAttributes><paaf:OwnerRestrictions/><paaf:GroupRestrictions><paaf:NoWrite/></paaf:GroupRestrictions><paaf:OtherRestrictions><paaf:NoWrite/></paaf:OtherRestrictions></paaf:OriginalAttributes><paaf:DefaultAttributes/></paaf:FileSystemAttributes></Statement></Descriptor><Item><Descriptor><Statement mimeType=\"text/xml\"><paaf:FileSystemAttributes><paaf:Name>file_format.JPG</paaf:Name><paaf:EncodedPath charset=\"US-ASCII\" original=\"true\">MDFfaW5wdXQvaW1hZ2VzL2ZpbGVfZm9ybWF0LkpQRw==</paaf:EncodedPath><paaf:EncodedPath charset=\"UTF-8\" default=\"true\">MDFfaW5wdXQvaW1hZ2VzL2ZpbGVfZm9ybWF0LkpQRw==</paaf:EncodedPath><paaf:OriginalSize>51650</paaf:OriginalSize><paaf:OriginalTimestamp>2009-01-27T12:01:53+00:00</paaf:OriginalTimestamp><paaf:OriginalAttributes><paaf:OwnerRestrictions><paaf:NoExecute/></paaf:OwnerRestrictions><paaf:GroupRestrictions><paaf:NoWrite/><paaf:NoExecute/></paaf:GroupRestrictions><paaf:OtherRestrictions><paaf:NoWrite/><paaf:NoExecute/></paaf:OtherRestrictions></paaf:OriginalAttributes><paaf:DefaultAttributes/></paaf:FileSystemAttributes></Statement></Descriptor><Component><Resource mimeType=\"image/jpeg\" ref=\"#item_id=3\"/></Component></Item></Container><Container><Descriptor><Statement mimeType=\"text/xml\"><paaf:FileSystemAttributes><paaf:Name>scripts</paaf:Name><paaf:EncodedPath charset=\"US-ASCII\" original=\"true\">MDFfaW5wdXQvc2NyaXB0cw==</paaf:EncodedPath><paaf:EncodedPath charset=\"UTF-8\" default=\"true\">MDFfaW5wdXQvc2NyaXB0cw==</paaf:EncodedPath><paaf:OriginalTimestamp>2010-07-25T09:58:40:927000000F1000000000+00:00</paaf:OriginalTimestamp><paaf:OriginalAttributes><paaf:OwnerRestrictions/><paaf:GroupRestrictions><paaf:NoWrite/></paaf:GroupRestrictions><paaf:OtherRestrictions><paaf:NoWrite/></paaf:OtherRestrictions></paaf:OriginalAttributes><paaf:DefaultAttributes/></paaf:FileSystemAttributes></Statement></Descriptor><Item><Descriptor><Statement mimeType=\"text/xml\"><paaf:FileSystemAttributes><paaf:Name>main.css</paaf:Name><paaf:EncodedPath charset=\"US-ASCII\" original=\"true\">MDFfaW5wdXQvc2NyaXB0cy9tYWluLmNzcw==</paaf:EncodedPath><paaf:EncodedPath charset=\"UTF-8\" default=\"true\">MDFfaW5wdXQvc2NyaXB0cy9tYWluLmNzcw==</paaf:EncodedPath><paaf:OriginalSize>350</paaf:OriginalSize><paaf:OriginalTimestamp>2009-01-27T12:06:42:343000000F1000000000+00:00</paaf:OriginalTimestamp><paaf:OriginalAttributes><paaf:OwnerRestrictions><paaf:NoExecute/></paaf:OwnerRestrictions><paaf:GroupRestrictions><paaf:NoWrite/><paaf:NoExecute/></paaf:GroupRestrictions><paaf:OtherRestrictions><paaf:NoWrite/><paaf:NoExecute/></paaf:OtherRestrictions></paaf:OriginalAttributes><paaf:DefaultAttributes/></paaf:FileSystemAttributes></Statement></Descriptor><Component><Resource contentEncoding=\"x-gzip\" mimeType=\"application/octet-stream\" ref=\"#item_id=5\"/></Component></Item></Container><Container><Descriptor><Statement mimeType=\"text/xml\"><paaf:FileSystemAttributes><paaf:Name>waves</paaf:Name><paaf:EncodedPath charset=\"US-ASCII\" original=\"true\">MDFfaW5wdXQvd2F2ZXM=</paaf:EncodedPath><paaf:EncodedPath charset=\"UTF-8\" default=\"true\">MDFfaW5wdXQvd2F2ZXM=</paaf:EncodedPath><paaf:OriginalTimestamp>2010-07-25T09:58:41:070000000F1000000000+00:00</paaf:OriginalTimestamp><paaf:OriginalAttributes><paaf:OwnerRestrictions/><paaf:GroupRestrictions><paaf:NoWrite/></paaf:GroupRestrictions><paaf:OtherRestrictions><paaf:NoWrite/></paaf:OtherRestrictions></paaf:OriginalAttributes><paaf:DefaultAttributes/></paaf:FileSystemAttributes></Statement></Descriptor><Item><Descriptor><Statement mimeType=\"text/xml\"><paaf:FileSystemAttributes><paaf:Name>avemaria.wav</paaf:Name><paaf:EncodedPath charset=\"US-ASCII\" original=\"true\">MDFfaW5wdXQvd2F2ZXMvYXZlbWFyaWEud2F2</paaf:EncodedPath><paaf:EncodedPath charset=\"UTF-8\" default=\"true\">MDFfaW5wdXQvd2F2ZXMvYXZlbWFyaWEud2F2</paaf:EncodedPath><paaf:OriginalSize>5760048</paaf:OriginalSize><paaf:OriginalTimestamp>2009-10-08T14:46:56:812000000F1000000000+00:00</paaf:OriginalTimestamp><paaf:OriginalAttributes><paaf:OwnerRestrictions><paaf:NoExecute/></paaf:OwnerRestrictions><paaf:GroupRestrictions><paaf:NoWrite/><paaf:NoExecute/></paaf:GroupRestrictions><paaf:OtherRestrictions><paaf:NoWrite/><paaf:NoExecute/></paaf:OtherRestrictions></paaf:OriginalAttributes><paaf:DefaultAttributes/></paaf:FileSystemAttributes></Statement></Descriptor><Component><Resource contentEncoding=\"x-mp4als\" mimeType=\"audio/x-wav\" ref=\"#item_id=6\"/></Component></Item><Item><Descriptor><Statement mimeType=\"text/xml\"><paaf:FileSystemAttributes><paaf:Name>flute.wav</paaf:Name><paaf:EncodedPath charset=\"US-ASCII\" original=\"true\">MDFfaW5wdXQvd2F2ZXMvZmx1dGUud2F2</paaf:EncodedPath><paaf:EncodedPath charset=\"UTF-8\" default=\"true\">MDFfaW5wdXQvd2F2ZXMvZmx1dGUud2F2</paaf:EncodedPath><paaf:OriginalSize>5760048</paaf:OriginalSize><paaf:OriginalTimestamp>2009-10-08T14:46:57:890000000F1000000000+00:00</paaf:OriginalTimestamp><paaf:OriginalAttributes><paaf:OwnerRestrictions><paaf:NoExecute/></paaf:OwnerRestrictions><paaf:GroupRestrictions><paaf:NoWrite/><paaf:NoExecute/></paaf:GroupRestrictions><paaf:OtherRestrictions><paaf:NoWrite/><paaf:NoExecute/></paaf:OtherRestrictions></paaf:OriginalAttributes><paaf:DefaultAttributes/></paaf:FileSystemAttributes></Statement></Descriptor><Component><Resource contentEncoding=\"x-mp4als\" mimeType=\"audio/x-wav\" ref=\"#item_id=7\"/></Component></Item></Container><Item><Descriptor><Statement mimeType=\"text/xml\"><paaf:FileSystemAttributes><paaf:Name>conformance_points.html</paaf:Name><paaf:EncodedPath charset=\"US-ASCII\" original=\"true\">MDFfaW5wdXQvY29uZm9ybWFuY2VfcG9pbnRzLmh0bWw=</paaf:EncodedPath><paaf:EncodedPath charset=\"UTF-8\" default=\"true\">MDFfaW5wdXQvY29uZm9ybWFuY2VfcG9pbnRzLmh0bWw=</paaf:EncodedPath><paaf:OriginalSize>2845</paaf:OriginalSize><paaf:OriginalTimestamp>2009-01-27T12:09:26:109000000F1000000000+00:00</paaf:OriginalTimestamp><paaf:OriginalAttributes><paaf:OwnerRestrictions><paaf:NoExecute/></paaf:OwnerRestrictions><paaf:GroupRestrictions><paaf:NoWrite/><paaf:NoExecute/></paaf:GroupRestrictions><paaf:OtherRestrictions><paaf:NoWrite/><paaf:NoExecute/></paaf:OtherRestrictions></paaf:OriginalAttributes><paaf:DefaultAttributes/></paaf:FileSystemAttributes></Statement></Descriptor><Descriptor><Statement mimeType=\"text/xml\"><Mpeg7><Description xsi:type=\"ContentEntityType\"><MultimediaContent xsi:type=\"MultimediaType\"><Multimedia><CreationInformation><Creation><Title>title2</Title><Abstract><FreeTextAnnotation>free text annotation2</FreeTextAnnotation></Abstract><Creator><Role href=\"urn:mpeg:mpeg7:cs:RoleCS:2001\"/><Agent xsi:type=\"PersonType\"><Name><GivenName/><FamilyName/></Name></Agent></Creator><CreationCoordinates><Location><Name/></Location><Date><TimePoint/></Date></CreationCoordinates><CreationTool><Tool><Name/></Tool></CreationTool><CopyrightString/></Creation><Classification><Form href=\"urn:mpeg:mpeg7:cs:FormatCS:2001:1.1\"><Name/></Form><Genre href=\"urn:mpeg:mpeg7:cs:ContentCS:2001:1.3.1\"><Name/></Genre><Subject><FreeTextAnnotation/></Subject><Purpose href=\"urn:mpeg:mpeg7:cs:IntentionCS:2001:2.1\"><Name/></Purpose><Language type=\"original\"/><Release date=\"\"/><Target><Market href=\"\"><Name/></Market><Region/></Target><ParentalGuidance><ParentalRating href=\"urn:mpeg:mpeg7:cs:MPAAParentalRatingCS:2001:G\"><Name/></ParentalRating></ParentalGuidance><MediaReview><Rating><RatingValue/><RatingScheme best=\"10\" style=\"higherBetter\" worst=\"1\"><Name>Overall</Name></RatingScheme></Rating><FreeTextReview/><Reviewer><Agent xsi:type=\"PersonType\"><Name><GivenName/><FamilyName/></Name></Agent></Reviewer></MediaReview></Classification><RelatedMaterial><DisseminationFormat href=\"urn:mpeg:mpeg7:cs:DisseminationFormatCS:2001:4\"/><MaterialType><Name/></MaterialType><MediaLocator><MediaUri/></MediaLocator></RelatedMaterial></CreationInformation></Multimedia></MultimediaContent></Description></Mpeg7></Statement></Descriptor><Component><Resource contentEncoding=\"x-gzip\" mimeType=\"text/html\" ref=\"#item_id=1\"/></Component></Item><Item><Descriptor><Statement mimeType=\"text/xml\"><paaf:FileSystemAttributes><paaf:Name>file_format.html</paaf:Name><paaf:EncodedPath charset=\"US-ASCII\" original=\"true\">MDFfaW5wdXQvZmlsZV9mb3JtYXQuaHRtbA==</paaf:EncodedPath><paaf:EncodedPath charset=\"UTF-8\" default=\"true\">MDFfaW5wdXQvZmlsZV9mb3JtYXQuaHRtbA==</paaf:EncodedPath><paaf:OriginalSize>1188</paaf:OriginalSize><paaf:OriginalTimestamp>2009-01-27T12:08:54:343000000F1000000000+00:00</paaf:OriginalTimestamp><paaf:OriginalAttributes><paaf:OwnerRestrictions><paaf:NoExecute/></paaf:OwnerRestrictions><paaf:GroupRestrictions><paaf:NoWrite/><paaf:NoExecute/></paaf:GroupRestrictions><paaf:OtherRestrictions><paaf:NoWrite/><paaf:NoExecute/></paaf:OtherRestrictions></paaf:OriginalAttributes><paaf:DefaultAttributes/></paaf:FileSystemAttributes></Statement></Descriptor><Component><Resource contentEncoding=\"x-gzip\" mimeType=\"text/html\" ref=\"#item_id=2\"/></Component></Item><Item><Descriptor><Statement mimeType=\"text/xml\"><paaf:FileSystemAttributes><paaf:Name>index.html</paaf:Name><paaf:EncodedPath charset=\"US-ASCII\" original=\"true\">MDFfaW5wdXQvaW5kZXguaHRtbA==</paaf:EncodedPath><paaf:EncodedPath charset=\"UTF-8\" default=\"true\">MDFfaW5wdXQvaW5kZXguaHRtbA==</paaf:EncodedPath><paaf:OriginalSize>2593</paaf:OriginalSize><paaf:OriginalTimestamp>2009-10-11T04:52:17:230000000F1000000000+00:00</paaf:OriginalTimestamp><paaf:OriginalAttributes><paaf:OwnerRestrictions><paaf:NoExecute/></paaf:OwnerRestrictions><paaf:GroupRestrictions><paaf:NoWrite/><paaf:NoExecute/></paaf:GroupRestrictions><paaf:OtherRestrictions><paaf:NoWrite/><paaf:NoExecute/></paaf:OtherRestrictions></paaf:OriginalAttributes><paaf:DefaultAttributes/></paaf:FileSystemAttributes></Statement></Descriptor><Descriptor><Statement mimeType=\"text/xml\"><Mpeg7><Description xsi:type=\"ContentEntityType\"><MultimediaContent xsi:type=\"MultimediaType\"><Multimedia><CreationInformation><Creation><Title>title3</Title><Abstract><FreeTextAnnotation>free text annotation3</FreeTextAnnotation></Abstract><Creator><Role href=\"urn:mpeg:mpeg7:cs:RoleCS:2001\"/><Agent xsi:type=\"PersonType\"><Name><GivenName>houari</GivenName><FamilyName>sabirin</FamilyName></Name></Agent></Creator><CreationCoordinates><Location><Name/></Location><Date><TimePoint/></Date></CreationCoordinates><CreationTool><Tool><Name/></Tool></CreationTool><CopyrightString/></Creation><Classification><Form href=\"urn:mpeg:mpeg7:cs:FormatCS:2001:1.1\"><Name/></Form><Genre href=\"urn:mpeg:mpeg7:cs:ContentCS:2001:1.3.1\"><Name/></Genre><Subject><FreeTextAnnotation/></Subject><Purpose href=\"urn:mpeg:mpeg7:cs:IntentionCS:2001:2.1\"><Name/></Purpose><Language type=\"original\"/><Release date=\"\"/><Target><Market href=\"\"><Name/></Market><Region/></Target><ParentalGuidance><ParentalRating href=\"urn:mpeg:mpeg7:cs:MPAAParentalRatingCS:2001:G\"><Name/></ParentalRating></ParentalGuidance><MediaReview><Rating><RatingValue/><RatingScheme best=\"10\" style=\"higherBetter\" worst=\"1\"><Name>Overall</Name></RatingScheme></Rating><FreeTextReview/><Reviewer><Agent xsi:type=\"PersonType\"><Name><GivenName/><FamilyName/></Name></Agent></Reviewer></MediaReview></Classification><RelatedMaterial><DisseminationFormat href=\"urn:mpeg:mpeg7:cs:DisseminationFormatCS:2001:4\"/><MaterialType><Name/></MaterialType><MediaLocator><MediaUri/></MediaLocator></RelatedMaterial></CreationInformation></Multimedia></MultimediaContent></Description></Mpeg7></Statement></Descriptor><Component><Resource contentEncoding=\"x-gzip\" mimeType=\"text/html\" ref=\"#item_id=4\"/></Component></Item></Container></Container></DIDL>",
+                    ),
+                },
+            ),
+            bxml: None,
+            pitm: None,
+            fiin: None,
+            idat: None,
+            iref: None,
+            iprp: None,
+            grpl: None,
+            unknown_boxes: [],
+        },
+    ),
+    styp: [],
+    sidx: [],
+    ssix: [],
+    prft: [],
+    unknown_boxes: [],
+    mfra: None,
+}

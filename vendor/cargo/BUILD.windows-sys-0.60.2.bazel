@@ -37,13 +37,9 @@ rust_library(
     crate_features = [
         "Win32",
         "Win32_Foundation",
-        "Win32_Networking",
-        "Win32_Networking_WinSock",
         "Win32_Storage",
         "Win32_Storage_FileSystem",
         "Win32_System",
-        "Win32_System_Console",
-        "Win32_System_IO",
         "Win32_System_Threading",
         "default",
     ],
@@ -69,6 +65,6 @@ rust_library(
     }),
     version = "0.60.2",
     deps = [
-        "@cargo_vendor__windows-targets-0.53.3//:windows_targets",
+        "@cargo_vendor__windows-targets-0.53.4//:windows_targets",
     ],
 )

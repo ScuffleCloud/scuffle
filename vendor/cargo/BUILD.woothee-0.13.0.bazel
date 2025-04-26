@@ -69,7 +69,7 @@ rust_library(
     version = "0.13.0",
     deps = [
         "@cargo_vendor__lazy_static-1.5.0//:lazy_static",
-        "@cargo_vendor__regex-1.11.2//:regex",
+        "@cargo_vendor__regex-1.12.2//:regex",
         "@cargo_vendor__woothee-0.13.0//:build_script_build",
     ],
 )

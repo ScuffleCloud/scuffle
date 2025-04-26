@@ -297,11 +297,9 @@ impl Encoder {
 #[cfg(test)]
 #[cfg_attr(all(test, coverage_nightly), coverage(off))]
 mod tests {
-    use std::io::Write;
-
-    use bytes::{Buf, Bytes};
     use rusty_ffmpeg::ffi::AVRational;
-    use sha2::Digest;
+    use scuffle_bytes_util::zero_copy::Deserialize;
+    use scuffle_bytes_util::{BytesCow, IoResultExt};
 
     use crate::codec::EncoderCodec;
     use crate::decoder::Decoder;
@@ -801,31 +799,23 @@ mod tests {
 
         output.write_trailer().expect("Failed to write trailer");
 
-        let mut cursor = std::io::Cursor::new(Bytes::from(output.into_inner().into_inner()));
+        let data = output.into_inner().into_inner();
+        let mut reader = scuffle_bytes_util::zero_copy::Slice::from(&data[..]);
+
         let mut boxes = Vec::new();
-        while cursor.has_remaining() {
-            let mut _box = scuffle_mp4::DynBox::demux(&mut cursor).expect("Failed to demux box");
-            match &mut _box {
-                scuffle_mp4::DynBox::Mdat(mdat) => {
-                    mdat.data.iter_mut().for_each(|buf| {
-                        let mut hash = sha2::Sha256::new();
-                        hash.write_all(buf).unwrap();
-                        *buf = Bytes::new();
-                    });
-                }
-                scuffle_mp4::DynBox::Moov(moov) => {
-                    moov.traks.iter_mut().for_each(|trak| {
-                        // these can change from version to version
-                        trak.mdia.minf.stbl.stsd.entries.clear();
-                        if let Some(stsz) = trak.mdia.minf.stbl.stsz.as_mut() {
-                            stsz.samples.clear();
-                        }
-                        trak.mdia.minf.stbl.stco.entries.clear();
-                    });
-                }
-                _ => {}
+        loop {
+            let Some(mut any_box) = isobmff::UnknownBox::deserialize(&mut reader)
+                .eof_to_none()
+                .expect("failed to demux box")
+            else {
+                break;
+            };
+
+            if any_box.header.box_type.is_four_cc(b"mdat") || any_box.header.box_type.is_four_cc(b"moov") {
+                any_box.data = BytesCow::new();
             }
-            boxes.push(_box);
+
+            boxes.push(any_box);
         }
         insta::assert_debug_snapshot!("test_encoder_encode_video", &boxes);
     }

@@ -46,3 +46,6 @@ MODULE.bazel.lock
 
 # diesel
 .diesel_lock
+
+# ISOBMFF file conformance
+assets/isobmff_conformance/

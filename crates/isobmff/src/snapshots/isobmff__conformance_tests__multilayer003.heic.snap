@@ -1,0 +1,285 @@
+---
+source: crates/isobmff/src/conformance_tests.rs
+expression: redeserialized_file
+snapshot_kind: text
+---
+IsobmffFile {
+    ftyp: Some(
+        FileTypeBox {
+            major_brand: Brand([109, 105, 102, 49]),
+            minor_version: 0,
+            compatible_brands: [
+                Brand([109, 105, 102, 49]),
+                Brand([104, 101, 105, 99]),
+            ],
+        },
+    ),
+    etyp: [],
+    otyp: [],
+    pdin: None,
+    moov: None,
+    moof: [],
+    mdat: [
+        MediaDataBox {
+            data.len: 14079,
+        },
+    ],
+    imda: [],
+    meta: Some(
+        MetaBox {
+            full_header: FullBoxHeader {
+                version: 0,
+                flags: U24Be(
+                    0,
+                ),
+            },
+            hdlr: HandlerBox {
+                full_header: FullBoxHeader {
+                    version: 0,
+                    flags: U24Be(
+                        0,
+                    ),
+                },
+                pre_defined: 0,
+                handler_type: HandlerType([112, 105, 99, 116]),
+                reserved: [
+                    0,
+                    0,
+                    0,
+                ],
+                name: Utf8String(
+                    "",
+                ),
+            },
+            dinf: None,
+            iloc: Some(
+                ItemLocationBox {
+                    full_header: FullBoxHeader {
+                        version: 0,
+                        flags: U24Be(
+                            0,
+                        ),
+                    },
+                    offset_size: 4,
+                    length_size: 4,
+                    base_offset_size: 4,
+                    index_size: 0,
+                    item_count: Some(
+                        2,
+                    ),
+                    items: [
+                        ItemLocationBoxItem {
+                            item_id: Some(
+                                1002,
+                            ),
+                            construction_method: None,
+                            data_reference_index: 0,
+                            base_offset: 417,
+                            extent_count: 1,
+                            extents: [
+                                ItemLocationBoxExtent {
+                                    item_reference_index: None,
+                                    extent_offset: 16,
+                                    extent_length: 7044,
+                                },
+                            ],
+                        },
+                        ItemLocationBoxItem {
+                            item_id: Some(
+                                1004,
+                            ),
+                            construction_method: None,
+                            data_reference_index: 0,
+                            base_offset: 417,
+                            extent_count: 1,
+                            extents: [
+                                ItemLocationBoxExtent {
+                                    item_reference_index: None,
+                                    extent_offset: 7060,
+                                    extent_length: 7035,
+                                },
+                            ],
+                        },
+                    ],
+                },
+            ),
+            ipro: None,
+            iinf: Some(
+                ItemInfoBox {
+                    full_header: FullBoxHeader {
+                        version: 0,
+                        flags: U24Be(
+                            0,
+                        ),
+                    },
+                    entry_count: 2,
+                    item_infos: [
+                        ItemInfoEntry {
+                            full_header: FullBoxHeader {
+                                version: 2,
+                                flags: U24Be(
+                                    0,
+                                ),
+                            },
+                            item_id: Some(
+                                1002,
+                            ),
+                            item_protection_index: 0,
+                            item_type: [
+                                104,
+                                118,
+                                99,
+                                49,
+                            ],
+                            item_name: Utf8String(
+                                "HEVC Image",
+                            ),
+                            item: None,
+                            extension_type: None,
+                            extension: None,
+                        },
+                        ItemInfoEntry {
+                            full_header: FullBoxHeader {
+                                version: 2,
+                                flags: U24Be(
+                                    0,
+                                ),
+                            },
+                            item_id: Some(
+                                1004,
+                            ),
+                            item_protection_index: 0,
+                            item_type: [
+                                104,
+                                118,
+                                99,
+                                49,
+                            ],
+                            item_name: Utf8String(
+                                "HEVC Image",
+                            ),
+                            item: None,
+                            extension_type: None,
+                            extension: None,
+                        },
+                    ],
+                },
+            ),
+            xml: None,
+            bxml: None,
+            pitm: Some(
+                PrimaryItemBox {
+                    full_header: FullBoxHeader {
+                        version: 0,
+                        flags: U24Be(
+                            0,
+                        ),
+                    },
+                    item_id: 1002,
+                },
+            ),
+            fiin: None,
+            idat: None,
+            iref: None,
+            iprp: Some(
+                ItemPropertiesBox {
+                    property_container: ItemPropertyContainerBox {
+                        etyp: None,
+                        brnd: [],
+                        scrb: [],
+                        boxes: [
+                            UnknownBox {
+                                header: BoxHeader {
+                                    size: Short(
+                                        108,
+                                    ),
+                                    box_type: FourCc(
+                                        "hvcC",
+                                    ),
+                                },
+                                data.len: 100,
+                            },
+                            UnknownBox {
+                                header: BoxHeader {
+                                    size: Short(
+                                        20,
+                                    ),
+                                    box_type: FourCc(
+                                        "ispe",
+                                    ),
+                                },
+                                data.len: 12,
+                            },
+                        ],
+                    },
+                    association: [
+                        ItemPropertyAssociationBox {
+                            full_header: FullBoxHeader {
+                                version: 0,
+                                flags: U24Be(
+                                    0,
+                                ),
+                            },
+                            entry_count: 2,
+                            entries: [
+                                ItemPropertyAssociationBoxEntry {
+                                    item_id: 1002,
+                                    association_count: 2,
+                                    associations: [
+                                        ItemPropertyAssociationBoxEntryAssociation {
+                                            essential: true,
+                                            property_index: 1,
+                                        },
+                                        ItemPropertyAssociationBoxEntryAssociation {
+                                            essential: false,
+                                            property_index: 2,
+                                        },
+                                    ],
+                                },
+                                ItemPropertyAssociationBoxEntry {
+                                    item_id: 1004,
+                                    association_count: 2,
+                                    associations: [
+                                        ItemPropertyAssociationBoxEntryAssociation {
+                                            essential: true,
+                                            property_index: 1,
+                                        },
+                                        ItemPropertyAssociationBoxEntryAssociation {
+                                            essential: false,
+                                            property_index: 2,
+                                        },
+                                    ],
+                                },
+                            ],
+                        },
+                    ],
+                },
+            ),
+            grpl: Some(
+                GroupsListBox {
+                    altr: [],
+                    unknown_boxes: [
+                        UnknownBox {
+                            header: BoxHeader {
+                                size: Short(
+                                    28,
+                                ),
+                                box_type: FourCc(
+                                    "ster",
+                                ),
+                            },
+                            data.len: 20,
+                        },
+                    ],
+                },
+            ),
+            unknown_boxes: [],
+        },
+    ),
+    styp: [],
+    sidx: [],
+    ssix: [],
+    prft: [],
+    unknown_boxes: [],
+    mfra: None,
+}

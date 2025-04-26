@@ -79,6 +79,6 @@ rust_library(
         "@cargo_vendor__prost-0.14.1//:prost",
         "@cargo_vendor__serde-1.0.228//:serde",
         "@cargo_vendor__serde_json-1.0.145//:serde_json",
-        "@cargo_vendor__serde_with-3.14.0//:serde_with",
+        "@cargo_vendor__serde_with-3.15.0//:serde_with",
     ],
 )

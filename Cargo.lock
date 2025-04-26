@@ -1762,6 +1762,16 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "7943c866cc5cd64cbc25b2e01621d07fa8eb2a1a23160ee81ce38704e97b8ecf"
 
 [[package]]
+name = "isobmff"
+version = "0.1.0"
+dependencies = [
+ "byteorder",
+ "scuffle-bytes-util",
+ "scuffle-workspace-hack",
+ "uuid",
+]
+
+[[package]]
 name = "itertools"
 version = "0.10.5"
 source = "registry+https://github.com/rust-lang/crates.io-index"

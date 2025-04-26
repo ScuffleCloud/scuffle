@@ -1,0 +1,18 @@
+[package]
+name = "isobmff"
+version = "0.1.0"
+edition = "2024"
+description = "A pure Rust ISO base media file format parser and writer."
+repository = "https://github.com/scufflecloud/scuffle"
+authors = ["Scuffle <opensource@scuffle.cloud>"]
+readme = "README.md"
+documentation = "https://docs.rs/isobmff"
+license = "MIT OR Apache-2.0"
+keywords = ["isobmff", "mp4", "video", "container", "iso-14496-12"]
+
+[dependencies]
+uuid = "1.16.0"
+byteorder = "1.5.0"
+
+scuffle-bytes-util.workspace = true
+scuffle-workspace-hack.workspace = true

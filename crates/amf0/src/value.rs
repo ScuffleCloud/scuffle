@@ -278,12 +278,167 @@ impl serde::ser::Serialize for Amf0Value<'_> {
     }
 }
 
+#[cfg(feature = "serde")]
+#[cfg_attr(docsrs, doc(cfg(feature = "serde")))]
+macro_rules! impl_de_number {
+    ($deserializser_fn:ident, $visit_fn:ident) => {
+        fn $deserializser_fn<V>(self, visitor: V) -> Result<V::Value, Self::Error>
+        where
+            V: serde::de::Visitor<'de>,
+        {
+            if let Amf0Value::Number(n) = self {
+                if let Some(n) = ::num_traits::cast(*n) {
+                    return visitor.$visit_fn(n);
+                }
+            }
+
+            self.deserialize_any(visitor)
+        }
+    };
+}
+
+#[cfg(feature = "serde")]
+#[cfg_attr(docsrs, doc(cfg(feature = "serde")))]
+impl<'de, 'a: 'de> serde::Deserializer<'de> for &'a Amf0Value<'de> {
+    type Error = Amf0Error;
+
+    serde::forward_to_deserialize_any! {
+        bool f64 char str string unit
+        seq map newtype_struct tuple
+        struct enum ignored_any identifier
+    }
+
+    impl_de_number!(deserialize_i8, visit_i8);
+
+    impl_de_number!(deserialize_i16, visit_i16);
+
+    impl_de_number!(deserialize_i32, visit_i32);
+
+    impl_de_number!(deserialize_i64, visit_i64);
+
+    impl_de_number!(deserialize_u8, visit_u8);
+
+    impl_de_number!(deserialize_u16, visit_u16);
+
+    impl_de_number!(deserialize_u32, visit_u32);
+
+    impl_de_number!(deserialize_u64, visit_u64);
+
+    impl_de_number!(deserialize_f32, visit_f32);
+
+    fn deserialize_option<V>(self, visitor: V) -> Result<V::Value, Self::Error>
+    where
+        V: serde::de::Visitor<'de>,
+    {
+        match self {
+            Amf0Value::Null => visitor.visit_none(),
+            _ => visitor.visit_some(self),
+        }
+    }
+
+    fn deserialize_bytes<V>(self, visitor: V) -> Result<V::Value, Self::Error>
+    where
+        V: serde::de::Visitor<'de>,
+    {
+        self.deserialize_seq(visitor)
+    }
+
+    fn deserialize_byte_buf<V>(self, visitor: V) -> Result<V::Value, Self::Error>
+    where
+        V: serde::de::Visitor<'de>,
+    {
+        self.deserialize_seq(visitor)
+    }
+
+    fn deserialize_unit_struct<V>(self, _name: &'static str, visitor: V) -> Result<V::Value, Self::Error>
+    where
+        V: serde::de::Visitor<'de>,
+    {
+        self.deserialize_unit(visitor)
+    }
+
+    fn deserialize_tuple_struct<V>(self, _name: &'static str, len: usize, visitor: V) -> Result<V::Value, Self::Error>
+    where
+        V: serde::de::Visitor<'de>,
+    {
+        self.deserialize_tuple(len, visitor)
+    }
+
+    fn deserialize_any<V>(self, visitor: V) -> Result<V::Value, Self::Error>
+    where
+        V: serde::de::Visitor<'de>,
+    {
+        match self {
+            Amf0Value::Null => visitor.visit_unit(),
+            Amf0Value::Boolean(b) => visitor.visit_bool(*b),
+            Amf0Value::Number(n) => visitor.visit_f64(*n),
+            Amf0Value::String(s) => visitor.visit_borrowed_str(s.as_str()),
+            Amf0Value::Array(a) => visitor.visit_seq(Amf0SeqAccess { iter: a.iter() }),
+            Amf0Value::Object(o) => visitor.visit_map(Amf0MapAccess {
+                iter: o.iter(),
+                value: None,
+            }),
+        }
+    }
+}
+
+struct Amf0SeqAccess<'a, 'de> {
+    iter: std::slice::Iter<'a, Amf0Value<'de>>,
+}
+
+impl<'de, 'a: 'de> serde::de::SeqAccess<'de> for Amf0SeqAccess<'a, 'de> {
+    type Error = Amf0Error;
+
+    fn next_element_seed<T>(&mut self, seed: T) -> Result<Option<T::Value>, Self::Error>
+    where
+        T: serde::de::DeserializeSeed<'de>,
+    {
+        match self.iter.next() {
+            Some(value) => seed.deserialize(value).map(Some),
+            None => Ok(None),
+        }
+    }
+}
+
+struct Amf0MapAccess<'a, 'de> {
+    iter: std::collections::hash_map::Iter<'a, StringCow<'de>, Amf0Value<'de>>,
+    value: Option<&'a Amf0Value<'de>>,
+}
+
+impl<'de, 'a: 'de> serde::de::MapAccess<'de> for Amf0MapAccess<'a, 'de> {
+    type Error = Amf0Error;
+
+    fn next_key_seed<K>(&mut self, seed: K) -> Result<Option<K::Value>, Self::Error>
+    where
+        K: serde::de::DeserializeSeed<'de>,
+    {
+        match self.iter.next() {
+            Some((key, value)) => {
+                self.value = Some(value);
+                seed.deserialize(serde::de::IntoDeserializer::into_deserializer(key.as_str()))
+                    .map(Some)
+            }
+            None => Ok(None),
+        }
+    }
+
+    fn next_value_seed<V>(&mut self, seed: V) -> Result<V::Value, Self::Error>
+    where
+        V: serde::de::DeserializeSeed<'de>,
+    {
+        seed.deserialize(self.value.take().unwrap())
+    }
+}
+
 #[cfg(test)]
 #[cfg_attr(all(test, coverage_nightly), coverage(off))]
 mod tests {
     use std::borrow::Cow;
+    use std::collections::HashMap;
 
     use scuffle_bytes_util::StringCow;
+    #[cfg(feature = "serde")]
+    use serde::Deserialize;
 
     use super::Amf0Value;
     use crate::{Amf0Array, Amf0Decoder, Amf0Encoder, Amf0Error, Amf0Marker, Amf0Object};
@@ -582,6 +737,90 @@ mod tests {
                 Amf0Value::Number(108.0),
                 Amf0Value::Number(111.0),
             ])),
+        );
+    }
+
+    #[cfg(feature = "serde")]
+    #[test]
+    fn deserialize_bool() {
+        let value = Amf0Value::Boolean(true);
+        let deserialized: bool = Deserialize::deserialize(&value).unwrap();
+        assert!(deserialized);
+    }
+
+    #[cfg(feature = "serde")]
+    #[test]
+    fn deserialize_number() {
+        let value = Amf0Value::Number(42.0);
+        let deserialized: f64 = Deserialize::deserialize(&value).unwrap();
+        assert_eq!(deserialized, 42.0);
+    }
+
+    #[cfg(feature = "serde")]
+    #[test]
+    fn deserialize_string() {
+        let value = Amf0Value::String(StringCow::from("hello"));
+        let deserialized: String = Deserialize::deserialize(&value).unwrap();
+        assert_eq!(deserialized, "hello");
+    }
+
+    #[cfg(feature = "serde")]
+    #[test]
+    fn deserialize_null() {
+        let value = Amf0Value::Null;
+        let deserialized: Option<i32> = Deserialize::deserialize(&value).unwrap();
+        assert_eq!(deserialized, None);
+    }
+
+    #[cfg(feature = "serde")]
+    #[test]
+    fn deserialize_array() {
+        let value = Amf0Value::Array(Cow::Owned(vec![
+            Amf0Value::Number(1.0),
+            Amf0Value::Number(2.0),
+            Amf0Value::Number(3.0),
+        ]));
+
+        let deserialized: Vec<f64> = Deserialize::deserialize(&value).unwrap();
+        assert_eq!(deserialized, vec![1.0, 2.0, 3.0]);
+    }
+
+    #[cfg(feature = "serde")]
+    #[test]
+    fn deserialize_object() {
+        let mut map = Amf0Object::new();
+        map.insert(StringCow::from("key"), Amf0Value::String(StringCow::from("value")));
+        let value = Amf0Value::Object(map);
+
+        let deserialized: HashMap<String, String> = Deserialize::deserialize(&value).unwrap();
+        assert_eq!(deserialized.get("key"), Some(&"value".to_string()));
+    }
+
+    #[cfg(feature = "serde")]
+    #[test]
+    fn deserialize_complex_structure() {
+        let value = Amf0Value::Object(HashMap::from([
+            (
+                StringCow::from("numbers"),
+                Amf0Value::Array(Cow::Owned(vec![Amf0Value::Number(1.0), Amf0Value::Number(2.0)])),
+            ),
+            (StringCow::from("flag"), Amf0Value::Boolean(true)),
+        ]));
+
+        #[derive(Debug, Deserialize, PartialEq)]
+        struct Complex {
+            numbers: Vec<f64>,
+            flag: bool,
+        }
+
+        let deserialized: Complex = Deserialize::deserialize(&value).unwrap();
+
+        assert_eq!(
+            deserialized,
+            Complex {
+                numbers: vec![1.0, 2.0],
+                flag: true
+            }
         );
     }
 }

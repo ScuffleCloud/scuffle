@@ -1,0 +1,9 @@
+[[scuffle-amf0]]
+category = "fix"
+description = "Fix amf0 deserialization to abide by deserialization rules"
+authors = ["@philipch07"]
+
+[[scuffle-amf0]]
+category = "feat"
+description = "Add amf0::value deserialization"
+authors = ["@philipch07"]

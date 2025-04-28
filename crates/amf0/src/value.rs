@@ -312,13 +312,21 @@ impl<'de, 'a: 'de> serde::Deserializer<'de> for &'a Amf0Value<'de> {
     }
 
     impl_de_number!(deserialize_i8, visit_i8);
+
     impl_de_number!(deserialize_i16, visit_i16);
+
     impl_de_number!(deserialize_i32, visit_i32);
+
     impl_de_number!(deserialize_i64, visit_i64);
+
     impl_de_number!(deserialize_u8, visit_u8);
+
     impl_de_number!(deserialize_u16, visit_u16);
+
     impl_de_number!(deserialize_u32, visit_u32);
+
     impl_de_number!(deserialize_u64, visit_u64);
+
     impl_de_number!(deserialize_f32, visit_f32);
 
     fn deserialize_option<V>(self, visitor: V) -> Result<V::Value, Self::Error>
@@ -327,7 +335,7 @@ impl<'de, 'a: 'de> serde::Deserializer<'de> for &'a Amf0Value<'de> {
     {
         match self {
             Amf0Value::Null => visitor.visit_none(),
-            _ => visitor.visit_some(self)
+            _ => visitor.visit_some(self),
         }
     }
 
@@ -355,14 +363,12 @@ impl<'de, 'a: 'de> serde::Deserializer<'de> for &'a Amf0Value<'de> {
         self.deserialize_seq(visitor)
     }
 
-
     fn deserialize_unit_struct<V>(self, _name: &'static str, visitor: V) -> Result<V::Value, Self::Error>
     where
         V: serde::de::Visitor<'de>,
     {
         self.deserialize_unit(visitor)
     }
-
 
     // fn deserialize_newtype_struct<V>(self, name: &'static str, visitor: V) -> Result<V::Value, Self::Error>
     // where
@@ -375,7 +381,6 @@ impl<'de, 'a: 'de> serde::Deserializer<'de> for &'a Amf0Value<'de> {
     //     }
     // }
 
-
     fn deserialize_tuple_struct<V>(self, _name: &'static str, len: usize, visitor: V) -> Result<V::Value, Self::Error>
     where
         V: serde::de::Visitor<'de>,
@@ -383,7 +388,12 @@ impl<'de, 'a: 'de> serde::Deserializer<'de> for &'a Amf0Value<'de> {
         self.deserialize_tuple(len, visitor)
     }
 
-    fn deserialize_struct<V>(self, _name: &'static str, _fields: &'static [&'static str], visitor: V) -> Result<V::Value, Self::Error>
+    fn deserialize_struct<V>(
+        self,
+        _name: &'static str,
+        _fields: &'static [&'static str],
+        visitor: V,
+    ) -> Result<V::Value, Self::Error>
     where
         V: serde::de::Visitor<'de>,
     {

@@ -79,7 +79,7 @@ where
     {
         if let Some(Amf0Marker::Number) = self.next_marker {
             let value = self.decode_number()?;
-            return visitor.visit_i8(value as i8)
+            return visitor.visit_i8(value as i8);
         }
         self.deserialize_any(visitor)
     }
@@ -90,7 +90,7 @@ where
     {
         if let Some(Amf0Marker::Number) = self.next_marker {
             let value = self.decode_number()?;
-            return visitor.visit_i16(value as i16)
+            return visitor.visit_i16(value as i16);
         }
         self.deserialize_any(visitor)
     }
@@ -101,7 +101,7 @@ where
     {
         if let Some(Amf0Marker::Number) = self.next_marker {
             let value = self.decode_number()?;
-            return visitor.visit_i32(value as i32)
+            return visitor.visit_i32(value as i32);
         }
         self.deserialize_any(visitor)
     }
@@ -112,7 +112,7 @@ where
     {
         if let Some(Amf0Marker::Number) = self.next_marker {
             let value = self.decode_number()?;
-            return visitor.visit_i64(value as i64)
+            return visitor.visit_i64(value as i64);
         }
         self.deserialize_any(visitor)
     }
@@ -123,7 +123,7 @@ where
     {
         if let Some(Amf0Marker::Number) = self.next_marker {
             let value = self.decode_number()?;
-            return visitor.visit_u8(value as u8)
+            return visitor.visit_u8(value as u8);
         }
         self.deserialize_any(visitor)
     }
@@ -134,7 +134,7 @@ where
     {
         if let Some(Amf0Marker::Number) = self.next_marker {
             let value = self.decode_number()?;
-            return visitor.visit_u16(value as u16)
+            return visitor.visit_u16(value as u16);
         }
         self.deserialize_any(visitor)
     }
@@ -145,7 +145,7 @@ where
     {
         if let Some(Amf0Marker::Number) = self.next_marker {
             let value = self.decode_number()?;
-            return visitor.visit_u32(value as u32)
+            return visitor.visit_u32(value as u32);
         }
         self.deserialize_any(visitor)
     }
@@ -156,7 +156,7 @@ where
     {
         if let Some(Amf0Marker::Number) = self.next_marker {
             let value = self.decode_number()?;
-            return visitor.visit_u64(value as u64)
+            return visitor.visit_u64(value as u64);
         }
         self.deserialize_any(visitor)
     }
@@ -167,7 +167,7 @@ where
     {
         if let Some(Amf0Marker::Number) = self.next_marker {
             let value = self.decode_number()?;
-            return visitor.visit_f32(value as f32)
+            return visitor.visit_f32(value as f32);
         }
         self.deserialize_any(visitor)
     }
@@ -178,7 +178,7 @@ where
     {
         if let Some(Amf0Marker::Number) = self.next_marker {
             let value = self.decode_number()?;
-            return visitor.visit_f64(value as f64)
+            return visitor.visit_f64(value as f64);
         }
         self.deserialize_any(visitor)
     }

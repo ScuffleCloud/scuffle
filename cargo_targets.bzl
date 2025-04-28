@@ -30,6 +30,7 @@ _packages = [
     "//crates/h265",
     "//crates/http",
     "//crates/isobmff",
+    "//crates/isobmff/derive",
     "//crates/metrics",
     "//crates/metrics/derive",
     "//crates/mp4",

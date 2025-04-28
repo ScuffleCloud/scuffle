@@ -12,6 +12,27 @@ mod stream;
 
 pub use stream::*;
 
+#[cfg(feature = "serde")]
+#[cfg_attr(docsrs, doc(cfg(feature = "serde")))]
+macro_rules! impl_de_number {
+    ($deserializser_fn:ident, $visit_fn:ident) => {
+        fn $deserializser_fn<V>(self, visitor: V) -> Result<V::Value, Self::Error>
+        where
+            V: serde::de::Visitor<'de>,
+        {
+            if let Some(Amf0Marker::Number) = self.next_marker {
+                // must make sure the marker is a number so we don't error out
+                let value = self.decode_number()?;
+                if let Some(value) = ::num_traits::cast(value) {
+                    return visitor.$visit_fn(value);
+                }
+            }
+
+            self.deserialize_any(visitor)
+        }
+    };
+}
+
 /// Deserialize a value from a given [`bytes::Buf`].
 pub fn from_buf<'de, T>(buf: impl bytes::Buf) -> crate::Result<T>
 where
@@ -48,6 +69,28 @@ where
 {
     type Error = Amf0Error;
 
+    serde::forward_to_deserialize_any! {
+        f64
+    }
+
+    impl_de_number!(deserialize_i8, visit_i8);
+
+    impl_de_number!(deserialize_i16, visit_i16);
+
+    impl_de_number!(deserialize_i32, visit_i32);
+
+    impl_de_number!(deserialize_i64, visit_i64);
+
+    impl_de_number!(deserialize_u8, visit_u8);
+
+    impl_de_number!(deserialize_u16, visit_u16);
+
+    impl_de_number!(deserialize_u32, visit_u32);
+
+    impl_de_number!(deserialize_u64, visit_u64);
+
+    impl_de_number!(deserialize_f32, visit_f32);
+
     fn deserialize_any<V>(self, visitor: V) -> Result<V::Value, Self::Error>
     where
         V: serde::de::Visitor<'de>,
@@ -69,124 +112,16 @@ where
     where
         V: serde::de::Visitor<'de>,
     {
+        // TODO: check everything before calling decode
         let value = self.decode_boolean()?;
         visitor.visit_bool(value)
-    }
-
-    fn deserialize_i8<V>(self, visitor: V) -> Result<V::Value, Self::Error>
-    where
-        V: serde::de::Visitor<'de>,
-    {
-        if let Some(Amf0Marker::Number) = self.next_marker {
-            let value = self.decode_number()?;
-            return visitor.visit_i8(value as i8);
-        }
-        self.deserialize_any(visitor)
-    }
-
-    fn deserialize_i16<V>(self, visitor: V) -> Result<V::Value, Self::Error>
-    where
-        V: serde::de::Visitor<'de>,
-    {
-        if let Some(Amf0Marker::Number) = self.next_marker {
-            let value = self.decode_number()?;
-            return visitor.visit_i16(value as i16);
-        }
-        self.deserialize_any(visitor)
-    }
-
-    fn deserialize_i32<V>(self, visitor: V) -> Result<V::Value, Self::Error>
-    where
-        V: serde::de::Visitor<'de>,
-    {
-        if let Some(Amf0Marker::Number) = self.next_marker {
-            let value = self.decode_number()?;
-            return visitor.visit_i32(value as i32);
-        }
-        self.deserialize_any(visitor)
-    }
-
-    fn deserialize_i64<V>(self, visitor: V) -> Result<V::Value, Self::Error>
-    where
-        V: serde::de::Visitor<'de>,
-    {
-        if let Some(Amf0Marker::Number) = self.next_marker {
-            let value = self.decode_number()?;
-            return visitor.visit_i64(value as i64);
-        }
-        self.deserialize_any(visitor)
-    }
-
-    fn deserialize_u8<V>(self, visitor: V) -> Result<V::Value, Self::Error>
-    where
-        V: serde::de::Visitor<'de>,
-    {
-        if let Some(Amf0Marker::Number) = self.next_marker {
-            let value = self.decode_number()?;
-            return visitor.visit_u8(value as u8);
-        }
-        self.deserialize_any(visitor)
-    }
-
-    fn deserialize_u16<V>(self, visitor: V) -> Result<V::Value, Self::Error>
-    where
-        V: serde::de::Visitor<'de>,
-    {
-        if let Some(Amf0Marker::Number) = self.next_marker {
-            let value = self.decode_number()?;
-            return visitor.visit_u16(value as u16);
-        }
-        self.deserialize_any(visitor)
-    }
-
-    fn deserialize_u32<V>(self, visitor: V) -> Result<V::Value, Self::Error>
-    where
-        V: serde::de::Visitor<'de>,
-    {
-        if let Some(Amf0Marker::Number) = self.next_marker {
-            let value = self.decode_number()?;
-            return visitor.visit_u32(value as u32);
-        }
-        self.deserialize_any(visitor)
-    }
-
-    fn deserialize_u64<V>(self, visitor: V) -> Result<V::Value, Self::Error>
-    where
-        V: serde::de::Visitor<'de>,
-    {
-        if let Some(Amf0Marker::Number) = self.next_marker {
-            let value = self.decode_number()?;
-            return visitor.visit_u64(value as u64);
-        }
-        self.deserialize_any(visitor)
-    }
-
-    fn deserialize_f32<V>(self, visitor: V) -> Result<V::Value, Self::Error>
-    where
-        V: serde::de::Visitor<'de>,
-    {
-        if let Some(Amf0Marker::Number) = self.next_marker {
-            let value = self.decode_number()?;
-            return visitor.visit_f32(value as f32);
-        }
-        self.deserialize_any(visitor)
-    }
-
-    fn deserialize_f64<V>(self, visitor: V) -> Result<V::Value, Self::Error>
-    where
-        V: serde::de::Visitor<'de>,
-    {
-        if let Some(Amf0Marker::Number) = self.next_marker {
-            let value = self.decode_number()?;
-            return visitor.visit_f64(value);
-        }
-        self.deserialize_any(visitor)
     }
 
     fn deserialize_char<V>(self, _visitor: V) -> Result<V::Value, Self::Error>
     where
         V: serde::de::Visitor<'de>,
     {
+        // should we still error here?
         Err(Amf0Error::CharNotSupported)
     }
 

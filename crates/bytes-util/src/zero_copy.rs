@@ -14,6 +14,24 @@ pub trait ZeroCopyReader<'a> {
 
     /// Returns a standard [`io::Read`] interface for the reader.
     fn as_std(&mut self) -> impl io::Read;
+
+    /// Limits the number of bytes that can be read from the reader.
+    fn take(self, limit: usize) -> Take<Self>
+    where
+        Self: Sized,
+    {
+        Take::new(self, limit)
+    }
+}
+
+impl<'a, T: ZeroCopyReader<'a>> ZeroCopyReader<'a> for &mut T {
+    fn try_read(&mut self, size: usize) -> Result<BytesCow<'a>, io::Error> {
+        (*self).try_read(size)
+    }
+
+    fn as_std(&mut self) -> impl io::Read {
+        (*self).as_std()
+    }
 }
 
 /// A zero-copy reader that wraps a [`bytes::Buf`].
@@ -89,5 +107,62 @@ impl<'a> ZeroCopyReader<'a> for Slice<'a> {
 
     fn as_std(&mut self) -> impl io::Read {
         &mut self.0
+    }
+}
+
+/// Zero-copy reader that limits the number of bytes read.
+///
+/// This is equivalent to [`std::io::Take`], but it implements [`ZeroCopyReader`].
+pub struct Take<R> {
+    inner: R,
+    limit: usize,
+}
+
+struct TakeAsStd<'a, R> {
+    inner: R,
+    limit: &'a mut usize,
+}
+
+impl<R: io::Read> io::Read for TakeAsStd<'_, R> {
+    fn read(&mut self, buf: &mut [u8]) -> io::Result<usize> {
+        if *self.limit == 0 {
+            return Ok(0);
+        }
+
+        let size = std::cmp::min(buf.len(), *self.limit);
+        let n = self.inner.read(&mut buf[..size])?;
+        *self.limit -= n;
+        Ok(n)
+    }
+}
+
+impl<R> Take<R> {
+    /// Creates a new [`Take`] reader that limits the number of bytes read.
+    pub fn new(inner: R, limit: usize) -> Self {
+        Self { inner, limit }
+    }
+
+    /// Returns the underlying reader.
+    pub fn into_inner(self) -> R {
+        self.inner
+    }
+}
+
+impl<'a, R> ZeroCopyReader<'a> for Take<R>
+where
+    R: ZeroCopyReader<'a>,
+{
+    fn as_std(&mut self) -> impl io::Read {
+        TakeAsStd {
+            inner: self.inner.as_std(),
+            limit: &mut self.limit,
+        }
+    }
+
+    fn try_read(&mut self, size: usize) -> Result<BytesCow<'a>, io::Error> {
+        let size = std::cmp::min(size, self.limit);
+        let result = self.inner.try_read(size)?;
+        self.limit -= result.as_bytes().len();
+        Ok(result)
     }
 }

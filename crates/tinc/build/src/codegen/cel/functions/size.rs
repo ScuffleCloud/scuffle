@@ -1,8 +1,9 @@
 use syn::parse_quote;
 
 use super::Function;
-use crate::cel::codegen::{CelType, ProtoModifiedValueType, ProtoType, ProtoValueType};
-use crate::cel::compiler::{CompileError, CompiledExpr, CompilerCtx};
+use crate::codegen::cel::compiler::{CompileError, CompiledExpr, CompilerCtx};
+use crate::codegen::cel::types::CelType;
+use crate::codegen::types::{ProtoModifiedValueType, ProtoType, ProtoValueType};
 
 pub struct Size;
 
@@ -36,7 +37,7 @@ impl Function for Size {
             }
             _ => Ok(CompiledExpr {
                 expr: parse_quote! {
-                    ::tinc::__private::cel::CelValue::size(#this)?
+                    ::tinc::__private::cel::CelValue::cel_size(#this)?
                 },
                 ty: CelType::Proto(ProtoType::Value(ProtoValueType::UInt64)),
             }),

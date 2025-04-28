@@ -13,6 +13,9 @@ inputs:
 runs:
   using: "composite"
   steps:
+    - name: Install Protoc
+      uses: arduino/setup-protoc@v3
+
     - name: Build docs
       shell: bash
       env:

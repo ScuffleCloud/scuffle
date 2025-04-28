@@ -1,84 +1,26 @@
 use std::collections::BTreeMap;
 
-use convert_case::{Case, Casing};
-use quote::quote;
+use quote::{ToTokens, quote};
 use syn::parse_quote;
 use tinc_pb::schema_oneof_options::Tagged;
 
-use super::prost_sanatize::{strip_enum_prefix, to_upper_camel};
-use super::{field_ident_from_str, ident_from_str, strip_last_path_part, type_ident_from_str};
-use crate::codegen::get_common_import_path;
-use crate::extensions::{EnumOpts, FieldModifier, FieldOpts, FieldType, FieldVisibility, MessageOpts, OneofOpts};
-
-fn message_attributes(key: &str, prost: &mut tonic_build::Config) {
-    let attrs = [
-        "#[derive(::tinc::reexports::serde::Serialize)]",
-        "#[serde(crate = \"::tinc::reexports::serde\")]",
-    ];
-
-    for attr in &attrs {
-        prost.message_attribute(key, attr);
-    }
-}
-
-fn enum_attributes(key: &str, prost: &mut tonic_build::Config, repr_enum: bool) {
-    if repr_enum {
-        prost.enum_attribute(key, "#[derive(::tinc::reexports::serde_repr::Serialize_repr)]");
-        prost.enum_attribute(key, "#[derive(::tinc::reexports::serde_repr::Deserialize_repr)]");
-    } else {
-        prost.enum_attribute(key, "#[derive(::tinc::reexports::serde::Serialize)]");
-        prost.enum_attribute(key, "#[derive(::tinc::reexports::serde::Deserialize)]");
-    }
-
-    prost.enum_attribute(key, "#[serde(crate = \"::tinc::reexports::serde\")]");
-}
-
-fn rename_field(field: &str, style: tinc_pb::RenameAll) -> Option<String> {
-    match style {
-        tinc_pb::RenameAll::LowerCase => Some(field.to_lowercase()),
-        tinc_pb::RenameAll::UpperCase => Some(field.to_uppercase()),
-        tinc_pb::RenameAll::PascalCase => Some(field.to_case(Case::Pascal)),
-        tinc_pb::RenameAll::CamelCase => Some(field.to_case(Case::Camel)),
-        tinc_pb::RenameAll::SnakeCase => Some(field.to_case(Case::Snake)),
-        tinc_pb::RenameAll::KebabCase => Some(field.to_case(Case::Kebab)),
-        tinc_pb::RenameAll::ScreamingSnakeCase => Some(field.to_case(Case::UpperSnake)),
-        tinc_pb::RenameAll::ScreamingKebabCase => Some(field.to_case(Case::UpperKebab)),
-        tinc_pb::RenameAll::Unspecified => None,
-    }
-}
-
-fn serde_rename(key: &str, name: &str, prost: &mut tonic_build::Config) {
-    prost.field_attribute(key, format!("#[serde(rename = \"{name}\")]"));
-}
+use super::types::{
+    ProtoEnumType, ProtoFieldJsonOmittable, ProtoMessageField, ProtoMessageType, ProtoOneOfType, ProtoPath,
+    ProtoTypeRegistry, ProtoValueType, ProtoVisibility,
+};
+use crate::codegen::types::{ProtoModifiedValueType, ProtoType};
 
 fn handle_oneof(
     prost: &mut tonic_build::Config,
-    modules: &mut BTreeMap<String, Vec<syn::Item>>,
-    message_key: &str,
-    message: &MessageOpts,
-    oneof: &OneofOpts,
-    name: &str,
+    modules: &mut BTreeMap<ProtoPath, Vec<syn::Item>>,
+    oneof: &ProtoOneOfType,
+    registry: &ProtoTypeRegistry,
 ) -> anyhow::Result<()> {
-    let oneof_key = format!("{message_key}.{name}",);
+    prost.enum_attribute(&oneof.full_name, "#[derive(::tinc::reexports::serde::Serialize)]");
+    prost.enum_attribute(&oneof.full_name, "#[derive(::tinc::__private::Tracker)]");
+    prost.field_attribute(&oneof.full_name, "#[tinc(oneof)]");
 
-    if message.custom_impl {
-        if let Some(rename) = &oneof.rename {
-            serde_rename(&oneof_key, rename, prost);
-        }
-    }
-
-    if oneof.custom_impl {
-        return Ok(());
-    }
-
-    prost.enum_attribute(&oneof_key, "#[derive(::tinc::reexports::serde::Serialize)]");
-    prost.enum_attribute(&oneof_key, "#[derive(::tinc::__private::Tracker)]");
-    prost.field_attribute(&oneof_key, "#[tinc(oneof)]");
-
-    let oneof_path = get_common_import_path(&message.package, &oneof_key);
-    let oneof_ident = oneof_path.segments.last().unwrap().ident.clone();
-
-    let variant_identifier_ident = ident_from_str("___identifier");
+    let variant_identifier_ident = quote::format_ident!("___identifier");
     let mut oneof_identifier_for_ident = variant_identifier_ident.clone();
     let mut variant_idents = Vec::new();
     let mut variant_name_fn = Vec::new();
@@ -88,10 +30,13 @@ fn handle_oneof(
     let mut deserializer_impl = Vec::new();
     let mut validation_impl = Vec::new();
 
-    let tagged_impl = if let Some(Tagged { tag, content }) = &oneof.tagged {
-        prost.enum_attribute(&oneof_key, format!("#[serde(tag = \"{tag}\", content = \"{content}\")]"));
-        prost.enum_attribute(&oneof_key, "#[tinc(tagged)]");
-        oneof_identifier_for_ident = ident_from_str("___tagged_identifier");
+    let tagged_impl = if let Some(Tagged { tag, content }) = &oneof.options.tagged {
+        prost.enum_attribute(
+            &oneof.full_name,
+            format!("#[serde(tag = \"{tag}\", content = \"{content}\")]"),
+        );
+        prost.enum_attribute(&oneof.full_name, "#[tinc(tagged)]");
+        oneof_identifier_for_ident = quote::format_ident!("___tagged_identifier");
         quote! {
             #[derive(
                 ::std::fmt::Debug,
@@ -144,19 +89,18 @@ fn handle_oneof(
     };
 
     oneof.fields.iter().for_each(|(name, field)| {
-        let ident = ident_from_str(format!("__field_{name}"));
+        let ident = quote::format_ident!("__field_{name}");
         let json_name = field
-            .rename
-            .clone()
-            .or_else(|| rename_field(name, oneof.rename_all?))
-            .unwrap_or_else(|| name.clone());
+            .options
+            .json_name
+            .clone();
 
-        prost.field_attribute(format!("{oneof_key}.{name}"), format!("#[serde(rename = \"{json_name}\")]"));
-        if !field.has_input() {
-            prost.field_attribute(format!("{oneof_key}.{name}"), "#[serde(skip_serializing)]");
+        prost.field_attribute(&field.full_name, format!("#[serde(rename = \"{json_name}\")]"));
+        if !field.options.visibility.has_input() {
+            prost.field_attribute(&field.full_name, "#[serde(skip_serializing)]");
         }
 
-        if field.has_output() {
+        if field.options.visibility.has_output() {
             variant_idents.push(ident.clone());
             variant_name_fn.push(quote! {
                 #variant_identifier_ident::#ident => #json_name
@@ -167,7 +111,7 @@ fn handle_oneof(
             variant_fields.push(quote! {
                 #json_name
             });
-            let enum_ident = type_ident_from_str(name);
+            let enum_ident = field.rust_ident();
             variant_enum_ident.push(enum_ident.clone());
             deserializer_impl.push(quote! {
                 #variant_identifier_ident::#ident => {
@@ -181,7 +125,7 @@ fn handle_oneof(
                         },
                         ::core::option::Option::Some(___Tracker::#enum_ident(tracker)) => {
                             if !::tinc::__private::tracker_allow_duplicates(Some(tracker)) {
-                                return ::tinc::__private::report_error(
+                                return ::tinc::__private::report_tracked_error(
                                     ::tinc::__private::TrackedError::duplicate_field(),
                                 );
                             }
@@ -229,14 +173,18 @@ fn handle_oneof(
             });
         }
 
-        if let FieldType::Enum(path) = field.kind.field_type() {
-            let path = get_common_import_path(message_key, &path);
-            let path_str = quote! { #path };
-            let field_key = format!("{oneof_key}.{name}");
-            prost.field_attribute(&field_key, format!("#[serde(serialize_with = \"::tinc::__private::serialize_enum::<{path_str}, _, _>\")]"));
-            prost.field_attribute(&field_key, format!("#[tinc(enum = \"{path_str}\")]"));
+        if let ProtoValueType::Enum(path) = &field.ty {
+            let enum_opts = registry.get_enum(path).expect("enum not found");
+            let path_str = enum_opts.rust_path(&oneof.message).to_token_stream().to_string();
+            prost.field_attribute(&field.full_name, format!("#[serde(serialize_with = \"::tinc::__private::serialize_enum::<{path_str}, _, _>\")]"));
+            prost.field_attribute(&field.full_name, format!("#[tinc(enum = \"{path_str}\")]"));
         }
     });
+
+    let message = registry.get_message(&oneof.message).expect("message not found");
+
+    let oneof_path = oneof.rust_path(&message.package);
+    let oneof_ident = oneof_path.segments.last().unwrap().ident.clone();
 
     modules.entry(message.package.clone()).or_default().push(parse_quote! {
         const _: () = {
@@ -359,43 +307,36 @@ struct FieldBuilder<'a> {
 
 fn handle_message_field(
     prost: &mut tonic_build::Config,
-    message: &MessageOpts,
-    message_key: &str,
-    field: &FieldOpts,
+    modules: &mut BTreeMap<ProtoPath, Vec<syn::Item>>,
     name: &str,
+    field: &ProtoMessageField,
     builder: FieldBuilder<'_>,
     field_enum_ident: &syn::Ident,
+    registry: &ProtoTypeRegistry,
 ) -> anyhow::Result<()> {
-    let json_name = field
-        .rename
-        .clone()
-        .or_else(|| rename_field(name, message.rename_all?))
-        .unwrap_or_else(|| name.to_owned());
+    let json_name = &field.options.json_name;
 
-    let field_key = format!("{message_key}.{name}");
+    prost.field_attribute(&field.full_name, format!("#[serde(rename = \"{json_name}\")]"));
 
-    prost.field_attribute(&field_key, format!("#[serde(rename = \"{json_name}\")]"));
+    let message = registry.get_message(&field.message).expect("message not found");
 
-    let ident = ident_from_str(format!("__field_{name}"));
-    if field.flatten {
-        let key = match field.kind.field_type() {
-            FieldType::Message(key) => key,
-            FieldType::OneOf(key) => key,
+    let ident = quote::format_ident!("__field_{name}");
+    if field.options.flatten {
+        let flattened_ty_path = match &field.ty {
+            ProtoType::Modified(ProtoModifiedValueType::Optional(ProtoValueType::Message(path)))
+            | ProtoType::Value(ProtoValueType::Message(path)) => registry
+                .get_message(path)
+                .expect("message not found")
+                .rust_path(&message.package),
+            ProtoType::Modified(ProtoModifiedValueType::OneOf(oneof)) => oneof.rust_path(&message.package),
             _ => anyhow::bail!("flattened fields must be messages or oneofs"),
         };
 
-        anyhow::ensure!(
-            matches!(field.kind.modifier(), Some(FieldModifier::Optional) | None),
-            "flattened fields cannot be lists or maps"
-        );
+        prost.field_attribute(&field.full_name, "#[serde(flatten)]");
 
-        let message_path = get_common_import_path(message.package.as_str(), &key);
-
-        prost.field_attribute(&field_key, "#[serde(flatten)]");
-
-        if field.has_input() {
+        if field.options.visibility.has_input() {
             let flattened_identifier = quote! {
-                <#message_path as ::tinc::__private::IdentifierFor>::Identifier
+                <#flattened_ty_path as ::tinc::__private::IdentifierFor>::Identifier
             };
 
             builder.deserializer_fields.push(quote! {
@@ -411,7 +352,7 @@ fn handle_message_field(
                 #ident
             });
         }
-    } else if field.has_input() {
+    } else if field.options.visibility.has_input() {
         builder.deserializer_fields.push(quote! {
             &[#json_name]
         });
@@ -426,48 +367,68 @@ fn handle_message_field(
         });
     }
 
-    if !field.has_output() {
-        prost.field_attribute(&field_key, "#[serde(skip_serializing)]");
+    if !field.options.visibility.has_output() {
+        prost.field_attribute(&field.full_name, "#[serde(skip_serializing)]");
+    } else if matches!(field.options.json_omittable, ProtoFieldJsonOmittable::True) {
+        prost.field_attribute(
+            &field.full_name,
+            "#[serde(skip_serializing_if = \"::tinc::__private::serde_ser_skip_default\")]",
+        );
     }
 
-    if !field.has_input() {
+    if !field.options.visibility.has_input() {
         return Ok(());
     }
 
-    match field.kind.field_type() {
-        FieldType::Enum(path) => {
-            let path = get_common_import_path(strip_last_path_part(message_key), &path);
-            let path_str = quote! { #path };
+    match &field.ty {
+        ProtoType::Value(ProtoValueType::Enum(path))
+        | ProtoType::Modified(
+            ProtoModifiedValueType::Optional(ProtoValueType::Enum(path))
+            | ProtoModifiedValueType::Map(_, ProtoValueType::Enum(path))
+            | ProtoModifiedValueType::Repeated(ProtoValueType::Enum(path)),
+        ) => {
+            let enum_opts = registry.get_enum(path).expect("enum not found");
+            let path_str = enum_opts
+                .rust_path(message.full_name.trim_last_segment())
+                .to_token_stream()
+                .to_string();
             prost.field_attribute(
-                &field_key,
+                &field.full_name,
                 format!("#[serde(serialize_with = \"::tinc::__private::serialize_enum::<{path_str}, _, _>\")]"),
             );
-            prost.field_attribute(&field_key, format!("#[tinc(enum = \"{path_str}\")]"));
+            prost.field_attribute(&field.full_name, format!("#[tinc(enum = \"{path_str}\")]"));
         }
-        FieldType::WellKnown(_) => {
+        ProtoType::Value(ProtoValueType::WellKnown(_))
+        | ProtoType::Modified(
+            ProtoModifiedValueType::Optional(ProtoValueType::WellKnown(_))
+            | ProtoModifiedValueType::Map(_, ProtoValueType::WellKnown(_))
+            | ProtoModifiedValueType::Repeated(ProtoValueType::WellKnown(_)),
+        ) => {
             prost.field_attribute(
-                &field_key,
+                &field.full_name,
                 "#[serde(serialize_with = \"::tinc::__private::serialize_well_known\")]",
             );
+        }
+        ProtoType::Modified(ProtoModifiedValueType::OneOf(oneof)) => {
+            handle_oneof(prost, modules, oneof, registry)?;
         }
         _ => {}
     };
 
-    let field_name = field_ident_from_str(name);
+    let field_ident = field.rust_ident();
 
     let mut tracker = quote! {
-        &mut tracker.#field_name
+        &mut tracker.#field_ident
     };
 
     let mut value = quote! {
-        &mut self.#field_name
+        &mut self.#field_ident
     };
 
     // When a field is not nullable but prost generates an option<T>, we need to
     // remove the option before deserializing otherwise null will be a valid input.
-    if matches!(field.kind.modifier(), Some(FieldModifier::Optional))
-        && (!field.nullable || field.flatten)
-        && !matches!(field.kind.field_type(), FieldType::OneOf(_))
+    if matches!(field.ty, ProtoType::Modified(ProtoModifiedValueType::Optional(_)))
+        && (!field.options.nullable || field.options.flatten)
     {
         tracker = quote! {
             (#tracker).get_or_insert_default()
@@ -478,53 +439,60 @@ fn handle_message_field(
         };
     }
 
-    if field.flatten {
+    if field.options.flatten {
         builder.deserializer_fn.push(quote! {
             #field_enum_ident::#ident(field) => {
-                let _token = ::tinc::__private::PathAllowerToken::push(#name)?;
-                ::tinc::__private::TrackerDeserializeIdentifier::<'de>::deserialize(
+                let _token = ::tinc::__private::ProtoPathToken::push_field(#name);
+                if let Err(error) = ::tinc::__private::TrackerDeserializeIdentifier::<'de>::deserialize(
                     (#tracker).get_or_insert_default(),
                     #value,
                     field,
                     deserializer,
-                )?;
+                ) {
+                    return ::tinc::__private::report_de_error(error);
+                }
             }
         });
     } else {
         builder.deserializer_fn.push(quote! {
             #field_enum_ident::#ident => {
-                let _token = ::tinc::__private::PathAllowerToken::push(#name)?;
+                let _token = ::tinc::__private::ProtoPathToken::push_field(#name);
                 let tracker = #tracker;
 
                 if !::tinc::__private::tracker_allow_duplicates(tracker.as_ref()) {
-                    return ::tinc::__private::report_error(
+                    return ::tinc::__private::report_tracked_error(
                         ::tinc::__private::TrackedError::duplicate_field(),
                     );
                 }
 
-                ::tinc::__private::TrackerDeserializer::deserialize(
+                if let Err(error) = ::tinc::__private::TrackerDeserializer::deserialize(
                     tracker.get_or_insert_default(),
                     #value,
                     deserializer,
-                )?;
+                ) {
+                    return ::tinc::__private::report_de_error(error);
+                }
             }
         });
     }
 
-    let push_field_token = if field.flatten {
-        quote! {}
+    let push_field_token = if field.options.flatten {
+        quote! {
+            let _token = ::tinc::__private::ProtoPathToken::push_field(#name);
+        }
     } else {
         quote! {
-            let _token = ::tinc::__private::PathToken::push_field(
+            let _token = ::tinc::__private::SerdePathToken::push_field(
                 ::tinc::__private::Identifier::name(&#field_enum_ident::#ident),
             );
+            let _token = ::tinc::__private::ProtoPathToken::push_field(#name);
         }
     };
 
-    let missing = if !field.omitable && !field.flatten {
+    let missing = if matches!(field.options.json_omittable, ProtoFieldJsonOmittable::False) && !field.options.flatten {
         quote! {
             #push_field_token
-            ::tinc::__private::report_error(
+            ::tinc::__private::report_tracked_error(
                 ::tinc::__private::TrackedError::missing_field(),
             )?;
         }
@@ -533,9 +501,9 @@ fn handle_message_field(
     };
 
     builder.verify_deserialize_fn.push(quote! {
-        if let Some(tracker) = tracker.#field_name.as_mut() {
+        if let Some(tracker) = tracker.#field_ident.as_mut() {
             #push_field_token
-            ::tinc::__private::TrackerValidation::validate(tracker, &self.#field_name)?;
+            ::tinc::__private::TrackerValidation::validate(tracker, &self.#field_ident)?;
         } else {
             #missing
         }
@@ -545,23 +513,16 @@ fn handle_message_field(
 }
 
 pub(super) fn handle_message(
-    message_key: &str,
-    message: &MessageOpts,
+    message: &ProtoMessageType,
     prost: &mut tonic_build::Config,
-    modules: &mut BTreeMap<String, Vec<syn::Item>>,
+    modules: &mut BTreeMap<ProtoPath, Vec<syn::Item>>,
+    registry: &ProtoTypeRegistry,
 ) -> anyhow::Result<()> {
-    // Process oneof fields.
-    for (oneof_name, oneof) in &message.oneofs {
-        handle_oneof(prost, modules, message_key, message, oneof, oneof_name)?;
-    }
+    prost.message_attribute(&message.full_name, "#[derive(::tinc::reexports::serde::Serialize)]");
+    prost.message_attribute(&message.full_name, "#[serde(crate = \"::tinc::reexports::serde\")]");
+    prost.message_attribute(&message.full_name, "#[derive(::tinc::__private::Tracker)]");
 
-    if message.custom_impl {
-        return Ok(());
-    }
-
-    message_attributes(message_key, prost);
-
-    let field_enum_ident = ident_from_str("___field_enum");
+    let field_enum_ident = quote::format_ident!("___field_enum");
 
     let mut field_enum_variants = Vec::new();
     let mut field_enum_name_fn = Vec::new();
@@ -574,10 +535,9 @@ pub(super) fn handle_message(
     for (field_name, field) in message.fields.iter() {
         handle_message_field(
             prost,
-            message,
-            message_key,
-            field,
+            modules,
             field_name,
+            field,
             FieldBuilder {
                 deserializer_fields: &mut deserializer_fields,
                 field_enum_variants: &mut field_enum_variants,
@@ -588,12 +548,12 @@ pub(super) fn handle_message(
                 verify_deserialize_fn: &mut verify_deserialize_fn,
             },
             &field_enum_ident,
+            registry,
         )?;
     }
-    let message_path = get_common_import_path(message.package.as_str(), message_key);
-    let message_ident = message_path.segments.last().unwrap().ident.clone();
 
-    prost.message_attribute(message_key, "#[derive(::tinc::__private::Tracker)]");
+    let message_path = message.rust_path(&message.package);
+    let message_ident = message_path.segments.last().unwrap().ident.clone();
 
     let field_enum_impl = parse_quote! {
         const _: () = {
@@ -681,59 +641,56 @@ pub(super) fn handle_message(
 }
 
 pub(super) fn handle_enum(
-    enum_key: &str,
-    enum_: &EnumOpts,
+    enum_: &ProtoEnumType,
     prost: &mut tonic_build::Config,
-    modules: &mut BTreeMap<String, Vec<syn::Item>>,
+    modules: &mut BTreeMap<ProtoPath, Vec<syn::Item>>,
 ) -> anyhow::Result<()> {
-    if enum_.custom_impl {
-        return Ok(());
+    let enum_path = enum_.rust_path(&enum_.package);
+    let enum_ident = enum_path.segments.last().unwrap().ident.clone();
+
+    if enum_.options.repr_enum {
+        prost.enum_attribute(&enum_.full_name, "#[derive(::tinc::reexports::serde_repr::Serialize_repr)]");
+        prost.enum_attribute(&enum_.full_name, "#[derive(::tinc::reexports::serde_repr::Deserialize_repr)]");
+    } else {
+        prost.enum_attribute(&enum_.full_name, "#[derive(::tinc::reexports::serde::Serialize)]");
+        prost.enum_attribute(&enum_.full_name, "#[derive(::tinc::reexports::serde::Deserialize)]");
     }
 
-    let enum_path = get_common_import_path(enum_.package.as_str(), enum_key);
-    let enum_ident = enum_path.segments.last().unwrap().ident.clone();
-    let enum_ident_str = enum_ident.to_string();
+    prost.enum_attribute(&enum_.full_name, "#[serde(crate = \"::tinc::reexports::serde\")]");
 
-    enum_attributes(enum_key, prost, enum_.repr_enum);
-    for (variant, variant_opts) in &enum_.variants {
-        let variant_key = format!("{enum_key}.{variant}");
-
-        if !enum_.repr_enum {
-            if let Some(rename) = &variant_opts.rename {
-                serde_rename(&variant_key, rename, prost);
-            } else if let Some(renamed) = rename_field(
-                &strip_enum_prefix(&enum_ident_str, &to_upper_camel(variant)),
-                enum_.rename_all,
-            ) {
-                serde_rename(&variant_key, &renamed, prost);
-            }
+    for variant in enum_.variants.values() {
+        if !enum_.options.repr_enum {
+            prost.field_attribute(
+                &variant.full_name,
+                format!("#[serde(rename = \"{}\")]", variant.options.json_name),
+            );
         }
 
-        match variant_opts.visibility {
-            Some(FieldVisibility::InputOnly) => {
-                prost.field_attribute(&variant_key, "#[serde(skip_serializing)]");
+        match variant.options.visibility {
+            ProtoVisibility::InputOnly => {
+                prost.field_attribute(&variant.full_name, "#[serde(skip_serializing)]");
             }
-            Some(FieldVisibility::OutputOnly) => {
-                prost.field_attribute(&variant_key, "#[serde(skip_deserializing)]");
+            ProtoVisibility::OutputOnly => {
+                prost.field_attribute(&variant.full_name, "#[serde(skip_deserializing)]");
             }
-            Some(FieldVisibility::Skip) => {
-                prost.field_attribute(&variant_key, "#[serde(skip)]");
+            ProtoVisibility::Skip => {
+                prost.field_attribute(&variant.full_name, "#[serde(skip)]");
             }
             _ => {}
         }
     }
 
-    let enum_impl = parse_quote! {
-        impl ::tinc::__private::Expected for #enum_path {
-            fn expecting(formatter: &mut std::fmt::Formatter) -> std::fmt::Result {
-                write!(formatter, "an enum of `")?;
-                write!(formatter, stringify!(#enum_ident))?;
-                write!(formatter, "`")
+    modules.entry(enum_.package.clone()).or_default().push(parse_quote! {
+        const _: () = {
+            impl ::tinc::__private::Expected for #enum_path {
+                fn expecting(formatter: &mut std::fmt::Formatter) -> std::fmt::Result {
+                    write!(formatter, "an enum of `")?;
+                    write!(formatter, stringify!(#enum_ident))?;
+                    write!(formatter, "`")
+                }
             }
-        }
-    };
-
-    modules.entry(enum_.package.clone()).or_default().push(enum_impl);
+        };
+    });
 
     Ok(())
 }

@@ -6,6 +6,9 @@ inputs:
 runs:
   using: "composite"
   steps:
+    - name: Install Protoc
+      uses: arduino/setup-protoc@v3
+
     - name: Fail if not Linux
       shell: bash
       if: ${{ runner.os != 'Linux' }}

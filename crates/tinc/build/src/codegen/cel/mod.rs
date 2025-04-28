@@ -4,11 +4,11 @@ use anyhow::Context;
 use functions::Function;
 use quote::quote;
 
-use crate::extensions::Extension;
+use super::explore::Extension;
 
-pub mod codegen;
 pub mod compiler;
 pub mod functions;
+pub mod types;
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Ord, PartialOrd)]
 pub enum CelInput {
@@ -18,7 +18,7 @@ pub enum CelInput {
     Root,
 }
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, PartialEq)]
 pub struct MessageFormat {
     pub format: String,
     pub args: Vec<cel_parser::Expression>,
@@ -124,10 +124,10 @@ fn value_to_str(v: &cel_interpreter::Value) -> impl std::fmt::Display + std::fmt
             std::fmt::Display::fmt(&quote! { #lit }, fmt)
         }
         cel_interpreter::Value::List(list) => fmt.debug_list().entries(list.iter().map(value_to_str)).finish(),
-        cel_interpreter::Value::Function(name, arg) => panic!(),
+        cel_interpreter::Value::Function(_, _) => panic!("function should not be in the AST"),
         cel_interpreter::Value::Map(map) => {
             let mut fmt = fmt.debug_map();
-            for (k, v) in map.map.iter() {
+            map.map.iter().collect::<BTreeMap<_, _>>().iter().for_each(|(k, v)| {
                 fmt.entry(
                     match k {
                         cel_interpreter::objects::Key::Bool(b) => b,
@@ -137,14 +137,15 @@ fn value_to_str(v: &cel_interpreter::Value) -> impl std::fmt::Display + std::fmt
                     },
                     &value_to_str(v),
                 );
-            }
+            });
+
             fmt.finish()
         }
         cel_interpreter::Value::Null => fmt.write_str("null"),
     })
 }
 enum ConstantOrExpression {
-    // we have enough data now to evaluate the expression
+    // we evaluate the expression at compile time
     Constant(cel_interpreter::Value),
     // we need to evaluate the expression at runtime but this is the most we can do
     Expression(cel_parser::Expression),
@@ -283,7 +284,7 @@ fn preevaluate_expression(
     Ok(ConstantOrExpression::Expression(result))
 }
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, PartialEq)]
 pub struct CelExpression {
     pub expression: cel_parser::Expression,
     pub message: MessageFormat,
@@ -318,13 +319,11 @@ impl CelExpression {
             json_schemas.push(json);
         }
 
-        let result = Ok(Self {
+        Ok(Self {
             expression,
             message,
             json_schemas,
-        });
-
-        result
+        })
     }
 }
 
@@ -338,8 +337,8 @@ pub fn gather_cel_expressions(
     };
 
     let mut input = CelInput::Root;
-    if field_options.has_extension(&extension) {
-        let value = field_options.get_extension(&extension);
+    if field_options.has_extension(extension) {
+        let value = field_options.get_extension(extension);
         let predef = value
             .as_message()
             .context("expected message")?
@@ -382,8 +381,8 @@ fn explore_fields(
     for (field, value) in value.fields() {
         let options = field.options();
         let mut input = input;
-        if options.has_extension(&extension) {
-            let message = options.get_extension(&extension);
+        if options.has_extension(extension) {
+            let message = options.get_extension(extension);
             let predef = message
                 .as_message()
                 .unwrap()
@@ -416,10 +415,7 @@ fn explore_fields(
             }
 
             for expr in &predef.cel {
-                results
-                    .entry(input)
-                    .or_default()
-                    .push(CelExpression::new(expr, Some(&value))?);
+                results.entry(input).or_default().push(CelExpression::new(expr, Some(value))?);
             }
         }
 

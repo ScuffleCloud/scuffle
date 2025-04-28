@@ -5,9 +5,7 @@ package oneof;
 import "tinc/annotations.proto";
 
 message OneofMessage {
-  option (tinc.message) = {
-    custom_impl: false
-  };
+  option (tinc.message).generate = true;
 
   oneof string_or_int32 {
     string string = 1;

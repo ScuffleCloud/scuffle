@@ -1,11 +1,12 @@
 use tinc::__private::{TrackedStructDeserializer, TrackerFor, TrackerSharedState, deserialize_tracker_target};
 
+mod pb {
+    #![allow(clippy::all)]
+    tonic::include_proto!("recursive");
+}
+
 #[test]
 fn test_recursive() {
-    mod pb {
-        tonic::include_proto!("recursive");
-    }
-
     let mut message = pb::RecursiveMessage::default();
     let mut tracker = <pb::RecursiveMessage as TrackerFor>::Tracker::default();
     let mut state = TrackerSharedState::default();

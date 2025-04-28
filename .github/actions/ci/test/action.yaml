@@ -12,6 +12,9 @@ inputs:
 runs:
   using: "composite"
   steps:
+    - name: Install Protoc
+      uses: arduino/setup-protoc@v3
+
     # Note; we don't run the powerset here because it's very slow on CI
     # Perhaps we should consider it at some point.
     #

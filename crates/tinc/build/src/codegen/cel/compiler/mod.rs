@@ -4,8 +4,9 @@ use quote::ToTokens;
 use syn::parse_quote;
 
 use super::FuncFmtter;
-use super::codegen::CelType;
 use super::functions::Function;
+use super::types::CelType;
+use crate::codegen::types::{ProtoPath, ProtoTypeRegistry};
 
 mod helpers;
 mod resolve;
@@ -31,7 +32,7 @@ impl std::fmt::Debug for CompiledExpr {
                     let pretty = pretty.trim();
                     let pretty = pretty.strip_prefix("const _: Debug =").unwrap_or(pretty);
                     let pretty = pretty.strip_suffix(';').unwrap_or(pretty);
-                    fmt.write_str(&pretty.trim())
+                    fmt.write_str(pretty.trim())
                 }),
             )
             .finish()
@@ -47,14 +48,16 @@ impl ToTokens for CompiledExpr {
 #[derive(Clone, Debug)]
 pub struct Compiler<'a> {
     parent: Option<&'a Compiler<'a>>,
+    registry: &'a ProtoTypeRegistry,
     variables: BTreeMap<String, CompiledExpr>,
     functions: BTreeMap<&'static str, CompilerFunction>,
 }
 
-impl Compiler<'_> {
-    pub fn empty() -> Self {
+impl<'a> Compiler<'a> {
+    pub fn empty(registry: &'a ProtoTypeRegistry) -> Self {
         Self {
             parent: None,
+            registry,
             variables: BTreeMap::new(),
             functions: BTreeMap::new(),
         }
@@ -63,6 +66,7 @@ impl Compiler<'_> {
     fn child(&self) -> Compiler<'_> {
         Compiler {
             parent: Some(self),
+            registry: self.registry,
             variables: BTreeMap::new(),
             functions: BTreeMap::new(),
         }
@@ -96,7 +100,7 @@ impl std::ops::DerefMut for CompilerCtx<'_> {
     }
 }
 
-impl Compiler<'_> {
+impl<'a> Compiler<'a> {
     pub fn add_variable(&mut self, name: &str, expr: CompiledExpr) {
         self.variables.insert(name.to_owned(), expr.clone());
     }
@@ -134,6 +138,10 @@ impl Compiler<'_> {
             },
         }
     }
+
+    pub fn registry(&self) -> &'a ProtoTypeRegistry {
+        self.registry
+    }
 }
 
 #[derive(Debug, Clone, PartialEq, thiserror::Error)]
@@ -149,21 +157,23 @@ pub enum CompileError {
         got: usize,
     },
     #[error("type conversion error on type {ty:?}: {message}")]
-    TypeConversion { ty: CelType, message: String },
+    TypeConversion { ty: Box<CelType>, message: String },
     #[error("member access error on type {ty:?}: {message}")]
-    MemberAccess { ty: CelType, message: String },
+    MemberAccess { ty: Box<CelType>, message: String },
     #[error("variable not found: {0}")]
     VariableNotFound(String),
     #[error("function not found: {0}")]
     FunctionNotFound(String),
     #[error("unsupported function call identifier type: {0:?}")]
     UnsupportedFunctionCallIdentifierType(cel_parser::Expression),
+    #[error("missing message: {0}")]
+    MissingMessage(ProtoPath),
 }
 
 impl CompileError {
     pub fn type_conversion(ty: CelType, message: impl Into<String>) -> Self {
         Self::TypeConversion {
-            ty,
+            ty: Box::new(ty),
             message: message.into(),
         }
     }

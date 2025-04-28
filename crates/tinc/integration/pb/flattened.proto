@@ -5,9 +5,7 @@ package flattened;
 import "tinc/annotations.proto";
 
 message FlattenedMessage {
-  option (tinc.message) = {
-    custom_impl: false
-  };
+  option (tinc.message).generate = true;
 
   SomeOtherMessage some_other = 1 [(tinc.field) = { flatten: true }];
 }

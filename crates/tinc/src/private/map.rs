@@ -3,8 +3,8 @@ use std::hash::{BuildHasher, Hash};
 use std::marker::PhantomData;
 
 use super::{
-    DeserializeHelper, Expected, PathToken, TrackedError, Tracker, TrackerDeserializer, TrackerFor, TrackerValidation,
-    report_error, report_serde_error, set_irrecoverable,
+    DeserializeHelper, Expected, ProtoPathToken, SerdePathToken, TrackedError, Tracker, TrackerDeserializer, TrackerFor,
+    TrackerValidation, report_de_error, report_tracked_error, set_irrecoverable,
 };
 
 pub struct MapTracker<K: Eq, T, M> {
@@ -54,11 +54,11 @@ pub(crate) trait Map<K, V> {
 
     fn insert(&mut self, key: K, value: V) -> Option<V>;
     fn reserve(&mut self, additional: usize);
-    fn len(&self) -> usize;
-    fn iterator<'a>(&'a self) -> impl Iterator<Item = (&'a K, &'a V)> + 'a
-    where
-        K: 'a,
-        V: 'a;
+    // fn len(&self) -> usize;
+    // fn iterator<'a>(&'a self) -> impl Iterator<Item = (&'a K, &'a V)> + 'a
+    // where
+    //     K: 'a,
+    //     V: 'a;
 }
 
 impl<K: Eq, T: Tracker, M: Default + Expected> Tracker for MapTracker<K, T, M> {
@@ -97,18 +97,6 @@ impl<K: std::hash::Hash + Eq, V: Default, S: BuildHasher> Map<K, V> for HashMap<
     fn reserve(&mut self, additional: usize) {
         HashMap::reserve(self, additional)
     }
-
-    fn len(&self) -> usize {
-        HashMap::len(self)
-    }
-
-    fn iterator<'a>(&'a self) -> impl Iterator<Item = (&'a K, &'a V)> + 'a
-    where
-        K: 'a,
-        V: 'a,
-    {
-        self.iter()
-    }
 }
 
 impl<K: Ord, V: Default> Map<K, V> for BTreeMap<K, V> {
@@ -129,25 +117,13 @@ impl<K: Ord, V: Default> Map<K, V> for BTreeMap<K, V> {
     }
 
     fn reserve(&mut self, _: usize) {}
-
-    fn len(&self) -> usize {
-        BTreeMap::len(self)
-    }
-
-    fn iterator<'a>(&'a self) -> impl Iterator<Item = (&'a K, &'a V)> + 'a
-    where
-        K: 'a,
-        V: 'a,
-    {
-        self.iter()
-    }
 }
 
 impl<'de, K, T, M> serde::de::DeserializeSeed<'de> for DeserializeHelper<'_, MapTracker<K, T, M>>
 where
     for<'a> DeserializeHelper<'a, T>: serde::de::DeserializeSeed<'de, Value = ()>,
     T: Tracker + Default,
-    K: serde::de::Deserialize<'de> + std::cmp::Eq + Clone + std::fmt::Display + Expected,
+    K: serde::de::Deserialize<'de> + std::cmp::Eq + Clone + std::fmt::Debug + Expected,
     M: Map<K, T::Target>,
     MapTracker<K, T, M>: Tracker<Target = M>,
     T::Target: Default,
@@ -166,7 +142,7 @@ impl<'de, K, T, M> serde::de::Visitor<'de> for DeserializeHelper<'_, MapTracker<
 where
     for<'a> DeserializeHelper<'a, T>: serde::de::DeserializeSeed<'de, Value = ()>,
     T: Tracker + Default,
-    K: serde::de::Deserialize<'de> + std::cmp::Eq + Clone + std::fmt::Display + Expected,
+    K: serde::de::Deserialize<'de> + std::cmp::Eq + Clone + std::fmt::Debug + Expected,
     M: Map<K, T::Target>,
     MapTracker<K, T, M>: Tracker<Target = M>,
     T::Target: Default,
@@ -191,11 +167,11 @@ where
         while let Some(key) = map.next_key::<K>().inspect_err(|_| {
             set_irrecoverable();
         })? {
-            let _token = PathToken::push_key(&key);
+            let _token = (SerdePathToken::push_key(&key), ProtoPathToken::push_key(&key));
             let entry = self.tracker.entry(key.clone());
             if let linear_map::Entry::Occupied(entry) = &entry {
                 if !entry.get().allow_duplicates() {
-                    report_error(TrackedError::duplicate_field())?;
+                    report_tracked_error(TrackedError::duplicate_field())?;
                     map.next_value::<serde::de::IgnoredAny>().inspect_err(|_| {
                         set_irrecoverable();
                     })?;
@@ -210,7 +186,7 @@ where
             match map.next_value_seed(DeserializeHelper { value, tracker }) {
                 Ok(_) => {}
                 Err(error) => {
-                    report_serde_error(error)?;
+                    report_de_error(error)?;
                     continue;
                 }
             }
@@ -230,7 +206,7 @@ impl<'de, K, T, M> TrackerDeserializer<'de> for MapTracker<K, T, M>
 where
     for<'a> DeserializeHelper<'a, T>: serde::de::DeserializeSeed<'de, Value = ()>,
     T: Tracker + Default,
-    K: serde::de::Deserialize<'de> + std::cmp::Eq + Clone + std::fmt::Display + Expected,
+    K: serde::de::Deserialize<'de> + std::cmp::Eq + Clone + std::fmt::Debug + Expected,
     M: Map<K, T::Target>,
     MapTracker<K, T, M>: Tracker<Target = M>,
     T::Target: Default,
@@ -246,7 +222,7 @@ where
 impl<K, T, M> TrackerValidation for MapTracker<K, T, M>
 where
     T: TrackerValidation + Default,
-    K: std::cmp::Eq + Clone + std::fmt::Display + Expected + Ord + Hash,
+    K: std::cmp::Eq + Clone + std::fmt::Debug + Expected + Ord + Hash,
     M: Map<K, T::Target>,
     MapTracker<K, T, M>: Tracker<Target = M>,
     T::Target: Default,
@@ -256,7 +232,7 @@ where
         E: serde::de::Error,
     {
         for (key, tracker) in self.iter_mut() {
-            let _token = PathToken::push_key(key);
+            let _token = (SerdePathToken::push_key(key), ProtoPathToken::push_key(key));
             if let Some(value) = value.get(key) {
                 tracker.validate(value)?;
             }

@@ -47,6 +47,11 @@ mod http;
 pub use http::*;
 
 pub mod cel;
+mod validation;
+pub use validation::*;
+
+mod fmt;
+pub use fmt::*;
 
 #[macro_export]
 #[doc(hidden)]
@@ -75,6 +80,11 @@ macro_rules! __tinc_field_from_str {
 #[inline(always)]
 pub fn tracker_allow_duplicates<T: Tracker>(tracker: Option<&T>) -> bool {
     tracker.is_none_or(|tracker| tracker.allow_duplicates())
+}
+
+#[inline(always)]
+pub fn serde_ser_skip_default<T: Default + PartialEq>(value: &T) -> bool {
+    value == &T::default()
 }
 
 pub fn deserialize_tracker_target<'de, D, T>(de: D, target: &mut T::Target, tracker: &mut T) -> Result<(), D::Error>

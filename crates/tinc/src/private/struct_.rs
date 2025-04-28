@@ -1,7 +1,7 @@
 use super::{
     DeserializeContent, DeserializeHelper, Expected, IdentifiedValue, Identifier, IdentifierDeserializer, IdentifierFor,
-    MapAccessValueDeserializer, PathToken, TrackedError, Tracker, TrackerDeserializeIdentifier, TrackerDeserializer,
-    TrackerFor, TrackerValidation, TrackerWrapper, report_error, report_serde_error, set_irrecoverable,
+    MapAccessValueDeserializer, SerdePathToken, TrackedError, Tracker, TrackerDeserializeIdentifier, TrackerDeserializer,
+    TrackerFor, TrackerValidation, TrackerWrapper, report_tracked_error, set_irrecoverable,
 };
 
 pub trait TrackedStructDeserializer<'de>: Sized + TrackerFor + IdentifierFor + Expected
@@ -150,8 +150,8 @@ where
             let mut deserialized = false;
             match key {
                 IdentifiedValue::Found(field) => {
-                    let _token = PathToken::push_field(field.name());
-                    let result = S::deserialize(
+                    let _token = SerdePathToken::push_field(field.name());
+                    S::deserialize(
                         self.value,
                         field,
                         self.tracker,
@@ -159,15 +159,11 @@ where
                             map: &mut map,
                             deserialized: &mut deserialized,
                         },
-                    );
-
-                    if let Err(e) = result {
-                        report_serde_error(e)?;
-                    }
+                    )?;
                 }
                 IdentifiedValue::Unknown(field) => {
-                    let _token = PathToken::push_field(&field);
-                    report_error(TrackedError::unknown_field(S::DENY_UNKNOWN_FIELDS))?;
+                    let _token = SerdePathToken::push_field(&field);
+                    report_tracked_error(TrackedError::unknown_field(S::DENY_UNKNOWN_FIELDS))?;
                 }
             }
 

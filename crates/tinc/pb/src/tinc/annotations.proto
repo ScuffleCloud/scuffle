@@ -55,7 +55,7 @@ enum RenameAll {
 }
 
 message SchemaMessageOptions {
-  optional bool custom_impl = 1;
+  optional bool generate = 1;
   optional RenameAll rename_all = 2;
   optional bool skip_validation = 101;
 
@@ -83,10 +83,39 @@ message PredefinedConstraint {
   Type type = 2;
 }
 
+enum JsonOmittable {
+  JSON_OMITTABLE_UNSPECIFIED = 0;
+  TRUE = 1;
+  FALSE = 2;
+  TRUE_BUT_STILL_SERIALIZE = 3;
+}
+
 message SchemaFieldOptions {
   optional string rename = 1;
-  optional bool omitable = 200;
-  optional bool flatten = 201;
+
+  // Deserialization:
+  // This flag dictates how we handle fields which are
+  // not provided in the json representation of the message.
+  // If this is true, then no error will be returned
+  // if the field is not provided.
+  // If this is false then not providing a value for this field
+  // will result in an error.
+  // The default setting for this flag is `true` if the field
+  // is marked as `optional` and `false` otherwise.
+  // Meaning that optional fields can be omitted from the json
+  // representation of the message without causing an error.
+  //
+  // Serialization:
+  // This flag dictates if we should skip serializing the field
+  // in the json representation of the message if the field
+  // is equal to the default value for its type.
+  // The default setting for this flag is `true` if the field
+  // is marked as `optional` and `false` otherwise.
+  // Meaning that optional fields will be omitted from the json
+  // if they do not have a value.
+  JsonOmittable json_omittable = 200;
+
+  optional bool flatten = 205;
   optional Visibility visibility = 202;
 
   optional FieldConstraints constraint = 101;
@@ -379,18 +408,18 @@ message StringConstraints {
     jsonschemas: '{"const": this }'
   }];
   optional uint64 len = 2 [(predefined).cel = {
-    message: "value must be exactly `{this}` character{this > 1 ? 's' : ''} long"
+    message: "value must be exactly `{this}` characters long"
     expression: "input.size() == this"
     jsonschemas: '{ "maxLength": this }'
     jsonschemas: '{ "minLength": this }'
   }];
   optional uint64 min_len = 3 [(predefined).cel = {
-    message: "value must be at least `{this}` character{this > 1 ? 's' : ''} long"
+    message: "value must be at least `{this}` characters long"
     expression: "input.size() >= this"
     jsonschemas: '{ "minLength": this }'
   }];
   optional uint64 max_len = 4 [(predefined).cel = {
-    message: "value must be at most `{this}` character{this > 1 ? 's' : ''} long"
+    message: "value must be at most `{this}` characters long"
     expression: "input.size() <= this"
     jsonschemas: '{ "maxLength": this }'
   }];
@@ -619,7 +648,6 @@ message CelExpression {
 }
 
 message SchemaEnumOptions {
-  optional bool custom_impl = 1;
   optional bool repr_enum = 2;
   optional RenameAll rename_all = 3;
 }
@@ -687,10 +715,31 @@ message HttpEndpointOptions {
 
 message SchemaOneofOptions {
   optional string rename = 1;
-  optional bool custom_impl = 2;
   optional RenameAll rename_all = 4;
-  optional bool omitable = 5;
-  optional bool nullable = 6;
+  // Deserialization:
+  // This flag dictates how we handle fields which are
+  // not provided in the json representation of the message.
+  // If this is true, then no error will be returned
+  // if the field is not provided.
+  // If this is false then not providing a value for this field
+  // will result in an error.
+  // The default setting for this flag is `true` if the field
+  // is marked as `optional` and `false` otherwise.
+  // Meaning that optional fields can be omitted from the json
+  // representation of the message without causing an error.
+  //
+  // Serialization:
+  // This flag dictates if we should skip serializing the field
+  // in the json representation of the message if the field
+  // is equal to the default value for its type.
+  // The default setting for this flag is `true` if the field
+  // is marked as `optional` and `false` otherwise.
+  // Meaning that optional fields will be omitted from the json
+  // if they do not have a value.
+  JsonOmittable json_omittable = 200;
+  // This flag dictates if the field is nullable or not.
+  // By default oneof fields are not nullable.
+  optional bool optional = 6;
   optional Visibility visibility = 202;
 
   message Tagged {

@@ -1,4 +1,4 @@
-use std::collections::BTreeMap;
+use crate::codegen::types::{ProtoModifiedValueType, ProtoType, ProtoValueType, ProtoWellKnownType};
 
 #[derive(Debug, Clone, PartialEq)]
 pub enum CelType {
@@ -15,12 +15,6 @@ impl CelType {
     }
 }
 
-#[derive(Debug, Clone, PartialEq)]
-pub enum ProtoType {
-    Value(ProtoValueType),
-    Modified(ProtoModifiedValueType),
-}
-
 impl ProtoType {
     pub fn can_be_cel(&self) -> bool {
         match self {
@@ -30,23 +24,6 @@ impl ProtoType {
     }
 }
 
-#[derive(Debug, Clone, PartialEq)]
-pub enum ProtoValueType {
-    String,
-    Bytes,
-    Int32,
-    Int64,
-    UInt32,
-    UInt64,
-    Float,
-    Double,
-    Bool,
-    Timestamp,
-    Duration,
-    Message(ProtoMessageType),
-    Enum(ProtoEnumType),
-}
-
 impl ProtoValueType {
     pub fn can_be_cel(&self) -> bool {
         match self {
@@ -54,24 +31,11 @@ impl ProtoValueType {
             ProtoValueType::Int32 | ProtoValueType::Int64 | ProtoValueType::UInt32 | ProtoValueType::UInt64 => true,
             ProtoValueType::Float | ProtoValueType::Double => true,
             ProtoValueType::Bool => true,
-            ProtoValueType::Timestamp | ProtoValueType::Duration => true,
-            ProtoValueType::Message(_) => false,
-            ProtoValueType::Enum(_) => false,
+            ProtoValueType::WellKnown(wk) => wk.can_be_cel(),
+            ProtoValueType::Message { .. } => false,
+            ProtoValueType::Enum { .. } => false,
         }
     }
-}
-
-#[derive(Debug, Clone, PartialEq, Eq)]
-pub struct ProtoEnumType {
-    // pub path: syn::Path,
-}
-
-#[derive(Debug, Clone, PartialEq)]
-pub enum ProtoModifiedValueType {
-    Repeated(ProtoValueType),
-    Map(ProtoValueType, ProtoValueType),
-    Optional(ProtoValueType),
-    OneOf(ProtoOneOfType),
 }
 
 impl ProtoModifiedValueType {
@@ -85,19 +49,15 @@ impl ProtoModifiedValueType {
     }
 }
 
-#[derive(Debug, Clone, PartialEq)]
-pub struct ProtoMessageType {
-    pub name: String,
-    pub fields: BTreeMap<String, ProtoMessageField>,
-}
-
-#[derive(Debug, Clone, PartialEq)]
-pub struct ProtoMessageField {
-    pub ty: ProtoType,
-    pub ident: String,
-}
-
-#[derive(Debug, Clone, PartialEq)]
-pub struct ProtoOneOfType {
-    pub fields: BTreeMap<String, ProtoValueType>,
+impl ProtoWellKnownType {
+    pub fn can_be_cel(&self) -> bool {
+        match self {
+            ProtoWellKnownType::Timestamp | ProtoWellKnownType::Duration => true,
+            ProtoWellKnownType::Empty => true,
+            ProtoWellKnownType::Struct => true,
+            ProtoWellKnownType::Value => true,
+            ProtoWellKnownType::List => true,
+            ProtoWellKnownType::Any => false,
+        }
+    }
 }

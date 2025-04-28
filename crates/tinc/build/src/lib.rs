@@ -1,12 +1,9 @@
 #![cfg_attr(coverage_nightly, feature(coverage_attribute))]
 
 use anyhow::Context;
-use extensions::Extensions;
 use prost_reflect::DescriptorPool;
 
-pub mod cel;
-mod codegen;
-mod extensions;
+pub mod codegen;
 
 #[derive(Debug)]
 pub struct Config {
@@ -72,11 +69,15 @@ impl Config {
 
         let pool = DescriptorPool::decode(&mut fds_bytes.as_slice()).context("failed to decode tonic fds")?;
 
-        let mut extensions = Extensions::new(&pool);
+        let mut extensions = codegen::Extensions::new(&pool);
 
-        extensions.process(&pool).context("failed to process extensions")?;
+        let mut registry = codegen::types::ProtoTypeRegistry::new();
 
-        let modules = codegen::generate_modules(&extensions, &mut self.prost)?;
+        extensions
+            .process(&pool, &mut registry)
+            .context("failed to process extensions")?;
+
+        let modules = codegen::generate_modules(&registry, &mut self.prost)?;
 
         self.tonic
             .compile_fds_with_config(self.prost, fds)

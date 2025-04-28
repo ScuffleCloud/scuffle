@@ -1,4 +1,4 @@
-use std::borrow::{Borrow, Cow};
+use std::borrow::Cow;
 use std::collections::{BTreeMap, HashMap};
 use std::hash::Hash;
 use std::sync::Arc;
@@ -6,28 +6,7 @@ use std::sync::Arc;
 use bytes::Bytes;
 use num_traits::ToPrimitive;
 
-use super::Map;
-
-pub struct FuncFmt<F: Fn(&mut std::fmt::Formatter) -> std::fmt::Result>(pub F);
-
-impl<F> std::fmt::Display for FuncFmt<F>
-where
-    F: Fn(&mut std::fmt::Formatter) -> std::fmt::Result,
-{
-    #[inline(always)]
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        (self.0)(f)
-    }
-}
-impl<F> std::fmt::Debug for FuncFmt<F>
-where
-    F: Fn(&mut std::fmt::Formatter) -> std::fmt::Result,
-{
-    #[inline(always)]
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        (self.0)(f)
-    }
-}
+use super::{FuncFmt, Map};
 
 #[derive(Debug, thiserror::Error, PartialEq)]
 pub enum CelError<'a> {
@@ -77,7 +56,7 @@ impl PartialOrd for CelValue<'_> {
                 let l = match self {
                     CelValue::String(s) => s.as_bytes(),
                     CelValue::Bytes(b) => b.as_ref(),
-                    CelValue::BytesRef(b) => b.as_ref(),
+                    CelValue::BytesRef(b) => b,
                     CelValue::StringRef(s) => s.as_bytes(),
                     _ => unreachable!(),
                 };
@@ -85,7 +64,7 @@ impl PartialOrd for CelValue<'_> {
                 let r = match other {
                     CelValue::String(s) => s.as_bytes(),
                     CelValue::Bytes(b) => b.as_ref(),
-                    CelValue::BytesRef(b) => b.as_ref(),
+                    CelValue::BytesRef(b) => b,
                     CelValue::StringRef(s) => s.as_bytes(),
                     _ => unreachable!(),
                 };
@@ -122,9 +101,9 @@ impl<'a> CelValue<'a> {
         }
     }
 
-    pub fn add(left: impl CelValueConv<'a>, right: impl CelValueConv<'a>) -> Result<CelValue<'a>, CelError<'a>> {
+    pub fn cel_add(left: impl CelValueConv<'a>, right: impl CelValueConv<'a>) -> Result<CelValue<'a>, CelError<'a>> {
         match (left.conv(), right.conv()) {
-            (CelValue::Number(l), CelValue::Number(r)) => Ok(CelValue::Number(l.add(r)?)),
+            (CelValue::Number(l), CelValue::Number(r)) => Ok(CelValue::Number(l.cel_add(r)?)),
             (CelValue::String(l), CelValue::String(r)) => Ok(CelValue::String(Arc::from(format!("{l}{r}")))),
             (CelValue::Bytes(l), CelValue::Bytes(r)) => Ok(CelValue::Bytes({
                 let mut l = l.to_vec();
@@ -137,30 +116,30 @@ impl<'a> CelValue<'a> {
         }
     }
 
-    pub fn sub(left: impl CelValueConv<'a>, right: impl CelValueConv<'a>) -> Result<CelValue<'a>, CelError<'a>> {
+    pub fn cel_sub(left: impl CelValueConv<'a>, right: impl CelValueConv<'a>) -> Result<CelValue<'a>, CelError<'a>> {
         match (left.conv(), right.conv()) {
-            (CelValue::Number(l), CelValue::Number(r)) => Ok(CelValue::Number(l.sub(r)?)),
+            (CelValue::Number(l), CelValue::Number(r)) => Ok(CelValue::Number(l.cel_sub(r)?)),
             (left, right) => Err(CelError::BadOperation { left, right, op: "-" }),
         }
     }
 
-    pub fn mul(left: impl CelValueConv<'a>, right: impl CelValueConv<'a>) -> Result<CelValue<'a>, CelError<'a>> {
+    pub fn cel_mul(left: impl CelValueConv<'a>, right: impl CelValueConv<'a>) -> Result<CelValue<'a>, CelError<'a>> {
         match (left.conv(), right.conv()) {
-            (CelValue::Number(l), CelValue::Number(r)) => Ok(CelValue::Number(l.mul(r)?)),
+            (CelValue::Number(l), CelValue::Number(r)) => Ok(CelValue::Number(l.cel_mul(r)?)),
             (left, right) => Err(CelError::BadOperation { left, right, op: "*" }),
         }
     }
 
-    pub fn div(left: impl CelValueConv<'a>, right: impl CelValueConv<'a>) -> Result<CelValue<'a>, CelError<'a>> {
+    pub fn cel_div(left: impl CelValueConv<'a>, right: impl CelValueConv<'a>) -> Result<CelValue<'a>, CelError<'a>> {
         match (left.conv(), right.conv()) {
-            (CelValue::Number(l), CelValue::Number(r)) => Ok(CelValue::Number(l.div(r)?)),
+            (CelValue::Number(l), CelValue::Number(r)) => Ok(CelValue::Number(l.cel_div(r)?)),
             (left, right) => Err(CelError::BadOperation { left, right, op: "/" }),
         }
     }
 
-    pub fn rem(left: impl CelValueConv<'a>, right: impl CelValueConv<'a>) -> Result<CelValue<'a>, CelError<'a>> {
+    pub fn cel_rem(left: impl CelValueConv<'a>, right: impl CelValueConv<'a>) -> Result<CelValue<'a>, CelError<'a>> {
         match (left.conv(), right.conv()) {
-            (CelValue::Number(l), CelValue::Number(r)) => Ok(CelValue::Number(l.rem(r)?)),
+            (CelValue::Number(l), CelValue::Number(r)) => Ok(CelValue::Number(l.cel_rem(r)?)),
             (left, right) => Err(CelError::BadOperation { left, right, op: "%" }),
         }
     }
@@ -173,15 +152,15 @@ impl<'a> CelValue<'a> {
     }
 
     // !self
-    pub fn neg(self) -> Result<CelValue<'a>, CelError<'a>> {
+    pub fn cel_neg(self) -> Result<CelValue<'a>, CelError<'a>> {
         match self {
-            CelValue::Number(n) => Ok(CelValue::Number(n.neg()?)),
+            CelValue::Number(n) => Ok(CelValue::Number(n.cel_neg()?)),
             _ => Err(CelError::BadUnaryOperation { value: self, op: "-" }),
         }
     }
 
     // left < right
-    pub fn lt(left: impl CelValueConv<'a>, right: impl CelValueConv<'a>) -> Result<bool, CelError<'a>> {
+    pub fn cel_lt(left: impl CelValueConv<'a>, right: impl CelValueConv<'a>) -> Result<bool, CelError<'a>> {
         let left = left.conv();
         let right = right.conv();
         left.partial_cmp(&right)
@@ -190,7 +169,7 @@ impl<'a> CelValue<'a> {
     }
 
     // left <= right
-    pub fn lte(left: impl CelValueConv<'a>, right: impl CelValueConv<'a>) -> Result<bool, CelError<'a>> {
+    pub fn cel_lte(left: impl CelValueConv<'a>, right: impl CelValueConv<'a>) -> Result<bool, CelError<'a>> {
         let left = left.conv();
         let right = right.conv();
         left.partial_cmp(&right)
@@ -199,7 +178,7 @@ impl<'a> CelValue<'a> {
     }
 
     // left > right
-    pub fn gt(left: impl CelValueConv<'a>, right: impl CelValueConv<'a>) -> Result<bool, CelError<'a>> {
+    pub fn cel_gt(left: impl CelValueConv<'a>, right: impl CelValueConv<'a>) -> Result<bool, CelError<'a>> {
         let left = left.conv();
         let right = right.conv();
         left.partial_cmp(&right)
@@ -208,7 +187,7 @@ impl<'a> CelValue<'a> {
     }
 
     // left >= right
-    pub fn gte(left: impl CelValueConv<'a>, right: impl CelValueConv<'a>) -> Result<bool, CelError<'a>> {
+    pub fn cel_gte(left: impl CelValueConv<'a>, right: impl CelValueConv<'a>) -> Result<bool, CelError<'a>> {
         let left = left.conv();
         let right = right.conv();
         left.partial_cmp(&right)
@@ -217,7 +196,7 @@ impl<'a> CelValue<'a> {
     }
 
     // left == right
-    pub fn eq(left: impl CelValueConv<'a>, right: impl CelValueConv<'a>) -> Result<bool, CelError<'a>> {
+    pub fn cel_eq(left: impl CelValueConv<'a>, right: impl CelValueConv<'a>) -> Result<bool, CelError<'a>> {
         let left = left.conv();
         let right = right.conv();
         left.partial_cmp(&right)
@@ -226,7 +205,7 @@ impl<'a> CelValue<'a> {
     }
 
     // left != right
-    pub fn ne(left: impl CelValueConv<'a>, right: impl CelValueConv<'a>) -> Result<bool, CelError<'a>> {
+    pub fn cel_ne(left: impl CelValueConv<'a>, right: impl CelValueConv<'a>) -> Result<bool, CelError<'a>> {
         let left = left.conv();
         let right = right.conv();
 
@@ -236,8 +215,8 @@ impl<'a> CelValue<'a> {
     }
 
     // left contains right
-    pub fn contains(left: impl CelValueConv<'a>, right: impl CelValueConv<'a>) -> Result<bool, CelError<'a>> {
-        Self::contained_by(right, left).map_err(|err| match err {
+    pub fn cel_contains(left: impl CelValueConv<'a>, right: impl CelValueConv<'a>) -> Result<bool, CelError<'a>> {
+        Self::cel_contained_by(right, left).map_err(|err| match err {
             CelError::BadOperation { left, right, op: "in" } => CelError::BadOperation {
                 left: right,
                 right: left,
@@ -248,7 +227,7 @@ impl<'a> CelValue<'a> {
     }
 
     // left in right
-    pub fn contained_by(left: impl CelValueConv<'a>, right: impl CelValueConv<'a>) -> Result<bool, CelError<'a>> {
+    pub fn cel_contained_by(left: impl CelValueConv<'a>, right: impl CelValueConv<'a>) -> Result<bool, CelError<'a>> {
         match (left.conv(), right.conv()) {
             (left, CelValue::List(r)) => Ok(r.contains(&left)),
             (left, CelValue::Map(r)) => Ok(r.iter().any(|(k, _)| k == &left)),
@@ -258,7 +237,7 @@ impl<'a> CelValue<'a> {
             ) => {
                 let r = match &right {
                     CelValue::Bytes(b) => b.as_ref(),
-                    CelValue::BytesRef(b) => b.as_ref(),
+                    CelValue::BytesRef(b) => b,
                     CelValue::String(s) => s.as_bytes(),
                     CelValue::StringRef(s) => s.as_bytes(),
                     _ => unreachable!(),
@@ -266,7 +245,7 @@ impl<'a> CelValue<'a> {
 
                 let l = match &left {
                     CelValue::Bytes(b) => b.as_ref(),
-                    CelValue::BytesRef(b) => b.as_ref(),
+                    CelValue::BytesRef(b) => b,
                     CelValue::String(s) => s.as_bytes(),
                     CelValue::StringRef(s) => s.as_bytes(),
                     _ => unreachable!(),
@@ -520,7 +499,7 @@ impl PartialOrd for NumberTy {
 }
 
 impl NumberTy {
-    pub fn add(self, other: Self) -> Result<Self, CelError<'static>> {
+    pub fn cel_add(self, other: Self) -> Result<Self, CelError<'static>> {
         const ERROR: CelError<'static> = CelError::NumberOutOfRange { op: "addition" };
         match NumberTy::promote(self, other).ok_or(ERROR)? {
             (NumberTy::I64(l), NumberTy::I64(r)) => Ok(NumberTy::I64(l.checked_add(r).ok_or(ERROR)?)),
@@ -530,7 +509,7 @@ impl NumberTy {
         }
     }
 
-    pub fn sub(self, other: Self) -> Result<Self, CelError<'static>> {
+    pub fn cel_sub(self, other: Self) -> Result<Self, CelError<'static>> {
         const ERROR: CelError<'static> = CelError::NumberOutOfRange { op: "subtraction" };
         match NumberTy::promote(self, other).ok_or(ERROR)? {
             (NumberTy::I64(l), NumberTy::I64(r)) => Ok(NumberTy::I64(l.checked_sub(r).ok_or(ERROR)?)),
@@ -540,7 +519,7 @@ impl NumberTy {
         }
     }
 
-    pub fn mul(self, other: Self) -> Result<Self, CelError<'static>> {
+    pub fn cel_mul(self, other: Self) -> Result<Self, CelError<'static>> {
         const ERROR: CelError<'static> = CelError::NumberOutOfRange { op: "multiplication" };
         match NumberTy::promote(self, other).ok_or(ERROR)? {
             (NumberTy::I64(l), NumberTy::I64(r)) => Ok(NumberTy::I64(l.checked_mul(r).ok_or(ERROR)?)),
@@ -550,7 +529,7 @@ impl NumberTy {
         }
     }
 
-    pub fn div(self, other: Self) -> Result<Self, CelError<'static>> {
+    pub fn cel_div(self, other: Self) -> Result<Self, CelError<'static>> {
         if other == 0 {
             return Err(CelError::NumberOutOfRange { op: "division by zero" });
         }
@@ -564,7 +543,7 @@ impl NumberTy {
         }
     }
 
-    pub fn rem(self, other: Self) -> Result<Self, CelError<'static>> {
+    pub fn cel_rem(self, other: Self) -> Result<Self, CelError<'static>> {
         if other == 0 {
             return Err(CelError::NumberOutOfRange { op: "remainder by zero" });
         }
@@ -577,7 +556,7 @@ impl NumberTy {
         }
     }
 
-    pub fn neg(self) -> Result<NumberTy, CelError<'static>> {
+    pub fn cel_neg(self) -> Result<NumberTy, CelError<'static>> {
         const ERROR: CelError<'static> = CelError::NumberOutOfRange { op: "negation" };
         match self {
             NumberTy::I64(n) => Ok(NumberTy::I64(n.checked_neg().ok_or(ERROR)?)),
@@ -854,7 +833,7 @@ impl<K, V> CelBooleanConv for HashMap<K, V> {
     }
 }
 
-impl<'a, T> CelBooleanConv for &'a T
+impl<T> CelBooleanConv for &T
 where
     T: CelBooleanConv,
 {

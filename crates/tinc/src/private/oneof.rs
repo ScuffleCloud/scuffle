@@ -5,8 +5,8 @@ use serde::de::{Unexpected, VariantAccess};
 use super::buffer::Content;
 use super::{
     DeserializeContent, DeserializeHelper, Expected, IdentifiedValue, Identifier, IdentifierDeserializer, IdentifierFor,
-    MapAccessValueDeserializer, PathToken, SerdeDeserializer, TrackedError, Tracker, TrackerDeserializer, TrackerFor,
-    TrackerValidation, TrackerWrapper, report_error, report_serde_error, set_irrecoverable,
+    MapAccessValueDeserializer, SerdeDeserializer, SerdePathToken, TrackedError, Tracker, TrackerDeserializer, TrackerFor,
+    TrackerValidation, TrackerWrapper, report_de_error, report_tracked_error, set_irrecoverable,
 };
 
 pub trait OneOfHelper {
@@ -83,7 +83,7 @@ where
                 set_irrecoverable();
             })?
         {
-            let _token = PathToken::push_field(match &key {
+            let _token = SerdePathToken::push_field(match &key {
                 IdentifiedValue::Found(tag) => tag.name(),
                 IdentifiedValue::Unknown(v) => v.as_ref(),
             });
@@ -103,7 +103,7 @@ where
                     )?;
                 }
                 IdentifiedValue::Unknown(_) => {
-                    report_error(TrackedError::unknown_field(T::Target::DENY_UNKNOWN_FIELDS))?;
+                    report_tracked_error(TrackedError::unknown_field(T::Target::DENY_UNKNOWN_FIELDS))?;
                 }
             }
 
@@ -202,13 +202,13 @@ where
                                 Unexpected::Str(tag.name()),
                                 &existing_tag.name(),
                             );
-                            report_serde_error(error)?;
+                            report_de_error(error)?;
                         }
                     } else {
                         self.tag_buffer = Some(tag);
                     }
 
-                    let _token = PathToken::replace_field(<T::Target as IdentifierFor>::Identifier::CONTENT.name());
+                    let _token = SerdePathToken::replace_field(<T::Target as IdentifierFor>::Identifier::CONTENT.name());
                     for content in self.content_buffer.drain(..) {
                         let result: Result<(), D::Error> = T::Target::deserialize(
                             value,
@@ -220,7 +220,7 @@ where
                         );
 
                         if let Err(e) = result {
-                            report_serde_error(e)?;
+                            report_de_error(e)?;
                         }
                     }
                 }
@@ -230,12 +230,12 @@ where
                         v.as_ref(),
                         <T::Target as TrackedOneOfVariant>::Variant::OPTIONS,
                     );
-                    report_serde_error(error)?;
+                    report_de_error(error)?;
                 }
                 (IdentifiedValue::Unknown(v), Some(tag)) => {
                     self.set_tag_invalid();
                     let error = <D::Error as serde::de::Error>::invalid_value(Unexpected::Str(v.as_ref()), &tag.name());
-                    report_serde_error(error)?;
+                    report_de_error(error)?;
                 }
                 _ => {}
             }
@@ -245,7 +245,7 @@ where
                 if let Some(tag) = self.tag_buffer {
                     let result: Result<(), D::Error> = T::Target::deserialize(value, tag, &mut self.tracker, deserializer);
                     if let Err(e) = result {
-                        report_serde_error(e)?;
+                        report_de_error(e)?;
                     }
                 } else {
                     self.content_buffer.push(
@@ -259,7 +259,7 @@ where
                 }
             }
         } else {
-            report_error(TrackedError::unknown_field(T::Target::DENY_UNKNOWN_FIELDS))?;
+            report_tracked_error(TrackedError::unknown_field(T::Target::DENY_UNKNOWN_FIELDS))?;
         }
 
         Ok(())
@@ -277,14 +277,14 @@ where
         E: serde::de::Error,
     {
         if !self.content_buffer.is_empty() {
-            let _guard = PathToken::push_field(<T::Target as IdentifierFor>::Identifier::TAG.name());
-            report_error(TrackedError::missing_field())?;
+            let _guard = SerdePathToken::push_field(<T::Target as IdentifierFor>::Identifier::TAG.name());
+            report_tracked_error(TrackedError::missing_field())?;
             return Ok(());
         }
 
         match (self.tracker.as_mut(), value) {
             (Some(tracker), Some(value)) => {
-                let _guard = PathToken::push_field(<T::Target as IdentifierFor>::Identifier::CONTENT.name());
+                let _guard = SerdePathToken::push_field(<T::Target as IdentifierFor>::Identifier::CONTENT.name());
                 value.validate(tracker)
             }
             (None, Some(_)) => Err(serde::de::Error::custom("tracker not initialized but value is present")),
@@ -479,7 +479,7 @@ where
             data.variant_seed(IdentifierDeserializer::<<T::Target as IdentifierFor>::Identifier>::new())?;
         match variant {
             IdentifiedValue::Found(variant) => {
-                let _token = PathToken::push_field(variant.name());
+                let _token = SerdePathToken::push_field(variant.name());
                 TrackerDeserializeIdentifier::deserialize(
                     self.tracker,
                     self.value,
@@ -492,7 +492,7 @@ where
                     variant.as_ref(),
                     <T::Target as IdentifierFor>::Identifier::OPTIONS,
                 );
-                report_serde_error(error)?;
+                report_de_error(error)?;
                 variant_access.newtype_variant::<serde::de::IgnoredAny>().inspect_err(|_| {
                     set_irrecoverable();
                 })?;

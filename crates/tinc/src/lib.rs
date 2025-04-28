@@ -15,6 +15,7 @@ pub trait TincService {
 }
 
 pub trait TincTonicRequestExt {
+    #[allow(clippy::result_large_err)]
     fn validate(&self) -> Result<(), tonic::Status>;
 }
 

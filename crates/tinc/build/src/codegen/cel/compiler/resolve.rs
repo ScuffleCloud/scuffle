@@ -3,7 +3,8 @@ use quote::quote;
 use syn::parse_quote;
 
 use super::{CompileError, CompiledExpr, Compiler, CompilerCtx, helpers};
-use crate::cel::codegen::{CelType, ProtoModifiedValueType, ProtoType, ProtoValueType};
+use crate::codegen::cel::types::CelType;
+use crate::codegen::types::{ProtoModifiedValueType, ProtoType, ProtoValueType};
 
 pub fn resolve(ctx: &Compiler, expr: &Expression) -> Result<CompiledExpr, CompileError> {
     match expr {
@@ -57,11 +58,11 @@ fn resolve_arithmetic(
     }
 
     let op = match op {
-        ArithmeticOp::Add => quote! { add },
-        ArithmeticOp::Subtract => quote! { sub },
-        ArithmeticOp::Divide => quote! { div },
-        ArithmeticOp::Multiply => quote! { mul },
-        ArithmeticOp::Modulus => quote! { rem },
+        ArithmeticOp::Add => quote! { cel_add },
+        ArithmeticOp::Subtract => quote! { cel_sub },
+        ArithmeticOp::Divide => quote! { cel_div },
+        ArithmeticOp::Multiply => quote! { cel_mul },
+        ArithmeticOp::Modulus => quote! { cel_rem },
     };
 
     Ok(CompiledExpr {
@@ -138,7 +139,7 @@ fn resolve_function_call(
         return Err(CompileError::UnsupportedFunctionCallIdentifierType(func.clone()));
     };
 
-    let Some(func) = ctx.get_function(&func_name) else {
+    let Some(func) = ctx.get_function(func_name) else {
         return Err(CompileError::FunctionNotFound(func_name.to_string()));
     };
 
@@ -162,7 +163,7 @@ fn resolve_list(ctx: &Compiler, items: &[Expression]) -> Result<CompiledExpr, Co
 
     if let Some(item) = items.iter().find(|item| !item.ty.can_be_cel()) {
         return Err(CompileError::TypeConversion {
-            ty: item.ty.clone(),
+            ty: Box::new(item.ty.clone()),
             message: "can only contain items that can be converted to CEL".to_string(),
         });
     }
@@ -189,13 +190,13 @@ fn resolve_map(ctx: &Compiler, items: &[(Expression, Expression)]) -> Result<Com
             let value = ctx.resolve(value)?;
             if !key.ty.can_be_cel() {
                 return Err(CompileError::TypeConversion {
-                    ty: key.ty.clone(),
+                    ty: Box::new(key.ty.clone()),
                     message: "can only contain keys that can be converted to CEL".to_string(),
                 });
             }
             if !value.ty.can_be_cel() {
                 return Err(CompileError::TypeConversion {
-                    ty: value.ty.clone(),
+                    ty: Box::new(value.ty.clone()),
                     message: "can only contain values that can be converted to CEL".to_string(),
                 });
             }
@@ -230,13 +231,20 @@ fn resolve_member(ctx: &Compiler, expr: &Expression, member: &Member) -> Result<
                     },
                     ty: CelType::CelValue,
                 }),
-                CelType::Proto(ProtoType::Modified(ProtoModifiedValueType::Optional(ProtoValueType::Message(msg)))) => {
+                CelType::Proto(ProtoType::Modified(ProtoModifiedValueType::Optional(ProtoValueType::Message(
+                    full_name,
+                )))) => {
+                    let msg = ctx
+                        .registry()
+                        .get_message(full_name)
+                        .ok_or_else(|| CompileError::MissingMessage(full_name.clone()))?;
+
                     let field_ty = msg.fields.get(attr).ok_or_else(|| CompileError::MemberAccess {
-                        ty: expr.ty.clone(),
-                        message: format!("message {} does not have field {}", msg.name, attr),
+                        ty: Box::new(expr.ty.clone()),
+                        message: format!("message {} does not have field {}", msg.full_name, attr),
                     })?;
 
-                    let field_ident = syn::Ident::new(&field_ty.ident, proc_macro2::Span::call_site());
+                    let field_ident = field_ty.rust_ident();
 
                     Ok(CompiledExpr {
                         ty: CelType::Proto(field_ty.ty.clone()),
@@ -251,13 +259,38 @@ fn resolve_member(ctx: &Compiler, expr: &Expression, member: &Member) -> Result<
                         },
                     })
                 }
-                CelType::Proto(ProtoType::Value(ProtoValueType::Message(msg))) => {
-                    let field_ty = msg.fields.get(attr).ok_or_else(|| CompileError::MemberAccess {
-                        ty: expr.ty.clone(),
-                        message: format!("message {} does not have field {}", msg.name, attr),
+                CelType::Proto(ProtoType::Modified(ProtoModifiedValueType::OneOf(oneof))) => {
+                    let field_ty = oneof.fields.get(attr).ok_or_else(|| CompileError::MemberAccess {
+                        ty: Box::new(expr.ty.clone()),
+                        message: format!("oneof {} does not have field {}", oneof.full_name, attr),
                     })?;
 
-                    let field_ident = syn::Ident::new(&field_ty.ident, proc_macro2::Span::call_site());
+                    let field_ident = field_ty.rust_ident();
+
+                    Ok(CompiledExpr {
+                        ty: CelType::Proto(ProtoType::Value(field_ty.ty.clone())),
+                        expr: parse_quote! {
+                            match (#expr) {
+                                Some(value) => &value.#field_ident,
+                                None => return Err(::tinc::__private::cel::CelError::BadAccess {
+                                    member: ::tinc::__private::cel::CelValue::StringRef(#attr),
+                                    container: ::tinc::__private::cel::CelValue::Null,
+                                }),
+                            }
+                        },
+                    })
+                }
+                CelType::Proto(ProtoType::Value(ProtoValueType::Message(full_name))) => {
+                    let msg = ctx
+                        .registry()
+                        .get_message(full_name)
+                        .ok_or_else(|| CompileError::MissingMessage(full_name.clone()))?;
+                    let field_ty = msg.fields.get(attr).ok_or_else(|| CompileError::MemberAccess {
+                        ty: Box::new(expr.ty.clone()),
+                        message: format!("message {} does not have field {}", msg.full_name, attr),
+                    })?;
+
+                    let field_ident = field_ty.rust_ident();
 
                     Ok(CompiledExpr {
                         ty: CelType::Proto(field_ty.ty.clone()),
@@ -278,7 +311,7 @@ fn resolve_member(ctx: &Compiler, expr: &Expression, member: &Member) -> Result<
                     })
                 }
                 _ => Err(CompileError::MemberAccess {
-                    ty: expr.ty.clone(),
+                    ty: Box::new(expr.ty.clone()),
                     message: "can only access attributes on messages and maps with string keys".to_string(),
                 }),
             }
@@ -309,7 +342,7 @@ fn resolve_member(ctx: &Compiler, expr: &Expression, member: &Member) -> Result<
                     },
                 }),
                 _ => Err(CompileError::MemberAccess {
-                    ty: expr.ty.clone(),
+                    ty: Box::new(expr.ty.clone()),
                     message: "cannot index into non-repeated and non-map values".to_string(),
                 }),
             }
@@ -340,7 +373,7 @@ fn resolve_relation(
     let left = ctx.resolve(left)?;
     if !left.ty.can_be_cel() {
         return Err(CompileError::TypeConversion {
-            ty: left.ty.clone(),
+            ty: Box::new(left.ty.clone()),
             message: format!("cannot perform relational operation {op:?} on a non-CEL value"),
         });
     }
@@ -351,7 +384,7 @@ fn resolve_relation(
         CelType::Proto(ProtoType::Modified(ProtoModifiedValueType::Repeated(item) | ProtoModifiedValueType::Map(item, _))),
     ) = (op, &right.ty)
     {
-        if !matches!(item, ProtoValueType::Message(_) | ProtoValueType::Enum(_)) {
+        if !matches!(item, ProtoValueType::Message { .. } | ProtoValueType::Enum(_)) {
             let op = match &right.ty {
                 CelType::Proto(ProtoType::Modified(ProtoModifiedValueType::Repeated(_))) => {
                     quote! { array_contains }
@@ -374,19 +407,19 @@ fn resolve_relation(
 
     if !right.ty.can_be_cel() {
         return Err(CompileError::TypeConversion {
-            ty: right.ty.clone(),
+            ty: Box::new(right.ty.clone()),
             message: format!("cannot perform relational operation {op:?} on a non-CEL value"),
         });
     }
 
     let op = match op {
-        RelationOp::LessThan => quote! { lt },
-        RelationOp::LessThanEq => quote! { lte },
-        RelationOp::GreaterThan => quote! { gt },
-        RelationOp::GreaterThanEq => quote! { gte },
-        RelationOp::Equals => quote! { eq },
-        RelationOp::NotEquals => quote! { neq },
-        RelationOp::In => quote! { contained_by },
+        RelationOp::LessThan => quote! { cel_lt },
+        RelationOp::LessThanEq => quote! { cel_lte },
+        RelationOp::GreaterThan => quote! { cel_gt },
+        RelationOp::GreaterThanEq => quote! { cel_gte },
+        RelationOp::Equals => quote! { cel_eq },
+        RelationOp::NotEquals => quote! { cel_neq },
+        RelationOp::In => quote! { cel_contained_by },
     };
 
     Ok(CompiledExpr {
@@ -410,7 +443,7 @@ fn resolve_ternary(
     let left = ctx.resolve(left)?;
     if !left.ty.can_be_cel() {
         return Err(CompileError::TypeConversion {
-            ty: left.ty.clone(),
+            ty: Box::new(left.ty.clone()),
             message: "ternary operations must return CEL values".to_string(),
         });
     }
@@ -418,7 +451,7 @@ fn resolve_ternary(
     let right = ctx.resolve(right)?;
     if !right.ty.can_be_cel() {
         return Err(CompileError::TypeConversion {
-            ty: right.ty.clone(),
+            ty: Box::new(right.ty.clone()),
             message: "ternary operations must return CEL values".to_string(),
         });
     }
@@ -452,7 +485,7 @@ fn resolve_unary(ctx: &Compiler, op: &cel_parser::UnaryOp, expr: &Expression) ->
         cel_parser::UnaryOp::Minus => {
             if !expr.ty.can_be_cel() {
                 return Err(CompileError::TypeConversion {
-                    ty: expr.ty.clone(),
+                    ty: Box::new(expr.ty.clone()),
                     message: "cannot perform minus operation on a non-CEL value".to_string(),
                 });
             }

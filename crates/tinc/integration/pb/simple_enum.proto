@@ -5,9 +5,7 @@ package simple_enum;
 import "tinc/annotations.proto";
 
 message Simple {
-  option (tinc.message) = {
-    custom_impl: false
-  };
+  option (tinc.message).generate = true;
 
   SimpleEnum value = 1;
   repeated SimpleEnum values = 2;
@@ -23,9 +21,7 @@ enum SimpleEnum {
 }
 
 message SimpleRenamed {
-  option (tinc.message) = {
-    custom_impl: false
-  };
+  option (tinc.message).generate = true;
 
   SimpleEnumRenamed value = 1;
   repeated SimpleEnumRenamed values = 2;
@@ -45,9 +41,7 @@ enum SimpleEnumRenamed {
 }
 
 message SimpleRepr {
-  option (tinc.message) = {
-    custom_impl: false
-  };
+  option (tinc.message).generate = true;
 
   SimpleEnumRepr value = 1;
   repeated SimpleEnumRepr values = 2;

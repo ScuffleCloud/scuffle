@@ -5,17 +5,12 @@ use quote::quote;
 use syn::{Ident, parse_quote};
 use tinc_pb::http_endpoint_options;
 
-use crate::codegen::{field_ident_from_str, ident_from_str, type_ident_from_str};
-use crate::extensions::{
-    Extensions, FieldKind, FieldModifier, FieldType, MessageOpts, MethodIo, MethodOpts, PrimitiveKind, ServiceOpts,
-    WellKnownType,
+use super::types::{
+    ProtoMessageType, ProtoModifiedValueType, ProtoPath, ProtoService, ProtoServiceMethod, ProtoServiceMethodEndpoint,
+    ProtoType, ProtoTypeRegistry, ProtoValueType,
 };
-
-// Define a helper enum for input message options.
-enum IoOptions<'a> {
-    Message(String, &'a MessageOpts),
-    WellKnown(WellKnownType),
-}
+use super::utils::{field_ident_from_str, type_ident_from_str};
+use crate::codegen::types::ProtoWellKnownType;
 
 struct PathFields {
     defs: Vec<proc_macro2::TokenStream>,
@@ -24,9 +19,9 @@ struct PathFields {
 
 fn field_extractor_generator(
     field_str: &str,
-    extensions: &Extensions,
-    message: &MessageOpts,
-) -> anyhow::Result<(proc_macro2::TokenStream, FieldKind)> {
+    registry: &ProtoTypeRegistry,
+    message: &ProtoMessageType,
+) -> anyhow::Result<(proc_macro2::TokenStream, ProtoType)> {
     let mut next_message = Some(message);
     let mut is_optional = false;
     let mut kind = None;
@@ -45,7 +40,7 @@ fn field_extractor_generator(
             }
         });
 
-        kind = Some(field.kind.clone());
+        kind = Some(field.ty.clone());
         mapping = quote! {{
             let (tracker, target) = #mapping;
             #optional_unwrap
@@ -54,211 +49,142 @@ fn field_extractor_generator(
             (tracker, target)
         }};
 
-        is_optional = matches!(field.kind.modifier(), Some(FieldModifier::Optional));
-        if matches!(field.kind.modifier(), Some(FieldModifier::Optional) | None) {
-            next_message = field.kind.message_name().and_then(|key| extensions.messages().get(key))
-        } else {
-            next_message = None;
+        is_optional = matches!(
+            field.ty,
+            ProtoType::Modified(ProtoModifiedValueType::Optional(_) | ProtoModifiedValueType::OneOf(_))
+        );
+        next_message = match &field.ty {
+            ProtoType::Value(ProtoValueType::Message(path))
+            | ProtoType::Modified(ProtoModifiedValueType::Optional(ProtoValueType::Message(path))) => {
+                Some(registry.get_message(path).unwrap())
+            }
+            _ => None,
         }
     }
 
     Ok((mapping, kind.unwrap()))
 }
 
-impl IoOptions<'_> {
-    fn path(&self, package: &str) -> syn::Path {
-        match self {
-            IoOptions::Message(name, _) => {
-                let path = object_type_path(name.as_str(), package);
-                parse_quote! { super::#path }
-            }
-            IoOptions::WellKnown(well_known) => {
-                todo!("handle well-known types");
-            }
-        }
-    }
+fn path_struct(
+    ty: &ProtoValueType,
+    package: &str,
+    fields: &[String],
+    registry: &ProtoTypeRegistry,
+) -> anyhow::Result<PathFields> {
+    let mut defs = Vec::new();
+    let mut mappings = Vec::new();
 
-    fn path_struct(
-        &self,
-        extensions: &Extensions,
-        fields: impl IntoIterator<Item = impl AsRef<str>>,
-    ) -> anyhow::Result<Option<PathFields>> {
-        let fields: Vec<_> = fields.into_iter().collect();
-        if fields.is_empty() {
-            return Ok(None);
-        }
-
-        let mut defs = Vec::new();
-        let mut mappings = Vec::new();
-
-        match self {
-            IoOptions::Message(_, message) => {
-                for (idx, field) in fields.iter().enumerate() {
-                    let field_str = field.as_ref();
-                    let path_field_ident = ident_from_str(format!("field_{idx}"));
-
-                    let (path_mapping, field_kind) = field_extractor_generator(field_str, extensions, message)?;
-
-                    let setter = match field_kind.modifier() {
-                        Some(FieldModifier::Optional) => quote! {
-                            tracker.get_or_insert_default();
-                            target.insert(path.#path_field_ident.into());
-                        },
-                        _ => quote! {
-                            *target = path.#path_field_ident.into();
-                        },
-                    };
-
-                    mappings.push(quote! {{
-                        let (tracker, target) = #path_mapping;
-                        #setter;
-                    }});
-
-                    let ty = match field_kind.field_type() {
-                        FieldType::Enum(path) => {
-                            let path = object_type_path(path.as_str(), message.package.as_str());
-                            quote! {
-                                super::#path
-                            }
-                        }
-                        FieldType::Message(m) => anyhow::bail!("message type cannot be mapped: {m}"),
-                        FieldType::Primitive(prim) | FieldType::WellKnown(WellKnownType::Primitive(prim)) => match prim {
-                            PrimitiveKind::Bool => quote! {
-                                ::core::primitive::bool
-                            },
-                            PrimitiveKind::F32 => quote! {
-                                ::core::primitive::f32
-                            },
-                            PrimitiveKind::F64 => quote! {
-                                ::core::primitive::f64
-                            },
-                            PrimitiveKind::I32 => quote! {
-                                ::core::primitive::i32
-                            },
-                            PrimitiveKind::I64 => quote! {
-                                ::core::primitive::i64
-                            },
-                            PrimitiveKind::U32 => quote! {
-                                ::core::primitive::u32
-                            },
-                            PrimitiveKind::U64 => quote! {
-                                ::core::primitive::u64
-                            },
-                            PrimitiveKind::String => quote! {
-                                ::std::string::String
-                            },
-                            PrimitiveKind::Bytes => anyhow::bail!("bytes type cannot be mapped"),
-                        },
-                        FieldType::WellKnown(wk) => match wk {
-                            WellKnownType::Duration => quote! {
-                                ::tinc::__private::well_known::Duration
-                            },
-                            WellKnownType::Timestamp => quote! {
-                                ::tinc::__private::well_known::Timestamp
-                            },
-                            WellKnownType::Value => quote! {
-                                ::tinc::__private::well_known::Value
-                            },
-                            t => {
-                                anyhow::bail!("well-known type cannot be mapped: {t:?}");
-                            }
-                        },
-                        FieldType::OneOf(_) => {
-                            anyhow::bail!("oneof type cannot be mapped");
-                        }
-                    };
-
-                    defs.push(quote! {
-                        #[serde(rename = #field_str)]
-                        #path_field_ident: #ty
-                    });
+    let match_single_ty = |ty: &ProtoValueType| {
+        Some(match &ty {
+            ProtoValueType::Enum(path) => {
+                let path = registry.get_enum(path).expect("enum not found").rust_path(package);
+                quote! {
+                    #path
                 }
             }
-            IoOptions::WellKnown(wk) => {
-                if fields.len() != 1 {
-                    anyhow::bail!("well-known type can only have one field");
-                }
+            ProtoValueType::Bool => quote! {
+                ::core::primitive::bool
+            },
+            ProtoValueType::Float => quote! {
+                ::core::primitive::f32
+            },
+            ProtoValueType::Double => quote! {
+                ::core::primitive::f64
+            },
+            ProtoValueType::Int32 => quote! {
+                ::core::primitive::i32
+            },
+            ProtoValueType::Int64 => quote! {
+                ::core::primitive::i64
+            },
+            ProtoValueType::UInt32 => quote! {
+                ::core::primitive::u32
+            },
+            ProtoValueType::UInt64 => quote! {
+                ::core::primitive::u64
+            },
+            ProtoValueType::String => quote! {
+                ::std::string::String
+            },
+            ProtoValueType::WellKnown(ProtoWellKnownType::Duration) => quote! {
+                ::tinc::__private::well_known::Duration
+            },
+            ProtoValueType::WellKnown(ProtoWellKnownType::Timestamp) => quote! {
+                ::tinc::__private::well_known::Timestamp
+            },
+            ProtoValueType::WellKnown(ProtoWellKnownType::Value) => quote! {
+                ::tinc::__private::well_known::Value
+            },
+            _ => return None,
+        })
+    };
 
-                let field = &fields[0];
-                if field.as_ref() != "value" {
-                    anyhow::bail!("well-known type can only have field 'value'");
-                }
+    match &ty {
+        ProtoValueType::Message(message) => {
+            let message = registry.get_message(message).expect("message not found");
 
-                mappings.push(quote! {
-                    *target = path.value.into();
+            for (idx, field) in fields.iter().enumerate() {
+                let field_str = field.as_ref();
+                let path_field_ident = quote::format_ident!("field_{idx}");
+                let (path_mapping, ty) = field_extractor_generator(field_str, registry, message)?;
+
+                let setter = match &ty {
+                    ProtoType::Modified(ProtoModifiedValueType::Optional(_)) => quote! {
+                        tracker.get_or_insert_default();
+                        target.insert(path.#path_field_ident.into());
+                    },
+                    _ => quote! {
+                        *target = path.#path_field_ident.into();
+                    },
+                };
+
+                mappings.push(quote! {{
+                    let (tracker, target) = #path_mapping;
+                    #setter;
+                }});
+
+                let ty = match ty {
+                    ProtoType::Modified(ProtoModifiedValueType::Optional(value)) | ProtoType::Value(value) => {
+                        match_single_ty(&value)
+                    }
+                    _ => None,
+                };
+
+                let Some(ty) = ty else {
+                    anyhow::bail!("type cannot be mapped: {ty:?}");
+                };
+
+                defs.push(quote! {
+                    #[serde(rename = #field_str)]
+                    #path_field_ident: #ty
                 });
-
-                match wk {
-                    WellKnownType::Duration => {
-                        defs.push(quote! {
-                            #[serde(rename = "value")]
-                            value: ::tinc::__private::well_known::Duration
-                        });
-                    }
-                    WellKnownType::Timestamp => {
-                        defs.push(quote! {
-                            #[serde(rename = "value")]
-                            value: ::tinc::__private::well_known::Timestamp
-                        });
-                    }
-                    WellKnownType::Value => {
-                        defs.push(quote! {
-                            #[serde(rename = "value")]
-                            value: ::tinc::__private::well_known::Value
-                        });
-                    }
-                    t => anyhow::bail!("well-known type cannot be mapped: {t:?}"),
-                }
             }
         }
+        ty => {
+            let Some(ty) = match_single_ty(ty) else {
+                anyhow::bail!("type cannot be mapped: {ty:?}");
+            };
 
-        Ok(Some(PathFields { defs, mappings }))
-    }
-
-    fn field_extract(
-        &self,
-        field_str: &str,
-        extensions: &Extensions,
-    ) -> anyhow::Result<(proc_macro2::TokenStream, FieldKind)> {
-        match self {
-            IoOptions::Message(_, message) => {
-                let (path_mapping, field_kind) = field_extractor_generator(field_str, extensions, message)?;
-                Ok((path_mapping, field_kind))
+            if fields.len() != 1 {
+                anyhow::bail!("well-known type can only have one field");
             }
-            IoOptions::WellKnown(_) => {
-                anyhow::bail!("well-known type cannot be mapped");
+
+            if fields[0] != "value" {
+                anyhow::bail!("well-known type can only have field 'value'");
             }
+
+            mappings.push(quote! {
+                *target = path.value.into();
+            });
+
+            defs.push(quote! {
+                #[serde(rename = "value")]
+                value: #ty
+            });
         }
     }
 
-    fn field_type(&self, field: &str) -> Option<&FieldKind> {
-        match self {
-            IoOptions::Message(_, message) => message.fields.get(field).map(|field| &field.kind),
-            IoOptions::WellKnown(WellKnownType::Struct) => Some(&FieldKind::WellKnown(WellKnownType::Value)),
-            IoOptions::WellKnown(_) => None,
-        }
-    }
-}
-
-fn object_type_path(key: &str, package: &str) -> syn::Path {
-    let mut parts: Vec<String> = key
-        .strip_prefix(package)
-        .unwrap_or(key)
-        .split('.')
-        .filter(|s| !s.is_empty())
-        .map(|s| s.to_owned())
-        .collect();
-
-    let len = parts.len();
-    if len > 1 {
-        for part in &mut parts[..len - 1] {
-            *part = super::field_ident_from_str(&part).to_string();
-        }
-
-        parts[len - 1] = super::type_ident_from_str(&parts[len - 1]).to_string();
-    }
-
-    syn::parse_str::<syn::Path>(&parts.join("::")).unwrap()
+    Ok(PathFields { defs, mappings })
 }
 
 fn parse_route(route: &str) -> Vec<String> {
@@ -299,48 +225,38 @@ struct GeneratedMethod {
 impl GeneratedMethod {
     fn new(
         name: &str,
-        method: &MethodOpts,
-        service: &ServiceOpts,
-        extensions: &Extensions,
-        endpoint: &tinc_pb::HttpEndpointOptions,
-    ) -> anyhow::Result<Option<GeneratedMethod>> {
-        let (http_method_str, path) = match endpoint.method.as_ref() {
-            Some(tinc_pb::http_endpoint_options::Method::Get(path)) => ("get", path),
-            Some(tinc_pb::http_endpoint_options::Method::Post(path)) => ("post", path),
-            Some(tinc_pb::http_endpoint_options::Method::Put(path)) => ("put", path),
-            Some(tinc_pb::http_endpoint_options::Method::Delete(path)) => ("delete", path),
-            Some(tinc_pb::http_endpoint_options::Method::Patch(path)) => ("patch", path),
-            Some(tinc_pb::http_endpoint_options::Method::Custom(method)) => {
+        package: &str,
+        service: &ProtoService,
+        method: &ProtoServiceMethod,
+        endpoint: &ProtoServiceMethodEndpoint,
+        registry: &ProtoTypeRegistry,
+    ) -> anyhow::Result<GeneratedMethod> {
+        let (http_method_str, path) = match &endpoint.method {
+            tinc_pb::http_endpoint_options::Method::Get(path) => ("get", path),
+            tinc_pb::http_endpoint_options::Method::Post(path) => ("post", path),
+            tinc_pb::http_endpoint_options::Method::Put(path) => ("put", path),
+            tinc_pb::http_endpoint_options::Method::Delete(path) => ("delete", path),
+            tinc_pb::http_endpoint_options::Method::Patch(path) => ("patch", path),
+            tinc_pb::http_endpoint_options::Method::Custom(method) => {
                 todo!("custom method not implemented: {:?}", method);
                 // (method.method.as_str(), &method.path)
             }
-            _ => return Ok(None),
         };
 
         let trimmed_path = path.trim_start_matches('/');
-        let full_path = if let Some(prefix) = &service.prefix {
+        let full_path = if let Some(prefix) = &service.options.prefix {
             format!("/{}/{}", prefix.trim_end_matches('/'), trimmed_path)
         } else {
-            format!("/{}", trimmed_path)
+            format!("/{trimmed_path}")
         };
 
-        let http_method = ident_from_str(http_method_str);
+        let http_method = quote::format_ident!("{http_method_str}");
         let params = parse_route(&full_path);
 
-        // Determine the input message type.
-        let input_message = match &method.input {
-            MethodIo::Message(name) => {
-                let input_message = extensions.messages().get(name).expect("input message not found");
-                IoOptions::Message(name.clone(), input_message)
-            }
-            MethodIo::WellKnown(well_known) => IoOptions::WellKnown(*well_known),
-        };
+        let path_params = if !params.is_empty() {
+            let PathFields { defs, mappings } = path_struct(&method.input, package, &params, registry)
+                .with_context(|| format!("failed to generate path struct for method: {name}"))?;
 
-        let path_struct = input_message
-            .path_struct(extensions, &params)
-            .with_context(|| format!("failed to generate path struct for method: {name}"))?;
-
-        let path_params = path_struct.map(|PathFields { defs, mappings }| {
             quote! {{
                 let mut tracker = &mut tracker;
                 let mut target = &mut target;
@@ -358,7 +274,9 @@ impl GeneratedMethod {
 
                 #(#mappings)*
             }}
-        });
+        } else {
+            quote! {}
+        };
 
         let is_get_or_delete = matches!(http_method_str, "get" | "delete");
         let input = endpoint.input.clone().unwrap_or_else(|| {
@@ -371,12 +289,16 @@ impl GeneratedMethod {
 
         let input = match input {
             http_endpoint_options::Input::Query(http_endpoint_options::QueryParams { field }) => {
-                let extract = if field.is_empty() {
-                    quote! {}
-                } else {
-                    let (extract, _) = input_message.field_extract(&field, extensions)?;
-                    extract
+                let extract = match &method.input {
+                    ProtoValueType::Message(_) if field.is_empty() => quote! {},
+                    ProtoValueType::Message(message) => {
+                        let message = registry.get_message(message).expect("message not found");
+                        let (extract, _) = field_extractor_generator(&field, registry, message)?;
+                        extract
+                    }
+                    _ => todo!("handle other types"),
                 };
+
                 quote! {{
                     let mut tracker = &mut tracker;
                     let mut target = &mut target;
@@ -400,22 +322,25 @@ impl GeneratedMethod {
                         anyhow::bail!("content type field cannot be the same as the body field");
                     }
 
-                    let (extract, kind) = input_message.field_extract(&content_type_field, extensions)?;
-                    if !matches!(kind.field_type(), FieldType::Primitive(PrimitiveKind::String)) {
-                        anyhow::bail!("content type field must be a string");
-                    }
+                    let (extract, kind) = match &method.input {
+                        ProtoValueType::Message(message) => {
+                            let message = registry.get_message(message).expect("message not found");
+                            field_extractor_generator(&field, registry, message)?
+                        }
+                        _ => todo!("handle other types"),
+                    };
 
-                    let modifier = match kind.modifier() {
-                        Some(FieldModifier::Optional) => quote! {
+                    let modifier = match &kind {
+                        ProtoType::Modified(ProtoModifiedValueType::Optional(ProtoValueType::String)) => quote! {
                             let (mut tracker, mut target) = #extract;
                             tracker.get_or_insert_default();
                             target.insert(content_type.into());
                         },
-                        None => quote! {
+                        ProtoType::Value(ProtoValueType::String) => quote! {
                             let (_, mut target) = #extract;
                             *target = content_type.into();
                         },
-                        _ => anyhow::bail!("content type field cannot be repeated or map"),
+                        _ => anyhow::bail!("content type field must be a string: {kind:?}"),
                     };
 
                     quote! {{
@@ -429,23 +354,21 @@ impl GeneratedMethod {
                 };
 
                 let (extract, is_raw_bytes) = if field.is_empty() {
-                    (
-                        quote! {},
-                        matches!(
-                            input_message,
-                            IoOptions::WellKnown(WellKnownType::Primitive(PrimitiveKind::Bytes))
-                        ),
-                    )
+                    (quote! {}, matches!(&method.input, ProtoValueType::Bytes))
                 } else {
-                    let (extract, kind) = input_message.field_extract(&field, extensions)?;
+                    let (extract, ty) = match &method.input {
+                        ProtoValueType::Message(message) => {
+                            let message = registry.get_message(message).expect("message not found");
+                            field_extractor_generator(&field, registry, message)?
+                        }
+                        _ => todo!("handle other types"),
+                    };
                     (
                         extract,
                         matches!(
-                            (kind.field_type(), kind.modifier()),
-                            (
-                                FieldType::Primitive(PrimitiveKind::Bytes),
-                                Some(FieldModifier::Optional) | None
-                            )
+                            ty,
+                            ProtoType::Modified(ProtoModifiedValueType::Optional(ProtoValueType::Bytes))
+                                | ProtoType::Value(ProtoValueType::Bytes)
                         ),
                     )
                 };
@@ -477,7 +400,11 @@ impl GeneratedMethod {
             }
         };
 
-        let input_path = input_message.path(service.package.as_str());
+        let input_path = match &method.input {
+            ProtoValueType::Message(message) => registry.get_message(message).expect("message not found").rust_path(package),
+            _ => todo!("handle other types"),
+        };
+
         let service_method_name = field_ident_from_str(name);
 
         let function_impl = quote! {
@@ -510,11 +437,11 @@ impl GeneratedMethod {
             response
         };
 
-        Ok(Some(GeneratedMethod {
+        Ok(GeneratedMethod {
             function_body: function_impl,
             http_method,
             path: full_path,
-        }))
+        })
     }
 
     pub fn method_handler(
@@ -552,36 +479,32 @@ impl GeneratedMethod {
 }
 
 pub(super) fn handle_service(
-    service_key: &str,
-    service: &ServiceOpts,
-    extensions: &Extensions,
-    _: &mut tonic_build::Config,
-    modules: &mut BTreeMap<String, Vec<syn::Item>>,
+    service: &ProtoService,
+    modules: &mut BTreeMap<ProtoPath, Vec<syn::Item>>,
+    registry: &ProtoTypeRegistry,
 ) -> anyhow::Result<()> {
-    const EXPECT_FMT: &str = "service should be in the format <package>.<service>";
-
-    let name = service_key
-        .strip_prefix(service.package.as_str())
-        .and_then(|s| s.strip_prefix('.'))
-        .expect(EXPECT_FMT);
+    let name = service
+        .full_name
+        .strip_suffix(&*service.package)
+        .unwrap_or(&*service.full_name);
 
     let snake_name = field_ident_from_str(name);
     let pascal_name = type_ident_from_str(name);
 
-    let tinc_module_name = ident_from_str(format!("{}_tinc", snake_name));
-    let server_module_name = ident_from_str(format!("{}_server", snake_name));
-    let tinc_struct_name = ident_from_str(format!("{}Tinc", pascal_name));
+    let tinc_module_name = quote::format_ident!("{snake_name}_tinc");
+    let server_module_name = quote::format_ident!("{snake_name}_server");
+    let tinc_struct_name = quote::format_ident!("{pascal_name}Tinc");
 
     let mut methods = Vec::new();
     let mut routes = Vec::new();
 
-    for (name, method) in service.methods.iter() {
-        for (idx, endpoint) in method.opts.iter().enumerate() {
-            let Some(method) = GeneratedMethod::new(name, method, service, extensions, endpoint)? else {
-                continue;
-            };
+    let package = format!("{}.{tinc_module_name}", service.package);
 
-            let function_name = ident_from_str(format!("{name}_{idx}"));
+    for (name, method) in service.methods.iter() {
+        for (idx, endpoint) in method.endpoints.iter().enumerate() {
+            let method = GeneratedMethod::new(name, &package, service, method, endpoint, registry)?;
+
+            let function_name = quote::format_ident!("{name}_{idx}");
 
             methods.push(method.method_handler(&function_name, &server_module_name, &pascal_name, &tinc_struct_name));
             routes.push(method.route(&function_name));

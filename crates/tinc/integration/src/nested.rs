@@ -1,11 +1,12 @@
 use tinc::__private::{TrackedStructDeserializer, TrackerFor, TrackerSharedState, deserialize_tracker_target};
 
+mod pb {
+    #![allow(clippy::all)]
+    tonic::include_proto!("nested");
+}
+
 #[test]
 fn test_nested() {
-    mod pb {
-        tonic::include_proto!("nested");
-    }
-
     let mut message = pb::NestedMessage::default();
     let mut tracker = <pb::NestedMessage as TrackerFor>::Tracker::default();
     let mut state = TrackerSharedState::default();
@@ -84,7 +85,7 @@ fn test_nested() {
                                             StructTracker(
                                                 NestedMessageTracker {
                                                     nested_enum: Some(
-                                                        EnumTracker<tinc_integration_tests::nested::test_nested::pb::some_other_message::nested_message::NestedEnum>,
+                                                        EnumTracker<tinc_integration_tests::nested::pb::some_other_message::nested_message::NestedEnum>,
                                                     ),
                                                     name: Some(
                                                         PrimitiveTracker<alloc::string::String>,
@@ -119,7 +120,7 @@ fn test_nested() {
                 ),
             ),
             nested_enum: Some(
-                EnumTracker<tinc_integration_tests::nested::test_nested::pb::some_other_message::nested_message::NestedEnum>,
+                EnumTracker<tinc_integration_tests::nested::pb::some_other_message::nested_message::NestedEnum>,
             ),
         },
     )

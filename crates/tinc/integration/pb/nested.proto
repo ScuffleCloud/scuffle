@@ -5,9 +5,7 @@ package nested;
 import "tinc/annotations.proto";
 
 message NestedMessage {
-  option (tinc.message) = {
-    custom_impl: false
-  };
+  option (tinc.message).generate = true;
 
   SomeOtherMessage some_other = 1;
   SomeOtherMessage.NestedMessage.NestedEnum nested_enum = 2;

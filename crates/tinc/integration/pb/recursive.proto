@@ -5,9 +5,7 @@ package recursive;
 import "tinc/annotations.proto";
 
 message RecursiveMessage {
-  option (tinc.message) = {
-    custom_impl: false
-  };
+  option (tinc.message).generate = true;
 
   repeated AnotherMessage anothers = 1;
   optional AnotherMessage another_optional = 2;

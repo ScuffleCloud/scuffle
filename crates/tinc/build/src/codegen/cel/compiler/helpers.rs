@@ -1,12 +1,13 @@
 use syn::parse_quote;
 
 use super::CompiledExpr;
-use crate::cel::codegen::{CelType, ProtoModifiedValueType, ProtoType, ProtoValueType};
+use crate::codegen::cel::types::CelType;
+use crate::codegen::types::{ProtoModifiedValueType, ProtoType, ProtoValueType};
 
 pub fn to_bool(CompiledExpr { expr, ty }: CompiledExpr) -> CompiledExpr {
     match ty {
         CelType::Proto(ProtoType::Modified(ProtoModifiedValueType::OneOf(_))) => CompiledExpr {
-            expr: parse_quote! { true },
+            expr: parse_quote! { (#expr).is_some() },
             ty: CelType::Proto(ProtoType::Value(ProtoValueType::Bool)),
         },
         CelType::Proto(ProtoType::Modified(ProtoModifiedValueType::Optional(ty))) => {
@@ -25,7 +26,7 @@ pub fn to_bool(CompiledExpr { expr, ty }: CompiledExpr) -> CompiledExpr {
                 ty: CelType::Proto(ProtoType::Value(ProtoValueType::Bool)),
             }
         }
-        CelType::Proto(ProtoType::Value(ProtoValueType::Message(_))) => CompiledExpr {
+        CelType::Proto(ProtoType::Value(ProtoValueType::Message { .. })) => CompiledExpr {
             expr: parse_quote! { true },
             ty: CelType::Proto(ProtoType::Value(ProtoValueType::Bool)),
         },

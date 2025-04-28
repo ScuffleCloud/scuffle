@@ -5,9 +5,7 @@ package simple;
 import "tinc/annotations.proto";
 
 message SimpleMessage {
-  option (tinc.message) = {
-    custom_impl: false
-  };
+  option (tinc.message).generate = true;
 
   string name = 1;
   repeated string values = 2;
@@ -15,9 +13,7 @@ message SimpleMessage {
 }
 
 message SimpleMessageRenamed {
-  option (tinc.message) = {
-    custom_impl: false
-  };
+  option (tinc.message).generate = true;
 
   string name = 1;
   repeated string values = 2;

@@ -3,8 +3,9 @@ use quote::quote;
 use syn::parse_quote;
 
 use super::Function;
-use crate::cel::codegen::{CelType, ProtoModifiedValueType, ProtoType, ProtoValueType};
-use crate::cel::compiler::{CompileError, CompiledExpr, CompilerCtx};
+use crate::codegen::cel::compiler::{CompileError, CompiledExpr, CompilerCtx};
+use crate::codegen::cel::types::CelType;
+use crate::codegen::types::{ProtoModifiedValueType, ProtoType, ProtoValueType};
 
 pub struct Contains;
 
@@ -31,7 +32,7 @@ impl Function for Contains {
         let arg = ctx.resolve(&ctx.args[0])?;
         if !arg.ty.can_be_cel() {
             return Err(CompileError::TypeConversion {
-                ty: arg.ty.clone(),
+                ty: Box::new(arg.ty.clone()),
                 message: "the contains function can only be called with CEL value argument types".to_string(),
             });
         }
@@ -40,7 +41,7 @@ impl Function for Contains {
             ProtoModifiedValueType::Repeated(item) | ProtoModifiedValueType::Map(item, _),
         )) = &this.ty
         {
-            if !matches!(item, ProtoValueType::Message(_) | ProtoValueType::Enum(_)) {
+            if !matches!(item, ProtoValueType::Message { .. } | ProtoValueType::Enum(_)) {
                 let op = match &this.ty {
                     CelType::Proto(ProtoType::Modified(ProtoModifiedValueType::Repeated(_))) => {
                         quote! { array_contains }
@@ -65,7 +66,7 @@ impl Function for Contains {
 
         if !this.ty.can_be_cel() {
             return Err(CompileError::TypeConversion {
-                ty: this.ty.clone(),
+                ty: Box::new(this.ty.clone()),
                 message: "the contains function can only be called with CEL value argument types".to_string(),
             });
         }

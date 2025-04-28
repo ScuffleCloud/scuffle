@@ -1,6 +1,7 @@
 use tinc::__private::{TrackedStructDeserializer, TrackerFor, TrackerSharedState, deserialize_tracker_target};
 
 mod pb {
+    #![allow(clippy::all)]
     tonic::include_proto!("renamed");
 }
 

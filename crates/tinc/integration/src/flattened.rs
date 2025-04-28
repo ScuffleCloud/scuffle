@@ -1,11 +1,12 @@
 use tinc::__private::{TrackedStructDeserializer, TrackerFor, TrackerSharedState, deserialize_tracker_target};
 
-#[test]
-fn test_nested() {
-    mod pb {
-        tonic::include_proto!("flattened");
-    }
+mod pb {
+    #![allow(clippy::all)]
+    tonic::include_proto!("flattened");
+}
 
+#[test]
+fn test_flattened() {
     let mut message = pb::FlattenedMessage::default();
     let mut tracker = <pb::FlattenedMessage as TrackerFor>::Tracker::default();
     let mut state = TrackerSharedState::default();
@@ -15,7 +16,7 @@ fn test_nested() {
         "id": 1,
         "age": 2,
         "depth": 3,
-        "house_number": "123",
+        "house_number": 123,
         "street": "Main St",
         "city": "Anytown",
         "state": "CA",
@@ -28,12 +29,21 @@ fn test_nested() {
         TrackedStructDeserializer::validate::<serde::de::value::Error>(&message, &mut tracker).unwrap();
     });
 
-    insta::assert_debug_snapshot!(state, @r"
+    insta::assert_debug_snapshot!(state, @r#"
     TrackerSharedState {
         fail_fast: false,
-        errors: [],
+        errors: [
+            TrackedError {
+                kind: InvalidField {
+                    message: "invalid type: integer `123`, expected a string at line 6 column 27",
+                },
+                fatal: true,
+                proto_path: "some_other.address.house_number",
+                serde_path: "house_number",
+            },
+        ],
     }
-    ");
+    "#);
     insta::assert_debug_snapshot!(message, @r#"
     FlattenedMessage {
         some_other: Some(
@@ -48,7 +58,7 @@ fn test_nested() {
                 ),
                 address: Some(
                     SomeOtherMessage2 {
-                        house_number: "123",
+                        house_number: "",
                         street: "Main St",
                         city: "Anytown",
                         state: "CA",
@@ -129,7 +139,7 @@ fn test_nested() {
       "id": 1,
       "age": 2,
       "depth": 3,
-      "house_number": "123",
+      "house_number": "",
       "street": "Main St",
       "city": "Anytown",
       "state": "CA",

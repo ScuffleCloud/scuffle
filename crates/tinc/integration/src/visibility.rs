@@ -1,6 +1,7 @@
 use tinc::__private::{TrackedStructDeserializer, TrackerFor, TrackerSharedState, deserialize_tracker_target};
 
 mod pb {
+    #![allow(clippy::all)]
     tonic::include_proto!("visibility");
 }
 
@@ -39,26 +40,30 @@ fn test_visibility() {
             TrackedError {
                 kind: UnknownField,
                 fatal: false,
-                path: "output_only",
+                proto_path: "",
+                serde_path: "output_only",
             },
             TrackedError {
                 kind: InvalidField {
                     message: "unknown variant `UNSPECIFIED`, expected `INPUT_ONLY` or `INPUT_OUTPUT` at line 5 column 40",
                 },
                 fatal: true,
-                path: "input_outputs.UNSPECIFIED",
+                proto_path: "input_outputs[\"UNSPECIFIED\"]",
+                serde_path: "input_outputs[\"UNSPECIFIED\"]",
             },
             TrackedError {
                 kind: InvalidField {
                     message: "unknown variant `OUTPUT_ONLY`, expected `INPUT_ONLY` or `INPUT_OUTPUT` at line 7 column 40",
                 },
                 fatal: true,
-                path: "input_outputs.OUTPUT_ONLY",
+                proto_path: "input_outputs[\"OUTPUT_ONLY\"]",
+                serde_path: "input_outputs[\"OUTPUT_ONLY\"]",
             },
             TrackedError {
                 kind: UnknownField,
                 fatal: false,
-                path: "nothing",
+                proto_path: "",
+                serde_path: "nothing",
             },
         ],
     }

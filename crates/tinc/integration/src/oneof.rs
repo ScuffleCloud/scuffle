@@ -1,11 +1,12 @@
 use tinc::__private::{TrackedStructDeserializer, TrackerFor, TrackerSharedState, deserialize_tracker_target};
 
+mod pb {
+    #![allow(clippy::all)]
+    tonic::include_proto!("oneof");
+}
+
 #[test]
 fn test_oneof() {
-    mod pb {
-        tonic::include_proto!("oneof");
-    }
-
     let mut message = pb::OneofMessage::default();
     let mut tracker = <pb::OneofMessage as TrackerFor>::Tracker::default();
     let mut state = TrackerSharedState {
@@ -147,7 +148,7 @@ fn test_oneof() {
                 OneOfTracker(
                     Some(
                         CustomEnum2(
-                            EnumTracker<tinc_integration_tests::oneof::test_oneof::pb::CustomEnum>,
+                            EnumTracker<tinc_integration_tests::oneof::pb::CustomEnum>,
                         ),
                     ),
                 ),
@@ -174,7 +175,7 @@ fn test_oneof() {
                 TaggedOneOfTracker {
                     tracker: Some(
                         MagicEnum3(
-                            EnumTracker<tinc_integration_tests::oneof::test_oneof::pb::CustomEnum>,
+                            EnumTracker<tinc_integration_tests::oneof::pb::CustomEnum>,
                         ),
                     ),
                     state: 2,
@@ -219,10 +220,6 @@ fn test_oneof() {
 
 #[test]
 fn test_oneof_buffering() {
-    mod pb {
-        tonic::include_proto!("oneof");
-    }
-
     let mut message = pb::OneofMessage::default();
     let mut tracker = <pb::OneofMessage as TrackerFor>::Tracker::default();
     let mut state = TrackerSharedState {
@@ -378,7 +375,7 @@ fn test_oneof_buffering() {
                 OneOfTracker(
                     Some(
                         CustomEnum2(
-                            EnumTracker<tinc_integration_tests::oneof::test_oneof_buffering::pb::CustomEnum>,
+                            EnumTracker<tinc_integration_tests::oneof::pb::CustomEnum>,
                         ),
                     ),
                 ),
@@ -405,7 +402,7 @@ fn test_oneof_buffering() {
                 TaggedOneOfTracker {
                     tracker: Some(
                         MagicEnum3(
-                            EnumTracker<tinc_integration_tests::oneof::test_oneof_buffering::pb::CustomEnum>,
+                            EnumTracker<tinc_integration_tests::oneof::pb::CustomEnum>,
                         ),
                     ),
                     state: 2,

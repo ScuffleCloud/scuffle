@@ -1,11 +1,12 @@
 use tinc::__private::{TrackedStructDeserializer, TrackerFor, TrackerSharedState, deserialize_tracker_target};
 
+mod pb {
+    #![allow(clippy::all)]
+    tonic::include_proto!("simple_enum");
+}
+
 #[test]
 fn test_simple_enum() {
-    mod pb {
-        tonic::include_proto!("simple_enum");
-    }
-
     let mut message = pb::Simple::default();
     let mut tracker = <pb::Simple as TrackerFor>::Tracker::default();
     let mut state = TrackerSharedState::default();
@@ -54,26 +55,26 @@ fn test_simple_enum() {
     StructTracker(
         SimpleTracker {
             value: Some(
-                EnumTracker<tinc_integration_tests::simple_enum::test_simple_enum::pb::SimpleEnum>,
+                EnumTracker<tinc_integration_tests::simple_enum::pb::SimpleEnum>,
             ),
             values: Some(
                 RepeatedVecTracker(
                     [
-                        EnumTracker<tinc_integration_tests::simple_enum::test_simple_enum::pb::SimpleEnum>,
-                        EnumTracker<tinc_integration_tests::simple_enum::test_simple_enum::pb::SimpleEnum>,
+                        EnumTracker<tinc_integration_tests::simple_enum::pb::SimpleEnum>,
+                        EnumTracker<tinc_integration_tests::simple_enum::pb::SimpleEnum>,
                     ],
                 ),
             ),
             map: Some(
                 {
-                    "key1": EnumTracker<tinc_integration_tests::simple_enum::test_simple_enum::pb::SimpleEnum>,
-                    "key2": EnumTracker<tinc_integration_tests::simple_enum::test_simple_enum::pb::SimpleEnum>,
+                    "key1": EnumTracker<tinc_integration_tests::simple_enum::pb::SimpleEnum>,
+                    "key2": EnumTracker<tinc_integration_tests::simple_enum::pb::SimpleEnum>,
                 },
             ),
             optional: Some(
                 OptionalTracker(
                     Some(
-                        EnumTracker<tinc_integration_tests::simple_enum::test_simple_enum::pb::SimpleEnum>,
+                        EnumTracker<tinc_integration_tests::simple_enum::pb::SimpleEnum>,
                     ),
                 ),
             ),
@@ -99,10 +100,6 @@ fn test_simple_enum() {
 
 #[test]
 fn test_simple_enum_renamed() {
-    mod pb {
-        tonic::include_proto!("simple_enum");
-    }
-
     let mut message = pb::SimpleRenamed::default();
     let mut tracker = <pb::SimpleRenamed as TrackerFor>::Tracker::default();
     let mut state = TrackerSharedState::default();
@@ -151,26 +148,26 @@ fn test_simple_enum_renamed() {
     StructTracker(
         SimpleRenamedTracker {
             value: Some(
-                EnumTracker<tinc_integration_tests::simple_enum::test_simple_enum_renamed::pb::SimpleEnumRenamed>,
+                EnumTracker<tinc_integration_tests::simple_enum::pb::SimpleEnumRenamed>,
             ),
             values: Some(
                 RepeatedVecTracker(
                     [
-                        EnumTracker<tinc_integration_tests::simple_enum::test_simple_enum_renamed::pb::SimpleEnumRenamed>,
-                        EnumTracker<tinc_integration_tests::simple_enum::test_simple_enum_renamed::pb::SimpleEnumRenamed>,
+                        EnumTracker<tinc_integration_tests::simple_enum::pb::SimpleEnumRenamed>,
+                        EnumTracker<tinc_integration_tests::simple_enum::pb::SimpleEnumRenamed>,
                     ],
                 ),
             ),
             map: Some(
                 {
-                    "key1": EnumTracker<tinc_integration_tests::simple_enum::test_simple_enum_renamed::pb::SimpleEnumRenamed>,
-                    "key2": EnumTracker<tinc_integration_tests::simple_enum::test_simple_enum_renamed::pb::SimpleEnumRenamed>,
+                    "key1": EnumTracker<tinc_integration_tests::simple_enum::pb::SimpleEnumRenamed>,
+                    "key2": EnumTracker<tinc_integration_tests::simple_enum::pb::SimpleEnumRenamed>,
                 },
             ),
             optional: Some(
                 OptionalTracker(
                     Some(
-                        EnumTracker<tinc_integration_tests::simple_enum::test_simple_enum_renamed::pb::SimpleEnumRenamed>,
+                        EnumTracker<tinc_integration_tests::simple_enum::pb::SimpleEnumRenamed>,
                     ),
                 ),
             ),
@@ -195,10 +192,6 @@ fn test_simple_enum_renamed() {
 
 #[test]
 fn test_simple_enum_repr() {
-    mod pb {
-        tonic::include_proto!("simple_enum");
-    }
-
     let mut message = pb::SimpleRepr::default();
     let mut tracker = <pb::SimpleRepr as TrackerFor>::Tracker::default();
     let mut state = TrackerSharedState::default();
@@ -247,26 +240,26 @@ fn test_simple_enum_repr() {
     StructTracker(
         SimpleReprTracker {
             value: Some(
-                EnumTracker<tinc_integration_tests::simple_enum::test_simple_enum_repr::pb::SimpleEnumRepr>,
+                EnumTracker<tinc_integration_tests::simple_enum::pb::SimpleEnumRepr>,
             ),
             values: Some(
                 RepeatedVecTracker(
                     [
-                        EnumTracker<tinc_integration_tests::simple_enum::test_simple_enum_repr::pb::SimpleEnumRepr>,
-                        EnumTracker<tinc_integration_tests::simple_enum::test_simple_enum_repr::pb::SimpleEnumRepr>,
+                        EnumTracker<tinc_integration_tests::simple_enum::pb::SimpleEnumRepr>,
+                        EnumTracker<tinc_integration_tests::simple_enum::pb::SimpleEnumRepr>,
                     ],
                 ),
             ),
             map: Some(
                 {
-                    "key1": EnumTracker<tinc_integration_tests::simple_enum::test_simple_enum_repr::pb::SimpleEnumRepr>,
-                    "key2": EnumTracker<tinc_integration_tests::simple_enum::test_simple_enum_repr::pb::SimpleEnumRepr>,
+                    "key1": EnumTracker<tinc_integration_tests::simple_enum::pb::SimpleEnumRepr>,
+                    "key2": EnumTracker<tinc_integration_tests::simple_enum::pb::SimpleEnumRepr>,
                 },
             ),
             optional: Some(
                 OptionalTracker(
                     Some(
-                        EnumTracker<tinc_integration_tests::simple_enum::test_simple_enum_repr::pb::SimpleEnumRepr>,
+                        EnumTracker<tinc_integration_tests::simple_enum::pb::SimpleEnumRepr>,
                     ),
                 ),
             ),
@@ -291,10 +284,6 @@ fn test_simple_enum_repr() {
 
 #[test]
 fn test_simple_enum_invalid() {
-    mod pb {
-        tonic::include_proto!("simple_enum");
-    }
-
     let mut message = pb::Simple::default();
     let mut tracker = <pb::Simple as TrackerFor>::Tracker::default();
     let mut state = TrackerSharedState {
@@ -323,17 +312,20 @@ fn test_simple_enum_invalid() {
                     message: "unknown variant `FOUR`, expected one of `UNSPECIFIED`, `ONE`, `TWO`, `THREE` at line 2 column 23",
                 },
                 fatal: true,
-                path: "value",
+                proto_path: "value",
+                serde_path: "value",
             },
             TrackedError {
                 kind: MissingField,
                 fatal: true,
-                path: "values",
+                proto_path: "values",
+                serde_path: "values",
             },
             TrackedError {
                 kind: MissingField,
                 fatal: true,
-                path: "map",
+                proto_path: "map",
+                serde_path: "map",
             },
         ],
     }
@@ -350,7 +342,7 @@ fn test_simple_enum_invalid() {
     StructTracker(
         SimpleTracker {
             value: Some(
-                EnumTracker<tinc_integration_tests::simple_enum::test_simple_enum_invalid::pb::SimpleEnum>,
+                EnumTracker<tinc_integration_tests::simple_enum::pb::SimpleEnum>,
             ),
             values: None,
             map: None,
@@ -370,10 +362,6 @@ fn test_simple_enum_invalid() {
 
 #[test]
 fn test_simple_enum_renamed_invalid() {
-    mod pb {
-        tonic::include_proto!("simple_enum");
-    }
-
     let mut message = pb::SimpleRenamed::default();
     let mut tracker = <pb::SimpleRenamed as TrackerFor>::Tracker::default();
     let mut state = TrackerSharedState {
@@ -402,17 +390,20 @@ fn test_simple_enum_renamed_invalid() {
                     message: "unknown variant `four`, expected one of `unspecified`, `one`, `two`, `three` at line 2 column 23",
                 },
                 fatal: true,
-                path: "value",
+                proto_path: "value",
+                serde_path: "value",
             },
             TrackedError {
                 kind: MissingField,
                 fatal: true,
-                path: "values",
+                proto_path: "values",
+                serde_path: "values",
             },
             TrackedError {
                 kind: MissingField,
                 fatal: true,
-                path: "map",
+                proto_path: "map",
+                serde_path: "map",
             },
         ],
     }
@@ -429,7 +420,7 @@ fn test_simple_enum_renamed_invalid() {
     StructTracker(
         SimpleRenamedTracker {
             value: Some(
-                EnumTracker<tinc_integration_tests::simple_enum::test_simple_enum_renamed_invalid::pb::SimpleEnumRenamed>,
+                EnumTracker<tinc_integration_tests::simple_enum::pb::SimpleEnumRenamed>,
             ),
             values: None,
             map: None,
@@ -449,10 +440,6 @@ fn test_simple_enum_renamed_invalid() {
 
 #[test]
 fn test_simple_enum_repr_invalid() {
-    mod pb {
-        tonic::include_proto!("simple_enum");
-    }
-
     let mut message = pb::SimpleRepr::default();
     let mut tracker = <pb::SimpleRepr as TrackerFor>::Tracker::default();
     let mut state = TrackerSharedState {
@@ -481,17 +468,20 @@ fn test_simple_enum_repr_invalid() {
                     message: "invalid value: 4, expected one of: 0, 1, 2, 3",
                 },
                 fatal: true,
-                path: "value",
+                proto_path: "value",
+                serde_path: "value",
             },
             TrackedError {
                 kind: MissingField,
                 fatal: true,
-                path: "values",
+                proto_path: "values",
+                serde_path: "values",
             },
             TrackedError {
                 kind: MissingField,
                 fatal: true,
-                path: "map",
+                proto_path: "map",
+                serde_path: "map",
             },
         ],
     }
@@ -508,7 +498,7 @@ fn test_simple_enum_repr_invalid() {
     StructTracker(
         SimpleReprTracker {
             value: Some(
-                EnumTracker<tinc_integration_tests::simple_enum::test_simple_enum_repr_invalid::pb::SimpleEnumRepr>,
+                EnumTracker<tinc_integration_tests::simple_enum::pb::SimpleEnumRepr>,
             ),
             values: None,
             map: None,

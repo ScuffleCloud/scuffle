@@ -1,11 +1,12 @@
 use tinc::__private::{TrackedStructDeserializer, TrackerFor, TrackerSharedState, deserialize_tracker_target};
 
+mod pb {
+    #![allow(clippy::all)]
+    tonic::include_proto!("simple");
+}
+
 #[test]
 fn test_simple_single_pass() {
-    mod pb {
-        tonic::include_proto!("simple");
-    }
-
     let mut message = pb::SimpleMessage::default();
     let mut tracker = <pb::SimpleMessage as TrackerFor>::Tracker::default();
     let mut state = TrackerSharedState::default();
@@ -73,10 +74,6 @@ fn test_simple_single_pass() {
 
 #[test]
 fn test_simple_multiple_passes() {
-    mod pb {
-        tonic::include_proto!("simple");
-    }
-
     let mut message = pb::SimpleMessage::default();
     let mut tracker = <pb::SimpleMessage as TrackerFor>::Tracker::default();
     let mut state = TrackerSharedState::default();
@@ -180,10 +177,6 @@ fn test_simple_multiple_passes() {
 
 #[test]
 fn test_simple_missing_fields() {
-    mod pb {
-        tonic::include_proto!("simple");
-    }
-
     let mut message = pb::SimpleMessage::default();
     let mut tracker = <pb::SimpleMessage as TrackerFor>::Tracker::default();
     let mut state = TrackerSharedState::default();
@@ -272,7 +265,8 @@ fn test_simple_missing_fields() {
             TrackedError {
                 kind: MissingField,
                 fatal: true,
-                path: "name",
+                proto_path: "name",
+                serde_path: "name",
             },
         ],
     }
@@ -281,10 +275,6 @@ fn test_simple_missing_fields() {
 
 #[test]
 fn test_simple_duplicate_fields() {
-    mod pb {
-        tonic::include_proto!("simple");
-    }
-
     let mut message = pb::SimpleMessage::default();
     let mut tracker = <pb::SimpleMessage as TrackerFor>::Tracker::default();
     let mut state = TrackerSharedState {
@@ -403,17 +393,20 @@ fn test_simple_duplicate_fields() {
             TrackedError {
                 kind: DuplicateField,
                 fatal: true,
-                path: "values",
+                proto_path: "values",
+                serde_path: "values",
             },
             TrackedError {
                 kind: DuplicateField,
                 fatal: true,
-                path: "key_values.key1",
+                proto_path: "key_values[\"key1\"]",
+                serde_path: "key_values[\"key1\"]",
             },
             TrackedError {
                 kind: DuplicateField,
                 fatal: true,
-                path: "key_values.key2",
+                proto_path: "key_values[\"key2\"]",
+                serde_path: "key_values[\"key2\"]",
             },
         ],
     }
@@ -422,10 +415,6 @@ fn test_simple_duplicate_fields() {
 
 #[test]
 fn test_simple_invalid_type() {
-    mod pb {
-        tonic::include_proto!("simple");
-    }
-
     let mut message = pb::SimpleMessage::default();
     let mut tracker = <pb::SimpleMessage as TrackerFor>::Tracker::default();
     let mut state = TrackerSharedState {
@@ -480,21 +469,24 @@ fn test_simple_invalid_type() {
                     message: "invalid type: integer `123`, expected a string at line 2 column 19",
                 },
                 fatal: true,
-                path: "name",
+                proto_path: "name",
+                serde_path: "name",
             },
             TrackedError {
                 kind: InvalidField {
                     message: "invalid type: integer `1`, expected a string at line 3 column 20",
                 },
                 fatal: true,
-                path: "values[0]",
+                proto_path: "values[0]",
+                serde_path: "values[0]",
             },
             TrackedError {
                 kind: InvalidField {
                     message: "invalid type: null, expected a map of `String`s to `String`s at line 4 column 26",
                 },
                 fatal: true,
-                path: "key_values",
+                proto_path: "key_values",
+                serde_path: "key_values",
             },
         ],
     }
@@ -503,10 +495,6 @@ fn test_simple_invalid_type() {
 
 #[test]
 fn test_simple_renamed_field() {
-    mod pb {
-        tonic::include_proto!("simple");
-    }
-
     let mut message = pb::SimpleMessageRenamed::default();
     let mut tracker = <pb::SimpleMessageRenamed as TrackerFor>::Tracker::default();
     let mut state = TrackerSharedState::default();

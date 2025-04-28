@@ -1,6 +1,7 @@
 use tinc::__private::{TrackedStructDeserializer, TrackerFor, TrackerSharedState, deserialize_tracker_target};
 
 mod pb {
+    #![allow(clippy::all)]
     tonic::include_proto!("well_known");
 }
 
@@ -324,21 +325,24 @@ fn test_well_known_map() {
                     message: "expected empty string at line 7 column 43",
                 },
                 fatal: true,
-                path: "empty.non_empty_string",
+                proto_path: "empty[\"non_empty_string\"]",
+                serde_path: "empty[\"non_empty_string\"]",
             },
             TrackedError {
                 kind: InvalidField {
                     message: "expected empty sequence at line 8 column 40",
                 },
                 fatal: true,
-                path: "empty.non_empty_array",
+                proto_path: "empty[\"non_empty_array\"]",
+                serde_path: "empty[\"non_empty_array\"]",
             },
             TrackedError {
                 kind: InvalidField {
                     message: "expected empty map at line 12 column 13",
                 },
                 fatal: true,
-                path: "empty.non_empty_map",
+                proto_path: "empty[\"non_empty_map\"]",
+                serde_path: "empty[\"non_empty_map\"]",
             },
         ],
     }

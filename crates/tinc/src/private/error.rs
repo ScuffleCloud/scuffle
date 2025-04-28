@@ -1,6 +1,9 @@
 use std::cell::RefCell;
 use std::collections::HashMap;
+use std::fmt::Write;
 use std::marker::PhantomData;
+
+use super::FuncFmt;
 
 #[derive(Debug)]
 pub enum PathItem {
@@ -9,66 +12,68 @@ pub enum PathItem {
     Key(MapKey),
 }
 
-pub struct PathAllowerToken {
-    _marker: PhantomData<()>,
+pub struct ProtoPathToken<'a> {
+    _no_send: PhantomData<*const ()>,
+    _marker: PhantomData<&'a ()>,
 }
 
-impl PathAllowerToken {
-    pub fn push<E>(field: &'static str) -> Result<Self, E>
-    where
-        E: serde::de::Error,
-    {
-        PATH_BUFFER.with(|buffer| {
-            buffer.borrow_mut().push(field);
+impl<'a> ProtoPathToken<'a> {
+    pub fn push_field(field: &'a str) -> Self {
+        PROTO_PATH_BUFFER.with(|buffer| {
+            buffer.borrow_mut().push(PathItem::Field(
+                // SAFETY: `field` has a lifetime of `'a`, field-name hides the field so it cannot be accessed outside of this module.
+                // We return a `PathToken` that has a lifetime of `'a` which makes it impossible to access this field after its lifetime ends.
+                unsafe { std::mem::transmute::<&'a str, &'static str>(field) },
+            ))
         });
-        Ok(Self { _marker: PhantomData })
+        Self {
+            _marker: PhantomData,
+            _no_send: PhantomData,
+        }
+    }
+
+    pub fn push_index(index: usize) -> Self {
+        PROTO_PATH_BUFFER.with(|buffer| buffer.borrow_mut().push(PathItem::Index(index)));
+        Self {
+            _marker: PhantomData,
+            _no_send: PhantomData,
+        }
+    }
+
+    pub fn push_key(key: &'a dyn std::fmt::Debug) -> Self {
+        PROTO_PATH_BUFFER.with(|buffer| {
+            buffer.borrow_mut().push(PathItem::Key(
+                // SAFETY: `key` has a lifetime of `'a`, map-key hides the key so it cannot be accessed outside of this module.
+                // We return a `PathToken` that has a lifetime of `'a` which makes it impossible to access this key after its lifetime ends.
+                MapKey(unsafe { std::mem::transmute::<&'a dyn std::fmt::Debug, &'static dyn std::fmt::Debug>(key) }),
+            ))
+        });
+        Self {
+            _marker: PhantomData,
+            _no_send: PhantomData,
+        }
+    }
+
+    pub fn current_path() -> String {
+        PROTO_PATH_BUFFER.with(|buffer| format_path_items(buffer.borrow().as_slice()))
     }
 }
 
-impl Drop for PathAllowerToken {
+impl Drop for ProtoPathToken<'_> {
     fn drop(&mut self) {
-        PATH_BUFFER.with(|buffer| {
+        PROTO_PATH_BUFFER.with(|buffer| {
             buffer.borrow_mut().pop();
         });
     }
 }
 
-pub struct PathToken<'a> {
+pub struct SerdePathToken<'a> {
     previous: Option<PathItem>,
     _marker: PhantomData<&'a ()>,
     _no_send: PhantomData<*const ()>,
 }
 
-fn current_path() -> String {
-    ERROR_PATH_BUFFER.with(|buffer| {
-        let mut path = String::new();
-        for token in buffer.borrow().iter() {
-            match token {
-                PathItem::Field(field) => {
-                    if !path.is_empty() {
-                        path.push('.');
-                    }
-                    path.push_str(field);
-                }
-                PathItem::Key(key) => {
-                    if !path.is_empty() {
-                        path.push('.');
-                    }
-                    path.push_str(&key.0.to_string());
-                }
-                PathItem::Index(index) => {
-                    path.push('[');
-                    path.push_str(&index.to_string());
-                    path.push(']');
-                }
-            }
-        }
-
-        path
-    })
-}
-
-pub fn report_serde_error<E>(error: E) -> Result<(), E>
+pub fn report_de_error<E>(error: E) -> Result<(), E>
 where
     E: serde::de::Error,
 {
@@ -96,7 +101,7 @@ where
     })
 }
 
-pub fn report_error<E>(error: TrackedError) -> Result<(), E>
+pub fn report_tracked_error<E>(error: TrackedError) -> Result<(), E>
 where
     E: serde::de::Error,
 {
@@ -139,9 +144,9 @@ pub fn set_irrecoverable() {
     });
 }
 
-impl<'a> PathToken<'a> {
+impl<'a> SerdePathToken<'a> {
     pub fn push_field(field: &'a str) -> Self {
-        ERROR_PATH_BUFFER.with(|buffer| {
+        SERDE_PATH_BUFFER.with(|buffer| {
             buffer.borrow_mut().push(PathItem::Field(
                 // SAFETY: `field` has a lifetime of `'a`, field-name hides the field so it cannot be accessed outside of this module.
                 // We return a `PathToken` that has a lifetime of `'a` which makes it impossible to access this field after its lifetime ends.
@@ -156,7 +161,7 @@ impl<'a> PathToken<'a> {
     }
 
     pub fn replace_field(field: &'a str) -> Self {
-        let previous = ERROR_PATH_BUFFER.with(|buffer| buffer.borrow_mut().pop());
+        let previous = SERDE_PATH_BUFFER.with(|buffer| buffer.borrow_mut().pop());
         Self {
             previous,
             ..Self::push_field(field)
@@ -164,7 +169,7 @@ impl<'a> PathToken<'a> {
     }
 
     pub fn push_index(index: usize) -> Self {
-        ERROR_PATH_BUFFER.with(|buffer| buffer.borrow_mut().push(PathItem::Index(index)));
+        SERDE_PATH_BUFFER.with(|buffer| buffer.borrow_mut().push(PathItem::Index(index)));
         Self {
             _marker: PhantomData,
             _no_send: PhantomData,
@@ -172,12 +177,12 @@ impl<'a> PathToken<'a> {
         }
     }
 
-    pub fn push_key(key: &'a dyn std::fmt::Display) -> Self {
-        ERROR_PATH_BUFFER.with(|buffer| {
+    pub fn push_key(key: &'a dyn std::fmt::Debug) -> Self {
+        SERDE_PATH_BUFFER.with(|buffer| {
             buffer.borrow_mut().push(PathItem::Key(
                 // SAFETY: `key` has a lifetime of `'a`, map-key hides the key so it cannot be accessed outside of this module.
                 // We return a `PathToken` that has a lifetime of `'a` which makes it impossible to access this key after its lifetime ends.
-                MapKey(unsafe { std::mem::transmute::<&'a dyn std::fmt::Display, &'static dyn std::fmt::Display>(key) }),
+                MapKey(unsafe { std::mem::transmute::<&'a dyn std::fmt::Debug, &'static dyn std::fmt::Debug>(key) }),
             ))
         });
         Self {
@@ -186,11 +191,45 @@ impl<'a> PathToken<'a> {
             previous: None,
         }
     }
+
+    pub fn current_path() -> String {
+        SERDE_PATH_BUFFER.with(|buffer| format_path_items(buffer.borrow().as_slice()))
+    }
 }
 
-impl Drop for PathToken<'_> {
+fn format_path_items(items: &[PathItem]) -> String {
+    FuncFmt(|fmt| {
+        let mut first = true;
+        for token in items {
+            match token {
+                PathItem::Field(field) => {
+                    if !first {
+                        fmt.write_char('.')?;
+                    }
+                    first = false;
+                    fmt.write_str(field)?;
+                }
+                PathItem::Index(index) => {
+                    fmt.write_char('[')?;
+                    std::fmt::Display::fmt(index, fmt)?;
+                    fmt.write_char(']')?;
+                }
+                PathItem::Key(key) => {
+                    fmt.write_char('[')?;
+                    key.0.fmt(fmt)?;
+                    fmt.write_char(']')?;
+                }
+            }
+        }
+
+        Ok(())
+    })
+    .to_string()
+}
+
+impl Drop for SerdePathToken<'_> {
     fn drop(&mut self) {
-        ERROR_PATH_BUFFER.with(|buffer| {
+        SERDE_PATH_BUFFER.with(|buffer| {
             buffer.borrow_mut().pop();
             if let Some(previous) = self.previous.take() {
                 buffer.borrow_mut().push(previous);
@@ -200,8 +239,8 @@ impl Drop for PathToken<'_> {
 }
 
 thread_local! {
-    static ERROR_PATH_BUFFER: RefCell<Vec<PathItem>> = const { RefCell::new(Vec::new()) };
-    static PATH_BUFFER: RefCell<Vec<&'static str>> = const { RefCell::new(Vec::new()) };
+    static SERDE_PATH_BUFFER: RefCell<Vec<PathItem>> = const { RefCell::new(Vec::new()) };
+    static PROTO_PATH_BUFFER: RefCell<Vec<PathItem>> = const { RefCell::new(Vec::new()) };
     static STATE: RefCell<Option<InternalTrackerState>> = const { RefCell::new(None) };
 }
 
@@ -260,16 +299,17 @@ pub enum TrackedErrorKind {
 pub struct TrackedError {
     pub kind: TrackedErrorKind,
     pub fatal: bool,
-    pub path: Box<str>,
+    pub proto_path: Box<str>,
+    pub serde_path: Box<str>,
 }
 
 impl std::fmt::Display for TrackedError {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match &self.kind {
-            TrackedErrorKind::DuplicateField => write!(f, "`{}` was already provided", self.path),
-            TrackedErrorKind::UnknownField => write!(f, "unknown field `{}`", self.path),
-            TrackedErrorKind::MissingField => write!(f, "missing field `{}`", self.path),
-            TrackedErrorKind::InvalidField { message } => write!(f, "`{}`: {}", self.path, message),
+            TrackedErrorKind::DuplicateField => write!(f, "`{}` was already provided", self.proto_path),
+            TrackedErrorKind::UnknownField => write!(f, "unknown field `{}`", self.proto_path),
+            TrackedErrorKind::MissingField => write!(f, "missing field `{}`", self.proto_path),
+            TrackedErrorKind::InvalidField { message } => write!(f, "`{}`: {}", self.proto_path, message),
         }
     }
 }
@@ -279,7 +319,8 @@ impl TrackedError {
         Self {
             kind,
             fatal,
-            path: current_path().into_boxed_str(),
+            proto_path: ProtoPathToken::current_path().into_boxed_str(),
+            serde_path: SerdePathToken::current_path().into_boxed_str(),
         }
     }
 
@@ -318,11 +359,11 @@ impl TrackerSharedState {
     }
 }
 
-pub struct MapKey(&'static dyn std::fmt::Display);
+pub struct MapKey(&'static dyn std::fmt::Debug);
 
 impl std::fmt::Debug for MapKey {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        write!(f, "MapKey({})", self.0)
+        write!(f, "MapKey({:?})", self.0)
     }
 }
 

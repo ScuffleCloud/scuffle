@@ -1,5 +1,6 @@
 use super::{
-    DeserializeHelper, Expected, PathToken, Tracker, TrackerDeserializer, TrackerFor, TrackerValidation, report_serde_error,
+    DeserializeHelper, Expected, ProtoPathToken, SerdePathToken, Tracker, TrackerDeserializer, TrackerFor,
+    TrackerValidation, report_de_error,
 };
 
 #[derive(Debug)]
@@ -81,7 +82,7 @@ where
         let mut index = 0;
 
         loop {
-            let _token = PathToken::push_index(index);
+            let _token = (SerdePathToken::push_index(index), ProtoPathToken::push_index(index));
 
             let Some(result) = seq
                 .next_element_seed(DeserializeHelper {
@@ -94,7 +95,7 @@ where
             };
 
             if let Err(error) = result {
-                report_serde_error(error)?;
+                report_de_error(error)?;
                 break;
             }
 
@@ -131,10 +132,10 @@ where
         E: serde::de::Error,
     {
         for (index, (value, tracker)) in value.iter().zip(self.iter_mut()).enumerate() {
-            let _token = PathToken::push_index(index);
+            let _token = (SerdePathToken::push_index(index), ProtoPathToken::push_index(index));
 
             if let Err(error) = tracker.validate::<E>(value) {
-                report_serde_error(error)?;
+                report_de_error(error)?;
             }
         }
 

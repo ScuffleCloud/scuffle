@@ -77,21 +77,24 @@ where
     where
         V: serde::de::Visitor<'de>,
     {
-        self.deserialize_i64(visitor)
+        let value = self.decode_number()?;
+        visitor.visit_i8(value as i8)
     }
 
     fn deserialize_i16<V>(self, visitor: V) -> Result<V::Value, Self::Error>
     where
         V: serde::de::Visitor<'de>,
     {
-        self.deserialize_i64(visitor)
+        let value = self.decode_number()?;
+        visitor.visit_i16(value as i16)
     }
 
     fn deserialize_i32<V>(self, visitor: V) -> Result<V::Value, Self::Error>
     where
         V: serde::de::Visitor<'de>,
     {
-        self.deserialize_i64(visitor)
+        let value = self.decode_number()?;
+        visitor.visit_i32(value as i32)
     }
 
     fn deserialize_i64<V>(self, visitor: V) -> Result<V::Value, Self::Error>
@@ -106,21 +109,24 @@ where
     where
         V: serde::de::Visitor<'de>,
     {
-        self.deserialize_u64(visitor)
+        let value = self.decode_number()?;
+        visitor.visit_u8(value as u8)
     }
 
     fn deserialize_u16<V>(self, visitor: V) -> Result<V::Value, Self::Error>
     where
         V: serde::de::Visitor<'de>,
     {
-        self.deserialize_u64(visitor)
+        let value = self.decode_number()?;
+        visitor.visit_u16(value as u16)
     }
 
     fn deserialize_u32<V>(self, visitor: V) -> Result<V::Value, Self::Error>
     where
         V: serde::de::Visitor<'de>,
     {
-        self.deserialize_u64(visitor)
+        let value = self.decode_number()?;
+        visitor.visit_u32(value as u32)
     }
 
     fn deserialize_u64<V>(self, visitor: V) -> Result<V::Value, Self::Error>
@@ -135,7 +141,8 @@ where
     where
         V: serde::de::Visitor<'de>,
     {
-        self.deserialize_f64(visitor)
+        let value = self.decode_number()?;
+        visitor.visit_f32(value as f32)
     }
 
     fn deserialize_f64<V>(self, visitor: V) -> Result<V::Value, Self::Error>

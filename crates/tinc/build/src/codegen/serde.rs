@@ -16,9 +16,12 @@ fn handle_oneof(
     oneof: &ProtoOneOfType,
     registry: &ProtoTypeRegistry,
 ) -> anyhow::Result<()> {
-    prost.enum_attribute(&oneof.full_name, "#[derive(::tinc::reexports::serde::Serialize)]");
-    prost.enum_attribute(&oneof.full_name, "#[derive(::tinc::__private::Tracker)]");
-    prost.field_attribute(&oneof.full_name, "#[tinc(oneof)]");
+    prost.enum_attribute(
+        &oneof.full_name,
+        quote!(#[derive(::tinc::reexports::serde::Serialize)]).to_string(),
+    );
+    prost.enum_attribute(&oneof.full_name, quote!(#[derive(::tinc::__private::Tracker)]).to_string());
+    prost.field_attribute(&oneof.full_name, quote!(#[tinc(oneof)]).to_string());
 
     let variant_identifier_ident = quote::format_ident!("___identifier");
     let mut oneof_identifier_for_ident = variant_identifier_ident.clone();
@@ -31,11 +34,8 @@ fn handle_oneof(
     let mut validation_impl = Vec::new();
 
     let tagged_impl = if let Some(Tagged { tag, content }) = &oneof.options.tagged {
-        prost.enum_attribute(
-            &oneof.full_name,
-            format!("#[serde(tag = \"{tag}\", content = \"{content}\")]"),
-        );
-        prost.enum_attribute(&oneof.full_name, "#[tinc(tagged)]");
+        prost.enum_attribute(&oneof.full_name, quote!(#[serde(tag = #tag, content = #content)]).to_string());
+        prost.enum_attribute(&oneof.full_name, quote!(#[tinc(tagged)]).to_string());
         oneof_identifier_for_ident = quote::format_ident!("___tagged_identifier");
         quote! {
             #[derive(
@@ -95,9 +95,9 @@ fn handle_oneof(
             .json_name
             .clone();
 
-        prost.field_attribute(&field.full_name, format!("#[serde(rename = \"{json_name}\")]"));
+        prost.field_attribute(&field.full_name, quote!(#[serde(rename = #json_name)]).to_string());
         if !field.options.visibility.has_input() {
-            prost.field_attribute(&field.full_name, "#[serde(skip_serializing)]");
+            prost.field_attribute(&field.full_name, quote!(#[serde(skip_serializing)]).to_string());
         }
 
         if field.options.visibility.has_output() {
@@ -176,8 +176,9 @@ fn handle_oneof(
         if let ProtoValueType::Enum(path) = &field.ty {
             let enum_opts = registry.get_enum(path).expect("enum not found");
             let path_str = enum_opts.rust_path(&oneof.message).to_token_stream().to_string();
-            prost.field_attribute(&field.full_name, format!("#[serde(serialize_with = \"::tinc::__private::serialize_enum::<{path_str}, _, _>\")]"));
-            prost.field_attribute(&field.full_name, format!("#[tinc(enum = \"{path_str}\")]"));
+            let serialize_with = format!("::tinc::__private::serialize_enum::<{path_str}, _, _>");
+            prost.field_attribute(&field.full_name, quote!(#[serde(serialize_with = #serialize_with)]).to_string());
+            prost.field_attribute(&field.full_name, quote!(#[tinc(enum = #path_str)]).to_string());
         }
     });
 
@@ -316,7 +317,7 @@ fn handle_message_field(
 ) -> anyhow::Result<()> {
     let json_name = &field.options.json_name;
 
-    prost.field_attribute(&field.full_name, format!("#[serde(rename = \"{json_name}\")]"));
+    prost.field_attribute(&field.full_name, quote!(#[serde(rename = #json_name)]).to_string());
 
     let message = registry.get_message(&field.message).expect("message not found");
 
@@ -332,7 +333,7 @@ fn handle_message_field(
             _ => anyhow::bail!("flattened fields must be messages or oneofs"),
         };
 
-        prost.field_attribute(&field.full_name, "#[serde(flatten)]");
+        prost.field_attribute(&field.full_name, quote! { #[serde(flatten)] }.to_string());
 
         if field.options.visibility.has_input() {
             let flattened_identifier = quote! {
@@ -368,11 +369,11 @@ fn handle_message_field(
     }
 
     if !field.options.visibility.has_output() {
-        prost.field_attribute(&field.full_name, "#[serde(skip_serializing)]");
+        prost.field_attribute(&field.full_name, quote!(#[serde(skip_serializing)]).to_string());
     } else if matches!(field.options.json_omittable, ProtoFieldJsonOmittable::True) {
         prost.field_attribute(
             &field.full_name,
-            "#[serde(skip_serializing_if = \"::tinc::__private::serde_ser_skip_default\")]",
+            quote!(#[serde(skip_serializing_if = "::tinc::__private::serde_ser_skip_default")]).to_string(),
         );
     }
 
@@ -392,11 +393,14 @@ fn handle_message_field(
                 .rust_path(message.full_name.trim_last_segment())
                 .to_token_stream()
                 .to_string();
+
+            let serialize_with = format!("::tinc::__private::serialize_enum::<{path_str}, _, _>");
+
             prost.field_attribute(
                 &field.full_name,
-                format!("#[serde(serialize_with = \"::tinc::__private::serialize_enum::<{path_str}, _, _>\")]"),
+                quote!(#[serde(serialize_with = #serialize_with)]).to_string(),
             );
-            prost.field_attribute(&field.full_name, format!("#[tinc(enum = \"{path_str}\")]"));
+            prost.field_attribute(&field.full_name, quote!(#[tinc(enum = #path_str)]).to_string());
         }
         ProtoType::Value(ProtoValueType::WellKnown(_))
         | ProtoType::Modified(
@@ -406,7 +410,7 @@ fn handle_message_field(
         ) => {
             prost.field_attribute(
                 &field.full_name,
-                "#[serde(serialize_with = \"::tinc::__private::serialize_well_known\")]",
+                quote!(#[serde(serialize_with = "::tinc::__private::serialize_well_known")]).to_string(),
             );
         }
         ProtoType::Modified(ProtoModifiedValueType::OneOf(oneof)) => {
@@ -518,9 +522,15 @@ pub(super) fn handle_message(
     modules: &mut BTreeMap<ProtoPath, Vec<syn::Item>>,
     registry: &ProtoTypeRegistry,
 ) -> anyhow::Result<()> {
-    prost.message_attribute(&message.full_name, "#[derive(::tinc::reexports::serde::Serialize)]");
-    prost.message_attribute(&message.full_name, "#[serde(crate = \"::tinc::reexports::serde\")]");
-    prost.message_attribute(&message.full_name, "#[derive(::tinc::__private::Tracker)]");
+    prost.message_attribute(
+        &message.full_name,
+        quote!(#[derive(::tinc::reexports::serde::Serialize)]).to_string(),
+    );
+    prost.message_attribute(
+        &message.full_name,
+        quote!(#[serde(crate = "::tinc::reexports::serde")]).to_string(),
+    );
+    prost.message_attribute(&message.full_name, quote!(#[derive(::tinc::__private::Tracker)]).to_string());
 
     let field_enum_ident = quote::format_ident!("___field_enum");
 
@@ -649,32 +659,45 @@ pub(super) fn handle_enum(
     let enum_ident = enum_path.segments.last().unwrap().ident.clone();
 
     if enum_.options.repr_enum {
-        prost.enum_attribute(&enum_.full_name, "#[derive(::tinc::reexports::serde_repr::Serialize_repr)]");
-        prost.enum_attribute(&enum_.full_name, "#[derive(::tinc::reexports::serde_repr::Deserialize_repr)]");
+        prost.enum_attribute(
+            &enum_.full_name,
+            quote!(#[derive(::tinc::reexports::serde_repr::Serialize_repr)]).to_string(),
+        );
+        prost.enum_attribute(
+            &enum_.full_name,
+            quote!(#[derive(::tinc::reexports::serde_repr::Deserialize_repr)]).to_string(),
+        );
     } else {
-        prost.enum_attribute(&enum_.full_name, "#[derive(::tinc::reexports::serde::Serialize)]");
-        prost.enum_attribute(&enum_.full_name, "#[derive(::tinc::reexports::serde::Deserialize)]");
+        prost.enum_attribute(
+            &enum_.full_name,
+            quote!(#[derive(::tinc::reexports::serde::Serialize)]).to_string(),
+        );
+        prost.enum_attribute(
+            &enum_.full_name,
+            quote!(#[derive(::tinc::reexports::serde::Deserialize)]).to_string(),
+        );
     }
 
-    prost.enum_attribute(&enum_.full_name, "#[serde(crate = \"::tinc::reexports::serde\")]");
+    prost.enum_attribute(
+        &enum_.full_name,
+        quote!(#[serde(crate = "::tinc::reexports::serde")]).to_string(),
+    );
 
     for variant in enum_.variants.values() {
         if !enum_.options.repr_enum {
-            prost.field_attribute(
-                &variant.full_name,
-                format!("#[serde(rename = \"{}\")]", variant.options.json_name),
-            );
+            let json_name = &variant.options.json_name;
+            prost.field_attribute(&variant.full_name, quote!(#[serde(rename = #json_name)]).to_string());
         }
 
         match variant.options.visibility {
             ProtoVisibility::InputOnly => {
-                prost.field_attribute(&variant.full_name, "#[serde(skip_serializing)]");
+                prost.field_attribute(&variant.full_name, quote!(#[serde(skip_serializing)]).to_string());
             }
             ProtoVisibility::OutputOnly => {
-                prost.field_attribute(&variant.full_name, "#[serde(skip_deserializing)]");
+                prost.field_attribute(&variant.full_name, quote!(#[serde(skip_deserializing)]).to_string());
             }
             ProtoVisibility::Skip => {
-                prost.field_attribute(&variant.full_name, "#[serde(skip)]");
+                prost.field_attribute(&variant.full_name, quote!(#[serde(skip)]).to_string());
             }
             _ => {}
         }

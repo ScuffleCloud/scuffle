@@ -7,7 +7,7 @@ use tinc_pb::http_endpoint_options;
 
 use super::types::{
     ProtoMessageType, ProtoModifiedValueType, ProtoPath, ProtoService, ProtoServiceMethod, ProtoServiceMethodEndpoint,
-    ProtoType, ProtoTypeRegistry, ProtoValueType,
+    ProtoServiceMethodIo, ProtoType, ProtoTypeRegistry, ProtoValueType,
 };
 use super::utils::{field_ident_from_str, type_ident_from_str};
 use crate::codegen::types::ProtoWellKnownType;
@@ -254,7 +254,7 @@ impl GeneratedMethod {
         let params = parse_route(&full_path);
 
         let path_params = if !params.is_empty() {
-            let PathFields { defs, mappings } = path_struct(&method.input, package, &params, registry)
+            let PathFields { defs, mappings } = path_struct(method.input.value_type(), package, &params, registry)
                 .with_context(|| format!("failed to generate path struct for method: {name}"))?;
 
             quote! {{
@@ -290,8 +290,8 @@ impl GeneratedMethod {
         let input = match input {
             http_endpoint_options::Input::Query(http_endpoint_options::QueryParams { field }) => {
                 let extract = match &method.input {
-                    ProtoValueType::Message(_) if field.is_empty() => quote! {},
-                    ProtoValueType::Message(message) => {
+                    ProtoServiceMethodIo::Single(ProtoValueType::Message(_)) if field.is_empty() => quote! {},
+                    ProtoServiceMethodIo::Single(ProtoValueType::Message(message)) => {
                         let message = registry.get_message(message).expect("message not found");
                         let (extract, _) = field_extractor_generator(&field, registry, message)?;
                         extract
@@ -323,7 +323,7 @@ impl GeneratedMethod {
                     }
 
                     let (extract, kind) = match &method.input {
-                        ProtoValueType::Message(message) => {
+                        ProtoServiceMethodIo::Single(ProtoValueType::Message(message)) => {
                             let message = registry.get_message(message).expect("message not found");
                             field_extractor_generator(&field, registry, message)?
                         }
@@ -354,10 +354,13 @@ impl GeneratedMethod {
                 };
 
                 let (extract, is_raw_bytes) = if field.is_empty() {
-                    (quote! {}, matches!(&method.input, ProtoValueType::Bytes))
+                    (
+                        quote! {},
+                        matches!(&method.input, ProtoServiceMethodIo::Single(ProtoValueType::Bytes)),
+                    )
                 } else {
                     let (extract, ty) = match &method.input {
-                        ProtoValueType::Message(message) => {
+                        ProtoServiceMethodIo::Single(ProtoValueType::Message(message)) => {
                             let message = registry.get_message(message).expect("message not found");
                             field_extractor_generator(&field, registry, message)?
                         }
@@ -401,7 +404,9 @@ impl GeneratedMethod {
         };
 
         let input_path = match &method.input {
-            ProtoValueType::Message(message) => registry.get_message(message).expect("message not found").rust_path(package),
+            ProtoServiceMethodIo::Single(ProtoValueType::Message(message)) => {
+                registry.get_message(message).expect("message not found").rust_path(package)
+            }
             _ => todo!("handle other types"),
         };
 

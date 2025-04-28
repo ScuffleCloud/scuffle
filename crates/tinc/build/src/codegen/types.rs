@@ -333,11 +333,34 @@ pub struct ProtoServiceOptions {
 }
 
 #[derive(Debug, Clone, PartialEq)]
+pub enum ProtoServiceMethodIo {
+    Single(ProtoValueType),
+    Stream(ProtoValueType),
+}
+
+impl ProtoServiceMethodIo {
+    pub fn is_stream(&self) -> bool {
+        matches!(self, ProtoServiceMethodIo::Stream(_))
+    }
+
+    pub fn is_single(&self) -> bool {
+        matches!(self, ProtoServiceMethodIo::Single(_))
+    }
+
+    pub fn value_type(&self) -> &ProtoValueType {
+        match self {
+            ProtoServiceMethodIo::Single(ty) => ty,
+            ProtoServiceMethodIo::Stream(ty) => ty,
+        }
+    }
+}
+
+#[derive(Debug, Clone, PartialEq)]
 pub struct ProtoServiceMethod {
     pub full_name: ProtoPath,
     pub service: ProtoPath,
-    pub input: ProtoValueType,
-    pub output: ProtoValueType,
+    pub input: ProtoServiceMethodIo,
+    pub output: ProtoServiceMethodIo,
     pub endpoints: Vec<ProtoServiceMethodEndpoint>,
 }
 
@@ -345,6 +368,8 @@ pub struct ProtoServiceMethod {
 pub struct ProtoServiceMethodEndpoint {
     pub method: http_endpoint_options::Method,
     pub input: Option<http_endpoint_options::Input>,
+    pub response: Option<http_endpoint_options::Response>,
+    pub cel: Vec<CelExpression>,
 }
 
 #[derive(Debug, Clone)]

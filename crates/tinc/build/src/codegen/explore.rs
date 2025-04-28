@@ -9,8 +9,8 @@ use crate::codegen::cel::{CelExpression, gather_cel_expressions};
 use crate::codegen::types::{
     ProtoEnumOptions, ProtoEnumType, ProtoEnumVariant, ProtoEnumVariantOptions, ProtoFieldJsonOmittable, ProtoFieldOptions,
     ProtoMessageField, ProtoMessageOptions, ProtoMessageType, ProtoModifiedValueType, ProtoOneOfField, ProtoOneOfOptions,
-    ProtoOneOfType, ProtoPath, ProtoService, ProtoServiceMethod, ProtoServiceMethodEndpoint, ProtoType, ProtoTypeRegistry,
-    ProtoValueType, ProtoVisibility, ProtoWellKnownType,
+    ProtoOneOfType, ProtoPath, ProtoService, ProtoServiceMethod, ProtoServiceMethodEndpoint, ProtoServiceMethodIo,
+    ProtoType, ProtoTypeRegistry, ProtoValueType, ProtoVisibility, ProtoWellKnownType,
 };
 
 pub struct Extension<T> {
@@ -223,11 +223,6 @@ impl Extensions {
         let service_full_name = ProtoPath::new(service.full_name());
 
         for method in service.methods() {
-            let endpoints = self
-                .ext_http_endpoint
-                .decode_all(&method)
-                .with_context(|| format!("method {}", method.full_name()))?;
-
             let input = method.input();
             let output = method.output();
 
@@ -257,22 +252,44 @@ impl Extensions {
                     .with_context(|| format!("method {}", method.full_name()))?;
             }
 
+            let mut endpoints = Vec::new();
+            for endpoint in self
+                .ext_http_endpoint
+                .decode_all(&method)
+                .with_context(|| format!("method {}", method.full_name()))?
+            {
+                let Some(method) = endpoint.method else {
+                    continue;
+                };
+
+                endpoints.push(ProtoServiceMethodEndpoint {
+                    method,
+                    input: endpoint.input,
+                    response: endpoint.response,
+                    cel: endpoint
+                        .cel
+                        .iter()
+                        .map(|expr| CelExpression::new(expr, None))
+                        .collect::<anyhow::Result<_>>()?,
+                });
+            }
+
             methods.insert(
                 method.name().to_owned(),
                 ProtoServiceMethod {
                     full_name: ProtoPath::new(method.full_name()),
                     service: service_full_name.clone(),
-                    input: method_input,
-                    output: method_output,
-                    endpoints: endpoints
-                        .into_iter()
-                        .filter_map(|endpoint| {
-                            Some(ProtoServiceMethodEndpoint {
-                                method: endpoint.method?,
-                                input: endpoint.input,
-                            })
-                        })
-                        .collect(),
+                    input: if method.is_client_streaming() {
+                        ProtoServiceMethodIo::Stream(method_input)
+                    } else {
+                        ProtoServiceMethodIo::Single(method_input)
+                    },
+                    output: if method.is_server_streaming() {
+                        ProtoServiceMethodIo::Stream(method_output)
+                    } else {
+                        ProtoServiceMethodIo::Single(method_output)
+                    },
+                    endpoints,
                 },
             );
         }
@@ -440,6 +457,9 @@ impl Extensions {
             fields.insert(
                 field.name().to_owned(),
                 ProtoOneOfField {
+                    // This is because the field name should contain the oneof name, by
+                    // default the `field.full_name()` just has the field name on the message
+                    // instead of through the oneof.
                     full_name: ProtoPath::new(format!("{full_name}.{}", field.name())),
                     message: message_full_name.clone(),
                     ty: field_ty.clone(),

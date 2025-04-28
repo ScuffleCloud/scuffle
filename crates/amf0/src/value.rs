@@ -306,9 +306,8 @@ impl<'de, 'a: 'de> serde::Deserializer<'de> for &'a Amf0Value<'de> {
 
     serde::forward_to_deserialize_any! {
         bool f64 char str string unit
-        // These should also be handled in the same way the deserializer handles them
         seq map newtype_struct tuple
-        enum identifier
+        struct enum identifier
     }
 
     impl_de_number!(deserialize_i8, visit_i8);
@@ -339,16 +338,6 @@ impl<'de, 'a: 'de> serde::Deserializer<'de> for &'a Amf0Value<'de> {
         }
     }
 
-    // fn deserialize_seq<V>(self, visitor: V) -> Result<V::Value, Self::Error>
-    // where
-    //     V: serde::de::Visitor<'de>,
-    // {
-    //     match self {
-    //         Amf0Value::Array(_) => visitor.visit_seq(self),
-    //         _ => visitor.visit_some(self)
-    //     }
-    // }
-
     fn deserialize_bytes<V>(self, visitor: V) -> Result<V::Value, Self::Error>
     where
         V: serde::de::Visitor<'de>,
@@ -370,49 +359,12 @@ impl<'de, 'a: 'de> serde::Deserializer<'de> for &'a Amf0Value<'de> {
         self.deserialize_unit(visitor)
     }
 
-    // fn deserialize_newtype_struct<V>(self, name: &'static str, visitor: V) -> Result<V::Value, Self::Error>
-    // where
-    //     V: serde::de::Visitor<'de>,
-    // {
-    //     if name == stream::MULTI_VALUE_NEW_TYPE {
-    //         visitor.visit_seq(MultiValueDe {de: self })
-    //     } else {
-    //         visitor.visit_newtype_struct(self)
-    //     }
-    // }
-
     fn deserialize_tuple_struct<V>(self, _name: &'static str, len: usize, visitor: V) -> Result<V::Value, Self::Error>
     where
         V: serde::de::Visitor<'de>,
     {
         self.deserialize_tuple(len, visitor)
     }
-
-    fn deserialize_struct<V>(
-        self,
-        _name: &'static str,
-        _fields: &'static [&'static str],
-        visitor: V,
-    ) -> Result<V::Value, Self::Error>
-    where
-        V: serde::de::Visitor<'de>,
-    {
-        self.deserialize_map(visitor)
-    }
-
-    // fn deserialize_enum<V>(self, _name: &'static str, _variants: &'static [&'static str], visitor: V) -> Result<V::Value, Self::Error>
-    // where
-    //     V: serde::de::Visitor<'de>,
-    // {
-    //     visitor.visit_enum(Enum { de: self })
-    // }
-
-    // fn deserialize_identifier<V>(self, visitor: V) -> Result<V::Value, Self::Error>
-    // where
-    //     V: serde::de::Visitor<'de>,
-    // {
-    //     self.deserialize_identifier(visitor)
-    // }
 
     fn deserialize_ignored_any<V>(self, visitor: V) -> Result<V::Value, Self::Error>
     where

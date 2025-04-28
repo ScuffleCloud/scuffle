@@ -280,14 +280,133 @@ impl serde::ser::Serialize for Amf0Value<'_> {
 
 #[cfg(feature = "serde")]
 #[cfg_attr(docsrs, doc(cfg(feature = "serde")))]
+macro_rules! impl_de_number {
+    ($deserializser_fn:ident, $visit_fn:ident) => {
+        fn $deserializser_fn<V>(self, visitor: V) -> Result<V::Value, Self::Error>
+        where
+            V: serde::de::Visitor<'de>,
+        {
+            if let Amf0Value::Number(n) = self {
+                if let Some(n) = ::num_traits::cast(*n) {
+                    return visitor.$visit_fn(n);
+                }
+            }
+
+            self.deserialize_any(visitor)
+        }
+    };
+}
+
+#[cfg(feature = "serde")]
+#[cfg_attr(docsrs, doc(cfg(feature = "serde")))]
 impl<'de, 'a: 'de> serde::Deserializer<'de> for &'a Amf0Value<'de> {
     type Error = Amf0Error;
 
     serde::forward_to_deserialize_any! {
-        // need to handle these number types from i8 thru f64; try to deserialze them as their original type then forward as f64
-        bool i8 i16 i32 i64 u8 u16 u32 u64 f32 f64 char str string unit
-        option seq bytes byte_buf map unit_struct newtype_struct tuple tuple_struct
-        struct enum identifier ignored_any
+        bool f64 char str string unit
+        // These should also be handled in the same way the deserializer handles them
+        seq map newtype_struct tuple
+        enum identifier
+    }
+
+    impl_de_number!(deserialize_i8, visit_i8);
+    impl_de_number!(deserialize_i16, visit_i16);
+    impl_de_number!(deserialize_i32, visit_i32);
+    impl_de_number!(deserialize_i64, visit_i64);
+    impl_de_number!(deserialize_u8, visit_u8);
+    impl_de_number!(deserialize_u16, visit_u16);
+    impl_de_number!(deserialize_u32, visit_u32);
+    impl_de_number!(deserialize_u64, visit_u64);
+    impl_de_number!(deserialize_f32, visit_f32);
+
+    fn deserialize_option<V>(self, visitor: V) -> Result<V::Value, Self::Error>
+    where
+        V: serde::de::Visitor<'de>,
+    {
+        match self {
+            Amf0Value::Null => visitor.visit_none(),
+            _ => visitor.visit_some(self)
+        }
+    }
+
+    // fn deserialize_seq<V>(self, visitor: V) -> Result<V::Value, Self::Error>
+    // where
+    //     V: serde::de::Visitor<'de>,
+    // {
+    //     match self {
+    //         Amf0Value::Array(_) => visitor.visit_seq(self),
+    //         _ => visitor.visit_some(self)
+    //     }
+    // }
+
+    fn deserialize_bytes<V>(self, visitor: V) -> Result<V::Value, Self::Error>
+    where
+        V: serde::de::Visitor<'de>,
+    {
+        self.deserialize_seq(visitor)
+    }
+
+    fn deserialize_byte_buf<V>(self, visitor: V) -> Result<V::Value, Self::Error>
+    where
+        V: serde::de::Visitor<'de>,
+    {
+        self.deserialize_seq(visitor)
+    }
+
+
+    fn deserialize_unit_struct<V>(self, _name: &'static str, visitor: V) -> Result<V::Value, Self::Error>
+    where
+        V: serde::de::Visitor<'de>,
+    {
+        self.deserialize_unit(visitor)
+    }
+
+
+    // fn deserialize_newtype_struct<V>(self, name: &'static str, visitor: V) -> Result<V::Value, Self::Error>
+    // where
+    //     V: serde::de::Visitor<'de>,
+    // {
+    //     if name == stream::MULTI_VALUE_NEW_TYPE {
+    //         visitor.visit_seq(MultiValueDe {de: self })
+    //     } else {
+    //         visitor.visit_newtype_struct(self)
+    //     }
+    // }
+
+
+    fn deserialize_tuple_struct<V>(self, _name: &'static str, len: usize, visitor: V) -> Result<V::Value, Self::Error>
+    where
+        V: serde::de::Visitor<'de>,
+    {
+        self.deserialize_tuple(len, visitor)
+    }
+
+    fn deserialize_struct<V>(self, _name: &'static str, _fields: &'static [&'static str], visitor: V) -> Result<V::Value, Self::Error>
+    where
+        V: serde::de::Visitor<'de>,
+    {
+        self.deserialize_map(visitor)
+    }
+
+    // fn deserialize_enum<V>(self, _name: &'static str, _variants: &'static [&'static str], visitor: V) -> Result<V::Value, Self::Error>
+    // where
+    //     V: serde::de::Visitor<'de>,
+    // {
+    //     visitor.visit_enum(Enum { de: self })
+    // }
+
+    // fn deserialize_identifier<V>(self, visitor: V) -> Result<V::Value, Self::Error>
+    // where
+    //     V: serde::de::Visitor<'de>,
+    // {
+    //     self.deserialize_identifier(visitor)
+    // }
+
+    fn deserialize_ignored_any<V>(self, visitor: V) -> Result<V::Value, Self::Error>
+    where
+        V: serde::de::Visitor<'de>,
+    {
+        self.deserialize_any(visitor)
     }
 
     fn deserialize_any<V>(self, visitor: V) -> Result<V::Value, Self::Error>
@@ -297,34 +416,7 @@ impl<'de, 'a: 'de> serde::Deserializer<'de> for &'a Amf0Value<'de> {
         match self {
             Amf0Value::Null => visitor.visit_unit(),
             Amf0Value::Boolean(b) => visitor.visit_bool(*b),
-            Amf0Value::Number(n) => {
-                let num = *n;
-                if num.fract() == 0.0 {
-                    let i = num as i128;
-                    let result = if (i8::MIN as i128) <= i && i <= (i8::MAX as i128) {
-                        visitor.visit_i8(i as i8)
-                    } else if (i16::MIN as i128) <= i && i <= (i16::MAX as i128) {
-                        visitor.visit_i16(i as i16)
-                    } else if (i32::MIN as i128) <= i && i <= (i32::MAX as i128) {
-                        visitor.visit_i32(i as i32)
-                    } else if (i64::MIN as i128) <= i && i <= (i64::MAX as i128) {
-                        visitor.visit_i64(i as i64)
-                    } else if i >= 0 && i <= (u8::MAX as i128) {
-                        visitor.visit_u8(i as u8)
-                    } else if i >= 0 && i <= (u16::MAX as i128) {
-                        visitor.visit_u16(i as u16)
-                    } else if i >= 0 && i <= (u32::MAX as i128) {
-                        visitor.visit_u32(i as u32)
-                    } else if i >= 0 {
-                        visitor.visit_u64(i as u64)
-                    } else {
-                        visitor.visit_f64(num)
-                    };
-                    result
-                } else {
-                    visitor.visit_f64(num)
-                }
-            }
+            Amf0Value::Number(n) => visitor.visit_f64(*n),
             Amf0Value::String(s) => visitor.visit_borrowed_str(s.as_str()),
             Amf0Value::Array(a) => visitor.visit_seq(Amf0SeqAccess { iter: a.iter() }),
             Amf0Value::Object(o) => visitor.visit_map(Amf0MapAccess {

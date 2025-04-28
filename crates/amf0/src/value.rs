@@ -285,6 +285,13 @@ impl serde::ser::Serialize for Amf0Value<'_> {
 impl<'de, 'a: 'de> serde::Deserializer<'de> for &'a Amf0Value<'de> {
     type Error = Amf0Error;
 
+    serde::forward_to_deserialize_any! {
+        // need to handle these number types from i8 thru f64; try to deserialze them as their original type then forward as f64
+        bool i8 i16 i32 i64 u8 u16 u32 u64 f32 f64 char str string unit
+        option seq bytes byte_buf map unit_struct newtype_struct tuple tuple_struct
+        struct enum identifier ignored_any
+    }
+
     fn deserialize_any<V>(self, visitor: V) -> Result<V::Value, Self::Error>
     where
         V: serde::de::Visitor<'de>,
@@ -292,17 +299,41 @@ impl<'de, 'a: 'de> serde::Deserializer<'de> for &'a Amf0Value<'de> {
         match self {
             Amf0Value::Null => visitor.visit_unit(),
             Amf0Value::Boolean(b) => visitor.visit_bool(*b),
-            Amf0Value::Number(n) => visitor.visit_f64(*n),
+            Amf0Value::Number(n) => {
+                let num = *n;
+                if num.fract() == 0.0 {
+                    let i = num as i128;
+                    let result = if (i8::MIN as i128) <= i && i <= (i8::MAX as i128) {
+                        visitor.visit_i8(i as i8)
+                    } else if (i16::MIN as i128) <= i && i <= (i16::MAX as i128) {
+                        visitor.visit_i16(i as i16)
+                    } else if (i32::MIN as i128) <= i && i <= (i32::MAX as i128) {
+                        visitor.visit_i32(i as i32)
+                    } else if (i64::MIN as i128) <= i && i <= (i64::MAX as i128) {
+                        visitor.visit_i64(i as i64)
+                    } else if i >= 0 && i <= (u8::MAX as i128) {
+                        visitor.visit_u8(i as u8)
+                    } else if i >= 0 && i <= (u16::MAX as i128) {
+                        visitor.visit_u16(i as u16)
+                    } else if i >= 0 && i <= (u32::MAX as i128) {
+                        visitor.visit_u32(i as u32)
+                    } else if i >= 0 {
+                        visitor.visit_u64(i as u64)
+                    } else {
+                        visitor.visit_f64(num)
+                    };
+                    result
+                } else {
+                    visitor.visit_f64(num)
+                }
+            }
             Amf0Value::String(s) => visitor.visit_borrowed_str(s.as_str()),
             Amf0Value::Array(a) => visitor.visit_seq(Amf0SeqAccess { iter: a.iter() }),
-            Amf0Value::Object(o) => visitor.visit_map(Amf0MapAccess { iter: o.iter(), value: None }),
+            Amf0Value::Object(o) => visitor.visit_map(Amf0MapAccess {
+                iter: o.iter(),
+                value: None,
+            }),
         }
-    }
-
-    serde::forward_to_deserialize_any! {
-        bool i8 i16 i32 i64 u8 u16 u32 u64 f32 f64 char str string unit
-        option seq bytes byte_buf map unit_struct newtype_struct tuple tuple_struct
-        struct enum identifier ignored_any
     }
 }
 
@@ -339,7 +370,8 @@ impl<'de, 'a: 'de> serde::de::MapAccess<'de> for Amf0MapAccess<'a, 'de> {
         match self.iter.next() {
             Some((key, value)) => {
                 self.value = Some(value);
-                seed.deserialize(serde::de::IntoDeserializer::into_deserializer(key.as_str())).map(Some)
+                seed.deserialize(serde::de::IntoDeserializer::into_deserializer(key.as_str()))
+                    .map(Some)
             }
             None => Ok(None),
         }
@@ -360,12 +392,11 @@ mod tests {
     use std::collections::HashMap;
 
     use scuffle_bytes_util::StringCow;
+    #[cfg(feature = "serde")]
+    use serde::Deserialize;
 
     use super::Amf0Value;
     use crate::{Amf0Array, Amf0Decoder, Amf0Encoder, Amf0Error, Amf0Marker, Amf0Object};
-
-    #[cfg(feature = "serde")]
-    use serde::Deserialize;
 
     #[test]
     fn from() {

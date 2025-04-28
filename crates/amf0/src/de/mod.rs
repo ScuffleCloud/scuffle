@@ -178,7 +178,7 @@ where
     {
         if let Some(Amf0Marker::Number) = self.next_marker {
             let value = self.decode_number()?;
-            return visitor.visit_f64(value as f64);
+            return visitor.visit_f64(value);
         }
         self.deserialize_any(visitor)
     }

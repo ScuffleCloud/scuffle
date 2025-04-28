@@ -1766,9 +1766,23 @@ name = "isobmff"
 version = "0.1.0"
 dependencies = [
  "byteorder",
+ "bytes",
+ "isobmff-derive",
+ "nutype-enum",
  "scuffle-bytes-util",
  "scuffle-workspace-hack",
  "uuid",
+]
+
+[[package]]
+name = "isobmff-derive"
+version = "0.1.0"
+dependencies = [
+ "darling",
+ "proc-macro2",
+ "quote",
+ "scuffle-workspace-hack",
+ "syn",
 ]
 
 [[package]]

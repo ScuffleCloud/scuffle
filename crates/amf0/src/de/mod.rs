@@ -12,27 +12,6 @@ mod stream;
 
 pub use stream::*;
 
-#[cfg(feature = "serde")]
-#[cfg_attr(docsrs, doc(cfg(feature = "serde")))]
-macro_rules! impl_de_number {
-    ($deserializser_fn:ident, $visit_fn:ident) => {
-        fn $deserializser_fn<V>(self, visitor: V) -> Result<V::Value, Self::Error>
-        where
-            V: serde::de::Visitor<'de>,
-        {
-            if let Some(Amf0Marker::Number) = self.next_marker {
-                // must make sure the marker is a number so we don't error out
-                let value = self.decode_number()?;
-                if let Some(value) = ::num_traits::cast(value) {
-                    return visitor.$visit_fn(value);
-                }
-            }
-
-            self.deserialize_any(visitor)
-        }
-    };
-}
-
 /// Deserialize a value from a given [`bytes::Buf`].
 pub fn from_buf<'de, T>(buf: impl bytes::Buf) -> crate::Result<T>
 where
@@ -63,6 +42,27 @@ where
     Ok(value)
 }
 
+#[cfg(feature = "serde")]
+#[cfg_attr(docsrs, doc(cfg(feature = "serde")))]
+macro_rules! impl_de_number {
+    ($deserializser_fn:ident, $visit_fn:ident) => {
+        fn $deserializser_fn<V>(self, visitor: V) -> Result<V::Value, Self::Error>
+        where
+            V: serde::de::Visitor<'de>,
+        {
+            if let Some(Amf0Marker::Number) = self.next_marker {
+                // must make sure the marker is a number so we don't error out
+                let value = self.decode_number()?;
+                if let Some(value) = ::num_traits::cast(value) {
+                    return visitor.$visit_fn(value);
+                }
+            }
+
+            self.deserialize_any(visitor)
+        }
+    };
+}
+
 impl<'de, R> serde::de::Deserializer<'de> for &mut Amf0Decoder<R>
 where
     R: ZeroCopyReader<'de>,
@@ -70,7 +70,7 @@ where
     type Error = Amf0Error;
 
     serde::forward_to_deserialize_any! {
-        f64
+        f64 ignored_any
     }
 
     impl_de_number!(deserialize_i8, visit_i8);
@@ -112,47 +112,62 @@ where
     where
         V: serde::de::Visitor<'de>,
     {
-        // TODO: check everything before calling decode
-        let value = self.decode_boolean()?;
-        visitor.visit_bool(value)
+        if let Some(Amf0Marker::Boolean) = self.next_marker {
+            let value = self.decode_boolean()?;
+            return visitor.visit_bool(value);
+        }
+        self.deserialize_any(visitor)
     }
 
-    fn deserialize_char<V>(self, _visitor: V) -> Result<V::Value, Self::Error>
+    fn deserialize_char<V>(self, visitor: V) -> Result<V::Value, Self::Error>
     where
         V: serde::de::Visitor<'de>,
     {
-        // should we still error here?
-        Err(Amf0Error::CharNotSupported)
+        // should we still error here? original line below
+        // Err(Amf0Error::CharNotSupported)
+        self.deserialize_any(visitor)
     }
 
     fn deserialize_string<V>(self, visitor: V) -> Result<V::Value, Self::Error>
     where
         V: serde::de::Visitor<'de>,
     {
-        let value = self.decode_string()?;
-        value.into_deserializer().deserialize_string(visitor)
+        if let Some(Amf0Marker::String) = self.next_marker {
+            let value = self.decode_string()?;
+            return value.into_deserializer().deserialize_string(visitor);
+        }
+        self.deserialize_any(visitor)
     }
 
     fn deserialize_str<V>(self, visitor: V) -> Result<V::Value, Self::Error>
     where
         V: serde::de::Visitor<'de>,
     {
-        let value = self.decode_string()?;
-        value.into_deserializer().deserialize_str(visitor)
+        if let Some(Amf0Marker::String) = self.next_marker {
+            let value = self.decode_string()?;
+            return value.into_deserializer().deserialize_str(visitor);
+        }
+        self.deserialize_any(visitor)
     }
 
     fn deserialize_bytes<V>(self, visitor: V) -> Result<V::Value, Self::Error>
     where
         V: serde::de::Visitor<'de>,
     {
-        self.deserialize_seq(visitor)
+        if let Some(Amf0Marker::StrictArray) = self.next_marker {
+            return self.deserialize_seq(visitor);
+        }
+        self.deserialize_any(visitor)
     }
 
     fn deserialize_byte_buf<V>(self, visitor: V) -> Result<V::Value, Self::Error>
     where
         V: serde::de::Visitor<'de>,
     {
-        self.deserialize_seq(visitor)
+        if let Some(Amf0Marker::StrictArray) = self.next_marker {
+            return self.deserialize_seq(visitor);
+        }
+        self.deserialize_any(visitor)
     }
 
     fn deserialize_option<V>(self, visitor: V) -> Result<V::Value, Self::Error>
@@ -174,25 +189,30 @@ where
     where
         V: serde::de::Visitor<'de>,
     {
-        self.decode_null()?;
-        visitor.visit_unit()
+        if let Some(Amf0Marker::Null | Amf0Marker::Undefined) = self.next_marker {
+            self.decode_null()?;
+            return visitor.visit_unit();
+        }
+        self.deserialize_any(visitor)
     }
 
     fn deserialize_unit_struct<V>(self, _name: &'static str, visitor: V) -> Result<V::Value, Self::Error>
     where
         V: serde::de::Visitor<'de>,
     {
-        self.deserialize_unit(visitor)
+        if let Some(Amf0Marker::Null | Amf0Marker::Undefined) = self.next_marker {
+            return self.deserialize_unit(visitor);
+        }
+        self.deserialize_any(visitor)
     }
 
     fn deserialize_newtype_struct<V>(self, name: &'static str, visitor: V) -> Result<V::Value, Self::Error>
     where
         V: serde::de::Visitor<'de>,
     {
-        if name == stream::MULTI_VALUE_NEW_TYPE {
-            visitor.visit_seq(MultiValueDe { de: self })
-        } else {
-            visitor.visit_newtype_struct(self)
+        match (self.next_marker, name) {
+            (Some(Amf0Marker::StrictArray), stream::MULTI_VALUE_NEW_TYPE) => visitor.visit_seq(MultiValueDe { de: self }),
+            _ => visitor.visit_newtype_struct(self),
         }
     }
 
@@ -200,53 +220,66 @@ where
     where
         V: serde::de::Visitor<'de>,
     {
-        let size = self.decode_strict_array_header()? as usize;
+        if let Some(Amf0Marker::StrictArray) = self.next_marker {
+            let size = self.decode_strict_array_header()? as usize;
 
-        visitor.visit_seq(StrictArray {
-            de: self,
-            remaining: size,
-        })
+            return visitor.visit_seq(StrictArray {
+                de: self,
+                remaining: size,
+            });
+        }
+        self.deserialize_any(visitor)
     }
 
-    fn deserialize_tuple<V>(self, len: usize, visitor: V) -> Result<V::Value, Self::Error>
+    fn deserialize_tuple<V>(self, _len: usize, visitor: V) -> Result<V::Value, Self::Error>
     where
         V: serde::de::Visitor<'de>,
     {
-        let size = self.decode_strict_array_header()? as usize;
+        if let Some(Amf0Marker::StrictArray) = self.next_marker {
+            let size = self.decode_strict_array_header()? as usize;
 
-        if len != size {
-            return Err(Amf0Error::WrongArrayLength {
-                expected: len,
-                got: size,
+            // there used to be this check, but we shouldn't error from deserializing...
+            // if len != size {
+            //     return Err(Amf0Error::WrongArrayLength {
+            //         expected: len,
+            //         got: size,
+            //     });
+            // }
+
+            return visitor.visit_seq(StrictArray {
+                de: self,
+                remaining: size,
             });
         }
-
-        visitor.visit_seq(StrictArray {
-            de: self,
-            remaining: size,
-        })
+        self.deserialize_any(visitor)
     }
 
     fn deserialize_tuple_struct<V>(self, _name: &'static str, len: usize, visitor: V) -> Result<V::Value, Self::Error>
     where
         V: serde::de::Visitor<'de>,
     {
-        self.deserialize_tuple(len, visitor)
+        if let Some(Amf0Marker::StrictArray) = self.next_marker {
+            return self.deserialize_tuple(len, visitor);
+        }
+        self.deserialize_any(visitor)
     }
 
     fn deserialize_map<V>(self, visitor: V) -> Result<V::Value, Self::Error>
     where
         V: serde::de::Visitor<'de>,
     {
-        let header = self.decode_object_header()?;
+        if let Some(Amf0Marker::Object) = self.next_marker {
+            let header = self.decode_object_header()?;
 
-        match header {
-            ObjectHeader::Object | ObjectHeader::TypedObject { .. } => visitor.visit_map(Object { de: self }),
-            ObjectHeader::EcmaArray { size } => visitor.visit_map(EcmaArray {
-                de: self,
-                remaining: size as usize,
-            }),
+            return match header {
+                ObjectHeader::Object | ObjectHeader::TypedObject { .. } => visitor.visit_map(Object { de: self }),
+                ObjectHeader::EcmaArray { size } => visitor.visit_map(EcmaArray {
+                    de: self,
+                    remaining: size as usize,
+                }),
+            };
         }
+        self.deserialize_any(visitor)
     }
 
     fn deserialize_struct<V>(
@@ -258,7 +291,10 @@ where
     where
         V: serde::de::Visitor<'de>,
     {
-        self.deserialize_map(visitor)
+        if let Some(Amf0Marker::Object) = self.next_marker {
+            return self.deserialize_map(visitor);
+        }
+        self.deserialize_any(visitor)
     }
 
     fn deserialize_enum<V>(
@@ -270,6 +306,7 @@ where
     where
         V: serde::de::Visitor<'de>,
     {
+        // what marker would this have?
         visitor.visit_enum(Enum { de: self })
     }
 
@@ -277,14 +314,10 @@ where
     where
         V: serde::de::Visitor<'de>,
     {
-        let s = self.decode_string()?;
-        s.into_deserializer().deserialize_identifier(visitor)
-    }
-
-    fn deserialize_ignored_any<V>(self, visitor: V) -> Result<V::Value, Self::Error>
-    where
-        V: serde::de::Visitor<'de>,
-    {
+        if let Some(Amf0Marker::String | Amf0Marker::LongString) = self.next_marker {
+            let s = self.decode_string()?;
+            return s.into_deserializer().deserialize_identifier(visitor);
+        }
         self.deserialize_any(visitor)
     }
 }

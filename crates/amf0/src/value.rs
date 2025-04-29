@@ -305,7 +305,7 @@ impl<'de, 'a: 'de> serde::Deserializer<'de> for &'a Amf0Value<'de> {
     serde::forward_to_deserialize_any! {
         bool f64 char str string unit
         seq map newtype_struct tuple
-        struct enum identifier
+        struct enum ignored_any identifier
     }
 
     impl_de_number!(deserialize_i8, visit_i8);
@@ -362,13 +362,6 @@ impl<'de, 'a: 'de> serde::Deserializer<'de> for &'a Amf0Value<'de> {
         V: serde::de::Visitor<'de>,
     {
         self.deserialize_tuple(len, visitor)
-    }
-
-    fn deserialize_ignored_any<V>(self, visitor: V) -> Result<V::Value, Self::Error>
-    where
-        V: serde::de::Visitor<'de>,
-    {
-        self.deserialize_any(visitor)
     }
 
     fn deserialize_any<V>(self, visitor: V) -> Result<V::Value, Self::Error>

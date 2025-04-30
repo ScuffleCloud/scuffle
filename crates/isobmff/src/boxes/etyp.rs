@@ -9,6 +9,6 @@ use crate::{BoxHeader, IsoBox};
 pub struct Etyp {
     #[iso_box(header)]
     pub header: BoxHeader,
-    #[iso_box(remaining, nested_box)]
+    #[iso_box(remaining)]
     pub compatible_combinations: Vec<Tyco>,
 }

@@ -5,12 +5,14 @@
 
 use std::io;
 
+use scuffle_bytes_util::zero_copy::ZeroCopyReader;
+
 pub mod boxes;
 mod header;
+pub mod read_field;
 
 pub use header::*;
 pub use isobmff_derive::IsoBox;
-use scuffle_bytes_util::zero_copy::ZeroCopyReader;
 
 pub trait IsoBox<'a>: Sized {
     const TYPE: [u8; 4];

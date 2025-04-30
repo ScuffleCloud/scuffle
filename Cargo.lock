@@ -1781,6 +1781,7 @@ dependencies = [
  "darling",
  "proc-macro2",
  "quote",
+ "scuffle-bytes-util",
  "scuffle-workspace-hack",
  "syn",
 ]

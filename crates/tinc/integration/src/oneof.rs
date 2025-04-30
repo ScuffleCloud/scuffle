@@ -42,10 +42,10 @@ fn test_oneof() {
     }"#,
     );
 
-    state.in_scope(|| {
-        deserialize_tracker_target(&mut de, &mut message, &mut tracker).unwrap();
+    deserialize_tracker_target(&mut state, &mut de, &mut tracker, &mut message).unwrap();
 
-        TrackedStructDeserializer::validate::<serde::de::value::Error>(&message, &mut tracker).unwrap();
+    state.in_scope(|| {
+        TrackedStructDeserializer::validate(&message, &mut tracker).unwrap();
     });
 
     insta::assert_debug_snapshot!(state, @r"
@@ -241,9 +241,7 @@ fn test_oneof_buffering() {
     }"#,
     );
 
-    state.in_scope(|| {
-        deserialize_tracker_target(&mut de, &mut message, &mut tracker).unwrap();
-    });
+    deserialize_tracker_target(&mut state, &mut de, &mut tracker, &mut message).unwrap();
 
     let mut de = serde_json::Deserializer::from_str(
         r#"{
@@ -270,10 +268,9 @@ fn test_oneof_buffering() {
     }"#,
     );
 
+    deserialize_tracker_target(&mut state, &mut de, &mut tracker, &mut message).unwrap();
     state.in_scope(|| {
-        deserialize_tracker_target(&mut de, &mut message, &mut tracker).unwrap();
-
-        TrackedStructDeserializer::validate::<serde::de::value::Error>(&message, &mut tracker).unwrap();
+        TrackedStructDeserializer::validate(&message, &mut tracker).unwrap();
     });
 
     insta::assert_debug_snapshot!(state, @r"

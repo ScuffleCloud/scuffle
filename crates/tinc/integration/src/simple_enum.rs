@@ -23,10 +23,10 @@ fn test_simple_enum() {
     }"#,
     );
 
-    state.in_scope(|| {
-        deserialize_tracker_target(&mut de, &mut message, &mut tracker).unwrap();
+    deserialize_tracker_target(&mut state, &mut de, &mut tracker, &mut message).unwrap();
 
-        TrackedStructDeserializer::validate::<serde::de::value::Error>(&message, &mut tracker).unwrap();
+    state.in_scope(|| {
+        TrackedStructDeserializer::validate(&message, &mut tracker).unwrap();
     });
 
     insta::assert_debug_snapshot!(state, @r"
@@ -116,10 +116,10 @@ fn test_simple_enum_renamed() {
     }"#,
     );
 
-    state.in_scope(|| {
-        deserialize_tracker_target(&mut de, &mut message, &mut tracker).unwrap();
+    deserialize_tracker_target(&mut state, &mut de, &mut tracker, &mut message).unwrap();
 
-        TrackedStructDeserializer::validate::<serde::de::value::Error>(&message, &mut tracker).unwrap();
+    state.in_scope(|| {
+        TrackedStructDeserializer::validate(&message, &mut tracker).unwrap();
     });
 
     insta::assert_debug_snapshot!(state, @r"
@@ -208,10 +208,9 @@ fn test_simple_enum_repr() {
     }"#,
     );
 
+    deserialize_tracker_target(&mut state, &mut de, &mut tracker, &mut message).unwrap();
     state.in_scope(|| {
-        deserialize_tracker_target(&mut de, &mut message, &mut tracker).unwrap();
-
-        TrackedStructDeserializer::validate::<serde::de::value::Error>(&message, &mut tracker).unwrap();
+        TrackedStructDeserializer::validate(&message, &mut tracker).unwrap();
     });
 
     insta::assert_debug_snapshot!(state, @r"
@@ -297,10 +296,9 @@ fn test_simple_enum_invalid() {
     }"#,
     );
 
+    deserialize_tracker_target(&mut state, &mut de, &mut tracker, &mut message).unwrap();
     state.in_scope(|| {
-        deserialize_tracker_target(&mut de, &mut message, &mut tracker).unwrap();
-
-        TrackedStructDeserializer::validate::<serde::de::value::Error>(&message, &mut tracker).unwrap();
+        TrackedStructDeserializer::validate(&message, &mut tracker).unwrap();
     });
 
     insta::assert_debug_snapshot!(state, @r#"
@@ -375,10 +373,10 @@ fn test_simple_enum_renamed_invalid() {
     }"#,
     );
 
-    state.in_scope(|| {
-        deserialize_tracker_target(&mut de, &mut message, &mut tracker).unwrap();
+    deserialize_tracker_target(&mut state, &mut de, &mut tracker, &mut message).unwrap();
 
-        TrackedStructDeserializer::validate::<serde::de::value::Error>(&message, &mut tracker).unwrap();
+    state.in_scope(|| {
+        TrackedStructDeserializer::validate(&message, &mut tracker).unwrap();
     });
 
     insta::assert_debug_snapshot!(state, @r#"
@@ -453,10 +451,9 @@ fn test_simple_enum_repr_invalid() {
     }"#,
     );
 
+    deserialize_tracker_target(&mut state, &mut de, &mut tracker, &mut message).unwrap();
     state.in_scope(|| {
-        deserialize_tracker_target(&mut de, &mut message, &mut tracker).unwrap();
-
-        TrackedStructDeserializer::validate::<serde::de::value::Error>(&message, &mut tracker).unwrap();
+        TrackedStructDeserializer::validate(&message, &mut tracker).unwrap();
     });
 
     insta::assert_debug_snapshot!(state, @r#"

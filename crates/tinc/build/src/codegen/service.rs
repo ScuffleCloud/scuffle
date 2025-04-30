@@ -1,12 +1,13 @@
 use anyhow::Context;
-use quote::quote;
+use indexmap::IndexMap;
+use quote::{format_ident, quote};
 use syn::{Ident, parse_quote};
 use tinc_pb::http_endpoint_options;
 
 use super::Package;
 use super::utils::{field_ident_from_str, type_ident_from_str};
 use crate::types::{
-    ProtoMessageType, ProtoModifiedValueType, ProtoService, ProtoServiceMethod, ProtoServiceMethodEndpoint,
+    ProtoMessageType, ProtoModifiedValueType, ProtoPath, ProtoService, ProtoServiceMethod, ProtoServiceMethodEndpoint,
     ProtoServiceMethodIo, ProtoType, ProtoTypeRegistry, ProtoValueType, ProtoWellKnownType,
 };
 
@@ -419,6 +420,10 @@ impl GeneratedMethod {
 
             #input
 
+            if let Err(err) = ::tinc::__private::TrackerValidation::validate_http(&mut tracker, state, &target) {
+                return err;
+            }
+
             let request = ::tinc::reexports::tonic::Request::from_parts(
                 ::tinc::reexports::tonic::metadata::MetadataMap::from_headers(parts.headers),
                 parts.extensions,
@@ -481,6 +486,29 @@ impl GeneratedMethod {
     }
 }
 
+#[derive(Debug, Clone, PartialEq)]
+pub struct ProcessedService {
+    pub full_name: ProtoPath,
+    pub package: ProtoPath,
+    pub methods: IndexMap<String, ProcessedServiceMethod>,
+}
+
+impl ProcessedService {
+    pub fn name(&self) -> &str {
+        self.full_name
+            .strip_prefix(&*self.package)
+            .unwrap_or(&self.full_name)
+            .trim_matches('.')
+    }
+}
+
+#[derive(Debug, Clone, PartialEq)]
+pub struct ProcessedServiceMethod {
+    pub codec_path: ProtoPath,
+    pub input: ProtoServiceMethodIo,
+    pub output: ProtoServiceMethodIo,
+}
+
 pub(super) fn handle_service(
     service: &ProtoService,
     package: &mut Package,
@@ -499,20 +527,96 @@ pub(super) fn handle_service(
     let server_module_name = quote::format_ident!("{snake_name}_server");
     let tinc_struct_name = quote::format_ident!("{pascal_name}Tinc");
 
-    let mut methods = Vec::new();
-    let mut routes = Vec::new();
+    let mut method_tokens = Vec::new();
+    let mut route_tokens = Vec::new();
+    let mut method_codecs = Vec::new();
+    let mut methods = IndexMap::new();
 
     let package_name = format!("{}.{tinc_module_name}", service.package);
 
     for (name, method) in service.methods.iter() {
         for (idx, endpoint) in method.endpoints.iter().enumerate() {
-            let method = GeneratedMethod::new(name, &package_name, service, method, endpoint, registry)?;
-
+            let gen_method = GeneratedMethod::new(name, &package_name, service, method, endpoint, registry)?;
             let function_name = quote::format_ident!("{name}_{idx}");
 
-            methods.push(method.method_handler(&function_name, &server_module_name, &pascal_name, &tinc_struct_name));
-            routes.push(method.route(&function_name));
+            method_tokens.push(gen_method.method_handler(
+                &function_name,
+                &server_module_name,
+                &pascal_name,
+                &tinc_struct_name,
+            ));
+            route_tokens.push(gen_method.route(&function_name));
         }
+
+        let codec_ident = format_ident!("{name}Codec");
+        let input_path = method.input.value_type().rust_path(&package_name);
+        let output_path = method.output.value_type().rust_path(&package_name);
+
+        method_codecs.push(quote! {
+            #[derive(Debug, Clone, Default)]
+            #[doc(hidden)]
+            pub struct #codec_ident<C>(C);
+
+            const _: () = {
+                #[derive(Debug, Clone, Default)]
+                pub struct Encoder<E>(E);
+                #[derive(Debug, Clone, Default)]
+                pub struct Decoder<D>(D);
+
+                impl<C> ::tinc::reexports::tonic::codec::Codec for #codec_ident<C>
+                where
+                    C: ::tinc::reexports::tonic::codec::Codec<Encode = #output_path, Decode = #input_path>
+                {
+                    type Encode = C::Encode;
+                    type Decode = C::Decode;
+
+                    type Encoder = C::Encoder;
+                    type Decoder = Decoder<C::Decoder>;
+
+                    fn encoder(&mut self) -> Self::Encoder {
+                        ::tinc::reexports::tonic::codec::Codec::encoder(&mut self.0)
+                    }
+
+                    fn decoder(&mut self) -> Self::Decoder {
+                        Decoder(
+                            ::tinc::reexports::tonic::codec::Codec::decoder(&mut self.0)
+                        )
+                    }
+                }
+
+                impl<D> ::tinc::reexports::tonic::codec::Decoder for Decoder<D>
+                where
+                    D: ::tinc::reexports::tonic::codec::Decoder<Item = #input_path, Error = ::tinc::reexports::tonic::Status>
+                {
+                    type Item = D::Item;
+                    type Error = ::tinc::reexports::tonic::Status;
+
+                    fn decode(&mut self, buf: &mut ::tinc::reexports::tonic::codec::DecodeBuf<'_>) -> Result<Option<Self::Item>, Self::Error> {
+                        match ::tinc::reexports::tonic::codec::Decoder::decode(&mut self.0, buf) {
+                            ::core::result::Result::Ok(::core::option::Option::Some(item)) => {
+                                ::tinc::__private::ValidateMessage::validate_codec(&item)?;
+                                ::core::result::Result::Ok(::core::option::Option::Some(item))
+                            },
+                            ::core::result::Result::Ok(::core::option::Option::None) => ::core::result::Result::Ok(::core::option::Option::None),
+                            ::core::result::Result::Err(err) => ::core::result::Result::Err(err),
+                        }
+                    }
+
+                    fn buffer_settings(&self) -> ::tinc::reexports::tonic::codec::BufferSettings {
+                        ::tinc::reexports::tonic::codec::Decoder::buffer_settings(&self.0)
+                    }
+                }
+            };
+        });
+
+        methods.insert(
+            name.clone(),
+            ProcessedServiceMethod {
+                codec_path: ProtoPath::new(format!("{package_name}.{codec_ident}")),
+                input: method.input.clone(),
+                output: method.output.clone(),
+            },
+        );
     }
 
     package.push_item(parse_quote! {
@@ -552,14 +656,22 @@ pub(super) fn handle_service(
                 T: super::#server_module_name::#pascal_name
             {
                 fn into_router(self) -> ::tinc::reexports::axum::Router {
-                    #(#methods)*
+                    #(#method_tokens)*
 
                     ::tinc::reexports::axum::Router::new()
-                        #(#routes)*
+                        #(#route_tokens)*
                         .with_state(self)
                 }
             }
+
+            #(#method_codecs)*
         }
+    });
+
+    package.services.push(ProcessedService {
+        full_name: service.full_name.clone(),
+        package: service.package.clone(),
+        methods,
     });
 
     Ok(())

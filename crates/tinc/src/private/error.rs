@@ -306,6 +306,17 @@ pub struct TrackedError {
     pub serde_path: Box<str>,
 }
 
+impl TrackedError {
+    pub fn message(&self) -> &str {
+        match &self.kind {
+            TrackedErrorKind::DuplicateField => "duplicate field",
+            TrackedErrorKind::UnknownField => "unknown field",
+            TrackedErrorKind::MissingField => "missing field",
+            TrackedErrorKind::InvalidField { message } => message.as_ref(),
+        }
+    }
+}
+
 impl std::fmt::Display for TrackedError {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match &self.kind {

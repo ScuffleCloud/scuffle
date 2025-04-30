@@ -1,10 +1,10 @@
 use std::collections::BTreeMap;
 
 pub use config::AttributeConfig;
-use service::handle_service;
+use service::{ProcessedService, handle_service};
 
 use self::serde::{handle_enum, handle_message};
-use crate::types::{ProtoPath, ProtoService, ProtoTypeRegistry};
+use crate::types::{ProtoPath, ProtoTypeRegistry};
 
 pub mod cel;
 mod config;
@@ -17,7 +17,7 @@ pub mod utils;
 pub struct Package {
     pub attributes: AttributeConfig,
     pub extra_items: Vec<syn::Item>,
-    pub services: Vec<ProtoService>,
+    pub services: Vec<ProcessedService>,
 }
 
 impl Package {
@@ -51,14 +51,9 @@ pub fn generate_modules(registry: &ProtoTypeRegistry) -> anyhow::Result<BTreeMap
         .enums()
         .try_for_each(|enum_| handle_enum(enum_, modules.entry(enum_.package.clone()).or_default()))?;
 
-    registry.services().try_for_each(|service| {
-        modules
-            .entry(service.package.clone())
-            .or_default()
-            .services
-            .push(service.clone());
-        handle_service(service, modules.entry(service.package.clone()).or_default(), registry)
-    })?;
+    registry
+        .services()
+        .try_for_each(|service| handle_service(service, modules.entry(service.package.clone()).or_default(), registry))?;
 
     Ok(modules)
 }

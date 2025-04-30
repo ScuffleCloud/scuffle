@@ -22,10 +22,9 @@ fn test_simple_single_pass() {
     }"#,
     );
 
+    deserialize_tracker_target(&mut state, &mut de, &mut tracker, &mut message).unwrap();
     state.in_scope(|| {
-        deserialize_tracker_target(&mut de, &mut message, &mut tracker).unwrap();
-
-        TrackedStructDeserializer::validate::<serde::de::value::Error>(&message, &mut tracker).unwrap();
+        TrackedStructDeserializer::validate(&message, &mut tracker).unwrap();
     });
 
     insta::assert_debug_snapshot!(state, @r"
@@ -87,9 +86,7 @@ fn test_simple_multiple_passes() {
     }"#,
     );
 
-    state.in_scope(|| {
-        deserialize_tracker_target(&mut de, &mut message, &mut tracker).unwrap();
-    });
+    deserialize_tracker_target(&mut state, &mut de, &mut tracker, &mut message).unwrap();
 
     insta::assert_debug_snapshot!(message, @r#"
     SimpleMessage {
@@ -125,9 +122,9 @@ fn test_simple_multiple_passes() {
     }"#,
     );
 
+    deserialize_tracker_target(&mut state, &mut de, &mut tracker, &mut message).unwrap();
     state.in_scope(|| {
-        deserialize_tracker_target(&mut de, &mut message, &mut tracker).unwrap();
-        TrackedStructDeserializer::validate::<serde::de::value::Error>(&message, &mut tracker).unwrap();
+        TrackedStructDeserializer::validate(&message, &mut tracker).unwrap();
     });
 
     insta::assert_debug_snapshot!(message, @r#"
@@ -188,9 +185,7 @@ fn test_simple_missing_fields() {
     }"#,
     );
 
-    state.in_scope(|| {
-        deserialize_tracker_target(&mut de, &mut message, &mut tracker).unwrap();
-    });
+    deserialize_tracker_target(&mut state, &mut de, &mut tracker, &mut message).unwrap();
 
     insta::assert_debug_snapshot!(message, @r#"
     SimpleMessage {
@@ -220,9 +215,9 @@ fn test_simple_missing_fields() {
     }"#,
     );
 
+    deserialize_tracker_target(&mut state, &mut de, &mut tracker, &mut message).unwrap();
     state.in_scope(|| {
-        deserialize_tracker_target(&mut de, &mut message, &mut tracker).unwrap();
-        TrackedStructDeserializer::validate::<serde::de::value::Error>(&message, &mut tracker).unwrap()
+        TrackedStructDeserializer::validate(&message, &mut tracker).unwrap()
     });
 
     insta::assert_debug_snapshot!(message, @r#"
@@ -293,9 +288,7 @@ fn test_simple_duplicate_fields() {
     }"#,
     );
 
-    state.in_scope(|| {
-        deserialize_tracker_target(&mut de, &mut message, &mut tracker).unwrap();
-    });
+    deserialize_tracker_target(&mut state, &mut de, &mut tracker, &mut message).unwrap();
 
     insta::assert_debug_snapshot!(message, @r#"
     SimpleMessage {
@@ -344,9 +337,9 @@ fn test_simple_duplicate_fields() {
     }"#,
     );
 
+    deserialize_tracker_target(&mut state, &mut de, &mut tracker, &mut message).unwrap();
     state.in_scope(|| {
-        deserialize_tracker_target(&mut de, &mut message, &mut tracker).unwrap();
-        TrackedStructDeserializer::validate::<serde::de::value::Error>(&message, &mut tracker).unwrap();
+        TrackedStructDeserializer::validate(&message, &mut tracker).unwrap();
     });
 
     insta::assert_debug_snapshot!(message, @r#"
@@ -430,9 +423,9 @@ fn test_simple_invalid_type() {
     }"#,
     );
 
+    deserialize_tracker_target(&mut state, &mut de, &mut tracker, &mut message).unwrap();
     state.in_scope(|| {
-        deserialize_tracker_target(&mut de, &mut message, &mut tracker).unwrap();
-        TrackedStructDeserializer::validate::<serde::de::value::Error>(&message, &mut tracker).unwrap();
+        TrackedStructDeserializer::validate(&message, &mut tracker).unwrap();
     });
 
     insta::assert_debug_snapshot!(message, @r#"
@@ -510,10 +503,9 @@ fn test_simple_renamed_field() {
     }"#,
     );
 
+    deserialize_tracker_target(&mut state, &mut de, &mut tracker, &mut message).unwrap();
     state.in_scope(|| {
-        deserialize_tracker_target(&mut de, &mut message, &mut tracker).unwrap();
-
-        TrackedStructDeserializer::validate::<serde::de::value::Error>(&message, &mut tracker).unwrap();
+        TrackedStructDeserializer::validate(&message, &mut tracker).unwrap();
     });
 
     insta::assert_debug_snapshot!(state, @r"

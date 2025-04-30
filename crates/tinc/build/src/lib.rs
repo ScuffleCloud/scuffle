@@ -72,8 +72,9 @@ impl Config {
     #[cfg(feature = "prost")]
     fn compile_protos_prost(&mut self, protos: &[&str], includes: &[&str]) -> anyhow::Result<()> {
         use codegen::prost_sanatize::to_snake;
+        use codegen::utils::get_common_import_path;
         use prost_reflect::DescriptorPool;
-        use quote::ToTokens;
+        use quote::{ToTokens, quote};
         use syn::parse_quote;
         use types::ProtoTypeRegistry;
 
@@ -160,38 +161,74 @@ impl Config {
 
                 builder.emit_package(true).build_transport(true);
 
-                let service = service
-                    .methods
-                    .iter()
-                    .fold(
-                        tonic_build::manual::Service::builder()
-                            .name(service.name())
-                            .package(&service.package),
-                        |service_builder, (name, method)| {
-                            let mut builder = tonic_build::manual::Method::builder()
-                                .input_type("")
-                                .output_type("")
-                                .codec_path("")
-                                .name(to_snake(name))
-                                .route_name(name);
+                let make_service = |is_client: bool| {
+                    service
+                        .methods
+                        .iter()
+                        .fold(
+                            tonic_build::manual::Service::builder()
+                                .name(service.name())
+                                .package(&service.package),
+                            |service_builder, (name, method)| {
+                                let codec_path = if is_client {
+                                    quote!(::tinc::reexports::tonic::codec::ProstCodec)
+                                } else {
+                                    let path = get_common_import_path(&service.full_name, &method.codec_path);
+                                    quote!(#path::<::tinc::reexports::tonic::codec::ProstCodec<_, _>>)
+                                };
 
-                            if method.input.is_stream() {
-                                builder = builder.client_streaming()
-                            }
+                                let mut builder = tonic_build::manual::Method::builder()
+                                    .input_type(
+                                        method
+                                            .input
+                                            .value_type()
+                                            .rust_path(&service.full_name)
+                                            .to_token_stream()
+                                            .to_string(),
+                                    )
+                                    .output_type(
+                                        method
+                                            .output
+                                            .value_type()
+                                            .rust_path(&service.full_name)
+                                            .to_token_stream()
+                                            .to_string(),
+                                    )
+                                    .codec_path(codec_path.to_string())
+                                    .name(to_snake(name))
+                                    .route_name(name);
 
-                            if method.output.is_stream() {
-                                builder = builder.server_streaming();
-                            }
+                                if method.input.is_stream() {
+                                    builder = builder.client_streaming()
+                                }
 
-                            service_builder.method(builder.build())
-                        },
-                    )
-                    .build();
+                                if method.output.is_stream() {
+                                    builder = builder.server_streaming();
+                                }
 
-                let client = builder.generate_client(&service, "");
-                let server = builder.generate_server(&service, "");
+                                service_builder.method(builder.build())
+                            },
+                        )
+                        .build()
+                };
 
-                [parse_quote!(#client), parse_quote!(#server)]
+                let mut client: syn::ItemMod = syn::parse2(builder.generate_client(&make_service(true), "")).unwrap();
+                client.content.as_mut().unwrap().1.insert(
+                    0,
+                    parse_quote!(
+                        use ::tinc::reexports::tonic;
+                    ),
+                );
+
+                let mut server: syn::ItemMod = syn::parse2(builder.generate_server(&make_service(false), "")).unwrap();
+                server.content.as_mut().unwrap().1.insert(
+                    0,
+                    parse_quote!(
+                        use ::tinc::reexports::tonic;
+                    ),
+                );
+
+                [client.into(), server.into()]
             }));
         });
 

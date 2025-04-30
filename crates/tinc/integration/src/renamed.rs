@@ -7,18 +7,19 @@ mod pb {
 
 macro_rules! create_rename_test {
     ($message:ty, $field:literal) => {{
-        let mut value = <$message>::default();
+        let mut target = <$message>::default();
         let mut tracker = <$message as TrackerFor>::Tracker::default();
         let mut state = TrackerSharedState::default();
         let json = format!(r#"{{ "{}": "SOME VALUE!!!" }}"#, $field);
         let mut de = serde_json::Deserializer::from_str(&json);
 
+        deserialize_tracker_target(&mut state, &mut de, &mut tracker, &mut target).unwrap();
+
         state.in_scope(|| {
-            deserialize_tracker_target(&mut de, &mut value, &mut tracker).unwrap();
-            TrackedStructDeserializer::validate::<serde::de::value::Error>(&value, &mut tracker).unwrap();
+            TrackedStructDeserializer::validate(&target, &mut tracker).unwrap();
         });
 
-        (state, value, tracker)
+        (state, target, tracker)
     }};
 }
 
@@ -234,7 +235,7 @@ fn test_screaming_kebab_case() {
 
 #[test]
 fn test_rename_with_override() {
-    let mut value = pb::RenameAllWithOverrideMessage::default();
+    let mut target = pb::RenameAllWithOverrideMessage::default();
     let mut tracker = <pb::RenameAllWithOverrideMessage as TrackerFor>::Tracker::default();
     let mut state = TrackerSharedState::default();
     let json = r#"{
@@ -245,9 +246,9 @@ fn test_rename_with_override() {
 }"#;
     let mut de = serde_json::Deserializer::from_str(json);
 
+    deserialize_tracker_target(&mut state, &mut de, &mut tracker, &mut target).unwrap();
     state.in_scope(|| {
-        deserialize_tracker_target(&mut de, &mut value, &mut tracker).unwrap();
-        TrackedStructDeserializer::validate::<serde::de::value::Error>(&value, &mut tracker).unwrap();
+        TrackedStructDeserializer::validate(&target, &mut tracker).unwrap();
     });
 
     insta::assert_debug_snapshot!(state, @r"
@@ -256,7 +257,7 @@ fn test_rename_with_override() {
         errors: [],
     }
     ");
-    insta::assert_debug_snapshot!(value, @r#"
+    insta::assert_debug_snapshot!(target, @r#"
     RenameAllWithOverrideMessage {
         my_custom_field: "SOME VALUE!!!",
         my_custom_field2: "SOME VALUE 2!!!",
@@ -282,7 +283,7 @@ fn test_rename_with_override() {
         },
     )
     ");
-    insta::assert_json_snapshot!(value, @r#"
+    insta::assert_json_snapshot!(target, @r#"
     {
       "myCustomField": "SOME VALUE!!!",
       "MY_CUSTOM_FIELD": "SOME VALUE 2!!!",

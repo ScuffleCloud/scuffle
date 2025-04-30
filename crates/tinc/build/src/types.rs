@@ -3,6 +3,7 @@ use std::sync::Arc;
 
 use indexmap::IndexMap;
 use prost_reflect::Kind;
+use syn::parse_quote;
 use tinc_pb::http_endpoint_options;
 
 use crate::codegen::cel::{CelExpression, CelExpressions};
@@ -83,6 +84,29 @@ impl ProtoValueType {
             "google.protobuf.StringValue" => ProtoValueType::String,
             "google.protobuf.BytesValue" => ProtoValueType::Bytes,
             _ => ProtoValueType::Message(ProtoPath::new(path)),
+        }
+    }
+
+    pub fn rust_path(&self, package: &str) -> syn::Path {
+        match self {
+            ProtoValueType::WellKnown(ProtoWellKnownType::Timestamp) => parse_quote!(),
+            ProtoValueType::WellKnown(ProtoWellKnownType::Duration) => parse_quote!(),
+            ProtoValueType::WellKnown(ProtoWellKnownType::Struct) => parse_quote!(),
+            ProtoValueType::WellKnown(ProtoWellKnownType::Value) => parse_quote!(),
+            ProtoValueType::WellKnown(ProtoWellKnownType::Empty) => parse_quote!(),
+            ProtoValueType::WellKnown(ProtoWellKnownType::List) => parse_quote!(),
+            ProtoValueType::WellKnown(ProtoWellKnownType::Any) => parse_quote!(),
+            ProtoValueType::Bool => parse_quote!(bool),
+            ProtoValueType::Int32 => parse_quote!(i32),
+            ProtoValueType::Int64 => parse_quote!(i64),
+            ProtoValueType::UInt32 => parse_quote!(u32),
+            ProtoValueType::UInt64 => parse_quote!(u64),
+            ProtoValueType::Float => parse_quote!(f32),
+            ProtoValueType::Double => parse_quote!(f64),
+            ProtoValueType::String => parse_quote!(String), // todo?
+            ProtoValueType::Bytes => parse_quote!(Vec<u8>), // todo?
+            ProtoValueType::Enum(name) => get_common_import_path(package, name),
+            ProtoValueType::Message(name) => get_common_import_path(package, name),
         }
     }
 }
@@ -325,15 +349,6 @@ pub struct ProtoService {
     pub package: ProtoPath,
     pub options: ProtoServiceOptions,
     pub methods: IndexMap<String, ProtoServiceMethod>,
-}
-
-impl ProtoService {
-    pub fn name(&self) -> &str {
-        self.full_name
-            .strip_prefix(&*self.package)
-            .unwrap_or(&self.full_name)
-            .trim_matches('.')
-    }
 }
 
 #[derive(Debug, Clone, PartialEq)]

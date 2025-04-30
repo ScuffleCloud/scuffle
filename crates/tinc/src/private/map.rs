@@ -45,7 +45,7 @@ impl<K: Eq, T, M> Default for MapTracker<K, T, M> {
     }
 }
 
-pub trait Map<K, V> {
+pub(crate) trait Map<K, V> {
     fn get_mut<'a>(&'a mut self, key: &K) -> Option<&'a mut V>;
     fn get<'a, I>(&'a self, key: &I) -> Option<&'a V>
     where
@@ -54,11 +54,6 @@ pub trait Map<K, V> {
 
     fn insert(&mut self, key: K, value: V) -> Option<V>;
     fn reserve(&mut self, additional: usize);
-    fn len(&self) -> usize;
-    fn iterator<'a>(&'a self) -> impl Iterator<Item = (&'a K, &'a V)> + 'a
-    where
-        K: 'a,
-        V: 'a;
 }
 
 impl<K: Eq, T: Tracker, M: Default + Expected> Tracker for MapTracker<K, T, M> {
@@ -97,18 +92,6 @@ impl<K: std::hash::Hash + Eq, V: Default, S: BuildHasher> Map<K, V> for HashMap<
     fn reserve(&mut self, additional: usize) {
         HashMap::reserve(self, additional)
     }
-
-    fn iterator<'a>(&'a self) -> impl Iterator<Item = (&'a K, &'a V)> + 'a
-    where
-        K: 'a,
-        V: 'a,
-    {
-        HashMap::iter(self)
-    }
-
-    fn len(&self) -> usize {
-        HashMap::len(self)
-    }
 }
 
 impl<K: Ord, V: Default> Map<K, V> for BTreeMap<K, V> {
@@ -129,18 +112,6 @@ impl<K: Ord, V: Default> Map<K, V> for BTreeMap<K, V> {
     }
 
     fn reserve(&mut self, _: usize) {}
-
-    fn len(&self) -> usize {
-        BTreeMap::len(self)
-    }
-
-    fn iterator<'a>(&'a self) -> impl Iterator<Item = (&'a K, &'a V)> + 'a
-    where
-        K: 'a,
-        V: 'a,
-    {
-        BTreeMap::iter(self)
-    }
 }
 
 impl<'de, K, T, M> serde::de::DeserializeSeed<'de> for DeserializeHelper<'_, MapTracker<K, T, M>>

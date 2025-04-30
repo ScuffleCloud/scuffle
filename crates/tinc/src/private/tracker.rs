@@ -1,4 +1,4 @@
-use super::{DeserializeContent, Expected};
+use super::{DeserializeContent, Expected, ValidationError};
 
 pub trait Tracker {
     type Target: Expected;
@@ -21,9 +21,7 @@ pub trait TrackerDeserializer<'de>: Tracker + Sized {
 }
 
 pub trait TrackerValidation: Tracker {
-    fn validate<E>(&mut self, value: &Self::Target) -> Result<(), E>
-    where
-        E: serde::de::Error;
+    fn validate(&mut self, value: &Self::Target) -> Result<(), ValidationError>;
 }
 
 impl<'de, T> TrackerDeserializer<'de> for Box<T>
@@ -42,10 +40,7 @@ impl<T> TrackerValidation for Box<T>
 where
     T: TrackerValidation,
 {
-    fn validate<E>(&mut self, value: &Self::Target) -> Result<(), E>
-    where
-        E: serde::de::Error,
-    {
+    fn validate(&mut self, value: &Self::Target) -> Result<(), ValidationError> {
         self.as_mut().validate(value.as_ref())
     }
 }

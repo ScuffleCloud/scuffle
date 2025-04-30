@@ -4,7 +4,7 @@ use std::marker::PhantomData;
 
 use super::{
     DeserializeHelper, Expected, ProtoPathToken, SerdePathToken, TrackedError, Tracker, TrackerDeserializer, TrackerFor,
-    TrackerValidation, report_de_error, report_tracked_error, set_irrecoverable,
+    TrackerValidation, ValidationError, report_de_error, report_tracked_error, set_irrecoverable,
 };
 
 pub struct MapTracker<K: Eq, T, M> {
@@ -251,10 +251,7 @@ where
     MapTracker<K, T, M>: Tracker<Target = M>,
     T::Target: Default,
 {
-    fn validate<E>(&mut self, value: &Self::Target) -> Result<(), E>
-    where
-        E: serde::de::Error,
-    {
+    fn validate(&mut self, value: &Self::Target) -> Result<(), ValidationError> {
         for (key, tracker) in self.iter_mut() {
             let _token = (SerdePathToken::push_key(key), ProtoPathToken::push_key(key));
             if let Some(value) = value.get(key) {

@@ -17,16 +17,15 @@ where
         return Ok(());
     };
 
-    state.in_scope(|| {
-        match serde_qs::Deserializer::new(query_string.as_bytes()).map(|de| deserialize_tracker_target(de, target, tracker))
-        {
-            Err(err) | Ok(Err(err)) => Err(HttpErrorResponse {
-                code: tonic::Code::InvalidArgument.into(),
-                details: Default::default(),
-                message: &format!("invalid query string: {err}"),
-            }
-            .into_response()),
-            Ok(Ok(())) => Ok(()),
+    match serde_qs::Deserializer::new(query_string.as_bytes())
+        .map(|de| deserialize_tracker_target(state, de, tracker, target))
+    {
+        Err(err) | Ok(Err(err)) => Err(HttpErrorResponse {
+            code: tonic::Code::InvalidArgument.into(),
+            details: Default::default(),
+            message: &format!("invalid query string: {err}"),
         }
-    })
+        .into_response()),
+        Ok(Ok(())) => Ok(()),
+    }
 }

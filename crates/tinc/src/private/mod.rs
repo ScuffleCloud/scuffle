@@ -87,16 +87,23 @@ pub fn serde_ser_skip_default<T: Default + PartialEq>(value: &T) -> bool {
     value == &T::default()
 }
 
-pub fn deserialize_tracker_target<'de, D, T>(de: D, target: &mut T::Target, tracker: &mut T) -> Result<(), D::Error>
+pub fn deserialize_tracker_target<'de, D, T>(
+    state: &mut TrackerSharedState,
+    de: D,
+    tracker: &mut T,
+    target: &mut T::Target,
+) -> Result<(), D::Error>
 where
     D: serde::Deserializer<'de>,
     T: TrackerDeserializer<'de>,
 {
-    <T as TrackerDeserializer>::deserialize(
-        tracker,
-        target,
-        SerdeDeserializer {
-            deserializer: wrapper::DeserializerWrapper::new(de),
-        },
-    )
+    state.in_scope(|| {
+        <T as TrackerDeserializer>::deserialize(
+            tracker,
+            target,
+            SerdeDeserializer {
+                deserializer: wrapper::DeserializerWrapper::new(de),
+            },
+        )
+    })
 }

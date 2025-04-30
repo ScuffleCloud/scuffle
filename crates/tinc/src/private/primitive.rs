@@ -1,6 +1,9 @@
 use std::marker::PhantomData;
 
-use super::{DeserializeContent, DeserializeHelper, Expected, Tracker, TrackerDeserializer, TrackerFor, TrackerValidation};
+use super::{
+    DeserializeContent, DeserializeHelper, Expected, Tracker, TrackerDeserializer, TrackerFor, TrackerValidation,
+    ValidationError,
+};
 
 pub struct PrimitiveTracker<T>(PhantomData<T>);
 
@@ -76,10 +79,7 @@ impl<T> TrackerValidation for PrimitiveTracker<T>
 where
     PrimitiveTracker<T>: Tracker<Target = T>,
 {
-    fn validate<E>(&mut self, _: &Self::Target) -> Result<(), E>
-    where
-        E: serde::de::Error,
-    {
+    fn validate(&mut self, _: &Self::Target) -> Result<(), ValidationError> {
         Ok(())
     }
 }

@@ -134,6 +134,7 @@ fn value_to_str(v: &cel_interpreter::Value) -> impl std::fmt::Display + std::fmt
         cel_interpreter::Value::Null => fmt.write_str("null"),
     })
 }
+
 enum ConstantOrExpression {
     // we evaluate the expression at compile time
     Constant(cel_interpreter::Value),
@@ -276,6 +277,7 @@ fn preevaluate_expression(
 
 #[derive(Debug, Clone, PartialEq)]
 pub struct CelExpression {
+    pub raw_expr: String,
     pub expression: cel_parser::Expression,
     pub message: MessageFormat,
     pub json_schemas: Vec<serde_json::Value>,
@@ -310,6 +312,7 @@ impl CelExpression {
         }
 
         Ok(Self {
+            raw_expr: pb.expression.clone(),
             expression,
             message,
             json_schemas,

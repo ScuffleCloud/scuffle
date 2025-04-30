@@ -6,7 +6,7 @@ use super::buffer::Content;
 use super::{
     DeserializeContent, DeserializeHelper, Expected, IdentifiedValue, Identifier, IdentifierDeserializer, IdentifierFor,
     MapAccessValueDeserializer, SerdeDeserializer, SerdePathToken, TrackedError, Tracker, TrackerDeserializer, TrackerFor,
-    TrackerValidation, TrackerWrapper, report_de_error, report_tracked_error, set_irrecoverable,
+    TrackerValidation, TrackerWrapper, ValidationError, report_de_error, report_tracked_error, set_irrecoverable,
 };
 
 pub trait OneOfHelper {
@@ -55,9 +55,7 @@ where
     where
         D: DeserializeContent<'de>;
 
-    fn validate<E>(&self, tracker: &mut <Self::Tracker as TrackerWrapper>::Tracker) -> Result<(), E>
-    where
-        E: serde::de::Error;
+    fn validate(&self, tracker: &mut <Self::Tracker as TrackerWrapper>::Tracker) -> Result<(), ValidationError>;
 }
 
 impl<'de, T> serde::de::Visitor<'de> for DeserializeHelper<'_, TaggedOneOfTracker<T>>
@@ -123,10 +121,7 @@ where
     T: Tracker,
     T::Target: for<'de> TrackedOneOfDeserializer<'de, Tracker = OneOfTracker<T>>,
 {
-    fn validate<E>(&mut self, value: &Self::Target) -> Result<(), E>
-    where
-        E: serde::de::Error,
-    {
+    fn validate(&mut self, value: &Self::Target) -> Result<(), ValidationError> {
         match (self.0.as_mut(), value) {
             (Some(tracker), Some(value)) => value.validate(tracker),
             (None, Some(_)) => Err(serde::de::Error::custom("tracker not initialized but value is present")),
@@ -272,10 +267,7 @@ where
     T::Target: for<'de> TrackedOneOfDeserializer<'de, Tracker = TaggedOneOfTracker<T>>,
     <T::Target as IdentifierFor>::Identifier: TaggedOneOfIdentifier,
 {
-    fn validate<E>(&mut self, value: &Self::Target) -> Result<(), E>
-    where
-        E: serde::de::Error,
-    {
+    fn validate(&mut self, value: &Self::Target) -> Result<(), ValidationError> {
         if !self.content_buffer.is_empty() {
             let _guard = SerdePathToken::push_field(<T::Target as IdentifierFor>::Identifier::TAG.name());
             report_tracked_error(TrackedError::missing_field())?;

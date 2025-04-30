@@ -1,6 +1,6 @@
 use super::{
     DeserializeHelper, Expected, ProtoPathToken, SerdePathToken, Tracker, TrackerDeserializer, TrackerFor,
-    TrackerValidation, report_de_error,
+    TrackerValidation, ValidationError, report_de_error,
 };
 
 #[derive(Debug)]
@@ -127,16 +127,10 @@ where
     T: Tracker + Default + TrackerValidation,
     T::Target: Default,
 {
-    fn validate<E>(&mut self, value: &Self::Target) -> Result<(), E>
-    where
-        E: serde::de::Error,
-    {
+    fn validate(&mut self, value: &Self::Target) -> Result<(), ValidationError> {
         for (index, (value, tracker)) in value.iter().zip(self.iter_mut()).enumerate() {
             let _token = (SerdePathToken::push_index(index), ProtoPathToken::push_index(index));
-
-            if let Err(error) = tracker.validate::<E>(value) {
-                report_de_error(error)?;
-            }
+            tracker.validate(value)?;
         }
 
         Ok(())

@@ -67,18 +67,16 @@ where
 
     let mut de = serde_json::Deserializer::from_reader(body.reader());
 
-    state.in_scope(|| {
-        if let Err(err) = deserialize_tracker_target(&mut de, target, tracker) {
-            return Err(HttpErrorResponse {
-                code: tonic::Code::InvalidArgument.into(),
-                details: Default::default(),
-                message: &format!("failed to deserialize body: {err}"),
-            }
-            .into_response());
+    if let Err(err) = deserialize_tracker_target(state, &mut de, tracker, target) {
+        return Err(HttpErrorResponse {
+            code: tonic::Code::InvalidArgument.into(),
+            details: Default::default(),
+            message: &format!("failed to deserialize body: {err}"),
         }
+        .into_response());
+    }
 
-        Ok(())
-    })
+    Ok(())
 }
 
 pub trait BytesLikeTracker: Tracker {

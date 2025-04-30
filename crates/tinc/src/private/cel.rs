@@ -256,6 +256,18 @@ impl<'a> CelValue<'a> {
             (left, right) => Err(CelError::BadOperation { left, right, op: "in" }),
         }
     }
+
+    pub fn cel_size(item: impl CelValueConv<'a>) -> Result<u64, CelError<'a>> {
+        match item.conv() {
+            Self::Bytes(b) => Ok(b.len() as u64),
+            Self::BytesRef(b) => Ok(b.len() as u64),
+            Self::String(s) => Ok(s.len() as u64),
+            Self::StringRef(s) => Ok(s.len() as u64),
+            Self::List(l) => Ok(l.len() as u64),
+            Self::Map(m) => Ok(m.len() as u64),
+            item => Err(CelError::BadUnaryOperation { op: "size", value: item }),
+        }
+    }
 }
 
 impl PartialEq for CelValue<'_> {

@@ -4,19 +4,9 @@ use anyhow::Context;
 use functions::Function;
 use quote::quote;
 
-use crate::explore::Extension;
-
 pub mod compiler;
 pub mod functions;
 pub mod types;
-
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Ord, PartialOrd)]
-pub enum CelInput {
-    MapKey,
-    MapValue,
-    RepeatedItem,
-    Root,
-}
 
 #[derive(Debug, Clone, PartialEq)]
 pub struct MessageFormat {
@@ -327,104 +317,10 @@ impl CelExpression {
     }
 }
 
-pub fn gather_cel_expressions(
-    extension: &Extension<tinc_pb::PredefinedConstraint>,
-    field_options: &prost_reflect::DynamicMessage,
-) -> anyhow::Result<BTreeMap<CelInput, Vec<CelExpression>>> {
-    let mut results = BTreeMap::new();
-    let Some(extension) = extension.descriptor() else {
-        return Ok(results);
-    };
-
-    let mut input = CelInput::Root;
-    if field_options.has_extension(extension) {
-        let value = field_options.get_extension(extension);
-        let predef = value
-            .as_message()
-            .context("expected message")?
-            .transcode_to::<tinc_pb::PredefinedConstraint>()
-            .context("invalid predefined constraint")?;
-        match predef.r#type() {
-            tinc_pb::predefined_constraint::Type::Unspecified => {}
-            tinc_pb::predefined_constraint::Type::CustomExpression => {}
-            tinc_pb::predefined_constraint::Type::WrapperMapKey => {
-                input = CelInput::MapKey;
-            }
-            tinc_pb::predefined_constraint::Type::WrapperMapValue => {
-                input = CelInput::MapValue;
-            }
-            tinc_pb::predefined_constraint::Type::WrapperRepeatedItem => {
-                input = CelInput::RepeatedItem;
-            }
-        }
-    }
-
-    for (ext, value) in field_options.extensions() {
-        if &ext == extension {
-            continue;
-        }
-
-        if let Some(message) = value.as_message() {
-            explore_fields(extension, input, message, &mut results)?;
-        }
-    }
-
-    Ok(results)
-}
-
-fn explore_fields(
-    extension: &prost_reflect::ExtensionDescriptor,
-    input: CelInput,
-    value: &prost_reflect::DynamicMessage,
-    results: &mut BTreeMap<CelInput, Vec<CelExpression>>,
-) -> anyhow::Result<()> {
-    for (field, value) in value.fields() {
-        let options = field.options();
-        let mut input = input;
-        if options.has_extension(extension) {
-            let message = options.get_extension(extension);
-            let predef = message
-                .as_message()
-                .unwrap()
-                .transcode_to::<tinc_pb::PredefinedConstraint>()
-                .unwrap();
-            match predef.r#type() {
-                tinc_pb::predefined_constraint::Type::Unspecified => {}
-                tinc_pb::predefined_constraint::Type::CustomExpression => {
-                    if let Some(list) = value.as_list() {
-                        let messages = list
-                            .iter()
-                            .filter_map(|item| item.as_message())
-                            .filter_map(|msg| msg.transcode_to::<tinc_pb::CelExpression>().ok());
-                        for message in messages {
-                            let expr = CelExpression::new(&message, None)?;
-                            results.entry(input).or_default().push(expr);
-                        }
-                    }
-                    continue;
-                }
-                tinc_pb::predefined_constraint::Type::WrapperMapKey => {
-                    input = CelInput::MapKey;
-                }
-                tinc_pb::predefined_constraint::Type::WrapperMapValue => {
-                    input = CelInput::MapValue;
-                }
-                tinc_pb::predefined_constraint::Type::WrapperRepeatedItem => {
-                    input = CelInput::RepeatedItem;
-                }
-            }
-
-            for expr in &predef.cel {
-                results.entry(input).or_default().push(CelExpression::new(expr, Some(value))?);
-            }
-        }
-
-        let Some(message) = value.as_message() else {
-            continue;
-        };
-
-        explore_fields(extension, input, message, results)?;
-    }
-
-    Ok(())
+#[derive(Debug, PartialEq, Clone, Default)]
+pub struct CelExpressions {
+    pub field: Vec<CelExpression>,
+    pub map_key: Vec<CelExpression>,
+    pub map_value: Vec<CelExpression>,
+    pub repeated_item: Vec<CelExpression>,
 }

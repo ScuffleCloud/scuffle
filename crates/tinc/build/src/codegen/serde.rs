@@ -1,8 +1,12 @@
-use quote::{ToTokens, quote};
+use anyhow::Context;
+use quote::{ToTokens, format_ident, quote};
 use syn::parse_quote;
 use tinc_pb::oneof_options::Tagged;
 
 use super::Package;
+use super::cel::compiler::{CompiledExpr, Compiler};
+use super::cel::types::CelType;
+use super::cel::CelExpression;
 use crate::types::{
     ProtoEnumType, ProtoFieldJsonOmittable, ProtoMessageField, ProtoMessageType, ProtoModifiedValueType, ProtoOneOfType,
     ProtoType, ProtoTypeRegistry, ProtoValueType, ProtoVisibility,
@@ -303,6 +307,7 @@ struct FieldBuilder<'a> {
     field_enum_from_str_flattened_fn: &'a mut Vec<proc_macro2::TokenStream>,
     deserializer_fn: &'a mut Vec<proc_macro2::TokenStream>,
     verify_deserialize_fn: &'a mut Vec<proc_macro2::TokenStream>,
+    cel_validation_fn: &'a mut Vec<proc_macro2::TokenStream>,
 }
 
 fn handle_message_field(
@@ -501,6 +506,145 @@ fn handle_message_field(
         quote! {}
     };
 
+    let compiler = Compiler::new(registry);
+
+    let evaluate_expr = |compiler: &Compiler, expr: &CelExpression| {
+        let resolved = compiler.resolve(&expr.expression).context("cel expression")?;
+        let message = if !expr.message.args.is_empty() {
+            let message_fmt = &expr.message.format;
+            let args = expr
+                .message
+                .args
+                .iter()
+                .enumerate()
+                .map(|(idx, arg)| {
+                    let ident = format_ident!("arg_{idx}");
+                    let resolved = compiler.resolve(arg).context("resolving fmt arg")?;
+                    Ok(quote! {
+                        #ident = { #resolved }
+                    })
+                })
+                .collect::<anyhow::Result<Vec<_>>>()?;
+            quote! { format!(#message_fmt, #(#args),*) }
+        } else {
+            let message_fmt = &expr.message.format;
+            quote! { #message_fmt }
+        };
+
+        anyhow::Ok(quote! {
+            if !::tinc::__private::to_bool(#resolved) {
+                ::tinc::__private::report_tracked_error(
+                    ::tinc::__private::TrackedError::invalid_field(#message)
+                )
+            }
+        })
+    };
+
+    {
+        let mut compiler = compiler.child();
+        let (value_match, field_type) = if let ProtoType::Modified(ProtoModifiedValueType::Optional(ty)) = &field.ty {
+            (quote!(Some(value)), CelType::Proto(ProtoType::Value(ty.clone())))
+        } else {
+            (quote!(value), CelType::Proto(field.ty.clone()))
+        };
+        compiler.add_variable(
+            "input",
+            CompiledExpr {
+                expr: parse_quote!(value),
+                ty: field_type,
+            },
+        );
+        let exprs = field
+            .options
+            .cel_exprs
+            .field
+            .iter()
+            .map(|expr| evaluate_expr(&compiler, expr))
+            .collect::<anyhow::Result<Vec<_>>>()?;
+        field_builder.cel_validation_fn.push(quote! {{
+            if let #value_match = &self.#field_ident {
+                #push_field_token
+                #(#exprs)*
+            }
+        }});
+    }
+
+    match &field.ty {
+        ProtoType::Modified(ProtoModifiedValueType::Map(key, value))
+            if !field.options.cel_exprs.map_key.is_empty() || !field.options.cel_exprs.map_value.is_empty() =>
+        {
+            let key_exprs = {
+                let mut compiler = compiler.child();
+                compiler.add_variable(
+                    "input",
+                    CompiledExpr {
+                        expr: parse_quote!(key),
+                        ty: CelType::Proto(ProtoType::Value(key.clone())),
+                    },
+                );
+                field
+                    .options
+                    .cel_exprs
+                    .map_key
+                    .iter()
+                    .map(|expr| evaluate_expr(&compiler, expr))
+                    .collect::<anyhow::Result<Vec<_>>>()?
+            };
+            let value_exprs = {
+                let mut compiler = compiler.child();
+                compiler.add_variable(
+                    "input",
+                    CompiledExpr {
+                        expr: parse_quote!(value),
+                        ty: CelType::Proto(ProtoType::Value(value.clone())),
+                    },
+                );
+                field
+                    .options
+                    .cel_exprs
+                    .map_value
+                    .iter()
+                    .map(|expr| evaluate_expr(&compiler, expr))
+                    .collect::<anyhow::Result<Vec<_>>>()?
+            };
+
+            field_builder.cel_validation_fn.push(quote! {{
+                #push_field_token
+                for (key, value) in &self.#field_ident {
+                    let _token = ::tinc::__private::SerdePathToken::push_key(key);
+                    let _token = ::tinc::__private::ProtoPathToken::push_key(key);
+                    #(#key_exprs)*
+                    #(#value_exprs)*
+                }
+            }});
+        }
+        ProtoType::Modified(ProtoModifiedValueType::Repeated(item)) => {
+            let mut compiler = compiler.child();
+            compiler.add_variable(
+                "input",
+                CompiledExpr {
+                    expr: parse_quote!(item),
+                    ty: CelType::Proto(ProtoType::Value(item.clone())),
+                },
+            );
+            let exprs = field
+                .options
+                .cel_exprs
+                .repeated_item
+                .iter()
+                .map(|expr| evaluate_expr(&compiler, expr))
+                .collect::<anyhow::Result<Vec<_>>>()?;
+            field_builder.cel_validation_fn.push(quote! {{
+                for (idx, item) in self.#field_ident.iter().enumerate() {
+                    let _token = ::tinc::__private::SerdePathToken::push_index(idx);
+                    let _token = ::tinc::__private::ProtoPathToken::push_index(idx);
+                    #(#exprs)*
+                }
+            }});
+        }
+        _ => {}
+    }
+
     field_builder.verify_deserialize_fn.push(quote! {
         if let Some(tracker) = tracker.#field_ident.as_mut() {
             #push_field_token
@@ -533,6 +677,7 @@ pub(super) fn handle_message(
     let mut deserializer_fields = Vec::new();
     let mut deserializer_fn = Vec::new();
     let mut verify_deserialize_fn = Vec::new();
+    let mut cel_validation_fn = Vec::new();
 
     for (field_name, field) in message.fields.iter() {
         handle_message_field(
@@ -547,6 +692,7 @@ pub(super) fn handle_message(
                 field_enum_from_str_flattened_fn: &mut field_enum_from_str_flattened_fn,
                 deserializer_fn: &mut deserializer_fn,
                 verify_deserialize_fn: &mut verify_deserialize_fn,
+                cel_validation_fn: &mut cel_validation_fn,
             },
             &field_enum_ident,
             registry,

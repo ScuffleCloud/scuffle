@@ -2,7 +2,10 @@
 
 use anyhow::Context;
 pub mod codegen;
-mod explore;
+
+#[cfg(feature = "prost")]
+mod prost_explore;
+
 mod types;
 
 #[derive(Debug)]
@@ -69,7 +72,6 @@ impl Config {
     #[cfg(feature = "prost")]
     fn compile_protos_prost(&mut self, protos: &[&str], includes: &[&str]) -> anyhow::Result<()> {
         use codegen::prost_sanatize::to_snake;
-        use explore::Extensions;
         use prost_reflect::DescriptorPool;
         use quote::ToTokens;
         use syn::parse_quote;
@@ -105,7 +107,7 @@ impl Config {
 
         let pool = DescriptorPool::decode(&mut fds_bytes.as_slice()).context("failed to decode tonic fds")?;
 
-        let mut extensions = Extensions::new(&pool);
+        let mut extensions = prost_explore::Extensions::new(&pool);
 
         let mut registry = ProtoTypeRegistry::new();
 

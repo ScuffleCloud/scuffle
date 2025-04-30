@@ -63,7 +63,16 @@ impl<'a> Compiler<'a> {
         }
     }
 
-    fn child(&self) -> Compiler<'_> {
+    pub fn new(registry: &'a ProtoTypeRegistry) -> Self {
+        let mut compiler = Self::empty(registry);
+
+        compiler.register_function::<super::functions::Contains>();
+        compiler.register_function::<super::functions::Size>();
+
+        compiler
+    }
+
+    pub fn child(&self) -> Compiler<'_> {
         Compiler {
             parent: Some(self),
             registry: self.registry,

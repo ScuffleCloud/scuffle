@@ -5,7 +5,7 @@ use indexmap::IndexMap;
 use prost_reflect::Kind;
 use tinc_pb::http_endpoint_options;
 
-use crate::codegen::cel::{CelExpression, CelInput};
+use crate::codegen::cel::{CelExpression, CelExpressions};
 use crate::codegen::utils::{field_ident_from_str, get_common_import_path, type_ident_from_str};
 
 #[derive(Debug, Clone, PartialEq)]
@@ -224,7 +224,7 @@ pub struct ProtoFieldOptions {
     pub nullable: bool,
     pub flatten: bool,
     pub visibility: ProtoVisibility,
-    pub cel_exprs: BTreeMap<CelInput, Vec<CelExpression>>,
+    pub cel_exprs: CelExpressions,
 }
 
 #[derive(Debug, Clone, PartialEq)]

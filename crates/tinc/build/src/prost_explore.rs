@@ -1,31 +1,18 @@
+use std::collections::BTreeMap;
+
 use anyhow::Context;
 use convert_case::{Case, Casing};
 use indexmap::IndexMap;
 use prost_reflect::{DescriptorPool, EnumDescriptor, ExtensionDescriptor, Kind, MessageDescriptor, ServiceDescriptor};
 
-use super::types::ProtoServiceOptions;
-use crate::codegen::cel::{CelExpression, gather_cel_expressions};
+use crate::codegen::cel::{CelExpression, CelExpressions};
 use crate::codegen::prost_sanatize::{strip_enum_prefix, to_upper_camel};
 use crate::types::{
     ProtoEnumOptions, ProtoEnumType, ProtoEnumVariant, ProtoEnumVariantOptions, ProtoFieldJsonOmittable, ProtoFieldOptions,
     ProtoMessageField, ProtoMessageOptions, ProtoMessageType, ProtoModifiedValueType, ProtoOneOfField, ProtoOneOfOptions,
     ProtoOneOfType, ProtoPath, ProtoService, ProtoServiceMethod, ProtoServiceMethodEndpoint, ProtoServiceMethodIo,
-    ProtoType, ProtoTypeRegistry, ProtoValueType, ProtoVisibility, ProtoWellKnownType,
+    ProtoServiceOptions, ProtoType, ProtoTypeRegistry, ProtoValueType, ProtoVisibility, ProtoWellKnownType,
 };
-
-fn rename_field(field: &str, style: tinc_pb::RenameAll) -> Option<String> {
-    match style {
-        tinc_pb::RenameAll::LowerCase => Some(field.to_lowercase()),
-        tinc_pb::RenameAll::UpperCase => Some(field.to_uppercase()),
-        tinc_pb::RenameAll::PascalCase => Some(field.to_case(Case::Pascal)),
-        tinc_pb::RenameAll::CamelCase => Some(field.to_case(Case::Camel)),
-        tinc_pb::RenameAll::SnakeCase => Some(field.to_case(Case::Snake)),
-        tinc_pb::RenameAll::KebabCase => Some(field.to_case(Case::Kebab)),
-        tinc_pb::RenameAll::ScreamingSnakeCase => Some(field.to_case(Case::UpperSnake)),
-        tinc_pb::RenameAll::ScreamingKebabCase => Some(field.to_case(Case::UpperKebab)),
-        tinc_pb::RenameAll::Unspecified => None,
-    }
-}
 
 pub struct Extension<T> {
     name: &'static str,
@@ -44,10 +31,6 @@ impl<T> Extension<T> {
 
     pub fn descriptor(&self) -> Option<&ExtensionDescriptor> {
         self.descriptor.as_ref()
-    }
-
-    pub fn name(&self) -> &'static str {
-        self.name
     }
 
     fn decode(&self, incoming: &T::Incoming) -> anyhow::Result<Option<T>>
@@ -169,6 +152,20 @@ impl ProstExtension for tinc_pb::OneofOptions {
     }
 }
 
+fn rename_field(field: &str, style: tinc_pb::RenameAll) -> Option<String> {
+    match style {
+        tinc_pb::RenameAll::LowerCase => Some(field.to_lowercase()),
+        tinc_pb::RenameAll::UpperCase => Some(field.to_uppercase()),
+        tinc_pb::RenameAll::PascalCase => Some(field.to_case(Case::Pascal)),
+        tinc_pb::RenameAll::CamelCase => Some(field.to_case(Case::Camel)),
+        tinc_pb::RenameAll::SnakeCase => Some(field.to_case(Case::Snake)),
+        tinc_pb::RenameAll::KebabCase => Some(field.to_case(Case::Kebab)),
+        tinc_pb::RenameAll::ScreamingSnakeCase => Some(field.to_case(Case::UpperSnake)),
+        tinc_pb::RenameAll::ScreamingKebabCase => Some(field.to_case(Case::UpperKebab)),
+        tinc_pb::RenameAll::Unspecified => None,
+    }
+}
+
 pub struct Extensions {
     // Message extensions.
     ext_message: Extension<tinc_pb::MessageOptions>,
@@ -230,10 +227,9 @@ impl Extensions {
             return Ok(());
         }
 
-        let opts = self.ext_service.decode(service)?.unwrap_or_default();
-
         let mut methods = IndexMap::new();
 
+        let opts = self.ext_service.decode(service)?.unwrap_or_default();
         let service_full_name = ProtoPath::new(service.full_name());
 
         for method in service.methods() {
@@ -345,11 +341,9 @@ impl Extensions {
             return Ok(());
         }
 
+        let opts = opts.unwrap_or_default();
         let message_full_name = ProtoPath::new(message.full_name());
-
-        let rename_all = opts
-            .as_ref()
-            .and_then(|opts| opts.rename_all.and_then(|v| tinc_pb::RenameAll::try_from(v).ok()));
+        let rename_all = opts.rename_all.and_then(|v| tinc_pb::RenameAll::try_from(v).ok());
 
         registry.register_message(ProtoMessageType {
             full_name: message_full_name.clone(),
@@ -357,9 +351,8 @@ impl Extensions {
             fields: IndexMap::new(),
             options: ProtoMessageOptions {
                 cel: opts
-                    .as_ref()
-                    .map(|opts| opts.cel.as_slice())
-                    .unwrap_or_default()
+                    .cel
+                    .as_slice()
                     .iter()
                     .map(|expr| CelExpression::new(expr, None))
                     .collect::<anyhow::Result<_>>()?,
@@ -571,4 +564,120 @@ impl Extensions {
 
         Ok(())
     }
+}
+
+#[derive(Eq, PartialEq, Ord, PartialOrd, Copy, Clone)]
+enum CelInput {
+    Root,
+    MapKey,
+    MapValue,
+    RepeatedItem,
+}
+
+pub fn gather_cel_expressions(
+    extension: &Extension<tinc_pb::PredefinedConstraint>,
+    field_options: &prost_reflect::DynamicMessage,
+) -> anyhow::Result<CelExpressions> {
+    let Some(extension) = extension.descriptor() else {
+        return Ok(CelExpressions::default());
+    };
+
+    let mut results = BTreeMap::new();
+    let mut input = CelInput::Root;
+
+    if field_options.has_extension(extension) {
+        let value = field_options.get_extension(extension);
+        let predef = value
+            .as_message()
+            .context("expected message")?
+            .transcode_to::<tinc_pb::PredefinedConstraint>()
+            .context("invalid predefined constraint")?;
+        match predef.r#type() {
+            tinc_pb::predefined_constraint::Type::Unspecified => {}
+            tinc_pb::predefined_constraint::Type::CustomExpression => {}
+            tinc_pb::predefined_constraint::Type::WrapperMapKey => {
+                input = CelInput::MapKey;
+            }
+            tinc_pb::predefined_constraint::Type::WrapperMapValue => {
+                input = CelInput::MapValue;
+            }
+            tinc_pb::predefined_constraint::Type::WrapperRepeatedItem => {
+                input = CelInput::RepeatedItem;
+            }
+        }
+    }
+
+    for (ext, value) in field_options.extensions() {
+        if &ext == extension {
+            continue;
+        }
+
+        if let Some(message) = value.as_message() {
+            explore_fields(extension, input, message, &mut results)?;
+        }
+    }
+
+    Ok(CelExpressions {
+        field: results.remove(&CelInput::Root).unwrap_or_default(),
+        map_key: results.remove(&CelInput::MapKey).unwrap_or_default(),
+        map_value: results.remove(&CelInput::MapValue).unwrap_or_default(),
+        repeated_item: results.remove(&CelInput::RepeatedItem).unwrap_or_default(),
+    })
+}
+
+fn explore_fields(
+    extension: &prost_reflect::ExtensionDescriptor,
+    input: CelInput,
+    value: &prost_reflect::DynamicMessage,
+    results: &mut BTreeMap<CelInput, Vec<CelExpression>>,
+) -> anyhow::Result<()> {
+    for (field, value) in value.fields() {
+        let options = field.options();
+        let mut input = input;
+        if options.has_extension(extension) {
+            let message = options.get_extension(extension);
+            let predef = message
+                .as_message()
+                .unwrap()
+                .transcode_to::<tinc_pb::PredefinedConstraint>()
+                .unwrap();
+            match predef.r#type() {
+                tinc_pb::predefined_constraint::Type::Unspecified => {}
+                tinc_pb::predefined_constraint::Type::CustomExpression => {
+                    if let Some(list) = value.as_list() {
+                        let messages = list
+                            .iter()
+                            .filter_map(|item| item.as_message())
+                            .filter_map(|msg| msg.transcode_to::<tinc_pb::CelExpression>().ok());
+                        for message in messages {
+                            let expr = CelExpression::new(&message, None)?;
+                            results.entry(input).or_default().push(expr);
+                        }
+                    }
+                    continue;
+                }
+                tinc_pb::predefined_constraint::Type::WrapperMapKey => {
+                    input = CelInput::MapKey;
+                }
+                tinc_pb::predefined_constraint::Type::WrapperMapValue => {
+                    input = CelInput::MapValue;
+                }
+                tinc_pb::predefined_constraint::Type::WrapperRepeatedItem => {
+                    input = CelInput::RepeatedItem;
+                }
+            }
+
+            for expr in &predef.cel {
+                results.entry(input).or_default().push(CelExpression::new(expr, Some(value))?);
+            }
+        }
+
+        let Some(message) = value.as_message() else {
+            continue;
+        };
+
+        explore_fields(extension, input, message, results)?;
+    }
+
+    Ok(())
 }

@@ -40,7 +40,7 @@ fn into_fields_checked(
     let fields = data.take_struct().expect("unreachable: only structs supported");
 
     if let Some(field) = fields.iter().find(|f| {
-        [f.header, f.full_header, f.nested_box, f.from.is_some()]
+        [f.header, f.full_header, f.from.is_some()]
             .iter()
             .map(|b| *b as u8)
             .sum::<u8>()
@@ -48,7 +48,7 @@ fn into_fields_checked(
     }) {
         return Err(syn::Error::new_spanned(
             field.ident.as_ref().expect("unreachable: only named fields supported"),
-            "Only one of header, full_header, nested_box or from can be used",
+            "Only one of header, full_header or from can be used",
         ));
     }
 
@@ -105,8 +105,6 @@ struct IsoBoxField {
     header: bool,
     #[darling(default)]
     full_header: bool,
-    #[darling(default)]
-    nested_box: bool,
 }
 
 fn box_impl(input: DeriveInput) -> syn::Result<proc_macro2::TokenStream> {

@@ -6,7 +6,7 @@ publish = false
 [lints.rust]
 unexpected_cfgs = { level = "warn", check-cfg = ['cfg(coverage_nightly)'] }
 
-[dependencies]
+[dev-dependencies]
 tonic = "0.13.0"
 prost = "0.13.5"
 tinc.workspace = true

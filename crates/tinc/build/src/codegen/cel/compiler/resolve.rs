@@ -4,7 +4,7 @@ use syn::parse_quote;
 
 use super::{CompileError, CompiledExpr, Compiler, CompilerCtx, helpers};
 use crate::codegen::cel::types::CelType;
-use crate::codegen::types::{ProtoModifiedValueType, ProtoType, ProtoValueType};
+use crate::types::{ProtoModifiedValueType, ProtoType, ProtoValueType};
 
 pub fn resolve(ctx: &Compiler, expr: &Expression) -> Result<CompiledExpr, CompileError> {
     match expr {

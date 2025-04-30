@@ -1,17 +1,31 @@
 use anyhow::Context;
+use convert_case::{Case, Casing};
 use indexmap::IndexMap;
 use prost_reflect::{DescriptorPool, EnumDescriptor, ExtensionDescriptor, Kind, MessageDescriptor, ServiceDescriptor};
 
-use super::prost_sanatize::{strip_enum_prefix, to_upper_camel};
 use super::types::ProtoServiceOptions;
-use super::utils::rename_field;
 use crate::codegen::cel::{CelExpression, gather_cel_expressions};
-use crate::codegen::types::{
+use crate::codegen::prost_sanatize::{strip_enum_prefix, to_upper_camel};
+use crate::types::{
     ProtoEnumOptions, ProtoEnumType, ProtoEnumVariant, ProtoEnumVariantOptions, ProtoFieldJsonOmittable, ProtoFieldOptions,
     ProtoMessageField, ProtoMessageOptions, ProtoMessageType, ProtoModifiedValueType, ProtoOneOfField, ProtoOneOfOptions,
     ProtoOneOfType, ProtoPath, ProtoService, ProtoServiceMethod, ProtoServiceMethodEndpoint, ProtoServiceMethodIo,
     ProtoType, ProtoTypeRegistry, ProtoValueType, ProtoVisibility, ProtoWellKnownType,
 };
+
+fn rename_field(field: &str, style: tinc_pb::RenameAll) -> Option<String> {
+    match style {
+        tinc_pb::RenameAll::LowerCase => Some(field.to_lowercase()),
+        tinc_pb::RenameAll::UpperCase => Some(field.to_uppercase()),
+        tinc_pb::RenameAll::PascalCase => Some(field.to_case(Case::Pascal)),
+        tinc_pb::RenameAll::CamelCase => Some(field.to_case(Case::Camel)),
+        tinc_pb::RenameAll::SnakeCase => Some(field.to_case(Case::Snake)),
+        tinc_pb::RenameAll::KebabCase => Some(field.to_case(Case::Kebab)),
+        tinc_pb::RenameAll::ScreamingSnakeCase => Some(field.to_case(Case::UpperSnake)),
+        tinc_pb::RenameAll::ScreamingKebabCase => Some(field.to_case(Case::UpperKebab)),
+        tinc_pb::RenameAll::Unspecified => None,
+    }
+}
 
 pub struct Extension<T> {
     name: &'static str,
@@ -91,7 +105,7 @@ trait ProstExtension: prost::Message + Default {
     fn get_options(incoming: &Self::Incoming) -> Option<prost_reflect::DynamicMessage>;
 }
 
-impl ProstExtension for tinc_pb::SchemaMessageOptions {
+impl ProstExtension for tinc_pb::MessageOptions {
     type Incoming = prost_reflect::MessageDescriptor;
 
     fn get_options(incoming: &Self::Incoming) -> Option<prost_reflect::DynamicMessage> {
@@ -99,7 +113,7 @@ impl ProstExtension for tinc_pb::SchemaMessageOptions {
     }
 }
 
-impl ProstExtension for tinc_pb::SchemaFieldOptions {
+impl ProstExtension for tinc_pb::FieldOptions {
     type Incoming = prost_reflect::FieldDescriptor;
 
     fn get_options(incoming: &Self::Incoming) -> Option<prost_reflect::DynamicMessage> {
@@ -115,7 +129,7 @@ impl ProstExtension for tinc_pb::PredefinedConstraint {
     }
 }
 
-impl ProstExtension for tinc_pb::SchemaEnumOptions {
+impl ProstExtension for tinc_pb::EnumOptions {
     type Incoming = prost_reflect::EnumDescriptor;
 
     fn get_options(incoming: &Self::Incoming) -> Option<prost_reflect::DynamicMessage> {
@@ -123,7 +137,7 @@ impl ProstExtension for tinc_pb::SchemaEnumOptions {
     }
 }
 
-impl ProstExtension for tinc_pb::SchemaVariantOptions {
+impl ProstExtension for tinc_pb::EnumVariantOptions {
     type Incoming = prost_reflect::EnumValueDescriptor;
 
     fn get_options(incoming: &Self::Incoming) -> Option<prost_reflect::DynamicMessage> {
@@ -131,7 +145,7 @@ impl ProstExtension for tinc_pb::SchemaVariantOptions {
     }
 }
 
-impl ProstExtension for tinc_pb::HttpEndpointOptions {
+impl ProstExtension for tinc_pb::MethodOptions {
     type Incoming = prost_reflect::MethodDescriptor;
 
     fn get_options(incoming: &Self::Incoming) -> Option<prost_reflect::DynamicMessage> {
@@ -139,7 +153,7 @@ impl ProstExtension for tinc_pb::HttpEndpointOptions {
     }
 }
 
-impl ProstExtension for tinc_pb::HttpRouterOptions {
+impl ProstExtension for tinc_pb::ServiceOptions {
     type Incoming = prost_reflect::ServiceDescriptor;
 
     fn get_options(incoming: &Self::Incoming) -> Option<prost_reflect::DynamicMessage> {
@@ -147,7 +161,7 @@ impl ProstExtension for tinc_pb::HttpRouterOptions {
     }
 }
 
-impl ProstExtension for tinc_pb::SchemaOneofOptions {
+impl ProstExtension for tinc_pb::OneofOptions {
     type Incoming = prost_reflect::OneofDescriptor;
 
     fn get_options(incoming: &Self::Incoming) -> Option<prost_reflect::DynamicMessage> {
@@ -157,18 +171,18 @@ impl ProstExtension for tinc_pb::SchemaOneofOptions {
 
 pub struct Extensions {
     // Message extensions.
-    ext_message: Extension<tinc_pb::SchemaMessageOptions>,
-    ext_field: Extension<tinc_pb::SchemaFieldOptions>,
-    ext_oneof: Extension<tinc_pb::SchemaOneofOptions>,
+    ext_message: Extension<tinc_pb::MessageOptions>,
+    ext_field: Extension<tinc_pb::FieldOptions>,
+    ext_oneof: Extension<tinc_pb::OneofOptions>,
     ext_predefined: Extension<tinc_pb::PredefinedConstraint>,
 
     // Enum extensions.
-    ext_enum: Extension<tinc_pb::SchemaEnumOptions>,
-    ext_variant: Extension<tinc_pb::SchemaVariantOptions>,
+    ext_enum: Extension<tinc_pb::EnumOptions>,
+    ext_variant: Extension<tinc_pb::EnumVariantOptions>,
 
     // Service extensions.
-    ext_http_endpoint: Extension<tinc_pb::HttpEndpointOptions>,
-    ext_http_router: Extension<tinc_pb::HttpRouterOptions>,
+    ext_method: Extension<tinc_pb::MethodOptions>,
+    ext_service: Extension<tinc_pb::ServiceOptions>,
 }
 
 const ANY_NOT_SUPPORTED_ERROR: &str = "uses `google.protobuf.Any`, this is currently not supported.";
@@ -181,8 +195,8 @@ impl Extensions {
             ext_predefined: Extension::new("tinc.predefined", pool),
             ext_enum: Extension::new("tinc.enum", pool),
             ext_variant: Extension::new("tinc.variant", pool),
-            ext_http_endpoint: Extension::new("tinc.http_endpoint", pool),
-            ext_http_router: Extension::new("tinc.http_router", pool),
+            ext_method: Extension::new("tinc.method", pool),
+            ext_service: Extension::new("tinc.service", pool),
             ext_oneof: Extension::new("tinc.oneof", pool),
         }
     }
@@ -216,7 +230,7 @@ impl Extensions {
             return Ok(());
         }
 
-        let opts = self.ext_http_router.decode(service)?.unwrap_or_default();
+        let opts = self.ext_service.decode(service)?.unwrap_or_default();
 
         let mut methods = IndexMap::new();
 
@@ -252,12 +266,14 @@ impl Extensions {
                     .with_context(|| format!("method {}", method.full_name()))?;
             }
 
-            let mut endpoints = Vec::new();
-            for endpoint in self
-                .ext_http_endpoint
-                .decode_all(&method)
+            let opts = self
+                .ext_method
+                .decode(&method)
                 .with_context(|| format!("method {}", method.full_name()))?
-            {
+                .unwrap_or_default();
+
+            let mut endpoints = Vec::new();
+            for endpoint in opts.endpoint {
                 let Some(method) = endpoint.method else {
                     continue;
                 };
@@ -266,11 +282,6 @@ impl Extensions {
                     method,
                     input: endpoint.input,
                     response: endpoint.response,
-                    cel: endpoint
-                        .cel
-                        .iter()
-                        .map(|expr| CelExpression::new(expr, None))
-                        .collect::<anyhow::Result<_>>()?,
                 });
             }
 
@@ -290,6 +301,11 @@ impl Extensions {
                         ProtoServiceMethodIo::Single(method_output)
                     },
                     endpoints,
+                    cel: opts
+                        .cel
+                        .iter()
+                        .map(|expr| CelExpression::new(expr, None))
+                        .collect::<anyhow::Result<_>>()?,
                 },
             );
         }
@@ -340,7 +356,7 @@ impl Extensions {
             package: ProtoPath::new(message.package_name()),
             fields: IndexMap::new(),
             options: ProtoMessageOptions {
-                cel_expressions: opts
+                cel: opts
                     .as_ref()
                     .map(|opts| opts.cel.as_slice())
                     .unwrap_or_default()

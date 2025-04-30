@@ -2,14 +2,8 @@
 #![cfg_attr(coverage_nightly, coverage(off))]
 
 fn main() {
-    let config = tinc_build::Config::new();
-
-    let mut prost_config = prost_build::Config::new();
-
-    prost_config.btree_map(["."]);
-
-    config
-        .with_prost(prost_config)
+    tinc_build::Config::prost()
+        .btree_map(".")
         .compile_protos(
             &[
                 "pb/simple.proto",

@@ -5,36 +5,35 @@ package tinc;
 import "google/protobuf/descriptor.proto";
 
 extend google.protobuf.MessageOptions {
-  SchemaMessageOptions message = 15501;
+  MessageOptions message = 15501;
 }
 
 extend google.protobuf.FieldOptions {
-  SchemaFieldOptions field = 15502;
+  FieldOptions field = 15502;
   optional PredefinedConstraint predefined = 15508;
 }
 
 extend google.protobuf.EnumOptions {
-  SchemaEnumOptions enum = 15503;
+  EnumOptions enum = 15503;
 }
 
 extend google.protobuf.EnumValueOptions {
-  SchemaVariantOptions variant = 15504;
+  EnumVariantOptions variant = 15504;
 }
 
 extend google.protobuf.MethodOptions {
-  // protolint:disable:next REPEATED_FIELD_NAMES_PLURALIZED
-  repeated HttpEndpointOptions http_endpoint = 15505;
+  MethodOptions method = 15505;
 }
 
 extend google.protobuf.ServiceOptions {
-  HttpRouterOptions http_router = 15506;
+  ServiceOptions service = 15506;
 }
 
 extend google.protobuf.OneofOptions {
-  SchemaOneofOptions oneof = 15507;
+  OneofOptions oneof = 15507;
 }
 
-message HttpRouterOptions {
+message ServiceOptions {
   optional string prefix = 1;
 }
 
@@ -54,7 +53,14 @@ enum RenameAll {
   SCREAMING_KEBAB_CASE = 8;
 }
 
-message SchemaMessageOptions {
+message MethodOptions {
+  // protolint:disable:next REPEATED_FIELD_NAMES_PLURALIZED
+  repeated HttpEndpointOptions endpoint = 1;
+  // protolint:disable:next REPEATED_FIELD_NAMES_PLURALIZED
+  repeated CelExpression cel = 2;
+}
+
+message MessageOptions {
   optional bool generate = 1;
   optional RenameAll rename_all = 2;
   optional bool skip_validation = 101;
@@ -90,7 +96,7 @@ enum JsonOmittable {
   TRUE_BUT_STILL_SERIALIZE = 3;
 }
 
-message SchemaFieldOptions {
+message FieldOptions {
   optional string rename = 1;
 
   // Deserialization:
@@ -647,12 +653,12 @@ message CelExpression {
   repeated string jsonschemas = 5;
 }
 
-message SchemaEnumOptions {
+message EnumOptions {
   optional bool repr_enum = 2;
   optional RenameAll rename_all = 3;
 }
 
-message SchemaVariantOptions {
+message EnumVariantOptions {
   optional string rename = 1;
   optional Visibility visibility = 2;
 }
@@ -706,14 +712,9 @@ message HttpEndpointOptions {
   }
 
   Response response = 9;
-
-  //protolint:disable:next REPEATED_FIELD_NAMES_PLURALIZED
-  // Custom expressions evaluated on the incoming request
-  // specific for this endpoint.
-  repeated CelExpression cel = 10;
 }
 
-message SchemaOneofOptions {
+message OneofOptions {
   optional string rename = 1;
   optional RenameAll rename_all = 4;
   // Deserialization:

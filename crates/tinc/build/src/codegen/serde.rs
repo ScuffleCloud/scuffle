@@ -1,27 +1,26 @@
-use std::collections::BTreeMap;
-
 use quote::{ToTokens, quote};
 use syn::parse_quote;
-use tinc_pb::schema_oneof_options::Tagged;
+use tinc_pb::oneof_options::Tagged;
 
-use super::types::{
-    ProtoEnumType, ProtoFieldJsonOmittable, ProtoMessageField, ProtoMessageType, ProtoOneOfType, ProtoPath,
-    ProtoTypeRegistry, ProtoValueType, ProtoVisibility,
+use super::Package;
+use crate::types::{
+    ProtoEnumType, ProtoFieldJsonOmittable, ProtoMessageField, ProtoMessageType, ProtoModifiedValueType, ProtoOneOfType,
+    ProtoType, ProtoTypeRegistry, ProtoValueType, ProtoVisibility,
 };
-use crate::codegen::types::{ProtoModifiedValueType, ProtoType};
 
 fn handle_oneof(
-    prost: &mut tonic_build::Config,
-    modules: &mut BTreeMap<ProtoPath, Vec<syn::Item>>,
+    package: &mut Package,
+    field_name: &str,
     oneof: &ProtoOneOfType,
     registry: &ProtoTypeRegistry,
 ) -> anyhow::Result<()> {
-    prost.enum_attribute(
-        &oneof.full_name,
-        quote!(#[derive(::tinc::reexports::serde::Serialize)]).to_string(),
-    );
-    prost.enum_attribute(&oneof.full_name, quote!(#[derive(::tinc::__private::Tracker)]).to_string());
-    prost.field_attribute(&oneof.full_name, quote!(#[tinc(oneof)]).to_string());
+    let message_config = package.message_config(&oneof.message);
+    message_config.field_attribute(field_name, parse_quote!(#[tinc(oneof)]));
+
+    let oneof_config = message_config.oneof_config(field_name);
+
+    oneof_config.attribute(parse_quote!(#[derive(::tinc::reexports::serde::Serialize)]));
+    oneof_config.attribute(parse_quote!(#[derive(::tinc::__private::Tracker)]));
 
     let variant_identifier_ident = quote::format_ident!("___identifier");
     let mut oneof_identifier_for_ident = variant_identifier_ident.clone();
@@ -34,8 +33,8 @@ fn handle_oneof(
     let mut validation_impl = Vec::new();
 
     let tagged_impl = if let Some(Tagged { tag, content }) = &oneof.options.tagged {
-        prost.enum_attribute(&oneof.full_name, quote!(#[serde(tag = #tag, content = #content)]).to_string());
-        prost.enum_attribute(&oneof.full_name, quote!(#[tinc(tagged)]).to_string());
+        oneof_config.attribute(parse_quote!(#[serde(tag = #tag, content = #content)]));
+        oneof_config.attribute(parse_quote!(#[tinc(tagged)]));
         oneof_identifier_for_ident = quote::format_ident!("___tagged_identifier");
         quote! {
             #[derive(
@@ -95,9 +94,9 @@ fn handle_oneof(
             .json_name
             .clone();
 
-        prost.field_attribute(&field.full_name, quote!(#[serde(rename = #json_name)]).to_string());
+        oneof_config.field_attribute(name, parse_quote!(#[serde(rename = #json_name)]));
         if !field.options.visibility.has_input() {
-            prost.field_attribute(&field.full_name, quote!(#[serde(skip_serializing)]).to_string());
+            oneof_config.field_attribute(name, parse_quote!(#[serde(skip_serializing)]));
         }
 
         if field.options.visibility.has_output() {
@@ -177,8 +176,8 @@ fn handle_oneof(
             let enum_opts = registry.get_enum(path).expect("enum not found");
             let path_str = enum_opts.rust_path(&oneof.message).to_token_stream().to_string();
             let serialize_with = format!("::tinc::__private::serialize_enum::<{path_str}, _, _>");
-            prost.field_attribute(&field.full_name, quote!(#[serde(serialize_with = #serialize_with)]).to_string());
-            prost.field_attribute(&field.full_name, quote!(#[tinc(enum = #path_str)]).to_string());
+            oneof_config.field_attribute(name, parse_quote!(#[serde(serialize_with = #serialize_with)]));
+            oneof_config.field_attribute(name, parse_quote!(#[tinc(enum = #path_str)]));
         }
     });
 
@@ -187,7 +186,7 @@ fn handle_oneof(
     let oneof_path = oneof.rust_path(&message.package);
     let oneof_ident = oneof_path.segments.last().unwrap().ident.clone();
 
-    modules.entry(message.package.clone()).or_default().push(parse_quote! {
+    package.push_item(parse_quote! {
         const _: () = {
             #tagged_impl
 
@@ -307,21 +306,22 @@ struct FieldBuilder<'a> {
 }
 
 fn handle_message_field(
-    prost: &mut tonic_build::Config,
-    modules: &mut BTreeMap<ProtoPath, Vec<syn::Item>>,
-    name: &str,
+    package: &mut Package,
+    field_name: &str,
     field: &ProtoMessageField,
-    builder: FieldBuilder<'_>,
+    field_builder: FieldBuilder<'_>,
     field_enum_ident: &syn::Ident,
     registry: &ProtoTypeRegistry,
 ) -> anyhow::Result<()> {
     let json_name = &field.options.json_name;
 
-    prost.field_attribute(&field.full_name, quote!(#[serde(rename = #json_name)]).to_string());
+    let message_config = package.message_config(&field.message);
+
+    message_config.field_attribute(field_name, parse_quote!(#[serde(rename = #json_name)]));
 
     let message = registry.get_message(&field.message).expect("message not found");
 
-    let ident = quote::format_ident!("__field_{name}");
+    let ident = quote::format_ident!("__field_{field_name}");
     if field.options.flatten {
         let flattened_ty_path = match &field.ty {
             ProtoType::Modified(ProtoModifiedValueType::Optional(ProtoValueType::Message(path)))
@@ -333,47 +333,47 @@ fn handle_message_field(
             _ => anyhow::bail!("flattened fields must be messages or oneofs"),
         };
 
-        prost.field_attribute(&field.full_name, quote! { #[serde(flatten)] }.to_string());
+        message_config.field_attribute(field_name, parse_quote!(#[serde(flatten)]));
 
         if field.options.visibility.has_input() {
             let flattened_identifier = quote! {
                 <#flattened_ty_path as ::tinc::__private::IdentifierFor>::Identifier
             };
 
-            builder.deserializer_fields.push(quote! {
+            field_builder.deserializer_fields.push(quote! {
                 <#flattened_identifier as ::tinc::__private::Identifier>::OPTIONS
             });
-            builder.field_enum_variants.push(quote! {
+            field_builder.field_enum_variants.push(quote! {
                 #ident(#flattened_identifier)
             });
-            builder.field_enum_name_fn.push(quote! {
+            field_builder.field_enum_name_fn.push(quote! {
                 #field_enum_ident::#ident(flatten) => ::tinc::__private::Identifier::name(flatten)
             });
-            builder.field_enum_from_str_flattened_fn.push(quote! {
+            field_builder.field_enum_from_str_flattened_fn.push(quote! {
                 #ident
             });
         }
     } else if field.options.visibility.has_input() {
-        builder.deserializer_fields.push(quote! {
+        field_builder.deserializer_fields.push(quote! {
             &[#json_name]
         });
-        builder.field_enum_variants.push(quote! {
+        field_builder.field_enum_variants.push(quote! {
             #ident
         });
-        builder.field_enum_name_fn.push(quote! {
+        field_builder.field_enum_name_fn.push(quote! {
             #field_enum_ident::#ident => #json_name
         });
-        builder.field_enum_from_str_fn.push(quote! {
+        field_builder.field_enum_from_str_fn.push(quote! {
             #json_name => #field_enum_ident::#ident
         });
     }
 
     if !field.options.visibility.has_output() {
-        prost.field_attribute(&field.full_name, quote!(#[serde(skip_serializing)]).to_string());
+        message_config.field_attribute(field_name, parse_quote!(#[serde(skip_serializing)]));
     } else if matches!(field.options.json_omittable, ProtoFieldJsonOmittable::True) {
-        prost.field_attribute(
-            &field.full_name,
-            quote!(#[serde(skip_serializing_if = "::tinc::__private::serde_ser_skip_default")]).to_string(),
+        message_config.field_attribute(
+            field_name,
+            parse_quote!(#[serde(skip_serializing_if = "::tinc::__private::serde_ser_skip_default")]),
         );
     }
 
@@ -396,11 +396,8 @@ fn handle_message_field(
 
             let serialize_with = format!("::tinc::__private::serialize_enum::<{path_str}, _, _>");
 
-            prost.field_attribute(
-                &field.full_name,
-                quote!(#[serde(serialize_with = #serialize_with)]).to_string(),
-            );
-            prost.field_attribute(&field.full_name, quote!(#[tinc(enum = #path_str)]).to_string());
+            message_config.field_attribute(field_name, parse_quote!(#[serde(serialize_with = #serialize_with)]));
+            message_config.field_attribute(field_name, parse_quote!(#[tinc(enum = #path_str)]));
         }
         ProtoType::Value(ProtoValueType::WellKnown(_))
         | ProtoType::Modified(
@@ -408,13 +405,13 @@ fn handle_message_field(
             | ProtoModifiedValueType::Map(_, ProtoValueType::WellKnown(_))
             | ProtoModifiedValueType::Repeated(ProtoValueType::WellKnown(_)),
         ) => {
-            prost.field_attribute(
-                &field.full_name,
-                quote!(#[serde(serialize_with = "::tinc::__private::serialize_well_known")]).to_string(),
+            message_config.field_attribute(
+                field_name,
+                parse_quote!(#[serde(serialize_with = "::tinc::__private::serialize_well_known")]),
             );
         }
         ProtoType::Modified(ProtoModifiedValueType::OneOf(oneof)) => {
-            handle_oneof(prost, modules, oneof, registry)?;
+            handle_oneof(package, field_name, oneof, registry)?;
         }
         _ => {}
     };
@@ -444,9 +441,9 @@ fn handle_message_field(
     }
 
     if field.options.flatten {
-        builder.deserializer_fn.push(quote! {
+        field_builder.deserializer_fn.push(quote! {
             #field_enum_ident::#ident(field) => {
-                let _token = ::tinc::__private::ProtoPathToken::push_field(#name);
+                let _token = ::tinc::__private::ProtoPathToken::push_field(#field_name);
                 if let Err(error) = ::tinc::__private::TrackerDeserializeIdentifier::<'de>::deserialize(
                     (#tracker).get_or_insert_default(),
                     #value,
@@ -458,9 +455,9 @@ fn handle_message_field(
             }
         });
     } else {
-        builder.deserializer_fn.push(quote! {
+        field_builder.deserializer_fn.push(quote! {
             #field_enum_ident::#ident => {
-                let _token = ::tinc::__private::ProtoPathToken::push_field(#name);
+                let _token = ::tinc::__private::ProtoPathToken::push_field(#field_name);
                 let tracker = #tracker;
 
                 if !::tinc::__private::tracker_allow_duplicates(tracker.as_ref()) {
@@ -482,14 +479,14 @@ fn handle_message_field(
 
     let push_field_token = if field.options.flatten {
         quote! {
-            let _token = ::tinc::__private::ProtoPathToken::push_field(#name);
+            let _token = ::tinc::__private::ProtoPathToken::push_field(#field_name);
         }
     } else {
         quote! {
             let _token = ::tinc::__private::SerdePathToken::push_field(
                 ::tinc::__private::Identifier::name(&#field_enum_ident::#ident),
             );
-            let _token = ::tinc::__private::ProtoPathToken::push_field(#name);
+            let _token = ::tinc::__private::ProtoPathToken::push_field(#field_name);
         }
     };
 
@@ -504,7 +501,7 @@ fn handle_message_field(
         quote! {}
     };
 
-    builder.verify_deserialize_fn.push(quote! {
+    field_builder.verify_deserialize_fn.push(quote! {
         if let Some(tracker) = tracker.#field_ident.as_mut() {
             #push_field_token
             ::tinc::__private::TrackerValidation::validate(tracker, &self.#field_ident)?;
@@ -518,19 +515,14 @@ fn handle_message_field(
 
 pub(super) fn handle_message(
     message: &ProtoMessageType,
-    prost: &mut tonic_build::Config,
-    modules: &mut BTreeMap<ProtoPath, Vec<syn::Item>>,
+    package: &mut Package,
     registry: &ProtoTypeRegistry,
 ) -> anyhow::Result<()> {
-    prost.message_attribute(
-        &message.full_name,
-        quote!(#[derive(::tinc::reexports::serde::Serialize)]).to_string(),
-    );
-    prost.message_attribute(
-        &message.full_name,
-        quote!(#[serde(crate = "::tinc::reexports::serde")]).to_string(),
-    );
-    prost.message_attribute(&message.full_name, quote!(#[derive(::tinc::__private::Tracker)]).to_string());
+    let message_config = package.message_config(&message.full_name);
+
+    message_config.attribute(parse_quote!(#[derive(::tinc::reexports::serde::Serialize)]));
+    message_config.attribute(parse_quote!(#[serde(crate = "::tinc::reexports::serde")]));
+    message_config.attribute(parse_quote!(#[derive(::tinc::__private::Tracker)]));
 
     let field_enum_ident = quote::format_ident!("___field_enum");
 
@@ -544,8 +536,7 @@ pub(super) fn handle_message(
 
     for (field_name, field) in message.fields.iter() {
         handle_message_field(
-            prost,
-            modules,
+            package,
             field_name,
             field,
             FieldBuilder {
@@ -565,7 +556,7 @@ pub(super) fn handle_message(
     let message_path = message.rust_path(&message.package);
     let message_ident = message_path.segments.last().unwrap().ident.clone();
 
-    let field_enum_impl = parse_quote! {
+    package.push_item(parse_quote! {
         const _: () = {
             #[derive(
                 ::std::fmt::Debug,
@@ -643,67 +634,47 @@ pub(super) fn handle_message(
                 }
             }
         };
-    };
-
-    modules.entry(message.package.clone()).or_default().push(field_enum_impl);
+    });
 
     Ok(())
 }
 
-pub(super) fn handle_enum(
-    enum_: &ProtoEnumType,
-    prost: &mut tonic_build::Config,
-    modules: &mut BTreeMap<ProtoPath, Vec<syn::Item>>,
-) -> anyhow::Result<()> {
+pub(super) fn handle_enum(enum_: &ProtoEnumType, package: &mut Package) -> anyhow::Result<()> {
     let enum_path = enum_.rust_path(&enum_.package);
     let enum_ident = enum_path.segments.last().unwrap().ident.clone();
+    let enum_config = package.enum_config(&enum_.full_name);
 
     if enum_.options.repr_enum {
-        prost.enum_attribute(
-            &enum_.full_name,
-            quote!(#[derive(::tinc::reexports::serde_repr::Serialize_repr)]).to_string(),
-        );
-        prost.enum_attribute(
-            &enum_.full_name,
-            quote!(#[derive(::tinc::reexports::serde_repr::Deserialize_repr)]).to_string(),
-        );
+        enum_config.attribute(parse_quote!(#[derive(::tinc::reexports::serde_repr::Serialize_repr)]));
+        enum_config.attribute(parse_quote!(#[derive(::tinc::reexports::serde_repr::Deserialize_repr)]));
     } else {
-        prost.enum_attribute(
-            &enum_.full_name,
-            quote!(#[derive(::tinc::reexports::serde::Serialize)]).to_string(),
-        );
-        prost.enum_attribute(
-            &enum_.full_name,
-            quote!(#[derive(::tinc::reexports::serde::Deserialize)]).to_string(),
-        );
+        enum_config.attribute(parse_quote!(#[derive(::tinc::reexports::serde::Serialize)]));
+        enum_config.attribute(parse_quote!(#[derive(::tinc::reexports::serde::Deserialize)]));
     }
 
-    prost.enum_attribute(
-        &enum_.full_name,
-        quote!(#[serde(crate = "::tinc::reexports::serde")]).to_string(),
-    );
+    enum_config.attribute(parse_quote!(#[serde(crate = "::tinc::reexports::serde")]));
 
-    for variant in enum_.variants.values() {
+    for (name, variant) in &enum_.variants {
         if !enum_.options.repr_enum {
             let json_name = &variant.options.json_name;
-            prost.field_attribute(&variant.full_name, quote!(#[serde(rename = #json_name)]).to_string());
+            enum_config.variant_attribute(name, parse_quote!(#[serde(rename = #json_name)]));
         }
 
         match variant.options.visibility {
             ProtoVisibility::InputOnly => {
-                prost.field_attribute(&variant.full_name, quote!(#[serde(skip_serializing)]).to_string());
+                enum_config.variant_attribute(name, parse_quote!(#[serde(skip_serializing)]));
             }
             ProtoVisibility::OutputOnly => {
-                prost.field_attribute(&variant.full_name, quote!(#[serde(skip_deserializing)]).to_string());
+                enum_config.variant_attribute(name, parse_quote!(#[serde(skip_deserializing)]));
             }
             ProtoVisibility::Skip => {
-                prost.field_attribute(&variant.full_name, quote!(#[serde(skip)]).to_string());
+                enum_config.variant_attribute(name, parse_quote!(#[serde(skip)]));
             }
             _ => {}
         }
     }
 
-    modules.entry(enum_.package.clone()).or_default().push(parse_quote! {
+    package.push_item(parse_quote! {
         const _: () = {
             impl ::tinc::__private::Expected for #enum_path {
                 fn expecting(formatter: &mut std::fmt::Formatter) -> std::fmt::Result {

@@ -6,7 +6,7 @@ use syn::parse_quote;
 use super::FuncFmtter;
 use super::functions::Function;
 use super::types::CelType;
-use crate::codegen::types::{ProtoPath, ProtoTypeRegistry};
+use crate::types::{ProtoPath, ProtoTypeRegistry};
 
 mod helpers;
 mod resolve;

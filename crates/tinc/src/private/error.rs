@@ -3,6 +3,9 @@ use std::collections::HashMap;
 use std::fmt::Write;
 use std::marker::PhantomData;
 
+use axum::response::IntoResponse;
+use tonic_types::StatusExt;
+
 use super::FuncFmt;
 
 #[derive(Debug)]
@@ -365,6 +368,18 @@ impl std::fmt::Debug for MapKey {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         write!(f, "MapKey({:?})", self.0)
     }
+}
+
+pub fn handle_tonic_status(status: &tonic::Status) -> axum::response::Response {
+    let code = HttpErrorResponseCode::from(status.code());
+    let details = status.get_error_details();
+    let details = HttpErrorResponseDetails::from(&details);
+    HttpErrorResponse {
+        message: status.message(),
+        code,
+        details,
+    }
+    .into_response()
 }
 
 #[derive(Debug, serde::Serialize)]

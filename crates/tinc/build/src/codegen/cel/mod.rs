@@ -4,7 +4,7 @@ use anyhow::Context;
 use functions::Function;
 use quote::quote;
 
-use super::explore::Extension;
+use crate::explore::Extension;
 
 pub mod compiler;
 pub mod functions;

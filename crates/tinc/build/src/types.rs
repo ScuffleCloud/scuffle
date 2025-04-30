@@ -5,8 +5,8 @@ use indexmap::IndexMap;
 use prost_reflect::Kind;
 use tinc_pb::http_endpoint_options;
 
-use super::cel::{CelExpression, CelInput};
-use super::utils::{field_ident_from_str, get_common_import_path, type_ident_from_str};
+use crate::codegen::cel::{CelExpression, CelInput};
+use crate::codegen::utils::{field_ident_from_str, get_common_import_path, type_ident_from_str};
 
 #[derive(Debug, Clone, PartialEq)]
 pub enum ProtoType {
@@ -149,7 +149,7 @@ impl ProtoMessageType {
 
 #[derive(Debug, Clone, PartialEq, Default)]
 pub struct ProtoMessageOptions {
-    pub cel_expressions: Vec<CelExpression>,
+    pub cel: Vec<CelExpression>,
 }
 
 #[derive(Debug, Clone, PartialEq)]
@@ -243,7 +243,7 @@ impl ProtoOneOfType {
 
 #[derive(Debug, Clone, PartialEq)]
 pub struct ProtoOneOfOptions {
-    pub tagged: Option<tinc_pb::schema_oneof_options::Tagged>,
+    pub tagged: Option<tinc_pb::oneof_options::Tagged>,
 }
 
 #[derive(Debug, Clone, PartialEq)]
@@ -327,6 +327,15 @@ pub struct ProtoService {
     pub methods: IndexMap<String, ProtoServiceMethod>,
 }
 
+impl ProtoService {
+    pub fn name(&self) -> &str {
+        self.full_name
+            .strip_prefix(&*self.package)
+            .unwrap_or(&self.full_name)
+            .trim_matches('.')
+    }
+}
+
 #[derive(Debug, Clone, PartialEq)]
 pub struct ProtoServiceOptions {
     pub prefix: Option<String>,
@@ -362,6 +371,7 @@ pub struct ProtoServiceMethod {
     pub input: ProtoServiceMethodIo,
     pub output: ProtoServiceMethodIo,
     pub endpoints: Vec<ProtoServiceMethodEndpoint>,
+    pub cel: Vec<CelExpression>,
 }
 
 #[derive(Debug, Clone, PartialEq)]
@@ -369,7 +379,6 @@ pub struct ProtoServiceMethodEndpoint {
     pub method: http_endpoint_options::Method,
     pub input: Option<http_endpoint_options::Input>,
     pub response: Option<http_endpoint_options::Response>,
-    pub cel: Vec<CelExpression>,
 }
 
 #[derive(Debug, Clone)]

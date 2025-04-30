@@ -1,21 +1,6 @@
-use convert_case::{Case, Casing};
 use syn::Ident;
 
 use super::prost_sanatize;
-
-pub fn rename_field(field: &str, style: tinc_pb::RenameAll) -> Option<String> {
-    match style {
-        tinc_pb::RenameAll::LowerCase => Some(field.to_lowercase()),
-        tinc_pb::RenameAll::UpperCase => Some(field.to_uppercase()),
-        tinc_pb::RenameAll::PascalCase => Some(field.to_case(Case::Pascal)),
-        tinc_pb::RenameAll::CamelCase => Some(field.to_case(Case::Camel)),
-        tinc_pb::RenameAll::SnakeCase => Some(field.to_case(Case::Snake)),
-        tinc_pb::RenameAll::KebabCase => Some(field.to_case(Case::Kebab)),
-        tinc_pb::RenameAll::ScreamingSnakeCase => Some(field.to_case(Case::UpperSnake)),
-        tinc_pb::RenameAll::ScreamingKebabCase => Some(field.to_case(Case::UpperKebab)),
-        tinc_pb::RenameAll::Unspecified => None,
-    }
-}
 
 pub fn field_ident_from_str(s: impl AsRef<str>) -> Ident {
     syn::parse_str(&prost_sanatize::to_snake(s.as_ref())).unwrap()

@@ -2,7 +2,7 @@ use syn::parse_quote;
 
 use super::CompiledExpr;
 use crate::codegen::cel::types::CelType;
-use crate::codegen::types::{ProtoModifiedValueType, ProtoType, ProtoValueType};
+use crate::types::{ProtoModifiedValueType, ProtoType, ProtoValueType};
 
 pub fn to_bool(CompiledExpr { expr, ty }: CompiledExpr) -> CompiledExpr {
     match ty {

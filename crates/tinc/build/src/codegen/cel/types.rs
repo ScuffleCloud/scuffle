@@ -1,4 +1,4 @@
-use crate::codegen::types::{ProtoModifiedValueType, ProtoType, ProtoValueType, ProtoWellKnownType};
+use crate::types::{ProtoModifiedValueType, ProtoType, ProtoValueType, ProtoWellKnownType};
 
 #[derive(Debug, Clone, PartialEq)]
 pub enum CelType {

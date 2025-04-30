@@ -3,7 +3,7 @@ use syn::parse_quote;
 use super::Function;
 use crate::codegen::cel::compiler::{CompileError, CompiledExpr, CompilerCtx};
 use crate::codegen::cel::types::CelType;
-use crate::codegen::types::{ProtoModifiedValueType, ProtoType, ProtoValueType};
+use crate::types::{ProtoModifiedValueType, ProtoType, ProtoValueType};
 
 pub struct Size;
 

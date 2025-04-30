@@ -4,7 +4,7 @@
 #![deny(unreachable_pub)]
 
 use darling::FromDeriveInput;
-use quote::{ToTokens, format_ident, quote};
+use quote::quote;
 use syn::{DeriveInput, parse_macro_input};
 
 #[proc_macro_derive(IsoBox, attributes(iso_box))]
@@ -146,13 +146,17 @@ fn box_impl(input: DeriveInput) -> syn::Result<proc_macro2::TokenStream> {
     for field in fields.into_iter().filter(|f| !f.full_header && !f.header) {
         let field_name = field.ident.clone().expect("unreachable: only named fields supported");
 
-        if field.remaining {
-            field_parsers.push(read_field_remaining(field, &crate_path)?);
+        let read_field = if field.remaining {
+            read_field_remaining(field, &crate_path)
         } else if field.from.is_some() {
-            field_parsers.push(read_field_with_from(field, &crate_path, false)?);
+            read_field_with_from(field, &crate_path)
         } else {
-            field_parsers.push(read_field(field, &crate_path, false)?);
-        }
+            read_field(field, &crate_path)
+        };
+
+        field_parsers.push(quote! {
+            let #field_name = #read_field;
+        });
 
         constructor_fields.push(field_name);
     }
@@ -165,6 +169,7 @@ fn box_impl(input: DeriveInput) -> syn::Result<proc_macro2::TokenStream> {
             const TYPE: [u8; 4] = *#box_type;
 
             fn demux<R: ::scuffle_bytes_util::zero_copy::ZeroCopyReader<'a>>(header: #crate_path::BoxHeader, mut payload_reader: R) -> ::std::io::Result<Self> {
+                use #crate_path::read_field::{i24, i48, u24, u48};
                 #(#field_parsers)*
                 Ok(Self {
                     #header_constructor
@@ -177,204 +182,38 @@ fn box_impl(input: DeriveInput) -> syn::Result<proc_macro2::TokenStream> {
     Ok(output)
 }
 
-fn read_field_remaining(mut field: IsoBoxField, crate_path: &syn::Path) -> syn::Result<proc_macro2::TokenStream> {
-    let field_name = field.ident.clone().expect("unreachable: only named fields supported");
+fn read_field_remaining(field: IsoBoxField, crate_path: &syn::Path) -> proc_macro2::TokenStream {
+    let field_type = field.ty;
 
-    let syn::Type::Path(type_path) = field.ty.clone() else {
-        return Err(syn::Error::new_spanned(
-            field.ty,
-            "Only Vec<T> is supported for remaining fields",
-        ));
-    };
-
-    let segment = type_path
-        .path
-        .segments
-        .last()
-        .expect("unreachable: type path should have at least one segment");
-    if segment.ident != "Vec" {
-        return Err(syn::Error::new_spanned(
-            segment,
-            "Only Vec<T> is supported for remaining fields",
-        ));
+    if let Some(from) = field.from {
+        quote! {
+            ::std::iter::Iterator::collect::<::std::vec::Vec<_>>(
+                ::std::iter::Iterator::map(
+                    ::std::iter::IntoIterator::into_iter(<::std::vec::Vec<#from> as #crate_path::read_field::ReadRemaining>::read_remaining(&mut payload_reader, None)?),
+                    ::std::convert::From::from,
+                )
+            )
+        }
+    } else {
+        quote! {
+            <#field_type as #crate_path::read_field::ReadRemaining>::read_remaining(&mut payload_reader, None)?
+        }
     }
-    let syn::PathArguments::AngleBracketed(syn::AngleBracketedGenericArguments { args, .. }) = &segment.arguments else {
-        return Err(syn::Error::new_spanned(
-            segment,
-            "Only Vec<T> is supported for remaining fields",
-        ));
-    };
-    let Some(inner_type) = args.into_iter().find_map(|arg| {
-        if let syn::GenericArgument::Type(ty) = arg {
-            Some(ty)
-        } else {
-            None
-        }
-    }) else {
-        return Err(syn::Error::new_spanned(
-            segment,
-            "Only Vec<T> is supported for remaining fields",
-        ));
-    };
-
-    field.ty = inner_type.clone();
-
-    let read_field = if field.from.is_some() {
-        read_field_with_from(field, crate_path, true)?
-    } else {
-        read_field(field, crate_path, true)?
-    };
-
-    Ok(quote! {
-        let #field_name = {
-            let mut remaining = Vec::new();
-            loop {
-                let value = {
-                    #read_field
-                    #field_name
-                };
-                remaining.push(value);
-            }
-            remaining
-        };
-    })
 }
 
-fn read_field_with_from(
-    field: IsoBoxField,
-    crate_path: &syn::Path,
-    break_on_eof: bool,
-) -> syn::Result<proc_macro2::TokenStream> {
-    let field_name = field.ident.clone().expect("unreachable: only named fields supported");
+fn read_field_with_from(field: IsoBoxField, crate_path: &syn::Path) -> proc_macro2::TokenStream {
     let field_type = field.ty.clone();
-    let read_field = read_field(field, crate_path, break_on_eof)?;
+    let read_field = read_field(field, crate_path);
 
-    Ok(quote! {
-        #read_field
-        let #field_name: #field_type = ::std::convert::From::from(#field_name);
-    })
+    quote! {
+        <#field_type as ::std::convert::From<_>>::from(#read_field)
+    }
 }
 
-const READ_FN_TYPES: [&str; 16] = [
-    "f32", "f64", "i8", "i16", "i24", "i32", "i48", "i64", "i128", "u8", "u16", "u24", "u32", "u48", "u64", "u128",
-];
-
-fn read_field(field: IsoBoxField, crate_path: &syn::Path, break_on_eof: bool) -> syn::Result<proc_macro2::TokenStream> {
-    let field_name = field.ident.expect("unreachable: only named fields supported");
+fn read_field(field: IsoBoxField, crate_path: &syn::Path) -> proc_macro2::TokenStream {
     let field_type = field.from.unwrap_or(field.ty);
-    let field_type_str = field_type.to_token_stream().to_string();
 
-    if field.nested_box {
-        if break_on_eof {
-            Ok(quote! {
-                let #field_name = {
-                    let box_header = match #crate_path::BoxHeader::demux(&mut payload_reader) {
-                        Ok(v) => v,
-                        Err(e) if e.kind() == ::std::io::ErrorKind::UnexpectedEof => {
-                            break;
-                        },
-                        Err(e) => return Err(e),
-                    };
-
-                    let res = if let Some(size) = box_header.payload_size() {
-                        <#field_type as IsoBox<'a>>::demux(
-                            box_header,
-                            ::scuffle_bytes_util::zero_copy::ZeroCopyReader::take(&mut payload_reader, size),
-                        )
-                    } else {
-                        <#field_type as IsoBox<'a>>::demux(box_header, &mut payload_reader)
-                    };
-
-                    match res {
-                        Ok(v) => v,
-                        Err(e) if e.kind() == ::std::io::ErrorKind::UnexpectedEof => {
-                            break;
-                        },
-                        Err(e) => return Err(e),
-                    }
-                };
-            })
-        } else {
-            Ok(quote! {
-                let #field_name = {
-                    let box_header = #crate_path::BoxHeader::demux(&mut payload_reader)?;
-
-                    if let Some(size) = box_header.payload_size() {
-                        <#field_type as IsoBox<'a>>::demux(
-                            box_header,
-                            ::scuffle_bytes_util::zero_copy::ZeroCopyReader::take(&mut payload_reader, size),
-                        )?
-                    } else {
-                        <#field_type as IsoBox<'a>>::demux(box_header, &mut payload_reader)?
-                    }
-                };
-            })
-        }
-    } else if READ_FN_TYPES.contains(&field_type_str.as_str()) {
-        let read_fn = format_ident!("read_{}", field_type_str);
-
-        // u8 and i8 do not require endianness
-        let read_fn = if field_type_str == "u8" || field_type_str == "i8" {
-            quote! { #read_fn }
-        } else {
-            quote! {
-                #read_fn::<::byteorder::BigEndian>
-            }
-        };
-
-        if break_on_eof {
-            Ok(quote! {
-                let #field_name = match ::byteorder::ReadBytesExt::#read_fn(&mut ::scuffle_bytes_util::zero_copy::ZeroCopyReader::as_std(&mut payload_reader)) {
-                    Ok(v) => v,
-                    Err(e) if e.kind() == ::std::io::ErrorKind::UnexpectedEof => {
-                        break;
-                    },
-                    Err(e) => return Err(e),
-                };
-            })
-        } else {
-            Ok(quote! {
-                let #field_name = ::byteorder::ReadBytesExt::#read_fn(&mut ::scuffle_bytes_util::zero_copy::ZeroCopyReader::as_std(&mut payload_reader))?;
-            })
-        }
-    } else if let syn::Type::Array(type_array) = field_type {
-        let syn::Type::Path(syn::TypePath { path, .. }) = &*type_array.elem else {
-            return Err(syn::Error::new_spanned(
-                type_array,
-                format!("Only u8 arrays supprted, found: {field_type_str}"),
-            ));
-        };
-
-        if !path.is_ident("u8") {
-            return Err(syn::Error::new_spanned(
-                path,
-                format!("Only u8 arrays supprted, found: {field_type_str}"),
-            ));
-        }
-
-        let len = type_array.len.clone();
-
-        if break_on_eof {
-            Ok(quote! {
-                let #field_name: #type_array = {
-                    match ::scuffle_bytes_util::zero_copy::ZeroCopyReader::try_read(&mut payload_reader, #len) {
-                        Ok(v) => ::std::result::Result::unwrap(::std::convert::TryInto::try_into(::scuffle_bytes_util::BytesCow::as_bytes(&v))),
-                        Err(e) if e.kind() == ::std::io::ErrorKind::UnexpectedEof => {
-                            break;
-                        },
-                        Err(e) => return Err(e),
-                    }
-                };
-            })
-        } else {
-            Ok(quote! {
-                let #field_name: #type_array = ::std::result::Result::unwrap(::std::convert::TryInto::try_into(::scuffle_bytes_util::BytesCow::as_bytes(&::scuffle_bytes_util::zero_copy::ZeroCopyReader::try_read(&mut payload_reader, #len)?)));
-            })
-        }
-    } else {
-        return Err(syn::Error::new_spanned(
-            field_type,
-            format!("Unsupported type: {field_type_str}"),
-        ));
+    quote! {
+        <#field_type as #crate_path::read_field::ReadField>::read_field(&mut payload_reader)?
     }
 }

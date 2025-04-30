@@ -314,17 +314,17 @@ fn read_field(field: IsoBoxField, crate_path: &syn::Path, break_on_eof: bool) ->
         let read_fn = format_ident!("read_{}", field_type_str);
 
         // u8 and i8 do not require endianness
-        let generics = if field_type_str == "u8" || field_type_str == "i8" {
-            None
+        let read_fn = if field_type_str == "u8" || field_type_str == "i8" {
+            quote! { #read_fn }
         } else {
-            Some(quote! {
-                <::byteorder::BigEndian>
-            })
+            quote! {
+                #read_fn::<::byteorder::BigEndian>
+            }
         };
 
         if break_on_eof {
             Ok(quote! {
-                let #field_name = match ::byteorder::ReadBytesExt::#read_fn::#generics(&mut ::scuffle_bytes_util::zero_copy::ZeroCopyReader::as_std(&mut payload_reader)) {
+                let #field_name = match ::byteorder::ReadBytesExt::#read_fn(&mut ::scuffle_bytes_util::zero_copy::ZeroCopyReader::as_std(&mut payload_reader)) {
                     Ok(v) => v,
                     Err(e) if e.kind() == ::std::io::ErrorKind::UnexpectedEof => {
                         break;
@@ -334,7 +334,7 @@ fn read_field(field: IsoBoxField, crate_path: &syn::Path, break_on_eof: bool) ->
             })
         } else {
             Ok(quote! {
-                let #field_name = ::byteorder::ReadBytesExt::#read_fn::#generics(&mut ::scuffle_bytes_util::zero_copy::ZeroCopyReader::as_std(&mut payload_reader))?;
+                let #field_name = ::byteorder::ReadBytesExt::#read_fn(&mut ::scuffle_bytes_util::zero_copy::ZeroCopyReader::as_std(&mut payload_reader))?;
             })
         }
     } else if let syn::Type::Array(type_array) = field_type {

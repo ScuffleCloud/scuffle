@@ -361,8 +361,6 @@ pub struct TrackerSharedState {
     pub errors: Vec<TrackedError>,
 }
 
-pub struct RequestAlreadyValidated;
-
 impl TrackerSharedState {
     pub fn in_scope<F, R>(&mut self, f: F) -> R
     where

@@ -39,6 +39,7 @@ num-traits = "0.2.19"
 # Parsing / Formatting numbers
 itoa = "1.0.1"
 ryu = "1.0.14"
+regex = "1"
 
 linear-map = "1.2.0"
 

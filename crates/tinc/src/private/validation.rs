@@ -78,7 +78,7 @@ pub trait ValidateMessage {
 
 impl<V> ValidateMessage for Box<V>
 where
-    V: ValidateMessage
+    V: ValidateMessage,
 {
     fn validate(&self) -> Result<(), ValidationError> {
         self.as_ref().validate()

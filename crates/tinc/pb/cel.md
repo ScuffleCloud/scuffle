@@ -47,7 +47,6 @@ The following table has a list of all functions that are available in the CEL ex
 | `endsWith` | `bytes` | `bytes` or `string` | `bool` | interpreted, native | Returns true if the bytes ends with the sub sequence. |
 | `matches` | `string` | `string` | `bool` | interpreted, native | Returns true if the string matches the regex. |
 | `matches` | `bytes` | `string` | `bool` | interpreted, native | Returns true if the bytes matches the regex, if the bytes is not valid utf-8, returns false. |
-| `tuple` | None | `T`, ... | `tuple<T, ...>` | interpreted, native | Returns a tuple of the values. |
 | `string` | `string` | None | `string` | interpreted, native | Converts the value to a string. (noop) |
 | `string` | `bytes` | None | `string` | interpreted, native | Converts the value to a string, non-valid utf-8 characters are replaced. |
 | `string` | `int` | None | `string` | interpreted, native | Converts the value to a string. |

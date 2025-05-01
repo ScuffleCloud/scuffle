@@ -1,7 +1,6 @@
 use std::collections::{BTreeMap, HashMap};
 
 use anyhow::Context;
-use functions::Function;
 use quote::quote;
 
 pub mod compiler;
@@ -132,6 +131,8 @@ fn value_to_str(v: &cel_interpreter::Value) -> impl std::fmt::Display + std::fmt
             fmt.finish()
         }
         cel_interpreter::Value::Null => fmt.write_str("null"),
+        cel_interpreter::Value::Duration(dur) => std::fmt::Display::fmt(dur, fmt),
+        cel_interpreter::Value::Timestamp(ts) => std::fmt::Display::fmt(ts, fmt),
     })
 }
 
@@ -163,6 +164,12 @@ fn cel_value_to_expr(value: cel_interpreter::Value) -> cel_parser::Expression {
                 .collect()
         }),
         cel_interpreter::Value::Null => cel_parser::Expression::Atom(cel_parser::Atom::Null),
+        cel_interpreter::Value::Duration(dur) => {
+            cel_parser::Expression::Atom(cel_parser::Atom::String(dur.to_string().into()))
+        }
+        cel_interpreter::Value::Timestamp(ts) => {
+            cel_parser::Expression::Atom(cel_parser::Atom::String(ts.to_string().into()))
+        }
     }
 }
 
@@ -290,8 +297,7 @@ impl CelExpression {
             ctx.add_variable_from_value("this", prost_to_cel(this.clone())?);
         }
 
-        functions::Contains::add_to_ctx(&mut ctx);
-        functions::Size::add_to_ctx(&mut ctx);
+        functions::add_to_context(&mut ctx);
 
         let message = MessageFormat::new(&pb.message, &ctx, this.is_some()).context("failed to create message format")?;
 

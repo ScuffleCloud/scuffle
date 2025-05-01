@@ -257,6 +257,91 @@ impl<'a> CelValue<'a> {
         }
     }
 
+    pub fn cel_starts_with(left: impl CelValueConv<'a>, right: impl CelValueConv<'a>) -> Result<bool, CelError<'a>> {
+        match (left.conv(), right.conv()) {
+            (
+                left @ (CelValue::Bytes(_) | CelValue::BytesRef(_) | CelValue::String(_) | CelValue::StringRef(_)),
+                right @ (CelValue::Bytes(_) | CelValue::BytesRef(_) | CelValue::String(_) | CelValue::StringRef(_)),
+            ) => {
+                let r = match &right {
+                    CelValue::Bytes(b) => b.as_ref(),
+                    CelValue::BytesRef(b) => b,
+                    CelValue::String(s) => s.as_bytes(),
+                    CelValue::StringRef(s) => s.as_bytes(),
+                    _ => unreachable!(),
+                };
+
+                let l = match &left {
+                    CelValue::Bytes(b) => b.as_ref(),
+                    CelValue::BytesRef(b) => b,
+                    CelValue::String(s) => s.as_bytes(),
+                    CelValue::StringRef(s) => s.as_bytes(),
+                    _ => unreachable!(),
+                };
+
+                Ok(l.starts_with(r))
+            }
+            (left, right) => Err(CelError::BadOperation {
+                left,
+                right,
+                op: "startsWith",
+            }),
+        }
+    }
+
+    pub fn cel_ends_with(left: impl CelValueConv<'a>, right: impl CelValueConv<'a>) -> Result<bool, CelError<'a>> {
+        match (left.conv(), right.conv()) {
+            (
+                left @ (CelValue::Bytes(_) | CelValue::BytesRef(_) | CelValue::String(_) | CelValue::StringRef(_)),
+                right @ (CelValue::Bytes(_) | CelValue::BytesRef(_) | CelValue::String(_) | CelValue::StringRef(_)),
+            ) => {
+                let r = match &right {
+                    CelValue::Bytes(b) => b.as_ref(),
+                    CelValue::BytesRef(b) => b,
+                    CelValue::String(s) => s.as_bytes(),
+                    CelValue::StringRef(s) => s.as_bytes(),
+                    _ => unreachable!(),
+                };
+
+                let l = match &left {
+                    CelValue::Bytes(b) => b.as_ref(),
+                    CelValue::BytesRef(b) => b,
+                    CelValue::String(s) => s.as_bytes(),
+                    CelValue::StringRef(s) => s.as_bytes(),
+                    _ => unreachable!(),
+                };
+
+                Ok(l.ends_with(r))
+            }
+            (left, right) => Err(CelError::BadOperation {
+                left,
+                right,
+                op: "startsWith",
+            }),
+        }
+    }
+
+    pub fn cel_matches(value: impl CelValueConv<'a>, regex: &regex::Regex) -> Result<bool, CelError<'a>> {
+        match value.conv() {
+            value @ (CelValue::Bytes(_) | CelValue::BytesRef(_) | CelValue::String(_) | CelValue::StringRef(_)) => {
+                let maybe_str = match &value {
+                    CelValue::Bytes(b) => std::str::from_utf8(&b),
+                    CelValue::BytesRef(b) => std::str::from_utf8(b),
+                    CelValue::String(s) => Ok(&**s),
+                    CelValue::StringRef(s) => Ok(*s),
+                    _ => unreachable!(),
+                };
+
+                let Ok(input) = maybe_str else {
+                    return Ok(false);
+                };
+
+                Ok(regex.is_match(input))
+            }
+            value => Err(CelError::BadUnaryOperation { op: "matches", value }),
+        }
+    }
+
     pub fn cel_size(item: impl CelValueConv<'a>) -> Result<u64, CelError<'a>> {
         match item.conv() {
             Self::Bytes(b) => Ok(b.len() as u64),
@@ -266,6 +351,256 @@ impl<'a> CelValue<'a> {
             Self::List(l) => Ok(l.len() as u64),
             Self::Map(m) => Ok(m.len() as u64),
             item => Err(CelError::BadUnaryOperation { op: "size", value: item }),
+        }
+    }
+
+    pub fn cel_map(
+        item: impl CelValueConv<'a>,
+        map_fn: impl Fn(CelValue<'a>) -> Result<CelValue<'a>, CelError<'a>>,
+    ) -> Result<CelValue<'a>, CelError<'a>> {
+        match item.conv() {
+            CelValue::List(items) => Ok(CelValue::List(items.iter().cloned().map(map_fn).collect::<Result<_, _>>()?)),
+            CelValue::Map(map) => Ok(CelValue::List(
+                map.iter()
+                    .map(|(key, _)| key)
+                    .cloned()
+                    .map(map_fn)
+                    .collect::<Result<_, _>>()?,
+            )),
+            value => Err(CelError::BadUnaryOperation { op: "map", value }),
+        }
+    }
+
+    pub fn cel_filter(
+        item: impl CelValueConv<'a>,
+        map_fn: impl Fn(CelValue<'a>) -> Result<bool, CelError<'a>>,
+    ) -> Result<CelValue<'a>, CelError<'a>> {
+        let filter_map = |item: CelValue<'a>| match map_fn(item.clone()) {
+            Ok(false) => None,
+            Ok(true) => Some(Ok(item)),
+            Err(err) => Some(Err(err)),
+        };
+
+        match item.conv() {
+            CelValue::List(items) => Ok(CelValue::List(
+                items.iter().cloned().filter_map(filter_map).collect::<Result<_, _>>()?,
+            )),
+            CelValue::Map(map) => Ok(CelValue::List(
+                map.iter()
+                    .map(|(key, _)| key)
+                    .cloned()
+                    .filter_map(filter_map)
+                    .collect::<Result<_, _>>()?,
+            )),
+            value => Err(CelError::BadUnaryOperation { op: "filter", value }),
+        }
+    }
+
+    pub fn cel_all(
+        item: impl CelValueConv<'a>,
+        map_fn: impl Fn(CelValue<'a>) -> Result<bool, CelError<'a>>,
+    ) -> Result<CelValue<'a>, CelError<'a>> {
+        match item.conv() {
+            CelValue::List(items) => Ok(CelValue::Bool({
+                let mut iter = items.iter();
+                loop {
+                    let Some(item) = iter.next() else {
+                        break true;
+                    };
+
+                    if !map_fn(item.clone())? {
+                        break false;
+                    }
+                }
+            })),
+            CelValue::Map(map) => Ok(CelValue::Bool({
+                let mut iter = map.iter();
+                loop {
+                    let Some((item, _)) = iter.next() else {
+                        break true;
+                    };
+
+                    if !map_fn(item.clone())? {
+                        break false;
+                    }
+                }
+            })),
+            value => Err(CelError::BadUnaryOperation { op: "all", value }),
+        }
+    }
+
+    pub fn cel_exists(
+        item: impl CelValueConv<'a>,
+        map_fn: impl Fn(CelValue<'a>) -> Result<bool, CelError<'a>>,
+    ) -> Result<CelValue<'a>, CelError<'a>> {
+        match item.conv() {
+            CelValue::List(items) => Ok(CelValue::Bool({
+                let mut iter = items.iter();
+                loop {
+                    let Some(item) = iter.next() else {
+                        break false;
+                    };
+
+                    if map_fn(item.clone())? {
+                        break true;
+                    }
+                }
+            })),
+            CelValue::Map(map) => Ok(CelValue::Bool({
+                let mut iter = map.iter();
+                loop {
+                    let Some((item, _)) = iter.next() else {
+                        break false;
+                    };
+
+                    if map_fn(item.clone())? {
+                        break true;
+                    }
+                }
+            })),
+            value => Err(CelError::BadUnaryOperation { op: "existsOne", value }),
+        }
+    }
+
+    pub fn cel_exists_one(
+        item: impl CelValueConv<'a>,
+        map_fn: impl Fn(CelValue<'a>) -> Result<bool, CelError<'a>>,
+    ) -> Result<CelValue<'a>, CelError<'a>> {
+        match item.conv() {
+            CelValue::List(items) => Ok(CelValue::Bool({
+                let mut iter = items.iter();
+                let mut seen = false;
+                loop {
+                    let Some(item) = iter.next() else {
+                        break seen;
+                    };
+
+                    if map_fn(item.clone())? {
+                        if seen {
+                            break false;
+                        }
+
+                        seen = true;
+                    }
+                }
+            })),
+            CelValue::Map(map) => Ok(CelValue::Bool({
+                let mut iter = map.iter();
+                let mut seen = false;
+                loop {
+                    let Some((item, _)) = iter.next() else {
+                        break seen;
+                    };
+
+                    if map_fn(item.clone())? {
+                        if seen {
+                            break false;
+                        }
+
+                        seen = true;
+                    }
+                }
+            })),
+            value => Err(CelError::BadUnaryOperation { op: "existsOne", value }),
+        }
+    }
+
+    pub fn cel_to_string(item: impl CelValueConv<'a>) -> CelValue<'a> {
+        match item.conv() {
+            item @ (CelValue::String(_) | CelValue::StringRef(_)) => item,
+            CelValue::Bytes(bytes) => CelValue::String(String::from_utf8_lossy(&bytes).to_owned().into()),
+            CelValue::BytesRef(bytes) => match String::from_utf8_lossy(bytes) {
+                Cow::Borrowed(b) => CelValue::StringRef(b),
+                Cow::Owned(o) => CelValue::String(o.into()),
+            },
+            item => CelValue::String(item.to_string().into()),
+        }
+    }
+
+    pub fn cel_to_bytes(item: impl CelValueConv<'a>) -> Result<CelValue<'a>, CelError<'a>> {
+        match item.conv() {
+            item @ (CelValue::Bytes(_) | CelValue::BytesRef(_)) => Ok(item.clone()),
+            CelValue::String(s) => Ok(CelValue::Bytes(s.as_bytes().to_vec().into())),
+            CelValue::StringRef(bytes) => Ok(CelValue::BytesRef(bytes.as_bytes())),
+            value => Err(CelError::BadUnaryOperation { op: "bytes", value }),
+        }
+    }
+
+    pub fn cel_to_int(item: impl CelValueConv<'a>) -> Result<CelValue<'a>, CelError<'a>> {
+        match item.conv() {
+            item @ (CelValue::String(_) | CelValue::StringRef(_)) => {
+                let s = match &item {
+                    CelValue::String(s) => s.as_ref(),
+                    CelValue::StringRef(s) => s,
+                    _ => unreachable!(),
+                };
+
+                if let Ok(number) = s.parse() {
+                    Ok(CelValue::Number(NumberTy::I64(number)))
+                } else {
+                    Ok(CelValue::Null)
+                }
+            }
+            CelValue::Number(number) => {
+                if let Ok(number) = number.to_int() {
+                    Ok(CelValue::Number(number))
+                } else {
+                    Ok(CelValue::Null)
+                }
+            }
+            value => Err(CelError::BadUnaryOperation { op: "int", value }),
+        }
+    }
+
+    pub fn cel_to_uint(item: impl CelValueConv<'a>) -> Result<CelValue<'a>, CelError<'a>> {
+        match item.conv() {
+            item @ (CelValue::String(_) | CelValue::StringRef(_)) => {
+                let s = match &item {
+                    CelValue::String(s) => s.as_ref(),
+                    CelValue::StringRef(s) => s,
+                    _ => unreachable!(),
+                };
+
+                if let Ok(number) = s.parse() {
+                    Ok(CelValue::Number(NumberTy::U64(number)))
+                } else {
+                    Ok(CelValue::Null)
+                }
+            }
+            CelValue::Number(number) => {
+                if let Ok(number) = number.to_uint() {
+                    Ok(CelValue::Number(number))
+                } else {
+                    Ok(CelValue::Null)
+                }
+            }
+            value => Err(CelError::BadUnaryOperation { op: "uint", value }),
+        }
+    }
+
+    pub fn cel_to_double(item: impl CelValueConv<'a>) -> Result<CelValue<'a>, CelError<'a>> {
+        match item.conv() {
+            item @ (CelValue::String(_) | CelValue::StringRef(_)) => {
+                let s = match &item {
+                    CelValue::String(s) => s.as_ref(),
+                    CelValue::StringRef(s) => s,
+                    _ => unreachable!(),
+                };
+
+                if let Ok(number) = s.parse() {
+                    Ok(CelValue::Number(NumberTy::F64(number)))
+                } else {
+                    Ok(CelValue::Null)
+                }
+            }
+            CelValue::Number(number) => {
+                if let Ok(number) = number.to_double() {
+                    Ok(CelValue::Number(number))
+                } else {
+                    Ok(CelValue::Null)
+                }
+            }
+            value => Err(CelError::BadUnaryOperation { op: "double", value }),
         }
     }
 }
@@ -574,6 +909,33 @@ impl NumberTy {
             NumberTy::I64(n) => Ok(NumberTy::I64(n.checked_neg().ok_or(ERROR)?)),
             NumberTy::U64(n) => Ok(NumberTy::I64(n.to_i64().ok_or(ERROR)?.checked_neg().ok_or(ERROR)?)),
             NumberTy::F64(n) => Ok(NumberTy::F64(-n)),
+        }
+    }
+
+    pub fn to_int(self) -> Result<NumberTy, CelError<'static>> {
+        const ERROR: CelError<'static> = CelError::NumberOutOfRange { op: "int" };
+        match self {
+            NumberTy::I64(n) => Ok(NumberTy::I64(n)),
+            NumberTy::U64(n) => Ok(NumberTy::I64(n.to_i64().ok_or(ERROR)?)),
+            NumberTy::F64(n) => Ok(NumberTy::I64(n.to_i64().ok_or(ERROR)?)),
+        }
+    }
+
+    pub fn to_uint(self) -> Result<NumberTy, CelError<'static>> {
+        const ERROR: CelError<'static> = CelError::NumberOutOfRange { op: "int" };
+        match self {
+            NumberTy::I64(n) => Ok(NumberTy::U64(n.to_u64().ok_or(ERROR)?)),
+            NumberTy::U64(n) => Ok(NumberTy::U64(n)),
+            NumberTy::F64(n) => Ok(NumberTy::U64(n.to_u64().ok_or(ERROR)?)),
+        }
+    }
+
+    pub fn to_double(self) -> Result<NumberTy, CelError<'static>> {
+        const ERROR: CelError<'static> = CelError::NumberOutOfRange { op: "int" };
+        match self {
+            NumberTy::I64(n) => Ok(NumberTy::F64(n.to_f64().ok_or(ERROR)?)),
+            NumberTy::U64(n) => Ok(NumberTy::F64(n.to_f64().ok_or(ERROR)?)),
+            NumberTy::F64(n) => Ok(NumberTy::F64(n)),
         }
     }
 }

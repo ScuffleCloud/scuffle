@@ -4,7 +4,7 @@ use quote::ToTokens;
 use syn::parse_quote;
 
 use super::FuncFmtter;
-use super::functions::Function;
+use super::functions::{Function, add_to_compiler};
 use super::types::CelType;
 use crate::types::{ProtoPath, ProtoTypeRegistry};
 
@@ -66,8 +66,7 @@ impl<'a> Compiler<'a> {
     pub fn new(registry: &'a ProtoTypeRegistry) -> Self {
         let mut compiler = Self::empty(registry);
 
-        compiler.register_function::<super::functions::Contains>();
-        compiler.register_function::<super::functions::Size>();
+        add_to_compiler(&mut compiler);
 
         compiler
     }
@@ -177,6 +176,12 @@ pub enum CompileError {
     UnsupportedFunctionCallIdentifierType(cel_parser::Expression),
     #[error("missing message: {0}")]
     MissingMessage(ProtoPath),
+    #[error("invalid function argument[{idx}]: {expr:?} - {message}")]
+    InvalidFunctionArgument {
+        idx: usize,
+        expr: cel_parser::Expression,
+        message: String,
+    },
 }
 
 impl CompileError {

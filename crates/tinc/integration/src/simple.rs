@@ -216,9 +216,7 @@ fn test_simple_missing_fields() {
     );
 
     deserialize_tracker_target(&mut state, &mut de, &mut tracker, &mut message).unwrap();
-    state.in_scope(|| {
-        TrackedStructDeserializer::validate(&message, &mut tracker).unwrap()
-    });
+    state.in_scope(|| TrackedStructDeserializer::validate(&message, &mut tracker).unwrap());
 
     insta::assert_debug_snapshot!(message, @r#"
     SimpleMessage {

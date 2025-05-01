@@ -49,6 +49,7 @@ ryu = "1.0.14"
 regex = "1"
 
 linear-map = "1.2.0"
+float-cmp = "0.10.0"
 
 tinc-derive.workspace = true
 

@@ -106,7 +106,7 @@ fn value_to_str(v: &cel_interpreter::Value) -> impl std::fmt::Display + std::fmt
         cel_interpreter::Value::Bool(b) => std::fmt::Display::fmt(b, fmt),
         cel_interpreter::Value::Int(i) => std::fmt::Display::fmt(i, fmt),
         cel_interpreter::Value::UInt(i) => std::fmt::Display::fmt(i, fmt),
-        cel_interpreter::Value::Float(f) => std::fmt::Display::fmt(f, fmt),
+        cel_interpreter::Value::Float(f) => write!(fmt, "{f:.2}"),
         cel_interpreter::Value::String(s) => std::fmt::Display::fmt(s, fmt),
         cel_interpreter::Value::Bytes(b) => {
             let lit = syn::LitByteStr::new(b, proc_macro2::Span::call_site());

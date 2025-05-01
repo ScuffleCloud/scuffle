@@ -191,6 +191,7 @@ fn handle_oneof(
     let oneof_ident = oneof_path.segments.last().unwrap().ident.clone();
 
     package.push_item(parse_quote! {
+        #[allow(clippy::all, dead_code, unused_imports, unused_variables)]
         const _: () = {
             #tagged_impl
 
@@ -769,6 +770,7 @@ pub(super) fn handle_message(
     let message_ident = message_path.segments.last().unwrap().ident.clone();
 
     package.push_item(parse_quote! {
+        #[allow(clippy::all, dead_code, unused_imports, unused_variables)]
         const _: () = {
             #[derive(
                 ::std::fmt::Debug,
@@ -899,6 +901,7 @@ pub(super) fn handle_enum(enum_: &ProtoEnumType, package: &mut Package) -> anyho
     }
 
     package.push_item(parse_quote! {
+        #[allow(clippy::all, dead_code, unused_imports, unused_variables)]
         const _: () = {
             impl ::tinc::__private::Expected for #enum_path {
                 fn expecting(formatter: &mut std::fmt::Formatter) -> std::fmt::Result {

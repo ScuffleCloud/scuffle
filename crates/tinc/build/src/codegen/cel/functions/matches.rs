@@ -56,8 +56,8 @@ impl Function for Matches {
         Ok(CompiledExpr {
             expr: parse_quote! {{
                 static REGEX: ::std::sync::LazyLock<::tinc::reexports::regex::Regex> = ::std::sync::LazyLock::new(|| {
-                    regex::Regex::new(#regex).expect("regex failed to compile")
-                })
+                    ::tinc::reexports::regex::Regex::new(#regex).expect("regex failed to compile")
+                });
 
                 ::tinc::__private::cel::CelValue::cel_matches(
                     #this,

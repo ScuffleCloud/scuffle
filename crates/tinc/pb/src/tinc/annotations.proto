@@ -166,10 +166,6 @@ message FloatConstraint {
     expression: "!this.contains(input)"
     jsonschemas: '{ "not": { "enum": this }}'
   }];
-  optional bool finite = 7 [(predefined).cel = {
-    message: "value must be finite"
-    expression: "!this || input.is_finite()"
-  }];
   optional float const = 8 [(predefined).cel = {
     message: "value must be equal to `{this}`"
     expression: "input == this"
@@ -215,10 +211,6 @@ message DoubleConstraint {
     message: "value must not be one of `{this}`"
     expression: "!this.contains(input)"
     jsonschemas: '{ "not": { "enum": this }}'
-  }];
-  optional bool finite = 7 [(predefined).cel = {
-    message: "value must be finite"
-    expression: "!this || input.is_finite()"
   }];
   optional double const = 8 [(predefined).cel = {
     message: "value must be equal to `{this}`"
@@ -471,13 +463,13 @@ message StringConstraints {
     expression: "!this.contains(input)"
     jsonschemas: '{ "not": { "enum": this }}'
   }];
-  oneof well_known {
-    bool email = 13 [(predefined).cel = {
-      message: "value must be a valid email address"
-      expression: "!this || input.isEmail()"
-      jsonschemas: 'this ? { "format": "email" } : {}'
-    }];
-  }
+  // oneof well_known {
+  //   bool email = 13 [(predefined).cel = {
+  //     message: "value must be a valid email address"
+  //     expression: "!this || input.isEmail()"
+  //     jsonschemas: 'this ? { "format": "email" } : {}'
+  //   }];
+  // }
 }
 
 message BytesConstraints {

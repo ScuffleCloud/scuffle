@@ -560,6 +560,7 @@ pub(super) fn handle_service(
             #[doc(hidden)]
             pub struct #codec_ident<C>(C);
 
+            #[allow(clippy::all, dead_code, unused_imports, unused_variables)]
             const _: () = {
                 #[derive(Debug, Clone, Default)]
                 pub struct Encoder<E>(E);

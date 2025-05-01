@@ -170,7 +170,7 @@ fn resolve_list(ctx: &Compiler, items: &[Expression]) -> Result<CompiledExpr, Co
 
     Ok(CompiledExpr {
         expr: parse_quote! {
-            ::tinc::__private::cel::CelValueConv::List(::std::iter::FromIterator::from_iter([
+            ::tinc::__private::cel::CelValue::List(::std::iter::FromIterator::from_iter([
                 #(
                     ::tinc::__private::cel::CelValueConv::conv(#items)
                 ),*
@@ -419,7 +419,7 @@ fn resolve_relation(
         RelationOp::GreaterThanEq => quote! { cel_gte },
         RelationOp::Equals => quote! { cel_eq },
         RelationOp::NotEquals => quote! { cel_neq },
-        RelationOp::In => quote! { cel_contained_by },
+        RelationOp::In => quote! { cel_in },
     };
 
     Ok(CompiledExpr {

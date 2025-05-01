@@ -1,0 +1,244 @@
+syntax = "proto3";
+
+package expressions;
+
+import "tinc/annotations.proto";
+
+message StringExpressions {
+  option (tinc.message).generate = true;
+
+  string code = 1 [(tinc.field).constraint.string = {
+    len: 5
+  }];
+
+  string name = 2 [(tinc.field).constraint.string = {
+    min_len: 3
+    max_len: 10
+  }];
+
+  string phone_number = 3 [(tinc.field).constraint.string = {
+    // phone number regex
+    match: "^(\\+\\d{1,2}\\s?)?\\(?\\d{3}\\)?[\\s.-]?\\d{3}[\\s.-]?\\d{4}$"
+  }];
+
+  string email = 4 [(tinc.field).constraint.string = {
+    // disallow any @gmail.com email addresses
+    not_match: "@gmail\\.com$"
+  }];
+
+  string foreign_key = 5 [(tinc.field).constraint.string = {
+    prefix: "fk_"
+  }];
+
+  string primary_key = 6 [(tinc.field).constraint.string = {
+    suffix: "_id"
+  }];
+
+  string word_with_e = 7 [(tinc.field).constraint.string = {
+    contains: "e"
+  }];
+
+  string word_without_z = 8 [(tinc.field).constraint.string = {
+    not_contains: "z"
+  }];
+
+  string ice_cream = 9 [(tinc.field).constraint.string = {
+    in: ["chocolate", "vanilla"]
+  }];
+
+  string best_friend = 10 [(tinc.field).constraint.string = {
+    not_in: ["troy"]
+  }];
+}
+
+message FloatExpressions {
+  option (tinc.message).generate = true;
+
+  float zero_to_one = 1 [(tinc.field).constraint.float = {
+    gte: 0.0
+    lte: 1.0
+  }];
+
+  float bigger_than_zero = 2 [(tinc.field).constraint.float = {
+    gt: 0.0
+  }];
+
+  float less_than_zero = 3 [(tinc.field).constraint.float = {
+    lt: 0.0
+  }];
+
+  float bucket = 4 [(tinc.field).constraint.float = {
+    in: [5.1, 10.2, -5.2, -10.4]
+  }];
+
+  float coolest_float = 5 [(tinc.field).constraint.float = {
+    not_in: [3.14, 2.71]
+  }];
+
+  float pi = 6 [(tinc.field).constraint.float = {
+    const: 3
+  }];
+}
+
+message DoubleExpressions {
+  option (tinc.message).generate = true;
+
+  double zero_to_one = 1 [(tinc.field).constraint.double = {
+    gte: 0.0
+    lte: 1.0
+  }];
+
+  double bigger_than_zero = 2 [(tinc.field).constraint.double = {
+    gt: 0.0
+  }];
+
+  double less_than_zero = 3 [(tinc.field).constraint.double = {
+    lt: 0.0
+  }];
+
+  double bucket = 4 [(tinc.field).constraint.double = {
+    in: [5.1, 10.2, -5.2, -10.4]
+  }];
+
+  double coolest_float = 5 [(tinc.field).constraint.double = {
+    not_in: [3.14, 2.71]
+  }];
+
+  double pi = 6 [(tinc.field).constraint.double = {
+    const: 3
+  }];
+}
+
+message Int32Expressions {
+  option (tinc.message).generate = true;
+
+  int32 zero_to_ten = 1 [(tinc.field).constraint.int32 = {
+    gte: 0
+    lte: 10
+  }];
+
+  int32 bigger_than_zero = 2 [(tinc.field).constraint.int32 = {
+    gt: 0
+  }];
+
+  int32 less_than_zero = 3 [(tinc.field).constraint.int32 = {
+    lt: 0
+  }];
+
+  int32 bucket = 4 [(tinc.field).constraint.int32 = {
+    in: [5, 10, -5, -10]
+  }];
+
+  int32 coolest_int32 = 5 [(tinc.field).constraint.int32 = {
+    not_in: [3, 2, 1]
+  }];
+
+  int32 pi = 6 [(tinc.field).constraint.int32 = {
+    const: 3
+  }];
+}
+
+message UInt32Expressions {
+  option (tinc.message).generate = true;
+
+  uint32 one_to_ten = 1 [(tinc.field).constraint.uint32 = {
+    gte: 1
+    lte: 10
+  }];
+
+  uint32 bigger_than_100 = 2 [(tinc.field).constraint.uint32 = {
+    gt: 100
+  }];
+
+  uint32 less_than_100 = 3 [(tinc.field).constraint.uint32 = {
+    lt: 100
+  }];
+
+  uint32 bucket = 4 [(tinc.field).constraint.uint32 = {
+    in: [5, 10, 15, 20]
+  }];
+
+  uint32 coolest_uint32 = 5 [(tinc.field).constraint.uint32 = {
+    not_in: [3, 2, 1]
+  }];
+
+  uint32 pi = 6 [(tinc.field).constraint.uint32 = {
+    const: 3
+  }];
+}
+
+message Int64Expressions {
+  option (tinc.message).generate = true;
+
+  int64 zero_to_ten = 1 [(tinc.field).constraint.int64 = {
+    gte: 0
+    lte: 10
+  }];
+
+  int64 bigger_than_zero = 2 [(tinc.field).constraint.int64 = {
+    gt: 0
+  }];
+
+  int64 less_than_zero = 3 [(tinc.field).constraint.int64 = {
+    lt: 0
+  }];
+
+  int64 bucket = 4 [(tinc.field).constraint.int64 = {
+    in: [5, 10, -5, -10]
+  }];
+
+  int64 coolest_int64 = 5 [(tinc.field).constraint.int64 = {
+    not_in: [3, 2, 1]
+  }];
+
+  int64 pi = 6 [(tinc.field).constraint.int64 = {
+    const: 3
+  }];
+}
+
+message UInt64Expressions {
+  option (tinc.message).generate = true;
+
+  uint64 one_to_ten = 1 [(tinc.field).constraint.uint64 = {
+    gte: 1
+    lte: 10
+  }];
+
+  uint64 bigger_than_100 = 2 [(tinc.field).constraint.uint64 = {
+    gt: 100
+  }];
+
+  uint64 less_than_100 = 3 [(tinc.field).constraint.uint64 = {
+    lt: 100
+  }];
+
+  uint64 bucket = 4 [(tinc.field).constraint.uint64 = {
+    in: [5, 10, 15, 20]
+  }];
+
+  uint64 coolest_uint64 = 5 [(tinc.field).constraint.uint64 = {
+    not_in: [3, 2, 1]
+  }];
+
+  uint64 pi = 6 [(tinc.field).constraint.uint64 = {
+    const: 3
+  }];
+}
+
+message BytesExpressions {
+  option (tinc.message).generate = true;
+
+  bytes constant = 1 [(tinc.field).constraint.bytes = {
+    const: "\0\0\0"
+  }];
+
+  bytes exact_len = 2 [(tinc.field).constraint.bytes = {
+    len: 5
+  }];
+
+  bytes min_max_len = 3 [(tinc.field).constraint.bytes = {
+    min_len: 5
+    max_len: 10
+  }];
+}
+

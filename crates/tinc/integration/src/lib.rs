@@ -2,6 +2,7 @@
 #![cfg_attr(all(coverage_nightly, test), feature(coverage_attribute))]
 #![cfg_attr(coverage_nightly, coverage(off))]
 
+mod expressions;
 mod flattened;
 mod nested;
 mod oneof;

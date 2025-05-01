@@ -73,7 +73,7 @@ impl Function for Contains {
 
         Ok(CompiledExpr {
             expr: parse_quote! {
-                ::tinc::__private::cel::CelValue::contains(
+                ::tinc::__private::cel::CelValue::cel_contains(
                     #this,
                     #arg,
                 )?

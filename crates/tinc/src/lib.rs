@@ -2,7 +2,7 @@
 
 #[doc(hidden)]
 pub mod reexports {
-    pub use {axum, chrono, headers_accept, http, mediatype, prost, schemars, serde, serde_repr, tonic};
+    pub use {axum, chrono, headers_accept, http, mediatype, prost, regex, schemars, serde, serde_repr, tonic};
 }
 
 #[doc(hidden)]

@@ -4,6 +4,7 @@ use std::hash::Hash;
 use std::sync::Arc;
 
 use bytes::Bytes;
+use float_cmp::ApproxEq;
 use num_traits::ToPrimitive;
 
 use super::{FuncFmt, Map};
@@ -48,7 +49,7 @@ pub enum CelValue<'a> {
 impl PartialOrd for CelValue<'_> {
     fn partial_cmp(&self, other: &Self) -> Option<std::cmp::Ordering> {
         match (self, other) {
-            (CelValue::Number(l), CelValue::Number(r)) => Some(l.partial_cmp(r)?),
+            (CelValue::Number(l), CelValue::Number(r)) => l.partial_cmp(r),
             (
                 CelValue::String(_) | CelValue::Bytes(_) | CelValue::BytesRef(_) | CelValue::StringRef(_),
                 CelValue::String(_) | CelValue::Bytes(_) | CelValue::BytesRef(_) | CelValue::StringRef(_),
@@ -71,8 +72,8 @@ impl PartialOrd for CelValue<'_> {
 
                 Some(l.cmp(r))
             }
-            (CelValue::List(l), CelValue::List(r)) => Some(l.partial_cmp(r)?),
-            (CelValue::Map(l), CelValue::Map(r)) => Some(l.partial_cmp(r)?),
+            (CelValue::List(l), CelValue::List(r)) => l.partial_cmp(r),
+            (CelValue::Map(l), CelValue::Map(r)) => l.partial_cmp(r),
             _ => None,
         }
     }
@@ -214,9 +215,9 @@ impl<'a> CelValue<'a> {
             .map(|o| matches!(o, std::cmp::Ordering::Less | std::cmp::Ordering::Greater))
     }
 
-    // left contains right
+    // left.contains(right)
     pub fn cel_contains(left: impl CelValueConv<'a>, right: impl CelValueConv<'a>) -> Result<bool, CelError<'a>> {
-        Self::cel_contained_by(right, left).map_err(|err| match err {
+        Self::cel_in(right, left).map_err(|err| match err {
             CelError::BadOperation { left, right, op: "in" } => CelError::BadOperation {
                 left: right,
                 right: left,
@@ -227,7 +228,7 @@ impl<'a> CelValue<'a> {
     }
 
     // left in right
-    pub fn cel_contained_by(left: impl CelValueConv<'a>, right: impl CelValueConv<'a>) -> Result<bool, CelError<'a>> {
+    pub fn cel_in(left: impl CelValueConv<'a>, right: impl CelValueConv<'a>) -> Result<bool, CelError<'a>> {
         match (left.conv(), right.conv()) {
             (left, CelValue::List(r)) => Ok(r.contains(&left)),
             (left, CelValue::Map(r)) => Ok(r.iter().any(|(k, _)| k == &left)),
@@ -607,39 +608,7 @@ impl<'a> CelValue<'a> {
 
 impl PartialEq for CelValue<'_> {
     fn eq(&self, other: &Self) -> bool {
-        match (self, other) {
-            (CelValue::Bool(l), CelValue::Bool(r)) => l == r,
-            (CelValue::Number(l), CelValue::Number(r)) => l == r,
-            (CelValue::String(_) | CelValue::StringRef(_), CelValue::String(_) | CelValue::StringRef(_)) => {
-                let l = match self {
-                    CelValue::String(s) => &**s,
-                    CelValue::StringRef(s) => &**s,
-                    _ => unreachable!(),
-                };
-                let r = match self {
-                    CelValue::String(s) => &**s,
-                    CelValue::StringRef(s) => &**s,
-                    _ => unreachable!(),
-                };
-                l == r
-            }
-            (CelValue::Bytes(_) | CelValue::BytesRef(_), CelValue::Bytes(_) | CelValue::BytesRef(_)) => {
-                let l = match self {
-                    CelValue::Bytes(b) => &**b,
-                    CelValue::BytesRef(b) => &**b,
-                    _ => unreachable!(),
-                };
-                let r = match self {
-                    CelValue::Bytes(b) => &**b,
-                    CelValue::BytesRef(b) => &**b,
-                    _ => unreachable!(),
-                };
-                l == r
-            }
-            (CelValue::List(l), CelValue::List(r)) => l == r,
-            (CelValue::Map(l), CelValue::Map(r)) => l == r,
-            _ => false,
-        }
+        self.partial_cmp(other).is_some_and(|c| c.is_eq())
     }
 }
 
@@ -839,7 +808,11 @@ impl PartialOrd for NumberTy {
         NumberTy::promote(*self, *other).and_then(|(l, r)| match (l, r) {
             (NumberTy::I64(l), NumberTy::I64(r)) => Some(l.cmp(&r)),
             (NumberTy::U64(l), NumberTy::U64(r)) => Some(l.cmp(&r)),
-            (NumberTy::F64(l), NumberTy::F64(r)) => Some(l.partial_cmp(&r).unwrap_or(std::cmp::Ordering::Equal)),
+            (NumberTy::F64(l), NumberTy::F64(r)) => Some(if l.approx_eq(r, float_cmp::F64Margin::default()) {
+                std::cmp::Ordering::Equal
+            } else {
+                l.partial_cmp(&r).unwrap_or(std::cmp::Ordering::Equal)
+            }),
             _ => None,
         })
     }
@@ -945,7 +918,7 @@ impl std::fmt::Display for NumberTy {
         match self {
             NumberTy::I64(n) => std::fmt::Display::fmt(n, f),
             NumberTy::U64(n) => std::fmt::Display::fmt(n, f),
-            NumberTy::F64(n) => std::fmt::Display::fmt(n, f),
+            NumberTy::F64(n) => write!(f, "{n:.2}"), // limit to 2 decimal places
         }
     }
 }
@@ -956,7 +929,7 @@ impl PartialEq for NumberTy {
             .map(|(l, r)| match (l, r) {
                 (NumberTy::I64(l), NumberTy::I64(r)) => l == r,
                 (NumberTy::U64(l), NumberTy::U64(r)) => l == r,
-                (NumberTy::F64(l), NumberTy::F64(r)) => l == r,
+                (NumberTy::F64(l), NumberTy::F64(r)) => l.approx_eq(r, float_cmp::F64Margin::default()),
                 _ => false,
             })
             .unwrap_or(false)

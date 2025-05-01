@@ -525,7 +525,7 @@ fn handle_message_field(
                             || {
                                 ::core::result::Result::Ok::<_, ::tinc::__private::cel::CelError>(#resolved)
                             }
-                        ).map_err(|| {
+                        )().map_err(|err| {
                             ::tinc::__private::ValidationError::Expression {
                                 error: err.to_string().into_boxed_str(),
                                 field: ::tinc::__private::ProtoPathToken::current_path().into_boxed_str(),

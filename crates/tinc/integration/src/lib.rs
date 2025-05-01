@@ -9,5 +9,6 @@ mod recursive;
 mod renamed;
 mod simple;
 mod simple_enum;
+mod simple_service;
 mod visibility;
 mod well_known;

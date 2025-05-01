@@ -1,9 +1,12 @@
 use cel_interpreter::{ExecutionError, FunctionContext};
 
 mod all;
+mod bool;
 mod bytes;
+mod const_;
 mod contains;
 mod double;
+mod dyn_;
 mod ends_with;
 mod exists;
 mod exists_one;
@@ -18,9 +21,12 @@ mod string;
 mod uint;
 
 pub use all::All;
+pub use bool::Bool;
 pub use bytes::Bytes;
+pub use const_::Const;
 pub use contains::Contains;
 pub use double::Double;
+pub use dyn_::Dyn;
 pub use ends_with::EndsWith;
 pub use exists::Exists;
 pub use exists_one::ExistsOne;
@@ -53,6 +59,9 @@ pub fn add_to_context(ctx: &mut cel_interpreter::Context) {
     Int::add_to_ctx(ctx);
     UInt::add_to_ctx(ctx);
     Double::add_to_ctx(ctx);
+    Bool::add_to_ctx(ctx);
+    Const::add_to_ctx(ctx);
+    Dyn::add_to_ctx(ctx);
 }
 
 pub fn add_to_compiler(compiler: &mut Compiler) {
@@ -72,6 +81,9 @@ pub fn add_to_compiler(compiler: &mut Compiler) {
     compiler.register_function::<Int>();
     compiler.register_function::<UInt>();
     compiler.register_function::<Double>();
+    compiler.register_function::<Bool>();
+    compiler.register_function::<Const>();
+    compiler.register_function::<Dyn>();
 }
 
 pub trait Function: Sized + 'static {

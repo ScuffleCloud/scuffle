@@ -14,7 +14,7 @@ impl Function for String {
         if ctx.this.is_some() {
             return Err(CompileError::MissingTarget {
                 func: Self::NAME,
-                message: format!("bad usage for string(arg) function"),
+                message: "bad usage for string(arg) function".to_string(),
             });
         }
 

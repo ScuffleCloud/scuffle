@@ -2,7 +2,7 @@ use tinc::__private::{TrackedStructDeserializer, TrackerFor, TrackerSharedState,
 
 mod pb {
     #![allow(clippy::all)]
-    tonic::include_proto!("renamed");
+    tinc::include_proto!("renamed");
 }
 
 macro_rules! create_rename_test {

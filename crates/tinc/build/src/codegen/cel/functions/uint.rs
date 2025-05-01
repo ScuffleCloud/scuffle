@@ -14,7 +14,7 @@ impl Function for UInt {
         if ctx.this.is_some() {
             return Err(CompileError::MissingTarget {
                 func: Self::NAME,
-                message: format!("bad usage for uint(arg) function"),
+                message: "bad usage for uint(arg) function".to_string(),
             });
         }
 

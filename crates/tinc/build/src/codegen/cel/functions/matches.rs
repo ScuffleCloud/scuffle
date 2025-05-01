@@ -38,7 +38,7 @@ impl Function for Matches {
 
         let regex = regex.as_str();
 
-        if let Err(err) = regex::Regex::new(&regex) {
+        if let Err(err) = regex::Regex::new(regex) {
             return Err(CompileError::InvalidFunctionArgument {
                 message: format!("bad regex expression: {err}"),
                 expr: ctx.args[0].clone(),

@@ -4060,6 +4060,9 @@ dependencies = [
 name = "tinc-integration-tests"
 version = "0.0.0"
 dependencies = [
+ "bytes",
+ "http",
+ "http-body-util",
  "insta",
  "prost 0.13.5",
  "prost-build 0.13.5",
@@ -4069,7 +4072,8 @@ dependencies = [
  "serde_json",
  "tinc",
  "tinc-build",
- "tonic",
+ "tokio",
+ "tower",
 ]
 
 [[package]]

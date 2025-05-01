@@ -7,14 +7,18 @@ publish = false
 unexpected_cfgs = { level = "warn", check-cfg = ['cfg(coverage_nightly)'] }
 
 [dev-dependencies]
-tonic = "0.13.0"
-prost = "0.13.5"
 tinc.workspace = true
 insta = { version = "1.30.0", features = ["json"] }
 serde_json = "1.0.115"
 serde = "1.0.215"
+prost = "0.13.5"
 prost-types = "0.13.5"
 scuffle-workspace-hack.workspace = true
+tokio = { version = "1.4.2", features = ["full"] }
+http = "1"
+http-body-util = "0.1"
+bytes = "1"
+tower = "0.5"
 
 [build-dependencies]
 tinc-build.workspace = true

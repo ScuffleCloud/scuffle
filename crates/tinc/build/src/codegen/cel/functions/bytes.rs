@@ -13,7 +13,7 @@ impl Function for Bytes {
         if ctx.this.is_some() {
             return Err(CompileError::MissingTarget {
                 func: Self::NAME,
-                message: format!("bad usage for bytes(arg) function"),
+                message: "bad usage for bytes(arg) function".to_string(),
             });
         }
 

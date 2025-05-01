@@ -1,0 +1,24 @@
+syntax = "proto3";
+
+package simple_service;
+
+import "tinc/annotations.proto";
+
+service SimpleService {
+  rpc Ping(PingRequest) returns (PingResponse) {
+    option (tinc.method).endpoint = {
+      post: "/ping"
+    };
+    option (tinc.method).endpoint = {
+      get: "/ping/{arg}"
+    };
+  }
+}
+
+message PingRequest {
+  string arg = 1;
+}
+
+message PingResponse {
+  string result = 1;
+}

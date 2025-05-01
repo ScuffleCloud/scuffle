@@ -325,7 +325,7 @@ impl<'a> CelValue<'a> {
         match value.conv() {
             value @ (CelValue::Bytes(_) | CelValue::BytesRef(_) | CelValue::String(_) | CelValue::StringRef(_)) => {
                 let maybe_str = match &value {
-                    CelValue::Bytes(b) => std::str::from_utf8(&b),
+                    CelValue::Bytes(b) => std::str::from_utf8(b),
                     CelValue::BytesRef(b) => std::str::from_utf8(b),
                     CelValue::String(s) => Ok(&**s),
                     CelValue::StringRef(s) => Ok(*s),
@@ -508,7 +508,7 @@ impl<'a> CelValue<'a> {
     pub fn cel_to_string(item: impl CelValueConv<'a>) -> CelValue<'a> {
         match item.conv() {
             item @ (CelValue::String(_) | CelValue::StringRef(_)) => item,
-            CelValue::Bytes(bytes) => CelValue::String(String::from_utf8_lossy(&bytes).to_owned().into()),
+            CelValue::Bytes(bytes) => CelValue::String(String::from_utf8_lossy(&bytes).into()),
             CelValue::BytesRef(bytes) => match String::from_utf8_lossy(bytes) {
                 Cow::Borrowed(b) => CelValue::StringRef(b),
                 Cow::Owned(o) => CelValue::String(o.into()),

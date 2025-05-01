@@ -15,6 +15,7 @@ fn main() {
                 "pb/renamed.proto",
                 "pb/visibility.proto",
                 "pb/well_known.proto",
+                "pb/simple_service.proto",
             ],
             &["pb"],
         )

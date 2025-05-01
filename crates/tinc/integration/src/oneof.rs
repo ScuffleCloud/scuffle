@@ -2,7 +2,7 @@ use tinc::__private::{TrackedStructDeserializer, TrackerFor, TrackerSharedState,
 
 mod pb {
     #![allow(clippy::all)]
-    tonic::include_proto!("oneof");
+    tinc::include_proto!("oneof");
 }
 
 #[test]

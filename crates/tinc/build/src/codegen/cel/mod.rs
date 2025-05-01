@@ -10,7 +10,7 @@ pub mod types;
 #[derive(Debug, Clone, PartialEq)]
 pub struct MessageFormat {
     pub format: String,
-    pub args: Vec<cel_parser::Expression>,
+    pub args: Vec<(String, cel_parser::Expression)>,
 }
 
 impl MessageFormat {
@@ -30,7 +30,7 @@ impl MessageFormat {
                 }
                 ConstantOrExpression::Expression(expr) => {
                     compile_time_args.insert(key, format!("{{arg_{}}}", runtime_args.len()));
-                    runtime_args.push(expr);
+                    runtime_args.push((key.to_owned(), expr));
                 }
             }
         }
@@ -187,8 +187,9 @@ fn preevaluate_expression(
     ctx: &cel_interpreter::Context,
     has_this: bool,
 ) -> anyhow::Result<ConstantOrExpression> {
-    let mut requires_runtime = false;
-    for variable in expr.references().variables() {
+    let references = expr.references();
+    let mut requires_runtime = references.has_function("dyn");
+    for variable in references.variables() {
         match variable {
             "input" => requires_runtime = true,
             "this" if has_this => {}

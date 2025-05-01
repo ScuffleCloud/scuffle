@@ -517,11 +517,21 @@ fn handle_message_field(
                 .args
                 .iter()
                 .enumerate()
-                .map(|(idx, arg)| {
+                .map(|(idx, (raw_expr, expr))| {
                     let ident = format_ident!("arg_{idx}");
-                    let resolved = compiler.resolve(arg).context("resolving fmt arg")?;
+                    let resolved = compiler.resolve(expr).context("resolving fmt arg")?;
                     Ok(quote! {
-                        #ident = { #resolved }
+                        #ident = (
+                            || {
+                                ::core::result::Result::Ok::<_, ::tinc::__private::cel::CelError>(#resolved)
+                            }
+                        ).map_err(|| {
+                            ::tinc::__private::ValidationError::Expression {
+                                error: err.to_string().into_boxed_str(),
+                                field: ::tinc::__private::ProtoPathToken::current_path().into_boxed_str(),
+                                expression: #raw_expr,
+                            }
+                        })?
                     })
                 })
                 .collect::<anyhow::Result<Vec<_>>>()?;

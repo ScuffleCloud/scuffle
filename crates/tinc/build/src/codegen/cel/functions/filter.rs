@@ -44,7 +44,7 @@ impl Function for Filter {
         match &this.ty {
             CelType::CelValue => {
                 child_ctx.add_variable(
-                    &variable,
+                    variable,
                     CompiledExpr {
                         expr: parse_quote!(item),
                         ty: CelType::CelValue,
@@ -55,7 +55,7 @@ impl Function for Filter {
                 ProtoModifiedValueType::Repeated(ty) | ProtoModifiedValueType::Map(ty, _),
             )) => {
                 child_ctx.add_variable(
-                    &variable,
+                    variable,
                     CompiledExpr {
                         expr: parse_quote!(item),
                         ty: CelType::Proto(ProtoType::Value(ty.clone())),
@@ -144,8 +144,8 @@ impl Function for Filter {
         }
 
         match this {
-            cel_interpreter::Value::List(s) => handle(s.iter().cloned(), fctx, &variable),
-            cel_interpreter::Value::Map(map) => handle(map.map.keys().cloned().map(Into::into), fctx, &variable),
+            cel_interpreter::Value::List(s) => handle(s.iter().cloned(), fctx, variable),
+            cel_interpreter::Value::Map(map) => handle(map.map.keys().cloned().map(Into::into), fctx, variable),
             item => Err(item.error_expected_type(ValueType::List)),
         }
     }

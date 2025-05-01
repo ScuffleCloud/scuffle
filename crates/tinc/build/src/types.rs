@@ -442,16 +442,8 @@ impl ProtoTypeRegistry {
         self.enums.get(full_name)
     }
 
-    pub fn get_enum_mut(&mut self, full_name: &str) -> Option<&mut ProtoEnumType> {
-        self.enums.get_mut(full_name)
-    }
-
     pub fn get_service(&self, full_name: &str) -> Option<&ProtoService> {
         self.services.get(full_name)
-    }
-
-    pub fn get_service_mut(&mut self, full_name: &str) -> Option<&mut ProtoService> {
-        self.services.get_mut(full_name)
     }
 
     pub fn messages(&self) -> impl Iterator<Item = &ProtoMessageType> {

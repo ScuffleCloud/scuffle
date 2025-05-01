@@ -1,20 +1,20 @@
-use num_traits::cast::ToPrimitive;
 use syn::parse_quote;
 
 use super::Function;
 use crate::codegen::cel::compiler::{CompileError, CompiledExpr, CompilerCtx};
 use crate::codegen::cel::types::CelType;
+use crate::types::{ProtoType, ProtoValueType};
 
-pub struct Int;
+pub struct Bool;
 
-impl Function for Int {
-    const NAME: &'static str = "int";
+impl Function for Bool {
+    const NAME: &'static str = "bool";
 
     fn compile(ctx: CompilerCtx) -> Result<CompiledExpr, CompileError> {
         if ctx.this.is_some() {
             return Err(CompileError::MissingTarget {
                 func: Self::NAME,
-                message: "bad usage for int(arg) function".to_string(),
+                message: "bad usage for bool(arg) function".to_string(),
             });
         }
 
@@ -37,9 +37,9 @@ impl Function for Int {
 
         Ok(CompiledExpr {
             expr: parse_quote! {
-                ::tinc::__private::cel::CelValue::cel_to_int(#arg)?
+                ::tinc::__private::cel::to_bool(#arg)?
             },
-            ty: CelType::CelValue,
+            ty: CelType::Proto(ProtoType::Value(ProtoValueType::Bool)),
         })
     }
 
@@ -57,24 +57,20 @@ impl Function for Int {
         let value = fctx.ptx.resolve(&fctx.args[0])?;
 
         Ok(match value {
-            cel_interpreter::Value::Int(i) => cel_interpreter::Value::Int(i),
-            cel_interpreter::Value::Float(i) => match i.to_i64() {
-                Some(i) => cel_interpreter::Value::Int(i),
-                None => cel_interpreter::Value::Null,
-            },
-            cel_interpreter::Value::UInt(i) => match i.to_i64() {
-                Some(i) => cel_interpreter::Value::Int(i),
-                None => cel_interpreter::Value::Null,
-            },
-            cel_interpreter::Value::String(s) => {
-                if let Ok(i) = s.parse() {
-                    cel_interpreter::Value::Int(i)
-                } else {
-                    cel_interpreter::Value::Null
-                }
+            cel_interpreter::Value::Int(i) => cel_interpreter::Value::Bool(i != 0),
+            cel_interpreter::Value::Float(i) => cel_interpreter::Value::Bool(i != 0.0),
+            cel_interpreter::Value::UInt(i) => cel_interpreter::Value::Bool(i != 0),
+            cel_interpreter::Value::String(s) => cel_interpreter::Value::Bool(!s.is_empty()),
+            cel_interpreter::Value::Bool(b) => cel_interpreter::Value::Bool(b),
+            cel_interpreter::Value::Bytes(b) => cel_interpreter::Value::Bool(!b.is_empty()),
+            cel_interpreter::Value::Duration(d) => cel_interpreter::Value::Bool(!d.is_zero()),
+            cel_interpreter::Value::Timestamp(t) => {
+                cel_interpreter::Value::Bool(t.timestamp_nanos_opt().is_some_and(|v| v != 0))
             }
-            cel_interpreter::Value::Bool(b) => cel_interpreter::Value::Int(if b { 1 } else { 0 }),
-            target => return Err(cel_interpreter::ExecutionError::UnsupportedTargetType { target }),
+            cel_interpreter::Value::List(l) => cel_interpreter::Value::Bool(!l.is_empty()),
+            cel_interpreter::Value::Function(_, _) => cel_interpreter::Value::Bool(false),
+            cel_interpreter::Value::Map(m) => cel_interpreter::Value::Bool(!m.map.is_empty()),
+            cel_interpreter::Value::Null => cel_interpreter::Value::Bool(false),
         })
     }
 }

@@ -2,6 +2,13 @@
 name = "tinc-derive"
 version = "0.1.0"
 edition = "2024"
+description = "A derive macro that generates code for tinc protobuf annotations"
+repository = "https://github.com/scufflecloud/scuffle"
+authors = ["Scuffle <opensource@scuffle.cloud>"]
+readme = "README.md"
+documentation = "https://docs.rs/tinc-derive"
+license = "MIT OR Apache-2.0"
+keywords = ["grpc", "protobuf", "tonic", "codegen"]
 
 [lib]
 proc-macro = true

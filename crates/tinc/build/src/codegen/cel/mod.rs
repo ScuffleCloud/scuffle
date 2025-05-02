@@ -1,86 +1,60 @@
-use std::collections::{BTreeMap, HashMap};
+use std::collections::HashMap;
 
 use anyhow::Context;
-use functions::{Enum, Function};
-use quote::quote;
-
-use crate::types::ProtoPath;
+use compiler::{CompiledExpr, CompilerCtx, ConstantCompiledExpr, RuntimeCompiledExpr};
+use functions::Function;
+use proc_macro2::TokenStream;
+use quote::{format_ident, quote};
+use tinc_cel::CelValue;
 
 pub mod compiler;
 pub mod functions;
 pub mod types;
 
-#[derive(Debug, Clone, PartialEq)]
-pub struct MessageFormat {
-    pub format: String,
-    pub args: Vec<(String, cel_parser::Expression)>,
-}
+pub fn eval_message_fmt(msg: &str, ctx: &compiler::Compiler<'_>) -> anyhow::Result<TokenStream> {
+    let fmt = runtime_format::ParsedFmt::new(msg).map_err(|err| anyhow::anyhow!("failed to parse message format: {err}"))?;
 
-impl MessageFormat {
-    pub fn new(msg: &str, ctx: &cel_interpreter::Context, has_this: bool) -> anyhow::Result<Self> {
-        let fmt =
-            runtime_format::ParsedFmt::new(msg).map_err(|err| anyhow::anyhow!("failed to parse message format: {err}"))?;
+    let mut runtime_args = Vec::new();
+    let mut compile_time_args = HashMap::new();
 
-        let mut runtime_args = Vec::new();
-        let mut compile_time_args = HashMap::new();
-
-        // each key itself a cel expression
-        for key in fmt.keys() {
-            let expr = cel_parser::parse(key).context("failed to parse cel expression")?;
-            match preevaluate_expression(expr, ctx, has_this)? {
-                ConstantOrExpression::Constant(value) => {
-                    compile_time_args.insert(key, value_to_str(&value).to_string());
-                }
-                ConstantOrExpression::Expression(expr) => {
-                    compile_time_args.insert(key, format!("{{arg_{}}}", runtime_args.len()));
-                    runtime_args.push((key.to_owned(), expr));
-                }
+    // each key itself a cel expression
+    for key in fmt.keys() {
+        let expr = cel_parser::parse(key).context("failed to parse cel expression")?;
+        match functions::String.compile(CompilerCtx::new(ctx.child(), Some(ctx.resolve(&expr)?), &[]))? {
+            CompiledExpr::Constant(ConstantCompiledExpr { value }) => {
+                // we need to escape the '{' & '}'
+                compile_time_args.insert(key, value);
+            }
+            CompiledExpr::Runtime(RuntimeCompiledExpr { expr, .. }) => {
+                let ident = format_ident!("arg_{}", runtime_args.len());
+                compile_time_args.insert(key, CelValue::String(format!("{{{ident}}}").into()));
+                runtime_args.push((key, ident, expr));
             }
         }
-
-        Ok(Self {
-            format: fmt.with_args(&compile_time_args).to_string(),
-            args: runtime_args,
-        })
     }
-}
 
-fn prost_to_cel(v: prost_reflect::Value) -> anyhow::Result<cel_interpreter::Value> {
-    match v {
-        prost_reflect::Value::String(s) => Ok(cel_interpreter::Value::String(s.into())),
-        prost_reflect::Value::Message(_) => anyhow::bail!("message not supported"),
-        prost_reflect::Value::EnumNumber(_) => anyhow::bail!("enum not supported"),
-        prost_reflect::Value::Bool(b) => Ok(cel_interpreter::Value::Bool(b)),
-        prost_reflect::Value::I32(i) => Ok(cel_interpreter::Value::Int(i as i64)),
-        prost_reflect::Value::I64(i) => Ok(cel_interpreter::Value::Int(i)),
-        prost_reflect::Value::U32(i) => Ok(cel_interpreter::Value::UInt(i as u64)),
-        prost_reflect::Value::U64(i) => Ok(cel_interpreter::Value::UInt(i)),
-        prost_reflect::Value::Bytes(b) => Ok(cel_interpreter::Value::Bytes(b.to_vec().into())),
-        prost_reflect::Value::F32(f) => Ok(cel_interpreter::Value::Float(f as f64)),
-        prost_reflect::Value::F64(f) => Ok(cel_interpreter::Value::Float(f)),
-        prost_reflect::Value::List(list) => list
-            .into_iter()
-            .map(prost_to_cel)
-            .collect::<anyhow::Result<Vec<_>>>()
-            .map(Into::into)
-            .map(cel_interpreter::Value::List),
-        prost_reflect::Value::Map(map) => map
-            .into_iter()
-            .map(|(k, v)| {
-                let k = match k {
-                    prost_reflect::MapKey::Bool(b) => cel_interpreter::objects::Key::Bool(b),
-                    prost_reflect::MapKey::I32(i) => cel_interpreter::objects::Key::Int(i as i64),
-                    prost_reflect::MapKey::I64(i) => cel_interpreter::objects::Key::Int(i),
-                    prost_reflect::MapKey::U32(i) => cel_interpreter::objects::Key::Uint(i as u64),
-                    prost_reflect::MapKey::U64(i) => cel_interpreter::objects::Key::Uint(i),
-                    prost_reflect::MapKey::String(s) => cel_interpreter::objects::Key::String(s.into()),
-                };
+    let fmt = fmt.with_args(&compile_time_args).to_string();
 
-                let v = prost_to_cel(v)?;
-                Ok((k, v))
-            })
-            .collect::<anyhow::Result<HashMap<_, _>>>()
-            .map(|map| cel_interpreter::Value::Map(cel_interpreter::objects::Map { map: map.into() })),
+    if runtime_args.is_empty() {
+        Ok(quote!(#fmt))
+    } else {
+        let args = runtime_args.iter().map(|(key, ident, expr)| {
+            quote! {
+                #ident = (
+                    || {
+                        ::core::result::Result::Ok::<_, ::tinc::__private::cel::CelError>(#expr)
+                    }
+                )().map_err(|err| {
+                    ::tinc::__private::ValidationError::Expression {
+                        error: err.to_string().into_boxed_str(),
+                        field: ::tinc::__private::ProtoPathToken::current_path().into_boxed_str(),
+                        expression: #key,
+                    }
+                })?
+            }
+        });
+
+        Ok(quote!(format!(#fmt, #(#args),*)))
     }
 }
 
@@ -104,230 +78,12 @@ where
     }
 }
 
-fn value_to_str(v: &cel_interpreter::Value) -> impl std::fmt::Display + std::fmt::Debug {
-    FuncFmtter(move |fmt| match v {
-        cel_interpreter::Value::Bool(b) => std::fmt::Display::fmt(b, fmt),
-        cel_interpreter::Value::Int(i) => std::fmt::Display::fmt(i, fmt),
-        cel_interpreter::Value::UInt(i) => std::fmt::Display::fmt(i, fmt),
-        cel_interpreter::Value::Float(f) => write!(fmt, "{f:.2}"),
-        cel_interpreter::Value::String(s) => std::fmt::Display::fmt(s, fmt),
-        cel_interpreter::Value::Bytes(b) => {
-            let lit = syn::LitByteStr::new(b, proc_macro2::Span::call_site());
-            std::fmt::Display::fmt(&quote! { #lit }, fmt)
-        }
-        cel_interpreter::Value::List(list) => fmt.debug_list().entries(list.iter().map(value_to_str)).finish(),
-        cel_interpreter::Value::Function(_, _) => panic!("function should not be in the AST"),
-        cel_interpreter::Value::Map(map) => {
-            let mut fmt = fmt.debug_map();
-            map.map.iter().collect::<BTreeMap<_, _>>().iter().for_each(|(k, v)| {
-                fmt.entry(
-                    match k {
-                        cel_interpreter::objects::Key::Bool(b) => b,
-                        cel_interpreter::objects::Key::Int(i) => i,
-                        cel_interpreter::objects::Key::Uint(i) => i,
-                        cel_interpreter::objects::Key::String(s) => s,
-                    },
-                    &value_to_str(v),
-                );
-            });
-
-            fmt.finish()
-        }
-        cel_interpreter::Value::Null => fmt.write_str("null"),
-        cel_interpreter::Value::Duration(dur) => std::fmt::Display::fmt(dur, fmt),
-        cel_interpreter::Value::Timestamp(ts) => std::fmt::Display::fmt(ts, fmt),
-    })
-}
-
-enum ConstantOrExpression {
-    // we evaluate the expression at compile time
-    Constant(cel_interpreter::Value),
-    // we need to evaluate the expression at runtime but this is the most we can do
-    Expression(cel_parser::Expression),
-}
-
-fn cel_value_to_expr(value: cel_interpreter::Value) -> cel_parser::Expression {
-    match value {
-        cel_interpreter::Value::Bool(b) => cel_parser::Expression::Atom(cel_parser::Atom::Bool(b)),
-        cel_interpreter::Value::Int(i) => cel_parser::Expression::Atom(cel_parser::Atom::Int(i)),
-        cel_interpreter::Value::UInt(i) => cel_parser::Expression::Atom(cel_parser::Atom::UInt(i)),
-        cel_interpreter::Value::Float(f) => cel_parser::Expression::Atom(cel_parser::Atom::Float(f)),
-        cel_interpreter::Value::String(s) => cel_parser::Expression::Atom(cel_parser::Atom::String(s)),
-        cel_interpreter::Value::Bytes(b) => cel_parser::Expression::Atom(cel_parser::Atom::Bytes(b)),
-        cel_interpreter::Value::List(list) => {
-            cel_parser::Expression::List(list.iter().cloned().map(cel_value_to_expr).collect())
-        }
-        cel_interpreter::Value::Function(name, arg) => {
-            unreachable!("value should not be function at this point: {name} on {arg:?}")
-        }
-        cel_interpreter::Value::Map(map) => cel_parser::Expression::Map({
-            let map = BTreeMap::from_iter(map.map.iter());
-            map.into_iter()
-                .map(|(k, v)| (cel_value_to_expr(k.clone().into()), cel_value_to_expr(v.clone())))
-                .collect()
-        }),
-        cel_interpreter::Value::Null => cel_parser::Expression::Atom(cel_parser::Atom::Null),
-        cel_interpreter::Value::Duration(dur) => {
-            cel_parser::Expression::Atom(cel_parser::Atom::String(dur.to_string().into()))
-        }
-        cel_interpreter::Value::Timestamp(ts) => {
-            cel_parser::Expression::Atom(cel_parser::Atom::String(ts.to_string().into()))
-        }
-    }
-}
-
-impl ConstantOrExpression {
-    fn into_expr(self) -> cel_parser::Expression {
-        match self {
-            ConstantOrExpression::Constant(value) => cel_value_to_expr(value),
-            ConstantOrExpression::Expression(expr) => expr,
-        }
-    }
-}
-
-fn preevaluate_expression(
-    expr: cel_parser::Expression,
-    ctx: &cel_interpreter::Context,
-    has_this: bool,
-) -> anyhow::Result<ConstantOrExpression> {
-    let references = expr.references();
-    let requires_runtime =
-        references.has_function("dyn") || references.has_function("enum") || references.has_variable("input");
-
-    if !requires_runtime {
-        return ctx
-            .resolve(&expr)
-            .context("failed to resolve expression")
-            .map(ConstantOrExpression::Constant);
-    }
-
-    let result = match expr {
-        cel_parser::Expression::Arithmetic(left, op, right) => cel_parser::Expression::Arithmetic(
-            Box::new(preevaluate_expression(*left, ctx, has_this)?.into_expr()),
-            op,
-            Box::new(preevaluate_expression(*right, ctx, has_this)?.into_expr()),
-        ),
-        cel_parser::Expression::Relation(left, op, right) => cel_parser::Expression::Relation(
-            Box::new(preevaluate_expression(*left, ctx, has_this)?.into_expr()),
-            op,
-            Box::new(preevaluate_expression(*right, ctx, has_this)?.into_expr()),
-        ),
-        cel_parser::Expression::Ternary(cmp, t, f) => cel_parser::Expression::Ternary(
-            Box::new(preevaluate_expression(*cmp, ctx, has_this)?.into_expr()),
-            Box::new(preevaluate_expression(*t, ctx, has_this)?.into_expr()),
-            Box::new(preevaluate_expression(*f, ctx, has_this)?.into_expr()),
-        ),
-        cel_parser::Expression::Or(left, right) => cel_parser::Expression::Or(
-            Box::new(preevaluate_expression(*left, ctx, has_this)?.into_expr()),
-            Box::new(preevaluate_expression(*right, ctx, has_this)?.into_expr()),
-        ),
-        cel_parser::Expression::And(left, right) => cel_parser::Expression::And(
-            Box::new(preevaluate_expression(*left, ctx, has_this)?.into_expr()),
-            Box::new(preevaluate_expression(*right, ctx, has_this)?.into_expr()),
-        ),
-        cel_parser::Expression::Unary(op, expr) => {
-            cel_parser::Expression::Unary(op, Box::new(preevaluate_expression(*expr, ctx, has_this)?.into_expr()))
-        }
-        cel_parser::Expression::Member(expr, member) => cel_parser::Expression::Member(
-            Box::new(preevaluate_expression(*expr, ctx, has_this)?.into_expr()),
-            Box::new(match *member {
-                cel_parser::Member::Attribute(attr) => cel_parser::Member::Attribute(attr),
-                cel_parser::Member::Index(index) => {
-                    cel_parser::Member::Index(Box::new(preevaluate_expression(*index, ctx, has_this)?.into_expr()))
-                }
-                cel_parser::Member::Fields(fields) => cel_parser::Member::Fields(
-                    fields
-                        .into_iter()
-                        .map(|(key, value)| {
-                            let value = preevaluate_expression(value, ctx, has_this)?.into_expr();
-                            Ok((key, value))
-                        })
-                        .collect::<anyhow::Result<Vec<_>>>()?,
-                ),
-            }),
-        ),
-        cel_parser::Expression::FunctionCall(func, this, args) => cel_parser::Expression::FunctionCall(
-            func,
-            if let Some(this) = this {
-                Some(Box::new(preevaluate_expression(*this, ctx, has_this)?.into_expr()))
-            } else {
-                None
-            },
-            args.into_iter()
-                .map(|arg| preevaluate_expression(arg, ctx, has_this).map(|value| value.into_expr()))
-                .collect::<anyhow::Result<Vec<_>>>()?,
-        ),
-        cel_parser::Expression::List(exprs) => cel_parser::Expression::List(
-            exprs
-                .into_iter()
-                .map(|expr| preevaluate_expression(expr, ctx, has_this).map(|value| value.into_expr()))
-                .collect::<anyhow::Result<Vec<_>>>()?,
-        ),
-        cel_parser::Expression::Map(pairs) => cel_parser::Expression::Map(
-            pairs
-                .into_iter()
-                .map(|(key, value)| {
-                    let key = preevaluate_expression(key, ctx, has_this)?.into_expr();
-                    let value = preevaluate_expression(value, ctx, has_this)?.into_expr();
-                    Ok((key, value))
-                })
-                .collect::<anyhow::Result<Vec<_>>>()?,
-        ),
-        cel_parser::Expression::Atom(atom) => cel_parser::Expression::Atom(atom),
-        cel_parser::Expression::Ident(ident) => cel_parser::Expression::Ident(ident),
-    };
-
-    Ok(ConstantOrExpression::Expression(result))
-}
-
 #[derive(Debug, Clone, PartialEq)]
 pub struct CelExpression {
-    pub raw_expr: String,
-    pub expression: cel_parser::Expression,
-    pub message: MessageFormat,
-    pub json_schemas: Vec<serde_json::Value>,
-}
-
-impl CelExpression {
-    pub fn new(
-        pb: &tinc_pb::CelExpression,
-        this: Option<&prost_reflect::Value>,
-        enum_path: Option<ProtoPath>,
-    ) -> anyhow::Result<Self> {
-        let mut ctx = cel_interpreter::Context::empty();
-        if let Some(this) = this {
-            ctx.add_variable_from_value("this", prost_to_cel(this.clone())?);
-        }
-
-        functions::add_to_context(&mut ctx);
-
-        Enum(enum_path).add_to_ctx(&mut ctx);
-
-        let message = MessageFormat::new(&pb.message, &ctx, this.is_some()).context("failed to create message format")?;
-
-        let expression = cel_parser::parse(&pb.expression).context("failed to parse cel expression")?;
-
-        let expression = preevaluate_expression(expression, &ctx, this.is_some())
-            .context("failed to pre-evaluate expression")?
-            .into_expr();
-
-        let json_schemas = Vec::new();
-        // for schema in &pb.jsonschemas {
-        //     let expr = cel_parser::parse(schema).context("failed to parse cel expression")?;
-        //     let result = ctx.resolve(&expr).context("failed to resolve expression")?;
-        //     let json = result
-        //         .json()
-        //         .map_err(|err| anyhow::anyhow!("failed to convert expression to json: {err}"))?;
-        //     json_schemas.push(json);
-        // }
-
-        Ok(Self {
-            raw_expr: pb.expression.clone(),
-            expression,
-            message,
-            json_schemas,
-        })
-    }
+    pub message: String,
+    pub expression: String,
+    pub jsonschemas: Vec<String>,
+    pub this: Option<CelValue<'static>>,
 }
 
 #[derive(Debug, PartialEq, Clone, Default)]

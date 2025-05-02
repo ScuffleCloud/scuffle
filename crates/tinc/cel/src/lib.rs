@@ -7,36 +7,6 @@ use bytes::Bytes;
 use float_cmp::ApproxEq;
 use num_traits::ToPrimitive;
 
-#[derive(Debug, Clone, Copy, PartialEq, Eq)]
-pub enum CelMode {
-    Proto,
-    Json,
-}
-
-impl CelMode {
-    pub fn set(self) {
-        CEL_MODE.set(self);
-    }
-
-    pub fn current() -> CelMode {
-        CEL_MODE.get()
-    }
-
-    pub fn is_json(self) -> bool {
-        matches!(self, Self::Json)
-    }
-
-    pub fn is_proto(self) -> bool {
-        matches!(self, Self::Proto)
-    }
-}
-
-thread_local! {
-    static CEL_MODE: std::cell::Cell<CelMode> = std::cell::Cell::new(CelMode::Proto);
-}
-
-use super::{FuncFmt, Map};
-
 #[derive(Debug, thiserror::Error, PartialEq)]
 pub enum CelError<'a> {
     #[error("index out of bounds: {0} is out of range for a list of length {1}")]
@@ -73,10 +43,34 @@ impl PartialEq for CelString<'_> {
 
 impl Eq for CelString<'_> {}
 
-#[derive(Clone, Debug)]
-pub enum CelBytes<'a> {
-    Owned(Bytes),
-    Borrowed(&'a [u8]),
+impl<'a> From<&'a str> for CelString<'a> {
+    fn from(value: &'a str) -> Self {
+        CelString::Borrowed(value)
+    }
+}
+
+impl From<String> for CelString<'_> {
+    fn from(value: String) -> Self {
+        CelString::Owned(value.into())
+    }
+}
+
+impl<'a> From<&'a String> for CelString<'a> {
+    fn from(value: &'a String) -> Self {
+        CelString::Borrowed(value.as_str())
+    }
+}
+
+impl From<&Arc<str>> for CelString<'static> {
+    fn from(value: &Arc<str>) -> Self {
+        CelString::Owned(value.clone())
+    }
+}
+
+impl From<Arc<str>> for CelString<'static> {
+    fn from(value: Arc<str>) -> Self {
+        CelString::Owned(value)
+    }
 }
 
 impl AsRef<str> for CelString<'_> {
@@ -85,6 +79,58 @@ impl AsRef<str> for CelString<'_> {
             Self::Borrowed(s) => s,
             Self::Owned(s) => s,
         }
+    }
+}
+
+impl std::ops::Deref for CelString<'_> {
+    type Target = str;
+
+    fn deref(&self) -> &Self::Target {
+        self.as_ref()
+    }
+}
+
+#[derive(Clone, Debug)]
+pub enum CelBytes<'a> {
+    Owned(Bytes),
+    Borrowed(&'a [u8]),
+}
+
+impl PartialEq for CelBytes<'_> {
+    fn eq(&self, other: &Self) -> bool {
+        self.as_ref() == other.as_ref()
+    }
+}
+
+impl Eq for CelBytes<'_> {}
+
+impl<'a> From<&'a [u8]> for CelBytes<'a> {
+    fn from(value: &'a [u8]) -> Self {
+        CelBytes::Borrowed(value)
+    }
+}
+
+impl From<Bytes> for CelBytes<'_> {
+    fn from(value: Bytes) -> Self {
+        CelBytes::Owned(value)
+    }
+}
+
+impl From<&Bytes> for CelBytes<'_> {
+    fn from(value: &Bytes) -> Self {
+        CelBytes::Owned(value.clone())
+    }
+}
+
+impl From<Vec<u8>> for CelBytes<'static> {
+    fn from(value: Vec<u8>) -> Self {
+        CelBytes::Owned(value.into())
+    }
+}
+
+impl<'a> From<&'a Vec<u8>> for CelBytes<'a> {
+    fn from(value: &'a Vec<u8>) -> Self {
+        CelBytes::Borrowed(value.as_slice())
     }
 }
 
@@ -138,9 +184,12 @@ impl PartialOrd for CelValue<'_> {
 }
 
 impl<'a> CelValue<'a> {
-    pub fn access(&self, key: impl CelValueConv<'a>) -> Result<CelValue<'a>, CelError<'a>> {
+    pub fn cel_access<'b>(container: impl CelValueConv<'a>, key: impl CelValueConv<'b>) -> Result<CelValue<'a>, CelError<'b>>
+    where
+        'a: 'b,
+    {
         let key = key.conv();
-        match self {
+        match container.conv() {
             CelValue::Map(map) => map
                 .iter()
                 .find(|(k, _)| k == &key)
@@ -153,9 +202,9 @@ impl<'a> CelValue<'a> {
                     Err(CelError::IndexWithBadIndex(key))
                 }
             }
-            _ => Err(CelError::BadAccess {
+            v => Err(CelError::BadAccess {
                 member: key,
-                container: self.clone(),
+                container: v,
             }),
         }
     }
@@ -179,28 +228,28 @@ impl<'a> CelValue<'a> {
         }
     }
 
-    pub fn cel_sub(left: impl CelValueConv<'a>, right: impl CelValueConv<'a>) -> Result<CelValue<'a>, CelError<'a>> {
+    pub fn cel_sub(left: impl CelValueConv<'a>, right: impl CelValueConv<'a>) -> Result<CelValue<'static>, CelError<'a>> {
         match (left.conv(), right.conv()) {
             (CelValue::Number(l), CelValue::Number(r)) => Ok(CelValue::Number(l.cel_sub(r)?)),
             (left, right) => Err(CelError::BadOperation { left, right, op: "-" }),
         }
     }
 
-    pub fn cel_mul(left: impl CelValueConv<'a>, right: impl CelValueConv<'a>) -> Result<CelValue<'a>, CelError<'a>> {
+    pub fn cel_mul(left: impl CelValueConv<'a>, right: impl CelValueConv<'a>) -> Result<CelValue<'static>, CelError<'a>> {
         match (left.conv(), right.conv()) {
             (CelValue::Number(l), CelValue::Number(r)) => Ok(CelValue::Number(l.cel_mul(r)?)),
             (left, right) => Err(CelError::BadOperation { left, right, op: "*" }),
         }
     }
 
-    pub fn cel_div(left: impl CelValueConv<'a>, right: impl CelValueConv<'a>) -> Result<CelValue<'a>, CelError<'a>> {
+    pub fn cel_div(left: impl CelValueConv<'a>, right: impl CelValueConv<'a>) -> Result<CelValue<'static>, CelError<'a>> {
         match (left.conv(), right.conv()) {
             (CelValue::Number(l), CelValue::Number(r)) => Ok(CelValue::Number(l.cel_div(r)?)),
             (left, right) => Err(CelError::BadOperation { left, right, op: "/" }),
         }
     }
 
-    pub fn cel_rem(left: impl CelValueConv<'a>, right: impl CelValueConv<'a>) -> Result<CelValue<'a>, CelError<'a>> {
+    pub fn cel_rem(left: impl CelValueConv<'a>, right: impl CelValueConv<'a>) -> Result<CelValue<'static>, CelError<'a>> {
         match (left.conv(), right.conv()) {
             (CelValue::Number(l), CelValue::Number(r)) => Ok(CelValue::Number(l.cel_rem(r)?)),
             (left, right) => Err(CelError::BadOperation { left, right, op: "%" }),
@@ -215,7 +264,7 @@ impl<'a> CelValue<'a> {
     }
 
     // !self
-    pub fn cel_neg(self) -> Result<CelValue<'a>, CelError<'a>> {
+    pub fn cel_neg(self) -> Result<CelValue<'static>, CelError<'a>> {
         match self {
             CelValue::Number(n) => Ok(CelValue::Number(n.cel_neg()?)),
             _ => Err(CelError::BadUnaryOperation { value: self, op: "-" }),
@@ -262,19 +311,14 @@ impl<'a> CelValue<'a> {
     pub fn cel_eq(left: impl CelValueConv<'a>, right: impl CelValueConv<'a>) -> Result<bool, CelError<'a>> {
         let left = left.conv();
         let right = right.conv();
-        left.partial_cmp(&right)
-            .ok_or(CelError::BadOperation { left, right, op: "==" })
-            .map(|o| matches!(o, std::cmp::Ordering::Equal))
+        Ok(left == right)
     }
 
     // left != right
-    pub fn cel_ne(left: impl CelValueConv<'a>, right: impl CelValueConv<'a>) -> Result<bool, CelError<'a>> {
+    pub fn cel_neq(left: impl CelValueConv<'a>, right: impl CelValueConv<'a>) -> Result<bool, CelError<'a>> {
         let left = left.conv();
         let right = right.conv();
-
-        left.partial_cmp(&right)
-            .ok_or(CelError::BadOperation { left, right, op: "!=" })
-            .map(|o| matches!(o, std::cmp::Ordering::Less | std::cmp::Ordering::Greater))
+        Ok(left != right)
     }
 
     // left.contains(right)
@@ -647,7 +691,38 @@ impl<'a> CelValue<'a> {
 
 impl PartialEq for CelValue<'_> {
     fn eq(&self, other: &Self) -> bool {
-        self.partial_cmp(other).is_some_and(|c| c.is_eq())
+        match (self, other) {
+            (CelValue::Bool(left), CelValue::Bool(right)) => left == right,
+            (left @ (CelValue::Bytes(_) | CelValue::String(_)), right @ (CelValue::Bytes(_) | CelValue::String(_))) => {
+                let left = match left {
+                    CelValue::String(s) => s.as_bytes(),
+                    CelValue::Bytes(b) => b.as_ref(),
+                    _ => unreachable!(),
+                };
+
+                let right = match right {
+                    CelValue::String(s) => s.as_bytes(),
+                    CelValue::Bytes(b) => b.as_ref(),
+                    _ => unreachable!(),
+                };
+
+                left == right
+            }
+            (CelValue::Duration(left), CelValue::Duration(right)) => left == right,
+            (CelValue::Duration(dur), CelValue::Number(seconds)) | (CelValue::Number(seconds), CelValue::Duration(dur)) => {
+                (dur.num_seconds() as f64) + dur.subsec_nanos() as f64 / 1_000_000_000.0 == *seconds
+            }
+            (CelValue::Timestamp(left), CelValue::Timestamp(right)) => left == right,
+            (CelValue::Enum(left), CelValue::Enum(right)) => left == right,
+            (CelValue::Enum(enum_), CelValue::Number(value)) | (CelValue::Number(value), CelValue::Enum(enum_)) => {
+                enum_.value == *value
+            }
+            (CelValue::List(left), CelValue::List(right)) => left == right,
+            (CelValue::Map(left), CelValue::Map(right)) => left == right,
+            (CelValue::Number(left), CelValue::Number(right)) => left == right,
+            (CelValue::Null, CelValue::Null) => true,
+            _ => false,
+        }
     }
 }
 
@@ -775,6 +850,12 @@ where
     }
 }
 
+impl<'a> CelValueConv<'a> for &CelValue<'a> {
+    fn conv(self) -> CelValue<'a> {
+        self.clone()
+    }
+}
+
 impl std::fmt::Display for CelValue<'_> {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match self {
@@ -785,21 +866,24 @@ impl std::fmt::Display for CelValue<'_> {
             CelValue::List(l) => {
                 let mut list = f.debug_list();
                 for item in l.iter() {
-                    list.entry(&FuncFmt(|fmt| item.fmt(fmt)));
+                    list.entry(&fmtools::fmt(|fmt| item.fmt(fmt)));
                 }
                 list.finish()
             }
             CelValue::Map(m) => {
                 let mut map = f.debug_map();
                 for (key, value) in m.iter() {
-                    map.entry(&FuncFmt(|fmt| key.fmt(fmt)), &FuncFmt(|fmt| value.fmt(fmt)));
+                    map.entry(&fmtools::fmt(|fmt| key.fmt(fmt)), &fmtools::fmt(|fmt| value.fmt(fmt)));
                 }
                 map.finish()
             }
             CelValue::Null => std::fmt::Display::fmt("null", f),
             CelValue::Duration(d) => std::fmt::Display::fmt(d, f),
             CelValue::Timestamp(t) => std::fmt::Display::fmt(t, f),
+            #[cfg(feature = "runtime")]
             CelValue::Enum(e) => e.into_prim_cel().fmt(f),
+            #[cfg(not(feature = "runtime"))]
+            CelValue::Enum(_) => panic!("enum to string called during build-time"),
         }
     }
 }
@@ -816,7 +900,10 @@ impl CelValue<'_> {
             CelValue::Null => false,
             CelValue::Duration(d) => !d.is_zero(),
             CelValue::Timestamp(t) => t.timestamp_nanos_opt().unwrap_or_default() != 0,
+            #[cfg(feature = "runtime")]
             CelValue::Enum(t) => t.is_valid(),
+            #[cfg(not(feature = "runtime"))]
+            CelValue::Enum(_) => panic!("enum to bool called during build-time"),
         }
     }
 }
@@ -1130,6 +1217,40 @@ impl MapKeyCast for String {
     }
 }
 
+trait Map<K, V> {
+    fn get<Q>(&self, key: &Q) -> Option<&V>
+    where
+        K: std::borrow::Borrow<Q>,
+        Q: std::hash::Hash + std::cmp::Ord + ?Sized;
+}
+
+impl<K, V, S> Map<K, V> for HashMap<K, V, S>
+where
+    K: std::hash::Hash + std::cmp::Eq,
+    S: std::hash::BuildHasher,
+{
+    fn get<Q>(&self, key: &Q) -> Option<&V>
+    where
+        K: std::borrow::Borrow<Q>,
+        Q: std::hash::Hash + std::cmp::Eq + ?Sized,
+    {
+        HashMap::get(self, key)
+    }
+}
+
+impl<K, V> Map<K, V> for BTreeMap<K, V>
+where
+    K: std::cmp::Ord,
+{
+    fn get<Q>(&self, key: &Q) -> Option<&V>
+    where
+        K: std::borrow::Borrow<Q>,
+        Q: std::cmp::Ord + ?Sized,
+    {
+        BTreeMap::get(self, key)
+    }
+}
+
 #[allow(private_bounds)]
 pub fn map_access<'a, 'b, K, V>(map: &'a impl Map<K, V>, key: impl CelValueConv<'b>) -> Result<&'a V, CelError<'b>>
 where
@@ -1231,13 +1352,49 @@ pub fn to_bool(value: impl CelBooleanConv) -> bool {
     value.to_bool()
 }
 
+#[cfg(feature = "runtime")]
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum CelMode {
+    Proto,
+    Json,
+}
+
+#[cfg(feature = "runtime")]
+thread_local! {
+    static CEL_MODE: std::cell::Cell<CelMode> = const { std::cell::Cell::new(CelMode::Proto) };
+}
+
+#[cfg(feature = "runtime")]
+impl CelMode {
+    pub fn set(self) {
+        CEL_MODE.set(self);
+    }
+
+    pub fn current() -> CelMode {
+        CEL_MODE.get()
+    }
+
+    pub fn is_json(self) -> bool {
+        matches!(self, Self::Json)
+    }
+
+    pub fn is_proto(self) -> bool {
+        matches!(self, Self::Proto)
+    }
+}
+
 #[derive(Debug, PartialEq, Clone)]
 pub struct CelEnum<'a> {
     pub tag: CelString<'a>,
     pub value: i32,
 }
 
-impl CelEnum<'_> {
+impl<'a> CelEnum<'a> {
+    pub fn new(tag: CelString<'a>, value: i32) -> CelEnum<'a> {
+        CelEnum { tag, value }
+    }
+
+    #[cfg(feature = "runtime")]
     pub fn into_prim_cel(&self) -> CelValue<'static> {
         EnumVtable::from_tag(self.tag.as_ref())
             .map(|vt| match CEL_MODE.get() {
@@ -1247,11 +1404,13 @@ impl CelEnum<'_> {
             .unwrap_or(CelValue::Number(NumberTy::I64(self.value as i64)))
     }
 
+    #[cfg(feature = "runtime")]
     pub fn is_valid(&self) -> bool {
         EnumVtable::from_tag(self.tag.as_ref()).is_some_and(|vt| (vt.is_valid)(self.value))
     }
 }
 
+#[cfg(feature = "runtime")]
 #[derive(Debug, Copy, Clone)]
 pub struct EnumVtable {
     pub proto_path: &'static str,
@@ -1260,6 +1419,7 @@ pub struct EnumVtable {
     pub to_proto: fn(i32) -> CelValue<'static>,
 }
 
+#[cfg(feature = "runtime")]
 impl EnumVtable {
     pub fn from_tag(tag: &str) -> Option<&'static EnumVtable> {
         static LOOKUP: std::sync::LazyLock<HashMap<&'static str, &'static EnumVtable>> =
@@ -1269,5 +1429,6 @@ impl EnumVtable {
     }
 }
 
+#[cfg(feature = "runtime")]
 #[linkme::distributed_slice]
 pub static TINC_CEL_ENUM_VTABLE: [EnumVtable];

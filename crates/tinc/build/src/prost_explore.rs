@@ -5,6 +5,7 @@ use convert_case::{Case, Casing};
 use indexmap::IndexMap;
 use prost_reflect::{DescriptorPool, EnumDescriptor, ExtensionDescriptor, Kind, MessageDescriptor, ServiceDescriptor};
 use quote::format_ident;
+use tinc_cel::CelValueConv;
 
 use crate::codegen::cel::{CelExpression, CelExpressions};
 use crate::codegen::prost_sanatize::{strip_enum_prefix, to_upper_camel};
@@ -298,11 +299,7 @@ impl Extensions {
                         ProtoServiceMethodIo::Single(method_output)
                     },
                     endpoints,
-                    cel: opts
-                        .cel
-                        .iter()
-                        .map(|expr| CelExpression::new(expr, None, None))
-                        .collect::<anyhow::Result<_>>()?,
+                    cel: opts.cel,
                 },
             );
         }
@@ -350,14 +347,7 @@ impl Extensions {
             full_name: message_full_name.clone(),
             package: ProtoPath::new(message.package_name()),
             fields: IndexMap::new(),
-            options: ProtoMessageOptions {
-                cel: opts
-                    .cel
-                    .as_slice()
-                    .iter()
-                    .map(|expr| CelExpression::new(expr, None, None))
-                    .collect::<anyhow::Result<_>>()?,
-            },
+            options: ProtoMessageOptions { cel: opts.cel },
         });
 
         for (field, opts) in fields {
@@ -378,7 +368,7 @@ impl Extensions {
                     .rename
                     .or_else(|| rename_field(field.name(), rename_all?))
                     .unwrap_or_else(|| field.name().to_owned()),
-                cel_exprs: gather_cel_expressions(&self.ext_predefined, &field.options(), &field.kind())
+                cel_exprs: gather_cel_expressions(&self.ext_predefined, &field.options())
                     .context("gathering cel expressions")?,
             };
 
@@ -438,7 +428,7 @@ impl Extensions {
                                 .or_else(|| rename_field(oneof.name(), rename_all?))
                                 .unwrap_or_else(|| oneof.name().to_owned()),
                             visibility,
-                            cel_exprs: gather_cel_expressions(&self.ext_predefined, &field.options(), &field.kind())
+                            cel_exprs: gather_cel_expressions(&self.ext_predefined, &field.options())
                                 .context("gathering cel expressions")?,
                         },
                         ty: ProtoType::Modified(ProtoModifiedValueType::OneOf(ProtoOneOfType {
@@ -579,7 +569,6 @@ enum CelInput {
 pub fn gather_cel_expressions(
     extension: &Extension<tinc_pb::PredefinedConstraint>,
     field_options: &prost_reflect::DynamicMessage,
-    field_ty: &Kind,
 ) -> anyhow::Result<CelExpressions> {
     let Some(extension) = extension.descriptor() else {
         return Ok(CelExpressions::default());
@@ -616,7 +605,7 @@ pub fn gather_cel_expressions(
         }
 
         if let Some(message) = value.as_message() {
-            explore_fields(extension, input, message, &mut results, field_ty)?;
+            explore_fields(extension, input, message, &mut results)?;
         }
     }
 
@@ -633,7 +622,6 @@ fn explore_fields(
     input: CelInput,
     value: &prost_reflect::DynamicMessage,
     results: &mut BTreeMap<CelInput, Vec<CelExpression>>,
-    field_ty: &Kind,
 ) -> anyhow::Result<()> {
     for (field, value) in value.fields() {
         let options = field.options();
@@ -649,18 +637,17 @@ fn explore_fields(
                 tinc_pb::predefined_constraint::Type::Unspecified => {}
                 tinc_pb::predefined_constraint::Type::CustomExpression => {
                     if let Some(list) = value.as_list() {
-                        let messages = list
-                            .iter()
-                            .filter_map(|item| item.as_message())
-                            .filter_map(|msg| msg.transcode_to::<tinc_pb::CelExpression>().ok());
-                        for message in messages {
-                            let expr = CelExpression::new(
-                                &message,
-                                None,
-                                field_ty.as_enum().map(|e| ProtoPath::new(e.full_name())),
-                            )?;
-                            results.entry(input).or_default().push(expr);
-                        }
+                        results.entry(input).or_default().extend(
+                            list.iter()
+                                .filter_map(|item| item.as_message())
+                                .filter_map(|msg| msg.transcode_to::<tinc_pb::CelExpression>().ok())
+                                .map(|expr| CelExpression {
+                                    expression: expr.expression,
+                                    jsonschemas: expr.jsonschemas,
+                                    message: expr.message,
+                                    this: None,
+                                }),
+                        );
                     }
                     continue;
                 }
@@ -675,21 +662,57 @@ fn explore_fields(
                 }
             }
 
-            for expr in &predef.cel {
-                results.entry(input).or_default().push(CelExpression::new(
-                    expr,
-                    Some(value),
-                    field_ty.as_enum().map(|e| ProtoPath::new(e.full_name())),
-                )?);
-            }
+            results
+                .entry(input)
+                .or_default()
+                .extend(predef.cel.into_iter().map(|expr| CelExpression {
+                    expression: expr.expression,
+                    jsonschemas: expr.jsonschemas,
+                    message: expr.message,
+                    this: Some(prost_to_cel(value.clone())),
+                }));
         }
 
         let Some(message) = value.as_message() else {
             continue;
         };
 
-        explore_fields(extension, input, message, results, field_ty)?;
+        explore_fields(extension, input, message, results)?;
     }
 
     Ok(())
+}
+
+fn prost_to_cel(v: prost_reflect::Value) -> tinc_cel::CelValue<'static> {
+    match v {
+        prost_reflect::Value::String(s) => tinc_cel::CelValue::String(s.into()),
+        prost_reflect::Value::Message(_) => todo!("message not supported"),
+        prost_reflect::Value::EnumNumber(v) => v.conv(),
+        prost_reflect::Value::Bool(v) => v.conv(),
+        prost_reflect::Value::I32(v) => v.conv(),
+        prost_reflect::Value::I64(v) => v.conv(),
+        prost_reflect::Value::U32(v) => v.conv(),
+        prost_reflect::Value::U64(v) => v.conv(),
+        prost_reflect::Value::Bytes(b) => tinc_cel::CelValue::Bytes(b.into()),
+        prost_reflect::Value::F32(v) => v.conv(),
+        prost_reflect::Value::F64(v) => v.conv(),
+        prost_reflect::Value::List(list) => tinc_cel::CelValue::List(list.into_iter().map(prost_to_cel).collect()),
+        prost_reflect::Value::Map(map) => tinc_cel::CelValue::Map(
+            map.into_iter()
+                .map(|(k, v)| {
+                    let k = match k {
+                        prost_reflect::MapKey::Bool(v) => v.conv(),
+                        prost_reflect::MapKey::I32(v) => v.conv(),
+                        prost_reflect::MapKey::I64(v) => v.conv(),
+                        prost_reflect::MapKey::U32(v) => v.conv(),
+                        prost_reflect::MapKey::U64(v) => v.conv(),
+                        prost_reflect::MapKey::String(s) => tinc_cel::CelValue::String(s.into()),
+                    };
+
+                    let v = prost_to_cel(v);
+                    (k, v)
+                })
+                .collect(),
+        ),
+    }
 }

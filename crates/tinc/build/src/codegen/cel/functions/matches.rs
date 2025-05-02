@@ -1,8 +1,8 @@
-use cel_interpreter::{ExecutionError, FunctionContext};
 use syn::parse_quote;
+use tinc_cel::CelValue;
 
 use super::Function;
-use crate::codegen::cel::compiler::{CompileError, CompiledExpr, CompilerCtx};
+use crate::codegen::cel::compiler::{CompileError, CompiledExpr, CompilerCtx, ConstantCompiledExpr};
 use crate::codegen::cel::types::CelType;
 use crate::types::{ProtoType, ProtoValueType};
 
@@ -15,82 +15,52 @@ impl Function for Matches {
         "matches"
     }
 
+    fn syntax(&self) -> &'static str {
+        "<this>.matches(<const regex>)"
+    }
+
     fn compile(&self, ctx: CompilerCtx) -> Result<CompiledExpr, CompileError> {
         let Some(this) = &ctx.this else {
-            return Err(CompileError::MissingTarget {
-                func: self.name(),
-                message: "this is required when calling the matches function".to_string(),
-            });
+            return Err(CompileError::syntax("missing this", self));
         };
 
         if ctx.args.len() != 1 {
-            return Err(CompileError::InvalidFunctionArgumentCount {
-                func: self.name(),
-                expected: 1,
-                got: ctx.args.len(),
-            });
+            return Err(CompileError::syntax("takes exactly one argument", self));
         }
 
-        let cel_parser::Expression::Atom(cel_parser::Atom::String(regex)) = &ctx.args[0] else {
-            return Err(CompileError::InvalidFunctionArgument {
-                message: "the regex expression must be known at compile time".into(),
-                expr: ctx.args[0].clone(),
-                idx: 0,
-            });
+        let CompiledExpr::Constant(ConstantCompiledExpr {
+            value: CelValue::String(regex),
+        }) = ctx.resolve(&ctx.args[0])?.to_cel()?
+        else {
+            return Err(CompileError::syntax("regex must be known at compile time string", self));
         };
 
-        let regex = regex.as_str();
-
-        if let Err(err) = regex::Regex::new(regex) {
-            return Err(CompileError::InvalidFunctionArgument {
-                message: format!("bad regex expression: {err}"),
-                expr: ctx.args[0].clone(),
-                idx: 0,
-            });
+        let regex = regex.as_ref();
+        if regex.is_empty() {
+            return Err(CompileError::syntax("regex cannot be an empty string", self));
         }
+
+        let re = regex::Regex::new(regex).map_err(|err| CompileError::syntax(format!("bad regex {err}"), self))?;
 
         let this = this.clone().to_cel()?;
 
-        Ok(CompiledExpr {
-            expr: parse_quote! {{
-                static REGEX: ::std::sync::LazyLock<::tinc::reexports::regex::Regex> = ::std::sync::LazyLock::new(|| {
-                    ::tinc::reexports::regex::Regex::new(#regex).expect("regex failed to compile")
-                });
-
-                ::tinc::__private::cel::CelValue::cel_matches(
-                    #this,
-                    &*REGEX,
-                )?
-            }},
-            ty: CelType::Proto(ProtoType::Value(ProtoValueType::Bool)),
-        })
-    }
-
-    fn interpret(&self, fctx: &FunctionContext) -> Result<cel_interpreter::Value, ExecutionError> {
-        let Some(cel_interpreter::Value::String(this)) = &fctx.this else {
-            return Err(ExecutionError::missing_argument_or_target());
-        };
-
-        if fctx.args.len() != 1 {
-            return Err(ExecutionError::invalid_argument_count(1, fctx.args.len()));
-        }
-
-        let arg = fctx.ptx.resolve(&fctx.args[0])?;
-        let regex = regex::Regex::new(this).map_err(|err| ExecutionError::FunctionError {
-            function: self.name().to_owned(),
-            message: format!("bad regex: {err}"),
-        })?;
-
-        match arg {
-            cel_interpreter::Value::String(s) => Ok(cel_interpreter::Value::Bool(regex.is_match(&s))),
-            cel_interpreter::Value::Bytes(t) => {
-                if let Ok(s) = std::str::from_utf8(&t) {
-                    Ok(cel_interpreter::Value::Bool(regex.is_match(s)))
-                } else {
-                    Ok(cel_interpreter::Value::Bool(false))
-                }
+        match this {
+            CompiledExpr::Constant(ConstantCompiledExpr { value }) => {
+                Ok(CompiledExpr::constant(CelValue::cel_matches(value, &re)?))
             }
-            _ => Ok(cel_interpreter::Value::Bool(false)),
+            this => Ok(CompiledExpr::runtime(
+                CelType::Proto(ProtoType::Value(ProtoValueType::Bool)),
+                parse_quote! {{
+                    static REGEX: ::std::sync::LazyLock<::tinc::reexports::regex::Regex> = ::std::sync::LazyLock::new(|| {
+                        ::tinc::reexports::regex::Regex::new(#regex).expect("failed to compile regex this is a bug in tinc")
+                    });
+
+                    ::tinc::__private::cel::CelValue::cel_matches(
+                        #this,
+                        &*REGEX,
+                    )?
+                }},
+            )),
         }
     }
 }

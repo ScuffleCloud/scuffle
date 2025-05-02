@@ -1,0 +1,26 @@
+[package]
+name = "tinc-cel"
+version = "0.1.0"
+edition = "2024"
+description = "A CEL Type used by tinc-build and tinc for validating protobuf messages"
+repository = "https://github.com/scufflecloud/scuffle"
+authors = ["Scuffle <opensource@scuffle.cloud>"]
+readme = "README.md"
+documentation = "https://docs.rs/tinc-build"
+license = "MIT OR Apache-2.0"
+keywords = ["grpc", "protobuf", "tonic", "codegen"]
+
+[dependencies]
+num-traits = "0.2.19"
+bytes = "1.5"
+float-cmp = "0.10"
+thiserror = "2"
+chrono = "0.4"
+regex = "1"
+linkme = "0.3"
+fmtools = "0.1"
+scuffle-workspace-hack.workspace = true
+
+[features]
+runtime = []
+

@@ -502,22 +502,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "cel-interpreter"
-version = "0.9.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "5675bdc8ece076b0a4f5ac6c20724e7373919ed698e00dbf33825682a7b3a679"
-dependencies = [
- "base64 0.22.1",
- "cel-parser",
- "chrono",
- "nom",
- "paste",
- "serde",
- "serde_json",
- "thiserror 1.0.69",
-]
-
-[[package]]
 name = "cel-parser"
 version = "0.8.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1088,6 +1072,12 @@ checksum = "b09cf3155332e944990140d967ff5eceb70df778b34f77d8075db46e4704e6d8"
 dependencies = [
  "num-traits",
 ]
+
+[[package]]
+name = "fmtools"
+version = "0.1.2"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "f983ed6d4eec47f6b970d69908ceff3ce37a3a9699194ee130fc3e223a351d1a"
 
 [[package]]
 name = "fnv"
@@ -3577,7 +3567,6 @@ dependencies = [
  "libc",
  "log",
  "memchr",
- "nom",
  "num-traits",
  "opentelemetry",
  "opentelemetry_sdk",
@@ -4045,6 +4034,7 @@ dependencies = [
  "serde_repr",
  "serde_urlencoded",
  "thiserror 2.0.12",
+ "tinc-cel",
  "tinc-derive",
  "tonic",
  "tonic-types",
@@ -4055,7 +4045,6 @@ name = "tinc-build"
 version = "0.1.0"
 dependencies = [
  "anyhow",
- "cel-interpreter",
  "cel-parser",
  "convert_case",
  "heck",
@@ -4073,8 +4062,24 @@ dependencies = [
  "serde_json",
  "syn",
  "thiserror 2.0.12",
+ "tinc-cel",
  "tinc-pb",
  "tonic-build",
+]
+
+[[package]]
+name = "tinc-cel"
+version = "0.1.0"
+dependencies = [
+ "bytes",
+ "chrono",
+ "float-cmp",
+ "fmtools",
+ "linkme",
+ "num-traits",
+ "regex",
+ "scuffle-workspace-hack",
+ "thiserror 2.0.12",
 ]
 
 [[package]]

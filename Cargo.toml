@@ -30,6 +30,7 @@ members = [
     "crates/workspace-hack",
     "dev-tools/xtask",
     "crates/tinc",
+    "crates/tinc/cel",
     "crates/tinc/pb",
     "crates/tinc/build",
     "crates/tinc/derive",
@@ -67,6 +68,7 @@ scuffle-rtmp = { path = "crates/rtmp", version = "0.2.0" }
 scuffle-transmuxer = { path = "crates/transmuxer", version = "0.2.0" }
 scuffle-workspace-hack = { version = "0.1.0" }
 tinc = { path = "crates/tinc", version = "0.1.0" }
+tinc-cel = { path = "crates/tinc/cel", version = "0.1.0" }
 tinc-pb = { path = "crates/tinc/pb", version = "0.1.0" }
 tinc-build = { path = "crates/tinc/build", version = "0.1.0" }
 tinc-derive = { path = "crates/tinc/derive", version = "0.1.0" }

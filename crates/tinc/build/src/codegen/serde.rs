@@ -1,12 +1,12 @@
 use anyhow::Context;
-use quote::{ToTokens, format_ident, quote};
+use quote::{ToTokens, quote};
 use syn::parse_quote;
 use tinc_pb::oneof_options::Tagged;
 
 use super::Package;
 use super::cel::compiler::{CompiledExpr, Compiler};
 use super::cel::types::CelType;
-use super::cel::{CelExpression, functions};
+use super::cel::{CelExpression, eval_message_fmt, functions};
 use crate::types::{
     ProtoEnumType, ProtoFieldJsonOmittable, ProtoMessageField, ProtoMessageType, ProtoModifiedValueType, ProtoOneOfType,
     ProtoType, ProtoTypeRegistry, ProtoValueType, ProtoVisibility,
@@ -509,40 +509,15 @@ fn handle_message_field(
 
     let mut cel_validation_fn = Vec::new();
 
-    let evaluate_expr = |compiler: &Compiler, expr: &CelExpression| {
-        let resolved = compiler.resolve(&expr.expression).context("cel expression")?;
-        let message = if !expr.message.args.is_empty() {
-            let message_fmt = &expr.message.format;
-            let args = expr
-                .message
-                .args
-                .iter()
-                .enumerate()
-                .map(|(idx, (raw_expr, expr))| {
-                    let ident = format_ident!("arg_{idx}");
-                    let resolved = compiler.resolve(expr).context("resolving fmt arg")?;
-                    Ok(quote! {
-                        #ident = (
-                            || {
-                                ::core::result::Result::Ok::<_, ::tinc::__private::cel::CelError>(#resolved)
-                            }
-                        )().map_err(|err| {
-                            ::tinc::__private::ValidationError::Expression {
-                                error: err.to_string().into_boxed_str(),
-                                field: ::tinc::__private::ProtoPathToken::current_path().into_boxed_str(),
-                                expression: #raw_expr,
-                            }
-                        })?
-                    })
-                })
-                .collect::<anyhow::Result<Vec<_>>>()?;
-            quote! { format!(#message_fmt, #(#args),*) }
-        } else {
-            let message_fmt = &expr.message.format;
-            quote! { #message_fmt }
-        };
-
-        let expr_str = &expr.raw_expr;
+    let evaluate_expr = |ctx: &Compiler, expr: &CelExpression| {
+        let mut ctx = ctx.child();
+        if let Some(this) = expr.this.clone() {
+            ctx.add_variable("this", CompiledExpr::constant(this));
+        }
+        let parsed = cel_parser::parse(&expr.expression).context("expression parse")?;
+        let resolved = ctx.resolve(&parsed).context("cel expression")?;
+        let expr_str = &expr.expression;
+        let message = eval_message_fmt(&expr.message, &ctx).context("message")?;
 
         anyhow::Ok(quote! {
             if !::tinc::__private::cel::to_bool({
@@ -581,10 +556,7 @@ fn handle_message_field(
 
         compiler.add_variable(
             "input",
-            CompiledExpr {
-                expr: parse_quote!(value),
-                ty: CelType::Proto(field_type),
-            },
+            CompiledExpr::runtime(CelType::Proto(field_type), parse_quote!(value)),
         );
         let mut exprs = field
             .options
@@ -628,10 +600,7 @@ fn handle_message_field(
 
                 compiler.add_variable(
                     "input",
-                    CompiledExpr {
-                        expr: parse_quote!(key),
-                        ty: CelType::Proto(ProtoType::Value(key.clone())),
-                    },
+                    CompiledExpr::runtime(CelType::Proto(ProtoType::Value(key.clone())), parse_quote!(key)),
                 );
                 field
                     .options
@@ -651,10 +620,7 @@ fn handle_message_field(
                 }
                 compiler.add_variable(
                     "input",
-                    CompiledExpr {
-                        expr: parse_quote!(value),
-                        ty: CelType::Proto(ProtoType::Value(value.clone())),
-                    },
+                    CompiledExpr::runtime(CelType::Proto(ProtoType::Value(value.clone())), parse_quote!(value)),
                 );
                 field
                     .options
@@ -693,10 +659,7 @@ fn handle_message_field(
             }
             compiler.add_variable(
                 "input",
-                CompiledExpr {
-                    expr: parse_quote!(item),
-                    ty: CelType::Proto(ProtoType::Value(item.clone())),
-                },
+                CompiledExpr::runtime(CelType::Proto(ProtoType::Value(item.clone())), parse_quote!(item)),
             );
 
             let mut exprs = field

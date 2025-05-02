@@ -53,5 +53,6 @@ linear-map = "1.2.0"
 float-cmp = "0.10.0"
 
 tinc-derive.workspace = true
+tinc-cel = { workspace = true, features = ["runtime"] }
 
 scuffle-workspace-hack.workspace = true

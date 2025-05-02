@@ -720,7 +720,7 @@ fn test_bytes_expressions_valid() {
 fn test_bytes_expressions_invalid() {
     let mut state = TrackerSharedState::default();
     let valid = pb::BytesExpressions {
-        constant: b"\01\0".to_vec(),
+        constant: b"\x001\x00".to_vec(),
         exact_len: b"troy".to_vec(),
         min_max_len: b"0123".to_vec(),
     };
@@ -733,7 +733,7 @@ fn test_bytes_expressions_invalid() {
         errors: [
             TrackedError {
                 kind: InvalidField {
-                    message: "value must equal `b\"\\0\\0\\0\"`",
+                    message: "value must equal `\0\0\0`",
                 },
                 fatal: true,
                 proto_path: "constant",
@@ -798,7 +798,7 @@ fn test_enum_expressions_invalid() {
         errors: [
             TrackedError {
                 kind: InvalidField {
-                    message: "value must equal `b\"\\0\\0\\0\"`",
+                    message: "value must be equal to `SPECIAL_B`",
                 },
                 fatal: true,
                 proto_path: "constant",
@@ -806,19 +806,19 @@ fn test_enum_expressions_invalid() {
             },
             TrackedError {
                 kind: InvalidField {
-                    message: "value must be exactly `5` bytes long",
+                    message: "value must be one of `[SPECIAL_A, SPECIAL_B]`",
                 },
                 fatal: true,
-                proto_path: "exact_len",
-                serde_path: "exact_len",
+                proto_path: "one_of",
+                serde_path: "one_of",
             },
             TrackedError {
                 kind: InvalidField {
-                    message: "value must be at least `5` bytes long",
+                    message: "value must not be one of `[SPECIAL_UNSPECIFIED]`",
                 },
                 fatal: true,
-                proto_path: "min_max_len",
-                serde_path: "min_max_len",
+                proto_path: "none_of",
+                serde_path: "none_of",
             },
         ],
     }

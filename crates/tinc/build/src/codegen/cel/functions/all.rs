@@ -1,16 +1,30 @@
-use cel_interpreter::objects::ValueType;
-use cel_interpreter::{ExecutionError, FunctionContext};
 use proc_macro2::TokenStream;
-use quote::quote;
+use quote::{ToTokens, quote};
 use syn::parse_quote;
+use tinc_cel::CelValue;
 
 use super::Function;
-use crate::codegen::cel::compiler::{CompileError, CompiledExpr, CompilerCtx};
+use crate::codegen::cel::compiler::{CompileError, CompiledExpr, CompilerCtx, ConstantCompiledExpr, RuntimeCompiledExpr};
 use crate::codegen::cel::types::CelType;
 use crate::types::{ProtoModifiedValueType, ProtoType, ProtoValueType};
 
 #[derive(Debug, Clone, Default)]
 pub struct All;
+
+fn native_impl(iter: TokenStream, item_ident: syn::Ident, compare: impl ToTokens) -> syn::Expr {
+    parse_quote!({
+        let mut iter = (#iter).into_iter();
+        loop {
+            let Some(#item_ident) = iter.next() else {
+                break true;
+            };
+
+            if !(#compare) {
+                break false;
+            }
+        }
+    })
+}
 
 // this.all(<ident>, <expr>)
 impl Function for All {
@@ -18,138 +32,105 @@ impl Function for All {
         "all"
     }
 
+    fn syntax(&self) -> &'static str {
+        "<this>.all(<ident>, <expr>)"
+    }
+
     fn compile(&self, ctx: CompilerCtx) -> Result<CompiledExpr, CompileError> {
         let Some(this) = &ctx.this else {
-            return Err(CompileError::MissingTarget {
-                func: self.name(),
-                message: "this is required when calling the all function".to_string(),
-            });
+            return Err(CompileError::syntax("missing this", self));
         };
 
         if ctx.args.len() != 2 {
-            return Err(CompileError::InvalidFunctionArgumentCount {
-                func: self.name(),
-                expected: 2,
-                got: ctx.args.len(),
-            });
+            return Err(CompileError::syntax("invalid number of args", self));
         }
 
         let cel_parser::Expression::Ident(variable) = &ctx.args[0] else {
-            return Err(CompileError::InvalidFunctionArgument {
-                idx: 0,
-                message: "variable name as an ident".to_string(),
-                expr: ctx.args[0].clone(),
-            });
+            return Err(CompileError::syntax("first argument must be an ident", self));
         };
-
-        let mut child_ctx = ctx.child();
-
-        match &this.ty {
-            CelType::CelValue => {
-                child_ctx.add_variable(
-                    variable,
-                    CompiledExpr {
-                        expr: parse_quote!(item),
-                        ty: CelType::CelValue,
-                    },
-                );
-            }
-            CelType::Proto(ProtoType::Modified(
-                ProtoModifiedValueType::Repeated(ty) | ProtoModifiedValueType::Map(ty, _),
-            )) => {
-                child_ctx.add_variable(
-                    variable,
-                    CompiledExpr {
-                        expr: parse_quote!(item),
-                        ty: CelType::Proto(ProtoType::Value(ty.clone())),
-                    },
-                );
-            }
-            v => return Err(CompileError::FunctionNotFound(format!("no such function map for type {v:?}"))),
-        };
-
-        let arg = child_ctx.resolve(&ctx.args[1])?.to_cel()?;
-
-        let proto_native = |iter: TokenStream| {
-            parse_quote! {{
-                let mut iter = #iter;
-                loop {
-                    let Some(item) = iter.next() else {
-                        break true;
-                    };
-
-                    if !::tinc::__private::cel::to_bool(#arg) {
-                        break false;
-                    }
-                }
-            }}
-        };
-
-        Ok(CompiledExpr {
-            expr: match &this.ty {
-                CelType::CelValue => parse_quote! {
-                    ::tinc::__private::cel::CelValue::cel_exists(#this, |item| {
-                        ::core::result::Result::Ok(
-                            ::tinc::__private::cel::to_bool(#arg)
-                        )
-                    })
-                },
-                CelType::Proto(ProtoType::Modified(ProtoModifiedValueType::Map(_, _))) => {
-                    proto_native(quote!((#this).keys()))
-                }
-                CelType::Proto(ProtoType::Modified(ProtoModifiedValueType::Repeated(_))) => {
-                    proto_native(quote!((#this).iter()))
-                }
-                _ => unreachable!(),
-            },
-            ty: CelType::Proto(ProtoType::Value(ProtoValueType::Bool)),
-        })
-    }
-
-    fn interpret(&self, fctx: &FunctionContext) -> Result<cel_interpreter::Value, ExecutionError> {
-        let Some(this) = &fctx.this else {
-            return Err(ExecutionError::missing_argument_or_target());
-        };
-
-        if fctx.args.len() != 2 {
-            return Err(ExecutionError::invalid_argument_count(1, fctx.args.len()));
-        }
-
-        let cel_parser::Expression::Ident(variable) = &fctx.args[0] else {
-            return Err(ExecutionError::FunctionError {
-                function: self.name().to_owned(),
-                message: "variable name as an ident".to_owned(),
-            });
-        };
-
-        fn handle(
-            mut i: impl Iterator<Item = cel_interpreter::Value>,
-            fctx: &FunctionContext,
-            variable: &str,
-        ) -> Result<bool, ExecutionError> {
-            loop {
-                let Some(item) = i.next() else {
-                    break Ok(true);
-                };
-
-                let mut ctx = fctx.ptx.new_inner_scope();
-                ctx.add_variable_from_value(variable, item);
-                let item = ctx.resolve(&fctx.args[1])?;
-
-                if !matches!(item, cel_interpreter::Value::Bool(true)) {
-                    break Ok(false);
-                }
-            }
-        }
 
         match this {
-            cel_interpreter::Value::List(s) => Ok(cel_interpreter::Value::Bool(handle(s.iter().cloned(), fctx, variable)?)),
-            cel_interpreter::Value::Map(map) => Ok(cel_interpreter::Value::Bool(handle(
-                map.map.keys().cloned().map(Into::into),
-                fctx,
-                variable,
-            )?)),
-            item => Err(item.error_expected_type(ValueType::List)),
+            CompiledExpr::Runtime(RuntimeCompiledExpr { expr, ty }) => {
+                let mut child_ctx = ctx.child();
+
+                match ty {
+                    CelType::CelValue => {
+                        child_ctx.add_variable(variable, CompiledExpr::runtime(CelType::CelValue, parse_quote!(item)));
+                    }
+                    CelType::Proto(ProtoType::Modified(
+                        ProtoModifiedValueType::Repeated(ty) | ProtoModifiedValueType::Map(ty, _),
+                    )) => {
+                        child_ctx.add_variable(
+                            variable,
+                            CompiledExpr::runtime(CelType::Proto(ProtoType::Value(ty.clone())), parse_quote!(item)),
+                        );
+                    }
+                    v => {
+                        return Err(CompileError::TypeConversion {
+                            ty: Box::new(v.clone()),
+                            message: "type cannot be iterated over".to_string(),
+                        });
+                    }
+                };
+
+                let arg = child_ctx.resolve(&ctx.args[1])?.to_bool(&child_ctx);
+
+                Ok(CompiledExpr::runtime(
+                    CelType::Proto(ProtoType::Value(ProtoValueType::Bool)),
+                    match &ty {
+                        CelType::CelValue => parse_quote! {
+                            ::tinc::__private::cel::CelValue::cel_all(#expr, |item| {
+                                ::core::result::Result::Ok(
+                                    #arg
+                                )
+                            })
+                        },
+                        CelType::Proto(ProtoType::Modified(ProtoModifiedValueType::Map(_, _))) => {
+                            native_impl(quote!((#expr).keys()), parse_quote!(item), arg)
+                        }
+                        CelType::Proto(ProtoType::Modified(ProtoModifiedValueType::Repeated(_))) => {
+                            native_impl(quote!((#expr).iter()), parse_quote!(item), arg)
+                        }
+                        _ => unreachable!(),
+                    },
+                ))
+            }
+            CompiledExpr::Constant(ConstantCompiledExpr {
+                value: value @ (CelValue::List(_) | CelValue::Map(_)),
+            }) => {
+                let compile_val = |value: CelValue<'static>| {
+                    let mut child_ctx = ctx.child();
+
+                    child_ctx.add_variable(variable, CompiledExpr::constant(value));
+
+                    child_ctx.resolve(&ctx.args[1]).map(|v| v.to_bool(&child_ctx))
+                };
+
+                let collected: Result<Vec<_>, _> = match value {
+                    CelValue::List(item) => item.iter().cloned().map(compile_val).collect(),
+                    CelValue::Map(item) => item.iter().map(|(key, _)| key).cloned().map(compile_val).collect(),
+                    _ => unreachable!(),
+                };
+
+                let collected = collected?;
+                if collected.iter().any(|c| matches!(c, CompiledExpr::Runtime(_))) {
+                    Ok(CompiledExpr::runtime(
+                        CelType::Proto(ProtoType::Value(ProtoValueType::Bool)),
+                        native_impl(quote!([#(#collected),*]), parse_quote!(item), quote!(item)),
+                    ))
+                } else {
+                    Ok(CompiledExpr::constant(CelValue::Bool(collected.into_iter().all(
+                        |c| match c {
+                            CompiledExpr::Constant(ConstantCompiledExpr { value }) => value.to_bool(),
+                            _ => unreachable!("all values must be constant"),
+                        },
+                    ))))
+                }
+            }
+            CompiledExpr::Constant(ConstantCompiledExpr { value }) => Err(CompileError::TypeConversion {
+                ty: Box::new(CelType::CelValue),
+                message: format!("{value:?} cannot be iterated over"),
+            }),
         }
     }
 }

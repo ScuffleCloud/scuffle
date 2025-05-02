@@ -1,8 +1,8 @@
-use num_traits::cast::ToPrimitive;
 use syn::parse_quote;
+use tinc_cel::CelValue;
 
 use super::Function;
-use crate::codegen::cel::compiler::{CompileError, CompiledExpr, CompilerCtx};
+use crate::codegen::cel::compiler::{CompileError, CompiledExpr, CompilerCtx, ConstantCompiledExpr, RuntimeCompiledExpr};
 use crate::codegen::cel::types::CelType;
 
 #[derive(Debug, Clone, Default)]
@@ -13,65 +13,27 @@ impl Function for Int {
         "int"
     }
 
-    fn compile(&self, ctx: CompilerCtx) -> Result<CompiledExpr, CompileError> {
-        if ctx.this.is_some() {
-            return Err(CompileError::MissingTarget {
-                func: self.name(),
-                message: "bad usage for int(arg) function".to_string(),
-            });
-        }
-
-        if ctx.args.len() != 1 {
-            return Err(CompileError::InvalidFunctionArgumentCount {
-                func: self.name(),
-                expected: 1,
-                got: ctx.args.len(),
-            });
-        }
-
-        let arg = ctx.resolve(&ctx.args[0])?.to_cel()?;
-
-        Ok(CompiledExpr {
-            expr: parse_quote! {
-                ::tinc::__private::cel::CelValue::cel_to_int(#arg)?
-            },
-            ty: CelType::CelValue,
-        })
+    fn syntax(&self) -> &'static str {
+        "<this>.int()"
     }
 
-    fn interpret(
-        &self,
-        fctx: &cel_interpreter::FunctionContext,
-    ) -> Result<cel_interpreter::Value, cel_interpreter::ExecutionError> {
-        if fctx.this.is_some() {
-            return Err(cel_interpreter::ExecutionError::missing_argument_or_target());
+    fn compile(&self, ctx: CompilerCtx) -> Result<CompiledExpr, CompileError> {
+        let Some(this) = ctx.this else {
+            return Err(CompileError::syntax("missing this", self));
         };
 
-        if fctx.args.len() != 1 {
-            return Err(cel_interpreter::ExecutionError::invalid_argument_count(1, fctx.args.len()));
+        if !ctx.args.is_empty() {
+            return Err(CompileError::syntax("takes no arguments", self));
         }
 
-        let value = fctx.ptx.resolve(&fctx.args[0])?;
-
-        Ok(match value {
-            cel_interpreter::Value::Int(i) => cel_interpreter::Value::Int(i),
-            cel_interpreter::Value::Float(i) => match i.to_i64() {
-                Some(i) => cel_interpreter::Value::Int(i),
-                None => cel_interpreter::Value::Null,
-            },
-            cel_interpreter::Value::UInt(i) => match i.to_i64() {
-                Some(i) => cel_interpreter::Value::Int(i),
-                None => cel_interpreter::Value::Null,
-            },
-            cel_interpreter::Value::String(s) => {
-                if let Ok(i) = s.parse() {
-                    cel_interpreter::Value::Int(i)
-                } else {
-                    cel_interpreter::Value::Null
-                }
+        match this.to_cel()? {
+            CompiledExpr::Constant(ConstantCompiledExpr { value }) => {
+                Ok(CompiledExpr::constant(CelValue::cel_to_int(value)?))
             }
-            cel_interpreter::Value::Bool(b) => cel_interpreter::Value::Int(if b { 1 } else { 0 }),
-            target => return Err(cel_interpreter::ExecutionError::UnsupportedTargetType { target }),
-        })
+            CompiledExpr::Runtime(RuntimeCompiledExpr { expr, .. }) => Ok(CompiledExpr::runtime(
+                CelType::CelValue,
+                parse_quote!(::tinc::__private::cel::CelValue::cel_to_int(#expr)?),
+            )),
+        }
     }
 }

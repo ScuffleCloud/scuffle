@@ -45,8 +45,7 @@ pub use deserializer::*;
 
 mod http;
 pub use http::*;
-
-pub mod cel;
+pub use tinc_cel as cel;
 mod validation;
 pub use validation::*;
 

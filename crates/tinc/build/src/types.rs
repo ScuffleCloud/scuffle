@@ -6,7 +6,7 @@ use prost_reflect::Kind;
 use syn::parse_quote;
 use tinc_pb::http_endpoint_options;
 
-use crate::codegen::cel::{CelExpression, CelExpressions};
+use crate::codegen::cel::CelExpressions;
 use crate::codegen::utils::{field_ident_from_str, get_common_import_path, type_ident_from_str};
 
 #[derive(Debug, Clone, PartialEq)]
@@ -168,7 +168,7 @@ impl ProtoMessageType {
 
 #[derive(Debug, Clone, PartialEq, Default)]
 pub struct ProtoMessageOptions {
-    pub cel: Vec<CelExpression>,
+    pub cel: Vec<tinc_pb::CelExpression>,
 }
 
 #[derive(Debug, Clone, PartialEq)]
@@ -280,7 +280,7 @@ impl ProtoOneOfField {
 }
 
 #[derive(Debug, Clone, PartialEq, PartialOrd, Ord, Eq, Hash)]
-pub struct ProtoPath(Arc<str>);
+pub struct ProtoPath(pub Arc<str>);
 
 impl ProtoPath {
     pub fn trim_last_segment(&self) -> &str {
@@ -381,7 +381,7 @@ pub struct ProtoServiceMethod {
     pub input: ProtoServiceMethodIo,
     pub output: ProtoServiceMethodIo,
     pub endpoints: Vec<ProtoServiceMethodEndpoint>,
-    pub cel: Vec<CelExpression>,
+    pub cel: Vec<tinc_pb::CelExpression>,
 }
 
 #[derive(Debug, Clone, PartialEq)]

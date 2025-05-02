@@ -580,7 +580,7 @@ message MapConstraints {
       StringConstraints string = 5;
       // EnumConstraints enum = 6;
     }
-    optional Ignore ignore = 7;
+    // optional Ignore ignore = 7;
     //protolint:disable:next REPEATED_FIELD_NAMES_PLURALIZED
     repeated CelExpression cel = 8 [
       (predefined).type = CUSTOM_EXPRESSION
@@ -607,7 +607,7 @@ message PrimitiveConstraints {
     BytesConstraints bytes = 8;
     EnumConstraints enum = 9;
   }
-  optional Ignore ignore = 10;
+  // optional Ignore ignore = 10;
   //protolint:disable:next REPEATED_FIELD_NAMES_PLURALIZED
   repeated CelExpression cel = 11 [
       (predefined).type = CUSTOM_EXPRESSION
@@ -628,7 +628,7 @@ message FieldConstraints {
     RepeatedConstraints repeated = 10;
     MapConstraints map = 11;
   }
-  optional Ignore ignore = 12;
+  // optional Ignore ignore = 12;
   //protolint:disable:next REPEATED_FIELD_NAMES_PLURALIZED
   repeated CelExpression cel = 13 [
     (predefined).type = CUSTOM_EXPRESSION

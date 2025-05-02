@@ -1,18 +1,22 @@
 use super::Function;
 use crate::codegen::cel::compiler::{CompileError, CompiledExpr, CompilerCtx};
 
+#[derive(Debug, Clone, Default)]
 pub struct Const;
 
 impl Function for Const {
-    const NAME: &'static str = "const";
+    fn name(&self) -> &'static str {
+        "const"
+    }
 
-    fn compile(_: CompilerCtx) -> Result<CompiledExpr, CompileError> {
+    fn compile(&self, _: CompilerCtx) -> Result<CompiledExpr, CompileError> {
         Err(CompileError::FunctionNotFound(
             "const must be evaluated at compile time".into(),
         ))
     }
 
     fn interpret(
+        &self,
         fctx: &cel_interpreter::FunctionContext,
     ) -> Result<cel_interpreter::Value, cel_interpreter::ExecutionError> {
         if fctx.this.is_some() {

@@ -9,23 +9,26 @@ use crate::codegen::cel::compiler::{CompileError, CompiledExpr, CompilerCtx};
 use crate::codegen::cel::types::CelType;
 use crate::types::{ProtoModifiedValueType, ProtoType, ProtoValueType};
 
+#[derive(Debug, Clone, Default)]
 pub struct Exists;
 
 // this.exists(<ident>, <expr>)
 impl Function for Exists {
-    const NAME: &'static str = "exists";
+    fn name(&self) -> &'static str {
+        "exists"
+    }
 
-    fn compile(ctx: CompilerCtx) -> Result<CompiledExpr, CompileError> {
+    fn compile(&self, ctx: CompilerCtx) -> Result<CompiledExpr, CompileError> {
         let Some(this) = &ctx.this else {
             return Err(CompileError::MissingTarget {
-                func: Self::NAME,
+                func: self.name(),
                 message: "this is required when calling the contains function".to_string(),
             });
         };
 
         if ctx.args.len() != 2 {
             return Err(CompileError::InvalidFunctionArgumentCount {
-                func: Self::NAME,
+                func: self.name(),
                 expected: 2,
                 got: ctx.args.len(),
             });
@@ -109,7 +112,7 @@ impl Function for Exists {
         })
     }
 
-    fn interpret(fctx: &FunctionContext) -> Result<cel_interpreter::Value, ExecutionError> {
+    fn interpret(&self, fctx: &FunctionContext) -> Result<cel_interpreter::Value, ExecutionError> {
         let Some(this) = &fctx.this else {
             return Err(ExecutionError::missing_argument_or_target());
         };
@@ -120,7 +123,7 @@ impl Function for Exists {
 
         let cel_parser::Expression::Ident(variable) = &fctx.args[0] else {
             return Err(ExecutionError::FunctionError {
-                function: Self::NAME.to_owned(),
+                function: self.name().to_owned(),
                 message: "variable name as an ident".to_owned(),
             });
         };

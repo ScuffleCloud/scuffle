@@ -6,23 +6,26 @@ use crate::codegen::cel::compiler::{CompileError, CompiledExpr, CompilerCtx};
 use crate::codegen::cel::types::CelType;
 use crate::types::{ProtoType, ProtoValueType};
 
+#[derive(Debug, Clone, Default)]
 pub struct Has;
 
 // has(field-arg)
 impl Function for Has {
-    const NAME: &'static str = "has";
+    fn name(&self) -> &'static str {
+        "has"
+    }
 
-    fn compile(ctx: CompilerCtx) -> Result<CompiledExpr, CompileError> {
+    fn compile(&self, ctx: CompilerCtx) -> Result<CompiledExpr, CompileError> {
         if ctx.this.is_some() {
             return Err(CompileError::MissingTarget {
-                func: Self::NAME,
+                func: self.name(),
                 message: "this function does not have a target".to_string(),
             });
         };
 
         if ctx.args.len() != 1 {
             return Err(CompileError::InvalidFunctionArgumentCount {
-                func: Self::NAME,
+                func: self.name(),
                 expected: 1,
                 got: ctx.args.len(),
             });
@@ -46,7 +49,7 @@ impl Function for Has {
         })
     }
 
-    fn interpret(fctx: &FunctionContext) -> Result<cel_interpreter::Value, ExecutionError> {
+    fn interpret(&self, fctx: &FunctionContext) -> Result<cel_interpreter::Value, ExecutionError> {
         if fctx.this.is_some() {
             return Err(ExecutionError::missing_argument_or_target());
         }

@@ -149,7 +149,7 @@ fn resolve_function_call(
         None
     };
 
-    (func.compile)(CompilerCtx::new(ctx.child(), this, args))
+    func.compile(CompilerCtx::new(ctx.child(), this, args))
 }
 
 fn resolve_ident(ctx: &Compiler, ident: &str) -> Result<CompiledExpr, CompileError> {

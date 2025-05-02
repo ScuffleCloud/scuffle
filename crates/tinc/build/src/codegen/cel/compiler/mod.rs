@@ -1,4 +1,5 @@
 use std::collections::BTreeMap;
+use std::sync::Arc;
 
 use quote::ToTokens;
 use syn::parse_quote;
@@ -50,7 +51,15 @@ pub struct Compiler<'a> {
     parent: Option<&'a Compiler<'a>>,
     registry: &'a ProtoTypeRegistry,
     variables: BTreeMap<String, CompiledExpr>,
-    functions: BTreeMap<&'static str, CompilerFunction>,
+    functions: BTreeMap<&'static str, DebugFunc>,
+}
+
+#[derive(Clone)]
+struct DebugFunc(Arc<dyn Function + Send + Sync + 'static>);
+impl std::fmt::Debug for DebugFunc {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        f.write_str(self.0.name())
+    }
 }
 
 impl<'a> Compiler<'a> {
@@ -113,13 +122,10 @@ impl<'a> Compiler<'a> {
         self.variables.insert(name.to_owned(), expr.clone());
     }
 
-    pub fn register_function<F: Function>(&mut self) {
-        if self
-            .functions
-            .insert(F::NAME, CompilerFunction { compile: F::compile })
-            .is_some()
-        {
-            panic!("function {} already registered", F::NAME);
+    pub fn register_function(&mut self, f: impl Function) {
+        let name = f.name();
+        if self.functions.insert(name, DebugFunc(Arc::new(f))).is_some() {
+            panic!("function {name} already registered");
         }
     }
 
@@ -137,9 +143,9 @@ impl<'a> Compiler<'a> {
         }
     }
 
-    pub fn get_function(&self, name: &str) -> Option<&CompilerFunction> {
+    pub fn get_function(&self, name: &str) -> Option<&Arc<dyn Function + Send + Sync + 'static>> {
         match self.functions.get(name) {
-            Some(func) => Some(func),
+            Some(func) => Some(&func.0),
             None => match self.parent {
                 Some(parent) => parent.get_function(name),
                 None => None,
@@ -190,16 +196,5 @@ impl CompileError {
             ty: Box::new(ty),
             message: message.into(),
         }
-    }
-}
-
-#[derive(Clone, Copy)]
-pub struct CompilerFunction {
-    pub compile: fn(ctx: CompilerCtx) -> Result<CompiledExpr, CompileError>,
-}
-
-impl std::fmt::Debug for CompilerFunction {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        f.write_str("CompilerFunction")
     }
 }

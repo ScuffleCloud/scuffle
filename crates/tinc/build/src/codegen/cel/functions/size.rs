@@ -5,22 +5,25 @@ use crate::codegen::cel::compiler::{CompileError, CompiledExpr, CompilerCtx};
 use crate::codegen::cel::types::CelType;
 use crate::types::{ProtoModifiedValueType, ProtoType, ProtoValueType};
 
+#[derive(Debug, Clone, Default)]
 pub struct Size;
 
 impl Function for Size {
-    const NAME: &'static str = "size";
+    fn name(&self) -> &'static str {
+        "size"
+    }
 
-    fn compile(ctx: CompilerCtx) -> Result<CompiledExpr, CompileError> {
+    fn compile(&self, ctx: CompilerCtx) -> Result<CompiledExpr, CompileError> {
         let Some(this) = &ctx.this else {
             return Err(CompileError::MissingTarget {
-                func: Self::NAME,
+                func: self.name(),
                 message: "this is required when calling the size function".to_string(),
             });
         };
 
         if !ctx.args.is_empty() {
             return Err(CompileError::InvalidFunctionArgumentCount {
-                func: Self::NAME,
+                func: self.name(),
                 expected: 0,
                 got: ctx.args.len(),
             });
@@ -45,6 +48,7 @@ impl Function for Size {
     }
 
     fn interpret(
+        &self,
         fctx: &cel_interpreter::FunctionContext,
     ) -> Result<cel_interpreter::Value, cel_interpreter::ExecutionError> {
         let Some(this) = &fctx.this else {

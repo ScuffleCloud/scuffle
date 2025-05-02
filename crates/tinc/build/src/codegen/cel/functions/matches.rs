@@ -6,23 +6,26 @@ use crate::codegen::cel::compiler::{CompileError, CompiledExpr, CompilerCtx};
 use crate::codegen::cel::types::CelType;
 use crate::types::{ProtoType, ProtoValueType};
 
+#[derive(Debug, Clone, Default)]
 pub struct Matches;
 
 // this.matches(arg) -> arg in this
 impl Function for Matches {
-    const NAME: &'static str = "matches";
+    fn name(&self) -> &'static str {
+        "matches"
+    }
 
-    fn compile(ctx: CompilerCtx) -> Result<CompiledExpr, CompileError> {
+    fn compile(&self, ctx: CompilerCtx) -> Result<CompiledExpr, CompileError> {
         let Some(this) = &ctx.this else {
             return Err(CompileError::MissingTarget {
-                func: Self::NAME,
+                func: self.name(),
                 message: "this is required when calling the matches function".to_string(),
             });
         };
 
         if ctx.args.len() != 1 {
             return Err(CompileError::InvalidFunctionArgumentCount {
-                func: Self::NAME,
+                func: self.name(),
                 expected: 1,
                 got: ctx.args.len(),
             });
@@ -68,7 +71,7 @@ impl Function for Matches {
         })
     }
 
-    fn interpret(fctx: &FunctionContext) -> Result<cel_interpreter::Value, ExecutionError> {
+    fn interpret(&self, fctx: &FunctionContext) -> Result<cel_interpreter::Value, ExecutionError> {
         let Some(cel_interpreter::Value::String(this)) = &fctx.this else {
             return Err(ExecutionError::missing_argument_or_target());
         };
@@ -79,7 +82,7 @@ impl Function for Matches {
 
         let arg = fctx.ptx.resolve(&fctx.args[0])?;
         let regex = regex::Regex::new(this).map_err(|err| ExecutionError::FunctionError {
-            function: Self::NAME.to_owned(),
+            function: self.name().to_owned(),
             message: format!("bad regex: {err}"),
         })?;
 

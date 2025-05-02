@@ -4,22 +4,25 @@ use super::Function;
 use crate::codegen::cel::compiler::{CompileError, CompiledExpr, CompilerCtx};
 use crate::codegen::cel::types::CelType;
 
+#[derive(Debug, Clone, Default)]
 pub struct Bytes;
 
 impl Function for Bytes {
-    const NAME: &'static str = "bytes";
+    fn name(&self) -> &'static str {
+        "bytes"
+    }
 
-    fn compile(ctx: CompilerCtx) -> Result<CompiledExpr, CompileError> {
+    fn compile(&self, ctx: CompilerCtx) -> Result<CompiledExpr, CompileError> {
         if ctx.this.is_some() {
             return Err(CompileError::MissingTarget {
-                func: Self::NAME,
+                func: self.name(),
                 message: "bad usage for bytes(arg) function".to_string(),
             });
         }
 
         if ctx.args.len() != 1 {
             return Err(CompileError::InvalidFunctionArgumentCount {
-                func: Self::NAME,
+                func: self.name(),
                 expected: 1,
                 got: ctx.args.len(),
             });
@@ -43,6 +46,7 @@ impl Function for Bytes {
     }
 
     fn interpret(
+        &self,
         fctx: &cel_interpreter::FunctionContext,
     ) -> Result<cel_interpreter::Value, cel_interpreter::ExecutionError> {
         if fctx.this.is_some() {

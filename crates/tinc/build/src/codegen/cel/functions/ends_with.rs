@@ -6,23 +6,26 @@ use crate::codegen::cel::compiler::{CompileError, CompiledExpr, CompilerCtx};
 use crate::codegen::cel::types::CelType;
 use crate::types::{ProtoType, ProtoValueType};
 
+#[derive(Debug, Clone, Default)]
 pub struct EndsWith;
 
 // this.stratsWith(arg) -> arg in this
 impl Function for EndsWith {
-    const NAME: &'static str = "endsWith";
+    fn name(&self) -> &'static str {
+        "endsWith"
+    }
 
-    fn compile(ctx: CompilerCtx) -> Result<CompiledExpr, CompileError> {
+    fn compile(&self, ctx: CompilerCtx) -> Result<CompiledExpr, CompileError> {
         let Some(this) = &ctx.this else {
             return Err(CompileError::MissingTarget {
-                func: Self::NAME,
+                func: self.name(),
                 message: "this is required when calling the endsWith function".to_string(),
             });
         };
 
         if ctx.args.len() != 1 {
             return Err(CompileError::InvalidFunctionArgumentCount {
-                func: Self::NAME,
+                func: self.name(),
                 expected: 1,
                 got: ctx.args.len(),
             });
@@ -54,7 +57,7 @@ impl Function for EndsWith {
         })
     }
 
-    fn interpret(fctx: &FunctionContext) -> Result<cel_interpreter::Value, ExecutionError> {
+    fn interpret(&self, fctx: &FunctionContext) -> Result<cel_interpreter::Value, ExecutionError> {
         let Some(this) = &fctx.this else {
             return Err(ExecutionError::missing_argument_or_target());
         };

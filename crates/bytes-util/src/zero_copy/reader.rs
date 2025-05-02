@@ -1,6 +1,6 @@
 //! Zero-copy reader types.
 
-use std::io;
+use std::io::{self, Read};
 
 use crate::BytesCow;
 
@@ -21,6 +21,13 @@ pub trait ZeroCopyReader<'a> {
         Self: Sized,
     {
         Take::new(self, limit)
+    }
+
+    /// Reads all remaining bytes from the reader.
+    fn try_read_to_end(&mut self) -> Result<BytesCow<'a>, io::Error> {
+        let mut buf = Vec::new();
+        self.as_std().read_to_end(&mut buf)?;
+        Ok(BytesCow::from_vec(buf))
     }
 }
 
@@ -162,7 +169,7 @@ where
     fn try_read(&mut self, size: usize) -> Result<BytesCow<'a>, io::Error> {
         let size = std::cmp::min(size, self.limit);
         let result = self.inner.try_read(size)?;
-        self.limit -= result.as_bytes().len();
+        self.limit -= result.len();
         Ok(result)
     }
 }

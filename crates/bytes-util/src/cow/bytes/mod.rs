@@ -78,6 +78,26 @@ impl<'a> BytesCow<'a> {
             Self::Bytes(bytes) => bytes.as_ref(),
         }
     }
+
+    /// Returns the length of this [`BytesCow`].
+    pub fn len(&self) -> usize {
+        match self {
+            Self::Slice(slice) => slice.len(),
+            Self::StaticSlice(slice) => slice.len(),
+            Self::Vec(bytes) => bytes.len(),
+            Self::Bytes(bytes) => bytes.len(),
+        }
+    }
+
+    /// Returns `true` if this [`BytesCow`] is empty.
+    pub fn is_empty(&self) -> bool {
+        match self {
+            Self::Slice(slice) => slice.is_empty(),
+            Self::StaticSlice(slice) => slice.is_empty(),
+            Self::Vec(bytes) => bytes.is_empty(),
+            Self::Bytes(bytes) => bytes.is_empty(),
+        }
+    }
 }
 
 impl<T> PartialEq<T> for BytesCow<'_>

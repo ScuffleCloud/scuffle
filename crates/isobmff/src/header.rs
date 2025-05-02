@@ -3,6 +3,7 @@ use std::io;
 use byteorder::{BigEndian, ReadBytesExt};
 use scuffle_bytes_util::zero_copy::ZeroCopyReader;
 
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum BoxSize {
     Short(u32),
     Long(u64),
@@ -19,9 +20,19 @@ impl BoxSize {
     }
 }
 
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum BoxType {
     FourCc([u8; 4]),
     Uuid(uuid::Uuid),
+}
+
+impl BoxType {
+    pub fn is_four_cc(&self, four_cc: &[u8; 4]) -> bool {
+        match self {
+            BoxType::FourCc(box_four_cc) => box_four_cc == four_cc,
+            BoxType::Uuid(_) => false,
+        }
+    }
 }
 
 impl From<BoxType> for uuid::Uuid {
@@ -40,13 +51,51 @@ impl From<BoxType> for uuid::Uuid {
     }
 }
 
+pub trait BoxHeaderProperties {
+    fn size(&self) -> usize;
+    fn box_size(&self) -> BoxSize;
+    fn payload_size(&self) -> Option<usize> {
+        let header_size = self.size();
+        Some(self.box_size().size()?.saturating_sub(header_size))
+    }
+    fn box_type(&self) -> BoxType;
+}
+
+#[derive(Debug, Clone)]
 pub struct BoxHeader {
     pub size: BoxSize,
     pub box_type: BoxType,
 }
 
-impl BoxHeader {
-    pub fn demux<'a, R: ZeroCopyReader<'a>>(mut reader: R) -> io::Result<Self> {
+impl BoxHeaderProperties for BoxHeader {
+    fn size(&self) -> usize {
+        let mut size = 4 + 4; // size + type
+
+        if let BoxSize::Long(_) = self.size {
+            size += 8; // large size
+        }
+
+        if let BoxType::Uuid(_) = self.box_type {
+            size += 16; // usertype
+        }
+
+        size
+    }
+
+    fn box_size(&self) -> BoxSize {
+        self.size
+    }
+
+    fn box_type(&self) -> BoxType {
+        self.box_type
+    }
+}
+
+impl<'a> scuffle_bytes_util::zero_copy::Deserialize<'a> for BoxHeader {
+    fn deserialize<R>(mut reader: R) -> io::Result<Self>
+    where
+        R: ZeroCopyReader<'a>,
+    {
         let size = reader.as_std().read_u32::<BigEndian>()?;
         let box_type = reader.as_std().read_u32::<BigEndian>()?.to_be_bytes();
 
@@ -69,37 +118,53 @@ impl BoxHeader {
 
         Ok(Self { size, box_type })
     }
+}
 
-    pub fn size(&self) -> usize {
-        let mut size = 4 + 4; // size + type
-
-        if let BoxSize::Long(_) = self.size {
-            size += 8; // large size
-        }
-
-        if let BoxType::Uuid(_) = self.box_type {
-            size += 16; // usertype
-        }
-
-        size
-    }
-
-    pub fn payload_size(&self) -> Option<usize> {
-        let header_size = self.size();
-        Some(header_size - self.size.size()?)
+impl<'a> scuffle_bytes_util::zero_copy::DeserializeSeed<'a, BoxHeader> for BoxHeader {
+    fn deserialize_seed<R>(_reader: R, seed: BoxHeader) -> io::Result<Self>
+    where
+        R: ZeroCopyReader<'a>,
+    {
+        Ok(seed)
     }
 }
 
+#[derive(Debug, Clone)]
 pub struct FullBoxHeader {
+    pub header: BoxHeader,
     pub version: u8,
     /// only lower 24 bits are used
     pub flags: u32,
 }
 
-impl FullBoxHeader {
-    pub fn demux<'a, R: ZeroCopyReader<'a>>(mut reader: R) -> io::Result<Self> {
+impl BoxHeaderProperties for FullBoxHeader {
+    fn size(&self) -> usize {
+        self.header.size()
+            + 1 // version
+            + 3 // flags
+    }
+
+    fn box_size(&self) -> BoxSize {
+        self.header.box_size()
+    }
+
+    fn box_type(&self) -> BoxType {
+        self.header.box_type()
+    }
+}
+
+impl<'a> scuffle_bytes_util::zero_copy::DeserializeSeed<'a, BoxHeader> for FullBoxHeader {
+    fn deserialize_seed<R>(mut reader: R, seed: BoxHeader) -> io::Result<Self>
+    where
+        R: ZeroCopyReader<'a>,
+    {
         let version = reader.as_std().read_u8()?;
         let flags = reader.as_std().read_u24::<BigEndian>()?;
-        Ok(Self { version, flags })
+
+        Ok(Self {
+            header: seed,
+            version,
+            flags,
+        })
     }
 }

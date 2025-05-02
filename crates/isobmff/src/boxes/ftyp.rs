@@ -13,7 +13,7 @@ pub struct Ftyp {
     #[iso_box(from = "[u8; 4]")]
     pub major_brand: Brand,
     pub minor_version: u32,
-    #[iso_box(remaining, from = "[u8; 4]")]
+    #[iso_box(repeated, from = "[u8; 4]")]
     pub compatible_brands: Vec<Brand>,
 }
 

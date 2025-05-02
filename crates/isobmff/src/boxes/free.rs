@@ -5,7 +5,7 @@ use crate::{BoxHeader, IsoBox};
 pub struct FreeBox {
     #[iso_box(header)]
     pub header: BoxHeader,
-    #[iso_box(remaining)]
+    #[iso_box(repeated)]
     pub data: Vec<u8>,
 }
 
@@ -14,6 +14,6 @@ pub struct FreeBox {
 pub struct SkipBox {
     #[iso_box(header)]
     pub header: BoxHeader,
-    #[iso_box(remaining)]
+    #[iso_box(repeated)]
     pub data: Vec<u8>,
 }

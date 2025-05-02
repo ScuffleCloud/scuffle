@@ -38,12 +38,15 @@ impl Function for Size {
                     ty: CelType::Proto(ProtoType::Value(ProtoValueType::UInt64)),
                 })
             }
-            _ => Ok(CompiledExpr {
-                expr: parse_quote! {
-                    ::tinc::__private::cel::CelValue::cel_size(#this)?
-                },
-                ty: CelType::Proto(ProtoType::Value(ProtoValueType::UInt64)),
-            }),
+            _ => {
+                let this = this.clone().to_cel()?;
+                Ok(CompiledExpr {
+                    expr: parse_quote! {
+                        ::tinc::__private::cel::CelValue::cel_size(#this)?
+                    },
+                    ty: CelType::Proto(ProtoType::Value(ProtoValueType::UInt64)),
+                })
+            }
         }
     }
 

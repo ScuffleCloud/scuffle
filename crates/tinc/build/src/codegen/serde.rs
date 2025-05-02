@@ -4,9 +4,9 @@ use syn::parse_quote;
 use tinc_pb::oneof_options::Tagged;
 
 use super::Package;
-use super::cel::CelExpression;
 use super::cel::compiler::{CompiledExpr, Compiler};
 use super::cel::types::CelType;
+use super::cel::{CelExpression, functions};
 use crate::types::{
     ProtoEnumType, ProtoFieldJsonOmittable, ProtoMessageField, ProtoMessageType, ProtoModifiedValueType, ProtoOneOfType,
     ProtoType, ProtoTypeRegistry, ProtoValueType, ProtoVisibility,
@@ -571,6 +571,12 @@ fn handle_message_field(
             (quote!(value), field.ty.clone())
         };
 
+        if let ProtoType::Value(ProtoValueType::Enum(path))
+        | ProtoType::Modified(ProtoModifiedValueType::Optional(ProtoValueType::Enum(path))) = &field.ty
+        {
+            compiler.register_function(functions::Enum(Some(path.clone())));
+        }
+
         let is_message = matches!(field_type, ProtoType::Value(ProtoValueType::Message(_)));
 
         compiler.add_variable(
@@ -590,7 +596,7 @@ fn handle_message_field(
 
         if is_message {
             exprs.push(quote! {
-                if RECURSIVE_CEL_VALIDATE {
+                if ::tinc::__private::cel::CelMode::current().is_proto() {
                     ::tinc::__private::ValidateMessage::validate(value)?;
                 }
             })
@@ -615,6 +621,11 @@ fn handle_message_field(
         {
             let key_exprs = {
                 let mut compiler = compiler.child();
+
+                if let ProtoValueType::Enum(path) = key {
+                    compiler.register_function(functions::Enum(Some(path.clone())));
+                }
+
                 compiler.add_variable(
                     "input",
                     CompiledExpr {
@@ -635,6 +646,9 @@ fn handle_message_field(
 
             let mut value_exprs = {
                 let mut compiler = compiler.child();
+                if let ProtoValueType::Enum(path) = value {
+                    compiler.register_function(functions::Enum(Some(path.clone())));
+                }
                 compiler.add_variable(
                     "input",
                     CompiledExpr {
@@ -653,7 +667,7 @@ fn handle_message_field(
 
             if is_message {
                 value_exprs.push(quote! {
-                    if RECURSIVE_CEL_VALIDATE {
+                    if ::tinc::__private::cel::CelMode::current().is_proto() {
                         ::tinc::__private::ValidateMessage::validate(value)?;
                     }
                 });
@@ -674,6 +688,9 @@ fn handle_message_field(
         {
             let is_message = matches!(item, ProtoValueType::Message(_));
             let mut compiler = compiler.child();
+            if let ProtoValueType::Enum(path) = item {
+                compiler.register_function(functions::Enum(Some(path.clone())));
+            }
             compiler.add_variable(
                 "input",
                 CompiledExpr {
@@ -692,7 +709,7 @@ fn handle_message_field(
 
             if is_message {
                 exprs.push(quote! {
-                    if RECURSIVE_CEL_VALIDATE {
+                    if ::tinc::__private::cel::CelMode::current().is_proto() {
                         ::tinc::__private::ValidateMessage::validate(item)?;
                     }
                 });
@@ -834,8 +851,7 @@ pub(super) fn handle_message(
                     mut tracker: &mut <Self::Tracker as ::tinc::__private::TrackerWrapper>::Tracker,
                 ) -> Result<(), ::tinc::__private::ValidationError>
                 {
-                    #[allow(dead_code)]
-                    const RECURSIVE_CEL_VALIDATE: bool = false;
+                    ::tinc::__private::cel::CelMode::Json.set();
 
                     #(#verify_deserialize_fn)*
 
@@ -851,8 +867,7 @@ pub(super) fn handle_message(
 
             impl ::tinc::__private::ValidateMessage for #message_path {
                 fn validate(&self) -> ::core::result::Result<(), ::tinc::__private::ValidationError> {
-                    #[allow(dead_code)]
-                    const RECURSIVE_CEL_VALIDATE: bool = true;
+                    ::tinc::__private::cel::CelMode::Proto.set();
 
                     #(#cel_validation_fn)*
 
@@ -880,10 +895,22 @@ pub(super) fn handle_enum(enum_: &ProtoEnumType, package: &mut Package) -> anyho
 
     enum_config.attribute(parse_quote!(#[serde(crate = "::tinc::reexports::serde")]));
 
+    let mut to_json_matchers = if !enum_.options.repr_enum {
+        Vec::new()
+    } else {
+        vec![quote! {
+            item => ::tinc::__private::cel::CelValueConv::conv(item as i32)
+        }]
+    };
+
     for (name, variant) in &enum_.variants {
         if !enum_.options.repr_enum {
             let json_name = &variant.options.json_name;
             enum_config.variant_attribute(name, parse_quote!(#[serde(rename = #json_name)]));
+            let ident = &variant.rust_ident;
+            to_json_matchers.push(quote! {
+                #enum_path::#ident => ::tinc::__private::cel::CelValueConv::conv(#json_name)
+            })
         }
 
         match variant.options.visibility {
@@ -900,6 +927,8 @@ pub(super) fn handle_enum(enum_: &ProtoEnumType, package: &mut Package) -> anyho
         }
     }
 
+    let proto_path = enum_.full_name.as_ref();
+
     package.push_item(parse_quote! {
         #[allow(clippy::all, dead_code, unused_imports, unused_variables)]
         const _: () = {
@@ -910,6 +939,29 @@ pub(super) fn handle_enum(enum_: &ProtoEnumType, package: &mut Package) -> anyho
                     write!(formatter, "`")
                 }
             }
+
+            #[::tinc::reexports::linkme::distributed_slice(::tinc::__private::cel::TINC_CEL_ENUM_VTABLE)]
+            #[linkme(crate = ::tinc::reexports::linkme)]
+            static ENUM_VTABLE: ::tinc::__private::cel::EnumVtable = ::tinc::__private::cel::EnumVtable {
+                proto_path: #proto_path,
+                is_valid: |tag| {
+                    <#enum_path as std::convert::TryFrom<i32>>::try_from(tag).is_ok()
+                },
+                to_json: |tag| {
+                    match <#enum_path as std::convert::TryFrom<i32>>::try_from(tag) {
+                        Ok(value) => match value {
+                            #(#to_json_matchers),*
+                        }
+                        Err(_) => ::tinc::__private::cel::CelValue::Null,
+                    }
+                },
+                to_proto: |tag| {
+                    match <#enum_path as std::convert::TryFrom<i32>>::try_from(tag) {
+                        Ok(value) => ::tinc::__private::cel::CelValue::String(::tinc::__private::cel::CelString::Borrowed(value.as_str_name())),
+                        Err(_) => ::tinc::__private::cel::CelValue::Null,
+                    }
+                }
+            };
         };
     });
 

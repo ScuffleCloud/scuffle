@@ -1,7 +1,10 @@
 use std::collections::{BTreeMap, HashMap};
 
 use anyhow::Context;
+use functions::{Enum, Function};
 use quote::quote;
+
+use crate::types::ProtoPath;
 
 pub mod compiler;
 pub mod functions;
@@ -188,14 +191,8 @@ fn preevaluate_expression(
     has_this: bool,
 ) -> anyhow::Result<ConstantOrExpression> {
     let references = expr.references();
-    let mut requires_runtime = references.has_function("dyn");
-    for variable in references.variables() {
-        match variable {
-            "input" => requires_runtime = true,
-            "this" if has_this => {}
-            _ => anyhow::bail!("unknown variable in expression: {variable}"),
-        }
-    }
+    let requires_runtime =
+        references.has_function("dyn") || references.has_function("enum") || references.has_variable("input");
 
     if !requires_runtime {
         return ctx
@@ -292,13 +289,19 @@ pub struct CelExpression {
 }
 
 impl CelExpression {
-    pub fn new(pb: &tinc_pb::CelExpression, this: Option<&prost_reflect::Value>) -> anyhow::Result<Self> {
+    pub fn new(
+        pb: &tinc_pb::CelExpression,
+        this: Option<&prost_reflect::Value>,
+        enum_path: Option<ProtoPath>,
+    ) -> anyhow::Result<Self> {
         let mut ctx = cel_interpreter::Context::empty();
         if let Some(this) = this {
             ctx.add_variable_from_value("this", prost_to_cel(this.clone())?);
         }
 
         functions::add_to_context(&mut ctx);
+
+        Enum(enum_path).add_to_ctx(&mut ctx);
 
         let message = MessageFormat::new(&pb.message, &ctx, this.is_some()).context("failed to create message format")?;
 
@@ -308,15 +311,15 @@ impl CelExpression {
             .context("failed to pre-evaluate expression")?
             .into_expr();
 
-        let mut json_schemas = Vec::new();
-        for schema in &pb.jsonschemas {
-            let expr = cel_parser::parse(schema).context("failed to parse cel expression")?;
-            let result = ctx.resolve(&expr).context("failed to resolve expression")?;
-            let json = result
-                .json()
-                .map_err(|err| anyhow::anyhow!("failed to convert expression to json: {err}"))?;
-            json_schemas.push(json);
-        }
+        let json_schemas = Vec::new();
+        // for schema in &pb.jsonschemas {
+        //     let expr = cel_parser::parse(schema).context("failed to parse cel expression")?;
+        //     let result = ctx.resolve(&expr).context("failed to resolve expression")?;
+        //     let json = result
+        //         .json()
+        //         .map_err(|err| anyhow::anyhow!("failed to convert expression to json: {err}"))?;
+        //     json_schemas.push(json);
+        // }
 
         Ok(Self {
             raw_expr: pb.expression.clone(),

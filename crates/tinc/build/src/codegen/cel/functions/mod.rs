@@ -10,6 +10,7 @@ mod contains;
 mod double;
 mod dyn_;
 mod ends_with;
+mod enum_;
 mod exists;
 mod exists_one;
 mod filter;
@@ -30,6 +31,7 @@ pub use contains::Contains;
 pub use double::Double;
 pub use dyn_::Dyn;
 pub use ends_with::EndsWith;
+pub use enum_::Enum;
 pub use exists::Exists;
 pub use exists_one::ExistsOne;
 pub use filter::Filter;
@@ -63,7 +65,6 @@ pub fn add_to_context(ctx: &mut cel_interpreter::Context) {
     Double.add_to_ctx(ctx);
     Bool.add_to_ctx(ctx);
     Const.add_to_ctx(ctx);
-    Dyn.add_to_ctx(ctx);
 }
 
 pub fn add_to_compiler(compiler: &mut Compiler) {
@@ -86,6 +87,7 @@ pub fn add_to_compiler(compiler: &mut Compiler) {
     compiler.register_function(Bool);
     compiler.register_function(Const);
     compiler.register_function(Dyn);
+    compiler.register_function(Enum::default());
 }
 
 pub trait Function: Send + Sync + 'static {

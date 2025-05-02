@@ -242,3 +242,29 @@ message BytesExpressions {
   }];
 }
 
+message EnumExpressions {
+  option (tinc.message).generate = true;
+
+  enum Special {
+    SPECIAL_UNSPECIFIED = 0;
+    SPECIAL_A = 1;
+    SPECIAL_B = 2;
+  }
+
+  Special constant = 1 [(tinc.field).constraint.enum = {
+    const: 2
+  }];
+
+  Special defined = 2 [(tinc.field).constraint.enum = {
+    defined: true
+  }];
+
+  Special one_of = 3 [(tinc.field).constraint.enum = {
+    in: [1, 2]
+  }];
+
+  Special none_of = 4 [(tinc.field).constraint.enum = {
+    not_in: [0]
+  }];
+}
+

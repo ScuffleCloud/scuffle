@@ -31,20 +31,8 @@ impl Function for StartsWith {
             });
         }
 
-        let arg = ctx.resolve(&ctx.args[0])?;
-        if !arg.ty.can_be_cel() {
-            return Err(CompileError::TypeConversion {
-                ty: Box::new(arg.ty.clone()),
-                message: "the startsWith function can only be called with CEL value argument types".to_string(),
-            });
-        }
-
-        if !this.ty.can_be_cel() {
-            return Err(CompileError::TypeConversion {
-                ty: Box::new(this.ty.clone()),
-                message: "the startsWith function can only be called with CEL value argument types".to_string(),
-            });
-        }
+        let arg = ctx.resolve(&ctx.args[0])?.to_cel()?;
+        let this = this.clone().to_cel()?;
 
         Ok(CompiledExpr {
             expr: parse_quote! {

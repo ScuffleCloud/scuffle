@@ -49,12 +49,7 @@ impl Function for Matches {
             });
         }
 
-        if !this.ty.can_be_cel() {
-            return Err(CompileError::TypeConversion {
-                ty: Box::new(this.ty.clone()),
-                message: "the matches function can only be called with CEL value argument types".to_string(),
-            });
-        }
+        let this = this.clone().to_cel()?;
 
         Ok(CompiledExpr {
             expr: parse_quote! {{

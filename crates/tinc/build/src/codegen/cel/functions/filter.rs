@@ -22,7 +22,7 @@ impl Function for Filter {
         let Some(this) = &ctx.this else {
             return Err(CompileError::MissingTarget {
                 func: self.name(),
-                message: "this is required when calling the contains function".to_string(),
+                message: "this is required when calling the filter function".to_string(),
             });
         };
 
@@ -68,13 +68,7 @@ impl Function for Filter {
             v => return Err(CompileError::FunctionNotFound(format!("no such function map for type {v:?}"))),
         };
 
-        let arg = child_ctx.resolve(&ctx.args[1])?;
-        if !arg.ty.can_be_cel() {
-            return Err(CompileError::TypeConversion {
-                ty: Box::new(arg.ty.clone()),
-                message: "the return value of map expr needs to be a CEL value".to_string(),
-            });
-        }
+        let arg = child_ctx.resolve(&ctx.args[1])?.to_cel()?;
 
         let proto_native = |iter: TokenStream| {
             parse_quote! {{

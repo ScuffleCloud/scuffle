@@ -24,7 +24,7 @@ tonic = "0.13.0"
 prost = "0.13.5"
 prost-types = "0.13.5"
 
-serde = { version = "1.0.215", features = ["derive"] }
+serde = "1.0.215"
 serde_json = "1.0.115"
 serde_repr = "0.1.20"
 
@@ -41,6 +41,7 @@ serde_urlencoded = "0.7.1"
 serde_qs = "0.15.0"
 memchr = "2.4"
 
+linkme = "0.3"
 num-traits = "0.2.19"
 
 # Parsing / Formatting numbers

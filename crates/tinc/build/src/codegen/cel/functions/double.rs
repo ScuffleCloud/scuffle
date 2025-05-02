@@ -29,18 +29,11 @@ impl Function for Double {
             });
         }
 
-        let arg = ctx.resolve(&ctx.args[0])?;
-
-        if !arg.ty.can_be_cel() {
-            return Err(CompileError::TypeConversion {
-                ty: arg.ty.into(),
-                message: "The return type must be a CEL compatiable type".into(),
-            });
-        }
+        let arg = ctx.resolve(&ctx.args[0])?.to_cel()?;
 
         Ok(CompiledExpr {
             expr: parse_quote! {
-            ::tinc::__private::cel::CelValue::cel_to_doubleA(#arg)?
+                ::tinc::__private::cel::CelValue::cel_to_double(#arg)?
             },
             ty: CelType::CelValue,
         })

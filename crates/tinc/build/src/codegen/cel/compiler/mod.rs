@@ -124,9 +124,7 @@ impl<'a> Compiler<'a> {
 
     pub fn register_function(&mut self, f: impl Function) {
         let name = f.name();
-        if self.functions.insert(name, DebugFunc(Arc::new(f))).is_some() {
-            panic!("function {name} already registered");
-        }
+        self.functions.insert(name, DebugFunc(Arc::new(f)));
     }
 
     pub fn resolve(&self, expr: &cel_parser::Expression) -> Result<CompiledExpr, CompileError> {
@@ -182,6 +180,8 @@ pub enum CompileError {
     UnsupportedFunctionCallIdentifierType(cel_parser::Expression),
     #[error("missing message: {0}")]
     MissingMessage(ProtoPath),
+    #[error("missing enum: {0}")]
+    MissingEnum(ProtoPath),
     #[error("invalid function argument[{idx}]: {expr:?} - {message}")]
     InvalidFunctionArgument {
         idx: usize,

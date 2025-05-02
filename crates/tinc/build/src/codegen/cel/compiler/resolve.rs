@@ -2,7 +2,7 @@ use cel_parser::{ArithmeticOp, Atom, Expression, Member, RelationOp};
 use quote::quote;
 use syn::parse_quote;
 
-use super::{CompileError, CompiledExpr, Compiler, CompilerCtx, helpers};
+use super::{CompileError, CompiledExpr, Compiler, CompilerCtx};
 use crate::codegen::cel::types::CelType;
 use crate::types::{ProtoModifiedValueType, ProtoType, ProtoValueType};
 
@@ -24,10 +24,8 @@ pub fn resolve(ctx: &Compiler, expr: &Expression) -> Result<CompiledExpr, Compil
 }
 
 fn resolve_and(ctx: &Compiler, left: &Expression, right: &Expression) -> Result<CompiledExpr, CompileError> {
-    let left = ctx.resolve(left)?;
-    let right = ctx.resolve(right)?;
-    let left = helpers::to_bool(left);
-    let right = helpers::to_bool(right);
+    let left = ctx.resolve(left)?.to_bool();
+    let right = ctx.resolve(right)?.to_bool();
     Ok(CompiledExpr {
         expr: parse_quote! {
             (#left) && (#right)
@@ -42,20 +40,8 @@ fn resolve_arithmetic(
     op: &ArithmeticOp,
     right: &Expression,
 ) -> Result<CompiledExpr, CompileError> {
-    let left = ctx.resolve(left)?;
-    if !left.ty.can_be_cel() {
-        return Err(CompileError::type_conversion(
-            left.ty,
-            "cannot perform arithmetic operation on a non-CEL value",
-        ));
-    }
-    let right = ctx.resolve(right)?;
-    if !right.ty.can_be_cel() {
-        return Err(CompileError::type_conversion(
-            right.ty,
-            "cannot perform arithmetic operation on a non-CEL value",
-        ));
-    }
+    let left = ctx.resolve(left)?.to_cel()?;
+    let right = ctx.resolve(right)?.to_cel()?;
 
     let op = match op {
         ArithmeticOp::Add => quote! { cel_add },
@@ -100,7 +86,7 @@ fn resolve_atom(_: &Compiler, atom: &Atom) -> Result<CompiledExpr, CompileError>
             let s = s.as_str();
             Ok(CompiledExpr {
                 expr: parse_quote! {
-                    ::tinc::__private::cel::CelValue::StringRef(#s)
+                    ::tinc::__private::cel::CelValue::String(::tinc::__private::cel::CelString::Borrowed(#s))
                 },
                 ty: CelType::CelValue,
             })
@@ -109,7 +95,7 @@ fn resolve_atom(_: &Compiler, atom: &Atom) -> Result<CompiledExpr, CompileError>
             let b = syn::LitByteStr::new(b, proc_macro2::Span::call_site());
             Ok(CompiledExpr {
                 expr: parse_quote! {
-                    ::tinc::__private::cel::CelValue::BytesRef(#b)
+                    ::tinc::__private::cel::CelValue::Bytes(::tinc::__private::cel::CelBytes::Borrowed(#b))
                 },
                 ty: CelType::CelValue,
             })
@@ -159,21 +145,15 @@ fn resolve_ident(ctx: &Compiler, ident: &str) -> Result<CompiledExpr, CompileErr
 }
 
 fn resolve_list(ctx: &Compiler, items: &[Expression]) -> Result<CompiledExpr, CompileError> {
-    let items = items.iter().map(|item| ctx.resolve(item)).collect::<Result<Vec<_>, _>>()?;
-
-    if let Some(item) = items.iter().find(|item| !item.ty.can_be_cel()) {
-        return Err(CompileError::TypeConversion {
-            ty: Box::new(item.ty.clone()),
-            message: "can only contain items that can be converted to CEL".to_string(),
-        });
-    }
+    let items = items
+        .iter()
+        .map(|item| ctx.resolve(item)?.to_cel())
+        .collect::<Result<Vec<_>, _>>()?;
 
     Ok(CompiledExpr {
         expr: parse_quote! {
             ::tinc::__private::cel::CelValue::List(::std::iter::FromIterator::from_iter([
-                #(
-                    ::tinc::__private::cel::CelValueConv::conv(#items)
-                ),*
+                #(#items),*
             ]))
         },
         ty: CelType::CelValue,
@@ -186,24 +166,12 @@ fn resolve_map(ctx: &Compiler, items: &[(Expression, Expression)]) -> Result<Com
     let items = items
         .iter()
         .map(|(key, value)| {
-            let key = ctx.resolve(key)?;
-            let value = ctx.resolve(value)?;
-            if !key.ty.can_be_cel() {
-                return Err(CompileError::TypeConversion {
-                    ty: Box::new(key.ty.clone()),
-                    message: "can only contain keys that can be converted to CEL".to_string(),
-                });
-            }
-            if !value.ty.can_be_cel() {
-                return Err(CompileError::TypeConversion {
-                    ty: Box::new(value.ty.clone()),
-                    message: "can only contain values that can be converted to CEL".to_string(),
-                });
-            }
+            let key = ctx.resolve(key)?.to_cel()?;
+            let value = ctx.resolve(value)?.to_cel()?;
             Ok(quote! {
                 (
-                    ::tinc::__private::cel::CelValueConv::conv(#key),
-                    ::tinc::__private::cel::CelValueConv::conv(#value),
+                    #key,
+                    #value,
                 )
             })
         })
@@ -252,7 +220,7 @@ fn resolve_member(ctx: &Compiler, expr: &Expression, member: &Member) -> Result<
                             match (#expr) {
                                 Some(value) => &value.#field_ident,
                                 None => return Err(::tinc::__private::cel::CelError::BadAccess {
-                                    member: ::tinc::__private::cel::CelValue::StringRef(#attr),
+                                    member: ::tinc::__private::cel::CelValue::String(::tinc::__private::cel::CelString::Borrowed(#attr)),
                                     container: ::tinc::__private::cel::CelValue::Null,
                                 }),
                             }
@@ -273,7 +241,7 @@ fn resolve_member(ctx: &Compiler, expr: &Expression, member: &Member) -> Result<
                             match (#expr) {
                                 Some(value) => &value.#field_ident,
                                 None => return Err(::tinc::__private::cel::CelError::BadAccess {
-                                    member: ::tinc::__private::cel::CelValue::StringRef(#attr),
+                                    member: ::tinc::__private::cel::CelValue::String(::tinc::__private::cel::CelString::Borrowed(#attr)),
                                     container: ::tinc::__private::cel::CelValue::Null,
                                 }),
                             }
@@ -352,10 +320,8 @@ fn resolve_member(ctx: &Compiler, expr: &Expression, member: &Member) -> Result<
 }
 
 fn resolve_or(ctx: &Compiler, left: &Expression, right: &Expression) -> Result<CompiledExpr, CompileError> {
-    let left = ctx.resolve(left)?;
-    let right = ctx.resolve(right)?;
-    let left = helpers::to_bool(left);
-    let right = helpers::to_bool(right);
+    let left = ctx.resolve(left)?.to_bool();
+    let right = ctx.resolve(right)?.to_bool();
     Ok(CompiledExpr {
         expr: parse_quote! {
             (#left) || (#right)
@@ -370,14 +336,7 @@ fn resolve_relation(
     op: &RelationOp,
     right: &Expression,
 ) -> Result<CompiledExpr, CompileError> {
-    let left = ctx.resolve(left)?;
-    if !left.ty.can_be_cel() {
-        return Err(CompileError::TypeConversion {
-            ty: Box::new(left.ty.clone()),
-            message: format!("cannot perform relational operation {op:?} on a non-CEL value"),
-        });
-    }
-
+    let left = ctx.resolve(left)?.to_cel()?;
     let right = ctx.resolve(right)?;
     if let (
         RelationOp::In,
@@ -405,12 +364,7 @@ fn resolve_relation(
         }
     }
 
-    if !right.ty.can_be_cel() {
-        return Err(CompileError::TypeConversion {
-            ty: Box::new(right.ty.clone()),
-            message: format!("cannot perform relational operation {op:?} on a non-CEL value"),
-        });
-    }
+    let right = right.to_cel()?;
 
     let op = match op {
         RelationOp::LessThan => quote! { cel_lt },
@@ -439,30 +393,16 @@ fn resolve_ternary(
     left: &Expression,
     right: &Expression,
 ) -> Result<CompiledExpr, CompileError> {
-    let cond = ctx.resolve(cond)?;
-    let left = ctx.resolve(left)?;
-    if !left.ty.can_be_cel() {
-        return Err(CompileError::TypeConversion {
-            ty: Box::new(left.ty.clone()),
-            message: "ternary operations must return CEL values".to_string(),
-        });
-    }
+    let cond = ctx.resolve(cond)?.to_bool();
+    let left = ctx.resolve(left)?.to_cel()?;
+    let right = ctx.resolve(right)?.to_cel()?;
 
-    let right = ctx.resolve(right)?;
-    if !right.ty.can_be_cel() {
-        return Err(CompileError::TypeConversion {
-            ty: Box::new(right.ty.clone()),
-            message: "ternary operations must return CEL values".to_string(),
-        });
-    }
-
-    let cond = helpers::to_bool(cond);
     Ok(CompiledExpr {
         expr: parse_quote! {
             if (#cond) {
-                ::tinc::__private::cel::CelValueConv::conv(#left)
+                #left
             } else {
-                ::tinc::__private::cel::CelValueConv::conv(#right)
+                #right
             }
         },
         ty: CelType::CelValue,
@@ -473,7 +413,7 @@ fn resolve_unary(ctx: &Compiler, op: &cel_parser::UnaryOp, expr: &Expression) ->
     let expr = ctx.resolve(expr)?;
     match op {
         cel_parser::UnaryOp::Not => {
-            let expr = helpers::to_bool(expr);
+            let expr = expr.to_bool();
             Ok(CompiledExpr {
                 expr: parse_quote! {
                     !(#expr)
@@ -481,18 +421,13 @@ fn resolve_unary(ctx: &Compiler, op: &cel_parser::UnaryOp, expr: &Expression) ->
                 ty: CelType::Proto(ProtoType::Value(ProtoValueType::Bool)),
             })
         }
-        cel_parser::UnaryOp::DoubleNot => Ok(helpers::to_bool(expr)),
+        cel_parser::UnaryOp::DoubleNot => Ok(expr.to_bool()),
         cel_parser::UnaryOp::Minus => {
-            if !expr.ty.can_be_cel() {
-                return Err(CompileError::TypeConversion {
-                    ty: Box::new(expr.ty.clone()),
-                    message: "cannot perform minus operation on a non-CEL value".to_string(),
-                });
-            }
+            let expr = expr.to_cel()?;
 
             Ok(CompiledExpr {
                 expr: parse_quote! {
-                    ::tinc::__private::cel::CelValueConv::conv(#expr).neg()?
+                    (#expr).neg()?
                 },
                 ty: expr.ty.clone(),
             })

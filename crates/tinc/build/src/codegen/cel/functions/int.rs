@@ -29,14 +29,7 @@ impl Function for Int {
             });
         }
 
-        let arg = ctx.resolve(&ctx.args[0])?;
-
-        if !arg.ty.can_be_cel() {
-            return Err(CompileError::TypeConversion {
-                ty: arg.ty.into(),
-                message: "The return type must be a CEL compatiable type".into(),
-            });
-        }
+        let arg = ctx.resolve(&ctx.args[0])?.to_cel()?;
 
         Ok(CompiledExpr {
             expr: parse_quote! {

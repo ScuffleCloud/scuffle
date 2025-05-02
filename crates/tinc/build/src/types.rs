@@ -134,13 +134,8 @@ pub struct ProtoEnumOptions {
 pub struct ProtoEnumVariant {
     pub full_name: ProtoPath,
     pub options: ProtoEnumVariantOptions,
+    pub rust_ident: syn::Ident,
     pub value: i32,
-}
-
-impl ProtoEnumVariant {
-    pub fn rust_ident(&self) -> syn::Ident {
-        type_ident_from_str(self.full_name.split('.').next_back().unwrap())
-    }
 }
 
 #[derive(Debug, Clone, PartialEq)]

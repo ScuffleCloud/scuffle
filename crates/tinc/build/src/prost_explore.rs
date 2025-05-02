@@ -4,6 +4,7 @@ use anyhow::Context;
 use convert_case::{Case, Casing};
 use indexmap::IndexMap;
 use prost_reflect::{DescriptorPool, EnumDescriptor, ExtensionDescriptor, Kind, MessageDescriptor, ServiceDescriptor};
+use quote::format_ident;
 
 use crate::codegen::cel::{CelExpression, CelExpressions};
 use crate::codegen::prost_sanatize::{strip_enum_prefix, to_upper_camel};
@@ -300,7 +301,7 @@ impl Extensions {
                     cel: opts
                         .cel
                         .iter()
-                        .map(|expr| CelExpression::new(expr, None))
+                        .map(|expr| CelExpression::new(expr, None, None))
                         .collect::<anyhow::Result<_>>()?,
                 },
             );
@@ -354,7 +355,7 @@ impl Extensions {
                     .cel
                     .as_slice()
                     .iter()
-                    .map(|expr| CelExpression::new(expr, None))
+                    .map(|expr| CelExpression::new(expr, None, None))
                     .collect::<anyhow::Result<_>>()?,
             },
         });
@@ -377,7 +378,7 @@ impl Extensions {
                     .rename
                     .or_else(|| rename_field(field.name(), rename_all?))
                     .unwrap_or_else(|| field.name().to_owned()),
-                cel_exprs: gather_cel_expressions(&self.ext_predefined, &field.options())
+                cel_exprs: gather_cel_expressions(&self.ext_predefined, &field.options(), &field.kind())
                     .context("gathering cel expressions")?,
             };
 
@@ -437,7 +438,7 @@ impl Extensions {
                                 .or_else(|| rename_field(oneof.name(), rename_all?))
                                 .unwrap_or_else(|| oneof.name().to_owned()),
                             visibility,
-                            cel_exprs: gather_cel_expressions(&self.ext_predefined, &field.options())
+                            cel_exprs: gather_cel_expressions(&self.ext_predefined, &field.options(), &field.kind())
                                 .context("gathering cel expressions")?,
                         },
                         ty: ProtoType::Modified(ProtoModifiedValueType::OneOf(ProtoOneOfType {
@@ -552,6 +553,7 @@ impl Extensions {
                     // This is not the same as variant.full_name() because that strips the enum name.
                     full_name: ProtoPath::new(format!("{}.{}", enum_.full_name(), variant.name())),
                     value: variant.number(),
+                    rust_ident: format_ident!("{name}"),
                     options: ProtoEnumVariantOptions {
                         visibility,
                         json_name: opts.rename.or_else(|| rename_field(&name, rename_all)).unwrap_or(name),
@@ -577,6 +579,7 @@ enum CelInput {
 pub fn gather_cel_expressions(
     extension: &Extension<tinc_pb::PredefinedConstraint>,
     field_options: &prost_reflect::DynamicMessage,
+    field_ty: &Kind,
 ) -> anyhow::Result<CelExpressions> {
     let Some(extension) = extension.descriptor() else {
         return Ok(CelExpressions::default());
@@ -613,7 +616,7 @@ pub fn gather_cel_expressions(
         }
 
         if let Some(message) = value.as_message() {
-            explore_fields(extension, input, message, &mut results)?;
+            explore_fields(extension, input, message, &mut results, field_ty)?;
         }
     }
 
@@ -630,6 +633,7 @@ fn explore_fields(
     input: CelInput,
     value: &prost_reflect::DynamicMessage,
     results: &mut BTreeMap<CelInput, Vec<CelExpression>>,
+    field_ty: &Kind,
 ) -> anyhow::Result<()> {
     for (field, value) in value.fields() {
         let options = field.options();
@@ -650,7 +654,11 @@ fn explore_fields(
                             .filter_map(|item| item.as_message())
                             .filter_map(|msg| msg.transcode_to::<tinc_pb::CelExpression>().ok());
                         for message in messages {
-                            let expr = CelExpression::new(&message, None)?;
+                            let expr = CelExpression::new(
+                                &message,
+                                None,
+                                field_ty.as_enum().map(|e| ProtoPath::new(e.full_name())),
+                            )?;
                             results.entry(input).or_default().push(expr);
                         }
                     }
@@ -668,7 +676,11 @@ fn explore_fields(
             }
 
             for expr in &predef.cel {
-                results.entry(input).or_default().push(CelExpression::new(expr, Some(value))?);
+                results.entry(input).or_default().push(CelExpression::new(
+                    expr,
+                    Some(value),
+                    field_ty.as_enum().map(|e| ProtoPath::new(e.full_name())),
+                )?);
             }
         }
 
@@ -676,7 +688,7 @@ fn explore_fields(
             continue;
         };
 
-        explore_fields(extension, input, message, results)?;
+        explore_fields(extension, input, message, results, field_ty)?;
     }
 
     Ok(())

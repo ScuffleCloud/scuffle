@@ -696,3 +696,131 @@ fn test_uint64_expressions_invalid() {
     }
     "#);
 }
+
+#[test]
+fn test_bytes_expressions_valid() {
+    let mut state = TrackerSharedState::default();
+    let valid = pb::BytesExpressions {
+        constant: b"\0\0\0".to_vec(),
+        exact_len: b"troyb".to_vec(),
+        min_max_len: b"0123456789".to_vec(),
+    };
+
+    state.in_scope(|| valid.validate()).unwrap();
+
+    insta::assert_debug_snapshot!(state, @r"
+    TrackerSharedState {
+        fail_fast: false,
+        errors: [],
+    }
+    ");
+}
+
+#[test]
+fn test_bytes_expressions_invalid() {
+    let mut state = TrackerSharedState::default();
+    let valid = pb::BytesExpressions {
+        constant: b"\01\0".to_vec(),
+        exact_len: b"troy".to_vec(),
+        min_max_len: b"0123".to_vec(),
+    };
+
+    state.in_scope(|| valid.validate()).unwrap();
+
+    insta::assert_debug_snapshot!(state, @r#"
+    TrackerSharedState {
+        fail_fast: false,
+        errors: [
+            TrackedError {
+                kind: InvalidField {
+                    message: "value must equal `b\"\\0\\0\\0\"`",
+                },
+                fatal: true,
+                proto_path: "constant",
+                serde_path: "constant",
+            },
+            TrackedError {
+                kind: InvalidField {
+                    message: "value must be exactly `5` bytes long",
+                },
+                fatal: true,
+                proto_path: "exact_len",
+                serde_path: "exact_len",
+            },
+            TrackedError {
+                kind: InvalidField {
+                    message: "value must be at least `5` bytes long",
+                },
+                fatal: true,
+                proto_path: "min_max_len",
+                serde_path: "min_max_len",
+            },
+        ],
+    }
+    "#);
+}
+
+#[test]
+fn test_enum_expressions_valid() {
+    let mut state = TrackerSharedState::default();
+    let valid = pb::EnumExpressions {
+        constant: 2,
+        defined: 1,
+        one_of: 1,
+        none_of: 2,
+    };
+
+    state.in_scope(|| valid.validate()).unwrap();
+
+    insta::assert_debug_snapshot!(state, @r"
+    TrackerSharedState {
+        fail_fast: false,
+        errors: [],
+    }
+    ");
+}
+
+#[test]
+fn test_enum_expressions_invalid() {
+    let mut state = TrackerSharedState::default();
+    let valid = pb::EnumExpressions {
+        constant: 1,
+        defined: 3,
+        one_of: 0,
+        none_of: 0,
+    };
+
+    state.in_scope(|| valid.validate()).unwrap();
+
+    insta::assert_debug_snapshot!(state, @r#"
+    TrackerSharedState {
+        fail_fast: false,
+        errors: [
+            TrackedError {
+                kind: InvalidField {
+                    message: "value must equal `b\"\\0\\0\\0\"`",
+                },
+                fatal: true,
+                proto_path: "constant",
+                serde_path: "constant",
+            },
+            TrackedError {
+                kind: InvalidField {
+                    message: "value must be exactly `5` bytes long",
+                },
+                fatal: true,
+                proto_path: "exact_len",
+                serde_path: "exact_len",
+            },
+            TrackedError {
+                kind: InvalidField {
+                    message: "value must be at least `5` bytes long",
+                },
+                fatal: true,
+                proto_path: "min_max_len",
+                serde_path: "min_max_len",
+            },
+        ],
+    }
+    "#);
+}

@@ -1,14 +1,23 @@
-mod ftyp;
-pub use ftyp::*;
+mod file_organization;
+pub use file_organization::*;
 
-mod etyp;
-pub use etyp::*;
+mod general;
+pub use general::*;
 
-mod tyco;
-pub use tyco::*;
+mod movie;
+pub use movie::*;
 
-mod mdat;
-pub use mdat::*;
+mod track;
+pub use track::*;
 
-mod free;
-pub use free::*;
+mod track_media;
+pub use track_media::*;
+
+mod sample_table;
+pub use sample_table::*;
+
+mod user_data;
+pub use user_data::*;
+
+mod metadata;
+pub use metadata::*;

@@ -268,3 +268,74 @@ message EnumExpressions {
   }];
 }
 
+message RepeatedExpressions {
+  option (tinc.message).generate = true;
+
+  repeated int32 numbers = 1 [(tinc.field).constraint.repeated = {
+    len: 5
+    item: {
+      int32: {
+        gt: 0
+      }
+    }
+  }];
+}
+
+message MapExpressions {
+  option (tinc.message).generate = true;
+
+  map<string, int32> numbers = 1 [(tinc.field).constraint.map = {
+    len: 5
+    key: {
+      string: {
+        match: "^troy_"
+      }
+    }
+    value: {
+      int32: {
+        gt: 0
+      }
+    }
+  }];
+}
+
+message MessageExpressions {
+  option (tinc.message).generate = true;
+
+  message SubMessage {
+    string name = 1 [(tinc.field).constraint.string = {
+      min_len: 3
+      max_len: 10
+    }];
+  }
+
+  SubMessage message = 1;
+}
+
+message RepeatedMessageExpressions {
+  option (tinc.message).generate = true;
+
+  message SubMessage {
+    string name = 1 [(tinc.field).constraint.string = {
+      min_len: 3
+      max_len: 10
+    }];
+  }
+
+  repeated SubMessage messages = 1;
+}
+
+message MapMessageExpressions {
+  option (tinc.message).generate = true;
+
+  message SubMessage {
+    string name = 1 [(tinc.field).constraint.string = {
+      min_len: 3
+      max_len: 10
+    }];
+  }
+
+  map<string, SubMessage> messages = 1;
+}
+
+

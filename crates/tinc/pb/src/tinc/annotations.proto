@@ -542,7 +542,7 @@ message RepeatedConstraints {
     expression: "!this || input.isUnique()"
     jsonschemas: 'this ? { "uniqueItems": this } : {}'
   }];
-  optional PrimitiveConstraints items = 5 [
+  optional PrimitiveConstraints item = 5 [
     (predefined).type = WRAPPER_REPEATED_ITEM
   ];
 }

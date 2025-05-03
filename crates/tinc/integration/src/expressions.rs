@@ -1,5 +1,7 @@
 #![allow(clippy::approx_constant)]
 
+use std::collections::BTreeMap;
+
 use tinc::__private::{TrackerSharedState, ValidateMessage};
 
 mod pb {
@@ -827,6 +829,314 @@ fn test_enum_expressions_invalid() {
                 fatal: true,
                 proto_path: "none_of",
                 serde_path: "none_of",
+            },
+        ],
+    }
+    "#);
+}
+
+#[test]
+fn test_repeated_expressions_valid() {
+    let mut state = TrackerSharedState::default();
+    let valid = pb::RepeatedExpressions {
+        numbers: vec![1, 2, 3, 4, 5],
+    };
+
+    state.in_scope(|| valid.validate()).unwrap();
+
+    insta::assert_debug_snapshot!(state, @r"
+    TrackerSharedState {
+        fail_fast: false,
+        errors: [],
+    }
+    ");
+}
+
+#[test]
+fn test_repeated_expressions_invalid() {
+    let mut state = TrackerSharedState::default();
+    let valid = pb::RepeatedExpressions {
+        numbers: vec![1, 2, 0, 5],
+    };
+
+    state.in_scope(|| valid.validate()).unwrap();
+
+    insta::assert_debug_snapshot!(state, @r#"
+    TrackerSharedState {
+        fail_fast: false,
+        errors: [
+            TrackedError {
+                kind: InvalidField {
+                    message: "value must have exactly `5` elements",
+                },
+                fatal: true,
+                proto_path: "numbers",
+                serde_path: "numbers",
+            },
+            TrackedError {
+                kind: InvalidField {
+                    message: "value must be greater than `0`",
+                },
+                fatal: true,
+                proto_path: "numbers[2]",
+                serde_path: "numbers[2]",
+            },
+        ],
+    }
+    "#);
+}
+
+#[test]
+fn test_map_expressions_valid() {
+    let mut state = TrackerSharedState::default();
+    let valid = pb::MapExpressions {
+        numbers: {
+            let mut map = BTreeMap::new();
+            map.insert("troy_one".to_string(), 1);
+            map.insert("troy_two".to_string(), 2);
+            map.insert("troy_three".to_string(), 3);
+            map.insert("troy_four".to_string(), 4);
+            map.insert("troy_five".to_string(), 5);
+            map
+        },
+    };
+
+    state.in_scope(|| valid.validate()).unwrap();
+
+    insta::assert_debug_snapshot!(state, @r"
+    TrackerSharedState {
+        fail_fast: false,
+        errors: [],
+    }
+    ");
+}
+
+#[test]
+fn test_map_expressions_invalid() {
+    let mut state = TrackerSharedState::default();
+    let valid = pb::MapExpressions {
+        numbers: {
+            let mut map = BTreeMap::new();
+            map.insert("one".to_string(), -1);
+            map.insert("troy_two".to_string(), 2);
+            map.insert("three".to_string(), 0);
+            map.insert("troy_four".to_string(), 4);
+            map.insert("troy_five".to_string(), -5);
+            map
+        },
+    };
+
+    state.in_scope(|| valid.validate()).unwrap();
+
+    insta::assert_debug_snapshot!(state, @r#"
+    TrackerSharedState {
+        fail_fast: false,
+        errors: [
+            TrackedError {
+                kind: InvalidField {
+                    message: "value must match the pattern `^troy_`",
+                },
+                fatal: true,
+                proto_path: "numbers[\"one\"]",
+                serde_path: "numbers[\"one\"]",
+            },
+            TrackedError {
+                kind: InvalidField {
+                    message: "value must be greater than `0`",
+                },
+                fatal: true,
+                proto_path: "numbers[\"one\"]",
+                serde_path: "numbers[\"one\"]",
+            },
+            TrackedError {
+                kind: InvalidField {
+                    message: "value must match the pattern `^troy_`",
+                },
+                fatal: true,
+                proto_path: "numbers[\"three\"]",
+                serde_path: "numbers[\"three\"]",
+            },
+            TrackedError {
+                kind: InvalidField {
+                    message: "value must be greater than `0`",
+                },
+                fatal: true,
+                proto_path: "numbers[\"three\"]",
+                serde_path: "numbers[\"three\"]",
+            },
+            TrackedError {
+                kind: InvalidField {
+                    message: "value must be greater than `0`",
+                },
+                fatal: true,
+                proto_path: "numbers[\"troy_five\"]",
+                serde_path: "numbers[\"troy_five\"]",
+            },
+        ],
+    }
+    "#);
+}
+
+#[test]
+fn test_message_expressions_valid() {
+    let mut state = TrackerSharedState::default();
+    let valid = pb::MessageExpressions {
+        message: Some(pb::message_expressions::SubMessage { name: "troy".into() }),
+    };
+
+    state.in_scope(|| valid.validate()).unwrap();
+
+    insta::assert_debug_snapshot!(state, @r"
+    TrackerSharedState {
+        fail_fast: false,
+        errors: [],
+    }
+    ");
+}
+
+#[test]
+fn test_message_expressions_not_provided() {
+    let mut state = TrackerSharedState::default();
+    let valid = pb::MessageExpressions { message: None };
+
+    state.in_scope(|| valid.validate()).unwrap();
+
+    insta::assert_debug_snapshot!(state, @r#"
+    TrackerSharedState {
+        fail_fast: false,
+        errors: [
+            TrackedError {
+                kind: MissingField,
+                fatal: true,
+                proto_path: "message",
+                serde_path: "message",
+            },
+        ],
+    }
+    "#);
+}
+
+#[test]
+fn test_message_expressions_invalid() {
+    let mut state = TrackerSharedState::default();
+    let valid = pb::MessageExpressions {
+        message: Some(pb::message_expressions::SubMessage { name: "tr".into() }),
+    };
+
+    state.in_scope(|| valid.validate()).unwrap();
+
+    insta::assert_debug_snapshot!(state, @r#"
+    TrackerSharedState {
+        fail_fast: false,
+        errors: [
+            TrackedError {
+                kind: InvalidField {
+                    message: "value must be at least `3` characters long",
+                },
+                fatal: true,
+                proto_path: "message.name",
+                serde_path: "message.name",
+            },
+        ],
+    }
+    "#);
+}
+
+#[test]
+fn test_repeated_message_expressions_valid() {
+    let mut state = TrackerSharedState::default();
+    let valid = pb::RepeatedMessageExpressions {
+        messages: vec![pb::repeated_message_expressions::SubMessage { name: "troy".into() }],
+    };
+
+    state.in_scope(|| valid.validate()).unwrap();
+
+    insta::assert_debug_snapshot!(state, @r"
+    TrackerSharedState {
+        fail_fast: false,
+        errors: [],
+    }
+    ");
+}
+
+#[test]
+fn test_repeated_message_expressions_invalid() {
+    let mut state = TrackerSharedState::default();
+    let valid = pb::RepeatedMessageExpressions {
+        messages: vec![pb::repeated_message_expressions::SubMessage { name: "tr".into() }],
+    };
+
+    state.in_scope(|| valid.validate()).unwrap();
+
+    insta::assert_debug_snapshot!(state, @r#"
+    TrackerSharedState {
+        fail_fast: false,
+        errors: [
+            TrackedError {
+                kind: InvalidField {
+                    message: "value must be at least `3` characters long",
+                },
+                fatal: true,
+                proto_path: "messages[0].name",
+                serde_path: "messages[0].name",
+            },
+        ],
+    }
+    "#);
+}
+
+#[test]
+fn test_map_message_expressions_valid() {
+    let mut state = TrackerSharedState::default();
+    let valid = pb::MapMessageExpressions {
+        messages: {
+            let mut map = BTreeMap::new();
+
+            map.insert(
+                "first".into(),
+                pb::map_message_expressions::SubMessage { name: "troy".into() },
+            );
+
+            map
+        },
+    };
+
+    state.in_scope(|| valid.validate()).unwrap();
+
+    insta::assert_debug_snapshot!(state, @r"
+    TrackerSharedState {
+        fail_fast: false,
+        errors: [],
+    }
+    ");
+}
+
+#[test]
+fn test_map_message_expressions_invalid() {
+    let mut state = TrackerSharedState::default();
+    let valid = pb::MapMessageExpressions {
+        messages: {
+            let mut map = BTreeMap::new();
+
+            map.insert("first".into(), pb::map_message_expressions::SubMessage { name: "tr".into() });
+
+            map
+        },
+    };
+
+    state.in_scope(|| valid.validate()).unwrap();
+
+    insta::assert_debug_snapshot!(state, @r#"
+    TrackerSharedState {
+        fail_fast: false,
+        errors: [
+            TrackedError {
+                kind: InvalidField {
+                    message: "value must be at least `3` characters long",
+                },
+                fatal: true,
+                proto_path: "messages[\"first\"].name",
+                serde_path: "messages[\"first\"].name",
             },
         ],
     }

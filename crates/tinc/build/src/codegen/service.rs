@@ -465,7 +465,7 @@ impl GeneratedMethod {
         let function_impl = &self.function_body;
 
         quote! {
-            #[allow(non_snake_case, unused_mut, dead_code, unused_variables)]
+            #[allow(non_snake_case, unused_mut, dead_code, unused_variables, unused_parens)]
             async fn #function_name<T>(
                 ::tinc::reexports::axum::extract::State(service): ::tinc::reexports::axum::extract::State<#tinc_struct_name<T>>,
                 request: ::tinc::reexports::axum::extract::Request,
@@ -560,7 +560,7 @@ pub(super) fn handle_service(
             #[doc(hidden)]
             pub struct #codec_ident<C>(C);
 
-            #[allow(clippy::all, dead_code, unused_imports, unused_variables)]
+            #[allow(clippy::all, dead_code, unused_imports, unused_variables, unused_parens)]
             const _: () = {
                 #[derive(Debug, Clone, Default)]
                 pub struct Encoder<E>(E);
@@ -632,6 +632,7 @@ pub(super) fn handle_service(
                 missing_docs,
                 clippy::wildcard_imports,
                 clippy::let_unit_value,
+                unused_parens,
             )]
 
             /// A tinc service struct that exports gRPC routes via an axum router.

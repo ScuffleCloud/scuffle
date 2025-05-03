@@ -172,7 +172,7 @@ fn derive_message_tracker_struct(ident: syn::Ident, opts: TincContainerOptions, 
     };
 
     quote! {
-        #[allow(clippy::all, dead_code, unused_imports, unused_variables)]
+        #[allow(clippy::all, dead_code, unused_imports, unused_variables, unused_parens)]
         const _: () = {
             #[derive(Debug, Default)]
             pub struct #tracker_ident {
@@ -267,7 +267,7 @@ fn derive_message_tracker_enum(ident: syn::Ident, opts: TincContainerOptions, da
     };
 
     quote! {
-        #[allow(clippy::all, dead_code, unused_imports, unused_variables)]
+        #[allow(clippy::all, dead_code, unused_imports, unused_variables, unused_parens)]
         const _: () = {
             #[derive(std::fmt::Debug)]
             pub enum #tracker_ident {

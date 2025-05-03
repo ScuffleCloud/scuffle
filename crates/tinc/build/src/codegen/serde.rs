@@ -191,7 +191,7 @@ fn handle_oneof(
     let oneof_ident = oneof_path.segments.last().unwrap().ident.clone();
 
     package.push_item(parse_quote! {
-        #[allow(clippy::all, dead_code, unused_imports, unused_variables)]
+        #[allow(clippy::all, dead_code, unused_imports, unused_variables, unused_parens)]
         const _: () = {
             #tagged_impl
 
@@ -583,6 +583,17 @@ fn handle_message_field(
                 }
             }});
         }
+
+        if !field.options.nullable && matches!(&field.ty, ProtoType::Modified(ProtoModifiedValueType::Optional(_))) {
+            cel_validation_fn.push(quote! {{
+                if self.#field_ident.is_none() && ::tinc::__private::cel::CelMode::current().is_proto() {
+                    #push_field_token
+                    ::tinc::__private::report_tracked_error(
+                        ::tinc::__private::TrackedError::missing_field()
+                    )?;
+                }
+            }})
+        }
     }
 
     match &field.ty {
@@ -679,6 +690,7 @@ fn handle_message_field(
             }
 
             cel_validation_fn.push(quote! {{
+                #push_field_token
                 for (idx, item) in self.#field_ident.iter().enumerate() {
                     let _token = ::tinc::__private::SerdePathToken::push_index(idx);
                     let _token = ::tinc::__private::ProtoPathToken::push_index(idx);
@@ -750,7 +762,7 @@ pub(super) fn handle_message(
     let message_ident = message_path.segments.last().unwrap().ident.clone();
 
     package.push_item(parse_quote! {
-        #[allow(clippy::all, dead_code, unused_imports, unused_variables)]
+        #[allow(clippy::all, dead_code, unused_imports, unused_variables, unused_parens)]
         const _: () = {
             #[derive(
                 ::std::fmt::Debug,
@@ -893,7 +905,7 @@ pub(super) fn handle_enum(enum_: &ProtoEnumType, package: &mut Package) -> anyho
     let proto_path = enum_.full_name.as_ref();
 
     package.push_item(parse_quote! {
-        #[allow(clippy::all, dead_code, unused_imports, unused_variables)]
+        #[allow(clippy::all, dead_code, unused_imports, unused_variables, unused_parens)]
         const _: () = {
             impl ::tinc::__private::Expected for #enum_path {
                 fn expecting(formatter: &mut std::fmt::Formatter) -> std::fmt::Result {

@@ -5,58 +5,67 @@ package oneof;
 import "tinc/annotations.proto";
 
 message OneofMessage {
-  option (tinc.message).generate = true;
+    option (tinc.message).generate = true;
 
-  oneof string_or_int32 {
-    string string = 1;
-    int32 int32 = 2;
-  }
+    oneof string_or_int32 {
+        string string = 1;
+        int32 int32 = 2;
+    }
 
-  oneof string_or_int32_tagged {
-    option (tinc.oneof) = {
-      tagged: { tag: "tag", content: "value" }
-    };
-    string string2 = 3;
-    int32 int322 = 4;
-  }
+    oneof string_or_int32_tagged {
+        option (tinc.oneof) = {
+            tagged: {
+                tag: "tag",
+                content: "value"
+            }
+        };
+        string string2 = 3;
+        int32 int322 = 4;
+    }
 
-  oneof tagged_nested {
-    option (tinc.oneof) = {
-      tagged: { tag: "tag", content: "value" }
-    };
-    NestedMessage nested_message = 5;
-    CustomEnum custom_enum = 8;
-  }
+    oneof tagged_nested {
+        option (tinc.oneof) = {
+            tagged: {
+                tag: "tag",
+                content: "value"
+            }
+        };
+        NestedMessage nested_message = 5;
+        CustomEnum custom_enum = 8;
+    }
 
-  oneof nested {
-    NestedMessage nested_message2 = 6;
-    CustomEnum custom_enum2 = 7;
-  }
+    oneof nested {
+        NestedMessage nested_message2 = 6;
+        CustomEnum custom_enum2 = 7;
+    }
 
-  oneof flattened {
-    option (tinc.oneof) = {
-      flatten: true
-    };
-    NestedMessage magic_nested = 9;
-    CustomEnum magic_enum = 10;
-  }
+    oneof flattened {
+        option (tinc.oneof) = {
+            flatten: true
+        };
+        NestedMessage magic_nested = 9;
+        CustomEnum magic_enum = 10;
+    }
 
-  oneof flattened_tagged {
-    option (tinc.oneof) = {
-      flatten: true,
-      tagged: { tag: "flattened_tag", content: "flattened_value" }
-    };
-    NestedMessage magic_nested3 = 11;
-    CustomEnum magic_enum3 = 12;
-  }
+    oneof flattened_tagged {
+        option (tinc.oneof) = {
+            flatten: true,
+            tagged: {
+                tag: "flattened_tag",
+                content: "flattened_value"
+            }
+        };
+        NestedMessage magic_nested3 = 11;
+        CustomEnum magic_enum3 = 12;
+    }
 }
 
 message NestedMessage {
-  string string = 1;
-  int32 int32 = 2;
+    string string = 1;
+    int32 int32 = 2;
 }
 
 enum CustomEnum {
-  CUSTOM_ENUM_UNSPECIFIED = 0;
-  CUSTOM_ENUM_VALUE = 1;
+    CUSTOM_ENUM_UNSPECIFIED = 0;
+    CUSTOM_ENUM_VALUE = 1;
 }

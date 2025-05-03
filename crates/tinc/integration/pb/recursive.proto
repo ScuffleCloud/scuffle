@@ -5,15 +5,15 @@ package recursive;
 import "tinc/annotations.proto";
 
 message RecursiveMessage {
-  option (tinc.message).generate = true;
+    option (tinc.message).generate = true;
 
-  repeated AnotherMessage anothers = 1;
-  optional AnotherMessage another_optional = 2;
-  map<string, AnotherMessage> another_map = 3;
-  int32 depth = 4;
+    repeated AnotherMessage anothers = 1;
+    optional AnotherMessage another_optional = 2;
+    map<string, AnotherMessage> another_map = 3;
+    int32 depth = 4;
 }
 
 message AnotherMessage {
-  optional AnotherMessage another = 1;
-  optional RecursiveMessage nested = 2;
+    optional AnotherMessage another = 1;
+    optional RecursiveMessage nested = 2;
 }

@@ -7,31 +7,31 @@ package visibility;
 import "tinc/annotations.proto";
 
 message VisibilityMessage {
-  option (tinc.message) = {
-    rename_all: SNAKE_CASE
-  };
+    option (tinc.message) = {
+        rename_all: SNAKE_CASE
+    };
 
-  string output_only = 1 [(tinc.field) = {
-    visibility: OUTPUT_ONLY
-  }];
-  string input_only = 2 [(tinc.field) = {
-    visibility: INPUT_ONLY
-  }];
-  map<string, VisibilityEnum> input_outputs = 3;
-  string nothing = 4 [(tinc.field) = {
-    visibility: SKIP
-  }];
+    string output_only = 1 [(tinc.field) = {
+        visibility: OUTPUT_ONLY
+    }];
+    string input_only = 2 [(tinc.field) = {
+        visibility: INPUT_ONLY
+    }];
+    map<string, VisibilityEnum> input_outputs = 3;
+    string nothing = 4 [(tinc.field) = {
+        visibility: SKIP
+    }];
 }
 
 enum VisibilityEnum {
-  VISIBILITY_ENUM_UNSPECIFIED = 0 [(tinc.variant) = {
-    visibility: SKIP
-  }];
-  VISIBILITY_ENUM_INPUT_ONLY = 1 [(tinc.variant) = {
-    visibility: INPUT_ONLY
-  }];
-  VISIBILITY_ENUM_OUTPUT_ONLY = 2 [(tinc.variant) = {
-    visibility: OUTPUT_ONLY
-  }];
-  VISIBILITY_ENUM_INPUT_OUTPUT = 3;
+    VISIBILITY_ENUM_UNSPECIFIED = 0 [(tinc.variant) = {
+        visibility: SKIP
+    }];
+    VISIBILITY_ENUM_INPUT_ONLY = 1 [(tinc.variant) = {
+        visibility: INPUT_ONLY
+    }];
+    VISIBILITY_ENUM_OUTPUT_ONLY = 2 [(tinc.variant) = {
+        visibility: OUTPUT_ONLY
+    }];
+    VISIBILITY_ENUM_INPUT_OUTPUT = 3;
 }

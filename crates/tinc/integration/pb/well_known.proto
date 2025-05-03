@@ -11,40 +11,40 @@ import "google/protobuf/timestamp.proto";
 import "tinc/annotations.proto";
 
 message WellKnownMessage {
-  option (tinc.message) = {
-    rename_all: SNAKE_CASE
-  };
+    option (tinc.message) = {
+        rename_all: SNAKE_CASE
+    };
 
-  google.protobuf.Empty empty = 1;
-  google.protobuf.Struct struct = 2;
-  google.protobuf.Timestamp timestamp = 3;
-  google.protobuf.Duration duration = 4;
-  google.protobuf.Value value = 5;
-  google.protobuf.ListValue list_value = 6;
+    google.protobuf.Empty empty = 1;
+    google.protobuf.Struct struct = 2;
+    google.protobuf.Timestamp timestamp = 3;
+    google.protobuf.Duration duration = 4;
+    google.protobuf.Value value = 5;
+    google.protobuf.ListValue list_value = 6;
 }
 
 message WellKnownMapMessage {
-  option (tinc.message) = {
-    rename_all: SNAKE_CASE
-  };
+    option (tinc.message) = {
+        rename_all: SNAKE_CASE
+    };
 
-  map<string, google.protobuf.Empty> empty = 1;
-  map<string, google.protobuf.Struct> struct = 2;
-  map<string, google.protobuf.Timestamp> timestamp = 3;
-  map<string, google.protobuf.Duration> duration = 4;
-  map<string, google.protobuf.Value> value = 5;
-  map<string, google.protobuf.ListValue> list_value = 6;
+    map<string, google.protobuf.Empty> empty = 1;
+    map<string, google.protobuf.Struct> struct = 2;
+    map<string, google.protobuf.Timestamp> timestamp = 3;
+    map<string, google.protobuf.Duration> duration = 4;
+    map<string, google.protobuf.Value> value = 5;
+    map<string, google.protobuf.ListValue> list_value = 6;
 }
 
 message WellKnownRepeatedMessage {
-  option (tinc.message) = {
-    rename_all: SNAKE_CASE
-  };
+    option (tinc.message) = {
+        rename_all: SNAKE_CASE
+    };
 
-  repeated google.protobuf.Empty empty = 1;
-  repeated google.protobuf.Struct struct = 2;
-  repeated google.protobuf.Timestamp timestamp = 3;
-  repeated google.protobuf.Duration duration = 4;
-  repeated google.protobuf.Value value = 5;
-  repeated google.protobuf.ListValue list_value = 6;
+    repeated google.protobuf.Empty empty = 1;
+    repeated google.protobuf.Struct struct = 2;
+    repeated google.protobuf.Timestamp timestamp = 3;
+    repeated google.protobuf.Duration duration = 4;
+    repeated google.protobuf.Value value = 5;
+    repeated google.protobuf.ListValue list_value = 6;
 }

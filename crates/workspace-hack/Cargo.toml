@@ -28,6 +28,7 @@ crypto-common = { version = "0.1", default-features = false, features = ["std"] 
 digest = { version = "0.10", features = ["mac", "std"] }
 either = { version = "1", default-features = false, features = ["use_std"] }
 fastrand = { version = "2" }
+form_urlencoded = { version = "1" }
 futures = { version = "0.3" }
 futures-channel = { version = "0.3", features = ["sink"] }
 futures-executor = { version = "0.3" }
@@ -91,6 +92,7 @@ crypto-common = { version = "0.1", default-features = false, features = ["std"] 
 digest = { version = "0.10", features = ["mac", "std"] }
 either = { version = "1", default-features = false, features = ["use_std"] }
 fastrand = { version = "2" }
+form_urlencoded = { version = "1" }
 futures = { version = "0.3" }
 futures-channel = { version = "0.3", features = ["sink"] }
 futures-executor = { version = "0.3" }

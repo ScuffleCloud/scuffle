@@ -10,6 +10,12 @@ mod exists_one;
 mod filter;
 mod has;
 mod int;
+mod is_email;
+mod is_hostname;
+mod is_ipv4;
+mod is_ipv6;
+mod is_uri;
+mod is_uuid;
 mod map;
 mod matches;
 mod size;
@@ -29,6 +35,12 @@ pub use exists_one::ExistsOne;
 pub use filter::Filter;
 pub use has::Has;
 pub use int::Int;
+pub use is_email::IsEmail;
+pub use is_hostname::IsHostname;
+pub use is_ipv4::IsIpv4;
+pub use is_ipv6::IsIpv6;
+pub use is_uri::IsUri;
+pub use is_uuid::IsUuid;
 pub use map::Map;
 pub use matches::Matches;
 pub use size::Size;
@@ -57,6 +69,12 @@ pub fn add_to_compiler(compiler: &mut Compiler) {
     compiler.register_function(Double);
     compiler.register_function(Bool);
     compiler.register_function(Enum::default());
+    compiler.register_function(IsIpv4);
+    compiler.register_function(IsIpv6);
+    compiler.register_function(IsUuid);
+    compiler.register_function(IsHostname);
+    compiler.register_function(IsUri);
+    compiler.register_function(IsEmail);
 }
 
 pub trait Function: Send + Sync + 'static {

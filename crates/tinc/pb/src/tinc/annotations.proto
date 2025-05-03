@@ -463,13 +463,49 @@ message StringConstraints {
     expression: "!this.contains(input)"
     jsonschemas: '{ "not": { "enum": this }}'
   }];
-  // oneof well_known {
-  //   bool email = 13 [(predefined).cel = {
-  //     message: "value must be a valid email address"
-  //     expression: "!this || input.isEmail()"
-  //     jsonschemas: 'this ? { "format": "email" } : {}'
-  //   }];
-  // }
+  oneof well_known {
+    bool email = 13 [(predefined).cel = {
+      message: "value must be a valid email address"
+      expression: "!this || input.isEmail()"
+      jsonschemas: 'this ? { "format": "email" } : {}'
+    }];
+
+    bool ip = 14 [(predefined).cel = {
+      message: "value must be a valid ipv4 or ipv6 address"
+      expression: "!this || input.isIpv4() || input.isIpv6()"
+      jsonschemas: 'this ? { "anyOf": [ { "format": "ipv4" }, { "format": "ipv6" } ] } : {}'
+    }];
+
+    bool ipv4 = 15 [(predefined).cel = {
+      message: "value must be a valid ipv4 address"
+      expression: "!this || input.isIpv4()"
+      jsonschemas: 'this ? { "format": "ipv4" } : {}'
+    }];
+
+    bool ipv6 = 16 [(predefined).cel = {
+      message: "value must be a valid ipv6 address"
+      expression: "!this || input.isIpv6()"
+      jsonschemas: 'this ? { "format": "ipv6" } : {}'
+    }];
+
+    bool uuid = 17 [(predefined).cel = {
+      message: "value must be a valid uuid"
+      expression: "!this || input.isUuid()"
+      jsonschemas: 'this ? { "format": "uuid" } : {}'
+    }];
+
+    bool hostname = 18 [(predefined).cel = {
+      message: "value must be a valid hostname"
+      expression: "!this || input.isHostname()"
+      jsonschemas: 'this ? { "format": "hostname" } : {}'
+    }];
+
+    bool uri = 19 [(predefined).cel = {
+      message: "value must be a valid uri"
+      expression: "!this || input.isUri()"
+      jsonschemas: 'this ? { "format": "uri" } : {}'
+    }];
+  }
 }
 
 message BytesConstraints {

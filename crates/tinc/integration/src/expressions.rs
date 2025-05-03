@@ -22,6 +22,15 @@ fn test_string_expressions_valid() {
         word_without_z: "friend".into(),
         ice_cream: "chocolate".into(),
         best_friend: "not_tr0y".into(),
+        ipv6_only: "2001:0db8:85a3:0000:0000:8a2e:0370:7334".into(),
+        ipv4_only: "192.168.1.1".into(),
+        ipv4_or_6_only: vec![
+            "2::".into(),
+            "2::1".into(),
+            "2001:0db8:85a3::".into(),
+            "2001:0db8:85a3::8a2e:0370:7334".into(),
+            "192.168.1.1".into(),
+        ],
     };
 
     state.in_scope(|| valid.validate()).unwrap();
@@ -48,6 +57,9 @@ fn test_string_expressions_invalid() {
         word_without_z: "zoo".into(),
         ice_cream: "caramel".into(),
         best_friend: "troy".into(),
+        ipv4_only: "2001:0db8:85a3:0000:0000:8a2e:0370:7334".into(),
+        ipv6_only: "192.168.1.1".into(),
+        ipv4_or_6_only: vec!["hello".into(), "goodbye".into()],
     };
 
     state.in_scope(|| valid.validate()).unwrap();
@@ -135,6 +147,38 @@ fn test_string_expressions_invalid() {
                 fatal: true,
                 proto_path: "best_friend",
                 serde_path: "best_friend",
+            },
+            TrackedError {
+                kind: InvalidField {
+                    message: "value must be a valid ipv4 address",
+                },
+                fatal: true,
+                proto_path: "ipv4_only",
+                serde_path: "ipv4_only",
+            },
+            TrackedError {
+                kind: InvalidField {
+                    message: "value must be a valid ipv6 address",
+                },
+                fatal: true,
+                proto_path: "ipv6_only",
+                serde_path: "ipv6_only",
+            },
+            TrackedError {
+                kind: InvalidField {
+                    message: "value must be a valid ipv4 or ipv6 address",
+                },
+                fatal: true,
+                proto_path: "ipv4_or_6_only[0]",
+                serde_path: "ipv4_or_6_only[0]",
+            },
+            TrackedError {
+                kind: InvalidField {
+                    message: "value must be a valid ipv4 or ipv6 address",
+                },
+                fatal: true,
+                proto_path: "ipv4_or_6_only[1]",
+                serde_path: "ipv4_or_6_only[1]",
             },
         ],
     }

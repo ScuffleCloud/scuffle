@@ -426,6 +426,96 @@ impl<'a> CelValue<'a> {
         }
     }
 
+    pub fn cel_is_ipv4(value: impl CelValueConv<'a>) -> Result<bool, CelError<'a>> {
+        match value.conv() {
+            CelValue::String(s) => Ok(s.parse::<std::net::Ipv4Addr>().is_ok()),
+            CelValue::Bytes(b) => {
+                if b.as_ref().len() == 4 {
+                    Ok(true)
+                } else if let Ok(s) = std::str::from_utf8(b.as_ref()) {
+                    Ok(s.parse::<std::net::Ipv4Addr>().is_ok())
+                } else {
+                    Ok(false)
+                }
+            }
+            value => Err(CelError::BadUnaryOperation { op: "isIpv4", value }),
+        }
+    }
+
+    pub fn cel_is_ipv6(value: impl CelValueConv<'a>) -> Result<bool, CelError<'a>> {
+        match value.conv() {
+            CelValue::String(s) => Ok(s.parse::<std::net::Ipv6Addr>().is_ok()),
+            CelValue::Bytes(b) => {
+                if b.as_ref().len() == 16 {
+                    Ok(true)
+                } else if let Ok(s) = std::str::from_utf8(b.as_ref()) {
+                    Ok(s.parse::<std::net::Ipv6Addr>().is_ok())
+                } else {
+                    Ok(false)
+                }
+            }
+            value => Err(CelError::BadUnaryOperation { op: "isIpv6", value }),
+        }
+    }
+
+    pub fn cel_is_uuid(value: impl CelValueConv<'a>) -> Result<bool, CelError<'a>> {
+        match value.conv() {
+            CelValue::String(s) => Ok(s.parse::<uuid::Uuid>().is_ok()),
+            CelValue::Bytes(b) => {
+                if b.as_ref().len() == 16 {
+                    Ok(true)
+                } else if let Ok(s) = std::str::from_utf8(b.as_ref()) {
+                    Ok(s.parse::<uuid::Uuid>().is_ok())
+                } else {
+                    Ok(false)
+                }
+            }
+            value => Err(CelError::BadUnaryOperation { op: "isUuid", value }),
+        }
+    }
+
+    pub fn cel_is_hostname(value: impl CelValueConv<'a>) -> Result<bool, CelError<'a>> {
+        match value.conv() {
+            CelValue::String(s) => Ok(matches!(url::Host::parse(&s), Ok(url::Host::Domain(_)))),
+            CelValue::Bytes(b) => {
+                if let Ok(s) = std::str::from_utf8(b.as_ref()) {
+                    Ok(matches!(url::Host::parse(s), Ok(url::Host::Domain(_))))
+                } else {
+                    Ok(false)
+                }
+            }
+            value => Err(CelError::BadUnaryOperation { op: "isHostname", value }),
+        }
+    }
+
+    pub fn cel_is_uri(value: impl CelValueConv<'a>) -> Result<bool, CelError<'a>> {
+        match value.conv() {
+            CelValue::String(s) => Ok(url::Url::parse(&s).is_ok()),
+            CelValue::Bytes(b) => {
+                if let Ok(s) = std::str::from_utf8(b.as_ref()) {
+                    Ok(url::Url::parse(s).is_ok())
+                } else {
+                    Ok(false)
+                }
+            }
+            value => Err(CelError::BadUnaryOperation { op: "isUri", value }),
+        }
+    }
+
+    pub fn cel_is_email(value: impl CelValueConv<'a>) -> Result<bool, CelError<'a>> {
+        match value.conv() {
+            CelValue::String(s) => Ok(email_address::EmailAddress::is_valid(&s)),
+            CelValue::Bytes(b) => {
+                if let Ok(s) = std::str::from_utf8(b.as_ref()) {
+                    Ok(email_address::EmailAddress::is_valid(s))
+                } else {
+                    Ok(false)
+                }
+            }
+            value => Err(CelError::BadUnaryOperation { op: "isEmail", value }),
+        }
+    }
+
     pub fn cel_size(item: impl CelValueConv<'a>) -> Result<u64, CelError<'a>> {
         match item.conv() {
             Self::Bytes(b) => Ok(b.as_ref().len() as u64),

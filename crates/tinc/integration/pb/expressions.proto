@@ -24,6 +24,7 @@ message StringExpressions {
   string email = 4 [(tinc.field).constraint.string = {
     // disallow any @gmail.com email addresses
     not_match: "@gmail\\.com$"
+    email: true
   }];
 
   string foreign_key = 5 [(tinc.field).constraint.string = {
@@ -48,6 +49,22 @@ message StringExpressions {
 
   string best_friend = 10 [(tinc.field).constraint.string = {
     not_in: ["troy"]
+  }];
+
+  string ipv4_only = 11 [(tinc.field).constraint.string = {
+    ipv4: true
+  }];
+
+  string ipv6_only = 12 [(tinc.field).constraint.string = {
+    ipv6: true
+  }];
+
+  repeated string ipv4_or_6_only = 13 [(tinc.field).constraint.repeated = {
+    item: {
+      string: {
+        ip: true
+      }
+    }
   }];
 }
 
@@ -337,5 +354,3 @@ message MapMessageExpressions {
 
   map<string, SubMessage> messages = 1;
 }
-
-

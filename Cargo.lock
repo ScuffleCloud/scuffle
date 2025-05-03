@@ -953,6 +953,15 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "48c757948c5ede0e46177b7add2e67155f70e33c07fea8284df6576da70b3719"
 
 [[package]]
+name = "email_address"
+version = "0.2.9"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "e079f19b08ca6239f47f8ba8509c11cf3ea30095831f7fed61441475edd8c449"
+dependencies = [
+ "serde",
+]
+
+[[package]]
 name = "ena"
 version = "0.14.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -3548,6 +3557,7 @@ dependencies = [
  "digest",
  "either",
  "fastrand",
+ "form_urlencoded",
  "futures",
  "futures-channel",
  "futures-executor",
@@ -4074,6 +4084,7 @@ version = "0.1.0"
 dependencies = [
  "bytes",
  "chrono",
+ "email_address",
  "float-cmp",
  "fmtools",
  "linkme",
@@ -4081,6 +4092,8 @@ dependencies = [
  "regex",
  "scuffle-workspace-hack",
  "thiserror 2.0.12",
+ "url",
+ "uuid",
 ]
 
 [[package]]

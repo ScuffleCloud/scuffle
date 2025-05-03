@@ -19,6 +19,14 @@ impl<T> Container for Vec<T> {
     }
 }
 
+impl<T> Container for Option<T> {
+    type Item = T;
+
+    fn add(&mut self, item: Self::Item) {
+        *self = Some(item);
+    }
+}
+
 pub trait Deserialize<'a>: Sized {
     fn deserialize<R>(reader: R) -> io::Result<Self>
     where
@@ -103,13 +111,18 @@ impl<'a> Deserialize<'a> for u128 {
     }
 }
 
-impl<'a, const LEN: usize> Deserialize<'a> for [u8; LEN] {
+impl<'a, T, const LEN: usize> Deserialize<'a> for [T; LEN]
+where
+    T: Deserialize<'a> + Default + Copy,
+{
     fn deserialize<R: ZeroCopyReader<'a>>(mut reader: R) -> io::Result<Self> {
-        reader
-            .try_read(LEN)?
-            .as_bytes()
-            .try_into()
-            .map_err(|_| io::Error::new(io::ErrorKind::UnexpectedEof, format!("expected {LEN} bytes")))
+        let mut buf = [T::default(); LEN];
+
+        for t in &mut buf {
+            *t = T::deserialize(&mut reader)?;
+        }
+
+        Ok(buf)
     }
 }
 

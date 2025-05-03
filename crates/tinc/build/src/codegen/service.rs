@@ -1,5 +1,6 @@
 use anyhow::Context;
 use indexmap::IndexMap;
+use proc_macro2::TokenStream;
 use quote::{format_ident, quote};
 use syn::{Ident, parse_quote};
 use tinc_pb::http_endpoint_options;
@@ -224,6 +225,7 @@ struct GeneratedMethod {
 
 impl GeneratedMethod {
     fn new(
+        mode: Mode,
         name: &str,
         package: &str,
         service: &ProtoService,
@@ -237,10 +239,6 @@ impl GeneratedMethod {
             tinc_pb::http_endpoint_options::Method::Put(path) => ("put", path),
             tinc_pb::http_endpoint_options::Method::Delete(path) => ("delete", path),
             tinc_pb::http_endpoint_options::Method::Patch(path) => ("patch", path),
-            tinc_pb::http_endpoint_options::Method::Custom(method) => {
-                todo!("custom method not implemented: {:?}", method);
-                // (method.method.as_str(), &method.path)
-            }
         };
 
         let trimmed_path = path.trim_start_matches('/');
@@ -293,10 +291,47 @@ impl GeneratedMethod {
                     ProtoServiceMethodIo::Single(ProtoValueType::Message(_)) if field.is_empty() => quote! {},
                     ProtoServiceMethodIo::Single(ProtoValueType::Message(message)) => {
                         let message = registry.get_message(message).expect("message not found");
-                        let (extract, _) = field_extractor_generator(&field, registry, message)?;
+                        let (extract, ty) = field_extractor_generator(&field, registry, message)?;
+                        anyhow::ensure!(
+                            match &ty {
+                                ProtoType::Modified(ProtoModifiedValueType::Repeated(_)) => false,
+                                ProtoType::Value(value) | ProtoType::Modified(ProtoModifiedValueType::Optional(value)) =>
+                                    !matches!(
+                                        value,
+                                        ProtoValueType::Bool
+                                            | ProtoValueType::String
+                                            | ProtoValueType::Bytes
+                                            | ProtoValueType::Int32
+                                            | ProtoValueType::Int64
+                                            | ProtoValueType::UInt32
+                                            | ProtoValueType::UInt64
+                                            | ProtoValueType::Double
+                                            | ProtoValueType::Float
+                                            | ProtoValueType::WellKnown(_)
+                                            | ProtoValueType::Enum(_)
+                                    ),
+                                ProtoType::Modified(
+                                    ProtoModifiedValueType::Map(_, _) | ProtoModifiedValueType::OneOf(_),
+                                ) => true,
+                            },
+                            "query string input can only be a map or message field not: {ty:?}"
+                        );
                         extract
                     }
-                    _ => todo!("handle other types"),
+                    ProtoServiceMethodIo::Stream(_) => anyhow::bail!("streams currently are not supported by tinc"),
+                    ProtoServiceMethodIo::Single(
+                        ProtoValueType::Bool
+                        | ProtoValueType::String
+                        | ProtoValueType::Bytes
+                        | ProtoValueType::Int32
+                        | ProtoValueType::Int64
+                        | ProtoValueType::UInt32
+                        | ProtoValueType::UInt64
+                        | ProtoValueType::Double
+                        | ProtoValueType::Float
+                        | ProtoValueType::WellKnown(_)
+                        | ProtoValueType::Enum(_),
+                    ) => anyhow::bail!("query string input requires a message type as the method input"),
                 };
 
                 quote! {{
@@ -328,7 +363,7 @@ impl GeneratedMethod {
                             let message = registry.get_message(message).expect("message not found");
                             field_extractor_generator(&field, registry, message)?
                         }
-                        _ => todo!("handle other types"),
+                        _ => anyhow::bail!("content_type_field is only supported on methods who have a message input."),
                     };
 
                     let modifier = match &kind {
@@ -354,38 +389,55 @@ impl GeneratedMethod {
                     quote! {}
                 };
 
-                let (extract, is_raw_bytes) = if field.is_empty() {
+                enum DeserializeMethod {
+                    Bytes,
+                    Json,
+                    Text,
+                }
+
+                impl DeserializeMethod {
+                    fn func(&self) -> TokenStream {
+                        match self {
+                            Self::Bytes => quote!(deserialize_body_bytes),
+                            Self::Json => quote!(deserialize_body_json),
+                            Self::Text => quote!(deserialize_body_text),
+                        }
+                    }
+                }
+
+                let (extract, method) = if field.is_empty() {
                     (
                         quote! {},
-                        matches!(&method.input, ProtoServiceMethodIo::Single(ProtoValueType::Bytes)),
+                        match &method.input {
+                            ProtoServiceMethodIo::Single(ProtoValueType::Bytes) => DeserializeMethod::Bytes,
+                            ProtoServiceMethodIo::Single(ProtoValueType::String) => DeserializeMethod::Text,
+                            ProtoServiceMethodIo::Single(_) => DeserializeMethod::Json,
+                            ProtoServiceMethodIo::Stream(_) => {
+                                anyhow::bail!("currently streams are not supported for tinc methods")
+                            }
+                        },
                     )
-                } else {
-                    let (extract, ty) = match &method.input {
-                        ProtoServiceMethodIo::Single(ProtoValueType::Message(message)) => {
-                            let message = registry.get_message(message).expect("message not found");
-                            field_extractor_generator(&field, registry, message)?
+                } else if let ProtoServiceMethodIo::Single(ProtoValueType::Message(message)) = &method.input {
+                    let message = registry.get_message(message).expect("message not found");
+                    let (extract, ty) = field_extractor_generator(&field, registry, message)?;
+                    let method = match &ty {
+                        ProtoType::Value(ProtoValueType::Bytes)
+                        | ProtoType::Modified(ProtoModifiedValueType::Optional(ProtoValueType::Bytes)) => {
+                            DeserializeMethod::Bytes
                         }
-                        _ => todo!("handle other types"),
+                        ProtoType::Value(ProtoValueType::String)
+                        | ProtoType::Modified(ProtoModifiedValueType::Optional(ProtoValueType::String)) => {
+                            DeserializeMethod::Text
+                        }
+                        _ => DeserializeMethod::Json,
                     };
-                    (
-                        extract,
-                        matches!(
-                            ty,
-                            ProtoType::Modified(ProtoModifiedValueType::Optional(ProtoValueType::Bytes))
-                                | ProtoType::Value(ProtoValueType::Bytes)
-                        ),
-                    )
+
+                    (extract, method)
+                } else {
+                    anyhow::bail!("nested fields are not supported on non message types.");
                 };
 
-                let de_func = if is_raw_bytes {
-                    quote! {
-                        deserialize_body_bytes
-                    }
-                } else {
-                    quote! {
-                        deserialize_body_json
-                    }
-                };
+                let de_func = method.func();
 
                 let body = quote! {{
                     #extract
@@ -405,10 +457,8 @@ impl GeneratedMethod {
         };
 
         let input_path = match &method.input {
-            ProtoServiceMethodIo::Single(ProtoValueType::Message(message)) => {
-                registry.get_message(message).expect("message not found").rust_path(package)
-            }
-            _ => todo!("handle other types"),
+            ProtoServiceMethodIo::Single(input) => input.rust_path(package, mode),
+            ProtoServiceMethodIo::Stream(_) => anyhow::bail!("currently streaming is not supported by tinc methods."),
         };
 
         let service_method_name = field_ident_from_str(name);
@@ -541,7 +591,7 @@ pub(super) fn handle_service(
 
     for (name, method) in service.methods.iter() {
         for (idx, endpoint) in method.endpoints.iter().enumerate() {
-            let gen_method = GeneratedMethod::new(name, &package_name, service, method, endpoint, registry)?;
+            let gen_method = GeneratedMethod::new(mode, name, &package_name, service, method, endpoint, registry)?;
             let function_name = quote::format_ident!("{name}_{idx}");
 
             method_tokens.push(gen_method.method_handler(
@@ -600,7 +650,7 @@ pub(super) fn handle_service(
                     fn decode(&mut self, buf: &mut ::tinc::reexports::tonic::codec::DecodeBuf<'_>) -> Result<Option<Self::Item>, Self::Error> {
                         match ::tinc::reexports::tonic::codec::Decoder::decode(&mut self.0, buf) {
                             ::core::result::Result::Ok(::core::option::Option::Some(item)) => {
-                                ::tinc::__private::ValidateMessage::validate_codec(&item)?;
+                                ::tinc::__private::ValidateMessage::validate_tonic(&item)?;
                                 ::core::result::Result::Ok(::core::option::Option::Some(item))
                             },
                             ::core::result::Result::Ok(::core::option::Option::None) => ::core::result::Result::Ok(::core::option::Option::None),

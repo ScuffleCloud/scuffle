@@ -71,6 +71,7 @@ tokio-stream = { version = "0.1", features = ["net"] }
 tokio-util = { version = "0.7", features = ["codec", "io"] }
 toml = { version = "0.8", features = ["preserve_order"] }
 toml_edit = { version = "0.22", default-features = false, features = ["display", "parse", "serde"] }
+tonic = { version = "0.13" }
 tower = { version = "0.5", default-features = false, features = ["balance", "buffer", "limit", "log"] }
 tracing = { version = "0.1", features = ["log"] }
 tracing-core = { version = "0.1" }
@@ -135,6 +136,7 @@ tokio-stream = { version = "0.1", features = ["net"] }
 tokio-util = { version = "0.7", features = ["codec", "io"] }
 toml = { version = "0.8", features = ["preserve_order"] }
 toml_edit = { version = "0.22", default-features = false, features = ["display", "parse", "serde"] }
+tonic = { version = "0.13" }
 tower = { version = "0.5", default-features = false, features = ["balance", "buffer", "limit", "log"] }
 tracing = { version = "0.1", features = ["log"] }
 tracing-core = { version = "0.1" }

@@ -3610,6 +3610,7 @@ dependencies = [
  "tokio-util",
  "toml",
  "toml_edit",
+ "tonic",
  "tower",
  "tracing",
  "tracing-core",

@@ -5,7 +5,6 @@ use quote::{ToTokens, quote};
 use syn::parse_quote;
 use tinc_cel::{CelEnum, CelError, CelValue, CelValueConv};
 
-use super::FuncFmtter;
 use super::functions::{Function, add_to_compiler};
 use super::types::CelType;
 use crate::types::{ProtoPath, ProtoTypeRegistry};
@@ -47,7 +46,7 @@ impl std::fmt::Debug for RuntimeCompiledExpr {
             .field("ty", &self.ty)
             .field(
                 "expr",
-                &FuncFmtter(|fmt| {
+                &fmtools::fmt(|fmt| {
                     let expr = &self.expr;
                     let tokens = parse_quote! {
                         const _: Debug = #expr;

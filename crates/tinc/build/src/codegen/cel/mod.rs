@@ -58,26 +58,6 @@ pub fn eval_message_fmt(msg: &str, ctx: &compiler::Compiler<'_>) -> anyhow::Resu
     }
 }
 
-struct FuncFmtter<F: Fn(&mut std::fmt::Formatter) -> std::fmt::Result>(F);
-
-impl<F> std::fmt::Display for FuncFmtter<F>
-where
-    F: Fn(&mut std::fmt::Formatter) -> std::fmt::Result,
-{
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        (self.0)(f)
-    }
-}
-
-impl<F> std::fmt::Debug for FuncFmtter<F>
-where
-    F: Fn(&mut std::fmt::Formatter) -> std::fmt::Result,
-{
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        (self.0)(f)
-    }
-}
-
 #[derive(Debug, Clone, PartialEq)]
 pub struct CelExpression {
     pub message: String,

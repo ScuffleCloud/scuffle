@@ -504,7 +504,7 @@ message EnumConstraints {
   }];
   optional bool defined = 2 [(predefined).cel = {
     message: "value must be defined in the enum"
-    expression: "!this || input.enum() != null"
+    expression: "!this || input.enum()"
   }];
   // protolint:disable:next REPEATED_FIELD_NAMES_PLURALIZED
   repeated int32 in = 3 [(predefined).cel = {

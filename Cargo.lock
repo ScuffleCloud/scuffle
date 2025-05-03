@@ -4047,6 +4047,7 @@ dependencies = [
  "anyhow",
  "cel-parser",
  "convert_case",
+ "fmtools",
  "heck",
  "indexmap",
  "num-traits",

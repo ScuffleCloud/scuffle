@@ -806,6 +806,14 @@ fn test_enum_expressions_invalid() {
             },
             TrackedError {
                 kind: InvalidField {
+                    message: "value must be defined in the enum",
+                },
+                fatal: true,
+                proto_path: "defined",
+                serde_path: "defined",
+            },
+            TrackedError {
+                kind: InvalidField {
                     message: "value must be one of `[SPECIAL_A, SPECIAL_B]`",
                 },
                 fatal: true,

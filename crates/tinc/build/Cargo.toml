@@ -35,6 +35,7 @@ runtime-format = "0.1.3"
 thiserror = "2"
 regex = "1"
 num-traits = "0.2.19"
+fmtools = "0.1"
 
 [features]
 default = ["prost"]

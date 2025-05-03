@@ -7,7 +7,7 @@ use crate::codegen::cel::types::CelType;
 use crate::types::{ProtoType, ProtoValueType};
 
 #[derive(Debug, Clone, Default)]
-pub struct Matches;
+pub(crate) struct Matches;
 
 // this.matches(arg) -> arg in this
 impl Function for Matches {
@@ -30,7 +30,7 @@ impl Function for Matches {
 
         let CompiledExpr::Constant(ConstantCompiledExpr {
             value: CelValue::String(regex),
-        }) = ctx.resolve(&ctx.args[0])?.to_cel()?
+        }) = ctx.resolve(&ctx.args[0])?.into_cel()?
         else {
             return Err(CompileError::syntax("regex must be known at compile time string", self));
         };
@@ -42,7 +42,7 @@ impl Function for Matches {
 
         let re = regex::Regex::new(regex).map_err(|err| CompileError::syntax(format!("bad regex {err}"), self))?;
 
-        let this = this.clone().to_cel()?;
+        let this = this.clone().into_cel()?;
 
         match this {
             CompiledExpr::Constant(ConstantCompiledExpr { value }) => {

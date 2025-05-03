@@ -9,7 +9,7 @@ use crate::codegen::cel::types::CelType;
 use crate::types::{ProtoModifiedValueType, ProtoType, ProtoValueType};
 
 #[derive(Debug, Clone, Default)]
-pub struct Map;
+pub(crate) struct Map;
 
 fn native_impl(iter: TokenStream, item_ident: syn::Ident, map_fn: impl ToTokens) -> syn::Expr {
     parse_quote!({
@@ -72,7 +72,7 @@ impl Function for Map {
                     }
                 };
 
-                let arg = child_ctx.resolve(&ctx.args[1])?.to_cel()?;
+                let arg = child_ctx.resolve(&ctx.args[1])?.into_cel()?;
 
                 Ok(CompiledExpr::runtime(
                     CelType::CelValue,
@@ -102,7 +102,7 @@ impl Function for Map {
 
                     child_ctx.add_variable(variable, CompiledExpr::constant(value));
 
-                    child_ctx.resolve(&ctx.args[1])?.to_cel()
+                    child_ctx.resolve(&ctx.args[1])?.into_cel()
                 };
 
                 let collected: Result<Vec<_>, _> = match value {

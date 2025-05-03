@@ -7,7 +7,7 @@ use crate::codegen::cel::types::CelType;
 use crate::types::{ProtoModifiedValueType, ProtoType, ProtoValueType};
 
 #[derive(Debug, Clone, Default)]
-pub struct Size;
+pub(crate) struct Size;
 
 impl Function for Size {
     fn name(&self) -> &'static str {
@@ -40,7 +40,7 @@ impl Function for Size {
             ));
         }
 
-        match this.to_cel()? {
+        match this.into_cel()? {
             CompiledExpr::Constant(ConstantCompiledExpr { value }) => Ok(CompiledExpr::constant(CelValue::cel_size(value)?)),
             CompiledExpr::Runtime(RuntimeCompiledExpr { expr, .. }) => Ok(CompiledExpr::runtime(
                 CelType::Proto(ProtoType::Value(ProtoValueType::UInt64)),

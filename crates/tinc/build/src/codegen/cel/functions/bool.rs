@@ -2,7 +2,7 @@ use super::Function;
 use crate::codegen::cel::compiler::{CompileError, CompiledExpr, CompilerCtx};
 
 #[derive(Debug, Clone, Default)]
-pub struct Bool;
+pub(crate) struct Bool;
 
 impl Function for Bool {
     fn name(&self) -> &'static str {
@@ -22,6 +22,6 @@ impl Function for Bool {
             return Err(CompileError::syntax("takes no arguments", self));
         }
 
-        Ok(this.to_bool(&ctx))
+        Ok(this.into_bool(&ctx))
     }
 }

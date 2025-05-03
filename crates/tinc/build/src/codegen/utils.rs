@@ -2,15 +2,15 @@ use syn::Ident;
 
 use super::prost_sanatize;
 
-pub fn field_ident_from_str(s: impl AsRef<str>) -> Ident {
+pub(crate) fn field_ident_from_str(s: impl AsRef<str>) -> Ident {
     syn::parse_str(&prost_sanatize::to_snake(s.as_ref())).unwrap()
 }
 
-pub fn type_ident_from_str(s: impl AsRef<str>) -> Ident {
+pub(crate) fn type_ident_from_str(s: impl AsRef<str>) -> Ident {
     syn::parse_str(&prost_sanatize::to_upper_camel(s.as_ref())).unwrap()
 }
 
-pub fn get_common_import_path(package: &str, end: &str) -> syn::Path {
+pub(crate) fn get_common_import_path(package: &str, end: &str) -> syn::Path {
     let start_parts: Vec<&str> = package.split('.').collect();
     let mut end_parts: Vec<&str> = end.split('.').collect();
 

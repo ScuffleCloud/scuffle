@@ -7,7 +7,7 @@ use crate::codegen::cel::types::CelType;
 use crate::types::{ProtoType, ProtoValueType};
 
 #[derive(Debug, Clone, Default)]
-pub struct IsIpv6;
+pub(crate) struct IsIpv6;
 
 // this.isIpv6(arg) -> arg in this
 impl Function for IsIpv6 {
@@ -28,7 +28,7 @@ impl Function for IsIpv6 {
             return Err(CompileError::syntax("does not take any arguments", self));
         }
 
-        let this = this.clone().to_cel()?;
+        let this = this.clone().into_cel()?;
 
         match this {
             CompiledExpr::Constant(ConstantCompiledExpr { value }) => {

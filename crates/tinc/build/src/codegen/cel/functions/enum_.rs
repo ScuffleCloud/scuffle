@@ -7,7 +7,7 @@ use crate::codegen::cel::types::CelType;
 use crate::types::{ProtoModifiedValueType, ProtoPath, ProtoType, ProtoValueType};
 
 #[derive(Debug, Clone, Default)]
-pub struct Enum(pub Option<ProtoPath>);
+pub(crate) struct Enum(pub Option<ProtoPath>);
 
 impl Function for Enum {
     fn name(&self) -> &'static str {
@@ -52,8 +52,8 @@ impl Function for Enum {
             }
         };
 
-        let this = this.clone().to_cel()?;
-        let enum_path = enum_path.to_cel()?;
+        let this = this.clone().into_cel()?;
+        let enum_path = enum_path.into_cel()?;
 
         match (this, enum_path) {
             (

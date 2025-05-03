@@ -8,7 +8,7 @@ struct TincContainerOptions {
 }
 
 impl TincContainerOptions {
-    pub fn from_attributes<'a>(attrs: impl IntoIterator<Item = &'a syn::Attribute>) -> syn::Result<Self> {
+    fn from_attributes<'a>(attrs: impl IntoIterator<Item = &'a syn::Attribute>) -> syn::Result<Self> {
         let mut crate_ = None;
         let mut tagged = false;
 
@@ -67,7 +67,7 @@ struct TincFieldOptions {
 }
 
 impl TincFieldOptions {
-    pub fn from_attributes<'a>(attrs: impl IntoIterator<Item = &'a syn::Attribute>) -> syn::Result<Self> {
+    fn from_attributes<'a>(attrs: impl IntoIterator<Item = &'a syn::Attribute>) -> syn::Result<Self> {
         let mut enum_ = None;
         let mut oneof = false;
 
@@ -110,7 +110,7 @@ impl TincFieldOptions {
     }
 }
 
-pub fn derive_message_tracker(input: TokenStream) -> TokenStream {
+pub(crate) fn derive_message_tracker(input: TokenStream) -> TokenStream {
     let input = match syn::parse2::<syn::DeriveInput>(input) {
         Ok(input) => input,
         Err(e) => return e.to_compile_error(),

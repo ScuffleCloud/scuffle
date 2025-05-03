@@ -8,7 +8,7 @@ use crate::codegen::cel::types::CelType;
 use crate::types::{ProtoModifiedValueType, ProtoType, ProtoValueType};
 
 #[derive(Debug, Clone, Default)]
-pub struct Contains;
+pub(crate) struct Contains;
 
 // this.contains(arg)
 // arg in this
@@ -30,7 +30,7 @@ impl Function for Contains {
             return Err(CompileError::syntax("takes exactly one argument", self));
         }
 
-        let arg = ctx.resolve(&ctx.args[0])?.to_cel()?;
+        let arg = ctx.resolve(&ctx.args[0])?.into_cel()?;
 
         if let CompiledExpr::Runtime(RuntimeCompiledExpr {
             expr,
@@ -63,7 +63,7 @@ impl Function for Contains {
             }
         }
 
-        let this = this.clone().to_cel()?;
+        let this = this.clone().into_cel()?;
 
         match (this, arg) {
             (

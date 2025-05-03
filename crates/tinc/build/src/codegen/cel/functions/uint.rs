@@ -6,7 +6,7 @@ use crate::codegen::cel::compiler::{CompileError, CompiledExpr, CompilerCtx, Con
 use crate::codegen::cel::types::CelType;
 
 #[derive(Debug, Clone, Default)]
-pub struct UInt;
+pub(crate) struct UInt;
 
 impl Function for UInt {
     fn name(&self) -> &'static str {
@@ -26,7 +26,7 @@ impl Function for UInt {
             return Err(CompileError::syntax("takes no arguments", self));
         }
 
-        match this.to_cel()? {
+        match this.into_cel()? {
             CompiledExpr::Constant(ConstantCompiledExpr { value }) => Ok(CompiledExpr::Constant(ConstantCompiledExpr {
                 value: CelValue::cel_to_uint(value)?,
             })),

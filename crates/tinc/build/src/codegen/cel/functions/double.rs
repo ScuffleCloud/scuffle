@@ -6,7 +6,7 @@ use crate::codegen::cel::compiler::{CompileError, CompiledExpr, CompilerCtx, Con
 use crate::codegen::cel::types::CelType;
 
 #[derive(Debug, Clone, Default)]
-pub struct Double;
+pub(crate) struct Double;
 
 impl Function for Double {
     fn name(&self) -> &'static str {
@@ -26,7 +26,7 @@ impl Function for Double {
             return Err(CompileError::syntax("takes no arguments", self));
         }
 
-        match this.to_cel()? {
+        match this.into_cel()? {
             CompiledExpr::Constant(ConstantCompiledExpr { value }) => {
                 Ok(CompiledExpr::constant(CelValue::cel_to_double(value)?))
             }

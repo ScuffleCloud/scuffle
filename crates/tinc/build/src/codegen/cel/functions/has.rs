@@ -2,7 +2,7 @@ use super::Function;
 use crate::codegen::cel::compiler::{CompileError, CompiledExpr, CompilerCtx};
 
 #[derive(Debug, Clone, Default)]
-pub struct Has;
+pub(crate) struct Has;
 
 // has(field-arg)
 impl Function for Has {

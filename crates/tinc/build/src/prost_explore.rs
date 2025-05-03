@@ -16,14 +16,14 @@ use crate::types::{
     ProtoServiceOptions, ProtoType, ProtoTypeRegistry, ProtoValueType, ProtoVisibility, ProtoWellKnownType,
 };
 
-pub struct Extension<T> {
+pub(crate) struct Extension<T> {
     name: &'static str,
     descriptor: Option<ExtensionDescriptor>,
     _marker: std::marker::PhantomData<T>,
 }
 
 impl<T> Extension<T> {
-    pub fn new(name: &'static str, pool: &DescriptorPool) -> Self {
+    fn new(name: &'static str, pool: &DescriptorPool) -> Self {
         Self {
             name,
             descriptor: pool.get_extension_by_name(name),
@@ -31,7 +31,7 @@ impl<T> Extension<T> {
         }
     }
 
-    pub fn descriptor(&self) -> Option<&ExtensionDescriptor> {
+    fn descriptor(&self) -> Option<&ExtensionDescriptor> {
         self.descriptor.as_ref()
     }
 
@@ -168,7 +168,7 @@ fn rename_field(field: &str, style: tinc_pb::RenameAll) -> Option<String> {
     }
 }
 
-pub struct Extensions {
+pub(crate) struct Extensions {
     // Message extensions.
     ext_message: Extension<tinc_pb::MessageOptions>,
     ext_field: Extension<tinc_pb::FieldOptions>,
@@ -187,7 +187,7 @@ pub struct Extensions {
 const ANY_NOT_SUPPORTED_ERROR: &str = "uses `google.protobuf.Any`, this is currently not supported.";
 
 impl Extensions {
-    pub fn new(pool: &DescriptorPool) -> Self {
+    pub(crate) fn new(pool: &DescriptorPool) -> Self {
         Self {
             ext_message: Extension::new("tinc.message", pool),
             ext_field: Extension::new("tinc.field", pool),
@@ -200,7 +200,7 @@ impl Extensions {
         }
     }
 
-    pub fn process(&mut self, pool: &DescriptorPool, registry: &mut ProtoTypeRegistry) -> anyhow::Result<()> {
+    pub(crate) fn process(&mut self, pool: &DescriptorPool, registry: &mut ProtoTypeRegistry) -> anyhow::Result<()> {
         for service in pool.services() {
             self.process_service(pool, &service, registry)
                 .with_context(|| format!("service {}", service.full_name()))?;
@@ -566,7 +566,7 @@ enum CelInput {
     RepeatedItem,
 }
 
-pub fn gather_cel_expressions(
+pub(crate) fn gather_cel_expressions(
     extension: &Extension<tinc_pb::PredefinedConstraint>,
     field_options: &prost_reflect::DynamicMessage,
 ) -> anyhow::Result<CelExpressions> {

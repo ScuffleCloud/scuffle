@@ -7,11 +7,11 @@ use proc_macro2::TokenStream;
 use quote::{format_ident, quote};
 use tinc_cel::CelValue;
 
-pub mod compiler;
-pub mod functions;
-pub mod types;
+pub(crate) mod compiler;
+pub(crate) mod functions;
+pub(crate) mod types;
 
-pub fn eval_message_fmt(msg: &str, ctx: &compiler::Compiler<'_>) -> anyhow::Result<TokenStream> {
+pub(crate) fn eval_message_fmt(msg: &str, ctx: &compiler::Compiler<'_>) -> anyhow::Result<TokenStream> {
     let fmt = runtime_format::ParsedFmt::new(msg).map_err(|err| anyhow::anyhow!("failed to parse message format: {err}"))?;
 
     let mut runtime_args = Vec::new();
@@ -59,7 +59,7 @@ pub fn eval_message_fmt(msg: &str, ctx: &compiler::Compiler<'_>) -> anyhow::Resu
 }
 
 #[derive(Debug, Clone, PartialEq)]
-pub struct CelExpression {
+pub(crate) struct CelExpression {
     pub message: String,
     pub expression: String,
     pub jsonschemas: Vec<String>,
@@ -67,7 +67,7 @@ pub struct CelExpression {
 }
 
 #[derive(Debug, PartialEq, Clone, Default)]
-pub struct CelExpressions {
+pub(crate) struct CelExpressions {
     pub field: Vec<CelExpression>,
     pub map_key: Vec<CelExpression>,
     pub map_value: Vec<CelExpression>,

@@ -9,7 +9,7 @@ use crate::codegen::cel::types::CelType;
 use crate::types::{ProtoModifiedValueType, ProtoType, ProtoValueType};
 
 #[derive(Debug, Clone, Default)]
-pub struct Filter;
+pub(crate) struct Filter;
 
 fn native_impl(iter: TokenStream, item_ident: syn::Ident, compare: impl ToTokens) -> syn::Expr {
     parse_quote!({
@@ -77,7 +77,7 @@ impl Function for Filter {
                     }
                 };
 
-                let arg = child_ctx.resolve(&ctx.args[1])?.to_bool(&child_ctx);
+                let arg = child_ctx.resolve(&ctx.args[1])?.into_bool(&child_ctx);
 
                 Ok(CompiledExpr::runtime(
                     CelType::CelValue,
@@ -92,7 +92,7 @@ impl Function for Filter {
                         CelType::Proto(ProtoType::Modified(ProtoModifiedValueType::Map(ty, _))) => {
                             let cel_ty =
                                 CompiledExpr::runtime(CelType::Proto(ProtoType::Value(ty.clone())), parse_quote!(item))
-                                    .to_cel()?;
+                                    .into_cel()?;
 
                             native_impl(
                                 quote!(
@@ -105,7 +105,7 @@ impl Function for Filter {
                         CelType::Proto(ProtoType::Modified(ProtoModifiedValueType::Repeated(ty))) => {
                             let cel_ty =
                                 CompiledExpr::runtime(CelType::Proto(ProtoType::Value(ty.clone())), parse_quote!(item))
-                                    .to_cel()?;
+                                    .into_cel()?;
 
                             native_impl(
                                 quote!(
@@ -127,7 +127,7 @@ impl Function for Filter {
 
                     child_ctx.add_variable(variable, CompiledExpr::constant(value.clone()));
 
-                    child_ctx.resolve(&ctx.args[1]).map(|v| (value, v.to_bool(&child_ctx)))
+                    child_ctx.resolve(&ctx.args[1]).map(|v| (value, v.into_bool(&child_ctx)))
                 };
 
                 let collected: Result<Vec<_>, _> = match value {

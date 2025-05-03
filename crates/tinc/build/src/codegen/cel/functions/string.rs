@@ -9,7 +9,7 @@ use crate::codegen::cel::compiler::{
 use crate::codegen::cel::types::CelType;
 
 #[derive(Debug, Clone, Default)]
-pub struct String;
+pub(crate) struct String;
 
 fn cel_to_string(ctx: &Compiler, value: &CelValue<'static>) -> CompiledExpr {
     match value {
@@ -122,7 +122,7 @@ impl Function for String {
             return Err(CompileError::syntax("takes no arguments", self));
         }
 
-        match this.to_cel()? {
+        match this.into_cel()? {
             CompiledExpr::Constant(ConstantCompiledExpr { value }) => Ok(cel_to_string(&ctx, &value)),
             CompiledExpr::Runtime(RuntimeCompiledExpr { expr, .. }) => Ok(CompiledExpr::runtime(
                 CelType::CelValue,

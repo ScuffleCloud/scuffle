@@ -7,7 +7,7 @@ use crate::codegen::cel::types::CelType;
 use crate::types::{ProtoType, ProtoValueType};
 
 #[derive(Debug, Clone, Default)]
-pub struct StartsWith;
+pub(crate) struct StartsWith;
 
 // this.stratsWith(arg) -> arg in this
 impl Function for StartsWith {
@@ -28,8 +28,8 @@ impl Function for StartsWith {
             return Err(CompileError::syntax("takes exactly one argument", self));
         }
 
-        let arg = ctx.resolve(&ctx.args[0])?.to_cel()?;
-        let this = this.clone().to_cel()?;
+        let arg = ctx.resolve(&ctx.args[0])?.into_cel()?;
+        let this = this.clone().into_cel()?;
 
         match (this, arg) {
             (

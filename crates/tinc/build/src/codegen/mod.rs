@@ -1,27 +1,27 @@
 use std::collections::BTreeMap;
 
-pub use config::AttributeConfig;
+pub(crate) use config::AttributeConfig;
 use service::{ProcessedService, handle_service};
 
 use self::serde::{handle_enum, handle_message};
 use crate::types::{ProtoPath, ProtoTypeRegistry};
 
-pub mod cel;
+pub(crate) mod cel;
 mod config;
-pub mod prost_sanatize;
+pub(crate) mod prost_sanatize;
 mod serde;
 mod service;
-pub mod utils;
+pub(crate) mod utils;
 
 #[derive(Default, Debug)]
-pub struct Package {
+pub(crate) struct Package {
     pub attributes: AttributeConfig,
     pub extra_items: Vec<syn::Item>,
     pub services: Vec<ProcessedService>,
 }
 
 impl Package {
-    pub fn push_item(&mut self, item: syn::Item) {
+    pub(crate) fn push_item(&mut self, item: syn::Item) {
         self.extra_items.push(item);
     }
 }
@@ -40,7 +40,7 @@ impl std::ops::DerefMut for Package {
     }
 }
 
-pub fn generate_modules(registry: &ProtoTypeRegistry) -> anyhow::Result<BTreeMap<ProtoPath, Package>> {
+pub(crate) fn generate_modules(registry: &ProtoTypeRegistry) -> anyhow::Result<BTreeMap<ProtoPath, Package>> {
     let mut modules = BTreeMap::new();
 
     registry

@@ -1,16 +1,24 @@
 #![cfg_attr(coverage_nightly, feature(coverage_attribute))]
+#![deny(missing_docs)]
+#![deny(unsafe_code)]
+#![deny(unreachable_pub)]
+
+//! Tinc build
+//! TODO: Crate Level Docs.
 
 use anyhow::Context;
-pub mod codegen;
+mod codegen;
 
 #[cfg(feature = "prost")]
 mod prost_explore;
 
 mod types;
 
+/// The mode to use for the generator, currently we only support `prost` codegen.
 #[derive(Debug)]
 pub enum Mode {
     #[cfg(feature = "prost")]
+    /// Use `prost` to generate the protobuf structures
     Prost,
 }
 
@@ -21,6 +29,7 @@ struct PathConfigs {
     boxed: Vec<String>,
 }
 
+/// A config for configuring how tinc builds / generates code.
 #[derive(Debug)]
 pub struct Config {
     disable_tinc_include: bool,
@@ -29,11 +38,13 @@ pub struct Config {
 }
 
 impl Config {
+    /// New config with prost mode.
     #[cfg(feature = "prost")]
     pub fn prost() -> Self {
         Self::new(Mode::Prost)
     }
 
+    /// Make a new config with a given mode.
     pub fn new(mode: Mode) -> Self {
         Self {
             disable_tinc_include: false,
@@ -42,26 +53,32 @@ impl Config {
         }
     }
 
+    /// Disable tinc auto-include. By default tinc will add its own
+    /// annotations into the include path of protoc.
     pub fn disable_tinc_include(&mut self) -> &mut Self {
         self.disable_tinc_include = true;
         self
     }
 
+    /// Specify a path to generate a `BTreeMap` instead of a `HashMap` for proto map.
     pub fn btree_map(&mut self, path: impl std::fmt::Display) -> &mut Self {
         self.paths.btree_maps.push(path.to_string());
         self
     }
 
+    /// Specify a path to generate `bytes::Bytes` instead of `Vec<u8>` for proto bytes.
     pub fn bytes(&mut self, path: impl std::fmt::Display) -> &mut Self {
         self.paths.bytes.push(path.to_string());
         self
     }
 
+    /// Specify a path to wrap around a `Box` instead of including it directly into the struct.
     pub fn boxed(&mut self, path: impl std::fmt::Display) -> &mut Self {
         self.paths.boxed.push(path.to_string());
         self
     }
 
+    /// Compile and generate all the protos with the includes.
     pub fn compile_protos(&mut self, protos: &[&str], includes: &[&str]) -> anyhow::Result<()> {
         match self.mode {
             #[cfg(feature = "prost")]

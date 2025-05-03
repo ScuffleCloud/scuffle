@@ -10,6 +10,9 @@ documentation = "https://docs.rs/tinc-build"
 license = "MIT OR Apache-2.0"
 keywords = ["grpc", "protobuf", "tonic", "codegen"]
 
+[lints.rust]
+unexpected_cfgs = { level = "warn", check-cfg = ['cfg(coverage_nightly)'] }
+
 [dependencies]
 num-traits = "0.2.19"
 bytes = "1.5"

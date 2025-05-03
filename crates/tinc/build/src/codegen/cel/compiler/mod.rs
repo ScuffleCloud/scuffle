@@ -14,29 +14,29 @@ mod resolve;
 
 #[derive(Clone, Debug)]
 #[allow(clippy::large_enum_variant)]
-pub enum CompiledExpr {
+pub(crate) enum CompiledExpr {
     Runtime(RuntimeCompiledExpr),
     Constant(ConstantCompiledExpr),
 }
 
 impl CompiledExpr {
-    pub fn constant(value: impl CelValueConv<'static>) -> Self {
+    pub(crate) fn constant(value: impl CelValueConv<'static>) -> Self {
         Self::Constant(ConstantCompiledExpr { value: value.conv() })
     }
 
-    pub fn runtime(ty: CelType, expr: syn::Expr) -> Self {
+    pub(crate) fn runtime(ty: CelType, expr: syn::Expr) -> Self {
         Self::Runtime(RuntimeCompiledExpr { expr, ty })
     }
 }
 
 #[derive(Clone)]
-pub struct RuntimeCompiledExpr {
+pub(crate) struct RuntimeCompiledExpr {
     pub expr: syn::Expr,
     pub ty: CelType,
 }
 
 #[derive(Debug, Clone)]
-pub struct ConstantCompiledExpr {
+pub(crate) struct ConstantCompiledExpr {
     pub value: tinc_cel::CelValue<'static>,
 }
 
@@ -174,13 +174,13 @@ impl ToTokens for CompiledExpr {
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
-pub enum CompilerTarget {
+pub(crate) enum CompilerTarget {
     Json,
     Proto,
 }
 
 #[derive(Clone, Debug)]
-pub struct Compiler<'a> {
+pub(crate) struct Compiler<'a> {
     parent: Option<&'a Compiler<'a>>,
     registry: &'a ProtoTypeRegistry,
     target: Option<CompilerTarget>,
@@ -197,7 +197,7 @@ impl std::fmt::Debug for DebugFunc {
 }
 
 impl<'a> Compiler<'a> {
-    pub fn empty(registry: &'a ProtoTypeRegistry) -> Self {
+    pub(crate) fn empty(registry: &'a ProtoTypeRegistry) -> Self {
         Self {
             parent: None,
             registry,
@@ -207,7 +207,7 @@ impl<'a> Compiler<'a> {
         }
     }
 
-    pub fn new(registry: &'a ProtoTypeRegistry) -> Self {
+    pub(crate) fn new(registry: &'a ProtoTypeRegistry) -> Self {
         let mut compiler = Self::empty(registry);
 
         add_to_compiler(&mut compiler);
@@ -215,15 +215,15 @@ impl<'a> Compiler<'a> {
         compiler
     }
 
-    pub fn set_target(&mut self, target: impl Into<Option<CompilerTarget>>) {
+    pub(crate) fn set_target(&mut self, target: impl Into<Option<CompilerTarget>>) {
         self.target = target.into()
     }
 
-    pub fn target(&self) -> Option<CompilerTarget> {
+    pub(crate) fn target(&self) -> Option<CompilerTarget> {
         self.target
     }
 
-    pub fn child(&self) -> Compiler<'_> {
+    pub(crate) fn child(&self) -> Compiler<'_> {
         Compiler {
             parent: Some(self),
             registry: self.registry,
@@ -235,14 +235,14 @@ impl<'a> Compiler<'a> {
 }
 
 #[derive(Debug, Clone)]
-pub struct CompilerCtx<'a> {
+pub(crate) struct CompilerCtx<'a> {
     pub this: Option<CompiledExpr>,
     pub args: &'a [cel_parser::Expression],
     compiler: Compiler<'a>,
 }
 
 impl<'a> CompilerCtx<'a> {
-    pub fn new(compiler: Compiler<'a>, this: Option<CompiledExpr>, args: &'a [cel_parser::Expression]) -> Self {
+    pub(crate) fn new(compiler: Compiler<'a>, this: Option<CompiledExpr>, args: &'a [cel_parser::Expression]) -> Self {
         Self { this, args, compiler }
     }
 }
@@ -262,20 +262,20 @@ impl std::ops::DerefMut for CompilerCtx<'_> {
 }
 
 impl<'a> Compiler<'a> {
-    pub fn add_variable(&mut self, name: &str, expr: CompiledExpr) {
+    pub(crate) fn add_variable(&mut self, name: &str, expr: CompiledExpr) {
         self.variables.insert(name.to_owned(), expr.clone());
     }
 
-    pub fn register_function(&mut self, f: impl Function) {
+    pub(crate) fn register_function(&mut self, f: impl Function) {
         let name = f.name();
         self.functions.insert(name, DebugFunc(Arc::new(f)));
     }
 
-    pub fn resolve(&self, expr: &cel_parser::Expression) -> Result<CompiledExpr, CompileError> {
+    pub(crate) fn resolve(&self, expr: &cel_parser::Expression) -> Result<CompiledExpr, CompileError> {
         resolve::resolve(self, expr)
     }
 
-    pub fn get_variable(&self, name: &str) -> Option<&CompiledExpr> {
+    pub(crate) fn get_variable(&self, name: &str) -> Option<&CompiledExpr> {
         match self.variables.get(name) {
             Some(expr) => Some(expr),
             None => match self.parent {
@@ -285,7 +285,7 @@ impl<'a> Compiler<'a> {
         }
     }
 
-    pub fn get_function(&self, name: &str) -> Option<&Arc<dyn Function + Send + Sync + 'static>> {
+    pub(crate) fn get_function(&self, name: &str) -> Option<&Arc<dyn Function + Send + Sync + 'static>> {
         match self.functions.get(name) {
             Some(func) => Some(&func.0),
             None => match self.parent {
@@ -295,13 +295,13 @@ impl<'a> Compiler<'a> {
         }
     }
 
-    pub fn registry(&self) -> &'a ProtoTypeRegistry {
+    pub(crate) fn registry(&self) -> &'a ProtoTypeRegistry {
         self.registry
     }
 }
 
 #[derive(Debug, Clone, PartialEq, thiserror::Error)]
-pub enum CompileError {
+pub(crate) enum CompileError {
     #[error("not implemented")]
     NotImplemented,
     #[error("invalid syntax: {message} - {syntax}")]
@@ -318,18 +318,10 @@ pub enum CompileError {
     UnsupportedFunctionCallIdentifierType(cel_parser::Expression),
     #[error("missing message: {0}")]
     MissingMessage(ProtoPath),
-    #[error("missing enum: {0}")]
-    MissingEnum(ProtoPath),
-    #[error("invalid function argument[{idx}]: {expr:?} - {message}")]
-    InvalidFunctionArgument {
-        idx: usize,
-        expr: cel_parser::Expression,
-        message: String,
-    },
 }
 
 impl CompileError {
-    pub fn syntax(message: impl std::fmt::Display, func: &impl Function) -> CompileError {
+    pub(crate) fn syntax(message: impl std::fmt::Display, func: &impl Function) -> CompileError {
         CompileError::InvalidSyntax {
             message: message.to_string(),
             syntax: func.syntax(),
@@ -342,15 +334,6 @@ impl From<CelError<'_>> for CompileError {
         Self::TypeConversion {
             ty: Box::new(CelType::CelValue),
             message: value.to_string(),
-        }
-    }
-}
-
-impl CompileError {
-    pub fn type_conversion(ty: CelType, message: impl Into<String>) -> Self {
-        Self::TypeConversion {
-            ty: Box::new(ty),
-            message: message.into(),
         }
     }
 }

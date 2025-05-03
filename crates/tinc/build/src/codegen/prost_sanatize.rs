@@ -1,6 +1,6 @@
 use heck::{ToSnakeCase, ToUpperCamelCase};
 
-pub fn sanitize_identifier(s: impl AsRef<str>) -> String {
+pub(crate) fn sanitize_identifier(s: impl AsRef<str>) -> String {
     let ident = s.as_ref();
     // Use a raw identifier if the identifier matches a Rust keyword:
     // https://doc.rust-lang.org/reference/keywords.html.
@@ -29,16 +29,16 @@ pub fn sanitize_identifier(s: impl AsRef<str>) -> String {
 
 /// Converts a `camelCase` or `SCREAMING_SNAKE_CASE` identifier to a `lower_snake` case Rust field
 /// identifier.
-pub fn to_snake(s: impl AsRef<str>) -> String {
+pub(crate) fn to_snake(s: impl AsRef<str>) -> String {
     sanitize_identifier(s.as_ref().to_snake_case())
 }
 
 /// Converts a `snake_case` identifier to an `UpperCamel` case Rust type identifier.
-pub fn to_upper_camel(s: impl AsRef<str>) -> String {
+pub(crate) fn to_upper_camel(s: impl AsRef<str>) -> String {
     sanitize_identifier(s.as_ref().to_upper_camel_case())
 }
 
-pub fn strip_enum_prefix(prefix: &str, name: &str) -> String {
+pub(crate) fn strip_enum_prefix(prefix: &str, name: &str) -> String {
     let stripped = name.strip_prefix(prefix).unwrap_or(name);
 
     // If the next character after the stripped prefix is not

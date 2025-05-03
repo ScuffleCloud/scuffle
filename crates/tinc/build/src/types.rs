@@ -10,13 +10,13 @@ use crate::codegen::cel::CelExpressions;
 use crate::codegen::utils::{field_ident_from_str, get_common_import_path, type_ident_from_str};
 
 #[derive(Debug, Clone, PartialEq)]
-pub enum ProtoType {
+pub(crate) enum ProtoType {
     Value(ProtoValueType),
     Modified(ProtoModifiedValueType),
 }
 
 #[derive(Debug, Clone, PartialEq)]
-pub enum ProtoValueType {
+pub(crate) enum ProtoValueType {
     String,
     Bytes,
     Int32,
@@ -32,7 +32,7 @@ pub enum ProtoValueType {
 }
 
 #[derive(Debug, Clone, PartialEq)]
-pub enum ProtoWellKnownType {
+pub(crate) enum ProtoWellKnownType {
     Timestamp,
     Duration,
     Struct,
@@ -43,7 +43,7 @@ pub enum ProtoWellKnownType {
 }
 
 impl ProtoValueType {
-    pub fn from_pb(ty: &Kind) -> Self {
+    pub(crate) fn from_pb(ty: &Kind) -> Self {
         match ty {
             Kind::Double => ProtoValueType::Double,
             Kind::Float => ProtoValueType::Float,
@@ -65,7 +65,7 @@ impl ProtoValueType {
         }
     }
 
-    pub fn from_proto_path(path: &str) -> Self {
+    pub(crate) fn from_proto_path(path: &str) -> Self {
         match path {
             "google.protobuf.Timestamp" => ProtoValueType::WellKnown(ProtoWellKnownType::Timestamp),
             "google.protobuf.Duration" => ProtoValueType::WellKnown(ProtoWellKnownType::Duration),
@@ -87,7 +87,7 @@ impl ProtoValueType {
         }
     }
 
-    pub fn rust_path(&self, package: &str) -> syn::Path {
+    pub(crate) fn rust_path(&self, package: &str) -> syn::Path {
         match self {
             ProtoValueType::WellKnown(ProtoWellKnownType::Timestamp) => parse_quote!(),
             ProtoValueType::WellKnown(ProtoWellKnownType::Duration) => parse_quote!(),
@@ -112,7 +112,7 @@ impl ProtoValueType {
 }
 
 #[derive(Debug, Clone, PartialEq)]
-pub struct ProtoEnumType {
+pub(crate) struct ProtoEnumType {
     pub package: ProtoPath,
     pub full_name: ProtoPath,
     pub options: ProtoEnumOptions,
@@ -120,18 +120,18 @@ pub struct ProtoEnumType {
 }
 
 impl ProtoEnumType {
-    pub fn rust_path(&self, package: &str) -> syn::Path {
+    pub(crate) fn rust_path(&self, package: &str) -> syn::Path {
         get_common_import_path(package, &self.full_name)
     }
 }
 
 #[derive(Debug, Clone, PartialEq)]
-pub struct ProtoEnumOptions {
+pub(crate) struct ProtoEnumOptions {
     pub repr_enum: bool,
 }
 
 #[derive(Debug, Clone, PartialEq)]
-pub struct ProtoEnumVariant {
+pub(crate) struct ProtoEnumVariant {
     pub full_name: ProtoPath,
     pub options: ProtoEnumVariantOptions,
     pub rust_ident: syn::Ident,
@@ -139,13 +139,13 @@ pub struct ProtoEnumVariant {
 }
 
 #[derive(Debug, Clone, PartialEq)]
-pub struct ProtoEnumVariantOptions {
+pub(crate) struct ProtoEnumVariantOptions {
     pub json_name: String,
     pub visibility: ProtoVisibility,
 }
 
 #[derive(Debug, Clone, PartialEq)]
-pub enum ProtoModifiedValueType {
+pub(crate) enum ProtoModifiedValueType {
     Repeated(ProtoValueType),
     Map(ProtoValueType, ProtoValueType),
     Optional(ProtoValueType),
@@ -153,7 +153,7 @@ pub enum ProtoModifiedValueType {
 }
 
 #[derive(Debug, Clone, PartialEq)]
-pub struct ProtoMessageType {
+pub(crate) struct ProtoMessageType {
     pub package: ProtoPath,
     pub full_name: ProtoPath,
     pub options: ProtoMessageOptions,
@@ -161,18 +161,18 @@ pub struct ProtoMessageType {
 }
 
 impl ProtoMessageType {
-    pub fn rust_path(&self, package: &str) -> syn::Path {
+    pub(crate) fn rust_path(&self, package: &str) -> syn::Path {
         get_common_import_path(package, &self.full_name)
     }
 }
 
 #[derive(Debug, Clone, PartialEq, Default)]
-pub struct ProtoMessageOptions {
+pub(crate) struct ProtoMessageOptions {
     pub cel: Vec<tinc_pb::CelExpression>,
 }
 
 #[derive(Debug, Clone, PartialEq)]
-pub struct ProtoMessageField {
+pub(crate) struct ProtoMessageField {
     pub full_name: ProtoPath,
     pub message: ProtoPath,
     pub ty: ProtoType,
@@ -180,20 +180,20 @@ pub struct ProtoMessageField {
 }
 
 impl ProtoMessageField {
-    pub fn rust_ident(&self) -> syn::Ident {
+    pub(crate) fn rust_ident(&self) -> syn::Ident {
         field_ident_from_str(self.full_name.split('.').next_back().unwrap())
     }
 }
 
 #[derive(Copy, Clone, Debug, PartialEq, Eq, Hash, PartialOrd, Ord)]
-pub enum ProtoFieldJsonOmittable {
+pub(crate) enum ProtoFieldJsonOmittable {
     True,
     False,
     TrueButStillSerialize,
 }
 
 impl ProtoFieldJsonOmittable {
-    pub fn from_pb(value: tinc_pb::JsonOmittable, nullable: bool) -> Self {
+    pub(crate) fn from_pb(value: tinc_pb::JsonOmittable, nullable: bool) -> Self {
         match value {
             tinc_pb::JsonOmittable::Unspecified => {
                 if nullable {
@@ -210,7 +210,7 @@ impl ProtoFieldJsonOmittable {
 }
 
 #[derive(Debug, Clone, Copy, PartialEq)]
-pub enum ProtoVisibility {
+pub(crate) enum ProtoVisibility {
     Default,
     Skip,
     InputOnly,
@@ -218,7 +218,7 @@ pub enum ProtoVisibility {
 }
 
 impl ProtoVisibility {
-    pub fn from_pb(visibility: tinc_pb::Visibility) -> Self {
+    pub(crate) fn from_pb(visibility: tinc_pb::Visibility) -> Self {
         match visibility {
             tinc_pb::Visibility::Skip => ProtoVisibility::Skip,
             tinc_pb::Visibility::InputOnly => ProtoVisibility::InputOnly,
@@ -227,17 +227,17 @@ impl ProtoVisibility {
         }
     }
 
-    pub fn has_output(&self) -> bool {
+    pub(crate) fn has_output(&self) -> bool {
         matches!(self, ProtoVisibility::OutputOnly | ProtoVisibility::Default)
     }
 
-    pub fn has_input(&self) -> bool {
+    pub(crate) fn has_input(&self) -> bool {
         matches!(self, ProtoVisibility::InputOnly | ProtoVisibility::Default)
     }
 }
 
 #[derive(Debug, Clone, PartialEq)]
-pub struct ProtoFieldOptions {
+pub(crate) struct ProtoFieldOptions {
     pub json_name: String,
     pub json_omittable: ProtoFieldJsonOmittable,
     pub nullable: bool,
@@ -247,7 +247,7 @@ pub struct ProtoFieldOptions {
 }
 
 #[derive(Debug, Clone, PartialEq)]
-pub struct ProtoOneOfType {
+pub(crate) struct ProtoOneOfType {
     pub full_name: ProtoPath,
     pub message: ProtoPath,
     pub options: ProtoOneOfOptions,
@@ -255,18 +255,18 @@ pub struct ProtoOneOfType {
 }
 
 impl ProtoOneOfType {
-    pub fn rust_path(&self, package: &str) -> syn::Path {
+    pub(crate) fn rust_path(&self, package: &str) -> syn::Path {
         get_common_import_path(package, &self.full_name)
     }
 }
 
 #[derive(Debug, Clone, PartialEq)]
-pub struct ProtoOneOfOptions {
+pub(crate) struct ProtoOneOfOptions {
     pub tagged: Option<tinc_pb::oneof_options::Tagged>,
 }
 
 #[derive(Debug, Clone, PartialEq)]
-pub struct ProtoOneOfField {
+pub(crate) struct ProtoOneOfField {
     pub full_name: ProtoPath,
     pub message: ProtoPath,
     pub ty: ProtoValueType,
@@ -274,16 +274,16 @@ pub struct ProtoOneOfField {
 }
 
 impl ProtoOneOfField {
-    pub fn rust_ident(&self) -> syn::Ident {
+    pub(crate) fn rust_ident(&self) -> syn::Ident {
         type_ident_from_str(self.full_name.split('.').next_back().unwrap())
     }
 }
 
 #[derive(Debug, Clone, PartialEq, PartialOrd, Ord, Eq, Hash)]
-pub struct ProtoPath(pub Arc<str>);
+pub(crate) struct ProtoPath(pub Arc<str>);
 
 impl ProtoPath {
-    pub fn trim_last_segment(&self) -> &str {
+    pub(crate) fn trim_last_segment(&self) -> &str {
         // remove the last .<segment> from the path
         let (item, _) = self.0.rsplit_once('.').unwrap_or_default();
         item
@@ -305,12 +305,8 @@ impl AsRef<str> for ProtoPath {
 }
 
 impl ProtoPath {
-    pub fn new(absolute: impl std::fmt::Display) -> Self {
+    pub(crate) fn new(absolute: impl std::fmt::Display) -> Self {
         Self(absolute.to_string().into())
-    }
-
-    pub fn new_field(absolute: impl std::fmt::Display, field: impl std::fmt::Display) -> Self {
-        Self(format!("{absolute}.{field}").into())
     }
 }
 
@@ -339,7 +335,7 @@ impl std::fmt::Display for ProtoPath {
 }
 
 #[derive(Debug, Clone, PartialEq)]
-pub struct ProtoService {
+pub(crate) struct ProtoService {
     pub full_name: ProtoPath,
     pub package: ProtoPath,
     pub options: ProtoServiceOptions,
@@ -347,26 +343,22 @@ pub struct ProtoService {
 }
 
 #[derive(Debug, Clone, PartialEq)]
-pub struct ProtoServiceOptions {
+pub(crate) struct ProtoServiceOptions {
     pub prefix: Option<String>,
 }
 
 #[derive(Debug, Clone, PartialEq)]
-pub enum ProtoServiceMethodIo {
+pub(crate) enum ProtoServiceMethodIo {
     Single(ProtoValueType),
     Stream(ProtoValueType),
 }
 
 impl ProtoServiceMethodIo {
-    pub fn is_stream(&self) -> bool {
+    pub(crate) fn is_stream(&self) -> bool {
         matches!(self, ProtoServiceMethodIo::Stream(_))
     }
 
-    pub fn is_single(&self) -> bool {
-        matches!(self, ProtoServiceMethodIo::Single(_))
-    }
-
-    pub fn value_type(&self) -> &ProtoValueType {
+    pub(crate) fn value_type(&self) -> &ProtoValueType {
         match self {
             ProtoServiceMethodIo::Single(ty) => ty,
             ProtoServiceMethodIo::Stream(ty) => ty,
@@ -375,7 +367,7 @@ impl ProtoServiceMethodIo {
 }
 
 #[derive(Debug, Clone, PartialEq)]
-pub struct ProtoServiceMethod {
+pub(crate) struct ProtoServiceMethod {
     pub full_name: ProtoPath,
     pub service: ProtoPath,
     pub input: ProtoServiceMethodIo,
@@ -385,14 +377,14 @@ pub struct ProtoServiceMethod {
 }
 
 #[derive(Debug, Clone, PartialEq)]
-pub struct ProtoServiceMethodEndpoint {
+pub(crate) struct ProtoServiceMethodEndpoint {
     pub method: http_endpoint_options::Method,
     pub input: Option<http_endpoint_options::Input>,
     pub response: Option<http_endpoint_options::Response>,
 }
 
 #[derive(Debug, Clone)]
-pub struct ProtoTypeRegistry {
+pub(crate) struct ProtoTypeRegistry {
     messages: BTreeMap<ProtoPath, ProtoMessageType>,
     enums: BTreeMap<ProtoPath, ProtoEnumType>,
     services: BTreeMap<ProtoPath, ProtoService>,
@@ -405,7 +397,7 @@ impl Default for ProtoTypeRegistry {
 }
 
 impl ProtoTypeRegistry {
-    pub fn new() -> Self {
+    pub(crate) fn new() -> Self {
         Self {
             messages: BTreeMap::new(),
             enums: BTreeMap::new(),
@@ -413,43 +405,43 @@ impl ProtoTypeRegistry {
         }
     }
 
-    pub fn register_message(&mut self, message: ProtoMessageType) {
+    pub(crate) fn register_message(&mut self, message: ProtoMessageType) {
         self.messages.insert(message.full_name.clone(), message);
     }
 
-    pub fn register_enum(&mut self, enum_: ProtoEnumType) {
+    pub(crate) fn register_enum(&mut self, enum_: ProtoEnumType) {
         self.enums.insert(enum_.full_name.clone(), enum_);
     }
 
-    pub fn register_service(&mut self, service: ProtoService) {
+    pub(crate) fn register_service(&mut self, service: ProtoService) {
         self.services.insert(service.full_name.clone(), service);
     }
 
-    pub fn get_message(&self, full_name: &str) -> Option<&ProtoMessageType> {
+    pub(crate) fn get_message(&self, full_name: &str) -> Option<&ProtoMessageType> {
         self.messages.get(full_name)
     }
 
-    pub fn get_message_mut(&mut self, full_name: &str) -> Option<&mut ProtoMessageType> {
+    pub(crate) fn get_message_mut(&mut self, full_name: &str) -> Option<&mut ProtoMessageType> {
         self.messages.get_mut(full_name)
     }
 
-    pub fn get_enum(&self, full_name: &str) -> Option<&ProtoEnumType> {
+    pub(crate) fn get_enum(&self, full_name: &str) -> Option<&ProtoEnumType> {
         self.enums.get(full_name)
     }
 
-    pub fn get_service(&self, full_name: &str) -> Option<&ProtoService> {
+    pub(crate) fn get_service(&self, full_name: &str) -> Option<&ProtoService> {
         self.services.get(full_name)
     }
 
-    pub fn messages(&self) -> impl Iterator<Item = &ProtoMessageType> {
+    pub(crate) fn messages(&self) -> impl Iterator<Item = &ProtoMessageType> {
         self.messages.values()
     }
 
-    pub fn enums(&self) -> impl Iterator<Item = &ProtoEnumType> {
+    pub(crate) fn enums(&self) -> impl Iterator<Item = &ProtoEnumType> {
         self.enums.values()
     }
 
-    pub fn services(&self) -> impl Iterator<Item = &ProtoService> {
+    pub(crate) fn services(&self) -> impl Iterator<Item = &ProtoService> {
         self.services.values()
     }
 }

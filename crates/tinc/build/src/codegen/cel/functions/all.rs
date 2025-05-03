@@ -9,7 +9,7 @@ use crate::codegen::cel::types::CelType;
 use crate::types::{ProtoModifiedValueType, ProtoType, ProtoValueType};
 
 #[derive(Debug, Clone, Default)]
-pub struct All;
+pub(crate) struct All;
 
 fn native_impl(iter: TokenStream, item_ident: syn::Ident, compare: impl ToTokens) -> syn::Expr {
     parse_quote!({
@@ -73,7 +73,7 @@ impl Function for All {
                     }
                 };
 
-                let arg = child_ctx.resolve(&ctx.args[1])?.to_bool(&child_ctx);
+                let arg = child_ctx.resolve(&ctx.args[1])?.into_bool(&child_ctx);
 
                 Ok(CompiledExpr::runtime(
                     CelType::Proto(ProtoType::Value(ProtoValueType::Bool)),
@@ -103,7 +103,7 @@ impl Function for All {
 
                     child_ctx.add_variable(variable, CompiledExpr::constant(value));
 
-                    child_ctx.resolve(&ctx.args[1]).map(|v| v.to_bool(&child_ctx))
+                    child_ctx.resolve(&ctx.args[1]).map(|v| v.into_bool(&child_ctx))
                 };
 
                 let collected: Result<Vec<_>, _> = match value {

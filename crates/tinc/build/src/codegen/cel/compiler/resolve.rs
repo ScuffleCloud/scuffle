@@ -7,7 +7,7 @@ use super::{CompileError, CompiledExpr, Compiler, CompilerCtx, ConstantCompiledE
 use crate::codegen::cel::types::CelType;
 use crate::types::{ProtoModifiedValueType, ProtoType, ProtoValueType};
 
-pub fn resolve(ctx: &Compiler, expr: &Expression) -> Result<CompiledExpr, CompileError> {
+pub(crate) fn resolve(ctx: &Compiler, expr: &Expression) -> Result<CompiledExpr, CompileError> {
     match expr {
         Expression::And(left, right) => resolve_and(ctx, left, right),
         Expression::Arithmetic(left, op, right) => resolve_arithmetic(ctx, left, op, right),
@@ -25,8 +25,8 @@ pub fn resolve(ctx: &Compiler, expr: &Expression) -> Result<CompiledExpr, Compil
 }
 
 fn resolve_and(ctx: &Compiler, left: &Expression, right: &Expression) -> Result<CompiledExpr, CompileError> {
-    let left = ctx.resolve(left)?.to_bool(ctx);
-    let right = ctx.resolve(right)?.to_bool(ctx);
+    let left = ctx.resolve(left)?.into_bool(ctx);
+    let right = ctx.resolve(right)?.into_bool(ctx);
     match (left, right) {
         (
             CompiledExpr::Constant(ConstantCompiledExpr { value: left }),
@@ -55,8 +55,8 @@ fn resolve_arithmetic(
     op: &ArithmeticOp,
     right: &Expression,
 ) -> Result<CompiledExpr, CompileError> {
-    let left = ctx.resolve(left)?.to_cel()?;
-    let right = ctx.resolve(right)?.to_cel()?;
+    let left = ctx.resolve(left)?.into_cel()?;
+    let right = ctx.resolve(right)?.into_cel()?;
     match (left, right) {
         (
             CompiledExpr::Constant(ConstantCompiledExpr { value: left }),
@@ -134,7 +134,7 @@ fn resolve_ident(ctx: &Compiler, ident: &str) -> Result<CompiledExpr, CompileErr
 fn resolve_list(ctx: &Compiler, items: &[Expression]) -> Result<CompiledExpr, CompileError> {
     let items = items
         .iter()
-        .map(|item| ctx.resolve(item)?.to_cel())
+        .map(|item| ctx.resolve(item)?.into_cel())
         .collect::<Result<Vec<_>, _>>()?;
 
     if items.iter().any(|i| matches!(i, CompiledExpr::Runtime(_))) {
@@ -163,8 +163,8 @@ fn resolve_map(ctx: &Compiler, items: &[(Expression, Expression)]) -> Result<Com
     let items = items
         .iter()
         .map(|(key, value)| {
-            let key = ctx.resolve(key)?.to_cel()?;
-            let value = ctx.resolve(value)?.to_cel()?;
+            let key = ctx.resolve(key)?.into_cel()?;
+            let value = ctx.resolve(value)?.into_cel()?;
             Ok((key, value))
         })
         .collect::<Result<Vec<_>, CompileError>>()?;
@@ -313,7 +313,7 @@ fn resolve_member(ctx: &Compiler, expr: &Expression, member: &Member) -> Result<
             }
         }
         Member::Index(idx) => {
-            let idx = ctx.resolve(idx)?.to_cel()?;
+            let idx = ctx.resolve(idx)?.into_cel()?;
             match (expr, idx) {
                 (
                     expr @ CompiledExpr::Runtime(RuntimeCompiledExpr {
@@ -372,8 +372,8 @@ fn resolve_member(ctx: &Compiler, expr: &Expression, member: &Member) -> Result<
 }
 
 fn resolve_or(ctx: &Compiler, left: &Expression, right: &Expression) -> Result<CompiledExpr, CompileError> {
-    let left = ctx.resolve(left)?.to_bool(ctx);
-    let right = ctx.resolve(right)?.to_bool(ctx);
+    let left = ctx.resolve(left)?.into_bool(ctx);
+    let right = ctx.resolve(right)?.into_bool(ctx);
     match (left, right) {
         (
             CompiledExpr::Constant(ConstantCompiledExpr { value: left }),
@@ -402,7 +402,7 @@ fn resolve_relation(
     op: &RelationOp,
     right: &Expression,
 ) -> Result<CompiledExpr, CompileError> {
-    let left = ctx.resolve(left)?.to_cel()?;
+    let left = ctx.resolve(left)?.into_cel()?;
     let right = ctx.resolve(right)?;
     if let (
         RelationOp::In,
@@ -436,7 +436,7 @@ fn resolve_relation(
         }
     }
 
-    let right = right.to_cel()?;
+    let right = right.into_cel()?;
 
     match (left, right) {
         (
@@ -481,9 +481,9 @@ fn resolve_ternary(
     left: &Expression,
     right: &Expression,
 ) -> Result<CompiledExpr, CompileError> {
-    let cond = ctx.resolve(cond)?.to_bool(ctx);
-    let left = ctx.resolve(left)?.to_cel()?;
-    let right = ctx.resolve(right)?.to_cel()?;
+    let cond = ctx.resolve(cond)?.into_bool(ctx);
+    let left = ctx.resolve(left)?.into_cel()?;
+    let right = ctx.resolve(right)?.into_cel()?;
 
     match cond {
         CompiledExpr::Constant(ConstantCompiledExpr { value: cond }) => {
@@ -510,7 +510,7 @@ fn resolve_unary(ctx: &Compiler, op: &cel_parser::UnaryOp, expr: &Expression) ->
     let expr = ctx.resolve(expr)?;
     match op {
         cel_parser::UnaryOp::Not => {
-            let expr = expr.to_bool(ctx);
+            let expr = expr.into_bool(ctx);
             match expr {
                 CompiledExpr::Constant(ConstantCompiledExpr { value: expr }) => Ok(CompiledExpr::constant(!expr.to_bool())),
                 expr => Ok(CompiledExpr::runtime(
@@ -521,9 +521,9 @@ fn resolve_unary(ctx: &Compiler, op: &cel_parser::UnaryOp, expr: &Expression) ->
                 )),
             }
         }
-        cel_parser::UnaryOp::DoubleNot => Ok(expr.to_bool(ctx)),
+        cel_parser::UnaryOp::DoubleNot => Ok(expr.into_bool(ctx)),
         cel_parser::UnaryOp::Minus => {
-            let expr = expr.to_cel()?;
+            let expr = expr.into_cel()?;
             match expr {
                 CompiledExpr::Constant(ConstantCompiledExpr { value: expr }) => {
                     Ok(CompiledExpr::constant(CelValue::cel_neg(expr)?))

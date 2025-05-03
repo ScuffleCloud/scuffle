@@ -7,7 +7,7 @@ use crate::codegen::cel::types::CelType;
 use crate::types::{ProtoType, ProtoValueType};
 
 #[derive(Debug, Clone, Default)]
-pub struct EndsWith;
+pub(crate) struct EndsWith;
 
 // this.endsWith(arg) -> arg in this
 impl Function for EndsWith {
@@ -28,8 +28,8 @@ impl Function for EndsWith {
             return Err(CompileError::syntax("takes exactly one argument", self));
         }
 
-        let arg = ctx.resolve(&ctx.args[0])?.to_cel()?;
-        let this = this.clone().to_cel()?;
+        let arg = ctx.resolve(&ctx.args[0])?.into_cel()?;
+        let this = this.clone().into_cel()?;
 
         match (this, arg) {
             (

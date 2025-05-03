@@ -589,7 +589,7 @@ impl serde::Serialize for Duration {
             }
 
             s.push('.');
-            s.push_str(unsafe { std::str::from_utf8_unchecked(&buf[..first_non_zero.unwrap_or(8) + 1]) });
+            s.push_str(std::str::from_utf8(&buf[..first_non_zero.unwrap_or(8) + 1]).expect("we just made this buffer it should be valid utf-8"));
             s.push('s');
         } else {
             s.push('s');
@@ -704,11 +704,15 @@ pub(crate) unsafe trait WellKnownAlias: Sized {
         };
 
         let mut value = ManuallyDrop::new(value);
+        // Safety: this is safe given that the `unsafe trait`'s precondition is held.
         let casted = unsafe { &mut *(&mut value as *mut _ as *mut ManuallyDrop<Self>) };
+        // Safety: this is safe because we never access value again and value is a `ManuallyDrop`
+        // which means it will not be deallocated after this scope ends.
         unsafe { ManuallyDrop::take(casted) }
     }
 
     fn cast_ref(value: &Self) -> &Self::Helper {
+        // Safety: this is safe given that the `unsafe trait`'s precondition is held.
         unsafe { &*(value as *const Self as *const Self::Helper) }
     }
 }

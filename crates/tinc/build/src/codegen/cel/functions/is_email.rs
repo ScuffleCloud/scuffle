@@ -7,7 +7,7 @@ use crate::codegen::cel::types::CelType;
 use crate::types::{ProtoType, ProtoValueType};
 
 #[derive(Debug, Clone, Default)]
-pub struct IsEmail;
+pub(crate) struct IsEmail;
 
 // this.isEmail(arg) -> arg in this
 impl Function for IsEmail {
@@ -28,7 +28,7 @@ impl Function for IsEmail {
             return Err(CompileError::syntax("does not take any arguments", self));
         }
 
-        let this = this.clone().to_cel()?;
+        let this = this.clone().into_cel()?;
 
         match this {
             CompiledExpr::Constant(ConstantCompiledExpr { value }) => {

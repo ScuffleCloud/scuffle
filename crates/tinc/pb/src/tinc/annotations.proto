@@ -5,98 +5,146 @@ package tinc;
 import "google/protobuf/descriptor.proto";
 
 extend google.protobuf.MessageOptions {
+  // See `MessageOptions` for what options can be added onto messages.
   MessageOptions message = 15501;
 }
 
 extend google.protobuf.FieldOptions {
+  // See `FieldOptions` for all the options that can be applied to fields.
   FieldOptions field = 15502;
+  // Predefined is used to construct custom field cel expression templates.
+  // For more information refer to the see the `PredefinedConstraint`
   optional PredefinedConstraint predefined = 15508;
 }
 
 extend google.protobuf.EnumOptions {
+  // See `EnumOptions` for all the options that can be applied to enums.
   EnumOptions enum = 15503;
 }
 
 extend google.protobuf.EnumValueOptions {
+  // See `EnumVariantOptions` for all the options that can be applied to enum variants.
   EnumVariantOptions variant = 15504;
 }
 
 extend google.protobuf.MethodOptions {
+  // See `MethodOptions` for all the options that can be applied to methods.
   MethodOptions method = 15505;
 }
 
 extend google.protobuf.ServiceOptions {
+  // See `ServiceOptions` for all the options that can be applied to services.
   ServiceOptions service = 15506;
 }
 
 extend google.protobuf.OneofOptions {
+  // See `OneofOptions` for all the options that can be applied to oneofs.
   OneofOptions oneof = 15507;
 }
 
 message ServiceOptions {
+  // By default service routes are defined in the method, however if you want
+  // all routes in this service to be prefixed this is
+  // how you would apply such a prefix.
   optional string prefix = 1;
 }
 
+
+// Enum to define how to rename fields or enum variants.
 enum RenameAll {
-  // Normally we should have prefix'd enums however in input case
-  // we want to allow for easier use by just saying `LOWER_CASE` instead
-  // of `RENAME_ALL_LOWER_CASE`.
   // protolint:disable ENUM_FIELD_NAMES_PREFIX
   RENAME_ALL_UNSPECIFIED = 0;
+  // Rename to lowercase.
   LOWER_CASE = 1;
+  // Rename to UPPERCASE.
   UPPER_CASE = 2;
+  // Rename to PascalCase.
   PASCAL_CASE = 3;
+  // Rename to camelCase.
   CAMEL_CASE = 4;
+  // Rename to snake_case.
   SNAKE_CASE = 5;
+  // Rename to SCREAMING_SNAKE_CASE.
   SCREAMING_SNAKE_CASE = 6;
+  // Rename to kebab-case.
   KEBAB_CASE = 7;
+  // Rename to SCREAMING-KEBAB-CASE.
   SCREAMING_KEBAB_CASE = 8;
 }
 
 message MethodOptions {
-  // protolint:disable:next REPEATED_FIELD_NAMES_PLURALIZED
+  // A list of endpoints to be built from this method.
   repeated HttpEndpointOptions endpoint = 1;
-  // protolint:disable:next REPEATED_FIELD_NAMES_PLURALIZED
+  // A list of cel expressions to apply to the input of this message.
   repeated CelExpression cel = 2;
 }
 
 message MessageOptions {
+  // If false, this message will not be generated even if its depended on by a method.
+  // If true, this message will always be generated.
+  // By default: this message is only generated if its depended on by a method.
   optional bool generate = 1;
+  // Rename all fields in the message.
   optional RenameAll rename_all = 2;
+  // Disable cel-validation generation.
   optional bool skip_validation = 101;
 
-  //protolint:disable:next REPEATED_FIELD_NAMES_PLURALIZED
+  // A list of custom cel expressions that apply to the message in its entirety
+  // You can use this to create expressions that depend on multiple field values.
   repeated CelExpression cel = 100;
 }
 
+// Change the visibility of a field or enum variant
 enum Visibility {
   VISIBILITY_UNSPECIFIED = 0;
+  // Skipped fields will not be deserialized or serialized.
   SKIP = 1;
+  // Fields marked as input only will only be deserialized and will not be
+  // serialized.
   INPUT_ONLY = 2;
+  // Fields marked as output only will not be deserialized and only will be
+  // serialized.
   OUTPUT_ONLY = 3;
 }
 
+// Predefined constraints allow us to extend the validation system
+// by defining our own custom message extensions with validation
+// constraints.
 message PredefinedConstraint {
-  //protolint:disable:next REPEATED_FIELD_NAMES_PLURALIZED
+  // The set of constraints that should be applied.
   repeated CelExpression cel = 1;
+
+  // The type of the target of the expression
   enum Type {
     TYPE_UNSPECIFIED = 0;
+    // Only apply all sub items to repeated items
     WRAPPER_REPEATED_ITEM = 1;
+    // Only apply all sub items to map keys
     WRAPPER_MAP_KEY = 2;
+    // Only apply all sub items to map values
     WRAPPER_MAP_VALUE = 3;
+    // Unlike the others, this can only be applied
+    // to lists of `CelExpression`
     CUSTOM_EXPRESSION = 4;
   }
   Type type = 2;
 }
 
+// JsonOmittable is the notion of leaving out fields, and
+// how we behave when a field is missing.
 enum JsonOmittable {
   JSON_OMITTABLE_UNSPECIFIED = 0;
+  // If true the field will just be defaulted if not provided.
+  // The field will also not be serialized if its the default value.
   TRUE = 1;
+  // If false we will raise an error when the field is not provided.
   FALSE = 2;
+  // Same as true, except always serialize the field even if its a default value.
   TRUE_BUT_STILL_SERIALIZE = 3;
 }
 
 message FieldOptions {
+  // Rename this specific field to another name.
   optional string rename = 1;
 
   // Deserialization:
@@ -106,34 +154,38 @@ message FieldOptions {
   // if the field is not provided.
   // If this is false then not providing a value for this field
   // will result in an error.
-  // The default setting for this flag is `true` if the field
-  // is marked as `optional` and `false` otherwise.
-  // Meaning that optional fields can be omitted from the json
-  // representation of the message without causing an error.
   //
   // Serialization:
   // This flag dictates if we should skip serializing the field
   // in the json representation of the message if the field
   // is equal to the default value for its type.
-  // The default setting for this flag is `true` if the field
-  // is marked as `optional` and `false` otherwise.
-  // Meaning that optional fields will be omitted from the json
-  // if they do not have a value.
+  //
+  // By default if the value depends on the type of field.
+  // If the field is an option then the default value is
+  // `TRUE_BUT_SERIALIZE` which means that the option does not
+  // need to be provided but a `null` value will always be serialized.
+  // If the field is not an option then it will be required so `FALSE`.
   JsonOmittable json_omittable = 200;
 
+  // Flatten this field into the parent message.
+  // This only works on messages.
   optional bool flatten = 205;
+  // Change the visibility of the field. By Default all fields are visible.
   optional Visibility visibility = 202;
 
+  // Add some constraints to the field.
   optional FieldConstraints constraint = 101;
 }
 
 message FloatConstraint {
   oneof greater {
+    // Requires the input value is greater than the value provided.
     float gt = 1 [(predefined).cel = {
       message: "value must be greater than `{this}`"
       expression: "input > this"
       jsonschemas: '{ "exclusiveMinimum": this }'
     }];
+    // Requires the input value is greater than or equal to the value provided.
     float gte = 2 [(predefined).cel = {
       message: "value must be greater than or equal to `{this}`"
       expression: "input >= this"
@@ -142,11 +194,13 @@ message FloatConstraint {
   }
 
   oneof less {
+    // Requires the input value is less than the value provided.
     float lt = 3 [(predefined).cel = {
       message: "value must be less than `{this}`"
       expression: "input < this"
       jsonschemas: '{ "exclusiveMaximum": this }'
     }];
+    // Requires the input value is less than or equal to the value provided.
     float lte = 4 [(predefined).cel = {
       message: "value must be less than or equal to {this}"
       expression: "input <= this"
@@ -154,18 +208,19 @@ message FloatConstraint {
     }];
   }
 
-  // protolint:disable:next REPEATED_FIELD_NAMES_PLURALIZED
+  // Requires the input value be one of the values in the list
   repeated float in = 5 [(predefined).cel = {
     message: "value must be one of `{this}`"
     expression: "this.contains(input)"
     jsonschemas: '{ "enum": this }'
   }];
-  // protolint:disable:next REPEATED_FIELD_NAMES_PLURALIZED
+  // Requires the input value not be one of the values in the list.
   repeated float not_in = 6 [(predefined).cel = {
     message: "value must not be one of `{this}`"
     expression: "!this.contains(input)"
     jsonschemas: '{ "not": { "enum": this }}'
   }];
+  // Requires the input value be exactly equal to the value provided.
   optional float const = 8 [(predefined).cel = {
     message: "value must be equal to `{this}`"
     expression: "input == this"
@@ -175,11 +230,13 @@ message FloatConstraint {
 
 message DoubleConstraint {
   oneof greater {
+    // Requires the input value is greater than the value provided.
     double gt = 1 [(predefined).cel = {
       message: "value must be greater than `{this}`"
       expression: "input > this"
       jsonschemas: '{ "exclusiveMinimum": this }'
     }];
+    // Requires the input value is greater than or equal to the value provided.
     double gte = 2 [(predefined).cel = {
       message: "value must be greater than or equal to `{this}`"
       expression: "input >= this"
@@ -188,11 +245,13 @@ message DoubleConstraint {
   }
 
   oneof less {
+    // Requires the input value is less than the value provided.
     double lt = 3 [(predefined).cel = {
       message: "value must be less than `{this}`"
       expression: "input < this"
       jsonschemas: '{ "exclusiveMaximum": this }'
     }];
+    // Requires the input value is less than or equal to the value provided.
     double lte = 4 [(predefined).cel = {
       message: "value must be less than or equal to `{this}`"
       expression: "input <= this"
@@ -200,18 +259,19 @@ message DoubleConstraint {
     }];
   }
 
-  // protolint:disable:next REPEATED_FIELD_NAMES_PLURALIZED
+  // Requires the input value be one of the values in the list
   repeated double in = 5 [(predefined).cel = {
     message: "value must be one of `{this}`"
     expression: "this.contains(input)"
     jsonschemas: '{ "enum": this }'
   }];
-  // protolint:disable:next REPEATED_FIELD_NAMES_PLURALIZED
+  // Requires the input value not be one of the values in the list.
   repeated double not_in = 6 [(predefined).cel = {
     message: "value must not be one of `{this}`"
     expression: "!this.contains(input)"
     jsonschemas: '{ "not": { "enum": this }}'
   }];
+  // Requires the input value be exactly equal to the value provided.
   optional double const = 8 [(predefined).cel = {
     message: "value must be equal to `{this}`"
     expression: "input == this"
@@ -221,11 +281,13 @@ message DoubleConstraint {
 
 message Int32Constraints {
   oneof greater {
+    // Requires the input value is greater than the value provided.
     int32 gt = 1 [(predefined).cel = {
       message: "value must be greater than `{this}`"
       expression: "input > this"
       jsonschemas: '{ "exclusiveMinimum": this }'
     }];
+    // Requires the input value is greater than or equal to the value provided.
     int32 gte = 2 [(predefined).cel = {
       message: "value must be greater than or equal to `{this}`"
       expression: "input >= this"
@@ -234,29 +296,32 @@ message Int32Constraints {
   }
 
   oneof less {
+    // Requires the input value is less than the value provided.
     int32 lt = 3 [(predefined).cel = {
       message: "value must be less than `{this}`"
       expression: "input < this"
       jsonschemas: '{ "exclusiveMaximum": this }'
     }];
+    // Requires the input value is less than or equal to the value provided.
     int32 lte = 4 [(predefined).cel = {
       message: "value must be less than or equal to `{this}`"
       expression: "input <= this"
       jsonschemas: '{ "maximum": this }'
     }];
   }
-  // protolint:disable:next REPEATED_FIELD_NAMES_PLURALIZED
+  // Requires the input value be one of the values in the list
   repeated int32 in = 5 [(predefined).cel = {
     message: "value must be one of `{this}`"
     expression: "this.contains(input)"
     jsonschemas: '{ "enum": this }'
   }];
-  // protolint:disable:next REPEATED_FIELD_NAMES_PLURALIZED
+  // Requires the input value not be one of the values in the list.
   repeated int32 not_in = 6 [(predefined).cel = {
     message: "value must not be one of `{this}`"
     expression: "!this.contains(input)"
     jsonschemas: '{ "not": { "enum": this }}'
   }];
+  // Requires the input value be exactly equal to the value provided.
   optional int32 const = 8 [(predefined).cel = {
     message: "value must be equal to `{this}`"
     expression: "input == this"
@@ -266,11 +331,13 @@ message Int32Constraints {
 
 message Int64Constraints {
   oneof greater {
+    // Requires the input value is greater than the value provided.
     int64 gt = 1 [(predefined).cel = {
       message: "value must be greater than `{this}`"
       expression: "input > this"
       jsonschemas: '{ "exclusiveMinimum": this }'
     }];
+    // Requires the input value is greater than or equal to the value provided.
     int64 gte = 2 [(predefined).cel = {
       message: "value must be greater than or equal to `{this}`"
       expression: "input >= this"
@@ -279,29 +346,32 @@ message Int64Constraints {
   }
 
   oneof less {
+    // Requires the input value is less than the value provided.
     int64 lt = 3 [(predefined).cel = {
       message: "value must be less than `{this}`"
       expression: "input < this"
       jsonschemas: '{ "exclusiveMaximum": this }'
     }];
+    // Requires the input value is less than or equal to the value provided.
     int64 lte = 4 [(predefined).cel = {
       message: "value must be less than or equal to `{this}`"
       expression: "input <= this"
       jsonschemas: '{ "maximum": this }'
     }];
   }
-  // protolint:disable:next REPEATED_FIELD_NAMES_PLURALIZED
+  // Requires the input value be one of the values in the list
   repeated int64 in = 5 [(predefined).cel = {
     message: "value must be one of `{this}`"
     expression: "this.contains(input)"
     jsonschemas: '{ "enum": this }'
   }];
-  // protolint:disable:next REPEATED_FIELD_NAMES_PLURALIZED
+  // Requires the input value not be one of the values in the list.
   repeated int64 not_in = 6 [(predefined).cel = {
     message: "value must not be one of `{this}`"
     expression: "!this.contains(input)"
     jsonschemas: '{ "not": { "enum": this }}'
   }];
+  // Requires the input value be exactly equal to the value provided.
   optional int64 const = 8 [(predefined).cel = {
     message: "value must be equal to `{this}`"
     expression: "input == this"
@@ -311,11 +381,13 @@ message Int64Constraints {
 
 message UInt32Constraints {
   oneof greater {
+    // Requires the input value is greater than the value provided.
     uint32 gt = 1 [(predefined).cel = {
       message: "value must be greater than `{this}`"
       expression: "input > this"
       jsonschemas: '{ "exclusiveMinimum": this }'
     }];
+    // Requires the input value is greater than or equal to the value provided.
     uint32 gte = 2 [(predefined).cel = {
       message: "value must be greater than or equal to `{this}`"
       expression: "input >= this"
@@ -324,29 +396,32 @@ message UInt32Constraints {
   }
 
   oneof less {
+    // Requires the input value is less than the value provided.
     uint32 lt = 3 [(predefined).cel = {
       message: "value must be less than `{this}`"
       expression: "input < this"
       jsonschemas: '{ "exclusiveMaximum": this }'
     }];
+    // Requires the input value is less than or equal to the value provided.
     uint32 lte = 4 [(predefined).cel = {
       message: "value must be less than or equal to `{this}`"
       expression: "input <= this"
       jsonschemas: '{ "maximum": this }'
     }];
   }
-  // protolint:disable:next REPEATED_FIELD_NAMES_PLURALIZED
+  // Requires the input value be one of the values in the list
   repeated uint32 in = 5 [(predefined).cel = {
     message: "value must be one of `{this}`"
     expression: "this.contains(input)"
     jsonschemas: '{ "enum": this }'
   }];
-  // protolint:disable:next REPEATED_FIELD_NAMES_PLURALIZED
+  // Requires the input value not be one of the values in the list.
   repeated uint32 not_in = 6 [(predefined).cel = {
     message: "value must not be one of `{this}`"
     expression: "!this.contains(input)"
     jsonschemas: '{ "not": { "enum": this }}'
   }];
+  // Requires the input value be exactly equal to the value provided.
   optional uint32 const = 8 [(predefined).cel = {
     message: "value must be equal to `{this}`"
     expression: "input == this"
@@ -356,11 +431,13 @@ message UInt32Constraints {
 
 message UInt64Constraints {
   oneof greater {
+    // Requires the input value is greater than the value provided.
     int64 gt = 1 [(predefined).cel = {
       message: "value must be greater than `{this}`"
       expression: "input > this"
       jsonschemas: '{ "exclusiveMinimum": this }'
     }];
+    // Requires the input value is greater than or equal to the value provided.
     uint64 gte = 2 [(predefined).cel = {
       message: "value must be greater than or equal to `{this}`"
       expression: "input >= this"
@@ -369,29 +446,32 @@ message UInt64Constraints {
   }
 
   oneof less {
+    // Requires the input value is less than the value provided.
     uint64 lt = 3 [(predefined).cel = {
       message: "value must be less than `{this}`"
       expression: "input < this"
       jsonschemas: '{ "exclusiveMaximum": this }'
     }];
+    // Requires the input value is less than or equal to the value provided.
     uint64 lte = 4 [(predefined).cel = {
       message: "value must be less than or equal to `{this}`"
       expression: "input <= this"
       jsonschemas: '{ "maximum": this }'
     }];
   }
-  // protolint:disable:next REPEATED_FIELD_NAMES_PLURALIZED
+  // Requires the input value be one of the values in the list
   repeated uint64 in = 5 [(predefined).cel = {
     message: "value must be one of `{this}`"
     expression: "this.contains(input)"
     jsonschemas: '{ "enum": this }'
   }];
-  // protolint:disable:next REPEATED_FIELD_NAMES_PLURALIZED
+  // Requires the input value not be one of the values in the list.
   repeated uint64 not_in = 6 [(predefined).cel = {
     message: "value must not be one of `{this}`"
     expression: "!this.contains(input)"
     jsonschemas: '{ "not": { "enum": this }}'
   }];
+  // Requires the input value be exactly equal to the value provided.
   optional uint64 const = 8 [(predefined).cel = {
     message: "value must be equal to `{this}`"
     expression: "input == this"
@@ -400,106 +480,117 @@ message UInt64Constraints {
 }
 
 message StringConstraints {
+  // Requires the input value be exactly equal to the value provided.
   optional string const = 1 [(predefined).cel = {
     message: "value must equal `{this}`"
     expression: "input == this"
     jsonschemas: '{"const": this }'
   }];
+  // Requires the input value length be exactly equal to the value provided.
   optional uint64 len = 2 [(predefined).cel = {
     message: "value must be exactly `{this}` characters long"
     expression: "input.size() == this"
     jsonschemas: '{ "maxLength": this }'
     jsonschemas: '{ "minLength": this }'
   }];
+  // Requires the input value length be greater then or equal to the value provided.
   optional uint64 min_len = 3 [(predefined).cel = {
     message: "value must be at least `{this}` characters long"
     expression: "input.size() >= this"
     jsonschemas: '{ "minLength": this }'
   }];
+  // Requires the input value length be less then or equal to the value provided.
   optional uint64 max_len = 4 [(predefined).cel = {
     message: "value must be at most `{this}` characters long"
     expression: "input.size() <= this"
     jsonschemas: '{ "maxLength": this }'
   }];
+  // Requires the input value to match against regex provided.
   optional string match = 5 [(predefined).cel = {
     message: "value must match the pattern `{this}`"
     expression: "input.matches(this)"
     jsonschemas: '{ "pattern": this }'
   }];
+  // Requires the input value not match against the regex provided.
   optional string not_match = 6 [(predefined).cel = {
     message: "value must not match the pattern `{this}`"
     expression: "!(input.matches(this))"
     jsonschemas: '{ "not": { "pattern": this }}'
   }];
+  // Requires the input value to start with the value provided.
   optional string prefix = 7 [(predefined).cel = {
     message: "value must start with `{this}`"
     expression: "input.startsWith(this)"
     jsonschemas: '{ "pattern": "^" + this }'
   }];
+  // Requires the input value to end with the value provided.
   optional string suffix = 8 [(predefined).cel = {
     message: "value must end with `{this}`"
     expression: "input.endsWith(this)"
     jsonschemas: '{ "pattern": this + "$" }'
   }];
+  // Requires the input value to contain this sub string.
   optional string contains = 9 [(predefined).cel = {
     message: "value must contain `{this}`"
     expression: "input.contains(this)"
     jsonschemas: '{ "pattern": this }'
   }];
+  // Requires the input value to not contain this sub string.
   optional string not_contains = 10 [(predefined).cel = {
     message: "value must not contain `{this}`"
     expression: "!input.contains(this)"
     jsonschemas: '{ "not": { "pattern": this }}'
   }];
-  // protolint:disable:next REPEATED_FIELD_NAMES_PLURALIZED
+  // Requires the input value to be one of the values in the list.
   repeated string in = 11 [(predefined).cel = {
     message: "value must be one of `{this}`"
     expression: "this.contains(input)"
     jsonschemas: '{ "enum": this }'
   }];
-  // protolint:disable:next REPEATED_FIELD_NAMES_PLURALIZED
+  // Requires the input value to not be in the list.
   repeated string not_in = 12 [(predefined).cel = {
     message: "value must not be one of `{this}`"
     expression: "!this.contains(input)"
     jsonschemas: '{ "not": { "enum": this }}'
   }];
   oneof well_known {
+    // Ensure the value is a valid email address format
     bool email = 13 [(predefined).cel = {
       message: "value must be a valid email address"
       expression: "!this || input.isEmail()"
       jsonschemas: 'this ? { "format": "email" } : {}'
     }];
-
+    // Requires the input value to be a valid ipv4 or ipv6 address.
     bool ip = 14 [(predefined).cel = {
       message: "value must be a valid ipv4 or ipv6 address"
       expression: "!this || input.isIpv4() || input.isIpv6()"
       jsonschemas: 'this ? { "anyOf": [ { "format": "ipv4" }, { "format": "ipv6" } ] } : {}'
     }];
-
+    // Requires the input value to be a valid ipv4 address.
     bool ipv4 = 15 [(predefined).cel = {
       message: "value must be a valid ipv4 address"
       expression: "!this || input.isIpv4()"
       jsonschemas: 'this ? { "format": "ipv4" } : {}'
     }];
-
+    // Requires the input value to be a valid ipv6 address.
     bool ipv6 = 16 [(predefined).cel = {
       message: "value must be a valid ipv6 address"
       expression: "!this || input.isIpv6()"
       jsonschemas: 'this ? { "format": "ipv6" } : {}'
     }];
-
+    // Requires the input value to be a valid uuid.
     bool uuid = 17 [(predefined).cel = {
       message: "value must be a valid uuid"
       expression: "!this || input.isUuid()"
       jsonschemas: 'this ? { "format": "uuid" } : {}'
     }];
-
+    // Requires the input value to be a valid hostname.
     bool hostname = 18 [(predefined).cel = {
       message: "value must be a valid hostname"
       expression: "!this || input.isHostname()"
       jsonschemas: 'this ? { "format": "hostname" } : {}'
     }];
-
+    // Requires the input value to be a valid uri.
     bool uri = 19 [(predefined).cel = {
       message: "value must be a valid uri"
       expression: "!this || input.isUri()"
@@ -509,22 +600,26 @@ message StringConstraints {
 }
 
 message BytesConstraints {
+  // Requires the input value be exactly equal to the value provided.
   optional bytes const = 1 [(predefined).cel = {
     message: "value must equal `{this}`"
     expression: "input == this"
     jsonschemas: '{"const": this }'
   }];
+  // Requires the input value length be exactly equal to the value provided.
   optional uint64 len = 2 [(predefined).cel = {
     message: "value must be exactly `{this}` bytes long"
     expression: "input.size() == this"
     jsonschemas: '{ "minLength": this }'
     jsonschemas: '{ "maxLength": this }'
   }];
+  // Requires the input value length be greater then or equal to the value provided.
   optional uint64 min_len = 3 [(predefined).cel = {
     message: "value must be at least `{this}` bytes long"
     expression: "input.size() >= this"
     jsonschemas: '{ "minLength": this }'
   }];
+  // Requires the input value length be less then or equal to the value provided.
   optional uint64 max_len = 4 [(predefined).cel = {
     message: "value must be at most `{this}` bytes long"
     expression: "input.size() <= this"
@@ -533,22 +628,24 @@ message BytesConstraints {
 }
 
 message EnumConstraints {
+  // Requires the input value to be equal to the enum value where the tag is the value provided.
   optional int32 const = 1 [(predefined).cel = {
     message: "value must be equal to `{this.enum()}`"
     expression: "input == this"
     jsonschemas: '{ "const": this.enum() }'
   }];
+  // Requires the input to be a valid value for this enum.
   optional bool defined = 2 [(predefined).cel = {
     message: "value must be defined in the enum"
     expression: "!this || input.enum()"
   }];
-  // protolint:disable:next REPEATED_FIELD_NAMES_PLURALIZED
+  // Requires the input to be one of the enum's provided.
   repeated int32 in = 3 [(predefined).cel = {
     message: "value must be one of `{this.map(e, e.enum())}`"
     expression: "this.contains(input)"
     jsonschemas: '{ "enum": this.map(e, e.enum()) }'
   }];
-  // protolint:disable:next REPEATED_FIELD_NAMES_PLURALIZED
+  // Requires the input to not be one of the enums provided.
   repeated int32 not_in = 4 [(predefined).cel = {
     message: "value must not be one of `{this.map(e, e.enum())}`"
     expression: "!this.contains(input)"
@@ -557,27 +654,34 @@ message EnumConstraints {
 }
 
 message RepeatedConstraints {
+  // Requires the length of the list be greater than or equal to the value provided.
   optional uint64 min_len = 1 [(predefined).cel = {
     message: "value must have at least `{this}` elements"
     expression: "input.size() >= this"
     jsonschemas: '{ "minItems": this }'
   }];
+  // Requires the length of the list be less than or equal to the value provided.
   optional uint64 max_len = 2 [(predefined).cel = {
     message: "value must have at most `{this}` elements"
     expression: "input.size() <= this"
     jsonschemas: '{ "maxItems": this }'
   }];
+  // Requires the length of the list be equal to the value provided.
   optional uint64 len = 3 [(predefined).cel = {
     message: "value must have exactly `{this}` elements"
     expression: "input.size() == this"
     jsonschemas: '{ "maxItems": this }'
     jsonschemas: '{ "minItems": this }'
   }];
-  optional bool unique = 4 [(predefined).cel = {
-    message: "value must be unique"
-    expression: "!this || input.isUnique()"
-    jsonschemas: 'this ? { "uniqueItems": this } : {}'
-  }];
+
+  // Requires all items in the list are unique
+  // optional bool unique = 4 [(predefined).cel = {
+  //   message: "value must be unique"
+  //   expression: "!this || input.isUnique()"
+  //   jsonschemas: 'this ? { "uniqueItems": this } : {}'
+  // }];
+
+  // Apply a constraints to the items in the list.
   optional PrimitiveConstraints item = 5 [
     (predefined).type = WRAPPER_REPEATED_ITEM
   ];
@@ -590,16 +694,19 @@ enum Ignore {
 }
 
 message MapConstraints {
+  // Requires the length of the map be greater than or equal to the value provided.
   optional uint64 min_len = 1 [(predefined).cel = {
     message: "value must have at least `{this}` elements"
     expression: "input.size() >= this"
     jsonschemas: '{ "minProperties": this }'
   }];
+  // Requires the length of the map be less than or equal to the value provided.
   optional uint64 max_len = 2 [(predefined).cel = {
     message: "value must have at most `{this}` elements"
     expression: "input.size() <= this"
     jsonschemas: '{ "maxProperties": this }'
   }];
+  // Requires the length of the map be equal to the value provided.
   optional uint64 len = 3 [(predefined).cel = {
     message: "value must have exactly `{this}` elements"
     expression: "input.size() == this"
@@ -609,23 +716,30 @@ message MapConstraints {
 
   message MapKeyConstraints {
     oneof constraint {
+      // for int32 keys
       Int32Constraints int32 = 1;
+      // for int64 keys
       Int64Constraints int64 = 2;
+      // for uint32 keys
       UInt32Constraints uint32 = 3;
+      // for uint64 keys
       UInt64Constraints uint64 = 4;
+      // for string keys
       StringConstraints string = 5;
-      // EnumConstraints enum = 6;
     }
-    // optional Ignore ignore = 7;
-    //protolint:disable:next REPEATED_FIELD_NAMES_PLURALIZED
+
+    // A list of custom expressions to apply to map keys.
     repeated CelExpression cel = 8 [
       (predefined).type = CUSTOM_EXPRESSION
     ];
   }
 
+  // Apply a constraints to the keys in the list.
   optional MapKeyConstraints key = 4 [
     (predefined).type = WRAPPER_MAP_KEY
   ];
+
+  // Apply a constraints to the values in the list.
   optional PrimitiveConstraints value = 5 [
     (predefined).type = WRAPPER_MAP_VALUE
   ];
@@ -633,18 +747,27 @@ message MapConstraints {
 
 message PrimitiveConstraints {
   oneof constraint {
+    // for float values
     FloatConstraint float = 1;
+    // for double values
     DoubleConstraint double = 2;
+    // for int32 values
     Int32Constraints int32 = 3;
+    // for int64 values
     Int64Constraints int64 = 4;
+    // for uint32 values
     UInt32Constraints uint32 = 5;
+    // for uint64 values
     UInt64Constraints uint64 = 6;
+    // for string values
     StringConstraints string = 7;
+    // for bytes values
     BytesConstraints bytes = 8;
+    // for enum values
     EnumConstraints enum = 9;
   }
-  // optional Ignore ignore = 10;
-  //protolint:disable:next REPEATED_FIELD_NAMES_PLURALIZED
+
+  // A list of custom expressions to apply to the value
   repeated CelExpression cel = 11 [
       (predefined).type = CUSTOM_EXPRESSION
     ];
@@ -652,42 +775,60 @@ message PrimitiveConstraints {
 
 message FieldConstraints {
   oneof constraint {
+    // for float fields.
     FloatConstraint float = 1;
+    // for double fields.
     DoubleConstraint double = 2;
+    // for int32 fields.
     Int32Constraints int32 = 3;
+    // for int64 fields.
     Int64Constraints int64 = 4;
+    // for uint32 fields.
     UInt32Constraints uint32 = 5;
+    // for uint64 fields.
     UInt64Constraints uint64 = 6;
+    // for string fields.
     StringConstraints string = 7;
+    // for bytes fields.
     BytesConstraints bytes = 8;
+    // for enum fields.
     EnumConstraints enum = 9;
+    // for repeated fields.
     RepeatedConstraints repeated = 10;
+    // for map fields.
     MapConstraints map = 11;
   }
-  // optional Ignore ignore = 12;
-  //protolint:disable:next REPEATED_FIELD_NAMES_PLURALIZED
+
+  // A list of custom expressions to apply to the field.
   repeated CelExpression cel = 13 [
     (predefined).type = CUSTOM_EXPRESSION
   ];
 }
 
 message CelExpression {
+  // The message to use when the validation fails.
+  // You can template cel expressions using the `{<cel-expr>}` syntax
   string message = 2;
+  // The expression itself.
+  // Note: This expression's result will be converted into a bool.
   string expression = 3;
-  message Variable {
-    string name = 1;
-    string rust_path = 2;
-  }
+  // Json Scheamas that should be used when this expression is applied.
+  // This is also a cel-expression which is evaluated at compile time
+  // and should return a map object in the json schema format.
   repeated string jsonschemas = 5;
 }
 
 message EnumOptions {
+  // Treat this enum as a number enum instead of string
   optional bool repr_enum = 2;
+  // Rename all the fields on the enum
   optional RenameAll rename_all = 3;
 }
 
 message EnumVariantOptions {
+  // Rename this variant
   optional string rename = 1;
+  // Change the visibility for this variant.
   optional Visibility visibility = 2;
 }
 
@@ -717,34 +858,52 @@ message HttpEndpointOptions {
   }
 
   message RequestBody {
+    // The field to parse the request body into.
+    // If the field is a `bytes` field then
+    // the request body will not be parsed
+    // but will be read into the field.
+    // By default this is empty which means
+    // it will be parsed into the root message.
     string field = 1;
+    // If we should store the content type into a field.
+    // By default this is empty which means it will not be stored.
     string content_type_field = 2;
   }
 
   message QueryParams {
+    // The field to parse the query parameters into.
+    // By Default this is empty and therefore its parsed into the root message.
     string field = 1;
   }
 
   // The default input for `GET` and `DELETE` methods is `query`
-  // where field is empty denoting the message itthis.
-  // Otherwise the default is `body` where field is empty denoting
-  // the message itthis. Content-type by default is not saved in the message.
+  // Otherwise the default is `body`.
   oneof input {
     RequestBody body = 7;
     QueryParams query = 8;
   }
 
   message Response {
+    // Specify a sub field to return as the response
+    // If this field is bytes or text it will be returned as is
+    // without encoding.
     string field = 1;
+    // Specify the field to take the content-type from.
     string content_type_field = 2;
   }
 
+  // Response options,
+  // by default the entire message will be sent as a response with the content type
+  // being `application/json`
   Response response = 9;
 }
 
 message OneofOptions {
+  // Rename this oneof's name
   optional string rename = 1;
+  // Rename all the fields in the oneof.
   optional RenameAll rename_all = 4;
+
   // Deserialization:
   // This flag dictates how we handle fields which are
   // not provided in the json representation of the message.
@@ -752,30 +911,38 @@ message OneofOptions {
   // if the field is not provided.
   // If this is false then not providing a value for this field
   // will result in an error.
-  // The default setting for this flag is `true` if the field
-  // is marked as `optional` and `false` otherwise.
-  // Meaning that optional fields can be omitted from the json
-  // representation of the message without causing an error.
   //
   // Serialization:
   // This flag dictates if we should skip serializing the field
   // in the json representation of the message if the field
   // is equal to the default value for its type.
-  // The default setting for this flag is `true` if the field
-  // is marked as `optional` and `false` otherwise.
-  // Meaning that optional fields will be omitted from the json
-  // if they do not have a value.
+  //
+  // By default if the value depends on the type of field.
+  // If the field is an option then the default value is
+  // `TRUE_BUT_SERIALIZE` which means that the option does not
+  // need to be provided but a `null` value will always be serialized.
+  // If the field is not an option then it will be required so `FALSE`.
   JsonOmittable json_omittable = 200;
+
   // This flag dictates if the field is nullable or not.
   // By default oneof fields are not nullable.
   optional bool optional = 6;
+
+  // This specifies the visibility for oneof fields.
   optional Visibility visibility = 202;
 
+  // Tagging a oneof causes the ser/de to represent it like such
+  // {
+  //    "tag": "<tag>",
+  //    "content": <content>
+  // }
   message Tagged {
     string tag = 1;
     string content = 2;
   }
 
+  // If you want to use tagged notation this allows you to configure that.
   optional Tagged tagged = 100;
+  // You can also flatten the oneof directly into the containing message.
   optional bool flatten = 101;
 }

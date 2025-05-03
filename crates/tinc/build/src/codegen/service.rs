@@ -455,7 +455,7 @@ impl GeneratedMethod {
         })
     }
 
-    pub fn method_handler(
+    pub(crate) fn method_handler(
         &self,
         function_name: &Ident,
         server_module_name: &Ident,
@@ -479,7 +479,7 @@ impl GeneratedMethod {
         }
     }
 
-    pub fn route(&self, function_name: &Ident) -> proc_macro2::TokenStream {
+    pub(crate) fn route(&self, function_name: &Ident) -> proc_macro2::TokenStream {
         let path = &self.path;
         let http_method = &self.http_method;
 
@@ -490,14 +490,14 @@ impl GeneratedMethod {
 }
 
 #[derive(Debug, Clone, PartialEq)]
-pub struct ProcessedService {
+pub(crate) struct ProcessedService {
     pub full_name: ProtoPath,
     pub package: ProtoPath,
     pub methods: IndexMap<String, ProcessedServiceMethod>,
 }
 
 impl ProcessedService {
-    pub fn name(&self) -> &str {
+    pub(crate) fn name(&self) -> &str {
         self.full_name
             .strip_prefix(&*self.package)
             .unwrap_or(&self.full_name)
@@ -506,7 +506,7 @@ impl ProcessedService {
 }
 
 #[derive(Debug, Clone, PartialEq)]
-pub struct ProcessedServiceMethod {
+pub(crate) struct ProcessedServiceMethod {
     pub codec_path: ProtoPath,
     pub input: ProtoServiceMethodIo,
     pub output: ProtoServiceMethodIo,

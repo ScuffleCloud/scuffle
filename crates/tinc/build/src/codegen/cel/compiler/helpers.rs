@@ -6,7 +6,7 @@ use crate::codegen::cel::types::CelType;
 use crate::types::{ProtoModifiedValueType, ProtoType, ProtoValueType, ProtoWellKnownType};
 
 impl CompiledExpr {
-    pub fn to_bool(self, compiler: &Compiler) -> CompiledExpr {
+    pub(crate) fn into_bool(self, compiler: &Compiler) -> CompiledExpr {
         match &self {
             CompiledExpr::Runtime(RuntimeCompiledExpr {
                 expr,
@@ -23,7 +23,7 @@ impl CompiledExpr {
                     expr: parse_quote! { ___to_bool_value },
                     ty: CelType::Proto(ProtoType::Value(ty.clone())),
                 })
-                .to_bool(compiler);
+                .into_bool(compiler);
 
                 CompiledExpr::Runtime(RuntimeCompiledExpr {
                     expr: parse_quote! {
@@ -63,7 +63,7 @@ impl CompiledExpr {
         }
     }
 
-    pub fn to_cel(self) -> Result<CompiledExpr, CompileError> {
+    pub(crate) fn into_cel(self) -> Result<CompiledExpr, CompileError> {
         match self {
             CompiledExpr::Runtime(RuntimeCompiledExpr {
                 expr,
@@ -105,13 +105,13 @@ impl CompiledExpr {
                     expr: parse_quote!(key),
                     ty: CelType::Proto(ProtoType::Value(key_ty)),
                 })
-                .to_cel()?;
+                .into_cel()?;
 
                 let value_to_cel = CompiledExpr::Runtime(RuntimeCompiledExpr {
                     expr: parse_quote!(value),
                     ty: CelType::Proto(ProtoType::Value(value_ty)),
                 })
-                .to_cel()?;
+                .into_cel()?;
 
                 Ok(CompiledExpr::Runtime(RuntimeCompiledExpr {
                     expr: parse_quote! {
@@ -135,7 +135,7 @@ impl CompiledExpr {
                     expr: parse_quote!(item),
                     ty: CelType::Proto(ProtoType::Value(some_ty)),
                 })
-                .to_cel()?;
+                .into_cel()?;
 
                 Ok(CompiledExpr::Runtime(RuntimeCompiledExpr {
                     expr: parse_quote! {{
@@ -155,7 +155,7 @@ impl CompiledExpr {
                     expr: parse_quote!(item),
                     ty: CelType::Proto(ProtoType::Value(item_ty)),
                 })
-                .to_cel()?;
+                .into_cel()?;
 
                 Ok(CompiledExpr::Runtime(RuntimeCompiledExpr {
                     expr: parse_quote! {

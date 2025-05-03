@@ -32,6 +32,7 @@ pub trait EnumHelper {
     type Target<E>;
 }
 
+#[repr(transparent)]
 pub struct Enum<T> {
     value: i32,
     _marker: PhantomData<T>,
@@ -139,26 +140,33 @@ unsafe trait EnumSerialize<T> {
     type Helper: Serialize;
 
     fn cast(&self) -> &Self::Helper {
+        // Safety: This trait is marked as unsafe and that safety condition
+        // makes this operation safe.
         unsafe { &*(self as *const Self as *const Self::Helper) }
     }
 }
 
+/// Safety: [`Enum`] is `#[repr(transparent)]` for [`i32`].
 unsafe impl<T: Serialize + TryFrom<i32>> EnumSerialize<T> for i32 {
     type Helper = Enum<T>;
 }
 
+/// Safety: [`Enum`] is `#[repr(transparent)]` for [`i32`].
 unsafe impl<T: Serialize + TryFrom<i32>> EnumSerialize<T> for Option<i32> {
     type Helper = Option<Enum<T>>;
 }
 
+/// Safety: [`Enum`] is `#[repr(transparent)]` for [`i32`].
 unsafe impl<T: Serialize + TryFrom<i32>> EnumSerialize<T> for Vec<i32> {
     type Helper = Vec<Enum<T>>;
 }
 
+/// Safety: [`Enum`] is `#[repr(transparent)]` for [`i32`].
 unsafe impl<K: Serialize, V: Serialize + TryFrom<i32>> EnumSerialize<V> for BTreeMap<K, i32> {
     type Helper = BTreeMap<K, Enum<V>>;
 }
 
+/// Safety: [`Enum`] is `#[repr(transparent)]` for [`i32`].
 unsafe impl<K: Serialize, V: Serialize + TryFrom<i32>> EnumSerialize<V> for HashMap<K, i32> {
     type Helper = HashMap<K, Enum<V>>;
 }

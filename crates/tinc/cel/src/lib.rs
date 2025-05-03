@@ -1,3 +1,11 @@
+#![cfg_attr(coverage_nightly, feature(coverage_attribute))]
+#![deny(missing_docs)]
+#![deny(unsafe_code)]
+#![deny(unreachable_pub)]
+#![doc(hidden)]
+
+//! Currently this crate is invisible outside because there is no stable API for the tinc-cel crate.
+
 use std::borrow::Cow;
 use std::collections::{BTreeMap, HashMap};
 use std::hash::Hash;

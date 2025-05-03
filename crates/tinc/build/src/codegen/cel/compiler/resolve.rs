@@ -1,6 +1,7 @@
 use cel_parser::{ArithmeticOp, Atom, Expression, Member, RelationOp};
 use quote::quote;
 use syn::parse_quote;
+use tinc_cel::CelValue;
 
 use super::{CompileError, CompiledExpr, Compiler, CompilerCtx, ConstantCompiledExpr, RuntimeCompiledExpr};
 use crate::codegen::cel::types::CelType;
@@ -26,12 +27,26 @@ pub fn resolve(ctx: &Compiler, expr: &Expression) -> Result<CompiledExpr, Compil
 fn resolve_and(ctx: &Compiler, left: &Expression, right: &Expression) -> Result<CompiledExpr, CompileError> {
     let left = ctx.resolve(left)?.to_bool(ctx);
     let right = ctx.resolve(right)?.to_bool(ctx);
-    Ok(CompiledExpr::runtime(
-        CelType::Proto(ProtoType::Value(ProtoValueType::Bool)),
-        parse_quote! {
-            (#left) && (#right)
-        },
-    ))
+    match (left, right) {
+        (
+            CompiledExpr::Constant(ConstantCompiledExpr { value: left }),
+            CompiledExpr::Constant(ConstantCompiledExpr { value: right }),
+        ) => Ok(CompiledExpr::constant(left.to_bool() && right.to_bool())),
+        (CompiledExpr::Constant(ConstantCompiledExpr { value: const_value }), other)
+        | (other, CompiledExpr::Constant(ConstantCompiledExpr { value: const_value })) => {
+            if const_value.to_bool() {
+                Ok(other)
+            } else {
+                Ok(CompiledExpr::constant(false))
+            }
+        }
+        (left, right) => Ok(CompiledExpr::runtime(
+            CelType::Proto(ProtoType::Value(ProtoValueType::Bool)),
+            parse_quote! {
+                (#left) && (#right)
+            },
+        )),
+    }
 }
 
 fn resolve_arithmetic(
@@ -42,24 +57,37 @@ fn resolve_arithmetic(
 ) -> Result<CompiledExpr, CompileError> {
     let left = ctx.resolve(left)?.to_cel()?;
     let right = ctx.resolve(right)?.to_cel()?;
-
-    let op = match op {
-        ArithmeticOp::Add => quote! { cel_add },
-        ArithmeticOp::Subtract => quote! { cel_sub },
-        ArithmeticOp::Divide => quote! { cel_div },
-        ArithmeticOp::Multiply => quote! { cel_mul },
-        ArithmeticOp::Modulus => quote! { cel_rem },
-    };
-
-    Ok(CompiledExpr::runtime(
-        CelType::CelValue,
-        parse_quote! {
-            ::tinc::__private::cel::CelValue::#op(
-                #right,
-                #left,
-            )?
+    match (left, right) {
+        (
+            CompiledExpr::Constant(ConstantCompiledExpr { value: left }),
+            CompiledExpr::Constant(ConstantCompiledExpr { value: right }),
+        ) => match op {
+            ArithmeticOp::Add => Ok(CompiledExpr::constant(CelValue::cel_add(left, right)?)),
+            ArithmeticOp::Subtract => Ok(CompiledExpr::constant(CelValue::cel_sub(left, right)?)),
+            ArithmeticOp::Divide => Ok(CompiledExpr::constant(CelValue::cel_div(left, right)?)),
+            ArithmeticOp::Multiply => Ok(CompiledExpr::constant(CelValue::cel_mul(left, right)?)),
+            ArithmeticOp::Modulus => Ok(CompiledExpr::constant(CelValue::cel_rem(left, right)?)),
         },
-    ))
+        (left, right) => {
+            let op = match op {
+                ArithmeticOp::Add => quote! { cel_add },
+                ArithmeticOp::Subtract => quote! { cel_sub },
+                ArithmeticOp::Divide => quote! { cel_div },
+                ArithmeticOp::Multiply => quote! { cel_mul },
+                ArithmeticOp::Modulus => quote! { cel_rem },
+            };
+
+            Ok(CompiledExpr::runtime(
+                CelType::CelValue,
+                parse_quote! {
+                    ::tinc::__private::cel::CelValue::#op(
+                        #right,
+                        #left,
+                    )?
+                },
+            ))
+        }
+    }
 }
 
 fn resolve_atom(_: &Compiler, atom: &Atom) -> Result<CompiledExpr, CompileError> {
@@ -109,41 +137,65 @@ fn resolve_list(ctx: &Compiler, items: &[Expression]) -> Result<CompiledExpr, Co
         .map(|item| ctx.resolve(item)?.to_cel())
         .collect::<Result<Vec<_>, _>>()?;
 
-    Ok(CompiledExpr::runtime(
-        CelType::CelValue,
-        parse_quote! {
-            ::tinc::__private::cel::CelValue::List(::std::iter::FromIterator::from_iter([
-                #(#items),*
-            ]))
-        },
-    ))
+    if items.iter().any(|i| matches!(i, CompiledExpr::Runtime(_))) {
+        Ok(CompiledExpr::runtime(
+            CelType::CelValue,
+            parse_quote! {
+                ::tinc::__private::cel::CelValue::List(::std::iter::FromIterator::from_iter([
+                    #(#items),*
+                ]))
+            },
+        ))
+    } else {
+        Ok(CompiledExpr::constant(CelValue::List(
+            items
+                .into_iter()
+                .map(|item| match item {
+                    CompiledExpr::Constant(ConstantCompiledExpr { value }) => value,
+                    _ => unreachable!(),
+                })
+                .collect(),
+        )))
+    }
 }
 
 fn resolve_map(ctx: &Compiler, items: &[(Expression, Expression)]) -> Result<CompiledExpr, CompileError> {
-    dbg!(items);
-
     let items = items
         .iter()
         .map(|(key, value)| {
             let key = ctx.resolve(key)?.to_cel()?;
             let value = ctx.resolve(value)?.to_cel()?;
-            Ok(quote! {
-                (
-                    #key,
-                    #value,
-                )
-            })
+            Ok((key, value))
         })
         .collect::<Result<Vec<_>, CompileError>>()?;
 
-    Ok(CompiledExpr::runtime(
-        CelType::CelValue,
-        parse_quote! {
-            ::tinc::__private::cel::CelValueConv::Map(::std::iter::FromIterator::from_iter([
-                #(#items),*
-            ]))
-        },
-    ))
+    if items
+        .iter()
+        .any(|(key, value)| matches!(key, CompiledExpr::Runtime(_)) || matches!(value, CompiledExpr::Runtime(_)))
+    {
+        let items = items.into_iter().map(|(key, value)| quote!((#key, #value)));
+        Ok(CompiledExpr::runtime(
+            CelType::CelValue,
+            parse_quote! {
+                ::tinc::__private::cel::CelValueConv::Map(::std::iter::FromIterator::from_iter([
+                    #(#items),*
+                ]))
+            },
+        ))
+    } else {
+        Ok(CompiledExpr::constant(CelValue::Map(
+            items
+                .into_iter()
+                .map(|(key, value)| match (key, value) {
+                    (
+                        CompiledExpr::Constant(ConstantCompiledExpr { value: key }),
+                        CompiledExpr::Constant(ConstantCompiledExpr { value }),
+                    ) => (key, value),
+                    _ => unreachable!(),
+                })
+                .collect(),
+        )))
+    }
 }
 
 fn resolve_member(ctx: &Compiler, expr: &Expression, member: &Member) -> Result<CompiledExpr, CompileError> {
@@ -322,12 +374,26 @@ fn resolve_member(ctx: &Compiler, expr: &Expression, member: &Member) -> Result<
 fn resolve_or(ctx: &Compiler, left: &Expression, right: &Expression) -> Result<CompiledExpr, CompileError> {
     let left = ctx.resolve(left)?.to_bool(ctx);
     let right = ctx.resolve(right)?.to_bool(ctx);
-    Ok(CompiledExpr::runtime(
-        CelType::Proto(ProtoType::Value(ProtoValueType::Bool)),
-        parse_quote! {
-            (#left) || (#right)
-        },
-    ))
+    match (left, right) {
+        (
+            CompiledExpr::Constant(ConstantCompiledExpr { value: left }),
+            CompiledExpr::Constant(ConstantCompiledExpr { value: right }),
+        ) => Ok(CompiledExpr::constant(left.to_bool() || right.to_bool())),
+        (CompiledExpr::Constant(ConstantCompiledExpr { value: const_value }), other)
+        | (other, CompiledExpr::Constant(ConstantCompiledExpr { value: const_value })) => {
+            if const_value.to_bool() {
+                Ok(CompiledExpr::constant(true))
+            } else {
+                Ok(other)
+            }
+        }
+        (left, right) => Ok(CompiledExpr::runtime(
+            CelType::Proto(ProtoType::Value(ProtoValueType::Bool)),
+            parse_quote! {
+                (#left) || (#right)
+            },
+        )),
+    }
 }
 
 fn resolve_relation(
@@ -372,25 +438,41 @@ fn resolve_relation(
 
     let right = right.to_cel()?;
 
-    let op = match op {
-        RelationOp::LessThan => quote! { cel_lt },
-        RelationOp::LessThanEq => quote! { cel_lte },
-        RelationOp::GreaterThan => quote! { cel_gt },
-        RelationOp::GreaterThanEq => quote! { cel_gte },
-        RelationOp::Equals => quote! { cel_eq },
-        RelationOp::NotEquals => quote! { cel_neq },
-        RelationOp::In => quote! { cel_in },
-    };
-
-    Ok(CompiledExpr::runtime(
-        CelType::Proto(ProtoType::Value(ProtoValueType::Bool)),
-        parse_quote! {
-            ::tinc::__private::cel::CelValue::#op(
-                #left,
-                #right,
-            )?
+    match (left, right) {
+        (
+            CompiledExpr::Constant(ConstantCompiledExpr { value: left }),
+            CompiledExpr::Constant(ConstantCompiledExpr { value: right }),
+        ) => match op {
+            RelationOp::LessThan => Ok(CompiledExpr::constant(CelValue::cel_lt(left, right)?)),
+            RelationOp::LessThanEq => Ok(CompiledExpr::constant(CelValue::cel_lte(left, right)?)),
+            RelationOp::GreaterThan => Ok(CompiledExpr::constant(CelValue::cel_gt(left, right)?)),
+            RelationOp::GreaterThanEq => Ok(CompiledExpr::constant(CelValue::cel_gte(left, right)?)),
+            RelationOp::Equals => Ok(CompiledExpr::constant(CelValue::cel_eq(left, right)?)),
+            RelationOp::NotEquals => Ok(CompiledExpr::constant(CelValue::cel_neq(left, right)?)),
+            RelationOp::In => Ok(CompiledExpr::constant(CelValue::cel_in(left, right)?)),
         },
-    ))
+        (left, right) => {
+            let op = match op {
+                RelationOp::LessThan => quote! { cel_lt },
+                RelationOp::LessThanEq => quote! { cel_lte },
+                RelationOp::GreaterThan => quote! { cel_gt },
+                RelationOp::GreaterThanEq => quote! { cel_gte },
+                RelationOp::Equals => quote! { cel_eq },
+                RelationOp::NotEquals => quote! { cel_neq },
+                RelationOp::In => quote! { cel_in },
+            };
+
+            Ok(CompiledExpr::runtime(
+                CelType::Proto(ProtoType::Value(ProtoValueType::Bool)),
+                parse_quote! {
+                    ::tinc::__private::cel::CelValue::#op(
+                        #left,
+                        #right,
+                    )?
+                },
+            ))
+        }
+    }
 }
 
 fn resolve_ternary(
@@ -403,16 +485,25 @@ fn resolve_ternary(
     let left = ctx.resolve(left)?.to_cel()?;
     let right = ctx.resolve(right)?.to_cel()?;
 
-    Ok(CompiledExpr::runtime(
-        CelType::CelValue,
-        parse_quote! {
-            if (#cond) {
-                #left
+    match cond {
+        CompiledExpr::Constant(ConstantCompiledExpr { value: cond }) => {
+            if cond.to_bool() {
+                Ok(left)
             } else {
-                #right
+                Ok(right)
             }
-        },
-    ))
+        }
+        cond => Ok(CompiledExpr::runtime(
+            CelType::CelValue,
+            parse_quote! {
+                if (#cond) {
+                    #left
+                } else {
+                    #right
+                }
+            },
+        )),
+    }
 }
 
 fn resolve_unary(ctx: &Compiler, op: &cel_parser::UnaryOp, expr: &Expression) -> Result<CompiledExpr, CompileError> {
@@ -420,23 +511,30 @@ fn resolve_unary(ctx: &Compiler, op: &cel_parser::UnaryOp, expr: &Expression) ->
     match op {
         cel_parser::UnaryOp::Not => {
             let expr = expr.to_bool(ctx);
-            Ok(CompiledExpr::runtime(
-                CelType::Proto(ProtoType::Value(ProtoValueType::Bool)),
-                parse_quote! {
-                    !(::tinc::__private::cel::to_bool(#expr))
-                },
-            ))
+            match expr {
+                CompiledExpr::Constant(ConstantCompiledExpr { value: expr }) => Ok(CompiledExpr::constant(!expr.to_bool())),
+                expr => Ok(CompiledExpr::runtime(
+                    CelType::Proto(ProtoType::Value(ProtoValueType::Bool)),
+                    parse_quote! {
+                        !(::tinc::__private::cel::to_bool(#expr))
+                    },
+                )),
+            }
         }
         cel_parser::UnaryOp::DoubleNot => Ok(expr.to_bool(ctx)),
         cel_parser::UnaryOp::Minus => {
             let expr = expr.to_cel()?;
-
-            Ok(CompiledExpr::runtime(
-                CelType::CelValue,
-                parse_quote! {
-                    ::tinc::__private::cel::CelValue::cel_neg(#expr)
-                },
-            ))
+            match expr {
+                CompiledExpr::Constant(ConstantCompiledExpr { value: expr }) => {
+                    Ok(CompiledExpr::constant(CelValue::cel_neg(expr)?))
+                }
+                expr => Ok(CompiledExpr::runtime(
+                    CelType::CelValue,
+                    parse_quote! {
+                        ::tinc::__private::cel::CelValue::cel_neg(#expr)
+                    },
+                )),
+            }
         }
         cel_parser::UnaryOp::DoubleMinus => Ok(expr),
     }

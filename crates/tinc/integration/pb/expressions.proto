@@ -354,3 +354,14 @@ message MapMessageExpressions {
 
   map<string, SubMessage> messages = 1;
 }
+
+message CustomExpressions {
+  option (tinc.message).generate = true;
+
+  repeated string items = 1 [(tinc.field).constraint = {
+    cel: {
+      message: "all items must start with with 'troy_'"
+      expression: "input.all(item, item.startsWith('troy_'))"
+    }
+  }];
+}

@@ -1186,3 +1186,46 @@ fn test_map_message_expressions_invalid() {
     }
     "#);
 }
+
+#[test]
+fn test_custom_expressions_valid() {
+    let mut state = TrackerSharedState::default();
+    let valid = pb::CustomExpressions {
+        items: vec!["troy_one".into(), "troy_two".into(), "troy_three".into()],
+    };
+
+    state.in_scope(|| valid.validate()).unwrap();
+
+    insta::assert_debug_snapshot!(state, @r"
+    TrackerSharedState {
+        fail_fast: false,
+        errors: [],
+    }
+    ");
+}
+
+#[test]
+fn test_custom_expressions_invalid() {
+    let mut state = TrackerSharedState::default();
+    let valid = pb::CustomExpressions {
+        items: vec!["troy".into(), "to".into(), "xd".into()],
+    };
+
+    state.in_scope(|| valid.validate()).unwrap();
+
+    insta::assert_debug_snapshot!(state, @r#"
+    TrackerSharedState {
+        fail_fast: false,
+        errors: [
+            TrackedError {
+                kind: InvalidField {
+                    message: "all items must start with with 'troy_'",
+                },
+                fatal: true,
+                proto_path: "items",
+                serde_path: "items",
+            },
+        ],
+    }
+    "#);
+}

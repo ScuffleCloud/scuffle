@@ -264,10 +264,10 @@ impl<'a> CelValue<'a> {
     }
 
     // !self
-    pub fn cel_neg(self) -> Result<CelValue<'static>, CelError<'a>> {
-        match self {
+    pub fn cel_neg(input: impl CelValueConv<'a>) -> Result<CelValue<'static>, CelError<'a>> {
+        match input.conv() {
             CelValue::Number(n) => Ok(CelValue::Number(n.cel_neg()?)),
-            _ => Err(CelError::BadUnaryOperation { value: self, op: "-" }),
+            value => Err(CelError::BadUnaryOperation { value, op: "-" }),
         }
     }
 

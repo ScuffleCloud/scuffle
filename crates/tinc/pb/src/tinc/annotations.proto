@@ -923,8 +923,8 @@ message OneofOptions {
 
     // Tagging a oneof causes the ser/de to represent it like such
     // {
-    //        "tag": "<tag>",
-    //        "content": <content>
+    //        "tag": "tag",
+    //        "content": content
     // }
     message Tagged {
         string tag = 1;

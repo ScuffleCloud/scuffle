@@ -1,3 +1,4 @@
+use std::fmt::Debug;
 use std::io;
 
 use byteorder::{BigEndian, ReadBytesExt};
@@ -20,10 +21,19 @@ impl BoxSize {
     }
 }
 
-#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+#[derive(Clone, Copy, PartialEq, Eq)]
 pub enum BoxType {
     FourCc([u8; 4]),
     Uuid(uuid::Uuid),
+}
+
+impl Debug for BoxType {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        match self {
+            BoxType::FourCc(fourcc) => f.debug_tuple("FourCc").field(&String::from_utf8_lossy(fourcc)).finish(),
+            BoxType::Uuid(uuid) => f.debug_tuple("Uuid").field(uuid).finish(),
+        }
+    }
 }
 
 impl BoxType {

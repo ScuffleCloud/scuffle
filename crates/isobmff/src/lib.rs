@@ -3,13 +3,20 @@
 #![deny(unsafe_code)]
 #![deny(unreachable_pub)]
 
-pub mod boxes;
-mod header;
+use std::fmt::Debug;
 
-pub use header::*;
-pub use isobmff_derive::IsoBox;
 use scuffle_bytes_util::BytesCow;
 use scuffle_bytes_util::zero_copy::DeserializeSeed;
+
+pub mod boxes;
+mod file;
+mod header;
+mod string_deserializer;
+
+pub use file::*;
+pub use header::*;
+pub use isobmff_derive::IsoBox;
+pub use string_deserializer::*;
 
 pub trait IsoBox {
     const TYPE: [u8; 4];
@@ -19,6 +26,15 @@ pub trait IsoBox {
 pub struct UnknownBox<'a> {
     pub header: BoxHeader,
     pub data: BytesCow<'a>,
+}
+
+impl Debug for UnknownBox<'_> {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        f.debug_struct("UnknownBox")
+            .field("header", &self.header)
+            .field("data(size)", &self.data.len())
+            .finish()
+    }
 }
 
 impl<'a> DeserializeSeed<'a, BoxHeader> for UnknownBox<'a> {

@@ -22,3 +22,6 @@ isobmff-derive.workspace = true
 nutype-enum.workspace = true
 scuffle-bytes-util.workspace = true
 scuffle-workspace-hack.workspace = true
+
+[dev-dependencies]
+insta = "1.42"

@@ -4,7 +4,8 @@
 #![deny(unreachable_pub)]
 #![doc(hidden)]
 
-//! Currently this crate is invisible outside because there is no stable API for the tinc-cel crate.
+//! Currently is currently a fully private api used by `tinc` and `tinc-build` to
+//! Compile & Execute cel expressions.
 
 use std::borrow::Cow;
 use std::collections::{BTreeMap, HashMap};

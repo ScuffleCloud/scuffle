@@ -709,7 +709,7 @@ fn prost_to_cel(value: &prost_reflect::Value, kind: &Kind) -> tinc_cel::CelValue
         prost_reflect::Value::F32(v) => v.conv(),
         prost_reflect::Value::F64(v) => v.conv(),
         prost_reflect::Value::List(list) => {
-            tinc_cel::CelValue::List(list.into_iter().map(|item| prost_to_cel(item, kind)).collect())
+            tinc_cel::CelValue::List(list.iter().map(|item| prost_to_cel(item, kind)).collect())
         }
         prost_reflect::Value::Map(map) => tinc_cel::CelValue::Map(
             map.iter()

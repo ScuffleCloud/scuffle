@@ -1,7 +1,7 @@
 use axum::response::IntoResponse;
 use tonic_types::{ErrorDetails, StatusExt};
 
-use super::{HttpErrorResponse, HttpErrorResponseDetails, TrackerSharedState};
+use super::{HttpErrorResponse, HttpErrorResponseCode, HttpErrorResponseDetails, TrackerSharedState};
 
 #[derive(Debug, thiserror::Error)]
 pub enum ValidationError {
@@ -25,6 +25,7 @@ impl serde::de::Error for ValidationError {
     }
 }
 
+#[cfg(feature = "tonic")]
 impl From<ValidationError> for tonic::Status {
     fn from(value: ValidationError) -> Self {
         tonic::Status::internal(value.to_string())
@@ -35,7 +36,7 @@ impl IntoResponse for ValidationError {
     fn into_response(self) -> axum::response::Response {
         let message = self.to_string();
         HttpErrorResponse {
-            code: tonic::Code::Internal.into(),
+            code: HttpErrorResponseCode::Internal,
             message: &message,
             details: HttpErrorResponseDetails::default(),
         }
@@ -52,8 +53,9 @@ impl From<ValidationError> for axum::response::Response {
 pub trait ValidateMessage {
     fn validate(&self) -> Result<(), ValidationError>;
 
+    #[cfg(feature = "tonic")]
     #[allow(clippy::result_large_err)]
-    fn validate_codec(&self) -> Result<(), tonic::Status> {
+    fn validate_tonic(&self) -> Result<(), tonic::Status> {
         let mut state = TrackerSharedState::default();
 
         state.in_scope(|| self.validate())?;

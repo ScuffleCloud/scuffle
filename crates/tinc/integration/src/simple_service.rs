@@ -9,9 +9,9 @@ mod pb {
 
 struct Svc {}
 
-#[tinc::async_trait]
+#[tonic::async_trait]
 impl pb::simple_service_server::SimpleService for Svc {
-    async fn ping(&self, request: tinc::Request<pb::PingRequest>) -> tinc::Result<tinc::Response<pb::PingResponse>> {
+    async fn ping(&self, request: tonic::Request<pb::PingRequest>) -> tonic::Result<tonic::Response<pb::PingResponse>> {
         Ok(pb::PingResponse {
             result: format!("{} - pong", request.get_ref().arg),
         }

@@ -5,8 +5,8 @@ use bytes::{Buf, Bytes};
 use http_body_util::BodyExt;
 
 use crate::__private::{
-    HttpErrorResponse, OptionalTracker, PrimitiveTracker, RepeatedVecTracker, Tracker, TrackerDeserializer,
-    TrackerSharedState, deserialize_tracker_target,
+    HttpErrorResponse, HttpErrorResponseCode, OptionalTracker, PrimitiveTracker, RepeatedVecTracker, Tracker,
+    TrackerDeserializer, TrackerSharedState, deserialize_tracker_target,
 };
 
 pub async fn deserialize_body_json<T, B>(
@@ -27,7 +27,7 @@ where
 
     let content_type = content_type.to_str().map_err(|_| {
         HttpErrorResponse {
-            code: tonic::Code::InvalidArgument.into(),
+            code: HttpErrorResponseCode::InvalidArgument,
             details: Default::default(),
             message: "content-type header is not valid utf-8",
         }
@@ -36,7 +36,7 @@ where
 
     let content_type = mediatype::MediaTypeBuf::from_str(content_type).map_err(|err| {
         HttpErrorResponse {
-            code: tonic::Code::InvalidArgument.into(),
+            code: HttpErrorResponseCode::InvalidArgument,
             details: Default::default(),
             message: &format!("content-type header is not valid: {err}"),
         }
@@ -45,7 +45,7 @@ where
 
     if content_type.essence() != mediatype::media_type!(APPLICATION / JSON) {
         return Err(HttpErrorResponse {
-            code: tonic::Code::InvalidArgument.into(),
+            code: HttpErrorResponseCode::InvalidArgument,
             details: Default::default(),
             message: "content-type header is not application/json",
         }
@@ -57,7 +57,7 @@ where
         .await
         .map_err(|err| {
             HttpErrorResponse {
-                code: tonic::Code::InvalidArgument.into(),
+                code: HttpErrorResponseCode::InvalidArgument,
                 details: Default::default(),
                 message: &format!("failed to read body: {err}"),
             }
@@ -69,7 +69,7 @@ where
 
     if let Err(err) = deserialize_tracker_target(state, &mut de, tracker, target) {
         return Err(HttpErrorResponse {
-            code: tonic::Code::InvalidArgument.into(),
+            code: HttpErrorResponseCode::InvalidArgument,
             details: Default::default(),
             message: &format!("failed to deserialize body: {err}"),
         }
@@ -126,7 +126,7 @@ where
         .await
         .map_err(|err| {
             HttpErrorResponse {
-                code: tonic::Code::InvalidArgument.into(),
+                code: HttpErrorResponseCode::InvalidArgument,
                 details: Default::default(),
                 message: &format!("failed to read body: {err:?}"),
             }

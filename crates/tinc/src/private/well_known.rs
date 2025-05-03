@@ -589,7 +589,10 @@ impl serde::Serialize for Duration {
             }
 
             s.push('.');
-            s.push_str(std::str::from_utf8(&buf[..first_non_zero.unwrap_or(8) + 1]).expect("we just made this buffer it should be valid utf-8"));
+            s.push_str(
+                std::str::from_utf8(&buf[..first_non_zero.unwrap_or(8) + 1])
+                    .expect("we just made this buffer it should be valid utf-8"),
+            );
             s.push('s');
         } else {
             s.push('s');

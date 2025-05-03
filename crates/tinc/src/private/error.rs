@@ -379,6 +379,7 @@ impl std::fmt::Debug for MapKey {
     }
 }
 
+#[cfg(feature = "tonic")]
 pub fn handle_tonic_status(status: &tonic::Status) -> axum::response::Response {
     let code = HttpErrorResponseCode::from(status.code());
     let details = status.get_error_details();
@@ -407,44 +408,84 @@ impl axum::response::IntoResponse for HttpErrorResponse<'_> {
 }
 
 #[derive(Debug)]
-pub struct HttpErrorResponseCode(pub tonic::Code);
+pub enum HttpErrorResponseCode {
+    Aborted,
+    Cancelled,
+    AlreadyExists,
+    DataLoss,
+    DeadlineExceeded,
+    FailedPrecondition,
+    Internal,
+    InvalidArgument,
+    NotFound,
+    OutOfRange,
+    PermissionDenied,
+    ResourceExhausted,
+    Unauthenticated,
+    Unavailable,
+    Unimplemented,
+    Unknown,
+    Ok,
+}
 
 impl serde::Serialize for HttpErrorResponseCode {
     fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
     where
         S: serde::Serializer,
     {
-        i32::from(self.0).serialize(serializer).map_err(serde::ser::Error::custom)
+        self.to_http_status()
+            .as_str()
+            .serialize(serializer)
+            .map_err(serde::ser::Error::custom)
     }
 }
 
 impl HttpErrorResponseCode {
     pub fn to_http_status(&self) -> http::StatusCode {
-        match self.0 {
-            tonic::Code::Aborted => http::StatusCode::from_u16(499).unwrap_or(http::StatusCode::BAD_REQUEST),
-            tonic::Code::Cancelled => http::StatusCode::from_u16(499).unwrap_or(http::StatusCode::BAD_REQUEST),
-            tonic::Code::AlreadyExists => http::StatusCode::ALREADY_REPORTED,
-            tonic::Code::DataLoss => http::StatusCode::INTERNAL_SERVER_ERROR,
-            tonic::Code::DeadlineExceeded => http::StatusCode::GATEWAY_TIMEOUT,
-            tonic::Code::FailedPrecondition => http::StatusCode::PRECONDITION_FAILED,
-            tonic::Code::Internal => http::StatusCode::INTERNAL_SERVER_ERROR,
-            tonic::Code::InvalidArgument => http::StatusCode::BAD_REQUEST,
-            tonic::Code::NotFound => http::StatusCode::NOT_FOUND,
-            tonic::Code::OutOfRange => http::StatusCode::BAD_REQUEST,
-            tonic::Code::PermissionDenied => http::StatusCode::FORBIDDEN,
-            tonic::Code::ResourceExhausted => http::StatusCode::TOO_MANY_REQUESTS,
-            tonic::Code::Unauthenticated => http::StatusCode::UNAUTHORIZED,
-            tonic::Code::Unavailable => http::StatusCode::SERVICE_UNAVAILABLE,
-            tonic::Code::Unimplemented => http::StatusCode::NOT_IMPLEMENTED,
-            tonic::Code::Unknown => http::StatusCode::INTERNAL_SERVER_ERROR,
-            tonic::Code::Ok => http::StatusCode::OK,
+        match self {
+            Self::Aborted => http::StatusCode::from_u16(499).unwrap_or(http::StatusCode::BAD_REQUEST),
+            Self::Cancelled => http::StatusCode::from_u16(499).unwrap_or(http::StatusCode::BAD_REQUEST),
+            Self::AlreadyExists => http::StatusCode::ALREADY_REPORTED,
+            Self::DataLoss => http::StatusCode::INTERNAL_SERVER_ERROR,
+            Self::DeadlineExceeded => http::StatusCode::GATEWAY_TIMEOUT,
+            Self::FailedPrecondition => http::StatusCode::PRECONDITION_FAILED,
+            Self::Internal => http::StatusCode::INTERNAL_SERVER_ERROR,
+            Self::InvalidArgument => http::StatusCode::BAD_REQUEST,
+            Self::NotFound => http::StatusCode::NOT_FOUND,
+            Self::OutOfRange => http::StatusCode::BAD_REQUEST,
+            Self::PermissionDenied => http::StatusCode::FORBIDDEN,
+            Self::ResourceExhausted => http::StatusCode::TOO_MANY_REQUESTS,
+            Self::Unauthenticated => http::StatusCode::UNAUTHORIZED,
+            Self::Unavailable => http::StatusCode::SERVICE_UNAVAILABLE,
+            Self::Unimplemented => http::StatusCode::NOT_IMPLEMENTED,
+            Self::Unknown => http::StatusCode::INTERNAL_SERVER_ERROR,
+            Self::Ok => http::StatusCode::OK,
         }
     }
 }
 
+#[cfg(feature = "tonic")]
 impl From<tonic::Code> for HttpErrorResponseCode {
     fn from(code: tonic::Code) -> Self {
-        Self(code)
+        match code {
+            tonic::Code::Aborted => Self::Aborted,
+            tonic::Code::Cancelled => Self::Cancelled,
+            tonic::Code::AlreadyExists => Self::AlreadyExists,
+            tonic::Code::DataLoss => Self::DataLoss,
+            tonic::Code::DeadlineExceeded => Self::DeadlineExceeded,
+            tonic::Code::FailedPrecondition => Self::FailedPrecondition,
+            tonic::Code::Internal => Self::Internal,
+            tonic::Code::InvalidArgument => Self::InvalidArgument,
+            tonic::Code::NotFound => Self::NotFound,
+            tonic::Code::OutOfRange => Self::OutOfRange,
+            tonic::Code::PermissionDenied => Self::PermissionDenied,
+            tonic::Code::ResourceExhausted => Self::ResourceExhausted,
+            tonic::Code::Unauthenticated => Self::Unauthenticated,
+            tonic::Code::Unavailable => Self::Unavailable,
+            tonic::Code::Unimplemented => Self::Unimplemented,
+            tonic::Code::Unknown => Self::Unknown,
+            tonic::Code::Ok => Self::Ok,
+        }
     }
 }
 

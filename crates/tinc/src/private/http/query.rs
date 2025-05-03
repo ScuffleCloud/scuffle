@@ -1,7 +1,7 @@
 use axum::response::IntoResponse;
 
 use crate::__private::error::HttpErrorResponse;
-use crate::__private::{TrackerDeserializer, TrackerSharedState, deserialize_tracker_target};
+use crate::__private::{HttpErrorResponseCode, TrackerDeserializer, TrackerSharedState, deserialize_tracker_target};
 
 #[allow(clippy::result_large_err)]
 pub fn deserialize_query_string<'de, T>(
@@ -21,7 +21,7 @@ where
         .map(|de| deserialize_tracker_target(state, de, tracker, target))
     {
         Err(err) | Ok(Err(err)) => Err(HttpErrorResponse {
-            code: tonic::Code::InvalidArgument.into(),
+            code: HttpErrorResponseCode::InvalidArgument,
             details: Default::default(),
             message: &format!("invalid query string: {err}"),
         }

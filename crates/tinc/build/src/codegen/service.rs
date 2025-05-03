@@ -6,6 +6,7 @@ use tinc_pb::http_endpoint_options;
 
 use super::Package;
 use super::utils::{field_ident_from_str, type_ident_from_str};
+use crate::Mode;
 use crate::types::{
     ProtoMessageType, ProtoModifiedValueType, ProtoPath, ProtoService, ProtoServiceMethod, ProtoServiceMethodEndpoint,
     ProtoServiceMethodIo, ProtoType, ProtoTypeRegistry, ProtoValueType, ProtoWellKnownType,
@@ -513,6 +514,7 @@ pub(crate) struct ProcessedServiceMethod {
 }
 
 pub(super) fn handle_service(
+    mode: Mode,
     service: &ProtoService,
     package: &mut Package,
     registry: &ProtoTypeRegistry,
@@ -552,8 +554,8 @@ pub(super) fn handle_service(
         }
 
         let codec_ident = format_ident!("{name}Codec");
-        let input_path = method.input.value_type().rust_path(&package_name);
-        let output_path = method.output.value_type().rust_path(&package_name);
+        let input_path = method.input.value_type().rust_path(&package_name, mode);
+        let output_path = method.output.value_type().rust_path(&package_name, mode);
 
         method_codecs.push(quote! {
             #[derive(Debug, Clone, Default)]

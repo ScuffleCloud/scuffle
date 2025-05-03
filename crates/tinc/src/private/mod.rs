@@ -37,7 +37,9 @@ pub use repeated::*;
 mod expected;
 pub use expected::*;
 
+#[cfg(feature = "prost")]
 mod well_known;
+#[cfg(feature = "prost")]
 pub use well_known::*;
 
 mod deserializer;

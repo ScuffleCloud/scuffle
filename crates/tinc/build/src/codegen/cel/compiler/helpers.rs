@@ -85,7 +85,7 @@ impl CompiledExpr {
                         | ProtoValueType::WellKnown(
                             ProtoWellKnownType::Duration
                             | ProtoWellKnownType::Empty
-                            | ProtoWellKnownType::List
+                            | ProtoWellKnownType::ListValue
                             | ProtoWellKnownType::Struct
                             | ProtoWellKnownType::Timestamp
                             | ProtoWellKnownType::Value,

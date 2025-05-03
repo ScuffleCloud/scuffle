@@ -5,7 +5,7 @@ use convert_case::{Case, Casing};
 use indexmap::IndexMap;
 use prost_reflect::{DescriptorPool, EnumDescriptor, ExtensionDescriptor, Kind, MessageDescriptor, ServiceDescriptor};
 use quote::format_ident;
-use tinc_cel::CelValueConv;
+use tinc_cel::{CelEnum, CelValueConv};
 
 use crate::codegen::cel::{CelExpression, CelExpressions};
 use crate::codegen::prost_sanatize::{strip_enum_prefix, to_upper_camel};
@@ -669,7 +669,7 @@ fn explore_fields(
                     expression: expr.expression,
                     jsonschemas: expr.jsonschemas,
                     message: expr.message,
-                    this: Some(prost_to_cel(value.clone())),
+                    this: Some(prost_to_cel(value, &field.kind())),
                 }));
         }
 
@@ -683,11 +683,23 @@ fn explore_fields(
     Ok(())
 }
 
-fn prost_to_cel(v: prost_reflect::Value) -> tinc_cel::CelValue<'static> {
-    match v {
-        prost_reflect::Value::String(s) => tinc_cel::CelValue::String(s.into()),
-        prost_reflect::Value::Message(_) => todo!("message not supported"),
-        prost_reflect::Value::EnumNumber(v) => v.conv(),
+fn prost_to_cel(value: &prost_reflect::Value, kind: &Kind) -> tinc_cel::CelValue<'static> {
+    match value {
+        prost_reflect::Value::String(s) => tinc_cel::CelValue::String(s.clone().into()),
+        prost_reflect::Value::Message(msg) => tinc_cel::CelValue::Map(
+            msg.fields()
+                .map(|(field, value)| {
+                    (
+                        tinc_cel::CelValue::String(field.name().to_owned().into()),
+                        prost_to_cel(value, &field.kind()),
+                    )
+                })
+                .collect(),
+        ),
+        prost_reflect::Value::EnumNumber(value) => tinc_cel::CelValue::Enum(CelEnum::new(
+            kind.as_enum().expect("enum").full_name().to_owned().into(),
+            *value,
+        )),
         prost_reflect::Value::Bool(v) => v.conv(),
         prost_reflect::Value::I32(v) => v.conv(),
         prost_reflect::Value::I64(v) => v.conv(),
@@ -696,21 +708,23 @@ fn prost_to_cel(v: prost_reflect::Value) -> tinc_cel::CelValue<'static> {
         prost_reflect::Value::Bytes(b) => tinc_cel::CelValue::Bytes(b.into()),
         prost_reflect::Value::F32(v) => v.conv(),
         prost_reflect::Value::F64(v) => v.conv(),
-        prost_reflect::Value::List(list) => tinc_cel::CelValue::List(list.into_iter().map(prost_to_cel).collect()),
+        prost_reflect::Value::List(list) => {
+            tinc_cel::CelValue::List(list.into_iter().map(|item| prost_to_cel(item, kind)).collect())
+        }
         prost_reflect::Value::Map(map) => tinc_cel::CelValue::Map(
-            map.into_iter()
-                .map(|(k, v)| {
-                    let k = match k {
+            map.iter()
+                .map(|(key, value)| {
+                    let key = match key {
                         prost_reflect::MapKey::Bool(v) => v.conv(),
                         prost_reflect::MapKey::I32(v) => v.conv(),
                         prost_reflect::MapKey::I64(v) => v.conv(),
                         prost_reflect::MapKey::U32(v) => v.conv(),
                         prost_reflect::MapKey::U64(v) => v.conv(),
-                        prost_reflect::MapKey::String(s) => tinc_cel::CelValue::String(s.into()),
+                        prost_reflect::MapKey::String(s) => tinc_cel::CelValue::String(s.clone().into()),
                     };
 
-                    let v = prost_to_cel(v);
-                    (k, v)
+                    let v = prost_to_cel(value, &kind.as_message().expect("map").map_entry_value_field().kind());
+                    (key, v)
                 })
                 .collect(),
         ),

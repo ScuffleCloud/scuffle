@@ -1,8 +1,8 @@
 use axum::response::IntoResponse;
 
 use super::{
-    DeserializeContent, Expected, HttpErrorResponse, HttpErrorResponseDetails, HttpErrorResponseRequestViolation,
-    TrackerSharedState, ValidationError,
+    DeserializeContent, Expected, HttpErrorResponse, HttpErrorResponseCode, HttpErrorResponseDetails,
+    HttpErrorResponseRequestViolation, TrackerSharedState, ValidationError,
 };
 
 pub trait Tracker {
@@ -49,7 +49,7 @@ pub trait TrackerValidation: Tracker {
             }
 
             Err(HttpErrorResponse {
-                code: tonic::Code::InvalidArgument.into(),
+                code: HttpErrorResponseCode::InvalidArgument.into(),
                 message: "bad request",
                 details,
             }

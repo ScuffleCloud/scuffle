@@ -20,9 +20,9 @@ http-body = "1"
 http-body-util = "0.1.0"
 bytes = "1.6.0"
 
-tonic = "0.13.0"
-prost = "0.13.5"
-prost-types = "0.13.5"
+tonic = { version = "0.13.0", optional = true }
+prost = { version = "0.13.5", optional = true }
+prost-types = { version = "0.13.5", optional = true }
 
 serde = "1.0.215"
 serde_json = "1.0.115"
@@ -56,3 +56,8 @@ tinc-derive.workspace = true
 tinc-cel = { workspace = true, features = ["runtime"] }
 
 scuffle-workspace-hack.workspace = true
+
+[features]
+prost = ["dep:prost", "dep:prost-types"]
+tonic = ["dep:tonic"]
+default = ["prost", "tonic"]

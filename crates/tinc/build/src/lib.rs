@@ -15,7 +15,7 @@ mod prost_explore;
 mod types;
 
 /// The mode to use for the generator, currently we only support `prost` codegen.
-#[derive(Debug)]
+#[derive(Debug, Clone, Copy)]
 pub enum Mode {
     #[cfg(feature = "prost")]
     /// Use `prost` to generate the protobuf structures
@@ -133,7 +133,7 @@ impl Config {
             .process(&pool, &mut registry)
             .context("failed to process extensions")?;
 
-        let mut packages = codegen::generate_modules(&registry)?;
+        let mut packages = codegen::generate_modules(self.mode, &registry)?;
 
         packages.values_mut().for_each(|package| {
             package.enum_configs().for_each(|(path, enum_config)| {
@@ -199,7 +199,7 @@ impl Config {
                                         method
                                             .input
                                             .value_type()
-                                            .rust_path(&service.full_name)
+                                            .rust_path(&service.full_name, self.mode)
                                             .to_token_stream()
                                             .to_string(),
                                     )
@@ -207,7 +207,7 @@ impl Config {
                                         method
                                             .output
                                             .value_type()
-                                            .rust_path(&service.full_name)
+                                            .rust_path(&service.full_name, self.mode)
                                             .to_token_stream()
                                             .to_string(),
                                     )

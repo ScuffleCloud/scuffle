@@ -6,6 +6,7 @@ use prost_reflect::Kind;
 use syn::parse_quote;
 use tinc_pb::http_endpoint_options;
 
+use crate::Mode;
 use crate::codegen::cel::CelExpressions;
 use crate::codegen::utils::{field_ident_from_str, get_common_import_path, type_ident_from_str};
 
@@ -38,7 +39,7 @@ pub(crate) enum ProtoWellKnownType {
     Struct,
     Value,
     Empty,
-    List,
+    ListValue,
     Any,
 }
 
@@ -72,7 +73,7 @@ impl ProtoValueType {
             "google.protobuf.Struct" => ProtoValueType::WellKnown(ProtoWellKnownType::Struct),
             "google.protobuf.Value" => ProtoValueType::WellKnown(ProtoWellKnownType::Value),
             "google.protobuf.Empty" => ProtoValueType::WellKnown(ProtoWellKnownType::Empty),
-            "google.protobuf.ListValue" => ProtoValueType::WellKnown(ProtoWellKnownType::List),
+            "google.protobuf.ListValue" => ProtoValueType::WellKnown(ProtoWellKnownType::ListValue),
             "google.protobuf.Any" => ProtoValueType::WellKnown(ProtoWellKnownType::Any),
             "google.protobuf.BoolValue" => ProtoValueType::Bool,
             "google.protobuf.Int32Value" => ProtoValueType::Int32,
@@ -87,26 +88,40 @@ impl ProtoValueType {
         }
     }
 
-    pub(crate) fn rust_path(&self, package: &str) -> syn::Path {
-        match self {
-            ProtoValueType::WellKnown(ProtoWellKnownType::Timestamp) => parse_quote!(),
-            ProtoValueType::WellKnown(ProtoWellKnownType::Duration) => parse_quote!(),
-            ProtoValueType::WellKnown(ProtoWellKnownType::Struct) => parse_quote!(),
-            ProtoValueType::WellKnown(ProtoWellKnownType::Value) => parse_quote!(),
-            ProtoValueType::WellKnown(ProtoWellKnownType::Empty) => parse_quote!(),
-            ProtoValueType::WellKnown(ProtoWellKnownType::List) => parse_quote!(),
-            ProtoValueType::WellKnown(ProtoWellKnownType::Any) => parse_quote!(),
-            ProtoValueType::Bool => parse_quote!(bool),
-            ProtoValueType::Int32 => parse_quote!(i32),
-            ProtoValueType::Int64 => parse_quote!(i64),
-            ProtoValueType::UInt32 => parse_quote!(u32),
-            ProtoValueType::UInt64 => parse_quote!(u64),
-            ProtoValueType::Float => parse_quote!(f32),
-            ProtoValueType::Double => parse_quote!(f64),
-            ProtoValueType::String => parse_quote!(String), // todo?
-            ProtoValueType::Bytes => parse_quote!(Vec<u8>), // todo?
-            ProtoValueType::Enum(name) => get_common_import_path(package, name),
-            ProtoValueType::Message(name) => get_common_import_path(package, name),
+    pub(crate) fn rust_path(&self, package: &str, mode: Mode) -> syn::Path {
+        match (self, mode) {
+            (ProtoValueType::Enum(name), _) => get_common_import_path(package, name),
+            (ProtoValueType::Message(name), _) => get_common_import_path(package, name),
+            (ProtoValueType::WellKnown(ProtoWellKnownType::Timestamp), Mode::Prost) => {
+                parse_quote!(::tinc::well_known::prost::Timestamp)
+            }
+            (ProtoValueType::WellKnown(ProtoWellKnownType::Duration), Mode::Prost) => {
+                parse_quote!(::tinc::well_known::prost::Duration)
+            }
+            (ProtoValueType::WellKnown(ProtoWellKnownType::Struct), Mode::Prost) => {
+                parse_quote!(::tinc::well_known::prost::Struct)
+            }
+            (ProtoValueType::WellKnown(ProtoWellKnownType::Value), Mode::Prost) => {
+                parse_quote!(::tinc::well_known::prost::Value)
+            }
+            (ProtoValueType::WellKnown(ProtoWellKnownType::Empty), Mode::Prost) => {
+                parse_quote!(::tinc::well_known::prost::Empty)
+            }
+            (ProtoValueType::WellKnown(ProtoWellKnownType::ListValue), Mode::Prost) => {
+                parse_quote!(::tinc::well_known::prost::List)
+            }
+            (ProtoValueType::WellKnown(ProtoWellKnownType::Any), Mode::Prost) => {
+                parse_quote!(::tinc::well_known::prost::Any)
+            }
+            (ProtoValueType::Bool, Mode::Prost) => parse_quote!(::tinc::well_known::prost::BoolValue),
+            (ProtoValueType::Int32, Mode::Prost) => parse_quote!(::tinc::well_known::prost::Int32Value),
+            (ProtoValueType::Int64, Mode::Prost) => parse_quote!(::tinc::well_known::prost::Int64Value),
+            (ProtoValueType::UInt32, Mode::Prost) => parse_quote!(::tinc::well_known::prost::UInt32Value),
+            (ProtoValueType::UInt64, Mode::Prost) => parse_quote!(::tinc::well_known::prost::UInt64Value),
+            (ProtoValueType::Float, Mode::Prost) => parse_quote!(::tinc::well_known::prost::FloatValue),
+            (ProtoValueType::Double, Mode::Prost) => parse_quote!(::tinc::well_known::prost::DoubleValue),
+            (ProtoValueType::String, Mode::Prost) => parse_quote!(::tinc::well_known::prost::String),
+            (ProtoValueType::Bytes, Mode::Prost) => parse_quote!(::tinc::well_known::prost::Bytes),
         }
     }
 }

@@ -76,7 +76,6 @@ impl Function for Enum {
 #[cfg(test)]
 #[cfg_attr(coverage_nightly, coverage(off))]
 mod tests {
-    use quote::quote;
     use syn::parse_quote;
 
     use crate::codegen::cel::compiler::{CompiledExpr, Compiler, CompilerCtx};
@@ -143,14 +142,6 @@ mod tests {
             ))
             .unwrap();
 
-        let small_fn = quote! {
-            #[allow(dead_code)]
-            fn enum_conv(input: &i32) -> Result<::tinc::__private::cel::CelValue<'_>, ::tinc::__private::cel::CelError<'_>> {
-                Ok(#result)
-            }
-        };
-
-        let compiled = postcompile::compile_str!(&small_fn.to_string());
-        insta::assert_snapshot!(compiled);
+        insta::assert_debug_snapshot!(result);
     }
 }

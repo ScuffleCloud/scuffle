@@ -1,24 +1,15 @@
 ---
 source: crates/tinc/build/src/codegen/cel/functions/enum_.rs
-expression: compiled
+expression: result
 ---
-exit status: 0
---- stdout 
-#![feature(prelude_import)]
-#[prelude_import]
-use std::prelude::rust_2024::*;
-#[macro_use]
-extern crate std;
-#[allow(dead_code)]
-fn enum_conv(
-    input: &i32,
-) -> Result<::tinc::__private::cel::CelValue<'_>, ::tinc::__private::cel::CelError<'_>> {
-    Ok(
-        ::tinc::__private::cel::CelValue::cel_to_enum(
+Runtime(
+    RuntimeCompiledExpr {
+        ty: CelValue,
+        expr: ::tinc::__private::cel::CelValue::cel_to_enum(
             ::tinc::__private::cel::CelValueConv::conv(input),
             ::tinc::__private::cel::CelValue::String(
                 ::tinc::__private::cel::CelString::Borrowed("some.Enum"),
             ),
         )?,
-    )
-}
+    },
+)

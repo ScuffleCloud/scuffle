@@ -1,24 +1,19 @@
 ---
 source: crates/tinc/build/src/codegen/cel/functions/ends_with.rs
-expression: compiled
+expression: result
 ---
-exit status: 0
---- stdout 
-#![feature(prelude_import)]
-#[prelude_import]
-use std::prelude::rust_2024::*;
-#[macro_use]
-extern crate std;
-#[allow(dead_code)]
-fn string_ends_with(
-    input: &std::string::String,
-) -> Result<bool, ::tinc::__private::cel::CelError<'_>> {
-    Ok(
-        ::tinc::__private::cel::CelValue::cel_ends_with(
+Runtime(
+    RuntimeCompiledExpr {
+        ty: Proto(
+            Value(
+                Bool,
+            ),
+        ),
+        expr: ::tinc::__private::cel::CelValue::cel_ends_with(
             ::tinc::__private::cel::CelValueConv::conv(input),
             ::tinc::__private::cel::CelValue::String(
                 ::tinc::__private::cel::CelString::Borrowed("ing"),
             ),
         )?,
-    )
-}
+    },
+)

@@ -86,7 +86,6 @@ impl Function for Contains {
 #[cfg(test)]
 #[cfg_attr(coverage_nightly, coverage(off))]
 mod tests {
-    use quote::quote;
     use syn::parse_quote;
     use tinc_cel::CelValue;
 
@@ -148,15 +147,7 @@ mod tests {
             ))
             .unwrap();
 
-        let small_fn = quote! {
-            #[allow(dead_code)]
-            fn bytes_conv(input: &std::string::String) -> Result<bool, ::tinc::__private::cel::CelError<'_>> {
-                Ok(#result)
-            }
-        };
-
-        let compiled = postcompile::compile_str!(&small_fn.to_string());
-        insta::assert_snapshot!(compiled);
+        insta::assert_debug_snapshot!(result);
     }
 
     #[test]
@@ -180,20 +171,7 @@ mod tests {
             ))
             .unwrap();
 
-        let small_fn = quote! {
-            #[allow(dead_code)]
-            fn btree_map_contains(input: &std::collections::BTreeMap<String, bool>) -> Result<bool, ::tinc::__private::cel::CelError<'_>> {
-                Ok(#result)
-            }
-
-            #[allow(dead_code)]
-            fn hashmap_contains(input: &std::collections::HashMap<String, bool>) -> Result<bool, ::tinc::__private::cel::CelError<'_>> {
-                Ok(#result)
-            }
-        };
-
-        let compiled = postcompile::compile_str!(&small_fn.to_string());
-        insta::assert_snapshot!(compiled);
+        insta::assert_debug_snapshot!(result);
     }
 
     #[test]
@@ -214,19 +192,6 @@ mod tests {
             ))
             .unwrap();
 
-        let small_fn = quote! {
-            #[allow(dead_code)]
-            fn btree_map_contains(input: &Vec<String>) -> Result<bool, ::tinc::__private::cel::CelError<'_>> {
-                Ok(#result)
-            }
-
-            #[allow(dead_code)]
-            fn slice(input: &[String]) -> Result<bool, ::tinc::__private::cel::CelError<'_>> {
-                Ok(#result)
-            }
-        };
-
-        let compiled = postcompile::compile_str!(&small_fn.to_string());
-        insta::assert_snapshot!(compiled);
+        insta::assert_debug_snapshot!(result);
     }
 }

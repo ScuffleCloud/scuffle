@@ -1,57 +1,31 @@
 ---
 source: crates/tinc/build/src/codegen/cel/functions/all.rs
-expression: compiled
+expression: result
 ---
-exit status: 0
---- stdout 
-#![feature(prelude_import)]
-#[prelude_import]
-use std::prelude::rust_2024::*;
-#[macro_use]
-extern crate std;
-#[allow(dead_code)]
-fn hash_map(
-    input: &std::collections::HashMap<i32, f64>,
-) -> Result<bool, ::tinc::__private::cel::CelError<'_>> {
-    Ok({
-        let mut iter = ((input).keys()).into_iter();
-        loop {
-            let Some(item) = iter.next() else {
-                break true;
-            };
-            if !(::tinc::__private::cel::to_bool(
-                ::tinc::__private::cel::CelValue::cel_gt(
-                    ::tinc::__private::cel::CelValueConv::conv(item),
-                    ::tinc::__private::cel::CelValue::Number(
-                        ::tinc::__private::cel::NumberTy::I64(2i64),
-                    ),
-                )?,
-            )) {
-                break false;
+Runtime(
+    RuntimeCompiledExpr {
+        ty: Proto(
+            Value(
+                Bool,
+            ),
+        ),
+        expr: {
+            let mut iter = ((input).keys()).into_iter();
+            loop {
+                let Some(item) = iter.next() else {
+                    break true;
+                };
+                if !(::tinc::__private::cel::to_bool(
+                    ::tinc::__private::cel::CelValue::cel_gt(
+                        ::tinc::__private::cel::CelValueConv::conv(item),
+                        ::tinc::__private::cel::CelValue::Number(
+                            ::tinc::__private::cel::NumberTy::I64(2i64),
+                        ),
+                    )?,
+                )) {
+                    break false;
+                }
             }
-        }
-    })
-}
-#[allow(dead_code)]
-fn btree_map(
-    input: &std::collections::BTreeMap<i32, f64>,
-) -> Result<bool, ::tinc::__private::cel::CelError<'_>> {
-    Ok({
-        let mut iter = ((input).keys()).into_iter();
-        loop {
-            let Some(item) = iter.next() else {
-                break true;
-            };
-            if !(::tinc::__private::cel::to_bool(
-                ::tinc::__private::cel::CelValue::cel_gt(
-                    ::tinc::__private::cel::CelValueConv::conv(item),
-                    ::tinc::__private::cel::CelValue::Number(
-                        ::tinc::__private::cel::NumberTy::I64(2i64),
-                    ),
-                )?,
-            )) {
-                break false;
-            }
-        }
-    })
-}
+        },
+    },
+)

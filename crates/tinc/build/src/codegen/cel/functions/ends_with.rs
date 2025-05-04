@@ -52,7 +52,6 @@ impl Function for EndsWith {
 #[cfg(test)]
 #[cfg_attr(coverage_nightly, coverage(off))]
 mod tests {
-    use quote::quote;
     use syn::parse_quote;
     use tinc_cel::CelValue;
 
@@ -116,14 +115,6 @@ mod tests {
             ))
             .unwrap();
 
-        let small_fn = quote! {
-            #[allow(dead_code)]
-            fn string_ends_with(input: &std::string::String) -> Result<bool, ::tinc::__private::cel::CelError<'_>> {
-                Ok(#result)
-            }
-        };
-
-        let compiled = postcompile::compile_str!(&small_fn.to_string());
-        insta::assert_snapshot!(compiled);
+        insta::assert_debug_snapshot!(result);
     }
 }

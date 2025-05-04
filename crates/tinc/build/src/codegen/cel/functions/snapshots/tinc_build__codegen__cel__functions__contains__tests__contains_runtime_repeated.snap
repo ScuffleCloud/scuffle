@@ -1,35 +1,19 @@
 ---
 source: crates/tinc/build/src/codegen/cel/functions/contains.rs
-expression: compiled
+expression: result
 ---
-exit status: 0
---- stdout 
-#![feature(prelude_import)]
-#[prelude_import]
-use std::prelude::rust_2024::*;
-#[macro_use]
-extern crate std;
-#[allow(dead_code)]
-fn btree_map_contains(
-    input: &Vec<String>,
-) -> Result<bool, ::tinc::__private::cel::CelError<'_>> {
-    Ok(
-        ::tinc::__private::cel::array_contains(
+Runtime(
+    RuntimeCompiledExpr {
+        ty: Proto(
+            Value(
+                Bool,
+            ),
+        ),
+        expr: ::tinc::__private::cel::array_contains(
             input,
             ::tinc::__private::cel::CelValue::String(
                 ::tinc::__private::cel::CelString::Borrowed("value"),
             ),
         ),
-    )
-}
-#[allow(dead_code)]
-fn slice(input: &[String]) -> Result<bool, ::tinc::__private::cel::CelError<'_>> {
-    Ok(
-        ::tinc::__private::cel::array_contains(
-            input,
-            ::tinc::__private::cel::CelValue::String(
-                ::tinc::__private::cel::CelString::Borrowed("value"),
-            ),
-        ),
-    )
-}
+    },
+)

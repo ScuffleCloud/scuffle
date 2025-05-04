@@ -39,8 +39,6 @@ fmtools = "0.1"
 
 [dev-dependencies]
 insta = "1"
-tinc.workspace = true
-postcompile = { workspace = true, features = ["prettyplease"] }
 
 [features]
 default = ["prost"]

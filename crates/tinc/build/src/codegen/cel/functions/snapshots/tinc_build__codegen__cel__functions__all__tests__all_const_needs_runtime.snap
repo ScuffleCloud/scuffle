@@ -1,37 +1,36 @@
 ---
 source: crates/tinc/build/src/codegen/cel/functions/all.rs
-expression: compiled
+expression: result
 ---
-exit status: 0
---- stdout 
-#![feature(prelude_import)]
-#[prelude_import]
-use std::prelude::rust_2024::*;
-#[macro_use]
-extern crate std;
-#[allow(dead_code)]
-fn dyn_func() -> Result<bool, ::tinc::__private::cel::CelError<'static>> {
-    Ok({
-        let mut iter = ([
-            ::tinc::__private::cel::to_bool(
-                match ::tinc::__private::cel::CelMode::current() {
-                    ::tinc::__private::cel::CelMode::Json => {
-                        ::tinc::__private::cel::CelValueConv::conv("FirstValue")
-                    }
-                    ::tinc::__private::cel::CelMode::Proto => {
-                        ::tinc::__private::cel::CelValueConv::conv("FIRST_VALUE")
-                    }
-                },
+Runtime(
+    RuntimeCompiledExpr {
+        ty: Proto(
+            Value(
+                Bool,
             ),
-        ])
-            .into_iter();
-        loop {
-            let Some(item) = iter.next() else {
-                break true;
-            };
-            if !(item) {
-                break false;
+        ),
+        expr: {
+            let mut iter = ([
+                ::tinc::__private::cel::to_bool(
+                    match ::tinc::__private::cel::CelMode::current() {
+                        ::tinc::__private::cel::CelMode::Json => {
+                            ::tinc::__private::cel::CelValueConv::conv("FirstValue")
+                        }
+                        ::tinc::__private::cel::CelMode::Proto => {
+                            ::tinc::__private::cel::CelValueConv::conv("FIRST_VALUE")
+                        }
+                    },
+                ),
+            ])
+                .into_iter();
+            loop {
+                let Some(item) = iter.next() else {
+                    break true;
+                };
+                if !(item) {
+                    break false;
+                }
             }
-        }
-    })
-}
+        },
+    },
+)

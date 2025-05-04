@@ -41,7 +41,6 @@ impl Function for Bytes {
 #[cfg(test)]
 #[cfg_attr(coverage_nightly, coverage(off))]
 mod tests {
-    use quote::quote;
     use syn::parse_quote;
     use tinc_cel::CelValue;
 
@@ -104,14 +103,6 @@ mod tests {
             .compile(CompilerCtx::new(compiler.child(), Some(string_value), &[]))
             .unwrap();
 
-        let small_fn = quote! {
-            #[allow(dead_code)]
-            fn bytes_conv(input: &std::string::String) -> Result<::tinc::__private::cel::CelValue<'_>, ::tinc::__private::cel::CelError<'_>> {
-                Ok(#result)
-            }
-        };
-
-        let compiled = postcompile::compile_str!(&small_fn.to_string());
-        insta::assert_snapshot!(compiled);
+        insta::assert_debug_snapshot!(result);
     }
 }

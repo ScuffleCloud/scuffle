@@ -103,6 +103,7 @@
 #![deny(unsafe_code)]
 #![deny(unreachable_pub)]
 
+pub mod boxes;
 mod config;
 mod enums;
 mod sps;

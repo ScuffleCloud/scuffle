@@ -1,3 +1,4 @@
+use super::HandlerBox;
 use crate::{FullBoxHeader, IsoBox, UnknownBox};
 
 #[derive(IsoBox, Debug)]
@@ -5,6 +6,8 @@ use crate::{FullBoxHeader, IsoBox, UnknownBox};
 pub struct MetaBox<'a> {
     #[iso_box(header)]
     pub header: FullBoxHeader,
+    #[iso_box(nested_box)]
+    pub hdlr: HandlerBox,
     #[iso_box(nested_box(collect_unknown))]
     pub unknown_boxes: Vec<UnknownBox<'a>>,
 }

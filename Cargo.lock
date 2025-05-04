@@ -2926,6 +2926,7 @@ dependencies = [
  "byteorder",
  "bytes",
  "insta",
+ "isobmff",
  "nutype-enum",
  "scuffle-bytes-util",
  "scuffle-expgolomb",

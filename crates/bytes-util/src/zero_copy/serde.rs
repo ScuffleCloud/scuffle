@@ -5,6 +5,7 @@ use std::io;
 use byteorder::ReadBytesExt;
 
 use super::ZeroCopyReader;
+use crate::BytesCow;
 
 pub trait Container {
     type Item;
@@ -123,6 +124,15 @@ where
         }
 
         Ok(buf)
+    }
+}
+
+impl<'a> Deserialize<'a> for BytesCow<'a> {
+    fn deserialize<R>(mut reader: R) -> io::Result<Self>
+    where
+        R: ZeroCopyReader<'a>,
+    {
+        reader.try_read_to_end()
     }
 }
 

@@ -1,5 +1,3 @@
-use std::io;
-
 use scuffle_bytes_util::zero_copy::{Deserialize, DeserializeSeed};
 
 use crate::boxes::{
@@ -7,23 +5,20 @@ use crate::boxes::{
 };
 use crate::{IsoBox, UnknownBox};
 
-#[derive(Debug)]
-pub struct EmptyHeader;
-
 #[derive(IsoBox, Debug)]
-#[iso_box(box_type = b"root", crate_path = "crate", skip_deserialize_impl)] // the box_type is not used
+#[iso_box(box_type = b"root", skip_deserialize_impl, crate_path = "crate")] // The box type does not matter here
 pub struct IsobmffFile<'a> {
     #[iso_box(header)]
-    pub header: EmptyHeader,
+    _empty_header: (),
     pub ftyp: FileTypeBox,
     #[iso_box(nested_box(collect))]
     pub etyp: Vec<ExtendedTypeBox<'a>>,
     #[iso_box(nested_box(collect))]
-    pub mdat: Vec<MediaDataBox>,
+    pub mdat: Vec<MediaDataBox<'a>>,
     #[iso_box(nested_box(collect))]
     pub pdin: Option<ProgressiveDownloadInfoBox>,
     #[iso_box(nested_box(collect))]
-    pub imda: Vec<IdentifiedMediaDataBox>,
+    pub imda: Vec<IdentifiedMediaDataBox<'a>>,
     #[iso_box(nested_box)]
     pub moov: MovieBox<'a>,
     // pub moof: Vec<MovieFragmentBox>,
@@ -40,11 +35,11 @@ pub struct IsobmffFile<'a> {
 }
 
 impl<'a> Deserialize<'a> for IsobmffFile<'a> {
-    fn deserialize<R>(reader: R) -> io::Result<Self>
+    fn deserialize<R>(reader: R) -> std::io::Result<Self>
     where
         R: scuffle_bytes_util::zero_copy::ZeroCopyReader<'a>,
     {
-        <Self as DeserializeSeed<EmptyHeader>>::deserialize_seed(reader, EmptyHeader)
+        <Self as DeserializeSeed<()>>::deserialize_seed(reader, ())
     }
 }
 

@@ -4089,6 +4089,7 @@ dependencies = [
  "email_address",
  "float-cmp",
  "fmtools",
+ "insta",
  "linkme",
  "num-traits",
  "regex",

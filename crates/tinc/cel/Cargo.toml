@@ -27,6 +27,9 @@ url = "2"
 email_address = "0.2.9"
 scuffle-workspace-hack.workspace = true
 
+[dev-dependencies]
+insta = "1.43"
+
 [features]
 runtime = []
 

@@ -338,6 +338,7 @@ impl<'a> CelValue<'a> {
                 right: left,
                 op: "contains",
             },
+            // I think this is unreachable
             err => err,
         })
     }
@@ -762,6 +763,7 @@ impl<'a> CelValue<'a> {
                 if let Ok(number) = number.to_double() {
                     Ok(CelValue::Number(number))
                 } else {
+                    // I think this is unreachable as well
                     Ok(CelValue::Null)
                 }
             }
@@ -1024,6 +1026,7 @@ impl PartialOrd for NumberTy {
             } else {
                 l.partial_cmp(&r).unwrap_or(std::cmp::Ordering::Equal)
             }),
+            // I think this is unreachable
             _ => None,
         })
     }
@@ -1036,6 +1039,7 @@ impl NumberTy {
             (NumberTy::I64(l), NumberTy::I64(r)) => Ok(NumberTy::I64(l.checked_add(r).ok_or(ERROR)?)),
             (NumberTy::U64(l), NumberTy::U64(r)) => Ok(NumberTy::U64(l.checked_add(r).ok_or(ERROR)?)),
             (NumberTy::F64(l), NumberTy::F64(r)) => Ok(NumberTy::F64(l + r)),
+            // I think this is unreachable
             _ => Err(ERROR),
         }
     }
@@ -1046,6 +1050,7 @@ impl NumberTy {
             (NumberTy::I64(l), NumberTy::I64(r)) => Ok(NumberTy::I64(l.checked_sub(r).ok_or(ERROR)?)),
             (NumberTy::U64(l), NumberTy::U64(r)) => Ok(NumberTy::U64(l.checked_sub(r).ok_or(ERROR)?)),
             (NumberTy::F64(l), NumberTy::F64(r)) => Ok(NumberTy::F64(l - r)),
+            // I think this is unreachable
             _ => Err(ERROR),
         }
     }
@@ -1056,6 +1061,7 @@ impl NumberTy {
             (NumberTy::I64(l), NumberTy::I64(r)) => Ok(NumberTy::I64(l.checked_mul(r).ok_or(ERROR)?)),
             (NumberTy::U64(l), NumberTy::U64(r)) => Ok(NumberTy::U64(l.checked_mul(r).ok_or(ERROR)?)),
             (NumberTy::F64(l), NumberTy::F64(r)) => Ok(NumberTy::F64(l * r)),
+            // I think this is unreachable
             _ => Err(ERROR),
         }
     }
@@ -1070,6 +1076,7 @@ impl NumberTy {
             (NumberTy::I64(l), NumberTy::I64(r)) => Ok(NumberTy::I64(l.checked_div(r).ok_or(ERROR)?)),
             (NumberTy::U64(l), NumberTy::U64(r)) => Ok(NumberTy::U64(l.checked_div(r).ok_or(ERROR)?)),
             (NumberTy::F64(l), NumberTy::F64(r)) => Ok(NumberTy::F64(l / r)),
+            // I think this is unreachable
             _ => Err(ERROR),
         }
     }
@@ -1141,6 +1148,7 @@ impl PartialEq for NumberTy {
                 (NumberTy::I64(l), NumberTy::I64(r)) => l == r,
                 (NumberTy::U64(l), NumberTy::U64(r)) => l == r,
                 (NumberTy::F64(l), NumberTy::F64(r)) => l.approx_eq(r, float_cmp::F64Margin::default()),
+                // I think this is unreachable
                 _ => false,
             })
             .unwrap_or(false)
@@ -1563,3 +1571,1785 @@ impl EnumVtable {
 #[cfg(feature = "runtime")]
 #[linkme::distributed_slice]
 pub static TINC_CEL_ENUM_VTABLE: [EnumVtable];
+
+#[cfg(test)]
+#[cfg_attr(all(test, coverage_nightly), coverage(off))]
+mod tests {
+    use std::borrow::Cow;
+    use std::cmp::Ordering;
+    use std::collections::{BTreeMap, HashMap};
+    use std::sync::Arc;
+
+    use bytes::Bytes;
+    use chrono::{DateTime, Duration, FixedOffset};
+    use num_traits::ToPrimitive;
+    use regex::Regex;
+    use uuid::Uuid;
+
+    use super::CelString;
+    use crate::{
+        CelBooleanConv, CelBytes, CelEnum, CelError, CelValue, CelValueConv, MapKeyCast, NumberTy, array_access,
+        array_contains, map_access, map_contains,
+    };
+
+    #[test]
+    fn celstring_eq() {
+        // borrowed vs borrowed
+        let b1 = CelString::Borrowed("foo");
+        let b2 = CelString::Borrowed("foo");
+        assert_eq!(b1, b2);
+
+        // owned vs owned
+        let o1 = CelString::Owned(Arc::from("foo"));
+        let o2 = CelString::Owned(Arc::from("foo"));
+        assert_eq!(o1, o2);
+
+        // borrowed vs owned (both directions)
+        let b = CelString::Borrowed("foo");
+        let o = CelString::Owned(Arc::from("foo"));
+        assert_eq!(b, o.clone());
+        assert_eq!(o, b);
+
+        // inequality
+        let bar_b = CelString::Borrowed("bar");
+        let bar_o = CelString::Owned(Arc::from("bar"));
+        assert_ne!(b1, bar_b);
+        assert_ne!(o1, bar_o);
+    }
+
+    #[test]
+    fn celstring_borrowed() {
+        let original = String::from("hello");
+        let cs: CelString = (&original).into();
+
+        match cs {
+            CelString::Borrowed(s) => {
+                assert_eq!(s, "hello");
+                // ensure it really is a borrow, not an owned Arc
+                let orig_ptr = original.as_ptr();
+                let borrow_ptr = s.as_ptr();
+                assert_eq!(orig_ptr, borrow_ptr);
+            }
+            _ => panic!("expected CelString::Borrowed"),
+        }
+    }
+
+    #[test]
+    fn celstring_owned() {
+        let arc: Arc<str> = Arc::from("world");
+        let cs: CelString<'static> = (&arc).into();
+
+        match cs {
+            CelString::Owned(o) => {
+                assert_eq!(o.as_ref(), "world");
+                assert!(Arc::ptr_eq(&o, &arc));
+                assert_eq!(Arc::strong_count(&arc), 2);
+            }
+            _ => panic!("expected CelString::Owned"),
+        }
+    }
+
+    #[test]
+    fn borrowed_eq_borrowed() {
+        let slice1: &[u8] = &[1, 2, 3];
+        let slice2: &[u8] = &[1, 2, 3];
+        let b1: CelBytes = slice1.into();
+        let b2: CelBytes = slice2.into();
+        assert_eq!(b1, b2);
+    }
+
+    #[test]
+    fn owned_eq_owned() {
+        let data = vec![10, 20, 30];
+        let o1: CelBytes<'static> = Bytes::from(data.clone()).into();
+        let o2: CelBytes<'static> = Bytes::from(data.clone()).into();
+        assert_eq!(o1, o2);
+    }
+
+    #[test]
+    fn borrowed_eq_owned() {
+        let v = vec![5, 6, 7];
+        let owned: CelBytes<'static> = Bytes::from(v.clone()).into();
+        let borrowed: CelBytes = v.as_slice().into();
+
+        // Owned vs Borrowed
+        assert_eq!(owned, borrowed);
+        // Borrowed vs Owned
+        assert_eq!(borrowed, owned);
+    }
+
+    #[test]
+    fn celbytes_neq() {
+        let b1: CelBytes = (&[1, 2, 3][..]).into();
+        let b2: CelBytes = (&[4, 5, 6][..]).into();
+        assert_ne!(b1, b2);
+
+        let o1: CelBytes<'static> = Bytes::from(vec![1, 2, 3]).into();
+        let o2: CelBytes<'static> = Bytes::from(vec![7, 8, 9]).into();
+        assert_ne!(o1, o2);
+    }
+
+    #[test]
+    fn celbytes_borrowed_slice() {
+        let arr: [u8; 4] = [9, 8, 7, 6];
+        let cb: CelBytes = arr.as_slice().into();
+        match cb {
+            CelBytes::Borrowed(s) => {
+                assert_eq!(s, arr.as_slice());
+                // pointer equality check
+                assert_eq!(s.as_ptr(), arr.as_ptr());
+            }
+            _ => panic!("Expected CelBytes::Borrowed from slice"),
+        }
+    }
+
+    #[test]
+    fn celbytes_bstr_owned() {
+        let bytes = Bytes::from_static(b"rust");
+        let cb: CelBytes = bytes.clone().into();
+        match cb {
+            CelBytes::Owned(b) => {
+                assert_eq!(b, bytes);
+            }
+            _ => panic!("Expected CelBytes::Owned from Bytes"),
+        }
+    }
+
+    #[test]
+    fn celbytes_vec_owned() {
+        let data = vec![0x10, 0x20, 0x30];
+        let cb: CelBytes<'static> = data.clone().into();
+
+        match cb {
+            CelBytes::Owned(bytes) => {
+                assert_eq!(bytes.as_ref(), &[0x10, 0x20, 0x30]);
+                assert_eq!(bytes, Bytes::from(data));
+            }
+            _ => panic!("Expected CelBytes::Owned variant"),
+        }
+    }
+
+    #[test]
+    fn celbytes_vec_borrowed() {
+        let data = vec![4u8, 5, 6];
+        let cb: CelBytes = (&data).into();
+
+        match cb {
+            CelBytes::Borrowed(slice) => {
+                assert_eq!(slice, data.as_slice());
+
+                let data_ptr = data.as_ptr();
+                let slice_ptr = slice.as_ptr();
+                assert_eq!(data_ptr, slice_ptr);
+            }
+            _ => panic!("Expected CelBytes::Borrowed variant"),
+        }
+    }
+
+    #[test]
+    fn celvalue_partial_cmp() {
+        let one = 1i32.conv();
+        let two = 2i32.conv();
+        assert_eq!(one.partial_cmp(&two), Some(Ordering::Less));
+        assert_eq!(two.partial_cmp(&one), Some(Ordering::Greater));
+        assert_eq!(one.partial_cmp(&1i32.conv()), Some(Ordering::Equal));
+    }
+
+    #[test]
+    fn celvalue_str_byte_partial_cmp() {
+        let s1 = "abc".conv();
+        let s2 = "abd".conv();
+        assert_eq!(s1.partial_cmp(&s2), Some(Ordering::Less));
+
+        let b1 = Bytes::from_static(b"abc").conv();
+        let b2 = Bytes::from_static(b"abd").conv();
+        assert_eq!(b1.partial_cmp(&b2), Some(Ordering::Less));
+
+        // cross: string vs bytes
+        assert_eq!(s1.partial_cmp(&b1), Some(Ordering::Equal));
+        assert_eq!(b1.partial_cmp(&s2), Some(Ordering::Less));
+    }
+
+    #[test]
+    fn celvalue_list_partial_cmp() {
+        let list1 = (&[1, 2, 3][..]).conv();
+        let list2 = (&[1, 2, 4][..]).conv();
+        assert_eq!(list1.partial_cmp(&list2), Some(Ordering::Less));
+
+        let list3 = (&[1, 2, 3][..]).conv();
+        assert_eq!(list1.partial_cmp(&list3), Some(Ordering::Equal));
+    }
+
+    #[test]
+    fn celvalue_map_partial_cmp() {
+        let map1 = CelValue::Map(Arc::from(vec![(1i32.conv(), 2i32.conv()), (3i32.conv(), 4i32.conv())]));
+        let map2 = CelValue::Map(Arc::from(vec![(1i32.conv(), 2i32.conv()), (3i32.conv(), 5i32.conv())]));
+        assert_eq!(map1.partial_cmp(&map2), Some(Ordering::Less));
+
+        let map3 = CelValue::Map(Arc::from(vec![(1i32.conv(), 2i32.conv()), (3i32.conv(), 4i32.conv())]));
+        assert_eq!(map1.partial_cmp(&map3), Some(Ordering::Equal));
+    }
+
+    #[test]
+    fn celvalue_mismatched_partial_cmp() {
+        let num = 1i32.conv();
+        let strv = "a".conv();
+        assert_eq!(num.partial_cmp(&strv), None);
+        assert_eq!(strv.partial_cmp(&num), None);
+
+        let binding = Vec::<i32>::new();
+        let list = (&binding).conv();
+        let map = CelValue::Map(Arc::from(vec![]));
+        assert_eq!(list.partial_cmp(&map), None);
+    }
+
+    // Helpers to build list and map CelValues
+    fn make_list(vals: &[i32]) -> CelValue<'static> {
+        let items: Vec<_> = vals.iter().map(|&n| n.conv()).collect();
+        CelValue::List(Arc::from(items))
+    }
+
+    fn make_map(pairs: &[(i32, i32)]) -> CelValue<'static> {
+        let items: Vec<_> = pairs.iter().map(|&(k, v)| (k.conv(), v.conv())).collect();
+        CelValue::Map(Arc::from(items))
+    }
+
+    #[test]
+    fn celvalue_pos_neg_ints() {
+        let num = CelValue::Number(NumberTy::I64(42));
+        assert_eq!(num.as_number(), Some(NumberTy::I64(42)));
+
+        let neg = CelValue::cel_neg(5i32);
+        assert_eq!(neg.unwrap(), CelValue::Number(NumberTy::I64(-5)));
+
+        let err = CelValue::cel_neg("foo").unwrap_err();
+        matches!(err, CelError::BadUnaryOperation { op: "-", .. });
+    }
+
+    #[test]
+    fn celvalue_map_keys() {
+        let map = make_map(&[(1, 10), (2, 20)]);
+        let v = CelValue::cel_access(map.clone(), 2i32).unwrap();
+        assert_eq!(v, 20i32.conv());
+
+        let err = CelValue::cel_access(map, 3i32).unwrap_err();
+        matches!(err, CelError::MapKeyNotFound(k) if k == 3i32.conv());
+    }
+
+    #[test]
+    fn celvalue_list_access() {
+        let list = make_list(&[100, 200, 300]);
+        let v = CelValue::cel_access(list.clone(), 1u32).unwrap();
+        assert_eq!(v, 200i32.conv());
+
+        let err = CelValue::cel_access(list.clone(), 5i32).unwrap_err();
+        matches!(err, CelError::IndexOutOfBounds(5, 3));
+
+        let err2 = CelValue::cel_access(list, "not_index").unwrap_err();
+        matches!(err2, CelError::IndexWithBadIndex(k) if k == "not_index".conv());
+    }
+
+    #[test]
+    fn celvalue_bad_access() {
+        let s = "hello".conv();
+        let err = CelValue::cel_access(s.clone(), 0i32).unwrap_err();
+        matches!(err, CelError::BadAccess { member, container } if member == 0i32.conv() && container == s);
+    }
+
+    #[test]
+    fn celvalue_add() {
+        // number
+        assert_eq!(CelValue::cel_add(3i32, 4i32).unwrap(), 7i32.conv());
+        // string
+        let s = CelValue::cel_add("foo", "bar").unwrap();
+        assert_eq!(s, CelValue::String(CelString::Owned(Arc::from("foobar"))));
+        // bytes
+        let b = CelValue::cel_add(Bytes::from_static(b"ab"), Bytes::from_static(b"cd")).unwrap();
+        assert_eq!(b, CelValue::Bytes(CelBytes::Owned(Bytes::from_static(b"abcd"))));
+        // list
+        let l = CelValue::cel_add(make_list(&[1, 2]), make_list(&[3])).unwrap();
+        assert_eq!(l, make_list(&[1, 2, 3]));
+        // map
+        let m1 = make_map(&[(1, 1)]);
+        let m2 = make_map(&[(2, 2)]);
+        let m3 = CelValue::cel_add(m1.clone(), m2.clone()).unwrap();
+        assert_eq!(m3, make_map(&[(1, 1), (2, 2)]));
+        // bad operation
+        let err = CelValue::cel_add(1i32, "x").unwrap_err();
+        matches!(err, CelError::BadOperation { op: "+", .. });
+    }
+
+    #[test]
+    fn celvalue_sub_mul_div_rem() {
+        // sub
+        assert_eq!(CelValue::cel_sub(10i32, 3i32).unwrap(), 7i32.conv());
+        assert!(matches!(
+            CelValue::cel_sub(1i32, "x").unwrap_err(),
+            CelError::BadOperation { op: "-", .. }
+        ));
+        // mul
+        assert_eq!(CelValue::cel_mul(6i32, 7i32).unwrap(), 42i32.conv());
+        assert!(matches!(
+            CelValue::cel_mul("a", 2i32).unwrap_err(),
+            CelError::BadOperation { op: "*", .. }
+        ));
+        // div
+        assert_eq!(CelValue::cel_div(8i32, 2i32).unwrap(), 4i32.conv());
+        assert!(matches!(
+            CelValue::cel_div(8i32, "x").unwrap_err(),
+            CelError::BadOperation { op: "/", .. }
+        ));
+        // rem
+        assert_eq!(CelValue::cel_rem(9i32, 4i32).unwrap(), 1i32.conv());
+        assert!(matches!(
+            CelValue::cel_rem("a", 1i32).unwrap_err(),
+            CelError::BadOperation { op: "%", .. }
+        ));
+    }
+
+    // helper to build a map CelValue from &[(K, V)]
+    fn as_map(pairs: &[(i32, i32)]) -> CelValue<'static> {
+        let items: Vec<_> = pairs.iter().map(|&(k, v)| (k.conv(), v.conv())).collect();
+        CelValue::Map(Arc::from(items))
+    }
+
+    #[test]
+    fn celvalue_neq() {
+        assert!(CelValue::cel_neq(1i32, 2i32).unwrap());
+        assert!(!CelValue::cel_neq("foo", "foo").unwrap());
+    }
+
+    #[test]
+    fn celvalue_in_and_contains_ints() {
+        let list = [1, 2, 3].conv();
+        assert!(CelValue::cel_in(2i32, &list).unwrap());
+        assert!(!CelValue::cel_in(4i32, &list).unwrap());
+
+        let map = as_map(&[(10, 100), (20, 200)]);
+        assert!(CelValue::cel_in(10i32, &map).unwrap());
+        assert!(!CelValue::cel_in(30i32, &map).unwrap());
+
+        // contains flips in
+        assert!(CelValue::cel_contains(&list, 3i32).unwrap());
+        assert!(!CelValue::cel_contains(&map, 30i32).unwrap());
+    }
+
+    #[test]
+    fn celvalue_contains_bad_operation() {
+        let err = CelValue::cel_contains(1i32, "foo").unwrap_err();
+        if let CelError::BadOperation { left, right, op } = err {
+            assert_eq!(op, "contains");
+            assert_eq!(left, 1i32.conv());
+            assert_eq!(right, "foo".conv());
+        } else {
+            panic!("expected CelError::BadOperation with op=\"contains\"");
+        }
+    }
+
+    #[test]
+    fn celvalue_in_and_contains_bytes() {
+        let s = "hello world";
+        let b = Bytes::from_static(b"hello world");
+        let b_again = Bytes::from_static(b"hello world");
+
+        // substring
+        assert!(CelValue::cel_in("world", s).unwrap());
+        assert!(CelValue::cel_in(Bytes::from_static(b"wor"), b).unwrap());
+
+        // contains
+        assert!(CelValue::cel_contains(s, "lo wo").unwrap());
+        assert!(CelValue::cel_contains(b_again, Bytes::from_static(b"lo")).unwrap());
+
+        // not found
+        assert!(!CelValue::cel_in("abc", s).unwrap());
+        assert!(!CelValue::cel_contains(s, "xyz").unwrap());
+    }
+
+    #[test]
+    fn celvalue_in_and_contains_bad_operations() {
+        let err = CelValue::cel_in(1i32, "foo").unwrap_err();
+        match err {
+            CelError::BadOperation { op, .. } => assert_eq!(op, "in"),
+            _ => panic!("Expected BadOperation"),
+        }
+
+        let err2 = CelValue::cel_contains(1i32, "foo").unwrap_err();
+        match err2 {
+            CelError::BadOperation { op, .. } => assert_eq!(op, "contains"),
+            _ => panic!("Expected BadOperation contains"),
+        }
+    }
+
+    #[test]
+    fn celvalue_starts_with_and_ends_with() {
+        // starts_with & ends_with string
+        assert!(CelValue::cel_starts_with("rustacean", "rust").unwrap());
+        assert!(CelValue::cel_ends_with("rustacean", "acean").unwrap());
+
+        // bytes
+        let b = Bytes::from_static(b"0123456");
+        let b_again = Bytes::from_static(b"0123456");
+        assert!(CelValue::cel_starts_with(b, Bytes::from_static(b"01")).unwrap());
+        assert!(CelValue::cel_ends_with(b_again, Bytes::from_static(b"56")).unwrap());
+
+        // type errors
+        let e1 = CelValue::cel_starts_with(123i32, "1").unwrap_err();
+        assert!(matches!(e1, CelError::BadOperation { op, .. } if op=="startsWith"));
+        let e2 = CelValue::cel_ends_with(123i32, "1").unwrap_err();
+        assert!(matches!(e2, CelError::BadOperation { op, .. } if op=="startsWith"));
+    }
+
+    #[test]
+    fn celvalue_matches() {
+        let re = Regex::new(r"^a.*z$").unwrap();
+        assert!(CelValue::cel_matches("abcz", &re).unwrap());
+
+        let b = Bytes::from_static(b"abcz");
+        assert!(CelValue::cel_matches(b, &re).unwrap());
+
+        // non-utf8 bytes -> Ok(false)
+        let bad = CelValue::cel_matches(Bytes::from_static(&[0xff, 0xfe]), &Regex::new(".*").unwrap()).unwrap();
+        assert!(!bad);
+
+        let err = CelValue::cel_matches(1i32, &re).unwrap_err();
+        matches!(err, CelError::BadUnaryOperation { op, .. } if op=="matches");
+    }
+
+    #[test]
+    fn celvalue_ip_and_uuid_hostname_uri_email() {
+        // IPv4
+        assert!(CelValue::cel_is_ipv4("127.0.0.1").unwrap());
+        assert!(CelValue::cel_is_ipv4(Bytes::from_static(&[127, 0, 0, 1])).unwrap());
+        assert!(!CelValue::cel_is_ipv4(Bytes::from_static(b"notip")).unwrap());
+        matches!(
+            CelValue::cel_is_ipv4(true).unwrap_err(),
+            CelError::BadUnaryOperation { op, .. } if op == "isIpv4"
+        );
+
+        // IPv6
+        assert!(CelValue::cel_is_ipv6("::1").unwrap());
+        let octets = [0u8; 16];
+        assert!(CelValue::cel_is_ipv6(&octets).unwrap());
+        assert!(!CelValue::cel_is_ipv6(Bytes::from_static(b"bad")).unwrap());
+        matches!(
+            CelValue::cel_is_ipv6(1i32).unwrap_err(),
+            CelError::BadUnaryOperation { op, .. } if op == "isIpv6"
+        );
+
+        // UUID
+        let uuid_str_nil = Uuid::nil().to_string();
+        assert!(CelValue::cel_is_uuid(&uuid_str_nil).unwrap());
+        let uuid_str_max = Uuid::max().to_string();
+        assert!(CelValue::cel_is_uuid(&uuid_str_max).unwrap());
+
+        let mut bytes16 = [0u8; 16];
+        bytes16[0] = 1;
+        assert!(CelValue::cel_is_uuid(&bytes16).unwrap());
+        assert!(!CelValue::cel_is_uuid(Bytes::from_static(b"short")).unwrap());
+        matches!(
+            CelValue::cel_is_uuid(1i32).unwrap_err(),
+            CelError::BadUnaryOperation { op, .. } if op == "isUuid"
+        );
+
+        // hostname
+        assert!(CelValue::cel_is_hostname("example.com").unwrap());
+        assert!(!CelValue::cel_is_hostname("not valid!").unwrap());
+        matches!(
+            CelValue::cel_is_hostname(1i32).unwrap_err(),
+            CelError::BadUnaryOperation { op, .. } if op == "isHostname"
+        );
+
+        // URI str
+        assert!(CelValue::cel_is_uri("https://rust-lang.org").unwrap());
+        assert!(!CelValue::cel_is_uri(Bytes::from_static(b":bad")).unwrap());
+        matches!(
+            CelValue::cel_is_uri(1i32).unwrap_err(),
+            CelError::BadUnaryOperation { op, .. } if op == "isUri"
+        );
+
+        // email str
+        assert!(CelValue::cel_is_email("user@example.com").unwrap());
+        assert!(!CelValue::cel_is_email(Bytes::from_static(b"noatsign")).unwrap());
+        matches!(
+            CelValue::cel_is_email(1i32).unwrap_err(),
+            CelError::BadUnaryOperation { op, .. } if op == "isEmail"
+        );
+    }
+
+    #[test]
+    fn celvalue_ipv4_invalid() {
+        let invalid = Bytes::from_static(&[0xff, 0xfe, 0xff, 0xff, 0xff]);
+        let result = CelValue::cel_is_ipv4(invalid).unwrap();
+        assert!(!result, "Expected false for non-UTF8, non-4-byte input");
+    }
+
+    #[test]
+    fn celvalue_ipv6_invalid() {
+        let invalid = Bytes::from_static(&[0xff, 0xfe, 0xff]);
+        let result = CelValue::cel_is_ipv6(invalid).unwrap();
+        assert!(!result, "Expected false for non-UTF8, non-16-byte input");
+    }
+
+    #[test]
+    fn celvalue_uuid_invalid() {
+        // length != 16 and invalid UTF-8 → should hit the final `Ok(false)` branch
+        let invalid = Bytes::from_static(&[0xff, 0xfe, 0xff]);
+        let result = CelValue::cel_is_uuid(invalid).unwrap();
+        assert!(!result, "Expected false for non-UTF8, non-16-byte input");
+    }
+
+    #[test]
+    fn celvalue_hostname_invalid() {
+        let valid = CelValue::cel_is_hostname(Bytes::from_static(b"example.com")).unwrap();
+        assert!(valid, "Expected true for valid hostname bytes");
+
+        let invalid = CelValue::cel_is_hostname(Bytes::from_static(&[0xff, 0xfe, 0xff])).unwrap();
+        assert!(!invalid, "Expected false for invalid UTF-8 bytes");
+    }
+
+    #[test]
+    fn celvalue_uri_invalid() {
+        let invalid = Bytes::from_static(&[0xff, 0xfe, 0xff]);
+        let result = CelValue::cel_is_uri(invalid).unwrap();
+        assert!(!result, "Expected false for invalid UTF-8 uri bytes");
+    }
+
+    #[test]
+    fn celvalue_email_invalid() {
+        let invalid = Bytes::from_static(&[0xff, 0xfe, 0xff]);
+        let result = CelValue::cel_is_email(invalid).unwrap();
+        assert!(!result, "Expected false for invalid UTF-8 email bytes");
+    }
+
+    #[test]
+    fn celvalue_size() {
+        assert_eq!(CelValue::cel_size(Bytes::from_static(b"abc")).unwrap(), 3);
+        assert_eq!(CelValue::cel_size("hello").unwrap(), 5);
+        assert_eq!(CelValue::cel_size([1, 2, 3].conv()).unwrap(), 3);
+        assert_eq!(CelValue::cel_size(as_map(&[(1, 1), (2, 2)])).unwrap(), 2);
+
+        let err = CelValue::cel_size(123i32).unwrap_err();
+        matches!(err, CelError::BadUnaryOperation { op, .. } if op=="size");
+    }
+
+    #[test]
+    fn celvalue_map_and_filter() {
+        // map: double each number
+        let m = CelValue::cel_map([1, 2, 3].conv(), |v| {
+            let n = v.as_number().unwrap().to_i64().unwrap();
+            Ok((n * 2).conv())
+        })
+        .unwrap();
+        assert_eq!(m, [2, 4, 6].conv());
+
+        // map over map produces list of keys
+        let keys = CelValue::cel_map(as_map(&[(10, 100), (20, 200)]), Ok).unwrap();
+        assert_eq!(keys, [10, 20].conv());
+
+        // filter: keep evens
+        let f =
+            CelValue::cel_filter([1, 2, 3, 4].conv(), |v| Ok(v.as_number().unwrap().to_i64().unwrap() % 2 == 0)).unwrap();
+        assert_eq!(f, [2, 4].conv());
+
+        // filter on map => list of keys
+        let fk = CelValue::cel_filter(as_map(&[(7, 70), (8, 80)]), |v| {
+            Ok(v.as_number().unwrap().to_i64().unwrap() == 8)
+        })
+        .unwrap();
+        assert_eq!(fk, [8].conv());
+
+        // error on wrong type
+        let err_map = CelValue::cel_map(1i32, |_| Ok(1i32.conv())).unwrap_err();
+        matches!(err_map, CelError::BadUnaryOperation { op, .. } if op=="map");
+        let err_filter = CelValue::cel_filter(1i32, |_| Ok(true)).unwrap_err();
+        matches!(err_filter, CelError::BadUnaryOperation { op, .. } if op=="filter");
+    }
+
+    #[test]
+    fn celvalue_list_and_filter() {
+        let list = [1i32, 2, 3].conv();
+
+        let err = CelValue::cel_filter(list, |v| {
+            if v == 2i32.conv() {
+                Err(CelError::BadUnaryOperation { op: "test", value: v })
+            } else {
+                Ok(true)
+            }
+        })
+        .unwrap_err();
+
+        if let CelError::BadUnaryOperation { op, value } = err {
+            assert_eq!(op, "test");
+            assert_eq!(value, 2i32.conv());
+        } else {
+            panic!("expected BadUnaryOperation from map_fn");
+        }
+    }
+
+    #[test]
+    fn celvalue_list_and_map_all() {
+        let list = [1, 2, 3].conv();
+        let all_pos = CelValue::cel_all(list.clone(), |v| Ok(v.as_number().unwrap().to_i64().unwrap() > 0)).unwrap();
+        assert_eq!(all_pos, CelValue::Bool(true));
+
+        let list2 = [1, 0, 3].conv();
+        let any_zero = CelValue::cel_all(list2, |v| Ok(v.as_number().unwrap().to_i64().unwrap() > 0)).unwrap();
+        assert_eq!(any_zero, CelValue::Bool(false));
+
+        let map = as_map(&[(2, 20), (4, 40)]);
+        let all_keys = CelValue::cel_all(map.clone(), |v| Ok(v.as_number().unwrap().to_i64().unwrap() < 5)).unwrap();
+        assert_eq!(all_keys, CelValue::Bool(true));
+
+        let map2 = as_map(&[(2, 20), (6, 60)]);
+        let some_ge5 = CelValue::cel_all(map2, |v| Ok(v.as_number().unwrap().to_i64().unwrap() < 5)).unwrap();
+        assert_eq!(some_ge5, CelValue::Bool(false));
+    }
+
+    #[test]
+    fn celvalue_list_error_propagation() {
+        let list = [1, 2, 3].conv();
+        let err = CelValue::cel_all(list, |v| {
+            if v == 2i32.conv() {
+                Err(CelError::BadUnaryOperation {
+                    op: "all_test",
+                    value: v,
+                })
+            } else {
+                Ok(true)
+            }
+        })
+        .unwrap_err();
+
+        if let CelError::BadUnaryOperation { op, value } = err {
+            assert_eq!(op, "all_test");
+            assert_eq!(value, 2i32.conv());
+        } else {
+            panic!("Expected BadUnaryOperation from map_fn");
+        }
+    }
+
+    #[test]
+    fn celvalue_all_bad_operation() {
+        let err = CelValue::cel_all(42i32, |_| Ok(true)).unwrap_err();
+        if let CelError::BadUnaryOperation { op, value } = err {
+            assert_eq!(op, "all");
+            assert_eq!(value, 42i32.conv());
+        } else {
+            panic!("Expected BadUnaryOperation with op=\"all\"");
+        }
+    }
+
+    #[test]
+    fn celvalue_exists() {
+        let list = [1, 2, 3].conv();
+        let result = CelValue::cel_exists(list, |v| Ok(v == 2i32.conv())).unwrap();
+        assert_eq!(result, CelValue::Bool(true));
+    }
+
+    #[test]
+    fn celvalue_exists_list_false() {
+        let list = [1, 2, 3].conv();
+        let result = CelValue::cel_exists(list, |_| Ok(false)).unwrap();
+        assert_eq!(result, CelValue::Bool(false));
+    }
+
+    #[test]
+    fn celvalue_exists_map_true() {
+        let map = as_map(&[(10, 100), (20, 200)]);
+        let result = CelValue::cel_exists(map, |v| Ok(v == 20i32.conv())).unwrap();
+        assert_eq!(result, CelValue::Bool(true));
+    }
+
+    #[test]
+    fn celvalue_exists_map_false() {
+        let map = as_map(&[(10, 100), (20, 200)]);
+        let result = CelValue::cel_exists(map, |_| Ok(false)).unwrap();
+        assert_eq!(result, CelValue::Bool(false));
+    }
+
+    #[test]
+    fn celvalue_exists_list_propagates_error() {
+        let list = [1, 2, 3].conv();
+        let err = CelValue::cel_exists(list, |v| {
+            if v == 2i32.conv() {
+                Err(CelError::BadUnaryOperation {
+                    op: "exists_test",
+                    value: v,
+                })
+            } else {
+                Ok(false)
+            }
+        })
+        .unwrap_err();
+
+        if let CelError::BadUnaryOperation { op, value } = err {
+            assert_eq!(op, "exists_test");
+            assert_eq!(value, 2i32.conv());
+        } else {
+            panic!("Expected BadUnaryOperation from map_fn");
+        }
+    }
+
+    #[test]
+    fn celvalue_exists_non_collection_error() {
+        let err = CelValue::cel_exists(42i32, |_| Ok(true)).unwrap_err();
+        if let CelError::BadUnaryOperation { op, value } = err {
+            assert_eq!(op, "existsOne");
+            assert_eq!(value, 42i32.conv());
+        } else {
+            panic!("Expected BadUnaryOperation with op=\"existsOne\"");
+        }
+    }
+
+    #[test]
+    fn celvalue_exists_one_list() {
+        let list = [1, 2, 3].conv();
+        let result = CelValue::cel_exists_one(list, |v| Ok(v == 2i32.conv())).unwrap();
+        assert_eq!(result, CelValue::Bool(true));
+    }
+
+    #[test]
+    fn celvalue_exists_one_list_zero() {
+        let list = [1, 2, 3].conv();
+        let result = CelValue::cel_exists_one(list, |_| Ok(false)).unwrap();
+        assert_eq!(result, CelValue::Bool(false));
+    }
+
+    #[test]
+    fn celvalue_exists_one_list_multiple() {
+        let list = [1, 2, 2, 3].conv();
+        let result = CelValue::cel_exists_one(list, |v| Ok(v == 2i32.conv())).unwrap();
+        assert_eq!(result, CelValue::Bool(false));
+    }
+
+    #[test]
+    fn celvalue_exists_one_map() {
+        let map = as_map(&[(10, 100), (20, 200)]);
+        let result = CelValue::cel_exists_one(map, |v| Ok(v == 20i32.conv())).unwrap();
+        assert_eq!(result, CelValue::Bool(true));
+    }
+
+    #[test]
+    fn celvalue_exists_one_map_zero() {
+        let map = as_map(&[(10, 100), (20, 200)]);
+        let result = CelValue::cel_exists_one(map, |_| Ok(false)).unwrap();
+        assert_eq!(result, CelValue::Bool(false));
+    }
+
+    #[test]
+    fn celvalue_exists_one_map_multiple() {
+        let map = as_map(&[(1, 10), (1, 20), (2, 30)]);
+        let result = CelValue::cel_exists_one(map, |v| Ok(v == 1i32.conv())).unwrap();
+        assert_eq!(result, CelValue::Bool(false));
+    }
+
+    #[test]
+    fn celvalue_exists_one_propagates_error() {
+        let list = [1, 2, 3].conv();
+        let err = CelValue::cel_exists_one(list, |v| {
+            if v == 2i32.conv() {
+                Err(CelError::BadUnaryOperation {
+                    op: "test_one",
+                    value: v,
+                })
+            } else {
+                Ok(false)
+            }
+        })
+        .unwrap_err();
+
+        if let CelError::BadUnaryOperation { op, value } = err {
+            assert_eq!(op, "test_one");
+            assert_eq!(value, 2i32.conv());
+        } else {
+            panic!("Expected BadUnaryOperation from map_fn");
+        }
+    }
+
+    #[test]
+    fn celvalue_exists_one_non_collection_error() {
+        let err = CelValue::cel_exists_one(42i32, |_| Ok(true)).unwrap_err();
+        if let CelError::BadUnaryOperation { op, value } = err {
+            assert_eq!(op, "existsOne");
+            assert_eq!(value, 42i32.conv());
+        } else {
+            panic!("Expected BadUnaryOperation with op=\"existsOne\"");
+        }
+    }
+
+    #[test]
+    fn celvalue_to_string_variant_passthrough() {
+        let original = "hello";
+        let cv = original.conv();
+        let out = CelValue::cel_to_string(cv.clone());
+
+        assert!(matches!(out, CelValue::String(_)));
+        assert_eq!(out, cv);
+    }
+
+    #[test]
+    fn celvalue_to_string_owned_bytes() {
+        let bytes = Bytes::from_static(b"foo");
+        let out = CelValue::cel_to_string(bytes.clone());
+
+        assert_eq!(out, CelValue::String(CelString::Owned(Arc::from("foo"))));
+    }
+
+    #[test]
+    fn celvalue_to_string_borrowed_bytes() {
+        let slice: &[u8] = b"bar";
+        let out = CelValue::cel_to_string(slice);
+
+        match out {
+            CelValue::String(CelString::Borrowed(s)) => assert_eq!(s, "bar"),
+            _ => panic!("expected Borrowed variant"),
+        }
+    }
+
+    #[test]
+    fn celvalue_to_string_borrowed_bytes_invalid_utf8_to_owned() {
+        let slice: &[u8] = &[0xff, 0xfe];
+        let out = CelValue::cel_to_string(slice);
+
+        match out {
+            CelValue::String(CelString::Owned(o)) => {
+                assert_eq!(o.as_ref(), "\u{FFFD}\u{FFFD}");
+            }
+            _ => panic!("expected Owned variant"),
+        }
+    }
+
+    #[test]
+    fn celvalue_to_string_num_and_bool() {
+        let out_num = CelValue::cel_to_string(42i32);
+        assert_eq!(out_num, CelValue::String(CelString::Owned(Arc::from("42"))));
+
+        let out_bool = CelValue::cel_to_string(true);
+        assert_eq!(out_bool, CelValue::String(CelString::Owned(Arc::from("true"))));
+    }
+
+    #[test]
+    fn celvalue_to_bytes_variant_passthrough() {
+        let bytes = Bytes::from_static(b"xyz");
+        let cv = CelValue::cel_to_bytes(bytes.clone()).unwrap();
+        match cv {
+            CelValue::Bytes(CelBytes::Owned(b)) => assert_eq!(b, bytes),
+            _ => panic!("expected Owned bytes passthrough"),
+        }
+    }
+
+    #[test]
+    fn celvalue_to_bytes_from_owned_string() {
+        let owned_str = CelString::Owned(Arc::from("hello"));
+        let cv_in = CelValue::String(owned_str.clone());
+        let cv = CelValue::cel_to_bytes(cv_in).unwrap();
+        match cv {
+            CelValue::Bytes(CelBytes::Owned(b)) => {
+                assert_eq!(b.as_ref(), b"hello");
+            }
+            _ => panic!("expected Owned bytes from Owned string"),
+        }
+    }
+
+    #[test]
+    fn celvalue_to_bytes_from_borrowed_string() {
+        let s = "world";
+        let cv = CelValue::cel_to_bytes(s).unwrap();
+        match cv {
+            CelValue::Bytes(CelBytes::Borrowed(b)) => {
+                assert_eq!(b, b"world");
+            }
+            _ => panic!("expected Borrowed bytes from Borrowed string"),
+        }
+    }
+
+    #[test]
+    fn celvalue_error_on_non_string_bytes() {
+        let err = CelValue::cel_to_bytes(123i32).unwrap_err();
+        if let CelError::BadUnaryOperation { op, value } = err {
+            assert_eq!(op, "bytes");
+            assert_eq!(value, 123i32.conv());
+        } else {
+            panic!("expected BadUnaryOperation for non-bytes/string");
+        }
+    }
+
+    #[test]
+    fn celvalue_to_int_from_string() {
+        let result = CelValue::cel_to_int("123").unwrap();
+        assert_eq!(result, CelValue::Number(NumberTy::I64(123)));
+    }
+
+    #[test]
+    fn celvalue_to_int_from_nan() {
+        let result = CelValue::cel_to_int("not_a_number").unwrap();
+        assert_eq!(result, CelValue::Null);
+    }
+
+    #[test]
+    fn celvalue_to_int_from_float() {
+        let result = CelValue::cel_to_int(3.99f64).unwrap();
+        assert_eq!(result, CelValue::Number(NumberTy::I64(3)));
+    }
+
+    #[test]
+    fn celvalue_to_int_too_large() {
+        let large = u64::MAX.conv();
+        let result = CelValue::cel_to_int(large).unwrap();
+        assert_eq!(result, CelValue::Null);
+    }
+
+    #[test]
+    fn celvalue_to_int_from_bytes_bad_operation() {
+        let err = CelValue::cel_to_int(&[1, 2, 3][..]).unwrap_err();
+        if let CelError::BadUnaryOperation { op, value } = err {
+            assert_eq!(op, "int");
+            assert_eq!(value, (&[1, 2, 3][..]).conv());
+        } else {
+            panic!("Expected BadUnaryOperation for non-string/number");
+        }
+    }
+
+    #[test]
+    fn celvalue_to_uint_from_string() {
+        let result = CelValue::cel_to_uint("456").unwrap();
+        assert_eq!(result, CelValue::Number(NumberTy::U64(456)));
+    }
+
+    #[test]
+    fn celvalue_to_uint_from_nan() {
+        let result = CelValue::cel_to_uint("not_uint").unwrap();
+        assert_eq!(result, CelValue::Null);
+    }
+
+    #[test]
+    fn celvalue_to_uint_from_int_float_uint() {
+        let result_i = CelValue::cel_to_uint(42i32).unwrap();
+        assert_eq!(result_i, CelValue::Number(NumberTy::U64(42)));
+
+        let result_f = CelValue::cel_to_uint(3.7f64).unwrap();
+        assert_eq!(result_f, CelValue::Number(NumberTy::U64(3)));
+
+        let result_u = CelValue::cel_to_uint(100u64).unwrap();
+        assert_eq!(result_u, CelValue::Number(NumberTy::U64(100)));
+    }
+
+    #[test]
+    fn celvalue_to_uint_neg_and_too_large() {
+        let result_neg = CelValue::cel_to_uint(-5i32).unwrap();
+        assert_eq!(result_neg, CelValue::Null);
+
+        let big = f64::INFINITY;
+        let result_inf = CelValue::cel_to_uint(big).unwrap();
+        assert_eq!(result_inf, CelValue::Null);
+    }
+
+    #[test]
+    fn celvalue_to_uint_from_bytes_bad_operation() {
+        let err = CelValue::cel_to_uint(&[1, 2, 3][..]).unwrap_err();
+        if let CelError::BadUnaryOperation { op, value } = err {
+            assert_eq!(op, "uint");
+            assert_eq!(value, (&[1, 2, 3][..]).conv());
+        } else {
+            panic!("Expected BadUnaryOperation for non-string/number");
+        }
+    }
+
+    #[test]
+    fn celvalue_to_double_from_string_valid() {
+        let result = CelValue::cel_to_double("3.141592653589793").unwrap();
+        assert_eq!(result, CelValue::Number(NumberTy::F64(std::f64::consts::PI)));
+    }
+
+    #[test]
+    fn celvalue_to_double_from_string_invalid_returns_null() {
+        let result = CelValue::cel_to_double("not_a_double").unwrap();
+        assert_eq!(result, CelValue::Null);
+    }
+
+    #[test]
+    fn celvalue_to_double_from_integer_number() {
+        let result = CelValue::cel_to_double(42i32).unwrap();
+        assert_eq!(result, CelValue::Number(NumberTy::F64(42.0)));
+    }
+
+    #[test]
+    fn celvalue_to_double_from_f64_number() {
+        let result = CelValue::cel_to_double(std::f64::consts::PI).unwrap();
+        assert_eq!(result, CelValue::Number(NumberTy::F64(std::f64::consts::PI)));
+    }
+
+    #[test]
+    fn celvalue_to_double_from_nan() {
+        let err = CelValue::cel_to_double(&[1, 2, 3][..]).unwrap_err();
+        if let CelError::BadUnaryOperation { op, value } = err {
+            assert_eq!(op, "double");
+            assert_eq!(value, (&[1, 2, 3][..]).conv());
+        } else {
+            panic!("Expected BadUnaryOperation for non-string/number");
+        }
+    }
+
+    #[test]
+    fn celvalue_to_enum_from_number_and_string() {
+        let v = CelValue::cel_to_enum(10i32, "MyEnum").unwrap();
+        assert_eq!(v, CelValue::Enum(CelEnum::new("MyEnum".into(), 10)));
+    }
+
+    #[test]
+    fn celvalue_to_enum_number_out_of_range() {
+        let overflow = i32::MAX as i64 + 1;
+        let v = CelValue::cel_to_enum(overflow, "Tag").unwrap();
+        assert_eq!(v, CelValue::Null);
+    }
+
+    #[test]
+    fn celvalue_to_enum_from_enum_and_string() {
+        let original = CelValue::Enum(CelEnum::new("Orig".into(), 42));
+        let v = CelValue::cel_to_enum(original.clone(), "NewTag").unwrap();
+        assert_eq!(v, CelValue::Enum(CelEnum::new("NewTag".into(), 42)));
+    }
+
+    #[test]
+    fn celvalue_to_enum_bad_operation_for_invalid_inputs() {
+        let err = CelValue::cel_to_enum(true, 123i32).unwrap_err();
+        if let CelError::BadOperation { op, left, right } = err {
+            assert_eq!(op, "enum");
+            assert_eq!(left, true.conv());
+            assert_eq!(right, 123i32.conv());
+        } else {
+            panic!("Expected BadOperation for invalid cel_to_enum inputs");
+        }
+    }
+
+    #[test]
+    fn celvalue_eq_bool_variants() {
+        assert_eq!(CelValue::Bool(true), CelValue::Bool(true));
+        assert_ne!(CelValue::Bool(true), CelValue::Bool(false));
+    }
+
+    #[test]
+    fn celvalue_eq_string_and_bytes_variants() {
+        let s1 = "abc".conv();
+        let s2 = "abc".conv();
+        let b1 = Bytes::from_static(b"abc").conv();
+        let b2 = Bytes::from_static(b"abc").conv();
+        assert_eq!(s1, s2);
+        assert_eq!(b1, b2);
+
+        assert_eq!(s1.clone(), b1.clone());
+        assert_eq!(b1, s2);
+    }
+
+    #[test]
+    fn celvalue_eq_duration_and_number() {
+        let dur = CelValue::Duration(chrono::Duration::seconds(5));
+        let num = 5i32.conv();
+
+        assert_eq!(dur.clone(), num.clone());
+        assert_eq!(num, dur);
+    }
+
+    #[test]
+    fn celvalue_eq_duration_variants() {
+        use chrono::Duration;
+
+        let d1 = CelValue::Duration(Duration::seconds(42));
+        let d2 = CelValue::Duration(Duration::seconds(42));
+        let d3 = CelValue::Duration(Duration::seconds(43));
+
+        assert_eq!(d1, d2, "Two identical Durations should be equal");
+        assert_ne!(d1, d3, "Different Durations should not be equal");
+    }
+
+    #[test]
+    fn celvalue_eq_timestamp_variants() {
+        use chrono::{DateTime, FixedOffset};
+
+        let dt1: DateTime<FixedOffset> = DateTime::parse_from_rfc3339("2021-01-01T12:00:00+00:00").unwrap();
+        let dt2: DateTime<FixedOffset> = DateTime::parse_from_rfc3339("2021-01-01T12:00:00+00:00").unwrap();
+
+        let t1 = CelValue::Timestamp(dt1);
+        let t2 = CelValue::Timestamp(dt2);
+        assert_eq!(t1, t2);
+    }
+
+    #[test]
+    fn celvalue_eq_enum_and_number_variants() {
+        let e = CelValue::Enum(CelEnum::new("Tag".into(), 42));
+        let n = 42i32.conv();
+
+        assert_eq!(e.clone(), n.clone());
+        assert_eq!(n, e);
+    }
+
+    #[test]
+    fn celvalue_eq_list_and_map_variants() {
+        let list1 = (&[1, 2, 3][..]).conv();
+        let list2 = (&[1, 2, 3][..]).conv();
+        assert_eq!(list1, list2);
+
+        let map1 = CelValue::Map(Arc::from(vec![(1i32.conv(), 10i32.conv()), (2i32.conv(), 20i32.conv())]));
+        let map2 = CelValue::Map(Arc::from(vec![(1i32.conv(), 10i32.conv()), (2i32.conv(), 20i32.conv())]));
+        assert_eq!(map1, map2);
+    }
+
+    #[test]
+    fn celvalue_eq_number_and_null_variants() {
+        assert_eq!(1i32.conv(), 1i32.conv());
+        assert_ne!(1i32.conv(), 2i32.conv());
+        assert_eq!(CelValue::Null, CelValue::Null);
+    }
+
+    #[test]
+    fn celvalue_eq_mismatched_variants() {
+        assert_ne!(CelValue::Bool(true), 1i32.conv());
+        assert_ne!(
+            CelValue::List(Arc::from(vec![].into_boxed_slice())),
+            CelValue::Map(Arc::from(vec![].into_boxed_slice()))
+        );
+    }
+
+    #[test]
+    fn celvalue_conv_unit_conv() {
+        let v: CelValue = ().conv();
+        assert_eq!(v, CelValue::Null);
+    }
+
+    #[test]
+    fn celvalue_display() {
+        let ts: DateTime<FixedOffset> = DateTime::parse_from_rfc3339("2025-05-04T00:00:00+00:00").unwrap();
+
+        // Build a simple map: {1: "x", 2: "y"}
+        let map_val = CelValue::Map(Arc::from(vec![(1i32.conv(), "x".conv()), (2i32.conv(), "y".conv())]));
+
+        let outputs = vec![
+            format!("{}", CelValue::Bool(false)),
+            format!("{}", 42i32.conv()),
+            format!("{}", "foo".conv()),
+            format!("{}", Bytes::from_static(b"bar").conv()),
+            format!("{}", (&[1, 2, 3][..]).conv()),
+            format!("{}", CelValue::Null),
+            format!("{}", CelValue::Duration(Duration::seconds(5))),
+            format!("{}", CelValue::Timestamp(ts)),
+            format!("{}", map_val),
+        ]
+        .join("\n");
+
+        insta::assert_snapshot!(outputs, @r###"
+        false
+        42
+        foo
+        [98, 97, 114]
+        [1, 2, 3]
+        null
+        PT5S
+        2025-05-04 00:00:00 +00:00
+        {1: x, 2: y}
+        "###);
+    }
+
+    #[cfg(feature = "runtime")]
+    #[test]
+    fn celvalue_display_enum_runtime() {
+        use crate::CelMode;
+
+        CelMode::set(CelMode::Proto);
+
+        let enum_val = CelValue::Enum(CelEnum::new(CelString::Owned("MyTag".into()), 123));
+        assert_eq!(format!("{enum_val}"), "123");
+
+        CelMode::set(CelMode::Json);
+        let enum_val_json = CelValue::Enum(CelEnum::new(CelString::Owned("MyTag".into()), 456));
+        assert_eq!(format!("{enum_val_json}"), "456");
+    }
+
+    #[test]
+    fn celvalue_to_bool_all_variants() {
+        // Bool
+        assert!(CelValue::Bool(true).to_bool());
+        assert!(!CelValue::Bool(false).to_bool());
+
+        // Number
+        assert!(42i32.conv().to_bool());
+        assert!(!0i32.conv().to_bool());
+
+        // String
+        assert!(CelValue::String(CelString::Borrowed("hello")).to_bool());
+        assert!(!CelValue::String(CelString::Borrowed("")).to_bool());
+
+        // Bytes
+        assert!(Bytes::from_static(b"x").conv().to_bool());
+        assert!(!Bytes::from_static(b"").conv().to_bool());
+
+        // List
+        let non_empty_list = (&[1, 2, 3][..]).conv();
+        assert!(non_empty_list.to_bool());
+        let empty_list = CelValue::List(Arc::from(Vec::<CelValue>::new().into_boxed_slice()));
+        assert!(!empty_list.to_bool());
+
+        // Map
+        let non_empty_map = CelValue::Map(Arc::from(vec![(1i32.conv(), 2i32.conv())]));
+        assert!(non_empty_map.to_bool());
+        let empty_map = CelValue::Map(Arc::from(Vec::<(CelValue, CelValue)>::new().into_boxed_slice()));
+        assert!(!empty_map.to_bool());
+
+        // Null
+        assert!(!CelValue::Null.to_bool());
+
+        // Duration
+        assert!(CelValue::Duration(Duration::seconds(5)).to_bool());
+        assert!(!CelValue::Duration(Duration::zero()).to_bool());
+
+        // Timestamp
+        let epoch: DateTime<FixedOffset> = DateTime::parse_from_rfc3339("1970-01-01T00:00:00+00:00").unwrap();
+        assert!(!CelValue::Timestamp(epoch).to_bool());
+        let later: DateTime<FixedOffset> = DateTime::parse_from_rfc3339("2025-05-04T00:00:00+00:00").unwrap();
+        assert!(CelValue::Timestamp(later).to_bool());
+    }
+
+    #[test]
+    fn numberty_partial_cmp_i64_variants() {
+        let a = NumberTy::I64(1);
+        let b = NumberTy::I64(2);
+        assert_eq!(a.partial_cmp(&b), Some(Ordering::Less));
+        assert_eq!(b.partial_cmp(&a), Some(Ordering::Greater));
+        assert_eq!(a.partial_cmp(&a), Some(Ordering::Equal));
+    }
+
+    #[test]
+    fn numberty_partial_cmp_u64_variants() {
+        let a = NumberTy::U64(10);
+        let b = NumberTy::U64(20);
+        assert_eq!(a.partial_cmp(&b), Some(Ordering::Less));
+        assert_eq!(b.partial_cmp(&a), Some(Ordering::Greater));
+        assert_eq!(b.partial_cmp(&b), Some(Ordering::Equal));
+    }
+
+    #[test]
+    fn numberty_partial_cmp_mixed_i64_u64() {
+        let a = NumberTy::I64(3);
+        let b = NumberTy::U64(4);
+        // promoted to I64 comparison
+        assert_eq!(a.partial_cmp(&b), Some(Ordering::Less));
+        assert_eq!(b.partial_cmp(&a), Some(Ordering::Greater));
+
+        let c = NumberTy::I64(5);
+        let d = NumberTy::U64(5);
+        assert_eq!(c.partial_cmp(&d), Some(Ordering::Equal));
+    }
+
+    #[test]
+    fn numberty_partial_cmp_f64_exact_and_order() {
+        let x = NumberTy::F64(1.23);
+        let y = NumberTy::F64(1.23);
+        let z = NumberTy::F64(4.56);
+
+        assert_eq!(x.partial_cmp(&y), Some(Ordering::Equal));
+        assert_eq!(x.partial_cmp(&z), Some(Ordering::Less));
+        assert_eq!(z.partial_cmp(&x), Some(Ordering::Greater));
+    }
+
+    #[test]
+    fn numberty_partial_cmp_mixed_f64_and_integer() {
+        let f = NumberTy::F64(2.0);
+        let i = NumberTy::I64(2);
+        // promoted to F64 and compared
+        assert_eq!(f.partial_cmp(&i), Some(Ordering::Equal));
+        assert_eq!(i.partial_cmp(&f), Some(Ordering::Equal));
+    }
+
+    #[test]
+    fn numberty_cel_add_i64_success() {
+        let a = NumberTy::I64(5);
+        let b = NumberTy::I64(7);
+        assert_eq!(a.cel_add(b).unwrap(), NumberTy::I64(12));
+    }
+
+    #[test]
+    fn numberty_cel_add_i64_overflow_errors() {
+        let a = NumberTy::I64(i64::MAX);
+        let b = NumberTy::I64(1);
+        let err = a.cel_add(b).unwrap_err();
+        matches!(err, CelError::NumberOutOfRange { op } if op=="addition");
+    }
+
+    #[test]
+    fn numberty_cel_add_u64_success() {
+        let a = NumberTy::U64(10);
+        let b = NumberTy::U64(20);
+        assert_eq!(a.cel_add(b).unwrap(), NumberTy::U64(30));
+    }
+
+    #[test]
+    fn numberty_cel_add_f64_success() {
+        let a = NumberTy::F64(1.5);
+        let b = NumberTy::F64(2.25);
+        assert_eq!(a.cel_add(b).unwrap(), NumberTy::F64(3.75));
+    }
+
+    #[test]
+    fn numberty_cel_sub_i64_underflow_errors() {
+        let a = NumberTy::I64(i64::MIN);
+        let b = NumberTy::I64(1);
+        let err = a.cel_sub(b).unwrap_err();
+        matches!(err, CelError::NumberOutOfRange { op } if op=="subtraction");
+    }
+
+    #[test]
+    fn numberty_cel_sub_u64_underflow_errors() {
+        let a = NumberTy::U64(0);
+        let b = NumberTy::U64(1);
+        let err = a.cel_sub(b).unwrap_err();
+        matches!(err, CelError::NumberOutOfRange { op } if op=="subtraction");
+    }
+
+    #[test]
+    fn numberty_cel_sub_f64_success() {
+        let a = NumberTy::F64(5.5);
+        let b = NumberTy::F64(2.25);
+        assert_eq!(a.cel_sub(b).unwrap(), NumberTy::F64(3.25));
+    }
+
+    #[test]
+    fn numberty_cel_mul_i64_overflow_errors() {
+        let a = NumberTy::I64(i64::MAX / 2 + 1);
+        let b = NumberTy::I64(2);
+        let err = a.cel_mul(b).unwrap_err();
+        matches!(err, CelError::NumberOutOfRange { op } if op=="multiplication");
+    }
+
+    #[test]
+    fn numberty_cel_mul_u64_overflow_errors() {
+        let a = NumberTy::U64(u64::MAX / 2 + 1);
+        let b = NumberTy::U64(2);
+        let err = a.cel_mul(b).unwrap_err();
+        matches!(err, CelError::NumberOutOfRange { op } if op=="multiplication");
+    }
+
+    #[test]
+    fn numberty_cel_mul_f64_success() {
+        let a = NumberTy::F64(3.0);
+        let b = NumberTy::F64(2.5);
+        assert_eq!(a.cel_mul(b).unwrap(), NumberTy::F64(7.5));
+    }
+
+    #[test]
+    fn numberty_cel_div_by_zero_errors() {
+        let a = NumberTy::I64(10);
+        let b = NumberTy::I64(0);
+        let err = a.cel_div(b).unwrap_err();
+        matches!(err, CelError::NumberOutOfRange { op } if op=="division by zero");
+    }
+
+    #[test]
+    fn numberty_cel_div_i64_success() {
+        let a = NumberTy::I64(10);
+        let b = NumberTy::I64(2);
+        assert_eq!(a.cel_div(b).unwrap(), NumberTy::I64(5));
+    }
+
+    #[test]
+    fn numberty_cel_div_u64_success() {
+        let a = NumberTy::U64(20);
+        let b = NumberTy::U64(5);
+        assert_eq!(a.cel_div(b).unwrap(), NumberTy::U64(4));
+    }
+
+    #[test]
+    fn numberty_cel_div_f64_success() {
+        let a = NumberTy::F64(9.0);
+        let b = NumberTy::F64(2.0);
+        assert_eq!(a.cel_div(b).unwrap(), NumberTy::F64(4.5));
+    }
+
+    #[test]
+    fn numberty_cel_rem_by_zero_errors() {
+        let a = NumberTy::I64(10);
+        let b = NumberTy::I64(0);
+        let err = a.cel_rem(b).unwrap_err();
+        matches!(err, CelError::NumberOutOfRange { op } if op=="remainder by zero");
+    }
+
+    #[test]
+    fn numberty_cel_rem_i64_success() {
+        let a = NumberTy::I64(10);
+        let b = NumberTy::I64(3);
+        assert_eq!(a.cel_rem(b).unwrap(), NumberTy::I64(1));
+    }
+
+    #[test]
+    fn numberty_cel_rem_u64_success() {
+        let a = NumberTy::U64(10);
+        let b = NumberTy::U64(3);
+        assert_eq!(a.cel_rem(b).unwrap(), NumberTy::U64(1));
+    }
+
+    #[test]
+    fn numberty_cel_rem_f64_errors() {
+        let a = NumberTy::F64(10.0);
+        let b = NumberTy::F64(3.0);
+        let err = a.cel_rem(b).unwrap_err();
+        matches!(err, CelError::NumberOutOfRange { op } if op=="remainder");
+    }
+
+    #[test]
+    fn numberty_cel_neg_i64_success() {
+        let a = NumberTy::I64(5);
+        assert_eq!(a.cel_neg().unwrap(), NumberTy::I64(-5));
+    }
+
+    #[test]
+    fn numberty_cel_neg_i64_overflow_errors() {
+        let a = NumberTy::I64(i64::MIN);
+        let err = a.cel_neg().unwrap_err();
+        matches!(err, CelError::NumberOutOfRange { op } if op=="negation");
+    }
+
+    #[test]
+    fn numberty_cel_neg_u64_success() {
+        let a = NumberTy::U64(5);
+        assert_eq!(a.cel_neg().unwrap(), NumberTy::I64(-5));
+    }
+
+    #[test]
+    fn numberty_cel_neg_u64_overflow_errors() {
+        let a = NumberTy::U64(1 << 63); // too large for i64
+        let err = a.cel_neg().unwrap_err();
+        matches!(err, CelError::NumberOutOfRange { op } if op=="negation");
+    }
+
+    #[test]
+    fn numberty_cel_neg_f64_success() {
+        let a = NumberTy::F64(2.5);
+        assert_eq!(a.cel_neg().unwrap(), NumberTy::F64(-2.5));
+    }
+
+    #[test]
+    fn numberty_to_int_success_and_error() {
+        assert_eq!(NumberTy::I64(42).to_int().unwrap(), NumberTy::I64(42));
+        let err = NumberTy::F64(f64::INFINITY).to_int().unwrap_err();
+        matches!(err, CelError::NumberOutOfRange { op } if op=="int");
+    }
+
+    #[test]
+    fn numberty_to_uint_success_and_error() {
+        assert_eq!(NumberTy::I64(42).to_uint().unwrap(), NumberTy::U64(42));
+        let err = NumberTy::I64(-1).to_uint().unwrap_err();
+        matches!(err, CelError::NumberOutOfRange { op } if op=="int");
+    }
+
+    #[test]
+    fn numberty_to_double_always_success() {
+        assert_eq!(NumberTy::I64(3).to_double().unwrap(), NumberTy::F64(3.0));
+        assert_eq!(NumberTy::U64(4).to_double().unwrap(), NumberTy::F64(4.0));
+        assert_eq!(NumberTy::F64(2.5).to_double().unwrap(), NumberTy::F64(2.5));
+    }
+
+    #[test]
+    fn numberty_from_u32_creates_u64_variant() {
+        let input: u32 = 123;
+        let nt: NumberTy = input.into();
+        assert_eq!(nt, NumberTy::U64(123));
+    }
+
+    #[test]
+    fn numberty_from_i64_creates_i64_variant() {
+        let input: i64 = -42;
+        let nt: NumberTy = input.into();
+        assert_eq!(nt, NumberTy::I64(-42));
+    }
+
+    #[test]
+    fn numberty_from_u64_creates_u64_variant() {
+        let input: u64 = 9876543210;
+        let nt: NumberTy = input.into();
+        assert_eq!(nt, NumberTy::U64(9876543210));
+    }
+
+    #[test]
+    fn numberty_from_f32_matches_raw_cast_to_f64() {
+        let input: f32 = 1.23;
+        let expected = input as f64;
+        let nt: NumberTy = input.into();
+        match nt {
+            NumberTy::F64(val) => assert_eq!(val, expected),
+            _ => panic!("Expected F64 variant"),
+        }
+    }
+
+    #[test]
+    fn numberty_conv_wraps_into_celvalue_number() {
+        let nt = NumberTy::I64(-5);
+        let cv: CelValue = nt.conv();
+        assert_eq!(cv, CelValue::Number(NumberTy::I64(-5)));
+    }
+
+    #[test]
+    fn array_access_valid_index_returns_element() {
+        let arr = [10, 20, 30];
+        // using u32 index
+        let v = array_access(&arr, 1u32).unwrap();
+        assert_eq!(*v, 20);
+
+        // using i64 index
+        let v2 = array_access(&arr, 2i64).unwrap();
+        assert_eq!(*v2, 30);
+    }
+
+    #[test]
+    fn array_access_index_out_of_bounds_errors() {
+        let arr = [1, 2];
+        let err = array_access(&arr, 5i32).unwrap_err();
+        if let CelError::IndexOutOfBounds(idx, len) = err {
+            assert_eq!(idx, 5);
+            assert_eq!(len, 2);
+        } else {
+            panic!("Expected IndexOutOfBounds, got {err:?}");
+        }
+    }
+
+    #[test]
+    fn array_access_non_numeric_index_errors() {
+        let arr = [100, 200];
+        let err = array_access(&arr, "not_a_number").unwrap_err();
+        if let CelError::IndexWithBadIndex(value) = err {
+            assert_eq!(value, "not_a_number".conv());
+        } else {
+            panic!("Expected IndexWithBadIndex, got {err:?}");
+        }
+    }
+
+    #[test]
+    fn celvalue_eq_string_and_string_conv() {
+        let cv = CelValue::String(CelString::Owned(Arc::from("hello")));
+        let s = "hello".to_string();
+        assert_eq!(cv, s);
+        assert_eq!(s, cv);
+    }
+
+    #[test]
+    fn celvalue_eq_i32_and_conv() {
+        let cv = 42i32.conv();
+        assert_eq!(cv, 42i32);
+        assert_eq!(42i32, cv);
+    }
+
+    #[test]
+    fn celvalue_eq_i64_and_conv() {
+        let cv = 123i64.conv();
+        assert_eq!(cv, 123i64);
+        assert_eq!(123i64, cv);
+    }
+
+    #[test]
+    fn celvalue_eq_u32_and_conv() {
+        let cv = 7u32.conv();
+        assert_eq!(cv, 7u32);
+        assert_eq!(7u32, cv);
+    }
+
+    #[test]
+    fn celvalue_eq_u64_and_conv() {
+        let cv = 99u64.conv();
+        assert_eq!(cv, 99u64);
+        assert_eq!(99u64, cv);
+    }
+
+    #[test]
+    fn celvalue_eq_f32_and_conv() {
+        let cv = 1.5f32.conv();
+        assert!(cv == 1.5f32);
+        assert!(1.5f32 == cv);
+    }
+
+    #[test]
+    fn celvalue_eq_f64_and_conv() {
+        let cv = 2.75f64.conv();
+        assert_eq!(cv, 2.75f64);
+        assert_eq!(2.75f64, cv);
+    }
+
+    #[test]
+    fn celvalue_eq_vec_u8_and_conv() {
+        let vec = vec![10u8, 20, 30];
+        let cv = (&vec).conv();
+        assert_eq!(cv, vec);
+        assert_eq!(vec, cv);
+    }
+
+    #[test]
+    fn celvalue_eq_bytes_variant() {
+        let b = Bytes::from_static(b"xyz");
+        let cv = CelValue::Bytes(CelBytes::Owned(b.clone()));
+        assert_eq!(cv, b);
+    }
+
+    #[test]
+    fn bytes_eq_celvalue_variant() {
+        let b = Bytes::from_static(b"hello");
+        let cv = CelValue::Bytes(CelBytes::Owned(b.clone()));
+        assert_eq!(b, cv);
+    }
+
+    #[test]
+    fn array_contains_with_integers() {
+        let arr = [1i32, 2, 3];
+        assert!(array_contains(&arr, 2i32));
+        assert!(!array_contains(&arr, 4i32));
+    }
+
+    #[test]
+    fn array_contains_with_bytes() {
+        let b1 = Bytes::from_static(b"a");
+        let b2 = Bytes::from_static(b"b");
+        let arr = [b1.clone(), b2.clone()];
+        assert!(array_contains(&arr, b2.clone()));
+        assert!(!array_contains(&arr, Bytes::from_static(b"c")));
+    }
+
+    #[test]
+    fn map_access_and_contains_with_hashmap_i32_key() {
+        let mut hm: HashMap<i32, &str> = HashMap::new();
+        hm.insert(5, "five");
+
+        let v = map_access(&hm, 5i32).unwrap();
+        assert_eq!(*v, "five");
+
+        assert!(map_contains(&hm, 5i32));
+        assert!(!map_contains(&hm, 6i32));
+    }
+
+    #[test]
+    fn map_access_and_contains_with_btreemap_u32_key() {
+        let mut bt: BTreeMap<u32, &str> = BTreeMap::new();
+        bt.insert(10, "ten");
+
+        let v = map_access(&bt, 10u32).unwrap();
+        assert_eq!(*v, "ten");
+
+        assert!(map_contains(&bt, 10u32));
+        assert!(!map_contains(&bt, 11u32));
+    }
+
+    #[test]
+    fn map_access_key_not_found_errors() {
+        let mut hm: HashMap<i32, &str> = HashMap::new();
+        hm.insert(1, "one");
+
+        let err = map_access(&hm, 2i32).unwrap_err();
+        if let CelError::MapKeyNotFound(k) = err {
+            assert_eq!(k, 2i32.conv());
+        } else {
+            panic!("Expected MapKeyNotFound");
+        }
+    }
+
+    #[test]
+    fn map_key_cast_string_some_for_borrowed() {
+        let cv = "hello".conv();
+        let key: Option<Cow<str>> = <String as MapKeyCast>::make_key(&cv);
+        match key {
+            Some(Cow::Borrowed(s)) => assert_eq!(s, "hello"),
+            _ => panic!("Expected Some(Cow::Borrowed)"),
+        }
+    }
+
+    #[test]
+    fn map_key_cast_string_some_for_owned() {
+        let arc: Arc<str> = Arc::from("world");
+        let cv = CelValue::String(CelString::Owned(arc.clone()));
+        let key: Option<Cow<str>> = <String as MapKeyCast>::make_key(&cv);
+        match key {
+            Some(Cow::Borrowed(s)) => assert_eq!(s, "world"),
+            _ => panic!("Expected Some(Cow::Borrowed)"),
+        }
+    }
+
+    #[test]
+    fn map_key_cast_string_none_for_non_string() {
+        let cv = 42i32.conv();
+        assert!(<String as MapKeyCast>::make_key(&cv).is_none());
+    }
+
+    #[test]
+    fn map_key_cast_number_none_for_non_number_value() {
+        let cv = "not_a_number".conv();
+        let result: Option<Cow<'_, i32>> = <i32 as MapKeyCast>::make_key(&cv);
+        assert!(result.is_none(), "Expected None for non-Number CelValue");
+    }
+
+    #[test]
+    fn option_to_bool() {
+        assert!(Some(true).to_bool(), "Some(true) should be true");
+        assert!(!Some(false).to_bool(), "Some(false) should be false");
+        let none: Option<bool> = None;
+        assert!(!none.to_bool(), "None should be false");
+    }
+
+    #[test]
+    fn vec_to_bool() {
+        let empty: Vec<i32> = Vec::new();
+        assert!(!empty.to_bool(), "Empty Vec should be false");
+        let non_empty = vec![1, 2, 3];
+        assert!(non_empty.to_bool(), "Non-empty Vec should be true");
+    }
+
+    #[test]
+    fn btreemap_to_bool() {
+        let mut map: BTreeMap<i32, i32> = BTreeMap::new();
+        assert!(!map.to_bool(), "Empty BTreeMap should be false");
+        map.insert(1, 10);
+        assert!(map.to_bool(), "Non-empty BTreeMap should be true");
+    }
+
+    #[test]
+    fn hashmap_to_bool() {
+        let mut map: HashMap<&str, i32> = HashMap::new();
+        assert!(!map.to_bool(), "Empty HashMap should be false");
+        map.insert("key", 42);
+        assert!(map.to_bool(), "Non-empty HashMap should be true");
+    }
+
+    #[test]
+    fn str_and_string_to_bool() {
+        assert!("hello".to_bool(), "Non-empty &str should be true");
+        assert!(!"".to_bool(), "Empty &str should be false");
+        let s = String::from("world");
+        assert!(s.to_bool(), "Non-empty String should be true");
+        let empty = String::new();
+        assert!(!empty.to_bool(), "Empty String should be false");
+    }
+
+    #[test]
+    fn array_slice_to_bool() {
+        let empty: [bool; 0] = [];
+        assert!(!empty.to_bool(), "Empty [T] slice should be false");
+        let non_empty = [true, false];
+        assert!(non_empty.to_bool(), "Non-empty [T] slice should be true");
+    }
+
+    #[test]
+    fn bytes_to_bool() {
+        let empty = Bytes::new();
+        assert!(!empty.to_bool(), "Empty Bytes should be false");
+        let non_empty = Bytes::from_static(b"x");
+        assert!(non_empty.to_bool(), "Non-empty Bytes should be true");
+    }
+
+    #[cfg(feature = "runtime")]
+    #[test]
+    fn celmode_json_and_proto_flags() {
+        use crate::CelMode;
+
+        CelMode::set(CelMode::Json);
+        let current = CelMode::current();
+        assert!(current.is_json(), "CelMode should report JSON when set to Json");
+        assert!(!current.is_proto(), "CelMode should not report Proto when set to Json");
+
+        CelMode::set(CelMode::Proto);
+        let current = CelMode::current();
+        assert!(current.is_proto(), "CelMode should report Proto when set to Proto");
+        assert!(!current.is_json(), "CelMode should not report JSON when set to Proto");
+    }
+}

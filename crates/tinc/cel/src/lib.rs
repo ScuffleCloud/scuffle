@@ -185,8 +185,6 @@ impl PartialOrd for CelValue<'_> {
 
                 Some(l.cmp(r))
             }
-            (CelValue::List(l), CelValue::List(r)) => l.partial_cmp(r),
-            (CelValue::Map(l), CelValue::Map(r)) => l.partial_cmp(r),
             _ => None,
         }
     }
@@ -1771,26 +1769,6 @@ mod tests {
     }
 
     #[test]
-    fn celvalue_list_partial_cmp() {
-        let list1 = (&[1, 2, 3][..]).conv();
-        let list2 = (&[1, 2, 4][..]).conv();
-        assert_eq!(list1.partial_cmp(&list2), Some(Ordering::Less));
-
-        let list3 = (&[1, 2, 3][..]).conv();
-        assert_eq!(list1.partial_cmp(&list3), Some(Ordering::Equal));
-    }
-
-    #[test]
-    fn celvalue_map_partial_cmp() {
-        let map1 = CelValue::Map(Arc::from(vec![(1i32.conv(), 2i32.conv()), (3i32.conv(), 4i32.conv())]));
-        let map2 = CelValue::Map(Arc::from(vec![(1i32.conv(), 2i32.conv()), (3i32.conv(), 5i32.conv())]));
-        assert_eq!(map1.partial_cmp(&map2), Some(Ordering::Less));
-
-        let map3 = CelValue::Map(Arc::from(vec![(1i32.conv(), 2i32.conv()), (3i32.conv(), 4i32.conv())]));
-        assert_eq!(map1.partial_cmp(&map3), Some(Ordering::Equal));
-    }
-
-    #[test]
     fn celvalue_mismatched_partial_cmp() {
         let num = 1i32.conv();
         let strv = "a".conv();
@@ -2012,7 +1990,7 @@ mod tests {
         assert!(!bad);
 
         let err = CelValue::cel_matches(1i32, &re).unwrap_err();
-        matches!(err, CelError::BadUnaryOperation { op, .. } if op=="matches");
+        assert!(matches!(err, CelError::BadUnaryOperation { op, .. } if op=="matches"));
     }
 
     #[test]
@@ -2021,20 +1999,20 @@ mod tests {
         assert!(CelValue::cel_is_ipv4("127.0.0.1").unwrap());
         assert!(CelValue::cel_is_ipv4(Bytes::from_static(&[127, 0, 0, 1])).unwrap());
         assert!(!CelValue::cel_is_ipv4(Bytes::from_static(b"notip")).unwrap());
-        matches!(
+        assert!(matches!(
             CelValue::cel_is_ipv4(true).unwrap_err(),
             CelError::BadUnaryOperation { op, .. } if op == "isIpv4"
-        );
+        ));
 
         // IPv6
         assert!(CelValue::cel_is_ipv6("::1").unwrap());
         let octets = [0u8; 16];
         assert!(CelValue::cel_is_ipv6(&octets).unwrap());
         assert!(!CelValue::cel_is_ipv6(Bytes::from_static(b"bad")).unwrap());
-        matches!(
+        assert!(matches!(
             CelValue::cel_is_ipv6(1i32).unwrap_err(),
             CelError::BadUnaryOperation { op, .. } if op == "isIpv6"
-        );
+        ));
 
         // UUID
         let uuid_str_nil = Uuid::nil().to_string();
@@ -2046,34 +2024,34 @@ mod tests {
         bytes16[0] = 1;
         assert!(CelValue::cel_is_uuid(&bytes16).unwrap());
         assert!(!CelValue::cel_is_uuid(Bytes::from_static(b"short")).unwrap());
-        matches!(
+        assert!(matches!(
             CelValue::cel_is_uuid(1i32).unwrap_err(),
             CelError::BadUnaryOperation { op, .. } if op == "isUuid"
-        );
+        ));
 
         // hostname
         assert!(CelValue::cel_is_hostname("example.com").unwrap());
         assert!(!CelValue::cel_is_hostname("not valid!").unwrap());
-        matches!(
+        assert!(matches!(
             CelValue::cel_is_hostname(1i32).unwrap_err(),
             CelError::BadUnaryOperation { op, .. } if op == "isHostname"
-        );
+        ));
 
         // URI str
         assert!(CelValue::cel_is_uri("https://rust-lang.org").unwrap());
         assert!(!CelValue::cel_is_uri(Bytes::from_static(b":bad")).unwrap());
-        matches!(
+        assert!(matches!(
             CelValue::cel_is_uri(1i32).unwrap_err(),
             CelError::BadUnaryOperation { op, .. } if op == "isUri"
-        );
+        ));
 
         // email str
         assert!(CelValue::cel_is_email("user@example.com").unwrap());
         assert!(!CelValue::cel_is_email(Bytes::from_static(b"noatsign")).unwrap());
-        matches!(
+        assert!(matches!(
             CelValue::cel_is_email(1i32).unwrap_err(),
             CelError::BadUnaryOperation { op, .. } if op == "isEmail"
-        );
+        ));
     }
 
     #[test]
@@ -2129,7 +2107,7 @@ mod tests {
         assert_eq!(CelValue::cel_size(as_map(&[(1, 1), (2, 2)])).unwrap(), 2);
 
         let err = CelValue::cel_size(123i32).unwrap_err();
-        matches!(err, CelError::BadUnaryOperation { op, .. } if op=="size");
+        assert!(matches!(err, CelError::BadUnaryOperation { op, .. } if op=="size"));
     }
 
     #[test]
@@ -2160,9 +2138,9 @@ mod tests {
 
         // error on wrong type
         let err_map = CelValue::cel_map(1i32, |_| Ok(1i32.conv())).unwrap_err();
-        matches!(err_map, CelError::BadUnaryOperation { op, .. } if op=="map");
+        assert!(matches!(err_map, CelError::BadUnaryOperation { op, .. } if op=="map"));
         let err_filter = CelValue::cel_filter(1i32, |_| Ok(true)).unwrap_err();
-        matches!(err_filter, CelError::BadUnaryOperation { op, .. } if op=="filter");
+        assert!(matches!(err_filter, CelError::BadUnaryOperation { op, .. } if op=="filter"));
     }
 
     #[test]
@@ -2871,7 +2849,7 @@ mod tests {
         let a = NumberTy::I64(i64::MAX);
         let b = NumberTy::I64(1);
         let err = a.cel_add(b).unwrap_err();
-        matches!(err, CelError::NumberOutOfRange { op } if op=="addition");
+        assert!(matches!(err, CelError::NumberOutOfRange { op } if op=="addition"));
     }
 
     #[test]
@@ -2901,7 +2879,7 @@ mod tests {
         let a = NumberTy::U64(0);
         let b = NumberTy::U64(1);
         let err = a.cel_sub(b).unwrap_err();
-        matches!(err, CelError::NumberOutOfRange { op } if op=="subtraction");
+        assert!(matches!(err, CelError::NumberOutOfRange { op } if op=="subtraction"));
     }
 
     #[test]
@@ -2916,7 +2894,7 @@ mod tests {
         let a = NumberTy::I64(i64::MAX / 2 + 1);
         let b = NumberTy::I64(2);
         let err = a.cel_mul(b).unwrap_err();
-        matches!(err, CelError::NumberOutOfRange { op } if op=="multiplication");
+        assert!(matches!(err, CelError::NumberOutOfRange { op } if op=="multiplication"));
     }
 
     #[test]
@@ -2924,7 +2902,7 @@ mod tests {
         let a = NumberTy::U64(u64::MAX / 2 + 1);
         let b = NumberTy::U64(2);
         let err = a.cel_mul(b).unwrap_err();
-        matches!(err, CelError::NumberOutOfRange { op } if op=="multiplication");
+        assert!(matches!(err, CelError::NumberOutOfRange { op } if op=="multiplication"));
     }
 
     #[test]
@@ -2939,7 +2917,7 @@ mod tests {
         let a = NumberTy::I64(10);
         let b = NumberTy::I64(0);
         let err = a.cel_div(b).unwrap_err();
-        matches!(err, CelError::NumberOutOfRange { op } if op=="division by zero");
+        assert!(matches!(err, CelError::NumberOutOfRange { op } if op=="division by zero"));
     }
 
     #[test]
@@ -2968,7 +2946,7 @@ mod tests {
         let a = NumberTy::I64(10);
         let b = NumberTy::I64(0);
         let err = a.cel_rem(b).unwrap_err();
-        matches!(err, CelError::NumberOutOfRange { op } if op=="remainder by zero");
+        assert!(matches!(err, CelError::NumberOutOfRange { op } if op=="remainder by zero"));
     }
 
     #[test]
@@ -2990,7 +2968,7 @@ mod tests {
         let a = NumberTy::F64(10.0);
         let b = NumberTy::F64(3.0);
         let err = a.cel_rem(b).unwrap_err();
-        matches!(err, CelError::NumberOutOfRange { op } if op=="remainder");
+        assert!(matches!(err, CelError::NumberOutOfRange { op } if op=="remainder"));
     }
 
     #[test]
@@ -3003,7 +2981,7 @@ mod tests {
     fn numberty_cel_neg_i64_overflow_errors() {
         let a = NumberTy::I64(i64::MIN);
         let err = a.cel_neg().unwrap_err();
-        matches!(err, CelError::NumberOutOfRange { op } if op=="negation");
+        assert!(matches!(err, CelError::NumberOutOfRange { op } if op=="negation"));
     }
 
     #[test]
@@ -3016,7 +2994,7 @@ mod tests {
     fn numberty_cel_neg_u64_overflow_errors() {
         let a = NumberTy::U64(1 << 63); // too large for i64
         let err = a.cel_neg().unwrap_err();
-        matches!(err, CelError::NumberOutOfRange { op } if op=="negation");
+        assert!(matches!(err, CelError::NumberOutOfRange { op } if op=="negation"));
     }
 
     #[test]
@@ -3029,14 +3007,14 @@ mod tests {
     fn numberty_to_int_success_and_error() {
         assert_eq!(NumberTy::I64(42).to_int().unwrap(), NumberTy::I64(42));
         let err = NumberTy::F64(f64::INFINITY).to_int().unwrap_err();
-        matches!(err, CelError::NumberOutOfRange { op } if op=="int");
+        assert!(matches!(err, CelError::NumberOutOfRange { op } if op=="int"));
     }
 
     #[test]
     fn numberty_to_uint_success_and_error() {
         assert_eq!(NumberTy::I64(42).to_uint().unwrap(), NumberTy::U64(42));
         let err = NumberTy::I64(-1).to_uint().unwrap_err();
-        matches!(err, CelError::NumberOutOfRange { op } if op=="int");
+        assert!(matches!(err, CelError::NumberOutOfRange { op } if op=="int"));
     }
 
     #[test]

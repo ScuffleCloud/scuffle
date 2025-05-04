@@ -980,7 +980,7 @@ impl std::fmt::Display for CelValue<'_> {
             CelValue::Duration(d) => std::fmt::Display::fmt(d, f),
             CelValue::Timestamp(t) => std::fmt::Display::fmt(t, f),
             #[cfg(feature = "runtime")]
-            CelValue::Enum(e) => e.into_prim_cel().fmt(f),
+            CelValue::Enum(e) => e.into_string().fmt(f),
             #[cfg(not(feature = "runtime"))]
             CelValue::Enum(_) => panic!("enum to string called during build-time"),
         }
@@ -1272,6 +1272,38 @@ pub fn array_access<'a, 'b, T>(array: &'a [T], idx: impl CelValueConv<'b>) -> Re
     }
 }
 
+macro_rules! impl_partial_eq {
+    ($($ty:ty),*$(,)?) => {
+        $(
+            impl PartialEq<$ty> for CelValue<'_> {
+                fn eq(&self, other: &$ty) -> bool {
+                    self == &other.conv()
+                }
+            }
+
+            impl PartialEq<CelValue<'_>> for $ty {
+                fn eq(&self, other: &CelValue<'_>) -> bool {
+                    other == self
+                }
+            }
+        )*
+    };
+}
+
+impl_partial_eq!(String, i32, i64, f64, f32, Vec<u8>, u32, u64);
+
+impl PartialEq<Bytes> for CelValue<'_> {
+    fn eq(&self, other: &Bytes) -> bool {
+        self == &other.clone().conv()
+    }
+}
+
+impl PartialEq<CelValue<'_>> for Bytes {
+    fn eq(&self, other: &CelValue<'_>) -> bool {
+        other == self
+    }
+}
+
 pub fn array_contains<'a, 'b, T: PartialEq<CelValue<'b>>>(array: &'a [T], value: impl CelValueConv<'b>) -> bool {
     let value = value.conv();
     array.iter().any(|v| v == &value)
@@ -1494,7 +1526,7 @@ impl<'a> CelEnum<'a> {
     }
 
     #[cfg(feature = "runtime")]
-    pub fn into_prim_cel(&self) -> CelValue<'static> {
+    pub fn into_string(&self) -> CelValue<'static> {
         EnumVtable::from_tag(self.tag.as_ref())
             .map(|vt| match CEL_MODE.get() {
                 CelMode::Json => (vt.to_json)(self.value),

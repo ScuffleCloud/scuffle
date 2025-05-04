@@ -37,6 +37,11 @@ regex = "1"
 num-traits = "0.2.19"
 fmtools = "0.1"
 
+[dev-dependencies]
+insta = "1"
+tinc.workspace = true
+postcompile = { workspace = true, features = ["prettyplease"] }
+
 [features]
 default = ["prost"]
 prost = ["dep:prost", "dep:prost-reflect", "dep:prost-build"]

@@ -49,7 +49,7 @@ pub trait TrackerValidation: Tracker {
             }
 
             Err(HttpErrorResponse {
-                code: HttpErrorResponseCode::InvalidArgument.into(),
+                code: HttpErrorResponseCode::InvalidArgument,
                 message: "bad request",
                 details,
             }

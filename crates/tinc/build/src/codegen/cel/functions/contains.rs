@@ -82,3 +82,151 @@ impl Function for Contains {
         }
     }
 }
+
+#[cfg(test)]
+#[cfg_attr(coverage_nightly, coverage(off))]
+mod tests {
+    use quote::quote;
+    use syn::parse_quote;
+    use tinc_cel::CelValue;
+
+    use crate::codegen::cel::compiler::{CompiledExpr, Compiler, CompilerCtx};
+    use crate::codegen::cel::functions::{Contains, Function};
+    use crate::codegen::cel::types::CelType;
+    use crate::types::{ProtoModifiedValueType, ProtoType, ProtoTypeRegistry, ProtoValueType};
+
+    #[test]
+    fn test_contains_syntax() {
+        let registry = ProtoTypeRegistry::new();
+        let compiler = Compiler::new(&registry);
+        insta::assert_debug_snapshot!(Contains.compile(CompilerCtx::new(compiler.child(), None, &[])), @r#"
+        Err(
+            InvalidSyntax {
+                message: "missing this",
+                syntax: "<this>.contains(<arg>)",
+            },
+        )
+        "#);
+
+        insta::assert_debug_snapshot!(Contains.compile(CompilerCtx::new(compiler.child(), Some(CompiledExpr::constant(CelValue::String("hi".into()))), &[])), @r#"
+        Err(
+            InvalidSyntax {
+                message: "takes exactly one argument",
+                syntax: "<this>.contains(<arg>)",
+            },
+        )
+        "#);
+
+        insta::assert_debug_snapshot!(Contains.compile(CompilerCtx::new(compiler.child(), Some(CompiledExpr::constant(CelValue::List(Default::default()))), &[
+            cel_parser::parse("1 + 1").unwrap(),
+        ])), @r"
+        Ok(
+            Constant(
+                ConstantCompiledExpr {
+                    value: Bool(
+                        false,
+                    ),
+                },
+            ),
+        )
+        ");
+    }
+
+    #[test]
+    fn test_contains_runtime_string() {
+        let registry = ProtoTypeRegistry::new();
+        let compiler = Compiler::new(&registry);
+
+        let string_value =
+            CompiledExpr::runtime(CelType::Proto(ProtoType::Value(ProtoValueType::String)), parse_quote!(input));
+
+        let result = Contains
+            .compile(CompilerCtx::new(
+                compiler.child(),
+                Some(string_value),
+                &[cel_parser::parse("1 + 1").unwrap()],
+            ))
+            .unwrap();
+
+        let small_fn = quote! {
+            #[allow(dead_code)]
+            fn bytes_conv(input: &std::string::String) -> Result<bool, ::tinc::__private::cel::CelError<'_>> {
+                Ok(#result)
+            }
+        };
+
+        let compiled = postcompile::compile_str!(&small_fn.to_string());
+        insta::assert_snapshot!(compiled);
+    }
+
+    #[test]
+    fn test_contains_runtime_map() {
+        let registry = ProtoTypeRegistry::new();
+        let compiler = Compiler::new(&registry);
+
+        let string_value = CompiledExpr::runtime(
+            CelType::Proto(ProtoType::Modified(ProtoModifiedValueType::Map(
+                ProtoValueType::String,
+                ProtoValueType::Bool,
+            ))),
+            parse_quote!(input),
+        );
+
+        let result = Contains
+            .compile(CompilerCtx::new(
+                compiler.child(),
+                Some(string_value),
+                &[cel_parser::parse("'value'").unwrap()],
+            ))
+            .unwrap();
+
+        let small_fn = quote! {
+            #[allow(dead_code)]
+            fn btree_map_contains(input: &std::collections::BTreeMap<String, bool>) -> Result<bool, ::tinc::__private::cel::CelError<'_>> {
+                Ok(#result)
+            }
+
+            #[allow(dead_code)]
+            fn hashmap_contains(input: &std::collections::HashMap<String, bool>) -> Result<bool, ::tinc::__private::cel::CelError<'_>> {
+                Ok(#result)
+            }
+        };
+
+        let compiled = postcompile::compile_str!(&small_fn.to_string());
+        insta::assert_snapshot!(compiled);
+    }
+
+    #[test]
+    fn test_contains_runtime_repeated() {
+        let registry = ProtoTypeRegistry::new();
+        let compiler = Compiler::new(&registry);
+
+        let string_value = CompiledExpr::runtime(
+            CelType::Proto(ProtoType::Modified(ProtoModifiedValueType::Repeated(ProtoValueType::String))),
+            parse_quote!(input),
+        );
+
+        let result = Contains
+            .compile(CompilerCtx::new(
+                compiler.child(),
+                Some(string_value),
+                &[cel_parser::parse("'value'").unwrap()],
+            ))
+            .unwrap();
+
+        let small_fn = quote! {
+            #[allow(dead_code)]
+            fn btree_map_contains(input: &Vec<String>) -> Result<bool, ::tinc::__private::cel::CelError<'_>> {
+                Ok(#result)
+            }
+
+            #[allow(dead_code)]
+            fn slice(input: &[String]) -> Result<bool, ::tinc::__private::cel::CelError<'_>> {
+                Ok(#result)
+            }
+        };
+
+        let compiled = postcompile::compile_str!(&small_fn.to_string());
+        insta::assert_snapshot!(compiled);
+    }
+}

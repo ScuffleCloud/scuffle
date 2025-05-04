@@ -48,3 +48,82 @@ impl Function for EndsWith {
         }
     }
 }
+
+#[cfg(test)]
+#[cfg_attr(coverage_nightly, coverage(off))]
+mod tests {
+    use quote::quote;
+    use syn::parse_quote;
+    use tinc_cel::CelValue;
+
+    use crate::codegen::cel::compiler::{CompiledExpr, Compiler, CompilerCtx};
+    use crate::codegen::cel::functions::{EndsWith, Function};
+    use crate::codegen::cel::types::CelType;
+    use crate::types::{ProtoType, ProtoTypeRegistry, ProtoValueType};
+
+    #[test]
+    fn test_ends_with_syntax() {
+        let registry = ProtoTypeRegistry::new();
+        let compiler = Compiler::new(&registry);
+        insta::assert_debug_snapshot!(EndsWith.compile(CompilerCtx::new(compiler.child(), None, &[])), @r#"
+        Err(
+            InvalidSyntax {
+                message: "missing this",
+                syntax: "<this>.endsWith(<arg>)",
+            },
+        )
+        "#);
+
+        insta::assert_debug_snapshot!(EndsWith.compile(CompilerCtx::new(compiler.child(), Some(CompiledExpr::constant(CelValue::String("13.2".into()))), &[])), @r#"
+        Err(
+            InvalidSyntax {
+                message: "takes exactly one argument",
+                syntax: "<this>.endsWith(<arg>)",
+            },
+        )
+        "#);
+
+        insta::assert_debug_snapshot!(EndsWith.compile(CompilerCtx::new(compiler.child(), Some(CompiledExpr::constant("some string")), &[
+            cel_parser::parse("'ing'").unwrap(), // not an ident
+        ])), @r"
+        Ok(
+            Constant(
+                ConstantCompiledExpr {
+                    value: Bool(
+                        true,
+                    ),
+                },
+            ),
+        )
+        ");
+    }
+
+    #[test]
+    fn test_ends_with_runtime() {
+        let registry = ProtoTypeRegistry::new();
+        let compiler = Compiler::new(&registry);
+
+        let string_value =
+            CompiledExpr::runtime(CelType::Proto(ProtoType::Value(ProtoValueType::String)), parse_quote!(input));
+
+        let result = EndsWith
+            .compile(CompilerCtx::new(
+                compiler.child(),
+                Some(string_value),
+                &[
+                    cel_parser::parse("'ing'").unwrap(), // not an ident
+                ],
+            ))
+            .unwrap();
+
+        let small_fn = quote! {
+            #[allow(dead_code)]
+            fn string_ends_with(input: &std::string::String) -> Result<bool, ::tinc::__private::cel::CelError<'_>> {
+                Ok(#result)
+            }
+        };
+
+        let compiled = postcompile::compile_str!(&small_fn.to_string());
+        insta::assert_snapshot!(compiled);
+    }
+}

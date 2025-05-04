@@ -72,3 +72,85 @@ impl Function for Enum {
         }
     }
 }
+
+#[cfg(test)]
+#[cfg_attr(coverage_nightly, coverage(off))]
+mod tests {
+    use quote::quote;
+    use syn::parse_quote;
+
+    use crate::codegen::cel::compiler::{CompiledExpr, Compiler, CompilerCtx};
+    use crate::codegen::cel::functions::{Enum, Function};
+    use crate::codegen::cel::types::CelType;
+    use crate::types::{ProtoType, ProtoTypeRegistry, ProtoValueType};
+
+    #[test]
+    fn test_enum_syntax() {
+        let registry = ProtoTypeRegistry::new();
+        let compiler = Compiler::new(&registry);
+        let enum_ = Enum(None);
+        insta::assert_debug_snapshot!(enum_.compile(CompilerCtx::new(compiler.child(), None, &[])), @r#"
+        Err(
+            InvalidSyntax {
+                message: "missing this",
+                syntax: "<this>.enum() | <this>.enum(<path>)",
+            },
+        )
+        "#);
+
+        insta::assert_debug_snapshot!(enum_.compile(CompilerCtx::new(compiler.child(), Some(CompiledExpr::constant(5)), &[])), @r#"
+        Err(
+            InvalidSyntax {
+                message: "unable to determine enum type, try providing an explicit path",
+                syntax: "<this>.enum() | <this>.enum(<path>)",
+            },
+        )
+        "#);
+
+        insta::assert_debug_snapshot!(enum_.compile(CompilerCtx::new(compiler.child(), Some(CompiledExpr::constant(5)), &[
+            cel_parser::parse("'some.Enum'").unwrap(),
+        ])), @r#"
+        Ok(
+            Constant(
+                ConstantCompiledExpr {
+                    value: Enum(
+                        CelEnum {
+                            tag: Owned(
+                                "some.Enum",
+                            ),
+                            value: 5,
+                        },
+                    ),
+                },
+            ),
+        )
+        "#);
+    }
+
+    #[test]
+    fn test_enum_runtime() {
+        let registry = ProtoTypeRegistry::new();
+        let compiler = Compiler::new(&registry);
+
+        let string_value =
+            CompiledExpr::runtime(CelType::Proto(ProtoType::Value(ProtoValueType::Int32)), parse_quote!(input));
+
+        let result = Enum(None)
+            .compile(CompilerCtx::new(
+                compiler.child(),
+                Some(string_value),
+                &[cel_parser::parse("'some.Enum'").unwrap()],
+            ))
+            .unwrap();
+
+        let small_fn = quote! {
+            #[allow(dead_code)]
+            fn enum_conv(input: &i32) -> Result<::tinc::__private::cel::CelValue<'_>, ::tinc::__private::cel::CelError<'_>> {
+                Ok(#result)
+            }
+        };
+
+        let compiled = postcompile::compile_str!(&small_fn.to_string());
+        insta::assert_snapshot!(compiled);
+    }
+}

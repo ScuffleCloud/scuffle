@@ -1,0 +1,37 @@
+---
+source: crates/tinc/build/src/codegen/cel/functions/contains.rs
+expression: compiled
+---
+exit status: 0
+--- stdout 
+#![feature(prelude_import)]
+#[prelude_import]
+use std::prelude::rust_2024::*;
+#[macro_use]
+extern crate std;
+#[allow(dead_code)]
+fn btree_map_contains(
+    input: &std::collections::BTreeMap<String, bool>,
+) -> Result<bool, ::tinc::__private::cel::CelError<'_>> {
+    Ok(
+        ::tinc::__private::cel::map_contains(
+            input,
+            ::tinc::__private::cel::CelValue::String(
+                ::tinc::__private::cel::CelString::Borrowed("value"),
+            ),
+        ),
+    )
+}
+#[allow(dead_code)]
+fn hashmap_contains(
+    input: &std::collections::HashMap<String, bool>,
+) -> Result<bool, ::tinc::__private::cel::CelError<'_>> {
+    Ok(
+        ::tinc::__private::cel::map_contains(
+            input,
+            ::tinc::__private::cel::CelValue::String(
+                ::tinc::__private::cel::CelString::Borrowed("value"),
+            ),
+        ),
+    )
+}

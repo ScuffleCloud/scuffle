@@ -1,0 +1,21 @@
+---
+source: crates/tinc/build/src/codegen/cel/functions/bytes.rs
+expression: compiled
+---
+exit status: 0
+--- stdout 
+#![feature(prelude_import)]
+#[prelude_import]
+use std::prelude::rust_2024::*;
+#[macro_use]
+extern crate std;
+#[allow(dead_code)]
+fn bytes_conv(
+    input: &std::string::String,
+) -> Result<::tinc::__private::cel::CelValue<'_>, ::tinc::__private::cel::CelError<'_>> {
+    Ok(
+        ::tinc::__private::cel::CelValue::cel_to_bytes(
+            ::tinc::__private::cel::CelValueConv::conv(input),
+        )?,
+    )
+}

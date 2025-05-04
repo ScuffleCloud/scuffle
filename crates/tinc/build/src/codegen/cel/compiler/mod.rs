@@ -173,6 +173,7 @@ impl ToTokens for CompiledExpr {
     }
 }
 
+#[allow(dead_code)]
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub(crate) enum CompilerTarget {
     Json,
@@ -215,6 +216,7 @@ impl<'a> Compiler<'a> {
         compiler
     }
 
+    #[allow(dead_code)]
     pub(crate) fn set_target(&mut self, target: impl Into<Option<CompilerTarget>>) {
         self.target = target.into()
     }

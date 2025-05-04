@@ -37,3 +37,81 @@ impl Function for Bytes {
         }
     }
 }
+
+#[cfg(test)]
+#[cfg_attr(coverage_nightly, coverage(off))]
+mod tests {
+    use quote::quote;
+    use syn::parse_quote;
+    use tinc_cel::CelValue;
+
+    use crate::codegen::cel::compiler::{CompiledExpr, Compiler, CompilerCtx};
+    use crate::codegen::cel::functions::{Bytes, Function};
+    use crate::codegen::cel::types::CelType;
+    use crate::types::{ProtoType, ProtoTypeRegistry, ProtoValueType};
+
+    #[test]
+    fn test_bytes_syntax() {
+        let registry = ProtoTypeRegistry::new();
+        let compiler = Compiler::new(&registry);
+        insta::assert_debug_snapshot!(Bytes.compile(CompilerCtx::new(compiler.child(), None, &[])), @r#"
+        Err(
+            InvalidSyntax {
+                message: "missing this",
+                syntax: "<this>.bytes()",
+            },
+        )
+        "#);
+
+        insta::assert_debug_snapshot!(Bytes.compile(CompilerCtx::new(compiler.child(), Some(CompiledExpr::constant(CelValue::String("hi".into()))), &[])), @r"
+        Ok(
+            Constant(
+                ConstantCompiledExpr {
+                    value: Bytes(
+                        Borrowed(
+                            [
+                                104,
+                                105,
+                            ],
+                        ),
+                    ),
+                },
+            ),
+        )
+        ");
+
+        insta::assert_debug_snapshot!(Bytes.compile(CompilerCtx::new(compiler.child(), Some(CompiledExpr::constant(CelValue::List(Default::default()))), &[
+            cel_parser::parse("1 + 1").unwrap(), // not an ident
+        ])), @r#"
+        Err(
+            InvalidSyntax {
+                message: "takes no arguments",
+                syntax: "<this>.bytes()",
+            },
+        )
+        "#);
+    }
+
+    #[test]
+    fn test_bytes_runtime() {
+        let registry = ProtoTypeRegistry::new();
+        let compiler = Compiler::new(&registry);
+
+        let string_value =
+            CompiledExpr::runtime(CelType::Proto(ProtoType::Value(ProtoValueType::String)), parse_quote!(input));
+
+        let result = Bytes
+            .compile(CompilerCtx::new(compiler.child(), Some(string_value), &[]))
+            .unwrap();
+
+        let small_fn = quote! {
+            #[allow(dead_code)]
+            fn bytes_conv(input: &std::string::String) -> Result<::tinc::__private::cel::CelValue<'_>, ::tinc::__private::cel::CelError<'_>> {
+                Ok(#result)
+            }
+        };
+
+        let compiled = postcompile::compile_str!(&small_fn.to_string());
+        insta::assert_snapshot!(compiled);
+    }
+}

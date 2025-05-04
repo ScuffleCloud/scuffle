@@ -143,7 +143,7 @@ pub struct TrackGroupBox<'a> {
     #[iso_box(header)]
     pub header: BoxHeader,
     #[iso_box(nested_box(collect_unknown))]
-    pub track_group_id: Vec<UnknownBox<'a>>,
+    pub track_group_type: Vec<UnknownBox<'a>>,
 }
 
 /// Track type box

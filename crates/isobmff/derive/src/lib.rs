@@ -153,7 +153,7 @@ fn box_impl(input: DeriveInput) -> syn::Result<proc_macro2::TokenStream> {
     let collect_boxes = fields.iter().any(|f| f.nested_box.is_some());
 
     let box_parser = if collect_boxes {
-        Some(box_parser(fields.iter(), &crate_path))
+        Some(nested_box_parser(fields.iter(), &crate_path))
     } else {
         None
     };
@@ -177,39 +177,34 @@ fn box_impl(input: DeriveInput) -> syn::Result<proc_macro2::TokenStream> {
         }
     }
 
-    let box_type = opts.box_type;
     let ident = opts.ident;
     let generics = opts.generics;
+    let box_type = opts.box_type;
     let header_type = fields
         .iter()
         .find(|f| f.header)
-        .map(|f| &f.ty)
-        .ok_or(syn::Error::new_spanned(
-            &ident,
-            "No header field found. Please add a field with the #[iso_box(header)] attribute.",
-        ))?;
+        .map(|f| f.ty.to_token_stream())
+        .ok_or(syn::Error::new_spanned(&ident, "No header field found"))?;
 
-    let deserialize_impl = if opts.skip_deserialize_impl {
-        None
-    } else {
-        Some(quote! {
-            impl<'a> ::scuffle_bytes_util::zero_copy::Deserialize<'a> for #ident #generics {
-                fn deserialize<R>(mut reader: R) -> ::std::io::Result<Self>
-                where
-                    R: ::scuffle_bytes_util::zero_copy::ZeroCopyReader<'a>,
-                {
-                    let seed = #header_parser;
-                    <Self as ::scuffle_bytes_util::zero_copy::DeserializeSeed<#header_type>>::deserialize_seed(reader, seed)
-                }
+    let deserialize_impl = (!opts.skip_deserialize_impl).then_some(quote! {
+        impl<'a> ::scuffle_bytes_util::zero_copy::Deserialize<'a> for #ident #generics {
+            fn deserialize<R>(mut reader: R) -> ::std::io::Result<Self>
+            where
+                R: ::scuffle_bytes_util::zero_copy::ZeroCopyReader<'a>,
+            {
+                let seed = #header_parser;
+                <Self as ::scuffle_bytes_util::zero_copy::DeserializeSeed<#header_type>>::deserialize_seed(reader, seed)
             }
-        })
-    };
+        }
+    });
 
     let output = quote! {
         impl #generics IsoBox for #ident #generics {
             const TYPE: [u8; 4] = *#box_type;
             type Header = #header_type;
         }
+
+        #deserialize_impl
 
         impl<'a> ::scuffle_bytes_util::zero_copy::DeserializeSeed<'a, #header_type> for #ident #generics {
             fn deserialize_seed<R>(mut reader: R, seed: #header_type) -> ::std::io::Result<Self>
@@ -228,14 +223,12 @@ fn box_impl(input: DeriveInput) -> syn::Result<proc_macro2::TokenStream> {
                 })
             }
         }
-
-        #deserialize_impl
     };
 
     Ok(output)
 }
 
-fn box_parser<'a>(fields: impl Iterator<Item = &'a IsoBoxField>, crate_path: &syn::Path) -> proc_macro2::TokenStream {
+fn nested_box_parser<'a>(fields: impl Iterator<Item = &'a IsoBoxField>, crate_path: &syn::Path) -> proc_macro2::TokenStream {
     let (inits, match_arms): (proc_macro2::TokenStream, proc_macro2::TokenStream) = fields
         .filter_map(|f| f.nested_box.as_ref().map(|n| (f, n)))
         .map(|(f, nested)| {

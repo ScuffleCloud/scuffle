@@ -16,8 +16,14 @@ pub use track_media::*;
 mod sample_table;
 pub use sample_table::*;
 
+mod track_time;
+pub use track_time::*;
+
 mod user_data;
 pub use user_data::*;
 
 mod metadata;
 pub use metadata::*;
+
+mod video_media;
+pub use video_media::*;

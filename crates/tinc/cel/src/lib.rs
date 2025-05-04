@@ -2893,7 +2893,7 @@ mod tests {
         let a = NumberTy::I64(i64::MIN);
         let b = NumberTy::I64(1);
         let err = a.cel_sub(b).unwrap_err();
-        matches!(err, CelError::NumberOutOfRange { op } if op=="subtraction");
+        assert!(matches!(err, CelError::NumberOutOfRange { op } if op=="subtraction"));
     }
 
     #[test]

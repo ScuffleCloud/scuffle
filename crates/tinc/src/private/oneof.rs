@@ -2,7 +2,6 @@ use std::marker::PhantomData;
 
 use serde::de::{Unexpected, VariantAccess};
 
-use super::buffer::Content;
 use super::{
     DeserializeContent, DeserializeHelper, Expected, IdentifiedValue, Identifier, IdentifierDeserializer, IdentifierFor,
     MapAccessValueDeserializer, SerdeDeserializer, SerdePathToken, TrackedError, Tracker, TrackerDeserializer, TrackerFor,
@@ -161,7 +160,7 @@ where
     tracker: Option<T>,
     state: u8,
     tag_buffer: Option<<T::Target as TrackedOneOfVariant>::Variant>,
-    content_buffer: Vec<Content<'static>>,
+    content_buffer: Vec<serde_json::Value>,
 }
 
 impl<T: Tracker> TrackerWrapper for TaggedOneOfTracker<T>
@@ -212,7 +211,7 @@ where
                             SerdeDeserializer {
                                 deserializer: serde::de::IntoDeserializer::into_deserializer(content),
                             },
-                        );
+                        ).map_err(serde::de::Error::custom);
 
                         if let Err(e) = result {
                             report_de_error(e)?;
@@ -245,11 +244,10 @@ where
                 } else {
                     self.content_buffer.push(
                         deserializer
-                            .deserialize::<Content>()
+                            .deserialize::<serde_json::Value>()
                             .inspect_err(|_| {
                                 set_irrecoverable();
                             })?
-                            .into_static(),
                     );
                 }
             }

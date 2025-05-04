@@ -113,17 +113,42 @@ impl MediaHeaderBox {
     }
 }
 
+nutype_enum::nutype_enum! {
+    pub enum HandlerType([u8; 4]) {
+        Null = *b"null",
+        Video = *b"vide",
+        AuxiliaryVideo = *b"auxv",
+        Audio = *b"soun",
+        Metadata = *b"meta",
+        MetadataMpeg7t = *b"mp7t",
+        MetadataMpeg7b = *b"mp7b",
+        Hint = *b"hint",
+        Text = *b"text",
+        Subtitle = *b"subt",
+        Font = *b"fdsm",
+        VolumetricVisual = *b"volv",
+        Haptic = *b"hapt",
+    }
+}
+
+/// Handler reference box
+///
+/// ISO/IEC 14496-12 - 8.4.3
 #[derive(IsoBox, Debug)]
 #[iso_box(box_type = b"hdlr", crate_path = "crate")]
 pub struct HandlerBox {
     #[iso_box(header)]
     pub header: FullBoxHeader,
     pub pre_defined: u32,
-    pub handler_type: u32,
+    #[iso_box(from = "[u8; 4]")]
+    pub handler_type: HandlerType,
     _reserved: [u32; 3],
     pub name: Utf8String,
 }
 
+/// Media information box
+///
+/// ISO/IEC 14496-12 - 8.4.4
 #[derive(IsoBox, Debug)]
 #[iso_box(box_type = b"minf", crate_path = "crate")]
 pub struct MediaInformationBox<'a> {
@@ -135,6 +160,9 @@ pub struct MediaInformationBox<'a> {
     pub unknown_boxes: Vec<UnknownBox<'a>>,
 }
 
+/// Null media header box
+///
+/// ISO/IEC 14496-12 - 8.4.5.2
 #[derive(IsoBox, Debug)]
 #[iso_box(box_type = b"nmhd", crate_path = "crate")]
 pub struct NullMediaHeaderBox {
@@ -142,6 +170,9 @@ pub struct NullMediaHeaderBox {
     pub header: FullBoxHeader,
 }
 
+/// Extended language tag
+///
+/// ISO/IEC 14496-12 - 8.4.6
 #[derive(IsoBox, Debug)]
 #[iso_box(box_type = b"elng", crate_path = "crate")]
 pub struct ExtendedLanguageBox {

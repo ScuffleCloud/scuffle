@@ -1,3 +1,5 @@
+// compressed boxes (8.19) are not supported
+
 #![cfg_attr(all(coverage_nightly, test), feature(coverage_attribute))]
 // #![deny(missing_docs)]
 #![deny(unsafe_code)]

@@ -1,0 +1,1057 @@
+---
+source: crates/isobmff/src/file.rs
+expression: file
+snapshot_kind: text
+---
+IsobmffFile {
+    _empty_header: (),
+    ftyp: FileTypeBox {
+        header: BoxHeader {
+            size: Short(
+                32,
+            ),
+            box_type: FourCc(
+                "ftyp",
+            ),
+        },
+        major_brand: Brand::IsoM,
+        minor_version: 512,
+        compatible_brands: [
+            Brand::IsoM,
+            Brand::Iso2,
+            Brand::Avc1,
+            Brand([109, 112, 52, 49]),
+            Brand([0, 0, 0, 8]),
+            Brand([102, 114, 101, 101]),
+        ],
+    },
+    etyp: [],
+    mdat: [
+        MediaDataBox {
+            header: BoxHeader {
+                size: Short(
+                    832486,
+                ),
+                box_type: FourCc(
+                    "mdat",
+                ),
+            },
+            data(size): 832478,
+        },
+    ],
+    pdin: None,
+    imda: [],
+    moov: MovieBox {
+        header: BoxHeader {
+            size: Short(
+                6303,
+            ),
+            box_type: FourCc(
+                "moov",
+            ),
+        },
+        mvhd: MovieHeaderBox {
+            header: FullBoxHeader {
+                header: BoxHeader {
+                    size: Short(
+                        108,
+                    ),
+                    box_type: FourCc(
+                        "mvhd",
+                    ),
+                },
+                version: 0,
+                flags: 0,
+            },
+            creation_time: 0,
+            modification_time: 0,
+            timescale: 1000,
+            duration: 4667,
+            rate: 65536,
+            volume: 256,
+            matrix: [
+                65536,
+                0,
+                0,
+                0,
+                65536,
+                0,
+                0,
+                0,
+                1073741824,
+            ],
+            pre_defined: [
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+            ],
+            next_track_id: 3,
+        },
+        trak: [
+            TrackBox {
+                header: BoxHeader {
+                    size: Short(
+                        2708,
+                    ),
+                    box_type: FourCc(
+                        "trak",
+                    ),
+                },
+                tkhd: TrackHeaderBox {
+                    header: FullBoxHeader {
+                        header: BoxHeader {
+                            size: Short(
+                                92,
+                            ),
+                            box_type: FourCc(
+                                "tkhd",
+                            ),
+                        },
+                        version: 0,
+                        flags: 3,
+                    },
+                    creation_time: 0,
+                    modification_time: 0,
+                    track_id: 1,
+                    duration: 4667,
+                    layer: 0,
+                    alternate_group: 0,
+                    volume: 0,
+                    matrix: [
+                        65536,
+                        0,
+                        0,
+                        0,
+                        65536,
+                        0,
+                        0,
+                        0,
+                        1073741824,
+                    ],
+                    width: 31457280,
+                    height: 55836672,
+                },
+                tref: None,
+                trgr: None,
+                ttyp: None,
+                mdia: MediaBox {
+                    header: BoxHeader {
+                        size: Short(
+                            2572,
+                        ),
+                        box_type: FourCc(
+                            "mdia",
+                        ),
+                    },
+                    mdhd: MediaHeaderBox {
+                        header: FullBoxHeader {
+                            header: BoxHeader {
+                                size: Short(
+                                    32,
+                                ),
+                                box_type: FourCc(
+                                    "mdhd",
+                                ),
+                            },
+                            version: 0,
+                            flags: 0,
+                        },
+                        creation_time: 0,
+                        modification_time: 0,
+                        timescale: 15360,
+                        duration: 71680,
+                        language: [
+                            21,
+                            14,
+                            4,
+                        ],
+                        pre_defined: 0,
+                    },
+                    hdlr: HandlerBox {
+                        header: FullBoxHeader {
+                            header: BoxHeader {
+                                size: Short(
+                                    49,
+                                ),
+                                box_type: FourCc(
+                                    "hdlr",
+                                ),
+                            },
+                            version: 0,
+                            flags: 0,
+                        },
+                        pre_defined: 0,
+                        handler_type: HandlerType::Video,
+                        _reserved: [
+                            0,
+                            0,
+                            0,
+                        ],
+                        name: Utf8String(
+                            "Core Media Video",
+                        ),
+                    },
+                    minf: MediaInformationBox {
+                        header: BoxHeader {
+                            size: Short(
+                                2483,
+                            ),
+                            box_type: FourCc(
+                                "minf",
+                            ),
+                        },
+                        stbl: SampleTableBox {
+                            header: BoxHeader {
+                                size: Short(
+                                    2419,
+                                ),
+                                box_type: FourCc(
+                                    "stbl",
+                                ),
+                            },
+                            stsd: SampleDescriptionBox {
+                                header: FullBoxHeader {
+                                    header: BoxHeader {
+                                        size: Short(
+                                            199,
+                                        ),
+                                        box_type: FourCc(
+                                            "stsd",
+                                        ),
+                                    },
+                                    version: 0,
+                                    flags: 0,
+                                },
+                                entry_count: 1,
+                                unknown_boxes: [
+                                    UnknownBox {
+                                        header: BoxHeader {
+                                            size: Short(
+                                                183,
+                                            ),
+                                            box_type: FourCc(
+                                                "avc1",
+                                            ),
+                                        },
+                                        data(size): 175,
+                                    },
+                                ],
+                            },
+                            stdp: None,
+                            stts: TimeToSampleBox {
+                                header: FullBoxHeader {
+                                    header: BoxHeader {
+                                        size: Short(
+                                            24,
+                                        ),
+                                        box_type: FourCc(
+                                            "stts",
+                                        ),
+                                    },
+                                    version: 0,
+                                    flags: 0,
+                                },
+                                entry_count: 1,
+                                entries: [
+                                    TimeToSampleBoxEntry {
+                                        sample_count: 140,
+                                        sample_delta: 512,
+                                    },
+                                ],
+                            },
+                            ctts: Some(
+                                CompositionOffsetBox {
+                                    header: FullBoxHeader {
+                                        header: BoxHeader {
+                                            size: Short(
+                                                976,
+                                            ),
+                                            box_type: FourCc(
+                                                "ctts",
+                                            ),
+                                        },
+                                        version: 0,
+                                        flags: 0,
+                                    },
+                                    entry_count: 120,
+                                    entries: [
+                                        CompositionOffsetBoxEntry {
+                                            sample_count: 1,
+                                            sample_offset: 1024,
+                                        },
+                                        CompositionOffsetBoxEntry {
+                                            sample_count: 1,
+                                            sample_offset: 2560,
+                                        },
+                                        CompositionOffsetBoxEntry {
+                                            sample_count: 1,
+                                            sample_offset: 1024,
+                                        },
+                                        CompositionOffsetBoxEntry {
+                                            sample_count: 1,
+                                            sample_offset: 0,
+                                        },
+                                        CompositionOffsetBoxEntry {
+                                            sample_count: 1,
+                                            sample_offset: 512,
+                                        },
+                                        CompositionOffsetBoxEntry {
+                                            sample_count: 1,
+                                            sample_offset: 2560,
+                                        },
+                                        CompositionOffsetBoxEntry {
+                                            sample_count: 1,
+                                            sample_offset: 1024,
+                                        },
+                                        CompositionOffsetBoxEntry {
+                                            sample_count: 1,
+                                            sample_offset: 0,
+                                        },
+                                        CompositionOffsetBoxEntry {
+                                            sample_count: 1,
+                                            sample_offset: 512,
+                                        },
+                                        CompositionOffsetBoxEntry {
+                                            sample_count: 1,
+                                            sample_offset: 2560,
+                                        },
+                                        CompositionOffsetBoxEntry {
+                                            sample_count: 1,
+                                            sample_offset: 1024,
+                                        },
+                                        CompositionOffsetBoxEntry {
+                                            sample_count: 1,
+                                            sample_offset: 0,
+                                        },
+                                        CompositionOffsetBoxEntry {
+                                            sample_count: 1,
+                                            sample_offset: 512,
+                                        },
+                                        CompositionOffsetBoxEntry {
+                                            sample_count: 1,
+                                            sample_offset: 2560,
+                                        },
+                                        CompositionOffsetBoxEntry {
+                                            sample_count: 1,
+                                            sample_offset: 1024,
+                                        },
+                                        CompositionOffsetBoxEntry {
+                                            sample_count: 1,
+                                            sample_offset: 0,
+                                        },
+                                        CompositionOffsetBoxEntry {
+                                            sample_count: 1,
+                                            sample_offset: 512,
+                                        },
+                                        CompositionOffsetBoxEntry {
+                                            sample_count: 1,
+                                            sample_offset: 2560,
+                                        },
+                                        CompositionOffsetBoxEntry {
+                                            sample_count: 1,
+                                            sample_offset: 1024,
+                                        },
+                                        CompositionOffsetBoxEntry {
+                                            sample_count: 1,
+                                            sample_offset: 0,
+                                        },
+                                        CompositionOffsetBoxEntry {
+                                            sample_count: 1,
+                                            sample_offset: 512,
+                                        },
+                                        CompositionOffsetBoxEntry {
+                                            sample_count: 1,
+                                            sample_offset: 2560,
+                                        },
+                                        CompositionOffsetBoxEntry {
+                                            sample_count: 1,
+                                            sample_offset: 1024,
+                                        },
+                                        CompositionOffsetBoxEntry {
+                                            sample_count: 1,
+                                            sample_offset: 0,
+                                        },
+                                        CompositionOffsetBoxEntry {
+                                            sample_count: 1,
+                                            sample_offset: 512,
+                                        },
+                                        CompositionOffsetBoxEntry {
+                                            sample_count: 1,
+                                            sample_offset: 2560,
+                                        },
+                                        CompositionOffsetBoxEntry {
+                                            sample_count: 1,
+                                            sample_offset: 1024,
+                                        },
+                                        CompositionOffsetBoxEntry {
+                                            sample_count: 1,
+                                            sample_offset: 0,
+                                        },
+                                        CompositionOffsetBoxEntry {
+                                            sample_count: 1,
+                                            sample_offset: 512,
+                                        },
+                                        CompositionOffsetBoxEntry {
+                                            sample_count: 1,
+                                            sample_offset: 2560,
+                                        },
+                                        CompositionOffsetBoxEntry {
+                                            sample_count: 1,
+                                            sample_offset: 1024,
+                                        },
+                                        CompositionOffsetBoxEntry {
+                                            sample_count: 1,
+                                            sample_offset: 0,
+                                        },
+                                        CompositionOffsetBoxEntry {
+                                            sample_count: 1,
+                                            sample_offset: 512,
+                                        },
+                                        CompositionOffsetBoxEntry {
+                                            sample_count: 1,
+                                            sample_offset: 2560,
+                                        },
+                                        CompositionOffsetBoxEntry {
+                                            sample_count: 1,
+                                            sample_offset: 1024,
+                                        },
+                                        CompositionOffsetBoxEntry {
+                                            sample_count: 1,
+                                            sample_offset: 0,
+                                        },
+                                        CompositionOffsetBoxEntry {
+                                            sample_count: 1,
+                                            sample_offset: 512,
+                                        },
+                                        CompositionOffsetBoxEntry {
+                                            sample_count: 1,
+                                            sample_offset: 2048,
+                                        },
+                                        CompositionOffsetBoxEntry {
+                                            sample_count: 2,
+                                            sample_offset: 512,
+                                        },
+                                        CompositionOffsetBoxEntry {
+                                            sample_count: 1,
+                                            sample_offset: 2560,
+                                        },
+                                        CompositionOffsetBoxEntry {
+                                            sample_count: 1,
+                                            sample_offset: 1024,
+                                        },
+                                        CompositionOffsetBoxEntry {
+                                            sample_count: 1,
+                                            sample_offset: 0,
+                                        },
+                                        CompositionOffsetBoxEntry {
+                                            sample_count: 1,
+                                            sample_offset: 512,
+                                        },
+                                        CompositionOffsetBoxEntry {
+                                            sample_count: 6,
+                                            sample_offset: 1024,
+                                        },
+                                        CompositionOffsetBoxEntry {
+                                            sample_count: 1,
+                                            sample_offset: 2048,
+                                        },
+                                        CompositionOffsetBoxEntry {
+                                            sample_count: 2,
+                                            sample_offset: 512,
+                                        },
+                                        CompositionOffsetBoxEntry {
+                                            sample_count: 1,
+                                            sample_offset: 2560,
+                                        },
+                                        CompositionOffsetBoxEntry {
+                                            sample_count: 1,
+                                            sample_offset: 1024,
+                                        },
+                                        CompositionOffsetBoxEntry {
+                                            sample_count: 1,
+                                            sample_offset: 0,
+                                        },
+                                        CompositionOffsetBoxEntry {
+                                            sample_count: 1,
+                                            sample_offset: 512,
+                                        },
+                                        CompositionOffsetBoxEntry {
+                                            sample_count: 1,
+                                            sample_offset: 1536,
+                                        },
+                                        CompositionOffsetBoxEntry {
+                                            sample_count: 1,
+                                            sample_offset: 512,
+                                        },
+                                        CompositionOffsetBoxEntry {
+                                            sample_count: 1,
+                                            sample_offset: 2560,
+                                        },
+                                        CompositionOffsetBoxEntry {
+                                            sample_count: 1,
+                                            sample_offset: 1024,
+                                        },
+                                        CompositionOffsetBoxEntry {
+                                            sample_count: 1,
+                                            sample_offset: 0,
+                                        },
+                                        CompositionOffsetBoxEntry {
+                                            sample_count: 1,
+                                            sample_offset: 512,
+                                        },
+                                        CompositionOffsetBoxEntry {
+                                            sample_count: 1,
+                                            sample_offset: 2560,
+                                        },
+                                        CompositionOffsetBoxEntry {
+                                            sample_count: 1,
+                                            sample_offset: 1024,
+                                        },
+                                        CompositionOffsetBoxEntry {
+                                            sample_count: 1,
+                                            sample_offset: 0,
+                                        },
+                                        CompositionOffsetBoxEntry {
+                                            sample_count: 1,
+                                            sample_offset: 512,
+                                        },
+                                        CompositionOffsetBoxEntry {
+                                            sample_count: 1,
+                                            sample_offset: 2560,
+                                        },
+                                        CompositionOffsetBoxEntry {
+                                            sample_count: 1,
+                                            sample_offset: 1024,
+                                        },
+                                        CompositionOffsetBoxEntry {
+                                            sample_count: 1,
+                                            sample_offset: 0,
+                                        },
+                                        CompositionOffsetBoxEntry {
+                                            sample_count: 1,
+                                            sample_offset: 512,
+                                        },
+                                        CompositionOffsetBoxEntry {
+                                            sample_count: 14,
+                                            sample_offset: 1024,
+                                        },
+                                        CompositionOffsetBoxEntry {
+                                            sample_count: 1,
+                                            sample_offset: 2560,
+                                        },
+                                        CompositionOffsetBoxEntry {
+                                            sample_count: 1,
+                                            sample_offset: 1024,
+                                        },
+                                        CompositionOffsetBoxEntry {
+                                            sample_count: 1,
+                                            sample_offset: 0,
+                                        },
+                                        CompositionOffsetBoxEntry {
+                                            sample_count: 1,
+                                            sample_offset: 512,
+                                        },
+                                        CompositionOffsetBoxEntry {
+                                            sample_count: 1,
+                                            sample_offset: 2560,
+                                        },
+                                        CompositionOffsetBoxEntry {
+                                            sample_count: 1,
+                                            sample_offset: 1024,
+                                        },
+                                        CompositionOffsetBoxEntry {
+                                            sample_count: 1,
+                                            sample_offset: 0,
+                                        },
+                                        CompositionOffsetBoxEntry {
+                                            sample_count: 1,
+                                            sample_offset: 512,
+                                        },
+                                        CompositionOffsetBoxEntry {
+                                            sample_count: 1,
+                                            sample_offset: 1024,
+                                        },
+                                        CompositionOffsetBoxEntry {
+                                            sample_count: 1,
+                                            sample_offset: 2560,
+                                        },
+                                        CompositionOffsetBoxEntry {
+                                            sample_count: 1,
+                                            sample_offset: 1024,
+                                        },
+                                        CompositionOffsetBoxEntry {
+                                            sample_count: 1,
+                                            sample_offset: 0,
+                                        },
+                                        CompositionOffsetBoxEntry {
+                                            sample_count: 1,
+                                            sample_offset: 512,
+                                        },
+                                        CompositionOffsetBoxEntry {
+                                            sample_count: 1,
+                                            sample_offset: 2560,
+                                        },
+                                        CompositionOffsetBoxEntry {
+                                            sample_count: 1,
+                                            sample_offset: 1024,
+                                        },
+                                        CompositionOffsetBoxEntry {
+                                            sample_count: 1,
+                                            sample_offset: 0,
+                                        },
+                                        CompositionOffsetBoxEntry {
+                                            sample_count: 1,
+                                            sample_offset: 512,
+                                        },
+                                        CompositionOffsetBoxEntry {
+                                            sample_count: 1,
+                                            sample_offset: 2560,
+                                        },
+                                        CompositionOffsetBoxEntry {
+                                            sample_count: 1,
+                                            sample_offset: 1024,
+                                        },
+                                        CompositionOffsetBoxEntry {
+                                            sample_count: 1,
+                                            sample_offset: 0,
+                                        },
+                                        CompositionOffsetBoxEntry {
+                                            sample_count: 1,
+                                            sample_offset: 512,
+                                        },
+                                        CompositionOffsetBoxEntry {
+                                            sample_count: 1,
+                                            sample_offset: 2560,
+                                        },
+                                        CompositionOffsetBoxEntry {
+                                            sample_count: 1,
+                                            sample_offset: 1024,
+                                        },
+                                        CompositionOffsetBoxEntry {
+                                            sample_count: 1,
+                                            sample_offset: 0,
+                                        },
+                                        CompositionOffsetBoxEntry {
+                                            sample_count: 1,
+                                            sample_offset: 512,
+                                        },
+                                        CompositionOffsetBoxEntry {
+                                            sample_count: 1,
+                                            sample_offset: 2560,
+                                        },
+                                        CompositionOffsetBoxEntry {
+                                            sample_count: 1,
+                                            sample_offset: 1024,
+                                        },
+                                        CompositionOffsetBoxEntry {
+                                            sample_count: 1,
+                                            sample_offset: 0,
+                                        },
+                                        CompositionOffsetBoxEntry {
+                                            sample_count: 1,
+                                            sample_offset: 512,
+                                        },
+                                        CompositionOffsetBoxEntry {
+                                            sample_count: 1,
+                                            sample_offset: 2560,
+                                        },
+                                        CompositionOffsetBoxEntry {
+                                            sample_count: 1,
+                                            sample_offset: 1024,
+                                        },
+                                        CompositionOffsetBoxEntry {
+                                            sample_count: 1,
+                                            sample_offset: 0,
+                                        },
+                                        CompositionOffsetBoxEntry {
+                                            sample_count: 1,
+                                            sample_offset: 512,
+                                        },
+                                        CompositionOffsetBoxEntry {
+                                            sample_count: 1,
+                                            sample_offset: 2560,
+                                        },
+                                        CompositionOffsetBoxEntry {
+                                            sample_count: 1,
+                                            sample_offset: 1024,
+                                        },
+                                        CompositionOffsetBoxEntry {
+                                            sample_count: 1,
+                                            sample_offset: 0,
+                                        },
+                                        CompositionOffsetBoxEntry {
+                                            sample_count: 1,
+                                            sample_offset: 512,
+                                        },
+                                        CompositionOffsetBoxEntry {
+                                            sample_count: 1,
+                                            sample_offset: 1536,
+                                        },
+                                        CompositionOffsetBoxEntry {
+                                            sample_count: 1,
+                                            sample_offset: 512,
+                                        },
+                                        CompositionOffsetBoxEntry {
+                                            sample_count: 1,
+                                            sample_offset: 1536,
+                                        },
+                                        CompositionOffsetBoxEntry {
+                                            sample_count: 1,
+                                            sample_offset: 512,
+                                        },
+                                        CompositionOffsetBoxEntry {
+                                            sample_count: 1,
+                                            sample_offset: 2560,
+                                        },
+                                        CompositionOffsetBoxEntry {
+                                            sample_count: 1,
+                                            sample_offset: 1024,
+                                        },
+                                        CompositionOffsetBoxEntry {
+                                            sample_count: 1,
+                                            sample_offset: 0,
+                                        },
+                                        CompositionOffsetBoxEntry {
+                                            sample_count: 1,
+                                            sample_offset: 512,
+                                        },
+                                        CompositionOffsetBoxEntry {
+                                            sample_count: 1,
+                                            sample_offset: 2560,
+                                        },
+                                        CompositionOffsetBoxEntry {
+                                            sample_count: 1,
+                                            sample_offset: 1024,
+                                        },
+                                        CompositionOffsetBoxEntry {
+                                            sample_count: 1,
+                                            sample_offset: 0,
+                                        },
+                                        CompositionOffsetBoxEntry {
+                                            sample_count: 1,
+                                            sample_offset: 512,
+                                        },
+                                        CompositionOffsetBoxEntry {
+                                            sample_count: 1,
+                                            sample_offset: 2560,
+                                        },
+                                        CompositionOffsetBoxEntry {
+                                            sample_count: 1,
+                                            sample_offset: 1024,
+                                        },
+                                        CompositionOffsetBoxEntry {
+                                            sample_count: 1,
+                                            sample_offset: 0,
+                                        },
+                                        CompositionOffsetBoxEntry {
+                                            sample_count: 1,
+                                            sample_offset: 512,
+                                        },
+                                        CompositionOffsetBoxEntry {
+                                            sample_count: 1,
+                                            sample_offset: 1536,
+                                        },
+                                        CompositionOffsetBoxEntry {
+                                            sample_count: 1,
+                                            sample_offset: 512,
+                                        },
+                                    ],
+                                },
+                            ),
+                        },
+                        unknown_boxes: [
+                            UnknownBox {
+                                header: BoxHeader {
+                                    size: Short(
+                                        20,
+                                    ),
+                                    box_type: FourCc(
+                                        "vmhd",
+                                    ),
+                                },
+                                data(size): 12,
+                            },
+                            UnknownBox {
+                                header: BoxHeader {
+                                    size: Short(
+                                        36,
+                                    ),
+                                    box_type: FourCc(
+                                        "dinf",
+                                    ),
+                                },
+                                data(size): 28,
+                            },
+                        ],
+                    },
+                    elng: None,
+                    unknown_boxes: [],
+                },
+                udta: None,
+                unknown_boxes: [
+                    UnknownBox {
+                        header: BoxHeader {
+                            size: Short(
+                                36,
+                            ),
+                            box_type: FourCc(
+                                "edts",
+                            ),
+                        },
+                        data(size): 28,
+                    },
+                ],
+            },
+            TrackBox {
+                header: BoxHeader {
+                    size: Short(
+                        3381,
+                    ),
+                    box_type: FourCc(
+                        "trak",
+                    ),
+                },
+                tkhd: TrackHeaderBox {
+                    header: FullBoxHeader {
+                        header: BoxHeader {
+                            size: Short(
+                                92,
+                            ),
+                            box_type: FourCc(
+                                "tkhd",
+                            ),
+                        },
+                        version: 0,
+                        flags: 3,
+                    },
+                    creation_time: 0,
+                    modification_time: 0,
+                    track_id: 2,
+                    duration: 4643,
+                    layer: 0,
+                    alternate_group: 1,
+                    volume: 256,
+                    matrix: [
+                        65536,
+                        0,
+                        0,
+                        0,
+                        65536,
+                        0,
+                        0,
+                        0,
+                        1073741824,
+                    ],
+                    width: 0,
+                    height: 0,
+                },
+                tref: None,
+                trgr: None,
+                ttyp: None,
+                mdia: MediaBox {
+                    header: BoxHeader {
+                        size: Short(
+                            3245,
+                        ),
+                        box_type: FourCc(
+                            "mdia",
+                        ),
+                    },
+                    mdhd: MediaHeaderBox {
+                        header: FullBoxHeader {
+                            header: BoxHeader {
+                                size: Short(
+                                    32,
+                                ),
+                                box_type: FourCc(
+                                    "mdhd",
+                                ),
+                            },
+                            version: 0,
+                            flags: 0,
+                        },
+                        creation_time: 0,
+                        modification_time: 0,
+                        timescale: 44100,
+                        duration: 204736,
+                        language: [
+                            21,
+                            14,
+                            4,
+                        ],
+                        pre_defined: 0,
+                    },
+                    hdlr: HandlerBox {
+                        header: FullBoxHeader {
+                            header: BoxHeader {
+                                size: Short(
+                                    49,
+                                ),
+                                box_type: FourCc(
+                                    "hdlr",
+                                ),
+                            },
+                            version: 0,
+                            flags: 0,
+                        },
+                        pre_defined: 0,
+                        handler_type: HandlerType::Audio,
+                        _reserved: [
+                            0,
+                            0,
+                            0,
+                        ],
+                        name: Utf8String(
+                            "Core Media Audio",
+                        ),
+                    },
+                    minf: MediaInformationBox {
+                        header: BoxHeader {
+                            size: Short(
+                                3156,
+                            ),
+                            box_type: FourCc(
+                                "minf",
+                            ),
+                        },
+                        stbl: SampleTableBox {
+                            header: BoxHeader {
+                                size: Short(
+                                    3096,
+                                ),
+                                box_type: FourCc(
+                                    "stbl",
+                                ),
+                            },
+                            stsd: SampleDescriptionBox {
+                                header: FullBoxHeader {
+                                    header: BoxHeader {
+                                        size: Short(
+                                            126,
+                                        ),
+                                        box_type: FourCc(
+                                            "stsd",
+                                        ),
+                                    },
+                                    version: 0,
+                                    flags: 0,
+                                },
+                                entry_count: 1,
+                                unknown_boxes: [
+                                    UnknownBox {
+                                        header: BoxHeader {
+                                            size: Short(
+                                                110,
+                                            ),
+                                            box_type: FourCc(
+                                                "mp4a",
+                                            ),
+                                        },
+                                        data(size): 102,
+                                    },
+                                ],
+                            },
+                            stdp: None,
+                            stts: TimeToSampleBox {
+                                header: FullBoxHeader {
+                                    header: BoxHeader {
+                                        size: Short(
+                                            32,
+                                        ),
+                                        box_type: FourCc(
+                                            "stts",
+                                        ),
+                                    },
+                                    version: 0,
+                                    flags: 0,
+                                },
+                                entry_count: 2,
+                                entries: [
+                                    TimeToSampleBoxEntry {
+                                        sample_count: 200,
+                                        sample_delta: 1024,
+                                    },
+                                    TimeToSampleBoxEntry {
+                                        sample_count: 1,
+                                        sample_delta: 960,
+                                    },
+                                ],
+                            },
+                            ctts: None,
+                        },
+                        unknown_boxes: [
+                            UnknownBox {
+                                header: BoxHeader {
+                                    size: Short(
+                                        16,
+                                    ),
+                                    box_type: FourCc(
+                                        "smhd",
+                                    ),
+                                },
+                                data(size): 8,
+                            },
+                            UnknownBox {
+                                header: BoxHeader {
+                                    size: Short(
+                                        36,
+                                    ),
+                                    box_type: FourCc(
+                                        "dinf",
+                                    ),
+                                },
+                                data(size): 28,
+                            },
+                        ],
+                    },
+                    elng: None,
+                    unknown_boxes: [],
+                },
+                udta: None,
+                unknown_boxes: [
+                    UnknownBox {
+                        header: BoxHeader {
+                            size: Short(
+                                36,
+                            ),
+                            box_type: FourCc(
+                                "edts",
+                            ),
+                        },
+                        data(size): 28,
+                    },
+                ],
+            },
+        ],
+        udta: Some(
+            UserDataBox {
+                header: BoxHeader {
+                    size: Short(
+                        98,
+                    ),
+                    box_type: FourCc(
+                        "udta",
+                    ),
+                },
+                unknown_boxes: [
+                    UnknownBox {
+                        header: BoxHeader {
+                            size: Short(
+                                90,
+                            ),
+                            box_type: FourCc(
+                                "meta",
+                            ),
+                        },
+                        data(size): 82,
+                    },
+                ],
+            },
+        ),
+    },
+    meta: None,
+    unknown_boxes: [],
+}

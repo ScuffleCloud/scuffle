@@ -3494,6 +3494,7 @@ dependencies = [
  "bytes",
  "document-features",
  "insta",
+ "isobmff",
  "nutype-enum",
  "scuffle-bytes-util",
  "scuffle-changelog",

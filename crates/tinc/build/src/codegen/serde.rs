@@ -23,7 +23,7 @@ fn handle_oneof(
 
     let oneof_config = message_config.oneof_config(field_name);
 
-    oneof_config.attribute(parse_quote!(#[derive(::tinc::reexports::serde::Serialize)]));
+    oneof_config.attribute(parse_quote!(#[derive(::tinc::reexports::serde_derive::Serialize)]));
     oneof_config.attribute(parse_quote!(#[derive(::tinc::__private::Tracker)]));
 
     let variant_identifier_ident = quote::format_ident!("___identifier");
@@ -723,7 +723,7 @@ pub(super) fn handle_message(
 ) -> anyhow::Result<()> {
     let message_config = package.message_config(&message.full_name);
 
-    message_config.attribute(parse_quote!(#[derive(::tinc::reexports::serde::Serialize)]));
+    message_config.attribute(parse_quote!(#[derive(::tinc::reexports::serde_derive::Serialize)]));
     message_config.attribute(parse_quote!(#[serde(crate = "::tinc::reexports::serde")]));
     message_config.attribute(parse_quote!(#[derive(::tinc::__private::Tracker)]));
 
@@ -864,8 +864,8 @@ pub(super) fn handle_enum(enum_: &ProtoEnumType, package: &mut Package) -> anyho
         enum_config.attribute(parse_quote!(#[derive(::tinc::reexports::serde_repr::Serialize_repr)]));
         enum_config.attribute(parse_quote!(#[derive(::tinc::reexports::serde_repr::Deserialize_repr)]));
     } else {
-        enum_config.attribute(parse_quote!(#[derive(::tinc::reexports::serde::Serialize)]));
-        enum_config.attribute(parse_quote!(#[derive(::tinc::reexports::serde::Deserialize)]));
+        enum_config.attribute(parse_quote!(#[derive(::tinc::reexports::serde_derive::Serialize)]));
+        enum_config.attribute(parse_quote!(#[derive(::tinc::reexports::serde_derive::Deserialize)]));
     }
 
     enum_config.attribute(parse_quote!(#[serde(crate = "::tinc::reexports::serde")]));

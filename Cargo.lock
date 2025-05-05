@@ -4040,6 +4040,7 @@ dependencies = [
  "schemars",
  "scuffle-workspace-hack",
  "serde",
+ "serde_derive",
  "serde_json",
  "serde_qs",
  "serde_repr",

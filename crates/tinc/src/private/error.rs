@@ -392,7 +392,7 @@ pub fn handle_tonic_status(status: &tonic::Status) -> axum::response::Response {
     .into_response()
 }
 
-#[derive(Debug, serde::Serialize)]
+#[derive(Debug, serde_derive::Serialize)]
 pub struct HttpErrorResponse<'a> {
     pub message: &'a str,
     pub code: HttpErrorResponseCode,
@@ -496,7 +496,7 @@ where
     t == &T::default()
 }
 
-#[derive(Debug, serde::Serialize, Default, PartialEq)]
+#[derive(Debug, serde_derive::Serialize, Default, PartialEq)]
 pub struct HttpErrorResponseDetails<'a> {
     #[serde(skip_serializing_if = "is_default")]
     pub retry: HttpErrorResponseRetry,

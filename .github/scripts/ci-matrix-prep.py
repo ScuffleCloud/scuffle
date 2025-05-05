@@ -117,6 +117,7 @@ class Job:
     job_name: str
     rust: Optional[RustSetup]
     ffmpeg: Optional[FfmpegSetup]
+    setup_protoc: bool
     inputs: (
         GrindMatrix
         | DocsRsMatrix
@@ -142,6 +143,7 @@ def create_docsrs_jobs() -> list[Job]:
             job_name="Docs.rs (Linux x86_64)",
             job="docsrs",
             ffmpeg=FfmpegSetup(),
+            setup_protoc=True,
             inputs=DocsRsMatrix(
                 artifact_name="docsrs",
                 deploy_docs=deploy_docs,
@@ -167,6 +169,7 @@ def create_docsrs_jobs() -> list[Job]:
                 job_name="Docs.rs (Linux arm64)",
                 job="docsrs",
                 ffmpeg=FfmpegSetup(),
+                setup_protoc=True,
                 inputs=DocsRsMatrix(
                     artifact_name=None,
                     deploy_docs=False,
@@ -188,6 +191,7 @@ def create_docsrs_jobs() -> list[Job]:
                 job_name="Docs.rs (Windows x86_64)",
                 job="docsrs",
                 ffmpeg=FfmpegSetup(),
+                setup_protoc=True,
                 inputs=DocsRsMatrix(
                     artifact_name=None,
                     deploy_docs=False,
@@ -209,6 +213,7 @@ def create_docsrs_jobs() -> list[Job]:
                 job_name="Docs.rs (macOS x86_64)",
                 job="docsrs",
                 ffmpeg=FfmpegSetup(),
+                setup_protoc=True,
                 inputs=DocsRsMatrix(
                     artifact_name=None,
                     deploy_docs=False,
@@ -230,6 +235,7 @@ def create_docsrs_jobs() -> list[Job]:
                 job_name="Docs.rs (macOS arm64)",
                 job="docsrs",
                 ffmpeg=FfmpegSetup(),
+                setup_protoc=True,
                 inputs=DocsRsMatrix(
                     artifact_name=None,
                     deploy_docs=False,
@@ -258,6 +264,7 @@ def create_docusaurus_jobs() -> list[Job]:
             job_name="Docusaurus Docs",
             job="docusaurus",
             ffmpeg=None,
+            setup_protoc=False,
             inputs=DocusaurusMatrix(
                 deploy_docs=deploy_docs,
                 pr_number=pr_number(),
@@ -281,6 +288,7 @@ def create_clippy_jobs() -> list[Job]:
             job_name="Clippy (Linux x86_64)",
             job="clippy",
             ffmpeg=FfmpegSetup(),
+            setup_protoc=True,
             inputs=ClippyMatrix(
                 powerset=is_brawl(),
             ),
@@ -301,6 +309,7 @@ def create_clippy_jobs() -> list[Job]:
                 job_name="Clippy (Linux arm64)",
                 job="clippy",
                 ffmpeg=FfmpegSetup(),
+                setup_protoc=True,
                 inputs=ClippyMatrix(
                     powerset=True,
                 ),
@@ -320,6 +329,7 @@ def create_clippy_jobs() -> list[Job]:
                 job_name="Clippy (Windows x86_64)",
                 job="clippy",
                 ffmpeg=FfmpegSetup(),
+                setup_protoc=True,
                 inputs=ClippyMatrix(
                     powerset=True,
                 ),
@@ -339,6 +349,7 @@ def create_clippy_jobs() -> list[Job]:
                 job_name="Clippy (macOS x86_64)",
                 job="clippy",
                 ffmpeg=FfmpegSetup(),
+                setup_protoc=True,
                 inputs=ClippyMatrix(
                     powerset=True,
                 ),
@@ -358,6 +369,7 @@ def create_clippy_jobs() -> list[Job]:
                 job_name="Clippy (macOS arm64)",
                 job="clippy",
                 ffmpeg=FfmpegSetup(),
+                setup_protoc=True,
                 inputs=ClippyMatrix(
                     powerset=True,
                 ),
@@ -393,6 +405,7 @@ def create_test_jobs() -> list[Job]:
             job_name="Test (Linux x86_64)",
             job="test",
             ffmpeg=FfmpegSetup(),
+            setup_protoc=True,
             inputs=TestMatrix(
                 pr_number=pr_number(),
                 commit_sha=commit_sha,
@@ -415,6 +428,7 @@ def create_test_jobs() -> list[Job]:
                 job_name="Test (Linux arm64)",
                 job="test",
                 ffmpeg=FfmpegSetup(),
+                setup_protoc=True,
                 inputs=TestMatrix(
                     pr_number=pr_number(),
                     commit_sha=commit_sha,
@@ -436,6 +450,7 @@ def create_test_jobs() -> list[Job]:
                 job_name="Test (Windows x86_64)",
                 job="test",
                 ffmpeg=FfmpegSetup(),
+                setup_protoc=True,
                 inputs=TestMatrix(
                     pr_number=pr_number(),
                     commit_sha=commit_sha,
@@ -457,6 +472,7 @@ def create_test_jobs() -> list[Job]:
                 job_name="Test (macOS x86_64)",
                 job="test",
                 ffmpeg=FfmpegSetup(),
+                setup_protoc=True,
                 inputs=TestMatrix(
                     pr_number=pr_number(),
                     commit_sha=commit_sha,
@@ -478,6 +494,7 @@ def create_test_jobs() -> list[Job]:
                 job_name="Test (macOS arm64)",
                 job="test",
                 ffmpeg=FfmpegSetup(),
+                setup_protoc=True,
                 inputs=TestMatrix(
                     pr_number=pr_number(),
                     commit_sha=commit_sha,
@@ -506,6 +523,7 @@ def create_grind_jobs() -> list[Job]:
                 job_name="Grind (Linux x86_64)",
                 job="grind",
                 ffmpeg=FfmpegSetup(),
+                setup_protoc=True,
                 inputs=GrindMatrix(
                     env=json.dumps(
                         {
@@ -528,6 +546,7 @@ def create_grind_jobs() -> list[Job]:
                 job_name="Grind (Linux arm64)",
                 job="grind",
                 ffmpeg=FfmpegSetup(),
+                setup_protoc=True,
                 inputs=GrindMatrix(
                     env=json.dumps(
                         {
@@ -557,6 +576,7 @@ def create_fmt_jobs() -> list[Job]:
             job="fmt",
             ffmpeg=None,
             inputs=FmtMatrix(),
+            setup_protoc=False,
             rust=RustSetup(
                 toolchain="nightly",
                 components="rustfmt",
@@ -579,6 +599,7 @@ def create_hakari_jobs() -> list[Job]:
             job="hakari",
             ffmpeg=None,
             inputs=HakariMatrix(),
+            setup_protoc=False,
             rust=RustSetup(
                 toolchain="nightly",
                 components="rustfmt",
@@ -604,6 +625,7 @@ def create_semver_checks_jobs() -> list[Job]:
             job_name="Semver-checks",
             job="semver-checks",
             ffmpeg=FfmpegSetup(),
+            setup_protoc=True,
             inputs=SemverChecksMatrix(
                 pr_number=pr_number()
             ),

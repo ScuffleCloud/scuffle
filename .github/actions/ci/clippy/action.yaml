@@ -7,9 +7,6 @@ inputs:
 runs:
   using: "composite"
   steps:
-    - name: Install Protoc
-      uses: arduino/setup-protoc@v3
-
     - name: Disable Hakari
       shell: bash
       run: cargo hakari disable

@@ -21,6 +21,8 @@ docs/.cache-loader
 
 # Website
 website/node_modules/
+
+# Output
 website/.output
 website/.vercel
 website/.svelte-kit

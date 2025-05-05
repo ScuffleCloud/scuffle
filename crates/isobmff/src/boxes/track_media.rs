@@ -3,7 +3,7 @@
 use byteorder::ReadBytesExt;
 use scuffle_bytes_util::zero_copy::{Deserialize, DeserializeSeed};
 
-use super::SampleTableBox;
+use super::{DataInformationBox, SampleTableBox};
 use crate::string_deserializer::Utf8String;
 use crate::{BoxHeader, FullBoxHeader, IsoBox, UnknownBox};
 
@@ -11,7 +11,7 @@ use crate::{BoxHeader, FullBoxHeader, IsoBox, UnknownBox};
 ///
 /// ISO/IEC 14496-12 - 8.4.1
 #[derive(IsoBox, Debug)]
-#[iso_box(box_type = b"mdia", crate_path = "crate")]
+#[iso_box(box_type = b"mdia", crate_path = crate)]
 pub struct MediaBox<'a> {
     #[iso_box(header)]
     pub header: BoxHeader,
@@ -135,7 +135,7 @@ nutype_enum::nutype_enum! {
 ///
 /// ISO/IEC 14496-12 - 8.4.3
 #[derive(IsoBox, Debug)]
-#[iso_box(box_type = b"hdlr", crate_path = "crate")]
+#[iso_box(box_type = b"hdlr", crate_path = crate)]
 pub struct HandlerBox {
     #[iso_box(header)]
     pub header: FullBoxHeader,
@@ -150,12 +150,14 @@ pub struct HandlerBox {
 ///
 /// ISO/IEC 14496-12 - 8.4.4
 #[derive(IsoBox, Debug)]
-#[iso_box(box_type = b"minf", crate_path = "crate")]
+#[iso_box(box_type = b"minf", crate_path = crate)]
 pub struct MediaInformationBox<'a> {
     #[iso_box(header)]
     pub header: BoxHeader,
     #[iso_box(nested_box)]
     pub stbl: SampleTableBox<'a>,
+    #[iso_box(nested_box)]
+    pub dinf: DataInformationBox<'a>,
     #[iso_box(nested_box(collect_unknown))]
     pub unknown_boxes: Vec<UnknownBox<'a>>,
 }
@@ -164,7 +166,7 @@ pub struct MediaInformationBox<'a> {
 ///
 /// ISO/IEC 14496-12 - 8.4.5.2
 #[derive(IsoBox, Debug)]
-#[iso_box(box_type = b"nmhd", crate_path = "crate")]
+#[iso_box(box_type = b"nmhd", crate_path = crate)]
 pub struct NullMediaHeaderBox {
     #[iso_box(header)]
     pub header: FullBoxHeader,
@@ -174,7 +176,7 @@ pub struct NullMediaHeaderBox {
 ///
 /// ISO/IEC 14496-12 - 8.4.6
 #[derive(IsoBox, Debug)]
-#[iso_box(box_type = b"elng", crate_path = "crate")]
+#[iso_box(box_type = b"elng", crate_path = crate)]
 pub struct ExtendedLanguageBox {
     #[iso_box(header)]
     pub header: FullBoxHeader,

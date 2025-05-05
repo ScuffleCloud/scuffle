@@ -3,14 +3,14 @@
 use byteorder::ReadBytesExt;
 use scuffle_bytes_util::zero_copy::{Deserialize, DeserializeSeed};
 
-use super::{Brand, MediaBox, UserDataBox};
+use super::{Brand, EditBox, MediaBox, UserDataBox};
 use crate::{BoxHeader, FullBoxHeader, IsoBox, UnknownBox};
 
 /// Track box
 ///
 /// ISO/IEC 14496-12 - 8.3.1
 #[derive(IsoBox, Debug)]
-#[iso_box(box_type = b"trak", crate_path = "crate")]
+#[iso_box(box_type = b"trak", crate_path = crate)]
 pub struct TrackBox<'a> {
     #[iso_box(header)]
     pub header: BoxHeader,
@@ -24,6 +24,8 @@ pub struct TrackBox<'a> {
     pub ttyp: Option<TrackTypeBox>,
     #[iso_box(nested_box)]
     pub mdia: MediaBox<'a>,
+    #[iso_box(nested_box(collect))]
+    pub edts: Option<EditBox>,
     #[iso_box(nested_box(collect))]
     pub udta: Option<UserDataBox<'a>>,
     #[iso_box(nested_box(collect_unknown))]
@@ -126,7 +128,7 @@ impl<'a> Deserialize<'a> for TrackHeaderBox {
 ///
 /// ISO/IEC 14496-12 - 8.3.3
 #[derive(IsoBox, Debug)]
-#[iso_box(box_type = b"tref", crate_path = "crate")]
+#[iso_box(box_type = b"tref", crate_path = crate)]
 pub struct TrackReferenceBox<'a> {
     #[iso_box(header)]
     pub header: BoxHeader,
@@ -138,7 +140,7 @@ pub struct TrackReferenceBox<'a> {
 ///
 /// ISO/IEC 14496-12 - 8.3.4
 #[derive(IsoBox, Debug)]
-#[iso_box(box_type = b"trgr", crate_path = "crate")]
+#[iso_box(box_type = b"trgr", crate_path = crate)]
 pub struct TrackGroupBox<'a> {
     #[iso_box(header)]
     pub header: BoxHeader,
@@ -150,7 +152,7 @@ pub struct TrackGroupBox<'a> {
 ///
 /// ISO/IEC 14496-12 - 8.3.5
 #[derive(IsoBox, Debug)]
-#[iso_box(box_type = b"ttyp", crate_path = "crate")]
+#[iso_box(box_type = b"ttyp", crate_path = crate)]
 pub struct TrackTypeBox {
     #[iso_box(header)]
     pub header: BoxHeader,

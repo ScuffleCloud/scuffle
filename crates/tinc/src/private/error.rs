@@ -534,7 +534,7 @@ impl<'a> From<&'a tonic_types::ErrorDetails> for HttpErrorResponseDetails<'a> {
     }
 }
 
-#[derive(Debug, serde::Serialize, Default, PartialEq)]
+#[derive(Debug, serde_derive::Serialize, Default, PartialEq)]
 pub struct HttpErrorResponseRetry {
     #[serde(skip_serializing_if = "is_default")]
     pub after: Option<std::time::Duration>,
@@ -554,7 +554,7 @@ impl From<Option<&tonic_types::RetryInfo>> for HttpErrorResponseRetry {
     }
 }
 
-#[derive(Debug, serde::Serialize, Default, PartialEq)]
+#[derive(Debug, serde_derive::Serialize, Default, PartialEq)]
 pub struct HttpErrorResponseDebug<'a> {
     #[serde(skip_serializing_if = "is_default")]
     pub stack: &'a [String],
@@ -593,7 +593,7 @@ impl<'a> From<Option<&'a tonic_types::QuotaFailure>> for HttpErrorResponseQuota<
     }
 }
 
-#[derive(Debug, serde::Serialize, Default, PartialEq)]
+#[derive(Debug, serde_derive::Serialize, Default, PartialEq)]
 pub struct HttpErrorResponseQuotaViolation<'a> {
     #[serde(skip_serializing_if = "is_default")]
     pub subject: &'a str,
@@ -601,7 +601,7 @@ pub struct HttpErrorResponseQuotaViolation<'a> {
     pub description: &'a str,
 }
 
-#[derive(Debug, serde::Serialize, Default, PartialEq)]
+#[derive(Debug, serde_derive::Serialize, Default, PartialEq)]
 pub struct HttpErrorResponseError<'a> {
     #[serde(skip_serializing_if = "is_default")]
     pub reason: &'a str,
@@ -651,7 +651,7 @@ impl<'a> From<Option<&'a tonic_types::PreconditionFailure>> for HttpErrorRespons
     }
 }
 
-#[derive(Debug, serde::Serialize, Default, PartialEq)]
+#[derive(Debug, serde_derive::Serialize, Default, PartialEq)]
 pub struct HttpErrorResponsePreconditionViolation<'a> {
     #[serde(skip_serializing_if = "is_default", rename = "type")]
     pub type_: &'a str,
@@ -661,7 +661,7 @@ pub struct HttpErrorResponsePreconditionViolation<'a> {
     pub description: &'a str,
 }
 
-#[derive(Debug, serde::Serialize, Default, PartialEq)]
+#[derive(Debug, serde_derive::Serialize, Default, PartialEq)]
 pub struct HttpErrorResponseRequest<'a> {
     #[serde(skip_serializing_if = "is_default")]
     pub violations: Vec<HttpErrorResponseRequestViolation<'a>>,
@@ -695,7 +695,7 @@ impl<'a> From<(Option<&'a tonic_types::BadRequest>, Option<&'a tonic_types::Requ
     }
 }
 
-#[derive(Debug, serde::Serialize, Default, PartialEq)]
+#[derive(Debug, serde_derive::Serialize, Default, PartialEq)]
 pub struct HttpErrorResponseRequestViolation<'a> {
     #[serde(skip_serializing_if = "is_default")]
     pub field: &'a str,
@@ -703,7 +703,7 @@ pub struct HttpErrorResponseRequestViolation<'a> {
     pub description: &'a str,
 }
 
-#[derive(Debug, serde::Serialize, Default, PartialEq)]
+#[derive(Debug, serde_derive::Serialize, Default, PartialEq)]
 pub struct HttpErrorResponseResource<'a> {
     #[serde(skip_serializing_if = "is_default")]
     pub name: &'a str,
@@ -747,7 +747,7 @@ impl<'a> From<Option<&'a tonic_types::Help>> for HttpErrorResponseHelp<'a> {
     }
 }
 
-#[derive(Debug, serde::Serialize, Default, PartialEq)]
+#[derive(Debug, serde_derive::Serialize, Default, PartialEq)]
 pub struct HttpErrorResponseHelpLink<'a> {
     #[serde(skip_serializing_if = "is_default")]
     pub description: &'a str,
@@ -755,7 +755,7 @@ pub struct HttpErrorResponseHelpLink<'a> {
     pub url: &'a str,
 }
 
-#[derive(Debug, serde::Serialize, Default, PartialEq)]
+#[derive(Debug, serde_derive::Serialize, Default, PartialEq)]
 pub struct HttpErrorResponseLocalized<'a> {
     #[serde(skip_serializing_if = "is_default")]
     pub locale: &'a str,

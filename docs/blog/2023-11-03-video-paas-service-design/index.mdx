@@ -1,0 +1,94 @@
+---
+title: "Implementing a Robust Video PAAS: Insights from Scuffle's Journey"
+slug: video-paas-service-design
+authors: [troy]
+tags: [video]
+---
+
+Implementing a video Platform as a Service (PAAS), like Amazon IVS, calls for meticulous planning and design. Scuffle's evolution into a comprehensive live-streaming solution offers a wealth of insights into the design and implementation process that goes beyond merely being a live-streaming platform. In this article, we delve into the intricate architecture of Scuffle's live-streaming solution, detailing each component's role and functionality.
+
+<!-- truncate -->
+
+![Design](./infrastructure-design.svg)
+
+## Ingest: The Gateway to Live Streaming
+
+The Ingest component is the first line of engagement for streamers. It adopts a protocol-agnostic stance, currently supporting RTMP, with plans to expand to WebRTC, SRT, and WARP/MOQ. The process encompasses:
+
+The go-live process involves:
+
+1. **Authentication**: Verifying the streamer's identity via their unique stream key when a new stream is initiated.
+2. **Validation & Transcoding**: Ensuring the room's readiness, triggering a new transcoder job, and queuing it in our message broker.
+3. **Transcoding Handoff**: The transcoder, upon receiving the queued job, interfaces with Ingest to fetch and transcode the incoming stream.
+4. **Broadcasting**: Once the stream is transcoded, the room is flagged as live, inviting viewers to join in.
+
+Ingest also serves as a safeguard against denial-of-service (DOS) attacks by managing data flow and ensuring packet integrity. Stream distribution to transcoders is based on system capacity, maintaining optimal load balancing. This setup also allows for dynamic scaling of transcoder resources in response to fluctuating live request volumes.
+
+The separation of Ingest and Transcoder processes is intentional:
+
+- **Ingest's Lightweight Operation**: As a transmuxer (changing stream containers, e.g., FLV to MP4), it's resource-efficient, capable of handling hundreds of streams on a single core.
+- **Transcoder's Resource-Intensive Task**: As a transcoder (codec conversion or re-encoding), it's computationally demanding, with a single HD-quality stream requiring several CPU cores.
+
+This division ensures scalability and cost-efficiency, enabling the use of preemptable cloud instances for transcoders to reduce expenses without risking stream continuity.
+
+## Transcoder: The Powerhouse of Video Quality
+
+Once authenticated, the incoming video is assigned to a transcoder job. Here's what happens:
+
+- **Configuration Check**: It assesses room settings to determine necessary video qualities (HD, SD, LD) and whether to archive recordings to S3.
+- **FFmpeg Integration**: Utilizing FFmpeg, it outputs fragmented mp4 files, which are then processed for optimal structure, essential for our player.
+
+Currently, we transcode into H264 & AAC, with future plans to adopt AV1 & Opus. AV1's compression excellence and bandwidth efficiency are offset by its greater processing demands, which we aim to mitigate with specialized hardware.
+
+Following transcoding, the segments are cached temporarily and then stored on S3 based on configuration preferences.
+
+## Edge: The Portal for Playback
+
+The Edge component is the go-to for initiating video playback. It crafts unique playback sessions for each viewer request, retrievable through authenticated sessions. This design ensures that playback can be dynamically controlled and revoked as needed.
+
+We employ LL-HLS with custom enhancements for low latency, alongside a spec-compliant mode for broader compatibility, achieving approximately 500ms latency from real-time.
+
+## Player: The Interface for Engagement
+
+Our video player is a testament to innovation, built from scratch in Rust and compiled to WebAssembly for high performance. Its ease of integration is a standout feature, facilitating the seamless addition of our player into various web services.
+
+## API: Orchestrating Video Service Interactions
+
+The Scuffle API serves as the control hub for your live streaming needs, offering straightforward yet powerful features. Streamers can fine-tune their broadcasts in real-time by adjusting transcoding parameters for the best quality, managing recording options to capture their live sessions, and deciding on storage solutions between Scuffle's own servers or integration with AWS S3 buckets.
+
+Room creation and management are made simple, with the ability to configure settings for different events or viewer requirements, ensuring secure access through robust streamer and viewer authentication mechanisms. The API also simplifies video content management, allowing for organized storage, retrieval, and deletion of video recordings, and configuration of playback options to suit various content delivery strategies.
+
+Through the current API, Scuffle provides the essential tools required for a comprehensive and controlled streaming experience, with an eye on simplicity and functionality.
+
+### Looking Ahead: Expanding the Horizons of Live Streaming
+
+As we continue to innovate and enhance the Scuffle platform, there are exciting features on the horizon designed to amplify viewer engagement and provide detailed insights into streaming performance.
+
+**Insertable Data Packets**: We are working towards enabling our customers to insert custom data packets into their live streams. This feature will empower broadcasters to send tailored content, such as user-specific messages or interactive elements, directly to viewers through the Player SDK.
+
+**Advanced Ad Systems**: Tailoring ad experiences is on our roadmap. We aim to introduce sophisticated ad systems that cater to different regions and viewer demographics. This will allow for targeted advertising, enhancing the relevance of ads for viewers and increasing the value for advertisers.
+
+**Comprehensive Analytics**: To equip our customers with a deeper understanding of their audience, we're developing an advanced analytics system. It will track viewer engagement metrics across various dimensions such as geographical regions and demographic data, providing actionable insights to shape future content and strategies.
+
+These forward-looking features are designed with our commitment to providing a comprehensive and cutting-edge live streaming platform that not only meets the current demands but also anticipates the future needs of our users.
+
+## Libraries
+
+To achieve our vision, we have meticulously crafted several video libraries in Rust, encompassing codecs and protocols crucial for our operations:
+
+- `h264` - H264 header decoder
+- `h265` - H265 header decoder
+- `av1` - AV1 header decoder
+- `aac` - AAC header decoder
+- `mp4` - MP4 muxer/demuxer
+- `flv` - FLV demuxer
+- `rtmp` - RTMP protocol implementation
+- `transmuxer` - Transmuxing from FLV to MP4
+- `amf0` - AMF0 encoder/decoder
+- `exp_golomb` - Exponential-Golomb encoder/decoder
+
+These are set for integration into our main branch by year-end, marking our foray into the live streaming domain.
+
+## Contributing: Join the Scuffle Community
+
+We're immensely grateful for the ongoing support and invite contributions to Scuffle. Whether it's through our [Discord community](https://discord.gg/scuffle) or [GitHub repository](https://github.com/ScuffleTV/scuffle), your expertise can help shape the future of live streaming with Scuffle.

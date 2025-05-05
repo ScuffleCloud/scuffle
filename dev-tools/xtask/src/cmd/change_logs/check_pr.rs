@@ -28,7 +28,7 @@ impl CheckPr {
             .join("changes.d")
             .join(format!("pr-{}.toml", self.pr_number));
 
-        eprintln!("checking {}", path);
+        eprintln!("checking {path}");
 
         if !self.required && !path.exists() {
             return Ok(());

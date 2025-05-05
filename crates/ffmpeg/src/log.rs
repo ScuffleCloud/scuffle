@@ -194,10 +194,7 @@ mod tests {
             assert_eq!(
                 log_level.to_string(),
                 expected,
-                "Expected '{}' for input {}, but got '{}'",
-                expected,
-                input,
-                log_level
+                "Expected '{expected}' for input {input}, but got '{log_level}'"
             );
         }
     }
@@ -367,7 +364,7 @@ mod tests {
         ];
 
         for (level, expected_tracing_level) in &levels_and_expected_tracing {
-            let message = format!("Test {} log message", expected_tracing_level);
+            let message = format!("Test {expected_tracing_level} log message");
             // Safety: `av_log` is safe to call.
             unsafe {
                 av_log(
@@ -379,15 +376,11 @@ mod tests {
         }
 
         for (_level, expected_tracing_level) in &levels_and_expected_tracing {
-            let expected_message = format!(
-                "{}: ffmpeg @ Test {} log message",
-                expected_tracing_level, expected_tracing_level
-            );
+            let expected_message = format!("{expected_tracing_level}: ffmpeg @ Test {expected_tracing_level} log message");
 
             assert!(
                 logs_contain(&expected_message),
-                "Expected log message for '{}'",
-                expected_message
+                "Expected log message for '{expected_message}'"
             );
         }
         log_callback_unset();
@@ -419,9 +412,8 @@ mod tests {
         }
 
         assert!(
-            logs_contain(&format!("debug: ffmpeg @ {}", deprecated_message)),
-            "Expected log message for '{}'",
-            deprecated_message
+            logs_contain(&format!("debug: ffmpeg @ {deprecated_message}")),
+            "Expected log message for '{deprecated_message}'"
         );
         log_callback_unset();
     }

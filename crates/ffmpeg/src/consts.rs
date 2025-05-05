@@ -66,7 +66,7 @@ mod tests {
         let value = vec![1, 2, 3];
         let mut_value = Mut::new(value);
 
-        assert_eq!(format!("{:?}", mut_value), "[1, 2, 3]");
+        assert_eq!(format!("{mut_value:?}"), "[1, 2, 3]");
     }
 
     #[test]

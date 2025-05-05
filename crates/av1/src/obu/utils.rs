@@ -4,7 +4,7 @@ use scuffle_bytes_util::BitReader;
 
 /// Read a little-endian variable-length integer.
 /// AV1-Spec-2 - 4.10.5
-pub fn read_leb128<T: io::Read>(reader: &mut BitReader<T>) -> io::Result<u64> {
+pub(crate) fn read_leb128<T: io::Read>(reader: &mut BitReader<T>) -> io::Result<u64> {
     let mut result = 0;
     for i in 0..8 {
         let byte = reader.read_bits(8)?;
@@ -18,7 +18,7 @@ pub fn read_leb128<T: io::Read>(reader: &mut BitReader<T>) -> io::Result<u64> {
 
 /// Read a variable-length unsigned integer.
 /// AV1-Spec-2 - 4.10.3
-pub fn read_uvlc<T: io::Read>(reader: &mut BitReader<T>) -> io::Result<u64> {
+pub(crate) fn read_uvlc<T: io::Read>(reader: &mut BitReader<T>) -> io::Result<u64> {
     let mut leading_zeros = 0;
     while !reader.read_bit()? {
         leading_zeros += 1;

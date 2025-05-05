@@ -1,5 +1,5 @@
 use bytes::Bytes;
-use scuffle_flv::video::FrameType;
+use scuffle_flv::video::header::VideoFrameType;
 use scuffle_h264::{AVCDecoderConfigurationRecord, Sps};
 use scuffle_mp4::DynBox;
 use scuffle_mp4::types::avc1::Avc1;
@@ -10,7 +10,7 @@ use scuffle_mp4::types::trun::{TrunSample, TrunSampleFlag};
 
 use crate::TransmuxError;
 
-pub fn stsd_entry(config: AVCDecoderConfigurationRecord, sps: &Sps) -> Result<DynBox, TransmuxError> {
+pub(crate) fn stsd_entry(config: AVCDecoderConfigurationRecord, sps: &Sps) -> Result<DynBox, TransmuxError> {
     if config.sps.is_empty() {
         return Err(TransmuxError::InvalidAVCDecoderConfigurationRecord);
     }
@@ -32,8 +32,8 @@ pub fn stsd_entry(config: AVCDecoderConfigurationRecord, sps: &Sps) -> Result<Dy
     .into())
 }
 
-pub fn trun_sample(
-    frame_type: FrameType,
+pub(crate) fn trun_sample(
+    frame_type: VideoFrameType,
     composition_time: u32,
     duration: u32,
     data: &Bytes,
@@ -45,10 +45,10 @@ pub fn trun_sample(
             reserved: 0,
             is_leading: 0,
             sample_degradation_priority: 0,
-            sample_depends_on: if frame_type == FrameType::Keyframe { 2 } else { 1 },
+            sample_depends_on: if frame_type == VideoFrameType::KeyFrame { 2 } else { 1 },
             sample_has_redundancy: 0,
             sample_is_depended_on: 0,
-            sample_is_non_sync_sample: frame_type != FrameType::Keyframe,
+            sample_is_non_sync_sample: frame_type != VideoFrameType::KeyFrame,
             sample_padding_value: 0,
         }),
         size: Some(data.len() as u32),

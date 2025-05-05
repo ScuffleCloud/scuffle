@@ -86,6 +86,7 @@
 //! `SPDX-License-Identifier: MIT OR Apache-2.0`
 #![cfg_attr(all(coverage_nightly, test), feature(coverage_attribute))]
 #![deny(missing_docs)]
+#![deny(unreachable_pub)]
 #![deny(clippy::undocumented_unsafe_blocks)]
 #![deny(clippy::multiple_unsafe_ops_per_block)]
 
@@ -112,7 +113,7 @@ impl std::fmt::Display for ExitStatus {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match self {
             ExitStatus::Success => write!(f, "0"),
-            ExitStatus::Failure(code) => write!(f, "{}", code),
+            ExitStatus::Failure(code) => write!(f, "{code}"),
         }
     }
 }

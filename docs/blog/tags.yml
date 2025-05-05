@@ -1,0 +1,14 @@
+ip:
+  label: IP
+  permalink: /ip
+  description: IP Space
+
+asn:
+  label: ASN
+  permalink: /asn
+  description: Our ASN 17337
+
+video:
+  label: Video
+  permalink: /video
+  description: Our Video Stack

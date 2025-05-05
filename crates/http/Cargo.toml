@@ -1,6 +1,6 @@
 [package]
 name = "scuffle-http"
-version = "0.2.0"
+version = "0.2.1"
 edition = "2024"
 repository = "https://github.com/scufflecloud/scuffle"
 authors = ["Scuffle <opensource@scuffle.cloud>"]
@@ -12,6 +12,21 @@ keywords = ["http", "server", "http1", "http2", "http3"]
 
 [lints.rust]
 unexpected_cfgs = { level = "warn", check-cfg = ['cfg(coverage_nightly)'] }
+
+[[example]]
+name = "scuffle-http-echo"
+path = "examples/echo.rs"
+required-features = ["default"]
+
+[[example]]
+name = "scuffle-http-echo-tls"
+path = "examples/echo_tls.rs"
+required-features = ["default", "tls-rustls", "http3"]
+
+[[example]]
+name = "scuffle-http-axum"
+path = "examples/axum.rs"
+required-features = ["default", "tls-rustls", "http3", "tower", "tracing"]
 
 [dependencies]
 tokio = { version = "1.43.0" }
@@ -36,8 +51,8 @@ libc = { version = "0.2.169", default-features = false, optional = true }
 
 # QUIC + HTTP/3
 quinn = { version = "0.11.6", default-features = false, features = ["platform-verifier", "runtime-tokio", "rustls-aws-lc-rs"], optional = true }
-h3-quinn = { version = "0.0.7", default-features = false, optional = true }
-h3 = { version = "0.0.6", default-features = false, optional = true }
+h3-quinn = { version = "0.0.9", default-features = false, optional = true }
+h3 = { version = "0.0.7", default-features = false, optional = true }
 
 # TLS
 tokio-rustls = { version = "0.26.1", default-features = false, features = ["aws_lc_rs", "tls12"], optional = true }
@@ -50,11 +65,16 @@ scuffle-workspace-hack.workspace = true
 
 [dev-dependencies]
 # The http3 feature requires a custom build flag (see .cargo/config.toml)
-reqwest = { version = "0.12.12", default-features = false, features = ["rustls-tls", "http2", "http3"] }
-axum = { version = "0.8.1" }
+reqwest = { version = "0.12.15", default-features = false, features = ["rustls-tls", "http2", "http3"] }
+axum = { version = "0.8.1", features = ["ws"]}
 rustls-pemfile = "2.2.0"
 tokio-test = "0.4.4"
 scuffle-future-ext.workspace = true
+
+# For examples:
+tokio = { version = "1.43.0", features = ["full"] }
+tracing = { version = "0.1.41" }
+tracing-subscriber = { version = "0.3.19", features = ["env-filter"] }
 
 # https://doc.rust-lang.org/cargo/reference/features.html#dependency-features
 [features]

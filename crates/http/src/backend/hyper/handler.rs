@@ -3,17 +3,17 @@ use hyper_util::server::conn::auto;
 use scuffle_context::ContextFutExt;
 use tokio::io::{AsyncRead, AsyncWrite};
 
-use crate::error::Error;
+use crate::error::HttpError;
 use crate::service::{HttpService, HttpServiceFactory};
 
 /// Helper function used by hyper server to handle incoming connections.
-pub async fn handle_connection<F, S, I>(
+pub(crate) async fn handle_connection<F, S, I>(
     ctx: scuffle_context::Context,
     service: S,
     io: I,
     http1: bool,
     http2: bool,
-) -> Result<(), Error<F>>
+) -> Result<(), HttpError<F>>
 where
     F: HttpServiceFactory<Service = S>,
     F::Error: std::error::Error,
@@ -50,7 +50,7 @@ where
             .with_context(ctx)
             .await
             .transpose()
-            .map_err(Error::HyperConnection)?;
+            .map_err(HttpError::HyperConnection)?;
     } else if http1 {
         #[cfg(not(feature = "http1"))]
         unreachable!("http1 enabled but http1 feature disabled");
@@ -62,7 +62,7 @@ where
             .with_context(ctx)
             .await
             .transpose()
-            .map_err(Error::HyperConnection)?;
+            .map_err(HttpError::HyperConnection)?;
     } else if http2 {
         #[cfg(not(feature = "http2"))]
         unreachable!("http2 enabled but http2 feature disabled");
@@ -74,7 +74,7 @@ where
             .with_context(ctx)
             .await
             .transpose()
-            .map_err(Error::HyperConnection)?;
+            .map_err(HttpError::HyperConnection)?;
     } else {
         #[cfg(feature = "tracing")]
         tracing::warn!("both http1 and http2 are disabled, closing connection");

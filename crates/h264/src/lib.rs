@@ -101,14 +101,13 @@
 #![cfg_attr(docsrs, feature(doc_cfg))]
 #![deny(missing_docs)]
 #![deny(unsafe_code)]
+#![deny(unreachable_pub)]
 
 mod config;
 mod enums;
-mod io;
 mod sps;
 
 pub use enums::*;
-pub use io::EmulationPreventionIo;
 pub use sps::*;
 
 pub use self::config::{AVCDecoderConfigurationRecord, AvccExtendedConfig};

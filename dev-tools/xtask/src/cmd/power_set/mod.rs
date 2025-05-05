@@ -147,7 +147,7 @@ impl PowerSet {
 
                 cmd.args(&self.args);
 
-                println!("executing {:?} ({}/{})", cmd, i, total);
+                println!("executing {cmd:?} ({i}/{total})");
 
                 if !cmd.status()?.success() {
                     failed.push((*package, features));
@@ -168,7 +168,7 @@ impl PowerSet {
         if !failed.is_empty() {
             eprintln!("failed to execute command for the following:");
             for (package, features) in failed {
-                eprintln!("  {} with features {:?}", package, features);
+                eprintln!("  {package} with features {features:?}");
             }
 
             anyhow::bail!("failed to execute command for some packages after {:?}", start.elapsed());

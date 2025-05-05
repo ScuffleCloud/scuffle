@@ -15,6 +15,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.2.0](https://github.com/ScuffleCloud/scuffle/compare/scuffle-metrics-v0.1.1...scuffle-metrics-v0.2.0) - 2025-04-27
+
+### ⚠️ Breaking changes
+
+- chore: bump opentelemetry to 0.29 ([#414](https://github.com/scufflecloud/scuffle/pull/414)) (@troykomodo)
+- chore: bump opentelemetry_sdk to 0.29 ([#414](https://github.com/scufflecloud/scuffle/pull/414)) (@troykomodo)
+- chore: removed `extended-numbers` feature ([#388](https://github.com/scufflecloud/scuffle/pull/388)) (@SimaoMoreira5228)
+
+### 🛠️ Non-breaking changes
+
+- docs: improved documentation ([#372](https://github.com/scufflecloud/scuffle/pull/372)) (@lennartkloock)
+
 ## [0.1.1](https://github.com/ScuffleCloud/scuffle/compare/scuffle-metrics-v0.1.0...scuffle-metrics-v0.1.1) - 2025-02-21
 
 ### ⚠️ Breaking changes

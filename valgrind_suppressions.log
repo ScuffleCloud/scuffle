@@ -185,3 +185,12 @@
    fun:_ZN17opentelemetry_sdk7metrics8internal9aggregate25AggregateBuilder$LT$T$GT$25explicit_bucket_histogram*
    ...
 }
+{
+   ignore regex_automata::hybrid::dfa::Lazy::add_state
+   Memcheck:Leak
+   match-leak-kinds: possible
+   fun:malloc
+   ...
+   fun:_ZN14regex_automata6hybrid3dfa4Lazy9add_state*
+   ...
+}

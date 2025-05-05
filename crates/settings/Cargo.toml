@@ -1,6 +1,6 @@
 [package]
 name = "scuffle-settings"
-version = "0.1.1"
+version = "0.1.2"
 edition = "2024"
 repository = "https://github.com/scufflecloud/scuffle"
 authors = ["Scuffle <opensource@scuffle.cloud>"]
@@ -13,18 +13,26 @@ keywords = ["settings", "configuration", "environment", "config"]
 [lints.rust]
 unexpected_cfgs = { level = "warn", check-cfg = ['cfg(coverage_nightly)'] }
 
+[[example]]
+name = "scuffle-settings-cli"
+path = "examples/cli.rs"
+required-features = ["cli"]
+
 [dependencies]
 config = { version = "0.15", default-features = false }
 clap = { version = "4", optional = true }
 minijinja = { version = "2.5", optional = true, features = ["json", "custom_syntax", "urlencode"] }
 serde = "1"
+serde_derive = "1"
 thiserror = "2"
 anyhow = { version = "1.0", optional = true }
 scuffle-bootstrap = { workspace = true, optional = true }
 scuffle-workspace-hack.workspace = true
 
 [dev-dependencies]
-serde = { version = "1", features = [ "derive" ] }
+# For examples:
+smart-default = "0.7"
+serde_derive = "1"
 
 [features]
 cli = ["clap"]

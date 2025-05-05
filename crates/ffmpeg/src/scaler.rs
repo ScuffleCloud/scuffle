@@ -203,8 +203,7 @@ mod tests {
 
         assert!(
             result.is_ok(),
-            "Expected Scalar::process to succeed, but got error: {:?}",
-            result
+            "Expected Scalar::process to succeed, but got error: {result:?}"
         );
 
         let output_frame = result.unwrap();

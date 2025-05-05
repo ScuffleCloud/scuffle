@@ -353,8 +353,7 @@ mod tests {
         let filter_ptr = unsafe { avfilter_get_by_name(CString::new(filter_name).unwrap().as_ptr()) };
         assert!(
             !filter_ptr.is_null(),
-            "avfilter_get_by_name should return a valid pointer for filter '{}'",
-            filter_name
+            "avfilter_get_by_name should return a valid pointer for filter '{filter_name}'"
         );
 
         // Safety: The pointer here is valid.
@@ -384,8 +383,7 @@ mod tests {
         let filter_ptr = unsafe { avfilter_get_by_name(CString::new(filter_name).unwrap().as_ptr()) };
         assert!(
             !filter_ptr.is_null(),
-            "avfilter_get_by_name should return a valid pointer for filter '{}'",
-            filter_name
+            "avfilter_get_by_name should return a valid pointer for filter '{filter_name}'"
         );
 
         // Safety: The pointer here is valid.
@@ -469,7 +467,7 @@ mod tests {
             .expect("Failed to set input for the filter graph");
 
         assert!(
-            input_parser.graph.as_ptr() == filter_graph.as_ptr(),
+            std::ptr::eq(input_parser.graph.as_ptr(), filter_graph.as_ptr()),
             "Input parser should belong to the same filter graph"
         );
     }
@@ -486,7 +484,7 @@ mod tests {
             .expect("Failed to set output for the filter graph");
 
         assert!(
-            output_parser.graph.as_ptr() == filter_graph.as_ptr(),
+            std::ptr::eq(output_parser.graph.as_ptr(), filter_graph.as_ptr()),
             "Output parser should belong to the same filter graph"
         );
     }

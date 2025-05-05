@@ -13,24 +13,31 @@
 //!
 //! `SPDX-License-Identifier: MIT OR Apache-2.0`
 #![allow(clippy::single_match)]
+// #![deny(missing_docs)]
 #![deny(unsafe_code)]
+#![deny(unreachable_pub)]
 
-use std::borrow::Cow;
-use std::collections::{HashMap, VecDeque};
+use std::collections::VecDeque;
 use std::fmt::Debug;
 use std::io;
 
 use byteorder::{BigEndian, ReadBytesExt};
 use bytes::{Buf, Bytes};
-use scuffle_amf0::Amf0Value;
-use scuffle_flv::aac::AacPacket;
-use scuffle_flv::audio::{AudioData, AudioDataBody, SoundType};
-use scuffle_flv::av1::Av1Packet;
-use scuffle_flv::avc::AvcPacket;
-use scuffle_flv::hevc::HevcPacket;
-use scuffle_flv::script::ScriptData;
+use scuffle_flv::audio::AudioData;
+use scuffle_flv::audio::body::AudioTagBody;
+use scuffle_flv::audio::body::legacy::LegacyAudioTagBody;
+use scuffle_flv::audio::body::legacy::aac::AacAudioData;
+use scuffle_flv::audio::header::AudioTagHeader;
+use scuffle_flv::audio::header::legacy::{LegacyAudioTagHeader, SoundType};
+use scuffle_flv::script::{OnMetaData, ScriptData};
 use scuffle_flv::tag::{FlvTag, FlvTagData};
-use scuffle_flv::video::{EnhancedPacket, FrameType, VideoTagBody, VideoTagHeader};
+use scuffle_flv::video::VideoData;
+use scuffle_flv::video::body::VideoTagBody;
+use scuffle_flv::video::body::enhanced::{ExVideoTagBody, VideoPacket, VideoPacketCodedFrames, VideoPacketSequenceStart};
+use scuffle_flv::video::body::legacy::LegacyVideoTagBody;
+use scuffle_flv::video::header::enhanced::VideoFourCc;
+use scuffle_flv::video::header::legacy::{LegacyVideoTagHeader, LegacyVideoTagHeaderAvcPacket};
+use scuffle_flv::video::header::{VideoFrameType, VideoTagHeader, VideoTagHeaderData};
 use scuffle_h264::Sps;
 use scuffle_mp4::BoxType;
 use scuffle_mp4::codec::{AudioCodec, VideoCodec};
@@ -68,14 +75,14 @@ mod errors;
 pub use define::*;
 pub use errors::TransmuxError;
 
-struct Tags {
+struct Tags<'a> {
     video_sequence_header: Option<VideoSequenceHeader>,
     audio_sequence_header: Option<AudioSequenceHeader>,
-    scriptdata_tag: Option<HashMap<Cow<'static, str>, Amf0Value<'static>>>,
+    scriptdata_tag: Option<OnMetaData<'a>>,
 }
 
 #[derive(Debug, Clone)]
-pub struct Transmuxer {
+pub struct Transmuxer<'a> {
     // These durations are measured in timescales
     /// sample_freq * 1000
     audio_duration: u64,
@@ -84,16 +91,16 @@ pub struct Transmuxer {
     sequence_number: u32,
     last_video_timestamp: u32,
     settings: Option<(VideoSettings, AudioSettings)>,
-    tags: VecDeque<FlvTag>,
+    tags: VecDeque<FlvTag<'a>>,
 }
 
-impl Default for Transmuxer {
+impl Default for Transmuxer<'_> {
     fn default() -> Self {
         Self::new()
     }
 }
 
-impl Transmuxer {
+impl<'a> Transmuxer<'a> {
     pub fn new() -> Self {
         Self {
             sequence_number: 1,
@@ -122,7 +129,7 @@ impl Transmuxer {
     }
 
     /// Feed a single FLV tag to the transmuxer.
-    pub fn add_tag(&mut self, tag: FlvTag) {
+    pub fn add_tag(&mut self, tag: FlvTag<'a>) {
         self.tags.push_back(tag);
     }
 
@@ -187,7 +194,7 @@ impl Transmuxer {
 
             match tag.data {
                 FlvTagData::Audio(AudioData {
-                    body: AudioDataBody::Aac(AacPacket::Raw(data)),
+                    body: AudioTagBody::Legacy(LegacyAudioTagBody::Aac(AacAudioData::Raw(data))),
                     ..
                 }) => {
                     let (sample, duration) = codecs::aac::trun_sample(&data)?;
@@ -197,12 +204,20 @@ impl Transmuxer {
                     total_duration = duration;
                     is_audio = true;
                 }
-                FlvTagData::Video(VideoTagHeader {
-                    frame_type,
-                    body: VideoTagBody::Avc(AvcPacket::Nalu { composition_time, data }),
+                FlvTagData::Video(VideoData {
+                    header:
+                        VideoTagHeader {
+                            frame_type,
+                            data:
+                                VideoTagHeaderData::Legacy(LegacyVideoTagHeader::AvcPacket(
+                                    LegacyVideoTagHeaderAvcPacket::Nalu { composition_time_offset },
+                                )),
+                        },
+                    body: VideoTagBody::Legacy(LegacyVideoTagBody::Other { data }),
                     ..
                 }) => {
-                    let composition_time = ((composition_time as f64 * video_settings.framerate) / 1000.0).floor() * 1000.0;
+                    let composition_time =
+                        ((composition_time_offset as f64 * video_settings.framerate) / 1000.0).floor() * 1000.0;
 
                     let sample = codecs::avc::trun_sample(frame_type, composition_time as u32, duration, &data)?;
 
@@ -210,11 +225,15 @@ impl Transmuxer {
                     total_duration = duration;
                     mdat_data = data;
 
-                    is_keyframe = frame_type == FrameType::Keyframe;
+                    is_keyframe = frame_type == VideoFrameType::KeyFrame;
                 }
-                FlvTagData::Video(VideoTagHeader {
-                    frame_type,
-                    body: VideoTagBody::Enhanced(EnhancedPacket::Av1(Av1Packet::Raw(data))),
+                FlvTagData::Video(VideoData {
+                    header: VideoTagHeader { frame_type, .. },
+                    body:
+                        VideoTagBody::Enhanced(ExVideoTagBody::NoMultitrack {
+                            video_four_cc: VideoFourCc::Av1,
+                            packet: VideoPacket::CodedFrames(VideoPacketCodedFrames::Other(data)),
+                        }),
                     ..
                 }) => {
                     let sample = codecs::av1::trun_sample(frame_type, duration, &data)?;
@@ -223,13 +242,26 @@ impl Transmuxer {
                     total_duration = duration;
                     mdat_data = data;
 
-                    is_keyframe = frame_type == FrameType::Keyframe;
+                    is_keyframe = frame_type == VideoFrameType::KeyFrame;
                 }
-                FlvTagData::Video(VideoTagHeader {
-                    frame_type,
-                    body: VideoTagBody::Enhanced(EnhancedPacket::Hevc(HevcPacket::Nalu { composition_time, data })),
+                FlvTagData::Video(VideoData {
+                    header: VideoTagHeader { frame_type, .. },
+                    body:
+                        VideoTagBody::Enhanced(ExVideoTagBody::NoMultitrack {
+                            video_four_cc: VideoFourCc::Hevc,
+                            packet,
+                        }),
                     ..
                 }) => {
+                    let (composition_time, data) = match packet {
+                        VideoPacket::CodedFrames(VideoPacketCodedFrames::Hevc {
+                            composition_time_offset,
+                            data,
+                        }) => (Some(composition_time_offset), data),
+                        VideoPacket::CodedFramesX { data } => (None, data),
+                        _ => continue,
+                    };
+
                     let composition_time =
                         ((composition_time.unwrap_or_default() as f64 * video_settings.framerate) / 1000.0).floor() * 1000.0;
 
@@ -239,7 +271,7 @@ impl Transmuxer {
                     total_duration = duration;
                     mdat_data = data;
 
-                    is_keyframe = frame_type == FrameType::Keyframe;
+                    is_keyframe = frame_type == VideoFrameType::KeyFrame;
                 }
                 _ => {
                     // We don't support anything else
@@ -313,7 +345,7 @@ impl Transmuxer {
     }
 
     /// Internal function to find the tags we need to create the init segment.
-    fn find_tags(&self) -> Tags {
+    fn find_tags(&self) -> Tags<'a> {
         let tags = self.tags.iter();
         let mut video_sequence_header = None;
         let mut audio_sequence_header = None;
@@ -325,31 +357,38 @@ impl Transmuxer {
             }
 
             match &tag.data {
-                FlvTagData::Video(VideoTagHeader {
-                    frame_type: _,
-                    body: VideoTagBody::Avc(AvcPacket::SequenceHeader(data)),
+                FlvTagData::Video(VideoData {
+                    body: VideoTagBody::Legacy(LegacyVideoTagBody::AvcVideoPacketSeqHdr(data)),
                     ..
                 }) => {
                     video_sequence_header = Some(VideoSequenceHeader::Avc(data.clone()));
                 }
-                FlvTagData::Video(VideoTagHeader {
-                    frame_type: _,
-                    body: VideoTagBody::Enhanced(EnhancedPacket::Av1(Av1Packet::SequenceStart(config))),
+                FlvTagData::Video(VideoData {
+                    body:
+                        VideoTagBody::Enhanced(ExVideoTagBody::NoMultitrack {
+                            video_four_cc: VideoFourCc::Av1,
+                            packet: VideoPacket::SequenceStart(VideoPacketSequenceStart::Av1(config)),
+                        }),
                     ..
                 }) => {
                     video_sequence_header = Some(VideoSequenceHeader::Av1(config.clone()));
                 }
-                FlvTagData::Video(VideoTagHeader {
-                    frame_type: _,
-                    body: VideoTagBody::Enhanced(EnhancedPacket::Hevc(HevcPacket::SequenceStart(config))),
+                FlvTagData::Video(VideoData {
+                    body:
+                        VideoTagBody::Enhanced(ExVideoTagBody::NoMultitrack {
+                            video_four_cc: VideoFourCc::Hevc,
+                            packet: VideoPacket::SequenceStart(VideoPacketSequenceStart::Hevc(config)),
+                        }),
                     ..
                 }) => {
                     video_sequence_header = Some(VideoSequenceHeader::Hevc(config.clone()));
                 }
                 FlvTagData::Audio(AudioData {
-                    body: AudioDataBody::Aac(AacPacket::SequenceHeader(data)),
-                    sound_size,
-                    sound_type,
+                    body: AudioTagBody::Legacy(LegacyAudioTagBody::Aac(AacAudioData::SequenceHeader(data))),
+                    header:
+                        AudioTagHeader::Legacy(LegacyAudioTagHeader {
+                            sound_size, sound_type, ..
+                        }),
                     ..
                 }) => {
                     audio_sequence_header = Some(AudioSequenceHeader {
@@ -358,14 +397,8 @@ impl Transmuxer {
                         sound_type: *sound_type,
                     });
                 }
-                FlvTagData::ScriptData(ScriptData { data, name }) => {
-                    if name == "@setDataFrame" || name == "onMetaData" {
-                        let meta_object = data.iter().find(|v| matches!(v, Amf0Value::Object(_)));
-
-                        if let Some(Amf0Value::Object(meta_object)) = meta_object {
-                            scriptdata_tag = Some(meta_object.iter().map(|(k, v)| (k.clone(), v.clone())).collect());
-                        }
-                    }
+                FlvTagData::ScriptData(ScriptData::OnMetaData(metadata)) => {
+                    scriptdata_tag = Some(*metadata.clone());
                 }
                 _ => {}
             }
@@ -410,36 +443,16 @@ impl Transmuxer {
         let mut estimated_audio_bitrate = 0;
 
         if let Some(scriptdata_tag) = scriptdata_tag {
-            video_fps = scriptdata_tag
-                .get("framerate")
-                .and_then(|v| match v {
-                    Amf0Value::Number(v) => Some(*v),
-                    _ => None,
-                })
-                .unwrap_or(0.0);
-
-            estimated_video_bitrate = scriptdata_tag
-                .get("videodatarate")
-                .and_then(|v| match v {
-                    Amf0Value::Number(v) => Some((*v * 1024.0) as u32),
-                    _ => None,
-                })
-                .unwrap_or(0);
-
-            estimated_audio_bitrate = scriptdata_tag
-                .get("audiodatarate")
-                .and_then(|v| match v {
-                    Amf0Value::Number(v) => Some((*v * 1024.0) as u32),
-                    _ => None,
-                })
-                .unwrap_or(0);
+            video_fps = scriptdata_tag.framerate.unwrap_or(0.0);
+            estimated_video_bitrate = scriptdata_tag.videodatarate.map(|v| (v * 1024.0) as u32).unwrap_or(0);
+            estimated_audio_bitrate = scriptdata_tag.audiodatarate.map(|v| (v * 1024.0) as u32).unwrap_or(0);
         }
 
-        let mut compatiable_brands = vec![FourCC::Iso5, FourCC::Iso6];
+        let mut compatable_brands = vec![FourCC::Iso5, FourCC::Iso6];
 
         let video_stsd_entry = match video_sequence_header {
             VideoSequenceHeader::Avc(config) => {
-                compatiable_brands.push(FourCC::Avc1);
+                compatable_brands.push(FourCC::Avc1);
                 video_codec = VideoCodec::Avc {
                     constraint_set: config.profile_compatibility,
                     level: config.level_indication,
@@ -459,7 +472,7 @@ impl Transmuxer {
                 codecs::avc::stsd_entry(config, &sps)?
             }
             VideoSequenceHeader::Av1(config) => {
-                compatiable_brands.push(FourCC::Av01);
+                compatable_brands.push(FourCC::Av01);
                 let (entry, seq_obu) = codecs::av1::stsd_entry(config)?;
 
                 video_height = seq_obu.max_frame_height as u32;
@@ -484,7 +497,7 @@ impl Transmuxer {
                 entry
             }
             VideoSequenceHeader::Hevc(config) => {
-                compatiable_brands.push(FourCC::Hev1);
+                compatable_brands.push(FourCC::Hev1);
                 video_codec = VideoCodec::Hevc {
                     constraint_indicator: config.general_constraint_indicator_flags,
                     level: config.general_level_idc,
@@ -495,12 +508,12 @@ impl Transmuxer {
                 };
 
                 let (entry, sps) = codecs::hevc::stsd_entry(config)?;
-                if sps.frame_rate != 0.0 {
-                    video_fps = sps.frame_rate;
+                if let Some(info) = sps.vui_parameters.as_ref().and_then(|p| p.vui_timing_info.as_ref()) {
+                    video_fps = info.time_scale.get() as f64 / info.num_units_in_tick.get() as f64;
                 }
 
-                video_width = sps.width as u32;
-                video_height = sps.height as u32;
+                video_width = sps.cropped_width() as u32;
+                video_height = sps.cropped_height() as u32;
 
                 entry
             }
@@ -508,7 +521,7 @@ impl Transmuxer {
 
         let audio_stsd_entry = match audio_sequence_header.data {
             AudioSequenceHeaderData::Aac(data) => {
-                compatiable_brands.push(FourCC::Mp41);
+                compatable_brands.push(FourCC::Mp41);
                 let (entry, config) =
                     codecs::aac::stsd_entry(audio_sequence_header.sound_size, audio_sequence_header.sound_type, data)?;
 
@@ -546,7 +559,7 @@ impl Transmuxer {
         // units per second, making each frame 1000 units long instead of 33ms long.
         let video_timescale = (1000.0 * video_fps) as u32;
 
-        Ftyp::new(FourCC::Iso5, 512, compatiable_brands).mux(writer)?;
+        Ftyp::new(FourCC::Iso5, 512, compatable_brands).mux(writer)?;
         Moov::new(
             Mvhd::new(0, 0, 1000, 0, 1),
             vec![

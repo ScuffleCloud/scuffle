@@ -15,6 +15,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.1.2](https://github.com/ScuffleCloud/scuffle/compare/scuffle-bytes-util-v0.1.1...scuffle-bytes-util-v0.1.2) - 2025-04-27
+
+### 🛠️ Non-breaking changes
+
+- docs: improved documentation ([#372](https://github.com/scufflecloud/scuffle/pull/372)) (@lennartkloock)
+- feat: add new cow types ([#421](https://github.com/scufflecloud/scuffle/pull/421)) (@TroyKomodo, @lennartkloock)
+- feat: add new zero-copy reader types ([#421](https://github.com/scufflecloud/scuffle/pull/421)) (@TroyKomodo, @lennartkloock)
+- feat: add nal emulation prevention io ([#425](https://github.com/scufflecloud/scuffle/pull/425)) (@lennartkloock)
+
 ## [0.1.1](https://github.com/ScuffleCloud/scuffle/compare/scuffle-bytes-util-v0.1.0...scuffle-bytes-util-v0.1.1) - 2025-02-21
 
 ### 🛠️ Non-breaking changes

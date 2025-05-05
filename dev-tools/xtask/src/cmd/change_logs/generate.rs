@@ -132,7 +132,7 @@ impl Generate {
 
         let path = metadata.workspace_root.join("changes.d");
 
-        eprintln!("reading {}", path);
+        eprintln!("reading {path}");
 
         let mut change_fragments = std::fs::read_dir(&path)?
             .filter_map(|entry| entry.ok())

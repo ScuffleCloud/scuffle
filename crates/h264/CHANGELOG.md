@@ -15,6 +15,28 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.2.0](https://github.com/ScuffleCloud/scuffle/compare/scuffle-h264-v0.1.1...scuffle-h264-v0.2.0) - 2025-04-27
+
+### ⚠️ Breaking changes
+
+- fix: Fixes a bug with the AVCDecoderConfigurationRecord size not being computed correctly ([#384](https://github.com/scufflecloud/scuffle/pull/384)) (@philipch07)
+- fix: Fixes a bug with the AVCDecoderConfigurationRecord not being built correctly due to byte misalignment ([#384](https://github.com/scufflecloud/scuffle/pull/384)) (@philipch07)
+- fix: Fixes a bug with removing the emu prevention byte causing other bytes to be lost by accident ([#370](https://github.com/scufflecloud/scuffle/pull/370)) (@philipch07)
+- refactor: AVCDecoderConfigurationRecord now uses actual SpsExtended struct (we intentionally do not let it use the Sps struct) ([#384](https://github.com/scufflecloud/scuffle/pull/384)) (@philipch07)
+- refactor: Refactored Sps to be its own module with each struct having its own file ([#384](https://github.com/scufflecloud/scuffle/pull/384)) (@philipch07)
+- refactor: Refactored sps output and input to use nutype enums ([#370](https://github.com/scufflecloud/scuffle/pull/370)) (@philipch07)
+- refactor: Renamed sps/config `demux` and `mux` to `parse` and `build` respectively ([#370](https://github.com/scufflecloud/scuffle/pull/370)) (@philipch07)
+- refactor: move nal emulation prevention io to scuffle-bytes-util ([#425](https://github.com/scufflecloud/scuffle/pull/425)) (@lennartkloock)
+
+### 🛠️ Non-breaking changes
+
+- docs: Added docs for the crate, sps, and config ([#370](https://github.com/scufflecloud/scuffle/pull/370)) (@philipch07)
+- feat: All sps structs can now be "built", that is, they can now go from a struct back into a bytestream ([#384](https://github.com/scufflecloud/scuffle/pull/384)) (@philipch07)
+- feat: Parsing and building Sps can now use the `EmulationPreventionIo` wrapper to automatically handle emulation prevention bytes ([#384](https://github.com/scufflecloud/scuffle/pull/384)) (@TroyKomodo)
+- feat: All sps structs now have functions to retrieve their bit/byte sizes ([#384](https://github.com/scufflecloud/scuffle/pull/384)) (@philipch07)
+- refactor: Refactored how tests work so they work like the tests in our other crates ([#370](https://github.com/scufflecloud/scuffle/pull/370)) (@philipch07)
+- test: Improved test coverage for sps and config ([#370](https://github.com/scufflecloud/scuffle/pull/370)) (@philipch07)
+
 ## [0.1.1](https://github.com/ScuffleCloud/scuffle/compare/scuffle-h264-v0.1.0...scuffle-h264-v0.1.1) - 2025-02-21
 
 ### 🛠️ Non-breaking changes

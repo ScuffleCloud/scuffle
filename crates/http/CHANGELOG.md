@@ -15,6 +15,20 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.2.1](https://github.com/ScuffleCloud/scuffle/compare/scuffle-http-v0.2.0...scuffle-http-v0.2.1) - 2025-04-27
+
+### ⚠️ Breaking changes
+
+- chore: bump h3-quinn to 0.0.9 ([#413](https://github.com/scufflecloud/scuffle/pull/413)) (@troykomodo)
+- chore: bump h3 to 0.0.7 ([#413](https://github.com/scufflecloud/scuffle/pull/413)) (@troykomodo)
+- refactor: rename error type to avoid name clashes ([#417](https://github.com/scufflecloud/scuffle/pull/417)) (@lennartkloock)
+
+### 🛠️ Non-breaking changes
+
+- docs: fixed readme ([#401](https://github.com/scufflecloud/scuffle/pull/401)) (@lennartkloock)
+- docs: improved documentation ([#372](https://github.com/scufflecloud/scuffle/pull/372)) (@lennartkloock)
+- fix: fix windows blocking event-loop when running a http server ([#378](https://github.com/scufflecloud/scuffle/pull/378)) (@TroyKomodo)
+
 ## [0.2.0](https://github.com/ScuffleCloud/scuffle/compare/scuffle-http-v0.1.0...scuffle-http-v0.2.0) - 2025-02-21
 
 ### ⚠️ Breaking changes

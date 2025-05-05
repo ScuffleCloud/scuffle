@@ -15,6 +15,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.2.1](https://github.com/ScuffleCloud/scuffle/compare/scuffle-bootstrap-telemetry-v0.2.0...scuffle-bootstrap-telemetry-v0.2.1) - 2025-04-27
+
+### 🛠️ Non-breaking changes
+
+- docs: document pprof is not supported on windows ([#378](https://github.com/scufflecloud/scuffle/pull/378)) (@TroyKomodo)
+- docs: improved documentation ([#372](https://github.com/scufflecloud/scuffle/pull/372)) (@lennartkloock)
+
 ## [0.2.0](https://github.com/ScuffleCloud/scuffle/compare/scuffle-bootstrap-telemetry-v0.1.0...scuffle-bootstrap-telemetry-v0.2.0) - 2025-02-21
 
 ### ⚠️ Breaking changes

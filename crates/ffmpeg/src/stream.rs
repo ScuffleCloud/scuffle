@@ -608,11 +608,11 @@ mod tests {
 
         let serialized_metadata = sorted_metadata
             .iter()
-            .map(|(key, value)| format!("        \"{}\": \"{}\",", key, value))
+            .map(|(key, value)| format!("        \"{key}\": \"{value}\","))
             .collect::<Vec<_>>()
             .join("\n");
 
-        let replacement_metadata = format!("metadata: {{\n{}\n    }}", serialized_metadata);
+        let replacement_metadata = format!("metadata: {{\n{serialized_metadata}\n    }}");
         let mut settings = Settings::new();
         let metadata_regex = r"metadata: \{[^}]*\}";
         settings.add_filter(metadata_regex, &replacement_metadata);

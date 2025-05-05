@@ -103,7 +103,7 @@ impl FunctionAttrs {
     }
 }
 
-pub struct Function {
+struct Function {
     vis: syn::Visibility,
     fn_token: Token![fn],
     ident: syn::Ident,
@@ -458,7 +458,10 @@ fn metric_function(
     })
 }
 
-pub fn metrics_impl(args: proc_macro::TokenStream, input: proc_macro::TokenStream) -> syn::Result<proc_macro2::TokenStream> {
+pub(crate) fn metrics_impl(
+    args: proc_macro::TokenStream,
+    input: proc_macro::TokenStream,
+) -> syn::Result<proc_macro2::TokenStream> {
     let module = match syn::parse::<syn::Item>(input)? {
         syn::Item::Mod(module) => module,
         syn::Item::Verbatim(tokens) => return metric_function(tokens, None, &Default::default()),

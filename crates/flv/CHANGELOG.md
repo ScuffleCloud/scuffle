@@ -15,6 +15,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.2.0](https://github.com/ScuffleCloud/scuffle/compare/scuffle-flv-v0.1.1...scuffle-flv-v0.2.0) - 2025-04-27
+
+### ⚠️ Breaking changes
+
+- chore: update to use new version of scuffle-amf0 ([#421](https://github.com/scufflecloud/scuffle/pull/421)) (@lennartkloock, @TroyKomodo)
+- feat: enhanced RTMP support ([#396](https://github.com/scufflecloud/scuffle/pull/396)) (@lennartkloock)
+- refactor: refactor to be more ergonomic and efficient ([#396](https://github.com/scufflecloud/scuffle/pull/396)) (@lennartkloock)
+
+### 🛠️ Non-breaking changes
+
+- chore: update tests to use new h265 version ([#425](https://github.com/scufflecloud/scuffle/pull/425)) (@lennartkloock)
+
 ## [0.1.1](https://github.com/ScuffleCloud/scuffle/compare/scuffle-flv-v0.1.0...scuffle-flv-v0.1.1) - 2025-02-21
 
 ### 🛠️ Non-breaking changes

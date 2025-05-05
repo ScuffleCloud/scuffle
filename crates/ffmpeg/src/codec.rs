@@ -156,7 +156,7 @@ mod tests {
     #[test]
     fn test_decoder_codec_debug_null() {
         let decoder_codec = DecoderCodec::empty();
-        let debug_output = format!("{:?}", decoder_codec);
+        let debug_output = format!("{decoder_codec:?}");
 
         insta::assert_snapshot!(debug_output, @r#"DecoderCodec { name: "null", id: AVCodecID::None }"#);
     }
@@ -164,7 +164,7 @@ mod tests {
     #[test]
     fn test_decoder_codec_debug_non_null() {
         let decoder_codec = DecoderCodec::new(AVCodecID::H264).expect("H264 codec should be available");
-        let debug_output = format!("{:?}", decoder_codec);
+        let debug_output = format!("{decoder_codec:?}");
 
         insta::assert_snapshot!(debug_output, @r#"DecoderCodec { name: "h264", id: 27 }"#);
     }
@@ -286,8 +286,7 @@ mod tests {
 
         assert!(
             result.is_none(),
-            "Expected None for an invalid encoder name {}",
-            invalid_encoder_name
+            "Expected None for an invalid encoder name {invalid_encoder_name}"
         );
     }
 

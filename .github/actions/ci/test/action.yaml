@@ -29,8 +29,8 @@ runs:
         fail_ci_if_error: true
         files: ./lcov.info
         token: ${{ env.CODECOV_TOKEN }}
-        override_pr: ${{ matrix.pr_number }}
-        override_commit: ${{ matrix.commit_sha }}
+        override_pr: ${{ inputs.pr_number }}
+        override_commit: ${{ inputs.commit_sha }}
         verbose: true
 
     - name: Upload test results to Codecov
@@ -39,5 +39,5 @@ runs:
       with:
         files: ./target/nextest/ci/junit.xml
         token: ${{ env.CODECOV_TOKEN }}
-        override_pr: ${{ matrix.pr_number }}
-        override_commit: ${{ matrix.commit_sha }}
+        override_pr: ${{ inputs.pr_number }}
+        override_commit: ${{ inputs.commit_sha }}

@@ -34,3 +34,7 @@
   color: "32a852"
 - name: "automated"
   color: "a62b33"
+- name: "do-not-merge"
+  color: "7d1700"
+- name: "stale"
+  color: "ffffff"

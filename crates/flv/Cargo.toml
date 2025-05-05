@@ -1,6 +1,6 @@
 [package]
 name = "scuffle-flv"
-version = "0.1.1"
+version = "0.2.0"
 edition = "2024"
 license = "MIT OR Apache-2.0"
 repository = "https://github.com/scufflecloud/scuffle"
@@ -14,17 +14,21 @@ keywords = ["flv", "demuxer"]
 unexpected_cfgs = { level = "warn", check-cfg = ['cfg(coverage_nightly)'] }
 
 [dependencies]
+serde = "1"
+serde_derive = "1"
 byteorder = "1.5"
 bytes = "1.5"
 num-traits = "0.2"
 num-derive = "0.4"
 thiserror = "2.0"
+bitmask-enum = "2.2.5"
+
 scuffle-h264.workspace = true
 scuffle-h265.workspace = true
 scuffle-aac.workspace = true
 scuffle-bytes-util.workspace = true
 scuffle-av1.workspace = true
-scuffle-amf0.workspace = true
+scuffle-amf0 = { workspace = true, features = ["serde"] }
 nutype-enum.workspace = true
 scuffle-workspace-hack.workspace = true
 

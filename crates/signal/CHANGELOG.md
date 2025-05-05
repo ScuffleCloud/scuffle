@@ -15,6 +15,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.3.0](https://github.com/ScuffleCloud/scuffle/compare/scuffle-signal-v0.2.1...scuffle-signal-v0.3.0) - 2025-04-27
+
+### ⚠️ Breaking changes
+
+- feat: add windows support ([#395](https://github.com/scufflecloud/scuffle/pull/395)) (@SimaoMoreira5228)
+
+### 🛠️ Non-breaking changes
+
+- docs: document signal is not supported on windows ([#378](https://github.com/scufflecloud/scuffle/pull/378)) (@TroyKomodo)
+- docs: improved documentation ([#372](https://github.com/scufflecloud/scuffle/pull/372)) (@lennartkloock)
+- feat: added block_global_shutdown function to bootstrap ([#395](https://github.com/scufflecloud/scuffle/pull/395)) (@SimaoMoreira5228)
+
 ## [0.2.1](https://github.com/ScuffleCloud/scuffle/compare/scuffle-signal-v0.2.0...scuffle-signal-v0.2.1) - 2025-02-21
 
 ### 🛠️ Non-breaking changes

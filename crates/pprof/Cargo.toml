@@ -1,6 +1,6 @@
 [package]
 name = "scuffle-pprof"
-version = "0.1.1"
+version = "0.1.2"
 edition = "2024"
 repository = "https://github.com/scufflecloud/scuffle"
 authors = ["Scuffle <opensource@scuffle.cloud>"]
@@ -13,6 +13,10 @@ keywords = ["pprof", "cpu", "profiling", "flamegraphs"]
 [lints.rust]
 unexpected_cfgs = { level = "warn", check-cfg = ['cfg(coverage_nightly)'] }
 
+[[example]]
+name = "scuffle-pprof-cpu"
+path = "examples/cpu.rs"
+
 [dependencies]
 scuffle-workspace-hack.workspace = true
 
@@ -20,3 +24,7 @@ scuffle-workspace-hack.workspace = true
 pprof = { version = "0.14", features = ["prost-codec"] }
 flate2 = "1.0"
 thiserror = "2"
+
+[dev-dependencies]
+# For examples:
+rand = "0.9"

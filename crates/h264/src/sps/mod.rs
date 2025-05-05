@@ -20,11 +20,11 @@ mod timing_info;
 use std::io;
 
 use byteorder::ReadBytesExt;
-use scuffle_bytes_util::{BitReader, BitWriter};
+use scuffle_bytes_util::{BitReader, BitWriter, EmulationPreventionIo, range_check};
 use scuffle_expgolomb::{BitReaderExpGolombExt, BitWriterExpGolombExt, size_of_exp_golomb};
 
 pub use self::timing_info::TimingInfo;
-use crate::{EmulationPreventionIo, NALUnitType};
+use crate::NALUnitType;
 
 /// The Sequence Parameter Set.
 /// ISO/IEC-14496-10-2022 - 7.3.2
@@ -422,7 +422,9 @@ impl Sps {
         bit_reader.read_bits(2)?;
 
         let level_idc = bit_reader.read_u8()?;
-        let seq_parameter_set_id = bit_reader.read_exp_golomb()? as u16;
+        let seq_parameter_set_id = bit_reader.read_exp_golomb()?;
+        range_check!(seq_parameter_set_id, 0, 31)?;
+        let seq_parameter_set_id = seq_parameter_set_id as u16;
 
         let sps_ext = match profile_idc {
             100 | 110 | 122 | 244 | 44 | 83 | 86 | 118 | 128 | 138 | 139 | 134 | 135 => {
@@ -431,14 +433,21 @@ impl Sps {
             _ => None,
         };
 
-        let log2_max_frame_num_minus4 = bit_reader.read_exp_golomb()? as u8;
-        let pic_order_cnt_type = bit_reader.read_exp_golomb()? as u8;
+        let log2_max_frame_num_minus4 = bit_reader.read_exp_golomb()?;
+        range_check!(log2_max_frame_num_minus4, 0, 12)?;
+        let log2_max_frame_num_minus4 = log2_max_frame_num_minus4 as u8;
+
+        let pic_order_cnt_type = bit_reader.read_exp_golomb()?;
+        range_check!(pic_order_cnt_type, 0, 2)?;
+        let pic_order_cnt_type = pic_order_cnt_type as u8;
 
         let mut log2_max_pic_order_cnt_lsb_minus4 = None;
         let mut pic_order_cnt_type1 = None;
 
         if pic_order_cnt_type == 0 {
-            log2_max_pic_order_cnt_lsb_minus4 = Some(bit_reader.read_exp_golomb()? as u8);
+            let log2_max_pic_order_cnt_lsb_minus4_value = bit_reader.read_exp_golomb()?;
+            range_check!(log2_max_pic_order_cnt_lsb_minus4_value, 0, 12)?;
+            log2_max_pic_order_cnt_lsb_minus4 = Some(log2_max_pic_order_cnt_lsb_minus4_value as u8);
         } else if pic_order_cnt_type == 1 {
             pic_order_cnt_type1 = Some(PicOrderCountType1::parse(&mut bit_reader)?)
         }

@@ -220,6 +220,6 @@ mod tests {
         }
 
         let err = TrackedBodyError::<TestBody, TestTracker>::Body(());
-        assert_eq!(format!("{:?}", err), "TrackedBodyError::Body(())",);
+        assert_eq!(format!("{err:?}"), "TrackedBodyError::Body(())",);
     }
 }

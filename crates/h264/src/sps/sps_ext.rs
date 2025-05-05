@@ -1,6 +1,6 @@
 use std::io;
 
-use scuffle_bytes_util::{BitReader, BitWriter};
+use scuffle_bytes_util::{BitReader, BitWriter, range_check};
 use scuffle_expgolomb::{BitReaderExpGolombExt, BitWriterExpGolombExt, size_of_exp_golomb, size_of_signed_exp_golomb};
 
 /// The Sequence Parameter Set extension.
@@ -99,15 +99,23 @@ impl SpsExtended {
     /// Parses an extended SPS from a bitstream.
     /// Returns an `SpsExtended` struct.
     pub fn parse<T: io::Read>(reader: &mut BitReader<T>) -> io::Result<Self> {
-        let chroma_format_idc = reader.read_exp_golomb()? as u8;
+        let chroma_format_idc = reader.read_exp_golomb()?;
+        range_check!(chroma_format_idc, 0, 3)?;
+        let chroma_format_idc = chroma_format_idc as u8;
         // Defaults to false: ISO/IEC-14496-10-2022 - 7.4.2.1.1
         let mut separate_color_plane_flag = false;
         if chroma_format_idc == 3 {
             separate_color_plane_flag = reader.read_bit()?;
         }
 
-        let bit_depth_luma_minus8 = reader.read_exp_golomb()? as u8;
-        let bit_depth_chroma_minus8 = reader.read_exp_golomb()? as u8;
+        let bit_depth_luma_minus8 = reader.read_exp_golomb()?;
+        range_check!(bit_depth_luma_minus8, 0, 6)?;
+        let bit_depth_luma_minus8 = bit_depth_luma_minus8 as u8;
+
+        let bit_depth_chroma_minus8 = reader.read_exp_golomb()?;
+        range_check!(bit_depth_chroma_minus8, 0, 6)?;
+        let bit_depth_chroma_minus8 = bit_depth_chroma_minus8 as u8;
+
         let qpprime_y_zero_transform_bypass_flag = reader.read_bit()?;
         let seq_scaling_matrix_present_flag = reader.read_bit()?;
         let mut scaling_matrix: Vec<Vec<i64>> = vec![];

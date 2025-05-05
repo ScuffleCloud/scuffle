@@ -14,6 +14,7 @@
 //! `SPDX-License-Identifier: MIT OR Apache-2.0`
 #![deny(missing_docs)]
 #![deny(unsafe_code)]
+#![deny(unreachable_pub)]
 
 /// The [`FutureExt`] trait is a trait that provides a more ergonomic way to
 /// extend futures with additional functionality. Similar to the `IteratorExt`

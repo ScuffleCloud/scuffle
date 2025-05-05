@@ -15,6 +15,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.1.2](https://github.com/ScuffleCloud/scuffle/compare/scuffle-expgolomb-v0.1.1...scuffle-expgolomb-v0.1.2) - 2025-04-27
+
+### 🛠️ Non-breaking changes
+
+- feat: Added 2 functions to be able to get the bit size of un/signed expgolombs without having to write them ([#384](https://github.com/scufflecloud/scuffle/pull/384)) (@philipch07)
+
 ## [0.1.1](https://github.com/ScuffleCloud/scuffle/compare/scuffle-expgolomb-v0.1.0...scuffle-expgolomb-v0.1.1) - 2025-02-21
 
 ### 🛠️ Non-breaking changes

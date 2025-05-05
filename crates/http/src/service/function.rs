@@ -105,7 +105,7 @@ mod tests {
     fn fn_service_debug() {
         let service = super::fn_http_service(|_| async { Ok::<_, Infallible>(http::Response::new(String::new())) });
         assert_eq!(
-            format!("{:?}", service),
+            format!("{service:?}"),
             "FnHttpService(\"scuffle_http::service::function::tests::fn_service_debug::{{closure}}\")"
         );
     }
@@ -118,7 +118,7 @@ mod tests {
             }))
         });
         assert_eq!(
-            format!("{:?}", factory),
+            format!("{factory:?}"),
             "FnHttpServiceFactory(\"scuffle_http::service::function::tests::fn_service_factory_debug::{{closure}}\")"
         );
     }

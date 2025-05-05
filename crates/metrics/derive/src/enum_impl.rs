@@ -12,7 +12,7 @@ struct EnumAttr {
     crate_path: Option<syn::Path>,
 }
 
-pub fn metric_enum_impl(input: TokenStream) -> syn::Result<TokenStream> {
+pub(crate) fn metric_enum_impl(input: TokenStream) -> syn::Result<TokenStream> {
     let input = syn::parse2::<syn::ItemEnum>(input)?;
     let enum_ident = &input.ident;
 

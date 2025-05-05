@@ -44,10 +44,9 @@ let service = scuffle_http::service::fn_http_service(|req| async move {
 let service_factory = scuffle_http::service::service_clone_factory(service);
 
 scuffle_http::HttpServer::builder()
-    .with_service_factory(service_factory)
+    .service_factory(service_factory)
     .bind("[::]:3000".parse().unwrap())
     .build()
-    .expect("failed to build server")
     .run()
     .await
     .expect("server failed");
@@ -61,8 +60,6 @@ This crate is currently under development and is not yet stable.
 
 - HTTP/3 webtransport support
 - Upgrading to websocket connections from HTTP/3 connections (this is usually done via HTTP/1.1 anyway)
-
-Unit tests are not yet fully implemented. Use at your own risk.
 
 ## License
 

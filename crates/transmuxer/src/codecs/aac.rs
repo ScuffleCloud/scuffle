@@ -1,6 +1,6 @@
 use bytes::Bytes;
 use scuffle_aac::PartialAudioSpecificConfig;
-use scuffle_flv::audio::{SoundSize, SoundType};
+use scuffle_flv::audio::header::legacy::{SoundSize, SoundType};
 use scuffle_mp4::DynBox;
 use scuffle_mp4::types::esds::Esds;
 use scuffle_mp4::types::esds::descriptor::header::DescriptorHeader;
@@ -14,7 +14,7 @@ use scuffle_mp4::types::trun::{TrunSample, TrunSampleFlag};
 
 use crate::TransmuxError;
 
-pub fn stsd_entry(
+pub(crate) fn stsd_entry(
     sound_size: SoundSize,
     sound_type: SoundType,
     data: Bytes,
@@ -61,7 +61,7 @@ pub fn stsd_entry(
     ))
 }
 
-pub fn trun_sample(data: &Bytes) -> Result<(TrunSample, u32), TransmuxError> {
+pub(crate) fn trun_sample(data: &Bytes) -> Result<(TrunSample, u32), TransmuxError> {
     Ok((
         TrunSample {
             duration: Some(1024),

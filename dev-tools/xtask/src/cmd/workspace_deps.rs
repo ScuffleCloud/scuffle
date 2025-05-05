@@ -98,11 +98,16 @@ impl WorkspaceDeps {
                     continue;
                 }
 
-                let mut dep = toml_edit::Table::new();
+                let dep = doc["dev-dependencies"][&dependency.name]
+                    .as_table_like_mut()
+                    .expect("expected table");
 
-                dep["path"] = toml_edit::value(relative_path(package.manifest_path.parent().unwrap(), path).to_string());
+                dep.insert(
+                    "path",
+                    toml_edit::value(relative_path(package.manifest_path.parent().unwrap(), path).to_string()),
+                );
                 if let Some(rename) = dependency.rename.clone() {
-                    dep["rename"] = toml_edit::value(rename);
+                    dep.insert("rename", toml_edit::value(rename));
                 }
 
                 if !dependency.features.is_empty() {
@@ -110,13 +115,15 @@ impl WorkspaceDeps {
                     for feature in dependency.features.iter().cloned() {
                         array.push(feature);
                     }
-                    dep["features"] = toml_edit::value(array);
+                    dep.insert("features", toml_edit::value(array));
                 }
                 if dependency.optional {
-                    dep["optional"] = toml_edit::value(true);
+                    dep.insert("optional", toml_edit::value(true));
                 }
 
-                doc["dev-dependencies"][&dependency.name] = toml_edit::Item::Table(dep);
+                dep.remove("workspace");
+
+                println!("Replaced path in {} for '{}' to '{}'", package.name, dependency.name, path);
                 changes = true;
             }
 

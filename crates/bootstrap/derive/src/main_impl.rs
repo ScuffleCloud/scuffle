@@ -36,7 +36,7 @@ struct Item {
 }
 
 #[derive(Debug, PartialEq, Eq, PartialOrd, Ord)]
-pub enum ItemKind {
+enum ItemKind {
     Service,
 }
 
@@ -116,7 +116,7 @@ impl syn::parse::Parse for ParseArgs {
     }
 }
 
-pub fn impl_main(input: TokenStream) -> Result<TokenStream, syn::Error> {
+pub(crate) fn impl_main(input: TokenStream) -> Result<TokenStream, syn::Error> {
     let span = input.span();
     let Main {
         options,
@@ -217,22 +217,16 @@ pub fn impl_main(input: TokenStream) -> Result<TokenStream, syn::Error> {
 
                 #entry_as_global::on_services_start(&#global_ident).await?;
 
-                macro_rules! handle_service_exit {
-                    ($remaining:ident) => {{
-                        let ((name, result), _, remaining) = #crate_path::prelude::futures::future::select_all($remaining).await;
-
-                        let result = #crate_path::prelude::anyhow::Context::context(#crate_path::prelude::anyhow::Context::context(result, name)?, name);
-
-                        #entry_as_global::on_service_exit(&#global_ident, name, result).await?;
-
-                        remaining
-                    }};
-                }
-
-                let mut remaining = handle_service_exit!(#services_vec_ident);
+                let mut remaining = #services_vec_ident;
 
                 while !remaining.is_empty() {
-                    remaining = handle_service_exit!(remaining);
+                    let ((name, result), _, new_remaining) = #crate_path::prelude::futures::future::select_all(remaining).await;
+
+                    let result = #crate_path::prelude::anyhow::Context::context(#crate_path::prelude::anyhow::Context::context(result, name)?, name);
+
+                    #entry_as_global::on_service_exit(&#global_ident, name, result).await?;
+
+                    remaining = new_remaining;
                 }
 
                 #crate_path::prelude::anyhow::Ok(())

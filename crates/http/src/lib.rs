@@ -53,8 +53,6 @@
 //!
 //! This crate is currently under development and is not yet stable.
 //!
-//! Unit tests are not yet fully implemented. Use at your own risk.
-//!
 //! ### Missing Features
 //!
 //! - HTTP/3 webtransport support
@@ -70,6 +68,7 @@
 #![cfg_attr(all(coverage_nightly, test), feature(coverage_attribute))]
 #![deny(missing_docs)]
 #![deny(unsafe_code)]
+#![deny(unreachable_pub)]
 
 #[cfg(all(feature = "http3", not(feature = "tls-rustls")))]
 compile_error!("feature \"tls-rustls\" must be enabled when \"http3\" is enabled.");
@@ -134,7 +133,7 @@ mod tests {
         // Wait for the server to start
         tokio::time::sleep(std::time::Duration::from_millis(100)).await;
 
-        let url = format!("http://{}/", addr);
+        let url = format!("http://{addr}/");
 
         for version in versions {
             let mut builder = reqwest::Client::builder().danger_accept_invalid_certs(true);
@@ -199,7 +198,7 @@ mod tests {
         // Wait for the server to start
         tokio::time::sleep(std::time::Duration::from_millis(100)).await;
 
-        let url = format!("https://{}/", addr);
+        let url = format!("https://{addr}/");
 
         for version in versions {
             let mut builder = reqwest::Client::builder().danger_accept_invalid_certs(true).https_only(true);
@@ -224,7 +223,7 @@ mod tests {
             let resp = client
                 .execute(request)
                 .await
-                .unwrap_or_else(|_| panic!("failed to get response version {:?}", version))
+                .unwrap_or_else(|_| panic!("failed to get response version {version:?}"))
                 .text()
                 .await
                 .expect("failed to get text");

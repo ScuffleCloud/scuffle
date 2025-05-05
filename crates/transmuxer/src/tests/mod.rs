@@ -96,7 +96,7 @@ fn test_transmuxer_avc_aac() {
 
     let output = String::from_utf8(output.stdout).unwrap();
 
-    println!("{}", output);
+    println!("{output}");
 
     // Check the output is valid.
     let json: serde_json::Value = serde_json::from_str(&output).unwrap();
@@ -262,29 +262,30 @@ fn test_transmuxer_hevc_aac() {
                 assert_eq!(
                     video_settings,
                     &VideoSettings {
-                        width: 2560,
-                        height: 1440,
-                        framerate: 144.0,
-                        bitrate: 2560000,
-                        timescale: 144000,
+                        width: 3840,
+                        height: 2160,
+                        framerate: 60.0,
+                        bitrate: 389904,
+                        timescale: 60000,
                         codec: VideoCodec::Hevc {
                             general_profile_space: 0,
-                            profile_compatibility: 64,
+                            profile_compatibility: scuffle_h265::ProfileCompatibilityFlags::MainProfile
+                                | scuffle_h265::ProfileCompatibilityFlags::Main10Profile,
                             profile: 1,
                             level: 153,
                             tier: false,
-                            constraint_indicator: 144,
+                            constraint_indicator: (1 << 47) | (1 << 44), // 1. bit and 4. bit,
                         }
                     }
                 );
-                assert_eq!(video_settings.codec.to_string(), "hev1.1.40.L99.90");
+                assert_eq!(video_settings.codec.to_string(), "hev1.1.60.L99.90");
 
                 assert_eq!(
                     audio_settings,
                     &AudioSettings {
                         sample_rate: 48000,
                         channels: 2,
-                        bitrate: 163840,
+                        bitrate: 135360,
                         timescale: 48000,
                         codec: AudioCodec::Aac {
                             object_type: AudioObjectType::AacLowComplexity,
@@ -324,16 +325,16 @@ fn test_transmuxer_hevc_aac() {
     let json: serde_json::Value = serde_json::from_slice(&output.stdout).unwrap();
 
     assert_eq!(json["format"]["format_name"], "mov,mp4,m4a,3gp,3g2,mj2");
-    assert_eq!(json["format"]["duration"], "3.090277");
+    assert_eq!(json["format"]["duration"], "2.026667");
     assert_eq!(json["format"]["tags"]["major_brand"], "iso5");
     assert_eq!(json["format"]["tags"]["minor_version"], "512");
     assert_eq!(json["format"]["tags"]["compatible_brands"], "iso5iso6hev1mp41");
 
     assert_eq!(json["streams"][0]["codec_name"], "hevc");
     assert_eq!(json["streams"][0]["codec_type"], "video");
-    assert_eq!(json["streams"][0]["width"], 2560);
-    assert_eq!(json["streams"][0]["height"], 1440);
-    assert_eq!(json["streams"][0]["r_frame_rate"], "144/1");
+    assert_eq!(json["streams"][0]["width"], 3840);
+    assert_eq!(json["streams"][0]["height"], 2160);
+    assert_eq!(json["streams"][0]["r_frame_rate"], "60/1");
 
     assert_eq!(json["streams"][1]["codec_name"], "aac");
     assert_eq!(json["streams"][1]["codec_type"], "audio");

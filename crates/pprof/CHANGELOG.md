@@ -15,6 +15,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.1.2](https://github.com/ScuffleCloud/scuffle/compare/scuffle-pprof-v0.1.1...scuffle-pprof-v0.1.2) - 2025-04-27
+
+### 🛠️ Non-breaking changes
+
+- docs: document lack of windows support ([#378](https://github.com/scufflecloud/scuffle/pull/378)) (@TroyKomodo)
+- docs: improved documentation ([#372](https://github.com/scufflecloud/scuffle/pull/372)) (@lennartkloock)
+
 ## [0.1.1](https://github.com/ScuffleCloud/scuffle/compare/scuffle-pprof-v0.1.0...scuffle-pprof-v0.1.1) - 2025-02-21
 
 ### 🛠️ Non-breaking changes

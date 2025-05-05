@@ -1,6 +1,6 @@
 [package]
 name = "scuffle-bootstrap-telemetry"
-version = "0.2.0"
+version = "0.2.1"
 edition = "2024"
 repository = "https://github.com/scufflecloud/scuffle"
 authors = ["Scuffle <opensource@scuffle.cloud>"]
@@ -25,10 +25,10 @@ querystring = { version = "1", optional = true }
 tokio = { version = "1", optional = true, features = [ "rt" ], default-features = false }
 thiserror = { version = "2", optional = true }
 
-opentelemetry = { version = "0.28", optional = true }
-opentelemetry_sdk = { version = "0.28", optional = true }
-opentelemetry-appender-tracing = { version = "0.28", optional = true }
-tracing-opentelemetry = { version = "0.29", optional = true }
+opentelemetry = { version = "0.29", optional = true }
+opentelemetry_sdk = { version = "0.29", optional = true }
+opentelemetry-appender-tracing = { version = "0.29", optional = true }
+tracing-opentelemetry = { version = "0.30", optional = true }
 
 scuffle-bootstrap.workspace = true
 scuffle-context.workspace = true

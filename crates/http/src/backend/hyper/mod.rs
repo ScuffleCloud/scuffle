@@ -6,7 +6,7 @@ use scuffle_context::ContextFutExt;
 #[cfg(feature = "tracing")]
 use tracing::Instrument;
 
-use crate::error::Error;
+use crate::error::HttpError;
 use crate::service::{HttpService, HttpServiceFactory};
 
 mod handler;
@@ -67,7 +67,7 @@ where
     /// This function will bind to the address specified in `bind`, listen for incoming connections and handle requests.
     #[cfg_attr(feature = "tracing", tracing::instrument(skip_all, fields(bind = %self.bind)))]
     #[allow(unused_mut)] // allow the unused `mut self`
-    pub async fn run(mut self) -> Result<(), Error<F>> {
+    pub async fn run(mut self) -> Result<(), HttpError<F>> {
         #[cfg(feature = "tracing")]
         tracing::debug!("starting server");
 
@@ -108,7 +108,7 @@ where
                             Some(Err(e)) if utils::is_fatal_tcp_error(&e) => {
                                 #[cfg(feature = "tracing")]
                                 tracing::error!(err = %e, "failed to accept tcp connection");
-                                return Err(Error::<F>::from(e));
+                                return Err(HttpError::<F>::from(e));
                             }
                             Some(Err(_)) => continue,
                             None => {

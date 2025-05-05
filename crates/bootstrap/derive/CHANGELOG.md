@@ -15,6 +15,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.1.2](https://github.com/ScuffleCloud/scuffle/compare/scuffle-bootstrap-derive-v0.1.1...scuffle-bootstrap-derive-v0.1.2) - 2025-04-27
+
+### 🛠️ Non-breaking changes
+
+- docs: improved documentation ([#372](https://github.com/scufflecloud/scuffle/pull/372)) (@lennartkloock)
+- fix: fixed panic on no service provided ([#400](https://github.com/scufflecloud/scuffle/pull/400)) (@lucassshanks)
+
 ## [0.1.1](https://github.com/ScuffleCloud/scuffle/compare/scuffle-bootstrap-derive-v0.1.0...scuffle-bootstrap-derive-v0.1.1) - 2025-02-21
 
 ### 🛠️ Non-breaking changes

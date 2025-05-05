@@ -17,6 +17,7 @@
 #![cfg_attr(all(coverage_nightly, test), feature(coverage_attribute))]
 #![deny(missing_docs)]
 #![deny(unsafe_code)]
+#![deny(unreachable_pub)]
 
 use proc_macro::TokenStream;
 
@@ -136,19 +137,26 @@ mod tests {
                     }
                     <MyGlobal as ::scuffle_bootstrap::global::Global>::on_services_start(&global)
                         .await?;
-                    macro_rules! handle_service_exit {
-                        ($remaining:ident) => {
-                            { let ((name, result), _, remaining) =
-                            ::scuffle_bootstrap::prelude::futures::future::select_all($remaining)
-                            . await; let result =
-                            ::scuffle_bootstrap::prelude::anyhow::Context::context(::scuffle_bootstrap::prelude::anyhow::Context::context(result,
-                            name) ?, name); < MyGlobal as ::scuffle_bootstrap::global::Global >
-                            ::on_service_exit(& global, name, result). await ?; remaining }
-                        };
-                    }
-                    let mut remaining = handle_service_exit!(services_vec);
+                    let mut remaining = services_vec;
                     while !remaining.is_empty() {
-                        remaining = handle_service_exit!(remaining);
+                        let ((name, result), _, new_remaining) = ::scuffle_bootstrap::prelude::futures::future::select_all(
+                                remaining,
+                            )
+                            .await;
+                        let result = ::scuffle_bootstrap::prelude::anyhow::Context::context(
+                            ::scuffle_bootstrap::prelude::anyhow::Context::context(
+                                result,
+                                name,
+                            )?,
+                            name,
+                        );
+                        <MyGlobal as ::scuffle_bootstrap::global::Global>::on_service_exit(
+                                &global,
+                                name,
+                                result,
+                            )
+                            .await?;
+                        remaining = new_remaining;
                     }
                     ::scuffle_bootstrap::prelude::anyhow::Ok(())
                 });

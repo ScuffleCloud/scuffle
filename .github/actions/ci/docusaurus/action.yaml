@@ -1,0 +1,48 @@
+name: Docusaurus Docs
+inputs:
+  pr_number:
+    description: "The PR number"
+    required: true
+  artifact_name:
+    description: "The name of the artifact to upload"
+    required: false
+  deploy_docs:
+    description: "Whether to deploy the docs"
+    required: true
+    default: false
+runs:
+  using: "composite"
+  steps:
+    - uses: pnpm/action-setup@v4
+      with:
+        version: 10
+        run_install: false
+
+    - uses: actions/setup-node@v4
+      with:
+        node-version: 20
+        cache: "pnpm"
+
+    - name: Install dependencies
+      shell: bash
+      working-directory: ./docs
+      run: pnpm install --frozen-lockfile
+
+    - name: Build docs
+      shell: bash
+      working-directory: ./docs
+      run: pnpm build
+
+    - name: Upload docs
+      uses: actions/upload-artifact@v4
+      with:
+        name: docusaurus
+        path: docs/build
+
+    - name: Deploy docs
+      if: ${{ inputs.deploy_docs == 'true' }}
+      uses: cloudflare/wrangler-action@v3
+      with:
+        apiToken: ${{ env.CF_DOCS_API_KEY }}
+        accountId: ${{ env.CF_DOCS_ACCOUNT_ID }}
+        command: pages deploy --project-name=scuffle-docusaurus-docs --branch=pr/${{ inputs.pr_number }} --commit-hash=${{ env.SHA }} --commit-dirty=true ./docs/build

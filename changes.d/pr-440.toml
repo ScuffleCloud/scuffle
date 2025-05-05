@@ -1,0 +1,29 @@
+[[scuffle-amf0]]
+category = "chore"
+description = "Use serde_derive instead of serde's derive feature for improved compile times"
+authors = ["@philipch07"]
+
+[[scuffle-bootstrap]]
+category = "chore"
+description = "Use serde_derive instead of serde's derive feature for improved compile times"
+authors = ["@philipch07"]
+
+[[scuffle-flv]]
+category = "chore"
+description = "Use serde_derive instead of serde's derive feature for improved compile times"
+authors = ["@philipch07"]
+
+[[postcompile]]
+category = "chore"
+description = "Use serde_derive instead of serde's derive feature for improved compile times"
+authors = ["@philipch07"]
+
+[[scuffle-rtmp]]
+category = "chore"
+description = "Use serde_derive instead of serde's derive feature for improved compile times"
+authors = ["@philipch07"]
+
+[[scuffle-settings]]
+category = "chore"
+description = "Use serde_derive instead of serde's derive feature for improved compile times"
+authors = ["@philipch07"]

@@ -5,7 +5,7 @@ use crate::service::{HttpService, HttpServiceFactory};
 
 /// An error that can occur when creating or running an HTTP server.
 #[derive(Debug, thiserror::Error)]
-pub enum Error<F>
+pub enum HttpError<F>
 where
     F: HttpServiceFactory,
     F::Error: std::error::Error,

@@ -1,6 +1,6 @@
 [package]
 name = "postcompile"
-version = "0.1.1"
+version = "0.2.0"
 edition = "2024"
 build = "build.rs"
 repository = "https://github.com/scufflecloud/scuffle"
@@ -19,8 +19,8 @@ serde_json = "1.0"
 cargo_metadata = "0.19.1"
 cargo-platform = "0.1"
 target-triple = "0.1"
-serde_derive = "1.0"
-serde = "1.0"
+serde = "1"
+serde_derive = "1"
 prettyplease = { version = "0.2", optional = true }
 syn = { version = "2", features = ["full"] }
 scuffle-workspace-hack.workspace = true

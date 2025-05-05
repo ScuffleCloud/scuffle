@@ -15,6 +15,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.3.0](https://github.com/ScuffleCloud/scuffle/compare/scuffle-ffmpeg-v0.2.0...scuffle-ffmpeg-v0.3.0) - 2025-04-27
+
+### ⚠️ Breaking changes
+
+- feat: change `AudioFrame::channel_layout` and `GenericDecoder::time_base`'s return types to their non-ffi counterparts ([#437](https://github.com/scufflecloud/scuffle/pull/437)) (@Juliapixel)
+
+### 🛠️ Non-breaking changes
+
+- feat: add support for arm64 builds ([#378](https://github.com/scufflecloud/scuffle/pull/378)) (@TroyKomodo)
+- feat: add support for windows builds ([#378](https://github.com/scufflecloud/scuffle/pull/378)) (@TroyKomodo)
+- feat: Add `AudioFrame::format` ([#437](https://github.com/scufflecloud/scuffle/pull/437)) (@Juliapixel)
+- fix: fix windows memory corruption issue ([#378](https://github.com/scufflecloud/scuffle/pull/378)) (@TroyKomodo)
+
 ## [0.2.0](https://github.com/ScuffleCloud/scuffle/compare/scuffle-ffmpeg-v0.1.3...scuffle-ffmpeg-v0.2.0) - 2025-02-21
 
 ### ⚠️ Breaking changes

@@ -1,6 +1,6 @@
 [package]
 name = "scuffle-ffmpeg"
-version = "0.2.0"
+version = "0.3.0"
 edition = "2024"
 repository = "https://github.com/scufflecloud/scuffle"
 authors = ["Scuffle <opensource@scuffle.cloud>"]

@@ -1,6 +1,6 @@
 [package]
 name = "scuffle-rtmp"
-version = "0.1.1"
+version = "0.2.0"
 edition = "2024"
 description = "A pure Rust RTMP server"
 repository = "https://github.com/scufflecloud/scuffle"
@@ -10,30 +10,42 @@ documentation = "https://docs.rs/scuffle-rtmp"
 license = "MIT OR Apache-2.0"
 keywords = ["rtmp", "server", "streaming"]
 
-
 [lints.rust]
-unexpected_cfgs = { level = "warn", check-cfg = ['cfg(valgrind)'] }
+unexpected_cfgs = { level = "warn", check-cfg = ['cfg(coverage_nightly)', 'cfg(valgrind)'] }
+
+[[example]]
+name = "scuffle-rtmp-basic"
+path = "examples/basic.rs"
 
 [dependencies]
+tokio = { version = "1.36", features = ["io-util", "sync"] }
+serde = "1"
+serde_derive = "1"
 byteorder = "1.5"
 bytes = "1.5"
+tracing = "0.1"
+thiserror = "2.0"
+
 rand = "0.9"
 hmac = "0.12"
 sha2 = "0.10"
-uuid = { version = "1.6", features = ["v4"] }
-chrono = { version = "0.4", default-features = false, features = ["clock"] }
+
 num-traits = "0.2"
 num-derive = "0.4"
-tokio = { version = "1.36", features = ["io-util", "sync"] }
-futures = "0.3"
-async-trait = "0.1"
-tracing = "0.1"
+bitmask-enum = "2.2.5"
 
-scuffle-amf0.workspace = true
-scuffle-workspace-hack.workspace = true
+nutype-enum.workspace = true
+scuffle-amf0 = { workspace = true, features = ["serde"] }
 scuffle-bytes-util.workspace = true
 scuffle-future-ext.workspace = true
+scuffle-context.workspace = true
+scuffle-workspace-hack.workspace = true
 
 [dev-dependencies]
-tokio = { version = "1.36", features = ["full"] }
+tokio = { version = "1.44.1", features = ["full"] }
 serde_json = "1.0"
+
+# For examples:
+tracing = "0.1.41"
+tracing-subscriber = "0.3.19"
+scuffle-flv = { workspace = true }

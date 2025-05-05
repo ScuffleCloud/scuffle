@@ -15,6 +15,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.2.0](https://github.com/ScuffleCloud/scuffle/compare/scuffle-transmuxer-v0.1.1...scuffle-transmuxer-v0.2.0) - 2025-04-27
+
+### 🛠️ Non-breaking changes
+
+- chore: update to use new version of scuffle-rtmp ([#421](https://github.com/scufflecloud/scuffle/pull/421)) (@lennartkloock)
+- chore: update to work with new scuffle-flv version ([#396](https://github.com/scufflecloud/scuffle/pull/396)) (@lennartkloock)
+- chore: update to use new h265 version ([#425](https://github.com/scufflecloud/scuffle/pull/425)) (@lennartkloock)
+- docs: improved documentation ([#372](https://github.com/scufflecloud/scuffle/pull/372)) (@lennartkloock)
+
 ## [0.1.1](https://github.com/ScuffleCloud/scuffle/compare/scuffle-transmuxer-v0.1.0...scuffle-transmuxer-v0.1.1) - 2025-02-21
 
 ### 🛠️ Non-breaking changes

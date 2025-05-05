@@ -10,7 +10,7 @@ use scuffle_context::ContextFutExt;
 use tracing::Instrument;
 use utils::copy_response_body;
 
-use crate::error::Error;
+use crate::error::HttpError;
 use crate::service::{HttpService, HttpServiceFactory};
 
 pub mod body;
@@ -57,7 +57,7 @@ where
     ///
     /// This function will bind to the address specified in `bind`, listen for incoming connections and handle requests.
     #[cfg_attr(feature = "tracing", tracing::instrument(skip_all, fields(bind = %self.bind)))]
-    pub async fn run(mut self) -> Result<(), Error<F>> {
+    pub async fn run(mut self) -> Result<(), HttpError<F>> {
         #[cfg(feature = "tracing")]
         tracing::debug!("starting server");
 
@@ -98,7 +98,7 @@ where
                     let ctx = ctx.clone();
 
                     tokio::spawn(async move {
-                        let _res: Result<_, Error<F>> = async move {
+                        let _res: Result<_, HttpError<F>> = async move {
                             let Some(conn) = new_conn.with_context(&ctx).await.transpose()? else {
                                 #[cfg(feature = "tracing")]
                                 tracing::trace!("context done while accepting connection");
@@ -124,7 +124,7 @@ where
                                 let http_service = service_factory
                                     .new_service(addr)
                                     .await
-                                    .map_err(|e| Error::ServiceFactoryError(e))?;
+                                    .map_err(|e| HttpError::ServiceFactoryError(e))?;
 
                                 loop {
                                     match h3_conn.accept().with_context(&ctx).await {
@@ -144,9 +144,11 @@ where
                                             let ctx = ctx.clone();
                                             let mut http_service = http_service.clone();
                                             tokio::spawn(async move {
-                                                let _res: Result<_, Error<F>> = async move {
-                                                    let resp =
-                                                        http_service.call(req).await.map_err(|e| Error::ServiceError(e))?;
+                                                let _res: Result<_, HttpError<F>> = async move {
+                                                    let resp = http_service
+                                                        .call(req)
+                                                        .await
+                                                        .map_err(|e| HttpError::ServiceError(e))?;
                                                     let (parts, body) = resp.into_parts();
 
                                                     send.send_response(http::Response::from_parts(parts, ())).await?;
@@ -210,7 +212,7 @@ where
                 // wait for connections to be closed before exiting
                 endpoint.wait_idle().await;
 
-                Ok::<_, crate::error::Error<F>>(())
+                Ok::<_, crate::error::HttpError<F>>(())
             };
 
             #[cfg(feature = "tracing")]

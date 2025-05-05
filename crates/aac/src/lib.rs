@@ -10,6 +10,7 @@
 #![cfg_attr(all(coverage_nightly, test), feature(coverage_attribute))]
 #![deny(missing_docs)]
 #![deny(unsafe_code)]
+#![deny(unreachable_pub)]
 
 use std::io;
 
@@ -228,7 +229,7 @@ mod tests {
         ];
 
         for (idx, freq) in cases {
-            assert_eq!(freq, idx.to_freq(), "Expected frequency for {:?}", idx);
+            assert_eq!(freq, idx.to_freq(), "Expected frequency for {idx:?}");
         }
     }
 }

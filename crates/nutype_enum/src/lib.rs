@@ -25,6 +25,7 @@
 //! `SPDX-License-Identifier: MIT OR Apache-2.0`
 #![deny(missing_docs)]
 #![deny(unsafe_code)]
+#![deny(unreachable_pub)]
 
 /// Helper macro to create a new enum type with a single field.
 ///

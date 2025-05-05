@@ -1,8 +1,9 @@
 use std::path::{Path, PathBuf};
 
 use anyhow::Context;
-use serde::Deserialize;
+use serde::Deserialize as _;
 use serde::de::IntoDeserializer;
+use serde_derive::Deserialize;
 
 #[derive(Debug, Clone)]
 pub struct Fragment {
@@ -28,7 +29,7 @@ impl Fragment {
     }
 }
 
-#[derive(Debug, Clone, serde_derive::Deserialize)]
+#[derive(Debug, Clone, Deserialize)]
 #[serde(deny_unknown_fields)]
 pub struct PackageChangeLog {
     #[serde(skip, default)]

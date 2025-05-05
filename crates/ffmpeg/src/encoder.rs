@@ -733,24 +733,20 @@ mod tests {
             .expect("Failed to create encoder");
 
         let stream_index = encoder.stream_index();
-        assert_eq!(stream_index, 0, "Unexpected stream index: expected 0, got {}", stream_index);
+        assert_eq!(stream_index, 0, "Unexpected stream index: expected 0, got {stream_index}");
 
         let actual_incoming_time_base = encoder.incoming_time_base();
         assert_eq!(
             actual_incoming_time_base,
             incoming_time_base.into(),
-            "Unexpected incoming_time_base: expected {:?}, got {:?}",
-            incoming_time_base,
-            actual_incoming_time_base
+            "Unexpected incoming_time_base: expected {incoming_time_base:?}, got {actual_incoming_time_base:?}"
         );
 
         let actual_outgoing_time_base = encoder.outgoing_time_base();
         assert_eq!(
             actual_outgoing_time_base,
             outgoing_time_base.into(),
-            "Unexpected outgoing_time_base: expected {:?}, got {:?}",
-            outgoing_time_base,
-            actual_outgoing_time_base
+            "Unexpected outgoing_time_base: expected {outgoing_time_base:?}, got {actual_outgoing_time_base:?}"
         );
     }
 

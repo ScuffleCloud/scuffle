@@ -3,7 +3,7 @@ use tokio::io::{AsyncRead, AsyncWrite};
 /// A stream that can be either a TCP stream or a TLS stream.
 ///
 /// Implements [`AsyncRead`] and [`AsyncWrite`] by delegating to the inner stream.
-pub enum Stream {
+pub(crate) enum Stream {
     Tcp(tokio::net::TcpStream),
     #[cfg(feature = "tls-rustls")]
     #[cfg_attr(docsrs, doc(cfg(feature = "tls-rustls")))]
@@ -16,7 +16,7 @@ impl Stream {
     /// If the stream is already a TLS stream, this function will return the stream unchanged.
     #[cfg(feature = "tls-rustls")]
     #[cfg_attr(docsrs, doc(cfg(feature = "tls-rustls")))]
-    pub async fn try_accept_tls(self, tls_acceptor: &tokio_rustls::TlsAcceptor) -> std::io::Result<Self> {
+    pub(crate) async fn try_accept_tls(self, tls_acceptor: &tokio_rustls::TlsAcceptor) -> std::io::Result<Self> {
         match self {
             Stream::Tcp(stream) => {
                 let stream = tls_acceptor.accept(stream).await?;

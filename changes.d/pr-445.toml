@@ -1,0 +1,4 @@
+[[scuffle-transmuxer]]
+category = "chore"
+description = "Fixes typo in the variable name `compatiable_brands` -> `compatable_brands`"
+authors = ["@philipch07"]

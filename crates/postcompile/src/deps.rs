@@ -16,7 +16,7 @@ use crate::{Config, features};
 
 #[derive(Default, Debug)]
 /// Describes where to find the binaries built for the dependencies
-pub struct Dependencies {
+pub(crate) struct Dependencies {
     pub import_paths: Vec<PathBuf>,
     pub import_libs: Vec<PathBuf>,
     pub dependencies: Vec<(String, Vec<PathBuf>)>,
@@ -26,7 +26,7 @@ pub struct Dependencies {
 }
 
 impl Dependencies {
-    pub fn new(config: &Config) -> Result<Self, Errored> {
+    pub(crate) fn new(config: &Config) -> Result<Self, Errored> {
         let mut build = Command::new(std::env::var_os("CARGO").unwrap_or_else(|| "cargo".into()));
 
         let target_dir = if config.target_dir.ends_with(TARGET) {
@@ -195,7 +195,7 @@ impl Dependencies {
 
         let output = match metadata.output() {
             Err(e) => {
-                eprintln!("failed to run cargo metadata: \n{:#}", e);
+                eprintln!("failed to run cargo metadata: \n{e:#}");
                 std::process::exit(1);
             }
             Ok(output) => output,
@@ -315,7 +315,7 @@ impl Dependencies {
         })
     }
 
-    pub fn apply(&self, command: &mut Command) {
+    pub(crate) fn apply(&self, command: &mut Command) {
         for (name, artifacts) in &self.dependencies {
             for dependency in artifacts {
                 command.arg("--extern");

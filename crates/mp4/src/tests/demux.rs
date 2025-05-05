@@ -8,7 +8,10 @@ use bytes::{Buf, Bytes};
 use fixed::FixedI32;
 use scuffle_av1::AV1CodecConfigurationRecord;
 use scuffle_h264::AVCDecoderConfigurationRecord;
-use scuffle_h265::{HEVCDecoderConfigurationRecord, NaluArray, NaluType};
+use scuffle_h265::{
+    ConstantFrameRate, HEVCDecoderConfigurationRecord, NALUnitType, NaluArray, NumTemporalLayers, ParallelismType,
+    ProfileCompatibilityFlags,
+};
 
 use crate::boxes::DynBox;
 use crate::boxes::header::{BoxHeader, FullBoxHeader};
@@ -1893,42 +1896,41 @@ fn test_demux_hevc_aac() {
                             hvcc: HvcC {
                                 header: BoxHeader { box_type: *b"hvcC" },
                                 hevc_config: HEVCDecoderConfigurationRecord {
-                                    configuration_version: 1,
                                     general_profile_space: 0,
                                     general_tier_flag: false,
                                     general_profile_idc: 1,
-                                    general_profile_compatibility_flags: 96,
-                                    general_constraint_indicator_flags: 144,
+                                    general_profile_compatibility_flags: ProfileCompatibilityFlags::MainProfile | ProfileCompatibilityFlags::Main10Profile,
+                                    general_constraint_indicator_flags: (1 << 47) | (1 << 44), // 1. bit and 4. bit
                                     general_level_idc: 153,
                                     min_spatial_segmentation_idc: 0,
-                                    parallelism_type: 0,
+                                    parallelism_type: ParallelismType::MixedOrUnknown,
                                     chroma_format_idc: 1,
                                     bit_depth_luma_minus8: 0,
                                     bit_depth_chroma_minus8: 0,
                                     avg_frame_rate: 0,
-                                    constant_frame_rate: 0,
-                                    num_temporal_layers: 1,
+                                    constant_frame_rate: ConstantFrameRate::Unknown,
+                                    num_temporal_layers: NumTemporalLayers::NotScalable,
                                     temporal_id_nested: true,
                                     length_size_minus_one: 3,
                                     arrays: vec![
                                         NaluArray {
                                             array_completeness: false,
-                                            nal_unit_type: NaluType::Vps,
+                                            nal_unit_type: NALUnitType::VpsNut,
                                             nalus: vec![b"@\x01\x0c\x01\xff\xff\x01`\0\0\x03\0\x90\0\0\x03\0\0\x03\0\x99\x95\x98\t".to_vec().into()]
                                         },
                                         NaluArray {
                                             array_completeness: false,
-                                            nal_unit_type: NaluType::Sps,
+                                            nal_unit_type: NALUnitType::SpsNut,
                                             nalus: vec![b"B\x01\x01\x01`\0\0\x03\0\x90\0\0\x03\0\0\x03\0\x99\xa0\x01\xe0 \x02\x1cYef\x92L\xaf\x01h\x08\0\0\x03\0\x08\0\0\x03\x01\xe0@".to_vec().into()]
                                         },
                                         NaluArray {
                                             array_completeness: false,
-                                            nal_unit_type: NaluType::Pps,
+                                            nal_unit_type: NALUnitType::PpsNut,
                                             nalus: vec![b"D\x01\xc1r\xb4\"@".to_vec().into()],
                                         },
                                         NaluArray {
                                             array_completeness: false,
-                                            nal_unit_type: NaluType::Unknown(39),
+                                            nal_unit_type: NALUnitType::PrefixSeiNut,
                                             nalus: vec![b"N\x01\x05\xff\xff\xff\xff\xff\xff\xff\xff\xf5,\xa2\xde\t\xb5\x17G\xdb\xbbU\xa4\xfe\x7f\xc2\xfcNx265 (build 199) - 3.5+1-f0c1022b6:[Linux][GCC 11.2.0][64 bit] 8bit+10bit+12bit - H.265/HEVC codec - Copyright 2013-2018 (c) Multicoreware, Inc - http://x265.org - options: cpuid=1111039 frame-threads=6 no-wpp no-pmode no-pme no-psnr no-ssim log-level=2 bitdepth=8 input-csp=1 fps=60/1 input-res=3840x2160 interlace=0 total-frames=0 level-idc=0 high-tier=1 uhd-bd=0 ref=3 no-allow-non-conformance no-repeat-headers annexb no-aud no-hrd info hash=0 no-temporal-layers open-gop min-keyint=25 keyint=250 gop-lookahead=0 bframes=4 b-adapt=2 b-pyramid bframe-bias=0 rc-lookahead=20 lookahead-slices=0 scenecut=40 hist-scenecut=0 radl=0 no-splice no-intra-refresh ctu=64 min-cu-size=8 no-rect no-amp max-tu-size=32 tu-inter-depth=1 tu-intra-depth=1 limit-tu=0 rdoq-level=0 dynamic-rd=0.00 no-ssim-rd signhide no-tskip nr-intra=0 nr-inter=0 no-constrained-intra strong-intra-smoothing max-merge=3 limit-refs=1 no-limit-modes me=1 subme=2 merange=57 temporal-mvp no-frame-dup no-hme weightp no-weightb no-analyze-src-pics deblock=0:0 sao no-sao-non-deblock rd=3 selective-sao=4 early-skip rskip no-fast-intra no-tskip-fast no-cu-lossless b-intra no-splitrd-skip rdpenalty=0 psy-rd=2.00 psy-rdoq=0.00 no-rd-refine no-lossless cbqpoffs=0 crqpoffs=0 rc=crf crf=28.0 qcomp=0.60 qpstep=4 stats-write=0 stats-read=0 ipratio=1.40 pbratio=1.30 aq-mode=2 aq-strength=1.00 cutree zone-count=0 no-strict-cbr qg-size=32 no-rc-grain qpmax=69 qpmin=0 no-const-vbv sar=1 overscan=0 videoformat=5 range=0 colorprim=2 transfer=2 colormatrix=2 chromaloc=0 display-window=0 cll=0,0 min-luma=0 max-luma=255 log2-max-poc-lsb=8 vui-timing-info vui-hrd-info slices=1 no-opt-qp-pps no-opt-ref-list-length-pps no-multi-pass-opt-rps scenecut-bias=0.05 hist-threshold=0.03 no-opt-cu-delta-qp no-aq-motion no-hdr10 no-hdr10-opt no-dhdr10-opt no-idr-recovery-sei analysis-reuse-level=0 analysis-save-reuse-level=0 analysis-load-reuse-level=0 scale-factor=0 refine-intra=0 refine-inter=0 refine-mv=1 refine-ctu-distortion=0 no-limit-sao ctu-info=0 no-lowpass-dct refine-analysis-type=0 copy-pic=1 max-ausize-factor=1.0 no-dynamic-refine no-single-sei no-hevc-aq no-svt no-field qp-adaptation-range=1.00 scenecut-aware-qp=0conformance-window-offsets right=0 bottom=0 decoder-max-rate=0 no-vbv-live-multi-pass\x80".to_vec().into()]
                                         }
                                     ]

@@ -1,5 +1,0 @@
-[[scuffle-metrics]]
-category = "chore"
-description = "removed `extended-numbers` feature"
-breaking = true
-authors = ["@SimaoMoreira5228"]

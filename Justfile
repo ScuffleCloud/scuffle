@@ -16,7 +16,7 @@ lint *args:
 
 alias coverage := test
 test *args:
-    #!/bin/bash
+    #!/usr/bin/env bash
     set -euo pipefail
 
     INSTA_FORCE_PASS=1 cargo +{{RUST_TOOLCHAIN}} llvm-cov clean --workspace
@@ -34,7 +34,7 @@ coverage-serve:
     miniserve target/llvm-cov/html --index index.html --port 3000
 
 grind *args:
-    #!/bin/bash
+    #!/usr/bin/env bash
     set -euo pipefail
 
     # Runs valgrind on the tests.
@@ -46,7 +46,7 @@ grind *args:
 
 alias docs := doc
 doc *args:
-    #!/bin/bash
+    #!/usr/bin/env bash
     set -euo pipefail
 
     # `--cfg docsrs` enables us to write feature hints in the form of `#[cfg_attr(docsrs, doc(cfg(feature = "some-feature")))]`

@@ -15,7 +15,7 @@ jobs:
   crates-io:
     name: Crates.io
     runs-on: ubicloud-standard-8
-    environment: crates
+    environment: crates.io
     permissions:
       contents: write
     steps:
@@ -48,8 +48,8 @@ jobs:
       - name: Run release-plz
         run: release-plz release --allow-dirty --token ${{ secrets.CARGO_REGISTRY_TOKEN }} --git-token ${{ secrets.GITHUB_TOKEN }}
 
-  docs:
-    name: Docs
+  docs-rs:
+    name: Docs.rs
     runs-on: ubuntu-24.04
     environment: docs.scuffle.rs
     steps:
@@ -62,13 +62,40 @@ jobs:
           workflow: ci.yaml
           workflow_conclusion: success
           commit: ${{ github.sha }}
-          name: docs
+          name: docsrs
           path: target/doc
 
       - name: Deploy
         id: deploy
         uses: cloudflare/wrangler-action@v3
         with:
+          packageManager: npm
           apiToken: ${{ secrets.CF_DOCS_API_KEY }}
           accountId: ${{ secrets.CF_DOCS_ACCOUNT_ID }}
           command: pages deploy --project-name=scuffle-docrs --branch=main --commit-hash=${{ github.sha }} --commit-dirty=true ./target/doc
+
+  docusaurus:
+    name: Docusaurus
+    runs-on: ubuntu-24.04
+    environment: docs.scuffle.cloud
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Download Artifact
+        id: download-artifact
+        uses: dawidd6/action-download-artifact@v8
+        with:
+          workflow: ci.yaml
+          workflow_conclusion: success
+          commit: ${{ github.sha }}
+          name: docusaurus
+          path: docs/build
+
+      - name: Deploy
+        id: deploy
+        uses: cloudflare/wrangler-action@v3
+        with:
+          packageManager: npm
+          apiToken: ${{ secrets.CF_DOCS_API_KEY }}
+          accountId: ${{ secrets.CF_DOCS_ACCOUNT_ID }}
+          command: pages deploy --project-name=scuffle-docusaurus-docs --branch=main --commit-hash=${{ github.sha }} --commit-dirty=true ./docs/build

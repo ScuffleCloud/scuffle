@@ -41,6 +41,7 @@
 #![cfg_attr(all(coverage_nightly, test), feature(coverage_attribute))]
 #![deny(missing_docs)]
 #![deny(unsafe_code)]
+#![deny(unreachable_pub)]
 
 use std::io;
 
@@ -159,7 +160,7 @@ mod tests {
 
     use crate::{BitReaderExpGolombExt, BitWriterExpGolombExt, size_of_exp_golomb, size_of_signed_exp_golomb};
 
-    pub fn get_remaining_bits(reader: &BitReader<std::io::Cursor<Vec<u8>>>) -> usize {
+    pub(crate) fn get_remaining_bits(reader: &BitReader<std::io::Cursor<Vec<u8>>>) -> usize {
         let remaining = reader.get_ref().remaining();
 
         if reader.is_aligned() {

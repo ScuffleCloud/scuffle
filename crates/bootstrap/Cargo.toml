@@ -1,6 +1,6 @@
 [package]
 name = "scuffle-bootstrap"
-version = "0.1.1"
+version = "0.1.2"
 edition = "2024"
 description = "A utility crate for creating binaries."
 repository = "https://github.com/scufflecloud/scuffle"
@@ -12,6 +12,18 @@ keywords = ["bootstrap", "binary", "cli", "config"]
 
 [lints.rust]
 unexpected_cfgs = { level = "warn", check-cfg = ['cfg(coverage_nightly)'] }
+
+[[example]]
+name = "scuffle-bootstrap-basic"
+path = "examples/basic.rs"
+
+[[example]]
+name = "scuffle-bootstrap-cli"
+path = "examples/cli.rs"
+
+[[example]]
+name = "scuffle-bootstrap-tracing"
+path = "examples/tracing.rs"
 
 [dependencies]
 anyhow = "1.0"
@@ -28,3 +40,11 @@ insta = "1.42"
 postcompile = { workspace = true, features = ["prettyplease"] }
 scuffle-future-ext.workspace = true
 scuffle-signal = { workspace = true, features = ["bootstrap"] }
+
+# For examples:
+serde = "1"
+serde_derive = "1"
+smart-default = "0.7"
+tracing = "0.1"
+tracing-subscriber = "0.3"
+scuffle-settings = { workspace = true, features = ["bootstrap"] }

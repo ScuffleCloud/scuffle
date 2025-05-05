@@ -7,7 +7,17 @@
 
 ---
 
-A pure Rust implementation of the FLV format, allowing for demuxing of FLV files or streams.
+A pure Rust implementation of the FLV format, allowing for demuxing of FLV
+files and streams.
+
+## Specifications
+
+| Name | Version | Link | Comments |
+| --- | --- | --- | --- |
+| Video File Format Specification | `10` | <https://github.com/veovera/enhanced-rtmp/blob/main/docs/legacy/video-file-format-v10-0-spec.pdf> | |
+| Adobe Flash Video File Format Specification | `10.1` | <https://github.com/veovera/enhanced-rtmp/blob/main/docs/legacy/video-file-format-v10-1-spec.pdf> | Refered to as 'Legacy FLV spec' in this documentation |
+| Enhancing RTMP, FLV | `v1-2024-02-29-r1` | <https://github.com/veovera/enhanced-rtmp/blob/main/docs/enhanced/enhanced-rtmp-v1.pdf> | |
+| Enhanced RTMP | `v2-2024-10-22-b1` | <https://github.com/veovera/enhanced-rtmp/blob/main/docs/enhanced/enhanced-rtmp-v2.pdf> | Refered to as 'Enhanced RTMP spec' in this documentation |
 
 ## License
 

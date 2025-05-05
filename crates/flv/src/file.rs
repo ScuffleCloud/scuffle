@@ -1,26 +1,31 @@
+//! FLV file processing
+
 use byteorder::{BigEndian, ReadBytesExt};
 use bytes::{Buf, Bytes};
 
 use super::header::FlvHeader;
 use super::tag::FlvTag;
+use crate::error::FlvError;
 
 /// An FLV file is a combination of a [`FlvHeader`] followed by the
-/// `FLVFileBody` (which is just a series of [`FlvTag`]s)
+/// FLV File Body (which is a series of [`FlvTag`]s)
 ///
-/// The `FLVFileBody` is defined by:
-/// - video_file_format_spec_v10.pdf (Chapter 1 - The FLV File Format - Page 8)
-/// - video_file_format_spec_v10_1.pdf (Annex E.3 - The FLV File Body)
+/// The FLV File Body is defined by:
+/// - Legacy FLV spec, Annex E.3
 #[derive(Debug, Clone, PartialEq)]
-pub struct FlvFile {
+pub struct FlvFile<'a> {
+    /// The header of the FLV file.
     pub header: FlvHeader,
-    pub tags: Vec<FlvTag>,
+    /// The tags in the FLV file.
+    pub tags: Vec<FlvTag<'a>>,
 }
 
-impl FlvFile {
+impl FlvFile<'_> {
     /// Demux an FLV file from a reader.
+    ///
     /// The reader needs to be a [`std::io::Cursor`] with a [`Bytes`] buffer because we
     /// take advantage of zero-copy reading.
-    pub fn demux(reader: &mut std::io::Cursor<Bytes>) -> std::io::Result<Self> {
+    pub fn demux(reader: &mut std::io::Cursor<Bytes>) -> Result<Self, FlvError> {
         let header = FlvHeader::demux(reader)?;
 
         let mut tags = Vec::new();

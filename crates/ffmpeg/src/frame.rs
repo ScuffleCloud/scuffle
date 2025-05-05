@@ -608,8 +608,10 @@ impl AudioFrame {
     }
 
     /// Returns the channel layout of the frame.
-    pub const fn channel_layout(&self) -> AVChannelLayout {
-        self.0.0.as_deref_except().ch_layout
+    pub fn channel_layout(&self) -> AudioChannelLayout {
+        // Safety: the AudioFrame has already been initialized at this point, so
+        // `av_channel_layout_uninit` is safe to call
+        unsafe { AudioChannelLayout::wrap(self.0.0.as_deref_except().ch_layout) }
     }
 
     /// Returns the channel count of the frame.
@@ -668,6 +670,11 @@ impl AudioFrame {
 
         // Safety: ptr is not null and linesize is the correct length for the slice type
         Some(unsafe { core::slice::from_raw_parts_mut(ptr, linesize as usize) })
+    }
+
+    /// Get the sample format of the frame.
+    pub const fn format(&self) -> AVSampleFormat {
+        AVSampleFormat(self.0.0.as_deref_except().format)
     }
 }
 
@@ -730,7 +737,7 @@ mod tests {
         let cloned_frame = frame.clone();
 
         assert_eq!(
-            format!("{:?}", frame),
+            format!("{frame:?}"),
             format!("{:?}", cloned_frame),
             "Cloned frame should be equal to the original frame."
         );
@@ -957,15 +964,19 @@ mod tests {
             .expect("Failed to create AudioFrame with custom layout");
 
         let layout = audio_frame.channel_layout();
-        assert_eq!(layout.nb_channels, 2, "Expected channel layout to have 2 channels (stereo).");
+        assert_eq!(
+            layout.channel_count(),
+            2,
+            "Expected channel layout to have 2 channels (stereo)."
+        );
         assert_eq!(
             // Safety: this should be a mask not a pointer.
-            unsafe { layout.u.mask },
+            unsafe { layout.0.u.mask },
             3,
             "Expected channel mask to match AV_CH_LAYOUT_STEREO."
         );
         assert_eq!(
-            AVChannelOrder(layout.order as _),
+            AVChannelOrder(layout.0.order as _),
             AVChannelOrder::Native,
             "Expected channel order to be AV_CHANNEL_ORDER_NATIVE."
         );
@@ -1001,8 +1012,7 @@ mod tests {
             assert!(
                 // Safety: `frame` is a valid pointer. And we dont attempt to read from the frame until after the allocation.
                 unsafe { frame.alloc_frame_buffer(alignment).is_err() },
-                "Should fail to allocate buffer with invalid frame and alignment {:?}",
-                alignment
+                "Should fail to allocate buffer with invalid frame and alignment {alignment:?}"
             );
         }
     }
@@ -1061,7 +1071,7 @@ mod tests {
                 numerator: 1,
                 denominator: 44100,
             },
-            format: 1,
+            format: AVSampleFormat::S16,
             is_audio: true,
             is_video: false,
         }

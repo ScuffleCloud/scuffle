@@ -1,9 +1,3 @@
-mod define;
-mod errors;
-mod server_session;
+//! High-level API to drive RTMP sessions.
 
-pub use self::errors::SessionError;
-pub use self::server_session::Session;
-
-#[cfg(test)]
-mod tests;
+pub mod server;

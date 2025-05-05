@@ -1,0 +1,14 @@
+[[scuffle-h265]]
+category = "refactor"
+description = "Move `range_check` macro to scuffle-bytes-util and call it from there"
+authors = ["@philipch07, @lennartkloock"]
+
+[[scuffle-bytes-util]]
+category = "feat"
+description = "Add `range_check` macro to scuffle-bytes-util"
+authors = ["@philipch07, @lennartkloock"]
+
+[[scuffle-h264]]
+category = "feat"
+description = "Use `range_check` macro from scuffle-bytes-util to enforce range checks"
+authors = ["@philipch07, @lennartkloock"]

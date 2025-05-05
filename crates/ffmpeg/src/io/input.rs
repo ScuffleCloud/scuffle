@@ -209,7 +209,7 @@ mod tests {
         if let Err(err) = result {
             match err {
                 FfmpegError::Code(_) => (),
-                _ => panic!("Unexpected error type: {:?}", err),
+                _ => panic!("Unexpected error type: {err:?}"),
             }
         }
     }
@@ -221,7 +221,7 @@ mod tests {
         let result = Input::new(data);
 
         if let Err(e) = &result {
-            eprintln!("Error encountered: {:?}", e);
+            eprintln!("Error encountered: {e:?}");
         }
 
         assert!(result.is_ok(), "Expected success but got error");
@@ -234,7 +234,7 @@ mod tests {
         let result = Input::seekable(data);
 
         if let Err(e) = &result {
-            eprintln!("Error encountered: {:?}", e);
+            eprintln!("Error encountered: {e:?}");
         }
 
         assert!(result.is_ok(), "Expected success but got error");
@@ -362,7 +362,7 @@ mod tests {
         for _ in 0..5 {
             match packets.next() {
                 Some(Ok(_)) => (),
-                Some(Err(e)) => panic!("Error encountered while reading packets: {:?}", e),
+                Some(Err(e)) => panic!("Error encountered while reading packets: {e:?}"),
                 None => break,
             }
         }

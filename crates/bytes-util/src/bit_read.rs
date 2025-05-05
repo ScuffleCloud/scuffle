@@ -225,8 +225,7 @@ mod tests {
             assert_eq!(
                 reader.read_bit().unwrap(),
                 (binary & (1 << (31 - i))) != 0,
-                "bit {} is not correct",
-                i
+                "bit {i} is not correct"
             );
         }
 
@@ -253,8 +252,7 @@ mod tests {
             assert_eq!(
                 reader.read_bits(count).ok(),
                 Some(expected),
-                "reading {} bits ({i}) are not correct",
-                count
+                "reading {count} bits ({i}) are not correct"
             );
         }
 
@@ -269,7 +267,7 @@ mod tests {
             let pos = reader.data.stream_position().unwrap();
             assert_eq!(pos, i, "stream pos");
             assert_eq!(reader.bit_pos(), 0, "bit pos");
-            assert!(reader.read_bit().unwrap(), "bit {} is not correct", i);
+            assert!(reader.read_bit().unwrap(), "bit {i} is not correct");
             reader.align().unwrap();
             let pos = reader.data.stream_position().unwrap();
             assert_eq!(pos, i + 1, "stream pos");

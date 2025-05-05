@@ -22,6 +22,10 @@ defaults:
   run:
     shell: bash
 
+permissions:
+  # enable writing for semver-checks so it can write a pr comment
+  pull-requests: write
+
 jobs:
   matrix_prep:
     name: Matrix Prep
@@ -35,9 +39,11 @@ jobs:
 
       - name: Run matrix prep
         id: compute
+        env:
+          JSON_INPUT: ${{ toJson(github) }}
         run: |
           set -xeo pipefail
-          python3 .github/scripts/ci-matrix-prep.py '${{ toJson(github) }}' | tee -a $GITHUB_OUTPUT
+          echo $JSON_INPUT | python3 .github/scripts/ci-matrix-prep.py | tee -a $GITHUB_OUTPUT
 
   jobs:
     name: ${{ matrix.job_name || 'Jobs' }}
@@ -82,7 +88,7 @@ jobs:
 
   brawl-done:
     runs-on: ubuntu-24.04
-    needs: [jobs]
+    needs: [matrix_prep, jobs]
     if: ${{ !cancelled() && github.event_name == 'push' }}
     steps:
       - name: calculate the correct exit status

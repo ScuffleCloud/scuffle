@@ -13,12 +13,13 @@ benchmark.txt
 .aliases
 local.just
 !valgrind_suppressions.log
+.runner/
 
 # Docusaurus
 docs/build
 docs/.docusaurus
 docs/.cache-loader
-.runner/
+
 # Website
 website/node_modules/
 

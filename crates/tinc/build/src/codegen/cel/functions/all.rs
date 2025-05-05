@@ -138,18 +138,14 @@ impl Function for All {
 #[cfg(test)]
 #[cfg_attr(coverage_nightly, coverage(off))]
 mod tests {
-    use indexmap::IndexMap;
-    use quote::format_ident;
+    use quote::quote;
     use syn::parse_quote;
     use tinc_cel::{CelValue, CelValueConv};
 
     use crate::codegen::cel::compiler::{CompiledExpr, Compiler, CompilerCtx};
     use crate::codegen::cel::functions::{All, Function};
     use crate::codegen::cel::types::CelType;
-    use crate::types::{
-        ProtoEnumOptions, ProtoEnumType, ProtoEnumVariant, ProtoEnumVariantOptions, ProtoModifiedValueType, ProtoPath,
-        ProtoType, ProtoTypeRegistry, ProtoValueType, ProtoVisibility,
-    };
+    use crate::types::{ProtoModifiedValueType, ProtoType, ProtoTypeRegistry, ProtoValueType};
 
     #[test]
     fn test_all_syntax() {
@@ -304,31 +300,7 @@ mod tests {
 
     #[test]
     fn test_all_const_needs_runtime() {
-        let mut registry = ProtoTypeRegistry::new();
-        registry.register_enum(ProtoEnumType {
-            full_name: ProtoPath::new("some.UnknownEnum"),
-            options: ProtoEnumOptions { repr_enum: false },
-            package: ProtoPath::new("some"),
-            variants: {
-                let mut map = IndexMap::new();
-
-                map.insert(
-                    "FIRST_VALUE".into(),
-                    ProtoEnumVariant {
-                        full_name: ProtoPath::new("some.UnknownEnum.FIRST_VALUE"),
-                        value: 0,
-                        options: ProtoEnumVariantOptions {
-                            json_name: "FirstValue".into(),
-                            visibility: ProtoVisibility::Default,
-                        },
-                        rust_ident: format_ident!("FirstValue"),
-                    },
-                );
-
-                map
-            },
-        });
-
+        let registry = ProtoTypeRegistry::new();
         let compiler = Compiler::new(&registry);
 
         let list = CompiledExpr::constant(CelValue::List([CelValue::Number(0.into())].into_iter().collect()));
@@ -339,11 +311,91 @@ mod tests {
                 Some(list),
                 &[
                     cel_parser::parse("x").unwrap(), // not an ident
-                    cel_parser::parse("x.enum('some.UnknownEnum').string()").unwrap(),
+                    cel_parser::parse("dyn(x > 2)").unwrap(),
                 ],
             ))
             .unwrap();
 
-        insta::assert_debug_snapshot!(result);
+        let result = postcompile::compile_custom(
+            quote! {
+                #[allow(dead_code)]
+                fn runtime() -> Result<bool, ::tinc::__private::cel::CelError<'static>> {
+                    Ok(
+                        #result
+                    )
+                }
+            },
+            &postcompile::config! {
+                edition: "2024".into(),
+                dependencies: vec![
+                    postcompile::Dependency::workspace("tinc"),
+                ],
+            }
+        ).unwrap();
+
+        insta::assert_snapshot!(result);
+    }
+
+    #[test]
+    fn test_all_runtime() {
+        let registry = ProtoTypeRegistry::new();
+        let compiler = Compiler::new(&registry);
+
+        let list = CompiledExpr::runtime(
+            CelType::Proto(ProtoType::Modified(ProtoModifiedValueType::Repeated(ProtoValueType::Int32))),
+            parse_quote!(input)
+        );
+
+        let result = All
+            .compile(CompilerCtx::new(
+                compiler.child(),
+                Some(list),
+                &[
+                    cel_parser::parse("x").unwrap(), // not an ident
+                    cel_parser::parse("x > 2").unwrap(),
+                ],
+            ))
+            .unwrap();
+
+        let result = postcompile::compile_custom(
+            quote! {
+                #[allow(dead_code)]
+                fn runtime_slice(
+                    input: &[i32],
+                ) -> Result<bool, ::tinc::__private::cel::CelError<'static>> {
+                    Ok(
+                        #result
+                    )
+                }
+
+                #[allow(dead_code)]
+                fn runtime_vec(
+                    input: &Vec<i32>,
+                ) -> Result<bool, ::tinc::__private::cel::CelError<'static>> {
+                    Ok(
+                        #result
+                    )
+                }
+
+                #[test]
+                fn test_empty_lists() {
+                    assert!(runtime_slice(&[]).unwrap());
+                    assert!(runtime_vec(&vec![]).unwrap());
+                    assert!(runtime_slice(&[3, 4, 5]).unwrap());
+                    assert!(runtime_vec(&vec![3, 4, 5]).unwrap());
+                    assert!(!runtime_slice(&[3, 4, 5, 2]).unwrap());
+                    assert!(!runtime_vec(&vec![3, 4, 5, 2]).unwrap());
+                }
+            },
+            &postcompile::config! {
+                edition: "2024".into(),
+                test: true,
+                dependencies: vec![
+                    postcompile::Dependency::workspace("tinc"),
+                ],
+            }
+        ).unwrap();
+
+        insta::assert_snapshot!(result);
     }
 }

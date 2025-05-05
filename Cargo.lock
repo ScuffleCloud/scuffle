@@ -4063,6 +4063,7 @@ dependencies = [
  "indexmap",
  "insta",
  "num-traits",
+ "postcompile",
  "prettyplease",
  "proc-macro2",
  "prost 0.13.5",

@@ -22,6 +22,7 @@ mod size;
 mod starts_with;
 mod string;
 mod uint;
+mod dyn_;
 
 pub(crate) use all::All;
 pub(crate) use bool::Bool;
@@ -47,6 +48,7 @@ pub(crate) use size::Size;
 pub(crate) use starts_with::StartsWith;
 pub(crate) use string::String;
 pub(crate) use uint::UInt;
+pub(crate) use dyn_::Dyn;
 
 use super::compiler::{CompileError, CompiledExpr, Compiler, CompilerCtx};
 
@@ -75,6 +77,7 @@ pub(crate) fn add_to_compiler(compiler: &mut Compiler) {
     IsHostname.add_to_compiler(compiler);
     IsUri.add_to_compiler(compiler);
     IsEmail.add_to_compiler(compiler);
+    Dyn.add_to_compiler(compiler);
 }
 
 pub(crate) trait Function: Send + Sync + 'static {

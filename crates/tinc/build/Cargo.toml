@@ -39,6 +39,7 @@ fmtools = "0.1"
 
 [dev-dependencies]
 insta = "1"
+postcompile.workspace = true
 
 [features]
 default = ["prost"]

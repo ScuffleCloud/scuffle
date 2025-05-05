@@ -39,6 +39,11 @@ runs:
         name: docusaurus
         path: docs/build
 
+    - name: Install Wrangler
+      shell: bash
+      working-directory: ./docs
+      run: pnpm add -D cloudflare/wrangler-action@v3
+
     - name: Deploy docs
       if: ${{ inputs.deploy_docs == 'true' }}
       uses: cloudflare/wrangler-action@v3

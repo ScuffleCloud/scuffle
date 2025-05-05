@@ -12,7 +12,7 @@ use crate::{BoxHeader, FullBoxHeader, IsoBox};
 ///
 /// ISO/IEC 14496-12 - 8.1.1
 #[derive(IsoBox)]
-#[iso_box(box_type = b"mdat", crate_path = "crate")]
+#[iso_box(box_type = b"mdat", crate_path = crate)]
 pub struct MediaDataBox<'a> {
     #[iso_box(header)]
     pub header: BoxHeader,
@@ -23,7 +23,7 @@ impl Debug for MediaDataBox<'_> {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         f.debug_struct("MediaDataBox")
             .field("header", &self.header)
-            .field("data(size)", &self.data.len())
+            .field("data.len", &self.data.len())
             .finish()
     }
 }
@@ -32,7 +32,7 @@ impl Debug for MediaDataBox<'_> {
 ///
 /// ISO/IEC 14496-12 - 8.1.2
 #[derive(IsoBox)]
-#[iso_box(box_type = b"free", crate_path = "crate")]
+#[iso_box(box_type = b"free", crate_path = crate)]
 pub struct FreeSpaceBox<'a> {
     #[iso_box(header)]
     pub header: BoxHeader,
@@ -43,7 +43,7 @@ impl Debug for FreeSpaceBox<'_> {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         f.debug_struct("FreeSpaceBox")
             .field("header", &self.header)
-            .field("data(size)", &self.data.len())
+            .field("data.len", &self.data.len())
             .finish()
     }
 }
@@ -52,7 +52,7 @@ impl Debug for FreeSpaceBox<'_> {
 ///
 /// ISO/IEC 14496-12 - 8.1.2
 #[derive(IsoBox)]
-#[iso_box(box_type = b"skip", crate_path = "crate")]
+#[iso_box(box_type = b"skip", crate_path = crate)]
 pub struct SkipBox<'a> {
     #[iso_box(header)]
     pub header: BoxHeader,
@@ -63,7 +63,7 @@ impl Debug for SkipBox<'_> {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         f.debug_struct("SkipBox")
             .field("header", &self.header)
-            .field("data(size)", &self.data.len())
+            .field("data.len", &self.data.len())
             .finish()
     }
 }
@@ -72,7 +72,7 @@ impl Debug for SkipBox<'_> {
 ///
 /// ISO/IEC 14496-12 - 8.1.3
 #[derive(IsoBox, Debug)]
-#[iso_box(box_type = b"pdin", crate_path = "crate")]
+#[iso_box(box_type = b"pdin", crate_path = crate)]
 pub struct ProgressiveDownloadInfoBox {
     #[iso_box(header)]
     pub header: FullBoxHeader,
@@ -102,7 +102,7 @@ impl<'a> Deserialize<'a> for ProgressiveDownloadInfoBoxProperties {
 ///
 /// ISO/IEC 14496-12 - 8.1.4
 #[derive(IsoBox)]
-#[iso_box(box_type = b"imda", crate_path = "crate")]
+#[iso_box(box_type = b"imda", crate_path = crate)]
 pub struct IdentifiedMediaDataBox<'a> {
     #[iso_box(header)]
     pub header: BoxHeader,
@@ -115,7 +115,7 @@ impl Debug for IdentifiedMediaDataBox<'_> {
         f.debug_struct("IdentifiedMediaDataBox")
             .field("header", &self.header)
             .field("imda_identifier", &self.imda_identifier)
-            .field("data(size)", &self.data.len())
+            .field("data.len", &self.data.len())
             .finish()
     }
 }

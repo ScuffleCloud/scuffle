@@ -11,7 +11,7 @@ license = "MIT OR Apache-2.0"
 keywords = ["grpc", "protobuf", "tonic", "codegen"]
 
 [lints.rust]
-unexpected_cfgs = { level = "warn", check-cfg = ['cfg(coverage_nightly)'] }
+unexpected_cfgs = { level = "warn", check-cfg = ['cfg(coverage_nightly)', 'cfg(valgrind)'] }
 
 [dependencies]
 scuffle-workspace-hack.workspace = true

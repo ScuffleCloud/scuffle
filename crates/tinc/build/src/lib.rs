@@ -2,6 +2,7 @@
 #![deny(missing_docs)]
 #![deny(unsafe_code)]
 #![deny(unreachable_pub)]
+#![cfg_attr(not(feature = "prost"), allow(unused_variables, dead_code))]
 
 //! Tinc build
 //! TODO: Crate Level Docs.

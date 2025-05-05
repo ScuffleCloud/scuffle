@@ -1,7 +1,6 @@
 use axum::response::IntoResponse;
-use tonic_types::{ErrorDetails, StatusExt};
 
-use super::{HttpErrorResponse, HttpErrorResponseCode, HttpErrorResponseDetails, TrackerSharedState};
+use super::{HttpErrorResponse, HttpErrorResponseCode, HttpErrorResponseDetails};
 
 #[derive(Debug, thiserror::Error)]
 pub enum ValidationError {
@@ -56,6 +55,10 @@ pub trait ValidateMessage {
     #[cfg(feature = "tonic")]
     #[allow(clippy::result_large_err)]
     fn validate_tonic(&self) -> Result<(), tonic::Status> {
+        use tonic_types::{ErrorDetails, StatusExt};
+
+        use crate::__private::TrackerSharedState;
+
         let mut state = TrackerSharedState::default();
 
         state.in_scope(|| self.validate())?;

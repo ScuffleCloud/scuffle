@@ -2,7 +2,7 @@ use std::collections::BTreeMap;
 use std::sync::Arc;
 
 use indexmap::IndexMap;
-use prost_reflect::Kind;
+#[cfg(feature = "prost")]
 use syn::parse_quote;
 use tinc_pb::http_endpoint_options;
 
@@ -44,25 +44,26 @@ pub(crate) enum ProtoWellKnownType {
 }
 
 impl ProtoValueType {
-    pub(crate) fn from_pb(ty: &Kind) -> Self {
+    #[cfg(feature = "prost")]
+    pub(crate) fn from_pb(ty: &prost_reflect::Kind) -> Self {
         match ty {
-            Kind::Double => ProtoValueType::Double,
-            Kind::Float => ProtoValueType::Float,
-            Kind::Int32 => ProtoValueType::Int32,
-            Kind::Int64 => ProtoValueType::Int64,
-            Kind::Uint32 => ProtoValueType::UInt32,
-            Kind::Uint64 => ProtoValueType::UInt64,
-            Kind::Sint32 => ProtoValueType::Int32,
-            Kind::Sint64 => ProtoValueType::Int64,
-            Kind::Fixed32 => ProtoValueType::Float,
-            Kind::Fixed64 => ProtoValueType::Double,
-            Kind::Sfixed32 => ProtoValueType::Float,
-            Kind::Sfixed64 => ProtoValueType::Double,
-            Kind::Bool => ProtoValueType::Bool,
-            Kind::String => ProtoValueType::String,
-            Kind::Bytes => ProtoValueType::Bytes,
-            Kind::Message(message) => ProtoValueType::from_proto_path(message.full_name()),
-            Kind::Enum(enum_) => ProtoValueType::Enum(ProtoPath::new(enum_.full_name())),
+            prost_reflect::Kind::Double => ProtoValueType::Double,
+            prost_reflect::Kind::Float => ProtoValueType::Float,
+            prost_reflect::Kind::Int32 => ProtoValueType::Int32,
+            prost_reflect::Kind::Int64 => ProtoValueType::Int64,
+            prost_reflect::Kind::Uint32 => ProtoValueType::UInt32,
+            prost_reflect::Kind::Uint64 => ProtoValueType::UInt64,
+            prost_reflect::Kind::Sint32 => ProtoValueType::Int32,
+            prost_reflect::Kind::Sint64 => ProtoValueType::Int64,
+            prost_reflect::Kind::Fixed32 => ProtoValueType::Float,
+            prost_reflect::Kind::Fixed64 => ProtoValueType::Double,
+            prost_reflect::Kind::Sfixed32 => ProtoValueType::Float,
+            prost_reflect::Kind::Sfixed64 => ProtoValueType::Double,
+            prost_reflect::Kind::Bool => ProtoValueType::Bool,
+            prost_reflect::Kind::String => ProtoValueType::String,
+            prost_reflect::Kind::Bytes => ProtoValueType::Bytes,
+            prost_reflect::Kind::Message(message) => ProtoValueType::from_proto_path(message.full_name()),
+            prost_reflect::Kind::Enum(enum_) => ProtoValueType::Enum(ProtoPath::new(enum_.full_name())),
         }
     }
 
@@ -92,35 +93,51 @@ impl ProtoValueType {
         match (self, mode) {
             (ProtoValueType::Enum(name), _) => get_common_import_path(package, name),
             (ProtoValueType::Message(name), _) => get_common_import_path(package, name),
+            #[cfg(feature = "prost")]
             (ProtoValueType::WellKnown(ProtoWellKnownType::Timestamp), Mode::Prost) => {
                 parse_quote!(::tinc::well_known::prost::Timestamp)
             }
+            #[cfg(feature = "prost")]
             (ProtoValueType::WellKnown(ProtoWellKnownType::Duration), Mode::Prost) => {
                 parse_quote!(::tinc::well_known::prost::Duration)
             }
+            #[cfg(feature = "prost")]
             (ProtoValueType::WellKnown(ProtoWellKnownType::Struct), Mode::Prost) => {
                 parse_quote!(::tinc::well_known::prost::Struct)
             }
+            #[cfg(feature = "prost")]
             (ProtoValueType::WellKnown(ProtoWellKnownType::Value), Mode::Prost) => {
                 parse_quote!(::tinc::well_known::prost::Value)
             }
+            #[cfg(feature = "prost")]
             (ProtoValueType::WellKnown(ProtoWellKnownType::Empty), Mode::Prost) => {
                 parse_quote!(::tinc::well_known::prost::Empty)
             }
+            #[cfg(feature = "prost")]
             (ProtoValueType::WellKnown(ProtoWellKnownType::ListValue), Mode::Prost) => {
                 parse_quote!(::tinc::well_known::prost::List)
             }
+            #[cfg(feature = "prost")]
             (ProtoValueType::WellKnown(ProtoWellKnownType::Any), Mode::Prost) => {
                 parse_quote!(::tinc::well_known::prost::Any)
             }
+            #[cfg(feature = "prost")]
             (ProtoValueType::Bool, Mode::Prost) => parse_quote!(::tinc::well_known::prost::BoolValue),
+            #[cfg(feature = "prost")]
             (ProtoValueType::Int32, Mode::Prost) => parse_quote!(::tinc::well_known::prost::Int32Value),
+            #[cfg(feature = "prost")]
             (ProtoValueType::Int64, Mode::Prost) => parse_quote!(::tinc::well_known::prost::Int64Value),
+            #[cfg(feature = "prost")]
             (ProtoValueType::UInt32, Mode::Prost) => parse_quote!(::tinc::well_known::prost::UInt32Value),
+            #[cfg(feature = "prost")]
             (ProtoValueType::UInt64, Mode::Prost) => parse_quote!(::tinc::well_known::prost::UInt64Value),
+            #[cfg(feature = "prost")]
             (ProtoValueType::Float, Mode::Prost) => parse_quote!(::tinc::well_known::prost::FloatValue),
+            #[cfg(feature = "prost")]
             (ProtoValueType::Double, Mode::Prost) => parse_quote!(::tinc::well_known::prost::DoubleValue),
+            #[cfg(feature = "prost")]
             (ProtoValueType::String, Mode::Prost) => parse_quote!(::tinc::well_known::prost::String),
+            #[cfg(feature = "prost")]
             (ProtoValueType::Bytes, Mode::Prost) => parse_quote!(::tinc::well_known::prost::Bytes),
         }
     }

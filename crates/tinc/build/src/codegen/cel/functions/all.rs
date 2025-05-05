@@ -337,6 +337,7 @@ mod tests {
         insta::assert_snapshot!(result);
     }
 
+    #[cfg(not(valgrind))]
     #[test]
     fn test_all_runtime() {
         let registry = ProtoTypeRegistry::new();

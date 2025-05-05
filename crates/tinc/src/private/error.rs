@@ -3,9 +3,6 @@ use std::collections::HashMap;
 use std::fmt::Write;
 use std::marker::PhantomData;
 
-use axum::response::IntoResponse;
-use tonic_types::StatusExt;
-
 use super::FuncFmt;
 
 #[derive(Debug)]
@@ -381,6 +378,9 @@ impl std::fmt::Debug for MapKey {
 
 #[cfg(feature = "tonic")]
 pub fn handle_tonic_status(status: &tonic::Status) -> axum::response::Response {
+    use axum::response::IntoResponse;
+    use tonic_types::StatusExt;
+
     let code = HttpErrorResponseCode::from(status.code());
     let details = status.get_error_details();
     let details = HttpErrorResponseDetails::from(&details);

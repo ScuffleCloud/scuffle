@@ -330,8 +330,9 @@ mod tests {
                 dependencies: vec![
                     postcompile::Dependency::workspace("tinc"),
                 ],
-            }
-        ).unwrap();
+            },
+        )
+        .unwrap();
 
         insta::assert_snapshot!(result);
     }
@@ -343,7 +344,7 @@ mod tests {
 
         let list = CompiledExpr::runtime(
             CelType::Proto(ProtoType::Modified(ProtoModifiedValueType::Repeated(ProtoValueType::Int32))),
-            parse_quote!(input)
+            parse_quote!(input),
         );
 
         let result = All
@@ -393,8 +394,9 @@ mod tests {
                 dependencies: vec![
                     postcompile::Dependency::workspace("tinc"),
                 ],
-            }
-        ).unwrap();
+            },
+        )
+        .unwrap();
 
         insta::assert_snapshot!(result);
     }

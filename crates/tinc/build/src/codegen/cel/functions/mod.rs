@@ -3,6 +3,7 @@ mod bool;
 mod bytes;
 mod contains;
 mod double;
+mod dyn_;
 mod ends_with;
 mod enum_;
 mod exists;
@@ -22,13 +23,13 @@ mod size;
 mod starts_with;
 mod string;
 mod uint;
-mod dyn_;
 
 pub(crate) use all::All;
 pub(crate) use bool::Bool;
 pub(crate) use bytes::Bytes;
 pub(crate) use contains::Contains;
 pub(crate) use double::Double;
+pub(crate) use dyn_::Dyn;
 pub(crate) use ends_with::EndsWith;
 pub(crate) use enum_::Enum;
 pub(crate) use exists::Exists;
@@ -48,7 +49,6 @@ pub(crate) use size::Size;
 pub(crate) use starts_with::StartsWith;
 pub(crate) use string::String;
 pub(crate) use uint::UInt;
-pub(crate) use dyn_::Dyn;
 
 use super::compiler::{CompileError, CompiledExpr, Compiler, CompilerCtx};
 

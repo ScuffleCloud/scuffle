@@ -211,7 +211,8 @@ where
                             SerdeDeserializer {
                                 deserializer: serde::de::IntoDeserializer::into_deserializer(content),
                             },
-                        ).map_err(serde::de::Error::custom);
+                        )
+                        .map_err(serde::de::Error::custom);
 
                         if let Err(e) = result {
                             report_de_error(e)?;
@@ -242,13 +243,10 @@ where
                         report_de_error(e)?;
                     }
                 } else {
-                    self.content_buffer.push(
-                        deserializer
-                            .deserialize::<serde_json::Value>()
-                            .inspect_err(|_| {
-                                set_irrecoverable();
-                            })?
-                    );
+                    self.content_buffer
+                        .push(deserializer.deserialize::<serde_json::Value>().inspect_err(|_| {
+                            set_irrecoverable();
+                        })?);
                 }
             }
         } else {

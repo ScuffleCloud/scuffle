@@ -1,7 +1,8 @@
 use syn::parse_quote;
 
 use super::Function;
-use crate::codegen::cel::{compiler::{CompileError, CompiledExpr, CompilerCtx}, types::CelType};
+use crate::codegen::cel::compiler::{CompileError, CompiledExpr, CompilerCtx};
+use crate::codegen::cel::types::CelType;
 
 #[derive(Debug, Clone, Default)]
 pub(crate) struct Dyn;
@@ -28,7 +29,7 @@ impl Function for Dyn {
 
         let ty = match &result {
             CompiledExpr::Constant(_) => CelType::CelValue,
-            CompiledExpr::Runtime(r) => r.ty.clone()
+            CompiledExpr::Runtime(r) => r.ty.clone(),
         };
 
         Ok(CompiledExpr::runtime(ty, parse_quote!(#result)))

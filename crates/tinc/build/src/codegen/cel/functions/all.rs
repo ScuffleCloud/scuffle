@@ -316,7 +316,13 @@ mod tests {
             ))
             .unwrap();
 
-        let result = postcompile::compile_custom(
+        let result = postcompile::compile_str!(
+            postcompile::config! {
+                edition: "2024".into(),
+                dependencies: vec![
+                    postcompile::Dependency::workspace("tinc"),
+                ],
+            },
             quote! {
                 #[allow(dead_code)]
                 fn runtime() -> Result<bool, ::tinc::__private::cel::CelError<'static>> {
@@ -325,14 +331,7 @@ mod tests {
                     )
                 }
             },
-            &postcompile::config! {
-                edition: "2024".into(),
-                dependencies: vec![
-                    postcompile::Dependency::workspace("tinc"),
-                ],
-            },
-        )
-        .unwrap();
+        );
 
         insta::assert_snapshot!(result);
     }
@@ -359,7 +358,14 @@ mod tests {
             ))
             .unwrap();
 
-        let result = postcompile::compile_custom(
+        let result = postcompile::compile_str!(
+            postcompile::config! {
+                edition: "2024".into(),
+                test: true,
+                dependencies: vec![
+                    postcompile::Dependency::workspace("tinc"),
+                ],
+            },
             quote! {
                 #[allow(dead_code)]
                 fn runtime_slice(
@@ -389,15 +395,7 @@ mod tests {
                     assert!(!runtime_vec(&vec![3, 4, 5, 2]).unwrap());
                 }
             },
-            &postcompile::config! {
-                edition: "2024".into(),
-                test: true,
-                dependencies: vec![
-                    postcompile::Dependency::workspace("tinc"),
-                ],
-            },
-        )
-        .unwrap();
+        );
 
         insta::assert_snapshot!(result);
     }

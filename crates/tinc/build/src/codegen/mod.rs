@@ -14,7 +14,7 @@ mod serde;
 mod service;
 pub(crate) mod utils;
 
-#[derive(Default, Debug)]
+#[derive(Default)]
 pub(crate) struct Package {
     pub attributes: AttributeConfig,
     pub extra_items: Vec<syn::Item>,

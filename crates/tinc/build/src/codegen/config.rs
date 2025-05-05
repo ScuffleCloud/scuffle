@@ -2,7 +2,7 @@ use std::collections::BTreeMap;
 
 use crate::types::ProtoPath;
 
-#[derive(Default, Debug)]
+#[derive(Default)]
 pub(crate) struct AttributeConfig {
     enum_configs: BTreeMap<ProtoPath, EnumConfig>,
     message_configs: BTreeMap<ProtoPath, MessageConfig>,
@@ -26,7 +26,7 @@ impl AttributeConfig {
     }
 }
 
-#[derive(Default, Debug)]
+#[derive(Default)]
 pub(crate) struct EnumConfig {
     container_attributes: Vec<syn::Attribute>,
     variant_attributes: BTreeMap<String, Vec<syn::Attribute>>,

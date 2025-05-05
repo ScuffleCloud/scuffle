@@ -81,6 +81,11 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "lts/*"
+
       - name: Download Artifact
         id: download-artifact
         uses: dawidd6/action-download-artifact@v8

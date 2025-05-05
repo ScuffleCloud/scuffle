@@ -44,12 +44,24 @@ mod tests {
 
     #[test]
     fn test_get_common_import_path() {
-        assert_eq!(get_common_import_path("a.b.c", "a.b.d").to_token_stream().to_string(), syn::parse_str::<syn::Path>("super::D").unwrap().to_token_stream().to_string());
-        assert_eq!(get_common_import_path("a.b.c", "a.b.c.d").to_token_stream().to_string(), syn::parse_str::<syn::Path>("D").unwrap().to_token_stream().to_string());
-        assert_eq!(get_common_import_path("a.b.c", "a.b.c").to_token_stream().to_string(), syn::parse_str::<syn::Path>("super::C").unwrap().to_token_stream().to_string());
+        assert_eq!(
+            get_common_import_path("a.b.c", "a.b.d").to_token_stream().to_string(),
+            syn::parse_str::<syn::Path>("super::D").unwrap().to_token_stream().to_string()
+        );
+        assert_eq!(
+            get_common_import_path("a.b.c", "a.b.c.d").to_token_stream().to_string(),
+            syn::parse_str::<syn::Path>("D").unwrap().to_token_stream().to_string()
+        );
+        assert_eq!(
+            get_common_import_path("a.b.c", "a.b.c").to_token_stream().to_string(),
+            syn::parse_str::<syn::Path>("super::C").unwrap().to_token_stream().to_string()
+        );
         assert_eq!(
             get_common_import_path("a.b.c", "a.b").to_token_stream().to_string(),
-            syn::parse_str::<syn::Path>("super::super::B").unwrap().to_token_stream().to_string()
+            syn::parse_str::<syn::Path>("super::super::B")
+                .unwrap()
+                .to_token_stream()
+                .to_string()
         );
     }
 }

@@ -3,7 +3,7 @@ source: crates/postcompile/src/lib.rs
 expression: out
 ---
 exit status: 101
---- expand_stderr 
+--- expand_stderr
 error: expected one of `!` or `::`, found `<eof>`
  --> <postcompile>:1:1
   |

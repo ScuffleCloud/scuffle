@@ -3,7 +3,7 @@ source: crates/metrics/src/lib.rs
 expression: "postcompile::compile!({\n    #[derive(scuffle_metrics::MetricEnum)] pub enum Kind { Http, Grpc, }\n})"
 ---
 exit status: 0
---- expanded 
+--- expanded
 #![feature(prelude_import)]
 #[prelude_import]
 use std::prelude::rust_2024::*;

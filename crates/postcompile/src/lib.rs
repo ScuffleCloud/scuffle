@@ -186,16 +186,16 @@ impl std::fmt::Display for CompileOutput {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         writeln!(f, "exit status: {}", self.status)?;
         if !self.expand_stderr.is_empty() {
-            write!(f, "--- expand_stderr \n{}\n", self.expand_stderr)?;
+            write!(f, "--- expand_stderr\n{}\n", self.expand_stderr)?;
         }
         if !self.test_stderr.is_empty() {
-            write!(f, "--- test_stderr \n{}\n", self.test_stderr)?;
+            write!(f, "--- test_stderr\n{}\n", self.test_stderr)?;
         }
         if !self.test_stdout.is_empty() {
-            write!(f, "--- test_stdout \n{}\n", self.test_stdout)?;
+            write!(f, "--- test_stdout\n{}\n", self.test_stdout)?;
         }
         if !self.expanded.is_empty() {
-            write!(f, "--- expanded \n{}\n", self.expanded)?;
+            write!(f, "--- expanded\n{}\n", self.expanded)?;
         }
         Ok(())
     }

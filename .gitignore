@@ -19,7 +19,6 @@ docs/build
 docs/.docusaurus
 docs/.cache-loader
 
-
 # Website
 website/node_modules/
 website/.output

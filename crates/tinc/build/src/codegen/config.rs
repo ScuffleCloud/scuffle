@@ -54,7 +54,7 @@ impl EnumConfig {
     }
 }
 
-#[derive(Default, Debug)]
+#[derive(Default)]
 pub(crate) struct MessageConfig {
     pub container_attributes: Vec<syn::Attribute>,
     pub field_attributes: BTreeMap<String, Vec<syn::Attribute>>,
@@ -91,7 +91,7 @@ impl MessageConfig {
     }
 }
 
-#[derive(Default, Debug)]
+#[derive(Default)]
 pub(crate) struct OneofConfig {
     pub container_attributes: Vec<syn::Attribute>,
     pub field_attributes: BTreeMap<String, Vec<syn::Attribute>>,

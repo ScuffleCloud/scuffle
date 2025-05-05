@@ -38,16 +38,18 @@ pub(crate) fn get_common_import_path(package: &str, end: &str) -> syn::Path {
 #[cfg(test)]
 #[cfg_attr(coverage_nightly, coverage(off))]
 mod tests {
+    use quote::ToTokens;
+
     use super::*;
 
     #[test]
     fn test_get_common_import_path() {
-        assert_eq!(get_common_import_path("a.b.c", "a.b.d"), syn::parse_str("super::D").unwrap());
-        assert_eq!(get_common_import_path("a.b.c", "a.b.c.d"), syn::parse_str("D").unwrap());
-        assert_eq!(get_common_import_path("a.b.c", "a.b.c"), syn::parse_str("super::C").unwrap());
+        assert_eq!(get_common_import_path("a.b.c", "a.b.d").to_token_stream().to_string(), syn::parse_str::<syn::Path>("super::D").unwrap().to_token_stream().to_string());
+        assert_eq!(get_common_import_path("a.b.c", "a.b.c.d").to_token_stream().to_string(), syn::parse_str::<syn::Path>("D").unwrap().to_token_stream().to_string());
+        assert_eq!(get_common_import_path("a.b.c", "a.b.c").to_token_stream().to_string(), syn::parse_str::<syn::Path>("super::C").unwrap().to_token_stream().to_string());
         assert_eq!(
-            get_common_import_path("a.b.c", "a.b"),
-            syn::parse_str("super::super::B").unwrap()
+            get_common_import_path("a.b.c", "a.b").to_token_stream().to_string(),
+            syn::parse_str::<syn::Path>("super::super::B").unwrap().to_token_stream().to_string()
         );
     }
 }

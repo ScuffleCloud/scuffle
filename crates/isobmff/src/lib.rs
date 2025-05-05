@@ -34,7 +34,7 @@ impl Debug for UnknownBox<'_> {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         f.debug_struct("UnknownBox")
             .field("header", &self.header)
-            .field("data(size)", &self.data.len())
+            .field("data.len", &self.data.len())
             .finish()
     }
 }

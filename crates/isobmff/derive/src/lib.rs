@@ -253,7 +253,7 @@ fn nested_box_parser<'a>(fields: impl Iterator<Item = &'a IsoBoxField>, crate_pa
 
                             if let Some(payload_size) = #crate_path::BoxHeaderProperties::payload_size(&box_header) {
                                 // Initialize the payload reader with the payload size
-                                let mut payload_reader = ::scuffle_bytes_util::zero_copy::ZeroCopyReader::take(&mut reader, #crate_path::BoxHeaderProperties::payload_size(&box_header).unwrap_or(1000));
+                                let mut payload_reader = ::scuffle_bytes_util::zero_copy::ZeroCopyReader::take(&mut reader, payload_size);
                                 // Deserialize the box payload
                                 let Some(iso_box) = ::scuffle_bytes_util::IoResultExt::eof_to_none(
                                     <#field_type as ::scuffle_bytes_util::zero_copy::DeserializeSeed<<#field_type as #crate_path::IsoBox>::Header>>::deserialize_seed(
@@ -303,7 +303,7 @@ fn nested_box_parser<'a>(fields: impl Iterator<Item = &'a IsoBoxField>, crate_pa
 
                             if let Some(payload_size) = #crate_path::BoxHeaderProperties::payload_size(&box_header) {
                                 // Initialize the payload reader with the payload size
-                                let mut payload_reader = ::scuffle_bytes_util::zero_copy::ZeroCopyReader::take(&mut reader, #crate_path::BoxHeaderProperties::payload_size(&box_header).unwrap_or(1000));
+                                let mut payload_reader = ::scuffle_bytes_util::zero_copy::ZeroCopyReader::take(&mut reader, payload_size);
                                 // Deserialize the box payload
                                 let Some(iso_box) = ::scuffle_bytes_util::IoResultExt::eof_to_none(
                                     <<#field_type as ::scuffle_bytes_util::zero_copy::Container>::Item as ::scuffle_bytes_util::zero_copy::DeserializeSeed<<<#field_type as ::scuffle_bytes_util::zero_copy::Container>::Item as #crate_path::IsoBox>::Header>>::deserialize_seed(

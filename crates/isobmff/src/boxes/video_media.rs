@@ -10,7 +10,7 @@ use crate::{BoxHeader, IsoBox};
 ///
 /// ISO/IEC 14496-12 - 12.1.4
 #[derive(IsoBox, Debug)]
-#[iso_box(box_type = b"clap", crate_path = "crate")]
+#[iso_box(box_type = b"clap", crate_path = crate)]
 pub struct CleanApertureBox {
     #[iso_box(header)]
     pub header: BoxHeader,
@@ -28,7 +28,7 @@ pub struct CleanApertureBox {
 ///
 /// ISO/IEC 14496-12 - 12.1.4
 #[derive(IsoBox, Debug)]
-#[iso_box(box_type = b"pasp", crate_path = "crate")]
+#[iso_box(box_type = b"pasp", crate_path = crate)]
 pub struct PixelAspectRatioBox {
     #[iso_box(header)]
     pub header: BoxHeader,
@@ -37,7 +37,7 @@ pub struct PixelAspectRatioBox {
 }
 
 #[derive(IsoBox, Debug)]
-#[iso_box(box_type = b"colr", crate_path = "crate")]
+#[iso_box(box_type = b"colr", crate_path = crate)]
 pub struct ColourInformationBox<'a> {
     #[iso_box(header)]
     pub header: BoxHeader,

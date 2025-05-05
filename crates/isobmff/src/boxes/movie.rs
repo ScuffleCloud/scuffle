@@ -3,14 +3,14 @@
 use byteorder::ReadBytesExt;
 use scuffle_bytes_util::zero_copy::{Deserialize, DeserializeSeed};
 
-use super::{TrackBox, UserDataBox};
+use super::{MovieExtendsBox, TrackBox, UserDataBox};
 use crate::{BoxHeader, FullBoxHeader, IsoBox};
 
 /// Movie box
 ///
 /// ISO/IEC 14496-12 - 8.2.1
 #[derive(IsoBox, Debug)]
-#[iso_box(box_type = b"moov", crate_path = "crate")]
+#[iso_box(box_type = b"moov", crate_path = crate)]
 pub struct MovieBox<'a> {
     #[iso_box(header)]
     pub header: BoxHeader,
@@ -18,6 +18,8 @@ pub struct MovieBox<'a> {
     pub mvhd: MovieHeaderBox,
     #[iso_box(nested_box(collect))]
     pub trak: Vec<TrackBox<'a>>,
+    #[iso_box(nested_box(collect))]
+    pub mvex: Option<MovieExtendsBox>,
     #[iso_box(nested_box(collect))]
     pub udta: Option<UserDataBox<'a>>,
 }

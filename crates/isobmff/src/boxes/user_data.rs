@@ -1,7 +1,10 @@
 use crate::{BoxHeader, IsoBox, UnknownBox};
 
+/// User data box
+///
+/// ISO/IEC 14496-12 - 8.10.1
 #[derive(IsoBox, Debug)]
-#[iso_box(box_type = b"udta", crate_path = "crate")]
+#[iso_box(box_type = b"udta", crate_path = crate)]
 pub struct UserDataBox<'a> {
     #[iso_box(header)]
     pub header: BoxHeader,

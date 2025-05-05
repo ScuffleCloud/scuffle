@@ -2,14 +2,18 @@ use std::io;
 
 use scuffle_bytes_util::zero_copy::{Deserialize, ZeroCopyReader};
 
-use super::{CompositionOffsetBox, TimeToSampleBox};
+use super::{
+    ChunkLargeOffsetBox, ChunkOffsetBox, CompactSampleSizeBox, CompositionOffsetBox, CompositionToDecodeBox, PaddingBitsBox,
+    SampleAuxiliaryInformationOffsetsBox, SampleAuxiliaryInformationSizesBox, SampleDependencyTypeBox, SampleSizeBox,
+    SampleToChunkBox, ShadowSyncSampleBox, SubSampleInformationBox, SyncSampleBox, TimeToSampleBox,
+};
 use crate::{BoxHeader, FullBoxHeader, IsoBox, UnknownBox};
 
 /// Sample table box
 ///
 /// ISO/IEC 14496-12 - 8.5.1
 #[derive(IsoBox, Debug)]
-#[iso_box(box_type = b"stbl", crate_path = "crate")]
+#[iso_box(box_type = b"stbl", crate_path = crate)]
 pub struct SampleTableBox<'a> {
     #[iso_box(header)]
     pub header: BoxHeader,
@@ -21,6 +25,38 @@ pub struct SampleTableBox<'a> {
     pub stts: TimeToSampleBox,
     #[iso_box(nested_box(collect))]
     pub ctts: Option<CompositionOffsetBox>,
+    #[iso_box(nested_box(collect))]
+    pub cslg: Option<CompositionToDecodeBox>,
+    #[iso_box(nested_box(collect))]
+    pub stss: Option<SyncSampleBox>,
+    #[iso_box(nested_box(collect))]
+    pub stsh: Option<ShadowSyncSampleBox>,
+    #[iso_box(nested_box(collect))]
+    pub sdtp: Option<SampleDependencyTypeBox>,
+
+    // one of stsz or stz2 must be present
+    #[iso_box(nested_box(collect))]
+    pub stsz: Option<SampleSizeBox>,
+    #[iso_box(nested_box(collect))]
+    pub stz2: Option<CompactSampleSizeBox<'a>>,
+
+    #[iso_box(nested_box)]
+    pub stsc: SampleToChunkBox,
+
+    // one of stco or co64 must be present
+    #[iso_box(nested_box(collect))]
+    pub stco: Option<ChunkOffsetBox>,
+    #[iso_box(nested_box(collect))]
+    pub co64: Option<ChunkLargeOffsetBox>,
+
+    #[iso_box(nested_box(collect))]
+    pub padb: Option<PaddingBitsBox>,
+    #[iso_box(nested_box(collect))]
+    pub subs: Vec<SubSampleInformationBox>,
+    #[iso_box(nested_box(collect))]
+    pub saiz: Vec<SampleAuxiliaryInformationSizesBox<'a>>,
+    #[iso_box(nested_box(collect))]
+    pub saio: Vec<SampleAuxiliaryInformationOffsetsBox>,
 }
 
 /// Sample entry
@@ -47,7 +83,7 @@ impl<'a> Deserialize<'a> for SampleEntry {
 ///
 /// ISO/IEC 14496-12 - 8.5.2
 #[derive(IsoBox, Debug)]
-#[iso_box(box_type = b"btrt", crate_path = "crate")]
+#[iso_box(box_type = b"btrt", crate_path = crate)]
 pub struct BitRateBox {
     #[iso_box(header)]
     pub header: BoxHeader,
@@ -60,7 +96,7 @@ pub struct BitRateBox {
 ///
 /// ISO/IEC 14496-12 - 8.5.2
 #[derive(IsoBox, Debug)]
-#[iso_box(box_type = b"stsd", crate_path = "crate")]
+#[iso_box(box_type = b"stsd", crate_path = crate)]
 pub struct SampleDescriptionBox<'a> {
     #[iso_box(header)]
     pub header: FullBoxHeader,
@@ -70,7 +106,7 @@ pub struct SampleDescriptionBox<'a> {
 }
 
 #[derive(IsoBox, Debug)]
-#[iso_box(box_type = b"stdp", crate_path = "crate")]
+#[iso_box(box_type = b"stdp", crate_path = crate)]
 pub struct DegradationPriorityBox {
     #[iso_box(header)]
     pub header: FullBoxHeader,

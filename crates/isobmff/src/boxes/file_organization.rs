@@ -30,7 +30,7 @@ nutype_enum! {
 ///
 /// ISO/IEC 14496-12 - 4.3
 #[derive(IsoBox, Debug)]
-#[iso_box(box_type = b"ftyp", crate_path = "crate")]
+#[iso_box(box_type = b"ftyp", crate_path = crate)]
 pub struct FileTypeBox {
     #[iso_box(header)]
     pub header: BoxHeader,
@@ -45,7 +45,7 @@ pub struct FileTypeBox {
 ///
 /// ISO/IEC 14496-12 - 4.4
 #[derive(IsoBox, Debug)]
-#[iso_box(box_type = b"tyco", crate_path = "crate")]
+#[iso_box(box_type = b"tyco", crate_path = crate)]
 pub struct TypeCombinationBox {
     #[iso_box(header)]
     pub header: BoxHeader,
@@ -57,7 +57,7 @@ pub struct TypeCombinationBox {
 ///
 /// ISO/IEC 14496-12 - 4.4
 #[derive(IsoBox, Debug)]
-#[iso_box(box_type = b"etyp", crate_path = "crate")]
+#[iso_box(box_type = b"etyp", crate_path = crate)]
 pub struct ExtendedTypeBox<'a> {
     #[iso_box(header)]
     pub header: BoxHeader,

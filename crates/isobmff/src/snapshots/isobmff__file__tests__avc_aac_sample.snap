@@ -36,7 +36,7 @@ IsobmffFile {
                     "mdat",
                 ),
             },
-            data(size): 832478,
+            data.len: 832478,
         },
     ],
     pdin: None,
@@ -236,7 +236,7 @@ IsobmffFile {
                                                 "avc1",
                                             ),
                                         },
-                                        data(size): 175,
+                                        data.len: 175,
                                     },
                                 ],
                             },
@@ -277,490 +277,137 @@ IsobmffFile {
                                         flags: 0,
                                     },
                                     entry_count: 120,
-                                    entries: [
-                                        CompositionOffsetBoxEntry {
-                                            sample_count: 1,
-                                            sample_offset: 1024,
-                                        },
-                                        CompositionOffsetBoxEntry {
-                                            sample_count: 1,
-                                            sample_offset: 2560,
-                                        },
-                                        CompositionOffsetBoxEntry {
-                                            sample_count: 1,
-                                            sample_offset: 1024,
-                                        },
-                                        CompositionOffsetBoxEntry {
-                                            sample_count: 1,
-                                            sample_offset: 0,
-                                        },
-                                        CompositionOffsetBoxEntry {
-                                            sample_count: 1,
-                                            sample_offset: 512,
-                                        },
-                                        CompositionOffsetBoxEntry {
-                                            sample_count: 1,
-                                            sample_offset: 2560,
-                                        },
-                                        CompositionOffsetBoxEntry {
-                                            sample_count: 1,
-                                            sample_offset: 1024,
-                                        },
-                                        CompositionOffsetBoxEntry {
-                                            sample_count: 1,
-                                            sample_offset: 0,
-                                        },
-                                        CompositionOffsetBoxEntry {
-                                            sample_count: 1,
-                                            sample_offset: 512,
-                                        },
-                                        CompositionOffsetBoxEntry {
-                                            sample_count: 1,
-                                            sample_offset: 2560,
-                                        },
-                                        CompositionOffsetBoxEntry {
-                                            sample_count: 1,
-                                            sample_offset: 1024,
-                                        },
-                                        CompositionOffsetBoxEntry {
-                                            sample_count: 1,
-                                            sample_offset: 0,
-                                        },
-                                        CompositionOffsetBoxEntry {
-                                            sample_count: 1,
-                                            sample_offset: 512,
-                                        },
-                                        CompositionOffsetBoxEntry {
-                                            sample_count: 1,
-                                            sample_offset: 2560,
-                                        },
-                                        CompositionOffsetBoxEntry {
-                                            sample_count: 1,
-                                            sample_offset: 1024,
-                                        },
-                                        CompositionOffsetBoxEntry {
-                                            sample_count: 1,
-                                            sample_offset: 0,
-                                        },
-                                        CompositionOffsetBoxEntry {
-                                            sample_count: 1,
-                                            sample_offset: 512,
-                                        },
-                                        CompositionOffsetBoxEntry {
-                                            sample_count: 1,
-                                            sample_offset: 2560,
-                                        },
-                                        CompositionOffsetBoxEntry {
-                                            sample_count: 1,
-                                            sample_offset: 1024,
-                                        },
-                                        CompositionOffsetBoxEntry {
-                                            sample_count: 1,
-                                            sample_offset: 0,
-                                        },
-                                        CompositionOffsetBoxEntry {
-                                            sample_count: 1,
-                                            sample_offset: 512,
-                                        },
-                                        CompositionOffsetBoxEntry {
-                                            sample_count: 1,
-                                            sample_offset: 2560,
-                                        },
-                                        CompositionOffsetBoxEntry {
-                                            sample_count: 1,
-                                            sample_offset: 1024,
-                                        },
-                                        CompositionOffsetBoxEntry {
-                                            sample_count: 1,
-                                            sample_offset: 0,
-                                        },
-                                        CompositionOffsetBoxEntry {
-                                            sample_count: 1,
-                                            sample_offset: 512,
-                                        },
-                                        CompositionOffsetBoxEntry {
-                                            sample_count: 1,
-                                            sample_offset: 2560,
-                                        },
-                                        CompositionOffsetBoxEntry {
-                                            sample_count: 1,
-                                            sample_offset: 1024,
-                                        },
-                                        CompositionOffsetBoxEntry {
-                                            sample_count: 1,
-                                            sample_offset: 0,
-                                        },
-                                        CompositionOffsetBoxEntry {
-                                            sample_count: 1,
-                                            sample_offset: 512,
-                                        },
-                                        CompositionOffsetBoxEntry {
-                                            sample_count: 1,
-                                            sample_offset: 2560,
-                                        },
-                                        CompositionOffsetBoxEntry {
-                                            sample_count: 1,
-                                            sample_offset: 1024,
-                                        },
-                                        CompositionOffsetBoxEntry {
-                                            sample_count: 1,
-                                            sample_offset: 0,
-                                        },
-                                        CompositionOffsetBoxEntry {
-                                            sample_count: 1,
-                                            sample_offset: 512,
-                                        },
-                                        CompositionOffsetBoxEntry {
-                                            sample_count: 1,
-                                            sample_offset: 2560,
-                                        },
-                                        CompositionOffsetBoxEntry {
-                                            sample_count: 1,
-                                            sample_offset: 1024,
-                                        },
-                                        CompositionOffsetBoxEntry {
-                                            sample_count: 1,
-                                            sample_offset: 0,
-                                        },
-                                        CompositionOffsetBoxEntry {
-                                            sample_count: 1,
-                                            sample_offset: 512,
-                                        },
-                                        CompositionOffsetBoxEntry {
-                                            sample_count: 1,
-                                            sample_offset: 2048,
-                                        },
-                                        CompositionOffsetBoxEntry {
-                                            sample_count: 2,
-                                            sample_offset: 512,
-                                        },
-                                        CompositionOffsetBoxEntry {
-                                            sample_count: 1,
-                                            sample_offset: 2560,
-                                        },
-                                        CompositionOffsetBoxEntry {
-                                            sample_count: 1,
-                                            sample_offset: 1024,
-                                        },
-                                        CompositionOffsetBoxEntry {
-                                            sample_count: 1,
-                                            sample_offset: 0,
-                                        },
-                                        CompositionOffsetBoxEntry {
-                                            sample_count: 1,
-                                            sample_offset: 512,
-                                        },
-                                        CompositionOffsetBoxEntry {
-                                            sample_count: 6,
-                                            sample_offset: 1024,
-                                        },
-                                        CompositionOffsetBoxEntry {
-                                            sample_count: 1,
-                                            sample_offset: 2048,
-                                        },
-                                        CompositionOffsetBoxEntry {
-                                            sample_count: 2,
-                                            sample_offset: 512,
-                                        },
-                                        CompositionOffsetBoxEntry {
-                                            sample_count: 1,
-                                            sample_offset: 2560,
-                                        },
-                                        CompositionOffsetBoxEntry {
-                                            sample_count: 1,
-                                            sample_offset: 1024,
-                                        },
-                                        CompositionOffsetBoxEntry {
-                                            sample_count: 1,
-                                            sample_offset: 0,
-                                        },
-                                        CompositionOffsetBoxEntry {
-                                            sample_count: 1,
-                                            sample_offset: 512,
-                                        },
-                                        CompositionOffsetBoxEntry {
-                                            sample_count: 1,
-                                            sample_offset: 1536,
-                                        },
-                                        CompositionOffsetBoxEntry {
-                                            sample_count: 1,
-                                            sample_offset: 512,
-                                        },
-                                        CompositionOffsetBoxEntry {
-                                            sample_count: 1,
-                                            sample_offset: 2560,
-                                        },
-                                        CompositionOffsetBoxEntry {
-                                            sample_count: 1,
-                                            sample_offset: 1024,
-                                        },
-                                        CompositionOffsetBoxEntry {
-                                            sample_count: 1,
-                                            sample_offset: 0,
-                                        },
-                                        CompositionOffsetBoxEntry {
-                                            sample_count: 1,
-                                            sample_offset: 512,
-                                        },
-                                        CompositionOffsetBoxEntry {
-                                            sample_count: 1,
-                                            sample_offset: 2560,
-                                        },
-                                        CompositionOffsetBoxEntry {
-                                            sample_count: 1,
-                                            sample_offset: 1024,
-                                        },
-                                        CompositionOffsetBoxEntry {
-                                            sample_count: 1,
-                                            sample_offset: 0,
-                                        },
-                                        CompositionOffsetBoxEntry {
-                                            sample_count: 1,
-                                            sample_offset: 512,
-                                        },
-                                        CompositionOffsetBoxEntry {
-                                            sample_count: 1,
-                                            sample_offset: 2560,
-                                        },
-                                        CompositionOffsetBoxEntry {
-                                            sample_count: 1,
-                                            sample_offset: 1024,
-                                        },
-                                        CompositionOffsetBoxEntry {
-                                            sample_count: 1,
-                                            sample_offset: 0,
-                                        },
-                                        CompositionOffsetBoxEntry {
-                                            sample_count: 1,
-                                            sample_offset: 512,
-                                        },
-                                        CompositionOffsetBoxEntry {
-                                            sample_count: 14,
-                                            sample_offset: 1024,
-                                        },
-                                        CompositionOffsetBoxEntry {
-                                            sample_count: 1,
-                                            sample_offset: 2560,
-                                        },
-                                        CompositionOffsetBoxEntry {
-                                            sample_count: 1,
-                                            sample_offset: 1024,
-                                        },
-                                        CompositionOffsetBoxEntry {
-                                            sample_count: 1,
-                                            sample_offset: 0,
-                                        },
-                                        CompositionOffsetBoxEntry {
-                                            sample_count: 1,
-                                            sample_offset: 512,
-                                        },
-                                        CompositionOffsetBoxEntry {
-                                            sample_count: 1,
-                                            sample_offset: 2560,
-                                        },
-                                        CompositionOffsetBoxEntry {
-                                            sample_count: 1,
-                                            sample_offset: 1024,
-                                        },
-                                        CompositionOffsetBoxEntry {
-                                            sample_count: 1,
-                                            sample_offset: 0,
-                                        },
-                                        CompositionOffsetBoxEntry {
-                                            sample_count: 1,
-                                            sample_offset: 512,
-                                        },
-                                        CompositionOffsetBoxEntry {
-                                            sample_count: 1,
-                                            sample_offset: 1024,
-                                        },
-                                        CompositionOffsetBoxEntry {
-                                            sample_count: 1,
-                                            sample_offset: 2560,
-                                        },
-                                        CompositionOffsetBoxEntry {
-                                            sample_count: 1,
-                                            sample_offset: 1024,
-                                        },
-                                        CompositionOffsetBoxEntry {
-                                            sample_count: 1,
-                                            sample_offset: 0,
-                                        },
-                                        CompositionOffsetBoxEntry {
-                                            sample_count: 1,
-                                            sample_offset: 512,
-                                        },
-                                        CompositionOffsetBoxEntry {
-                                            sample_count: 1,
-                                            sample_offset: 2560,
-                                        },
-                                        CompositionOffsetBoxEntry {
-                                            sample_count: 1,
-                                            sample_offset: 1024,
-                                        },
-                                        CompositionOffsetBoxEntry {
-                                            sample_count: 1,
-                                            sample_offset: 0,
-                                        },
-                                        CompositionOffsetBoxEntry {
-                                            sample_count: 1,
-                                            sample_offset: 512,
-                                        },
-                                        CompositionOffsetBoxEntry {
-                                            sample_count: 1,
-                                            sample_offset: 2560,
-                                        },
-                                        CompositionOffsetBoxEntry {
-                                            sample_count: 1,
-                                            sample_offset: 1024,
-                                        },
-                                        CompositionOffsetBoxEntry {
-                                            sample_count: 1,
-                                            sample_offset: 0,
-                                        },
-                                        CompositionOffsetBoxEntry {
-                                            sample_count: 1,
-                                            sample_offset: 512,
-                                        },
-                                        CompositionOffsetBoxEntry {
-                                            sample_count: 1,
-                                            sample_offset: 2560,
-                                        },
-                                        CompositionOffsetBoxEntry {
-                                            sample_count: 1,
-                                            sample_offset: 1024,
-                                        },
-                                        CompositionOffsetBoxEntry {
-                                            sample_count: 1,
-                                            sample_offset: 0,
-                                        },
-                                        CompositionOffsetBoxEntry {
-                                            sample_count: 1,
-                                            sample_offset: 512,
-                                        },
-                                        CompositionOffsetBoxEntry {
-                                            sample_count: 1,
-                                            sample_offset: 2560,
-                                        },
-                                        CompositionOffsetBoxEntry {
-                                            sample_count: 1,
-                                            sample_offset: 1024,
-                                        },
-                                        CompositionOffsetBoxEntry {
-                                            sample_count: 1,
-                                            sample_offset: 0,
-                                        },
-                                        CompositionOffsetBoxEntry {
-                                            sample_count: 1,
-                                            sample_offset: 512,
-                                        },
-                                        CompositionOffsetBoxEntry {
-                                            sample_count: 1,
-                                            sample_offset: 2560,
-                                        },
-                                        CompositionOffsetBoxEntry {
-                                            sample_count: 1,
-                                            sample_offset: 1024,
-                                        },
-                                        CompositionOffsetBoxEntry {
-                                            sample_count: 1,
-                                            sample_offset: 0,
-                                        },
-                                        CompositionOffsetBoxEntry {
-                                            sample_count: 1,
-                                            sample_offset: 512,
-                                        },
-                                        CompositionOffsetBoxEntry {
-                                            sample_count: 1,
-                                            sample_offset: 2560,
-                                        },
-                                        CompositionOffsetBoxEntry {
-                                            sample_count: 1,
-                                            sample_offset: 1024,
-                                        },
-                                        CompositionOffsetBoxEntry {
-                                            sample_count: 1,
-                                            sample_offset: 0,
-                                        },
-                                        CompositionOffsetBoxEntry {
-                                            sample_count: 1,
-                                            sample_offset: 512,
-                                        },
-                                        CompositionOffsetBoxEntry {
-                                            sample_count: 1,
-                                            sample_offset: 1536,
-                                        },
-                                        CompositionOffsetBoxEntry {
-                                            sample_count: 1,
-                                            sample_offset: 512,
-                                        },
-                                        CompositionOffsetBoxEntry {
-                                            sample_count: 1,
-                                            sample_offset: 1536,
-                                        },
-                                        CompositionOffsetBoxEntry {
-                                            sample_count: 1,
-                                            sample_offset: 512,
-                                        },
-                                        CompositionOffsetBoxEntry {
-                                            sample_count: 1,
-                                            sample_offset: 2560,
-                                        },
-                                        CompositionOffsetBoxEntry {
-                                            sample_count: 1,
-                                            sample_offset: 1024,
-                                        },
-                                        CompositionOffsetBoxEntry {
-                                            sample_count: 1,
-                                            sample_offset: 0,
-                                        },
-                                        CompositionOffsetBoxEntry {
-                                            sample_count: 1,
-                                            sample_offset: 512,
-                                        },
-                                        CompositionOffsetBoxEntry {
-                                            sample_count: 1,
-                                            sample_offset: 2560,
-                                        },
-                                        CompositionOffsetBoxEntry {
-                                            sample_count: 1,
-                                            sample_offset: 1024,
-                                        },
-                                        CompositionOffsetBoxEntry {
-                                            sample_count: 1,
-                                            sample_offset: 0,
-                                        },
-                                        CompositionOffsetBoxEntry {
-                                            sample_count: 1,
-                                            sample_offset: 512,
-                                        },
-                                        CompositionOffsetBoxEntry {
-                                            sample_count: 1,
-                                            sample_offset: 2560,
-                                        },
-                                        CompositionOffsetBoxEntry {
-                                            sample_count: 1,
-                                            sample_offset: 1024,
-                                        },
-                                        CompositionOffsetBoxEntry {
-                                            sample_count: 1,
-                                            sample_offset: 0,
-                                        },
-                                        CompositionOffsetBoxEntry {
-                                            sample_count: 1,
-                                            sample_offset: 512,
-                                        },
-                                        CompositionOffsetBoxEntry {
-                                            sample_count: 1,
-                                            sample_offset: 1536,
-                                        },
-                                        CompositionOffsetBoxEntry {
-                                            sample_count: 1,
-                                            sample_offset: 512,
-                                        },
+                                    entries.len: 120,
+                                },
+                            ),
+                            cslg: None,
+                            stss: Some(
+                                SyncSampleBox {
+                                    header: FullBoxHeader {
+                                        header: BoxHeader {
+                                            size: Short(
+                                                20,
+                                            ),
+                                            box_type: FourCc(
+                                                "stss",
+                                            ),
+                                        },
+                                        version: 0,
+                                        flags: 0,
+                                    },
+                                    entry_count: 1,
+                                    sample_number: [
+                                        1,
                                     ],
                                 },
                             ),
+                            stsh: None,
+                            sdtp: None,
+                            stsz: Some(
+                                SampleSizeBox {
+                                    header: FullBoxHeader {
+                                        header: BoxHeader {
+                                            size: Short(
+                                                580,
+                                            ),
+                                            box_type: FourCc(
+                                                "stsz",
+                                            ),
+                                        },
+                                        version: 0,
+                                        flags: 0,
+                                    },
+                                    sample_size: 0,
+                                    sample_count: 140,
+                                    entry_size.len: 140,
+                                },
+                            ),
+                            stz2: None,
+                            stsc: SampleToChunkBox {
+                                header: FullBoxHeader {
+                                    header: BoxHeader {
+                                        size: Short(
+                                            40,
+                                        ),
+                                        box_type: FourCc(
+                                            "stsc",
+                                        ),
+                                    },
+                                    version: 0,
+                                    flags: 0,
+                                },
+                                entry_count: 2,
+                                entries.len: 2,
+                            },
+                            stco: Some(
+                                ChunkOffsetBox {
+                                    header: FullBoxHeader {
+                                        header: BoxHeader {
+                                            size: Short(
+                                                572,
+                                            ),
+                                            box_type: FourCc(
+                                                "stco",
+                                            ),
+                                        },
+                                        version: 0,
+                                        flags: 0,
+                                    },
+                                    entry_count: 139,
+                                    chunk_offset.len: 139,
+                                },
+                            ),
+                            co64: None,
+                            padb: None,
+                            subs: [],
+                            saiz: [],
+                            saio: [],
+                        },
+                        dinf: DataInformationBox {
+                            header: BoxHeader {
+                                size: Short(
+                                    36,
+                                ),
+                                box_type: FourCc(
+                                    "dinf",
+                                ),
+                            },
+                            dref: DataReferenceBox {
+                                header: FullBoxHeader {
+                                    header: BoxHeader {
+                                        size: Short(
+                                            28,
+                                        ),
+                                        box_type: FourCc(
+                                            "dref",
+                                        ),
+                                    },
+                                    version: 0,
+                                    flags: 0,
+                                },
+                                entry_count: 1,
+                                url: [
+                                    DataEntryUrlBox {
+                                        header: FullBoxHeader {
+                                            header: BoxHeader {
+                                                size: Short(
+                                                    12,
+                                                ),
+                                                box_type: FourCc(
+                                                    "url ",
+                                                ),
+                                            },
+                                            version: 0,
+                                            flags: 1,
+                                        },
+                                        location: None,
+                                    },
+                                ],
+                                urn: [],
+                                imda: [],
+                                snim: [],
+                                unknown_boxes: [],
+                            },
                         },
                         unknown_boxes: [
                             UnknownBox {
@@ -772,27 +419,15 @@ IsobmffFile {
                                         "vmhd",
                                     ),
                                 },
-                                data(size): 12,
-                            },
-                            UnknownBox {
-                                header: BoxHeader {
-                                    size: Short(
-                                        36,
-                                    ),
-                                    box_type: FourCc(
-                                        "dinf",
-                                    ),
-                                },
-                                data(size): 28,
+                                data.len: 12,
                             },
                         ],
                     },
                     elng: None,
                     unknown_boxes: [],
                 },
-                udta: None,
-                unknown_boxes: [
-                    UnknownBox {
+                edts: Some(
+                    EditBox {
                         header: BoxHeader {
                             size: Short(
                                 36,
@@ -801,9 +436,35 @@ IsobmffFile {
                                 "edts",
                             ),
                         },
-                        data(size): 28,
+                        elst: Some(
+                            EditListBox {
+                                header: FullBoxHeader {
+                                    header: BoxHeader {
+                                        size: Short(
+                                            28,
+                                        ),
+                                        box_type: FourCc(
+                                            "elst",
+                                        ),
+                                    },
+                                    version: 0,
+                                    flags: 0,
+                                },
+                                entry_count: 1,
+                                entries: [
+                                    EditListBoxEntry {
+                                        edit_duration: 4667,
+                                        media_time: 1024,
+                                        media_rate_integer: 1,
+                                        media_rate_fraction: 0,
+                                    },
+                                ],
+                            },
+                        ),
                     },
-                ],
+                ),
+                udta: None,
+                unknown_boxes: [],
             },
             TrackBox {
                 header: BoxHeader {
@@ -950,7 +611,7 @@ IsobmffFile {
                                                 "mp4a",
                                             ),
                                         },
-                                        data(size): 102,
+                                        data.len: 102,
                                     },
                                 ],
                             },
@@ -981,6 +642,115 @@ IsobmffFile {
                                 ],
                             },
                             ctts: None,
+                            cslg: None,
+                            stss: None,
+                            stsh: None,
+                            sdtp: None,
+                            stsz: Some(
+                                SampleSizeBox {
+                                    header: FullBoxHeader {
+                                        header: BoxHeader {
+                                            size: Short(
+                                                824,
+                                            ),
+                                            box_type: FourCc(
+                                                "stsz",
+                                            ),
+                                        },
+                                        version: 0,
+                                        flags: 0,
+                                    },
+                                    sample_size: 0,
+                                    sample_count: 201,
+                                    entry_size.len: 201,
+                                },
+                            ),
+                            stz2: None,
+                            stsc: SampleToChunkBox {
+                                header: FullBoxHeader {
+                                    header: BoxHeader {
+                                        size: Short(
+                                            1480,
+                                        ),
+                                        box_type: FourCc(
+                                            "stsc",
+                                        ),
+                                    },
+                                    version: 0,
+                                    flags: 0,
+                                },
+                                entry_count: 122,
+                                entries.len: 122,
+                            },
+                            stco: Some(
+                                ChunkOffsetBox {
+                                    header: FullBoxHeader {
+                                        header: BoxHeader {
+                                            size: Short(
+                                                572,
+                                            ),
+                                            box_type: FourCc(
+                                                "stco",
+                                            ),
+                                        },
+                                        version: 0,
+                                        flags: 0,
+                                    },
+                                    entry_count: 139,
+                                    chunk_offset.len: 139,
+                                },
+                            ),
+                            co64: None,
+                            padb: None,
+                            subs: [],
+                            saiz: [],
+                            saio: [],
+                        },
+                        dinf: DataInformationBox {
+                            header: BoxHeader {
+                                size: Short(
+                                    36,
+                                ),
+                                box_type: FourCc(
+                                    "dinf",
+                                ),
+                            },
+                            dref: DataReferenceBox {
+                                header: FullBoxHeader {
+                                    header: BoxHeader {
+                                        size: Short(
+                                            28,
+                                        ),
+                                        box_type: FourCc(
+                                            "dref",
+                                        ),
+                                    },
+                                    version: 0,
+                                    flags: 0,
+                                },
+                                entry_count: 1,
+                                url: [
+                                    DataEntryUrlBox {
+                                        header: FullBoxHeader {
+                                            header: BoxHeader {
+                                                size: Short(
+                                                    12,
+                                                ),
+                                                box_type: FourCc(
+                                                    "url ",
+                                                ),
+                                            },
+                                            version: 0,
+                                            flags: 1,
+                                        },
+                                        location: None,
+                                    },
+                                ],
+                                urn: [],
+                                imda: [],
+                                snim: [],
+                                unknown_boxes: [],
+                            },
                         },
                         unknown_boxes: [
                             UnknownBox {
@@ -992,27 +762,15 @@ IsobmffFile {
                                         "smhd",
                                     ),
                                 },
-                                data(size): 8,
-                            },
-                            UnknownBox {
-                                header: BoxHeader {
-                                    size: Short(
-                                        36,
-                                    ),
-                                    box_type: FourCc(
-                                        "dinf",
-                                    ),
-                                },
-                                data(size): 28,
+                                data.len: 8,
                             },
                         ],
                     },
                     elng: None,
                     unknown_boxes: [],
                 },
-                udta: None,
-                unknown_boxes: [
-                    UnknownBox {
+                edts: Some(
+                    EditBox {
                         header: BoxHeader {
                             size: Short(
                                 36,
@@ -1021,9 +779,35 @@ IsobmffFile {
                                 "edts",
                             ),
                         },
-                        data(size): 28,
+                        elst: Some(
+                            EditListBox {
+                                header: FullBoxHeader {
+                                    header: BoxHeader {
+                                        size: Short(
+                                            28,
+                                        ),
+                                        box_type: FourCc(
+                                            "elst",
+                                        ),
+                                    },
+                                    version: 0,
+                                    flags: 0,
+                                },
+                                entry_count: 1,
+                                entries: [
+                                    EditListBoxEntry {
+                                        edit_duration: 4642,
+                                        media_time: 1024,
+                                        media_rate_integer: 1,
+                                        media_rate_fraction: 0,
+                                    },
+                                ],
+                            },
+                        ),
                     },
-                ],
+                ),
+                udta: None,
+                unknown_boxes: [],
             },
         ],
         udta: Some(
@@ -1046,7 +830,7 @@ IsobmffFile {
                                 "meta",
                             ),
                         },
-                        data(size): 82,
+                        data.len: 82,
                     },
                 ],
             },

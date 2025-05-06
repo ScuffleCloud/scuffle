@@ -358,7 +358,7 @@ fn generate_cargo_toml(config: &Config, crate_name: &str) -> std::io::Result<Str
 pub fn compile_custom(tokens: impl std::fmt::Display, config: &Config) -> std::io::Result<CompileOutput> {
     let tokens = tokens.to_string();
 
-    let crate_name = config.function_name.replace("::", "____");
+    let crate_name = config.function_name.replace("::", "__");
     let tmp_crate_path = Path::new(config.tmp_dir.as_ref()).join(&crate_name);
     std::fs::create_dir_all(&tmp_crate_path)?;
 

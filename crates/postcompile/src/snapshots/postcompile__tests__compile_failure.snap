@@ -5,7 +5,7 @@ expression: out
 exit status: 101
 --- expand_stderr
 error: expected one of `!` or `::`, found `<eof>`
- --> <postcompile>:1:1
+ --> [POST_COMPILE]:1:1
   |
 1 | invalid_rust_code
   | ^^^^^^^^^^^^^^^^^ expected one of `!` or `::`

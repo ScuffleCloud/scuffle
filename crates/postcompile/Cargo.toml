@@ -21,6 +21,7 @@ toml = "0.8"
 cargo-manifest = "0.19"
 cargo_metadata = "0.19"
 target-triple = "0.1"
+regex = "1"
 scuffle-workspace-hack.workspace = true
 
 [dev-dependencies]

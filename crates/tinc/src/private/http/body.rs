@@ -138,3 +138,67 @@ where
 
     Ok(())
 }
+
+pub trait TextLikeTracker: Tracker {
+    fn set_target(&mut self, target: &mut Self::Target, body: String);
+}
+
+impl<T> TextLikeTracker for OptionalTracker<T>
+where
+    T: TextLikeTracker + Default,
+    T::Target: Default,
+{
+    fn set_target(&mut self, target: &mut Self::Target, body: String) {
+        self.0
+            .get_or_insert_default()
+            .set_target(target.get_or_insert_default(), body);
+    }
+}
+
+impl TextLikeTracker for PrimitiveTracker<String> {
+    fn set_target(&mut self, target: &mut Self::Target, body: String) {
+        *target = body;
+    }
+}
+
+pub async fn deserialize_body_text<T, B>(
+    _: &http::request::Parts,
+    body: B,
+    tracker: &mut T,
+    target: &mut T::Target,
+    _: &mut TrackerSharedState,
+) -> Result<(), axum::response::Response>
+where
+    T: TextLikeTracker,
+    B: http_body::Body,
+    B::Error: std::fmt::Debug,
+{
+    let mut buf = body
+        .collect()
+        .await
+        .map_err(|err| {
+            HttpErrorResponse {
+                code: HttpErrorResponseCode::InvalidArgument,
+                details: Default::default(),
+                message: &format!("failed to read body: {err:?}"),
+            }
+            .into_response()
+        })?
+        .aggregate();
+
+    let mut vec = vec![0; buf.remaining()];
+    buf.copy_to_slice(&mut vec);
+
+    let string = String::from_utf8(vec).map_err(|err| {
+        HttpErrorResponse {
+            code: HttpErrorResponseCode::InvalidArgument,
+            details: Default::default(),
+            message: &format!("failed to read body: {err:?}"),
+        }
+        .into_response()
+    })?;
+
+    tracker.set_target(target, string);
+
+    Ok(())
+}

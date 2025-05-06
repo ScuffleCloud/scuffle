@@ -2437,6 +2437,7 @@ dependencies = [
  "cargo_metadata",
  "insta",
  "prettyplease",
+ "regex",
  "scuffle-workspace-hack",
  "syn",
  "target-triple",

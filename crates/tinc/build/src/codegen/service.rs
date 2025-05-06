@@ -463,6 +463,13 @@ impl GeneratedMethod {
 
         let service_method_name = field_ident_from_str(name);
 
+        // let response = endpoint.response.clone().unwrap_or_default();
+        // let accessor = if !response.field.is_empty() {
+
+        // } else {
+
+        // };
+
         let function_impl = quote! {
             let mut state = ::tinc::__private::TrackerSharedState::default();
             let mut tracker = <<#input_path as ::tinc::__private::TrackerFor>::Tracker as ::core::default::Default>::default();

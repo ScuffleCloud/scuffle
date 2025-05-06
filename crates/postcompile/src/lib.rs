@@ -354,6 +354,9 @@ fn generate_cargo_toml(config: &Config, crate_name: &str) -> std::io::Result<Str
     toml::to_string(&manifest).map_err(|err| std::io::Error::new(std::io::ErrorKind::InvalidData, err))
 }
 
+static TEST_TIME_RE: std::sync::LazyLock<regex::Regex> =
+    std::sync::LazyLock::new(|| regex::Regex::new(r"\d+\.\d+s").expect("failed to compile regex"));
+
 /// Compiles the given tokens and returns the output.
 pub fn compile_custom(tokens: impl std::fmt::Display, config: &Config) -> std::io::Result<CompileOutput> {
     let tokens = tokens.to_string();
@@ -388,10 +391,12 @@ pub fn compile_custom(tokens: impl std::fmt::Display, config: &Config) -> std::i
         let tmp_dir = config.tmp_dir.display().to_string();
         let main_relative = main_path.strip_prefix(&tmp_crate_path).unwrap().display().to_string();
         let main_path = main_path.display().to_string();
-        out.trim()
-            .replace(&main_relative, "<postcompile>")
-            .replace(&main_path, "<postcompile>")
-            .replace(&tmp_dir, "<build_dir>")
+        TEST_TIME_RE
+            .replace_all(out.as_ref(), "[ELAPSED]s")
+            .trim()
+            .replace(&main_relative, "[POST_COMPILE]")
+            .replace(&main_path, "[POST_COMPILE]")
+            .replace(&tmp_dir, "[BUILD_DIR]")
     };
 
     let mut result = CompileOutput {

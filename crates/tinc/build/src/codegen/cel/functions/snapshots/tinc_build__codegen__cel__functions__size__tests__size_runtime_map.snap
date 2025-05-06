@@ -5,7 +5,7 @@ expression: "postcompile::compile_str!(postcompile::config!\n{\n    test: true, 
 exit status: 0
 --- expand_stderr
 warning: unnecessary parentheses around function argument
- --> <postcompile>:4:8
+ --> [POST_COMPILE]:4:8
   |
 4 |     Ok(((input).len() as u64))
   |        ^                    ^
@@ -18,7 +18,7 @@ help: remove these parentheses
   |
 --- test_stderr
 warning: unnecessary parentheses around function argument
- --> <postcompile>:4:8
+ --> [POST_COMPILE]:4:8
   |
 4 |     Ok(((input).len() as u64))
   |        ^                    ^
@@ -32,7 +32,7 @@ help: remove these parentheses
 --- test_stdout
 running 1 test
 .
-test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in [ELAPSED]s
 --- expanded
 #![feature(prelude_import)]
 #[prelude_import]

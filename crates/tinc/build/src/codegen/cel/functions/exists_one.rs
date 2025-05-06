@@ -223,10 +223,9 @@ mod tests {
         )
         ");
 
-
-        let input = CompiledExpr::constant(CelValue::Map([
-            (CelValueConv::conv("value"), CelValueConv::conv(1))
-        ].into_iter().collect()));
+        let input = CompiledExpr::constant(CelValue::Map(
+            [(CelValueConv::conv("value"), CelValueConv::conv(1))].into_iter().collect(),
+        ));
         let mut ctx = compiler.child();
         ctx.add_variable("input", input.clone());
 
@@ -348,10 +347,7 @@ mod tests {
         let registry = ProtoTypeRegistry::new();
         let compiler = Compiler::new(&registry);
 
-        let string_value = CompiledExpr::runtime(
-            CelType::CelValue,
-            parse_quote!(input),
-        );
+        let string_value = CompiledExpr::runtime(CelType::CelValue, parse_quote!(input));
 
         let output = ExistsOne
             .compile(CompilerCtx::new(

@@ -56,7 +56,7 @@ mod tests {
     use tinc_cel::CelValue;
 
     use crate::codegen::cel::compiler::{CompiledExpr, Compiler, CompilerCtx};
-    use crate::codegen::cel::functions::{StartsWith, Function};
+    use crate::codegen::cel::functions::{Function, StartsWith};
     use crate::codegen::cel::types::CelType;
     use crate::types::{ProtoType, ProtoTypeRegistry, ProtoValueType};
 

@@ -132,7 +132,7 @@ mod tests {
         ));
     }
 
-        #[test]
+    #[test]
     fn test_size_runtime_map() {
         let registry = ProtoTypeRegistry::new();
         let compiler = Compiler::new(&registry);
@@ -145,13 +145,7 @@ mod tests {
             parse_quote!(input),
         );
 
-        let output = Size
-            .compile(CompilerCtx::new(
-                compiler.child(),
-                Some(input),
-                &[],
-            ))
-            .unwrap();
+        let output = Size.compile(CompilerCtx::new(compiler.child(), Some(input), &[])).unwrap();
 
         insta::assert_snapshot!(postcompile::compile_str!(
             postcompile::config! {
@@ -195,11 +189,7 @@ mod tests {
         );
 
         let output = Size
-            .compile(CompilerCtx::new(
-                compiler.child(),
-                Some(string_value),
-                &[],
-            ))
+            .compile(CompilerCtx::new(compiler.child(), Some(string_value), &[]))
             .unwrap();
 
         insta::assert_snapshot!(postcompile::compile_str!(

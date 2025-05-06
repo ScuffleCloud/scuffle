@@ -315,10 +315,7 @@ mod tests {
         let registry = ProtoTypeRegistry::new();
         let compiler = Compiler::new(&registry);
 
-        let string_value = CompiledExpr::runtime(
-            CelType::CelValue,
-            parse_quote!(input),
-        );
+        let string_value = CompiledExpr::runtime(CelType::CelValue, parse_quote!(input));
 
         let output = Exists
             .compile(CompilerCtx::new(

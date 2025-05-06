@@ -580,7 +580,10 @@ impl<'a> CelValue<'a> {
         item: impl CelValueConv<'a>,
         map_fn: impl Fn(CelValue<'a>) -> Result<bool, CelError<'a>>,
     ) -> Result<bool, CelError<'a>> {
-        fn all<'a>(mut iter: impl Iterator<Item = CelValue<'a>>, map_fn: impl Fn(CelValue<'a>) -> Result<bool, CelError<'a>>) -> Result<bool, CelError<'a>> {
+        fn all<'a>(
+            mut iter: impl Iterator<Item = CelValue<'a>>,
+            map_fn: impl Fn(CelValue<'a>) -> Result<bool, CelError<'a>>,
+        ) -> Result<bool, CelError<'a>> {
             loop {
                 let Some(item) = iter.next() else {
                     break Ok(true);
@@ -603,7 +606,10 @@ impl<'a> CelValue<'a> {
         item: impl CelValueConv<'a>,
         map_fn: impl Fn(CelValue<'a>) -> Result<bool, CelError<'a>>,
     ) -> Result<bool, CelError<'a>> {
-        fn exists<'a>(mut iter: impl Iterator<Item = CelValue<'a>>, map_fn: impl Fn(CelValue<'a>) -> Result<bool, CelError<'a>>) -> Result<bool, CelError<'a>> {
+        fn exists<'a>(
+            mut iter: impl Iterator<Item = CelValue<'a>>,
+            map_fn: impl Fn(CelValue<'a>) -> Result<bool, CelError<'a>>,
+        ) -> Result<bool, CelError<'a>> {
             loop {
                 let Some(item) = iter.next() else {
                     break Ok(false);
@@ -626,7 +632,10 @@ impl<'a> CelValue<'a> {
         item: impl CelValueConv<'a>,
         map_fn: impl Fn(CelValue<'a>) -> Result<bool, CelError<'a>>,
     ) -> Result<bool, CelError<'a>> {
-        fn exists_one<'a>(mut iter: impl Iterator<Item = CelValue<'a>>, map_fn: impl Fn(CelValue<'a>) -> Result<bool, CelError<'a>>) -> Result<bool, CelError<'a>> {
+        fn exists_one<'a>(
+            mut iter: impl Iterator<Item = CelValue<'a>>,
+            map_fn: impl Fn(CelValue<'a>) -> Result<bool, CelError<'a>>,
+        ) -> Result<bool, CelError<'a>> {
             let mut seen = false;
             loop {
                 let Some(item) = iter.next() else {

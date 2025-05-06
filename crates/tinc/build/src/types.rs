@@ -239,6 +239,10 @@ impl ProtoFieldJsonOmittable {
             tinc_pb::JsonOmittable::TrueButStillSerialize => Self::TrueButStillSerialize,
         }
     }
+
+    pub(crate) fn is_true(&self) -> bool {
+        matches!(self, Self::True | Self::TrueButStillSerialize)
+    }
 }
 
 #[derive(Debug, Clone, Copy, PartialEq)]

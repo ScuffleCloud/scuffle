@@ -914,10 +914,6 @@ message OneofOptions {
     // If the field is not an option then it will be required so `FALSE`.
     JsonOmittable json_omittable = 200;
 
-    // This flag dictates if the field is nullable or not.
-    // By default oneof fields are not nullable.
-    optional bool optional = 6;
-
     // This specifies the visibility for oneof fields.
     optional Visibility visibility = 202;
 

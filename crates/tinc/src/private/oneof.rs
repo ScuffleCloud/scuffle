@@ -55,6 +55,10 @@ where
         D: DeserializeContent<'de>;
 
     fn validate(&self, tracker: &mut <Self::Tracker as TrackerWrapper>::Tracker) -> Result<(), ValidationError>;
+
+    fn tracker_to_identifier(tracker: &<Self::Tracker as TrackerWrapper>::Tracker)
+    -> <Self as TrackedOneOfVariant>::Variant;
+    fn value_to_identifier(value: &Self) -> <Self as TrackedOneOfVariant>::Variant;
 }
 
 impl<'de, T> serde::de::Visitor<'de> for DeserializeHelper<'_, TaggedOneOfTracker<T>>
@@ -122,10 +126,20 @@ where
 {
     fn validate(&mut self, value: &Self::Target) -> Result<(), ValidationError> {
         match (self.0.as_mut(), value) {
-            (Some(tracker), Some(value)) => value.validate(tracker),
+            (Some(tracker), Some(value)) => {
+                let _token = SerdePathToken::push_field(T::Target::tracker_to_identifier(tracker).name());
+                value.validate(tracker)
+            }
             (None, Some(_)) => Err(serde::de::Error::custom("tracker not initialized but value is present")),
-            (Some(_), None) => Err(serde::de::Error::custom("tracker is present but value is not")),
-            (None, None) => Ok(()),
+            (Some(tracker), None) => {
+                let _token = SerdePathToken::push_field(T::Target::tracker_to_identifier(tracker).name());
+                report_tracked_error(TrackedError::missing_field())?;
+                Ok(())
+            }
+            (None, None) => {
+                report_tracked_error(TrackedError::missing_field())?;
+                Ok(())
+            }
         }
     }
 }
@@ -276,8 +290,16 @@ where
                 value.validate(tracker)
             }
             (None, Some(_)) => Err(serde::de::Error::custom("tracker not initialized but value is present")),
-            (Some(_), None) => Err(serde::de::Error::custom("tracker is present but value is not")),
-            (None, None) => Ok(()),
+            (None, None) => {
+                let _guard = SerdePathToken::push_field(<T::Target as IdentifierFor>::Identifier::TAG.name());
+                report_tracked_error(TrackedError::missing_field())?;
+                Ok(())
+            }
+            (Some(_), None) => {
+                let _guard = SerdePathToken::push_field(<T::Target as IdentifierFor>::Identifier::CONTENT.name());
+                report_tracked_error(TrackedError::missing_field())?;
+                Ok(())
+            }
         }
     }
 }

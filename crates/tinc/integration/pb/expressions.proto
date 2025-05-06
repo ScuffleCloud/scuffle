@@ -365,3 +365,22 @@ message CustomExpressions {
         }
     }];
 }
+
+message OneofExpressions {
+    option (tinc.message).generate = true;
+
+    oneof tagged_nested {
+        option (tinc.oneof).tagged = {
+            tag: "tag",
+            content: "content"
+        };
+
+        int32 age = 1 [(tinc.field).constraint.int32 = {
+            gte: 18
+        }];
+        string name = 2 [(tinc.field).constraint.string = {
+            max_len: 15
+            min_len: 2
+        }];
+    }
+}

@@ -13,12 +13,57 @@ use crate::types::{
     ProtoServiceMethodIo, ProtoType, ProtoTypeRegistry, ProtoValueType, ProtoWellKnownType,
 };
 
+enum BodyMethod {
+    Bytes,
+    Json,
+    Text,
+}
+
+impl BodyMethod {
+    fn deserialize_func(&self) -> TokenStream {
+        match self {
+            Self::Bytes => quote!(deserialize_body_bytes),
+            Self::Json => quote!(deserialize_body_json),
+            Self::Text => quote!(deserialize_body_text),
+        }
+    }
+
+    fn from_io(io: &ProtoServiceMethodIo) -> anyhow::Result<Self> {
+        match &io {
+            ProtoServiceMethodIo::Single(ProtoValueType::Bytes) => Ok(Self::Bytes),
+            ProtoServiceMethodIo::Single(ProtoValueType::String) => Ok(Self::Text),
+            ProtoServiceMethodIo::Single(_) => Ok(Self::Json),
+            ProtoServiceMethodIo::Stream(_) => {
+                anyhow::bail!("currently streams are not supported for tinc methods")
+            }
+        }
+    }
+
+    fn from_ty(ty: &ProtoType) -> Self {
+        match ty {
+            ProtoType::Value(ProtoValueType::Bytes)
+            | ProtoType::Modified(ProtoModifiedValueType::Optional(ProtoValueType::Bytes)) => BodyMethod::Bytes,
+            ProtoType::Value(ProtoValueType::String)
+            | ProtoType::Modified(ProtoModifiedValueType::Optional(ProtoValueType::String)) => BodyMethod::Text,
+            _ => BodyMethod::Json,
+        }
+    }
+
+    fn content_type(&self) -> &'static str {
+        match self {
+            BodyMethod::Bytes => "application/octet-stream",
+            BodyMethod::Json => "application/json",
+            BodyMethod::Text => "text/plain",
+        }
+    }
+}
+
 struct PathFields {
     defs: Vec<proc_macro2::TokenStream>,
     mappings: Vec<proc_macro2::TokenStream>,
 }
 
-fn field_extractor_generator(
+fn tracker_field_extractor_generator(
     field_str: &str,
     registry: &ProtoTypeRegistry,
     message: &ProtoMessageType,
@@ -64,6 +109,49 @@ fn field_extractor_generator(
     }
 
     Ok((mapping, kind.unwrap()))
+}
+
+fn field_extractor_generator(
+    field_str: &str,
+    registry: &ProtoTypeRegistry,
+    message: &ProtoMessageType,
+) -> anyhow::Result<(proc_macro2::TokenStream, ProtoType, bool)> {
+    let mut next_message = Some(message);
+    let mut was_optional = false;
+    let mut kind = None;
+    let mut mapping = quote!(&body);
+    for part in field_str.split('.') {
+        let Some(field) = next_message.and_then(|message| message.fields.get(part)) else {
+            anyhow::bail!("message does not have field: {field_str}");
+        };
+
+        let field_ident = field_ident_from_str(part);
+
+        kind = Some(field.ty.clone());
+        let is_optional = matches!(
+            field.ty,
+            ProtoType::Modified(ProtoModifiedValueType::Optional(_) | ProtoModifiedValueType::OneOf(_))
+        );
+
+        mapping = match (is_optional, was_optional) {
+            (true, true) => quote!(#mapping.and_then(|m| m.#field_ident.as_ref())),
+            (false, true) => quote!(#mapping.map(|m| &m.#field_ident)),
+            (true, false) => quote!(#mapping.#field_ident.as_ref()),
+            (false, false) => quote!(#mapping.#field_ident),
+        };
+
+        was_optional = was_optional || is_optional;
+
+        next_message = match &field.ty {
+            ProtoType::Value(ProtoValueType::Message(path))
+            | ProtoType::Modified(ProtoModifiedValueType::Optional(ProtoValueType::Message(path))) => {
+                Some(registry.get_message(path).unwrap())
+            }
+            _ => None,
+        }
+    }
+
+    Ok((mapping, kind.unwrap(), was_optional))
 }
 
 fn path_struct(
@@ -127,7 +215,7 @@ fn path_struct(
             for (idx, field) in fields.iter().enumerate() {
                 let field_str = field.as_ref();
                 let path_field_ident = quote::format_ident!("field_{idx}");
-                let (path_mapping, ty) = field_extractor_generator(field_str, registry, message)?;
+                let (path_mapping, ty) = tracker_field_extractor_generator(field_str, registry, message)?;
 
                 let setter = match &ty {
                     ProtoType::Modified(ProtoModifiedValueType::Optional(_)) => quote! {
@@ -291,7 +379,7 @@ impl GeneratedMethod {
                     ProtoServiceMethodIo::Single(ProtoValueType::Message(_)) if field.is_empty() => quote! {},
                     ProtoServiceMethodIo::Single(ProtoValueType::Message(message)) => {
                         let message = registry.get_message(message).expect("message not found");
-                        let (extract, ty) = field_extractor_generator(&field, registry, message)?;
+                        let (extract, ty) = tracker_field_extractor_generator(&field, registry, message)?;
                         anyhow::ensure!(
                             match &ty {
                                 ProtoType::Modified(ProtoModifiedValueType::Repeated(_)) => false,
@@ -361,7 +449,7 @@ impl GeneratedMethod {
                     let (extract, kind) = match &method.input {
                         ProtoServiceMethodIo::Single(ProtoValueType::Message(message)) => {
                             let message = registry.get_message(message).expect("message not found");
-                            field_extractor_generator(&field, registry, message)?
+                            tracker_field_extractor_generator(&field, registry, message)?
                         }
                         _ => anyhow::bail!("content_type_field is only supported on methods who have a message input."),
                     };
@@ -389,55 +477,17 @@ impl GeneratedMethod {
                     quote! {}
                 };
 
-                enum DeserializeMethod {
-                    Bytes,
-                    Json,
-                    Text,
-                }
-
-                impl DeserializeMethod {
-                    fn func(&self) -> TokenStream {
-                        match self {
-                            Self::Bytes => quote!(deserialize_body_bytes),
-                            Self::Json => quote!(deserialize_body_json),
-                            Self::Text => quote!(deserialize_body_text),
-                        }
-                    }
-                }
-
                 let (extract, method) = if field.is_empty() {
-                    (
-                        quote! {},
-                        match &method.input {
-                            ProtoServiceMethodIo::Single(ProtoValueType::Bytes) => DeserializeMethod::Bytes,
-                            ProtoServiceMethodIo::Single(ProtoValueType::String) => DeserializeMethod::Text,
-                            ProtoServiceMethodIo::Single(_) => DeserializeMethod::Json,
-                            ProtoServiceMethodIo::Stream(_) => {
-                                anyhow::bail!("currently streams are not supported for tinc methods")
-                            }
-                        },
-                    )
+                    (quote! {}, BodyMethod::from_io(&method.input)?)
                 } else if let ProtoServiceMethodIo::Single(ProtoValueType::Message(message)) = &method.input {
                     let message = registry.get_message(message).expect("message not found");
-                    let (extract, ty) = field_extractor_generator(&field, registry, message)?;
-                    let method = match &ty {
-                        ProtoType::Value(ProtoValueType::Bytes)
-                        | ProtoType::Modified(ProtoModifiedValueType::Optional(ProtoValueType::Bytes)) => {
-                            DeserializeMethod::Bytes
-                        }
-                        ProtoType::Value(ProtoValueType::String)
-                        | ProtoType::Modified(ProtoModifiedValueType::Optional(ProtoValueType::String)) => {
-                            DeserializeMethod::Text
-                        }
-                        _ => DeserializeMethod::Json,
-                    };
-
-                    (extract, method)
+                    let (extract, ty) = tracker_field_extractor_generator(&field, registry, message)?;
+                    (extract, BodyMethod::from_ty(&ty))
                 } else {
                     anyhow::bail!("nested fields are not supported on non message types.");
                 };
 
-                let de_func = method.func();
+                let de_func = method.deserialize_func();
 
                 let body = quote! {{
                     #extract
@@ -463,12 +513,78 @@ impl GeneratedMethod {
 
         let service_method_name = field_ident_from_str(name);
 
-        // let response = endpoint.response.clone().unwrap_or_default();
-        // let accessor = if !response.field.is_empty() {
+        let response = endpoint.response.clone().unwrap_or_default();
 
-        // } else {
+        let (extract, output_body_method, optional) = if response.field.is_empty() {
+            (quote!(&body), BodyMethod::from_io(&method.output)?, false)
+        } else if let ProtoServiceMethodIo::Single(ProtoValueType::Message(message)) = &method.output {
+            let message = registry.get_message(message).expect("message not found");
+            let (extract, ty, optional) = field_extractor_generator(&response.field, registry, message)?;
+            (extract, BodyMethod::from_ty(&ty), optional)
+        } else {
+            anyhow::bail!("nested fields are not supported on non message types.");
+        };
 
-        // };
+        let content_type = if !response.content_type_field.is_empty() {
+            let ProtoServiceMethodIo::Single(ProtoValueType::Message(message)) = &method.output else {
+                anyhow::bail!("content-type field can only be used on message types.");
+            };
+
+            let message = registry.get_message(message).expect("message not found");
+            let (extract, ty, optional) = field_extractor_generator(&response.field, registry, message)?;
+            let matcher = if optional { quote!(Some(ct)) } else { quote!(ct) };
+            if !matches!(
+                ty,
+                ProtoType::Value(ProtoValueType::String)
+                    | ProtoType::Modified(ProtoModifiedValueType::Optional(ProtoValueType::String))
+            ) {
+                anyhow::bail!("content-type field must be a string");
+            }
+
+            quote!({
+                if let #matcher = #extract {
+                    response_builder = response_builder.header(::tinc::reexports::http::header::CONTENT_TYPE, ct);
+                }
+            })
+        } else {
+            let ct = output_body_method.content_type();
+            quote!({
+                response_builder = response_builder.header(::tinc::reexports::http::header::CONTENT_TYPE, #ct);
+            })
+        };
+
+        let response = {
+            let matcher = if optional { quote!(Some(body)) } else { quote!(body) };
+            let body = match output_body_method {
+                BodyMethod::Text | BodyMethod::Bytes => quote!({
+                    if let #matcher = #extract {
+                        ::tinc::reexports::axum::body::Body::from(body.clone())
+                    } else {
+                        ::tinc::reexports::axum::body::Body::empty()
+                    }
+                }),
+                BodyMethod::Json => quote!({
+                    let mut writer = ::tinc::reexports::bytes::BufMut::writer(
+                        ::tinc::reexports::bytes::BytesMut::with_capacity(128)
+                    );
+                    match ::tinc::reexports::serde_json::to_writer(&mut writer, #extract) {
+                        ::core::result::Result::Ok(()) => {},
+                        ::core::result::Result::Err(err) => return ::tinc::__private::handle_response_build_error(err),
+                    }
+                    ::tinc::reexports::axum::body::Body::from(writer.into_inner().freeze())
+                }),
+            };
+
+            quote!({
+                let mut response_builder = ::tinc::reexports::http::Response::builder();
+                #content_type
+                match response_builder
+                    .body(#body) {
+                        ::core::result::Result::Ok(v) => v,
+                        ::core::result::Result::Err(err) => return ::tinc::__private::handle_response_build_error(err),
+                    }
+            })
+        };
 
         let function_impl = quote! {
             let mut state = ::tinc::__private::TrackerSharedState::default();
@@ -494,13 +610,8 @@ impl GeneratedMethod {
                 ::core::result::Result::Err(status) => return ::tinc::__private::handle_tonic_status(&status),
             };
 
-            let mut response = ::tinc::reexports::axum::response::IntoResponse::into_response(
-                ::tinc::reexports::axum::extract::Json(body),
-            );
-
-            *response.headers_mut() = metadata.into_headers();
-            const APPLICATION_JSON: ::tinc::reexports::http::header::HeaderValue = ::tinc::reexports::http::header::HeaderValue::from_static("application/json");
-            response.headers_mut().insert(::tinc::reexports::http::header::CONTENT_TYPE, APPLICATION_JSON);
+            let mut response = #response;
+            response.headers_mut().extend(metadata.into_headers());
             *response.extensions_mut() = extensions;
 
             response

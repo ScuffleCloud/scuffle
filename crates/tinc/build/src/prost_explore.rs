@@ -413,23 +413,22 @@ impl Extensions {
             let oneof = match entry {
                 indexmap::map::Entry::Occupied(ref mut entry) => entry.get_mut(),
                 indexmap::map::Entry::Vacant(entry) => {
-                    let optional = opts.optional();
                     let visibility = ProtoVisibility::from_pb(opts.visibility());
+                    let json_omittable = ProtoFieldJsonOmittable::from_pb(opts.json_omittable(), false);
 
                     entry.insert(ProtoMessageField {
                         full_name: ProtoPath::new(oneof.full_name()),
                         message: message_full_name.clone(),
                         options: ProtoFieldOptions {
                             flatten: opts.flatten(),
-                            nullable: optional,
-                            json_omittable: ProtoFieldJsonOmittable::from_pb(opts.json_omittable(), optional),
+                            nullable: json_omittable.is_true(),
+                            json_omittable,
                             json_name: opts
                                 .rename
                                 .or_else(|| rename_field(oneof.name(), rename_all?))
                                 .unwrap_or_else(|| oneof.name().to_owned()),
                             visibility,
-                            cel_exprs: gather_cel_expressions(&self.ext_predefined, &field.options())
-                                .context("gathering cel expressions")?,
+                            cel_exprs: CelExpressions::default(),
                         },
                         ty: ProtoType::Modified(ProtoModifiedValueType::OneOf(ProtoOneOfType {
                             full_name: ProtoPath::new(oneof.full_name()),

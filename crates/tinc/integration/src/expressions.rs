@@ -1229,3 +1229,89 @@ fn test_custom_expressions_invalid() {
     }
     "#);
 }
+
+#[test]
+fn test_oneof_expressions_valid() {
+    let mut state = TrackerSharedState::default();
+    let valid = pb::OneofExpressions {
+        tagged_nested: Some(pb::oneof_expressions::TaggedNested::Age(18)),
+    };
+
+    state.in_scope(|| valid.validate()).unwrap();
+
+    insta::assert_debug_snapshot!(state, @r"
+    TrackerSharedState {
+        fail_fast: false,
+        errors: [],
+    }
+    ");
+
+    let valid = pb::OneofExpressions {
+        tagged_nested: Some(pb::oneof_expressions::TaggedNested::Name("troy".into())),
+    };
+
+    state.in_scope(|| valid.validate()).unwrap();
+
+    insta::assert_debug_snapshot!(state, @r"
+    TrackerSharedState {
+        fail_fast: false,
+        errors: [],
+    }
+    ");
+}
+
+#[test]
+fn test_oneof_expressions_invalid() {
+    let mut state = TrackerSharedState::default();
+    let valid = pb::OneofExpressions {
+        tagged_nested: Some(pb::oneof_expressions::TaggedNested::Age(17)),
+    };
+
+    state.in_scope(|| valid.validate()).unwrap();
+
+    insta::assert_debug_snapshot!(state, @r#"
+    TrackerSharedState {
+        fail_fast: false,
+        errors: [
+            TrackedError {
+                kind: InvalidField {
+                    message: "value must be greater than or equal to `18`",
+                },
+                fatal: true,
+                proto_path: "tagged_nested.age",
+                serde_path: "tagged_nested",
+            },
+        ],
+    }
+    "#);
+
+    let valid = pb::OneofExpressions {
+        tagged_nested: Some(pb::oneof_expressions::TaggedNested::Name("t".into())),
+    };
+
+    state.in_scope(|| valid.validate()).unwrap();
+
+    insta::assert_debug_snapshot!(state, @r#"
+    TrackerSharedState {
+        fail_fast: false,
+        errors: [
+            TrackedError {
+                kind: InvalidField {
+                    message: "value must be greater than or equal to `18`",
+                },
+                fatal: true,
+                proto_path: "tagged_nested.age",
+                serde_path: "tagged_nested",
+            },
+            TrackedError {
+                kind: InvalidField {
+                    message: "value must be at least `2` characters long",
+                },
+                fatal: true,
+                proto_path: "tagged_nested.name",
+                serde_path: "tagged_nested",
+            },
+        ],
+    }
+    "#);
+}

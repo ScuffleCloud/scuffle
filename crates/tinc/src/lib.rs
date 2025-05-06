@@ -11,7 +11,10 @@
 pub mod reexports {
     #[cfg(feature = "tonic")]
     pub use tonic;
-    pub use {axum, chrono, headers_accept, http, linkme, mediatype, regex, schemars, serde, serde_derive, serde_repr};
+    pub use {
+        axum, bytes, chrono, headers_accept, http, linkme, mediatype, regex, schemars, serde, serde_derive, serde_json,
+        serde_repr,
+    };
     #[cfg(feature = "prost")]
     pub use {prost, prost_types};
 }

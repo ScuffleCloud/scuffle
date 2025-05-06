@@ -48,3 +48,91 @@ impl Function for StartsWith {
         }
     }
 }
+
+#[cfg(test)]
+#[cfg_attr(coverage_nightly, coverage(off))]
+mod tests {
+    use syn::parse_quote;
+    use tinc_cel::CelValue;
+
+    use crate::codegen::cel::compiler::{CompiledExpr, Compiler, CompilerCtx};
+    use crate::codegen::cel::functions::{StartsWith, Function};
+    use crate::codegen::cel::types::CelType;
+    use crate::types::{ProtoType, ProtoTypeRegistry, ProtoValueType};
+
+    #[test]
+    fn test_starts_with_syntax() {
+        let registry = ProtoTypeRegistry::new();
+        let compiler = Compiler::new(&registry);
+        insta::assert_debug_snapshot!(StartsWith.compile(CompilerCtx::new(compiler.child(), None, &[])), @r#"
+        Err(
+            InvalidSyntax {
+                message: "missing this",
+                syntax: "<this>.startsWith(<arg>)",
+            },
+        )
+        "#);
+
+        insta::assert_debug_snapshot!(StartsWith.compile(CompilerCtx::new(compiler.child(), Some(CompiledExpr::constant(CelValue::String("13.2".into()))), &[])), @r#"
+        Err(
+            InvalidSyntax {
+                message: "takes exactly one argument",
+                syntax: "<this>.startsWith(<arg>)",
+            },
+        )
+        "#);
+
+        insta::assert_debug_snapshot!(StartsWith.compile(CompilerCtx::new(compiler.child(), Some(CompiledExpr::constant("some string")), &[
+            cel_parser::parse("'som'").unwrap(), // not an ident
+        ])), @r"
+        Ok(
+            Constant(
+                ConstantCompiledExpr {
+                    value: Bool(
+                        true,
+                    ),
+                },
+            ),
+        )
+        ");
+    }
+
+    #[test]
+    fn test_starts_with_runtime() {
+        let registry = ProtoTypeRegistry::new();
+        let compiler = Compiler::new(&registry);
+
+        let string_value =
+            CompiledExpr::runtime(CelType::Proto(ProtoType::Value(ProtoValueType::String)), parse_quote!(input));
+
+        let output = StartsWith
+            .compile(CompilerCtx::new(
+                compiler.child(),
+                Some(string_value),
+                &[
+                    cel_parser::parse("'tes'").unwrap(), // not an ident
+                ],
+            ))
+            .unwrap();
+
+        insta::assert_snapshot!(postcompile::compile_str!(
+            postcompile::config! {
+                test: true,
+                dependencies: vec![
+                    postcompile::Dependency::workspace("tinc"),
+                ],
+            },
+            quote::quote! {
+                fn starts_with(input: &str) -> Result<bool, ::tinc::__private::cel::CelError<'_>> {
+                    Ok(#output)
+                }
+
+                #[test]
+                fn test_to_double() {
+                    assert_eq!(starts_with("testing").unwrap(), true);
+                    assert_eq!(starts_with("smile").unwrap(), false);
+                }
+            },
+        ));
+    }
+}

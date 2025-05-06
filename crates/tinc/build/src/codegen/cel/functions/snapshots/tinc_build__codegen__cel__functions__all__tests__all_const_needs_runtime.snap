@@ -3,6 +3,10 @@ source: crates/tinc/build/src/codegen/cel/functions/all.rs
 expression: result
 ---
 exit status: 0
+--- test_stdout
+running 1 test
+.
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
 --- expanded
 #![feature(prelude_import)]
 #[prelude_import]
@@ -10,7 +14,7 @@ use std::prelude::rust_2024::*;
 #[macro_use]
 extern crate std;
 #[allow(dead_code)]
-fn runtime() -> Result<bool, ::tinc::__private::cel::CelError<'static>> {
+fn all() -> Result<bool, ::tinc::__private::cel::CelError<'static>> {
     Ok({
         let mut iter = ([
             ::tinc::__private::cel::to_bool(

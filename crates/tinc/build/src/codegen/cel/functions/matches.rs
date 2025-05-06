@@ -64,3 +64,102 @@ impl Function for Matches {
         }
     }
 }
+
+#[cfg(test)]
+#[cfg_attr(coverage_nightly, coverage(off))]
+mod tests {
+    use quote::quote;
+    use syn::parse_quote;
+    use tinc_cel::CelValue;
+
+    use crate::codegen::cel::compiler::{CompiledExpr, Compiler, CompilerCtx};
+    use crate::codegen::cel::functions::{Matches, Function};
+    use crate::codegen::cel::types::CelType;
+    use crate::types::{ProtoType, ProtoTypeRegistry, ProtoValueType};
+
+    #[test]
+    fn test_matches_syntax() {
+        let registry = ProtoTypeRegistry::new();
+        let compiler = Compiler::new(&registry);
+        insta::assert_debug_snapshot!(Matches.compile(CompilerCtx::new(compiler.child(), None, &[])), @r#"
+        Err(
+            InvalidSyntax {
+                message: "missing this",
+                syntax: "<this>.matches(<const regex>)",
+            },
+        )
+        "#);
+
+        insta::assert_debug_snapshot!(Matches.compile(CompilerCtx::new(compiler.child(), Some(CompiledExpr::constant(CelValue::String("hi".into()))), &[])), @r#"
+        Err(
+            InvalidSyntax {
+                message: "takes exactly one argument",
+                syntax: "<this>.matches(<const regex>)",
+            },
+        )
+        "#);
+
+        insta::assert_debug_snapshot!(Matches.compile(CompilerCtx::new(compiler.child(), Some(CompiledExpr::constant(CelValue::String("hi".into()))), &[
+            cel_parser::parse("dyn('^h')").unwrap(),
+        ])), @r#"
+        Err(
+            InvalidSyntax {
+                message: "regex must be known at compile time string",
+                syntax: "<this>.matches(<const regex>)",
+            },
+        )
+        "#);
+
+        insta::assert_debug_snapshot!(Matches.compile(CompilerCtx::new(compiler.child(), Some(CompiledExpr::constant(CelValue::String("hi".into()))), &[
+            cel_parser::parse("'^h'").unwrap(),
+        ])), @r"
+        Ok(
+            Constant(
+                ConstantCompiledExpr {
+                    value: Bool(
+                        true,
+                    ),
+                },
+            ),
+        )
+        ");
+    }
+
+    #[test]
+    fn test_matches_runtime_string() {
+        let registry = ProtoTypeRegistry::new();
+        let compiler = Compiler::new(&registry);
+
+        let string_value =
+            CompiledExpr::runtime(CelType::Proto(ProtoType::Value(ProtoValueType::String)), parse_quote!(input));
+
+        let output = Matches
+            .compile(CompilerCtx::new(
+                compiler.child(),
+                Some(string_value),
+                &[cel_parser::parse("'\\\\d+'").unwrap()],
+            ))
+            .unwrap();
+
+        insta::assert_snapshot!(postcompile::compile_str!(
+            postcompile::config! {
+                test: true,
+                dependencies: vec![
+                    postcompile::Dependency::workspace("tinc"),
+                ],
+            },
+            quote! {
+                fn matches(input: &String) -> Result<bool, ::tinc::__private::cel::CelError<'_>> {
+                    Ok(#output)
+                }
+
+                #[test]
+                fn test_matches() {
+                    assert_eq!(matches(&"in2dastring".into()).unwrap(), true);
+                    assert_eq!(matches(&"in3dastring".into()).unwrap(), true);
+                    assert_eq!(matches(&"xd".into()).unwrap(), false);
+                }
+            },
+        ));
+    }
+}

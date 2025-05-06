@@ -169,6 +169,34 @@ mod tests {
         )
         "#);
 
+        insta::assert_debug_snapshot!(All.compile(CompilerCtx::new(compiler.child(), Some(CompiledExpr::constant(CelValue::String("hi".into()))), &[
+            cel_parser::parse("x").unwrap(),
+            cel_parser::parse("dyn(x >= 1)").unwrap(),
+        ])), @r#"
+        Err(
+            TypeConversion {
+                ty: CelValue,
+                message: "String(Borrowed(\"hi\")) cannot be iterated over",
+            },
+        )
+        "#);
+
+        insta::assert_debug_snapshot!(All.compile(CompilerCtx::new(compiler.child(), Some(CompiledExpr::runtime(CelType::Proto(ProtoType::Value(ProtoValueType::Bool)), parse_quote!(input))), &[
+            cel_parser::parse("x").unwrap(),
+            cel_parser::parse("dyn(x >= 1)").unwrap(),
+        ])), @r#"
+        Err(
+            TypeConversion {
+                ty: Proto(
+                    Value(
+                        Bool,
+                    ),
+                ),
+                message: "type cannot be iterated over",
+            },
+        )
+        "#);
+
         insta::assert_debug_snapshot!(All.compile(CompilerCtx::new(compiler.child(), Some(CompiledExpr::constant(CelValue::List(Default::default()))), &[
             cel_parser::parse("1 + 1").unwrap(), // not an ident
             cel_parser::parse("x + 2").unwrap(),
@@ -271,7 +299,45 @@ mod tests {
             ))
             .unwrap();
 
-        insta::assert_debug_snapshot!(result);
+        let result = postcompile::compile_str!(
+            postcompile::config! {
+                test: true,
+                dependencies: vec![
+                    postcompile::Dependency::workspace("tinc"),
+                ],
+            },
+            quote! {
+                #[allow(dead_code)]
+                fn all(
+                    input: &std::collections::BTreeMap<i32, f32>,
+                ) -> Result<bool, ::tinc::__private::cel::CelError<'static>> {
+                    Ok(
+                        #result
+                    )
+                }
+
+                #[test]
+                fn test_all() {
+                    assert_eq!(all(&{
+                        let mut map = std::collections::BTreeMap::new();
+                        map.insert(3, 2.0);
+                        map.insert(4, 2.0);
+                        map.insert(5, 2.0);
+                        map
+                    }).unwrap(), true);
+                    assert_eq!(all(&{
+                        let mut map = std::collections::BTreeMap::new();
+                        map.insert(3, 2.0);
+                        map.insert(1, 2.0);
+                        map.insert(5, 2.0);
+                        map
+                    }).unwrap(), false);
+                    assert_eq!(all(&std::collections::BTreeMap::new()).unwrap(), true)
+                }
+            },
+        );
+
+        insta::assert_snapshot!(result);
     }
 
     #[test]
@@ -295,7 +361,33 @@ mod tests {
             ))
             .unwrap();
 
-        insta::assert_debug_snapshot!(result);
+        let result = postcompile::compile_str!(
+            postcompile::config! {
+                test: true,
+                dependencies: vec![
+                    postcompile::Dependency::workspace("tinc"),
+                ],
+            },
+            quote! {
+                #[allow(dead_code)]
+                fn all(
+                    input: &Vec<i32>,
+                ) -> Result<bool, ::tinc::__private::cel::CelError<'static>> {
+                    Ok(
+                        #result
+                    )
+                }
+
+                #[test]
+                fn test_all() {
+                    assert_eq!(all(&vec![1, 2, 3]).unwrap(), false);
+                    assert_eq!(all(&vec![3, 4, 60]).unwrap(), true);
+                    assert_eq!(all(&vec![]).unwrap(), true);
+                }
+            },
+        );
+
+        insta::assert_snapshot!(result);
     }
 
     #[test]
@@ -318,17 +410,22 @@ mod tests {
 
         let result = postcompile::compile_str!(
             postcompile::config! {
-                edition: "2024".into(),
+                test: true,
                 dependencies: vec![
                     postcompile::Dependency::workspace("tinc"),
                 ],
             },
             quote! {
                 #[allow(dead_code)]
-                fn runtime() -> Result<bool, ::tinc::__private::cel::CelError<'static>> {
+                fn all() -> Result<bool, ::tinc::__private::cel::CelError<'static>> {
                     Ok(
                         #result
                     )
+                }
+
+                #[test]
+                fn test_all() {
+                    assert_eq!(all().unwrap(), false);
                 }
             },
         );

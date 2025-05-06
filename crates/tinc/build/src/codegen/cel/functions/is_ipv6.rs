@@ -58,7 +58,7 @@ mod tests {
     use crate::types::{ProtoType, ProtoTypeRegistry, ProtoValueType};
 
     #[test]
-    fn test_is_ipv4_syntax() {
+    fn test_is_ipv6_syntax() {
         let registry = ProtoTypeRegistry::new();
         let compiler = Compiler::new(&registry);
         insta::assert_debug_snapshot!(IsIpv6.compile(CompilerCtx::new(compiler.child(), None, &[])), @r#"
@@ -107,7 +107,7 @@ mod tests {
     }
 
     #[test]
-    fn test_is_ipv4_runtime() {
+    fn test_is_ipv6_runtime() {
         let registry = ProtoTypeRegistry::new();
         let compiler = Compiler::new(&registry);
 

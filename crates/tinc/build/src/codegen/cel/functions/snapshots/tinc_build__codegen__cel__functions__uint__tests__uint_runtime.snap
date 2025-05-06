@@ -1,5 +1,5 @@
 ---
-source: crates/tinc/build/src/codegen/cel/functions/int.rs
+source: crates/tinc/build/src/codegen/cel/functions/uint.rs
 expression: "postcompile::compile_str!(postcompile::config!\n{\n    test: true, dependencies:\n    vec![postcompile::Dependency::workspace(\"tinc\"),],\n}, quote::quote!\n{\n    fn to_int(input: &str) -> Result<::tinc::__private::cel::CelValue<'_>,\n    ::tinc::__private::cel::CelError<'_>> { Ok(#output) } #[test] fn\n    test_to_int()\n    {\n        assert_eq!(to_int(\"55\").unwrap(),\n        ::tinc::__private::cel::CelValueConv::conv(55));\n    }\n},)"
 ---
 exit status: 0
@@ -17,7 +17,7 @@ fn to_int(
     input: &str,
 ) -> Result<::tinc::__private::cel::CelValue<'_>, ::tinc::__private::cel::CelError<'_>> {
     Ok(
-        ::tinc::__private::cel::CelValue::cel_to_int(
+        ::tinc::__private::cel::CelValue::cel_to_uint(
             ::tinc::__private::cel::CelValueConv::conv(input),
         )?,
     )

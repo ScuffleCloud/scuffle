@@ -579,32 +579,22 @@ impl<'a> CelValue<'a> {
     pub fn cel_all(
         item: impl CelValueConv<'a>,
         map_fn: impl Fn(CelValue<'a>) -> Result<bool, CelError<'a>>,
-    ) -> Result<CelValue<'a>, CelError<'a>> {
+    ) -> Result<bool, CelError<'a>> {
+        fn all<'a>(mut iter: impl Iterator<Item = CelValue<'a>>, map_fn: impl Fn(CelValue<'a>) -> Result<bool, CelError<'a>>) -> Result<bool, CelError<'a>> {
+            loop {
+                let Some(item) = iter.next() else {
+                    break Ok(true);
+                };
+
+                if !map_fn(item)? {
+                    break Ok(false);
+                }
+            }
+        }
+
         match item.conv() {
-            CelValue::List(items) => Ok(CelValue::Bool({
-                let mut iter = items.iter();
-                loop {
-                    let Some(item) = iter.next() else {
-                        break true;
-                    };
-
-                    if !map_fn(item.clone())? {
-                        break false;
-                    }
-                }
-            })),
-            CelValue::Map(map) => Ok(CelValue::Bool({
-                let mut iter = map.iter();
-                loop {
-                    let Some((item, _)) = iter.next() else {
-                        break true;
-                    };
-
-                    if !map_fn(item.clone())? {
-                        break false;
-                    }
-                }
-            })),
+            CelValue::List(items) => all(items.iter().cloned(), map_fn),
+            CelValue::Map(map) => all(map.iter().map(|(key, _)| key).cloned(), map_fn),
             value => Err(CelError::BadUnaryOperation { op: "all", value }),
         }
     }
@@ -612,32 +602,22 @@ impl<'a> CelValue<'a> {
     pub fn cel_exists(
         item: impl CelValueConv<'a>,
         map_fn: impl Fn(CelValue<'a>) -> Result<bool, CelError<'a>>,
-    ) -> Result<CelValue<'a>, CelError<'a>> {
+    ) -> Result<bool, CelError<'a>> {
+        fn exists<'a>(mut iter: impl Iterator<Item = CelValue<'a>>, map_fn: impl Fn(CelValue<'a>) -> Result<bool, CelError<'a>>) -> Result<bool, CelError<'a>> {
+            loop {
+                let Some(item) = iter.next() else {
+                    break Ok(false);
+                };
+
+                if map_fn(item)? {
+                    break Ok(true);
+                }
+            }
+        }
+
         match item.conv() {
-            CelValue::List(items) => Ok(CelValue::Bool({
-                let mut iter = items.iter();
-                loop {
-                    let Some(item) = iter.next() else {
-                        break false;
-                    };
-
-                    if map_fn(item.clone())? {
-                        break true;
-                    }
-                }
-            })),
-            CelValue::Map(map) => Ok(CelValue::Bool({
-                let mut iter = map.iter();
-                loop {
-                    let Some((item, _)) = iter.next() else {
-                        break false;
-                    };
-
-                    if map_fn(item.clone())? {
-                        break true;
-                    }
-                }
-            })),
+            CelValue::List(items) => exists(items.iter().cloned(), map_fn),
+            CelValue::Map(map) => exists(map.iter().map(|(key, _)| key).cloned(), map_fn),
             value => Err(CelError::BadUnaryOperation { op: "existsOne", value }),
         }
     }
@@ -645,42 +625,27 @@ impl<'a> CelValue<'a> {
     pub fn cel_exists_one(
         item: impl CelValueConv<'a>,
         map_fn: impl Fn(CelValue<'a>) -> Result<bool, CelError<'a>>,
-    ) -> Result<CelValue<'a>, CelError<'a>> {
+    ) -> Result<bool, CelError<'a>> {
+        fn exists_one<'a>(mut iter: impl Iterator<Item = CelValue<'a>>, map_fn: impl Fn(CelValue<'a>) -> Result<bool, CelError<'a>>) -> Result<bool, CelError<'a>> {
+            let mut seen = false;
+            loop {
+                let Some(item) = iter.next() else {
+                    break Ok(seen);
+                };
+
+                if map_fn(item)? {
+                    if seen {
+                        break Ok(false);
+                    }
+
+                    seen = true;
+                }
+            }
+        }
+
         match item.conv() {
-            CelValue::List(items) => Ok(CelValue::Bool({
-                let mut iter = items.iter();
-                let mut seen = false;
-                loop {
-                    let Some(item) = iter.next() else {
-                        break seen;
-                    };
-
-                    if map_fn(item.clone())? {
-                        if seen {
-                            break false;
-                        }
-
-                        seen = true;
-                    }
-                }
-            })),
-            CelValue::Map(map) => Ok(CelValue::Bool({
-                let mut iter = map.iter();
-                let mut seen = false;
-                loop {
-                    let Some((item, _)) = iter.next() else {
-                        break seen;
-                    };
-
-                    if map_fn(item.clone())? {
-                        if seen {
-                            break false;
-                        }
-
-                        seen = true;
-                    }
-                }
-            })),
+            CelValue::List(items) => exists_one(items.iter().cloned(), map_fn),
+            CelValue::Map(map) => exists_one(map.iter().map(|(key, _)| key).cloned(), map_fn),
             value => Err(CelError::BadUnaryOperation { op: "existsOne", value }),
         }
     }
@@ -2168,19 +2133,19 @@ mod tests {
     fn celvalue_list_and_map_all() {
         let list = [1, 2, 3].conv();
         let all_pos = CelValue::cel_all(list.clone(), |v| Ok(v.as_number().unwrap().to_i64().unwrap() > 0)).unwrap();
-        assert_eq!(all_pos, CelValue::Bool(true));
+        assert!(all_pos);
 
         let list2 = [1, 0, 3].conv();
         let any_zero = CelValue::cel_all(list2, |v| Ok(v.as_number().unwrap().to_i64().unwrap() > 0)).unwrap();
-        assert_eq!(any_zero, CelValue::Bool(false));
+        assert!(!any_zero);
 
         let map = as_map(&[(2, 20), (4, 40)]);
         let all_keys = CelValue::cel_all(map.clone(), |v| Ok(v.as_number().unwrap().to_i64().unwrap() < 5)).unwrap();
-        assert_eq!(all_keys, CelValue::Bool(true));
+        assert!(all_keys);
 
         let map2 = as_map(&[(2, 20), (6, 60)]);
         let some_ge5 = CelValue::cel_all(map2, |v| Ok(v.as_number().unwrap().to_i64().unwrap() < 5)).unwrap();
-        assert_eq!(some_ge5, CelValue::Bool(false));
+        assert!(!some_ge5);
     }
 
     #[test]
@@ -2221,28 +2186,28 @@ mod tests {
     fn celvalue_exists() {
         let list = [1, 2, 3].conv();
         let result = CelValue::cel_exists(list, |v| Ok(v == 2i32.conv())).unwrap();
-        assert_eq!(result, CelValue::Bool(true));
+        assert!(result);
     }
 
     #[test]
     fn celvalue_exists_list_false() {
         let list = [1, 2, 3].conv();
         let result = CelValue::cel_exists(list, |_| Ok(false)).unwrap();
-        assert_eq!(result, CelValue::Bool(false));
+        assert!(!result);
     }
 
     #[test]
     fn celvalue_exists_map_true() {
         let map = as_map(&[(10, 100), (20, 200)]);
         let result = CelValue::cel_exists(map, |v| Ok(v == 20i32.conv())).unwrap();
-        assert_eq!(result, CelValue::Bool(true));
+        assert!(result);
     }
 
     #[test]
     fn celvalue_exists_map_false() {
         let map = as_map(&[(10, 100), (20, 200)]);
         let result = CelValue::cel_exists(map, |_| Ok(false)).unwrap();
-        assert_eq!(result, CelValue::Bool(false));
+        assert!(!result);
     }
 
     #[test]
@@ -2283,42 +2248,42 @@ mod tests {
     fn celvalue_exists_one_list() {
         let list = [1, 2, 3].conv();
         let result = CelValue::cel_exists_one(list, |v| Ok(v == 2i32.conv())).unwrap();
-        assert_eq!(result, CelValue::Bool(true));
+        assert!(result);
     }
 
     #[test]
     fn celvalue_exists_one_list_zero() {
         let list = [1, 2, 3].conv();
         let result = CelValue::cel_exists_one(list, |_| Ok(false)).unwrap();
-        assert_eq!(result, CelValue::Bool(false));
+        assert!(!result);
     }
 
     #[test]
     fn celvalue_exists_one_list_multiple() {
         let list = [1, 2, 2, 3].conv();
         let result = CelValue::cel_exists_one(list, |v| Ok(v == 2i32.conv())).unwrap();
-        assert_eq!(result, CelValue::Bool(false));
+        assert!(!result);
     }
 
     #[test]
     fn celvalue_exists_one_map() {
         let map = as_map(&[(10, 100), (20, 200)]);
         let result = CelValue::cel_exists_one(map, |v| Ok(v == 20i32.conv())).unwrap();
-        assert_eq!(result, CelValue::Bool(true));
+        assert!(result);
     }
 
     #[test]
     fn celvalue_exists_one_map_zero() {
         let map = as_map(&[(10, 100), (20, 200)]);
         let result = CelValue::cel_exists_one(map, |_| Ok(false)).unwrap();
-        assert_eq!(result, CelValue::Bool(false));
+        assert!(!result);
     }
 
     #[test]
     fn celvalue_exists_one_map_multiple() {
         let map = as_map(&[(1, 10), (1, 20), (2, 30)]);
         let result = CelValue::cel_exists_one(map, |v| Ok(v == 1i32.conv())).unwrap();
-        assert_eq!(result, CelValue::Bool(false));
+        assert!(!result);
     }
 
     #[test]

@@ -88,7 +88,7 @@ impl Function for ExistsOne {
                                 ::core::result::Result::Ok(
                                     #arg
                                 )
-                            })
+                            })?
                         },
                         CelType::Proto(ProtoType::Modified(ProtoModifiedValueType::Map(_, _))) => {
                             native_impl(quote!((#expr).keys()), parse_quote!(item), arg)
@@ -149,7 +149,7 @@ impl Function for ExistsOne {
 mod tests {
     use quote::quote;
     use syn::parse_quote;
-    use tinc_cel::CelValue;
+    use tinc_cel::{CelValue, CelValueConv};
 
     use crate::codegen::cel::compiler::{CompiledExpr, Compiler, CompilerCtx};
     use crate::codegen::cel::functions::{ExistsOne, Function};
@@ -178,7 +178,37 @@ mod tests {
         )
         "#);
 
-        insta::assert_debug_snapshot!(ExistsOne.compile(CompilerCtx::new(compiler.child(), Some(CompiledExpr::constant(CelValue::List(Default::default()))), &[
+        insta::assert_debug_snapshot!(ExistsOne.compile(CompilerCtx::new(compiler.child(), Some(CompiledExpr::constant(CelValue::String("hi".into()))), &[
+            cel_parser::parse("x").unwrap(),
+            cel_parser::parse("dyn(x >= 1)").unwrap(),
+        ])), @r#"
+        Err(
+            TypeConversion {
+                ty: CelValue,
+                message: "String(Borrowed(\"hi\")) cannot be iterated over",
+            },
+        )
+        "#);
+
+        insta::assert_debug_snapshot!(ExistsOne.compile(CompilerCtx::new(compiler.child(), Some(CompiledExpr::runtime(CelType::Proto(ProtoType::Value(ProtoValueType::Bool)), parse_quote!(input))), &[
+            cel_parser::parse("x").unwrap(),
+            cel_parser::parse("dyn(x >= 1)").unwrap(),
+        ])), @r#"
+        Err(
+            TypeConversion {
+                ty: Proto(
+                    Value(
+                        Bool,
+                    ),
+                ),
+                message: "type cannot be iterated over",
+            },
+        )
+        "#);
+
+        insta::assert_debug_snapshot!(ExistsOne.compile(CompilerCtx::new(compiler.child(), Some(CompiledExpr::constant(CelValue::List([
+            CelValueConv::conv("value")
+        ].into_iter().collect()))), &[
             cel_parser::parse("x").unwrap(),
             cel_parser::parse("x == 'value'").unwrap(),
         ])), @r"
@@ -186,7 +216,29 @@ mod tests {
             Constant(
                 ConstantCompiledExpr {
                     value: Bool(
-                        false,
+                        true,
+                    ),
+                },
+            ),
+        )
+        ");
+
+
+        let input = CompiledExpr::constant(CelValue::Map([
+            (CelValueConv::conv("value"), CelValueConv::conv(1))
+        ].into_iter().collect()));
+        let mut ctx = compiler.child();
+        ctx.add_variable("input", input.clone());
+
+        insta::assert_debug_snapshot!(ExistsOne.compile(CompilerCtx::new(ctx, Some(input), &[
+            cel_parser::parse("x").unwrap(),
+            cel_parser::parse("input[x] > 0").unwrap(),
+        ])), @r"
+        Ok(
+            Constant(
+                ConstantCompiledExpr {
+                    value: Bool(
+                        true,
                     ),
                 },
             ),
@@ -286,6 +338,97 @@ mod tests {
                     assert_eq!(contains(&vec!["not_value".into()]).unwrap(), false);
                     assert_eq!(contains(&vec!["xd".into(), "value".into()]).unwrap(), true);
                     assert_eq!(contains(&vec!["xd".into(), "value".into(), "value".into()]).unwrap(), false);
+                }
+            },
+        ));
+    }
+
+    #[test]
+    fn test_exists_one_runtime_cel_value() {
+        let registry = ProtoTypeRegistry::new();
+        let compiler = Compiler::new(&registry);
+
+        let string_value = CompiledExpr::runtime(
+            CelType::CelValue,
+            parse_quote!(input),
+        );
+
+        let output = ExistsOne
+            .compile(CompilerCtx::new(
+                compiler.child(),
+                Some(string_value),
+                &[cel_parser::parse("x").unwrap(), cel_parser::parse("x == 'value'").unwrap()],
+            ))
+            .unwrap();
+
+        insta::assert_snapshot!(postcompile::compile_str!(
+            postcompile::config! {
+                test: true,
+                dependencies: vec![
+                    postcompile::Dependency::workspace("tinc"),
+                ],
+            },
+            quote! {
+                fn exists_one<'a>(input: &'a ::tinc::__private::cel::CelValue<'a>) -> Result<bool, ::tinc::__private::cel::CelError<'a>> {
+                    Ok(#output)
+                }
+
+                #[test]
+                fn test_exists_one() {
+                    assert_eq!(exists_one(&tinc::__private::cel::CelValue::List([
+                        tinc::__private::cel::CelValueConv::conv("value"),
+                    ].into_iter().collect())).unwrap(), true);
+                    assert_eq!(exists_one(&tinc::__private::cel::CelValue::List([
+                        tinc::__private::cel::CelValueConv::conv("not_value"),
+                    ].into_iter().collect())).unwrap(), false);
+                    assert_eq!(exists_one(&tinc::__private::cel::CelValue::List([
+                        tinc::__private::cel::CelValueConv::conv("xd"),
+                        tinc::__private::cel::CelValueConv::conv("value"),
+                    ].into_iter().collect())).unwrap(), true);
+                    assert_eq!(exists_one(&tinc::__private::cel::CelValue::List([
+                        tinc::__private::cel::CelValueConv::conv("xd"),
+                        tinc::__private::cel::CelValueConv::conv("value"),
+                        tinc::__private::cel::CelValueConv::conv("value"),
+                    ].into_iter().collect())).unwrap(), false);
+                }
+            },
+        ));
+    }
+
+    #[test]
+    fn test_exists_one_const_requires_runtime() {
+        let registry = ProtoTypeRegistry::new();
+        let compiler = Compiler::new(&registry);
+
+        let list_value = CompiledExpr::constant(CelValue::List(
+            [CelValueConv::conv(5), CelValueConv::conv(0), CelValueConv::conv(1)]
+                .into_iter()
+                .collect(),
+        ));
+
+        let output = ExistsOne
+            .compile(CompilerCtx::new(
+                compiler.child(),
+                Some(list_value),
+                &[cel_parser::parse("x").unwrap(), cel_parser::parse("dyn(x >= 1)").unwrap()],
+            ))
+            .unwrap();
+
+        insta::assert_snapshot!(postcompile::compile_str!(
+            postcompile::config! {
+                test: true,
+                dependencies: vec![
+                    postcompile::Dependency::workspace("tinc"),
+                ],
+            },
+            quote! {
+                fn exists_one() -> Result<bool, ::tinc::__private::cel::CelError<'static>> {
+                    Ok(#output)
+                }
+
+                #[test]
+                fn test_filter() {
+                    assert_eq!(exists_one().unwrap(), false);
                 }
             },
         ));

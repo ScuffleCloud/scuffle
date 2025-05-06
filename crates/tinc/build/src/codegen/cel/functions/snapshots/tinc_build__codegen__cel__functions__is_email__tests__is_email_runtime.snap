@@ -1,6 +1,6 @@
 ---
 source: crates/tinc/build/src/codegen/cel/functions/is_email.rs
-expression: "postcompile::compile_str!(postcompile::config!\n{\n    test: true, dependencies:\n    vec![postcompile::Dependency::workspace(\"tinc\"),],\n}, quote::quote!\n{\n    fn is_email(input: &str) -> Result<bool,\n    ::tinc::__private::cel::CelError<'_>> { Ok(#output) } #[test] fn\n    test_to_double()\n    {\n        assert_eq!(is_email(\"troy@scuffle.cloud\").unwrap(), true);\n        assert_eq!(is_email(\"not-an-email\").unwrap(), false);\n    }\n},)"
+expression: "postcompile::compile_str!(postcompile::config!\n{\n    test: true, dependencies:\n    vec![postcompile::Dependency::workspace(\"tinc\"),],\n}, quote::quote!\n{\n    fn is_email(input: &str) -> Result<bool,\n    ::tinc::__private::cel::CelError<'_>> { Ok(#output) } #[test] fn\n    test_is_email()\n    {\n        assert_eq!(is_email(\"troy@scuffle.cloud\").unwrap(), true);\n        assert_eq!(is_email(\"not-an-email\").unwrap(), false);\n    }\n},)"
 ---
 exit status: 0
 --- test_stdout

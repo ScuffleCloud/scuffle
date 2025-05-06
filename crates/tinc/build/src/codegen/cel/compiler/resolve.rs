@@ -210,7 +210,10 @@ fn resolve_member(ctx: &Compiler, expr: &Expression, member: &Member) -> Result<
                 }) => Ok(CompiledExpr::runtime(
                     CelType::CelValue,
                     parse_quote! {
-                        (#expr).access(#attr)?
+                        ::tinc::__private::cel::CelValue::access(
+                            #expr,
+                            #attr
+                        )?
                     },
                 )),
                 CompiledExpr::Runtime(RuntimeCompiledExpr {
@@ -531,11 +534,588 @@ fn resolve_unary(ctx: &Compiler, op: &cel_parser::UnaryOp, expr: &Expression) ->
                 expr => Ok(CompiledExpr::runtime(
                     CelType::CelValue,
                     parse_quote! {
-                        ::tinc::__private::cel::CelValue::cel_neg(#expr)
+                        ::tinc::__private::cel::CelValue::cel_neg(#expr)?
                     },
                 )),
             }
         }
         cel_parser::UnaryOp::DoubleMinus => Ok(expr),
+    }
+}
+
+#[cfg(test)]
+#[cfg_attr(coverage_nightly, coverage(off))]
+mod tests {
+    use super::*;
+    use cel_parser::parse as parse_cel;
+    use crate::types::ProtoTypeRegistry;
+
+    #[test]
+    fn test_resolve_atom_int() {
+        let registry = ProtoTypeRegistry::new();
+        let compiler = Compiler::new(&registry);
+        let expr = parse_cel("1").unwrap();
+        insta::assert_debug_snapshot!(resolve(&compiler, &expr), @r"
+        Ok(
+            Constant(
+                ConstantCompiledExpr {
+                    value: Number(
+                        I64(
+                            1,
+                        ),
+                    ),
+                },
+            ),
+        )
+        ");
+    }
+
+    #[test]
+    fn test_resolve_atom_uint() {
+        let registry = ProtoTypeRegistry::new();
+        let compiler = Compiler::new(&registry);
+        let expr = parse_cel("3u").unwrap();
+        insta::assert_debug_snapshot!(resolve(&compiler, &expr), @r"
+        Ok(
+            Constant(
+                ConstantCompiledExpr {
+                    value: Number(
+                        U64(
+                            3,
+                        ),
+                    ),
+                },
+            ),
+        )
+        ");
+    }
+
+    #[test]
+    fn test_resolve_atom_float() {
+        let registry = ProtoTypeRegistry::new();
+        let compiler = Compiler::new(&registry);
+        let expr = parse_cel("1.23").unwrap();
+        insta::assert_debug_snapshot!(resolve(&compiler, &expr), @r"
+        Ok(
+            Constant(
+                ConstantCompiledExpr {
+                    value: Number(
+                        F64(
+                            1.23,
+                        ),
+                    ),
+                },
+            ),
+        )
+        ");
+    }
+
+    #[test]
+    fn test_resolve_atom_string_bytes_bool_null() {
+        let registry = ProtoTypeRegistry::new();
+        let compiler = Compiler::new(&registry);
+
+        let expr_str = parse_cel("\"foo\"").unwrap();
+        insta::assert_debug_snapshot!(resolve(&compiler, &expr_str), @r#"
+        Ok(
+            Constant(
+                ConstantCompiledExpr {
+                    value: String(
+                        Owned(
+                            "foo",
+                        ),
+                    ),
+                },
+            ),
+        )
+        "#);
+
+        let expr_bytes = parse_cel("b\"hi\"").unwrap();
+        insta::assert_debug_snapshot!(resolve(&compiler, &expr_bytes), @r#"
+        Ok(
+            Constant(
+                ConstantCompiledExpr {
+                    value: Bytes(
+                        Owned(
+                            b"hi",
+                        ),
+                    ),
+                },
+            ),
+        )
+        "#);
+
+        let expr_bool = parse_cel("true").unwrap();
+        insta::assert_debug_snapshot!(resolve(&compiler, &expr_bool), @r"
+        Ok(
+            Constant(
+                ConstantCompiledExpr {
+                    value: Bool(
+                        true,
+                    ),
+                },
+            ),
+        )
+        ");
+
+        let expr_null = parse_cel("null").unwrap();
+        insta::assert_debug_snapshot!(resolve(&compiler, &expr_null), @r"
+        Ok(
+            Constant(
+                ConstantCompiledExpr {
+                    value: Null,
+                },
+            ),
+        )
+        ");
+    }
+
+    #[test]
+    fn test_resolve_arithmetic_constant() {
+        let registry = ProtoTypeRegistry::new();
+        let compiler = Compiler::new(&registry);
+
+        let expr = parse_cel("10 + 5").unwrap();
+        insta::assert_debug_snapshot!(resolve(&compiler, &expr), @r"
+        Ok(
+            Constant(
+                ConstantCompiledExpr {
+                    value: Number(
+                        I64(
+                            15,
+                        ),
+                    ),
+                },
+            ),
+        )
+        ");
+
+        let expr = parse_cel("10 - 4").unwrap();
+        insta::assert_debug_snapshot!(resolve(&compiler, &expr), @r"
+        Ok(
+            Constant(
+                ConstantCompiledExpr {
+                    value: Number(
+                        I64(
+                            6,
+                        ),
+                    ),
+                },
+            ),
+        )
+        ");
+
+        let expr = parse_cel("6 * 7").unwrap();
+        insta::assert_debug_snapshot!(resolve(&compiler, &expr), @r"
+        Ok(
+            Constant(
+                ConstantCompiledExpr {
+                    value: Number(
+                        I64(
+                            42,
+                        ),
+                    ),
+                },
+            ),
+        )
+        ");
+
+        let expr = parse_cel("20 / 4").unwrap();
+        insta::assert_debug_snapshot!(resolve(&compiler, &expr), @r"
+        Ok(
+            Constant(
+                ConstantCompiledExpr {
+                    value: Number(
+                        I64(
+                            5,
+                        ),
+                    ),
+                },
+            ),
+        )
+        ");
+
+        let expr = parse_cel("10 % 3").unwrap();
+        insta::assert_debug_snapshot!(resolve(&compiler, &expr), @r"
+        Ok(
+            Constant(
+                ConstantCompiledExpr {
+                    value: Number(
+                        I64(
+                            1,
+                        ),
+                    ),
+                },
+            ),
+        )
+        ");
+    }
+
+    #[test]
+    fn test_resolve_relation_constant() {
+        let registry = ProtoTypeRegistry::new();
+        let compiler = Compiler::new(&registry);
+
+        let expr = parse_cel("1 < 2").unwrap();
+        insta::assert_debug_snapshot!(resolve(&compiler, &expr), @r"
+        Ok(
+            Constant(
+                ConstantCompiledExpr {
+                    value: Bool(
+                        true,
+                    ),
+                },
+            ),
+        )
+        ");
+        let expr = parse_cel("1 <= 1").unwrap();
+        insta::assert_debug_snapshot!(resolve(&compiler, &expr), @r"
+        Ok(
+            Constant(
+                ConstantCompiledExpr {
+                    value: Bool(
+                        true,
+                    ),
+                },
+            ),
+        )
+        ");
+        let expr = parse_cel("2 > 1").unwrap();
+        insta::assert_debug_snapshot!(resolve(&compiler, &expr), @r"
+        Ok(
+            Constant(
+                ConstantCompiledExpr {
+                    value: Bool(
+                        true,
+                    ),
+                },
+            ),
+        )
+        ");
+        let expr = parse_cel("2 >= 2").unwrap();
+        insta::assert_debug_snapshot!(resolve(&compiler, &expr), @r"
+        Ok(
+            Constant(
+                ConstantCompiledExpr {
+                    value: Bool(
+                        true,
+                    ),
+                },
+            ),
+        )
+        ");
+        let expr = parse_cel("1 == 1").unwrap();
+        insta::assert_debug_snapshot!(resolve(&compiler, &expr), @r"
+        Ok(
+            Constant(
+                ConstantCompiledExpr {
+                    value: Bool(
+                        true,
+                    ),
+                },
+            ),
+        )
+        ");
+        let expr = parse_cel("1 != 2").unwrap();
+        insta::assert_debug_snapshot!(resolve(&compiler, &expr), @r"
+        Ok(
+            Constant(
+                ConstantCompiledExpr {
+                    value: Bool(
+                        true,
+                    ),
+                },
+            ),
+        )
+        ");
+        let expr = parse_cel("1 in [1, 2, 3]").unwrap();
+        insta::assert_debug_snapshot!(resolve(&compiler, &expr), @r"
+        Ok(
+            Constant(
+                ConstantCompiledExpr {
+                    value: Bool(
+                        true,
+                    ),
+                },
+            ),
+        )
+        ");
+    }
+
+    #[test]
+    fn test_resolve_boolean_constant() {
+        let registry = ProtoTypeRegistry::new();
+        let compiler = Compiler::new(&registry);
+
+        let expr_and = parse_cel("true && false").unwrap();
+        insta::assert_debug_snapshot!(resolve(&compiler, &expr_and), @r"
+        Ok(
+            Constant(
+                ConstantCompiledExpr {
+                    value: Bool(
+                        false,
+                    ),
+                },
+            ),
+        )
+        ");
+
+        let expr_or = parse_cel("true || false").unwrap();
+        insta::assert_debug_snapshot!(resolve(&compiler, &expr_or), @r"
+        Ok(
+            Constant(
+                ConstantCompiledExpr {
+                    value: Bool(
+                        true,
+                    ),
+                },
+            ),
+        )
+        ");
+    }
+
+    #[test]
+    fn test_resolve_unary_constant() {
+        let registry = ProtoTypeRegistry::new();
+        let compiler = Compiler::new(&registry);
+
+        let expr_not = parse_cel("!false").unwrap();
+        insta::assert_debug_snapshot!(resolve(&compiler, &expr_not), @r"
+        Ok(
+            Constant(
+                ConstantCompiledExpr {
+                    value: Bool(
+                        true,
+                    ),
+                },
+            ),
+        )
+        ");
+
+        let expr_double_not = parse_cel("!!true").unwrap();
+        insta::assert_debug_snapshot!(resolve(&compiler, &expr_double_not), @r"
+        Ok(
+            Constant(
+                ConstantCompiledExpr {
+                    value: Bool(
+                        true,
+                    ),
+                },
+            ),
+        )
+        ");
+
+        let expr_neg = parse_cel("-5").unwrap();
+        insta::assert_debug_snapshot!(resolve(&compiler, &expr_neg), @r"
+        Ok(
+            Constant(
+                ConstantCompiledExpr {
+                    value: Number(
+                        I64(
+                            -5,
+                        ),
+                    ),
+                },
+            ),
+        )
+        ");
+
+        let expr_double_neg = parse_cel("--5").unwrap();
+        insta::assert_debug_snapshot!(resolve(&compiler, &expr_double_neg), @r"
+        Ok(
+            Constant(
+                ConstantCompiledExpr {
+                    value: Number(
+                        I64(
+                            5,
+                        ),
+                    ),
+                },
+            ),
+        )
+        ");
+    }
+
+    #[test]
+    fn test_resolve_ternary_constant() {
+        let registry = ProtoTypeRegistry::new();
+        let compiler = Compiler::new(&registry);
+
+        let expr_true = parse_cel("true ? 1 : 2").unwrap();
+        insta::assert_debug_snapshot!(resolve(&compiler, &expr_true), @r"
+        Ok(
+            Constant(
+                ConstantCompiledExpr {
+                    value: Number(
+                        I64(
+                            1,
+                        ),
+                    ),
+                },
+            ),
+        )
+        ");
+
+        let expr_false = parse_cel("false ? 1 : 2").unwrap();
+        insta::assert_debug_snapshot!(resolve(&compiler, &expr_false), @r"
+        Ok(
+            Constant(
+                ConstantCompiledExpr {
+                    value: Number(
+                        I64(
+                            2,
+                        ),
+                    ),
+                },
+            ),
+        )
+        ");
+    }
+
+    #[test]
+    fn test_resolve_list_map_constant() {
+        let registry = ProtoTypeRegistry::new();
+        let compiler = Compiler::new(&registry);
+
+        let expr_list = parse_cel("[1, 2, 3]").unwrap();
+        insta::assert_debug_snapshot!(resolve(&compiler, &expr_list), @r"
+        Ok(
+            Constant(
+                ConstantCompiledExpr {
+                    value: List(
+                        [
+                            Number(
+                                I64(
+                                    1,
+                                ),
+                            ),
+                            Number(
+                                I64(
+                                    2,
+                                ),
+                            ),
+                            Number(
+                                I64(
+                                    3,
+                                ),
+                            ),
+                        ],
+                    ),
+                },
+            ),
+        )
+        ");
+
+        let expr_map = parse_cel("{'a': 1, 'b': 2}").unwrap();
+        insta::assert_debug_snapshot!(resolve(&compiler, &expr_map), @r#"
+        Ok(
+            Constant(
+                ConstantCompiledExpr {
+                    value: Map(
+                        [
+                            (
+                                String(
+                                    Owned(
+                                        "a",
+                                    ),
+                                ),
+                                Number(
+                                    I64(
+                                        1,
+                                    ),
+                                ),
+                            ),
+                            (
+                                String(
+                                    Owned(
+                                        "b",
+                                    ),
+                                ),
+                                Number(
+                                    I64(
+                                        2,
+                                    ),
+                                ),
+                            ),
+                        ],
+                    ),
+                },
+            ),
+        )
+        "#);
+    }
+
+    #[test]
+    fn test_resolve_negative_variable() {
+        let registry = ProtoTypeRegistry::new();
+        let mut compiler = Compiler::new(&registry);
+
+        compiler.add_variable("x", CompiledExpr::constant(CelValue::Number(1.into())));
+
+        let expr_list = parse_cel("-x").unwrap();
+        insta::assert_debug_snapshot!(resolve(&compiler, &expr_list), @r"
+        Ok(
+            Constant(
+                ConstantCompiledExpr {
+                    value: Number(
+                        I64(
+                            -1,
+                        ),
+                    ),
+                },
+            ),
+        )
+        ");
+    }
+
+    #[test]
+    fn test_resolve_access() {
+        let registry = ProtoTypeRegistry::new();
+        let compiler = Compiler::new(&registry);
+
+        let expr_list = parse_cel("[1, 2, 3][2]").unwrap();
+        insta::assert_debug_snapshot!(resolve(&compiler, &expr_list), @r"
+        Ok(
+            Constant(
+                ConstantCompiledExpr {
+                    value: Number(
+                        I64(
+                            3,
+                        ),
+                    ),
+                },
+            ),
+        )
+        ");
+
+        let expr_map = parse_cel("({'a': 1, 'b': 2}).a").unwrap();
+        insta::assert_debug_snapshot!(resolve(&compiler, &expr_map), @r"
+        Ok(
+            Constant(
+                ConstantCompiledExpr {
+                    value: Number(
+                        I64(
+                            1,
+                        ),
+                    ),
+                },
+            ),
+        )
+        ");
+
+        let expr_map = parse_cel("({'a': 1, 'b': 2})['b']").unwrap();
+        insta::assert_debug_snapshot!(resolve(&compiler, &expr_map), @r"
+        Ok(
+            Constant(
+                ConstantCompiledExpr {
+                    value: Number(
+                        I64(
+                            2,
+                        ),
+                    ),
+                },
+            ),
+        )
+        ");
     }
 }

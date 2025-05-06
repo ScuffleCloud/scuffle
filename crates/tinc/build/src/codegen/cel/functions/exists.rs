@@ -79,11 +79,11 @@ impl Function for Exists {
                     CelType::Proto(ProtoType::Value(ProtoValueType::Bool)),
                     match &ty {
                         CelType::CelValue => parse_quote! {
-                            ::tinc::__private::cel::CelValue::cel_exists_one(#expr, |item| {
+                            ::tinc::__private::cel::CelValue::cel_exists(#expr, |item| {
                                 ::core::result::Result::Ok(
                                     #arg
                                 )
-                            })
+                            })?
                         },
                         CelType::Proto(ProtoType::Modified(ProtoModifiedValueType::Map(_, _))) => {
                             native_impl(quote!((#expr).keys()), parse_quote!(item), arg)
@@ -140,7 +140,7 @@ impl Function for Exists {
 mod tests {
     use quote::quote;
     use syn::parse_quote;
-    use tinc_cel::CelValue;
+    use tinc_cel::{CelValue, CelValueConv};
 
     use crate::codegen::cel::compiler::{CompiledExpr, Compiler, CompilerCtx};
     use crate::codegen::cel::functions::{Exists, Function};
@@ -165,6 +165,34 @@ mod tests {
             InvalidSyntax {
                 message: "invalid number of args",
                 syntax: "<this>.exists(<ident>, <expr>)",
+            },
+        )
+        "#);
+
+        insta::assert_debug_snapshot!(Exists.compile(CompilerCtx::new(compiler.child(), Some(CompiledExpr::constant(CelValue::String("hi".into()))), &[
+            cel_parser::parse("x").unwrap(),
+            cel_parser::parse("dyn(x >= 1)").unwrap(),
+        ])), @r#"
+        Err(
+            TypeConversion {
+                ty: CelValue,
+                message: "String(Borrowed(\"hi\")) cannot be iterated over",
+            },
+        )
+        "#);
+
+        insta::assert_debug_snapshot!(Exists.compile(CompilerCtx::new(compiler.child(), Some(CompiledExpr::runtime(CelType::Proto(ProtoType::Value(ProtoValueType::Bool)), parse_quote!(input))), &[
+            cel_parser::parse("x").unwrap(),
+            cel_parser::parse("dyn(x >= 1)").unwrap(),
+        ])), @r#"
+        Err(
+            TypeConversion {
+                ty: Proto(
+                    Value(
+                        Bool,
+                    ),
+                ),
+                message: "type cannot be iterated over",
             },
         )
         "#);
@@ -277,6 +305,97 @@ mod tests {
                     assert_eq!(exists(&vec!["not_value".into()]).unwrap(), false);
                     assert_eq!(exists(&vec!["xd".into(), "value".into()]).unwrap(), true);
                     assert_eq!(exists(&vec!["xd".into(), "value".into(), "value".into()]).unwrap(), true);
+                }
+            },
+        ));
+    }
+
+    #[test]
+    fn test_exists_runtime_cel_value() {
+        let registry = ProtoTypeRegistry::new();
+        let compiler = Compiler::new(&registry);
+
+        let string_value = CompiledExpr::runtime(
+            CelType::CelValue,
+            parse_quote!(input),
+        );
+
+        let output = Exists
+            .compile(CompilerCtx::new(
+                compiler.child(),
+                Some(string_value),
+                &[cel_parser::parse("x").unwrap(), cel_parser::parse("x == 'value'").unwrap()],
+            ))
+            .unwrap();
+
+        insta::assert_snapshot!(postcompile::compile_str!(
+            postcompile::config! {
+                test: true,
+                dependencies: vec![
+                    postcompile::Dependency::workspace("tinc"),
+                ],
+            },
+            quote! {
+                fn exists<'a>(input: &'a ::tinc::__private::cel::CelValue<'a>) -> Result<bool, ::tinc::__private::cel::CelError<'a>> {
+                    Ok(#output)
+                }
+
+                #[test]
+                fn test_exists() {
+                    assert_eq!(exists(&tinc::__private::cel::CelValue::List([
+                        tinc::__private::cel::CelValueConv::conv("value"),
+                    ].into_iter().collect())).unwrap(), true);
+                    assert_eq!(exists(&tinc::__private::cel::CelValue::List([
+                        tinc::__private::cel::CelValueConv::conv("not_value"),
+                    ].into_iter().collect())).unwrap(), false);
+                    assert_eq!(exists(&tinc::__private::cel::CelValue::List([
+                        tinc::__private::cel::CelValueConv::conv("xd"),
+                        tinc::__private::cel::CelValueConv::conv("value"),
+                    ].into_iter().collect())).unwrap(), true);
+                    assert_eq!(exists(&tinc::__private::cel::CelValue::List([
+                        tinc::__private::cel::CelValueConv::conv("xd"),
+                        tinc::__private::cel::CelValueConv::conv("value"),
+                        tinc::__private::cel::CelValueConv::conv("value"),
+                    ].into_iter().collect())).unwrap(), true);
+                }
+            },
+        ));
+    }
+
+    #[test]
+    fn test_exists_const_requires_runtime() {
+        let registry = ProtoTypeRegistry::new();
+        let compiler = Compiler::new(&registry);
+
+        let list_value = CompiledExpr::constant(CelValue::List(
+            [CelValueConv::conv(5), CelValueConv::conv(0), CelValueConv::conv(1)]
+                .into_iter()
+                .collect(),
+        ));
+
+        let output = Exists
+            .compile(CompilerCtx::new(
+                compiler.child(),
+                Some(list_value),
+                &[cel_parser::parse("x").unwrap(), cel_parser::parse("dyn(x >= 1)").unwrap()],
+            ))
+            .unwrap();
+
+        insta::assert_snapshot!(postcompile::compile_str!(
+            postcompile::config! {
+                test: true,
+                dependencies: vec![
+                    postcompile::Dependency::workspace("tinc"),
+                ],
+            },
+            quote! {
+                fn exists_one() -> Result<bool, ::tinc::__private::cel::CelError<'static>> {
+                    Ok(#output)
+                }
+
+                #[test]
+                fn test_filter() {
+                    assert_eq!(exists_one().unwrap(), true);
                 }
             },
         ));

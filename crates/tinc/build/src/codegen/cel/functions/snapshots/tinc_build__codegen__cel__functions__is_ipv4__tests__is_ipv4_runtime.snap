@@ -1,0 +1,22 @@
+---
+source: crates/tinc/build/src/codegen/cel/functions/is_ipv4.rs
+expression: "postcompile::compile_str!(postcompile::config!\n{\n    test: true, dependencies:\n    vec![postcompile::Dependency::workspace(\"tinc\"),],\n}, quote::quote!\n{\n    fn is_ipv4(input: &str) -> Result<bool,\n    ::tinc::__private::cel::CelError<'_>> { Ok(#output) } #[test] fn\n    test_is_ipv4()\n    {\n        assert_eq!(is_ipv4(\"www.scuffle.cloud\").unwrap(), false);\n        assert_eq!(is_ipv4(\"192.168.1.1\").unwrap(), true);\n    }\n},)"
+---
+exit status: 0
+--- test_stdout
+running 1 test
+.
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+--- expanded
+#![feature(prelude_import)]
+#[prelude_import]
+use std::prelude::rust_2024::*;
+#[macro_use]
+extern crate std;
+fn is_ipv4(input: &str) -> Result<bool, ::tinc::__private::cel::CelError<'_>> {
+    Ok({
+        ::tinc::__private::cel::CelValue::cel_is_ipv4(
+            ::tinc::__private::cel::CelValueConv::conv(input),
+        )?
+    })
+}

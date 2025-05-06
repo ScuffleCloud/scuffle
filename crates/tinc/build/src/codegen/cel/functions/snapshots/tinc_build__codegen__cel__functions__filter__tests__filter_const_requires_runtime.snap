@@ -1,0 +1,54 @@
+---
+source: crates/tinc/build/src/codegen/cel/functions/filter.rs
+expression: "postcompile::compile_str!(postcompile::config!\n{\n    test: true, dependencies:\n    vec![postcompile::Dependency::workspace(\"tinc\"),],\n}, quote!\n{\n    fn filter() -> Result<::tinc::__private::cel::CelValue<'static>,\n    ::tinc::__private::cel::CelError<'static>> { Ok(#output) } #[test] fn\n    test_filter()\n    {\n        assert_eq!(filter().unwrap(),\n        ::tinc::__private::cel::CelValue::List([::tinc::__private::cel::CelValueConv::conv(5),\n        ::tinc::__private::cel::CelValueConv::conv(1),].into_iter().collect()));\n    }\n},)"
+---
+exit status: 0
+--- test_stdout
+running 1 test
+.
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+--- expanded
+#![feature(prelude_import)]
+#[prelude_import]
+use std::prelude::rust_2024::*;
+#[macro_use]
+extern crate std;
+fn filter() -> Result<
+    ::tinc::__private::cel::CelValue<'static>,
+    ::tinc::__private::cel::CelError<'static>,
+> {
+    Ok({
+        let mut collected = Vec::new();
+        if ::tinc::__private::cel::to_bool(
+            ::tinc::__private::cel::CelValue::Bool(true),
+        ) {
+            collected
+                .push(
+                    ::tinc::__private::cel::CelValue::Number(
+                        ::tinc::__private::cel::NumberTy::I64(5i64),
+                    ),
+                );
+        }
+        if ::tinc::__private::cel::to_bool(
+            ::tinc::__private::cel::CelValue::Bool(false),
+        ) {
+            collected
+                .push(
+                    ::tinc::__private::cel::CelValue::Number(
+                        ::tinc::__private::cel::NumberTy::I64(0i64),
+                    ),
+                );
+        }
+        if ::tinc::__private::cel::to_bool(
+            ::tinc::__private::cel::CelValue::Bool(true),
+        ) {
+            collected
+                .push(
+                    ::tinc::__private::cel::CelValue::Number(
+                        ::tinc::__private::cel::NumberTy::I64(1i64),
+                    ),
+                );
+        }
+        ::tinc::__private::cel::CelValue::List(collected.into())
+    })
+}

@@ -358,9 +358,8 @@ mod tests {
             ))
             .unwrap();
 
-        let result = postcompile::compile_str!(
+        insta::assert_snapshot!(postcompile::compile_str!(
             postcompile::config! {
-                edition: "2024".into(),
                 test: true,
                 dependencies: vec![
                     postcompile::Dependency::workspace("tinc"),
@@ -395,8 +394,6 @@ mod tests {
                     assert!(!runtime_vec(&vec![3, 4, 5, 2]).unwrap());
                 }
             },
-        );
-
-        insta::assert_snapshot!(result);
+        ));
     }
 }

@@ -134,7 +134,7 @@ mod tests {
         let string_value =
             CompiledExpr::runtime(CelType::Proto(ProtoType::Value(ProtoValueType::Int32)), parse_quote!(input));
 
-        let result = Enum(None)
+        let output = Enum(None)
             .compile(CompilerCtx::new(
                 compiler.child(),
                 Some(string_value),
@@ -142,6 +142,41 @@ mod tests {
             ))
             .unwrap();
 
-        insta::assert_debug_snapshot!(result);
+        insta::assert_snapshot!(postcompile::compile_str!(
+            postcompile::config! {
+                test: true,
+                dependencies: vec![
+                    postcompile::Dependency::workspace("tinc"),
+                ],
+            },
+            quote::quote! {
+                fn to_enum(input: i32) -> Result<::tinc::__private::cel::CelValue<'static>, ::tinc::__private::cel::CelError<'static>> {
+                    Ok(#output)
+                }
+
+                #[test]
+                fn test_to_enum() {
+                    #[::tinc::reexports::linkme::distributed_slice(::tinc::__private::cel::TINC_CEL_ENUM_VTABLE)]
+                    #[linkme(crate = ::tinc::reexports::linkme)]
+                    static ENUM_VTABLE: ::tinc::__private::cel::EnumVtable = ::tinc::__private::cel::EnumVtable {
+                        proto_path: "some.Enum",
+                        is_valid: |_| {
+                            true
+                        },
+                        to_json: |_| {
+                            ::tinc::__private::cel::CelValue::String(::tinc::__private::cel::CelString::Borrowed("JSON"))
+                        },
+                        to_proto: |_| {
+                            ::tinc::__private::cel::CelValue::String(::tinc::__private::cel::CelString::Borrowed("PROTO"))
+                        }
+                    };
+
+                    ::tinc::__private::cel::CelMode::Json.set();
+                    assert_eq!(to_enum(1).unwrap().to_string(), "JSON");
+                    ::tinc::__private::cel::CelMode::Proto.set();
+                    assert_eq!(to_enum(1).unwrap().to_string(), "PROTO");
+                }
+            },
+        ));
     }
 }

@@ -21,10 +21,10 @@ fn native_impl(iter: TokenStream, item_ident: syn::Ident, compare: impl ToTokens
             };
 
             if {
-                let #item_ident = #item_ident.clone()
+                let #item_ident = #item_ident.clone();
                 #compare
             } {
-                colleced.push(#item_ident);
+                collected.push(#item_ident);
             }
         }
     })
@@ -152,7 +152,7 @@ impl Function for Filter {
                         parse_quote!({
                             let mut collected = Vec::new();
                             #(#collected)*
-                            ::tinc::__private::cel::CelValue::List(collected.into());
+                            ::tinc::__private::cel::CelValue::List(collected.into())
                         }),
                     ))
                 } else {
@@ -178,5 +178,208 @@ impl Function for Filter {
                 message: format!("{value:?} cannot be iterated over"),
             }),
         }
+    }
+}
+
+#[cfg(test)]
+#[cfg_attr(coverage_nightly, coverage(off))]
+mod tests {
+    use quote::quote;
+    use syn::parse_quote;
+    use tinc_cel::{CelValue, CelValueConv};
+
+    use crate::codegen::cel::compiler::{CompiledExpr, Compiler, CompilerCtx};
+    use crate::codegen::cel::functions::{Filter, Function};
+    use crate::codegen::cel::types::CelType;
+    use crate::types::{ProtoModifiedValueType, ProtoType, ProtoTypeRegistry, ProtoValueType};
+
+    #[test]
+    fn test_exists_syntax() {
+        let registry = ProtoTypeRegistry::new();
+        let compiler = Compiler::new(&registry);
+        insta::assert_debug_snapshot!(Filter.compile(CompilerCtx::new(compiler.child(), None, &[])), @r#"
+        Err(
+            InvalidSyntax {
+                message: "missing this",
+                syntax: "<this>.filter(<ident>, <expr>)",
+            },
+        )
+        "#);
+
+        insta::assert_debug_snapshot!(Filter.compile(CompilerCtx::new(compiler.child(), Some(CompiledExpr::constant(CelValue::String("hi".into()))), &[])), @r#"
+        Err(
+            InvalidSyntax {
+                message: "invalid number of args",
+                syntax: "<this>.filter(<ident>, <expr>)",
+            },
+        )
+        "#);
+
+        insta::assert_debug_snapshot!(Filter.compile(CompilerCtx::new(compiler.child(), Some(CompiledExpr::constant(CelValue::List([
+            CelValueConv::conv(0),
+            CelValueConv::conv(1),
+            CelValueConv::conv(-50),
+            CelValueConv::conv(50),
+        ].into_iter().collect()))), &[
+            cel_parser::parse("x").unwrap(),
+            cel_parser::parse("x >= 1").unwrap(),
+        ])), @r"
+        Ok(
+            Constant(
+                ConstantCompiledExpr {
+                    value: List(
+                        [
+                            Number(
+                                I64(
+                                    1,
+                                ),
+                            ),
+                            Number(
+                                I64(
+                                    50,
+                                ),
+                            ),
+                        ],
+                    ),
+                },
+            ),
+        )
+        ");
+    }
+
+    #[test]
+    fn test_exists_runtime_map() {
+        let registry = ProtoTypeRegistry::new();
+        let mut compiler = Compiler::new(&registry);
+
+        let string_value = CompiledExpr::runtime(
+            CelType::Proto(ProtoType::Modified(ProtoModifiedValueType::Map(
+                ProtoValueType::String,
+                ProtoValueType::Int32,
+            ))),
+            parse_quote!(input),
+        );
+
+        compiler.add_variable("input", string_value.clone());
+
+        let output = Filter
+            .compile(CompilerCtx::new(
+                compiler.child(),
+                Some(string_value),
+                &[cel_parser::parse("x").unwrap(), cel_parser::parse("input[x] >= 1").unwrap()],
+            ))
+            .unwrap();
+
+        insta::assert_snapshot!(postcompile::compile_str!(
+            postcompile::config! {
+                test: true,
+                dependencies: vec![
+                    postcompile::Dependency::workspace("tinc"),
+                ],
+            },
+            quote! {
+                fn filter(input: &std::collections::BTreeMap<String, i32>) -> Result<::tinc::__private::cel::CelValue<'_>, ::tinc::__private::cel::CelError<'_>> {
+                    Ok(#output)
+                }
+
+                #[test]
+                fn test_filter() {
+                    assert_eq!(filter(&{
+                        let mut map = std::collections::BTreeMap::new();
+                        map.insert("0".to_string(), 0);
+                        map.insert("1".to_string(), 1);
+                        map.insert("-50".to_string(), -50);
+                        map.insert("50".to_string(), 50);
+                        map
+                    }).unwrap(), ::tinc::__private::cel::CelValue::List([
+                        ::tinc::__private::cel::CelValueConv::conv("1"),
+                        ::tinc::__private::cel::CelValueConv::conv("50"),
+                    ].into_iter().collect()));
+                }
+            },
+        ));
+    }
+
+    #[test]
+    fn test_filter_runtime_repeated() {
+        let registry = ProtoTypeRegistry::new();
+        let compiler = Compiler::new(&registry);
+
+        let string_value = CompiledExpr::runtime(
+            CelType::Proto(ProtoType::Modified(ProtoModifiedValueType::Repeated(ProtoValueType::Int32))),
+            parse_quote!(input),
+        );
+
+        let output = Filter
+            .compile(CompilerCtx::new(
+                compiler.child(),
+                Some(string_value),
+                &[cel_parser::parse("x").unwrap(), cel_parser::parse("x >= 1").unwrap()],
+            ))
+            .unwrap();
+
+        insta::assert_snapshot!(postcompile::compile_str!(
+            postcompile::config! {
+                test: true,
+                dependencies: vec![
+                    postcompile::Dependency::workspace("tinc"),
+                ],
+            },
+            quote! {
+                fn filter(input: &Vec<i32>) -> Result<::tinc::__private::cel::CelValue<'_>, ::tinc::__private::cel::CelError<'_>> {
+                    Ok(#output)
+                }
+
+                #[test]
+                fn test_filter() {
+                    assert_eq!(filter(&vec![0, 1, -50, 50]).unwrap(), ::tinc::__private::cel::CelValue::List([
+                        ::tinc::__private::cel::CelValueConv::conv(1),
+                        ::tinc::__private::cel::CelValueConv::conv(50),
+                    ].into_iter().collect()));
+                }
+            },
+        ));
+    }
+
+    #[test]
+    fn test_filter_const_requires_runtime() {
+        let registry = ProtoTypeRegistry::new();
+        let compiler = Compiler::new(&registry);
+
+        let list_value = CompiledExpr::constant(CelValue::List(
+            [CelValueConv::conv(5), CelValueConv::conv(0), CelValueConv::conv(1)]
+                .into_iter()
+                .collect(),
+        ));
+
+        let output = Filter
+            .compile(CompilerCtx::new(
+                compiler.child(),
+                Some(list_value),
+                &[cel_parser::parse("x").unwrap(), cel_parser::parse("dyn(x >= 1)").unwrap()],
+            ))
+            .unwrap();
+
+        insta::assert_snapshot!(postcompile::compile_str!(
+            postcompile::config! {
+                test: true,
+                dependencies: vec![
+                    postcompile::Dependency::workspace("tinc"),
+                ],
+            },
+            quote! {
+                fn filter() -> Result<::tinc::__private::cel::CelValue<'static>, ::tinc::__private::cel::CelError<'static>> {
+                    Ok(#output)
+                }
+
+                #[test]
+                fn test_filter() {
+                    assert_eq!(filter().unwrap(), ::tinc::__private::cel::CelValue::List([
+                        ::tinc::__private::cel::CelValueConv::conv(5),
+                        ::tinc::__private::cel::CelValueConv::conv(1),
+                    ].into_iter().collect()));
+                }
+            },
+        ));
     }
 }

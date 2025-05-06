@@ -134,3 +134,151 @@ impl Function for Exists {
         }
     }
 }
+
+#[cfg(test)]
+#[cfg_attr(coverage_nightly, coverage(off))]
+mod tests {
+    use quote::quote;
+    use syn::parse_quote;
+    use tinc_cel::CelValue;
+
+    use crate::codegen::cel::compiler::{CompiledExpr, Compiler, CompilerCtx};
+    use crate::codegen::cel::functions::{Exists, Function};
+    use crate::codegen::cel::types::CelType;
+    use crate::types::{ProtoModifiedValueType, ProtoType, ProtoTypeRegistry, ProtoValueType};
+
+    #[test]
+    fn test_exists_syntax() {
+        let registry = ProtoTypeRegistry::new();
+        let compiler = Compiler::new(&registry);
+        insta::assert_debug_snapshot!(Exists.compile(CompilerCtx::new(compiler.child(), None, &[])), @r#"
+        Err(
+            InvalidSyntax {
+                message: "missing this",
+                syntax: "<this>.exists(<ident>, <expr>)",
+            },
+        )
+        "#);
+
+        insta::assert_debug_snapshot!(Exists.compile(CompilerCtx::new(compiler.child(), Some(CompiledExpr::constant(CelValue::String("hi".into()))), &[])), @r#"
+        Err(
+            InvalidSyntax {
+                message: "invalid number of args",
+                syntax: "<this>.exists(<ident>, <expr>)",
+            },
+        )
+        "#);
+
+        insta::assert_debug_snapshot!(Exists.compile(CompilerCtx::new(compiler.child(), Some(CompiledExpr::constant(CelValue::List(Default::default()))), &[
+            cel_parser::parse("x").unwrap(),
+            cel_parser::parse("x == 'value'").unwrap(),
+        ])), @r"
+        Ok(
+            Constant(
+                ConstantCompiledExpr {
+                    value: Bool(
+                        false,
+                    ),
+                },
+            ),
+        )
+        ");
+    }
+
+    #[test]
+    fn test_exists_runtime_map() {
+        let registry = ProtoTypeRegistry::new();
+        let compiler = Compiler::new(&registry);
+
+        let string_value = CompiledExpr::runtime(
+            CelType::Proto(ProtoType::Modified(ProtoModifiedValueType::Map(
+                ProtoValueType::String,
+                ProtoValueType::Bool,
+            ))),
+            parse_quote!(input),
+        );
+
+        let output = Exists
+            .compile(CompilerCtx::new(
+                compiler.child(),
+                Some(string_value),
+                &[cel_parser::parse("x").unwrap(), cel_parser::parse("x == 'value'").unwrap()],
+            ))
+            .unwrap();
+
+        insta::assert_snapshot!(postcompile::compile_str!(
+            postcompile::config! {
+                test: true,
+                dependencies: vec![
+                    postcompile::Dependency::workspace("tinc"),
+                ],
+            },
+            quote! {
+                fn exists(input: &std::collections::HashMap<String, bool>) -> Result<bool, ::tinc::__private::cel::CelError<'_>> {
+                    Ok(#output)
+                }
+
+                #[test]
+                fn test_contains() {
+                    assert_eq!(exists(&{
+                        let mut map = std::collections::HashMap::new();
+                        map.insert("value".to_string(), true);
+                        map
+                    }).unwrap(), true);
+                    assert_eq!(exists(&{
+                        let mut map = std::collections::HashMap::new();
+                        map.insert("not_value".to_string(), true);
+                        map
+                    }).unwrap(), false);
+                    assert_eq!(exists(&{
+                        let mut map = std::collections::HashMap::new();
+                        map.insert("xd".to_string(), true);
+                        map.insert("value".to_string(), true);
+                        map
+                    }).unwrap(), true);
+                }
+            },
+        ));
+    }
+
+    #[test]
+    fn test_exists_runtime_repeated() {
+        let registry = ProtoTypeRegistry::new();
+        let compiler = Compiler::new(&registry);
+
+        let string_value = CompiledExpr::runtime(
+            CelType::Proto(ProtoType::Modified(ProtoModifiedValueType::Repeated(ProtoValueType::String))),
+            parse_quote!(input),
+        );
+
+        let output = Exists
+            .compile(CompilerCtx::new(
+                compiler.child(),
+                Some(string_value),
+                &[cel_parser::parse("x").unwrap(), cel_parser::parse("x == 'value'").unwrap()],
+            ))
+            .unwrap();
+
+        insta::assert_snapshot!(postcompile::compile_str!(
+            postcompile::config! {
+                test: true,
+                dependencies: vec![
+                    postcompile::Dependency::workspace("tinc"),
+                ],
+            },
+            quote! {
+                fn exists(input: &Vec<String>) -> Result<bool, ::tinc::__private::cel::CelError<'_>> {
+                    Ok(#output)
+                }
+
+                #[test]
+                fn test_exists() {
+                    assert_eq!(exists(&vec!["value".into()]).unwrap(), true);
+                    assert_eq!(exists(&vec!["not_value".into()]).unwrap(), false);
+                    assert_eq!(exists(&vec!["xd".into(), "value".into()]).unwrap(), true);
+                    assert_eq!(exists(&vec!["xd".into(), "value".into(), "value".into()]).unwrap(), true);
+                }
+            },
+        ));
+    }
+}

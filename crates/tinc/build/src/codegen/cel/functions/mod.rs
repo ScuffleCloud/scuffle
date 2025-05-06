@@ -85,10 +85,7 @@ pub(crate) trait Function: Send + Sync + 'static {
 
     fn syntax(&self) -> &'static str;
 
-    fn compile(&self, ctx: CompilerCtx) -> Result<CompiledExpr, CompileError> {
-        let _ = ctx;
-        Err(CompileError::NotImplemented)
-    }
+    fn compile(&self, ctx: CompilerCtx) -> Result<CompiledExpr, CompileError>;
 
     fn add_to_compiler(self, ctx: &mut Compiler)
     where

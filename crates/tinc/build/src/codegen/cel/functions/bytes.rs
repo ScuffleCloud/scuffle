@@ -41,6 +41,7 @@ impl Function for Bytes {
 #[cfg(test)]
 #[cfg_attr(coverage_nightly, coverage(off))]
 mod tests {
+    use quote::quote;
     use syn::parse_quote;
     use tinc_cel::CelValue;
 
@@ -99,10 +100,27 @@ mod tests {
         let string_value =
             CompiledExpr::runtime(CelType::Proto(ProtoType::Value(ProtoValueType::String)), parse_quote!(input));
 
-        let result = Bytes
+        let output = Bytes
             .compile(CompilerCtx::new(compiler.child(), Some(string_value), &[]))
             .unwrap();
 
-        insta::assert_debug_snapshot!(result);
+        insta::assert_snapshot!(postcompile::compile_str!(
+            postcompile::config! {
+                test: true,
+                dependencies: vec![
+                    postcompile::Dependency::workspace("tinc"),
+                ],
+            },
+            quote! {
+                fn to_bytes(input: &str) -> Result<::tinc::__private::cel::CelValue<'_>, ::tinc::__private::cel::CelError<'_>> {
+                    Ok(#output)
+                }
+
+                #[test]
+                fn test_to_bytes() {
+                    assert_eq!(to_bytes("some string").unwrap(), ::tinc::__private::cel::CelValueConv::conv(b"some string"));
+                }
+            },
+        ));
     }
 }

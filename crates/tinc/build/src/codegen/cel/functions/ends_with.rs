@@ -105,7 +105,7 @@ mod tests {
         let string_value =
             CompiledExpr::runtime(CelType::Proto(ProtoType::Value(ProtoValueType::String)), parse_quote!(input));
 
-        let result = EndsWith
+        let output = EndsWith
             .compile(CompilerCtx::new(
                 compiler.child(),
                 Some(string_value),
@@ -115,6 +115,24 @@ mod tests {
             ))
             .unwrap();
 
-        insta::assert_debug_snapshot!(result);
+        insta::assert_snapshot!(postcompile::compile_str!(
+            postcompile::config! {
+                test: true,
+                dependencies: vec![
+                    postcompile::Dependency::workspace("tinc"),
+                ],
+            },
+            quote::quote! {
+                fn ends_with(input: &str) -> Result<bool, ::tinc::__private::cel::CelError<'_>> {
+                    Ok(#output)
+                }
+
+                #[test]
+                fn test_to_double() {
+                    assert_eq!(ends_with("testing").unwrap(), true);
+                    assert_eq!(ends_with("smile").unwrap(), false);
+                }
+            },
+        ));
     }
 }

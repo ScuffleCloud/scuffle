@@ -1,12 +1,24 @@
 ---
 source: crates/tinc/build/src/codegen/cel/functions/double.rs
-expression: result
+expression: "postcompile::compile_str!(postcompile::config!\n{\n    test: true, dependencies:\n    vec![postcompile::Dependency::workspace(\"tinc\"),],\n}, quote::quote!\n{\n    fn to_double(input: &str) -> Result<::tinc::__private::cel::CelValue<'_>,\n    ::tinc::__private::cel::CelError<'_>> { Ok(#output) } #[test] fn\n    test_to_double()\n    {\n        assert_eq!(to_double(\"54.4\").unwrap(),\n        ::tinc::__private::cel::CelValueConv::conv(54.4));\n    }\n},)"
 ---
-Runtime(
-    RuntimeCompiledExpr {
-        ty: CelValue,
-        expr: ::tinc::__private::cel::CelValue::cel_to_double(
+exit status: 0
+--- test_stdout
+running 1 test
+.
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+--- expanded
+#![feature(prelude_import)]
+#[prelude_import]
+use std::prelude::rust_2024::*;
+#[macro_use]
+extern crate std;
+fn to_double(
+    input: &str,
+) -> Result<::tinc::__private::cel::CelValue<'_>, ::tinc::__private::cel::CelError<'_>> {
+    Ok(
+        ::tinc::__private::cel::CelValue::cel_to_double(
             ::tinc::__private::cel::CelValueConv::conv(input),
         )?,
-    },
-)
+    )
+}

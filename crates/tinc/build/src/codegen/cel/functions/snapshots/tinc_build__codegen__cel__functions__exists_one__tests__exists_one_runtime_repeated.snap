@@ -1,0 +1,39 @@
+---
+source: crates/tinc/build/src/codegen/cel/functions/exists_one.rs
+expression: "postcompile::compile_str!(postcompile::config!\n{\n    test: true, dependencies:\n    vec![postcompile::Dependency::workspace(\"tinc\"),],\n}, quote!\n{\n    fn contains(input: &Vec<String>) -> Result<bool,\n    ::tinc::__private::cel::CelError<'_>> { Ok(#output) } #[test] fn\n    test_contains()\n    {\n        assert_eq!(contains(&vec![\"value\".into()]).unwrap(), true);\n        assert_eq!(contains(&vec![\"not_value\".into()]).unwrap(), false);\n        assert_eq!(contains(&vec![\"xd\".into(), \"value\".into()]).unwrap(),\n        true);\n        assert_eq!(contains(&vec![\"xd\".into(), \"value\".into(),\n        \"value\".into()]).unwrap(), false);\n    }\n},)"
+---
+exit status: 0
+--- test_stdout
+running 1 test
+.
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+--- expanded
+#![feature(prelude_import)]
+#[prelude_import]
+use std::prelude::rust_2024::*;
+#[macro_use]
+extern crate std;
+fn contains(input: &Vec<String>) -> Result<bool, ::tinc::__private::cel::CelError<'_>> {
+    Ok({
+        let mut iter = ((input).iter()).into_iter();
+        let mut seen = false;
+        loop {
+            let Some(item) = iter.next() else {
+                break seen;
+            };
+            if ::tinc::__private::cel::to_bool(
+                ::tinc::__private::cel::CelValue::cel_eq(
+                    ::tinc::__private::cel::CelValueConv::conv(item),
+                    ::tinc::__private::cel::CelValue::String(
+                        ::tinc::__private::cel::CelString::Borrowed("value"),
+                    ),
+                )?,
+            ) {
+                if seen {
+                    break false;
+                }
+                seen = true;
+            }
+        }
+    })
+}

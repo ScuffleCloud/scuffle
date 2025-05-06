@@ -86,6 +86,7 @@ impl Function for Contains {
 #[cfg(test)]
 #[cfg_attr(coverage_nightly, coverage(off))]
 mod tests {
+    use quote::quote;
     use syn::parse_quote;
     use tinc_cel::CelValue;
 
@@ -139,15 +140,33 @@ mod tests {
         let string_value =
             CompiledExpr::runtime(CelType::Proto(ProtoType::Value(ProtoValueType::String)), parse_quote!(input));
 
-        let result = Contains
+        let output = Contains
             .compile(CompilerCtx::new(
                 compiler.child(),
                 Some(string_value),
-                &[cel_parser::parse("1 + 1").unwrap()],
+                &[cel_parser::parse("(1 + 1).string()").unwrap()],
             ))
             .unwrap();
 
-        insta::assert_debug_snapshot!(result);
+        insta::assert_snapshot!(postcompile::compile_str!(
+            postcompile::config! {
+                test: true,
+                dependencies: vec![
+                    postcompile::Dependency::workspace("tinc"),
+                ],
+            },
+            quote! {
+                fn contains(input: &String) -> Result<bool, ::tinc::__private::cel::CelError<'_>> {
+                    Ok(#output)
+                }
+
+                #[test]
+                fn test_contains() {
+                    assert_eq!(contains(&"in2dastring".into()).unwrap(), true);
+                    assert_eq!(contains(&"in3dastring".into()).unwrap(), false);
+                }
+            },
+        ));
     }
 
     #[test]
@@ -163,7 +182,7 @@ mod tests {
             parse_quote!(input),
         );
 
-        let result = Contains
+        let output = Contains
             .compile(CompilerCtx::new(
                 compiler.child(),
                 Some(string_value),
@@ -171,7 +190,39 @@ mod tests {
             ))
             .unwrap();
 
-        insta::assert_debug_snapshot!(result);
+        insta::assert_snapshot!(postcompile::compile_str!(
+            postcompile::config! {
+                test: true,
+                dependencies: vec![
+                    postcompile::Dependency::workspace("tinc"),
+                ],
+            },
+            quote! {
+                fn contains(input: &std::collections::HashMap<String, bool>) -> Result<bool, ::tinc::__private::cel::CelError<'_>> {
+                    Ok(#output)
+                }
+
+                #[test]
+                fn test_contains() {
+                    assert_eq!(contains(&{
+                        let mut map = std::collections::HashMap::new();
+                        map.insert("value".to_string(), true);
+                        map
+                    }).unwrap(), true);
+                    assert_eq!(contains(&{
+                        let mut map = std::collections::HashMap::new();
+                        map.insert("not_value".to_string(), true);
+                        map
+                    }).unwrap(), false);
+                    assert_eq!(contains(&{
+                        let mut map = std::collections::HashMap::new();
+                        map.insert("xd".to_string(), true);
+                        map.insert("value".to_string(), true);
+                        map
+                    }).unwrap(), true);
+                }
+            },
+        ));
     }
 
     #[test]
@@ -184,7 +235,7 @@ mod tests {
             parse_quote!(input),
         );
 
-        let result = Contains
+        let output = Contains
             .compile(CompilerCtx::new(
                 compiler.child(),
                 Some(string_value),
@@ -192,6 +243,25 @@ mod tests {
             ))
             .unwrap();
 
-        insta::assert_debug_snapshot!(result);
+        insta::assert_snapshot!(postcompile::compile_str!(
+            postcompile::config! {
+                test: true,
+                dependencies: vec![
+                    postcompile::Dependency::workspace("tinc"),
+                ],
+            },
+            quote! {
+                fn contains(input: &Vec<String>) -> Result<bool, ::tinc::__private::cel::CelError<'_>> {
+                    Ok(#output)
+                }
+
+                #[test]
+                fn test_contains() {
+                    assert_eq!(contains(&vec!["value".into()]).unwrap(), true);
+                    assert_eq!(contains(&vec!["not_value".into()]).unwrap(), false);
+                    assert_eq!(contains(&vec!["xd".into(), "value".into()]).unwrap(), true);
+                }
+            },
+        ));
     }
 }

@@ -50,7 +50,7 @@ mod tests {
     use crate::types::{ProtoType, ProtoTypeRegistry, ProtoValueType};
 
     #[test]
-    fn test_bytes_syntax() {
+    fn test_double_syntax() {
         let registry = ProtoTypeRegistry::new();
         let compiler = Compiler::new(&registry);
         insta::assert_debug_snapshot!(Double.compile(CompilerCtx::new(compiler.child(), None, &[])), @r#"
@@ -96,10 +96,27 @@ mod tests {
         let string_value =
             CompiledExpr::runtime(CelType::Proto(ProtoType::Value(ProtoValueType::String)), parse_quote!(input));
 
-        let result = Double
+        let output = Double
             .compile(CompilerCtx::new(compiler.child(), Some(string_value), &[]))
             .unwrap();
 
-        insta::assert_debug_snapshot!(result);
+        insta::assert_snapshot!(postcompile::compile_str!(
+            postcompile::config! {
+                test: true,
+                dependencies: vec![
+                    postcompile::Dependency::workspace("tinc"),
+                ],
+            },
+            quote::quote! {
+                fn to_double(input: &str) -> Result<::tinc::__private::cel::CelValue<'_>, ::tinc::__private::cel::CelError<'_>> {
+                    Ok(#output)
+                }
+
+                #[test]
+                fn test_to_double() {
+                    assert_eq!(to_double("54.4").unwrap(), ::tinc::__private::cel::CelValueConv::conv(54.4));
+                }
+            },
+        ));
     }
 }

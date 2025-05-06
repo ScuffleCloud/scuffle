@@ -1,19 +1,25 @@
 ---
 source: crates/tinc/build/src/codegen/cel/functions/contains.rs
-expression: result
+expression: "postcompile::compile_str!(postcompile::config!\n{\n    test: true, dependencies:\n    vec![postcompile::Dependency::workspace(\"tinc\"),],\n}, quote!\n{\n    fn contains(input: &Vec<String>) -> Result<bool,\n    ::tinc::__private::cel::CelError<'_>> { Ok(#output) } #[test] fn\n    test_to_bytes()\n    {\n        assert_eq!(contains(&vec![\"value\".into()]).unwrap(), true);\n        assert_eq!(contains(&vec![\"not_value\".into()]).unwrap(), false);\n        assert_eq!(contains(&vec![\"xd\".into(), \"value\".into()]).unwrap(),\n        true);\n    }\n},)"
 ---
-Runtime(
-    RuntimeCompiledExpr {
-        ty: Proto(
-            Value(
-                Bool,
-            ),
-        ),
-        expr: ::tinc::__private::cel::array_contains(
+exit status: 0
+--- test_stdout
+running 1 test
+.
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+--- expanded
+#![feature(prelude_import)]
+#[prelude_import]
+use std::prelude::rust_2024::*;
+#[macro_use]
+extern crate std;
+fn contains(input: &Vec<String>) -> Result<bool, ::tinc::__private::cel::CelError<'_>> {
+    Ok(
+        ::tinc::__private::cel::array_contains(
             input,
             ::tinc::__private::cel::CelValue::String(
                 ::tinc::__private::cel::CelString::Borrowed("value"),
             ),
         ),
-    },
-)
+    )
+}

@@ -177,7 +177,7 @@ fn resolve_map(ctx: &Compiler, items: &[(Expression, Expression)]) -> Result<Com
         Ok(CompiledExpr::runtime(
             CelType::CelValue,
             parse_quote! {
-                ::tinc::__private::cel::CelValueConv::Map(::std::iter::FromIterator::from_iter([
+                ::tinc::__private::cel::CelValue::Map(::std::iter::FromIterator::from_iter([
                     #(#items),*
                 ]))
             },
@@ -297,7 +297,7 @@ fn resolve_member(ctx: &Compiler, expr: &Expression, member: &Member) -> Result<
                 }) => Ok(CompiledExpr::runtime(
                     CelType::Proto(ProtoType::Value(value_ty.clone())),
                     parse_quote! {
-                        ::tinc::__private::cel::CelValueConv::map_access(
+                        ::tinc::__private::cel::map_access(
                             #expr,
                             #attr,
                         )?
@@ -351,7 +351,7 @@ fn resolve_member(ctx: &Compiler, expr: &Expression, member: &Member) -> Result<
                 ) => Ok(CompiledExpr::runtime(
                     CelType::Proto(ProtoType::Value(value_ty.clone())),
                     parse_quote! {
-                        ::tinc::__private::cel::CelValueConv::map_access(
+                        ::tinc::__private::cel::map_access(
                             #expr,
                             #idx,
                         )?

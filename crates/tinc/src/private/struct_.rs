@@ -1,7 +1,7 @@
 use super::{
     DeserializeContent, DeserializeHelper, Expected, IdentifiedValue, Identifier, IdentifierDeserializer, IdentifierFor,
     MapAccessValueDeserializer, SerdePathToken, TrackedError, Tracker, TrackerDeserializeIdentifier, TrackerDeserializer,
-    TrackerFor, TrackerValidation, TrackerWrapper, ValidationError, report_tracked_error, set_irrecoverable,
+    TrackerFor, TrackerWrapper, report_tracked_error, set_irrecoverable,
 };
 
 pub trait TrackedStructDeserializer<'de>: Sized + TrackerFor + IdentifierFor + Expected
@@ -18,8 +18,6 @@ where
     ) -> Result<(), D::Error>
     where
         D: DeserializeContent<'de>;
-
-    fn validate(&self, tracker: &mut <Self::Tracker as TrackerWrapper>::Tracker) -> Result<(), ValidationError>;
 }
 
 impl<'de, T> TrackedStructDeserializer<'de> for Box<T>
@@ -40,11 +38,6 @@ where
         D: DeserializeContent<'de>,
     {
         T::deserialize(self.as_mut(), field, tracker, deserializer)
-    }
-
-    #[inline(always)]
-    fn validate(&self, tracker: &mut <Self::Tracker as TrackerWrapper>::Tracker) -> Result<(), ValidationError> {
-        T::validate(self, tracker)
     }
 }
 
@@ -92,16 +85,6 @@ where
         D: serde::Deserializer<'de>,
     {
         deserializer.deserialize_struct(S::NAME, <S::Identifier as Identifier>::OPTIONS, self)
-    }
-}
-
-impl<T, S> TrackerValidation for StructTracker<T>
-where
-    T: Tracker<Target = S>,
-    S: for<'de> TrackedStructDeserializer<'de, Tracker = StructTracker<T>>,
-{
-    fn validate(&mut self, value: &Self::Target) -> Result<(), ValidationError> {
-        S::validate(value, &mut self.0)
     }
 }
 

@@ -1,4 +1,4 @@
-use tinc::__private::{TrackedStructDeserializer, TrackerFor, TrackerSharedState, deserialize_tracker_target};
+use tinc::__private::{TincValidate, TrackerFor, TrackerSharedState, deserialize_tracker_target};
 
 mod pb {
     #![allow(clippy::all)]
@@ -24,7 +24,7 @@ fn test_simple_single_pass() {
 
     deserialize_tracker_target(&mut state, &mut de, &mut tracker, &mut message).unwrap();
     state.in_scope(|| {
-        TrackedStructDeserializer::validate(&message, &mut tracker).unwrap();
+        TincValidate::validate(&message, Some(&tracker)).unwrap();
     });
 
     insta::assert_debug_snapshot!(state, @r"
@@ -124,7 +124,7 @@ fn test_simple_multiple_passes() {
 
     deserialize_tracker_target(&mut state, &mut de, &mut tracker, &mut message).unwrap();
     state.in_scope(|| {
-        TrackedStructDeserializer::validate(&message, &mut tracker).unwrap();
+        TincValidate::validate(&message, Some(&tracker)).unwrap();
     });
 
     insta::assert_debug_snapshot!(message, @r#"
@@ -216,7 +216,7 @@ fn test_simple_missing_fields() {
     );
 
     deserialize_tracker_target(&mut state, &mut de, &mut tracker, &mut message).unwrap();
-    state.in_scope(|| TrackedStructDeserializer::validate(&message, &mut tracker).unwrap());
+    state.in_scope(|| TincValidate::validate(&message, Some(&tracker)).unwrap());
 
     insta::assert_debug_snapshot!(message, @r#"
     SimpleMessage {
@@ -258,8 +258,7 @@ fn test_simple_missing_fields() {
             TrackedError {
                 kind: MissingField,
                 fatal: true,
-                proto_path: "name",
-                serde_path: "name",
+                path: "name",
             },
         ],
     }
@@ -337,7 +336,7 @@ fn test_simple_duplicate_fields() {
 
     deserialize_tracker_target(&mut state, &mut de, &mut tracker, &mut message).unwrap();
     state.in_scope(|| {
-        TrackedStructDeserializer::validate(&message, &mut tracker).unwrap();
+        TincValidate::validate(&message, Some(&tracker)).unwrap();
     });
 
     insta::assert_debug_snapshot!(message, @r#"
@@ -384,20 +383,17 @@ fn test_simple_duplicate_fields() {
             TrackedError {
                 kind: DuplicateField,
                 fatal: true,
-                proto_path: "values",
-                serde_path: "values",
+                path: "values",
             },
             TrackedError {
                 kind: DuplicateField,
                 fatal: true,
-                proto_path: "key_values[\"key1\"]",
-                serde_path: "key_values[\"key1\"]",
+                path: "key_values[\"key1\"]",
             },
             TrackedError {
                 kind: DuplicateField,
                 fatal: true,
-                proto_path: "key_values[\"key2\"]",
-                serde_path: "key_values[\"key2\"]",
+                path: "key_values[\"key2\"]",
             },
         ],
     }
@@ -423,7 +419,7 @@ fn test_simple_invalid_type() {
 
     deserialize_tracker_target(&mut state, &mut de, &mut tracker, &mut message).unwrap();
     state.in_scope(|| {
-        TrackedStructDeserializer::validate(&message, &mut tracker).unwrap();
+        TincValidate::validate(&message, Some(&tracker)).unwrap();
     });
 
     insta::assert_debug_snapshot!(message, @r#"
@@ -460,24 +456,21 @@ fn test_simple_invalid_type() {
                     message: "invalid type: integer `123`, expected a string at line 2 column 19",
                 },
                 fatal: true,
-                proto_path: "name",
-                serde_path: "name",
+                path: "name",
             },
             TrackedError {
                 kind: InvalidField {
                     message: "invalid type: integer `1`, expected a string at line 3 column 20",
                 },
                 fatal: true,
-                proto_path: "values[0]",
-                serde_path: "values[0]",
+                path: "values[0]",
             },
             TrackedError {
                 kind: InvalidField {
                     message: "invalid type: null, expected a map of `String`s to `String`s at line 4 column 26",
                 },
                 fatal: true,
-                proto_path: "key_values",
-                serde_path: "key_values",
+                path: "key_values",
             },
         ],
     }
@@ -503,7 +496,7 @@ fn test_simple_renamed_field() {
 
     deserialize_tracker_target(&mut state, &mut de, &mut tracker, &mut message).unwrap();
     state.in_scope(|| {
-        TrackedStructDeserializer::validate(&message, &mut tracker).unwrap();
+        TincValidate::validate(&message, Some(&tracker)).unwrap();
     });
 
     insta::assert_debug_snapshot!(state, @r"

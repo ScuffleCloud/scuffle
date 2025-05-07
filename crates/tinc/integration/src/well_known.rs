@@ -1,4 +1,4 @@
-use tinc::__private::{TrackedStructDeserializer, TrackerFor, TrackerSharedState, deserialize_tracker_target};
+use tinc::__private::{TincValidate, TrackerFor, TrackerSharedState, deserialize_tracker_target};
 
 mod pb {
     #![allow(clippy::all)]
@@ -41,7 +41,7 @@ fn test_well_known() {
 
     deserialize_tracker_target(&mut state, &mut de, &mut tracker, &mut message).unwrap();
     state.in_scope(|| {
-        TrackedStructDeserializer::validate(&message, &mut tracker).unwrap();
+        TincValidate::validate(&message, Some(&tracker)).unwrap();
     });
 
     insta::assert_debug_snapshot!(state, @r"
@@ -311,7 +311,7 @@ fn test_well_known_map() {
 
     deserialize_tracker_target(&mut state, &mut de, &mut tracker, &mut message).unwrap();
     state.in_scope(|| {
-        TrackedStructDeserializer::validate(&message, &mut tracker).unwrap();
+        TincValidate::validate(&message, Some(&tracker)).unwrap();
     });
 
     insta::assert_debug_snapshot!(state, @r#"
@@ -323,24 +323,21 @@ fn test_well_known_map() {
                     message: "expected empty string at line 7 column 43",
                 },
                 fatal: true,
-                proto_path: "empty[\"non_empty_string\"]",
-                serde_path: "empty[\"non_empty_string\"]",
+                path: "empty[\"non_empty_string\"]",
             },
             TrackedError {
                 kind: InvalidField {
                     message: "expected empty sequence at line 8 column 40",
                 },
                 fatal: true,
-                proto_path: "empty[\"non_empty_array\"]",
-                serde_path: "empty[\"non_empty_array\"]",
+                path: "empty[\"non_empty_array\"]",
             },
             TrackedError {
                 kind: InvalidField {
                     message: "expected empty map at line 12 column 13",
                 },
                 fatal: true,
-                proto_path: "empty[\"non_empty_map\"]",
-                serde_path: "empty[\"non_empty_map\"]",
+                path: "empty[\"non_empty_map\"]",
             },
         ],
     }
@@ -724,7 +721,7 @@ fn test_well_known_repeated() {
 
     deserialize_tracker_target(&mut state, &mut de, &mut tracker, &mut message).unwrap();
     state.in_scope(|| {
-        TrackedStructDeserializer::validate(&message, &mut tracker).unwrap();
+        TincValidate::validate(&message, Some(&tracker)).unwrap();
     });
 
     insta::assert_debug_snapshot!(state, @r"

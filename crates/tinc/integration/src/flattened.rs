@@ -1,4 +1,4 @@
-use tinc::__private::{TrackedStructDeserializer, TrackerFor, TrackerSharedState, deserialize_tracker_target};
+use tinc::__private::{TincValidate, TrackerFor, TrackerSharedState, deserialize_tracker_target};
 
 mod pb {
     #![allow(clippy::all)]
@@ -26,7 +26,7 @@ fn test_flattened() {
 
     deserialize_tracker_target(&mut state, &mut de, &mut tracker, &mut message).unwrap();
     state.in_scope(|| {
-        TrackedStructDeserializer::validate(&message, &mut tracker).unwrap();
+        TincValidate::validate(&message, Some(&tracker)).unwrap();
     });
 
     insta::assert_debug_snapshot!(state, @r#"
@@ -38,8 +38,7 @@ fn test_flattened() {
                     message: "invalid type: integer `123`, expected a string at line 6 column 27",
                 },
                 fatal: true,
-                proto_path: "some_other.address.house_number",
-                serde_path: "house_number",
+                path: "house_number",
             },
         ],
     }

@@ -34,7 +34,6 @@ fn handle_oneof(
     let mut variant_fields = Vec::new();
     let mut variant_enum_ident = Vec::new();
     let mut deserializer_impl = Vec::new();
-    let mut validation_impl = Vec::new();
     let mut validate_message_impl = Vec::new();
 
     let tagged_impl = if let Some(Tagged { tag, content }) = &oneof.options.tagged {
@@ -161,8 +160,6 @@ fn handle_oneof(
                         }
                     };
 
-                    let _token = ::tinc::__private::ProtoPathToken::push_field(#name);
-
                     ::tinc::__private::TrackerDeserializer::deserialize(
                         tracker,
                         value,
@@ -171,19 +168,36 @@ fn handle_oneof(
                 }
             });
 
-            let cel_validation_fn =
-                cel_expressions(registry, &ProtoType::Value(field.ty.clone()), &field.options, quote!(*value))?;
+            let cel_validation_fn = cel_expressions(
+                registry,
+                &ProtoType::Value(field.ty.clone()),
+                &field.full_name,
+                &field.options,
+                quote!(*value),
+                quote!(tracker),
+            )?;
 
-            validation_impl.push(quote! {
-                (Self::#enum_ident(value), ___Tracker::#enum_ident(tracker)) => {
-                    let _token = ::tinc::__private::ProtoPathToken::push_field(#name);
-                    #(#cel_validation_fn)*
-                    ::tinc::__private::TrackerValidation::validate(tracker, value)?;
-                }
-            });
+            let serde_name = if let Some(tagged) = &oneof.options.tagged {
+                tagged.content.as_str()
+            } else {
+                field.options.json_name.as_str()
+            };
+
             validate_message_impl.push(quote! {
                 (Self::#enum_ident(value)) => {
                     let _token = ::tinc::__private::ProtoPathToken::push_field(#name);
+                    let _token = ::tinc::__private::SerdePathToken::push_field(#serde_name);
+                    let tracker = match tracker {
+                        ::core::option::Option::Some(___Tracker::#enum_ident(tracker)) => ::core::option::Option::Some(tracker),
+                        ::core::option::Option::Some(t) => return ::core::result::Result::Err(
+                            ::tinc::reexports::serde::de::Error::custom(format!(
+                                "tracker and value do not match: {:?} != {:?}",
+                                ::tinc::__private::Identifier::name(&<Self as ::tinc::__private::TrackedOneOfDeserializer<'_>>::tracker_to_identifier(t)),
+                                ::tinc::__private::Identifier::name(&<Self as ::tinc::__private::TrackedOneOfDeserializer<'_>>::value_to_identifier(self)),
+                            )),
+                        ),
+                        ::core::option::Option::None => ::core::option::Option::None,
+                    };
                     #(#cel_validation_fn)*
                 }
             });
@@ -275,24 +289,6 @@ fn handle_oneof(
                     ::core::result::Result::Ok(())
                 }
 
-                fn validate(&self, tracker: &mut <Self::Tracker as ::tinc::__private::TrackerWrapper>::Tracker) -> Result<(), ::tinc::__private::ValidationError>
-                {
-                    match (self, tracker) {
-                        #(#validation_impl),*
-                        (_, tracker) => {
-                            return ::core::result::Result::Err(
-                                ::tinc::reexports::serde::de::Error::custom(format!(
-                                    "tracker and value do not match: {:?} != {:?}",
-                                    ::tinc::__private::Identifier::name(&Self::tracker_to_identifier(tracker)),
-                                    ::tinc::__private::Identifier::name(&Self::value_to_identifier(self)),
-                                )),
-                            );
-                        }
-                    }
-
-                    ::core::result::Result::Ok(())
-                }
-
                 fn tracker_to_identifier(v: &___Tracker) -> #variant_identifier_ident {
                     match v {
                         #(___Tracker::#variant_enum_ident(_) => #variant_identifier_ident::#variant_idents),*
@@ -306,12 +302,12 @@ fn handle_oneof(
                 }
             }
 
-            impl ::tinc::__private::ValidateMessage for #oneof_path {
-                fn validate(&self) -> ::core::result::Result<(), ::tinc::__private::ValidationError> {
-                    ::tinc::__private::cel::CelMode::Proto.set();
-
+            impl ::tinc::__private::TincValidate for #oneof_path {
+                fn validate(&self, tracker: Option<&<#oneof_path as ::tinc::__private::TrackerFor>::Tracker>) -> ::core::result::Result<(), ::tinc::__private::ValidationError> {
+                    let tracker = tracker.and_then(|t| t.as_ref());
                     match self {
                         #(#validate_message_impl)*
+                        #[allow(unreachable_patterns)]
                         _ => {}
                     }
 
@@ -331,7 +327,6 @@ struct FieldBuilder<'a> {
     field_enum_from_str_fn: &'a mut Vec<proc_macro2::TokenStream>,
     field_enum_from_str_flattened_fn: &'a mut Vec<proc_macro2::TokenStream>,
     deserializer_fn: &'a mut Vec<proc_macro2::TokenStream>,
-    verify_deserialize_fn: &'a mut Vec<proc_macro2::TokenStream>,
     cel_validation_fn: &'a mut Vec<proc_macro2::TokenStream>,
 }
 
@@ -473,7 +468,6 @@ fn handle_message_field(
     if field.options.flatten {
         field_builder.deserializer_fn.push(quote! {
             #field_enum_ident::#ident(field) => {
-                let _token = ::tinc::__private::ProtoPathToken::push_field(#field_name);
                 if let Err(error) = ::tinc::__private::TrackerDeserializeIdentifier::<'de>::deserialize(
                     (#tracker).get_or_insert_default(),
                     #value,
@@ -487,7 +481,6 @@ fn handle_message_field(
     } else {
         field_builder.deserializer_fn.push(quote! {
             #field_enum_ident::#ident => {
-                let _token = ::tinc::__private::ProtoPathToken::push_field(#field_name);
                 let tracker = #tracker;
 
                 if !::tinc::__private::tracker_allow_duplicates(tracker.as_ref()) {
@@ -507,22 +500,18 @@ fn handle_message_field(
         });
     }
 
-    let push_field_token = if field.options.flatten {
-        quote! {
-            let _token = ::tinc::__private::ProtoPathToken::push_field(#field_name);
-        }
-    } else {
+    let push_field_token = if !field.options.flatten {
         quote! {
             let _token = ::tinc::__private::SerdePathToken::push_field(
                 ::tinc::__private::Identifier::name(&#field_enum_ident::#ident),
             );
-            let _token = ::tinc::__private::ProtoPathToken::push_field(#field_name);
         }
+    } else {
+        quote! {}
     };
 
     let missing = if matches!(field.options.json_omittable, ProtoFieldJsonOmittable::False) && !field.options.flatten {
         quote! {
-            #push_field_token
             ::tinc::__private::report_tracked_error(
                 ::tinc::__private::TrackedError::missing_field(),
             )?;
@@ -531,21 +520,30 @@ fn handle_message_field(
         quote! {}
     };
 
-    let cel_validation_fn = cel_expressions(registry, &field.ty, &field.options, quote!(self.#field_ident))?;
+    let mut tracker_access = quote!(tracker.and_then(|t| t.#field_ident.as_ref()));
+    if matches!(field.ty, ProtoType::Modified(ProtoModifiedValueType::Optional(_))) {
+        tracker_access = quote!(#tracker_access.and_then(|t| t.as_ref()))
+    }
 
-    field_builder.verify_deserialize_fn.push(quote! {
-        if let Some(tracker) = tracker.#field_ident.as_mut() {
-            #push_field_token
+    let cel_validation_fn = cel_expressions(
+        registry,
+        &field.ty,
+        &field.full_name,
+        &field.options,
+        quote!(self.#field_ident),
+        tracker_access,
+    )?;
+
+    field_builder.cel_validation_fn.push(quote!({
+        let _token = ::tinc::__private::ProtoPathToken::push_field(#field_name);
+        #push_field_token
+
+        // TODO: this seems wrong. I feel as if we should validate it even if omittable is true.
+        if tracker.is_none_or(|t| t.#field_ident.is_some()) {
             #(#cel_validation_fn)*
-            ::tinc::__private::TrackerValidation::validate(tracker, &self.#field_ident)?;
         } else {
             #missing
         }
-    });
-
-    field_builder.cel_validation_fn.push(quote!({
-        #push_field_token
-        #(#cel_validation_fn)*
     }));
 
     Ok(())
@@ -554,8 +552,10 @@ fn handle_message_field(
 fn cel_expressions(
     registry: &ProtoTypeRegistry,
     ty: &ProtoType,
+    field_full_name: &str,
     options: &ProtoFieldOptions,
-    accessor: proc_macro2::TokenStream,
+    value_accessor: proc_macro2::TokenStream,
+    tracker_accessor: proc_macro2::TokenStream,
 ) -> anyhow::Result<Vec<proc_macro2::TokenStream>> {
     let compiler = Compiler::new(registry);
     let mut cel_validation_fn = Vec::new();
@@ -568,7 +568,7 @@ fn cel_expressions(
         let parsed = cel_parser::parse(&expr.expression).context("expression parse")?;
         let resolved = ctx.resolve(&parsed).context("cel expression")?;
         let expr_str = &expr.expression;
-        let message = eval_message_fmt(&expr.message, &ctx).context("message")?;
+        let message = eval_message_fmt(field_full_name, &expr.message, &ctx).context("message")?;
 
         anyhow::Ok(quote! {
             if !::tinc::__private::cel::to_bool({
@@ -577,7 +577,7 @@ fn cel_expressions(
                 })().map_err(|err| {
                     ::tinc::__private::ValidationError::Expression {
                         error: err.to_string().into_boxed_str(),
-                        field: ::tinc::__private::ProtoPathToken::current_path().into_boxed_str(),
+                        field: #field_full_name,
                         expression: #expr_str,
                     }
                 })?
@@ -621,16 +621,14 @@ fn cel_expressions(
 
         if recursive_validate {
             exprs.push(quote! {
-                if ::tinc::__private::cel::CelMode::current().is_proto() {
-                    ::tinc::__private::ValidateMessage::validate(value)?;
-                }
+                ::tinc::__private::TincValidate::validate(value, #tracker_accessor)?;
             })
         }
 
         if !exprs.is_empty() {
             cel_validation_fn.push(quote! {{
                 #[allow(irrefutable_let_patterns)]
-                if let #value_match = &#accessor {
+                if let #value_match = &#value_accessor {
                     #(#exprs)*
                 }
             }});
@@ -643,7 +641,7 @@ fn cel_expressions(
             )
         {
             cel_validation_fn.push(quote! {{
-                if #accessor.is_none() && ::tinc::__private::cel::CelMode::current().is_proto() {
+                if #value_accessor.is_none() {
                     ::tinc::__private::report_tracked_error(
                         ::tinc::__private::TrackedError::missing_field()
                     )?;
@@ -697,17 +695,19 @@ fn cel_expressions(
             };
 
             if is_message {
-                value_exprs.push(quote! {
-                    if ::tinc::__private::cel::CelMode::current().is_proto() {
-                        ::tinc::__private::ValidateMessage::validate(value)?;
-                    }
-                });
+                value_exprs.push(quote!({
+                    let tracker = match #tracker_accessor {
+                        ::core::option::Option::Some(t) => Some(t.get(key).expect("todo: handle error")),
+                        ::core::option::Option::None => None
+                    };
+                    ::tinc::__private::TincValidate::validate(value, tracker)?;
+                }));
             }
 
             cel_validation_fn.push(quote! {{
-                for (key, value) in &#accessor {
-                    let _token = ::tinc::__private::SerdePathToken::push_key(key);
-                    let _token = ::tinc::__private::ProtoPathToken::push_key(key);
+                for (key, value) in &#value_accessor {
+                    let _token = ::tinc::__private::ProtoPathToken::push_field(key);
+                    let _token = ::tinc::__private::SerdePathToken::push_field(key);
                     #(#key_exprs)*
                     #(#value_exprs)*
                 }
@@ -734,17 +734,19 @@ fn cel_expressions(
                 .collect::<anyhow::Result<Vec<_>>>()?;
 
             if is_message {
-                exprs.push(quote! {
-                    if ::tinc::__private::cel::CelMode::current().is_proto() {
-                        ::tinc::__private::ValidateMessage::validate(item)?;
-                    }
-                });
+                exprs.push(quote!({
+                    let tracker = match #tracker_accessor {
+                        ::core::option::Option::Some(t) => Some(t.get(idx).expect("todo: handle error")),
+                        ::core::option::Option::None => None
+                    };
+                    ::tinc::__private::TincValidate::validate(item, tracker)?;
+                }));
             }
 
             cel_validation_fn.push(quote! {{
-                for (idx, item) in #accessor.iter().enumerate() {
-                    let _token = ::tinc::__private::SerdePathToken::push_index(idx);
+                for (idx, item) in #value_accessor.iter().enumerate() {
                     let _token = ::tinc::__private::ProtoPathToken::push_index(idx);
+                    let _token = ::tinc::__private::SerdePathToken::push_index(idx);
                     #(#exprs)*
                 }
             }});
@@ -774,7 +776,6 @@ pub(super) fn handle_message(
     let mut field_enum_from_str_flattened_fn = Vec::new();
     let mut deserializer_fields = Vec::new();
     let mut deserializer_fn = Vec::new();
-    let mut verify_deserialize_fn = Vec::new();
     let mut cel_validation_fn = Vec::new();
 
     for (field_name, field) in message.fields.iter() {
@@ -789,7 +790,6 @@ pub(super) fn handle_message(
                 field_enum_from_str_fn: &mut field_enum_from_str_fn,
                 field_enum_from_str_flattened_fn: &mut field_enum_from_str_flattened_fn,
                 deserializer_fn: &mut deserializer_fn,
-                verify_deserialize_fn: &mut verify_deserialize_fn,
                 cel_validation_fn: &mut cel_validation_fn,
             },
             &field_enum_ident,
@@ -841,12 +841,14 @@ pub(super) fn handle_message(
                 type Identifier = #field_enum_ident;
             }
 
+            type ___Tracker = <<#message_path as ::tinc::__private::TrackerFor>::Tracker as ::tinc::__private::TrackerWrapper>::Tracker;
+
             impl<'de> ::tinc::__private::TrackedStructDeserializer<'de> for #message_path {
                 #[allow(unused_mut, dead_code)]
                 fn deserialize<D>(
                     &mut self,
                     field: Self::Identifier,
-                    mut tracker: &mut <Self::Tracker as ::tinc::__private::TrackerWrapper>::Tracker,
+                    mut tracker: &mut ___Tracker,
                     deserializer: D,
                 ) -> Result<(), D::Error>
                 where
@@ -858,19 +860,6 @@ pub(super) fn handle_message(
 
                     ::core::result::Result::Ok(())
                 }
-
-                #[allow(unused_mut, dead_code)]
-                fn validate(
-                    &self,
-                    mut tracker: &mut <Self::Tracker as ::tinc::__private::TrackerWrapper>::Tracker,
-                ) -> Result<(), ::tinc::__private::ValidationError>
-                {
-                    ::tinc::__private::cel::CelMode::Json.set();
-
-                    #(#verify_deserialize_fn)*
-
-                    ::core::result::Result::Ok(())
-                }
             }
 
             impl ::tinc::__private::Expected for #message_path {
@@ -879,12 +868,10 @@ pub(super) fn handle_message(
                 }
             }
 
-            impl ::tinc::__private::ValidateMessage for #message_path {
-                fn validate(&self) -> ::core::result::Result<(), ::tinc::__private::ValidationError> {
-                    ::tinc::__private::cel::CelMode::Proto.set();
-
+            impl ::tinc::__private::TincValidate for #message_path {
+                fn validate(&self, tracker: Option<&<#message_path as ::tinc::__private::TrackerFor>::Tracker>) -> ::core::result::Result<(), ::tinc::__private::ValidationError> {
+                    let tracker = tracker.map(|t| &**t);
                     #(#cel_validation_fn)*
-
                     ::core::result::Result::Ok(())
                 }
             }

@@ -1,4 +1,4 @@
-use tinc::__private::{TrackedStructDeserializer, TrackerFor, TrackerSharedState, deserialize_tracker_target};
+use tinc::__private::{TincValidate, TrackerFor, TrackerSharedState, deserialize_tracker_target};
 
 mod pb {
     #![allow(clippy::all)]
@@ -26,7 +26,7 @@ fn test_simple_enum() {
     deserialize_tracker_target(&mut state, &mut de, &mut tracker, &mut message).unwrap();
 
     state.in_scope(|| {
-        TrackedStructDeserializer::validate(&message, &mut tracker).unwrap();
+        TincValidate::validate(&message, Some(&tracker)).unwrap();
     });
 
     insta::assert_debug_snapshot!(state, @r"
@@ -119,7 +119,7 @@ fn test_simple_enum_renamed() {
     deserialize_tracker_target(&mut state, &mut de, &mut tracker, &mut message).unwrap();
 
     state.in_scope(|| {
-        TrackedStructDeserializer::validate(&message, &mut tracker).unwrap();
+        TincValidate::validate(&message, Some(&tracker)).unwrap();
     });
 
     insta::assert_debug_snapshot!(state, @r"
@@ -210,7 +210,7 @@ fn test_simple_enum_repr() {
 
     deserialize_tracker_target(&mut state, &mut de, &mut tracker, &mut message).unwrap();
     state.in_scope(|| {
-        TrackedStructDeserializer::validate(&message, &mut tracker).unwrap();
+        TincValidate::validate(&message, Some(&tracker)).unwrap();
     });
 
     insta::assert_debug_snapshot!(state, @r"
@@ -298,7 +298,7 @@ fn test_simple_enum_invalid() {
 
     deserialize_tracker_target(&mut state, &mut de, &mut tracker, &mut message).unwrap();
     state.in_scope(|| {
-        TrackedStructDeserializer::validate(&message, &mut tracker).unwrap();
+        TincValidate::validate(&message, Some(&tracker)).unwrap();
     });
 
     insta::assert_debug_snapshot!(state, @r#"
@@ -310,20 +310,17 @@ fn test_simple_enum_invalid() {
                     message: "unknown variant `FOUR`, expected one of `UNSPECIFIED`, `ONE`, `TWO`, `THREE` at line 2 column 23",
                 },
                 fatal: true,
-                proto_path: "value",
-                serde_path: "value",
+                path: "value",
             },
             TrackedError {
                 kind: MissingField,
                 fatal: true,
-                proto_path: "values",
-                serde_path: "values",
+                path: "values",
             },
             TrackedError {
                 kind: MissingField,
                 fatal: true,
-                proto_path: "map",
-                serde_path: "map",
+                path: "map",
             },
         ],
     }
@@ -376,7 +373,7 @@ fn test_simple_enum_renamed_invalid() {
     deserialize_tracker_target(&mut state, &mut de, &mut tracker, &mut message).unwrap();
 
     state.in_scope(|| {
-        TrackedStructDeserializer::validate(&message, &mut tracker).unwrap();
+        TincValidate::validate(&message, Some(&tracker)).unwrap();
     });
 
     insta::assert_debug_snapshot!(state, @r#"
@@ -388,20 +385,17 @@ fn test_simple_enum_renamed_invalid() {
                     message: "unknown variant `four`, expected one of `unspecified`, `one`, `two`, `three` at line 2 column 23",
                 },
                 fatal: true,
-                proto_path: "value",
-                serde_path: "value",
+                path: "value",
             },
             TrackedError {
                 kind: MissingField,
                 fatal: true,
-                proto_path: "values",
-                serde_path: "values",
+                path: "values",
             },
             TrackedError {
                 kind: MissingField,
                 fatal: true,
-                proto_path: "map",
-                serde_path: "map",
+                path: "map",
             },
         ],
     }
@@ -453,7 +447,7 @@ fn test_simple_enum_repr_invalid() {
 
     deserialize_tracker_target(&mut state, &mut de, &mut tracker, &mut message).unwrap();
     state.in_scope(|| {
-        TrackedStructDeserializer::validate(&message, &mut tracker).unwrap();
+        TincValidate::validate(&message, Some(&tracker)).unwrap();
     });
 
     insta::assert_debug_snapshot!(state, @r#"
@@ -465,20 +459,17 @@ fn test_simple_enum_repr_invalid() {
                     message: "invalid value: 4, expected one of: 0, 1, 2, 3",
                 },
                 fatal: true,
-                proto_path: "value",
-                serde_path: "value",
+                path: "value",
             },
             TrackedError {
                 kind: MissingField,
                 fatal: true,
-                proto_path: "values",
-                serde_path: "values",
+                path: "values",
             },
             TrackedError {
                 kind: MissingField,
                 fatal: true,
-                proto_path: "map",
-                serde_path: "map",
+                path: "map",
             },
         ],
     }

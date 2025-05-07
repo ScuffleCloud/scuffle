@@ -11,7 +11,11 @@ pub(crate) mod compiler;
 pub(crate) mod functions;
 pub(crate) mod types;
 
-pub(crate) fn eval_message_fmt(msg: &str, ctx: &compiler::Compiler<'_>) -> anyhow::Result<TokenStream> {
+pub(crate) fn eval_message_fmt(
+    field_full_name: &str,
+    msg: &str,
+    ctx: &compiler::Compiler<'_>,
+) -> anyhow::Result<TokenStream> {
     let fmt = runtime_format::ParsedFmt::new(msg).map_err(|err| anyhow::anyhow!("failed to parse message format: {err}"))?;
 
     let mut runtime_args = Vec::new();
@@ -47,7 +51,7 @@ pub(crate) fn eval_message_fmt(msg: &str, ctx: &compiler::Compiler<'_>) -> anyho
                 )().map_err(|err| {
                     ::tinc::__private::ValidationError::Expression {
                         error: err.to_string().into_boxed_str(),
-                        field: ::tinc::__private::ProtoPathToken::current_path().into_boxed_str(),
+                        field: #field_full_name,
                         expression: #key,
                     }
                 })?

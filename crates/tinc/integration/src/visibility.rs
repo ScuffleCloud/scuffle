@@ -1,4 +1,4 @@
-use tinc::__private::{TrackedStructDeserializer, TrackerFor, TrackerSharedState, deserialize_tracker_target};
+use tinc::__private::{TincValidate, TrackerFor, TrackerSharedState, deserialize_tracker_target};
 
 mod pb {
     #![allow(clippy::all)]
@@ -29,7 +29,7 @@ fn test_visibility() {
 
     deserialize_tracker_target(&mut state, &mut de, &mut tracker, &mut message).unwrap();
     state.in_scope(|| {
-        TrackedStructDeserializer::validate(&message, &mut tracker).unwrap();
+        TincValidate::validate(&message, Some(&tracker)).unwrap();
     });
 
     insta::assert_debug_snapshot!(state, @r#"
@@ -39,30 +39,26 @@ fn test_visibility() {
             TrackedError {
                 kind: UnknownField,
                 fatal: false,
-                proto_path: "",
-                serde_path: "output_only",
+                path: "output_only",
             },
             TrackedError {
                 kind: InvalidField {
                     message: "unknown variant `UNSPECIFIED`, expected `INPUT_ONLY` or `INPUT_OUTPUT` at line 5 column 40",
                 },
                 fatal: true,
-                proto_path: "input_outputs[\"UNSPECIFIED\"]",
-                serde_path: "input_outputs[\"UNSPECIFIED\"]",
+                path: "input_outputs[\"UNSPECIFIED\"]",
             },
             TrackedError {
                 kind: InvalidField {
                     message: "unknown variant `OUTPUT_ONLY`, expected `INPUT_ONLY` or `INPUT_OUTPUT` at line 7 column 40",
                 },
                 fatal: true,
-                proto_path: "input_outputs[\"OUTPUT_ONLY\"]",
-                serde_path: "input_outputs[\"OUTPUT_ONLY\"]",
+                path: "input_outputs[\"OUTPUT_ONLY\"]",
             },
             TrackedError {
                 kind: UnknownField,
                 fatal: false,
-                proto_path: "",
-                serde_path: "nothing",
+                path: "nothing",
             },
         ],
     }

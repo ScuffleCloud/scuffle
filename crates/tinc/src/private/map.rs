@@ -1,10 +1,10 @@
 use std::collections::{BTreeMap, HashMap};
-use std::hash::{BuildHasher, Hash};
+use std::hash::BuildHasher;
 use std::marker::PhantomData;
 
 use super::{
-    DeserializeHelper, Expected, ProtoPathToken, SerdePathToken, TrackedError, Tracker, TrackerDeserializer, TrackerFor,
-    TrackerValidation, ValidationError, report_de_error, report_tracked_error, set_irrecoverable,
+    DeserializeHelper, Expected, SerdePathToken, TrackedError, Tracker, TrackerDeserializer, TrackerFor, report_de_error,
+    report_tracked_error, set_irrecoverable,
 };
 
 pub struct MapTracker<K: Eq, T, M> {
@@ -47,11 +47,6 @@ impl<K: Eq, T, M> Default for MapTracker<K, T, M> {
 
 pub(crate) trait Map<K, V> {
     fn get_mut<'a>(&'a mut self, key: &K) -> Option<&'a mut V>;
-    fn get<'a, I>(&'a self, key: &I) -> Option<&'a V>
-    where
-        K: std::borrow::Borrow<I>,
-        I: std::cmp::Eq + std::cmp::Ord + std::hash::Hash + ?Sized;
-
     fn insert(&mut self, key: K, value: V) -> Option<V>;
     fn reserve(&mut self, additional: usize);
 }
@@ -77,14 +72,6 @@ impl<K: std::hash::Hash + Eq, V: Default, S: BuildHasher> Map<K, V> for HashMap<
         HashMap::get_mut(self, key)
     }
 
-    fn get<I>(&self, key: &I) -> Option<&V>
-    where
-        K: std::borrow::Borrow<I>,
-        I: std::cmp::Ord + std::cmp::Eq + std::hash::Hash + ?Sized,
-    {
-        HashMap::get(self, key)
-    }
-
     fn insert(&mut self, key: K, value: V) -> Option<V> {
         HashMap::insert(self, key, value)
     }
@@ -97,14 +84,6 @@ impl<K: std::hash::Hash + Eq, V: Default, S: BuildHasher> Map<K, V> for HashMap<
 impl<K: Ord, V: Default> Map<K, V> for BTreeMap<K, V> {
     fn get_mut(&mut self, key: &K) -> Option<&mut V> {
         BTreeMap::get_mut(self, key)
-    }
-
-    fn get<I>(&self, key: &I) -> Option<&V>
-    where
-        K: std::borrow::Borrow<I>,
-        I: std::cmp::Ord + std::cmp::Eq + std::hash::Hash + ?Sized,
-    {
-        BTreeMap::get(self, key)
     }
 
     fn insert(&mut self, key: K, value: V) -> Option<V> {
@@ -162,7 +141,7 @@ where
         while let Some(key) = map.next_key::<K>().inspect_err(|_| {
             set_irrecoverable();
         })? {
-            let _token = (SerdePathToken::push_key(&key), ProtoPathToken::push_key(&key));
+            let _token = SerdePathToken::push_key(&key);
             let entry = self.tracker.entry(key.clone());
             if let linear_map::Entry::Occupied(entry) = &entry {
                 if !entry.get().allow_duplicates() {
@@ -211,24 +190,5 @@ where
         D: super::DeserializeContent<'de>,
     {
         deserializer.deserialize_seed(DeserializeHelper { value, tracker: self })
-    }
-}
-
-impl<K, T, M> TrackerValidation for MapTracker<K, T, M>
-where
-    T: TrackerValidation + Default,
-    K: std::cmp::Eq + Clone + std::fmt::Debug + Expected + Ord + Hash,
-    M: Map<K, T::Target>,
-    MapTracker<K, T, M>: Tracker<Target = M>,
-    T::Target: Default,
-{
-    fn validate(&mut self, value: &Self::Target) -> Result<(), ValidationError> {
-        for (key, tracker) in self.iter_mut() {
-            let _token = (SerdePathToken::push_key(key), ProtoPathToken::push_key(key));
-            if let Some(value) = value.get(key) {
-                tracker.validate(value)?;
-            }
-        }
-        Ok(())
     }
 }

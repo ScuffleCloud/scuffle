@@ -1,7 +1,4 @@
-use super::{
-    DeserializeHelper, Expected, ProtoPathToken, SerdePathToken, Tracker, TrackerDeserializer, TrackerFor,
-    TrackerValidation, ValidationError, report_de_error,
-};
+use super::{DeserializeHelper, Expected, SerdePathToken, Tracker, TrackerDeserializer, TrackerFor, report_de_error};
 
 #[derive(Debug)]
 pub struct RepeatedVecTracker<T>(Vec<T>);
@@ -82,7 +79,7 @@ where
         let mut index = 0;
 
         loop {
-            let _token = (SerdePathToken::push_index(index), ProtoPathToken::push_index(index));
+            let _token = SerdePathToken::push_index(index);
 
             let Some(result) = seq
                 .next_element_seed(DeserializeHelper {
@@ -119,20 +116,5 @@ where
         D: super::DeserializeContent<'de>,
     {
         deserializer.deserialize_seed(DeserializeHelper { value, tracker: self })
-    }
-}
-
-impl<T> TrackerValidation for RepeatedVecTracker<T>
-where
-    T: Tracker + Default + TrackerValidation,
-    T::Target: Default,
-{
-    fn validate(&mut self, value: &Self::Target) -> Result<(), ValidationError> {
-        for (index, (value, tracker)) in value.iter().zip(self.iter_mut()).enumerate() {
-            let _token = (SerdePathToken::push_index(index), ProtoPathToken::push_index(index));
-            tracker.validate(value)?;
-        }
-
-        Ok(())
     }
 }

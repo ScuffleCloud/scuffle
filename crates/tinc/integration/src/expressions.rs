@@ -2,7 +2,7 @@
 
 use std::collections::BTreeMap;
 
-use tinc::__private::{TrackerSharedState, ValidateMessage};
+use tinc::__private::{TincValidate, TrackerSharedState};
 
 mod pb {
     tinc::include_proto!("expressions");
@@ -33,7 +33,7 @@ fn test_string_expressions_valid() {
         ],
     };
 
-    state.in_scope(|| valid.validate()).unwrap();
+    state.in_scope(|| valid.validate(None)).unwrap();
 
     insta::assert_debug_snapshot!(state, @r"
     TrackerSharedState {
@@ -62,7 +62,7 @@ fn test_string_expressions_invalid() {
         ipv4_or_6_only: vec!["hello".into(), "goodbye".into()],
     };
 
-    state.in_scope(|| valid.validate()).unwrap();
+    state.in_scope(|| valid.validate(None)).unwrap();
 
     insta::assert_debug_snapshot!(state, @r#"
     TrackerSharedState {
@@ -73,112 +73,98 @@ fn test_string_expressions_invalid() {
                     message: "value must be exactly `5` characters long",
                 },
                 fatal: true,
-                proto_path: "code",
-                serde_path: "code",
+                path: "code",
             },
             TrackedError {
                 kind: InvalidField {
                     message: "value must be at least `3` characters long",
                 },
                 fatal: true,
-                proto_path: "name",
-                serde_path: "name",
+                path: "name",
             },
             TrackedError {
                 kind: InvalidField {
                     message: "value must match the pattern `^(\\+\\d{1,2}\\s?)?\\(?\\d{3}\\)?[\\s.-]?\\d{3}[\\s.-]?\\d{4}$`",
                 },
                 fatal: true,
-                proto_path: "phone_number",
-                serde_path: "phone_number",
+                path: "phone_number",
             },
             TrackedError {
                 kind: InvalidField {
                     message: "value must not match the pattern `@gmail\\.com$`",
                 },
                 fatal: true,
-                proto_path: "email",
-                serde_path: "email",
+                path: "email",
             },
             TrackedError {
                 kind: InvalidField {
                     message: "value must start with `fk_`",
                 },
                 fatal: true,
-                proto_path: "foreign_key",
-                serde_path: "foreign_key",
+                path: "foreign_key",
             },
             TrackedError {
                 kind: InvalidField {
                     message: "value must end with `_id`",
                 },
                 fatal: true,
-                proto_path: "primary_key",
-                serde_path: "primary_key",
+                path: "primary_key",
             },
             TrackedError {
                 kind: InvalidField {
                     message: "value must contain `e`",
                 },
                 fatal: true,
-                proto_path: "word_with_e",
-                serde_path: "word_with_e",
+                path: "word_with_e",
             },
             TrackedError {
                 kind: InvalidField {
                     message: "value must not contain `z`",
                 },
                 fatal: true,
-                proto_path: "word_without_z",
-                serde_path: "word_without_z",
+                path: "word_without_z",
             },
             TrackedError {
                 kind: InvalidField {
                     message: "value must be one of `[chocolate, vanilla]`",
                 },
                 fatal: true,
-                proto_path: "ice_cream",
-                serde_path: "ice_cream",
+                path: "ice_cream",
             },
             TrackedError {
                 kind: InvalidField {
                     message: "value must not be one of `[troy]`",
                 },
                 fatal: true,
-                proto_path: "best_friend",
-                serde_path: "best_friend",
+                path: "best_friend",
             },
             TrackedError {
                 kind: InvalidField {
                     message: "value must be a valid ipv4 address",
                 },
                 fatal: true,
-                proto_path: "ipv4_only",
-                serde_path: "ipv4_only",
+                path: "ipv4_only",
             },
             TrackedError {
                 kind: InvalidField {
                     message: "value must be a valid ipv6 address",
                 },
                 fatal: true,
-                proto_path: "ipv6_only",
-                serde_path: "ipv6_only",
+                path: "ipv6_only",
             },
             TrackedError {
                 kind: InvalidField {
                     message: "value must be a valid ipv4 or ipv6 address",
                 },
                 fatal: true,
-                proto_path: "ipv4_or_6_only[0]",
-                serde_path: "ipv4_or_6_only[0]",
+                path: "ipv4_or_6_only[0]",
             },
             TrackedError {
                 kind: InvalidField {
                     message: "value must be a valid ipv4 or ipv6 address",
                 },
                 fatal: true,
-                proto_path: "ipv4_or_6_only[1]",
-                serde_path: "ipv4_or_6_only[1]",
+                path: "ipv4_or_6_only[1]",
             },
         ],
     }
@@ -197,7 +183,7 @@ fn test_float_expressions_valid() {
         pi: 3.0,
     };
 
-    state.in_scope(|| valid.validate()).unwrap();
+    state.in_scope(|| valid.validate(None)).unwrap();
 
     insta::assert_debug_snapshot!(state, @r"
     TrackerSharedState {
@@ -219,7 +205,7 @@ fn test_float_expressions_invalid() {
         pi: 3.14,
     };
 
-    state.in_scope(|| valid.validate()).unwrap();
+    state.in_scope(|| valid.validate(None)).unwrap();
 
     insta::assert_debug_snapshot!(state, @r#"
     TrackerSharedState {
@@ -230,48 +216,42 @@ fn test_float_expressions_invalid() {
                     message: "value must be less than or equal to 1.00",
                 },
                 fatal: true,
-                proto_path: "zero_to_one",
-                serde_path: "zero_to_one",
+                path: "zero_to_one",
             },
             TrackedError {
                 kind: InvalidField {
                     message: "value must be greater than `0.00`",
                 },
                 fatal: true,
-                proto_path: "bigger_than_zero",
-                serde_path: "bigger_than_zero",
+                path: "bigger_than_zero",
             },
             TrackedError {
                 kind: InvalidField {
                     message: "value must be less than `0.00`",
                 },
                 fatal: true,
-                proto_path: "less_than_zero",
-                serde_path: "less_than_zero",
+                path: "less_than_zero",
             },
             TrackedError {
                 kind: InvalidField {
                     message: "value must be one of `[5.10, 10.20, -5.20, -10.40]`",
                 },
                 fatal: true,
-                proto_path: "bucket",
-                serde_path: "bucket",
+                path: "bucket",
             },
             TrackedError {
                 kind: InvalidField {
                     message: "value must not be one of `[3.14, 2.71]`",
                 },
                 fatal: true,
-                proto_path: "coolest_float",
-                serde_path: "coolest_float",
+                path: "coolest_float",
             },
             TrackedError {
                 kind: InvalidField {
                     message: "value must be equal to `3.00`",
                 },
                 fatal: true,
-                proto_path: "pi",
-                serde_path: "pi",
+                path: "pi",
             },
         ],
     }
@@ -290,7 +270,7 @@ fn test_double_expressions_valid() {
         pi: 3.0,
     };
 
-    state.in_scope(|| valid.validate()).unwrap();
+    state.in_scope(|| valid.validate(None)).unwrap();
 
     insta::assert_debug_snapshot!(state, @r"
     TrackerSharedState {
@@ -312,7 +292,7 @@ fn test_double_expressions_invalid() {
         pi: 3.14,
     };
 
-    state.in_scope(|| valid.validate()).unwrap();
+    state.in_scope(|| valid.validate(None)).unwrap();
 
     insta::assert_debug_snapshot!(state, @r#"
     TrackerSharedState {
@@ -323,48 +303,42 @@ fn test_double_expressions_invalid() {
                     message: "value must be less than or equal to `1.00`",
                 },
                 fatal: true,
-                proto_path: "zero_to_one",
-                serde_path: "zero_to_one",
+                path: "zero_to_one",
             },
             TrackedError {
                 kind: InvalidField {
                     message: "value must be greater than `0.00`",
                 },
                 fatal: true,
-                proto_path: "bigger_than_zero",
-                serde_path: "bigger_than_zero",
+                path: "bigger_than_zero",
             },
             TrackedError {
                 kind: InvalidField {
                     message: "value must be less than `0.00`",
                 },
                 fatal: true,
-                proto_path: "less_than_zero",
-                serde_path: "less_than_zero",
+                path: "less_than_zero",
             },
             TrackedError {
                 kind: InvalidField {
                     message: "value must be one of `[5.10, 10.20, -5.20, -10.40]`",
                 },
                 fatal: true,
-                proto_path: "bucket",
-                serde_path: "bucket",
+                path: "bucket",
             },
             TrackedError {
                 kind: InvalidField {
                     message: "value must not be one of `[3.14, 2.71]`",
                 },
                 fatal: true,
-                proto_path: "coolest_float",
-                serde_path: "coolest_float",
+                path: "coolest_float",
             },
             TrackedError {
                 kind: InvalidField {
                     message: "value must be equal to `3.00`",
                 },
                 fatal: true,
-                proto_path: "pi",
-                serde_path: "pi",
+                path: "pi",
             },
         ],
     }
@@ -383,7 +357,7 @@ fn test_int32_expressions_valid() {
         pi: 3,
     };
 
-    state.in_scope(|| valid.validate()).unwrap();
+    state.in_scope(|| valid.validate(None)).unwrap();
 
     insta::assert_debug_snapshot!(state, @r"
     TrackerSharedState {
@@ -405,7 +379,7 @@ fn test_int32_expressions_invalid() {
         pi: 4,
     };
 
-    state.in_scope(|| valid.validate()).unwrap();
+    state.in_scope(|| valid.validate(None)).unwrap();
 
     insta::assert_debug_snapshot!(state, @r#"
     TrackerSharedState {
@@ -416,48 +390,42 @@ fn test_int32_expressions_invalid() {
                     message: "value must be greater than or equal to `0`",
                 },
                 fatal: true,
-                proto_path: "zero_to_ten",
-                serde_path: "zero_to_ten",
+                path: "zero_to_ten",
             },
             TrackedError {
                 kind: InvalidField {
                     message: "value must be greater than `0`",
                 },
                 fatal: true,
-                proto_path: "bigger_than_zero",
-                serde_path: "bigger_than_zero",
+                path: "bigger_than_zero",
             },
             TrackedError {
                 kind: InvalidField {
                     message: "value must be less than `0`",
                 },
                 fatal: true,
-                proto_path: "less_than_zero",
-                serde_path: "less_than_zero",
+                path: "less_than_zero",
             },
             TrackedError {
                 kind: InvalidField {
                     message: "value must be one of `[5, 10, -5, -10]`",
                 },
                 fatal: true,
-                proto_path: "bucket",
-                serde_path: "bucket",
+                path: "bucket",
             },
             TrackedError {
                 kind: InvalidField {
                     message: "value must not be one of `[3, 2, 1]`",
                 },
                 fatal: true,
-                proto_path: "coolest_int32",
-                serde_path: "coolest_int32",
+                path: "coolest_int32",
             },
             TrackedError {
                 kind: InvalidField {
                     message: "value must be equal to `3`",
                 },
                 fatal: true,
-                proto_path: "pi",
-                serde_path: "pi",
+                path: "pi",
             },
         ],
     }
@@ -476,7 +444,7 @@ fn test_int64_expressions_valid() {
         pi: 3,
     };
 
-    state.in_scope(|| valid.validate()).unwrap();
+    state.in_scope(|| valid.validate(None)).unwrap();
 
     insta::assert_debug_snapshot!(state, @r"
     TrackerSharedState {
@@ -498,7 +466,7 @@ fn test_int64_expressions_invalid() {
         pi: 4,
     };
 
-    state.in_scope(|| valid.validate()).unwrap();
+    state.in_scope(|| valid.validate(None)).unwrap();
 
     insta::assert_debug_snapshot!(state, @r#"
     TrackerSharedState {
@@ -509,48 +477,42 @@ fn test_int64_expressions_invalid() {
                     message: "value must be greater than or equal to `0`",
                 },
                 fatal: true,
-                proto_path: "zero_to_ten",
-                serde_path: "zero_to_ten",
+                path: "zero_to_ten",
             },
             TrackedError {
                 kind: InvalidField {
                     message: "value must be greater than `0`",
                 },
                 fatal: true,
-                proto_path: "bigger_than_zero",
-                serde_path: "bigger_than_zero",
+                path: "bigger_than_zero",
             },
             TrackedError {
                 kind: InvalidField {
                     message: "value must be less than `0`",
                 },
                 fatal: true,
-                proto_path: "less_than_zero",
-                serde_path: "less_than_zero",
+                path: "less_than_zero",
             },
             TrackedError {
                 kind: InvalidField {
                     message: "value must be one of `[5, 10, -5, -10]`",
                 },
                 fatal: true,
-                proto_path: "bucket",
-                serde_path: "bucket",
+                path: "bucket",
             },
             TrackedError {
                 kind: InvalidField {
                     message: "value must not be one of `[3, 2, 1]`",
                 },
                 fatal: true,
-                proto_path: "coolest_int64",
-                serde_path: "coolest_int64",
+                path: "coolest_int64",
             },
             TrackedError {
                 kind: InvalidField {
                     message: "value must be equal to `3`",
                 },
                 fatal: true,
-                proto_path: "pi",
-                serde_path: "pi",
+                path: "pi",
             },
         ],
     }
@@ -569,7 +531,7 @@ fn test_uint32_expressions_valid() {
         pi: 3,
     };
 
-    state.in_scope(|| valid.validate()).unwrap();
+    state.in_scope(|| valid.validate(None)).unwrap();
 
     insta::assert_debug_snapshot!(state, @r"
     TrackerSharedState {
@@ -591,7 +553,7 @@ fn test_uint32_expressions_invalid() {
         pi: 4,
     };
 
-    state.in_scope(|| valid.validate()).unwrap();
+    state.in_scope(|| valid.validate(None)).unwrap();
 
     insta::assert_debug_snapshot!(state, @r#"
     TrackerSharedState {
@@ -602,48 +564,42 @@ fn test_uint32_expressions_invalid() {
                     message: "value must be greater than or equal to `1`",
                 },
                 fatal: true,
-                proto_path: "one_to_ten",
-                serde_path: "one_to_ten",
+                path: "one_to_ten",
             },
             TrackedError {
                 kind: InvalidField {
                     message: "value must be greater than `100`",
                 },
                 fatal: true,
-                proto_path: "bigger_than_100",
-                serde_path: "bigger_than_100",
+                path: "bigger_than_100",
             },
             TrackedError {
                 kind: InvalidField {
                     message: "value must be less than `100`",
                 },
                 fatal: true,
-                proto_path: "less_than_100",
-                serde_path: "less_than_100",
+                path: "less_than_100",
             },
             TrackedError {
                 kind: InvalidField {
                     message: "value must be one of `[5, 10, 15, 20]`",
                 },
                 fatal: true,
-                proto_path: "bucket",
-                serde_path: "bucket",
+                path: "bucket",
             },
             TrackedError {
                 kind: InvalidField {
                     message: "value must not be one of `[3, 2, 1]`",
                 },
                 fatal: true,
-                proto_path: "coolest_uint32",
-                serde_path: "coolest_uint32",
+                path: "coolest_uint32",
             },
             TrackedError {
                 kind: InvalidField {
                     message: "value must be equal to `3`",
                 },
                 fatal: true,
-                proto_path: "pi",
-                serde_path: "pi",
+                path: "pi",
             },
         ],
     }
@@ -662,7 +618,7 @@ fn test_uint64_expressions_valid() {
         pi: 3,
     };
 
-    state.in_scope(|| valid.validate()).unwrap();
+    state.in_scope(|| valid.validate(None)).unwrap();
 
     insta::assert_debug_snapshot!(state, @r"
     TrackerSharedState {
@@ -684,7 +640,7 @@ fn test_uint64_expressions_invalid() {
         pi: 4,
     };
 
-    state.in_scope(|| valid.validate()).unwrap();
+    state.in_scope(|| valid.validate(None)).unwrap();
 
     insta::assert_debug_snapshot!(state, @r#"
     TrackerSharedState {
@@ -695,48 +651,42 @@ fn test_uint64_expressions_invalid() {
                     message: "value must be greater than or equal to `1`",
                 },
                 fatal: true,
-                proto_path: "one_to_ten",
-                serde_path: "one_to_ten",
+                path: "one_to_ten",
             },
             TrackedError {
                 kind: InvalidField {
                     message: "value must be greater than `100`",
                 },
                 fatal: true,
-                proto_path: "bigger_than_100",
-                serde_path: "bigger_than_100",
+                path: "bigger_than_100",
             },
             TrackedError {
                 kind: InvalidField {
                     message: "value must be less than `100`",
                 },
                 fatal: true,
-                proto_path: "less_than_100",
-                serde_path: "less_than_100",
+                path: "less_than_100",
             },
             TrackedError {
                 kind: InvalidField {
                     message: "value must be one of `[5, 10, 15, 20]`",
                 },
                 fatal: true,
-                proto_path: "bucket",
-                serde_path: "bucket",
+                path: "bucket",
             },
             TrackedError {
                 kind: InvalidField {
                     message: "value must not be one of `[3, 2, 1]`",
                 },
                 fatal: true,
-                proto_path: "coolest_uint64",
-                serde_path: "coolest_uint64",
+                path: "coolest_uint64",
             },
             TrackedError {
                 kind: InvalidField {
                     message: "value must be equal to `3`",
                 },
                 fatal: true,
-                proto_path: "pi",
-                serde_path: "pi",
+                path: "pi",
             },
         ],
     }
@@ -752,7 +702,7 @@ fn test_bytes_expressions_valid() {
         min_max_len: b"0123456789".to_vec(),
     };
 
-    state.in_scope(|| valid.validate()).unwrap();
+    state.in_scope(|| valid.validate(None)).unwrap();
 
     insta::assert_debug_snapshot!(state, @r"
     TrackerSharedState {
@@ -771,7 +721,7 @@ fn test_bytes_expressions_invalid() {
         min_max_len: b"0123".to_vec(),
     };
 
-    state.in_scope(|| valid.validate()).unwrap();
+    state.in_scope(|| valid.validate(None)).unwrap();
 
     insta::assert_debug_snapshot!(state, @r#"
     TrackerSharedState {
@@ -782,24 +732,21 @@ fn test_bytes_expressions_invalid() {
                     message: "value must equal `\0\0\0`",
                 },
                 fatal: true,
-                proto_path: "constant",
-                serde_path: "constant",
+                path: "constant",
             },
             TrackedError {
                 kind: InvalidField {
                     message: "value must be exactly `5` bytes long",
                 },
                 fatal: true,
-                proto_path: "exact_len",
-                serde_path: "exact_len",
+                path: "exact_len",
             },
             TrackedError {
                 kind: InvalidField {
                     message: "value must be at least `5` bytes long",
                 },
                 fatal: true,
-                proto_path: "min_max_len",
-                serde_path: "min_max_len",
+                path: "min_max_len",
             },
         ],
     }
@@ -816,7 +763,7 @@ fn test_enum_expressions_valid() {
         none_of: 2,
     };
 
-    state.in_scope(|| valid.validate()).unwrap();
+    state.in_scope(|| valid.validate(None)).unwrap();
 
     insta::assert_debug_snapshot!(state, @r"
     TrackerSharedState {
@@ -836,7 +783,7 @@ fn test_enum_expressions_invalid() {
         none_of: 0,
     };
 
-    state.in_scope(|| valid.validate()).unwrap();
+    state.in_scope(|| valid.validate(None)).unwrap();
 
     insta::assert_debug_snapshot!(state, @r#"
     TrackerSharedState {
@@ -847,32 +794,28 @@ fn test_enum_expressions_invalid() {
                     message: "value must be equal to `SPECIAL_B`",
                 },
                 fatal: true,
-                proto_path: "constant",
-                serde_path: "constant",
+                path: "constant",
             },
             TrackedError {
                 kind: InvalidField {
                     message: "value must be defined in the enum",
                 },
                 fatal: true,
-                proto_path: "defined",
-                serde_path: "defined",
+                path: "defined",
             },
             TrackedError {
                 kind: InvalidField {
                     message: "value must be one of `[SPECIAL_A, SPECIAL_B]`",
                 },
                 fatal: true,
-                proto_path: "one_of",
-                serde_path: "one_of",
+                path: "one_of",
             },
             TrackedError {
                 kind: InvalidField {
                     message: "value must not be one of `[SPECIAL_UNSPECIFIED]`",
                 },
                 fatal: true,
-                proto_path: "none_of",
-                serde_path: "none_of",
+                path: "none_of",
             },
         ],
     }
@@ -886,7 +829,7 @@ fn test_repeated_expressions_valid() {
         numbers: vec![1, 2, 3, 4, 5],
     };
 
-    state.in_scope(|| valid.validate()).unwrap();
+    state.in_scope(|| valid.validate(None)).unwrap();
 
     insta::assert_debug_snapshot!(state, @r"
     TrackerSharedState {
@@ -903,7 +846,7 @@ fn test_repeated_expressions_invalid() {
         numbers: vec![1, 2, 0, 5],
     };
 
-    state.in_scope(|| valid.validate()).unwrap();
+    state.in_scope(|| valid.validate(None)).unwrap();
 
     insta::assert_debug_snapshot!(state, @r#"
     TrackerSharedState {
@@ -914,16 +857,14 @@ fn test_repeated_expressions_invalid() {
                     message: "value must have exactly `5` elements",
                 },
                 fatal: true,
-                proto_path: "numbers",
-                serde_path: "numbers",
+                path: "numbers",
             },
             TrackedError {
                 kind: InvalidField {
                     message: "value must be greater than `0`",
                 },
                 fatal: true,
-                proto_path: "numbers[2]",
-                serde_path: "numbers[2]",
+                path: "numbers[2]",
             },
         ],
     }
@@ -945,7 +886,7 @@ fn test_map_expressions_valid() {
         },
     };
 
-    state.in_scope(|| valid.validate()).unwrap();
+    state.in_scope(|| valid.validate(None)).unwrap();
 
     insta::assert_debug_snapshot!(state, @r"
     TrackerSharedState {
@@ -970,7 +911,7 @@ fn test_map_expressions_invalid() {
         },
     };
 
-    state.in_scope(|| valid.validate()).unwrap();
+    state.in_scope(|| valid.validate(None)).unwrap();
 
     insta::assert_debug_snapshot!(state, @r#"
     TrackerSharedState {
@@ -981,40 +922,35 @@ fn test_map_expressions_invalid() {
                     message: "value must match the pattern `^troy_`",
                 },
                 fatal: true,
-                proto_path: "numbers[\"one\"]",
-                serde_path: "numbers[\"one\"]",
+                path: "numbers.one",
             },
             TrackedError {
                 kind: InvalidField {
                     message: "value must be greater than `0`",
                 },
                 fatal: true,
-                proto_path: "numbers[\"one\"]",
-                serde_path: "numbers[\"one\"]",
+                path: "numbers.one",
             },
             TrackedError {
                 kind: InvalidField {
                     message: "value must match the pattern `^troy_`",
                 },
                 fatal: true,
-                proto_path: "numbers[\"three\"]",
-                serde_path: "numbers[\"three\"]",
+                path: "numbers.three",
             },
             TrackedError {
                 kind: InvalidField {
                     message: "value must be greater than `0`",
                 },
                 fatal: true,
-                proto_path: "numbers[\"three\"]",
-                serde_path: "numbers[\"three\"]",
+                path: "numbers.three",
             },
             TrackedError {
                 kind: InvalidField {
                     message: "value must be greater than `0`",
                 },
                 fatal: true,
-                proto_path: "numbers[\"troy_five\"]",
-                serde_path: "numbers[\"troy_five\"]",
+                path: "numbers.troy_five",
             },
         ],
     }
@@ -1028,7 +964,7 @@ fn test_message_expressions_valid() {
         message: Some(pb::message_expressions::SubMessage { name: "troy".into() }),
     };
 
-    state.in_scope(|| valid.validate()).unwrap();
+    state.in_scope(|| valid.validate(None)).unwrap();
 
     insta::assert_debug_snapshot!(state, @r"
     TrackerSharedState {
@@ -1043,7 +979,7 @@ fn test_message_expressions_not_provided() {
     let mut state = TrackerSharedState::default();
     let valid = pb::MessageExpressions { message: None };
 
-    state.in_scope(|| valid.validate()).unwrap();
+    state.in_scope(|| valid.validate(None)).unwrap();
 
     insta::assert_debug_snapshot!(state, @r#"
     TrackerSharedState {
@@ -1052,8 +988,7 @@ fn test_message_expressions_not_provided() {
             TrackedError {
                 kind: MissingField,
                 fatal: true,
-                proto_path: "message",
-                serde_path: "message",
+                path: "message",
             },
         ],
     }
@@ -1067,7 +1002,7 @@ fn test_message_expressions_invalid() {
         message: Some(pb::message_expressions::SubMessage { name: "tr".into() }),
     };
 
-    state.in_scope(|| valid.validate()).unwrap();
+    state.in_scope(|| valid.validate(None)).unwrap();
 
     insta::assert_debug_snapshot!(state, @r#"
     TrackerSharedState {
@@ -1078,8 +1013,7 @@ fn test_message_expressions_invalid() {
                     message: "value must be at least `3` characters long",
                 },
                 fatal: true,
-                proto_path: "message.name",
-                serde_path: "message.name",
+                path: "message.name",
             },
         ],
     }
@@ -1093,7 +1027,7 @@ fn test_repeated_message_expressions_valid() {
         messages: vec![pb::repeated_message_expressions::SubMessage { name: "troy".into() }],
     };
 
-    state.in_scope(|| valid.validate()).unwrap();
+    state.in_scope(|| valid.validate(None)).unwrap();
 
     insta::assert_debug_snapshot!(state, @r"
     TrackerSharedState {
@@ -1110,7 +1044,7 @@ fn test_repeated_message_expressions_invalid() {
         messages: vec![pb::repeated_message_expressions::SubMessage { name: "tr".into() }],
     };
 
-    state.in_scope(|| valid.validate()).unwrap();
+    state.in_scope(|| valid.validate(None)).unwrap();
 
     insta::assert_debug_snapshot!(state, @r#"
     TrackerSharedState {
@@ -1121,8 +1055,7 @@ fn test_repeated_message_expressions_invalid() {
                     message: "value must be at least `3` characters long",
                 },
                 fatal: true,
-                proto_path: "messages[0].name",
-                serde_path: "messages[0].name",
+                path: "messages[0].name",
             },
         ],
     }
@@ -1145,7 +1078,7 @@ fn test_map_message_expressions_valid() {
         },
     };
 
-    state.in_scope(|| valid.validate()).unwrap();
+    state.in_scope(|| valid.validate(None)).unwrap();
 
     insta::assert_debug_snapshot!(state, @r"
     TrackerSharedState {
@@ -1168,7 +1101,7 @@ fn test_map_message_expressions_invalid() {
         },
     };
 
-    state.in_scope(|| valid.validate()).unwrap();
+    state.in_scope(|| valid.validate(None)).unwrap();
 
     insta::assert_debug_snapshot!(state, @r#"
     TrackerSharedState {
@@ -1179,8 +1112,7 @@ fn test_map_message_expressions_invalid() {
                     message: "value must be at least `3` characters long",
                 },
                 fatal: true,
-                proto_path: "messages[\"first\"].name",
-                serde_path: "messages[\"first\"].name",
+                path: "messages.first.name",
             },
         ],
     }
@@ -1194,7 +1126,7 @@ fn test_custom_expressions_valid() {
         items: vec!["troy_one".into(), "troy_two".into(), "troy_three".into()],
     };
 
-    state.in_scope(|| valid.validate()).unwrap();
+    state.in_scope(|| valid.validate(None)).unwrap();
 
     insta::assert_debug_snapshot!(state, @r"
     TrackerSharedState {
@@ -1211,7 +1143,7 @@ fn test_custom_expressions_invalid() {
         items: vec!["troy".into(), "to".into(), "xd".into()],
     };
 
-    state.in_scope(|| valid.validate()).unwrap();
+    state.in_scope(|| valid.validate(None)).unwrap();
 
     insta::assert_debug_snapshot!(state, @r#"
     TrackerSharedState {
@@ -1222,8 +1154,7 @@ fn test_custom_expressions_invalid() {
                     message: "all items must start with with 'troy_'",
                 },
                 fatal: true,
-                proto_path: "items",
-                serde_path: "items",
+                path: "items",
             },
         ],
     }
@@ -1237,7 +1168,7 @@ fn test_oneof_expressions_valid() {
         tagged_nested: Some(pb::oneof_expressions::TaggedNested::Age(18)),
     };
 
-    state.in_scope(|| valid.validate()).unwrap();
+    state.in_scope(|| valid.validate(None)).unwrap();
 
     insta::assert_debug_snapshot!(state, @r"
     TrackerSharedState {
@@ -1250,7 +1181,7 @@ fn test_oneof_expressions_valid() {
         tagged_nested: Some(pb::oneof_expressions::TaggedNested::Name("troy".into())),
     };
 
-    state.in_scope(|| valid.validate()).unwrap();
+    state.in_scope(|| valid.validate(None)).unwrap();
 
     insta::assert_debug_snapshot!(state, @r"
     TrackerSharedState {
@@ -1267,7 +1198,7 @@ fn test_oneof_expressions_invalid() {
         tagged_nested: Some(pb::oneof_expressions::TaggedNested::Age(17)),
     };
 
-    state.in_scope(|| valid.validate()).unwrap();
+    state.in_scope(|| valid.validate(None)).unwrap();
 
     insta::assert_debug_snapshot!(state, @r#"
     TrackerSharedState {
@@ -1278,8 +1209,7 @@ fn test_oneof_expressions_invalid() {
                     message: "value must be greater than or equal to `18`",
                 },
                 fatal: true,
-                proto_path: "tagged_nested.age",
-                serde_path: "tagged_nested",
+                path: "tagged_nested.age",
             },
         ],
     }
@@ -1289,7 +1219,7 @@ fn test_oneof_expressions_invalid() {
         tagged_nested: Some(pb::oneof_expressions::TaggedNested::Name("t".into())),
     };
 
-    state.in_scope(|| valid.validate()).unwrap();
+    state.in_scope(|| valid.validate(None)).unwrap();
 
     insta::assert_debug_snapshot!(state, @r#"
     TrackerSharedState {
@@ -1300,16 +1230,14 @@ fn test_oneof_expressions_invalid() {
                     message: "value must be greater than or equal to `18`",
                 },
                 fatal: true,
-                proto_path: "tagged_nested.age",
-                serde_path: "tagged_nested",
+                path: "tagged_nested.age",
             },
             TrackedError {
                 kind: InvalidField {
                     message: "value must be at least `2` characters long",
                 },
                 fatal: true,
-                proto_path: "tagged_nested.name",
-                serde_path: "tagged_nested",
+                path: "tagged_nested.name",
             },
         ],
     }

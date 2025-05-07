@@ -6,10 +6,7 @@ use std::mem::ManuallyDrop;
 use serde::ser::{SerializeMap, SerializeSeq};
 use serde::{Deserialize, Serialize};
 
-use super::{
-    DeserializeContent, DeserializeHelper, Expected, Tracker, TrackerDeserializer, TrackerFor, TrackerValidation,
-    ValidationError,
-};
+use super::{DeserializeContent, DeserializeHelper, Expected, Tracker, TrackerDeserializer, TrackerFor};
 
 pub struct WellKnownTracker<T>(PhantomData<T>);
 
@@ -126,12 +123,6 @@ where
         D: DeserializeContent<'de>,
     {
         deserializer.deserialize_seed(DeserializeHelper { tracker: self, value })
-    }
-}
-
-impl<T: Default + Expected> TrackerValidation for WellKnownTracker<T> {
-    fn validate(&mut self, _: &Self::Target) -> Result<(), ValidationError> {
-        Ok(())
     }
 }
 

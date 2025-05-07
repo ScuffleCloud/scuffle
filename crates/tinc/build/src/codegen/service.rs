@@ -595,7 +595,7 @@ impl GeneratedMethod {
 
             #input
 
-            if let Err(err) = ::tinc::__private::TrackerValidation::validate_http(&mut tracker, state, &target) {
+            if let Err(err) = ::tinc::__private::TincValidate::validate_http(&target, state, &tracker) {
                 return err;
             }
 
@@ -768,7 +768,7 @@ pub(super) fn handle_service(
                     fn decode(&mut self, buf: &mut ::tinc::reexports::tonic::codec::DecodeBuf<'_>) -> Result<Option<Self::Item>, Self::Error> {
                         match ::tinc::reexports::tonic::codec::Decoder::decode(&mut self.0, buf) {
                             ::core::result::Result::Ok(::core::option::Option::Some(item)) => {
-                                ::tinc::__private::ValidateMessage::validate_tonic(&item)?;
+                                ::tinc::__private::TincValidate::validate_tonic(&item)?;
                                 ::core::result::Result::Ok(::core::option::Option::Some(item))
                             },
                             ::core::result::Result::Ok(::core::option::Option::None) => ::core::result::Result::Ok(::core::option::Option::None),

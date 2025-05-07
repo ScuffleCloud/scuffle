@@ -97,6 +97,7 @@ where
     D: serde::Deserializer<'de>,
     T: TrackerDeserializer<'de>,
 {
+    tinc_cel::CelMode::Json.set();
     state.in_scope(|| {
         <T as TrackerDeserializer>::deserialize(
             tracker,

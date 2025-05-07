@@ -1,14 +1,16 @@
 use axum::response::IntoResponse;
 
-use super::{HttpErrorResponse, HttpErrorResponseCode, HttpErrorResponseDetails};
+use super::{
+    HttpErrorResponse, HttpErrorResponseCode, HttpErrorResponseDetails, HttpErrorResponseRequestViolation, TrackerFor,
+    TrackerSharedState, TrackerWrapper,
+};
 
 #[derive(Debug, thiserror::Error)]
 pub enum ValidationError {
     #[error("error evaluating expression `{expression}` on field `{field}`: {error}")]
     Expression {
-        field: Box<str>,
+        field: &'static str,
         error: Box<str>,
-
         expression: &'static str,
     },
     #[error("{0}")]
@@ -49,25 +51,58 @@ impl From<ValidationError> for axum::response::Response {
     }
 }
 
-pub trait ValidateMessage {
-    fn validate(&self) -> Result<(), ValidationError>;
+pub trait TincValidate
+where
+    Self: TrackerFor,
+    Self::Tracker: TrackerWrapper,
+{
+    fn validate(&self, tracker: Option<&Self::Tracker>) -> Result<(), ValidationError>;
+
+    #[allow(clippy::result_large_err)]
+    fn validate_http(&self, mut state: TrackerSharedState, tracker: &Self::Tracker) -> Result<(), axum::response::Response> {
+        tinc_cel::CelMode::Json.set();
+
+        state.in_scope(|| self.validate(Some(tracker)))?;
+
+        if state.errors.is_empty() {
+            Ok(())
+        } else {
+            let mut details = HttpErrorResponseDetails::default();
+
+            for error in &state.errors {
+                details.request.violations.push(HttpErrorResponseRequestViolation {
+                    field: &error.path.as_ref(),
+                    description: error.message(),
+                })
+            }
+
+            Err(HttpErrorResponse {
+                code: HttpErrorResponseCode::InvalidArgument,
+                message: "bad request",
+                details,
+            }
+            .into_response())
+        }
+    }
 
     #[cfg(feature = "tonic")]
     #[allow(clippy::result_large_err)]
     fn validate_tonic(&self) -> Result<(), tonic::Status> {
+        tinc_cel::CelMode::Proto.set();
+
         use tonic_types::{ErrorDetails, StatusExt};
 
         use crate::__private::TrackerSharedState;
 
         let mut state = TrackerSharedState::default();
 
-        state.in_scope(|| self.validate())?;
+        state.in_scope(|| self.validate(None))?;
 
         if !state.errors.is_empty() {
             let mut details = ErrorDetails::new();
 
             for error in state.errors {
-                details.add_bad_request_violation(error.proto_path.as_ref(), error.message());
+                details.add_bad_request_violation(error.path.as_ref(), error.message());
             }
 
             Err(tonic::Status::with_error_details(
@@ -81,11 +116,12 @@ pub trait ValidateMessage {
     }
 }
 
-impl<V> ValidateMessage for Box<V>
+impl<V> TincValidate for Box<V>
 where
-    V: ValidateMessage,
+    V: TincValidate,
+    V::Tracker: TrackerWrapper,
 {
-    fn validate(&self) -> Result<(), ValidationError> {
-        self.as_ref().validate()
+    fn validate(&self, tracker: Option<&Self::Tracker>) -> Result<(), ValidationError> {
+        self.as_ref().validate(tracker.map(|t| t.as_ref()))
     }
 }

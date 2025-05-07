@@ -301,8 +301,7 @@ pub enum TrackedErrorKind {
 pub struct TrackedError {
     pub kind: TrackedErrorKind,
     pub fatal: bool,
-    pub proto_path: Box<str>,
-    pub serde_path: Box<str>,
+    pub path: Box<str>,
 }
 
 impl TrackedError {
@@ -319,10 +318,10 @@ impl TrackedError {
 impl std::fmt::Display for TrackedError {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match &self.kind {
-            TrackedErrorKind::DuplicateField => write!(f, "`{}` was already provided", self.proto_path),
-            TrackedErrorKind::UnknownField => write!(f, "unknown field `{}`", self.proto_path),
-            TrackedErrorKind::MissingField => write!(f, "missing field `{}`", self.proto_path),
-            TrackedErrorKind::InvalidField { message } => write!(f, "`{}`: {}", self.proto_path, message),
+            TrackedErrorKind::DuplicateField => write!(f, "`{}` was already provided", self.path),
+            TrackedErrorKind::UnknownField => write!(f, "unknown field `{}`", self.path),
+            TrackedErrorKind::MissingField => write!(f, "missing field `{}`", self.path),
+            TrackedErrorKind::InvalidField { message } => write!(f, "`{}`: {}", self.path, message),
         }
     }
 }
@@ -332,8 +331,10 @@ impl TrackedError {
         Self {
             kind,
             fatal,
-            proto_path: ProtoPathToken::current_path().into_boxed_str(),
-            serde_path: SerdePathToken::current_path().into_boxed_str(),
+            path: match tinc_cel::CelMode::current() {
+                tinc_cel::CelMode::Json => SerdePathToken::current_path().into_boxed_str(),
+                tinc_cel::CelMode::Proto => ProtoPathToken::current_path().into_boxed_str(),
+            },
         }
     }
 

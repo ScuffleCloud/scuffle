@@ -1,4 +1,4 @@
-use tinc::__private::{TrackedStructDeserializer, TrackerFor, TrackerSharedState, deserialize_tracker_target};
+use tinc::__private::{TincValidate, TrackerFor, TrackerSharedState, deserialize_tracker_target};
 
 mod pb {
     #![allow(clippy::all)]
@@ -16,7 +16,7 @@ macro_rules! create_rename_test {
         deserialize_tracker_target(&mut state, &mut de, &mut tracker, &mut target).unwrap();
 
         state.in_scope(|| {
-            TrackedStructDeserializer::validate(&target, &mut tracker).unwrap();
+            TincValidate::validate(&target, Some(&tracker)).unwrap();
         });
 
         (state, target, tracker)
@@ -248,7 +248,7 @@ fn test_rename_with_override() {
 
     deserialize_tracker_target(&mut state, &mut de, &mut tracker, &mut target).unwrap();
     state.in_scope(|| {
-        TrackedStructDeserializer::validate(&target, &mut tracker).unwrap();
+        TincValidate::validate(&target, Some(&tracker)).unwrap();
     });
 
     insta::assert_debug_snapshot!(state, @r"

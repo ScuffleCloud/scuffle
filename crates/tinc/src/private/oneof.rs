@@ -5,7 +5,7 @@ use serde::de::{Unexpected, VariantAccess};
 use super::{
     DeserializeContent, DeserializeHelper, Expected, IdentifiedValue, Identifier, IdentifierDeserializer, IdentifierFor,
     MapAccessValueDeserializer, SerdeDeserializer, SerdePathToken, TrackedError, Tracker, TrackerDeserializer, TrackerFor,
-    TrackerValidation, TrackerWrapper, ValidationError, report_de_error, report_tracked_error, set_irrecoverable,
+    TrackerWrapper, report_de_error, report_tracked_error, set_irrecoverable,
 };
 
 pub trait OneOfHelper {
@@ -54,11 +54,8 @@ where
     where
         D: DeserializeContent<'de>;
 
-    fn validate(&self, tracker: &mut <Self::Tracker as TrackerWrapper>::Tracker) -> Result<(), ValidationError>;
-
-    fn tracker_to_identifier(tracker: &<Self::Tracker as TrackerWrapper>::Tracker)
-    -> <Self as TrackedOneOfVariant>::Variant;
-    fn value_to_identifier(value: &Self) -> <Self as TrackedOneOfVariant>::Variant;
+    fn tracker_to_identifier(tracker: &<Self::Tracker as TrackerWrapper>::Tracker) -> Self::Variant;
+    fn value_to_identifier(value: &Self) -> Self::Variant;
 }
 
 impl<'de, T> serde::de::Visitor<'de> for DeserializeHelper<'_, TaggedOneOfTracker<T>>
@@ -116,31 +113,6 @@ where
         }
 
         Ok(())
-    }
-}
-
-impl<T> TrackerValidation for OneOfTracker<T>
-where
-    T: Tracker,
-    T::Target: for<'de> TrackedOneOfDeserializer<'de, Tracker = OneOfTracker<T>>,
-{
-    fn validate(&mut self, value: &Self::Target) -> Result<(), ValidationError> {
-        match (self.0.as_mut(), value) {
-            (Some(tracker), Some(value)) => {
-                let _token = SerdePathToken::push_field(T::Target::tracker_to_identifier(tracker).name());
-                value.validate(tracker)
-            }
-            (None, Some(_)) => Err(serde::de::Error::custom("tracker not initialized but value is present")),
-            (Some(tracker), None) => {
-                let _token = SerdePathToken::push_field(T::Target::tracker_to_identifier(tracker).name());
-                report_tracked_error(TrackedError::missing_field())?;
-                Ok(())
-            }
-            (None, None) => {
-                report_tracked_error(TrackedError::missing_field())?;
-                Ok(())
-            }
-        }
     }
 }
 
@@ -268,39 +240,6 @@ where
         }
 
         Ok(())
-    }
-}
-
-impl<T> TrackerValidation for TaggedOneOfTracker<T>
-where
-    T: Tracker,
-    T::Target: for<'de> TrackedOneOfDeserializer<'de, Tracker = TaggedOneOfTracker<T>>,
-    <T::Target as IdentifierFor>::Identifier: TaggedOneOfIdentifier,
-{
-    fn validate(&mut self, value: &Self::Target) -> Result<(), ValidationError> {
-        if !self.content_buffer.is_empty() {
-            let _guard = SerdePathToken::push_field(<T::Target as IdentifierFor>::Identifier::TAG.name());
-            report_tracked_error(TrackedError::missing_field())?;
-            return Ok(());
-        }
-
-        match (self.tracker.as_mut(), value) {
-            (Some(tracker), Some(value)) => {
-                let _guard = SerdePathToken::push_field(<T::Target as IdentifierFor>::Identifier::CONTENT.name());
-                value.validate(tracker)
-            }
-            (None, Some(_)) => Err(serde::de::Error::custom("tracker not initialized but value is present")),
-            (None, None) => {
-                let _guard = SerdePathToken::push_field(<T::Target as IdentifierFor>::Identifier::TAG.name());
-                report_tracked_error(TrackedError::missing_field())?;
-                Ok(())
-            }
-            (Some(_), None) => {
-                let _guard = SerdePathToken::push_field(<T::Target as IdentifierFor>::Identifier::CONTENT.name());
-                report_tracked_error(TrackedError::missing_field())?;
-                Ok(())
-            }
-        }
     }
 }
 

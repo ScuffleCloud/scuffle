@@ -1,9 +1,8 @@
-use std::{fmt::Debug, io, iter};
+use std::fmt::Debug;
+use std::{io, iter};
 
-use scuffle_bytes_util::{
-    BytesCow, IoResultExt,
-    zero_copy::{Deserialize, DeserializeSeed, ZeroCopyReader},
-};
+use scuffle_bytes_util::zero_copy::{Deserialize, DeserializeSeed, ZeroCopyReader};
+use scuffle_bytes_util::{BytesCow, IoResultExt};
 
 use crate::{BoxHeader, BoxHeaderProperties, FullBoxHeader, IsoBox, UnknownBox, Utf8String};
 
@@ -29,12 +28,13 @@ pub struct DataEntryUrlBox {
 }
 
 impl IsoBox for DataEntryUrlBox {
-    const TYPE: [u8; 4] = *b"url ";
     type Header = FullBoxHeader;
+
+    const TYPE: [u8; 4] = *b"url ";
 }
 
 impl<'a> Deserialize<'a> for DataEntryUrlBox {
-    fn deserialize<R>(mut reader: R) -> ::std::io::Result<Self>
+    fn deserialize<R>(mut reader: R) -> io::Result<Self>
     where
         R: ZeroCopyReader<'a>,
     {
@@ -45,7 +45,7 @@ impl<'a> Deserialize<'a> for DataEntryUrlBox {
 }
 
 impl<'a> DeserializeSeed<'a, FullBoxHeader> for DataEntryUrlBox {
-    fn deserialize_seed<R>(mut reader: R, seed: FullBoxHeader) -> ::std::io::Result<Self>
+    fn deserialize_seed<R>(mut reader: R, seed: FullBoxHeader) -> io::Result<Self>
     where
         R: ZeroCopyReader<'a>,
     {
@@ -70,12 +70,13 @@ pub struct DataEntryUrnBox {
 }
 
 impl IsoBox for DataEntryUrnBox {
-    const TYPE: [u8; 4] = *b"urn ";
     type Header = FullBoxHeader;
+
+    const TYPE: [u8; 4] = *b"urn ";
 }
 
 impl<'a> Deserialize<'a> for DataEntryUrnBox {
-    fn deserialize<R>(mut reader: R) -> ::std::io::Result<Self>
+    fn deserialize<R>(mut reader: R) -> io::Result<Self>
     where
         R: ZeroCopyReader<'a>,
     {
@@ -86,7 +87,7 @@ impl<'a> Deserialize<'a> for DataEntryUrnBox {
 }
 
 impl<'a> DeserializeSeed<'a, FullBoxHeader> for DataEntryUrnBox {
-    fn deserialize_seed<R>(mut reader: R, seed: FullBoxHeader) -> ::std::io::Result<Self>
+    fn deserialize_seed<R>(mut reader: R, seed: FullBoxHeader) -> io::Result<Self>
     where
         R: ZeroCopyReader<'a>,
     {
@@ -177,7 +178,7 @@ pub struct CompactSampleSizeBox<'a> {
     #[iso_box(header)]
     pub header: FullBoxHeader,
     #[iso_box(from = "u24")]
-    _reserved: u32,
+    pub reserved: u32,
     pub field_size: u8,
     pub sample_count: u32,
     pub entry_size: BytesCow<'a>,
@@ -306,8 +307,9 @@ pub struct SubSampleInformationBox {
 }
 
 impl IsoBox for SubSampleInformationBox {
-    const TYPE: [u8; 4] = *b"subs";
     type Header = FullBoxHeader;
+
+    const TYPE: [u8; 4] = *b"subs";
 }
 
 impl<'a> Deserialize<'a> for SubSampleInformationBox {
@@ -428,12 +430,13 @@ pub struct SampleAuxiliaryInformationSizesBox<'a> {
 }
 
 impl IsoBox for SampleAuxiliaryInformationSizesBox<'_> {
-    const TYPE: [u8; 4] = *b"saiz";
     type Header = FullBoxHeader;
+
+    const TYPE: [u8; 4] = *b"saiz";
 }
 
 impl<'a> Deserialize<'a> for SampleAuxiliaryInformationSizesBox<'a> {
-    fn deserialize<R>(mut reader: R) -> ::std::io::Result<Self>
+    fn deserialize<R>(mut reader: R) -> io::Result<Self>
     where
         R: ZeroCopyReader<'a>,
     {
@@ -444,7 +447,7 @@ impl<'a> Deserialize<'a> for SampleAuxiliaryInformationSizesBox<'a> {
 }
 
 impl<'a> DeserializeSeed<'a, FullBoxHeader> for SampleAuxiliaryInformationSizesBox<'a> {
-    fn deserialize_seed<R>(mut reader: R, seed: FullBoxHeader) -> ::std::io::Result<Self>
+    fn deserialize_seed<R>(mut reader: R, seed: FullBoxHeader) -> io::Result<Self>
     where
         R: ZeroCopyReader<'a>,
     {
@@ -492,12 +495,13 @@ pub struct SampleAuxiliaryInformationOffsetsBox {
 }
 
 impl IsoBox for SampleAuxiliaryInformationOffsetsBox {
-    const TYPE: [u8; 4] = *b"saio";
     type Header = FullBoxHeader;
+
+    const TYPE: [u8; 4] = *b"saio";
 }
 
 impl<'a> Deserialize<'a> for SampleAuxiliaryInformationOffsetsBox {
-    fn deserialize<R>(mut reader: R) -> ::std::io::Result<Self>
+    fn deserialize<R>(mut reader: R) -> io::Result<Self>
     where
         R: ZeroCopyReader<'a>,
     {
@@ -508,7 +512,7 @@ impl<'a> Deserialize<'a> for SampleAuxiliaryInformationOffsetsBox {
 }
 
 impl<'a> DeserializeSeed<'a, FullBoxHeader> for SampleAuxiliaryInformationOffsetsBox {
-    fn deserialize_seed<R>(mut reader: R, seed: FullBoxHeader) -> ::std::io::Result<Self>
+    fn deserialize_seed<R>(mut reader: R, seed: FullBoxHeader) -> io::Result<Self>
     where
         R: ZeroCopyReader<'a>,
     {

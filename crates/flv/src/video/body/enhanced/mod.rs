@@ -10,6 +10,7 @@ use metadata::VideoPacketMetadataEntry;
 use scuffle_amf0::decoder::Amf0Decoder;
 use scuffle_av1::{AV1CodecConfigurationRecord, AV1VideoDescriptor};
 use scuffle_bytes_util::BytesCursorExt;
+use scuffle_bytes_util::zero_copy::Deserialize;
 use scuffle_h264::AVCDecoderConfigurationRecord;
 use scuffle_h265::HEVCDecoderConfigurationRecord;
 
@@ -20,11 +21,11 @@ pub mod metadata;
 
 /// Sequence start video packet
 #[derive(Debug, Clone, PartialEq)]
-pub enum VideoPacketSequenceStart {
+pub enum VideoPacketSequenceStart<'a> {
     /// Av1 codec configuration record
     Av1(AV1CodecConfigurationRecord),
     /// H.264/AVC codec configuration record
-    Avc(AVCDecoderConfigurationRecord),
+    Avc(AVCDecoderConfigurationRecord<'a>),
     /// H.265/HEVC codec configuration record
     Hevc(HEVCDecoderConfigurationRecord),
     /// Other codecs like VP8 and VP9
@@ -74,7 +75,7 @@ pub enum VideoPacket<'a> {
     /// Indicates the end of a sequence of video packets.
     SequenceEnd,
     /// Indicates the start of a sequence of video packets.
-    SequenceStart(VideoPacketSequenceStart),
+    SequenceStart(VideoPacketSequenceStart<'a>),
     /// Indicates the start of a sequence of video packets in MPEG2-TS format.
     Mpeg2TsSequenceStart(VideoPacketMpeg2TsSequenceStart),
     /// Coded video frames.
@@ -132,7 +133,8 @@ impl VideoPacket<'_> {
                         VideoPacketSequenceStart::Av1(record)
                     }
                     VideoFourCc::Avc => {
-                        let record = AVCDecoderConfigurationRecord::parse(&mut io::Cursor::new(data))?;
+                        let record =
+                            AVCDecoderConfigurationRecord::deserialize(scuffle_bytes_util::zero_copy::BytesBuf::from(data))?;
                         VideoPacketSequenceStart::Avc(record)
                     }
                     VideoFourCc::Hevc => {

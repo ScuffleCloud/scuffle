@@ -1,6 +1,5 @@
 //! Track media structure boxes defined in ISO/IEC 14496-12 - 8.4
 
-use byteorder::ReadBytesExt;
 use scuffle_bytes_util::zero_copy::{Deserialize, DeserializeSeed};
 
 use super::{DataInformationBox, SampleTableBox};
@@ -55,30 +54,30 @@ impl<'a> DeserializeSeed<'a, FullBoxHeader> for MediaHeaderBox {
         R: scuffle_bytes_util::zero_copy::ZeroCopyReader<'a>,
     {
         let creation_time = if seed.version == 1 {
-            reader.as_std().read_u64::<byteorder::BigEndian>()?
+            u64::deserialize(&mut reader)?
         } else {
-            reader.as_std().read_u32::<byteorder::BigEndian>()? as u64
+            u32::deserialize(&mut reader)? as u64
         };
         let modification_time = if seed.version == 1 {
-            reader.as_std().read_u64::<byteorder::BigEndian>()?
+            u64::deserialize(&mut reader)?
         } else {
-            reader.as_std().read_u32::<byteorder::BigEndian>()? as u64
+            u32::deserialize(&mut reader)? as u64
         };
-        let timescale = reader.as_std().read_u32::<byteorder::BigEndian>()?;
+        let timescale = u32::deserialize(&mut reader)?;
         let duration = if seed.version == 1 {
-            reader.as_std().read_u64::<byteorder::BigEndian>()?
+            u64::deserialize(&mut reader)?
         } else {
-            reader.as_std().read_u32::<byteorder::BigEndian>()? as u64
+            u32::deserialize(&mut reader)? as u64
         };
 
         // 0 xxxxx xxxxx xxxxx
-        let language = reader.as_std().read_u16::<byteorder::BigEndian>()?;
+        let language = u16::deserialize(&mut reader)?;
         let language = [
             ((language >> 10) & 0b11111) as u8,
             ((language >> 5) & 0b11111) as u8,
             (language & 0b11111) as u8,
         ];
-        let pre_defined = reader.as_std().read_u16::<byteorder::BigEndian>()?;
+        let pre_defined = u16::deserialize(&mut reader)?;
 
         Ok(Self {
             header: seed,
@@ -142,7 +141,7 @@ pub struct HandlerBox {
     pub pre_defined: u32,
     #[iso_box(from = "[u8; 4]")]
     pub handler_type: HandlerType,
-    _reserved: [u32; 3],
+    pub reserved: [u32; 3],
     pub name: Utf8String,
 }
 

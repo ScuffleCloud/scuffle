@@ -3,9 +3,10 @@ use std::io;
 use scuffle_bytes_util::zero_copy::{Deserialize, ZeroCopyReader};
 
 use super::{
-    ChunkLargeOffsetBox, ChunkOffsetBox, CompactSampleSizeBox, CompositionOffsetBox, CompositionToDecodeBox, PaddingBitsBox,
-    SampleAuxiliaryInformationOffsetsBox, SampleAuxiliaryInformationSizesBox, SampleDependencyTypeBox, SampleSizeBox,
-    SampleToChunkBox, ShadowSyncSampleBox, SubSampleInformationBox, SyncSampleBox, TimeToSampleBox,
+    ChunkLargeOffsetBox, ChunkOffsetBox, CompactSampleSizeBox, CompactSampleToGroupBox, CompositionOffsetBox,
+    CompositionToDecodeBox, PaddingBitsBox, SampleAuxiliaryInformationOffsetsBox, SampleAuxiliaryInformationSizesBox,
+    SampleDependencyTypeBox, SampleGroupDescriptionBox, SampleSizeBox, SampleToChunkBox, SampleToGroupBox,
+    ShadowSyncSampleBox, SubSampleInformationBox, SyncSampleBox, TimeToSampleBox,
 };
 use crate::{BoxHeader, FullBoxHeader, IsoBox, UnknownBox};
 
@@ -57,6 +58,12 @@ pub struct SampleTableBox<'a> {
     pub saiz: Vec<SampleAuxiliaryInformationSizesBox<'a>>,
     #[iso_box(nested_box(collect))]
     pub saio: Vec<SampleAuxiliaryInformationOffsetsBox>,
+    #[iso_box(nested_box(collect))]
+    pub sbgp: Vec<SampleToGroupBox>,
+    #[iso_box(nested_box(collect))]
+    pub sgpd: Vec<SampleGroupDescriptionBox>,
+    #[iso_box(nested_box(collect))]
+    pub csgp: Vec<CompactSampleToGroupBox>,
 }
 
 /// Sample entry

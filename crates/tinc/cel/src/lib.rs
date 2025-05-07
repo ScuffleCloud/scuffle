@@ -1467,7 +1467,7 @@ pub fn to_bool(value: impl CelBooleanConv) -> bool {
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum CelMode {
     Proto,
-    Json,
+    Serde,
 }
 
 #[cfg(feature = "runtime")]
@@ -1486,7 +1486,7 @@ impl CelMode {
     }
 
     pub fn is_json(self) -> bool {
-        matches!(self, Self::Json)
+        matches!(self, Self::Serde)
     }
 
     pub fn is_proto(self) -> bool {
@@ -1509,7 +1509,7 @@ impl<'a> CelEnum<'a> {
     pub fn into_string(&self) -> CelValue<'static> {
         EnumVtable::from_tag(self.tag.as_ref())
             .map(|vt| match CEL_MODE.get() {
-                CelMode::Json => (vt.to_json)(self.value),
+                CelMode::Serde => (vt.to_serde)(self.value),
                 CelMode::Proto => (vt.to_proto)(self.value),
             })
             .unwrap_or(CelValue::Number(NumberTy::I64(self.value as i64)))
@@ -1526,7 +1526,7 @@ impl<'a> CelEnum<'a> {
 pub struct EnumVtable {
     pub proto_path: &'static str,
     pub is_valid: fn(i32) -> bool,
-    pub to_json: fn(i32) -> CelValue<'static>,
+    pub to_serde: fn(i32) -> CelValue<'static>,
     pub to_proto: fn(i32) -> CelValue<'static>,
 }
 
@@ -2711,7 +2711,7 @@ mod tests {
         let enum_val = CelValue::Enum(CelEnum::new(CelString::Owned("MyTag".into()), 123));
         assert_eq!(format!("{enum_val}"), "123");
 
-        CelMode::set(CelMode::Json);
+        CelMode::set(CelMode::Serde);
         let enum_val_json = CelValue::Enum(CelEnum::new(CelString::Owned("MyTag".into()), 456));
         assert_eq!(format!("{enum_val_json}"), "456");
     }
@@ -3294,7 +3294,7 @@ mod tests {
     fn celmode_json_and_proto_flags() {
         use crate::CelMode;
 
-        CelMode::set(CelMode::Json);
+        CelMode::set(CelMode::Serde);
         let current = CelMode::current();
         assert!(current.is_json(), "CelMode should report JSON when set to Json");
         assert!(!current.is_proto(), "CelMode should not report Proto when set to Json");

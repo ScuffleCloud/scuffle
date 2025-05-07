@@ -8,7 +8,7 @@ use super::cel::compiler::{CompiledExpr, Compiler};
 use super::cel::types::CelType;
 use super::cel::{CelExpression, eval_message_fmt, functions};
 use crate::types::{
-    ProtoEnumType, ProtoFieldJsonOmittable, ProtoFieldOptions, ProtoMessageField, ProtoMessageType, ProtoModifiedValueType,
+    ProtoEnumType, ProtoFieldSerdeOmittable, ProtoFieldOptions, ProtoMessageField, ProtoMessageType, ProtoModifiedValueType,
     ProtoOneOfType, ProtoType, ProtoTypeRegistry, ProtoValueType, ProtoVisibility,
 };
 
@@ -95,9 +95,9 @@ fn handle_oneof(
         anyhow::ensure!(!field.options.flatten, "oneof fields cannot be flattened");
 
         let ident = quote::format_ident!("__field_{name}");
-        let json_name = field.options.json_name.clone();
+        let serde_name = &field.options.serde_name;
 
-        oneof_config.field_attribute(name, parse_quote!(#[serde(rename = #json_name)]));
+        oneof_config.field_attribute(name, parse_quote!(#[serde(rename = #serde_name)]));
         if !field.options.visibility.has_output() {
             oneof_config.field_attribute(name, parse_quote!(#[serde(skip_serializing)]));
         }
@@ -105,13 +105,13 @@ fn handle_oneof(
         if field.options.visibility.has_input() {
             variant_idents.push(ident.clone());
             variant_name_fn.push(quote! {
-                #variant_identifier_ident::#ident => #json_name
+                #variant_identifier_ident::#ident => #serde_name
             });
             variant_from_str_fn.push(quote! {
-                #json_name => #variant_identifier_ident::#ident
+                #serde_name => #variant_identifier_ident::#ident
             });
             variant_fields.push(quote! {
-                #json_name
+                #serde_name
             });
             let enum_ident = field.rust_ident();
             variant_enum_ident.push(enum_ident.clone());
@@ -180,7 +180,7 @@ fn handle_oneof(
             let serde_name = if let Some(tagged) = &oneof.options.tagged {
                 tagged.content.as_str()
             } else {
-                field.options.json_name.as_str()
+                field.options.serde_name.as_str()
             };
 
             validate_message_impl.push(quote! {
@@ -338,11 +338,11 @@ fn handle_message_field(
     field_enum_ident: &syn::Ident,
     registry: &ProtoTypeRegistry,
 ) -> anyhow::Result<()> {
-    let json_name = &field.options.json_name;
+    let serde_name = &field.options.serde_name;
 
     let message_config = package.message_config(&field.message);
 
-    message_config.field_attribute(field_name, parse_quote!(#[serde(rename = #json_name)]));
+    message_config.field_attribute(field_name, parse_quote!(#[serde(rename = #serde_name)]));
 
     let message = registry.get_message(&field.message).expect("message not found");
 
@@ -380,22 +380,22 @@ fn handle_message_field(
         }
     } else if field.options.visibility.has_input() {
         field_builder.deserializer_fields.push(quote! {
-            &[#json_name]
+            &[#serde_name]
         });
         field_builder.field_enum_variants.push(quote! {
             #ident
         });
         field_builder.field_enum_name_fn.push(quote! {
-            #field_enum_ident::#ident => #json_name
+            #field_enum_ident::#ident => #serde_name
         });
         field_builder.field_enum_from_str_fn.push(quote! {
-            #json_name => #field_enum_ident::#ident
+            #serde_name => #field_enum_ident::#ident
         });
     }
 
     if !field.options.visibility.has_output() {
         message_config.field_attribute(field_name, parse_quote!(#[serde(skip_serializing)]));
-    } else if matches!(field.options.json_omittable, ProtoFieldJsonOmittable::True) {
+    } else if matches!(field.options.serde_omittable, ProtoFieldSerdeOmittable::True) {
         message_config.field_attribute(
             field_name,
             parse_quote!(#[serde(skip_serializing_if = "::tinc::__private::serde_ser_skip_default")]),
@@ -510,7 +510,7 @@ fn handle_message_field(
         quote! {}
     };
 
-    let missing = if matches!(field.options.json_omittable, ProtoFieldJsonOmittable::False) && !field.options.flatten {
+    let missing = if matches!(field.options.serde_omittable, ProtoFieldSerdeOmittable::False) && !field.options.flatten {
         quote! {
             ::tinc::__private::report_tracked_error(
                 ::tinc::__private::TrackedError::missing_field(),
@@ -896,7 +896,7 @@ pub(super) fn handle_enum(enum_: &ProtoEnumType, package: &mut Package) -> anyho
 
     enum_config.attribute(parse_quote!(#[serde(crate = "::tinc::reexports::serde")]));
 
-    let mut to_json_matchers = if !enum_.options.repr_enum {
+    let mut to_serde_matchers = if !enum_.options.repr_enum {
         Vec::new()
     } else {
         vec![quote! {
@@ -906,11 +906,11 @@ pub(super) fn handle_enum(enum_: &ProtoEnumType, package: &mut Package) -> anyho
 
     for (name, variant) in &enum_.variants {
         if !enum_.options.repr_enum {
-            let json_name = &variant.options.json_name;
-            enum_config.variant_attribute(name, parse_quote!(#[serde(rename = #json_name)]));
+            let serde_name = &variant.options.serde_name;
+            enum_config.variant_attribute(name, parse_quote!(#[serde(rename = #serde_name)]));
             let ident = &variant.rust_ident;
-            to_json_matchers.push(quote! {
-                #enum_path::#ident => ::tinc::__private::cel::CelValueConv::conv(#json_name)
+            to_serde_matchers.push(quote! {
+                #enum_path::#ident => ::tinc::__private::cel::CelValueConv::conv(#serde_name)
             })
         }
 
@@ -948,10 +948,10 @@ pub(super) fn handle_enum(enum_: &ProtoEnumType, package: &mut Package) -> anyho
                 is_valid: |tag| {
                     <#enum_path as std::convert::TryFrom<i32>>::try_from(tag).is_ok()
                 },
-                to_json: |tag| {
+                to_serde: |tag| {
                     match <#enum_path as std::convert::TryFrom<i32>>::try_from(tag) {
                         Ok(value) => match value {
-                            #(#to_json_matchers),*
+                            #(#to_serde_matchers),*
                         }
                         Err(_) => ::tinc::__private::cel::CelValue::Null,
                     }

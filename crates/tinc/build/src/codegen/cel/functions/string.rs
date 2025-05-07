@@ -78,16 +78,16 @@ fn cel_to_string(ctx: &Compiler, value: &CelValue<'static>) -> CompiledExpr {
                 return CompiledExpr::constant(CelValue::cel_to_string(cel_enum.value));
             };
 
-            let json_name = &proto_enum.options.json_name;
+            let serde_name = &proto_enum.options.serde_name;
 
             match ctx.target() {
-                Some(CompilerTarget::Json) => CompiledExpr::constant(CelValue::String(json_name.clone().into())),
+                Some(CompilerTarget::Serde) => CompiledExpr::constant(CelValue::String(serde_name.clone().into())),
                 Some(CompilerTarget::Proto) => CompiledExpr::constant(CelValue::String(proto_name.clone().into())),
                 None => CompiledExpr::runtime(
                     CelType::CelValue,
                     parse_quote! {
                         match ::tinc::__private::cel::CelMode::current() {
-                            ::tinc::__private::cel::CelMode::Json => ::tinc::__private::cel::CelValueConv::conv(#json_name),
+                            ::tinc::__private::cel::CelMode::Serde => ::tinc::__private::cel::CelValueConv::conv(#serde_name),
                             ::tinc::__private::cel::CelMode::Proto => ::tinc::__private::cel::CelValueConv::conv(#proto_name),
                         }
                     },

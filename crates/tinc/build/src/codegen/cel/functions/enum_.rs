@@ -163,16 +163,16 @@ mod tests {
                         is_valid: |_| {
                             true
                         },
-                        to_json: |_| {
-                            ::tinc::__private::cel::CelValue::String(::tinc::__private::cel::CelString::Borrowed("JSON"))
+                        to_serde: |_| {
+                            ::tinc::__private::cel::CelValue::String(::tinc::__private::cel::CelString::Borrowed("SERDE"))
                         },
                         to_proto: |_| {
                             ::tinc::__private::cel::CelValue::String(::tinc::__private::cel::CelString::Borrowed("PROTO"))
                         }
                     };
 
-                    ::tinc::__private::cel::CelMode::Json.set();
-                    assert_eq!(to_enum(1).unwrap().to_string(), "JSON");
+                    ::tinc::__private::cel::CelMode::Serde.set();
+                    assert_eq!(to_enum(1).unwrap().to_string(), "SERDE");
                     ::tinc::__private::cel::CelMode::Proto.set();
                     assert_eq!(to_enum(1).unwrap().to_string(), "PROTO");
                 }

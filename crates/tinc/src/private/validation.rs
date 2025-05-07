@@ -60,7 +60,7 @@ where
 
     #[allow(clippy::result_large_err)]
     fn validate_http(&self, mut state: TrackerSharedState, tracker: &Self::Tracker) -> Result<(), axum::response::Response> {
-        tinc_cel::CelMode::Json.set();
+        tinc_cel::CelMode::Serde.set();
 
         state.in_scope(|| self.validate(Some(tracker)))?;
 

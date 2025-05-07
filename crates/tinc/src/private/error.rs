@@ -332,7 +332,7 @@ impl TrackedError {
             kind,
             fatal,
             path: match tinc_cel::CelMode::current() {
-                tinc_cel::CelMode::Json => SerdePathToken::current_path().into_boxed_str(),
+                tinc_cel::CelMode::Serde => SerdePathToken::current_path().into_boxed_str(),
                 tinc_cel::CelMode::Proto => ProtoPathToken::current_path().into_boxed_str(),
             },
         }

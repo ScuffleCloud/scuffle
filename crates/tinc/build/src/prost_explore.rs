@@ -10,7 +10,7 @@ use tinc_cel::{CelEnum, CelValueConv};
 use crate::codegen::cel::{CelExpression, CelExpressions};
 use crate::codegen::prost_sanatize::{strip_enum_prefix, to_upper_camel};
 use crate::types::{
-    ProtoEnumOptions, ProtoEnumType, ProtoEnumVariant, ProtoEnumVariantOptions, ProtoFieldJsonOmittable, ProtoFieldOptions,
+    ProtoEnumOptions, ProtoEnumType, ProtoEnumVariant, ProtoEnumVariantOptions, ProtoFieldSerdeOmittable, ProtoFieldOptions,
     ProtoMessageField, ProtoMessageOptions, ProtoMessageType, ProtoModifiedValueType, ProtoOneOfField, ProtoOneOfOptions,
     ProtoOneOfType, ProtoPath, ProtoService, ProtoServiceMethod, ProtoServiceMethodEndpoint, ProtoServiceMethodIo,
     ProtoServiceOptions, ProtoType, ProtoTypeRegistry, ProtoValueType, ProtoVisibility, ProtoWellKnownType,
@@ -360,11 +360,11 @@ impl Extensions {
             let visibility = ProtoVisibility::from_pb(opts.visibility());
 
             let field_opts = ProtoFieldOptions {
-                json_omittable: ProtoFieldJsonOmittable::from_pb(opts.json_omittable(), proto3_optional),
+                serde_omittable: ProtoFieldSerdeOmittable::from_pb(opts.json_omittable(), proto3_optional),
                 nullable: proto3_optional,
                 visibility,
                 flatten: opts.flatten(),
-                json_name: opts
+                serde_name: opts
                     .rename
                     .or_else(|| rename_field(field.name(), rename_all?))
                     .unwrap_or_else(|| field.name().to_owned()),
@@ -414,7 +414,7 @@ impl Extensions {
                 indexmap::map::Entry::Occupied(ref mut entry) => entry.get_mut(),
                 indexmap::map::Entry::Vacant(entry) => {
                     let visibility = ProtoVisibility::from_pb(opts.visibility());
-                    let json_omittable = ProtoFieldJsonOmittable::from_pb(opts.json_omittable(), false);
+                    let json_omittable = ProtoFieldSerdeOmittable::from_pb(opts.json_omittable(), false);
 
                     entry.insert(ProtoMessageField {
                         full_name: ProtoPath::new(oneof.full_name()),
@@ -422,8 +422,8 @@ impl Extensions {
                         options: ProtoFieldOptions {
                             flatten: opts.flatten(),
                             nullable: json_omittable.is_true(),
-                            json_omittable,
-                            json_name: opts
+                            serde_omittable: json_omittable,
+                            serde_name: opts
                                 .rename
                                 .or_else(|| rename_field(oneof.name(), rename_all?))
                                 .unwrap_or_else(|| oneof.name().to_owned()),
@@ -545,7 +545,7 @@ impl Extensions {
                     rust_ident: format_ident!("{name}"),
                     options: ProtoEnumVariantOptions {
                         visibility,
-                        json_name: opts.rename.or_else(|| rename_field(&name, rename_all)).unwrap_or(name),
+                        serde_name: opts.rename.or_else(|| rename_field(&name, rename_all)).unwrap_or(name),
                     },
                 },
             );

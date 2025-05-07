@@ -172,7 +172,7 @@ pub(crate) struct ProtoEnumVariant {
 
 #[derive(Debug, Clone, PartialEq)]
 pub(crate) struct ProtoEnumVariantOptions {
-    pub json_name: String,
+    pub serde_name: String,
     pub visibility: ProtoVisibility,
 }
 
@@ -218,13 +218,13 @@ impl ProtoMessageField {
 }
 
 #[derive(Copy, Clone, Debug, PartialEq, Eq, Hash, PartialOrd, Ord)]
-pub(crate) enum ProtoFieldJsonOmittable {
+pub(crate) enum ProtoFieldSerdeOmittable {
     True,
     False,
     TrueButStillSerialize,
 }
 
-impl ProtoFieldJsonOmittable {
+impl ProtoFieldSerdeOmittable {
     pub(crate) fn from_pb(value: tinc_pb::JsonOmittable, nullable: bool) -> Self {
         match value {
             tinc_pb::JsonOmittable::Unspecified => {
@@ -274,8 +274,8 @@ impl ProtoVisibility {
 
 #[derive(Debug, Clone, PartialEq)]
 pub(crate) struct ProtoFieldOptions {
-    pub json_name: String,
-    pub json_omittable: ProtoFieldJsonOmittable,
+    pub serde_name: String,
+    pub serde_omittable: ProtoFieldSerdeOmittable,
     pub nullable: bool,
     pub flatten: bool,
     pub visibility: ProtoVisibility,

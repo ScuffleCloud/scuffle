@@ -176,7 +176,7 @@ impl ToTokens for CompiledExpr {
 #[allow(dead_code)]
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub(crate) enum CompilerTarget {
-    Json,
+    Serde,
     Proto,
 }
 

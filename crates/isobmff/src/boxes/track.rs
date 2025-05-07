@@ -1,6 +1,5 @@
 //! Track structure boxes defined in ISO/IEC 14496-12 - 8.3
 
-use byteorder::ReadBytesExt;
 use scuffle_bytes_util::zero_copy::{Deserialize, DeserializeSeed};
 
 use super::{Brand, EditBox, MediaBox, UserDataBox};
@@ -64,38 +63,38 @@ impl<'a> DeserializeSeed<'a, FullBoxHeader> for TrackHeaderBox {
         R: scuffle_bytes_util::zero_copy::ZeroCopyReader<'a>,
     {
         let creation_time = if seed.version == 1 {
-            reader.as_std().read_u64::<byteorder::BigEndian>()?
+            u64::deserialize(&mut reader)?
         } else {
-            reader.as_std().read_u32::<byteorder::BigEndian>()? as u64
+            u32::deserialize(&mut reader)? as u64
         };
         let modification_time = if seed.version == 1 {
-            reader.as_std().read_u64::<byteorder::BigEndian>()?
+            u64::deserialize(&mut reader)?
         } else {
-            reader.as_std().read_u32::<byteorder::BigEndian>()? as u64
+            u32::deserialize(&mut reader)? as u64
         };
-        let track_id = reader.as_std().read_u32::<byteorder::BigEndian>()?;
-        reader.as_std().read_u32::<byteorder::BigEndian>()?; // reserved
+        let track_id = u32::deserialize(&mut reader)?;
+        u32::deserialize(&mut reader)?; // reserved
         let duration = if seed.version == 1 {
-            reader.as_std().read_u64::<byteorder::BigEndian>()?
+            u64::deserialize(&mut reader)?
         } else {
-            reader.as_std().read_u32::<byteorder::BigEndian>()? as u64
+            u32::deserialize(&mut reader)? as u64
         };
 
-        reader.as_std().read_u64::<byteorder::BigEndian>()?; // reserved
+        u64::deserialize(&mut reader)?; // reserved
 
-        let layer = reader.as_std().read_i16::<byteorder::BigEndian>()?;
-        let alternate_group = reader.as_std().read_i16::<byteorder::BigEndian>()?;
-        let volume = reader.as_std().read_i16::<byteorder::BigEndian>()?;
+        let layer = i16::deserialize(&mut reader)?;
+        let alternate_group = i16::deserialize(&mut reader)?;
+        let volume = i16::deserialize(&mut reader)?;
 
-        reader.as_std().read_u16::<byteorder::BigEndian>()?; // reserved
+        u16::deserialize(&mut reader)?; // reserved
 
         let mut matrix = [0; 9];
         for m in &mut matrix {
-            *m = reader.as_std().read_i32::<byteorder::BigEndian>()?;
+            *m = i32::deserialize(&mut reader)?;
         }
 
-        let width = reader.as_std().read_u32::<byteorder::BigEndian>()?;
-        let height = reader.as_std().read_u32::<byteorder::BigEndian>()?;
+        let width = u32::deserialize(&mut reader)?;
+        let height = u32::deserialize(&mut reader)?;
 
         Ok(Self {
             header: seed,

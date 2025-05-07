@@ -22,7 +22,7 @@ pub mod legacy;
 #[derive(Debug, Clone, PartialEq)]
 pub enum VideoTagBody<'a> {
     /// Legacy video tag body.
-    Legacy(LegacyVideoTagBody),
+    Legacy(LegacyVideoTagBody<'a>),
     /// Enhanced video tag body.
     Enhanced(ExVideoTagBody<'a>),
 }

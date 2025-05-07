@@ -5,7 +5,7 @@
 use std::io;
 
 use bytes::Bytes;
-use scuffle_bytes_util::BytesCursorExt;
+use scuffle_bytes_util::{BytesCursorExt, zero_copy::Deserialize};
 use scuffle_h264::AVCDecoderConfigurationRecord;
 
 use crate::video::header::legacy::{LegacyVideoTagHeader, LegacyVideoTagHeaderAvcPacket};
@@ -20,11 +20,11 @@ use crate::video::header::legacy::{LegacyVideoTagHeader, LegacyVideoTagHeaderAvc
 ///   tags)
 /// - video_file_format_spec_v10_1.pdf (Annex E.4.3.1 - VIDEODATA)
 #[derive(Debug, Clone, PartialEq)]
-pub enum LegacyVideoTagBody {
+pub enum LegacyVideoTagBody<'a> {
     /// Empty body because the header contains a [`VideoCommand`](crate::video::header::VideoCommand)
     Command,
     /// AVC/H.264 configuration record
-    AvcVideoPacketSeqHdr(AVCDecoderConfigurationRecord),
+    AvcVideoPacketSeqHdr(AVCDecoderConfigurationRecord<'a>),
     /// Any other video data
     Other {
         /// The video data
@@ -32,7 +32,7 @@ pub enum LegacyVideoTagBody {
     },
 }
 
-impl LegacyVideoTagBody {
+impl LegacyVideoTagBody<'_> {
     /// Demux the video tag body from the given reader.
     ///
     /// The reader will be consumed entirely.
@@ -41,7 +41,8 @@ impl LegacyVideoTagBody {
             LegacyVideoTagHeader::VideoCommand(_) => Ok(Self::Command),
             LegacyVideoTagHeader::AvcPacket(LegacyVideoTagHeaderAvcPacket::SequenceHeader) => {
                 // AVCVIDEOPACKET
-                let avc_decoder_configuration_record = AVCDecoderConfigurationRecord::parse(reader)?;
+                let avc_decoder_configuration_record =
+                    AVCDecoderConfigurationRecord::deserialize(scuffle_bytes_util::zero_copy::IoRead::from(reader))?;
                 Ok(Self::AvcVideoPacketSeqHdr(avc_decoder_configuration_record))
             }
             _ => Ok(Self::Other {

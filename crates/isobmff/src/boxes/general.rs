@@ -2,7 +2,6 @@
 
 use std::fmt::Debug;
 
-use byteorder::ReadBytesExt;
 use scuffle_bytes_util::BytesCow;
 use scuffle_bytes_util::zero_copy::Deserialize;
 
@@ -91,8 +90,8 @@ impl<'a> Deserialize<'a> for ProgressiveDownloadInfoBoxProperties {
     where
         R: scuffle_bytes_util::zero_copy::ZeroCopyReader<'a>,
     {
-        let rate = reader.as_std().read_u32::<byteorder::BigEndian>()?;
-        let initial_delay = reader.as_std().read_u32::<byteorder::BigEndian>()?;
+        let rate = u32::deserialize(&mut reader)?;
+        let initial_delay = u32::deserialize(&mut reader)?;
 
         Ok(ProgressiveDownloadInfoBoxProperties { rate, initial_delay })
     }

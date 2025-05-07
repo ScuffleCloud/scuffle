@@ -1,10 +1,8 @@
-use std::{fmt::Debug, io, iter};
+use std::fmt::Debug;
+use std::{io, iter};
 
-use byteorder::ReadBytesExt;
-use scuffle_bytes_util::{
-    IoResultExt,
-    zero_copy::{Deserialize, DeserializeSeed, ZeroCopyReader},
-};
+use scuffle_bytes_util::IoResultExt;
+use scuffle_bytes_util::zero_copy::{Deserialize, DeserializeSeed, ZeroCopyReader};
 
 use crate::{BoxHeader, FullBoxHeader, IsoBox};
 
@@ -102,8 +100,9 @@ pub struct CompositionToDecodeBox {
 // Manual implementation because conditional fields are not supported in the macro
 
 impl IsoBox for CompositionToDecodeBox {
-    const TYPE: [u8; 4] = *b"cslg";
     type Header = FullBoxHeader;
+
+    const TYPE: [u8; 4] = *b"cslg";
 }
 
 impl<'a> DeserializeSeed<'a, FullBoxHeader> for CompositionToDecodeBox {
@@ -112,29 +111,29 @@ impl<'a> DeserializeSeed<'a, FullBoxHeader> for CompositionToDecodeBox {
         R: ZeroCopyReader<'a>,
     {
         let composition_to_dt_shift = if seed.version == 0 {
-            reader.as_std().read_i32::<byteorder::BigEndian>()? as i64
+            i32::deserialize(&mut reader)? as i64
         } else {
-            reader.as_std().read_i64::<byteorder::BigEndian>()?
+            i64::deserialize(&mut reader)?
         };
         let least_decode_to_display_delta = if seed.version == 0 {
-            reader.as_std().read_i32::<byteorder::BigEndian>()? as i64
+            i32::deserialize(&mut reader)? as i64
         } else {
-            reader.as_std().read_i64::<byteorder::BigEndian>()?
+            i64::deserialize(&mut reader)?
         };
         let greatest_decode_to_display_delta = if seed.version == 0 {
-            reader.as_std().read_i32::<byteorder::BigEndian>()? as i64
+            i32::deserialize(&mut reader)? as i64
         } else {
-            reader.as_std().read_i64::<byteorder::BigEndian>()?
+            i64::deserialize(&mut reader)?
         };
         let composition_start_time = if seed.version == 0 {
-            reader.as_std().read_i32::<byteorder::BigEndian>()? as i64
+            i32::deserialize(&mut reader)? as i64
         } else {
-            reader.as_std().read_i64::<byteorder::BigEndian>()?
+            i64::deserialize(&mut reader)?
         };
         let composition_end_time = if seed.version == 0 {
-            reader.as_std().read_i32::<byteorder::BigEndian>()? as i64
+            i32::deserialize(&mut reader)? as i64
         } else {
-            reader.as_std().read_i64::<byteorder::BigEndian>()?
+            i64::deserialize(&mut reader)?
         };
 
         Ok(Self {
@@ -260,12 +259,13 @@ pub struct EditListBox {
 }
 
 impl IsoBox for EditListBox {
-    const TYPE: [u8; 4] = *b"elst";
     type Header = FullBoxHeader;
+
+    const TYPE: [u8; 4] = *b"elst";
 }
 
 impl<'a> Deserialize<'a> for EditListBox {
-    fn deserialize<R>(mut reader: R) -> ::std::io::Result<Self>
+    fn deserialize<R>(mut reader: R) -> io::Result<Self>
     where
         R: ZeroCopyReader<'a>,
     {
@@ -276,7 +276,7 @@ impl<'a> Deserialize<'a> for EditListBox {
 }
 
 impl<'a> DeserializeSeed<'a, FullBoxHeader> for EditListBox {
-    fn deserialize_seed<R>(mut reader: R, seed: FullBoxHeader) -> ::std::io::Result<Self>
+    fn deserialize_seed<R>(mut reader: R, seed: FullBoxHeader) -> io::Result<Self>
     where
         R: ZeroCopyReader<'a>,
     {

@@ -2,7 +2,7 @@
 
 use scuffle_bytes_util::zero_copy::{Deserialize, DeserializeSeed};
 
-use super::{Brand, EditBox, MediaBox, UserDataBox};
+use super::{Brand, EditBox, MediaBox, MetaBox, UserDataBox};
 use crate::{BoxHeader, FullBoxHeader, IsoBox, UnknownBox};
 
 /// Track box
@@ -27,6 +27,8 @@ pub struct TrackBox<'a> {
     pub edts: Option<EditBox>,
     #[iso_box(nested_box(collect))]
     pub udta: Option<UserDataBox<'a>>,
+    #[iso_box(nested_box(collect))]
+    pub meta: Option<MetaBox<'a>>,
     #[iso_box(nested_box(collect_unknown))]
     pub unknown_boxes: Vec<UnknownBox<'a>>,
 }

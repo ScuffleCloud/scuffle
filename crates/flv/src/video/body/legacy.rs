@@ -5,7 +5,8 @@
 use std::io;
 
 use bytes::Bytes;
-use scuffle_bytes_util::{BytesCursorExt, zero_copy::Deserialize};
+use scuffle_bytes_util::BytesCursorExt;
+use scuffle_bytes_util::zero_copy::Deserialize;
 use scuffle_h264::AVCDecoderConfigurationRecord;
 
 use crate::video::header::legacy::{LegacyVideoTagHeader, LegacyVideoTagHeaderAvcPacket};

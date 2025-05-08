@@ -6,6 +6,7 @@ use crate::{BoxHeader, IsoBox, UnknownBox};
 
 nutype_enum! {
     pub enum Brand([u8; 4]) {
+        Mp41 = *b"mp41",
         IsoM = *b"isom",
         Avc1 = *b"avc1",
         Iso2 = *b"iso2",

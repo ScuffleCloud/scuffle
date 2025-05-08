@@ -1,9 +1,10 @@
 use std::io;
 
+use scuffle_bytes_util::BytesCow;
 use scuffle_bytes_util::zero_copy::{Deserialize, DeserializeSeed, ZeroCopyReader};
 
 use super::{
-    CompositionToDecodeBox, SampleAuxiliaryInformationOffsetsBox, SampleAuxiliaryInformationSizesBox,
+    CompositionToDecodeBox, MetaBox, SampleAuxiliaryInformationOffsetsBox, SampleAuxiliaryInformationSizesBox,
     SampleGroupDescriptionBox, SampleToGroupBox, SubSampleInformationBox, UserDataBox,
 };
 use crate::{BoxHeader, FullBoxHeader, IsoBox, UnknownBox};
@@ -99,6 +100,8 @@ pub struct MovieFragmentBox<'a> {
     pub trun: Vec<TrackRunBox>,
     #[iso_box(nested_box(collect))]
     pub udta: Option<UserDataBox<'a>>,
+    #[iso_box(nested_box(collect))]
+    pub meta: Option<MetaBox<'a>>,
 }
 
 /// Movie fragment header box
@@ -136,6 +139,8 @@ pub struct TrackFragmentBox<'a> {
     pub sgpd: Vec<SampleGroupDescriptionBox>,
     #[iso_box(nested_box(collect))]
     pub udta: Option<UserDataBox<'a>>,
+    #[iso_box(nested_box(collect))]
+    pub meta: Option<MetaBox<'a>>,
 }
 
 /// Track fragment header box
@@ -420,28 +425,9 @@ impl<'a> DeserializeSeed<'a, FullBoxHeader> for TrackFragmentRandomAccessBox {
             };
 
             // The length of the following fields is bound to 3 bytes because the length fields are all 2 bits
-            // We copy the bytes into a 4 byte array and convert it to u32
-
-            let traf_number = {
-                let mut buf = [0u8; 4];
-                let bytes = reader.try_read(length_size_of_traf_num as usize)?;
-                buf[4 - length_size_of_traf_num as usize..].copy_from_slice(bytes.as_bytes());
-                u32::from_be_bytes(buf)
-            };
-
-            let trun_number = {
-                let mut buf = [0u8; 4];
-                let bytes = reader.try_read(length_size_of_trun_num as usize)?;
-                buf[4 - length_size_of_trun_num as usize..].copy_from_slice(bytes.as_bytes());
-                u32::from_be_bytes(buf)
-            };
-
-            let sample_number = {
-                let mut buf = [0u8; 4];
-                let bytes = reader.try_read(length_size_of_sample_num as usize)?;
-                buf[4 - length_size_of_sample_num as usize..].copy_from_slice(bytes.as_bytes());
-                u32::from_be_bytes(buf)
-            };
+            let traf_number = pad_to_u32(reader.try_read(length_size_of_traf_num as usize)?);
+            let trun_number = pad_to_u32(reader.try_read(length_size_of_trun_num as usize)?);
+            let sample_number = pad_to_u32(reader.try_read(length_size_of_sample_num as usize)?);
 
             entries.push(TrackFragmentRandomAccessBoxEntry {
                 time,
@@ -462,6 +448,14 @@ impl<'a> DeserializeSeed<'a, FullBoxHeader> for TrackFragmentRandomAccessBox {
             entries,
         })
     }
+}
+
+fn pad_to_u32(bytes: BytesCow<'_>) -> u32 {
+    // We copy the bytes into a 4 byte array and convert it to a u32
+    assert!(bytes.len() <= 4);
+    let mut buf = [0u8; 4];
+    buf[4 - bytes.len()..].copy_from_slice(bytes.as_bytes());
+    u32::from_be_bytes(buf)
 }
 
 #[derive(Debug)]

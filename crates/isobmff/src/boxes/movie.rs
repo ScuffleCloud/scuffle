@@ -3,7 +3,7 @@
 use byteorder::ReadBytesExt;
 use scuffle_bytes_util::zero_copy::{Deserialize, DeserializeSeed};
 
-use super::{MovieExtendsBox, TrackBox, UserDataBox};
+use super::{MetaBox, MovieExtendsBox, TrackBox, UserDataBox};
 use crate::{BoxHeader, FullBoxHeader, IsoBox};
 
 /// Movie box
@@ -22,6 +22,8 @@ pub struct MovieBox<'a> {
     pub mvex: Option<MovieExtendsBox>,
     #[iso_box(nested_box(collect))]
     pub udta: Option<UserDataBox<'a>>,
+    #[iso_box(nested_box(collect))]
+    pub meta: Option<MetaBox<'a>>,
 }
 
 /// Movie header box

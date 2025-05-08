@@ -47,8 +47,8 @@ mod metadata;
 pub use metadata::*;
 
 // 8.12
-// mod protected_streams;
-// pub use protected_streams::*;
+mod protected_streams;
+pub use protected_streams::*;
 
 // 8.13
 // mod file_delivery_format;

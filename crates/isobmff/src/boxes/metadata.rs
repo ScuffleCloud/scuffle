@@ -1,7 +1,7 @@
 use scuffle_bytes_util::zero_copy::{Deserialize, DeserializeSeed};
 use scuffle_bytes_util::{BytesCow, IoResultExt};
 
-use super::{Brand, DataInformationBox, HandlerBox, ProtectionSchemeInfoBox, ScrambleSchemeInfoBox};
+use super::{Brand, DataInformationBox, FDItemInformationBox, HandlerBox, ProtectionSchemeInfoBox, ScrambleSchemeInfoBox};
 use crate::{BoxHeader, FullBoxHeader, IsoBox, UnknownBox, Utf8String};
 
 /// Meta box
@@ -34,6 +34,8 @@ pub struct MetaBox<'a> {
     pub iref: Option<ItemReferenceBox>,
     #[iso_box(nested_box(collect))]
     pub iprp: Option<ItemPropertiesBox<'a>>,
+    #[iso_box(nested_box(collect))]
+    pub fiin: Option<FDItemInformationBox>,
     #[iso_box(nested_box(collect_unknown))]
     pub unknown_boxes: Vec<UnknownBox<'a>>,
 }

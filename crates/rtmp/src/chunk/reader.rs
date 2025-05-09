@@ -7,6 +7,7 @@ use std::io::{self, Cursor, Seek, SeekFrom};
 use byteorder::{BigEndian, LittleEndian, ReadBytesExt};
 use bytes::BytesMut;
 use num_traits::FromPrimitive;
+use scuffle_bytes_util::IoResultExt;
 
 use super::error::ChunkReadError;
 use super::{Chunk, ChunkBasicHeader, ChunkMessageHeader, ChunkType, INIT_CHUNK_SIZE, MAX_CHUNK_SIZE};
@@ -86,48 +87,25 @@ impl ChunkReader {
             // Thus allowing us to backtrack if we need to read more data.
             let mut cursor = std::io::Cursor::new(buffer.as_ref());
 
-            let header = match self.read_header(&mut cursor) {
-                Ok(header) => header,
-                Err(None) => {
-                    // Returning none here means that the buffer is empty and we need to wait for
-                    // more data.
-                    return Ok(None);
-                }
-                Err(Some(err)) => {
-                    // This is an error that we can't recover from, so we return it.
-                    // The connection will be closed.
-                    return Err(crate::error::RtmpError::Io(err));
-                }
+            let Some(header) = self.read_header(&mut cursor)? else {
+                // Returning none here means that the buffer is empty and we need to wait for
+                // more data.
+                return Ok(None);
             };
 
-            let message_header = match self.read_message_header(&header, &mut cursor) {
-                Ok(message_header) => message_header,
-                Err(None) => {
-                    // Returning none here means that the buffer is empty and we need to wait for
-                    // more data.
-                    return Ok(None);
-                }
-                Err(Some(err)) => {
-                    // This is an error that we can't recover from, so we return it.
-                    // The connection will be closed.
-                    return Err(err);
-                }
+            let Some(message_header) = self.read_message_header(&header, &mut cursor)? else {
+                // Returning none here means that the buffer is empty and we need to wait for
+                // more data.
+                return Ok(None);
             };
 
-            let (payload_range_start, payload_range_end) =
-                match self.get_payload_range(&header, &message_header, &mut cursor) {
-                    Ok(data) => data,
-                    Err(None) => {
-                        // Returning none here means that the buffer is empty and we need to wait
-                        // for more data.
-                        return Ok(None);
-                    }
-                    Err(Some(err)) => {
-                        // This is an error that we can't recover from, so we return it.
-                        // The connection will be closed.
-                        return Err(err);
-                    }
-                };
+            let Some((payload_range_start, payload_range_end)) =
+                self.get_payload_range(&header, &message_header, &mut cursor)?
+            else {
+                // Returning none here means that the buffer is empty and we need to wait
+                // for more data.
+                return Ok(None);
+            };
 
             // Since we were reading from an advanced cursor, our reads did not actually
             // advance the reader's position. We need to manually advance the reader's
@@ -246,11 +224,13 @@ impl ChunkReader {
     }
 
     /// Internal function used to read the basic chunk header.
-    fn read_header(&self, cursor: &mut Cursor<&[u8]>) -> Result<ChunkBasicHeader, Option<io::Error>> {
+    fn read_header(&self, cursor: &mut Cursor<&[u8]>) -> Result<Option<ChunkBasicHeader>, io::Error> {
         // The first byte of the basic header is the format of the chunk and the stream
         // id. Mapping the error to none means that this isn't a real error but we dont
         // have enough data.
-        let byte = cursor.read_u8().eof_to_none()?;
+        let Some(byte) = cursor.read_u8().eof_to_none()? else {
+            return Ok(None);
+        };
         // The format is the first 2 bits of the byte. We shift the byte 6 bits to the
         // right to get the format.
         let format = (byte >> 6) & 0b00000011;
@@ -265,15 +245,21 @@ impl ChunkReader {
         let chunk_stream_id = match (byte & 0b00111111) as u32 {
             // If the chunk stream id is 0 we read the next byte and add 64 to it.
             0 => {
-                let first_byte = cursor.read_u8().eof_to_none()?;
+                let Some(first_byte) = cursor.read_u8().eof_to_none()? else {
+                    return Ok(None);
+                };
 
                 64 + first_byte as u32
             }
             // If it is 1 we read the next 2 bytes and add 64 to it and multiply the 2nd byte by
             // 256.
             1 => {
-                let first_byte = cursor.read_u8().eof_to_none()?;
-                let second_byte = cursor.read_u8().eof_to_none()?;
+                let Some(first_byte) = cursor.read_u8().eof_to_none()? else {
+                    return Ok(None);
+                };
+                let Some(second_byte) = cursor.read_u8().eof_to_none()? else {
+                    return Ok(None);
+                };
 
                 64 + first_byte as u32 + second_byte as u32 * 256
             }
@@ -284,7 +270,7 @@ impl ChunkReader {
         // We then read the message header.
         let header = ChunkBasicHeader { chunk_stream_id, format };
 
-        Ok(header)
+        Ok(Some(header))
     }
 
     /// Internal function used to read the message header.
@@ -292,42 +278,38 @@ impl ChunkReader {
         &self,
         header: &ChunkBasicHeader,
         cursor: &mut Cursor<&[u8]>,
-    ) -> Result<ChunkMessageHeader, Option<crate::error::RtmpError>> {
+    ) -> Result<Option<ChunkMessageHeader>, crate::error::RtmpError> {
         // Each format has a different message header length.
         match header.format {
             // Type0 headers have the most information and can be compared to keyframes in video.
             // They do not reference any previous chunks. They contain the full message header.
             ChunkType::Type0 => {
                 // The first 3 bytes are the timestamp.
-                let timestamp = cursor
-                    .read_u24::<BigEndian>()
-                    .eof_to_none()
-                    .map_err(|e| e.map(crate::error::RtmpError::Io))?;
+                let Some(timestamp) = cursor.read_u24::<BigEndian>().eof_to_none()? else {
+                    return Ok(None);
+                };
                 // Followed by a 3 byte message length. (this is the length of the entire
                 // payload not just this chunk)
-                let msg_length = cursor
-                    .read_u24::<BigEndian>()
-                    .eof_to_none()
-                    .map_err(|e| e.map(crate::error::RtmpError::Io))?;
+                let Some(msg_length) = cursor.read_u24::<BigEndian>().eof_to_none()? else {
+                    return Ok(None);
+                };
                 if msg_length as usize > MAX_PARTIAL_CHUNK_SIZE {
-                    return Err(Some(crate::error::RtmpError::ChunkRead(
-                        ChunkReadError::PartialChunkTooLarge(msg_length as usize),
+                    return Err(crate::error::RtmpError::ChunkRead(ChunkReadError::PartialChunkTooLarge(
+                        msg_length as usize,
                     )));
                 }
 
                 // We then have a 1 byte message type id.
-                let msg_type_id = cursor
-                    .read_u8()
-                    .eof_to_none()
-                    .map_err(|e| e.map(crate::error::RtmpError::Io))?;
+                let Some(msg_type_id) = cursor.read_u8().eof_to_none()? else {
+                    return Ok(None);
+                };
                 let msg_type_id = MessageType::from(msg_type_id);
 
                 // We then read the message stream id. (According to spec this is stored in
                 // LittleEndian, no idea why.)
-                let msg_stream_id = cursor
-                    .read_u32::<LittleEndian>()
-                    .eof_to_none()
-                    .map_err(|e| e.map(crate::error::RtmpError::Io))?;
+                let Some(msg_stream_id) = cursor.read_u32::<LittleEndian>().eof_to_none()? else {
+                    return Ok(None);
+                };
 
                 // Sometimes the timestamp is larger than 3 bytes.
                 // If the timestamp is 0xFFFFFF we read the next 4 bytes as the timestamp.
@@ -338,62 +320,53 @@ impl ChunkReader {
                 // This would save 3 bytes in the header and would be more
                 // efficient but I guess the Spec writers are smarter than me.
                 let (timestamp, was_extended_timestamp) = if timestamp == 0xFFFFFF {
-                    (
-                        cursor
-                            .read_u32::<BigEndian>()
-                            .eof_to_none()
-                            .map_err(|e| e.map(crate::error::RtmpError::Io))?,
-                        true,
-                    )
+                    let Some(timestamp) = cursor.read_u32::<BigEndian>().eof_to_none()? else {
+                        return Ok(None);
+                    };
+                    (timestamp, true)
                 } else {
                     (timestamp, false)
                 };
 
-                Ok(ChunkMessageHeader {
+                Ok(Some(ChunkMessageHeader {
                     timestamp,
                     msg_length,
                     msg_type_id,
                     msg_stream_id,
                     was_extended_timestamp,
-                })
+                }))
             }
             // For ChunkType 1 we have a delta timestamp, message length and message type id.
             // The message stream id is the same as the previous chunk.
             ChunkType::Type1 => {
                 // The first 3 bytes are the delta timestamp.
-                let timestamp_delta = cursor
-                    .read_u24::<BigEndian>()
-                    .eof_to_none()
-                    .map_err(|e| e.map(crate::error::RtmpError::Io))?;
+                let Some(timestamp_delta) = cursor.read_u24::<BigEndian>().eof_to_none()? else {
+                    return Ok(None);
+                };
                 // Followed by a 3 byte message length. (this is the length of the entire
                 // payload not just this chunk)
-                let msg_length = cursor
-                    .read_u24::<BigEndian>()
-                    .eof_to_none()
-                    .map_err(|e| e.map(crate::error::RtmpError::Io))?;
+                let Some(msg_length) = cursor.read_u24::<BigEndian>().eof_to_none()? else {
+                    return Ok(None);
+                };
                 if msg_length as usize > MAX_PARTIAL_CHUNK_SIZE {
-                    return Err(Some(crate::error::RtmpError::ChunkRead(
-                        ChunkReadError::PartialChunkTooLarge(msg_length as usize),
+                    return Err(crate::error::RtmpError::ChunkRead(ChunkReadError::PartialChunkTooLarge(
+                        msg_length as usize,
                     )));
                 }
 
                 // We then have a 1 byte message type id.
-                let msg_type_id = cursor
-                    .read_u8()
-                    .eof_to_none()
-                    .map_err(|e| e.map(crate::error::RtmpError::Io))?;
+                let Some(msg_type_id) = cursor.read_u8().eof_to_none()? else {
+                    return Ok(None);
+                };
                 let msg_type_id = MessageType::from(msg_type_id);
 
                 // Again as mentioned above we sometimes have a delta timestamp larger than 3
                 // bytes.
                 let (timestamp_delta, was_extended_timestamp) = if timestamp_delta == 0xFFFFFF {
-                    (
-                        cursor
-                            .read_u32::<BigEndian>()
-                            .eof_to_none()
-                            .map_err(|e| e.map(crate::error::RtmpError::Io))?,
-                        true,
-                    )
+                    let Some(timestamp) = cursor.read_u32::<BigEndian>().eof_to_none()? else {
+                        return Ok(None);
+                    };
+                    (timestamp, true)
                 } else {
                     (timestamp_delta, false)
                 };
@@ -420,35 +393,31 @@ impl ChunkReader {
                     previous_header.timestamp
                 });
 
-                Ok(ChunkMessageHeader {
+                Ok(Some(ChunkMessageHeader {
                     timestamp,
                     msg_length,
                     msg_type_id,
                     was_extended_timestamp,
                     // The message stream id is the same as the previous chunk.
                     msg_stream_id: previous_header.msg_stream_id,
-                })
+                }))
             }
             // ChunkType2 headers only have a delta timestamp.
             // The message length, message type id and message stream id are the same as the
             // previous chunk.
             ChunkType::Type2 => {
                 // We read the delta timestamp.
-                let timestamp_delta = cursor
-                    .read_u24::<BigEndian>()
-                    .eof_to_none()
-                    .map_err(|e| e.map(crate::error::RtmpError::Io))?;
+                let Some(timestamp_delta) = cursor.read_u24::<BigEndian>().eof_to_none()? else {
+                    return Ok(None);
+                };
 
                 // Again if the delta timestamp is larger than 3 bytes we read the next 4 bytes
                 // as the timestamp.
                 let (timestamp_delta, was_extended_timestamp) = if timestamp_delta == 0xFFFFFF {
-                    (
-                        cursor
-                            .read_u32::<BigEndian>()
-                            .eof_to_none()
-                            .map_err(|e| e.map(crate::error::RtmpError::Io))?,
-                        true,
-                    )
+                    let Some(timestamp) = cursor.read_u32::<BigEndian>().eof_to_none()? else {
+                        return Ok(None);
+                    };
+                    (timestamp, true)
                 } else {
                     (timestamp_delta, false)
                 };
@@ -467,13 +436,13 @@ impl ChunkReader {
                 // timestamp.
                 let timestamp = previous_header.timestamp + timestamp_delta;
 
-                Ok(ChunkMessageHeader {
+                Ok(Some(ChunkMessageHeader {
                     timestamp,
                     msg_length: previous_header.msg_length,
                     msg_type_id: previous_header.msg_type_id,
                     msg_stream_id: previous_header.msg_stream_id,
                     was_extended_timestamp,
-                })
+                }))
             }
             // ChunkType3 headers are the same as the previous chunk header.
             ChunkType::Type3 => {
@@ -496,13 +465,12 @@ impl ChunkReader {
                 if previous_header.was_extended_timestamp {
                     // Not a real error, we just dont have enough data.
                     // We dont have to store this value since it is the same as the previous header.
-                    cursor
-                        .read_u32::<BigEndian>()
-                        .eof_to_none()
-                        .map_err(|e| e.map(crate::error::RtmpError::Io))?;
+                    if cursor.read_u32::<BigEndian>().eof_to_none()?.is_none() {
+                        return Ok(None);
+                    };
                 }
 
-                Ok(previous_header)
+                Ok(Some(previous_header))
             }
         }
     }
@@ -513,7 +481,7 @@ impl ChunkReader {
         header: &ChunkBasicHeader,
         message_header: &ChunkMessageHeader,
         cursor: &mut Cursor<&'_ [u8]>,
-    ) -> Result<(usize, usize), Option<crate::error::RtmpError>> {
+    ) -> Result<Option<(usize, usize)>, crate::error::RtmpError> {
         // We find out if the chunk is a partial chunk (and if we have already read some
         // of it).
         let key = (header.chunk_stream_id, message_header.msg_stream_id);
@@ -531,30 +499,17 @@ impl ChunkReader {
         let pos = cursor.position() as usize;
 
         // We seek forward to where the payload starts.
-        cursor
+        if cursor
             .seek(SeekFrom::Current(need_read_length as i64))
-            .eof_to_none()
-            .map_err(|e| e.map(crate::error::RtmpError::Io))?;
+            .eof_to_none()?
+            .is_none()
+        {
+            return Ok(None);
+        };
 
         // We then return the range of the payload.
         // Which would be the pos to the pos + need_read_length.
-        Ok((pos, pos + need_read_length))
-    }
-}
-
-trait IoResultExt<T> {
-    fn eof_to_none(self) -> Result<T, Option<io::Error>>;
-}
-
-impl<T> IoResultExt<T> for io::Result<T> {
-    fn eof_to_none(self) -> Result<T, Option<io::Error>> {
-        self.map_err(|e| {
-            if e.kind() == io::ErrorKind::UnexpectedEof {
-                None
-            } else {
-                Some(e)
-            }
-        })
+        Ok(Some((pos, pos + need_read_length)))
     }
 }
 
@@ -594,7 +549,7 @@ mod tests {
 
         let reader = ChunkReader::default();
         let err = reader.read_header(&mut Cursor::new(&buf));
-        assert!(matches!(err, Err(None)));
+        assert!(matches!(err, Ok(None)));
     }
 
     #[test]

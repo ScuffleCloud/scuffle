@@ -1563,6 +1563,34 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "7943c866cc5cd64cbc25b2e01621d07fa8eb2a1a23160ee81ce38704e97b8ecf"
 
 [[package]]
+name = "isobmff"
+version = "0.1.0"
+dependencies = [
+ "base64 0.22.1",
+ "bitflags 2.9.0",
+ "byteorder",
+ "bytes",
+ "insta",
+ "isobmff-derive",
+ "nutype-enum",
+ "scuffle-bytes-util",
+ "scuffle-workspace-hack",
+ "uuid",
+]
+
+[[package]]
+name = "isobmff-derive"
+version = "0.1.0"
+dependencies = [
+ "darling",
+ "proc-macro2",
+ "quote",
+ "scuffle-bytes-util",
+ "scuffle-workspace-hack",
+ "syn",
+]
+
+[[package]]
 name = "itertools"
 version = "0.10.5"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -2913,6 +2941,7 @@ dependencies = [
  "byteorder",
  "bytes",
  "insta",
+ "isobmff",
  "nutype-enum",
  "scuffle-bytes-util",
  "scuffle-expgolomb",

@@ -1,0 +1,866 @@
+---
+source: crates/isobmff/src/file.rs
+expression: file
+snapshot_kind: text
+---
+IsobmffFile {
+    empty_header: (),
+    ftyp: FileTypeBox {
+        header: BoxHeader {
+            size: Short(
+                32,
+            ),
+            box_type: FourCc(
+                "ftyp",
+            ),
+        },
+        major_brand: Brand::IsoM,
+        minor_version: 512,
+        compatible_brands: [
+            Brand::IsoM,
+            Brand::Iso2,
+            Brand::Avc1,
+            Brand::Mp41,
+        ],
+    },
+    etyp: [],
+    mdat: [
+        MediaDataBox {
+            header: BoxHeader {
+                size: Short(
+                    832486,
+                ),
+                box_type: FourCc(
+                    "mdat",
+                ),
+            },
+            data.len: 832478,
+        },
+    ],
+    pdin: None,
+    imda: [],
+    moov: MovieBox {
+        header: BoxHeader {
+            size: Short(
+                6303,
+            ),
+            box_type: FourCc(
+                "moov",
+            ),
+        },
+        mvhd: MovieHeaderBox {
+            header: FullBoxHeader {
+                header: BoxHeader {
+                    size: Short(
+                        108,
+                    ),
+                    box_type: FourCc(
+                        "mvhd",
+                    ),
+                },
+                version: 0,
+                flags: 0,
+            },
+            creation_time: 0,
+            modification_time: 0,
+            timescale: 1000,
+            duration: 4667,
+            rate: 65536,
+            volume: 256,
+            matrix: [
+                65536,
+                0,
+                0,
+                0,
+                65536,
+                0,
+                0,
+                0,
+                1073741824,
+            ],
+            pre_defined: [
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+            ],
+            next_track_id: 3,
+        },
+        trak: [
+            TrackBox {
+                header: BoxHeader {
+                    size: Short(
+                        2708,
+                    ),
+                    box_type: FourCc(
+                        "trak",
+                    ),
+                },
+                tkhd: TrackHeaderBox {
+                    header: FullBoxHeader {
+                        header: BoxHeader {
+                            size: Short(
+                                92,
+                            ),
+                            box_type: FourCc(
+                                "tkhd",
+                            ),
+                        },
+                        version: 0,
+                        flags: 3,
+                    },
+                    creation_time: 0,
+                    modification_time: 0,
+                    track_id: 1,
+                    duration: 4667,
+                    layer: 0,
+                    alternate_group: 0,
+                    volume: 0,
+                    matrix: [
+                        65536,
+                        0,
+                        0,
+                        0,
+                        65536,
+                        0,
+                        0,
+                        0,
+                        1073741824,
+                    ],
+                    width: 31457280,
+                    height: 55836672,
+                },
+                tref: None,
+                trgr: None,
+                ttyp: None,
+                mdia: MediaBox {
+                    header: BoxHeader {
+                        size: Short(
+                            2572,
+                        ),
+                        box_type: FourCc(
+                            "mdia",
+                        ),
+                    },
+                    mdhd: MediaHeaderBox {
+                        header: FullBoxHeader {
+                            header: BoxHeader {
+                                size: Short(
+                                    32,
+                                ),
+                                box_type: FourCc(
+                                    "mdhd",
+                                ),
+                            },
+                            version: 0,
+                            flags: 0,
+                        },
+                        creation_time: 0,
+                        modification_time: 0,
+                        timescale: 15360,
+                        duration: 71680,
+                        language: [
+                            21,
+                            14,
+                            4,
+                        ],
+                        pre_defined: 0,
+                    },
+                    hdlr: HandlerBox {
+                        header: FullBoxHeader {
+                            header: BoxHeader {
+                                size: Short(
+                                    49,
+                                ),
+                                box_type: FourCc(
+                                    "hdlr",
+                                ),
+                            },
+                            version: 0,
+                            flags: 0,
+                        },
+                        pre_defined: 0,
+                        handler_type: HandlerType::Video,
+                        reserved: [
+                            0,
+                            0,
+                            0,
+                        ],
+                        name: Utf8String(
+                            "Core Media Video",
+                        ),
+                    },
+                    minf: MediaInformationBox {
+                        header: BoxHeader {
+                            size: Short(
+                                2483,
+                            ),
+                            box_type: FourCc(
+                                "minf",
+                            ),
+                        },
+                        stbl: SampleTableBox {
+                            header: BoxHeader {
+                                size: Short(
+                                    2419,
+                                ),
+                                box_type: FourCc(
+                                    "stbl",
+                                ),
+                            },
+                            stsd: SampleDescriptionBox {
+                                header: FullBoxHeader {
+                                    header: BoxHeader {
+                                        size: Short(
+                                            199,
+                                        ),
+                                        box_type: FourCc(
+                                            "stsd",
+                                        ),
+                                    },
+                                    version: 0,
+                                    flags: 0,
+                                },
+                                entry_count: 1,
+                                unknown_boxes: [
+                                    UnknownBox {
+                                        header: BoxHeader {
+                                            size: Short(
+                                                183,
+                                            ),
+                                            box_type: FourCc(
+                                                "avc1",
+                                            ),
+                                        },
+                                        data.len: 175,
+                                    },
+                                ],
+                            },
+                            stdp: None,
+                            stts: TimeToSampleBox {
+                                header: FullBoxHeader {
+                                    header: BoxHeader {
+                                        size: Short(
+                                            24,
+                                        ),
+                                        box_type: FourCc(
+                                            "stts",
+                                        ),
+                                    },
+                                    version: 0,
+                                    flags: 0,
+                                },
+                                entry_count: 1,
+                                entries: [
+                                    TimeToSampleBoxEntry {
+                                        sample_count: 140,
+                                        sample_delta: 512,
+                                    },
+                                ],
+                            },
+                            ctts: Some(
+                                CompositionOffsetBox {
+                                    header: FullBoxHeader {
+                                        header: BoxHeader {
+                                            size: Short(
+                                                976,
+                                            ),
+                                            box_type: FourCc(
+                                                "ctts",
+                                            ),
+                                        },
+                                        version: 0,
+                                        flags: 0,
+                                    },
+                                    entry_count: 120,
+                                    entries.len: 120,
+                                },
+                            ),
+                            cslg: None,
+                            stss: Some(
+                                SyncSampleBox {
+                                    header: FullBoxHeader {
+                                        header: BoxHeader {
+                                            size: Short(
+                                                20,
+                                            ),
+                                            box_type: FourCc(
+                                                "stss",
+                                            ),
+                                        },
+                                        version: 0,
+                                        flags: 0,
+                                    },
+                                    entry_count: 1,
+                                    sample_number: [
+                                        1,
+                                    ],
+                                },
+                            ),
+                            stsh: None,
+                            sdtp: None,
+                            stsz: Some(
+                                SampleSizeBox {
+                                    header: FullBoxHeader {
+                                        header: BoxHeader {
+                                            size: Short(
+                                                580,
+                                            ),
+                                            box_type: FourCc(
+                                                "stsz",
+                                            ),
+                                        },
+                                        version: 0,
+                                        flags: 0,
+                                    },
+                                    sample_size: 0,
+                                    sample_count: 140,
+                                    entry_size.len: 140,
+                                },
+                            ),
+                            stz2: None,
+                            stsc: SampleToChunkBox {
+                                header: FullBoxHeader {
+                                    header: BoxHeader {
+                                        size: Short(
+                                            40,
+                                        ),
+                                        box_type: FourCc(
+                                            "stsc",
+                                        ),
+                                    },
+                                    version: 0,
+                                    flags: 0,
+                                },
+                                entry_count: 2,
+                                entries.len: 2,
+                            },
+                            stco: Some(
+                                ChunkOffsetBox {
+                                    header: FullBoxHeader {
+                                        header: BoxHeader {
+                                            size: Short(
+                                                572,
+                                            ),
+                                            box_type: FourCc(
+                                                "stco",
+                                            ),
+                                        },
+                                        version: 0,
+                                        flags: 0,
+                                    },
+                                    entry_count: 139,
+                                    chunk_offset.len: 139,
+                                },
+                            ),
+                            co64: None,
+                            padb: None,
+                            subs: [],
+                            saiz: [],
+                            saio: [],
+                            sbgp: [],
+                            sgpd: [],
+                            csgp: [],
+                        },
+                        dinf: DataInformationBox {
+                            header: BoxHeader {
+                                size: Short(
+                                    36,
+                                ),
+                                box_type: FourCc(
+                                    "dinf",
+                                ),
+                            },
+                            dref: DataReferenceBox {
+                                header: FullBoxHeader {
+                                    header: BoxHeader {
+                                        size: Short(
+                                            28,
+                                        ),
+                                        box_type: FourCc(
+                                            "dref",
+                                        ),
+                                    },
+                                    version: 0,
+                                    flags: 0,
+                                },
+                                entry_count: 1,
+                                url: [
+                                    DataEntryUrlBox {
+                                        header: FullBoxHeader {
+                                            header: BoxHeader {
+                                                size: Short(
+                                                    12,
+                                                ),
+                                                box_type: FourCc(
+                                                    "url ",
+                                                ),
+                                            },
+                                            version: 0,
+                                            flags: 1,
+                                        },
+                                        location: None,
+                                    },
+                                ],
+                                urn: [],
+                                imda: [],
+                                snim: [],
+                                unknown_boxes: [],
+                            },
+                        },
+                        unknown_boxes: [
+                            UnknownBox {
+                                header: BoxHeader {
+                                    size: Short(
+                                        20,
+                                    ),
+                                    box_type: FourCc(
+                                        "vmhd",
+                                    ),
+                                },
+                                data.len: 12,
+                            },
+                        ],
+                    },
+                    elng: None,
+                    unknown_boxes: [],
+                },
+                edts: Some(
+                    EditBox {
+                        header: BoxHeader {
+                            size: Short(
+                                36,
+                            ),
+                            box_type: FourCc(
+                                "edts",
+                            ),
+                        },
+                        elst: Some(
+                            EditListBox {
+                                header: FullBoxHeader {
+                                    header: BoxHeader {
+                                        size: Short(
+                                            28,
+                                        ),
+                                        box_type: FourCc(
+                                            "elst",
+                                        ),
+                                    },
+                                    version: 0,
+                                    flags: 0,
+                                },
+                                entry_count: 1,
+                                entries: [
+                                    EditListBoxEntry {
+                                        edit_duration: 4667,
+                                        media_time: 1024,
+                                        media_rate_integer: 1,
+                                        media_rate_fraction: 0,
+                                    },
+                                ],
+                            },
+                        ),
+                    },
+                ),
+                udta: None,
+                meta: None,
+                unknown_boxes: [],
+            },
+            TrackBox {
+                header: BoxHeader {
+                    size: Short(
+                        3381,
+                    ),
+                    box_type: FourCc(
+                        "trak",
+                    ),
+                },
+                tkhd: TrackHeaderBox {
+                    header: FullBoxHeader {
+                        header: BoxHeader {
+                            size: Short(
+                                92,
+                            ),
+                            box_type: FourCc(
+                                "tkhd",
+                            ),
+                        },
+                        version: 0,
+                        flags: 3,
+                    },
+                    creation_time: 0,
+                    modification_time: 0,
+                    track_id: 2,
+                    duration: 4643,
+                    layer: 0,
+                    alternate_group: 1,
+                    volume: 256,
+                    matrix: [
+                        65536,
+                        0,
+                        0,
+                        0,
+                        65536,
+                        0,
+                        0,
+                        0,
+                        1073741824,
+                    ],
+                    width: 0,
+                    height: 0,
+                },
+                tref: None,
+                trgr: None,
+                ttyp: None,
+                mdia: MediaBox {
+                    header: BoxHeader {
+                        size: Short(
+                            3245,
+                        ),
+                        box_type: FourCc(
+                            "mdia",
+                        ),
+                    },
+                    mdhd: MediaHeaderBox {
+                        header: FullBoxHeader {
+                            header: BoxHeader {
+                                size: Short(
+                                    32,
+                                ),
+                                box_type: FourCc(
+                                    "mdhd",
+                                ),
+                            },
+                            version: 0,
+                            flags: 0,
+                        },
+                        creation_time: 0,
+                        modification_time: 0,
+                        timescale: 44100,
+                        duration: 204736,
+                        language: [
+                            21,
+                            14,
+                            4,
+                        ],
+                        pre_defined: 0,
+                    },
+                    hdlr: HandlerBox {
+                        header: FullBoxHeader {
+                            header: BoxHeader {
+                                size: Short(
+                                    49,
+                                ),
+                                box_type: FourCc(
+                                    "hdlr",
+                                ),
+                            },
+                            version: 0,
+                            flags: 0,
+                        },
+                        pre_defined: 0,
+                        handler_type: HandlerType::Audio,
+                        reserved: [
+                            0,
+                            0,
+                            0,
+                        ],
+                        name: Utf8String(
+                            "Core Media Audio",
+                        ),
+                    },
+                    minf: MediaInformationBox {
+                        header: BoxHeader {
+                            size: Short(
+                                3156,
+                            ),
+                            box_type: FourCc(
+                                "minf",
+                            ),
+                        },
+                        stbl: SampleTableBox {
+                            header: BoxHeader {
+                                size: Short(
+                                    3096,
+                                ),
+                                box_type: FourCc(
+                                    "stbl",
+                                ),
+                            },
+                            stsd: SampleDescriptionBox {
+                                header: FullBoxHeader {
+                                    header: BoxHeader {
+                                        size: Short(
+                                            126,
+                                        ),
+                                        box_type: FourCc(
+                                            "stsd",
+                                        ),
+                                    },
+                                    version: 0,
+                                    flags: 0,
+                                },
+                                entry_count: 1,
+                                unknown_boxes: [
+                                    UnknownBox {
+                                        header: BoxHeader {
+                                            size: Short(
+                                                110,
+                                            ),
+                                            box_type: FourCc(
+                                                "mp4a",
+                                            ),
+                                        },
+                                        data.len: 102,
+                                    },
+                                ],
+                            },
+                            stdp: None,
+                            stts: TimeToSampleBox {
+                                header: FullBoxHeader {
+                                    header: BoxHeader {
+                                        size: Short(
+                                            32,
+                                        ),
+                                        box_type: FourCc(
+                                            "stts",
+                                        ),
+                                    },
+                                    version: 0,
+                                    flags: 0,
+                                },
+                                entry_count: 2,
+                                entries: [
+                                    TimeToSampleBoxEntry {
+                                        sample_count: 200,
+                                        sample_delta: 1024,
+                                    },
+                                    TimeToSampleBoxEntry {
+                                        sample_count: 1,
+                                        sample_delta: 960,
+                                    },
+                                ],
+                            },
+                            ctts: None,
+                            cslg: None,
+                            stss: None,
+                            stsh: None,
+                            sdtp: None,
+                            stsz: Some(
+                                SampleSizeBox {
+                                    header: FullBoxHeader {
+                                        header: BoxHeader {
+                                            size: Short(
+                                                824,
+                                            ),
+                                            box_type: FourCc(
+                                                "stsz",
+                                            ),
+                                        },
+                                        version: 0,
+                                        flags: 0,
+                                    },
+                                    sample_size: 0,
+                                    sample_count: 201,
+                                    entry_size.len: 201,
+                                },
+                            ),
+                            stz2: None,
+                            stsc: SampleToChunkBox {
+                                header: FullBoxHeader {
+                                    header: BoxHeader {
+                                        size: Short(
+                                            1480,
+                                        ),
+                                        box_type: FourCc(
+                                            "stsc",
+                                        ),
+                                    },
+                                    version: 0,
+                                    flags: 0,
+                                },
+                                entry_count: 122,
+                                entries.len: 122,
+                            },
+                            stco: Some(
+                                ChunkOffsetBox {
+                                    header: FullBoxHeader {
+                                        header: BoxHeader {
+                                            size: Short(
+                                                572,
+                                            ),
+                                            box_type: FourCc(
+                                                "stco",
+                                            ),
+                                        },
+                                        version: 0,
+                                        flags: 0,
+                                    },
+                                    entry_count: 139,
+                                    chunk_offset.len: 139,
+                                },
+                            ),
+                            co64: None,
+                            padb: None,
+                            subs: [],
+                            saiz: [],
+                            saio: [],
+                            sbgp: [],
+                            sgpd: [],
+                            csgp: [],
+                        },
+                        dinf: DataInformationBox {
+                            header: BoxHeader {
+                                size: Short(
+                                    36,
+                                ),
+                                box_type: FourCc(
+                                    "dinf",
+                                ),
+                            },
+                            dref: DataReferenceBox {
+                                header: FullBoxHeader {
+                                    header: BoxHeader {
+                                        size: Short(
+                                            28,
+                                        ),
+                                        box_type: FourCc(
+                                            "dref",
+                                        ),
+                                    },
+                                    version: 0,
+                                    flags: 0,
+                                },
+                                entry_count: 1,
+                                url: [
+                                    DataEntryUrlBox {
+                                        header: FullBoxHeader {
+                                            header: BoxHeader {
+                                                size: Short(
+                                                    12,
+                                                ),
+                                                box_type: FourCc(
+                                                    "url ",
+                                                ),
+                                            },
+                                            version: 0,
+                                            flags: 1,
+                                        },
+                                        location: None,
+                                    },
+                                ],
+                                urn: [],
+                                imda: [],
+                                snim: [],
+                                unknown_boxes: [],
+                            },
+                        },
+                        unknown_boxes: [
+                            UnknownBox {
+                                header: BoxHeader {
+                                    size: Short(
+                                        16,
+                                    ),
+                                    box_type: FourCc(
+                                        "smhd",
+                                    ),
+                                },
+                                data.len: 8,
+                            },
+                        ],
+                    },
+                    elng: None,
+                    unknown_boxes: [],
+                },
+                edts: Some(
+                    EditBox {
+                        header: BoxHeader {
+                            size: Short(
+                                36,
+                            ),
+                            box_type: FourCc(
+                                "edts",
+                            ),
+                        },
+                        elst: Some(
+                            EditListBox {
+                                header: FullBoxHeader {
+                                    header: BoxHeader {
+                                        size: Short(
+                                            28,
+                                        ),
+                                        box_type: FourCc(
+                                            "elst",
+                                        ),
+                                    },
+                                    version: 0,
+                                    flags: 0,
+                                },
+                                entry_count: 1,
+                                entries: [
+                                    EditListBoxEntry {
+                                        edit_duration: 4642,
+                                        media_time: 1024,
+                                        media_rate_integer: 1,
+                                        media_rate_fraction: 0,
+                                    },
+                                ],
+                            },
+                        ),
+                    },
+                ),
+                udta: None,
+                meta: None,
+                unknown_boxes: [],
+            },
+        ],
+        mvex: None,
+        udta: Some(
+            UserDataBox {
+                header: BoxHeader {
+                    size: Short(
+                        98,
+                    ),
+                    box_type: FourCc(
+                        "udta",
+                    ),
+                },
+                cprt: [],
+                tsel: None,
+                kind: [],
+                unknown_boxes: [
+                    UnknownBox {
+                        header: BoxHeader {
+                            size: Short(
+                                90,
+                            ),
+                            box_type: FourCc(
+                                "meta",
+                            ),
+                        },
+                        data.len: 82,
+                    },
+                ],
+            },
+        ),
+        meta: None,
+    },
+    moof: [],
+    mfra: None,
+    meta: None,
+    unknown_boxes: [
+        UnknownBox {
+            header: BoxHeader {
+                size: Short(
+                    8,
+                ),
+                box_type: FourCc(
+                    "free",
+                ),
+            },
+            data.len: 0,
+        },
+    ],
+}

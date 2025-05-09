@@ -16,6 +16,7 @@ mod bit_read;
 mod bit_write;
 mod bytes_cursor;
 mod cow;
+mod io_ext;
 mod nal_emulation_prevention;
 pub mod range_check;
 pub mod zero_copy;
@@ -28,4 +29,5 @@ pub use cow::string::StringCow;
 #[cfg(feature = "serde")]
 #[cfg_attr(docsrs, doc(cfg(feature = "serde")))]
 pub use cow::string::serde::StringCowDeserializer;
+pub use io_ext::IoResultExt;
 pub use nal_emulation_prevention::EmulationPreventionIo;

@@ -55,28 +55,28 @@ mod file_delivery_format;
 pub use file_delivery_format::*;
 
 // 8.14
-// mod sub_tracks;
-// pub use sub_tracks::*;
+mod sub_tracks;
+pub use sub_tracks::*;
 
 // 8.15
 mod post_decoder_requirements;
 pub use post_decoder_requirements::*;
 
 // 8.16
-// mod segments;
-// pub use segments::*;
+mod segments;
+pub use segments::*;
 
 // 8.17
 mod incomplete_tracks;
 pub use incomplete_tracks::*;
 
 // 8.18
-// mod entity_grouping;
-// pub use entity_grouping::*;
+mod entity_grouping;
+pub use entity_grouping::*;
 
 // 8.19
-// mod compressed_boxes;
-// pub use compressed_boxes::*;
+mod compressed_boxes;
+pub use compressed_boxes::*;
 
 // 9.1
 mod rtp_and_srtp_hint;

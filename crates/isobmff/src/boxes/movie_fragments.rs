@@ -553,10 +553,10 @@ impl<'a> Deserialize<'a> for LevelAssignmentBoxLevel {
         let assignment_type = byte & 0b01111111;
         let assignment_type = match assignment_type {
             0 => LevelAssignmentBoxLevelAssignmentType::Type0 {
-                grouping_type: u32::deserialize(&mut reader)?,
+                grouping_type: <[u8; 4]>::deserialize(&mut reader)?,
             },
             1 => LevelAssignmentBoxLevelAssignmentType::Type1 {
-                grouping_type: u32::deserialize(&mut reader)?,
+                grouping_type: <[u8; 4]>::deserialize(&mut reader)?,
                 grouping_type_parameter: u32::deserialize(&mut reader)?,
             },
             2 => LevelAssignmentBoxLevelAssignmentType::Type2,
@@ -578,10 +578,10 @@ impl<'a> Deserialize<'a> for LevelAssignmentBoxLevel {
 #[derive(Debug)]
 pub enum LevelAssignmentBoxLevelAssignmentType {
     Type0 {
-        grouping_type: u32,
+        grouping_type: [u8; 4],
     },
     Type1 {
-        grouping_type: u32,
+        grouping_type: [u8; 4],
         grouping_type_parameter: u32,
     },
     Type2,

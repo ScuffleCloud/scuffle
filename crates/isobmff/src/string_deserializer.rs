@@ -64,7 +64,7 @@ impl<'a> Deserialize<'a> for Base64String {
 
         let data = base64::prelude::BASE64_STANDARD
             .decode(bytes)
-            .map_err(|e| io::Error::new(io::ErrorKind::InvalidData, format!("Base64 decode error: {}", e)))?;
+            .map_err(|e| io::Error::new(io::ErrorKind::InvalidData, format!("Base64 decode error: {e}")))?;
         Ok(Base64String(data))
     }
 }

@@ -11,7 +11,7 @@ use crate::{BoxHeader, FullBoxHeader, IsoBox};
 #[derive(Debug)]
 pub struct SampleToGroupBox {
     pub header: FullBoxHeader,
-    pub grouping_type: u32,
+    pub grouping_type: [u8; 4],
     pub grouping_type_parameter: Option<u32>,
     pub entry_count: u32,
     pub entries: Vec<SampleToGroupBoxEntry>,
@@ -39,7 +39,7 @@ impl<'a> DeserializeSeed<'a, FullBoxHeader> for SampleToGroupBox {
     where
         R: ZeroCopyReader<'a>,
     {
-        let grouping_type = u32::deserialize(&mut reader)?;
+        let grouping_type = <[u8; 4]>::deserialize(&mut reader)?;
         let grouping_type_parameter = if seed.version == 1 {
             Some(u32::deserialize(&mut reader)?)
         } else {

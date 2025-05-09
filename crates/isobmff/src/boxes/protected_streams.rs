@@ -1,5 +1,6 @@
 use scuffle_bytes_util::zero_copy::{Deserialize, DeserializeSeed};
 
+use super::StereoVideoBox;
 use crate::{BoxHeader, FullBoxHeader, IsoBox, UnknownBox, Utf8String};
 
 /// Protection scheme information box
@@ -87,6 +88,8 @@ impl<'a> DeserializeSeed<'a, FullBoxHeader> for SchemeTypeBox {
 pub struct SchemeInformationBox<'a> {
     #[iso_box(header)]
     pub header: BoxHeader,
+    #[iso_box(nested_box(collect))]
+    pub stvi: Option<StereoVideoBox<'a>>,
     #[iso_box(nested_box(collect_unknown))]
     pub boxes: Vec<UnknownBox<'a>>,
 }

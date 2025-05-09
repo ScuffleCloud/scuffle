@@ -18,6 +18,7 @@ uuid = "1.16.0"
 byteorder = "1.5.0"
 bytes = "1.10.1"
 bitflags = "2.9.0"
+base64 = "0.22.1"
 
 isobmff-derive.workspace = true
 nutype-enum.workspace = true

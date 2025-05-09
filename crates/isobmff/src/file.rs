@@ -2,7 +2,8 @@ use scuffle_bytes_util::zero_copy::{Deserialize, DeserializeSeed};
 
 use crate::boxes::{
     ExtendedTypeBox, FileTypeBox, IdentifiedMediaDataBox, MediaDataBox, MetaBox, MovieBox, MovieFragmentBox,
-    MovieFragmentRandomAccessBox, ProgressiveDownloadInfoBox,
+    MovieFragmentRandomAccessBox, OriginalFileTypeBox, ProducerReferenceTimeBox, ProgressiveDownloadInfoBox,
+    SegmentIndexBox, SegmentTypeBox, SubsegmentIndexBox,
 };
 use crate::{IsoBox, UnknownBox};
 
@@ -29,11 +30,16 @@ pub struct IsobmffFile<'a> {
     pub mfra: Option<MovieFragmentRandomAccessBox>,
     #[iso_box(nested_box(collect))]
     pub meta: Option<MetaBox<'a>>,
-    // pub styp: Vec<SegmentTypeBox>,
-    // pub sidx: Vec<SegmentIndexBox>,
-    // pub ssix: Vec<SubsegmentIndexBox>,
-    // pub prft: Vec<ProducerReferenceTimeBox>,
-    // pub otyp: Vec<OriginalFileTypeBox>,
+    #[iso_box(nested_box(collect))]
+    pub styp: Vec<SegmentTypeBox>,
+    #[iso_box(nested_box(collect))]
+    pub sidx: Vec<SegmentIndexBox>,
+    #[iso_box(nested_box(collect))]
+    pub ssix: Vec<SubsegmentIndexBox>,
+    #[iso_box(nested_box(collect))]
+    pub prft: Vec<ProducerReferenceTimeBox>,
+    #[iso_box(nested_box(collect))]
+    pub otyp: Vec<OriginalFileTypeBox<'a>>,
     #[iso_box(nested_box(collect_unknown))]
     pub unknown_boxes: Vec<UnknownBox<'a>>,
 }

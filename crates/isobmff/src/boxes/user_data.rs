@@ -1,5 +1,6 @@
 use scuffle_bytes_util::zero_copy::{Deserialize, DeserializeSeed};
 
+use super::SubTrackBox;
 use crate::{BoxHeader, FullBoxHeader, IsoBox, UnknownBox, Utf8String};
 
 /// User data box
@@ -16,6 +17,8 @@ pub struct UserDataBox<'a> {
     pub tsel: Option<TrackSelectionBox>,
     #[iso_box(nested_box(collect))]
     pub kind: Vec<KindBox>,
+    #[iso_box(nested_box(collect))]
+    pub strk: Vec<SubTrackBox>,
     #[iso_box(nested_box(collect_unknown))]
     pub unknown_boxes: Vec<UnknownBox<'a>>,
 }
@@ -77,6 +80,7 @@ impl<'a> DeserializeSeed<'a, FullBoxHeader> for CopyrightBox {
 pub struct TrackSelectionBox {
     #[iso_box(header)]
     pub header: FullBoxHeader,
+    pub switch_group: i32,
     #[iso_box(repeated)]
     pub attribute_list: Vec<u32>,
 }

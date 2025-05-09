@@ -51,24 +51,24 @@ mod protected_streams;
 pub use protected_streams::*;
 
 // 8.13
-// mod file_delivery_format;
-// pub use file_delivery_format::*;
+mod file_delivery_format;
+pub use file_delivery_format::*;
 
 // 8.14
 // mod sub_tracks;
 // pub use sub_tracks::*;
 
 // 8.15
-// mod post_decoder_requirements;
-// pub use post_decoder_requirements::*;
+mod post_decoder_requirements;
+pub use post_decoder_requirements::*;
 
 // 8.16
 // mod segments;
 // pub use segments::*;
 
 // 8.17
-// mod incomplete_tracks;
-// pub use incomplete_tracks::*;
+mod incomplete_tracks;
+pub use incomplete_tracks::*;
 
 // 8.18
 // mod entity_grouping;
@@ -77,6 +77,10 @@ pub use protected_streams::*;
 // 8.19
 // mod compressed_boxes;
 // pub use compressed_boxes::*;
+
+// 9.1
+mod rtp_and_srtp_hint;
+pub use rtp_and_srtp_hint::*;
 
 // 12.1
 mod video_media;

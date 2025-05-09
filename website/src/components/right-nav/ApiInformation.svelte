@@ -125,7 +125,6 @@
         border-radius: 10px;
         padding: 0.125rem;
         width: 100%;
-        max-width: 400px;
 
         .header-row {
             display: flex;

@@ -58,6 +58,9 @@
         display: flex;
         flex-direction: column;
         box-sizing: border-box;
+        width: 100%;
+        /* So content resizes properly */
+        min-width: 0;
 
         .content {
             display: flex;
@@ -67,6 +70,8 @@
             .main-content {
                 flex: 1;
                 width: 100%;
+                /* So content resizes properly */
+                min-width: 0;
             }
         }
     }

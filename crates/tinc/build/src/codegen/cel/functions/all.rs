@@ -83,7 +83,7 @@ impl Function for All {
                                 ::core::result::Result::Ok(
                                     #arg
                                 )
-                            })
+                            })?
                         },
                         CelType::Proto(ProtoType::Modified(ProtoModifiedValueType::Map(_, _))) => {
                             native_impl(quote!((#expr).keys()), parse_quote!(item), arg)
@@ -273,6 +273,53 @@ mod tests {
             },
         )
         "#);
+    }
+
+    #[test]
+    fn test_all_cel_value() {
+        let registry = ProtoTypeRegistry::new(crate::Mode::Prost, crate::extern_paths::ExternPaths::new(crate::Mode::Prost));
+        let compiler = Compiler::new(&registry);
+
+        let map = CompiledExpr::runtime(CelType::CelValue, parse_quote!(input));
+
+        let result = All
+            .compile(CompilerCtx::new(
+                compiler.child(),
+                Some(map),
+                &[
+                    cel_parser::parse("x").unwrap(), // not an ident
+                    cel_parser::parse("x > 2").unwrap(),
+                ],
+            ))
+            .unwrap();
+
+        let result = postcompile::compile_str!(
+            postcompile::config! {
+                test: true,
+                dependencies: vec![
+                    postcompile::Dependency::workspace("tinc"),
+                ],
+            },
+            quote! {
+                #[allow(dead_code)]
+                fn all<'a>(
+                    input: ::tinc::__private::cel::CelValue<'a>,
+                ) -> Result<bool, ::tinc::__private::cel::CelError<'a>> {
+                    Ok(
+                        #result
+                    )
+                }
+
+                #[test]
+                fn test_all() {
+                    assert_eq!(all(::tinc::__private::cel::CelValueConv::conv(&[0, 1, 2] as &[i32])).unwrap(), false);
+                    assert_eq!(all(::tinc::__private::cel::CelValueConv::conv(&[3, 4, 5] as &[i32])).unwrap(), true);
+                    assert_eq!(all(::tinc::__private::cel::CelValueConv::conv(&[] as &[i32])).unwrap(), true);
+                }
+            },
+        );
+
+        insta::assert_snapshot!(result);
     }
 
     #[test]

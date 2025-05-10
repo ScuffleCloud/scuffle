@@ -4,45 +4,35 @@
 
     import { init, use } from 'echarts/core';
     import type { EChartsOption } from 'echarts';
-    import { BarChart } from 'echarts/charts';
+    import { BarChart, LineChart } from 'echarts/charts';
     import {
         DatasetComponent,
+        DataZoomComponent,
         GridComponent,
         TitleComponent,
+        ToolboxComponent,
         TooltipComponent,
         TransformComponent,
+        VisualMapComponent,
     } from 'echarts/components';
+
     import { CanvasRenderer } from 'echarts/renderers';
 
-    function formatBytes(bytes: number, decimals = 2) {
-        if (bytes === 0) return '0 Bytes';
-        const k = 1024;
-        const dm = decimals < 0 ? 0 : decimals;
-        const sizes = ['Bytes', 'KB', 'MB', 'GB', 'TB'];
-        const i = Math.floor(Math.log(bytes) / Math.log(k));
-        return parseFloat((bytes / Math.pow(k, i)).toFixed(dm)) + ' ' + sizes[i];
-    }
-
-    const getTransferSize = async () =>
-        performance
-            .getEntriesByType('resource')
-            // @ts-expect-error
-            .reduce((acc, resource) => acc + resource.transferSize, 0);
-
-    onMount(() => {});
-
     use([
-        BarChart,
         DatasetComponent,
-        GridComponent,
-        TooltipComponent,
-        TransformComponent,
-        CanvasRenderer,
         TitleComponent,
+        ToolboxComponent,
+        TooltipComponent,
+        GridComponent,
+        VisualMapComponent,
+        DataZoomComponent,
+        BarChart,
+        CanvasRenderer,
+        LineChart,
     ]);
 
     let interval = 1000;
-    let numRecords = 10;
+    let numRecords = 30;
 
     let data: { timestamp: Date; value: number }[] = $state(
         Array.from({ length: numRecords }, (_, i) => ({
@@ -52,29 +42,94 @@
     );
 
     let options = $derived({
-        title: {
-            text: 'ECharts example',
+        dataset: {
+            source: data,
         },
-        xAxis: {
-            type: 'category',
-            axisLabel: {
-                formatter: (value) =>
-                    new Date(value).toLocaleTimeString('en-US', {
-                        hour12: false,
-                        hour: '2-digit',
-                        minute: '2-digit',
-                        second: '2-digit',
-                    }),
+        grid: [
+            {
+                left: 60,
+                right: 50,
+                height: '35%',
             },
-            data: data.map(({ timestamp }) => timestamp),
-        },
-        yAxis: {
-            type: 'value',
-        },
+            {
+                left: 60,
+                right: 50,
+                top: '55%',
+                height: '35%',
+            },
+        ],
+        xAxis: [
+            {
+                type: 'category',
+                axisLabel: {
+                    formatter: (value) =>
+                        new Date(value).toLocaleTimeString('en-US', {
+                            hour12: false,
+                            hour: '2-digit',
+                            minute: '2-digit',
+                            second: '2-digit',
+                        }),
+                },
+            },
+            {
+                type: 'category',
+                axisLabel: {
+                    formatter: (value) =>
+                        new Date(value).toLocaleTimeString('en-US', {
+                            hour12: false,
+                            hour: '2-digit',
+                            minute: '2-digit',
+                            second: '2-digit',
+                        }),
+                },
+                gridIndex: 1,
+            },
+        ],
+        yAxis: [
+            {
+                type: 'value',
+                gridIndex: 0,
+            },
+            {
+                type: 'value',
+                gridIndex: 1,
+            },
+        ],
+
+        dataZoom: [
+            {
+                type: 'inside',
+                // realtime: true,
+                xAxisIndex: [0, 1],
+                start: 10,
+                end: 90,
+            },
+            {
+                show: true,
+                xAxisIndex: [0, 1],
+                type: 'slider',
+                // realtime: true,
+                top: 10,
+                start: 10,
+                end: 90,
+            },
+        ],
         series: [
             {
                 type: 'bar',
-                data: data.map(({ value }) => value),
+                encode: {
+                    x: 'timestamp',
+                    y: 'value',
+                },
+            },
+            {
+                type: 'line',
+                encode: {
+                    x: 'timestamp',
+                    y: 'value',
+                },
+                xAxisIndex: 1,
+                yAxisIndex: 1,
             },
         ],
     } as EChartsOption);
@@ -91,36 +146,13 @@
     const handleClick = (event: ECMouseEvent) => {
         alert(`${event.name} ${event.value}`);
     };
-
-    onMount(() => {
-        const id = setInterval(updateData, interval);
-        return () => clearInterval(id);
-    });
 </script>
 
 <svelte:head>
-    <title>Examples - svelte-echarts</title>
+    <title>svelte-echarts Example</title>
 </svelte:head>
-<div class="app">
-    {#await getTransferSize()}
-        <span>Loading...</span>
-    {:then bytes}
-        <span>Transfer Size: {formatBytes(bytes)}</span>
-        <span>Refresh without cache to see real size (CTRL+F5)</span>
-    {:catch error}
-        <span>Error: {error.message}</span>
-    {/await}
-</div>
 
 <Chart {init} {options} onclick={handleClick} />
 
 <style>
-    .app {
-        width: 100%;
-        height: 100%;
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        justify-content: center;
-    }
 </style>

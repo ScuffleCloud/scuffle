@@ -194,3 +194,11 @@
    fun:_ZN14regex_automata6hybrid3dfa4Lazy9add_state*
    ...
 }
+{
+   ignore tinc_cel enum vtable cache
+   Memcheck:Leak
+   match-leak-kinds: possible
+   ...
+   fun:_ZN8tinc_cel10EnumVtable8from_tag6LOOKUP28_$u7b$$u7b$closure$u7d$$u7d$*
+   ...
+}

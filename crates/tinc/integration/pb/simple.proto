@@ -1,0 +1,23 @@
+syntax = "proto3";
+
+package simple;
+
+import "tinc/annotations.proto";
+
+message SimpleMessage {
+    option (tinc.message).generate = true;
+
+    string name = 1;
+    repeated string values = 2;
+    map<string, string> key_values = 3;
+}
+
+message SimpleMessageRenamed {
+    option (tinc.message).generate = true;
+
+    string name = 1;
+    repeated string values = 2;
+    map<string, string> key_values = 3 [(tinc.field) = {
+        rename: "key_values"
+    }];
+}

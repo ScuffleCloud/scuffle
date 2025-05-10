@@ -67,6 +67,12 @@ jobs:
         uses: ./.github/actions/setup-rust
         with: ${{ matrix.rust }}
 
+      - name: Setup Protoc
+        if: ${{ matrix.setup_protoc }}
+        uses: arduino/setup-protoc@v3
+        with:
+          repo-token: ${{ secrets.GITHUB_TOKEN }}
+
       - name: Setup Secrets
         if: ${{ matrix.secrets != null }}
         run: |

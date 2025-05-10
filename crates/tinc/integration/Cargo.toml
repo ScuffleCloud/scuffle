@@ -1,0 +1,27 @@
+[package]
+name = "tinc-integration-tests"
+edition = "2024"
+publish = false
+license = "MIT OR Apache-2.0"
+
+[lints.rust]
+unexpected_cfgs = { level = "warn", check-cfg = ['cfg(coverage_nightly)'] }
+
+[dev-dependencies]
+tinc.workspace = true
+insta = { version = "1.30.0", features = ["json"] }
+serde_json = "1.0.115"
+serde = "1.0.215"
+prost = "0.13.5"
+prost-types = "0.13.5"
+scuffle-workspace-hack.workspace = true
+tokio = { version = "1.4.2", features = ["full"] }
+http = "1"
+http-body-util = "0.1"
+bytes = "1"
+tower = "0.5"
+tonic = "0.13"
+
+[build-dependencies]
+tinc-build.workspace = true
+prost-build = "0.13.5"

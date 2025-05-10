@@ -1,0 +1,28 @@
+---
+source: crates/tinc/build/src/codegen/cel/functions/matches.rs
+expression: "postcompile::compile_str!(postcompile::config!\n{\n    test: true, dependencies:\n    vec![postcompile::Dependency::workspace(\"tinc\"),],\n}, quote!\n{\n    fn matches(input: &String) -> Result<bool,\n    ::tinc::__private::cel::CelError<'_>> { Ok(#output) } #[test] fn\n    test_matches()\n    {\n        assert_eq!(matches(&\"in2dastring\".into()).unwrap(), true);\n        assert_eq!(matches(&\"in3dastring\".into()).unwrap(), true);\n        assert_eq!(matches(&\"xd\".into()).unwrap(), false);\n    }\n},)"
+---
+exit status: 0
+--- test_stdout
+running 1 test
+.
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in [ELAPSED]s
+--- expanded
+#![feature(prelude_import)]
+#[prelude_import]
+use std::prelude::rust_2024::*;
+#[macro_use]
+extern crate std;
+fn matches(input: &String) -> Result<bool, ::tinc::__private::cel::CelError<'_>> {
+    Ok({
+        static REGEX: ::std::sync::LazyLock<::tinc::reexports::regex::Regex> = ::std::sync::LazyLock::new(||
+        {
+            ::tinc::reexports::regex::Regex::new("\\d+")
+                .expect("failed to compile regex this is a bug in tinc")
+        });
+        ::tinc::__private::cel::CelValue::cel_matches(
+            ::tinc::__private::cel::CelValueConv::conv(input),
+            &*REGEX,
+        )?
+    })
+}

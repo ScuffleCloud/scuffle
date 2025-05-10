@@ -20,9 +20,9 @@ runs:
     - name: Run tests
       shell: bash
       run: |
-        cargo llvm-cov nextest --no-fail-fast --all-features --profile ci --no-report
-        cargo llvm-cov test --all-features --doc --no-report
-        cargo llvm-cov report --lcov --output-path ./lcov.info
+        cargo llvm-cov nextest --no-fail-fast --all-features --profile ci --no-report --include-build-script
+        cargo llvm-cov test --all-features --doc --no-report --include-build-script
+        cargo llvm-cov report --include-build-script --lcov --output-path ./lcov.info
 
     - uses: codecov/codecov-action@v5
       with:

@@ -1,0 +1,41 @@
+---
+source: crates/tinc/build/src/codegen/cel/functions/exists_one.rs
+expression: "postcompile::compile_str!(postcompile::config!\n{\n    test: true, dependencies:\n    vec![postcompile::Dependency::workspace(\"tinc\"),],\n}, quote!\n{\n    fn exists_one(input: &std::collections::HashMap<String, bool>) ->\n    Result<bool, ::tinc::__private::cel::CelError<'_>> { Ok(#output) } #[test]\n    fn test_exists_one()\n    {\n        assert_eq!(exists_one(&{\n            let mut map = std::collections::HashMap::new();\n            map.insert(\"value\".to_string(), true); map\n        }).unwrap(), true);\n        assert_eq!(exists_one(&{\n            let mut map = std::collections::HashMap::new();\n            map.insert(\"not_value\".to_string(), true); map\n        }).unwrap(), false);\n        assert_eq!(exists_one(&{\n            let mut map = std::collections::HashMap::new();\n            map.insert(\"xd\".to_string(), true);\n            map.insert(\"value\".to_string(), true); map\n        }).unwrap(), true);\n    }\n},)"
+---
+exit status: 0
+--- test_stdout
+running 1 test
+.
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in [ELAPSED]s
+--- expanded
+#![feature(prelude_import)]
+#[prelude_import]
+use std::prelude::rust_2024::*;
+#[macro_use]
+extern crate std;
+fn exists_one(
+    input: &std::collections::HashMap<String, bool>,
+) -> Result<bool, ::tinc::__private::cel::CelError<'_>> {
+    Ok({
+        let mut iter = ((input).keys()).into_iter();
+        let mut seen = false;
+        loop {
+            let Some(item) = iter.next() else {
+                break seen;
+            };
+            if ::tinc::__private::cel::to_bool(
+                ::tinc::__private::cel::CelValue::cel_eq(
+                    ::tinc::__private::cel::CelValueConv::conv(item),
+                    ::tinc::__private::cel::CelValue::String(
+                        ::tinc::__private::cel::CelString::Borrowed("value"),
+                    ),
+                )?,
+            ) {
+                if seen {
+                    break false;
+                }
+                seen = true;
+            }
+        }
+    })
+}

@@ -27,8 +27,8 @@ test *args:
 
     # Do not generate the coverage report on CI
     cargo insta review
-    cargo +{{RUST_TOOLCHAIN}} llvm-cov report --lcov --output-path ./lcov.info
-    cargo +{{RUST_TOOLCHAIN}} llvm-cov report --html
+    cargo +{{RUST_TOOLCHAIN}} llvm-cov report --include-build-script --lcov --output-path ./lcov.info
+    cargo +{{RUST_TOOLCHAIN}} llvm-cov report --include-build-script --html
 
 coverage-serve:
     miniserve target/llvm-cov/html --index index.html --port 3000

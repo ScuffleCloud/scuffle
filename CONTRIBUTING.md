@@ -136,6 +136,11 @@ $env:PATH="${$env:FFMPEG_ROOT}\bin;${$env:FFMPEG_ROOT}\lib;${$env:FFMPEG_ROOT}\i
 
 On windows you need to include not just the binary directory but also the lib and include directories in your path, so that the linker can find the libraries.
 
+### Protobuf-compiler
+
+In `scuffle-tinc` we use the protobuf compiler which you can install via the following instructions: https://protobuf.dev/installation/
+
+
 ## Local Commnads
 
 | Command | Description |

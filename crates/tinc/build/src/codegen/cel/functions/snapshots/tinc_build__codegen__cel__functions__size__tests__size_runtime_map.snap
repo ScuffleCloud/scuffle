@@ -1,0 +1,46 @@
+---
+source: crates/tinc/build/src/codegen/cel/functions/size.rs
+expression: "postcompile::compile_str!(postcompile::config!\n{\n    test: true, dependencies:\n    vec![postcompile::Dependency::workspace(\"tinc\"),],\n}, quote::quote!\n{\n    fn size(input: &std::collections::HashMap<String, bool>) -> Result<u64,\n    ::tinc::__private::cel::CelError<'_>> { Ok(#output) } #[test] fn\n    test_contains()\n    {\n        assert_eq!(size(&{\n            let mut map = std::collections::HashMap::new();\n            map.insert(\"value\".to_string(), true); map\n        }).unwrap(), 1);\n        assert_eq!(size(&std::collections::HashMap::new()).unwrap(), 0);\n        assert_eq!(size(&{\n            let mut map = std::collections::HashMap::new();\n            map.insert(\"xd\".to_string(), true);\n            map.insert(\"value\".to_string(), true); map\n        }).unwrap(), 2);\n    }\n},)"
+---
+exit status: 0
+--- expand_stderr
+warning: unnecessary parentheses around function argument
+ --> [POST_COMPILE]:4:8
+  |
+4 |     Ok(((input).len() as u64))
+  |        ^                    ^
+  |
+  = note: `#[warn(unused_parens)]` on by default
+help: remove these parentheses
+  |
+4 -     Ok(((input).len() as u64))
+4 +     Ok((input).len() as u64)
+  |
+--- test_stderr
+warning: unnecessary parentheses around function argument
+ --> [POST_COMPILE]:4:8
+  |
+4 |     Ok(((input).len() as u64))
+  |        ^                    ^
+  |
+  = note: `#[warn(unused_parens)]` on by default
+help: remove these parentheses
+  |
+4 -     Ok(((input).len() as u64))
+4 +     Ok((input).len() as u64)
+  |
+--- test_stdout
+running 1 test
+.
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in [ELAPSED]s
+--- expanded
+#![feature(prelude_import)]
+#[prelude_import]
+use std::prelude::rust_2024::*;
+#[macro_use]
+extern crate std;
+fn size(
+    input: &std::collections::HashMap<String, bool>,
+) -> Result<u64, ::tinc::__private::cel::CelError<'_>> {
+    Ok(((input).len() as u64))
+}

@@ -1,0 +1,37 @@
+---
+source: crates/tinc/build/src/codegen/cel/functions/exists.rs
+expression: "postcompile::compile_str!(postcompile::config!\n{\n    test: true, dependencies:\n    vec![postcompile::Dependency::workspace(\"tinc\"),],\n}, quote!\n{\n    fn exists_one() -> Result<bool, ::tinc::__private::cel::CelError<'static>>\n    { Ok(#output) } #[test] fn test_filter()\n    { assert_eq!(exists_one().unwrap(), true); }\n},)"
+---
+exit status: 0
+--- test_stdout
+running 1 test
+.
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in [ELAPSED]s
+--- expanded
+#![feature(prelude_import)]
+#[prelude_import]
+use std::prelude::rust_2024::*;
+#[macro_use]
+extern crate std;
+fn exists_one() -> Result<bool, ::tinc::__private::cel::CelError<'static>> {
+    Ok({
+        let mut iter = ([
+            ::tinc::__private::cel::to_bool(
+                ::tinc::__private::cel::CelValue::Bool(true),
+            ),
+            ::tinc::__private::cel::to_bool(
+                ::tinc::__private::cel::CelValue::Bool(false),
+            ),
+            ::tinc::__private::cel::to_bool(::tinc::__private::cel::CelValue::Bool(true)),
+        ])
+            .into_iter();
+        loop {
+            let Some(item) = iter.next() else {
+                break false;
+            };
+            if item {
+                break true;
+            }
+        }
+    })
+}

@@ -3,11 +3,11 @@ source: crates/postcompile/src/lib.rs
 expression: out
 ---
 exit status: 101
---- expand_stderr 
+--- expand_stderr
 error: expected one of `!` or `::`, found `<eof>`
- --> <postcompile>:1:1
+ --> [POST_COMPILE]:1:1
   |
 1 | invalid_rust_code
   | ^^^^^^^^^^^^^^^^^ expected one of `!` or `::`
 
-error: could not compile `postcompile____tests____compile_failure` (bin "postcompile____tests____compile_failure") due to 1 previous error
+error: could not compile `postcompile__tests__compile_failure` (bin "postcompile__tests__compile_failure") due to 1 previous error

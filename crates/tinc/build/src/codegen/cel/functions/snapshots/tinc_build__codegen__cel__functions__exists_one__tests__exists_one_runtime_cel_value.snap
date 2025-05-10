@@ -1,0 +1,36 @@
+---
+source: crates/tinc/build/src/codegen/cel/functions/exists_one.rs
+expression: "postcompile::compile_str!(postcompile::config!\n{\n    test: true, dependencies:\n    vec![postcompile::Dependency::workspace(\"tinc\"),],\n}, quote!\n{\n    fn exists_one<'a>(input: &'a ::tinc::__private::cel::CelValue<'a>) ->\n    Result<bool, ::tinc::__private::cel::CelError<'a>> { Ok(#output) } #[test]\n    fn test_exists_one()\n    {\n        assert_eq!(exists_one(&tinc::__private::cel::CelValue::List([tinc::__private::cel::CelValueConv::conv(\"value\"),].into_iter().collect())).unwrap(),\n        true);\n        assert_eq!(exists_one(&tinc::__private::cel::CelValue::List([tinc::__private::cel::CelValueConv::conv(\"not_value\"),].into_iter().collect())).unwrap(),\n        false);\n        assert_eq!(exists_one(&tinc::__private::cel::CelValue::List([tinc::__private::cel::CelValueConv::conv(\"xd\"),\n        tinc::__private::cel::CelValueConv::conv(\"value\"),].into_iter().collect())).unwrap(),\n        true);\n        assert_eq!(exists_one(&tinc::__private::cel::CelValue::List([tinc::__private::cel::CelValueConv::conv(\"xd\"),\n        tinc::__private::cel::CelValueConv::conv(\"value\"),\n        tinc::__private::cel::CelValueConv::conv(\"value\"),].into_iter().collect())).unwrap(),\n        false);\n    }\n},)"
+---
+exit status: 0
+--- test_stdout
+running 1 test
+.
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in [ELAPSED]s
+--- expanded
+#![feature(prelude_import)]
+#[prelude_import]
+use std::prelude::rust_2024::*;
+#[macro_use]
+extern crate std;
+fn exists_one<'a>(
+    input: &'a ::tinc::__private::cel::CelValue<'a>,
+) -> Result<bool, ::tinc::__private::cel::CelError<'a>> {
+    Ok(
+        ::tinc::__private::cel::CelValue::cel_exists_one(
+            input,
+            |item| {
+                ::core::result::Result::Ok(
+                    ::tinc::__private::cel::to_bool(
+                        ::tinc::__private::cel::CelValue::cel_eq(
+                            item,
+                            ::tinc::__private::cel::CelValue::String(
+                                ::tinc::__private::cel::CelString::Borrowed("value"),
+                            ),
+                        )?,
+                    ),
+                )
+            },
+        )?,
+    )
+}

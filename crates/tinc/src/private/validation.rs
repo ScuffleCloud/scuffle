@@ -71,7 +71,7 @@ where
 
             for error in &state.errors {
                 details.request.violations.push(HttpErrorResponseRequestViolation {
-                    field: &error.path.as_ref(),
+                    field: error.path.as_ref(),
                     description: error.message(),
                 })
             }

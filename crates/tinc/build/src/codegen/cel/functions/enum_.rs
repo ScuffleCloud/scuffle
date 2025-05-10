@@ -85,7 +85,7 @@ mod tests {
 
     #[test]
     fn test_enum_syntax() {
-        let registry = ProtoTypeRegistry::new();
+        let registry = ProtoTypeRegistry::new(crate::Mode::Prost, crate::extern_paths::ExternPaths::new(crate::Mode::Prost));
         let compiler = Compiler::new(&registry);
         let enum_ = Enum(None);
         insta::assert_debug_snapshot!(enum_.compile(CompilerCtx::new(compiler.child(), None, &[])), @r#"
@@ -128,7 +128,7 @@ mod tests {
 
     #[test]
     fn test_enum_runtime() {
-        let registry = ProtoTypeRegistry::new();
+        let registry = ProtoTypeRegistry::new(crate::Mode::Prost, crate::extern_paths::ExternPaths::new(crate::Mode::Prost));
         let compiler = Compiler::new(&registry);
 
         let string_value =

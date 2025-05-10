@@ -51,7 +51,7 @@ mod tests {
 
     #[test]
     fn test_uint_syntax() {
-        let registry = ProtoTypeRegistry::new();
+        let registry = ProtoTypeRegistry::new(crate::Mode::Prost, crate::extern_paths::ExternPaths::new(crate::Mode::Prost));
         let compiler = Compiler::new(&registry);
         insta::assert_debug_snapshot!(UInt.compile(CompilerCtx::new(compiler.child(), None, &[])), @r#"
         Err(
@@ -90,7 +90,7 @@ mod tests {
 
     #[test]
     fn test_uint_runtime() {
-        let registry = ProtoTypeRegistry::new();
+        let registry = ProtoTypeRegistry::new(crate::Mode::Prost, crate::extern_paths::ExternPaths::new(crate::Mode::Prost));
         let compiler = Compiler::new(&registry);
 
         let string_value =

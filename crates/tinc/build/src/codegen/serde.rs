@@ -8,7 +8,7 @@ use super::cel::compiler::{CompiledExpr, Compiler};
 use super::cel::types::CelType;
 use super::cel::{CelExpression, eval_message_fmt, functions};
 use crate::types::{
-    ProtoEnumType, ProtoFieldSerdeOmittable, ProtoFieldOptions, ProtoMessageField, ProtoMessageType, ProtoModifiedValueType,
+    ProtoEnumType, ProtoFieldOptions, ProtoFieldSerdeOmittable, ProtoMessageField, ProtoMessageType, ProtoModifiedValueType,
     ProtoOneOfType, ProtoType, ProtoTypeRegistry, ProtoValueType, ProtoVisibility,
 };
 
@@ -204,8 +204,11 @@ fn handle_oneof(
         }
 
         if let ProtoValueType::Enum(path) = &field.ty {
-            let enum_opts = registry.get_enum(path).expect("enum not found");
-            let path_str = enum_opts.rust_path(&oneof.message).to_token_stream().to_string();
+            let path_str = registry
+                .resolve_rust_path(&oneof.message, path)
+                .expect("enum not found")
+                .to_token_stream()
+                .to_string();
             let serialize_with = format!("::tinc::__private::serialize_enum::<{path_str}, _, _>");
             oneof_config.field_attribute(name, parse_quote!(#[serde(serialize_with = #serialize_with)]));
             oneof_config.field_attribute(name, parse_quote!(#[tinc(enum = #path_str)]));
@@ -350,10 +353,9 @@ fn handle_message_field(
     if field.options.flatten {
         let flattened_ty_path = match &field.ty {
             ProtoType::Modified(ProtoModifiedValueType::Optional(ProtoValueType::Message(path)))
-            | ProtoType::Value(ProtoValueType::Message(path)) => registry
-                .get_message(path)
-                .expect("message not found")
-                .rust_path(&message.package),
+            | ProtoType::Value(ProtoValueType::Message(path)) => {
+                registry.resolve_rust_path(&message.package, path).expect("message not found")
+            }
             ProtoType::Modified(ProtoModifiedValueType::OneOf(oneof)) => oneof.rust_path(&message.package),
             _ => anyhow::bail!("flattened fields must be messages or oneofs"),
         };
@@ -413,9 +415,9 @@ fn handle_message_field(
             | ProtoModifiedValueType::Map(_, ProtoValueType::Enum(path))
             | ProtoModifiedValueType::Repeated(ProtoValueType::Enum(path)),
         ) => {
-            let enum_opts = registry.get_enum(path).expect("enum not found");
-            let path_str = enum_opts
-                .rust_path(message.full_name.trim_last_segment())
+            let path_str = registry
+                .resolve_rust_path(message.full_name.trim_last_segment(), path)
+                .expect("enum not found")
                 .to_token_stream()
                 .to_string();
 
@@ -797,7 +799,9 @@ pub(super) fn handle_message(
         )?;
     }
 
-    let message_path = message.rust_path(&message.package);
+    let message_path = registry
+        .resolve_rust_path(&message.package, &message.full_name)
+        .expect("message not found");
     let message_ident = message_path.segments.last().unwrap().ident.clone();
 
     package.push_item(parse_quote! {
@@ -881,8 +885,10 @@ pub(super) fn handle_message(
     Ok(())
 }
 
-pub(super) fn handle_enum(enum_: &ProtoEnumType, package: &mut Package) -> anyhow::Result<()> {
-    let enum_path = enum_.rust_path(&enum_.package);
+pub(super) fn handle_enum(enum_: &ProtoEnumType, package: &mut Package, registry: &ProtoTypeRegistry) -> anyhow::Result<()> {
+    let enum_path = registry
+        .resolve_rust_path(&enum_.package, &enum_.full_name)
+        .expect("enum not found");
     let enum_ident = enum_path.segments.last().unwrap().ident.clone();
     let enum_config = package.enum_config(&enum_.full_name);
 

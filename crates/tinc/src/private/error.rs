@@ -529,6 +529,7 @@ pub struct HttpErrorResponseDetails<'a> {
     pub localized: HttpErrorResponseLocalized<'a>,
 }
 
+#[cfg(feature = "tonic")]
 impl<'a> From<&'a tonic_types::ErrorDetails> for HttpErrorResponseDetails<'a> {
     fn from(value: &'a tonic_types::ErrorDetails) -> Self {
         Self {
@@ -553,6 +554,7 @@ pub struct HttpErrorResponseRetry {
     pub at: Option<chrono::DateTime<chrono::Utc>>,
 }
 
+#[cfg(feature = "tonic")]
 impl From<Option<&tonic_types::RetryInfo>> for HttpErrorResponseRetry {
     fn from(retry_info: Option<&tonic_types::RetryInfo>) -> Self {
         Self {
@@ -573,6 +575,7 @@ pub struct HttpErrorResponseDebug<'a> {
     pub details: &'a str,
 }
 
+#[cfg(feature = "tonic")]
 impl<'a> From<Option<&'a tonic_types::DebugInfo>> for HttpErrorResponseDebug<'a> {
     fn from(debug_info: Option<&'a tonic_types::DebugInfo>) -> Self {
         Self {
@@ -587,6 +590,7 @@ pub struct HttpErrorResponseQuota<'a> {
     pub violations: Vec<HttpErrorResponseQuotaViolation<'a>>,
 }
 
+#[cfg(feature = "tonic")]
 impl<'a> From<Option<&'a tonic_types::QuotaFailure>> for HttpErrorResponseQuota<'a> {
     fn from(quota_failure: Option<&'a tonic_types::QuotaFailure>) -> Self {
         Self {
@@ -622,6 +626,7 @@ pub struct HttpErrorResponseError<'a> {
     pub metadata: HashMap<&'a str, &'a str>,
 }
 
+#[cfg(feature = "tonic")]
 impl<'a> From<Option<&'a tonic_types::ErrorInfo>> for HttpErrorResponseError<'a> {
     fn from(error_info: Option<&'a tonic_types::ErrorInfo>) -> Self {
         Self {
@@ -644,6 +649,7 @@ pub struct HttpErrorResponsePrecondition<'a> {
     pub violations: Vec<HttpErrorResponsePreconditionViolation<'a>>,
 }
 
+#[cfg(feature = "tonic")]
 impl<'a> From<Option<&'a tonic_types::PreconditionFailure>> for HttpErrorResponsePrecondition<'a> {
     fn from(precondition_failure: Option<&'a tonic_types::PreconditionFailure>) -> Self {
         Self {
@@ -682,6 +688,7 @@ pub struct HttpErrorResponseRequest<'a> {
     pub serving_data: &'a str,
 }
 
+#[cfg(feature = "tonic")]
 impl<'a> From<(Option<&'a tonic_types::BadRequest>, Option<&'a tonic_types::RequestInfo>)> for HttpErrorResponseRequest<'a> {
     fn from(
         (bad_request, request_info): (Option<&'a tonic_types::BadRequest>, Option<&'a tonic_types::RequestInfo>),
@@ -726,6 +733,7 @@ pub struct HttpErrorResponseResource<'a> {
     pub description: &'a str,
 }
 
+#[cfg(feature = "tonic")]
 impl<'a> From<Option<&'a tonic_types::ResourceInfo>> for HttpErrorResponseResource<'a> {
     fn from(resource_info: Option<&'a tonic_types::ResourceInfo>) -> Self {
         Self {
@@ -741,6 +749,7 @@ pub struct HttpErrorResponseHelp<'a> {
     pub links: Vec<HttpErrorResponseHelpLink<'a>>,
 }
 
+#[cfg(feature = "tonic")]
 impl<'a> From<Option<&'a tonic_types::Help>> for HttpErrorResponseHelp<'a> {
     fn from(help: Option<&'a tonic_types::Help>) -> Self {
         Self {
@@ -774,6 +783,7 @@ pub struct HttpErrorResponseLocalized<'a> {
     pub message: &'a str,
 }
 
+#[cfg(feature = "tonic")]
 impl<'a> From<Option<&'a tonic_types::LocalizedMessage>> for HttpErrorResponseLocalized<'a> {
     fn from(localized_message: Option<&'a tonic_types::LocalizedMessage>) -> Self {
         Self {

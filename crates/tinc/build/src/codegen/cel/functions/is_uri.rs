@@ -59,7 +59,7 @@ mod tests {
 
     #[test]
     fn test_is_uri_syntax() {
-        let registry = ProtoTypeRegistry::new();
+        let registry = ProtoTypeRegistry::new(crate::Mode::Prost, crate::extern_paths::ExternPaths::new(crate::Mode::Prost));
         let compiler = Compiler::new(&registry);
         insta::assert_debug_snapshot!(IsUri.compile(CompilerCtx::new(compiler.child(), None, &[])), @r#"
         Err(
@@ -120,7 +120,7 @@ mod tests {
 
     #[test]
     fn test_is_uri_runtime() {
-        let registry = ProtoTypeRegistry::new();
+        let registry = ProtoTypeRegistry::new(crate::Mode::Prost, crate::extern_paths::ExternPaths::new(crate::Mode::Prost));
         let compiler = Compiler::new(&registry);
 
         let string_value =

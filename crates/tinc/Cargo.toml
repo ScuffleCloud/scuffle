@@ -23,35 +23,21 @@ bytes = "1.6.0"
 tonic = { version = "0.13.0", optional = true }
 prost = { version = "0.13.5", optional = true }
 prost-types = { version = "0.13.5", optional = true }
+tonic-types = { version = "0.13.0", optional = true }
 
 serde = "1"
 serde_derive = "1"
 serde_json = "1"
 serde_repr = "0.1"
 
-schemars = { version = "1.0.0-alpha.17", features = ["chrono04"] }
-
 chrono = { version = "0.4.36", features = ["serde"] }
 thiserror = "2"
-tonic-types = "0.13.0"
-
-# Media Types
-headers-accept = "0.1.4"
 mediatype = "0.19.20"
-serde_urlencoded = "0.7.1"
 serde_qs = "0.15.0"
-memchr = "2.4"
-
 linkme = "0.3"
 num-traits = "0.2.19"
-
-# Parsing / Formatting numbers
-itoa = "1.0.1"
-ryu = "1.0.14"
 regex = "1"
-
 linear-map = "1.2.0"
-float-cmp = "0.10.0"
 
 tinc-derive.workspace = true
 tinc-cel = { workspace = true, features = ["runtime"] }
@@ -60,5 +46,5 @@ scuffle-workspace-hack.workspace = true
 
 [features]
 prost = ["dep:prost", "dep:prost-types"]
-tonic = ["dep:tonic"]
+tonic = ["dep:tonic", "dep:tonic-types"]
 default = ["prost", "tonic"]

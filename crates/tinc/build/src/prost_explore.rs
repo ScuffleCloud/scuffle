@@ -3,17 +3,21 @@ use std::collections::BTreeMap;
 use anyhow::Context;
 use convert_case::{Case, Casing};
 use indexmap::IndexMap;
-use prost_reflect::{DescriptorPool, EnumDescriptor, ExtensionDescriptor, Kind, MessageDescriptor, ServiceDescriptor};
+use prost_reflect::prost_types::source_code_info::Location;
+use prost_reflect::{
+    DescriptorPool, EnumDescriptor, ExtensionDescriptor, FileDescriptor, Kind, MessageDescriptor, ServiceDescriptor,
+};
 use quote::format_ident;
 use tinc_cel::{CelEnum, CelValueConv};
 
 use crate::codegen::cel::{CelExpression, CelExpressions};
 use crate::codegen::prost_sanatize::{strip_enum_prefix, to_upper_camel};
 use crate::types::{
-    ProtoEnumOptions, ProtoEnumType, ProtoEnumVariant, ProtoEnumVariantOptions, ProtoFieldSerdeOmittable, ProtoFieldOptions,
-    ProtoMessageField, ProtoMessageOptions, ProtoMessageType, ProtoModifiedValueType, ProtoOneOfField, ProtoOneOfOptions,
-    ProtoOneOfType, ProtoPath, ProtoService, ProtoServiceMethod, ProtoServiceMethodEndpoint, ProtoServiceMethodIo,
-    ProtoServiceOptions, ProtoType, ProtoTypeRegistry, ProtoValueType, ProtoVisibility, ProtoWellKnownType,
+    Comments, ProtoEnumOptions, ProtoEnumType, ProtoEnumVariant, ProtoEnumVariantOptions, ProtoFieldOptions,
+    ProtoFieldSerdeOmittable, ProtoMessageField, ProtoMessageOptions, ProtoMessageType, ProtoModifiedValueType,
+    ProtoOneOfField, ProtoOneOfOptions, ProtoOneOfType, ProtoPath, ProtoService, ProtoServiceMethod,
+    ProtoServiceMethodEndpoint, ProtoServiceMethodIo, ProtoServiceOptions, ProtoType, ProtoTypeRegistry, ProtoValueType,
+    ProtoVisibility,
 };
 
 pub(crate) struct Extension<T> {
@@ -168,7 +172,8 @@ fn rename_field(field: &str, style: tinc_pb::RenameAll) -> Option<String> {
     }
 }
 
-pub(crate) struct Extensions {
+pub(crate) struct Extensions<'a> {
+    pool: &'a DescriptorPool,
     // Message extensions.
     ext_message: Extension<tinc_pb::MessageOptions>,
     ext_field: Extension<tinc_pb::FieldOptions>,
@@ -184,11 +189,10 @@ pub(crate) struct Extensions {
     ext_service: Extension<tinc_pb::ServiceOptions>,
 }
 
-const ANY_NOT_SUPPORTED_ERROR: &str = "uses `google.protobuf.Any`, this is currently not supported.";
-
-impl Extensions {
-    pub(crate) fn new(pool: &DescriptorPool) -> Self {
+impl<'a> Extensions<'a> {
+    pub(crate) fn new(pool: &'a DescriptorPool) -> Self {
         Self {
+            pool,
             ext_message: Extension::new("tinc.message", pool),
             ext_field: Extension::new("tinc.field", pool),
             ext_predefined: Extension::new("tinc.predefined", pool),
@@ -200,38 +204,81 @@ impl Extensions {
         }
     }
 
-    pub(crate) fn process(&mut self, pool: &DescriptorPool, registry: &mut ProtoTypeRegistry) -> anyhow::Result<()> {
-        for service in pool.services() {
-            self.process_service(pool, &service, registry)
-                .with_context(|| format!("service {}", service.full_name()))?;
-        }
+    pub(crate) fn process(&self, registry: &mut ProtoTypeRegistry) -> anyhow::Result<()> {
+        self.pool
+            .files()
+            .map(|file| FileWalker::new(file, self))
+            .try_for_each(|file| file.process(registry))
+    }
+}
 
-        for message in pool.all_messages() {
-            self.process_message(pool, &message, false, registry)
+struct FileWalker<'a> {
+    file: FileDescriptor,
+    extensions: &'a Extensions<'a>,
+    locations: Vec<Location>,
+}
+
+impl<'a> FileWalker<'a> {
+    fn new(file: FileDescriptor, extensions: &'a Extensions) -> Self {
+        Self {
+            extensions,
+            locations: file
+                .file_descriptor_proto()
+                .source_code_info
+                .clone()
+                .map(|mut si| {
+                    si.location.retain(|l| {
+                        let len = l.path.len();
+                        len > 0 && len % 2 == 0
+                    });
+
+                    si.location.sort_by(|a, b| a.path.cmp(&b.path));
+
+                    si.location
+                })
+                .unwrap_or_default(),
+            file,
+        }
+    }
+
+    fn location(&self, path: &[i32]) -> Option<&Location> {
+        let idx = self
+            .locations
+            .binary_search_by_key(&path, |location| location.path.as_slice())
+            .ok()?;
+        Some(&self.locations[idx])
+    }
+
+    fn process(&self, registry: &mut ProtoTypeRegistry) -> anyhow::Result<()> {
+        for message in self.file.messages() {
+            // FileDescriptorProto.message_type = 4
+            self.process_message(&message, registry)
                 .with_context(|| format!("message {}", message.full_name()))?;
         }
 
-        for enum_ in pool.all_enums() {
-            self.process_enum(&enum_, false, registry)
+        for enum_ in self.file.enums() {
+            // FileDescriptorProto.enum_type = 5
+            self.process_enum(&enum_, registry)
                 .with_context(|| format!("enum {}", enum_.full_name()))?;
+        }
+
+        for service in self.file.services() {
+            // FileDescriptorProto.service = 6
+            self.process_service(&service, registry)
+                .with_context(|| format!("service {}", service.full_name()))?;
         }
 
         Ok(())
     }
 
-    fn process_service(
-        &mut self,
-        pool: &DescriptorPool,
-        service: &ServiceDescriptor,
-        registry: &mut ProtoTypeRegistry,
-    ) -> anyhow::Result<()> {
+    fn process_service(&self, service: &ServiceDescriptor, registry: &mut ProtoTypeRegistry) -> anyhow::Result<()> {
         if registry.get_service(service.full_name()).is_some() {
             return Ok(());
         }
 
         let mut methods = IndexMap::new();
 
-        let opts = self.ext_service.decode(service)?.unwrap_or_default();
+        let opts = self.extensions.ext_service.decode(service)?.unwrap_or_default();
         let service_full_name = ProtoPath::new(service.full_name());
 
         for method in service.methods() {
@@ -241,30 +288,8 @@ impl Extensions {
             let method_input = ProtoValueType::from_proto_path(input.full_name());
             let method_output = ProtoValueType::from_proto_path(output.full_name());
 
-            anyhow::ensure!(
-                !matches!(method_input, ProtoValueType::WellKnown(ProtoWellKnownType::Any)),
-                "method {} {ANY_NOT_SUPPORTED_ERROR}",
-                method.full_name()
-            );
-            anyhow::ensure!(
-                !matches!(method_output, ProtoValueType::WellKnown(ProtoWellKnownType::Any)),
-                "method {} {ANY_NOT_SUPPORTED_ERROR}",
-                method.full_name()
-            );
-
-            if matches!(method_input, ProtoValueType::Message(_)) {
-                self.process_message(pool, &input, true, registry)
-                    .with_context(|| format!("message {}", input.full_name()))
-                    .with_context(|| format!("method {}", method.full_name()))?;
-            }
-
-            if matches!(method_output, ProtoValueType::Message(_)) {
-                self.process_message(pool, &output, true, registry)
-                    .with_context(|| format!("message {}", output.full_name()))
-                    .with_context(|| format!("method {}", method.full_name()))?;
-            }
-
             let opts = self
+                .extensions
                 .ext_method
                 .decode(&method)
                 .with_context(|| format!("method {}", method.full_name()))?
@@ -288,6 +313,7 @@ impl Extensions {
                 ProtoServiceMethod {
                     full_name: ProtoPath::new(method.full_name()),
                     service: service_full_name.clone(),
+                    comments: self.location(method.path()).map(location_to_comments).unwrap_or_default(),
                     input: if method.is_client_streaming() {
                         ProtoServiceMethodIo::Stream(method_input)
                     } else {
@@ -299,13 +325,23 @@ impl Extensions {
                         ProtoServiceMethodIo::Single(method_output)
                     },
                     endpoints,
-                    cel: opts.cel,
+                    cel: opts
+                        .cel
+                        .into_iter()
+                        .map(|expr| CelExpression {
+                            expression: expr.expression,
+                            jsonschemas: expr.jsonschemas,
+                            message: expr.message,
+                            this: None,
+                        })
+                        .collect(),
                 },
             );
         }
 
         registry.register_service(ProtoService {
             full_name: ProtoPath::new(service.full_name()),
+            comments: self.location(service.path()).map(location_to_comments).unwrap_or_default(),
             package: ProtoPath::new(service.package_name()),
             options: ProtoServiceOptions { prefix: opts.prefix },
             methods,
@@ -314,47 +350,34 @@ impl Extensions {
         Ok(())
     }
 
-    fn process_message(
-        &mut self,
-        pool: &DescriptorPool,
-        message: &MessageDescriptor,
-        insert: bool,
-        registry: &mut ProtoTypeRegistry,
-    ) -> anyhow::Result<()> {
-        if registry.get_message(message.full_name()).is_some() {
-            return Ok(());
-        }
-
-        let opts = self.ext_message.decode(message)?;
+    fn process_message(&self, message: &MessageDescriptor, registry: &mut ProtoTypeRegistry) -> anyhow::Result<()> {
+        let opts = self.extensions.ext_message.decode(message)?;
 
         let fields = message
             .fields()
             .map(|field| {
-                let opts = self.ext_field.decode(&field).with_context(|| field.full_name().to_owned())?;
-                Ok((field, opts))
+                let opts = self
+                    .extensions
+                    .ext_field
+                    .decode(&field)
+                    .with_context(|| field.full_name().to_owned())?;
+                Ok((field, opts.unwrap_or_default()))
             })
             .collect::<anyhow::Result<Vec<_>>>()?;
-
-        if !insert && opts.is_none() && fields.iter().all(|(_, opts)| opts.is_none()) {
-            return Ok(());
-        }
 
         let opts = opts.unwrap_or_default();
         let message_full_name = ProtoPath::new(message.full_name());
         let rename_all = opts.rename_all.and_then(|v| tinc_pb::RenameAll::try_from(v).ok());
 
-        registry.register_message(ProtoMessageType {
+        let mut message_type = ProtoMessageType {
             full_name: message_full_name.clone(),
+            comments: self.location(message.path()).map(location_to_comments).unwrap_or_default(),
             package: ProtoPath::new(message.package_name()),
             fields: IndexMap::new(),
             options: ProtoMessageOptions { cel: opts.cel },
-        });
+        };
 
         for (field, opts) in fields {
-            let message = registry.get_message_mut(message.full_name()).unwrap();
-
-            let opts = opts.unwrap_or_default();
-
             // This means the field is nullable, and can be omitted from the payload.
             let proto3_optional = field.field_descriptor_proto().proto3_optional();
             let visibility = ProtoVisibility::from_pb(opts.visibility());
@@ -368,16 +391,17 @@ impl Extensions {
                     .rename
                     .or_else(|| rename_field(field.name(), rename_all?))
                     .unwrap_or_else(|| field.name().to_owned()),
-                cel_exprs: gather_cel_expressions(&self.ext_predefined, &field.options())
+                cel_exprs: gather_cel_expressions(&self.extensions.ext_predefined, &field.options())
                     .context("gathering cel expressions")?,
             };
 
             let Some(Some(oneof)) = (!proto3_optional).then(|| field.containing_oneof()) else {
-                message.fields.insert(
+                message_type.fields.insert(
                     field.name().to_owned(),
                     ProtoMessageField {
                         full_name: ProtoPath::new(field.full_name()),
                         message: message_full_name.clone(),
+                        comments: self.location(field.path()).map(location_to_comments).unwrap_or_default(),
                         ty: match field.kind() {
                             Kind::Message(message) if field.is_map() => ProtoType::Modified(ProtoModifiedValueType::Map(
                                 ProtoValueType::from_pb(&message.map_entry_key_field().kind()),
@@ -395,21 +419,11 @@ impl Extensions {
                         options: field_opts,
                     },
                 );
-
-                let ty = match &message.fields.get(field.name()).unwrap().ty {
-                    ProtoType::Value(value) => value.clone(),
-                    ProtoType::Modified(ProtoModifiedValueType::Map(_, value)) => value.clone(),
-                    ProtoType::Modified(ProtoModifiedValueType::Repeated(value)) => value.clone(),
-                    ProtoType::Modified(ProtoModifiedValueType::Optional(value)) => value.clone(),
-                    ProtoType::Modified(ProtoModifiedValueType::OneOf(_)) => unreachable!(),
-                };
-
-                self.process_subtypes(ty, pool, registry)?;
                 continue;
             };
 
-            let opts = self.ext_oneof.decode(&oneof)?.unwrap_or_default();
-            let mut entry = message.fields.entry(oneof.name().to_owned());
+            let opts = self.extensions.ext_oneof.decode(&oneof)?.unwrap_or_default();
+            let mut entry = message_type.fields.entry(oneof.name().to_owned());
             let oneof = match entry {
                 indexmap::map::Entry::Occupied(ref mut entry) => entry.get_mut(),
                 indexmap::map::Entry::Vacant(entry) => {
@@ -419,6 +433,7 @@ impl Extensions {
                     entry.insert(ProtoMessageField {
                         full_name: ProtoPath::new(oneof.full_name()),
                         message: message_full_name.clone(),
+                        comments: self.location(oneof.path()).map(location_to_comments).unwrap_or_default(),
                         options: ProtoFieldOptions {
                             flatten: opts.flatten(),
                             nullable: json_omittable.is_true(),
@@ -461,58 +476,44 @@ impl Extensions {
                     // instead of through the oneof.
                     full_name: ProtoPath::new(format!("{full_name}.{}", field.name())),
                     message: message_full_name.clone(),
+                    comments: self.location(field.path()).map(location_to_comments).unwrap_or_default(),
                     ty: field_ty.clone(),
                     options: field_opts,
                 },
             );
+        }
 
-            self.process_subtypes(field_ty, pool, registry)?;
+        registry.register_message(message_type);
+
+        for child in message.child_messages() {
+            if child.is_map_entry() {
+                continue;
+            }
+
+            self.process_message(&child, registry)?;
+        }
+
+        for child in message.child_enums() {
+            self.process_enum(&child, registry)?;
         }
 
         Ok(())
     }
 
-    fn process_subtypes(
-        &mut self,
-        ty: ProtoValueType,
-        pool: &DescriptorPool,
-        registry: &mut ProtoTypeRegistry,
-    ) -> anyhow::Result<()> {
-        match ty {
-            ProtoValueType::Enum(path) => self.process_enum(&pool.get_enum_by_name(&path).unwrap(), true, registry),
-            ProtoValueType::Message(path) => {
-                self.process_message(pool, &pool.get_message_by_name(&path).unwrap(), true, registry)
-            }
-            _ => Ok(()),
-        }
-    }
-
-    fn process_enum(
-        &mut self,
-        enum_: &EnumDescriptor,
-        insert: bool,
-        registry: &mut ProtoTypeRegistry,
-    ) -> anyhow::Result<()> {
-        if registry.get_enum(enum_.full_name()).is_some() {
-            return Ok(());
-        }
-
-        let opts = self.ext_enum.decode(enum_)?;
+    fn process_enum(&self, enum_: &EnumDescriptor, registry: &mut ProtoTypeRegistry) -> anyhow::Result<()> {
+        let opts = self.extensions.ext_enum.decode(enum_)?;
 
         let values = enum_
             .values()
             .map(|value| {
                 let opts = self
+                    .extensions
                     .ext_variant
                     .decode(&value)
                     .with_context(|| value.full_name().to_owned())?;
                 Ok((value, opts))
             })
             .collect::<anyhow::Result<Vec<_>>>()?;
-
-        if !insert && opts.is_none() && values.iter().all(|(_, opts)| opts.is_none()) {
-            return Ok(());
-        }
 
         let opts = opts.unwrap_or_default();
         let rename_all = opts
@@ -522,6 +523,7 @@ impl Extensions {
 
         let mut enum_opts = ProtoEnumType {
             full_name: ProtoPath::new(enum_.full_name()),
+            comments: self.location(enum_.path()).map(location_to_comments).unwrap_or_default(),
             package: ProtoPath::new(enum_.package_name()),
             variants: IndexMap::new(),
             options: ProtoEnumOptions {
@@ -539,6 +541,7 @@ impl Extensions {
             enum_opts.variants.insert(
                 variant.name().to_owned(),
                 ProtoEnumVariant {
+                    comments: self.location(variant.path()).map(location_to_comments).unwrap_or_default(),
                     // This is not the same as variant.full_name() because that strips the enum name.
                     full_name: ProtoPath::new(format!("{}.{}", enum_.full_name(), variant.name())),
                     value: variant.number(),
@@ -727,5 +730,13 @@ fn prost_to_cel(value: &prost_reflect::Value, kind: &Kind) -> tinc_cel::CelValue
                 })
                 .collect(),
         ),
+    }
+}
+
+fn location_to_comments(location: &Location) -> Comments {
+    Comments {
+        leading: location.leading_comments.as_deref().map(Into::into),
+        detached: location.leading_detached_comments.iter().map(|s| s.as_str().into()).collect(),
+        trailing: location.trailing_comments.as_deref().map(Into::into),
     }
 }

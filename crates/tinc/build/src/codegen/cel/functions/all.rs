@@ -149,7 +149,7 @@ mod tests {
 
     #[test]
     fn test_all_syntax() {
-        let registry = ProtoTypeRegistry::new();
+        let registry = ProtoTypeRegistry::new(crate::Mode::Prost, crate::extern_paths::ExternPaths::new(crate::Mode::Prost));
         let compiler = Compiler::new(&registry);
         insta::assert_debug_snapshot!(All.compile(CompilerCtx::new(compiler.child(), None, &[])), @r#"
         Err(
@@ -277,7 +277,7 @@ mod tests {
 
     #[test]
     fn test_all_proto_map() {
-        let registry = ProtoTypeRegistry::new();
+        let registry = ProtoTypeRegistry::new(crate::Mode::Prost, crate::extern_paths::ExternPaths::new(crate::Mode::Prost));
         let compiler = Compiler::new(&registry);
 
         let map = CompiledExpr::runtime(
@@ -342,7 +342,7 @@ mod tests {
 
     #[test]
     fn test_all_proto_repeated() {
-        let registry = ProtoTypeRegistry::new();
+        let registry = ProtoTypeRegistry::new(crate::Mode::Prost, crate::extern_paths::ExternPaths::new(crate::Mode::Prost));
         let compiler = Compiler::new(&registry);
 
         let repeated = CompiledExpr::runtime(
@@ -392,7 +392,7 @@ mod tests {
 
     #[test]
     fn test_all_const_needs_runtime() {
-        let registry = ProtoTypeRegistry::new();
+        let registry = ProtoTypeRegistry::new(crate::Mode::Prost, crate::extern_paths::ExternPaths::new(crate::Mode::Prost));
         let compiler = Compiler::new(&registry);
 
         let list = CompiledExpr::constant(CelValue::List([CelValue::Number(0.into())].into_iter().collect()));
@@ -436,7 +436,7 @@ mod tests {
     #[cfg(not(valgrind))]
     #[test]
     fn test_all_runtime() {
-        let registry = ProtoTypeRegistry::new();
+        let registry = ProtoTypeRegistry::new(crate::Mode::Prost, crate::extern_paths::ExternPaths::new(crate::Mode::Prost));
         let compiler = Compiler::new(&registry);
 
         let list = CompiledExpr::runtime(

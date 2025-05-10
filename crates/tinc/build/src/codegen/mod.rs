@@ -1,10 +1,10 @@
 use std::collections::BTreeMap;
 
 pub(crate) use config::AttributeConfig;
+pub(crate) use service::SchemaRegistry;
 use service::{ProcessedService, handle_service};
 
 use self::serde::{handle_enum, handle_message};
-use crate::Mode;
 use crate::types::{ProtoPath, ProtoTypeRegistry};
 
 pub(crate) mod cel;
@@ -41,19 +41,24 @@ impl std::ops::DerefMut for Package {
     }
 }
 
-pub(crate) fn generate_modules(mode: Mode, registry: &ProtoTypeRegistry) -> anyhow::Result<BTreeMap<ProtoPath, Package>> {
+pub(crate) fn generate_modules(
+    registry: &ProtoTypeRegistry,
+    schema: &mut SchemaRegistry,
+) -> anyhow::Result<BTreeMap<ProtoPath, Package>> {
     let mut modules = BTreeMap::new();
 
     registry
         .messages()
+        .filter(|message| !registry.has_extern(&message.full_name))
         .try_for_each(|message| handle_message(message, modules.entry(message.package.clone()).or_default(), registry))?;
 
     registry
         .enums()
-        .try_for_each(|enum_| handle_enum(enum_, modules.entry(enum_.package.clone()).or_default()))?;
+        .filter(|enum_| !registry.has_extern(&enum_.full_name))
+        .try_for_each(|enum_| handle_enum(enum_, modules.entry(enum_.package.clone()).or_default(), registry))?;
 
     registry.services().try_for_each(|service| {
-        handle_service(mode, service, modules.entry(service.package.clone()).or_default(), registry)
+        handle_service(service, modules.entry(service.package.clone()).or_default(), registry, schema)
     })?;
 
     Ok(modules)

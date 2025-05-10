@@ -8,7 +8,9 @@
 //! TODO: Crate Level Docs.
 
 use anyhow::Context;
+use extern_paths::ExternPaths;
 mod codegen;
+mod extern_paths;
 
 #[cfg(feature = "prost")]
 mod prost_explore;
@@ -36,6 +38,7 @@ pub struct Config {
     disable_tinc_include: bool,
     mode: Mode,
     paths: PathConfigs,
+    extern_paths: ExternPaths,
 }
 
 impl Config {
@@ -51,6 +54,7 @@ impl Config {
             disable_tinc_include: false,
             mode,
             paths: PathConfigs::default(),
+            extern_paths: ExternPaths::new(mode),
         }
     }
 
@@ -89,6 +93,7 @@ impl Config {
 
     #[cfg(feature = "prost")]
     fn compile_protos_prost(&mut self, protos: &[&str], includes: &[&str]) -> anyhow::Result<()> {
+        use codegen::SchemaRegistry;
         use codegen::prost_sanatize::to_snake;
         use codegen::utils::get_common_import_path;
         use prost_reflect::DescriptorPool;
@@ -111,13 +116,13 @@ impl Config {
 
         let mut includes = includes.to_vec();
 
-        if !self.disable_tinc_include {
-            let extra_includes = out_dir.join("tinc");
-            config.extern_path(".tinc", "::tinc::reexports::tinc_pb");
-            std::fs::create_dir_all(&extra_includes).context("failed to create tinc directory")?;
-            std::fs::write(extra_includes.join("annotations.proto"), tinc_pb::TINC_ANNOTATIONS)
+        {
+            let tinc_out = out_dir.join("tinc");
+            std::fs::create_dir_all(&tinc_out).context("failed to create tinc directory")?;
+            std::fs::write(tinc_out.join("annotations.proto"), tinc_pb::TINC_ANNOTATIONS)
                 .context("failed to write tinc_annotations.rs")?;
             includes.push(&out_dir_str);
+            config.protoc_arg(format!("--descriptor_set_in={}", tinc_pb::TINC_ANNOTATIONS_PB_PATH));
         }
 
         let fds = config.load_fds(protos, &includes).context("failed to generate tonic fds")?;
@@ -126,18 +131,36 @@ impl Config {
 
         let pool = DescriptorPool::decode(&mut fds_bytes.as_slice()).context("failed to decode tonic fds")?;
 
-        let mut extensions = prost_explore::Extensions::new(&pool);
+        let mut registry = ProtoTypeRegistry::new(self.mode, self.extern_paths.clone());
 
-        let mut registry = ProtoTypeRegistry::new();
+        config.compile_well_known_types();
+        for (proto, rust) in self.extern_paths.paths() {
+            let proto = if proto.starts_with('.') {
+                proto.to_string()
+            } else {
+                format!(".{proto}")
+            };
+            config.extern_path(proto, rust.to_token_stream().to_string());
+        }
 
-        extensions
-            .process(&pool, &mut registry)
+        prost_explore::Extensions::new(&pool)
+            .process(&mut registry)
             .context("failed to process extensions")?;
 
-        let mut packages = codegen::generate_modules(self.mode, &registry)?;
+        let mut schema = SchemaRegistry::default();
 
-        packages.values_mut().for_each(|package| {
+        let mut packages = codegen::generate_modules(&registry, &mut schema)?;
+
+        packages.iter_mut().for_each(|(path, package)| {
+            if self.extern_paths.contains(path) {
+                return;
+            }
+
             package.enum_configs().for_each(|(path, enum_config)| {
+                if self.extern_paths.contains(path) {
+                    return;
+                }
+
                 enum_config.attributes().for_each(|attribute| {
                     config.enum_attribute(path, attribute.to_token_stream().to_string());
                 });
@@ -150,6 +173,10 @@ impl Config {
             });
 
             package.message_configs().for_each(|(path, message_config)| {
+                if self.extern_paths.contains(path) {
+                    return;
+                }
+
                 message_config.attributes().for_each(|attribute| {
                     config.message_attribute(path, attribute.to_token_stream().to_string());
                 });
@@ -180,53 +207,58 @@ impl Config {
                 builder.emit_package(true).build_transport(true);
 
                 let make_service = |is_client: bool| {
+                    let mut builder = tonic_build::manual::Service::builder()
+                        .name(service.name())
+                        .package(&service.package);
+
+                    if !service.comments.is_empty() {
+                        builder = builder.comment(service.comments.to_string());
+                    }
+
                     service
                         .methods
                         .iter()
-                        .fold(
-                            tonic_build::manual::Service::builder()
-                                .name(service.name())
-                                .package(&service.package),
-                            |service_builder, (name, method)| {
-                                let codec_path = if is_client {
-                                    quote!(::tinc::reexports::tonic::codec::ProstCodec)
-                                } else {
-                                    let path = get_common_import_path(&service.full_name, &method.codec_path);
-                                    quote!(#path::<::tinc::reexports::tonic::codec::ProstCodec<_, _>>)
-                                };
+                        .fold(builder, |service_builder, (name, method)| {
+                            let codec_path = if is_client {
+                                quote!(::tinc::reexports::tonic::codec::ProstCodec)
+                            } else {
+                                let path = get_common_import_path(&service.full_name, &method.codec_path);
+                                quote!(#path::<::tinc::reexports::tonic::codec::ProstCodec<_, _>>)
+                            };
 
-                                let mut builder = tonic_build::manual::Method::builder()
-                                    .input_type(
-                                        method
-                                            .input
-                                            .value_type()
-                                            .rust_path(&service.full_name, self.mode)
-                                            .to_token_stream()
-                                            .to_string(),
-                                    )
-                                    .output_type(
-                                        method
-                                            .output
-                                            .value_type()
-                                            .rust_path(&service.full_name, self.mode)
-                                            .to_token_stream()
-                                            .to_string(),
-                                    )
-                                    .codec_path(codec_path.to_string())
-                                    .name(to_snake(name))
-                                    .route_name(name);
+                            let mut builder = tonic_build::manual::Method::builder()
+                                .input_type(
+                                    registry
+                                        .resolve_rust_path(&service.full_name, method.input.value_type().proto_path())
+                                        .unwrap()
+                                        .to_token_stream()
+                                        .to_string(),
+                                )
+                                .output_type(
+                                    registry
+                                        .resolve_rust_path(&service.full_name, method.output.value_type().proto_path())
+                                        .unwrap()
+                                        .to_token_stream()
+                                        .to_string(),
+                                )
+                                .codec_path(codec_path.to_string())
+                                .name(to_snake(name))
+                                .route_name(name);
 
-                                if method.input.is_stream() {
-                                    builder = builder.client_streaming()
-                                }
+                            if method.input.is_stream() {
+                                builder = builder.client_streaming()
+                            }
 
-                                if method.output.is_stream() {
-                                    builder = builder.server_streaming();
-                                }
+                            if method.output.is_stream() {
+                                builder = builder.server_streaming();
+                            }
 
-                                service_builder.method(builder.build())
-                            },
-                        )
+                            if !method.comments.is_empty() {
+                                builder = builder.comment(method.comments.to_string());
+                            }
+
+                            service_builder.method(builder.build())
+                        })
                         .build()
                 };
 
@@ -253,6 +285,10 @@ impl Config {
         config.compile_fds(fds).context("prost compile")?;
 
         for (package, module) in packages {
+            if self.extern_paths.contains(&package) {
+                continue;
+            };
+
             let path = out_dir.join(format!("{package}.rs"));
             write_module(&path, module.extra_items).with_context(|| package.to_owned())?;
         }

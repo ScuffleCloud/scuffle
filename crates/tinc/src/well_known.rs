@@ -3,6 +3,8 @@
 /// Wellknown types for Prost
 #[cfg(feature = "prost")]
 pub mod prost {
+    pub use prost_types::*;
+
     /// Protobuf `google.protobuf.Timestamp`
     pub type Timestamp = prost_types::Timestamp;
     /// Protobuf `google.protobuf.Duration`
@@ -32,7 +34,7 @@ pub mod prost {
     /// Protobuf `google.protobuf.DoubleValue`
     pub type DoubleValue = f64;
     /// Protobuf `google.protobuf.StringValue`
-    pub type String = std::string::String;
+    pub type StringValue = std::string::String;
     /// Protobuf `google.protobuf.BytesValue`
-    pub type Bytes = bytes::Bytes;
+    pub type BytesValue = bytes::Bytes;
 }

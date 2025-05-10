@@ -59,7 +59,7 @@ mod tests {
 
     #[test]
     fn test_is_ipv4_syntax() {
-        let registry = ProtoTypeRegistry::new();
+        let registry = ProtoTypeRegistry::new(crate::Mode::Prost, crate::extern_paths::ExternPaths::new(crate::Mode::Prost));
         let compiler = Compiler::new(&registry);
         insta::assert_debug_snapshot!(IsIpv4.compile(CompilerCtx::new(compiler.child(), None, &[])), @r#"
         Err(
@@ -108,7 +108,7 @@ mod tests {
 
     #[test]
     fn test_is_ipv4_runtime() {
-        let registry = ProtoTypeRegistry::new();
+        let registry = ProtoTypeRegistry::new(crate::Mode::Prost, crate::extern_paths::ExternPaths::new(crate::Mode::Prost));
         let compiler = Compiler::new(&registry);
 
         let string_value =

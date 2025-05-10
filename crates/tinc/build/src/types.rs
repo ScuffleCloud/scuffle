@@ -1,14 +1,13 @@
 use std::collections::BTreeMap;
+use std::fmt::Write;
 use std::sync::Arc;
 
 use indexmap::IndexMap;
-#[cfg(feature = "prost")]
-use syn::parse_quote;
 use tinc_pb::http_endpoint_options;
 
-use crate::Mode;
-use crate::codegen::cel::CelExpressions;
+use crate::codegen::cel::{CelExpression, CelExpressions};
 use crate::codegen::utils::{field_ident_from_str, get_common_import_path, type_ident_from_str};
+use crate::{ExternPaths, Mode};
 
 #[derive(Debug, Clone, PartialEq)]
 pub(crate) enum ProtoType {
@@ -89,56 +88,25 @@ impl ProtoValueType {
         }
     }
 
-    pub(crate) fn rust_path(&self, package: &str, mode: Mode) -> syn::Path {
-        match (self, mode) {
-            (ProtoValueType::Enum(name), _) => get_common_import_path(package, name),
-            (ProtoValueType::Message(name), _) => get_common_import_path(package, name),
-            #[cfg(feature = "prost")]
-            (ProtoValueType::WellKnown(ProtoWellKnownType::Timestamp), Mode::Prost) => {
-                parse_quote!(::tinc::well_known::prost::Timestamp)
-            }
-            #[cfg(feature = "prost")]
-            (ProtoValueType::WellKnown(ProtoWellKnownType::Duration), Mode::Prost) => {
-                parse_quote!(::tinc::well_known::prost::Duration)
-            }
-            #[cfg(feature = "prost")]
-            (ProtoValueType::WellKnown(ProtoWellKnownType::Struct), Mode::Prost) => {
-                parse_quote!(::tinc::well_known::prost::Struct)
-            }
-            #[cfg(feature = "prost")]
-            (ProtoValueType::WellKnown(ProtoWellKnownType::Value), Mode::Prost) => {
-                parse_quote!(::tinc::well_known::prost::Value)
-            }
-            #[cfg(feature = "prost")]
-            (ProtoValueType::WellKnown(ProtoWellKnownType::Empty), Mode::Prost) => {
-                parse_quote!(::tinc::well_known::prost::Empty)
-            }
-            #[cfg(feature = "prost")]
-            (ProtoValueType::WellKnown(ProtoWellKnownType::ListValue), Mode::Prost) => {
-                parse_quote!(::tinc::well_known::prost::List)
-            }
-            #[cfg(feature = "prost")]
-            (ProtoValueType::WellKnown(ProtoWellKnownType::Any), Mode::Prost) => {
-                parse_quote!(::tinc::well_known::prost::Any)
-            }
-            #[cfg(feature = "prost")]
-            (ProtoValueType::Bool, Mode::Prost) => parse_quote!(::tinc::well_known::prost::BoolValue),
-            #[cfg(feature = "prost")]
-            (ProtoValueType::Int32, Mode::Prost) => parse_quote!(::tinc::well_known::prost::Int32Value),
-            #[cfg(feature = "prost")]
-            (ProtoValueType::Int64, Mode::Prost) => parse_quote!(::tinc::well_known::prost::Int64Value),
-            #[cfg(feature = "prost")]
-            (ProtoValueType::UInt32, Mode::Prost) => parse_quote!(::tinc::well_known::prost::UInt32Value),
-            #[cfg(feature = "prost")]
-            (ProtoValueType::UInt64, Mode::Prost) => parse_quote!(::tinc::well_known::prost::UInt64Value),
-            #[cfg(feature = "prost")]
-            (ProtoValueType::Float, Mode::Prost) => parse_quote!(::tinc::well_known::prost::FloatValue),
-            #[cfg(feature = "prost")]
-            (ProtoValueType::Double, Mode::Prost) => parse_quote!(::tinc::well_known::prost::DoubleValue),
-            #[cfg(feature = "prost")]
-            (ProtoValueType::String, Mode::Prost) => parse_quote!(::tinc::well_known::prost::String),
-            #[cfg(feature = "prost")]
-            (ProtoValueType::Bytes, Mode::Prost) => parse_quote!(::tinc::well_known::prost::Bytes),
+    pub(crate) fn proto_path(&self) -> &str {
+        match self {
+            ProtoValueType::WellKnown(ProtoWellKnownType::Timestamp) => "google.protobuf.Timestamp",
+            ProtoValueType::WellKnown(ProtoWellKnownType::Duration) => "google.protobuf.Duration",
+            ProtoValueType::WellKnown(ProtoWellKnownType::Struct) => "google.protobuf.Struct",
+            ProtoValueType::WellKnown(ProtoWellKnownType::Value) => "google.protobuf.Value",
+            ProtoValueType::WellKnown(ProtoWellKnownType::Empty) => "google.protobuf.Empty",
+            ProtoValueType::WellKnown(ProtoWellKnownType::ListValue) => "google.protobuf.ListValue",
+            ProtoValueType::WellKnown(ProtoWellKnownType::Any) => "google.protobuf.Any",
+            ProtoValueType::Bool => "google.protobuf.BoolValue",
+            ProtoValueType::Int32 => "google.protobuf.Int32Value",
+            ProtoValueType::Int64 => "google.protobuf.Int64Value",
+            ProtoValueType::UInt32 => "google.protobuf.UInt32Value",
+            ProtoValueType::UInt64 => "google.protobuf.UInt64Value",
+            ProtoValueType::Float => "google.protobuf.FloatValue",
+            ProtoValueType::Double => "google.protobuf.DoubleValue",
+            ProtoValueType::String => "google.protobuf.StringValue",
+            ProtoValueType::Bytes => "google.protobuf.BytesValue",
+            ProtoValueType::Enum(path) | ProtoValueType::Message(path) => path.as_ref(),
         }
     }
 }
@@ -147,12 +115,13 @@ impl ProtoValueType {
 pub(crate) struct ProtoEnumType {
     pub package: ProtoPath,
     pub full_name: ProtoPath,
+    pub comments: Comments,
     pub options: ProtoEnumOptions,
     pub variants: IndexMap<String, ProtoEnumVariant>,
 }
 
 impl ProtoEnumType {
-    pub(crate) fn rust_path(&self, package: &str) -> syn::Path {
+    fn rust_path(&self, package: &str) -> syn::Path {
         get_common_import_path(package, &self.full_name)
     }
 }
@@ -165,6 +134,7 @@ pub(crate) struct ProtoEnumOptions {
 #[derive(Debug, Clone, PartialEq)]
 pub(crate) struct ProtoEnumVariant {
     pub full_name: ProtoPath,
+    pub comments: Comments,
     pub options: ProtoEnumVariantOptions,
     pub rust_ident: syn::Ident,
     pub value: i32,
@@ -188,12 +158,13 @@ pub(crate) enum ProtoModifiedValueType {
 pub(crate) struct ProtoMessageType {
     pub package: ProtoPath,
     pub full_name: ProtoPath,
+    pub comments: Comments,
     pub options: ProtoMessageOptions,
     pub fields: IndexMap<String, ProtoMessageField>,
 }
 
 impl ProtoMessageType {
-    pub(crate) fn rust_path(&self, package: &str) -> syn::Path {
+    fn rust_path(&self, package: &str) -> syn::Path {
         get_common_import_path(package, &self.full_name)
     }
 }
@@ -208,6 +179,7 @@ pub(crate) struct ProtoMessageField {
     pub full_name: ProtoPath,
     pub message: ProtoPath,
     pub ty: ProtoType,
+    pub comments: Comments,
     pub options: ProtoFieldOptions,
 }
 
@@ -305,6 +277,7 @@ pub(crate) struct ProtoOneOfOptions {
 pub(crate) struct ProtoOneOfField {
     pub full_name: ProtoPath,
     pub message: ProtoPath,
+    pub comments: Comments,
     pub ty: ProtoValueType,
     pub options: ProtoFieldOptions,
 }
@@ -374,6 +347,7 @@ impl std::fmt::Display for ProtoPath {
 pub(crate) struct ProtoService {
     pub full_name: ProtoPath,
     pub package: ProtoPath,
+    pub comments: Comments,
     pub options: ProtoServiceOptions,
     pub methods: IndexMap<String, ProtoServiceMethod>,
 }
@@ -406,10 +380,51 @@ impl ProtoServiceMethodIo {
 pub(crate) struct ProtoServiceMethod {
     pub full_name: ProtoPath,
     pub service: ProtoPath,
+    pub comments: Comments,
     pub input: ProtoServiceMethodIo,
     pub output: ProtoServiceMethodIo,
     pub endpoints: Vec<ProtoServiceMethodEndpoint>,
-    pub cel: Vec<tinc_pb::CelExpression>,
+    pub cel: Vec<CelExpression>,
+}
+
+#[derive(Debug, Clone, PartialEq, Default)]
+pub(crate) struct Comments {
+    pub leading: Option<Arc<str>>,
+    pub detached: Arc<[Arc<str>]>,
+    pub trailing: Option<Arc<str>>,
+}
+
+impl Comments {
+    pub(crate) fn is_empty(&self) -> bool {
+        self.leading.is_none() && self.detached.is_empty() && self.trailing.is_none()
+    }
+}
+
+impl std::fmt::Display for Comments {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        let mut newline = false;
+        if let Some(leading) = self.leading.as_ref() {
+            leading.trim().fmt(f)?;
+            newline = true;
+        }
+
+        for detached in self.detached.iter() {
+            if newline {
+                f.write_char('\n')?;
+            }
+            newline = true;
+            detached.trim().fmt(f)?;
+        }
+
+        if let Some(detached) = self.trailing.as_ref() {
+            if newline {
+                f.write_char('\n')?;
+            }
+            detached.trim().fmt(f)?;
+        }
+
+        Ok(())
+    }
 }
 
 #[derive(Debug, Clone, PartialEq)]
@@ -424,20 +439,18 @@ pub(crate) struct ProtoTypeRegistry {
     messages: BTreeMap<ProtoPath, ProtoMessageType>,
     enums: BTreeMap<ProtoPath, ProtoEnumType>,
     services: BTreeMap<ProtoPath, ProtoService>,
-}
-
-impl Default for ProtoTypeRegistry {
-    fn default() -> Self {
-        Self::new()
-    }
+    extern_paths: ExternPaths,
+    _mode: Mode,
 }
 
 impl ProtoTypeRegistry {
-    pub(crate) fn new() -> Self {
+    pub(crate) fn new(mode: Mode, extern_paths: ExternPaths) -> Self {
         Self {
             messages: BTreeMap::new(),
             enums: BTreeMap::new(),
             services: BTreeMap::new(),
+            extern_paths,
+            _mode: mode,
         }
     }
 
@@ -455,10 +468,6 @@ impl ProtoTypeRegistry {
 
     pub(crate) fn get_message(&self, full_name: &str) -> Option<&ProtoMessageType> {
         self.messages.get(full_name)
-    }
-
-    pub(crate) fn get_message_mut(&mut self, full_name: &str) -> Option<&mut ProtoMessageType> {
-        self.messages.get_mut(full_name)
     }
 
     pub(crate) fn get_enum(&self, full_name: &str) -> Option<&ProtoEnumType> {
@@ -479,5 +488,16 @@ impl ProtoTypeRegistry {
 
     pub(crate) fn services(&self) -> impl Iterator<Item = &ProtoService> {
         self.services.values()
+    }
+
+    pub(crate) fn resolve_rust_path(&self, package: &str, path: &str) -> Option<syn::Path> {
+        self.extern_paths
+            .resolve(path)
+            .or_else(|| Some(self.enums.get(path)?.rust_path(package)))
+            .or_else(|| Some(self.messages.get(path)?.rust_path(package)))
+    }
+
+    pub(crate) fn has_extern(&self, path: &str) -> bool {
+        self.extern_paths.contains(path)
     }
 }

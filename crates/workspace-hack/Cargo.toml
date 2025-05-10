@@ -61,7 +61,7 @@ regex-syntax = { version = "0.8" }
 reqwest = { version = "0.12", default-features = false, features = ["http2", "http3", "rustls-tls"] }
 rusty_ffmpeg = { version = "0.16", default-features = false, features = ["link_system_ffmpeg", "link_vcpkg_ffmpeg"] }
 serde = { version = "1", features = ["alloc", "derive"] }
-serde_json = { version = "1", features = ["alloc", "raw_value", "unbounded_depth"] }
+serde_json = { version = "1", features = ["raw_value", "unbounded_depth"] }
 smallvec = { version = "1", default-features = false, features = ["const_new"] }
 syn = { version = "2", features = ["extra-traits", "fold", "full", "visit", "visit-mut"] }
 sync_wrapper = { version = "1", default-features = false, features = ["futures"] }
@@ -71,7 +71,6 @@ tokio-stream = { version = "0.1", features = ["net"] }
 tokio-util = { version = "0.7", features = ["codec", "io"] }
 toml = { version = "0.8", features = ["preserve_order"] }
 toml_edit = { version = "0.22", default-features = false, features = ["display", "parse", "serde"] }
-tonic = { version = "0.13" }
 tower = { version = "0.5", default-features = false, features = ["balance", "buffer", "limit", "log"] }
 tracing = { version = "0.1", features = ["log"] }
 tracing-core = { version = "0.1" }
@@ -126,7 +125,7 @@ regex-syntax = { version = "0.8" }
 reqwest = { version = "0.12", default-features = false, features = ["http2", "http3", "rustls-tls"] }
 rusty_ffmpeg = { version = "0.16", default-features = false, features = ["link_system_ffmpeg", "link_vcpkg_ffmpeg"] }
 serde = { version = "1", features = ["alloc", "derive"] }
-serde_json = { version = "1", features = ["alloc", "raw_value", "unbounded_depth"] }
+serde_json = { version = "1", features = ["raw_value", "unbounded_depth"] }
 smallvec = { version = "1", default-features = false, features = ["const_new"] }
 syn = { version = "2", features = ["extra-traits", "fold", "full", "visit", "visit-mut"] }
 sync_wrapper = { version = "1", default-features = false, features = ["futures"] }
@@ -136,7 +135,6 @@ tokio-stream = { version = "0.1", features = ["net"] }
 tokio-util = { version = "0.7", features = ["codec", "io"] }
 toml = { version = "0.8", features = ["preserve_order"] }
 toml_edit = { version = "0.22", default-features = false, features = ["display", "parse", "serde"] }
-tonic = { version = "0.13" }
 tower = { version = "0.5", default-features = false, features = ["balance", "buffer", "limit", "log"] }
 tracing = { version = "0.1", features = ["log"] }
 tracing-core = { version = "0.1" }

@@ -49,16 +49,6 @@
         })),
     );
 
-    const labelOption = {
-        show: true,
-        rotate: 90,
-        formatter: '{c}  {name|{a}}',
-        fontSize: 16,
-        rich: {
-            name: {},
-        },
-    };
-
     const option = {
         title: {
             text: 'Rent Periods',
@@ -81,35 +71,65 @@
         },
         xAxis: {
             type: 'value',
-            max: 10,
+            max: 11,
         },
         yAxis: {
             type: 'category',
             data: ['Rent'],
         },
+        dataZoom: [
+            {
+                type: 'inside',
+                // realtime: true,
+                xAxisIndex: [0, 1],
+                start: 10,
+                end: 90,
+                filterMode: 'empty',
+            },
+            {
+                show: true,
+                xAxisIndex: [0, 1],
+                type: 'slider',
+                // realtime: true,
+                top: 10,
+                start: 10,
+                end: 90,
+                filterMode: 'empty',
+            },
+        ],
         series: [
             {
                 type: 'custom',
+                // Maybe change these latter but otherwise renderItem isn't called on elements
+                // whose x values have exited the view
                 renderItem: (
                     _params: CustomSeriesRenderItemParams,
                     api: CustomSeriesRenderItemAPI,
                 ): CustomSeriesRenderItemReturn => {
+                    console.log('renderItem called');
+                    console.log('test logging2');
+                    console.log(api.value(0), api.value(1));
                     if (!api.size || !api.coord) return null;
 
-                    const start = api.value(0);
-                    const end = api.value(1);
+                    const start = Number(api.value(0));
+                    const end = Number(api.value(1));
+
                     const height = 0.4;
 
                     // Get the coordinate system
                     const categoryIndex = 0; // Since we only have one category 'Rent'
+
                     const points = [
                         api.coord([start, categoryIndex]),
                         api.coord([end, categoryIndex]),
                     ];
-
+                    // This number is arbirtary. Might need to adjust later
+                    const viewWidth = api.getWidth() - 90;
                     const size = api.size([0, 1]);
                     const categoryHeight = Array.isArray(size) ? size[1] : size;
-                    const width = points[1][0] - points[0][0];
+
+                    // Width can't be greater than viewWidth of chart
+                    const width = Math.min(points[1][0] - points[0][0], viewWidth - points[0][0]);
 
                     const rectShape = {
                         x: points[0][0],

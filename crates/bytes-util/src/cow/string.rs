@@ -1,8 +1,11 @@
 use std::borrow::Cow;
 use std::fmt::Display;
 use std::hash::Hash;
+use std::str::Utf8Error;
 
 use bytestring::ByteString;
+
+use crate::BytesCow;
 
 #[cfg(feature = "serde")]
 pub(crate) mod serde;
@@ -162,6 +165,15 @@ impl From<String> for StringCow<'_> {
 impl From<ByteString> for StringCow<'_> {
     fn from(bytes: ByteString) -> Self {
         StringCow::from_bytes(bytes)
+    }
+}
+
+impl<'a> TryFrom<BytesCow<'a>> for StringCow<'a> {
+    type Error = Utf8Error;
+
+    fn try_from(value: BytesCow<'a>) -> Result<Self, Self::Error> {
+        let bytes = ByteString::try_from(value.into_bytes())?;
+        Ok(Self::from_bytes(bytes))
     }
 }
 

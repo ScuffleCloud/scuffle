@@ -95,11 +95,6 @@
         );
 
         if (!rectShape) return null;
-        // TODO: Make this dynamic
-        const text = 'test 123';
-        // Conservatively estimate minimum width needed (7px per character + 8px padding)
-        const minWidthNeeded = text.length * 7 + 8;
-        const showText = rectShape.width >= minWidthNeeded;
 
         return {
             type: 'rect',
@@ -109,24 +104,11 @@
                 ...api.style(),
                 stroke: '#2b7fa4',
                 lineWidth: 1,
-                text: showText ? 'test 123' : '',
-                font: '12px sans-serif',
-                textFill: '#003043',
-                textPosition: [0, '50%'],
-                textAlign: 'left',
-                textVerticalAlign: 'middle',
-                textPadding: [0, 4, 0, 4],
-                textWidth: rectShape.width - 8,
-                overflow: 'truncate',
-                ellipsis: '...',
             },
         };
     };
 
     const option = {
-        title: {
-            text: 'Rent Periods',
-        },
         tooltip: {
             formatter: function (params: any) {
                 return params.marker + params.name + ': ' + params.value[3] + ' ms';
@@ -139,7 +121,7 @@
         },
         xAxis: {
             min: startTime,
-            scale: true,
+            position: 'top',
             axisLabel: {
                 formatter: function (val: number) {
                     return Math.max(0, val - startTime) + ' ms';
@@ -154,8 +136,7 @@
                 type: 'slider',
                 filterMode: 'weakFilter',
                 showDataShadow: false,
-                top: 200,
-                labelFormatter: '',
+                top: 5,
             },
             {
                 type: 'inside',
@@ -165,7 +146,7 @@
         series: [
             {
                 type: 'custom',
-                renderItem: renderItem,
+                renderItem,
                 itemStyle: {
                     opacity: 0.8,
                 },
@@ -173,7 +154,7 @@
                     x: [1, 2],
                     y: 0,
                 },
-                data: data,
+                data,
             },
         ],
     };

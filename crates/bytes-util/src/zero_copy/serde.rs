@@ -5,7 +5,7 @@ use std::io;
 use byteorder::ReadBytesExt;
 
 use super::ZeroCopyReader;
-use crate::BytesCow;
+use crate::{BytesCow, StringCow};
 
 pub trait Container {
     type Item;
@@ -88,6 +88,12 @@ impl<'a> Deserialize<'a> for u8 {
     }
 }
 
+impl<'a> Deserialize<'a> for char {
+    fn deserialize<R: ZeroCopyReader<'a>>(mut reader: R) -> io::Result<Self> {
+        reader.as_std().read_u8().map(|b| b as char)
+    }
+}
+
 impl<'a> Deserialize<'a> for u16 {
     fn deserialize<R: ZeroCopyReader<'a>>(mut reader: R) -> io::Result<Self> {
         reader.as_std().read_u16::<byteorder::BigEndian>()
@@ -133,6 +139,16 @@ impl<'a> Deserialize<'a> for BytesCow<'a> {
         R: ZeroCopyReader<'a>,
     {
         reader.try_read_to_end()
+    }
+}
+
+impl<'a> Deserialize<'a> for StringCow<'a> {
+    fn deserialize<R>(mut reader: R) -> io::Result<Self>
+    where
+        R: ZeroCopyReader<'a>,
+    {
+        let bytes = reader.try_read_to_end()?;
+        Self::try_from(bytes).map_err(|_| io::Error::new(io::ErrorKind::InvalidData, "Invalid UTF-8"))
     }
 }
 

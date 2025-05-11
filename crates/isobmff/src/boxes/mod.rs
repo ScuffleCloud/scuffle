@@ -78,10 +78,10 @@ pub use entity_grouping::*;
 mod compressed_boxes;
 pub use compressed_boxes::*;
 
-// 9.1
-mod rtp_and_srtp_hint;
-pub use rtp_and_srtp_hint::*;
-
 // 12.1
 mod video_media;
 pub use video_media::*;
+
+// 12.4
+mod hint_media;
+pub use hint_media::*;

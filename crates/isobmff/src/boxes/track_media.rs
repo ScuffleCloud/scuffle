@@ -1,5 +1,6 @@
 //! Track media structure boxes defined in ISO/IEC 14496-12 - 8.4
 
+use nutype_enum::nutype_enum;
 use scuffle_bytes_util::zero_copy::{Deserialize, DeserializeSeed};
 
 use super::{DataInformationBox, SampleTableBox};
@@ -112,7 +113,7 @@ impl MediaHeaderBox {
     }
 }
 
-nutype_enum::nutype_enum! {
+nutype_enum! {
     pub enum HandlerType([u8; 4]) {
         Null = *b"null",
         Video = *b"vide",

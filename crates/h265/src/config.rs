@@ -3,8 +3,8 @@ use std::io::{
 };
 
 use byteorder::{BigEndian, ReadBytesExt, WriteBytesExt};
-use bytes::Bytes;
-use scuffle_bytes_util::{BitReader, BitWriter};
+use scuffle_bytes_util::zero_copy::Deserialize;
+use scuffle_bytes_util::{BitReader, BitWriter, BytesCow};
 
 use crate::{ConstantFrameRate, NALUnitType, NumTemporalLayers, ParallelismType, ProfileCompatibilityFlags};
 
@@ -12,7 +12,7 @@ use crate::{ConstantFrameRate, NALUnitType, NumTemporalLayers, ParallelismType, 
 ///
 /// ISO/IEC 14496-15 - 8.3.2.1
 #[derive(Debug, Clone, PartialEq)]
-pub struct HEVCDecoderConfigurationRecord {
+pub struct HEVCDecoderConfigurationRecord<'a> {
     /// Matches the [`general_profile_space`](crate::Profile::profile_space) field as defined in ISO/IEC 23008-2.
     pub general_profile_space: u8,
     /// Matches the [`general_tier_flag`](crate::Profile::tier_flag) field as defined in ISO/IEC 23008-2.
@@ -61,14 +61,14 @@ pub struct HEVCDecoderConfigurationRecord {
     /// corresponding to a length encoded with 1, 2, or 4 bytes, respectively.
     pub length_size_minus_one: u8,
     /// [`NaluArray`]s in that are part of this configuration record.
-    pub arrays: Vec<NaluArray>,
+    pub arrays: Vec<NaluArray<'a>>,
 }
 
 /// Nalu Array Structure
 ///
 /// ISO/IEC 14496-15 - 8.3.2.1
 #[derive(Debug, Clone, PartialEq)]
-pub struct NaluArray {
+pub struct NaluArray<'a> {
     /// When equal to `true` indicates that all NAL units of the given type are in the
     /// following array and none are in the stream; when equal to `false` indicates that additional NAL units
     /// of the indicated type may be in the stream; the default and permitted values are constrained by
@@ -82,15 +82,15 @@ pub struct NaluArray {
     ///
     /// You might want to use [`SpsNALUnit::parse`](crate::SpsNALUnit::parse)
     /// to parse an SPS NAL unit.
-    pub nalus: Vec<Bytes>,
+    pub nalus: Vec<BytesCow<'a>>,
 }
 
-impl HEVCDecoderConfigurationRecord {
-    /// Demuxes an [`HEVCDecoderConfigurationRecord`] from a byte stream.
-    ///
-    /// Returns a demuxed [`HEVCDecoderConfigurationRecord`].
-    pub fn demux(data: impl io::Read) -> io::Result<Self> {
-        let mut bit_reader = BitReader::new(data);
+impl<'a> Deserialize<'a> for HEVCDecoderConfigurationRecord<'a> {
+    fn deserialize<R>(mut reader: R) -> io::Result<Self>
+    where
+        R: scuffle_bytes_util::zero_copy::ZeroCopyReader<'a>,
+    {
+        let mut bit_reader = BitReader::new(reader.as_std());
 
         // This demuxer only supports version 1
         let configuration_version = bit_reader.read_u8()?;
@@ -189,7 +189,9 @@ impl HEVCDecoderConfigurationRecord {
             arrays,
         })
     }
+}
 
+impl HEVCDecoderConfigurationRecord<'_> {
     /// Returns the total byte size of the [`HEVCDecoderConfigurationRecord`].
     pub fn size(&self) -> u64 {
         1 // configuration_version
@@ -262,7 +264,7 @@ impl HEVCDecoderConfigurationRecord {
 
             for nalu in &array.nalus {
                 bit_writer.write_u16::<BigEndian>(nalu.len() as u16)?;
-                bit_writer.write_all(nalu)?;
+                bit_writer.write_all(nalu.as_bytes())?;
             }
         }
 
@@ -277,7 +279,7 @@ impl HEVCDecoderConfigurationRecord {
 mod tests {
     use std::io;
 
-    use bytes::Bytes;
+    use scuffle_bytes_util::zero_copy::{Deserialize, Slice};
 
     use crate::{
         ConstantFrameRate, HEVCDecoderConfigurationRecord, NALUnitType, NumTemporalLayers, ParallelismType,
@@ -287,9 +289,9 @@ mod tests {
     #[test]
     fn test_config_demux() {
         // h265 config
-        let data = Bytes::from(b"\x01\x01@\0\0\0\x90\0\0\0\0\0\x99\xf0\0\xfc\xfd\xf8\xf8\0\0\x0f\x03 \0\x01\0\x18@\x01\x0c\x01\xff\xff\x01@\0\0\x03\0\x90\0\0\x03\0\0\x03\0\x99\x95@\x90!\0\x01\0=B\x01\x01\x01@\0\0\x03\0\x90\0\0\x03\0\0\x03\0\x99\xa0\x01@ \x05\xa1e\x95R\x90\x84d_\xf8\xc0Z\x80\x80\x80\x82\0\0\x03\0\x02\0\0\x03\x01 \xc0\x0b\xbc\xa2\0\x02bX\0\x011-\x08\"\0\x01\0\x07D\x01\xc0\x93|\x0c\xc9".to_vec());
+        let data = b"\x01\x01@\0\0\0\x90\0\0\0\0\0\x99\xf0\0\xfc\xfd\xf8\xf8\0\0\x0f\x03 \0\x01\0\x18@\x01\x0c\x01\xff\xff\x01@\0\0\x03\0\x90\0\0\x03\0\0\x03\0\x99\x95@\x90!\0\x01\0=B\x01\x01\x01@\0\0\x03\0\x90\0\0\x03\0\0\x03\0\x99\xa0\x01@ \x05\xa1e\x95R\x90\x84d_\xf8\xc0Z\x80\x80\x80\x82\0\0\x03\0\x02\0\0\x03\x01 \xc0\x0b\xbc\xa2\0\x02bX\0\x011-\x08\"\0\x01\0\x07D\x01\xc0\x93|\x0c\xc9";
 
-        let config = HEVCDecoderConfigurationRecord::demux(&mut io::Cursor::new(data)).unwrap();
+        let config = HEVCDecoderConfigurationRecord::deserialize(Slice::from(&data[..])).unwrap();
 
         assert_eq!(config.general_profile_space, 0);
         assert!(!config.general_tier_flag);
@@ -332,9 +334,9 @@ mod tests {
 
     #[test]
     fn test_config_mux() {
-        let data = Bytes::from(b"\x01\x01@\0\0\0\x90\0\0\0\0\0\x99\xf0\0\xfc\xfd\xf8\xf8\0\0\x0f\x03 \0\x01\0\x18@\x01\x0c\x01\xff\xff\x01@\0\0\x03\0\x90\0\0\x03\0\0\x03\0\x99\x95@\x90!\0\x01\0=B\x01\x01\x01@\0\0\x03\0\x90\0\0\x03\0\0\x03\0\x99\xa0\x01@ \x05\xa1e\x95R\x90\x84d_\xf8\xc0Z\x80\x80\x80\x82\0\0\x03\0\x02\0\0\x03\x01 \xc0\x0b\xbc\xa2\0\x02bX\0\x011-\x08\"\0\x01\0\x07D\x01\xc0\x93|\x0c\xc9".to_vec());
+        let data = b"\x01\x01@\0\0\0\x90\0\0\0\0\0\x99\xf0\0\xfc\xfd\xf8\xf8\0\0\x0f\x03 \0\x01\0\x18@\x01\x0c\x01\xff\xff\x01@\0\0\x03\0\x90\0\0\x03\0\0\x03\0\x99\x95@\x90!\0\x01\0=B\x01\x01\x01@\0\0\x03\0\x90\0\0\x03\0\0\x03\0\x99\xa0\x01@ \x05\xa1e\x95R\x90\x84d_\xf8\xc0Z\x80\x80\x80\x82\0\0\x03\0\x02\0\0\x03\x01 \xc0\x0b\xbc\xa2\0\x02bX\0\x011-\x08\"\0\x01\0\x07D\x01\xc0\x93|\x0c\xc9";
 
-        let config = HEVCDecoderConfigurationRecord::demux(&mut io::Cursor::new(data.clone())).unwrap();
+        let config = HEVCDecoderConfigurationRecord::deserialize(Slice::from(&data[..])).unwrap();
 
         assert_eq!(config.size(), data.len() as u64);
 

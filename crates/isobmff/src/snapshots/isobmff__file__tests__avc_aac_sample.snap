@@ -410,19 +410,33 @@ IsobmffFile {
                                 unknown_boxes: [],
                             },
                         },
-                        unknown_boxes: [
-                            UnknownBox {
-                                header: BoxHeader {
-                                    size: Short(
-                                        20,
-                                    ),
-                                    box_type: FourCc(
-                                        "vmhd",
-                                    ),
+                        vmhd: Some(
+                            VideoMediaHeaderBox {
+                                header: FullBoxHeader {
+                                    header: BoxHeader {
+                                        size: Short(
+                                            20,
+                                        ),
+                                        box_type: FourCc(
+                                            "vmhd",
+                                        ),
+                                    },
+                                    version: 0,
+                                    flags: 1,
                                 },
-                                data.len: 12,
+                                graphicsmode: 0,
+                                opcolor: [
+                                    0,
+                                    0,
+                                    0,
+                                ],
                             },
-                        ],
+                        ),
+                        smhd: None,
+                        hmhd: None,
+                        sthd: None,
+                        vvhd: None,
+                        unknown_boxes: [],
                     },
                     elng: None,
                     unknown_boxes: [],
@@ -757,19 +771,29 @@ IsobmffFile {
                                 unknown_boxes: [],
                             },
                         },
-                        unknown_boxes: [
-                            UnknownBox {
-                                header: BoxHeader {
-                                    size: Short(
-                                        16,
-                                    ),
-                                    box_type: FourCc(
-                                        "smhd",
-                                    ),
+                        vmhd: None,
+                        smhd: Some(
+                            SoundMediaHeaderBox {
+                                header: FullBoxHeader {
+                                    header: BoxHeader {
+                                        size: Short(
+                                            16,
+                                        ),
+                                        box_type: FourCc(
+                                            "smhd",
+                                        ),
+                                    },
+                                    version: 0,
+                                    flags: 0,
                                 },
-                                data.len: 8,
+                                balance: 0,
+                                reserved: 0,
                             },
-                        ],
+                        ),
+                        hmhd: None,
+                        sthd: None,
+                        vvhd: None,
+                        unknown_boxes: [],
                     },
                     elng: None,
                     unknown_boxes: [],
@@ -830,6 +854,8 @@ IsobmffFile {
                 cprt: [],
                 tsel: None,
                 kind: [],
+                strk: [],
+                ludt: [],
                 unknown_boxes: [
                     UnknownBox {
                         header: BoxHeader {
@@ -850,6 +876,11 @@ IsobmffFile {
     moof: [],
     mfra: None,
     meta: None,
+    styp: [],
+    sidx: [],
+    ssix: [],
+    prft: [],
+    otyp: [],
     unknown_boxes: [
         UnknownBox {
             header: BoxHeader {

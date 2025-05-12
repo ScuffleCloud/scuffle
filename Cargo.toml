@@ -37,6 +37,7 @@ members = [
   "crates/tinc/integration",
   "crates/openapiv3_1",
   "crates/changelog",
+  "cloud/proto",
 ]
 
 resolver = "2"

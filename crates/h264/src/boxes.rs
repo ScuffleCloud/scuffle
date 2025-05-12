@@ -1,7 +1,10 @@
 // TODO
 #![allow(missing_docs)]
 
-use isobmff::boxes::{BitRateBox, CleanApertureBox, ColourInformationBox, PixelAspectRatioBox, VisualSampleEntry};
+use isobmff::boxes::{
+    AmbientViewingEnvironmentBox, BitRateBox, CleanApertureBox, ColourInformationBox, ContentColourVolumeBox,
+    ContentLightLevelBox, MasteringDisplayColourVolumeBox, PixelAspectRatioBox, VisualSampleEntry,
+};
 use isobmff::{BoxHeader, IsoBox};
 
 use crate::AVCDecoderConfigurationRecord;
@@ -39,6 +42,14 @@ pub struct AVCSampleEntry1<'a> {
     pub pasp: Option<PixelAspectRatioBox>,
     #[iso_box(nested_box(collect))]
     pub colr: Option<ColourInformationBox<'a>>,
+    #[iso_box(nested_box(collect))]
+    pub clli: Option<ContentLightLevelBox>,
+    #[iso_box(nested_box(collect))]
+    pub mdcv: Option<MasteringDisplayColourVolumeBox>,
+    #[iso_box(nested_box(collect))]
+    pub cclv: Option<ContentColourVolumeBox>,
+    #[iso_box(nested_box(collect))]
+    pub amve: Option<AmbientViewingEnvironmentBox>,
     #[iso_box(nested_box)]
     pub config: AVCConfigurationBox<'a>,
     #[iso_box(nested_box(collect))]
@@ -61,6 +72,14 @@ pub struct AVCSampleEntry2<'a> {
     pub pasp: Option<PixelAspectRatioBox>,
     #[iso_box(nested_box(collect))]
     pub colr: Option<ColourInformationBox<'a>>,
+    #[iso_box(nested_box(collect))]
+    pub clli: Option<ContentLightLevelBox>,
+    #[iso_box(nested_box(collect))]
+    pub mdcv: Option<MasteringDisplayColourVolumeBox>,
+    #[iso_box(nested_box(collect))]
+    pub cclv: Option<ContentColourVolumeBox>,
+    #[iso_box(nested_box(collect))]
+    pub amve: Option<AmbientViewingEnvironmentBox>,
     #[iso_box(nested_box)]
     pub config: AVCConfigurationBox<'a>,
     #[iso_box(nested_box(collect))]
@@ -83,6 +102,14 @@ pub struct AVCSampleEntry3<'a> {
     pub pasp: Option<PixelAspectRatioBox>,
     #[iso_box(nested_box(collect))]
     pub colr: Option<ColourInformationBox<'a>>,
+    #[iso_box(nested_box(collect))]
+    pub clli: Option<ContentLightLevelBox>,
+    #[iso_box(nested_box(collect))]
+    pub mdcv: Option<MasteringDisplayColourVolumeBox>,
+    #[iso_box(nested_box(collect))]
+    pub cclv: Option<ContentColourVolumeBox>,
+    #[iso_box(nested_box(collect))]
+    pub amve: Option<AmbientViewingEnvironmentBox>,
     #[iso_box(nested_box)]
     pub config: AVCConfigurationBox<'a>,
     #[iso_box(nested_box(collect))]
@@ -105,6 +132,14 @@ pub struct AVCSampleEntry4<'a> {
     pub pasp: Option<PixelAspectRatioBox>,
     #[iso_box(nested_box(collect))]
     pub colr: Option<ColourInformationBox<'a>>,
+    #[iso_box(nested_box(collect))]
+    pub clli: Option<ContentLightLevelBox>,
+    #[iso_box(nested_box(collect))]
+    pub mdcv: Option<MasteringDisplayColourVolumeBox>,
+    #[iso_box(nested_box(collect))]
+    pub cclv: Option<ContentColourVolumeBox>,
+    #[iso_box(nested_box(collect))]
+    pub amve: Option<AmbientViewingEnvironmentBox>,
     #[iso_box(nested_box)]
     pub config: AVCConfigurationBox<'a>,
     #[iso_box(nested_box(collect))]
@@ -127,6 +162,14 @@ pub struct AVCParameterSampleEntry<'a> {
     pub pasp: Option<PixelAspectRatioBox>,
     #[iso_box(nested_box(collect))]
     pub colr: Option<ColourInformationBox<'a>>,
+    #[iso_box(nested_box(collect))]
+    pub clli: Option<ContentLightLevelBox>,
+    #[iso_box(nested_box(collect))]
+    pub mdcv: Option<MasteringDisplayColourVolumeBox>,
+    #[iso_box(nested_box(collect))]
+    pub cclv: Option<ContentColourVolumeBox>,
+    #[iso_box(nested_box(collect))]
+    pub amve: Option<AmbientViewingEnvironmentBox>,
     #[iso_box(nested_box)]
     pub config: AVCConfigurationBox<'a>,
     #[iso_box(nested_box(collect_unknown))]

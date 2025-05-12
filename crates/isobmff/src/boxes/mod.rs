@@ -82,6 +82,38 @@ pub use compressed_boxes::*;
 mod video_media;
 pub use video_media::*;
 
+// 12.2
+mod audio_media;
+pub use audio_media::*;
+
+// 12.3
+mod metadata_media;
+pub use metadata_media::*;
+
 // 12.4
 mod hint_media;
 pub use hint_media::*;
+
+// 12.5
+mod text_media;
+pub use text_media::*;
+
+// 12.6
+mod subtitle_media;
+pub use subtitle_media::*;
+
+// 12.7
+mod font_media;
+pub use font_media::*;
+
+// 12.9
+mod multiplexed_timed_metadata_tracks;
+pub use multiplexed_timed_metadata_tracks::*;
+
+// 12.10
+mod volemetric_visual_media;
+pub use volemetric_visual_media::*;
+
+// 12.11
+mod haptic_media;
+pub use haptic_media::*;

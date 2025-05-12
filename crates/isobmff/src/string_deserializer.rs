@@ -68,3 +68,36 @@ impl<'a> Deserialize<'a> for Base64String {
         Ok(Base64String(data))
     }
 }
+
+#[derive(Debug)]
+pub struct Utf8List(pub Vec<String>);
+
+impl<'a> Deserialize<'a> for Utf8List {
+    fn deserialize<R>(mut reader: R) -> io::Result<Self>
+    where
+        R: ZeroCopyReader<'a>,
+    {
+        let mut strings = Vec::new();
+
+        'list: loop {
+            let mut bytes = Vec::new();
+
+            'string: loop {
+                let byte = u8::deserialize(&mut reader)?;
+                if byte == b' ' {
+                    break 'string;
+                } else if byte == 0 {
+                    break 'list;
+                }
+                bytes.push(byte);
+            }
+
+            let string = String::from_utf8(bytes)
+                .map_err(|_| io::Error::new(io::ErrorKind::InvalidData, "Invalid UTF-8 sequence"))?;
+
+            strings.push(string);
+        }
+
+        Ok(Self(strings))
+    }
+}

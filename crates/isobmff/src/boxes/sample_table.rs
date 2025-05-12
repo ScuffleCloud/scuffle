@@ -69,6 +69,9 @@ pub struct SampleTableBox<'a> {
 /// Sample entry
 ///
 /// ISO/IEC 14496-12 - 8.5.2
+///
+/// Sub boxes:
+/// - [`btrt`](BitRateBox)
 #[derive(Debug)]
 pub struct SampleEntry {
     pub data_reference_index: u16,

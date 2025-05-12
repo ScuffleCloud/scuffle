@@ -3,7 +3,10 @@
 use nutype_enum::nutype_enum;
 use scuffle_bytes_util::zero_copy::{Deserialize, DeserializeSeed};
 
-use super::{DataInformationBox, SampleTableBox};
+use super::{
+    DataInformationBox, HintMediaHeaderBox, SampleTableBox, SoundMediaHeaderBox, SubtitleMediaHeaderBox,
+    VideoMediaHeaderBox, VolumetricVisualMediaHeaderBox,
+};
 use crate::string_deserializer::Utf8String;
 use crate::{BoxHeader, FullBoxHeader, IsoBox, UnknownBox};
 
@@ -158,6 +161,16 @@ pub struct MediaInformationBox<'a> {
     pub stbl: SampleTableBox<'a>,
     #[iso_box(nested_box)]
     pub dinf: DataInformationBox<'a>,
+    #[iso_box(nested_box(collect))]
+    pub vmhd: Option<VideoMediaHeaderBox>,
+    #[iso_box(nested_box(collect))]
+    pub smhd: Option<SoundMediaHeaderBox>,
+    #[iso_box(nested_box(collect))]
+    pub hmhd: Option<HintMediaHeaderBox>,
+    #[iso_box(nested_box(collect))]
+    pub sthd: Option<SubtitleMediaHeaderBox>,
+    #[iso_box(nested_box(collect))]
+    pub vvhd: Option<VolumetricVisualMediaHeaderBox>,
     #[iso_box(nested_box(collect_unknown))]
     pub unknown_boxes: Vec<UnknownBox<'a>>,
 }

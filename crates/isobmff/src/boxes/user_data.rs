@@ -1,6 +1,6 @@
 use scuffle_bytes_util::zero_copy::{Deserialize, DeserializeSeed};
 
-use super::SubTrackBox;
+use super::{LoudnessBox, SubTrackBox};
 use crate::{BoxHeader, FullBoxHeader, IsoBox, UnknownBox, Utf8String};
 
 /// User data box
@@ -19,6 +19,8 @@ pub struct UserDataBox<'a> {
     pub kind: Vec<KindBox>,
     #[iso_box(nested_box(collect))]
     pub strk: Vec<SubTrackBox>,
+    #[iso_box(nested_box(collect))]
+    pub ludt: Vec<LoudnessBox>,
     #[iso_box(nested_box(collect_unknown))]
     pub unknown_boxes: Vec<UnknownBox<'a>>,
 }

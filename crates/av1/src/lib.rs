@@ -15,6 +15,7 @@
 #![deny(unreachable_pub)]
 #![deny(clippy::mod_module_files)]
 
+pub mod boxes;
 mod config;
 mod obu;
 

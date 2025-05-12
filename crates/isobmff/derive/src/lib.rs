@@ -200,7 +200,7 @@ fn box_impl(input: DeriveInput) -> syn::Result<proc_macro2::TokenStream> {
 
     let output = quote! {
         impl #generics IsoBox for #ident #generics {
-            const TYPE: [u8; 4] = *#box_type;
+            const TYPE: #crate_path::BoxType = #crate_path::BoxType::FourCc(*#box_type);
             type Header = #header_type;
         }
 
@@ -241,7 +241,7 @@ fn nested_box_parser<'a>(fields: impl Iterator<Item = &'a IsoBoxField>, crate_pa
                         let mut #field_name = ::std::option::Option::None;
                     };
                     let match_arm = quote! {
-                        #crate_path::BoxType::FourCc(<#field_type as #crate_path::IsoBox>::TYPE) => {
+                        <#field_type as #crate_path::IsoBox>::TYPE => {
                             // If the type matches, we can deserialize the box header
                             // If the box header is a normal (partial) box header, this won't consume any bytes from the reader
                             let Some(box_header) = ::scuffle_bytes_util::IoResultExt::eof_to_none(
@@ -291,7 +291,7 @@ fn nested_box_parser<'a>(fields: impl Iterator<Item = &'a IsoBoxField>, crate_pa
                         let mut #field_name = <#field_type as ::std::default::Default>::default();
                     };
                     let match_arm = quote! {
-                        #crate_path::BoxType::FourCc(<<#field_type as ::scuffle_bytes_util::zero_copy::Container>::Item as #crate_path::IsoBox>::TYPE) => {
+                        <<#field_type as ::scuffle_bytes_util::zero_copy::Container>::Item as #crate_path::IsoBox>::TYPE => {
                             // If the type matches, we can deserialize the box header
                             // If the box header is a normal (partial) box header, this won't consume any bytes from the reader
                             let Some(box_header) = ::scuffle_bytes_util::IoResultExt::eof_to_none(

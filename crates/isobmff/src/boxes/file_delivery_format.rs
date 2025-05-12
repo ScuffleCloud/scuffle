@@ -1,7 +1,7 @@
 use scuffle_bytes_util::IoResultExt;
 use scuffle_bytes_util::zero_copy::{Deserialize, DeserializeSeed};
 
-use crate::{Base64String, BoxHeader, FullBoxHeader, IsoBox, Utf8String};
+use crate::{Base64String, BoxHeader, BoxType, FullBoxHeader, IsoBox, Utf8String};
 
 /// FD item information box
 ///
@@ -18,7 +18,7 @@ pub struct FDItemInformationBox {
 impl IsoBox for FDItemInformationBox {
     type Header = FullBoxHeader;
 
-    const TYPE: [u8; 4] = *b"fiin";
+    const TYPE: BoxType = BoxType::FourCc(*b"fiin");
 }
 
 impl<'a> Deserialize<'a> for FDItemInformationBox {
@@ -91,7 +91,7 @@ pub struct FilePartitionBox {
 impl IsoBox for FilePartitionBox {
     type Header = FullBoxHeader;
 
-    const TYPE: [u8; 4] = *b"fpar";
+    const TYPE: BoxType = BoxType::FourCc(*b"fpar");
 }
 
 impl<'a> Deserialize<'a> for FilePartitionBox {
@@ -182,7 +182,7 @@ pub struct FECReservoirBox {
 impl IsoBox for FECReservoirBox {
     type Header = FullBoxHeader;
 
-    const TYPE: [u8; 4] = *b"fecr";
+    const TYPE: BoxType = BoxType::FourCc(*b"fecr");
 }
 
 impl<'a> Deserialize<'a> for FECReservoirBox {
@@ -255,7 +255,7 @@ pub struct FDSessionGroupBox {
 impl IsoBox for FDSessionGroupBox {
     type Header = BoxHeader;
 
-    const TYPE: [u8; 4] = *b"segr";
+    const TYPE: BoxType = BoxType::FourCc(*b"segr");
 }
 
 impl<'a> Deserialize<'a> for FDSessionGroupBox {
@@ -335,7 +335,7 @@ pub struct GroupIdToNameBox {
 impl IsoBox for GroupIdToNameBox {
     type Header = FullBoxHeader;
 
-    const TYPE: [u8; 4] = *b"gitn";
+    const TYPE: BoxType = BoxType::FourCc(*b"gitn");
 }
 
 impl<'a> Deserialize<'a> for GroupIdToNameBox {
@@ -400,7 +400,7 @@ pub struct FileReservoirBox {
 impl IsoBox for FileReservoirBox {
     type Header = FullBoxHeader;
 
-    const TYPE: [u8; 4] = *b"fire";
+    const TYPE: BoxType = BoxType::FourCc(*b"fire");
 }
 
 impl<'a> Deserialize<'a> for FileReservoirBox {

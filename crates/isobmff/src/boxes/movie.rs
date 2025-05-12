@@ -4,7 +4,7 @@ use byteorder::ReadBytesExt;
 use scuffle_bytes_util::zero_copy::{Deserialize, DeserializeSeed};
 
 use super::{MetaBox, MovieExtendsBox, TrackBox, UserDataBox};
-use crate::{BoxHeader, FullBoxHeader, IsoBox};
+use crate::{BoxHeader, BoxType, FullBoxHeader, IsoBox, UnknownBox};
 
 /// Movie box
 ///
@@ -24,6 +24,8 @@ pub struct MovieBox<'a> {
     pub udta: Option<UserDataBox<'a>>,
     #[iso_box(nested_box(collect))]
     pub meta: Option<MetaBox<'a>>,
+    #[iso_box(nested_box(collect_unknown))]
+    pub unknown_boxes: Vec<UnknownBox<'a>>,
 }
 
 /// Movie header box
@@ -48,7 +50,7 @@ pub struct MovieHeaderBox {
 impl IsoBox for MovieHeaderBox {
     type Header = FullBoxHeader;
 
-    const TYPE: [u8; 4] = *b"mvhd";
+    const TYPE: BoxType = BoxType::FourCc(*b"mvhd");
 }
 
 impl<'a> DeserializeSeed<'a, FullBoxHeader> for MovieHeaderBox {

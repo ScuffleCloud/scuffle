@@ -8,7 +8,7 @@ use super::{
     VideoMediaHeaderBox, VolumetricVisualMediaHeaderBox,
 };
 use crate::string_deserializer::Utf8String;
-use crate::{BoxHeader, FullBoxHeader, IsoBox, UnknownBox};
+use crate::{BoxHeader, BoxType, FullBoxHeader, IsoBox, UnknownBox};
 
 /// Media box
 ///
@@ -49,7 +49,7 @@ pub struct MediaHeaderBox {
 impl IsoBox for MediaHeaderBox {
     type Header = FullBoxHeader;
 
-    const TYPE: [u8; 4] = *b"mdhd";
+    const TYPE: BoxType = BoxType::FourCc(*b"mdhd");
 }
 
 impl<'a> DeserializeSeed<'a, FullBoxHeader> for MediaHeaderBox {

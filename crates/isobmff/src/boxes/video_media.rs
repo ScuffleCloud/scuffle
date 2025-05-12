@@ -4,7 +4,7 @@ use scuffle_bytes_util::BytesCow;
 use scuffle_bytes_util::zero_copy::{Deserialize, DeserializeSeed};
 
 use super::SampleEntry;
-use crate::{BoxHeader, FullBoxHeader, IsoBox};
+use crate::{BoxHeader, BoxType, FullBoxHeader, IsoBox};
 
 /// Video media header
 ///
@@ -232,7 +232,7 @@ pub struct ContentColourVolumeBox {
 impl IsoBox for ContentColourVolumeBox {
     type Header = BoxHeader;
 
-    const TYPE: [u8; 4] = *b"cclv";
+    const TYPE: BoxType = BoxType::FourCc(*b"cclv");
 }
 
 impl<'a> Deserialize<'a> for ContentColourVolumeBox {

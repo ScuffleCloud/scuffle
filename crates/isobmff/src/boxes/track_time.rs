@@ -4,7 +4,7 @@ use std::{io, iter};
 use scuffle_bytes_util::IoResultExt;
 use scuffle_bytes_util::zero_copy::{Deserialize, DeserializeSeed, ZeroCopyReader};
 
-use crate::{BoxHeader, FullBoxHeader, IsoBox};
+use crate::{BoxHeader, BoxType, FullBoxHeader, IsoBox};
 
 /// Time to sample box
 ///
@@ -102,7 +102,7 @@ pub struct CompositionToDecodeBox {
 impl IsoBox for CompositionToDecodeBox {
     type Header = FullBoxHeader;
 
-    const TYPE: [u8; 4] = *b"cslg";
+    const TYPE: BoxType = BoxType::FourCc(*b"cslg");
 }
 
 impl<'a> DeserializeSeed<'a, FullBoxHeader> for CompositionToDecodeBox {
@@ -261,7 +261,7 @@ pub struct EditListBox {
 impl IsoBox for EditListBox {
     type Header = FullBoxHeader;
 
-    const TYPE: [u8; 4] = *b"elst";
+    const TYPE: BoxType = BoxType::FourCc(*b"elst");
 }
 
 impl<'a> Deserialize<'a> for EditListBox {

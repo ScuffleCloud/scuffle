@@ -2,7 +2,7 @@ use scuffle_bytes_util::zero_copy::{Deserialize, DeserializeSeed};
 use scuffle_bytes_util::{BytesCow, IoResultExt};
 
 use super::{Brand, DataInformationBox, FDItemInformationBox, HandlerBox, ProtectionSchemeInfoBox, ScrambleSchemeInfoBox};
-use crate::{BoxHeader, FullBoxHeader, IsoBox, UnknownBox, Utf8String};
+use crate::{BoxHeader, BoxType, FullBoxHeader, IsoBox, UnknownBox, Utf8String};
 
 /// Meta box
 ///
@@ -79,7 +79,7 @@ pub struct ItemLocationBox {
 impl IsoBox for ItemLocationBox {
     type Header = FullBoxHeader;
 
-    const TYPE: [u8; 4] = *b"iloc";
+    const TYPE: BoxType = BoxType::FourCc(*b"iloc");
 }
 
 impl<'a> Deserialize<'a> for ItemLocationBox {
@@ -239,7 +239,7 @@ pub struct PrimaryItemBox {
 impl IsoBox for PrimaryItemBox {
     type Header = FullBoxHeader;
 
-    const TYPE: [u8; 4] = *b"pitm";
+    const TYPE: BoxType = BoxType::FourCc(*b"pitm");
 }
 
 impl<'a> Deserialize<'a> for PrimaryItemBox {
@@ -294,7 +294,7 @@ pub struct ItemInfoBox<'a> {
 impl IsoBox for ItemInfoBox<'_> {
     type Header = FullBoxHeader;
 
-    const TYPE: [u8; 4] = *b"iinf";
+    const TYPE: BoxType = BoxType::FourCc(*b"iinf");
 }
 
 impl<'a> Deserialize<'a> for ItemInfoBox<'a> {
@@ -358,7 +358,7 @@ pub enum ItemInfoEntryItem {
 impl IsoBox for ItemInfoEntry<'_> {
     type Header = FullBoxHeader;
 
-    const TYPE: [u8; 4] = *b"infe";
+    const TYPE: BoxType = BoxType::FourCc(*b"infe");
 }
 
 impl<'a> Deserialize<'a> for ItemInfoEntry<'a> {
@@ -517,7 +517,7 @@ pub struct ItemReferenceBox {
 impl IsoBox for ItemReferenceBox {
     type Header = FullBoxHeader;
 
-    const TYPE: [u8; 4] = *b"iref";
+    const TYPE: BoxType = BoxType::FourCc(*b"iref");
 }
 
 impl<'a> Deserialize<'a> for ItemReferenceBox {
@@ -653,7 +653,7 @@ pub struct ItemPropertyAssociationBox {
 impl IsoBox for ItemPropertyAssociationBox {
     type Header = FullBoxHeader;
 
-    const TYPE: [u8; 4] = *b"ipma";
+    const TYPE: BoxType = BoxType::FourCc(*b"ipma");
 }
 
 impl<'a> Deserialize<'a> for ItemPropertyAssociationBox {

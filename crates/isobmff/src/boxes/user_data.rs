@@ -1,7 +1,7 @@
 use scuffle_bytes_util::zero_copy::{Deserialize, DeserializeSeed};
 
 use super::{LoudnessBox, SubTrackBox};
-use crate::{BoxHeader, FullBoxHeader, IsoBox, UnknownBox, Utf8String};
+use crate::{BoxHeader, BoxType, FullBoxHeader, IsoBox, UnknownBox, Utf8String};
 
 /// User data box
 ///
@@ -38,7 +38,7 @@ pub struct CopyrightBox {
 impl IsoBox for CopyrightBox {
     type Header = FullBoxHeader;
 
-    const TYPE: [u8; 4] = *b"cprt";
+    const TYPE: BoxType = BoxType::FourCc(*b"cprt");
 }
 
 impl<'a> Deserialize<'a> for CopyrightBox {

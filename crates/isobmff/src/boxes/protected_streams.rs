@@ -1,7 +1,7 @@
 use scuffle_bytes_util::zero_copy::{Deserialize, DeserializeSeed};
 
 use super::StereoVideoBox;
-use crate::{BoxHeader, FullBoxHeader, IsoBox, UnknownBox, Utf8String};
+use crate::{BoxHeader, BoxType, FullBoxHeader, IsoBox, UnknownBox, Utf8String};
 
 /// Protection scheme information box
 ///
@@ -44,7 +44,7 @@ pub struct SchemeTypeBox {
 impl IsoBox for SchemeTypeBox {
     type Header = FullBoxHeader;
 
-    const TYPE: [u8; 4] = *b"schm";
+    const TYPE: BoxType = BoxType::FourCc(*b"schm");
 }
 
 impl<'a> Deserialize<'a> for SchemeTypeBox {

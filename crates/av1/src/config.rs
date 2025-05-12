@@ -1,14 +1,13 @@
 use std::io;
 
-use byteorder::ReadBytesExt;
-use bytes::Bytes;
-use scuffle_bytes_util::{BitReader, BitWriter, BytesCursorExt};
+use scuffle_bytes_util::zero_copy::Deserialize;
+use scuffle_bytes_util::{BitReader, BitWriter, BytesCow};
 
 /// AV1 Video Descriptor
 ///
 /// <https://aomediacodec.github.io/av1-mpeg2-ts/#av1-video-descriptor>
 #[derive(Debug, Clone, PartialEq)]
-pub struct AV1VideoDescriptor {
+pub struct AV1VideoDescriptor<'a> {
     /// This value shall be set to `0x80`.
     ///
     /// 8 bits
@@ -18,18 +17,20 @@ pub struct AV1VideoDescriptor {
     /// 8 bits
     pub length: u8,
     /// AV1 Codec Configuration Record
-    pub codec_configuration_record: AV1CodecConfigurationRecord,
+    pub codec_configuration_record: AV1CodecConfigurationRecord<'a>,
 }
 
-impl AV1VideoDescriptor {
-    /// Demuxes the AV1 Video Descriptor from the given reader.
-    pub fn demux(reader: &mut io::Cursor<Bytes>) -> io::Result<Self> {
-        let tag = reader.read_u8()?;
+impl<'a> Deserialize<'a> for AV1VideoDescriptor<'a> {
+    fn deserialize<R>(mut reader: R) -> io::Result<Self>
+    where
+        R: scuffle_bytes_util::zero_copy::ZeroCopyReader<'a>,
+    {
+        let tag = u8::deserialize(&mut reader)?;
         if tag != 0x80 {
             return Err(io::Error::new(io::ErrorKind::InvalidData, "Invalid AV1 video descriptor tag"));
         }
 
-        let length = reader.read_u8()?;
+        let length = u8::deserialize(&mut reader)?;
         if length != 4 {
             return Err(io::Error::new(
                 io::ErrorKind::InvalidData,
@@ -40,7 +41,7 @@ impl AV1VideoDescriptor {
         Ok(AV1VideoDescriptor {
             tag,
             length,
-            codec_configuration_record: AV1CodecConfigurationRecord::demux(reader)?,
+            codec_configuration_record: AV1CodecConfigurationRecord::deserialize(reader)?,
         })
     }
 }
@@ -49,7 +50,7 @@ impl AV1VideoDescriptor {
 /// AV1 Codec Configuration Record
 ///
 /// <https://aomediacodec.github.io/av1-isobmff/#av1codecconfigurationbox-syntax>
-pub struct AV1CodecConfigurationRecord {
+pub struct AV1CodecConfigurationRecord<'a> {
     /// This field shall be coded according to the semantics defined in [AV1](https://aomediacodec.github.io/av1-spec/av1-spec.pdf).
     ///
     /// 3 bits
@@ -114,13 +115,15 @@ pub struct AV1CodecConfigurationRecord {
     /// Zero or more OBUs. Refer to the linked specification for details.
     ///
     /// 8 bits
-    pub config_obu: Bytes,
+    pub config_obu: BytesCow<'a>,
 }
 
-impl AV1CodecConfigurationRecord {
-    /// Demuxes the AV1 Codec Configuration Record from the given reader.
-    pub fn demux(reader: &mut io::Cursor<Bytes>) -> io::Result<Self> {
-        let mut bit_reader = BitReader::new(reader);
+impl<'a> Deserialize<'a> for AV1CodecConfigurationRecord<'a> {
+    fn deserialize<R>(mut reader: R) -> io::Result<Self>
+    where
+        R: scuffle_bytes_util::zero_copy::ZeroCopyReader<'a>,
+    {
+        let mut bit_reader = BitReader::new(reader.as_std());
 
         let marker = bit_reader.read_bit()?;
         if !marker {
@@ -149,20 +152,21 @@ impl AV1CodecConfigurationRecord {
         // Leaving 1 bit for future use
         let hdr_wcg_idc = bit_reader.read_bits(2)? as u8;
 
-        bit_reader.seek_bits(1)?; // reserved 1 bits
+        bit_reader.read_bits(1)?; // reserved 1 bits
 
         let initial_presentation_delay_minus_one = if bit_reader.read_bit()? {
             Some(bit_reader.read_bits(4)? as u8)
         } else {
-            bit_reader.seek_bits(4)?; // reserved 4 bits
+            bit_reader.read_bits(4)?; // reserved 4 bits
             None
         };
 
-        if !bit_reader.is_aligned() {
-            return Err(io::Error::new(io::ErrorKind::InvalidData, "Bit reader is not aligned"));
+        {
+            let bit_reader = bit_reader; // move
+            if !bit_reader.is_aligned() {
+                return Err(io::Error::new(io::ErrorKind::InvalidData, "Bit reader is not aligned"));
+            }
         }
-
-        let reader = bit_reader.into_inner();
 
         Ok(AV1CodecConfigurationRecord {
             seq_profile,
@@ -176,10 +180,12 @@ impl AV1CodecConfigurationRecord {
             chroma_sample_position,
             hdr_wcg_idc,
             initial_presentation_delay_minus_one,
-            config_obu: reader.extract_remaining(),
+            config_obu: reader.try_read_to_end()?,
         })
     }
+}
 
+impl AV1CodecConfigurationRecord<'_> {
     /// Returns the size of the AV1 Codec Configuration Record.
     pub fn size(&self) -> u64 {
         1 // marker, version
@@ -217,7 +223,7 @@ impl AV1CodecConfigurationRecord {
             bit_writer.write_bits(0, 4)?; // reserved 4 bits
         }
 
-        bit_writer.finish()?.write_all(&self.config_obu)?;
+        bit_writer.finish()?.write_all(self.config_obu.as_bytes())?;
 
         Ok(())
     }
@@ -226,14 +232,16 @@ impl AV1CodecConfigurationRecord {
 #[cfg(test)]
 #[cfg_attr(all(test, coverage_nightly), coverage(off))]
 mod tests {
+    use bytes::Bytes;
+    use scuffle_bytes_util::zero_copy::Slice;
 
     use super::*;
 
     #[test]
     fn test_config_demux() {
-        let data = b"\x81\r\x0c\0\n\x0f\0\0\0j\xef\xbf\xe1\xbc\x02\x19\x90\x10\x10\x10@".to_vec();
+        let data = b"\x81\r\x0c\0\n\x0f\0\0\0j\xef\xbf\xe1\xbc\x02\x19\x90\x10\x10\x10@";
 
-        let config = AV1CodecConfigurationRecord::demux(&mut io::Cursor::new(data.into())).unwrap();
+        let config = AV1CodecConfigurationRecord::deserialize(Slice::from(&data[..])).unwrap();
 
         insta::assert_debug_snapshot!(config, @r#"
         AV1CodecConfigurationRecord {
@@ -257,7 +265,7 @@ mod tests {
     fn test_marker_is_not_set() {
         let data = vec![0b00000000];
 
-        let err = AV1CodecConfigurationRecord::demux(&mut io::Cursor::new(data.into())).unwrap_err();
+        let err = AV1CodecConfigurationRecord::deserialize(Slice::from(&data[..])).unwrap_err();
 
         assert_eq!(err.kind(), io::ErrorKind::InvalidData);
         assert_eq!(err.to_string(), "marker is not set");
@@ -267,7 +275,7 @@ mod tests {
     fn test_version_is_not_1() {
         let data = vec![0b10000000];
 
-        let err = AV1CodecConfigurationRecord::demux(&mut io::Cursor::new(data.into())).unwrap_err();
+        let err = AV1CodecConfigurationRecord::deserialize(Slice::from(&data[..])).unwrap_err();
 
         assert_eq!(err.kind(), io::ErrorKind::InvalidData);
         assert_eq!(err.to_string(), "version is not 1");
@@ -277,7 +285,7 @@ mod tests {
     fn test_config_demux_with_initial_presentation_delay() {
         let data = b"\x81\r\x0c\x3f\n\x0f\0\0\0j\xef\xbf\xe1\xbc\x02\x19\x90\x10\x10\x10@".to_vec();
 
-        let config = AV1CodecConfigurationRecord::demux(&mut io::Cursor::new(data.into())).unwrap();
+        let config = AV1CodecConfigurationRecord::deserialize(Slice::from(&data[..])).unwrap();
 
         insta::assert_debug_snapshot!(config, @r#"
         AV1CodecConfigurationRecord {
@@ -313,7 +321,7 @@ mod tests {
             chroma_sample_position: 0,
             hdr_wcg_idc: 0,
             initial_presentation_delay_minus_one: None,
-            config_obu: Bytes::from_static(b"HELLO FROM THE OBU"),
+            config_obu: BytesCow::from_static(b"HELLO FROM THE OBU"),
         };
 
         let mut buf = Vec::new();
@@ -336,7 +344,7 @@ mod tests {
             chroma_sample_position: 0,
             hdr_wcg_idc: 0,
             initial_presentation_delay_minus_one: Some(0),
-            config_obu: Bytes::from_static(b"HELLO FROM THE OBU"),
+            config_obu: BytesCow::from_static(b"HELLO FROM THE OBU"),
         };
 
         let mut buf = Vec::new();
@@ -349,7 +357,7 @@ mod tests {
     fn test_video_descriptor_demux() {
         let data = b"\x80\x04\x81\r\x0c\x3f\n\x0f\0\0\0j\xef\xbf\xe1\xbc\x02\x19\x90\x10\x10\x10@".to_vec();
 
-        let config = AV1VideoDescriptor::demux(&mut io::Cursor::new(data.into())).unwrap();
+        let config = AV1VideoDescriptor::deserialize(Slice::from(&data[..])).unwrap();
 
         insta::assert_debug_snapshot!(config, @r#"
         AV1VideoDescriptor {
@@ -379,7 +387,7 @@ mod tests {
     fn test_video_descriptor_demux_invalid_tag() {
         let data = b"\x81".to_vec();
 
-        let err = AV1VideoDescriptor::demux(&mut io::Cursor::new(data.into())).unwrap_err();
+        let err = AV1VideoDescriptor::deserialize(Slice::from(&data[..])).unwrap_err();
 
         assert_eq!(err.kind(), io::ErrorKind::InvalidData);
         assert_eq!(err.to_string(), "Invalid AV1 video descriptor tag");
@@ -389,7 +397,7 @@ mod tests {
     fn test_video_descriptor_demux_invalid_length() {
         let data = b"\x80\x05ju".to_vec();
 
-        let err = AV1VideoDescriptor::demux(&mut io::Cursor::new(data.into())).unwrap_err();
+        let err = AV1VideoDescriptor::deserialize(Slice::from(&data[..])).unwrap_err();
 
         assert_eq!(err.kind(), io::ErrorKind::InvalidData);
         assert_eq!(err.to_string(), "Invalid AV1 video descriptor length");

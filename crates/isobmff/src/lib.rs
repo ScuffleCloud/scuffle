@@ -1,4 +1,5 @@
 // Section 9 and 10 are not implemented
+// TODO: Fixed-point numbers
 
 #![cfg_attr(all(coverage_nightly, test), feature(coverage_attribute))]
 // #![deny(missing_docs)]

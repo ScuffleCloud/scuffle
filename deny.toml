@@ -13,6 +13,7 @@ allow = [
   "CC0-1.0",
 ]
 
+private.ignore = true
 unused-allowed-license = "warn"
 confidence-threshold = 0.95
 

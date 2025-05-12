@@ -7,7 +7,7 @@ use super::{
     CompositionToDecodeBox, MetaBox, SampleAuxiliaryInformationOffsetsBox, SampleAuxiliaryInformationSizesBox,
     SampleGroupDescriptionBox, SampleToGroupBox, SubSampleInformationBox, UserDataBox,
 };
-use crate::{BoxHeader, FullBoxHeader, IsoBox, UnknownBox};
+use crate::{BoxHeader, BoxType, FullBoxHeader, IsoBox, UnknownBox};
 
 /// Movie extends box
 ///
@@ -37,7 +37,7 @@ pub struct MovieExtendsHeaderBox {
 impl IsoBox for MovieExtendsHeaderBox {
     type Header = FullBoxHeader;
 
-    const TYPE: [u8; 4] = *b"mehd";
+    const TYPE: BoxType = BoxType::FourCc(*b"mehd");
 }
 
 impl<'a> Deserialize<'a> for MovieExtendsHeaderBox {
@@ -160,7 +160,7 @@ pub struct TrackFragmentHeaderBox {
 impl IsoBox for TrackFragmentHeaderBox {
     type Header = FullBoxHeader;
 
-    const TYPE: [u8; 4] = *b"tfhd";
+    const TYPE: BoxType = BoxType::FourCc(*b"tfhd");
 }
 
 impl<'a> Deserialize<'a> for TrackFragmentHeaderBox {
@@ -304,7 +304,7 @@ impl<'a> DeserializeSeed<'a, TrFlags> for TrackRunBoxSample {
 impl IsoBox for TrackRunBox {
     type Header = FullBoxHeader;
 
-    const TYPE: [u8; 4] = *b"trun";
+    const TYPE: BoxType = BoxType::FourCc(*b"trun");
 }
 
 impl<'a> Deserialize<'a> for TrackRunBox {
@@ -384,7 +384,7 @@ pub struct TrackFragmentRandomAccessBox {
 impl IsoBox for TrackFragmentRandomAccessBox {
     type Header = FullBoxHeader;
 
-    const TYPE: [u8; 4] = *b"tfra";
+    const TYPE: BoxType = BoxType::FourCc(*b"tfra");
 }
 
 impl<'a> Deserialize<'a> for TrackFragmentRandomAccessBox {
@@ -490,7 +490,7 @@ pub struct TrackFragmentBaseMediaDecodeTimeBox {
 impl IsoBox for TrackFragmentBaseMediaDecodeTimeBox {
     type Header = FullBoxHeader;
 
-    const TYPE: [u8; 4] = *b"tfdt";
+    const TYPE: BoxType = BoxType::FourCc(*b"tfdt");
 }
 
 impl<'a> Deserialize<'a> for TrackFragmentBaseMediaDecodeTimeBox {
@@ -621,7 +621,7 @@ pub struct AlternativeStartupSequencePropertiesBox {
 impl IsoBox for AlternativeStartupSequencePropertiesBox {
     type Header = FullBoxHeader;
 
-    const TYPE: [u8; 4] = *b"assp";
+    const TYPE: BoxType = BoxType::FourCc(*b"assp");
 }
 
 impl<'a> Deserialize<'a> for AlternativeStartupSequencePropertiesBox {

@@ -3,7 +3,7 @@
 use scuffle_bytes_util::zero_copy::{Deserialize, DeserializeSeed};
 
 use super::{Brand, EditBox, MediaBox, MetaBox, UserDataBox};
-use crate::{BoxHeader, FullBoxHeader, IsoBox, UnknownBox};
+use crate::{BoxHeader, BoxType, FullBoxHeader, IsoBox, UnknownBox};
 
 /// Track box
 ///
@@ -56,7 +56,7 @@ pub struct TrackHeaderBox {
 impl IsoBox for TrackHeaderBox {
     type Header = FullBoxHeader;
 
-    const TYPE: [u8; 4] = *b"tkhd";
+    const TYPE: BoxType = BoxType::FourCc(*b"tkhd");
 }
 
 impl<'a> DeserializeSeed<'a, FullBoxHeader> for TrackHeaderBox {

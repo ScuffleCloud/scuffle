@@ -1,7 +1,7 @@
 use scuffle_bytes_util::zero_copy::{Deserialize, DeserializeSeed, U24Be};
 
 use super::Brand;
-use crate::{BoxHeader, FullBoxHeader, IsoBox};
+use crate::{BoxHeader, BoxType, FullBoxHeader, IsoBox};
 
 /// Segment type box
 ///
@@ -35,7 +35,7 @@ pub struct SegmentIndexBox {
 impl IsoBox for SegmentIndexBox {
     type Header = FullBoxHeader;
 
-    const TYPE: [u8; 4] = *b"sidx";
+    const TYPE: BoxType = BoxType::FourCc(*b"sidx");
 }
 
 impl<'a> Deserialize<'a> for SegmentIndexBox {
@@ -191,7 +191,7 @@ pub struct ProducerReferenceTimeBox {
 impl IsoBox for ProducerReferenceTimeBox {
     type Header = FullBoxHeader;
 
-    const TYPE: [u8; 4] = *b"prft";
+    const TYPE: BoxType = BoxType::FourCc(*b"prft");
 }
 
 impl<'a> Deserialize<'a> for ProducerReferenceTimeBox {

@@ -3,7 +3,7 @@ use std::io;
 use scuffle_bytes_util::IoResultExt;
 use scuffle_bytes_util::zero_copy::{Deserialize, DeserializeSeed, ZeroCopyReader};
 
-use crate::{BoxHeader, FullBoxHeader, IsoBox};
+use crate::{BoxHeader, BoxType, FullBoxHeader, IsoBox};
 
 /// Sample to group box
 ///
@@ -20,7 +20,7 @@ pub struct SampleToGroupBox {
 impl IsoBox for SampleToGroupBox {
     type Header = FullBoxHeader;
 
-    const TYPE: [u8; 4] = *b"sbgp";
+    const TYPE: BoxType = BoxType::FourCc(*b"sbgp");
 }
 
 impl<'a> Deserialize<'a> for SampleToGroupBox {
@@ -97,7 +97,7 @@ pub struct SampleGroupDescriptionBox {
 impl IsoBox for SampleGroupDescriptionBox {
     type Header = FullBoxHeader;
 
-    const TYPE: [u8; 4] = *b"sgpd";
+    const TYPE: BoxType = BoxType::FourCc(*b"sgpd");
 }
 
 impl<'a> Deserialize<'a> for SampleGroupDescriptionBox {
@@ -449,7 +449,7 @@ impl From<u32> for CompactSampleToGroupBoxFlags {
 impl IsoBox for CompactSampleToGroupBox {
     type Header = FullBoxHeader;
 
-    const TYPE: [u8; 4] = *b"csgp";
+    const TYPE: BoxType = BoxType::FourCc(*b"csgp");
 }
 
 impl<'a> Deserialize<'a> for CompactSampleToGroupBox {

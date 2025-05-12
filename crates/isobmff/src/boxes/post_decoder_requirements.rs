@@ -4,7 +4,7 @@ use scuffle_bytes_util::IoResultExt;
 use scuffle_bytes_util::zero_copy::{Deserialize, DeserializeSeed, ZeroCopyReader};
 
 use super::{OriginalFormatBox, SchemeInformationBox, SchemeTypeBox};
-use crate::{BoxHeader, FullBoxHeader, IsoBox, UnknownBox, Utf8String};
+use crate::{BoxHeader, BoxType, FullBoxHeader, IsoBox, UnknownBox, Utf8String};
 
 /// Restricted scheme information box
 ///
@@ -40,7 +40,7 @@ pub struct StereoVideoBox<'a> {
 impl IsoBox for StereoVideoBox<'_> {
     type Header = FullBoxHeader;
 
-    const TYPE: [u8; 4] = *b"stvi";
+    const TYPE: BoxType = BoxType::FourCc(*b"stvi");
 }
 
 impl<'a> Deserialize<'a> for StereoVideoBox<'a> {
@@ -105,7 +105,7 @@ pub struct CompatibleSchemeTypeBox {
 impl IsoBox for CompatibleSchemeTypeBox {
     type Header = FullBoxHeader;
 
-    const TYPE: [u8; 4] = *b"csch";
+    const TYPE: BoxType = BoxType::FourCc(*b"csch");
 }
 
 impl<'a> Deserialize<'a> for CompatibleSchemeTypeBox {

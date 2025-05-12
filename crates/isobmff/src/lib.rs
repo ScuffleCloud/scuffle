@@ -22,7 +22,7 @@ pub use isobmff_derive::IsoBox;
 pub use string_deserializer::*;
 
 pub trait IsoBox {
-    const TYPE: [u8; 4];
+    const TYPE: BoxType;
     type Header;
 }
 
@@ -49,5 +49,34 @@ impl<'a> DeserializeSeed<'a, BoxHeader> for UnknownBox<'a> {
             header: seed,
             data: reader.try_read_to_end()?,
         })
+    }
+}
+
+impl<'a> UnknownBox<'a> {
+    pub fn deserialize_as<T, S>(self) -> std::io::Result<T>
+    where
+        T: DeserializeSeed<'a, S>,
+        S: DeserializeSeed<'a, BoxHeader>,
+    {
+        let mut reader = scuffle_bytes_util::zero_copy::BytesBuf::from(self.data.into_bytes());
+        let seed = S::deserialize_seed(&mut reader, self.header)?;
+        T::deserialize_seed(&mut reader, seed)
+    }
+
+    pub fn deserialize_as_box<B>(self) -> std::io::Result<B>
+    where
+        B: IsoBox + DeserializeSeed<'a, B::Header>,
+        B::Header: DeserializeSeed<'a, BoxHeader>,
+    {
+        if self.header.box_type != B::TYPE {
+            return Err(std::io::Error::new(
+                std::io::ErrorKind::InvalidData,
+                format!("Box type mismatch: expected {:?}, found {:?}", B::TYPE, self.header.box_type),
+            ));
+        }
+
+        let mut reader = scuffle_bytes_util::zero_copy::BytesBuf::from(self.data.into_bytes());
+        let seed = B::Header::deserialize_seed(&mut reader, self.header)?;
+        B::deserialize_seed(&mut reader, seed)
     }
 }

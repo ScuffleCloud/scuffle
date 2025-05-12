@@ -2,7 +2,7 @@ use scuffle_bytes_util::BytesCow;
 use scuffle_bytes_util::zero_copy::{Deserialize, DeserializeSeed};
 
 use super::SampleEntry;
-use crate::{BoxHeader, FullBoxHeader, IsoBox};
+use crate::{BoxHeader, BoxType, FullBoxHeader, IsoBox};
 
 /// Sound media header
 ///
@@ -262,7 +262,7 @@ pub struct TrackLoudnessInfo {
 impl IsoBox for TrackLoudnessInfo {
     type Header = FullBoxHeader;
 
-    const TYPE: [u8; 4] = *b"tlou";
+    const TYPE: BoxType = BoxType::FourCc(*b"tlou");
 }
 
 impl<'a> Deserialize<'a> for TrackLoudnessInfo {
@@ -300,7 +300,7 @@ pub struct AlbumLoudnessInfo {
 impl IsoBox for AlbumLoudnessInfo {
     type Header = FullBoxHeader;
 
-    const TYPE: [u8; 4] = *b"alou";
+    const TYPE: BoxType = BoxType::FourCc(*b"alou");
 }
 
 impl<'a> Deserialize<'a> for AlbumLoudnessInfo {

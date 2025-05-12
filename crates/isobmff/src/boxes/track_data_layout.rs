@@ -4,7 +4,7 @@ use std::{io, iter};
 use scuffle_bytes_util::zero_copy::{Deserialize, DeserializeSeed, ZeroCopyReader};
 use scuffle_bytes_util::{BytesCow, IoResultExt};
 
-use crate::{BoxHeader, BoxHeaderProperties, FullBoxHeader, IsoBox, UnknownBox, Utf8String};
+use crate::{BoxHeader, BoxHeaderProperties, BoxType, FullBoxHeader, IsoBox, UnknownBox, Utf8String};
 
 /// Data information box
 ///
@@ -30,7 +30,7 @@ pub struct DataEntryUrlBox {
 impl IsoBox for DataEntryUrlBox {
     type Header = FullBoxHeader;
 
-    const TYPE: [u8; 4] = *b"url ";
+    const TYPE: BoxType = BoxType::FourCc(*b"url ");
 }
 
 impl<'a> Deserialize<'a> for DataEntryUrlBox {
@@ -72,7 +72,7 @@ pub struct DataEntryUrnBox {
 impl IsoBox for DataEntryUrnBox {
     type Header = FullBoxHeader;
 
-    const TYPE: [u8; 4] = *b"urn ";
+    const TYPE: BoxType = BoxType::FourCc(*b"urn ");
 }
 
 impl<'a> Deserialize<'a> for DataEntryUrnBox {
@@ -309,7 +309,7 @@ pub struct SubSampleInformationBox {
 impl IsoBox for SubSampleInformationBox {
     type Header = FullBoxHeader;
 
-    const TYPE: [u8; 4] = *b"subs";
+    const TYPE: BoxType = BoxType::FourCc(*b"subs");
 }
 
 impl<'a> Deserialize<'a> for SubSampleInformationBox {
@@ -432,7 +432,7 @@ pub struct SampleAuxiliaryInformationSizesBox<'a> {
 impl IsoBox for SampleAuxiliaryInformationSizesBox<'_> {
     type Header = FullBoxHeader;
 
-    const TYPE: [u8; 4] = *b"saiz";
+    const TYPE: BoxType = BoxType::FourCc(*b"saiz");
 }
 
 impl<'a> Deserialize<'a> for SampleAuxiliaryInformationSizesBox<'a> {
@@ -497,7 +497,7 @@ pub struct SampleAuxiliaryInformationOffsetsBox {
 impl IsoBox for SampleAuxiliaryInformationOffsetsBox {
     type Header = FullBoxHeader;
 
-    const TYPE: [u8; 4] = *b"saio";
+    const TYPE: BoxType = BoxType::FourCc(*b"saio");
 }
 
 impl<'a> Deserialize<'a> for SampleAuxiliaryInformationOffsetsBox {

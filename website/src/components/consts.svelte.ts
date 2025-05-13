@@ -10,25 +10,15 @@ export const NAV_ITEMS: NavItem[] = [
         icon: IconStats,
     },
     {
-        id: 'video',
-        label: 'Video',
-        path: '/video',
+        id: 'streams',
+        label: 'Streams',
+        path: '/streams',
         icon: IconTest,
-        children: [
-            { id: 'streams', label: 'Streams', path: '/video/streams' },
-            { id: 'reports', label: 'Reports', path: '/video/reports' },
-            { id: 'metrics', label: 'Metrics', path: '/video/metrics' },
-        ],
     },
     {
-        id: 'projects',
-        label: 'Projects',
-        path: '/projects',
+        id: 'assets',
+        label: 'Assets',
+        path: '/assets',
         icon: IconTest2,
-        children: [
-            { id: 'active', label: 'Active Projects', path: '/projects/active' },
-            { id: 'archived', label: 'Archived', path: '/projects/archived' },
-            { id: 'templates', label: 'Templates', path: '/projects/templates' },
-        ],
     },
 ];

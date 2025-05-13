@@ -3,13 +3,12 @@
 
     type Props = {
         navItem: NavItem;
-        isCollapsible?: boolean;
     };
 
-    const { navItem, isCollapsible }: Props = $props();
+    const { navItem }: Props = $props();
 </script>
 
-<div class="header" class:collapsible={isCollapsible}>
+<div class="header">
     <navItem.icon />
     <div class="label">
         {navItem.label}
@@ -28,11 +27,6 @@
         &:hover {
             background-color: rgba(0, 0, 0, 0.05);
         }
-
-        &.collapsible {
-            cursor: pointer;
-        }
-
         .label {
             font-size: 1rem;
             font-weight: 500;

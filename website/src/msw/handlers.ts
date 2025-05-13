@@ -1,5 +1,9 @@
 import { http, HttpResponse } from 'msw';
-import { mockStreamsListResponse, mockStreamsDetailResponse } from './mocks/streams';
+import {
+    mockStreamsListResponse,
+    mockStreamsDetailResponse,
+    mockStreamsCreateResponse,
+} from './mocks/streams';
 
 export const handlers = [
     http.get('/api/v1/video-streams/', () => {
@@ -7,5 +11,8 @@ export const handlers = [
     }),
     http.get('/api/v1/video-streams/:id', () => {
         return HttpResponse.json(mockStreamsDetailResponse);
+    }),
+    http.put('/api/v1/video-streams/new', () => {
+        return HttpResponse.json(mockStreamsCreateResponse);
     }),
 ];

@@ -1,5 +1,5 @@
 // Define types
-export type VideoStatus = 'Live' | 'Finished';
+export type VideoStatus = 'live' | 'finished';
 
 export interface VideoStream {
     id: string;

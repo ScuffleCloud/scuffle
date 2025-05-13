@@ -39,6 +39,9 @@ export const theme = {
         tan850: '#FAF5F1',
         tan900: '#FEFAF7',
         tan950: '#FEFCFB',
+
+        // Confirmed colors? i guess
+        teal30: '#FAF5F1',
     },
 } as const;
 

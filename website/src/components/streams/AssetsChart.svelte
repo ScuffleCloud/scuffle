@@ -1,5 +1,4 @@
 <script lang="ts">
-    import { onMount } from 'svelte';
     import { Chart, type ECMouseEvent } from 'svelte-echarts';
 
     import { init, use } from 'echarts/core';
@@ -7,7 +6,6 @@
         graphic,
         type CustomSeriesRenderItemAPI,
         type CustomSeriesRenderItemParams,
-        type CustomSeriesRenderItemReturn,
         type EChartsOption,
     } from 'echarts';
     import { BarChart, CustomChart, LineChart, ScatterChart } from 'echarts/charts';
@@ -165,10 +163,6 @@
         alert(`${event.name} ${event.value}`);
     };
 </script>
-
-<svelte:head>
-    <title>svelte-echarts Example</title>
-</svelte:head>
 
 <Chart {init} {options} onclick={handleClick} />
 

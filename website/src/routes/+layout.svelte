@@ -4,8 +4,8 @@
     import '../app.css';
     import Navbar from '$components/left-nav/Navbar.svelte';
     import TopNav from '$components/top-nav/TopNav.svelte';
+    import { QueryClient, QueryClientProvider } from '@tanstack/svelte-query';
     import '@fontsource-variable/archivo';
-    const { children } = $props();
     import { browser, dev } from '$app/environment';
     import { PUBLIC_VITE_MSW_ENABLED } from '$env/static/public';
     import { enableMocking } from '$msw/setup';
@@ -21,6 +21,14 @@
             });
         }
     });
+    const { children } = $props();
+    const queryClient = new QueryClient({
+        defaultOptions: {
+            queries: {
+                enabled: browser,
+            },
+        },
+    });
 
     const cssVariables = Object.entries(theme.colors)
         .map(([key, value]) => `--color-${key}: ${value}`)
@@ -29,16 +37,18 @@
 
 {#if mockingReady}
     <div class="app" style={cssVariables}>
-        <Navbar />
-        <main>
-            <TopNav />
-            <div class="content">
-                <div class="main-content">
-                    {@render children()}
+        <QueryClientProvider client={queryClient}>
+            <Navbar />
+            <main>
+                <TopNav />
+                <div class="content">
+                    <div class="main-content">
+                        {@render children()}
+                    </div>
+                    <RightNav />
                 </div>
-                <RightNav />
-            </div>
-        </main>
+            </main>
+        </QueryClientProvider>
     </div>
 {:else}
     <div>Error loading mocks...</div>

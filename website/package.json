@@ -36,6 +36,7 @@
         "prettier": "^3.4.1",
         "prettier-plugin-svelte": "^3.3.2",
         "svelte": "^5.16.0",
+        "@tanstack/svelte-query": "^5.62.2",
         "svelte-check": "^4.0.0",
         "svelte-echarts": "^1.0.0",
         "svelte-eslint-parser": "^0.43.0",

@@ -20,6 +20,7 @@
     } from 'echarts/components';
 
     import { CanvasRenderer } from 'echarts/renderers';
+    import { renderItem } from './shape-renderers';
 
     use([
         DatasetComponent,
@@ -43,72 +44,45 @@
     let data: any[] = [];
     let dataCount = 10;
     let startTime = +new Date();
-    let categories = ['categoryA', 'categoryB'];
+    let categories = ['categoryA', 'categoryB', 'categoryC'];
     let types = [
         { name: 'JS Heap', color: '#91c7dd' },
         { name: 'Documents', color: '#bd6d6c' },
     ];
 
-    // Generate mock data
+    // Generate mock data. This should come from the backend, not sure how formatted it will be though
+    // If we're 100% re-using api data.
     categories.forEach(function (category, index) {
         let baseTime = startTime;
         for (let i = 0; i < dataCount; i++) {
             let typeItem = types[Math.round(Math.random() * (types.length - 1))];
             let duration = Math.round(Math.random() * 10000);
+
+            // Asset has more associated data
+            const value =
+                index === 0
+                    ? [index, baseTime, (baseTime += duration), duration]
+                    : [index, (baseTime += duration)];
             data.push({
                 name: typeItem.name,
-                value: [index, baseTime, (baseTime += duration), duration],
-                itemStyle: {
-                    normal: {
-                        color: typeItem.color,
-                    },
-                },
+                value: value,
+                // We should put our styles here eventually to be consistent
+                // itemStyle: {
+                //     normal: {
+                //         color: typeItem.color,
+                //     },
+                // },
             });
             baseTime += Math.round(Math.random() * 2000);
         }
     });
 
-    const renderItem = (params: CustomSeriesRenderItemParams, api: CustomSeriesRenderItemAPI) => {
-        if (!api.size || !api.coord) return null;
-        const categoryIndex = api.value(0);
-        const start = api.coord([api.value(1), categoryIndex]);
-        const end = api.coord([api.value(2), categoryIndex]);
-
-        const size = (api.size([0, 1]) as number[])[1];
-        const height = size * 0.3;
-
-        const rectShape = graphic.clipRectByRect(
-            {
-                x: start[0],
-                y: start[1] - height / 2,
-                width: end[0] - start[0],
-                height: height,
-            },
-            {
-                x: (params.coordSys as any).x,
-                y: (params.coordSys as any).y,
-                width: (params.coordSys as any).width,
-                height: (params.coordSys as any).height,
-            },
-        );
-
-        if (!rectShape) return null;
-
-        return {
-            type: 'rect',
-            transition: ['shape'],
-            shape: rectShape,
-            style: {
-                ...api.style(),
-                stroke: '#2b7fa4',
-                lineWidth: 1,
-            },
-        };
-    };
+    console.log(data);
 
     const option = {
         tooltip: {
             formatter: function (params: any) {
+                // TODO update here
                 return params.marker + params.name + ': ' + params.value[3] + ' ms';
             },
         },
@@ -144,7 +118,7 @@
         series: [
             {
                 type: 'custom',
-                renderItem,
+                renderItem: renderItem,
                 itemStyle: {
                     opacity: 0.8,
                 },

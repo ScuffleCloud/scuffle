@@ -1,7 +1,7 @@
 export const ssr = false;
 
 import type { VideoStream } from '$components/streams/types';
-import type { PageLoad } from './$types';
+import type { PageLoad } from '../$types';
 
 export const load = (async ({ params, fetch, depends }) => {
     depends('stream:data');

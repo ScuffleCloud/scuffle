@@ -120,8 +120,8 @@ fn box_impl(input: DeriveInput) -> syn::Result<proc_macro2::TokenStream> {
 
     let header_parser = quote! {
         {
-            let header = <#crate_path::BoxHeader as ::scuffle_bytes_util::zero_copy::Deserialize>::deserialize(&mut reader)?;
-            <<Self as #crate_path::IsoBox>::Header as ::scuffle_bytes_util::zero_copy::DeserializeSeed<#crate_path::BoxHeader>>::deserialize_seed(
+            let header = <#crate_path::BoxHeader as #crate_path::reexports::scuffle_bytes_util::zero_copy::Deserialize>::deserialize(&mut reader)?;
+            <<Self as #crate_path::IsoBox>::Header as #crate_path::reexports::scuffle_bytes_util::zero_copy::DeserializeSeed<#crate_path::BoxHeader>>::deserialize_seed(
                 &mut reader,
                 header,
             )?
@@ -137,9 +137,9 @@ fn box_impl(input: DeriveInput) -> syn::Result<proc_macro2::TokenStream> {
         let read_field = if field.repeated {
             read_field_repeated(field, &crate_path)
         } else if field.from.is_some() {
-            read_field_with_from(field)
+            read_field_with_from(field, &crate_path)
         } else {
-            read_field(field)
+            read_field(field, &crate_path)
         };
 
         fields_in_self.push(quote! {
@@ -187,13 +187,13 @@ fn box_impl(input: DeriveInput) -> syn::Result<proc_macro2::TokenStream> {
         .ok_or(syn::Error::new_spanned(&ident, "No header field found"))?;
 
     let deserialize_impl = (!opts.skip_deserialize_impl).then_some(quote! {
-        impl<'a> ::scuffle_bytes_util::zero_copy::Deserialize<'a> for #ident #generics {
+        impl<'a> #crate_path::reexports::scuffle_bytes_util::zero_copy::Deserialize<'a> for #ident #generics {
             fn deserialize<R>(mut reader: R) -> ::std::io::Result<Self>
             where
-                R: ::scuffle_bytes_util::zero_copy::ZeroCopyReader<'a>,
+                R: #crate_path::reexports::scuffle_bytes_util::zero_copy::ZeroCopyReader<'a>,
             {
                 let seed = #header_parser;
-                <Self as ::scuffle_bytes_util::zero_copy::DeserializeSeed<#header_type>>::deserialize_seed(reader, seed)
+                <Self as #crate_path::reexports::scuffle_bytes_util::zero_copy::DeserializeSeed<#header_type>>::deserialize_seed(reader, seed)
             }
         }
     });
@@ -206,12 +206,12 @@ fn box_impl(input: DeriveInput) -> syn::Result<proc_macro2::TokenStream> {
 
         #deserialize_impl
 
-        impl<'a> ::scuffle_bytes_util::zero_copy::DeserializeSeed<'a, #header_type> for #ident #generics {
+        impl<'a> #crate_path::reexports::scuffle_bytes_util::zero_copy::DeserializeSeed<'a, #header_type> for #ident #generics {
             fn deserialize_seed<R>(mut reader: R, seed: #header_type) -> ::std::io::Result<Self>
             where
-                R: ::scuffle_bytes_util::zero_copy::ZeroCopyReader<'a>,
+                R: #crate_path::reexports::scuffle_bytes_util::zero_copy::ZeroCopyReader<'a>,
             {
-                use ::scuffle_bytes_util::zero_copy::{I24Be as i24, I48Be as i48, U24Be as u24, U48Be as u48};
+                use #crate_path::reexports::scuffle_bytes_util::zero_copy::{I24Be as i24, I48Be as i48, U24Be as u24, U48Be as u48};
                 let header = seed;
 
                 #(#field_parsers)*
@@ -244,8 +244,8 @@ fn nested_box_parser<'a>(fields: impl Iterator<Item = &'a IsoBoxField>, crate_pa
                         <#field_type as #crate_path::IsoBox>::TYPE => {
                             // If the type matches, we can deserialize the box header
                             // If the box header is a normal (partial) box header, this won't consume any bytes from the reader
-                            let Some(box_header) = ::scuffle_bytes_util::IoResultExt::eof_to_none(
-                                <<#field_type as #crate_path::IsoBox>::Header as ::scuffle_bytes_util::zero_copy::DeserializeSeed<#crate_path::BoxHeader>>::deserialize_seed(&mut reader, partial_box_header)
+                            let Some(box_header) = #crate_path::reexports::scuffle_bytes_util::IoResultExt::eof_to_none(
+                                <<#field_type as #crate_path::IsoBox>::Header as #crate_path::reexports::scuffle_bytes_util::zero_copy::DeserializeSeed<#crate_path::BoxHeader>>::deserialize_seed(&mut reader, partial_box_header)
                             )? else {
                                 // EOF
                                 break;
@@ -253,26 +253,26 @@ fn nested_box_parser<'a>(fields: impl Iterator<Item = &'a IsoBoxField>, crate_pa
 
                             if let Some(payload_size) = #crate_path::BoxHeaderProperties::payload_size(&box_header) {
                                 // Initialize the payload reader with the payload size
-                                let mut payload_reader = ::scuffle_bytes_util::zero_copy::ZeroCopyReader::take(&mut reader, payload_size);
+                                let mut payload_reader = #crate_path::reexports::scuffle_bytes_util::zero_copy::ZeroCopyReader::take(&mut reader, payload_size);
                                 // Deserialize the box payload
-                                let Some(iso_box) = ::scuffle_bytes_util::IoResultExt::eof_to_none(
-                                    <#field_type as ::scuffle_bytes_util::zero_copy::DeserializeSeed<<#field_type as #crate_path::IsoBox>::Header>>::deserialize_seed(
+                                let Some(iso_box) = #crate_path::reexports::scuffle_bytes_util::IoResultExt::eof_to_none(
+                                    <#field_type as #crate_path::reexports::scuffle_bytes_util::zero_copy::DeserializeSeed<<#field_type as #crate_path::IsoBox>::Header>>::deserialize_seed(
                                         &mut payload_reader,
                                         box_header,
                                     )
                                 )? else {
                                     // EOF
                                     // Align the reader to the start of the next box
-                                    ::scuffle_bytes_util::zero_copy::ZeroCopyReader::try_read_to_end(&mut payload_reader)?;
+                                    #crate_path::reexports::scuffle_bytes_util::zero_copy::ZeroCopyReader::try_read_to_end(&mut payload_reader)?;
                                     break;
                                 };
                                 // Align the reader to the start of the next box
-                                ::scuffle_bytes_util::zero_copy::ZeroCopyReader::try_read_to_end(&mut payload_reader)?;
+                                #crate_path::reexports::scuffle_bytes_util::zero_copy::ZeroCopyReader::try_read_to_end(&mut payload_reader)?;
                                 #field_name = ::std::option::Option::Some(iso_box);
                             } else {
                                 // Deserialize the box payload
-                                let Some(iso_box) = ::scuffle_bytes_util::IoResultExt::eof_to_none(
-                                    <#field_type as ::scuffle_bytes_util::zero_copy::DeserializeSeed<<#field_type as #crate_path::IsoBox>::Header>>::deserialize_seed(
+                                let Some(iso_box) = #crate_path::reexports::scuffle_bytes_util::IoResultExt::eof_to_none(
+                                    <#field_type as #crate_path::reexports::scuffle_bytes_util::zero_copy::DeserializeSeed<<#field_type as #crate_path::IsoBox>::Header>>::deserialize_seed(
                                         &mut reader,
                                         box_header,
                                     )
@@ -291,11 +291,11 @@ fn nested_box_parser<'a>(fields: impl Iterator<Item = &'a IsoBoxField>, crate_pa
                         let mut #field_name = <#field_type as ::std::default::Default>::default();
                     };
                     let match_arm = quote! {
-                        <<#field_type as ::scuffle_bytes_util::zero_copy::Container>::Item as #crate_path::IsoBox>::TYPE => {
+                        <<#field_type as #crate_path::reexports::scuffle_bytes_util::zero_copy::Container>::Item as #crate_path::IsoBox>::TYPE => {
                             // If the type matches, we can deserialize the box header
                             // If the box header is a normal (partial) box header, this won't consume any bytes from the reader
-                            let Some(box_header) = ::scuffle_bytes_util::IoResultExt::eof_to_none(
-                                <<<#field_type as ::scuffle_bytes_util::zero_copy::Container>::Item as #crate_path::IsoBox>::Header as ::scuffle_bytes_util::zero_copy::DeserializeSeed<#crate_path::BoxHeader>>::deserialize_seed(&mut reader, partial_box_header)
+                            let Some(box_header) = #crate_path::reexports::scuffle_bytes_util::IoResultExt::eof_to_none(
+                                <<<#field_type as #crate_path::reexports::scuffle_bytes_util::zero_copy::Container>::Item as #crate_path::IsoBox>::Header as #crate_path::reexports::scuffle_bytes_util::zero_copy::DeserializeSeed<#crate_path::BoxHeader>>::deserialize_seed(&mut reader, partial_box_header)
                             )? else {
                                 // EOF
                                 break;
@@ -303,26 +303,26 @@ fn nested_box_parser<'a>(fields: impl Iterator<Item = &'a IsoBoxField>, crate_pa
 
                             if let Some(payload_size) = #crate_path::BoxHeaderProperties::payload_size(&box_header) {
                                 // Initialize the payload reader with the payload size
-                                let mut payload_reader = ::scuffle_bytes_util::zero_copy::ZeroCopyReader::take(&mut reader, payload_size);
+                                let mut payload_reader = #crate_path::reexports::scuffle_bytes_util::zero_copy::ZeroCopyReader::take(&mut reader, payload_size);
                                 // Deserialize the box payload
-                                let Some(iso_box) = ::scuffle_bytes_util::IoResultExt::eof_to_none(
-                                    <<#field_type as ::scuffle_bytes_util::zero_copy::Container>::Item as ::scuffle_bytes_util::zero_copy::DeserializeSeed<<<#field_type as ::scuffle_bytes_util::zero_copy::Container>::Item as #crate_path::IsoBox>::Header>>::deserialize_seed(
+                                let Some(iso_box) = #crate_path::reexports::scuffle_bytes_util::IoResultExt::eof_to_none(
+                                    <<#field_type as #crate_path::reexports::scuffle_bytes_util::zero_copy::Container>::Item as #crate_path::reexports::scuffle_bytes_util::zero_copy::DeserializeSeed<<<#field_type as #crate_path::reexports::scuffle_bytes_util::zero_copy::Container>::Item as #crate_path::IsoBox>::Header>>::deserialize_seed(
                                         &mut payload_reader,
                                         box_header,
                                     )
                                 )? else {
                                     // EOF
                                     // Align the reader to the start of the next box
-                                    ::scuffle_bytes_util::zero_copy::ZeroCopyReader::try_read_to_end(&mut payload_reader)?;
+                                    #crate_path::reexports::scuffle_bytes_util::zero_copy::ZeroCopyReader::try_read_to_end(&mut payload_reader)?;
                                     break;
                                 };
                                 // Align the reader to the start of the next box
-                                ::scuffle_bytes_util::zero_copy::ZeroCopyReader::try_read_to_end(&mut payload_reader)?;
-                                ::scuffle_bytes_util::zero_copy::Container::add(&mut #field_name, iso_box);
+                                #crate_path::reexports::scuffle_bytes_util::zero_copy::ZeroCopyReader::try_read_to_end(&mut payload_reader)?;
+                                #crate_path::reexports::scuffle_bytes_util::zero_copy::Container::add(&mut #field_name, iso_box);
                             } else {
                                 // Deserialize the box payload
-                                let Some(iso_box) = ::scuffle_bytes_util::IoResultExt::eof_to_none(
-                                    <<#field_type as ::scuffle_bytes_util::zero_copy::Container>::Item as ::scuffle_bytes_util::zero_copy::DeserializeSeed<<<#field_type as ::scuffle_bytes_util::zero_copy::Container>::Item as #crate_path::IsoBox>::Header>>::deserialize_seed(
+                                let Some(iso_box) = #crate_path::reexports::scuffle_bytes_util::IoResultExt::eof_to_none(
+                                    <<#field_type as #crate_path::reexports::scuffle_bytes_util::zero_copy::Container>::Item as #crate_path::reexports::scuffle_bytes_util::zero_copy::DeserializeSeed<<<#field_type as #crate_path::reexports::scuffle_bytes_util::zero_copy::Container>::Item as #crate_path::IsoBox>::Header>>::deserialize_seed(
                                         &mut reader,
                                         box_header,
                                     )
@@ -330,7 +330,7 @@ fn nested_box_parser<'a>(fields: impl Iterator<Item = &'a IsoBoxField>, crate_pa
                                     // EOF
                                     break;
                                 };
-                                ::scuffle_bytes_util::zero_copy::Container::add(&mut #field_name, iso_box);
+                                #crate_path::reexports::scuffle_bytes_util::zero_copy::Container::add(&mut #field_name, iso_box);
                             }
                         }
                     };
@@ -343,22 +343,22 @@ fn nested_box_parser<'a>(fields: impl Iterator<Item = &'a IsoBoxField>, crate_pa
                     let match_arm = quote! {
                         _ => {
                             if let Some(payload_size) = #crate_path::BoxHeaderProperties::payload_size(&partial_box_header) {
-                                let mut payload_reader = ::scuffle_bytes_util::zero_copy::ZeroCopyReader::take(&mut reader, payload_size);
-                                let Some(unknown_box) = ::scuffle_bytes_util::IoResultExt::eof_to_none(
-                                    <#crate_path::UnknownBox as ::scuffle_bytes_util::zero_copy::DeserializeSeed<'_, #crate_path::BoxHeader>>::deserialize_seed(&mut payload_reader, partial_box_header)
+                                let mut payload_reader = #crate_path::reexports::scuffle_bytes_util::zero_copy::ZeroCopyReader::take(&mut reader, payload_size);
+                                let Some(unknown_box) = #crate_path::reexports::scuffle_bytes_util::IoResultExt::eof_to_none(
+                                    <#crate_path::UnknownBox as #crate_path::reexports::scuffle_bytes_util::zero_copy::DeserializeSeed<'_, #crate_path::BoxHeader>>::deserialize_seed(&mut payload_reader, partial_box_header)
                                 )? else {
                                     break;
                                 };
-                                ::scuffle_bytes_util::zero_copy::Container::add(&mut #field_name, unknown_box);
+                                #crate_path::reexports::scuffle_bytes_util::zero_copy::Container::add(&mut #field_name, unknown_box);
                                 // Align the reader to the start of the next box
-                                ::scuffle_bytes_util::zero_copy::ZeroCopyReader::try_read_to_end(&mut payload_reader)?;
+                                #crate_path::reexports::scuffle_bytes_util::zero_copy::ZeroCopyReader::try_read_to_end(&mut payload_reader)?;
                             } else {
-                                let Some(unknown_box) = ::scuffle_bytes_util::IoResultExt::eof_to_none(
-                                    <#crate_path::UnknownBox as ::scuffle_bytes_util::zero_copy::DeserializeSeed<'_, #crate_path::BoxHeader>>::deserialize_seed(&mut reader, partial_box_header)
+                                let Some(unknown_box) = #crate_path::reexports::scuffle_bytes_util::IoResultExt::eof_to_none(
+                                    <#crate_path::UnknownBox as #crate_path::reexports::scuffle_bytes_util::zero_copy::DeserializeSeed<'_, #crate_path::BoxHeader>>::deserialize_seed(&mut reader, partial_box_header)
                                 )? else {
                                     break;
                                 };
-                                ::scuffle_bytes_util::zero_copy::Container::add(&mut #field_name, unknown_box);
+                                #crate_path::reexports::scuffle_bytes_util::zero_copy::Container::add(&mut #field_name, unknown_box);
                             }
 
                         }
@@ -373,8 +373,8 @@ fn nested_box_parser<'a>(fields: impl Iterator<Item = &'a IsoBoxField>, crate_pa
         #inits
         loop {
             // Deserialize the box header which is part of every box
-            let Some(partial_box_header) = ::scuffle_bytes_util::IoResultExt::eof_to_none(
-                <#crate_path::BoxHeader as ::scuffle_bytes_util::zero_copy::Deserialize>::deserialize(&mut reader)
+            let Some(partial_box_header) = #crate_path::reexports::scuffle_bytes_util::IoResultExt::eof_to_none(
+                <#crate_path::BoxHeader as #crate_path::reexports::scuffle_bytes_util::zero_copy::Deserialize>::deserialize(&mut reader)
             )? else {
                 // EOF
                 break;
@@ -386,10 +386,10 @@ fn nested_box_parser<'a>(fields: impl Iterator<Item = &'a IsoBoxField>, crate_pa
                     // Ignore unknown boxes if we are not collecting them
                     // Align the reader to the start of the next box
                     if let Some(payload_size) = #crate_path::BoxHeaderProperties::payload_size(&partial_box_header) {
-                        let mut payload_reader = ::scuffle_bytes_util::zero_copy::ZeroCopyReader::take(&mut reader, payload_size);
-                        ::scuffle_bytes_util::zero_copy::ZeroCopyReader::try_read_to_end(&mut payload_reader)?;
+                        let mut payload_reader = #crate_path::reexports::scuffle_bytes_util::zero_copy::ZeroCopyReader::take(&mut reader, payload_size);
+                        #crate_path::reexports::scuffle_bytes_util::zero_copy::ZeroCopyReader::try_read_to_end(&mut payload_reader)?;
                     } else {
-                        ::scuffle_bytes_util::zero_copy::ZeroCopyReader::try_read_to_end(&mut reader)?;
+                        #crate_path::reexports::scuffle_bytes_util::zero_copy::ZeroCopyReader::try_read_to_end(&mut reader)?;
                     }
                 }
             }
@@ -404,10 +404,10 @@ fn read_field_repeated(field: &IsoBoxField, crate_path: &syn::Path) -> proc_macr
         quote! {
             {
                 if let Some(payload_size) = #crate_path::BoxHeaderProperties::payload_size(&header) {
-                    let mut payload_reader = ::scuffle_bytes_util::zero_copy::ZeroCopyReader::take(&mut reader, payload_size);
+                    let mut payload_reader = #crate_path::reexports::scuffle_bytes_util::zero_copy::ZeroCopyReader::take(&mut reader, payload_size);
                     let iter = ::std::iter::from_fn(||
-                        ::std::result::Result::transpose(::scuffle_bytes_util::IoResultExt::eof_to_none(
-                            <#from as ::scuffle_bytes_util::zero_copy::Deserialize>::deserialize(&mut payload_reader)
+                        ::std::result::Result::transpose(#crate_path::reexports::scuffle_bytes_util::IoResultExt::eof_to_none(
+                            <#from as #crate_path::reexports::scuffle_bytes_util::zero_copy::Deserialize>::deserialize(&mut payload_reader)
                         ))
                     );
                     let iter = ::std::iter::Iterator::map(iter, |item| {
@@ -419,8 +419,8 @@ fn read_field_repeated(field: &IsoBoxField, crate_path: &syn::Path) -> proc_macr
                     ::std::iter::Iterator::collect::<::std::result::Result<#field_type, ::std::io::Error>>(iter)?
                 } else {
                     let iter = ::std::iter::from_fn(||
-                        ::std::result::Result::transpose(::scuffle_bytes_util::IoResultExt::eof_to_none(
-                            <#from as ::scuffle_bytes_util::zero_copy::Deserialize>::deserialize(&mut reader)
+                        ::std::result::Result::transpose(#crate_path::reexports::scuffle_bytes_util::IoResultExt::eof_to_none(
+                            <#from as #crate_path::reexports::scuffle_bytes_util::zero_copy::Deserialize>::deserialize(&mut reader)
                         ))
                     );
                     let iter = ::std::iter::Iterator::map(iter, |item| {
@@ -437,17 +437,17 @@ fn read_field_repeated(field: &IsoBoxField, crate_path: &syn::Path) -> proc_macr
         quote! {
             {
                 if let Some(payload_size) = #crate_path::BoxHeaderProperties::payload_size(&header) {
-                    let mut payload_reader = ::scuffle_bytes_util::zero_copy::ZeroCopyReader::take(&mut reader, payload_size);
+                    let mut payload_reader = #crate_path::reexports::scuffle_bytes_util::zero_copy::ZeroCopyReader::take(&mut reader, payload_size);
                     let iter = ::std::iter::from_fn(||
-                        ::std::result::Result::transpose(::scuffle_bytes_util::IoResultExt::eof_to_none(
-                            <<#field_type as ::scuffle_bytes_util::zero_copy::Container>::Item as ::scuffle_bytes_util::zero_copy::Deserialize>::deserialize(&mut payload_reader)
+                        ::std::result::Result::transpose(#crate_path::reexports::scuffle_bytes_util::IoResultExt::eof_to_none(
+                            <<#field_type as #crate_path::reexports::scuffle_bytes_util::zero_copy::Container>::Item as #crate_path::reexports::scuffle_bytes_util::zero_copy::Deserialize>::deserialize(&mut payload_reader)
                         ))
                     );
                     ::std::iter::Iterator::collect::<::std::result::Result<#field_type, ::std::io::Error>>(iter)?
                 } else {
                     let iter = ::std::iter::from_fn(||
-                        ::std::result::Result::transpose(::scuffle_bytes_util::IoResultExt::eof_to_none(
-                            <<#field_type as ::scuffle_bytes_util::zero_copy::Container>::Item as ::scuffle_bytes_util::zero_copy::Deserialize>::deserialize(&mut reader)
+                        ::std::result::Result::transpose(#crate_path::reexports::scuffle_bytes_util::IoResultExt::eof_to_none(
+                            <<#field_type as #crate_path::reexports::scuffle_bytes_util::zero_copy::Container>::Item as #crate_path::reexports::scuffle_bytes_util::zero_copy::Deserialize>::deserialize(&mut reader)
                         ))
                     );
                     ::std::iter::Iterator::collect::<::std::result::Result<#field_type, ::std::io::Error>>(iter)?
@@ -457,19 +457,19 @@ fn read_field_repeated(field: &IsoBoxField, crate_path: &syn::Path) -> proc_macr
     }
 }
 
-fn read_field_with_from(field: &IsoBoxField) -> proc_macro2::TokenStream {
+fn read_field_with_from(field: &IsoBoxField, crate_path: &syn::Path) -> proc_macro2::TokenStream {
     let field_type = &field.ty;
-    let read_field = read_field(field);
+    let read_field = read_field(field, crate_path);
 
     quote! {
         <#field_type as ::std::convert::From<_>>::from(#read_field)
     }
 }
 
-fn read_field(field: &IsoBoxField) -> proc_macro2::TokenStream {
+fn read_field(field: &IsoBoxField, crate_path: &syn::Path) -> proc_macro2::TokenStream {
     let field_type = field.from.as_ref().unwrap_or(&field.ty);
 
     quote! {
-        <#field_type as ::scuffle_bytes_util::zero_copy::Deserialize>::deserialize(&mut reader)?
+        <#field_type as #crate_path::reexports::scuffle_bytes_util::zero_copy::Deserialize>::deserialize(&mut reader)?
     }
 }

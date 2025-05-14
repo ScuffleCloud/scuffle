@@ -21,6 +21,11 @@ pub use header::*;
 pub use isobmff_derive::IsoBox;
 pub use string_deserializer::*;
 
+#[doc(hidden)]
+pub mod reexports {
+    pub use scuffle_bytes_util;
+}
+
 pub trait IsoBox {
     const TYPE: BoxType;
     type Header;

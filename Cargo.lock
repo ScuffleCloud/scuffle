@@ -3579,6 +3579,16 @@ dependencies = [
 ]
 
 [[package]]
+name = "scuffle-opus"
+version = "0.1.0"
+dependencies = [
+ "isobmff",
+ "isobmff-derive",
+ "scuffle-bytes-util",
+ "scuffle-workspace-hack",
+]
+
+[[package]]
 name = "scuffle-pprof"
 version = "0.1.4"
 dependencies = [

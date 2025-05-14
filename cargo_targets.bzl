@@ -35,6 +35,7 @@ _packages = [
     "//crates/metrics/derive",
     "//crates/mp4",
     "//crates/nutype-enum",
+    "//crates/opus",
     "//crates/openapiv3_1",
     "//crates/postcompile",
     "//crates/pprof",

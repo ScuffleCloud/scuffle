@@ -42,7 +42,7 @@
 
     // Let's attempt to use rich label
     let data: any[] = [];
-    let dataCount = 10;
+    let dataCount = 20;
     let startTime = +new Date();
     let categories = ['categoryA', 'categoryB', 'categoryC'];
     let types = [
@@ -52,6 +52,10 @@
 
     // Generate mock data. This should come from the backend, not sure how formatted it will be though
     // If we're 100% re-using api data.
+
+    // Ok. I can't figure out how to make these categories closer to each other
+    // Worst case I make it just one big single category and then color code the different types and heights
+    // Instead of 3 different categories
     categories.forEach(function (category, index) {
         let baseTime = startTime;
         for (let i = 0; i < dataCount; i++) {
@@ -66,7 +70,7 @@
             data.push({
                 name: typeItem.name,
                 value: value,
-                // We should put our styles here eventually to be consistent
+                // We should put our styles here eventually to be consistent on tooltips too
                 // itemStyle: {
                 //     normal: {
                 //         color: typeItem.color,

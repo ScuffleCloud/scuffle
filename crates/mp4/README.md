@@ -15,8 +15,11 @@
 
 ---
 
-<!-- cargo-sync-rdme rustdoc [[ -->
-A crate for reading and writing MP4 files.
+A pure Rust implementation of MP4 file format ISOBMFF boxes.
+
+This crates implements the MP4 ISO Base Media File Format (ISOBMFF) boxes defined by ISO/IEC 14496-14.
+
+For an implementation of ISO/IEC 14496-12 (the ISO Base Media File Format itself), see the [isobmff](https://crates.io/crates/isobmff) crate.
 
 See the [changelog](./CHANGELOG.md) for a full release history.
 

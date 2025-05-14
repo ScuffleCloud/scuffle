@@ -12,7 +12,7 @@ export const renderCircle = (
     const categoryIndex = api.value(0);
     const value = api.coord([api.value(1), categoryIndex]);
     const size = (api.size([0, 1]) as number[])[1];
-    const height = size * 0.2;
+    const height = size * 0.65;
 
     const circleRadius = height / 2;
 
@@ -64,7 +64,7 @@ export const renderDiamond = (
     const categoryIndex = api.value(0);
     const value = api.coord([api.value(1), categoryIndex]);
     const size = (api.size([0, 1]) as number[])[1];
-    const height = size * 0.25;
+    const height = size * 0.75;
 
     // Calculate diamond points
     const diamondSize = height; // This will be the height/width before rotation
@@ -128,7 +128,7 @@ export const renderRectangle = (
     const end = api.coord([api.value(2), categoryIndex]);
 
     const size = (api.size([0, 1]) as number[])[1];
-    const height = size * 0.3;
+    const height = size * 0.5;
 
     const rectShape = graphic.clipRectByRect(
         {

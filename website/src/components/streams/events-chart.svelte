@@ -53,9 +53,9 @@
     // Generate mock data. This should come from the backend, not sure how formatted it will be though
     // If we're 100% re-using api data.
 
-    // Ok. I can't figure out how to make these categories closer to each other
-    // Worst case I make it just one big single category and then color code the different types and heights
-    // Instead of 3 different categories
+    // Worst case can use one category with items coded to different heights and colors
+    // otherwise can decrease height and increase size of shapes
+
     categories.forEach(function (category, index) {
         let baseTime = startTime;
         for (let i = 0; i < dataCount; i++) {
@@ -92,7 +92,9 @@
         },
         grid: {
             left: '3%',
+            top: '20%',
             bottom: '3%',
+            height: '30%',
             containLabel: true,
         },
         xAxis: {
@@ -106,6 +108,7 @@
         },
         yAxis: {
             data: categories,
+            show: false,
         },
         dataZoom: [
             {

@@ -259,12 +259,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "az"
-version = "1.2.1"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "7b7e4c2464d97fe331d41de9d5db0def0a96f4d823b8b32a2efd503578988973"
-
-[[package]]
 name = "backtrace"
 version = "0.3.75"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1090,18 +1084,6 @@ dependencies = [
  "lazy_static",
  "libc",
  "winapi",
-]
-
-[[package]]
-name = "fixed"
-version = "1.29.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "707070ccf8c4173548210893a0186e29c266901b71ed20cd9e2ca0193dfe95c3"
-dependencies = [
- "az",
- "bytemuck",
- "half",
- "typenum",
 ]
 
 [[package]]
@@ -2359,12 +2341,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "paste"
-version = "1.0.15"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "57c0d7b74b563b49d38dae00a0c37d4d6de9b432382b2892f0574ddcae73fd0a"
-
-[[package]]
 name = "pathdiff"
 version = "0.2.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -3562,20 +3538,10 @@ dependencies = [
 name = "scuffle-mp4"
 version = "0.1.4"
 dependencies = [
- "byteorder",
- "bytes",
- "document-features",
- "fixed",
- "paste",
- "scuffle-aac",
- "scuffle-av1",
+ "isobmff",
+ "isobmff-derive",
  "scuffle-bytes-util",
- "scuffle-changelog",
- "scuffle-h264",
- "scuffle-h265",
  "scuffle-workspace-hack",
- "serde",
- "serde_json",
 ]
 
 [[package]]

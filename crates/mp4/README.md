@@ -3,7 +3,7 @@
 # scuffle-mp4
 <!-- sync-readme ]] -->
 
-> [!WARNING]  
+> [!WARNING]
 > This crate is under active development and may not be stable.
 
 <!-- sync-readme badge [[ -->

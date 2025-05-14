@@ -1,0 +1,20 @@
+[package]
+name = "scuffle-opus"
+version = "0.1.0"
+edition = "2024"
+license = "MIT OR Apache-2.0"
+repository = "https://github.com/scufflecloud/scuffle"
+authors = ["Scuffle <opensource@scuffle.cloud>"]
+readme = "README.md"
+documentation = "https://docs.rs/scuffle-h264"
+description = "A pure Rust implementation of Opus ISOBMFF boxes"
+keywords = ["opus", "audio", "codec", "isobmff"]
+
+[lints.rust]
+unexpected_cfgs = { level = "warn", check-cfg = ['cfg(coverage_nightly)'] }
+
+[dependencies]
+isobmff.workspace = true
+isobmff-derive.workspace = true
+scuffle-bytes-util.workspace = true
+scuffle-workspace-hack.workspace = true

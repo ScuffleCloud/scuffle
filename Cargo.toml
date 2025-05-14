@@ -23,6 +23,7 @@ members = [
   "crates/metrics/derive",
   "crates/mp4",
   "crates/nutype_enum",
+  "crates/opus",
   "crates/postcompile",
   "crates/pprof",
   "crates/rtmp",

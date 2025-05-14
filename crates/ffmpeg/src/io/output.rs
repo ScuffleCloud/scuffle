@@ -316,7 +316,6 @@ mod tests {
     use std::path::PathBuf;
     use std::ptr;
 
-    use bytes::{Buf, Bytes};
     use sha2::Digest;
     use tempfile::Builder;
 
@@ -479,18 +478,24 @@ mod tests {
     macro_rules! get_boxes {
         ($output:expr) => {{
             let binary = $output.inner.data.as_mut().unwrap().get_mut().as_slice();
-            let mut cursor = Cursor::new(Bytes::copy_from_slice(binary));
+            let mut reader = scuffle_bytes_util::zero_copy::Slice::from(binary);
+
             let mut boxes = Vec::new();
-            while cursor.has_remaining() {
-                let mut box_ = scuffle_mp4::DynBox::demux(&mut cursor).expect("Failed to demux mp4");
-                if let scuffle_mp4::DynBox::Mdat(mdat) = &mut box_ {
-                    mdat.data.iter_mut().for_each(|buf| {
-                        let mut hash = sha2::Sha256::new();
-                        hash.write_all(buf).unwrap();
-                        *buf = hash.finalize().to_vec().into();
-                    });
+            loop {
+                let Some(mut any_box) = scuffle_bytes_util::IoResultExt::eof_to_none(
+                    <isobmff::UnknownBox as scuffle_bytes_util::zero_copy::Deserialize>::deserialize(&mut reader),
+                )
+                .expect("Failed to demux mp4") else {
+                    break;
+                };
+
+                if any_box.header.box_type.is_four_cc(b"mdat") {
+                    let mut hash = sha2::Sha256::new();
+                    hash.write_all(any_box.data.as_bytes()).unwrap();
+                    any_box.data = scuffle_bytes_util::BytesCow::from(hash.finalize().to_vec());
                 }
-                boxes.push(box_);
+
+                boxes.push(any_box);
             }
 
             boxes

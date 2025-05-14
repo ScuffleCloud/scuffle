@@ -49,6 +49,7 @@ impl VideoData<'_> {
 mod tests {
     use scuffle_amf0::{Amf0Marker, Amf0Object};
     use scuffle_av1::AV1CodecConfigurationRecord;
+    use scuffle_bytes_util::BytesCow;
 
     use super::header::enhanced::{VideoFourCc, VideoPacketType};
     use super::header::legacy::VideoCodecId;
@@ -541,7 +542,7 @@ mod tests {
                     chroma_sample_position: 0,
                     hdr_wcg_idc: 0,
                     initial_presentation_delay_minus_one: None,
-                    config_obu: Bytes::from_static(b"\n\x0f\0\0\0j\xef\xbf\xe1\xbc\x02\x19\x90\x10\x10\x10@"),
+                    config_obu: BytesCow::from_static(b"\n\x0f\0\0\0j\xef\xbf\xe1\xbc\x02\x19\x90\x10\x10\x10@"),
                 }))
             }),
         );

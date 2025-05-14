@@ -23,20 +23,20 @@ pub mod metadata;
 #[derive(Debug, Clone, PartialEq)]
 pub enum VideoPacketSequenceStart<'a> {
     /// Av1 codec configuration record
-    Av1(AV1CodecConfigurationRecord),
+    Av1(AV1CodecConfigurationRecord<'a>),
     /// H.264/AVC codec configuration record
     Avc(AVCDecoderConfigurationRecord<'a>),
     /// H.265/HEVC codec configuration record
-    Hevc(HEVCDecoderConfigurationRecord),
+    Hevc(HEVCDecoderConfigurationRecord<'a>),
     /// Other codecs like VP8 and VP9
     Other(Bytes),
 }
 
 /// MPEG2-TS sequence start video packet
 #[derive(Debug, Clone, PartialEq)]
-pub enum VideoPacketMpeg2TsSequenceStart {
+pub enum VideoPacketMpeg2TsSequenceStart<'a> {
     /// Av1 video descriptor
-    Av1(AV1VideoDescriptor),
+    Av1(AV1VideoDescriptor<'a>),
     /// Any other codecs
     Other(Bytes),
 }
@@ -77,7 +77,7 @@ pub enum VideoPacket<'a> {
     /// Indicates the start of a sequence of video packets.
     SequenceStart(VideoPacketSequenceStart<'a>),
     /// Indicates the start of a sequence of video packets in MPEG2-TS format.
-    Mpeg2TsSequenceStart(VideoPacketMpeg2TsSequenceStart),
+    Mpeg2TsSequenceStart(VideoPacketMpeg2TsSequenceStart<'a>),
     /// Coded video frames.
     CodedFrames(VideoPacketCodedFrames),
     /// Coded video frames without extra data.
@@ -129,16 +129,18 @@ impl VideoPacket<'_> {
 
                 let seq_start = match video_four_cc {
                     VideoFourCc::Av1 => {
-                        let record = AV1CodecConfigurationRecord::demux(&mut io::Cursor::new(data))?;
+                        let reader = scuffle_bytes_util::zero_copy::BytesBuf::from(data);
+                        let record = AV1CodecConfigurationRecord::deserialize(reader)?;
                         VideoPacketSequenceStart::Av1(record)
                     }
                     VideoFourCc::Avc => {
-                        let record =
-                            AVCDecoderConfigurationRecord::deserialize(scuffle_bytes_util::zero_copy::BytesBuf::from(data))?;
+                        let reader = scuffle_bytes_util::zero_copy::BytesBuf::from(data);
+                        let record = AVCDecoderConfigurationRecord::deserialize(reader)?;
                         VideoPacketSequenceStart::Avc(record)
                     }
                     VideoFourCc::Hevc => {
-                        let record = HEVCDecoderConfigurationRecord::demux(&mut io::Cursor::new(data))?;
+                        let reader = scuffle_bytes_util::zero_copy::BytesBuf::from(data);
+                        let record = HEVCDecoderConfigurationRecord::deserialize(reader)?;
                         VideoPacketSequenceStart::Hevc(record)
                     }
                     _ => VideoPacketSequenceStart::Other(data),
@@ -151,7 +153,8 @@ impl VideoPacket<'_> {
 
                 let seq_start = match video_four_cc {
                     VideoFourCc::Av1 => {
-                        let descriptor = AV1VideoDescriptor::demux(&mut io::Cursor::new(data))?;
+                        let reader = scuffle_bytes_util::zero_copy::BytesBuf::from(data);
+                        let descriptor = AV1VideoDescriptor::deserialize(reader)?;
                         VideoPacketMpeg2TsSequenceStart::Av1(descriptor)
                     }
                     _ => VideoPacketMpeg2TsSequenceStart::Other(data),

@@ -263,7 +263,7 @@ mod tests {
 
     #[test]
     fn test_marker_is_not_set() {
-        let data = vec![0b00000000];
+        let data = [0b00000000];
 
         let err = AV1CodecConfigurationRecord::deserialize(Slice::from(&data[..])).unwrap_err();
 
@@ -273,7 +273,7 @@ mod tests {
 
     #[test]
     fn test_version_is_not_1() {
-        let data = vec![0b10000000];
+        let data = [0b10000000];
 
         let err = AV1CodecConfigurationRecord::deserialize(Slice::from(&data[..])).unwrap_err();
 

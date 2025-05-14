@@ -8,7 +8,7 @@
 use std::fmt::Debug;
 
 use scuffle_bytes_util::BytesCow;
-use scuffle_bytes_util::zero_copy::DeserializeSeed;
+use scuffle_bytes_util::zero_copy::{Deserialize, DeserializeSeed};
 
 pub mod boxes;
 mod file;
@@ -41,6 +41,16 @@ impl Debug for UnknownBox<'_> {
             .field("header", &self.header)
             .field("data.len", &self.data.len())
             .finish()
+    }
+}
+
+impl<'a> Deserialize<'a> for UnknownBox<'a> {
+    fn deserialize<R>(mut reader: R) -> std::io::Result<Self>
+    where
+        R: scuffle_bytes_util::zero_copy::ZeroCopyReader<'a>,
+    {
+        let header = BoxHeader::deserialize(&mut reader)?;
+        Self::deserialize_seed(&mut reader, header)
     }
 }
 

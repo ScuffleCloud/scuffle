@@ -1,5 +1,6 @@
 <!-- website/src/components/streams/StreamDetailsHeader.svelte -->
 <script lang="ts">
+    import StreamStatusPill from '$lib/shared-components/stream-status-pill.svelte';
     import type { VideoStream } from './types';
     export let stream: VideoStream;
 </script>
@@ -49,7 +50,7 @@
         <div class="status-bar">
             <div class="status-indicators">
                 <div class="twitch-icon"></div>
-                <div class="live-badge">• Live</div>
+                <StreamStatusPill status={stream.status} />
             </div>
             <div class="date">
                 <span class="calendar-icon">📅</span>

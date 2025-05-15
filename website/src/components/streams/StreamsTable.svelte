@@ -3,19 +3,14 @@
     import IconStream from '$lib/images/IconStream.svelte';
     import type { VideoStream } from './types';
     import { goto } from '$app/navigation';
+    import StreamStatusPill from '$lib/shared-components/stream-status-pill.svelte';
 
     export let streams: VideoStream[];
 
     // Map stream statuses to text that gets displayed here
-    const statusMap = {
-        live: {
-            text: '• Live',
-            icon: IconWebhook,
-        },
-        finished: {
-            text: 'Finished',
-            icon: IconStream,
-        },
+    const iconMap = {
+        live: IconWebhook,
+        finished: IconStream,
     };
 
     function handleRowClick(id: string) {
@@ -44,10 +39,8 @@
                 >
                     <td class="status-column">
                         <div class="status-wrapper">
-                            <svelte:component this={statusMap[stream.status].icon} />
-                            <span class={`status-badge ${stream.status}`}>
-                                {statusMap[stream.status].text}
-                            </span>
+                            <svelte:component this={iconMap[stream.status]} />
+                            <StreamStatusPill status={stream.status} />
                         </div>
                     </td>
                     <td class="name-column">{stream.name}</td>

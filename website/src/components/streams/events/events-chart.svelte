@@ -2,12 +2,7 @@
     import { Chart, type ECMouseEvent } from 'svelte-echarts';
 
     import { init, use } from 'echarts/core';
-    import {
-        graphic,
-        type CustomSeriesRenderItemAPI,
-        type CustomSeriesRenderItemParams,
-        type EChartsOption,
-    } from 'echarts';
+    import { type EChartsOption } from 'echarts';
     import { BarChart, CustomChart, LineChart, ScatterChart } from 'echarts/charts';
     import {
         DatasetComponent,
@@ -21,7 +16,6 @@
 
     import { CanvasRenderer } from 'echarts/renderers';
     import { renderItem } from './shape-renderers';
-
     use([
         DatasetComponent,
         TitleComponent,
@@ -37,15 +31,16 @@
         CustomChart,
     ]);
 
-    let interval = 1000;
-    let numRecords = 30;
+    const interval = 1000;
+    const numRecords = 30;
 
     // Let's attempt to use rich label
     let data: any[] = [];
     let dataCount = 20;
-    let startTime = +new Date();
-    let categories = ['categoryA', 'categoryB', 'categoryC'];
-    let types = [
+    // let starttime = +new Date()
+    const startTime = new Date('2024-01-01T00:00:00').getTime();
+    const categories = ['categoryC', 'categoryB', 'categoryA'];
+    const types = [
         { name: 'JS Heap', color: '#91c7dd' },
         { name: 'Documents', color: '#bd6d6c' },
     ];
@@ -55,7 +50,7 @@
 
     // Worst case can use one category with items coded to different heights and colors
     // otherwise can decrease height and increase size of shapes
-
+    let lineData: { timestamp: number; value: number }[] = [];
     categories.forEach(function (category, index) {
         let baseTime = startTime;
         for (let i = 0; i < dataCount; i++) {
@@ -63,52 +58,79 @@
             let duration = Math.round(Math.random() * 10000);
 
             // Asset has more associated data
-            const value =
-                index === 0
-                    ? [index, baseTime, (baseTime += duration), duration]
-                    : [index, (baseTime += duration)];
+            // This should probably only be array of length 2 when not a rectangle but TBD to fix this
+            const value = [index, baseTime, (baseTime += duration), duration];
             data.push({
                 name: typeItem.name,
                 value: value,
-                // We should put our styles here eventually to be consistent on tooltips too
-                // itemStyle: {
-                //     normal: {
-                //         color: typeItem.color,
-                //     },
-                // },
             });
+            if (index === 2) {
+                lineData.push({
+                    timestamp: baseTime,
+                    value: duration,
+                    // We should put our styles here eventually to be consistent on tooltips too
+                    // itemStyle: {
+                    //     normal: {
+                    //         color: typeItem.color,
+                    //     },
+                    // },
+                });
+            }
             baseTime += Math.round(Math.random() * 2000);
         }
     });
 
-    console.log(data);
-
     const option = {
-        tooltip: {
-            formatter: function (params: any) {
-                // TODO update here
-                return params.marker + params.name + ': ' + params.value[3] + ' ms';
+        grid: [
+            {
+                left: '3%',
+                top: '20%',
+                height: '30%',
+                containLabel: true,
             },
-        },
-        grid: {
-            left: '3%',
-            top: '20%',
-            bottom: '3%',
-            height: '30%',
-            containLabel: true,
-        },
-        xAxis: {
-            min: startTime,
-            position: 'top',
-            axisLabel: {
-                formatter: function (val: number) {
-                    return Math.max(0, val - startTime) + ' ms';
+            {
+                left: '4.5%',
+                top: '55%',
+                height: '30%',
+                containLabel: true,
+            },
+        ],
+        xAxis: [
+            {
+                min: startTime,
+                position: 'top',
+                gridIndex: 0,
+                axisLabel: {
+                    formatter: function (val: number) {
+                        return Math.max(0, val - startTime) + ' ms';
+                    },
                 },
             },
-        },
-        yAxis: {
-            data: categories,
-            show: false,
+            {
+                type: 'time',
+                gridIndex: 1,
+                show: false,
+                splitLine: {
+                    show: true,
+                },
+            },
+        ],
+        yAxis: [
+            {
+                data: categories,
+                show: false,
+            },
+            {
+                type: 'value',
+                gridIndex: 1,
+                show: false,
+            },
+        ],
+        tooltip: {
+            trigger: 'axis',
+            axisPointer: {
+                type: 'line',
+            },
         },
         dataZoom: [
             {
@@ -116,10 +138,12 @@
                 filterMode: 'weakFilter',
                 showDataShadow: false,
                 top: 5,
+                xAxisIndex: [0, 1],
             },
             {
                 type: 'inside',
                 filterMode: 'weakFilter',
+                xAxisIndex: [0, 1],
             },
         ],
         series: [
@@ -134,6 +158,16 @@
                     y: 0,
                 },
                 data,
+            },
+            {
+                type: 'line',
+                data: lineData.map((item) => [item.timestamp, item.value]),
+                xAxisIndex: 1,
+                yAxisIndex: 1,
+                showSymbol: false,
+                lineStyle: {
+                    color: '#91c7dd',
+                },
             },
         ],
     };

@@ -3,9 +3,9 @@
     import { Tabs } from 'melt/builders';
     import type { VideoStream } from './types';
     import { page } from '$app/state';
-    import StreamDetailsHeader from './StreamDetailsHeader.svelte';
+    import StreamDetailsHeader from './stream-detail-header.svelte';
     import { pushState, replaceState } from '$app/navigation';
-    import EventsTab from './events-tab.svelte';
+    import EventsTab from './events/events-tab.svelte';
 
     type Props = {
         streamedData: Streamed<VideoStream>;

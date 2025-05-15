@@ -166,10 +166,10 @@ export const renderItem = (
     params: CustomSeriesRenderItemParams,
     api: CustomSeriesRenderItemAPI,
 ) => {
-    if (api.value(0) === 2) {
-        return renderRectangle(params, api);
+    if (api.value(0) === 0) {
+        return renderDiamond(params, api);
     } else if (api.value(0) === 1) {
         return renderCircle(params, api);
     }
-    return renderDiamond(params, api);
+    return renderRectangle(params, api);
 };

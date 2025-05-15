@@ -205,8 +205,8 @@
         .events-chart-container {
             height: 250px;
             margin-bottom: 1rem;
-            border: 1px solid #eee;
             border-radius: 4px;
+            width: 100%;
         }
 
         .event-items {

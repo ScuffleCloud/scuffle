@@ -16,6 +16,7 @@
 
     import { CanvasRenderer } from 'echarts/renderers';
     import { renderItem } from './shape-renderers';
+    import { rectangleData } from './sample-data';
     use([
         DatasetComponent,
         TitleComponent,
@@ -35,15 +36,11 @@
     const numRecords = 30;
 
     // Let's attempt to use rich label
-    let data: any[] = [];
+    const data = [...rectangleData()];
     let dataCount = 20;
     // let starttime = +new Date()
     const startTime = new Date('2024-01-01T00:00:00').getTime();
-    const categories = ['categoryC', 'categoryB', 'categoryA'];
-    const types = [
-        { name: 'JS Heap', color: '#91c7dd' },
-        { name: 'Documents', color: '#bd6d6c' },
-    ];
+    const categories = ['row1', 'row2', 'row3'];
 
     // Generate mock data. This should come from the backend, not sure how formatted it will be though
     // If we're 100% re-using api data.
@@ -51,20 +48,23 @@
     // Worst case can use one category with items coded to different heights and colors
     // otherwise can decrease height and increase size of shapes
     let lineData: { timestamp: number; value: number }[] = [];
+    // For rectangle
     categories.forEach(function (category, index) {
         let baseTime = startTime;
         for (let i = 0; i < dataCount; i++) {
-            let typeItem = types[Math.round(Math.random() * (types.length - 1))];
             let duration = Math.round(Math.random() * 10000);
 
             // Asset has more associated data
             // This should probably only be array of length 2 when not a rectangle but TBD to fix this
-            const value = [index, baseTime, (baseTime += duration), duration];
+            const value =
+                index === 1
+                    ? [index, (baseTime += duration)]
+                    : [index, baseTime, (baseTime += duration), duration];
             data.push({
-                name: typeItem.name,
+                name: categories[index],
                 value: value,
             });
-            if (index === 2) {
+            if (index === 0) {
                 lineData.push({
                     timestamp: baseTime,
                     value: duration,
@@ -79,21 +79,22 @@
             baseTime += Math.round(Math.random() * 2000);
         }
     });
-
+    console.log(data);
     const option = {
         grid: [
             {
-                left: '3%',
-                top: '20%',
-                height: '30%',
-                containLabel: true,
+                left: '1%',
+                right: '1%',
+                top: '28%',
+                height: '25%',
+                show: true,
             },
-            {
-                left: '4.5%',
-                top: '55%',
-                height: '30%',
-                containLabel: true,
-            },
+            // {
+            //     left: '4.5%',
+            //     top: '55%',
+            //     height: '30%',
+            //     containLabel: true,
+            // },
         ],
         xAxis: [
             {
@@ -106,30 +107,64 @@
                     },
                 },
             },
-            {
-                type: 'time',
-                gridIndex: 1,
-                show: false,
-                splitLine: {
-                    show: true,
-                },
-            },
+            // {
+            //     type: 'time',
+            //     gridIndex: 1,
+            //     show: false,
+            //     splitLine: {
+            //         show: true,
+            //     },
+            // },
         ],
         yAxis: [
             {
                 data: categories,
                 show: false,
             },
-            {
-                type: 'value',
-                gridIndex: 1,
-                show: false,
-            },
+            // {
+            //     type: 'value',
+            //     gridIndex: 1,
+            //     show: false,
+            // },
         ],
         tooltip: {
             trigger: 'axis',
             axisPointer: {
+                snap: false,
                 type: 'line',
+                axis: 'x',
+                animation: true,
+                status: 'show',
+            },
+            formatter: function (params) {
+                const currentTime = params[0].axisValue;
+
+                // Filter all items across all categories that overlap with current time
+                const relevantItems = data.filter((item) => {
+                    const startTime = item.value[1];
+                    const endTime = item.value[2];
+                    return currentTime >= startTime && currentTime <= endTime;
+                });
+
+                let result = `Time: ${Math.max(0, currentTime - startTime)} ms<br/>`;
+
+                // Sort items by category for consistent display
+                relevantItems.sort((a, b) => a.value[0] - b.value[0]);
+
+                relevantItems.forEach((item) => {
+                    console.log(item);
+                    const duration = item.value[3];
+                    const categoryIndex = item.value[0];
+                    // result += `<span style="display:inline-block;margin-right:4px;border-radius:10px;width:10px;height:10px;background-color:${
+                    //     types.find((t) => t.name === item.name)?.color || '#666'
+                    // }"></span>`;
+                    result += `${categories[categoryIndex]} - ${item.name}: ${duration}ms<br/>`;
+                });
+
+                return result;
+            },
+            position: function (pos, params, dom, rect, size) {
+                return [pos[0], '10%'];
             },
         },
         dataZoom: [
@@ -139,6 +174,17 @@
                 showDataShadow: false,
                 top: 5,
                 xAxisIndex: [0, 1],
+                start: 30,
+                end: 70,
+                textStyle: {
+                    color: '#333',
+                    fontFamily: 'Arial',
+                    fontSize: 12,
+                    right: 50,
+                },
+                labelFormatter: '{value}',
+                // fillerColor: '#EEE7E2', // color of selected area
+                borderRadius: 4,
             },
             {
                 type: 'inside',
@@ -159,16 +205,16 @@
                 },
                 data,
             },
-            {
-                type: 'line',
-                data: lineData.map((item) => [item.timestamp, item.value]),
-                xAxisIndex: 1,
-                yAxisIndex: 1,
-                showSymbol: false,
-                lineStyle: {
-                    color: '#91c7dd',
-                },
-            },
+            // {
+            //     type: 'line',
+            //     data: lineData.map((item) => [item.timestamp, item.value]),
+            //     xAxisIndex: 1,
+            //     yAxisIndex: 1,
+            //     showSymbol: false,
+            //     lineStyle: {
+            //         color: '#91c7dd',
+            //     },
+            // },
         ],
     };
 
@@ -179,6 +225,7 @@
     };
 </script>
 
+<!-- TODO: Add a "updateFilteredData" function to update visible data after zooming so our tooltip filter is less intensive -->
 <Chart {init} {options} onclick={handleClick} />
 
 <style>

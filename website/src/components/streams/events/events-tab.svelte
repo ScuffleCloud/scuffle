@@ -59,22 +59,23 @@
             </button>
             <div class="select-content" {...select.content}>
                 <div class="select-header">
-                    <span>Current streams</span>
+                    <span class="title">Current streams</span>
+                    <div class="divider"></div>
                 </div>
                 {#each streams.filter((s) => s.status === 'live') as stream}
                     <div class="select-option" {...select.getOption(stream.id)}>
-                        <span class="status-badge live">Live</span>
+                        <StreamStatusPill status="live" />
                         <span class="stream-id">{stream.id}</span>
                         <span class="stream-time">{stream.created}</span>
                     </div>
                 {/each}
-
                 <div class="select-header">
                     <span>Past streams</span>
+                    <div class="divider"></div>
                 </div>
                 {#each streams.filter((s) => s.status === 'finished') as stream}
                     <div class="select-option" {...select.getOption(stream.id)}>
-                        <span class="status-badge">Finished</span>
+                        <StreamStatusPill status="finished" />
                         <span class="stream-id">{stream.id}</span>
                         <span class="stream-time">{stream.created}</span>
                     </div>
@@ -105,7 +106,6 @@
     .card {
         background: white;
         border-radius: 8px;
-        padding: 1rem;
         box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 
         .header {
@@ -113,7 +113,7 @@
             justify-content: space-between;
             align-items: center;
             margin-bottom: 1rem;
-
+            padding: 1rem;
             .controls {
                 display: flex;
                 gap: 0.75rem;
@@ -142,14 +142,26 @@
             border: 1px solid #e2e8f0;
             box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
             min-width: 400px;
+            padding: 0.5rem;
 
             .select-header {
                 padding: 0.5rem;
                 color: #64748b;
                 font-size: 0.875rem;
                 font-weight: 500;
-                background-color: #f8fafc;
-                border-bottom: 1px solid #e2e8f0;
+                display: flex;
+                align-items: center;
+                gap: 0.5rem;
+
+                .title {
+                    flex: 0 0 auto;
+                }
+
+                .divider {
+                    width: 100%;
+                    height: 1px;
+                    background-color: #e2e8f0;
+                }
             }
 
             .select-option {
@@ -207,6 +219,7 @@
             margin-bottom: 1rem;
             border-radius: 4px;
             width: 100%;
+            padding: 0.25rem;
         }
 
         .event-items {

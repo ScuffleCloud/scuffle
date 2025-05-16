@@ -16,6 +16,7 @@
 
     import { CanvasRenderer } from 'echarts/renderers';
     import { renderItem } from './shape-renderers';
+    import { circleData, getLineData, rectangleData, triangleData } from './sample-data';
     use([
         DatasetComponent,
         TitleComponent,
@@ -50,35 +51,67 @@
 
     // Worst case can use one category with items coded to different heights and colors
     // otherwise can decrease height and increase size of shapes
-    let lineData: { timestamp: number; value: number }[] = [];
-    categories.forEach(function (category, index) {
-        let baseTime = startTime;
-        for (let i = 0; i < dataCount; i++) {
-            let typeItem = types[Math.round(Math.random() * (types.length - 1))];
-            let duration = Math.round(Math.random() * 10000);
+    // categories.forEach(function (category, index) {
+    //     let baseTime = startTime;
+    //     for (let i = 0; i < dataCount; i++) {
+    //         let typeItem = types[Math.round(Math.random() * (types.length - 1))];
+    //         let duration = Math.round(Math.random() * 10000);
 
-            // Asset has more associated data
-            // This should probably only be array of length 2 when not a rectangle but TBD to fix this
-            const value = [index, baseTime, (baseTime += duration), duration];
-            data.push({
-                name: typeItem.name,
-                value: value,
-            });
-            if (index === 0) {
-                lineData.push({
-                    timestamp: baseTime,
-                    value: duration,
-                    // We should put our styles here eventually to be consistent on tooltips too
-                    // itemStyle: {
-                    //     normal: {
-                    //         color: typeItem.color,
-                    //     },
-                    // },
+    //         // Asset has more associated data
+    //         // This should probably only be array of length 2 when not a rectangle but TBD to fix this
+    //         const value = [index, baseTime, (baseTime += duration), duration];
+    //         data.push({
+    //             name: typeItem.name,
+    //             value: value,
+    //         });
+    //         if (index === 0) {
+    //             lineData.push({
+    //                 timestamp: baseTime,
+    //                 value: duration,
+    //                 // We should put our styles here eventually to be consistent on tooltips too
+    //                 // itemStyle: {
+    //                 //     normal: {
+    //                 //         color: typeItem.color,
+    //                 //     },
+    //                 // },
+    //             });
+    //         }
+    //         baseTime += Math.round(Math.random() * 2000);
+    //     }
+    // });
+    data = [...rectangleData(), ...triangleData(), ...circleData()];
+
+    const lineData = getLineData();
+
+    const xMinTime = startTime;
+    const xMaxTime = startTime + 1000 * 60 * 2;
+    const xAxisOptions = {
+        type: 'time',
+        splitLine: {
+            show: true,
+        },
+        min: xMinTime,
+        max: xMaxTime,
+        axisLabel: {
+            formatter: function (val: number) {
+                const date = new Date(val);
+                const formatter = new Intl.DateTimeFormat('en-US', {
+                    hour: '2-digit',
+                    minute: '2-digit',
+                    second: '2-digit',
+                    timeZone: 'America/New_York',
+                    timeZoneName: 'short',
                 });
-            }
-            baseTime += Math.round(Math.random() * 2000);
-        }
-    });
+                return formatter.format(date);
+            },
+            showMinLabel: true,
+            showMaxLabel: true,
+            alignMinLabel: 'left',
+            alignMaxLabel: 'right',
+            hideOverlap: true,
+            interval: 'auto',
+        },
+    };
 
     const option = {
         grid: [
@@ -89,46 +122,42 @@
                 height: '25%',
                 show: true,
             },
-            // {
-            //     left: '4.5%',
-            //     top: '55%',
-            //     height: '30%',
-            //     containLabel: true,
-            // },
+            {
+                left: '1%',
+                right: '1%',
+                top: '55%',
+                height: '25%',
+                show: true,
+            },
         ],
         xAxis: [
             {
-                min: startTime,
                 position: 'top',
                 gridIndex: 0,
+                ...xAxisOptions,
+            },
+            {
+                gridIndex: 1,
+                ...xAxisOptions,
                 axisLabel: {
-                    formatter: function (val: number) {
-                        return Math.max(0, val - startTime) + ' ms';
-                    },
+                    ...xAxisOptions.axisLabel,
+                    show: false,
                 },
             },
-            // {
-            //     type: 'time',
-            //     gridIndex: 1,
-            //     show: false,
-            //     splitLine: {
-            //         show: true,
-            //     },
-            // },
         ],
         yAxis: [
             {
                 data: categories,
                 show: false,
             },
-            // {
-            //     type: 'value',
-            //     gridIndex: 1,
-            //     show: false,
-            // },
+            {
+                type: 'value',
+                gridIndex: 1,
+                show: false,
+            },
         ],
         tooltip: {
-            formatter: function (params) {
+            formatter: function (params: any) {
                 return params.marker + params.name + ': ' + params.value[3] + ' ms';
             },
         },
@@ -170,16 +199,16 @@
                 },
                 data,
             },
-            // {
-            //     type: 'line',
-            //     data: lineData.map((item) => [item.timestamp, item.value]),
-            //     xAxisIndex: 1,
-            //     yAxisIndex: 1,
-            //     showSymbol: false,
-            //     lineStyle: {
-            //         color: '#91c7dd',
-            //     },
-            // },
+            {
+                type: 'line',
+                data: lineData.map((item) => [item.timestamp, item.value]),
+                xAxisIndex: 1,
+                yAxisIndex: 1,
+                showSymbol: false,
+                lineStyle: {
+                    color: '#91c7dd',
+                },
+            },
         ],
     };
 

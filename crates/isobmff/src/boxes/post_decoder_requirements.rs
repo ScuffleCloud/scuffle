@@ -1,10 +1,10 @@
 use std::io;
 
-use scuffle_bytes_util::IoResultExt;
-use scuffle_bytes_util::zero_copy::{Deserialize, DeserializeSeed, ZeroCopyReader};
+use scuffle_bytes_util::zero_copy::{Deserialize, DeserializeSeed, Serialize, ZeroCopyReader};
+use scuffle_bytes_util::{BytesCow, IoResultExt};
 
 use super::{OriginalFormatBox, SchemeInformationBox, SchemeTypeBox};
-use crate::{BoxHeader, BoxType, FullBoxHeader, IsoBox, UnknownBox, Utf8String};
+use crate::{BoxHeader, FullBoxHeader, IsoBox, UnknownBox, Utf8String};
 
 /// Restricted scheme information box
 ///
@@ -27,31 +27,17 @@ pub struct RestrictedSchemeInfoBox<'a> {
 /// Stereo video box
 ///
 /// ISO/IEC 14496-12 - 8.15.4.2
-#[derive(Debug)]
+#[derive(Debug, IsoBox)]
+#[iso_box(box_type = b"stvi", skip_impl(deserialize_seed), crate_path = crate)]
 pub struct StereoVideoBox<'a> {
+    #[iso_box(header)]
     pub header: FullBoxHeader,
     pub single_view_allowed: u8,
     pub stereo_scheme: u32,
     pub length: u32,
-    pub stereo_indication_type: Vec<u8>,
+    pub stereo_indication_type: BytesCow<'a>,
+    #[iso_box(nested_box(collect_unknown))]
     pub any_box: Vec<UnknownBox<'a>>,
-}
-
-impl IsoBox for StereoVideoBox<'_> {
-    type Header = FullBoxHeader;
-
-    const TYPE: BoxType = BoxType::FourCc(*b"stvi");
-}
-
-impl<'a> Deserialize<'a> for StereoVideoBox<'a> {
-    fn deserialize<R>(mut reader: R) -> io::Result<Self>
-    where
-        R: ZeroCopyReader<'a>,
-    {
-        let header = BoxHeader::deserialize(&mut reader)?;
-        let header = FullBoxHeader::deserialize_seed(&mut reader, header)?;
-        Self::deserialize_seed(reader, header)
-    }
 }
 
 impl<'a> DeserializeSeed<'a, FullBoxHeader> for StereoVideoBox<'a> {
@@ -64,10 +50,7 @@ impl<'a> DeserializeSeed<'a, FullBoxHeader> for StereoVideoBox<'a> {
         let stereo_scheme = u32::deserialize(&mut reader)?;
 
         let length = u32::deserialize(&mut reader)?;
-        let mut stereo_indication_type = Vec::with_capacity(length as usize);
-        for _ in 0..length {
-            stereo_indication_type.push(u8::deserialize(&mut reader)?);
-        }
+        let stereo_indication_type = reader.try_read(length as usize)?;
 
         let mut any_box = Vec::new();
         loop {
@@ -94,29 +77,14 @@ impl<'a> DeserializeSeed<'a, FullBoxHeader> for StereoVideoBox<'a> {
 /// Compatible scheme type box
 ///
 /// ISO/IEC 14496-12 - 8.15.5
-#[derive(Debug)]
+#[derive(Debug, IsoBox)]
+#[iso_box(box_type = b"csch", skip_impl(deserialize_seed, serialize), crate_path = crate)]
 pub struct CompatibleSchemeTypeBox {
+    #[iso_box(header)]
     pub header: FullBoxHeader,
     pub scheme_type: [u8; 4],
     pub scheme_version: u32,
     pub scheme_uri: Option<Utf8String>,
-}
-
-impl IsoBox for CompatibleSchemeTypeBox {
-    type Header = FullBoxHeader;
-
-    const TYPE: BoxType = BoxType::FourCc(*b"csch");
-}
-
-impl<'a> Deserialize<'a> for CompatibleSchemeTypeBox {
-    fn deserialize<R>(mut reader: R) -> io::Result<Self>
-    where
-        R: ZeroCopyReader<'a>,
-    {
-        let header = BoxHeader::deserialize(&mut reader)?;
-        let header = FullBoxHeader::deserialize_seed(&mut reader, header)?;
-        Self::deserialize_seed(reader, header)
-    }
 }
 
 impl<'a> DeserializeSeed<'a, FullBoxHeader> for CompatibleSchemeTypeBox {
@@ -126,7 +94,7 @@ impl<'a> DeserializeSeed<'a, FullBoxHeader> for CompatibleSchemeTypeBox {
     {
         let scheme_type = <[u8; 4]>::deserialize(&mut reader)?;
         let scheme_version = u32::deserialize(&mut reader)?;
-        let scheme_uri = if seed.flags & 0x000001 != 0 {
+        let scheme_uri = if (*seed.flags & 0x000001) != 0 {
             Some(Utf8String::deserialize(&mut reader)?)
         } else {
             None
@@ -138,5 +106,23 @@ impl<'a> DeserializeSeed<'a, FullBoxHeader> for CompatibleSchemeTypeBox {
             scheme_version,
             scheme_uri,
         })
+    }
+}
+
+impl Serialize for CompatibleSchemeTypeBox {
+    fn serialize<W>(&self, mut writer: W) -> io::Result<()>
+    where
+        W: std::io::Write,
+    {
+        self.header.serialize(&mut writer)?;
+
+        self.scheme_type.serialize(&mut writer)?;
+        self.scheme_version.serialize(&mut writer)?;
+
+        if let Some(scheme_uri) = &self.scheme_uri {
+            scheme_uri.serialize(&mut writer)?;
+        }
+
+        Ok(())
     }
 }

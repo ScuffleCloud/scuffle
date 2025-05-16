@@ -8,17 +8,18 @@
 use std::fmt::Debug;
 
 use scuffle_bytes_util::BytesCow;
-use scuffle_bytes_util::zero_copy::{Deserialize, DeserializeSeed};
+use scuffle_bytes_util::zero_copy::{Deserialize, DeserializeSeed, Serialize};
 
 pub mod boxes;
+mod common_types;
 mod file;
 mod header;
-mod string_deserializer;
+mod utils;
 
+pub use common_types::*;
 pub use file::*;
 pub use header::*;
 pub use isobmff_derive::IsoBox;
-pub use string_deserializer::*;
 
 #[doc(hidden)]
 pub mod reexports {
@@ -26,8 +27,9 @@ pub mod reexports {
 }
 
 pub trait IsoBox {
-    const TYPE: BoxType;
     type Header;
+
+    const TYPE: BoxType;
 }
 
 pub struct UnknownBox<'a> {
@@ -63,6 +65,17 @@ impl<'a> DeserializeSeed<'a, BoxHeader> for UnknownBox<'a> {
             header: seed,
             data: reader.try_read_to_end()?,
         })
+    }
+}
+
+impl Serialize for UnknownBox<'_> {
+    fn serialize<W>(&self, mut writer: W) -> std::io::Result<()>
+    where
+        W: std::io::Write,
+    {
+        self.header.serialize(&mut writer)?;
+        self.data.serialize(&mut writer)?;
+        Ok(())
     }
 }
 

@@ -1,4 +1,4 @@
-use scuffle_bytes_util::zero_copy::Deserialize;
+use scuffle_bytes_util::zero_copy::{Deserialize, Serialize};
 
 use super::SampleEntry;
 
@@ -22,5 +22,14 @@ impl<'a> Deserialize<'a> for HapticSampleEntry {
         Ok(Self {
             sample_entry: SampleEntry::deserialize(reader)?,
         })
+    }
+}
+
+impl Serialize for HapticSampleEntry {
+    fn serialize<W>(&self, writer: W) -> std::io::Result<()>
+    where
+        W: std::io::Write,
+    {
+        self.sample_entry.serialize(writer)
     }
 }

@@ -27,11 +27,64 @@ struct IsoBoxOpts {
     #[darling(default = "default_crate_path")]
     crate_path: syn::Path,
     #[darling(default)]
-    skip_deserialize_impl: bool,
+    skip_impl: Option<SkipImpls>,
 }
 
 fn default_crate_path() -> syn::Path {
     syn::parse_str("::isobmff").unwrap()
+}
+
+#[derive(Debug)]
+struct SkipImpls(Vec<SkipImpl>);
+
+impl darling::FromMeta for SkipImpls {
+    fn from_list(items: &[darling::ast::NestedMeta]) -> darling::Result<Self> {
+        let skips = items
+            .iter()
+            .map(|m| match m {
+                darling::ast::NestedMeta::Meta(mi) => {
+                    if let Some(ident) = mi.path().get_ident() {
+                        SkipImpl::from_string(ident.to_string().as_str())
+                    } else {
+                        Ok(SkipImpl::All)
+                    }
+                }
+                darling::ast::NestedMeta::Lit(lit) => SkipImpl::from_value(lit),
+            })
+            .collect::<Result<_, _>>()?;
+        Ok(SkipImpls(skips))
+    }
+
+    fn from_word() -> darling::Result<Self> {
+        Ok(SkipImpls(vec![SkipImpl::All]))
+    }
+
+    fn from_string(value: &str) -> darling::Result<Self> {
+        Ok(SkipImpls(vec![SkipImpl::from_string(value)?]))
+    }
+}
+
+impl SkipImpls {
+    fn should_impl(&self, this_impl: SkipImpl) -> bool {
+        if self.0.contains(&SkipImpl::All) {
+            // Nothing should be implemented when all impls are skipped
+            return false;
+        }
+
+        if self.0.contains(&this_impl) {
+            return false;
+        }
+
+        true
+    }
+}
+
+#[derive(Debug, PartialEq, Eq, darling::FromMeta)]
+enum SkipImpl {
+    All,
+    Deserialize,
+    DeserializeSeed,
+    Serialize,
 }
 
 fn into_fields_checked(data: darling::ast::Data<(), IsoBoxField>) -> syn::Result<darling::ast::Fields<IsoBoxField>> {
@@ -111,10 +164,18 @@ fn box_impl(input: DeriveInput) -> syn::Result<proc_macro2::TokenStream> {
 
     let fields = into_fields_checked(opts.data)?;
 
-    let header_constructor = fields.iter().find(|f| f.header).map(|f| {
-        let name = f.ident.as_ref().expect("unreachable: only named fields supported");
+    let header_ident = fields
+        .iter()
+        .find(|f| f.header)
+        .map(|f| f.ident.as_ref().expect("unreachable: only named fields supported"));
+    let header_constructor = header_ident.map(|h| {
         quote! {
-            #name: header,
+            #h: header,
+        }
+    });
+    let header_serializer = header_ident.map(|h| {
+        quote! {
+            #crate_path::reexports::scuffle_bytes_util::zero_copy::Serialize::serialize(&self.#h, &mut writer)?;
         }
     });
 
@@ -130,6 +191,7 @@ fn box_impl(input: DeriveInput) -> syn::Result<proc_macro2::TokenStream> {
 
     let mut fields_in_self = Vec::new();
     let mut field_parsers = Vec::new();
+    let mut field_serializers = Vec::new();
 
     for field in fields.iter().filter(|f| !f.header && f.nested_box.is_none()) {
         let field_name = field.ident.as_ref().expect("unreachable: only named fields supported");
@@ -148,6 +210,33 @@ fn box_impl(input: DeriveInput) -> syn::Result<proc_macro2::TokenStream> {
         field_parsers.push(quote! {
             let #field_name = #read_field;
         });
+
+        match (field.repeated, &field.from) {
+            (true, None) => {
+                field_serializers.push(quote! {
+                    for item in &self.#field_name {
+                        #crate_path::reexports::scuffle_bytes_util::zero_copy::Serialize::serialize(item, &mut writer)?;
+                    }
+                });
+            }
+            (true, Some(from_ty)) => {
+                field_serializers.push(quote! {
+                    for item in &self.#field_name {
+                        #crate_path::reexports::scuffle_bytes_util::zero_copy::Serialize::serialize(&::std::convert::Into::<#from_ty>::into(*item), &mut writer)?;
+                    }
+                });
+            }
+            (false, None) => {
+                field_serializers.push(quote! {
+                    #crate_path::reexports::scuffle_bytes_util::zero_copy::Serialize::serialize(&self.#field_name, &mut writer)?;
+                });
+            }
+            (false, Some(from_ty)) => {
+                field_serializers.push(quote! {
+                    #crate_path::reexports::scuffle_bytes_util::zero_copy::Serialize::serialize(&::std::convert::Into::<#from_ty>::into(self.#field_name), &mut writer)?;
+                });
+            }
+        }
     }
 
     let collect_boxes = fields.iter().any(|f| f.nested_box.is_some());
@@ -168,10 +257,18 @@ fn box_impl(input: DeriveInput) -> syn::Result<proc_macro2::TokenStream> {
                 fields_in_self.push(quote! {
                     #field_name: ::std::option::Option::ok_or(#field_name, ::std::io::Error::new(::std::io::ErrorKind::InvalidData, format!("{} not found", #field_type)))?,
                 });
+                field_serializers.push(quote! {
+                    #crate_path::reexports::scuffle_bytes_util::zero_copy::Serialize::serialize(&self.#field_name, &mut writer)?;
+                });
             }
             IsoBoxFieldNestedBox::Collect | IsoBoxFieldNestedBox::CollectUnknown => {
                 fields_in_self.push(quote! {
                     #field_name,
+                });
+                field_serializers.push(quote! {
+                    for item in &self.#field_name {
+                        #crate_path::reexports::scuffle_bytes_util::zero_copy::Serialize::serialize(item, &mut writer)?;
+                    }
                 });
             }
         }
@@ -186,43 +283,77 @@ fn box_impl(input: DeriveInput) -> syn::Result<proc_macro2::TokenStream> {
         .map(|f| f.ty.to_token_stream())
         .ok_or(syn::Error::new_spanned(&ident, "No header field found"))?;
 
-    let deserialize_impl = (!opts.skip_deserialize_impl).then_some(quote! {
-        impl<'a> #crate_path::reexports::scuffle_bytes_util::zero_copy::Deserialize<'a> for #ident #generics {
-            fn deserialize<R>(mut reader: R) -> ::std::io::Result<Self>
-            where
-                R: #crate_path::reexports::scuffle_bytes_util::zero_copy::ZeroCopyReader<'a>,
-            {
-                let seed = #header_parser;
-                <Self as #crate_path::reexports::scuffle_bytes_util::zero_copy::DeserializeSeed<#header_type>>::deserialize_seed(reader, seed)
+    let mut impls = Vec::new();
+
+    if opts.skip_impl.as_ref().is_none_or(|s| s.should_impl(SkipImpl::Deserialize)) {
+        impls.push(quote! {
+            #[automatically_derived]
+            impl<'a> #crate_path::reexports::scuffle_bytes_util::zero_copy::Deserialize<'a> for #ident #generics {
+                fn deserialize<R>(mut reader: R) -> ::std::io::Result<Self>
+                where
+                    R: #crate_path::reexports::scuffle_bytes_util::zero_copy::ZeroCopyReader<'a>,
+                {
+                    let seed = #header_parser;
+                    <Self as #crate_path::reexports::scuffle_bytes_util::zero_copy::DeserializeSeed<#header_type>>::deserialize_seed(reader, seed)
+                }
             }
-        }
-    });
+        });
+    }
+
+    if opts
+        .skip_impl
+        .as_ref()
+        .is_none_or(|s| s.should_impl(SkipImpl::DeserializeSeed))
+    {
+        impls.push(quote! {
+            #[automatically_derived]
+            impl<'a> #crate_path::reexports::scuffle_bytes_util::zero_copy::DeserializeSeed<'a, #header_type> for #ident #generics {
+                fn deserialize_seed<R>(mut reader: R, seed: #header_type) -> ::std::io::Result<Self>
+                where
+                    R: #crate_path::reexports::scuffle_bytes_util::zero_copy::ZeroCopyReader<'a>,
+                {
+                    use #crate_path::reexports::scuffle_bytes_util::zero_copy::{I24Be as i24, I48Be as i48, U24Be as u24, U48Be as u48};
+                    let header = seed;
+
+                    #(#field_parsers)*
+                    #box_parser
+
+                    Ok(Self {
+                        #(#fields_in_self)*
+                        #header_constructor
+                    })
+                }
+            }
+        });
+    }
+
+    if opts.skip_impl.as_ref().is_none_or(|s| s.should_impl(SkipImpl::Serialize)) {
+        impls.push(quote! {
+            #[automatically_derived]
+            impl #generics #crate_path::reexports::scuffle_bytes_util::zero_copy::Serialize for #ident #generics {
+                fn serialize<W>(&self, mut writer: W) -> ::std::io::Result<()>
+                where
+                    W: ::std::io::Write
+                {
+                    use #crate_path::reexports::scuffle_bytes_util::zero_copy::{I24Be as i24, I48Be as i48, U24Be as u24, U48Be as u48};
+
+                    #header_serializer
+                    #(#field_serializers)*
+                    Ok(())
+                }
+            }
+        });
+    }
 
     let output = quote! {
+        #[automatically_derived]
         impl #generics IsoBox for #ident #generics {
-            const TYPE: #crate_path::BoxType = #crate_path::BoxType::FourCc(*#box_type);
             type Header = #header_type;
+
+            const TYPE: #crate_path::BoxType = #crate_path::BoxType::FourCc(*#box_type);
         }
 
-        #deserialize_impl
-
-        impl<'a> #crate_path::reexports::scuffle_bytes_util::zero_copy::DeserializeSeed<'a, #header_type> for #ident #generics {
-            fn deserialize_seed<R>(mut reader: R, seed: #header_type) -> ::std::io::Result<Self>
-            where
-                R: #crate_path::reexports::scuffle_bytes_util::zero_copy::ZeroCopyReader<'a>,
-            {
-                use #crate_path::reexports::scuffle_bytes_util::zero_copy::{I24Be as i24, I48Be as i48, U24Be as u24, U48Be as u48};
-                let header = seed;
-
-                #(#field_parsers)*
-                #box_parser
-
-                Ok(Self {
-                    #(#fields_in_self)*
-                    #header_constructor
-                })
-            }
-        }
+        #(#impls)*
     };
 
     Ok(output)

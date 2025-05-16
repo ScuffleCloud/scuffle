@@ -1,10 +1,9 @@
 use std::fmt::Debug;
-use std::{io, iter};
+use std::io;
 
-use scuffle_bytes_util::IoResultExt;
-use scuffle_bytes_util::zero_copy::{Deserialize, DeserializeSeed, ZeroCopyReader};
+use scuffle_bytes_util::zero_copy::{Deserialize, DeserializeSeed, Serialize, ZeroCopyReader};
 
-use crate::{BoxHeader, BoxType, FullBoxHeader, IsoBox};
+use crate::{BoxHeader, FullBoxHeader, IsoBox};
 
 /// Time to sample box
 ///
@@ -30,13 +29,21 @@ impl<'a> Deserialize<'a> for TimeToSampleBoxEntry {
     where
         R: ZeroCopyReader<'a>,
     {
-        let sample_count = u32::deserialize(&mut reader)?;
-        let sample_delta = u32::deserialize(&mut reader)?;
-
         Ok(Self {
-            sample_count,
-            sample_delta,
+            sample_count: u32::deserialize(&mut reader)?,
+            sample_delta: u32::deserialize(&mut reader)?,
         })
+    }
+}
+
+impl Serialize for TimeToSampleBoxEntry {
+    fn serialize<W>(&self, mut writer: W) -> io::Result<()>
+    where
+        W: std::io::Write,
+    {
+        self.sample_count.serialize(&mut writer)?;
+        self.sample_delta.serialize(&mut writer)?;
+        Ok(())
     }
 }
 
@@ -75,34 +82,37 @@ impl<'a> Deserialize<'a> for CompositionOffsetBoxEntry {
     where
         R: ZeroCopyReader<'a>,
     {
-        let sample_count = u32::deserialize(&mut reader)?;
-        let sample_offset = u32::deserialize(&mut reader)?;
         Ok(Self {
-            sample_count,
-            sample_offset,
+            sample_count: u32::deserialize(&mut reader)?,
+            sample_offset: u32::deserialize(&mut reader)?,
         })
+    }
+}
+
+impl Serialize for CompositionOffsetBoxEntry {
+    fn serialize<W>(&self, mut writer: W) -> io::Result<()>
+    where
+        W: std::io::Write,
+    {
+        self.sample_count.serialize(&mut writer)?;
+        self.sample_offset.serialize(&mut writer)?;
+        Ok(())
     }
 }
 
 /// Composition to decode box
 ///
 /// ISO/IEC 14496-12 - 8.6.1.4
-#[derive(Debug)]
+#[derive(Debug, IsoBox)]
+#[iso_box(box_type = b"cslg", skip_impl(deserialize_seed, serialize), crate_path = crate)]
 pub struct CompositionToDecodeBox {
+    #[iso_box(header)]
     pub header: FullBoxHeader,
     pub composition_to_dt_shift: i64,
     pub least_decode_to_display_delta: i64,
     pub greatest_decode_to_display_delta: i64,
     pub composition_start_time: i64,
     pub composition_end_time: i64,
-}
-
-// Manual implementation because conditional fields are not supported in the macro
-
-impl IsoBox for CompositionToDecodeBox {
-    type Header = FullBoxHeader;
-
-    const TYPE: BoxType = BoxType::FourCc(*b"cslg");
 }
 
 impl<'a> DeserializeSeed<'a, FullBoxHeader> for CompositionToDecodeBox {
@@ -147,14 +157,25 @@ impl<'a> DeserializeSeed<'a, FullBoxHeader> for CompositionToDecodeBox {
     }
 }
 
-impl<'a> Deserialize<'a> for CompositionToDecodeBox {
-    fn deserialize<R>(mut reader: R) -> io::Result<Self>
+impl Serialize for CompositionToDecodeBox {
+    fn serialize<W>(&self, mut writer: W) -> io::Result<()>
     where
-        R: ZeroCopyReader<'a>,
+        W: std::io::Write,
     {
-        let header = BoxHeader::deserialize(&mut reader)?;
-        let header = FullBoxHeader::deserialize_seed(&mut reader, header)?;
-        Self::deserialize_seed(reader, header)
+        if self.header.version == 0 {
+            (self.composition_to_dt_shift as i32).serialize(&mut writer)?;
+            (self.least_decode_to_display_delta as i32).serialize(&mut writer)?;
+            (self.greatest_decode_to_display_delta as i32).serialize(&mut writer)?;
+            (self.composition_start_time as i32).serialize(&mut writer)?;
+            (self.composition_end_time as i32).serialize(&mut writer)?;
+        } else {
+            self.composition_to_dt_shift.serialize(&mut writer)?;
+            self.least_decode_to_display_delta.serialize(&mut writer)?;
+            self.greatest_decode_to_display_delta.serialize(&mut writer)?;
+            self.composition_start_time.serialize(&mut writer)?;
+            self.composition_end_time.serialize(&mut writer)?;
+        }
+        Ok(())
     }
 }
 
@@ -195,13 +216,21 @@ impl<'a> Deserialize<'a> for ShadowSyncSampleBoxEntry {
     where
         R: ZeroCopyReader<'a>,
     {
-        let shadowed_sample_number = u32::deserialize(&mut reader)?;
-        let sync_sample_number = u32::deserialize(&mut reader)?;
-
         Ok(Self {
-            shadowed_sample_number,
-            sync_sample_number,
+            shadowed_sample_number: u32::deserialize(&mut reader)?,
+            sync_sample_number: u32::deserialize(&mut reader)?,
         })
+    }
+}
+
+impl Serialize for ShadowSyncSampleBoxEntry {
+    fn serialize<W>(&self, mut writer: W) -> io::Result<()>
+    where
+        W: std::io::Write,
+    {
+        self.shadowed_sample_number.serialize(&mut writer)?;
+        self.sync_sample_number.serialize(&mut writer)?;
+        Ok(())
     }
 }
 
@@ -217,7 +246,7 @@ pub struct SampleDependencyTypeBox {
     pub entries: Vec<SampleDependencyTypeBoxEntry>,
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone, Copy)]
 pub struct SampleDependencyTypeBoxEntry {
     pub is_leading: u8,
     pub sample_depends_on: u8,
@@ -236,6 +265,15 @@ impl From<u8> for SampleDependencyTypeBoxEntry {
     }
 }
 
+impl From<SampleDependencyTypeBoxEntry> for u8 {
+    fn from(val: SampleDependencyTypeBoxEntry) -> Self {
+        ((val.is_leading & 0b11) << 6)
+            | ((val.sample_depends_on & 0b11) << 4)
+            | ((val.sample_is_depended_on & 0b11) << 2)
+            | (val.sample_has_redundancy & 0b11)
+    }
+}
+
 /// Edit box
 ///
 /// ISO/IEC 14496-12 - 8.6.5
@@ -251,28 +289,14 @@ pub struct EditBox {
 /// Edit list box
 ///
 /// ISO/IEC 14496-12 - 8.6.6
-#[derive(Debug)]
+#[derive(Debug, IsoBox)]
+#[iso_box(box_type = b"elst", skip_impl(deserialize_seed, serialize), crate_path = crate)]
 pub struct EditListBox {
+    #[iso_box(header)]
     pub header: FullBoxHeader,
     pub entry_count: u32,
+    #[iso_box(repeated)]
     pub entries: Vec<EditListBoxEntry>,
-}
-
-impl IsoBox for EditListBox {
-    type Header = FullBoxHeader;
-
-    const TYPE: BoxType = BoxType::FourCc(*b"elst");
-}
-
-impl<'a> Deserialize<'a> for EditListBox {
-    fn deserialize<R>(mut reader: R) -> io::Result<Self>
-    where
-        R: ZeroCopyReader<'a>,
-    {
-        let header = BoxHeader::deserialize(&mut reader)?;
-        let header = FullBoxHeader::deserialize_seed(&mut reader, header)?;
-        Self::deserialize_seed(reader, header)
-    }
 }
 
 impl<'a> DeserializeSeed<'a, FullBoxHeader> for EditListBox {
@@ -282,30 +306,40 @@ impl<'a> DeserializeSeed<'a, FullBoxHeader> for EditListBox {
     {
         let entry_count = u32::deserialize(&mut reader)?;
 
-        let entries = {
-            if let Some(payload_size) = crate::BoxHeaderProperties::payload_size(&seed) {
-                let mut payload_reader = ZeroCopyReader::take(&mut reader, payload_size);
-                iter::from_fn(|| {
-                    EditListBoxEntry::deserialize_seed(&mut payload_reader, seed.version)
-                        .eof_to_none()
-                        .transpose()
-                })
-                .collect::<Result<Vec<EditListBoxEntry>, io::Error>>()?
-            } else {
-                iter::from_fn(|| {
-                    EditListBoxEntry::deserialize_seed(&mut reader, seed.version)
-                        .eof_to_none()
-                        .transpose()
-                })
-                .collect::<Result<Vec<EditListBoxEntry>, io::Error>>()?
-            }
-        };
+        let mut entries = Vec::with_capacity(entry_count as usize);
+        for _ in 0..entry_count {
+            entries.push(EditListBoxEntry::deserialize_seed(&mut reader, seed.version)?);
+        }
 
         Ok(Self {
             header: seed,
             entry_count,
             entries,
         })
+    }
+}
+
+impl Serialize for EditListBox {
+    fn serialize<W>(&self, mut writer: W) -> io::Result<()>
+    where
+        W: std::io::Write,
+    {
+        self.header.serialize(&mut writer)?;
+        self.entry_count.serialize(&mut writer)?;
+
+        for entry in &self.entries {
+            if self.header.version == 0 {
+                (entry.edit_duration as u32).serialize(&mut writer)?;
+                (entry.media_time as i32).serialize(&mut writer)?;
+            } else {
+                entry.edit_duration.serialize(&mut writer)?;
+                entry.media_time.serialize(&mut writer)?;
+            }
+            entry.media_rate_integer.serialize(&mut writer)?;
+            entry.media_rate_fraction.serialize(&mut writer)?;
+        }
+
+        Ok(())
     }
 }
 

@@ -8,7 +8,7 @@ use crate::boxes::{
 use crate::{IsoBox, UnknownBox};
 
 #[derive(IsoBox, Debug)]
-#[iso_box(box_type = b"root", skip_deserialize_impl, crate_path = crate)] // The box type does not matter here
+#[iso_box(box_type = b"root", skip_impl(deserialize), crate_path = crate)] // The box type does not matter here
 pub struct IsobmffFile<'a> {
     #[iso_box(header)]
     pub empty_header: (),

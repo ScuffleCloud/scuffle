@@ -1,7 +1,7 @@
-use scuffle_bytes_util::zero_copy::{Deserialize, DeserializeSeed};
+use scuffle_bytes_util::zero_copy::{Deserialize, DeserializeSeed, Serialize};
 
 use super::StereoVideoBox;
-use crate::{BoxHeader, BoxType, FullBoxHeader, IsoBox, UnknownBox, Utf8String};
+use crate::{BoxHeader, FullBoxHeader, IsoBox, UnknownBox, Utf8String};
 
 /// Protection scheme information box
 ///
@@ -33,29 +33,14 @@ pub struct OriginalFormatBox {
 /// Scheme type box
 ///
 /// ISO/IEC 14496-12 - 8.12.6
-#[derive(Debug)]
+#[derive(Debug, IsoBox)]
+#[iso_box(box_type = b"schm", skip_impl(deserialize_seed, serialize), crate_path = crate)]
 pub struct SchemeTypeBox {
+    #[iso_box(header)]
     pub header: FullBoxHeader,
     pub scheme_type: [u8; 4],
     pub scheme_version: u32,
     pub scheme_uri: Option<Utf8String>,
-}
-
-impl IsoBox for SchemeTypeBox {
-    type Header = FullBoxHeader;
-
-    const TYPE: BoxType = BoxType::FourCc(*b"schm");
-}
-
-impl<'a> Deserialize<'a> for SchemeTypeBox {
-    fn deserialize<R>(mut reader: R) -> std::io::Result<Self>
-    where
-        R: scuffle_bytes_util::zero_copy::ZeroCopyReader<'a>,
-    {
-        let header = BoxHeader::deserialize(&mut reader)?;
-        let header = FullBoxHeader::deserialize_seed(&mut reader, header)?;
-        Self::deserialize_seed(&mut reader, header)
-    }
 }
 
 impl<'a> DeserializeSeed<'a, FullBoxHeader> for SchemeTypeBox {
@@ -65,7 +50,7 @@ impl<'a> DeserializeSeed<'a, FullBoxHeader> for SchemeTypeBox {
     {
         let scheme_type = <[u8; 4]>::deserialize(&mut reader)?;
         let scheme_version = u32::deserialize(&mut reader)?;
-        let scheme_uri = if seed.flags & 0x000001 != 0 {
+        let scheme_uri = if (*seed.flags & 0x000001) != 0 {
             Some(Utf8String::deserialize(&mut reader)?)
         } else {
             None
@@ -77,6 +62,24 @@ impl<'a> DeserializeSeed<'a, FullBoxHeader> for SchemeTypeBox {
             scheme_version,
             scheme_uri,
         })
+    }
+}
+
+impl Serialize for SchemeTypeBox {
+    fn serialize<W>(&self, mut writer: W) -> std::io::Result<()>
+    where
+        W: std::io::Write,
+    {
+        self.header.serialize(&mut writer)?;
+
+        self.scheme_type.serialize(&mut writer)?;
+        self.scheme_version.serialize(&mut writer)?;
+
+        if let Some(scheme_uri) = &self.scheme_uri {
+            scheme_uri.serialize(&mut writer)?;
+        }
+
+        Ok(())
     }
 }
 

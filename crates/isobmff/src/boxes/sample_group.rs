@@ -1,37 +1,22 @@
 use std::io;
 
-use scuffle_bytes_util::IoResultExt;
-use scuffle_bytes_util::zero_copy::{Deserialize, DeserializeSeed, ZeroCopyReader};
+use scuffle_bytes_util::zero_copy::{Deserialize, DeserializeSeed, Serialize, ZeroCopyReader};
+use scuffle_bytes_util::{BitWriter, IoResultExt};
 
-use crate::{BoxHeader, BoxType, FullBoxHeader, IsoBox};
+use crate::{FullBoxHeader, IsoBox};
 
 /// Sample to group box
 ///
 /// ISO/IEC 14496-12 - 8.9.2
-#[derive(Debug)]
+#[derive(Debug, IsoBox)]
+#[iso_box(box_type = b"sbgp", skip_impl(deserialize_seed, serialize), crate_path = crate)]
 pub struct SampleToGroupBox {
+    #[iso_box(header)]
     pub header: FullBoxHeader,
     pub grouping_type: [u8; 4],
     pub grouping_type_parameter: Option<u32>,
     pub entry_count: u32,
     pub entries: Vec<SampleToGroupBoxEntry>,
-}
-
-impl IsoBox for SampleToGroupBox {
-    type Header = FullBoxHeader;
-
-    const TYPE: BoxType = BoxType::FourCc(*b"sbgp");
-}
-
-impl<'a> Deserialize<'a> for SampleToGroupBox {
-    fn deserialize<R>(mut reader: R) -> io::Result<Self>
-    where
-        R: ZeroCopyReader<'a>,
-    {
-        let header = BoxHeader::deserialize(&mut reader)?;
-        let header = FullBoxHeader::deserialize_seed(&mut reader, header)?;
-        Self::deserialize_seed(reader, header)
-    }
 }
 
 impl<'a> DeserializeSeed<'a, FullBoxHeader> for SampleToGroupBox {
@@ -63,6 +48,30 @@ impl<'a> DeserializeSeed<'a, FullBoxHeader> for SampleToGroupBox {
     }
 }
 
+impl Serialize for SampleToGroupBox {
+    fn serialize<W>(&self, mut writer: W) -> io::Result<()>
+    where
+        W: std::io::Write,
+    {
+        self.grouping_type.serialize(&mut writer)?;
+        if self.header.version == 1 {
+            self.grouping_type_parameter
+                .ok_or(io::Error::new(
+                    io::ErrorKind::InvalidData,
+                    "grouping_type_parameter is required",
+                ))?
+                .serialize(&mut writer)?;
+        }
+
+        self.entry_count.serialize(&mut writer)?;
+        for entry in &self.entries {
+            entry.serialize(&mut writer)?;
+        }
+
+        Ok(())
+    }
+}
+
 #[derive(Debug)]
 pub struct SampleToGroupBoxEntry {
     pub sample_count: u32,
@@ -81,34 +90,30 @@ impl<'a> Deserialize<'a> for SampleToGroupBoxEntry {
     }
 }
 
+impl Serialize for SampleToGroupBoxEntry {
+    fn serialize<W>(&self, mut writer: W) -> io::Result<()>
+    where
+        W: std::io::Write,
+    {
+        self.sample_count.serialize(&mut writer)?;
+        self.group_description_index.serialize(&mut writer)?;
+        Ok(())
+    }
+}
+
 /// Sample group description box
 ///
 /// ISO/IEC 14496-12 - 8.9.3
-#[derive(Debug)]
+#[derive(Debug, IsoBox)]
+#[iso_box(box_type = b"sgpd", skip_impl(deserialize_seed, serialize), crate_path = crate)]
 pub struct SampleGroupDescriptionBox {
+    #[iso_box(header)]
     pub header: FullBoxHeader,
     pub grouping_type: [u8; 4],
     pub default_length: Option<u32>,
     pub default_group_description_index: Option<u32>,
     pub entry_count: u32,
     pub entries: Vec<SampleGroupDescriptionEntry>,
-}
-
-impl IsoBox for SampleGroupDescriptionBox {
-    type Header = FullBoxHeader;
-
-    const TYPE: BoxType = BoxType::FourCc(*b"sgpd");
-}
-
-impl<'a> Deserialize<'a> for SampleGroupDescriptionBox {
-    fn deserialize<R>(mut reader: R) -> io::Result<Self>
-    where
-        R: ZeroCopyReader<'a>,
-    {
-        let header = BoxHeader::deserialize(&mut reader)?;
-        let header = FullBoxHeader::deserialize_seed(&mut reader, header)?;
-        Self::deserialize_seed(reader, header)
-    }
 }
 
 impl<'a> DeserializeSeed<'a, FullBoxHeader> for SampleGroupDescriptionBox {
@@ -143,6 +148,43 @@ impl<'a> DeserializeSeed<'a, FullBoxHeader> for SampleGroupDescriptionBox {
             entry_count,
             entries,
         })
+    }
+}
+
+impl Serialize for SampleGroupDescriptionBox {
+    fn serialize<W>(&self, mut writer: W) -> io::Result<()>
+    where
+        W: std::io::Write,
+    {
+        self.header.serialize(&mut writer)?;
+
+        self.grouping_type.serialize(&mut writer)?;
+        if self.header.version >= 1 {
+            self.default_length
+                .ok_or(io::Error::new(io::ErrorKind::InvalidData, "default_length is required"))?
+                .serialize(&mut writer)?;
+        }
+        if self.header.version >= 2 {
+            self.default_group_description_index
+                .ok_or(io::Error::new(
+                    io::ErrorKind::InvalidData,
+                    "default_group_description_index is required",
+                ))?
+                .serialize(&mut writer)?;
+        }
+
+        self.entry_count.serialize(&mut writer)?;
+        for entry in &self.entries {
+            if self.header.version >= 1 && self.default_length.is_some_and(|l| l == 0) {
+                entry
+                    .description_length
+                    .ok_or(io::Error::new(io::ErrorKind::InvalidData, "description_length is required"))?
+                    .serialize(&mut writer)?;
+            }
+            entry.sample_group_description_entry.serialize(&mut writer)?;
+        }
+
+        Ok(())
     }
 }
 
@@ -257,6 +299,17 @@ impl<'a> Deserialize<'a> for AlternativeStartupEntryNums {
     }
 }
 
+impl Serialize for AlternativeStartupEntryNums {
+    fn serialize<W>(&self, mut writer: W) -> io::Result<()>
+    where
+        W: std::io::Write,
+    {
+        self.num_output_samples.serialize(&mut writer)?;
+        self.num_total_samples.serialize(&mut writer)?;
+        Ok(())
+    }
+}
+
 #[derive(Debug)]
 pub struct RateShareEntryOperationPoint {
     pub target_rate_share: u16,
@@ -275,6 +328,19 @@ impl<'a> Deserialize<'a> for RateShareEntryOperationPoint {
             available_bitrate: Some(available_bitrate),
             target_rate_share,
         })
+    }
+}
+
+impl Serialize for RateShareEntryOperationPoint {
+    fn serialize<W>(&self, mut writer: W) -> io::Result<()>
+    where
+        W: std::io::Write,
+    {
+        self.target_rate_share.serialize(&mut writer)?;
+        if let Some(available_bitrate) = &self.available_bitrate {
+            available_bitrate.serialize(&mut writer)?;
+        }
+        Ok(())
     }
 }
 
@@ -412,11 +478,119 @@ impl<'a> DeserializeSeed<'a, [u8; 4]> for SampleGroupDescriptionEntryType {
     }
 }
 
+impl Serialize for SampleGroupDescriptionEntryType {
+    fn serialize<W>(&self, mut writer: W) -> io::Result<()>
+    where
+        W: std::io::Write,
+    {
+        match self {
+            Self::RollRecoveryEntry { roll_distance } => roll_distance.serialize(&mut writer)?,
+            Self::AlternativeStartupEntry {
+                roll_count,
+                first_output_sample,
+                sample_offset,
+                nums,
+            } => {
+                roll_count.serialize(&mut writer)?;
+                first_output_sample.serialize(&mut writer)?;
+                for offset in sample_offset {
+                    offset.serialize(&mut writer)?;
+                }
+                for num in nums {
+                    num.serialize(&mut writer)?;
+                }
+            }
+            Self::VisualRandomAccessEntry {
+                num_leading_samples_known,
+                num_leading_samples,
+            } => {
+                let mut byte = (*num_leading_samples_known as u8) << 7;
+                byte |= *num_leading_samples;
+                byte.serialize(&mut writer)?;
+            }
+            Self::TemporalLevelEntry {
+                level_independently_decodable,
+            } => {
+                ((*level_independently_decodable as u8) << 7).serialize(&mut writer)?;
+            }
+            Self::VisualDRAPEntry { drap_type } => {
+                let byte = ((*drap_type & 0b1111) as u32) << 29;
+                byte.serialize(&mut writer)?;
+            }
+            Self::PixelAspectRatioEntry { h_spacing, v_spacing } => {
+                h_spacing.serialize(&mut writer)?;
+                v_spacing.serialize(&mut writer)?;
+            }
+            Self::CleanApertureEntry {
+                clean_aperture_width_n,
+                clean_aperture_width_d,
+                clean_aperture_height_n,
+                clean_aperture_height_d,
+                horiz_off_n,
+                horiz_off_d,
+                vert_off_n,
+                vert_off_d,
+            } => {
+                clean_aperture_width_n.serialize(&mut writer)?;
+                clean_aperture_width_d.serialize(&mut writer)?;
+                clean_aperture_height_n.serialize(&mut writer)?;
+                clean_aperture_height_d.serialize(&mut writer)?;
+                horiz_off_n.serialize(&mut writer)?;
+                horiz_off_d.serialize(&mut writer)?;
+                vert_off_n.serialize(&mut writer)?;
+                vert_off_d.serialize(&mut writer)?;
+            }
+            Self::AudioPreRollEntry { roll_distance } => roll_distance.serialize(&mut writer)?,
+            Self::RateShareEntry {
+                operation_point_count,
+                operation_points,
+                maximum_bitrate,
+                minimum_bitrate,
+                discard_priority,
+            } => {
+                operation_point_count.serialize(&mut writer)?;
+                for operation_point in operation_points {
+                    if *operation_point_count > 1 && operation_point.available_bitrate.is_none() {
+                        return Err(io::Error::new(io::ErrorKind::InvalidData, "available_bitrate is required"));
+                    }
+                    operation_point.serialize(&mut writer)?;
+                }
+                maximum_bitrate.serialize(&mut writer)?;
+                minimum_bitrate.serialize(&mut writer)?;
+                discard_priority.serialize(&mut writer)?;
+            }
+            Self::SAPEntry {
+                dependent_flag,
+                sap_type,
+            } => {
+                let mut byte = (*dependent_flag as u8) << 7;
+                byte |= *sap_type & 0b0000_1111;
+                byte.serialize(&mut writer)?;
+            }
+            Self::SampleToMetadataItemEntry {
+                meta_box_handler_type,
+                num_items,
+                item_id,
+            } => {
+                meta_box_handler_type.serialize(&mut writer)?;
+                num_items.serialize(&mut writer)?;
+                for id in item_id {
+                    id.serialize(&mut writer)?;
+                }
+            }
+        }
+
+        Ok(())
+    }
+}
+
 /// Compact sample to group box
 ///
 /// ISO/IEC 14496-12 - 8.9.5
-#[derive(Debug)]
+#[derive(Debug, IsoBox)]
+#[iso_box(box_type = b"csgp", skip_impl(deserialize_seed, serialize), crate_path = crate)]
 pub struct CompactSampleToGroupBox {
+    #[iso_box(header)]
     pub header: FullBoxHeader,
     pub grouping_type: [u8; 4],
     pub grouping_type_parameter: Option<u32>,
@@ -446,29 +620,12 @@ impl From<u32> for CompactSampleToGroupBoxFlags {
     }
 }
 
-impl IsoBox for CompactSampleToGroupBox {
-    type Header = FullBoxHeader;
-
-    const TYPE: BoxType = BoxType::FourCc(*b"csgp");
-}
-
-impl<'a> Deserialize<'a> for CompactSampleToGroupBox {
-    fn deserialize<R>(mut reader: R) -> io::Result<Self>
-    where
-        R: ZeroCopyReader<'a>,
-    {
-        let header = BoxHeader::deserialize(&mut reader)?;
-        let header = FullBoxHeader::deserialize_seed(&mut reader, header)?;
-        Self::deserialize_seed(reader, header)
-    }
-}
-
 impl<'a> DeserializeSeed<'a, FullBoxHeader> for CompactSampleToGroupBox {
     fn deserialize_seed<R>(mut reader: R, seed: FullBoxHeader) -> io::Result<Self>
     where
         R: ZeroCopyReader<'a>,
     {
-        let flags = CompactSampleToGroupBoxFlags::from(seed.flags);
+        let flags = CompactSampleToGroupBoxFlags::from(*seed.flags);
 
         let grouping_type = <[u8; 4]>::deserialize(&mut reader)?;
         let grouping_type_parameter = if flags.grouping_type_parameter_present {
@@ -581,6 +738,49 @@ impl<'a> DeserializeSeed<'a, FullBoxHeader> for CompactSampleToGroupBox {
     }
 }
 
+impl Serialize for CompactSampleToGroupBox {
+    fn serialize<W>(&self, writer: W) -> io::Result<()>
+    where
+        W: std::io::Write,
+    {
+        fn f(index: u8) -> u8 {
+            match index {
+                0 => 4,
+                1 => 8,
+                2 => 16,
+                3 => 32,
+                _ => unreachable!(),
+            }
+        }
+        let flags = CompactSampleToGroupBoxFlags::from(*self.header.flags);
+
+        let mut bit_writer = BitWriter::new(writer);
+
+        self.header.serialize(&mut bit_writer)?;
+
+        self.grouping_type.serialize(&mut bit_writer)?;
+
+        if let Some(grouping_type_parameter) = self.grouping_type_parameter {
+            grouping_type_parameter.serialize(&mut bit_writer)?;
+        }
+
+        self.pattern_count.serialize(&mut bit_writer)?;
+        for pattern in &self.patterns {
+            bit_writer.write_bits(pattern.pattern_length as u64, f(flags.pattern_size_code))?;
+            bit_writer.write_bits(pattern.sample_count as u64, f(flags.count_size_code))?;
+        }
+
+        for j in &self.sample_group_description_index {
+            for k in j {
+                let bit_count = f(flags.index_size_code);
+                bit_writer.write_bits(k.to_value(bit_count) as u64, bit_count)?;
+            }
+        }
+
+        Ok(())
+    }
+}
+
 #[derive(Debug)]
 pub struct CompactSampleToGroupBoxPattern {
     pub pattern_length: u32,
@@ -630,4 +830,16 @@ impl<'a> DeserializeSeed<'a, CompactSampleToGroupBoxFlags> for CompactSampleToGr
 pub struct CompactSampleToGroupBoxSampleGroupDescriptionIndex {
     pub value: u32,
     pub fragment_local: Option<bool>,
+}
+
+impl CompactSampleToGroupBoxSampleGroupDescriptionIndex {
+    pub fn to_value(&self, size: u8) -> u32 {
+        if let Some(fl) = self.fragment_local {
+            let mut value = (fl as u32) << (size - 1);
+            value |= self.value & ((1 << (size - 1)) - 1);
+            value
+        } else {
+            self.value
+        }
+    }
 }

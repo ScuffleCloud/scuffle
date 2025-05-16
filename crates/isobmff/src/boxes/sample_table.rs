@@ -1,6 +1,6 @@
 use std::io;
 
-use scuffle_bytes_util::zero_copy::{Deserialize, ZeroCopyReader};
+use scuffle_bytes_util::zero_copy::{Deserialize, Serialize, ZeroCopyReader};
 
 use super::{
     ChunkLargeOffsetBox, ChunkOffsetBox, CompactSampleSizeBox, CompactSampleToGroupBox, CompositionOffsetBox,
@@ -86,6 +86,17 @@ impl<'a> Deserialize<'a> for SampleEntry {
         let data_reference_index = u16::deserialize(&mut reader)?;
 
         Ok(Self { data_reference_index })
+    }
+}
+
+impl Serialize for SampleEntry {
+    fn serialize<W>(&self, mut writer: W) -> io::Result<()>
+    where
+        W: std::io::Write,
+    {
+        [0u8; 6].serialize(&mut writer)?; // reserved
+        self.data_reference_index.serialize(&mut writer)?;
+        Ok(())
     }
 }
 

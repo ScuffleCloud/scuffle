@@ -1,4 +1,4 @@
-use scuffle_bytes_util::zero_copy::Deserialize;
+use scuffle_bytes_util::zero_copy::{Deserialize, Serialize};
 
 use super::SampleEntry;
 use crate::{FullBoxHeader, IsoBox};
@@ -39,5 +39,16 @@ impl<'a> Deserialize<'a> for VolumetricVisualSampleEntry {
             sample_entry,
             compressorname,
         })
+    }
+}
+
+impl Serialize for VolumetricVisualSampleEntry {
+    fn serialize<W>(&self, mut writer: W) -> std::io::Result<()>
+    where
+        W: std::io::Write,
+    {
+        self.sample_entry.serialize(&mut writer)?;
+        self.compressorname.serialize(&mut writer)?;
+        Ok(())
     }
 }

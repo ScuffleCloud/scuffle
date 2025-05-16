@@ -1,10 +1,9 @@
 //! Movie structure boxes defined in ISO/IEC 14496-12 - 8.2
 
-use byteorder::ReadBytesExt;
-use scuffle_bytes_util::zero_copy::{Deserialize, DeserializeSeed};
+use scuffle_bytes_util::zero_copy::{Deserialize, DeserializeSeed, Serialize};
 
 use super::{MetaBox, MovieExtendsBox, TrackBox, UserDataBox};
-use crate::{BoxHeader, BoxType, FullBoxHeader, IsoBox, UnknownBox};
+use crate::{BoxHeader, FullBoxHeader, IsoBox, UnknownBox};
 
 /// Movie box
 ///
@@ -31,8 +30,10 @@ pub struct MovieBox<'a> {
 /// Movie header box
 ///
 /// ISO/IEC 14496-12 - 8.2.2
-#[derive(Debug)]
+#[derive(Debug, IsoBox)]
+#[iso_box(box_type = b"mvhd", skip_impl(deserialize_seed, serialize), crate_path = crate)]
 pub struct MovieHeaderBox {
+    #[iso_box(header)]
     pub header: FullBoxHeader,
     pub creation_time: u64,
     pub modification_time: u64,
@@ -40,17 +41,11 @@ pub struct MovieHeaderBox {
     pub duration: u64,
     pub rate: i32,
     pub volume: i16,
+    pub reserved1: u16,
+    pub reserved2: u64,
     pub matrix: [i32; 9],
     pub pre_defined: [u32; 6],
     pub next_track_id: u32,
-}
-
-// Manual implementation because conditional fields are not supported in the macro
-
-impl IsoBox for MovieHeaderBox {
-    type Header = FullBoxHeader;
-
-    const TYPE: BoxType = BoxType::FourCc(*b"mvhd");
 }
 
 impl<'a> DeserializeSeed<'a, FullBoxHeader> for MovieHeaderBox {
@@ -59,39 +54,39 @@ impl<'a> DeserializeSeed<'a, FullBoxHeader> for MovieHeaderBox {
         R: scuffle_bytes_util::zero_copy::ZeroCopyReader<'a>,
     {
         let creation_time = if seed.version == 1 {
-            reader.as_std().read_u64::<byteorder::BigEndian>()?
+            u64::deserialize(&mut reader)?
         } else {
-            reader.as_std().read_u32::<byteorder::BigEndian>()? as u64
+            u32::deserialize(&mut reader)? as u64
         };
         let modification_time = if seed.version == 1 {
-            reader.as_std().read_u64::<byteorder::BigEndian>()?
+            u64::deserialize(&mut reader)?
         } else {
-            reader.as_std().read_u32::<byteorder::BigEndian>()? as u64
+            u32::deserialize(&mut reader)? as u64
         };
-        let timescale = reader.as_std().read_u32::<byteorder::BigEndian>()?;
+        let timescale = u32::deserialize(&mut reader)?;
         let duration = if seed.version == 1 {
-            reader.as_std().read_u64::<byteorder::BigEndian>()?
+            u64::deserialize(&mut reader)?
         } else {
-            reader.as_std().read_u32::<byteorder::BigEndian>()? as u64
+            u32::deserialize(&mut reader)? as u64
         };
 
-        let rate = reader.as_std().read_i32::<byteorder::BigEndian>()?;
-        let volume = reader.as_std().read_i16::<byteorder::BigEndian>()?;
+        let rate = i32::deserialize(&mut reader)?;
+        let volume = i16::deserialize(&mut reader)?;
 
-        reader.as_std().read_u16::<byteorder::BigEndian>()?; // reserved
-        reader.as_std().read_u64::<byteorder::BigEndian>()?; // reserved
+        let reserved1 = u16::deserialize(&mut reader)?;
+        let reserved2 = u64::deserialize(&mut reader)?;
 
         let mut matrix = [0; 9];
         for m in &mut matrix {
-            *m = reader.as_std().read_i32::<byteorder::BigEndian>()?;
+            *m = i32::deserialize(&mut reader)?;
         }
 
         let mut pre_defined = [0; 6];
         for p in &mut pre_defined {
-            *p = reader.as_std().read_u32::<byteorder::BigEndian>()?;
+            *p = u32::deserialize(&mut reader)?;
         }
 
-        let next_track_id = reader.as_std().read_u32::<byteorder::BigEndian>()?;
+        let next_track_id = u32::deserialize(&mut reader)?;
 
         Ok(Self {
             header: seed,
@@ -101,6 +96,8 @@ impl<'a> DeserializeSeed<'a, FullBoxHeader> for MovieHeaderBox {
             duration,
             rate,
             volume,
+            reserved1,
+            reserved2,
             matrix,
             pre_defined,
             next_track_id,
@@ -108,13 +105,33 @@ impl<'a> DeserializeSeed<'a, FullBoxHeader> for MovieHeaderBox {
     }
 }
 
-impl<'a> Deserialize<'a> for MovieHeaderBox {
-    fn deserialize<R>(mut reader: R) -> std::io::Result<Self>
+impl Serialize for MovieHeaderBox {
+    fn serialize<W>(&self, mut writer: W) -> std::io::Result<()>
     where
-        R: scuffle_bytes_util::zero_copy::ZeroCopyReader<'a>,
+        W: std::io::Write,
     {
-        let header = BoxHeader::deserialize(&mut reader)?;
-        let header = FullBoxHeader::deserialize_seed(&mut reader, header)?;
-        Self::deserialize_seed(reader, header)
+        self.header.serialize(&mut writer)?;
+
+        if self.header.version == 1 {
+            self.creation_time.serialize(&mut writer)?;
+            self.modification_time.serialize(&mut writer)?;
+            self.timescale.serialize(&mut writer)?;
+            self.duration.serialize(&mut writer)?;
+        } else {
+            (self.creation_time as u32).serialize(&mut writer)?;
+            (self.modification_time as u32).serialize(&mut writer)?;
+            self.timescale.serialize(&mut writer)?;
+            (self.duration as u32).serialize(&mut writer)?;
+        }
+
+        self.rate.serialize(&mut writer)?;
+        self.volume.serialize(&mut writer)?;
+        self.reserved1.serialize(&mut writer)?;
+        self.reserved2.serialize(&mut writer)?;
+        self.matrix.serialize(&mut writer)?;
+        self.pre_defined.serialize(&mut writer)?;
+        self.next_track_id.serialize(writer)?;
+
+        Ok(())
     }
 }

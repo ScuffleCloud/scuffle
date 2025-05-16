@@ -3,7 +3,7 @@
 use std::fmt::Debug;
 
 use scuffle_bytes_util::BytesCow;
-use scuffle_bytes_util::zero_copy::Deserialize;
+use scuffle_bytes_util::zero_copy::{Deserialize, Serialize};
 
 use crate::{BoxHeader, FullBoxHeader, IsoBox};
 
@@ -94,6 +94,17 @@ impl<'a> Deserialize<'a> for ProgressiveDownloadInfoBoxProperties {
         let initial_delay = u32::deserialize(&mut reader)?;
 
         Ok(ProgressiveDownloadInfoBoxProperties { rate, initial_delay })
+    }
+}
+
+impl Serialize for ProgressiveDownloadInfoBoxProperties {
+    fn serialize<W>(&self, mut writer: W) -> std::io::Result<()>
+    where
+        W: std::io::Write,
+    {
+        self.rate.serialize(&mut writer)?;
+        self.initial_delay.serialize(&mut writer)?;
+        Ok(())
     }
 }
 

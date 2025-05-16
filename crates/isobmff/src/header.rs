@@ -1,8 +1,7 @@
 use std::fmt::Debug;
 use std::io;
 
-use byteorder::{BigEndian, ReadBytesExt};
-use scuffle_bytes_util::zero_copy::ZeroCopyReader;
+use scuffle_bytes_util::zero_copy::{Deserialize, Serialize, U24Be, ZeroCopyReader};
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum BoxSize {
@@ -106,20 +105,20 @@ impl<'a> scuffle_bytes_util::zero_copy::Deserialize<'a> for BoxHeader {
     where
         R: ZeroCopyReader<'a>,
     {
-        let size = reader.as_std().read_u32::<BigEndian>()?;
-        let box_type = reader.as_std().read_u32::<BigEndian>()?.to_be_bytes();
+        let size = u32::deserialize(&mut reader)?;
+        let box_type = u32::deserialize(&mut reader)?.to_be_bytes();
 
         let size = match size {
             0 => BoxSize::ToEnd,
             1 => {
-                let size = reader.as_std().read_u64::<BigEndian>()?;
+                let size = u64::deserialize(&mut reader)?;
                 BoxSize::Long(size)
             }
             _ => BoxSize::Short(size),
         };
 
         let box_type = if box_type == *b"uuid" {
-            let uuid = reader.as_std().read_u128::<BigEndian>()?;
+            let uuid = u128::deserialize(&mut reader)?;
             let uuid = uuid::Uuid::from_u128(uuid);
             BoxType::Uuid(uuid)
         } else {
@@ -139,12 +138,41 @@ impl<'a> scuffle_bytes_util::zero_copy::DeserializeSeed<'a, BoxHeader> for BoxHe
     }
 }
 
+impl Serialize for BoxHeader {
+    fn serialize<W>(&self, mut writer: W) -> io::Result<()>
+    where
+        W: std::io::Write,
+    {
+        let size = match self.size {
+            BoxSize::Short(size) => size,
+            BoxSize::Long(_) => 1,
+            BoxSize::ToEnd => 0,
+        };
+        size.serialize(&mut writer)?;
+
+        let box_type = match &self.box_type {
+            BoxType::FourCc(fourcc) => fourcc,
+            BoxType::Uuid(_) => b"uuid",
+        };
+        box_type.serialize(&mut writer)?;
+
+        if let BoxSize::Long(size) = self.size {
+            size.serialize(&mut writer)?;
+        }
+
+        if let BoxType::Uuid(uuid) = &self.box_type {
+            uuid.as_u128().to_be_bytes().serialize(&mut writer)?;
+        }
+
+        Ok(())
+    }
+}
+
 #[derive(Debug, Clone)]
 pub struct FullBoxHeader {
     pub header: BoxHeader,
     pub version: u8,
-    /// only lower 24 bits are used
-    pub flags: u32,
+    pub flags: U24Be,
 }
 
 impl BoxHeaderProperties for FullBoxHeader {
@@ -168,13 +196,26 @@ impl<'a> scuffle_bytes_util::zero_copy::DeserializeSeed<'a, BoxHeader> for FullB
     where
         R: ZeroCopyReader<'a>,
     {
-        let version = reader.as_std().read_u8()?;
-        let flags = reader.as_std().read_u24::<BigEndian>()?;
+        let version = u8::deserialize(&mut reader)?;
+        let flags = U24Be::deserialize(&mut reader)?;
 
         Ok(Self {
             header: seed,
             version,
             flags,
         })
+    }
+}
+
+impl Serialize for FullBoxHeader {
+    fn serialize<W>(&self, mut writer: W) -> io::Result<()>
+    where
+        W: std::io::Write,
+    {
+        self.header.serialize(&mut writer)?;
+        self.version.serialize(&mut writer)?;
+        self.flags.serialize(&mut writer)?;
+
+        Ok(())
     }
 }

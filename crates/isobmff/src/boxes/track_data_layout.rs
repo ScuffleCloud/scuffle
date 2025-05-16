@@ -1,10 +1,10 @@
 use std::fmt::Debug;
 use std::{io, iter};
 
-use scuffle_bytes_util::zero_copy::{Deserialize, DeserializeSeed, ZeroCopyReader};
+use scuffle_bytes_util::zero_copy::{Deserialize, DeserializeSeed, Serialize, U24Be, ZeroCopyReader};
 use scuffle_bytes_util::{BytesCow, IoResultExt};
 
-use crate::{BoxHeader, BoxHeaderProperties, BoxType, FullBoxHeader, IsoBox, UnknownBox, Utf8String};
+use crate::{BoxHeader, BoxHeaderProperties, FullBoxHeader, IsoBox, UnknownBox, Utf8String};
 
 /// Data information box
 ///
@@ -21,27 +21,12 @@ pub struct DataInformationBox<'a> {
 /// Data entry url box
 ///
 /// ISO/IEC 14496-12 - 8.7.2
-#[derive(Debug)]
+#[derive(Debug, IsoBox)]
+#[iso_box(box_type = b"url ", skip_impl(deserialize_seed, serialize), crate_path = crate)]
 pub struct DataEntryUrlBox {
+    #[iso_box(header)]
     pub header: FullBoxHeader,
     pub location: Option<Utf8String>,
-}
-
-impl IsoBox for DataEntryUrlBox {
-    type Header = FullBoxHeader;
-
-    const TYPE: BoxType = BoxType::FourCc(*b"url ");
-}
-
-impl<'a> Deserialize<'a> for DataEntryUrlBox {
-    fn deserialize<R>(mut reader: R) -> io::Result<Self>
-    where
-        R: ZeroCopyReader<'a>,
-    {
-        let header = BoxHeader::deserialize(&mut reader)?;
-        let header = FullBoxHeader::deserialize_seed(&mut reader, header)?;
-        Self::deserialize_seed(reader, header)
-    }
 }
 
 impl<'a> DeserializeSeed<'a, FullBoxHeader> for DataEntryUrlBox {
@@ -49,7 +34,7 @@ impl<'a> DeserializeSeed<'a, FullBoxHeader> for DataEntryUrlBox {
     where
         R: ZeroCopyReader<'a>,
     {
-        let location = if seed.flags == 0x000001 {
+        let location = if *seed.flags == 0x000001 {
             None
         } else {
             Some(Utf8String::deserialize(&mut reader)?)
@@ -59,31 +44,31 @@ impl<'a> DeserializeSeed<'a, FullBoxHeader> for DataEntryUrlBox {
     }
 }
 
+impl Serialize for DataEntryUrlBox {
+    fn serialize<W>(&self, mut writer: W) -> io::Result<()>
+    where
+        W: std::io::Write,
+    {
+        self.header.serialize(&mut writer)?;
+
+        if let Some(location) = &self.location {
+            location.serialize(&mut writer)?;
+        }
+
+        Ok(())
+    }
+}
+
 /// Data entry urn box
 ///
 /// ISO/IEC 14496-12 - 8.7.2
-#[derive(Debug)]
+#[derive(Debug, IsoBox)]
+#[iso_box(box_type = b"urn ", skip_impl(deserialize_seed, serialize), crate_path = crate)]
 pub struct DataEntryUrnBox {
+    #[iso_box(header)]
     pub header: FullBoxHeader,
     pub name: Utf8String,
     pub location: Option<Utf8String>,
-}
-
-impl IsoBox for DataEntryUrnBox {
-    type Header = FullBoxHeader;
-
-    const TYPE: BoxType = BoxType::FourCc(*b"urn ");
-}
-
-impl<'a> Deserialize<'a> for DataEntryUrnBox {
-    fn deserialize<R>(mut reader: R) -> io::Result<Self>
-    where
-        R: ZeroCopyReader<'a>,
-    {
-        let header = BoxHeader::deserialize(&mut reader)?;
-        let header = FullBoxHeader::deserialize_seed(&mut reader, header)?;
-        Self::deserialize_seed(reader, header)
-    }
 }
 
 impl<'a> DeserializeSeed<'a, FullBoxHeader> for DataEntryUrnBox {
@@ -99,6 +84,21 @@ impl<'a> DeserializeSeed<'a, FullBoxHeader> for DataEntryUrnBox {
             name,
             location,
         })
+    }
+}
+
+impl Serialize for DataEntryUrnBox {
+    fn serialize<W>(&self, mut writer: W) -> io::Result<()>
+    where
+        W: std::io::Write,
+    {
+        self.header.serialize(&mut writer)?;
+        self.name.serialize(&mut writer)?;
+        if let Some(location) = &self.location {
+            location.serialize(&mut writer)?;
+        }
+
+        Ok(())
     }
 }
 
@@ -177,8 +177,7 @@ impl Debug for SampleSizeBox {
 pub struct CompactSampleSizeBox<'a> {
     #[iso_box(header)]
     pub header: FullBoxHeader,
-    #[iso_box(from = "u24")]
-    pub reserved: u32,
+    pub reserved: U24Be,
     pub field_size: u8,
     pub sample_count: u32,
     pub entry_size: BytesCow<'a>,
@@ -219,15 +218,23 @@ impl<'a> Deserialize<'a> for SampleToChunkBoxEntry {
     where
         R: ZeroCopyReader<'a>,
     {
-        let first_chunk = u32::deserialize(&mut reader)?;
-        let samples_per_chunk = u32::deserialize(&mut reader)?;
-        let sample_description_index = u32::deserialize(&mut reader)?;
-
         Ok(Self {
-            first_chunk,
-            samples_per_chunk,
-            sample_description_index,
+            first_chunk: u32::deserialize(&mut reader)?,
+            samples_per_chunk: u32::deserialize(&mut reader)?,
+            sample_description_index: u32::deserialize(&mut reader)?,
         })
+    }
+}
+
+impl Serialize for SampleToChunkBoxEntry {
+    fn serialize<W>(&self, mut writer: W) -> io::Result<()>
+    where
+        W: std::io::Write,
+    {
+        self.first_chunk.serialize(&mut writer)?;
+        self.samples_per_chunk.serialize(&mut writer)?;
+        self.sample_description_index.serialize(&mut writer)?;
+        Ok(())
     }
 }
 
@@ -280,7 +287,7 @@ pub struct PaddingBitsBox {
     pub entry: Vec<PaddingBitsBoxEntry>,
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone, Copy)]
 pub struct PaddingBitsBoxEntry {
     pub pad1: u8,
     pub pad2: u8,
@@ -296,33 +303,22 @@ impl From<u8> for PaddingBitsBoxEntry {
     }
 }
 
+impl From<PaddingBitsBoxEntry> for u8 {
+    fn from(value: PaddingBitsBoxEntry) -> Self {
+        (value.pad1 << 4) | value.pad2
+    }
+}
+
 /// Sub-sample information box
 ///
 /// ISO/IEC 14496-12 - 8.7.7
-#[derive(Debug)]
+#[derive(Debug, IsoBox)]
+#[iso_box(box_type = b"subs", skip_impl(deserialize_seed, serialize), crate_path = crate)]
 pub struct SubSampleInformationBox {
+    #[iso_box(header)]
     pub header: FullBoxHeader,
     pub entry_count: u32,
     pub entries: Vec<SubSampleInformationBoxEntry>,
-}
-
-impl IsoBox for SubSampleInformationBox {
-    type Header = FullBoxHeader;
-
-    const TYPE: BoxType = BoxType::FourCc(*b"subs");
-}
-
-impl<'a> Deserialize<'a> for SubSampleInformationBox {
-    fn deserialize<R>(mut reader: R) -> io::Result<Self>
-    where
-        R: ZeroCopyReader<'a>,
-    {
-        let seed = {
-            let header = <crate::BoxHeader as Deserialize>::deserialize(&mut reader)?;
-            <<Self as crate::IsoBox>::Header as DeserializeSeed<crate::BoxHeader>>::deserialize_seed(&mut reader, header)?
-        };
-        <Self as DeserializeSeed<FullBoxHeader>>::deserialize_seed(reader, seed)
-    }
 }
 
 impl<'a> DeserializeSeed<'a, FullBoxHeader> for SubSampleInformationBox {
@@ -359,6 +355,34 @@ impl<'a> DeserializeSeed<'a, FullBoxHeader> for SubSampleInformationBox {
     }
 }
 
+impl Serialize for SubSampleInformationBox {
+    fn serialize<W>(&self, mut writer: W) -> io::Result<()>
+    where
+        W: std::io::Write,
+    {
+        self.header.serialize(&mut writer)?;
+        self.entry_count.serialize(&mut writer)?;
+
+        for entry in &self.entries {
+            entry.sample_delta.serialize(&mut writer)?;
+
+            entry.subsample_count.serialize(&mut writer)?;
+            for subsample in &entry.subsample_info {
+                if self.header.version == 1 {
+                    subsample.subsample_size.serialize(&mut writer)?;
+                } else {
+                    (subsample.subsample_size as u16).serialize(&mut writer)?;
+                }
+                subsample.subsample_priority.serialize(&mut writer)?;
+                subsample.discardable.serialize(&mut writer)?;
+                subsample.codec_specific_parameters.serialize(&mut writer)?;
+            }
+        }
+
+        Ok(())
+    }
+}
+
 #[derive(Debug)]
 pub struct SubSampleInformationBoxEntry {
     pub sample_delta: u32,
@@ -373,8 +397,7 @@ impl<'a> DeserializeSeed<'a, u8> for SubSampleInformationBoxEntry {
 
         let mut subsample_info = Vec::with_capacity(subsample_count as usize);
         for _ in 0..subsample_count {
-            let subsample = SubSampleInformationBoxEntrySubSample::deserialize_seed(&mut reader, seed)?;
-            subsample_info.push(subsample);
+            subsample_info.push(SubSampleInformationBoxEntrySubSample::deserialize_seed(&mut reader, seed)?);
         }
 
         Ok(Self {
@@ -419,8 +442,10 @@ impl<'a> DeserializeSeed<'a, u8> for SubSampleInformationBoxEntrySubSample {
 /// Sample auxiliary information sizes box
 ///
 /// ISO/IEC 14496-12 - 8.7.8
-#[derive(Debug)]
+#[derive(Debug, IsoBox)]
+#[iso_box(box_type = b"saiz", skip_impl(deserialize_seed, serialize), crate_path = crate)]
 pub struct SampleAuxiliaryInformationSizesBox<'a> {
+    #[iso_box(header)]
     pub header: FullBoxHeader,
     pub aux_info_type: Option<u32>,
     pub aux_info_type_parameter: Option<u32>,
@@ -429,34 +454,17 @@ pub struct SampleAuxiliaryInformationSizesBox<'a> {
     pub sample_info_size: Option<BytesCow<'a>>,
 }
 
-impl IsoBox for SampleAuxiliaryInformationSizesBox<'_> {
-    type Header = FullBoxHeader;
-
-    const TYPE: BoxType = BoxType::FourCc(*b"saiz");
-}
-
-impl<'a> Deserialize<'a> for SampleAuxiliaryInformationSizesBox<'a> {
-    fn deserialize<R>(mut reader: R) -> io::Result<Self>
-    where
-        R: ZeroCopyReader<'a>,
-    {
-        let header = BoxHeader::deserialize(&mut reader)?;
-        let header = FullBoxHeader::deserialize_seed(&mut reader, header)?;
-        Self::deserialize_seed(reader, header)
-    }
-}
-
 impl<'a> DeserializeSeed<'a, FullBoxHeader> for SampleAuxiliaryInformationSizesBox<'a> {
     fn deserialize_seed<R>(mut reader: R, seed: FullBoxHeader) -> io::Result<Self>
     where
         R: ZeroCopyReader<'a>,
     {
-        let aux_info_type = if (seed.flags & 1) == 1 {
+        let aux_info_type = if (*seed.flags & 0b1) == 1 {
             Some(u32::deserialize(&mut reader)?)
         } else {
             None
         };
-        let aux_info_type_parameter = if (seed.flags & 1) == 1 {
+        let aux_info_type_parameter = if (*seed.flags & 0b1) == 1 {
             Some(u32::deserialize(&mut reader)?)
         } else {
             None
@@ -482,11 +490,45 @@ impl<'a> DeserializeSeed<'a, FullBoxHeader> for SampleAuxiliaryInformationSizesB
     }
 }
 
+impl Serialize for SampleAuxiliaryInformationSizesBox<'_> {
+    fn serialize<W>(&self, mut writer: W) -> io::Result<()>
+    where
+        W: std::io::Write,
+    {
+        self.header.serialize(&mut writer)?;
+
+        if (*self.header.flags & 0b1) == 1 {
+            self.aux_info_type
+                .ok_or(io::Error::new(io::ErrorKind::InvalidData, "aux_info_type is required"))?
+                .serialize(&mut writer)?;
+            self.aux_info_type_parameter
+                .ok_or(io::Error::new(
+                    io::ErrorKind::InvalidData,
+                    "aux_info_type_parameter is required",
+                ))?
+                .serialize(&mut writer)?;
+        }
+
+        self.default_sample_info_size.serialize(&mut writer)?;
+        self.sample_count.serialize(&mut writer)?;
+        if self.default_sample_info_size == 0 {
+            self.sample_info_size
+                .as_ref()
+                .ok_or(io::Error::new(io::ErrorKind::InvalidData, "sample_info_size is required"))?
+                .serialize(&mut writer)?;
+        }
+
+        Ok(())
+    }
+}
+
 /// Sample auxiliary information offsets box
 ///
 /// ISO/IEC 14496-12 - 8.7.9
-#[derive(Debug)]
+#[derive(Debug, IsoBox)]
+#[iso_box(box_type = b"saio", skip_impl(deserialize_seed, serialize), crate_path = crate)]
 pub struct SampleAuxiliaryInformationOffsetsBox {
+    #[iso_box(header)]
     pub header: FullBoxHeader,
     pub aux_info_type: Option<u32>,
     pub aux_info_type_parameter: Option<u32>,
@@ -494,34 +536,17 @@ pub struct SampleAuxiliaryInformationOffsetsBox {
     pub offset: Vec<u64>,
 }
 
-impl IsoBox for SampleAuxiliaryInformationOffsetsBox {
-    type Header = FullBoxHeader;
-
-    const TYPE: BoxType = BoxType::FourCc(*b"saio");
-}
-
-impl<'a> Deserialize<'a> for SampleAuxiliaryInformationOffsetsBox {
-    fn deserialize<R>(mut reader: R) -> io::Result<Self>
-    where
-        R: ZeroCopyReader<'a>,
-    {
-        let header = BoxHeader::deserialize(&mut reader)?;
-        let header = FullBoxHeader::deserialize_seed(&mut reader, header)?;
-        Self::deserialize_seed(reader, header)
-    }
-}
-
 impl<'a> DeserializeSeed<'a, FullBoxHeader> for SampleAuxiliaryInformationOffsetsBox {
     fn deserialize_seed<R>(mut reader: R, seed: FullBoxHeader) -> io::Result<Self>
     where
         R: ZeroCopyReader<'a>,
     {
-        let aux_info_type = if (seed.flags & 1) == 1 {
+        let aux_info_type = if (*seed.flags & 0b1) == 1 {
             Some(u32::deserialize(&mut reader)?)
         } else {
             None
         };
-        let aux_info_type_parameter = if (seed.flags & 1) == 1 {
+        let aux_info_type_parameter = if (*seed.flags & 0b1) == 1 {
             Some(u32::deserialize(&mut reader)?)
         } else {
             None
@@ -546,5 +571,37 @@ impl<'a> DeserializeSeed<'a, FullBoxHeader> for SampleAuxiliaryInformationOffset
             entry_count,
             offset,
         })
+    }
+}
+
+impl Serialize for SampleAuxiliaryInformationOffsetsBox {
+    fn serialize<W>(&self, mut writer: W) -> io::Result<()>
+    where
+        W: std::io::Write,
+    {
+        self.header.serialize(&mut writer)?;
+
+        if (*self.header.flags & 0b1) == 1 {
+            self.aux_info_type
+                .ok_or(io::Error::new(io::ErrorKind::InvalidData, "aux_info_type is required"))?
+                .serialize(&mut writer)?;
+            self.aux_info_type_parameter
+                .ok_or(io::Error::new(
+                    io::ErrorKind::InvalidData,
+                    "aux_info_type_parameter is required",
+                ))?
+                .serialize(&mut writer)?;
+        }
+
+        self.entry_count.serialize(&mut writer)?;
+        for entry in &self.offset {
+            if self.header.version == 0 {
+                (*entry as u32).serialize(&mut writer)?;
+            } else {
+                entry.serialize(&mut writer)?;
+            }
+        }
+
+        Ok(())
     }
 }

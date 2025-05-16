@@ -1,4 +1,4 @@
-use scuffle_bytes_util::zero_copy::Deserialize;
+use scuffle_bytes_util::zero_copy::{Deserialize, Serialize};
 
 use crate::{BoxHeader, FullBoxHeader, IsoBox, UnknownBox};
 
@@ -44,6 +44,22 @@ impl<'a> Deserialize<'a> for EntityToGroupBox {
             num_entities_in_group,
             entity_id,
         })
+    }
+}
+
+impl Serialize for EntityToGroupBox {
+    fn serialize<W>(&self, mut writer: W) -> std::io::Result<()>
+    where
+        W: std::io::Write,
+    {
+        self.group_id.serialize(&mut writer)?;
+        self.num_entities_in_group.serialize(&mut writer)?;
+
+        for id in &self.entity_id {
+            id.serialize(&mut writer)?;
+        }
+
+        Ok(())
     }
 }
 

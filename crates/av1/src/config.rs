@@ -1,6 +1,6 @@
 use std::io;
 
-use scuffle_bytes_util::zero_copy::Deserialize;
+use scuffle_bytes_util::zero_copy::{Deserialize, Serialize};
 use scuffle_bytes_util::{BitReader, BitWriter, BytesCow};
 
 /// AV1 Video Descriptor
@@ -43,6 +43,18 @@ impl<'a> Deserialize<'a> for AV1VideoDescriptor<'a> {
             length,
             codec_configuration_record: AV1CodecConfigurationRecord::deserialize(reader)?,
         })
+    }
+}
+
+impl Serialize for AV1VideoDescriptor<'_> {
+    fn serialize<W>(&self, mut writer: W) -> io::Result<()>
+    where
+        W: std::io::Write,
+    {
+        self.tag.serialize(&mut writer)?;
+        self.length.serialize(&mut writer)?;
+        self.codec_configuration_record.serialize(&mut writer)?;
+        Ok(())
     }
 }
 
@@ -185,18 +197,11 @@ impl<'a> Deserialize<'a> for AV1CodecConfigurationRecord<'a> {
     }
 }
 
-impl AV1CodecConfigurationRecord<'_> {
-    /// Returns the size of the AV1 Codec Configuration Record.
-    pub fn size(&self) -> u64 {
-        1 // marker, version
-        + 1 // seq_profile, seq_level_idx_0
-        + 1 // seq_tier_0, high_bitdepth, twelve_bit, monochrome, chroma_subsampling_x, chroma_subsampling_y, chroma_sample_position
-        + 1 // reserved, initial_presentation_delay_present, initial_presentation_delay_minus_one/reserved
-        + self.config_obu.len() as u64
-    }
-
-    /// Muxes the AV1 Codec Configuration Record to the given writer.
-    pub fn mux<T: io::Write>(&self, writer: &mut T) -> io::Result<()> {
+impl Serialize for AV1CodecConfigurationRecord<'_> {
+    fn serialize<W>(&self, writer: W) -> io::Result<()>
+    where
+        W: std::io::Write,
+    {
         let mut bit_writer = BitWriter::new(writer);
 
         bit_writer.write_bit(true)?; // marker
@@ -226,6 +231,17 @@ impl AV1CodecConfigurationRecord<'_> {
         bit_writer.finish()?.write_all(self.config_obu.as_bytes())?;
 
         Ok(())
+    }
+}
+
+impl AV1CodecConfigurationRecord<'_> {
+    /// Returns the size of the AV1 Codec Configuration Record.
+    pub fn size(&self) -> u64 {
+        1 // marker, version
+        + 1 // seq_profile, seq_level_idx_0
+        + 1 // seq_tier_0, high_bitdepth, twelve_bit, monochrome, chroma_subsampling_x, chroma_subsampling_y, chroma_sample_position
+        + 1 // reserved, initial_presentation_delay_present, initial_presentation_delay_minus_one/reserved
+        + self.config_obu.len() as u64
     }
 }
 
@@ -325,7 +341,7 @@ mod tests {
         };
 
         let mut buf = Vec::new();
-        config.mux(&mut buf).unwrap();
+        config.serialize(&mut buf).unwrap();
 
         insta::assert_snapshot!(format!("{:?}", Bytes::from(buf)), @r#"b"\x81\0\0\0HELLO FROM THE OBU""#);
     }
@@ -348,7 +364,7 @@ mod tests {
         };
 
         let mut buf = Vec::new();
-        config.mux(&mut buf).unwrap();
+        config.serialize(&mut buf).unwrap();
 
         insta::assert_snapshot!(format!("{:?}", Bytes::from(buf)), @r#"b"\x81\0\0\x10HELLO FROM THE OBU""#);
     }

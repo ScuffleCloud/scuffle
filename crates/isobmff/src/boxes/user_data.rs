@@ -1,7 +1,5 @@
-use scuffle_bytes_util::zero_copy::{Deserialize, DeserializeSeed};
-
 use super::{LoudnessBox, SubTrackBox};
-use crate::{BoxHeader, BoxType, FullBoxHeader, IsoBox, UnknownBox, Utf8String};
+use crate::{BoxHeader, FullBoxHeader, IsoBox, Langauge, UnknownBox, Utf8String};
 
 /// User data box
 ///
@@ -28,50 +26,13 @@ pub struct UserDataBox<'a> {
 /// Copyright box
 ///
 /// ISO/IEC 14496-12 - 8.10.2
-#[derive(Debug)]
+#[derive(Debug, IsoBox)]
+#[iso_box(box_type = b"cprt", crate_path = crate)]
 pub struct CopyrightBox {
+    #[iso_box(header)]
     pub header: FullBoxHeader,
-    pub language: [u8; 3],
+    pub language: Langauge,
     pub notice: Utf8String,
-}
-
-impl IsoBox for CopyrightBox {
-    type Header = FullBoxHeader;
-
-    const TYPE: BoxType = BoxType::FourCc(*b"cprt");
-}
-
-impl<'a> Deserialize<'a> for CopyrightBox {
-    fn deserialize<R>(mut reader: R) -> std::io::Result<Self>
-    where
-        R: scuffle_bytes_util::zero_copy::ZeroCopyReader<'a>,
-    {
-        let header = BoxHeader::deserialize(&mut reader)?;
-        let header = FullBoxHeader::deserialize_seed(&mut reader, header)?;
-        Self::deserialize_seed(reader, header)
-    }
-}
-
-impl<'a> DeserializeSeed<'a, FullBoxHeader> for CopyrightBox {
-    fn deserialize_seed<R>(mut reader: R, seed: FullBoxHeader) -> std::io::Result<Self>
-    where
-        R: scuffle_bytes_util::zero_copy::ZeroCopyReader<'a>,
-    {
-        // 0 xxxxx xxxxx xxxxx
-        let language = u16::deserialize(&mut reader)?;
-        let language = [
-            ((language >> 10) & 0b11111) as u8,
-            ((language >> 5) & 0b11111) as u8,
-            (language & 0b11111) as u8,
-        ];
-        let notice = Utf8String::deserialize(&mut reader)?;
-
-        Ok(Self {
-            header: seed,
-            language,
-            notice,
-        })
-    }
 }
 
 /// Track selection box

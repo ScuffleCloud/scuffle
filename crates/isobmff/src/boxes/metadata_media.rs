@@ -1,4 +1,5 @@
-use scuffle_bytes_util::zero_copy::Deserialize;
+use scuffle_bytes_util::BytesCow;
+use scuffle_bytes_util::zero_copy::{Deserialize, Serialize};
 
 use super::{BitRateBox, SampleEntry};
 use crate::{BoxHeader, FullBoxHeader, IsoBox, UnknownBox, Utf8List, Utf8String};
@@ -23,6 +24,15 @@ impl<'a> Deserialize<'a> for MetaDataSampleEntry {
         Ok(Self {
             sample_entry: SampleEntry::deserialize(reader)?,
         })
+    }
+}
+
+impl Serialize for MetaDataSampleEntry {
+    fn serialize<W>(&self, writer: W) -> std::io::Result<()>
+    where
+        W: std::io::Write,
+    {
+        self.sample_entry.serialize(writer)
     }
 }
 
@@ -92,11 +102,10 @@ pub struct URIBox {
 
 #[derive(IsoBox, Debug)]
 #[iso_box(box_type = b"uriI", crate_path = crate)]
-pub struct URIInitBox {
+pub struct URIInitBox<'a> {
     #[iso_box(header)]
     pub header: FullBoxHeader,
-    #[iso_box(repeated)]
-    pub uri_initialization_data: Vec<u8>,
+    pub uri_initialization_data: BytesCow<'a>,
 }
 
 #[derive(IsoBox, Debug)]
@@ -110,7 +119,7 @@ pub struct URIMetaSampleEntry<'a> {
     #[iso_box(nested_box)]
     pub the_label: URIBox,
     #[iso_box(nested_box(collect))]
-    pub init: Option<URIInitBox>,
+    pub init: Option<URIInitBox<'a>>,
     #[iso_box(nested_box(collect_unknown))]
     pub unknown_boxes: Vec<UnknownBox<'a>>,
 }

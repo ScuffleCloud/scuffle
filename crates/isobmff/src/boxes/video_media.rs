@@ -1,10 +1,10 @@
 //! Video media specific boxes defined in ISO/IEC 14496-12 - 12.1
 
-use scuffle_bytes_util::BytesCow;
-use scuffle_bytes_util::zero_copy::{Deserialize, DeserializeSeed};
+use scuffle_bytes_util::zero_copy::{Deserialize, DeserializeSeed, Serialize};
+use scuffle_bytes_util::{BitWriter, BytesCow};
 
 use super::SampleEntry;
-use crate::{BoxHeader, BoxType, FullBoxHeader, IsoBox};
+use crate::{BoxHeader, FullBoxHeader, IsoBox};
 
 /// Video media header
 ///
@@ -36,11 +36,13 @@ pub struct VideoMediaHeaderBox {
 pub struct VisualSampleEntry {
     pub sample_entry: SampleEntry,
     pub pre_defined: u16,
+    pub reserved1: u16,
     pub pre_defined2: [u32; 3],
     pub width: u16,
     pub height: u16,
     pub horiz_resolution: u32,
     pub vert_resolution: u32,
+    pub reserved2: u32,
     pub frame_count: u16,
     pub compressor_name: [u8; 32],
     pub depth: u16,
@@ -54,13 +56,13 @@ impl<'a> Deserialize<'a> for VisualSampleEntry {
     {
         let sample_entry = SampleEntry::deserialize(&mut reader)?;
         let pre_defined = u16::deserialize(&mut reader)?;
-        u16::deserialize(&mut reader)?; // reserved
+        let reserved1 = u16::deserialize(&mut reader)?;
         let pre_defined2 = <[u32; 3]>::deserialize(&mut reader)?;
         let width = u16::deserialize(&mut reader)?;
         let height = u16::deserialize(&mut reader)?;
         let horiz_resolution = u32::deserialize(&mut reader)?;
         let vert_resolution = u32::deserialize(&mut reader)?;
-        u32::deserialize(&mut reader)?; // reserved
+        let reserved2 = u32::deserialize(&mut reader)?;
         let frame_count = u16::deserialize(&mut reader)?;
         let compressor_name = <[u8; 32]>::deserialize(&mut reader)?;
         let depth = u16::deserialize(&mut reader)?;
@@ -69,16 +71,40 @@ impl<'a> Deserialize<'a> for VisualSampleEntry {
         Ok(Self {
             sample_entry,
             pre_defined,
+            reserved1,
             pre_defined2,
             width,
             height,
             horiz_resolution,
             vert_resolution,
+            reserved2,
             frame_count,
             compressor_name,
             depth,
             pre_defined4,
         })
+    }
+}
+
+impl Serialize for VisualSampleEntry {
+    fn serialize<W>(&self, mut writer: W) -> std::io::Result<()>
+    where
+        W: std::io::Write,
+    {
+        self.sample_entry.serialize(&mut writer)?;
+        self.pre_defined.serialize(&mut writer)?;
+        self.reserved1.serialize(&mut writer)?;
+        self.pre_defined2.serialize(&mut writer)?;
+        self.width.serialize(&mut writer)?;
+        self.height.serialize(&mut writer)?;
+        self.horiz_resolution.serialize(&mut writer)?;
+        self.vert_resolution.serialize(&mut writer)?;
+        self.reserved2.serialize(&mut writer)?;
+        self.frame_count.serialize(&mut writer)?;
+        self.compressor_name.serialize(&mut writer)?;
+        self.depth.serialize(&mut writer)?;
+        self.pre_defined4.serialize(&mut writer)?;
+        Ok(())
     }
 }
 
@@ -128,7 +154,7 @@ pub enum ColourInformation<'a> {
     Nclx(NclxColourInformation),
     RIcc { icc_profile: BytesCow<'a> },
     Prof { icc_profile: BytesCow<'a> },
-    Other(BytesCow<'a>),
+    Other { colour_type: [u8; 4], data: BytesCow<'a> },
 }
 
 impl<'a> Deserialize<'a> for ColourInformation<'a> {
@@ -151,8 +177,38 @@ impl<'a> Deserialize<'a> for ColourInformation<'a> {
                 let icc_profile = reader.try_read_to_end()?;
                 Ok(ColourInformation::Prof { icc_profile })
             }
-            _ => Ok(Self::Other(reader.try_read_to_end()?)),
+            _ => Ok(Self::Other {
+                colour_type,
+                data: reader.try_read_to_end()?,
+            }),
         }
+    }
+}
+
+impl Serialize for ColourInformation<'_> {
+    fn serialize<W>(&self, mut writer: W) -> std::io::Result<()>
+    where
+        W: std::io::Write,
+    {
+        match self {
+            ColourInformation::Nclx(info) => {
+                b"nclx".serialize(&mut writer)?;
+                info.serialize(&mut writer)?;
+            }
+            ColourInformation::RIcc { icc_profile } => {
+                b"rICC".serialize(&mut writer)?;
+                icc_profile.serialize(&mut writer)?;
+            }
+            ColourInformation::Prof { icc_profile } => {
+                b"prof".serialize(&mut writer)?;
+                icc_profile.serialize(&mut writer)?;
+            }
+            ColourInformation::Other { colour_type, data } => {
+                colour_type.serialize(&mut writer)?;
+                data.serialize(&mut writer)?;
+            }
+        }
+        Ok(())
     }
 }
 
@@ -169,17 +225,25 @@ impl<'a> Deserialize<'a> for NclxColourInformation {
     where
         R: scuffle_bytes_util::zero_copy::ZeroCopyReader<'a>,
     {
-        let colour_primaries = u16::deserialize(&mut reader)?;
-        let transfer_characteristics = u16::deserialize(&mut reader)?;
-        let matrix_coefficients = u16::deserialize(&mut reader)?;
-        let full_range_flag = u8::deserialize(&mut reader)? >> 7 != 0;
-
         Ok(Self {
-            colour_primaries,
-            transfer_characteristics,
-            matrix_coefficients,
-            full_range_flag,
+            colour_primaries: u16::deserialize(&mut reader)?,
+            transfer_characteristics: u16::deserialize(&mut reader)?,
+            matrix_coefficients: u16::deserialize(&mut reader)?,
+            full_range_flag: u8::deserialize(&mut reader)? >> 7 != 0,
         })
+    }
+}
+
+impl Serialize for NclxColourInformation {
+    fn serialize<W>(&self, mut writer: W) -> std::io::Result<()>
+    where
+        W: std::io::Write,
+    {
+        self.colour_primaries.serialize(&mut writer)?;
+        self.transfer_characteristics.serialize(&mut writer)?;
+        self.matrix_coefficients.serialize(&mut writer)?;
+        ((self.full_range_flag as u8) << 7).serialize(&mut writer)?;
+        Ok(())
     }
 }
 
@@ -213,36 +277,18 @@ pub struct MasteringDisplayColourVolumeBox {
 /// Content colour volume
 ///
 /// ISO/IEC 144496-12 - 12.1.8
-#[derive(Debug)]
+#[derive(Debug, IsoBox)]
+#[iso_box(box_type = b"cclv", skip_impl(deserialize_seed, serialize), crate_path = crate)]
 pub struct ContentColourVolumeBox {
+    #[iso_box(header)]
     pub header: BoxHeader,
     pub reserved1: bool,
     pub reserved2: bool,
-    pub ccv_primaries_present_flag: bool,
-    pub ccv_min_luminance_value_present_flag: bool,
-    pub ccv_max_luminance_value_present_flag: bool,
-    pub ccv_avg_luminance_value_present_flag: bool,
     pub ccv_reserved_zero_2bits: u8,
     pub ccv_primaries: Option<[[i32; 2]; 3]>,
     pub ccv_min_luminance_value: Option<u32>,
     pub ccv_max_luminance_value: Option<u32>,
     pub ccv_avg_luminance_value: Option<u32>,
-}
-
-impl IsoBox for ContentColourVolumeBox {
-    type Header = BoxHeader;
-
-    const TYPE: BoxType = BoxType::FourCc(*b"cclv");
-}
-
-impl<'a> Deserialize<'a> for ContentColourVolumeBox {
-    fn deserialize<R>(mut reader: R) -> std::io::Result<Self>
-    where
-        R: scuffle_bytes_util::zero_copy::ZeroCopyReader<'a>,
-    {
-        let header = BoxHeader::deserialize(&mut reader)?;
-        Self::deserialize_seed(reader, header)
-    }
 }
 
 impl<'a> DeserializeSeed<'a, BoxHeader> for ContentColourVolumeBox {
@@ -287,16 +333,44 @@ impl<'a> DeserializeSeed<'a, BoxHeader> for ContentColourVolumeBox {
             header: seed,
             reserved1,
             reserved2,
-            ccv_primaries_present_flag,
-            ccv_min_luminance_value_present_flag,
-            ccv_max_luminance_value_present_flag,
-            ccv_avg_luminance_value_present_flag,
             ccv_reserved_zero_2bits,
             ccv_primaries,
             ccv_min_luminance_value,
             ccv_max_luminance_value,
             ccv_avg_luminance_value,
         })
+    }
+}
+
+impl Serialize for ContentColourVolumeBox {
+    fn serialize<W>(&self, writer: W) -> std::io::Result<()>
+    where
+        W: std::io::Write,
+    {
+        let mut bit_writer = BitWriter::new(writer);
+
+        bit_writer.write_bit(self.reserved1)?;
+        bit_writer.write_bit(self.reserved2)?;
+        bit_writer.write_bit(self.ccv_primaries.is_some())?;
+        bit_writer.write_bit(self.ccv_min_luminance_value.is_some())?;
+        bit_writer.write_bit(self.ccv_max_luminance_value.is_some())?;
+        bit_writer.write_bit(self.ccv_avg_luminance_value.is_some())?;
+        bit_writer.write_bits(self.ccv_reserved_zero_2bits as u64, 2)?;
+
+        if let Some(ccv_primaries) = &self.ccv_primaries {
+            ccv_primaries.serialize(&mut bit_writer)?;
+        }
+        if let Some(ccv_min_luminance_value) = &self.ccv_min_luminance_value {
+            ccv_min_luminance_value.serialize(&mut bit_writer)?;
+        }
+        if let Some(ccv_max_luminance_value) = &self.ccv_max_luminance_value {
+            ccv_max_luminance_value.serialize(&mut bit_writer)?;
+        }
+        if let Some(ccv_avg_luminance_value) = &self.ccv_avg_luminance_value {
+            ccv_avg_luminance_value.serialize(&mut bit_writer)?;
+        }
+
+        Ok(())
     }
 }
 

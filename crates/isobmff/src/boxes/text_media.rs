@@ -1,4 +1,4 @@
-use scuffle_bytes_util::zero_copy::{Deserialize, ZeroCopyReader};
+use scuffle_bytes_util::zero_copy::{Deserialize, Serialize, ZeroCopyReader};
 
 use super::{BitRateBox, SampleEntry, TextConfigBox};
 use crate::{BoxHeader, IsoBox, UnknownBox, Utf8String};
@@ -20,6 +20,15 @@ impl<'a> Deserialize<'a> for PlainTextSampleEntry {
         Ok(Self {
             sample_entry: SampleEntry::deserialize(reader)?,
         })
+    }
+}
+
+impl Serialize for PlainTextSampleEntry {
+    fn serialize<W>(&self, writer: W) -> std::io::Result<()>
+    where
+        W: std::io::Write,
+    {
+        self.sample_entry.serialize(writer)
     }
 }
 

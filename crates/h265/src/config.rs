@@ -3,7 +3,7 @@ use std::io::{
 };
 
 use byteorder::{BigEndian, ReadBytesExt, WriteBytesExt};
-use scuffle_bytes_util::zero_copy::Deserialize;
+use scuffle_bytes_util::zero_copy::{Deserialize, Serialize};
 use scuffle_bytes_util::{BitReader, BitWriter, BytesCow};
 
 use crate::{ConstantFrameRate, NALUnitType, NumTemporalLayers, ParallelismType, ProfileCompatibilityFlags};
@@ -191,36 +191,11 @@ impl<'a> Deserialize<'a> for HEVCDecoderConfigurationRecord<'a> {
     }
 }
 
-impl HEVCDecoderConfigurationRecord<'_> {
-    /// Returns the total byte size of the [`HEVCDecoderConfigurationRecord`].
-    pub fn size(&self) -> u64 {
-        1 // configuration_version
-        + 1 // general_profile_space, general_tier_flag, general_profile_idc
-        + 4 // general_profile_compatibility_flags
-        + 6 // general_constraint_indicator_flags
-        + 1 // general_level_idc
-        + 2 // reserved_4bits, min_spatial_segmentation_idc
-        + 1 // reserved_6bits, parallelism_type
-        + 1 // reserved_6bits, chroma_format_idc
-        + 1 // reserved_5bits, bit_depth_luma_minus8
-        + 1 // reserved_5bits, bit_depth_chroma_minus8
-        + 2 // avg_frame_rate
-        + 1 // constant_frame_rate, num_temporal_layers, temporal_id_nested, length_size_minus_one
-        + 1 // num_of_arrays
-        + self.arrays.iter().map(|array| {
-            1 // array_completeness, reserved, nal_unit_type
-            + 2 // num_nalus
-            + array.nalus.iter().map(|nalu| {
-                2 // nal_unit_length
-                + nalu.len() as u64 // nal_unit
-            }).sum::<u64>()
-        }).sum::<u64>()
-    }
-
-    /// Muxes the [`HEVCDecoderConfigurationRecord`] into a byte stream.
-    ///
-    /// Returns a muxed byte stream.
-    pub fn mux<T: io::Write>(&self, writer: &mut T) -> io::Result<()> {
+impl Serialize for HEVCDecoderConfigurationRecord<'_> {
+    fn serialize<W>(&self, writer: W) -> io::Result<()>
+    where
+        W: std::io::Write,
+    {
         let mut bit_writer = BitWriter::new(writer);
 
         // This muxer only supports version 1
@@ -274,12 +249,39 @@ impl HEVCDecoderConfigurationRecord<'_> {
     }
 }
 
+impl HEVCDecoderConfigurationRecord<'_> {
+    /// Returns the total byte size of the [`HEVCDecoderConfigurationRecord`].
+    pub fn size(&self) -> u64 {
+        1 // configuration_version
+        + 1 // general_profile_space, general_tier_flag, general_profile_idc
+        + 4 // general_profile_compatibility_flags
+        + 6 // general_constraint_indicator_flags
+        + 1 // general_level_idc
+        + 2 // reserved_4bits, min_spatial_segmentation_idc
+        + 1 // reserved_6bits, parallelism_type
+        + 1 // reserved_6bits, chroma_format_idc
+        + 1 // reserved_5bits, bit_depth_luma_minus8
+        + 1 // reserved_5bits, bit_depth_chroma_minus8
+        + 2 // avg_frame_rate
+        + 1 // constant_frame_rate, num_temporal_layers, temporal_id_nested, length_size_minus_one
+        + 1 // num_of_arrays
+        + self.arrays.iter().map(|array| {
+            1 // array_completeness, reserved, nal_unit_type
+            + 2 // num_nalus
+            + array.nalus.iter().map(|nalu| {
+                2 // nal_unit_length
+                + nalu.len() as u64 // nal_unit
+            }).sum::<u64>()
+        }).sum::<u64>()
+    }
+}
+
 #[cfg(test)]
 #[cfg_attr(all(test, coverage_nightly), coverage(off))]
 mod tests {
     use std::io;
 
-    use scuffle_bytes_util::zero_copy::{Deserialize, Slice};
+    use scuffle_bytes_util::zero_copy::{Deserialize, Serialize, Slice};
 
     use crate::{
         ConstantFrameRate, HEVCDecoderConfigurationRecord, NALUnitType, NumTemporalLayers, ParallelismType,
@@ -341,7 +343,7 @@ mod tests {
         assert_eq!(config.size(), data.len() as u64);
 
         let mut buf = Vec::new();
-        config.mux(&mut buf).unwrap();
+        config.serialize(&mut buf).unwrap();
 
         assert_eq!(buf, data.to_vec());
     }

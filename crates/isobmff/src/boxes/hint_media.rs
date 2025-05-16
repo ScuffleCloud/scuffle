@@ -1,6 +1,6 @@
 use std::io;
 
-use scuffle_bytes_util::zero_copy::{Deserialize, ZeroCopyReader};
+use scuffle_bytes_util::zero_copy::{Deserialize, Serialize, ZeroCopyReader};
 
 use super::SampleEntry;
 use crate::{FullBoxHeader, IsoBox};
@@ -36,5 +36,11 @@ impl<'a> Deserialize<'a> for HintSampleEntry {
     fn deserialize<R: ZeroCopyReader<'a>>(reader: R) -> io::Result<Self> {
         let sample_entry = SampleEntry::deserialize(reader)?;
         Ok(HintSampleEntry { sample_entry })
+    }
+}
+
+impl Serialize for HintSampleEntry {
+    fn serialize<W: io::Write>(&self, writer: W) -> io::Result<()> {
+        self.sample_entry.serialize(writer)
     }
 }

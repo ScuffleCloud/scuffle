@@ -38,7 +38,7 @@ pub struct AVCSampleEntry1<'a> {
     pub config: AVCConfigurationBox<'a>,
     /// The optional MPEG-4 extension descriptors box contained in this box.
     #[iso_box(nested_box(collect))]
-    pub mpeg4_extension: Option<MPEG4ExtensionDescriptorsBox>,
+    pub mpeg4_extension: Option<MPEG4ExtensionDescriptorsBox<'a>>,
     /// Any other boxes contained in this box.
     #[iso_box(nested_box(collect_unknown))]
     pub sub_boxes: Vec<UnknownBox<'a>>,
@@ -60,7 +60,7 @@ pub struct AVCSampleEntry2<'a> {
     pub config: AVCConfigurationBox<'a>,
     /// The optional MPEG-4 extension descriptors box contained in this box.
     #[iso_box(nested_box(collect))]
-    pub mpeg4_extension: Option<MPEG4ExtensionDescriptorsBox>,
+    pub mpeg4_extension: Option<MPEG4ExtensionDescriptorsBox<'a>>,
     /// Any other boxes contained in this box.
     #[iso_box(nested_box(collect_unknown))]
     pub sub_boxes: Vec<UnknownBox<'a>>,
@@ -82,7 +82,7 @@ pub struct AVCSampleEntry3<'a> {
     pub config: AVCConfigurationBox<'a>,
     /// The optional MPEG-4 extension descriptors box contained in this box.
     #[iso_box(nested_box(collect))]
-    pub mpeg4_extension: Option<MPEG4ExtensionDescriptorsBox>,
+    pub mpeg4_extension: Option<MPEG4ExtensionDescriptorsBox<'a>>,
     /// Any other boxes contained in this box.
     #[iso_box(nested_box(collect_unknown))]
     pub sub_boxes: Vec<UnknownBox<'a>>,
@@ -104,7 +104,7 @@ pub struct AVCSampleEntry4<'a> {
     pub config: AVCConfigurationBox<'a>,
     /// The optional MPEG-4 extension descriptors box contained in this box.
     #[iso_box(nested_box(collect))]
-    pub mpeg4_extension: Option<MPEG4ExtensionDescriptorsBox>,
+    pub mpeg4_extension: Option<MPEG4ExtensionDescriptorsBox<'a>>,
     /// Any other boxes contained in this box.
     #[iso_box(nested_box(collect_unknown))]
     pub sub_boxes: Vec<UnknownBox<'a>>,

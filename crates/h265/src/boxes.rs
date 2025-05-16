@@ -36,7 +36,7 @@ pub struct HEVCSampleEntryHvc1<'a> {
     pub config: HEVCConfigurationBox<'a>,
     /// The optional MPEG-4 extension descriptors box contained in this box.
     #[iso_box(nested_box(collect))]
-    pub mpeg4_extension: Option<MPEG4ExtensionDescriptorsBox>,
+    pub mpeg4_extension: Option<MPEG4ExtensionDescriptorsBox<'a>>,
     /// Any other boxes contained in this box.
     #[iso_box(nested_box(collect_unknown))]
     pub sub_boxes: Vec<UnknownBox<'a>>,
@@ -58,7 +58,7 @@ pub struct HEVCSampleEntryHev1<'a> {
     pub config: HEVCConfigurationBox<'a>,
     /// The optional MPEG-4 extension descriptors box contained in this box.
     #[iso_box(nested_box(collect))]
-    pub mpeg4_extension: Option<MPEG4ExtensionDescriptorsBox>,
+    pub mpeg4_extension: Option<MPEG4ExtensionDescriptorsBox<'a>>,
     /// Any other boxes contained in this box.
     #[iso_box(nested_box(collect_unknown))]
     pub sub_boxes: Vec<UnknownBox<'a>>,

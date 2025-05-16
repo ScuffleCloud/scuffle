@@ -1,7 +1,8 @@
-use scuffle_bytes_util::zero_copy::{Deserialize, DeserializeSeed, U24Be};
+use scuffle_bytes_util::BitWriter;
+use scuffle_bytes_util::zero_copy::{Deserialize, DeserializeSeed, Serialize, U24Be};
 
 use super::Brand;
-use crate::{BoxHeader, BoxType, FullBoxHeader, IsoBox};
+use crate::{BoxHeader, FullBoxHeader, IsoBox};
 
 /// Segment type box
 ///
@@ -21,32 +22,18 @@ pub struct SegmentTypeBox {
 /// Segment index box
 ///
 /// ISO/IEC 14496-12 - 8.16.3
-#[derive(Debug)]
+#[derive(Debug, IsoBox)]
+#[iso_box(box_type = b"sidx", skip_impl(deserialize_seed, serialize), crate_path = crate)]
 pub struct SegmentIndexBox {
+    #[iso_box(header)]
     pub header: FullBoxHeader,
     pub reference_id: u32,
     pub timescale: u32,
     pub earliest_presentation_time: u64,
     pub first_offset: u64,
+    pub reserved: u16,
     pub reference_count: u16,
     pub references: Vec<SegmentIndexBoxReference>,
-}
-
-impl IsoBox for SegmentIndexBox {
-    type Header = FullBoxHeader;
-
-    const TYPE: BoxType = BoxType::FourCc(*b"sidx");
-}
-
-impl<'a> Deserialize<'a> for SegmentIndexBox {
-    fn deserialize<R>(mut reader: R) -> std::io::Result<Self>
-    where
-        R: scuffle_bytes_util::zero_copy::ZeroCopyReader<'a>,
-    {
-        let header = BoxHeader::deserialize(&mut reader)?;
-        let header = FullBoxHeader::deserialize_seed(&mut reader, header)?;
-        Self::deserialize_seed(&mut reader, header)
-    }
 }
 
 impl<'a> DeserializeSeed<'a, FullBoxHeader> for SegmentIndexBox {
@@ -68,7 +55,7 @@ impl<'a> DeserializeSeed<'a, FullBoxHeader> for SegmentIndexBox {
             u64::deserialize(&mut reader)?
         };
 
-        u16::deserialize(&mut reader)?; // reserved
+        let reserved = u16::deserialize(&mut reader)?;
         let reference_count = u16::deserialize(&mut reader)?;
 
         let mut references = Vec::with_capacity(reference_count as usize);
@@ -82,9 +69,39 @@ impl<'a> DeserializeSeed<'a, FullBoxHeader> for SegmentIndexBox {
             timescale,
             earliest_presentation_time,
             first_offset,
+            reserved,
             reference_count,
             references,
         })
+    }
+}
+
+impl Serialize for SegmentIndexBox {
+    fn serialize<W>(&self, mut writer: W) -> std::io::Result<()>
+    where
+        W: std::io::Write,
+    {
+        self.header.serialize(&mut writer)?;
+
+        self.reference_id.serialize(&mut writer)?;
+        self.timescale.serialize(&mut writer)?;
+
+        if self.header.version == 0 {
+            (self.earliest_presentation_time as u32).serialize(&mut writer)?;
+            (self.first_offset as u32).serialize(&mut writer)?;
+        } else {
+            self.earliest_presentation_time.serialize(&mut writer)?;
+            self.first_offset.serialize(&mut writer)?;
+        }
+
+        self.reserved.serialize(&mut writer)?;
+        self.reference_count.serialize(&mut writer)?;
+
+        for reference in &self.references {
+            reference.serialize(&mut writer)?;
+        }
+
+        Ok(())
     }
 }
 
@@ -125,6 +142,26 @@ impl<'a> Deserialize<'a> for SegmentIndexBoxReference {
     }
 }
 
+impl Serialize for SegmentIndexBoxReference {
+    fn serialize<W>(&self, writer: W) -> std::io::Result<()>
+    where
+        W: std::io::Write,
+    {
+        let mut bit_writer = BitWriter::new(writer);
+
+        bit_writer.write_bit(self.reference_type)?;
+        bit_writer.write_bits(self.referenced_size as u64, 31)?;
+
+        self.subsegment_duration.serialize(&mut bit_writer)?;
+
+        bit_writer.write_bit(self.starts_with_sap)?;
+        bit_writer.write_bits(self.sap_type as u64, 3)?;
+        bit_writer.write_bits(self.sap_delta_time as u64, 28)?;
+
+        Ok(())
+    }
+}
+
 /// Subsegment index box
 ///
 /// ISO/IEC 14496-12 - 8.16.4
@@ -159,10 +196,25 @@ impl<'a> Deserialize<'a> for SubsegmentIndexBoxSubsegment {
     }
 }
 
+impl Serialize for SubsegmentIndexBoxSubsegment {
+    fn serialize<W>(&self, mut writer: W) -> std::io::Result<()>
+    where
+        W: std::io::Write,
+    {
+        self.range_count.serialize(&mut writer)?;
+
+        for range in &self.ranges {
+            range.serialize(&mut writer)?;
+        }
+
+        Ok(())
+    }
+}
+
 #[derive(Debug)]
 pub struct SubsegmentIndexBoxSubsegmentRange {
     pub level: u8,
-    pub range_size: u32,
+    pub range_size: U24Be,
 }
 
 impl<'a> Deserialize<'a> for SubsegmentIndexBoxSubsegmentRange {
@@ -171,38 +223,34 @@ impl<'a> Deserialize<'a> for SubsegmentIndexBoxSubsegmentRange {
         R: scuffle_bytes_util::zero_copy::ZeroCopyReader<'a>,
     {
         let level = u8::deserialize(&mut reader)?;
-        let range_size = U24Be::deserialize(&mut reader)?.into();
+        let range_size = U24Be::deserialize(&mut reader)?;
 
         Ok(SubsegmentIndexBoxSubsegmentRange { level, range_size })
+    }
+}
+
+impl Serialize for SubsegmentIndexBoxSubsegmentRange {
+    fn serialize<W>(&self, mut writer: W) -> std::io::Result<()>
+    where
+        W: std::io::Write,
+    {
+        self.level.serialize(&mut writer)?;
+        self.range_size.serialize(&mut writer)?;
+        Ok(())
     }
 }
 
 /// Producer reference time box
 ///
 /// ISO/IEC 14496-12 - 8.16.5
-#[derive(Debug)]
+#[derive(Debug, IsoBox)]
+#[iso_box(box_type = b"prft", skip_impl(deserialize_seed), crate_path = crate)]
 pub struct ProducerReferenceTimeBox {
+    #[iso_box(header)]
     pub header: FullBoxHeader,
     pub reference_track_id: u32,
     pub ntp_timestamp: u64,
     pub media_time: u64,
-}
-
-impl IsoBox for ProducerReferenceTimeBox {
-    type Header = FullBoxHeader;
-
-    const TYPE: BoxType = BoxType::FourCc(*b"prft");
-}
-
-impl<'a> Deserialize<'a> for ProducerReferenceTimeBox {
-    fn deserialize<R>(mut reader: R) -> std::io::Result<Self>
-    where
-        R: scuffle_bytes_util::zero_copy::ZeroCopyReader<'a>,
-    {
-        let header = BoxHeader::deserialize(&mut reader)?;
-        let header = FullBoxHeader::deserialize_seed(&mut reader, header)?;
-        Self::deserialize_seed(&mut reader, header)
-    }
 }
 
 impl<'a> DeserializeSeed<'a, FullBoxHeader> for ProducerReferenceTimeBox {

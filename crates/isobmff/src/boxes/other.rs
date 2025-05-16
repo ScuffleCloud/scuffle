@@ -1,5 +1,7 @@
 //! Other boxes that are used by multiple codecs or are not specific to a codec.
 
+use scuffle_bytes_util::BytesCow;
+
 use crate::{BoxHeader, IsoBox};
 
 /// MPEG-4 extension descriptors box
@@ -7,7 +9,7 @@ use crate::{BoxHeader, IsoBox};
 /// ISO/IEC 14496-15 - 5.4.2
 #[derive(IsoBox, Debug)]
 #[iso_box(box_type = b"m4ds", crate_path = crate)]
-pub struct MPEG4ExtensionDescriptorsBox {
+pub struct MPEG4ExtensionDescriptorsBox<'a> {
     /// Header of the box.
     #[iso_box(header)]
     pub header: BoxHeader,
@@ -15,6 +17,5 @@ pub struct MPEG4ExtensionDescriptorsBox {
     /// stream is used in an MPEG-4 systems context. This does not include `SLConfigDescriptor` or
     /// `DecoderConfigDescriptor`, but includes the other descriptors in order to be placed after
     /// the `SLConfigDescriptor`.
-    #[iso_box(repeated)]
-    pub descr: Vec<u8>,
+    pub descr: BytesCow<'a>,
 }

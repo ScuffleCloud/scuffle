@@ -1,14 +1,14 @@
 //! Track media structure boxes defined in ISO/IEC 14496-12 - 8.4
 
 use nutype_enum::nutype_enum;
-use scuffle_bytes_util::zero_copy::{Deserialize, DeserializeSeed};
+use scuffle_bytes_util::zero_copy::{Deserialize, DeserializeSeed, Serialize};
 
 use super::{
     DataInformationBox, HintMediaHeaderBox, SampleTableBox, SoundMediaHeaderBox, SubtitleMediaHeaderBox,
     VideoMediaHeaderBox, VolumetricVisualMediaHeaderBox,
 };
-use crate::string_deserializer::Utf8String;
-use crate::{BoxHeader, BoxType, FullBoxHeader, IsoBox, UnknownBox};
+use crate::common_types::Utf8String;
+use crate::{BoxHeader, FullBoxHeader, IsoBox, Langauge, UnknownBox};
 
 /// Media box
 ///
@@ -33,23 +33,17 @@ pub struct MediaBox<'a> {
 /// Media header box
 ///
 /// ISO/IEC 14496-12 - 8.4.2
-#[derive(Debug)]
+#[derive(Debug, IsoBox)]
+#[iso_box(box_type = b"mdhd", skip_impl(deserialize_seed, serialize), crate_path = crate)]
 pub struct MediaHeaderBox {
+    #[iso_box(header)]
     pub header: FullBoxHeader,
     pub creation_time: u64,
     pub modification_time: u64,
     pub timescale: u32,
     pub duration: u64,
-    pub language: [u8; 3],
+    pub language: Langauge,
     pub pre_defined: u16,
-}
-
-// Manual implementation because conditional fields are not supported in the macro
-
-impl IsoBox for MediaHeaderBox {
-    type Header = FullBoxHeader;
-
-    const TYPE: BoxType = BoxType::FourCc(*b"mdhd");
 }
 
 impl<'a> DeserializeSeed<'a, FullBoxHeader> for MediaHeaderBox {
@@ -74,13 +68,7 @@ impl<'a> DeserializeSeed<'a, FullBoxHeader> for MediaHeaderBox {
             u32::deserialize(&mut reader)? as u64
         };
 
-        // 0 xxxxx xxxxx xxxxx
-        let language = u16::deserialize(&mut reader)?;
-        let language = [
-            ((language >> 10) & 0b11111) as u8,
-            ((language >> 5) & 0b11111) as u8,
-            (language & 0b11111) as u8,
-        ];
+        let language = Langauge::deserialize(&mut reader)?;
         let pre_defined = u16::deserialize(&mut reader)?;
 
         Ok(Self {
@@ -95,24 +83,29 @@ impl<'a> DeserializeSeed<'a, FullBoxHeader> for MediaHeaderBox {
     }
 }
 
-impl<'a> Deserialize<'a> for MediaHeaderBox {
-    fn deserialize<R>(mut reader: R) -> std::io::Result<Self>
+impl Serialize for MediaHeaderBox {
+    fn serialize<W>(&self, mut writer: W) -> std::io::Result<()>
     where
-        R: scuffle_bytes_util::zero_copy::ZeroCopyReader<'a>,
+        W: std::io::Write,
     {
-        let header = BoxHeader::deserialize(&mut reader)?;
-        let header = FullBoxHeader::deserialize_seed(&mut reader, header)?;
-        Self::deserialize_seed(reader, header)
-    }
-}
+        self.header.serialize(&mut writer)?;
 
-impl MediaHeaderBox {
-    pub fn language(&self) -> [char; 3] {
-        [
-            (self.language[0] + 0x60) as char,
-            (self.language[1] + 0x60) as char,
-            (self.language[2] + 0x60) as char,
-        ]
+        if self.header.version == 1 {
+            self.creation_time.serialize(&mut writer)?;
+            self.modification_time.serialize(&mut writer)?;
+            self.timescale.serialize(&mut writer)?;
+            self.duration.serialize(&mut writer)?;
+        } else {
+            (self.creation_time as u32).serialize(&mut writer)?;
+            (self.modification_time as u32).serialize(&mut writer)?;
+            self.timescale.serialize(&mut writer)?;
+            (self.duration as u32).serialize(&mut writer)?;
+        }
+
+        self.language.serialize(&mut writer)?;
+        self.pre_defined.serialize(&mut writer)?;
+
+        Ok(())
     }
 }
 

@@ -3,9 +3,9 @@
 //! [Encapsulation of Opus in ISO Base Media File Format Version 0.6.8](https://www.opus-codec.org/docs/opus_in_isobmff.html)
 
 use isobmff::boxes::AudioSampleEntry;
-use isobmff::{BoxHeader, BoxType, IsoBox, UnknownBox};
+use isobmff::{BoxHeader, IsoBox, UnknownBox};
 use scuffle_bytes_util::BytesCow;
-use scuffle_bytes_util::zero_copy::{Deserialize, DeserializeSeed};
+use scuffle_bytes_util::zero_copy::{Deserialize, DeserializeSeed, Serialize};
 
 /// Opus Sample Entry Format
 ///
@@ -29,9 +29,11 @@ pub struct OpusSampleEntry<'a> {
 /// Opus Specific Box
 ///
 /// Encapsulation of Opus in ISO Base Media File Format - 4.3.2
-#[derive(Debug)]
+#[derive(Debug, IsoBox)]
+#[iso_box(box_type = b"dOps", skip_impl(deserialize_seed, serialize))]
 pub struct OpusSpecificBox<'a> {
     /// The header of the box.
+    #[iso_box(header)]
     pub header: BoxHeader,
     /// Shall be set to 0.
     pub version: u8,
@@ -58,22 +60,6 @@ pub struct OpusSpecificBox<'a> {
 
 // The IsoBox derive macro doesn't support conditional fields.
 // That's why we have to implement the traits manually here.
-
-impl IsoBox for OpusSpecificBox<'_> {
-    type Header = BoxHeader;
-
-    const TYPE: BoxType = BoxType::FourCc(*b"dOps");
-}
-
-impl<'a> Deserialize<'a> for OpusSpecificBox<'a> {
-    fn deserialize<R>(mut reader: R) -> std::io::Result<Self>
-    where
-        R: scuffle_bytes_util::zero_copy::ZeroCopyReader<'a>,
-    {
-        let header = BoxHeader::deserialize(&mut reader)?;
-        Self::deserialize_seed(&mut reader, header)
-    }
-}
 
 impl<'a> DeserializeSeed<'a, BoxHeader> for OpusSpecificBox<'a> {
     fn deserialize_seed<R>(mut reader: R, seed: BoxHeader) -> std::io::Result<Self>
@@ -112,6 +98,26 @@ impl<'a> DeserializeSeed<'a, BoxHeader> for OpusSpecificBox<'a> {
     }
 }
 
+impl Serialize for OpusSpecificBox<'_> {
+    fn serialize<W>(&self, mut writer: W) -> std::io::Result<()>
+    where
+        W: std::io::Write,
+    {
+        self.header.serialize(&mut writer)?;
+        self.version.serialize(&mut writer)?;
+        self.output_channel_count.serialize(&mut writer)?;
+        self.pre_skip.serialize(&mut writer)?;
+        self.input_sample_rate.serialize(&mut writer)?;
+        self.output_gain.serialize(&mut writer)?;
+        self.channel_mapping_family.serialize(&mut writer)?;
+        if let Some(channel_mapping_table) = &self.channel_mapping_table {
+            channel_mapping_table.serialize(&mut writer)?;
+        }
+
+        Ok(())
+    }
+}
+
 /// Channel Mapping Table
 ///
 /// Encapsulation of Opus in ISO Base Media File Format - 4.3.2
@@ -143,5 +149,18 @@ impl<'a> DeserializeSeed<'a, u8> for ChannelMappingTable<'a> {
             coupled_count,
             channel_mapping,
         })
+    }
+}
+
+impl Serialize for ChannelMappingTable<'_> {
+    fn serialize<W>(&self, mut writer: W) -> std::io::Result<()>
+    where
+        W: std::io::Write,
+    {
+        self.stream_count.serialize(&mut writer)?;
+        self.coupled_count.serialize(&mut writer)?;
+        self.channel_mapping.serialize(&mut writer)?;
+
+        Ok(())
     }
 }

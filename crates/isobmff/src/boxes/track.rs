@@ -1,9 +1,9 @@
 //! Track structure boxes defined in ISO/IEC 14496-12 - 8.3
 
-use scuffle_bytes_util::zero_copy::{Deserialize, DeserializeSeed};
+use scuffle_bytes_util::zero_copy::{Deserialize, DeserializeSeed, Serialize};
 
 use super::{Brand, EditBox, MediaBox, MetaBox, UserDataBox};
-use crate::{BoxHeader, BoxType, FullBoxHeader, IsoBox, UnknownBox};
+use crate::{BoxHeader, FullBoxHeader, IsoBox, UnknownBox};
 
 /// Track box
 ///
@@ -36,27 +36,24 @@ pub struct TrackBox<'a> {
 /// Track header box
 ///
 /// ISO/IEC 14496-12 - 8.3.2
-#[derive(Debug)]
+#[derive(Debug, IsoBox)]
+#[iso_box(box_type = b"tkhd", skip_impl(deserialize_seed, serialize), crate_path = crate)]
 pub struct TrackHeaderBox {
+    #[iso_box(header)]
     pub header: FullBoxHeader,
     pub creation_time: u64,
     pub modification_time: u64,
     pub track_id: u32,
+    pub reserved1: u32,
     pub duration: u64,
+    pub reserved2: u64,
     pub layer: i16,
     pub alternate_group: i16,
     pub volume: i16,
+    pub reserved3: u16,
     pub matrix: [i32; 9],
     pub width: u32,
     pub height: u32,
-}
-
-// Manual implementation because conditional fields are not supported in the macro
-
-impl IsoBox for TrackHeaderBox {
-    type Header = FullBoxHeader;
-
-    const TYPE: BoxType = BoxType::FourCc(*b"tkhd");
 }
 
 impl<'a> DeserializeSeed<'a, FullBoxHeader> for TrackHeaderBox {
@@ -75,20 +72,20 @@ impl<'a> DeserializeSeed<'a, FullBoxHeader> for TrackHeaderBox {
             u32::deserialize(&mut reader)? as u64
         };
         let track_id = u32::deserialize(&mut reader)?;
-        u32::deserialize(&mut reader)?; // reserved
+        let reserved1 = u32::deserialize(&mut reader)?;
         let duration = if seed.version == 1 {
             u64::deserialize(&mut reader)?
         } else {
             u32::deserialize(&mut reader)? as u64
         };
 
-        u64::deserialize(&mut reader)?; // reserved
+        let reserved2 = u64::deserialize(&mut reader)?;
 
         let layer = i16::deserialize(&mut reader)?;
         let alternate_group = i16::deserialize(&mut reader)?;
         let volume = i16::deserialize(&mut reader)?;
 
-        u16::deserialize(&mut reader)?; // reserved
+        let reserved3 = u16::deserialize(&mut reader)?;
 
         let mut matrix = [0; 9];
         for m in &mut matrix {
@@ -103,10 +100,13 @@ impl<'a> DeserializeSeed<'a, FullBoxHeader> for TrackHeaderBox {
             creation_time,
             modification_time,
             track_id,
+            reserved1,
             duration,
+            reserved2,
             layer,
             alternate_group,
             volume,
+            reserved3,
             matrix,
             width,
             height,
@@ -114,14 +114,42 @@ impl<'a> DeserializeSeed<'a, FullBoxHeader> for TrackHeaderBox {
     }
 }
 
-impl<'a> Deserialize<'a> for TrackHeaderBox {
-    fn deserialize<R>(mut reader: R) -> std::io::Result<Self>
+impl Serialize for TrackHeaderBox {
+    fn serialize<W>(&self, mut writer: W) -> std::io::Result<()>
     where
-        R: scuffle_bytes_util::zero_copy::ZeroCopyReader<'a>,
+        W: std::io::Write,
     {
-        let header = BoxHeader::deserialize(&mut reader)?;
-        let header = FullBoxHeader::deserialize_seed(&mut reader, header)?;
-        Self::deserialize_seed(reader, header)
+        self.header.serialize(&mut writer)?;
+
+        if self.header.version == 1 {
+            self.creation_time.serialize(&mut writer)?;
+            self.modification_time.serialize(&mut writer)?;
+        } else {
+            (self.creation_time as u32).serialize(&mut writer)?;
+            (self.modification_time as u32).serialize(&mut writer)?;
+        }
+        self.track_id.serialize(&mut writer)?;
+        self.reserved1.serialize(&mut writer)?;
+        if self.header.version == 1 {
+            self.duration.serialize(&mut writer)?;
+        } else {
+            (self.duration as u32).serialize(&mut writer)?;
+        }
+
+        self.reserved2.serialize(&mut writer)?;
+
+        self.layer.serialize(&mut writer)?;
+        self.alternate_group.serialize(&mut writer)?;
+        self.volume.serialize(&mut writer)?;
+
+        self.reserved3.serialize(&mut writer)?;
+
+        self.matrix.serialize(&mut writer)?;
+
+        self.width.serialize(&mut writer)?;
+        self.height.serialize(&mut writer)?;
+
+        Ok(())
     }
 }
 

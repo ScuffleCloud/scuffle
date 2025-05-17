@@ -21,5 +21,24 @@ syn = "2.0.100"
 proc-macro2 = "1.0.95"
 quote = "1.0.40"
 darling = "0.20.11"
-scuffle-bytes-util.workspace = true
+scuffle-bytes-util = { path = "../../bytes-util", version = "0.1.3" }
 scuffle-workspace-hack.workspace = true
+
+[package.metadata.docs.rs]
+all-features = true
+rustdoc-args = [
+  "--cfg",
+  "docsrs",
+  "--sort-modules-by-appearance",
+  "--generate-link-to-definition",
+]
+
+[package.metadata.cargo-sync-rdme.badge]
+style = "flat-square"
+
+[package.metadata.cargo-sync-rdme.badge.badges]
+license = true
+docs-rs = true
+crates-io = true
+github-actions = { workflows = "ci.yaml" }
+codecov = true

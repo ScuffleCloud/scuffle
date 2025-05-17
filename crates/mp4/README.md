@@ -15,9 +15,10 @@
 
 ---
 
+<!-- cargo-sync-rdme rustdoc [[ -->
 A pure Rust implementation of MP4 file format ISOBMFF boxes.
 
-This crates implements the MP4 ISO Base Media File Format (ISOBMFF) boxes defined by ISO/IEC 14496-14.
+This crates implements the MP4 ISO Base Media File Format (ISOBMFF) boxes defined by ISO/IEC 14496-14 - 6.
 
 For an implementation of ISO/IEC 14496-12 (the ISO Base Media File Format itself), see the [isobmff](https://crates.io/crates/isobmff) crate.
 
@@ -29,7 +30,7 @@ See the [changelog](./CHANGELOG.md) for a full release history.
 
 ### License
 
-This project is licensed under the MIT or Apache-2.0 license.
+This project is licensed under the [MIT](./LICENSE.MIT) or [Apache-2.0](./LICENSE.Apache-2.0) license.
 You can choose between one of them if you use this work.
 
 `SPDX-License-Identifier: MIT OR Apache-2.0`

@@ -1,6 +1,6 @@
 [package]
 name = "scuffle-bytes-util"
-version = "0.1.5"
+version = "0.2.0"
 authors = ["Scuffle <opensource@scuffle.cloud>"]
 documentation = "https://docs.rs/scuffle-bytes-util"
 edition = "2024"

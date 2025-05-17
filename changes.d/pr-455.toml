@@ -1,0 +1,9 @@
+[[tinc]]
+category = "feat"
+description = "generate root module for including all protos"
+authors = ["@troykomodo"]
+
+[[tinc]]
+category = "fix"
+description = "fix codegen for non-message service inputs"
+authors = ["@troykomodo"]

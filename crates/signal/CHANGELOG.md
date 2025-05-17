@@ -15,6 +15,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.3.2](https://github.com/ScuffleCloud/scuffle/releases/tag/scuffle-signal-v0.3.2) - 2025-05-17
+
+[View diff on diff.rs](https://diff.rs/scuffle-signal/0.3.1/scuffle-signal/0.3.2/Cargo.toml)
+
+### 🛠️ Non-breaking changes
+
+- chore: fix changelog entry & release process ([#465](https://github.com/scufflecloud/scuffle/pull/465)) (@troykomodo, @SimaoMoreira5228, @philipch07)
+
 ## [0.3.1](https://github.com/ScuffleCloud/scuffle/releases/tag/scuffle-signal-v0.3.1) - 2025-05-14
 
 [View diff on diff.rs](https://diff.rs/scuffle-signal/0.3.0/scuffle-signal/0.3.1/Cargo.toml)

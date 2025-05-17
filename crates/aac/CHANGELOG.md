@@ -15,6 +15,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.1.4](https://github.com/ScuffleCloud/scuffle/releases/tag/scuffle-aac-v0.1.4) - 2025-05-17
+
+[View diff on diff.rs](https://diff.rs/scuffle-aac/0.1.3/scuffle-aac/0.1.4/Cargo.toml)
+
+### 🛠️ Non-breaking changes
+
+- chore: fix changelog entry & release process ([#465](https://github.com/scufflecloud/scuffle/pull/465)) (@troykomodo, @SimaoMoreira5228, @philipch07)
+
 ## [0.1.3](https://github.com/ScuffleCloud/scuffle/releases/tag/scuffle-aac-v0.1.3) - 2025-05-14
 
 [View diff on diff.rs](https://diff.rs/scuffle-aac/0.1.2/scuffle-aac/0.1.3/Cargo.toml)

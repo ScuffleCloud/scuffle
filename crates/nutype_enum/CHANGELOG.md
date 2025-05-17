@@ -15,6 +15,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.1.5](https://github.com/ScuffleCloud/scuffle/releases/tag/nutype-enum-v0.1.5) - 2025-05-17
+
+[View diff on diff.rs](https://diff.rs/nutype-enum/0.1.4/nutype-enum/0.1.5/Cargo.toml)
+
+### 🛠️ Non-breaking changes
+
+- chore: fix changelog entry & release process ([#465](https://github.com/scufflecloud/scuffle/pull/465)) (@troykomodo, @SimaoMoreira5228, @philipch07)
+
 ## [0.1.4](https://github.com/ScuffleCloud/scuffle/releases/tag/nutype-enum-v0.1.4) - 2025-05-14
 
 [View diff on diff.rs](https://diff.rs/nutype-enum/0.1.3/nutype-enum/0.1.4/Cargo.toml)

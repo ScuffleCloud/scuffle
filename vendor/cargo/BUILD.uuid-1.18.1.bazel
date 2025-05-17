@@ -68,7 +68,7 @@ rust_library(
     }),
     version = "1.18.1",
     deps = [
-        "@cargo_vendor__serde-1.0.220//:serde",
+        "@cargo_vendor__serde-1.0.228//:serde",
     ] + select({
         "@rules_rust//rust/platform:aarch64-apple-darwin": [
             "@cargo_vendor__getrandom-0.3.3//:getrandom",  # cfg(not(all(target_arch = "wasm32", any(target_os = "unknown", target_os = "none"))))

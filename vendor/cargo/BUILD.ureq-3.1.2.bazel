@@ -67,13 +67,13 @@ rust_library(
     version = "3.1.2",
     deps = [
         "@cargo_vendor__base64-0.22.1//:base64",
-        "@cargo_vendor__log-0.4.28//:log",
-        "@cargo_vendor__percent-encoding-2.3.2//:percent_encoding",
+        "@cargo_vendor__log-0.4.27//:log",
+        "@cargo_vendor__percent-encoding-2.3.1//:percent_encoding",
         "@cargo_vendor__rustls-0.23.32//:rustls",
         "@cargo_vendor__rustls-pemfile-2.2.0//:rustls_pemfile",
         "@cargo_vendor__rustls-pki-types-1.12.0//:rustls_pki_types",
         "@cargo_vendor__ureq-proto-0.5.2//:ureq_proto",
         "@cargo_vendor__utf-8-0.7.6//:utf8",
-        "@cargo_vendor__webpki-roots-1.0.2//:webpki_roots",
+        "@cargo_vendor__webpki-roots-1.0.0//:webpki_roots",
     ],
 )

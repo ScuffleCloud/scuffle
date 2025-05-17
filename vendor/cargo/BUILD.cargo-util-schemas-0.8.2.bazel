@@ -62,12 +62,12 @@ rust_library(
     version = "0.8.2",
     deps = [
         "@cargo_vendor__semver-1.0.26//:semver",
-        "@cargo_vendor__serde-1.0.220//:serde",
-        "@cargo_vendor__serde-untagged-0.1.8//:serde_untagged",
+        "@cargo_vendor__serde-1.0.228//:serde",
+        "@cargo_vendor__serde-untagged-0.1.7//:serde_untagged",
         "@cargo_vendor__serde-value-0.7.0//:serde_value",
-        "@cargo_vendor__thiserror-2.0.16//:thiserror",
+        "@cargo_vendor__thiserror-2.0.17//:thiserror",
         "@cargo_vendor__toml-0.8.23//:toml",
         "@cargo_vendor__unicode-xid-0.2.6//:unicode_xid",
-        "@cargo_vendor__url-2.5.7//:url",
+        "@cargo_vendor__url-2.5.4//:url",
     ],
 )

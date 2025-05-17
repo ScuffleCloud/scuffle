@@ -3253,7 +3253,7 @@ dependencies = [
 
 [[package]]
 name = "scuffle-av1"
-version = "0.1.4"
+version = "0.2.0"
 dependencies = [
  "byteorder",
  "bytes",
@@ -3349,7 +3349,7 @@ dependencies = [
 
 [[package]]
 name = "scuffle-bytes-util"
-version = "0.1.4"
+version = "0.2.0"
 dependencies = [
  "byteorder",
  "bytes",
@@ -3465,7 +3465,7 @@ dependencies = [
 
 [[package]]
 name = "scuffle-h264"
-version = "0.2.2"
+version = "0.3.0"
 dependencies = [
  "byteorder",
  "bytes",
@@ -3481,7 +3481,7 @@ dependencies = [
 
 [[package]]
 name = "scuffle-h265"
-version = "0.2.2"
+version = "0.3.0"
 dependencies = [
  "bitflags 2.9.1",
  "byteorder",

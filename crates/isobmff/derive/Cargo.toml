@@ -21,7 +21,7 @@ syn = "2.0.100"
 proc-macro2 = "1.0.95"
 quote = "1.0.40"
 darling = "0.20.11"
-scuffle-bytes-util = { path = "../../bytes-util", version = "0.1.3" }
+scuffle-bytes-util = { path = "../../bytes-util", version = "0.2.0" }
 scuffle-workspace-hack.workspace = true
 
 [package.metadata.docs.rs]

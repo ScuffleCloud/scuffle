@@ -33,6 +33,12 @@ description = "update to use isobmff crate and new zero copy traits"
 breaking = true
 authors = ["@lennartkloock"]
 
+[[scuffle-h265]]
+category = "chore"
+description = "update to use isobmff crate and new zero copy traits"
+breaking = true
+authors = ["@lennartkloock"]
+
 [[scuffle-opus]]
 category = "feat"
 description = "add crate"

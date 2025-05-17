@@ -1,3 +1,5 @@
+use std::io;
+
 use scuffle_bytes_util::zero_copy::{Deserialize, DeserializeSeed, Serialize};
 use scuffle_bytes_util::{BitWriter, BytesCow};
 
@@ -80,7 +82,6 @@ impl Serialize for AudioSampleEntry {
         self.pre_defined.serialize(&mut writer)?;
         self.reserved2.serialize(&mut writer)?;
         self.samplerate.serialize(&mut writer)?;
-
         Ok(())
     }
 }
@@ -190,6 +191,50 @@ impl<'a> DeserializeSeed<'a, &FullBoxHeader> for LoudnessBaseBox {
     }
 }
 
+impl LoudnessBaseBox {
+    pub fn serialize<W>(&self, writer: W, version: u8) -> std::io::Result<()>
+    where
+        W: std::io::Write,
+    {
+        let mut bit_writer = BitWriter::new(writer);
+
+        if version >= 2 {
+            let loudness_info_type = self
+                .loudness_info_type
+                .ok_or(io::Error::new(io::ErrorKind::InvalidData, "loudness_info_type is required"))?;
+            bit_writer.write_bits(loudness_info_type as u64, 2)?;
+            bit_writer.write_bits(self.loudness_base_count as u64, 6)?;
+
+            if loudness_info_type == 1 || loudness_info_type == 2 {
+                bit_writer.write_bit(false)?;
+                bit_writer.write_bits(
+                    self.mae_group_id
+                        .ok_or(io::Error::new(io::ErrorKind::InvalidData, "mae_group_ID is required"))?
+                        as u64,
+                    7,
+                )?;
+            } else if loudness_info_type == 3 {
+                bit_writer.write_bits(0, 3)?;
+                bit_writer.write_bits(
+                    self.mae_group_id
+                        .ok_or(io::Error::new(io::ErrorKind::InvalidData, "mae_group_preset_ID is required"))?
+                        as u64,
+                    5,
+                )?;
+            }
+        } else if version == 1 {
+            bit_writer.write_bits(0, 2)?;
+            bit_writer.write_bits(self.loudness_base_count as u64, 6)?;
+        }
+
+        for loudness_base in &self.loudness_bases {
+            loudness_base.serialize(&mut bit_writer, version)?;
+        }
+
+        Ok(())
+    }
+}
+
 #[derive(Debug)]
 pub struct LoudnessBase {
     pub eq_set_id: Option<u8>,
@@ -244,24 +289,30 @@ impl<'a> DeserializeSeed<'a, &FullBoxHeader> for LoudnessBase {
     }
 }
 
-impl Serialize for LoudnessBase {
-    fn serialize<W>(&self, writer: W) -> std::io::Result<()>
+impl LoudnessBase {
+    pub fn serialize<W>(&self, writer: W, version: u8) -> std::io::Result<()>
     where
         W: std::io::Write,
     {
         let mut bit_writer = BitWriter::new(writer);
 
-        if let Some(eq_set_id) = self.eq_set_id {
-            (eq_set_id & 0b0011_1111).serialize(&mut bit_writer)?;
+        if version >= 1 {
+            bit_writer.write_bits(0, 2)?;
+            bit_writer.write_bits(
+                self.eq_set_id
+                    .ok_or(io::Error::new(io::ErrorKind::InvalidData, "eq_set_ID is required"))? as u64,
+                6,
+            )?;
         }
 
-        bit_writer.write_bits(self.downmix_id as u64, 6)?;
+        bit_writer.write_bits(0, 3)?;
+        bit_writer.write_bits(self.downmix_id as u64, 7)?;
         bit_writer.write_bits(self.drc_set_id as u64, 6)?;
 
         bit_writer.write_bits(pad_to_u64(&self.bs_sample_peak_level.to_be_bytes()), 12)?;
         bit_writer.write_bits(pad_to_u64(&self.bs_true_peak_level.to_be_bytes()), 12)?;
-        bit_writer.write_bits(pad_to_u64(&self.measurement_system_for_tp.to_be_bytes()), 4)?;
-        bit_writer.write_bits(pad_to_u64(&self.reliability_for_tp.to_be_bytes()), 4)?;
+        bit_writer.write_bits(self.measurement_system_for_tp as u64, 4)?;
+        bit_writer.write_bits(self.reliability_for_tp as u64, 4)?;
 
         self.measurement_count.serialize(&mut bit_writer)?;
         for measurement in &self.measurements {
@@ -341,30 +392,12 @@ impl<'a> DeserializeSeed<'a, FullBoxHeader> for TrackLoudnessInfo {
 }
 
 impl Serialize for TrackLoudnessInfo {
-    fn serialize<W>(&self, writer: W) -> std::io::Result<()>
+    fn serialize<W>(&self, mut writer: W) -> std::io::Result<()>
     where
         W: std::io::Write,
     {
-        let mut bit_writer = BitWriter::new(writer);
-
-        self.header.serialize(&mut bit_writer)?;
-
-        if self.header.version >= 2 || self.header.version == 1 {
-            if let Some(loudness_info_type) = self.base_box.loudness_info_type {
-                bit_writer.write_bits(loudness_info_type as u64, 2)?;
-            }
-
-            bit_writer.write_bits(self.base_box.loudness_base_count as u64, 6)?;
-
-            if let Some(mae_group_id) = self.base_box.mae_group_id {
-                bit_writer.write_bits(mae_group_id as u64, 7)?;
-            }
-        }
-
-        for loudness_base in &self.base_box.loudness_bases {
-            loudness_base.serialize(&mut bit_writer)?;
-        }
-
+        self.header.serialize(&mut writer)?;
+        self.base_box.serialize(&mut writer, self.header.version)?;
         Ok(())
     }
 }
@@ -393,30 +426,12 @@ impl<'a> DeserializeSeed<'a, FullBoxHeader> for AlbumLoudnessInfo {
 }
 
 impl Serialize for AlbumLoudnessInfo {
-    fn serialize<W>(&self, writer: W) -> std::io::Result<()>
+    fn serialize<W>(&self, mut writer: W) -> std::io::Result<()>
     where
         W: std::io::Write,
     {
-        let mut bit_writer = BitWriter::new(writer);
-
-        self.header.serialize(&mut bit_writer)?;
-
-        if self.header.version >= 2 || self.header.version == 1 {
-            if let Some(loudness_info_type) = self.base_box.loudness_info_type {
-                bit_writer.write_bits(loudness_info_type as u64, 2)?;
-            }
-
-            bit_writer.write_bits(self.base_box.loudness_base_count as u64, 6)?;
-
-            if let Some(mae_group_id) = self.base_box.mae_group_id {
-                bit_writer.write_bits(mae_group_id as u64, 7)?;
-            }
-        }
-
-        for loudness_base in &self.base_box.loudness_bases {
-            loudness_base.serialize(&mut bit_writer)?;
-        }
-
+        self.header.serialize(&mut writer)?;
+        self.base_box.serialize(&mut writer, self.header.version)?;
         Ok(())
     }
 }

@@ -119,8 +119,11 @@ impl Serialize for CompatibleSchemeTypeBox {
         self.scheme_type.serialize(&mut writer)?;
         self.scheme_version.serialize(&mut writer)?;
 
-        if let Some(scheme_uri) = &self.scheme_uri {
-            scheme_uri.serialize(&mut writer)?;
+        if (*self.header.flags & 0x000001) != 0 {
+            self.scheme_uri
+                .as_ref()
+                .ok_or(io::Error::new(io::ErrorKind::InvalidData, "scheme_uri is required"))?
+                .serialize(&mut writer)?;
         }
 
         Ok(())

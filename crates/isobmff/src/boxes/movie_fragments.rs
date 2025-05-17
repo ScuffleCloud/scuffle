@@ -1,7 +1,7 @@
 use std::io;
 
 use scuffle_bytes_util::BitWriter;
-use scuffle_bytes_util::zero_copy::{Deserialize, DeserializeSeed, Serialize, ZeroCopyReader};
+use scuffle_bytes_util::zero_copy::{Deserialize, DeserializeSeed, Serialize, SerializeSeed, ZeroCopyReader};
 
 use super::{
     CompositionToDecodeBox, MetaBox, SampleAuxiliaryInformationOffsetsBox, SampleAuxiliaryInformationSizesBox,
@@ -337,7 +337,7 @@ impl Serialize for TrackRunBox {
         }
 
         for sample in &self.samples {
-            sample.serialize(&mut writer, self)?;
+            sample.serialize_seed(&mut writer, flags)?;
         }
 
         Ok(())
@@ -400,29 +400,27 @@ impl<'a> DeserializeSeed<'a, TrFlags> for TrackRunBoxSample {
     }
 }
 
-impl TrackRunBoxSample {
-    pub fn serialize<W>(&self, mut writer: W, parent: &TrackRunBox) -> io::Result<()>
+impl SerializeSeed<TrFlags> for TrackRunBoxSample {
+    fn serialize_seed<W>(&self, mut writer: W, seed: TrFlags) -> io::Result<()>
     where
         W: io::Write,
     {
-        let flags = TrFlags::from_bits_truncate(*parent.header.flags);
-
-        if flags.contains(TrFlags::SampleDurationPresent) {
+        if seed.contains(TrFlags::SampleDurationPresent) {
             self.sample_duration
                 .ok_or(io::Error::new(io::ErrorKind::InvalidData, "sample_duration is required"))?
                 .serialize(&mut writer)?;
         }
-        if flags.contains(TrFlags::SampleSizePresent) {
+        if seed.contains(TrFlags::SampleSizePresent) {
             self.sample_size
                 .ok_or(io::Error::new(io::ErrorKind::InvalidData, "sample_size is required"))?
                 .serialize(&mut writer)?;
         }
-        if flags.contains(TrFlags::SampleFlagsPresent) {
+        if seed.contains(TrFlags::SampleFlagsPresent) {
             self.sample_flags
                 .ok_or(io::Error::new(io::ErrorKind::InvalidData, "sample_flags is required"))?
                 .serialize(&mut writer)?;
         }
-        if flags.contains(TrFlags::SampleCompositionTimeOffsetsPresent) {
+        if seed.contains(TrFlags::SampleCompositionTimeOffsetsPresent) {
             self.sample_composition_time_offset
                 .ok_or(io::Error::new(
                     io::ErrorKind::InvalidData,
@@ -534,17 +532,7 @@ impl Serialize for TrackFragmentRandomAccessBox {
         self.number_of_entry.serialize(&mut bit_writer)?;
 
         for entry in &self.entries {
-            if self.header.version == 1 {
-                entry.time.serialize(&mut bit_writer)?;
-                entry.moof_offset.serialize(&mut bit_writer)?;
-            } else {
-                (entry.time as u32).serialize(&mut bit_writer)?;
-                (entry.moof_offset as u32).serialize(&mut bit_writer)?;
-            }
-
-            bit_writer.write_bits(entry.traf_number as u64, (self.length_size_of_traf_num + 1) * 8)?;
-            bit_writer.write_bits(entry.trun_number as u64, (self.length_size_of_trun_num + 1) * 8)?;
-            bit_writer.write_bits(entry.sample_number as u64, (self.length_size_of_sample_num + 1) * 8)?;
+            entry.serialize_seed(&mut bit_writer, self)?;
         }
 
         Ok(())
@@ -558,6 +546,29 @@ pub struct TrackFragmentRandomAccessBoxEntry {
     pub traf_number: u32,
     pub trun_number: u32,
     pub sample_number: u32,
+}
+
+impl SerializeSeed<&TrackFragmentRandomAccessBox> for TrackFragmentRandomAccessBoxEntry {
+    fn serialize_seed<W>(&self, writer: W, seed: &TrackFragmentRandomAccessBox) -> io::Result<()>
+    where
+        W: std::io::Write,
+    {
+        let mut bit_writer = BitWriter::new(writer);
+
+        if seed.header.version == 1 {
+            self.time.serialize(&mut bit_writer)?;
+            self.moof_offset.serialize(&mut bit_writer)?;
+        } else {
+            (self.time as u32).serialize(&mut bit_writer)?;
+            (self.moof_offset as u32).serialize(&mut bit_writer)?;
+        }
+
+        bit_writer.write_bits(self.traf_number as u64, (seed.length_size_of_traf_num + 1) * 8)?;
+        bit_writer.write_bits(self.trun_number as u64, (seed.length_size_of_trun_num + 1) * 8)?;
+        bit_writer.write_bits(self.sample_number as u64, (seed.length_size_of_sample_num + 1) * 8)?;
+
+        Ok(())
+    }
 }
 
 /// Movie fragment random access offset box

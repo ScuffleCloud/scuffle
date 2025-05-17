@@ -1,6 +1,3 @@
-import { times } from 'lodash';
-
-const interval = 1000;
 const numRecords = 30;
 const startTime = new Date('2024-01-01T00:00:00').getTime();
 
@@ -17,7 +14,8 @@ export const rectangleData = () => {
 
         const value = [RECTANGLE_INDEX, baseTime, (baseTime += duration), duration];
         data.push({
-            name: 'row1',
+            name: 'row3',
+            type: 'asset',
             value: value,
         });
         baseTime += Math.round(Math.random() * 2000);
@@ -25,7 +23,7 @@ export const rectangleData = () => {
     return data;
 };
 
-export const triangleData = () => {
+export const diamondData = () => {
     const data = [];
     let baseTime = startTime;
     for (let i = 0; i < numRecords; i++) {
@@ -34,6 +32,7 @@ export const triangleData = () => {
         const value = [TRIANGLE_INDEX, (baseTime += duration)];
         data.push({
             name: 'row2',
+            type: 'error',
             value: value,
         });
         baseTime += Math.round(Math.random() * 2000);
@@ -51,21 +50,15 @@ export const circleData = () => {
         data.push({
             name: 'row3',
             value: value,
-            // itemStyle: {
-            //     normal: {
-            //         color: '#000000',
-            //     },
-            // },
         });
         baseTime += Math.round(Math.random() * 2000);
     }
     return data;
 };
 
-// Let's build some line chart data but use signifiacntly more data points for a stream of data
 const LINE_NUM_RECORDS = 500;
 
-export const getLineData = () => {
+export const getSampleLineData = () => {
     const data = [];
     let baseTime = startTime;
     for (let i = 0; i < LINE_NUM_RECORDS; i++) {

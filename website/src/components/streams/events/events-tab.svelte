@@ -8,9 +8,11 @@
 
 <script lang="ts">
     import StreamStatusPill from '$lib/shared-components/stream-status-pill.svelte';
-    import EventsChart from './events-chart.svelte';
+    import EventsChart from './chart.svelte';
     import { Select } from 'melt/builders';
     import type { VideoStream } from '../types';
+    import EventsList from './events-list.svelte';
+    import type { StreamEvent } from './types';
 
     const streams: VideoStream[] = [
         {
@@ -39,11 +41,22 @@
         },
     ];
 
+    // It doesn't matter what we fetch, we need to reformat the events before dumping it in our chart
+
+    const events: StreamEvent[] = [
+        {
+            id: '1',
+            type: 'neutral',
+            text: 'Neutral event',
+            timestamp: 'May 5, 04:01:11 PM EDT',
+        },
+    ];
+
     const select = new Select<string>({
         value: streams[0].id,
     });
 
-    $: selectedStream = streams.find((stream) => stream.id === select.value);
+    const selectedStream = $derived(streams.find((stream) => stream.id === select.value));
 </script>
 
 <div class="card">
@@ -66,18 +79,16 @@
                     <div class="select-option" {...select.getOption(stream.id)}>
                         <StreamStatusPill status="live" />
                         <span class="stream-id">{stream.id}</span>
-                        <span class="stream-time">{stream.created}</span>
                     </div>
                 {/each}
                 <div class="select-header">
-                    <span>Past streams</span>
+                    <span class="title">Past streams</span>
                     <div class="divider"></div>
                 </div>
                 {#each streams.filter((s) => s.status === 'finished') as stream}
                     <div class="select-option" {...select.getOption(stream.id)}>
                         <StreamStatusPill status="finished" />
                         <span class="stream-id">{stream.id}</span>
-                        <span class="stream-time">{stream.created}</span>
                     </div>
                 {/each}
             </div>
@@ -89,18 +100,9 @@
     <div class="events-chart-container">
         <EventsChart />
     </div>
-
-    <!-- <div class="events-list">
-        <h3>Events</h3>
-        <div class="event-items">
-            <div class="event-item">
-                <span class="event-icon">●</span>
-                <span class="event-text">Neutral event</span>
-                <span class="event-time">May 5, 04:01:11 PM EDT</span>
-            </div>
-        </div>
-    </div> -->
 </div>
+
+<EventsList {events} />
 
 <style>
     .card {
@@ -181,24 +183,6 @@
             display: flex;
             align-items: center;
             gap: 0.5rem;
-        }
-
-        .status-badge {
-            padding: 0.25rem 0.5rem;
-            background: #e2e8f0;
-            border-radius: 999px;
-            font-size: 0.75rem;
-            font-weight: 500;
-
-            &.live {
-                background: #ef4444;
-                color: white;
-            }
-        }
-
-        .stream-time {
-            color: #64748b;
-            font-size: 0.875rem;
         }
 
         .resume-button {

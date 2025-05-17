@@ -99,11 +99,9 @@ export const renderDiamond = (
             points: points,
         },
         style: {
-            ...api.style(),
             stroke: '#D44F34',
             lineWidth: 1,
             fill: '#FF9985BF',
-            // border color
             borderWidth: 1,
         },
         clipPath: {
@@ -155,7 +153,7 @@ export const renderRectangle = (
             r: 2,
         },
         style: {
-            ...api.style(),
+            fill: '#75BFDEBF',
             stroke: '#2b7fa4',
             lineWidth: 1,
         },

@@ -16,7 +16,7 @@
 
     import { CanvasRenderer } from 'echarts/renderers';
     import { renderItem } from './shape-renderers';
-    import { circleData, getLineData, rectangleData, triangleData } from './sample-data';
+    import { circleData, getSampleLineData, rectangleData, diamondData } from './sample-data';
     use([
         DatasetComponent,
         TitleComponent,
@@ -32,59 +32,18 @@
         CustomChart,
     ]);
 
-    const interval = 1000;
-    const numRecords = 30;
-
-    // Let's attempt to use rich label
-    let data: any[] = [];
-    let dataCount = 20;
-    // let starttime = +new Date()
     const startTime = new Date('2024-01-01T00:00:00').getTime();
     const categories = ['categoryC', 'categoryB', 'categoryA'];
-    const types = [
-        { name: 'JS Heap', color: '#91c7dd' },
-        { name: 'Documents', color: '#bd6d6c' },
-    ];
 
     // Generate mock data. This should come from the backend, not sure how formatted it will be though
     // If we're 100% re-using api data.
+    const data = [...rectangleData(), ...diamondData(), ...circleData()];
 
-    // Worst case can use one category with items coded to different heights and colors
-    // otherwise can decrease height and increase size of shapes
-    // categories.forEach(function (category, index) {
-    //     let baseTime = startTime;
-    //     for (let i = 0; i < dataCount; i++) {
-    //         let typeItem = types[Math.round(Math.random() * (types.length - 1))];
-    //         let duration = Math.round(Math.random() * 10000);
-
-    //         // Asset has more associated data
-    //         // This should probably only be array of length 2 when not a rectangle but TBD to fix this
-    //         const value = [index, baseTime, (baseTime += duration), duration];
-    //         data.push({
-    //             name: typeItem.name,
-    //             value: value,
-    //         });
-    //         if (index === 0) {
-    //             lineData.push({
-    //                 timestamp: baseTime,
-    //                 value: duration,
-    //                 // We should put our styles here eventually to be consistent on tooltips too
-    //                 // itemStyle: {
-    //                 //     normal: {
-    //                 //         color: typeItem.color,
-    //                 //     },
-    //                 // },
-    //             });
-    //         }
-    //         baseTime += Math.round(Math.random() * 2000);
-    //     }
-    // });
-    data = [...rectangleData(), ...triangleData(), ...circleData()];
-
-    const lineData = getLineData();
+    const lineData = getSampleLineData();
 
     const xMinTime = startTime;
     const xMaxTime = startTime + 1000 * 60 * 2;
+    // Must be used for all charts
     const xAxisOptions = {
         type: 'time',
         splitLine: {
@@ -141,6 +100,12 @@
                 ...xAxisOptions,
                 axisLabel: {
                     ...xAxisOptions.axisLabel,
+                    show: false,
+                },
+                axisTick: {
+                    show: false,
+                },
+                axisLine: {
                     show: false,
                 },
             },

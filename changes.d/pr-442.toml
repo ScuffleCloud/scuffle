@@ -12,11 +12,13 @@ authors = ["@lennartkloock"]
 [[isobmff]]
 category = "feat"
 description = "add crate"
+breaking = true
 authors = ["@lennartkloock"]
 
 [[isobmff-derive]]
 category = "feat"
 description = "add crate"
+breaking = true
 authors = ["@lennartkloock"]
 
 [[scuffle-av1]]
@@ -34,4 +36,5 @@ authors = ["@lennartkloock"]
 [[scuffle-opus]]
 category = "feat"
 description = "add crate"
+breaking = true
 authors = ["@lennartkloock"]

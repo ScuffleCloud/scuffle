@@ -409,12 +409,6 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "1628fb46dfa0b37568d12e5edd512553eccf6a22a78e8bde00bb4aed84d5bdbf"
 
 [[package]]
-name = "bytemuck"
-version = "1.23.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "9134a6ef01ce4b366b50689c94f82c14bc72bc5d0386829828a2e2752ef7958c"
-
-[[package]]
 name = "byteorder"
 version = "1.5.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1751,10 +1745,12 @@ dependencies = [
  "bitflags 2.9.0",
  "byteorder",
  "bytes",
+ "document-features",
  "insta",
  "isobmff-derive",
  "nutype-enum",
  "scuffle-bytes-util",
+ "scuffle-changelog",
  "scuffle-workspace-hack",
  "uuid",
 ]
@@ -3388,8 +3384,8 @@ dependencies = [
  "nutype-enum",
  "rand 0.9.1",
  "rusty_ffmpeg",
- "scuffle-changelog",
  "scuffle-bytes-util",
+ "scuffle-changelog",
  "scuffle-workspace-hack",
  "sha2",
  "tempfile",
@@ -3539,19 +3535,25 @@ dependencies = [
 name = "scuffle-mp4"
 version = "0.1.4"
 dependencies = [
+ "document-features",
  "isobmff",
  "isobmff-derive",
  "scuffle-bytes-util",
+ "scuffle-changelog",
  "scuffle-workspace-hack",
+ "serde",
+ "serde_json",
 ]
 
 [[package]]
 name = "scuffle-opus"
 version = "0.1.0"
 dependencies = [
+ "document-features",
  "isobmff",
  "isobmff-derive",
  "scuffle-bytes-util",
+ "scuffle-changelog",
  "scuffle-workspace-hack",
 ]
 

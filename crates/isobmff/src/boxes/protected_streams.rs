@@ -1,3 +1,5 @@
+use std::io;
+
 use scuffle_bytes_util::zero_copy::{Deserialize, DeserializeSeed, Serialize};
 
 use super::StereoVideoBox;
@@ -66,7 +68,7 @@ impl<'a> DeserializeSeed<'a, FullBoxHeader> for SchemeTypeBox {
 }
 
 impl Serialize for SchemeTypeBox {
-    fn serialize<W>(&self, mut writer: W) -> std::io::Result<()>
+    fn serialize<W>(&self, mut writer: W) -> io::Result<()>
     where
         W: std::io::Write,
     {
@@ -75,8 +77,11 @@ impl Serialize for SchemeTypeBox {
         self.scheme_type.serialize(&mut writer)?;
         self.scheme_version.serialize(&mut writer)?;
 
-        if let Some(scheme_uri) = &self.scheme_uri {
-            scheme_uri.serialize(&mut writer)?;
+        if (*self.header.flags & 0x000001) != 0 {
+            self.scheme_uri
+                .as_ref()
+                .ok_or(io::Error::new(io::ErrorKind::InvalidData, "scheme_uri is required"))?
+                .serialize(&mut writer)?;
         }
 
         Ok(())

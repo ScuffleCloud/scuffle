@@ -259,12 +259,7 @@ impl Serialize for FECReservoirBox {
         }
 
         for entry in &self.entries {
-            if self.header.version == 0 {
-                (entry.item_id as u16).serialize(&mut writer)?;
-            } else {
-                entry.item_id.serialize(&mut writer)?;
-            }
-            entry.symbol_count.serialize(&mut writer)?;
+            entry.serialize(&mut writer, self.header.version)?;
         }
 
         Ok(())
@@ -290,6 +285,22 @@ impl<'a> DeserializeSeed<'a, u8> for FECReservoirBoxEntry {
         let symbol_count = u32::deserialize(&mut reader)?;
 
         Ok(Self { item_id, symbol_count })
+    }
+}
+
+impl FECReservoirBoxEntry {
+    pub fn serialize<W>(&self, mut writer: W, version: u8) -> std::io::Result<()>
+    where
+        W: std::io::Write,
+    {
+        if version == 0 {
+            (self.item_id as u16).serialize(&mut writer)?;
+        } else {
+            self.item_id.serialize(&mut writer)?;
+        }
+        self.symbol_count.serialize(&mut writer)?;
+
+        Ok(())
     }
 }
 
@@ -520,12 +531,7 @@ impl Serialize for FileReservoirBox {
         }
 
         for entry in &self.entries {
-            if self.header.version == 0 {
-                (entry.item_id as u16).serialize(&mut writer)?;
-            } else {
-                entry.item_id.serialize(&mut writer)?;
-            }
-            entry.symbol_count.serialize(&mut writer)?;
+            entry.serialize(&mut writer, self.header.version)?;
         }
 
         Ok(())
@@ -551,5 +557,21 @@ impl<'a> DeserializeSeed<'a, u8> for FileReservoirBoxEntry {
         let symbol_count = u32::deserialize(&mut reader)?;
 
         Ok(Self { item_id, symbol_count })
+    }
+}
+
+impl FileReservoirBoxEntry {
+    pub fn serialize<W>(&self, mut writer: W, version: u8) -> std::io::Result<()>
+    where
+        W: std::io::Write,
+    {
+        if version == 0 {
+            (self.item_id as u16).serialize(&mut writer)?;
+        } else {
+            self.item_id.serialize(&mut writer)?;
+        }
+        self.symbol_count.serialize(&mut writer)?;
+
+        Ok(())
     }
 }

@@ -22,41 +22,11 @@ pub struct DataInformationBox<'a> {
 ///
 /// ISO/IEC 14496-12 - 8.7.2
 #[derive(Debug, IsoBox)]
-#[iso_box(box_type = b"url ", skip_impl(deserialize_seed, serialize), crate_path = crate)]
+#[iso_box(box_type = b"url ", crate_path = crate)]
 pub struct DataEntryUrlBox {
     #[iso_box(header)]
     pub header: FullBoxHeader,
-    pub location: Option<Utf8String>,
-}
-
-impl<'a> DeserializeSeed<'a, FullBoxHeader> for DataEntryUrlBox {
-    fn deserialize_seed<R>(mut reader: R, seed: FullBoxHeader) -> io::Result<Self>
-    where
-        R: ZeroCopyReader<'a>,
-    {
-        let location = if *seed.flags == 0x000001 {
-            None
-        } else {
-            Some(Utf8String::deserialize(&mut reader)?)
-        };
-
-        Ok(Self { header: seed, location })
-    }
-}
-
-impl Serialize for DataEntryUrlBox {
-    fn serialize<W>(&self, mut writer: W) -> io::Result<()>
-    where
-        W: std::io::Write,
-    {
-        self.header.serialize(&mut writer)?;
-
-        if let Some(location) = &self.location {
-            location.serialize(&mut writer)?;
-        }
-
-        Ok(())
-    }
+    pub location: Utf8String,
 }
 
 /// Data entry urn box

@@ -226,23 +226,41 @@ impl Serialize for TrackFragmentHeaderBox {
     where
         W: std::io::Write,
     {
+        let flags = TfFlags::from_bits_truncate(*self.header.flags);
+
         self.header.serialize(&mut writer)?;
 
         self.track_id.serialize(&mut writer)?;
-        if let Some(base_data_offset) = self.base_data_offset {
-            base_data_offset.serialize(&mut writer)?;
+        if flags.contains(TfFlags::BaseDataOffsetPresent) {
+            self.base_data_offset
+                .ok_or(io::Error::new(io::ErrorKind::InvalidData, "base_data_offset is required"))?
+                .serialize(&mut writer)?;
         }
-        if let Some(sample_description_index) = self.sample_description_index {
-            sample_description_index.serialize(&mut writer)?;
+        if flags.contains(TfFlags::SampleDescriptionIndexPresent) {
+            self.sample_description_index
+                .ok_or(io::Error::new(
+                    io::ErrorKind::InvalidData,
+                    "sample_description_index is required",
+                ))?
+                .serialize(&mut writer)?;
         }
-        if let Some(default_sample_duration) = self.default_sample_duration {
-            default_sample_duration.serialize(&mut writer)?;
+        if flags.contains(TfFlags::DefaultSampleDurationPresent) {
+            self.default_sample_duration
+                .ok_or(io::Error::new(
+                    io::ErrorKind::InvalidData,
+                    "default_sample_duration is required",
+                ))?
+                .serialize(&mut writer)?;
         }
-        if let Some(default_sample_size) = self.default_sample_size {
-            default_sample_size.serialize(&mut writer)?;
+        if flags.contains(TfFlags::DefaultSampleSizePresent) {
+            self.default_sample_size
+                .ok_or(io::Error::new(io::ErrorKind::InvalidData, "default_sample_size is required"))?
+                .serialize(&mut writer)?;
         }
-        if let Some(default_sample_flags) = self.default_sample_flags {
-            default_sample_flags.serialize(&mut writer)?;
+        if flags.contains(TfFlags::DefaultSampleFlagsPresent) {
+            self.default_sample_flags
+                .ok_or(io::Error::new(io::ErrorKind::InvalidData, "default_sample_flags is required"))?
+                .serialize(&mut writer)?;
         }
 
         Ok(())
@@ -284,8 +302,7 @@ impl<'a> DeserializeSeed<'a, FullBoxHeader> for TrackRunBox {
 
         let mut samples = Vec::with_capacity(sample_count as usize);
         for _ in 0..sample_count {
-            let sample = TrackRunBoxSample::deserialize_seed(&mut reader, flags)?;
-            samples.push(sample);
+            samples.push(TrackRunBoxSample::deserialize_seed(&mut reader, flags)?);
         }
 
         Ok(Self {
@@ -303,29 +320,24 @@ impl Serialize for TrackRunBox {
     where
         W: std::io::Write,
     {
+        let flags = TrFlags::from_bits_truncate(*self.header.flags);
+
         self.header.serialize(&mut writer)?;
 
         self.sample_count.serialize(&mut writer)?;
-        if let Some(data_offset) = self.data_offset {
-            data_offset.serialize(&mut writer)?;
+        if flags.contains(TrFlags::DataOffsetPresent) {
+            self.data_offset
+                .ok_or(io::Error::new(io::ErrorKind::InvalidData, "data_offset is required"))?
+                .serialize(&mut writer)?;
         }
-        if let Some(first_sample_flags) = self.first_sample_flags {
-            first_sample_flags.serialize(&mut writer)?;
+        if flags.contains(TrFlags::FirstSampleFlagsPresent) {
+            self.first_sample_flags
+                .ok_or(io::Error::new(io::ErrorKind::InvalidData, "first_sample_flags is required"))?
+                .serialize(&mut writer)?;
         }
 
         for sample in &self.samples {
-            if let Some(sample_duration) = sample.sample_duration {
-                sample_duration.serialize(&mut writer)?;
-            }
-            if let Some(sample_size) = sample.sample_size {
-                sample_size.serialize(&mut writer)?;
-            }
-            if let Some(sample_flags) = sample.sample_flags {
-                sample_flags.serialize(&mut writer)?;
-            }
-            if let Some(sample_composition_time_offset) = sample.sample_composition_time_offset {
-                sample_composition_time_offset.serialize(&mut writer)?;
-            }
+            sample.serialize(&mut writer, self)?;
         }
 
         Ok(())
@@ -385,6 +397,41 @@ impl<'a> DeserializeSeed<'a, TrFlags> for TrackRunBoxSample {
             sample_flags,
             sample_composition_time_offset,
         })
+    }
+}
+
+impl TrackRunBoxSample {
+    pub fn serialize<W>(&self, mut writer: W, parent: &TrackRunBox) -> io::Result<()>
+    where
+        W: io::Write,
+    {
+        let flags = TrFlags::from_bits_truncate(*parent.header.flags);
+
+        if flags.contains(TrFlags::SampleDurationPresent) {
+            self.sample_duration
+                .ok_or(io::Error::new(io::ErrorKind::InvalidData, "sample_duration is required"))?
+                .serialize(&mut writer)?;
+        }
+        if flags.contains(TrFlags::SampleSizePresent) {
+            self.sample_size
+                .ok_or(io::Error::new(io::ErrorKind::InvalidData, "sample_size is required"))?
+                .serialize(&mut writer)?;
+        }
+        if flags.contains(TrFlags::SampleFlagsPresent) {
+            self.sample_flags
+                .ok_or(io::Error::new(io::ErrorKind::InvalidData, "sample_flags is required"))?
+                .serialize(&mut writer)?;
+        }
+        if flags.contains(TrFlags::SampleCompositionTimeOffsetsPresent) {
+            self.sample_composition_time_offset
+                .ok_or(io::Error::new(
+                    io::ErrorKind::InvalidData,
+                    "sample_composition_time_offset is required",
+                ))?
+                .serialize(&mut writer)?;
+        }
+
+        Ok(())
     }
 }
 

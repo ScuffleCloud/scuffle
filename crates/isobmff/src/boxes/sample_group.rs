@@ -1,6 +1,6 @@
 use std::io;
 
-use scuffle_bytes_util::zero_copy::{Deserialize, DeserializeSeed, Serialize, ZeroCopyReader};
+use scuffle_bytes_util::zero_copy::{Deserialize, DeserializeSeed, Serialize, SerializeSeed, ZeroCopyReader};
 use scuffle_bytes_util::{BitWriter, IoResultExt};
 
 use crate::{FullBoxHeader, IsoBox};
@@ -34,8 +34,7 @@ impl<'a> DeserializeSeed<'a, FullBoxHeader> for SampleToGroupBox {
         let entry_count = u32::deserialize(&mut reader)?;
         let mut entries = Vec::with_capacity(entry_count as usize);
         for _ in 0..entry_count {
-            let entry = SampleToGroupBoxEntry::deserialize(&mut reader)?;
-            entries.push(entry);
+            entries.push(SampleToGroupBoxEntry::deserialize(&mut reader)?);
         }
 
         Ok(Self {
@@ -136,8 +135,10 @@ impl<'a> DeserializeSeed<'a, FullBoxHeader> for SampleGroupDescriptionBox {
         let entry_count = u32::deserialize(&mut reader)?;
         let mut entries = Vec::with_capacity(entry_count as usize);
         for _ in 0..entry_count {
-            let entry = SampleGroupDescriptionEntry::deserialize_seed(&mut reader, (grouping_type, default_length))?;
-            entries.push(entry);
+            entries.push(SampleGroupDescriptionEntry::deserialize_seed(
+                &mut reader,
+                (grouping_type, default_length),
+            )?);
         }
 
         Ok(Self {
@@ -175,13 +176,7 @@ impl Serialize for SampleGroupDescriptionBox {
 
         self.entry_count.serialize(&mut writer)?;
         for entry in &self.entries {
-            if self.header.version >= 1 && self.default_length.is_some_and(|l| l == 0) {
-                entry
-                    .description_length
-                    .ok_or(io::Error::new(io::ErrorKind::InvalidData, "description_length is required"))?
-                    .serialize(&mut writer)?;
-            }
-            entry.sample_group_description_entry.serialize(&mut writer)?;
+            entry.serialize_seed(&mut writer, self)?;
         }
 
         Ok(())
@@ -211,6 +206,22 @@ impl<'a> DeserializeSeed<'a, ([u8; 4], Option<u32>)> for SampleGroupDescriptionE
             description_length,
             sample_group_description_entry,
         })
+    }
+}
+
+impl SerializeSeed<&SampleGroupDescriptionBox> for SampleGroupDescriptionEntry {
+    fn serialize_seed<W>(&self, mut writer: W, seed: &SampleGroupDescriptionBox) -> io::Result<()>
+    where
+        W: std::io::Write,
+    {
+        if seed.header.version >= 1 && seed.default_length.is_some_and(|l| l == 0) {
+            self.description_length
+                .ok_or(io::Error::new(io::ErrorKind::InvalidData, "description_length is required"))?
+                .serialize(&mut writer)?;
+        }
+        self.sample_group_description_entry.serialize(&mut writer)?;
+
+        Ok(())
     }
 }
 
@@ -776,6 +787,8 @@ impl Serialize for CompactSampleToGroupBox {
                 bit_writer.write_bits(k.to_value(bit_count) as u64, bit_count)?;
             }
         }
+
+        bit_writer.align()?;
 
         Ok(())
     }

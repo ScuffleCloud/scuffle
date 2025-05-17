@@ -1,6 +1,6 @@
 use std::io;
 
-use scuffle_bytes_util::zero_copy::{Deserialize, DeserializeSeed, Serialize};
+use scuffle_bytes_util::zero_copy::{Deserialize, DeserializeSeed, Serialize, SerializeSeed, U24Be};
 use scuffle_bytes_util::{BitWriter, BytesCow, IoResultExt};
 
 use super::{Brand, DataInformationBox, FDItemInformationBox, HandlerBox, ProtectionSchemeInfoBox, ScrambleSchemeInfoBox};
@@ -207,43 +207,7 @@ impl Serialize for ItemLocationBox {
         }
 
         for item in &self.items {
-            if self.header.version < 2 {
-                (item
-                    .item_id
-                    .ok_or(io::Error::new(io::ErrorKind::InvalidData, "item_id is required"))? as u16)
-                    .serialize(&mut bit_writer)?;
-            } else if self.header.version == 2 {
-                item.item_id
-                    .ok_or(io::Error::new(io::ErrorKind::InvalidData, "item_id is required"))?
-                    .serialize(&mut bit_writer)?;
-            }
-
-            if self.header.version == 1 || self.header.version == 2 {
-                bit_writer.write_bits(0, 12)?;
-                bit_writer.write_bits(
-                    item.construction_method
-                        .ok_or(io::Error::new(io::ErrorKind::InvalidData, "construction_method is required"))?
-                        as u64,
-                    4,
-                )?;
-            }
-
-            item.data_reference_index.serialize(&mut bit_writer)?;
-            bit_writer.write_bits(item.base_offset, self.base_offset_size * 8)?;
-            item.extent_count.serialize(&mut bit_writer)?;
-
-            for extent in &item.extents {
-                if (self.header.version == 1 || self.header.version == 2) && self.index_size > 0 {
-                    bit_writer.write_bits(
-                        extent
-                            .item_reference_index
-                            .ok_or(io::Error::new(io::ErrorKind::InvalidData, "item_reference_index is required"))?,
-                        self.index_size * 8,
-                    )?;
-                }
-                bit_writer.write_bits(extent.extent_offset, self.offset_size * 8)?;
-                bit_writer.write_bits(extent.extent_length, self.length_size * 8)?;
-            }
+            item.serialize_seed(&mut bit_writer, self)?;
         }
 
         Ok(())
@@ -260,11 +224,72 @@ pub struct ItemLocationBoxItem {
     pub extents: Vec<ItemLocationBoxExtent>,
 }
 
+impl SerializeSeed<&ItemLocationBox> for ItemLocationBoxItem {
+    fn serialize_seed<W>(&self, writer: W, seed: &ItemLocationBox) -> io::Result<()>
+    where
+        W: std::io::Write,
+    {
+        let mut bit_writer = BitWriter::new(writer);
+
+        if seed.header.version < 2 {
+            (self
+                .item_id
+                .ok_or(io::Error::new(io::ErrorKind::InvalidData, "item_id is required"))? as u16)
+                .serialize(&mut bit_writer)?;
+        } else if seed.header.version == 2 {
+            self.item_id
+                .ok_or(io::Error::new(io::ErrorKind::InvalidData, "item_id is required"))?
+                .serialize(&mut bit_writer)?;
+        }
+
+        if seed.header.version == 1 || seed.header.version == 2 {
+            bit_writer.write_bits(0, 12)?;
+            bit_writer.write_bits(
+                self.construction_method
+                    .ok_or(io::Error::new(io::ErrorKind::InvalidData, "construction_method is required"))?
+                    as u64,
+                4,
+            )?;
+        }
+
+        self.data_reference_index.serialize(&mut bit_writer)?;
+        bit_writer.write_bits(self.base_offset, seed.base_offset_size * 8)?;
+        self.extent_count.serialize(&mut bit_writer)?;
+
+        for extent in &self.extents {
+            extent.serialize_seed(&mut bit_writer, seed)?;
+        }
+
+        Ok(())
+    }
+}
+
 #[derive(Debug)]
 pub struct ItemLocationBoxExtent {
     pub item_reference_index: Option<u64>,
     pub extent_offset: u64,
     pub extent_length: u64,
+}
+
+impl SerializeSeed<&ItemLocationBox> for ItemLocationBoxExtent {
+    fn serialize_seed<W>(&self, writer: W, seed: &ItemLocationBox) -> io::Result<()>
+    where
+        W: std::io::Write,
+    {
+        let mut bit_writer = BitWriter::new(writer);
+
+        if (seed.header.version == 1 || seed.header.version == 2) && seed.index_size > 0 {
+            bit_writer.write_bits(
+                self.item_reference_index
+                    .ok_or(io::Error::new(io::ErrorKind::InvalidData, "item_reference_index is required"))?,
+                seed.index_size * 8,
+            )?;
+        }
+        bit_writer.write_bits(self.extent_offset, seed.offset_size * 8)?;
+        bit_writer.write_bits(self.extent_length, seed.length_size * 8)?;
+
+        Ok(())
+    }
 }
 
 /// Primary item box
@@ -801,7 +826,7 @@ impl Serialize for ItemPropertyAssociationBox {
         self.entry_count.serialize(&mut writer)?;
 
         for entry in &self.entries {
-            entry.serialize(&mut writer, &self.header)?;
+            entry.serialize_seed(&mut writer, &self.header)?;
         }
 
         Ok(())
@@ -829,8 +854,10 @@ impl<'a> DeserializeSeed<'a, &FullBoxHeader> for ItemPropertyAssociationBoxEntry
         let assocation_count = u8::deserialize(&mut reader)?;
         let mut associations = Vec::with_capacity(assocation_count as usize);
         for _ in 0..assocation_count {
-            let association = ItemPropertyAssociationBoxEntryAssociation::deserialize_seed(&mut reader, seed)?;
-            associations.push(association);
+            associations.push(ItemPropertyAssociationBoxEntryAssociation::deserialize_seed(
+                &mut reader,
+                seed,
+            )?);
         }
 
         Ok(ItemPropertyAssociationBoxEntry {
@@ -841,12 +868,12 @@ impl<'a> DeserializeSeed<'a, &FullBoxHeader> for ItemPropertyAssociationBoxEntry
     }
 }
 
-impl ItemPropertyAssociationBoxEntry {
-    pub fn serialize<W>(&self, mut writer: W, header: &FullBoxHeader) -> io::Result<()>
+impl SerializeSeed<&FullBoxHeader> for ItemPropertyAssociationBoxEntry {
+    fn serialize_seed<W>(&self, mut writer: W, seed: &FullBoxHeader) -> io::Result<()>
     where
         W: std::io::Write,
     {
-        if header.version < 1 {
+        if seed.version < 1 {
             (self.item_id as u16).serialize(&mut writer)?;
         } else {
             self.item_id.serialize(&mut writer)?;
@@ -854,7 +881,7 @@ impl ItemPropertyAssociationBoxEntry {
 
         self.association_count.serialize(&mut writer)?;
         for association in &self.associations {
-            association.serialize(&mut writer, header)?;
+            association.serialize_seed(&mut writer, seed.flags)?;
         }
 
         Ok(())
@@ -892,8 +919,8 @@ impl<'a> DeserializeSeed<'a, &FullBoxHeader> for ItemPropertyAssociationBoxEntry
     }
 }
 
-impl ItemPropertyAssociationBoxEntryAssociation {
-    pub fn serialize<W>(&self, mut writer: W, header: &FullBoxHeader) -> io::Result<()>
+impl SerializeSeed<U24Be> for ItemPropertyAssociationBoxEntryAssociation {
+    fn serialize_seed<W>(&self, mut writer: W, seed: U24Be) -> io::Result<()>
     where
         W: std::io::Write,
     {
@@ -902,7 +929,7 @@ impl ItemPropertyAssociationBoxEntryAssociation {
         byte |= ((self.property_index >> 8) as u8) & 0b0111_1111;
         byte.serialize(&mut writer)?;
 
-        if (*header.flags & 0b1) != 0 {
+        if (*seed & 0b1) != 0 {
             // iiiiiiii
             let low_byte = (self.property_index & 0xFF) as u8;
             low_byte.serialize(&mut writer)?;

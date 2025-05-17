@@ -1,5 +1,5 @@
 use scuffle_bytes_util::IoResultExt;
-use scuffle_bytes_util::zero_copy::{Deserialize, DeserializeSeed, Serialize};
+use scuffle_bytes_util::zero_copy::{Deserialize, DeserializeSeed, Serialize, SerializeSeed};
 
 use crate::{Base64String, BoxHeader, FullBoxHeader, IsoBox, Utf8String};
 
@@ -259,7 +259,7 @@ impl Serialize for FECReservoirBox {
         }
 
         for entry in &self.entries {
-            entry.serialize(&mut writer, self.header.version)?;
+            entry.serialize_seed(&mut writer, self.header.version)?;
         }
 
         Ok(())
@@ -288,12 +288,12 @@ impl<'a> DeserializeSeed<'a, u8> for FECReservoirBoxEntry {
     }
 }
 
-impl FECReservoirBoxEntry {
-    pub fn serialize<W>(&self, mut writer: W, version: u8) -> std::io::Result<()>
+impl SerializeSeed<u8> for FECReservoirBoxEntry {
+    fn serialize_seed<W>(&self, mut writer: W, seed: u8) -> std::io::Result<()>
     where
         W: std::io::Write,
     {
-        if version == 0 {
+        if seed == 0 {
             (self.item_id as u16).serialize(&mut writer)?;
         } else {
             self.item_id.serialize(&mut writer)?;
@@ -531,7 +531,7 @@ impl Serialize for FileReservoirBox {
         }
 
         for entry in &self.entries {
-            entry.serialize(&mut writer, self.header.version)?;
+            entry.serialize_seed(&mut writer, self.header.version)?;
         }
 
         Ok(())
@@ -560,12 +560,12 @@ impl<'a> DeserializeSeed<'a, u8> for FileReservoirBoxEntry {
     }
 }
 
-impl FileReservoirBoxEntry {
-    pub fn serialize<W>(&self, mut writer: W, version: u8) -> std::io::Result<()>
+impl SerializeSeed<u8> for FileReservoirBoxEntry {
+    fn serialize_seed<W>(&self, mut writer: W, seed: u8) -> std::io::Result<()>
     where
         W: std::io::Write,
     {
-        if version == 0 {
+        if seed == 0 {
             (self.item_id as u16).serialize(&mut writer)?;
         } else {
             self.item_id.serialize(&mut writer)?;

@@ -1,6 +1,6 @@
 use std::io;
 
-use scuffle_bytes_util::zero_copy::{Deserialize, DeserializeSeed, Serialize};
+use scuffle_bytes_util::zero_copy::{Deserialize, DeserializeSeed, Serialize, SerializeSeed};
 use scuffle_bytes_util::{BitWriter, BytesCow};
 
 use super::SampleEntry;
@@ -191,14 +191,14 @@ impl<'a> DeserializeSeed<'a, &FullBoxHeader> for LoudnessBaseBox {
     }
 }
 
-impl LoudnessBaseBox {
-    pub fn serialize<W>(&self, writer: W, version: u8) -> std::io::Result<()>
+impl SerializeSeed<u8> for LoudnessBaseBox {
+    fn serialize_seed<W>(&self, writer: W, seed: u8) -> std::io::Result<()>
     where
         W: std::io::Write,
     {
         let mut bit_writer = BitWriter::new(writer);
 
-        if version >= 2 {
+        if seed >= 2 {
             let loudness_info_type = self
                 .loudness_info_type
                 .ok_or(io::Error::new(io::ErrorKind::InvalidData, "loudness_info_type is required"))?;
@@ -222,13 +222,13 @@ impl LoudnessBaseBox {
                     5,
                 )?;
             }
-        } else if version == 1 {
+        } else if seed == 1 {
             bit_writer.write_bits(0, 2)?;
             bit_writer.write_bits(self.loudness_base_count as u64, 6)?;
         }
 
         for loudness_base in &self.loudness_bases {
-            loudness_base.serialize(&mut bit_writer, version)?;
+            loudness_base.serialize_seed(&mut bit_writer, seed)?;
         }
 
         Ok(())
@@ -289,14 +289,14 @@ impl<'a> DeserializeSeed<'a, &FullBoxHeader> for LoudnessBase {
     }
 }
 
-impl LoudnessBase {
-    pub fn serialize<W>(&self, writer: W, version: u8) -> std::io::Result<()>
+impl SerializeSeed<u8> for LoudnessBase {
+    fn serialize_seed<W>(&self, writer: W, seed: u8) -> std::io::Result<()>
     where
         W: std::io::Write,
     {
         let mut bit_writer = BitWriter::new(writer);
 
-        if version >= 1 {
+        if seed >= 1 {
             bit_writer.write_bits(0, 2)?;
             bit_writer.write_bits(
                 self.eq_set_id
@@ -397,7 +397,7 @@ impl Serialize for TrackLoudnessInfo {
         W: std::io::Write,
     {
         self.header.serialize(&mut writer)?;
-        self.base_box.serialize(&mut writer, self.header.version)?;
+        self.base_box.serialize_seed(&mut writer, self.header.version)?;
         Ok(())
     }
 }
@@ -431,7 +431,7 @@ impl Serialize for AlbumLoudnessInfo {
         W: std::io::Write,
     {
         self.header.serialize(&mut writer)?;
-        self.base_box.serialize(&mut writer, self.header.version)?;
+        self.base_box.serialize_seed(&mut writer, self.header.version)?;
         Ok(())
     }
 }

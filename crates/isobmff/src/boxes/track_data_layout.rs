@@ -1,7 +1,7 @@
 use std::fmt::Debug;
 use std::{io, iter};
 
-use scuffle_bytes_util::zero_copy::{Deserialize, DeserializeSeed, Serialize, U24Be, ZeroCopyReader};
+use scuffle_bytes_util::zero_copy::{Deserialize, DeserializeSeed, Serialize, SerializeSeed, U24Be, ZeroCopyReader};
 use scuffle_bytes_util::{BytesCow, IoResultExt};
 
 use crate::{BoxHeader, BoxHeaderProperties, FullBoxHeader, IsoBox, UnknownBox, Utf8String};
@@ -334,19 +334,7 @@ impl Serialize for SubSampleInformationBox {
         self.entry_count.serialize(&mut writer)?;
 
         for entry in &self.entries {
-            entry.sample_delta.serialize(&mut writer)?;
-
-            entry.subsample_count.serialize(&mut writer)?;
-            for subsample in &entry.subsample_info {
-                if self.header.version == 1 {
-                    subsample.subsample_size.serialize(&mut writer)?;
-                } else {
-                    (subsample.subsample_size as u16).serialize(&mut writer)?;
-                }
-                subsample.subsample_priority.serialize(&mut writer)?;
-                subsample.discardable.serialize(&mut writer)?;
-                subsample.codec_specific_parameters.serialize(&mut writer)?;
-            }
+            entry.serialize_seed(&mut writer, self.header.version)?;
         }
 
         Ok(())
@@ -378,6 +366,22 @@ impl<'a> DeserializeSeed<'a, u8> for SubSampleInformationBoxEntry {
     }
 }
 
+impl SerializeSeed<u8> for SubSampleInformationBoxEntry {
+    fn serialize_seed<W>(&self, mut writer: W, seed: u8) -> io::Result<()>
+    where
+        W: std::io::Write,
+    {
+        self.sample_delta.serialize(&mut writer)?;
+
+        self.subsample_count.serialize(&mut writer)?;
+        for subsample in &self.subsample_info {
+            subsample.serialize_seed(&mut writer, seed)?;
+        }
+
+        Ok(())
+    }
+}
+
 #[derive(Debug)]
 pub struct SubSampleInformationBoxEntrySubSample {
     pub subsample_size: u32,
@@ -406,6 +410,24 @@ impl<'a> DeserializeSeed<'a, u8> for SubSampleInformationBoxEntrySubSample {
             discardable,
             codec_specific_parameters,
         })
+    }
+}
+
+impl SerializeSeed<u8> for SubSampleInformationBoxEntrySubSample {
+    fn serialize_seed<W>(&self, mut writer: W, seed: u8) -> io::Result<()>
+    where
+        W: std::io::Write,
+    {
+        if seed == 1 {
+            self.subsample_size.serialize(&mut writer)?;
+        } else {
+            (self.subsample_size as u16).serialize(&mut writer)?;
+        }
+        self.subsample_priority.serialize(&mut writer)?;
+        self.discardable.serialize(&mut writer)?;
+        self.codec_specific_parameters.serialize(&mut writer)?;
+
+        Ok(())
     }
 }
 

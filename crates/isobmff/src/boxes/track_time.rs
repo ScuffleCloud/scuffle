@@ -1,7 +1,7 @@
 use std::fmt::Debug;
 use std::io;
 
-use scuffle_bytes_util::zero_copy::{Deserialize, DeserializeSeed, Serialize, ZeroCopyReader};
+use scuffle_bytes_util::zero_copy::{Deserialize, DeserializeSeed, Serialize, SerializeSeed, ZeroCopyReader};
 
 use crate::{BoxHeader, FullBoxHeader, IsoBox};
 
@@ -328,15 +328,7 @@ impl Serialize for EditListBox {
         self.entry_count.serialize(&mut writer)?;
 
         for entry in &self.entries {
-            if self.header.version == 0 {
-                (entry.edit_duration as u32).serialize(&mut writer)?;
-                (entry.media_time as i32).serialize(&mut writer)?;
-            } else {
-                entry.edit_duration.serialize(&mut writer)?;
-                entry.media_time.serialize(&mut writer)?;
-            }
-            entry.media_rate_integer.serialize(&mut writer)?;
-            entry.media_rate_fraction.serialize(&mut writer)?;
+            entry.serialize_seed(&mut writer, self.header.version)?;
         }
 
         Ok(())
@@ -375,5 +367,24 @@ impl<'a> DeserializeSeed<'a, u8> for EditListBoxEntry {
             media_rate_integer,
             media_rate_fraction,
         })
+    }
+}
+
+impl SerializeSeed<u8> for EditListBoxEntry {
+    fn serialize_seed<W>(&self, mut writer: W, seed: u8) -> io::Result<()>
+    where
+        W: std::io::Write,
+    {
+        if seed == 0 {
+            (self.edit_duration as u32).serialize(&mut writer)?;
+            (self.media_time as i32).serialize(&mut writer)?;
+        } else {
+            self.edit_duration.serialize(&mut writer)?;
+            self.media_time.serialize(&mut writer)?;
+        }
+        self.media_rate_integer.serialize(&mut writer)?;
+        self.media_rate_fraction.serialize(&mut writer)?;
+
+        Ok(())
     }
 }

@@ -259,12 +259,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "az"
-version = "1.2.1"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "7b7e4c2464d97fe331d41de9d5db0def0a96f4d823b8b32a2efd503578988973"
-
-[[package]]
 name = "backtrace"
 version = "0.3.75"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -413,12 +407,6 @@ name = "bumpalo"
 version = "3.17.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "1628fb46dfa0b37568d12e5edd512553eccf6a22a78e8bde00bb4aed84d5bdbf"
-
-[[package]]
-name = "bytemuck"
-version = "1.23.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "9134a6ef01ce4b366b50689c94f82c14bc72bc5d0386829828a2e2752ef7958c"
 
 [[package]]
 name = "byteorder"
@@ -1050,18 +1038,6 @@ dependencies = [
  "lazy_static",
  "libc",
  "winapi",
-]
-
-[[package]]
-name = "fixed"
-version = "1.29.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "707070ccf8c4173548210893a0186e29c266901b71ed20cd9e2ca0193dfe95c3"
-dependencies = [
- "az",
- "bytemuck",
- "half",
- "typenum",
 ]
 
 [[package]]
@@ -1756,6 +1732,36 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "7943c866cc5cd64cbc25b2e01621d07fa8eb2a1a23160ee81ce38704e97b8ecf"
 
 [[package]]
+name = "isobmff"
+version = "0.1.0"
+dependencies = [
+ "base64 0.22.1",
+ "bitflags 2.9.0",
+ "byteorder",
+ "bytes",
+ "document-features",
+ "insta",
+ "isobmff-derive",
+ "nutype-enum",
+ "scuffle-bytes-util",
+ "scuffle-changelog",
+ "scuffle-workspace-hack",
+ "uuid",
+]
+
+[[package]]
+name = "isobmff-derive"
+version = "0.1.0"
+dependencies = [
+ "darling",
+ "proc-macro2",
+ "quote",
+ "scuffle-bytes-util",
+ "scuffle-workspace-hack",
+ "syn",
+]
+
+[[package]]
 name = "itertools"
 version = "0.10.5"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -2353,12 +2359,6 @@ dependencies = [
  "smallvec",
  "windows-targets 0.52.6",
 ]
-
-[[package]]
-name = "paste"
-version = "1.0.15"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "57c0d7b74b563b49d38dae00a0c37d4d6de9b432382b2892f0574ddcae73fd0a"
 
 [[package]]
 name = "pathdiff"
@@ -3259,6 +3259,8 @@ dependencies = [
  "bytes",
  "document-features",
  "insta",
+ "isobmff",
+ "isobmff-derive",
  "scuffle-bytes-util",
  "scuffle-changelog",
  "scuffle-workspace-hack",
@@ -3408,12 +3410,13 @@ dependencies = [
  "crossbeam-channel",
  "document-features",
  "insta",
+ "isobmff",
  "libc",
  "nutype-enum",
  "rand 0.9.1",
  "rusty_ffmpeg",
+ "scuffle-bytes-util",
  "scuffle-changelog",
- "scuffle-mp4",
  "scuffle-workspace-hack",
  "sha2",
  "tempfile",
@@ -3468,6 +3471,7 @@ dependencies = [
  "bytes",
  "document-features",
  "insta",
+ "isobmff",
  "nutype-enum",
  "scuffle-bytes-util",
  "scuffle-changelog",
@@ -3484,6 +3488,8 @@ dependencies = [
  "bytes",
  "document-features",
  "insta",
+ "isobmff",
+ "isobmff-derive",
  "nutype-enum",
  "scuffle-bytes-util",
  "scuffle-changelog",
@@ -3560,20 +3566,26 @@ dependencies = [
 name = "scuffle-mp4"
 version = "0.1.4"
 dependencies = [
- "byteorder",
- "bytes",
  "document-features",
- "fixed",
- "paste",
- "scuffle-aac",
- "scuffle-av1",
+ "isobmff",
+ "isobmff-derive",
  "scuffle-bytes-util",
  "scuffle-changelog",
- "scuffle-h264",
- "scuffle-h265",
  "scuffle-workspace-hack",
  "serde",
  "serde_json",
+]
+
+[[package]]
+name = "scuffle-opus"
+version = "0.1.0"
+dependencies = [
+ "document-features",
+ "isobmff",
+ "isobmff-derive",
+ "scuffle-bytes-util",
+ "scuffle-changelog",
+ "scuffle-workspace-hack",
 ]
 
 [[package]]

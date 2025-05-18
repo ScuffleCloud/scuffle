@@ -24,21 +24,8 @@ IsobmffFile {
         ],
     },
     etyp: [],
-    mdat: [
-        MediaDataBox {
-            header: BoxHeader {
-                size: Short(
-                    832486,
-                ),
-                box_type: FourCc(
-                    "mdat",
-                ),
-            },
-            data.len: 832478,
-        },
-    ],
+    otyp: [],
     pdin: None,
-    imda: [],
     moov: MovieBox {
         header: BoxHeader {
             size: Short(
@@ -92,6 +79,7 @@ IsobmffFile {
             ],
             next_track_id: 3,
         },
+        meta: None,
         trak: [
             TrackBox {
                 header: BoxHeader {
@@ -143,7 +131,47 @@ IsobmffFile {
                 },
                 tref: None,
                 trgr: None,
+                edts: Some(
+                    EditBox {
+                        header: BoxHeader {
+                            size: Short(
+                                36,
+                            ),
+                            box_type: FourCc(
+                                "edts",
+                            ),
+                        },
+                        elst: Some(
+                            EditListBox {
+                                header: FullBoxHeader {
+                                    header: BoxHeader {
+                                        size: Short(
+                                            28,
+                                        ),
+                                        box_type: FourCc(
+                                            "elst",
+                                        ),
+                                    },
+                                    version: 0,
+                                    flags: U24Be(
+                                        0,
+                                    ),
+                                },
+                                entry_count: 1,
+                                entries: [
+                                    EditListBoxEntry {
+                                        edit_duration: 4667,
+                                        media_time: 1024,
+                                        media_rate_integer: 1,
+                                        media_rate_fraction: 0,
+                                    },
+                                ],
+                            },
+                        ),
+                    },
+                ),
                 ttyp: None,
+                meta: None,
                 mdia: MediaBox {
                     header: BoxHeader {
                         size: Short(
@@ -207,6 +235,7 @@ IsobmffFile {
                             "Core Media Video",
                         ),
                     },
+                    elng: None,
                     minf: MediaInformationBox {
                         header: BoxHeader {
                             size: Short(
@@ -216,183 +245,35 @@ IsobmffFile {
                                 "minf",
                             ),
                         },
-                        stbl: SampleTableBox {
-                            header: BoxHeader {
-                                size: Short(
-                                    2419,
-                                ),
-                                box_type: FourCc(
-                                    "stbl",
-                                ),
-                            },
-                            stsd: SampleDescriptionBox {
+                        vmhd: Some(
+                            VideoMediaHeaderBox {
                                 header: FullBoxHeader {
                                     header: BoxHeader {
                                         size: Short(
-                                            199,
+                                            20,
                                         ),
                                         box_type: FourCc(
-                                            "stsd",
+                                            "vmhd",
                                         ),
                                     },
                                     version: 0,
                                     flags: U24Be(
-                                        0,
-                                    ),
-                                },
-                                entry_count: 1,
-                                unknown_boxes: [
-                                    UnknownBox {
-                                        header: BoxHeader {
-                                            size: Short(
-                                                183,
-                                            ),
-                                            box_type: FourCc(
-                                                "avc1",
-                                            ),
-                                        },
-                                        data.len: 175,
-                                    },
-                                ],
-                            },
-                            stdp: None,
-                            stts: TimeToSampleBox {
-                                header: FullBoxHeader {
-                                    header: BoxHeader {
-                                        size: Short(
-                                            24,
-                                        ),
-                                        box_type: FourCc(
-                                            "stts",
-                                        ),
-                                    },
-                                    version: 0,
-                                    flags: U24Be(
-                                        0,
-                                    ),
-                                },
-                                entry_count: 1,
-                                entries: [
-                                    TimeToSampleBoxEntry {
-                                        sample_count: 140,
-                                        sample_delta: 512,
-                                    },
-                                ],
-                            },
-                            ctts: Some(
-                                CompositionOffsetBox {
-                                    header: FullBoxHeader {
-                                        header: BoxHeader {
-                                            size: Short(
-                                                976,
-                                            ),
-                                            box_type: FourCc(
-                                                "ctts",
-                                            ),
-                                        },
-                                        version: 0,
-                                        flags: U24Be(
-                                            0,
-                                        ),
-                                    },
-                                    entry_count: 120,
-                                    entries.len: 120,
-                                },
-                            ),
-                            cslg: None,
-                            stss: Some(
-                                SyncSampleBox {
-                                    header: FullBoxHeader {
-                                        header: BoxHeader {
-                                            size: Short(
-                                                20,
-                                            ),
-                                            box_type: FourCc(
-                                                "stss",
-                                            ),
-                                        },
-                                        version: 0,
-                                        flags: U24Be(
-                                            0,
-                                        ),
-                                    },
-                                    entry_count: 1,
-                                    sample_number: [
                                         1,
-                                    ],
-                                },
-                            ),
-                            stsh: None,
-                            sdtp: None,
-                            stsz: Some(
-                                SampleSizeBox {
-                                    header: FullBoxHeader {
-                                        header: BoxHeader {
-                                            size: Short(
-                                                580,
-                                            ),
-                                            box_type: FourCc(
-                                                "stsz",
-                                            ),
-                                        },
-                                        version: 0,
-                                        flags: U24Be(
-                                            0,
-                                        ),
-                                    },
-                                    sample_size: 0,
-                                    sample_count: 140,
-                                    entry_size.len: 140,
-                                },
-                            ),
-                            stz2: None,
-                            stsc: SampleToChunkBox {
-                                header: FullBoxHeader {
-                                    header: BoxHeader {
-                                        size: Short(
-                                            40,
-                                        ),
-                                        box_type: FourCc(
-                                            "stsc",
-                                        ),
-                                    },
-                                    version: 0,
-                                    flags: U24Be(
-                                        0,
                                     ),
                                 },
-                                entry_count: 2,
-                                entries.len: 2,
+                                graphicsmode: 0,
+                                opcolor: [
+                                    0,
+                                    0,
+                                    0,
+                                ],
                             },
-                            stco: Some(
-                                ChunkOffsetBox {
-                                    header: FullBoxHeader {
-                                        header: BoxHeader {
-                                            size: Short(
-                                                572,
-                                            ),
-                                            box_type: FourCc(
-                                                "stco",
-                                            ),
-                                        },
-                                        version: 0,
-                                        flags: U24Be(
-                                            0,
-                                        ),
-                                    },
-                                    entry_count: 139,
-                                    chunk_offset.len: 139,
-                                },
-                            ),
-                            co64: None,
-                            padb: None,
-                            subs: [],
-                            saiz: [],
-                            saio: [],
-                            sbgp: [],
-                            sgpd: [],
-                            csgp: [],
-                        },
+                        ),
+                        smhd: None,
+                        hmhd: None,
+                        sthd: None,
+                        vvhd: None,
+                        unknown_boxes: [],
                         dinf: DataInformationBox {
                             header: BoxHeader {
                                 size: Short(
@@ -443,58 +324,53 @@ IsobmffFile {
                                 unknown_boxes: [],
                             },
                         },
-                        vmhd: Some(
-                            VideoMediaHeaderBox {
+                        stbl: SampleTableBox {
+                            header: BoxHeader {
+                                size: Short(
+                                    2419,
+                                ),
+                                box_type: FourCc(
+                                    "stbl",
+                                ),
+                            },
+                            stsd: SampleDescriptionBox {
                                 header: FullBoxHeader {
                                     header: BoxHeader {
                                         size: Short(
-                                            20,
+                                            199,
                                         ),
                                         box_type: FourCc(
-                                            "vmhd",
+                                            "stsd",
                                         ),
                                     },
                                     version: 0,
                                     flags: U24Be(
-                                        1,
+                                        0,
                                     ),
                                 },
-                                graphicsmode: 0,
-                                opcolor: [
-                                    0,
-                                    0,
-                                    0,
+                                entry_count: 1,
+                                unknown_boxes: [
+                                    UnknownBox {
+                                        header: BoxHeader {
+                                            size: Short(
+                                                183,
+                                            ),
+                                            box_type: FourCc(
+                                                "avc1",
+                                            ),
+                                        },
+                                        data.len: 175,
+                                    },
                                 ],
                             },
-                        ),
-                        smhd: None,
-                        hmhd: None,
-                        sthd: None,
-                        vvhd: None,
-                        unknown_boxes: [],
-                    },
-                    elng: None,
-                    unknown_boxes: [],
-                },
-                edts: Some(
-                    EditBox {
-                        header: BoxHeader {
-                            size: Short(
-                                36,
-                            ),
-                            box_type: FourCc(
-                                "edts",
-                            ),
-                        },
-                        elst: Some(
-                            EditListBox {
+                            stts: TimeToSampleBox {
                                 header: FullBoxHeader {
                                     header: BoxHeader {
                                         size: Short(
-                                            28,
+                                            24,
                                         ),
                                         box_type: FourCc(
-                                            "elst",
+                                            "stts",
                                         ),
                                     },
                                     version: 0,
@@ -504,20 +380,132 @@ IsobmffFile {
                                 },
                                 entry_count: 1,
                                 entries: [
-                                    EditListBoxEntry {
-                                        edit_duration: 4667,
-                                        media_time: 1024,
-                                        media_rate_integer: 1,
-                                        media_rate_fraction: 0,
+                                    TimeToSampleBoxEntry {
+                                        sample_count: 140,
+                                        sample_delta: 512,
                                     },
                                 ],
                             },
-                        ),
+                            ctts: Some(
+                                CompositionOffsetBox {
+                                    header: FullBoxHeader {
+                                        header: BoxHeader {
+                                            size: Short(
+                                                976,
+                                            ),
+                                            box_type: FourCc(
+                                                "ctts",
+                                            ),
+                                        },
+                                        version: 0,
+                                        flags: U24Be(
+                                            0,
+                                        ),
+                                    },
+                                    entry_count: 120,
+                                    entries.len: 120,
+                                },
+                            ),
+                            cslg: None,
+                            stsc: SampleToChunkBox {
+                                header: FullBoxHeader {
+                                    header: BoxHeader {
+                                        size: Short(
+                                            40,
+                                        ),
+                                        box_type: FourCc(
+                                            "stsc",
+                                        ),
+                                    },
+                                    version: 0,
+                                    flags: U24Be(
+                                        0,
+                                    ),
+                                },
+                                entry_count: 2,
+                                entries.len: 2,
+                            },
+                            stsz: Some(
+                                SampleSizeBox {
+                                    header: FullBoxHeader {
+                                        header: BoxHeader {
+                                            size: Short(
+                                                580,
+                                            ),
+                                            box_type: FourCc(
+                                                "stsz",
+                                            ),
+                                        },
+                                        version: 0,
+                                        flags: U24Be(
+                                            0,
+                                        ),
+                                    },
+                                    sample_size: 0,
+                                    sample_count: 140,
+                                    entry_size.len: 140,
+                                },
+                            ),
+                            stz2: None,
+                            stco: Some(
+                                ChunkOffsetBox {
+                                    header: FullBoxHeader {
+                                        header: BoxHeader {
+                                            size: Short(
+                                                572,
+                                            ),
+                                            box_type: FourCc(
+                                                "stco",
+                                            ),
+                                        },
+                                        version: 0,
+                                        flags: U24Be(
+                                            0,
+                                        ),
+                                    },
+                                    entry_count: 139,
+                                    chunk_offset.len: 139,
+                                },
+                            ),
+                            co64: None,
+                            stss: Some(
+                                SyncSampleBox {
+                                    header: FullBoxHeader {
+                                        header: BoxHeader {
+                                            size: Short(
+                                                20,
+                                            ),
+                                            box_type: FourCc(
+                                                "stss",
+                                            ),
+                                        },
+                                        version: 0,
+                                        flags: U24Be(
+                                            0,
+                                        ),
+                                    },
+                                    entry_count: 1,
+                                    sample_number: [
+                                        1,
+                                    ],
+                                },
+                            ),
+                            stsh: None,
+                            padb: None,
+                            stdp: None,
+                            sdtp: None,
+                            sbgp: [],
+                            sgpd: [],
+                            subs: [],
+                            saiz: [],
+                            saio: [],
+                            csgp: [],
+                        },
                     },
-                ),
-                udta: None,
-                meta: None,
+                    unknown_boxes: [],
+                },
                 unknown_boxes: [],
+                udta: None,
             },
             TrackBox {
                 header: BoxHeader {
@@ -569,7 +557,47 @@ IsobmffFile {
                 },
                 tref: None,
                 trgr: None,
+                edts: Some(
+                    EditBox {
+                        header: BoxHeader {
+                            size: Short(
+                                36,
+                            ),
+                            box_type: FourCc(
+                                "edts",
+                            ),
+                        },
+                        elst: Some(
+                            EditListBox {
+                                header: FullBoxHeader {
+                                    header: BoxHeader {
+                                        size: Short(
+                                            28,
+                                        ),
+                                        box_type: FourCc(
+                                            "elst",
+                                        ),
+                                    },
+                                    version: 0,
+                                    flags: U24Be(
+                                        0,
+                                    ),
+                                },
+                                entry_count: 1,
+                                entries: [
+                                    EditListBoxEntry {
+                                        edit_duration: 4642,
+                                        media_time: 1024,
+                                        media_rate_integer: 1,
+                                        media_rate_fraction: 0,
+                                    },
+                                ],
+                            },
+                        ),
+                    },
+                ),
                 ttyp: None,
+                meta: None,
                 mdia: MediaBox {
                     header: BoxHeader {
                         size: Short(
@@ -633,6 +661,7 @@ IsobmffFile {
                             "Core Media Audio",
                         ),
                     },
+                    elng: None,
                     minf: MediaInformationBox {
                         header: BoxHeader {
                             size: Short(
@@ -641,6 +670,81 @@ IsobmffFile {
                             box_type: FourCc(
                                 "minf",
                             ),
+                        },
+                        vmhd: None,
+                        smhd: Some(
+                            SoundMediaHeaderBox {
+                                header: FullBoxHeader {
+                                    header: BoxHeader {
+                                        size: Short(
+                                            16,
+                                        ),
+                                        box_type: FourCc(
+                                            "smhd",
+                                        ),
+                                    },
+                                    version: 0,
+                                    flags: U24Be(
+                                        0,
+                                    ),
+                                },
+                                balance: 0,
+                                reserved: 0,
+                            },
+                        ),
+                        hmhd: None,
+                        sthd: None,
+                        vvhd: None,
+                        unknown_boxes: [],
+                        dinf: DataInformationBox {
+                            header: BoxHeader {
+                                size: Short(
+                                    36,
+                                ),
+                                box_type: FourCc(
+                                    "dinf",
+                                ),
+                            },
+                            dref: DataReferenceBox {
+                                header: FullBoxHeader {
+                                    header: BoxHeader {
+                                        size: Short(
+                                            28,
+                                        ),
+                                        box_type: FourCc(
+                                            "dref",
+                                        ),
+                                    },
+                                    version: 0,
+                                    flags: U24Be(
+                                        0,
+                                    ),
+                                },
+                                entry_count: 1,
+                                url: [
+                                    DataEntryUrlBox {
+                                        header: FullBoxHeader {
+                                            header: BoxHeader {
+                                                size: Short(
+                                                    12,
+                                                ),
+                                                box_type: FourCc(
+                                                    "url ",
+                                                ),
+                                            },
+                                            version: 0,
+                                            flags: U24Be(
+                                                1,
+                                            ),
+                                        },
+                                        location: None,
+                                    },
+                                ],
+                                urn: [],
+                                imda: [],
+                                snim: [],
+                                unknown_boxes: [],
+                            },
                         },
                         stbl: SampleTableBox {
                             header: BoxHeader {
@@ -681,7 +785,6 @@ IsobmffFile {
                                     },
                                 ],
                             },
-                            stdp: None,
                             stts: TimeToSampleBox {
                                 header: FullBoxHeader {
                                     header: BoxHeader {
@@ -711,9 +814,24 @@ IsobmffFile {
                             },
                             ctts: None,
                             cslg: None,
-                            stss: None,
-                            stsh: None,
-                            sdtp: None,
+                            stsc: SampleToChunkBox {
+                                header: FullBoxHeader {
+                                    header: BoxHeader {
+                                        size: Short(
+                                            1480,
+                                        ),
+                                        box_type: FourCc(
+                                            "stsc",
+                                        ),
+                                    },
+                                    version: 0,
+                                    flags: U24Be(
+                                        0,
+                                    ),
+                                },
+                                entry_count: 122,
+                                entries.len: 122,
+                            },
                             stsz: Some(
                                 SampleSizeBox {
                                     header: FullBoxHeader {
@@ -736,24 +854,6 @@ IsobmffFile {
                                 },
                             ),
                             stz2: None,
-                            stsc: SampleToChunkBox {
-                                header: FullBoxHeader {
-                                    header: BoxHeader {
-                                        size: Short(
-                                            1480,
-                                        ),
-                                        box_type: FourCc(
-                                            "stsc",
-                                        ),
-                                    },
-                                    version: 0,
-                                    flags: U24Be(
-                                        0,
-                                    ),
-                                },
-                                entry_count: 122,
-                                entries.len: 122,
-                            },
                             stco: Some(
                                 ChunkOffsetBox {
                                     header: FullBoxHeader {
@@ -775,10 +875,11 @@ IsobmffFile {
                                 },
                             ),
                             co64: None,
+                            stss: None,
+                            stsh: None,
                             padb: None,
-                            subs: [],
-                            saiz: [],
-                            saio: [],
+                            stdp: None,
+                            sdtp: None,
                             sbgp: [
                                 SampleToGroupBox {
                                     header: FullBoxHeader {
@@ -848,132 +949,20 @@ IsobmffFile {
                                     ],
                                 },
                             ],
+                            subs: [],
+                            saiz: [],
+                            saio: [],
                             csgp: [],
                         },
-                        dinf: DataInformationBox {
-                            header: BoxHeader {
-                                size: Short(
-                                    36,
-                                ),
-                                box_type: FourCc(
-                                    "dinf",
-                                ),
-                            },
-                            dref: DataReferenceBox {
-                                header: FullBoxHeader {
-                                    header: BoxHeader {
-                                        size: Short(
-                                            28,
-                                        ),
-                                        box_type: FourCc(
-                                            "dref",
-                                        ),
-                                    },
-                                    version: 0,
-                                    flags: U24Be(
-                                        0,
-                                    ),
-                                },
-                                entry_count: 1,
-                                url: [
-                                    DataEntryUrlBox {
-                                        header: FullBoxHeader {
-                                            header: BoxHeader {
-                                                size: Short(
-                                                    12,
-                                                ),
-                                                box_type: FourCc(
-                                                    "url ",
-                                                ),
-                                            },
-                                            version: 0,
-                                            flags: U24Be(
-                                                1,
-                                            ),
-                                        },
-                                        location: None,
-                                    },
-                                ],
-                                urn: [],
-                                imda: [],
-                                snim: [],
-                                unknown_boxes: [],
-                            },
-                        },
-                        vmhd: None,
-                        smhd: Some(
-                            SoundMediaHeaderBox {
-                                header: FullBoxHeader {
-                                    header: BoxHeader {
-                                        size: Short(
-                                            16,
-                                        ),
-                                        box_type: FourCc(
-                                            "smhd",
-                                        ),
-                                    },
-                                    version: 0,
-                                    flags: U24Be(
-                                        0,
-                                    ),
-                                },
-                                balance: 0,
-                                reserved: 0,
-                            },
-                        ),
-                        hmhd: None,
-                        sthd: None,
-                        vvhd: None,
-                        unknown_boxes: [],
                     },
-                    elng: None,
                     unknown_boxes: [],
                 },
-                edts: Some(
-                    EditBox {
-                        header: BoxHeader {
-                            size: Short(
-                                36,
-                            ),
-                            box_type: FourCc(
-                                "edts",
-                            ),
-                        },
-                        elst: Some(
-                            EditListBox {
-                                header: FullBoxHeader {
-                                    header: BoxHeader {
-                                        size: Short(
-                                            28,
-                                        ),
-                                        box_type: FourCc(
-                                            "elst",
-                                        ),
-                                    },
-                                    version: 0,
-                                    flags: U24Be(
-                                        0,
-                                    ),
-                                },
-                                entry_count: 1,
-                                entries: [
-                                    EditListBoxEntry {
-                                        edit_duration: 4642,
-                                        media_time: 1024,
-                                        media_rate_integer: 1,
-                                        media_rate_fraction: 0,
-                                    },
-                                ],
-                            },
-                        ),
-                    },
-                ),
-                udta: None,
-                meta: None,
                 unknown_boxes: [],
+                udta: None,
             },
         ],
         mvex: None,
+        unknown_boxes: [],
         udta: Some(
             UserDataBox {
                 header: BoxHeader {
@@ -1004,17 +993,27 @@ IsobmffFile {
                 ],
             },
         ),
-        meta: None,
-        unknown_boxes: [],
     },
     moof: [],
-    mfra: None,
+    mdat: [
+        MediaDataBox {
+            header: BoxHeader {
+                size: Short(
+                    832486,
+                ),
+                box_type: FourCc(
+                    "mdat",
+                ),
+            },
+            data.len: 832478,
+        },
+    ],
+    imda: [],
     meta: None,
     styp: [],
     sidx: [],
     ssix: [],
     prft: [],
-    otyp: [],
     unknown_boxes: [
         UnknownBox {
             header: BoxHeader {
@@ -1028,4 +1027,5 @@ IsobmffFile {
             data.len: 0,
         },
     ],
+    mfra: None,
 }

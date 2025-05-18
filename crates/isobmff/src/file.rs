@@ -124,6 +124,8 @@ mod tests {
 
         let mut out_data = Vec::new();
         file.serialize(&mut out_data).unwrap();
+        // let mut file = std::fs::File::create(dir.join("avc_aac_out.mp4")).unwrap();
+        // file.write_all(&out_data).unwrap();
 
         let mut reader = scuffle_bytes_util::zero_copy::Slice::from(&out_data[..]);
         let file = IsobmffFile::deserialize(&mut reader).unwrap();

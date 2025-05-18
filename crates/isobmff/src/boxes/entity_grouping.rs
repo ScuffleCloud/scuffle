@@ -1,6 +1,6 @@
 use scuffle_bytes_util::zero_copy::{Deserialize, Serialize};
 
-use crate::{BoxHeader, FullBoxHeader, IsoBox, UnknownBox};
+use crate::{BoxHeader, FullBoxHeader, IsoBox, IsoSized, UnknownBox};
 
 /// Groups list box
 ///
@@ -60,6 +60,12 @@ impl Serialize for EntityToGroupBox {
         }
 
         Ok(())
+    }
+}
+
+impl IsoSized for EntityToGroupBox {
+    fn size(&self) -> usize {
+        self.group_id.size() + self.num_entities_in_group.size() + self.entity_id.size()
     }
 }
 

@@ -1,7 +1,9 @@
 use std::fmt::Debug;
 use std::io;
 
-use scuffle_bytes_util::zero_copy::{Deserialize, Serialize, U24Be, ZeroCopyReader};
+use scuffle_bytes_util::zero_copy::{Deserialize, DeserializeSeed, Serialize, U24Be, ZeroCopyReader};
+
+use crate::IsoSized;
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum BoxSize {
@@ -16,6 +18,16 @@ impl BoxSize {
             BoxSize::Short(size) => Some(*size as usize),
             BoxSize::Long(size) => Some(*size as usize),
             BoxSize::ToEnd => None,
+        }
+    }
+
+    pub fn set(&mut self, size: u64) {
+        // If the size does not fit in a u32 we use a long size.
+        // 0 and 1 are reserved for special cases, so we have to use long size for them too.
+        if size > u32::MAX as u64 || size == 0 || size == 1 {
+            *self = BoxSize::Long(size);
+        } else {
+            *self = BoxSize::Short(size as u32);
         }
     }
 }
@@ -60,9 +72,9 @@ impl From<BoxType> for uuid::Uuid {
     }
 }
 
-pub trait BoxHeaderProperties {
-    fn size(&self) -> usize;
+pub trait BoxHeaderProperties: IsoSized {
     fn box_size(&self) -> BoxSize;
+    fn box_size_mut(&mut self) -> &mut BoxSize;
     fn payload_size(&self) -> Option<usize> {
         let header_size = self.size();
         Some(self.box_size().size()?.saturating_sub(header_size))
@@ -76,7 +88,7 @@ pub struct BoxHeader {
     pub box_type: BoxType,
 }
 
-impl BoxHeaderProperties for BoxHeader {
+impl IsoSized for BoxHeader {
     fn size(&self) -> usize {
         let mut size = 4 + 4; // size + type
 
@@ -90,9 +102,15 @@ impl BoxHeaderProperties for BoxHeader {
 
         size
     }
+}
 
+impl BoxHeaderProperties for BoxHeader {
     fn box_size(&self) -> BoxSize {
         self.size
+    }
+
+    fn box_size_mut(&mut self) -> &mut BoxSize {
+        &mut self.size
     }
 
     fn box_type(&self) -> BoxType {
@@ -100,7 +118,7 @@ impl BoxHeaderProperties for BoxHeader {
     }
 }
 
-impl<'a> scuffle_bytes_util::zero_copy::Deserialize<'a> for BoxHeader {
+impl<'a> Deserialize<'a> for BoxHeader {
     fn deserialize<R>(mut reader: R) -> io::Result<Self>
     where
         R: ZeroCopyReader<'a>,
@@ -129,7 +147,7 @@ impl<'a> scuffle_bytes_util::zero_copy::Deserialize<'a> for BoxHeader {
     }
 }
 
-impl<'a> scuffle_bytes_util::zero_copy::DeserializeSeed<'a, BoxHeader> for BoxHeader {
+impl<'a> DeserializeSeed<'a, BoxHeader> for BoxHeader {
     fn deserialize_seed<R>(_reader: R, seed: BoxHeader) -> io::Result<Self>
     where
         R: ZeroCopyReader<'a>,
@@ -175,15 +193,21 @@ pub struct FullBoxHeader {
     pub flags: U24Be,
 }
 
-impl BoxHeaderProperties for FullBoxHeader {
+impl IsoSized for FullBoxHeader {
     fn size(&self) -> usize {
         self.header.size()
             + 1 // version
             + 3 // flags
     }
+}
 
+impl BoxHeaderProperties for FullBoxHeader {
     fn box_size(&self) -> BoxSize {
         self.header.box_size()
+    }
+
+    fn box_size_mut(&mut self) -> &mut BoxSize {
+        self.header.box_size_mut()
     }
 
     fn box_type(&self) -> BoxType {
@@ -191,7 +215,7 @@ impl BoxHeaderProperties for FullBoxHeader {
     }
 }
 
-impl<'a> scuffle_bytes_util::zero_copy::DeserializeSeed<'a, BoxHeader> for FullBoxHeader {
+impl<'a> DeserializeSeed<'a, BoxHeader> for FullBoxHeader {
     fn deserialize_seed<R>(mut reader: R, seed: BoxHeader) -> io::Result<Self>
     where
         R: ZeroCopyReader<'a>,

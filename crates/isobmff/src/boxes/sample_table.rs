@@ -8,7 +8,7 @@ use super::{
     SampleDependencyTypeBox, SampleGroupDescriptionBox, SampleSizeBox, SampleToChunkBox, SampleToGroupBox,
     ShadowSyncSampleBox, SubSampleInformationBox, SyncSampleBox, TimeToSampleBox,
 };
-use crate::{BoxHeader, FullBoxHeader, IsoBox, UnknownBox};
+use crate::{BoxHeader, FullBoxHeader, IsoBox, IsoSized, UnknownBox};
 
 /// Sample table box
 ///
@@ -97,6 +97,12 @@ impl Serialize for SampleEntry {
         [0u8; 6].serialize(&mut writer)?; // reserved
         self.data_reference_index.serialize(&mut writer)?;
         Ok(())
+    }
+}
+
+impl IsoSized for SampleEntry {
+    fn size(&self) -> usize {
+        6 + self.data_reference_index.size()
     }
 }
 

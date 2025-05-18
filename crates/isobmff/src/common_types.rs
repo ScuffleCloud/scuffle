@@ -5,6 +5,8 @@ use base64::Engine;
 use scuffle_bytes_util::BitWriter;
 use scuffle_bytes_util::zero_copy::{Deserialize, Serialize, ZeroCopyReader};
 
+use crate::IsoSized;
+
 #[derive(Debug)]
 pub struct Utf8String(pub String);
 
@@ -45,6 +47,12 @@ impl Serialize for Utf8String {
         writer.write_all(self.0.as_bytes())?;
         writer.write_all(&[0])?;
         Ok(())
+    }
+}
+
+impl IsoSized for Utf8String {
+    fn size(&self) -> usize {
+        self.0.len() + 1
     }
 }
 
@@ -90,6 +98,12 @@ impl Serialize for Base64String {
         writer.write_all(encoded.as_bytes())?;
         writer.write_all(&[0])?;
         Ok(())
+    }
+}
+
+impl IsoSized for Base64String {
+    fn size(&self) -> usize {
+        base64::prelude::BASE64_STANDARD.encode(&self.0).len() + 1
     }
 }
 
@@ -141,6 +155,12 @@ impl Serialize for Utf8List {
     }
 }
 
+impl IsoSized for Utf8List {
+    fn size(&self) -> usize {
+        self.0.iter().map(|s| s.len() + 1).sum::<usize>() + 1
+    }
+}
+
 #[derive(Debug, Clone, Copy)]
 pub struct Langauge(pub [u8; 3]);
 
@@ -172,6 +192,12 @@ impl Serialize for Langauge {
         bit_writer.write_bits(self.0[1] as u64, 5)?;
         bit_writer.write_bits(self.0[2] as u64, 5)?;
         Ok(())
+    }
+}
+
+impl IsoSized for Langauge {
+    fn size(&self) -> usize {
+        2
     }
 }
 

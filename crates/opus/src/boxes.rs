@@ -3,7 +3,7 @@
 //! [Encapsulation of Opus in ISO Base Media File Format Version 0.6.8](https://www.opus-codec.org/docs/opus_in_isobmff.html)
 
 use isobmff::boxes::AudioSampleEntry;
-use isobmff::{BoxHeader, IsoBox, UnknownBox};
+use isobmff::{BoxHeader, IsoBox, IsoSized, UnknownBox};
 use scuffle_bytes_util::BytesCow;
 use scuffle_bytes_util::zero_copy::{Deserialize, DeserializeSeed, Serialize};
 
@@ -162,5 +162,11 @@ impl Serialize for ChannelMappingTable<'_> {
         self.channel_mapping.serialize(&mut writer)?;
 
         Ok(())
+    }
+}
+
+impl IsoSized for ChannelMappingTable<'_> {
+    fn size(&self) -> usize {
+        1 + 1 + self.channel_mapping.len()
     }
 }

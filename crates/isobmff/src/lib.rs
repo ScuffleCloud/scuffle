@@ -24,12 +24,14 @@ pub mod boxes;
 mod common_types;
 mod file;
 mod header;
+mod sized;
 mod utils;
 
 pub use common_types::*;
 pub use file::*;
 pub use header::*;
 pub use isobmff_derive::IsoBox;
+pub use sized::*;
 
 #[doc(hidden)]
 pub mod reexports {
@@ -120,5 +122,11 @@ impl<'a> UnknownBox<'a> {
         let mut reader = scuffle_bytes_util::zero_copy::BytesBuf::from(self.data.into_bytes());
         let seed = B::Header::deserialize_seed(&mut reader, self.header)?;
         B::deserialize_seed(&mut reader, seed)
+    }
+}
+
+impl IsoSized for UnknownBox<'_> {
+    fn size(&self) -> usize {
+        self.header.size() + self.data.size()
     }
 }

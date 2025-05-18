@@ -85,6 +85,7 @@ enum SkipImpl {
     Deserialize,
     DeserializeSeed,
     Serialize,
+    Sized,
 }
 
 fn into_fields_checked(data: darling::ast::Data<(), IsoBoxField>) -> syn::Result<darling::ast::Fields<IsoBoxField>> {
@@ -175,7 +176,11 @@ fn box_impl(input: DeriveInput) -> syn::Result<proc_macro2::TokenStream> {
     });
     let header_serializer = header_ident.map(|h| {
         quote! {
-            #crate_path::reexports::scuffle_bytes_util::zero_copy::Serialize::serialize(&self.#h, &mut writer)?;
+            {
+                let mut header = ::std::clone::Clone::clone(&self.#h);
+                #crate_path::BoxSize::set(#crate_path::BoxHeaderProperties::box_size_mut(&mut header), #crate_path::IsoSized::size(self) as u64);
+                #crate_path::reexports::scuffle_bytes_util::zero_copy::Serialize::serialize(&header, &mut writer)?;
+            }
         }
     });
 
@@ -204,9 +209,7 @@ fn box_impl(input: DeriveInput) -> syn::Result<proc_macro2::TokenStream> {
             read_field(field, &crate_path)
         };
 
-        fields_in_self.push(quote! {
-            #field_name,
-        });
+        fields_in_self.push(field_name.to_token_stream());
         field_parsers.push(quote! {
             let #field_name = #read_field;
         });
@@ -248,23 +251,20 @@ fn box_impl(input: DeriveInput) -> syn::Result<proc_macro2::TokenStream> {
     };
 
     for (field, nested) in fields.iter().filter_map(|f| f.nested_box.map(|n| (f, n))) {
-        let field_type = &field.ty;
-        let field_type = field_type.to_token_stream().to_string();
         let field_name = field.ident.clone().expect("unreachable: only named fields supported");
+        let field_name_str = field_name.to_string();
 
         match nested {
             IsoBoxFieldNestedBox::Single => {
                 fields_in_self.push(quote! {
-                    #field_name: ::std::option::Option::ok_or(#field_name, ::std::io::Error::new(::std::io::ErrorKind::InvalidData, format!("{} not found", #field_type)))?,
+                    #field_name: ::std::option::Option::ok_or(#field_name, ::std::io::Error::new(::std::io::ErrorKind::InvalidData, format!("{} not found", #field_name_str)))?
                 });
                 field_serializers.push(quote! {
                     #crate_path::reexports::scuffle_bytes_util::zero_copy::Serialize::serialize(&self.#field_name, &mut writer)?;
                 });
             }
             IsoBoxFieldNestedBox::Collect | IsoBoxFieldNestedBox::CollectUnknown => {
-                fields_in_self.push(quote! {
-                    #field_name,
-                });
+                fields_in_self.push(field_name.to_token_stream());
                 field_serializers.push(quote! {
                     for item in &self.#field_name {
                         #crate_path::reexports::scuffle_bytes_util::zero_copy::Serialize::serialize(item, &mut writer)?;
@@ -312,14 +312,13 @@ fn box_impl(input: DeriveInput) -> syn::Result<proc_macro2::TokenStream> {
                 where
                     R: #crate_path::reexports::scuffle_bytes_util::zero_copy::ZeroCopyReader<'a>,
                 {
-                    use #crate_path::reexports::scuffle_bytes_util::zero_copy::{I24Be as i24, I48Be as i48, U24Be as u24, U48Be as u48};
                     let header = seed;
 
                     #(#field_parsers)*
                     #box_parser
 
                     Ok(Self {
-                        #(#fields_in_self)*
+                        #(#fields_in_self,)*
                         #header_constructor
                     })
                 }
@@ -335,11 +334,26 @@ fn box_impl(input: DeriveInput) -> syn::Result<proc_macro2::TokenStream> {
                 where
                     W: ::std::io::Write
                 {
-                    use #crate_path::reexports::scuffle_bytes_util::zero_copy::{I24Be as i24, I48Be as i48, U24Be as u24, U48Be as u48};
-
                     #header_serializer
                     #(#field_serializers)*
                     Ok(())
+                }
+            }
+        });
+    }
+
+    if opts.skip_impl.as_ref().is_none_or(|s| s.should_impl(SkipImpl::Sized)) {
+        let field_names = fields
+            .fields
+            .iter()
+            .map(|f| f.ident.clone().expect("unreachable: only named fields supported"))
+            .collect::<Vec<_>>();
+
+        impls.push(quote! {
+            #[automatically_derived]
+            impl #generics #crate_path::IsoSized for #ident #generics {
+                fn size(&self) -> usize {
+                    #(#crate_path::IsoSized::size(&self.#field_names))+*
                 }
             }
         });

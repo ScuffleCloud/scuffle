@@ -5,7 +5,7 @@ use std::fmt::Debug;
 use scuffle_bytes_util::BytesCow;
 use scuffle_bytes_util::zero_copy::{Deserialize, Serialize};
 
-use crate::{BoxHeader, FullBoxHeader, IsoBox};
+use crate::{BoxHeader, FullBoxHeader, IsoBox, IsoSized};
 
 /// Media data box
 ///
@@ -105,6 +105,12 @@ impl Serialize for ProgressiveDownloadInfoBoxProperties {
         self.rate.serialize(&mut writer)?;
         self.initial_delay.serialize(&mut writer)?;
         Ok(())
+    }
+}
+
+impl IsoSized for ProgressiveDownloadInfoBoxProperties {
+    fn size(&self) -> usize {
+        self.rate.size() + self.initial_delay.size()
     }
 }
 

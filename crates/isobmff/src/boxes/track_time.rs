@@ -3,7 +3,7 @@ use std::io;
 
 use scuffle_bytes_util::zero_copy::{Deserialize, DeserializeSeed, Serialize, SerializeSeed, ZeroCopyReader};
 
-use crate::{BoxHeader, FullBoxHeader, IsoBox};
+use crate::{BoxHeader, FullBoxHeader, IsoBox, IsoSized};
 
 /// Time to sample box
 ///
@@ -44,6 +44,12 @@ impl Serialize for TimeToSampleBoxEntry {
         self.sample_count.serialize(&mut writer)?;
         self.sample_delta.serialize(&mut writer)?;
         Ok(())
+    }
+}
+
+impl IsoSized for TimeToSampleBoxEntry {
+    fn size(&self) -> usize {
+        self.sample_count.size() + self.sample_delta.size()
     }
 }
 
@@ -100,11 +106,17 @@ impl Serialize for CompositionOffsetBoxEntry {
     }
 }
 
+impl IsoSized for CompositionOffsetBoxEntry {
+    fn size(&self) -> usize {
+        self.sample_count.size() + self.sample_offset.size()
+    }
+}
+
 /// Composition to decode box
 ///
 /// ISO/IEC 14496-12 - 8.6.1.4
 #[derive(Debug, IsoBox)]
-#[iso_box(box_type = b"cslg", skip_impl(deserialize_seed, serialize), crate_path = crate)]
+#[iso_box(box_type = b"cslg", skip_impl(deserialize_seed, serialize, sized), crate_path = crate)]
 pub struct CompositionToDecodeBox {
     #[iso_box(header)]
     pub header: FullBoxHeader,
@@ -162,6 +174,7 @@ impl Serialize for CompositionToDecodeBox {
     where
         W: std::io::Write,
     {
+        self.header.serialize(&mut writer)?;
         if self.header.version == 0 {
             (self.composition_to_dt_shift as i32).serialize(&mut writer)?;
             (self.least_decode_to_display_delta as i32).serialize(&mut writer)?;
@@ -176,6 +189,18 @@ impl Serialize for CompositionToDecodeBox {
             self.composition_end_time.serialize(&mut writer)?;
         }
         Ok(())
+    }
+}
+
+impl IsoSized for CompositionToDecodeBox {
+    fn size(&self) -> usize {
+        let mut size = self.header.size();
+        if self.header.version == 0 {
+            size += 4 + 4 + 4 + 4 + 4;
+        } else {
+            size += 8 + 8 + 8 + 8 + 8;
+        }
+        size
     }
 }
 
@@ -234,6 +259,12 @@ impl Serialize for ShadowSyncSampleBoxEntry {
     }
 }
 
+impl IsoSized for ShadowSyncSampleBoxEntry {
+    fn size(&self) -> usize {
+        self.shadowed_sample_number.size() + self.sync_sample_number.size()
+    }
+}
+
 /// Independent and disposable samples box
 ///
 /// ISO/IEC 14496-12 - 8.6.4
@@ -274,6 +305,12 @@ impl From<SampleDependencyTypeBoxEntry> for u8 {
     }
 }
 
+impl IsoSized for SampleDependencyTypeBoxEntry {
+    fn size(&self) -> usize {
+        1
+    }
+}
+
 /// Edit box
 ///
 /// ISO/IEC 14496-12 - 8.6.5
@@ -290,7 +327,7 @@ pub struct EditBox {
 ///
 /// ISO/IEC 14496-12 - 8.6.6
 #[derive(Debug, IsoBox)]
-#[iso_box(box_type = b"elst", skip_impl(deserialize_seed, serialize), crate_path = crate)]
+#[iso_box(box_type = b"elst", skip_impl(deserialize_seed, serialize, sized), crate_path = crate)]
 pub struct EditListBox {
     #[iso_box(header)]
     pub header: FullBoxHeader,
@@ -335,6 +372,18 @@ impl Serialize for EditListBox {
     }
 }
 
+impl IsoSized for EditListBox {
+    fn size(&self) -> usize {
+        self.header.size()
+            + self.entry_count.size()
+            + self
+                .entries
+                .iter()
+                .map(|entry| entry.size(self.header.version))
+                .sum::<usize>()
+    }
+}
+
 #[derive(Debug)]
 pub struct EditListBoxEntry {
     pub edit_duration: u64,
@@ -375,16 +424,28 @@ impl SerializeSeed<u8> for EditListBoxEntry {
     where
         W: std::io::Write,
     {
-        if seed == 0 {
-            (self.edit_duration as u32).serialize(&mut writer)?;
-            (self.media_time as i32).serialize(&mut writer)?;
-        } else {
+        if seed == 1 {
             self.edit_duration.serialize(&mut writer)?;
             self.media_time.serialize(&mut writer)?;
+        } else {
+            (self.edit_duration as u32).serialize(&mut writer)?;
+            (self.media_time as i32).serialize(&mut writer)?;
         }
         self.media_rate_integer.serialize(&mut writer)?;
         self.media_rate_fraction.serialize(&mut writer)?;
 
         Ok(())
+    }
+}
+
+impl EditListBoxEntry {
+    pub fn size(&self, version: u8) -> usize {
+        let mut size = 0;
+        if version == 1 {
+            size += 8 + 8;
+        } else {
+            size += 4 + 4;
+        }
+        size + 2 + 2
     }
 }

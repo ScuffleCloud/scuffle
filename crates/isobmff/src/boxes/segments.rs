@@ -2,7 +2,7 @@ use scuffle_bytes_util::BitWriter;
 use scuffle_bytes_util::zero_copy::{Deserialize, DeserializeSeed, Serialize, U24Be};
 
 use super::Brand;
-use crate::{BoxHeader, FullBoxHeader, IsoBox};
+use crate::{BoxHeader, FullBoxHeader, IsoBox, IsoSized};
 
 /// Segment type box
 ///
@@ -23,7 +23,7 @@ pub struct SegmentTypeBox {
 ///
 /// ISO/IEC 14496-12 - 8.16.3
 #[derive(Debug, IsoBox)]
-#[iso_box(box_type = b"sidx", skip_impl(deserialize_seed, serialize), crate_path = crate)]
+#[iso_box(box_type = b"sidx", skip_impl(deserialize_seed, serialize, sized), crate_path = crate)]
 pub struct SegmentIndexBox {
     #[iso_box(header)]
     pub header: FullBoxHeader,
@@ -105,6 +105,27 @@ impl Serialize for SegmentIndexBox {
     }
 }
 
+impl IsoSized for SegmentIndexBox {
+    fn size(&self) -> usize {
+        let mut size = self.header.size();
+        size += 4; // reference_id
+        size += 4; // timescale
+        if self.header.version == 0 {
+            size += 4; // earliest_presentation_time
+            size += 4; // first_offset
+        } else {
+            size += 8; // earliest_presentation_time
+            size += 8; // first_offset
+        }
+        size += 2; // reserved
+        size += 2; // reference_count
+
+        size += self.references.size();
+
+        size
+    }
+}
+
 #[derive(Debug)]
 pub struct SegmentIndexBoxReference {
     pub reference_type: bool,
@@ -162,6 +183,12 @@ impl Serialize for SegmentIndexBoxReference {
     }
 }
 
+impl IsoSized for SegmentIndexBoxReference {
+    fn size(&self) -> usize {
+        4 + 4 + 4 // 3 u32s
+    }
+}
+
 /// Subsegment index box
 ///
 /// ISO/IEC 14496-12 - 8.16.4
@@ -211,6 +238,12 @@ impl Serialize for SubsegmentIndexBoxSubsegment {
     }
 }
 
+impl IsoSized for SubsegmentIndexBoxSubsegment {
+    fn size(&self) -> usize {
+        self.range_count.size() + self.ranges.size()
+    }
+}
+
 #[derive(Debug)]
 pub struct SubsegmentIndexBoxSubsegmentRange {
     pub level: u8,
@@ -240,11 +273,17 @@ impl Serialize for SubsegmentIndexBoxSubsegmentRange {
     }
 }
 
+impl IsoSized for SubsegmentIndexBoxSubsegmentRange {
+    fn size(&self) -> usize {
+        self.level.size() + self.range_size.size()
+    }
+}
+
 /// Producer reference time box
 ///
 /// ISO/IEC 14496-12 - 8.16.5
 #[derive(Debug, IsoBox)]
-#[iso_box(box_type = b"prft", skip_impl(deserialize_seed), crate_path = crate)]
+#[iso_box(box_type = b"prft", skip_impl(deserialize_seed, serialize, sized), crate_path = crate)]
 pub struct ProducerReferenceTimeBox {
     #[iso_box(header)]
     pub header: FullBoxHeader,
@@ -272,5 +311,37 @@ impl<'a> DeserializeSeed<'a, FullBoxHeader> for ProducerReferenceTimeBox {
             ntp_timestamp,
             media_time,
         })
+    }
+}
+
+impl Serialize for ProducerReferenceTimeBox {
+    fn serialize<W>(&self, mut writer: W) -> std::io::Result<()>
+    where
+        W: std::io::Write,
+    {
+        self.header.serialize(&mut writer)?;
+
+        self.reference_track_id.serialize(&mut writer)?;
+        self.ntp_timestamp.serialize(&mut writer)?;
+        if self.header.version == 0 {
+            (self.media_time as u32).serialize(&mut writer)?;
+        } else {
+            self.media_time.serialize(&mut writer)?;
+        }
+        Ok(())
+    }
+}
+
+impl IsoSized for ProducerReferenceTimeBox {
+    fn size(&self) -> usize {
+        let mut size = self.header.size();
+        size += 4; // reference_track_id
+        size += 8; // ntp_timestamp
+        if self.header.version == 0 {
+            size += 4; // media_time
+        } else {
+            size += 8; // media_time
+        }
+        size
     }
 }

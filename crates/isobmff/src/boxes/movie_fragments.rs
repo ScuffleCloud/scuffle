@@ -8,7 +8,7 @@ use super::{
     SampleGroupDescriptionBox, SampleToGroupBox, SubSampleInformationBox, UserDataBox,
 };
 use crate::utils::pad_cow_to_u32;
-use crate::{BoxHeader, FullBoxHeader, IsoBox, UnknownBox};
+use crate::{BoxHeader, FullBoxHeader, IsoBox, IsoSized, UnknownBox};
 
 /// Movie extends box
 ///
@@ -30,7 +30,7 @@ pub struct MovieExtendsBox {
 ///
 /// ISO/IEC 14496-12 - 8.8.2
 #[derive(Debug, IsoBox)]
-#[iso_box(box_type = b"mehd", skip_impl(deserialize_seed, serialize), crate_path = crate)]
+#[iso_box(box_type = b"mehd", skip_impl(deserialize_seed, serialize, sized), crate_path = crate)]
 pub struct MovieExtendsHeaderBox {
     #[iso_box(header)]
     pub header: FullBoxHeader,
@@ -69,6 +69,18 @@ impl Serialize for MovieExtendsHeaderBox {
         }
 
         Ok(())
+    }
+}
+
+impl IsoSized for MovieExtendsHeaderBox {
+    fn size(&self) -> usize {
+        let mut size = self.header.size(); // header
+        if self.header.version == 1 {
+            size += 8; // fragment_duration
+        } else {
+            size += 4; // fragment_duration
+        }
+        size
     }
 }
 
@@ -271,7 +283,7 @@ impl Serialize for TrackFragmentHeaderBox {
 ///
 /// ISO/IEC 14496-12 - 8.8.8
 #[derive(Debug, IsoBox)]
-#[iso_box(box_type = b"trun", skip_impl(deserialize_seed, serialize), crate_path = crate)]
+#[iso_box(box_type = b"trun", skip_impl(deserialize_seed, serialize, sized), crate_path = crate)]
 pub struct TrackRunBox {
     #[iso_box(header)]
     pub header: FullBoxHeader,
@@ -312,6 +324,24 @@ impl<'a> DeserializeSeed<'a, FullBoxHeader> for TrackRunBox {
             first_sample_flags,
             samples,
         })
+    }
+}
+
+impl IsoSized for TrackRunBox {
+    fn size(&self) -> usize {
+        let flags = TrFlags::from_bits_truncate(*self.header.flags);
+
+        let mut size = self.header.size() + 8; // header + sample_count
+        if flags.contains(TrFlags::DataOffsetPresent) {
+            size += 4; // data_offset
+        }
+        if flags.contains(TrFlags::FirstSampleFlagsPresent) {
+            size += 4; // first_sample_flags
+        }
+
+        size += self.samples.iter().map(|s| s.size(flags)).sum::<usize>();
+
+        size
     }
 }
 
@@ -433,6 +463,26 @@ impl SerializeSeed<TrFlags> for TrackRunBoxSample {
     }
 }
 
+impl TrackRunBoxSample {
+    pub fn size(&self, flags: TrFlags) -> usize {
+        let mut size = 0;
+        if flags.contains(TrFlags::SampleDurationPresent) {
+            size += 4; // sample_duration
+        }
+        if flags.contains(TrFlags::SampleSizePresent) {
+            size += 4; // sample_size
+        }
+        if flags.contains(TrFlags::SampleFlagsPresent) {
+            size += 4; // sample_flags
+        }
+        if flags.contains(TrFlags::SampleCompositionTimeOffsetsPresent) {
+            size += 4; // sample_composition_time_offset
+        }
+
+        size
+    }
+}
+
 /// Movie fragment random access box
 ///
 /// ISO/IEC 14496-12 - 8.8.9
@@ -451,7 +501,7 @@ pub struct MovieFragmentRandomAccessBox {
 ///
 /// ISO/IEC 14496-12 - 8.8.10
 #[derive(Debug, IsoBox)]
-#[iso_box(box_type = b"tfra", skip_impl(deserialize_seed, serialize), crate_path = crate)]
+#[iso_box(box_type = b"tfra", skip_impl(deserialize_seed, serialize, sized), crate_path = crate)]
 pub struct TrackFragmentRandomAccessBox {
     #[iso_box(header)]
     pub header: FullBoxHeader,
@@ -539,6 +589,30 @@ impl Serialize for TrackFragmentRandomAccessBox {
     }
 }
 
+impl IsoSized for TrackFragmentRandomAccessBox {
+    fn size(&self) -> usize {
+        let mut size = self.header.size(); // header
+        size += 4; // track_id
+        size += 4; // length_size_of_traf_num + length_size_of_trun_num + length_size_of_sample_num
+        size += 4; // number_of_entry
+
+        let mut entry_size = 0;
+        if self.header.version == 1 {
+            entry_size += 8; // time
+            entry_size += 8; // moof_offset
+        } else {
+            entry_size += 4; // time
+            entry_size += 4; // moof_offset
+        }
+        entry_size += self.length_size_of_traf_num as usize;
+        entry_size += self.length_size_of_trun_num as usize;
+        entry_size += self.length_size_of_sample_num as usize;
+        size += self.entries.len() * entry_size;
+
+        size
+    }
+}
+
 #[derive(Debug)]
 pub struct TrackFragmentRandomAccessBoxEntry {
     pub time: u64,
@@ -586,7 +660,7 @@ pub struct MovieFragmentRandomAccessOffsetBox {
 ///
 /// ISO/IEC 14496-12 - 8.8.12
 #[derive(Debug, IsoBox)]
-#[iso_box(box_type = b"tfdt", skip_impl(deserialize_seed, serialize), crate_path = crate)]
+#[iso_box(box_type = b"tfdt", skip_impl(deserialize_seed, serialize, sized), crate_path = crate)]
 pub struct TrackFragmentBaseMediaDecodeTimeBox {
     #[iso_box(header)]
     pub header: FullBoxHeader,
@@ -625,6 +699,18 @@ impl Serialize for TrackFragmentBaseMediaDecodeTimeBox {
         }
 
         Ok(())
+    }
+}
+
+impl IsoSized for TrackFragmentBaseMediaDecodeTimeBox {
+    fn size(&self) -> usize {
+        let mut size = self.header.size(); // header
+        if self.header.version == 1 {
+            size += 8; // base_media_decode_time
+        } else {
+            size += 4; // base_media_decode_time
+        }
+        size
     }
 }
 
@@ -710,6 +796,22 @@ impl Serialize for LevelAssignmentBoxLevel {
         }
 
         Ok(())
+    }
+}
+
+impl IsoSized for LevelAssignmentBoxLevel {
+    fn size(&self) -> usize {
+        let mut size = 4; // track_id
+        size += 1; // padding_flag + assignment_type
+
+        match self.assignment_type {
+            LevelAssignmentBoxLevelAssignmentType::Type0 { .. } => size += 4,
+            LevelAssignmentBoxLevelAssignmentType::Type1 { .. } => size += 8,
+            LevelAssignmentBoxLevelAssignmentType::Type4 { .. } => size += 4,
+            _ => {}
+        }
+
+        size
     }
 }
 
@@ -842,6 +944,16 @@ pub enum AlternativeStartupSequencePropertiesBoxVersion {
     Other(u8),
 }
 
+impl IsoSized for AlternativeStartupSequencePropertiesBoxVersion {
+    fn size(&self) -> usize {
+        match self {
+            AlternativeStartupSequencePropertiesBoxVersion::Version0 { .. } => 4,
+            AlternativeStartupSequencePropertiesBoxVersion::Version1 { entries, .. } => 4 + entries.size(),
+            _ => 0,
+        }
+    }
+}
+
 #[derive(Debug)]
 pub struct AlternativeStartupSequencePropertiesBoxVersion1Entry {
     pub grouping_type_parameter: u32,
@@ -871,5 +983,11 @@ impl Serialize for AlternativeStartupSequencePropertiesBoxVersion1Entry {
         self.grouping_type_parameter.serialize(&mut writer)?;
         self.min_initial_alt_startup_offset.serialize(&mut writer)?;
         Ok(())
+    }
+}
+
+impl IsoSized for AlternativeStartupSequencePropertiesBoxVersion1Entry {
+    fn size(&self) -> usize {
+        4 + 4
     }
 }

@@ -1,7 +1,6 @@
 <script lang="ts">
     import { theme } from '$lib/theme';
     import '$styles/global.css';
-    import '../app.css';
     import Navbar from '$components/left-nav/Navbar.svelte';
     import TopNav from '$components/top-nav/TopNav.svelte';
     import { QueryClient, QueryClientProvider } from '@tanstack/svelte-query';

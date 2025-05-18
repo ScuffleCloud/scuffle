@@ -20,17 +20,17 @@ pub struct TrackBox<'a> {
     #[iso_box(nested_box(collect))]
     pub trgr: Option<TrackGroupBox<'a>>,
     #[iso_box(nested_box(collect))]
-    pub ttyp: Option<TrackTypeBox>,
-    #[iso_box(nested_box)]
-    pub mdia: MediaBox<'a>,
-    #[iso_box(nested_box(collect))]
     pub edts: Option<EditBox>,
     #[iso_box(nested_box(collect))]
-    pub udta: Option<UserDataBox<'a>>,
+    pub ttyp: Option<TrackTypeBox>,
     #[iso_box(nested_box(collect))]
     pub meta: Option<MetaBox<'a>>,
+    #[iso_box(nested_box)]
+    pub mdia: MediaBox<'a>,
     #[iso_box(nested_box(collect_unknown))]
     pub unknown_boxes: Vec<UnknownBox<'a>>,
+    #[iso_box(nested_box(collect))]
+    pub udta: Option<UserDataBox<'a>>,
 }
 
 /// Track header box

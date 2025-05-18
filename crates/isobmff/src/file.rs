@@ -19,17 +19,17 @@ pub struct IsobmffFile<'a> {
     #[iso_box(nested_box(collect))]
     pub etyp: Vec<ExtendedTypeBox<'a>>,
     #[iso_box(nested_box(collect))]
-    pub mdat: Vec<MediaDataBox<'a>>,
+    pub otyp: Vec<OriginalFileTypeBox<'a>>,
     #[iso_box(nested_box(collect))]
     pub pdin: Option<ProgressiveDownloadInfoBox>,
-    #[iso_box(nested_box(collect))]
-    pub imda: Vec<IdentifiedMediaDataBox<'a>>,
     #[iso_box(nested_box)]
     pub moov: MovieBox<'a>,
     #[iso_box(nested_box(collect))]
     pub moof: Vec<MovieFragmentBox<'a>>,
     #[iso_box(nested_box(collect))]
-    pub mfra: Option<MovieFragmentRandomAccessBox>,
+    pub mdat: Vec<MediaDataBox<'a>>,
+    #[iso_box(nested_box(collect))]
+    pub imda: Vec<IdentifiedMediaDataBox<'a>>,
     #[iso_box(nested_box(collect))]
     pub meta: Option<MetaBox<'a>>,
     #[iso_box(nested_box(collect))]
@@ -40,10 +40,10 @@ pub struct IsobmffFile<'a> {
     pub ssix: Vec<SubsegmentIndexBox>,
     #[iso_box(nested_box(collect))]
     pub prft: Vec<ProducerReferenceTimeBox>,
-    #[iso_box(nested_box(collect))]
-    pub otyp: Vec<OriginalFileTypeBox<'a>>,
     #[iso_box(nested_box(collect_unknown))]
     pub unknown_boxes: Vec<UnknownBox<'a>>,
+    #[iso_box(nested_box(collect))]
+    pub mfra: Option<MovieFragmentRandomAccessBox>,
 }
 
 impl<'a> Deserialize<'a> for IsobmffFile<'a> {

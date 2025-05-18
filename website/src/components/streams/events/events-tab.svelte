@@ -46,8 +46,20 @@
     const events: StreamEvent[] = [
         {
             id: '1',
-            type: 'neutral',
+            type: 'info',
             text: 'Neutral event',
+            timestamp: 'May 5, 04:01:11 PM EDT',
+        },
+        {
+            id: '2',
+            type: 'asset_created',
+            text: 'Success event',
+            timestamp: 'May 5, 04:01:11 PM EDT',
+        },
+        {
+            id: '3',
+            type: 'error',
+            text: 'Error event',
             timestamp: 'May 5, 04:01:11 PM EDT',
         },
     ];

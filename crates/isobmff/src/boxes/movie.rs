@@ -16,15 +16,15 @@ pub struct MovieBox<'a> {
     #[iso_box(nested_box)]
     pub mvhd: MovieHeaderBox,
     #[iso_box(nested_box(collect))]
+    pub meta: Option<MetaBox<'a>>,
+    #[iso_box(nested_box(collect))]
     pub trak: Vec<TrackBox<'a>>,
     #[iso_box(nested_box(collect))]
     pub mvex: Option<MovieExtendsBox>,
-    #[iso_box(nested_box(collect))]
-    pub udta: Option<UserDataBox<'a>>,
-    #[iso_box(nested_box(collect))]
-    pub meta: Option<MetaBox<'a>>,
     #[iso_box(nested_box(collect_unknown))]
     pub unknown_boxes: Vec<UnknownBox<'a>>,
+    #[iso_box(nested_box(collect))]
+    pub udta: Option<UserDataBox<'a>>,
 }
 
 /// Movie header box

@@ -110,13 +110,11 @@ pub struct MovieFragmentBox<'a> {
     #[iso_box(nested_box)]
     pub mfhd: MovieFragmentHeaderBox,
     #[iso_box(nested_box(collect))]
+    pub meta: Option<MetaBox<'a>>,
+    #[iso_box(nested_box(collect))]
     pub traf: Vec<TrackFragmentBox<'a>>,
     #[iso_box(nested_box(collect))]
-    pub trun: Vec<TrackRunBox>,
-    #[iso_box(nested_box(collect))]
     pub udta: Option<UserDataBox<'a>>,
-    #[iso_box(nested_box(collect))]
-    pub meta: Option<MetaBox<'a>>,
 }
 
 /// Movie fragment header box
@@ -141,6 +139,12 @@ pub struct TrackFragmentBox<'a> {
     #[iso_box(nested_box)]
     pub tfhd: TrackFragmentHeaderBox,
     #[iso_box(nested_box(collect))]
+    pub trun: Vec<TrackRunBox>,
+    #[iso_box(nested_box(collect))]
+    pub sbgp: Vec<SampleToGroupBox>,
+    #[iso_box(nested_box(collect))]
+    pub sgpd: Vec<SampleGroupDescriptionBox>,
+    #[iso_box(nested_box(collect))]
     pub subs: Vec<SubSampleInformationBox>,
     #[iso_box(nested_box(collect))]
     pub saiz: Vec<SampleAuxiliaryInformationSizesBox<'a>>,
@@ -149,13 +153,9 @@ pub struct TrackFragmentBox<'a> {
     #[iso_box(nested_box(collect))]
     pub tfdt: Option<TrackFragmentBaseMediaDecodeTimeBox>,
     #[iso_box(nested_box(collect))]
-    pub sbgp: Vec<SampleToGroupBox>,
-    #[iso_box(nested_box(collect))]
-    pub sgpd: Vec<SampleGroupDescriptionBox>,
+    pub meta: Option<MetaBox<'a>>,
     #[iso_box(nested_box(collect))]
     pub udta: Option<UserDataBox<'a>>,
-    #[iso_box(nested_box(collect))]
-    pub meta: Option<MetaBox<'a>>,
 }
 
 /// Track fragment header box

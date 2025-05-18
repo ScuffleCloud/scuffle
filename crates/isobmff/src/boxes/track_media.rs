@@ -22,10 +22,10 @@ pub struct MediaBox<'a> {
     pub mdhd: MediaHeaderBox,
     #[iso_box(nested_box)]
     pub hdlr: HandlerBox,
-    #[iso_box(nested_box)]
-    pub minf: MediaInformationBox<'a>,
     #[iso_box(nested_box(collect))]
     pub elng: Option<ExtendedLanguageBox>,
+    #[iso_box(nested_box)]
+    pub minf: MediaInformationBox<'a>,
     #[iso_box(nested_box(collect_unknown))]
     pub unknown_boxes: Vec<UnknownBox<'a>>,
 }
@@ -170,10 +170,6 @@ pub struct HandlerBox {
 pub struct MediaInformationBox<'a> {
     #[iso_box(header)]
     pub header: BoxHeader,
-    #[iso_box(nested_box)]
-    pub stbl: SampleTableBox<'a>,
-    #[iso_box(nested_box)]
-    pub dinf: DataInformationBox<'a>,
     #[iso_box(nested_box(collect))]
     pub vmhd: Option<VideoMediaHeaderBox>,
     #[iso_box(nested_box(collect))]
@@ -186,6 +182,10 @@ pub struct MediaInformationBox<'a> {
     pub vvhd: Option<VolumetricVisualMediaHeaderBox>,
     #[iso_box(nested_box(collect_unknown))]
     pub unknown_boxes: Vec<UnknownBox<'a>>,
+    #[iso_box(nested_box)]
+    pub dinf: DataInformationBox<'a>,
+    #[iso_box(nested_box)]
+    pub stbl: SampleTableBox<'a>,
 }
 
 /// Null media header box

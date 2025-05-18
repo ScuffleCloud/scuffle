@@ -1,6 +1,6 @@
 use scuffle_bytes_util::BytesCow;
 
-use super::{MovieBox, MovieFragmentBox, SegmentIndexBox, SubsegmentIndexBox};
+use super::{ExtendedTypeBox, MovieBox, MovieFragmentBox, SegmentIndexBox, SubsegmentIndexBox};
 use crate::{BoxHeader, IsoBox, UnknownBox};
 
 /// Original file-type box
@@ -11,6 +11,8 @@ use crate::{BoxHeader, IsoBox, UnknownBox};
 pub struct OriginalFileTypeBox<'a> {
     #[iso_box(header)]
     pub header: BoxHeader,
+    #[iso_box(nested_box(collect))]
+    pub etyp: Option<ExtendedTypeBox<'a>>,
     #[iso_box(nested_box(collect_unknown))]
     pub unknown_boxes: Vec<UnknownBox<'a>>,
 }

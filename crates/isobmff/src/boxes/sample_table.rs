@@ -20,48 +20,44 @@ pub struct SampleTableBox<'a> {
     pub header: BoxHeader,
     #[iso_box(nested_box)]
     pub stsd: SampleDescriptionBox<'a>,
-    #[iso_box(nested_box(collect))]
-    pub stdp: Option<DegradationPriorityBox>,
     #[iso_box(nested_box)]
     pub stts: TimeToSampleBox,
     #[iso_box(nested_box(collect))]
     pub ctts: Option<CompositionOffsetBox>,
     #[iso_box(nested_box(collect))]
     pub cslg: Option<CompositionToDecodeBox>,
-    #[iso_box(nested_box(collect))]
-    pub stss: Option<SyncSampleBox>,
-    #[iso_box(nested_box(collect))]
-    pub stsh: Option<ShadowSyncSampleBox>,
-    #[iso_box(nested_box(collect))]
-    pub sdtp: Option<SampleDependencyTypeBox>,
-
+    #[iso_box(nested_box)]
+    pub stsc: SampleToChunkBox,
     // one of stsz or stz2 must be present
     #[iso_box(nested_box(collect))]
     pub stsz: Option<SampleSizeBox>,
     #[iso_box(nested_box(collect))]
     pub stz2: Option<CompactSampleSizeBox<'a>>,
-
-    #[iso_box(nested_box)]
-    pub stsc: SampleToChunkBox,
-
     // one of stco or co64 must be present
     #[iso_box(nested_box(collect))]
     pub stco: Option<ChunkOffsetBox>,
     #[iso_box(nested_box(collect))]
     pub co64: Option<ChunkLargeOffsetBox>,
-
+    #[iso_box(nested_box(collect))]
+    pub stss: Option<SyncSampleBox>,
+    #[iso_box(nested_box(collect))]
+    pub stsh: Option<ShadowSyncSampleBox>,
     #[iso_box(nested_box(collect))]
     pub padb: Option<PaddingBitsBox>,
+    #[iso_box(nested_box(collect))]
+    pub stdp: Option<DegradationPriorityBox>,
+    #[iso_box(nested_box(collect))]
+    pub sdtp: Option<SampleDependencyTypeBox>,
+    #[iso_box(nested_box(collect))]
+    pub sbgp: Vec<SampleToGroupBox>,
+    #[iso_box(nested_box(collect))]
+    pub sgpd: Vec<SampleGroupDescriptionBox>,
     #[iso_box(nested_box(collect))]
     pub subs: Vec<SubSampleInformationBox>,
     #[iso_box(nested_box(collect))]
     pub saiz: Vec<SampleAuxiliaryInformationSizesBox<'a>>,
     #[iso_box(nested_box(collect))]
     pub saio: Vec<SampleAuxiliaryInformationOffsetsBox>,
-    #[iso_box(nested_box(collect))]
-    pub sbgp: Vec<SampleToGroupBox>,
-    #[iso_box(nested_box(collect))]
-    pub sgpd: Vec<SampleGroupDescriptionBox>,
     #[iso_box(nested_box(collect))]
     pub csgp: Vec<CompactSampleToGroupBox>,
 }

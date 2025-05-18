@@ -4,7 +4,7 @@ use scuffle_bytes_util::zero_copy::{Deserialize, DeserializeSeed, Serialize};
 use scuffle_bytes_util::{BitWriter, BytesCow};
 
 use super::SampleEntry;
-use crate::{BoxHeader, FullBoxHeader, IsoBox};
+use crate::{BoxHeader, FullBoxHeader, IsoBox, IsoSized};
 
 /// Video media header
 ///
@@ -44,7 +44,7 @@ pub struct VisualSampleEntry {
     pub vert_resolution: u32,
     pub reserved2: u32,
     pub frame_count: u16,
-    pub compressor_name: [u8; 32],
+    pub compressor_name: [char; 32],
     pub depth: u16,
     pub pre_defined4: i16,
 }
@@ -64,7 +64,7 @@ impl<'a> Deserialize<'a> for VisualSampleEntry {
         let vert_resolution = u32::deserialize(&mut reader)?;
         let reserved2 = u32::deserialize(&mut reader)?;
         let frame_count = u16::deserialize(&mut reader)?;
-        let compressor_name = <[u8; 32]>::deserialize(&mut reader)?;
+        let compressor_name = <[char; 32]>::deserialize(&mut reader)?;
         let depth = u16::deserialize(&mut reader)?;
         let pre_defined4 = i16::deserialize(&mut reader)?;
 
@@ -105,6 +105,24 @@ impl Serialize for VisualSampleEntry {
         self.depth.serialize(&mut writer)?;
         self.pre_defined4.serialize(&mut writer)?;
         Ok(())
+    }
+}
+
+impl IsoSized for VisualSampleEntry {
+    fn size(&self) -> usize {
+        self.sample_entry.size()
+            + 2 // pre_defined
+            + 2 // reserved1
+            + self.pre_defined2.size() // pre_defined2
+            + 2 // width
+            + 2 // height
+            + 4 // horiz_resolution
+            + 4 // vert_resolution
+            + 4 // reserved2
+            + 2 // frame_count
+            + self.compressor_name.size() // compressor_name
+            + 2 // depth
+            + 2 // pre_defined4
     }
 }
 
@@ -212,6 +230,17 @@ impl Serialize for ColourInformation<'_> {
     }
 }
 
+impl IsoSized for ColourInformation<'_> {
+    fn size(&self) -> usize {
+        match self {
+            ColourInformation::Nclx(info) => 4 + info.size(),
+            ColourInformation::RIcc { icc_profile } => 4 + icc_profile.size(),
+            ColourInformation::Prof { icc_profile } => 4 + icc_profile.size(),
+            ColourInformation::Other { data, .. } => 4 + data.size(),
+        }
+    }
+}
+
 #[derive(Debug)]
 pub struct NclxColourInformation {
     pub colour_primaries: u16,
@@ -247,6 +276,12 @@ impl Serialize for NclxColourInformation {
     }
 }
 
+impl IsoSized for NclxColourInformation {
+    fn size(&self) -> usize {
+        2 + 2 + 2 + 1
+    }
+}
+
 /// Content light level
 ///
 /// ISO/IEC 144496-12 - 12.1.6
@@ -278,7 +313,7 @@ pub struct MasteringDisplayColourVolumeBox {
 ///
 /// ISO/IEC 144496-12 - 12.1.8
 #[derive(Debug, IsoBox)]
-#[iso_box(box_type = b"cclv", skip_impl(deserialize_seed, serialize), crate_path = crate)]
+#[iso_box(box_type = b"cclv", skip_impl(deserialize_seed, serialize, sized), crate_path = crate)]
 pub struct ContentColourVolumeBox {
     #[iso_box(header)]
     pub header: BoxHeader,
@@ -349,6 +384,8 @@ impl Serialize for ContentColourVolumeBox {
     {
         let mut bit_writer = BitWriter::new(writer);
 
+        self.header.serialize(&mut bit_writer)?;
+
         bit_writer.write_bit(self.reserved1)?;
         bit_writer.write_bit(self.reserved2)?;
         bit_writer.write_bit(self.ccv_primaries.is_some())?;
@@ -371,6 +408,26 @@ impl Serialize for ContentColourVolumeBox {
         }
 
         Ok(())
+    }
+}
+
+impl IsoSized for ContentColourVolumeBox {
+    fn size(&self) -> usize {
+        let mut size = self.header.size();
+        size += 1; // flags
+        if let Some(ccv_primaries) = self.ccv_primaries {
+            size += ccv_primaries.size();
+        }
+        if let Some(ccv_min_luminance_value) = self.ccv_min_luminance_value {
+            size += ccv_min_luminance_value.size();
+        }
+        if let Some(ccv_max_luminance_value) = self.ccv_max_luminance_value {
+            size += ccv_max_luminance_value.size();
+        }
+        if let Some(ccv_avg_luminance_value) = self.ccv_avg_luminance_value {
+            size += ccv_avg_luminance_value.size();
+        }
+        size
     }
 }
 

@@ -1,7 +1,7 @@
 use scuffle_bytes_util::zero_copy::{Deserialize, Serialize, ZeroCopyReader};
 
 use super::{BitRateBox, SampleEntry, TextConfigBox};
-use crate::{BoxHeader, IsoBox, UnknownBox, Utf8String};
+use crate::{BoxHeader, IsoBox, IsoSized, UnknownBox, Utf8String};
 
 /// Plain Text sample entry
 ///
@@ -29,6 +29,12 @@ impl Serialize for PlainTextSampleEntry {
         W: std::io::Write,
     {
         self.sample_entry.serialize(writer)
+    }
+}
+
+impl IsoSized for PlainTextSampleEntry {
+    fn size(&self) -> usize {
+        self.sample_entry.size()
     }
 }
 

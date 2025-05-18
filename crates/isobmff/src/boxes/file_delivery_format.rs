@@ -1,7 +1,7 @@
 use scuffle_bytes_util::IoResultExt;
 use scuffle_bytes_util::zero_copy::{Deserialize, DeserializeSeed, Serialize, SerializeSeed};
 
-use crate::{Base64String, BoxHeader, FullBoxHeader, IsoBox, Utf8String};
+use crate::{Base64String, BoxHeader, FullBoxHeader, IsoBox, IsoSized, Utf8String};
 
 /// FD item information box
 ///
@@ -83,7 +83,7 @@ pub struct PartitionEntry {
 ///
 /// ISO/IEC 14996-12 - 8.13.3
 #[derive(Debug, IsoBox)]
-#[iso_box(box_type = b"fpar", skip_impl(deserialize_seed, serialize), crate_path = crate)]
+#[iso_box(box_type = b"fpar", skip_impl(deserialize_seed, serialize, sized), crate_path = crate)]
 pub struct FilePartitionBox {
     #[iso_box(header)]
     pub header: FullBoxHeader,
@@ -181,6 +181,32 @@ impl Serialize for FilePartitionBox {
     }
 }
 
+impl IsoSized for FilePartitionBox {
+    fn size(&self) -> usize {
+        let mut size = self.header.size();
+        if self.header.version == 0 {
+            size += 2; // item_id
+        } else {
+            size += 4; // item_id
+        }
+        size += self.packet_payload_size.size()
+            + self.reserved.size()
+            + self.fec_encoding_id.size()
+            + self.fec_instance_id.size()
+            + self.max_source_block_length.size()
+            + self.encoding_symbol_length.size()
+            + self.max_number_of_encoding_symbols.size()
+            + self.scheme_specific_info.size();
+        if self.header.version == 0 {
+            size += 2; // entry_count
+        } else {
+            size += 4; // entry_count
+        }
+        size += self.entries.size();
+        size
+    }
+}
+
 #[derive(Debug)]
 pub struct FilePartitionBoxEntry {
     pub block_count: u16,
@@ -210,11 +236,17 @@ impl Serialize for FilePartitionBoxEntry {
     }
 }
 
+impl IsoSized for FilePartitionBoxEntry {
+    fn size(&self) -> usize {
+        self.block_count.size() + self.block_size.size()
+    }
+}
+
 /// FEC reservoir box
 ///
 /// ISO/IEC 14996-12 - 8.13.4
 #[derive(Debug, IsoBox)]
-#[iso_box(box_type = b"fecr", skip_impl(deserialize_seed, serialize), crate_path = crate)]
+#[iso_box(box_type = b"fecr", skip_impl(deserialize_seed, serialize, sized), crate_path = crate)]
 pub struct FECReservoirBox {
     #[iso_box(header)]
     pub header: FullBoxHeader,
@@ -266,6 +298,23 @@ impl Serialize for FECReservoirBox {
     }
 }
 
+impl IsoSized for FECReservoirBox {
+    fn size(&self) -> usize {
+        let mut size = self.header.size();
+        if self.header.version == 0 {
+            size += (self.entry_count as u16).size();
+        } else {
+            size += self.entry_count.size();
+        }
+        size += self
+            .entries
+            .iter()
+            .map(|entry| entry.size(self.header.version))
+            .sum::<usize>();
+        size
+    }
+}
+
 #[derive(Debug)]
 pub struct FECReservoirBoxEntry {
     pub item_id: u32,
@@ -301,6 +350,16 @@ impl SerializeSeed<u8> for FECReservoirBoxEntry {
         self.symbol_count.serialize(&mut writer)?;
 
         Ok(())
+    }
+}
+
+impl FECReservoirBoxEntry {
+    pub fn size(&self, version: u8) -> usize {
+        if version == 0 {
+            (self.item_id as u16).size() + self.symbol_count.size()
+        } else {
+            self.item_id.size() + self.symbol_count.size()
+        }
     }
 }
 
@@ -405,6 +464,15 @@ impl Serialize for FDSessionGroupBoxSessionGroup {
     }
 }
 
+impl IsoSized for FDSessionGroupBoxSessionGroup {
+    fn size(&self) -> usize {
+        self.entry_count.size()
+            + self.group_id.size()
+            + self.num_channels_in_session_group.size()
+            + self.hint_track_id.size()
+    }
+}
+
 /// Group ID to name box
 ///
 /// ISO/IEC 14996-12 - 8.13.6
@@ -482,11 +550,17 @@ impl Serialize for GroupIdToNameBoxEntry {
     }
 }
 
+impl IsoSized for GroupIdToNameBoxEntry {
+    fn size(&self) -> usize {
+        self.group_id.size() + self.group_name.size()
+    }
+}
+
 /// File reservoir box
 ///
 /// ISO/IEC 14996-12 - 8.13.7
 #[derive(Debug, IsoBox)]
-#[iso_box(box_type = b"fire", skip_impl(deserialize_seed, serialize), crate_path = crate)]
+#[iso_box(box_type = b"fire", skip_impl(deserialize_seed, serialize, sized), crate_path = crate)]
 pub struct FileReservoirBox {
     #[iso_box(header)]
     pub header: FullBoxHeader,
@@ -538,6 +612,23 @@ impl Serialize for FileReservoirBox {
     }
 }
 
+impl IsoSized for FileReservoirBox {
+    fn size(&self) -> usize {
+        let mut size = self.header.size();
+        if self.header.version == 0 {
+            size += (self.entry_count as u16).size();
+        } else {
+            size += self.entry_count.size();
+        }
+        size += self
+            .entries
+            .iter()
+            .map(|entry| entry.size(self.header.version))
+            .sum::<usize>();
+        size
+    }
+}
+
 #[derive(Debug)]
 pub struct FileReservoirBoxEntry {
     pub item_id: u32,
@@ -573,5 +664,15 @@ impl SerializeSeed<u8> for FileReservoirBoxEntry {
         self.symbol_count.serialize(&mut writer)?;
 
         Ok(())
+    }
+}
+
+impl FileReservoirBoxEntry {
+    pub fn size(&self, version: u8) -> usize {
+        if version == 0 {
+            (self.item_id as u16).size() + self.symbol_count.size()
+        } else {
+            self.item_id.size() + self.symbol_count.size()
+        }
     }
 }

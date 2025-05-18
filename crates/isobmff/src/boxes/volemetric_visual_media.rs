@@ -1,7 +1,7 @@
 use scuffle_bytes_util::zero_copy::{Deserialize, Serialize};
 
 use super::SampleEntry;
-use crate::{FullBoxHeader, IsoBox};
+use crate::{FullBoxHeader, IsoBox, IsoSized};
 
 /// Volumetric visual media header box
 ///
@@ -50,5 +50,11 @@ impl Serialize for VolumetricVisualSampleEntry {
         self.sample_entry.serialize(&mut writer)?;
         self.compressorname.serialize(&mut writer)?;
         Ok(())
+    }
+}
+
+impl IsoSized for VolumetricVisualSampleEntry {
+    fn size(&self) -> usize {
+        self.sample_entry.size() + self.compressorname.size()
     }
 }

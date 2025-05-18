@@ -5,7 +5,7 @@ use scuffle_bytes_util::{BitWriter, BytesCow, IoResultExt};
 
 use super::{Brand, DataInformationBox, FDItemInformationBox, HandlerBox, ProtectionSchemeInfoBox, ScrambleSchemeInfoBox};
 use crate::utils::pad_cow_to_u64;
-use crate::{BoxHeader, FullBoxHeader, IsoBox, UnknownBox, Utf8String};
+use crate::{BoxHeader, FullBoxHeader, IsoBox, IsoSized, UnknownBox, Utf8String};
 
 /// Meta box
 ///
@@ -69,7 +69,7 @@ pub struct BinaryXmlBox<'a> {
 ///
 /// ISO/IEC 14496-12 - 8.11.3
 #[derive(Debug, IsoBox)]
-#[iso_box(box_type = b"iloc", skip_impl(deserialize_seed, serialize), crate_path = crate)]
+#[iso_box(box_type = b"iloc", skip_impl(deserialize_seed, serialize, sized), crate_path = crate)]
 pub struct ItemLocationBox {
     #[iso_box(header)]
     pub header: FullBoxHeader,
@@ -214,6 +214,26 @@ impl Serialize for ItemLocationBox {
     }
 }
 
+impl IsoSized for ItemLocationBox {
+    fn size(&self) -> usize {
+        let mut size = 0;
+
+        size += self.header.size();
+        size += 1; // offset_size + length_size
+        size += 1; // base_offset_size + index_size/reserved
+
+        if self.header.version < 2 {
+            size += 2; // item_count
+        } else if self.header.version == 2 {
+            size += 4; // item_count
+        }
+
+        size += self.items.iter().map(|item| item.size(self)).sum::<usize>();
+
+        size
+    }
+}
+
 #[derive(Debug)]
 pub struct ItemLocationBoxItem {
     pub item_id: Option<u32>,
@@ -264,6 +284,27 @@ impl SerializeSeed<&ItemLocationBox> for ItemLocationBoxItem {
     }
 }
 
+impl ItemLocationBoxItem {
+    pub fn size(&self, parent: &ItemLocationBox) -> usize {
+        let mut size = 0;
+
+        if parent.header.version < 2 {
+            size += 2; // item_id
+        } else if parent.header.version == 2 {
+            size += 4; // item_id
+        }
+        if parent.header.version == 1 || parent.header.version == 2 {
+            size += 2; // reserved + construction_method
+        }
+        size += 2; // data_reference_index
+        size += parent.base_offset_size as usize; // base_offset
+        size += 2; // extent_count
+        size += self.extents.iter().map(|e| e.size(parent)).sum::<usize>();
+
+        size
+    }
+}
+
 #[derive(Debug)]
 pub struct ItemLocationBoxExtent {
     pub item_reference_index: Option<u64>,
@@ -292,11 +333,25 @@ impl SerializeSeed<&ItemLocationBox> for ItemLocationBoxExtent {
     }
 }
 
+impl ItemLocationBoxExtent {
+    pub fn size(&self, parent: &ItemLocationBox) -> usize {
+        let mut size = 0;
+
+        if (parent.header.version == 1 || parent.header.version == 2) && parent.index_size > 0 {
+            size += parent.index_size as usize; // item_reference_index
+        }
+        size += parent.offset_size as usize; // extent_offset
+        size += parent.length_size as usize; // extent_length
+
+        size
+    }
+}
+
 /// Primary item box
 ///
 /// ISO/IEC 14496-12 - 8.11.4
 #[derive(Debug, IsoBox)]
-#[iso_box(box_type = b"pitm", skip_impl(deserialize_seed), crate_path = crate)]
+#[iso_box(box_type = b"pitm", skip_impl(deserialize_seed, serialize, sized), crate_path = crate)]
 pub struct PrimaryItemBox {
     #[iso_box(header)]
     pub header: FullBoxHeader,
@@ -318,6 +373,37 @@ impl<'a> DeserializeSeed<'a, FullBoxHeader> for PrimaryItemBox {
     }
 }
 
+impl Serialize for PrimaryItemBox {
+    fn serialize<W>(&self, mut writer: W) -> std::io::Result<()>
+    where
+        W: std::io::Write,
+    {
+        self.header.serialize(&mut writer)?;
+
+        if self.header.version == 0 {
+            (self.item_id as u16).serialize(&mut writer)?;
+        } else {
+            self.item_id.serialize(&mut writer)?;
+        }
+
+        Ok(())
+    }
+}
+
+impl IsoSized for PrimaryItemBox {
+    fn size(&self) -> usize {
+        let mut size = self.header.size();
+
+        if self.header.version == 0 {
+            size += 2; // item_id
+        } else {
+            size += 4; // item_id
+        }
+
+        size
+    }
+}
+
 /// Item protection box
 ///
 /// ISO/IEC 14496-12 - 8.11.5
@@ -335,7 +421,7 @@ pub struct ItemProtectionBox<'a> {
 ///
 /// ISO/IEC 14496-12 - 8.11.6
 #[derive(Debug, IsoBox)]
-#[iso_box(box_type = b"iinf", skip_impl(deserialize_seed), crate_path = crate)]
+#[iso_box(box_type = b"iinf", skip_impl(deserialize_seed, serialize, sized), crate_path = crate)]
 pub struct ItemInfoBox<'a> {
     #[iso_box(header)]
     pub header: FullBoxHeader,
@@ -368,11 +454,48 @@ impl<'a> DeserializeSeed<'a, FullBoxHeader> for ItemInfoBox<'a> {
     }
 }
 
+impl Serialize for ItemInfoBox<'_> {
+    fn serialize<W>(&self, mut writer: W) -> std::io::Result<()>
+    where
+        W: std::io::Write,
+    {
+        self.header.serialize(&mut writer)?;
+
+        if self.header.version == 0 {
+            (self.entry_count as u16).serialize(&mut writer)?;
+        } else {
+            self.entry_count.serialize(&mut writer)?;
+        }
+
+        for item_info in &self.item_infos {
+            item_info.serialize(&mut writer)?;
+        }
+
+        Ok(())
+    }
+}
+
+impl IsoSized for ItemInfoBox<'_> {
+    fn size(&self) -> usize {
+        let mut size = self.header.size();
+
+        if self.header.version == 0 {
+            size += 2; // entry_count
+        } else {
+            size += 4; // entry_count
+        }
+
+        size += self.item_infos.size();
+
+        size
+    }
+}
+
 /// Item information entry
 ///
 /// ISO/IEC 14496-12 - 8.11.6
 #[derive(Debug, IsoBox)]
-#[iso_box(box_type = b"infe", skip_impl(deserialize_seed, serialize), crate_path = crate)]
+#[iso_box(box_type = b"infe", skip_impl(deserialize_seed, serialize, sized), crate_path = crate)]
 pub struct ItemInfoEntry<'a> {
     #[iso_box(header)]
     pub header: FullBoxHeader,
@@ -530,6 +653,55 @@ impl Serialize for ItemInfoEntry<'_> {
     }
 }
 
+impl IsoSized for ItemInfoEntry<'_> {
+    fn size(&self) -> usize {
+        let mut size = self.header.size();
+
+        if self.header.version == 0 || self.header.version == 1 {
+            size += 2; // item_id
+            size += 2; // item_protection_index
+            size += self.item_name.size();
+            if let Some(ItemInfoEntryItem::Mime {
+                content_type,
+                content_encoding,
+            }) = &self.item
+            {
+                size += content_type.size();
+                size += content_encoding.size();
+            }
+        }
+        if self.header.version == 1 {
+            size += self.extension_type.size();
+            size += self.extension.size();
+        }
+        if self.header.version >= 2 {
+            if self.header.version == 2 {
+                size += 2; // item_id
+            } else if self.header.version == 3 {
+                size += 4; // item_id
+            }
+            size += 2; // item_protection_index
+            size += self.item_type.size();
+            size += self.item_name.size();
+            match &self.item {
+                Some(ItemInfoEntryItem::Mime {
+                    content_type,
+                    content_encoding,
+                }) => {
+                    size += content_type.size();
+                    size += content_encoding.size();
+                }
+                Some(ItemInfoEntryItem::Uri { item_uri_type }) => {
+                    size += item_uri_type.size();
+                }
+                None => {}
+            }
+        }
+
+        size
+    }
+}
+
 #[derive(Debug)]
 pub enum ItemInfoExtension<'a> {
     // "fdel"
@@ -613,6 +785,29 @@ impl Serialize for ItemInfoExtension<'_> {
                 data.serialize(&mut writer)?;
                 Ok(())
             }
+        }
+    }
+}
+
+impl IsoSized for ItemInfoExtension<'_> {
+    fn size(&self) -> usize {
+        match self {
+            ItemInfoExtension::FDItemInfoExtension {
+                current_location,
+                current_md5,
+                content_length,
+                transfer_length,
+                entry_count,
+                group_id,
+            } => {
+                current_location.size()
+                    + current_md5.size()
+                    + content_length.size()
+                    + transfer_length.size()
+                    + entry_count.size()
+                    + group_id.size()
+            }
+            ItemInfoExtension::Other { data, .. } => data.size(),
         }
     }
 }
@@ -761,6 +956,26 @@ impl Serialize for SingleItemTypeReferenceBox {
     }
 }
 
+impl IsoSized for SingleItemTypeReferenceBox {
+    fn size(&self) -> usize {
+        let mut size = 0;
+
+        if let Some(full_header) = &self.full_header {
+            size += full_header.size();
+            size += 2; // from_item_id
+            size += 2; // reference_count
+            size += self.to_item_id.len() * 2; // to_item_id
+        } else {
+            size += self.header.size();
+            size += 4; // from_item_id
+            size += 2; // reference_count
+            size += self.to_item_id.len() * 4; // to_item_id
+        }
+
+        size
+    }
+}
+
 /// Item properties box
 ///
 /// ISO/IEC 14496-12 - 8.11.14
@@ -789,7 +1004,7 @@ pub struct ItemPropertyContainerBox<'a> {
 }
 
 #[derive(Debug, IsoBox)]
-#[iso_box(box_type = b"ipma", skip_impl(deserialize_seed, serialize), crate_path = crate)]
+#[iso_box(box_type = b"ipma", skip_impl(deserialize_seed, serialize, sized), crate_path = crate)]
 pub struct ItemPropertyAssociationBox {
     #[iso_box(header)]
     pub header: FullBoxHeader,
@@ -830,6 +1045,17 @@ impl Serialize for ItemPropertyAssociationBox {
         }
 
         Ok(())
+    }
+}
+
+impl IsoSized for ItemPropertyAssociationBox {
+    fn size(&self) -> usize {
+        let mut size = self.header.size();
+
+        size += 4; // entry_count
+        size += self.entries.iter().map(|e| e.size(&self.header)).sum::<usize>();
+
+        size
     }
 }
 
@@ -888,6 +1114,22 @@ impl SerializeSeed<&FullBoxHeader> for ItemPropertyAssociationBoxEntry {
     }
 }
 
+impl ItemPropertyAssociationBoxEntry {
+    pub fn size(&self, header: &FullBoxHeader) -> usize {
+        let mut size = 0;
+
+        if header.version < 1 {
+            size += 2; // item_id
+        } else {
+            size += 4; // item_id
+        }
+        size += 1; // association_count
+        size += self.associations.iter().map(|a| a.size(header.flags)).sum::<usize>();
+
+        size
+    }
+}
+
 #[derive(Debug)]
 pub struct ItemPropertyAssociationBoxEntryAssociation {
     pub essential: bool,
@@ -936,6 +1178,16 @@ impl SerializeSeed<U24Be> for ItemPropertyAssociationBoxEntryAssociation {
         }
 
         Ok(())
+    }
+}
+
+impl ItemPropertyAssociationBoxEntryAssociation {
+    pub fn size(&self, flags: U24Be) -> usize {
+        if (*flags & 0b1) != 0 {
+            2 // e iiiiiii + iiiiiiii
+        } else {
+            1 // e iiiiiii
+        }
     }
 }
 

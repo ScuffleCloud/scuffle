@@ -1,6 +1,7 @@
 use scuffle_bytes_util::zero_copy::{Deserialize, Serialize};
 
 use super::SampleEntry;
+use crate::IsoSized;
 
 /// Haptic sample entry
 ///
@@ -31,5 +32,11 @@ impl Serialize for HapticSampleEntry {
         W: std::io::Write,
     {
         self.sample_entry.serialize(writer)
+    }
+}
+
+impl IsoSized for HapticSampleEntry {
+    fn size(&self) -> usize {
+        self.sample_entry.size()
     }
 }

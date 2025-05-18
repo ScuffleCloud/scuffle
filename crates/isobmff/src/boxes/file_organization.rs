@@ -2,7 +2,7 @@
 
 use nutype_enum::nutype_enum;
 
-use crate::{BoxHeader, IsoBox, UnknownBox};
+use crate::{BoxHeader, IsoBox, IsoSized, UnknownBox};
 
 nutype_enum! {
     pub enum Brand([u8; 4]) {
@@ -24,6 +24,12 @@ nutype_enum! {
         IsoC = *b"isoc",
         Comp = *b"comp",
         Unif = *b"unif",
+    }
+}
+
+impl IsoSized for Brand {
+    fn size(&self) -> usize {
+        4
     }
 }
 

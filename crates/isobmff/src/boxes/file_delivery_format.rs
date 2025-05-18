@@ -71,12 +71,12 @@ impl Serialize for FDItemInformationBox {
 pub struct PartitionEntry {
     #[iso_box(header)]
     pub header: BoxHeader,
+    #[iso_box(nested_box(collect))]
+    pub file_symbol_locations: Option<FileReservoirBox>,
     #[iso_box(nested_box)]
     pub blocks_and_symbols: FilePartitionBox,
     #[iso_box(nested_box(collect))]
     pub fec_symbol_locations: Option<FECReservoirBox>,
-    #[iso_box(nested_box(collect))]
-    pub file_symbol_locations: Option<FileReservoirBox>,
 }
 
 /// File partition box

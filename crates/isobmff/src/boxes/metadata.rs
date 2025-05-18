@@ -3,7 +3,10 @@ use std::io;
 use scuffle_bytes_util::zero_copy::{Deserialize, DeserializeSeed, Serialize, SerializeSeed, U24Be};
 use scuffle_bytes_util::{BitWriter, BytesCow, IoResultExt};
 
-use super::{Brand, DataInformationBox, FDItemInformationBox, HandlerBox, ProtectionSchemeInfoBox, ScrambleSchemeInfoBox};
+use super::{
+    Brand, DataInformationBox, ExtendedTypeBox, FDItemInformationBox, HandlerBox, ProtectionSchemeInfoBox,
+    ScrambleSchemeInfoBox,
+};
 use crate::utils::pad_cow_to_u64;
 use crate::{BoxHeader, FullBoxHeader, IsoBox, IsoSized, UnknownBox, Utf8String};
 
@@ -20,25 +23,25 @@ pub struct MetaBox<'a> {
     #[iso_box(nested_box(collect))]
     pub dinf: Option<DataInformationBox<'a>>,
     #[iso_box(nested_box(collect))]
+    pub iloc: Option<ItemLocationBox>,
+    #[iso_box(nested_box(collect))]
+    pub ipro: Option<ItemProtectionBox<'a>>,
+    #[iso_box(nested_box(collect))]
+    pub iinf: Option<ItemInfoBox<'a>>,
+    #[iso_box(nested_box(collect))]
     pub xml: Option<XmlBox>,
     #[iso_box(nested_box(collect))]
     pub bxml: Option<BinaryXmlBox<'a>>,
     #[iso_box(nested_box(collect))]
-    pub iloc: Option<ItemLocationBox>,
-    #[iso_box(nested_box(collect))]
     pub pitm: Option<PrimaryItemBox>,
     #[iso_box(nested_box(collect))]
-    pub ipro: Option<ItemProtectionBox<'a>>,
-    #[iso_box(nested_box(collect))]
-    pub iinfo: Option<ItemInfoBox<'a>>,
+    pub fiin: Option<FDItemInformationBox>,
     #[iso_box(nested_box(collect))]
     pub idat: Option<ItemDataBox<'a>>,
     #[iso_box(nested_box(collect))]
     pub iref: Option<ItemReferenceBox>,
     #[iso_box(nested_box(collect))]
     pub iprp: Option<ItemPropertiesBox<'a>>,
-    #[iso_box(nested_box(collect))]
-    pub fiin: Option<FDItemInformationBox>,
     #[iso_box(nested_box(collect_unknown))]
     pub unknown_boxes: Vec<UnknownBox<'a>>,
 }
@@ -995,6 +998,8 @@ pub struct ItemPropertiesBox<'a> {
 pub struct ItemPropertyContainerBox<'a> {
     #[iso_box(header)]
     pub header: BoxHeader,
+    #[iso_box(nested_box(collect))]
+    pub etyp: Option<ExtendedTypeBox<'a>>,
     #[iso_box(nested_box(collect))]
     pub brnd: Vec<BrandProperty>,
     #[iso_box(nested_box(collect))]

@@ -1,6 +1,7 @@
 use scuffle_bytes_util::zero_copy::{Deserialize, Serialize};
 
 use super::SampleEntry;
+use crate::IsoSized;
 
 /// Font sample entry
 ///
@@ -31,5 +32,11 @@ impl Serialize for FontSampleEntry {
         W: std::io::Write,
     {
         self.sample_entry.serialize(writer)
+    }
+}
+
+impl IsoSized for FontSampleEntry {
+    fn size(&self) -> usize {
+        self.sample_entry.size()
     }
 }

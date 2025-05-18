@@ -5,7 +5,7 @@ use scuffle_bytes_util::{BitWriter, BytesCow};
 
 use super::SampleEntry;
 use crate::utils::pad_to_u64;
-use crate::{BoxHeader, FullBoxHeader, IsoBox};
+use crate::{BoxHeader, FullBoxHeader, IsoBox, IsoSized};
 
 /// Sound media header
 ///
@@ -86,6 +86,18 @@ impl Serialize for AudioSampleEntry {
     }
 }
 
+impl IsoSized for AudioSampleEntry {
+    fn size(&self) -> usize {
+        self.sample_entry.size()
+            + 8 // reserved1
+            + 2 // channelcount
+            + 2 // samplesize
+            + 2 // pre_defined
+            + 2 // reserved2
+            + 4 // samplerate
+    }
+}
+
 #[derive(IsoBox, Debug)]
 #[iso_box(box_type = b"srat", crate_path = crate)]
 pub struct SamplingRateBox {
@@ -113,10 +125,69 @@ pub struct SamplingRateBox {
 pub struct AudioSampleEntryV1 {
     pub sample_entry: SampleEntry,
     pub entry_version: u16,
+    pub reserved1: [u16; 3],
     pub channelcount: u16,
     pub samplesize: u16,
     pub pre_defined: u16,
+    pub reserved2: u16,
     pub samplerate: u32,
+}
+
+impl<'a> Deserialize<'a> for AudioSampleEntryV1 {
+    fn deserialize<R>(mut reader: R) -> std::io::Result<Self>
+    where
+        R: scuffle_bytes_util::zero_copy::ZeroCopyReader<'a>,
+    {
+        let sample_entry = SampleEntry::deserialize(&mut reader)?;
+        let entry_version = u16::deserialize(&mut reader)?;
+        let reserved1 = <[u16; 3]>::deserialize(&mut reader)?;
+        let channelcount = u16::deserialize(&mut reader)?;
+        let samplesize = u16::deserialize(&mut reader)?;
+        let pre_defined = u16::deserialize(&mut reader)?;
+        let reserved2 = u16::deserialize(&mut reader)?;
+        let samplerate = u32::deserialize(&mut reader)?;
+
+        Ok(Self {
+            sample_entry,
+            entry_version,
+            reserved1,
+            channelcount,
+            samplesize,
+            pre_defined,
+            reserved2,
+            samplerate,
+        })
+    }
+}
+
+impl Serialize for AudioSampleEntryV1 {
+    fn serialize<W>(&self, mut writer: W) -> std::io::Result<()>
+    where
+        W: std::io::Write,
+    {
+        self.sample_entry.serialize(&mut writer)?;
+        self.entry_version.serialize(&mut writer)?;
+        self.reserved1.serialize(&mut writer)?;
+        self.channelcount.serialize(&mut writer)?;
+        self.samplesize.serialize(&mut writer)?;
+        self.pre_defined.serialize(&mut writer)?;
+        self.reserved2.serialize(&mut writer)?;
+        self.samplerate.serialize(&mut writer)?;
+        Ok(())
+    }
+}
+
+impl IsoSized for AudioSampleEntryV1 {
+    fn size(&self) -> usize {
+        self.sample_entry.size()
+            + 2 // entry_version
+            + 2 * 3 // reserved1
+            + 2 // channelcount
+            + 2 // samplesize
+            + 2 // pre_defined
+            + 2 // reserved2
+            + 4 // samplerate
+    }
 }
 
 /// Channel layout
@@ -235,6 +306,25 @@ impl SerializeSeed<u8> for LoudnessBaseBox {
     }
 }
 
+impl LoudnessBaseBox {
+    pub fn size(&self, version: u8) -> usize {
+        let mut size = 0;
+
+        if version >= 2 {
+            size += 1; // loudness_base_count + reserved
+            if self.loudness_info_type.is_some_and(|t| t == 1 || t == 2 || t == 3) {
+                size += 1; // mae_group_ID or mae_group_preset_ID + reserved
+            }
+        } else if version == 1 {
+            size += 1; // loudness_base_count + reserved
+        }
+
+        size += self.loudness_bases.size();
+
+        size
+    }
+}
+
 #[derive(Debug)]
 pub struct LoudnessBase {
     pub eq_set_id: Option<u8>,
@@ -323,6 +413,21 @@ impl SerializeSeed<u8> for LoudnessBase {
     }
 }
 
+impl IsoSized for LoudnessBase {
+    fn size(&self) -> usize {
+        let mut size = 0;
+        if self.eq_set_id.is_some() {
+            size += 1;
+        }
+
+        size += 2; // downmix_id + drc_set_id
+        size += 4; // bs_sample_peak_level + bs_true_peak_level + measurement_system_for_tp + reliability_for_tp
+        size += 1; // measurement_count
+        size += self.measurements.size();
+        size
+    }
+}
+
 #[derive(Debug)]
 pub struct LoudnessBaseMeasurement {
     pub method_definition: u8,
@@ -368,11 +473,19 @@ impl Serialize for LoudnessBaseMeasurement {
     }
 }
 
+impl IsoSized for LoudnessBaseMeasurement {
+    fn size(&self) -> usize {
+        1 // method_definition
+            + 1 // method_value
+            + 1 // measurement_system + reliability
+    }
+}
+
 /// Track loudness info
 ///
 /// ISO/IEC 14496-12 - 12.2.7
 #[derive(Debug, IsoBox)]
-#[iso_box(box_type = b"tlou", skip_impl(deserialize_seed, serialize), crate_path = crate)]
+#[iso_box(box_type = b"tlou", skip_impl(deserialize_seed, serialize, sized), crate_path = crate)]
 pub struct TrackLoudnessInfo {
     #[iso_box(header)]
     pub header: FullBoxHeader,
@@ -402,11 +515,17 @@ impl Serialize for TrackLoudnessInfo {
     }
 }
 
+impl IsoSized for TrackLoudnessInfo {
+    fn size(&self) -> usize {
+        self.header.size() + self.base_box.size(self.header.version)
+    }
+}
+
 /// Album loudness info
 ///
 /// ISO/IEC 14496-12 - 12.2.7
 #[derive(Debug, IsoBox)]
-#[iso_box(box_type = b"alou", skip_impl(deserialize_seed, serialize), crate_path = crate)]
+#[iso_box(box_type = b"alou", skip_impl(deserialize_seed, serialize, sized), crate_path = crate)]
 pub struct AlbumLoudnessInfo {
     #[iso_box(header)]
     pub header: FullBoxHeader,
@@ -433,6 +552,12 @@ impl Serialize for AlbumLoudnessInfo {
         self.header.serialize(&mut writer)?;
         self.base_box.serialize_seed(&mut writer, self.header.version)?;
         Ok(())
+    }
+}
+
+impl IsoSized for AlbumLoudnessInfo {
+    fn size(&self) -> usize {
+        self.header.size() + self.base_box.size(self.header.version)
     }
 }
 

@@ -3,7 +3,7 @@ use std::io;
 use scuffle_bytes_util::zero_copy::{Deserialize, Serialize, ZeroCopyReader};
 
 use super::SampleEntry;
-use crate::{FullBoxHeader, IsoBox};
+use crate::{FullBoxHeader, IsoBox, IsoSized};
 
 /// Hint media header box
 ///
@@ -42,5 +42,11 @@ impl<'a> Deserialize<'a> for HintSampleEntry {
 impl Serialize for HintSampleEntry {
     fn serialize<W: io::Write>(&self, writer: W) -> io::Result<()> {
         self.sample_entry.serialize(writer)
+    }
+}
+
+impl IsoSized for HintSampleEntry {
+    fn size(&self) -> usize {
+        self.sample_entry.size()
     }
 }

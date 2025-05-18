@@ -92,6 +92,26 @@ impl<'a> StringCow<'a> {
             StringCow::Bytes(bytes) => bytes.as_ref(),
         }
     }
+
+    /// Returns the length of this [`StringCow`].
+    pub fn len(&self) -> usize {
+        match self {
+            StringCow::Ref(slice) => slice.len(),
+            StringCow::StaticRef(slice) => slice.len(),
+            StringCow::String(string) => string.len(),
+            StringCow::Bytes(bytes) => bytes.len(),
+        }
+    }
+
+    /// Returns `true` if this [`StringCow`] is empty.
+    pub fn is_empty(&self) -> bool {
+        match self {
+            Self::Ref(slice) => slice.is_empty(),
+            Self::StaticRef(slice) => slice.is_empty(),
+            Self::String(string) => string.is_empty(),
+            Self::Bytes(bytes) => bytes.is_empty(),
+        }
+    }
 }
 
 impl PartialEq<str> for StringCow<'_> {

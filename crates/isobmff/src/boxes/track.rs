@@ -3,7 +3,7 @@
 use scuffle_bytes_util::zero_copy::{Deserialize, DeserializeSeed, Serialize};
 
 use super::{Brand, EditBox, MediaBox, MetaBox, UserDataBox};
-use crate::{BoxHeader, FullBoxHeader, IsoBox, UnknownBox};
+use crate::{BoxHeader, FullBoxHeader, IsoBox, IsoSized, UnknownBox};
 
 /// Track box
 ///
@@ -37,7 +37,7 @@ pub struct TrackBox<'a> {
 ///
 /// ISO/IEC 14496-12 - 8.3.2
 #[derive(Debug, IsoBox)]
-#[iso_box(box_type = b"tkhd", skip_impl(deserialize_seed, serialize), crate_path = crate)]
+#[iso_box(box_type = b"tkhd", skip_impl(deserialize_seed, serialize, sized), crate_path = crate)]
 pub struct TrackHeaderBox {
     #[iso_box(header)]
     pub header: FullBoxHeader,
@@ -150,6 +150,34 @@ impl Serialize for TrackHeaderBox {
         self.height.serialize(&mut writer)?;
 
         Ok(())
+    }
+}
+
+impl IsoSized for TrackHeaderBox {
+    fn size(&self) -> usize {
+        let mut size = self.header.size();
+        if self.header.version == 1 {
+            size += 8 + 8; // creation_time, modification_time
+        } else {
+            size += 4 + 4; // creation_time, modification_time
+        }
+        size += 4; // track_id
+        size += 4; // reserved1
+        if self.header.version == 1 {
+            size += 8; // duration
+        } else {
+            size += 4; // duration
+        }
+        size += 8; // reserved2
+        size += 2; // layer
+        size += 2; // alternate_group
+        size += 2; // volume
+        size += 2; // reserved3
+        size += self.matrix.size(); // matrix
+        size += 4; // width
+        size += 4; // height
+
+        size
     }
 }
 

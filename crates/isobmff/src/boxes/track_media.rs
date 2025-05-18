@@ -8,7 +8,7 @@ use super::{
     VideoMediaHeaderBox, VolumetricVisualMediaHeaderBox,
 };
 use crate::common_types::Utf8String;
-use crate::{BoxHeader, FullBoxHeader, IsoBox, Langauge, UnknownBox};
+use crate::{BoxHeader, FullBoxHeader, IsoBox, IsoSized, Langauge, UnknownBox};
 
 /// Media box
 ///
@@ -34,7 +34,7 @@ pub struct MediaBox<'a> {
 ///
 /// ISO/IEC 14496-12 - 8.4.2
 #[derive(Debug, IsoBox)]
-#[iso_box(box_type = b"mdhd", skip_impl(deserialize_seed, serialize), crate_path = crate)]
+#[iso_box(box_type = b"mdhd", skip_impl(deserialize_seed, serialize, sized), crate_path = crate)]
 pub struct MediaHeaderBox {
     #[iso_box(header)]
     pub header: FullBoxHeader,
@@ -109,6 +109,20 @@ impl Serialize for MediaHeaderBox {
     }
 }
 
+impl IsoSized for MediaHeaderBox {
+    fn size(&self) -> usize {
+        let mut size = self.header.size();
+        if self.header.version == 1 {
+            size += 8 + 8 + 4 + 8; // creation_time, modification_time, timescale, duration
+        } else {
+            size += 4 + 4 + 4 + 4; // creation_time, modification_time, timescale, duration
+        }
+        size += self.language.size(); // language
+        size += 2; // pre_defined
+        size
+    }
+}
+
 nutype_enum! {
     pub enum HandlerType([u8; 4]) {
         Null = *b"null",
@@ -124,6 +138,12 @@ nutype_enum! {
         Font = *b"fdsm",
         VolumetricVisual = *b"volv",
         Haptic = *b"hapt",
+    }
+}
+
+impl IsoSized for HandlerType {
+    fn size(&self) -> usize {
+        4
     }
 }
 

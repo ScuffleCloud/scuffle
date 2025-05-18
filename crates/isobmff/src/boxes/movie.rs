@@ -3,7 +3,7 @@
 use scuffle_bytes_util::zero_copy::{Deserialize, DeserializeSeed, Serialize};
 
 use super::{MetaBox, MovieExtendsBox, TrackBox, UserDataBox};
-use crate::{BoxHeader, FullBoxHeader, IsoBox, UnknownBox};
+use crate::{BoxHeader, FullBoxHeader, IsoBox, IsoSized, UnknownBox};
 
 /// Movie box
 ///
@@ -31,7 +31,7 @@ pub struct MovieBox<'a> {
 ///
 /// ISO/IEC 14496-12 - 8.2.2
 #[derive(Debug, IsoBox)]
-#[iso_box(box_type = b"mvhd", skip_impl(deserialize_seed, serialize), crate_path = crate)]
+#[iso_box(box_type = b"mvhd", skip_impl(deserialize_seed, serialize, sized), crate_path = crate)]
 pub struct MovieHeaderBox {
     #[iso_box(header)]
     pub header: FullBoxHeader,
@@ -133,5 +133,24 @@ impl Serialize for MovieHeaderBox {
         self.next_track_id.serialize(writer)?;
 
         Ok(())
+    }
+}
+
+impl IsoSized for MovieHeaderBox {
+    fn size(&self) -> usize {
+        let mut size = self.header.size();
+        if self.header.version == 1 {
+            size += 8 + 8 + 4 + 8; // creation_time, modification_time, timescale, duration
+        } else {
+            size += 4 + 4 + 4 + 4; // creation_time, modification_time, timescale, duration
+        }
+        size += 4 // rate
+            + 2 // volume
+            + 2 // reserved1
+            + 8 // reserved2
+            + self.matrix.size()
+            + self.pre_defined.size()
+            + 4; // next_track_id
+        size
     }
 }

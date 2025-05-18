@@ -91,26 +91,6 @@ impl Serialize for char {
     }
 }
 
-impl<'a> Deserialize<'a> for () {
-    fn deserialize<R>(_reader: R) -> io::Result<Self>
-    where
-        R: ZeroCopyReader<'a>,
-    {
-        // noop
-        Ok(())
-    }
-}
-
-impl Serialize for () {
-    fn serialize<W>(&self, _writer: W) -> io::Result<()>
-    where
-        W: std::io::Write,
-    {
-        // noop
-        Ok(())
-    }
-}
-
 impl<'a> Deserialize<'a> for f32 {
     fn deserialize<R: ZeroCopyReader<'a>>(mut reader: R) -> io::Result<Self> {
         reader.as_std().read_f32::<byteorder::BigEndian>()

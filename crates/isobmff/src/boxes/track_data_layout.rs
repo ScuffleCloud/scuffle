@@ -4,7 +4,7 @@ use std::{io, iter};
 use scuffle_bytes_util::zero_copy::{Deserialize, DeserializeSeed, Serialize, SerializeSeed, U24Be, ZeroCopyReader};
 use scuffle_bytes_util::{BytesCow, IoResultExt};
 
-use crate::{BoxHeader, BoxHeaderProperties, FullBoxHeader, IsoBox, UnknownBox, Utf8String};
+use crate::{BoxHeader, BoxHeaderProperties, FullBoxHeader, IsoBox, IsoSized, UnknownBox, Utf8String};
 
 /// Data information box
 ///
@@ -22,11 +22,37 @@ pub struct DataInformationBox<'a> {
 ///
 /// ISO/IEC 14496-12 - 8.7.2
 #[derive(Debug, IsoBox)]
-#[iso_box(box_type = b"url ", crate_path = crate)]
+#[iso_box(box_type = b"url ", skip_impl(deserialize_seed, serialize), crate_path = crate)]
 pub struct DataEntryUrlBox {
     #[iso_box(header)]
     pub header: FullBoxHeader,
-    pub location: Utf8String,
+    // The official spec says that this field is not optional but I found files that don't have it (e.g. assets/avc_aac.mp4)
+    pub location: Option<Utf8String>,
+}
+
+impl<'a> DeserializeSeed<'a, FullBoxHeader> for DataEntryUrlBox {
+    fn deserialize_seed<R>(mut reader: R, seed: FullBoxHeader) -> io::Result<Self>
+    where
+        R: ZeroCopyReader<'a>,
+    {
+        let location = Utf8String::deserialize(&mut reader).eof_to_none()?;
+
+        Ok(Self { header: seed, location })
+    }
+}
+
+impl Serialize for DataEntryUrlBox {
+    fn serialize<W>(&self, mut writer: W) -> io::Result<()>
+    where
+        W: std::io::Write,
+    {
+        self.header.serialize(&mut writer)?;
+        if let Some(location) = &self.location {
+            location.serialize(&mut writer)?;
+        }
+
+        Ok(())
+    }
 }
 
 /// Data entry urn box
@@ -208,6 +234,12 @@ impl Serialize for SampleToChunkBoxEntry {
     }
 }
 
+impl IsoSized for SampleToChunkBoxEntry {
+    fn size(&self) -> usize {
+        4 + 4 + 4 // 3 u32s
+    }
+}
+
 /// Chunk offset box
 ///
 /// ISO/IEC 14496-12 - 8.7.5
@@ -279,11 +311,17 @@ impl From<PaddingBitsBoxEntry> for u8 {
     }
 }
 
+impl IsoSized for PaddingBitsBoxEntry {
+    fn size(&self) -> usize {
+        1
+    }
+}
+
 /// Sub-sample information box
 ///
 /// ISO/IEC 14496-12 - 8.7.7
 #[derive(Debug, IsoBox)]
-#[iso_box(box_type = b"subs", skip_impl(deserialize_seed, serialize), crate_path = crate)]
+#[iso_box(box_type = b"subs", skip_impl(deserialize_seed, serialize, sized), crate_path = crate)]
 pub struct SubSampleInformationBox {
     #[iso_box(header)]
     pub header: FullBoxHeader,
@@ -341,6 +379,12 @@ impl Serialize for SubSampleInformationBox {
     }
 }
 
+impl IsoSized for SubSampleInformationBox {
+    fn size(&self) -> usize {
+        self.header.size() + 4 + self.entries.iter().map(|e| e.size(self.header.version)).sum::<usize>()
+    }
+}
+
 #[derive(Debug)]
 pub struct SubSampleInformationBoxEntry {
     pub sample_delta: u32,
@@ -379,6 +423,12 @@ impl SerializeSeed<u8> for SubSampleInformationBoxEntry {
         }
 
         Ok(())
+    }
+}
+
+impl SubSampleInformationBoxEntry {
+    pub fn size(&self, version: u8) -> usize {
+        4 + 2 + self.subsample_info.iter().map(|s| s.size(version)).sum::<usize>()
     }
 }
 
@@ -428,6 +478,12 @@ impl SerializeSeed<u8> for SubSampleInformationBoxEntrySubSample {
         self.codec_specific_parameters.serialize(&mut writer)?;
 
         Ok(())
+    }
+}
+
+impl SubSampleInformationBoxEntrySubSample {
+    pub fn size(&self, version: u8) -> usize {
+        if version == 1 { 4 + 1 + 1 + 4 } else { 2 + 1 + 1 + 4 }
     }
 }
 
@@ -518,7 +574,7 @@ impl Serialize for SampleAuxiliaryInformationSizesBox<'_> {
 ///
 /// ISO/IEC 14496-12 - 8.7.9
 #[derive(Debug, IsoBox)]
-#[iso_box(box_type = b"saio", skip_impl(deserialize_seed, serialize), crate_path = crate)]
+#[iso_box(box_type = b"saio", skip_impl(deserialize_seed, serialize, sized), crate_path = crate)]
 pub struct SampleAuxiliaryInformationOffsetsBox {
     #[iso_box(header)]
     pub header: FullBoxHeader,
@@ -595,5 +651,22 @@ impl Serialize for SampleAuxiliaryInformationOffsetsBox {
         }
 
         Ok(())
+    }
+}
+
+impl IsoSized for SampleAuxiliaryInformationOffsetsBox {
+    fn size(&self) -> usize {
+        let mut size = self.header.size();
+        if (*self.header.flags & 0b1) == 1 {
+            size += 4; // aux_info_type
+            size += 4; // aux_info_type_parameter
+        }
+        size += 4; // entry_count
+        size += if self.header.version == 0 {
+            4 * self.offset.len() // u32
+        } else {
+            8 * self.offset.len() // u64
+        };
+        size
     }
 }

@@ -173,3 +173,16 @@ where
         Ok(result)
     }
 }
+
+#[cfg(test)]
+#[cfg_attr(all(test, coverage_nightly), coverage(off))]
+mod tests {
+    use super::{Slice, ZeroCopyReader};
+
+    #[test]
+    fn take_and_read_to_end() {
+        let data = b"Hello, world!";
+        let mut reader = Slice::from(&data[..]).take(5);
+        assert_eq!(reader.try_read_to_end().unwrap(), b"Hello");
+    }
+}

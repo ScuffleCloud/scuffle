@@ -2,7 +2,7 @@ use scuffle_bytes_util::BytesCow;
 use scuffle_bytes_util::zero_copy::{Deserialize, Serialize};
 
 use super::{BitRateBox, SampleEntry};
-use crate::{BoxHeader, FullBoxHeader, IsoBox, UnknownBox, Utf8List, Utf8String};
+use crate::{BoxHeader, FullBoxHeader, IsoBox, IsoSized, UnknownBox, Utf8List, Utf8String};
 
 /// Metadata sample entry
 ///
@@ -33,6 +33,12 @@ impl Serialize for MetaDataSampleEntry {
         W: std::io::Write,
     {
         self.sample_entry.serialize(writer)
+    }
+}
+
+impl IsoSized for MetaDataSampleEntry {
+    fn size(&self) -> usize {
+        self.sample_entry.size()
     }
 }
 

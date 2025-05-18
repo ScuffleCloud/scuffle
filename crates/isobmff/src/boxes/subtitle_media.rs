@@ -1,7 +1,7 @@
 use scuffle_bytes_util::zero_copy::{Deserialize, Serialize, ZeroCopyReader};
 
 use super::{BitRateBox, SampleEntry, TextConfigBox};
-use crate::{BoxHeader, FullBoxHeader, IsoBox, UnknownBox, Utf8List, Utf8String};
+use crate::{BoxHeader, FullBoxHeader, IsoBox, IsoSized, UnknownBox, Utf8List, Utf8String};
 
 /// Subtitle media header box
 ///
@@ -40,6 +40,12 @@ impl Serialize for SubtitleSampleEntry {
         W: std::io::Write,
     {
         self.sample_entry.serialize(writer)
+    }
+}
+
+impl IsoSized for SubtitleSampleEntry {
+    fn size(&self) -> usize {
+        self.sample_entry.size()
     }
 }
 

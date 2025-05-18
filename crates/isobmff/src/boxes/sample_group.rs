@@ -3,13 +3,13 @@ use std::io;
 use scuffle_bytes_util::zero_copy::{Deserialize, DeserializeSeed, Serialize, SerializeSeed, ZeroCopyReader};
 use scuffle_bytes_util::{BitWriter, IoResultExt};
 
-use crate::{FullBoxHeader, IsoBox};
+use crate::{FullBoxHeader, IsoBox, IsoSized};
 
 /// Sample to group box
 ///
 /// ISO/IEC 14496-12 - 8.9.2
 #[derive(Debug, IsoBox)]
-#[iso_box(box_type = b"sbgp", skip_impl(deserialize_seed, serialize), crate_path = crate)]
+#[iso_box(box_type = b"sbgp", skip_impl(deserialize_seed, serialize, sized), crate_path = crate)]
 pub struct SampleToGroupBox {
     #[iso_box(header)]
     pub header: FullBoxHeader,
@@ -52,6 +52,8 @@ impl Serialize for SampleToGroupBox {
     where
         W: std::io::Write,
     {
+        self.header.serialize(&mut writer)?;
+
         self.grouping_type.serialize(&mut writer)?;
         if self.header.version == 1 {
             self.grouping_type_parameter
@@ -68,6 +70,19 @@ impl Serialize for SampleToGroupBox {
         }
 
         Ok(())
+    }
+}
+
+impl IsoSized for SampleToGroupBox {
+    fn size(&self) -> usize {
+        let mut size = self.header.size();
+        size += 4; // grouping_type
+        if self.header.version == 1 {
+            size += 4; // grouping_type_parameter
+        }
+        size += 4; // entry_count
+        size += self.entries.size();
+        size
     }
 }
 
@@ -100,11 +115,17 @@ impl Serialize for SampleToGroupBoxEntry {
     }
 }
 
+impl IsoSized for SampleToGroupBoxEntry {
+    fn size(&self) -> usize {
+        4 + 4 // sample_count + group_description_index
+    }
+}
+
 /// Sample group description box
 ///
 /// ISO/IEC 14496-12 - 8.9.3
 #[derive(Debug, IsoBox)]
-#[iso_box(box_type = b"sgpd", skip_impl(deserialize_seed, serialize), crate_path = crate)]
+#[iso_box(box_type = b"sgpd", skip_impl(deserialize_seed, serialize, sized), crate_path = crate)]
 pub struct SampleGroupDescriptionBox {
     #[iso_box(header)]
     pub header: FullBoxHeader,
@@ -183,6 +204,22 @@ impl Serialize for SampleGroupDescriptionBox {
     }
 }
 
+impl IsoSized for SampleGroupDescriptionBox {
+    fn size(&self) -> usize {
+        let mut size = self.header.size();
+        size += 4; // grouping_type
+        if self.header.version >= 1 {
+            size += 4; // default_length
+        }
+        if self.header.version >= 2 {
+            size += 4; // default_group_description_index
+        }
+        size += 4; // entry_count
+        size += self.entries.iter().map(|entry| entry.size(self)).sum::<usize>();
+        size
+    }
+}
+
 #[derive(Debug)]
 pub struct SampleGroupDescriptionEntry {
     pub description_length: Option<u32>,
@@ -196,9 +233,11 @@ impl<'a> DeserializeSeed<'a, ([u8; 4], Option<u32>)> for SampleGroupDescriptionE
     {
         let (grouping_type, default_length) = seed;
 
-        let description_length = default_length
-            .and_then(|default_length| (default_length == 0).then_some(u32::deserialize(&mut reader)))
-            .transpose()?;
+        let description_length = if default_length.is_some_and(|l| l == 0) {
+            Some(u32::deserialize(&mut reader)?)
+        } else {
+            None
+        };
 
         let sample_group_description_entry = SampleGroupDescriptionEntryType::deserialize_seed(&mut reader, grouping_type)?;
 
@@ -222,6 +261,17 @@ impl SerializeSeed<&SampleGroupDescriptionBox> for SampleGroupDescriptionEntry {
         self.sample_group_description_entry.serialize(&mut writer)?;
 
         Ok(())
+    }
+}
+
+impl SampleGroupDescriptionEntry {
+    pub fn size(&self, parent: &SampleGroupDescriptionBox) -> usize {
+        let mut size = 0;
+        if parent.header.version >= 1 && parent.default_length.is_some_and(|l| l == 0) {
+            size += 4; // description_length
+        }
+        size += self.sample_group_description_entry.size();
+        size
     }
 }
 
@@ -321,6 +371,12 @@ impl Serialize for AlternativeStartupEntryNums {
     }
 }
 
+impl IsoSized for AlternativeStartupEntryNums {
+    fn size(&self) -> usize {
+        2 + 2 // num_output_samples + num_total_samples
+    }
+}
+
 #[derive(Debug)]
 pub struct RateShareEntryOperationPoint {
     pub target_rate_share: u16,
@@ -347,11 +403,21 @@ impl Serialize for RateShareEntryOperationPoint {
     where
         W: std::io::Write,
     {
-        self.target_rate_share.serialize(&mut writer)?;
         if let Some(available_bitrate) = &self.available_bitrate {
             available_bitrate.serialize(&mut writer)?;
         }
+        self.target_rate_share.serialize(&mut writer)?;
         Ok(())
+    }
+}
+
+impl IsoSized for RateShareEntryOperationPoint {
+    fn size(&self) -> usize {
+        if self.available_bitrate.is_some() {
+            4 + 2 // available_bitrate + target_rate_share
+        } else {
+            2 // target_rate_share
+        }
     }
 }
 
@@ -595,11 +661,31 @@ impl Serialize for SampleGroupDescriptionEntryType {
     }
 }
 
+impl IsoSized for SampleGroupDescriptionEntryType {
+    fn size(&self) -> usize {
+        match self {
+            Self::RollRecoveryEntry { .. } => 2, // roll_distance
+            Self::AlternativeStartupEntry { sample_offset, nums, .. } => 2 + 2 + sample_offset.size() + nums.size(),
+            Self::VisualRandomAccessEntry { .. } => 1, // num_leading_samples_known + num_leading_samples
+            Self::TemporalLevelEntry { .. } => 1,      // level_independently_decodable
+            Self::VisualDRAPEntry { .. } => 4,         // drap_type
+            Self::PixelAspectRatioEntry { .. } => 4 + 4, // h_spacing + v_spacing
+            Self::CleanApertureEntry { .. } => 4 + 4 + 4 + 4 + 4 + 4 + 4 + 4, /* clean_aperture_width_n + clean_aperture_width_d + clean_aperture_height_n + clean_aperture_height_d + horiz_off_n + horiz_off_d + vert_off_n + vert_off_d */
+            Self::AudioPreRollEntry { .. } => 2,                              // roll_distance
+            Self::RateShareEntry { operation_points, .. } => 2 + operation_points.size() + 4 + 4 + 1,
+            Self::SAPEntry { .. } => 1, // dependent_flag + sap_type
+            Self::SampleToMetadataItemEntry { item_id, .. } => {
+                4 + 4 + item_id.size() // meta_box_handler_type + num_items + item_id
+            }
+        }
+    }
+}
+
 /// Compact sample to group box
 ///
 /// ISO/IEC 14496-12 - 8.9.5
 #[derive(Debug, IsoBox)]
-#[iso_box(box_type = b"csgp", skip_impl(deserialize_seed, serialize), crate_path = crate)]
+#[iso_box(box_type = b"csgp", skip_impl(deserialize_seed, serialize, sized), crate_path = crate)]
 pub struct CompactSampleToGroupBox {
     #[iso_box(header)]
     pub header: FullBoxHeader,
@@ -749,20 +835,21 @@ impl<'a> DeserializeSeed<'a, FullBoxHeader> for CompactSampleToGroupBox {
     }
 }
 
+fn f(index: u8) -> u8 {
+    match index {
+        0 => 4,
+        1 => 8,
+        2 => 16,
+        3 => 32,
+        _ => unreachable!(),
+    }
+}
+
 impl Serialize for CompactSampleToGroupBox {
     fn serialize<W>(&self, writer: W) -> io::Result<()>
     where
         W: std::io::Write,
     {
-        fn f(index: u8) -> u8 {
-            match index {
-                0 => 4,
-                1 => 8,
-                2 => 16,
-                3 => 32,
-                _ => unreachable!(),
-            }
-        }
         let flags = CompactSampleToGroupBoxFlags::from(*self.header.flags);
 
         let mut bit_writer = BitWriter::new(writer);
@@ -791,6 +878,27 @@ impl Serialize for CompactSampleToGroupBox {
         bit_writer.align()?;
 
         Ok(())
+    }
+}
+
+impl IsoSized for CompactSampleToGroupBox {
+    fn size(&self) -> usize {
+        let flags = CompactSampleToGroupBoxFlags::from(*self.header.flags);
+
+        let mut size = self.header.size();
+        size += 4; // grouping_type
+        if self.grouping_type_parameter.is_some() {
+            size += 4; // grouping_type_parameter
+        }
+        size += 4; // pattern_count
+
+        let mut bits = 0;
+        bits += (f(flags.pattern_size_code) + f(flags.count_size_code)) * self.patterns.len() as u8;
+        for j in &self.sample_group_description_index {
+            bits += f(flags.index_size_code) * j.len() as u8;
+        }
+        size += (bits as usize).div_ceil(8);
+        size
     }
 }
 

@@ -1,17 +1,19 @@
-use scuffle_bytes_util::zero_copy::{Deserialize, DeserializeSeed};
+use std::fmt::Debug;
+
+use scuffle_bytes_util::zero_copy::{Deserialize, DeserializeSeed, Serialize};
 
 use crate::boxes::{
     ExtendedTypeBox, FileTypeBox, IdentifiedMediaDataBox, MediaDataBox, MetaBox, MovieBox, MovieFragmentBox,
     MovieFragmentRandomAccessBox, OriginalFileTypeBox, ProducerReferenceTimeBox, ProgressiveDownloadInfoBox,
     SegmentIndexBox, SegmentTypeBox, SubsegmentIndexBox,
 };
-use crate::{IsoBox, UnknownBox};
+use crate::{BoxHeaderProperties, BoxSize, BoxType, IsoBox, IsoSized, UnknownBox};
 
 #[derive(IsoBox, Debug)]
 #[iso_box(box_type = b"root", skip_impl(deserialize), crate_path = crate)] // The box type does not matter here
 pub struct IsobmffFile<'a> {
     #[iso_box(header)]
-    pub empty_header: (),
+    pub empty_header: EmptyHeader,
     #[iso_box(nested_box)]
     pub ftyp: FileTypeBox,
     #[iso_box(nested_box(collect))]
@@ -49,7 +51,55 @@ impl<'a> Deserialize<'a> for IsobmffFile<'a> {
     where
         R: scuffle_bytes_util::zero_copy::ZeroCopyReader<'a>,
     {
-        <Self as DeserializeSeed<()>>::deserialize_seed(reader, ())
+        Self::deserialize_seed(reader, EmptyHeader::default())
+    }
+}
+
+#[derive(Clone)]
+pub struct EmptyHeader {
+    box_size: BoxSize,
+}
+
+impl Debug for EmptyHeader {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        f.debug_tuple("EmptyHeader").finish()
+    }
+}
+
+impl Serialize for EmptyHeader {
+    fn serialize<W>(&self, _writer: W) -> std::io::Result<()>
+    where
+        W: std::io::Write,
+    {
+        Ok(())
+    }
+}
+
+impl Default for EmptyHeader {
+    fn default() -> Self {
+        Self {
+            box_size: BoxSize::ToEnd,
+        }
+    }
+}
+
+impl IsoSized for EmptyHeader {
+    fn size(&self) -> usize {
+        0
+    }
+}
+
+impl BoxHeaderProperties for EmptyHeader {
+    fn box_size(&self) -> BoxSize {
+        self.box_size
+    }
+
+    fn box_size_mut(&mut self) -> &mut BoxSize {
+        &mut self.box_size
+    }
+
+    fn box_type(&self) -> BoxType {
+        BoxType::FourCc(*b"root")
     }
 }
 
@@ -58,15 +108,24 @@ impl<'a> Deserialize<'a> for IsobmffFile<'a> {
 mod tests {
     use std::path::PathBuf;
 
-    use scuffle_bytes_util::zero_copy::Deserialize;
+    use scuffle_bytes_util::zero_copy::{Deserialize, Serialize};
 
     use super::IsobmffFile;
+    use crate::IsoSized;
 
     #[test]
     fn avc_aac_sample() {
         let dir = PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("../../assets");
         let data = std::fs::read(dir.join("avc_aac.mp4").to_str().unwrap()).unwrap();
         let mut reader = scuffle_bytes_util::zero_copy::Slice::from(&data[..]);
+        let file = IsobmffFile::deserialize(&mut reader).unwrap();
+        insta::assert_debug_snapshot!(file);
+        assert_eq!(file.size(), data.len());
+
+        let mut out_data = Vec::new();
+        file.serialize(&mut out_data).unwrap();
+
+        let mut reader = scuffle_bytes_util::zero_copy::Slice::from(&out_data[..]);
         let file = IsobmffFile::deserialize(&mut reader).unwrap();
         insta::assert_debug_snapshot!(file);
     }

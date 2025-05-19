@@ -1,6 +1,6 @@
 ---
 source: crates/isobmff/src/file.rs
-expression: file
+expression: og_file
 snapshot_kind: text
 ---
 IsobmffFile {
@@ -29,7 +29,7 @@ IsobmffFile {
     moov: MovieBox {
         header: BoxHeader {
             size: Short(
-                6303,
+                6286,
             ),
             box_type: FourCc(
                 "moov",
@@ -84,7 +84,7 @@ IsobmffFile {
             TrackBox {
                 header: BoxHeader {
                     size: Short(
-                        2708,
+                        2692,
                     ),
                     box_type: FourCc(
                         "trak",
@@ -175,7 +175,7 @@ IsobmffFile {
                 mdia: MediaBox {
                     header: BoxHeader {
                         size: Short(
-                            2572,
+                            2556,
                         ),
                         box_type: FourCc(
                             "mdia",
@@ -239,7 +239,7 @@ IsobmffFile {
                     minf: MediaInformationBox {
                         header: BoxHeader {
                             size: Short(
-                                2483,
+                                2467,
                             ),
                             box_type: FourCc(
                                 "minf",
@@ -327,7 +327,7 @@ IsobmffFile {
                         stbl: SampleTableBox {
                             header: BoxHeader {
                                 size: Short(
-                                    2419,
+                                    2403,
                                 ),
                                 box_type: FourCc(
                                     "stbl",
@@ -391,7 +391,7 @@ IsobmffFile {
                                     header: FullBoxHeader {
                                         header: BoxHeader {
                                             size: Short(
-                                                976,
+                                                944,
                                             ),
                                             box_type: FourCc(
                                                 "ctts",
@@ -402,8 +402,8 @@ IsobmffFile {
                                             0,
                                         ),
                                     },
-                                    entry_count: 120,
-                                    entries.len: 120,
+                                    entry_count: 116,
+                                    entries.len: 116,
                                 },
                             ),
                             cslg: None,
@@ -473,7 +473,7 @@ IsobmffFile {
                                     header: FullBoxHeader {
                                         header: BoxHeader {
                                             size: Short(
-                                                20,
+                                                36,
                                             ),
                                             box_type: FourCc(
                                                 "stss",
@@ -484,9 +484,13 @@ IsobmffFile {
                                             0,
                                         ),
                                     },
-                                    entry_count: 1,
+                                    entry_count: 5,
                                     sample_number: [
                                         1,
+                                        31,
+                                        61,
+                                        91,
+                                        121,
                                     ],
                                 },
                             ),
@@ -535,7 +539,7 @@ IsobmffFile {
                     modification_time: 0,
                     track_id: 2,
                     reserved1: 0,
-                    duration: 4643,
+                    duration: 4642,
                     reserved2: 0,
                     layer: 0,
                     alternate_group: 1,
@@ -625,7 +629,7 @@ IsobmffFile {
                         creation_time: 0,
                         modification_time: 0,
                         timescale: 44100,
-                        duration: 204736,
+                        duration: 205736,
                         language: Langauge(
                             [
                                 21,
@@ -808,7 +812,7 @@ IsobmffFile {
                                     },
                                     TimeToSampleBoxEntry {
                                         sample_count: 1,
-                                        sample_delta: 960,
+                                        sample_delta: 936,
                                     },
                                 ],
                             },
@@ -967,7 +971,7 @@ IsobmffFile {
             UserDataBox {
                 header: BoxHeader {
                     size: Short(
-                        98,
+                        97,
                     ),
                     box_type: FourCc(
                         "udta",
@@ -982,13 +986,13 @@ IsobmffFile {
                     UnknownBox {
                         header: BoxHeader {
                             size: Short(
-                                90,
+                                89,
                             ),
                             box_type: FourCc(
                                 "meta",
                             ),
                         },
-                        data.len: 82,
+                        data.len: 81,
                     },
                 ],
             },
@@ -999,13 +1003,13 @@ IsobmffFile {
         MediaDataBox {
             header: BoxHeader {
                 size: Short(
-                    832486,
+                    785003,
                 ),
                 box_type: FourCc(
                     "mdat",
                 ),
             },
-            data.len: 832478,
+            data.len: 784995,
         },
     ],
     imda: [],

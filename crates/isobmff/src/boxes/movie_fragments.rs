@@ -331,7 +331,8 @@ impl IsoSized for TrackRunBox {
     fn size(&self) -> usize {
         let flags = TrFlags::from_bits_truncate(*self.header.flags);
 
-        let mut size = self.header.size() + 8; // header + sample_count
+        let mut size = self.header.size(); // header
+        size += 4; // sample_count
         if flags.contains(TrFlags::DataOffsetPresent) {
             size += 4; // data_offset
         }
@@ -540,9 +541,9 @@ impl<'a> DeserializeSeed<'a, FullBoxHeader> for TrackFragmentRandomAccessBox {
             };
 
             // The length of the following fields is bound to 3 bytes because the length fields are all 2 bits
-            let traf_number = pad_cow_to_u32(reader.try_read(length_size_of_traf_num as usize)?);
-            let trun_number = pad_cow_to_u32(reader.try_read(length_size_of_trun_num as usize)?);
-            let sample_number = pad_cow_to_u32(reader.try_read(length_size_of_sample_num as usize)?);
+            let traf_number = pad_cow_to_u32(reader.try_read(length_size_of_traf_num as usize + 1)?);
+            let trun_number = pad_cow_to_u32(reader.try_read(length_size_of_trun_num as usize + 1)?);
+            let sample_number = pad_cow_to_u32(reader.try_read(length_size_of_sample_num as usize + 1)?);
 
             entries.push(TrackFragmentRandomAccessBoxEntry {
                 time,
@@ -595,19 +596,7 @@ impl IsoSized for TrackFragmentRandomAccessBox {
         size += 4; // track_id
         size += 4; // length_size_of_traf_num + length_size_of_trun_num + length_size_of_sample_num
         size += 4; // number_of_entry
-
-        let mut entry_size = 0;
-        if self.header.version == 1 {
-            entry_size += 8; // time
-            entry_size += 8; // moof_offset
-        } else {
-            entry_size += 4; // time
-            entry_size += 4; // moof_offset
-        }
-        entry_size += self.length_size_of_traf_num as usize;
-        entry_size += self.length_size_of_trun_num as usize;
-        entry_size += self.length_size_of_sample_num as usize;
-        size += self.entries.len() * entry_size;
+        size += self.entries.iter().map(|e| e.size(self)).sum::<usize>();
 
         size
     }
@@ -642,6 +631,23 @@ impl SerializeSeed<&TrackFragmentRandomAccessBox> for TrackFragmentRandomAccessB
         bit_writer.write_bits(self.sample_number as u64, (seed.length_size_of_sample_num + 1) * 8)?;
 
         Ok(())
+    }
+}
+
+impl TrackFragmentRandomAccessBoxEntry {
+    pub fn size(&self, parent: &TrackFragmentRandomAccessBox) -> usize {
+        let mut size = 0;
+        if parent.header.version == 1 {
+            size += 8;
+            size += 8;
+        } else {
+            size += 4;
+            size += 4;
+        }
+        size += parent.length_size_of_traf_num as usize + 1;
+        size += parent.length_size_of_trun_num as usize + 1;
+        size += parent.length_size_of_sample_num as usize + 1;
+        size
     }
 }
 

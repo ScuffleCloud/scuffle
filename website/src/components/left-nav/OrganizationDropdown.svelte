@@ -31,7 +31,7 @@
 
         .dropdown-title {
             font-size: 0.75rem;
-            color: var(--color-brown-600);
+            color: var(--colors-brown-600);
             margin-bottom: 0.5rem;
             font-weight: 600;
             padding-left: 0.25rem;
@@ -70,7 +70,7 @@
                     .org-name-dropdown {
                         font-size: 0.875rem;
                         font-weight: 500;
-                        color: var(--color-brown-600);
+                        color: var(--colors-brown-600);
                     }
                 }
             }

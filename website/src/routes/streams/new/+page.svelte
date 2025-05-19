@@ -11,7 +11,7 @@
 
 <style>
     .page-bg {
-        background-color: var(--color-light100);
+        background-color: var(--colors-light100);
         margin: 0 auto;
         width: 100%;
         max-width: 1200px;

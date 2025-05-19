@@ -118,7 +118,7 @@
     }
 
     .option-box.selected {
-        border-color: var(--color-orange500);
+        border-color: var(--colors-orange500);
         background-color: rgba(255, 210, 128, 0.1);
     }
 
@@ -137,7 +137,7 @@
         display: block;
         margin: 0 auto;
         padding: 0.75rem 2rem;
-        background-color: var(--color-orange500);
+        background-color: var(--colors-orange500);
         border-radius: 4px;
         font-weight: 600;
         cursor: pointer;

@@ -58,7 +58,7 @@
         position: relative;
         display: flex;
         min-height: 100vh;
-        background-color: var(--color-light100);
+        background-color: var(--colors-light100);
     }
 
     main {

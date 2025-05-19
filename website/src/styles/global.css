@@ -1,12 +1,12 @@
 /* Put */
 :root {
     --font-body: 'Archivo Variable', sans-serif;
-    --color-text: var(--color-brown800);
+    --color-text: var(--colors-brown800);
     font-size: 16px;
 
     /* Default font */
     font-family: var(--font-body);
-    color: var(--color-text);
+    color: var(--colors-text);
     --layout-width: 70rem;
     --layout-padding: 2rem;
     --mobile-width: 768px;
@@ -55,7 +55,7 @@ p {
 }
 
 a {
-    color: var(--color-text);
+    color: var(--colors-text);
     text-decoration: none;
 }
 

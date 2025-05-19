@@ -149,7 +149,7 @@
         }
 
         .credential-section-container {
-            background-color: var(--color-tan700);
+            background-color: var(--colors-tan700);
             border-radius: 0.5rem;
             padding: 0.5rem;
             display: flex;

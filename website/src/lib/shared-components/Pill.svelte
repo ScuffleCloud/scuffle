@@ -60,7 +60,7 @@
         border: 1px solid var(--pill-border-color);
         width: var(--pill-width);
         &[disabled] {
-            color: var(--color);
+            color: var(--colors);
         }
     }
 </style>

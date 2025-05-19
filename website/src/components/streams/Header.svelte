@@ -26,7 +26,7 @@
 
     <div class="create-button-link">
         <button use:melt={$trigger}>
-            <Pill color={theme.colors.orange500} as="div">
+            <Pill color={theme.colors.blue100} as="div">
                 <div class="create-button">
                     Create New
                     <svg
@@ -89,7 +89,7 @@
                 border-radius: 9999px; /* Match pill shape */
 
                 &:focus-visible {
-                    outline: 2px solid var(--color-orange500);
+                    outline: 2px solid var(--colors-orange500);
                     outline-offset: 2px;
                     border-radius: 9999px;
                 }

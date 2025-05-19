@@ -111,7 +111,7 @@
         .breadcrumb {
             font-size: 1.1rem;
             font-weight: 500;
-            color: var(--color-dark100);
+            color: var(--colors-dark100);
         }
 
         .actions {

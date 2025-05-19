@@ -60,14 +60,14 @@
                 min-width: 0;
 
                 .org-name {
-                    color: var(--color-brown-600);
+                    color: var(--colors-brown-600);
                     font-size: 0.875rem;
                     font-weight: 600;
                     line-height: normal;
                 }
 
                 .org-username {
-                    color: var(--color-brown-700);
+                    color: var(--colors-brown-700);
                     font-size: 1rem;
                     font-weight: 700;
                     line-height: normal;

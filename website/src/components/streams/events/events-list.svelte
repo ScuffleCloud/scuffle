@@ -1,17 +1,14 @@
 <script lang="ts">
-    import IconEventsError from '$lib/images/icon-events-error.svelte';
-    import IconEventsNeutral from '$lib/images/icon-events-neutral.svelte';
-    import IconEvents from '$lib/images/icon-events.svelte';
+    import IconEventsHeader from '$lib/images/icon-events-header.svelte';
     import { EVENT_ICONS, type StreamEvent } from './types';
 
     const { events } = $props<{ events: StreamEvent[] }>();
-    console.log(events);
 </script>
 
 <!-- TODO: Implement pagination and send actual events to this -->
 <div class="events-container">
     <div class="events-list-header">
-        <IconEvents />
+        <IconEventsHeader />
         <h2>Events</h2>
     </div>
     <div class="events-list">
@@ -33,10 +30,7 @@
             </div>
         {/each}
     </div>
-    <div class="events-list-pagination">
-        <button>Previous</button>
-        <button>Next</button>
-    </div>
+    <div class="events-list-pagination">1-10 items of 21 available</div>
 </div>
 
 <style>
@@ -60,9 +54,10 @@
             padding: 0.5rem;
             gap: 0.5rem;
             h2 {
-                font-size: 1.25rem;
-                font-weight: 600;
                 color: #1a1a1a;
+                font-size: 1rem;
+                font-weight: 700;
+                line-height: 1.5rem;
             }
         }
 
@@ -102,6 +97,8 @@
                     .event-icon {
                         font-size: 1.25rem;
                         line-height: 1;
+                        display: flex;
+                        align-items: center;
                     }
 
                     .event-text {

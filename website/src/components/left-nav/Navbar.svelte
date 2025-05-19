@@ -28,7 +28,7 @@
             display: flex;
             align-items: center;
             gap: 0.5rem;
-            color: var(--color-brown800);
+            color: var(--colors-brown800);
             font-size: 1.5rem;
             font-weight: 800;
             padding: 1rem;

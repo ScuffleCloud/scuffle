@@ -106,6 +106,7 @@ impl BoxHeaderProperties for EmptyHeader {
 #[cfg(test)]
 #[cfg_attr(all(test, coverage_nightly), coverage(off))]
 mod tests {
+    use std::io;
     use std::path::PathBuf;
 
     use scuffle_bytes_util::zero_copy::{Deserialize, Serialize};
@@ -113,22 +114,60 @@ mod tests {
     use super::IsobmffFile;
     use crate::IsoSized;
 
-    #[test]
-    fn avc_aac_sample() {
+    fn transmux_sample(sample_name: &str, skip_insta: bool) -> io::Result<()> {
+        let test_name = sample_name.split('.').next().unwrap();
+
         let dir = PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("../../assets");
-        let data = std::fs::read(dir.join("avc_aac.mp4").to_str().unwrap()).unwrap();
+        let data = std::fs::read(dir.join(sample_name))?;
         let mut reader = scuffle_bytes_util::zero_copy::Slice::from(&data[..]);
-        let file = IsobmffFile::deserialize(&mut reader).unwrap();
-        insta::assert_debug_snapshot!(file);
-        assert_eq!(file.size(), data.len());
+        let og_file = IsobmffFile::deserialize(&mut reader)?;
+        if !skip_insta {
+            insta::assert_debug_snapshot!(test_name, og_file);
+        }
+        assert_eq!(og_file.size(), data.len());
 
         let mut out_data = Vec::new();
-        file.serialize(&mut out_data).unwrap();
-        // let mut file = std::fs::File::create(dir.join("avc_aac_out.mp4")).unwrap();
-        // file.write_all(&out_data).unwrap();
+        og_file.serialize(&mut out_data)?;
+        assert_eq!(out_data.len(), data.len());
 
         let mut reader = scuffle_bytes_util::zero_copy::Slice::from(&out_data[..]);
-        let file = IsobmffFile::deserialize(&mut reader).unwrap();
-        insta::assert_debug_snapshot!(file);
+        let file = IsobmffFile::deserialize(&mut reader)?;
+        if !skip_insta {
+            insta::assert_debug_snapshot!(test_name, file);
+        }
+
+        Ok(())
+    }
+
+    #[test]
+    fn avc_aac_sample() {
+        transmux_sample("avc_aac.mp4", false).unwrap();
+    }
+
+    #[test]
+    fn avc_aac_large_sample() {
+        transmux_sample("avc_aac_large.mp4", false).unwrap();
+    }
+
+    #[test]
+    fn avc_aac_fragmented_sample() {
+        transmux_sample("avc_aac_fragmented.mp4", false).unwrap();
+    }
+
+    #[test]
+    fn avc_aac_keyframes_sample() {
+        transmux_sample("avc_aac_keyframes.mp4", false).unwrap();
+    }
+
+    #[test]
+    fn hevc_aac_fragmented_sample() {
+        // Skip the insta snapshot because it would be too big
+        transmux_sample("hevc_aac_fragmented.mp4", true).unwrap();
+    }
+
+    #[test]
+    fn av1_aac_fragmented_sample() {
+        // Skip the insta snapshot because it would be too big
+        transmux_sample("av1_aac_fragmented.mp4", true).unwrap();
     }
 }

@@ -1,6 +1,6 @@
 ---
 source: crates/isobmff/src/file.rs
-expression: file
+expression: og_file
 snapshot_kind: text
 ---
 IsobmffFile {

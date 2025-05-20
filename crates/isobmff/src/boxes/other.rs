@@ -10,7 +10,6 @@ use crate::IsoBox;
 #[derive(IsoBox, Debug)]
 #[iso_box(box_type = b"m4ds", crate_path = crate)]
 pub struct MPEG4ExtensionDescriptorsBox<'a> {
-    /// Header of the box.
     /// A descriptor that should be placed in the `ElementaryStreamDescriptor` when this
     /// stream is used in an MPEG-4 systems context. This does not include `SLConfigDescriptor` or
     /// `DecoderConfigDescriptor`, but includes the other descriptors in order to be placed after

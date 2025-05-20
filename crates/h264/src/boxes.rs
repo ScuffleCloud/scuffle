@@ -3,7 +3,7 @@
 //! ISO/IEC 14496-15 - 5.4
 
 use isobmff::boxes::{MPEG4ExtensionDescriptorsBox, VisualSampleEntry};
-use isobmff::{BoxHeader, IsoBox, UnknownBox};
+use isobmff::{IsoBox, UnknownBox};
 
 use crate::AVCDecoderConfigurationRecord;
 
@@ -13,9 +13,6 @@ use crate::AVCDecoderConfigurationRecord;
 #[derive(IsoBox, Debug)]
 #[iso_box(box_type = b"avcC")]
 pub struct AVCConfigurationBox<'a> {
-    /// Header of the box.
-    #[iso_box(header)]
-    pub header: BoxHeader,
     /// The AVC decoder configuration record.
     pub avc_config: AVCDecoderConfigurationRecord<'a>,
 }
@@ -28,9 +25,6 @@ pub struct AVCConfigurationBox<'a> {
 #[derive(IsoBox, Debug)]
 #[iso_box(box_type = b"avc1")]
 pub struct AVCSampleEntry1<'a> {
-    /// Header of the box.
-    #[iso_box(header)]
-    pub header: BoxHeader,
     /// The visual sample entry fields that this box inherits.
     pub visual_sample_entry: VisualSampleEntry,
     /// The AVC configuration box contained in this box.
@@ -50,9 +44,6 @@ pub struct AVCSampleEntry1<'a> {
 #[derive(IsoBox, Debug)]
 #[iso_box(box_type = b"avc2")]
 pub struct AVCSampleEntry2<'a> {
-    /// Header of the box.
-    #[iso_box(header)]
-    pub header: BoxHeader,
     /// The visual sample entry fields that this box inherits.
     pub visual_sample_entry: VisualSampleEntry,
     /// The AVC configuration box contained in this box.
@@ -72,9 +63,6 @@ pub struct AVCSampleEntry2<'a> {
 #[derive(IsoBox, Debug)]
 #[iso_box(box_type = b"avc3")]
 pub struct AVCSampleEntry3<'a> {
-    /// Header of the box.
-    #[iso_box(header)]
-    pub header: BoxHeader,
     /// The visual sample entry fields that this box inherits.
     pub visual_sample_entry: VisualSampleEntry,
     /// The AVC configuration box contained in this box.
@@ -94,9 +82,6 @@ pub struct AVCSampleEntry3<'a> {
 #[derive(IsoBox, Debug)]
 #[iso_box(box_type = b"avc4")]
 pub struct AVCSampleEntry4<'a> {
-    /// Header of the box.
-    #[iso_box(header)]
-    pub header: BoxHeader,
     /// The visual sample entry fields that this box inherits.
     pub visual_sample_entry: VisualSampleEntry,
     /// The AVC configuration box contained in this box.
@@ -116,9 +101,6 @@ pub struct AVCSampleEntry4<'a> {
 #[derive(IsoBox, Debug)]
 #[iso_box(box_type = b"avcp")]
 pub struct AVCParameterSampleEntry<'a> {
-    /// Header of the box.
-    #[iso_box(header)]
-    pub header: BoxHeader,
     /// The visual sample entry fields that this box inherits.
     pub visual_sample_entry: VisualSampleEntry,
     /// The AVC configuration box contained in this box.

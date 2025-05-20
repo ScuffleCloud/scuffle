@@ -13,9 +13,6 @@ use scuffle_bytes_util::zero_copy::{Deserialize, DeserializeSeed, Serialize};
 #[derive(Debug, IsoBox)]
 #[iso_box(box_type = b"Opus")]
 pub struct OpusSampleEntry<'a> {
-    /// The header of the box.
-    #[iso_box(header)]
-    pub header: BoxHeader,
     /// The audio sample entry fields that this box inherits.
     pub sample_entry: AudioSampleEntry,
     /// Contains initializing information for the decoder.
@@ -32,9 +29,6 @@ pub struct OpusSampleEntry<'a> {
 #[derive(Debug, IsoBox)]
 #[iso_box(box_type = b"dOps", skip_impl(deserialize_seed, serialize))]
 pub struct OpusSpecificBox<'a> {
-    /// The header of the box.
-    #[iso_box(header)]
-    pub header: BoxHeader,
     /// Shall be set to 0.
     pub version: u8,
     /// Shall be set to the same value as the *Output Channel Count* field in the
@@ -62,7 +56,7 @@ pub struct OpusSpecificBox<'a> {
 // That's why we have to implement the traits manually here.
 
 impl<'a> DeserializeSeed<'a, BoxHeader> for OpusSpecificBox<'a> {
-    fn deserialize_seed<R>(mut reader: R, seed: BoxHeader) -> std::io::Result<Self>
+    fn deserialize_seed<R>(mut reader: R, _seed: BoxHeader) -> std::io::Result<Self>
     where
         R: scuffle_bytes_util::zero_copy::ZeroCopyReader<'a>,
     {
@@ -86,7 +80,6 @@ impl<'a> DeserializeSeed<'a, BoxHeader> for OpusSpecificBox<'a> {
         };
 
         Ok(Self {
-            header: seed,
             version,
             output_channel_count,
             pre_skip,
@@ -103,7 +96,8 @@ impl Serialize for OpusSpecificBox<'_> {
     where
         W: std::io::Write,
     {
-        self.header.serialize(&mut writer)?;
+        self.serialize_box_header(&mut writer)?;
+
         self.version.serialize(&mut writer)?;
         self.output_channel_count.serialize(&mut writer)?;
         self.pre_skip.serialize(&mut writer)?;

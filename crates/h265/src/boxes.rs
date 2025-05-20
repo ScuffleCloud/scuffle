@@ -3,7 +3,7 @@
 //! ISO/IEC 14496-15 - 8.4
 
 use isobmff::boxes::{MPEG4ExtensionDescriptorsBox, VisualSampleEntry};
-use isobmff::{BoxHeader, IsoBox, UnknownBox};
+use isobmff::{IsoBox, UnknownBox};
 
 use crate::HEVCDecoderConfigurationRecord;
 
@@ -13,9 +13,6 @@ use crate::HEVCDecoderConfigurationRecord;
 #[derive(Debug, IsoBox)]
 #[iso_box(box_type = b"hvcC")]
 pub struct HEVCConfigurationBox<'a> {
-    /// The box header.
-    #[iso_box(header)]
-    pub header: BoxHeader,
     /// The HEVC decoder configuration record contained in this box.
     pub hevc_config: HEVCDecoderConfigurationRecord<'a>,
 }
@@ -26,9 +23,6 @@ pub struct HEVCConfigurationBox<'a> {
 #[derive(Debug, IsoBox)]
 #[iso_box(box_type = b"hvc1")]
 pub struct HEVCSampleEntryHvc1<'a> {
-    /// The box header.
-    #[iso_box(header)]
-    pub header: BoxHeader,
     /// The visual sample entry fields that this box inherits.
     pub sample_entry: VisualSampleEntry,
     /// The HEVC configuration box contained in this box.
@@ -48,9 +42,6 @@ pub struct HEVCSampleEntryHvc1<'a> {
 #[derive(Debug, IsoBox)]
 #[iso_box(box_type = b"hev1")]
 pub struct HEVCSampleEntryHev1<'a> {
-    /// The box header.
-    #[iso_box(header)]
-    pub header: BoxHeader,
     /// The visual sample entry fields that this box inherits.
     pub sample_entry: VisualSampleEntry,
     /// The HEVC configuration box contained in this box.

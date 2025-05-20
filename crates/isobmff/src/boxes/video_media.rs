@@ -12,8 +12,7 @@ use crate::{BoxHeader, FullBoxHeader, IsoBox, IsoSized};
 #[derive(IsoBox, Debug)]
 #[iso_box(box_type = b"vmhd", crate_path = crate)]
 pub struct VideoMediaHeaderBox {
-    #[iso_box(header)]
-    pub header: FullBoxHeader,
+    pub full_header: FullBoxHeader,
     pub graphicsmode: u16,
     pub opcolor: [u16; 3],
 }
@@ -132,8 +131,6 @@ impl IsoSized for VisualSampleEntry {
 #[derive(IsoBox, Debug)]
 #[iso_box(box_type = b"clap", crate_path = crate)]
 pub struct CleanApertureBox {
-    #[iso_box(header)]
-    pub header: BoxHeader,
     pub clean_aperture_width_n: u32,
     pub clean_aperture_width_d: u32,
     pub clean_aperture_height_n: u32,
@@ -150,8 +147,6 @@ pub struct CleanApertureBox {
 #[derive(IsoBox, Debug)]
 #[iso_box(box_type = b"pasp", crate_path = crate)]
 pub struct PixelAspectRatioBox {
-    #[iso_box(header)]
-    pub header: BoxHeader,
     pub h_spacing: u32,
     pub v_spacing: u32,
 }
@@ -162,8 +157,6 @@ pub struct PixelAspectRatioBox {
 #[derive(IsoBox, Debug)]
 #[iso_box(box_type = b"colr", crate_path = crate)]
 pub struct ColourInformationBox<'a> {
-    #[iso_box(header)]
-    pub header: BoxHeader,
     pub colour_info: ColourInformation<'a>,
 }
 
@@ -288,8 +281,6 @@ impl IsoSized for NclxColourInformation {
 #[derive(IsoBox, Debug)]
 #[iso_box(box_type = b"clli", crate_path = crate)]
 pub struct ContentLightLevelBox {
-    #[iso_box(header)]
-    pub header: BoxHeader,
     pub max_content_light_level: u16,
     pub max_pic_average_light_level: u16,
 }
@@ -300,8 +291,6 @@ pub struct ContentLightLevelBox {
 #[derive(IsoBox, Debug)]
 #[iso_box(box_type = b"mdcv", crate_path = crate)]
 pub struct MasteringDisplayColourVolumeBox {
-    #[iso_box(header)]
-    pub header: BoxHeader,
     pub display_primaries: [[u16; 2]; 6],
     pub white_point_x: u16,
     pub white_point_y: u16,
@@ -315,8 +304,6 @@ pub struct MasteringDisplayColourVolumeBox {
 #[derive(Debug, IsoBox)]
 #[iso_box(box_type = b"cclv", skip_impl(deserialize_seed, serialize, sized), crate_path = crate)]
 pub struct ContentColourVolumeBox {
-    #[iso_box(header)]
-    pub header: BoxHeader,
     pub reserved1: bool,
     pub reserved2: bool,
     pub ccv_reserved_zero_2bits: u8,
@@ -327,7 +314,7 @@ pub struct ContentColourVolumeBox {
 }
 
 impl<'a> DeserializeSeed<'a, BoxHeader> for ContentColourVolumeBox {
-    fn deserialize_seed<R>(mut reader: R, seed: BoxHeader) -> std::io::Result<Self>
+    fn deserialize_seed<R>(mut reader: R, _seed: BoxHeader) -> std::io::Result<Self>
     where
         R: scuffle_bytes_util::zero_copy::ZeroCopyReader<'a>,
     {
@@ -365,7 +352,6 @@ impl<'a> DeserializeSeed<'a, BoxHeader> for ContentColourVolumeBox {
         };
 
         Ok(Self {
-            header: seed,
             reserved1,
             reserved2,
             ccv_reserved_zero_2bits,
@@ -383,8 +369,6 @@ impl Serialize for ContentColourVolumeBox {
         W: std::io::Write,
     {
         let mut bit_writer = BitWriter::new(writer);
-
-        self.header.serialize(&mut bit_writer)?;
 
         bit_writer.write_bit(self.reserved1)?;
         bit_writer.write_bit(self.reserved2)?;
@@ -413,7 +397,7 @@ impl Serialize for ContentColourVolumeBox {
 
 impl IsoSized for ContentColourVolumeBox {
     fn size(&self) -> usize {
-        let mut size = self.header.size();
+        let mut size = 0;
         size += 1; // flags
         if let Some(ccv_primaries) = self.ccv_primaries {
             size += ccv_primaries.size();
@@ -427,7 +411,8 @@ impl IsoSized for ContentColourVolumeBox {
         if let Some(ccv_avg_luminance_value) = self.ccv_avg_luminance_value {
             size += ccv_avg_luminance_value.size();
         }
-        size
+
+        Self::add_header_size(size)
     }
 }
 
@@ -437,8 +422,6 @@ impl IsoSized for ContentColourVolumeBox {
 #[derive(IsoBox, Debug)]
 #[iso_box(box_type = b"amve", crate_path = crate)]
 pub struct AmbientViewingEnvironmentBox {
-    #[iso_box(header)]
-    pub header: BoxHeader,
     pub ambient_illuminance: u32,
     pub ambient_light_x: u16,
     pub ambient_light_y: u16,

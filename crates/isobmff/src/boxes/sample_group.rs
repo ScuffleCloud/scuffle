@@ -1,9 +1,9 @@
 use std::io;
 
-use scuffle_bytes_util::zero_copy::{Deserialize, DeserializeSeed, Serialize, SerializeSeed, ZeroCopyReader};
+use scuffle_bytes_util::zero_copy::{Deserialize, DeserializeSeed, Serialize, SerializeSeed, U24Be, ZeroCopyReader};
 use scuffle_bytes_util::{BitWriter, IoResultExt};
 
-use crate::{FullBoxHeader, IsoBox, IsoSized};
+use crate::{BoxHeader, FullBoxHeader, IsoBox, IsoSized};
 
 /// Sample to group box
 ///
@@ -11,21 +11,22 @@ use crate::{FullBoxHeader, IsoBox, IsoSized};
 #[derive(Debug, IsoBox)]
 #[iso_box(box_type = b"sbgp", skip_impl(deserialize_seed, serialize, sized), crate_path = crate)]
 pub struct SampleToGroupBox {
-    #[iso_box(header)]
-    pub header: FullBoxHeader,
+    pub full_header: FullBoxHeader,
     pub grouping_type: [u8; 4],
     pub grouping_type_parameter: Option<u32>,
     pub entry_count: u32,
     pub entries: Vec<SampleToGroupBoxEntry>,
 }
 
-impl<'a> DeserializeSeed<'a, FullBoxHeader> for SampleToGroupBox {
-    fn deserialize_seed<R>(mut reader: R, seed: FullBoxHeader) -> io::Result<Self>
+impl<'a> DeserializeSeed<'a, BoxHeader> for SampleToGroupBox {
+    fn deserialize_seed<R>(mut reader: R, _seed: BoxHeader) -> io::Result<Self>
     where
         R: ZeroCopyReader<'a>,
     {
+        let full_header = FullBoxHeader::deserialize(&mut reader)?;
+
         let grouping_type = <[u8; 4]>::deserialize(&mut reader)?;
-        let grouping_type_parameter = if seed.version == 1 {
+        let grouping_type_parameter = if full_header.version == 1 {
             Some(u32::deserialize(&mut reader)?)
         } else {
             None
@@ -38,7 +39,7 @@ impl<'a> DeserializeSeed<'a, FullBoxHeader> for SampleToGroupBox {
         }
 
         Ok(Self {
-            header: seed,
+            full_header,
             grouping_type,
             grouping_type_parameter,
             entry_count,
@@ -52,10 +53,11 @@ impl Serialize for SampleToGroupBox {
     where
         W: std::io::Write,
     {
-        self.header.serialize(&mut writer)?;
+        self.serialize_box_header(&mut writer)?;
+        self.full_header.serialize(&mut writer)?;
 
         self.grouping_type.serialize(&mut writer)?;
-        if self.header.version == 1 {
+        if self.full_header.version == 1 {
             self.grouping_type_parameter
                 .ok_or(io::Error::new(
                     io::ErrorKind::InvalidData,
@@ -75,14 +77,15 @@ impl Serialize for SampleToGroupBox {
 
 impl IsoSized for SampleToGroupBox {
     fn size(&self) -> usize {
-        let mut size = self.header.size();
+        let mut size = self.full_header.size();
         size += 4; // grouping_type
-        if self.header.version == 1 {
+        if self.full_header.version == 1 {
             size += 4; // grouping_type_parameter
         }
         size += 4; // entry_count
         size += self.entries.size();
-        size
+
+        Self::add_header_size(size)
     }
 }
 
@@ -127,8 +130,7 @@ impl IsoSized for SampleToGroupBoxEntry {
 #[derive(Debug, IsoBox)]
 #[iso_box(box_type = b"sgpd", skip_impl(deserialize_seed, serialize, sized), crate_path = crate)]
 pub struct SampleGroupDescriptionBox {
-    #[iso_box(header)]
-    pub header: FullBoxHeader,
+    pub full_header: FullBoxHeader,
     pub grouping_type: [u8; 4],
     pub default_length: Option<u32>,
     pub default_group_description_index: Option<u32>,
@@ -136,18 +138,20 @@ pub struct SampleGroupDescriptionBox {
     pub entries: Vec<SampleGroupDescriptionEntry>,
 }
 
-impl<'a> DeserializeSeed<'a, FullBoxHeader> for SampleGroupDescriptionBox {
-    fn deserialize_seed<R>(mut reader: R, seed: FullBoxHeader) -> io::Result<Self>
+impl<'a> DeserializeSeed<'a, BoxHeader> for SampleGroupDescriptionBox {
+    fn deserialize_seed<R>(mut reader: R, _seed: BoxHeader) -> io::Result<Self>
     where
         R: ZeroCopyReader<'a>,
     {
+        let full_header = FullBoxHeader::deserialize(&mut reader)?;
+
         let grouping_type = <[u8; 4]>::deserialize(&mut reader)?;
-        let default_length = if seed.version >= 1 {
+        let default_length = if full_header.version >= 1 {
             Some(u32::deserialize(&mut reader)?)
         } else {
             None
         };
-        let default_group_description_index = if seed.version >= 2 {
+        let default_group_description_index = if full_header.version >= 2 {
             Some(u32::deserialize(&mut reader)?)
         } else {
             None
@@ -163,7 +167,7 @@ impl<'a> DeserializeSeed<'a, FullBoxHeader> for SampleGroupDescriptionBox {
         }
 
         Ok(Self {
-            header: seed,
+            full_header,
             grouping_type,
             default_length,
             default_group_description_index,
@@ -178,15 +182,16 @@ impl Serialize for SampleGroupDescriptionBox {
     where
         W: std::io::Write,
     {
-        self.header.serialize(&mut writer)?;
+        self.serialize_box_header(&mut writer)?;
+        self.full_header.serialize(&mut writer)?;
 
         self.grouping_type.serialize(&mut writer)?;
-        if self.header.version >= 1 {
+        if self.full_header.version >= 1 {
             self.default_length
                 .ok_or(io::Error::new(io::ErrorKind::InvalidData, "default_length is required"))?
                 .serialize(&mut writer)?;
         }
-        if self.header.version >= 2 {
+        if self.full_header.version >= 2 {
             self.default_group_description_index
                 .ok_or(io::Error::new(
                     io::ErrorKind::InvalidData,
@@ -206,17 +211,18 @@ impl Serialize for SampleGroupDescriptionBox {
 
 impl IsoSized for SampleGroupDescriptionBox {
     fn size(&self) -> usize {
-        let mut size = self.header.size();
+        let mut size = self.full_header.size();
         size += 4; // grouping_type
-        if self.header.version >= 1 {
+        if self.full_header.version >= 1 {
             size += 4; // default_length
         }
-        if self.header.version >= 2 {
+        if self.full_header.version >= 2 {
             size += 4; // default_group_description_index
         }
         size += 4; // entry_count
         size += self.entries.iter().map(|entry| entry.size(self)).sum::<usize>();
-        size
+
+        Self::add_header_size(size)
     }
 }
 
@@ -253,7 +259,7 @@ impl SerializeSeed<&SampleGroupDescriptionBox> for SampleGroupDescriptionEntry {
     where
         W: std::io::Write,
     {
-        if seed.header.version >= 1 && seed.default_length.is_some_and(|l| l == 0) {
+        if seed.full_header.version >= 1 && seed.default_length.is_some_and(|l| l == 0) {
             self.description_length
                 .ok_or(io::Error::new(io::ErrorKind::InvalidData, "description_length is required"))?
                 .serialize(&mut writer)?;
@@ -267,7 +273,7 @@ impl SerializeSeed<&SampleGroupDescriptionBox> for SampleGroupDescriptionEntry {
 impl SampleGroupDescriptionEntry {
     pub fn size(&self, parent: &SampleGroupDescriptionBox) -> usize {
         let mut size = 0;
-        if parent.header.version >= 1 && parent.default_length.is_some_and(|l| l == 0) {
+        if parent.full_header.version >= 1 && parent.default_length.is_some_and(|l| l == 0) {
             size += 4; // description_length
         }
         size += self.sample_group_description_entry.size();
@@ -687,8 +693,10 @@ impl IsoSized for SampleGroupDescriptionEntryType {
 #[derive(Debug, IsoBox)]
 #[iso_box(box_type = b"csgp", skip_impl(deserialize_seed, serialize, sized), crate_path = crate)]
 pub struct CompactSampleToGroupBox {
-    #[iso_box(header)]
-    pub header: FullBoxHeader,
+    // full header:
+    pub version: u8,
+    pub flags: CompactSampleToGroupBoxFlags,
+    // body:
     pub grouping_type: [u8; 4],
     pub grouping_type_parameter: Option<u32>,
     pub pattern_count: u32,
@@ -705,24 +713,51 @@ pub struct CompactSampleToGroupBoxFlags {
     pub index_size_code: u8,
 }
 
-impl From<u32> for CompactSampleToGroupBoxFlags {
-    fn from(value: u32) -> Self {
-        Self {
+impl<'a> Deserialize<'a> for CompactSampleToGroupBoxFlags {
+    fn deserialize<R>(reader: R) -> io::Result<Self>
+    where
+        R: ZeroCopyReader<'a>,
+    {
+        let value = U24Be::deserialize(reader)?.0;
+
+        Ok(Self {
             index_msb_indicates_fragment_local_description: (value >> 7) & 0b1 != 0,
             grouping_type_parameter_present: (value >> 6) & 0b1 != 0,
             pattern_size_code: ((value >> 4) & 0b11) as u8,
             count_size_code: ((value >> 2) & 0b11) as u8,
             index_size_code: (value & 0b11) as u8,
-        }
+        })
     }
 }
 
-impl<'a> DeserializeSeed<'a, FullBoxHeader> for CompactSampleToGroupBox {
-    fn deserialize_seed<R>(mut reader: R, seed: FullBoxHeader) -> io::Result<Self>
+impl Serialize for CompactSampleToGroupBoxFlags {
+    fn serialize<W>(&self, writer: W) -> io::Result<()>
+    where
+        W: std::io::Write,
+    {
+        let mut bit_writer = BitWriter::new(writer);
+        bit_writer.write_bit(self.index_msb_indicates_fragment_local_description)?;
+        bit_writer.write_bit(self.grouping_type_parameter_present)?;
+        bit_writer.write_bits(self.pattern_size_code as u64, 2)?;
+        bit_writer.write_bits(self.count_size_code as u64, 2)?;
+        bit_writer.write_bits(self.index_size_code as u64, 2)?;
+        Ok(())
+    }
+}
+
+impl IsoSized for CompactSampleToGroupBoxFlags {
+    fn size(&self) -> usize {
+        3
+    }
+}
+
+impl<'a> DeserializeSeed<'a, BoxHeader> for CompactSampleToGroupBox {
+    fn deserialize_seed<R>(mut reader: R, _seed: BoxHeader) -> io::Result<Self>
     where
         R: ZeroCopyReader<'a>,
     {
-        let flags = CompactSampleToGroupBoxFlags::from(*seed.flags);
+        let version = u8::deserialize(&mut reader)?;
+        let flags = CompactSampleToGroupBoxFlags::deserialize(&mut reader)?;
 
         let grouping_type = <[u8; 4]>::deserialize(&mut reader)?;
         let grouping_type_parameter = if flags.grouping_type_parameter_present {
@@ -825,7 +860,8 @@ impl<'a> DeserializeSeed<'a, FullBoxHeader> for CompactSampleToGroupBox {
         }
 
         Ok(Self {
-            header: seed,
+            version,
+            flags,
             grouping_type,
             grouping_type_parameter,
             pattern_count,
@@ -850,11 +886,11 @@ impl Serialize for CompactSampleToGroupBox {
     where
         W: std::io::Write,
     {
-        let flags = CompactSampleToGroupBoxFlags::from(*self.header.flags);
-
         let mut bit_writer = BitWriter::new(writer);
 
-        self.header.serialize(&mut bit_writer)?;
+        self.serialize_box_header(&mut bit_writer)?;
+        self.version.serialize(&mut bit_writer)?;
+        self.flags.serialize(&mut bit_writer)?;
 
         self.grouping_type.serialize(&mut bit_writer)?;
 
@@ -864,13 +900,13 @@ impl Serialize for CompactSampleToGroupBox {
 
         self.pattern_count.serialize(&mut bit_writer)?;
         for pattern in &self.patterns {
-            bit_writer.write_bits(pattern.pattern_length as u64, f(flags.pattern_size_code))?;
-            bit_writer.write_bits(pattern.sample_count as u64, f(flags.count_size_code))?;
+            bit_writer.write_bits(pattern.pattern_length as u64, f(self.flags.pattern_size_code))?;
+            bit_writer.write_bits(pattern.sample_count as u64, f(self.flags.count_size_code))?;
         }
 
         for j in &self.sample_group_description_index {
             for k in j {
-                let bit_count = f(flags.index_size_code);
+                let bit_count = f(self.flags.index_size_code);
                 bit_writer.write_bits(k.to_value(bit_count) as u64, bit_count)?;
             }
         }
@@ -883,9 +919,9 @@ impl Serialize for CompactSampleToGroupBox {
 
 impl IsoSized for CompactSampleToGroupBox {
     fn size(&self) -> usize {
-        let flags = CompactSampleToGroupBoxFlags::from(*self.header.flags);
-
-        let mut size = self.header.size();
+        let mut size = 0;
+        size += self.version.size();
+        size += self.flags.size();
         size += 4; // grouping_type
         if self.grouping_type_parameter.is_some() {
             size += 4; // grouping_type_parameter
@@ -893,12 +929,13 @@ impl IsoSized for CompactSampleToGroupBox {
         size += 4; // pattern_count
 
         let mut bits = 0;
-        bits += (f(flags.pattern_size_code) + f(flags.count_size_code)) * self.patterns.len() as u8;
+        bits += (f(self.flags.pattern_size_code) + f(self.flags.count_size_code)) * self.patterns.len() as u8;
         for j in &self.sample_group_description_index {
-            bits += f(flags.index_size_code) * j.len() as u8;
+            bits += f(self.flags.index_size_code) * j.len() as u8;
         }
         size += (bits as usize).div_ceil(8);
-        size
+
+        Self::add_header_size(size)
     }
 }
 

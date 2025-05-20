@@ -12,8 +12,6 @@ use crate::{BoxHeader, FullBoxHeader, IsoBox, UnknownBox, Utf8String};
 #[derive(IsoBox, Debug)]
 #[iso_box(box_type = b"rinf", crate_path = crate)]
 pub struct RestrictedSchemeInfoBox<'a> {
-    #[iso_box(header)]
-    pub header: BoxHeader,
     #[iso_box(nested_box)]
     pub original_format: OriginalFormatBox,
     #[iso_box(nested_box)]
@@ -30,8 +28,7 @@ pub struct RestrictedSchemeInfoBox<'a> {
 #[derive(Debug, IsoBox)]
 #[iso_box(box_type = b"stvi", skip_impl(deserialize_seed), crate_path = crate)]
 pub struct StereoVideoBox<'a> {
-    #[iso_box(header)]
-    pub header: FullBoxHeader,
+    pub full_header: FullBoxHeader,
     pub single_view_allowed: u8,
     pub stereo_scheme: u32,
     pub length: u32,
@@ -40,11 +37,13 @@ pub struct StereoVideoBox<'a> {
     pub any_box: Vec<UnknownBox<'a>>,
 }
 
-impl<'a> DeserializeSeed<'a, FullBoxHeader> for StereoVideoBox<'a> {
-    fn deserialize_seed<R>(mut reader: R, seed: FullBoxHeader) -> io::Result<Self>
+impl<'a> DeserializeSeed<'a, BoxHeader> for StereoVideoBox<'a> {
+    fn deserialize_seed<R>(mut reader: R, _seed: BoxHeader) -> io::Result<Self>
     where
         R: ZeroCopyReader<'a>,
     {
+        let full_header = FullBoxHeader::deserialize(&mut reader)?;
+
         let single_view_allowed = u32::deserialize(&mut reader)?;
         let single_view_allowed = (single_view_allowed & 0b11) as u8;
         let stereo_scheme = u32::deserialize(&mut reader)?;
@@ -64,7 +63,7 @@ impl<'a> DeserializeSeed<'a, FullBoxHeader> for StereoVideoBox<'a> {
         }
 
         Ok(Self {
-            header: seed,
+            full_header,
             single_view_allowed,
             stereo_scheme,
             length,
@@ -80,28 +79,29 @@ impl<'a> DeserializeSeed<'a, FullBoxHeader> for StereoVideoBox<'a> {
 #[derive(Debug, IsoBox)]
 #[iso_box(box_type = b"csch", skip_impl(deserialize_seed, serialize), crate_path = crate)]
 pub struct CompatibleSchemeTypeBox {
-    #[iso_box(header)]
-    pub header: FullBoxHeader,
+    pub full_header: FullBoxHeader,
     pub scheme_type: [u8; 4],
     pub scheme_version: u32,
     pub scheme_uri: Option<Utf8String>,
 }
 
-impl<'a> DeserializeSeed<'a, FullBoxHeader> for CompatibleSchemeTypeBox {
-    fn deserialize_seed<R>(mut reader: R, seed: FullBoxHeader) -> io::Result<Self>
+impl<'a> DeserializeSeed<'a, BoxHeader> for CompatibleSchemeTypeBox {
+    fn deserialize_seed<R>(mut reader: R, _seed: BoxHeader) -> io::Result<Self>
     where
         R: ZeroCopyReader<'a>,
     {
+        let full_header = FullBoxHeader::deserialize(&mut reader)?;
+
         let scheme_type = <[u8; 4]>::deserialize(&mut reader)?;
         let scheme_version = u32::deserialize(&mut reader)?;
-        let scheme_uri = if (*seed.flags & 0x000001) != 0 {
+        let scheme_uri = if (*full_header.flags & 0x000001) != 0 {
             Some(Utf8String::deserialize(&mut reader)?)
         } else {
             None
         };
 
         Ok(Self {
-            header: seed,
+            full_header,
             scheme_type,
             scheme_version,
             scheme_uri,
@@ -114,12 +114,13 @@ impl Serialize for CompatibleSchemeTypeBox {
     where
         W: std::io::Write,
     {
-        self.header.serialize(&mut writer)?;
+        self.serialize_box_header(&mut writer)?;
+        self.full_header.serialize(&mut writer)?;
 
         self.scheme_type.serialize(&mut writer)?;
         self.scheme_version.serialize(&mut writer)?;
 
-        if (*self.header.flags & 0x000001) != 0 {
+        if (*self.full_header.flags & 0x000001) != 0 {
             self.scheme_uri
                 .as_ref()
                 .ok_or(io::Error::new(io::ErrorKind::InvalidData, "scheme_uri is required"))?

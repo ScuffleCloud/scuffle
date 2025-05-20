@@ -9,8 +9,7 @@ use crate::{FullBoxHeader, IsoBox, IsoSized};
 #[derive(Debug, IsoBox)]
 #[iso_box(box_type = b"vvhd", crate_path = crate)]
 pub struct VolumetricVisualMediaHeaderBox {
-    #[iso_box(header)]
-    pub header: FullBoxHeader,
+    pub full_header: FullBoxHeader,
     // empty
 }
 

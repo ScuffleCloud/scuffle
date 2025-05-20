@@ -3,7 +3,7 @@
 //! ISO/IEC 14496-14 - 6
 
 use isobmff::boxes::{AudioSampleEntry, SampleEntry, VisualSampleEntry};
-use isobmff::{BoxHeader, FullBoxHeader, IsoBox};
+use isobmff::{FullBoxHeader, IsoBox};
 use scuffle_bytes_util::BytesCow;
 
 /// Object Descriptor Box
@@ -12,8 +12,7 @@ use scuffle_bytes_util::BytesCow;
 #[derive(Debug, IsoBox)]
 #[iso_box(box_type = b"iods")]
 pub struct ObjectDescriptorBox<'a> {
-    /// Header of the box
-    #[iso_box(header)]
+    /// The full header of the box
     pub header: FullBoxHeader,
     /// The object descriptor contained in this box.
     ///
@@ -29,9 +28,6 @@ pub struct ObjectDescriptorBox<'a> {
 #[derive(Debug, IsoBox)]
 #[iso_box(box_type = b"mp4v")]
 pub struct MP4VisualSampleEntry<'a> {
-    /// Header of the box.
-    #[iso_box(header)]
-    pub header: BoxHeader,
     /// The visual sample entry fields that this box inherits.
     pub sample_entry: VisualSampleEntry,
     /// The ES Descriptor for this stream.
@@ -45,9 +41,6 @@ pub struct MP4VisualSampleEntry<'a> {
 #[derive(Debug, IsoBox)]
 #[iso_box(box_type = b"mp4a")]
 pub struct MP4AudioSampleEntry<'a> {
-    /// Header of the box.
-    #[iso_box(header)]
-    pub header: BoxHeader,
     /// The audio sample entry fields that this box inherits.
     pub sample_entry: AudioSampleEntry,
     /// The ES Descriptor for this stream.
@@ -61,9 +54,6 @@ pub struct MP4AudioSampleEntry<'a> {
 #[derive(Debug, IsoBox)]
 #[iso_box(box_type = b"mp4s")]
 pub struct MpegSampleEntry<'a> {
-    /// Header of the box.
-    #[iso_box(header)]
-    pub header: BoxHeader,
     /// The sample entry fields that this box inherits.
     pub sample_entry: SampleEntry,
     /// The ES Descriptor for this stream.
@@ -77,9 +67,6 @@ pub struct MpegSampleEntry<'a> {
 #[derive(Debug, IsoBox)]
 #[iso_box(box_type = b"m4ae")]
 pub struct MP4AudioEnhancementSampleEntry<'a> {
-    /// Header of the box.
-    #[iso_box(header)]
-    pub header: BoxHeader,
     /// The audio sample entry fields that this box inherits.
     pub sample_entry: AudioSampleEntry,
     /// The ES Descriptor for this stream.
@@ -93,8 +80,7 @@ pub struct MP4AudioEnhancementSampleEntry<'a> {
 #[derive(Debug, IsoBox)]
 #[iso_box(box_type = b"esds")]
 pub struct ESDBox<'a> {
-    /// Header of the box.
-    #[iso_box(header)]
+    /// The full header of the box
     pub header: FullBoxHeader,
     /// The ES Descriptor for this stream.
     ///

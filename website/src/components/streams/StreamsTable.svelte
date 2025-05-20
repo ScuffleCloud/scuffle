@@ -80,7 +80,7 @@
 
         .stream-row {
             background-color: white;
-            background: var(--colors-teal30);
+            background: var(--color-teal30);
             cursor: pointer;
             transition:
                 transform 0.1s ease-in-out,

@@ -32,8 +32,6 @@
     const cssVariables = Object.entries(theme.colors)
         .map(([key, value]) => `--color-${key}: ${value}`)
         .join(';');
-
-    console.log(cssVariables);
 </script>
 
 {#if mockingReady}

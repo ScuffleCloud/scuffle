@@ -234,14 +234,14 @@ impl Serialize for AV1CodecConfigurationRecord<'_> {
     }
 }
 
-impl AV1CodecConfigurationRecord<'_> {
+impl isobmff::IsoSized for AV1CodecConfigurationRecord<'_> {
     /// Returns the size of the AV1 Codec Configuration Record.
-    pub fn size(&self) -> u64 {
+    fn size(&self) -> usize {
         1 // marker, version
         + 1 // seq_profile, seq_level_idx_0
         + 1 // seq_tier_0, high_bitdepth, twelve_bit, monochrome, chroma_subsampling_x, chroma_subsampling_y, chroma_sample_position
         + 1 // reserved, initial_presentation_delay_present, initial_presentation_delay_minus_one/reserved
-        + self.config_obu.len() as u64
+        + self.config_obu.len()
     }
 }
 

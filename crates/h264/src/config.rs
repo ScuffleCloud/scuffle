@@ -225,9 +225,9 @@ impl Serialize for AVCDecoderConfigurationRecord<'_> {
     }
 }
 
-impl AVCDecoderConfigurationRecord<'_> {
+impl isobmff::IsoSized for AVCDecoderConfigurationRecord<'_> {
     /// Returns the total byte size of the AVCDecoderConfigurationRecord.
-    pub fn size(&self) -> u64 {
+    fn size(&self) -> usize {
         1 // configuration_version
         + 1 // avc_profile_indication
         + 1 // profile_compatibility
@@ -236,13 +236,13 @@ impl AVCDecoderConfigurationRecord<'_> {
         + 1 // num_of_sequence_parameter_sets (5 bits reserved, 3 bits)
         + self.sps.iter().map(|sps| {
             2 // sps_length
-            + sps.len() as u64
-        }).sum::<u64>() // sps
+            + sps.len()
+        }).sum::<usize>() // sps
         + 1 // num_of_picture_parameter_sets
         + self.pps.iter().map(|pps| {
             2 // pps_length
-            + pps.len() as u64
-        }).sum::<u64>() // pps
+            + pps.len()
+        }).sum::<usize>() // pps
         + match &self.extended_config {
             Some(config) => {
                 1 // chroma_format_idc (6 bits reserved, 2 bits)
@@ -251,8 +251,8 @@ impl AVCDecoderConfigurationRecord<'_> {
                 + 1 // number_of_sequence_parameter_set_ext
                 + config.sequence_parameter_set_ext.iter().map(|sps_ext| {
                     2 // sps_ext_length
-                    + sps_ext.bytesize() // sps_ext
-                }).sum::<u64>()
+                    + sps_ext.bytesize() as usize // sps_ext
+                }).sum::<usize>()
             }
             None => 0,
         }
@@ -266,6 +266,7 @@ mod tests {
 
     use byteorder::{BigEndian, WriteBytesExt};
     use bytes::Bytes;
+    use isobmff::IsoSized;
     use scuffle_bytes_util::BitWriter;
     use scuffle_bytes_util::zero_copy::{Deserialize, Serialize};
 
@@ -331,7 +332,7 @@ mod tests {
         let config =
             AVCDecoderConfigurationRecord::deserialize(scuffle_bytes_util::zero_copy::Slice::from(&data[..])).unwrap();
 
-        assert_eq!(config.size(), data.len() as u64);
+        assert_eq!(config.size(), data.len());
 
         let mut buf = Vec::new();
         config.serialize(&mut buf).unwrap();

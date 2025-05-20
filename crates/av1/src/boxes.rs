@@ -3,7 +3,7 @@
 //! <https://aomediacodec.github.io/av1-isobmff>
 
 use isobmff::boxes::VisualSampleEntry;
-use isobmff::{BoxHeader, IsoBox, UnknownBox};
+use isobmff::{IsoBox, UnknownBox};
 
 use crate::AV1CodecConfigurationRecord;
 
@@ -13,9 +13,6 @@ use crate::AV1CodecConfigurationRecord;
 #[derive(Debug, IsoBox)]
 #[iso_box(box_type = b"av01")]
 pub struct AV1SampleEntry<'a> {
-    /// Header of the box
-    #[iso_box(header)]
-    pub header: BoxHeader,
     /// The visual sample entry fields that this box inherits.
     pub sample_entry: VisualSampleEntry,
     /// The AV1 codec configuration box contained in this box.
@@ -32,9 +29,6 @@ pub struct AV1SampleEntry<'a> {
 #[derive(Debug, IsoBox)]
 #[iso_box(box_type = b"av1C")]
 pub struct AV1CodecConfigurationBox<'a> {
-    /// Header of the box.
-    #[iso_box(header)]
-    pub header: BoxHeader,
     /// The AV1 codec configuration record.
     pub av1_config: AV1CodecConfigurationRecord<'a>,
 }

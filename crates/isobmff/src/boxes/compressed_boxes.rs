@@ -1,7 +1,7 @@
 use scuffle_bytes_util::BytesCow;
 
 use super::{ExtendedTypeBox, MovieBox, MovieFragmentBox, SegmentIndexBox, SubsegmentIndexBox};
-use crate::{BoxHeader, IsoBox, UnknownBox};
+use crate::{IsoBox, UnknownBox};
 
 /// Original file-type box
 ///
@@ -9,8 +9,6 @@ use crate::{BoxHeader, IsoBox, UnknownBox};
 #[derive(Debug, IsoBox)]
 #[iso_box(box_type = b"otyp", crate_path = crate)]
 pub struct OriginalFileTypeBox<'a> {
-    #[iso_box(header)]
-    pub header: BoxHeader,
     #[iso_box(nested_box(collect))]
     pub etyp: Option<ExtendedTypeBox<'a>>,
     #[iso_box(nested_box(collect_unknown))]
@@ -27,8 +25,6 @@ pub trait CompressedBox {
 #[derive(Debug, IsoBox)]
 #[iso_box(box_type = b"!mov", crate_path = crate)]
 pub struct CompressedMovieBox<'a> {
-    #[iso_box(header)]
-    pub header: BoxHeader,
     pub data: BytesCow<'a>,
 }
 
@@ -42,8 +38,6 @@ impl<'a> CompressedBox for CompressedMovieBox<'a> {
 #[derive(Debug, IsoBox)]
 #[iso_box(box_type = b"!mof", crate_path = crate)]
 pub struct CompressedMovieFragmentBox<'a> {
-    #[iso_box(header)]
-    pub header: BoxHeader,
     pub data: BytesCow<'a>,
 }
 
@@ -57,8 +51,6 @@ impl<'a> CompressedBox for CompressedMovieFragmentBox<'a> {
 #[derive(Debug, IsoBox)]
 #[iso_box(box_type = b"!six", crate_path = crate)]
 pub struct CompressedSegmentIndexBox<'a> {
-    #[iso_box(header)]
-    pub header: BoxHeader,
     pub data: BytesCow<'a>,
 }
 
@@ -72,8 +64,6 @@ impl CompressedBox for CompressedSegmentIndexBox<'_> {
 #[derive(Debug, IsoBox)]
 #[iso_box(box_type = b"!ssx", crate_path = crate)]
 pub struct CompressedSubsegmentIndexBox<'a> {
-    #[iso_box(header)]
-    pub header: BoxHeader,
     pub data: BytesCow<'a>,
 }
 

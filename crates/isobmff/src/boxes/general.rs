@@ -5,7 +5,7 @@ use std::fmt::Debug;
 use scuffle_bytes_util::BytesCow;
 use scuffle_bytes_util::zero_copy::{Deserialize, Serialize};
 
-use crate::{BoxHeader, FullBoxHeader, IsoBox, IsoSized};
+use crate::{FullBoxHeader, IsoBox, IsoSized};
 
 /// Media data box
 ///
@@ -13,17 +13,12 @@ use crate::{BoxHeader, FullBoxHeader, IsoBox, IsoSized};
 #[derive(IsoBox)]
 #[iso_box(box_type = b"mdat", crate_path = crate)]
 pub struct MediaDataBox<'a> {
-    #[iso_box(header)]
-    pub header: BoxHeader,
     pub data: BytesCow<'a>,
 }
 
 impl Debug for MediaDataBox<'_> {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        f.debug_struct("MediaDataBox")
-            .field("header", &self.header)
-            .field("data.len", &self.data.len())
-            .finish()
+        f.debug_struct("MediaDataBox").field("data.len", &self.data.len()).finish()
     }
 }
 
@@ -33,17 +28,12 @@ impl Debug for MediaDataBox<'_> {
 #[derive(IsoBox)]
 #[iso_box(box_type = b"free", crate_path = crate)]
 pub struct FreeSpaceBox<'a> {
-    #[iso_box(header)]
-    pub header: BoxHeader,
     pub data: BytesCow<'a>,
 }
 
 impl Debug for FreeSpaceBox<'_> {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        f.debug_struct("FreeSpaceBox")
-            .field("header", &self.header)
-            .field("data.len", &self.data.len())
-            .finish()
+        f.debug_struct("FreeSpaceBox").field("data.len", &self.data.len()).finish()
     }
 }
 
@@ -53,17 +43,12 @@ impl Debug for FreeSpaceBox<'_> {
 #[derive(IsoBox)]
 #[iso_box(box_type = b"skip", crate_path = crate)]
 pub struct SkipBox<'a> {
-    #[iso_box(header)]
-    pub header: BoxHeader,
     pub data: BytesCow<'a>,
 }
 
 impl Debug for SkipBox<'_> {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        f.debug_struct("SkipBox")
-            .field("header", &self.header)
-            .field("data.len", &self.data.len())
-            .finish()
+        f.debug_struct("SkipBox").field("data.len", &self.data.len()).finish()
     }
 }
 
@@ -73,8 +58,7 @@ impl Debug for SkipBox<'_> {
 #[derive(IsoBox, Debug)]
 #[iso_box(box_type = b"pdin", crate_path = crate)]
 pub struct ProgressiveDownloadInfoBox {
-    #[iso_box(header)]
-    pub header: FullBoxHeader,
+    pub full_header: FullBoxHeader,
     #[iso_box(repeated)]
     pub properties: Vec<ProgressiveDownloadInfoBoxProperties>,
 }
@@ -120,8 +104,6 @@ impl IsoSized for ProgressiveDownloadInfoBoxProperties {
 #[derive(IsoBox)]
 #[iso_box(box_type = b"imda", crate_path = crate)]
 pub struct IdentifiedMediaDataBox<'a> {
-    #[iso_box(header)]
-    pub header: BoxHeader,
     pub imda_identifier: u32,
     pub data: BytesCow<'a>,
 }
@@ -129,7 +111,6 @@ pub struct IdentifiedMediaDataBox<'a> {
 impl Debug for IdentifiedMediaDataBox<'_> {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         f.debug_struct("IdentifiedMediaDataBox")
-            .field("header", &self.header)
             .field("imda_identifier", &self.imda_identifier)
             .field("data.len", &self.data.len())
             .finish()
@@ -142,7 +123,6 @@ mod tests {
     use scuffle_bytes_util::zero_copy::{Deserialize, Slice};
 
     use super::MediaDataBox;
-    use crate::{BoxHeaderProperties, BoxSize};
 
     #[test]
     fn demux_mdat() {
@@ -155,9 +135,6 @@ mod tests {
         ];
 
         let mdat = MediaDataBox::deserialize(Slice::from(&data[..])).unwrap();
-        assert_eq!(mdat.header.size, BoxSize::Short(12));
-        assert!(mdat.header.box_type.is_four_cc(b"mdat"));
-        assert_eq!(mdat.header.payload_size(), Some(4));
         assert_eq!(mdat.data.len(), 4);
         assert_eq!(mdat.data.as_bytes()[0], 0x42);
         assert_eq!(mdat.data.as_bytes()[1], 0x00);

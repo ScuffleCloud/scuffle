@@ -1,7 +1,7 @@
 use std::io;
 
-use scuffle_bytes_util::BitWriter;
-use scuffle_bytes_util::zero_copy::{Deserialize, DeserializeSeed, Serialize, SerializeSeed, ZeroCopyReader};
+use scuffle_bytes_util::zero_copy::{Deserialize, DeserializeSeed, Serialize, SerializeSeed, U24Be, ZeroCopyReader};
+use scuffle_bytes_util::{BitReader, BitWriter};
 
 use super::{
     CompositionToDecodeBox, MetaBox, SampleAuxiliaryInformationOffsetsBox, SampleAuxiliaryInformationSizesBox,
@@ -16,8 +16,6 @@ use crate::{BoxHeader, FullBoxHeader, IsoBox, IsoSized, UnknownBox};
 #[derive(IsoBox, Debug)]
 #[iso_box(box_type = b"mvex", crate_path = crate)]
 pub struct MovieExtendsBox {
-    #[iso_box(header)]
-    pub header: BoxHeader,
     #[iso_box(nested_box(collect))]
     pub mehd: Option<MovieExtendsHeaderBox>,
     #[iso_box(nested_box(collect))]
@@ -32,24 +30,25 @@ pub struct MovieExtendsBox {
 #[derive(Debug, IsoBox)]
 #[iso_box(box_type = b"mehd", skip_impl(deserialize_seed, serialize, sized), crate_path = crate)]
 pub struct MovieExtendsHeaderBox {
-    #[iso_box(header)]
-    pub header: FullBoxHeader,
+    pub full_header: FullBoxHeader,
     pub fragment_duration: u64,
 }
 
-impl<'a> DeserializeSeed<'a, FullBoxHeader> for MovieExtendsHeaderBox {
-    fn deserialize_seed<R>(mut reader: R, seed: FullBoxHeader) -> io::Result<Self>
+impl<'a> DeserializeSeed<'a, BoxHeader> for MovieExtendsHeaderBox {
+    fn deserialize_seed<R>(mut reader: R, _seed: BoxHeader) -> io::Result<Self>
     where
         R: ZeroCopyReader<'a>,
     {
-        let fragment_duration = if seed.version == 1 {
+        let full_header = FullBoxHeader::deserialize(&mut reader)?;
+
+        let fragment_duration = if full_header.version == 1 {
             u64::deserialize(&mut reader)?
         } else {
             u32::deserialize(&mut reader)? as u64
         };
 
         Ok(Self {
-            header: seed,
+            full_header,
             fragment_duration,
         })
     }
@@ -60,9 +59,10 @@ impl Serialize for MovieExtendsHeaderBox {
     where
         W: std::io::Write,
     {
-        self.header.serialize(&mut writer)?;
+        self.serialize_box_header(&mut writer)?;
+        self.full_header.serialize(&mut writer)?;
 
-        if self.header.version == 1 {
+        if self.full_header.version == 1 {
             self.fragment_duration.serialize(&mut writer)?;
         } else {
             (self.fragment_duration as u32).serialize(&mut writer)?;
@@ -74,13 +74,78 @@ impl Serialize for MovieExtendsHeaderBox {
 
 impl IsoSized for MovieExtendsHeaderBox {
     fn size(&self) -> usize {
-        let mut size = self.header.size(); // header
-        if self.header.version == 1 {
+        let mut size = self.full_header.size(); // header
+        if self.full_header.version == 1 {
             size += 8; // fragment_duration
         } else {
             size += 4; // fragment_duration
         }
-        size
+        Self::add_header_size(size)
+    }
+}
+
+#[derive(Debug, Clone, Copy)]
+pub struct SampleFlags {
+    pub reserved: u8,
+    pub is_leading: u8,
+    pub sample_depends_on: u8,
+    pub sample_is_depended_on: u8,
+    pub sample_has_redundancy: u8,
+    pub sample_padding_value: u8,
+    pub sample_is_non_sync_sample: bool,
+    pub sample_degradation_priority: u16,
+}
+
+impl<'a> Deserialize<'a> for SampleFlags {
+    fn deserialize<R>(mut reader: R) -> io::Result<Self>
+    where
+        R: ZeroCopyReader<'a>,
+    {
+        let mut reader = BitReader::new(reader.as_std());
+        let reserved = reader.read_bits(4)? as u8;
+        let is_leading = reader.read_bits(2)? as u8;
+        let sample_depends_on = reader.read_bits(2)? as u8;
+        let sample_is_depended_on = reader.read_bits(2)? as u8;
+        let sample_has_redundancy = reader.read_bits(2)? as u8;
+        let sample_padding_value = reader.read_bits(3)? as u8;
+        let sample_is_non_sync_sample = reader.read_bit()?;
+        let sample_degradation_priority = reader.read_bits(16)? as u16;
+
+        Ok(Self {
+            reserved,
+            is_leading,
+            sample_depends_on,
+            sample_is_depended_on,
+            sample_has_redundancy,
+            sample_padding_value,
+            sample_is_non_sync_sample,
+            sample_degradation_priority,
+        })
+    }
+}
+
+impl Serialize for SampleFlags {
+    fn serialize<W>(&self, writer: W) -> io::Result<()>
+    where
+        W: std::io::Write,
+    {
+        let mut bit_writer = BitWriter::new(writer);
+        bit_writer.write_bits(self.reserved as u64, 4)?;
+        bit_writer.write_bits(self.is_leading as u64, 2)?;
+        bit_writer.write_bits(self.sample_depends_on as u64, 2)?;
+        bit_writer.write_bits(self.sample_is_depended_on as u64, 2)?;
+        bit_writer.write_bits(self.sample_has_redundancy as u64, 2)?;
+        bit_writer.write_bits(self.sample_padding_value as u64, 3)?;
+        bit_writer.write_bit(self.sample_is_non_sync_sample)?;
+        bit_writer.write_bits(self.sample_degradation_priority as u64, 16)?;
+
+        Ok(())
+    }
+}
+
+impl IsoSized for SampleFlags {
+    fn size(&self) -> usize {
+        4
     }
 }
 
@@ -90,13 +155,12 @@ impl IsoSized for MovieExtendsHeaderBox {
 #[derive(IsoBox, Debug)]
 #[iso_box(box_type = b"trex", crate_path = crate)]
 pub struct TrackExtendsBox {
-    #[iso_box(header)]
-    pub header: FullBoxHeader,
+    pub full_header: FullBoxHeader,
     pub track_id: u32,
     pub default_sample_description_index: u32,
     pub default_sample_duration: u32,
     pub default_sample_size: u32,
-    pub default_sample_flags: u32,
+    pub default_sample_flags: SampleFlags,
 }
 
 /// Movie fragment box
@@ -105,8 +169,6 @@ pub struct TrackExtendsBox {
 #[derive(IsoBox, Debug)]
 #[iso_box(box_type = b"moof", crate_path = crate)]
 pub struct MovieFragmentBox<'a> {
-    #[iso_box(header)]
-    pub header: BoxHeader,
     #[iso_box(nested_box)]
     pub mfhd: MovieFragmentHeaderBox,
     #[iso_box(nested_box(collect))]
@@ -123,8 +185,7 @@ pub struct MovieFragmentBox<'a> {
 #[derive(IsoBox, Debug)]
 #[iso_box(box_type = b"mfhd", crate_path = crate)]
 pub struct MovieFragmentHeaderBox {
-    #[iso_box(header)]
-    pub header: FullBoxHeader,
+    pub full_header: FullBoxHeader,
     pub sequence_number: u32,
 }
 
@@ -134,8 +195,6 @@ pub struct MovieFragmentHeaderBox {
 #[derive(IsoBox, Debug)]
 #[iso_box(box_type = b"traf", crate_path = crate)]
 pub struct TrackFragmentBox<'a> {
-    #[iso_box(header)]
-    pub header: BoxHeader,
     #[iso_box(nested_box)]
     pub tfhd: TrackFragmentHeaderBox,
     #[iso_box(nested_box(collect))]
@@ -164,14 +223,16 @@ pub struct TrackFragmentBox<'a> {
 #[derive(Debug, IsoBox)]
 #[iso_box(box_type = b"tfhd", skip_impl(deserialize_seed, serialize), crate_path = crate)]
 pub struct TrackFragmentHeaderBox {
-    #[iso_box(header)]
-    pub header: FullBoxHeader,
+    // full header:
+    pub version: u8,
+    pub flags: TfFlags,
+    // body:
     pub track_id: u32,
     pub base_data_offset: Option<u64>,
     pub sample_description_index: Option<u32>,
     pub default_sample_duration: Option<u32>,
     pub default_sample_size: Option<u32>,
-    pub default_sample_flags: Option<u32>,
+    pub default_sample_flags: Option<SampleFlags>,
 }
 
 bitflags::bitflags! {
@@ -187,12 +248,38 @@ bitflags::bitflags! {
     }
 }
 
-impl<'a> DeserializeSeed<'a, FullBoxHeader> for TrackFragmentHeaderBox {
-    fn deserialize_seed<R>(mut reader: R, seed: FullBoxHeader) -> io::Result<Self>
+impl<'a> Deserialize<'a> for TfFlags {
+    fn deserialize<R>(reader: R) -> io::Result<Self>
     where
         R: ZeroCopyReader<'a>,
     {
-        let flags = TfFlags::from_bits_truncate(*seed.flags);
+        let flags = U24Be::deserialize(reader)?;
+        Ok(TfFlags::from_bits_truncate(*flags))
+    }
+}
+
+impl Serialize for TfFlags {
+    fn serialize<W>(&self, writer: W) -> io::Result<()>
+    where
+        W: std::io::Write,
+    {
+        U24Be(self.bits()).serialize(writer)
+    }
+}
+
+impl IsoSized for TfFlags {
+    fn size(&self) -> usize {
+        3
+    }
+}
+
+impl<'a> DeserializeSeed<'a, BoxHeader> for TrackFragmentHeaderBox {
+    fn deserialize_seed<R>(mut reader: R, _seed: BoxHeader) -> io::Result<Self>
+    where
+        R: ZeroCopyReader<'a>,
+    {
+        let version = u8::deserialize(&mut reader)?;
+        let flags = TfFlags::deserialize(&mut reader)?;
 
         let track_id = u32::deserialize(&mut reader)?;
         let base_data_offset = if flags.contains(TfFlags::BaseDataOffsetPresent) {
@@ -216,13 +303,14 @@ impl<'a> DeserializeSeed<'a, FullBoxHeader> for TrackFragmentHeaderBox {
             None
         };
         let default_sample_flags = if flags.contains(TfFlags::DefaultSampleFlagsPresent) {
-            Some(u32::deserialize(&mut reader)?)
+            Some(SampleFlags::deserialize(&mut reader)?)
         } else {
             None
         };
 
         Ok(Self {
-            header: seed,
+            version,
+            flags,
             track_id,
             base_data_offset,
             sample_description_index,
@@ -238,17 +326,16 @@ impl Serialize for TrackFragmentHeaderBox {
     where
         W: std::io::Write,
     {
-        let flags = TfFlags::from_bits_truncate(*self.header.flags);
-
-        self.header.serialize(&mut writer)?;
+        self.version.serialize(&mut writer)?;
+        self.flags.serialize(&mut writer)?;
 
         self.track_id.serialize(&mut writer)?;
-        if flags.contains(TfFlags::BaseDataOffsetPresent) {
+        if self.flags.contains(TfFlags::BaseDataOffsetPresent) {
             self.base_data_offset
                 .ok_or(io::Error::new(io::ErrorKind::InvalidData, "base_data_offset is required"))?
                 .serialize(&mut writer)?;
         }
-        if flags.contains(TfFlags::SampleDescriptionIndexPresent) {
+        if self.flags.contains(TfFlags::SampleDescriptionIndexPresent) {
             self.sample_description_index
                 .ok_or(io::Error::new(
                     io::ErrorKind::InvalidData,
@@ -256,7 +343,7 @@ impl Serialize for TrackFragmentHeaderBox {
                 ))?
                 .serialize(&mut writer)?;
         }
-        if flags.contains(TfFlags::DefaultSampleDurationPresent) {
+        if self.flags.contains(TfFlags::DefaultSampleDurationPresent) {
             self.default_sample_duration
                 .ok_or(io::Error::new(
                     io::ErrorKind::InvalidData,
@@ -264,12 +351,12 @@ impl Serialize for TrackFragmentHeaderBox {
                 ))?
                 .serialize(&mut writer)?;
         }
-        if flags.contains(TfFlags::DefaultSampleSizePresent) {
+        if self.flags.contains(TfFlags::DefaultSampleSizePresent) {
             self.default_sample_size
                 .ok_or(io::Error::new(io::ErrorKind::InvalidData, "default_sample_size is required"))?
                 .serialize(&mut writer)?;
         }
-        if flags.contains(TfFlags::DefaultSampleFlagsPresent) {
+        if self.flags.contains(TfFlags::DefaultSampleFlagsPresent) {
             self.default_sample_flags
                 .ok_or(io::Error::new(io::ErrorKind::InvalidData, "default_sample_flags is required"))?
                 .serialize(&mut writer)?;
@@ -285,20 +372,23 @@ impl Serialize for TrackFragmentHeaderBox {
 #[derive(Debug, IsoBox)]
 #[iso_box(box_type = b"trun", skip_impl(deserialize_seed, serialize, sized), crate_path = crate)]
 pub struct TrackRunBox {
-    #[iso_box(header)]
-    pub header: FullBoxHeader,
+    // full header:
+    pub version: u8,
+    pub flags: TrFlags,
+    // body:
     pub sample_count: u32,
     pub data_offset: Option<i32>,
-    pub first_sample_flags: Option<u32>,
+    pub first_sample_flags: Option<SampleFlags>,
     pub samples: Vec<TrackRunBoxSample>,
 }
 
-impl<'a> DeserializeSeed<'a, FullBoxHeader> for TrackRunBox {
-    fn deserialize_seed<R>(mut reader: R, seed: FullBoxHeader) -> io::Result<Self>
+impl<'a> DeserializeSeed<'a, BoxHeader> for TrackRunBox {
+    fn deserialize_seed<R>(mut reader: R, _seed: BoxHeader) -> io::Result<Self>
     where
         R: ZeroCopyReader<'a>,
     {
-        let flags = TrFlags::from_bits_truncate(*seed.flags);
+        let version = u8::deserialize(&mut reader)?;
+        let flags = TrFlags::deserialize(&mut reader)?;
 
         let sample_count = u32::deserialize(&mut reader)?;
         let data_offset = if flags.contains(TrFlags::DataOffsetPresent) {
@@ -307,18 +397,19 @@ impl<'a> DeserializeSeed<'a, FullBoxHeader> for TrackRunBox {
             None
         };
         let first_sample_flags = if flags.contains(TrFlags::FirstSampleFlagsPresent) {
-            Some(u32::deserialize(&mut reader)?)
+            Some(SampleFlags::deserialize(&mut reader)?)
         } else {
             None
         };
 
         let mut samples = Vec::with_capacity(sample_count as usize);
         for _ in 0..sample_count {
-            samples.push(TrackRunBoxSample::deserialize_seed(&mut reader, flags)?);
+            samples.push(TrackRunBoxSample::deserialize_seed(&mut reader, (version, flags))?);
         }
 
         Ok(Self {
-            header: seed,
+            version,
+            flags,
             sample_count,
             data_offset,
             first_sample_flags,
@@ -329,20 +420,20 @@ impl<'a> DeserializeSeed<'a, FullBoxHeader> for TrackRunBox {
 
 impl IsoSized for TrackRunBox {
     fn size(&self) -> usize {
-        let flags = TrFlags::from_bits_truncate(*self.header.flags);
-
-        let mut size = self.header.size(); // header
+        let mut size = 0;
+        size += self.version.size(); // version
+        size += self.flags.size(); // flags
         size += 4; // sample_count
-        if flags.contains(TrFlags::DataOffsetPresent) {
+        if self.flags.contains(TrFlags::DataOffsetPresent) {
             size += 4; // data_offset
         }
-        if flags.contains(TrFlags::FirstSampleFlagsPresent) {
+        if self.flags.contains(TrFlags::FirstSampleFlagsPresent) {
             size += 4; // first_sample_flags
         }
 
-        size += self.samples.iter().map(|s| s.size(flags)).sum::<usize>();
+        size += self.samples.iter().map(|s| s.size(self.flags)).sum::<usize>();
 
-        size
+        Self::add_header_size(size)
     }
 }
 
@@ -351,24 +442,24 @@ impl Serialize for TrackRunBox {
     where
         W: std::io::Write,
     {
-        let flags = TrFlags::from_bits_truncate(*self.header.flags);
-
-        self.header.serialize(&mut writer)?;
+        self.serialize_box_header(&mut writer)?;
+        self.version.serialize(&mut writer)?;
+        self.flags.serialize(&mut writer)?;
 
         self.sample_count.serialize(&mut writer)?;
-        if flags.contains(TrFlags::DataOffsetPresent) {
+        if self.flags.contains(TrFlags::DataOffsetPresent) {
             self.data_offset
                 .ok_or(io::Error::new(io::ErrorKind::InvalidData, "data_offset is required"))?
                 .serialize(&mut writer)?;
         }
-        if flags.contains(TrFlags::FirstSampleFlagsPresent) {
+        if self.flags.contains(TrFlags::FirstSampleFlagsPresent) {
             self.first_sample_flags
                 .ok_or(io::Error::new(io::ErrorKind::InvalidData, "first_sample_flags is required"))?
                 .serialize(&mut writer)?;
         }
 
         for sample in &self.samples {
-            sample.serialize_seed(&mut writer, flags)?;
+            sample.serialize_seed(&mut writer, (self.version, self.flags))?;
         }
 
         Ok(())
@@ -379,9 +470,9 @@ impl Serialize for TrackRunBox {
 pub struct TrackRunBoxSample {
     pub sample_duration: Option<u32>,
     pub sample_size: Option<u32>,
-    pub sample_flags: Option<u32>,
-    /// Should be interpreted as signed when version is 1
-    pub sample_composition_time_offset: Option<u32>,
+    pub sample_flags: Option<SampleFlags>,
+    /// Either a u32 or a i32
+    pub sample_composition_time_offset: Option<i64>,
 }
 
 bitflags::bitflags! {
@@ -396,28 +487,59 @@ bitflags::bitflags! {
     }
 }
 
-impl<'a> DeserializeSeed<'a, TrFlags> for TrackRunBoxSample {
-    fn deserialize_seed<R>(mut reader: R, seed: TrFlags) -> std::io::Result<Self>
+impl<'a> Deserialize<'a> for TrFlags {
+    fn deserialize<R>(reader: R) -> io::Result<Self>
     where
         R: ZeroCopyReader<'a>,
     {
-        let sample_duration = if seed.contains(TrFlags::SampleDurationPresent) {
+        let flags = U24Be::deserialize(reader)?;
+        Ok(TrFlags::from_bits_truncate(*flags))
+    }
+}
+
+impl Serialize for TrFlags {
+    fn serialize<W>(&self, writer: W) -> io::Result<()>
+    where
+        W: std::io::Write,
+    {
+        U24Be(self.bits()).serialize(writer)
+    }
+}
+
+impl IsoSized for TrFlags {
+    fn size(&self) -> usize {
+        3
+    }
+}
+
+impl<'a> DeserializeSeed<'a, (u8, TrFlags)> for TrackRunBoxSample {
+    fn deserialize_seed<R>(mut reader: R, seed: (u8, TrFlags)) -> std::io::Result<Self>
+    where
+        R: ZeroCopyReader<'a>,
+    {
+        let (version, flags) = seed;
+
+        let sample_duration = if flags.contains(TrFlags::SampleDurationPresent) {
             Some(u32::deserialize(&mut reader)?)
         } else {
             None
         };
-        let sample_size = if seed.contains(TrFlags::SampleSizePresent) {
+        let sample_size = if flags.contains(TrFlags::SampleSizePresent) {
             Some(u32::deserialize(&mut reader)?)
         } else {
             None
         };
-        let sample_flags = if seed.contains(TrFlags::SampleFlagsPresent) {
-            Some(u32::deserialize(&mut reader)?)
+        let sample_flags = if flags.contains(TrFlags::SampleFlagsPresent) {
+            Some(SampleFlags::deserialize(&mut reader)?)
         } else {
             None
         };
-        let sample_composition_time_offset = if seed.contains(TrFlags::SampleCompositionTimeOffsetsPresent) {
-            Some(u32::deserialize(&mut reader)?)
+        let sample_composition_time_offset = if flags.contains(TrFlags::SampleCompositionTimeOffsetsPresent) {
+            if version == 0 {
+                Some(u32::deserialize(&mut reader)? as i64)
+            } else {
+                Some(i32::deserialize(&mut reader)? as i64)
+            }
         } else {
             None
         };
@@ -431,33 +553,38 @@ impl<'a> DeserializeSeed<'a, TrFlags> for TrackRunBoxSample {
     }
 }
 
-impl SerializeSeed<TrFlags> for TrackRunBoxSample {
-    fn serialize_seed<W>(&self, mut writer: W, seed: TrFlags) -> io::Result<()>
+impl SerializeSeed<(u8, TrFlags)> for TrackRunBoxSample {
+    fn serialize_seed<W>(&self, mut writer: W, seed: (u8, TrFlags)) -> io::Result<()>
     where
         W: io::Write,
     {
-        if seed.contains(TrFlags::SampleDurationPresent) {
+        let (version, flags) = seed;
+
+        if flags.contains(TrFlags::SampleDurationPresent) {
             self.sample_duration
                 .ok_or(io::Error::new(io::ErrorKind::InvalidData, "sample_duration is required"))?
                 .serialize(&mut writer)?;
         }
-        if seed.contains(TrFlags::SampleSizePresent) {
+        if flags.contains(TrFlags::SampleSizePresent) {
             self.sample_size
                 .ok_or(io::Error::new(io::ErrorKind::InvalidData, "sample_size is required"))?
                 .serialize(&mut writer)?;
         }
-        if seed.contains(TrFlags::SampleFlagsPresent) {
+        if flags.contains(TrFlags::SampleFlagsPresent) {
             self.sample_flags
                 .ok_or(io::Error::new(io::ErrorKind::InvalidData, "sample_flags is required"))?
                 .serialize(&mut writer)?;
         }
-        if seed.contains(TrFlags::SampleCompositionTimeOffsetsPresent) {
-            self.sample_composition_time_offset
-                .ok_or(io::Error::new(
-                    io::ErrorKind::InvalidData,
-                    "sample_composition_time_offset is required",
-                ))?
-                .serialize(&mut writer)?;
+        if flags.contains(TrFlags::SampleCompositionTimeOffsetsPresent) {
+            let sample_composition_time_offset = self.sample_composition_time_offset.ok_or(io::Error::new(
+                io::ErrorKind::InvalidData,
+                "sample_composition_time_offset is required",
+            ))?;
+            if version == 0 {
+                (sample_composition_time_offset as u32).serialize(&mut writer)?;
+            } else {
+                (sample_composition_time_offset as i32).serialize(&mut writer)?;
+            }
         }
 
         Ok(())
@@ -490,8 +617,6 @@ impl TrackRunBoxSample {
 #[derive(IsoBox, Debug)]
 #[iso_box(box_type = b"mfra", crate_path = crate)]
 pub struct MovieFragmentRandomAccessBox {
-    #[iso_box(header)]
-    pub header: BoxHeader,
     #[iso_box(nested_box(collect))]
     pub tfra: Vec<TrackFragmentRandomAccessBox>,
     #[iso_box(nested_box)]
@@ -504,8 +629,7 @@ pub struct MovieFragmentRandomAccessBox {
 #[derive(Debug, IsoBox)]
 #[iso_box(box_type = b"tfra", skip_impl(deserialize_seed, serialize, sized), crate_path = crate)]
 pub struct TrackFragmentRandomAccessBox {
-    #[iso_box(header)]
-    pub header: FullBoxHeader,
+    pub full_header: FullBoxHeader,
     pub track_id: u32,
     pub length_size_of_traf_num: u8,
     pub length_size_of_trun_num: u8,
@@ -514,11 +638,13 @@ pub struct TrackFragmentRandomAccessBox {
     pub entries: Vec<TrackFragmentRandomAccessBoxEntry>,
 }
 
-impl<'a> DeserializeSeed<'a, FullBoxHeader> for TrackFragmentRandomAccessBox {
-    fn deserialize_seed<R>(mut reader: R, seed: FullBoxHeader) -> io::Result<Self>
+impl<'a> DeserializeSeed<'a, BoxHeader> for TrackFragmentRandomAccessBox {
+    fn deserialize_seed<R>(mut reader: R, _seed: BoxHeader) -> io::Result<Self>
     where
         R: ZeroCopyReader<'a>,
     {
+        let full_header = FullBoxHeader::deserialize(&mut reader)?;
+
         let track_id = u32::deserialize(&mut reader)?;
         // 00000000 00000000 00000000 00xxxxxx
         let bytes = u32::deserialize(&mut reader)?;
@@ -529,12 +655,12 @@ impl<'a> DeserializeSeed<'a, FullBoxHeader> for TrackFragmentRandomAccessBox {
 
         let mut entries = Vec::with_capacity(number_of_entry as usize);
         for _ in 0..number_of_entry {
-            let time = if seed.version == 1 {
+            let time = if full_header.version == 1 {
                 u64::deserialize(&mut reader)?
             } else {
                 u32::deserialize(&mut reader)? as u64
             };
-            let moof_offset = if seed.version == 1 {
+            let moof_offset = if full_header.version == 1 {
                 u64::deserialize(&mut reader)?
             } else {
                 u32::deserialize(&mut reader)? as u64
@@ -555,7 +681,7 @@ impl<'a> DeserializeSeed<'a, FullBoxHeader> for TrackFragmentRandomAccessBox {
         }
 
         Ok(Self {
-            header: seed,
+            full_header,
             track_id,
             length_size_of_traf_num,
             length_size_of_trun_num,
@@ -573,7 +699,8 @@ impl Serialize for TrackFragmentRandomAccessBox {
     {
         let mut bit_writer = BitWriter::new(writer);
 
-        self.header.serialize(&mut bit_writer)?;
+        self.serialize_box_header(&mut bit_writer)?;
+        self.full_header.serialize(&mut bit_writer)?;
 
         self.track_id.serialize(&mut bit_writer)?;
         bit_writer.write_bits(0, 26)?;
@@ -592,13 +719,13 @@ impl Serialize for TrackFragmentRandomAccessBox {
 
 impl IsoSized for TrackFragmentRandomAccessBox {
     fn size(&self) -> usize {
-        let mut size = self.header.size(); // header
+        let mut size = self.full_header.size(); // header
         size += 4; // track_id
         size += 4; // length_size_of_traf_num + length_size_of_trun_num + length_size_of_sample_num
         size += 4; // number_of_entry
         size += self.entries.iter().map(|e| e.size(self)).sum::<usize>();
 
-        size
+        Self::add_header_size(size)
     }
 }
 
@@ -618,7 +745,7 @@ impl SerializeSeed<&TrackFragmentRandomAccessBox> for TrackFragmentRandomAccessB
     {
         let mut bit_writer = BitWriter::new(writer);
 
-        if seed.header.version == 1 {
+        if seed.full_header.version == 1 {
             self.time.serialize(&mut bit_writer)?;
             self.moof_offset.serialize(&mut bit_writer)?;
         } else {
@@ -637,7 +764,7 @@ impl SerializeSeed<&TrackFragmentRandomAccessBox> for TrackFragmentRandomAccessB
 impl TrackFragmentRandomAccessBoxEntry {
     pub fn size(&self, parent: &TrackFragmentRandomAccessBox) -> usize {
         let mut size = 0;
-        if parent.header.version == 1 {
+        if parent.full_header.version == 1 {
             size += 8;
             size += 8;
         } else {
@@ -657,8 +784,7 @@ impl TrackFragmentRandomAccessBoxEntry {
 #[derive(Debug, IsoBox)]
 #[iso_box(box_type = b"mfro", crate_path = crate)]
 pub struct MovieFragmentRandomAccessOffsetBox {
-    #[iso_box(header)]
-    pub header: FullBoxHeader,
+    pub full_header: FullBoxHeader,
     pub parent_size: u32,
 }
 
@@ -668,24 +794,25 @@ pub struct MovieFragmentRandomAccessOffsetBox {
 #[derive(Debug, IsoBox)]
 #[iso_box(box_type = b"tfdt", skip_impl(deserialize_seed, serialize, sized), crate_path = crate)]
 pub struct TrackFragmentBaseMediaDecodeTimeBox {
-    #[iso_box(header)]
-    pub header: FullBoxHeader,
+    pub full_header: FullBoxHeader,
     pub base_media_decode_time: u64,
 }
 
-impl<'a> DeserializeSeed<'a, FullBoxHeader> for TrackFragmentBaseMediaDecodeTimeBox {
-    fn deserialize_seed<R>(mut reader: R, seed: FullBoxHeader) -> io::Result<Self>
+impl<'a> DeserializeSeed<'a, BoxHeader> for TrackFragmentBaseMediaDecodeTimeBox {
+    fn deserialize_seed<R>(mut reader: R, _seed: BoxHeader) -> io::Result<Self>
     where
         R: ZeroCopyReader<'a>,
     {
-        let base_media_decode_time = if seed.version == 1 {
+        let full_header = FullBoxHeader::deserialize(&mut reader)?;
+
+        let base_media_decode_time = if full_header.version == 1 {
             u64::deserialize(&mut reader)?
         } else {
             u32::deserialize(&mut reader)? as u64
         };
 
         Ok(Self {
-            header: seed,
+            full_header,
             base_media_decode_time,
         })
     }
@@ -696,9 +823,10 @@ impl Serialize for TrackFragmentBaseMediaDecodeTimeBox {
     where
         W: std::io::Write,
     {
-        self.header.serialize(&mut writer)?;
+        self.serialize_box_header(&mut writer)?;
+        self.full_header.serialize(&mut writer)?;
 
-        if self.header.version == 1 {
+        if self.full_header.version == 1 {
             self.base_media_decode_time.serialize(&mut writer)?;
         } else {
             (self.base_media_decode_time as u32).serialize(&mut writer)?;
@@ -710,13 +838,13 @@ impl Serialize for TrackFragmentBaseMediaDecodeTimeBox {
 
 impl IsoSized for TrackFragmentBaseMediaDecodeTimeBox {
     fn size(&self) -> usize {
-        let mut size = self.header.size(); // header
-        if self.header.version == 1 {
+        let mut size = self.full_header.size(); // header
+        if self.full_header.version == 1 {
             size += 8; // base_media_decode_time
         } else {
             size += 4; // base_media_decode_time
         }
-        size
+        Self::add_header_size(size)
     }
 }
 
@@ -726,8 +854,7 @@ impl IsoSized for TrackFragmentBaseMediaDecodeTimeBox {
 #[derive(Debug, IsoBox)]
 #[iso_box(box_type = b"leva", crate_path = crate)]
 pub struct LevelAssignmentBox {
-    #[iso_box(header)]
-    pub header: FullBoxHeader,
+    pub full_header: FullBoxHeader,
     pub level_count: u8,
     #[iso_box(repeated)]
     pub levels: Vec<LevelAssignmentBoxLevel>,
@@ -857,8 +984,7 @@ impl LevelAssignmentBoxLevelAssignmentType {
 #[derive(IsoBox, Debug)]
 #[iso_box(box_type = b"trep", crate_path = crate)]
 pub struct TrackExtensionPropertiesBox<'a> {
-    #[iso_box(header)]
-    pub header: FullBoxHeader,
+    pub full_header: FullBoxHeader,
     pub track_id: u32,
     #[iso_box(nested_box(collect))]
     pub cslg: Option<CompositionToDecodeBox>,
@@ -874,17 +1000,18 @@ pub struct TrackExtensionPropertiesBox<'a> {
 #[derive(Debug, IsoBox)]
 #[iso_box(box_type = b"assp", skip_impl(deserialize_seed, serialize), crate_path = crate)]
 pub struct AlternativeStartupSequencePropertiesBox {
-    #[iso_box(header)]
-    pub header: FullBoxHeader,
+    pub full_header: FullBoxHeader,
     pub version: AlternativeStartupSequencePropertiesBoxVersion,
 }
 
-impl<'a> DeserializeSeed<'a, FullBoxHeader> for AlternativeStartupSequencePropertiesBox {
-    fn deserialize_seed<R>(mut reader: R, seed: FullBoxHeader) -> io::Result<Self>
+impl<'a> DeserializeSeed<'a, BoxHeader> for AlternativeStartupSequencePropertiesBox {
+    fn deserialize_seed<R>(mut reader: R, _seed: BoxHeader) -> io::Result<Self>
     where
         R: ZeroCopyReader<'a>,
     {
-        let version = match seed.version {
+        let full_header = FullBoxHeader::deserialize(&mut reader)?;
+
+        let version = match full_header.version {
             0 => AlternativeStartupSequencePropertiesBoxVersion::Version0 {
                 min_initial_alt_startup_offset: i32::deserialize(&mut reader)?,
             },
@@ -908,7 +1035,7 @@ impl<'a> DeserializeSeed<'a, FullBoxHeader> for AlternativeStartupSequenceProper
             v => AlternativeStartupSequencePropertiesBoxVersion::Other(v),
         };
 
-        Ok(Self { header: seed, version })
+        Ok(Self { full_header, version })
     }
 }
 
@@ -917,7 +1044,8 @@ impl Serialize for AlternativeStartupSequencePropertiesBox {
     where
         W: std::io::Write,
     {
-        self.header.serialize(&mut writer)?;
+        self.serialize_box_header(&mut writer)?;
+        self.full_header.serialize(&mut writer)?;
 
         match &self.version {
             AlternativeStartupSequencePropertiesBoxVersion::Version0 {

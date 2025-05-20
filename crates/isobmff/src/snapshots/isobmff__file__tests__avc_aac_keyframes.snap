@@ -4,16 +4,7 @@ expression: og_file
 snapshot_kind: text
 ---
 IsobmffFile {
-    empty_header: EmptyHeader,
     ftyp: FileTypeBox {
-        header: BoxHeader {
-            size: Short(
-                32,
-            ),
-            box_type: FourCc(
-                "ftyp",
-            ),
-        },
         major_brand: Brand::IsoM,
         minor_version: 512,
         compatible_brands: [
@@ -27,24 +18,8 @@ IsobmffFile {
     otyp: [],
     pdin: None,
     moov: MovieBox {
-        header: BoxHeader {
-            size: Short(
-                6286,
-            ),
-            box_type: FourCc(
-                "moov",
-            ),
-        },
         mvhd: MovieHeaderBox {
-            header: FullBoxHeader {
-                header: BoxHeader {
-                    size: Short(
-                        108,
-                    ),
-                    box_type: FourCc(
-                        "mvhd",
-                    ),
-                },
+            full_header: FullBoxHeader {
                 version: 0,
                 flags: U24Be(
                     0,
@@ -82,24 +57,8 @@ IsobmffFile {
         meta: None,
         trak: [
             TrackBox {
-                header: BoxHeader {
-                    size: Short(
-                        2692,
-                    ),
-                    box_type: FourCc(
-                        "trak",
-                    ),
-                },
                 tkhd: TrackHeaderBox {
-                    header: FullBoxHeader {
-                        header: BoxHeader {
-                            size: Short(
-                                92,
-                            ),
-                            box_type: FourCc(
-                                "tkhd",
-                            ),
-                        },
+                    full_header: FullBoxHeader {
                         version: 0,
                         flags: U24Be(
                             3,
@@ -133,25 +92,9 @@ IsobmffFile {
                 trgr: None,
                 edts: Some(
                     EditBox {
-                        header: BoxHeader {
-                            size: Short(
-                                36,
-                            ),
-                            box_type: FourCc(
-                                "edts",
-                            ),
-                        },
                         elst: Some(
                             EditListBox {
-                                header: FullBoxHeader {
-                                    header: BoxHeader {
-                                        size: Short(
-                                            28,
-                                        ),
-                                        box_type: FourCc(
-                                            "elst",
-                                        ),
-                                    },
+                                full_header: FullBoxHeader {
                                     version: 0,
                                     flags: U24Be(
                                         0,
@@ -173,24 +116,8 @@ IsobmffFile {
                 ttyp: None,
                 meta: None,
                 mdia: MediaBox {
-                    header: BoxHeader {
-                        size: Short(
-                            2556,
-                        ),
-                        box_type: FourCc(
-                            "mdia",
-                        ),
-                    },
                     mdhd: MediaHeaderBox {
-                        header: FullBoxHeader {
-                            header: BoxHeader {
-                                size: Short(
-                                    32,
-                                ),
-                                box_type: FourCc(
-                                    "mdhd",
-                                ),
-                            },
+                        full_header: FullBoxHeader {
                             version: 0,
                             flags: U24Be(
                                 0,
@@ -210,15 +137,7 @@ IsobmffFile {
                         pre_defined: 0,
                     },
                     hdlr: HandlerBox {
-                        header: FullBoxHeader {
-                            header: BoxHeader {
-                                size: Short(
-                                    49,
-                                ),
-                                box_type: FourCc(
-                                    "hdlr",
-                                ),
-                            },
+                        full_header: FullBoxHeader {
                             version: 0,
                             flags: U24Be(
                                 0,
@@ -237,25 +156,9 @@ IsobmffFile {
                     },
                     elng: None,
                     minf: MediaInformationBox {
-                        header: BoxHeader {
-                            size: Short(
-                                2467,
-                            ),
-                            box_type: FourCc(
-                                "minf",
-                            ),
-                        },
                         vmhd: Some(
                             VideoMediaHeaderBox {
-                                header: FullBoxHeader {
-                                    header: BoxHeader {
-                                        size: Short(
-                                            20,
-                                        ),
-                                        box_type: FourCc(
-                                            "vmhd",
-                                        ),
-                                    },
+                                full_header: FullBoxHeader {
                                     version: 0,
                                     flags: U24Be(
                                         1,
@@ -275,24 +178,8 @@ IsobmffFile {
                         vvhd: None,
                         unknown_boxes: [],
                         dinf: DataInformationBox {
-                            header: BoxHeader {
-                                size: Short(
-                                    36,
-                                ),
-                                box_type: FourCc(
-                                    "dinf",
-                                ),
-                            },
                             dref: DataReferenceBox {
-                                header: FullBoxHeader {
-                                    header: BoxHeader {
-                                        size: Short(
-                                            28,
-                                        ),
-                                        box_type: FourCc(
-                                            "dref",
-                                        ),
-                                    },
+                                full_header: FullBoxHeader {
                                     version: 0,
                                     flags: U24Be(
                                         0,
@@ -301,15 +188,7 @@ IsobmffFile {
                                 entry_count: 1,
                                 url: [
                                     DataEntryUrlBox {
-                                        header: FullBoxHeader {
-                                            header: BoxHeader {
-                                                size: Short(
-                                                    12,
-                                                ),
-                                                box_type: FourCc(
-                                                    "url ",
-                                                ),
-                                            },
+                                        full_header: FullBoxHeader {
                                             version: 0,
                                             flags: U24Be(
                                                 1,
@@ -325,24 +204,8 @@ IsobmffFile {
                             },
                         },
                         stbl: SampleTableBox {
-                            header: BoxHeader {
-                                size: Short(
-                                    2403,
-                                ),
-                                box_type: FourCc(
-                                    "stbl",
-                                ),
-                            },
                             stsd: SampleDescriptionBox {
-                                header: FullBoxHeader {
-                                    header: BoxHeader {
-                                        size: Short(
-                                            199,
-                                        ),
-                                        box_type: FourCc(
-                                            "stsd",
-                                        ),
-                                    },
+                                full_header: FullBoxHeader {
                                     version: 0,
                                     flags: U24Be(
                                         0,
@@ -364,15 +227,7 @@ IsobmffFile {
                                 ],
                             },
                             stts: TimeToSampleBox {
-                                header: FullBoxHeader {
-                                    header: BoxHeader {
-                                        size: Short(
-                                            24,
-                                        ),
-                                        box_type: FourCc(
-                                            "stts",
-                                        ),
-                                    },
+                                full_header: FullBoxHeader {
                                     version: 0,
                                     flags: U24Be(
                                         0,
@@ -388,15 +243,7 @@ IsobmffFile {
                             },
                             ctts: Some(
                                 CompositionOffsetBox {
-                                    header: FullBoxHeader {
-                                        header: BoxHeader {
-                                            size: Short(
-                                                944,
-                                            ),
-                                            box_type: FourCc(
-                                                "ctts",
-                                            ),
-                                        },
+                                    full_header: FullBoxHeader {
                                         version: 0,
                                         flags: U24Be(
                                             0,
@@ -408,15 +255,7 @@ IsobmffFile {
                             ),
                             cslg: None,
                             stsc: SampleToChunkBox {
-                                header: FullBoxHeader {
-                                    header: BoxHeader {
-                                        size: Short(
-                                            40,
-                                        ),
-                                        box_type: FourCc(
-                                            "stsc",
-                                        ),
-                                    },
+                                full_header: FullBoxHeader {
                                     version: 0,
                                     flags: U24Be(
                                         0,
@@ -427,15 +266,7 @@ IsobmffFile {
                             },
                             stsz: Some(
                                 SampleSizeBox {
-                                    header: FullBoxHeader {
-                                        header: BoxHeader {
-                                            size: Short(
-                                                580,
-                                            ),
-                                            box_type: FourCc(
-                                                "stsz",
-                                            ),
-                                        },
+                                    full_header: FullBoxHeader {
                                         version: 0,
                                         flags: U24Be(
                                             0,
@@ -449,15 +280,7 @@ IsobmffFile {
                             stz2: None,
                             stco: Some(
                                 ChunkOffsetBox {
-                                    header: FullBoxHeader {
-                                        header: BoxHeader {
-                                            size: Short(
-                                                572,
-                                            ),
-                                            box_type: FourCc(
-                                                "stco",
-                                            ),
-                                        },
+                                    full_header: FullBoxHeader {
                                         version: 0,
                                         flags: U24Be(
                                             0,
@@ -470,15 +293,7 @@ IsobmffFile {
                             co64: None,
                             stss: Some(
                                 SyncSampleBox {
-                                    header: FullBoxHeader {
-                                        header: BoxHeader {
-                                            size: Short(
-                                                36,
-                                            ),
-                                            box_type: FourCc(
-                                                "stss",
-                                            ),
-                                        },
+                                    full_header: FullBoxHeader {
                                         version: 0,
                                         flags: U24Be(
                                             0,
@@ -512,24 +327,8 @@ IsobmffFile {
                 udta: None,
             },
             TrackBox {
-                header: BoxHeader {
-                    size: Short(
-                        3381,
-                    ),
-                    box_type: FourCc(
-                        "trak",
-                    ),
-                },
                 tkhd: TrackHeaderBox {
-                    header: FullBoxHeader {
-                        header: BoxHeader {
-                            size: Short(
-                                92,
-                            ),
-                            box_type: FourCc(
-                                "tkhd",
-                            ),
-                        },
+                    full_header: FullBoxHeader {
                         version: 0,
                         flags: U24Be(
                             3,
@@ -563,25 +362,9 @@ IsobmffFile {
                 trgr: None,
                 edts: Some(
                     EditBox {
-                        header: BoxHeader {
-                            size: Short(
-                                36,
-                            ),
-                            box_type: FourCc(
-                                "edts",
-                            ),
-                        },
                         elst: Some(
                             EditListBox {
-                                header: FullBoxHeader {
-                                    header: BoxHeader {
-                                        size: Short(
-                                            28,
-                                        ),
-                                        box_type: FourCc(
-                                            "elst",
-                                        ),
-                                    },
+                                full_header: FullBoxHeader {
                                     version: 0,
                                     flags: U24Be(
                                         0,
@@ -603,24 +386,8 @@ IsobmffFile {
                 ttyp: None,
                 meta: None,
                 mdia: MediaBox {
-                    header: BoxHeader {
-                        size: Short(
-                            3245,
-                        ),
-                        box_type: FourCc(
-                            "mdia",
-                        ),
-                    },
                     mdhd: MediaHeaderBox {
-                        header: FullBoxHeader {
-                            header: BoxHeader {
-                                size: Short(
-                                    32,
-                                ),
-                                box_type: FourCc(
-                                    "mdhd",
-                                ),
-                            },
+                        full_header: FullBoxHeader {
                             version: 0,
                             flags: U24Be(
                                 0,
@@ -640,15 +407,7 @@ IsobmffFile {
                         pre_defined: 0,
                     },
                     hdlr: HandlerBox {
-                        header: FullBoxHeader {
-                            header: BoxHeader {
-                                size: Short(
-                                    49,
-                                ),
-                                box_type: FourCc(
-                                    "hdlr",
-                                ),
-                            },
+                        full_header: FullBoxHeader {
                             version: 0,
                             flags: U24Be(
                                 0,
@@ -667,26 +426,10 @@ IsobmffFile {
                     },
                     elng: None,
                     minf: MediaInformationBox {
-                        header: BoxHeader {
-                            size: Short(
-                                3156,
-                            ),
-                            box_type: FourCc(
-                                "minf",
-                            ),
-                        },
                         vmhd: None,
                         smhd: Some(
                             SoundMediaHeaderBox {
-                                header: FullBoxHeader {
-                                    header: BoxHeader {
-                                        size: Short(
-                                            16,
-                                        ),
-                                        box_type: FourCc(
-                                            "smhd",
-                                        ),
-                                    },
+                                full_header: FullBoxHeader {
                                     version: 0,
                                     flags: U24Be(
                                         0,
@@ -701,24 +444,8 @@ IsobmffFile {
                         vvhd: None,
                         unknown_boxes: [],
                         dinf: DataInformationBox {
-                            header: BoxHeader {
-                                size: Short(
-                                    36,
-                                ),
-                                box_type: FourCc(
-                                    "dinf",
-                                ),
-                            },
                             dref: DataReferenceBox {
-                                header: FullBoxHeader {
-                                    header: BoxHeader {
-                                        size: Short(
-                                            28,
-                                        ),
-                                        box_type: FourCc(
-                                            "dref",
-                                        ),
-                                    },
+                                full_header: FullBoxHeader {
                                     version: 0,
                                     flags: U24Be(
                                         0,
@@ -727,15 +454,7 @@ IsobmffFile {
                                 entry_count: 1,
                                 url: [
                                     DataEntryUrlBox {
-                                        header: FullBoxHeader {
-                                            header: BoxHeader {
-                                                size: Short(
-                                                    12,
-                                                ),
-                                                box_type: FourCc(
-                                                    "url ",
-                                                ),
-                                            },
+                                        full_header: FullBoxHeader {
                                             version: 0,
                                             flags: U24Be(
                                                 1,
@@ -751,24 +470,8 @@ IsobmffFile {
                             },
                         },
                         stbl: SampleTableBox {
-                            header: BoxHeader {
-                                size: Short(
-                                    3096,
-                                ),
-                                box_type: FourCc(
-                                    "stbl",
-                                ),
-                            },
                             stsd: SampleDescriptionBox {
-                                header: FullBoxHeader {
-                                    header: BoxHeader {
-                                        size: Short(
-                                            126,
-                                        ),
-                                        box_type: FourCc(
-                                            "stsd",
-                                        ),
-                                    },
+                                full_header: FullBoxHeader {
                                     version: 0,
                                     flags: U24Be(
                                         0,
@@ -790,15 +493,7 @@ IsobmffFile {
                                 ],
                             },
                             stts: TimeToSampleBox {
-                                header: FullBoxHeader {
-                                    header: BoxHeader {
-                                        size: Short(
-                                            32,
-                                        ),
-                                        box_type: FourCc(
-                                            "stts",
-                                        ),
-                                    },
+                                full_header: FullBoxHeader {
                                     version: 0,
                                     flags: U24Be(
                                         0,
@@ -819,15 +514,7 @@ IsobmffFile {
                             ctts: None,
                             cslg: None,
                             stsc: SampleToChunkBox {
-                                header: FullBoxHeader {
-                                    header: BoxHeader {
-                                        size: Short(
-                                            1480,
-                                        ),
-                                        box_type: FourCc(
-                                            "stsc",
-                                        ),
-                                    },
+                                full_header: FullBoxHeader {
                                     version: 0,
                                     flags: U24Be(
                                         0,
@@ -838,15 +525,7 @@ IsobmffFile {
                             },
                             stsz: Some(
                                 SampleSizeBox {
-                                    header: FullBoxHeader {
-                                        header: BoxHeader {
-                                            size: Short(
-                                                824,
-                                            ),
-                                            box_type: FourCc(
-                                                "stsz",
-                                            ),
-                                        },
+                                    full_header: FullBoxHeader {
                                         version: 0,
                                         flags: U24Be(
                                             0,
@@ -860,15 +539,7 @@ IsobmffFile {
                             stz2: None,
                             stco: Some(
                                 ChunkOffsetBox {
-                                    header: FullBoxHeader {
-                                        header: BoxHeader {
-                                            size: Short(
-                                                572,
-                                            ),
-                                            box_type: FourCc(
-                                                "stco",
-                                            ),
-                                        },
+                                    full_header: FullBoxHeader {
                                         version: 0,
                                         flags: U24Be(
                                             0,
@@ -886,15 +557,7 @@ IsobmffFile {
                             sdtp: None,
                             sbgp: [
                                 SampleToGroupBox {
-                                    header: FullBoxHeader {
-                                        header: BoxHeader {
-                                            size: Short(
-                                                28,
-                                            ),
-                                            box_type: FourCc(
-                                                "sbgp",
-                                            ),
-                                        },
+                                    full_header: FullBoxHeader {
                                         version: 0,
                                         flags: U24Be(
                                             0,
@@ -918,15 +581,7 @@ IsobmffFile {
                             ],
                             sgpd: [
                                 SampleGroupDescriptionBox {
-                                    header: FullBoxHeader {
-                                        header: BoxHeader {
-                                            size: Short(
-                                                26,
-                                            ),
-                                            box_type: FourCc(
-                                                "sgpd",
-                                            ),
-                                        },
+                                    full_header: FullBoxHeader {
                                         version: 1,
                                         flags: U24Be(
                                             0,
@@ -969,14 +624,6 @@ IsobmffFile {
         unknown_boxes: [],
         udta: Some(
             UserDataBox {
-                header: BoxHeader {
-                    size: Short(
-                        97,
-                    ),
-                    box_type: FourCc(
-                        "udta",
-                    ),
-                },
                 cprt: [],
                 tsel: None,
                 kind: [],
@@ -1001,14 +648,6 @@ IsobmffFile {
     moof: [],
     mdat: [
         MediaDataBox {
-            header: BoxHeader {
-                size: Short(
-                    785003,
-                ),
-                box_type: FourCc(
-                    "mdat",
-                ),
-            },
             data.len: 784995,
         },
     ],

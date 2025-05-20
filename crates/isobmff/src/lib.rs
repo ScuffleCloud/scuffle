@@ -43,10 +43,34 @@ pub mod reexports {
 #[scuffle_changelog::changelog]
 pub mod changelog {}
 
-pub trait IsoBox {
-    type Header;
-
+pub trait IsoBox: IsoSized {
     const TYPE: BoxType;
+
+    fn add_header_size(payload_size: usize) -> usize {
+        let mut box_size = payload_size;
+        box_size += 4 + 4; // size + type
+        if let BoxType::Uuid(_) = Self::TYPE {
+            box_size += 16; // usertype
+        }
+
+        // If the size does not fit in a u32 we use a long size.
+        if box_size > u32::MAX as usize {
+            box_size += 8; // large size
+        }
+
+        box_size
+    }
+
+    fn serialize_box_header<W>(&self, writer: W) -> std::io::Result<()>
+    where
+        W: std::io::Write,
+    {
+        BoxHeader {
+            size: self.size().into(),
+            box_type: Self::TYPE,
+        }
+        .serialize(writer)
+    }
 }
 
 pub struct UnknownBox<'a> {
@@ -109,8 +133,7 @@ impl<'a> UnknownBox<'a> {
 
     pub fn deserialize_as_box<B>(self) -> std::io::Result<B>
     where
-        B: IsoBox + DeserializeSeed<'a, B::Header>,
-        B::Header: DeserializeSeed<'a, BoxHeader>,
+        B: IsoBox + Deserialize<'a>,
     {
         if self.header.box_type != B::TYPE {
             return Err(std::io::Error::new(
@@ -119,9 +142,8 @@ impl<'a> UnknownBox<'a> {
             ));
         }
 
-        let mut reader = scuffle_bytes_util::zero_copy::BytesBuf::from(self.data.into_bytes());
-        let seed = B::Header::deserialize_seed(&mut reader, self.header)?;
-        B::deserialize_seed(&mut reader, seed)
+        let reader = scuffle_bytes_util::zero_copy::BytesBuf::from(self.data.into_bytes());
+        B::deserialize(reader)
     }
 }
 

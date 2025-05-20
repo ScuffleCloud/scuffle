@@ -2,7 +2,7 @@ use scuffle_bytes_util::BytesCow;
 use scuffle_bytes_util::zero_copy::{Deserialize, Serialize};
 
 use super::{BitRateBox, SampleEntry};
-use crate::{BoxHeader, FullBoxHeader, IsoBox, IsoSized, UnknownBox, Utf8List, Utf8String};
+use crate::{FullBoxHeader, IsoBox, IsoSized, UnknownBox, Utf8List, Utf8String};
 
 /// Metadata sample entry
 ///
@@ -48,8 +48,6 @@ impl IsoSized for MetaDataSampleEntry {
 #[derive(IsoBox, Debug)]
 #[iso_box(box_type = b"metx", crate_path = crate)]
 pub struct XMLMetaDataSampleEntry<'a> {
-    #[iso_box(header)]
-    pub header: BoxHeader,
     pub sample_entry: MetaDataSampleEntry,
     pub content_encoding: Utf8String,
     pub namespace: Utf8List,
@@ -66,8 +64,7 @@ pub struct XMLMetaDataSampleEntry<'a> {
 #[derive(IsoBox, Debug)]
 #[iso_box(box_type = b"txtC", crate_path = crate)]
 pub struct TextConfigBox {
-    #[iso_box(header)]
-    pub header: FullBoxHeader,
+    pub full_header: FullBoxHeader,
     pub text_config: Utf8String,
 }
 
@@ -77,8 +74,6 @@ pub struct TextConfigBox {
 #[derive(IsoBox, Debug)]
 #[iso_box(box_type = b"mett", crate_path = crate)]
 pub struct TextMetaDataSampleEntry<'a> {
-    #[iso_box(header)]
-    pub header: BoxHeader,
     pub sample_entry: MetaDataSampleEntry,
     pub content_encoding: Utf8String,
     pub mime_format: Utf8String,
@@ -93,32 +88,27 @@ pub struct TextMetaDataSampleEntry<'a> {
 #[derive(IsoBox, Debug)]
 #[iso_box(box_type = b"mime", crate_path = crate)]
 pub struct MIMEBox {
-    #[iso_box(header)]
-    pub header: FullBoxHeader,
+    pub full_header: FullBoxHeader,
     pub content_type: Utf8String,
 }
 
 #[derive(IsoBox, Debug)]
 #[iso_box(box_type = b"uri ", crate_path = crate)]
 pub struct URIBox {
-    #[iso_box(header)]
-    pub header: FullBoxHeader,
+    pub full_header: FullBoxHeader,
     pub the_uri: Utf8String,
 }
 
 #[derive(IsoBox, Debug)]
 #[iso_box(box_type = b"uriI", crate_path = crate)]
 pub struct URIInitBox<'a> {
-    #[iso_box(header)]
-    pub header: FullBoxHeader,
+    pub full_header: FullBoxHeader,
     pub uri_initialization_data: BytesCow<'a>,
 }
 
 #[derive(IsoBox, Debug)]
 #[iso_box(box_type = b"urim", crate_path = crate)]
 pub struct URIMetaSampleEntry<'a> {
-    #[iso_box(header)]
-    pub header: BoxHeader,
     pub sample_entry: MetaDataSampleEntry,
     #[iso_box(nested_box(collect))]
     pub btrt: Option<BitRateBox>,

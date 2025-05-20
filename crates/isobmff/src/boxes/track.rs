@@ -11,8 +11,6 @@ use crate::{BoxHeader, FullBoxHeader, IsoBox, IsoSized, UnknownBox};
 #[derive(IsoBox, Debug)]
 #[iso_box(box_type = b"trak", crate_path = crate)]
 pub struct TrackBox<'a> {
-    #[iso_box(header)]
-    pub header: BoxHeader,
     #[iso_box(nested_box)]
     pub tkhd: TrackHeaderBox,
     #[iso_box(nested_box(collect))]
@@ -39,8 +37,7 @@ pub struct TrackBox<'a> {
 #[derive(Debug, IsoBox)]
 #[iso_box(box_type = b"tkhd", skip_impl(deserialize_seed, serialize, sized), crate_path = crate)]
 pub struct TrackHeaderBox {
-    #[iso_box(header)]
-    pub header: FullBoxHeader,
+    pub full_header: FullBoxHeader,
     pub creation_time: u64,
     pub modification_time: u64,
     pub track_id: u32,
@@ -56,24 +53,26 @@ pub struct TrackHeaderBox {
     pub height: u32,
 }
 
-impl<'a> DeserializeSeed<'a, FullBoxHeader> for TrackHeaderBox {
-    fn deserialize_seed<R>(mut reader: R, seed: FullBoxHeader) -> std::io::Result<Self>
+impl<'a> DeserializeSeed<'a, BoxHeader> for TrackHeaderBox {
+    fn deserialize_seed<R>(mut reader: R, _seed: BoxHeader) -> std::io::Result<Self>
     where
         R: scuffle_bytes_util::zero_copy::ZeroCopyReader<'a>,
     {
-        let creation_time = if seed.version == 1 {
+        let full_header = FullBoxHeader::deserialize(&mut reader)?;
+
+        let creation_time = if full_header.version == 1 {
             u64::deserialize(&mut reader)?
         } else {
             u32::deserialize(&mut reader)? as u64
         };
-        let modification_time = if seed.version == 1 {
+        let modification_time = if full_header.version == 1 {
             u64::deserialize(&mut reader)?
         } else {
             u32::deserialize(&mut reader)? as u64
         };
         let track_id = u32::deserialize(&mut reader)?;
         let reserved1 = u32::deserialize(&mut reader)?;
-        let duration = if seed.version == 1 {
+        let duration = if full_header.version == 1 {
             u64::deserialize(&mut reader)?
         } else {
             u32::deserialize(&mut reader)? as u64
@@ -96,7 +95,7 @@ impl<'a> DeserializeSeed<'a, FullBoxHeader> for TrackHeaderBox {
         let height = u32::deserialize(&mut reader)?;
 
         Ok(Self {
-            header: seed,
+            full_header,
             creation_time,
             modification_time,
             track_id,
@@ -119,9 +118,10 @@ impl Serialize for TrackHeaderBox {
     where
         W: std::io::Write,
     {
-        self.header.serialize(&mut writer)?;
+        self.serialize_box_header(&mut writer)?;
+        self.full_header.serialize(&mut writer)?;
 
-        if self.header.version == 1 {
+        if self.full_header.version == 1 {
             self.creation_time.serialize(&mut writer)?;
             self.modification_time.serialize(&mut writer)?;
         } else {
@@ -130,7 +130,7 @@ impl Serialize for TrackHeaderBox {
         }
         self.track_id.serialize(&mut writer)?;
         self.reserved1.serialize(&mut writer)?;
-        if self.header.version == 1 {
+        if self.full_header.version == 1 {
             self.duration.serialize(&mut writer)?;
         } else {
             (self.duration as u32).serialize(&mut writer)?;
@@ -155,15 +155,15 @@ impl Serialize for TrackHeaderBox {
 
 impl IsoSized for TrackHeaderBox {
     fn size(&self) -> usize {
-        let mut size = self.header.size();
-        if self.header.version == 1 {
+        let mut size = self.full_header.size();
+        if self.full_header.version == 1 {
             size += 8 + 8; // creation_time, modification_time
         } else {
             size += 4 + 4; // creation_time, modification_time
         }
         size += 4; // track_id
         size += 4; // reserved1
-        if self.header.version == 1 {
+        if self.full_header.version == 1 {
             size += 8; // duration
         } else {
             size += 4; // duration
@@ -177,7 +177,7 @@ impl IsoSized for TrackHeaderBox {
         size += 4; // width
         size += 4; // height
 
-        size
+        Self::add_header_size(size)
     }
 }
 
@@ -187,8 +187,6 @@ impl IsoSized for TrackHeaderBox {
 #[derive(IsoBox, Debug)]
 #[iso_box(box_type = b"tref", crate_path = crate)]
 pub struct TrackReferenceBox<'a> {
-    #[iso_box(header)]
-    pub header: BoxHeader,
     #[iso_box(nested_box(collect_unknown))]
     pub track_reference_type: Vec<UnknownBox<'a>>,
 }
@@ -199,8 +197,6 @@ pub struct TrackReferenceBox<'a> {
 #[derive(IsoBox, Debug)]
 #[iso_box(box_type = b"trgr", crate_path = crate)]
 pub struct TrackGroupBox<'a> {
-    #[iso_box(header)]
-    pub header: BoxHeader,
     #[iso_box(nested_box(collect_unknown))]
     pub track_group_type: Vec<UnknownBox<'a>>,
 }
@@ -211,8 +207,6 @@ pub struct TrackGroupBox<'a> {
 #[derive(IsoBox, Debug)]
 #[iso_box(box_type = b"ttyp", crate_path = crate)]
 pub struct TrackTypeBox {
-    #[iso_box(header)]
-    pub header: BoxHeader,
     #[iso_box(from = "[u8; 4]")]
     pub major_brand: Brand,
     pub minor_version: u32,

@@ -11,8 +11,7 @@ use crate::{BoxHeader, FullBoxHeader, IsoBox, IsoSized};
 #[derive(IsoBox, Debug)]
 #[iso_box(box_type = b"stts", crate_path = crate)]
 pub struct TimeToSampleBox {
-    #[iso_box(header)]
-    pub header: FullBoxHeader,
+    pub full_header: FullBoxHeader,
     pub entry_count: u32,
     #[iso_box(repeated)]
     pub entries: Vec<TimeToSampleBoxEntry>,
@@ -59,8 +58,7 @@ impl IsoSized for TimeToSampleBoxEntry {
 #[derive(IsoBox)]
 #[iso_box(box_type = b"ctts", crate_path = crate)]
 pub struct CompositionOffsetBox {
-    #[iso_box(header)]
-    pub header: FullBoxHeader,
+    pub full_header: FullBoxHeader,
     pub entry_count: u32,
     #[iso_box(repeated)]
     pub entries: Vec<CompositionOffsetBoxEntry>,
@@ -69,7 +67,7 @@ pub struct CompositionOffsetBox {
 impl Debug for CompositionOffsetBox {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         f.debug_struct("CompositionOffsetBox")
-            .field("header", &self.header)
+            .field("full_header", &self.full_header)
             .field("entry_count", &self.entry_count)
             .field("entries.len", &self.entries.len())
             .finish()
@@ -118,8 +116,7 @@ impl IsoSized for CompositionOffsetBoxEntry {
 #[derive(Debug, IsoBox)]
 #[iso_box(box_type = b"cslg", skip_impl(deserialize_seed, serialize, sized), crate_path = crate)]
 pub struct CompositionToDecodeBox {
-    #[iso_box(header)]
-    pub header: FullBoxHeader,
+    pub full_header: FullBoxHeader,
     pub composition_to_dt_shift: i64,
     pub least_decode_to_display_delta: i64,
     pub greatest_decode_to_display_delta: i64,
@@ -127,39 +124,41 @@ pub struct CompositionToDecodeBox {
     pub composition_end_time: i64,
 }
 
-impl<'a> DeserializeSeed<'a, FullBoxHeader> for CompositionToDecodeBox {
-    fn deserialize_seed<R>(mut reader: R, seed: FullBoxHeader) -> io::Result<Self>
+impl<'a> DeserializeSeed<'a, BoxHeader> for CompositionToDecodeBox {
+    fn deserialize_seed<R>(mut reader: R, _seed: BoxHeader) -> io::Result<Self>
     where
         R: ZeroCopyReader<'a>,
     {
-        let composition_to_dt_shift = if seed.version == 0 {
+        let full_header = FullBoxHeader::deserialize(&mut reader)?;
+
+        let composition_to_dt_shift = if full_header.version == 0 {
             i32::deserialize(&mut reader)? as i64
         } else {
             i64::deserialize(&mut reader)?
         };
-        let least_decode_to_display_delta = if seed.version == 0 {
+        let least_decode_to_display_delta = if full_header.version == 0 {
             i32::deserialize(&mut reader)? as i64
         } else {
             i64::deserialize(&mut reader)?
         };
-        let greatest_decode_to_display_delta = if seed.version == 0 {
+        let greatest_decode_to_display_delta = if full_header.version == 0 {
             i32::deserialize(&mut reader)? as i64
         } else {
             i64::deserialize(&mut reader)?
         };
-        let composition_start_time = if seed.version == 0 {
+        let composition_start_time = if full_header.version == 0 {
             i32::deserialize(&mut reader)? as i64
         } else {
             i64::deserialize(&mut reader)?
         };
-        let composition_end_time = if seed.version == 0 {
+        let composition_end_time = if full_header.version == 0 {
             i32::deserialize(&mut reader)? as i64
         } else {
             i64::deserialize(&mut reader)?
         };
 
         Ok(Self {
-            header: seed,
+            full_header,
             composition_to_dt_shift,
             least_decode_to_display_delta,
             greatest_decode_to_display_delta,
@@ -174,8 +173,9 @@ impl Serialize for CompositionToDecodeBox {
     where
         W: std::io::Write,
     {
-        self.header.serialize(&mut writer)?;
-        if self.header.version == 0 {
+        self.serialize_box_header(&mut writer)?;
+        self.full_header.serialize(&mut writer)?;
+        if self.full_header.version == 0 {
             (self.composition_to_dt_shift as i32).serialize(&mut writer)?;
             (self.least_decode_to_display_delta as i32).serialize(&mut writer)?;
             (self.greatest_decode_to_display_delta as i32).serialize(&mut writer)?;
@@ -194,13 +194,14 @@ impl Serialize for CompositionToDecodeBox {
 
 impl IsoSized for CompositionToDecodeBox {
     fn size(&self) -> usize {
-        let mut size = self.header.size();
-        if self.header.version == 0 {
+        let mut size = self.full_header.size();
+        if self.full_header.version == 0 {
             size += 4 + 4 + 4 + 4 + 4;
         } else {
             size += 8 + 8 + 8 + 8 + 8;
         }
-        size
+
+        Self::add_header_size(size)
     }
 }
 
@@ -210,8 +211,7 @@ impl IsoSized for CompositionToDecodeBox {
 #[derive(IsoBox, Debug)]
 #[iso_box(box_type = b"stss", crate_path = crate)]
 pub struct SyncSampleBox {
-    #[iso_box(header)]
-    pub header: FullBoxHeader,
+    pub full_header: FullBoxHeader,
     pub entry_count: u32,
     #[iso_box(repeated)]
     pub sample_number: Vec<u32>,
@@ -223,8 +223,7 @@ pub struct SyncSampleBox {
 #[derive(IsoBox, Debug)]
 #[iso_box(box_type = b"stsh", crate_path = crate)]
 pub struct ShadowSyncSampleBox {
-    #[iso_box(header)]
-    pub header: FullBoxHeader,
+    pub full_header: FullBoxHeader,
     pub entry_count: u32,
     #[iso_box(repeated)]
     pub entries: Vec<ShadowSyncSampleBoxEntry>,
@@ -271,8 +270,7 @@ impl IsoSized for ShadowSyncSampleBoxEntry {
 #[derive(IsoBox, Debug)]
 #[iso_box(box_type = b"sdtp", crate_path = crate)]
 pub struct SampleDependencyTypeBox {
-    #[iso_box(header)]
-    pub header: FullBoxHeader,
+    pub full_header: FullBoxHeader,
     #[iso_box(from = "u8", repeated)]
     pub entries: Vec<SampleDependencyTypeBoxEntry>,
 }
@@ -317,8 +315,6 @@ impl IsoSized for SampleDependencyTypeBoxEntry {
 #[derive(IsoBox, Debug)]
 #[iso_box(box_type = b"edts", crate_path = crate)]
 pub struct EditBox {
-    #[iso_box(header)]
-    pub header: BoxHeader,
     #[iso_box(nested_box(collect))]
     pub elst: Option<EditListBox>,
 }
@@ -329,27 +325,28 @@ pub struct EditBox {
 #[derive(Debug, IsoBox)]
 #[iso_box(box_type = b"elst", skip_impl(deserialize_seed, serialize, sized), crate_path = crate)]
 pub struct EditListBox {
-    #[iso_box(header)]
-    pub header: FullBoxHeader,
+    pub full_header: FullBoxHeader,
     pub entry_count: u32,
     #[iso_box(repeated)]
     pub entries: Vec<EditListBoxEntry>,
 }
 
-impl<'a> DeserializeSeed<'a, FullBoxHeader> for EditListBox {
-    fn deserialize_seed<R>(mut reader: R, seed: FullBoxHeader) -> io::Result<Self>
+impl<'a> DeserializeSeed<'a, BoxHeader> for EditListBox {
+    fn deserialize_seed<R>(mut reader: R, _seed: BoxHeader) -> io::Result<Self>
     where
         R: ZeroCopyReader<'a>,
     {
+        let full_header = FullBoxHeader::deserialize(&mut reader)?;
+
         let entry_count = u32::deserialize(&mut reader)?;
 
         let mut entries = Vec::with_capacity(entry_count as usize);
         for _ in 0..entry_count {
-            entries.push(EditListBoxEntry::deserialize_seed(&mut reader, seed.version)?);
+            entries.push(EditListBoxEntry::deserialize_seed(&mut reader, full_header.version)?);
         }
 
         Ok(Self {
-            header: seed,
+            full_header,
             entry_count,
             entries,
         })
@@ -361,11 +358,12 @@ impl Serialize for EditListBox {
     where
         W: std::io::Write,
     {
-        self.header.serialize(&mut writer)?;
+        self.serialize_box_header(&mut writer)?;
+        self.full_header.serialize(&mut writer)?;
         self.entry_count.serialize(&mut writer)?;
 
         for entry in &self.entries {
-            entry.serialize_seed(&mut writer, self.header.version)?;
+            entry.serialize_seed(&mut writer, self.full_header.version)?;
         }
 
         Ok(())
@@ -374,13 +372,16 @@ impl Serialize for EditListBox {
 
 impl IsoSized for EditListBox {
     fn size(&self) -> usize {
-        self.header.size()
-            + self.entry_count.size()
-            + self
-                .entries
-                .iter()
-                .map(|entry| entry.size(self.header.version))
-                .sum::<usize>()
+        let mut size = 0;
+        size += self.full_header.size();
+        size += self.entry_count.size();
+        size += self
+            .entries
+            .iter()
+            .map(|entry| entry.size(self.full_header.version))
+            .sum::<usize>();
+
+        Self::add_header_size(size)
     }
 }
 

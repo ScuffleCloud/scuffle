@@ -249,9 +249,8 @@ impl Serialize for HEVCDecoderConfigurationRecord<'_> {
     }
 }
 
-impl HEVCDecoderConfigurationRecord<'_> {
-    /// Returns the total byte size of the [`HEVCDecoderConfigurationRecord`].
-    pub fn size(&self) -> u64 {
+impl isobmff::IsoSized for HEVCDecoderConfigurationRecord<'_> {
+    fn size(&self) -> usize {
         1 // configuration_version
         + 1 // general_profile_space, general_tier_flag, general_profile_idc
         + 4 // general_profile_compatibility_flags
@@ -270,9 +269,9 @@ impl HEVCDecoderConfigurationRecord<'_> {
             + 2 // num_nalus
             + array.nalus.iter().map(|nalu| {
                 2 // nal_unit_length
-                + nalu.len() as u64 // nal_unit
-            }).sum::<u64>()
-        }).sum::<u64>()
+                + nalu.len() // nal_unit
+            }).sum::<usize>()
+        }).sum::<usize>()
     }
 }
 
@@ -281,6 +280,7 @@ impl HEVCDecoderConfigurationRecord<'_> {
 mod tests {
     use std::io;
 
+    use isobmff::IsoSized;
     use scuffle_bytes_util::zero_copy::{Deserialize, Serialize, Slice};
 
     use crate::{
@@ -340,7 +340,7 @@ mod tests {
 
         let config = HEVCDecoderConfigurationRecord::deserialize(Slice::from(&data[..])).unwrap();
 
-        assert_eq!(config.size(), data.len() as u64);
+        assert_eq!(config.size(), data.len());
 
         let mut buf = Vec::new();
         config.serialize(&mut buf).unwrap();

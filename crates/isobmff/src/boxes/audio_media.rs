@@ -13,8 +13,7 @@ use crate::{BoxHeader, FullBoxHeader, IsoBox, IsoSized};
 #[derive(IsoBox, Debug)]
 #[iso_box(box_type = b"smhd", crate_path = crate)]
 pub struct SoundMediaHeaderBox {
-    #[iso_box(header)]
-    pub header: FullBoxHeader,
+    pub full_header: FullBoxHeader,
     pub balance: i16,
     pub reserved: u16,
 }
@@ -101,8 +100,7 @@ impl IsoSized for AudioSampleEntry {
 #[derive(IsoBox, Debug)]
 #[iso_box(box_type = b"srat", crate_path = crate)]
 pub struct SamplingRateBox {
-    #[iso_box(header)]
-    pub header: FullBoxHeader,
+    pub full_header: FullBoxHeader,
     pub sampling_rate: u32,
 }
 
@@ -196,8 +194,7 @@ impl IsoSized for AudioSampleEntryV1 {
 #[derive(IsoBox, Debug)]
 #[iso_box(box_type = b"chnl", crate_path = crate)]
 pub struct ChannelLayout<'a> {
-    #[iso_box(header)]
-    pub header: FullBoxHeader,
+    pub full_header: FullBoxHeader,
     pub data: BytesCow<'a>,
 }
 
@@ -207,8 +204,7 @@ pub struct ChannelLayout<'a> {
 #[derive(IsoBox, Debug)]
 #[iso_box(box_type = b"dmix", crate_path = crate)]
 pub struct DownMixInstructions<'a> {
-    #[iso_box(header)]
-    pub header: FullBoxHeader,
+    pub full_header: FullBoxHeader,
     pub data: BytesCow<'a>,
 }
 
@@ -487,20 +483,19 @@ impl IsoSized for LoudnessBaseMeasurement {
 #[derive(Debug, IsoBox)]
 #[iso_box(box_type = b"tlou", skip_impl(deserialize_seed, serialize, sized), crate_path = crate)]
 pub struct TrackLoudnessInfo {
-    #[iso_box(header)]
-    pub header: FullBoxHeader,
+    pub full_header: FullBoxHeader,
     pub base_box: LoudnessBaseBox,
 }
 
-impl<'a> DeserializeSeed<'a, FullBoxHeader> for TrackLoudnessInfo {
-    fn deserialize_seed<R>(reader: R, seed: FullBoxHeader) -> std::io::Result<Self>
+impl<'a> DeserializeSeed<'a, BoxHeader> for TrackLoudnessInfo {
+    fn deserialize_seed<R>(mut reader: R, _seed: BoxHeader) -> std::io::Result<Self>
     where
         R: scuffle_bytes_util::zero_copy::ZeroCopyReader<'a>,
     {
-        Ok(Self {
-            base_box: LoudnessBaseBox::deserialize_seed(reader, &seed)?,
-            header: seed,
-        })
+        let full_header = FullBoxHeader::deserialize(&mut reader)?;
+        let base_box = LoudnessBaseBox::deserialize_seed(&mut reader, &full_header)?;
+
+        Ok(Self { full_header, base_box })
     }
 }
 
@@ -509,15 +504,16 @@ impl Serialize for TrackLoudnessInfo {
     where
         W: std::io::Write,
     {
-        self.header.serialize(&mut writer)?;
-        self.base_box.serialize_seed(&mut writer, self.header.version)?;
+        self.serialize_box_header(&mut writer)?;
+        self.full_header.serialize(&mut writer)?;
+        self.base_box.serialize_seed(&mut writer, self.full_header.version)?;
         Ok(())
     }
 }
 
 impl IsoSized for TrackLoudnessInfo {
     fn size(&self) -> usize {
-        self.header.size() + self.base_box.size(self.header.version)
+        Self::add_header_size(self.full_header.size() + self.base_box.size(self.full_header.version))
     }
 }
 
@@ -527,20 +523,19 @@ impl IsoSized for TrackLoudnessInfo {
 #[derive(Debug, IsoBox)]
 #[iso_box(box_type = b"alou", skip_impl(deserialize_seed, serialize, sized), crate_path = crate)]
 pub struct AlbumLoudnessInfo {
-    #[iso_box(header)]
-    pub header: FullBoxHeader,
+    pub full_header: FullBoxHeader,
     pub base_box: LoudnessBaseBox,
 }
 
-impl<'a> DeserializeSeed<'a, FullBoxHeader> for AlbumLoudnessInfo {
-    fn deserialize_seed<R>(reader: R, seed: FullBoxHeader) -> std::io::Result<Self>
+impl<'a> DeserializeSeed<'a, BoxHeader> for AlbumLoudnessInfo {
+    fn deserialize_seed<R>(mut reader: R, _seed: BoxHeader) -> std::io::Result<Self>
     where
         R: scuffle_bytes_util::zero_copy::ZeroCopyReader<'a>,
     {
-        Ok(Self {
-            base_box: LoudnessBaseBox::deserialize_seed(reader, &seed)?,
-            header: seed,
-        })
+        let full_header = FullBoxHeader::deserialize(&mut reader)?;
+        let base_box = LoudnessBaseBox::deserialize_seed(&mut reader, &full_header)?;
+
+        Ok(Self { full_header, base_box })
     }
 }
 
@@ -549,15 +544,16 @@ impl Serialize for AlbumLoudnessInfo {
     where
         W: std::io::Write,
     {
-        self.header.serialize(&mut writer)?;
-        self.base_box.serialize_seed(&mut writer, self.header.version)?;
+        self.serialize_box_header(&mut writer)?;
+        self.full_header.serialize(&mut writer)?;
+        self.base_box.serialize_seed(&mut writer, self.full_header.version)?;
         Ok(())
     }
 }
 
 impl IsoSized for AlbumLoudnessInfo {
     fn size(&self) -> usize {
-        self.header.size() + self.base_box.size(self.header.version)
+        Self::add_header_size(self.full_header.size() + self.base_box.size(self.full_header.version))
     }
 }
 
@@ -567,8 +563,6 @@ impl IsoSized for AlbumLoudnessInfo {
 #[derive(IsoBox, Debug)]
 #[iso_box(box_type = b"ludt", crate_path = crate)]
 pub struct LoudnessBox {
-    #[iso_box(header)]
-    pub header: BoxHeader,
     #[iso_box(nested_box(collect))]
     pub loudness: Vec<TrackLoudnessInfo>,
     #[iso_box(nested_box(collect))]

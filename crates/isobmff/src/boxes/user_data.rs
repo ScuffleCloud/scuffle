@@ -1,5 +1,5 @@
 use super::{LoudnessBox, SubTrackBox};
-use crate::{BoxHeader, FullBoxHeader, IsoBox, Langauge, UnknownBox, Utf8String};
+use crate::{FullBoxHeader, IsoBox, Langauge, UnknownBox, Utf8String};
 
 /// User data box
 ///
@@ -7,8 +7,6 @@ use crate::{BoxHeader, FullBoxHeader, IsoBox, Langauge, UnknownBox, Utf8String};
 #[derive(IsoBox, Debug)]
 #[iso_box(box_type = b"udta", crate_path = crate)]
 pub struct UserDataBox<'a> {
-    #[iso_box(header)]
-    pub header: BoxHeader,
     #[iso_box(nested_box(collect))]
     pub cprt: Vec<CopyrightBox>,
     #[iso_box(nested_box(collect))]
@@ -29,8 +27,7 @@ pub struct UserDataBox<'a> {
 #[derive(Debug, IsoBox)]
 #[iso_box(box_type = b"cprt", crate_path = crate)]
 pub struct CopyrightBox {
-    #[iso_box(header)]
-    pub header: FullBoxHeader,
+    pub full_header: FullBoxHeader,
     pub language: Langauge,
     pub notice: Utf8String,
 }
@@ -41,8 +38,7 @@ pub struct CopyrightBox {
 #[derive(IsoBox, Debug)]
 #[iso_box(box_type = b"tsel", crate_path = crate)]
 pub struct TrackSelectionBox {
-    #[iso_box(header)]
-    pub header: FullBoxHeader,
+    pub full_header: FullBoxHeader,
     pub switch_group: i32,
     #[iso_box(repeated)]
     pub attribute_list: Vec<u32>,
@@ -54,8 +50,7 @@ pub struct TrackSelectionBox {
 #[derive(IsoBox, Debug)]
 #[iso_box(box_type = b"kind", crate_path = crate)]
 pub struct KindBox {
-    #[iso_box(header)]
-    pub header: FullBoxHeader,
+    pub full_header: FullBoxHeader,
     pub scheme_uri: Utf8String,
     pub value: Utf8String,
 }

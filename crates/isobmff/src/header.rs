@@ -20,14 +20,16 @@ impl BoxSize {
             BoxSize::ToEnd => None,
         }
     }
+}
 
-    pub fn set(&mut self, size: u64) {
+impl From<usize> for BoxSize {
+    fn from(value: usize) -> Self {
         // If the size does not fit in a u32 we use a long size.
         // 0 and 1 are reserved for special cases, so we have to use long size for them too.
-        if size > u32::MAX as u64 || size == 0 || size == 1 {
-            *self = BoxSize::Long(size);
+        if value > u32::MAX as usize || value == 0 || value == 1 {
+            BoxSize::Long(value as u64)
         } else {
-            *self = BoxSize::Short(size as u32);
+            BoxSize::Short(value as u32)
         }
     }
 }
@@ -72,16 +74,6 @@ impl From<BoxType> for uuid::Uuid {
     }
 }
 
-pub trait BoxHeaderProperties: IsoSized {
-    fn box_size(&self) -> BoxSize;
-    fn box_size_mut(&mut self) -> &mut BoxSize;
-    fn payload_size(&self) -> Option<usize> {
-        let header_size = self.size();
-        Some(self.box_size().size()?.saturating_sub(header_size))
-    }
-    fn box_type(&self) -> BoxType;
-}
-
 #[derive(Debug, Clone)]
 pub struct BoxHeader {
     pub size: BoxSize,
@@ -104,17 +96,10 @@ impl IsoSized for BoxHeader {
     }
 }
 
-impl BoxHeaderProperties for BoxHeader {
-    fn box_size(&self) -> BoxSize {
-        self.size
-    }
-
-    fn box_size_mut(&mut self) -> &mut BoxSize {
-        &mut self.size
-    }
-
-    fn box_type(&self) -> BoxType {
-        self.box_type
+impl BoxHeader {
+    pub fn payload_size(&self) -> Option<usize> {
+        let header_size = self.size();
+        Some(self.size.size()?.saturating_sub(header_size))
     }
 }
 
@@ -188,46 +173,26 @@ impl Serialize for BoxHeader {
 
 #[derive(Debug, Clone)]
 pub struct FullBoxHeader {
-    pub header: BoxHeader,
     pub version: u8,
     pub flags: U24Be,
 }
 
 impl IsoSized for FullBoxHeader {
     fn size(&self) -> usize {
-        self.header.size()
-            + 1 // version
-            + 3 // flags
+        1 // version
+        + 3 // flags
     }
 }
 
-impl BoxHeaderProperties for FullBoxHeader {
-    fn box_size(&self) -> BoxSize {
-        self.header.box_size()
-    }
-
-    fn box_size_mut(&mut self) -> &mut BoxSize {
-        self.header.box_size_mut()
-    }
-
-    fn box_type(&self) -> BoxType {
-        self.header.box_type()
-    }
-}
-
-impl<'a> DeserializeSeed<'a, BoxHeader> for FullBoxHeader {
-    fn deserialize_seed<R>(mut reader: R, seed: BoxHeader) -> io::Result<Self>
+impl<'a> Deserialize<'a> for FullBoxHeader {
+    fn deserialize<R>(mut reader: R) -> io::Result<Self>
     where
         R: ZeroCopyReader<'a>,
     {
         let version = u8::deserialize(&mut reader)?;
         let flags = U24Be::deserialize(&mut reader)?;
 
-        Ok(Self {
-            header: seed,
-            version,
-            flags,
-        })
+        Ok(Self { version, flags })
     }
 }
 
@@ -236,7 +201,6 @@ impl Serialize for FullBoxHeader {
     where
         W: std::io::Write,
     {
-        self.header.serialize(&mut writer)?;
         self.version.serialize(&mut writer)?;
         self.flags.serialize(&mut writer)?;
 

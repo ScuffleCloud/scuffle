@@ -1,5 +1,5 @@
 use super::OriginalFormatBox;
-use crate::{BoxHeader, IsoBox};
+use crate::IsoBox;
 
 /// Complete track information box
 ///
@@ -7,8 +7,6 @@ use crate::{BoxHeader, IsoBox};
 #[derive(IsoBox, Debug)]
 #[iso_box(box_type = b"cinf", crate_path = crate)]
 pub struct CompleteTrackInfoBox {
-    #[iso_box(header)]
-    pub header: BoxHeader,
     #[iso_box(nested_box)]
     pub original_format: OriginalFormatBox,
 }

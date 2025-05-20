@@ -9,19 +9,19 @@ use crate::{Base64String, BoxHeader, FullBoxHeader, IsoBox, IsoSized, Utf8String
 #[derive(Debug, IsoBox)]
 #[iso_box(box_type = b"fiin", skip_impl(deserialize_seed, serialize), crate_path = crate)]
 pub struct FDItemInformationBox {
-    #[iso_box(header)]
-    pub header: FullBoxHeader,
+    pub full_header: FullBoxHeader,
     pub entry_count: u16,
     pub partition_entries: Vec<PartitionEntry>,
     pub session_info: Option<FDSessionGroupBox>,
     pub group_id_to_name: Option<GroupIdToNameBox>,
 }
 
-impl<'a> DeserializeSeed<'a, FullBoxHeader> for FDItemInformationBox {
-    fn deserialize_seed<R>(mut reader: R, seed: FullBoxHeader) -> std::io::Result<Self>
+impl<'a> DeserializeSeed<'a, BoxHeader> for FDItemInformationBox {
+    fn deserialize_seed<R>(mut reader: R, _seed: BoxHeader) -> std::io::Result<Self>
     where
         R: scuffle_bytes_util::zero_copy::ZeroCopyReader<'a>,
     {
+        let full_header = FullBoxHeader::deserialize(&mut reader)?;
         let entry_count = u16::deserialize(&mut reader)?;
 
         let mut partition_entries = Vec::with_capacity(entry_count as usize);
@@ -33,7 +33,7 @@ impl<'a> DeserializeSeed<'a, FullBoxHeader> for FDItemInformationBox {
         let group_id_to_name = GroupIdToNameBox::deserialize(&mut reader).eof_to_none()?;
 
         Ok(Self {
-            header: seed,
+            full_header,
             entry_count,
             partition_entries,
             session_info,
@@ -47,7 +47,8 @@ impl Serialize for FDItemInformationBox {
     where
         W: std::io::Write,
     {
-        self.header.serialize(&mut writer)?;
+        self.serialize_box_header(&mut writer)?;
+        self.full_header.serialize(&mut writer)?;
         self.entry_count.serialize(&mut writer)?;
 
         for entry in &self.partition_entries {
@@ -69,8 +70,6 @@ impl Serialize for FDItemInformationBox {
 #[derive(Debug, IsoBox)]
 #[iso_box(box_type = b"paen", crate_path = crate)]
 pub struct PartitionEntry {
-    #[iso_box(header)]
-    pub header: BoxHeader,
     #[iso_box(nested_box(collect))]
     pub file_symbol_locations: Option<FileReservoirBox>,
     #[iso_box(nested_box)]
@@ -85,8 +84,7 @@ pub struct PartitionEntry {
 #[derive(Debug, IsoBox)]
 #[iso_box(box_type = b"fpar", skip_impl(deserialize_seed, serialize, sized), crate_path = crate)]
 pub struct FilePartitionBox {
-    #[iso_box(header)]
-    pub header: FullBoxHeader,
+    pub full_header: FullBoxHeader,
     pub item_id: u32,
     pub packet_payload_size: u16,
     pub reserved: u8,
@@ -100,12 +98,13 @@ pub struct FilePartitionBox {
     pub entries: Vec<FilePartitionBoxEntry>,
 }
 
-impl<'a> DeserializeSeed<'a, FullBoxHeader> for FilePartitionBox {
-    fn deserialize_seed<R>(mut reader: R, seed: FullBoxHeader) -> std::io::Result<Self>
+impl<'a> DeserializeSeed<'a, BoxHeader> for FilePartitionBox {
+    fn deserialize_seed<R>(mut reader: R, _seed: BoxHeader) -> std::io::Result<Self>
     where
         R: scuffle_bytes_util::zero_copy::ZeroCopyReader<'a>,
     {
-        let item_id = if seed.version == 0 {
+        let full_header = FullBoxHeader::deserialize(&mut reader)?;
+        let item_id = if full_header.version == 0 {
             u16::deserialize(&mut reader)? as u32
         } else {
             u32::deserialize(&mut reader)?
@@ -119,7 +118,7 @@ impl<'a> DeserializeSeed<'a, FullBoxHeader> for FilePartitionBox {
         let max_number_of_encoding_symbols = u16::deserialize(&mut reader)?;
         let scheme_specific_info = Base64String::deserialize(&mut reader)?;
 
-        let entry_count = if seed.version == 0 {
+        let entry_count = if full_header.version == 0 {
             u16::deserialize(&mut reader)? as u32
         } else {
             u32::deserialize(&mut reader)?
@@ -131,7 +130,7 @@ impl<'a> DeserializeSeed<'a, FullBoxHeader> for FilePartitionBox {
         }
 
         Ok(Self {
-            header: seed,
+            full_header,
             item_id,
             packet_payload_size,
             reserved,
@@ -152,8 +151,9 @@ impl Serialize for FilePartitionBox {
     where
         W: std::io::Write,
     {
-        self.header.serialize(&mut writer)?;
-        if self.header.version == 0 {
+        self.serialize_box_header(&mut writer)?;
+        self.full_header.serialize(&mut writer)?;
+        if self.full_header.version == 0 {
             (self.item_id as u16).serialize(&mut writer)?;
         } else {
             self.item_id.serialize(&mut writer)?;
@@ -167,7 +167,7 @@ impl Serialize for FilePartitionBox {
         self.max_number_of_encoding_symbols.serialize(&mut writer)?;
         self.scheme_specific_info.serialize(&mut writer)?;
 
-        if self.header.version == 0 {
+        if self.full_header.version == 0 {
             (self.entry_count as u16).serialize(&mut writer)?;
         } else {
             self.entry_count.serialize(&mut writer)?;
@@ -183,8 +183,8 @@ impl Serialize for FilePartitionBox {
 
 impl IsoSized for FilePartitionBox {
     fn size(&self) -> usize {
-        let mut size = self.header.size();
-        if self.header.version == 0 {
+        let mut size = self.full_header.size();
+        if self.full_header.version == 0 {
             size += 2; // item_id
         } else {
             size += 4; // item_id
@@ -197,13 +197,14 @@ impl IsoSized for FilePartitionBox {
             + self.encoding_symbol_length.size()
             + self.max_number_of_encoding_symbols.size()
             + self.scheme_specific_info.size();
-        if self.header.version == 0 {
+        if self.full_header.version == 0 {
             size += 2; // entry_count
         } else {
             size += 4; // entry_count
         }
         size += self.entries.size();
-        size
+
+        Self::add_header_size(size)
     }
 }
 
@@ -248,18 +249,18 @@ impl IsoSized for FilePartitionBoxEntry {
 #[derive(Debug, IsoBox)]
 #[iso_box(box_type = b"fecr", skip_impl(deserialize_seed, serialize, sized), crate_path = crate)]
 pub struct FECReservoirBox {
-    #[iso_box(header)]
-    pub header: FullBoxHeader,
+    pub full_header: FullBoxHeader,
     pub entry_count: u32,
     pub entries: Vec<FECReservoirBoxEntry>,
 }
 
-impl<'a> DeserializeSeed<'a, FullBoxHeader> for FECReservoirBox {
-    fn deserialize_seed<R>(mut reader: R, seed: FullBoxHeader) -> std::io::Result<Self>
+impl<'a> DeserializeSeed<'a, BoxHeader> for FECReservoirBox {
+    fn deserialize_seed<R>(mut reader: R, _seed: BoxHeader) -> std::io::Result<Self>
     where
         R: scuffle_bytes_util::zero_copy::ZeroCopyReader<'a>,
     {
-        let entry_count = if seed.version == 0 {
+        let full_header = FullBoxHeader::deserialize(&mut reader)?;
+        let entry_count = if full_header.version == 0 {
             u16::deserialize(&mut reader)? as u32
         } else {
             u32::deserialize(&mut reader)?
@@ -267,11 +268,11 @@ impl<'a> DeserializeSeed<'a, FullBoxHeader> for FECReservoirBox {
 
         let mut entries = Vec::with_capacity(entry_count as usize);
         for _ in 0..entry_count {
-            entries.push(FECReservoirBoxEntry::deserialize_seed(&mut reader, seed.version)?);
+            entries.push(FECReservoirBoxEntry::deserialize_seed(&mut reader, full_header.version)?);
         }
 
         Ok(Self {
-            header: seed,
+            full_header,
             entry_count,
             entries,
         })
@@ -283,15 +284,16 @@ impl Serialize for FECReservoirBox {
     where
         W: std::io::Write,
     {
-        self.header.serialize(&mut writer)?;
-        if self.header.version == 0 {
+        self.serialize_box_header(&mut writer)?;
+        self.full_header.serialize(&mut writer)?;
+        if self.full_header.version == 0 {
             (self.entry_count as u16).serialize(&mut writer)?;
         } else {
             self.entry_count.serialize(&mut writer)?;
         }
 
         for entry in &self.entries {
-            entry.serialize_seed(&mut writer, self.header.version)?;
+            entry.serialize_seed(&mut writer, self.full_header.version)?;
         }
 
         Ok(())
@@ -300,8 +302,8 @@ impl Serialize for FECReservoirBox {
 
 impl IsoSized for FECReservoirBox {
     fn size(&self) -> usize {
-        let mut size = self.header.size();
-        if self.header.version == 0 {
+        let mut size = self.full_header.size();
+        if self.full_header.version == 0 {
             size += (self.entry_count as u16).size();
         } else {
             size += self.entry_count.size();
@@ -309,9 +311,10 @@ impl IsoSized for FECReservoirBox {
         size += self
             .entries
             .iter()
-            .map(|entry| entry.size(self.header.version))
+            .map(|entry| entry.size(self.full_header.version))
             .sum::<usize>();
-        size
+
+        Self::add_header_size(size)
     }
 }
 
@@ -369,14 +372,12 @@ impl FECReservoirBoxEntry {
 #[derive(Debug, IsoBox)]
 #[iso_box(box_type = b"segr", skip_impl(deserialize_seed, serialize), crate_path = crate)]
 pub struct FDSessionGroupBox {
-    #[iso_box(header)]
-    pub header: BoxHeader,
     pub num_session_groups: u16,
     pub session_groups: Vec<FDSessionGroupBoxSessionGroup>,
 }
 
 impl<'a> DeserializeSeed<'a, BoxHeader> for FDSessionGroupBox {
-    fn deserialize_seed<R>(mut reader: R, seed: BoxHeader) -> std::io::Result<Self>
+    fn deserialize_seed<R>(mut reader: R, _seed: BoxHeader) -> std::io::Result<Self>
     where
         R: scuffle_bytes_util::zero_copy::ZeroCopyReader<'a>,
     {
@@ -388,7 +389,6 @@ impl<'a> DeserializeSeed<'a, BoxHeader> for FDSessionGroupBox {
         }
 
         Ok(Self {
-            header: seed,
             num_session_groups,
             session_groups,
         })
@@ -400,7 +400,7 @@ impl Serialize for FDSessionGroupBox {
     where
         W: std::io::Write,
     {
-        self.header.serialize(&mut writer)?;
+        self.serialize_box_header(&mut writer)?;
         self.num_session_groups.serialize(&mut writer)?;
 
         for group in &self.session_groups {
@@ -479,17 +479,17 @@ impl IsoSized for FDSessionGroupBoxSessionGroup {
 #[derive(Debug, IsoBox)]
 #[iso_box(box_type = b"gitn", skip_impl(deserialize_seed, serialize), crate_path = crate)]
 pub struct GroupIdToNameBox {
-    #[iso_box(header)]
-    pub header: FullBoxHeader,
+    pub full_header: FullBoxHeader,
     pub entry_count: u16,
     pub entries: Vec<GroupIdToNameBoxEntry>,
 }
 
-impl<'a> DeserializeSeed<'a, FullBoxHeader> for GroupIdToNameBox {
-    fn deserialize_seed<R>(mut reader: R, seed: FullBoxHeader) -> std::io::Result<Self>
+impl<'a> DeserializeSeed<'a, BoxHeader> for GroupIdToNameBox {
+    fn deserialize_seed<R>(mut reader: R, _seed: BoxHeader) -> std::io::Result<Self>
     where
         R: scuffle_bytes_util::zero_copy::ZeroCopyReader<'a>,
     {
+        let full_header = FullBoxHeader::deserialize(&mut reader)?;
         let entry_count = u16::deserialize(&mut reader)?;
 
         let mut entries = Vec::with_capacity(entry_count as usize);
@@ -498,7 +498,7 @@ impl<'a> DeserializeSeed<'a, FullBoxHeader> for GroupIdToNameBox {
         }
 
         Ok(Self {
-            header: seed,
+            full_header,
             entry_count,
             entries,
         })
@@ -510,7 +510,8 @@ impl Serialize for GroupIdToNameBox {
     where
         W: std::io::Write,
     {
-        self.header.serialize(&mut writer)?;
+        self.serialize_box_header(&mut writer)?;
+        self.full_header.serialize(&mut writer)?;
         self.entry_count.serialize(&mut writer)?;
 
         for entry in &self.entries {
@@ -562,18 +563,18 @@ impl IsoSized for GroupIdToNameBoxEntry {
 #[derive(Debug, IsoBox)]
 #[iso_box(box_type = b"fire", skip_impl(deserialize_seed, serialize, sized), crate_path = crate)]
 pub struct FileReservoirBox {
-    #[iso_box(header)]
-    pub header: FullBoxHeader,
+    pub full_header: FullBoxHeader,
     pub entry_count: u32,
     pub entries: Vec<FileReservoirBoxEntry>,
 }
 
-impl<'a> DeserializeSeed<'a, FullBoxHeader> for FileReservoirBox {
-    fn deserialize_seed<R>(mut reader: R, seed: FullBoxHeader) -> std::io::Result<Self>
+impl<'a> DeserializeSeed<'a, BoxHeader> for FileReservoirBox {
+    fn deserialize_seed<R>(mut reader: R, _seed: BoxHeader) -> std::io::Result<Self>
     where
         R: scuffle_bytes_util::zero_copy::ZeroCopyReader<'a>,
     {
-        let entry_count = if seed.version == 0 {
+        let full_header = FullBoxHeader::deserialize(&mut reader)?;
+        let entry_count = if full_header.version == 0 {
             u16::deserialize(&mut reader)? as u32
         } else {
             u32::deserialize(&mut reader)?
@@ -581,11 +582,11 @@ impl<'a> DeserializeSeed<'a, FullBoxHeader> for FileReservoirBox {
 
         let mut entries = Vec::with_capacity(entry_count as usize);
         for _ in 0..entry_count {
-            entries.push(FileReservoirBoxEntry::deserialize_seed(&mut reader, seed.version)?);
+            entries.push(FileReservoirBoxEntry::deserialize_seed(&mut reader, full_header.version)?);
         }
 
         Ok(Self {
-            header: seed,
+            full_header,
             entry_count,
             entries,
         })
@@ -597,15 +598,16 @@ impl Serialize for FileReservoirBox {
     where
         W: std::io::Write,
     {
-        self.header.serialize(&mut writer)?;
-        if self.header.version == 0 {
+        self.serialize_box_header(&mut writer)?;
+        self.full_header.serialize(&mut writer)?;
+        if self.full_header.version == 0 {
             (self.entry_count as u16).serialize(&mut writer)?;
         } else {
             self.entry_count.serialize(&mut writer)?;
         }
 
         for entry in &self.entries {
-            entry.serialize_seed(&mut writer, self.header.version)?;
+            entry.serialize_seed(&mut writer, self.full_header.version)?;
         }
 
         Ok(())
@@ -614,8 +616,8 @@ impl Serialize for FileReservoirBox {
 
 impl IsoSized for FileReservoirBox {
     fn size(&self) -> usize {
-        let mut size = self.header.size();
-        if self.header.version == 0 {
+        let mut size = self.full_header.size();
+        if self.full_header.version == 0 {
             size += (self.entry_count as u16).size();
         } else {
             size += self.entry_count.size();
@@ -623,9 +625,10 @@ impl IsoSized for FileReservoirBox {
         size += self
             .entries
             .iter()
-            .map(|entry| entry.size(self.header.version))
+            .map(|entry| entry.size(self.full_header.version))
             .sum::<usize>();
-        size
+
+        Self::add_header_size(size)
     }
 }
 

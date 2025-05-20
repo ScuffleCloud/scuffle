@@ -16,8 +16,7 @@ use crate::{BoxHeader, FullBoxHeader, IsoBox, IsoSized, UnknownBox, Utf8String};
 #[derive(IsoBox, Debug)]
 #[iso_box(box_type = b"meta", crate_path = crate)]
 pub struct MetaBox<'a> {
-    #[iso_box(header)]
-    pub header: FullBoxHeader,
+    pub full_header: FullBoxHeader,
     #[iso_box(nested_box)]
     pub hdlr: HandlerBox,
     #[iso_box(nested_box(collect))]
@@ -52,8 +51,7 @@ pub struct MetaBox<'a> {
 #[derive(IsoBox, Debug)]
 #[iso_box(box_type = b"xml ", crate_path = crate)]
 pub struct XmlBox {
-    #[iso_box(header)]
-    pub header: FullBoxHeader,
+    pub full_header: FullBoxHeader,
     pub xml: Utf8String,
 }
 
@@ -63,8 +61,7 @@ pub struct XmlBox {
 #[derive(IsoBox, Debug)]
 #[iso_box(box_type = b"bxml", crate_path = crate)]
 pub struct BinaryXmlBox<'a> {
-    #[iso_box(header)]
-    pub header: FullBoxHeader,
+    pub full_header: FullBoxHeader,
     pub data: BytesCow<'a>,
 }
 
@@ -74,8 +71,7 @@ pub struct BinaryXmlBox<'a> {
 #[derive(Debug, IsoBox)]
 #[iso_box(box_type = b"iloc", skip_impl(deserialize_seed, serialize, sized), crate_path = crate)]
 pub struct ItemLocationBox {
-    #[iso_box(header)]
-    pub header: FullBoxHeader,
+    pub full_header: FullBoxHeader,
     pub offset_size: u8,
     pub length_size: u8,
     pub base_offset_size: u8,
@@ -85,11 +81,13 @@ pub struct ItemLocationBox {
     pub items: Vec<ItemLocationBoxItem>,
 }
 
-impl<'a> DeserializeSeed<'a, FullBoxHeader> for ItemLocationBox {
-    fn deserialize_seed<R>(mut reader: R, seed: FullBoxHeader) -> std::io::Result<Self>
+impl<'a> DeserializeSeed<'a, BoxHeader> for ItemLocationBox {
+    fn deserialize_seed<R>(mut reader: R, _seed: BoxHeader) -> std::io::Result<Self>
     where
         R: scuffle_bytes_util::zero_copy::ZeroCopyReader<'a>,
     {
+        let full_header = FullBoxHeader::deserialize(&mut reader)?;
+
         let byte = u8::deserialize(&mut reader)?;
         let offset_size = byte >> 4;
 
@@ -114,13 +112,13 @@ impl<'a> DeserializeSeed<'a, FullBoxHeader> for ItemLocationBox {
         }
 
         let index_size = byte & 0x0F;
-        if (seed.version == 1 || seed.version == 2) && ![0, 4, 8].contains(&index_size) {
+        if (full_header.version == 1 || full_header.version == 2) && ![0, 4, 8].contains(&index_size) {
             return Err(std::io::Error::new(std::io::ErrorKind::InvalidData, "Invalid index_size"));
         }
 
-        let item_count = if seed.version < 2 {
+        let item_count = if full_header.version < 2 {
             Some(u16::deserialize(&mut reader)? as u32)
-        } else if seed.version == 2 {
+        } else if full_header.version == 2 {
             Some(u32::deserialize(&mut reader)?)
         } else {
             None
@@ -128,15 +126,15 @@ impl<'a> DeserializeSeed<'a, FullBoxHeader> for ItemLocationBox {
 
         let mut items = Vec::with_capacity(item_count.unwrap_or(0) as usize);
         for _ in 0..item_count.unwrap_or(0) {
-            let item_id = if seed.version < 2 {
+            let item_id = if full_header.version < 2 {
                 Some(u16::deserialize(&mut reader)? as u32)
-            } else if seed.version == 2 {
+            } else if full_header.version == 2 {
                 Some(u32::deserialize(&mut reader)?)
             } else {
                 None
             };
 
-            let construction_method = if seed.version == 1 || seed.version == 2 {
+            let construction_method = if full_header.version == 1 || full_header.version == 2 {
                 let value = u16::deserialize(&mut reader)?;
                 Some((value & 0b1111) as u8)
             } else {
@@ -148,7 +146,7 @@ impl<'a> DeserializeSeed<'a, FullBoxHeader> for ItemLocationBox {
             let extent_count = u16::deserialize(&mut reader)?;
             let mut extents = Vec::with_capacity(extent_count as usize);
             for _ in 0..extent_count {
-                let item_reference_index = if (seed.version == 1 || seed.version == 2) && index_size > 0 {
+                let item_reference_index = if (full_header.version == 1 || full_header.version == 2) && index_size > 0 {
                     Some(pad_cow_to_u64(reader.try_read(index_size as usize)?))
                 } else {
                     None
@@ -174,7 +172,7 @@ impl<'a> DeserializeSeed<'a, FullBoxHeader> for ItemLocationBox {
         }
 
         Ok(ItemLocationBox {
-            header: seed,
+            full_header,
             offset_size,
             length_size,
             base_offset_size,
@@ -192,18 +190,19 @@ impl Serialize for ItemLocationBox {
     {
         let mut bit_writer = BitWriter::new(writer);
 
-        self.header.serialize(&mut bit_writer)?;
+        self.serialize_box_header(&mut bit_writer)?;
+        self.full_header.serialize(&mut bit_writer)?;
         bit_writer.write_bits(self.offset_size as u64, 4)?;
         bit_writer.write_bits(self.length_size as u64, 4)?;
         bit_writer.write_bits(self.base_offset_size as u64, 4)?;
         bit_writer.write_bits(self.index_size as u64, 4)?;
 
-        if self.header.version < 2 {
+        if self.full_header.version < 2 {
             (self
                 .item_count
                 .ok_or(io::Error::new(io::ErrorKind::InvalidData, "item_count is required"))? as u16)
                 .serialize(&mut bit_writer)?;
-        } else if self.header.version == 2 {
+        } else if self.full_header.version == 2 {
             self.item_count
                 .ok_or(io::Error::new(io::ErrorKind::InvalidData, "item_count is required"))?
                 .serialize(&mut bit_writer)?;
@@ -221,19 +220,19 @@ impl IsoSized for ItemLocationBox {
     fn size(&self) -> usize {
         let mut size = 0;
 
-        size += self.header.size();
+        size += self.full_header.size();
         size += 1; // offset_size + length_size
         size += 1; // base_offset_size + index_size/reserved
 
-        if self.header.version < 2 {
+        if self.full_header.version < 2 {
             size += 2; // item_count
-        } else if self.header.version == 2 {
+        } else if self.full_header.version == 2 {
             size += 4; // item_count
         }
 
         size += self.items.iter().map(|item| item.size(self)).sum::<usize>();
 
-        size
+        Self::add_header_size(size)
     }
 }
 
@@ -254,18 +253,18 @@ impl SerializeSeed<&ItemLocationBox> for ItemLocationBoxItem {
     {
         let mut bit_writer = BitWriter::new(writer);
 
-        if seed.header.version < 2 {
+        if seed.full_header.version < 2 {
             (self
                 .item_id
                 .ok_or(io::Error::new(io::ErrorKind::InvalidData, "item_id is required"))? as u16)
                 .serialize(&mut bit_writer)?;
-        } else if seed.header.version == 2 {
+        } else if seed.full_header.version == 2 {
             self.item_id
                 .ok_or(io::Error::new(io::ErrorKind::InvalidData, "item_id is required"))?
                 .serialize(&mut bit_writer)?;
         }
 
-        if seed.header.version == 1 || seed.header.version == 2 {
+        if seed.full_header.version == 1 || seed.full_header.version == 2 {
             bit_writer.write_bits(0, 12)?;
             bit_writer.write_bits(
                 self.construction_method
@@ -291,12 +290,12 @@ impl ItemLocationBoxItem {
     pub fn size(&self, parent: &ItemLocationBox) -> usize {
         let mut size = 0;
 
-        if parent.header.version < 2 {
+        if parent.full_header.version < 2 {
             size += 2; // item_id
-        } else if parent.header.version == 2 {
+        } else if parent.full_header.version == 2 {
             size += 4; // item_id
         }
-        if parent.header.version == 1 || parent.header.version == 2 {
+        if parent.full_header.version == 1 || parent.full_header.version == 2 {
             size += 2; // reserved + construction_method
         }
         size += 2; // data_reference_index
@@ -322,7 +321,7 @@ impl SerializeSeed<&ItemLocationBox> for ItemLocationBoxExtent {
     {
         let mut bit_writer = BitWriter::new(writer);
 
-        if (seed.header.version == 1 || seed.header.version == 2) && seed.index_size > 0 {
+        if (seed.full_header.version == 1 || seed.full_header.version == 2) && seed.index_size > 0 {
             bit_writer.write_bits(
                 self.item_reference_index
                     .ok_or(io::Error::new(io::ErrorKind::InvalidData, "item_reference_index is required"))?,
@@ -340,7 +339,7 @@ impl ItemLocationBoxExtent {
     pub fn size(&self, parent: &ItemLocationBox) -> usize {
         let mut size = 0;
 
-        if (parent.header.version == 1 || parent.header.version == 2) && parent.index_size > 0 {
+        if (parent.full_header.version == 1 || parent.full_header.version == 2) && parent.index_size > 0 {
             size += parent.index_size as usize; // item_reference_index
         }
         size += parent.offset_size as usize; // extent_offset
@@ -356,23 +355,24 @@ impl ItemLocationBoxExtent {
 #[derive(Debug, IsoBox)]
 #[iso_box(box_type = b"pitm", skip_impl(deserialize_seed, serialize, sized), crate_path = crate)]
 pub struct PrimaryItemBox {
-    #[iso_box(header)]
-    pub header: FullBoxHeader,
+    pub full_header: FullBoxHeader,
     pub item_id: u32,
 }
 
-impl<'a> DeserializeSeed<'a, FullBoxHeader> for PrimaryItemBox {
-    fn deserialize_seed<R>(mut reader: R, seed: FullBoxHeader) -> std::io::Result<Self>
+impl<'a> DeserializeSeed<'a, BoxHeader> for PrimaryItemBox {
+    fn deserialize_seed<R>(mut reader: R, _seed: BoxHeader) -> std::io::Result<Self>
     where
         R: scuffle_bytes_util::zero_copy::ZeroCopyReader<'a>,
     {
-        let item_id = if seed.version == 0 {
+        let full_header = FullBoxHeader::deserialize(&mut reader)?;
+
+        let item_id = if full_header.version == 0 {
             u16::deserialize(&mut reader)? as u32
         } else {
             u32::deserialize(&mut reader)?
         };
 
-        Ok(PrimaryItemBox { header: seed, item_id })
+        Ok(PrimaryItemBox { full_header, item_id })
     }
 }
 
@@ -381,9 +381,10 @@ impl Serialize for PrimaryItemBox {
     where
         W: std::io::Write,
     {
-        self.header.serialize(&mut writer)?;
+        self.serialize_box_header(&mut writer)?;
+        self.full_header.serialize(&mut writer)?;
 
-        if self.header.version == 0 {
+        if self.full_header.version == 0 {
             (self.item_id as u16).serialize(&mut writer)?;
         } else {
             self.item_id.serialize(&mut writer)?;
@@ -395,15 +396,15 @@ impl Serialize for PrimaryItemBox {
 
 impl IsoSized for PrimaryItemBox {
     fn size(&self) -> usize {
-        let mut size = self.header.size();
+        let mut size = self.full_header.size();
 
-        if self.header.version == 0 {
+        if self.full_header.version == 0 {
             size += 2; // item_id
         } else {
             size += 4; // item_id
         }
 
-        size
+        Self::add_header_size(size)
     }
 }
 
@@ -413,8 +414,7 @@ impl IsoSized for PrimaryItemBox {
 #[derive(IsoBox, Debug)]
 #[iso_box(box_type = b"ipro", crate_path = crate)]
 pub struct ItemProtectionBox<'a> {
-    #[iso_box(header)]
-    pub header: FullBoxHeader,
+    pub full_header: FullBoxHeader,
     pub protection_count: u16,
     #[iso_box(nested_box(collect))]
     pub protection_information: Vec<ProtectionSchemeInfoBox<'a>>,
@@ -426,19 +426,20 @@ pub struct ItemProtectionBox<'a> {
 #[derive(Debug, IsoBox)]
 #[iso_box(box_type = b"iinf", skip_impl(deserialize_seed, serialize, sized), crate_path = crate)]
 pub struct ItemInfoBox<'a> {
-    #[iso_box(header)]
-    pub header: FullBoxHeader,
+    pub full_header: FullBoxHeader,
     pub entry_count: u32,
     #[iso_box(nested_box(collect))]
     pub item_infos: Vec<ItemInfoEntry<'a>>,
 }
 
-impl<'a> DeserializeSeed<'a, FullBoxHeader> for ItemInfoBox<'a> {
-    fn deserialize_seed<R>(mut reader: R, seed: FullBoxHeader) -> std::io::Result<Self>
+impl<'a> DeserializeSeed<'a, BoxHeader> for ItemInfoBox<'a> {
+    fn deserialize_seed<R>(mut reader: R, _seed: BoxHeader) -> std::io::Result<Self>
     where
         R: scuffle_bytes_util::zero_copy::ZeroCopyReader<'a>,
     {
-        let entry_count = if seed.version == 0 {
+        let full_header = FullBoxHeader::deserialize(&mut reader)?;
+
+        let entry_count = if full_header.version == 0 {
             u16::deserialize(&mut reader)? as u32
         } else {
             u32::deserialize(&mut reader)?
@@ -450,7 +451,7 @@ impl<'a> DeserializeSeed<'a, FullBoxHeader> for ItemInfoBox<'a> {
         }
 
         Ok(ItemInfoBox {
-            header: seed,
+            full_header,
             entry_count,
             item_infos,
         })
@@ -462,9 +463,10 @@ impl Serialize for ItemInfoBox<'_> {
     where
         W: std::io::Write,
     {
-        self.header.serialize(&mut writer)?;
+        self.serialize_box_header(&mut writer)?;
+        self.full_header.serialize(&mut writer)?;
 
-        if self.header.version == 0 {
+        if self.full_header.version == 0 {
             (self.entry_count as u16).serialize(&mut writer)?;
         } else {
             self.entry_count.serialize(&mut writer)?;
@@ -480,9 +482,9 @@ impl Serialize for ItemInfoBox<'_> {
 
 impl IsoSized for ItemInfoBox<'_> {
     fn size(&self) -> usize {
-        let mut size = self.header.size();
+        let mut size = self.full_header.size();
 
-        if self.header.version == 0 {
+        if self.full_header.version == 0 {
             size += 2; // entry_count
         } else {
             size += 4; // entry_count
@@ -490,7 +492,7 @@ impl IsoSized for ItemInfoBox<'_> {
 
         size += self.item_infos.size();
 
-        size
+        Self::add_header_size(size)
     }
 }
 
@@ -500,8 +502,7 @@ impl IsoSized for ItemInfoBox<'_> {
 #[derive(Debug, IsoBox)]
 #[iso_box(box_type = b"infe", skip_impl(deserialize_seed, serialize, sized), crate_path = crate)]
 pub struct ItemInfoEntry<'a> {
-    #[iso_box(header)]
-    pub header: FullBoxHeader,
+    pub full_header: FullBoxHeader,
     pub item_id: Option<u32>,
     pub item_protection_index: u16,
     pub item_type: [u8; 4],
@@ -522,20 +523,22 @@ pub enum ItemInfoEntryItem {
     },
 }
 
-impl<'a> DeserializeSeed<'a, FullBoxHeader> for ItemInfoEntry<'a> {
-    fn deserialize_seed<R>(mut reader: R, seed: FullBoxHeader) -> std::io::Result<Self>
+impl<'a> DeserializeSeed<'a, BoxHeader> for ItemInfoEntry<'a> {
+    fn deserialize_seed<R>(mut reader: R, _seed: BoxHeader) -> std::io::Result<Self>
     where
         R: scuffle_bytes_util::zero_copy::ZeroCopyReader<'a>,
     {
-        let item_id = if seed.version == 0 || seed.version == 1 || seed.version == 2 {
+        let full_header = FullBoxHeader::deserialize(&mut reader)?;
+
+        let item_id = if full_header.version == 0 || full_header.version == 1 || full_header.version == 2 {
             Some(u16::deserialize(&mut reader)? as u32)
-        } else if seed.version == 3 {
+        } else if full_header.version == 3 {
             Some(u32::deserialize(&mut reader)?)
         } else {
             None
         };
         let item_protection_index = u16::deserialize(&mut reader)?;
-        let item_type = if seed.version == 0 || seed.version == 1 {
+        let item_type = if full_header.version == 0 || full_header.version == 1 {
             *b"mime"
         } else {
             <[u8; 4]>::deserialize(&mut reader)?
@@ -559,7 +562,7 @@ impl<'a> DeserializeSeed<'a, FullBoxHeader> for ItemInfoEntry<'a> {
             _ => None,
         };
 
-        let extension_type = if seed.version == 1 {
+        let extension_type = if full_header.version == 1 {
             <[u8; 4]>::deserialize(&mut reader).eof_to_none()?
         } else {
             None
@@ -572,7 +575,7 @@ impl<'a> DeserializeSeed<'a, FullBoxHeader> for ItemInfoEntry<'a> {
         };
 
         Ok(Self {
-            header: seed,
+            full_header,
             item_id,
             item_protection_index,
             item_type,
@@ -589,9 +592,10 @@ impl Serialize for ItemInfoEntry<'_> {
     where
         W: std::io::Write,
     {
-        self.header.serialize(&mut writer)?;
+        self.serialize_box_header(&mut writer)?;
+        self.full_header.serialize(&mut writer)?;
 
-        if self.header.version == 0 || self.header.version == 1 {
+        if self.full_header.version == 0 || self.full_header.version == 1 {
             (self
                 .item_id
                 .ok_or(io::Error::new(io::ErrorKind::InvalidData, "item_ID is required"))? as u16)
@@ -610,7 +614,7 @@ impl Serialize for ItemInfoEntry<'_> {
             }
         }
 
-        if self.header.version == 1 {
+        if self.full_header.version == 1 {
             if let Some(extension_type) = self.extension_type {
                 extension_type.serialize(&mut writer)?;
             }
@@ -619,13 +623,13 @@ impl Serialize for ItemInfoEntry<'_> {
             }
         }
 
-        if self.header.version >= 2 {
-            if self.header.version == 2 {
+        if self.full_header.version >= 2 {
+            if self.full_header.version == 2 {
                 (self
                     .item_id
                     .ok_or(io::Error::new(io::ErrorKind::InvalidData, "item_ID is required"))? as u16)
                     .serialize(&mut writer)?;
-            } else if self.header.version == 3 {
+            } else if self.full_header.version == 3 {
                 self.item_id
                     .ok_or(io::Error::new(io::ErrorKind::InvalidData, "item_ID is required"))?
                     .serialize(&mut writer)?;
@@ -658,9 +662,9 @@ impl Serialize for ItemInfoEntry<'_> {
 
 impl IsoSized for ItemInfoEntry<'_> {
     fn size(&self) -> usize {
-        let mut size = self.header.size();
+        let mut size = self.full_header.size();
 
-        if self.header.version == 0 || self.header.version == 1 {
+        if self.full_header.version == 0 || self.full_header.version == 1 {
             size += 2; // item_id
             size += 2; // item_protection_index
             size += self.item_name.size();
@@ -673,14 +677,14 @@ impl IsoSized for ItemInfoEntry<'_> {
                 size += content_encoding.size();
             }
         }
-        if self.header.version == 1 {
+        if self.full_header.version == 1 {
             size += self.extension_type.size();
             size += self.extension.size();
         }
-        if self.header.version >= 2 {
-            if self.header.version == 2 {
+        if self.full_header.version >= 2 {
+            if self.full_header.version == 2 {
                 size += 2; // item_id
-            } else if self.header.version == 3 {
+            } else if self.full_header.version == 3 {
                 size += 4; // item_id
             }
             size += 2; // item_protection_index
@@ -701,7 +705,7 @@ impl IsoSized for ItemInfoEntry<'_> {
             }
         }
 
-        size
+        Self::add_header_size(size)
     }
 }
 
@@ -825,8 +829,6 @@ impl IsoSized for ItemInfoExtension<'_> {
 #[derive(IsoBox, Debug)]
 #[iso_box(box_type = b"idat", crate_path = crate)]
 pub struct ItemDataBox<'a> {
-    #[iso_box(header)]
-    pub header: BoxHeader,
     pub data: BytesCow<'a>,
 }
 
@@ -836,17 +838,18 @@ pub struct ItemDataBox<'a> {
 #[derive(Debug, IsoBox)]
 #[iso_box(box_type = b"iref", skip_impl(deserialize_seed), crate_path = crate)]
 pub struct ItemReferenceBox {
-    #[iso_box(header)]
-    pub header: FullBoxHeader,
+    pub full_header: FullBoxHeader,
     #[iso_box(repeated)]
     pub references: Vec<SingleItemTypeReferenceBox>,
 }
 
-impl<'a> DeserializeSeed<'a, FullBoxHeader> for ItemReferenceBox {
-    fn deserialize_seed<R>(mut reader: R, seed: FullBoxHeader) -> std::io::Result<Self>
+impl<'a> DeserializeSeed<'a, BoxHeader> for ItemReferenceBox {
+    fn deserialize_seed<R>(mut reader: R, _seed: BoxHeader) -> std::io::Result<Self>
     where
         R: scuffle_bytes_util::zero_copy::ZeroCopyReader<'a>,
     {
+        let full_header = FullBoxHeader::deserialize(&mut reader)?;
+
         let mut references = Vec::new();
 
         loop {
@@ -854,26 +857,27 @@ impl<'a> DeserializeSeed<'a, FullBoxHeader> for ItemReferenceBox {
                 break;
             };
 
-            if seed.version == 0 {
-                let Some(iso_box) = SingleItemTypeReferenceBox::deserialize_seed(&mut reader, header).eof_to_none()? else {
+            if full_header.version == 0 {
+                let Some(iso_box) =
+                    SingleItemTypeReferenceBox::deserialize_seed(&mut reader, (header, None)).eof_to_none()?
+                else {
                     break;
                 };
                 references.push(iso_box);
-            } else if seed.version == 1 {
-                let Some(header) = FullBoxHeader::deserialize_seed(&mut reader, header).eof_to_none()? else {
+            } else if full_header.version == 1 {
+                let Some(full_header) = FullBoxHeader::deserialize(&mut reader).eof_to_none()? else {
                     break;
                 };
-                let Some(iso_box) = SingleItemTypeReferenceBox::deserialize_seed(&mut reader, header).eof_to_none()? else {
+                let Some(iso_box) =
+                    SingleItemTypeReferenceBox::deserialize_seed(&mut reader, (header, Some(full_header))).eof_to_none()?
+                else {
                     break;
                 };
                 references.push(iso_box);
             }
         }
 
-        Ok(ItemReferenceBox {
-            header: seed,
-            references,
-        })
+        Ok(ItemReferenceBox { full_header, references })
     }
 }
 
@@ -886,47 +890,42 @@ pub struct SingleItemTypeReferenceBox {
     pub to_item_id: Vec<u32>,
 }
 
-impl<'a> DeserializeSeed<'a, BoxHeader> for SingleItemTypeReferenceBox {
-    fn deserialize_seed<R>(mut reader: R, seed: BoxHeader) -> std::io::Result<Self>
+impl<'a> DeserializeSeed<'a, (BoxHeader, Option<FullBoxHeader>)> for SingleItemTypeReferenceBox {
+    fn deserialize_seed<R>(mut reader: R, seed: (BoxHeader, Option<FullBoxHeader>)) -> std::io::Result<Self>
     where
         R: scuffle_bytes_util::zero_copy::ZeroCopyReader<'a>,
     {
-        let from_item_id = u16::deserialize(&mut reader)? as u32;
-        let reference_count = u16::deserialize(&mut reader)?;
-        let mut to_item_id = Vec::with_capacity(reference_count as usize);
-        for _ in 0..reference_count {
-            to_item_id.push(u16::deserialize(&mut reader)? as u32);
+        if seed.1.is_none() {
+            let from_item_id = u16::deserialize(&mut reader)? as u32;
+            let reference_count = u16::deserialize(&mut reader)?;
+            let mut to_item_id = Vec::with_capacity(reference_count as usize);
+            for _ in 0..reference_count {
+                to_item_id.push(u16::deserialize(&mut reader)? as u32);
+            }
+
+            Ok(SingleItemTypeReferenceBox {
+                header: seed.0,
+                full_header: seed.1,
+                from_item_id,
+                reference_count,
+                to_item_id,
+            })
+        } else {
+            let from_item_id = u32::deserialize(&mut reader)?;
+            let reference_count = u16::deserialize(&mut reader)?;
+            let mut to_item_id = Vec::with_capacity(reference_count as usize);
+            for _ in 0..reference_count {
+                to_item_id.push(u32::deserialize(&mut reader)?);
+            }
+
+            Ok(SingleItemTypeReferenceBox {
+                header: seed.0,
+                full_header: seed.1,
+                from_item_id,
+                reference_count,
+                to_item_id,
+            })
         }
-
-        Ok(SingleItemTypeReferenceBox {
-            header: seed,
-            full_header: None,
-            from_item_id,
-            reference_count,
-            to_item_id,
-        })
-    }
-}
-
-impl<'a> DeserializeSeed<'a, FullBoxHeader> for SingleItemTypeReferenceBox {
-    fn deserialize_seed<R>(mut reader: R, seed: FullBoxHeader) -> std::io::Result<Self>
-    where
-        R: scuffle_bytes_util::zero_copy::ZeroCopyReader<'a>,
-    {
-        let from_item_id = u32::deserialize(&mut reader)?;
-        let reference_count = u16::deserialize(&mut reader)?;
-        let mut to_item_id = Vec::with_capacity(reference_count as usize);
-        for _ in 0..reference_count {
-            to_item_id.push(u32::deserialize(&mut reader)?);
-        }
-
-        Ok(SingleItemTypeReferenceBox {
-            header: seed.header.clone(),
-            full_header: Some(seed),
-            from_item_id,
-            reference_count,
-            to_item_id,
-        })
     }
 }
 
@@ -985,8 +984,7 @@ impl IsoSized for SingleItemTypeReferenceBox {
 #[derive(IsoBox, Debug)]
 #[iso_box(box_type = b"iprp", crate_path = crate)]
 pub struct ItemPropertiesBox<'a> {
-    #[iso_box(header)]
-    pub header: FullBoxHeader,
+    pub full_header: FullBoxHeader,
     #[iso_box(nested_box)]
     pub property_container: ItemPropertyContainerBox<'a>,
     #[iso_box(nested_box(collect))]
@@ -996,8 +994,6 @@ pub struct ItemPropertiesBox<'a> {
 #[derive(IsoBox, Debug)]
 #[iso_box(box_type = b"ipco", crate_path = crate)]
 pub struct ItemPropertyContainerBox<'a> {
-    #[iso_box(header)]
-    pub header: BoxHeader,
     #[iso_box(nested_box(collect))]
     pub etyp: Option<ExtendedTypeBox<'a>>,
     #[iso_box(nested_box(collect))]
@@ -1011,26 +1007,26 @@ pub struct ItemPropertyContainerBox<'a> {
 #[derive(Debug, IsoBox)]
 #[iso_box(box_type = b"ipma", skip_impl(deserialize_seed, serialize, sized), crate_path = crate)]
 pub struct ItemPropertyAssociationBox {
-    #[iso_box(header)]
-    pub header: FullBoxHeader,
+    pub full_header: FullBoxHeader,
     pub entry_count: u32,
     pub entries: Vec<ItemPropertyAssociationBoxEntry>,
 }
 
-impl<'a> DeserializeSeed<'a, FullBoxHeader> for ItemPropertyAssociationBox {
-    fn deserialize_seed<R>(mut reader: R, seed: FullBoxHeader) -> std::io::Result<Self>
+impl<'a> DeserializeSeed<'a, BoxHeader> for ItemPropertyAssociationBox {
+    fn deserialize_seed<R>(mut reader: R, _seed: BoxHeader) -> std::io::Result<Self>
     where
         R: scuffle_bytes_util::zero_copy::ZeroCopyReader<'a>,
     {
+        let full_header = FullBoxHeader::deserialize(&mut reader)?;
         let entry_count = u32::deserialize(&mut reader)?;
 
         let mut entries = Vec::with_capacity(entry_count as usize);
         for _ in 0..entry_count {
-            entries.push(ItemPropertyAssociationBoxEntry::deserialize_seed(&mut reader, &seed)?);
+            entries.push(ItemPropertyAssociationBoxEntry::deserialize_seed(&mut reader, &full_header)?);
         }
 
         Ok(ItemPropertyAssociationBox {
-            header: seed,
+            full_header,
             entry_count,
             entries,
         })
@@ -1042,11 +1038,12 @@ impl Serialize for ItemPropertyAssociationBox {
     where
         W: std::io::Write,
     {
-        self.header.serialize(&mut writer)?;
+        self.serialize_box_header(&mut writer)?;
+        self.full_header.serialize(&mut writer)?;
         self.entry_count.serialize(&mut writer)?;
 
         for entry in &self.entries {
-            entry.serialize_seed(&mut writer, &self.header)?;
+            entry.serialize_seed(&mut writer, &self.full_header)?;
         }
 
         Ok(())
@@ -1055,12 +1052,12 @@ impl Serialize for ItemPropertyAssociationBox {
 
 impl IsoSized for ItemPropertyAssociationBox {
     fn size(&self) -> usize {
-        let mut size = self.header.size();
+        let mut size = self.full_header.size();
 
         size += 4; // entry_count
-        size += self.entries.iter().map(|e| e.size(&self.header)).sum::<usize>();
+        size += self.entries.iter().map(|e| e.size(&self.full_header)).sum::<usize>();
 
-        size
+        Self::add_header_size(size)
     }
 }
 
@@ -1202,8 +1199,6 @@ impl ItemPropertyAssociationBoxEntryAssociation {
 #[derive(IsoBox, Debug)]
 #[iso_box(box_type = b"brnd", crate_path = crate)]
 pub struct BrandProperty {
-    #[iso_box(header)]
-    pub header: BoxHeader,
     #[iso_box(from = "[u8; 4]")]
     pub major_brand: Brand,
     pub minor_version: u32,

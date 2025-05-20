@@ -2,7 +2,7 @@
 
 use nutype_enum::nutype_enum;
 
-use crate::{BoxHeader, IsoBox, IsoSized, UnknownBox};
+use crate::{IsoBox, IsoSized, UnknownBox};
 
 nutype_enum! {
     pub enum Brand([u8; 4]) {
@@ -39,8 +39,6 @@ impl IsoSized for Brand {
 #[derive(IsoBox, Debug)]
 #[iso_box(box_type = b"ftyp", crate_path = crate)]
 pub struct FileTypeBox {
-    #[iso_box(header)]
-    pub header: BoxHeader,
     #[iso_box(from = "[u8; 4]")]
     pub major_brand: Brand,
     pub minor_version: u32,
@@ -54,8 +52,6 @@ pub struct FileTypeBox {
 #[derive(IsoBox, Debug)]
 #[iso_box(box_type = b"tyco", crate_path = crate)]
 pub struct TypeCombinationBox {
-    #[iso_box(header)]
-    pub header: BoxHeader,
     #[iso_box(repeated, from = "[u8; 4]")]
     pub compatible_brands: Vec<Brand>,
 }
@@ -66,8 +62,6 @@ pub struct TypeCombinationBox {
 #[derive(IsoBox, Debug)]
 #[iso_box(box_type = b"etyp", crate_path = crate)]
 pub struct ExtendedTypeBox<'a> {
-    #[iso_box(header)]
-    pub header: BoxHeader,
     #[iso_box(nested_box(collect))]
     pub compatible_combinations: Vec<TypeCombinationBox>,
     #[iso_box(nested_box(collect_unknown))]
@@ -80,7 +74,6 @@ mod tests {
     use scuffle_bytes_util::zero_copy::{Deserialize, Slice};
 
     use crate::boxes::{Brand, ExtendedTypeBox, TypeCombinationBox};
-    use crate::{BoxHeaderProperties, BoxSize};
 
     #[test]
     fn demux_tyco() {
@@ -93,9 +86,6 @@ mod tests {
         ];
 
         let mdat = TypeCombinationBox::deserialize(Slice::from(&data[..])).unwrap();
-        assert_eq!(mdat.header.size, BoxSize::Short(12));
-        assert!(mdat.header.box_type.is_four_cc(b"tyco"));
-        assert_eq!(mdat.header.payload_size(), Some(4));
         assert_eq!(mdat.compatible_brands.len(), 1);
         assert_eq!(mdat.compatible_brands[0], Brand::Iso6);
     }
@@ -121,28 +111,16 @@ mod tests {
         ];
 
         let mdat = ExtendedTypeBox::deserialize(Slice::from(&data[..])).unwrap();
-        assert_eq!(mdat.header.size, BoxSize::Short(44));
-        assert!(mdat.header.box_type.is_four_cc(b"etyp"));
-        assert_eq!(mdat.header.payload_size(), Some(44 - 8));
 
         assert_eq!(mdat.compatible_combinations.len(), 2);
 
-        assert_eq!(mdat.compatible_combinations[0].header.size, BoxSize::Short(12));
-        assert!(mdat.compatible_combinations[0].header.box_type.is_four_cc(b"tyco"));
-        assert_eq!(mdat.compatible_combinations[0].header.payload_size(), Some(4));
         assert_eq!(mdat.compatible_combinations[0].compatible_brands.len(), 1);
         assert_eq!(mdat.compatible_combinations[0].compatible_brands[0], Brand::IsoM);
 
-        assert_eq!(mdat.compatible_combinations[1].header.size, BoxSize::Short(12));
-        assert!(mdat.compatible_combinations[1].header.box_type.is_four_cc(b"tyco"));
-        assert_eq!(mdat.compatible_combinations[1].header.payload_size(), Some(4));
         assert_eq!(mdat.compatible_combinations[1].compatible_brands.len(), 1);
         assert_eq!(mdat.compatible_combinations[1].compatible_brands[0], Brand::Iso6);
 
         assert_eq!(mdat.unknown_boxes.len(), 1);
-        assert_eq!(mdat.unknown_boxes[0].header.size, BoxSize::Short(12));
-        assert!(mdat.unknown_boxes[0].header.box_type.is_four_cc(b"unkn"));
-        assert_eq!(mdat.unknown_boxes[0].header.payload_size(), Some(4));
         assert_eq!(mdat.unknown_boxes[0].data.len(), 4);
         assert_eq!(mdat.unknown_boxes[0].data.as_bytes()[0], 0x42);
         assert_eq!(mdat.unknown_boxes[0].data.as_bytes()[1], 0x00);

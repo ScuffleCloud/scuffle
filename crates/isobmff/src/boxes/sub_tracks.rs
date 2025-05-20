@@ -1,4 +1,4 @@
-use crate::{BoxHeader, FullBoxHeader, IsoBox};
+use crate::{FullBoxHeader, IsoBox};
 
 /// Sub track box
 ///
@@ -6,8 +6,6 @@ use crate::{BoxHeader, FullBoxHeader, IsoBox};
 #[derive(Debug, IsoBox)]
 #[iso_box(box_type = b"strk", crate_path = crate)]
 pub struct SubTrackBox {
-    #[iso_box(header)]
-    pub header: BoxHeader,
     #[iso_box(nested_box)]
     pub stri: SubTrackInformationBox,
     #[iso_box(nested_box)]
@@ -20,8 +18,7 @@ pub struct SubTrackBox {
 #[derive(Debug, IsoBox)]
 #[iso_box(box_type = b"stri", crate_path = crate)]
 pub struct SubTrackInformationBox {
-    #[iso_box(header)]
-    pub header: FullBoxHeader,
+    pub full_header: FullBoxHeader,
     pub switch_group: i16,
     pub alternate_group: i16,
     pub sub_track_id: u32,
@@ -35,8 +32,6 @@ pub struct SubTrackInformationBox {
 #[derive(Debug, IsoBox)]
 #[iso_box(box_type = b"strd", crate_path = crate)]
 pub struct SubTrackDefinitionBox {
-    #[iso_box(header)]
-    pub header: BoxHeader,
     #[iso_box(nested_box(collect))]
     pub stsg: Vec<SubTrackSampleGroupBox>,
 }
@@ -47,8 +42,7 @@ pub struct SubTrackDefinitionBox {
 #[derive(Debug, IsoBox)]
 #[iso_box(box_type = b"stsg", crate_path = crate)]
 pub struct SubTrackSampleGroupBox {
-    #[iso_box(header)]
-    pub header: FullBoxHeader,
+    pub full_header: FullBoxHeader,
     pub grouping_type: [u8; 4],
     pub item_count: u16,
     #[iso_box(repeated)]

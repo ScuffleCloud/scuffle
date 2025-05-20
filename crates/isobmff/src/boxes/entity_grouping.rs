@@ -1,6 +1,6 @@
 use scuffle_bytes_util::zero_copy::{Deserialize, Serialize};
 
-use crate::{BoxHeader, FullBoxHeader, IsoBox, IsoSized, UnknownBox};
+use crate::{FullBoxHeader, IsoBox, IsoSized, UnknownBox};
 
 /// Groups list box
 ///
@@ -8,8 +8,6 @@ use crate::{BoxHeader, FullBoxHeader, IsoBox, IsoSized, UnknownBox};
 #[derive(IsoBox, Debug)]
 #[iso_box(box_type = b"grpl", crate_path = crate)]
 pub struct GroupsListBox<'a> {
-    #[iso_box(header)]
-    pub header: BoxHeader,
     #[iso_box(nested_box(collect))]
     pub altr: Vec<AltrEntityToGroupBox>,
     #[iso_box(nested_box(collect_unknown))]
@@ -72,7 +70,6 @@ impl IsoSized for EntityToGroupBox {
 #[derive(IsoBox, Debug)]
 #[iso_box(box_type = b"altr", crate_path = crate)]
 pub struct AltrEntityToGroupBox {
-    #[iso_box(header)]
-    pub header: FullBoxHeader,
+    pub full_header: FullBoxHeader,
     pub entity_to_group: EntityToGroupBox,
 }

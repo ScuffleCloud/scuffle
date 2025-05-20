@@ -1,19 +1,17 @@
 use std::fmt::Debug;
 
-use scuffle_bytes_util::zero_copy::{Deserialize, DeserializeSeed, Serialize};
+use scuffle_bytes_util::zero_copy::{Deserialize, DeserializeSeed};
 
 use crate::boxes::{
     ExtendedTypeBox, FileTypeBox, IdentifiedMediaDataBox, MediaDataBox, MetaBox, MovieBox, MovieFragmentBox,
     MovieFragmentRandomAccessBox, OriginalFileTypeBox, ProducerReferenceTimeBox, ProgressiveDownloadInfoBox,
     SegmentIndexBox, SegmentTypeBox, SubsegmentIndexBox,
 };
-use crate::{BoxHeaderProperties, BoxSize, BoxType, IsoBox, IsoSized, UnknownBox};
+use crate::{BoxHeader, BoxSize, BoxType, IsoBox, UnknownBox};
 
 #[derive(IsoBox, Debug)]
-#[iso_box(box_type = b"root", skip_impl(deserialize), crate_path = crate)] // The box type does not matter here
+#[iso_box(skip_impl(iso_box, deserialize), crate_path = crate)]
 pub struct IsobmffFile<'a> {
-    #[iso_box(header)]
-    pub empty_header: EmptyHeader,
     #[iso_box(nested_box)]
     pub ftyp: FileTypeBox,
     #[iso_box(nested_box(collect))]
@@ -51,55 +49,32 @@ impl<'a> Deserialize<'a> for IsobmffFile<'a> {
     where
         R: scuffle_bytes_util::zero_copy::ZeroCopyReader<'a>,
     {
-        Self::deserialize_seed(reader, EmptyHeader::default())
+        Self::deserialize_seed(
+            reader,
+            BoxHeader {
+                size: BoxSize::ToEnd,
+                box_type: BoxType::FourCc(*b"root"),
+            },
+        )
     }
 }
 
-#[derive(Clone)]
-pub struct EmptyHeader {
-    box_size: BoxSize,
-}
+// This trait is usually not implemented manually.
+// Since the file does not have a header, we need to implement it manually here.
+impl IsoBox for IsobmffFile<'_> {
+    const TYPE: BoxType = BoxType::Uuid(uuid::Uuid::nil());
 
-impl Debug for EmptyHeader {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        f.debug_tuple("EmptyHeader").finish()
+    fn add_header_size(payload_size: usize) -> usize {
+        // Return the payload size, because the file does not have a header
+        payload_size
     }
-}
 
-impl Serialize for EmptyHeader {
-    fn serialize<W>(&self, _writer: W) -> std::io::Result<()>
+    fn serialize_box_header<W>(&self, _writer: W) -> std::io::Result<()>
     where
         W: std::io::Write,
     {
+        // noop, because the file does not have a header
         Ok(())
-    }
-}
-
-impl Default for EmptyHeader {
-    fn default() -> Self {
-        Self {
-            box_size: BoxSize::ToEnd,
-        }
-    }
-}
-
-impl IsoSized for EmptyHeader {
-    fn size(&self) -> usize {
-        0
-    }
-}
-
-impl BoxHeaderProperties for EmptyHeader {
-    fn box_size(&self) -> BoxSize {
-        self.box_size
-    }
-
-    fn box_size_mut(&mut self) -> &mut BoxSize {
-        &mut self.box_size
-    }
-
-    fn box_type(&self) -> BoxType {
-        BoxType::FourCc(*b"root")
     }
 }
 

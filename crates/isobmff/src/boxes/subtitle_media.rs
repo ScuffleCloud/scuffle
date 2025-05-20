@@ -1,7 +1,7 @@
 use scuffle_bytes_util::zero_copy::{Deserialize, Serialize, ZeroCopyReader};
 
 use super::{BitRateBox, SampleEntry, TextConfigBox};
-use crate::{BoxHeader, FullBoxHeader, IsoBox, IsoSized, UnknownBox, Utf8List, Utf8String};
+use crate::{FullBoxHeader, IsoBox, IsoSized, UnknownBox, Utf8List, Utf8String};
 
 /// Subtitle media header box
 ///
@@ -9,8 +9,7 @@ use crate::{BoxHeader, FullBoxHeader, IsoBox, IsoSized, UnknownBox, Utf8List, Ut
 #[derive(Debug, IsoBox)]
 #[iso_box(box_type = b"sthd", crate_path = crate)]
 pub struct SubtitleMediaHeaderBox {
-    #[iso_box(header)]
-    pub header: FullBoxHeader,
+    pub full_header: FullBoxHeader,
     // empty
 }
 
@@ -55,8 +54,6 @@ impl IsoSized for SubtitleSampleEntry {
 #[derive(IsoBox, Debug)]
 #[iso_box(box_type = b"stpp", crate_path = crate)]
 pub struct XMLSubtitleSampleEntry<'a> {
-    #[iso_box(header)]
-    pub header: BoxHeader,
     pub sample_entry: SubtitleSampleEntry,
     pub namespace: Utf8List,
     pub schema_location: Utf8List,
@@ -73,8 +70,6 @@ pub struct XMLSubtitleSampleEntry<'a> {
 #[derive(IsoBox, Debug)]
 #[iso_box(box_type = b"sbtt", crate_path = crate)]
 pub struct TextSubtitleSampleEntry<'a> {
-    #[iso_box(header)]
-    pub header: BoxHeader,
     pub sample_entry: SubtitleSampleEntry,
     pub content_encoding: Utf8String,
     pub mime_format: Utf8String,

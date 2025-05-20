@@ -10,8 +10,6 @@ use crate::{BoxHeader, FullBoxHeader, IsoBox, IsoSized};
 #[derive(Debug, IsoBox)]
 #[iso_box(box_type = b"styp", crate_path = crate)]
 pub struct SegmentTypeBox {
-    #[iso_box(header)]
-    pub header: BoxHeader,
     #[iso_box(from = "[u8; 4]")]
     pub major_brand: Brand,
     pub minor_version: u32,
@@ -25,8 +23,7 @@ pub struct SegmentTypeBox {
 #[derive(Debug, IsoBox)]
 #[iso_box(box_type = b"sidx", skip_impl(deserialize_seed, serialize, sized), crate_path = crate)]
 pub struct SegmentIndexBox {
-    #[iso_box(header)]
-    pub header: FullBoxHeader,
+    pub full_header: FullBoxHeader,
     pub reference_id: u32,
     pub timescale: u32,
     pub earliest_presentation_time: u64,
@@ -36,20 +33,22 @@ pub struct SegmentIndexBox {
     pub references: Vec<SegmentIndexBoxReference>,
 }
 
-impl<'a> DeserializeSeed<'a, FullBoxHeader> for SegmentIndexBox {
-    fn deserialize_seed<R>(mut reader: R, seed: FullBoxHeader) -> std::io::Result<Self>
+impl<'a> DeserializeSeed<'a, BoxHeader> for SegmentIndexBox {
+    fn deserialize_seed<R>(mut reader: R, _seed: BoxHeader) -> std::io::Result<Self>
     where
         R: scuffle_bytes_util::zero_copy::ZeroCopyReader<'a>,
     {
+        let full_header = FullBoxHeader::deserialize(&mut reader)?;
+
         let reference_id = u32::deserialize(&mut reader)?;
         let timescale = u32::deserialize(&mut reader)?;
 
-        let earliest_presentation_time = if seed.version == 0 {
+        let earliest_presentation_time = if full_header.version == 0 {
             u32::deserialize(&mut reader)? as u64
         } else {
             u64::deserialize(&mut reader)?
         };
-        let first_offset = if seed.version == 0 {
+        let first_offset = if full_header.version == 0 {
             u32::deserialize(&mut reader)? as u64
         } else {
             u64::deserialize(&mut reader)?
@@ -64,7 +63,7 @@ impl<'a> DeserializeSeed<'a, FullBoxHeader> for SegmentIndexBox {
         }
 
         Ok(SegmentIndexBox {
-            header: seed,
+            full_header,
             reference_id,
             timescale,
             earliest_presentation_time,
@@ -81,12 +80,13 @@ impl Serialize for SegmentIndexBox {
     where
         W: std::io::Write,
     {
-        self.header.serialize(&mut writer)?;
+        self.serialize_box_header(&mut writer)?;
+        self.full_header.serialize(&mut writer)?;
 
         self.reference_id.serialize(&mut writer)?;
         self.timescale.serialize(&mut writer)?;
 
-        if self.header.version == 0 {
+        if self.full_header.version == 0 {
             (self.earliest_presentation_time as u32).serialize(&mut writer)?;
             (self.first_offset as u32).serialize(&mut writer)?;
         } else {
@@ -107,10 +107,10 @@ impl Serialize for SegmentIndexBox {
 
 impl IsoSized for SegmentIndexBox {
     fn size(&self) -> usize {
-        let mut size = self.header.size();
+        let mut size = self.full_header.size();
         size += 4; // reference_id
         size += 4; // timescale
-        if self.header.version == 0 {
+        if self.full_header.version == 0 {
             size += 4; // earliest_presentation_time
             size += 4; // first_offset
         } else {
@@ -122,7 +122,7 @@ impl IsoSized for SegmentIndexBox {
 
         size += self.references.size();
 
-        size
+        Self::add_header_size(size)
     }
 }
 
@@ -195,8 +195,7 @@ impl IsoSized for SegmentIndexBoxReference {
 #[derive(IsoBox, Debug)]
 #[iso_box(box_type = b"ssix", crate_path = crate)]
 pub struct SubsegmentIndexBox {
-    #[iso_box(header)]
-    pub header: FullBoxHeader,
+    pub full_header: FullBoxHeader,
     pub subsegment_count: u32,
     #[iso_box(repeated)]
     pub subsegments: Vec<SubsegmentIndexBoxSubsegment>,
@@ -285,28 +284,29 @@ impl IsoSized for SubsegmentIndexBoxSubsegmentRange {
 #[derive(Debug, IsoBox)]
 #[iso_box(box_type = b"prft", skip_impl(deserialize_seed, serialize, sized), crate_path = crate)]
 pub struct ProducerReferenceTimeBox {
-    #[iso_box(header)]
-    pub header: FullBoxHeader,
+    pub full_header: FullBoxHeader,
     pub reference_track_id: u32,
     pub ntp_timestamp: u64,
     pub media_time: u64,
 }
 
-impl<'a> DeserializeSeed<'a, FullBoxHeader> for ProducerReferenceTimeBox {
-    fn deserialize_seed<R>(mut reader: R, seed: FullBoxHeader) -> std::io::Result<Self>
+impl<'a> DeserializeSeed<'a, BoxHeader> for ProducerReferenceTimeBox {
+    fn deserialize_seed<R>(mut reader: R, _seed: BoxHeader) -> std::io::Result<Self>
     where
         R: scuffle_bytes_util::zero_copy::ZeroCopyReader<'a>,
     {
+        let full_header = FullBoxHeader::deserialize(&mut reader)?;
+
         let reference_track_id = u32::deserialize(&mut reader)?;
         let ntp_timestamp = u64::deserialize(&mut reader)?;
-        let media_time = if seed.version == 0 {
+        let media_time = if full_header.version == 0 {
             u32::deserialize(&mut reader)? as u64
         } else {
             u64::deserialize(&mut reader)?
         };
 
         Ok(ProducerReferenceTimeBox {
-            header: seed,
+            full_header,
             reference_track_id,
             ntp_timestamp,
             media_time,
@@ -319,11 +319,12 @@ impl Serialize for ProducerReferenceTimeBox {
     where
         W: std::io::Write,
     {
-        self.header.serialize(&mut writer)?;
+        self.serialize_box_header(&mut writer)?;
+        self.full_header.serialize(&mut writer)?;
 
         self.reference_track_id.serialize(&mut writer)?;
         self.ntp_timestamp.serialize(&mut writer)?;
-        if self.header.version == 0 {
+        if self.full_header.version == 0 {
             (self.media_time as u32).serialize(&mut writer)?;
         } else {
             self.media_time.serialize(&mut writer)?;
@@ -334,14 +335,15 @@ impl Serialize for ProducerReferenceTimeBox {
 
 impl IsoSized for ProducerReferenceTimeBox {
     fn size(&self) -> usize {
-        let mut size = self.header.size();
+        let mut size = self.full_header.size();
         size += 4; // reference_track_id
         size += 8; // ntp_timestamp
-        if self.header.version == 0 {
+        if self.full_header.version == 0 {
             size += 4; // media_time
         } else {
             size += 8; // media_time
         }
-        size
+
+        Self::add_header_size(size)
     }
 }

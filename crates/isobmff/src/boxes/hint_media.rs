@@ -11,8 +11,7 @@ use crate::{FullBoxHeader, IsoBox, IsoSized};
 #[derive(IsoBox, Debug)]
 #[iso_box(box_type = b"hmhd", crate_path = crate)]
 pub struct HintMediaHeaderBox {
-    #[iso_box(header)]
-    pub header: FullBoxHeader,
+    pub full_header: FullBoxHeader,
     pub max_pdu_size: u16,
     pub avg_pdu_size: u16,
     pub maxbitrate: u32,

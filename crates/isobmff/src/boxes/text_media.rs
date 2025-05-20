@@ -1,7 +1,7 @@
 use scuffle_bytes_util::zero_copy::{Deserialize, Serialize, ZeroCopyReader};
 
 use super::{BitRateBox, SampleEntry, TextConfigBox};
-use crate::{BoxHeader, IsoBox, IsoSized, UnknownBox, Utf8String};
+use crate::{IsoBox, IsoSized, UnknownBox, Utf8String};
 
 /// Plain Text sample entry
 ///
@@ -44,8 +44,6 @@ impl IsoSized for PlainTextSampleEntry {
 #[derive(IsoBox, Debug)]
 #[iso_box(box_type = b"stxt", crate_path = crate)]
 pub struct SimpleTextSampleEntry<'a> {
-    #[iso_box(header)]
-    pub header: BoxHeader,
     pub sample_entry: PlainTextSampleEntry,
     pub content_encoding: Utf8String,
     pub mime_format: Utf8String,

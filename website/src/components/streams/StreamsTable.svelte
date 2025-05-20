@@ -1,5 +1,5 @@
 <script lang="ts">
-    import IconWebhook from '$lib/images/IconWebhook.svelte';
+    import IconWebhook from '$lib/images/IconWebhookInverted.svelte';
     import IconStream from '$lib/images/IconStream.svelte';
     import type { VideoStream } from './types';
     import { goto } from '$app/navigation';

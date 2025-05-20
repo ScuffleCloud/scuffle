@@ -6,6 +6,7 @@
     import StreamDetailsHeader from './stream-detail-header.svelte';
     import { pushState, replaceState } from '$app/navigation';
     import EventsTab from './events/events-tab.svelte';
+    import OverviewTab from './overview/overview-tab.svelte';
 
     type Props = {
         streamedData: Streamed<VideoStream>;
@@ -60,6 +61,7 @@
                     {#if id === 'overview'}
                         <div class="overview-content">
                             <h3>Stream Overview</h3>
+                            <OverviewTab />
                         </div>
                     {:else if id === 'events'}
                         <div class="events-content">
@@ -121,6 +123,10 @@
 
             .tab-content {
                 padding: 1rem 0;
+
+                .events-content {
+                    position: relative;
+                }
 
                 h3 {
                     margin: 0 0 1rem 0;

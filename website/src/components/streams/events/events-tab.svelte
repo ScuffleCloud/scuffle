@@ -132,6 +132,7 @@
                 display: flex;
                 gap: 0.75rem;
                 align-items: center;
+                position: relative;
             }
         }
 
@@ -157,6 +158,11 @@
             box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
             min-width: 400px;
             padding: 0.5rem;
+            z-index: 50;
+
+            /* Not sure why margins are being applied automatically to my select content */
+            margin-top: 0rem;
+            margin-left: 0rem;
 
             .select-header {
                 padding: 0.5rem;
@@ -216,30 +222,6 @@
             border-radius: 4px;
             width: 100%;
             padding: 0.25rem;
-        }
-
-        .event-items {
-            display: flex;
-            flex-direction: column;
-            gap: 0.5rem;
-        }
-
-        .event-item {
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
-            padding: 0.5rem;
-            background: #f9f9f9;
-            border-radius: 4px;
-
-            .event-icon {
-                color: #22c55e;
-            }
-
-            .event-time {
-                color: #64748b;
-                font-size: 0.875rem;
-            }
         }
     }
 </style>

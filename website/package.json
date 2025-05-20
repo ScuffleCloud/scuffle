@@ -21,6 +21,7 @@
         "@sveltejs/adapter-static": "^3.0.8",
         "@sveltejs/kit": "^2.16.0",
         "@sveltejs/vite-plugin-svelte": "^5.0.3",
+        "@tanstack/svelte-query": "^5.62.2",
         "@types/lodash": "^4.17.16",
         "echarts": "^5.6.0",
         "eslint": "^9.21.0",
@@ -31,7 +32,6 @@
         "prettier": "^3.4.1",
         "prettier-plugin-svelte": "^3.3.2",
         "svelte": "^5.16.0",
-        "@tanstack/svelte-query": "^5.62.2",
         "svelte-check": "^4.0.0",
         "svelte-echarts": "^1.0.0",
         "svelte-eslint-parser": "^0.43.0",
@@ -44,7 +44,7 @@
     },
     "dependencies": {
         "date-fns": "^4.1.0",
-        "melt": "^0.17.1"
+        "melt": "^0.17.8"
     },
     "msw": {
         "workerDirectory": [

@@ -1,214 +1,327 @@
 <script lang="ts">
     import VideoHeader from './video-header.svelte';
+    import IconCopy from '$lib/images/icon-copy.svelte';
     let streamId = '8a28e499d6s7987fd9812937fd981...';
     let streamKey = '••••••••••••••••••••••••';
     let isConnected = true;
     let requireSignedUrls = false;
+
+    import IconOverviewKey from '$lib/images/icon-overview-key.svelte';
+    import IconCopyCheckmark from '$lib/images/icon-copy-checkmark.svelte';
+
+    let copied = {
+        streamId: false,
+        streamKey: false,
+    };
+
+    function copyToClipboard(text: string, field: keyof typeof copied) {
+        navigator.clipboard.writeText(text);
+        copied[field] = true;
+
+        setTimeout(() => {
+            copied[field] = false;
+        }, 2000);
+    }
 </script>
 
-<VideoHeader />
-
-<section class="keys-section">
-    <h2>🔑 Important keys</h2>
-    <div class="key-item">
-        <div class="key-label">Stream ID</div>
-        <div class="key-value">
-            <span>{streamId}</span>
-            <button class="copy-button">📋</button>
+<div class="overview-tab-container">
+    <VideoHeader />
+    <section class="keys-section">
+        <div class="section-header">
+            <div class="section-header-icon">
+                <IconOverviewKey />
+            </div>
+            <h2>Important keys</h2>
         </div>
-    </div>
-    <div class="key-item">
-        <div class="key-label">Stream Key</div>
-        <div class="key-value">
-            <span>Private</span>
-            <span class="masked-key">{streamKey}</span>
-            <button class="copy-button">📋</button>
+        <div class="keys-content">
+            <div class="key-card">
+                <div class="key-label">Stream ID</div>
+                <div class="key-value">
+                    <span>{streamId}</span>
+                    <button
+                        class="copy-button"
+                        class:copied={copied.streamId}
+                        onclick={() => copyToClipboard(streamId, 'streamId')}
+                    >
+                        {#if copied.streamId}
+                            <IconCopyCheckmark />
+                        {:else}
+                            <IconCopy />
+                        {/if}
+                    </button>
+                </div>
+            </div>
+            <div class="key-card">
+                <div class="key-label">Stream Key</div>
+                <div class="key-value">
+                    <span class="masked-key">{streamKey}</span>
+                    <button
+                        class="copy-button"
+                        class:copied={copied.streamKey}
+                        onclick={() => copyToClipboard(streamKey, 'streamKey')}
+                    >
+                        {#if copied.streamKey}
+                            <IconCopyCheckmark />
+                        {:else}
+                            <IconCopy />
+                        {/if}
+                    </button>
+                </div>
+            </div>
         </div>
-    </div>
-</section>
+    </section>
 
-<section class="urls-section">
-    <h2>🌐 URLs</h2>
-    <div class="signed-urls">
-        <h3>Require Signed URLs</h3>
-        <p class="subtext">Subtext about this temporary text</p>
-        <label class="toggle">
-            <input type="checkbox" bind:checked={requireSignedUrls} />
-            <span class="slider"></span>
-            <span class="toggle-label">
-                {requireSignedUrls ? 'Enabled' : 'Disabled'}
-            </span>
-        </label>
-    </div>
-</section>
+    <section class="keys-section">
+        <div class="section-header">
+            <div class="section-header-icon">
+                <IconOverviewKey />
+            </div>
+            <h2>URLs</h2>
+        </div>
+        <div class="keys-content">
+            <div class="key-card">
+                <div class="key-label">Signed URLs</div>
+                <div class="key-value">
+                    <span>{requireSignedUrls ? 'Enabled' : 'Disabled'}</span>
+                    <button
+                        class="copy-button"
+                        onclick={() => (requireSignedUrls = !requireSignedUrls)}
+                    >
+                        <input
+                            type="checkbox"
+                            bind:checked={requireSignedUrls}
+                            style="display: none;"
+                        />
+                        {#if requireSignedUrls}
+                            <IconCopyCheckmark />
+                        {:else}
+                            <IconCopy />
+                        {/if}
+                    </button>
+                </div>
+            </div>
+            <div class="key-card">
+                <div class="key-label">Passphrase</div>
+                <div class="key-value">
+                    <span class="masked-key">{streamKey}</span>
+                    <button
+                        class="copy-button"
+                        class:copied={copied.streamKey}
+                        onclick={() => copyToClipboard(streamKey, 'streamKey')}
+                    >
+                        {#if copied.streamKey}
+                            <IconCopyCheckmark />
+                        {:else}
+                            <IconCopy />
+                        {/if}
+                    </button>
+                </div>
+            </div>
+        </div>
+    </section>
+</div>
 
 <style>
-    .overview-container {
-        padding: 1.5rem;
-        background: #fff;
-        border-radius: 8px;
-        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    .overview-tab-container {
+        display: flex;
+        flex-direction: column;
+        gap: 1.5rem;
+    }
 
-        h2 {
-            font-size: 1.2rem;
-            margin-bottom: 1rem;
-            color: #333;
-        }
+    h2 {
+        font-size: 1.2rem;
+        margin-bottom: 1rem;
+        color: #333;
+    }
 
-        .info-grid {
-            display: grid;
-            grid-template-columns: repeat(2, 1fr);
-            gap: 1rem;
-            margin-bottom: 1.5rem;
+    .keys-section {
+        margin-bottom: 2rem;
+        background: var(--color-teal70);
+        border-radius: 0.5rem;
+        padding: 0.25rem;
+        box-shadow:
+            0px 1px 2px 0px #e6dedb,
+            -1px 1px 0px 0px #e6dedb,
+            1px 1px 0px 0px #e6dedb,
+            1px -1px 0px 0px #e6dedb,
+            -1px -1px 0px 0px #e6dedb;
 
-            .info-item {
-                background: #f5f5f5;
-                padding: 0.75rem;
-                border-radius: 6px;
+        .section-header {
+            display: flex;
+            align-items: center;
+            padding: 0.5rem;
+            align-items: center;
 
-                .label {
-                    display: block;
-                    font-size: 0.9rem;
-                    color: #666;
-                }
+            .section-header-icon {
+                padding: 0.5rem;
+            }
 
-                .value {
-                    display: block;
-                    font-weight: 500;
-                    margin-top: 0.25rem;
-                }
-
-                .status {
-                    display: flex;
-                    align-items: center;
-                    gap: 0.5rem;
-
-                    .status-dot {
-                        width: 8px;
-                        height: 8px;
-                        border-radius: 50%;
-
-                        &.connected {
-                            background: #4caf50;
-                        }
-                    }
-                }
+            h2 {
+                margin: 0;
+                color: var(--color-brown90);
+                font-size: 1rem;
+                font-style: normal;
+                font-weight: 700;
+                line-height: 1.5rem;
             }
         }
 
-        .webhook-info {
-            background: #f0f0ff;
-            padding: 1rem;
-            border-radius: 6px;
-            margin-top: 1rem;
+        /* Where items start */
+        .keys-content {
+            display: flex;
+            flex-direction: column;
+            gap: 0.25rem;
+        }
 
-            .webhook-badge {
+        .key-card {
+            display: flex;
+            padding: 1rem;
+            justify-content: space-between;
+            align-items: center;
+            align-self: stretch;
+            background: var(--color-teal30);
+            border-radius: 0.5rem;
+            padding: 1rem;
+            border: 1px solid var(--colors-teal-10, #fefcfb);
+
+            .key-label {
+                color: var(--colors-brown90);
+                text-overflow: ellipsis;
+                font-size: 1rem;
+                font-style: normal;
+                font-weight: 500;
+                line-height: 1.5rem; /* 150% */
+            }
+
+            .key-value {
                 display: flex;
                 align-items: center;
-                gap: 0.5rem;
-                color: #4444ff;
-                margin-bottom: 0.5rem;
-            }
+                gap: 0.75rem;
+                background: var(--color-teal50);
+                border-radius: 0.5rem;
+                padding: 0.5rem 1rem;
 
-            .webhook-notice {
-                font-size: 0.9rem;
-                color: #666;
-            }
-        }
-
-        .encoding-grid {
-            background: #f5f5f5;
-            border-radius: 6px;
-            padding: 1rem;
-
-            .encoding-row {
-                display: grid;
-                grid-template-columns: repeat(3, 1fr);
-                gap: 1rem;
-                margin-bottom: 0.5rem;
-
-                .label {
-                    color: #666;
-                }
-
-                .value {
+                span {
+                    font-size: 1rem;
+                    font-style: normal;
                     font-weight: 500;
+                    line-height: 1.5rem; /* 150% */
+                }
+
+                .copy-button {
+                    background: none;
+                    border: none;
+                    cursor: pointer;
+                    padding: 0.25rem;
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    color: #543a3c;
+                    transition: color 0.2s;
+
+                    &:hover {
+                        color: #555;
+                    }
+
+                    &.copied {
+                        color: #4caf50;
+                    }
+                }
+
+                .masked-key {
+                    font-family: monospace;
                 }
             }
         }
+    }
 
-        .keys-section {
-            .key-item {
-                background: #f5f5f5;
-                padding: 1rem;
-                border-radius: 6px;
-                margin-bottom: 1rem;
+    .urls-section {
+        margin-bottom: 2rem;
+        background: var(--color-teal70);
+        border-radius: 0.5rem;
+        padding: 0.25rem;
+        box-shadow:
+            0px 1px 2px 0px #e6dedb,
+            -1px 1px 0px 0px #e6dedb,
+            1px 1px 0px 0px #e6dedb,
+            1px -1px 0px 0px #e6dedb,
+            -1px -1px 0px 0px #e6dedb;
 
-                .key-value {
-                    display: flex;
-                    align-items: center;
-                    gap: 0.5rem;
-                    margin-top: 0.5rem;
+        .section-header {
+            display: flex;
+            align-items: center;
+            padding: 0.5rem;
 
-                    .copy-button {
-                        background: none;
-                        border: none;
-                        cursor: pointer;
-                        padding: 0.25rem;
-                    }
+            .section-header-icon {
+                padding: 0.5rem;
+                font-size: 1.2rem;
+            }
 
-                    .masked-key {
-                        font-family: monospace;
-                    }
-                }
+            h2 {
+                margin: 0;
+                color: var(--color-brown90);
+                font-size: 1rem;
+                font-style: normal;
+                font-weight: 700;
+                line-height: 1.5rem;
             }
         }
 
-        .urls-section {
-            .signed-urls {
-                background: #f5f5f5;
-                padding: 1rem;
-                border-radius: 6px;
+        input[type='password'] {
+            background: transparent;
+            border: none;
+            color: var(--colors-brown90);
+            font-size: 1rem;
+            font-family: monospace;
+            width: 100%;
+            outline: none;
 
-                .toggle {
-                    display: flex;
-                    align-items: center;
-                    gap: 0.5rem;
-                    margin-top: 1rem;
+            &::placeholder {
+                color: var(--colors-brown50);
+            }
+        }
 
-                    .slider {
-                        position: relative;
-                        width: 40px;
-                        height: 24px;
-                        background: #ccc;
-                        border-radius: 12px;
-                        cursor: pointer;
+        .toggle {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
 
-                        &::before {
-                            content: '';
-                            position: absolute;
-                            width: 20px;
-                            height: 20px;
-                            border-radius: 50%;
-                            background: white;
-                            top: 2px;
-                            left: 2px;
-                            transition: transform 0.2s;
-                        }
-                    }
+            .slider {
+                position: relative;
+                width: 40px;
+                height: 24px;
+                background: #ccc;
+                border-radius: 12px;
+                cursor: pointer;
 
-                    input:checked + .slider {
-                        background: #4caf50;
-
-                        &::before {
-                            transform: translateX(16px);
-                        }
-                    }
-
-                    input {
-                        display: none;
-                    }
+                &::before {
+                    content: '';
+                    position: absolute;
+                    width: 20px;
+                    height: 20px;
+                    border-radius: 50%;
+                    background: white;
+                    top: 2px;
+                    left: 2px;
+                    transition: transform 0.2s;
                 }
+            }
+
+            input:checked + .slider {
+                background: #4caf50;
+
+                &::before {
+                    transform: translateX(16px);
+                }
+            }
+
+            input {
+                display: none;
+            }
+
+            .toggle-label {
+                font-size: 0.875rem;
+                color: var(--colors-brown90);
             }
         }
     }

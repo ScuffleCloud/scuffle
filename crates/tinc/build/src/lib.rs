@@ -29,6 +29,9 @@
 #![deny(unreachable_pub)]
 #![cfg_attr(not(feature = "prost"), allow(unused_variables, dead_code))]
 
+use std::io::ErrorKind;
+use std::path::Path;
+
 use anyhow::Context;
 use extern_paths::ExternPaths;
 mod codegen;
@@ -69,6 +72,7 @@ struct PathConfigs {
 #[derive(Debug)]
 pub struct Config {
     disable_tinc_include: bool,
+    root_module: bool,
     mode: Mode,
     paths: PathConfigs,
     extern_paths: ExternPaths,
@@ -88,6 +92,7 @@ impl Config {
             mode,
             paths: PathConfigs::default(),
             extern_paths: ExternPaths::new(mode),
+            root_module: true,
         }
     }
 
@@ -95,6 +100,14 @@ impl Config {
     /// annotations into the include path of protoc.
     pub fn disable_tinc_include(&mut self) -> &mut Self {
         self.disable_tinc_include = true;
+        self
+    }
+
+    /// Disable the root module generation
+    /// which allows for `tinc::include_protos!()` without
+    /// providing a package.
+    pub fn disable_root_module(&mut self) -> &mut Self {
+        self.root_module = false;
         self
     }
 
@@ -117,7 +130,7 @@ impl Config {
     }
 
     /// Compile and generate all the protos with the includes.
-    pub fn compile_protos(&mut self, protos: &[&str], includes: &[&str]) -> anyhow::Result<()> {
+    pub fn compile_protos(&mut self, protos: &[impl AsRef<Path>], includes: &[impl AsRef<Path>]) -> anyhow::Result<()> {
         match self.mode {
             #[cfg(feature = "prost")]
             Mode::Prost => self.compile_protos_prost(protos, includes),
@@ -125,13 +138,16 @@ impl Config {
     }
 
     #[cfg(feature = "prost")]
-    fn compile_protos_prost(&mut self, protos: &[&str], includes: &[&str]) -> anyhow::Result<()> {
+    fn compile_protos_prost(&mut self, protos: &[impl AsRef<Path>], includes: &[impl AsRef<Path>]) -> anyhow::Result<()> {
+        use std::collections::BTreeMap;
+
         use codegen::prost_sanatize::to_snake;
         use codegen::utils::get_common_import_path;
+        use proc_macro2::Span;
         use prost_reflect::DescriptorPool;
         use quote::{ToTokens, quote};
         use syn::parse_quote;
-        use types::ProtoTypeRegistry;
+        use types::{ProtoPath, ProtoTypeRegistry};
 
         let out_dir_str = std::env::var("OUT_DIR").context("OUT_DIR must be set, typically set by a cargo build script")?;
         let out_dir = std::path::PathBuf::from(&out_dir_str);
@@ -146,14 +162,14 @@ impl Config {
         });
         config.bytes(self.paths.bytes.iter());
 
-        let mut includes = includes.to_vec();
+        let mut includes = includes.iter().map(|i| i.as_ref()).collect::<Vec<_>>();
 
         {
             let tinc_out = out_dir.join("tinc");
             std::fs::create_dir_all(&tinc_out).context("failed to create tinc directory")?;
             std::fs::write(tinc_out.join("annotations.proto"), tinc_pb_prost::TINC_ANNOTATIONS)
                 .context("failed to write tinc_annotations.rs")?;
-            includes.push(&out_dir_str);
+            includes.push(Path::new(&out_dir_str));
             config.protoc_arg(format!("--descriptor_set_in={}", tinc_pb_prost::TINC_ANNOTATIONS_PB_PATH));
         }
 
@@ -249,12 +265,13 @@ impl Config {
                         .methods
                         .iter()
                         .fold(builder, |service_builder, (name, method)| {
-                            let codec_path = if is_client {
-                                quote!(::tinc::reexports::tonic::codec::ProstCodec)
-                            } else {
-                                let path = get_common_import_path(&service.full_name, &method.codec_path);
-                                quote!(#path::<::tinc::reexports::tonic::codec::ProstCodec<_, _>>)
-                            };
+                            let codec_path =
+                                if let Some(Some(codec_path)) = (!is_client).then_some(method.codec_path.as_ref()) {
+                                    let path = get_common_import_path(&service.full_name, codec_path);
+                                    quote!(#path::<::tinc::reexports::tonic::codec::ProstCodec<_, _>>)
+                                } else {
+                                    quote!(::tinc::reexports::tonic::codec::ProstCodec)
+                                };
 
                             let mut builder = tonic_build::manual::Method::builder()
                                 .input_type(
@@ -312,15 +329,64 @@ impl Config {
             }));
         });
 
+        for package in packages.keys() {
+            match std::fs::remove_file(out_dir.join(format!("{package}.rs"))) {
+                Err(err) if err.kind() != ErrorKind::NotFound => return Err(anyhow::anyhow!(err).context("remove")),
+                _ => {}
+            }
+        }
+
         config.compile_fds(fds).context("prost compile")?;
 
-        for (package, module) in packages {
-            if self.extern_paths.contains(&package) {
+        for (package, module) in &mut packages {
+            if self.extern_paths.contains(package) {
                 continue;
             };
 
             let path = out_dir.join(format!("{package}.rs"));
-            write_module(&path, module.extra_items).with_context(|| package.to_owned())?;
+            write_module(&path, std::mem::take(&mut module.extra_items)).with_context(|| package.to_owned())?;
+        }
+
+        #[derive(Default)]
+        struct Module<'a> {
+            proto_path: Option<&'a ProtoPath>,
+            children: BTreeMap<&'a str, Module<'a>>,
+        }
+
+        impl ToTokens for Module<'_> {
+            fn to_tokens(&self, tokens: &mut proc_macro2::TokenStream) {
+                let include = self
+                    .proto_path
+                    .map(|p| p.as_ref())
+                    .map(|path| quote!(include!(concat!(#path, ".rs"));));
+                let children = self.children.iter().map(|(part, child)| {
+                    let ident = syn::Ident::new(&to_snake(part), Span::call_site());
+                    quote! {
+                        pub mod #ident {
+                            #child
+                        }
+                    }
+                });
+                quote! {
+                    #include
+                    #(#children)*
+                }
+                .to_tokens(tokens);
+            }
+        }
+
+        if self.root_module {
+            let mut module = Module::default();
+            for package in packages.keys() {
+                let mut module = &mut module;
+                for part in package.split('.') {
+                    module = module.children.entry(part).or_default();
+                }
+                module.proto_path = Some(package);
+            }
+
+            let file: syn::File = parse_quote!(#module);
+            std::fs::write(out_dir.join("___root_module.rs"), prettyplease::unparse(&file)).context("write root module")?;
         }
 
         Ok(())
@@ -328,8 +394,15 @@ impl Config {
 }
 
 fn write_module(path: &std::path::Path, module: Vec<syn::Item>) -> anyhow::Result<()> {
-    let file = std::fs::read_to_string(path).context("read")?;
-    let mut file = syn::parse_file(&file).context("parse")?;
+    let mut file = match std::fs::read_to_string(path) {
+        Ok(content) if !content.is_empty() => syn::parse_file(&content).context("parse")?,
+        Err(err) if err.kind() != ErrorKind::NotFound => return Err(anyhow::anyhow!(err).context("read")),
+        _ => syn::File {
+            attrs: Vec::new(),
+            items: Vec::new(),
+            shebang: None,
+        },
+    };
 
     file.items.extend(module);
     std::fs::write(path, prettyplease::unparse(&file)).context("write")?;

@@ -10,7 +10,7 @@ use super::Package;
 use super::utils::{field_ident_from_str, type_ident_from_str};
 use crate::types::{
     Comments, ProtoPath, ProtoService, ProtoServiceMethod, ProtoServiceMethodEndpoint, ProtoServiceMethodIo,
-    ProtoTypeRegistry,
+    ProtoTypeRegistry, ProtoValueType,
 };
 
 mod openapi;
@@ -160,6 +160,16 @@ impl GeneratedMethod {
 
         openapi.response("200", response);
 
+        let validate = if matches!(method.input.value_type(), ProtoValueType::Message(_)) {
+            quote! {
+                if let Err(err) = ::tinc::__private::TincValidate::validate_http(&#target_ident, #state_ident, &#tracker_ident) {
+                    return err;
+                }
+            }
+        } else {
+            quote!()
+        };
+
         let function_impl = quote! {
             let mut #state_ident = ::tinc::__private::TrackerSharedState::default();
             let mut #tracker_ident = <<#input_path as ::tinc::__private::TrackerFor>::Tracker as ::core::default::Default>::default();
@@ -168,9 +178,7 @@ impl GeneratedMethod {
             #path_tokens
             #request_tokens
 
-            if let Err(err) = ::tinc::__private::TincValidate::validate_http(&#target_ident, #state_ident, &#tracker_ident) {
-                return err;
-            }
+            #validate
 
             let request = ::tinc::reexports::tonic::Request::from_parts(
                 ::tinc::reexports::tonic::metadata::MetadataMap::from_headers(parts.headers),
@@ -259,7 +267,7 @@ impl ProcessedService {
 
 #[derive(Debug, Clone, PartialEq)]
 pub(crate) struct ProcessedServiceMethod {
-    pub codec_path: ProtoPath,
+    pub codec_path: Option<ProtoPath>,
     pub input: ProtoServiceMethodIo,
     pub output: ProtoServiceMethodIo,
     pub comments: Comments,
@@ -309,72 +317,76 @@ pub(super) fn handle_service(
             paths = paths.path(gen_method.path, gen_method.openapi);
         }
 
-        let codec_ident = format_ident!("{name}Codec");
-        let input_path = registry.resolve_rust_path(&package_name, method.input.value_type().proto_path());
-        let output_path = registry.resolve_rust_path(&package_name, method.output.value_type().proto_path());
-
-        method_codecs.push(quote! {
-            #[derive(Debug, Clone, Default)]
-            #[doc(hidden)]
-            pub struct #codec_ident<C>(C);
-
-            #[allow(clippy::all, dead_code, unused_imports, unused_variables, unused_parens)]
-            const _: () = {
+        let codec_path = if matches!(method.input.value_type(), ProtoValueType::Message(_)) {
+            let input_path = registry.resolve_rust_path(&package_name, method.input.value_type().proto_path());
+            let output_path = registry.resolve_rust_path(&package_name, method.output.value_type().proto_path());
+            let codec_ident = format_ident!("{name}Codec");
+            method_codecs.push(quote! {
                 #[derive(Debug, Clone, Default)]
-                pub struct Encoder<E>(E);
-                #[derive(Debug, Clone, Default)]
-                pub struct Decoder<D>(D);
+                #[doc(hidden)]
+                pub struct #codec_ident<C>(C);
 
-                impl<C> ::tinc::reexports::tonic::codec::Codec for #codec_ident<C>
-                where
-                    C: ::tinc::reexports::tonic::codec::Codec<Encode = #output_path, Decode = #input_path>
-                {
-                    type Encode = C::Encode;
-                    type Decode = C::Decode;
+                #[allow(clippy::all, dead_code, unused_imports, unused_variables, unused_parens)]
+                const _: () = {
+                    #[derive(Debug, Clone, Default)]
+                    pub struct Encoder<E>(E);
+                    #[derive(Debug, Clone, Default)]
+                    pub struct Decoder<D>(D);
 
-                    type Encoder = C::Encoder;
-                    type Decoder = Decoder<C::Decoder>;
+                    impl<C> ::tinc::reexports::tonic::codec::Codec for #codec_ident<C>
+                    where
+                        C: ::tinc::reexports::tonic::codec::Codec<Encode = #output_path, Decode = #input_path>
+                    {
+                        type Encode = C::Encode;
+                        type Decode = C::Decode;
 
-                    fn encoder(&mut self) -> Self::Encoder {
-                        ::tinc::reexports::tonic::codec::Codec::encoder(&mut self.0)
-                    }
+                        type Encoder = C::Encoder;
+                        type Decoder = Decoder<C::Decoder>;
 
-                    fn decoder(&mut self) -> Self::Decoder {
-                        Decoder(
-                            ::tinc::reexports::tonic::codec::Codec::decoder(&mut self.0)
-                        )
-                    }
-                }
+                        fn encoder(&mut self) -> Self::Encoder {
+                            ::tinc::reexports::tonic::codec::Codec::encoder(&mut self.0)
+                        }
 
-                impl<D> ::tinc::reexports::tonic::codec::Decoder for Decoder<D>
-                where
-                    D: ::tinc::reexports::tonic::codec::Decoder<Item = #input_path, Error = ::tinc::reexports::tonic::Status>
-                {
-                    type Item = D::Item;
-                    type Error = ::tinc::reexports::tonic::Status;
-
-                    fn decode(&mut self, buf: &mut ::tinc::reexports::tonic::codec::DecodeBuf<'_>) -> Result<Option<Self::Item>, Self::Error> {
-                        match ::tinc::reexports::tonic::codec::Decoder::decode(&mut self.0, buf) {
-                            ::core::result::Result::Ok(::core::option::Option::Some(item)) => {
-                                ::tinc::__private::TincValidate::validate_tonic(&item)?;
-                                ::core::result::Result::Ok(::core::option::Option::Some(item))
-                            },
-                            ::core::result::Result::Ok(::core::option::Option::None) => ::core::result::Result::Ok(::core::option::Option::None),
-                            ::core::result::Result::Err(err) => ::core::result::Result::Err(err),
+                        fn decoder(&mut self) -> Self::Decoder {
+                            Decoder(
+                                ::tinc::reexports::tonic::codec::Codec::decoder(&mut self.0)
+                            )
                         }
                     }
 
-                    fn buffer_settings(&self) -> ::tinc::reexports::tonic::codec::BufferSettings {
-                        ::tinc::reexports::tonic::codec::Decoder::buffer_settings(&self.0)
+                    impl<D> ::tinc::reexports::tonic::codec::Decoder for Decoder<D>
+                    where
+                        D: ::tinc::reexports::tonic::codec::Decoder<Item = #input_path, Error = ::tinc::reexports::tonic::Status>
+                    {
+                        type Item = D::Item;
+                        type Error = ::tinc::reexports::tonic::Status;
+
+                        fn decode(&mut self, buf: &mut ::tinc::reexports::tonic::codec::DecodeBuf<'_>) -> Result<Option<Self::Item>, Self::Error> {
+                            match ::tinc::reexports::tonic::codec::Decoder::decode(&mut self.0, buf) {
+                                ::core::result::Result::Ok(::core::option::Option::Some(item)) => {
+                                    ::tinc::__private::TincValidate::validate_tonic(&item)?;
+                                    ::core::result::Result::Ok(::core::option::Option::Some(item))
+                                },
+                                ::core::result::Result::Ok(::core::option::Option::None) => ::core::result::Result::Ok(::core::option::Option::None),
+                                ::core::result::Result::Err(err) => ::core::result::Result::Err(err),
+                            }
+                        }
+
+                        fn buffer_settings(&self) -> ::tinc::reexports::tonic::codec::BufferSettings {
+                            ::tinc::reexports::tonic::codec::Decoder::buffer_settings(&self.0)
+                        }
                     }
-                }
-            };
-        });
+                };
+            });
+            Some(ProtoPath::new(format!("{package_name}.{codec_ident}")))
+        } else {
+            None
+        };
 
         methods.insert(
             name.clone(),
             ProcessedServiceMethod {
-                codec_path: ProtoPath::new(format!("{package_name}.{codec_ident}")),
+                codec_path,
                 input: method.input.clone(),
                 output: method.output.clone(),
                 comments: method.comments.clone(),

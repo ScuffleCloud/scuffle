@@ -13,6 +13,7 @@
     import type { VideoStream } from '../types';
     import EventsList from './events-list.svelte';
     import type { StreamEvent } from './types';
+    import EventsLegend from './events-legend.svelte';
 
     const streams: VideoStream[] = [
         {
@@ -71,56 +72,67 @@
     const selectedStream = $derived(streams.find((stream) => stream.id === select.value));
 </script>
 
-<div class="card">
-    <div class="header">
-        <div class="controls">
-            <button class="select-trigger" {...select.trigger}>
-                <div class="stream-info">
-                    {#if selectedStream}
-                        <StreamStatusPill status={selectedStream.status} />
-                        <span class="stream-id">{selectedStream.id}</span>
-                    {/if}
-                </div>
-            </button>
-            <div class="select-content" {...select.content}>
-                <div class="select-header">
-                    <span class="title">Current streams</span>
-                    <div class="divider"></div>
-                </div>
-                {#each streams.filter((s) => s.status === 'live') as stream}
-                    <div class="select-option" {...select.getOption(stream.id)}>
-                        <StreamStatusPill status="live" />
-                        <span class="stream-id">{stream.id}</span>
+<div class="events-tab-container">
+    <div class="card">
+        <div class="header">
+            <div class="controls">
+                <button class="select-trigger" {...select.trigger}>
+                    <div class="stream-info">
+                        {#if selectedStream}
+                            <StreamStatusPill status={selectedStream.status} />
+                            <span class="stream-id">{selectedStream.id}</span>
+                        {/if}
                     </div>
-                {/each}
-                <div class="select-header">
-                    <span class="title">Past streams</span>
-                    <div class="divider"></div>
-                </div>
-                {#each streams.filter((s) => s.status === 'finished') as stream}
-                    <div class="select-option" {...select.getOption(stream.id)}>
-                        <StreamStatusPill status="finished" />
-                        <span class="stream-id">{stream.id}</span>
+                </button>
+                <div class="select-content" {...select.content}>
+                    <div class="select-header">
+                        <span class="title">Current streams</span>
+                        <div class="divider"></div>
                     </div>
-                {/each}
-            </div>
+                    {#each streams.filter((s) => s.status === 'live') as stream}
+                        <div class="select-option" {...select.getOption(stream.id)}>
+                            <StreamStatusPill status="live" />
+                            <span class="stream-id">{stream.id}</span>
+                        </div>
+                    {/each}
+                    <div class="select-header">
+                        <span class="title">Past streams</span>
+                        <div class="divider"></div>
+                    </div>
+                    {#each streams.filter((s) => s.status === 'finished') as stream}
+                        <div class="select-option" {...select.getOption(stream.id)}>
+                            <StreamStatusPill status="finished" />
+                            <span class="stream-id">{stream.id}</span>
+                        </div>
+                    {/each}
+                </div>
 
-            <button class="resume-button"> Resume Live Updates ▶ </button>
+                <button class="resume-button"> Resume Live Updates ▶ </button>
+            </div>
+        </div>
+
+        <!-- For the data-zoom slider + chart -->
+        <div class="events-chart-container">
+            <EventsChart />
+        </div>
+        <div class="events-legend-container">
+            <EventsLegend />
         </div>
     </div>
 
-    <div class="events-chart-container">
-        <EventsChart />
-    </div>
+    <EventsList {events} />
 </div>
 
-<EventsList {events} />
-
 <style>
+    .events-tab-container {
+        display: flex;
+        flex-direction: column;
+        gap: 0.25rem;
+    }
+
     .card {
         background: white;
         border-radius: 8px;
-        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 
         .header {
             display: flex;
@@ -222,6 +234,15 @@
             border-radius: 4px;
             width: 100%;
             padding: 0.25rem;
+        }
+
+        .events-legend-container {
+            padding: 1.5rem 1rem 1rem 1rem;
+            border-radius: 0rem 0rem 0.5rem 0.5rem;
+            background: var(--color-teal70);
+            display: flex;
+            flex-direction: column;
+            gap: 0.75rem;
         }
     }
 </style>

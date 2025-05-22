@@ -1,5 +1,6 @@
 <!-- website/src/components/streams/StreamDetailsHeader.svelte -->
 <script lang="ts">
+    import IconDate from '$lib/images/icon-date.svelte';
     import StreamStatusPill from '$lib/shared-components/stream-status-pill.svelte';
     import type { VideoStream } from './types';
     export let stream: VideoStream;
@@ -53,8 +54,8 @@
                 <StreamStatusPill status={stream.status} />
             </div>
             <div class="date">
-                <span class="calendar-icon">📅</span>
                 {stream.created}
+                <IconDate />
             </div>
         </div>
     </div>

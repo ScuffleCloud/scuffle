@@ -17,6 +17,7 @@
     import { CanvasRenderer } from 'echarts/renderers';
     import { renderItem } from './shape-renderers';
     import { circleData, getSampleLineData, rectangleData, diamondData } from './sample-data';
+    import { theme } from '$lib/theme';
     use([
         DatasetComponent,
         TitleComponent,
@@ -48,9 +49,21 @@
         type: 'time',
         splitLine: {
             show: true,
+            showMinLine: false,
+            showMaxLine: false,
+            lineStyle: {
+                color: theme.colors.gray40,
+            },
         },
         min: xMinTime,
         max: xMaxTime,
+        axisTick: {
+            show: true,
+            length: 4,
+            lineStyle: {
+                color: theme.colors.gray60,
+            },
+        },
         axisLabel: {
             formatter: function (val: number) {
                 const date = new Date(val);
@@ -69,6 +82,7 @@
             alignMaxLabel: 'right',
             hideOverlap: true,
             interval: 'auto',
+            color: theme.colors.gray60,
         },
     };
 
@@ -80,6 +94,8 @@
                 top: '28%',
                 height: '25%',
                 show: true,
+                backgroundColor: theme.colors.teal70,
+                borderColor: theme.colors.teal70,
             },
             {
                 left: '1%',
@@ -87,6 +103,8 @@
                 top: '55%',
                 height: '25%',
                 show: true,
+                backgroundColor: theme.colors.teal70,
+                borderColor: theme.colors.teal70,
             },
         ],
         xAxis: [

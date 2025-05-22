@@ -51,17 +51,80 @@
             show: true,
             showMinLine: false,
             showMaxLine: false,
+            // Only method of changing line style with echarts
             lineStyle: {
-                color: theme.colors.gray40,
+                color: {
+                    type: 'linear',
+                    x: 0,
+                    y: 0,
+                    x2: 0,
+                    y2: 1,
+                    colorStops: [
+                        {
+                            offset: 0,
+                            color: 'transparent',
+                        },
+                        {
+                            offset: 0.15,
+                            color: 'transparent',
+                        },
+                        {
+                            offset: 0.15,
+                            color: theme.colors.gray40,
+                        },
+                        {
+                            offset: 0.85,
+                            color: theme.colors.gray40,
+                        },
+                        {
+                            offset: 0.85,
+                            color: 'transparent',
+                        },
+                        {
+                            offset: 1,
+                            color: 'transparent',
+                        },
+                    ],
+                },
+                width: 1,
+                type: 'solid',
+                cap: 'round',
             },
         },
         min: xMinTime,
         max: xMaxTime,
         axisTick: {
             show: true,
-            length: 4,
+            length: 6,
+            // Only method of changing tick style with echarts
             lineStyle: {
-                color: theme.colors.gray60,
+                color: {
+                    type: 'linear',
+                    x: 0,
+                    y: 0,
+                    x2: 0,
+                    y2: 1,
+                    colorStops: [
+                        {
+                            offset: 0,
+                            color: theme.colors.gray60,
+                        },
+                        {
+                            offset: 0.5,
+                            color: theme.colors.gray60,
+                        },
+                        {
+                            offset: 0.5,
+                            color: 'transparent',
+                        },
+                        {
+                            offset: 1,
+                            color: 'transparent',
+                        },
+                    ],
+                },
+                width: 1,
+                cap: 'round',
             },
         },
         axisLabel: {
@@ -83,6 +146,7 @@
             hideOverlap: true,
             interval: 'auto',
             color: theme.colors.gray60,
+            margin: 10,
         },
     };
 
@@ -94,8 +158,8 @@
                 top: '28%',
                 height: '25%',
                 show: true,
-                backgroundColor: theme.colors.teal70,
-                borderColor: theme.colors.teal70,
+                backgroundColor: theme.colors.teal30,
+                borderColor: theme.colors.teal30,
             },
             {
                 left: '1%',
@@ -103,8 +167,8 @@
                 top: '55%',
                 height: '25%',
                 show: true,
-                backgroundColor: theme.colors.teal70,
-                borderColor: theme.colors.teal70,
+                backgroundColor: theme.colors.teal30,
+                borderColor: theme.colors.teal30,
             },
         ],
         xAxis: [
@@ -149,7 +213,7 @@
                 type: 'slider',
                 filterMode: 'weakFilter',
                 showDataShadow: false,
-                top: 5,
+                top: 1,
                 xAxisIndex: [0, 1],
                 start: 30,
                 end: 70,
@@ -160,8 +224,20 @@
                     right: 50,
                 },
                 labelFormatter: '{value}',
-                // fillerColor: '#EEE7E2', // color of selected area
                 borderRadius: 4,
+                fillerColor: '#EEE6E2', // Add this line
+                // backgroundColor: theme.colors.teal100,
+                borderColor: theme.colors.teal100,
+                handleStyle: {
+                    color: theme.colors.yellow40,
+                    borderColor: theme.colors.yellow40,
+                    borderWidth: 1,
+                    borderRadius: 4,
+                },
+                moveHandleStyle: {
+                    color: theme.colors.brown50,
+                    opacity: 0.7,
+                },
             },
             {
                 type: 'inside',
@@ -202,7 +278,36 @@
     };
 </script>
 
-<Chart {init} {options} onclick={handleClick} />
+<div class="chart-container">
+    <div class="grid-overlay top"></div>
+    <div class="grid-overlay bottom"></div>
+    <Chart {init} {options} onclick={handleClick} />
+</div>
 
 <style>
+    .chart-container {
+        position: relative;
+        width: 100%;
+        height: 100%;
+    }
+
+    .grid-overlay {
+        position: absolute;
+        left: 1%;
+        right: 1%;
+        height: 25%;
+        border-radius: 0.25rem;
+        pointer-events: none;
+        z-index: 1;
+        background-color: var(--color-teal70);
+        mix-blend-mode: multiply;
+    }
+
+    .grid-overlay.top {
+        top: 28%;
+    }
+
+    .grid-overlay.bottom {
+        top: 55%;
+    }
 </style>

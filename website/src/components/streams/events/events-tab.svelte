@@ -131,7 +131,7 @@
     }
 
     .card {
-        background: white;
+        background: var(--color-teal30);
         border-radius: 8px;
 
         .header {
@@ -230,7 +230,6 @@
 
         .events-chart-container {
             height: 250px;
-            margin-bottom: 1rem;
             border-radius: 4px;
             width: 100%;
             padding: 0.25rem;

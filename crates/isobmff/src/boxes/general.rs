@@ -16,6 +16,12 @@ pub struct MediaDataBox<'a> {
     pub data: BytesCow<'a>,
 }
 
+impl<'a> MediaDataBox<'a> {
+    pub fn new(data: BytesCow<'a>) -> Self {
+        Self { data }
+    }
+}
+
 impl Debug for MediaDataBox<'_> {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         f.debug_struct("MediaDataBox").field("data.len", &self.data.len()).finish()

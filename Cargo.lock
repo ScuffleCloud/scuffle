@@ -259,6 +259,12 @@ dependencies = [
 ]
 
 [[package]]
+name = "az"
+version = "1.2.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "7b7e4c2464d97fe331d41de9d5db0def0a96f4d823b8b32a2efd503578988973"
+
+[[package]]
 name = "backtrace"
 version = "0.3.75"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -407,6 +413,12 @@ name = "bumpalo"
 version = "3.17.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "1628fb46dfa0b37568d12e5edd512553eccf6a22a78e8bde00bb4aed84d5bdbf"
+
+[[package]]
+name = "bytemuck"
+version = "1.23.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "9134a6ef01ce4b366b50689c94f82c14bc72bc5d0386829828a2e2752ef7958c"
 
 [[package]]
 name = "byteorder"
@@ -1081,6 +1093,18 @@ dependencies = [
 ]
 
 [[package]]
+name = "fixed"
+version = "1.29.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "707070ccf8c4173548210893a0186e29c266901b71ed20cd9e2ca0193dfe95c3"
+dependencies = [
+ "az",
+ "bytemuck",
+ "half",
+ "typenum",
+]
+
+[[package]]
 name = "fixedbitset"
 version = "0.4.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1746,6 +1770,7 @@ dependencies = [
  "byteorder",
  "bytes",
  "document-features",
+ "fixed",
  "insta",
  "isobmff-derive",
  "nutype-enum",
@@ -3538,6 +3563,7 @@ dependencies = [
  "document-features",
  "isobmff",
  "isobmff-derive",
+ "nutype-enum",
  "scuffle-bytes-util",
  "scuffle-changelog",
  "scuffle-workspace-hack",
@@ -3643,6 +3669,8 @@ dependencies = [
  "byteorder",
  "bytes",
  "document-features",
+ "fixed",
+ "isobmff",
  "scuffle-aac",
  "scuffle-av1",
  "scuffle-bytes-util",

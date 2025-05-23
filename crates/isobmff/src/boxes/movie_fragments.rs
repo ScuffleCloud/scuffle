@@ -162,6 +162,28 @@ pub struct TrackExtendsBox {
     pub default_sample_flags: SampleFlags,
 }
 
+impl TrackExtendsBox {
+    pub fn new(track_id: u32) -> Self {
+        Self {
+            full_header: FullBoxHeader::default(),
+            track_id,
+            default_sample_description_index: 1,
+            default_sample_duration: 0,
+            default_sample_size: 0,
+            default_sample_flags: SampleFlags {
+                reserved: 0,
+                is_leading: 0,
+                sample_depends_on: 0,
+                sample_is_depended_on: 0,
+                sample_has_redundancy: 0,
+                sample_padding_value: 0,
+                sample_is_non_sync_sample: false,
+                sample_degradation_priority: 0,
+            },
+        }
+    }
+}
+
 /// Movie fragment box
 ///
 /// ISO/IEC 14496-12 - 8.8.4
@@ -186,6 +208,15 @@ pub struct MovieFragmentBox<'a> {
 pub struct MovieFragmentHeaderBox {
     pub full_header: FullBoxHeader,
     pub sequence_number: u32,
+}
+
+impl MovieFragmentHeaderBox {
+    pub fn new(sequence_number: u32) -> Self {
+        Self {
+            full_header: FullBoxHeader::default(),
+            sequence_number,
+        }
+    }
 }
 
 /// Track fragment box
@@ -232,6 +263,50 @@ pub struct TrackFragmentHeaderBox {
     pub default_sample_duration: Option<u32>,
     pub default_sample_size: Option<u32>,
     pub default_sample_flags: Option<SampleFlags>,
+}
+
+impl TrackFragmentHeaderBox {
+    pub fn new(
+        track_id: u32,
+        base_data_offset: Option<u64>,
+        sample_description_index: Option<u32>,
+        default_sample_duration: Option<u32>,
+        default_sample_size: Option<u32>,
+        default_sample_flags: Option<SampleFlags>,
+    ) -> Self {
+        let mut flags = TfFlags::DefaultBaseIsMoof;
+
+        if base_data_offset.is_some() {
+            flags |= TfFlags::BaseDataOffsetPresent;
+        }
+
+        if sample_description_index.is_some() {
+            flags |= TfFlags::SampleDescriptionIndexPresent;
+        }
+
+        if default_sample_duration.is_some() {
+            flags |= TfFlags::DefaultSampleDurationPresent;
+        }
+
+        if default_sample_size.is_some() {
+            flags |= TfFlags::DefaultSampleSizePresent;
+        }
+
+        if default_sample_flags.is_some() {
+            flags |= TfFlags::DefaultSampleFlagsPresent;
+        }
+
+        Self {
+            version: 0,
+            flags,
+            track_id,
+            base_data_offset,
+            sample_description_index,
+            default_sample_duration,
+            default_sample_size,
+            default_sample_flags,
+        }
+    }
 }
 
 bitflags::bitflags! {
@@ -379,6 +454,45 @@ pub struct TrackRunBox {
     pub data_offset: Option<i32>,
     pub first_sample_flags: Option<SampleFlags>,
     pub samples: Vec<TrackRunBoxSample>,
+}
+
+impl TrackRunBox {
+    pub fn new(samples: Vec<TrackRunBoxSample>, first_sample_flags: Option<SampleFlags>) -> Self {
+        let mut flags = TrFlags::DataOffsetPresent;
+
+        if let Some(first_sample) = samples.first() {
+            if first_sample.sample_duration.is_some() {
+                flags |= TrFlags::SampleDurationPresent;
+            }
+            if first_sample.sample_size.is_some() {
+                flags |= TrFlags::SampleSizePresent;
+            }
+            if first_sample.sample_flags.is_some() {
+                flags |= TrFlags::SampleFlagsPresent;
+            }
+            if first_sample.sample_composition_time_offset.is_some() {
+                flags |= TrFlags::SampleCompositionTimeOffsetsPresent;
+            }
+        }
+
+        let version = if samples
+            .iter()
+            .any(|s| s.sample_composition_time_offset.is_some_and(|o| o < 0))
+        {
+            1
+        } else {
+            0
+        };
+
+        Self {
+            version,
+            flags,
+            sample_count: samples.len() as u32,
+            data_offset: Some(0),
+            first_sample_flags,
+            samples,
+        }
+    }
 }
 
 impl<'a> DeserializeSeed<'a, BoxHeader> for TrackRunBox {
@@ -795,6 +909,20 @@ pub struct MovieFragmentRandomAccessOffsetBox {
 pub struct TrackFragmentBaseMediaDecodeTimeBox {
     pub full_header: FullBoxHeader,
     pub base_media_decode_time: u64,
+}
+
+impl TrackFragmentBaseMediaDecodeTimeBox {
+    pub fn new(base_media_decode_time: u64) -> Self {
+        let version = if base_media_decode_time > u32::MAX as u64 { 1 } else { 0 };
+
+        Self {
+            full_header: FullBoxHeader {
+                version,
+                flags: U24Be(0),
+            },
+            base_media_decode_time,
+        }
+    }
 }
 
 impl<'a> DeserializeSeed<'a, BoxHeader> for TrackFragmentBaseMediaDecodeTimeBox {

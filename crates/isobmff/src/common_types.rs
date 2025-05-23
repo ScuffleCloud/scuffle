@@ -10,6 +10,18 @@ use crate::IsoSized;
 #[derive(Debug)]
 pub struct Utf8String(pub String);
 
+impl From<String> for Utf8String {
+    fn from(string: String) -> Self {
+        Utf8String(string)
+    }
+}
+
+impl From<Utf8String> for String {
+    fn from(utf8_string: Utf8String) -> Self {
+        utf8_string.0
+    }
+}
+
 impl Deref for Utf8String {
     type Target = str;
 
@@ -161,8 +173,13 @@ impl IsoSized for Utf8List {
     }
 }
 
+/// ISO-639-2 three-letter language code.
 #[derive(Debug, Clone, Copy)]
 pub struct Langauge(pub [u8; 3]);
+
+impl Langauge {
+    pub const UNDETERMINED: Self = Self([0x15, 0x0E, 0x04]); // und
+}
 
 impl<'a> Deserialize<'a> for Langauge {
     fn deserialize<R>(reader: R) -> std::io::Result<Self>

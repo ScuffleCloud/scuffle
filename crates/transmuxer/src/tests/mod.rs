@@ -6,10 +6,9 @@ use std::process::{Command, Stdio};
 
 use scuffle_aac::AudioObjectType;
 use scuffle_flv::header::FlvHeader;
-use scuffle_mp4::codec::{AudioCodec, VideoCodec};
 
 use crate::define::{AudioSettings, VideoSettings};
-use crate::{TransmuxResult, Transmuxer};
+use crate::{AudioCodec, TransmuxResult, Transmuxer, VideoCodec};
 
 #[test]
 fn test_transmuxer_avc_aac() {

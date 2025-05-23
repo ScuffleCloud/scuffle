@@ -9,7 +9,7 @@ use crate::{BoxHeader, FullBoxHeader, IsoBox, IsoSized, UnknownBox, Utf8String};
 /// Data information box
 ///
 /// ISO/IEC 14496-12 - 8.7.1
-#[derive(Debug, IsoBox)]
+#[derive(Debug, Default, IsoBox)]
 #[iso_box(box_type = b"dinf", crate_path = crate)]
 pub struct DataInformationBox<'a> {
     #[iso_box(nested_box)]
@@ -19,7 +19,7 @@ pub struct DataInformationBox<'a> {
 /// Data entry url box
 ///
 /// ISO/IEC 14496-12 - 8.7.2
-#[derive(Debug, IsoBox)]
+#[derive(Debug, IsoBox, Default)]
 #[iso_box(box_type = b"url ", skip_impl(deserialize_seed, serialize), crate_path = crate)]
 pub struct DataEntryUrlBox {
     pub full_header: FullBoxHeader,
@@ -137,10 +137,24 @@ pub struct DataReferenceBox<'a> {
     pub unknown_boxes: Vec<UnknownBox<'a>>,
 }
 
+impl Default for DataReferenceBox<'_> {
+    fn default() -> Self {
+        Self {
+            full_header: FullBoxHeader::default(),
+            entry_count: 1,
+            url: vec![DataEntryUrlBox::default()],
+            urn: vec![],
+            imda: vec![],
+            snim: vec![],
+            unknown_boxes: vec![],
+        }
+    }
+}
+
 /// Sample size box
 ///
 /// ISO/IEC 14496-12 - 8.7.3.2
-#[derive(IsoBox)]
+#[derive(IsoBox, Default)]
 #[iso_box(box_type = b"stsz", crate_path = crate)]
 pub struct SampleSizeBox {
     pub full_header: FullBoxHeader,
@@ -177,7 +191,7 @@ pub struct CompactSampleSizeBox<'a> {
 /// Sample to chunk box
 ///
 /// ISO/IEC 14496-12 - 8.7.4
-#[derive(IsoBox)]
+#[derive(IsoBox, Default)]
 #[iso_box(box_type = b"stsc", crate_path = crate)]
 pub struct SampleToChunkBox {
     pub full_header: FullBoxHeader,
@@ -237,7 +251,7 @@ impl IsoSized for SampleToChunkBoxEntry {
 /// Chunk offset box
 ///
 /// ISO/IEC 14496-12 - 8.7.5
-#[derive(IsoBox)]
+#[derive(IsoBox, Default)]
 #[iso_box(box_type = b"stco", crate_path = crate)]
 pub struct ChunkOffsetBox {
     pub full_header: FullBoxHeader,

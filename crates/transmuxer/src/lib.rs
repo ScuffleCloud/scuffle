@@ -19,6 +19,15 @@ use std::io;
 
 use byteorder::{BigEndian, ReadBytesExt};
 use bytes::{Buf, Bytes};
+use isobmff::boxes::{
+    Brand, ChunkOffsetBox, FileTypeBox, HandlerBox, HandlerType, MediaBox, MediaDataBox, MediaHeaderBox,
+    MediaInformationBox, MovieBox, MovieExtendsBox, MovieFragmentBox, MovieFragmentHeaderBox, MovieHeaderBox,
+    SampleDescriptionBox, SampleSizeBox, SampleTableBox, SampleToChunkBox, SoundMediaHeaderBox, TimeToSampleBox, TrackBox,
+    TrackExtendsBox, TrackFragmentBaseMediaDecodeTimeBox, TrackFragmentBox, TrackFragmentHeaderBox, TrackHeaderBox,
+    TrackRunBox, VideoMediaHeaderBox,
+};
+use isobmff::{IsoSized, UnknownBox};
+use scuffle_bytes_util::zero_copy::Serialize;
 use scuffle_flv::audio::AudioData;
 use scuffle_flv::audio::body::AudioTagBody;
 use scuffle_flv::audio::body::legacy::LegacyAudioTagBody;
@@ -35,34 +44,6 @@ use scuffle_flv::video::header::enhanced::VideoFourCc;
 use scuffle_flv::video::header::legacy::{LegacyVideoTagHeader, LegacyVideoTagHeaderAvcPacket};
 use scuffle_flv::video::header::{VideoFrameType, VideoTagHeader, VideoTagHeaderData};
 use scuffle_h264::Sps;
-use scuffle_mp4::BoxType;
-use scuffle_mp4::codec::{AudioCodec, VideoCodec};
-use scuffle_mp4::types::ftyp::{FourCC, Ftyp};
-use scuffle_mp4::types::hdlr::{HandlerType, Hdlr};
-use scuffle_mp4::types::mdat::Mdat;
-use scuffle_mp4::types::mdhd::Mdhd;
-use scuffle_mp4::types::mdia::Mdia;
-use scuffle_mp4::types::mfhd::Mfhd;
-use scuffle_mp4::types::minf::Minf;
-use scuffle_mp4::types::moof::Moof;
-use scuffle_mp4::types::moov::Moov;
-use scuffle_mp4::types::mvex::Mvex;
-use scuffle_mp4::types::mvhd::Mvhd;
-use scuffle_mp4::types::smhd::Smhd;
-use scuffle_mp4::types::stbl::Stbl;
-use scuffle_mp4::types::stco::Stco;
-use scuffle_mp4::types::stsc::Stsc;
-use scuffle_mp4::types::stsd::Stsd;
-use scuffle_mp4::types::stsz::Stsz;
-use scuffle_mp4::types::stts::Stts;
-use scuffle_mp4::types::tfdt::Tfdt;
-use scuffle_mp4::types::tfhd::Tfhd;
-use scuffle_mp4::types::tkhd::Tkhd;
-use scuffle_mp4::types::traf::Traf;
-use scuffle_mp4::types::trak::Trak;
-use scuffle_mp4::types::trex::Trex;
-use scuffle_mp4::types::trun::Trun;
-use scuffle_mp4::types::vmhd::Vmhd;
 
 mod codecs;
 mod define;
@@ -72,7 +53,7 @@ pub use define::*;
 pub use errors::TransmuxError;
 
 struct Tags<'a> {
-    video_sequence_header: Option<VideoSequenceHeader>,
+    video_sequence_header: Option<VideoSequenceHeader<'a>>,
     audio_sequence_header: Option<AudioSequenceHeader>,
     scriptdata_tag: Option<OnMetaData<'a>>,
 }
@@ -282,17 +263,29 @@ impl<'a> Transmuxer<'a> {
                     (self.video_duration, 1)
                 };
 
-                let mut traf = Traf::new(
-                    Tfhd::new(main_id, None, None, None, None, None),
-                    Some(Trun::new(vec![trun_sample], None)),
-                    Some(Tfdt::new(main_duration)),
-                );
-                traf.optimize();
+                let traf = TrackFragmentBox {
+                    tfhd: TrackFragmentHeaderBox::new(main_id, None, None, None, None, None),
+                    trun: vec![TrackRunBox::new(vec![trun_sample], None)],
+                    sbgp: vec![],
+                    sgpd: vec![],
+                    subs: vec![],
+                    saiz: vec![],
+                    saio: vec![],
+                    tfdt: Some(TrackFragmentBaseMediaDecodeTimeBox::new(main_duration)),
+                    meta: None,
+                    udta: None,
+                };
+                // TODO: traf.optimize();
 
                 vec![traf]
             };
 
-            let mut moof = Moof::new(Mfhd::new(self.sequence_number), trafs);
+            let mut moof = MovieFragmentBox {
+                mfhd: MovieFragmentHeaderBox::new(self.sequence_number),
+                meta: None,
+                traf: trafs,
+                udta: None,
+            };
 
             // We need to get the moof size so that we can set the data offsets.
             let moof_size = moof.size();
@@ -300,10 +293,10 @@ impl<'a> Transmuxer<'a> {
             // We just created the moof, and therefore we know that the first traf is the
             // video traf and the second traf is the audio traf. So we can just unwrap them
             // and set the data offsets.
-            let traf = moof.traf.get_mut(0).expect("we just created the moof with a traf");
+            let traf = moof.traf.first_mut().expect("we just created the moof with a traf");
 
             // Again we know that these exist because we just created it.
-            let trun = traf.trun.as_mut().expect("we just created the video traf with a trun");
+            let trun = traf.trun.first_mut().expect("we just created the video traf with a trun");
 
             // We now define the offsets.
             // So the video offset will be the size of the moof + 8 bytes for the mdat
@@ -311,10 +304,10 @@ impl<'a> Transmuxer<'a> {
             trun.data_offset = Some(moof_size as i32 + 8);
 
             // We then write the moof to the writer.
-            moof.mux(&mut writer)?;
+            moof.serialize(&mut writer)?;
 
             // We create an mdat box and write it to the writer.
-            Mdat::new(vec![mdat_data]).mux(&mut writer)?;
+            MediaDataBox::new(mdat_data.into()).serialize(&mut writer)?;
 
             // Increase our sequence number and duration.
             self.sequence_number += 1;
@@ -444,11 +437,11 @@ impl<'a> Transmuxer<'a> {
             estimated_audio_bitrate = scriptdata_tag.audiodatarate.map(|v| (v * 1024.0) as u32).unwrap_or(0);
         }
 
-        let mut compatable_brands = vec![FourCC::Iso5, FourCC::Iso6];
+        let mut compatible_brands = vec![Brand::Iso5, Brand::Iso6];
 
         let video_stsd_entry = match video_sequence_header {
             VideoSequenceHeader::Avc(config) => {
-                compatable_brands.push(FourCC::Avc1);
+                compatible_brands.push(Brand::Avc1);
                 video_codec = VideoCodec::Avc {
                     constraint_set: config.profile_compatibility,
                     level: config.level_indication,
@@ -465,10 +458,10 @@ impl<'a> Transmuxer<'a> {
                     video_fps = frame_rate;
                 }
 
-                codecs::avc::stsd_entry(config, &sps)?
+                UnknownBox::try_from_box(codecs::avc::stsd_entry(config, &sps)?)?
             }
             VideoSequenceHeader::Av1(config) => {
-                compatable_brands.push(FourCC::Av01);
+                compatible_brands.push(Brand(*b"av01"));
                 let (entry, seq_obu) = codecs::av1::stsd_entry(config)?;
 
                 video_height = seq_obu.max_frame_height as u32;
@@ -490,10 +483,10 @@ impl<'a> Transmuxer<'a> {
                     full_range_flag: seq_obu.color_config.full_color_range,
                 };
 
-                entry
+                UnknownBox::try_from_box(entry)?
             }
             VideoSequenceHeader::Hevc(config) => {
-                compatable_brands.push(FourCC::Hev1);
+                compatible_brands.push(Brand(*b"hev1"));
                 video_codec = VideoCodec::Hevc {
                     constraint_indicator: config.general_constraint_indicator_flags,
                     level: config.general_level_idc,
@@ -511,13 +504,13 @@ impl<'a> Transmuxer<'a> {
                 video_width = sps.cropped_width() as u32;
                 video_height = sps.cropped_height() as u32;
 
-                entry
+                UnknownBox::try_from_box(entry)?
             }
         };
 
         let audio_stsd_entry = match audio_sequence_header.data {
             AudioSequenceHeaderData::Aac(data) => {
-                compatable_brands.push(FourCC::Mp41);
+                compatible_brands.push(Brand::Mp41);
                 let (entry, config) =
                     codecs::aac::stsd_entry(audio_sequence_header.sound_size, audio_sequence_header.sound_type, data)?;
 
@@ -555,52 +548,73 @@ impl<'a> Transmuxer<'a> {
         // units per second, making each frame 1000 units long instead of 33ms long.
         let video_timescale = (1000.0 * video_fps) as u32;
 
-        Ftyp::new(FourCC::Iso5, 512, compatable_brands).mux(writer)?;
-        Moov::new(
-            Mvhd::new(0, 0, 1000, 0, 1),
-            vec![
-                Trak::new(
-                    Tkhd::new(0, 0, 1, 0, Some((video_width, video_height))),
-                    None,
-                    Mdia::new(
-                        Mdhd::new(0, 0, video_timescale, 0),
-                        Hdlr::new(HandlerType::Vide, "VideoHandler".to_string()),
-                        Minf::new(
-                            Stbl::new(
-                                Stsd::new(vec![video_stsd_entry]),
-                                Stts::new(vec![]),
-                                Stsc::new(vec![]),
-                                Stco::new(vec![]),
-                                Some(Stsz::new(0, vec![])),
+        // ftyp
+        FileTypeBox {
+            major_brand: Brand::Iso5,
+            minor_version: 512,
+            compatible_brands,
+        }
+        .serialize(&mut *writer)?;
+
+        // moov
+        MovieBox {
+            mvhd: MovieHeaderBox::new(0, 0, 1000, 0, 1),
+            meta: None,
+            trak: vec![
+                TrackBox::new(
+                    TrackHeaderBox::new(0, 0, 1, 0, Some((video_width, video_height))), // tkhd
+                    None,                                                               // edts
+                    // mdia
+                    MediaBox::new(
+                        MediaHeaderBox::new(0, 0, video_timescale, 0),                          // mdhd
+                        HandlerBox::new(HandlerType::Video, "VideoHandler".to_string().into()), // hdlr
+                        // minf
+                        MediaInformationBox::new(
+                            // stbl
+                            SampleTableBox::new(
+                                SampleDescriptionBox::new(vec![video_stsd_entry]), // stsd
+                                TimeToSampleBox::default(),                        // stts
+                                SampleToChunkBox::default(),                       // stsc
+                                Some(SampleSizeBox::default()),                    // stsz
+                                ChunkOffsetBox::default(),                         // stco
                             ),
-                            Some(Vmhd::new()),
-                            None,
+                            Some(VideoMediaHeaderBox::default()), // vmhd
+                            None,                                 // smhd
                         ),
                     ),
                 ),
-                Trak::new(
-                    Tkhd::new(0, 0, 2, 0, None),
-                    None,
-                    Mdia::new(
-                        Mdhd::new(0, 0, audio_sample_rate, 0),
-                        Hdlr::new(HandlerType::Soun, "SoundHandler".to_string()),
-                        Minf::new(
-                            Stbl::new(
-                                Stsd::new(vec![audio_stsd_entry]),
-                                Stts::new(vec![]),
-                                Stsc::new(vec![]),
-                                Stco::new(vec![]),
-                                Some(Stsz::new(0, vec![])),
+                TrackBox::new(
+                    TrackHeaderBox::new(0, 0, 2, 0, None), // tkhd
+                    None,                                  // edts
+                    // mdia
+                    MediaBox::new(
+                        MediaHeaderBox::new(0, 0, audio_sample_rate, 0),                        // mdhd
+                        HandlerBox::new(HandlerType::Audio, "SoundHandler".to_string().into()), // hdlr
+                        // minf
+                        MediaInformationBox::new(
+                            // stbl
+                            SampleTableBox::new(
+                                SampleDescriptionBox::new(vec![UnknownBox::try_from_box(audio_stsd_entry)?]), // stsd
+                                TimeToSampleBox::default(),                                                   // stts
+                                SampleToChunkBox::default(),                                                  // stsc
+                                Some(SampleSizeBox::default()),                                               // stsz
+                                ChunkOffsetBox::default(),                                                    // stco
                             ),
-                            None,
-                            Some(Smhd::new()),
+                            None,                                 // vmhd
+                            Some(SoundMediaHeaderBox::default()), // smhd
                         ),
                     ),
                 ),
             ],
-            Some(Mvex::new(vec![Trex::new(1), Trex::new(2)], None)),
-        )
-        .mux(writer)?;
+            mvex: Some(MovieExtendsBox {
+                mehd: None,
+                trex: vec![TrackExtendsBox::new(1), TrackExtendsBox::new(2)],
+                leva: None,
+            }),
+            unknown_boxes: vec![],
+            udta: None,
+        }
+        .serialize(writer)?;
 
         Ok(Some((
             VideoSettings {

@@ -1,6 +1,8 @@
 use std::fmt::Debug;
 use std::io;
 
+use fixed::FixedI32;
+use fixed::types::extra::U16;
 use scuffle_bytes_util::zero_copy::{Deserialize, DeserializeSeed, Serialize, SerializeSeed, ZeroCopyReader};
 
 use crate::{BoxHeader, FullBoxHeader, IsoBox, IsoSized};
@@ -8,7 +10,7 @@ use crate::{BoxHeader, FullBoxHeader, IsoBox, IsoSized};
 /// Time to sample box
 ///
 /// ISO/IEC 14496-12 - 8.6.1.2
-#[derive(IsoBox, Debug)]
+#[derive(IsoBox, Debug, Default)]
 #[iso_box(box_type = b"stts", crate_path = crate)]
 pub struct TimeToSampleBox {
     pub full_header: FullBoxHeader,
@@ -389,8 +391,7 @@ impl IsoSized for EditListBox {
 pub struct EditListBoxEntry {
     pub edit_duration: u64,
     pub media_time: i64,
-    pub media_rate_integer: i16,
-    pub media_rate_fraction: i16,
+    pub media_rate: FixedI32<U16>,
 }
 
 impl<'a> DeserializeSeed<'a, u8> for EditListBoxEntry {
@@ -408,14 +409,12 @@ impl<'a> DeserializeSeed<'a, u8> for EditListBoxEntry {
         } else {
             i32::deserialize(&mut reader)? as i64
         };
-        let media_rate_integer = i16::deserialize(&mut reader)?;
-        let media_rate_fraction = i16::deserialize(&mut reader)?;
+        let media_rate = FixedI32::from_bits(i32::deserialize(&mut reader)?);
 
         Ok(Self {
             edit_duration,
             media_time,
-            media_rate_integer,
-            media_rate_fraction,
+            media_rate,
         })
     }
 }
@@ -432,8 +431,7 @@ impl SerializeSeed<u8> for EditListBoxEntry {
             (self.edit_duration as u32).serialize(&mut writer)?;
             (self.media_time as i32).serialize(&mut writer)?;
         }
-        self.media_rate_integer.serialize(&mut writer)?;
-        self.media_rate_fraction.serialize(&mut writer)?;
+        self.media_rate.to_bits().serialize(&mut writer)?;
 
         Ok(())
     }

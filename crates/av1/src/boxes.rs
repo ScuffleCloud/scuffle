@@ -32,3 +32,10 @@ pub struct AV1CodecConfigurationBox<'a> {
     /// The AV1 codec configuration record.
     pub av1_config: AV1CodecConfigurationRecord<'a>,
 }
+
+impl<'a> AV1CodecConfigurationBox<'a> {
+    /// Creates a new AV1 codec configuration box.
+    pub fn new(av1_config: AV1CodecConfigurationRecord<'a>) -> Self {
+        Self { av1_config }
+    }
+}

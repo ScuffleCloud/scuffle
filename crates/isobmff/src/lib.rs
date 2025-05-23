@@ -16,6 +16,7 @@
 #![deny(unreachable_pub)]
 
 use std::fmt::Debug;
+use std::io;
 
 use scuffle_bytes_util::BytesCow;
 use scuffle_bytes_util::zero_copy::{Deserialize, DeserializeSeed, Serialize};
@@ -61,15 +62,18 @@ pub trait IsoBox: IsoSized {
         box_size
     }
 
-    fn serialize_box_header<W>(&self, writer: W) -> std::io::Result<()>
-    where
-        W: std::io::Write,
-    {
+    fn box_header(&self) -> BoxHeader {
         BoxHeader {
             size: self.size().into(),
             box_type: Self::TYPE,
         }
-        .serialize(writer)
+    }
+
+    fn serialize_box_header<W>(&self, writer: W) -> std::io::Result<()>
+    where
+        W: std::io::Write,
+    {
+        self.box_header().serialize(writer)
     }
 }
 
@@ -121,6 +125,22 @@ impl Serialize for UnknownBox<'_> {
 }
 
 impl<'a> UnknownBox<'a> {
+    pub fn try_from_box(box_: impl IsoBox + Serialize) -> Result<Self, io::Error> {
+        let header = box_.box_header();
+
+        let mut data = if let Some(size) = header.size.size() {
+            Vec::with_capacity(size)
+        } else {
+            Vec::new()
+        };
+        box_.serialize(&mut data)?;
+
+        Ok(Self {
+            header,
+            data: data.into(),
+        })
+    }
+
     pub fn deserialize_as<T, S>(self) -> std::io::Result<T>
     where
         T: DeserializeSeed<'a, S>,

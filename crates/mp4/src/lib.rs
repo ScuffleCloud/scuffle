@@ -3,6 +3,8 @@
 //! This crates implements the MP4 ISO Base Media File Format (ISOBMFF) boxes defined by ISO/IEC 14496-14 - 6.
 //!
 //! For an implementation of ISO/IEC 14496-12 (the ISO Base Media File Format itself), see the [isobmff](https://crates.io/crates/isobmff) crate.
+//!
+//! Additionally it implements the Object Description Framework defined by ISO/IEC 14496-1 - 7.2.
 #![cfg_attr(feature = "docs", doc = "\n\nSee the [changelog][changelog] for a full release history.")]
 #![cfg_attr(feature = "docs", doc = "## Feature flags")]
 #![cfg_attr(feature = "docs", doc = document_features::document_features!())]
@@ -20,6 +22,7 @@
 #![deny(clippy::mod_module_files)]
 
 pub mod boxes;
+pub mod object_description;
 
 #[cfg(test)]
 fn file_path(item: &str) -> PathBuf {

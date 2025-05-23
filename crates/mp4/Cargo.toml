@@ -23,6 +23,7 @@ isobmff-derive = { path = "../isobmff/derive", version = "0.1.0" }
 scuffle-bytes-util = { path = "../bytes-util", version = "0.2.0" }
 scuffle-changelog = { optional = true, path = "../changelog", version = "0.1.0" }
 document-features = { optional = true, version = "0.2" }
+nutype-enum = { path = "../nutype-enum", version = "0.1.5" }
 
 [dev-dependencies]
 serde = { features = ["derive"], version = "1" }

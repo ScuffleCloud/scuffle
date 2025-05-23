@@ -215,6 +215,7 @@ fn box_impl(input: DeriveInput) -> syn::Result<proc_macro2::TokenStream> {
             IsoBoxFieldNestedBox::Collect | IsoBoxFieldNestedBox::CollectUnknown => {
                 fields_in_self.push(field_name.to_token_stream());
                 field_serializers.push(quote! {
+                    #[allow(for_loops_over_fallibles)]
                     for item in &self.#field_name {
                         #crate_path::reexports::scuffle_bytes_util::zero_copy::Serialize::serialize(item, &mut writer)?;
                     }

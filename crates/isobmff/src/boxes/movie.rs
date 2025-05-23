@@ -1,5 +1,8 @@
 //! Movie structure boxes defined in ISO/IEC 14496-12 - 8.2
 
+use fixed::traits::ToFixed;
+use fixed::types::extra::{U8, U16};
+use fixed::{FixedI16, FixedI32};
 use scuffle_bytes_util::zero_copy::{Deserialize, DeserializeSeed, Serialize};
 
 use super::{MetaBox, MovieExtendsBox, TrackBox, UserDataBox};
@@ -36,13 +39,32 @@ pub struct MovieHeaderBox {
     pub modification_time: u64,
     pub timescale: u32,
     pub duration: u64,
-    pub rate: i32,
-    pub volume: i16,
+    pub rate: FixedI32<U16>,
+    pub volume: FixedI16<U8>,
     pub reserved1: u16,
     pub reserved2: u64,
     pub matrix: [i32; 9],
     pub pre_defined: [u32; 6],
     pub next_track_id: u32,
+}
+
+impl MovieHeaderBox {
+    pub fn new(creation_time: u64, modification_time: u64, timescale: u32, duration: u64, next_track_id: u32) -> Self {
+        Self {
+            full_header: FullBoxHeader::default(),
+            creation_time,
+            modification_time,
+            timescale,
+            duration,
+            rate: 1.to_fixed(),
+            volume: 1.to_fixed(),
+            reserved1: 0,
+            reserved2: 0,
+            matrix: [0x00010000, 0, 0, 0, 0x00010000, 0, 0, 0, 0x40000000],
+            pre_defined: [0; 6],
+            next_track_id,
+        }
+    }
 }
 
 impl<'a> DeserializeSeed<'a, BoxHeader> for MovieHeaderBox {
@@ -69,8 +91,8 @@ impl<'a> DeserializeSeed<'a, BoxHeader> for MovieHeaderBox {
             u32::deserialize(&mut reader)? as u64
         };
 
-        let rate = i32::deserialize(&mut reader)?;
-        let volume = i16::deserialize(&mut reader)?;
+        let rate = FixedI32::from_bits(i32::deserialize(&mut reader)?);
+        let volume = FixedI16::from_bits(i16::deserialize(&mut reader)?);
 
         let reserved1 = u16::deserialize(&mut reader)?;
         let reserved2 = u64::deserialize(&mut reader)?;
@@ -124,8 +146,8 @@ impl Serialize for MovieHeaderBox {
             (self.duration as u32).serialize(&mut writer)?;
         }
 
-        self.rate.serialize(&mut writer)?;
-        self.volume.serialize(&mut writer)?;
+        self.rate.to_bits().serialize(&mut writer)?;
+        self.volume.to_bits().serialize(&mut writer)?;
         self.reserved1.serialize(&mut writer)?;
         self.reserved2.serialize(&mut writer)?;
         self.matrix.serialize(&mut writer)?;

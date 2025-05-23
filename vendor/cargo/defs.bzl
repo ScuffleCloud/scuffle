@@ -920,6 +920,7 @@ _NORMAL_DEPENDENCIES = {
                 "bitflags": Label("@cargo_vendor//:bitflags-2.9.1"),
                 "byteorder": Label("@cargo_vendor//:byteorder-1.5.0"),
                 "bytes": Label("@cargo_vendor//:bytes-1.10.1"),
+                "fixed": Label("@cargo_vendor//:fixed-1.29.0"),
                 "uuid": Label("@cargo_vendor//:uuid-1.18.1"),
             },
         },
@@ -1172,6 +1173,7 @@ _NORMAL_DEPENDENCIES = {
             _COMMON_CONDITION: {
                 "byteorder": Label("@cargo_vendor//:byteorder-1.5.0"),
                 "bytes": Label("@cargo_vendor//:bytes-1.10.1"),
+                "fixed": Label("@cargo_vendor//:fixed-1.29.0"),
                 "thiserror": Label("@cargo_vendor//:thiserror-2.0.17"),
             },
         },
@@ -4672,12 +4674,12 @@ _VERSIONS = {
     "cloud/proto": "0.1.0",
     "crates/aac": "0.1.4",
     "crates/amf0": "0.2.4",
-    "crates/av1": "0.1.4",
+    "crates/av1": "0.2.0",
     "crates/batching": "0.1.6",
     "crates/bootstrap": "0.1.7",
     "crates/bootstrap-telemetry": "0.3.0",
     "crates/bootstrap/derive": "0.1.7",
-    "crates/bytes-util": "0.1.5",
+    "crates/bytes-util": "0.2.0",
     "crates/cedar-policy": "0.1.0",
     "crates/cedar-policy/codegen": "0.1.1",
     "crates/changelog": "0.1.1",
@@ -4686,8 +4688,8 @@ _VERSIONS = {
     "crates/ffmpeg": "0.3.5",
     "crates/flv": "0.2.2",
     "crates/future-ext": "0.1.4",
-    "crates/h264": "0.2.2",
-    "crates/h265": "0.2.2",
+    "crates/h264": "0.3.0",
+    "crates/h265": "0.3.0",
     "crates/http": "0.3.2",
     "crates/isobmff": "0.1.0",
     "crates/isobmff/derive": "0.1.0",
@@ -5133,6 +5135,16 @@ def crate_repositories():
 
     maybe(
         http_archive,
+        name = "cargo_vendor__az-1.2.1",
+        sha256 = "7b7e4c2464d97fe331d41de9d5db0def0a96f4d823b8b32a2efd503578988973",
+        type = "tar.gz",
+        urls = ["https://static.crates.io/crates/az/1.2.1/download"],
+        strip_prefix = "az-1.2.1",
+        build_file = Label("//vendor/cargo:BUILD.az-1.2.1.bazel"),
+    )
+
+    maybe(
+        http_archive,
         name = "cargo_vendor__backtrace-0.3.75",
         sha256 = "6806a6321ec58106fea15becdad98371e28d92ccbc7c8f1b3b6dd724fe8f1002",
         type = "tar.gz",
@@ -5363,12 +5375,12 @@ def crate_repositories():
 
     maybe(
         http_archive,
-        name = "cargo_vendor__bytemuck-1.24.0",
-        sha256 = "1fbdf580320f38b612e485521afda1ee26d10cc9884efaaa750d383e13e3c5f4",
+        name = "cargo_vendor__bytemuck-1.23.0",
+        sha256 = "9134a6ef01ce4b366b50689c94f82c14bc72bc5d0386829828a2e2752ef7958c",
         type = "tar.gz",
-        urls = ["https://static.crates.io/crates/bytemuck/1.24.0/download"],
-        strip_prefix = "bytemuck-1.24.0",
-        build_file = Label("//vendor/cargo:BUILD.bytemuck-1.24.0.bazel"),
+        urls = ["https://static.crates.io/crates/bytemuck/1.23.0/download"],
+        strip_prefix = "bytemuck-1.23.0",
+        build_file = Label("//vendor/cargo:BUILD.bytemuck-1.23.0.bazel"),
     )
 
     maybe(
@@ -6539,6 +6551,16 @@ def crate_repositories():
         urls = ["https://static.crates.io/crates/findshlibs/0.10.2/download"],
         strip_prefix = "findshlibs-0.10.2",
         build_file = Label("//vendor/cargo:BUILD.findshlibs-0.10.2.bazel"),
+    )
+
+    maybe(
+        http_archive,
+        name = "cargo_vendor__fixed-1.29.0",
+        sha256 = "707070ccf8c4173548210893a0186e29c266901b71ed20cd9e2ca0193dfe95c3",
+        type = "tar.gz",
+        urls = ["https://static.crates.io/crates/fixed/1.29.0/download"],
+        strip_prefix = "fixed-1.29.0",
+        build_file = Label("//vendor/cargo:BUILD.fixed-1.29.0.bazel"),
     )
 
     maybe(
@@ -11780,6 +11802,7 @@ def crate_repositories():
         struct(repo = "cargo_vendor__email_address-0.2.9", is_dev_dep = False),
         struct(repo = "cargo_vendor__env_logger-0.10.2", is_dev_dep = False),
         struct(repo = "cargo_vendor__env_logger-0.11.8", is_dev_dep = False),
+        struct(repo = "cargo_vendor__fixed-1.29.0", is_dev_dep = False),
         struct(repo = "cargo_vendor__flate2-1.1.1", is_dev_dep = False),
         struct(repo = "cargo_vendor__float-cmp-0.10.0", is_dev_dep = False),
         struct(repo = "cargo_vendor__fmtools-0.1.2", is_dev_dep = False),

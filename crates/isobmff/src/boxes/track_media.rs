@@ -1,7 +1,7 @@
 //! Track media structure boxes defined in ISO/IEC 14496-12 - 8.4
 
 use nutype_enum::nutype_enum;
-use scuffle_bytes_util::zero_copy::{Deserialize, DeserializeSeed, Serialize};
+use scuffle_bytes_util::zero_copy::{Deserialize, DeserializeSeed, Serialize, U24Be};
 
 use super::{
     DataInformationBox, HintMediaHeaderBox, SampleTableBox, SoundMediaHeaderBox, SubtitleMediaHeaderBox,
@@ -28,6 +28,18 @@ pub struct MediaBox<'a> {
     pub unknown_boxes: Vec<UnknownBox<'a>>,
 }
 
+impl<'a> MediaBox<'a> {
+    pub fn new(mdhd: MediaHeaderBox, hdlr: HandlerBox, minf: MediaInformationBox<'a>) -> Self {
+        Self {
+            mdhd,
+            hdlr,
+            elng: None,
+            minf,
+            unknown_boxes: vec![],
+        }
+    }
+}
+
 /// Media header box
 ///
 /// ISO/IEC 14496-12 - 8.4.2
@@ -41,6 +53,30 @@ pub struct MediaHeaderBox {
     pub duration: u64,
     pub language: Langauge,
     pub pre_defined: u16,
+}
+
+impl MediaHeaderBox {
+    pub fn new(creation_time: u64, modification_time: u64, timescale: u32, duration: u64) -> Self {
+        let version = if creation_time > u32::MAX as u64 || modification_time > u32::MAX as u64 || duration > u32::MAX as u64
+        {
+            1
+        } else {
+            0
+        };
+
+        Self {
+            full_header: FullBoxHeader {
+                version,
+                flags: U24Be(0),
+            },
+            creation_time,
+            modification_time,
+            timescale,
+            duration,
+            language: Langauge::UNDETERMINED,
+            pre_defined: 0,
+        }
+    }
 }
 
 impl<'a> DeserializeSeed<'a, BoxHeader> for MediaHeaderBox {
@@ -162,6 +198,18 @@ pub struct HandlerBox {
     pub name: Utf8String,
 }
 
+impl HandlerBox {
+    pub fn new(handler_type: HandlerType, name: Utf8String) -> Self {
+        Self {
+            full_header: FullBoxHeader::default(),
+            pre_defined: 0,
+            handler_type,
+            reserved: [0; 3],
+            name,
+        }
+    }
+}
+
 /// Media information box
 ///
 /// ISO/IEC 14496-12 - 8.4.4
@@ -184,6 +232,21 @@ pub struct MediaInformationBox<'a> {
     pub dinf: DataInformationBox<'a>,
     #[iso_box(nested_box)]
     pub stbl: SampleTableBox<'a>,
+}
+
+impl<'a> MediaInformationBox<'a> {
+    pub fn new(stbl: SampleTableBox<'a>, vmhd: Option<VideoMediaHeaderBox>, smhd: Option<SoundMediaHeaderBox>) -> Self {
+        Self {
+            vmhd,
+            smhd,
+            hmhd: None,
+            sthd: None,
+            vvhd: None,
+            unknown_boxes: Vec::new(),
+            dinf: DataInformationBox::default(),
+            stbl,
+        }
+    }
 }
 
 /// Null media header box

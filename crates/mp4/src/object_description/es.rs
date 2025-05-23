@@ -104,10 +104,7 @@ impl<'a> Deserialize<'a> for ESDescriptor<'a> {
             let url_length = u8::deserialize(&mut reader)?;
             let url_string = reader.try_read(url_length as usize)?;
             Some(url_string.try_into().map_err(|e| {
-                std::io::Error::new(
-                    std::io::ErrorKind::InvalidData,
-                    format!("URLString must be valid UTF-8: {}", e),
-                )
+                std::io::Error::new(std::io::ErrorKind::InvalidData, format!("URLString must be valid UTF-8: {e}"))
             })?)
         } else {
             None

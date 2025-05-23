@@ -376,6 +376,12 @@ dependencies = [
 ]
 
 [[package]]
+name = "az"
+version = "1.2.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "7b7e4c2464d97fe331d41de9d5db0def0a96f4d823b8b32a2efd503578988973"
+
+[[package]]
 name = "backtrace"
 version = "0.3.75"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -669,9 +675,9 @@ checksum = "1628fb46dfa0b37568d12e5edd512553eccf6a22a78e8bde00bb4aed84d5bdbf"
 
 [[package]]
 name = "bytemuck"
-version = "1.24.0"
+version = "1.23.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "1fbdf580320f38b612e485521afda1ee26d10cc9884efaaa750d383e13e3c5f4"
+checksum = "9134a6ef01ce4b366b50689c94f82c14bc72bc5d0386829828a2e2752ef7958c"
 
 [[package]]
 name = "byteorder"
@@ -1964,6 +1970,18 @@ dependencies = [
 ]
 
 [[package]]
+name = "fixed"
+version = "1.29.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "707070ccf8c4173548210893a0186e29c266901b71ed20cd9e2ca0193dfe95c3"
+dependencies = [
+ "az",
+ "bytemuck",
+ "half 2.6.0",
+ "typenum",
+]
+
+[[package]]
 name = "fixedbitset"
 version = "0.4.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -2939,6 +2957,7 @@ dependencies = [
  "byteorder",
  "bytes",
  "document-features",
+ "fixed",
  "insta",
  "isobmff-derive",
  "nutype-enum",
@@ -3154,7 +3173,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "07033963ba89ebaf1584d767badaa2e8fcec21aedea6b8c0346d487d49c28667"
 dependencies = [
  "cfg-if",
- "windows-targets 0.52.6",
+ "windows-targets 0.53.4",
 ]
 
 [[package]]
@@ -5513,7 +5532,7 @@ dependencies = [
 
 [[package]]
 name = "scuffle-av1"
-version = "0.1.4"
+version = "0.2.0"
 dependencies = [
  "byteorder",
  "bytes",
@@ -5605,7 +5624,7 @@ dependencies = [
 
 [[package]]
 name = "scuffle-bytes-util"
-version = "0.1.5"
+version = "0.2.0"
 dependencies = [
  "bytes",
  "bytestring",
@@ -5745,7 +5764,7 @@ dependencies = [
 
 [[package]]
 name = "scuffle-h264"
-version = "0.2.2"
+version = "0.3.0"
 dependencies = [
  "byteorder",
  "bytes",
@@ -5760,7 +5779,7 @@ dependencies = [
 
 [[package]]
 name = "scuffle-h265"
-version = "0.2.2"
+version = "0.3.0"
 dependencies = [
  "bitflags 2.9.1",
  "byteorder",
@@ -5843,6 +5862,7 @@ dependencies = [
  "document-features",
  "isobmff",
  "isobmff-derive",
+ "nutype-enum",
  "scuffle-bytes-util",
  "scuffle-changelog",
  "serde",
@@ -5942,6 +5962,8 @@ dependencies = [
  "byteorder",
  "bytes",
  "document-features",
+ "fixed",
+ "isobmff",
  "scuffle-aac",
  "scuffle-av1",
  "scuffle-bytes-util",

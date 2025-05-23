@@ -490,6 +490,18 @@ transition_alias_opt(
 )
 
 transition_alias_opt(
+    name = "fixed-1.29.0",
+    actual = "@cargo_vendor__fixed-1.29.0//:fixed",
+    tags = ["manual"],
+)
+
+transition_alias_opt(
+    name = "fixed",
+    actual = "@cargo_vendor__fixed-1.29.0//:fixed",
+    tags = ["manual"],
+)
+
+transition_alias_opt(
     name = "flate2-1.1.1",
     actual = "@cargo_vendor__flate2-1.1.1//:flate2",
     tags = ["manual"],

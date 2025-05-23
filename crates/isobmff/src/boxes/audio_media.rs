@@ -44,6 +44,20 @@ pub struct AudioSampleEntry {
     pub samplerate: u32,
 }
 
+impl AudioSampleEntry {
+    pub fn new(sample_entry: SampleEntry, channelcount: u16, samplesize: u16, samplerate: u32) -> Self {
+        Self {
+            sample_entry,
+            reserved1: 0,
+            channelcount,
+            samplesize,
+            pre_defined: 0,
+            reserved2: 0,
+            samplerate,
+        }
+    }
+}
+
 impl<'a> Deserialize<'a> for AudioSampleEntry {
     fn deserialize<R>(mut reader: R) -> std::io::Result<Self>
     where

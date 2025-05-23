@@ -7,7 +7,6 @@ use super::{
     Brand, DataInformationBox, ExtendedTypeBox, FDItemInformationBox, HandlerBox, ProtectionSchemeInfoBox,
     ScrambleSchemeInfoBox,
 };
-use crate::utils::pad_cow_to_u64;
 use crate::{BoxHeader, FullBoxHeader, IsoBox, IsoSized, UnknownBox, Utf8String};
 
 /// Meta box
@@ -142,17 +141,17 @@ impl<'a> DeserializeSeed<'a, BoxHeader> for ItemLocationBox {
             };
 
             let data_reference_index = u16::deserialize(&mut reader)?;
-            let base_offset = pad_cow_to_u64(reader.try_read(base_offset_size as usize)?);
+            let base_offset = reader.try_read(base_offset_size as usize)?.pad_to_u64_be();
             let extent_count = u16::deserialize(&mut reader)?;
             let mut extents = Vec::with_capacity(extent_count as usize);
             for _ in 0..extent_count {
                 let item_reference_index = if (full_header.version == 1 || full_header.version == 2) && index_size > 0 {
-                    Some(pad_cow_to_u64(reader.try_read(index_size as usize)?))
+                    Some(reader.try_read(index_size as usize)?.pad_to_u64_be())
                 } else {
                     None
                 };
-                let extent_offset = pad_cow_to_u64(reader.try_read(offset_size as usize)?);
-                let extent_length = pad_cow_to_u64(reader.try_read(length_size as usize)?);
+                let extent_offset = reader.try_read(offset_size as usize)?.pad_to_u64_be();
+                let extent_length = reader.try_read(length_size as usize)?.pad_to_u64_be();
 
                 extents.push(ItemLocationBoxExtent {
                     item_reference_index,

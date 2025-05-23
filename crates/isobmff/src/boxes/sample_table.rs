@@ -68,7 +68,17 @@ pub struct SampleTableBox<'a> {
 /// - [`btrt`](BitRateBox)
 #[derive(Debug)]
 pub struct SampleEntry {
+    pub reserved: [u8; 6],
     pub data_reference_index: u16,
+}
+
+impl Default for SampleEntry {
+    fn default() -> Self {
+        Self {
+            reserved: [0; 6],
+            data_reference_index: 1,
+        }
+    }
 }
 
 impl<'a> Deserialize<'a> for SampleEntry {
@@ -76,10 +86,13 @@ impl<'a> Deserialize<'a> for SampleEntry {
     where
         R: ZeroCopyReader<'a>,
     {
-        <[u8; 6]>::deserialize(&mut reader)?; // reserved
+        let reserved = <[u8; 6]>::deserialize(&mut reader)?;
         let data_reference_index = u16::deserialize(&mut reader)?;
 
-        Ok(Self { data_reference_index })
+        Ok(Self {
+            reserved,
+            data_reference_index,
+        })
     }
 }
 
@@ -88,7 +101,7 @@ impl Serialize for SampleEntry {
     where
         W: std::io::Write,
     {
-        [0u8; 6].serialize(&mut writer)?; // reserved
+        self.reserved.serialize(&mut writer)?;
         self.data_reference_index.serialize(&mut writer)?;
         Ok(())
     }
@@ -96,7 +109,7 @@ impl Serialize for SampleEntry {
 
 impl IsoSized for SampleEntry {
     fn size(&self) -> usize {
-        6 + self.data_reference_index.size()
+        self.reserved.size() + self.data_reference_index.size()
     }
 }
 

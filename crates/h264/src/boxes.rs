@@ -17,6 +17,13 @@ pub struct AVCConfigurationBox<'a> {
     pub avc_config: AVCDecoderConfigurationRecord<'a>,
 }
 
+impl<'a> AVCConfigurationBox<'a> {
+    /// Creates a new AVC configuration box.
+    pub fn new(avc_config: AVCDecoderConfigurationRecord<'a>) -> Self {
+        Self { avc_config }
+    }
+}
+
 // This doesn't make sense to me, the following 4 box types (avc1 - avc4) are all the same
 
 /// AVC sample entry

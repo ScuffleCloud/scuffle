@@ -7,7 +7,6 @@ use super::{
     CompositionToDecodeBox, MetaBox, SampleAuxiliaryInformationOffsetsBox, SampleAuxiliaryInformationSizesBox,
     SampleGroupDescriptionBox, SampleToGroupBox, SubSampleInformationBox, UserDataBox,
 };
-use crate::utils::pad_cow_to_u32;
 use crate::{BoxHeader, FullBoxHeader, IsoBox, IsoSized, UnknownBox};
 
 /// Movie extends box
@@ -667,9 +666,9 @@ impl<'a> DeserializeSeed<'a, BoxHeader> for TrackFragmentRandomAccessBox {
             };
 
             // The length of the following fields is bound to 3 bytes because the length fields are all 2 bits
-            let traf_number = pad_cow_to_u32(reader.try_read(length_size_of_traf_num as usize + 1)?);
-            let trun_number = pad_cow_to_u32(reader.try_read(length_size_of_trun_num as usize + 1)?);
-            let sample_number = pad_cow_to_u32(reader.try_read(length_size_of_sample_num as usize + 1)?);
+            let traf_number = reader.try_read(length_size_of_traf_num as usize + 1)?.pad_to_u32_be();
+            let trun_number = reader.try_read(length_size_of_trun_num as usize + 1)?.pad_to_u32_be();
+            let sample_number = reader.try_read(length_size_of_sample_num as usize + 1)?.pad_to_u32_be();
 
             entries.push(TrackFragmentRandomAccessBoxEntry {
                 time,

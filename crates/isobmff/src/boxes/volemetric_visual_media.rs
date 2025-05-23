@@ -23,7 +23,7 @@ pub struct VolumetricVisualMediaHeaderBox {
 #[derive(Debug)]
 pub struct VolumetricVisualSampleEntry {
     pub sample_entry: SampleEntry,
-    pub compressorname: [char; 32],
+    pub compressorname: [u8; 32],
 }
 
 impl<'a> Deserialize<'a> for VolumetricVisualSampleEntry {
@@ -32,7 +32,7 @@ impl<'a> Deserialize<'a> for VolumetricVisualSampleEntry {
         R: scuffle_bytes_util::zero_copy::ZeroCopyReader<'a>,
     {
         let sample_entry = SampleEntry::deserialize(&mut reader)?;
-        let compressorname = <[char; 32]>::deserialize(&mut reader)?;
+        let compressorname = <[u8; 32]>::deserialize(&mut reader)?;
 
         Ok(Self {
             sample_entry,

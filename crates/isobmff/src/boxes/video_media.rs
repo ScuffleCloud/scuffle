@@ -43,9 +43,29 @@ pub struct VisualSampleEntry {
     pub vert_resolution: u32,
     pub reserved2: u32,
     pub frame_count: u16,
-    pub compressor_name: [char; 32],
+    pub compressor_name: [u8; 32],
     pub depth: u16,
     pub pre_defined4: i16,
+}
+
+impl VisualSampleEntry {
+    pub fn new(sample_entry: SampleEntry, width: u16, height: u16, compressor_name: [u8; 32]) -> Self {
+        Self {
+            sample_entry,
+            pre_defined: 0,
+            reserved1: 0,
+            pre_defined2: [0; 3],
+            width,
+            height,
+            horiz_resolution: 0x00480000,
+            vert_resolution: 0x00480000,
+            reserved2: 0,
+            frame_count: 1,
+            compressor_name,
+            depth: 0x0018,
+            pre_defined4: -1,
+        }
+    }
 }
 
 impl<'a> Deserialize<'a> for VisualSampleEntry {
@@ -63,7 +83,7 @@ impl<'a> Deserialize<'a> for VisualSampleEntry {
         let vert_resolution = u32::deserialize(&mut reader)?;
         let reserved2 = u32::deserialize(&mut reader)?;
         let frame_count = u16::deserialize(&mut reader)?;
-        let compressor_name = <[char; 32]>::deserialize(&mut reader)?;
+        let compressor_name = <[u8; 32]>::deserialize(&mut reader)?;
         let depth = u16::deserialize(&mut reader)?;
         let pre_defined4 = i16::deserialize(&mut reader)?;
 
@@ -149,6 +169,15 @@ pub struct CleanApertureBox {
 pub struct PixelAspectRatioBox {
     pub h_spacing: u32,
     pub v_spacing: u32,
+}
+
+impl Default for PixelAspectRatioBox {
+    fn default() -> Self {
+        Self {
+            h_spacing: 1,
+            v_spacing: 1,
+        }
+    }
 }
 
 /// Colour information

@@ -17,6 +17,13 @@ pub struct HEVCConfigurationBox<'a> {
     pub hevc_config: HEVCDecoderConfigurationRecord<'a>,
 }
 
+impl<'a> HEVCConfigurationBox<'a> {
+    /// Creates a new HEVC configuration box.
+    pub fn new(hevc_config: HEVCDecoderConfigurationRecord<'a>) -> Self {
+        Self { hevc_config }
+    }
+}
+
 /// HEVC Sample Entry
 ///
 /// ISO/IEC 14496-15 - 8.4.1

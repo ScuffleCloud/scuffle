@@ -29,8 +29,8 @@ IsobmffFile {
             modification_time: 0,
             timescale: 1000,
             duration: 4667,
-            rate: 65536,
-            volume: 256,
+            rate: 1,
+            volume: 1,
             reserved1: 0,
             reserved2: 0,
             matrix: [
@@ -58,12 +58,10 @@ IsobmffFile {
         trak: [
             TrackBox {
                 tkhd: TrackHeaderBox {
-                    full_header: FullBoxHeader {
-                        version: 0,
-                        flags: U24Be(
-                            3,
-                        ),
-                    },
+                    version: 0,
+                    flags: TrackHeaderBoxFlags(
+                        TrackEnabled | TrackInMovie,
+                    ),
                     creation_time: 0,
                     modification_time: 0,
                     track_id: 1,
@@ -85,8 +83,8 @@ IsobmffFile {
                         0,
                         1073741824,
                     ],
-                    width: 31457280,
-                    height: 55836672,
+                    width: 480,
+                    height: 852,
                 },
                 tref: None,
                 trgr: None,
@@ -105,8 +103,7 @@ IsobmffFile {
                                     EditListBoxEntry {
                                         edit_duration: 4667,
                                         media_time: 1024,
-                                        media_rate_integer: 1,
-                                        media_rate_fraction: 0,
+                                        media_rate: 1,
                                     },
                                 ],
                             },
@@ -212,7 +209,7 @@ IsobmffFile {
                                     ),
                                 },
                                 entry_count: 1,
-                                unknown_boxes: [
+                                boxes: [
                                     UnknownBox {
                                         header: BoxHeader {
                                             size: Short(
@@ -328,12 +325,10 @@ IsobmffFile {
             },
             TrackBox {
                 tkhd: TrackHeaderBox {
-                    full_header: FullBoxHeader {
-                        version: 0,
-                        flags: U24Be(
-                            3,
-                        ),
-                    },
+                    version: 0,
+                    flags: TrackHeaderBoxFlags(
+                        TrackEnabled | TrackInMovie,
+                    ),
                     creation_time: 0,
                     modification_time: 0,
                     track_id: 2,
@@ -342,7 +337,7 @@ IsobmffFile {
                     reserved2: 0,
                     layer: 0,
                     alternate_group: 1,
-                    volume: 256,
+                    volume: 1,
                     reserved3: 0,
                     matrix: [
                         65536,
@@ -375,8 +370,7 @@ IsobmffFile {
                                     EditListBoxEntry {
                                         edit_duration: 4642,
                                         media_time: 1024,
-                                        media_rate_integer: 1,
-                                        media_rate_fraction: 0,
+                                        media_rate: 1,
                                     },
                                 ],
                             },
@@ -478,7 +472,7 @@ IsobmffFile {
                                     ),
                                 },
                                 entry_count: 1,
-                                unknown_boxes: [
+                                boxes: [
                                     UnknownBox {
                                         header: BoxHeader {
                                             size: Short(

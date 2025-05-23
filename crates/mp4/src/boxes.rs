@@ -5,6 +5,9 @@
 use isobmff::boxes::{AudioSampleEntry, SampleEntry, VisualSampleEntry};
 use isobmff::{FullBoxHeader, IsoBox};
 use scuffle_bytes_util::BytesCow;
+use scuffle_bytes_util::zero_copy::U24Be;
+
+use crate::object_description::ESDescriptor;
 
 /// Object Descriptor Box
 ///
@@ -85,5 +88,18 @@ pub struct ESDBox<'a> {
     /// The ES Descriptor for this stream.
     ///
     /// Defined in ISO/IEC 14496-1.
-    pub es: BytesCow<'a>,
+    pub es: ESDescriptor<'a>,
+}
+
+impl<'a> ESDBox<'a> {
+    /// Creates a new ESDBox with the given ES descriptor.
+    pub fn new(es: ESDescriptor<'a>) -> Self {
+        Self {
+            header: FullBoxHeader {
+                version: 0,
+                flags: U24Be(0),
+            },
+            es,
+        }
+    }
 }

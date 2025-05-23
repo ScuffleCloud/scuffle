@@ -24,6 +24,7 @@ scuffle-bytes-util = { path = "../bytes-util", version = "0.2.0" }
 scuffle-changelog = { optional = true, path = "../changelog", version = "0.1.0" }
 document-features = { optional = true, version = "0.2" }
 scuffle-workspace-hack.workspace = true
+nutype-enum = { path = "../nutype_enum", version = "0.1.5" }
 
 [dev-dependencies]
 serde = { features = ["derive"], version = "1" }

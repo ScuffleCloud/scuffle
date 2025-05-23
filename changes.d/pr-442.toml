@@ -44,3 +44,9 @@ category = "feat"
 description = "add crate"
 breaking = true
 authors = ["@lennartkloock"]
+
+[[scuffle-transmuxer]]
+category = "chore"
+description = "update to use isobmff crate"
+breaking = true
+authors = ["@lennartkloock"]

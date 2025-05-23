@@ -78,6 +78,60 @@ impl<'a> BytesCow<'a> {
             Self::Bytes(bytes) => bytes.as_ref(),
         }
     }
+
+    /// Returns the length of this [`BytesCow`].
+    pub fn len(&self) -> usize {
+        match self {
+            Self::Slice(slice) => slice.len(),
+            Self::StaticSlice(slice) => slice.len(),
+            Self::Vec(bytes) => bytes.len(),
+            Self::Bytes(bytes) => bytes.len(),
+        }
+    }
+
+    /// Returns `true` if this [`BytesCow`] is empty.
+    pub fn is_empty(&self) -> bool {
+        match self {
+            Self::Slice(slice) => slice.is_empty(),
+            Self::StaticSlice(slice) => slice.is_empty(),
+            Self::Vec(bytes) => bytes.is_empty(),
+            Self::Bytes(bytes) => bytes.is_empty(),
+        }
+    }
+
+    /// Pads the bytes to a [`u64`].
+    ///
+    /// The bytes are expected to be in big-endian order.
+    ///
+    /// # Panics
+    ///
+    /// The caller must ensure that the length of the bytes is less than or equal to 8,
+    /// otherwise this function will panic.
+    pub fn pad_to_u64_be(&self) -> u64 {
+        assert!(self.len() <= 8);
+
+        // We copy the bytes into an 8 byte array and convert it to a u64
+        let mut buf = [0u8; 8];
+        buf[4 - self.len()..].copy_from_slice(self.as_bytes());
+        u64::from_be_bytes(buf)
+    }
+
+    /// Pads the bytes to a [`u32`].
+    ///
+    /// The bytes are expected to be in big-endian order.
+    ///
+    /// # Panics
+    ///
+    /// The caller must ensure that the length of the bytes is less than or equal to 4,
+    /// otherwise this function will panic.
+    pub fn pad_to_u32_be(&self) -> u32 {
+        assert!(self.len() <= 4);
+
+        // We copy the bytes into a 4 byte array and convert it to a u32
+        let mut buf = [0u8; 4];
+        buf[4 - self.len()..].copy_from_slice(self.as_bytes());
+        u32::from_be_bytes(buf)
+    }
 }
 
 impl<T> PartialEq<T> for BytesCow<'_>

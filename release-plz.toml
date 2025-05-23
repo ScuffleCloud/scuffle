@@ -57,3 +57,13 @@ name = "scuffle-bootstrap-derive"
 version_group = "bootstrap"
 git_release_enable = false
 git_tag_enable = false
+
+[[package]]
+name = "isobmff"
+version_group = "isobmff"
+
+[[package]]
+name = "isobmff-derive"
+version_group = "isobmff"
+git_release_enable = false
+git_tag_enable = false

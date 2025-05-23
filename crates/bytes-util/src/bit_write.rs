@@ -36,7 +36,9 @@ impl<W: io::Write> BitWriter<W> {
     }
 
     /// Writes a number of bits to the stream (the most significant bit is
-    /// written first)
+    /// written first).
+    ///
+    /// If `count` is less than 64 the lower bits are written.
     pub fn write_bits(&mut self, bits: u64, count: u8) -> io::Result<()> {
         let count = count.min(64);
 

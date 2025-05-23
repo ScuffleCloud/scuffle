@@ -1,8 +1,11 @@
 use std::borrow::Cow;
 use std::fmt::Display;
 use std::hash::Hash;
+use std::str::Utf8Error;
 
 use bytestring::ByteString;
+
+use crate::BytesCow;
 
 #[cfg(feature = "serde")]
 pub(crate) mod serde;
@@ -89,6 +92,26 @@ impl<'a> StringCow<'a> {
             StringCow::Bytes(bytes) => bytes.as_ref(),
         }
     }
+
+    /// Returns the length of this [`StringCow`].
+    pub fn len(&self) -> usize {
+        match self {
+            StringCow::Ref(slice) => slice.len(),
+            StringCow::StaticRef(slice) => slice.len(),
+            StringCow::String(string) => string.len(),
+            StringCow::Bytes(bytes) => bytes.len(),
+        }
+    }
+
+    /// Returns `true` if this [`StringCow`] is empty.
+    pub fn is_empty(&self) -> bool {
+        match self {
+            Self::Ref(slice) => slice.is_empty(),
+            Self::StaticRef(slice) => slice.is_empty(),
+            Self::String(string) => string.is_empty(),
+            Self::Bytes(bytes) => bytes.is_empty(),
+        }
+    }
 }
 
 impl PartialEq<str> for StringCow<'_> {
@@ -162,6 +185,15 @@ impl From<String> for StringCow<'_> {
 impl From<ByteString> for StringCow<'_> {
     fn from(bytes: ByteString) -> Self {
         StringCow::from_bytes(bytes)
+    }
+}
+
+impl<'a> TryFrom<BytesCow<'a>> for StringCow<'a> {
+    type Error = Utf8Error;
+
+    fn try_from(value: BytesCow<'a>) -> Result<Self, Self::Error> {
+        let bytes = ByteString::try_from(value.into_bytes())?;
+        Ok(Self::from_bytes(bytes))
     }
 }
 

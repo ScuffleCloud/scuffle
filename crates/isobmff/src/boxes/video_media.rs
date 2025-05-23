@@ -1,5 +1,7 @@
 //! Video media specific boxes defined in ISO/IEC 14496-12 - 12.1
 
+use fixed::FixedU32;
+use fixed::types::extra::U16;
 use scuffle_bytes_util::zero_copy::{Deserialize, DeserializeSeed, Serialize};
 use scuffle_bytes_util::{BitWriter, BytesCow};
 
@@ -9,7 +11,7 @@ use crate::{BoxHeader, FullBoxHeader, IsoBox, IsoSized};
 /// Video media header
 ///
 /// ISO/IEC 14496-12 - 12.1.2
-#[derive(IsoBox, Debug)]
+#[derive(IsoBox, Default, Debug)]
 #[iso_box(box_type = b"vmhd", crate_path = crate)]
 pub struct VideoMediaHeaderBox {
     pub full_header: FullBoxHeader,
@@ -39,8 +41,8 @@ pub struct VisualSampleEntry {
     pub pre_defined2: [u32; 3],
     pub width: u16,
     pub height: u16,
-    pub horiz_resolution: u32,
-    pub vert_resolution: u32,
+    pub horiz_resolution: FixedU32<U16>,
+    pub vert_resolution: FixedU32<U16>,
     pub reserved2: u32,
     pub frame_count: u16,
     pub compressor_name: [u8; 32],
@@ -57,8 +59,8 @@ impl VisualSampleEntry {
             pre_defined2: [0; 3],
             width,
             height,
-            horiz_resolution: 0x00480000,
-            vert_resolution: 0x00480000,
+            horiz_resolution: FixedU32::from_bits(0x00480000),
+            vert_resolution: FixedU32::from_bits(0x00480000),
             reserved2: 0,
             frame_count: 1,
             compressor_name,
@@ -79,8 +81,8 @@ impl<'a> Deserialize<'a> for VisualSampleEntry {
         let pre_defined2 = <[u32; 3]>::deserialize(&mut reader)?;
         let width = u16::deserialize(&mut reader)?;
         let height = u16::deserialize(&mut reader)?;
-        let horiz_resolution = u32::deserialize(&mut reader)?;
-        let vert_resolution = u32::deserialize(&mut reader)?;
+        let horiz_resolution = FixedU32::from_bits(u32::deserialize(&mut reader)?);
+        let vert_resolution = FixedU32::from_bits(u32::deserialize(&mut reader)?);
         let reserved2 = u32::deserialize(&mut reader)?;
         let frame_count = u16::deserialize(&mut reader)?;
         let compressor_name = <[u8; 32]>::deserialize(&mut reader)?;
@@ -116,8 +118,8 @@ impl Serialize for VisualSampleEntry {
         self.pre_defined2.serialize(&mut writer)?;
         self.width.serialize(&mut writer)?;
         self.height.serialize(&mut writer)?;
-        self.horiz_resolution.serialize(&mut writer)?;
-        self.vert_resolution.serialize(&mut writer)?;
+        self.horiz_resolution.to_bits().serialize(&mut writer)?;
+        self.vert_resolution.to_bits().serialize(&mut writer)?;
         self.reserved2.serialize(&mut writer)?;
         self.frame_count.serialize(&mut writer)?;
         self.compressor_name.serialize(&mut writer)?;

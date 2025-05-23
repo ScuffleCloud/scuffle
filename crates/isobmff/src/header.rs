@@ -171,7 +171,7 @@ impl Serialize for BoxHeader {
     }
 }
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Default)]
 pub struct FullBoxHeader {
     pub version: u8,
     pub flags: U24Be,

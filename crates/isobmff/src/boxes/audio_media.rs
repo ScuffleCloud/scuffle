@@ -1,5 +1,7 @@
 use std::io;
 
+use fixed::types::extra::{U8, U16};
+use fixed::{FixedI16, FixedU32};
 use scuffle_bytes_util::zero_copy::{Deserialize, DeserializeSeed, Serialize, SerializeSeed};
 use scuffle_bytes_util::{BitWriter, BytesCow};
 
@@ -10,12 +12,48 @@ use crate::{BoxHeader, FullBoxHeader, IsoBox, IsoSized};
 /// Sound media header
 ///
 /// ISO/IEC 14496-12 - 12.2.2
-#[derive(IsoBox, Debug)]
-#[iso_box(box_type = b"smhd", crate_path = crate)]
+#[derive(IsoBox, Debug, Default)]
+#[iso_box(box_type = b"smhd", skip_impl(deserialize_seed, serialize, sized), crate_path = crate)]
 pub struct SoundMediaHeaderBox {
     pub full_header: FullBoxHeader,
-    pub balance: i16,
+    pub balance: FixedI16<U8>,
     pub reserved: u16,
+}
+
+impl<'a> DeserializeSeed<'a, BoxHeader> for SoundMediaHeaderBox {
+    fn deserialize_seed<R>(mut reader: R, _seed: BoxHeader) -> io::Result<Self>
+    where
+        R: scuffle_bytes_util::zero_copy::ZeroCopyReader<'a>,
+    {
+        let full_header = FullBoxHeader::deserialize(&mut reader)?;
+        let balance = FixedI16::from_bits(i16::deserialize(&mut reader)?);
+        let reserved = u16::deserialize(&mut reader)?;
+
+        Ok(Self {
+            full_header,
+            balance,
+            reserved,
+        })
+    }
+}
+
+impl Serialize for SoundMediaHeaderBox {
+    fn serialize<W>(&self, mut writer: W) -> io::Result<()>
+    where
+        W: std::io::Write,
+    {
+        self.serialize_box_header(&mut writer)?;
+        self.full_header.serialize(&mut writer)?;
+        self.balance.to_bits().serialize(&mut writer)?;
+        self.reserved.serialize(&mut writer)?;
+        Ok(())
+    }
+}
+
+impl IsoSized for SoundMediaHeaderBox {
+    fn size(&self) -> usize {
+        Self::add_header_size(self.full_header.size() + 2 + 2)
+    }
 }
 
 /// Audio sample entry
@@ -41,11 +79,11 @@ pub struct AudioSampleEntry {
     pub samplesize: u16,
     pub pre_defined: u16,
     pub reserved2: u16,
-    pub samplerate: u32,
+    pub samplerate: FixedU32<U16>,
 }
 
 impl AudioSampleEntry {
-    pub fn new(sample_entry: SampleEntry, channelcount: u16, samplesize: u16, samplerate: u32) -> Self {
+    pub fn new(sample_entry: SampleEntry, channelcount: u16, samplesize: u16, samplerate: FixedU32<U16>) -> Self {
         Self {
             sample_entry,
             reserved1: 0,
@@ -69,7 +107,7 @@ impl<'a> Deserialize<'a> for AudioSampleEntry {
         let samplesize = u16::deserialize(&mut reader)?;
         let pre_defined = u16::deserialize(&mut reader)?;
         let reserved2 = u16::deserialize(&mut reader)?;
-        let samplerate = u32::deserialize(&mut reader)?;
+        let samplerate = FixedU32::from_bits(u32::deserialize(&mut reader)?);
 
         Ok(Self {
             sample_entry,
@@ -94,7 +132,7 @@ impl Serialize for AudioSampleEntry {
         self.samplesize.serialize(&mut writer)?;
         self.pre_defined.serialize(&mut writer)?;
         self.reserved2.serialize(&mut writer)?;
-        self.samplerate.serialize(&mut writer)?;
+        self.samplerate.to_bits().serialize(&mut writer)?;
         Ok(())
     }
 }
@@ -142,7 +180,7 @@ pub struct AudioSampleEntryV1 {
     pub samplesize: u16,
     pub pre_defined: u16,
     pub reserved2: u16,
-    pub samplerate: u32,
+    pub samplerate: FixedU32<U16>,
 }
 
 impl<'a> Deserialize<'a> for AudioSampleEntryV1 {
@@ -157,7 +195,7 @@ impl<'a> Deserialize<'a> for AudioSampleEntryV1 {
         let samplesize = u16::deserialize(&mut reader)?;
         let pre_defined = u16::deserialize(&mut reader)?;
         let reserved2 = u16::deserialize(&mut reader)?;
-        let samplerate = u32::deserialize(&mut reader)?;
+        let samplerate = FixedU32::from_bits(u32::deserialize(&mut reader)?);
 
         Ok(Self {
             sample_entry,
@@ -184,7 +222,7 @@ impl Serialize for AudioSampleEntryV1 {
         self.samplesize.serialize(&mut writer)?;
         self.pre_defined.serialize(&mut writer)?;
         self.reserved2.serialize(&mut writer)?;
-        self.samplerate.serialize(&mut writer)?;
+        self.samplerate.to_bits().serialize(&mut writer)?;
         Ok(())
     }
 }

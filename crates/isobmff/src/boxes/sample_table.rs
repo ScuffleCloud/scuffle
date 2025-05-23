@@ -60,6 +60,39 @@ pub struct SampleTableBox<'a> {
     pub csgp: Vec<CompactSampleToGroupBox>,
 }
 
+impl<'a> SampleTableBox<'a> {
+    pub fn new(
+        stsd: SampleDescriptionBox<'a>,
+        stts: TimeToSampleBox,
+        stsc: SampleToChunkBox,
+        stsz: Option<SampleSizeBox>,
+        stco: ChunkOffsetBox,
+    ) -> Self {
+        Self {
+            stsd,
+            stts,
+            ctts: None,
+            cslg: None,
+            stsc,
+            stsz,
+            stz2: None,
+            stco: Some(stco),
+            co64: None,
+            stss: None,
+            stsh: None,
+            padb: None,
+            stdp: None,
+            sdtp: None,
+            sbgp: vec![],
+            sgpd: vec![],
+            subs: vec![],
+            saiz: vec![],
+            saio: vec![],
+            csgp: vec![],
+        }
+    }
+}
+
 /// Sample entry
 ///
 /// ISO/IEC 14496-12 - 8.5.2
@@ -133,7 +166,17 @@ pub struct SampleDescriptionBox<'a> {
     pub full_header: FullBoxHeader,
     pub entry_count: u32,
     #[iso_box(nested_box(collect_unknown))]
-    pub unknown_boxes: Vec<UnknownBox<'a>>,
+    pub boxes: Vec<UnknownBox<'a>>,
+}
+
+impl<'a> SampleDescriptionBox<'a> {
+    pub fn new(boxes: Vec<UnknownBox<'a>>) -> Self {
+        Self {
+            full_header: FullBoxHeader::default(),
+            entry_count: boxes.len() as u32,
+            boxes,
+        }
+    }
 }
 
 #[derive(IsoBox, Debug)]

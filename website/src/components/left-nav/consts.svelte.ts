@@ -1,4 +1,4 @@
-import type { NavItem } from './types';
+import type { NavItem } from '../types';
 import IconTest from '$lib/images/IconTest.svelte';
 import IconTest2 from '$lib/images/IconTest2.svelte';
 import IconStats from '$lib/images/IconStats.svelte';

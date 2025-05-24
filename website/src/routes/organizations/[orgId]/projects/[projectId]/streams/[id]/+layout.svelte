@@ -35,11 +35,7 @@
         <div class="tabs-container">
             <div class="tabs-list-container">
                 {#each tabs as tab}
-                    <a
-                        href={`/streams/${stream.id}/${tab.id}`}
-                        class="tab-trigger"
-                        data-selected={currentTab === tab.id}
-                    >
+                    <a href={tab.id} class="tab-trigger" data-selected={currentTab === tab.id}>
                         {tab.label}
                     </a>
                 {/each}

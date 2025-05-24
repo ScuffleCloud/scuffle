@@ -4,11 +4,22 @@
     import { fade } from 'svelte/transition';
     // TODO: Configure routing from root
     import { page } from '$app/state';
+    import { useUser } from '$lib/useUser';
+    import IconSwitch from '$lib/images/icon-switch.svelte';
+    import NavSwitcher from './NavSwitcher.svelte';
 
     let showSearchModal = $state(false);
     let searchInput = $state<HTMLInputElement | null>(null);
 
-    // Handle keyboard shortcut
+    const { userQuery, currentOrganization, currentProject } = useUser();
+
+    $effect(() => {
+        if ($userQuery.data?.organizations) {
+            console.log('user', $userQuery.data);
+            console.log('currentOrganization', currentOrganization);
+        }
+    });
+
     function handleKeydown(event: KeyboardEvent) {
         if ((event.metaKey || event.ctrlKey) && event.key === 'k') {
             event.preventDefault();
@@ -40,28 +51,68 @@
         showSearchModal = false;
     }
 
+    // This breadcrumb logic is hacky I'm not sure how extensive this needs to be yet.
+    // There's very few breadcrumbs to show other than always showing organization and project.
+    let showBreadcrumbs = true;
     let breadcrumbs = $derived(
         page.url.pathname
             .split('/')
             .filter(Boolean)
-            .map((segment, index, segments) => ({
-                label: segment.replace(/[-_]/g, ' ').replace(/\b\w/g, (c) => c.toUpperCase()),
-                href: '/' + segments.slice(0, index + 1).join('/'),
-            })),
+            .map((segment, index, segments) => {
+                const path = '/' + segments.slice(0, index + 1).join('/');
+                const customTitle = 'test';
+                return {
+                    label:
+                        customTitle ||
+                        segment.replace(/[-_]/g, ' ').replace(/\b\w/g, (c) => c.toUpperCase()),
+                    href: path,
+                };
+            }),
+    );
+
+    const organizations = $derived(
+        $userQuery.data?.organizations.map((org) => ({
+            id: org.id,
+            name: org.name,
+            imageUrl: org.image_url,
+        })),
+    );
+
+    const projects = $derived(
+        $currentOrganization?.projects.map((project) => ({
+            id: project.id,
+            name: project.name,
+        })) ?? [],
     );
 </script>
 
 <header class="top-nav">
     <nav class="breadcrumb">
-        <a href="/" class="breadcrumb-link">Home</a>
-        {#each breadcrumbs as { label, href }, i}
-            <span class="breadcrumb-separator">/</span>
-            {#if i === breadcrumbs.length - 1}
-                <span class="breadcrumb-text" aria-current="page">{label}</span>
-            {:else}
-                <a {href} class="breadcrumb-link">{label}</a>
-            {/if}
-        {/each}
+        <!-- <a href="/" class="breadcrumb-link">Home</a>
+            {#each breadcrumbs as { label, href }, i}
+                <span class="breadcrumb-separator">/</span>
+                {#if i === breadcrumbs.length - 1}
+                    <span class="breadcrumb-text" aria-current="page">{label}</span>
+                {:else}
+                    <a {href} class="breadcrumb-link">{label}</a>
+                {/if}
+            {/each} -->
+        <NavSwitcher
+            name={$currentOrganization?.name ?? ''}
+            imageUrl={$currentOrganization?.image_url}
+            items={organizations ?? []}
+            onClick={(id) => {
+                console.log('clicked', id);
+            }}
+        />
+        <div class="slash-divider">/</div>
+        <NavSwitcher
+            name={$currentProject?.name ?? ''}
+            items={projects ?? []}
+            onClick={(id) => {
+                console.log('clicked', id);
+            }}
+        />
     </nav>
     <div class="actions">
         <button class="search-button" aria-label="Search" onclick={() => (showSearchModal = true)}>
@@ -112,6 +163,40 @@
             font-size: 1.1rem;
             font-weight: 500;
             color: var(--colors-dark100);
+            display: flex;
+            align-items: center;
+            gap: 0.25rem;
+
+            /* .organization-switcher {
+                display: flex;
+                align-items: center;
+                color: #201617;
+                font-size: 1rem;
+                font-style: normal;
+                font-weight: 500;
+                line-height: 1.5rem;
+                padding: 0.38rem;
+
+                .image-container {
+                    display: flex;
+                    align-items: center;
+                    gap: 0.5rem;
+
+                    .organization-image {
+                        width: 1.5rem;
+                        height: 1.5rem;
+                        object-fit: cover;
+                        border-radius: 0.25rem;
+                    }
+                }
+            } */
+
+            .slash-divider {
+                font-size: 0.875rem;
+                font-style: normal;
+                font-weight: 600;
+                line-height: normal;
+            }
         }
 
         .actions {

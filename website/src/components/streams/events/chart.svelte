@@ -225,7 +225,8 @@
                 },
                 labelFormatter: '{value}',
                 borderRadius: 4,
-                fillerColor: '#EEE6E2', // Add this line
+                fillerColor: '#EEE6E2',
+                // This background color seems to ignore the borderRadius. TBD
                 // backgroundColor: theme.colors.teal100,
                 borderColor: theme.colors.teal100,
                 handleStyle: {
@@ -299,7 +300,7 @@
         border-radius: 0.25rem;
         pointer-events: none;
         z-index: 1;
-        background-color: var(--color-teal70);
+        background-color: rgba(230, 222, 219, 0.6);
         mix-blend-mode: multiply;
     }
 

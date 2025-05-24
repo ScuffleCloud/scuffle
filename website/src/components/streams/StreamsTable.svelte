@@ -14,7 +14,7 @@
     };
 
     function handleRowClick(id: string) {
-        goto(`/streams/${id}`);
+        goto(`streams/${id}`);
     }
 </script>
 

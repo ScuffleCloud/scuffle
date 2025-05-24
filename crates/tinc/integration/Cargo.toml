@@ -18,7 +18,7 @@ rand = "0.9"
 scuffle-workspace-hack.workspace = true
 serde = "1.0.215"
 serde_json = "1.0.115"
-tinc = { path = "..", version = "0.1.1" }
+tinc = { path = ".." }
 tokio = { features = ["full"], version = "1.4.2" }
 tonic = "0.13"
 tower = "0.5"

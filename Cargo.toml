@@ -39,7 +39,7 @@ members = [
   "crates/changelog",
 ]
 
-resolver = "2"
+resolver = "3"
 
 [workspace.dependencies]
 scuffle-workspace-hack = "0.1.0"

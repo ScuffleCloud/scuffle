@@ -1,11 +1,10 @@
 //! A crate used to add telemetry to applications built with the
 //! [`scuffle-bootstrap`][scuffle_bootstrap] crate.
-//!
-//! Emit metrics using the [`scuffle-metrics`][scuffle_metrics]
-//! crate.
 #![cfg_attr(feature = "docs", doc = "\n\nSee the [changelog][changelog] for a full release history.")]
 #![cfg_attr(feature = "docs", doc = "## Feature flags")]
 #![cfg_attr(feature = "docs", doc = document_features::document_features!())]
+//! Emit metrics using the [`scuffle-metrics`][scuffle_metrics]
+//! crate.
 //! See [`TelemetrySvc`] for more details.
 //!
 //! ## Example

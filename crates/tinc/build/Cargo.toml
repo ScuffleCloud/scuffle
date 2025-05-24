@@ -54,7 +54,7 @@ tonic-build = { default-features = false, version = "0.13.0" }
 
 [dev-dependencies]
 insta = "1"
-postcompile = { path = "../../postcompile", version = "0.3.0" }
+postcompile = { path = "../../postcompile"}
 
 [package.metadata.xtask.powerset]
 additive-features = ["prost", "docs"]
@@ -77,3 +77,6 @@ docs-rs = true
 crates-io = true
 github-actions = { workflows = "ci.yaml" }
 codecov = true
+
+[package.metadata.xtask.release]
+group = "tinc"

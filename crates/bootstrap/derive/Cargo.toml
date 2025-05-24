@@ -36,3 +36,6 @@ docs-rs = true
 crates-io = true
 github-actions = { workflows = "ci.yaml" }
 codecov = true
+
+[package.metadata.xtask.release]
+group = "scuffle-bootstrap"

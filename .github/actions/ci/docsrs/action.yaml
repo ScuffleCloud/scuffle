@@ -19,7 +19,7 @@ runs:
         RUSTDOCFLAGS: "-Dwarnings --cfg docsrs --sort-modules-by-appearance --generate-link-to-definition --enable-index-page -Zunstable-options"
       run: |
         set -xeo pipefail
-        cargo xtask change-logs generate
+        cargo xtask release generate-pr --no-changelog-bump
         cargo doc --no-deps --all-features
 
     - name: Insert custom html for PR

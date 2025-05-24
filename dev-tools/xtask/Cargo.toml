@@ -1,6 +1,5 @@
 [package]
 name = "xtask"
-version = "0.1.0"
 edition = "2024"
 readme = "README.md"
 publish = false
@@ -13,11 +12,21 @@ license = "MIT OR Apache-2.0"
 
 [dependencies]
 anyhow = "1.0"
+cargo-platform = "0.1.9"
 cargo_metadata = "0.19.1"
 chrono = "0.4"
 clap = { features = ["derive", "env"], version = "4.5.23" }
-reqwest = { features = ["blocking", "json"], version = "0.12" }
+fmtools = "0.1"
+hex = "0.4"
+home = "0.5"
+indent_write = "2.2.0"
+minijinja = "2"
+num_cpus = "1"
 serde = "1"
 serde_derive = "1"
 serde_json = "1.0"
+sha2 = "0.10"
+temp-dir = "0.1"
 toml_edit = { features = ["serde"], version = "0.22" }
+tracing = "0.1"
+tracing-subscriber = { features = ["env-filter"], version = "0.3" }

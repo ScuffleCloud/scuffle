@@ -1,5 +1,8 @@
-use clap::Parser;
+use clap::error::ErrorKind;
+use clap::{CommandFactory, Parser};
 use cmd::Commands;
+use tracing::level_filters::LevelFilter;
+use tracing_subscriber::EnvFilter;
 
 mod cmd;
 mod utils;
@@ -15,6 +18,19 @@ struct Cli {
     command: Commands,
 }
 
-fn main() -> anyhow::Result<()> {
-    Cli::parse().command.run()
+fn main() {
+    tracing_subscriber::fmt()
+        .with_env_filter(
+            EnvFilter::builder()
+                .with_default_directive(LevelFilter::INFO.into())
+                .from_env_lossy(),
+        )
+        .with_writer(std::io::stderr)
+        .init();
+
+    if let Err(err) = Cli::parse().command.run() {
+        Cli::command()
+            .error(ErrorKind::InvalidValue, format!("{err:#}\n\n{err:?}"))
+            .exit()
+    }
 }

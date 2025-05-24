@@ -11,35 +11,32 @@ runs:
       run: |
         git fetch --unshallow
 
-    - name: Install
-      shell: bash
-      run: |
-        cargo binstall release-plz --git https://github.com/ScuffleCloud/release-plz.git --force -y
-
-    - name: Run release-plz update check
+    - name: Run release check
       id: semver_checks
       shell: bash
       continue-on-error: true
       env:
         RUSTFLAGS: "--cfg reqwest_unstable"
       run: |
-        release-plz update --disable-dependant-updates --no-changelog --check-only --exit-status 2> /tmp/.release-plz.stderr 1> /tmp/.release-plz.stdout
+        CMD="cargo xtask release check --exit-status --stdout-markdown"
+
+        if [ "${{ inputs.pr_number }}" != "" ]; then
+          CMD="$CMD --pr-number ${{ inputs.pr_number }}"
+        fi
+
+        # Execute the command, capturing stderr and stdout with tee
+        bash -c "$CMD" 2> >(tee /tmp/.release-check.stderr >&2) 1> >(tee /tmp/.release-check.stdout)
+
 
     - name: PR Body
       shell: bash
-      env:
-        MESSAGE: "${{ steps.semver_checks.outcome == 'failure' && '❌ Release Checks Failed\n\nYou need to update the versions on the following packages:' || '✅ All package versions up-to-date!' }}"
       run: |
         {
-          printf '## %s\n\n' "$MESSAGE"
-          cat /tmp/.release-plz.stdout
-          printf '\n\n<details><summary>Release-plz output</summary>\n\n```\n'
-          sed -E "s/\x1B\[[0-9;]*[mK]//g" /tmp/.release-plz.stderr
+          cat /tmp/.release-check.stdout
+          printf '\n\n<details><summary>Release checks output</summary>\n\n```\n'
+          sed -E "s/\x1B\[[0-9;]*[mK]//g" /tmp/.release-check.stderr
           printf '```\n\n</details>'
         } | tee /tmp/.release-checks-body $GITHUB_STEP_SUMMARY
-
-        # Print stderr to the log for debugging
-        cat /tmp/.release-plz.stderr
 
     - name: Add/update PR comment
       # skip commenting the summary on forked PRs

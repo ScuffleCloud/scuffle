@@ -39,7 +39,7 @@ members = [
   "crates/changelog",
 ]
 
-resolver = "2"
+resolver = "3"
 
 [workspace.dependencies]
 scuffle-workspace-hack = "0.1.0"
@@ -50,3 +50,11 @@ debug = true
 
 [patch.crates-io.scuffle-workspace-hack]
 path = "crates/workspace-hack"
+
+[workspace.metadata.xtask.release]
+pr-branch = "automation/cargo-release"
+pr-title = "Cargo Release"
+pr-labels = [
+  "automated",
+  "release",
+]

@@ -265,10 +265,9 @@ mod tests {
     use std::io::Write;
 
     use byteorder::{BigEndian, WriteBytesExt};
-    use bytes::Bytes;
     use isobmff::IsoSized;
-    use scuffle_bytes_util::BitWriter;
     use scuffle_bytes_util::zero_copy::{Deserialize, Serialize};
+    use scuffle_bytes_util::{BitWriter, BytesCow};
 
     use crate::config::{AVCDecoderConfigurationRecord, AvccExtendedConfig};
     use crate::sps::SpsExtended;
@@ -327,7 +326,7 @@ mod tests {
         // these may not be the same size due to the natural reduction from the SPS parsing.
         // in specific, the sps size function may return a lower size than the original bitstring.
         // reduction will occur from rebuilding the sps and from rebuilding the sps_ext.
-        let data = Bytes::from(b"\x01d\0\x1f\xff\xe1\0\x19\x67\x64\x00\x1F\xAC\xD9\x41\xE0\x6D\xF9\xE6\xA0\x20\x20\x28\x00\x00\x03\x00\x08\x00\x00\x03\x01\xE0\x01\0\x06h\xeb\xe3\xcb\"\xc0\xfd\xf8\xf8\0".to_vec());
+        let data = b"\x01d\0\x1f\xff\xe1\0\x19\x67\x64\x00\x1F\xAC\xD9\x41\xE0\x6D\xF9\xE6\xA0\x20\x20\x28\x00\x00\x03\x00\x08\x00\x00\x03\x01\xE0\x01\0\x06h\xeb\xe3\xcb\"\xc0\xfd\xf8\xf8\0";
 
         let config =
             AVCDecoderConfigurationRecord::deserialize(scuffle_bytes_util::zero_copy::Slice::from(&data[..])).unwrap();
@@ -342,7 +341,7 @@ mod tests {
 
     #[test]
     fn test_no_ext_cfg_for_profiles_66_77_88() {
-        let data = Bytes::from(b"\x01B\x00\x1F\xFF\xE1\x00\x1Dgd\x00\x1F\xAC\xD9A\xE0m\xF9\xE6\xA0  (\x00\x00\x03\x00\x08\x00\x00\x03\x01\xE0x\xC1\x8C\xB0\x01\x00\x06h\xEB\xE3\xCB\"\xC0\xFD\xF8\xF8\x00".to_vec());
+        let data = b"\x01B\x00\x1F\xFF\xE1\x00\x1Dgd\x00\x1F\xAC\xD9A\xE0m\xF9\xE6\xA0  (\x00\x00\x03\x00\x08\x00\x00\x03\x01\xE0x\xC1\x8C\xB0\x01\x00\x06h\xEB\xE3\xCB\"\xC0\xFD\xF8\xF8\x00";
         let config =
             AVCDecoderConfigurationRecord::deserialize(scuffle_bytes_util::zero_copy::Slice::from(&data[..])).unwrap();
 
@@ -370,18 +369,15 @@ mod tests {
             profile_compatibility: 0,
             level_indication: 31,
             length_size_minus_one: 3,
-            sps: vec![
-                Bytes::from_static(
-                    b"\x67\x64\x00\x1F\xAC\xD9\x41\xE0\x6D\xF9\xE6\xA0\x20\x20\x28\x00\x00\x00\x08\x00\x00\x01\xE0",
-                )
-                .into(),
-            ],
-            pps: vec![Bytes::from_static(b"ppsdata").into()],
+            sps: vec![BytesCow::from_static(
+                b"\x67\x64\x00\x1F\xAC\xD9\x41\xE0\x6D\xF9\xE6\xA0\x20\x20\x28\x00\x00\x00\x08\x00\x00\x01\xE0",
+            )],
+            pps: vec![BytesCow::from_static(b"ppsdata")],
             extended_config: Some(extended_config),
         };
 
         assert_eq!(config.size(), 49);
-        insta::assert_debug_snapshot!(config, @r#"
+        insta::assert_debug_snapshot!(config, @r"
         AVCDecoderConfigurationRecord {
             configuration_version: 1,
             profile_indication: 100,
@@ -389,10 +385,46 @@ mod tests {
             level_indication: 31,
             length_size_minus_one: 3,
             sps: [
-                b"gd\0\x1f\xac\xd9A\xe0m\xf9\xe6\xa0  (\0\0\0\x08\0\0\x01\xe0",
+                StaticSlice(
+                    [
+                        103,
+                        100,
+                        0,
+                        31,
+                        172,
+                        217,
+                        65,
+                        224,
+                        109,
+                        249,
+                        230,
+                        160,
+                        32,
+                        32,
+                        40,
+                        0,
+                        0,
+                        0,
+                        8,
+                        0,
+                        0,
+                        1,
+                        224,
+                    ],
+                ),
             ],
             pps: [
-                b"ppsdata",
+                StaticSlice(
+                    [
+                        112,
+                        112,
+                        115,
+                        100,
+                        97,
+                        116,
+                        97,
+                    ],
+                ),
             ],
             extended_config: Some(
                 AvccExtendedConfig {
@@ -412,7 +444,7 @@ mod tests {
                 },
             ),
         }
-        "#);
+        ");
     }
 
     #[test]
@@ -436,11 +468,10 @@ mod tests {
             profile_compatibility: 0,
             level_indication: 31,
             length_size_minus_one: 3,
-            sps: vec![
-                Bytes::from_static(b"gd\0\x1f\xac\xd9A\xe0m\xf9\xe6\xa0  (\0\0\x03\0\x08\0\0\x03\x01\xe0x\xc1\x8c\xb0")
-                    .into(),
-            ],
-            pps: vec![Bytes::from_static(b"ppsdata").into()],
+            sps: vec![BytesCow::from_static(
+                b"gd\0\x1f\xac\xd9A\xe0m\xf9\xe6\xa0  (\0\0\x03\0\x08\0\0\x03\x01\xe0x\xc1\x8c\xb0",
+            )],
+            pps: vec![BytesCow::from_static(b"ppsdata")],
             extended_config: Some(extended_config),
         };
 
@@ -450,7 +481,7 @@ mod tests {
         let parsed =
             AVCDecoderConfigurationRecord::deserialize(scuffle_bytes_util::zero_copy::Slice::from(&buf[..])).unwrap();
         assert_eq!(parsed.extended_config.unwrap().sequence_parameter_set_ext.len(), 1);
-        insta::assert_debug_snapshot!(config, @r#"
+        insta::assert_debug_snapshot!(config, @r"
         AVCDecoderConfigurationRecord {
             configuration_version: 1,
             profile_indication: 100,
@@ -458,10 +489,52 @@ mod tests {
             level_indication: 31,
             length_size_minus_one: 3,
             sps: [
-                b"gd\0\x1f\xac\xd9A\xe0m\xf9\xe6\xa0  (\0\0\x03\0\x08\0\0\x03\x01\xe0x\xc1\x8c\xb0",
+                StaticSlice(
+                    [
+                        103,
+                        100,
+                        0,
+                        31,
+                        172,
+                        217,
+                        65,
+                        224,
+                        109,
+                        249,
+                        230,
+                        160,
+                        32,
+                        32,
+                        40,
+                        0,
+                        0,
+                        3,
+                        0,
+                        8,
+                        0,
+                        0,
+                        3,
+                        1,
+                        224,
+                        120,
+                        193,
+                        140,
+                        176,
+                    ],
+                ),
             ],
             pps: [
-                b"ppsdata",
+                StaticSlice(
+                    [
+                        112,
+                        112,
+                        115,
+                        100,
+                        97,
+                        116,
+                        97,
+                    ],
+                ),
             ],
             extended_config: Some(
                 AvccExtendedConfig {
@@ -481,6 +554,6 @@ mod tests {
                 },
             ),
         }
-        "#);
+        ");
     }
 }

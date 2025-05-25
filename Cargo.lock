@@ -3173,7 +3173,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "07033963ba89ebaf1584d767badaa2e8fcec21aedea6b8c0346d487d49c28667"
 dependencies = [
  "cfg-if",
- "windows-targets 0.53.4",
+ "windows-targets 0.52.6",
 ]
 
 [[package]]
@@ -5767,7 +5767,6 @@ name = "scuffle-h264"
 version = "0.3.0"
 dependencies = [
  "byteorder",
- "bytes",
  "document-features",
  "insta",
  "isobmff",

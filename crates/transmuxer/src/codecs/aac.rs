@@ -56,7 +56,7 @@ pub(crate) fn stsd_entry<'a>(
             SampleEntry::default(),
             channelcount,
             samplesize,
-            FixedU32::from_bits(aac_config.sampling_frequency),
+            FixedU32::from_num(aac_config.sampling_frequency),
         ),
         es: ESDBox::new(es),
     };

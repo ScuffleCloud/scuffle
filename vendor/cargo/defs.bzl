@@ -849,7 +849,6 @@ _NORMAL_DEPENDENCIES = {
         _REQUIRED_FEATURE: {
             _COMMON_CONDITION: {
                 "byteorder": Label("@cargo_vendor//:byteorder-1.5.0"),
-                "bytes": Label("@cargo_vendor//:bytes-1.10.1"),
             },
         },
     },

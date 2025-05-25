@@ -11,15 +11,15 @@
 //! ```rust
 //! use std::io;
 //!
-//! use bytes::Bytes;
+//! use scuffle_bytes_util::zero_copy::Deserialize;
 //!
 //! use scuffle_h264::{AVCDecoderConfigurationRecord, Sps};
 //!
 //! // A sample h264 bytestream to parse
-//! # let bytes = Bytes::from(b"\x01d\0\x1f\xff\xe1\0\x17\x67\x64\x00\x1F\xAC\xD9\x41\xE0\x6D\xF9\xE6\xA0\x20\x20\x28\x00\x00\x00\x08\x00\x00\x01\xE0\x01\0\x06h\xeb\xe3\xcb\"\xc0\xfd\xf8\xf8\0".to_vec());
+//! # let bytes = b"\x01d\0\x1f\xff\xe1\0\x17\x67\x64\x00\x1F\xAC\xD9\x41\xE0\x6D\xF9\xE6\xA0\x20\x20\x28\x00\x00\x00\x08\x00\x00\x01\xE0\x01\0\x06h\xeb\xe3\xcb\"\xc0\xfd\xf8\xf8\0";
 //!
 //! // Parsing
-//! let result = AVCDecoderConfigurationRecord::parse(&mut io::Cursor::new(bytes)).unwrap();
+//! let result = AVCDecoderConfigurationRecord::deserialize(scuffle_bytes_util::zero_copy::Slice::from(&bytes[..])).unwrap();
 //!
 //! // Do something with it!
 //!
@@ -32,7 +32,8 @@
 //! ### Building
 //!
 //! ```rust
-//! use bytes::Bytes;
+//! use scuffle_bytes_util::BytesCow;
+//! use scuffle_bytes_util::zero_copy::Serialize;
 //!
 //! use scuffle_h264::{AVCDecoderConfigurationRecord, AvccExtendedConfig, Sps, SpsExtended};
 //!
@@ -56,9 +57,9 @@
 //!     level_indication: 31,
 //!     length_size_minus_one: 3,
 //!     sps: vec![
-//!         Bytes::from_static(b"spsdata"),
+//!         BytesCow::from_static(b"spsdata"),
 //!     ],
-//!     pps: vec![Bytes::from_static(b"ppsdata")],
+//!     pps: vec![BytesCow::from_static(b"ppsdata")],
 //!     extended_config: Some(extended_config),
 //! };
 //!
@@ -66,7 +67,7 @@
 //! let mut built = Vec::new();
 //!
 //! // Building
-//! config.build(&mut built).unwrap();
+//! config.serialize(&mut built).unwrap();
 //!
 //! // Do something with it!
 //! ```

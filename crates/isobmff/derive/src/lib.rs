@@ -252,7 +252,13 @@ fn box_impl(input: DeriveInput) -> syn::Result<proc_macro2::TokenStream> {
                     R: #crate_path::reexports::scuffle_bytes_util::zero_copy::ZeroCopyReader<'a>,
                 {
                     let seed = <#crate_path::BoxHeader as #crate_path::reexports::scuffle_bytes_util::zero_copy::Deserialize>::deserialize(&mut reader)?;
-                    <Self as #crate_path::reexports::scuffle_bytes_util::zero_copy::DeserializeSeed<#crate_path::BoxHeader>>::deserialize_seed(reader, seed)
+                    if let Some(size) = #crate_path::BoxHeader::payload_size(&seed) {
+                        // Limit the reader when we know the payload size
+                        let reader = #crate_path::reexports::scuffle_bytes_util::zero_copy::ZeroCopyReader::take(reader, size);
+                        <Self as #crate_path::reexports::scuffle_bytes_util::zero_copy::DeserializeSeed<#crate_path::BoxHeader>>::deserialize_seed(reader, seed)
+                    } else {
+                        <Self as #crate_path::reexports::scuffle_bytes_util::zero_copy::DeserializeSeed<#crate_path::BoxHeader>>::deserialize_seed(reader, seed)
+                    }
                 }
             }
         });

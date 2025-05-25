@@ -126,14 +126,46 @@ impl Serialize for UnknownBox<'_> {
 
 impl<'a> UnknownBox<'a> {
     pub fn try_from_box(box_: impl IsoBox + Serialize) -> Result<Self, io::Error> {
+        #[derive(Debug)]
+        struct SkipWriter<W> {
+            writer: W,
+            skip_size: usize,
+        }
+
+        impl<W> io::Write for SkipWriter<W>
+        where
+            W: io::Write,
+        {
+            fn write(&mut self, buf: &[u8]) -> io::Result<usize> {
+                // Calculate how many bytes are left to skip
+                let skip = self.skip_size.min(buf.len());
+
+                // Write the data and skip the specified number of bytes
+                // n is the number of bytes that were actually written considering the skip
+                let n = self.writer.write(&buf[skip..])? + skip;
+                // Update the counter
+                self.skip_size = self.skip_size.saturating_sub(n);
+                Ok(n)
+            }
+
+            fn flush(&mut self) -> io::Result<()> {
+                self.writer.flush()
+            }
+        }
+
         let header = box_.box_header();
 
-        let mut data = if let Some(size) = header.size.size() {
+        let mut data = if let Some(size) = header.payload_size() {
             Vec::with_capacity(size)
         } else {
             Vec::new()
         };
-        box_.serialize(&mut data)?;
+        box_.serialize(SkipWriter {
+            writer: &mut data,
+            skip_size: header.size(),
+        })?;
+
+        data.shrink_to_fit();
 
         Ok(Self {
             header,

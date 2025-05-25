@@ -19,7 +19,6 @@ docs = ["dep:scuffle-changelog", "dep:document-features"]
 
 [dependencies]
 byteorder = "1.5"
-bytes = "1.5"
 document-features = { optional = true, version = "0.2" }
 nutype-enum = { path = "../nutype_enum", version = "0.1.4" }
 scuffle-bytes-util = { path = "../bytes-util", version = "0.2.0" }

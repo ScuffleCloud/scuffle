@@ -3462,7 +3462,6 @@ name = "scuffle-h264"
 version = "0.3.0"
 dependencies = [
  "byteorder",
- "bytes",
  "document-features",
  "insta",
  "isobmff",

@@ -1,6 +1,4 @@
-use std::io::{
-    Write, {self},
-};
+use std::io::{self, Write};
 use std::path::PathBuf;
 use std::process::{Command, Stdio};
 
@@ -13,7 +11,7 @@ use crate::{AudioCodec, TransmuxResult, Transmuxer, VideoCodec};
 #[test]
 fn test_transmuxer_avc_aac() {
     let dir = PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("../../assets");
-    let data = std::fs::read(dir.join("avc_aac.flv").to_str().unwrap()).unwrap();
+    let data = std::fs::read(dir.join("avc_aac.flv")).unwrap();
 
     let mut transmuxer = Transmuxer::new();
 
@@ -95,13 +93,11 @@ fn test_transmuxer_avc_aac() {
 
     let output = String::from_utf8(output.stdout).unwrap();
 
-    println!("{output}");
-
     // Check the output is valid.
     let json: serde_json::Value = serde_json::from_str(&output).unwrap();
 
     assert_eq!(json["format"]["format_name"], "mov,mp4,m4a,3gp,3g2,mj2");
-    assert_eq!(json["format"]["duration"], "1.002667");
+    assert_eq!(json["format"]["duration"], "0.983334");
     assert_eq!(json["format"]["tags"]["major_brand"], "iso5");
     assert_eq!(json["format"]["tags"]["minor_version"], "512");
     assert_eq!(json["format"]["tags"]["compatible_brands"], "iso5iso6avc1mp41");
@@ -122,7 +118,7 @@ fn test_transmuxer_avc_aac() {
 #[test]
 fn test_transmuxer_av1_aac() {
     let dir = PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("../../assets");
-    let data = std::fs::read(dir.join("av1_aac.flv").to_str().unwrap()).unwrap();
+    let data = std::fs::read(dir.join("av1_aac.flv")).unwrap();
 
     let mut transmuxer = Transmuxer::new();
 
@@ -217,7 +213,7 @@ fn test_transmuxer_av1_aac() {
     assert_eq!(json["format"]["format_name"], "mov,mp4,m4a,3gp,3g2,mj2");
     assert_eq!(json["format"]["tags"]["major_brand"], "iso5");
     assert_eq!(json["format"]["tags"]["minor_version"], "512");
-    assert_eq!(json["format"]["duration"], "2.816000");
+    assert_eq!(json["format"]["duration"], "2.805556");
     assert_eq!(json["format"]["tags"]["compatible_brands"], "iso5iso6av01mp41");
 
     assert_eq!(json["streams"][0]["codec_name"], "av1");
@@ -235,7 +231,7 @@ fn test_transmuxer_av1_aac() {
 #[test]
 fn test_transmuxer_hevc_aac() {
     let dir = PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("../../assets");
-    let data = std::fs::read(dir.join("hevc_aac.flv").to_str().unwrap()).unwrap();
+    let data = std::fs::read(dir.join("hevc_aac.flv")).unwrap();
 
     let mut transmuxer = Transmuxer::new();
 
@@ -324,7 +320,7 @@ fn test_transmuxer_hevc_aac() {
     let json: serde_json::Value = serde_json::from_slice(&output.stdout).unwrap();
 
     assert_eq!(json["format"]["format_name"], "mov,mp4,m4a,3gp,3g2,mj2");
-    assert_eq!(json["format"]["duration"], "2.026667");
+    assert_eq!(json["format"]["duration"], "2.005333");
     assert_eq!(json["format"]["tags"]["major_brand"], "iso5");
     assert_eq!(json["format"]["tags"]["minor_version"], "512");
     assert_eq!(json["format"]["tags"]["compatible_brands"], "iso5iso6hev1mp41");

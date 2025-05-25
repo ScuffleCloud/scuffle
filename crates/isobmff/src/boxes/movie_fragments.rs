@@ -400,6 +400,7 @@ impl Serialize for TrackFragmentHeaderBox {
     where
         W: std::io::Write,
     {
+        self.serialize_box_header(&mut writer)?;
         self.version.serialize(&mut writer)?;
         self.flags.serialize(&mut writer)?;
 

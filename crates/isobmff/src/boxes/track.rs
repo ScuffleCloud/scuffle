@@ -76,7 +76,7 @@ impl Serialize for TrackHeaderBoxFlags {
     where
         W: std::io::Write,
     {
-        self.bits().serialize(writer)
+        U24Be(self.bits()).serialize(writer)
     }
 }
 

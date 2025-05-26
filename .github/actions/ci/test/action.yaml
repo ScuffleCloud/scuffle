@@ -20,6 +20,14 @@ runs:
       shell: bash
       run: cargo hakari disable
 
+    - name: Download ISOBMFF conformance samples
+      shell: bash
+      run: |
+        mkdir -p ./assets/isobmff_conformance
+        curl -Lo ./assets/isobmff_conformance/files.json https://github.com/MPEGGroup/FileFormatConformance/releases/download/r20250526/files.json
+        curl -Lo ./assets/isobmff_conformance/conformance-files.tar.gz https://github.com/MPEGGroup/FileFormatConformance/releases/download/r20250526/conformance-files.tar.gz
+        tar xf ./assets/isobmff_conformance/conformance-files.tar.gz --directory=./assets/isobmff_conformance
+
     # Note; we don't run the powerset here because it's very slow on CI
     # Perhaps we should consider it at some point.
     #

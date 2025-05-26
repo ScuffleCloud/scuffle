@@ -29,6 +29,9 @@ scuffle-workspace-hack.workspace = true
 
 [dev-dependencies]
 insta = "1.42"
+serde = "1.0.219"
+serde_derive = "1.0.219"
+serde_json = "1.0.140"
 
 [features]
 ## Enables changelog and documentation of feature flags

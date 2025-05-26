@@ -26,6 +26,7 @@ mod common_types;
 mod file;
 mod header;
 mod sized;
+mod tests;
 mod utils;
 
 pub use common_types::*;

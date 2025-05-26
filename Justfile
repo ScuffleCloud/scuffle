@@ -19,6 +19,17 @@ test *args:
     #!/usr/bin/env bash
     set -euo pipefail
 
+    # Download ISOBMFF file conformance samples
+    if [ ! -d ./assets/isobmff_conformance ]; then
+        echo "Downloading ISOBMFF conformance samples..."
+        mkdir -p ./assets/isobmff_conformance
+        curl -Lo ./assets/isobmff_conformance/files.json https://github.com/MPEGGroup/FileFormatConformance/releases/download/r20250526/files.json
+        curl -Lo ./assets/isobmff_conformance/conformance-files.tar.gz https://github.com/MPEGGroup/FileFormatConformance/releases/download/r20250526/conformance-files.tar.gz
+        tar xf ./assets/isobmff_conformance/conformance-files.tar.gz --directory=./assets/isobmff_conformance
+    else
+        echo "ISOBMFF conformance samples already downloaded."
+    fi
+
     INSTA_FORCE_PASS=1 cargo +{{RUST_TOOLCHAIN}} llvm-cov clean --workspace
     INSTA_FORCE_PASS=1 cargo +{{RUST_TOOLCHAIN}} llvm-cov nextest --include-build-script --no-report --all-features -- {{args}}
     # Coverage for doctests is currently broken in llvm-cov.

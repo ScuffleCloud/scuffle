@@ -19,3 +19,6 @@ docs/build
 docs/.docusaurus
 docs/.cache-loader
 .runner/
+
+# ISOBMFF file conformance
+assets/isobmff_conformance/

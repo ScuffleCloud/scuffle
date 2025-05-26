@@ -49,7 +49,7 @@ pub struct SampleTableBox<'a> {
     #[iso_box(nested_box(collect))]
     pub sbgp: Vec<SampleToGroupBox>,
     #[iso_box(nested_box(collect))]
-    pub sgpd: Vec<SampleGroupDescriptionBox>,
+    pub sgpd: Vec<SampleGroupDescriptionBox<'a>>,
     #[iso_box(nested_box(collect))]
     pub subs: Vec<SubSampleInformationBox>,
     #[iso_box(nested_box(collect))]

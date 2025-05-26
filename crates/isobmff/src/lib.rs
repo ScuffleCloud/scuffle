@@ -23,10 +23,10 @@ use scuffle_bytes_util::zero_copy::{Deserialize, DeserializeSeed, Serialize};
 
 pub mod boxes;
 mod common_types;
+mod conformance_tests;
 mod file;
 mod header;
 mod sized;
-mod tests;
 mod utils;
 
 pub use common_types::*;

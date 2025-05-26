@@ -20,8 +20,12 @@ pub struct IsobmffFile<'a> {
     pub otyp: Vec<OriginalFileTypeBox<'a>>,
     #[iso_box(nested_box(collect))]
     pub pdin: Option<ProgressiveDownloadInfoBox>,
-    #[iso_box(nested_box)]
-    pub moov: MovieBox<'a>,
+    // According to the official spec the moov box is mandatory,
+    // but for some reason ISO decided to break their own rules and
+    // allow the HEIF file format to not have a moov box.
+    // For example: https://github.com/MPEGGroup/FileFormatConformance/blob/16d041df6d39c02d452ca15815431742411da194/data/file_features/published/heif/C002.heic
+    #[iso_box(nested_box(collect))]
+    pub moov: Option<MovieBox<'a>>,
     #[iso_box(nested_box(collect))]
     pub moof: Vec<MovieFragmentBox<'a>>,
     #[iso_box(nested_box(collect))]

@@ -1,7 +1,7 @@
 use std::io;
 
 use scuffle_bytes_util::zero_copy::{Deserialize, DeserializeSeed, Serialize, SerializeSeed, U24Be, ZeroCopyReader};
-use scuffle_bytes_util::{BitWriter, IoResultExt};
+use scuffle_bytes_util::{BitWriter, BytesCow, IoResultExt};
 
 use crate::{BoxHeader, FullBoxHeader, IsoBox, IsoSized};
 
@@ -129,16 +129,16 @@ impl IsoSized for SampleToGroupBoxEntry {
 /// ISO/IEC 14496-12 - 8.9.3
 #[derive(Debug, IsoBox)]
 #[iso_box(box_type = b"sgpd", skip_impl(deserialize_seed, serialize, sized), crate_path = crate)]
-pub struct SampleGroupDescriptionBox {
+pub struct SampleGroupDescriptionBox<'a> {
     pub full_header: FullBoxHeader,
     pub grouping_type: [u8; 4],
     pub default_length: Option<u32>,
     pub default_group_description_index: Option<u32>,
     pub entry_count: u32,
-    pub entries: Vec<SampleGroupDescriptionEntry>,
+    pub entries: Vec<SampleGroupDescriptionEntry<'a>>,
 }
 
-impl<'a> DeserializeSeed<'a, BoxHeader> for SampleGroupDescriptionBox {
+impl<'a> DeserializeSeed<'a, BoxHeader> for SampleGroupDescriptionBox<'a> {
     fn deserialize_seed<R>(mut reader: R, _seed: BoxHeader) -> io::Result<Self>
     where
         R: ZeroCopyReader<'a>,
@@ -177,7 +177,7 @@ impl<'a> DeserializeSeed<'a, BoxHeader> for SampleGroupDescriptionBox {
     }
 }
 
-impl Serialize for SampleGroupDescriptionBox {
+impl Serialize for SampleGroupDescriptionBox<'_> {
     fn serialize<W>(&self, mut writer: W) -> io::Result<()>
     where
         W: std::io::Write,
@@ -209,7 +209,7 @@ impl Serialize for SampleGroupDescriptionBox {
     }
 }
 
-impl IsoSized for SampleGroupDescriptionBox {
+impl IsoSized for SampleGroupDescriptionBox<'_> {
     fn size(&self) -> usize {
         let mut size = self.full_header.size();
         size += 4; // grouping_type
@@ -227,12 +227,12 @@ impl IsoSized for SampleGroupDescriptionBox {
 }
 
 #[derive(Debug)]
-pub struct SampleGroupDescriptionEntry {
+pub struct SampleGroupDescriptionEntry<'a> {
     pub description_length: Option<u32>,
-    pub sample_group_description_entry: SampleGroupDescriptionEntryType,
+    pub sample_group_description_entry: SampleGroupDescriptionEntryType<'a>,
 }
 
-impl<'a> DeserializeSeed<'a, ([u8; 4], Option<u32>)> for SampleGroupDescriptionEntry {
+impl<'a> DeserializeSeed<'a, ([u8; 4], Option<u32>)> for SampleGroupDescriptionEntry<'a> {
     fn deserialize_seed<R>(mut reader: R, seed: ([u8; 4], Option<u32>)) -> io::Result<Self>
     where
         R: ZeroCopyReader<'a>,
@@ -245,7 +245,9 @@ impl<'a> DeserializeSeed<'a, ([u8; 4], Option<u32>)> for SampleGroupDescriptionE
             None
         };
 
-        let sample_group_description_entry = SampleGroupDescriptionEntryType::deserialize_seed(&mut reader, grouping_type)?;
+        let description_reader = reader.take(description_length.unwrap_or(0) as usize);
+        let sample_group_description_entry =
+            SampleGroupDescriptionEntryType::deserialize_seed(description_reader, grouping_type)?;
 
         Ok(Self {
             description_length,
@@ -254,7 +256,7 @@ impl<'a> DeserializeSeed<'a, ([u8; 4], Option<u32>)> for SampleGroupDescriptionE
     }
 }
 
-impl SerializeSeed<&SampleGroupDescriptionBox> for SampleGroupDescriptionEntry {
+impl SerializeSeed<&SampleGroupDescriptionBox<'_>> for SampleGroupDescriptionEntry<'_> {
     fn serialize_seed<W>(&self, mut writer: W, seed: &SampleGroupDescriptionBox) -> io::Result<()>
     where
         W: std::io::Write,
@@ -270,7 +272,7 @@ impl SerializeSeed<&SampleGroupDescriptionBox> for SampleGroupDescriptionEntry {
     }
 }
 
-impl SampleGroupDescriptionEntry {
+impl SampleGroupDescriptionEntry<'_> {
     pub fn size(&self, parent: &SampleGroupDescriptionBox) -> usize {
         let mut size = 0;
         if parent.full_header.version >= 1 && parent.default_length.is_some_and(|l| l == 0) {
@@ -282,7 +284,7 @@ impl SampleGroupDescriptionEntry {
 }
 
 #[derive(Debug)]
-pub enum SampleGroupDescriptionEntryType {
+pub enum SampleGroupDescriptionEntryType<'a> {
     // "roll"
     RollRecoveryEntry {
         roll_distance: i16,
@@ -345,6 +347,10 @@ pub enum SampleGroupDescriptionEntryType {
         meta_box_handler_type: u32,
         num_items: u32,
         item_id: Vec<u32>,
+    },
+    Unknown {
+        grouping_type: [u8; 4],
+        data: BytesCow<'a>,
     },
 }
 
@@ -427,7 +433,7 @@ impl IsoSized for RateShareEntryOperationPoint {
     }
 }
 
-impl<'a> DeserializeSeed<'a, [u8; 4]> for SampleGroupDescriptionEntryType {
+impl<'a> DeserializeSeed<'a, [u8; 4]> for SampleGroupDescriptionEntryType<'a> {
     fn deserialize_seed<R>(mut reader: R, seed: [u8; 4]) -> io::Result<Self>
     where
         R: ZeroCopyReader<'a>,
@@ -553,15 +559,15 @@ impl<'a> DeserializeSeed<'a, [u8; 4]> for SampleGroupDescriptionEntryType {
                     item_id,
                 })
             }
-            _ => Err(io::Error::new(
-                io::ErrorKind::InvalidData,
-                format!("Unknown sample group description entry grouping type: {seed:?}"),
-            )),
+            _ => Ok(Self::Unknown {
+                grouping_type: seed,
+                data: reader.try_read_to_end()?,
+            }),
         }
     }
 }
 
-impl Serialize for SampleGroupDescriptionEntryType {
+impl Serialize for SampleGroupDescriptionEntryType<'_> {
     fn serialize<W>(&self, mut writer: W) -> io::Result<()>
     where
         W: std::io::Write,
@@ -661,13 +667,16 @@ impl Serialize for SampleGroupDescriptionEntryType {
                     id.serialize(&mut writer)?;
                 }
             }
+            Self::Unknown { data, .. } => {
+                data.serialize(&mut writer)?;
+            }
         }
 
         Ok(())
     }
 }
 
-impl IsoSized for SampleGroupDescriptionEntryType {
+impl IsoSized for SampleGroupDescriptionEntryType<'_> {
     fn size(&self) -> usize {
         match self {
             Self::RollRecoveryEntry { .. } => 2, // roll_distance
@@ -683,6 +692,7 @@ impl IsoSized for SampleGroupDescriptionEntryType {
             Self::SampleToMetadataItemEntry { item_id, .. } => {
                 4 + 4 + item_id.size() // meta_box_handler_type + num_items + item_id
             }
+            Self::Unknown { data, .. } => data.size(),
         }
     }
 }

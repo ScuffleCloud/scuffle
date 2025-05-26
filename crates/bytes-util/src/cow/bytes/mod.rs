@@ -112,7 +112,7 @@ impl<'a> BytesCow<'a> {
 
         // We copy the bytes into an 8 byte array and convert it to a u64
         let mut buf = [0u8; 8];
-        buf[4 - self.len()..].copy_from_slice(self.as_bytes());
+        buf[8 - self.len()..].copy_from_slice(self.as_bytes());
         u64::from_be_bytes(buf)
     }
 

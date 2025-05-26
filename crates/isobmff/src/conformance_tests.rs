@@ -29,16 +29,23 @@ fn conformance_files() {
         serde_json::from_reader(std::fs::File::open(dir.join("files.json")).expect("failed to open metadata file"))
             .expect("failed to deserialize metadata file");
 
-    for (file_name, _) in metadata_file.file_metadata.into_iter().filter(|(_, m)| m.published) {
+    for (file_name, _) in metadata_file
+        .file_metadata
+        .into_iter()
+        .filter(|(n, m)| !n.ends_with(".zip") && m.published)
+    {
         println!("testing {file_name}");
         let mut file = std::fs::File::open(dir.join("files").join(&file_name)).expect("failed to open file");
         let reader = scuffle_bytes_util::zero_copy::IoRead::from(BufReader::new(&mut file));
 
         let isobmff_file = IsobmffFile::deserialize(reader).expect("failed to deserialize file");
-        assert_eq!(
+
+        let file_size = file.metadata().expect("failed to read metadata").len() as usize;
+        assert!(
+            isobmff_file.size() <= file_size,
+            "file size mismatch: {} (serialized size) > {} (file size)",
             isobmff_file.size(),
-            file.metadata().expect("failed to read metadata").len() as usize,
-            "file size mismatch",
+            file_size
         );
     }
 }

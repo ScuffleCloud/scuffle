@@ -4,7 +4,7 @@ use scuffle_bytes_util::zero_copy::{Deserialize, DeserializeSeed, Serialize, Ser
 use scuffle_bytes_util::{BitWriter, BytesCow, IoResultExt};
 
 use super::{
-    Brand, DataInformationBox, ExtendedTypeBox, FDItemInformationBox, HandlerBox, ProtectionSchemeInfoBox,
+    Brand, DataInformationBox, ExtendedTypeBox, FDItemInformationBox, GroupsListBox, HandlerBox, ProtectionSchemeInfoBox,
     ScrambleSchemeInfoBox,
 };
 use crate::{BoxHeader, FullBoxHeader, IsoBox, IsoSized, UnknownBox, Utf8String};
@@ -40,6 +40,8 @@ pub struct MetaBox<'a> {
     pub iref: Option<ItemReferenceBox>,
     #[iso_box(nested_box(collect))]
     pub iprp: Option<ItemPropertiesBox<'a>>,
+    #[iso_box(nested_box(collect))]
+    pub grpl: Option<GroupsListBox<'a>>,
     #[iso_box(nested_box(collect_unknown))]
     pub unknown_boxes: Vec<UnknownBox<'a>>,
 }
@@ -856,24 +858,13 @@ impl<'a> DeserializeSeed<'a, BoxHeader> for ItemReferenceBox {
                 break;
             };
 
-            if full_header.version == 0 {
-                let Some(iso_box) =
-                    SingleItemTypeReferenceBox::deserialize_seed(&mut reader, (header, None)).eof_to_none()?
-                else {
-                    break;
-                };
-                references.push(iso_box);
-            } else if full_header.version == 1 {
-                let Some(full_header) = FullBoxHeader::deserialize(&mut reader).eof_to_none()? else {
-                    break;
-                };
-                let Some(iso_box) =
-                    SingleItemTypeReferenceBox::deserialize_seed(&mut reader, (header, Some(full_header))).eof_to_none()?
-                else {
-                    break;
-                };
-                references.push(iso_box);
-            }
+            let Some(iso_box) =
+                SingleItemTypeReferenceBox::deserialize_seed(&mut reader, (header, full_header.version == 1))
+                    .eof_to_none()?
+            else {
+                break;
+            };
+            references.push(iso_box);
         }
 
         Ok(ItemReferenceBox { full_header, references })
@@ -882,49 +873,42 @@ impl<'a> DeserializeSeed<'a, BoxHeader> for ItemReferenceBox {
 
 #[derive(Debug)]
 pub struct SingleItemTypeReferenceBox {
+    pub large: bool,
     pub header: BoxHeader,
-    pub full_header: Option<FullBoxHeader>,
     pub from_item_id: u32,
     pub reference_count: u16,
     pub to_item_id: Vec<u32>,
 }
 
-impl<'a> DeserializeSeed<'a, (BoxHeader, Option<FullBoxHeader>)> for SingleItemTypeReferenceBox {
-    fn deserialize_seed<R>(mut reader: R, seed: (BoxHeader, Option<FullBoxHeader>)) -> std::io::Result<Self>
+impl<'a> DeserializeSeed<'a, (BoxHeader, bool)> for SingleItemTypeReferenceBox {
+    fn deserialize_seed<R>(mut reader: R, seed: (BoxHeader, bool)) -> std::io::Result<Self>
     where
         R: scuffle_bytes_util::zero_copy::ZeroCopyReader<'a>,
     {
-        if seed.1.is_none() {
-            let from_item_id = u16::deserialize(&mut reader)? as u32;
-            let reference_count = u16::deserialize(&mut reader)?;
-            let mut to_item_id = Vec::with_capacity(reference_count as usize);
-            for _ in 0..reference_count {
-                to_item_id.push(u16::deserialize(&mut reader)? as u32);
-            }
+        let (header, large) = seed;
 
-            Ok(SingleItemTypeReferenceBox {
-                header: seed.0,
-                full_header: seed.1,
-                from_item_id,
-                reference_count,
-                to_item_id,
-            })
+        let from_item_id = if !large {
+            u16::deserialize(&mut reader)? as u32
         } else {
-            let from_item_id = u32::deserialize(&mut reader)?;
-            let reference_count = u16::deserialize(&mut reader)?;
-            let mut to_item_id = Vec::with_capacity(reference_count as usize);
-            for _ in 0..reference_count {
+            u32::deserialize(&mut reader)?
+        };
+        let reference_count = u16::deserialize(&mut reader)?;
+        let mut to_item_id = Vec::with_capacity(reference_count as usize);
+        for _ in 0..reference_count {
+            if !large {
+                to_item_id.push(u16::deserialize(&mut reader)? as u32);
+            } else {
                 to_item_id.push(u32::deserialize(&mut reader)?);
             }
-
-            Ok(SingleItemTypeReferenceBox {
-                header: seed.0,
-                full_header: seed.1,
-                from_item_id,
-                reference_count,
-                to_item_id,
-            })
         }
+
+        Ok(SingleItemTypeReferenceBox {
+            large,
+            header,
+            from_item_id,
+            reference_count,
+            to_item_id,
+        })
     }
 }
 
@@ -933,41 +917,33 @@ impl Serialize for SingleItemTypeReferenceBox {
     where
         W: std::io::Write,
     {
-        if let Some(full_header) = &self.full_header {
-            full_header.serialize(&mut writer)?;
+        if !self.large {
             (self.from_item_id as u16).serialize(&mut writer)?;
-            self.reference_count.serialize(&mut writer)?;
-
-            for id in &self.to_item_id {
-                (*id as u16).serialize(&mut writer)?;
-            }
-
-            Ok(())
         } else {
-            self.header.serialize(&mut writer)?;
             self.from_item_id.serialize(&mut writer)?;
-            self.reference_count.serialize(&mut writer)?;
-
-            for id in &self.to_item_id {
+        }
+        self.reference_count.serialize(&mut writer)?;
+        for id in &self.to_item_id {
+            if !self.large {
+                (*id as u16).serialize(&mut writer)?;
+            } else {
                 id.serialize(&mut writer)?;
             }
-
-            Ok(())
         }
+
+        Ok(())
     }
 }
 
 impl IsoSized for SingleItemTypeReferenceBox {
     fn size(&self) -> usize {
-        let mut size = 0;
+        let mut size = self.header.size();
 
-        if let Some(full_header) = &self.full_header {
-            size += full_header.size();
+        if !self.large {
             size += 2; // from_item_id
             size += 2; // reference_count
             size += self.to_item_id.len() * 2; // to_item_id
         } else {
-            size += self.header.size();
             size += 4; // from_item_id
             size += 2; // reference_count
             size += self.to_item_id.len() * 4; // to_item_id
@@ -983,7 +959,6 @@ impl IsoSized for SingleItemTypeReferenceBox {
 #[derive(IsoBox, Debug)]
 #[iso_box(box_type = b"iprp", crate_path = crate)]
 pub struct ItemPropertiesBox<'a> {
-    pub full_header: FullBoxHeader,
     #[iso_box(nested_box)]
     pub property_container: ItemPropertyContainerBox<'a>,
     #[iso_box(nested_box(collect))]

@@ -1,6 +1,6 @@
 [package]
 name = "scuffle-metrics-derive"
-version = "0.3.1"
+version = "0.3.2"
 edition = "2024"
 repository = "https://github.com/scufflecloud/scuffle"
 authors = ["Scuffle <opensource@scuffle.cloud>"]
@@ -21,7 +21,7 @@ scuffle-workspace-hack.workspace = true
 syn = { features = ["full"], version = "2" }
 
 [dev-dependencies]
-scuffle-metrics = { path = "..", version = "0.3.0" }
+scuffle-metrics = { path = ".." }
 
 [package.metadata.cargo-sync-rdme.badge]
 style = "flat-square"

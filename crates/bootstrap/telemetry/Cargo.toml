@@ -1,6 +1,6 @@
 [package]
 name = "scuffle-bootstrap-telemetry"
-version = "0.2.3"
+version = "0.2.4"
 edition = "2024"
 repository = "https://github.com/scufflecloud/scuffle"
 authors = ["Scuffle <opensource@scuffle.cloud>"]
@@ -43,7 +43,7 @@ scuffle-workspace-hack.workspace = true
 
 [dev-dependencies]
 reqwest = { default-features = false, version = "0.12.12" }
-scuffle-metrics = { path = "../../metrics", version = "0.3.0" }
+scuffle-metrics = { path = "../../metrics" }
 
 [features]
 default = [

@@ -2,12 +2,10 @@
 //! [`scuffle-bootstrap`][scuffle_bootstrap] crate.
 //!
 //! Emit metrics using the [`scuffle-metrics`][scuffle_metrics]
-//! crate.
+//! crate. See [`TelemetrySvc`] for more details.
 #![cfg_attr(feature = "docs", doc = "\n\nSee the [changelog][changelog] for a full release history.")]
 #![cfg_attr(feature = "docs", doc = "## Feature flags")]
 #![cfg_attr(feature = "docs", doc = document_features::document_features!())]
-//! See [`TelemetrySvc`] for more details.
-//!
 //! ## Example
 //!
 //! ```rust

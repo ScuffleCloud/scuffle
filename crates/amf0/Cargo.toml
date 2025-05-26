@@ -1,11 +1,13 @@
 [package]
 name = "scuffle-amf0"
-version = "0.2.2"
+version = "0.2.3"
 edition = "2024"
 license = "MIT OR Apache-2.0"
 description = "A pure-rust implementation of AMF0 encoder and decoder."
 repository = "https://github.com/scufflecloud/scuffle"
 keywords = ["amf0", "rtmp", "flash", "video", "flv"]
+authors = ["Scuffle <opensource@scuffle.cloud>"]
+documentation = "https://docs.rs/scuffle-amf0"
 
 [lints.rust]
 unexpected_cfgs = { level = "warn", check-cfg = ['cfg(coverage_nightly)'] }

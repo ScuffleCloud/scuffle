@@ -1,0 +1,93 @@
+[[scuffle-amf0]]
+category = "docs"
+description = "added authors to Cargo.toml"
+authors = ["@troykomodo"]
+
+[[scuffle-amf0]]
+category = "docs"
+description = "added documentation to Cargo.toml"
+authors = ["@troykomodo"]
+
+[[scuffle-bootstrap]]
+category = "chore"
+description = "removed version from dev dependency `postcompile`"
+authors = ["@troykomodo"]
+
+[[scuffle-bootstrap]]
+category = "chore"
+description = "removed version from dev dependency `scuffle-future-ext`"
+authors = ["@troykomodo"]
+
+[[scuffle-bootstrap]]
+category = "chore"
+description = "removed version from dev dependency `scuffle-settings`"
+authors = ["@troykomodo"]
+
+[[scuffle-bootstrap]]
+category = "chore"
+description = "removed version from dev dependency `scuffle-signal`"
+authors = ["@troykomodo"]
+
+[[scuffle-bootstrap]]
+category = "chore"
+description = "bumped `scuffle-bootstrap-derive` to `=0.1.5`"
+version_bump = ["scuffle-bootstrap-derive", "0.1.5"]
+authors = ["@troykomodo"]
+
+[[scuffle-bootstrap-telemetry]]
+category = "chore"
+description = "removed version from dev dependency `scuffle-metrics`"
+authors = ["@troykomodo"]
+
+[[scuffle-context]]
+category = "chore"
+description = "removed version from dev dependency `scuffle-future-ext`"
+authors = ["@troykomodo"]
+
+[[scuffle-ffmpeg]]
+category = "chore"
+description = "removed version from dev dependency `scuffle-mp4`"
+authors = ["@troykomodo"]
+
+[[scuffle-http]]
+category = "chore"
+description = "removed version from dev dependency `scuffle-future-ext`"
+authors = ["@troykomodo"]
+
+[[scuffle-metrics]]
+category = "chore"
+description = "removed version from dev dependency `postcompile`"
+authors = ["@troykomodo"]
+
+[[scuffle-metrics]]
+category = "chore"
+description = "bumped `scuffle-metrics-derive` to `=0.3.2`"
+version_bump = ["scuffle-metrics-derive", "0.3.2"]
+authors = ["@troykomodo"]
+
+[[scuffle-rtmp]]
+category = "chore"
+description = "removed version from dev dependency `scuffle-flv`"
+authors = ["@troykomodo"]
+
+[[scuffle-signal]]
+category = "chore"
+description = "removed version from dev dependency `scuffle-future-ext`"
+authors = ["@troykomodo"]
+
+[[tinc]]
+category = "chore"
+description = "bumped `tinc-cel` to `=0.1.3`"
+authors = ["@troykomodo"]
+version_bump = ["tinc-cel", "0.1.3"]
+
+[[tinc]]
+category = "chore"
+description = "bumped `tinc-derive` to `=0.1.3`"
+authors = ["@troykomodo"]
+version_bump = ["tinc-derive", "0.1.3"]
+
+[[openapiv3_1]]
+category = "docs"
+description = "edit docs to avoid clippy-nightly ICE"
+authors = ["@troykomodo"]

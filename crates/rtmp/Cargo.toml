@@ -1,6 +1,6 @@
 [package]
 name = "scuffle-rtmp"
-version = "0.2.2"
+version = "0.2.3"
 edition = "2024"
 description = "A pure Rust RTMP server"
 repository = "https://github.com/scufflecloud/scuffle"
@@ -55,7 +55,7 @@ serde_json = "1.0"
 tokio = { features = ["full"], version = "1.44.1" }
 
 # For examples:
-scuffle-flv = { path = "../flv", version = "0.2.1" }
+scuffle-flv = { path = "../flv" }
 tracing = "0.1.41"
 tracing-subscriber = "0.3.19"
 

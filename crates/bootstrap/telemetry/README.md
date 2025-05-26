@@ -20,7 +20,7 @@ A crate used to add telemetry to applications built with the
 [`scuffle-bootstrap`][scuffle_bootstrap] crate.
 
 Emit metrics using the [`scuffle-metrics`][scuffle_metrics]
-crate.
+crate. See [`TelemetrySvc`](https://docs.rs/scuffle-bootstrap-telemetry/0.2.4/scuffle_bootstrap_telemetry/struct.TelemetrySvc.html) for more details.
 
 See the [changelog](./CHANGELOG.md) for a full release history.
 
@@ -33,7 +33,6 @@ See the [changelog](./CHANGELOG.md) for a full release history.
 * **`opentelemetry-traces`** *(enabled by default)* —  Enables opentelemetry trace exporting
 * **`opentelemetry-logs`** *(enabled by default)* —  Enables opentelemetry log exporting
 * **`docs`** —  Enables changelog and documentation of feature flags
-  See [`TelemetrySvc`](https://docs.rs/scuffle-bootstrap-telemetry/0.2.3/scuffle_bootstrap_telemetry/struct.TelemetrySvc.html) for more details.
 
 ### Example
 

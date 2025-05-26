@@ -104,7 +104,7 @@ test *targets="//...":
     #!/usr/bin/env bash
     set -exuo pipefail
 
-    # Download ISOBMFF file conformance samples
+    # Download ISOBMFF conformance samples
     if [ ! -d ./assets/isobmff_conformance ]; then
         echo "Downloading ISOBMFF conformance samples..."
         mkdir -p ./assets/isobmff_conformance

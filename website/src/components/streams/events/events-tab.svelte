@@ -14,6 +14,7 @@
     import EventsList from './events-list.svelte';
     import type { StreamEvent } from './types';
     import EventsLegend from './events-legend.svelte';
+    import IconPlayBig from '$lib/images/icon-play-big.svelte';
 
     const streams: VideoStream[] = [
         {
@@ -75,40 +76,41 @@
 <div class="events-tab-container">
     <div class="card">
         <div class="header">
-            <div class="controls">
-                <button class="select-trigger" {...select.trigger}>
-                    <div class="stream-info">
-                        {#if selectedStream}
-                            <StreamStatusPill status={selectedStream.status} />
-                            <span class="stream-id">{selectedStream.id}</span>
-                        {/if}
-                    </div>
-                </button>
-                <div class="select-content" {...select.content}>
-                    <div class="select-header">
-                        <span class="title">Current streams</span>
-                        <div class="divider"></div>
-                    </div>
-                    {#each streams.filter((s) => s.status === 'live') as stream}
-                        <div class="select-option" {...select.getOption(stream.id)}>
-                            <StreamStatusPill status="live" />
-                            <span class="stream-id">{stream.id}</span>
-                        </div>
-                    {/each}
-                    <div class="select-header">
-                        <span class="title">Past streams</span>
-                        <div class="divider"></div>
-                    </div>
-                    {#each streams.filter((s) => s.status === 'finished') as stream}
-                        <div class="select-option" {...select.getOption(stream.id)}>
-                            <StreamStatusPill status="finished" />
-                            <span class="stream-id">{stream.id}</span>
-                        </div>
-                    {/each}
+            <button class="select-trigger" {...select.trigger}>
+                <div class="stream-info">
+                    {#if selectedStream}
+                        <StreamStatusPill status={selectedStream.status} />
+                        <span class="stream-id">{selectedStream.id}</span>
+                    {/if}
                 </div>
-
-                <button class="resume-button"> Resume Live Updates ▶ </button>
+            </button>
+            <div class="select-content" {...select.content}>
+                <div class="select-header">
+                    <span class="title">Current streams</span>
+                    <div class="divider"></div>
+                </div>
+                {#each streams.filter((s) => s.status === 'live') as stream}
+                    <div class="select-option" {...select.getOption(stream.id)}>
+                        <StreamStatusPill status="live" />
+                        <span class="stream-id">{stream.id}</span>
+                    </div>
+                {/each}
+                <div class="select-header">
+                    <span class="title">Past streams</span>
+                    <div class="divider"></div>
+                </div>
+                {#each streams.filter((s) => s.status === 'finished') as stream}
+                    <div class="select-option" {...select.getOption(stream.id)}>
+                        <StreamStatusPill status="finished" />
+                        <span class="stream-id">{stream.id}</span>
+                    </div>
+                {/each}
             </div>
+
+            <button class="resume-button">
+                <div class="resume-button-text">Resume Live Updates</div>
+                <IconPlayBig />
+            </button>
         </div>
 
         <!-- For the data-zoom slider + chart -->
@@ -140,12 +142,6 @@
             align-items: center;
             margin-bottom: 1rem;
             padding: 1rem;
-            .controls {
-                display: flex;
-                gap: 0.75rem;
-                align-items: center;
-                position: relative;
-            }
         }
 
         .select-trigger {
@@ -222,6 +218,23 @@
             border-radius: 0.375rem;
             font-size: 0.875rem;
             cursor: pointer;
+            display: flex;
+            align-items: center;
+            border-radius: 0.5rem;
+            background: var(--color-teal90);
+
+            .resume-button-text {
+                display: flex;
+                padding: 0rem 0.25rem;
+                justify-content: center;
+                align-items: center;
+                gap: 0.625rem;
+                color: var(--color-brown90);
+                font-size: 1rem;
+                font-style: normal;
+                font-weight: 700;
+                line-height: 1.5rem; /* 150% */
+            }
 
             &:hover {
                 background-color: #e2e8f0;

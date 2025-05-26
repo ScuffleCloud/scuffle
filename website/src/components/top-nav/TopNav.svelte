@@ -7,6 +7,7 @@
     import { useUser } from '$lib/useUser';
     import IconSwitch from '$lib/images/icon-switch.svelte';
     import NavSwitcher from './NavSwitcher.svelte';
+    import IconConfigureTab from '$lib/images/icon-configure-tab.svelte';
 
     let showSearchModal = $state(false);
     let searchInput = $state<HTMLInputElement | null>(null);
@@ -87,8 +88,13 @@
 </script>
 
 <header class="top-nav">
-    <nav class="breadcrumb">
-        <!-- <a href="/" class="breadcrumb-link">Home</a>
+    <div class="left-nav">
+        <button class="minimize-left-nav-button">
+            <IconConfigureTab />
+        </button>
+        <div class="divider"></div>
+        <nav class="breadcrumb">
+            <!-- <a href="/" class="breadcrumb-link">Home</a>
             {#each breadcrumbs as { label, href }, i}
                 <span class="breadcrumb-separator">/</span>
                 {#if i === breadcrumbs.length - 1}
@@ -97,23 +103,28 @@
                     <a {href} class="breadcrumb-link">{label}</a>
                 {/if}
             {/each} -->
-        <NavSwitcher
-            name={$currentOrganization?.name ?? ''}
-            imageUrl={$currentOrganization?.image_url}
-            items={organizations ?? []}
-            onClick={(id) => {
-                console.log('clicked', id);
-            }}
-        />
-        <div class="slash-divider">/</div>
-        <NavSwitcher
-            name={$currentProject?.name ?? ''}
-            items={projects ?? []}
-            onClick={(id) => {
-                console.log('clicked', id);
-            }}
-        />
-    </nav>
+            <div class="breadcrumb-item">
+                <NavSwitcher
+                    name={$currentOrganization?.name ?? ''}
+                    imageUrl={$currentOrganization?.image_url}
+                    items={organizations ?? []}
+                    onClick={(id) => {
+                        console.log('clicked', id);
+                    }}
+                />
+            </div>
+            <div class="slash-divider">/</div>
+            <div class="breadcrumb-item">
+                <NavSwitcher
+                    name={$currentProject?.name ?? ''}
+                    items={projects ?? []}
+                    onClick={(id) => {
+                        console.log('clicked', id);
+                    }}
+                />
+            </div>
+        </nav>
+    </div>
     <div class="actions">
         <button class="search-button" aria-label="Search" onclick={() => (showSearchModal = true)}>
             <Search />
@@ -153,55 +164,59 @@
 
 <style>
     .top-nav {
-        display: flex;
-        justify-content: space-between;
+        display: grid;
+        grid-template-columns: auto 1fr auto;
         align-items: center;
         padding: 1rem 2rem;
-        border-bottom: 1px solid rgba(0, 0, 0, 0.1);
 
-        .breadcrumb {
-            font-size: 1.1rem;
-            font-weight: 500;
-            color: var(--colors-dark100);
+        .left-nav {
             display: flex;
             align-items: center;
-            gap: 0.25rem;
+            gap: 0.5rem;
 
-            /* .organization-switcher {
+            .minimize-left-nav-button {
+                background: none;
+                border: none;
+                cursor: pointer;
+                padding: 0.5rem;
+                border-radius: 6px;
+                display: flex;
+            }
+
+            .divider {
+                width: 0.0625rem;
+                height: 1.25rem;
+                background: #c7c1bf;
+            }
+
+            .breadcrumb {
+                font-size: 1.1rem;
+                font-weight: 500;
+                color: var(--colors-dark100);
                 display: flex;
                 align-items: center;
-                color: #201617;
-                font-size: 1rem;
-                font-style: normal;
-                font-weight: 500;
-                line-height: 1.5rem;
-                padding: 0.38rem;
+                padding: 0rem 0.125rem;
+                gap: 0.25rem;
 
-                .image-container {
+                .slash-divider {
+                    font-size: 0.875rem;
+                    font-style: normal;
+                    font-weight: 600;
+                    line-height: normal;
+                }
+
+                .breadcrumb-item {
                     display: flex;
                     align-items: center;
-                    gap: 0.5rem;
-
-                    .organization-image {
-                        width: 1.5rem;
-                        height: 1.5rem;
-                        object-fit: cover;
-                        border-radius: 0.25rem;
-                    }
+                    padding: 0.38rem;
                 }
-            } */
-
-            .slash-divider {
-                font-size: 0.875rem;
-                font-style: normal;
-                font-weight: 600;
-                line-height: normal;
             }
         }
 
         .actions {
             display: flex;
             align-items: center;
+            margin-left: auto;
 
             .search-button {
                 display: flex;

@@ -1,20 +1,19 @@
 <!-- This will hold all event stuff for a stream.
  we will have a dropdown selector that is defaulted to the current stream and can show past streams
  There will be an adjacent button to resume or stop live updates
- Then we will have our chart. We need to leverage a charting library to get this wroking properly probably but we will see
+ Then we will have our chart. We need to leverage a charting library to get this working properly probably but we will see
   Then there will be a
 
  -->
 
 <script lang="ts">
-    import StreamStatusPill from '$lib/shared-components/stream-status-pill.svelte';
     import EventsChart from './chart.svelte';
-    import { Select } from 'melt/builders';
     import type { VideoStream } from '../types';
     import EventsList from './events-list.svelte';
     import type { StreamEvent } from './types';
     import EventsLegend from './events-legend.svelte';
     import IconPlayBig from '$lib/images/icon-play-big.svelte';
+    import StreamSelect from './stream-select.svelte';
 
     const streams: VideoStream[] = [
         {
@@ -66,47 +65,22 @@
         },
     ];
 
-    const select = new Select<string>({
-        value: streams[0].id,
-    });
+    let selectedStream = $state('');
 
-    const selectedStream = $derived(streams.find((stream) => stream.id === select.value));
+    function handleStreamChange(value: string | undefined) {
+        selectedStream = value || '';
+    }
 </script>
 
 <div class="events-tab-container">
     <div class="card">
         <div class="header">
-            <button class="select-trigger" {...select.trigger}>
-                <div class="stream-info">
-                    {#if selectedStream}
-                        <StreamStatusPill status={selectedStream.status} />
-                        <span class="stream-id">{selectedStream.id}</span>
-                    {/if}
-                </div>
-            </button>
-            <div class="select-content" {...select.content}>
-                <div class="select-header">
-                    <span class="title">Current streams</span>
-                    <div class="divider"></div>
-                </div>
-                {#each streams.filter((s) => s.status === 'live') as stream}
-                    <div class="select-option" {...select.getOption(stream.id)}>
-                        <StreamStatusPill status="live" />
-                        <span class="stream-id">{stream.id}</span>
-                    </div>
-                {/each}
-                <div class="select-header">
-                    <span class="title">Past streams</span>
-                    <div class="divider"></div>
-                </div>
-                {#each streams.filter((s) => s.status === 'finished') as stream}
-                    <div class="select-option" {...select.getOption(stream.id)}>
-                        <StreamStatusPill status="finished" />
-                        <span class="stream-id">{stream.id}</span>
-                    </div>
-                {/each}
-            </div>
-
+            <!-- TODO: Can use design system select here and migrate things when needed-->
+            <StreamSelect
+                {streams}
+                bind:value={selectedStream}
+                onValueChange={handleStreamChange}
+            />
             <button class="resume-button">
                 <div class="resume-button-text">Resume Live Updates</div>
                 <IconPlayBig />
@@ -135,126 +109,57 @@
     .card {
         background: var(--color-teal30);
         border-radius: 8px;
+        padding: 1rem;
+        display: flex;
+        flex-direction: column;
+        gap: 1rem;
+    }
 
-        .header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 1rem;
-            padding: 1rem;
-        }
+    .header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 1rem;
+    }
 
-        .select-trigger {
-            display: inline-flex;
-            align-items: center;
-            padding: 0.5rem;
-            background-color: white;
-            border: 1px solid #e2e8f0;
-            border-radius: 0.5rem;
-            min-width: 400px;
-            cursor: pointer;
+    .resume-button {
+        padding: 0.5rem 1rem;
+        background: var(--color-teal90);
+        border: none;
+        border-radius: 0.5rem;
+        font-size: 0.875rem;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        gap: 0.625rem;
+        transition: background-color 0.2s;
+        flex-shrink: 0;
+    }
 
-            &:hover {
-                background-color: #f8fafc;
-            }
-        }
+    .resume-button-text {
+        color: var(--color-brown90);
+        font-size: 1rem;
+        font-weight: 700;
+        line-height: 1.5rem;
+    }
 
-        .select-content {
-            background: white;
-            border-radius: 0.375rem;
-            border: 1px solid #e2e8f0;
-            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
-            min-width: 400px;
-            padding: 0.5rem;
-            z-index: 50;
+    .resume-button:hover {
+        background-color: #e2e8f0;
+    }
 
-            /* Not sure why margins are being applied automatically to my select content */
-            margin-top: 0rem;
-            margin-left: 0rem;
+    .events-chart-container {
+        height: 250px;
+        border-radius: 4px;
+        width: 100%;
+        padding: 0.25rem;
+    }
 
-            .select-header {
-                padding: 0.5rem;
-                color: #64748b;
-                font-size: 0.875rem;
-                font-weight: 500;
-                display: flex;
-                align-items: center;
-                gap: 0.5rem;
-
-                .title {
-                    flex: 0 0 auto;
-                }
-
-                .divider {
-                    width: 100%;
-                    height: 1px;
-                    background-color: #e2e8f0;
-                }
-            }
-
-            .select-option {
-                padding: 0.5rem;
-                cursor: pointer;
-                display: flex;
-                align-items: center;
-                gap: 0.5rem;
-
-                &:hover {
-                    background-color: #f1f5f9;
-                }
-            }
-        }
-
-        .stream-info {
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
-        }
-
-        .resume-button {
-            padding: 0.5rem 1rem;
-            background-color: #f1f5f9;
-            border: none;
-            border-radius: 0.375rem;
-            font-size: 0.875rem;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            border-radius: 0.5rem;
-            background: var(--color-teal90);
-
-            .resume-button-text {
-                display: flex;
-                padding: 0rem 0.25rem;
-                justify-content: center;
-                align-items: center;
-                gap: 0.625rem;
-                color: var(--color-brown90);
-                font-size: 1rem;
-                font-style: normal;
-                font-weight: 700;
-                line-height: 1.5rem; /* 150% */
-            }
-
-            &:hover {
-                background-color: #e2e8f0;
-            }
-        }
-
-        .events-chart-container {
-            height: 250px;
-            border-radius: 4px;
-            width: 100%;
-            padding: 0.25rem;
-        }
-
-        .events-legend-container {
-            padding: 1.5rem 1rem 1rem 1rem;
-            border-radius: 0rem 0rem 0.5rem 0.5rem;
-            background: var(--color-teal70);
-            display: flex;
-            flex-direction: column;
-            gap: 0.75rem;
-        }
+    .events-legend-container {
+        padding: 1.5rem 1rem 1rem 1rem;
+        border-radius: 0rem 0rem 0.5rem 0.5rem;
+        background: var(--color-teal70);
+        display: flex;
+        flex-direction: column;
+        gap: 0.75rem;
     }
 </style>

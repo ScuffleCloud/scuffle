@@ -35,7 +35,7 @@ fn conformance_files() {
         .filter(|(n, m)| !n.ends_with(".zip") && m.published)
     {
         println!("testing {file_name}");
-        let test_name = file_name.split('/').last().unwrap_or(&file_name);
+        let test_name = file_name.split('/').next_back().unwrap_or(&file_name);
 
         let mut file = std::fs::File::open(dir.join("files").join(&file_name)).expect("failed to open file");
         let reader = scuffle_bytes_util::zero_copy::IoRead::from(BufReader::new(&mut file));

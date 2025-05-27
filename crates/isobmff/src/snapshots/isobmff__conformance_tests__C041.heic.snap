@@ -381,9 +381,7 @@ IsobmffFile {
                                                         102,
                                                         115,
                                                     ],
-                                                    data: Slice(
-                                                        [],
-                                                    ),
+                                                    data: [],
                                                 },
                                             },
                                             SampleGroupDescriptionEntry {
@@ -397,9 +395,7 @@ IsobmffFile {
                                                         102,
                                                         115,
                                                     ],
-                                                    data: Slice(
-                                                        [],
-                                                    ),
+                                                    data: [],
                                                 },
                                             },
                                         ],

@@ -380,9 +380,9 @@ impl GeneratePr {
         let mut command = Command::new("gh");
 
         if let Some(current_pr) = current_pr.as_ref() {
-            command.arg("pr").arg("edit").arg(current_pr.number.to_string())
+            command.arg("pr").arg("edit").arg(current_pr.number.to_string());
         } else {
-            command.arg("pr").arg("create")
+            command.arg("pr").arg("create").arg("--head").arg(&xtask_metadata.pr_branch);
         };
 
         command.arg("--base").arg(branch_name.as_ref());

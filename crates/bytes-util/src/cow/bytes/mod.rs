@@ -1,4 +1,5 @@
 use std::borrow::Cow;
+use std::fmt::Debug;
 use std::hash::Hash;
 
 use bytes::Bytes;
@@ -7,7 +8,7 @@ use bytes::Bytes;
 pub(crate) mod serde;
 
 /// A [`Cow`] type for bytes.
-#[derive(Debug, Clone, Eq)]
+#[derive(Clone, Eq)]
 pub enum BytesCow<'a> {
     /// A borrowed [`Bytes`] object.
     Slice(&'a [u8]),
@@ -17,6 +18,17 @@ pub enum BytesCow<'a> {
     Vec(Vec<u8>),
     /// An owned [`Bytes`] object.
     Bytes(Bytes),
+}
+
+impl Debug for BytesCow<'_> {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        match self {
+            Self::Slice(slice) => Debug::fmt(slice, f),
+            Self::StaticSlice(slice) => Debug::fmt(slice, f),
+            Self::Vec(bytes) => Debug::fmt(bytes, f),
+            Self::Bytes(bytes) => Debug::fmt(bytes, f),
+        }
+    }
 }
 
 impl Default for BytesCow<'_> {

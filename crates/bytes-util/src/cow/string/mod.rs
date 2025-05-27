@@ -1,5 +1,5 @@
 use std::borrow::Cow;
-use std::fmt::Display;
+use std::fmt::{Debug, Display};
 use std::hash::Hash;
 use std::str::Utf8Error;
 
@@ -11,7 +11,7 @@ use crate::BytesCow;
 pub(crate) mod serde;
 
 /// A [`Cow`] type for strings.
-#[derive(Debug, Clone, Eq)]
+#[derive(Clone, Eq)]
 pub enum StringCow<'a> {
     /// A borrowed [`ByteString`] object.
     Ref(&'a str),
@@ -21,6 +21,17 @@ pub enum StringCow<'a> {
     String(String),
     /// An owned [`ByteString`] object.
     Bytes(ByteString),
+}
+
+impl Debug for StringCow<'_> {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        match self {
+            Self::Ref(slice) => Debug::fmt(slice, f),
+            Self::StaticRef(slice) => Debug::fmt(slice, f),
+            Self::String(string) => Debug::fmt(string, f),
+            Self::Bytes(bytes) => Debug::fmt(bytes, f),
+        }
+    }
 }
 
 impl Default for StringCow<'_> {
@@ -150,10 +161,10 @@ where
 impl Display for StringCow<'_> {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match self {
-            StringCow::Ref(slice) => slice.fmt(f),
-            StringCow::StaticRef(slice) => slice.fmt(f),
-            StringCow::String(string) => string.fmt(f),
-            StringCow::Bytes(bytes) => bytes.fmt(f),
+            StringCow::Ref(slice) => Display::fmt(slice, f),
+            StringCow::StaticRef(slice) => Display::fmt(slice, f),
+            StringCow::String(string) => Display::fmt(string, f),
+            StringCow::Bytes(bytes) => Display::fmt(bytes, f),
         }
     }
 }

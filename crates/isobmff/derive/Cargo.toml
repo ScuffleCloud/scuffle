@@ -8,7 +8,7 @@ authors = ["Scuffle <opensource@scuffle.cloud>"]
 readme = "README.md"
 documentation = "https://docs.rs/isobmff-derive"
 license = "MIT OR Apache-2.0"
-keywords = ["isobmff", "mp4", "video", "container", "iso-14496-12", "derive", "macros"]
+keywords = ["isobmff", "mp4", "video", "container", "iso-14496-12"]
 
 [lints.rust]
 unexpected_cfgs = { level = "warn", check-cfg = ['cfg(coverage_nightly)'] }
@@ -17,12 +17,12 @@ unexpected_cfgs = { level = "warn", check-cfg = ['cfg(coverage_nightly)'] }
 proc-macro = true
 
 [dependencies]
-syn = "2.0.100"
+darling = "0.20.11"
 proc-macro2 = "1.0.95"
 quote = "1.0.40"
-darling = "0.20.11"
 scuffle-bytes-util = { path = "../../bytes-util", version = "0.2.0" }
 scuffle-workspace-hack.workspace = true
+syn = "2.0.100"
 
 [package.metadata.docs.rs]
 all-features = true

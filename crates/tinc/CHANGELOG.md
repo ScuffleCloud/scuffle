@@ -15,6 +15,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.1.3](https://github.com/ScuffleCloud/scuffle/releases/tag/tinc-v0.1.3) - 2025-05-27
+
+[View diff on diff.rs](https://diff.rs/tinc/0.1.2/tinc/0.1.3/Cargo.toml)
+
+### 🛠️ Non-breaking changes
+
+- chore: bumped `tinc-cel` to `=0.1.3` ([#473](https://github.com/scufflecloud/scuffle/pull/473)) (@troykomodo)
+- chore: bumped `tinc-derive` to `=0.1.3` ([#473](https://github.com/scufflecloud/scuffle/pull/473)) (@troykomodo)
+
 ## [0.1.2](https://github.com/ScuffleCloud/scuffle/releases/tag/tinc-v0.1.2) - 2025-05-17
 
 [View diff on diff.rs](https://diff.rs/tinc/0.1.1/tinc/0.1.2/Cargo.toml)

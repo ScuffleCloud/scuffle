@@ -29,13 +29,21 @@
         },
     });
 
-    const cssVariables = Object.entries(theme.colors)
+    const rootCssVariables = Object.entries(theme.colors)
         .map(([key, value]) => `--color-${key}: ${value}`)
         .join(';');
+
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    const inlineStyleForRoot = `:root { ${rootCssVariables} }`;
 </script>
 
+<!-- Otherwise dynamically generated CSS variables aren't correctly available in the app -->
+<svelte:head>
+    {@html `<style>${inlineStyleForRoot}</style>`}
+</svelte:head>
+
 {#if mockingReady}
-    <div class="app" style={cssVariables}>
+    <div class="app">
         <QueryClientProvider client={queryClient}>
             <Navbar />
             <main>

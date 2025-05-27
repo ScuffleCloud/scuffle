@@ -12,7 +12,7 @@ use crate::{BoxHeader, FullBoxHeader, IsoBox, IsoSized, UnknownBox, Utf8String};
 /// Meta box
 ///
 /// ISO/IEC 14496-12 - 8.11.1
-#[derive(IsoBox, Debug)]
+#[derive(IsoBox, Debug, PartialEq, Eq)]
 #[iso_box(box_type = b"meta", crate_path = crate)]
 pub struct MetaBox<'a> {
     pub full_header: FullBoxHeader,
@@ -49,7 +49,7 @@ pub struct MetaBox<'a> {
 /// XML box
 ///
 /// ISO/IEC 14496-12 - 8.11.2
-#[derive(IsoBox, Debug)]
+#[derive(IsoBox, Debug, PartialEq, Eq)]
 #[iso_box(box_type = b"xml ", crate_path = crate)]
 pub struct XmlBox {
     pub full_header: FullBoxHeader,
@@ -59,7 +59,7 @@ pub struct XmlBox {
 /// Binary XML box
 ///
 /// ISO/IEC 14496-12 - 8.11.2
-#[derive(IsoBox, Debug)]
+#[derive(IsoBox, Debug, PartialEq, Eq)]
 #[iso_box(box_type = b"bxml", crate_path = crate)]
 pub struct BinaryXmlBox<'a> {
     pub full_header: FullBoxHeader,
@@ -69,7 +69,7 @@ pub struct BinaryXmlBox<'a> {
 /// Item location box
 ///
 /// ISO/IEC 14496-12 - 8.11.3
-#[derive(Debug, IsoBox)]
+#[derive(IsoBox, Debug, PartialEq, Eq)]
 #[iso_box(box_type = b"iloc", skip_impl(deserialize_seed, serialize, sized), crate_path = crate)]
 pub struct ItemLocationBox {
     pub full_header: FullBoxHeader,
@@ -237,7 +237,7 @@ impl IsoSized for ItemLocationBox {
     }
 }
 
-#[derive(Debug)]
+#[derive(Debug, PartialEq, Eq)]
 pub struct ItemLocationBoxItem {
     pub item_id: Option<u32>,
     pub construction_method: Option<u8>,
@@ -308,7 +308,7 @@ impl ItemLocationBoxItem {
     }
 }
 
-#[derive(Debug)]
+#[derive(Debug, PartialEq, Eq)]
 pub struct ItemLocationBoxExtent {
     pub item_reference_index: Option<u64>,
     pub extent_offset: u64,
@@ -353,7 +353,7 @@ impl ItemLocationBoxExtent {
 /// Primary item box
 ///
 /// ISO/IEC 14496-12 - 8.11.4
-#[derive(Debug, IsoBox)]
+#[derive(IsoBox, Debug, PartialEq, Eq)]
 #[iso_box(box_type = b"pitm", skip_impl(deserialize_seed, serialize, sized), crate_path = crate)]
 pub struct PrimaryItemBox {
     pub full_header: FullBoxHeader,
@@ -412,7 +412,7 @@ impl IsoSized for PrimaryItemBox {
 /// Item protection box
 ///
 /// ISO/IEC 14496-12 - 8.11.5
-#[derive(IsoBox, Debug)]
+#[derive(IsoBox, Debug, PartialEq, Eq)]
 #[iso_box(box_type = b"ipro", crate_path = crate)]
 pub struct ItemProtectionBox<'a> {
     pub full_header: FullBoxHeader,
@@ -424,7 +424,7 @@ pub struct ItemProtectionBox<'a> {
 /// Item information box
 ///
 /// ISO/IEC 14496-12 - 8.11.6
-#[derive(Debug, IsoBox)]
+#[derive(IsoBox, Debug, PartialEq, Eq)]
 #[iso_box(box_type = b"iinf", skip_impl(deserialize_seed, serialize, sized), crate_path = crate)]
 pub struct ItemInfoBox<'a> {
     pub full_header: FullBoxHeader,
@@ -500,7 +500,7 @@ impl IsoSized for ItemInfoBox<'_> {
 /// Item information entry
 ///
 /// ISO/IEC 14496-12 - 8.11.6
-#[derive(Debug, IsoBox)]
+#[derive(IsoBox, Debug, PartialEq, Eq)]
 #[iso_box(box_type = b"infe", skip_impl(deserialize_seed, serialize, sized), crate_path = crate)]
 pub struct ItemInfoEntry<'a> {
     pub full_header: FullBoxHeader,
@@ -513,7 +513,7 @@ pub struct ItemInfoEntry<'a> {
     pub extension: Option<ItemInfoExtension<'a>>,
 }
 
-#[derive(Debug)]
+#[derive(Debug, PartialEq, Eq)]
 pub enum ItemInfoEntryItem {
     Mime {
         content_type: Utf8String,
@@ -639,21 +639,18 @@ impl Serialize for ItemInfoEntry<'_> {
             self.item_protection_index.serialize(&mut writer)?;
             self.item_type.serialize(&mut writer)?;
             self.item_name.serialize(&mut writer)?;
-            match self
-                .item
-                .as_ref()
-                .ok_or(io::Error::new(io::ErrorKind::InvalidData, "item is required"))?
-            {
-                ItemInfoEntryItem::Mime {
+            match &self.item {
+                Some(ItemInfoEntryItem::Mime {
                     content_type,
                     content_encoding,
-                } => {
+                }) => {
                     content_type.serialize(&mut writer)?;
                     content_encoding.serialize(&mut writer)?;
                 }
-                ItemInfoEntryItem::Uri { item_uri_type } => {
+                Some(ItemInfoEntryItem::Uri { item_uri_type }) => {
                     item_uri_type.serialize(&mut writer)?;
                 }
+                None => {}
             }
         }
 
@@ -710,7 +707,7 @@ impl IsoSized for ItemInfoEntry<'_> {
     }
 }
 
-#[derive(Debug)]
+#[derive(Debug, PartialEq, Eq)]
 pub enum ItemInfoExtension<'a> {
     // "fdel"
     FDItemInfoExtension {
@@ -827,7 +824,7 @@ impl IsoSized for ItemInfoExtension<'_> {
 /// Item data box
 ///
 /// ISO/IEC 14496-12 - 8.11.11
-#[derive(IsoBox, Debug)]
+#[derive(IsoBox, Debug, PartialEq, Eq)]
 #[iso_box(box_type = b"idat", crate_path = crate)]
 pub struct ItemDataBox<'a> {
     pub data: BytesCow<'a>,
@@ -836,7 +833,7 @@ pub struct ItemDataBox<'a> {
 /// Item reference box
 ///
 /// ISO/IEC 14496-12 - 8.11.12
-#[derive(Debug, IsoBox)]
+#[derive(IsoBox, Debug, PartialEq, Eq)]
 #[iso_box(box_type = b"iref", skip_impl(deserialize_seed), crate_path = crate)]
 pub struct ItemReferenceBox {
     pub full_header: FullBoxHeader,
@@ -871,7 +868,7 @@ impl<'a> DeserializeSeed<'a, BoxHeader> for ItemReferenceBox {
     }
 }
 
-#[derive(Debug)]
+#[derive(Debug, PartialEq, Eq)]
 pub struct SingleItemTypeReferenceBox {
     pub large: bool,
     pub header: BoxHeader,
@@ -917,6 +914,8 @@ impl Serialize for SingleItemTypeReferenceBox {
     where
         W: std::io::Write,
     {
+        self.header.serialize(&mut writer)?;
+
         if !self.large {
             (self.from_item_id as u16).serialize(&mut writer)?;
         } else {
@@ -956,7 +955,7 @@ impl IsoSized for SingleItemTypeReferenceBox {
 /// Item properties box
 ///
 /// ISO/IEC 14496-12 - 8.11.14
-#[derive(IsoBox, Debug)]
+#[derive(IsoBox, Debug, PartialEq, Eq)]
 #[iso_box(box_type = b"iprp", crate_path = crate)]
 pub struct ItemPropertiesBox<'a> {
     #[iso_box(nested_box)]
@@ -965,7 +964,7 @@ pub struct ItemPropertiesBox<'a> {
     pub association: Vec<ItemPropertyAssociationBox>,
 }
 
-#[derive(IsoBox, Debug)]
+#[derive(IsoBox, Debug, PartialEq, Eq)]
 #[iso_box(box_type = b"ipco", crate_path = crate)]
 pub struct ItemPropertyContainerBox<'a> {
     #[iso_box(nested_box(collect))]
@@ -978,7 +977,7 @@ pub struct ItemPropertyContainerBox<'a> {
     pub boxes: Vec<UnknownBox<'a>>,
 }
 
-#[derive(Debug, IsoBox)]
+#[derive(IsoBox, Debug, PartialEq, Eq)]
 #[iso_box(box_type = b"ipma", skip_impl(deserialize_seed, serialize, sized), crate_path = crate)]
 pub struct ItemPropertyAssociationBox {
     pub full_header: FullBoxHeader,
@@ -1035,7 +1034,7 @@ impl IsoSized for ItemPropertyAssociationBox {
     }
 }
 
-#[derive(Debug)]
+#[derive(Debug, PartialEq, Eq)]
 pub struct ItemPropertyAssociationBoxEntry {
     pub item_id: u32,
     pub association_count: u8,
@@ -1106,7 +1105,7 @@ impl ItemPropertyAssociationBoxEntry {
     }
 }
 
-#[derive(Debug)]
+#[derive(Debug, PartialEq, Eq)]
 pub struct ItemPropertyAssociationBoxEntryAssociation {
     pub essential: bool,
     pub property_index: u16,
@@ -1142,15 +1141,19 @@ impl SerializeSeed<U24Be> for ItemPropertyAssociationBoxEntryAssociation {
     where
         W: std::io::Write,
     {
-        // e iiiiiii
-        let mut byte = (self.essential as u8) << 7;
-        byte |= ((self.property_index >> 8) as u8) & 0b0111_1111;
-        byte.serialize(&mut writer)?;
-
         if (*seed & 0b1) != 0 {
+            // e iiiiiii
+            let mut byte = (self.essential as u8) << 7;
+            byte |= ((self.property_index >> 8) as u8) & 0b0111_1111;
+            byte.serialize(&mut writer)?;
+
             // iiiiiiii
             let low_byte = (self.property_index & 0xFF) as u8;
             low_byte.serialize(&mut writer)?;
+        } else {
+            // e iiiiiii
+            let byte = (self.essential as u8) << 7 | (self.property_index & 0b0111_1111) as u8;
+            byte.serialize(&mut writer)?;
         }
 
         Ok(())
@@ -1170,7 +1173,7 @@ impl ItemPropertyAssociationBoxEntryAssociation {
 /// Brand item property
 ///
 /// ISO/IEC 14496-12 - 8.11.15
-#[derive(IsoBox, Debug)]
+#[derive(IsoBox, Debug, PartialEq, Eq)]
 #[iso_box(box_type = b"brnd", crate_path = crate)]
 pub struct BrandProperty {
     #[iso_box(from = "[u8; 4]")]

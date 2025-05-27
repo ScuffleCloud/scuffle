@@ -10,7 +10,7 @@ use crate::IsoSized;
 /// Sub boxes:
 /// - [`btrt`](super::BitRateBox)
 /// - Any other boxes
-#[derive(Debug)]
+#[derive(Debug, PartialEq, Eq)]
 pub struct FontSampleEntry {
     pub sample_entry: SampleEntry,
 }

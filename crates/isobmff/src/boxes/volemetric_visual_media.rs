@@ -6,7 +6,7 @@ use crate::{FullBoxHeader, IsoBox, IsoSized};
 /// Volumetric visual media header box
 ///
 /// ISO/IEC 14496-12 - 12.10.2
-#[derive(Debug, IsoBox)]
+#[derive(IsoBox, Debug, PartialEq, Eq)]
 #[iso_box(box_type = b"vvhd", crate_path = crate)]
 pub struct VolumetricVisualMediaHeaderBox {
     pub full_header: FullBoxHeader,
@@ -20,7 +20,7 @@ pub struct VolumetricVisualMediaHeaderBox {
 /// Sub boxes:
 /// - [`btrt`](super::BitRateBox)
 /// - Any other boxes
-#[derive(Debug)]
+#[derive(Debug, PartialEq, Eq)]
 pub struct VolumetricVisualSampleEntry {
     pub sample_entry: SampleEntry,
     pub compressorname: [u8; 32],

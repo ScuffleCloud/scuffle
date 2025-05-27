@@ -7,7 +7,7 @@ use crate::{BoxHeader, FullBoxHeader, IsoBox, IsoSized};
 /// Segment type box
 ///
 /// ISO/IEC 14496-12 - 8.16.2
-#[derive(Debug, IsoBox)]
+#[derive(IsoBox, Debug, PartialEq, Eq)]
 #[iso_box(box_type = b"styp", crate_path = crate)]
 pub struct SegmentTypeBox {
     #[iso_box(from = "[u8; 4]")]
@@ -20,7 +20,7 @@ pub struct SegmentTypeBox {
 /// Segment index box
 ///
 /// ISO/IEC 14496-12 - 8.16.3
-#[derive(Debug, IsoBox)]
+#[derive(IsoBox, Debug, PartialEq, Eq)]
 #[iso_box(box_type = b"sidx", skip_impl(deserialize_seed, serialize, sized), crate_path = crate)]
 pub struct SegmentIndexBox {
     pub full_header: FullBoxHeader,
@@ -126,7 +126,7 @@ impl IsoSized for SegmentIndexBox {
     }
 }
 
-#[derive(Debug)]
+#[derive(Debug, PartialEq, Eq)]
 pub struct SegmentIndexBoxReference {
     pub reference_type: bool,
     pub referenced_size: u32,
@@ -192,7 +192,7 @@ impl IsoSized for SegmentIndexBoxReference {
 /// Subsegment index box
 ///
 /// ISO/IEC 14496-12 - 8.16.4
-#[derive(IsoBox, Debug)]
+#[derive(IsoBox, Debug, PartialEq, Eq)]
 #[iso_box(box_type = b"ssix", crate_path = crate)]
 pub struct SubsegmentIndexBox {
     pub full_header: FullBoxHeader,
@@ -201,7 +201,7 @@ pub struct SubsegmentIndexBox {
     pub subsegments: Vec<SubsegmentIndexBoxSubsegment>,
 }
 
-#[derive(Debug)]
+#[derive(Debug, PartialEq, Eq)]
 pub struct SubsegmentIndexBoxSubsegment {
     pub range_count: u32,
     pub ranges: Vec<SubsegmentIndexBoxSubsegmentRange>,
@@ -243,7 +243,7 @@ impl IsoSized for SubsegmentIndexBoxSubsegment {
     }
 }
 
-#[derive(Debug)]
+#[derive(Debug, PartialEq, Eq)]
 pub struct SubsegmentIndexBoxSubsegmentRange {
     pub level: u8,
     pub range_size: U24Be,
@@ -281,7 +281,7 @@ impl IsoSized for SubsegmentIndexBoxSubsegmentRange {
 /// Producer reference time box
 ///
 /// ISO/IEC 14496-12 - 8.16.5
-#[derive(Debug, IsoBox)]
+#[derive(IsoBox, Debug, PartialEq, Eq)]
 #[iso_box(box_type = b"prft", skip_impl(deserialize_seed, serialize, sized), crate_path = crate)]
 pub struct ProducerReferenceTimeBox {
     pub full_header: FullBoxHeader,

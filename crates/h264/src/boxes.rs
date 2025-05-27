@@ -10,7 +10,7 @@ use crate::AVCDecoderConfigurationRecord;
 /// AVC configuration box
 ///
 /// ISO/IEC 14496-15 - 5.4.2
-#[derive(IsoBox, Debug)]
+#[derive(IsoBox, Debug, PartialEq, Eq)]
 #[iso_box(box_type = b"avcC")]
 pub struct AVCConfigurationBox<'a> {
     /// The AVC decoder configuration record.
@@ -29,7 +29,7 @@ impl<'a> AVCConfigurationBox<'a> {
 /// AVC sample entry
 ///
 /// ISO/IEC 14496-15 - 5.4.2
-#[derive(IsoBox, Debug)]
+#[derive(IsoBox, Debug, PartialEq, Eq)]
 #[iso_box(box_type = b"avc1")]
 pub struct AVCSampleEntry1<'a> {
     /// The visual sample entry fields that this box inherits.
@@ -48,7 +48,7 @@ pub struct AVCSampleEntry1<'a> {
 /// AVC sample entry
 ///
 /// ISO/IEC 14496-15 - 5.4.2
-#[derive(IsoBox, Debug)]
+#[derive(IsoBox, Debug, PartialEq, Eq)]
 #[iso_box(box_type = b"avc2")]
 pub struct AVCSampleEntry2<'a> {
     /// The visual sample entry fields that this box inherits.
@@ -67,7 +67,7 @@ pub struct AVCSampleEntry2<'a> {
 /// AVC sample entry
 ///
 /// ISO/IEC 14496-15 - 5.4.2
-#[derive(IsoBox, Debug)]
+#[derive(IsoBox, Debug, PartialEq, Eq)]
 #[iso_box(box_type = b"avc3")]
 pub struct AVCSampleEntry3<'a> {
     /// The visual sample entry fields that this box inherits.
@@ -86,7 +86,7 @@ pub struct AVCSampleEntry3<'a> {
 /// AVC sample entry
 ///
 /// ISO/IEC 14496-15 - 5.4.2
-#[derive(IsoBox, Debug)]
+#[derive(IsoBox, Debug, PartialEq, Eq)]
 #[iso_box(box_type = b"avc4")]
 pub struct AVCSampleEntry4<'a> {
     /// The visual sample entry fields that this box inherits.
@@ -105,7 +105,7 @@ pub struct AVCSampleEntry4<'a> {
 /// AVC parameter sample entry
 ///
 /// ISO/IEC 14496-15 - 5.4.3
-#[derive(IsoBox, Debug)]
+#[derive(IsoBox, Debug, PartialEq, Eq)]
 #[iso_box(box_type = b"avcp")]
 pub struct AVCParameterSampleEntry<'a> {
     /// The visual sample entry fields that this box inherits.

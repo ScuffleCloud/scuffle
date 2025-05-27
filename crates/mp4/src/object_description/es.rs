@@ -9,7 +9,7 @@ use super::{BaseDescriptor, DescriptorTag, UnknownDescriptor};
 /// ES Descriptor
 ///
 /// ISO/IEC 14496-1 - 7.2.6.5
-#[derive(Debug)]
+#[derive(Debug, PartialEq, Eq)]
 pub struct ESDescriptor<'a> {
     /// Provides a unique label for each elementary stream within its name scope. The
     /// values 0 and 0xFFFF are reserved.

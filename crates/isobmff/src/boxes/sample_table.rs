@@ -13,7 +13,7 @@ use crate::{FullBoxHeader, IsoBox, IsoSized, UnknownBox};
 /// Sample table box
 ///
 /// ISO/IEC 14496-12 - 8.5.1
-#[derive(IsoBox, Debug)]
+#[derive(IsoBox, Debug, PartialEq, Eq)]
 #[iso_box(box_type = b"stbl", crate_path = crate)]
 pub struct SampleTableBox<'a> {
     #[iso_box(nested_box)]
@@ -99,7 +99,7 @@ impl<'a> SampleTableBox<'a> {
 ///
 /// Sub boxes:
 /// - [`btrt`](BitRateBox)
-#[derive(Debug)]
+#[derive(Debug, PartialEq, Eq)]
 pub struct SampleEntry {
     pub reserved: [u8; 6],
     pub data_reference_index: u16,
@@ -149,7 +149,7 @@ impl IsoSized for SampleEntry {
 /// BitRateBox
 ///
 /// ISO/IEC 14496-12 - 8.5.2
-#[derive(IsoBox, Debug)]
+#[derive(IsoBox, Debug, PartialEq, Eq)]
 #[iso_box(box_type = b"btrt", crate_path = crate)]
 pub struct BitRateBox {
     pub buffer_size_db: u32,
@@ -160,7 +160,7 @@ pub struct BitRateBox {
 /// Sample description box
 ///
 /// ISO/IEC 14496-12 - 8.5.2
-#[derive(IsoBox, Debug)]
+#[derive(IsoBox, Debug, PartialEq, Eq)]
 #[iso_box(box_type = b"stsd", crate_path = crate)]
 pub struct SampleDescriptionBox<'a> {
     pub full_header: FullBoxHeader,
@@ -179,7 +179,7 @@ impl<'a> SampleDescriptionBox<'a> {
     }
 }
 
-#[derive(IsoBox, Debug)]
+#[derive(IsoBox, Debug, PartialEq, Eq)]
 #[iso_box(box_type = b"stdp", crate_path = crate)]
 pub struct DegradationPriorityBox {
     pub full_header: FullBoxHeader,

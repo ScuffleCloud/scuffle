@@ -12,7 +12,7 @@ use crate::{BoxHeader, FullBoxHeader, IsoBox, IsoSized};
 /// Sound media header
 ///
 /// ISO/IEC 14496-12 - 12.2.2
-#[derive(IsoBox, Debug, Default)]
+#[derive(IsoBox, Debug, PartialEq, Eq, Default)]
 #[iso_box(box_type = b"smhd", skip_impl(deserialize_seed, serialize, sized), crate_path = crate)]
 pub struct SoundMediaHeaderBox {
     pub full_header: FullBoxHeader,
@@ -71,7 +71,7 @@ impl IsoSized for SoundMediaHeaderBox {
 /// - `udex` (`UniDrcConfigExtension`, defined in ISO/IEC 23003-4)
 /// - [`srat`](SamplingRateBox)
 /// - Any other boxes
-#[derive(Debug)]
+#[derive(Debug, PartialEq, Eq)]
 pub struct AudioSampleEntry {
     pub sample_entry: SampleEntry,
     pub reserved1: u64,
@@ -149,7 +149,7 @@ impl IsoSized for AudioSampleEntry {
     }
 }
 
-#[derive(IsoBox, Debug)]
+#[derive(IsoBox, Debug, PartialEq, Eq)]
 #[iso_box(box_type = b"srat", crate_path = crate)]
 pub struct SamplingRateBox {
     pub full_header: FullBoxHeader,
@@ -171,7 +171,7 @@ pub struct SamplingRateBox {
 /// - `udi2` (`DRCInstructionsUniDRC`, defined in ISO/IEC 23003-4)
 /// - `udex` (`UniDrcConfigExtension`, defined in ISO/IEC 23003-4)
 /// - Any other boxes
-#[derive(Debug)]
+#[derive(Debug, PartialEq, Eq)]
 pub struct AudioSampleEntryV1 {
     pub sample_entry: SampleEntry,
     pub entry_version: u16,
@@ -243,7 +243,7 @@ impl IsoSized for AudioSampleEntryV1 {
 /// Channel layout
 ///
 /// ISO/IEC 14496-12 - 12.2.4
-#[derive(IsoBox, Debug)]
+#[derive(IsoBox, Debug, PartialEq, Eq)]
 #[iso_box(box_type = b"chnl", crate_path = crate)]
 pub struct ChannelLayout<'a> {
     pub full_header: FullBoxHeader,
@@ -253,7 +253,7 @@ pub struct ChannelLayout<'a> {
 /// Down mix instructions
 ///
 /// ISO/IEC 14496-12 - 12.2.5
-#[derive(IsoBox, Debug)]
+#[derive(IsoBox, Debug, PartialEq, Eq)]
 #[iso_box(box_type = b"dmix", crate_path = crate)]
 pub struct DownMixInstructions<'a> {
     pub full_header: FullBoxHeader,
@@ -263,7 +263,7 @@ pub struct DownMixInstructions<'a> {
 /// Audio stream loudness base box
 ///
 /// ISO/IEC 14496-12 - 12.2.7
-#[derive(Debug)]
+#[derive(Debug, PartialEq, Eq)]
 pub struct LoudnessBaseBox {
     pub loudness_info_type: Option<u8>,
     pub loudness_base_count: u8,
@@ -373,7 +373,7 @@ impl LoudnessBaseBox {
     }
 }
 
-#[derive(Debug)]
+#[derive(Debug, PartialEq, Eq)]
 pub struct LoudnessBase {
     pub eq_set_id: Option<u8>,
     pub downmix_id: u8,
@@ -476,7 +476,7 @@ impl IsoSized for LoudnessBase {
     }
 }
 
-#[derive(Debug)]
+#[derive(Debug, PartialEq, Eq)]
 pub struct LoudnessBaseMeasurement {
     pub method_definition: u8,
     pub method_value: u8,
@@ -532,7 +532,7 @@ impl IsoSized for LoudnessBaseMeasurement {
 /// Track loudness info
 ///
 /// ISO/IEC 14496-12 - 12.2.7
-#[derive(Debug, IsoBox)]
+#[derive(IsoBox, Debug, PartialEq, Eq)]
 #[iso_box(box_type = b"tlou", skip_impl(deserialize_seed, serialize, sized), crate_path = crate)]
 pub struct TrackLoudnessInfo {
     pub full_header: FullBoxHeader,
@@ -572,7 +572,7 @@ impl IsoSized for TrackLoudnessInfo {
 /// Album loudness info
 ///
 /// ISO/IEC 14496-12 - 12.2.7
-#[derive(Debug, IsoBox)]
+#[derive(IsoBox, Debug, PartialEq, Eq)]
 #[iso_box(box_type = b"alou", skip_impl(deserialize_seed, serialize, sized), crate_path = crate)]
 pub struct AlbumLoudnessInfo {
     pub full_header: FullBoxHeader,
@@ -612,7 +612,7 @@ impl IsoSized for AlbumLoudnessInfo {
 /// Loudness box
 ///
 /// ISO/IEC 14496-12 - 12.2.7
-#[derive(IsoBox, Debug)]
+#[derive(IsoBox, Debug, PartialEq, Eq)]
 #[iso_box(box_type = b"ludt", crate_path = crate)]
 pub struct LoudnessBox {
     #[iso_box(nested_box(collect))]

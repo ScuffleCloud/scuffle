@@ -5,7 +5,7 @@ use crate::{FullBoxHeader, IsoBox, IsoSized, UnknownBox};
 /// Groups list box
 ///
 /// ISO/IEC 14496-12 - 8.18.2
-#[derive(IsoBox, Debug)]
+#[derive(IsoBox, Debug, PartialEq, Eq)]
 #[iso_box(box_type = b"grpl", crate_path = crate)]
 pub struct GroupsListBox<'a> {
     #[iso_box(nested_box(collect))]
@@ -17,7 +17,7 @@ pub struct GroupsListBox<'a> {
 /// Entity to group box
 ///
 /// ISO/IEC 14496-12 - 8.18.3
-#[derive(Debug)]
+#[derive(Debug, PartialEq, Eq)]
 pub struct EntityToGroupBox {
     pub group_id: u32,
     pub num_entities_in_group: u32,
@@ -67,7 +67,7 @@ impl IsoSized for EntityToGroupBox {
     }
 }
 
-#[derive(IsoBox, Debug)]
+#[derive(IsoBox, Debug, PartialEq, Eq)]
 #[iso_box(box_type = b"altr", crate_path = crate)]
 pub struct AltrEntityToGroupBox {
     pub full_header: FullBoxHeader,

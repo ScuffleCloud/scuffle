@@ -11,7 +11,7 @@ use crate::{FullBoxHeader, IsoBox, IsoSized, UnknownBox, Utf8List, Utf8String};
 /// Sub boxes:
 /// - [`btrt`](super::BitRateBox)
 /// - Any other boxes
-#[derive(Debug)]
+#[derive(Debug, PartialEq, Eq)]
 pub struct MetaDataSampleEntry {
     pub sample_entry: SampleEntry,
 }
@@ -45,7 +45,7 @@ impl IsoSized for MetaDataSampleEntry {
 /// XML metadata sample entry
 ///
 /// ISO/IEC 14496-12 - 12.3.3
-#[derive(IsoBox, Debug)]
+#[derive(IsoBox, Debug, PartialEq, Eq)]
 #[iso_box(box_type = b"metx", crate_path = crate)]
 pub struct XMLMetaDataSampleEntry<'a> {
     pub sample_entry: MetaDataSampleEntry,
@@ -61,7 +61,7 @@ pub struct XMLMetaDataSampleEntry<'a> {
 /// Text config box
 ///
 /// ISO/IEC 14496-12 - 12.3.3
-#[derive(IsoBox, Debug)]
+#[derive(IsoBox, Debug, PartialEq, Eq)]
 #[iso_box(box_type = b"txtC", crate_path = crate)]
 pub struct TextConfigBox {
     pub full_header: FullBoxHeader,
@@ -71,7 +71,7 @@ pub struct TextConfigBox {
 /// Text metadata sample entry
 ///
 /// ISO/IEC 14496-12 - 12.3.3
-#[derive(IsoBox, Debug)]
+#[derive(IsoBox, Debug, PartialEq, Eq)]
 #[iso_box(box_type = b"mett", crate_path = crate)]
 pub struct TextMetaDataSampleEntry<'a> {
     pub sample_entry: MetaDataSampleEntry,
@@ -85,28 +85,28 @@ pub struct TextMetaDataSampleEntry<'a> {
     pub unknown_boxes: Vec<UnknownBox<'a>>,
 }
 
-#[derive(IsoBox, Debug)]
+#[derive(IsoBox, Debug, PartialEq, Eq)]
 #[iso_box(box_type = b"mime", crate_path = crate)]
 pub struct MIMEBox {
     pub full_header: FullBoxHeader,
     pub content_type: Utf8String,
 }
 
-#[derive(IsoBox, Debug)]
+#[derive(IsoBox, Debug, PartialEq, Eq)]
 #[iso_box(box_type = b"uri ", crate_path = crate)]
 pub struct URIBox {
     pub full_header: FullBoxHeader,
     pub the_uri: Utf8String,
 }
 
-#[derive(IsoBox, Debug)]
+#[derive(IsoBox, Debug, PartialEq, Eq)]
 #[iso_box(box_type = b"uriI", crate_path = crate)]
 pub struct URIInitBox<'a> {
     pub full_header: FullBoxHeader,
     pub uri_initialization_data: BytesCow<'a>,
 }
 
-#[derive(IsoBox, Debug)]
+#[derive(IsoBox, Debug, PartialEq, Eq)]
 #[iso_box(box_type = b"urim", crate_path = crate)]
 pub struct URIMetaSampleEntry<'a> {
     pub sample_entry: MetaDataSampleEntry,

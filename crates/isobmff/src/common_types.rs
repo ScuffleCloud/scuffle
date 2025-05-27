@@ -7,7 +7,7 @@ use scuffle_bytes_util::zero_copy::{Deserialize, Serialize, ZeroCopyReader};
 
 use crate::IsoSized;
 
-#[derive(Debug)]
+#[derive(Debug, PartialEq, Eq)]
 pub struct Utf8String(pub String);
 
 impl From<String> for Utf8String {
@@ -68,7 +68,7 @@ impl IsoSized for Utf8String {
     }
 }
 
-#[derive(Debug)]
+#[derive(Debug, PartialEq, Eq)]
 pub struct Base64String(pub Vec<u8>);
 
 impl Deref for Base64String {
@@ -119,7 +119,7 @@ impl IsoSized for Base64String {
     }
 }
 
-#[derive(Debug)]
+#[derive(Debug, PartialEq, Eq)]
 pub struct Utf8List(pub Vec<String>);
 
 impl<'a> Deserialize<'a> for Utf8List {
@@ -174,7 +174,7 @@ impl IsoSized for Utf8List {
 }
 
 /// ISO-639-2 three-letter language code.
-#[derive(Debug, Clone, Copy)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub struct Langauge(pub [u8; 3]);
 
 impl Langauge {

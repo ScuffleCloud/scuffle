@@ -42,7 +42,7 @@ impl IsoSized for SLConfigDescriptorPredefined {
 /// SL Packet Header Configuration
 ///
 /// ISO/IEC 14496-1 - 7.3.2.3
-#[derive(Debug)]
+#[derive(Debug, PartialEq, Eq)]
 pub struct SLConfigDescriptor {
     /// Allows to default the values from a set of predefined parameter sets as detailed below.
     pub predefined: SLConfigDescriptorPredefined,
@@ -116,7 +116,7 @@ impl IsoSized for SLConfigDescriptor {
 }
 
 /// Present in [`SLConfigDescriptor`] when [`predefined`](SLConfigDescriptor::predefined) is [`SLConfigDescriptorPredefined::Custom`].
-#[derive(Debug)]
+#[derive(Debug, PartialEq, Eq)]
 pub struct SLConfigDescriptorCustom {
     /// Indicates that the `accessUnitStartFlag` is present in each SL packet
     /// header of this elementary stream.
@@ -353,7 +353,7 @@ impl IsoSized for SLConfigDescriptorCustom {
 }
 
 /// Present in [`SLConfigDescriptorCustom`] when [`duration_flag`](SLConfigDescriptorCustom::duration_flag) is set.
-#[derive(Debug)]
+#[derive(Debug, PartialEq, Eq)]
 pub struct SLConfigDescriptorDuration {
     /// Used to express the duration of access units and composition units. One second is evenly
     /// divided in timeScale parts.
@@ -396,7 +396,7 @@ impl IsoSized for SLConfigDescriptorDuration {
 }
 
 /// Present in [`SLConfigDescriptorCustom`] when [`use_time_stamps_flag`](SLConfigDescriptorCustom::use_time_stamps_flag) is set.
-#[derive(Debug)]
+#[derive(Debug, PartialEq, Eq)]
 pub struct SLConfigDescriptorTimeStamps {
     /// Conveys the time at which the first access unit of this elementary stream shall
     /// be decoded. It is conveyed in the resolution specified by `timeStampResolution`.

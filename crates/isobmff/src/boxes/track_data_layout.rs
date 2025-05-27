@@ -9,7 +9,7 @@ use crate::{BoxHeader, FullBoxHeader, IsoBox, IsoSized, UnknownBox, Utf8String};
 /// Data information box
 ///
 /// ISO/IEC 14496-12 - 8.7.1
-#[derive(Debug, Default, IsoBox)]
+#[derive(IsoBox, Debug, PartialEq, Eq, Default)]
 #[iso_box(box_type = b"dinf", crate_path = crate)]
 pub struct DataInformationBox<'a> {
     #[iso_box(nested_box)]
@@ -19,7 +19,7 @@ pub struct DataInformationBox<'a> {
 /// Data entry url box
 ///
 /// ISO/IEC 14496-12 - 8.7.2
-#[derive(Debug, IsoBox, Default)]
+#[derive(IsoBox, Debug, PartialEq, Eq, Default)]
 #[iso_box(box_type = b"url ", skip_impl(deserialize_seed, serialize), crate_path = crate)]
 pub struct DataEntryUrlBox {
     pub full_header: FullBoxHeader,
@@ -57,7 +57,7 @@ impl Serialize for DataEntryUrlBox {
 /// Data entry urn box
 ///
 /// ISO/IEC 14496-12 - 8.7.2
-#[derive(Debug, IsoBox)]
+#[derive(IsoBox, Debug, PartialEq, Eq)]
 #[iso_box(box_type = b"urn ", skip_impl(deserialize_seed, serialize), crate_path = crate)]
 pub struct DataEntryUrnBox {
     pub full_header: FullBoxHeader,
@@ -101,7 +101,7 @@ impl Serialize for DataEntryUrnBox {
 /// Data entry imda box
 ///
 /// ISO/IEC 14496-12 - 8.7.2
-#[derive(Debug, IsoBox)]
+#[derive(IsoBox, Debug, PartialEq, Eq)]
 #[iso_box(box_type = b"imdt", crate_path = crate)]
 pub struct DataEntryImdaBox {
     pub full_header: FullBoxHeader,
@@ -111,7 +111,7 @@ pub struct DataEntryImdaBox {
 /// Data entry sequence number imda box
 ///
 /// ISO/IEC 14496-12 - 8.7.2
-#[derive(Debug, IsoBox)]
+#[derive(IsoBox, Debug, PartialEq, Eq)]
 #[iso_box(box_type = b"snim", crate_path = crate)]
 pub struct DataEntrySeqNumImdaBox {
     pub full_header: FullBoxHeader,
@@ -120,7 +120,7 @@ pub struct DataEntrySeqNumImdaBox {
 /// Data reference box
 ///
 /// ISO/IEC 14496-12 - 8.7.2
-#[derive(Debug, IsoBox)]
+#[derive(IsoBox, Debug, PartialEq, Eq)]
 #[iso_box(box_type = b"dref", crate_path = crate)]
 pub struct DataReferenceBox<'a> {
     pub full_header: FullBoxHeader,
@@ -154,7 +154,7 @@ impl Default for DataReferenceBox<'_> {
 /// Sample size box
 ///
 /// ISO/IEC 14496-12 - 8.7.3.2
-#[derive(IsoBox, Default)]
+#[derive(IsoBox, PartialEq, Eq, Default)]
 #[iso_box(box_type = b"stsz", crate_path = crate)]
 pub struct SampleSizeBox {
     pub full_header: FullBoxHeader,
@@ -178,7 +178,7 @@ impl Debug for SampleSizeBox {
 /// Compact sample size box
 ///
 /// ISO/IEC 14496-12 - 8.7.3.3
-#[derive(Debug, IsoBox)]
+#[derive(IsoBox, Debug, PartialEq, Eq)]
 #[iso_box(box_type = b"stz2", crate_path = crate)]
 pub struct CompactSampleSizeBox<'a> {
     pub full_header: FullBoxHeader,
@@ -191,7 +191,7 @@ pub struct CompactSampleSizeBox<'a> {
 /// Sample to chunk box
 ///
 /// ISO/IEC 14496-12 - 8.7.4
-#[derive(IsoBox, Default)]
+#[derive(IsoBox, PartialEq, Eq, Default)]
 #[iso_box(box_type = b"stsc", crate_path = crate)]
 pub struct SampleToChunkBox {
     pub full_header: FullBoxHeader,
@@ -210,7 +210,7 @@ impl Debug for SampleToChunkBox {
     }
 }
 
-#[derive(Debug)]
+#[derive(Debug, PartialEq, Eq)]
 pub struct SampleToChunkBoxEntry {
     pub first_chunk: u32,
     pub samples_per_chunk: u32,
@@ -251,7 +251,7 @@ impl IsoSized for SampleToChunkBoxEntry {
 /// Chunk offset box
 ///
 /// ISO/IEC 14496-12 - 8.7.5
-#[derive(IsoBox, Default)]
+#[derive(IsoBox, PartialEq, Eq, Default)]
 #[iso_box(box_type = b"stco", crate_path = crate)]
 pub struct ChunkOffsetBox {
     pub full_header: FullBoxHeader,
@@ -273,7 +273,7 @@ impl Debug for ChunkOffsetBox {
 /// Chunk large offset box
 ///
 /// ISO/IEC 14496-12 - 8.7.5
-#[derive(Debug, IsoBox)]
+#[derive(IsoBox, Debug, PartialEq, Eq)]
 #[iso_box(box_type = b"co64", crate_path = crate)]
 pub struct ChunkLargeOffsetBox {
     pub full_header: FullBoxHeader,
@@ -285,7 +285,7 @@ pub struct ChunkLargeOffsetBox {
 /// Padding bits box
 ///
 /// ISO/IEC 14496-12 - 8.7.6
-#[derive(Debug, IsoBox)]
+#[derive(IsoBox, Debug, PartialEq, Eq)]
 #[iso_box(box_type = b"padb", crate_path = crate)]
 pub struct PaddingBitsBox {
     pub full_header: FullBoxHeader,
@@ -294,7 +294,7 @@ pub struct PaddingBitsBox {
     pub entry: Vec<PaddingBitsBoxEntry>,
 }
 
-#[derive(Debug, Clone, Copy)]
+#[derive(Debug, PartialEq, Eq, Clone, Copy)]
 pub struct PaddingBitsBoxEntry {
     pub pad1: u8,
     pub pad2: u8,
@@ -325,7 +325,7 @@ impl IsoSized for PaddingBitsBoxEntry {
 /// Sub-sample information box
 ///
 /// ISO/IEC 14496-12 - 8.7.7
-#[derive(Debug, IsoBox)]
+#[derive(IsoBox, Debug, PartialEq, Eq)]
 #[iso_box(box_type = b"subs", skip_impl(deserialize_seed, serialize, sized), crate_path = crate)]
 pub struct SubSampleInformationBox {
     pub full_header: FullBoxHeader,
@@ -397,7 +397,7 @@ impl IsoSized for SubSampleInformationBox {
     }
 }
 
-#[derive(Debug)]
+#[derive(Debug, PartialEq, Eq)]
 pub struct SubSampleInformationBoxEntry {
     pub sample_delta: u32,
     pub subsample_count: u16,
@@ -444,7 +444,7 @@ impl SubSampleInformationBoxEntry {
     }
 }
 
-#[derive(Debug)]
+#[derive(Debug, PartialEq, Eq)]
 pub struct SubSampleInformationBoxEntrySubSample {
     pub subsample_size: u32,
     pub subsample_priority: u8,
@@ -502,7 +502,7 @@ impl SubSampleInformationBoxEntrySubSample {
 /// Sample auxiliary information sizes box
 ///
 /// ISO/IEC 14496-12 - 8.7.8
-#[derive(Debug, IsoBox)]
+#[derive(IsoBox, Debug, PartialEq, Eq)]
 #[iso_box(box_type = b"saiz", skip_impl(deserialize_seed, serialize), crate_path = crate)]
 pub struct SampleAuxiliaryInformationSizesBox<'a> {
     pub full_header: FullBoxHeader,
@@ -587,7 +587,7 @@ impl Serialize for SampleAuxiliaryInformationSizesBox<'_> {
 /// Sample auxiliary information offsets box
 ///
 /// ISO/IEC 14496-12 - 8.7.9
-#[derive(Debug, IsoBox)]
+#[derive(IsoBox, Debug, PartialEq, Eq)]
 #[iso_box(box_type = b"saio", skip_impl(deserialize_seed, serialize, sized), crate_path = crate)]
 pub struct SampleAuxiliaryInformationOffsetsBox {
     pub full_header: FullBoxHeader,

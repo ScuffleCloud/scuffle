@@ -11,7 +11,7 @@ use crate::{BoxHeader, FullBoxHeader, IsoBox, IsoSized, UnknownBox};
 /// Movie box
 ///
 /// ISO/IEC 14496-12 - 8.2.1
-#[derive(IsoBox, Debug)]
+#[derive(IsoBox, Debug, PartialEq, Eq)]
 #[iso_box(box_type = b"moov", crate_path = crate)]
 pub struct MovieBox<'a> {
     #[iso_box(nested_box)]
@@ -31,7 +31,7 @@ pub struct MovieBox<'a> {
 /// Movie header box
 ///
 /// ISO/IEC 14496-12 - 8.2.2
-#[derive(Debug, IsoBox)]
+#[derive(IsoBox, Debug, PartialEq, Eq)]
 #[iso_box(box_type = b"mvhd", skip_impl(deserialize_seed, serialize, sized), crate_path = crate)]
 pub struct MovieHeaderBox {
     pub full_header: FullBoxHeader,

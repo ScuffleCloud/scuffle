@@ -10,7 +10,7 @@ use crate::{IsoBox, IsoSized, UnknownBox, Utf8String};
 /// Sub boxes:
 /// - [`btrt`](super::BitRateBox)
 /// - Any other boxes
-#[derive(Debug)]
+#[derive(Debug, PartialEq, Eq)]
 pub struct PlainTextSampleEntry {
     pub sample_entry: SampleEntry,
 }
@@ -41,7 +41,7 @@ impl IsoSized for PlainTextSampleEntry {
 /// Simple text sample entry
 ///
 /// ISO/IEC 14496-12 - 12.5.3
-#[derive(IsoBox, Debug)]
+#[derive(IsoBox, Debug, PartialEq, Eq)]
 #[iso_box(box_type = b"stxt", crate_path = crate)]
 pub struct SimpleTextSampleEntry<'a> {
     pub sample_entry: PlainTextSampleEntry,

@@ -5,7 +5,7 @@ use scuffle_expgolomb::{BitReaderExpGolombExt, BitWriterExpGolombExt, size_of_ex
 
 /// The Sequence Parameter Set extension.
 /// ISO/IEC-14496-10-2022 - 7.3.2
-#[derive(Debug, Clone, PartialEq)]
+#[derive(Debug, Clone, PartialEq, Eq)]
 pub struct SpsExtended {
     /// The `chroma_format_idc` as a u8. This is the chroma sampling relative
     /// to the luma sampling specified in subclause 6.2.

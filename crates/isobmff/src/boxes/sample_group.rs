@@ -8,7 +8,7 @@ use crate::{BoxHeader, FullBoxHeader, IsoBox, IsoSized};
 /// Sample to group box
 ///
 /// ISO/IEC 14496-12 - 8.9.2
-#[derive(Debug, IsoBox)]
+#[derive(IsoBox, Debug, PartialEq, Eq)]
 #[iso_box(box_type = b"sbgp", skip_impl(deserialize_seed, serialize, sized), crate_path = crate)]
 pub struct SampleToGroupBox {
     pub full_header: FullBoxHeader,
@@ -89,7 +89,7 @@ impl IsoSized for SampleToGroupBox {
     }
 }
 
-#[derive(Debug)]
+#[derive(Debug, PartialEq, Eq)]
 pub struct SampleToGroupBoxEntry {
     pub sample_count: u32,
     pub group_description_index: u32,
@@ -127,7 +127,7 @@ impl IsoSized for SampleToGroupBoxEntry {
 /// Sample group description box
 ///
 /// ISO/IEC 14496-12 - 8.9.3
-#[derive(Debug, IsoBox)]
+#[derive(IsoBox, Debug, PartialEq, Eq)]
 #[iso_box(box_type = b"sgpd", skip_impl(deserialize_seed, serialize, sized), crate_path = crate)]
 pub struct SampleGroupDescriptionBox<'a> {
     pub full_header: FullBoxHeader,
@@ -226,7 +226,7 @@ impl IsoSized for SampleGroupDescriptionBox<'_> {
     }
 }
 
-#[derive(Debug)]
+#[derive(Debug, PartialEq, Eq)]
 pub struct SampleGroupDescriptionEntry<'a> {
     pub description_length: Option<u32>,
     pub sample_group_description_entry: SampleGroupDescriptionEntryType<'a>,
@@ -283,7 +283,7 @@ impl SampleGroupDescriptionEntry<'_> {
     }
 }
 
-#[derive(Debug)]
+#[derive(Debug, PartialEq, Eq)]
 pub enum SampleGroupDescriptionEntryType<'a> {
     // "roll"
     RollRecoveryEntry {
@@ -354,7 +354,7 @@ pub enum SampleGroupDescriptionEntryType<'a> {
     },
 }
 
-#[derive(Debug)]
+#[derive(Debug, PartialEq, Eq)]
 pub struct AlternativeStartupEntryNums {
     pub num_output_samples: u16,
     pub num_total_samples: u16,
@@ -389,7 +389,7 @@ impl IsoSized for AlternativeStartupEntryNums {
     }
 }
 
-#[derive(Debug)]
+#[derive(Debug, PartialEq, Eq)]
 pub struct RateShareEntryOperationPoint {
     pub target_rate_share: u16,
     pub available_bitrate: Option<u32>,
@@ -700,7 +700,7 @@ impl IsoSized for SampleGroupDescriptionEntryType<'_> {
 /// Compact sample to group box
 ///
 /// ISO/IEC 14496-12 - 8.9.5
-#[derive(Debug, IsoBox)]
+#[derive(IsoBox, Debug, PartialEq, Eq)]
 #[iso_box(box_type = b"csgp", skip_impl(deserialize_seed, serialize, sized), crate_path = crate)]
 pub struct CompactSampleToGroupBox {
     // full header:
@@ -714,7 +714,7 @@ pub struct CompactSampleToGroupBox {
     pub sample_group_description_index: Vec<Vec<CompactSampleToGroupBoxSampleGroupDescriptionIndex>>,
 }
 
-#[derive(Debug, Clone, Copy)]
+#[derive(Debug, PartialEq, Eq, Clone, Copy)]
 pub struct CompactSampleToGroupBoxFlags {
     pub index_msb_indicates_fragment_local_description: bool,
     pub grouping_type_parameter_present: bool,
@@ -949,7 +949,7 @@ impl IsoSized for CompactSampleToGroupBox {
     }
 }
 
-#[derive(Debug)]
+#[derive(Debug, PartialEq, Eq)]
 pub struct CompactSampleToGroupBoxPattern {
     pub pattern_length: u32,
     pub sample_count: u32,
@@ -994,7 +994,7 @@ impl<'a> DeserializeSeed<'a, CompactSampleToGroupBoxFlags> for CompactSampleToGr
     }
 }
 
-#[derive(Debug)]
+#[derive(Debug, PartialEq, Eq)]
 pub struct CompactSampleToGroupBoxSampleGroupDescriptionIndex {
     pub value: u32,
     pub fragment_local: Option<bool>,

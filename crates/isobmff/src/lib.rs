@@ -78,6 +78,7 @@ pub trait IsoBox: IsoSized {
     }
 }
 
+#[derive(PartialEq, Eq)]
 pub struct UnknownBox<'a> {
     pub header: BoxHeader,
     pub data: BytesCow<'a>,

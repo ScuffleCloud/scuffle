@@ -4,7 +4,7 @@ use crate::{FullBoxHeader, IsoBox, Langauge, UnknownBox, Utf8String};
 /// User data box
 ///
 /// ISO/IEC 14496-12 - 8.10.1
-#[derive(IsoBox, Debug)]
+#[derive(IsoBox, Debug, PartialEq, Eq)]
 #[iso_box(box_type = b"udta", crate_path = crate)]
 pub struct UserDataBox<'a> {
     #[iso_box(nested_box(collect))]
@@ -24,7 +24,7 @@ pub struct UserDataBox<'a> {
 /// Copyright box
 ///
 /// ISO/IEC 14496-12 - 8.10.2
-#[derive(Debug, IsoBox)]
+#[derive(IsoBox, Debug, PartialEq, Eq)]
 #[iso_box(box_type = b"cprt", crate_path = crate)]
 pub struct CopyrightBox {
     pub full_header: FullBoxHeader,
@@ -35,7 +35,7 @@ pub struct CopyrightBox {
 /// Track selection box
 ///
 /// ISO/IEC 14496-12 - 8.10.3
-#[derive(IsoBox, Debug)]
+#[derive(IsoBox, Debug, PartialEq, Eq)]
 #[iso_box(box_type = b"tsel", crate_path = crate)]
 pub struct TrackSelectionBox {
     pub full_header: FullBoxHeader,
@@ -47,7 +47,7 @@ pub struct TrackSelectionBox {
 /// Track kind box
 ///
 /// ISO/IEC 14496-12 - 8.10.4
-#[derive(IsoBox, Debug)]
+#[derive(IsoBox, Debug, PartialEq, Eq)]
 #[iso_box(box_type = b"kind", crate_path = crate)]
 pub struct KindBox {
     pub full_header: FullBoxHeader,

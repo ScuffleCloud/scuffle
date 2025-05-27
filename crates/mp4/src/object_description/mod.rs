@@ -142,7 +142,7 @@ impl IsoSized for DescriptorTag {
 /// Base Descriptor
 ///
 /// ISO/IEC 14496-1 - 7.2.2.2
-#[derive(Debug)]
+#[derive(Debug, PartialEq, Eq)]
 pub struct BaseDescriptor {
     /// Descriptor tag
     pub tag: DescriptorTag,
@@ -206,7 +206,7 @@ impl IsoSized for BaseDescriptor {
 }
 
 /// Any descriptor that inherits [`BaseDescriptor`].
-#[derive(Debug)]
+#[derive(Debug, PartialEq, Eq)]
 pub struct UnknownDescriptor<'a> {
     /// The base descriptor.
     pub base_descriptor: BaseDescriptor,

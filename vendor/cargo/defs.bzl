@@ -2084,6 +2084,8 @@ _NORMAL_DEV_DEPENDENCIES = {
         _REQUIRED_FEATURE: {
             _COMMON_CONDITION: {
                 "insta": Label("@cargo_vendor//:insta-1.43.1"),
+                "serde": Label("@cargo_vendor//:serde-1.0.228"),
+                "serde_json": Label("@cargo_vendor//:serde_json-1.0.145"),
             },
         },
     },
@@ -3000,6 +3002,10 @@ _PROC_MACRO_ALIASES = {
     "crates/http": {
     },
     "crates/isobmff": {
+        _REQUIRED_FEATURE: {
+            _COMMON_CONDITION: {
+            },
+        },
     },
     "crates/isobmff/derive": {
     },
@@ -3158,6 +3164,11 @@ _PROC_MACRO_DEV_DEPENDENCIES = {
     "crates/http": {
     },
     "crates/isobmff": {
+        _REQUIRED_FEATURE: {
+            _COMMON_CONDITION: {
+                "serde_derive": Label("@cargo_vendor//:serde_derive-1.0.228"),
+            },
+        },
     },
     "crates/isobmff/derive": {
     },
@@ -4671,7 +4682,7 @@ _VERSIONS = {
     "cloud/geo-ip": "0.1.0",
     "cloud/id": "0.1.0",
     "cloud/proto": "0.1.0",
-    "crates/aac": "0.1.4",
+    "crates/aac": "0.1.5",
     "crates/amf0": "0.2.4",
     "crates/av1": "0.2.0",
     "crates/batching": "0.1.6",
@@ -4685,7 +4696,7 @@ _VERSIONS = {
     "crates/context": "0.1.5",
     "crates/expgolomb": "0.1.5",
     "crates/ffmpeg": "0.3.5",
-    "crates/flv": "0.2.2",
+    "crates/flv": "0.3.0",
     "crates/future-ext": "0.1.4",
     "crates/h264": "0.3.0",
     "crates/h265": "0.3.0",
@@ -4694,7 +4705,7 @@ _VERSIONS = {
     "crates/isobmff/derive": "0.1.0",
     "crates/metrics": "0.4.2",
     "crates/metrics/derive": "0.4.2",
-    "crates/mp4": "0.1.5",
+    "crates/mp4": "0.2.0",
     "crates/nutype-enum": "0.1.5",
     "crates/openapiv3_1": "0.1.3",
     "crates/opus": "0.1.0",
@@ -4709,7 +4720,7 @@ _VERSIONS = {
     "crates/tinc/derive": "0.2.0",
     "crates/tinc/integration": "0.0.0",
     "crates/tinc/pb-prost": "0.2.0",
-    "crates/transmuxer": "0.2.2",
+    "crates/transmuxer": "0.2.3",
     "dev-tools/xtask": "0.0.0",
     "misc/utils/protobuf/file_concat": "0.0.0",
     "misc/utils/rust/analyzer/check": "0.0.0",

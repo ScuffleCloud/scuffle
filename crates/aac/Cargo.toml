@@ -1,6 +1,6 @@
 [package]
 name = "scuffle-aac"
-version = "0.1.4"
+version = "0.1.5"
 authors = ["Scuffle <opensource@scuffle.cloud>"]
 documentation = "https://docs.rs/scuffle-aac"
 edition = "2024"

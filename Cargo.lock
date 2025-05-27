@@ -2963,6 +2963,9 @@ dependencies = [
  "nutype-enum",
  "scuffle-bytes-util",
  "scuffle-changelog",
+ "serde",
+ "serde_derive",
+ "serde_json",
  "uuid",
 ]
 
@@ -5503,7 +5506,7 @@ checksum = "94143f37725109f92c262ed2cf5e59bce7498c01bcc1502d7b9afe439a4e9f49"
 
 [[package]]
 name = "scuffle-aac"
-version = "0.1.4"
+version = "0.1.5"
 dependencies = [
  "bytes",
  "document-features",
@@ -5731,7 +5734,7 @@ dependencies = [
 
 [[package]]
 name = "scuffle-flv"
-version = "0.2.2"
+version = "0.3.0"
 dependencies = [
  "bitmask-enum",
  "byteorder",
@@ -5856,7 +5859,7 @@ dependencies = [
 
 [[package]]
 name = "scuffle-mp4"
-version = "0.1.5"
+version = "0.2.0"
 dependencies = [
  "document-features",
  "isobmff",
@@ -5956,7 +5959,7 @@ dependencies = [
 
 [[package]]
 name = "scuffle-transmuxer"
-version = "0.2.2"
+version = "0.2.3"
 dependencies = [
  "byteorder",
  "bytes",

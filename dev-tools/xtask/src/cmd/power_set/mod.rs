@@ -147,7 +147,7 @@ impl PowerSet {
 
                 cmd.args(&self.args);
 
-                tracing::info!("executing {cmd:?} ({i}/{total})");
+                tracing::info!("executing {cmd} ({i}/{total})");
 
                 if !cmd.status()?.success() {
                     failed.push((*package, features));

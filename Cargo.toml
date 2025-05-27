@@ -54,7 +54,4 @@ path = "crates/workspace-hack"
 [workspace.metadata.xtask.release]
 pr-branch = "automation/cargo-release"
 pr-title = "Cargo Release"
-pr-labels = [
-  "automated",
-  "release",
-]
+pr-labels = ["automated", "release"]

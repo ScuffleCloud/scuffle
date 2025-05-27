@@ -1,5 +1,5 @@
 use std::path::{Path, PathBuf};
-use std::process::{Command, Stdio};
+use std::process::Stdio;
 use std::sync::{Condvar, Mutex};
 
 use anyhow::Context;
@@ -11,6 +11,8 @@ use serde::de::IntoDeserializer;
 use serde_derive::{Deserialize, Serialize};
 use sha2::Digest;
 use toml_edit::DocumentMut;
+
+use crate::utils::Command;
 
 #[derive(Debug, Clone)]
 pub struct Fragment {

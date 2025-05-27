@@ -1,6 +1,5 @@
 use std::collections::{BTreeMap, HashSet};
 use std::fmt::Write;
-use std::process::{Command, Stdio};
 
 use anyhow::Context;
 use cargo_metadata::camino::Utf8Path;
@@ -8,6 +7,7 @@ use cargo_metadata::semver::Version;
 
 use super::utils::{Fragment, PackageChangeLog, XTaskWorkspaceMetadata, git_workdir_clean};
 use crate::cmd::release::utils::{Package, concurrently};
+use crate::utils::Command;
 
 #[derive(Debug, Clone, clap::Parser)]
 pub struct GeneratePr {
@@ -305,7 +305,8 @@ impl GeneratePr {
 
         let xtask_metadata = XTaskWorkspaceMetadata::from_metadata(&metadata).context("parse workspace metadata")?;
 
-        let mut branch_name = String::from_utf8_lossy(&current_branch.stdout);
+        let branch_name = String::from_utf8_lossy(&current_branch.stdout);
+        let mut branch_name = branch_name.trim();
         let _checkout_previous = if !branch_name.eq_ignore_ascii_case(&xtask_metadata.pr_branch) {
             let cmd = Command::new("git")
                 .arg("checkout")
@@ -330,7 +331,7 @@ impl GeneratePr {
                 }
             }))
         } else {
-            branch_name = "main".into();
+            branch_name = "main";
             None
         };
 
@@ -380,12 +381,12 @@ impl GeneratePr {
         let mut command = Command::new("gh");
 
         if let Some(current_pr) = current_pr.as_ref() {
-            command.arg("pr").arg("edit").arg(current_pr.number.to_string())
+            command.arg("pr").arg("edit").arg(current_pr.number.to_string());
         } else {
-            command.arg("pr").arg("create")
+            command.arg("pr").arg("create").arg("--head").arg(&xtask_metadata.pr_branch);
         };
 
-        command.arg("--base").arg(branch_name.as_ref());
+        command.arg("--base").arg(branch_name);
         command.arg("--title").arg(&xtask_metadata.pr_title);
         command.arg("--body").arg(pr_body);
 

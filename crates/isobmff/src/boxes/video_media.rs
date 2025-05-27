@@ -11,7 +11,7 @@ use crate::{BoxHeader, FullBoxHeader, IsoBox, IsoSized};
 /// Video media header
 ///
 /// ISO/IEC 14496-12 - 12.1.2
-#[derive(IsoBox, Default, Debug)]
+#[derive(IsoBox, Debug, PartialEq, Eq, Default)]
 #[iso_box(box_type = b"vmhd", crate_path = crate)]
 pub struct VideoMediaHeaderBox {
     pub full_header: FullBoxHeader,
@@ -33,7 +33,7 @@ pub struct VideoMediaHeaderBox {
 /// - [`cclv`](ContentColourVolumeBox)
 /// - [`amve`](AmbientViewingEnvironmentBox)
 /// - Any other boxes
-#[derive(Debug)]
+#[derive(Debug, PartialEq, Eq)]
 pub struct VisualSampleEntry {
     pub sample_entry: SampleEntry,
     pub pre_defined: u16,
@@ -150,7 +150,7 @@ impl IsoSized for VisualSampleEntry {
 /// Clean aperture box
 ///
 /// ISO/IEC 14496-12 - 12.1.4
-#[derive(IsoBox, Debug)]
+#[derive(IsoBox, Debug, PartialEq, Eq)]
 #[iso_box(box_type = b"clap", crate_path = crate)]
 pub struct CleanApertureBox {
     pub clean_aperture_width_n: u32,
@@ -166,7 +166,7 @@ pub struct CleanApertureBox {
 /// Pixel aspect ratio box
 ///
 /// ISO/IEC 14496-12 - 12.1.4
-#[derive(IsoBox, Debug)]
+#[derive(IsoBox, Debug, PartialEq, Eq)]
 #[iso_box(box_type = b"pasp", crate_path = crate)]
 pub struct PixelAspectRatioBox {
     pub h_spacing: u32,
@@ -185,13 +185,13 @@ impl Default for PixelAspectRatioBox {
 /// Colour information
 ///
 /// ISO/IEC 14496-12 - 12.1.5
-#[derive(IsoBox, Debug)]
+#[derive(IsoBox, Debug, PartialEq, Eq)]
 #[iso_box(box_type = b"colr", crate_path = crate)]
 pub struct ColourInformationBox<'a> {
     pub colour_info: ColourInformation<'a>,
 }
 
-#[derive(Debug)]
+#[derive(Debug, PartialEq, Eq)]
 pub enum ColourInformation<'a> {
     Nclx(NclxColourInformation),
     RIcc { icc_profile: BytesCow<'a> },
@@ -265,7 +265,7 @@ impl IsoSized for ColourInformation<'_> {
     }
 }
 
-#[derive(Debug)]
+#[derive(Debug, PartialEq, Eq)]
 pub struct NclxColourInformation {
     pub colour_primaries: u16,
     pub transfer_characteristics: u16,
@@ -309,7 +309,7 @@ impl IsoSized for NclxColourInformation {
 /// Content light level
 ///
 /// ISO/IEC 144496-12 - 12.1.6
-#[derive(IsoBox, Debug)]
+#[derive(IsoBox, Debug, PartialEq, Eq)]
 #[iso_box(box_type = b"clli", crate_path = crate)]
 pub struct ContentLightLevelBox {
     pub max_content_light_level: u16,
@@ -319,7 +319,7 @@ pub struct ContentLightLevelBox {
 /// Mastering display colour volume
 ///
 /// ISO/IEC 144496-12 - 12.1.7
-#[derive(IsoBox, Debug)]
+#[derive(IsoBox, Debug, PartialEq, Eq)]
 #[iso_box(box_type = b"mdcv", crate_path = crate)]
 pub struct MasteringDisplayColourVolumeBox {
     pub display_primaries: [[u16; 2]; 6],
@@ -332,7 +332,7 @@ pub struct MasteringDisplayColourVolumeBox {
 /// Content colour volume
 ///
 /// ISO/IEC 144496-12 - 12.1.8
-#[derive(Debug, IsoBox)]
+#[derive(IsoBox, Debug, PartialEq, Eq)]
 #[iso_box(box_type = b"cclv", skip_impl(deserialize_seed, serialize, sized), crate_path = crate)]
 pub struct ContentColourVolumeBox {
     pub reserved1: bool,
@@ -450,7 +450,7 @@ impl IsoSized for ContentColourVolumeBox {
 /// Ambient viewing environment
 ///
 /// ISO/IEC 144496-12 - 12.1.9
-#[derive(IsoBox, Debug)]
+#[derive(IsoBox, Debug, PartialEq, Eq)]
 #[iso_box(box_type = b"amve", crate_path = crate)]
 pub struct AmbientViewingEnvironmentBox {
     pub ambient_illuminance: u32,

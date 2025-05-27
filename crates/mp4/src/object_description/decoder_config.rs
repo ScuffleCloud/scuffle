@@ -141,7 +141,7 @@ nutype_enum! {
 /// Deocder Config Descriptor
 ///
 /// ISO/IEC 14496-1 - 7.2.6.6
-#[derive(Debug)]
+#[derive(Debug, PartialEq, Eq)]
 pub struct DecoderConfigDescriptor<'a> {
     /// An indication of the object or scene description type that needs to be supported
     /// by the decoder for this elementary stream.

@@ -8,7 +8,7 @@ use crate::{BoxHeader, FullBoxHeader, IsoBox, UnknownBox, Utf8String};
 /// Protection scheme information box
 ///
 /// ISO/IEC 14496-12 - 8.12.2
-#[derive(IsoBox, Debug)]
+#[derive(IsoBox, Debug, PartialEq, Eq)]
 #[iso_box(box_type = b"sinf", crate_path = crate)]
 pub struct ProtectionSchemeInfoBox<'a> {
     #[iso_box(nested_box)]
@@ -22,7 +22,7 @@ pub struct ProtectionSchemeInfoBox<'a> {
 /// Original format box
 ///
 /// ISO/IEC 14496-12 - 8.12.3
-#[derive(IsoBox, Debug)]
+#[derive(IsoBox, Debug, PartialEq, Eq)]
 #[iso_box(box_type = b"frma", crate_path = crate)]
 pub struct OriginalFormatBox {
     pub data_format: [u8; 4],
@@ -31,7 +31,7 @@ pub struct OriginalFormatBox {
 /// Scheme type box
 ///
 /// ISO/IEC 14496-12 - 8.12.6
-#[derive(Debug, IsoBox)]
+#[derive(IsoBox, Debug, PartialEq, Eq)]
 #[iso_box(box_type = b"schm", skip_impl(deserialize_seed, serialize), crate_path = crate)]
 pub struct SchemeTypeBox {
     pub full_header: FullBoxHeader,
@@ -89,7 +89,7 @@ impl Serialize for SchemeTypeBox {
 /// Scheme information box
 ///
 /// ISO/IEC 14496-12 - 8.12.7
-#[derive(IsoBox, Debug)]
+#[derive(IsoBox, Debug, PartialEq, Eq)]
 #[iso_box(box_type = b"schi", crate_path = crate)]
 pub struct SchemeInformationBox<'a> {
     #[iso_box(nested_box(collect))]
@@ -101,7 +101,7 @@ pub struct SchemeInformationBox<'a> {
 /// Scheme information box
 ///
 /// ISO/IEC 14496-12 - 8.12.7
-#[derive(IsoBox, Debug)]
+#[derive(IsoBox, Debug, PartialEq, Eq)]
 #[iso_box(box_type = b"scrb", crate_path = crate)]
 pub struct ScrambleSchemeInfoBox<'a> {
     #[iso_box(nested_box)]

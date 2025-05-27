@@ -11,7 +11,7 @@ use crate::{BoxHeader, IsoBox, IsoSized, UnknownBox};
 /// Track box
 ///
 /// ISO/IEC 14496-12 - 8.3.1
-#[derive(IsoBox, Debug)]
+#[derive(IsoBox, Debug, PartialEq, Eq)]
 #[iso_box(box_type = b"trak", crate_path = crate)]
 pub struct TrackBox<'a> {
     #[iso_box(nested_box)]
@@ -52,7 +52,7 @@ impl<'a> TrackBox<'a> {
 
 bitflags::bitflags! {
     /// Track header box flags
-    #[derive(Debug, Clone, Copy)]
+    #[derive(Debug, PartialEq, Eq, Clone, Copy)]
     pub struct TrackHeaderBoxFlags: u32 {
         const TrackEnabled = 0x000001;
         const TrackInMovie = 0x000002;
@@ -89,7 +89,7 @@ impl IsoSized for TrackHeaderBoxFlags {
 /// Track header box
 ///
 /// ISO/IEC 14496-12 - 8.3.2
-#[derive(Debug, IsoBox)]
+#[derive(IsoBox, Debug, PartialEq, Eq)]
 #[iso_box(box_type = b"tkhd", skip_impl(deserialize_seed, serialize, sized), crate_path = crate)]
 pub struct TrackHeaderBox {
     // full header:
@@ -283,7 +283,7 @@ impl IsoSized for TrackHeaderBox {
 /// Track reference box
 ///
 /// ISO/IEC 14496-12 - 8.3.3
-#[derive(IsoBox, Debug)]
+#[derive(IsoBox, Debug, PartialEq, Eq)]
 #[iso_box(box_type = b"tref", crate_path = crate)]
 pub struct TrackReferenceBox<'a> {
     #[iso_box(nested_box(collect_unknown))]
@@ -293,7 +293,7 @@ pub struct TrackReferenceBox<'a> {
 /// Track group box
 ///
 /// ISO/IEC 14496-12 - 8.3.4
-#[derive(IsoBox, Debug)]
+#[derive(IsoBox, Debug, PartialEq, Eq)]
 #[iso_box(box_type = b"trgr", crate_path = crate)]
 pub struct TrackGroupBox<'a> {
     #[iso_box(nested_box(collect_unknown))]
@@ -303,7 +303,7 @@ pub struct TrackGroupBox<'a> {
 /// Track type box
 ///
 /// ISO/IEC 14496-12 - 8.3.5
-#[derive(IsoBox, Debug)]
+#[derive(IsoBox, Debug, PartialEq, Eq)]
 #[iso_box(box_type = b"ttyp", crate_path = crate)]
 pub struct TrackTypeBox {
     #[iso_box(from = "[u8; 4]")]

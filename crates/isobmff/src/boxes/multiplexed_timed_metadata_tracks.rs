@@ -4,7 +4,7 @@ use crate::{IsoBox, UnknownBox};
 /// Boxed metadata sample entry
 ///
 /// ISO/IEC 14496-12 - 12.9.4.1
-#[derive(Debug, IsoBox)]
+#[derive(IsoBox, Debug, PartialEq, Eq)]
 #[iso_box(box_type = b"mebx", crate_path = crate)]
 pub struct BoxedMetadataSampleEntry<'a> {
     pub sample_entry: MetaDataSampleEntry,
@@ -19,7 +19,7 @@ pub struct BoxedMetadataSampleEntry<'a> {
 /// Metadata key table box
 ///
 /// ISO/IEC 14496-12 - 12.9.4.2
-#[derive(Debug, IsoBox)]
+#[derive(IsoBox, Debug, PartialEq, Eq)]
 #[iso_box(box_type = b"keys", crate_path = crate)]
 pub struct MetadataKeyTableBox<'a> {
     #[iso_box(nested_box(collect_unknown))]

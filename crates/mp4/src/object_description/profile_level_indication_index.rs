@@ -6,7 +6,7 @@ use super::{BaseDescriptor, DescriptorTag};
 /// Profile Level Indication Index Descriptor
 ///
 /// ISO/IEC 14496-1 - 7.2.6.20
-#[derive(Debug)]
+#[derive(Debug, PartialEq, Eq)]
 pub struct ProfileLevelIndicationIndexDescriptor {
     /// A unique identifier for the set of profile and level indications described
     /// in this descriptor within the name scope defined by the IOD.

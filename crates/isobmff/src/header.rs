@@ -74,7 +74,7 @@ impl From<BoxType> for uuid::Uuid {
     }
 }
 
-#[derive(Debug, Clone)]
+#[derive(Debug, PartialEq, Eq, Clone)]
 pub struct BoxHeader {
     pub size: BoxSize,
     pub box_type: BoxType,
@@ -171,7 +171,7 @@ impl Serialize for BoxHeader {
     }
 }
 
-#[derive(Debug, Clone, Default)]
+#[derive(Debug, PartialEq, Eq, Clone, Default)]
 pub struct FullBoxHeader {
     pub version: u8,
     pub flags: U24Be,

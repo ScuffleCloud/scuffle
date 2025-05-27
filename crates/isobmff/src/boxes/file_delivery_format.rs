@@ -6,7 +6,7 @@ use crate::{Base64String, BoxHeader, FullBoxHeader, IsoBox, IsoSized, Utf8String
 /// FD item information box
 ///
 /// ISO/IEC 14996-12 - 8.13.2
-#[derive(Debug, IsoBox)]
+#[derive(IsoBox, Debug, PartialEq, Eq)]
 #[iso_box(box_type = b"fiin", skip_impl(deserialize_seed, serialize), crate_path = crate)]
 pub struct FDItemInformationBox {
     pub full_header: FullBoxHeader,
@@ -67,7 +67,7 @@ impl Serialize for FDItemInformationBox {
     }
 }
 
-#[derive(Debug, IsoBox)]
+#[derive(IsoBox, Debug, PartialEq, Eq)]
 #[iso_box(box_type = b"paen", crate_path = crate)]
 pub struct PartitionEntry {
     #[iso_box(nested_box(collect))]
@@ -81,7 +81,7 @@ pub struct PartitionEntry {
 /// File partition box
 ///
 /// ISO/IEC 14996-12 - 8.13.3
-#[derive(Debug, IsoBox)]
+#[derive(IsoBox, Debug, PartialEq, Eq)]
 #[iso_box(box_type = b"fpar", skip_impl(deserialize_seed, serialize, sized), crate_path = crate)]
 pub struct FilePartitionBox {
     pub full_header: FullBoxHeader,
@@ -208,7 +208,7 @@ impl IsoSized for FilePartitionBox {
     }
 }
 
-#[derive(Debug)]
+#[derive(Debug, PartialEq, Eq)]
 pub struct FilePartitionBoxEntry {
     pub block_count: u16,
     pub block_size: u32,
@@ -246,7 +246,7 @@ impl IsoSized for FilePartitionBoxEntry {
 /// FEC reservoir box
 ///
 /// ISO/IEC 14996-12 - 8.13.4
-#[derive(Debug, IsoBox)]
+#[derive(IsoBox, Debug, PartialEq, Eq)]
 #[iso_box(box_type = b"fecr", skip_impl(deserialize_seed, serialize, sized), crate_path = crate)]
 pub struct FECReservoirBox {
     pub full_header: FullBoxHeader,
@@ -318,7 +318,7 @@ impl IsoSized for FECReservoirBox {
     }
 }
 
-#[derive(Debug)]
+#[derive(Debug, PartialEq, Eq)]
 pub struct FECReservoirBoxEntry {
     pub item_id: u32,
     pub symbol_count: u32,
@@ -369,7 +369,7 @@ impl FECReservoirBoxEntry {
 /// FD session group box
 ///
 /// ISO/IEC 14996-12 - 8.13.5
-#[derive(Debug, IsoBox)]
+#[derive(IsoBox, Debug, PartialEq, Eq)]
 #[iso_box(box_type = b"segr", skip_impl(deserialize_seed, serialize), crate_path = crate)]
 pub struct FDSessionGroupBox {
     pub num_session_groups: u16,
@@ -411,7 +411,7 @@ impl Serialize for FDSessionGroupBox {
     }
 }
 
-#[derive(Debug)]
+#[derive(Debug, PartialEq, Eq)]
 pub struct FDSessionGroupBoxSessionGroup {
     pub entry_count: u8,
     pub group_id: Vec<u32>,
@@ -476,7 +476,7 @@ impl IsoSized for FDSessionGroupBoxSessionGroup {
 /// Group ID to name box
 ///
 /// ISO/IEC 14996-12 - 8.13.6
-#[derive(Debug, IsoBox)]
+#[derive(IsoBox, Debug, PartialEq, Eq)]
 #[iso_box(box_type = b"gitn", skip_impl(deserialize_seed, serialize), crate_path = crate)]
 pub struct GroupIdToNameBox {
     pub full_header: FullBoxHeader,
@@ -522,7 +522,7 @@ impl Serialize for GroupIdToNameBox {
     }
 }
 
-#[derive(Debug)]
+#[derive(Debug, PartialEq, Eq)]
 pub struct GroupIdToNameBoxEntry {
     pub group_id: u32,
     pub group_name: Utf8String,
@@ -560,7 +560,7 @@ impl IsoSized for GroupIdToNameBoxEntry {
 /// File reservoir box
 ///
 /// ISO/IEC 14996-12 - 8.13.7
-#[derive(Debug, IsoBox)]
+#[derive(IsoBox, Debug, PartialEq, Eq)]
 #[iso_box(box_type = b"fire", skip_impl(deserialize_seed, serialize, sized), crate_path = crate)]
 pub struct FileReservoirBox {
     pub full_header: FullBoxHeader,
@@ -632,7 +632,7 @@ impl IsoSized for FileReservoirBox {
     }
 }
 
-#[derive(Debug)]
+#[derive(Debug, PartialEq, Eq)]
 pub struct FileReservoirBoxEntry {
     pub item_id: u32,
     pub symbol_count: u32,

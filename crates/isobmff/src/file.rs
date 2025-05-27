@@ -9,11 +9,13 @@ use crate::boxes::{
 };
 use crate::{BoxHeader, BoxSize, BoxType, IsoBox, UnknownBox};
 
-#[derive(IsoBox, Debug)]
+#[derive(IsoBox, Debug, PartialEq, Eq)]
 #[iso_box(skip_impl(iso_box, deserialize), crate_path = crate)]
 pub struct IsobmffFile<'a> {
-    #[iso_box(nested_box)]
-    pub ftyp: FileTypeBox,
+    /// According to the official spec the ftyp box is mandatory,
+    /// but some files (e.g. recording of live streams) do not have an ftyp box.
+    #[iso_box(nested_box(collect))]
+    pub ftyp: Option<FileTypeBox>,
     #[iso_box(nested_box(collect))]
     pub etyp: Vec<ExtendedTypeBox<'a>>,
     #[iso_box(nested_box(collect))]
@@ -23,7 +25,7 @@ pub struct IsobmffFile<'a> {
     // According to the official spec the moov box is mandatory,
     // but for some reason ISO decided to break their own rules and
     // allow the HEIF file format to not have a moov box.
-    // For example: https://github.com/MPEGGroup/FileFormatConformance/blob/16d041df6d39c02d452ca15815431742411da194/data/file_features/published/heif/C002.heic
+    // https://github.com/MPEGGroup/FileFormatConformance/issues/154
     #[iso_box(nested_box(collect))]
     pub moov: Option<MovieBox<'a>>,
     #[iso_box(nested_box(collect))]

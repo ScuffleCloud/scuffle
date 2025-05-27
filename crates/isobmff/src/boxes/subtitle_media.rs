@@ -6,7 +6,7 @@ use crate::{FullBoxHeader, IsoBox, IsoSized, UnknownBox, Utf8List, Utf8String};
 /// Subtitle media header box
 ///
 /// ISO/IEC 14496-12 - 12.6.2
-#[derive(Debug, IsoBox)]
+#[derive(IsoBox, Debug, PartialEq, Eq)]
 #[iso_box(box_type = b"sthd", crate_path = crate)]
 pub struct SubtitleMediaHeaderBox {
     pub full_header: FullBoxHeader,
@@ -20,7 +20,7 @@ pub struct SubtitleMediaHeaderBox {
 /// Sub boxes:
 /// - [`btrt`](super::BitRateBox)
 /// - Any other boxes
-#[derive(Debug)]
+#[derive(Debug, PartialEq, Eq)]
 pub struct SubtitleSampleEntry {
     pub sample_entry: SampleEntry,
 }
@@ -51,7 +51,7 @@ impl IsoSized for SubtitleSampleEntry {
 /// XML subtitle sample entry
 ///
 /// ISO/IEC 14496-12 - 12.6.3
-#[derive(IsoBox, Debug)]
+#[derive(IsoBox, Debug, PartialEq, Eq)]
 #[iso_box(box_type = b"stpp", crate_path = crate)]
 pub struct XMLSubtitleSampleEntry<'a> {
     pub sample_entry: SubtitleSampleEntry,
@@ -67,7 +67,7 @@ pub struct XMLSubtitleSampleEntry<'a> {
 /// Text subtitle sample entry
 ///
 /// ISO/IEC 14496-12 - 12.6.3
-#[derive(IsoBox, Debug)]
+#[derive(IsoBox, Debug, PartialEq, Eq)]
 #[iso_box(box_type = b"sbtt", crate_path = crate)]
 pub struct TextSubtitleSampleEntry<'a> {
     pub sample_entry: SubtitleSampleEntry,

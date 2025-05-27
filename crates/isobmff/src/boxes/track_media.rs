@@ -13,7 +13,7 @@ use crate::{BoxHeader, FullBoxHeader, IsoBox, IsoSized, Langauge, UnknownBox};
 /// Media box
 ///
 /// ISO/IEC 14496-12 - 8.4.1
-#[derive(IsoBox, Debug)]
+#[derive(IsoBox, Debug, PartialEq, Eq)]
 #[iso_box(box_type = b"mdia", crate_path = crate)]
 pub struct MediaBox<'a> {
     #[iso_box(nested_box)]
@@ -43,7 +43,7 @@ impl<'a> MediaBox<'a> {
 /// Media header box
 ///
 /// ISO/IEC 14496-12 - 8.4.2
-#[derive(Debug, IsoBox)]
+#[derive(IsoBox, Debug, PartialEq, Eq)]
 #[iso_box(box_type = b"mdhd", skip_impl(deserialize_seed, serialize, sized), crate_path = crate)]
 pub struct MediaHeaderBox {
     pub full_header: FullBoxHeader,
@@ -187,7 +187,7 @@ impl IsoSized for HandlerType {
 /// Handler reference box
 ///
 /// ISO/IEC 14496-12 - 8.4.3
-#[derive(IsoBox, Debug)]
+#[derive(IsoBox, Debug, PartialEq, Eq)]
 #[iso_box(box_type = b"hdlr", crate_path = crate)]
 pub struct HandlerBox {
     pub full_header: FullBoxHeader,
@@ -213,7 +213,7 @@ impl HandlerBox {
 /// Media information box
 ///
 /// ISO/IEC 14496-12 - 8.4.4
-#[derive(IsoBox, Debug)]
+#[derive(IsoBox, Debug, PartialEq, Eq)]
 #[iso_box(box_type = b"minf", crate_path = crate)]
 pub struct MediaInformationBox<'a> {
     #[iso_box(nested_box(collect))]
@@ -252,7 +252,7 @@ impl<'a> MediaInformationBox<'a> {
 /// Null media header box
 ///
 /// ISO/IEC 14496-12 - 8.4.5.2
-#[derive(IsoBox, Debug)]
+#[derive(IsoBox, Debug, PartialEq, Eq)]
 #[iso_box(box_type = b"nmhd", crate_path = crate)]
 pub struct NullMediaHeaderBox {
     pub full_header: FullBoxHeader,
@@ -261,7 +261,7 @@ pub struct NullMediaHeaderBox {
 /// Extended language tag
 ///
 /// ISO/IEC 14496-12 - 8.4.6
-#[derive(IsoBox, Debug)]
+#[derive(IsoBox, Debug, PartialEq, Eq)]
 #[iso_box(box_type = b"elng", crate_path = crate)]
 pub struct ExtendedLanguageBox {
     pub full_header: FullBoxHeader,

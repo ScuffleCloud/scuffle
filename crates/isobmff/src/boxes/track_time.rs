@@ -10,7 +10,7 @@ use crate::{BoxHeader, FullBoxHeader, IsoBox, IsoSized};
 /// Time to sample box
 ///
 /// ISO/IEC 14496-12 - 8.6.1.2
-#[derive(IsoBox, Debug, Default)]
+#[derive(IsoBox, Debug, PartialEq, Eq, Default)]
 #[iso_box(box_type = b"stts", crate_path = crate)]
 pub struct TimeToSampleBox {
     pub full_header: FullBoxHeader,
@@ -19,7 +19,7 @@ pub struct TimeToSampleBox {
     pub entries: Vec<TimeToSampleBoxEntry>,
 }
 
-#[derive(Debug)]
+#[derive(Debug, PartialEq, Eq)]
 pub struct TimeToSampleBoxEntry {
     pub sample_count: u32,
     pub sample_delta: u32,
@@ -57,7 +57,7 @@ impl IsoSized for TimeToSampleBoxEntry {
 /// Composition time to sample box
 ///
 /// ISO/IEC 14496-12 - 8.6.1.3
-#[derive(IsoBox)]
+#[derive(IsoBox, PartialEq, Eq)]
 #[iso_box(box_type = b"ctts", crate_path = crate)]
 pub struct CompositionOffsetBox {
     pub full_header: FullBoxHeader,
@@ -76,7 +76,7 @@ impl Debug for CompositionOffsetBox {
     }
 }
 
-#[derive(Debug)]
+#[derive(Debug, PartialEq, Eq)]
 pub struct CompositionOffsetBoxEntry {
     pub sample_count: u32,
     /// This should be interpreted as signed when the version is 1
@@ -115,7 +115,7 @@ impl IsoSized for CompositionOffsetBoxEntry {
 /// Composition to decode box
 ///
 /// ISO/IEC 14496-12 - 8.6.1.4
-#[derive(Debug, IsoBox)]
+#[derive(IsoBox, Debug, PartialEq, Eq)]
 #[iso_box(box_type = b"cslg", skip_impl(deserialize_seed, serialize, sized), crate_path = crate)]
 pub struct CompositionToDecodeBox {
     pub full_header: FullBoxHeader,
@@ -210,7 +210,7 @@ impl IsoSized for CompositionToDecodeBox {
 /// Sync sample box
 ///
 /// ISO/IEC 14496-12 - 8.6.2
-#[derive(IsoBox, Debug)]
+#[derive(IsoBox, Debug, PartialEq, Eq)]
 #[iso_box(box_type = b"stss", crate_path = crate)]
 pub struct SyncSampleBox {
     pub full_header: FullBoxHeader,
@@ -222,7 +222,7 @@ pub struct SyncSampleBox {
 /// Shadow sync sample box
 ///
 /// ISO/IEC 14496-12 - 8.6.3.2
-#[derive(IsoBox, Debug)]
+#[derive(IsoBox, Debug, PartialEq, Eq)]
 #[iso_box(box_type = b"stsh", crate_path = crate)]
 pub struct ShadowSyncSampleBox {
     pub full_header: FullBoxHeader,
@@ -231,7 +231,7 @@ pub struct ShadowSyncSampleBox {
     pub entries: Vec<ShadowSyncSampleBoxEntry>,
 }
 
-#[derive(Debug)]
+#[derive(Debug, PartialEq, Eq)]
 pub struct ShadowSyncSampleBoxEntry {
     pub shadowed_sample_number: u32,
     pub sync_sample_number: u32,
@@ -269,7 +269,7 @@ impl IsoSized for ShadowSyncSampleBoxEntry {
 /// Independent and disposable samples box
 ///
 /// ISO/IEC 14496-12 - 8.6.4
-#[derive(IsoBox, Debug)]
+#[derive(IsoBox, Debug, PartialEq, Eq)]
 #[iso_box(box_type = b"sdtp", crate_path = crate)]
 pub struct SampleDependencyTypeBox {
     pub full_header: FullBoxHeader,
@@ -277,7 +277,7 @@ pub struct SampleDependencyTypeBox {
     pub entries: Vec<SampleDependencyTypeBoxEntry>,
 }
 
-#[derive(Debug, Clone, Copy)]
+#[derive(Debug, PartialEq, Eq, Clone, Copy)]
 pub struct SampleDependencyTypeBoxEntry {
     pub is_leading: u8,
     pub sample_depends_on: u8,
@@ -314,7 +314,7 @@ impl IsoSized for SampleDependencyTypeBoxEntry {
 /// Edit box
 ///
 /// ISO/IEC 14496-12 - 8.6.5
-#[derive(IsoBox, Debug)]
+#[derive(IsoBox, Debug, PartialEq, Eq)]
 #[iso_box(box_type = b"edts", crate_path = crate)]
 pub struct EditBox {
     #[iso_box(nested_box(collect))]
@@ -324,7 +324,7 @@ pub struct EditBox {
 /// Edit list box
 ///
 /// ISO/IEC 14496-12 - 8.6.6
-#[derive(Debug, IsoBox)]
+#[derive(IsoBox, Debug, PartialEq, Eq)]
 #[iso_box(box_type = b"elst", skip_impl(deserialize_seed, serialize, sized), crate_path = crate)]
 pub struct EditListBox {
     pub full_header: FullBoxHeader,
@@ -387,7 +387,7 @@ impl IsoSized for EditListBox {
     }
 }
 
-#[derive(Debug)]
+#[derive(Debug, PartialEq, Eq)]
 pub struct EditListBoxEntry {
     pub edit_duration: u64,
     pub media_time: i64,

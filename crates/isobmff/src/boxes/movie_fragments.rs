@@ -12,7 +12,7 @@ use crate::{BoxHeader, FullBoxHeader, IsoBox, IsoSized, UnknownBox};
 /// Movie extends box
 ///
 /// ISO/IEC 14496-12 - 8.8.1
-#[derive(IsoBox, Debug)]
+#[derive(IsoBox, Debug, PartialEq, Eq)]
 #[iso_box(box_type = b"mvex", crate_path = crate)]
 pub struct MovieExtendsBox {
     #[iso_box(nested_box(collect))]
@@ -26,7 +26,7 @@ pub struct MovieExtendsBox {
 /// Movie extends header box
 ///
 /// ISO/IEC 14496-12 - 8.8.2
-#[derive(Debug, IsoBox)]
+#[derive(IsoBox, Debug, PartialEq, Eq)]
 #[iso_box(box_type = b"mehd", skip_impl(deserialize_seed, serialize, sized), crate_path = crate)]
 pub struct MovieExtendsHeaderBox {
     pub full_header: FullBoxHeader,
@@ -83,7 +83,7 @@ impl IsoSized for MovieExtendsHeaderBox {
     }
 }
 
-#[derive(Debug, Clone, Copy)]
+#[derive(Debug, PartialEq, Eq, Clone, Copy)]
 pub struct SampleFlags {
     pub reserved: u8,
     pub is_leading: u8,
@@ -151,7 +151,7 @@ impl IsoSized for SampleFlags {
 /// Track extends box
 ///
 /// ISO/IEC 14496-12 - 8.8.3
-#[derive(IsoBox, Debug)]
+#[derive(IsoBox, Debug, PartialEq, Eq)]
 #[iso_box(box_type = b"trex", crate_path = crate)]
 pub struct TrackExtendsBox {
     pub full_header: FullBoxHeader,
@@ -187,7 +187,7 @@ impl TrackExtendsBox {
 /// Movie fragment box
 ///
 /// ISO/IEC 14496-12 - 8.8.4
-#[derive(IsoBox, Debug)]
+#[derive(IsoBox, Debug, PartialEq, Eq)]
 #[iso_box(box_type = b"moof", crate_path = crate)]
 pub struct MovieFragmentBox<'a> {
     #[iso_box(nested_box)]
@@ -203,7 +203,7 @@ pub struct MovieFragmentBox<'a> {
 /// Movie fragment header box
 ///
 /// ISO/IEC 14496-12 - 8.8.5
-#[derive(IsoBox, Debug)]
+#[derive(IsoBox, Debug, PartialEq, Eq)]
 #[iso_box(box_type = b"mfhd", crate_path = crate)]
 pub struct MovieFragmentHeaderBox {
     pub full_header: FullBoxHeader,
@@ -222,7 +222,7 @@ impl MovieFragmentHeaderBox {
 /// Track fragment box
 ///
 /// ISO/IEC 14496-12 - 8.8.6
-#[derive(IsoBox, Debug)]
+#[derive(IsoBox, Debug, PartialEq, Eq)]
 #[iso_box(box_type = b"traf", crate_path = crate)]
 pub struct TrackFragmentBox<'a> {
     #[iso_box(nested_box)]
@@ -250,7 +250,7 @@ pub struct TrackFragmentBox<'a> {
 /// Track fragment header box
 ///
 /// ISO/IEC 14496-12 - 8.8.7
-#[derive(Debug, IsoBox)]
+#[derive(IsoBox, Debug, PartialEq, Eq)]
 #[iso_box(box_type = b"tfhd", skip_impl(deserialize_seed, serialize), crate_path = crate)]
 pub struct TrackFragmentHeaderBox {
     // full header:
@@ -310,7 +310,7 @@ impl TrackFragmentHeaderBox {
 }
 
 bitflags::bitflags! {
-    #[derive(Debug, Clone, Copy)]
+    #[derive(Debug, Clone, Copy, PartialEq, Eq)]
     pub struct TfFlags: u32 {
         const BaseDataOffsetPresent = 0x000001;
         const SampleDescriptionIndexPresent = 0x000002;
@@ -444,7 +444,7 @@ impl Serialize for TrackFragmentHeaderBox {
 /// Track fragment run box
 ///
 /// ISO/IEC 14496-12 - 8.8.8
-#[derive(Debug, IsoBox)]
+#[derive(IsoBox, Debug, PartialEq, Eq)]
 #[iso_box(box_type = b"trun", skip_impl(deserialize_seed, serialize, sized), crate_path = crate)]
 pub struct TrackRunBox {
     // full header:
@@ -580,7 +580,7 @@ impl Serialize for TrackRunBox {
     }
 }
 
-#[derive(Debug)]
+#[derive(Debug, PartialEq, Eq)]
 pub struct TrackRunBoxSample {
     pub sample_duration: Option<u32>,
     pub sample_size: Option<u32>,
@@ -590,7 +590,7 @@ pub struct TrackRunBoxSample {
 }
 
 bitflags::bitflags! {
-    #[derive(Debug, Clone, Copy)]
+    #[derive(Debug, PartialEq, Eq, Clone, Copy)]
     pub struct TrFlags: u32 {
         const DataOffsetPresent = 0x000001;
         const FirstSampleFlagsPresent = 0x000004;
@@ -728,7 +728,7 @@ impl TrackRunBoxSample {
 /// Movie fragment random access box
 ///
 /// ISO/IEC 14496-12 - 8.8.9
-#[derive(IsoBox, Debug)]
+#[derive(IsoBox, Debug, PartialEq, Eq)]
 #[iso_box(box_type = b"mfra", crate_path = crate)]
 pub struct MovieFragmentRandomAccessBox {
     #[iso_box(nested_box(collect))]
@@ -740,7 +740,7 @@ pub struct MovieFragmentRandomAccessBox {
 /// Track fragment random access box
 ///
 /// ISO/IEC 14496-12 - 8.8.10
-#[derive(Debug, IsoBox)]
+#[derive(IsoBox, Debug, PartialEq, Eq)]
 #[iso_box(box_type = b"tfra", skip_impl(deserialize_seed, serialize, sized), crate_path = crate)]
 pub struct TrackFragmentRandomAccessBox {
     pub full_header: FullBoxHeader,
@@ -843,7 +843,7 @@ impl IsoSized for TrackFragmentRandomAccessBox {
     }
 }
 
-#[derive(Debug)]
+#[derive(Debug, PartialEq, Eq)]
 pub struct TrackFragmentRandomAccessBoxEntry {
     pub time: u64,
     pub moof_offset: u64,
@@ -895,7 +895,7 @@ impl TrackFragmentRandomAccessBoxEntry {
 /// Movie fragment random access offset box
 ///
 /// ISO/IEC 14496-12 - 8.8.11
-#[derive(Debug, IsoBox)]
+#[derive(IsoBox, Debug, PartialEq, Eq)]
 #[iso_box(box_type = b"mfro", crate_path = crate)]
 pub struct MovieFragmentRandomAccessOffsetBox {
     pub full_header: FullBoxHeader,
@@ -905,7 +905,7 @@ pub struct MovieFragmentRandomAccessOffsetBox {
 /// Track fragment decode time box
 ///
 /// ISO/IEC 14496-12 - 8.8.12
-#[derive(Debug, IsoBox)]
+#[derive(IsoBox, Debug, PartialEq, Eq)]
 #[iso_box(box_type = b"tfdt", skip_impl(deserialize_seed, serialize, sized), crate_path = crate)]
 pub struct TrackFragmentBaseMediaDecodeTimeBox {
     pub full_header: FullBoxHeader,
@@ -979,7 +979,7 @@ impl IsoSized for TrackFragmentBaseMediaDecodeTimeBox {
 /// Level assignment box
 ///
 /// ISO/IEC 14496-12 - 8.8.13
-#[derive(Debug, IsoBox)]
+#[derive(IsoBox, Debug, PartialEq, Eq)]
 #[iso_box(box_type = b"leva", crate_path = crate)]
 pub struct LevelAssignmentBox {
     pub full_header: FullBoxHeader,
@@ -988,7 +988,7 @@ pub struct LevelAssignmentBox {
     pub levels: Vec<LevelAssignmentBoxLevel>,
 }
 
-#[derive(Debug)]
+#[derive(Debug, PartialEq, Eq)]
 pub struct LevelAssignmentBoxLevel {
     pub track_id: u32,
     pub padding_flag: bool,
@@ -1076,7 +1076,7 @@ impl IsoSized for LevelAssignmentBoxLevel {
     }
 }
 
-#[derive(Debug)]
+#[derive(Debug, PartialEq, Eq)]
 pub enum LevelAssignmentBoxLevelAssignmentType {
     Type0 {
         grouping_type: [u8; 4],
@@ -1109,7 +1109,7 @@ impl LevelAssignmentBoxLevelAssignmentType {
 /// Track Extension Properties box
 ///
 /// ISO/IEC 14496-12 - 8.8.15
-#[derive(IsoBox, Debug)]
+#[derive(IsoBox, Debug, PartialEq, Eq)]
 #[iso_box(box_type = b"trep", crate_path = crate)]
 pub struct TrackExtensionPropertiesBox<'a> {
     pub full_header: FullBoxHeader,
@@ -1125,7 +1125,7 @@ pub struct TrackExtensionPropertiesBox<'a> {
 /// Alternative startup sequence properties box
 ///
 /// ISO/IEC 14496-12 - 8.8.16
-#[derive(Debug, IsoBox)]
+#[derive(IsoBox, Debug, PartialEq, Eq)]
 #[iso_box(box_type = b"assp", skip_impl(deserialize_seed, serialize), crate_path = crate)]
 pub struct AlternativeStartupSequencePropertiesBox {
     pub full_header: FullBoxHeader,
@@ -1194,7 +1194,7 @@ impl Serialize for AlternativeStartupSequencePropertiesBox {
     }
 }
 
-#[derive(Debug)]
+#[derive(Debug, PartialEq, Eq)]
 pub enum AlternativeStartupSequencePropertiesBoxVersion {
     Version0 {
         min_initial_alt_startup_offset: i32,
@@ -1216,7 +1216,7 @@ impl IsoSized for AlternativeStartupSequencePropertiesBoxVersion {
     }
 }
 
-#[derive(Debug)]
+#[derive(Debug, PartialEq, Eq)]
 pub struct AlternativeStartupSequencePropertiesBoxVersion1Entry {
     pub grouping_type_parameter: u32,
     pub min_initial_alt_startup_offset: i32,

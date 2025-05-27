@@ -11,7 +11,7 @@ use crate::{ConstantFrameRate, NALUnitType, NumTemporalLayers, ParallelismType, 
 /// HEVC Decoder Configuration Record.
 ///
 /// ISO/IEC 14496-15 - 8.3.2.1
-#[derive(Debug, Clone, PartialEq)]
+#[derive(Debug, Clone, PartialEq, Eq)]
 pub struct HEVCDecoderConfigurationRecord<'a> {
     /// Matches the [`general_profile_space`](crate::Profile::profile_space) field as defined in ISO/IEC 23008-2.
     pub general_profile_space: u8,
@@ -67,7 +67,7 @@ pub struct HEVCDecoderConfigurationRecord<'a> {
 /// Nalu Array Structure
 ///
 /// ISO/IEC 14496-15 - 8.3.2.1
-#[derive(Debug, Clone, PartialEq)]
+#[derive(Debug, Clone, PartialEq, Eq)]
 pub struct NaluArray<'a> {
     /// When equal to `true` indicates that all NAL units of the given type are in the
     /// following array and none are in the stream; when equal to `false` indicates that additional NAL units

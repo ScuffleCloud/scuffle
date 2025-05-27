@@ -10,7 +10,7 @@ use crate::HEVCDecoderConfigurationRecord;
 /// HEVC Configuration Box
 ///
 /// ISO/IEC 14496-15 - 8.4.1
-#[derive(Debug, IsoBox)]
+#[derive(IsoBox, Debug, PartialEq, Eq)]
 #[iso_box(box_type = b"hvcC")]
 pub struct HEVCConfigurationBox<'a> {
     /// The HEVC decoder configuration record contained in this box.
@@ -27,7 +27,7 @@ impl<'a> HEVCConfigurationBox<'a> {
 /// HEVC Sample Entry
 ///
 /// ISO/IEC 14496-15 - 8.4.1
-#[derive(Debug, IsoBox)]
+#[derive(IsoBox, Debug, PartialEq, Eq)]
 #[iso_box(box_type = b"hvc1")]
 pub struct HEVCSampleEntryHvc1<'a> {
     /// The visual sample entry fields that this box inherits.
@@ -46,7 +46,7 @@ pub struct HEVCSampleEntryHvc1<'a> {
 /// HEVC Sample Entry
 ///
 /// ISO/IEC 14496-15 - 8.4.1
-#[derive(Debug, IsoBox)]
+#[derive(IsoBox, Debug, PartialEq, Eq)]
 #[iso_box(box_type = b"hev1")]
 pub struct HEVCSampleEntryHev1<'a> {
     /// The visual sample entry fields that this box inherits.

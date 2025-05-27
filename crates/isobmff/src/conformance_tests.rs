@@ -5,7 +5,8 @@ use std::collections::BTreeMap;
 use std::io::BufReader;
 use std::path::PathBuf;
 
-use scuffle_bytes_util::zero_copy::Deserialize;
+use pretty_assertions::assert_eq;
+use scuffle_bytes_util::zero_copy::{Deserialize, Serialize};
 
 use crate::{IsoSized, IsobmffFile};
 
@@ -34,6 +35,11 @@ fn conformance_files() {
         .into_iter()
         .filter(|(n, m)| !n.ends_with(".zip") && m.published)
     {
+        // https://github.com/MPEGGroup/FileFormatConformance/issues/155
+        if file_name.ends_with("sg-tl-st.mp4") {
+            continue;
+        }
+
         println!("testing {file_name}");
         let mut file = std::fs::File::open(dir.join("files").join(&file_name)).expect("failed to open file");
         let reader = scuffle_bytes_util::zero_copy::IoRead::from(BufReader::new(&mut file));
@@ -47,5 +53,16 @@ fn conformance_files() {
             isobmff_file.size(),
             file_size
         );
+
+        let mut serialized = Vec::new();
+        isobmff_file.serialize(&mut serialized).expect("failed to serialize file");
+        std::fs::write(
+            dir.join("output").join(file_name.split('/').last().unwrap_or(&file_name)),
+            &serialized,
+        )
+        .expect("failed to write serialized file");
+        let redeserialized_file = IsobmffFile::deserialize(scuffle_bytes_util::zero_copy::Slice::from(&serialized[..]))
+            .expect("failed to deserialize serialized file");
+        assert_eq!(isobmff_file, redeserialized_file, "file content mismatch");
     }
 }

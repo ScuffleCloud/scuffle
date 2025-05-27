@@ -8,7 +8,7 @@ use crate::{FullBoxHeader, IsoBox, IsoSized};
 /// Hint media header box
 ///
 /// ISO/IEC 14496-12 - 12.4.3
-#[derive(IsoBox, Debug)]
+#[derive(IsoBox, Debug, PartialEq, Eq)]
 #[iso_box(box_type = b"hmhd", crate_path = crate)]
 pub struct HintMediaHeaderBox {
     pub full_header: FullBoxHeader,
@@ -26,7 +26,7 @@ pub struct HintMediaHeaderBox {
 /// Sub boxes:
 /// - [`btrt`](super::BitRateBox)
 /// - Any other boxes
-#[derive(Debug)]
+#[derive(Debug, PartialEq, Eq)]
 pub struct HintSampleEntry {
     pub sample_entry: SampleEntry,
 }

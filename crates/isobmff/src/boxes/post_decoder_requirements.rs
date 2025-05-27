@@ -9,7 +9,7 @@ use crate::{BoxHeader, FullBoxHeader, IsoBox, UnknownBox, Utf8String};
 /// Restricted scheme information box
 ///
 /// ISO/IEC 14496-12 - 8.15.3
-#[derive(IsoBox, Debug)]
+#[derive(IsoBox, Debug, PartialEq, Eq)]
 #[iso_box(box_type = b"rinf", crate_path = crate)]
 pub struct RestrictedSchemeInfoBox<'a> {
     #[iso_box(nested_box)]
@@ -25,7 +25,7 @@ pub struct RestrictedSchemeInfoBox<'a> {
 /// Stereo video box
 ///
 /// ISO/IEC 14496-12 - 8.15.4.2
-#[derive(Debug, IsoBox)]
+#[derive(IsoBox, Debug, PartialEq, Eq)]
 #[iso_box(box_type = b"stvi", skip_impl(deserialize_seed), crate_path = crate)]
 pub struct StereoVideoBox<'a> {
     pub full_header: FullBoxHeader,
@@ -76,7 +76,7 @@ impl<'a> DeserializeSeed<'a, BoxHeader> for StereoVideoBox<'a> {
 /// Compatible scheme type box
 ///
 /// ISO/IEC 14496-12 - 8.15.5
-#[derive(Debug, IsoBox)]
+#[derive(IsoBox, Debug, PartialEq, Eq)]
 #[iso_box(box_type = b"csch", skip_impl(deserialize_seed, serialize), crate_path = crate)]
 pub struct CompatibleSchemeTypeBox {
     pub full_header: FullBoxHeader,

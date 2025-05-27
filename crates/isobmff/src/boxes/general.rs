@@ -10,7 +10,7 @@ use crate::{FullBoxHeader, IsoBox, IsoSized};
 /// Media data box
 ///
 /// ISO/IEC 14496-12 - 8.1.1
-#[derive(IsoBox)]
+#[derive(IsoBox, PartialEq, Eq)]
 #[iso_box(box_type = b"mdat", crate_path = crate)]
 pub struct MediaDataBox<'a> {
     pub data: BytesCow<'a>,
@@ -31,7 +31,7 @@ impl Debug for MediaDataBox<'_> {
 /// Free space box
 ///
 /// ISO/IEC 14496-12 - 8.1.2
-#[derive(IsoBox)]
+#[derive(IsoBox, PartialEq, Eq)]
 #[iso_box(box_type = b"free", crate_path = crate)]
 pub struct FreeSpaceBox<'a> {
     pub data: BytesCow<'a>,
@@ -46,7 +46,7 @@ impl Debug for FreeSpaceBox<'_> {
 /// Free space box
 ///
 /// ISO/IEC 14496-12 - 8.1.2
-#[derive(IsoBox)]
+#[derive(IsoBox, PartialEq, Eq)]
 #[iso_box(box_type = b"skip", crate_path = crate)]
 pub struct SkipBox<'a> {
     pub data: BytesCow<'a>,
@@ -61,7 +61,7 @@ impl Debug for SkipBox<'_> {
 /// Progressive download information box
 ///
 /// ISO/IEC 14496-12 - 8.1.3
-#[derive(IsoBox, Debug)]
+#[derive(IsoBox, Debug, PartialEq, Eq)]
 #[iso_box(box_type = b"pdin", crate_path = crate)]
 pub struct ProgressiveDownloadInfoBox {
     pub full_header: FullBoxHeader,
@@ -69,7 +69,7 @@ pub struct ProgressiveDownloadInfoBox {
     pub properties: Vec<ProgressiveDownloadInfoBoxProperties>,
 }
 
-#[derive(Debug)]
+#[derive(Debug, PartialEq, Eq)]
 pub struct ProgressiveDownloadInfoBoxProperties {
     pub rate: u32,
     pub initial_delay: u32,
@@ -107,7 +107,7 @@ impl IsoSized for ProgressiveDownloadInfoBoxProperties {
 /// Identified media data box
 ///
 /// ISO/IEC 14496-12 - 8.1.4
-#[derive(IsoBox)]
+#[derive(IsoBox, PartialEq, Eq)]
 #[iso_box(box_type = b"imda", crate_path = crate)]
 pub struct IdentifiedMediaDataBox<'a> {
     pub imda_identifier: u32,

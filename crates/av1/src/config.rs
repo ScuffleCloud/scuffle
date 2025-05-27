@@ -58,7 +58,7 @@ impl Serialize for AV1VideoDescriptor<'_> {
     }
 }
 
-#[derive(Debug, Clone, PartialEq)]
+#[derive(Debug, Clone, PartialEq, Eq)]
 /// AV1 Codec Configuration Record
 ///
 /// <https://aomediacodec.github.io/av1-isobmff/#av1codecconfigurationbox-syntax>

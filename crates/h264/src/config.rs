@@ -10,7 +10,7 @@ use crate::sps::SpsExtended;
 
 /// The AVC (H.264) Decoder Configuration Record.
 /// ISO/IEC 14496-15:2022(E) - 5.3.2.1.2
-#[derive(Debug, Clone, PartialEq)]
+#[derive(Debug, Clone, PartialEq, Eq)]
 pub struct AVCDecoderConfigurationRecord<'a> {
     /// The `configuration_version` is set to 1 (as a u8) defined by the h264 spec until further notice.
     ///
@@ -61,7 +61,7 @@ pub struct AVCDecoderConfigurationRecord<'a> {
 
 /// The AVC (H.264) Extended Configuration.
 /// ISO/IEC 14496-15:2022(E) - 5.3.2.1.2
-#[derive(Debug, Clone, PartialEq)]
+#[derive(Debug, Clone, PartialEq, Eq)]
 pub struct AvccExtendedConfig {
     /// The `chroma_format_idc` as a u8.
     ///

@@ -36,7 +36,7 @@ impl IsoSized for Brand {
 /// File-type box
 ///
 /// ISO/IEC 14496-12 - 4.3
-#[derive(IsoBox, Debug)]
+#[derive(IsoBox, Debug, PartialEq, Eq)]
 #[iso_box(box_type = b"ftyp", crate_path = crate)]
 pub struct FileTypeBox {
     #[iso_box(from = "[u8; 4]")]
@@ -49,7 +49,7 @@ pub struct FileTypeBox {
 /// Type combination box
 ///
 /// ISO/IEC 14496-12 - 4.4
-#[derive(IsoBox, Debug)]
+#[derive(IsoBox, Debug, PartialEq, Eq)]
 #[iso_box(box_type = b"tyco", crate_path = crate)]
 pub struct TypeCombinationBox {
     #[iso_box(repeated, from = "[u8; 4]")]
@@ -59,7 +59,7 @@ pub struct TypeCombinationBox {
 /// Extended type box
 ///
 /// ISO/IEC 14496-12 - 4.4
-#[derive(IsoBox, Debug)]
+#[derive(IsoBox, Debug, PartialEq, Eq)]
 #[iso_box(box_type = b"etyp", crate_path = crate)]
 pub struct ExtendedTypeBox<'a> {
     #[iso_box(nested_box(collect))]

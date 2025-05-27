@@ -238,7 +238,7 @@ impl Serialize for StringCow<'_> {
 }
 
 /// A 24-bit signed integer in big-endian byte order.
-#[derive(Debug, Clone, Copy, Default)]
+#[derive(Debug, Clone, Copy, Default, PartialEq, Eq)]
 pub struct I24Be(pub i32);
 
 impl<'a> Deserialize<'a> for I24Be {
@@ -271,7 +271,7 @@ impl Deref for I24Be {
 }
 
 /// A 48-bit signed integer in big-endian byte order.
-#[derive(Debug, Clone, Copy, Default)]
+#[derive(Debug, Clone, Copy, Default, PartialEq, Eq)]
 pub struct I48Be(pub i64);
 
 impl<'a> Deserialize<'a> for I48Be {
@@ -304,7 +304,7 @@ impl Deref for I48Be {
 }
 
 /// A 24-bit unsigned integer in big-endian byte order.
-#[derive(Debug, Clone, Copy, Default)]
+#[derive(Debug, Clone, Copy, Default, PartialEq, Eq)]
 pub struct U24Be(pub u32);
 
 impl<'a> Deserialize<'a> for U24Be {
@@ -337,7 +337,7 @@ impl Deref for U24Be {
 }
 
 /// A 48-bit unsigned integer in big-endian byte order.
-#[derive(Debug, Clone, Copy, Default)]
+#[derive(Debug, Clone, Copy, Default, PartialEq, Eq)]
 pub struct U48Be(pub u64);
 
 impl<'a> Deserialize<'a> for U48Be {

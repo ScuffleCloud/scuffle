@@ -10,7 +10,7 @@ use scuffle_bytes_util::zero_copy::{Deserialize, DeserializeSeed, Serialize};
 /// Opus Sample Entry Format
 ///
 /// Encapsulation of Opus in ISO Base Media File Format - 4.3.1
-#[derive(Debug, IsoBox)]
+#[derive(IsoBox, Debug, PartialEq, Eq)]
 #[iso_box(box_type = b"Opus")]
 pub struct OpusSampleEntry<'a> {
     /// The audio sample entry fields that this box inherits.
@@ -26,7 +26,7 @@ pub struct OpusSampleEntry<'a> {
 /// Opus Specific Box
 ///
 /// Encapsulation of Opus in ISO Base Media File Format - 4.3.2
-#[derive(Debug, IsoBox)]
+#[derive(IsoBox, Debug, PartialEq, Eq)]
 #[iso_box(box_type = b"dOps", skip_impl(deserialize_seed, serialize))]
 pub struct OpusSpecificBox<'a> {
     /// Shall be set to 0.
@@ -115,7 +115,7 @@ impl Serialize for OpusSpecificBox<'_> {
 /// Channel Mapping Table
 ///
 /// Encapsulation of Opus in ISO Base Media File Format - 4.3.2
-#[derive(Debug)]
+#[derive(Debug, PartialEq, Eq)]
 pub struct ChannelMappingTable<'a> {
     /// Shall be set to the same value as the *Stream Count* field in the identification
     /// header defined in Ogg Opus.

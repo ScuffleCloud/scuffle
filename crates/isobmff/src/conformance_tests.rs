@@ -35,11 +35,6 @@ fn conformance_files() {
         .into_iter()
         .filter(|(n, m)| !n.ends_with(".zip") && m.published)
     {
-        // https://github.com/MPEGGroup/FileFormatConformance/issues/155
-        if file_name.ends_with("sg-tl-st.mp4") {
-            continue;
-        }
-
         println!("testing {file_name}");
         let mut file = std::fs::File::open(dir.join("files").join(&file_name)).expect("failed to open file");
         let reader = scuffle_bytes_util::zero_copy::IoRead::from(BufReader::new(&mut file));

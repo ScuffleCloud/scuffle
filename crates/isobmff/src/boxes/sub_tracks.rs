@@ -8,8 +8,9 @@ use crate::{FullBoxHeader, IsoBox};
 pub struct SubTrackBox {
     #[iso_box(nested_box)]
     pub stri: SubTrackInformationBox,
-    #[iso_box(nested_box)]
-    pub strd: SubTrackDefinitionBox,
+    // https://github.com/MPEGGroup/FileFormatConformance/issues/155
+    #[iso_box(nested_box(collect))]
+    pub strd: Option<SubTrackDefinitionBox>,
 }
 
 /// Sub track information box

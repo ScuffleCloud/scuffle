@@ -285,13 +285,23 @@ pub struct ChunkLargeOffsetBox {
 /// Padding bits box
 ///
 /// ISO/IEC 14496-12 - 8.7.6
-#[derive(IsoBox, Debug, PartialEq, Eq)]
+#[derive(IsoBox, PartialEq, Eq)]
 #[iso_box(box_type = b"padb", crate_path = crate)]
 pub struct PaddingBitsBox {
     pub full_header: FullBoxHeader,
     pub sample_count: u32,
     #[iso_box(from = "u8", repeated)]
     pub entry: Vec<PaddingBitsBoxEntry>,
+}
+
+impl Debug for PaddingBitsBox {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        f.debug_struct("PaddingBitsBox")
+            .field("full_header", &self.full_header)
+            .field("sample_count", &self.sample_count)
+            .field("entry.len", &self.entry.len())
+            .finish()
+    }
 }
 
 #[derive(Debug, PartialEq, Eq, Clone, Copy)]

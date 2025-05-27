@@ -1,0 +1,823 @@
+---
+source: crates/isobmff/src/conformance_tests.rs
+expression: redeserialized_file
+snapshot_kind: text
+---
+IsobmffFile {
+    ftyp: Some(
+        FileTypeBox {
+            major_brand: Brand::Iso4,
+            minor_version: 0,
+            compatible_brands: [
+                Brand::IsoM,
+                Brand::Avc1,
+                Brand::Iso6,
+                Brand::Iso4,
+            ],
+        },
+    ),
+    etyp: [],
+    otyp: [],
+    pdin: None,
+    moov: Some(
+        MovieBox {
+            mvhd: MovieHeaderBox {
+                full_header: FullBoxHeader {
+                    version: 0,
+                    flags: U24Be(
+                        0,
+                    ),
+                },
+                creation_time: 3538934171,
+                modification_time: 3538934171,
+                timescale: 600,
+                duration: 30000,
+                rate: 1,
+                volume: 1,
+                reserved1: 0,
+                reserved2: 0,
+                matrix: [
+                    65536,
+                    0,
+                    0,
+                    0,
+                    65536,
+                    0,
+                    0,
+                    0,
+                    1073741824,
+                ],
+                pre_defined: [
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                ],
+                next_track_id: 2,
+            },
+            meta: None,
+            trak: [
+                TrackBox {
+                    tkhd: TrackHeaderBox {
+                        version: 0,
+                        flags: TrackHeaderBoxFlags(
+                            TrackEnabled,
+                        ),
+                        creation_time: 3538934171,
+                        modification_time: 3538934172,
+                        track_id: 1,
+                        reserved1: 0,
+                        duration: 30000,
+                        reserved2: 0,
+                        layer: 0,
+                        alternate_group: 0,
+                        volume: 0,
+                        reserved3: 0,
+                        matrix: [
+                            65536,
+                            0,
+                            0,
+                            0,
+                            65536,
+                            0,
+                            0,
+                            0,
+                            1073741824,
+                        ],
+                        width: 320,
+                        height: 180,
+                    },
+                    tref: None,
+                    trgr: None,
+                    edts: Some(
+                        EditBox {
+                            elst: Some(
+                                EditListBox {
+                                    full_header: FullBoxHeader {
+                                        version: 0,
+                                        flags: U24Be(
+                                            0,
+                                        ),
+                                    },
+                                    entry_count: 1,
+                                    entries: [
+                                        EditListBoxEntry {
+                                            edit_duration: 30000,
+                                            media_time: 8,
+                                            media_rate: 1,
+                                        },
+                                    ],
+                                },
+                            ),
+                        },
+                    ),
+                    ttyp: None,
+                    meta: None,
+                    mdia: MediaBox {
+                        mdhd: MediaHeaderBox {
+                            full_header: FullBoxHeader {
+                                version: 0,
+                                flags: U24Be(
+                                    0,
+                                ),
+                            },
+                            creation_time: 3538934171,
+                            modification_time: 3538934172,
+                            timescale: 100,
+                            duration: 5000,
+                            language: Langauge(
+                                [
+                                    21,
+                                    14,
+                                    4,
+                                ],
+                            ),
+                            pre_defined: 0,
+                        },
+                        hdlr: HandlerBox {
+                            full_header: FullBoxHeader {
+                                version: 0,
+                                flags: U24Be(
+                                    0,
+                                ),
+                            },
+                            pre_defined: 0,
+                            handler_type: HandlerType::Video,
+                            reserved: [
+                                0,
+                                0,
+                                0,
+                            ],
+                            name: Utf8String(
+                                "h264:negctts@GPAC0.5.2-DEV-rev1182-g65e1b58-master",
+                            ),
+                        },
+                        elng: None,
+                        minf: MediaInformationBox {
+                            vmhd: Some(
+                                VideoMediaHeaderBox {
+                                    full_header: FullBoxHeader {
+                                        version: 0,
+                                        flags: U24Be(
+                                            1,
+                                        ),
+                                    },
+                                    graphicsmode: 0,
+                                    opcolor: [
+                                        0,
+                                        0,
+                                        0,
+                                    ],
+                                },
+                            ),
+                            smhd: None,
+                            hmhd: None,
+                            sthd: None,
+                            vvhd: None,
+                            unknown_boxes: [],
+                            dinf: DataInformationBox {
+                                dref: DataReferenceBox {
+                                    full_header: FullBoxHeader {
+                                        version: 0,
+                                        flags: U24Be(
+                                            0,
+                                        ),
+                                    },
+                                    entry_count: 1,
+                                    url: [
+                                        DataEntryUrlBox {
+                                            full_header: FullBoxHeader {
+                                                version: 0,
+                                                flags: U24Be(
+                                                    1,
+                                                ),
+                                            },
+                                            location: None,
+                                        },
+                                    ],
+                                    urn: [],
+                                    imda: [],
+                                    snim: [],
+                                    unknown_boxes: [],
+                                },
+                            },
+                            stbl: SampleTableBox {
+                                stsd: SampleDescriptionBox {
+                                    full_header: FullBoxHeader {
+                                        version: 0,
+                                        flags: U24Be(
+                                            0,
+                                        ),
+                                    },
+                                    entry_count: 1,
+                                    boxes: [
+                                        UnknownBox {
+                                            header: BoxHeader {
+                                                size: Short(
+                                                    160,
+                                                ),
+                                                box_type: FourCc(
+                                                    "avc1",
+                                                ),
+                                            },
+                                            data.len: 152,
+                                        },
+                                    ],
+                                },
+                                stts: TimeToSampleBox {
+                                    full_header: FullBoxHeader {
+                                        version: 0,
+                                        flags: U24Be(
+                                            0,
+                                        ),
+                                    },
+                                    entry_count: 1,
+                                    entries: [
+                                        TimeToSampleBoxEntry {
+                                            sample_count: 1250,
+                                            sample_delta: 4,
+                                        },
+                                    ],
+                                },
+                                ctts: Some(
+                                    CompositionOffsetBox {
+                                        full_header: FullBoxHeader {
+                                            version: 1,
+                                            flags: U24Be(
+                                                0,
+                                            ),
+                                        },
+                                        entry_count: 1250,
+                                        entries.len: 1250,
+                                    },
+                                ),
+                                cslg: Some(
+                                    CompositionToDecodeBox {
+                                        full_header: FullBoxHeader {
+                                            version: 0,
+                                            flags: U24Be(
+                                                0,
+                                            ),
+                                        },
+                                        composition_to_dt_shift: 8,
+                                        least_decode_to_display_delta: -8,
+                                        greatest_decode_to_display_delta: 8,
+                                        composition_start_time: 0,
+                                        composition_end_time: 5000,
+                                    },
+                                ),
+                                stsc: SampleToChunkBox {
+                                    full_header: FullBoxHeader {
+                                        version: 0,
+                                        flags: U24Be(
+                                            0,
+                                        ),
+                                    },
+                                    entry_count: 3,
+                                    entries.len: 3,
+                                },
+                                stsz: Some(
+                                    SampleSizeBox {
+                                        full_header: FullBoxHeader {
+                                            version: 0,
+                                            flags: U24Be(
+                                                0,
+                                            ),
+                                        },
+                                        sample_size: 0,
+                                        sample_count: 1250,
+                                        entry_size.len: 1250,
+                                    },
+                                ),
+                                stz2: None,
+                                stco: Some(
+                                    ChunkOffsetBox {
+                                        full_header: FullBoxHeader {
+                                            version: 0,
+                                            flags: U24Be(
+                                                0,
+                                            ),
+                                        },
+                                        entry_count: 105,
+                                        chunk_offset.len: 105,
+                                    },
+                                ),
+                                co64: None,
+                                stss: Some(
+                                    SyncSampleBox {
+                                        full_header: FullBoxHeader {
+                                            version: 0,
+                                            flags: U24Be(
+                                                0,
+                                            ),
+                                        },
+                                        entry_count: 1,
+                                        sample_number: [
+                                            1,
+                                        ],
+                                    },
+                                ),
+                                stsh: None,
+                                padb: None,
+                                stdp: None,
+                                sdtp: None,
+                                sbgp: [
+                                    SampleToGroupBox {
+                                        full_header: FullBoxHeader {
+                                            version: 0,
+                                            flags: U24Be(
+                                                0,
+                                            ),
+                                        },
+                                        grouping_type: [
+                                            114,
+                                            97,
+                                            112,
+                                            32,
+                                        ],
+                                        grouping_type_parameter: None,
+                                        entry_count: 98,
+                                        entries: [
+                                            SampleToGroupBoxEntry {
+                                                sample_count: 25,
+                                                group_description_index: 0,
+                                            },
+                                            SampleToGroupBoxEntry {
+                                                sample_count: 1,
+                                                group_description_index: 1,
+                                            },
+                                            SampleToGroupBoxEntry {
+                                                sample_count: 24,
+                                                group_description_index: 0,
+                                            },
+                                            SampleToGroupBoxEntry {
+                                                sample_count: 1,
+                                                group_description_index: 1,
+                                            },
+                                            SampleToGroupBoxEntry {
+                                                sample_count: 24,
+                                                group_description_index: 0,
+                                            },
+                                            SampleToGroupBoxEntry {
+                                                sample_count: 1,
+                                                group_description_index: 1,
+                                            },
+                                            SampleToGroupBoxEntry {
+                                                sample_count: 24,
+                                                group_description_index: 0,
+                                            },
+                                            SampleToGroupBoxEntry {
+                                                sample_count: 1,
+                                                group_description_index: 1,
+                                            },
+                                            SampleToGroupBoxEntry {
+                                                sample_count: 22,
+                                                group_description_index: 0,
+                                            },
+                                            SampleToGroupBoxEntry {
+                                                sample_count: 1,
+                                                group_description_index: 1,
+                                            },
+                                            SampleToGroupBoxEntry {
+                                                sample_count: 26,
+                                                group_description_index: 0,
+                                            },
+                                            SampleToGroupBoxEntry {
+                                                sample_count: 1,
+                                                group_description_index: 1,
+                                            },
+                                            SampleToGroupBoxEntry {
+                                                sample_count: 22,
+                                                group_description_index: 0,
+                                            },
+                                            SampleToGroupBoxEntry {
+                                                sample_count: 1,
+                                                group_description_index: 1,
+                                            },
+                                            SampleToGroupBoxEntry {
+                                                sample_count: 26,
+                                                group_description_index: 0,
+                                            },
+                                            SampleToGroupBoxEntry {
+                                                sample_count: 1,
+                                                group_description_index: 1,
+                                            },
+                                            SampleToGroupBoxEntry {
+                                                sample_count: 22,
+                                                group_description_index: 0,
+                                            },
+                                            SampleToGroupBoxEntry {
+                                                sample_count: 1,
+                                                group_description_index: 1,
+                                            },
+                                            SampleToGroupBoxEntry {
+                                                sample_count: 26,
+                                                group_description_index: 0,
+                                            },
+                                            SampleToGroupBoxEntry {
+                                                sample_count: 1,
+                                                group_description_index: 1,
+                                            },
+                                            SampleToGroupBoxEntry {
+                                                sample_count: 22,
+                                                group_description_index: 0,
+                                            },
+                                            SampleToGroupBoxEntry {
+                                                sample_count: 1,
+                                                group_description_index: 1,
+                                            },
+                                            SampleToGroupBoxEntry {
+                                                sample_count: 26,
+                                                group_description_index: 0,
+                                            },
+                                            SampleToGroupBoxEntry {
+                                                sample_count: 1,
+                                                group_description_index: 1,
+                                            },
+                                            SampleToGroupBoxEntry {
+                                                sample_count: 22,
+                                                group_description_index: 0,
+                                            },
+                                            SampleToGroupBoxEntry {
+                                                sample_count: 1,
+                                                group_description_index: 1,
+                                            },
+                                            SampleToGroupBoxEntry {
+                                                sample_count: 26,
+                                                group_description_index: 0,
+                                            },
+                                            SampleToGroupBoxEntry {
+                                                sample_count: 1,
+                                                group_description_index: 1,
+                                            },
+                                            SampleToGroupBoxEntry {
+                                                sample_count: 22,
+                                                group_description_index: 0,
+                                            },
+                                            SampleToGroupBoxEntry {
+                                                sample_count: 1,
+                                                group_description_index: 1,
+                                            },
+                                            SampleToGroupBoxEntry {
+                                                sample_count: 26,
+                                                group_description_index: 0,
+                                            },
+                                            SampleToGroupBoxEntry {
+                                                sample_count: 1,
+                                                group_description_index: 1,
+                                            },
+                                            SampleToGroupBoxEntry {
+                                                sample_count: 22,
+                                                group_description_index: 0,
+                                            },
+                                            SampleToGroupBoxEntry {
+                                                sample_count: 1,
+                                                group_description_index: 1,
+                                            },
+                                            SampleToGroupBoxEntry {
+                                                sample_count: 26,
+                                                group_description_index: 0,
+                                            },
+                                            SampleToGroupBoxEntry {
+                                                sample_count: 1,
+                                                group_description_index: 1,
+                                            },
+                                            SampleToGroupBoxEntry {
+                                                sample_count: 22,
+                                                group_description_index: 0,
+                                            },
+                                            SampleToGroupBoxEntry {
+                                                sample_count: 1,
+                                                group_description_index: 1,
+                                            },
+                                            SampleToGroupBoxEntry {
+                                                sample_count: 26,
+                                                group_description_index: 0,
+                                            },
+                                            SampleToGroupBoxEntry {
+                                                sample_count: 1,
+                                                group_description_index: 1,
+                                            },
+                                            SampleToGroupBoxEntry {
+                                                sample_count: 22,
+                                                group_description_index: 0,
+                                            },
+                                            SampleToGroupBoxEntry {
+                                                sample_count: 1,
+                                                group_description_index: 1,
+                                            },
+                                            SampleToGroupBoxEntry {
+                                                sample_count: 26,
+                                                group_description_index: 0,
+                                            },
+                                            SampleToGroupBoxEntry {
+                                                sample_count: 1,
+                                                group_description_index: 1,
+                                            },
+                                            SampleToGroupBoxEntry {
+                                                sample_count: 22,
+                                                group_description_index: 0,
+                                            },
+                                            SampleToGroupBoxEntry {
+                                                sample_count: 1,
+                                                group_description_index: 1,
+                                            },
+                                            SampleToGroupBoxEntry {
+                                                sample_count: 26,
+                                                group_description_index: 0,
+                                            },
+                                            SampleToGroupBoxEntry {
+                                                sample_count: 1,
+                                                group_description_index: 1,
+                                            },
+                                            SampleToGroupBoxEntry {
+                                                sample_count: 22,
+                                                group_description_index: 0,
+                                            },
+                                            SampleToGroupBoxEntry {
+                                                sample_count: 1,
+                                                group_description_index: 1,
+                                            },
+                                            SampleToGroupBoxEntry {
+                                                sample_count: 26,
+                                                group_description_index: 0,
+                                            },
+                                            SampleToGroupBoxEntry {
+                                                sample_count: 1,
+                                                group_description_index: 1,
+                                            },
+                                            SampleToGroupBoxEntry {
+                                                sample_count: 22,
+                                                group_description_index: 0,
+                                            },
+                                            SampleToGroupBoxEntry {
+                                                sample_count: 1,
+                                                group_description_index: 1,
+                                            },
+                                            SampleToGroupBoxEntry {
+                                                sample_count: 26,
+                                                group_description_index: 0,
+                                            },
+                                            SampleToGroupBoxEntry {
+                                                sample_count: 1,
+                                                group_description_index: 1,
+                                            },
+                                            SampleToGroupBoxEntry {
+                                                sample_count: 22,
+                                                group_description_index: 0,
+                                            },
+                                            SampleToGroupBoxEntry {
+                                                sample_count: 1,
+                                                group_description_index: 1,
+                                            },
+                                            SampleToGroupBoxEntry {
+                                                sample_count: 26,
+                                                group_description_index: 0,
+                                            },
+                                            SampleToGroupBoxEntry {
+                                                sample_count: 1,
+                                                group_description_index: 1,
+                                            },
+                                            SampleToGroupBoxEntry {
+                                                sample_count: 22,
+                                                group_description_index: 0,
+                                            },
+                                            SampleToGroupBoxEntry {
+                                                sample_count: 1,
+                                                group_description_index: 1,
+                                            },
+                                            SampleToGroupBoxEntry {
+                                                sample_count: 26,
+                                                group_description_index: 0,
+                                            },
+                                            SampleToGroupBoxEntry {
+                                                sample_count: 1,
+                                                group_description_index: 1,
+                                            },
+                                            SampleToGroupBoxEntry {
+                                                sample_count: 22,
+                                                group_description_index: 0,
+                                            },
+                                            SampleToGroupBoxEntry {
+                                                sample_count: 1,
+                                                group_description_index: 1,
+                                            },
+                                            SampleToGroupBoxEntry {
+                                                sample_count: 26,
+                                                group_description_index: 0,
+                                            },
+                                            SampleToGroupBoxEntry {
+                                                sample_count: 1,
+                                                group_description_index: 1,
+                                            },
+                                            SampleToGroupBoxEntry {
+                                                sample_count: 22,
+                                                group_description_index: 0,
+                                            },
+                                            SampleToGroupBoxEntry {
+                                                sample_count: 1,
+                                                group_description_index: 1,
+                                            },
+                                            SampleToGroupBoxEntry {
+                                                sample_count: 26,
+                                                group_description_index: 0,
+                                            },
+                                            SampleToGroupBoxEntry {
+                                                sample_count: 1,
+                                                group_description_index: 1,
+                                            },
+                                            SampleToGroupBoxEntry {
+                                                sample_count: 22,
+                                                group_description_index: 0,
+                                            },
+                                            SampleToGroupBoxEntry {
+                                                sample_count: 1,
+                                                group_description_index: 1,
+                                            },
+                                            SampleToGroupBoxEntry {
+                                                sample_count: 26,
+                                                group_description_index: 0,
+                                            },
+                                            SampleToGroupBoxEntry {
+                                                sample_count: 1,
+                                                group_description_index: 1,
+                                            },
+                                            SampleToGroupBoxEntry {
+                                                sample_count: 22,
+                                                group_description_index: 0,
+                                            },
+                                            SampleToGroupBoxEntry {
+                                                sample_count: 1,
+                                                group_description_index: 1,
+                                            },
+                                            SampleToGroupBoxEntry {
+                                                sample_count: 26,
+                                                group_description_index: 0,
+                                            },
+                                            SampleToGroupBoxEntry {
+                                                sample_count: 1,
+                                                group_description_index: 1,
+                                            },
+                                            SampleToGroupBoxEntry {
+                                                sample_count: 22,
+                                                group_description_index: 0,
+                                            },
+                                            SampleToGroupBoxEntry {
+                                                sample_count: 1,
+                                                group_description_index: 1,
+                                            },
+                                            SampleToGroupBoxEntry {
+                                                sample_count: 26,
+                                                group_description_index: 0,
+                                            },
+                                            SampleToGroupBoxEntry {
+                                                sample_count: 1,
+                                                group_description_index: 1,
+                                            },
+                                            SampleToGroupBoxEntry {
+                                                sample_count: 22,
+                                                group_description_index: 0,
+                                            },
+                                            SampleToGroupBoxEntry {
+                                                sample_count: 1,
+                                                group_description_index: 1,
+                                            },
+                                            SampleToGroupBoxEntry {
+                                                sample_count: 26,
+                                                group_description_index: 0,
+                                            },
+                                            SampleToGroupBoxEntry {
+                                                sample_count: 1,
+                                                group_description_index: 1,
+                                            },
+                                            SampleToGroupBoxEntry {
+                                                sample_count: 22,
+                                                group_description_index: 0,
+                                            },
+                                            SampleToGroupBoxEntry {
+                                                sample_count: 1,
+                                                group_description_index: 1,
+                                            },
+                                            SampleToGroupBoxEntry {
+                                                sample_count: 26,
+                                                group_description_index: 0,
+                                            },
+                                            SampleToGroupBoxEntry {
+                                                sample_count: 1,
+                                                group_description_index: 1,
+                                            },
+                                            SampleToGroupBoxEntry {
+                                                sample_count: 22,
+                                                group_description_index: 0,
+                                            },
+                                            SampleToGroupBoxEntry {
+                                                sample_count: 1,
+                                                group_description_index: 1,
+                                            },
+                                            SampleToGroupBoxEntry {
+                                                sample_count: 26,
+                                                group_description_index: 0,
+                                            },
+                                            SampleToGroupBoxEntry {
+                                                sample_count: 1,
+                                                group_description_index: 1,
+                                            },
+                                            SampleToGroupBoxEntry {
+                                                sample_count: 22,
+                                                group_description_index: 0,
+                                            },
+                                            SampleToGroupBoxEntry {
+                                                sample_count: 1,
+                                                group_description_index: 1,
+                                            },
+                                        ],
+                                    },
+                                ],
+                                sgpd: [
+                                    SampleGroupDescriptionBox {
+                                        full_header: FullBoxHeader {
+                                            version: 1,
+                                            flags: U24Be(
+                                                0,
+                                            ),
+                                        },
+                                        grouping_type: [
+                                            114,
+                                            97,
+                                            112,
+                                            32,
+                                        ],
+                                        default_length: Some(
+                                            1,
+                                        ),
+                                        default_group_description_index: None,
+                                        entry_count: 1,
+                                        entries: [
+                                            SampleGroupDescriptionEntry {
+                                                description_length: None,
+                                                sample_group_description_entry: VisualRandomAccessEntry {
+                                                    num_leading_samples_known: false,
+                                                    num_leading_samples: 0,
+                                                },
+                                            },
+                                        ],
+                                    },
+                                ],
+                                subs: [],
+                                saiz: [],
+                                saio: [],
+                                csgp: [],
+                            },
+                        },
+                        unknown_boxes: [],
+                    },
+                    unknown_boxes: [],
+                    udta: None,
+                },
+            ],
+            mvex: None,
+            unknown_boxes: [
+                UnknownBox {
+                    header: BoxHeader {
+                        size: Short(
+                            21,
+                        ),
+                        box_type: FourCc(
+                            "iods",
+                        ),
+                    },
+                    data.len: 13,
+                },
+            ],
+            udta: None,
+        },
+    ),
+    moof: [],
+    mdat: [
+        MediaDataBox {
+            data.len: 315813,
+        },
+    ],
+    imda: [],
+    meta: None,
+    styp: [],
+    sidx: [],
+    ssix: [],
+    prft: [],
+    unknown_boxes: [
+        UnknownBox {
+            header: BoxHeader {
+                size: Short(
+                    75,
+                ),
+                box_type: FourCc(
+                    "free",
+                ),
+            },
+            data.len: 67,
+        },
+    ],
+    mfra: None,
+}

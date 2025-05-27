@@ -1,0 +1,2328 @@
+---
+source: crates/isobmff/src/conformance_tests.rs
+expression: redeserialized_file
+snapshot_kind: text
+---
+IsobmffFile {
+    ftyp: Some(
+        FileTypeBox {
+            major_brand: Brand::Iso6,
+            minor_version: 0,
+            compatible_brands: [
+                Brand([109, 112, 52, 50]),
+                Brand::IsoM,
+                Brand::Iso6,
+            ],
+        },
+    ),
+    etyp: [],
+    otyp: [],
+    pdin: None,
+    moov: Some(
+        MovieBox {
+            mvhd: MovieHeaderBox {
+                full_header: FullBoxHeader {
+                    version: 0,
+                    flags: U24Be(
+                        0,
+                    ),
+                },
+                creation_time: 3506405977,
+                modification_time: 3506405977,
+                timescale: 600,
+                duration: 1280,
+                rate: 1,
+                volume: 1,
+                reserved1: 0,
+                reserved2: 0,
+                matrix: [
+                    65536,
+                    0,
+                    0,
+                    0,
+                    65536,
+                    0,
+                    0,
+                    0,
+                    1073741824,
+                ],
+                pre_defined: [
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                ],
+                next_track_id: 2,
+            },
+            meta: None,
+            trak: [
+                TrackBox {
+                    tkhd: TrackHeaderBox {
+                        version: 0,
+                        flags: TrackHeaderBoxFlags(
+                            TrackEnabled | TrackInMovie | TrackInPreview,
+                        ),
+                        creation_time: 3506405978,
+                        modification_time: 3506405978,
+                        track_id: 1,
+                        reserved1: 0,
+                        duration: 1280,
+                        reserved2: 0,
+                        layer: 0,
+                        alternate_group: 0,
+                        volume: 0,
+                        reserved3: 0,
+                        matrix: [
+                            65536,
+                            0,
+                            0,
+                            0,
+                            65536,
+                            0,
+                            0,
+                            0,
+                            1073741824,
+                        ],
+                        width: 832,
+                        height: 480,
+                    },
+                    tref: None,
+                    trgr: None,
+                    edts: None,
+                    ttyp: None,
+                    meta: None,
+                    mdia: MediaBox {
+                        mdhd: MediaHeaderBox {
+                            full_header: FullBoxHeader {
+                                version: 0,
+                                flags: U24Be(
+                                    0,
+                                ),
+                            },
+                            creation_time: 3506405978,
+                            modification_time: 3506405978,
+                            timescale: 30000,
+                            duration: 64000,
+                            language: Langauge(
+                                [
+                                    21,
+                                    14,
+                                    4,
+                                ],
+                            ),
+                            pre_defined: 0,
+                        },
+                        hdlr: HandlerBox {
+                            full_header: FullBoxHeader {
+                                version: 0,
+                                flags: U24Be(
+                                    0,
+                                ),
+                            },
+                            pre_defined: 0,
+                            handler_type: HandlerType::Video,
+                            reserved: [
+                                0,
+                                0,
+                                0,
+                            ],
+                            name: Utf8String(
+                                "vide",
+                            ),
+                        },
+                        elng: None,
+                        minf: MediaInformationBox {
+                            vmhd: Some(
+                                VideoMediaHeaderBox {
+                                    full_header: FullBoxHeader {
+                                        version: 0,
+                                        flags: U24Be(
+                                            1,
+                                        ),
+                                    },
+                                    graphicsmode: 0,
+                                    opcolor: [
+                                        0,
+                                        0,
+                                        0,
+                                    ],
+                                },
+                            ),
+                            smhd: None,
+                            hmhd: None,
+                            sthd: None,
+                            vvhd: None,
+                            unknown_boxes: [],
+                            dinf: DataInformationBox {
+                                dref: DataReferenceBox {
+                                    full_header: FullBoxHeader {
+                                        version: 0,
+                                        flags: U24Be(
+                                            0,
+                                        ),
+                                    },
+                                    entry_count: 1,
+                                    url: [
+                                        DataEntryUrlBox {
+                                            full_header: FullBoxHeader {
+                                                version: 0,
+                                                flags: U24Be(
+                                                    1,
+                                                ),
+                                            },
+                                            location: None,
+                                        },
+                                    ],
+                                    urn: [],
+                                    imda: [],
+                                    snim: [],
+                                    unknown_boxes: [],
+                                },
+                            },
+                            stbl: SampleTableBox {
+                                stsd: SampleDescriptionBox {
+                                    full_header: FullBoxHeader {
+                                        version: 0,
+                                        flags: U24Be(
+                                            0,
+                                        ),
+                                    },
+                                    entry_count: 1,
+                                    boxes: [
+                                        UnknownBox {
+                                            header: BoxHeader {
+                                                size: Short(
+                                                    219,
+                                                ),
+                                                box_type: FourCc(
+                                                    "hvc1",
+                                                ),
+                                            },
+                                            data.len: 211,
+                                        },
+                                    ],
+                                },
+                                stts: TimeToSampleBox {
+                                    full_header: FullBoxHeader {
+                                        version: 0,
+                                        flags: U24Be(
+                                            0,
+                                        ),
+                                    },
+                                    entry_count: 1,
+                                    entries: [
+                                        TimeToSampleBoxEntry {
+                                            sample_count: 64,
+                                            sample_delta: 1000,
+                                        },
+                                    ],
+                                },
+                                ctts: Some(
+                                    CompositionOffsetBox {
+                                        full_header: FullBoxHeader {
+                                            version: 0,
+                                            flags: U24Be(
+                                                0,
+                                            ),
+                                        },
+                                        entry_count: 64,
+                                        entries.len: 64,
+                                    },
+                                ),
+                                cslg: None,
+                                stsc: SampleToChunkBox {
+                                    full_header: FullBoxHeader {
+                                        version: 0,
+                                        flags: U24Be(
+                                            0,
+                                        ),
+                                    },
+                                    entry_count: 1,
+                                    entries.len: 1,
+                                },
+                                stsz: Some(
+                                    SampleSizeBox {
+                                        full_header: FullBoxHeader {
+                                            version: 0,
+                                            flags: U24Be(
+                                                0,
+                                            ),
+                                        },
+                                        sample_size: 0,
+                                        sample_count: 64,
+                                        entry_size.len: 64,
+                                    },
+                                ),
+                                stz2: None,
+                                stco: Some(
+                                    ChunkOffsetBox {
+                                        full_header: FullBoxHeader {
+                                            version: 0,
+                                            flags: U24Be(
+                                                0,
+                                            ),
+                                        },
+                                        entry_count: 64,
+                                        chunk_offset.len: 64,
+                                    },
+                                ),
+                                co64: None,
+                                stss: Some(
+                                    SyncSampleBox {
+                                        full_header: FullBoxHeader {
+                                            version: 0,
+                                            flags: U24Be(
+                                                0,
+                                            ),
+                                        },
+                                        entry_count: 2,
+                                        sample_number: [
+                                            1,
+                                            1,
+                                        ],
+                                    },
+                                ),
+                                stsh: None,
+                                padb: None,
+                                stdp: None,
+                                sdtp: None,
+                                sbgp: [
+                                    SampleToGroupBox {
+                                        full_header: FullBoxHeader {
+                                            version: 0,
+                                            flags: U24Be(
+                                                0,
+                                            ),
+                                        },
+                                        grouping_type: [
+                                            114,
+                                            97,
+                                            112,
+                                            32,
+                                        ],
+                                        grouping_type_parameter: None,
+                                        entry_count: 3,
+                                        entries: [
+                                            SampleToGroupBoxEntry {
+                                                sample_count: 25,
+                                                group_description_index: 0,
+                                            },
+                                            SampleToGroupBoxEntry {
+                                                sample_count: 1,
+                                                group_description_index: 1,
+                                            },
+                                            SampleToGroupBoxEntry {
+                                                sample_count: 38,
+                                                group_description_index: 0,
+                                            },
+                                        ],
+                                    },
+                                ],
+                                sgpd: [
+                                    SampleGroupDescriptionBox {
+                                        full_header: FullBoxHeader {
+                                            version: 1,
+                                            flags: U24Be(
+                                                0,
+                                            ),
+                                        },
+                                        grouping_type: [
+                                            114,
+                                            97,
+                                            112,
+                                            32,
+                                        ],
+                                        default_length: Some(
+                                            1,
+                                        ),
+                                        default_group_description_index: None,
+                                        entry_count: 1,
+                                        entries: [
+                                            SampleGroupDescriptionEntry {
+                                                description_length: None,
+                                                sample_group_description_entry: VisualRandomAccessEntry {
+                                                    num_leading_samples_known: false,
+                                                    num_leading_samples: 0,
+                                                },
+                                            },
+                                        ],
+                                    },
+                                ],
+                                subs: [
+                                    SubSampleInformationBox {
+                                        full_header: FullBoxHeader {
+                                            version: 0,
+                                            flags: U24Be(
+                                                4,
+                                            ),
+                                        },
+                                        entry_count: 64,
+                                        entries: [
+                                            SubSampleInformationBoxEntry {
+                                                sample_delta: 0,
+                                                subsample_count: 4,
+                                                subsample_info: [
+                                                    SubSampleInformationBoxEntrySubSample {
+                                                        subsample_size: 8701,
+                                                        subsample_priority: 0,
+                                                        discardable: 0,
+                                                        codec_specific_parameters: 0,
+                                                    },
+                                                    SubSampleInformationBoxEntrySubSample {
+                                                        subsample_size: 3805,
+                                                        subsample_priority: 0,
+                                                        discardable: 0,
+                                                        codec_specific_parameters: 0,
+                                                    },
+                                                    SubSampleInformationBoxEntrySubSample {
+                                                        subsample_size: 3573,
+                                                        subsample_priority: 0,
+                                                        discardable: 0,
+                                                        codec_specific_parameters: 0,
+                                                    },
+                                                    SubSampleInformationBoxEntrySubSample {
+                                                        subsample_size: 903,
+                                                        subsample_priority: 0,
+                                                        discardable: 0,
+                                                        codec_specific_parameters: 0,
+                                                    },
+                                                ],
+                                            },
+                                            SubSampleInformationBoxEntry {
+                                                sample_delta: 1,
+                                                subsample_count: 4,
+                                                subsample_info: [
+                                                    SubSampleInformationBoxEntrySubSample {
+                                                        subsample_size: 1359,
+                                                        subsample_priority: 0,
+                                                        discardable: 0,
+                                                        codec_specific_parameters: 0,
+                                                    },
+                                                    SubSampleInformationBoxEntrySubSample {
+                                                        subsample_size: 2122,
+                                                        subsample_priority: 0,
+                                                        discardable: 0,
+                                                        codec_specific_parameters: 0,
+                                                    },
+                                                    SubSampleInformationBoxEntrySubSample {
+                                                        subsample_size: 1300,
+                                                        subsample_priority: 0,
+                                                        discardable: 0,
+                                                        codec_specific_parameters: 0,
+                                                    },
+                                                    SubSampleInformationBoxEntrySubSample {
+                                                        subsample_size: 447,
+                                                        subsample_priority: 0,
+                                                        discardable: 0,
+                                                        codec_specific_parameters: 0,
+                                                    },
+                                                ],
+                                            },
+                                            SubSampleInformationBoxEntry {
+                                                sample_delta: 1,
+                                                subsample_count: 4,
+                                                subsample_info: [
+                                                    SubSampleInformationBoxEntrySubSample {
+                                                        subsample_size: 433,
+                                                        subsample_priority: 0,
+                                                        discardable: 0,
+                                                        codec_specific_parameters: 0,
+                                                    },
+                                                    SubSampleInformationBoxEntrySubSample {
+                                                        subsample_size: 846,
+                                                        subsample_priority: 0,
+                                                        discardable: 0,
+                                                        codec_specific_parameters: 0,
+                                                    },
+                                                    SubSampleInformationBoxEntrySubSample {
+                                                        subsample_size: 500,
+                                                        subsample_priority: 0,
+                                                        discardable: 0,
+                                                        codec_specific_parameters: 0,
+                                                    },
+                                                    SubSampleInformationBoxEntrySubSample {
+                                                        subsample_size: 174,
+                                                        subsample_priority: 0,
+                                                        discardable: 0,
+                                                        codec_specific_parameters: 0,
+                                                    },
+                                                ],
+                                            },
+                                            SubSampleInformationBoxEntry {
+                                                sample_delta: 1,
+                                                subsample_count: 4,
+                                                subsample_info: [
+                                                    SubSampleInformationBoxEntrySubSample {
+                                                        subsample_size: 191,
+                                                        subsample_priority: 0,
+                                                        discardable: 0,
+                                                        codec_specific_parameters: 0,
+                                                    },
+                                                    SubSampleInformationBoxEntrySubSample {
+                                                        subsample_size: 363,
+                                                        subsample_priority: 0,
+                                                        discardable: 0,
+                                                        codec_specific_parameters: 0,
+                                                    },
+                                                    SubSampleInformationBoxEntrySubSample {
+                                                        subsample_size: 261,
+                                                        subsample_priority: 0,
+                                                        discardable: 0,
+                                                        codec_specific_parameters: 0,
+                                                    },
+                                                    SubSampleInformationBoxEntrySubSample {
+                                                        subsample_size: 74,
+                                                        subsample_priority: 0,
+                                                        discardable: 0,
+                                                        codec_specific_parameters: 0,
+                                                    },
+                                                ],
+                                            },
+                                            SubSampleInformationBoxEntry {
+                                                sample_delta: 1,
+                                                subsample_count: 4,
+                                                subsample_info: [
+                                                    SubSampleInformationBoxEntrySubSample {
+                                                        subsample_size: 17,
+                                                        subsample_priority: 0,
+                                                        discardable: 0,
+                                                        codec_specific_parameters: 0,
+                                                    },
+                                                    SubSampleInformationBoxEntrySubSample {
+                                                        subsample_size: 10,
+                                                        subsample_priority: 0,
+                                                        discardable: 0,
+                                                        codec_specific_parameters: 0,
+                                                    },
+                                                    SubSampleInformationBoxEntrySubSample {
+                                                        subsample_size: 10,
+                                                        subsample_priority: 0,
+                                                        discardable: 0,
+                                                        codec_specific_parameters: 0,
+                                                    },
+                                                    SubSampleInformationBoxEntrySubSample {
+                                                        subsample_size: 10,
+                                                        subsample_priority: 0,
+                                                        discardable: 0,
+                                                        codec_specific_parameters: 0,
+                                                    },
+                                                ],
+                                            },
+                                            SubSampleInformationBoxEntry {
+                                                sample_delta: 1,
+                                                subsample_count: 4,
+                                                subsample_info: [
+                                                    SubSampleInformationBoxEntrySubSample {
+                                                        subsample_size: 88,
+                                                        subsample_priority: 0,
+                                                        discardable: 0,
+                                                        codec_specific_parameters: 0,
+                                                    },
+                                                    SubSampleInformationBoxEntrySubSample {
+                                                        subsample_size: 158,
+                                                        subsample_priority: 0,
+                                                        discardable: 0,
+                                                        codec_specific_parameters: 0,
+                                                    },
+                                                    SubSampleInformationBoxEntrySubSample {
+                                                        subsample_size: 94,
+                                                        subsample_priority: 0,
+                                                        discardable: 0,
+                                                        codec_specific_parameters: 0,
+                                                    },
+                                                    SubSampleInformationBoxEntrySubSample {
+                                                        subsample_size: 58,
+                                                        subsample_priority: 0,
+                                                        discardable: 0,
+                                                        codec_specific_parameters: 0,
+                                                    },
+                                                ],
+                                            },
+                                            SubSampleInformationBoxEntry {
+                                                sample_delta: 1,
+                                                subsample_count: 4,
+                                                subsample_info: [
+                                                    SubSampleInformationBoxEntrySubSample {
+                                                        subsample_size: 337,
+                                                        subsample_priority: 0,
+                                                        discardable: 0,
+                                                        codec_specific_parameters: 0,
+                                                    },
+                                                    SubSampleInformationBoxEntrySubSample {
+                                                        subsample_size: 459,
+                                                        subsample_priority: 0,
+                                                        discardable: 0,
+                                                        codec_specific_parameters: 0,
+                                                    },
+                                                    SubSampleInformationBoxEntrySubSample {
+                                                        subsample_size: 289,
+                                                        subsample_priority: 0,
+                                                        discardable: 0,
+                                                        codec_specific_parameters: 0,
+                                                    },
+                                                    SubSampleInformationBoxEntrySubSample {
+                                                        subsample_size: 144,
+                                                        subsample_priority: 0,
+                                                        discardable: 0,
+                                                        codec_specific_parameters: 0,
+                                                    },
+                                                ],
+                                            },
+                                            SubSampleInformationBoxEntry {
+                                                sample_delta: 1,
+                                                subsample_count: 4,
+                                                subsample_info: [
+                                                    SubSampleInformationBoxEntrySubSample {
+                                                        subsample_size: 143,
+                                                        subsample_priority: 0,
+                                                        discardable: 0,
+                                                        codec_specific_parameters: 0,
+                                                    },
+                                                    SubSampleInformationBoxEntrySubSample {
+                                                        subsample_size: 156,
+                                                        subsample_priority: 0,
+                                                        discardable: 0,
+                                                        codec_specific_parameters: 0,
+                                                    },
+                                                    SubSampleInformationBoxEntrySubSample {
+                                                        subsample_size: 83,
+                                                        subsample_priority: 0,
+                                                        discardable: 0,
+                                                        codec_specific_parameters: 0,
+                                                    },
+                                                    SubSampleInformationBoxEntrySubSample {
+                                                        subsample_size: 54,
+                                                        subsample_priority: 0,
+                                                        discardable: 0,
+                                                        codec_specific_parameters: 0,
+                                                    },
+                                                ],
+                                            },
+                                            SubSampleInformationBoxEntry {
+                                                sample_delta: 1,
+                                                subsample_count: 4,
+                                                subsample_info: [
+                                                    SubSampleInformationBoxEntrySubSample {
+                                                        subsample_size: 154,
+                                                        subsample_priority: 0,
+                                                        discardable: 0,
+                                                        codec_specific_parameters: 0,
+                                                    },
+                                                    SubSampleInformationBoxEntrySubSample {
+                                                        subsample_size: 125,
+                                                        subsample_priority: 0,
+                                                        discardable: 0,
+                                                        codec_specific_parameters: 0,
+                                                    },
+                                                    SubSampleInformationBoxEntrySubSample {
+                                                        subsample_size: 108,
+                                                        subsample_priority: 0,
+                                                        discardable: 0,
+                                                        codec_specific_parameters: 0,
+                                                    },
+                                                    SubSampleInformationBoxEntrySubSample {
+                                                        subsample_size: 55,
+                                                        subsample_priority: 0,
+                                                        discardable: 0,
+                                                        codec_specific_parameters: 0,
+                                                    },
+                                                ],
+                                            },
+                                            SubSampleInformationBoxEntry {
+                                                sample_delta: 1,
+                                                subsample_count: 4,
+                                                subsample_info: [
+                                                    SubSampleInformationBoxEntrySubSample {
+                                                        subsample_size: 1140,
+                                                        subsample_priority: 0,
+                                                        discardable: 0,
+                                                        codec_specific_parameters: 0,
+                                                    },
+                                                    SubSampleInformationBoxEntrySubSample {
+                                                        subsample_size: 1837,
+                                                        subsample_priority: 0,
+                                                        discardable: 0,
+                                                        codec_specific_parameters: 0,
+                                                    },
+                                                    SubSampleInformationBoxEntrySubSample {
+                                                        subsample_size: 1874,
+                                                        subsample_priority: 0,
+                                                        discardable: 0,
+                                                        codec_specific_parameters: 0,
+                                                    },
+                                                    SubSampleInformationBoxEntrySubSample {
+                                                        subsample_size: 700,
+                                                        subsample_priority: 0,
+                                                        discardable: 0,
+                                                        codec_specific_parameters: 0,
+                                                    },
+                                                ],
+                                            },
+                                            SubSampleInformationBoxEntry {
+                                                sample_delta: 1,
+                                                subsample_count: 4,
+                                                subsample_info: [
+                                                    SubSampleInformationBoxEntrySubSample {
+                                                        subsample_size: 532,
+                                                        subsample_priority: 0,
+                                                        discardable: 0,
+                                                        codec_specific_parameters: 0,
+                                                    },
+                                                    SubSampleInformationBoxEntrySubSample {
+                                                        subsample_size: 857,
+                                                        subsample_priority: 0,
+                                                        discardable: 0,
+                                                        codec_specific_parameters: 0,
+                                                    },
+                                                    SubSampleInformationBoxEntrySubSample {
+                                                        subsample_size: 527,
+                                                        subsample_priority: 0,
+                                                        discardable: 0,
+                                                        codec_specific_parameters: 0,
+                                                    },
+                                                    SubSampleInformationBoxEntrySubSample {
+                                                        subsample_size: 264,
+                                                        subsample_priority: 0,
+                                                        discardable: 0,
+                                                        codec_specific_parameters: 0,
+                                                    },
+                                                ],
+                                            },
+                                            SubSampleInformationBoxEntry {
+                                                sample_delta: 1,
+                                                subsample_count: 4,
+                                                subsample_info: [
+                                                    SubSampleInformationBoxEntrySubSample {
+                                                        subsample_size: 347,
+                                                        subsample_priority: 0,
+                                                        discardable: 0,
+                                                        codec_specific_parameters: 0,
+                                                    },
+                                                    SubSampleInformationBoxEntrySubSample {
+                                                        subsample_size: 509,
+                                                        subsample_priority: 0,
+                                                        discardable: 0,
+                                                        codec_specific_parameters: 0,
+                                                    },
+                                                    SubSampleInformationBoxEntrySubSample {
+                                                        subsample_size: 341,
+                                                        subsample_priority: 0,
+                                                        discardable: 0,
+                                                        codec_specific_parameters: 0,
+                                                    },
+                                                    SubSampleInformationBoxEntrySubSample {
+                                                        subsample_size: 151,
+                                                        subsample_priority: 0,
+                                                        discardable: 0,
+                                                        codec_specific_parameters: 0,
+                                                    },
+                                                ],
+                                            },
+                                            SubSampleInformationBoxEntry {
+                                                sample_delta: 1,
+                                                subsample_count: 4,
+                                                subsample_info: [
+                                                    SubSampleInformationBoxEntrySubSample {
+                                                        subsample_size: 89,
+                                                        subsample_priority: 0,
+                                                        discardable: 0,
+                                                        codec_specific_parameters: 0,
+                                                    },
+                                                    SubSampleInformationBoxEntrySubSample {
+                                                        subsample_size: 127,
+                                                        subsample_priority: 0,
+                                                        discardable: 0,
+                                                        codec_specific_parameters: 0,
+                                                    },
+                                                    SubSampleInformationBoxEntrySubSample {
+                                                        subsample_size: 119,
+                                                        subsample_priority: 0,
+                                                        discardable: 0,
+                                                        codec_specific_parameters: 0,
+                                                    },
+                                                    SubSampleInformationBoxEntrySubSample {
+                                                        subsample_size: 79,
+                                                        subsample_priority: 0,
+                                                        discardable: 0,
+                                                        codec_specific_parameters: 0,
+                                                    },
+                                                ],
+                                            },
+                                            SubSampleInformationBoxEntry {
+                                                sample_delta: 1,
+                                                subsample_count: 4,
+                                                subsample_info: [
+                                                    SubSampleInformationBoxEntrySubSample {
+                                                        subsample_size: 80,
+                                                        subsample_priority: 0,
+                                                        discardable: 0,
+                                                        codec_specific_parameters: 0,
+                                                    },
+                                                    SubSampleInformationBoxEntrySubSample {
+                                                        subsample_size: 177,
+                                                        subsample_priority: 0,
+                                                        discardable: 0,
+                                                        codec_specific_parameters: 0,
+                                                    },
+                                                    SubSampleInformationBoxEntrySubSample {
+                                                        subsample_size: 135,
+                                                        subsample_priority: 0,
+                                                        discardable: 0,
+                                                        codec_specific_parameters: 0,
+                                                    },
+                                                    SubSampleInformationBoxEntrySubSample {
+                                                        subsample_size: 57,
+                                                        subsample_priority: 0,
+                                                        discardable: 0,
+                                                        codec_specific_parameters: 0,
+                                                    },
+                                                ],
+                                            },
+                                            SubSampleInformationBoxEntry {
+                                                sample_delta: 1,
+                                                subsample_count: 4,
+                                                subsample_info: [
+                                                    SubSampleInformationBoxEntrySubSample {
+                                                        subsample_size: 309,
+                                                        subsample_priority: 0,
+                                                        discardable: 0,
+                                                        codec_specific_parameters: 0,
+                                                    },
+                                                    SubSampleInformationBoxEntrySubSample {
+                                                        subsample_size: 451,
+                                                        subsample_priority: 0,
+                                                        discardable: 0,
+                                                        codec_specific_parameters: 0,
+                                                    },
+                                                    SubSampleInformationBoxEntrySubSample {
+                                                        subsample_size: 415,
+                                                        subsample_priority: 0,
+                                                        discardable: 0,
+                                                        codec_specific_parameters: 0,
+                                                    },
+                                                    SubSampleInformationBoxEntrySubSample {
+                                                        subsample_size: 195,
+                                                        subsample_priority: 0,
+                                                        discardable: 0,
+                                                        codec_specific_parameters: 0,
+                                                    },
+                                                ],
+                                            },
+                                            SubSampleInformationBoxEntry {
+                                                sample_delta: 1,
+                                                subsample_count: 4,
+                                                subsample_info: [
+                                                    SubSampleInformationBoxEntrySubSample {
+                                                        subsample_size: 79,
+                                                        subsample_priority: 0,
+                                                        discardable: 0,
+                                                        codec_specific_parameters: 0,
+                                                    },
+                                                    SubSampleInformationBoxEntrySubSample {
+                                                        subsample_size: 173,
+                                                        subsample_priority: 0,
+                                                        discardable: 0,
+                                                        codec_specific_parameters: 0,
+                                                    },
+                                                    SubSampleInformationBoxEntrySubSample {
+                                                        subsample_size: 100,
+                                                        subsample_priority: 0,
+                                                        discardable: 0,
+                                                        codec_specific_parameters: 0,
+                                                    },
+                                                    SubSampleInformationBoxEntrySubSample {
+                                                        subsample_size: 64,
+                                                        subsample_priority: 0,
+                                                        discardable: 0,
+                                                        codec_specific_parameters: 0,
+                                                    },
+                                                ],
+                                            },
+                                            SubSampleInformationBoxEntry {
+                                                sample_delta: 1,
+                                                subsample_count: 4,
+                                                subsample_info: [
+                                                    SubSampleInformationBoxEntrySubSample {
+                                                        subsample_size: 109,
+                                                        subsample_priority: 0,
+                                                        discardable: 0,
+                                                        codec_specific_parameters: 0,
+                                                    },
+                                                    SubSampleInformationBoxEntrySubSample {
+                                                        subsample_size: 165,
+                                                        subsample_priority: 0,
+                                                        discardable: 0,
+                                                        codec_specific_parameters: 0,
+                                                    },
+                                                    SubSampleInformationBoxEntrySubSample {
+                                                        subsample_size: 106,
+                                                        subsample_priority: 0,
+                                                        discardable: 0,
+                                                        codec_specific_parameters: 0,
+                                                    },
+                                                    SubSampleInformationBoxEntrySubSample {
+                                                        subsample_size: 48,
+                                                        subsample_priority: 0,
+                                                        discardable: 0,
+                                                        codec_specific_parameters: 0,
+                                                    },
+                                                ],
+                                            },
+                                            SubSampleInformationBoxEntry {
+                                                sample_delta: 1,
+                                                subsample_count: 4,
+                                                subsample_info: [
+                                                    SubSampleInformationBoxEntrySubSample {
+                                                        subsample_size: 1438,
+                                                        subsample_priority: 0,
+                                                        discardable: 0,
+                                                        codec_specific_parameters: 0,
+                                                    },
+                                                    SubSampleInformationBoxEntrySubSample {
+                                                        subsample_size: 1680,
+                                                        subsample_priority: 0,
+                                                        discardable: 0,
+                                                        codec_specific_parameters: 0,
+                                                    },
+                                                    SubSampleInformationBoxEntrySubSample {
+                                                        subsample_size: 2290,
+                                                        subsample_priority: 0,
+                                                        discardable: 0,
+                                                        codec_specific_parameters: 0,
+                                                    },
+                                                    SubSampleInformationBoxEntrySubSample {
+                                                        subsample_size: 775,
+                                                        subsample_priority: 0,
+                                                        discardable: 0,
+                                                        codec_specific_parameters: 0,
+                                                    },
+                                                ],
+                                            },
+                                            SubSampleInformationBoxEntry {
+                                                sample_delta: 1,
+                                                subsample_count: 4,
+                                                subsample_info: [
+                                                    SubSampleInformationBoxEntrySubSample {
+                                                        subsample_size: 445,
+                                                        subsample_priority: 0,
+                                                        discardable: 0,
+                                                        codec_specific_parameters: 0,
+                                                    },
+                                                    SubSampleInformationBoxEntrySubSample {
+                                                        subsample_size: 738,
+                                                        subsample_priority: 0,
+                                                        discardable: 0,
+                                                        codec_specific_parameters: 0,
+                                                    },
+                                                    SubSampleInformationBoxEntrySubSample {
+                                                        subsample_size: 864,
+                                                        subsample_priority: 0,
+                                                        discardable: 0,
+                                                        codec_specific_parameters: 0,
+                                                    },
+                                                    SubSampleInformationBoxEntrySubSample {
+                                                        subsample_size: 381,
+                                                        subsample_priority: 0,
+                                                        discardable: 0,
+                                                        codec_specific_parameters: 0,
+                                                    },
+                                                ],
+                                            },
+                                            SubSampleInformationBoxEntry {
+                                                sample_delta: 1,
+                                                subsample_count: 4,
+                                                subsample_info: [
+                                                    SubSampleInformationBoxEntrySubSample {
+                                                        subsample_size: 229,
+                                                        subsample_priority: 0,
+                                                        discardable: 0,
+                                                        codec_specific_parameters: 0,
+                                                    },
+                                                    SubSampleInformationBoxEntrySubSample {
+                                                        subsample_size: 517,
+                                                        subsample_priority: 0,
+                                                        discardable: 0,
+                                                        codec_specific_parameters: 0,
+                                                    },
+                                                    SubSampleInformationBoxEntrySubSample {
+                                                        subsample_size: 407,
+                                                        subsample_priority: 0,
+                                                        discardable: 0,
+                                                        codec_specific_parameters: 0,
+                                                    },
+                                                    SubSampleInformationBoxEntrySubSample {
+                                                        subsample_size: 200,
+                                                        subsample_priority: 0,
+                                                        discardable: 0,
+                                                        codec_specific_parameters: 0,
+                                                    },
+                                                ],
+                                            },
+                                            SubSampleInformationBoxEntry {
+                                                sample_delta: 1,
+                                                subsample_count: 4,
+                                                subsample_info: [
+                                                    SubSampleInformationBoxEntrySubSample {
+                                                        subsample_size: 96,
+                                                        subsample_priority: 0,
+                                                        discardable: 0,
+                                                        codec_specific_parameters: 0,
+                                                    },
+                                                    SubSampleInformationBoxEntrySubSample {
+                                                        subsample_size: 226,
+                                                        subsample_priority: 0,
+                                                        discardable: 0,
+                                                        codec_specific_parameters: 0,
+                                                    },
+                                                    SubSampleInformationBoxEntrySubSample {
+                                                        subsample_size: 103,
+                                                        subsample_priority: 0,
+                                                        discardable: 0,
+                                                        codec_specific_parameters: 0,
+                                                    },
+                                                    SubSampleInformationBoxEntrySubSample {
+                                                        subsample_size: 74,
+                                                        subsample_priority: 0,
+                                                        discardable: 0,
+                                                        codec_specific_parameters: 0,
+                                                    },
+                                                ],
+                                            },
+                                            SubSampleInformationBoxEntry {
+                                                sample_delta: 1,
+                                                subsample_count: 4,
+                                                subsample_info: [
+                                                    SubSampleInformationBoxEntrySubSample {
+                                                        subsample_size: 74,
+                                                        subsample_priority: 0,
+                                                        discardable: 0,
+                                                        codec_specific_parameters: 0,
+                                                    },
+                                                    SubSampleInformationBoxEntrySubSample {
+                                                        subsample_size: 107,
+                                                        subsample_priority: 0,
+                                                        discardable: 0,
+                                                        codec_specific_parameters: 0,
+                                                    },
+                                                    SubSampleInformationBoxEntrySubSample {
+                                                        subsample_size: 118,
+                                                        subsample_priority: 0,
+                                                        discardable: 0,
+                                                        codec_specific_parameters: 0,
+                                                    },
+                                                    SubSampleInformationBoxEntrySubSample {
+                                                        subsample_size: 66,
+                                                        subsample_priority: 0,
+                                                        discardable: 0,
+                                                        codec_specific_parameters: 0,
+                                                    },
+                                                ],
+                                            },
+                                            SubSampleInformationBoxEntry {
+                                                sample_delta: 1,
+                                                subsample_count: 4,
+                                                subsample_info: [
+                                                    SubSampleInformationBoxEntrySubSample {
+                                                        subsample_size: 214,
+                                                        subsample_priority: 0,
+                                                        discardable: 0,
+                                                        codec_specific_parameters: 0,
+                                                    },
+                                                    SubSampleInformationBoxEntrySubSample {
+                                                        subsample_size: 426,
+                                                        subsample_priority: 0,
+                                                        discardable: 0,
+                                                        codec_specific_parameters: 0,
+                                                    },
+                                                    SubSampleInformationBoxEntrySubSample {
+                                                        subsample_size: 418,
+                                                        subsample_priority: 0,
+                                                        discardable: 0,
+                                                        codec_specific_parameters: 0,
+                                                    },
+                                                    SubSampleInformationBoxEntrySubSample {
+                                                        subsample_size: 245,
+                                                        subsample_priority: 0,
+                                                        discardable: 0,
+                                                        codec_specific_parameters: 0,
+                                                    },
+                                                ],
+                                            },
+                                            SubSampleInformationBoxEntry {
+                                                sample_delta: 1,
+                                                subsample_count: 4,
+                                                subsample_info: [
+                                                    SubSampleInformationBoxEntrySubSample {
+                                                        subsample_size: 77,
+                                                        subsample_priority: 0,
+                                                        discardable: 0,
+                                                        codec_specific_parameters: 0,
+                                                    },
+                                                    SubSampleInformationBoxEntrySubSample {
+                                                        subsample_size: 119,
+                                                        subsample_priority: 0,
+                                                        discardable: 0,
+                                                        codec_specific_parameters: 0,
+                                                    },
+                                                    SubSampleInformationBoxEntrySubSample {
+                                                        subsample_size: 111,
+                                                        subsample_priority: 0,
+                                                        discardable: 0,
+                                                        codec_specific_parameters: 0,
+                                                    },
+                                                    SubSampleInformationBoxEntrySubSample {
+                                                        subsample_size: 91,
+                                                        subsample_priority: 0,
+                                                        discardable: 0,
+                                                        codec_specific_parameters: 0,
+                                                    },
+                                                ],
+                                            },
+                                            SubSampleInformationBoxEntry {
+                                                sample_delta: 1,
+                                                subsample_count: 4,
+                                                subsample_info: [
+                                                    SubSampleInformationBoxEntrySubSample {
+                                                        subsample_size: 72,
+                                                        subsample_priority: 0,
+                                                        discardable: 0,
+                                                        codec_specific_parameters: 0,
+                                                    },
+                                                    SubSampleInformationBoxEntrySubSample {
+                                                        subsample_size: 122,
+                                                        subsample_priority: 0,
+                                                        discardable: 0,
+                                                        codec_specific_parameters: 0,
+                                                    },
+                                                    SubSampleInformationBoxEntrySubSample {
+                                                        subsample_size: 133,
+                                                        subsample_priority: 0,
+                                                        discardable: 0,
+                                                        codec_specific_parameters: 0,
+                                                    },
+                                                    SubSampleInformationBoxEntrySubSample {
+                                                        subsample_size: 59,
+                                                        subsample_priority: 0,
+                                                        discardable: 0,
+                                                        codec_specific_parameters: 0,
+                                                    },
+                                                ],
+                                            },
+                                            SubSampleInformationBoxEntry {
+                                                sample_delta: 1,
+                                                subsample_count: 4,
+                                                subsample_info: [
+                                                    SubSampleInformationBoxEntrySubSample {
+                                                        subsample_size: 8922,
+                                                        subsample_priority: 0,
+                                                        discardable: 0,
+                                                        codec_specific_parameters: 0,
+                                                    },
+                                                    SubSampleInformationBoxEntrySubSample {
+                                                        subsample_size: 3575,
+                                                        subsample_priority: 0,
+                                                        discardable: 0,
+                                                        codec_specific_parameters: 0,
+                                                    },
+                                                    SubSampleInformationBoxEntrySubSample {
+                                                        subsample_size: 3968,
+                                                        subsample_priority: 0,
+                                                        discardable: 0,
+                                                        codec_specific_parameters: 0,
+                                                    },
+                                                    SubSampleInformationBoxEntrySubSample {
+                                                        subsample_size: 1305,
+                                                        subsample_priority: 0,
+                                                        discardable: 0,
+                                                        codec_specific_parameters: 0,
+                                                    },
+                                                ],
+                                            },
+                                            SubSampleInformationBoxEntry {
+                                                sample_delta: 1,
+                                                subsample_count: 4,
+                                                subsample_info: [
+                                                    SubSampleInformationBoxEntrySubSample {
+                                                        subsample_size: 543,
+                                                        subsample_priority: 0,
+                                                        discardable: 0,
+                                                        codec_specific_parameters: 0,
+                                                    },
+                                                    SubSampleInformationBoxEntrySubSample {
+                                                        subsample_size: 797,
+                                                        subsample_priority: 0,
+                                                        discardable: 0,
+                                                        codec_specific_parameters: 0,
+                                                    },
+                                                    SubSampleInformationBoxEntrySubSample {
+                                                        subsample_size: 927,
+                                                        subsample_priority: 0,
+                                                        discardable: 0,
+                                                        codec_specific_parameters: 0,
+                                                    },
+                                                    SubSampleInformationBoxEntrySubSample {
+                                                        subsample_size: 407,
+                                                        subsample_priority: 0,
+                                                        discardable: 0,
+                                                        codec_specific_parameters: 0,
+                                                    },
+                                                ],
+                                            },
+                                            SubSampleInformationBoxEntry {
+                                                sample_delta: 1,
+                                                subsample_count: 4,
+                                                subsample_info: [
+                                                    SubSampleInformationBoxEntrySubSample {
+                                                        subsample_size: 259,
+                                                        subsample_priority: 0,
+                                                        discardable: 0,
+                                                        codec_specific_parameters: 0,
+                                                    },
+                                                    SubSampleInformationBoxEntrySubSample {
+                                                        subsample_size: 482,
+                                                        subsample_priority: 0,
+                                                        discardable: 0,
+                                                        codec_specific_parameters: 0,
+                                                    },
+                                                    SubSampleInformationBoxEntrySubSample {
+                                                        subsample_size: 515,
+                                                        subsample_priority: 0,
+                                                        discardable: 0,
+                                                        codec_specific_parameters: 0,
+                                                    },
+                                                    SubSampleInformationBoxEntrySubSample {
+                                                        subsample_size: 215,
+                                                        subsample_priority: 0,
+                                                        discardable: 0,
+                                                        codec_specific_parameters: 0,
+                                                    },
+                                                ],
+                                            },
+                                            SubSampleInformationBoxEntry {
+                                                sample_delta: 1,
+                                                subsample_count: 4,
+                                                subsample_info: [
+                                                    SubSampleInformationBoxEntrySubSample {
+                                                        subsample_size: 90,
+                                                        subsample_priority: 0,
+                                                        discardable: 0,
+                                                        codec_specific_parameters: 0,
+                                                    },
+                                                    SubSampleInformationBoxEntrySubSample {
+                                                        subsample_size: 137,
+                                                        subsample_priority: 0,
+                                                        discardable: 0,
+                                                        codec_specific_parameters: 0,
+                                                    },
+                                                    SubSampleInformationBoxEntrySubSample {
+                                                        subsample_size: 145,
+                                                        subsample_priority: 0,
+                                                        discardable: 0,
+                                                        codec_specific_parameters: 0,
+                                                    },
+                                                    SubSampleInformationBoxEntrySubSample {
+                                                        subsample_size: 46,
+                                                        subsample_priority: 0,
+                                                        discardable: 0,
+                                                        codec_specific_parameters: 0,
+                                                    },
+                                                ],
+                                            },
+                                            SubSampleInformationBoxEntry {
+                                                sample_delta: 1,
+                                                subsample_count: 4,
+                                                subsample_info: [
+                                                    SubSampleInformationBoxEntrySubSample {
+                                                        subsample_size: 77,
+                                                        subsample_priority: 0,
+                                                        discardable: 0,
+                                                        codec_specific_parameters: 0,
+                                                    },
+                                                    SubSampleInformationBoxEntrySubSample {
+                                                        subsample_size: 158,
+                                                        subsample_priority: 0,
+                                                        discardable: 0,
+                                                        codec_specific_parameters: 0,
+                                                    },
+                                                    SubSampleInformationBoxEntrySubSample {
+                                                        subsample_size: 104,
+                                                        subsample_priority: 0,
+                                                        discardable: 0,
+                                                        codec_specific_parameters: 0,
+                                                    },
+                                                    SubSampleInformationBoxEntrySubSample {
+                                                        subsample_size: 67,
+                                                        subsample_priority: 0,
+                                                        discardable: 0,
+                                                        codec_specific_parameters: 0,
+                                                    },
+                                                ],
+                                            },
+                                            SubSampleInformationBoxEntry {
+                                                sample_delta: 1,
+                                                subsample_count: 4,
+                                                subsample_info: [
+                                                    SubSampleInformationBoxEntrySubSample {
+                                                        subsample_size: 312,
+                                                        subsample_priority: 0,
+                                                        discardable: 0,
+                                                        codec_specific_parameters: 0,
+                                                    },
+                                                    SubSampleInformationBoxEntrySubSample {
+                                                        subsample_size: 460,
+                                                        subsample_priority: 0,
+                                                        discardable: 0,
+                                                        codec_specific_parameters: 0,
+                                                    },
+                                                    SubSampleInformationBoxEntrySubSample {
+                                                        subsample_size: 498,
+                                                        subsample_priority: 0,
+                                                        discardable: 0,
+                                                        codec_specific_parameters: 0,
+                                                    },
+                                                    SubSampleInformationBoxEntrySubSample {
+                                                        subsample_size: 224,
+                                                        subsample_priority: 0,
+                                                        discardable: 0,
+                                                        codec_specific_parameters: 0,
+                                                    },
+                                                ],
+                                            },
+                                            SubSampleInformationBoxEntry {
+                                                sample_delta: 1,
+                                                subsample_count: 4,
+                                                subsample_info: [
+                                                    SubSampleInformationBoxEntrySubSample {
+                                                        subsample_size: 97,
+                                                        subsample_priority: 0,
+                                                        discardable: 0,
+                                                        codec_specific_parameters: 0,
+                                                    },
+                                                    SubSampleInformationBoxEntrySubSample {
+                                                        subsample_size: 139,
+                                                        subsample_priority: 0,
+                                                        discardable: 0,
+                                                        codec_specific_parameters: 0,
+                                                    },
+                                                    SubSampleInformationBoxEntrySubSample {
+                                                        subsample_size: 128,
+                                                        subsample_priority: 0,
+                                                        discardable: 0,
+                                                        codec_specific_parameters: 0,
+                                                    },
+                                                    SubSampleInformationBoxEntrySubSample {
+                                                        subsample_size: 83,
+                                                        subsample_priority: 0,
+                                                        discardable: 0,
+                                                        codec_specific_parameters: 0,
+                                                    },
+                                                ],
+                                            },
+                                            SubSampleInformationBoxEntry {
+                                                sample_delta: 1,
+                                                subsample_count: 4,
+                                                subsample_info: [
+                                                    SubSampleInformationBoxEntrySubSample {
+                                                        subsample_size: 112,
+                                                        subsample_priority: 0,
+                                                        discardable: 0,
+                                                        codec_specific_parameters: 0,
+                                                    },
+                                                    SubSampleInformationBoxEntrySubSample {
+                                                        subsample_size: 159,
+                                                        subsample_priority: 0,
+                                                        discardable: 0,
+                                                        codec_specific_parameters: 0,
+                                                    },
+                                                    SubSampleInformationBoxEntrySubSample {
+                                                        subsample_size: 136,
+                                                        subsample_priority: 0,
+                                                        discardable: 0,
+                                                        codec_specific_parameters: 0,
+                                                    },
+                                                    SubSampleInformationBoxEntrySubSample {
+                                                        subsample_size: 85,
+                                                        subsample_priority: 0,
+                                                        discardable: 0,
+                                                        codec_specific_parameters: 0,
+                                                    },
+                                                ],
+                                            },
+                                            SubSampleInformationBoxEntry {
+                                                sample_delta: 1,
+                                                subsample_count: 4,
+                                                subsample_info: [
+                                                    SubSampleInformationBoxEntrySubSample {
+                                                        subsample_size: 2034,
+                                                        subsample_priority: 0,
+                                                        discardable: 0,
+                                                        codec_specific_parameters: 0,
+                                                    },
+                                                    SubSampleInformationBoxEntrySubSample {
+                                                        subsample_size: 1919,
+                                                        subsample_priority: 0,
+                                                        discardable: 0,
+                                                        codec_specific_parameters: 0,
+                                                    },
+                                                    SubSampleInformationBoxEntrySubSample {
+                                                        subsample_size: 2544,
+                                                        subsample_priority: 0,
+                                                        discardable: 0,
+                                                        codec_specific_parameters: 0,
+                                                    },
+                                                    SubSampleInformationBoxEntrySubSample {
+                                                        subsample_size: 547,
+                                                        subsample_priority: 0,
+                                                        discardable: 0,
+                                                        codec_specific_parameters: 0,
+                                                    },
+                                                ],
+                                            },
+                                            SubSampleInformationBoxEntry {
+                                                sample_delta: 1,
+                                                subsample_count: 4,
+                                                subsample_info: [
+                                                    SubSampleInformationBoxEntrySubSample {
+                                                        subsample_size: 611,
+                                                        subsample_priority: 0,
+                                                        discardable: 0,
+                                                        codec_specific_parameters: 0,
+                                                    },
+                                                    SubSampleInformationBoxEntrySubSample {
+                                                        subsample_size: 744,
+                                                        subsample_priority: 0,
+                                                        discardable: 0,
+                                                        codec_specific_parameters: 0,
+                                                    },
+                                                    SubSampleInformationBoxEntrySubSample {
+                                                        subsample_size: 1042,
+                                                        subsample_priority: 0,
+                                                        discardable: 0,
+                                                        codec_specific_parameters: 0,
+                                                    },
+                                                    SubSampleInformationBoxEntrySubSample {
+                                                        subsample_size: 289,
+                                                        subsample_priority: 0,
+                                                        discardable: 0,
+                                                        codec_specific_parameters: 0,
+                                                    },
+                                                ],
+                                            },
+                                            SubSampleInformationBoxEntry {
+                                                sample_delta: 1,
+                                                subsample_count: 4,
+                                                subsample_info: [
+                                                    SubSampleInformationBoxEntrySubSample {
+                                                        subsample_size: 372,
+                                                        subsample_priority: 0,
+                                                        discardable: 0,
+                                                        codec_specific_parameters: 0,
+                                                    },
+                                                    SubSampleInformationBoxEntrySubSample {
+                                                        subsample_size: 502,
+                                                        subsample_priority: 0,
+                                                        discardable: 0,
+                                                        codec_specific_parameters: 0,
+                                                    },
+                                                    SubSampleInformationBoxEntrySubSample {
+                                                        subsample_size: 576,
+                                                        subsample_priority: 0,
+                                                        discardable: 0,
+                                                        codec_specific_parameters: 0,
+                                                    },
+                                                    SubSampleInformationBoxEntrySubSample {
+                                                        subsample_size: 223,
+                                                        subsample_priority: 0,
+                                                        discardable: 0,
+                                                        codec_specific_parameters: 0,
+                                                    },
+                                                ],
+                                            },
+                                            SubSampleInformationBoxEntry {
+                                                sample_delta: 1,
+                                                subsample_count: 4,
+                                                subsample_info: [
+                                                    SubSampleInformationBoxEntrySubSample {
+                                                        subsample_size: 147,
+                                                        subsample_priority: 0,
+                                                        discardable: 0,
+                                                        codec_specific_parameters: 0,
+                                                    },
+                                                    SubSampleInformationBoxEntrySubSample {
+                                                        subsample_size: 196,
+                                                        subsample_priority: 0,
+                                                        discardable: 0,
+                                                        codec_specific_parameters: 0,
+                                                    },
+                                                    SubSampleInformationBoxEntrySubSample {
+                                                        subsample_size: 136,
+                                                        subsample_priority: 0,
+                                                        discardable: 0,
+                                                        codec_specific_parameters: 0,
+                                                    },
+                                                    SubSampleInformationBoxEntrySubSample {
+                                                        subsample_size: 76,
+                                                        subsample_priority: 0,
+                                                        discardable: 0,
+                                                        codec_specific_parameters: 0,
+                                                    },
+                                                ],
+                                            },
+                                            SubSampleInformationBoxEntry {
+                                                sample_delta: 1,
+                                                subsample_count: 4,
+                                                subsample_info: [
+                                                    SubSampleInformationBoxEntrySubSample {
+                                                        subsample_size: 131,
+                                                        subsample_priority: 0,
+                                                        discardable: 0,
+                                                        codec_specific_parameters: 0,
+                                                    },
+                                                    SubSampleInformationBoxEntrySubSample {
+                                                        subsample_size: 157,
+                                                        subsample_priority: 0,
+                                                        discardable: 0,
+                                                        codec_specific_parameters: 0,
+                                                    },
+                                                    SubSampleInformationBoxEntrySubSample {
+                                                        subsample_size: 155,
+                                                        subsample_priority: 0,
+                                                        discardable: 0,
+                                                        codec_specific_parameters: 0,
+                                                    },
+                                                    SubSampleInformationBoxEntrySubSample {
+                                                        subsample_size: 76,
+                                                        subsample_priority: 0,
+                                                        discardable: 0,
+                                                        codec_specific_parameters: 0,
+                                                    },
+                                                ],
+                                            },
+                                            SubSampleInformationBoxEntry {
+                                                sample_delta: 1,
+                                                subsample_count: 4,
+                                                subsample_info: [
+                                                    SubSampleInformationBoxEntrySubSample {
+                                                        subsample_size: 344,
+                                                        subsample_priority: 0,
+                                                        discardable: 0,
+                                                        codec_specific_parameters: 0,
+                                                    },
+                                                    SubSampleInformationBoxEntrySubSample {
+                                                        subsample_size: 427,
+                                                        subsample_priority: 0,
+                                                        discardable: 0,
+                                                        codec_specific_parameters: 0,
+                                                    },
+                                                    SubSampleInformationBoxEntrySubSample {
+                                                        subsample_size: 571,
+                                                        subsample_priority: 0,
+                                                        discardable: 0,
+                                                        codec_specific_parameters: 0,
+                                                    },
+                                                    SubSampleInformationBoxEntrySubSample {
+                                                        subsample_size: 200,
+                                                        subsample_priority: 0,
+                                                        discardable: 0,
+                                                        codec_specific_parameters: 0,
+                                                    },
+                                                ],
+                                            },
+                                            SubSampleInformationBoxEntry {
+                                                sample_delta: 1,
+                                                subsample_count: 4,
+                                                subsample_info: [
+                                                    SubSampleInformationBoxEntrySubSample {
+                                                        subsample_size: 129,
+                                                        subsample_priority: 0,
+                                                        discardable: 0,
+                                                        codec_specific_parameters: 0,
+                                                    },
+                                                    SubSampleInformationBoxEntrySubSample {
+                                                        subsample_size: 137,
+                                                        subsample_priority: 0,
+                                                        discardable: 0,
+                                                        codec_specific_parameters: 0,
+                                                    },
+                                                    SubSampleInformationBoxEntrySubSample {
+                                                        subsample_size: 141,
+                                                        subsample_priority: 0,
+                                                        discardable: 0,
+                                                        codec_specific_parameters: 0,
+                                                    },
+                                                    SubSampleInformationBoxEntrySubSample {
+                                                        subsample_size: 65,
+                                                        subsample_priority: 0,
+                                                        discardable: 0,
+                                                        codec_specific_parameters: 0,
+                                                    },
+                                                ],
+                                            },
+                                            SubSampleInformationBoxEntry {
+                                                sample_delta: 1,
+                                                subsample_count: 4,
+                                                subsample_info: [
+                                                    SubSampleInformationBoxEntrySubSample {
+                                                        subsample_size: 146,
+                                                        subsample_priority: 0,
+                                                        discardable: 0,
+                                                        codec_specific_parameters: 0,
+                                                    },
+                                                    SubSampleInformationBoxEntrySubSample {
+                                                        subsample_size: 145,
+                                                        subsample_priority: 0,
+                                                        discardable: 0,
+                                                        codec_specific_parameters: 0,
+                                                    },
+                                                    SubSampleInformationBoxEntrySubSample {
+                                                        subsample_size: 173,
+                                                        subsample_priority: 0,
+                                                        discardable: 0,
+                                                        codec_specific_parameters: 0,
+                                                    },
+                                                    SubSampleInformationBoxEntrySubSample {
+                                                        subsample_size: 78,
+                                                        subsample_priority: 0,
+                                                        discardable: 0,
+                                                        codec_specific_parameters: 0,
+                                                    },
+                                                ],
+                                            },
+                                            SubSampleInformationBoxEntry {
+                                                sample_delta: 1,
+                                                subsample_count: 4,
+                                                subsample_info: [
+                                                    SubSampleInformationBoxEntrySubSample {
+                                                        subsample_size: 1746,
+                                                        subsample_priority: 0,
+                                                        discardable: 0,
+                                                        codec_specific_parameters: 0,
+                                                    },
+                                                    SubSampleInformationBoxEntrySubSample {
+                                                        subsample_size: 1847,
+                                                        subsample_priority: 0,
+                                                        discardable: 0,
+                                                        codec_specific_parameters: 0,
+                                                    },
+                                                    SubSampleInformationBoxEntrySubSample {
+                                                        subsample_size: 2745,
+                                                        subsample_priority: 0,
+                                                        discardable: 0,
+                                                        codec_specific_parameters: 0,
+                                                    },
+                                                    SubSampleInformationBoxEntrySubSample {
+                                                        subsample_size: 414,
+                                                        subsample_priority: 0,
+                                                        discardable: 0,
+                                                        codec_specific_parameters: 0,
+                                                    },
+                                                ],
+                                            },
+                                            SubSampleInformationBoxEntry {
+                                                sample_delta: 1,
+                                                subsample_count: 4,
+                                                subsample_info: [
+                                                    SubSampleInformationBoxEntrySubSample {
+                                                        subsample_size: 853,
+                                                        subsample_priority: 0,
+                                                        discardable: 0,
+                                                        codec_specific_parameters: 0,
+                                                    },
+                                                    SubSampleInformationBoxEntrySubSample {
+                                                        subsample_size: 907,
+                                                        subsample_priority: 0,
+                                                        discardable: 0,
+                                                        codec_specific_parameters: 0,
+                                                    },
+                                                    SubSampleInformationBoxEntrySubSample {
+                                                        subsample_size: 1067,
+                                                        subsample_priority: 0,
+                                                        discardable: 0,
+                                                        codec_specific_parameters: 0,
+                                                    },
+                                                    SubSampleInformationBoxEntrySubSample {
+                                                        subsample_size: 235,
+                                                        subsample_priority: 0,
+                                                        discardable: 0,
+                                                        codec_specific_parameters: 0,
+                                                    },
+                                                ],
+                                            },
+                                            SubSampleInformationBoxEntry {
+                                                sample_delta: 1,
+                                                subsample_count: 4,
+                                                subsample_info: [
+                                                    SubSampleInformationBoxEntrySubSample {
+                                                        subsample_size: 474,
+                                                        subsample_priority: 0,
+                                                        discardable: 0,
+                                                        codec_specific_parameters: 0,
+                                                    },
+                                                    SubSampleInformationBoxEntrySubSample {
+                                                        subsample_size: 495,
+                                                        subsample_priority: 0,
+                                                        discardable: 0,
+                                                        codec_specific_parameters: 0,
+                                                    },
+                                                    SubSampleInformationBoxEntrySubSample {
+                                                        subsample_size: 652,
+                                                        subsample_priority: 0,
+                                                        discardable: 0,
+                                                        codec_specific_parameters: 0,
+                                                    },
+                                                    SubSampleInformationBoxEntrySubSample {
+                                                        subsample_size: 135,
+                                                        subsample_priority: 0,
+                                                        discardable: 0,
+                                                        codec_specific_parameters: 0,
+                                                    },
+                                                ],
+                                            },
+                                            SubSampleInformationBoxEntry {
+                                                sample_delta: 1,
+                                                subsample_count: 4,
+                                                subsample_info: [
+                                                    SubSampleInformationBoxEntrySubSample {
+                                                        subsample_size: 135,
+                                                        subsample_priority: 0,
+                                                        discardable: 0,
+                                                        codec_specific_parameters: 0,
+                                                    },
+                                                    SubSampleInformationBoxEntrySubSample {
+                                                        subsample_size: 136,
+                                                        subsample_priority: 0,
+                                                        discardable: 0,
+                                                        codec_specific_parameters: 0,
+                                                    },
+                                                    SubSampleInformationBoxEntrySubSample {
+                                                        subsample_size: 193,
+                                                        subsample_priority: 0,
+                                                        discardable: 0,
+                                                        codec_specific_parameters: 0,
+                                                    },
+                                                    SubSampleInformationBoxEntrySubSample {
+                                                        subsample_size: 44,
+                                                        subsample_priority: 0,
+                                                        discardable: 0,
+                                                        codec_specific_parameters: 0,
+                                                    },
+                                                ],
+                                            },
+                                            SubSampleInformationBoxEntry {
+                                                sample_delta: 1,
+                                                subsample_count: 4,
+                                                subsample_info: [
+                                                    SubSampleInformationBoxEntrySubSample {
+                                                        subsample_size: 98,
+                                                        subsample_priority: 0,
+                                                        discardable: 0,
+                                                        codec_specific_parameters: 0,
+                                                    },
+                                                    SubSampleInformationBoxEntrySubSample {
+                                                        subsample_size: 129,
+                                                        subsample_priority: 0,
+                                                        discardable: 0,
+                                                        codec_specific_parameters: 0,
+                                                    },
+                                                    SubSampleInformationBoxEntrySubSample {
+                                                        subsample_size: 202,
+                                                        subsample_priority: 0,
+                                                        discardable: 0,
+                                                        codec_specific_parameters: 0,
+                                                    },
+                                                    SubSampleInformationBoxEntrySubSample {
+                                                        subsample_size: 57,
+                                                        subsample_priority: 0,
+                                                        discardable: 0,
+                                                        codec_specific_parameters: 0,
+                                                    },
+                                                ],
+                                            },
+                                            SubSampleInformationBoxEntry {
+                                                sample_delta: 1,
+                                                subsample_count: 4,
+                                                subsample_info: [
+                                                    SubSampleInformationBoxEntrySubSample {
+                                                        subsample_size: 373,
+                                                        subsample_priority: 0,
+                                                        discardable: 0,
+                                                        codec_specific_parameters: 0,
+                                                    },
+                                                    SubSampleInformationBoxEntrySubSample {
+                                                        subsample_size: 563,
+                                                        subsample_priority: 0,
+                                                        discardable: 0,
+                                                        codec_specific_parameters: 0,
+                                                    },
+                                                    SubSampleInformationBoxEntrySubSample {
+                                                        subsample_size: 724,
+                                                        subsample_priority: 0,
+                                                        discardable: 0,
+                                                        codec_specific_parameters: 0,
+                                                    },
+                                                    SubSampleInformationBoxEntrySubSample {
+                                                        subsample_size: 125,
+                                                        subsample_priority: 0,
+                                                        discardable: 0,
+                                                        codec_specific_parameters: 0,
+                                                    },
+                                                ],
+                                            },
+                                            SubSampleInformationBoxEntry {
+                                                sample_delta: 1,
+                                                subsample_count: 4,
+                                                subsample_info: [
+                                                    SubSampleInformationBoxEntrySubSample {
+                                                        subsample_size: 84,
+                                                        subsample_priority: 0,
+                                                        discardable: 0,
+                                                        codec_specific_parameters: 0,
+                                                    },
+                                                    SubSampleInformationBoxEntrySubSample {
+                                                        subsample_size: 167,
+                                                        subsample_priority: 0,
+                                                        discardable: 0,
+                                                        codec_specific_parameters: 0,
+                                                    },
+                                                    SubSampleInformationBoxEntrySubSample {
+                                                        subsample_size: 179,
+                                                        subsample_priority: 0,
+                                                        discardable: 0,
+                                                        codec_specific_parameters: 0,
+                                                    },
+                                                    SubSampleInformationBoxEntrySubSample {
+                                                        subsample_size: 47,
+                                                        subsample_priority: 0,
+                                                        discardable: 0,
+                                                        codec_specific_parameters: 0,
+                                                    },
+                                                ],
+                                            },
+                                            SubSampleInformationBoxEntry {
+                                                sample_delta: 1,
+                                                subsample_count: 4,
+                                                subsample_info: [
+                                                    SubSampleInformationBoxEntrySubSample {
+                                                        subsample_size: 118,
+                                                        subsample_priority: 0,
+                                                        discardable: 0,
+                                                        codec_specific_parameters: 0,
+                                                    },
+                                                    SubSampleInformationBoxEntrySubSample {
+                                                        subsample_size: 149,
+                                                        subsample_priority: 0,
+                                                        discardable: 0,
+                                                        codec_specific_parameters: 0,
+                                                    },
+                                                    SubSampleInformationBoxEntrySubSample {
+                                                        subsample_size: 173,
+                                                        subsample_priority: 0,
+                                                        discardable: 0,
+                                                        codec_specific_parameters: 0,
+                                                    },
+                                                    SubSampleInformationBoxEntrySubSample {
+                                                        subsample_size: 29,
+                                                        subsample_priority: 0,
+                                                        discardable: 0,
+                                                        codec_specific_parameters: 0,
+                                                    },
+                                                ],
+                                            },
+                                            SubSampleInformationBoxEntry {
+                                                sample_delta: 1,
+                                                subsample_count: 4,
+                                                subsample_info: [
+                                                    SubSampleInformationBoxEntrySubSample {
+                                                        subsample_size: 1548,
+                                                        subsample_priority: 0,
+                                                        discardable: 0,
+                                                        codec_specific_parameters: 0,
+                                                    },
+                                                    SubSampleInformationBoxEntrySubSample {
+                                                        subsample_size: 2024,
+                                                        subsample_priority: 0,
+                                                        discardable: 0,
+                                                        codec_specific_parameters: 0,
+                                                    },
+                                                    SubSampleInformationBoxEntrySubSample {
+                                                        subsample_size: 2993,
+                                                        subsample_priority: 0,
+                                                        discardable: 0,
+                                                        codec_specific_parameters: 0,
+                                                    },
+                                                    SubSampleInformationBoxEntrySubSample {
+                                                        subsample_size: 563,
+                                                        subsample_priority: 0,
+                                                        discardable: 0,
+                                                        codec_specific_parameters: 0,
+                                                    },
+                                                ],
+                                            },
+                                            SubSampleInformationBoxEntry {
+                                                sample_delta: 1,
+                                                subsample_count: 4,
+                                                subsample_info: [
+                                                    SubSampleInformationBoxEntrySubSample {
+                                                        subsample_size: 567,
+                                                        subsample_priority: 0,
+                                                        discardable: 0,
+                                                        codec_specific_parameters: 0,
+                                                    },
+                                                    SubSampleInformationBoxEntrySubSample {
+                                                        subsample_size: 755,
+                                                        subsample_priority: 0,
+                                                        discardable: 0,
+                                                        codec_specific_parameters: 0,
+                                                    },
+                                                    SubSampleInformationBoxEntrySubSample {
+                                                        subsample_size: 1123,
+                                                        subsample_priority: 0,
+                                                        discardable: 0,
+                                                        codec_specific_parameters: 0,
+                                                    },
+                                                    SubSampleInformationBoxEntrySubSample {
+                                                        subsample_size: 167,
+                                                        subsample_priority: 0,
+                                                        discardable: 0,
+                                                        codec_specific_parameters: 0,
+                                                    },
+                                                ],
+                                            },
+                                            SubSampleInformationBoxEntry {
+                                                sample_delta: 1,
+                                                subsample_count: 4,
+                                                subsample_info: [
+                                                    SubSampleInformationBoxEntrySubSample {
+                                                        subsample_size: 325,
+                                                        subsample_priority: 0,
+                                                        discardable: 0,
+                                                        codec_specific_parameters: 0,
+                                                    },
+                                                    SubSampleInformationBoxEntrySubSample {
+                                                        subsample_size: 500,
+                                                        subsample_priority: 0,
+                                                        discardable: 0,
+                                                        codec_specific_parameters: 0,
+                                                    },
+                                                    SubSampleInformationBoxEntrySubSample {
+                                                        subsample_size: 616,
+                                                        subsample_priority: 0,
+                                                        discardable: 0,
+                                                        codec_specific_parameters: 0,
+                                                    },
+                                                    SubSampleInformationBoxEntrySubSample {
+                                                        subsample_size: 73,
+                                                        subsample_priority: 0,
+                                                        discardable: 0,
+                                                        codec_specific_parameters: 0,
+                                                    },
+                                                ],
+                                            },
+                                            SubSampleInformationBoxEntry {
+                                                sample_delta: 1,
+                                                subsample_count: 4,
+                                                subsample_info: [
+                                                    SubSampleInformationBoxEntrySubSample {
+                                                        subsample_size: 110,
+                                                        subsample_priority: 0,
+                                                        discardable: 0,
+                                                        codec_specific_parameters: 0,
+                                                    },
+                                                    SubSampleInformationBoxEntrySubSample {
+                                                        subsample_size: 151,
+                                                        subsample_priority: 0,
+                                                        discardable: 0,
+                                                        codec_specific_parameters: 0,
+                                                    },
+                                                    SubSampleInformationBoxEntrySubSample {
+                                                        subsample_size: 157,
+                                                        subsample_priority: 0,
+                                                        discardable: 0,
+                                                        codec_specific_parameters: 0,
+                                                    },
+                                                    SubSampleInformationBoxEntrySubSample {
+                                                        subsample_size: 31,
+                                                        subsample_priority: 0,
+                                                        discardable: 0,
+                                                        codec_specific_parameters: 0,
+                                                    },
+                                                ],
+                                            },
+                                            SubSampleInformationBoxEntry {
+                                                sample_delta: 1,
+                                                subsample_count: 4,
+                                                subsample_info: [
+                                                    SubSampleInformationBoxEntrySubSample {
+                                                        subsample_size: 108,
+                                                        subsample_priority: 0,
+                                                        discardable: 0,
+                                                        codec_specific_parameters: 0,
+                                                    },
+                                                    SubSampleInformationBoxEntrySubSample {
+                                                        subsample_size: 131,
+                                                        subsample_priority: 0,
+                                                        discardable: 0,
+                                                        codec_specific_parameters: 0,
+                                                    },
+                                                    SubSampleInformationBoxEntrySubSample {
+                                                        subsample_size: 154,
+                                                        subsample_priority: 0,
+                                                        discardable: 0,
+                                                        codec_specific_parameters: 0,
+                                                    },
+                                                    SubSampleInformationBoxEntrySubSample {
+                                                        subsample_size: 28,
+                                                        subsample_priority: 0,
+                                                        discardable: 0,
+                                                        codec_specific_parameters: 0,
+                                                    },
+                                                ],
+                                            },
+                                            SubSampleInformationBoxEntry {
+                                                sample_delta: 1,
+                                                subsample_count: 4,
+                                                subsample_info: [
+                                                    SubSampleInformationBoxEntrySubSample {
+                                                        subsample_size: 391,
+                                                        subsample_priority: 0,
+                                                        discardable: 0,
+                                                        codec_specific_parameters: 0,
+                                                    },
+                                                    SubSampleInformationBoxEntrySubSample {
+                                                        subsample_size: 683,
+                                                        subsample_priority: 0,
+                                                        discardable: 0,
+                                                        codec_specific_parameters: 0,
+                                                    },
+                                                    SubSampleInformationBoxEntrySubSample {
+                                                        subsample_size: 639,
+                                                        subsample_priority: 0,
+                                                        discardable: 0,
+                                                        codec_specific_parameters: 0,
+                                                    },
+                                                    SubSampleInformationBoxEntrySubSample {
+                                                        subsample_size: 180,
+                                                        subsample_priority: 0,
+                                                        discardable: 0,
+                                                        codec_specific_parameters: 0,
+                                                    },
+                                                ],
+                                            },
+                                            SubSampleInformationBoxEntry {
+                                                sample_delta: 1,
+                                                subsample_count: 4,
+                                                subsample_info: [
+                                                    SubSampleInformationBoxEntrySubSample {
+                                                        subsample_size: 118,
+                                                        subsample_priority: 0,
+                                                        discardable: 0,
+                                                        codec_specific_parameters: 0,
+                                                    },
+                                                    SubSampleInformationBoxEntrySubSample {
+                                                        subsample_size: 190,
+                                                        subsample_priority: 0,
+                                                        discardable: 0,
+                                                        codec_specific_parameters: 0,
+                                                    },
+                                                    SubSampleInformationBoxEntrySubSample {
+                                                        subsample_size: 172,
+                                                        subsample_priority: 0,
+                                                        discardable: 0,
+                                                        codec_specific_parameters: 0,
+                                                    },
+                                                    SubSampleInformationBoxEntrySubSample {
+                                                        subsample_size: 64,
+                                                        subsample_priority: 0,
+                                                        discardable: 0,
+                                                        codec_specific_parameters: 0,
+                                                    },
+                                                ],
+                                            },
+                                            SubSampleInformationBoxEntry {
+                                                sample_delta: 1,
+                                                subsample_count: 4,
+                                                subsample_info: [
+                                                    SubSampleInformationBoxEntrySubSample {
+                                                        subsample_size: 79,
+                                                        subsample_priority: 0,
+                                                        discardable: 0,
+                                                        codec_specific_parameters: 0,
+                                                    },
+                                                    SubSampleInformationBoxEntrySubSample {
+                                                        subsample_size: 167,
+                                                        subsample_priority: 0,
+                                                        discardable: 0,
+                                                        codec_specific_parameters: 0,
+                                                    },
+                                                    SubSampleInformationBoxEntrySubSample {
+                                                        subsample_size: 149,
+                                                        subsample_priority: 0,
+                                                        discardable: 0,
+                                                        codec_specific_parameters: 0,
+                                                    },
+                                                    SubSampleInformationBoxEntrySubSample {
+                                                        subsample_size: 83,
+                                                        subsample_priority: 0,
+                                                        discardable: 0,
+                                                        codec_specific_parameters: 0,
+                                                    },
+                                                ],
+                                            },
+                                            SubSampleInformationBoxEntry {
+                                                sample_delta: 1,
+                                                subsample_count: 4,
+                                                subsample_info: [
+                                                    SubSampleInformationBoxEntrySubSample {
+                                                        subsample_size: 624,
+                                                        subsample_priority: 0,
+                                                        discardable: 0,
+                                                        codec_specific_parameters: 0,
+                                                    },
+                                                    SubSampleInformationBoxEntrySubSample {
+                                                        subsample_size: 1005,
+                                                        subsample_priority: 0,
+                                                        discardable: 0,
+                                                        codec_specific_parameters: 0,
+                                                    },
+                                                    SubSampleInformationBoxEntrySubSample {
+                                                        subsample_size: 1227,
+                                                        subsample_priority: 0,
+                                                        discardable: 0,
+                                                        codec_specific_parameters: 0,
+                                                    },
+                                                    SubSampleInformationBoxEntrySubSample {
+                                                        subsample_size: 333,
+                                                        subsample_priority: 0,
+                                                        discardable: 0,
+                                                        codec_specific_parameters: 0,
+                                                    },
+                                                ],
+                                            },
+                                            SubSampleInformationBoxEntry {
+                                                sample_delta: 1,
+                                                subsample_count: 4,
+                                                subsample_info: [
+                                                    SubSampleInformationBoxEntrySubSample {
+                                                        subsample_size: 278,
+                                                        subsample_priority: 0,
+                                                        discardable: 0,
+                                                        codec_specific_parameters: 0,
+                                                    },
+                                                    SubSampleInformationBoxEntrySubSample {
+                                                        subsample_size: 574,
+                                                        subsample_priority: 0,
+                                                        discardable: 0,
+                                                        codec_specific_parameters: 0,
+                                                    },
+                                                    SubSampleInformationBoxEntrySubSample {
+                                                        subsample_size: 698,
+                                                        subsample_priority: 0,
+                                                        discardable: 0,
+                                                        codec_specific_parameters: 0,
+                                                    },
+                                                    SubSampleInformationBoxEntrySubSample {
+                                                        subsample_size: 184,
+                                                        subsample_priority: 0,
+                                                        discardable: 0,
+                                                        codec_specific_parameters: 0,
+                                                    },
+                                                ],
+                                            },
+                                            SubSampleInformationBoxEntry {
+                                                sample_delta: 1,
+                                                subsample_count: 4,
+                                                subsample_info: [
+                                                    SubSampleInformationBoxEntrySubSample {
+                                                        subsample_size: 76,
+                                                        subsample_priority: 0,
+                                                        discardable: 0,
+                                                        codec_specific_parameters: 0,
+                                                    },
+                                                    SubSampleInformationBoxEntrySubSample {
+                                                        subsample_size: 162,
+                                                        subsample_priority: 0,
+                                                        discardable: 0,
+                                                        codec_specific_parameters: 0,
+                                                    },
+                                                    SubSampleInformationBoxEntrySubSample {
+                                                        subsample_size: 185,
+                                                        subsample_priority: 0,
+                                                        discardable: 0,
+                                                        codec_specific_parameters: 0,
+                                                    },
+                                                    SubSampleInformationBoxEntrySubSample {
+                                                        subsample_size: 61,
+                                                        subsample_priority: 0,
+                                                        discardable: 0,
+                                                        codec_specific_parameters: 0,
+                                                    },
+                                                ],
+                                            },
+                                            SubSampleInformationBoxEntry {
+                                                sample_delta: 1,
+                                                subsample_count: 4,
+                                                subsample_info: [
+                                                    SubSampleInformationBoxEntrySubSample {
+                                                        subsample_size: 96,
+                                                        subsample_priority: 0,
+                                                        discardable: 0,
+                                                        codec_specific_parameters: 0,
+                                                    },
+                                                    SubSampleInformationBoxEntrySubSample {
+                                                        subsample_size: 206,
+                                                        subsample_priority: 0,
+                                                        discardable: 0,
+                                                        codec_specific_parameters: 0,
+                                                    },
+                                                    SubSampleInformationBoxEntrySubSample {
+                                                        subsample_size: 177,
+                                                        subsample_priority: 0,
+                                                        discardable: 0,
+                                                        codec_specific_parameters: 0,
+                                                    },
+                                                    SubSampleInformationBoxEntrySubSample {
+                                                        subsample_size: 75,
+                                                        subsample_priority: 0,
+                                                        discardable: 0,
+                                                        codec_specific_parameters: 0,
+                                                    },
+                                                ],
+                                            },
+                                            SubSampleInformationBoxEntry {
+                                                sample_delta: 1,
+                                                subsample_count: 4,
+                                                subsample_info: [
+                                                    SubSampleInformationBoxEntrySubSample {
+                                                        subsample_size: 430,
+                                                        subsample_priority: 0,
+                                                        discardable: 0,
+                                                        codec_specific_parameters: 0,
+                                                    },
+                                                    SubSampleInformationBoxEntrySubSample {
+                                                        subsample_size: 762,
+                                                        subsample_priority: 0,
+                                                        discardable: 0,
+                                                        codec_specific_parameters: 0,
+                                                    },
+                                                    SubSampleInformationBoxEntrySubSample {
+                                                        subsample_size: 691,
+                                                        subsample_priority: 0,
+                                                        discardable: 0,
+                                                        codec_specific_parameters: 0,
+                                                    },
+                                                    SubSampleInformationBoxEntrySubSample {
+                                                        subsample_size: 241,
+                                                        subsample_priority: 0,
+                                                        discardable: 0,
+                                                        codec_specific_parameters: 0,
+                                                    },
+                                                ],
+                                            },
+                                            SubSampleInformationBoxEntry {
+                                                sample_delta: 1,
+                                                subsample_count: 4,
+                                                subsample_info: [
+                                                    SubSampleInformationBoxEntrySubSample {
+                                                        subsample_size: 87,
+                                                        subsample_priority: 0,
+                                                        discardable: 0,
+                                                        codec_specific_parameters: 0,
+                                                    },
+                                                    SubSampleInformationBoxEntrySubSample {
+                                                        subsample_size: 170,
+                                                        subsample_priority: 0,
+                                                        discardable: 0,
+                                                        codec_specific_parameters: 0,
+                                                    },
+                                                    SubSampleInformationBoxEntrySubSample {
+                                                        subsample_size: 136,
+                                                        subsample_priority: 0,
+                                                        discardable: 0,
+                                                        codec_specific_parameters: 0,
+                                                    },
+                                                    SubSampleInformationBoxEntrySubSample {
+                                                        subsample_size: 52,
+                                                        subsample_priority: 0,
+                                                        discardable: 0,
+                                                        codec_specific_parameters: 0,
+                                                    },
+                                                ],
+                                            },
+                                            SubSampleInformationBoxEntry {
+                                                sample_delta: 1,
+                                                subsample_count: 4,
+                                                subsample_info: [
+                                                    SubSampleInformationBoxEntrySubSample {
+                                                        subsample_size: 150,
+                                                        subsample_priority: 0,
+                                                        discardable: 0,
+                                                        codec_specific_parameters: 0,
+                                                    },
+                                                    SubSampleInformationBoxEntrySubSample {
+                                                        subsample_size: 276,
+                                                        subsample_priority: 0,
+                                                        discardable: 0,
+                                                        codec_specific_parameters: 0,
+                                                    },
+                                                    SubSampleInformationBoxEntrySubSample {
+                                                        subsample_size: 207,
+                                                        subsample_priority: 0,
+                                                        discardable: 0,
+                                                        codec_specific_parameters: 0,
+                                                    },
+                                                    SubSampleInformationBoxEntrySubSample {
+                                                        subsample_size: 69,
+                                                        subsample_priority: 0,
+                                                        discardable: 0,
+                                                        codec_specific_parameters: 0,
+                                                    },
+                                                ],
+                                            },
+                                        ],
+                                    },
+                                ],
+                                saiz: [],
+                                saio: [],
+                                csgp: [],
+                            },
+                        },
+                        unknown_boxes: [],
+                    },
+                    unknown_boxes: [],
+                    udta: None,
+                },
+            ],
+            mvex: None,
+            unknown_boxes: [
+                UnknownBox {
+                    header: BoxHeader {
+                        size: Short(
+                            33,
+                        ),
+                        box_type: FourCc(
+                            "iods",
+                        ),
+                    },
+                    data.len: 25,
+                },
+            ],
+            udta: None,
+        },
+    ),
+    moof: [],
+    mdat: [
+        MediaDataBox {
+            data.len: 132446,
+        },
+    ],
+    imda: [],
+    meta: None,
+    styp: [],
+    sidx: [],
+    ssix: [],
+    prft: [],
+    unknown_boxes: [],
+    mfra: None,
+}

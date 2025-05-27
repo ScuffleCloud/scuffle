@@ -1,3 +1,4 @@
+use std::fmt::Debug;
 use std::io;
 
 use scuffle_bytes_util::zero_copy::{Deserialize, DeserializeSeed, Serialize, SerializeSeed, U24Be};
@@ -824,10 +825,16 @@ impl IsoSized for ItemInfoExtension<'_> {
 /// Item data box
 ///
 /// ISO/IEC 14496-12 - 8.11.11
-#[derive(IsoBox, Debug, PartialEq, Eq)]
+#[derive(IsoBox, PartialEq, Eq)]
 #[iso_box(box_type = b"idat", crate_path = crate)]
 pub struct ItemDataBox<'a> {
     pub data: BytesCow<'a>,
+}
+
+impl Debug for ItemDataBox<'_> {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        f.debug_struct("ItemDataBox").field("data.len", &self.data.len()).finish()
+    }
 }
 
 /// Item reference box

@@ -51,11 +51,6 @@ fn conformance_files() {
 
         let mut serialized = Vec::new();
         isobmff_file.serialize(&mut serialized).expect("failed to serialize file");
-        std::fs::write(
-            dir.join("output").join(file_name.split('/').last().unwrap_or(&file_name)),
-            &serialized,
-        )
-        .expect("failed to write serialized file");
         let redeserialized_file = IsobmffFile::deserialize(scuffle_bytes_util::zero_copy::Slice::from(&serialized[..]))
             .expect("failed to deserialize serialized file");
         assert_eq!(isobmff_file, redeserialized_file, "file content mismatch");

@@ -1,6 +1,6 @@
 [package]
 name = "scuffle-mp4"
-version = "0.1.4"
+version = "0.2.0"
 edition = "2024"
 description = "A pure Rust implementation of MP4 file format ISOBMFF boxes"
 repository = "https://github.com/scufflecloud/scuffle"

@@ -43,7 +43,7 @@ num-traits = "0.2"
 
 document-features = { optional = true, version = "0.2" }
 nutype-enum = { path = "../nutype_enum", version = "0.1.4" }
-scuffle-amf0 = { features = ["serde"], path = "../amf0", version = "0.2.1" }
+scuffle-amf0 = { features = ["serde"], path = "../amf0", version = "0.2.3" }
 scuffle-bytes-util = { features = ["serde"], path = "../bytes-util", version = "0.2.0" }
 scuffle-changelog = { optional = true, path = "../changelog", version = "0.1.0" }
 scuffle-context = { path = "../context", version = "0.1.3" }

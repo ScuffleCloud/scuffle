@@ -1,0 +1,526 @@
+---
+source: crates/isobmff/src/conformance_tests.rs
+expression: redeserialized_file
+snapshot_kind: text
+---
+IsobmffFile {
+    ftyp: Some(
+        FileTypeBox {
+            major_brand: Brand::Iso4,
+            minor_version: 1,
+            compatible_brands: [
+                Brand::Iso4,
+                Brand([104, 118, 99, 49]),
+            ],
+        },
+    ),
+    etyp: [],
+    otyp: [],
+    pdin: None,
+    moov: Some(
+        MovieBox {
+            mvhd: MovieHeaderBox {
+                full_header: FullBoxHeader {
+                    version: 0,
+                    flags: U24Be(
+                        0,
+                    ),
+                },
+                creation_time: 3559143999,
+                modification_time: 3559143999,
+                timescale: 600,
+                duration: 6168,
+                rate: 1,
+                volume: 1,
+                reserved1: 0,
+                reserved2: 0,
+                matrix: [
+                    65536,
+                    0,
+                    0,
+                    0,
+                    65536,
+                    0,
+                    0,
+                    0,
+                    1073741824,
+                ],
+                pre_defined: [
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                ],
+                next_track_id: 2,
+            },
+            meta: None,
+            trak: [
+                TrackBox {
+                    tkhd: TrackHeaderBox {
+                        version: 0,
+                        flags: TrackHeaderBoxFlags(
+                            TrackEnabled,
+                        ),
+                        creation_time: 3559143999,
+                        modification_time: 3559143999,
+                        track_id: 1,
+                        reserved1: 0,
+                        duration: 6168,
+                        reserved2: 0,
+                        layer: 0,
+                        alternate_group: 0,
+                        volume: 0,
+                        reserved3: 0,
+                        matrix: [
+                            65536,
+                            0,
+                            0,
+                            0,
+                            65536,
+                            0,
+                            0,
+                            0,
+                            1073741824,
+                        ],
+                        width: 960,
+                        height: 540,
+                    },
+                    tref: None,
+                    trgr: None,
+                    edts: Some(
+                        EditBox {
+                            elst: Some(
+                                EditListBox {
+                                    full_header: FullBoxHeader {
+                                        version: 0,
+                                        flags: U24Be(
+                                            0,
+                                        ),
+                                    },
+                                    entry_count: 1,
+                                    entries: [
+                                        EditListBoxEntry {
+                                            edit_duration: 6168,
+                                            media_time: 17000,
+                                            media_rate: 1,
+                                        },
+                                    ],
+                                },
+                            ),
+                        },
+                    ),
+                    ttyp: None,
+                    meta: None,
+                    mdia: MediaBox {
+                        mdhd: MediaHeaderBox {
+                            full_header: FullBoxHeader {
+                                version: 0,
+                                flags: U24Be(
+                                    0,
+                                ),
+                            },
+                            creation_time: 3559143999,
+                            modification_time: 3559143999,
+                            timescale: 25000,
+                            duration: 257000,
+                            language: Langauge(
+                                [
+                                    21,
+                                    14,
+                                    4,
+                                ],
+                            ),
+                            pre_defined: 0,
+                        },
+                        hdlr: HandlerBox {
+                            full_header: FullBoxHeader {
+                                version: 0,
+                                flags: U24Be(
+                                    0,
+                                ),
+                            },
+                            pre_defined: 0,
+                            handler_type: HandlerType::Video,
+                            reserved: [
+                                0,
+                                0,
+                                0,
+                            ],
+                            name: Utf8String(
+                                "hvc@GPAC0.6.2-DEV-rev1025-g47a7127-master",
+                            ),
+                        },
+                        elng: None,
+                        minf: MediaInformationBox {
+                            vmhd: Some(
+                                VideoMediaHeaderBox {
+                                    full_header: FullBoxHeader {
+                                        version: 0,
+                                        flags: U24Be(
+                                            1,
+                                        ),
+                                    },
+                                    graphicsmode: 0,
+                                    opcolor: [
+                                        0,
+                                        0,
+                                        0,
+                                    ],
+                                },
+                            ),
+                            smhd: None,
+                            hmhd: None,
+                            sthd: None,
+                            vvhd: None,
+                            unknown_boxes: [],
+                            dinf: DataInformationBox {
+                                dref: DataReferenceBox {
+                                    full_header: FullBoxHeader {
+                                        version: 0,
+                                        flags: U24Be(
+                                            0,
+                                        ),
+                                    },
+                                    entry_count: 1,
+                                    url: [
+                                        DataEntryUrlBox {
+                                            full_header: FullBoxHeader {
+                                                version: 0,
+                                                flags: U24Be(
+                                                    1,
+                                                ),
+                                            },
+                                            location: None,
+                                        },
+                                    ],
+                                    urn: [],
+                                    imda: [],
+                                    snim: [],
+                                    unknown_boxes: [],
+                                },
+                            },
+                            stbl: SampleTableBox {
+                                stsd: SampleDescriptionBox {
+                                    full_header: FullBoxHeader {
+                                        version: 0,
+                                        flags: U24Be(
+                                            0,
+                                        ),
+                                    },
+                                    entry_count: 1,
+                                    boxes: [
+                                        UnknownBox {
+                                            header: BoxHeader {
+                                                size: Short(
+                                                    359,
+                                                ),
+                                                box_type: FourCc(
+                                                    "hvc1",
+                                                ),
+                                            },
+                                            data.len: 351,
+                                        },
+                                    ],
+                                },
+                                stts: TimeToSampleBox {
+                                    full_header: FullBoxHeader {
+                                        version: 0,
+                                        flags: U24Be(
+                                            0,
+                                        ),
+                                    },
+                                    entry_count: 1,
+                                    entries: [
+                                        TimeToSampleBoxEntry {
+                                            sample_count: 257,
+                                            sample_delta: 1000,
+                                        },
+                                    ],
+                                },
+                                ctts: Some(
+                                    CompositionOffsetBox {
+                                        full_header: FullBoxHeader {
+                                            version: 0,
+                                            flags: U24Be(
+                                                0,
+                                            ),
+                                        },
+                                        entry_count: 257,
+                                        entries.len: 257,
+                                    },
+                                ),
+                                cslg: None,
+                                stsc: SampleToChunkBox {
+                                    full_header: FullBoxHeader {
+                                        version: 0,
+                                        flags: U24Be(
+                                            0,
+                                        ),
+                                    },
+                                    entry_count: 3,
+                                    entries.len: 3,
+                                },
+                                stsz: Some(
+                                    SampleSizeBox {
+                                        full_header: FullBoxHeader {
+                                            version: 0,
+                                            flags: U24Be(
+                                                0,
+                                            ),
+                                        },
+                                        sample_size: 0,
+                                        sample_count: 257,
+                                        entry_size.len: 257,
+                                    },
+                                ),
+                                stz2: None,
+                                stco: Some(
+                                    ChunkOffsetBox {
+                                        full_header: FullBoxHeader {
+                                            version: 0,
+                                            flags: U24Be(
+                                                0,
+                                            ),
+                                        },
+                                        entry_count: 22,
+                                        chunk_offset.len: 22,
+                                    },
+                                ),
+                                co64: None,
+                                stss: Some(
+                                    SyncSampleBox {
+                                        full_header: FullBoxHeader {
+                                            version: 0,
+                                            flags: U24Be(
+                                                0,
+                                            ),
+                                        },
+                                        entry_count: 11,
+                                        sample_number: [
+                                            1,
+                                            18,
+                                            42,
+                                            66,
+                                            90,
+                                            114,
+                                            138,
+                                            162,
+                                            186,
+                                            210,
+                                            234,
+                                        ],
+                                    },
+                                ),
+                                stsh: None,
+                                padb: None,
+                                stdp: None,
+                                sdtp: None,
+                                sbgp: [],
+                                sgpd: [
+                                    SampleGroupDescriptionBox {
+                                        full_header: FullBoxHeader {
+                                            version: 1,
+                                            flags: U24Be(
+                                                0,
+                                            ),
+                                        },
+                                        grouping_type: [
+                                            111,
+                                            105,
+                                            110,
+                                            102,
+                                        ],
+                                        default_length: Some(
+                                            81,
+                                        ),
+                                        default_group_description_index: None,
+                                        entry_count: 1,
+                                        entries: [
+                                            SampleGroupDescriptionEntry {
+                                                description_length: None,
+                                                sample_group_description_entry: Unknown {
+                                                    grouping_type: [
+                                                        111,
+                                                        105,
+                                                        110,
+                                                        102,
+                                                    ],
+                                                    data: Slice(
+                                                        [
+                                                            0,
+                                                            4,
+                                                            195,
+                                                            1,
+                                                            96,
+                                                            0,
+                                                            0,
+                                                            0,
+                                                            0,
+                                                            0,
+                                                            0,
+                                                            0,
+                                                            0,
+                                                            0,
+                                                            123,
+                                                            0,
+                                                            0,
+                                                            0,
+                                                            0,
+                                                            0,
+                                                            0,
+                                                            0,
+                                                            0,
+                                                            0,
+                                                            0,
+                                                            0,
+                                                            123,
+                                                            0,
+                                                            0,
+                                                            0,
+                                                            0,
+                                                            0,
+                                                            0,
+                                                            0,
+                                                            0,
+                                                            0,
+                                                            0,
+                                                            0,
+                                                            123,
+                                                            0,
+                                                            2,
+                                                            0,
+                                                            0,
+                                                            0,
+                                                            1,
+                                                            1,
+                                                            2,
+                                                            3,
+                                                            192,
+                                                            2,
+                                                            32,
+                                                            3,
+                                                            192,
+                                                            2,
+                                                            32,
+                                                            4,
+                                                            0,
+                                                            1,
+                                                            0,
+                                                            2,
+                                                            1,
+                                                            0,
+                                                            2,
+                                                            4,
+                                                            3,
+                                                            192,
+                                                            2,
+                                                            32,
+                                                            7,
+                                                            128,
+                                                            4,
+                                                            56,
+                                                            4,
+                                                            2,
+                                                            0,
+                                                            0,
+                                                            0,
+                                                            1,
+                                                            1,
+                                                            0,
+                                                            1,
+                                                        ],
+                                                    ),
+                                                },
+                                            },
+                                        ],
+                                    },
+                                    SampleGroupDescriptionBox {
+                                        full_header: FullBoxHeader {
+                                            version: 1,
+                                            flags: U24Be(
+                                                0,
+                                            ),
+                                        },
+                                        grouping_type: [
+                                            108,
+                                            105,
+                                            110,
+                                            102,
+                                        ],
+                                        default_length: Some(
+                                            7,
+                                        ),
+                                        default_group_description_index: None,
+                                        entry_count: 1,
+                                        entries: [
+                                            SampleGroupDescriptionEntry {
+                                                description_length: None,
+                                                sample_group_description_entry: Unknown {
+                                                    grouping_type: [
+                                                        108,
+                                                        105,
+                                                        110,
+                                                        102,
+                                                    ],
+                                                    data: Slice(
+                                                        [
+                                                            2,
+                                                            0,
+                                                            0,
+                                                            127,
+                                                            0,
+                                                            64,
+                                                            127,
+                                                        ],
+                                                    ),
+                                                },
+                                            },
+                                        ],
+                                    },
+                                ],
+                                subs: [],
+                                saiz: [],
+                                saio: [],
+                                csgp: [],
+                            },
+                        },
+                        unknown_boxes: [],
+                    },
+                    unknown_boxes: [],
+                    udta: None,
+                },
+            ],
+            mvex: None,
+            unknown_boxes: [],
+            udta: None,
+        },
+    ),
+    moof: [],
+    mdat: [
+        MediaDataBox {
+            data.len: 1003234,
+        },
+    ],
+    imda: [],
+    meta: None,
+    styp: [],
+    sidx: [],
+    ssix: [],
+    prft: [],
+    unknown_boxes: [
+        UnknownBox {
+            header: BoxHeader {
+                size: Short(
+                    75,
+                ),
+                box_type: FourCc(
+                    "free",
+                ),
+            },
+            data.len: 67,
+        },
+    ],
+    mfra: None,
+}

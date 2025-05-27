@@ -1,0 +1,662 @@
+---
+source: crates/isobmff/src/conformance_tests.rs
+expression: redeserialized_file
+snapshot_kind: text
+---
+IsobmffFile {
+    ftyp: Some(
+        FileTypeBox {
+            major_brand: Brand::Iso4,
+            minor_version: 1,
+            compatible_brands: [
+                Brand::Iso4,
+                Brand([104, 118, 99, 49]),
+            ],
+        },
+    ),
+    etyp: [],
+    otyp: [],
+    pdin: None,
+    moov: Some(
+        MovieBox {
+            mvhd: MovieHeaderBox {
+                full_header: FullBoxHeader {
+                    version: 0,
+                    flags: U24Be(
+                        0,
+                    ),
+                },
+                creation_time: 3559213447,
+                modification_time: 3559213447,
+                timescale: 600,
+                duration: 600,
+                rate: 1,
+                volume: 1,
+                reserved1: 0,
+                reserved2: 0,
+                matrix: [
+                    65536,
+                    0,
+                    0,
+                    0,
+                    65536,
+                    0,
+                    0,
+                    0,
+                    1073741824,
+                ],
+                pre_defined: [
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                ],
+                next_track_id: 2,
+            },
+            meta: None,
+            trak: [
+                TrackBox {
+                    tkhd: TrackHeaderBox {
+                        version: 0,
+                        flags: TrackHeaderBoxFlags(
+                            TrackEnabled,
+                        ),
+                        creation_time: 3559213447,
+                        modification_time: 3559213447,
+                        track_id: 1,
+                        reserved1: 0,
+                        duration: 600,
+                        reserved2: 0,
+                        layer: 0,
+                        alternate_group: 0,
+                        volume: 0,
+                        reserved3: 0,
+                        matrix: [
+                            65536,
+                            0,
+                            0,
+                            0,
+                            65536,
+                            0,
+                            0,
+                            0,
+                            1073741824,
+                        ],
+                        width: 1920,
+                        height: 1080,
+                    },
+                    tref: None,
+                    trgr: None,
+                    edts: None,
+                    ttyp: None,
+                    meta: None,
+                    mdia: MediaBox {
+                        mdhd: MediaHeaderBox {
+                            full_header: FullBoxHeader {
+                                version: 0,
+                                flags: U24Be(
+                                    0,
+                                ),
+                            },
+                            creation_time: 3559213447,
+                            modification_time: 3559213447,
+                            timescale: 25000,
+                            duration: 25000,
+                            language: Langauge(
+                                [
+                                    21,
+                                    14,
+                                    4,
+                                ],
+                            ),
+                            pre_defined: 0,
+                        },
+                        hdlr: HandlerBox {
+                            full_header: FullBoxHeader {
+                                version: 0,
+                                flags: U24Be(
+                                    0,
+                                ),
+                            },
+                            pre_defined: 0,
+                            handler_type: HandlerType::Video,
+                            reserved: [
+                                0,
+                                0,
+                                0,
+                            ],
+                            name: Utf8String(
+                                "hvc:novpsext:tiles@GPAC0.6.2-DEV-rev1025-g47a7127-master",
+                            ),
+                        },
+                        elng: None,
+                        minf: MediaInformationBox {
+                            vmhd: Some(
+                                VideoMediaHeaderBox {
+                                    full_header: FullBoxHeader {
+                                        version: 0,
+                                        flags: U24Be(
+                                            1,
+                                        ),
+                                    },
+                                    graphicsmode: 0,
+                                    opcolor: [
+                                        0,
+                                        0,
+                                        0,
+                                    ],
+                                },
+                            ),
+                            smhd: None,
+                            hmhd: None,
+                            sthd: None,
+                            vvhd: None,
+                            unknown_boxes: [],
+                            dinf: DataInformationBox {
+                                dref: DataReferenceBox {
+                                    full_header: FullBoxHeader {
+                                        version: 0,
+                                        flags: U24Be(
+                                            0,
+                                        ),
+                                    },
+                                    entry_count: 1,
+                                    url: [
+                                        DataEntryUrlBox {
+                                            full_header: FullBoxHeader {
+                                                version: 0,
+                                                flags: U24Be(
+                                                    1,
+                                                ),
+                                            },
+                                            location: None,
+                                        },
+                                    ],
+                                    urn: [],
+                                    imda: [],
+                                    snim: [],
+                                    unknown_boxes: [],
+                                },
+                            },
+                            stbl: SampleTableBox {
+                                stsd: SampleDescriptionBox {
+                                    full_header: FullBoxHeader {
+                                        version: 0,
+                                        flags: U24Be(
+                                            0,
+                                        ),
+                                    },
+                                    entry_count: 1,
+                                    boxes: [
+                                        UnknownBox {
+                                            header: BoxHeader {
+                                                size: Short(
+                                                    216,
+                                                ),
+                                                box_type: FourCc(
+                                                    "hvc2",
+                                                ),
+                                            },
+                                            data.len: 208,
+                                        },
+                                    ],
+                                },
+                                stts: TimeToSampleBox {
+                                    full_header: FullBoxHeader {
+                                        version: 0,
+                                        flags: U24Be(
+                                            0,
+                                        ),
+                                    },
+                                    entry_count: 1,
+                                    entries: [
+                                        TimeToSampleBoxEntry {
+                                            sample_count: 25,
+                                            sample_delta: 1000,
+                                        },
+                                    ],
+                                },
+                                ctts: None,
+                                cslg: None,
+                                stsc: SampleToChunkBox {
+                                    full_header: FullBoxHeader {
+                                        version: 0,
+                                        flags: U24Be(
+                                            0,
+                                        ),
+                                    },
+                                    entry_count: 2,
+                                    entries.len: 2,
+                                },
+                                stsz: Some(
+                                    SampleSizeBox {
+                                        full_header: FullBoxHeader {
+                                            version: 0,
+                                            flags: U24Be(
+                                                0,
+                                            ),
+                                        },
+                                        sample_size: 0,
+                                        sample_count: 25,
+                                        entry_size.len: 25,
+                                    },
+                                ),
+                                stz2: None,
+                                stco: Some(
+                                    ChunkOffsetBox {
+                                        full_header: FullBoxHeader {
+                                            version: 0,
+                                            flags: U24Be(
+                                                0,
+                                            ),
+                                        },
+                                        entry_count: 2,
+                                        chunk_offset.len: 2,
+                                    },
+                                ),
+                                co64: None,
+                                stss: Some(
+                                    SyncSampleBox {
+                                        full_header: FullBoxHeader {
+                                            version: 0,
+                                            flags: U24Be(
+                                                0,
+                                            ),
+                                        },
+                                        entry_count: 1,
+                                        sample_number: [
+                                            1,
+                                        ],
+                                    },
+                                ),
+                                stsh: None,
+                                padb: None,
+                                stdp: None,
+                                sdtp: None,
+                                sbgp: [
+                                    SampleToGroupBox {
+                                        full_header: FullBoxHeader {
+                                            version: 1,
+                                            flags: U24Be(
+                                                0,
+                                            ),
+                                        },
+                                        grouping_type: [
+                                            110,
+                                            97,
+                                            108,
+                                            109,
+                                        ],
+                                        grouping_type_parameter: Some(
+                                            1953655142,
+                                        ),
+                                        entry_count: 1,
+                                        entries: [
+                                            SampleToGroupBoxEntry {
+                                                sample_count: 25,
+                                                group_description_index: 1,
+                                            },
+                                        ],
+                                    },
+                                ],
+                                sgpd: [
+                                    SampleGroupDescriptionBox {
+                                        full_header: FullBoxHeader {
+                                            version: 1,
+                                            flags: U24Be(
+                                                0,
+                                            ),
+                                        },
+                                        grouping_type: [
+                                            110,
+                                            97,
+                                            108,
+                                            109,
+                                        ],
+                                        default_length: Some(
+                                            22,
+                                        ),
+                                        default_group_description_index: None,
+                                        entry_count: 1,
+                                        entries: [
+                                            SampleGroupDescriptionEntry {
+                                                description_length: None,
+                                                sample_group_description_entry: Unknown {
+                                                    grouping_type: [
+                                                        110,
+                                                        97,
+                                                        108,
+                                                        109,
+                                                    ],
+                                                    data: Slice(
+                                                        [
+                                                            0,
+                                                            10,
+                                                            0,
+                                                            2,
+                                                            0,
+                                                            3,
+                                                            0,
+                                                            4,
+                                                            0,
+                                                            5,
+                                                            0,
+                                                            6,
+                                                            0,
+                                                            7,
+                                                            0,
+                                                            8,
+                                                            0,
+                                                            9,
+                                                            0,
+                                                            10,
+                                                            0,
+                                                            0,
+                                                        ],
+                                                    ),
+                                                },
+                                            },
+                                        ],
+                                    },
+                                    SampleGroupDescriptionBox {
+                                        full_header: FullBoxHeader {
+                                            version: 1,
+                                            flags: U24Be(
+                                                0,
+                                            ),
+                                        },
+                                        grouping_type: [
+                                            116,
+                                            114,
+                                            105,
+                                            102,
+                                        ],
+                                        default_length: Some(
+                                            11,
+                                        ),
+                                        default_group_description_index: None,
+                                        entry_count: 9,
+                                        entries: [
+                                            SampleGroupDescriptionEntry {
+                                                description_length: None,
+                                                sample_group_description_entry: Unknown {
+                                                    grouping_type: [
+                                                        116,
+                                                        114,
+                                                        105,
+                                                        102,
+                                                    ],
+                                                    data: Slice(
+                                                        [
+                                                            0,
+                                                            2,
+                                                            200,
+                                                            0,
+                                                            0,
+                                                            0,
+                                                            0,
+                                                            2,
+                                                            128,
+                                                            1,
+                                                            64,
+                                                        ],
+                                                    ),
+                                                },
+                                            },
+                                            SampleGroupDescriptionEntry {
+                                                description_length: None,
+                                                sample_group_description_entry: Unknown {
+                                                    grouping_type: [
+                                                        116,
+                                                        114,
+                                                        105,
+                                                        102,
+                                                    ],
+                                                    data: Slice(
+                                                        [
+                                                            0,
+                                                            3,
+                                                            200,
+                                                            2,
+                                                            128,
+                                                            0,
+                                                            0,
+                                                            2,
+                                                            128,
+                                                            1,
+                                                            64,
+                                                        ],
+                                                    ),
+                                                },
+                                            },
+                                            SampleGroupDescriptionEntry {
+                                                description_length: None,
+                                                sample_group_description_entry: Unknown {
+                                                    grouping_type: [
+                                                        116,
+                                                        114,
+                                                        105,
+                                                        102,
+                                                    ],
+                                                    data: Slice(
+                                                        [
+                                                            0,
+                                                            4,
+                                                            200,
+                                                            5,
+                                                            0,
+                                                            0,
+                                                            0,
+                                                            2,
+                                                            128,
+                                                            1,
+                                                            64,
+                                                        ],
+                                                    ),
+                                                },
+                                            },
+                                            SampleGroupDescriptionEntry {
+                                                description_length: None,
+                                                sample_group_description_entry: Unknown {
+                                                    grouping_type: [
+                                                        116,
+                                                        114,
+                                                        105,
+                                                        102,
+                                                    ],
+                                                    data: Slice(
+                                                        [
+                                                            0,
+                                                            5,
+                                                            200,
+                                                            0,
+                                                            0,
+                                                            1,
+                                                            64,
+                                                            2,
+                                                            128,
+                                                            1,
+                                                            128,
+                                                        ],
+                                                    ),
+                                                },
+                                            },
+                                            SampleGroupDescriptionEntry {
+                                                description_length: None,
+                                                sample_group_description_entry: Unknown {
+                                                    grouping_type: [
+                                                        116,
+                                                        114,
+                                                        105,
+                                                        102,
+                                                    ],
+                                                    data: Slice(
+                                                        [
+                                                            0,
+                                                            6,
+                                                            200,
+                                                            2,
+                                                            128,
+                                                            1,
+                                                            64,
+                                                            2,
+                                                            128,
+                                                            1,
+                                                            128,
+                                                        ],
+                                                    ),
+                                                },
+                                            },
+                                            SampleGroupDescriptionEntry {
+                                                description_length: None,
+                                                sample_group_description_entry: Unknown {
+                                                    grouping_type: [
+                                                        116,
+                                                        114,
+                                                        105,
+                                                        102,
+                                                    ],
+                                                    data: Slice(
+                                                        [
+                                                            0,
+                                                            7,
+                                                            200,
+                                                            5,
+                                                            0,
+                                                            1,
+                                                            64,
+                                                            2,
+                                                            128,
+                                                            1,
+                                                            128,
+                                                        ],
+                                                    ),
+                                                },
+                                            },
+                                            SampleGroupDescriptionEntry {
+                                                description_length: None,
+                                                sample_group_description_entry: Unknown {
+                                                    grouping_type: [
+                                                        116,
+                                                        114,
+                                                        105,
+                                                        102,
+                                                    ],
+                                                    data: Slice(
+                                                        [
+                                                            0,
+                                                            8,
+                                                            200,
+                                                            0,
+                                                            0,
+                                                            2,
+                                                            192,
+                                                            2,
+                                                            128,
+                                                            1,
+                                                            128,
+                                                        ],
+                                                    ),
+                                                },
+                                            },
+                                            SampleGroupDescriptionEntry {
+                                                description_length: None,
+                                                sample_group_description_entry: Unknown {
+                                                    grouping_type: [
+                                                        116,
+                                                        114,
+                                                        105,
+                                                        102,
+                                                    ],
+                                                    data: Slice(
+                                                        [
+                                                            0,
+                                                            9,
+                                                            200,
+                                                            2,
+                                                            128,
+                                                            2,
+                                                            192,
+                                                            2,
+                                                            128,
+                                                            1,
+                                                            128,
+                                                        ],
+                                                    ),
+                                                },
+                                            },
+                                            SampleGroupDescriptionEntry {
+                                                description_length: None,
+                                                sample_group_description_entry: Unknown {
+                                                    grouping_type: [
+                                                        116,
+                                                        114,
+                                                        105,
+                                                        102,
+                                                    ],
+                                                    data: Slice(
+                                                        [
+                                                            0,
+                                                            10,
+                                                            200,
+                                                            5,
+                                                            0,
+                                                            2,
+                                                            192,
+                                                            2,
+                                                            128,
+                                                            1,
+                                                            128,
+                                                        ],
+                                                    ),
+                                                },
+                                            },
+                                        ],
+                                    },
+                                ],
+                                subs: [],
+                                saiz: [],
+                                saio: [],
+                                csgp: [],
+                            },
+                        },
+                        unknown_boxes: [],
+                    },
+                    unknown_boxes: [],
+                    udta: None,
+                },
+            ],
+            mvex: None,
+            unknown_boxes: [],
+            udta: None,
+        },
+    ),
+    moof: [],
+    mdat: [
+        MediaDataBox {
+            data.len: 729967,
+        },
+    ],
+    imda: [],
+    meta: None,
+    styp: [],
+    sidx: [],
+    ssix: [],
+    prft: [],
+    unknown_boxes: [
+        UnknownBox {
+            header: BoxHeader {
+                size: Short(
+                    75,
+                ),
+                box_type: FourCc(
+                    "free",
+                ),
+            },
+            data.len: 67,
+        },
+    ],
+    mfra: None,
+}

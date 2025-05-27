@@ -5,7 +5,6 @@ use std::collections::BTreeMap;
 use std::io::BufReader;
 use std::path::PathBuf;
 
-use pretty_assertions::assert_eq;
 use scuffle_bytes_util::zero_copy::{Deserialize, Serialize};
 
 use crate::{IsoSized, IsobmffFile};
@@ -36,10 +35,13 @@ fn conformance_files() {
         .filter(|(n, m)| !n.ends_with(".zip") && m.published)
     {
         println!("testing {file_name}");
+        let test_name = file_name.split('/').last().unwrap_or(&file_name);
+
         let mut file = std::fs::File::open(dir.join("files").join(&file_name)).expect("failed to open file");
         let reader = scuffle_bytes_util::zero_copy::IoRead::from(BufReader::new(&mut file));
 
         let isobmff_file = IsobmffFile::deserialize(reader).expect("failed to deserialize file");
+        insta::assert_debug_snapshot!(test_name, isobmff_file);
 
         let file_size = file.metadata().expect("failed to read metadata").len() as usize;
         assert!(
@@ -53,6 +55,6 @@ fn conformance_files() {
         isobmff_file.serialize(&mut serialized).expect("failed to serialize file");
         let redeserialized_file = IsobmffFile::deserialize(scuffle_bytes_util::zero_copy::Slice::from(&serialized[..]))
             .expect("failed to deserialize serialized file");
-        assert_eq!(isobmff_file, redeserialized_file, "file content mismatch");
+        insta::assert_debug_snapshot!(test_name, redeserialized_file);
     }
 }

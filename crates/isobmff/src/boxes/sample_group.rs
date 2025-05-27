@@ -245,9 +245,8 @@ impl<'a> DeserializeSeed<'a, ([u8; 4], Option<u32>)> for SampleGroupDescriptionE
             None
         };
 
-        let description_reader = reader.take(description_length.unwrap_or(0) as usize);
         let sample_group_description_entry =
-            SampleGroupDescriptionEntryType::deserialize_seed(description_reader, grouping_type)?;
+            SampleGroupDescriptionEntryType::deserialize_seed(reader, (grouping_type, default_length))?;
 
         Ok(Self {
             description_length,
@@ -433,12 +432,14 @@ impl IsoSized for RateShareEntryOperationPoint {
     }
 }
 
-impl<'a> DeserializeSeed<'a, [u8; 4]> for SampleGroupDescriptionEntryType<'a> {
-    fn deserialize_seed<R>(mut reader: R, seed: [u8; 4]) -> io::Result<Self>
+impl<'a> DeserializeSeed<'a, ([u8; 4], Option<u32>)> for SampleGroupDescriptionEntryType<'a> {
+    fn deserialize_seed<R>(mut reader: R, seed: ([u8; 4], Option<u32>)) -> io::Result<Self>
     where
         R: ZeroCopyReader<'a>,
     {
-        match &seed {
+        let (grouping_type, description_length) = seed;
+
+        match &grouping_type {
             b"roll" => {
                 let roll_distance = i16::deserialize(&mut reader)?;
                 Ok(Self::RollRecoveryEntry { roll_distance })
@@ -559,10 +560,15 @@ impl<'a> DeserializeSeed<'a, [u8; 4]> for SampleGroupDescriptionEntryType<'a> {
                     item_id,
                 })
             }
-            _ => Ok(Self::Unknown {
-                grouping_type: seed,
-                data: reader.try_read_to_end()?,
-            }),
+            _ => {
+                let data = if let Some(description_length) = description_length {
+                    reader.try_read(description_length as usize)?
+                } else {
+                    BytesCow::new()
+                };
+
+                Ok(Self::Unknown { grouping_type, data })
+            }
         }
     }
 }

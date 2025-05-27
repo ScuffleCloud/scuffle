@@ -1,6 +1,6 @@
 <script lang="ts">
     import type { VideoStream } from '$components/streams/types';
-    import AllVideoStreams from '$components/streams/AllVideoStreams.svelte';
+    import AllVideoStreams from '$components/streams/all-video-streams.svelte';
     import type { ListResponse, Streamed } from '$lib/types';
 
     type Props = {

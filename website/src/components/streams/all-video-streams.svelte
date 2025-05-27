@@ -1,6 +1,6 @@
 <script lang="ts">
     import Header from './Header.svelte';
-    import StreamsTable from './StreamsTable.svelte';
+    import StreamsTable from './streams-table.svelte';
 
     import type { ListResponse, Streamed } from '$lib/types';
     import type { VideoStream } from './types';

@@ -20,9 +20,12 @@ proc-macro = true
 darling = "0.20.11"
 proc-macro2 = "1.0.95"
 quote = "1.0.40"
-scuffle-bytes-util = { path = "../../bytes-util", version = "0.2.0" }
 scuffle-workspace-hack.workspace = true
 syn = "2.0.100"
+
+[dev-dependencies]
+isobmff = { path = "..", version = "0.1.0" }
+scuffle-bytes-util = { path = "../../bytes-util", version = "0.2.0" }
 
 [package.metadata.docs.rs]
 all-features = true

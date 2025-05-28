@@ -41,6 +41,11 @@ test *args:
     cargo +{{RUST_TOOLCHAIN}} llvm-cov report --include-build-script --lcov --output-path ./lcov.info
     cargo +{{RUST_TOOLCHAIN}} llvm-cov report --include-build-script --html
 
+doctest *args:
+    #!/usr/bin/env bash
+    set -euo pipefail
+    cargo +{{RUST_TOOLCHAIN}} llvm-cov test --doc --no-report --all-features {{args}}
+
 coverage-serve:
     miniserve target/llvm-cov/html --index index.html --port 3000
 

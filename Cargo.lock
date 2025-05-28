@@ -1788,6 +1788,7 @@ name = "isobmff-derive"
 version = "0.1.0"
 dependencies = [
  "darling",
+ "isobmff",
  "proc-macro2",
  "quote",
  "scuffle-bytes-util",

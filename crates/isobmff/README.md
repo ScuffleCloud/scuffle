@@ -1,12 +1,17 @@
+<!-- cargo-sync-rdme title [[ -->
 # isobmff
+<!-- cargo-sync-rdme ]] -->
 
 > [!WARNING]  
 > This crate is under active development and may not be stable.
 
+<!-- cargo-sync-rdme badge [[ -->
 [![crates.io](https://img.shields.io/crates/v/isobmff.svg)](https://crates.io/crates/isobmff) [![docs.rs](https://img.shields.io/docsrs/isobmff)](https://docs.rs/isobmff)
+<!-- cargo-sync-rdme ]] -->
 
 ---
 
+<!-- cargo-sync-rdme rustdoc [[ -->
 A pure Rust ISO base media file format parser and writer.
 
 ## Status
@@ -21,3 +26,4 @@ This project is licensed under the [MIT](./LICENSE.MIT) or [Apache-2.0](./LICENS
 You can choose between one of them if you use this work.
 
 `SPDX-License-Identifier: MIT OR Apache-2.0`
+<!-- cargo-sync-rdme ]] -->

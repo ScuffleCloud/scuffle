@@ -14,16 +14,17 @@ keywords = ["isobmff", "mp4", "video", "container", "iso-14496-12"]
 unexpected_cfgs = { level = "warn", check-cfg = ['cfg(coverage_nightly)'] }
 
 [dependencies]
+document-features = { optional = true, version = "0.2" }
+scuffle-changelog = { optional = true, path = "../changelog", version = "0.1.0" }
+
 base64 = "0.22.1"
 bitflags = "2.9.0"
 byteorder = "1.5.0"
 bytes = "1.10.1"
-document-features = { optional = true, version = "0.2" }
 fixed = "1.29.0"
 isobmff-derive = { path = "./derive", version = "0.1.0" }
 nutype-enum = { path = "../nutype_enum", version = "0.1.4" }
 scuffle-bytes-util = { path = "../bytes-util", version = "0.2.0" }
-scuffle-changelog = { optional = true, path = "../changelog", version = "0.1.0" }
 scuffle-workspace-hack.workspace = true
 uuid = "1.16.0"
 

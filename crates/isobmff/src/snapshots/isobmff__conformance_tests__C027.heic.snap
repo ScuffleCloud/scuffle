@@ -324,33 +324,39 @@ IsobmffFile {
                                         default_group_description_index: None,
                                         entry_count: 2,
                                         entries: [
-                                            SampleGroupDescriptionEntry {
-                                                description_length: Some(
-                                                    9,
-                                                ),
-                                                sample_group_description_entry: Unknown {
-                                                    grouping_type: [
-                                                        114,
-                                                        101,
-                                                        102,
-                                                        115,
-                                                    ],
-                                                    data: [],
-                                                },
-                                            },
-                                            SampleGroupDescriptionEntry {
-                                                description_length: Some(
+                                            Unknown {
+                                                grouping_type: [
+                                                    114,
+                                                    101,
+                                                    102,
+                                                    115,
+                                                ],
+                                                data: [
                                                     0,
-                                                ),
-                                                sample_group_description_entry: Unknown {
-                                                    grouping_type: [
-                                                        114,
-                                                        101,
-                                                        102,
-                                                        115,
-                                                    ],
-                                                    data: [],
-                                                },
+                                                    0,
+                                                    0,
+                                                    0,
+                                                    1,
+                                                    0,
+                                                    0,
+                                                    0,
+                                                    1,
+                                                ],
+                                            },
+                                            Unknown {
+                                                grouping_type: [
+                                                    114,
+                                                    101,
+                                                    102,
+                                                    115,
+                                                ],
+                                                data: [
+                                                    0,
+                                                    0,
+                                                    0,
+                                                    1,
+                                                    0,
+                                                ],
                                             },
                                         ],
                                     },

@@ -1,8 +1,9 @@
 use std::io;
 
-use scuffle_bytes_util::zero_copy::{Deserialize, DeserializeSeed, Serialize, SerializeSeed, U24Be, ZeroCopyReader};
-use scuffle_bytes_util::{BitWriter, BytesCow, IoResultExt};
+use scuffle_bytes_util::BitWriter;
+use scuffle_bytes_util::zero_copy::{Deserialize, DeserializeSeed, Serialize, U24Be, ZeroCopyReader};
 
+use super::SampleGroupDescriptionEntry;
 use crate::{BoxHeader, FullBoxHeader, IsoBox, IsoSized};
 
 /// Sample to group box
@@ -160,10 +161,18 @@ impl<'a> DeserializeSeed<'a, BoxHeader> for SampleGroupDescriptionBox<'a> {
         let entry_count = u32::deserialize(&mut reader)?;
         let mut entries = Vec::with_capacity(entry_count as usize);
         for _ in 0..entry_count {
-            entries.push(SampleGroupDescriptionEntry::deserialize_seed(
-                &mut reader,
-                (grouping_type, default_length),
-            )?);
+            let description_length = if default_length.is_some_and(|l| l == 0) {
+                Some(u32::deserialize(&mut reader)?)
+            } else {
+                None
+            };
+
+            let length = description_length.or(default_length);
+
+            let sample_group_description_entry =
+                SampleGroupDescriptionEntry::deserialize_seed(&mut reader, (grouping_type, length))?;
+
+            entries.push(sample_group_description_entry);
         }
 
         Ok(Self {
@@ -202,7 +211,10 @@ impl Serialize for SampleGroupDescriptionBox<'_> {
 
         self.entry_count.serialize(&mut writer)?;
         for entry in &self.entries {
-            entry.serialize_seed(&mut writer, self)?;
+            if self.full_header.version >= 1 && self.default_length.is_some_and(|l| l == 0) {
+                (entry.size() as u32).serialize(&mut writer)?;
+            }
+            entry.serialize(&mut writer)?;
         }
 
         Ok(())
@@ -220,486 +232,20 @@ impl IsoSized for SampleGroupDescriptionBox<'_> {
             size += 4; // default_group_description_index
         }
         size += 4; // entry_count
-        size += self.entries.iter().map(|entry| entry.size(self)).sum::<usize>();
+        size += self
+            .entries
+            .iter()
+            .map(|entry| {
+                let mut size = 0;
+                if self.full_header.version >= 1 && self.default_length.is_some_and(|l| l == 0) {
+                    size += 4; // description_length
+                }
+                size += entry.size();
+                size
+            })
+            .sum::<usize>();
 
         Self::add_header_size(size)
-    }
-}
-
-#[derive(Debug, PartialEq, Eq)]
-pub struct SampleGroupDescriptionEntry<'a> {
-    pub description_length: Option<u32>,
-    pub sample_group_description_entry: SampleGroupDescriptionEntryType<'a>,
-}
-
-impl<'a> DeserializeSeed<'a, ([u8; 4], Option<u32>)> for SampleGroupDescriptionEntry<'a> {
-    fn deserialize_seed<R>(mut reader: R, seed: ([u8; 4], Option<u32>)) -> io::Result<Self>
-    where
-        R: ZeroCopyReader<'a>,
-    {
-        let (grouping_type, default_length) = seed;
-
-        let description_length = if default_length.is_some_and(|l| l == 0) {
-            Some(u32::deserialize(&mut reader)?)
-        } else {
-            None
-        };
-
-        let sample_group_description_entry =
-            SampleGroupDescriptionEntryType::deserialize_seed(reader, (grouping_type, default_length))?;
-
-        Ok(Self {
-            description_length,
-            sample_group_description_entry,
-        })
-    }
-}
-
-impl SerializeSeed<&SampleGroupDescriptionBox<'_>> for SampleGroupDescriptionEntry<'_> {
-    fn serialize_seed<W>(&self, mut writer: W, seed: &SampleGroupDescriptionBox) -> io::Result<()>
-    where
-        W: std::io::Write,
-    {
-        if seed.full_header.version >= 1 && seed.default_length.is_some_and(|l| l == 0) {
-            self.description_length
-                .ok_or(io::Error::new(io::ErrorKind::InvalidData, "description_length is required"))?
-                .serialize(&mut writer)?;
-        }
-        self.sample_group_description_entry.serialize(&mut writer)?;
-
-        Ok(())
-    }
-}
-
-impl SampleGroupDescriptionEntry<'_> {
-    pub fn size(&self, parent: &SampleGroupDescriptionBox) -> usize {
-        let mut size = 0;
-        if parent.full_header.version >= 1 && parent.default_length.is_some_and(|l| l == 0) {
-            size += 4; // description_length
-        }
-        size += self.sample_group_description_entry.size();
-        size
-    }
-}
-
-#[derive(Debug, PartialEq, Eq)]
-pub enum SampleGroupDescriptionEntryType<'a> {
-    // "roll"
-    RollRecoveryEntry {
-        roll_distance: i16,
-    },
-    // "alst"
-    AlternativeStartupEntry {
-        roll_count: u16,
-        first_output_sample: u16,
-        sample_offset: Vec<u32>,
-        nums: Vec<AlternativeStartupEntryNums>,
-    },
-    // "rap "
-    VisualRandomAccessEntry {
-        num_leading_samples_known: bool,
-        num_leading_samples: u8,
-    },
-    // "tele"
-    TemporalLevelEntry {
-        level_independently_decodable: bool,
-    },
-    // "drap"
-    VisualDRAPEntry {
-        drap_type: u8,
-    },
-    // "pasr"
-    PixelAspectRatioEntry {
-        h_spacing: u32,
-        v_spacing: u32,
-    },
-    // "casg"
-    CleanApertureEntry {
-        clean_aperture_width_n: u32,
-        clean_aperture_width_d: u32,
-        clean_aperture_height_n: u32,
-        clean_aperture_height_d: u32,
-        horiz_off_n: u32,
-        horiz_off_d: u32,
-        vert_off_n: u32,
-        vert_off_d: u32,
-    },
-    // "prol"
-    AudioPreRollEntry {
-        roll_distance: i16,
-    },
-    // "rash"
-    RateShareEntry {
-        operation_point_count: u16,
-        operation_points: Vec<RateShareEntryOperationPoint>,
-        maximum_bitrate: u32,
-        minimum_bitrate: u32,
-        discard_priority: u8,
-    },
-    // "sap "
-    SAPEntry {
-        dependent_flag: bool,
-        sap_type: u8,
-    },
-    // "stmi"
-    SampleToMetadataItemEntry {
-        meta_box_handler_type: u32,
-        num_items: u32,
-        item_id: Vec<u32>,
-    },
-    Unknown {
-        grouping_type: [u8; 4],
-        data: BytesCow<'a>,
-    },
-}
-
-#[derive(Debug, PartialEq, Eq)]
-pub struct AlternativeStartupEntryNums {
-    pub num_output_samples: u16,
-    pub num_total_samples: u16,
-}
-
-impl<'a> Deserialize<'a> for AlternativeStartupEntryNums {
-    fn deserialize<R>(mut reader: R) -> io::Result<Self>
-    where
-        R: ZeroCopyReader<'a>,
-    {
-        Ok(Self {
-            num_output_samples: u16::deserialize(&mut reader)?,
-            num_total_samples: u16::deserialize(&mut reader)?,
-        })
-    }
-}
-
-impl Serialize for AlternativeStartupEntryNums {
-    fn serialize<W>(&self, mut writer: W) -> io::Result<()>
-    where
-        W: std::io::Write,
-    {
-        self.num_output_samples.serialize(&mut writer)?;
-        self.num_total_samples.serialize(&mut writer)?;
-        Ok(())
-    }
-}
-
-impl IsoSized for AlternativeStartupEntryNums {
-    fn size(&self) -> usize {
-        2 + 2 // num_output_samples + num_total_samples
-    }
-}
-
-#[derive(Debug, PartialEq, Eq)]
-pub struct RateShareEntryOperationPoint {
-    pub target_rate_share: u16,
-    pub available_bitrate: Option<u32>,
-}
-
-impl<'a> Deserialize<'a> for RateShareEntryOperationPoint {
-    fn deserialize<R>(mut reader: R) -> io::Result<Self>
-    where
-        R: ZeroCopyReader<'a>,
-    {
-        let available_bitrate = u32::deserialize(&mut reader)?;
-        let target_rate_share = u16::deserialize(&mut reader)?;
-
-        Ok(Self {
-            available_bitrate: Some(available_bitrate),
-            target_rate_share,
-        })
-    }
-}
-
-impl Serialize for RateShareEntryOperationPoint {
-    fn serialize<W>(&self, mut writer: W) -> io::Result<()>
-    where
-        W: std::io::Write,
-    {
-        if let Some(available_bitrate) = &self.available_bitrate {
-            available_bitrate.serialize(&mut writer)?;
-        }
-        self.target_rate_share.serialize(&mut writer)?;
-        Ok(())
-    }
-}
-
-impl IsoSized for RateShareEntryOperationPoint {
-    fn size(&self) -> usize {
-        if self.available_bitrate.is_some() {
-            4 + 2 // available_bitrate + target_rate_share
-        } else {
-            2 // target_rate_share
-        }
-    }
-}
-
-impl<'a> DeserializeSeed<'a, ([u8; 4], Option<u32>)> for SampleGroupDescriptionEntryType<'a> {
-    fn deserialize_seed<R>(mut reader: R, seed: ([u8; 4], Option<u32>)) -> io::Result<Self>
-    where
-        R: ZeroCopyReader<'a>,
-    {
-        let (grouping_type, description_length) = seed;
-
-        match &grouping_type {
-            b"roll" => {
-                let roll_distance = i16::deserialize(&mut reader)?;
-                Ok(Self::RollRecoveryEntry { roll_distance })
-            }
-            b"alst" => {
-                let roll_count = u16::deserialize(&mut reader)?;
-                let first_output_sample = u16::deserialize(&mut reader)?;
-
-                let mut sample_offset = Vec::with_capacity(roll_count as usize);
-                for _ in 0..roll_count {
-                    sample_offset.push(u32::deserialize(&mut reader)?);
-                }
-
-                let mut nums = Vec::new();
-                loop {
-                    let Some(num) = AlternativeStartupEntryNums::deserialize(&mut reader).eof_to_none()? else {
-                        break;
-                    };
-                    nums.push(num);
-                }
-
-                Ok(Self::AlternativeStartupEntry {
-                    roll_count,
-                    first_output_sample,
-                    sample_offset,
-                    nums,
-                })
-            }
-            b"rap " => {
-                let byte = u8::deserialize(&mut reader)?;
-                let num_leading_samples_known = (byte & 0b1000_0000) != 0;
-                let num_leading_samples = byte & 0b0111_1111;
-
-                Ok(Self::VisualRandomAccessEntry {
-                    num_leading_samples_known,
-                    num_leading_samples,
-                })
-            }
-            b"tele" => {
-                let level_independently_decodable = (u8::deserialize(&mut reader)? & 0b1000_0000) != 0;
-
-                Ok(Self::TemporalLevelEntry {
-                    level_independently_decodable,
-                })
-            }
-            b"drap" => {
-                let drap_type = ((u32::deserialize(&mut reader)? >> 29) & 0b111) as u8;
-                Ok(Self::VisualDRAPEntry { drap_type })
-            }
-            b"pasr" => Ok(Self::PixelAspectRatioEntry {
-                h_spacing: u32::deserialize(&mut reader)?,
-                v_spacing: u32::deserialize(&mut reader)?,
-            }),
-            b"casg" => Ok(Self::CleanApertureEntry {
-                clean_aperture_width_n: u32::deserialize(&mut reader)?,
-                clean_aperture_width_d: u32::deserialize(&mut reader)?,
-                clean_aperture_height_n: u32::deserialize(&mut reader)?,
-                clean_aperture_height_d: u32::deserialize(&mut reader)?,
-                horiz_off_n: u32::deserialize(&mut reader)?,
-                horiz_off_d: u32::deserialize(&mut reader)?,
-                vert_off_n: u32::deserialize(&mut reader)?,
-                vert_off_d: u32::deserialize(&mut reader)?,
-            }),
-            b"prol" => Ok(Self::AudioPreRollEntry {
-                roll_distance: i16::deserialize(&mut reader)?,
-            }),
-            b"rash" => {
-                let operation_point_count = u16::deserialize(&mut reader)?;
-                let mut operation_points = Vec::with_capacity(operation_point_count as usize);
-
-                if operation_point_count == 1 {
-                    let target_rate_share = u16::deserialize(&mut reader)?;
-                    operation_points.push(RateShareEntryOperationPoint {
-                        target_rate_share,
-                        available_bitrate: None,
-                    });
-                } else {
-                    for _ in 0..operation_point_count {
-                        operation_points.push(RateShareEntryOperationPoint::deserialize(&mut reader)?);
-                    }
-                }
-
-                let maximum_bitrate = u32::deserialize(&mut reader)?;
-                let minimum_bitrate = u32::deserialize(&mut reader)?;
-                let discard_priority = u8::deserialize(&mut reader)?;
-
-                Ok(Self::RateShareEntry {
-                    operation_point_count,
-                    operation_points,
-                    maximum_bitrate,
-                    minimum_bitrate,
-                    discard_priority,
-                })
-            }
-            b"sap " => {
-                // x000 xxxx
-                let byte = u8::deserialize(&mut reader)?;
-                let dependent_flag = (byte & 0b1000_0000) != 0;
-                let sap_type = byte & 0b0000_1111;
-
-                Ok(Self::SAPEntry {
-                    dependent_flag,
-                    sap_type,
-                })
-            }
-            b"stmi" => {
-                let meta_box_handler_type = u32::deserialize(&mut reader)?;
-                let num_items = u32::deserialize(&mut reader)?;
-
-                let mut item_id = Vec::with_capacity(num_items as usize);
-                for _ in 0..num_items {
-                    item_id.push(u32::deserialize(&mut reader)?);
-                }
-
-                Ok(Self::SampleToMetadataItemEntry {
-                    meta_box_handler_type,
-                    num_items,
-                    item_id,
-                })
-            }
-            _ => {
-                let data = if let Some(description_length) = description_length {
-                    reader.try_read(description_length as usize)?
-                } else {
-                    BytesCow::new()
-                };
-
-                Ok(Self::Unknown { grouping_type, data })
-            }
-        }
-    }
-}
-
-impl Serialize for SampleGroupDescriptionEntryType<'_> {
-    fn serialize<W>(&self, mut writer: W) -> io::Result<()>
-    where
-        W: std::io::Write,
-    {
-        match self {
-            Self::RollRecoveryEntry { roll_distance } => roll_distance.serialize(&mut writer)?,
-            Self::AlternativeStartupEntry {
-                roll_count,
-                first_output_sample,
-                sample_offset,
-                nums,
-            } => {
-                roll_count.serialize(&mut writer)?;
-                first_output_sample.serialize(&mut writer)?;
-                for offset in sample_offset {
-                    offset.serialize(&mut writer)?;
-                }
-                for num in nums {
-                    num.serialize(&mut writer)?;
-                }
-            }
-            Self::VisualRandomAccessEntry {
-                num_leading_samples_known,
-                num_leading_samples,
-            } => {
-                let mut byte = (*num_leading_samples_known as u8) << 7;
-                byte |= *num_leading_samples;
-                byte.serialize(&mut writer)?;
-            }
-            Self::TemporalLevelEntry {
-                level_independently_decodable,
-            } => {
-                ((*level_independently_decodable as u8) << 7).serialize(&mut writer)?;
-            }
-            Self::VisualDRAPEntry { drap_type } => {
-                let byte = ((*drap_type & 0b1111) as u32) << 29;
-                byte.serialize(&mut writer)?;
-            }
-            Self::PixelAspectRatioEntry { h_spacing, v_spacing } => {
-                h_spacing.serialize(&mut writer)?;
-                v_spacing.serialize(&mut writer)?;
-            }
-            Self::CleanApertureEntry {
-                clean_aperture_width_n,
-                clean_aperture_width_d,
-                clean_aperture_height_n,
-                clean_aperture_height_d,
-                horiz_off_n,
-                horiz_off_d,
-                vert_off_n,
-                vert_off_d,
-            } => {
-                clean_aperture_width_n.serialize(&mut writer)?;
-                clean_aperture_width_d.serialize(&mut writer)?;
-                clean_aperture_height_n.serialize(&mut writer)?;
-                clean_aperture_height_d.serialize(&mut writer)?;
-                horiz_off_n.serialize(&mut writer)?;
-                horiz_off_d.serialize(&mut writer)?;
-                vert_off_n.serialize(&mut writer)?;
-                vert_off_d.serialize(&mut writer)?;
-            }
-            Self::AudioPreRollEntry { roll_distance } => roll_distance.serialize(&mut writer)?,
-            Self::RateShareEntry {
-                operation_point_count,
-                operation_points,
-                maximum_bitrate,
-                minimum_bitrate,
-                discard_priority,
-            } => {
-                operation_point_count.serialize(&mut writer)?;
-                for operation_point in operation_points {
-                    if *operation_point_count > 1 && operation_point.available_bitrate.is_none() {
-                        return Err(io::Error::new(io::ErrorKind::InvalidData, "available_bitrate is required"));
-                    }
-                    operation_point.serialize(&mut writer)?;
-                }
-                maximum_bitrate.serialize(&mut writer)?;
-                minimum_bitrate.serialize(&mut writer)?;
-                discard_priority.serialize(&mut writer)?;
-            }
-            Self::SAPEntry {
-                dependent_flag,
-                sap_type,
-            } => {
-                let mut byte = (*dependent_flag as u8) << 7;
-                byte |= *sap_type & 0b0000_1111;
-                byte.serialize(&mut writer)?;
-            }
-            Self::SampleToMetadataItemEntry {
-                meta_box_handler_type,
-                num_items,
-                item_id,
-            } => {
-                meta_box_handler_type.serialize(&mut writer)?;
-                num_items.serialize(&mut writer)?;
-                for id in item_id {
-                    id.serialize(&mut writer)?;
-                }
-            }
-            Self::Unknown { data, .. } => {
-                data.serialize(&mut writer)?;
-            }
-        }
-
-        Ok(())
-    }
-}
-
-impl IsoSized for SampleGroupDescriptionEntryType<'_> {
-    fn size(&self) -> usize {
-        match self {
-            Self::RollRecoveryEntry { .. } => 2, // roll_distance
-            Self::AlternativeStartupEntry { sample_offset, nums, .. } => 2 + 2 + sample_offset.size() + nums.size(),
-            Self::VisualRandomAccessEntry { .. } => 1, // num_leading_samples_known + num_leading_samples
-            Self::TemporalLevelEntry { .. } => 1,      // level_independently_decodable
-            Self::VisualDRAPEntry { .. } => 4,         // drap_type
-            Self::PixelAspectRatioEntry { .. } => 4 + 4, // h_spacing + v_spacing
-            Self::CleanApertureEntry { .. } => 4 + 4 + 4 + 4 + 4 + 4 + 4 + 4, /* clean_aperture_width_n + clean_aperture_width_d + clean_aperture_height_n + clean_aperture_height_d + horiz_off_n + horiz_off_d + vert_off_n + vert_off_d */
-            Self::AudioPreRollEntry { .. } => 2,                              // roll_distance
-            Self::RateShareEntry { operation_points, .. } => 2 + operation_points.size() + 4 + 4 + 1,
-            Self::SAPEntry { .. } => 1, // dependent_flag + sap_type
-            Self::SampleToMetadataItemEntry { item_id, .. } => {
-                4 + 4 + item_id.size() // meta_box_handler_type + num_items + item_id
-            }
-            Self::Unknown { data, .. } => data.size(),
-        }
     }
 }
 

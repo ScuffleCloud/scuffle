@@ -1,5 +1,3 @@
-//! Other boxes that are used by multiple codecs or are not specific to a codec.
-
 use scuffle_bytes_util::BytesCow;
 
 use crate::IsoBox;
@@ -7,6 +5,9 @@ use crate::IsoBox;
 /// MPEG-4 extension descriptors box
 ///
 /// ISO/IEC 14496-15 - 5.4.2
+///
+/// This box is used by multiple codecs and not specific to a codec.
+/// Therefore, it is part of this crate.
 #[derive(IsoBox, Debug, PartialEq, Eq)]
 #[iso_box(box_type = b"m4ds", crate_path = crate)]
 pub struct MPEG4ExtensionDescriptorsBox<'a> {

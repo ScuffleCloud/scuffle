@@ -755,13 +755,12 @@ IsobmffFile {
                                         default_group_description_index: None,
                                         entry_count: 1,
                                         entries: [
-                                            SampleGroupDescriptionEntry {
-                                                description_length: None,
-                                                sample_group_description_entry: VisualRandomAccessEntry {
+                                            VisualRandomAccess(
+                                                VisualRandomAccessEntry {
                                                     num_leading_samples_known: false,
                                                     num_leading_samples: 0,
                                                 },
-                                            },
+                                            ),
                                         ],
                                     },
                                 ],

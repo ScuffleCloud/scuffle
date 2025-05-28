@@ -835,22 +835,19 @@ IsobmffFile {
                                         default_group_description_index: None,
                                         entry_count: 1,
                                         entries: [
-                                            SampleGroupDescriptionEntry {
-                                                description_length: None,
-                                                sample_group_description_entry: Unknown {
-                                                    grouping_type: [
-                                                        108,
-                                                        105,
-                                                        110,
-                                                        102,
-                                                    ],
-                                                    data: [
-                                                        1,
-                                                        0,
-                                                        9,
-                                                        127,
-                                                    ],
-                                                },
+                                            Unknown {
+                                                grouping_type: [
+                                                    108,
+                                                    105,
+                                                    110,
+                                                    102,
+                                                ],
+                                                data: [
+                                                    1,
+                                                    0,
+                                                    9,
+                                                    127,
+                                                ],
                                             },
                                         ],
                                     },
@@ -1185,25 +1182,22 @@ IsobmffFile {
                                         default_group_description_index: None,
                                         entry_count: 1,
                                         entries: [
-                                            SampleGroupDescriptionEntry {
-                                                description_length: None,
-                                                sample_group_description_entry: Unknown {
-                                                    grouping_type: [
-                                                        108,
-                                                        105,
-                                                        110,
-                                                        102,
-                                                    ],
-                                                    data: [
-                                                        2,
-                                                        0,
-                                                        9,
-                                                        0,
-                                                        0,
-                                                        82,
-                                                        127,
-                                                    ],
-                                                },
+                                            Unknown {
+                                                grouping_type: [
+                                                    108,
+                                                    105,
+                                                    110,
+                                                    102,
+                                                ],
+                                                data: [
+                                                    2,
+                                                    0,
+                                                    9,
+                                                    0,
+                                                    0,
+                                                    82,
+                                                    127,
+                                                ],
                                             },
                                         ],
                                     },

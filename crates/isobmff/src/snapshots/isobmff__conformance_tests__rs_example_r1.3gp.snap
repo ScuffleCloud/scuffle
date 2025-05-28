@@ -671,11 +671,8 @@ IsobmffFile {
                                         default_group_description_index: None,
                                         entry_count: 1,
                                         entries: [
-                                            SampleGroupDescriptionEntry {
-                                                description_length: Some(
-                                                    23,
-                                                ),
-                                                sample_group_description_entry: RateShareEntry {
+                                            RateShare(
+                                                RateShareEntry {
                                                     operation_point_count: 2,
                                                     operation_points: [
                                                         RateShareEntryOperationPoint {
@@ -695,7 +692,7 @@ IsobmffFile {
                                                     minimum_bitrate: 80,
                                                     discard_priority: 1,
                                                 },
-                                            },
+                                            ),
                                         ],
                                     },
                                 ],
@@ -1275,11 +1272,8 @@ IsobmffFile {
                                         default_group_description_index: None,
                                         entry_count: 1,
                                         entries: [
-                                            SampleGroupDescriptionEntry {
-                                                description_length: Some(
-                                                    23,
-                                                ),
-                                                sample_group_description_entry: RateShareEntry {
+                                            RateShare(
+                                                RateShareEntry {
                                                     operation_point_count: 2,
                                                     operation_points: [
                                                         RateShareEntryOperationPoint {
@@ -1299,7 +1293,7 @@ IsobmffFile {
                                                     minimum_bitrate: 20,
                                                     discard_priority: 1,
                                                 },
-                                            },
+                                            ),
                                         ],
                                     },
                                 ],
@@ -1935,11 +1929,8 @@ IsobmffFile {
                                         default_group_description_index: None,
                                         entry_count: 1,
                                         entries: [
-                                            SampleGroupDescriptionEntry {
-                                                description_length: Some(
-                                                    23,
-                                                ),
-                                                sample_group_description_entry: RateShareEntry {
+                                            RateShare(
+                                                RateShareEntry {
                                                     operation_point_count: 2,
                                                     operation_points: [
                                                         RateShareEntryOperationPoint {
@@ -1959,7 +1950,7 @@ IsobmffFile {
                                                     minimum_bitrate: 80,
                                                     discard_priority: 2,
                                                 },
-                                            },
+                                            ),
                                         ],
                                     },
                                 ],
@@ -2539,11 +2530,8 @@ IsobmffFile {
                                         default_group_description_index: None,
                                         entry_count: 1,
                                         entries: [
-                                            SampleGroupDescriptionEntry {
-                                                description_length: Some(
-                                                    23,
-                                                ),
-                                                sample_group_description_entry: RateShareEntry {
+                                            RateShare(
+                                                RateShareEntry {
                                                     operation_point_count: 2,
                                                     operation_points: [
                                                         RateShareEntryOperationPoint {
@@ -2563,7 +2551,7 @@ IsobmffFile {
                                                     minimum_bitrate: 20,
                                                     discard_priority: 2,
                                                 },
-                                            },
+                                            ),
                                         ],
                                     },
                                 ],
@@ -3199,11 +3187,8 @@ IsobmffFile {
                                         default_group_description_index: None,
                                         entry_count: 1,
                                         entries: [
-                                            SampleGroupDescriptionEntry {
-                                                description_length: Some(
-                                                    23,
-                                                ),
-                                                sample_group_description_entry: RateShareEntry {
+                                            RateShare(
+                                                RateShareEntry {
                                                     operation_point_count: 2,
                                                     operation_points: [
                                                         RateShareEntryOperationPoint {
@@ -3223,7 +3208,7 @@ IsobmffFile {
                                                     minimum_bitrate: 80,
                                                     discard_priority: 3,
                                                 },
-                                            },
+                                            ),
                                         ],
                                     },
                                 ],
@@ -3803,11 +3788,8 @@ IsobmffFile {
                                         default_group_description_index: None,
                                         entry_count: 1,
                                         entries: [
-                                            SampleGroupDescriptionEntry {
-                                                description_length: Some(
-                                                    23,
-                                                ),
-                                                sample_group_description_entry: RateShareEntry {
+                                            RateShare(
+                                                RateShareEntry {
                                                     operation_point_count: 2,
                                                     operation_points: [
                                                         RateShareEntryOperationPoint {
@@ -3827,7 +3809,7 @@ IsobmffFile {
                                                     minimum_bitrate: 20,
                                                     discard_priority: 3,
                                                 },
-                                            },
+                                            ),
                                         ],
                                     },
                                 ],

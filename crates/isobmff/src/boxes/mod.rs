@@ -1,3 +1,45 @@
+//! Almost all boxes that are defined in ISO/IEC 14496-12.
+//!
+//! # Fully implemented sections
+//! - 4 File Organization
+//! - 8 Box structures
+//!   - 8.1 General
+//!   - 8.2 Movie
+//!   - 8.3 Track
+//!   - 8.4 Track Media
+//!   - 8.5 Sample Table
+//!   - 8.6 Track Time
+//!   - 8.7 Track Data Layout
+//!   - 8.8 Movie Fragments
+//!   - 8.9 Sample Group
+//!   - 8.10 User Data
+//!   - 8.11 Metadata
+//!   - 8.12 Protected Streams
+//!   - 8.13 File Delivery Format
+//!   - 8.14 Sub-tracks
+//!   - 8.15 Post-decoder Requirements
+//!   - 8.16 Segments
+//!   - 8.17 Incomplete Tracks
+//!   - 8.18 Entity Grouping
+//!   - 8.19 Compressed Boxes
+//! - 10 Sample Groups
+//! - 12 Media-specific definitions
+//!   - 12.1 Video Media
+//!   - 12.2 Audio Media
+//!   - 12.3 Metadata Media
+//!   - 12.4 Hint Media
+//!   - 12.5 Text Media
+//!   - 12.6 Subtitle Media
+//!   - 12.7 Font Media
+//!   - 12.9 Multiplexed Timed Metadata Tracks
+//!   - 12.10 Volemetric Visual Media
+//!   - 12.11 Haptic Media
+//! - ISO/IEC 14496-15 - 5.4.2 [`MPEG4ExtensionDescriptorsBox`]
+//!
+//! # Missing sections
+//! - 9 Hint Tracks
+//! - 12.8 Transformed Media
+
 // 4
 mod file_organization;
 pub use file_organization::*;
@@ -77,6 +119,10 @@ pub use entity_grouping::*;
 // 8.19
 mod compressed_boxes;
 pub use compressed_boxes::*;
+
+// 10
+mod sample_groups;
+pub use sample_groups::*;
 
 // 12.1
 mod video_media;

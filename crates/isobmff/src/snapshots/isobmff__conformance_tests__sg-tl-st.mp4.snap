@@ -278,18 +278,16 @@ IsobmffFile {
                                         default_group_description_index: None,
                                         entry_count: 2,
                                         entries: [
-                                            SampleGroupDescriptionEntry {
-                                                description_length: None,
-                                                sample_group_description_entry: TemporalLevelEntry {
+                                            TemporalLevel(
+                                                TemporalLevelEntry {
                                                     level_independently_decodable: true,
                                                 },
-                                            },
-                                            SampleGroupDescriptionEntry {
-                                                description_length: None,
-                                                sample_group_description_entry: TemporalLevelEntry {
+                                            ),
+                                            TemporalLevel(
+                                                TemporalLevelEntry {
                                                     level_independently_decodable: false,
                                                 },
-                                            },
+                                            ),
                                         ],
                                     },
                                 ],

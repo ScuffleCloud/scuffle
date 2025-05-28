@@ -323,12 +323,11 @@ IsobmffFile {
                                         default_group_description_index: None,
                                         entry_count: 1,
                                         entries: [
-                                            SampleGroupDescriptionEntry {
-                                                description_length: None,
-                                                sample_group_description_entry: RollRecoveryEntry {
+                                            RollRecovery(
+                                                RollRecoveryEntry {
                                                     roll_distance: -1,
                                                 },
-                                            },
+                                            ),
                                         ],
                                     },
                                 ],

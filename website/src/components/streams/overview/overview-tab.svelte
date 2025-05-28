@@ -25,7 +25,7 @@
 </script>
 
 <div class="overview-tab-container">
-    <VideoHeader />
+    <VideoHeader {streamId} {streamKey} {isConnected} {requireSignedUrls} />
     <section class="keys-section">
         <div class="section-header">
             <div class="section-header-icon">

@@ -2,7 +2,6 @@
     import IconWebhook from '$lib/images/IconWebhookInverted.svelte';
     import IconStream from '$lib/images/IconStream.svelte';
     import type { VideoStream } from './types';
-    import { goto } from '$app/navigation';
     import StreamStatusPill from '$lib/shared-components/stream-status-pill.svelte';
 
     export let streams: VideoStream[];
@@ -12,10 +11,6 @@
         live: IconWebhook,
         finished: IconStream,
     };
-
-    function handleRowClick(id: string) {
-        goto(`streams/${id}`);
-    }
 </script>
 
 <div class="table-wrapper">
@@ -30,22 +25,28 @@
         </thead>
         <tbody>
             {#each streams as stream (stream.id)}
-                <tr
-                    class="stream-row"
-                    on:click={() => handleRowClick(stream.id)}
-                    on:keydown={(e) => e.key === 'Enter' && handleRowClick(stream.id)}
-                    role="link"
-                    tabindex="0"
-                >
-                    <td class="status-column">
-                        <div class="status-wrapper">
-                            <svelte:component this={iconMap[stream.status]} />
-                            <StreamStatusPill status={stream.status} />
-                        </div>
+                <tr class="stream-row">
+                    <td colspan="4" class="row-cell">
+                        <a href="streams/{stream.id}" class="row-link">
+                            <div class="row-content">
+                                <div class="status-column-content">
+                                    <div class="status-wrapper">
+                                        <svelte:component this={iconMap[stream.status]} />
+                                        <StreamStatusPill status={stream.status} />
+                                    </div>
+                                </div>
+                                <div class="name-column-content">
+                                    {stream.name}
+                                </div>
+                                <div class="id-column-content">
+                                    {stream.id}
+                                </div>
+                                <div class="created-column-content">
+                                    {stream.created}
+                                </div>
+                            </div>
+                        </a>
                     </td>
-                    <td class="name-column">{stream.name}</td>
-                    <td class="id-column">{stream.id}</td>
-                    <td class="created-column">{stream.created}</td>
                 </tr>
             {/each}
         </tbody>
@@ -79,73 +80,80 @@
         }
 
         .stream-row {
-            background-color: white;
             background: var(--color-teal30);
-            cursor: pointer;
-            transition:
-                transform 0.1s ease-in-out,
-                background-color 0.1s ease-in-out;
+            transition: background-color 0.1s ease-in-out;
+        }
 
-            &:active {
-                transform: translateY(0);
+        .row-cell {
+            padding: 0;
+            background: white;
+            border-top-left-radius: 0.5rem;
+            border-bottom-left-radius: 0.5rem;
+            border-top-right-radius: 0.5rem;
+            border-bottom-right-radius: 0.5rem;
+        }
+
+        .row-link {
+            display: block;
+            padding: 1rem;
+            text-decoration: none;
+            color: inherit;
+            transition: background-color 0.1s ease-in-out;
+            border-radius: 0.5rem;
+
+            &:hover {
+                background-color: rgba(0, 0, 0, 0.02);
             }
 
-            td {
-                padding: 1rem;
-                background: white;
-
-                &:first-child {
-                    border-top-left-radius: 0.5rem;
-                    border-bottom-left-radius: 0.5rem;
-                }
-
-                &:last-child {
-                    border-top-right-radius: 0.5rem;
-                    border-bottom-right-radius: 0.5rem;
-                }
+            &:focus {
+                outline: 2px solid #007acc;
+                outline-offset: -2px;
+                background-color: rgba(0, 122, 204, 0.1);
             }
         }
 
-        .status-column {
+        .row-content {
+            display: flex;
+            align-items: center;
+        }
+
+        .status-column-content {
             width: 15%;
-
-            .status-wrapper {
-                display: flex;
-                align-items: center;
-                gap: 0.5rem;
-            }
-
-            .status-badge {
-                display: inline-block;
-                padding: 0.25rem 0.5rem;
-                border-radius: 0.25rem;
-                font-size: 0.875rem;
-                font-weight: 500;
-
-                &.live {
-                    padding: 4px 9px;
-                    color: #7c0505;
-                    background-color: #fed6d6;
-                    border-radius: 100rem;
-                }
-
-                &.finished {
-                    color: #666;
-                    background-color: #f0f0f0;
-                }
-            }
         }
 
-        .name-column {
+        .status-wrapper {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .name-column-content {
             width: 30%;
             font-weight: 500;
         }
 
-        .id-column {
+        .id-column-content {
             width: 30%;
             color: #666;
             font-family: monospace;
             font-size: 0.875rem;
+        }
+
+        .created-column-content {
+            width: 25%;
+        }
+
+        /* Column alignment for headers */
+        .status-column {
+            width: 15%;
+        }
+
+        .name-column {
+            width: 30%;
+        }
+
+        .id-column {
+            width: 30%;
         }
 
         .created-column {

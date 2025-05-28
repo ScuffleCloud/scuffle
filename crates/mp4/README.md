@@ -22,6 +22,8 @@ This crates implements the MP4 ISO Base Media File Format (ISOBMFF) boxes define
 
 For an implementation of ISO/IEC 14496-12 (the ISO Base Media File Format itself), see the [isobmff](https://crates.io/crates/isobmff) crate.
 
+Additionally it implements the Object Description Framework defined by ISO/IEC 14496-1 - 7.2.
+
 See the [changelog](./CHANGELOG.md) for a full release history.
 
 ### Feature flags

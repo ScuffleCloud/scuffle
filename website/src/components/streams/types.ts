@@ -6,6 +6,7 @@ export interface VideoStream {
     name: string;
     status: VideoStatus;
     created: string;
+    relatedStreams?: VideoStream[];
 }
 
 export interface StreamEvent {

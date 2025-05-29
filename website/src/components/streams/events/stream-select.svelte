@@ -4,6 +4,7 @@
     import type { VideoStream } from '../types';
     import IconCheckSmall from '$lib/images/icon-check-small.svelte';
     import IconSwitch_2 from '$lib/images/icon-switch-2.svelte';
+    import { isNil } from 'lodash';
 
     type Props = {
         streams: VideoStream[];
@@ -16,10 +17,13 @@
     const select = new Select<string>({
         value,
         onValueChange: (newValue) => {
-            if (newValue) {
-                value = newValue;
-                onValueChange?.(newValue);
+            // Need to force value to not update with melt syntax
+            if (isNil(newValue)) {
+                select.value = value;
+                return;
             }
+            value = newValue;
+            onValueChange?.(newValue);
         },
     });
 

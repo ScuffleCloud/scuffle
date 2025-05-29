@@ -4,14 +4,12 @@ import type { VideoStream } from '$components/streams/types';
 import type { LayoutLoad } from './$types';
 
 export const load = (async ({ params, fetch, depends }) => {
-    depends(`stream:${params.streamId}`);
+    depends(`stream:${params.roomId}`);
 
-    const streamId = params.streamId;
+    const roomId = params.roomId;
 
     const fetchStream = async (): Promise<VideoStream> => {
-        const response = await fetch(`/api/v1/video-streams/${streamId}`);
-
-        console.log('response', response);
+        const response = await fetch(`/api/v1/video-streams/${roomId}`);
         if (!response.ok) throw new Error(`Failed to fetch stream: ${response.statusText}`);
         return response.json();
     };

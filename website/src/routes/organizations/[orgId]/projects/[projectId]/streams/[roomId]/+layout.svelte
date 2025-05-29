@@ -23,8 +23,19 @@
         { id: 'events', label: 'Events' },
         { id: 'assets', label: 'Assets' },
     ];
+    const baseUrl = `/organizations/${page.params.orgId}/projects/${page.params.projectId}/streams/${page.params.roomId}/`;
 
-    const currentTab = $derived(page.url.pathname.split('/').pop());
+    const currentTab = $derived.by(() => {
+        const pathname = page.url.pathname;
+
+        if (pathname.startsWith(baseUrl)) {
+            const remainder = pathname.slice(baseUrl.length);
+            const firstSegment = remainder.split('/')[0];
+            return tabs.find((tab) => tab.id === firstSegment)?.id || 'overview';
+        }
+
+        return 'overview';
+    });
 </script>
 
 <div class="page-bg">
@@ -35,7 +46,11 @@
         <div class="tabs-container">
             <div class="tabs-list-container">
                 {#each tabs as tab}
-                    <a href={tab.id} class="tab-trigger" data-selected={currentTab === tab.id}>
+                    <a
+                        href={`${baseUrl}${tab.id}`}
+                        class="tab-trigger"
+                        data-selected={currentTab === tab.id}
+                    >
                         {tab.label}
                     </a>
                 {/each}

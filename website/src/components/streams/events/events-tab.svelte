@@ -21,7 +21,7 @@
 
     type Props = {
         events: VideoStream[];
-        eventDetails: ChartData | null;
+        eventDetails?: ChartData;
         currentEventId?: string;
     };
 
@@ -50,16 +50,14 @@
         },
     ];
 
-    $effect(() => {
-        console.log('eventDetails', eventDetails);
-    });
-
-    let selectedStream = $state(page.params.streamId || '');
+    let selectedStream = $state(page.params.eventId || '');
 
     function handleStreamChange(value: string) {
-        if (value && value !== page.params.streamId) {
+        if (value && value !== page.params.roomId) {
+            console.log('value', value);
             selectedStream = value;
-            goto(`/streams/${value}`);
+            const baseUrl = `/organizations/${page.params.orgId}/projects/${page.params.projectId}/streams/${page.params.roomId}/events`;
+            goto(`${baseUrl}/${value}`);
         }
     }
 </script>
@@ -81,7 +79,9 @@
 
         <!-- For the data-zoom slider + chart -->
         <div class="events-chart-container">
-            <EventsChart {eventDetails} />
+            {#if eventDetails}
+                <EventsChart {eventDetails} />
+            {/if}
         </div>
         <div class="events-legend-container">
             <EventsLegend />

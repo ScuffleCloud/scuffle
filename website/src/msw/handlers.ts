@@ -3,7 +3,6 @@ import {
     mockStreamsListResponse,
     mockStreamsDetailResponse,
     mockStreamsCreateResponse,
-    mockStreamEventsOptionsResponse,
     mockStreamEventsOptionsDetailResponse,
 } from './mocks/streams';
 import { mockUserResponse } from './mocks/user';
@@ -17,10 +16,6 @@ export const handlers = [
     }),
     http.put('/api/v1/video-streams/new', () => {
         return HttpResponse.json(mockStreamsCreateResponse);
-    }),
-    // Get all streams in a hosted room
-    http.get('/api/v1/video-streams/:id/events', () => {
-        return HttpResponse.json(mockStreamEventsOptionsResponse);
     }),
     // Get all events for a stream in a hosted room
     http.get('/api/v1/video-streams/:id/events/:eventId', () => {

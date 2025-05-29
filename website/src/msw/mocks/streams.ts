@@ -92,39 +92,39 @@ export const mockStreamsDetailResponse: VideoStream = {
     name: 'purple-angry-bottle...',
     status: 'live',
     created: '2min ago',
+    // Need to get all the streams from the hosted room too, ideally from the same API but can move into separate API calls if needed
+    relatedStreams: [
+        {
+            id: '8a28e499d6s7987fd9812937fd981293',
+            status: 'live',
+            created: 'May 5, 04:01:11',
+            name: 'Stream 1',
+        },
+        {
+            id: '3223499d6s7987fd9812123123132123',
+            status: 'finished',
+            created: 'May 5, 04:01:11',
+            name: 'Stream 2',
+        },
+        {
+            id: '21ae213132s7987fd981212312312',
+            status: 'finished',
+            created: 'May 5, 04:01:11',
+            name: 'Stream 3',
+        },
+        {
+            id: '3e3120f5c4e4s7987fd981123123312',
+            status: 'finished',
+            created: 'May 5, 04:01:11',
+            name: 'Stream 4',
+        },
+    ],
 };
 
 export const mockStreamsCreateResponse = {
     status: 200,
     newId: '8a28e4dbd6',
 };
-
-export const mockStreamEventsOptionsResponse: VideoStream[] = [
-    {
-        id: '8a28e499d6s7987fd9812937fd981293',
-        status: 'live',
-        created: 'May 5, 04:01:11',
-        name: 'Stream 1',
-    },
-    {
-        id: '3223499d6s7987fd9812123123132123',
-        status: 'finished',
-        created: 'May 5, 04:01:11',
-        name: 'Stream 2',
-    },
-    {
-        id: '21ae213132s7987fd981212312312',
-        status: 'finished',
-        created: 'May 5, 04:01:11',
-        name: 'Stream 3',
-    },
-    {
-        id: '3e3120f5c4e4s7987fd981123123312',
-        status: 'finished',
-        created: 'May 5, 04:01:11',
-        name: 'Stream 4',
-    },
-];
 
 export const mockStreamEventsOptionsDetailResponse: ChartData = {
     eventData: [...rectangleData(), ...diamondData(), ...circleData()],

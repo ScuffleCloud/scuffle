@@ -50,12 +50,8 @@
         },
     ];
 
-    let selectedStream = $state(page.params.eventId || '');
-
     function handleStreamChange(value: string) {
         if (value && value !== page.params.roomId) {
-            console.log('value', value);
-            selectedStream = value;
             const baseUrl = `/organizations/${page.params.orgId}/projects/${page.params.projectId}/streams/${page.params.roomId}/events`;
             goto(`${baseUrl}/${value}`);
         }
@@ -68,7 +64,7 @@
             <!-- TODO: Can use design system select here and migrate things when needed-->
             <StreamSelect
                 streams={events}
-                bind:value={selectedStream}
+                bind:value={page.params.eventId}
                 onValueChange={handleStreamChange}
             />
             <button class="resume-button">

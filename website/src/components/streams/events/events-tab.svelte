@@ -15,36 +15,21 @@
     import IconPlayBig from '$lib/images/icon-play-big.svelte';
     import StreamSelect from './stream-select.svelte';
 
-    const streams: VideoStream[] = [
-        {
-            id: '8a28e499d6s7987fd9812937fd981293',
-            status: 'live',
-            created: 'May 5, 04:01:11',
-            name: 'Stream 1',
-        },
-        {
-            id: '3223499d6s7987fd9812123123132123',
-            status: 'finished',
-            created: 'May 5, 04:01:11',
-            name: 'Stream 2',
-        },
-        {
-            id: '21ae213132s7987fd981212312312',
-            status: 'finished',
-            created: 'May 5, 04:01:11',
-            name: 'Stream 3',
-        },
-        {
-            id: '3e3120f5c4e4s7987fd981123123312',
-            status: 'finished',
-            created: 'May 5, 04:01:11',
-            name: 'Stream 4',
-        },
-    ];
+    import { goto } from '$app/navigation';
+    import { page } from '$app/state';
+    import type { ChartData } from '../types';
+
+    type Props = {
+        events: VideoStream[];
+        eventDetails: ChartData | null;
+        currentEventId?: string;
+    };
+
+    const { events = [], eventDetails, currentEventId = '' }: Props = $props();
 
     // It doesn't matter what we fetch, we need to reformat the events before dumping it in our chart
 
-    const events: StreamEvent[] = [
+    const eventContent: StreamEvent[] = [
         {
             id: '1',
             type: 'info',
@@ -65,10 +50,17 @@
         },
     ];
 
-    let selectedStream = $state('');
+    $effect(() => {
+        console.log('eventDetails', eventDetails);
+    });
 
-    function handleStreamChange(value: string | undefined) {
-        selectedStream = value || '';
+    let selectedStream = $state(page.params.streamId || '');
+
+    function handleStreamChange(value: string) {
+        if (value && value !== page.params.streamId) {
+            selectedStream = value;
+            goto(`/streams/${value}`);
+        }
     }
 </script>
 
@@ -77,7 +69,7 @@
         <div class="header">
             <!-- TODO: Can use design system select here and migrate things when needed-->
             <StreamSelect
-                {streams}
+                streams={events}
                 bind:value={selectedStream}
                 onValueChange={handleStreamChange}
             />
@@ -89,14 +81,14 @@
 
         <!-- For the data-zoom slider + chart -->
         <div class="events-chart-container">
-            <EventsChart />
+            <EventsChart {eventDetails} />
         </div>
         <div class="events-legend-container">
             <EventsLegend />
         </div>
     </div>
 
-    <EventsList {events} />
+    <EventsList events={eventContent} />
 </div>
 
 <style>

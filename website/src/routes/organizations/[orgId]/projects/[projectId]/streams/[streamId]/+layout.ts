@@ -4,9 +4,9 @@ import type { VideoStream } from '$components/streams/types';
 import type { LayoutLoad } from './$types';
 
 export const load = (async ({ params, fetch, depends }) => {
-    depends('stream:data');
+    depends(`stream:${params.streamId}`);
 
-    const streamId = params.id;
+    const streamId = params.streamId;
 
     const fetchStream = async (): Promise<VideoStream> => {
         const response = await fetch(`/api/v1/video-streams/${streamId}`);

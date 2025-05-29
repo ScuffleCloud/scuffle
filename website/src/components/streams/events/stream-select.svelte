@@ -8,7 +8,7 @@
     type Props = {
         streams: VideoStream[];
         value?: string;
-        onValueChange?: (value: string | undefined) => void;
+        onValueChange?: (value: string) => void;
     };
 
     let { streams, value = $bindable(), onValueChange }: Props = $props();
@@ -16,8 +16,10 @@
     const select = new Select<string>({
         value,
         onValueChange: (newValue) => {
-            value = newValue;
-            onValueChange?.(newValue);
+            if (newValue) {
+                value = newValue;
+                onValueChange?.(newValue);
+            }
         },
     });
 

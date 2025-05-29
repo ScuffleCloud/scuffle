@@ -14,6 +14,7 @@ export const rectangleData = () => {
 
         const value = [RECTANGLE_INDEX, baseTime, (baseTime += duration), duration];
         data.push({
+            // Can add additional metadata here ex. What kind of asset is it that we can show on hover or in the event list
             name: 'row3',
             type: 'asset',
             value: value,
@@ -49,6 +50,7 @@ export const circleData = () => {
         const value = [CIRCLE_INDEX, (baseTime += duration)];
         data.push({
             name: 'row3',
+            type: 'test2',
             value: value,
         });
         baseTime += Math.round(Math.random() * 2000);

@@ -18,6 +18,7 @@
     import { renderItem } from './shape-renderers';
     import { circleData, getSampleLineData, rectangleData, diamondData } from './sample-data';
     import { theme } from '$lib/theme';
+    import type { ChartData } from '../types';
     use([
         DatasetComponent,
         TitleComponent,
@@ -33,14 +34,16 @@
         CustomChart,
     ]);
 
+    type Props = {
+        eventDetails: ChartData | null;
+    };
+    const { eventDetails = null }: Props = $props();
+
     const startTime = new Date('2024-01-01T00:00:00').getTime();
     const categories = ['categoryC', 'categoryB', 'categoryA'];
 
-    // Generate mock data. This should come from the backend, not sure how formatted it will be though
-    // If we're 100% re-using api data.
-    const data = [...rectangleData(), ...diamondData(), ...circleData()];
-
-    const lineData = getSampleLineData();
+    const data = $derived(eventDetails?.eventData || []);
+    const lineData = $derived(eventDetails?.lineData || []);
 
     const xMinTime = startTime;
     const xMaxTime = startTime + 1000 * 60 * 2;

@@ -82,15 +82,6 @@ macro_rules! impl_serialize {
 
 impl_serialize!(f32, f64, i8, i16, i32, i64, i128, u8, u16, u32, u64, u128);
 
-impl Serialize for char {
-    fn serialize<W>(&self, writer: W) -> io::Result<()>
-    where
-        W: std::io::Write,
-    {
-        (*self as u8).serialize(writer)
-    }
-}
-
 impl<'a> Deserialize<'a> for f32 {
     fn deserialize<R: ZeroCopyReader<'a>>(mut reader: R) -> io::Result<Self> {
         reader.as_std().read_f32::<byteorder::BigEndian>()
@@ -136,12 +127,6 @@ impl<'a> Deserialize<'a> for i128 {
 impl<'a> Deserialize<'a> for u8 {
     fn deserialize<R: ZeroCopyReader<'a>>(mut reader: R) -> io::Result<Self> {
         reader.as_std().read_u8()
-    }
-}
-
-impl<'a> Deserialize<'a> for char {
-    fn deserialize<R: ZeroCopyReader<'a>>(mut reader: R) -> io::Result<Self> {
-        reader.as_std().read_u8().map(|b| b as char)
     }
 }
 

@@ -17,7 +17,7 @@
     const select = new Select<string>({
         value,
         onValueChange: (newValue) => {
-            // Need to force value to not update with melt syntax
+            // Need to force value to not update with melt syntax when same item is selected
             if (isNil(newValue)) {
                 select.value = value;
                 return;
@@ -166,7 +166,6 @@
         background-color: #e6f0ff;
     }
 
-    /* Headers using data attributes. Needed to maintain keyboard navigation with Melt Select */
     .select-option[data-first-in-group='true']::before {
         position: absolute;
         top: -2.5rem;
@@ -184,6 +183,7 @@
         background: white;
     }
 
+    /* Custom managing of headers so keyboard navigation with Melt Select works */
     .select-option[data-group='current'][data-first-in-group='true']::before {
         content: 'Current streams';
     }
@@ -192,7 +192,6 @@
         content: 'Past streams';
     }
 
-    /* Divider lines */
     .select-option[data-first-in-group='true']::after {
         content: '';
         position: absolute;
@@ -203,21 +202,19 @@
     }
 
     .select-option[data-group='current'][data-first-in-group='true']::after {
-        left: 7rem; /* Width of "Current streams" text */
+        left: 7rem;
         right: 0.5rem;
     }
 
     .select-option[data-group='past'][data-first-in-group='true']::after {
-        left: 6.5rem; /* Width of "Past streams" text */
+        left: 6.5rem;
         right: 0.5rem;
     }
 
-    /* Add top margin to first items to make space for headers */
     .select-option[data-first-in-group='true'] {
         margin-top: 2.5rem;
     }
 
-    /* Add some spacing between groups */
     .select-option[data-group='past'][data-first-in-group='true'] {
         margin-top: 3rem;
     }

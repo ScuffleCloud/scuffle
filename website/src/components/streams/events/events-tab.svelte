@@ -50,6 +50,8 @@
         },
     ];
 
+    let currentEvent = $state(page.params.eventId || '');
+
     function handleStreamChange(value: string) {
         if (value && value !== page.params.roomId) {
             const baseUrl = `/organizations/${page.params.orgId}/projects/${page.params.projectId}/streams/${page.params.roomId}/events`;
@@ -61,10 +63,10 @@
 <div class="events-tab-container">
     <div class="card">
         <div class="header">
-            <!-- TODO: Can use design system select here and migrate things when needed-->
+            <!-- TODO: Can use design system select here and migrate things when needed or at least reuse css classes -->
             <StreamSelect
                 streams={events}
-                bind:value={page.params.eventId}
+                bind:value={currentEvent}
                 onValueChange={handleStreamChange}
             />
             <button class="resume-button">

@@ -16,7 +16,6 @@
 
     import { CanvasRenderer } from 'echarts/renderers';
     import { renderItem } from './shape-renderers';
-    import { circleData, getSampleLineData, rectangleData, diamondData } from './sample-data';
     import { theme } from '$lib/theme';
     import type { ChartData } from '../types';
     use([
@@ -153,7 +152,7 @@
         },
     };
 
-    const option = {
+    const option = $derived({
         grid: [
             {
                 left: '1%',
@@ -273,7 +272,7 @@
                 },
             },
         ],
-    };
+    });
 
     let options = $derived({ ...option } as EChartsOption);
 

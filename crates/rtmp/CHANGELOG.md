@@ -15,6 +15,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.2.3](https://github.com/ScuffleCloud/scuffle/releases/tag/scuffle-rtmp-v0.2.3) - 2025-05-30
+
+[View diff on diff.rs](https://diff.rs/scuffle-rtmp/0.2.2/scuffle-rtmp/0.2.3/Cargo.toml)
+
+### 🛠️ Non-breaking changes
+
+- chore: cleaned up dev-dependencies ([#473](https://github.com/scufflecloud/scuffle/pull/473)) (@troykomodo)
+
 ## [0.2.2](https://github.com/ScuffleCloud/scuffle/releases/tag/scuffle-rtmp-v0.2.2) - 2025-05-17
 
 [View diff on diff.rs](https://diff.rs/scuffle-rtmp/0.2.1/scuffle-rtmp/0.2.2/Cargo.toml)

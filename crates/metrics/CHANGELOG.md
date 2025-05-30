@@ -15,6 +15,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.3.2](https://github.com/ScuffleCloud/scuffle/releases/tag/scuffle-metrics-v0.3.2) - 2025-05-30
+
+[View diff on diff.rs](https://diff.rs/scuffle-metrics/0.3.1/scuffle-metrics/0.3.2/Cargo.toml)
+
+### 🛠️ Non-breaking changes
+
+- chore: cleaned up dev-dependencies ([#473](https://github.com/scufflecloud/scuffle/pull/473)) (@troykomodo)
+
 ## [0.3.1](https://github.com/ScuffleCloud/scuffle/releases/tag/scuffle-metrics-v0.3.1) - 2025-05-17
 
 [View diff on diff.rs](https://diff.rs/scuffle-metrics/0.3.0/scuffle-metrics/0.3.1/Cargo.toml)

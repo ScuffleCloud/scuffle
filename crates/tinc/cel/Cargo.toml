@@ -1,6 +1,6 @@
 [package]
 name = "tinc-cel"
-version = "0.1.2"
+version = "0.1.3"
 edition = "2024"
 description = "A CEL Type used by tinc-build and tinc for validating protobuf messages"
 repository = "https://github.com/scufflecloud/scuffle"

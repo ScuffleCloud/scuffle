@@ -15,6 +15,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.1.3](https://github.com/ScuffleCloud/scuffle/releases/tag/openapiv3_1-v0.1.3) - 2025-05-30
+
+[View diff on diff.rs](https://diff.rs/openapiv3_1/0.1.2/openapiv3_1/0.1.3/Cargo.toml)
+
+### 🛠️ Non-breaking changes
+
+- docs: update docs to avoid clippy docsrs ICE ([#473](https://github.com/scufflecloud/scuffle/pull/473)) (@troykomodo)
+
 ## [0.1.2](https://github.com/ScuffleCloud/scuffle/releases/tag/openapiv3_1-v0.1.2) - 2025-05-17
 
 [View diff on diff.rs](https://diff.rs/openapiv3_1/0.1.1/openapiv3_1/0.1.2/Cargo.toml)

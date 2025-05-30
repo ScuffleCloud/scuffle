@@ -7,6 +7,9 @@ use scuffle_bytes_util::zero_copy::{Deserialize, Serialize, ZeroCopyReader};
 
 use crate::IsoSized;
 
+/// UTF-8 string as defined in IETF RFC 3629, null-terminated.
+///
+/// ISO/IEC 14496-12 - 4.2.1
 #[derive(Debug, PartialEq, Eq)]
 pub struct Utf8String(pub String);
 
@@ -68,6 +71,9 @@ impl IsoSized for Utf8String {
     }
 }
 
+/// Null-terminated base64 encoded data.
+///
+/// ISO/IEC 14496-12 - 4.2.1
 #[derive(Debug, PartialEq, Eq)]
 pub struct Base64String(pub Vec<u8>);
 
@@ -119,6 +125,9 @@ impl IsoSized for Base64String {
     }
 }
 
+/// Null-terminated list of space-separated UTF-8 strings.
+///
+/// ISO/IEC 14496-12 - 4.2.1
 #[derive(Debug, PartialEq, Eq)]
 pub struct Utf8List(pub Vec<String>);
 
@@ -174,10 +183,13 @@ impl IsoSized for Utf8List {
 }
 
 /// ISO-639-2 three-letter language code.
+///
+/// https://en.wikipedia.org/wiki/List_of_ISO_639-2_codes
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub struct Langauge(pub [u8; 3]);
 
 impl Langauge {
+    /// Undetermined language code.
     pub const UNDETERMINED: Self = Self([0x15, 0x0E, 0x04]); // und
 }
 
@@ -219,6 +231,7 @@ impl IsoSized for Langauge {
 }
 
 impl Langauge {
+    /// Returns the language code as a three-character array.
     pub fn code(&self) -> [char; 3] {
         [
             (self.0[0] + 0x60) as char,

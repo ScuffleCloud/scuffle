@@ -9,43 +9,66 @@ use crate::boxes::{
 };
 use crate::{BoxHeader, BoxSize, BoxType, IsoBox, UnknownBox};
 
+/// Represents an ISO Base Media File Format (ISOBMFF) file.
+///
+/// This encapsulates all boxes that may be present in an ISOBMFF file.
+/// You can also use the boxes directly for more fine-grained control.
 #[derive(IsoBox, Debug, PartialEq, Eq)]
 #[iso_box(skip_impl(iso_box, deserialize), crate_path = crate)]
 pub struct IsobmffFile<'a> {
-    /// According to the official spec the ftyp box is mandatory,
-    /// but some files (e.g. recording of live streams) do not have an ftyp box.
+    /// Optional [`FileTypeBox`].
+    ///
+    /// According to the official specification the [`FileTypeBox`] is mandatory
+    /// but in reality some files do not contain it. (e.g. recording of live streams)
     #[iso_box(nested_box(collect))]
     pub ftyp: Option<FileTypeBox>,
+    /// A list of [`ExtendedTypeBox`]es.
     #[iso_box(nested_box(collect))]
     pub etyp: Vec<ExtendedTypeBox<'a>>,
+    /// A list of [`OriginalFileTypeBox`]es.
     #[iso_box(nested_box(collect))]
     pub otyp: Vec<OriginalFileTypeBox<'a>>,
+    /// Optional [`ProgressiveDownloadInfoBox`].
     #[iso_box(nested_box(collect))]
     pub pdin: Option<ProgressiveDownloadInfoBox>,
-    // According to the official spec the moov box is mandatory,
-    // but for some reason ISO decided to break their own rules and
-    // allow the HEIF file format to not have a moov box.
-    // https://github.com/MPEGGroup/FileFormatConformance/issues/154
+    /// Optional [`MovieBox`].
+    ///
+    /// According to the official specification the [`MovieBox`] is mandatory,
+    /// but in reality some files (e.g. HEIF) do not contain it.
+    /// Apparently it is possible for derived specifications to change the
+    /// rules of the base specification.
+    ///
+    /// See: https://github.com/MPEGGroup/FileFormatConformance/issues/154
     #[iso_box(nested_box(collect))]
     pub moov: Option<MovieBox<'a>>,
+    /// A list of [`MovieFragmentBox`]es.
     #[iso_box(nested_box(collect))]
     pub moof: Vec<MovieFragmentBox<'a>>,
+    /// A list of [`MediaDataBox`]es.
     #[iso_box(nested_box(collect))]
     pub mdat: Vec<MediaDataBox<'a>>,
+    /// A list of [`IdentifiedMediaDataBox`]es.
     #[iso_box(nested_box(collect))]
     pub imda: Vec<IdentifiedMediaDataBox<'a>>,
     #[iso_box(nested_box(collect))]
+    /// Optional [`MetaBox`].
     pub meta: Option<MetaBox<'a>>,
+    /// A list of [`SegmentTypeBox`]es.
     #[iso_box(nested_box(collect))]
     pub styp: Vec<SegmentTypeBox>,
+    /// A list of [`SegmentIndexBox`]es.
     #[iso_box(nested_box(collect))]
     pub sidx: Vec<SegmentIndexBox>,
+    /// A list of [`SubsegmentIndexBox`]es.
     #[iso_box(nested_box(collect))]
     pub ssix: Vec<SubsegmentIndexBox>,
+    /// A list of [`ProducerReferenceTimeBox`]es.
     #[iso_box(nested_box(collect))]
     pub prft: Vec<ProducerReferenceTimeBox>,
+    /// Any unknown boxes that were not recognized during deserialization.
     #[iso_box(nested_box(collect_unknown))]
     pub unknown_boxes: Vec<UnknownBox<'a>>,
+    /// Optional [`MovieFragmentRandomAccessBox`].
     #[iso_box(nested_box(collect))]
     pub mfra: Option<MovieFragmentRandomAccessBox>,
 }

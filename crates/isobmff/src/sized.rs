@@ -1,7 +1,9 @@
 use scuffle_bytes_util::zero_copy::{I24Be, I48Be, U24Be, U48Be};
 use scuffle_bytes_util::{BytesCow, StringCow};
 
+/// This trait should be implemented by all types that have a known size when serialized.
 pub trait IsoSized {
+    /// Returns the size of the type when serialized.
     fn size(&self) -> usize;
 }
 

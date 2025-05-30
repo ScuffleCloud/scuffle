@@ -5,14 +5,23 @@ use scuffle_bytes_util::zero_copy::{Deserialize, DeserializeSeed, Serialize, U24
 
 use crate::IsoSized;
 
+/// Represents the size of a box.
+///
+/// Use [`Self::size`] to get the size as a number of bytes.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum BoxSize {
+    /// 32-bit encoded size. Can't be 0 or 1.
     Short(u32),
+    /// 64-bit encoded size.
     Long(u64),
+    /// The box this size beongs to goes to the end of the file.
     ToEnd,
 }
 
 impl BoxSize {
+    /// Returns the size as a number of bytes.
+    ///
+    /// Returns [`None`] if this is a [`BoxSize::ToEnd`].
     pub fn size(&self) -> Option<usize> {
         match self {
             BoxSize::Short(size) => Some(*size as usize),
@@ -34,9 +43,14 @@ impl From<usize> for BoxSize {
     }
 }
 
+/// Represents the box type.
+///
+/// Can either be a FourCC value or a user-defined UUID.
 #[derive(Clone, Copy, PartialEq, Eq)]
 pub enum BoxType {
+    /// A FourCC value, which is a 4-byte identifier. Cannot be "uuid".
     FourCc([u8; 4]),
+    /// A user extended identifier, which is a 16-byte UUID.
     Uuid(uuid::Uuid),
 }
 
@@ -50,6 +64,7 @@ impl Debug for BoxType {
 }
 
 impl BoxType {
+    /// Returns `true` if this is a FourCC value that matches the given FourCC.
     pub fn is_four_cc(&self, four_cc: &[u8; 4]) -> bool {
         match self {
             BoxType::FourCc(box_four_cc) => box_four_cc == four_cc,
@@ -74,9 +89,17 @@ impl From<BoxType> for uuid::Uuid {
     }
 }
 
+/// Represents the header of any box.
+///
+/// Every ISOBMFF box starts with this header, even boxes inheriting from `FullBox`.
+/// Please use [`FullBoxHeader`] in combination with this to represent full boxes,
+/// as [`FullBoxHeader`] only contains the `version` and `flags` field.
 #[derive(Debug, PartialEq, Eq, Clone)]
 pub struct BoxHeader {
+    /// An integer that specifies the number of bytes in this box, including all its fields and contained
+    /// boxes.
     pub size: BoxSize,
+    /// Identifies the box type.
     pub box_type: BoxType,
 }
 
@@ -97,6 +120,9 @@ impl IsoSized for BoxHeader {
 }
 
 impl BoxHeader {
+    /// Uses the size stored in this header to calculate the size of the payload.
+    ///
+    /// Returns `None` if the box size is [`BoxSize::ToEnd`], as the payload size cannot be determined.
     pub fn payload_size(&self) -> Option<usize> {
         let header_size = self.size();
         Some(self.size.size()?.saturating_sub(header_size))
@@ -171,9 +197,16 @@ impl Serialize for BoxHeader {
     }
 }
 
+/// Contains the `version` and `flags` fields.
+///
+/// **Attention**: This does NOT represent the `FullBoxHeader` defined by ISO/IEC 14496-12 - 4.
+/// This struct only contains the additional fields (compared to [`BoxHeader`]), which are `version` and `flags`.
+/// That means that every box, even boxes inheriting from `FullBox`, should contain the [`BoxHeader`] as well.
 #[derive(Debug, PartialEq, Eq, Clone, Default)]
 pub struct FullBoxHeader {
+    /// Is an integer that specifies the version of this format of the box.
     pub version: u8,
+    /// A map of flags.
     pub flags: U24Be,
 }
 

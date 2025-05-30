@@ -1,3 +1,14 @@
+//! Implementation of the ISO Base Media File Format (ISOBMFF) defined by ISO/IEC 14496-12.
+//!
+//! ## Example
+//!
+//! ```rust
+//! ```
+//!
+//! ## Notes
+//!
+//! This implementation does not preserve the order of boxes when remuxing files and individual boxes.
+//! Instead it uses the recommended box order as defined in ISO/IEC 14496-12 - 6.3.4.
 #![cfg_attr(feature = "docs", doc = "\n\nSee the [changelog][changelog] for a full release history.")]
 #![cfg_attr(feature = "docs", doc = "## Feature flags")]
 #![cfg_attr(feature = "docs", doc = document_features::document_features!())]
@@ -9,7 +20,7 @@
 //! `SPDX-License-Identifier: MIT OR Apache-2.0`
 #![cfg_attr(all(coverage_nightly, test), feature(coverage_attribute))]
 #![cfg_attr(docsrs, feature(doc_auto_cfg))]
-// #![deny(missing_docs)]
+#![deny(missing_docs)]
 #![deny(unsafe_code)]
 #![deny(unreachable_pub)]
 
@@ -43,9 +54,14 @@ pub mod reexports {
 #[scuffle_changelog::changelog]
 pub mod changelog {}
 
+/// This trait should be implemented by all box types.
 pub trait IsoBox: IsoSized {
+    /// The box type of this box.
     const TYPE: BoxType;
 
+    /// This function calculates the header size, adds it to the given payload size and return the result.
+    ///
+    /// This can be used as a helper function when implementing the [`IsoSized`] trait.
     fn add_header_size(payload_size: usize) -> usize {
         let mut box_size = payload_size;
         box_size += 4 + 4; // size + type
@@ -61,6 +77,7 @@ pub trait IsoBox: IsoSized {
         box_size
     }
 
+    /// Constructs a [`BoxHeader`] for this box.
     fn box_header(&self) -> BoxHeader {
         BoxHeader {
             size: self.size().into(),
@@ -68,6 +85,7 @@ pub trait IsoBox: IsoSized {
         }
     }
 
+    /// Serializes the box header returned by [`IsoBox::box_header`] to the given writer.
     fn serialize_box_header<W>(&self, writer: W) -> std::io::Result<()>
     where
         W: std::io::Write,
@@ -76,9 +94,17 @@ pub trait IsoBox: IsoSized {
     }
 }
 
+/// Any unknown box.
+///
+/// Can be used whenever the type is not known.
+///
+/// Use [`UnknownBox::try_from_box`] to create an [`UnknownBox`] from a known box type and
+/// [`UnknownBox::deserialize_as_box`] to deserialize it into a specific box type.
 #[derive(PartialEq, Eq)]
 pub struct UnknownBox<'a> {
+    /// The header of the box.
     pub header: BoxHeader,
+    /// The payload data of the box.
     pub data: BytesCow<'a>,
 }
 
@@ -125,6 +151,7 @@ impl Serialize for UnknownBox<'_> {
 }
 
 impl<'a> UnknownBox<'a> {
+    /// Creates an [`UnknownBox`] from a known box type.
     pub fn try_from_box(box_: impl IsoBox + Serialize) -> Result<Self, io::Error> {
         #[derive(Debug)]
         struct SkipWriter<W> {
@@ -173,6 +200,7 @@ impl<'a> UnknownBox<'a> {
         })
     }
 
+    /// Deserializes the box as a specific type.
     pub fn deserialize_as<T, S>(self) -> std::io::Result<T>
     where
         T: DeserializeSeed<'a, S>,
@@ -183,6 +211,7 @@ impl<'a> UnknownBox<'a> {
         T::deserialize_seed(&mut reader, seed)
     }
 
+    /// Deserializes the box as a specific type, which implements [`IsoBox`].
     pub fn deserialize_as_box<B>(self) -> std::io::Result<B>
     where
         B: IsoBox + Deserialize<'a>,

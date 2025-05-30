@@ -5,6 +5,9 @@ use nutype_enum::nutype_enum;
 use crate::{IsoBox, IsoSized, UnknownBox};
 
 nutype_enum! {
+    /// A four character code, registered with ISO, that identifies a precise specification.
+    ///
+    /// See: https://mp4ra.org/registered-types/brands
     pub enum Brand([u8; 4]) {
         Mp41 = *b"mp41",
         IsoM = *b"isom",
@@ -39,9 +42,12 @@ impl IsoSized for Brand {
 #[derive(IsoBox, Debug, PartialEq, Eq)]
 #[iso_box(box_type = b"ftyp", crate_path = crate)]
 pub struct FileTypeBox {
+    /// The "best use" brand of the file which will provide the greatest compatibility.
     #[iso_box(from = "[u8; 4]")]
     pub major_brand: Brand,
+    /// Minor version of the major brand.
     pub minor_version: u32,
+    /// A list of compatible brands.
     #[iso_box(repeated, from = "[u8; 4]")]
     pub compatible_brands: Vec<Brand>,
 }
@@ -52,6 +58,7 @@ pub struct FileTypeBox {
 #[derive(IsoBox, Debug, PartialEq, Eq)]
 #[iso_box(box_type = b"tyco", crate_path = crate)]
 pub struct TypeCombinationBox {
+    /// A list of compatible brands.
     #[iso_box(repeated, from = "[u8; 4]")]
     pub compatible_brands: Vec<Brand>,
 }
@@ -62,8 +69,10 @@ pub struct TypeCombinationBox {
 #[derive(IsoBox, Debug, PartialEq, Eq)]
 #[iso_box(box_type = b"etyp", crate_path = crate)]
 pub struct ExtendedTypeBox<'a> {
+    /// A list of [`TypeCombinationBox`]es.
     #[iso_box(nested_box(collect))]
     pub compatible_combinations: Vec<TypeCombinationBox>,
+    /// A list of unknown boxes that were encountered while parsing the box.
     #[iso_box(nested_box(collect_unknown))]
     pub unknown_boxes: Vec<UnknownBox<'a>>,
 }

@@ -38,7 +38,7 @@ pub struct IsobmffFile<'a> {
     /// Apparently it is possible for derived specifications to change the
     /// rules of the base specification.
     ///
-    /// See: https://github.com/MPEGGroup/FileFormatConformance/issues/154
+    /// See: <https://github.com/MPEGGroup/FileFormatConformance/issues/154>
     #[iso_box(nested_box(collect))]
     pub moov: Option<MovieBox<'a>>,
     /// A list of [`MovieFragmentBox`]es.

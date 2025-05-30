@@ -184,7 +184,7 @@ impl IsoSized for Utf8List {
 
 /// ISO-639-2 three-letter language code.
 ///
-/// https://en.wikipedia.org/wiki/List_of_ISO_639-2_codes
+/// <https://en.wikipedia.org/wiki/List_of_ISO_639-2_codes>
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub struct Langauge(pub [u8; 3]);
 

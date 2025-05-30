@@ -278,8 +278,6 @@ impl serde::ser::Serialize for Amf0Value<'_> {
     }
 }
 
-#[cfg(feature = "serde")]
-#[cfg_attr(docsrs, doc(cfg(feature = "serde")))]
 macro_rules! impl_de_number {
     ($deserializser_fn:ident, $visit_fn:ident) => {
         fn $deserializser_fn<V>(self, visitor: V) -> Result<V::Value, Self::Error>
@@ -297,8 +295,6 @@ macro_rules! impl_de_number {
     };
 }
 
-#[cfg(feature = "serde")]
-#[cfg_attr(docsrs, doc(cfg(feature = "serde")))]
 impl<'de, 'a: 'de> serde::Deserializer<'de> for &'a Amf0Value<'de> {
     type Error = Amf0Error;
 

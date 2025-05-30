@@ -259,7 +259,7 @@ mod tests {
 
         let config = AV1CodecConfigurationRecord::deserialize(Slice::from(&data[..])).unwrap();
 
-        insta::assert_debug_snapshot!(config, @r"
+        insta::assert_debug_snapshot!(config, @r#"
         AV1CodecConfigurationRecord {
             seq_profile: 0,
             seq_level_idx_0: 13,
@@ -272,27 +272,9 @@ mod tests {
             chroma_sample_position: 0,
             hdr_wcg_idc: 0,
             initial_presentation_delay_minus_one: None,
-            config_obu: [
-                10,
-                15,
-                0,
-                0,
-                0,
-                106,
-                239,
-                191,
-                225,
-                188,
-                2,
-                25,
-                144,
-                16,
-                16,
-                16,
-                64,
-            ],
+            config_obu: b"\n\x0f\0\0\0j\xef\xbf\xe1\xbc\x02\x19\x90\x10\x10\x10@",
         }
-        ");
+        "#);
     }
 
     #[test]
@@ -321,7 +303,7 @@ mod tests {
 
         let config = AV1CodecConfigurationRecord::deserialize(Slice::from(&data[..])).unwrap();
 
-        insta::assert_debug_snapshot!(config, @r"
+        insta::assert_debug_snapshot!(config, @r#"
         AV1CodecConfigurationRecord {
             seq_profile: 0,
             seq_level_idx_0: 13,
@@ -336,27 +318,9 @@ mod tests {
             initial_presentation_delay_minus_one: Some(
                 15,
             ),
-            config_obu: [
-                10,
-                15,
-                0,
-                0,
-                0,
-                106,
-                239,
-                191,
-                225,
-                188,
-                2,
-                25,
-                144,
-                16,
-                16,
-                16,
-                64,
-            ],
+            config_obu: b"\n\x0f\0\0\0j\xef\xbf\xe1\xbc\x02\x19\x90\x10\x10\x10@",
         }
-        ");
+        "#);
     }
 
     #[test]
@@ -411,7 +375,7 @@ mod tests {
 
         let config = AV1VideoDescriptor::deserialize(Slice::from(&data[..])).unwrap();
 
-        insta::assert_debug_snapshot!(config, @r"
+        insta::assert_debug_snapshot!(config, @r#"
         AV1VideoDescriptor {
             tag: 128,
             length: 4,
@@ -429,28 +393,10 @@ mod tests {
                 initial_presentation_delay_minus_one: Some(
                     15,
                 ),
-                config_obu: [
-                    10,
-                    15,
-                    0,
-                    0,
-                    0,
-                    106,
-                    239,
-                    191,
-                    225,
-                    188,
-                    2,
-                    25,
-                    144,
-                    16,
-                    16,
-                    16,
-                    64,
-                ],
+                config_obu: b"\n\x0f\0\0\0j\xef\xbf\xe1\xbc\x02\x19\x90\x10\x10\x10@",
             },
         }
-        ");
+        "#);
     }
 
     #[test]

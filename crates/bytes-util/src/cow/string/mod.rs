@@ -25,12 +25,7 @@ pub enum StringCow<'a> {
 
 impl Debug for StringCow<'_> {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        match self {
-            Self::Ref(slice) => Debug::fmt(slice, f),
-            Self::StaticRef(slice) => Debug::fmt(slice, f),
-            Self::String(string) => Debug::fmt(string, f),
-            Self::Bytes(bytes) => Debug::fmt(bytes, f),
-        }
+        Debug::fmt(self.as_str(), f)
     }
 }
 
@@ -160,12 +155,7 @@ where
 
 impl Display for StringCow<'_> {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        match self {
-            StringCow::Ref(slice) => Display::fmt(slice, f),
-            StringCow::StaticRef(slice) => Display::fmt(slice, f),
-            StringCow::String(string) => Display::fmt(string, f),
-            StringCow::Bytes(bytes) => Display::fmt(bytes, f),
-        }
+        Display::fmt(self.as_str(), f)
     }
 }
 

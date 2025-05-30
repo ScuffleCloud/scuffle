@@ -377,7 +377,7 @@ mod tests {
         };
 
         assert_eq!(config.size(), 49);
-        insta::assert_debug_snapshot!(config, @r"
+        insta::assert_debug_snapshot!(config, @r#"
         AVCDecoderConfigurationRecord {
             configuration_version: 1,
             profile_indication: 100,
@@ -385,42 +385,10 @@ mod tests {
             level_indication: 31,
             length_size_minus_one: 3,
             sps: [
-                [
-                    103,
-                    100,
-                    0,
-                    31,
-                    172,
-                    217,
-                    65,
-                    224,
-                    109,
-                    249,
-                    230,
-                    160,
-                    32,
-                    32,
-                    40,
-                    0,
-                    0,
-                    0,
-                    8,
-                    0,
-                    0,
-                    1,
-                    224,
-                ],
+                b"gd\0\x1f\xac\xd9A\xe0m\xf9\xe6\xa0  (\0\0\0\x08\0\0\x01\xe0",
             ],
             pps: [
-                [
-                    112,
-                    112,
-                    115,
-                    100,
-                    97,
-                    116,
-                    97,
-                ],
+                b"ppsdata",
             ],
             extended_config: Some(
                 AvccExtendedConfig {
@@ -440,7 +408,7 @@ mod tests {
                 },
             ),
         }
-        ");
+        "#);
     }
 
     #[test]
@@ -477,7 +445,7 @@ mod tests {
         let parsed =
             AVCDecoderConfigurationRecord::deserialize(scuffle_bytes_util::zero_copy::Slice::from(&buf[..])).unwrap();
         assert_eq!(parsed.extended_config.unwrap().sequence_parameter_set_ext.len(), 1);
-        insta::assert_debug_snapshot!(config, @r"
+        insta::assert_debug_snapshot!(config, @r#"
         AVCDecoderConfigurationRecord {
             configuration_version: 1,
             profile_indication: 100,
@@ -485,48 +453,10 @@ mod tests {
             level_indication: 31,
             length_size_minus_one: 3,
             sps: [
-                [
-                    103,
-                    100,
-                    0,
-                    31,
-                    172,
-                    217,
-                    65,
-                    224,
-                    109,
-                    249,
-                    230,
-                    160,
-                    32,
-                    32,
-                    40,
-                    0,
-                    0,
-                    3,
-                    0,
-                    8,
-                    0,
-                    0,
-                    3,
-                    1,
-                    224,
-                    120,
-                    193,
-                    140,
-                    176,
-                ],
+                b"gd\0\x1f\xac\xd9A\xe0m\xf9\xe6\xa0  (\0\0\x03\0\x08\0\0\x03\x01\xe0x\xc1\x8c\xb0",
             ],
             pps: [
-                [
-                    112,
-                    112,
-                    115,
-                    100,
-                    97,
-                    116,
-                    97,
-                ],
+                b"ppsdata",
             ],
             extended_config: Some(
                 AvccExtendedConfig {
@@ -546,6 +476,6 @@ mod tests {
                 },
             ),
         }
-        ");
+        "#);
     }
 }

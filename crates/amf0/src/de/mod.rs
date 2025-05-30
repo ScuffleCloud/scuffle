@@ -42,8 +42,6 @@ where
     Ok(value)
 }
 
-#[cfg(feature = "serde")]
-#[cfg_attr(docsrs, doc(cfg(feature = "serde")))]
 macro_rules! impl_de_number {
     ($deserializser_fn:ident, $visit_fn:ident) => {
         fn $deserializser_fn<V>(self, visitor: V) -> Result<V::Value, Self::Error>

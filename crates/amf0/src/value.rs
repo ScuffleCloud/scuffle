@@ -1,17 +1,17 @@
 //! AMF0 value types.
 
-use std::collections::BTreeMap;
 use std::io;
 use std::marker::PhantomData;
 
 use scuffle_bytes_util::StringCow;
 use serde::de::IntoDeserializer;
 
+use crate::map::Map;
 use crate::Amf0Error;
 use crate::encoder::Amf0Encoder;
 
 /// Represents any AMF0 object.
-pub type Amf0Object<'a> = BTreeMap<StringCow<'a>, Amf0Value<'a>>;
+pub type Amf0Object<'a> = Map<StringCow<'a>, Amf0Value<'a>>;
 /// Represents any AMF0 array.
 pub type Amf0Array<'a> = Vec<Amf0Value<'a>>;
 

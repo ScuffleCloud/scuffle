@@ -54,6 +54,7 @@ pub mod error;
 #[cfg(feature = "serde")]
 pub mod ser;
 pub mod value;
+pub mod map;
 
 #[cfg(feature = "serde")]
 pub use de::{from_buf, from_reader, from_slice};
@@ -63,6 +64,8 @@ pub use error::{Amf0Error, Result};
 #[cfg(feature = "serde")]
 pub use ser::{to_bytes, to_writer};
 pub use value::{Amf0Array, Amf0Object, Amf0Value};
+
+extern crate alloc;
 
 /// AMF0 marker types.
 ///

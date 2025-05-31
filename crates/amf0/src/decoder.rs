@@ -264,7 +264,7 @@ where
                 Ok(object)
             }
             ObjectHeader::EcmaArray { size } => {
-                let mut object = Amf0Object::with_capacity(size as usize);
+                let mut object = Amf0Object::new();
 
                 for _ in 0..size {
                     // Object keys are not preceeded with a marker and are always normal strings

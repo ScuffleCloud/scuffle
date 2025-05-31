@@ -48,15 +48,17 @@ macro_rules! impl_de_number {
         where
             V: serde::de::Visitor<'de>,
         {
-            if let Some(Amf0Marker::Number) = self.next_marker {
+            if let Amf0Marker::Number = self.peek_marker()? {
                 // must make sure the marker is a number so we don't error out
                 let value = self.decode_number()?;
                 if let Some(value) = ::num_traits::cast(value) {
-                    return visitor.$visit_fn(value);
+                    visitor.$visit_fn(value)
+                } else {
+                    visitor.visit_f64(value)
                 }
+            } else {
+                self.deserialize_any(visitor)
             }
-
-            self.deserialize_any(visitor)
         }
     };
 }
@@ -89,7 +91,16 @@ where
 
     impl_de_number!(deserialize_f32, visit_f32);
 
-    impl_de_number!(deserialize_f64, visit_f64);
+    fn deserialize_f64<V>(self, visitor: V) -> Result<V::Value, Self::Error>
+    where
+        V: serde::de::Visitor<'de>,
+    {
+        if let Amf0Marker::Number | Amf0Marker::Date = self.peek_marker()? {
+            visitor.visit_f64(self.decode_number()?)
+        } else {
+            self.deserialize_any(visitor)
+        }
+    }
 
     fn deserialize_any<V>(self, visitor: V) -> Result<V::Value, Self::Error>
     where
@@ -112,64 +123,66 @@ where
     where
         V: serde::de::Visitor<'de>,
     {
-        if let Some(Amf0Marker::Boolean) = self.next_marker {
+        if let Amf0Marker::Boolean = self.peek_marker()? {
             let value = self.decode_boolean()?;
-            return visitor.visit_bool(value);
+            visitor.visit_bool(value)
+        } else {
+            self.deserialize_any(visitor)
         }
-        self.deserialize_any(visitor)
     }
 
     fn deserialize_string<V>(self, visitor: V) -> Result<V::Value, Self::Error>
     where
         V: serde::de::Visitor<'de>,
     {
-        if let Some(Amf0Marker::String) = self.next_marker {
+        if let Amf0Marker::String | Amf0Marker::LongString | Amf0Marker::XmlDocument = self.peek_marker()? {
             let value = self.decode_string()?;
-            return value.into_deserializer().deserialize_string(visitor);
+            value.into_deserializer().deserialize_string(visitor)
+        } else {
+            self.deserialize_any(visitor)
         }
-        self.deserialize_any(visitor)
     }
 
     fn deserialize_str<V>(self, visitor: V) -> Result<V::Value, Self::Error>
     where
         V: serde::de::Visitor<'de>,
     {
-        if let Some(Amf0Marker::String) = self.next_marker {
+        if let Amf0Marker::String | Amf0Marker::LongString | Amf0Marker::XmlDocument = self.peek_marker()? {
             let value = self.decode_string()?;
-            return visitor.visit_string(value.to_string());
+            visitor.visit_string(value.to_string())
+        } else {
+            self.deserialize_any(visitor)
         }
-        self.deserialize_any(visitor)
     }
 
     fn deserialize_bytes<V>(self, visitor: V) -> Result<V::Value, Self::Error>
     where
         V: serde::de::Visitor<'de>,
     {
-        if let Some(Amf0Marker::StrictArray) = self.next_marker {
-            return self.deserialize_seq(visitor);
+        if let Amf0Marker::StrictArray = self.peek_marker()? {
+            self.deserialize_seq(visitor)
+        } else {
+            self.deserialize_any(visitor)
         }
-        self.deserialize_any(visitor)
     }
 
     fn deserialize_byte_buf<V>(self, visitor: V) -> Result<V::Value, Self::Error>
     where
         V: serde::de::Visitor<'de>,
     {
-        if let Some(Amf0Marker::StrictArray) = self.next_marker {
-            return self.deserialize_seq(visitor);
+        if let Amf0Marker::StrictArray = self.peek_marker()? {
+            self.deserialize_seq(visitor)
+        } else {
+            self.deserialize_any(visitor)
         }
-        self.deserialize_any(visitor)
     }
 
     fn deserialize_option<V>(self, visitor: V) -> Result<V::Value, Self::Error>
     where
         V: serde::de::Visitor<'de>,
     {
-        let marker = self.peek_marker()?;
-
-        if marker == Amf0Marker::Null || marker == Amf0Marker::Undefined {
-            self.next_marker = None; // clear the marker buffer
-
+        if matches!(self.peek_marker()?, Amf0Marker::Null | Amf0Marker::Undefined) {
+            self.decode_null()?;
             visitor.visit_none()
         } else {
             visitor.visit_some(self)
@@ -180,30 +193,29 @@ where
     where
         V: serde::de::Visitor<'de>,
     {
-        if let Some(Amf0Marker::Null | Amf0Marker::Undefined) = self.next_marker {
+        if let Amf0Marker::Null | Amf0Marker::Undefined = self.peek_marker()? {
             self.decode_null()?;
-            return visitor.visit_unit();
+            visitor.visit_unit()
+        } else {
+            self.deserialize_any(visitor)
         }
-        self.deserialize_any(visitor)
     }
 
     fn deserialize_unit_struct<V>(self, _name: &'static str, visitor: V) -> Result<V::Value, Self::Error>
     where
         V: serde::de::Visitor<'de>,
     {
-        if let Some(Amf0Marker::Null | Amf0Marker::Undefined) = self.next_marker {
-            return self.deserialize_unit(visitor);
-        }
-        self.deserialize_any(visitor)
+        self.deserialize_unit(visitor)
     }
 
     fn deserialize_newtype_struct<V>(self, name: &'static str, visitor: V) -> Result<V::Value, Self::Error>
     where
         V: serde::de::Visitor<'de>,
     {
-        match (self.next_marker, name) {
-            (Some(Amf0Marker::StrictArray), stream::MULTI_VALUE_NEW_TYPE) => visitor.visit_seq(MultiValueDe { de: self }),
-            _ => visitor.visit_newtype_struct(self),
+        if name == stream::MULTI_VALUE_NEW_TYPE {
+            visitor.visit_seq(MultiValueDe { de: self })
+        } else {
+            visitor.visit_newtype_struct(self)
         }
     }
 
@@ -211,58 +223,62 @@ where
     where
         V: serde::de::Visitor<'de>,
     {
-        if let Some(Amf0Marker::StrictArray) = self.next_marker {
+        if let Amf0Marker::StrictArray = self.peek_marker()? {
             let size = self.decode_strict_array_header()? as usize;
 
-            return visitor.visit_seq(StrictArray {
+            visitor.visit_seq(StrictArray {
                 de: self,
                 remaining: size,
-            });
+            })
+        } else {
+            self.deserialize_any(visitor)
         }
-        self.deserialize_any(visitor)
     }
 
     fn deserialize_tuple<V>(self, _len: usize, visitor: V) -> Result<V::Value, Self::Error>
     where
         V: serde::de::Visitor<'de>,
     {
-        if let Some(Amf0Marker::StrictArray) = self.next_marker {
+        if let Amf0Marker::StrictArray = self.peek_marker()? {
             let size = self.decode_strict_array_header()? as usize;
 
-            return visitor.visit_seq(StrictArray {
+            visitor.visit_seq(StrictArray {
                 de: self,
                 remaining: size,
-            });
+            })
+        } else {
+            self.deserialize_any(visitor)
         }
-        self.deserialize_any(visitor)
     }
 
     fn deserialize_tuple_struct<V>(self, _name: &'static str, len: usize, visitor: V) -> Result<V::Value, Self::Error>
     where
         V: serde::de::Visitor<'de>,
     {
-        if let Some(Amf0Marker::StrictArray) = self.next_marker {
-            return self.deserialize_tuple(len, visitor);
+        if let Amf0Marker::StrictArray = self.peek_marker()? {
+            self.deserialize_tuple(len, visitor)
+        } else {
+            self.deserialize_any(visitor)
         }
-        self.deserialize_any(visitor)
     }
 
     fn deserialize_map<V>(self, visitor: V) -> Result<V::Value, Self::Error>
     where
         V: serde::de::Visitor<'de>,
     {
-        if let Some(Amf0Marker::Object) = self.next_marker {
+        if let Amf0Marker::Object | Amf0Marker::TypedObject | Amf0Marker::EcmaArray = self.peek_marker()? {
             let header = self.decode_object_header()?;
 
-            return match header {
+            match header {
                 ObjectHeader::Object | ObjectHeader::TypedObject { .. } => visitor.visit_map(Object { de: self }),
                 ObjectHeader::EcmaArray { size } => visitor.visit_map(EcmaArray {
                     de: self,
                     remaining: size as usize,
                 }),
-            };
+            }
+        } else {
+            self.deserialize_any(visitor)
         }
-        self.deserialize_any(visitor)
     }
 
     fn deserialize_struct<V>(
@@ -274,10 +290,7 @@ where
     where
         V: serde::de::Visitor<'de>,
     {
-        if let Some(Amf0Marker::Object) = self.next_marker {
-            return self.deserialize_map(visitor);
-        }
-        self.deserialize_any(visitor)
+        self.deserialize_map(visitor)
     }
 
     fn deserialize_enum<V>(
@@ -296,11 +309,12 @@ where
     where
         V: serde::de::Visitor<'de>,
     {
-        if let Some(Amf0Marker::String | Amf0Marker::LongString) = self.next_marker {
+        if let Amf0Marker::String | Amf0Marker::LongString = self.peek_marker()? {
             let s = self.decode_string()?;
-            return s.into_deserializer().deserialize_identifier(visitor);
+            s.into_deserializer().deserialize_identifier(visitor)
+        } else {
+            self.deserialize_any(visitor)
         }
-        self.deserialize_any(visitor)
     }
 }
 
@@ -473,8 +487,9 @@ mod tests {
     use scuffle_bytes_util::StringCow;
     use serde_derive::Deserialize;
 
+    use crate::de::MultiValue;
     use crate::decoder::Amf0Decoder;
-    use crate::{Amf0Error, Amf0Marker, Amf0Value, from_buf};
+    use crate::{Amf0Error, Amf0Marker, Amf0Object, Amf0Value, from_buf};
 
     #[test]
     fn string() {
@@ -498,15 +513,9 @@ mod tests {
         let value: String = from_buf(Bytes::from_owner(bytes)).unwrap();
         assert_eq!(value, "hello");
 
-        let bytes = [Amf0Marker::Boolean as u8];
+        let bytes = [Amf0Marker::Boolean as u8, 0];
         let err = from_buf::<String>(Bytes::from_owner(bytes)).unwrap_err();
-        assert!(matches!(
-            err,
-            Amf0Error::UnexpectedType {
-                expected: [Amf0Marker::String, Amf0Marker::LongString, Amf0Marker::XmlDocument],
-                got: Amf0Marker::Boolean
-            }
-        ));
+        assert_eq!(err.to_string(), "invalid type: boolean `false`, expected a string");
     }
 
     #[test]
@@ -541,16 +550,16 @@ mod tests {
 
     #[test]
     fn numbers() {
+        number_test(1f64);
         number_test(1u8);
-        // number_test(1u16);
-        // number_test(1u32);
-        // number_test(1u64);
-        // number_test(1i8);
-        // number_test(1i16);
-        // number_test(1i32);
-        // number_test(1i64);
-        // number_test(1f32);
-        // number_test(1f64);
+        number_test(1u16);
+        number_test(1u32);
+        number_test(1u64);
+        number_test(1i8);
+        number_test(1i16);
+        number_test(1i32);
+        number_test(1i64);
+        number_test(1f32);
 
         let mut bytes = vec![Amf0Marker::Date as u8];
         bytes.extend_from_slice(&f64::consts::PI.to_be_bytes());
@@ -646,7 +655,10 @@ mod tests {
             1,
         ];
         let err = from_buf::<Test>(Bytes::from_owner(bytes)).unwrap_err();
-        assert!(matches!(err, Amf0Error::WrongArrayLength { expected: 2, got: 1 }));
+        assert_eq!(
+            err.to_string(),
+            "invalid length 1, expected tuple struct Test with 2 elements"
+        );
     }
 
     #[test]
@@ -751,14 +763,8 @@ mod tests {
             }
         );
 
-        let err = from_buf::<Test>(Bytes::from_owner([Amf0Marker::String as u8])).unwrap_err();
-        assert!(matches!(
-            err,
-            Amf0Error::UnexpectedType {
-                expected: [Amf0Marker::Object, Amf0Marker::TypedObject, Amf0Marker::EcmaArray],
-                got: Amf0Marker::String
-            }
-        ));
+        let err = from_buf::<Test>(Bytes::from_owner([Amf0Marker::String as u8, 0, 0])).unwrap_err();
+        assert_eq!(err.to_string(), "invalid type: string \"\", expected struct Test");
     }
 
     #[test]
@@ -954,33 +960,33 @@ mod tests {
         );
     }
 
-    // #[test]
-    // fn multi_value() {
-    //     #[rustfmt::skip]
-    //     let bytes = [
-    //         Amf0Marker::String as u8,
-    //         0, 5, // length
-    //         b'h', b'e', b'l', b'l', b'o',
-    //         Amf0Marker::Boolean as u8,
-    //         1,
-    //         Amf0Marker::Object as u8,
-    //         0, 1, // length
-    //         b'a',
-    //         Amf0Marker::Boolean as u8,
-    //         1,
-    //         0, 0, Amf0Marker::ObjectEnd as u8,
-    //     ];
+    #[test]
+    fn multi_value() {
+        #[rustfmt::skip]
+        let bytes = [
+            Amf0Marker::String as u8,
+            0, 5, // length
+            b'h', b'e', b'l', b'l', b'o',
+            Amf0Marker::Boolean as u8,
+            1,
+            Amf0Marker::Object as u8,
+            0, 1, // length
+            b'a',
+            Amf0Marker::Boolean as u8,
+            1,
+            0, 0, Amf0Marker::ObjectEnd as u8,
+        ];
 
-    //     let mut de = Amf0Decoder::from_buf(Bytes::from_owner(bytes));
-    //     // also this is breaking: `Result::unwrap()` on an `Err` value: Custom("invalid type: newtype struct, expected a series of values")
-    //     let values: MultiValue<(String, bool, Amf0Object)> = de.deserialize().unwrap();
-    //     assert_eq!(values.0.0, "hello");
-    //     assert!(values.0.1);
-    //     assert_eq!(
-    //         values.0.2,
-    //         [("a".into(), Amf0Value::Boolean(true))].into_iter().collect::<Amf0Object>()
-    //     );
-    // }
+        let mut de = Amf0Decoder::from_buf(Bytes::from_owner(bytes));
+        // also this is breaking: `Result::unwrap()` on an `Err` value: Custom("invalid type: newtype struct, expected a series of values")
+        let values: MultiValue<(String, bool, Amf0Object)> = de.deserialize().unwrap();
+        assert_eq!(values.0.0, "hello");
+        assert!(values.0.1);
+        assert_eq!(
+            values.0.2,
+            [("a".into(), Amf0Value::Boolean(true))].into_iter().collect::<Amf0Object>()
+        );
+    }
 
     #[test]
     fn deserializer_stream() {

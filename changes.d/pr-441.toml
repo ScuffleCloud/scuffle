@@ -1,9 +1,14 @@
 [[scuffle-amf0]]
 category = "fix"
-description = "Fix amf0 deserialization to abide by deserialization rules"
-authors = ["@philipch07"]
+description = "Fix amf0 deserialization to abide by better deserialization standards"
+authors = ["@philipch07", "@TroyKomodo"]
 
 [[scuffle-amf0]]
 category = "feat"
-description = "Add amf0::value deserialization"
-authors = ["@philipch07"]
+description = "Add an Amf0Value deserializer"
+authors = ["@philipch07", "@TroyKomodo"]
+
+[[scuffle-util-bytes]]
+category = "feat"
+description = "Add an `IntoDeserializer` implementation for `StringCow`"
+authors = ["@TroyKomodo"]

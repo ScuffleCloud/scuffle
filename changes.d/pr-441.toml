@@ -4,11 +4,21 @@ description = "Fix amf0 deserialization to abide by better deserialization stand
 authors = ["@philipch07", "@TroyKomodo"]
 
 [[scuffle-amf0]]
+category = "fix"
+description = "Fix `Amf0Object` to be represented by a BTreeMap instead of a hashmap to guarantee consistency when iterating through the map"
+authors = ["@TroyKomodo"]
+
+[[scuffle-amf0]]
+category = "fix"
+description = "Fix `Amf0Array` to be represented by a vec instead of a cow which is more appropriate for the type"
+authors = ["@TroyKomodo"]
+
+[[scuffle-amf0]]
 category = "feat"
 description = "Add an Amf0Value deserializer"
 authors = ["@philipch07", "@TroyKomodo"]
 
-[[scuffle-util-bytes]]
+[[scuffle-bytes-util]]
 category = "feat"
-description = "Add an `IntoDeserializer` implementation for `StringCow`"
+description = "Add an `IntoDeserializer` implementation for a `&StringCow`"
 authors = ["@TroyKomodo"]

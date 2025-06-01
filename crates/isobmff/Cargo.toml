@@ -15,8 +15,7 @@ unexpected_cfgs = { level = "warn", check-cfg = ['cfg(coverage_nightly)'] }
 
 [dependencies]
 document-features = { optional = true, version = "0.2" }
-scuffle-changelog = { optional = true, path = "../changelog", version = "0.1.0" }
-
+scuffle-changelog = { optional = true, path = "../changelog", version = "0.1.1" }
 base64 = "0.22.1"
 bitflags = "2.9.0"
 byteorder = "1.5.0"
@@ -24,8 +23,7 @@ bytes = "1.10.1"
 fixed = "1.29.0"
 isobmff-derive = { path = "./derive", version = "0.1.0" }
 nutype-enum = { path = "../nutype-enum", version = "0.1.5" }
-scuffle-changelog = { optional = true, path = "../changelog", version = "0.1.1" }
-scuffle-bytes-util = { path = "../bytes-util", version = "0.2.0" }
+scuffle-bytes-util = { path = "../bytes-util", version = "0.1.4" }
 uuid = "1.16.0"
 
 [dev-dependencies]

@@ -2974,6 +2974,7 @@ name = "isobmff-derive"
 version = "0.1.0"
 dependencies = [
  "darling 0.20.11",
+ "isobmff",
  "proc-macro2",
  "quote",
  "scuffle-bytes-util",
@@ -5506,7 +5507,7 @@ checksum = "94143f37725109f92c262ed2cf5e59bce7498c01bcc1502d7b9afe439a4e9f49"
 
 [[package]]
 name = "scuffle-aac"
-version = "0.1.5"
+version = "0.1.4"
 dependencies = [
  "bytes",
  "document-features",
@@ -5535,7 +5536,7 @@ dependencies = [
 
 [[package]]
 name = "scuffle-av1"
-version = "0.2.0"
+version = "0.1.4"
 dependencies = [
  "byteorder",
  "bytes",
@@ -5627,7 +5628,7 @@ dependencies = [
 
 [[package]]
 name = "scuffle-bytes-util"
-version = "0.2.0"
+version = "0.1.4"
 dependencies = [
  "bytes",
  "bytestring",
@@ -5696,7 +5697,7 @@ dependencies = [
 
 [[package]]
 name = "scuffle-expgolomb"
-version = "0.1.5"
+version = "0.1.4"
 dependencies = [
  "bytes",
  "document-features",
@@ -5734,7 +5735,7 @@ dependencies = [
 
 [[package]]
 name = "scuffle-flv"
-version = "0.3.0"
+version = "0.2.2"
 dependencies = [
  "bitmask-enum",
  "byteorder",
@@ -5767,7 +5768,7 @@ dependencies = [
 
 [[package]]
 name = "scuffle-h264"
-version = "0.3.0"
+version = "0.2.2"
 dependencies = [
  "byteorder",
  "document-features",
@@ -5781,7 +5782,7 @@ dependencies = [
 
 [[package]]
 name = "scuffle-h265"
-version = "0.3.0"
+version = "0.2.2"
 dependencies = [
  "bitflags 2.9.1",
  "byteorder",
@@ -5859,7 +5860,7 @@ dependencies = [
 
 [[package]]
 name = "scuffle-mp4"
-version = "0.2.0"
+version = "0.1.4"
 dependencies = [
  "document-features",
  "isobmff",
@@ -5959,7 +5960,7 @@ dependencies = [
 
 [[package]]
 name = "scuffle-transmuxer"
-version = "0.2.3"
+version = "0.2.2"
 dependencies = [
  "byteorder",
  "bytes",

@@ -24,8 +24,8 @@ scuffle-workspace-hack.workspace = true
 syn = "2.0.100"
 
 [dev-dependencies]
-isobmff = { path = ".."}
-scuffle-bytes-util = { path = "../../bytes-util"}
+isobmff = { path = ".." }
+scuffle-bytes-util = { path = "../../bytes-util" }
 
 [package.metadata.docs.rs]
 all-features = true

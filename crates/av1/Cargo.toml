@@ -22,8 +22,8 @@ byteorder = "1.5"
 bytes = "1.5"
 document-features = { optional = true, version = "0.2" }
 isobmff = { path = "../isobmff", version = "0.1.0" }
-isobmff-derive = { path = "../isobmff/derive", version = "0.1.0" }
-scuffle-bytes-util = { path = "../bytes-util", version = "0.1.4" }
+isobmff-derive = { path = "../isobmff/derive", version = ">=0.1.0" }
+scuffle-bytes-util = { path = "../bytes-util", version = ">=0.1.4" }
 scuffle-changelog = { optional = true, path = "../changelog", version = "0.1.0" }
 scuffle-workspace-hack.workspace = true
 

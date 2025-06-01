@@ -24,13 +24,13 @@ scuffle-changelog = { optional = true, path = "../changelog", version = "0.1.0" 
 
 fixed = "1.29.0"
 isobmff = { path = "../isobmff", version = "0.1.0" }
-scuffle-aac = { path = "../aac", version = "0.1.4" }
-scuffle-av1 = { path = "../av1", version = "0.1.4" }
-scuffle-bytes-util = { path = "../bytes-util", version = "0.1.4" }
-scuffle-flv = { path = "../flv", version = "0.2.2" }
-scuffle-h264 = { path = "../h264", version = "0.2.2" }
-scuffle-h265 = { path = "../h265", version = "0.2.2" }
-scuffle-mp4 = { path = "../mp4", version = "0.1.4" }
+scuffle-aac = { path = "../aac", version = ">=0.1.4" }
+scuffle-av1 = { path = "../av1", version = ">=0.1.4" }
+scuffle-bytes-util = { path = "../bytes-util", version = ">=0.1.4" }
+scuffle-flv = { path = "../flv", version = ">=0.2.2" }
+scuffle-h264 = { path = "../h264", version = ">=0.2.2" }
+scuffle-h265 = { path = "../h265", version = ">=0.2.2" }
+scuffle-mp4 = { path = "../mp4", version = ">=0.1.4" }
 scuffle-workspace-hack.workspace = true
 
 [dev-dependencies]

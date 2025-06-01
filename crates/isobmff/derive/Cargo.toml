@@ -24,8 +24,8 @@ scuffle-workspace-hack.workspace = true
 syn = "2.0.100"
 
 [dev-dependencies]
-isobmff = { path = "..", version = "0.1.0" }
-scuffle-bytes-util = { path = "../../bytes-util", version = "0.1.4" }
+isobmff = { path = ".."}
+scuffle-bytes-util = { path = "../../bytes-util"}
 
 [package.metadata.docs.rs]
 all-features = true
@@ -45,3 +45,6 @@ docs-rs = true
 crates-io = true
 github-actions = { workflows = "ci.yaml" }
 codecov = true
+
+[package.metadata.xtask.release]
+group = "isobmff"

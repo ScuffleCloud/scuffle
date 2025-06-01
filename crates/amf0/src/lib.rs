@@ -51,21 +51,20 @@ pub mod de;
 pub mod decoder;
 pub mod encoder;
 pub mod error;
+pub mod object;
 #[cfg(feature = "serde")]
 pub mod ser;
 pub mod value;
-pub mod map;
 
 #[cfg(feature = "serde")]
 pub use de::{from_buf, from_reader, from_slice};
 pub use decoder::Amf0Decoder;
 pub use encoder::Amf0Encoder;
 pub use error::{Amf0Error, Result};
+pub use object::Amf0Object;
 #[cfg(feature = "serde")]
 pub use ser::{to_bytes, to_writer};
-pub use value::{Amf0Array, Amf0Object, Amf0Value};
-
-extern crate alloc;
+pub use value::Amf0Value;
 
 /// AMF0 marker types.
 ///

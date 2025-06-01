@@ -3210,6 +3210,7 @@ dependencies = [
  "bytes",
  "bytestring",
  "document-features",
+ "indexmap",
  "num-derive",
  "num-traits",
  "scuffle-bytes-util",

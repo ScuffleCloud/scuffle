@@ -7,7 +7,7 @@ use num_traits::FromPrimitive;
 use scuffle_bytes_util::StringCow;
 use scuffle_bytes_util::zero_copy::ZeroCopyReader;
 
-use crate::{Amf0Array, Amf0Error, Amf0Marker, Amf0Object, Amf0Value};
+use crate::{Amf0Error, Amf0Marker, Amf0Object, Amf0Value};
 
 /// AMF0 decoder.
 ///
@@ -294,7 +294,7 @@ where
     }
 
     /// Decode a strict array from the buffer.
-    pub fn decode_strict_array(&mut self) -> Result<Amf0Array<'a>, Amf0Error> {
+    pub fn decode_strict_array(&mut self) -> Result<Vec<Amf0Value<'a>>, Amf0Error> {
         let size = self.decode_strict_array_header()? as usize;
 
         let mut array = Vec::with_capacity(size);
@@ -304,7 +304,7 @@ where
             array.push(value);
         }
 
-        Ok(Amf0Array::from(array))
+        Ok(array)
     }
 }
 
@@ -334,6 +334,8 @@ impl<'de, R> std::iter::FusedIterator for Amf0DecoderStream<'_, 'de, R> where R:
 #[cfg(test)]
 #[cfg_attr(all(test, coverage_nightly), coverage(off))]
 mod tests {
+    use scuffle_bytes_util::StringCow;
+
     use super::Amf0Decoder;
     use crate::{Amf0Marker, Amf0Value};
 
@@ -373,8 +375,11 @@ mod tests {
         let mut decoder = Amf0Decoder::from_slice(&bytes);
         let object = decoder.decode_object().unwrap();
         assert_eq!(object.len(), 2);
-        assert_eq!(*object.get(&"abc".into()).unwrap(), Amf0Value::String("val".into()));
-        assert_eq!(*object.get(&"defg".into()).unwrap(), Amf0Value::Boolean(true));
+        assert_eq!(
+            *object.get(&StringCow::from_static("abc")).unwrap(),
+            Amf0Value::String("val".into())
+        );
+        assert_eq!(*object.get("defg").unwrap(), Amf0Value::Boolean(true));
     }
 
     #[test]

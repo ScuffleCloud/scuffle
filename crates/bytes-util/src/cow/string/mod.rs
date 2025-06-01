@@ -1,4 +1,4 @@
-use std::borrow::Cow;
+use std::borrow::{Borrow, Cow};
 use std::fmt::Display;
 use std::hash::Hash;
 
@@ -162,6 +162,12 @@ impl From<String> for StringCow<'_> {
 impl From<ByteString> for StringCow<'_> {
     fn from(bytes: ByteString) -> Self {
         StringCow::from_bytes(bytes)
+    }
+}
+
+impl Borrow<str> for StringCow<'_> {
+    fn borrow(&self) -> &str {
+        self.as_str()
     }
 }
 

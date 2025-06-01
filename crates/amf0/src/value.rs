@@ -1,19 +1,13 @@
 //! AMF0 value types.
 
 use std::io;
-use std::marker::PhantomData;
 
 use scuffle_bytes_util::StringCow;
 use serde::de::IntoDeserializer;
 
-use crate::map::Map;
 use crate::Amf0Error;
 use crate::encoder::Amf0Encoder;
-
-/// Represents any AMF0 object.
-pub type Amf0Object<'a> = Map<StringCow<'a>, Amf0Value<'a>>;
-/// Represents any AMF0 array.
-pub type Amf0Array<'a> = Vec<Amf0Value<'a>>;
+use crate::object::Amf0Object;
 
 /// Represents any AMF0 value.
 #[derive(Debug, PartialEq, Clone)]
@@ -29,7 +23,7 @@ pub enum Amf0Value<'a> {
     /// AMF0 Null.
     Null,
     /// AMF0 Array.
-    Array(Amf0Array<'a>),
+    Array(Vec<Amf0Value<'a>>),
 }
 
 impl Amf0Value<'_> {
@@ -210,7 +204,9 @@ impl<'de> serde::de::Deserialize<'de> for Amf0Value<'de> {
             where
                 A: serde::de::MapAccess<'de>,
             {
-                let mut object = BTreeMap::new();
+                use crate::object::Amf0Object;
+
+                let mut object = Amf0Object::new();
 
                 while let Some((key, value)) = map.next_entry()? {
                     object.insert(key, value);
@@ -265,6 +261,7 @@ impl serde::ser::Serialize for Amf0Value<'_> {
     }
 }
 
+#[cfg(feature = "serde")]
 macro_rules! impl_de_number {
     ($deserializser_fn:ident, $visit_fn:ident) => {
         fn $deserializser_fn<V>(self, visitor: V) -> Result<V::Value, Self::Error>
@@ -285,6 +282,7 @@ macro_rules! impl_de_number {
     };
 }
 
+#[cfg(feature = "serde")]
 macro_rules! impl_deserializer {
     ($ty:ty) => {
         impl<'de> serde::Deserializer<'de> for $ty {
@@ -367,20 +365,19 @@ macro_rules! impl_deserializer {
                     Amf0Value::Number(n) => visitor.visit_f64(*(&n as &f64)),
                     Amf0Value::String(s) => s.into_deserializer().deserialize_any(visitor),
                     Amf0Value::Array(a) => visitor.visit_seq(Amf0SeqAccess { iter: a.into_iter() }),
-                    Amf0Value::Object(o) => visitor.visit_map(Amf0MapAccess {
-                        iter: o.into_iter(),
-                        value: None,
-                        _phantom: PhantomData,
-                    }),
+                    Amf0Value::Object(o) => o.into_deserializer().deserialize_any(visitor),
                 }
             }
         }
     };
 }
 
+#[cfg(feature = "serde")]
 impl_deserializer!(Amf0Value<'de>);
+#[cfg(feature = "serde")]
 impl_deserializer!(&'de Amf0Value<'de>);
 
+#[cfg(feature = "serde")]
 impl<'de> serde::de::IntoDeserializer<'de, Amf0Error> for Amf0Value<'de> {
     type Deserializer = Amf0Value<'de>;
 
@@ -389,6 +386,7 @@ impl<'de> serde::de::IntoDeserializer<'de, Amf0Error> for Amf0Value<'de> {
     }
 }
 
+#[cfg(feature = "serde")]
 impl<'de> serde::de::IntoDeserializer<'de, Amf0Error> for &'de Amf0Value<'de> {
     type Deserializer = &'de Amf0Value<'de>;
 
@@ -397,10 +395,12 @@ impl<'de> serde::de::IntoDeserializer<'de, Amf0Error> for &'de Amf0Value<'de> {
     }
 }
 
+#[cfg(feature = "serde")]
 struct Amf0SeqAccess<I> {
     iter: I,
 }
 
+#[cfg(feature = "serde")]
 impl<'de, I> serde::de::SeqAccess<'de> for Amf0SeqAccess<I>
 where
     I: Iterator,
@@ -416,41 +416,6 @@ where
             Some(value) => seed.deserialize(value.into_deserializer()).map(Some),
             None => Ok(None),
         }
-    }
-}
-
-struct Amf0MapAccess<I, K, V> {
-    iter: I,
-    value: Option<V>,
-    _phantom: PhantomData<K>,
-}
-
-impl<'de, I, K, V> serde::de::MapAccess<'de> for Amf0MapAccess<I, K, V>
-where
-    I: Iterator<Item = (K, V)>,
-    K: serde::de::IntoDeserializer<'de, Amf0Error>,
-    V: serde::de::IntoDeserializer<'de, Amf0Error>,
-{
-    type Error = Amf0Error;
-
-    fn next_key_seed<S>(&mut self, seed: S) -> Result<Option<S::Value>, Self::Error>
-    where
-        S: serde::de::DeserializeSeed<'de>,
-    {
-        match self.iter.next() {
-            Some((key, value)) => {
-                self.value = Some(value);
-                seed.deserialize(key.into_deserializer()).map(Some)
-            }
-            None => Ok(None),
-        }
-    }
-
-    fn next_value_seed<S>(&mut self, seed: S) -> Result<S::Value, Self::Error>
-    where
-        S: serde::de::DeserializeSeed<'de>,
-    {
-        seed.deserialize(self.value.take().unwrap().into_deserializer())
     }
 }
 
@@ -810,9 +775,7 @@ mod tests {
     #[cfg(feature = "serde")]
     #[test]
     fn deserialize_complex_structure() {
-        use std::collections::BTreeMap;
-
-        let value = Amf0Value::Object(BTreeMap::from([
+        let value = Amf0Value::Object(Amf0Object::from_iter([
             (
                 StringCow::from("numbers"),
                 Amf0Value::Array(vec![Amf0Value::Number(1.0), Amf0Value::Number(2.0)]),

@@ -16,6 +16,17 @@
 ---
 
 <!-- cargo-sync-rdme rustdoc [[ -->
+Implementation of the ISO Base Media File Format (ISOBMFF) defined by ISO/IEC 14496-12.
+
+### Example
+
+TODO
+
+### Notes
+
+This implementation does not preserve the order of boxes when remuxing files and individual boxes.
+Instead it uses the recommended box order as defined in ISO/IEC 14496-12 - 6.3.4.
+
 See the [changelog](./CHANGELOG.md) for a full release history.
 
 ### Feature flags

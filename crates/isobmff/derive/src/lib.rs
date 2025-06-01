@@ -232,7 +232,7 @@ fn into_fields_checked(data: darling::ast::Data<(), IsoBoxField>) -> syn::Result
         ));
     }
 
-    if let Some(field) = fields.iter().filter(|f| f.repeated).skip(1).next() {
+    if let Some(field) = fields.iter().filter(|f| f.repeated).nth(1) {
         return Err(syn::Error::new_spanned(
             field.ident.as_ref().expect("unreachable: only named fields supported"),
             "There can only be one repeated field in the struct",

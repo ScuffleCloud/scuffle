@@ -9,18 +9,6 @@ category = "feat"
 description = "add ability to limit number of zero copy bytes read"
 authors = ["@lennartkloock"]
 
-[[isobmff]]
-category = "feat"
-description = "add crate"
-breaking = true
-authors = ["@lennartkloock"]
-
-[[isobmff-derive]]
-category = "feat"
-description = "add crate"
-breaking = true
-authors = ["@lennartkloock"]
-
 [[scuffle-av1]]
 category = "chore"
 description = "update to use isobmff crate and new zero copy traits"
@@ -36,12 +24,6 @@ authors = ["@lennartkloock"]
 [[scuffle-h265]]
 category = "chore"
 description = "update to use isobmff crate and new zero copy traits"
-breaking = true
-authors = ["@lennartkloock"]
-
-[[scuffle-opus]]
-category = "feat"
-description = "add crate"
 breaking = true
 authors = ["@lennartkloock"]
 

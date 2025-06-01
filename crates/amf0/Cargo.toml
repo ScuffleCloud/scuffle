@@ -19,7 +19,7 @@ bytestring = "1.4.0"
 document-features = { optional = true, version = "0.2" }
 num-derive = "0.4"
 num-traits = "0.2"
-scuffle-bytes-util = { path = "../bytes-util", version = ">=0.1.3, <0.3" }
+scuffle-bytes-util = { path = "../bytes-util", version = "0.1.3" }
 scuffle-changelog = { optional = true, path = "../changelog", version = "0.1.0" }
 scuffle-workspace-hack.workspace = true
 serde = { optional = true, version = "1" }

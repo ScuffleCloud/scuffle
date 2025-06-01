@@ -1,6 +1,6 @@
 [package]
 name = "scuffle-h265"
-version = "0.3.0"
+version = "0.2.2"
 edition = "2024"
 license = "MIT OR Apache-2.0"
 repository = "https://github.com/scufflecloud/scuffle"
@@ -25,9 +25,9 @@ document-features = { optional = true, version = "0.2" }
 isobmff = { path = "../isobmff", version = "0.1.0" }
 isobmff-derive = { path = "../isobmff/derive", version = "0.1.0" }
 nutype-enum = { path = "../nutype_enum", version = "0.1.4" }
-scuffle-bytes-util = { path = "../bytes-util", version = "0.2.0" }
+scuffle-bytes-util = { path = "../bytes-util", version = "0.1.4" }
 scuffle-changelog = { optional = true, path = "../changelog", version = "0.1.0" }
-scuffle-expgolomb = { path = "../expgolomb", version = "0.1.5" }
+scuffle-expgolomb = { path = "../expgolomb", version = "0.1.4" }
 scuffle-workspace-hack.workspace = true
 
 [dev-dependencies]

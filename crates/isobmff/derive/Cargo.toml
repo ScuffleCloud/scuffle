@@ -25,7 +25,7 @@ syn = "2.0.100"
 
 [dev-dependencies]
 isobmff = { path = "..", version = "0.1.0" }
-scuffle-bytes-util = { path = "../../bytes-util", version = "0.2.0" }
+scuffle-bytes-util = { path = "../../bytes-util", version = "0.1.4" }
 
 [package.metadata.docs.rs]
 all-features = true

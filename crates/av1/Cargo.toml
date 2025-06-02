@@ -23,9 +23,9 @@ isobmff = ["dep:isobmff", "dep:isobmff-derive", "dep:scuffle-bytes-util"]
 byteorder = "1.5"
 bytes = "1.5"
 document-features = { optional = true, version = "0.2" }
-isobmff = { path = "../isobmff", version = "0.1.0", optional = true }
-isobmff-derive = { path = "../isobmff/derive", version = ">=0.1.0", optional = true }
-scuffle-bytes-util = { path = "../bytes-util", version = ">=0.1.4", optional = true }
+isobmff = { optional = true, path = "../isobmff", version = "0.1.0" }
+isobmff-derive = { optional = true, path = "../isobmff/derive", version = ">=0.1.0" }
+scuffle-bytes-util = { optional = true, path = "../bytes-util", version = ">=0.1.4" }
 scuffle-changelog = { optional = true, path = "../changelog", version = "0.1.0" }
 scuffle-workspace-hack.workspace = true
 

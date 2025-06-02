@@ -46,6 +46,9 @@
 #![deny(unsafe_code)]
 #![deny(unreachable_pub)]
 
+#[cfg(not(feature = "preserve_order"))]
+extern crate alloc;
+
 #[cfg(feature = "serde")]
 pub mod de;
 pub mod decoder;

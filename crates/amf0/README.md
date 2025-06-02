@@ -19,23 +19,29 @@
 A pure-rust implementation of AMF0 encoder and decoder.
 
 This crate provides serde support for serialization and deserialization of AMF0 data.
-## Specification
 
-| Name | Version | Link | Comments |
-| --- | --- | --- | --- |
-| Action Message Format -- AMF 0 | - | <https://rtmp.veriskope.com/pdf/amf0-file-format-specification.pdf> | Refered to as 'AMF0 spec' in this documentation |
+See the [changelog](./CHANGELOG.md) for a full release history.
 
-## Limitations
+### Feature flags
 
-- Does not support AMF0 references.
-- Does not support the AVM+ Type Marker. (see AMF 0 spec, 3.1)
+* **`serde`** —  Enables serde support
+* **`docs`** —  Enables changelog and documentation of feature flags
+* **`preserve_order`** —  Use an index map instead of a btree-map for Amf0Objects
 
-## Example
+### Specification
 
-```rust
-# fn test() -> Result<(), Box<dyn std::error::Error>> {
-# let bytes = &[0x02, 0, 1, b'a'];
-# let mut writer = Vec::new();
+|Name|Version|Link|Comments|
+|----|-------|----|--------|
+|Action Message Format – AMF 0|-|<https://rtmp.veriskope.com/pdf/amf0-file-format-specification.pdf>|Refered to as ‘AMF0 spec’ in this documentation|
+
+### Limitations
+
+* Does not support AMF0 references.
+* Does not support the AVM+ Type Marker. (see AMF 0 spec, 3.1)
+
+### Example
+
+````rust
 // Decode a string value from bytes
 let value: String = scuffle_amf0::from_slice(bytes)?;
 
@@ -43,13 +49,9 @@ let value: String = scuffle_amf0::from_slice(bytes)?;
 
 // Encode a value into a writer
 scuffle_amf0::to_writer(&mut writer, &value)?;
-# assert_eq!(writer, bytes);
-# Ok(())
-# }
-# test().expect("test failed");
-```
+````
 
-## License
+### License
 
 This project is licensed under the MIT or Apache-2.0 license.
 You can choose between one of them if you use this work.

@@ -8,7 +8,11 @@ use scuffle_h265::HEVCDecoderConfigurationRecord;
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum VideoCodec {
     /// <https://developer.mozilla.org/en-US/docs/Web/Media/Formats/codecs_parameter>
-    Avc { profile: u8, constraint_set: u8, level: u8 },
+    Avc {
+        profile: u8,
+        constraint_set: u8,
+        level: u8,
+    },
     /// There is barely any documentation on this.
     /// <https://hevcvideo.xp3.biz/html5_video.html>
     Hevc {
@@ -116,7 +120,9 @@ impl std::fmt::Display for VideoCodec {
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum AudioCodec {
-    Aac { object_type: AudioObjectType },
+    Aac {
+        object_type: AudioObjectType,
+    },
     Opus,
 }
 

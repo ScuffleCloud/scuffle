@@ -1,14 +1,14 @@
 [package]
 name = "scuffle-mp4"
 version = "0.1.4"
-edition = "2024"
-description = "A pure Rust implementation of MP4 file format ISOBMFF boxes"
-repository = "https://github.com/scufflecloud/scuffle"
 authors = ["Scuffle <opensource@scuffle.cloud>"]
 documentation = "https://docs.rs/scuffle-mp4"
-readme = "README.md"
-license = "MIT OR Apache-2.0"
+edition = "2024"
 keywords = ["mp4", "video", "codec", "isobmff"]
+license = "MIT OR Apache-2.0"
+readme = "README.md"
+repository = "https://github.com/scufflecloud/scuffle"
+description = "A pure Rust implementation of MP4 file format ISOBMFF boxes"
 
 [lints.rust]
 unexpected_cfgs = { level = "warn", check-cfg = ['cfg(coverage_nightly)'] }

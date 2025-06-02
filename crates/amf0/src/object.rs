@@ -1,9 +1,9 @@
-//! This code is taken from https://github.com/serde-rs/json/blob/v1.0.140/src/map.rs
+//! This code is modified from https://github.com/serde-rs/json/blob/v1.0.140/src/map.rs
 //!
-//! A map of String to serde_json::Value.
+//! A map of scuffle_bytes_util::StringCow to crate::Amf0Value.
 //!
 //! By default the map is backed by a [`BTreeMap`]. Enable the `preserve_order`
-//! feature of serde_json to use [`IndexMap`] instead.
+//! feature of scuffle_amf0 to use [`IndexMap`] instead.
 //!
 //! [`BTreeMap`]: std::collections::BTreeMap
 //! [`IndexMap`]: indexmap::IndexMap
@@ -150,7 +150,7 @@ impl<'a> Amf0Object<'a> {
     /// The key may be any borrowed form of the map's key type, but the ordering
     /// on the borrowed form *must* match the ordering on the key type.
     ///
-    /// If serde_json's "preserve_order" is enabled, `.remove(key)` is
+    /// If scuffle_amf0's "preserve_order" is enabled, `.remove(key)` is
     /// equivalent to [`.swap_remove(key)`][Self::swap_remove], replacing this
     /// entry's position with the last element. If you need to preserve the
     /// relative order of the keys in the map, use
@@ -173,7 +173,7 @@ impl<'a> Amf0Object<'a> {
     /// The key may be any borrowed form of the map's key type, but the ordering
     /// on the borrowed form *must* match the ordering on the key type.
     ///
-    /// If serde_json's "preserve_order" is enabled, `.remove_entry(key)` is
+    /// If scuffle_amf0's "preserve_order" is enabled, `.remove_entry(key)` is
     /// equivalent to [`.swap_remove_entry(key)`][Self::swap_remove_entry],
     /// replacing this entry's position with the last element. If you need to
     /// preserve the relative order of the keys in the map, use
@@ -354,10 +354,10 @@ impl<'a> Amf0Object<'a> {
 
     /// Sorts this map's entries in-place using `str`'s usual ordering.
     ///
-    /// If serde_json's "preserve_order" feature is not enabled, this method
+    /// If scuffle_amf0's "preserve_order" feature is not enabled, this method
     /// does no work because all JSON maps are always kept in a sorted state.
     ///
-    /// If serde_json's "preserve_order" feature is enabled, this method
+    /// If scuffle_amf0's "preserve_order" feature is enabled, this method
     /// destroys the original source order or insertion order of this map in
     /// favor of an alphanumerical order that matches how a BTreeMap with the
     /// same contents would be ordered. This takes **O(n log n + c)** time where
@@ -380,17 +380,15 @@ impl<'a> Amf0Object<'a> {
 /// map.
 ///
 /// ```
-/// # use serde_json::Value;
-/// #
-/// # let val = &Value::String("".to_owned());
-/// # let _ =
-/// match val {
-///     Value::String(s) => Some(s.as_str()),
-///     Value::Array(arr) => arr[0].as_str(),
-///     Value::Object(map) => map["type"].as_str(),
-///     _ => None,
-/// }
-/// # ;
+/// use scuffle_amf0::{Amf0Object, Amf0Value};
+/// use std::collections::BTreeMap;
+/// use scuffle_bytes_util::StringCow;
+///
+/// let mut map = scuffle_amf0::Amf0Object::new();
+/// map.insert(StringCow::from_ref("type"), Amf0Value::String("example".into()));
+/// let obj = Amf0Object::from(map);
+///
+/// assert_eq!(obj["type"], Amf0Value::String("example".into()));
 /// ```
 impl<'a, Q> ops::Index<&Q> for Amf0Object<'a>
 where
@@ -406,15 +404,6 @@ where
 
 /// Mutably access an element of this map. Panics if the given key is not
 /// present in the map.
-///
-/// ```
-/// # use serde_json::json;
-/// #
-/// # let mut map = serde_json::Map::new();
-/// # map.insert("key".to_owned(), serde_json::Value::Null);
-/// #
-/// map["key"] = json!("value");
-/// ```
 impl<'a, Q> ops::IndexMut<&Q> for Amf0Object<'a>
 where
     StringCow<'a>: Borrow<Q>,
@@ -687,7 +676,7 @@ impl<'a, 'b> Entry<'a, 'b> {
     /// # Examples
     ///
     /// ```
-    /// let mut map = serde_json::Map::new();
+    /// let mut map = scuffle_amf0::Amf0Object::new();
     /// assert_eq!(map.entry("serde").key(), &"serde");
     /// ```
     pub fn key(&self) -> &StringCow<'b> {
@@ -699,17 +688,6 @@ impl<'a, 'b> Entry<'a, 'b> {
 
     /// Ensures a value is in the entry by inserting the default if empty, and
     /// returns a mutable reference to the value in the entry.
-    ///
-    /// # Examples
-    ///
-    /// ```
-    /// # use serde_json::json;
-    /// #
-    /// let mut map = serde_json::Map::new();
-    /// map.entry("serde").or_insert(json!(12));
-    ///
-    /// assert_eq!(map["serde"], 12);
-    /// ```
     pub fn or_insert(self, default: Amf0Value<'b>) -> &'a mut Amf0Value<'b> {
         match self {
             Entry::Vacant(entry) => entry.insert(default),
@@ -720,17 +698,6 @@ impl<'a, 'b> Entry<'a, 'b> {
     /// Ensures a value is in the entry by inserting the result of the default
     /// function if empty, and returns a mutable reference to the value in the
     /// entry.
-    ///
-    /// # Examples
-    ///
-    /// ```
-    /// # use serde_json::json;
-    /// #
-    /// let mut map = serde_json::Map::new();
-    /// map.entry("serde").or_insert_with(|| json!("hoho"));
-    ///
-    /// assert_eq!(map["serde"], "hoho".to_owned());
-    /// ```
     pub fn or_insert_with<F>(self, default: F) -> &'a mut Amf0Value<'b>
     where
         F: FnOnce() -> Amf0Value<'b>,
@@ -743,25 +710,6 @@ impl<'a, 'b> Entry<'a, 'b> {
 
     /// Provides in-place mutable access to an occupied entry before any
     /// potential inserts into the map.
-    ///
-    /// # Examples
-    ///
-    /// ```
-    /// # use serde_json::json;
-    /// #
-    /// let mut map = serde_json::Map::new();
-    /// map.entry("serde")
-    ///     .and_modify(|e| *e = json!("rust"))
-    ///     .or_insert(json!("cpp"));
-    ///
-    /// assert_eq!(map["serde"], "cpp");
-    ///
-    /// map.entry("serde")
-    ///     .and_modify(|e| *e = json!("rust"))
-    ///     .or_insert(json!("cpp"));
-    ///
-    /// assert_eq!(map["serde"], "rust");
-    /// ```
     pub fn and_modify<F>(self, f: F) -> Self
     where
         F: FnOnce(&mut Amf0Value<'b>),
@@ -783,9 +731,9 @@ impl<'a, 'b> VacantEntry<'a, 'b> {
     /// # Examples
     ///
     /// ```
-    /// use serde_json::map::Entry;
+    /// use scuffle_amf0::object::Entry;
     ///
-    /// let mut map = serde_json::Map::new();
+    /// let mut map = scuffle_amf0::Amf0Object::new();
     ///
     /// match map.entry("serde") {
     ///     Entry::Vacant(vacant) => {
@@ -801,23 +749,6 @@ impl<'a, 'b> VacantEntry<'a, 'b> {
 
     /// Sets the value of the entry with the VacantEntry's key, and returns a
     /// mutable reference to it.
-    ///
-    /// # Examples
-    ///
-    /// ```
-    /// # use serde_json::json;
-    /// #
-    /// use serde_json::map::Entry;
-    ///
-    /// let mut map = serde_json::Map::new();
-    ///
-    /// match map.entry("serde") {
-    ///     Entry::Vacant(vacant) => {
-    ///         vacant.insert(json!("hoho"));
-    ///     }
-    ///     Entry::Occupied(_) => unimplemented!(),
-    /// }
-    /// ```
     #[inline]
     pub fn insert(self, value: Amf0Value<'b>) -> &'a mut Amf0Value<'b> {
         self.vacant.insert(value)
@@ -826,100 +757,24 @@ impl<'a, 'b> VacantEntry<'a, 'b> {
 
 impl<'a, 'b> OccupiedEntry<'a, 'b> {
     /// Gets a reference to the key in the entry.
-    ///
-    /// # Examples
-    ///
-    /// ```
-    /// # use serde_json::json;
-    /// #
-    /// use serde_json::map::Entry;
-    ///
-    /// let mut map = serde_json::Map::new();
-    /// map.insert("serde".to_owned(), json!(12));
-    ///
-    /// match map.entry("serde") {
-    ///     Entry::Occupied(occupied) => {
-    ///         assert_eq!(occupied.key(), &"serde");
-    ///     }
-    ///     Entry::Vacant(_) => unimplemented!(),
-    /// }
-    /// ```
     #[inline]
     pub fn key(&self) -> &StringCow<'b> {
         self.occupied.key()
     }
 
     /// Gets a reference to the value in the entry.
-    ///
-    /// # Examples
-    ///
-    /// ```
-    /// # use serde_json::json;
-    /// #
-    /// use serde_json::map::Entry;
-    ///
-    /// let mut map = serde_json::Map::new();
-    /// map.insert("serde".to_owned(), json!(12));
-    ///
-    /// match map.entry("serde") {
-    ///     Entry::Occupied(occupied) => {
-    ///         assert_eq!(occupied.get(), 12);
-    ///     }
-    ///     Entry::Vacant(_) => unimplemented!(),
-    /// }
-    /// ```
     #[inline]
     pub fn get(&self) -> &Amf0Value<'b> {
         self.occupied.get()
     }
 
     /// Gets a mutable reference to the value in the entry.
-    ///
-    /// # Examples
-    ///
-    /// ```
-    /// # use serde_json::json;
-    /// #
-    /// use serde_json::map::Entry;
-    ///
-    /// let mut map = serde_json::Map::new();
-    /// map.insert("serde".to_owned(), json!([1, 2, 3]));
-    ///
-    /// match map.entry("serde") {
-    ///     Entry::Occupied(mut occupied) => {
-    ///         occupied.get_mut().as_array_mut().unwrap().push(json!(4));
-    ///     }
-    ///     Entry::Vacant(_) => unimplemented!(),
-    /// }
-    ///
-    /// assert_eq!(map["serde"].as_array().unwrap().len(), 4);
-    /// ```
     #[inline]
     pub fn get_mut(&mut self) -> &mut Amf0Value<'b> {
         self.occupied.get_mut()
     }
 
     /// Converts the entry into a mutable reference to its value.
-    ///
-    /// # Examples
-    ///
-    /// ```
-    /// # use serde_json::json;
-    /// #
-    /// use serde_json::map::Entry;
-    ///
-    /// let mut map = serde_json::Map::new();
-    /// map.insert("serde".to_owned(), json!([1, 2, 3]));
-    ///
-    /// match map.entry("serde") {
-    ///     Entry::Occupied(mut occupied) => {
-    ///         occupied.into_mut().as_array_mut().unwrap().push(json!(4));
-    ///     }
-    ///     Entry::Vacant(_) => unimplemented!(),
-    /// }
-    ///
-    /// assert_eq!(map["serde"].as_array().unwrap().len(), 4);
-    /// ```
     #[inline]
     pub fn into_mut(self) -> &'a mut Amf0Value<'b> {
         self.occupied.into_mut()
@@ -927,25 +782,6 @@ impl<'a, 'b> OccupiedEntry<'a, 'b> {
 
     /// Sets the value of the entry with the `OccupiedEntry`'s key, and returns
     /// the entry's old value.
-    ///
-    /// # Examples
-    ///
-    /// ```
-    /// # use serde_json::json;
-    /// #
-    /// use serde_json::map::Entry;
-    ///
-    /// let mut map = serde_json::Map::new();
-    /// map.insert("serde".to_owned(), json!(12));
-    ///
-    /// match map.entry("serde") {
-    ///     Entry::Occupied(mut occupied) => {
-    ///         assert_eq!(occupied.insert(json!(13)), 12);
-    ///         assert_eq!(occupied.get(), 13);
-    ///     }
-    ///     Entry::Vacant(_) => unimplemented!(),
-    /// }
-    /// ```
     #[inline]
     pub fn insert(&mut self, value: Amf0Value<'b>) -> Amf0Value<'b> {
         self.occupied.insert(value)
@@ -953,29 +789,11 @@ impl<'a, 'b> OccupiedEntry<'a, 'b> {
 
     /// Takes the value of the entry out of the map, and returns it.
     ///
-    /// If serde_json's "preserve_order" is enabled, `.remove()` is
+    /// If scuffle_amf0's "preserve_order" is enabled, `.remove()` is
     /// equivalent to [`.swap_remove()`][Self::swap_remove], replacing this
     /// entry's position with the last element. If you need to preserve the
     /// relative order of the keys in the map, use
     /// [`.shift_remove()`][Self::shift_remove] instead.
-    ///
-    /// # Examples
-    ///
-    /// ```
-    /// # use serde_json::json;
-    /// #
-    /// use serde_json::map::Entry;
-    ///
-    /// let mut map = serde_json::Map::new();
-    /// map.insert("serde".to_owned(), json!(12));
-    ///
-    /// match map.entry("serde") {
-    ///     Entry::Occupied(occupied) => {
-    ///         assert_eq!(occupied.remove(), 12);
-    ///     }
-    ///     Entry::Vacant(_) => unimplemented!(),
-    /// }
-    /// ```
     #[inline]
     pub fn remove(self) -> Amf0Value<'b> {
         #[cfg(feature = "preserve_order")]
@@ -1014,31 +832,11 @@ impl<'a, 'b> OccupiedEntry<'a, 'b> {
 
     /// Removes the entry from the map, returning the stored key and value.
     ///
-    /// If serde_json's "preserve_order" is enabled, `.remove_entry()` is
+    /// If scuffle_amf0's "preserve_order" is enabled, `.remove_entry()` is
     /// equivalent to [`.swap_remove_entry()`][Self::swap_remove_entry],
     /// replacing this entry's position with the last element. If you need to
     /// preserve the relative order of the keys in the map, use
     /// [`.shift_remove_entry()`][Self::shift_remove_entry] instead.
-    ///
-    /// # Examples
-    ///
-    /// ```
-    /// # use serde_json::json;
-    /// #
-    /// use serde_json::map::Entry;
-    ///
-    /// let mut map = serde_json::Map::new();
-    /// map.insert("serde".to_owned(), json!(12));
-    ///
-    /// match map.entry("serde") {
-    ///     Entry::Occupied(occupied) => {
-    ///         let (key, value) = occupied.remove_entry();
-    ///         assert_eq!(key, "serde");
-    ///         assert_eq!(value, 12);
-    ///     }
-    ///     Entry::Vacant(_) => unimplemented!(),
-    /// }
-    /// ```
     #[inline]
     pub fn remove_entry(self) -> (StringCow<'b>, Amf0Value<'b>) {
         #[cfg(feature = "preserve_order")]
@@ -1088,7 +886,7 @@ impl<'a, 'b> IntoIterator for &'a Amf0Object<'b> {
     }
 }
 
-/// An iterator over a serde_json::Map's entries.
+/// An iterator over a scuffle_amf0::Amf0Object's entries.
 pub struct Iter<'a, 'b> {
     iter: IterImpl<'a, 'b>,
 }
@@ -1114,7 +912,7 @@ impl<'a, 'b> IntoIterator for &'a mut Amf0Object<'b> {
     }
 }
 
-/// A mutable iterator over a serde_json::Map's entries.
+/// A mutable iterator over a scuffle_amf0::Amf0Object's entries.
 pub struct IterMut<'a, 'b> {
     iter: IterMutImpl<'a, 'b>,
 }
@@ -1140,7 +938,7 @@ impl<'a> IntoIterator for Amf0Object<'a> {
     }
 }
 
-/// An owning iterator over a serde_json::Map's entries.
+/// An owning iterator over a scuffle_amf0::Amf0Object's entries.
 pub struct IntoIter<'a> {
     iter: IntoIterImpl<'a>,
 }
@@ -1154,7 +952,7 @@ delegate_iterator!((IntoIter<'a>) => (StringCow<'a>, Amf0Value<'a>));
 
 //////////////////////////////////////////////////////////////////////////////
 
-/// An iterator over a serde_json::Map's keys.
+/// An iterator over a scuffle_amf0::Amf0Object's keys.
 pub struct Keys<'a, 'b> {
     iter: KeysImpl<'a, 'b>,
 }
@@ -1168,7 +966,7 @@ delegate_iterator!((Keys<'a, 'b>) => &'a StringCow<'b>);
 
 //////////////////////////////////////////////////////////////////////////////
 
-/// An iterator over a serde_json::Map's values.
+/// An iterator over a scuffle_amf0::Amf0Object's values.
 pub struct Values<'a, 'b> {
     iter: ValuesImpl<'a, 'b>,
 }
@@ -1182,7 +980,7 @@ delegate_iterator!((Values<'a, 'b>) => &'a Amf0Value<'b>);
 
 //////////////////////////////////////////////////////////////////////////////
 
-/// A mutable iterator over a serde_json::Map's values.
+/// A mutable iterator over a scuffle_amf0::Amf0Object's values.
 pub struct ValuesMut<'a, 'b> {
     iter: ValuesMutImpl<'a, 'b>,
 }
@@ -1196,7 +994,7 @@ delegate_iterator!((ValuesMut<'a, 'b>) => &'a mut Amf0Value<'b>);
 
 //////////////////////////////////////////////////////////////////////////////
 
-/// An owning iterator over a serde_json::Map's values.
+/// An owning iterator over a scuffle_amf0::Amf0Object's values.
 pub struct IntoValues<'a> {
     iter: IntoValuesImpl<'a>,
 }

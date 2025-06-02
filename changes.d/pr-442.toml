@@ -1,7 +1,6 @@
 [[scuffle-bytes-util]]
 category = "feat"
 description = "implement the zero copy reader trait for mutable references of zero copy readers"
-breaking = true
 authors = ["@lennartkloock"]
 
 [[scuffle-bytes-util]]

@@ -56,11 +56,13 @@ impl DevTools {
         }
 
         // special case for cargo-sync-rdme
-        debug_command(std::process::Command::new("cargo")
-            .arg("binstall")
-            .arg("cargo-sync-rdme")
-            .arg("--git=https://github.com/TroyKomodo/cargo-sync-rdme.git")
-            .arg("--force=-y"));
+        debug_command(
+            std::process::Command::new("cargo")
+                .arg("binstall")
+                .arg("cargo-sync-rdme")
+                .arg("--git=https://github.com/TroyKomodo/cargo-sync-rdme.git")
+                .arg("--force=-y"),
+        );
 
         println!("Installation complete");
 

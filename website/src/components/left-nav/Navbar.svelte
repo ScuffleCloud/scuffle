@@ -1,6 +1,6 @@
 <script lang="ts">
     import ScuffleLogo from '$lib/images/ScuffleLogo.svelte';
-    import NavLinks from './NavLinks.svelte';
+    import NavLinks from './nav-links.svelte';
     import OrganizationInfo from './OrganizationToggle.svelte';
 </script>
 
@@ -23,12 +23,11 @@
         flex-direction: column;
         position: sticky;
         top: 0;
-
+        background-color: var(--color-teal30);
         .logo-container {
             display: flex;
             align-items: center;
             gap: 0.5rem;
-            color: var(--colors-brown800);
             font-size: 1.5rem;
             font-weight: 800;
             padding: 1rem;

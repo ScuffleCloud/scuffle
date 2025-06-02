@@ -155,8 +155,8 @@
     const option = $derived({
         grid: [
             {
-                left: '1%',
-                right: '1%',
+                left: '8%',
+                right: '8%',
                 top: '28%',
                 height: '25%',
                 show: true,
@@ -164,8 +164,8 @@
                 borderColor: theme.colors.teal30,
             },
             {
-                left: '1%',
-                right: '1%',
+                left: '8%',
+                right: '8%',
                 top: '55%',
                 height: '25%',
                 show: true,
@@ -290,14 +290,16 @@
 <style>
     .chart-container {
         position: relative;
-        width: 100%;
+        width: 120%;
         height: 100%;
+        margin-left: -10%;
+        overflow: visible;
     }
 
     .grid-overlay {
         position: absolute;
-        left: 1%;
-        right: 1%;
+        left: 8%;
+        right: 8%;
         height: 25%;
         border-radius: 0.25rem;
         pointer-events: none;

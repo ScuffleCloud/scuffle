@@ -1,7 +1,8 @@
 <script>
     import { NAV_ITEMS } from '$components/left-nav/consts.svelte';
     import { useUser } from '$lib/useUser';
-    import NavItemHeader from './NavItemHeader.svelte';
+    import NavItemDropdown from './nav-item-dropdown.svelte';
+    import NavItemBase from './nav-item-base.svelte';
 
     // Get the current organization and project
     const { currentOrganization, currentProject } = useUser();
@@ -20,9 +21,13 @@
 
 <ul class="nav-links">
     {#each navItemsWithPaths as item}
-        <a href={item.path}>
-            <NavItemHeader navItem={item} />
-        </a>
+        {#if item.children}
+            <NavItemDropdown navItem={item} />
+        {:else}
+            <a href={item.path}>
+                <NavItemBase navItem={item} />
+            </a>
+        {/if}
     {/each}
 </ul>
 

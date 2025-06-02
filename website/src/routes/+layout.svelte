@@ -1,7 +1,7 @@
 <script lang="ts">
     import { theme } from '$lib/theme';
     import '$styles/global.css';
-    import Navbar from '$components/left-nav/Navbar.svelte';
+    import Navbar from '$components/left-nav/navbar.svelte';
     import TopNav from '$components/top-nav/TopNav.svelte';
     import { QueryClient, QueryClientProvider } from '@tanstack/svelte-query';
     import '@fontsource-variable/archivo';

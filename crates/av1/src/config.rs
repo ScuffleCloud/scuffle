@@ -234,6 +234,7 @@ impl Serialize for AV1CodecConfigurationRecord<'_> {
     }
 }
 
+#[cfg(feature = "isobmff")]
 impl isobmff::IsoSized for AV1CodecConfigurationRecord<'_> {
     /// Returns the size of the AV1 Codec Configuration Record.
     fn size(&self) -> usize {

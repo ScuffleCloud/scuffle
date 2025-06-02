@@ -249,6 +249,7 @@ impl Serialize for HEVCDecoderConfigurationRecord<'_> {
     }
 }
 
+#[cfg(feature = "isobmff")]
 impl isobmff::IsoSized for HEVCDecoderConfigurationRecord<'_> {
     fn size(&self) -> usize {
         1 // configuration_version

@@ -7,9 +7,10 @@ export RUST_TOOLCHAIN := env_var_or_default('RUST_TOOLCHAIN', 'nightly')
 powerset *args:
     cargo +{{RUST_TOOLCHAIN}} xtask powerset {{args}}
 
-# An alias for cargo fmt --all
+# An alias for cargo fmt --all and taplo fmt for TOML files.
 fmt *args:
     cargo +{{RUST_TOOLCHAIN}} fmt --all {{args}}
+    taplo fmt
 
 lint *args:
     cargo +{{RUST_TOOLCHAIN}} clippy --fix --allow-dirty --allow-staged --all-features --all-targets {{args}} -- -Aclippy::collapsible_if

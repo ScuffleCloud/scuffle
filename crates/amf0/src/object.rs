@@ -1,4 +1,4 @@
-//! This code is modified from https://github.com/serde-rs/json/blob/v1.0.140/src/map.rs
+//! This code is modified from <https://github.com/serde-rs/json/blob/v1.0.140/src/map.rs>
 //!
 //! A map of scuffle_bytes_util::StringCow to crate::Amf0Value.
 //!
@@ -362,13 +362,6 @@ impl<'a> Amf0Object<'a> {
     /// favor of an alphanumerical order that matches how a BTreeMap with the
     /// same contents would be ordered. This takes **O(n log n + c)** time where
     /// _n_ is the length of the map and _c_ is the capacity.
-    ///
-    /// Other maps nested within the values of this map are not sorted. If you
-    /// need the entire data structure to be sorted at all levels, you must also
-    /// call
-    /// <code>map.[values_mut]\().for_each([Value::sort_all_objects])</code>.
-    ///
-    /// [values_mut]: Map::values_mut
     #[inline]
     pub fn sort_keys(&mut self) {
         #[cfg(feature = "preserve_order")]
@@ -640,9 +633,9 @@ where
 //////////////////////////////////////////////////////////////////////////////
 
 /// A view into a single entry in a map, which may either be vacant or occupied.
-/// This enum is constructed from the [`entry`] method on [`Map`].
+/// This enum is constructed from the [`entry`] method on [`Amf0Object`].
 ///
-/// [`entry`]: Map::entry
+/// [`entry`]: Amf0Object::entry
 pub enum Entry<'a, 'b> {
     /// A vacant Entry.
     Vacant(VacantEntry<'a, 'b>),

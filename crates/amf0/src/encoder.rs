@@ -83,7 +83,7 @@ where
         Ok(())
     }
 
-    /// Encode an [`Amf0Array`] as an AMF0 StrictArray value.
+    /// Encode an Amf0Array as an AMF0 StrictArray value.
     pub fn encode_array<'a, I, B>(&mut self, values: I) -> Result<(), Amf0Error>
     where
         B: Borrow<Amf0Value<'a>>,

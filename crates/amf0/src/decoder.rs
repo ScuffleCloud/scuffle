@@ -379,7 +379,10 @@ mod tests {
             *object.get(&StringCow::from_static("abc")).unwrap(),
             Amf0Value::String("val".into())
         );
-        assert_eq!(*object.get("defg").unwrap(), Amf0Value::Boolean(true));
+        assert_eq!(
+            *object.get(&StringCow::from_static("defg")).unwrap(),
+            Amf0Value::Boolean(true)
+        );
     }
 
     #[test]

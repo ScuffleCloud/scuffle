@@ -43,7 +43,7 @@ cargo install cargo-binstall
 then all of the other crates can be installed with `cargo binstall`.
 
 ```bash
-cargo binstall just cargo-llvm-cov cargo-nextest cargo-insta cargo-hakari miniserve
+cargo binstall just cargo-llvm-cov cargo-nextest cargo-insta cargo-hakari miniserve taplo
 ```
 
 </details>

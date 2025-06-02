@@ -1,4 +1,4 @@
-use std::collections::BTreeMap;
+use std::collections::{BTreeMap, BTreeSet, HashSet};
 use std::path::{Path, PathBuf};
 use std::process::Stdio;
 use std::sync::{Arc, Mutex};
@@ -51,6 +51,7 @@ struct XTaskPackageMetadata {
     git_release: GitReleaseMeta,
     semver_checks: Option<bool>,
     min_versions_checks: Option<bool>,
+    private_dependencies: HashSet<String>,
 }
 
 impl XTaskPackageMetadata {
@@ -591,6 +592,10 @@ impl Package {
 
     pub fn group(&self) -> &str {
         self.metadata.group.as_deref().unwrap_or(&self.pkg.name)
+    }
+
+    pub fn is_dep_public(&self, name: &str) -> bool {
+        !self.metadata.private_dependencies.contains(name)
     }
 
     pub fn unreleased_req(&self) -> semver::VersionReq {

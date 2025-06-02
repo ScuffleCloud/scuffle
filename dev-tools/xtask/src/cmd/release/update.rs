@@ -64,30 +64,65 @@ impl Update {
                 anyhow::Ok(fragments)
             })?;
 
+        let dep_graph = check_run
+            .all_packages()
+            .map(|package| {
+                (
+                    package.name.as_str(),
+                    package
+                        .dependencies
+                        .iter()
+                        .filter(|dep| {
+                            dep.path.is_some() && matches!(dep.kind, DependencyKind::Build | DependencyKind::Normal)
+                        })
+                        .map(|dep| (dep.name.as_str(), dep))
+                        .collect::<BTreeMap<_, _>>(),
+                )
+            })
+            .collect::<HashMap<_, _>>();
+
+        let inverted_dep_graph = dep_graph
+            .iter()
+            .fold(HashMap::<_, Vec<_>>::new(), |mut inverted, (package, deps)| {
+                deps.iter().for_each(|(name, dep)| {
+                    inverted.entry(*name).or_default().push((*package, *dep));
+                });
+                inverted
+            });
+
+        let flattened_dep_public_graph = dep_graph
+            .iter()
+            .map(|(package, deps)| {
+                let mut seen = HashSet::new();
+                let pkg = check_run.get_package(package).unwrap();
+                (
+                    *package,
+                    deps.iter().fold(HashMap::<_, Vec<_>>::new(), |mut deps, (name, dep)| {
+                        let mut stack = vec![(pkg, check_run.get_package(name).unwrap(), *dep)];
+
+                        while let Some((pkg, dep_pkg, dep)) = stack.pop() {
+                            if pkg.is_dep_public(&dep.name) {
+                                deps.entry(dep_pkg.name.as_str()).or_default().push(dep);
+                                if seen.insert(&dep_pkg.name) {
+                                    stack.extend(
+                                        dep_graph
+                                            .get(dep_pkg.name.as_str())
+                                            .into_iter()
+                                            .flatten()
+                                            .map(|(name, dep)| (pkg, check_run.get_package(name).unwrap(), *dep)),
+                                    );
+                                }
+                            }
+                        }
+
+                        deps
+                    }),
+                )
+            })
+            .collect::<HashMap<_, _>>();
+
         if !self.changelogs_only {
             check_run.process(self.concurrency, &metadata.workspace_root, None)?;
-
-            for package in check_run.groups().flatten() {
-                for dep in &package.dependencies {
-                    if dep.path.is_none() || !matches!(dep.kind, DependencyKind::Build | DependencyKind::Normal) {
-                        continue;
-                    }
-
-                    let Some(pkg) = check_run.get_package(&dep.name) else {
-                        continue;
-                    };
-
-                    let depends_on = dep.req == pkg.unreleased_req()
-                        || pkg.last_published_version().is_none_or(|v| !dep.req.matches(&v.vers));
-                    if depends_on && !check_run.is_accepted_group(pkg.group()) {
-                        anyhow::bail!(
-                            "could not update: `{}` because it depends on `{}` which is not part of the packages to be updated.",
-                            package.name,
-                            pkg.name
-                        );
-                    }
-                }
-            }
 
             for fragment in change_fragments.values() {
                 for (package, logs) in fragment.items().context("fragment items")? {
@@ -102,21 +137,6 @@ impl Update {
                     }
                 }
             }
-
-            let dependants = check_run
-                .all_packages()
-                .fold(HashMap::<_, Vec<_>>::new(), |mut deps, package| {
-                    package.dependencies.iter().for_each(|dep| {
-                        if dep.path.is_some()
-                            && check_run
-                                .get_package(&dep.name)
-                                .is_some_and(|p| check_run.is_accepted_group(p.group()))
-                        {
-                            deps.entry(dep.name.as_str()).or_default().push((package, dep));
-                        }
-                    });
-                    deps
-                });
 
             let mut found = false;
             for iter in 0..10 {
@@ -153,13 +173,18 @@ impl Update {
                         .iter()
                         .filter(|package| package.version != max_bump_version)
                         .for_each(|package| {
-                            dependants
+                            inverted_dep_graph
                                 .get(package.name.as_ref())
                                 .into_iter()
                                 .flatten()
                                 .for_each(|(pkg, dep)| {
                                     if !dep.req.matches(&max_bump_version) || dep.req == package.unreleased_req() {
-                                        pkg.report_change();
+                                        let pkg = check_run.get_package(pkg).unwrap();
+                                        if pkg.is_dep_public(&dep.name) {
+                                            pkg.report_breaking_change();
+                                        } else {
+                                            pkg.report_change();
+                                        }
                                     }
                                 });
                         });
@@ -182,6 +207,33 @@ impl Update {
 
             if !found {
                 anyhow::bail!("could not satisfy version constraints after 10 attempts");
+            }
+
+            for package in check_run.groups().flatten() {
+                let deps = dep_graph.get(package.name.as_str()).unwrap();
+                for dep in deps.values() {
+                    let dep_pkg = check_run.get_package(&dep.name).unwrap();
+
+                    let depends_on = dep.req == dep_pkg.unreleased_req()
+                        || dep_pkg.last_published_version().is_none_or(|v| !dep.req.matches(&v.vers))
+                        // we want to find out if any deps have a major semver change
+                        // and a peer dependency is dependent on an older version as a public dep.
+                        || flattened_dep_public_graph.get(dep.name.as_str()).unwrap().iter().any(|(inner_dep_name, reqs)| {
+                            let inner_dep_pkg = check_run.get_package(inner_dep_name).unwrap();
+                            deps.contains_key(inner_dep_name) // if we are also dependant
+                                && package.is_dep_public(inner_dep_name) // its also a public dep
+                                && check_run.is_accepted_group(inner_dep_pkg.group()) // if the dep is part of the release group
+                                && inner_dep_pkg.next_version().is_some_and(|vers| reqs.iter().any(|dep_req| !dep_req.req.matches(&vers)))
+                        });
+
+                    if depends_on && !check_run.is_accepted_group(dep_pkg.group()) {
+                        anyhow::bail!(
+                            "could not update: `{}` because it depends on `{}` which is not part of the packages to be updated.",
+                            package.name,
+                            dep_pkg.name
+                        );
+                    }
+                }
             }
         }
 
@@ -336,42 +388,17 @@ impl Update {
                             }],
                         }
                         .to_string()
-                    } else if depends_on {
-                        pkg_version.to_string()
                     } else {
-                        let dep_versions = pkg.published_versions();
-                        let min_version = dep_versions
-                            .iter()
-                            .find(|v| dep.req.matches(&v.vers))
-                            .map(|v| &v.vers)
-                            .unwrap();
-
-                        let next_major = VersionBump::Major.next_semver(pkg_version);
-
-                        let version = semver::VersionReq {
-                            comparators: vec![
-                                semver::Comparator {
-                                    op: semver::Op::GreaterEq,
-                                    major: min_version.major,
-                                    minor: Some(min_version.minor),
-                                    patch: Some(min_version.patch),
-                                    pre: min_version.pre.clone(),
-                                },
-                                semver::Comparator {
-                                    op: semver::Op::Less,
-                                    major: next_major.major,
-                                    minor: Some(next_major.minor),
-                                    patch: Some(next_major.patch),
-                                    pre: next_major.pre,
-                                },
-                            ],
-                        };
-
-                        if let Some((_, changelogs)) = changelogs.as_mut() {
-                            changelogs.push(PackageChangeLog::new("chore", format!("bump {} to `{version}`", dep.name)))
+                        if !depends_on {
+                            if let Some((_, changelogs)) = changelogs.as_mut() {
+                                let mut log =
+                                    PackageChangeLog::new("chore", format!("bump {} to `{pkg_version}`", dep.name));
+                                log.breaking = package.is_dep_public(&dep.name);
+                                changelogs.push(log)
+                            }
                         }
 
-                        version.to_string()
+                        pkg_version.to_string()
                     };
 
                     item.insert("version", version.into());

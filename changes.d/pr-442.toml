@@ -9,6 +9,30 @@ category = "feat"
 description = "add ability to limit number of zero copy bytes read"
 authors = ["@lennartkloock"]
 
+[[scuffle-ffmpeg]]
+category = "chore"
+description = "update to use isobmff crate and new zero copy traits"
+breaking = true
+authors = ["@lennartkloock"]
+
+[[scuffle-flv]]
+category = "chore"
+description = "update to use isobmff crate and new zero copy traits"
+breaking = true
+authors = ["@lennartkloock"]
+
+[[scuffle-rtmp]]
+category = "chore"
+description = "update to use new version of scuffle-bytes-util"
+breaking = true
+authors = ["@lennartkloock"]
+
+[[scuffle-mp4]]
+category = "refactor"
+description = "split into crates isobmff, scuffle-h264, scuffle-h265, scuffle-av1 and scuffle-opus"
+breaking = true
+authors = ["@lennartkloock"]
+
 [[scuffle-av1]]
 category = "chore"
 description = "update to use isobmff crate and new zero copy traits"

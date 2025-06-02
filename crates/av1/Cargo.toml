@@ -16,14 +16,16 @@ unexpected_cfgs = { level = "warn", check-cfg = ['cfg(coverage_nightly)'] }
 [features]
 ## Enables changelog and documentation of feature flags
 docs = ["dep:scuffle-changelog", "dep:document-features"]
+## Enables isobmff boxes
+isobmff = ["dep:isobmff", "dep:isobmff-derive", "dep:scuffle-bytes-util"]
 
 [dependencies]
 byteorder = "1.5"
 bytes = "1.5"
 document-features = { optional = true, version = "0.2" }
-isobmff = { path = "../isobmff", version = "0.1.0" }
-isobmff-derive = { path = "../isobmff/derive", version = ">=0.1.0" }
-scuffle-bytes-util = { path = "../bytes-util", version = ">=0.1.4" }
+isobmff = { path = "../isobmff", version = "0.1.0", optional = true }
+isobmff-derive = { path = "../isobmff/derive", version = ">=0.1.0", optional = true }
+scuffle-bytes-util = { path = "../bytes-util", version = ">=0.1.4", optional = true }
 scuffle-changelog = { optional = true, path = "../changelog", version = "0.1.0" }
 scuffle-workspace-hack.workspace = true
 

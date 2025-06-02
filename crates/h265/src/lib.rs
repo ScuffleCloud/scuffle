@@ -30,6 +30,7 @@
 #![deny(unsafe_code)]
 #![deny(unreachable_pub)]
 
+#[cfg(feature = "isobmff")]
 pub mod boxes;
 mod config;
 mod enums;

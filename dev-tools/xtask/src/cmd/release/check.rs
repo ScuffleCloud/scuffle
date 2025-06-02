@@ -235,7 +235,7 @@ impl Check {
                         f.write_str("\n## ⭐ Package Changes\n\n")?;
                         for line in &package_changes_markdown {
                             f.write_str(line.trim())?;
-                            f.write_char('\n')?;
+                            f.write_str("\n\n")?;
                         }
                     }
 
@@ -243,11 +243,9 @@ impl Check {
                         f.write_str("\n## 💥 Errors \n\n")?;
                         for line in &errors_markdown {
                             f.write_str(line.trim())?;
-                            f.write_char('\n')?;
+                            f.write_str("\n\n")?;
                         }
                     }
-
-                    f.write_char('\n')?;
 
                     Ok(())
                 })

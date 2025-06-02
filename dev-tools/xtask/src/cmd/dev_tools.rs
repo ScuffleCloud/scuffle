@@ -48,11 +48,19 @@ impl DevTools {
             "cargo-insta",
             "cargo-hakari",
             "miniserve",
+            "taplo",
         ];
 
         for package in BINSTALL_PACKAGES {
             debug_command(std::process::Command::new("cargo").arg("binstall").arg(package));
         }
+
+        // special case for cargo-sync-rdme
+        debug_command(std::process::Command::new("cargo")
+            .arg("binstall")
+            .arg("cargo-sync-rdme")
+            .arg("--git=https://github.com/TroyKomodo/cargo-sync-rdme.git")
+            .arg("--force=-y"));
 
         println!("Installation complete");
 

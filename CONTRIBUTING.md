@@ -46,6 +46,12 @@ then all of the other crates can be installed with `cargo binstall`.
 cargo binstall just cargo-llvm-cov cargo-nextest cargo-insta cargo-hakari miniserve taplo
 ```
 
+Note that for `cargo-sync-rdme` we use Troy's custom fork:
+
+```bash
+cargo binstall cargo-sync-rdme --git https://github.com/TroyKomodo/cargo-sync-rdme.git --force -y
+```
+
 </details>
 
 ### FFmpeg

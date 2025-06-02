@@ -2,7 +2,7 @@ use std::io::{
     Write, {self},
 };
 
-use byteorder::{BigEndian, ReadBytesExt, WriteBytesExt};
+use byteorder::{BigEndian, WriteBytesExt};
 use scuffle_bytes_util::zero_copy::{Deserialize, Serialize};
 use scuffle_bytes_util::{BitReader, BitWriter, BytesCow, IoResultExt};
 
@@ -96,24 +96,24 @@ impl<'a> Deserialize<'a> for AVCDecoderConfigurationRecord<'a> {
     where
         R: scuffle_bytes_util::zero_copy::ZeroCopyReader<'a>,
     {
-        let configuration_version = reader.as_std().read_u8()?;
-        let profile_indication = reader.as_std().read_u8()?;
-        let profile_compatibility = reader.as_std().read_u8()?;
-        let level_indication = reader.as_std().read_u8()?;
-        let length_size_minus_one = reader.as_std().read_u8()? & 0b00000011;
-        let num_of_sequence_parameter_sets = reader.as_std().read_u8()? & 0b00011111;
+        let configuration_version = u8::deserialize(&mut reader)?;
+        let profile_indication = u8::deserialize(&mut reader)?;
+        let profile_compatibility = u8::deserialize(&mut reader)?;
+        let level_indication = u8::deserialize(&mut reader)?;
+        let length_size_minus_one = u8::deserialize(&mut reader)? & 0b00000011;
+        let num_of_sequence_parameter_sets = u8::deserialize(&mut reader)? & 0b00011111;
 
         let mut sps = Vec::with_capacity(num_of_sequence_parameter_sets as usize);
         for _ in 0..num_of_sequence_parameter_sets {
-            let sps_length = reader.as_std().read_u16::<BigEndian>()?;
+            let sps_length = u16::deserialize(&mut reader)?;
             let sps_data = reader.try_read(sps_length as usize)?;
             sps.push(sps_data);
         }
 
-        let num_of_picture_parameter_sets = reader.as_std().read_u8()?;
+        let num_of_picture_parameter_sets = u8::deserialize(&mut reader)?;
         let mut pps = Vec::with_capacity(num_of_picture_parameter_sets as usize);
         for _ in 0..num_of_picture_parameter_sets {
-            let pps_length = reader.as_std().read_u16::<BigEndian>()?;
+            let pps_length = u16::deserialize(&mut reader)?;
             let pps_data = reader.try_read(pps_length as usize)?;
             pps.push(pps_data);
         }
@@ -124,16 +124,16 @@ impl<'a> Deserialize<'a> for AVCDecoderConfigurationRecord<'a> {
         let extended_config = match profile_indication {
             66 | 77 | 88 => None,
             _ => {
-                let chroma_format_idc = reader.as_std().read_u8().eof_to_none()?;
+                let chroma_format_idc = u8::deserialize(&mut reader).eof_to_none()?;
                 if let Some(chroma_format_idc) = chroma_format_idc {
                     let chroma_format_idc = chroma_format_idc & 0b00000011; // 2 bits (6 bits reserved)
-                    let bit_depth_luma_minus8 = reader.as_std().read_u8()? & 0b00000111; // 3 bits (5 bits reserved)
-                    let bit_depth_chroma_minus8 = reader.as_std().read_u8()? & 0b00000111; // 3 bits (5 bits reserved)
-                    let number_of_sequence_parameter_set_ext = reader.as_std().read_u8()?; // 8 bits
+                    let bit_depth_luma_minus8 = u8::deserialize(&mut reader)? & 0b00000111; // 3 bits (5 bits reserved)
+                    let bit_depth_chroma_minus8 = u8::deserialize(&mut reader)? & 0b00000111; // 3 bits (5 bits reserved)
+                    let number_of_sequence_parameter_set_ext = u8::deserialize(&mut reader)?; // 8 bits
 
                     let mut sequence_parameter_set_ext = Vec::with_capacity(number_of_sequence_parameter_set_ext as usize);
                     for _ in 0..number_of_sequence_parameter_set_ext {
-                        let sps_ext_length = reader.as_std().read_u16::<BigEndian>()?;
+                        let sps_ext_length = u16::deserialize(&mut reader)?;
                         let sps_ext_data = reader.try_read(sps_ext_length as usize)?;
 
                         let mut bit_reader = BitReader::new_from_slice(sps_ext_data);

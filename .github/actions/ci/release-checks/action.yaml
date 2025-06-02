@@ -18,7 +18,7 @@ runs:
       env:
         RUSTFLAGS: "--cfg reqwest_unstable"
       run: |
-        CMD="cargo xtask release check --exit-status --stdout-markdown"
+        CMD="cargo xtask release check --exit-status"
 
         if [ "${{ inputs.pr_number }}" != "" ]; then
           CMD="$CMD --pr-number ${{ inputs.pr_number }}"

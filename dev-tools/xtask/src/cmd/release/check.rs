@@ -10,7 +10,8 @@ use cargo_metadata::{DependencyKind, semver};
 use super::utils::Package;
 use crate::cmd::release::update::{Fragment, PackageChangeLog};
 use crate::cmd::release::utils::{
-    GitReleaseArtifact, LicenseKind, PackageError, PackageErrorMissing, PackageFile, VersionBump, dep_kind_to_name,
+    GitReleaseArtifact, LicenseKind, PackageError, PackageErrorMissing, PackageFile, VersionBump, WorkspaceReleaseMetadata,
+    dep_kind_to_name,
 };
 use crate::utils::{self, Command, DropRunner, cargo_cmd, concurrently, git_workdir_clean, relative_to};
 
@@ -34,9 +35,6 @@ pub struct Check {
     /// Allow the command to execute even if there are uncomitted changes in the workspace
     #[arg(long)]
     allow_dirty: bool,
-    /// Output markdown to stdout (used for CI to generate PR comments / Summaries)
-    #[arg(long, conflicts_with = "fix")]
-    stdout_markdown: bool,
     /// Report version changes as an error.
     #[arg(long)]
     version_change_error: bool,
@@ -199,9 +197,16 @@ impl Check {
                     )
                     .with_context(|| format!("report {}", package.name.clone()))?;
             } else {
-                package
-                    .fix(&check_run, &metadata.workspace_root, fragment.as_mut().unwrap())
+                let logs = package
+                    .fix(&check_run, &metadata.workspace_root)
                     .with_context(|| format!("fix {}", package.name.clone()))?;
+
+                if let Some(fragment) = fragment.as_mut() {
+                    for mut log in logs {
+                        log.authors = self.authors.clone();
+                        fragment.add_log(&package.name, &log);
+                    }
+                }
             }
         }
 
@@ -216,33 +221,33 @@ impl Check {
             }
         }
 
-        if self.stdout_markdown {
+        if !self.fix {
             print!(
                 "{}",
                 fmtools::fmt(|f| {
                     if errors_markdown.is_empty() {
-                        f.write_str("# ✅ Release Checks Passed\n\n")?;
+                        f.write_str("# ✅ Release Checks Passed\n")?;
                     } else {
-                        f.write_str("# ❌ Release Checks Failed\n\n")?;
+                        f.write_str("# ❌ Release Checks Failed\n")?;
                     }
 
                     if !package_changes_markdown.is_empty() {
-                        f.write_str("## ⭐ Package Changes\n\n")?;
+                        f.write_str("\n## ⭐ Package Changes\n\n")?;
                         for line in &package_changes_markdown {
-                            f.write_str(line)?;
+                            f.write_str(line.trim())?;
                             f.write_char('\n')?;
                         }
-                        f.write_char('\n')?;
                     }
 
                     if !errors_markdown.is_empty() {
-                        f.write_str("## 💥 Errors \n\n")?;
+                        f.write_str("\n## 💥 Errors \n\n")?;
                         for line in &errors_markdown {
-                            f.write_str(line)?;
+                            f.write_str(line.trim())?;
                             f.write_char('\n')?;
                         }
-                        f.write_char('\n')?;
                     }
+
+                    f.write_char('\n')?;
 
                     Ok(())
                 })
@@ -380,8 +385,8 @@ impl Package {
             }
         }
 
-        if let Some(commit) = self.last_git_commit().context("lookup commit")? {
-            tracing::debug!("found git changes at {commit}");
+        if self.has_changed_since_publish().context("lookup commit")? {
+            tracing::debug!("found git diff since last publish");
             self.report_change();
         }
 
@@ -450,28 +455,13 @@ impl Package {
                 }
             }
 
-            let mut dep_packages = Vec::new();
-            for dep in &self.dependencies {
-                let Some(pkg) = packages.get(&dep.name) else {
-                    continue;
-                };
+            let mut dep_packages_stack = Vec::new();
+            let slated_for_release = self.slated_for_release();
 
+            for dep in &self.dependencies {
                 if dep.path.is_none() {
                     continue;
                 }
-
-                let is_version_bump =
-                    self.should_publish() && self.last_published_version().is_some_and(|v| v.vers != self.version);
-                if dep.req == pkg.unreleased_req() && !is_version_bump {
-                    dep_packages.push(&dep.name);
-                    continue;
-                }
-
-                let root = if let Some(target) = &dep.target {
-                    &mut cargo_toml_edit["target"][&target.to_string()]
-                } else {
-                    cargo_toml_edit.as_item_mut()
-                };
 
                 let kind = match dep.kind {
                     DependencyKind::Build => "build-dependencies",
@@ -479,31 +469,74 @@ impl Package {
                     _ => continue,
                 };
 
-                let item = root[kind][&dep.name].as_table_like_mut().unwrap();
-                let versions = pkg.published_versions();
+                let Some(pkg) = packages.get(&dep.name) else {
+                    continue;
+                };
 
-                tracing::debug!(
-                    "min-version-check: finding best version for {} = '{}' outof [{}]",
-                    dep.name,
-                    dep.req,
-                    versions.iter().map(|v| v.vers.to_string()).collect::<Vec<_>>().join(", ")
-                );
+                if let Some(Some(version)) = (dep.req != pkg.unreleased_req()).then(|| {
+                    pkg.published_versions()
+                        .into_iter()
+                        .find(|v| dep.req.matches(&v.vers))
+                        .map(|v| v.vers)
+                }) {
+                    let root = if let Some(target) = &dep.target {
+                        &mut cargo_toml_edit["target"][&target.to_string()]
+                    } else {
+                        cargo_toml_edit.as_item_mut()
+                    };
 
-                if let Some(version) = versions.iter().find(|v| dep.req.matches(&v.vers)).map(|v| &v.vers) {
+                    let item = root[kind][&dep.name].as_table_like_mut().unwrap();
+
                     let pinned = semver::VersionReq {
                         comparators: vec![semver::Comparator {
                             op: semver::Op::Exact,
                             major: version.major,
                             minor: Some(version.minor),
                             patch: Some(version.patch),
-                            pre: version.pre.clone(),
+                            pre: version.pre,
                         }],
                     };
 
                     item.remove("path");
                     item.insert("version", pinned.to_string().into());
                 } else {
-                    dep_packages.push(&dep.name);
+                    dep_packages_stack.push(pkg);
+                }
+            }
+
+            let mut dep_packages = BTreeSet::new();
+            while let Some(dep_pkg) = dep_packages_stack.pop() {
+                if slated_for_release && !dep_pkg.slated_for_release() {
+                    tracing::warn!("depends on {} however that package isnt slated for release", dep_pkg.name);
+                    continue;
+                }
+
+                if dep_packages.insert(&dep_pkg.name) {
+                    for dep in &dep_pkg.dependencies {
+                        if dep.path.is_none() {
+                            continue;
+                        }
+
+                        match dep.kind {
+                            DependencyKind::Build | DependencyKind::Normal => {}
+                            _ => continue,
+                        };
+
+                        let Some(pkg) = packages.get(&dep.name) else {
+                            continue;
+                        };
+
+                        if dep.req == pkg.unreleased_req()
+                            || pkg
+                                .published_versions()
+                                .into_iter()
+                                .find(|v| dep.req.matches(&v.vers))
+                                .map(|v| v.vers)
+                                .is_none()
+                        {
+                            dep_packages_stack.push(pkg);
+                        }
+                    }
                 }
             }
 
@@ -544,7 +577,7 @@ impl Package {
                 .arg(self.name.as_ref());
 
             for package in &dep_packages {
-                cmd.arg("-p").arg(package);
+                cmd.arg("-p").arg(package.as_str());
             }
 
             let mut child = cmd.spawn().context("spawn")?;
@@ -565,7 +598,7 @@ impl Package {
         Ok(())
     }
 
-    fn fix(&self, check_run: &CheckRun, workspace_root: &Utf8Path, fragment: &mut Fragment) -> anyhow::Result<()> {
+    fn fix(&self, check_run: &CheckRun, workspace_root: &Utf8Path) -> anyhow::Result<Vec<PackageChangeLog>> {
         let cargo_toml_raw = std::fs::read_to_string(&self.manifest_path).context("read cargo toml")?;
         let mut cargo_toml = cargo_toml_raw.parse::<toml_edit::DocumentMut>().context("parse toml")?;
         if let Some(min_versions_output) = self.min_versions_output() {
@@ -729,19 +762,6 @@ impl Package {
             table[&dep.name]["version"] = req.to_string().into();
         }
 
-        if self.changelog_path().is_some() {
-            for changelog in changelogs {
-                fragment.add_log(
-                    &self.name,
-                    &match changelog {
-                        ChangelogEntryType::CargoToml => PackageChangeLog::new("docs", "cleaned up documentation"),
-                        ChangelogEntryType::Deps => PackageChangeLog::new("chore", "cleaned up grouped dependencies"),
-                        ChangelogEntryType::DevDeps => PackageChangeLog::new("chore", "cleaned up dev-dependencies"),
-                    },
-                );
-            }
-        }
-
         let cargo_toml_updated = cargo_toml.to_string();
         if cargo_toml_updated != cargo_toml_raw {
             tracing::info!(
@@ -755,7 +775,18 @@ impl Package {
             std::fs::write(&self.manifest_path, cargo_toml.to_string()).context("manifest write")?;
         }
 
-        Ok(())
+        Ok(if self.changelog_path().is_some() {
+            changelogs
+                .into_iter()
+                .map(|log| match log {
+                    ChangelogEntryType::CargoToml => PackageChangeLog::new("docs", "cleaned up documentation"),
+                    ChangelogEntryType::Deps => PackageChangeLog::new("chore", "cleaned up grouped dependencies"),
+                    ChangelogEntryType::DevDeps => PackageChangeLog::new("chore", "cleaned up dev-dependencies"),
+                })
+                .collect()
+        } else {
+            Vec::new()
+        })
     }
 
     fn report(
@@ -767,35 +798,54 @@ impl Package {
     ) -> anyhow::Result<()> {
         let semver_output = self.semver_output();
 
-        let version_text = match base_package_version {
-            Some(v) if v != &self.version => Some(format!("**version change** `{v}` -> `{}`", self.version)),
-            Some(_) => None,
-            None => Some("**new crate**".to_string()),
-        };
-        let changes_text = self.version_bump().map(|bump| match bump {
-            VersionBump::Major => "has breaking changes",
-            VersionBump::Minor => "has changes",
-        });
+        let version_bump = self.version_bump();
+        let slated_for_release = self.slated_for_release();
 
-        let log = match (changes_text, version_text) {
-            (Some(c), Some(v)) => Some(format!("{c} ({v})")),
-            (Some(c), None) => Some(c.to_string()),
-            (None, Some(v)) => Some(v),
-            (None, None) => None,
-        };
+        let version_changed = base_package_version.is_none_or(|v| v != &self.version);
 
-        if let Some(log) = log {
-            tracing::info!("{log}");
+        if version_bump.is_some() || slated_for_release || version_changed {
             package_changes.push(
                 fmtools::fmt(|f| {
-                    write!(f, "* `{}`: {log}", self.name)?;
+                    f.write_str("* ")?;
+                    if !self.should_release() {
+                        f.write_str("🔒 ")?;
+                    }
+                    write!(f, "`{}`:", self.name)?;
+
+                    if base_package_version.is_none() {
+                        f.write_str(" 📦 **New crate**")?;
+                    } else if let Some(bump) = &version_bump {
+                        f.write_str(match bump {
+                            VersionBump::Major => " ⚠️ **Breaking Change**",
+                            VersionBump::Minor => " 🛠️ **Compatiable Change**",
+                        })?;
+                    }
+
+                    if slated_for_release {
+                        f.write_str(" 🚀 **Releasing on merge**")?;
+                    }
+
+                    let mut f = indent_write::fmt::IndentWriter::new("  ", f);
+
+                    match base_package_version {
+                        Some(base) if base != &self.version => {
+                            write!(f, "\n* Version: **`{base}`** ➡️ **`{}`**", self.version)?
+                        }
+                        None => write!(f, "\n* Version: **`{}`**", self.version)?,
+                        Some(_) => {}
+                    }
+
+                    if version_changed && self.group() != self.name.as_str() {
+                        write!(f, " (group: **`{}`**)", self.group())?;
+                    }
+
                     if let Some((true, logs)) = &semver_output {
                         f.write_str("\n\n")?;
-                        let mut f = indent_write::fmt::IndentWriter::new("  ", f);
-                        f.write_str("<details><summary>cargo-semver-checks</summary>\n\n````\n")?;
+                        f.write_str("<details><summary>Cargo semver-checks details</summary>\n\n````\n")?;
                         f.write_str(logs)?;
                         f.write_str("\n````\n\n</details>\n")?;
                     }
+
                     Ok(())
                 })
                 .to_string(),
@@ -813,24 +863,22 @@ impl Package {
         let min_versions_output = self.min_versions_output();
 
         if !errors.is_empty() || min_versions_output.is_some() {
-            errors_markdown.push(format!("### {}\n", self.name));
-            for error in errors.iter() {
-                errors_markdown.push(format!("* {error}"))
-            }
-            if let Some(min_versions_output) = min_versions_output {
-                errors_markdown.push(
-                    fmtools::fmt(|f| {
-                        f.write_str("* min package versions issue\n\n")?;
+            errors_markdown.push(
+                fmtools::fmt(|f| {
+                    writeln!(f, "### {}", self.name)?;
+                    for error in errors.iter() {
+                        writeln!(f, "* {error}")?;
+                    }
+                    if let Some(min_versions_output) = &min_versions_output {
                         let mut f = indent_write::fmt::IndentWriter::new("  ", f);
-                        f.write_str("<details><summary>cargo publish</summary>\n\n````\n")?;
-                        f.write_str(&min_versions_output)?;
+                        f.write_str("<details><summary>min package versions</summary>\n\n````\n")?;
+                        f.write_str(min_versions_output)?;
                         f.write_str("\n````\n\n</details>\n")?;
-                        Ok(())
-                    })
-                    .to_string(),
-                )
-            }
-            errors_markdown.push("".into());
+                    }
+                    Ok(())
+                })
+                .to_string(),
+            );
         }
 
         Ok(())
@@ -845,12 +893,13 @@ pub struct CheckRun {
 
 impl CheckRun {
     pub fn new(metadata: &cargo_metadata::Metadata, allowed_packages: &[String]) -> anyhow::Result<Self> {
+        let workspace_metadata = WorkspaceReleaseMetadata::from_metadadata(metadata).context("workspace metadata")?;
         let members = metadata.workspace_members.iter().cloned().collect::<HashSet<_>>();
         let packages = metadata
             .packages
             .iter()
             .filter(|p| members.contains(&p.id))
-            .map(|p| Ok((p.name.as_ref().to_owned(), Package::new(p.clone())?)))
+            .map(|p| Ok((p.name.as_ref().to_owned(), Package::new(&workspace_metadata, p.clone())?)))
             .collect::<anyhow::Result<BTreeMap<_, _>>>()?;
 
         let accepted_groups = packages
@@ -863,10 +912,6 @@ impl CheckRun {
             .values()
             .cloned()
             .fold(BTreeMap::<_, Vec<_>>::new(), |mut groups, package| {
-                if !accepted_groups.contains(package.group()) {
-                    return groups;
-                }
-
                 let entry = groups.entry(package.group().to_owned()).or_default();
                 if package.name.as_ref() == package.group() {
                     entry.insert(0, package);
@@ -885,17 +930,13 @@ impl CheckRun {
     }
 
     pub fn process(&self, concurrency: usize, workspace_root: &Utf8Path, base_branch: Option<&str>) -> anyhow::Result<()> {
-        concurrently::<_, _, anyhow::Result<()>>(concurrency, self.packages.values(), |p| p.fetch_published())?;
+        concurrently::<_, _, anyhow::Result<()>>(concurrency, self.all_packages(), |p| p.fetch_published())?;
 
-        concurrently::<_, _, anyhow::Result<()>>(concurrency, self.groups.values().flatten(), |p| {
+        concurrently::<_, _, anyhow::Result<()>>(concurrency, self.groups().flatten(), |p| {
             p.check(&self.packages, workspace_root, base_branch)
         })?;
 
         Ok(())
-    }
-
-    pub fn packages(&self) -> impl Iterator<Item = &'_ Package> {
-        self.groups.values().flatten()
     }
 
     pub fn get_package(&self, name: impl AsRef<str>) -> Option<&Package> {
@@ -911,6 +952,13 @@ impl CheckRun {
     }
 
     pub fn groups(&self) -> impl Iterator<Item = &'_ [Package]> {
+        self.groups
+            .iter()
+            .filter_map(|(name, group)| self.is_accepted_group(name).then_some(group))
+            .map(|g| g.as_slice())
+    }
+
+    pub fn all_groups(&self) -> impl Iterator<Item = &'_ [Package]> {
         self.groups.values().map(|g| g.as_slice())
     }
 }

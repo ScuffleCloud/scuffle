@@ -3,6 +3,7 @@ use std::collections::HashSet;
 use anyhow::Context;
 
 use super::utils::{GitReleaseArtifact, Package};
+use crate::cmd::release::utils::WorkspaceReleaseMetadata;
 use crate::utils::{self, Command, cargo_cmd, concurrently, git_workdir_clean};
 
 #[derive(Debug, Clone, clap::Parser)]
@@ -17,26 +18,12 @@ pub struct Publish {
     /// Concurrency to run at. By default, this is the total number of cpus on the host.
     #[arg(long, default_value_t = num_cpus::get())]
     concurrency: usize,
-    /// If we should always run release even if its not from a PR that had the `release` label
-    #[arg(long)]
-    always: bool,
     /// Do not release anything.
     #[arg(long)]
     dry_run: bool,
     /// Token to use when uploading to crates.io
     #[arg(long)]
     crates_io_token: Option<String>,
-}
-
-#[derive(serde_derive::Deserialize)]
-struct PrOutput {
-    merge_commit_sha: Option<String>,
-    labels: Vec<PrLabel>,
-}
-
-#[derive(serde_derive::Deserialize)]
-struct PrLabel {
-    name: String,
 }
 
 impl Publish {
@@ -62,38 +49,10 @@ impl Publish {
         let current_commit = String::from_utf8_lossy(&current_commit.stdout);
         let current_commit = current_commit.trim();
 
-        if !self.always {
-            let gh_pulls = Command::new("gh")
-                .arg("api")
-                .arg(format!("repos/scufflecloud/scuffle/commits/{current_commit}/pulls"))
-                .output()
-                .context("gh api")?;
-
-            let mut skip_release = true;
-
-            if !gh_pulls.status.success() {
-                let stderr = String::from_utf8_lossy(&gh_pulls.stderr);
-                if !stderr.contains("No commit found for SHA") {
-                    anyhow::bail!("failed to get pulls related to commit: {stderr}");
-                }
-            } else {
-                let gh_pulls: Vec<PrOutput> = serde_json::from_slice(&gh_pulls.stdout).context("gh pulls")?;
-                if gh_pulls
-                    .iter()
-                    .find(|pr| pr.merge_commit_sha.as_ref().is_some_and(|commit| commit == current_commit))
-                    .is_some_and(|pr| pr.labels.iter().any(|label| label.name.eq_ignore_ascii_case("release")))
-                {
-                    skip_release = false;
-                }
-            }
-
-            if skip_release {
-                tracing::info!("not releasing because commit isnt from a pull request with the `release` label.");
-                return Ok(());
-            }
-        }
-
         let metadata = utils::metadata().context("metadata")?;
+
+        let workspace_relese_metadata =
+            WorkspaceReleaseMetadata::from_metadadata(&metadata).context("workspace metadata")?;
 
         let packages = {
             let members = metadata.workspace_members.iter().collect::<HashSet<_>>();
@@ -102,7 +61,7 @@ impl Publish {
                 .iter()
                 .filter(|p| members.contains(&p.id))
                 .filter(|p| self.packages.contains(&p.name) || self.packages.is_empty())
-                .map(|p| Package::new(p.clone()))
+                .map(|p| Package::new(&workspace_relese_metadata, p.clone()))
                 .collect::<anyhow::Result<Vec<_>>>()?
         };
 
@@ -112,6 +71,11 @@ impl Publish {
         let mut git_releases = Vec::new();
 
         for package in &packages {
+            if !package.slated_for_release() {
+                tracing::info!("{} is not slated for release", package.name);
+                continue;
+            }
+
             if package.last_published_version().is_some_and(|p| p.vers == package.version) {
                 tracing::info!("{}@{} has already been released on crates.io", package.name, package.version);
             } else if package.should_publish() {

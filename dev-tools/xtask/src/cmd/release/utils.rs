@@ -1,3 +1,4 @@
+use std::collections::BTreeMap;
 use std::path::{Path, PathBuf};
 use std::process::Stdio;
 use std::sync::{Arc, Mutex};
@@ -13,6 +14,7 @@ use crate::utils::Command;
 #[derive(Clone)]
 pub struct Package {
     pkg: cargo_metadata::Package,
+    version_slated: Option<semver::Version>,
     published_versions: Arc<Mutex<Vec<CratesIoVersion>>>,
     data: Arc<Mutex<PackageData>>,
     metadata: XTaskPackageMetadata,
@@ -49,8 +51,6 @@ struct XTaskPackageMetadata {
     git_release: GitReleaseMeta,
     semver_checks: Option<bool>,
     min_versions_checks: Option<bool>,
-    public_deps: Vec<String>,
-    next_version: Option<semver::Version>,
 }
 
 impl XTaskPackageMetadata {
@@ -575,9 +575,10 @@ impl Package {
     const DEFAULT_GIT_RELEASE_BODY: &str = include_str!("./git_release_body_tmpl.md");
     const DEFAULT_GIT_TAG_NAME: &str = "{{ package }}-v{{ version }}";
 
-    pub fn new(pkg: cargo_metadata::Package) -> anyhow::Result<Self> {
+    pub fn new(workspace_meta: &WorkspaceReleaseMetadata, pkg: cargo_metadata::Package) -> anyhow::Result<Self> {
         Ok(Self {
             data: Default::default(),
+            version_slated: workspace_meta.packages.get(pkg.name.as_str()).cloned(),
             metadata: XTaskPackageMetadata::from_package(&pkg)?,
             published_versions: Default::default(),
             pkg,
@@ -590,10 +591,6 @@ impl Package {
 
     pub fn group(&self) -> &str {
         self.metadata.group.as_deref().unwrap_or(&self.pkg.name)
-    }
-
-    pub fn public_deps(&self) -> &[String] {
-        &self.metadata.public_deps
     }
 
     pub fn unreleased_req(&self) -> semver::VersionReq {
@@ -654,6 +651,12 @@ impl Package {
             Ok(idx) => Some(published_versions[idx].clone()),
             Err(idx) => idx.checked_sub(1).and_then(|idx| published_versions.get(idx).cloned()),
         }
+    }
+
+    pub fn slated_for_release(&self) -> bool {
+        self.should_release()
+            && self.version_slated.as_ref().is_some_and(|v| v == &self.version)
+            && self.last_published_version().is_none_or(|p| p.vers != self.version)
     }
 
     fn git_tag_name(&self) -> anyhow::Result<String> {
@@ -733,9 +736,9 @@ impl Package {
 
     pub fn has_branch_changes(&self, base: &str) -> bool {
         let output = match Command::new("git")
-            .arg("rev-list")
-            .arg("-1")
+            .arg("diff")
             .arg(format!("{base}..HEAD"))
+            .arg("--quiet")
             .arg("--")
             .arg(self.pkg.manifest_path.parent().unwrap())
             .stderr(Stdio::piped())
@@ -744,29 +747,27 @@ impl Package {
         {
             Ok(output) => output,
             Err(err) => {
-                tracing::warn!("git rev-list failed: {err}");
+                tracing::warn!("git diff failed: {err}");
                 return true;
             }
         };
 
-        if !output.status.success() {
-            tracing::warn!("git rev-list failed: {}", String::from_utf8_lossy(&output.stderr));
-            return true;
+        if !output.status.success() && !output.stderr.is_empty() {
+            tracing::warn!("git diff failed: {}", String::from_utf8_lossy(&output.stderr));
         }
 
-        let commit = String::from_utf8_lossy(&output.stdout);
-        !commit.trim().is_empty()
+        !output.status.success()
     }
 
-    pub fn last_git_commit(&self) -> anyhow::Result<Option<String>> {
+    pub fn has_changed_since_publish(&self) -> anyhow::Result<bool> {
         let last_commit = if self.should_publish() {
             let Some(last_published) = self.last_published_version() else {
-                return Ok(None);
+                return Ok(false);
             };
 
             // It only makes sense to check git diffs if we are currently on the latest published version.
             if last_published.vers != self.pkg.version {
-                return Ok(None);
+                return Ok(false);
             }
 
             let crate_path = download_crate(&last_published)?;
@@ -812,32 +813,31 @@ impl Package {
 
             // tag doesnt exist
             if !output.status.success() {
-                return Ok(None);
+                return Ok(false);
             }
 
             String::from_utf8_lossy(&output.stdout).trim().to_owned()
         } else {
-            return Ok(None);
+            return Ok(false);
         };
 
-        // git rev-list -1 HEAD~100..HEAD -- README.md
+        // git diff HEAD~100..HEAD --quiet -- README.md
         let output = Command::new("git")
-            .arg("rev-list")
-            .arg("-1")
+            .arg("diff")
             .arg(format!("{last_commit}..HEAD"))
+            .arg("--quiet")
             .arg("--")
             .arg(self.pkg.manifest_path.parent().unwrap())
             .stderr(Stdio::piped())
             .stdout(Stdio::piped())
             .output()
-            .context("git rev-list lookup diffs")?;
+            .context("git diff")?;
 
-        if !output.status.success() {
-            anyhow::bail!("git rev-list failed: {}", String::from_utf8_lossy(&output.stderr))
+        if !output.status.success() && !output.stderr.is_empty() {
+            anyhow::bail!("failed to get git diff {}", String::from_utf8_lossy(&output.stderr))
         }
 
-        let commit = String::from_utf8_lossy(&output.stdout).trim().to_owned();
-        if commit.is_empty() { Ok(None) } else { Ok(Some(commit)) }
+        Ok(!output.status.success())
     }
 
     pub fn next_version(&self) -> Option<semver::Version> {
@@ -910,5 +910,30 @@ impl Package {
 
     pub fn errors(&self) -> Vec<PackageError> {
         self.data.lock().unwrap().issues.clone()
+    }
+}
+
+#[derive(serde_derive::Deserialize, serde_derive::Serialize, Default)]
+pub struct WorkspaceReleaseMetadata {
+    pub packages: BTreeMap<String, semver::Version>,
+}
+
+impl WorkspaceReleaseMetadata {
+    pub fn from_metadadata(metadata: &cargo_metadata::Metadata) -> anyhow::Result<Self> {
+        let Some(value) = metadata.workspace_metadata.get("xtask").and_then(|x| x.get("release")) else {
+            return Ok(Default::default());
+        };
+
+        serde_json::from_value(value.clone()).context("deserialize")
+    }
+}
+
+pub fn vers_to_comp(vers: semver::Version) -> semver::Comparator {
+    semver::Comparator {
+        op: semver::Op::Caret,
+        major: vers.major,
+        minor: Some(vers.minor),
+        patch: Some(vers.patch),
+        pre: vers.pre,
     }
 }

@@ -557,6 +557,11 @@ impl Package {
 
             let (mut read, write) = std::io::pipe()?;
 
+            let release_checks_dir = workspace_root.join("target").join("release-checks");
+            if release_checks_dir.join("package").exists() {
+                std::fs::remove_dir_all(release_checks_dir.join("package")).context("remove previous package run")?;
+            }
+
             let mut cmd = cargo_cmd();
             cmd.env("RUSTC_BOOTSTRAP", "1")
                 .env("CARGO_TERM_COLOR", "never")
@@ -569,9 +574,9 @@ impl Package {
                 .arg("--allow-dirty")
                 .arg("--all-features")
                 .arg("--lockfile-path")
-                .arg(workspace_root.join("target").join("release-checks").join("Cargo.lock"))
+                .arg(release_checks_dir.join("Cargo.lock"))
                 .arg("--target-dir")
-                .arg(workspace_root.join("target").join("release-checks"))
+                .arg(release_checks_dir)
                 .arg("-p")
                 .arg(self.name.as_ref());
 

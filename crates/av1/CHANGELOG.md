@@ -15,6 +15,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.2.0](https://github.com/ScuffleCloud/scuffle/releases/tag/scuffle-av1-v0.2.0) - 2025-06-02
+
+[View diff on diff.rs](https://diff.rs/scuffle-av1/0.1.4/scuffle-av1/0.2.0/Cargo.toml)
+
+### ⚠️ Breaking changes
+
+- chore: update to use isobmff crate and new zero copy traits ([#485](https://github.com/scufflecloud/scuffle/pull/485)) (@lennartkloock)
+
 ## [0.1.4](https://github.com/ScuffleCloud/scuffle/releases/tag/scuffle-av1-v0.1.4) - 2025-05-17
 
 [View diff on diff.rs](https://diff.rs/scuffle-av1/0.1.3/scuffle-av1/0.1.4/Cargo.toml)

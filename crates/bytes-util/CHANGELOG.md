@@ -15,6 +15,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.2.0](https://github.com/ScuffleCloud/scuffle/releases/tag/scuffle-bytes-util-v0.2.0) - 2025-06-02
+
+[View diff on diff.rs](https://diff.rs/scuffle-bytes-util/0.1.4/scuffle-bytes-util/0.2.0/Cargo.toml)
+
+### ⚠️ Breaking changes
+
+- feat: implement the zero copy reader trait for mutable references of zero copy readers ([#485](https://github.com/scufflecloud/scuffle/pull/485)) (@lennartkloock)
+
+### 🛠️ Non-breaking changes
+
+- feat: add ability to limit number of zero copy bytes read ([#485](https://github.com/scufflecloud/scuffle/pull/485)) (@lennartkloock)
+
 ## [0.1.4](https://github.com/ScuffleCloud/scuffle/releases/tag/scuffle-bytes-util-v0.1.4) - 2025-05-17
 
 [View diff on diff.rs](https://diff.rs/scuffle-bytes-util/0.1.3/scuffle-bytes-util/0.1.4/Cargo.toml)

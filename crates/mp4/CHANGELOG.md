@@ -15,6 +15,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.2.0](https://github.com/ScuffleCloud/scuffle/releases/tag/scuffle-mp4-v0.2.0) - 2025-06-02
+
+[View diff on diff.rs](https://diff.rs/scuffle-mp4/0.1.4/scuffle-mp4/0.2.0/Cargo.toml)
+
+### ⚠️ Breaking changes
+
+- refactor: split into crates isobmff, scuffle-h264, scuffle-h265, scuffle-av1 and scuffle-opus ([#485](https://github.com/scufflecloud/scuffle/pull/485)) (@lennartkloock)
+
 ## [0.1.4](https://github.com/ScuffleCloud/scuffle/releases/tag/scuffle-mp4-v0.1.4) - 2025-05-17
 
 [View diff on diff.rs](https://diff.rs/scuffle-mp4/0.1.3/scuffle-mp4/0.1.4/Cargo.toml)

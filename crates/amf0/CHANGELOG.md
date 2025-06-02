@@ -15,6 +15,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.3.0](https://github.com/ScuffleCloud/scuffle/releases/tag/scuffle-amf0-v0.3.0) - 2025-06-02
+
+[View diff on diff.rs](https://diff.rs/scuffle-amf0/0.2.3/scuffle-amf0/0.3.0/Cargo.toml)
+
+### ⚠️ Breaking changes
+
+- chore: bump scuffle-bytes-util to `0.2.0`
+
 ## [0.2.3](https://github.com/ScuffleCloud/scuffle/releases/tag/scuffle-amf0-v0.2.3) - 2025-05-30
 
 [View diff on diff.rs](https://diff.rs/scuffle-amf0/0.2.2/scuffle-amf0/0.2.3/Cargo.toml)

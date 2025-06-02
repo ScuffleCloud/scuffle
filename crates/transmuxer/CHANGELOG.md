@@ -15,6 +15,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.3.0](https://github.com/ScuffleCloud/scuffle/releases/tag/scuffle-transmuxer-v0.3.0) - 2025-06-02
+
+[View diff on diff.rs](https://diff.rs/scuffle-transmuxer/0.2.2/scuffle-transmuxer/0.3.0/Cargo.toml)
+
+### ⚠️ Breaking changes
+
+- chore: update to use isobmff crate ([#485](https://github.com/scufflecloud/scuffle/pull/485)) (@lennartkloock)
+
 ## [0.2.2](https://github.com/ScuffleCloud/scuffle/releases/tag/scuffle-transmuxer-v0.2.2) - 2025-05-17
 
 [View diff on diff.rs](https://diff.rs/scuffle-transmuxer/0.2.1/scuffle-transmuxer/0.2.2/Cargo.toml)

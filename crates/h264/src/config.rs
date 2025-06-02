@@ -225,6 +225,7 @@ impl Serialize for AVCDecoderConfigurationRecord<'_> {
     }
 }
 
+#[cfg(feature = "isobmff")]
 impl isobmff::IsoSized for AVCDecoderConfigurationRecord<'_> {
     /// Returns the total byte size of the AVCDecoderConfigurationRecord.
     fn size(&self) -> usize {

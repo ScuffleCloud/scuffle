@@ -33,7 +33,8 @@ See the [changelog](./CHANGELOG.md) for a full release history.
 
 ### Feature flags
 
-- **`docs`** — Enables changelog and documentation of feature flags
+* **`docs`** —  Enables changelog and documentation of feature flags
+* **`isobmff`** —  Enables isobmff boxes
 
 ### License
 

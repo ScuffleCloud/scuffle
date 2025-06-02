@@ -21,7 +21,6 @@
 #![deny(unreachable_pub)]
 #![deny(clippy::mod_module_files)]
 
-#[cfg(feature = "isobmff")]
 pub mod boxes;
 pub mod object_description;
 

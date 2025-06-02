@@ -266,7 +266,7 @@ impl Check {
 
 impl Package {
     #[tracing::instrument(skip_all, fields(package = %self.name))]
-    pub fn check(
+    fn check(
         &self,
         packages: &BTreeMap<String, Self>,
         workspace_root: &Utf8Path,
@@ -930,6 +930,37 @@ impl CheckRun {
     }
 
     pub fn process(&self, concurrency: usize, workspace_root: &Utf8Path, base_branch: Option<&str>) -> anyhow::Result<()> {
+        let clean_target = || {
+            let release_check_path = workspace_root.join("target").join("release-checks").join("package");
+            if release_check_path.exists() {
+                if let Err(err) = std::fs::remove_dir_all(release_check_path) {
+                    tracing::error!("failed to cleanup release-checks package folder: {err}")
+                }
+            }
+
+            let release_check_path = workspace_root.join("target").join("semver-checks");
+            if release_check_path.exists() {
+                let input = || {
+                    let dir = release_check_path.read_dir_utf8()?;
+
+                    for file in dir {
+                        let file = file?;
+                        if file.file_name().starts_with("local-") {
+                            std::fs::remove_dir_all(file.path())?;
+                        }
+                    }
+
+                    std::io::Result::Ok(())
+                };
+                if let Err(err) = input() {
+                    tracing::error!("failed to cleanup semver-checks package folder: {err}")
+                }
+            }
+        };
+
+        clean_target();
+        let _drop_runner = DropRunner::new(clean_target);
+
         concurrently::<_, _, anyhow::Result<()>>(concurrency, self.all_packages(), |p| p.fetch_published())?;
 
         concurrently::<_, _, anyhow::Result<()>>(concurrency, self.groups().flatten(), |p| {

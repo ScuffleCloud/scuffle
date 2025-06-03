@@ -2,8 +2,12 @@
     import type { VideoStream } from '$components/streams/types';
     import type { Streamed } from '$lib/types';
     import StreamDetailsHeader from '$components/streams/stream-detail-header.svelte';
+    import Tabs from '$components/tabs.svelte';
     import { page } from '$app/state';
     import type { Snippet } from 'svelte';
+    import IconPuzzle from '$lib/images/icon-puzzle.svelte';
+    import IconEvents from '$lib/images/icon-events.svelte';
+    import IconAssets_2 from '$lib/images/icon-assets-2.svelte';
 
     type ChildProps = {
         data: VideoStream;
@@ -19,23 +23,11 @@
     const { data: pageData, children }: Props = $props();
 
     const tabs = [
-        { id: 'overview', label: 'Overview' },
-        { id: 'events', label: 'Events' },
-        { id: 'assets', label: 'Assets' },
+        { id: 'overview', label: 'Overview', icon: IconPuzzle },
+        { id: 'events', label: 'Events', icon: IconEvents },
+        { id: 'assets', label: 'Assets', icon: IconAssets_2 },
     ];
     const baseUrl = `/organizations/${page.params.orgId}/projects/${page.params.projectId}/streams/${page.params.roomId}/`;
-
-    const currentTab = $derived.by(() => {
-        const pathname = page.url.pathname;
-
-        if (pathname.startsWith(baseUrl)) {
-            const remainder = pathname.slice(baseUrl.length);
-            const firstSegment = remainder.split('/')[0];
-            return tabs.find((tab) => tab.id === firstSegment)?.id || 'overview';
-        }
-
-        return 'overview';
-    });
 </script>
 
 <div class="page-bg">
@@ -43,23 +35,9 @@
         <div class="loading">Loading...</div>
     {:then stream}
         <StreamDetailsHeader {stream} />
-        <div class="tabs-container">
-            <div class="tabs-list-container">
-                {#each tabs as tab}
-                    <a
-                        href={`${baseUrl}${tab.id}`}
-                        class="tab-trigger"
-                        data-selected={currentTab === tab.id}
-                    >
-                        {tab.label}
-                    </a>
-                {/each}
-            </div>
-
-            <div class="tab-content">
-                {@render children({ data: stream })}
-            </div>
-        </div>
+        <Tabs {tabs} {baseUrl} defaultTab="overview">
+            {@render children({ data: stream })}
+        </Tabs>
     {:catch error}
         <div class="error">Error: {error.message}</div>
     {/await}
@@ -74,47 +52,19 @@
         padding: 2rem;
     }
 
-    .tabs-container {
-        .tabs-list-container {
-            display: flex;
-            gap: 1rem;
-            border-bottom: 1px solid var(--color-gray40);
-            margin-bottom: 1rem;
+    .loading {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        padding: 2rem;
+        color: var(--color-yellow90);
+    }
 
-            .tab-trigger {
-                padding: 0.75rem 1rem;
-                border: none;
-                background: none;
-                color: var(--color-yellow90);
-                font-size: 1rem;
-                font-weight: 700;
-                line-height: 1.5rem;
-                cursor: pointer;
-                font-weight: 500;
-                border-bottom: 2px solid transparent;
-                transition: all 0.2s;
-                text-decoration: none;
-
-                &[data-selected='true'] {
-                    /* Need to give radius to this border or just make a new div for the styling */
-                    /* border-radius: 0.125rem 0.125rem 0rem 0rem; */
-                    border-bottom-color: var(--color-yellow40);
-                }
-
-                &:hover:not([data-selected='true']) {
-                    color: #334155;
-                }
-
-                &:focus-visible {
-                    outline: 2px solid #3b82f6;
-                    outline-offset: 2px;
-                    border-radius: 0.25rem;
-                }
-            }
-        }
-
-        .tab-content {
-            padding: 1rem 0;
-        }
+    .error {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        padding: 2rem;
+        color: #ef4444;
     }
 </style>

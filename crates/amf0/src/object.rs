@@ -1093,7 +1093,7 @@ mod tests {
     fn test_get_key_value_valid() {
         let mut obj = Amf0Object::new();
         let key = StringCow::from("foo");
-        let value = Amf0Value::Number(3.14);
+        let value = Amf0Value::Number(3.21);
 
         obj.map.insert(key.clone(), value.clone());
 
@@ -1774,10 +1774,10 @@ mod tests {
     #[test]
     fn test_index_returns_value_for_existing_key() {
         let mut obj = Amf0Object::new();
-        obj.map.insert(StringCow::from("alpha"), Amf0Value::Number(3.14));
+        obj.map.insert(StringCow::from("alpha"), Amf0Value::Number(3.21));
 
         let v: &Amf0Value = &obj["alpha"];
-        assert_eq!(v, &Amf0Value::Number(3.14));
+        assert_eq!(v, &Amf0Value::Number(3.21));
     }
 
     #[test]

@@ -70,7 +70,7 @@ where
     type Error = Amf0Error;
 
     serde::forward_to_deserialize_any! {
-        char ignored_any
+        ignored_any
     }
 
     impl_de_number!(deserialize_i8, visit_i8);
@@ -97,6 +97,23 @@ where
     {
         if let Amf0Marker::Number | Amf0Marker::Date = self.peek_marker()? {
             visitor.visit_f64(self.decode_number()?)
+        } else {
+            self.deserialize_any(visitor)
+        }
+    }
+
+    fn deserialize_char<V>(self, visitor: V) -> Result<V::Value, Self::Error>
+    where
+        V: serde::de::Visitor<'de>,
+    {
+        if let Amf0Marker::String | Amf0Marker::LongString | Amf0Marker::XmlDocument = self.peek_marker()? {
+            let value = self.decode_string()?;
+            let s = value.as_str();
+            if s.len() == 1 {
+                visitor.visit_char(s.chars().next().unwrap())
+            } else {
+                value.into_deserializer().deserialize_string(visitor)
+            }
         } else {
             self.deserialize_any(visitor)
         }
@@ -586,17 +603,6 @@ mod tests {
 
         let bytes = [Amf0Marker::Null as u8];
         from_buf::<()>(Bytes::from_owner(bytes)).unwrap();
-
-        // same as before about the string stuff
-        // let bytes = [Amf0Marker::String as u8];
-        // let err = from_buf::<()>(Bytes::from_owner(bytes)).unwrap_err();
-        // assert!(matches!(
-        //     err,
-        //     Amf0Error::UnexpectedType {
-        //         expected: [Amf0Marker::Null, Amf0Marker::Undefined],
-        //         got: Amf0Marker::String
-        //     }
-        // ));
 
         let bytes = [Amf0Marker::Undefined as u8];
         let value: Option<bool> = from_buf(Bytes::from_owner(bytes)).unwrap();

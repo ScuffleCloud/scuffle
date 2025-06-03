@@ -289,7 +289,7 @@ macro_rules! impl_deserializer {
             type Error = Amf0Error;
 
             serde::forward_to_deserialize_any! {
-                bool f64 char str string unit
+                bool f64 str string unit
                 seq map newtype_struct tuple
                 struct enum ignored_any identifier
             }
@@ -311,6 +311,22 @@ macro_rules! impl_deserializer {
             impl_de_number!(deserialize_u64, visit_u64);
 
             impl_de_number!(deserialize_f32, visit_f32);
+
+            fn deserialize_char<V>(self, visitor: V) -> Result<V::Value, Self::Error>
+            where
+                V: serde::de::Visitor<'de>,
+            {
+                if let Amf0Value::String(s) = self {
+                    let s = s.as_str();
+                    if s.len() == 1 {
+                        visitor.visit_char(s.chars().next().unwrap())
+                    } else {
+                        s.into_deserializer().deserialize_any(visitor)
+                    }
+                } else {
+                    self.deserialize_any(visitor)
+                }
+            }
 
             fn deserialize_option<V>(self, visitor: V) -> Result<V::Value, Self::Error>
             where

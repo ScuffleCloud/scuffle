@@ -3165,6 +3165,7 @@ dependencies = [
  "bytestring",
  "document-features",
  "indexmap",
+ "insta",
  "num-derive",
  "num-traits",
  "scuffle-bytes-util",

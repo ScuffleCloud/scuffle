@@ -27,6 +27,7 @@ serde = { optional = true, version = "1" }
 thiserror = "2.0"
 
 [dev-dependencies]
+insta = "1.42"
 serde_derive = "1"
 
 [features]

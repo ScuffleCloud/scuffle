@@ -317,12 +317,7 @@ macro_rules! impl_deserializer {
                 V: serde::de::Visitor<'de>,
             {
                 if let Amf0Value::String(s) = self {
-                    let s = s.as_str();
-                    if s.len() == 1 {
-                        visitor.visit_char(s.chars().next().unwrap())
-                    } else {
-                        s.into_deserializer().deserialize_any(visitor)
-                    }
+                    s.into_deserializer().deserialize_any(visitor)
                 } else {
                     self.deserialize_any(visitor)
                 }

@@ -108,12 +108,7 @@ where
     {
         if let Amf0Marker::String | Amf0Marker::LongString | Amf0Marker::XmlDocument = self.peek_marker()? {
             let value = self.decode_string()?;
-            let s = value.as_str();
-            if s.len() == 1 {
-                visitor.visit_char(s.chars().next().unwrap())
-            } else {
-                value.into_deserializer().deserialize_string(visitor)
-            }
+            value.into_deserializer().deserialize_any(visitor)
         } else {
             self.deserialize_any(visitor)
         }
@@ -154,7 +149,7 @@ where
     {
         if let Amf0Marker::String | Amf0Marker::LongString | Amf0Marker::XmlDocument = self.peek_marker()? {
             let value = self.decode_string()?;
-            value.into_deserializer().deserialize_string(visitor)
+            value.into_deserializer().deserialize_str(visitor)
         } else {
             self.deserialize_any(visitor)
         }
@@ -164,12 +159,7 @@ where
     where
         V: serde::de::Visitor<'de>,
     {
-        if let Amf0Marker::String | Amf0Marker::LongString | Amf0Marker::XmlDocument = self.peek_marker()? {
-            let value = self.decode_string()?;
-            visitor.visit_string(value.to_string())
-        } else {
-            self.deserialize_any(visitor)
-        }
+        self.deserialize_string(visitor)
     }
 
     fn deserialize_bytes<V>(self, visitor: V) -> Result<V::Value, Self::Error>
@@ -272,11 +262,7 @@ where
     where
         V: serde::de::Visitor<'de>,
     {
-        if let Amf0Marker::StrictArray = self.peek_marker()? {
-            self.deserialize_tuple(len, visitor)
-        } else {
-            self.deserialize_any(visitor)
-        }
+        self.deserialize_tuple(len, visitor)
     }
 
     fn deserialize_map<V>(self, visitor: V) -> Result<V::Value, Self::Error>

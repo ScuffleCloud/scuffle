@@ -25,8 +25,8 @@
 
         &.live {
             padding: 4px 9px;
-            color: var(--color-red90);
-            background-color: var(--color-red30);
+            color: var(--colors-red90);
+            background-color: var(--colors-red30);
             border-radius: 100rem;
         }
 

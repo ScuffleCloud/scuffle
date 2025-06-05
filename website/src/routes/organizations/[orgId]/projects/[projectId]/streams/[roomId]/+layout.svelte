@@ -56,7 +56,7 @@
         justify-content: center;
         align-items: center;
         padding: 2rem;
-        color: var(--color-yellow90);
+        color: var(--colors-yellow90);
     }
 
     .error {

@@ -1,7 +1,7 @@
 /* Put */
 :root {
     --font-body: 'Archivo Variable', sans-serif;
-    --color-text: var(--colors-brown800);
+    --colors-text: var(--colors-brown800);
     font-size: 16px;
 
     /* Default font */

@@ -136,7 +136,7 @@
 
     .keys-section {
         margin-bottom: 2rem;
-        background: var(--color-teal70);
+        background: var(--colors-teal70);
         border-radius: 0.5rem;
         padding: 0.25rem;
         box-shadow:
@@ -158,7 +158,7 @@
 
             h2 {
                 margin: 0;
-                color: var(--color-brown90);
+                color: var(--colors-brown90);
                 font-size: 1rem;
                 font-style: normal;
                 font-weight: 700;
@@ -179,7 +179,7 @@
             justify-content: space-between;
             align-items: center;
             align-self: stretch;
-            background: var(--color-teal30);
+            background: var(--colors-teal30);
             border-radius: 0.5rem;
             padding: 1rem;
             border: 1px solid var(--colors-teal-10, #fefcfb);
@@ -197,7 +197,7 @@
                 display: flex;
                 align-items: center;
                 gap: 0.75rem;
-                background: var(--color-teal50);
+                background: var(--colors-teal50);
                 border-radius: 0.5rem;
                 padding: 0.5rem 1rem;
 

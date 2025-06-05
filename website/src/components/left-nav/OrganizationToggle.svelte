@@ -4,6 +4,12 @@
     import OrganizationDropdown from './OrganizationDropdown.svelte';
     import { createPopover, melt } from '@melt-ui/svelte';
 
+    type Props = {
+        isCollapsed?: boolean;
+    };
+
+    const { isCollapsed = false }: Props = $props();
+
     const {
         elements: { trigger, content },
         states: { open },
@@ -14,14 +20,16 @@
     const user = $derived(userStore.user);
 </script>
 
-<div class="organization-info">
+<div class="organization-info" class:collapsed={isCollapsed}>
     <button type="button" class="org-header-button" use:melt={$trigger}>
         <div class="avatar" style:background-color={'#FFCC80'}></div>
-        <div class="org-details">
-            <div class="org-name">{user?.organizations[0].name}</div>
-            <div class="org-username">{user?.email}</div>
-        </div>
-        <IconSwitch />
+        {#if !isCollapsed}
+            <div class="org-details">
+                <div class="org-name">{user?.organizations[0].name}</div>
+                <div class="org-username">{user?.email}</div>
+            </div>
+            <IconSwitch />
+        {/if}
     </button>
     {#if $open}
         <div use:melt={$content} class="popover-content">
@@ -33,7 +41,7 @@
 <style>
     .organization-info {
         margin-bottom: 1rem;
-        padding: 0 0.19rem;
+        padding: 0;
 
         .org-header-button {
             display: flex;
@@ -44,9 +52,12 @@
             padding: 0.5rem 0.56rem;
             border: none;
             background-color: transparent;
+            transition: justify-content 0.3s ease;
+
             &:hover {
                 background-color: rgba(0, 0, 0, 0.05);
             }
+
             .avatar {
                 width: 2rem;
                 height: 2rem;
@@ -58,6 +69,8 @@
                 flex: 1;
                 text-align: left;
                 min-width: 0;
+                text-wrap: nowrap;
+                transition: opacity 0.2s ease;
 
                 .org-name {
                     color: var(--colors-brown-600);
@@ -76,6 +89,11 @@
                     white-space: nowrap;
                 }
             }
+        }
+
+        &.collapsed .org-header-button {
+            justify-content: center;
+            padding: 0.5rem;
         }
     }
 

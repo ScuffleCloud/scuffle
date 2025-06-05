@@ -51,13 +51,13 @@
             flex: 1;
 
             .label {
-                color: var(--color-brown70);
+                color: var(--colors-brown70);
                 font-size: 0.875rem;
                 line-height: 1.25rem;
             }
 
             .value {
-                color: var(--color-brown90);
+                color: var(--colors-brown90);
                 font-size: 1rem;
                 font-weight: 500;
                 line-height: 1.5rem;
@@ -82,7 +82,7 @@
 
             .text {
                 font-size: 1rem;
-                color: var(--color-brown70);
+                color: var(--colors-brown70);
                 font-size: 1rem;
                 font-style: normal;
                 font-weight: 500;

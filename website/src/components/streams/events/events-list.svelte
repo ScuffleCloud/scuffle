@@ -71,7 +71,7 @@
                 grid-template-columns: 1fr auto;
                 align-items: center;
                 padding: 0.375rem;
-                background: #f1eae7;
+                background: var(--colors-teal50);
                 transition: background-color 0.2s;
 
                 &.first {

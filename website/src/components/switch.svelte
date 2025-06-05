@@ -129,8 +129,8 @@
             position: relative;
             width: var(--switch-width);
             height: var(--switch-height);
-            background: var(--color-gray40);
-            box-shadow: 0px 0.25px 2px 0px var(--color-gray20);
+            background: var(--colors-gray40);
+            box-shadow: 0px 0.25px 2px 0px var(--colors-gray20);
             border: none;
             border-radius: 100rem;
             cursor: pointer;
@@ -139,8 +139,8 @@
             padding: 0.125rem;
 
             &.checked {
-                box-shadow: 0px 0.25px 2px 0px var(--color-yellow30);
-                background-color: var(--color-yellow40);
+                box-shadow: 0px 0.25px 2px 0px var(--colors-yellow30);
+                background-color: var(--colors-yellow40);
 
                 .switch-thumb {
                     transform: translateX(
@@ -194,15 +194,15 @@
             border-radius: 0.5rem;
 
             &.checked {
-                color: var(--color-yellow80);
-                border: 1px solid var(--color-yellow30);
-                background: var(--color-yellow10);
+                color: var(--colors-yellow80);
+                border: 1px solid var(--colors-yellow30);
+                background: var(--colors-yellow10);
             }
 
             &.unchecked {
-                color: var(--color-gray80);
-                border: 1px solid var(--color-gray30);
-                background: var(--color-gray10);
+                color: var(--colors-gray80);
+                border: 1px solid var(--colors-gray30);
+                background: var(--colors-gray10);
             }
         }
     }

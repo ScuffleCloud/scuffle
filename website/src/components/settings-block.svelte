@@ -140,7 +140,7 @@
 
 <style>
     .settings-block {
-        background: var(--color-teal70);
+        background: var(--colors-teal70);
         border-radius: 8px;
         padding: 0.25rem;
         max-width: 100%;
@@ -162,14 +162,14 @@
                 .block-title {
                     font-size: 1rem;
                     font-weight: 700;
-                    color: var(--color-brown90);
+                    color: var(--colors-brown90);
                     line-height: 1.5rem;
                 }
 
                 .block-subtitle {
                     font-size: 1rem;
                     font-weight: 500;
-                    color: var(--color-brown50);
+                    color: var(--colors-brown50);
                     line-height: 1.5rem;
                 }
             }
@@ -181,10 +181,10 @@
             gap: 0.25rem;
 
             .card {
-                background: var(--color-teal30);
+                background: var(--colors-teal30);
                 border-radius: 0.5rem;
                 padding: 1rem;
-                border: 1px solid var(--color-teal10);
+                border: 1px solid var(--colors-teal10);
 
                 .card-header {
                     display: flex;
@@ -204,7 +204,7 @@
                         }
 
                         .card-title {
-                            color: var(--color-brown90);
+                            color: var(--colors-brown90);
                             font-size: 1.125rem;
                             font-weight: 700;
                             line-height: 1.5rem;
@@ -213,7 +213,7 @@
                 }
 
                 .status-badge {
-                    color: var(--color-gray90);
+                    color: var(--colors-gray90);
                     font-size: 0.875rem;
                     font-style: normal;
                     font-weight: 700;
@@ -228,7 +228,7 @@
                     }
 
                     &.status-disabled {
-                        background: var(--color-gray20);
+                        background: var(--colors-gray20);
                     }
 
                     &.status-warning {
@@ -239,7 +239,7 @@
 
                 .card-description {
                     margin-bottom: 0.75rem;
-                    color: var(--color-brown90);
+                    color: var(--colors-brown90);
                     font-size: 1rem;
                     font-style: normal;
                     font-weight: 500;
@@ -264,7 +264,7 @@
                         cursor: pointer;
                         transition: all 0.2s;
                         min-width: fit-content;
-                        color: var(--color-yellow90);
+                        color: var(--colors-yellow90);
                         font-size: 1rem;
                         font-style: normal;
                         font-weight: 700;
@@ -276,10 +276,10 @@
                         }
 
                         &.action-primary {
-                            background: var(--color-yellow30);
+                            background: var(--colors-yellow30);
 
                             &:hover:not(:disabled) {
-                                background: var(--color-yellow40);
+                                background: var(--colors-yellow40);
                             }
                         }
 

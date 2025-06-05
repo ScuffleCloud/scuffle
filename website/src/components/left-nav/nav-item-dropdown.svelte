@@ -8,16 +8,17 @@
 
     type Props = {
         navItem: NavItem;
+        isCollapsed?: boolean;
     };
 
-    const { navItem }: Props = $props();
+    const { navItem, isCollapsed = false }: Props = $props();
 </script>
 
-<div class="root">
+<div class="root" class:collapsed={isCollapsed}>
     <div {...collapsible.trigger}>
-        <NavItemBase {navItem} isCollapsed={!collapsible.open} />
+        <NavItemBase {navItem} {isCollapsed} isDropdownCollapsed={!collapsible.open} />
     </div>
-    {#if collapsible.open}
+    {#if collapsible.open && !isCollapsed}
         <div {...collapsible.content}>
             <div class="collapsible">
                 {#each navItem.children ?? [] as child}

@@ -59,7 +59,7 @@
         .tabs-list-container {
             display: flex;
             gap: 1rem;
-            border-bottom: 1px solid var(--color-gray40);
+            border-bottom: 1px solid var(--colors-gray40);
             margin-bottom: 1rem;
 
             .tab-trigger {
@@ -69,7 +69,7 @@
                 padding: 0.75rem 1rem;
                 border: none;
                 background: none;
-                color: var(--color-yellow90);
+                color: var(--colors-yellow90);
                 font-size: 1rem;
                 font-weight: 700;
                 line-height: 1.5rem;
@@ -80,7 +80,7 @@
                 text-decoration: none;
 
                 &[data-selected='true'] {
-                    border-bottom-color: var(--color-yellow40);
+                    border-bottom-color: var(--colors-yellow40);
                 }
 
                 &:hover:not([data-selected='true']) {

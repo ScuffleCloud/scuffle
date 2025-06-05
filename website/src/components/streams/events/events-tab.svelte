@@ -97,7 +97,7 @@
     }
 
     .card {
-        background: var(--color-teal30);
+        background: var(--colors-teal30);
         border-radius: 8px;
         padding: 1rem;
         display: flex;
@@ -114,7 +114,7 @@
 
     .resume-button {
         padding: 0.5rem 1rem;
-        background: var(--color-teal90);
+        background: var(--colors-teal90);
         border: none;
         border-radius: 0.5rem;
         font-size: 0.875rem;
@@ -127,7 +127,7 @@
     }
 
     .resume-button-text {
-        color: var(--color-brown90);
+        color: var(--colors-brown90);
         font-size: 1rem;
         font-weight: 700;
         line-height: 1.5rem;
@@ -147,7 +147,7 @@
     .events-legend-container {
         padding: 1.5rem 1rem 1rem 1rem;
         border-radius: 0rem 0rem 0.5rem 0.5rem;
-        background: var(--color-teal70);
+        background: var(--colors-teal70);
         display: flex;
         flex-direction: column;
         gap: 0.75rem;

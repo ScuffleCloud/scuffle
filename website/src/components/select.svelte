@@ -190,7 +190,7 @@
     /* Header styles for custom content */
     :global(.select-header) {
         padding: 0.5rem;
-        color: var(--color-gray60, #64748b);
+        color: var(--colors-gray60, #64748b);
         font-size: 0.875rem;
         font-weight: 500;
         display: flex;

@@ -166,7 +166,7 @@
             margin-bottom: 1.5rem;
 
             .info-item {
-                background: var(--color-teal60);
+                background: var(--colors-teal60);
                 padding: 0.5rem 1rem;
                 border-radius: 0.625rem;
                 display: flex;
@@ -176,11 +176,11 @@
                 .label {
                     display: block;
                     font-size: 0.9rem;
-                    color: var(--color-brown70);
+                    color: var(--colors-brown70);
                 }
 
                 .value {
-                    color: var(--color-brown90);
+                    color: var(--colors-brown90);
                     font-size: 1rem;
                     font-style: normal;
                     font-weight: 700;
@@ -197,7 +197,7 @@
             flex-direction: row;
 
             .webhook-border {
-                border-left: 3px solid var(--color-purple50);
+                border-left: 3px solid var(--colors-purple50);
                 width: 0.1875rem;
                 align-self: stretch;
                 border-radius: 0.25rem 0 0 0.25rem;
@@ -218,7 +218,7 @@
                     color: #6b46c1;
                     font-weight: 500;
                     margin-bottom: 0.5rem;
-                    color: var(--color-brown90);
+                    color: var(--colors-brown90);
                     font-size: 16px;
                     font-style: normal;
                     font-weight: 700;
@@ -226,7 +226,7 @@
                 }
 
                 .webhook-notice {
-                    color: var(--color-brown90);
+                    color: var(--colors-brown90);
                     font-size: 1rem;
                     font-style: normal;
                     font-weight: 500;
@@ -238,7 +238,7 @@
     .encoding-section {
         padding: 0.75rem 0.5rem 0.5rem 0.5rem;
         border-radius: 0rem 0rem 0.5rem 0.5rem;
-        background: var(--color-teal70);
+        background: var(--colors-teal70);
 
         .encoding-header {
             display: flex;
@@ -270,7 +270,7 @@
                 flex-direction: column;
 
                 .label {
-                    color: var(--color-brown70);
+                    color: var(--colors-brown70);
                     font-size: 1rem;
                     font-style: normal;
                     font-weight: 500;
@@ -278,7 +278,7 @@
                 }
 
                 .value {
-                    color: var(--color-brown90);
+                    color: var(--colors-brown90);
                     font-size: 1rem;
                     font-style: normal;
                     font-weight: 700;

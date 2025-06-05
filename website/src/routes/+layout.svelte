@@ -30,7 +30,7 @@
     });
 
     const rootCssVariables = Object.entries(theme.colors)
-        .map(([key, value]) => `--color-${key}: ${value}`)
+        .map(([key, value]) => `--colors-${key}: ${value}`)
         .join(';');
 
     // eslint-disable-next-line @typescript-eslint/no-unused-vars

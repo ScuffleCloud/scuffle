@@ -45,7 +45,7 @@
         .page-title {
             font-size: 2rem;
             font-weight: 700;
-            color: var(--color-yellow90);
+            color: var(--colors-yellow90);
             margin: 0;
         }
     }

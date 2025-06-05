@@ -6,6 +6,7 @@ import {
     mockStreamEventsOptionsDetailResponse,
 } from './mocks/streams';
 import { mockUserResponse } from './mocks/user';
+import { mockUserSettingsResponse } from './mocks/settings';
 
 export const handlers = [
     http.get('/api/v1/video-streams/', () => {
@@ -21,7 +22,11 @@ export const handlers = [
     http.get('/api/v1/video-streams/:id/events/:eventId', () => {
         return HttpResponse.json(mockStreamEventsOptionsDetailResponse);
     }),
-    // Just putting user stuff here for now
+    // Settings page data
+    http.get('/api/v1/users/settings', () => {
+        return HttpResponse.json(mockUserSettingsResponse);
+    }),
+    // Some place to fetch generic user profile information
     http.get('/api/me', () => {
         return HttpResponse.json(mockUserResponse);
     }),

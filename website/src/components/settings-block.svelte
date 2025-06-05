@@ -16,7 +16,6 @@
     export type Card = {
         id: string;
         title: string;
-        subtitle?: string;
         description?: string;
         status?: {
             label: string;
@@ -89,7 +88,7 @@
         {#each cards as card}
             <div class="card">
                 <div class="card-header">
-                    <div class="card-title-section">
+                    <div class="card-title-section" class:has-status={!!card.status}>
                         <h4 class="card-title">{card.title}</h4>
                         {#if card.status}
                             <span class="status-badge {getStatusClass(card.status.variant)}">
@@ -97,9 +96,6 @@
                             </span>
                         {/if}
                     </div>
-                    {#if card.subtitle}
-                        <p class="card-subtitle">{card.subtitle}</p>
-                    {/if}
                 </div>
 
                 {#if card.description}
@@ -116,17 +112,15 @@
                     <div class="card-actions">
                         {#each card.actions as action}
                             {#if action.variant === 'toggle'}
-                                <div class="toggle-action">
-                                    <Switch
-                                        checked={action.isToggled || false}
-                                        disabled={action.disabled || false}
-                                        showStateText={true}
-                                        enabledText={action.enabledText || 'Enabled'}
-                                        disabledText={action.disabledText || 'Disabled'}
-                                        onchange={(checked) => handleToggleChange(action, checked)}
-                                        size="medium"
-                                    />
-                                </div>
+                                <Switch
+                                    checked={action.isToggled || false}
+                                    disabled={action.disabled || false}
+                                    showStateText={true}
+                                    enabledText={action.enabledText || 'Enabled'}
+                                    disabledText={action.disabledText || 'Disabled'}
+                                    onchange={(checked) => handleToggleChange(action, checked)}
+                                    size="medium"
+                                />
                             {:else}
                                 <button
                                     class="action-button {getActionClass(action.variant)}"
@@ -190,7 +184,7 @@
                 background: var(--color-teal30);
                 border-radius: 0.5rem;
                 padding: 1rem;
-                border: 1px solid #e5e7eb;
+                border: 1px solid var(--color-teal10);
 
                 .card-header {
                     display: flex;
@@ -205,6 +199,9 @@
                         justify-content: space-between;
                         flex-wrap: wrap;
                         gap: 0.5rem;
+                        &.has-status {
+                            margin-bottom: 0.25rem;
+                        }
 
                         .card-title {
                             color: var(--color-brown90);
@@ -213,21 +210,17 @@
                             line-height: 1.5rem;
                         }
                     }
-
-                    .card-subtitle {
-                        color: var(--color-brown90);
-                        font-size: 1rem;
-                        font-weight: 500;
-                        line-height: 1.5rem;
-                    }
                 }
 
                 .status-badge {
-                    padding: 0.25rem 0.75rem;
-                    border-radius: 4px;
+                    color: var(--color-gray90);
                     font-size: 0.875rem;
-                    font-weight: 500;
+                    font-style: normal;
+                    font-weight: 700;
+                    line-height: 1rem;
                     white-space: nowrap;
+                    border-radius: 5.25rem;
+                    padding: 0.25rem 0.5625rem;
 
                     &.status-enabled {
                         background: #dcfce7;
@@ -235,8 +228,7 @@
                     }
 
                     &.status-disabled {
-                        background: #fee2e2;
-                        color: #dc2626;
+                        background: var(--color-gray20);
                     }
 
                     &.status-warning {
@@ -246,10 +238,12 @@
                 }
 
                 .card-description {
-                    color: #6b7280;
-                    font-size: 0.875rem;
-                    line-height: 1.5;
-                    margin: 0 0 1rem 0;
+                    margin-bottom: 0.75rem;
+                    color: var(--color-brown90);
+                    font-size: 1rem;
+                    font-style: normal;
+                    font-weight: 500;
+                    line-height: 1.5rem;
                 }
 
                 .card-content {

@@ -8,15 +8,14 @@
     import IconPuzzle from '$lib/images/icon-puzzle.svelte';
     import IconEvents from '$lib/images/icon-events.svelte';
     import IconAssets_2 from '$lib/images/icon-assets-2.svelte';
+    import type { LayoutData } from './$types';
 
     type ChildProps = {
         data: VideoStream;
     };
 
     type Props = {
-        data: {
-            stream: Streamed<VideoStream>;
-        };
+        data: LayoutData;
         children: Snippet<[ChildProps]>;
     };
 

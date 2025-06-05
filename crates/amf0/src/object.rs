@@ -198,7 +198,6 @@ impl<'a> Amf0Object<'a> {
     ///
     /// [`Vec::swap_remove`]: std::vec::Vec::swap_remove
     #[cfg(feature = "preserve_order")]
-    #[cfg_attr(docsrs, doc(cfg(feature = "preserve_order")))]
     #[inline]
     pub fn swap_remove<Q>(&mut self, key: &Q) -> Option<Amf0Value<'a>>
     where
@@ -216,7 +215,6 @@ impl<'a> Amf0Object<'a> {
     ///
     /// [`Vec::swap_remove`]: std::vec::Vec::swap_remove
     #[cfg(feature = "preserve_order")]
-    #[cfg_attr(docsrs, doc(cfg(feature = "preserve_order")))]
     #[inline]
     pub fn swap_remove_entry<Q>(&mut self, key: &Q) -> Option<(StringCow<'a>, Amf0Value<'a>)>
     where
@@ -234,7 +232,6 @@ impl<'a> Amf0Object<'a> {
     ///
     /// [`Vec::remove`]: std::vec::Vec::remove
     #[cfg(feature = "preserve_order")]
-    #[cfg_attr(docsrs, doc(cfg(feature = "preserve_order")))]
     #[inline]
     pub fn shift_remove<Q>(&mut self, key: &Q) -> Option<Amf0Value<'a>>
     where
@@ -252,7 +249,6 @@ impl<'a> Amf0Object<'a> {
     ///
     /// [`Vec::remove`]: std::vec::Vec::remove
     #[cfg(feature = "preserve_order")]
-    #[cfg_attr(docsrs, doc(cfg(feature = "preserve_order")))]
     #[inline]
     pub fn shift_remove_entry<Q>(&mut self, key: &Q) -> Option<(StringCow<'a>, Amf0Value<'a>)>
     where
@@ -803,7 +799,6 @@ impl<'a, 'b> OccupiedEntry<'a, 'b> {
     ///
     /// [`Vec::swap_remove`]: std::vec::Vec::swap_remove
     #[cfg(feature = "preserve_order")]
-    #[cfg_attr(docsrs, doc(cfg(feature = "preserve_order")))]
     #[inline]
     pub fn swap_remove(self) -> Amf0Value<'b> {
         self.occupied.swap_remove()
@@ -817,7 +812,6 @@ impl<'a, 'b> OccupiedEntry<'a, 'b> {
     ///
     /// [`Vec::remove`]: std::vec::Vec::remove
     #[cfg(feature = "preserve_order")]
-    #[cfg_attr(docsrs, doc(cfg(feature = "preserve_order")))]
     #[inline]
     pub fn shift_remove(self) -> Amf0Value<'b> {
         self.occupied.shift_remove()
@@ -846,7 +840,6 @@ impl<'a, 'b> OccupiedEntry<'a, 'b> {
     ///
     /// [`Vec::swap_remove`]: std::vec::Vec::swap_remove
     #[cfg(feature = "preserve_order")]
-    #[cfg_attr(docsrs, doc(cfg(feature = "preserve_order")))]
     #[inline]
     pub fn swap_remove_entry(self) -> (StringCow<'b>, Amf0Value<'b>) {
         self.occupied.swap_remove_entry()
@@ -860,7 +853,6 @@ impl<'a, 'b> OccupiedEntry<'a, 'b> {
     ///
     /// [`Vec::remove`]: std::vec::Vec::remove
     #[cfg(feature = "preserve_order")]
-    #[cfg_attr(docsrs, doc(cfg(feature = "preserve_order")))]
     #[inline]
     pub fn shift_remove_entry(self) -> (StringCow<'b>, Amf0Value<'b>) {
         self.occupied.shift_remove_entry()

@@ -16,19 +16,25 @@ use crate::{BoxHeader, FullBoxHeader, IsoBox, IsoSized, Langauge, UnknownBox};
 #[derive(IsoBox, Debug, PartialEq, Eq)]
 #[iso_box(box_type = b"mdia", crate_path = crate)]
 pub struct MediaBox<'a> {
+    /// The contained [`MediaHeaderBox`]. (mandatory)
     #[iso_box(nested_box)]
     pub mdhd: MediaHeaderBox,
+    /// The contained [`HandlerBox`]. (mandatory)
     #[iso_box(nested_box)]
     pub hdlr: HandlerBox,
+    /// The optional [`ExtendedLanguageBox`]. (optional)
     #[iso_box(nested_box(collect))]
     pub elng: Option<ExtendedLanguageBox>,
+    /// The contained [`MediaInformationBox`]. (mandatory)
     #[iso_box(nested_box)]
     pub minf: MediaInformationBox<'a>,
+    /// A list of unknown boxes that were not recognized during deserialization.
     #[iso_box(nested_box(collect_unknown))]
     pub unknown_boxes: Vec<UnknownBox<'a>>,
 }
 
 impl<'a> MediaBox<'a> {
+    /// Creates a new `MediaBox` with the given `mdhd`, `hdlr`, and `minf`.
     pub fn new(mdhd: MediaHeaderBox, hdlr: HandlerBox, minf: MediaInformationBox<'a>) -> Self {
         Self {
             mdhd,
@@ -46,16 +52,33 @@ impl<'a> MediaBox<'a> {
 #[derive(IsoBox, Debug, PartialEq, Eq)]
 #[iso_box(box_type = b"mdhd", skip_impl(deserialize_seed, serialize, sized), crate_path = crate)]
 pub struct MediaHeaderBox {
+    /// The full box header.
     pub full_header: FullBoxHeader,
+    /// An integer that declares the creation time of the media in this track (in seconds since
+    /// midnight, Jan. 1, 1904, in UTC time).
     pub creation_time: u64,
+    /// An integer that declares the most recent time the media in this track was modified
+    /// (in seconds since midnight, Jan. 1, 1904, in UTC time).
     pub modification_time: u64,
+    /// An integer that specifies the number of time units that pass in one second for this media.
+    /// For example, a time coordinate system that measures time in sixtieths of a second has a time scale
+    /// of 60.
     pub timescale: u32,
+    /// An integer that declares the duration of this media (in the scale of the timescale) and should
+    /// be the largest composition timestamp plus the duration of that sample. If the duration cannot be
+    /// determined then duration is set to all 1s.
     pub duration: u64,
+    /// Declares the language code for this media, as a packed three-character code defined in
+    /// ISO 639-2.
     pub language: Langauge,
+    /// Pre-defined 16 bits, must be set to 0.
     pub pre_defined: u16,
 }
 
 impl MediaHeaderBox {
+    /// Creates a new [`MediaHeaderBox`] with the specified parameters.
+    ///
+    /// All other fields are set to their default values.
     pub fn new(creation_time: u64, modification_time: u64, timescale: u32, duration: u64) -> Self {
         let version = if creation_time > u32::MAX as u64 || modification_time > u32::MAX as u64 || duration > u32::MAX as u64
         {
@@ -161,19 +184,33 @@ impl IsoSized for MediaHeaderBox {
 }
 
 nutype_enum! {
+    /// Handler type as defined in ISO/IEC 14496-12 - 12.
     pub enum HandlerType([u8; 4]) {
+        /// `null`
         Null = *b"null",
+        /// `vide`
         Video = *b"vide",
+        /// `auxv`
         AuxiliaryVideo = *b"auxv",
+        /// `soun`
         Audio = *b"soun",
+        /// `meta`
         Metadata = *b"meta",
+        /// `mp7t`
         MetadataMpeg7t = *b"mp7t",
+        /// `mp7b`
         MetadataMpeg7b = *b"mp7b",
+        /// `hint`
         Hint = *b"hint",
+        /// `text`
         Text = *b"text",
+        /// `subt`
         Subtitle = *b"subt",
+        /// `fdsm`
         Font = *b"fdsm",
+        /// `volv`
         VolumetricVisual = *b"volv",
+        /// `hapt`
         Haptic = *b"hapt",
     }
 }
@@ -190,15 +227,25 @@ impl IsoSized for HandlerType {
 #[derive(IsoBox, Debug, PartialEq, Eq)]
 #[iso_box(box_type = b"hdlr", crate_path = crate)]
 pub struct HandlerBox {
+    /// The full box header.
     pub full_header: FullBoxHeader,
+    /// Pre-defined 32 bits, must be set to 0.
     pub pre_defined: u32,
+    /// - When present in a [`MediaBox`](super::MediaBox), contains a value as defined in Clause 12, or a value from a derived
+    ///   specification, or registration.
+    /// - When present in a [`MetaBox`](super::MetaBox), contains an appropriate value to indicate the format of the
+    ///   [`MetaBox`](super::MetaBox) contents. The value 'null' can be used in the primary [`MetaBox`](super::MetaBox)
+    ///   to indicate that it is merely being used to hold resources.
     #[iso_box(from = "[u8; 4]")]
     pub handler_type: HandlerType,
+    /// Reserved 64 bits, must be set to 0.
     pub reserved: [u32; 3],
+    /// Gives a human-readable name for the track type (for debugging and inspection purposes).
     pub name: Utf8String,
 }
 
 impl HandlerBox {
+    /// Creates a new [`HandlerBox`] with the specified `handler_type` and `name`.
     pub fn new(handler_type: HandlerType, name: Utf8String) -> Self {
         Self {
             full_header: FullBoxHeader::default(),
@@ -216,25 +263,34 @@ impl HandlerBox {
 #[derive(IsoBox, Debug, PartialEq, Eq)]
 #[iso_box(box_type = b"minf", crate_path = crate)]
 pub struct MediaInformationBox<'a> {
+    /// The optional [`VideoMediaHeaderBox`]. (optional)
     #[iso_box(nested_box(collect))]
     pub vmhd: Option<VideoMediaHeaderBox>,
+    /// The optional [`SoundMediaHeaderBox`]. (optional)
     #[iso_box(nested_box(collect))]
     pub smhd: Option<SoundMediaHeaderBox>,
+    /// The optional [`HintMediaHeaderBox`]. (optional)
     #[iso_box(nested_box(collect))]
     pub hmhd: Option<HintMediaHeaderBox>,
+    /// The optional [`SubtitleMediaHeaderBox`]. (optional)
     #[iso_box(nested_box(collect))]
     pub sthd: Option<SubtitleMediaHeaderBox>,
+    /// The optional [`VolumetricVisualMediaHeaderBox`]. (optional)
     #[iso_box(nested_box(collect))]
     pub vvhd: Option<VolumetricVisualMediaHeaderBox>,
+    /// A list of unknown boxes that were not recognized during deserialization.
     #[iso_box(nested_box(collect_unknown))]
     pub unknown_boxes: Vec<UnknownBox<'a>>,
+    /// The contained [`DataInformationBox`]. (mandatory)
     #[iso_box(nested_box)]
     pub dinf: DataInformationBox<'a>,
+    /// The contained [`SampleTableBox`]. (mandatory)
     #[iso_box(nested_box)]
     pub stbl: SampleTableBox<'a>,
 }
 
 impl<'a> MediaInformationBox<'a> {
+    /// Creates a new [`MediaInformationBox`] with the given `stbl`, `vmhd`, and `smhd`.
     pub fn new(stbl: SampleTableBox<'a>, vmhd: Option<VideoMediaHeaderBox>, smhd: Option<SoundMediaHeaderBox>) -> Self {
         Self {
             vmhd,
@@ -255,6 +311,7 @@ impl<'a> MediaInformationBox<'a> {
 #[derive(IsoBox, Debug, PartialEq, Eq)]
 #[iso_box(box_type = b"nmhd", crate_path = crate)]
 pub struct NullMediaHeaderBox {
+    /// The full box header.
     pub full_header: FullBoxHeader,
 }
 
@@ -264,6 +321,9 @@ pub struct NullMediaHeaderBox {
 #[derive(IsoBox, Debug, PartialEq, Eq)]
 #[iso_box(box_type = b"elng", crate_path = crate)]
 pub struct ExtendedLanguageBox {
+    /// The full box header.
     pub full_header: FullBoxHeader,
+    /// Contains an IETF BCP 47 compliant language tag string, such as "en-US", "fr-FR", or
+    /// "zh-CN".
     pub extended_language: Utf8String,
 }

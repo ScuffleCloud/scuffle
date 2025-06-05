@@ -12,6 +12,7 @@ use crate::{IsoBox, IsoSized, UnknownBox, Utf8String};
 /// - Any other boxes
 #[derive(Debug, PartialEq, Eq)]
 pub struct PlainTextSampleEntry {
+    /// The sample entry that this box inherits from.
     pub sample_entry: SampleEntry,
 }
 
@@ -44,13 +45,23 @@ impl IsoSized for PlainTextSampleEntry {
 #[derive(IsoBox, Debug, PartialEq, Eq)]
 #[iso_box(box_type = b"stxt", crate_path = crate)]
 pub struct SimpleTextSampleEntry<'a> {
+    /// The sample entry that this box inherits from.
     pub sample_entry: PlainTextSampleEntry,
+    /// A MIME type which identifies the content encoding of the timed text. It is
+    /// defined in the same way as for an [`ItemInfoEntry`](super::ItemInfoEntry) in this document.
+    /// If not present (an empty string is supplied) the timed text is not encoded.
+    /// An example for this field is 'application/zip'.
     pub content_encoding: Utf8String,
+    /// A MIME type which identifies the content format of the samples. Examples for
+    /// this field include 'text/html' and 'text/plain'.
     pub mime_format: Utf8String,
+    /// The contained [`BitRateBox`]. (optional)
     #[iso_box(nested_box(collect))]
     pub btrt: Option<BitRateBox>,
+    /// The contained [`TextConfigBox`]. (optional)
     #[iso_box(nested_box(collect))]
     pub txtc: Option<TextConfigBox>,
+    /// A list of unknown boxes that were not recognized during deserialization.
     #[iso_box(nested_box(collect_unknown))]
     pub unknown_boxes: Vec<UnknownBox<'a>>,
 }

@@ -12,10 +12,18 @@ use crate::{BoxHeader, FullBoxHeader, IsoBox, IsoSized};
 #[derive(IsoBox, Debug, PartialEq, Eq)]
 #[iso_box(box_type = b"sbgp", skip_impl(deserialize_seed, serialize, sized), crate_path = crate)]
 pub struct SampleToGroupBox {
+    /// The full box header.
     pub full_header: FullBoxHeader,
+    /// An integer that identifies the type (i.e. criterion used to form the sample groups)
+    /// of the sample grouping and links it to its sample group description table with the same value for
+    /// `grouping_type`. At most one occurrence of this box with the same value for `grouping_type` (and,
+    /// if used, `grouping_type_parameter`) shall exist for a track.
     pub grouping_type: [u8; 4],
+    /// An indication of the sub-type of the grouping.
     pub grouping_type_parameter: Option<u32>,
+    /// An integer that gives the number of entries in the following table.
     pub entry_count: u32,
+    /// `sample_count` and `group_description_index`
     pub entries: Vec<SampleToGroupBoxEntry>,
 }
 
@@ -90,9 +98,21 @@ impl IsoSized for SampleToGroupBox {
     }
 }
 
+/// Entry in [`SampleToGroupBox`].
 #[derive(Debug, PartialEq, Eq)]
 pub struct SampleToGroupBoxEntry {
+    /// An integer that gives the number of consecutive samples with the same sample group
+    /// descriptor. It is an error for the total in this box to be greater than the `sample_count` documented
+    /// elsewhere, and the reader behaviour would then be undefined. If the sum of the sample count in
+    /// this box is less than the total sample count, or there is no [`SampleToGroupBox`] that applies to some
+    /// samples (e.g. it is absent from a track fragment), then those samples are associated with the group
+    /// identified by the `default_group_description_index` in the [`SampleGroupDescriptionBox`], if any, or
+    /// else with no group.
     pub sample_count: u32,
+    /// An integer that gives the index of the sample group entry which describes
+    /// the samples in this group. The index ranges from 1 to the number of sample group entries in the
+    /// [`SampleGroupDescriptionBox`], or takes the value 0 to indicate that this sample is a member of no
+    /// group of this type.
     pub group_description_index: u32,
 }
 
@@ -131,11 +151,20 @@ impl IsoSized for SampleToGroupBoxEntry {
 #[derive(IsoBox, Debug, PartialEq, Eq)]
 #[iso_box(box_type = b"sgpd", skip_impl(deserialize_seed, serialize, sized), crate_path = crate)]
 pub struct SampleGroupDescriptionBox<'a> {
+    /// The full box header.
     pub full_header: FullBoxHeader,
+    /// An integer that identifies the [`SampleToGroupBox`] that is associated with this sample group description.
     pub grouping_type: [u8; 4],
+    /// Indicates the length of every group entry (if the length is constant), or zero (0) if it is variable.
     pub default_length: Option<u32>,
+    /// Specifies the index of the sample group description entry which
+    /// applies to all samples in the track for which no sample to group mapping is provided through a
+    /// [`SampleToGroupBox`]. The default value of this field is zero (indicating that the samples are mapped to
+    /// no group description of this type).
     pub default_group_description_index: Option<u32>,
+    /// An integer that gives the number of entries in the following table.
     pub entry_count: u32,
+    /// The contained sample group description entries.
     pub entries: Vec<SampleGroupDescriptionEntry<'a>>,
 }
 
@@ -256,22 +285,63 @@ impl IsoSized for SampleGroupDescriptionBox<'_> {
 #[iso_box(box_type = b"csgp", skip_impl(deserialize_seed, serialize, sized), crate_path = crate)]
 pub struct CompactSampleToGroupBox {
     // full header:
+    /// The version of the box.
     pub version: u8,
+    /// The flags of the box.
     pub flags: CompactSampleToGroupBoxFlags,
     // body:
+    /// An integer that identifies the type (i.e. criterion used to form the sample groups) of the
+    /// sample grouping and links it to its sample group description table with the same value for grouping
+    /// type. At most one occurrence of either the ['csgp'](CompactSampleToGroupBox) or ['sbgp'](SampleToGroupBox) with
+    /// the same value for `grouping_type` (and, if used, `grouping_type_parameter`) shall exist for a track.
     pub grouping_type: [u8; 4],
+    /// An indication of the sub-type of the grouping.
     pub grouping_type_parameter: Option<u32>,
+    /// Indicates the length of the associated pattern in the pattern array that follows it. The
+    /// sum of the included sample_count values indicates the number of mapped samples.
     pub pattern_count: u32,
+    /// `pattern_length` and `sample_count`
     pub patterns: Vec<CompactSampleToGroupBoxPattern>,
+    /// `sample_group_description_index[j][k]`
+    ///
+    /// See [`CompactSampleToGroupBoxSampleGroupDescriptionIndex::value`] for details.
     pub sample_group_description_index: Vec<Vec<CompactSampleToGroupBoxSampleGroupDescriptionIndex>>,
 }
 
+/// Flags for [`CompactSampleToGroupBox`].
 #[derive(Debug, PartialEq, Eq, Clone, Copy)]
 pub struct CompactSampleToGroupBoxFlags {
+    /// A flag that shall be zero when this box appears inside a [`TrackBox`](super::TrackBox)
+    /// but may be 0 or 1 when this box appears inside a [`TrackFragmentBox`](super::TrackFragmentBox).
+    /// When it is 1, it indicates that the most significant bit (MSB) of every `sample_group_description_index`
+    /// does not form part of the index number but instead indicates which [`SampleGroupDescriptionBox`] the
+    /// group description is to be found in: if the MSB is 0, the index identifies a group description from
+    /// the [`TrackBox`](super::TrackBox)'s [`SampleGroupDescriptionBox`];
+    /// if the MSB is 1, the index identifies a group description from the [`TrackFragmentBox`](super::TrackFragmentBox)'s
+    /// [`SampleGroupDescriptionBox`].
     pub index_msb_indicates_fragment_local_description: bool,
+    /// If set, [`CompactSampleToGroupBox::grouping_type_parameter`] is present.
     pub grouping_type_parameter_present: bool,
+    /// Inidicates the size of [`CompactSampleToGroupBoxPattern::pattern_length`].
+    ///
+    /// - `0`: 4 bits
+    /// - `1`: 8 bits
+    /// - `2`: 16 bits
+    /// - `3`: 32 bits
     pub pattern_size_code: u8,
+    /// Inidicates the size of [`CompactSampleToGroupBoxPattern::sample_count`].
+    ///
+    /// - `0`: 4 bits
+    /// - `1`: 8 bits
+    /// - `2`: 16 bits
+    /// - `3`: 32 bits
     pub count_size_code: u8,
+    /// The size of [`CompactSampleToGroupBoxSampleGroupDescriptionIndex::value`].
+    ///
+    /// - `0`: 4 bits
+    /// - `1`: 8 bits
+    /// - `2`: 16 bits
+    /// - `3`: 32 bits
     pub index_size_code: u8,
 }
 
@@ -501,9 +571,15 @@ impl IsoSized for CompactSampleToGroupBox {
     }
 }
 
+/// A pattern in [`CompactSampleToGroupBox`].
 #[derive(Debug, PartialEq, Eq)]
 pub struct CompactSampleToGroupBoxPattern {
+    /// Corresponds to a pattern within the second array of `sample_group_description_index[j]` values.
+    /// Each instance of `pattern_length[i]` shall be greater than 0.
     pub pattern_length: u32,
+    /// Specifies the number of samples that use the `i`-th pattern.
+    /// `sample_count[i]` shall be greater than zero, and `sample_count[i]` shall be
+    /// greater than or equal to [`pattern_length[i]`](Self::pattern_length).
     pub sample_count: u32,
 }
 
@@ -546,20 +622,27 @@ impl<'a> DeserializeSeed<'a, CompactSampleToGroupBoxFlags> for CompactSampleToGr
     }
 }
 
+/// The `sample_group_description_index[j][k]` in [`CompactSampleToGroupBox`].
 #[derive(Debug, PartialEq, Eq)]
 pub struct CompactSampleToGroupBoxSampleGroupDescriptionIndex {
+    /// An integer that gives the index of the sample group entry
+    /// which describes the samples in this group. The index ranges from 1 to the number of sample group
+    /// entries in the SampleGroupDescriptionBox, inclusive, or takes the value 0 to indicate that this
+    /// sample is a member of no group of this type.
     pub value: u32,
+    /// If present, indicates fragment_local or global.
     pub fragment_local: Option<bool>,
 }
 
 impl CompactSampleToGroupBoxSampleGroupDescriptionIndex {
+    /// Converts this value to a number with given size in bits.
     pub fn to_value(&self, size: u8) -> u32 {
         if let Some(fl) = self.fragment_local {
             let mut value = (fl as u32) << (size - 1);
             value |= self.value & ((1 << (size - 1)) - 1);
             value
         } else {
-            self.value
+            self.value & ((1 << size) - 1)
         }
     }
 }

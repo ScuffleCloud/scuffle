@@ -5,20 +5,38 @@ use scuffle_bytes_util::{BytesCow, IoResultExt};
 
 use crate::IsoSized;
 
+/// All defined sample group description entries.
 #[derive(Debug, PartialEq, Eq)]
 pub enum SampleGroupDescriptionEntry<'a> {
+    /// `roll`
     RollRecovery(RollRecoveryEntry),
+    /// `prol`
     AudioPreRoll(AudioPreRollEntry),
+    /// `rash`
     RateShare(RateShareEntry),
+    /// `alst`
     AlternativeStartup(AlternativeStartupEntry),
+    /// `rap `
     VisualRandomAccess(VisualRandomAccessEntry),
+    /// `tele`
     TemporalLevel(TemporalLevelEntry),
+    /// `sap `
     SAP(SAPEntry),
+    /// `stmi`
     SampleToMetadataItem(SampleToMetadataItemEntry),
+    /// `drap`
     VisualDRAP(VisualDRAPEntry),
+    /// `pasr`
     PixelAspectRatio(PixelAspectRatioEntry),
+    /// `casg`
     CleanAperture(CleanApertureEntry),
-    Unknown { grouping_type: [u8; 4], data: BytesCow<'a> },
+    /// Unknown entry
+    Unknown {
+        /// The grouping type of the entry
+        grouping_type: [u8; 4],
+        /// The data
+        data: BytesCow<'a>,
+    },
 }
 
 impl<'a> DeserializeSeed<'a, ([u8; 4], Option<u32>)> for SampleGroupDescriptionEntry<'a> {
@@ -240,9 +258,19 @@ impl IsoSized for RateShareEntry {
     }
 }
 
+/// Operation point in [`RateShareEntry`].
 #[derive(Debug, PartialEq, Eq)]
 pub struct RateShareEntryOperationPoint {
+    /// An integer. A non-zero value indicates the percentage of available bandwidth that
+    /// should be allocated to the media for each operation point. The value of the first (last) operation
+    /// point applies to lower (higher) available bitrates than the operation point itself. The target
+    /// rate share between operation points is bounded by the target rate shares of the corresponding
+    /// operation points. A zero value indicates that no information on the preferred rate share percentage
+    /// is provided.
     pub target_rate_share: u16,
+    /// A positive integer that defines an operation point (in kilobits per second). It is the
+    /// total available bitrate that can be allocated in shares to tracks. Each entry shall be greater than the
+    /// previous entry.
     pub available_bitrate: Option<u32>,
 }
 
@@ -350,9 +378,22 @@ impl IsoSized for AlternativeStartupEntry {
     }
 }
 
+/// Number of samples in an [`AlternativeStartupEntry`].
+///
+/// Indicates the sample output rate within the
+/// alternative startup sequence. The alternative startup sequence is divided into k consecutive pieces,
+/// where each piece has a constant sample output rate which is unequal to that of the adjacent pieces.
+/// The first piece starts from the sample indicated by `first_output_sample`. `num_output_samples[j]`
+/// indicates the number of the output samples of the j-th piece of the alternative startup sequence.
+/// `num_total_samples[j]` indicates the total number of samples, including those that are not in the
+/// alternative startup sequence, from the first sample in the j-th piece that is output to the earlier one
+/// (in composition order) of the sample that ends the alternative startup sequence and the sample
+/// that immediately precedes the first output sample of the (j+1)th piece.
 #[derive(Debug, PartialEq, Eq)]
 pub struct AlternativeStartupEntryNums {
+    /// `num_output_samples[j]`
     pub num_output_samples: u16,
+    /// `num_total_samples[j]`
     pub num_total_samples: u16,
 }
 

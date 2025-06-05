@@ -57,14 +57,6 @@ pub trait Serialize {
         W: std::io::Write;
 }
 
-/// A trait for serializing types to a writer with a seed.
-pub trait SerializeSeed<S> {
-    /// Serialize the value into the given writer using the provided seed.
-    fn serialize_seed<W>(&self, writer: W, seed: S) -> io::Result<()>
-    where
-        W: std::io::Write;
-}
-
 macro_rules! impl_serialize {
     ($($t:ty),+) => {
         $(

@@ -14,8 +14,14 @@ use crate::{BoxHeader, FullBoxHeader, IsoBox, IsoSized};
 #[derive(IsoBox, Debug, PartialEq, Eq, Default)]
 #[iso_box(box_type = b"vmhd", crate_path = crate)]
 pub struct VideoMediaHeaderBox {
+    /// The full box header.
     pub full_header: FullBoxHeader,
+    /// A composition mode for this video track, from the following enumerated set,
+    /// which may be extended by derived specifications:
+    ///
+    /// - copy = 0 copy over the existing image
     pub graphicsmode: u16,
+    /// A set of 3 colour values (red, green, blue) available for use by graphics modes.
     pub opcolor: [u16; 3],
 }
 
@@ -35,22 +41,42 @@ pub struct VideoMediaHeaderBox {
 /// - Any other boxes
 #[derive(Debug, PartialEq, Eq)]
 pub struct VisualSampleEntry {
+    /// The sample entry that this box inherits from.
     pub sample_entry: SampleEntry,
+    /// Pre-defined 16 bits, must be 0.
     pub pre_defined: u16,
+    /// Reserved 16 bits, must be 0.
     pub reserved1: u16,
+    /// Pre-defined 3 * 32 bits, must be 0.
     pub pre_defined2: [u32; 3],
+    /// The maximum visual `width` and `height` of the stream described by this sample description, in pixels.
     pub width: u16,
+    /// See [`width`](Self::width).
     pub height: u16,
+    /// Must be set to `0x00480000` (72 dpi).
     pub horiz_resolution: FixedU32<U16>,
+    /// Must be set to `0x00480000` (72 dpi).
     pub vert_resolution: FixedU32<U16>,
+    /// Reserved 32 bits, must be 0.
     pub reserved2: u32,
+    /// How many frames of compressed video are stored in each sample. The default is
+    /// 1, for one frame per sample; it may be more than 1 for multiple frames per sample.
     pub frame_count: u16,
+    /// A name, for informative purposes. It is formatted in a fixed 32-byte field, with the
+    /// first byte set to the number of bytes to be displayed, followed by that number of bytes of displayable
+    /// data encoded using UTF-8, and then padding to complete 32 bytes total (including the size byte).
+    /// The field may be set to 0.
     pub compressor_name: [u8; 32],
+    /// One of the following values:
+    ///
+    /// - `0x0018`: images are in colour with no alpha.
     pub depth: u16,
+    /// Pre-defined 16 bits, must be -1.
     pub pre_defined4: i16,
 }
 
 impl VisualSampleEntry {
+    /// Creates a new [`VisualSampleEntry`] with the given parameters.
     pub fn new(sample_entry: SampleEntry, width: u16, height: u16, compressor_name: [u8; 32]) -> Self {
         Self {
             sample_entry,
@@ -153,13 +179,25 @@ impl IsoSized for VisualSampleEntry {
 #[derive(IsoBox, Debug, PartialEq, Eq)]
 #[iso_box(box_type = b"clap", crate_path = crate)]
 pub struct CleanApertureBox {
+    /// A fractional number which defines the width of the clean aperture image.
     pub clean_aperture_width_n: u32,
+    /// A fractional number which defines the width of the clean aperture image.
     pub clean_aperture_width_d: u32,
+    /// A fractional number which defines the height of the clean aperture image.
     pub clean_aperture_height_n: u32,
+    /// A fractional number which defines the height of the clean aperture image.
     pub clean_aperture_height_d: u32,
+    /// A fractional number which defines the horizontal offset between the clean
+    /// aperture image centre and the full aperture image centre. Typically 0.
     pub horiz_off_n: u32,
+    /// A fractional number which defines the horizontal offset between the clean
+    /// aperture image centre and the full aperture image centre. Typically 0.
     pub horiz_off_d: u32,
+    /// A fractional number which defines the vertical offset between clean aperture image
+    /// centre and the full aperture image centre. Typically 0.
     pub vert_off_n: u32,
+    /// A fractional number which defines the vertical offset between clean aperture image
+    /// centre and the full aperture image centre. Typically 0.
     pub vert_off_d: u32,
 }
 
@@ -169,7 +207,9 @@ pub struct CleanApertureBox {
 #[derive(IsoBox, Debug, PartialEq, Eq)]
 #[iso_box(box_type = b"pasp", crate_path = crate)]
 pub struct PixelAspectRatioBox {
+    /// Define the relative width and height of a pixel.
     pub h_spacing: u32,
+    /// Define the relative width and height of a pixel.
     pub v_spacing: u32,
 }
 
@@ -188,15 +228,32 @@ impl Default for PixelAspectRatioBox {
 #[derive(IsoBox, Debug, PartialEq, Eq)]
 #[iso_box(box_type = b"colr", crate_path = crate)]
 pub struct ColourInformationBox<'a> {
+    /// The colour information.
     pub colour_info: ColourInformation<'a>,
 }
 
+/// Colour information in the [`ColourInformationBox`] box.
 #[derive(Debug, PartialEq, Eq)]
 pub enum ColourInformation<'a> {
+    /// On-screen colour.
     Nclx(NclxColourInformation),
-    RIcc { icc_profile: BytesCow<'a> },
-    Prof { icc_profile: BytesCow<'a> },
-    Other { colour_type: [u8; 4], data: BytesCow<'a> },
+    /// Restricted ICC profile.
+    RIcc {
+        /// An ICC profile as defined in ISO 15076-1 or ICC.1 is supplied.
+        icc_profile: BytesCow<'a>,
+    },
+    /// Restricted ICC profile.
+    Prof {
+        /// An ICC profile as defined in ISO 15076-1 or ICC.1 is supplied.
+        icc_profile: BytesCow<'a>,
+    },
+    /// Other colour information.
+    Other {
+        /// The colour type.
+        colour_type: [u8; 4],
+        /// The colour info data.
+        data: BytesCow<'a>,
+    },
 }
 
 impl<'a> Deserialize<'a> for ColourInformation<'a> {
@@ -265,11 +322,16 @@ impl IsoSized for ColourInformation<'_> {
     }
 }
 
+/// NCLX colour information in the [`ColourInformationBox`].
 #[derive(Debug, PartialEq, Eq)]
 pub struct NclxColourInformation {
+    /// Carries a `ColourPrimaries` value as defined in ISO/IEC 23091-2.
     pub colour_primaries: u16,
+    /// Carries a `TransferCharacteristics` value as defined in ISO/IEC 23091-2.
     pub transfer_characteristics: u16,
+    /// Carries a `MatrixCoefficients` value as defined in ISO/IEC 23091-2.
     pub matrix_coefficients: u16,
+    /// Carries a `VideoFullRangeFlag` as defined in ISO/IEC 23091-2.
     pub full_range_flag: bool,
 }
 
@@ -309,38 +371,65 @@ impl IsoSized for NclxColourInformation {
 /// Content light level
 ///
 /// ISO/IEC 144496-12 - 12.1.6
+///
+/// It is functionally equivalent to, and shall be as described in, the Content light level
+/// information SEI message in ITU-T H.265 | ISO/IEC 23008-2, with the addition that the provisions of
+/// CTA-861-G, in which zero in some cases codes an unknown value, may be used.
 #[derive(IsoBox, Debug, PartialEq, Eq)]
 #[iso_box(box_type = b"clli", crate_path = crate)]
 pub struct ContentLightLevelBox {
+    /// See [`ContentLightLevelBox`].
     pub max_content_light_level: u16,
+    /// See [`ContentLightLevelBox`].
     pub max_pic_average_light_level: u16,
 }
 
 /// Mastering display colour volume
 ///
 /// ISO/IEC 144496-12 - 12.1.7
+///
+/// It is functionally equivalent to, and shall be as described in, the mastering display colour volume SEI message in
+/// ITU-T H.265 | ISO/IEC 23008-2, with the addition that the provisions of CTA-861-G in which zero in
+/// some cases codes an unknown value may be used.
 #[derive(IsoBox, Debug, PartialEq, Eq)]
 #[iso_box(box_type = b"mdcv", crate_path = crate)]
 pub struct MasteringDisplayColourVolumeBox {
+    /// See [`MasteringDisplayColourVolumeBox`].
     pub display_primaries: [[u16; 2]; 6],
+    /// See [`MasteringDisplayColourVolumeBox`].
     pub white_point_x: u16,
+    /// See [`MasteringDisplayColourVolumeBox`].
     pub white_point_y: u16,
+    /// See [`MasteringDisplayColourVolumeBox`].
     pub max_display_mastering_luminance: u32,
+    /// See [`MasteringDisplayColourVolumeBox`].
     pub min_display_mastering_luminance: u32,
 }
 
 /// Content colour volume
 ///
 /// ISO/IEC 144496-12 - 12.1.8
+///
+/// It is functionally equivalent to, and shall be as described in, the content colour volume SEI message
+/// in Rec. ITU-T H.265 | ISO/IEC 23008-2 except that the box, in a sample entry, applies to the associated
+/// content and hence the initial two bits (corresponding to the `ccv_cancel_flag` and `ccv_persistence_flag`)
+/// take the value 0.
 #[derive(IsoBox, Debug, PartialEq, Eq)]
 #[iso_box(box_type = b"cclv", skip_impl(deserialize_seed, serialize, sized), crate_path = crate)]
 pub struct ContentColourVolumeBox {
+    /// Reserved 1 bit, must be 0.
     pub reserved1: bool,
+    /// Reserved 1 bit, must be 0.
     pub reserved2: bool,
+    /// See [`ContentColourVolumeBox`].
     pub ccv_reserved_zero_2bits: u8,
+    /// See [`ContentColourVolumeBox`].
     pub ccv_primaries: Option<[[i32; 2]; 3]>,
+    /// See [`ContentColourVolumeBox`].
     pub ccv_min_luminance_value: Option<u32>,
+    /// See [`ContentColourVolumeBox`].
     pub ccv_max_luminance_value: Option<u32>,
+    /// See [`ContentColourVolumeBox`].
     pub ccv_avg_luminance_value: Option<u32>,
 }
 
@@ -450,10 +539,16 @@ impl IsoSized for ContentColourVolumeBox {
 /// Ambient viewing environment
 ///
 /// ISO/IEC 144496-12 - 12.1.9
+///
+/// It is functionally equivalent to, and shall be as described in, the ambient viewing environment SEI message
+/// in ITU-T H.265 |I ISO/IEC 23008-2.
 #[derive(IsoBox, Debug, PartialEq, Eq)]
 #[iso_box(box_type = b"amve", crate_path = crate)]
 pub struct AmbientViewingEnvironmentBox {
+    /// See [`AmbientViewingEnvironmentBox`].
     pub ambient_illuminance: u32,
+    /// See [`AmbientViewingEnvironmentBox`].
     pub ambient_light_x: u16,
+    /// See [`AmbientViewingEnvironmentBox`].
     pub ambient_light_y: u16,
 }

@@ -1,7 +1,7 @@
 use std::fmt::Debug;
 use std::io;
 
-use scuffle_bytes_util::zero_copy::{Deserialize, DeserializeSeed, Serialize, SerializeSeed, U24Be};
+use scuffle_bytes_util::zero_copy::{Deserialize, DeserializeSeed, Serialize, U24Be};
 use scuffle_bytes_util::{BitWriter, BytesCow, IoResultExt};
 
 use super::{
@@ -16,33 +16,48 @@ use crate::{BoxHeader, FullBoxHeader, IsoBox, IsoSized, UnknownBox, Utf8String};
 #[derive(IsoBox, Debug, PartialEq, Eq)]
 #[iso_box(box_type = b"meta", crate_path = crate)]
 pub struct MetaBox<'a> {
+    /// The full box header.
     pub full_header: FullBoxHeader,
+    /// The contained [`HandlerBox`]. (mandatory)
     #[iso_box(nested_box)]
     pub hdlr: HandlerBox,
+    /// The contained [`DataInformationBox`]. (optional)
     #[iso_box(nested_box(collect))]
     pub dinf: Option<DataInformationBox<'a>>,
+    /// The contained [`ItemLocationBox`]. (optional)
     #[iso_box(nested_box(collect))]
     pub iloc: Option<ItemLocationBox>,
+    /// The contained [`ItemProtectionBox`]. (optional)
     #[iso_box(nested_box(collect))]
     pub ipro: Option<ItemProtectionBox<'a>>,
+    /// The contained [`ItemInfoBox`]. (optional)
     #[iso_box(nested_box(collect))]
     pub iinf: Option<ItemInfoBox<'a>>,
+    /// The contained [`XmlBox`]. (optional)
     #[iso_box(nested_box(collect))]
     pub xml: Option<XmlBox>,
+    /// The contained [`BinaryXmlBox`]. (optional)
     #[iso_box(nested_box(collect))]
     pub bxml: Option<BinaryXmlBox<'a>>,
+    /// The contained [`PrimaryItemBox`]. (optional)
     #[iso_box(nested_box(collect))]
     pub pitm: Option<PrimaryItemBox>,
+    /// The contained [`FDItemInformationBox`]. (optional)
     #[iso_box(nested_box(collect))]
     pub fiin: Option<FDItemInformationBox>,
+    /// The contained [`ItemDataBox`]. (optional)
     #[iso_box(nested_box(collect))]
     pub idat: Option<ItemDataBox<'a>>,
+    /// The contained [`ItemReferenceBox`]. (optional)
     #[iso_box(nested_box(collect))]
     pub iref: Option<ItemReferenceBox>,
+    /// The contained [`ItemPropertiesBox`]. (optional)
     #[iso_box(nested_box(collect))]
     pub iprp: Option<ItemPropertiesBox<'a>>,
+    /// The contained [`GroupsListBox`]. (optional)
     #[iso_box(nested_box(collect))]
     pub grpl: Option<GroupsListBox<'a>>,
+    /// A list of unknown boxes that were not recognized during deserialization.
     #[iso_box(nested_box(collect_unknown))]
     pub unknown_boxes: Vec<UnknownBox<'a>>,
 }
@@ -53,7 +68,9 @@ pub struct MetaBox<'a> {
 #[derive(IsoBox, Debug, PartialEq, Eq)]
 #[iso_box(box_type = b"xml ", crate_path = crate)]
 pub struct XmlBox {
+    /// The full box header.
     pub full_header: FullBoxHeader,
+    /// A string containing the XML data.
     pub xml: Utf8String,
 }
 
@@ -63,7 +80,9 @@ pub struct XmlBox {
 #[derive(IsoBox, Debug, PartialEq, Eq)]
 #[iso_box(box_type = b"bxml", crate_path = crate)]
 pub struct BinaryXmlBox<'a> {
+    /// The full box header.
     pub full_header: FullBoxHeader,
+    /// Contains the encoded XML data.
     pub data: BytesCow<'a>,
 }
 
@@ -73,13 +92,21 @@ pub struct BinaryXmlBox<'a> {
 #[derive(IsoBox, Debug, PartialEq, Eq)]
 #[iso_box(box_type = b"iloc", skip_impl(deserialize_seed, serialize, sized), crate_path = crate)]
 pub struct ItemLocationBox {
+    /// The full box header.
     pub full_header: FullBoxHeader,
+    /// Taken from the set {0, 4, 8} and indicates the length in bytes of the `offset` field.
     pub offset_size: u8,
+    /// Taken from the set {0, 4, 8} and indicates the length in bytes of the `length` field.
     pub length_size: u8,
+    /// Taken from the set {0, 4, 8} and indicates the length in bytes of the `base_offset` field.
     pub base_offset_size: u8,
-    /// `index_size` or `reserved`
+    /// Taken from the set {0, 4, 8} and indicates the length in bytes of the `item_reference_index` field.
+    ///
+    /// If version is not 1 or 2, this field is reserved and does not represent the `index_size`.
     pub index_size: u8,
+    /// Counts the number of resources in the [`items`](Self::items) array.
     pub item_count: Option<u32>,
+    /// The items contained in this box.
     pub items: Vec<ItemLocationBoxItem>,
 }
 
@@ -211,7 +238,7 @@ impl Serialize for ItemLocationBox {
         }
 
         for item in &self.items {
-            item.serialize_seed(&mut bit_writer, self)?;
+            item.serialize(&mut bit_writer, self)?;
         }
 
         Ok(())
@@ -238,35 +265,45 @@ impl IsoSized for ItemLocationBox {
     }
 }
 
+/// Item in the [`ItemLocationBox`].
 #[derive(Debug, PartialEq, Eq)]
 pub struct ItemLocationBoxItem {
+    /// An arbitrary integer 'name' for this resource which can be used to refer to it (e.g. in a URL).
     pub item_id: Option<u32>,
+    /// Taken from the set 0 (file), 1 (idat) or 2 (item).
     pub construction_method: Option<u8>,
+    /// Either zero ('this file') or an index, with value 1 indicating the first entry, into
+    /// the data references in the [`DataInformationBox`].
     pub data_reference_index: u16,
+    /// Provides a base value for offset calculations within the referenced data.
+    /// If `base_offset_size` is 0, `base_offset` takes the value 0, i.e. it is unused.
     pub base_offset: u64,
+    /// Provides the count of the number of extents into which the resource is fragmented;
+    /// it shall have the value 1 or greater.
     pub extent_count: u16,
+    /// Extents in this item.
     pub extents: Vec<ItemLocationBoxExtent>,
 }
 
-impl SerializeSeed<&ItemLocationBox> for ItemLocationBoxItem {
-    fn serialize_seed<W>(&self, writer: W, seed: &ItemLocationBox) -> io::Result<()>
+impl ItemLocationBoxItem {
+    fn serialize<W>(&self, writer: W, parent: &ItemLocationBox) -> io::Result<()>
     where
         W: std::io::Write,
     {
         let mut bit_writer = BitWriter::new(writer);
 
-        if seed.full_header.version < 2 {
+        if parent.full_header.version < 2 {
             (self
                 .item_id
                 .ok_or(io::Error::new(io::ErrorKind::InvalidData, "item_id is required"))? as u16)
                 .serialize(&mut bit_writer)?;
-        } else if seed.full_header.version == 2 {
+        } else if parent.full_header.version == 2 {
             self.item_id
                 .ok_or(io::Error::new(io::ErrorKind::InvalidData, "item_id is required"))?
                 .serialize(&mut bit_writer)?;
         }
 
-        if seed.full_header.version == 1 || seed.full_header.version == 2 {
+        if parent.full_header.version == 1 || parent.full_header.version == 2 {
             bit_writer.write_bits(0, 12)?;
             bit_writer.write_bits(
                 self.construction_method
@@ -277,11 +314,11 @@ impl SerializeSeed<&ItemLocationBox> for ItemLocationBoxItem {
         }
 
         self.data_reference_index.serialize(&mut bit_writer)?;
-        bit_writer.write_bits(self.base_offset, seed.base_offset_size * 8)?;
+        bit_writer.write_bits(self.base_offset, parent.base_offset_size * 8)?;
         self.extent_count.serialize(&mut bit_writer)?;
 
         for extent in &self.extents {
-            extent.serialize_seed(&mut bit_writer, seed)?;
+            extent.serialize(&mut bit_writer, parent)?;
         }
 
         Ok(())
@@ -289,6 +326,7 @@ impl SerializeSeed<&ItemLocationBox> for ItemLocationBoxItem {
 }
 
 impl ItemLocationBoxItem {
+    /// Calculates the size of this item, depending on the parent box.
     pub fn size(&self, parent: &ItemLocationBox) -> usize {
         let mut size = 0;
 
@@ -309,35 +347,43 @@ impl ItemLocationBoxItem {
     }
 }
 
+/// Extent in the [`ItemLocationBoxItem`].
 #[derive(Debug, PartialEq, Eq)]
 pub struct ItemLocationBoxExtent {
+    /// Provides an index as defined for the construction method.
     pub item_reference_index: Option<u64>,
+    /// Provides the absolute offset, in bytes from the data origin of the container, of this extent
+    /// data. If [`offset_size`](ItemLocationBox::offset_size) is 0, `extent_offset` takes the value 0.
     pub extent_offset: u64,
+    /// Provides the absolute length in bytes of this metadata item extent.
+    /// If [`length_size`](ItemLocationBox::length_size) is 0, `extent_length` takes the value 0.
+    /// If the value is 0, then length of the extent is the length of the entire referenced container.
     pub extent_length: u64,
 }
 
-impl SerializeSeed<&ItemLocationBox> for ItemLocationBoxExtent {
-    fn serialize_seed<W>(&self, writer: W, seed: &ItemLocationBox) -> io::Result<()>
+impl ItemLocationBoxExtent {
+    fn serialize<W>(&self, writer: W, parent: &ItemLocationBox) -> io::Result<()>
     where
         W: std::io::Write,
     {
         let mut bit_writer = BitWriter::new(writer);
 
-        if (seed.full_header.version == 1 || seed.full_header.version == 2) && seed.index_size > 0 {
+        if (parent.full_header.version == 1 || parent.full_header.version == 2) && parent.index_size > 0 {
             bit_writer.write_bits(
                 self.item_reference_index
                     .ok_or(io::Error::new(io::ErrorKind::InvalidData, "item_reference_index is required"))?,
-                seed.index_size * 8,
+                parent.index_size * 8,
             )?;
         }
-        bit_writer.write_bits(self.extent_offset, seed.offset_size * 8)?;
-        bit_writer.write_bits(self.extent_length, seed.length_size * 8)?;
+        bit_writer.write_bits(self.extent_offset, parent.offset_size * 8)?;
+        bit_writer.write_bits(self.extent_length, parent.length_size * 8)?;
 
         Ok(())
     }
 }
 
 impl ItemLocationBoxExtent {
+    /// Calculates the size of this extent, depending on the parent box.
     pub fn size(&self, parent: &ItemLocationBox) -> usize {
         let mut size = 0;
 
@@ -357,7 +403,11 @@ impl ItemLocationBoxExtent {
 #[derive(IsoBox, Debug, PartialEq, Eq)]
 #[iso_box(box_type = b"pitm", skip_impl(deserialize_seed, serialize, sized), crate_path = crate)]
 pub struct PrimaryItemBox {
+    /// The full box header.
     pub full_header: FullBoxHeader,
+    /// The identifier of the primary item, which shall be the identifier of an item in the [`MetaBox`]
+    /// containing the [`PrimaryItemBox`]. Version 1 should only be used when large `item_ID` values (exceeding
+    /// 65535) are required or expected to be required.
     pub item_id: u32,
 }
 
@@ -416,8 +466,11 @@ impl IsoSized for PrimaryItemBox {
 #[derive(IsoBox, Debug, PartialEq, Eq)]
 #[iso_box(box_type = b"ipro", crate_path = crate)]
 pub struct ItemProtectionBox<'a> {
+    /// The full box header.
     pub full_header: FullBoxHeader,
+    /// Number of [`ProtectionSchemeInfoBox`]es in this box.
     pub protection_count: u16,
+    /// The contained [`ScrambleSchemeInfoBox`]es. (one or more)
     #[iso_box(nested_box(collect))]
     pub protection_information: Vec<ProtectionSchemeInfoBox<'a>>,
 }
@@ -428,8 +481,11 @@ pub struct ItemProtectionBox<'a> {
 #[derive(IsoBox, Debug, PartialEq, Eq)]
 #[iso_box(box_type = b"iinf", skip_impl(deserialize_seed, serialize, sized), crate_path = crate)]
 pub struct ItemInfoBox<'a> {
+    /// The full box header.
     pub full_header: FullBoxHeader,
+    /// Provides a count of the number of entries in the [`item_infos`](Self::item_infos) vec.
     pub entry_count: u32,
+    /// The entries.
     #[iso_box(nested_box(collect))]
     pub item_infos: Vec<ItemInfoEntry<'a>>,
 }
@@ -504,23 +560,45 @@ impl IsoSized for ItemInfoBox<'_> {
 #[derive(IsoBox, Debug, PartialEq, Eq)]
 #[iso_box(box_type = b"infe", skip_impl(deserialize_seed, serialize, sized), crate_path = crate)]
 pub struct ItemInfoEntry<'a> {
+    /// The full box header.
     pub full_header: FullBoxHeader,
+    /// Contains either 0 for the primary resource (e.g., the XML contained in an XMLBox) or the ID of
+    /// the item for which the following information is defined.
     pub item_id: Option<u32>,
+    /// Contains either 0 for an unprotected item, or the index, with value 1 indicating
+    /// the first entry, into the ItemProtectionBox defining the protection applied to this item (the first
+    /// box in the ItemProtectionBox has the index 1).
     pub item_protection_index: u16,
+    /// A 32-bit value, typically 4 printable characters, that is a defined valid item type indicator,
+    /// such as 'mime'.
     pub item_type: [u8; 4],
+    /// The symbolic name of the item (source file for file delivery transmissions).
     pub item_name: Utf8String,
+    /// The item information.
     pub item: Option<ItemInfoEntryItem>,
+    /// A four character code that identifies the extension fields.
     pub extension_type: Option<[u8; 4]>,
+    /// The extension.
     pub extension: Option<ItemInfoExtension<'a>>,
 }
 
+/// Info in [`ItemInfoEntry`].
 #[derive(Debug, PartialEq, Eq)]
 pub enum ItemInfoEntryItem {
+    /// MIME type item
     Mime {
+        /// The MIME type of the item. If the item is content encoded, then the content
+        /// type refers to the item after content decoding.
         content_type: Utf8String,
+        /// Indicates that the binary file is encoded and needs to be decoded before
+        /// interpreted. The values are as defined for `Content-Encoding` for HTTP/1.1. Some possible values are
+        /// "gzip", "compress" and "deflate". An empty string indicates no content encoding. Note that the item
+        /// is stored after the content encoding has been applied.
         content_encoding: Utf8String,
     },
+    /// URI item
     Uri {
+        /// An absolute URI, that is used as a type indicator.
         item_uri_type: Utf8String,
     },
 }
@@ -708,19 +786,33 @@ impl IsoSized for ItemInfoEntry<'_> {
     }
 }
 
+/// [`ItemInfoEntry`] extension.
 #[derive(Debug, PartialEq, Eq)]
 pub enum ItemInfoExtension<'a> {
-    // "fdel"
+    /// "fdel"
     FDItemInfoExtension {
+        /// Contains the URI of the file as defined in HTTP/1.1 (IETF RFC 2616).
         current_location: Utf8String,
+        /// Contains an MD5 digest of the file.
+        /// See HTTP/1.1 (IETF RFC 2616) and IETF RFC 1864.
         current_md5: Utf8String,
+        /// Gives the total length (in bytes) of the (un-encoded) file.
         content_length: u64,
+        /// Gives the total length (in bytes) of the (encoded) file. Transfer length is equal to
+        /// content length if no content encoding is applied (see above).
         transfer_length: u64,
+        /// Provides a count of the number of entries in the
+        /// [`group_id`](ItemInfoExtension::FDItemInfoExtension::entry_count) vec.
         entry_count: u8,
+        /// Indicates a file group to which the file item (source file) belongs. See 3GPP TS 26.346 for
+        /// more details on file groups.
         group_id: Vec<u32>,
     },
+    /// Any other extension.
     Other {
+        /// The four character code that identifies the extension fields.
         extension_type: [u8; 4],
+        /// Extension fields.
         data: BytesCow<'a>,
     },
 }
@@ -828,6 +920,7 @@ impl IsoSized for ItemInfoExtension<'_> {
 #[derive(IsoBox, PartialEq, Eq)]
 #[iso_box(box_type = b"idat", crate_path = crate)]
 pub struct ItemDataBox<'a> {
+    /// The contained metadata.
     pub data: BytesCow<'a>,
 }
 
@@ -843,7 +936,9 @@ impl Debug for ItemDataBox<'_> {
 #[derive(IsoBox, Debug, PartialEq, Eq)]
 #[iso_box(box_type = b"iref", skip_impl(deserialize_seed), crate_path = crate)]
 pub struct ItemReferenceBox {
+    /// The full box header.
     pub full_header: FullBoxHeader,
+    /// The contained [`SingleItemTypeReferenceBox`]es. (any quantity)
     #[iso_box(repeated)]
     pub references: Vec<SingleItemTypeReferenceBox>,
 }
@@ -875,12 +970,20 @@ impl<'a> DeserializeSeed<'a, BoxHeader> for ItemReferenceBox {
     }
 }
 
+/// Single item type reference box
+///
+/// ISO/IEC 14496-12 - 8.11.12
 #[derive(Debug, PartialEq, Eq)]
 pub struct SingleItemTypeReferenceBox {
+    /// Inidicates whether this is a `SingleItemTypeReferenceBox` or a `SingleItemTypeReferenceBoxLarge`.
     pub large: bool,
+    /// The box header.
     pub header: BoxHeader,
+    /// The `item_ID` of the item that refers to other items.
     pub from_item_id: u32,
+    /// The number of references.
     pub reference_count: u16,
+    /// The `item_ID` of the item referred to.
     pub to_item_id: Vec<u32>,
 }
 
@@ -965,30 +1068,45 @@ impl IsoSized for SingleItemTypeReferenceBox {
 #[derive(IsoBox, Debug, PartialEq, Eq)]
 #[iso_box(box_type = b"iprp", crate_path = crate)]
 pub struct ItemPropertiesBox<'a> {
+    /// The contained [`ItemPropertyContainerBox`]. (mandatory)
     #[iso_box(nested_box)]
     pub property_container: ItemPropertyContainerBox<'a>,
+    /// The contained [`ItemPropertyAssociationBox`]es. (any quantity)
     #[iso_box(nested_box(collect))]
     pub association: Vec<ItemPropertyAssociationBox>,
 }
 
+/// Item property container box
+///
+/// ISO/IEC 14496-12 - 8.11.14
 #[derive(IsoBox, Debug, PartialEq, Eq)]
 #[iso_box(box_type = b"ipco", crate_path = crate)]
 pub struct ItemPropertyContainerBox<'a> {
+    /// The contained [`ExtendedTypeBox`]. (optional)
     #[iso_box(nested_box(collect))]
     pub etyp: Option<ExtendedTypeBox<'a>>,
+    /// The contained [`BrandProperty`]es. (zero or one per item)
     #[iso_box(nested_box(collect))]
     pub brnd: Vec<BrandProperty>,
+    /// The contained [`ScrambleSchemeInfoBox`]es. (one or more)
     #[iso_box(nested_box(collect))]
     pub scrb: Vec<ScrambleSchemeInfoBox<'a>>,
+    /// Any other sub boxes.
     #[iso_box(nested_box(collect_unknown))]
     pub boxes: Vec<UnknownBox<'a>>,
 }
 
+/// Item property association box
+///
+/// ISO/IEC 14496-12 - 8.11.14
 #[derive(IsoBox, Debug, PartialEq, Eq)]
 #[iso_box(box_type = b"ipma", skip_impl(deserialize_seed, serialize, sized), crate_path = crate)]
 pub struct ItemPropertyAssociationBox {
+    /// The full box header.
     pub full_header: FullBoxHeader,
+    /// The number of entries in the [`entries`](Self::entries) vec.
     pub entry_count: u32,
+    /// The contained entries.
     pub entries: Vec<ItemPropertyAssociationBoxEntry>,
 }
 
@@ -1023,7 +1141,7 @@ impl Serialize for ItemPropertyAssociationBox {
         self.entry_count.serialize(&mut writer)?;
 
         for entry in &self.entries {
-            entry.serialize_seed(&mut writer, &self.full_header)?;
+            entry.serialize(&mut writer, &self.full_header)?;
         }
 
         Ok(())
@@ -1041,10 +1159,14 @@ impl IsoSized for ItemPropertyAssociationBox {
     }
 }
 
+/// Entry in the [`ItemPropertyAssociationBox`].
 #[derive(Debug, PartialEq, Eq)]
 pub struct ItemPropertyAssociationBoxEntry {
+    /// Identifies the item with which properties are associated.
     pub item_id: u32,
+    /// The number of associations in the [`associations`](Self::associations) vec.
     pub association_count: u8,
+    /// The associations.
     pub associations: Vec<ItemPropertyAssociationBoxEntryAssociation>,
 }
 
@@ -1076,12 +1198,12 @@ impl<'a> DeserializeSeed<'a, &FullBoxHeader> for ItemPropertyAssociationBoxEntry
     }
 }
 
-impl SerializeSeed<&FullBoxHeader> for ItemPropertyAssociationBoxEntry {
-    fn serialize_seed<W>(&self, mut writer: W, seed: &FullBoxHeader) -> io::Result<()>
+impl ItemPropertyAssociationBoxEntry {
+    fn serialize<W>(&self, mut writer: W, header: &FullBoxHeader) -> io::Result<()>
     where
         W: std::io::Write,
     {
-        if seed.version < 1 {
+        if header.version < 1 {
             (self.item_id as u16).serialize(&mut writer)?;
         } else {
             self.item_id.serialize(&mut writer)?;
@@ -1089,7 +1211,7 @@ impl SerializeSeed<&FullBoxHeader> for ItemPropertyAssociationBoxEntry {
 
         self.association_count.serialize(&mut writer)?;
         for association in &self.associations {
-            association.serialize_seed(&mut writer, seed.flags)?;
+            association.serialize(&mut writer, header.flags)?;
         }
 
         Ok(())
@@ -1097,6 +1219,7 @@ impl SerializeSeed<&FullBoxHeader> for ItemPropertyAssociationBoxEntry {
 }
 
 impl ItemPropertyAssociationBoxEntry {
+    /// Calculates the size of this entry, depending on the parent's box header.
     pub fn size(&self, header: &FullBoxHeader) -> usize {
         let mut size = 0;
 
@@ -1112,9 +1235,14 @@ impl ItemPropertyAssociationBoxEntry {
     }
 }
 
+/// Association in the [`ItemPropertyAssociationBoxEntry`].
 #[derive(Debug, PartialEq, Eq)]
 pub struct ItemPropertyAssociationBoxEntryAssociation {
+    /// When set to 1 indicates that the associated property is essential to the item, otherwise it is non-essential.
     pub essential: bool,
+    /// Either 0 indicating that no property is associated (the essential indicator shall also
+    /// be 0), or is the 1-based index (counting all boxes, including [`FreeSpaceBox`](super::FreeSpaceBox)es)
+    /// of the associated property box in the [`ItemPropertyContainerBox`] contained in the same [`ItemPropertiesBox`].
     pub property_index: u16,
 }
 
@@ -1143,12 +1271,12 @@ impl<'a> DeserializeSeed<'a, &FullBoxHeader> for ItemPropertyAssociationBoxEntry
     }
 }
 
-impl SerializeSeed<U24Be> for ItemPropertyAssociationBoxEntryAssociation {
-    fn serialize_seed<W>(&self, mut writer: W, seed: U24Be) -> io::Result<()>
+impl ItemPropertyAssociationBoxEntryAssociation {
+    fn serialize<W>(&self, mut writer: W, flags: U24Be) -> io::Result<()>
     where
         W: std::io::Write,
     {
-        if (*seed & 0b1) != 0 {
+        if (*flags & 0b1) != 0 {
             // e iiiiiii
             let mut byte = (self.essential as u8) << 7;
             byte |= ((self.property_index >> 8) as u8) & 0b0111_1111;
@@ -1168,6 +1296,7 @@ impl SerializeSeed<U24Be> for ItemPropertyAssociationBoxEntryAssociation {
 }
 
 impl ItemPropertyAssociationBoxEntryAssociation {
+    /// Calculates the size of this association, depending on the flags.
     pub fn size(&self, flags: U24Be) -> usize {
         if (*flags & 0b1) != 0 {
             2 // e iiiiiii + iiiiiiii
@@ -1183,9 +1312,12 @@ impl ItemPropertyAssociationBoxEntryAssociation {
 #[derive(IsoBox, Debug, PartialEq, Eq)]
 #[iso_box(box_type = b"brnd", crate_path = crate)]
 pub struct BrandProperty {
+    /// The "best use" brand of the file which will provide the greatest compatibility.
     #[iso_box(from = "[u8; 4]")]
     pub major_brand: Brand,
+    /// Minor version of the major brand.
     pub minor_version: u32,
+    /// A list of compatible brands.
     #[iso_box(repeated, from = "[u8; 4]")]
     pub compatible_brands: Vec<Brand>,
 }

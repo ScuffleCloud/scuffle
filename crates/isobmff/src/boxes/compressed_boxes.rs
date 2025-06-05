@@ -9,13 +9,17 @@ use crate::{IsoBox, UnknownBox};
 #[derive(IsoBox, Debug, PartialEq, Eq)]
 #[iso_box(box_type = b"otyp", crate_path = crate)]
 pub struct OriginalFileTypeBox<'a> {
+    /// The contained [`ExtendedTypeBox`]. (optional)
     #[iso_box(nested_box(collect))]
     pub etyp: Option<ExtendedTypeBox<'a>>,
+    /// A list of unknown boxes that were not recognized during deserialization.
     #[iso_box(nested_box(collect_unknown))]
     pub unknown_boxes: Vec<UnknownBox<'a>>,
 }
 
+/// Trait for compressed boxes.
 pub trait CompressedBox {
+    /// The uncompressed box type that this compressed box represents.
     type UncompressedBox: IsoBox;
 }
 
@@ -25,6 +29,8 @@ pub trait CompressedBox {
 #[derive(IsoBox, Debug, PartialEq, Eq)]
 #[iso_box(box_type = b"!mov", crate_path = crate)]
 pub struct CompressedMovieBox<'a> {
+    /// The compressed payload of a box defined by the replacement_type type. This data
+    /// contains the compressed box payload excluding the BoxHeader field of the uncompressed box.
     pub data: BytesCow<'a>,
 }
 
@@ -38,6 +44,8 @@ impl<'a> CompressedBox for CompressedMovieBox<'a> {
 #[derive(IsoBox, Debug, PartialEq, Eq)]
 #[iso_box(box_type = b"!mof", crate_path = crate)]
 pub struct CompressedMovieFragmentBox<'a> {
+    /// The compressed payload of a box defined by the replacement_type type. This data
+    /// contains the compressed box payload excluding the BoxHeader field of the uncompressed box.
     pub data: BytesCow<'a>,
 }
 
@@ -51,6 +59,8 @@ impl<'a> CompressedBox for CompressedMovieFragmentBox<'a> {
 #[derive(IsoBox, Debug, PartialEq, Eq)]
 #[iso_box(box_type = b"!six", crate_path = crate)]
 pub struct CompressedSegmentIndexBox<'a> {
+    /// The compressed payload of a box defined by the replacement_type type. This data
+    /// contains the compressed box payload excluding the BoxHeader field of the uncompressed box.
     pub data: BytesCow<'a>,
 }
 
@@ -64,6 +74,8 @@ impl CompressedBox for CompressedSegmentIndexBox<'_> {
 #[derive(IsoBox, Debug, PartialEq, Eq)]
 #[iso_box(box_type = b"!ssx", crate_path = crate)]
 pub struct CompressedSubsegmentIndexBox<'a> {
+    /// The compressed payload of a box defined by the replacement_type type. This data
+    /// contains the compressed box payload excluding the BoxHeader field of the uncompressed box.
     pub data: BytesCow<'a>,
 }
 

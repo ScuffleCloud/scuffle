@@ -1,6 +1,6 @@
 use std::io;
 
-use scuffle_bytes_util::zero_copy::{Deserialize, DeserializeSeed, Serialize, SerializeSeed, U24Be, ZeroCopyReader};
+use scuffle_bytes_util::zero_copy::{Deserialize, DeserializeSeed, Serialize, U24Be, ZeroCopyReader};
 use scuffle_bytes_util::{BitReader, BitWriter};
 
 use super::{
@@ -15,10 +15,13 @@ use crate::{BoxHeader, FullBoxHeader, IsoBox, IsoSized, UnknownBox};
 #[derive(IsoBox, Debug, PartialEq, Eq)]
 #[iso_box(box_type = b"mvex", crate_path = crate)]
 pub struct MovieExtendsBox {
+    /// The contained [`MovieExtendsHeaderBox`]. (optional)
     #[iso_box(nested_box(collect))]
     pub mehd: Option<MovieExtendsHeaderBox>,
+    /// The contained [`TrackExtendsBox`]es. (exactly one for each track in the [`MovieBox`](super::MovieBox))
     #[iso_box(nested_box(collect))]
     pub trex: Vec<TrackExtendsBox>,
+    /// The contained [`LevelAssignmentBox`]. (optional)
     #[iso_box(nested_box(collect))]
     pub leva: Option<LevelAssignmentBox>,
 }
@@ -29,7 +32,9 @@ pub struct MovieExtendsBox {
 #[derive(IsoBox, Debug, PartialEq, Eq)]
 #[iso_box(box_type = b"mehd", skip_impl(deserialize_seed, serialize, sized), crate_path = crate)]
 pub struct MovieExtendsHeaderBox {
+    /// The full box header.
     pub full_header: FullBoxHeader,
+    /// A number associated with this fragment.
     pub fragment_duration: u64,
 }
 
@@ -83,15 +88,43 @@ impl IsoSized for MovieExtendsHeaderBox {
     }
 }
 
+/// Sample flags
+///
+/// ISO/IEC 14496-12 - 8.8.3
 #[derive(Debug, PartialEq, Eq, Clone, Copy)]
 pub struct SampleFlags {
+    /// Reserved 4 bits, must be 0.
     pub reserved: u8,
+    /// - `0`: The leading nature of this sample is unknown;
+    /// - `1`: This sample is a leading sample that has a dependency before the referenced I-picture (and is
+    ///   therefore not decodable);
+    /// - `2`: This sample is not a leading sample;
+    /// - `3`: This sample is a leading sample that has no dependency before the referenced I-picture (and is
+    ///   therefore decodable);
     pub is_leading: u8,
+    /// - `0`: The dependency of this sample is unknown;
+    /// - `1`: This sample does depend on others (not an I picture);
+    /// - `2`: This sample does not depend on others (I picture);
+    /// - `3`: Reserved;
     pub sample_depends_on: u8,
+    /// - `0`: The dependency of other samples on this sample is unknown;
+    /// - `1`: Other samples may depend on this one (not disposable);
+    /// - `2`: No other sample depends on this one (disposable);
+    /// - `3`: Reserved;
     pub sample_is_depended_on: u8,
+    /// - `0`: It is unknown whether there is redundant coding in this sample;
+    /// - `1`: There is redundant coding in this sample;
+    /// - `2`: There is no redundant coding in this sample;
+    /// - `3`: Reserved;
     pub sample_has_redundancy: u8,
+    /// A value from 0 to 7, indicating the number of padding bits at the end of sample.
     pub sample_padding_value: u8,
+    /// Provides the same information as the sync sample table 8.6.2.
+    /// When this value is set to 0 for a sample, it is the same as if the sample were not in a movie fragment and
+    /// marked with an entry in the sync sample table (or, if all samples are sync samples, the sync sample table
+    /// were absent).
     pub sample_is_non_sync_sample: bool,
+    /// An integer specifying the degradation priority for each sample.
     pub sample_degradation_priority: u16,
 }
 
@@ -154,15 +187,23 @@ impl IsoSized for SampleFlags {
 #[derive(IsoBox, Debug, PartialEq, Eq)]
 #[iso_box(box_type = b"trex", crate_path = crate)]
 pub struct TrackExtendsBox {
+    /// The full box header.
     pub full_header: FullBoxHeader,
+    /// Identifies the track; this shall be the `track_ID` of a track in the [`MovieBox`](super::MovieBox).
     pub track_id: u32,
+    /// Indicates the index of the sample entry that describes, by default,
+    /// the samples in the track fragments.
     pub default_sample_description_index: u32,
+    /// Indicates the default duration of the samples in the track fragments.
     pub default_sample_duration: u32,
+    /// Indicates the default size of the samples in the track fragments.
     pub default_sample_size: u32,
+    /// Indicate the default flags values for the samples in the track fragments.
     pub default_sample_flags: SampleFlags,
 }
 
 impl TrackExtendsBox {
+    /// Creates a new [`TrackExtendsBox`] with the given `track_id`.
     pub fn new(track_id: u32) -> Self {
         Self {
             full_header: FullBoxHeader::default(),
@@ -190,12 +231,16 @@ impl TrackExtendsBox {
 #[derive(IsoBox, Debug, PartialEq, Eq)]
 #[iso_box(box_type = b"moof", crate_path = crate)]
 pub struct MovieFragmentBox<'a> {
+    /// The contained [`MovieFragmentHeaderBox`]. (mandatory)
     #[iso_box(nested_box)]
     pub mfhd: MovieFragmentHeaderBox,
+    /// The contained [`MovieExtendsBox`]. (optional)
     #[iso_box(nested_box(collect))]
     pub meta: Option<MetaBox<'a>>,
+    /// The contained [`TrackFragmentBox`]es. (any quantity)
     #[iso_box(nested_box(collect))]
     pub traf: Vec<TrackFragmentBox<'a>>,
+    /// The contained [`UserDataBox`]. (optional)
     #[iso_box(nested_box(collect))]
     pub udta: Option<UserDataBox<'a>>,
 }
@@ -206,11 +251,14 @@ pub struct MovieFragmentBox<'a> {
 #[derive(IsoBox, Debug, PartialEq, Eq)]
 #[iso_box(box_type = b"mfhd", crate_path = crate)]
 pub struct MovieFragmentHeaderBox {
+    /// The full box header.
     pub full_header: FullBoxHeader,
+    /// A number associated with this fragment.
     pub sequence_number: u32,
 }
 
 impl MovieFragmentHeaderBox {
+    /// Creates a new [`MovieFragmentHeaderBox`] with the given `sequence_number`.
     pub fn new(sequence_number: u32) -> Self {
         Self {
             full_header: FullBoxHeader::default(),
@@ -225,24 +273,34 @@ impl MovieFragmentHeaderBox {
 #[derive(IsoBox, Debug, PartialEq, Eq)]
 #[iso_box(box_type = b"traf", crate_path = crate)]
 pub struct TrackFragmentBox<'a> {
+    /// The contained [`TrackFragmentHeaderBox`]. (mandatory)
     #[iso_box(nested_box)]
     pub tfhd: TrackFragmentHeaderBox,
+    /// The contained [`TrackRunBox`]es. (any quantity)
     #[iso_box(nested_box(collect))]
     pub trun: Vec<TrackRunBox>,
+    /// The contained [`SampleToGroupBox`]es. (any quantity)
     #[iso_box(nested_box(collect))]
     pub sbgp: Vec<SampleToGroupBox>,
+    /// The contained [`SampleGroupDescriptionBox`]es. (any quantity)
     #[iso_box(nested_box(collect))]
     pub sgpd: Vec<SampleGroupDescriptionBox<'a>>,
+    /// The contained [`SubSampleInformationBox`]es. (any quantity)
     #[iso_box(nested_box(collect))]
     pub subs: Vec<SubSampleInformationBox>,
+    /// The contained [`SampleAuxiliaryInformationSizesBox`]es. (any quantity)
     #[iso_box(nested_box(collect))]
     pub saiz: Vec<SampleAuxiliaryInformationSizesBox<'a>>,
+    /// The contained [`SampleAuxiliaryInformationOffsetsBox`]es. (any quantity)
     #[iso_box(nested_box(collect))]
     pub saio: Vec<SampleAuxiliaryInformationOffsetsBox>,
+    /// The contained [`TrackFragmentBaseMediaDecodeTimeBox`]es. (any quantity)
     #[iso_box(nested_box(collect))]
     pub tfdt: Option<TrackFragmentBaseMediaDecodeTimeBox>,
+    /// The contained [`MetaBox`]. (optional)
     #[iso_box(nested_box(collect))]
     pub meta: Option<MetaBox<'a>>,
+    /// The contained [`UserDataBox`]. (optional)
     #[iso_box(nested_box(collect))]
     pub udta: Option<UserDataBox<'a>>,
 }
@@ -254,18 +312,38 @@ pub struct TrackFragmentBox<'a> {
 #[iso_box(box_type = b"tfhd", skip_impl(deserialize_seed, serialize), crate_path = crate)]
 pub struct TrackFragmentHeaderBox {
     // full header:
+    /// The version of the box.
     pub version: u8,
+    /// The flags of the box.
     pub flags: TfFlags,
     // body:
+    /// Identifies the track; this shall be the `track_ID` of a track in the [`MovieBox`](super::MovieBox).
     pub track_id: u32,
+    /// The base offset to use when calculating data offsets.
+    ///
+    /// Present if the [`BaseDataOffsetPresent`](TfFlags::BaseDataOffsetPresent) flag is set.
     pub base_data_offset: Option<u64>,
+    /// Indicates the index of the sample entry that describes, by default,
+    /// the samples in the track fragments.
+    ///
+    /// Present if the [`SampleDescriptionIndexPresent`](TfFlags::SampleDescriptionIndexPresent) flag is set.
     pub sample_description_index: Option<u32>,
+    /// Indicates the default duration of the samples in the track fragments.
+    ///
+    /// Present if the [`DefaultSampleDurationPresent`](TfFlags::DefaultSampleDurationPresent) flag is set.
     pub default_sample_duration: Option<u32>,
+    /// Indicates the default size of the samples in the track fragments.
+    ///
+    /// Present if the [`DefaultSampleSizePresent`](TfFlags::DefaultSampleSizePresent) flag is set.
     pub default_sample_size: Option<u32>,
+    /// Indicate the default flags values for the samples in the track fragments.
+    ///
+    /// Present if the [`DefaultSampleFlagsPresent`](TfFlags::DefaultSampleFlagsPresent) flag is set.
     pub default_sample_flags: Option<SampleFlags>,
 }
 
 impl TrackFragmentHeaderBox {
+    /// Creates a new [`TrackFragmentHeaderBox`] with the given parameters.
     pub fn new(
         track_id: u32,
         base_data_offset: Option<u64>,
@@ -310,14 +388,31 @@ impl TrackFragmentHeaderBox {
 }
 
 bitflags::bitflags! {
+    /// Track fragment header flags
     #[derive(Debug, Clone, Copy, PartialEq, Eq)]
     pub struct TfFlags: u32 {
+        /// Indicates the presence of the base-data-offset field. This
+        /// provides an explicit anchor for the data offsets in each track run.
         const BaseDataOffsetPresent = 0x000001;
+        /// Indicates the presence of this field, which over-rides, in
+        /// this fragment, the default set up in the [`TrackExtendsBox`].
         const SampleDescriptionIndexPresent = 0x000002;
+        /// Indicates the presence of the [`default_sample_duration`](TrackFragmentHeaderBox::default_sample_duration) field.
         const DefaultSampleDurationPresent = 0x000008;
+        /// Indicates the presence of the [`default_sample_size`](TrackFragmentHeaderBox::default_sample_size) field.
         const DefaultSampleSizePresent = 0x000010;
+        /// Indicates the presence of the [`default_sample_flags`](TrackFragmentHeaderBox::default_sample_flags) field.
         const DefaultSampleFlagsPresent = 0x000020;
+        /// This indicates that the duration provided in either
+        /// [`default_sample_duration`](TrackFragmentHeaderBox::default_sample_duration), or by the
+        /// [`default_sample_duration`](TrackExtendsBox::default_sample_duration) in the [`TrackExtendsBox`],
+        /// is empty, i.e. that there are no samples for this time interval.
+        /// It is an error to make a presentation that has both edit lists in the [`MovieBox`](super::MovieBox),
+        /// and empty-duration fragments.
         const DurationIsEmpty = 0x010000;
+        /// If [`BaseDataOffsetPresent`](Self::BaseDataOffsetPresent) is set, this flag is ignored. Support for the
+        /// [`DefaultBaseIsMoof`](Self::DefaultBaseIsMoof) is required under the 'iso5' brand,
+        /// and it shall not be used in brands or compatible brands earlier than 'iso5'.
         const DefaultBaseIsMoof = 0x020000;
     }
 }
@@ -448,16 +543,23 @@ impl Serialize for TrackFragmentHeaderBox {
 #[iso_box(box_type = b"trun", skip_impl(deserialize_seed, serialize, sized), crate_path = crate)]
 pub struct TrackRunBox {
     // full header:
+    /// The version of the box.
     pub version: u8,
+    /// The flags of the box.
     pub flags: TrFlags,
     // body:
+    /// The number of samples being added in this run; also the number of rows in the [`samples`](Self::samples) vec.
     pub sample_count: u32,
+    /// Added to the implicit or explicit `data_offset` established in the track fragment header.
     pub data_offset: Option<i32>,
+    /// Provides a set of flags for the first sample only of this run.
     pub first_sample_flags: Option<SampleFlags>,
+    /// The samples in this run.
     pub samples: Vec<TrackRunBoxSample>,
 }
 
 impl TrackRunBox {
+    /// Creates a new [`TrackRunBox`] with the given samples and optional first sample flags.
     pub fn new(samples: Vec<TrackRunBoxSample>, first_sample_flags: Option<SampleFlags>) -> Self {
         let mut flags = TrFlags::DataOffsetPresent;
 
@@ -573,30 +675,65 @@ impl Serialize for TrackRunBox {
         }
 
         for sample in &self.samples {
-            sample.serialize_seed(&mut writer, (self.version, self.flags))?;
+            sample.serialize(&mut writer, (self.version, self.flags))?;
         }
 
         Ok(())
     }
 }
 
+/// Sample in a [`TrackRunBox`].
 #[derive(Debug, PartialEq, Eq)]
 pub struct TrackRunBoxSample {
+    /// Duration of this sample.
+    ///
+    /// Present if the [`SampleDurationPresent`](TrFlags::SampleDurationPresent) flag is set.
     pub sample_duration: Option<u32>,
+    /// Size of this sample.
+    ///
+    /// Present if the [`SampleSizePresent`](TrFlags::SampleSizePresent) flag is set.
     pub sample_size: Option<u32>,
+    /// Flags for this sample.
+    ///
+    /// Present if the [`SampleFlagsPresent`](TrFlags::SampleFlagsPresent) flag is set.
     pub sample_flags: Option<SampleFlags>,
-    /// Either a u32 or a i32
+    /// Composition time offset for this sample.
+    /// Either a signed or unsigned 32-bit integer.
+    ///
+    /// Present if the [`SampleCompositionTimeOffsetsPresent`](TrFlags::SampleCompositionTimeOffsetsPresent) flag is set.
     pub sample_composition_time_offset: Option<i64>,
 }
 
 bitflags::bitflags! {
+    /// Track run flags
     #[derive(Debug, PartialEq, Eq, Clone, Copy)]
     pub struct TrFlags: u32 {
+        /// Indicates the presence of the [`data_offset`](TrackRunBox::data_offset) field.
         const DataOffsetPresent = 0x000001;
+        /// This overrides the default flags for the first sample only,
+        /// defined in [8.8.3.1](TrackExtendsBox).
+        /// This makes it possible to record a group of frames where the first is a key and the
+        /// rest are difference frames, without supplying explicit flags for every sample. If this flag and field
+        /// are used, [`SampleFlagsPresent`](Self::SampleFlagsPresent) shall not be set.
+        ///
+        /// If this flag is set, the [`first_sample_flags`](TrackRunBox::first_sample_flags) field is present.
         const FirstSampleFlagsPresent = 0x000004;
+        /// Indicates that each sample has its own duration, otherwise the default is used.
+        ///
+        /// Indicates the presence of the [`sample_duration`](TrackRunBoxSample::sample_duration) field.
         const SampleDurationPresent = 0x000100;
+        /// Each sample has its own size, otherwise the default is used.
+        ///
+        /// Indicates the presence of the [`sample_size`](TrackRunBoxSample::sample_size) field.
         const SampleSizePresent = 0x000200;
+        /// Each sample has its own flags, otherwise the default is used.
+        ///
+        /// Indicates the presence of the [`sample_flags`](TrackRunBoxSample::sample_flags) field.
         const SampleFlagsPresent = 0x000400;
+        /// Each sample has a composition time offset.
+        ///
+        /// Indicates the presence of the [`sample_composition_time_offset`](TrackRunBoxSample::sample_composition_time_offset)
+        /// field.
         const SampleCompositionTimeOffsetsPresent = 0x000800;
     }
 }
@@ -667,12 +804,12 @@ impl<'a> DeserializeSeed<'a, (u8, TrFlags)> for TrackRunBoxSample {
     }
 }
 
-impl SerializeSeed<(u8, TrFlags)> for TrackRunBoxSample {
-    fn serialize_seed<W>(&self, mut writer: W, seed: (u8, TrFlags)) -> io::Result<()>
+impl TrackRunBoxSample {
+    fn serialize<W>(&self, mut writer: W, full_header: (u8, TrFlags)) -> io::Result<()>
     where
         W: io::Write,
     {
-        let (version, flags) = seed;
+        let (version, flags) = full_header;
 
         if flags.contains(TrFlags::SampleDurationPresent) {
             self.sample_duration
@@ -706,6 +843,7 @@ impl SerializeSeed<(u8, TrFlags)> for TrackRunBoxSample {
 }
 
 impl TrackRunBoxSample {
+    /// Returns the size of this sample in bytes, depending on the flags.
     pub fn size(&self, flags: TrFlags) -> usize {
         let mut size = 0;
         if flags.contains(TrFlags::SampleDurationPresent) {
@@ -731,8 +869,10 @@ impl TrackRunBoxSample {
 #[derive(IsoBox, Debug, PartialEq, Eq)]
 #[iso_box(box_type = b"mfra", crate_path = crate)]
 pub struct MovieFragmentRandomAccessBox {
+    /// The contained [`TrackFragmentRandomAccessBox`]es. (zero or one per track)
     #[iso_box(nested_box(collect))]
     pub tfra: Vec<TrackFragmentRandomAccessBox>,
+    /// The contained [`MovieFragmentRandomAccessOffsetBox`]. (mandatory)
     #[iso_box(nested_box)]
     pub mfro: MovieFragmentRandomAccessOffsetBox,
 }
@@ -743,12 +883,20 @@ pub struct MovieFragmentRandomAccessBox {
 #[derive(IsoBox, Debug, PartialEq, Eq)]
 #[iso_box(box_type = b"tfra", skip_impl(deserialize_seed, serialize, sized), crate_path = crate)]
 pub struct TrackFragmentRandomAccessBox {
+    /// The full box header.
     pub full_header: FullBoxHeader,
+    /// An integer providing the track identifier for which random access information is provided.
     pub track_id: u32,
+    /// Indicates the length in bytes of the traf_number field minus one.
     pub length_size_of_traf_num: u8,
+    /// Indicates the length in bytes of the trun_number field minus one.
     pub length_size_of_trun_num: u8,
+    /// Indicates the length in bytes of the sample_number field minus one.
     pub length_size_of_sample_num: u8,
+    /// An integer that gives the number of the entries for this track. If this value is zero, it
+    /// indicates that every sample is a sync sample and no table entry follows.
     pub number_of_entry: u32,
+    /// `time`, `moof_offset`, `traf_number`, `trun_number`, and `sample_number`.
     pub entries: Vec<TrackFragmentRandomAccessBoxEntry>,
 }
 
@@ -790,7 +938,7 @@ impl<'a> DeserializeSeed<'a, BoxHeader> for TrackFragmentRandomAccessBox {
                 moof_offset,
                 traf_number,
                 trun_number,
-                sample_number,
+                sample_delta: sample_number,
             });
         }
 
@@ -824,7 +972,7 @@ impl Serialize for TrackFragmentRandomAccessBox {
         self.number_of_entry.serialize(&mut bit_writer)?;
 
         for entry in &self.entries {
-            entry.serialize_seed(&mut bit_writer, self)?;
+            entry.serialize(&mut bit_writer, self)?;
         }
 
         Ok(())
@@ -843,23 +991,34 @@ impl IsoSized for TrackFragmentRandomAccessBox {
     }
 }
 
+/// Entry in a [`TrackFragmentRandomAccessBox`].
 #[derive(Debug, PartialEq, Eq)]
 pub struct TrackFragmentRandomAccessBoxEntry {
+    /// An integer that indicates the presentation time of the sync sample in units defined in
+    /// the [`MediaHeaderBox`](super::MediaHeaderBox) of the associated track.
     pub time: u64,
+    /// An integer that gives the offset of the ['moof'](MovieFragmentBox) used in this entry. Offset is the
+    /// byte-offset between the beginning of the file and the beginning of the ['moof'](MovieFragmentBox).
     pub moof_offset: u64,
+    /// Indicates the ['traf'](TrackFragmentBox) number that contains the sync sample. The number ranges from 1
+    /// (the first ['traf'](TrackFragmentBox) is numbered 1) in each ['moof'](MovieFragmentBox).
     pub traf_number: u32,
+    /// Indicates the ['trun'](TrackRunBox) number that contains the sync sample. The number ranges from 1 in
+    /// each ['traf'](TrackFragmentBox).
     pub trun_number: u32,
-    pub sample_number: u32,
+    /// Indicates the sample number of the sync sample. It is coded as one plus the desired sample
+    /// number minus the sample number of the first sample in the [`TrackRunBox`].
+    pub sample_delta: u32,
 }
 
-impl SerializeSeed<&TrackFragmentRandomAccessBox> for TrackFragmentRandomAccessBoxEntry {
-    fn serialize_seed<W>(&self, writer: W, seed: &TrackFragmentRandomAccessBox) -> io::Result<()>
+impl TrackFragmentRandomAccessBoxEntry {
+    fn serialize<W>(&self, writer: W, parent: &TrackFragmentRandomAccessBox) -> io::Result<()>
     where
         W: std::io::Write,
     {
         let mut bit_writer = BitWriter::new(writer);
 
-        if seed.full_header.version == 1 {
+        if parent.full_header.version == 1 {
             self.time.serialize(&mut bit_writer)?;
             self.moof_offset.serialize(&mut bit_writer)?;
         } else {
@@ -867,15 +1026,16 @@ impl SerializeSeed<&TrackFragmentRandomAccessBox> for TrackFragmentRandomAccessB
             (self.moof_offset as u32).serialize(&mut bit_writer)?;
         }
 
-        bit_writer.write_bits(self.traf_number as u64, (seed.length_size_of_traf_num + 1) * 8)?;
-        bit_writer.write_bits(self.trun_number as u64, (seed.length_size_of_trun_num + 1) * 8)?;
-        bit_writer.write_bits(self.sample_number as u64, (seed.length_size_of_sample_num + 1) * 8)?;
+        bit_writer.write_bits(self.traf_number as u64, (parent.length_size_of_traf_num + 1) * 8)?;
+        bit_writer.write_bits(self.trun_number as u64, (parent.length_size_of_trun_num + 1) * 8)?;
+        bit_writer.write_bits(self.sample_delta as u64, (parent.length_size_of_sample_num + 1) * 8)?;
 
         Ok(())
     }
 }
 
 impl TrackFragmentRandomAccessBoxEntry {
+    /// Returns the size of this entry in bytes, depending on the parent box.
     pub fn size(&self, parent: &TrackFragmentRandomAccessBox) -> usize {
         let mut size = 0;
         if parent.full_header.version == 1 {
@@ -898,7 +1058,11 @@ impl TrackFragmentRandomAccessBoxEntry {
 #[derive(IsoBox, Debug, PartialEq, Eq)]
 #[iso_box(box_type = b"mfro", crate_path = crate)]
 pub struct MovieFragmentRandomAccessOffsetBox {
+    /// The full box header.
     pub full_header: FullBoxHeader,
+    /// An integer that gives the number of bytes of the enclosing [`MovieFragmentRandomAccessBox`]
+    /// box. This field is placed last in the enclosing box to assist readers scanning from the end of the file
+    /// in finding the [`MovieFragmentRandomAccessBox`].
     pub parent_size: u32,
 }
 
@@ -908,11 +1072,16 @@ pub struct MovieFragmentRandomAccessOffsetBox {
 #[derive(IsoBox, Debug, PartialEq, Eq)]
 #[iso_box(box_type = b"tfdt", skip_impl(deserialize_seed, serialize, sized), crate_path = crate)]
 pub struct TrackFragmentBaseMediaDecodeTimeBox {
+    /// The full box header.
     pub full_header: FullBoxHeader,
+    /// An integer equal to the sum of the decode durations of all earlier samples in the
+    /// media, expressed in the media's timescale. It does not include the samples added in the enclosing
+    /// track fragment.
     pub base_media_decode_time: u64,
 }
 
 impl TrackFragmentBaseMediaDecodeTimeBox {
+    /// Creates a new [`TrackFragmentBaseMediaDecodeTimeBox`] with the given base media decode time.
     pub fn new(base_media_decode_time: u64) -> Self {
         let version = if base_media_decode_time > u32::MAX as u64 { 1 } else { 0 };
 
@@ -982,16 +1151,27 @@ impl IsoSized for TrackFragmentBaseMediaDecodeTimeBox {
 #[derive(IsoBox, Debug, PartialEq, Eq)]
 #[iso_box(box_type = b"leva", crate_path = crate)]
 pub struct LevelAssignmentBox {
+    /// The full box header.
     pub full_header: FullBoxHeader,
+    /// Specifies the number of levels each fraction is grouped into. `level_count` shall be greater
+    /// than or equal to 2.
     pub level_count: u8,
+    /// `track_ID`, `padding_flag`, `assignment_type` and [`LevelAssignmentBoxLevelAssignmentType`].
     #[iso_box(repeated)]
     pub levels: Vec<LevelAssignmentBoxLevel>,
 }
 
+/// Level in a [`LevelAssignmentBox`].
 #[derive(Debug, PartialEq, Eq)]
 pub struct LevelAssignmentBoxLevel {
+    /// For loop entry `j` specifies the track identifier of the track assigned to level `j`.
     pub track_id: u32,
+    /// Equal to 1 indicates that a conforming fraction can be formed by concatenating any
+    /// positive integer number of levels within a fraction and padding the last [`MediaDataBox`](super::MediaDataBox)
+    /// by zero bytes up to the full size that is indicated in the header of the last [`MediaDataBox`](super::MediaDataBox).
+    /// When `padding_flag` is equal to 0 this is not assured.
     pub padding_flag: bool,
+    /// Specifies the type of level assignment.
     pub assignment_type: LevelAssignmentBoxLevelAssignmentType,
 }
 
@@ -1076,24 +1256,54 @@ impl IsoSized for LevelAssignmentBoxLevel {
     }
 }
 
+/// Type of level assignment in a [`LevelAssignmentBox`].
 #[derive(Debug, PartialEq, Eq)]
 pub enum LevelAssignmentBoxLevelAssignmentType {
+    /// Type 0: sample groups are used to specify levels, i.e., samples mapped to different sample group
+    /// description indexes of a particular sample grouping lie in different levels within the identified
+    /// track; other tracks are not affected and shall have all their data in precisely one level;
     Type0 {
+        /// Specifies the sample grouping used to
+        /// map sample group description entries in the [`SampleGroupDescriptionBox`] to levels. Level `n`
+        /// contains the samples that are mapped to the [`SampleGroupDescriptionEntry`](super::SampleGroupDescriptionEntry)
+        /// having index `n` in grouping_type the [`SampleGroupDescriptionBox`] having the same values of
+        /// `grouping_type` and `grouping_type_parameter`, if present, as those provided in this box.
         grouping_type: [u8; 4],
     },
+    /// Type 1: as for [`Type0`](Self::Type0) except assignment is by a parameterized sample group;
     Type1 {
+        /// Specifies the sample grouping used to
+        /// map sample group description entries in the [`SampleGroupDescriptionBox`] to levels. Level `n`
+        /// contains the samples that are mapped to the [`SampleGroupDescriptionEntry`](super::SampleGroupDescriptionEntry)
+        /// having index `n` in grouping_type the [`SampleGroupDescriptionBox`] having the same values of
+        /// `grouping_type` and `grouping_type_parameter`, if present, as those provided in this box.
         grouping_type: [u8; 4],
+        /// Specifies the sample grouping used to
+        /// map sample group description entries in the [`SampleGroupDescriptionBox`] to levels. Level `n`
+        /// contains the samples that are mapped to the [`SampleGroupDescriptionEntry`](super::SampleGroupDescriptionEntry)
+        /// having index `n` in grouping_type the [`SampleGroupDescriptionBox`] having the same values of
+        /// `grouping_type` and `grouping_type_parameter`, if present, as those provided in this box.
         grouping_type_parameter: u32,
     },
+    /// Type 2: level assignment is by track (see the [`SubsegmentIndexBox`](super::SubsegmentIndexBox)
+    /// for the difference in processing of these levels)
     Type2,
+    /// Type 3: level assignment is by track (see the [`SubsegmentIndexBox`](super::SubsegmentIndexBox)
+    /// for the difference in processing of these levels)
     Type3,
+    /// Type 4: the respective level contains the samples for a sub-track. The sub-tracks are specified through
+    /// the [`SubTrackBox`](super::SubTrackBox);
+    /// other tracks are not affected and shall have all their data in precisely one level;
     Type4 {
+        /// Specifies that the sub-track identified by `sub_track_ID` within loop entry `j` is mapped to level `j`.
         sub_track_id: u32,
     },
+    /// Other assignment type.
     Other(u8),
 }
 
 impl LevelAssignmentBoxLevelAssignmentType {
+    /// Returns the assignment type as a u8.
     pub fn assignment_type(&self) -> u8 {
         match self {
             LevelAssignmentBoxLevelAssignmentType::Type0 { .. } => 0,
@@ -1112,12 +1322,17 @@ impl LevelAssignmentBoxLevelAssignmentType {
 #[derive(IsoBox, Debug, PartialEq, Eq)]
 #[iso_box(box_type = b"trep", crate_path = crate)]
 pub struct TrackExtensionPropertiesBox<'a> {
+    /// The full box header.
     pub full_header: FullBoxHeader,
+    /// Indicates the track for which the track extension properties are provided in this box.
     pub track_id: u32,
+    /// The contained [`CompositionToDecodeBox`]. (optional)
     #[iso_box(nested_box(collect))]
     pub cslg: Option<CompositionToDecodeBox>,
+    /// The contained [`AlternativeStartupSequencePropertiesBox`]. (optional)
     #[iso_box(nested_box(collect))]
     pub assp: Option<AlternativeStartupSequencePropertiesBox>,
+    /// Any other boxes that were not recognized during deserialization.
     #[iso_box(nested_box(collect_unknown))]
     pub unknown_boxes: Vec<UnknownBox<'a>>,
 }
@@ -1128,7 +1343,10 @@ pub struct TrackExtensionPropertiesBox<'a> {
 #[derive(IsoBox, Debug, PartialEq, Eq)]
 #[iso_box(box_type = b"assp", skip_impl(deserialize_seed, serialize), crate_path = crate)]
 pub struct AlternativeStartupSequencePropertiesBox {
+    /// The full box header.
     pub full_header: FullBoxHeader,
+    /// `min_initial_alt_startup_offset` or `grouping_type_parameter` and `min_initial_alt_startup_offset`
+    /// depending on the version.
     pub version: AlternativeStartupSequencePropertiesBoxVersion,
 }
 
@@ -1194,15 +1412,27 @@ impl Serialize for AlternativeStartupSequencePropertiesBox {
     }
 }
 
+/// Version of the [`AlternativeStartupSequencePropertiesBox`].
 #[derive(Debug, PartialEq, Eq)]
 pub enum AlternativeStartupSequencePropertiesBoxVersion {
+    /// Version 0.
     Version0 {
+        /// No value of `sample_offset`(3GPP) of the referred sample group
+        /// description entries of the alternative startup sequence sample grouping shall be smaller than
+        /// min_initial_alt_startup_offset. In version 0 of this box, the alternative startup sequence sample
+        /// grouping using version 0 of the Sample to Group box is referred to. In version 1 of this box, the
+        /// alternative startup sequence sample grouping using version 1 of the [`SampleToGroupBox`] is referred
+        /// to as further constrained by `grouping_type_parameter`.
         min_initial_alt_startup_offset: i32,
     },
+    /// Version 1.
     Version1 {
+        /// Indicates the number of alternative startup sequence sample groupings documented in this box.
         num_entries: u32,
+        /// `grouping_type_parameter` and `min_initial_alt_startup_offset`.
         entries: Vec<AlternativeStartupSequencePropertiesBoxVersion1Entry>,
     },
+    /// Any other version.
     Other(u8),
 }
 
@@ -1216,9 +1446,19 @@ impl IsoSized for AlternativeStartupSequencePropertiesBoxVersion {
     }
 }
 
+/// Entry in a [`AlternativeStartupSequencePropertiesBox`] version 1.
+///
+/// See [`AlternativeStartupSequencePropertiesBoxVersion`].
 #[derive(Debug, PartialEq, Eq)]
 pub struct AlternativeStartupSequencePropertiesBoxVersion1Entry {
+    /// Indicates which one of the alternative sample groupings this loop entry applies to.
     pub grouping_type_parameter: u32,
+    /// No value of `sample_offset`(3GPP) of the referred sample group
+    /// description entries of the alternative startup sequence sample grouping shall be smaller than
+    /// min_initial_alt_startup_offset. In version 0 of this box, the alternative startup sequence sample
+    /// grouping using version 0 of the Sample to Group box is referred to. In version 1 of this box, the
+    /// alternative startup sequence sample grouping using version 1 of the [`SampleToGroupBox`] is referred
+    /// to as further constrained by `grouping_type_parameter`.
     pub min_initial_alt_startup_offset: i32,
 }
 

@@ -1,7 +1,7 @@
 use std::fmt::Debug;
 use std::{io, iter};
 
-use scuffle_bytes_util::zero_copy::{Deserialize, DeserializeSeed, Serialize, SerializeSeed, U24Be, ZeroCopyReader};
+use scuffle_bytes_util::zero_copy::{Deserialize, DeserializeSeed, Serialize, U24Be, ZeroCopyReader};
 use scuffle_bytes_util::{BytesCow, IoResultExt};
 
 use crate::{BoxHeader, FullBoxHeader, IsoBox, IsoSized, UnknownBox, Utf8String};
@@ -12,6 +12,7 @@ use crate::{BoxHeader, FullBoxHeader, IsoBox, IsoSized, UnknownBox, Utf8String};
 #[derive(IsoBox, Debug, PartialEq, Eq, Default)]
 #[iso_box(box_type = b"dinf", crate_path = crate)]
 pub struct DataInformationBox<'a> {
+    /// The contained [`DataReferenceBox`]. (mandatory)
     #[iso_box(nested_box)]
     pub dref: DataReferenceBox<'a>,
 }
@@ -22,8 +23,14 @@ pub struct DataInformationBox<'a> {
 #[derive(IsoBox, Debug, PartialEq, Eq, Default)]
 #[iso_box(box_type = b"url ", skip_impl(deserialize_seed, serialize), crate_path = crate)]
 pub struct DataEntryUrlBox {
+    /// The full box header.
     pub full_header: FullBoxHeader,
-    // The official spec says that this field is not optional but I found files that don't have it (e.g. assets/avc_aac.mp4)
+    /// A URL, and is required in a URL entry and optional in a URN entry, where it gives a location
+    /// to find the resource with the given name. The URL type should be of a service that delivers a file
+    /// (e.g. URLs of type file, http, ftp etc.), and which services ideally also permit random access. Relative
+    /// URLs are permissible and are relative to the file that contains this data reference.
+    ///
+    /// The official spec says that this field is mandatory but there are files that don't have it (e.g. `assets/avc_aac.mp4`).
     pub location: Option<Utf8String>,
 }
 
@@ -60,8 +67,14 @@ impl Serialize for DataEntryUrlBox {
 #[derive(IsoBox, Debug, PartialEq, Eq)]
 #[iso_box(box_type = b"urn ", skip_impl(deserialize_seed, serialize), crate_path = crate)]
 pub struct DataEntryUrnBox {
+    /// The full box header.
     pub full_header: FullBoxHeader,
+    /// A URN.
     pub name: Utf8String,
+    /// A URL, and is required in a URL entry and optional in a URN entry, where it gives a location
+    /// to find the resource with the given name. The URL type should be of a service that delivers a file
+    /// (e.g. URLs of type file, http, ftp etc.), and which services ideally also permit random access. Relative
+    /// URLs are permissible and are relative to the file that contains this data reference.
     pub location: Option<Utf8String>,
 }
 
@@ -104,7 +117,12 @@ impl Serialize for DataEntryUrnBox {
 #[derive(IsoBox, Debug, PartialEq, Eq)]
 #[iso_box(box_type = b"imdt", crate_path = crate)]
 pub struct DataEntryImdaBox {
+    /// The full box header.
     pub full_header: FullBoxHeader,
+    /// Identifies the [`IdentifiedMediaDataBox`](super::IdentifiedMediaDataBox) containing the
+    /// media data accessed through the `data_reference_index` corresponding to this [`DataEntryImdaBox`].
+    /// The referred [`IdentifiedMediaDataBox`](super::IdentifiedMediaDataBox) contains `imda_identifier`
+    /// that is equal to `imda_ref_identifier`.
     pub imda_ref_identifier: u32,
 }
 
@@ -114,6 +132,7 @@ pub struct DataEntryImdaBox {
 #[derive(IsoBox, Debug, PartialEq, Eq)]
 #[iso_box(box_type = b"snim", crate_path = crate)]
 pub struct DataEntrySeqNumImdaBox {
+    /// The full box header.
     pub full_header: FullBoxHeader,
 }
 
@@ -123,16 +142,23 @@ pub struct DataEntrySeqNumImdaBox {
 #[derive(IsoBox, Debug, PartialEq, Eq)]
 #[iso_box(box_type = b"dref", crate_path = crate)]
 pub struct DataReferenceBox<'a> {
+    /// The full box header.
     pub full_header: FullBoxHeader,
+    /// An integer that counts the sub boxes.
     pub entry_count: u32,
+    /// Data entry URL boxes.
     #[iso_box(nested_box(collect))]
     pub url: Vec<DataEntryUrlBox>,
+    /// Data entry URN boxes.
     #[iso_box(nested_box(collect))]
     pub urn: Vec<DataEntryUrnBox>,
+    /// Data entry IMDA boxes.
     #[iso_box(nested_box(collect))]
     pub imda: Vec<DataEntryImdaBox>,
+    /// Data entry sequence number IMDA boxes.
     #[iso_box(nested_box(collect))]
     pub snim: Vec<DataEntrySeqNumImdaBox>,
+    /// Any other unknown boxes.
     #[iso_box(nested_box(collect_unknown))]
     pub unknown_boxes: Vec<UnknownBox<'a>>,
 }
@@ -157,9 +183,17 @@ impl Default for DataReferenceBox<'_> {
 #[derive(IsoBox, PartialEq, Eq, Default)]
 #[iso_box(box_type = b"stsz", crate_path = crate)]
 pub struct SampleSizeBox {
+    /// The full box header.
     pub full_header: FullBoxHeader,
+    /// An integer specifying the default sample size. If all the samples are the same size, this field
+    /// contains that size value. If this field is set to 0, then the samples have different sizes, and those sizes
+    /// are stored in the sample size table. If this field is not 0, it specifies the constant sample size, and no
+    /// array follows.
     pub sample_size: u32,
+    /// An integer that gives the number of samples in the track; if sample-size is 0, then it is
+    /// also the number of entries in the [`entry_size`](SampleSizeBox::entry_size) vec.
     pub sample_count: u32,
+    /// Integers specifying the size of a sample, indexed by its number.
     #[iso_box(repeated)]
     pub entry_size: Vec<u32>,
 }
@@ -181,10 +215,17 @@ impl Debug for SampleSizeBox {
 #[derive(IsoBox, Debug, PartialEq, Eq)]
 #[iso_box(box_type = b"stz2", crate_path = crate)]
 pub struct CompactSampleSizeBox<'a> {
+    /// The full box header.
     pub full_header: FullBoxHeader,
+    /// Reserved 24 bits, must be 0.
     pub reserved: U24Be,
+    /// An integer specifying the size in bits of the entries in the following table; it shall take the
+    /// value 4, 8 or 16. If the value 4 is used, then each byte contains two values: `entry[i]<<4 + entry[i+1]`;
+    /// if the sizes do not fill an integral number of bytes, the last byte is padded with zeros.
     pub field_size: u8,
+    /// An integer that gives the number of entries in the [`entry_size`](Self::entry_size) vec.
     pub sample_count: u32,
+    /// Integers specifying the size of a sample, indexed by its number.
     pub entry_size: BytesCow<'a>,
 }
 
@@ -194,8 +235,11 @@ pub struct CompactSampleSizeBox<'a> {
 #[derive(IsoBox, PartialEq, Eq, Default)]
 #[iso_box(box_type = b"stsc", crate_path = crate)]
 pub struct SampleToChunkBox {
+    /// The full box header.
     pub full_header: FullBoxHeader,
+    /// An integer that gives the number of entries in the [`entries`](Self::entries) vec.
     pub entry_count: u32,
+    /// `first_chunk`, `samples_per_chunk` and `sample_description_index`.
     #[iso_box(repeated)]
     pub entries: Vec<SampleToChunkBoxEntry>,
 }
@@ -210,10 +254,19 @@ impl Debug for SampleToChunkBox {
     }
 }
 
+/// Entry in [`SampleToChunkBox`].
 #[derive(Debug, PartialEq, Eq)]
 pub struct SampleToChunkBoxEntry {
+    /// An integer that gives the index of the first chunk in this run of chunks that share the
+    /// same samples-per-chunk and sample-description-index; the index of the first chunk in a track has
+    /// the value 1 (the `first_chunk` field in the first record of this box has the value 1, identifying that the
+    /// first sample maps to the first chunk).
     pub first_chunk: u32,
+    /// An integer that gives the number of samples in each of these chunks.
     pub samples_per_chunk: u32,
+    /// An integer that gives the index of the sample entry that describes
+    /// the samples in this chunk. The index ranges from 1 to the number of sample entries in the
+    /// [`SampleDescriptionBox`](super::SampleDescriptionBox).
     pub sample_description_index: u32,
 }
 
@@ -254,8 +307,15 @@ impl IsoSized for SampleToChunkBoxEntry {
 #[derive(IsoBox, PartialEq, Eq, Default)]
 #[iso_box(box_type = b"stco", crate_path = crate)]
 pub struct ChunkOffsetBox {
+    /// The full box header.
     pub full_header: FullBoxHeader,
+    /// An integer that gives the number of entries in the [`chunk_offset`](Self::chunk_offset) vec.
     pub entry_count: u32,
+    /// Integers that give the offset of the start of a chunk. If the referenced
+    /// data reference entry is [`DataEntryImdaBox`] or [`DataEntrySeqNumImdaBox`],
+    /// the value of `chunk_offset` is relative to the first byte of the payload of the
+    /// [`IdentifiedMediaDataBox`](super::IdentifiedMediaDataBox) corresponding to the data reference entry.
+    /// Otherwise, the value of `chunk_offset` is relative to the start of the containing media file.
     #[iso_box(repeated)]
     pub chunk_offset: Vec<u32>,
 }
@@ -276,8 +336,15 @@ impl Debug for ChunkOffsetBox {
 #[derive(IsoBox, Debug, PartialEq, Eq)]
 #[iso_box(box_type = b"co64", crate_path = crate)]
 pub struct ChunkLargeOffsetBox {
+    /// The full box header.
     pub full_header: FullBoxHeader,
+    /// An integer that gives the number of entries in the [`chunk_offset`](Self::chunk_offset) vec.
     pub entry_count: u32,
+    /// Integers that give the offset of the start of a chunk. If the referenced
+    /// data reference entry is [`DataEntryImdaBox`] or [`DataEntrySeqNumImdaBox`],
+    /// the value of `chunk_offset` is relative to the first byte of the payload of the
+    /// [`IdentifiedMediaDataBox`](super::IdentifiedMediaDataBox) corresponding to the data reference entry.
+    /// Otherwise, the value of `chunk_offset` is relative to the start of the containing media file.
     #[iso_box(repeated)]
     pub chunk_offset: Vec<u64>,
 }
@@ -288,8 +355,11 @@ pub struct ChunkLargeOffsetBox {
 #[derive(IsoBox, PartialEq, Eq)]
 #[iso_box(box_type = b"padb", crate_path = crate)]
 pub struct PaddingBitsBox {
+    /// The full box header.
     pub full_header: FullBoxHeader,
+    /// Counts the number of samples in the track; it should match the count in other tables.
     pub sample_count: u32,
+    /// `pad1` and `pad2`
     #[iso_box(from = "u8", repeated)]
     pub entry: Vec<PaddingBitsBoxEntry>,
 }
@@ -304,9 +374,12 @@ impl Debug for PaddingBitsBox {
     }
 }
 
+/// Entry in [`PaddingBitsBox`].
 #[derive(Debug, PartialEq, Eq, Clone, Copy)]
 pub struct PaddingBitsBoxEntry {
+    /// A value from 0 to 7, indicating the number of padding bits at the end of sample `(i*2)+1`.
     pub pad1: u8,
+    /// A value from 0 to 7, indicating the number of padding bits at the end of sample `(i*2)+2`.
     pub pad2: u8,
 }
 
@@ -338,8 +411,11 @@ impl IsoSized for PaddingBitsBoxEntry {
 #[derive(IsoBox, Debug, PartialEq, Eq)]
 #[iso_box(box_type = b"subs", skip_impl(deserialize_seed, serialize, sized), crate_path = crate)]
 pub struct SubSampleInformationBox {
+    /// The full box header.
     pub full_header: FullBoxHeader,
+    /// An integer that gives the number of entries in the [`entries`](Self::entries) vec.
     pub entry_count: u32,
+    /// `sample_delta`, `subsample_count` and subsample information.
     pub entries: Vec<SubSampleInformationBoxEntry>,
 }
 
@@ -389,7 +465,7 @@ impl Serialize for SubSampleInformationBox {
         self.entry_count.serialize(&mut writer)?;
 
         for entry in &self.entries {
-            entry.serialize_seed(&mut writer, self.full_header.version)?;
+            entry.serialize(&mut writer, self.full_header.version)?;
         }
 
         Ok(())
@@ -407,10 +483,26 @@ impl IsoSized for SubSampleInformationBox {
     }
 }
 
+/// Entry in [`SubSampleInformationBox`].
 #[derive(Debug, PartialEq, Eq)]
 pub struct SubSampleInformationBoxEntry {
+    /// An integer that indicates the sample having sub‐sample structure. It is coded as the
+    /// difference, in decoding order, between the desired sample number, and the sample number
+    /// indicated in the previous entry. If the current entry is the first entry in the track, the value
+    /// indicates the sample number of the first sample having sub-sample information, that is, the value
+    /// is the difference between the sample number and zero (0). If the current entry is the first entry
+    /// in a track fragment with preceding non-empty track fragments, the value indicates the difference
+    /// between the sample number of the first sample having sub-sample information and the sample
+    /// number of the last sample in the previous track fragment. If the current entry is the first entry in
+    /// a track fragment without any preceding track fragments, the value indicates the sample number
+    /// of the first sample having sub-sample information, that is, the value is the difference between the
+    /// sample number and zero (0). This implies that the `sample_delta` for the first entry describing the
+    /// first sample in the track or in the track fragment is always 1.
     pub sample_delta: u32,
+    /// An integer that specifies the number of sub-sample for the current sample. If there
+    /// is no sub-sample structure, then this field takes the value 0.
     pub subsample_count: u16,
+    /// `subsample_size`, `subsample_priority`, `discardable` and `codec_specific_parameters`.
     pub subsample_info: Vec<SubSampleInformationBoxEntrySubSample>,
 }
 
@@ -432,8 +524,8 @@ impl<'a> DeserializeSeed<'a, u8> for SubSampleInformationBoxEntry {
     }
 }
 
-impl SerializeSeed<u8> for SubSampleInformationBoxEntry {
-    fn serialize_seed<W>(&self, mut writer: W, seed: u8) -> io::Result<()>
+impl SubSampleInformationBoxEntry {
+    fn serialize<W>(&self, mut writer: W, version: u8) -> io::Result<()>
     where
         W: std::io::Write,
     {
@@ -441,7 +533,7 @@ impl SerializeSeed<u8> for SubSampleInformationBoxEntry {
 
         self.subsample_count.serialize(&mut writer)?;
         for subsample in &self.subsample_info {
-            subsample.serialize_seed(&mut writer, seed)?;
+            subsample.serialize(&mut writer, version)?;
         }
 
         Ok(())
@@ -449,16 +541,28 @@ impl SerializeSeed<u8> for SubSampleInformationBoxEntry {
 }
 
 impl SubSampleInformationBoxEntry {
+    /// Returns the size of this entry in bytes, depending on the version.
     pub fn size(&self, version: u8) -> usize {
         4 + 2 + self.subsample_info.iter().map(|s| s.size(version)).sum::<usize>()
     }
 }
 
+/// Sub-sample information in a [`SubSampleInformationBoxEntry`].
 #[derive(Debug, PartialEq, Eq)]
 pub struct SubSampleInformationBoxEntrySubSample {
+    /// An integer that specifies the size, in bytes, of the current sub-sample.
     pub subsample_size: u32,
+    /// An integer specifying the degradation priority for each sub-sample. Higher
+    /// values of subsample_priority, indicate sub-samples which are important to, and have a greater
+    /// impact on, the decoded quality.
     pub subsample_priority: u8,
+    /// Equal to 0 means that the sub-sample is required to decode the current sample, while
+    /// equal to 1 means the sub-sample is not required to decode the current sample but may be used
+    /// for enhancements, e.g., the sub-sample consists of supplemental enhancement information (SEI)
+    /// messages.
     pub discardable: u8,
+    /// Defined by the codec in use. If no such definition is available, this field
+    /// shall be set to 0.
     pub codec_specific_parameters: u32,
 }
 
@@ -485,12 +589,12 @@ impl<'a> DeserializeSeed<'a, u8> for SubSampleInformationBoxEntrySubSample {
     }
 }
 
-impl SerializeSeed<u8> for SubSampleInformationBoxEntrySubSample {
-    fn serialize_seed<W>(&self, mut writer: W, seed: u8) -> io::Result<()>
+impl SubSampleInformationBoxEntrySubSample {
+    fn serialize<W>(&self, mut writer: W, version: u8) -> io::Result<()>
     where
         W: std::io::Write,
     {
-        if seed == 1 {
+        if version == 1 {
             self.subsample_size.serialize(&mut writer)?;
         } else {
             (self.subsample_size as u16).serialize(&mut writer)?;
@@ -504,6 +608,7 @@ impl SerializeSeed<u8> for SubSampleInformationBoxEntrySubSample {
 }
 
 impl SubSampleInformationBoxEntrySubSample {
+    /// Returns the size of this entry in bytes, depending on the version.
     pub fn size(&self, version: u8) -> usize {
         if version == 1 { 4 + 1 + 1 + 4 } else { 2 + 1 + 1 + 4 }
     }
@@ -515,11 +620,36 @@ impl SubSampleInformationBoxEntrySubSample {
 #[derive(IsoBox, Debug, PartialEq, Eq)]
 #[iso_box(box_type = b"saiz", skip_impl(deserialize_seed, serialize), crate_path = crate)]
 pub struct SampleAuxiliaryInformationSizesBox<'a> {
+    /// The full box header.
     pub full_header: FullBoxHeader,
+    /// An integer that identifies the type of the sample auxiliary information. At most one
+    /// occurrence of this box with the same values for `aux_info_type` and `aux_info_type_parameter` shall
+    /// exist in the containing box.
     pub aux_info_type: Option<u32>,
+    /// Identifies the "stream" of auxiliary information having the same value of
+    /// `aux_info_type` and associated to the same track. The semantics of `aux_info_type_parameter` are
+    /// determined by the value of `aux_info_type`.
     pub aux_info_type_parameter: Option<u32>,
+    /// An integer specifying the sample auxiliary information size for the case
+    /// where all the indicated samples have the same sample auxiliary information size. If the size varies
+    /// then this field shall be zero.
     pub default_sample_info_size: u8,
+    /// An integer that gives the number of samples for which a size is defined.
+    ///
+    /// For a [`SampleAuxiliaryInformationSizesBox`] appearing in the [`SampleTableBox`](super::SampleTableBox)
+    /// this shall be the same as, or less than, the `sample_count` within the [`SampleSizeBox`] or [`CompactSampleSizeBox`].
+    ///
+    /// For a [`SampleAuxiliaryInformationSizesBox`] appearing in a [`TrackFragmentBox`](super::TrackFragmentBox) this
+    /// shall be the same as, or less than, the sum of the `sample_count` entries within the
+    /// [`TrackRunBox`](super::TrackRunBox)es of the track fragment.
+    ///
+    /// If this is less than the number of samples, then auxiliary information is supplied for the initial samples, and the
+    /// remaining samples have no associated auxiliary information.
     pub sample_count: u32,
+    /// Gives the size of the sample auxiliary information in bytes. This may be zero to
+    /// indicate samples with no associated auxiliary information.
+    ///
+    /// If set, length is [`sample_count`](Self::sample_count).
     pub sample_info_size: Option<BytesCow<'a>>,
 }
 
@@ -600,10 +730,32 @@ impl Serialize for SampleAuxiliaryInformationSizesBox<'_> {
 #[derive(IsoBox, Debug, PartialEq, Eq)]
 #[iso_box(box_type = b"saio", skip_impl(deserialize_seed, serialize, sized), crate_path = crate)]
 pub struct SampleAuxiliaryInformationOffsetsBox {
+    /// The full box header.
     pub full_header: FullBoxHeader,
+    /// An integer that identifies the type of the sample auxiliary information. At most one
+    /// occurrence of this box with the same values for `aux_info_type` and `aux_info_type_parameter` shall
+    /// exist in the containing box.
     pub aux_info_type: Option<u32>,
+    /// Identifies the "stream" of auxiliary information having the same value of
+    /// `aux_info_type` and associated to the same track. The semantics of `aux_info_type_parameter` are
+    /// determined by the value of `aux_info_type`.
     pub aux_info_type_parameter: Option<u32>,
+    /// Gives the number of entries in the following table.
+    ///
+    /// For a [`SampleAuxiliaryInformationOffsetsBox`] appearing in a [`SampleTableBox`](super::SampleTableBox),
+    /// this shall be equal to one or to the value of the `entry_count`
+    /// field in the [`ChunkOffsetBox`] or [`ChunkLargeOffsetBox`].
+    ///
+    /// For a [`SampleAuxiliaryInformationOffsetsBox`] appearing in a [`TrackFragmentBox`](super::TrackFragmentBox),
+    /// this shall be equal to one or to the number of TrackRunBoxes in the [`TrackFragmentBox`](super::TrackFragmentBox).
     pub entry_count: u32,
+    /// Gives the position in the file of the Sample Auxiliary Information for each Chunk or Track
+    /// Fragment Run. If `entry_count` is one, then the Sample Auxiliary Information for all Chunks or Runs
+    /// is contiguous in the file in chunk or run order. When in the [`SampleTableBox`](super::SampleTableBox),
+    /// the offsets are relative to the same base offset as derived for the respective samples through the
+    /// `data_reference_index` of the sample entry referenced by the samples.
+    /// In a [`TrackFragmentBox`](super::TrackFragmentBox), this value is relative to the base offset established by the
+    /// [`TrackFragmentHeaderBox`](super::TrackFragmentHeaderBox) in the same track fragment (see 8.8.14).
     pub offset: Vec<u64>,
 }
 

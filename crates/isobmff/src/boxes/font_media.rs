@@ -12,6 +12,7 @@ use crate::IsoSized;
 /// - Any other boxes
 #[derive(Debug, PartialEq, Eq)]
 pub struct FontSampleEntry {
+    /// The sample entry that this box inherits from.
     pub sample_entry: SampleEntry,
 }
 

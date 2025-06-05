@@ -7,6 +7,7 @@ use crate::IsoBox;
 #[derive(IsoBox, Debug, PartialEq, Eq)]
 #[iso_box(box_type = b"cinf", crate_path = crate)]
 pub struct CompleteTrackInfoBox {
+    /// The contained [`OriginalFormatBox`]. (mandatory)
     #[iso_box(nested_box)]
     pub original_format: OriginalFormatBox,
 }

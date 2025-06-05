@@ -9,23 +9,41 @@ nutype_enum! {
     ///
     /// See: https://mp4ra.org/registered-types/brands
     pub enum Brand([u8; 4]) {
+        /// MPEG-4 version 1
         Mp41 = *b"mp41",
+        /// E.2 'isom' brand
         IsoM = *b"isom",
+        /// E.3 'avc1' brand
         Avc1 = *b"avc1",
+        /// E.4 'iso2' brand
         Iso2 = *b"iso2",
+        /// E.5 'mp71' brand
         Mp71 = *b"mp71",
+        /// E.6 'iso3' brand
         Iso3 = *b"iso3",
+        /// E.7 'iso4' brand
         Iso4 = *b"iso4",
+        /// E.8 'iso5' brand
         Iso5 = *b"iso5",
+        /// E.9 'iso6' brand
         Iso6 = *b"iso6",
+        /// E.10 'iso7' brand
         Iso7 = *b"iso7",
+        /// E.11 'iso8' brand
         Iso8 = *b"iso8",
+        /// E.12 'iso9' brand
         Iso9 = *b"iso9",
+        /// E.13 'isoa' brand
         IsoA = *b"isoa",
+        /// E.14 'isob' brand
         IsoB = *b"isob",
+        /// E.15 'relo' brand
         Relo = *b"relo",
+        /// E.16 'isoc' brand
         IsoC = *b"isoc",
+        /// E.17 'comp' brand
         Comp = *b"comp",
+        /// E.18 'unif' brand
         Unif = *b"unif",
     }
 }

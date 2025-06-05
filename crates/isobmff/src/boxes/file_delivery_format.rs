@@ -1,5 +1,5 @@
 use scuffle_bytes_util::IoResultExt;
-use scuffle_bytes_util::zero_copy::{Deserialize, DeserializeSeed, Serialize, SerializeSeed};
+use scuffle_bytes_util::zero_copy::{Deserialize, DeserializeSeed, Serialize};
 
 use crate::{Base64String, BoxHeader, FullBoxHeader, IsoBox, IsoSized, Utf8String};
 
@@ -9,10 +9,15 @@ use crate::{Base64String, BoxHeader, FullBoxHeader, IsoBox, IsoSized, Utf8String
 #[derive(IsoBox, Debug, PartialEq, Eq)]
 #[iso_box(box_type = b"fiin", skip_impl(deserialize_seed, serialize), crate_path = crate)]
 pub struct FDItemInformationBox {
+    /// The full box header.
     pub full_header: FullBoxHeader,
+    /// Provides a count of the number of entries in the [`partition_entries`](Self::partition_entries) vec.
     pub entry_count: u16,
+    /// The contained partition entries.
     pub partition_entries: Vec<PartitionEntry>,
+    /// The contained [`FDSessionGroupBox`]. (optional)
     pub session_info: Option<FDSessionGroupBox>,
+    /// The contained [`GroupIdToNameBox`]. (optional)
     pub group_id_to_name: Option<GroupIdToNameBox>,
 }
 
@@ -67,13 +72,19 @@ impl Serialize for FDItemInformationBox {
     }
 }
 
+/// FD item information partition entry
+///
+/// ISO/IEC 14996-12 - 8.13.2
 #[derive(IsoBox, Debug, PartialEq, Eq)]
 #[iso_box(box_type = b"paen", crate_path = crate)]
 pub struct PartitionEntry {
+    /// The contained [`FileReservoirBox`]. (optional)
     #[iso_box(nested_box(collect))]
     pub file_symbol_locations: Option<FileReservoirBox>,
+    /// The contained [`FilePartitionBox`]. (mandatory)
     #[iso_box(nested_box)]
     pub blocks_and_symbols: FilePartitionBox,
+    /// The contained [`FECReservoirBox`]. (optional)
     #[iso_box(nested_box(collect))]
     pub fec_symbol_locations: Option<FECReservoirBox>,
 }
@@ -84,17 +95,47 @@ pub struct PartitionEntry {
 #[derive(IsoBox, Debug, PartialEq, Eq)]
 #[iso_box(box_type = b"fpar", skip_impl(deserialize_seed, serialize, sized), crate_path = crate)]
 pub struct FilePartitionBox {
+    /// The full box header.
     pub full_header: FullBoxHeader,
+    /// References the item in the [`ItemLocationBox`](super::ItemLocationBox) that the file partitioning applies to.
     pub item_id: u32,
+    /// Gives the target ALC/LCT or FLUTE packet payload size of the partitioning
+    /// algorithm. Note that UDP packet payloads are larger, as they also contain ALC/LCT or FLUTE
+    /// headers.
     pub packet_payload_size: u16,
+    /// Reserved 8 bits, must be set to 0.
     pub reserved: u8,
+    /// Identifies the FEC encoding scheme using a "Reliable Multicast Transport
+    /// (RMT) FEC Encoding ID" declared at IANA, as defined in IETF RFC 5052. Note that i) value zero
+    /// corresponds to the "Compact No-Code FEC scheme" also known as "Null-FEC" (IETF RFC 3695);
+    /// ii) value one corresponds to the “MBMS FEC” (3GPP TS 26.346); iii) for values in the range of 0
+    /// to 127, inclusive, the FEC scheme is Fully-Specified, whereas for values in the range of 128 to 255,
+    /// inclusive, the FEC scheme is Under-Specified.
     pub fec_encoding_id: u8,
+    /// Provides a more specific identification of the FEC encoder being used for an
+    /// Under-Specified FEC scheme. This value should be set to zero for Fully-Specified FEC schemes and
+    /// shall be ignored when parsing a file with `FEC_encoding_ID` in the range of 0 to 127, inclusive.
+    /// `FEC_instance_ID` is scoped by the `FEC_encoding_ID`. See IETF RFC 5052 for further details.
     pub fec_instance_id: u16,
+    /// Gives the maximum number of source symbols per source block.
     pub max_source_block_length: u16,
+    /// Gives the size (in bytes) of one encoding symbol. All encoding symbols of one
+    /// item have the same length, except the last symbol which may be shorter.
     pub encoding_symbol_length: u16,
+    /// Gives the maximum number of encoding symbols that can be
+    /// generated for a source block for those FEC schemes in which the maximum number of encoding
+    /// symbols is relevant, such as FEC encoding ID 129 defined in IETF RFC 5052. For those FEC schemes
+    /// in which the maximum number of encoding symbols is not relevant, the semantics of this field is
+    /// unspecified.
     pub max_number_of_encoding_symbols: u16,
+    /// The scheme-specific object transfer information (FEC-OTI-Scheme-Specific-Info).
+    /// The definition of the information depends on the FEC encoding ID.
     pub scheme_specific_info: Base64String,
+    /// Gives the number of entries in the list of (`block_count`, `block_size`) pairs that provides a
+    /// partitioning of the source file. Starting from the beginning of the file, each entry indicates how the
+    /// next segment of the file is divided into source blocks and source symbols.
     pub entry_count: u32,
+    /// `block_count` and `block_size` pairs.
     pub entries: Vec<FilePartitionBoxEntry>,
 }
 
@@ -208,9 +249,16 @@ impl IsoSized for FilePartitionBox {
     }
 }
 
+/// Entry in the [`FilePartitionBox`].
 #[derive(Debug, PartialEq, Eq)]
 pub struct FilePartitionBoxEntry {
+    /// Indicates the number of consecutive source blocks of size `block_size`.
     pub block_count: u16,
+    /// Indicates the size of a block (in bytes). A `block_size` that is not a multiple of the
+    /// `encoding_symbol_length` symbol size indicates with Compact No-Code FEC that the last source symbols
+    /// includes padding that is not stored in the item. With MBMS FEC (3GPP TS 26.346) the padding
+    /// may extend across multiple symbols but the size of padding should never be more than
+    /// `encoding_symbol_length`.
     pub block_size: u32,
 }
 
@@ -249,8 +297,12 @@ impl IsoSized for FilePartitionBoxEntry {
 #[derive(IsoBox, Debug, PartialEq, Eq)]
 #[iso_box(box_type = b"fecr", skip_impl(deserialize_seed, serialize, sized), crate_path = crate)]
 pub struct FECReservoirBox {
+    /// The full box header.
     pub full_header: FullBoxHeader,
+    /// Gives the number of entries in the [`entries`](Self::entries) vec. An entry count here should match the
+    /// total number of blocks in the corresponding [`FilePartitionBox`].
     pub entry_count: u32,
+    /// The contained entries.
     pub entries: Vec<FECReservoirBoxEntry>,
 }
 
@@ -293,7 +345,7 @@ impl Serialize for FECReservoirBox {
         }
 
         for entry in &self.entries {
-            entry.serialize_seed(&mut writer, self.full_header.version)?;
+            entry.serialize(&mut writer, self.full_header.version)?;
         }
 
         Ok(())
@@ -318,9 +370,12 @@ impl IsoSized for FECReservoirBox {
     }
 }
 
+/// Entry in the [`FECReservoirBox`].
 #[derive(Debug, PartialEq, Eq)]
 pub struct FECReservoirBoxEntry {
+    /// Indicates the location of the FEC reservoir associated with a source block.
     pub item_id: u32,
+    /// Indicates the number of repair symbols contained in the FEC reservoir.
     pub symbol_count: u32,
 }
 
@@ -340,12 +395,12 @@ impl<'a> DeserializeSeed<'a, u8> for FECReservoirBoxEntry {
     }
 }
 
-impl SerializeSeed<u8> for FECReservoirBoxEntry {
-    fn serialize_seed<W>(&self, mut writer: W, seed: u8) -> std::io::Result<()>
+impl FECReservoirBoxEntry {
+    fn serialize<W>(&self, mut writer: W, version: u8) -> std::io::Result<()>
     where
         W: std::io::Write,
     {
-        if seed == 0 {
+        if version == 0 {
             (self.item_id as u16).serialize(&mut writer)?;
         } else {
             self.item_id.serialize(&mut writer)?;
@@ -357,6 +412,7 @@ impl SerializeSeed<u8> for FECReservoirBoxEntry {
 }
 
 impl FECReservoirBoxEntry {
+    /// Returns the size of the entry, depending on the version.
     pub fn size(&self, version: u8) -> usize {
         if version == 0 {
             (self.item_id as u16).size() + self.symbol_count.size()
@@ -372,7 +428,9 @@ impl FECReservoirBoxEntry {
 #[derive(IsoBox, Debug, PartialEq, Eq)]
 #[iso_box(box_type = b"segr", skip_impl(deserialize_seed, serialize), crate_path = crate)]
 pub struct FDSessionGroupBox {
+    /// Specifies the number of session groups.
     pub num_session_groups: u16,
+    /// The contained session groups.
     pub session_groups: Vec<FDSessionGroupBoxSessionGroup>,
 }
 
@@ -411,11 +469,21 @@ impl Serialize for FDSessionGroupBox {
     }
 }
 
+/// Session group in the [`FDSessionGroupBox`].
 #[derive(Debug, PartialEq, Eq)]
 pub struct FDSessionGroupBoxSessionGroup {
+    /// Gives the number of entries in the following list comprising all file groups that the session
+    /// group complies with. The session group contains all files included in the listed file groups as
+    /// specified by the item information entry of each source file. The FDT for the session group should
+    /// only contain those groups that are listed in this structure.
     pub entry_count: u8,
+    /// Indicates a file group that the session group complies with.
     pub group_id: Vec<u32>,
+    /// Specifies the number of channels in the session group.
+    /// The value of `num_channels_in_session_groups` shall be a positive integer.
     pub num_channels_in_session_group: u16,
+    /// Specifies the track identifier of the FD hint track belonging to a particular session group.
+    /// Note that one FD hint track corresponds to one LCT channel.
     pub hint_track_id: Vec<u32>,
 }
 
@@ -479,8 +547,11 @@ impl IsoSized for FDSessionGroupBoxSessionGroup {
 #[derive(IsoBox, Debug, PartialEq, Eq)]
 #[iso_box(box_type = b"gitn", skip_impl(deserialize_seed, serialize), crate_path = crate)]
 pub struct GroupIdToNameBox {
+    /// The full box header.
     pub full_header: FullBoxHeader,
+    /// Gives the number of entries in the [`entries`](Self::entries) vec.
     pub entry_count: u16,
+    /// The contained entries.
     pub entries: Vec<GroupIdToNameBoxEntry>,
 }
 
@@ -522,9 +593,12 @@ impl Serialize for GroupIdToNameBox {
     }
 }
 
+/// Entry in the [`GroupIdToNameBox`].
 #[derive(Debug, PartialEq, Eq)]
 pub struct GroupIdToNameBoxEntry {
+    /// Indicates a file group.
     pub group_id: u32,
+    /// The file group name.
     pub group_name: Utf8String,
 }
 
@@ -563,8 +637,12 @@ impl IsoSized for GroupIdToNameBoxEntry {
 #[derive(IsoBox, Debug, PartialEq, Eq)]
 #[iso_box(box_type = b"fire", skip_impl(deserialize_seed, serialize, sized), crate_path = crate)]
 pub struct FileReservoirBox {
+    /// The full box header.
     pub full_header: FullBoxHeader,
+    /// Gives the number of entries in the [`entries`](Self::entries) vec. An entry count here should match the
+    /// total number or blocks in the corresponding [`FilePartitionBox`].
     pub entry_count: u32,
+    /// The contained entries.
     pub entries: Vec<FileReservoirBoxEntry>,
 }
 
@@ -607,7 +685,7 @@ impl Serialize for FileReservoirBox {
         }
 
         for entry in &self.entries {
-            entry.serialize_seed(&mut writer, self.full_header.version)?;
+            entry.serialize(&mut writer, self.full_header.version)?;
         }
 
         Ok(())
@@ -632,9 +710,12 @@ impl IsoSized for FileReservoirBox {
     }
 }
 
+/// Entry in the [`FileReservoirBox`].
 #[derive(Debug, PartialEq, Eq)]
 pub struct FileReservoirBoxEntry {
+    /// Indicates the location of the File reservoir associated with a source block.
     pub item_id: u32,
+    /// Indicates the number of source symbols contained in the file reservoir.
     pub symbol_count: u32,
 }
 
@@ -654,12 +735,12 @@ impl<'a> DeserializeSeed<'a, u8> for FileReservoirBoxEntry {
     }
 }
 
-impl SerializeSeed<u8> for FileReservoirBoxEntry {
-    fn serialize_seed<W>(&self, mut writer: W, seed: u8) -> std::io::Result<()>
+impl FileReservoirBoxEntry {
+    fn serialize<W>(&self, mut writer: W, version: u8) -> std::io::Result<()>
     where
         W: std::io::Write,
     {
-        if seed == 0 {
+        if version == 0 {
             (self.item_id as u16).serialize(&mut writer)?;
         } else {
             self.item_id.serialize(&mut writer)?;
@@ -671,6 +752,7 @@ impl SerializeSeed<u8> for FileReservoirBoxEntry {
 }
 
 impl FileReservoirBoxEntry {
+    /// Returns the size of the entry, depending on the version.
     pub fn size(&self, version: u8) -> usize {
         if version == 0 {
             (self.item_id as u16).size() + self.symbol_count.size()

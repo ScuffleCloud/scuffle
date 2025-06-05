@@ -13,10 +13,12 @@ use crate::{FullBoxHeader, IsoBox, IsoSized};
 #[derive(IsoBox, PartialEq, Eq)]
 #[iso_box(box_type = b"mdat", crate_path = crate)]
 pub struct MediaDataBox<'a> {
+    /// The contained media data.
     pub data: BytesCow<'a>,
 }
 
 impl<'a> MediaDataBox<'a> {
+    /// Creates a new [`MediaDataBox`] with the given data.
     pub fn new(data: BytesCow<'a>) -> Self {
         Self { data }
     }
@@ -34,6 +36,7 @@ impl Debug for MediaDataBox<'_> {
 #[derive(IsoBox, PartialEq, Eq)]
 #[iso_box(box_type = b"free", crate_path = crate)]
 pub struct FreeSpaceBox<'a> {
+    /// The contained data.
     pub data: BytesCow<'a>,
 }
 
@@ -46,9 +49,12 @@ impl Debug for FreeSpaceBox<'_> {
 /// Free space box
 ///
 /// ISO/IEC 14496-12 - 8.1.2
+///
+/// This is the same as the [`FreeSpaceBox`] except the box type is `skip`.
 #[derive(IsoBox, PartialEq, Eq)]
 #[iso_box(box_type = b"skip", crate_path = crate)]
 pub struct SkipBox<'a> {
+    /// The contained data.
     pub data: BytesCow<'a>,
 }
 
@@ -64,14 +70,21 @@ impl Debug for SkipBox<'_> {
 #[derive(IsoBox, Debug, PartialEq, Eq)]
 #[iso_box(box_type = b"pdin", crate_path = crate)]
 pub struct ProgressiveDownloadInfoBox {
+    /// The full box header.
     pub full_header: FullBoxHeader,
+    /// `rate` and `initial_delay` properties.
     #[iso_box(repeated)]
     pub properties: Vec<ProgressiveDownloadInfoBoxProperties>,
 }
 
+/// Properties contained in the [`ProgressiveDownloadInfoBox`].
 #[derive(Debug, PartialEq, Eq)]
 pub struct ProgressiveDownloadInfoBoxProperties {
+    /// A download rate expressed in bytes/second.
     pub rate: u32,
+    /// Suggested delay to use when playing the file, such that if download continues at
+    /// the given rate, all data within the file will arrive in time for its use and
+    /// playback should not need to stall.
     pub initial_delay: u32,
 }
 
@@ -110,7 +123,10 @@ impl IsoSized for ProgressiveDownloadInfoBoxProperties {
 #[derive(IsoBox, PartialEq, Eq)]
 #[iso_box(box_type = b"imda", crate_path = crate)]
 pub struct IdentifiedMediaDataBox<'a> {
+    /// Shall differ from the imda_identifier values of the other
+    /// [`IdentifiedMediaDataBox`]es of the file.
     pub imda_identifier: u32,
+    /// The contained media data.
     pub data: BytesCow<'a>,
 }
 

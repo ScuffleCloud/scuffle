@@ -3,7 +3,7 @@ use std::io;
 
 use fixed::FixedI32;
 use fixed::types::extra::U16;
-use scuffle_bytes_util::zero_copy::{Deserialize, DeserializeSeed, Serialize, SerializeSeed, ZeroCopyReader};
+use scuffle_bytes_util::zero_copy::{Deserialize, DeserializeSeed, Serialize, ZeroCopyReader};
 
 use crate::{BoxHeader, FullBoxHeader, IsoBox, IsoSized};
 
@@ -13,15 +13,22 @@ use crate::{BoxHeader, FullBoxHeader, IsoBox, IsoSized};
 #[derive(IsoBox, Debug, PartialEq, Eq, Default)]
 #[iso_box(box_type = b"stts", crate_path = crate)]
 pub struct TimeToSampleBox {
+    /// The full box header.
     pub full_header: FullBoxHeader,
+    /// An integer that gives the number of entries in the [`entries`](Self::entries) vec.
     pub entry_count: u32,
+    /// `sample_count` and `sample_delta`.
     #[iso_box(repeated)]
     pub entries: Vec<TimeToSampleBoxEntry>,
 }
 
+/// Entry in the [`TimeToSampleBox`].
 #[derive(Debug, PartialEq, Eq)]
 pub struct TimeToSampleBoxEntry {
+    /// An integer that counts the number of consecutive samples that have the given duration.
     pub sample_count: u32,
+    /// An integer that gives the difference between the decoding timestamp of the next
+    /// sample and this one, in the time-scale of the media.
     pub sample_delta: u32,
 }
 
@@ -58,12 +65,38 @@ impl IsoSized for TimeToSampleBoxEntry {
 ///
 /// ISO/IEC 14496-12 - 8.6.1.3
 #[derive(IsoBox, PartialEq, Eq)]
-#[iso_box(box_type = b"ctts", crate_path = crate)]
+#[iso_box(box_type = b"ctts", skip_impl(deserialize_seed), crate_path = crate)]
 pub struct CompositionOffsetBox {
+    /// The full box header.
     pub full_header: FullBoxHeader,
+    /// An integer that gives the number of entries in the [`entries`](Self::entries) vec.
     pub entry_count: u32,
+    /// `sample_count` and `sample_offset`.
     #[iso_box(repeated)]
     pub entries: Vec<CompositionOffsetBoxEntry>,
+}
+
+impl<'a> DeserializeSeed<'a, BoxHeader> for CompositionOffsetBox {
+    fn deserialize_seed<R>(mut reader: R, _seed: BoxHeader) -> io::Result<Self>
+    where
+        R: ZeroCopyReader<'a>,
+    {
+        let full_header = FullBoxHeader::deserialize(&mut reader)?;
+        let entry_count = u32::deserialize(&mut reader)?;
+
+        let mut entries = Vec::new();
+        if full_header.version == 0 || full_header.version == 1 {
+            for _ in 0..entry_count {
+                entries.push(CompositionOffsetBoxEntry::deserialize_seed(&mut reader, full_header.version)?);
+            }
+        }
+
+        Ok(Self {
+            full_header,
+            entry_count,
+            entries,
+        })
+    }
 }
 
 impl Debug for CompositionOffsetBox {
@@ -76,21 +109,32 @@ impl Debug for CompositionOffsetBox {
     }
 }
 
+/// Entry in the [`CompositionOffsetBox`].
 #[derive(Debug, PartialEq, Eq)]
 pub struct CompositionOffsetBoxEntry {
+    /// An integer that counts the number of consecutive samples that have the given offset.
     pub sample_count: u32,
-    /// This should be interpreted as signed when the version is 1
-    pub sample_offset: u32,
+    /// An integer that gives the offset between CT and DT, such that `CT[n] = DT[n] + sample_offset[n]`.
+    pub sample_offset: i64,
 }
 
-impl<'a> Deserialize<'a> for CompositionOffsetBoxEntry {
-    fn deserialize<R>(mut reader: R) -> io::Result<Self>
+impl<'a> DeserializeSeed<'a, u8> for CompositionOffsetBoxEntry {
+    fn deserialize_seed<R>(mut reader: R, seed: u8) -> io::Result<Self>
     where
         R: ZeroCopyReader<'a>,
     {
         Ok(Self {
             sample_count: u32::deserialize(&mut reader)?,
-            sample_offset: u32::deserialize(&mut reader)?,
+            sample_offset: if seed == 0 {
+                u32::deserialize(&mut reader)? as i64
+            } else if seed == 1 {
+                i32::deserialize(&mut reader)? as i64
+            } else {
+                return Err(io::Error::new(
+                    io::ErrorKind::InvalidData,
+                    "cannot be called with version > 1",
+                ));
+            },
         })
     }
 }
@@ -118,11 +162,23 @@ impl IsoSized for CompositionOffsetBoxEntry {
 #[derive(IsoBox, Debug, PartialEq, Eq)]
 #[iso_box(box_type = b"cslg", skip_impl(deserialize_seed, serialize, sized), crate_path = crate)]
 pub struct CompositionToDecodeBox {
+    /// The full box header.
     pub full_header: FullBoxHeader,
+    /// If this value is added to the composition timestamps (as calculated by the CTS
+    /// offsets from the DTS), then for all samples, their CTS is guaranteed to be greater than or equal
+    /// to their DTS, and the buffer model implied by the indicated profile/level will be honoured; if
+    /// `leastDecodeToDisplayDelta` is positive or zero, this field can be 0; otherwise it should be at least
+    /// (`-leastDecodeToDisplayDelta`)
     pub composition_to_dt_shift: i64,
+    /// The smallest composition offset in the CompositionOffsetBox in this track.
     pub least_decode_to_display_delta: i64,
+    /// The largest composition offset in the CompositionOffsetBox in this track.
     pub greatest_decode_to_display_delta: i64,
+    /// The smallest computed composition timestamp (CTS) for any sample in the media of this track.
     pub composition_start_time: i64,
+    /// The composition timestamp plus the composition duration, of the sample with the
+    /// largest computed composition timestamp (CTS) in the media of this track; if this field takes the
+    /// value 0, the composition end time is unknown.
     pub composition_end_time: i64,
 }
 
@@ -213,8 +269,13 @@ impl IsoSized for CompositionToDecodeBox {
 #[derive(IsoBox, Debug, PartialEq, Eq)]
 #[iso_box(box_type = b"stss", crate_path = crate)]
 pub struct SyncSampleBox {
+    /// The full box header.
     pub full_header: FullBoxHeader,
+    /// An integer that gives the number of entries in the [`sample_number`](Self::sample_number) vec.
+    /// If `entry_count` is zero, there are no sync samples within the stream and the
+    /// [`sample_number`](Self::sample_number) vec is empty.
     pub entry_count: u32,
+    /// Gives, for each sync sample in the stream, its sample number.
     #[iso_box(repeated)]
     pub sample_number: Vec<u32>,
 }
@@ -225,15 +286,21 @@ pub struct SyncSampleBox {
 #[derive(IsoBox, Debug, PartialEq, Eq)]
 #[iso_box(box_type = b"stsh", crate_path = crate)]
 pub struct ShadowSyncSampleBox {
+    /// The full box header.
     pub full_header: FullBoxHeader,
+    /// An integer that gives the number of entries in the [`entries`](Self::entries) vec.
     pub entry_count: u32,
+    /// `shadowed_sample_number` and `sync_sample_number`.
     #[iso_box(repeated)]
     pub entries: Vec<ShadowSyncSampleBoxEntry>,
 }
 
+/// Entry in the [`ShadowSyncSampleBox`].
 #[derive(Debug, PartialEq, Eq)]
 pub struct ShadowSyncSampleBoxEntry {
+    /// Gives the number of a sample for which there is an alternative sync sample.
     pub shadowed_sample_number: u32,
+    /// Gives the number of the alternative sync sample.
     pub sync_sample_number: u32,
 }
 
@@ -272,16 +339,37 @@ impl IsoSized for ShadowSyncSampleBoxEntry {
 #[derive(IsoBox, Debug, PartialEq, Eq)]
 #[iso_box(box_type = b"sdtp", crate_path = crate)]
 pub struct SampleDependencyTypeBox {
+    /// The full box header.
     pub full_header: FullBoxHeader,
+    /// `is_leading`, `sample_depends_on`, `sample_is_depended_on`, and `sample_has_redundancy`.
     #[iso_box(from = "u8", repeated)]
     pub entries: Vec<SampleDependencyTypeBoxEntry>,
 }
 
+/// Entry in the [`SampleDependencyTypeBox`].
 #[derive(Debug, PartialEq, Eq, Clone, Copy)]
 pub struct SampleDependencyTypeBoxEntry {
+    /// - `0`: The leading nature of this sample is unknown;
+    /// - `1`: This sample is a leading sample that has a dependency before the referenced I-picture (and is
+    ///   therefore not decodable);
+    /// - `2`: This sample is not a leading sample;
+    /// - `3`: This sample is a leading sample that has no dependency before the referenced I-picture (and is
+    ///   therefore decodable);
     pub is_leading: u8,
+    /// - `0`: The dependency of this sample is unknown;
+    /// - `1`: This sample does depend on others (not an I picture);
+    /// - `2`: This sample does not depend on others (I picture);
+    /// - `3`: Reserved;
     pub sample_depends_on: u8,
+    /// - `0`: The dependency of other samples on this sample is unknown;
+    /// - `1`: Other samples may depend on this one (not disposable);
+    /// - `2`: No other sample depends on this one (disposable);
+    /// - `3`: Reserved;
     pub sample_is_depended_on: u8,
+    /// - `0`: It is unknown whether there is redundant coding in this sample;
+    /// - `1`: There is redundant coding in this sample;
+    /// - `2`: There is no redundant coding in this sample;
+    /// - `3`: Reserved;
     pub sample_has_redundancy: u8,
 }
 
@@ -317,6 +405,7 @@ impl IsoSized for SampleDependencyTypeBoxEntry {
 #[derive(IsoBox, Debug, PartialEq, Eq)]
 #[iso_box(box_type = b"edts", crate_path = crate)]
 pub struct EditBox {
+    /// The contained [`EditListBox`]. (optional)
     #[iso_box(nested_box(collect))]
     pub elst: Option<EditListBox>,
 }
@@ -327,8 +416,11 @@ pub struct EditBox {
 #[derive(IsoBox, Debug, PartialEq, Eq)]
 #[iso_box(box_type = b"elst", skip_impl(deserialize_seed, serialize, sized), crate_path = crate)]
 pub struct EditListBox {
+    /// The full box header.
     pub full_header: FullBoxHeader,
+    /// An integer that gives the number of entries in the [`entries`](Self::entries) vec.
     pub entry_count: u32,
+    /// `edit_duration`, `media_time`, and `media_rate`.
     #[iso_box(repeated)]
     pub entries: Vec<EditListBoxEntry>,
 }
@@ -365,7 +457,7 @@ impl Serialize for EditListBox {
         self.entry_count.serialize(&mut writer)?;
 
         for entry in &self.entries {
-            entry.serialize_seed(&mut writer, self.full_header.version)?;
+            entry.serialize(&mut writer, self.full_header.version)?;
         }
 
         Ok(())
@@ -387,10 +479,20 @@ impl IsoSized for EditListBox {
     }
 }
 
+/// Entry in the [`EditListBox`].
 #[derive(Debug, PartialEq, Eq)]
 pub struct EditListBoxEntry {
+    /// An integer that specifies the duration of this edit in units of the timescale in the
+    /// [`MovieHeaderBox`](super::MovieHeaderBox).
     pub edit_duration: u64,
+    /// An integer containing the starting time within the media of this edit entry (in media time
+    /// scale units, in composition time). If this field is set to –1, it is an empty edit. The last edit in a track
+    /// shall never be an empty edit. Any difference between the duration in the [`MovieHeaderBox`](super::MovieHeaderBox),
+    /// and the track’s duration is expressed as an implicit empty edit at the end.
     pub media_time: i64,
+    /// Specifies the relative rate at which to play the media corresponding to this edit entry. If
+    /// this value is 0, then the edit is specifying a 'dwell': the media at media-time is presented for the
+    /// edit_duration. The normal value, indicating normal-speed forward play, is 1.0.
     pub media_rate: FixedI32<U16>,
 }
 
@@ -419,12 +521,12 @@ impl<'a> DeserializeSeed<'a, u8> for EditListBoxEntry {
     }
 }
 
-impl SerializeSeed<u8> for EditListBoxEntry {
-    fn serialize_seed<W>(&self, mut writer: W, seed: u8) -> io::Result<()>
+impl EditListBoxEntry {
+    fn serialize<W>(&self, mut writer: W, version: u8) -> io::Result<()>
     where
         W: std::io::Write,
     {
-        if seed == 1 {
+        if version == 1 {
             self.edit_duration.serialize(&mut writer)?;
             self.media_time.serialize(&mut writer)?;
         } else {
@@ -438,6 +540,7 @@ impl SerializeSeed<u8> for EditListBoxEntry {
 }
 
 impl EditListBoxEntry {
+    /// Returns the size of this entry in bytes, depending on the version.
     pub fn size(&self, version: u8) -> usize {
         let mut size = 0;
         if version == 1 {

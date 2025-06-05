@@ -11,10 +11,13 @@ use crate::{BoxHeader, FullBoxHeader, IsoBox, UnknownBox, Utf8String};
 #[derive(IsoBox, Debug, PartialEq, Eq)]
 #[iso_box(box_type = b"sinf", crate_path = crate)]
 pub struct ProtectionSchemeInfoBox<'a> {
+    /// The contained [`OriginalFormatBox`]. (mandatory)
     #[iso_box(nested_box)]
     pub orginal_format: OriginalFormatBox,
+    /// The contained [`SchemeTypeBox`]. (optional)
     #[iso_box(nested_box(collect))]
     pub scheme_type: Option<SchemeTypeBox>,
+    /// The contained [`SchemeInformationBox`]. (optional)
     #[iso_box(nested_box(collect))]
     pub info: Option<SchemeInformationBox<'a>>,
 }
@@ -25,6 +28,8 @@ pub struct ProtectionSchemeInfoBox<'a> {
 #[derive(IsoBox, Debug, PartialEq, Eq)]
 #[iso_box(box_type = b"frma", crate_path = crate)]
 pub struct OriginalFormatBox {
+    /// The four character code of the original un-transformed sample entry
+    /// (e.g. 'mp4v' if the stream contains protected or restricted MPEG-4 visual material).
     pub data_format: [u8; 4],
 }
 
@@ -34,9 +39,14 @@ pub struct OriginalFormatBox {
 #[derive(IsoBox, Debug, PartialEq, Eq)]
 #[iso_box(box_type = b"schm", skip_impl(deserialize_seed, serialize), crate_path = crate)]
 pub struct SchemeTypeBox {
+    /// The full box header.
     pub full_header: FullBoxHeader,
+    /// The code defining the protection or restriction scheme, normally expressed as a four character code.
     pub scheme_type: [u8; 4],
+    /// The version of the scheme (used to create the content).
     pub scheme_version: u32,
+    /// An absolute URI allowing for the option of directing the user to a web-page if they do not
+    /// have the scheme installed on their system.
     pub scheme_uri: Option<Utf8String>,
 }
 
@@ -92,8 +102,10 @@ impl Serialize for SchemeTypeBox {
 #[derive(IsoBox, Debug, PartialEq, Eq)]
 #[iso_box(box_type = b"schi", crate_path = crate)]
 pub struct SchemeInformationBox<'a> {
+    /// The contained [`StereoVideoBox`]. (optional)
     #[iso_box(nested_box(collect))]
     pub stvi: Option<StereoVideoBox<'a>>,
+    /// A list of unknown boxes that were not recognized during deserialization.
     #[iso_box(nested_box(collect_unknown))]
     pub boxes: Vec<UnknownBox<'a>>,
 }
@@ -104,8 +116,10 @@ pub struct SchemeInformationBox<'a> {
 #[derive(IsoBox, Debug, PartialEq, Eq)]
 #[iso_box(box_type = b"scrb", crate_path = crate)]
 pub struct ScrambleSchemeInfoBox<'a> {
+    /// The contained [`OriginalFormatBox`]. (mandatory)
     #[iso_box(nested_box)]
     pub scheme_type_box: SchemeTypeBox,
+    /// The contained [`SchemeInformationBox`]. (optional)
     #[iso_box(nested_box(collect))]
     pub info: Option<SchemeInformationBox<'a>>,
 }

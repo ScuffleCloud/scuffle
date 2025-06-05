@@ -2,7 +2,7 @@ use std::io;
 
 use fixed::types::extra::{U8, U16};
 use fixed::{FixedI16, FixedU32};
-use scuffle_bytes_util::zero_copy::{Deserialize, DeserializeSeed, Serialize, SerializeSeed};
+use scuffle_bytes_util::zero_copy::{Deserialize, DeserializeSeed, Serialize};
 use scuffle_bytes_util::{BitWriter, BytesCow};
 
 use super::SampleEntry;
@@ -15,8 +15,12 @@ use crate::{BoxHeader, FullBoxHeader, IsoBox, IsoSized};
 #[derive(IsoBox, Debug, PartialEq, Eq, Default)]
 #[iso_box(box_type = b"smhd", skip_impl(deserialize_seed, serialize, sized), crate_path = crate)]
 pub struct SoundMediaHeaderBox {
+    /// The full box header.
     pub full_header: FullBoxHeader,
+    /// A number that places mono audio tracks in a stereo space; 0 is centre (the
+    /// normal value); full left is -1.0 and full right is 1.0.
     pub balance: FixedI16<U8>,
+    /// Reserved 16 bits, must be set to 0.
     pub reserved: u16,
 }
 
@@ -73,16 +77,30 @@ impl IsoSized for SoundMediaHeaderBox {
 /// - Any other boxes
 #[derive(Debug, PartialEq, Eq)]
 pub struct AudioSampleEntry {
+    /// The sample entry that this entry inherits from.
     pub sample_entry: SampleEntry,
+    /// Reserved 64 bits, must be set to 0.
     pub reserved1: u64,
+    /// The number of channels.
+    ///
+    /// - 0: inapplicable/unknown
+    /// - 1: mono
+    /// - 2: stereo (left/right)
+    /// - all other values: the codec configuration should identify the channel assignment.
     pub channelcount: u16,
+    /// In bits, and takes the default value of 16.
     pub samplesize: u16,
+    /// Pre-defined 16 bit value, must be set to 0.
     pub pre_defined: u16,
+    /// Reserved 16 bits, must be set to 0.
     pub reserved2: u16,
+    /// When a [`SamplingRateBox`] is absent is the sampling rate; when a [`SamplingRateBox`] is present,
+    /// is a suitable integer multiple or division of the actual sampling rate.
     pub samplerate: FixedU32<U16>,
 }
 
 impl AudioSampleEntry {
+    /// Creates a new [`AudioSampleEntry`] with the given parameters.
     pub fn new(sample_entry: SampleEntry, channelcount: u16, samplesize: u16, samplerate: FixedU32<U16>) -> Self {
         Self {
             sample_entry,
@@ -149,10 +167,15 @@ impl IsoSized for AudioSampleEntry {
     }
 }
 
+/// Sampling rate box
+///
+/// ISO/IEC 14496-12 - 12.2.3
 #[derive(IsoBox, Debug, PartialEq, Eq)]
 #[iso_box(box_type = b"srat", crate_path = crate)]
 pub struct SamplingRateBox {
+    /// The full box header.
     pub full_header: FullBoxHeader,
+    /// The actual sampling rate of the audio media in samples/second, expressed as a 32-bit integer.
     pub sampling_rate: u32,
 }
 
@@ -173,13 +196,27 @@ pub struct SamplingRateBox {
 /// - Any other boxes
 #[derive(Debug, PartialEq, Eq)]
 pub struct AudioSampleEntryV1 {
+    /// The sample entry that this entry inherits from.
     pub sample_entry: SampleEntry,
+    /// Shall be 1.
     pub entry_version: u16,
+    /// Reserved 48 bits, must be set to 0.
     pub reserved1: [u16; 3],
+    /// The number of channels.
+    ///
+    /// - 0: inapplicable/unknown
+    /// - 1: mono
+    /// - 2: stereo (left/right)
+    /// - all other values: the codec configuration should identify the channel assignment.
     pub channelcount: u16,
+    /// In bits, and takes the default value of 16.
     pub samplesize: u16,
+    /// Pre-defined 16 bit value, must be set to 0.
     pub pre_defined: u16,
+    /// Reserved 16 bits, must be set to 0.
     pub reserved2: u16,
+    /// When a [`SamplingRateBox`] is absent is the sampling rate; when a [`SamplingRateBox`] is present,
+    /// is a suitable integer multiple or division of the actual sampling rate.
     pub samplerate: FixedU32<U16>,
 }
 
@@ -246,7 +283,9 @@ impl IsoSized for AudioSampleEntryV1 {
 #[derive(IsoBox, Debug, PartialEq, Eq)]
 #[iso_box(box_type = b"chnl", crate_path = crate)]
 pub struct ChannelLayout<'a> {
+    /// The full box header.
     pub full_header: FullBoxHeader,
+    /// The channel layout data. (not further implemented)
     pub data: BytesCow<'a>,
 }
 
@@ -256,7 +295,9 @@ pub struct ChannelLayout<'a> {
 #[derive(IsoBox, Debug, PartialEq, Eq)]
 #[iso_box(box_type = b"dmix", crate_path = crate)]
 pub struct DownMixInstructions<'a> {
+    /// The full box header.
     pub full_header: FullBoxHeader,
+    /// The down mix instructions data. (not further implemented)
     pub data: BytesCow<'a>,
 }
 
@@ -265,10 +306,18 @@ pub struct DownMixInstructions<'a> {
 /// ISO/IEC 14496-12 - 12.2.7
 #[derive(Debug, PartialEq, Eq)]
 pub struct LoudnessBaseBox {
+    /// The type of audio scene described by the loudness information. It shall take a
+    /// value of zero unless other types are supported by the loudness processing. For defined values refer
+    /// to the corresponding `loudnessInfoType` specification in ISO/IEC 23008-3.
     pub loudness_info_type: Option<u8>,
+    /// Count of loudness bases in the box.
     pub loudness_base_count: u8,
     /// `mae_group_ID` or `mae_group_preset_ID` depending on the value of `loudness_info_type`.
+    ///
+    /// - `mae_group_ID` is a unique identifier for a group of metadata elements as specified in ISO/IEC 23008-3.
+    /// - `mae_group_preset_ID` is a unique identifier for a group preset as specified in ISO/IEC 23008-3.
     pub mae_group_id: Option<u8>,
+    /// The loudness bases contained in this box.
     pub loudness_bases: Vec<LoudnessBase>,
 }
 
@@ -310,14 +359,14 @@ impl<'a> DeserializeSeed<'a, &FullBoxHeader> for LoudnessBaseBox {
     }
 }
 
-impl SerializeSeed<u8> for LoudnessBaseBox {
-    fn serialize_seed<W>(&self, writer: W, seed: u8) -> std::io::Result<()>
+impl LoudnessBaseBox {
+    fn serialize<W>(&self, writer: W, version: u8) -> std::io::Result<()>
     where
         W: std::io::Write,
     {
         let mut bit_writer = BitWriter::new(writer);
 
-        if seed >= 2 {
+        if version >= 2 {
             let loudness_info_type = self
                 .loudness_info_type
                 .ok_or(io::Error::new(io::ErrorKind::InvalidData, "loudness_info_type is required"))?;
@@ -341,13 +390,13 @@ impl SerializeSeed<u8> for LoudnessBaseBox {
                     5,
                 )?;
             }
-        } else if seed == 1 {
+        } else if version == 1 {
             bit_writer.write_bits(0, 2)?;
             bit_writer.write_bits(self.loudness_base_count as u64, 6)?;
         }
 
         for loudness_base in &self.loudness_bases {
-            loudness_base.serialize_seed(&mut bit_writer, seed)?;
+            loudness_base.serialize(&mut bit_writer, version)?;
         }
 
         Ok(())
@@ -355,6 +404,7 @@ impl SerializeSeed<u8> for LoudnessBaseBox {
 }
 
 impl LoudnessBaseBox {
+    /// Returns the size of the box in bytes, depending on the version.
     pub fn size(&self, version: u8) -> usize {
         let mut size = 0;
 
@@ -373,16 +423,36 @@ impl LoudnessBaseBox {
     }
 }
 
+/// Loudness base in [`LoudnessBaseBox`].
 #[derive(Debug, PartialEq, Eq)]
 pub struct LoudnessBase {
+    /// When zero, declares the characteristics without applying EQ. If non-zero, this box declares
+    /// the loudness after applying the EQ with the matching `EQ_set_ID` and shall match a value in exactly
+    /// one box in the `UniDrcConfigExtension` of this track.
     pub eq_set_id: Option<u8>,
+    /// When zero, declares the loudness characteristics of the layout without downmix. If non-zero,
+    /// this box declares the loudness after applying the downmix with the matching `downmix_ID` and
+    /// shall match a value in exactly one box in the sample entry of this track.
     pub downmix_id: u8,
+    /// When zero, declares the characteristics without applying a DRC. If non-zero, this box
+    /// declares the loudness after applying the DRC with the matching DRC_set_ID and shall match a
+    /// value in exactly one box in the sample entry of this track.
     pub drc_set_id: u8,
+    /// A value for the sample peak level as defined in ISO/IEC 23003-4; all other values are reserved.
     pub bs_sample_peak_level: i16,
+    /// A value for the true peak level as defined in ISO/IEC 23003-4; all other values are reserved.
     pub bs_true_peak_level: i16,
+    /// An index for the measurement system as defined in ISO/IEC 23003-4; all other values are reserved.
     pub measurement_system_for_tp: u8,
+    /// - 0: Reliability is unknown.
+    /// - 1: Value is reported/imported but unverified.
+    /// - 2: Value is a 'not to exceed' ceiling.
+    /// - 3: Value is measured and accurate.
+    /// - 4: All other values are reserved.
     pub reliability_for_tp: u8,
+    /// The number of measurements in the [`measurements`](Self::measurements) vec.
     pub measurement_count: u8,
+    /// The measurements.
     pub measurements: Vec<LoudnessBaseMeasurement>,
 }
 
@@ -427,14 +497,14 @@ impl<'a> DeserializeSeed<'a, &FullBoxHeader> for LoudnessBase {
     }
 }
 
-impl SerializeSeed<u8> for LoudnessBase {
-    fn serialize_seed<W>(&self, writer: W, seed: u8) -> std::io::Result<()>
+impl LoudnessBase {
+    fn serialize<W>(&self, writer: W, version: u8) -> std::io::Result<()>
     where
         W: std::io::Write,
     {
         let mut bit_writer = BitWriter::new(writer);
 
-        if seed >= 1 {
+        if version >= 1 {
             bit_writer.write_bits(0, 2)?;
             bit_writer.write_bits(
                 self.eq_set_id
@@ -476,11 +546,22 @@ impl IsoSized for LoudnessBase {
     }
 }
 
+/// Measurement in [`LoudnessBase`].
 #[derive(Debug, PartialEq, Eq)]
 pub struct LoudnessBaseMeasurement {
+    /// An index for the measurement method as defined in ISO/IEC 23003-4; all others are reserved.
     pub method_definition: u8,
+    /// The method value.
+    ///
+    /// See [`method_definition`](Self::method_definition).
     pub method_value: u8,
+    /// An index for the measurement system as defined in ISO/IEC 23003-4; all others are reserved.
     pub measurement_system: u8,
+    /// - 0: Reliability is unknown.
+    /// - 1: Value is reported/imported but unverified.
+    /// - 2: Value is a 'not to exceed' ceiling.
+    /// - 3: Value is measured and accurate.
+    /// - 4: All other values are reserved.
     pub reliability: u8,
 }
 
@@ -535,7 +616,9 @@ impl IsoSized for LoudnessBaseMeasurement {
 #[derive(IsoBox, Debug, PartialEq, Eq)]
 #[iso_box(box_type = b"tlou", skip_impl(deserialize_seed, serialize, sized), crate_path = crate)]
 pub struct TrackLoudnessInfo {
+    /// The full box header.
     pub full_header: FullBoxHeader,
+    /// The loudness base box that this box inherits from.
     pub base_box: LoudnessBaseBox,
 }
 
@@ -558,7 +641,7 @@ impl Serialize for TrackLoudnessInfo {
     {
         self.serialize_box_header(&mut writer)?;
         self.full_header.serialize(&mut writer)?;
-        self.base_box.serialize_seed(&mut writer, self.full_header.version)?;
+        self.base_box.serialize(&mut writer, self.full_header.version)?;
         Ok(())
     }
 }
@@ -575,7 +658,9 @@ impl IsoSized for TrackLoudnessInfo {
 #[derive(IsoBox, Debug, PartialEq, Eq)]
 #[iso_box(box_type = b"alou", skip_impl(deserialize_seed, serialize, sized), crate_path = crate)]
 pub struct AlbumLoudnessInfo {
+    /// The full box header.
     pub full_header: FullBoxHeader,
+    /// The loudness base box that this box inherits from.
     pub base_box: LoudnessBaseBox,
 }
 
@@ -598,7 +683,7 @@ impl Serialize for AlbumLoudnessInfo {
     {
         self.serialize_box_header(&mut writer)?;
         self.full_header.serialize(&mut writer)?;
-        self.base_box.serialize_seed(&mut writer, self.full_header.version)?;
+        self.base_box.serialize(&mut writer, self.full_header.version)?;
         Ok(())
     }
 }
@@ -615,8 +700,10 @@ impl IsoSized for AlbumLoudnessInfo {
 #[derive(IsoBox, Debug, PartialEq, Eq)]
 #[iso_box(box_type = b"ludt", crate_path = crate)]
 pub struct LoudnessBox {
+    /// The contained [`TrackLoudnessInfo`] boxes. (any quantity)
     #[iso_box(nested_box(collect))]
     pub loudness: Vec<TrackLoudnessInfo>,
+    /// The contained [`AlbumLoudnessInfo`] boxes. (any quantity)
     #[iso_box(nested_box(collect))]
     pub album_loudness: Vec<AlbumLoudnessInfo>,
 }

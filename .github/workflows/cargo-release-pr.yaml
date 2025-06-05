@@ -72,7 +72,7 @@ jobs:
         env:
           RUSTDOCFLAGS: "-Dwarnings --cfg docsrs --sort-modules-by-appearance --enable-index-page -Zunstable-options"
           RUSTC_BOOTSTRAP: "1"
-        run: cargo sync-rdme --all-features --workspace
+        run: cargo +nightly sync-rdme --all-features --workspace
 
       - name: fmt cargo toml
         if: ${{ steps.changed.outputs.result == 1 }}

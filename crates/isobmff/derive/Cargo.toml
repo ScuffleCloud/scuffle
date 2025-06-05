@@ -1,0 +1,50 @@
+[package]
+name = "isobmff-derive"
+version = "0.1.0"
+edition = "2024"
+description = "Derive macro for isobmff::IsoBox"
+repository = "https://github.com/scufflecloud/scuffle"
+authors = ["Scuffle <opensource@scuffle.cloud>"]
+readme = "README.md"
+documentation = "https://docs.rs/isobmff-derive"
+license = "MIT OR Apache-2.0"
+keywords = ["isobmff", "mp4", "video", "container", "iso-14496-12"]
+
+[lints.rust]
+unexpected_cfgs = { level = "warn", check-cfg = ['cfg(coverage_nightly)'] }
+
+[lib]
+proc-macro = true
+
+[dependencies]
+darling = "0.20.11"
+proc-macro2 = "1.0.95"
+quote = "1.0.40"
+scuffle-workspace-hack.workspace = true
+syn = "2.0.100"
+
+[dev-dependencies]
+isobmff = { path = ".." }
+scuffle-bytes-util = { path = "../../bytes-util" }
+
+[package.metadata.docs.rs]
+all-features = true
+rustdoc-args = [
+  "--cfg",
+  "docsrs",
+  "--sort-modules-by-appearance",
+  "--generate-link-to-definition",
+]
+
+[package.metadata.cargo-sync-rdme.badge]
+style = "flat-square"
+
+[package.metadata.cargo-sync-rdme.badge.badges]
+license = true
+docs-rs = true
+crates-io = true
+github-actions = { workflows = "ci.yaml" }
+codecov = true
+
+[package.metadata.xtask.release]
+group = "isobmff"

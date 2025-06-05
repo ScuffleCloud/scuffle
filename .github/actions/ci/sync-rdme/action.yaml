@@ -13,4 +13,4 @@ runs:
         RUSTDOCFLAGS: "-Dwarnings --cfg docsrs --sort-modules-by-appearance --enable-index-page -Zunstable-options"
       run: |
         set -xeo pipefail
-        cargo sync-rdme --all-features --workspace --check
+        cargo +nightly sync-rdme --all-features --workspace --check

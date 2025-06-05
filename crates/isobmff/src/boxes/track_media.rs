@@ -231,7 +231,7 @@ pub struct HandlerBox {
     pub full_header: FullBoxHeader,
     /// Pre-defined 32 bits, must be set to 0.
     pub pre_defined: u32,
-    /// - When present in a [`MediaBox`](super::MediaBox), contains a value as defined in Clause 12, or a value from a derived
+    /// - When present in a [`MediaBox`], contains a value as defined in Clause 12, or a value from a derived
     ///   specification, or registration.
     /// - When present in a [`MetaBox`](super::MetaBox), contains an appropriate value to indicate the format of the
     ///   [`MetaBox`](super::MetaBox) contents. The value 'null' can be used in the primary [`MetaBox`](super::MetaBox)

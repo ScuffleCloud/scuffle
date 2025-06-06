@@ -149,7 +149,7 @@ where
     {
         if let Amf0Marker::String | Amf0Marker::LongString | Amf0Marker::XmlDocument = self.peek_marker()? {
             let value = self.decode_string()?;
-            value.into_deserializer().deserialize_str(visitor)
+            value.into_deserializer().deserialize_any(visitor)
         } else {
             self.deserialize_any(visitor)
         }
@@ -246,16 +246,7 @@ where
     where
         V: serde::de::Visitor<'de>,
     {
-        if let Amf0Marker::StrictArray = self.peek_marker()? {
-            let size = self.decode_strict_array_header()? as usize;
-
-            visitor.visit_seq(StrictArray {
-                de: self,
-                remaining: size,
-            })
-        } else {
-            self.deserialize_any(visitor)
-        }
+        self.deserialize_seq(visitor)
     }
 
     fn deserialize_tuple_struct<V>(self, _name: &'static str, len: usize, visitor: V) -> Result<V::Value, Self::Error>

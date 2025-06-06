@@ -11,6 +11,15 @@
 
     let selectedOption: 'left' | 'right' = 'left';
 
+    // Might need this later but don't need dialogs right now
+    // const {
+    //     elements: { trigger, portalled, overlay, content, close, title },
+    //     states: { open },
+    // } = createDialog({
+    //     defaultOpen: false,
+    //     forceVisible: true,
+    // });
+
     const mutation = createMutation({
         mutationFn: async () => {
             const response = await fetch('/api/v1/video-streams/new', {

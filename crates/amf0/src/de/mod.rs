@@ -70,7 +70,7 @@ where
     type Error = Amf0Error;
 
     serde::forward_to_deserialize_any! {
-        ignored_any
+        tuple tuple_struct ignored_any identifier
     }
 
     impl_de_number!(deserialize_i8, visit_i8);
@@ -188,7 +188,7 @@ where
     where
         V: serde::de::Visitor<'de>,
     {
-        if matches!(self.peek_marker()?, Amf0Marker::Null | Amf0Marker::Undefined) {
+        if let Amf0Marker::Null | Amf0Marker::Undefined = self.peek_marker()? {
             self.decode_null()?;
             visitor.visit_none()
         } else {
@@ -242,20 +242,6 @@ where
         }
     }
 
-    fn deserialize_tuple<V>(self, _len: usize, visitor: V) -> Result<V::Value, Self::Error>
-    where
-        V: serde::de::Visitor<'de>,
-    {
-        self.deserialize_seq(visitor)
-    }
-
-    fn deserialize_tuple_struct<V>(self, _name: &'static str, len: usize, visitor: V) -> Result<V::Value, Self::Error>
-    where
-        V: serde::de::Visitor<'de>,
-    {
-        self.deserialize_tuple(len, visitor)
-    }
-
     fn deserialize_map<V>(self, visitor: V) -> Result<V::Value, Self::Error>
     where
         V: serde::de::Visitor<'de>,
@@ -297,18 +283,6 @@ where
         V: serde::de::Visitor<'de>,
     {
         visitor.visit_enum(Enum { de: self })
-    }
-
-    fn deserialize_identifier<V>(self, visitor: V) -> Result<V::Value, Self::Error>
-    where
-        V: serde::de::Visitor<'de>,
-    {
-        if let Amf0Marker::String | Amf0Marker::LongString = self.peek_marker()? {
-            let s = self.decode_string()?;
-            s.into_deserializer().deserialize_identifier(visitor)
-        } else {
-            self.deserialize_any(visitor)
-        }
     }
 }
 

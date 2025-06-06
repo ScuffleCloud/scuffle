@@ -7,21 +7,13 @@
             placement: 'bottom-end',
         },
     });
-    const { trigger, content } = popover;
 
     function createWebhookStream() {
         console.log('Creating webhook stream...');
-        // Add your webhook stream creation logic here
     }
 
     function createConfiguredStream() {
         console.log('Creating configured stream...');
-        // Add your configured stream creation logic here
-    }
-
-    function createCodeStream() {
-        console.log('Creating code stream...');
-        // Add your code stream creation logic here
     }
 </script>
 
@@ -35,14 +27,14 @@
     </div>
 
     <div class="create-button-container">
-        <button {...trigger}>
+        <button class="create-button-wrapper" {...popover.trigger}>
             <div class="create-button">
                 New Stream
                 <IconPlus />
             </div>
         </button>
 
-        <div {...content} class="popover-content">
+        <div {...popover.content} class="popover-content">
             <div class="stream-option">
                 <div class="option-header">
                     <div class="option-icon webhook">📡</div>
@@ -100,19 +92,19 @@
     .create-button-container {
         position: relative;
         flex-shrink: 0;
+    }
 
-        button {
-            padding: 0;
-            border: none;
-            background: none;
-            cursor: pointer;
+    .create-button-wrapper {
+        padding: 0;
+        border: none;
+        background: none;
+        cursor: pointer;
+        border-radius: 9999px;
+
+        &:focus-visible {
+            outline: 2px solid var(--colors-orange500);
+            outline-offset: 2px;
             border-radius: 9999px;
-
-            &:focus-visible {
-                outline: 2px solid var(--colors-orange500);
-                outline-offset: 2px;
-                border-radius: 9999px;
-            }
         }
     }
 
@@ -173,10 +165,6 @@
             &.configured {
                 background-color: #fef3c7;
             }
-
-            &.code {
-                background-color: #f3f4f6;
-            }
         }
 
         .option-info {
@@ -202,7 +190,10 @@
         font-weight: 500;
         border: none;
         cursor: pointer;
-        transition: all 0.2s;
+
+        &:focus-visible {
+            outline: 2px solid var(--colors-orange100);
+        }
 
         &.webhook-btn {
             background-color: #e0e7ff;

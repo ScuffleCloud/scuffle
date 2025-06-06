@@ -1,6 +1,6 @@
 <script lang="ts">
-    import IconSwitch from '$lib/images/IconSwitch.svelte';
-    import { userStore } from '$lib/stores/userStore.svelte';
+    import IconSwitch from '$lib/images/icon-switch.svelte';
+    import { userStore } from '$lib/stores/user-store.svelte';
     import OrganizationDropdown from './OrganizationDropdown.svelte';
     import { createPopover, melt } from '@melt-ui/svelte';
 

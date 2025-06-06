@@ -1,6 +1,6 @@
 <script lang="ts">
     import IconConfigureTab from '$lib/images/icon-configure-tab.svelte';
-    import ScuffleLogo from '$lib/images/ScuffleLogo.svelte';
+    import ScuffleLogo from '$lib/images/scuffle-logo.svelte';
     import NavLinks from './nav-links.svelte';
     import OrganizationInfo from './OrganizationToggle.svelte';
     import { browser } from '$app/environment';

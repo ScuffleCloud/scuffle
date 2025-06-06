@@ -1,9 +1,18 @@
 <script lang="ts">
-    import Header from './Header.svelte';
+    import Header from './header.svelte';
     import StreamsTable from './streams-table.svelte';
+    import ScuffleLogo from '$lib/images/scuffle-logo.svelte';
+    import IconSwitch from '$lib/images/icon-switch.svelte';
+    import IconDots from '$lib/images/icon-dots.svelte';
+    import IconTest from '$lib/images/icon-test.svelte';
+    import IconTest2 from '$lib/images/icon-test-2.svelte';
+    import IconStats from '$lib/images/icon-stats.svelte';
+    import IconWebhook from '$lib/images/icon-webhook.svelte';
+    import IconStream from '$lib/images/icon-stream.svelte';
 
     import type { ListResponse, Streamed } from '$lib/types';
     import type { VideoStream } from './types';
+    import { userStore } from '$lib/stores/user-store.svelte';
 
     type Props = {
         streamedData: Streamed<ListResponse<VideoStream>>;

@@ -2,7 +2,7 @@
     import IconOverviewCheckSmall from '$lib/images/icon-overview-check-small.svelte';
     import IconOverviewEncoding from '$lib/images/icon-overview-encoding.svelte';
     import IconOverviewFilm from '$lib/images/icon-overview-film.svelte';
-    import IconWebhook from '$lib/images/IconWebhook.svelte';
+    import IconWebhook from '$lib/images/icon-webhook.svelte';
 
     type Props = {
         streamId: string;

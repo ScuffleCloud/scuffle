@@ -1,5 +1,5 @@
 <script lang="ts">
-    import Search from '$lib/images/Search.svelte';
+    import Search from '$lib/images/search.svelte';
     import { onMount } from 'svelte';
     import { fade } from 'svelte/transition';
     // TODO: Configure routing from root

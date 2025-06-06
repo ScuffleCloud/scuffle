@@ -1,6 +1,6 @@
 <script lang="ts">
-    import IconWebhook from '$lib/images/IconWebhookInverted.svelte';
-    import IconStream from '$lib/images/IconStream.svelte';
+    import IconWebhook from '$lib/images/icon-webhook.svelte';
+    import IconStream from '$lib/images/icon-stream.svelte';
     import type { VideoStream } from './types';
     import StreamStatusPill from '$lib/shared-components/stream-status-pill.svelte';
 

@@ -1,6 +1,6 @@
 <script lang="ts">
     import IconCopy from '$lib/images/icon-copy.svelte';
-    import IconDots from '$lib/images/IconDots.svelte';
+    import IconDots from '$lib/images/icon-dots.svelte';
     let credentials = {
         accountId: 'your-account-id-here',
         streamToken: 'your-stream-token-here',

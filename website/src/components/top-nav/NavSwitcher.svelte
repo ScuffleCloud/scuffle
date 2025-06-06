@@ -1,6 +1,6 @@
 <script lang="ts">
     import { createDropdownMenu, melt } from '@melt-ui/svelte';
-    import IconSwitch from '$lib/images/IconSwitch.svelte';
+    import IconSwitch from '$lib/images/icon-switch.svelte';
 
     interface MenuItem {
         id: string;

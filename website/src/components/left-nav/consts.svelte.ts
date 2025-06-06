@@ -1,7 +1,7 @@
 import type { NavItem } from '../types';
-import IconTest from '$lib/images/IconTest.svelte';
-import IconTest2 from '$lib/images/IconTest2.svelte';
-import IconStats from '$lib/images/IconStats.svelte';
+import IconTest from '$lib/images/icon-test.svelte';
+import IconTest2 from '$lib/images/icon-test-2.svelte';
+import IconStats from '$lib/images/icon-stats.svelte';
 import Settings2 from '$lib/images/icon-settings2.svelte';
 
 export const NAV_ITEMS: NavItem[] = [

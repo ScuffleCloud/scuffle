@@ -1,6 +1,9 @@
 <script lang="ts">
     import { Popover } from 'melt/builders';
     import IconPlus from '$lib/images/icon-plus.svelte';
+    import IconWebhook from '$lib/images/icon-webhook.svelte';
+    import IconStream from '$lib/images/icon-stream.svelte';
+    import IconOverviewKey from '$lib/images/icon-overview-key.svelte';
 
     const popover = new Popover({
         computePositionOptions: {
@@ -37,27 +40,34 @@
         <div {...popover.content} class="popover-content">
             <div class="stream-option">
                 <div class="option-header">
-                    <div class="option-icon webhook">📡</div>
-                    <div class="option-info">
+                    <div class="option-title">
+                        <IconWebhook />
                         <h3>Webhook Stream</h3>
-                        <p>Subtext about this temporary text</p>
+                    </div>
+                    <div class="option-info">
+                        <p>
+                            Create a stream that will be triggered by a webhook. See our
+                            documentation for more information.
+                        </p>
                     </div>
                 </div>
                 <button class="option-button webhook-btn" on:click={createWebhookStream}>
-                    View Keys ✏️
+                    View Keys <IconOverviewKey />
                 </button>
             </div>
 
             <div class="stream-option">
                 <div class="option-header">
-                    <div class="option-icon configured">⚙️</div>
-                    <div class="option-info">
+                    <div class="option-title">
+                        <IconStream />
                         <h3>Configured Stream</h3>
-                        <p>Subtext about this temporary text</p>
+                    </div>
+                    <div class="option-info">
+                        <p>Create a new configurable stream</p>
                     </div>
                 </div>
                 <button class="option-button configured-btn" on:click={createConfiguredStream}>
-                    Create Configured Stream +
+                    Create Configured Stream <IconPlus />
                 </button>
             </div>
         </div>
@@ -121,65 +131,54 @@
     .popover-content {
         background: white;
         border: 1px solid #e5e7eb;
-        border-radius: 12px;
+        border-radius: 0.5rem;
         box-shadow:
             0 10px 15px -3px rgba(0, 0, 0, 0.1),
             0 4px 6px -2px rgba(0, 0, 0, 0.05);
-        padding: 1rem;
-        width: 400px;
+        padding: 0.5rem;
+        width: 44rem;
         z-index: 50;
         margin: 0;
+        display: flex;
+        gap: 0.5rem;
     }
 
     .stream-option {
-        padding: 1rem;
-        border-radius: 8px;
-        margin-bottom: 0.75rem;
-        border: 1px solid #f3f4f6;
-
-        &:last-child {
-            margin-bottom: 0;
-        }
+        padding: 0.5rem;
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+        gap: 0.5rem;
+        flex: 1;
     }
 
     .option-header {
         display: flex;
+        flex-direction: column;
         align-items: flex-start;
-        gap: 0.75rem;
-        margin-bottom: 0.75rem;
+        gap: 0.25rem;
+        padding: 0.375rem;
 
-        .option-icon {
-            width: 40px;
-            height: 40px;
-            border-radius: 8px;
+        .option-title {
             display: flex;
             align-items: center;
-            justify-content: center;
-            font-size: 1.25rem;
-            flex-shrink: 0;
+            flex-direction: row;
+            gap: 0.5rem;
 
-            &.webhook {
-                background-color: #e0e7ff;
-            }
-
-            &.configured {
-                background-color: #fef3c7;
+            h3 {
+                font-size: 1rem;
+                font-weight: 700;
+                line-height: 1.5rem;
             }
         }
 
         .option-info {
-            h3 {
-                margin: 0 0 0.25rem 0;
-                font-size: 1rem;
-                font-weight: 600;
-                color: #1f2937;
-            }
-
-            p {
-                margin: 0;
-                font-size: 0.875rem;
-                color: #6b7280;
-            }
+            display: flex;
+            flex-direction: column;
+            color: var(--colors-brown90);
+            font-size: 1rem;
+            font-weight: 500;
+            line-height: normal;
         }
     }
 
@@ -190,14 +189,24 @@
         font-weight: 500;
         border: none;
         cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 0.5rem;
 
         &:focus-visible {
             outline: 2px solid var(--colors-orange100);
         }
 
         &.webhook-btn {
-            background-color: #e0e7ff;
-            color: #3730a3;
+            color: var(--colors-yellow90);
+            font-size: 1rem;
+            font-weight: 700;
+            line-height: 1.5rem;
+            background-color: var(--colors-purple10);
+            border-radius: 0.5rem;
+            border: 1px solid var(--colors-purple30);
+            background: var(--colors-purple30);
 
             &:hover {
                 background-color: #c7d2fe;
@@ -205,12 +214,33 @@
         }
 
         &.configured-btn {
-            background-color: #fbbf24;
-            color: #92400e;
+            color: var(--colors-yellow90);
+            font-size: 1rem;
+            font-weight: 700;
+            line-height: 1.5rem;
+            background-color: var(--colors-yellow10);
+            border-radius: 0.5rem;
+            border: 1px solid var(--colors-yellow30);
+            background: var(--colors-yellow30);
 
             &:hover {
                 background-color: #f59e0b;
             }
         }
+    }
+
+    [data-melt-popover-content] {
+        position: absolute;
+        pointer-events: none;
+        opacity: 0;
+        transform: scale(0.9);
+        transition: 0.3s;
+        transition-property: opacity, transform;
+    }
+
+    [data-melt-popover-content][data-open] {
+        pointer-events: auto;
+        opacity: 1;
+        transform: scale(1);
     }
 </style>

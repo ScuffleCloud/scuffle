@@ -31,13 +31,7 @@
     </a>
     <OrganizationInfo {isCollapsed} />
     <NavLinks {isCollapsed} />
-    <button
-        class="configure-tab-button"
-        onclick={() => {
-            console.log('configure tab button clicked');
-            toggleSidebar();
-        }}
-    >
+    <button class="configure-tab-button" onclick={toggleSidebar}>
         <IconConfigureTab />
     </button>
 </nav>

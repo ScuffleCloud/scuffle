@@ -50,7 +50,6 @@
 
         &.collapsed {
             justify-content: center;
-            padding: 0.75rem;
         }
 
         .content {

@@ -9,6 +9,10 @@
         browser ? localStorage.getItem('sidebar-collapsed') === 'true' : false,
     );
 
+    // Track the original collapsed state before temporary expansion
+    let originalCollapsedState = $state(isCollapsed);
+    let isTemporarilyExpanded = $state(false);
+
     $effect(() => {
         if (browser) {
             localStorage.setItem('sidebar-collapsed', isCollapsed.toString());
@@ -17,6 +21,20 @@
 
     const toggleSidebar = () => {
         isCollapsed = !isCollapsed;
+        originalCollapsedState = isCollapsed;
+        isTemporarilyExpanded = false;
+    };
+
+    // Function to temporarily expand sidebar for dropdown interaction
+    const handleDropdownInteraction = (shouldExpand: boolean, itemPath?: string) => {
+        if (shouldExpand && isCollapsed) {
+            isTemporarilyExpanded = true;
+            isCollapsed = false;
+        } else if (!shouldExpand && isTemporarilyExpanded) {
+            // Return to original state after navigation
+            isCollapsed = originalCollapsedState;
+            isTemporarilyExpanded = false;
+        }
     };
 </script>
 
@@ -30,7 +48,7 @@
         {/if}
     </a>
     <OrganizationInfo {isCollapsed} />
-    <NavLinks {isCollapsed} />
+    <NavLinks {isCollapsed} {handleDropdownInteraction} {isTemporarilyExpanded} />
     <button class="configure-tab-button" onclick={toggleSidebar}>
         <IconConfigureTab />
     </button>

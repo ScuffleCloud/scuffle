@@ -4,14 +4,23 @@
     import { Collapsible } from 'melt/builders';
     import NavItemBase from './nav-item-base.svelte';
 
-    const collapsible = new Collapsible();
-
     type Props = {
         navItem: NavItem;
         isCollapsed?: boolean;
+        shouldOpen?: boolean;
     };
 
-    const { navItem, isCollapsed = false }: Props = $props();
+    const { navItem, isCollapsed = false, shouldOpen = false }: Props = $props();
+
+    const collapsible = new Collapsible();
+
+    $effect(() => {
+        if (shouldOpen && !isCollapsed) {
+            setTimeout(() => {
+                collapsible.open = true;
+            }, 200);
+        }
+    });
 </script>
 
 <div class="root" class:collapsed={isCollapsed}>

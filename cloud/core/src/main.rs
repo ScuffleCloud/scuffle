@@ -6,6 +6,8 @@
 //!
 //! `SPDX-License-Identifier: AGPL-3.0`
 
+mod schema;
+
 fn main() {
     println!("Hello World!");
 }

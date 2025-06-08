@@ -10,6 +10,7 @@ repository = "https://github.com/scufflecloud/scuffle"
 description = "Authentication/Core server for scuffle.cloud"
 
 [dependencies]
+diesel = { version = "2.2.10", features = ["postgres"] }
 pb = { package = "scufflecloud-proto", path = "../proto" }
 
 [package.metadata.sync-readme.badges]

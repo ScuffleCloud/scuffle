@@ -28,7 +28,7 @@ config = { version = "0.15", default-features = false, features = ["ini", "json"
 crossbeam-utils = { version = "0.8" }
 crypto-common = { version = "0.1", default-features = false, features = ["std"] }
 digest = { version = "0.10", features = ["mac", "std"] }
-either = { version = "1", default-features = false, features = ["use_std"] }
+either = { version = "1", features = ["use_std"] }
 fastrand = { version = "2" }
 form_urlencoded = { version = "1" }
 futures = { version = "0.3" }
@@ -97,7 +97,7 @@ config = { version = "0.15", default-features = false, features = ["ini", "json"
 crossbeam-utils = { version = "0.8" }
 crypto-common = { version = "0.1", default-features = false, features = ["std"] }
 digest = { version = "0.10", features = ["mac", "std"] }
-either = { version = "1", default-features = false, features = ["use_std"] }
+either = { version = "1", features = ["use_std"] }
 fastrand = { version = "2" }
 form_urlencoded = { version = "1" }
 futures = { version = "0.3" }

@@ -10,6 +10,7 @@ readme = "README.md"
 publish = false
 
 [dependencies]
+diesel = { version = "2.2.10", features = ["postgres"] }
 pb = { package = "scufflecloud-proto", path = "../proto" }
 scuffle-workspace-hack.workspace = true
 

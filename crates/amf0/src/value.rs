@@ -292,6 +292,7 @@ macro_rules! impl_deserializer {
                 bool f64 str string unit
                 seq map newtype_struct tuple
                 struct enum ignored_any identifier
+                unit_struct tuple_struct
             }
 
             impl_de_number!(deserialize_i8, visit_i8);
@@ -337,7 +338,21 @@ macro_rules! impl_deserializer {
             where
                 V: serde::de::Visitor<'de>,
             {
-                self.deserialize_seq(visitor)
+                if let Amf0Value::Array(a) = &self {
+                    match a
+                        .iter()
+                        .map(|a| match a {
+                            Amf0Value::Number(n) => num_traits::cast(*n).ok_or(()),
+                            _ => Err(()),
+                        })
+                        .collect::<Result<_, _>>()
+                    {
+                        Ok(buf) => visitor.visit_byte_buf(buf),
+                        Err(()) => self.deserialize_any(visitor),
+                    }
+                } else {
+                    self.deserialize_any(visitor)
+                }
             }
 
             fn deserialize_byte_buf<V>(self, visitor: V) -> Result<V::Value, Self::Error>
@@ -345,25 +360,6 @@ macro_rules! impl_deserializer {
                 V: serde::de::Visitor<'de>,
             {
                 self.deserialize_seq(visitor)
-            }
-
-            fn deserialize_unit_struct<V>(self, _name: &'static str, visitor: V) -> Result<V::Value, Self::Error>
-            where
-                V: serde::de::Visitor<'de>,
-            {
-                self.deserialize_unit(visitor)
-            }
-
-            fn deserialize_tuple_struct<V>(
-                self,
-                _name: &'static str,
-                len: usize,
-                visitor: V,
-            ) -> Result<V::Value, Self::Error>
-            where
-                V: serde::de::Visitor<'de>,
-            {
-                self.deserialize_tuple(len, visitor)
             }
 
             fn deserialize_any<V>(self, visitor: V) -> Result<V::Value, Self::Error>

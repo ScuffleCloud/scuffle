@@ -146,7 +146,10 @@ where
             Amf0Marker::String | Amf0Marker::LongString | Amf0Marker::XmlDocument => {
                 self.decode_string()?.into_deserializer().deserialize_any(visitor)
             }
-            Amf0Marker::Null | Amf0Marker::Undefined => visitor.visit_unit(),
+            Amf0Marker::Null | Amf0Marker::Undefined => {
+                self.decode_null()?;
+                visitor.visit_unit()
+            },
             Amf0Marker::Object | Amf0Marker::TypedObject | Amf0Marker::EcmaArray => {
                 let header = self.decode_object_header()?;
                 match header {

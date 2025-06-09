@@ -10,8 +10,16 @@ repository = "https://github.com/scufflecloud/scuffle"
 description = "Authentication/Core server for scuffle.cloud"
 
 [dependencies]
-diesel = { version = "2.2.10", features = ["postgres"] }
+anyhow = "1.0.98"
+async-trait = "0.1.88"
+diesel = { features = ["postgres"], version = "2.2.10" }
 pb = { package = "scufflecloud-proto", path = "../proto" }
+scuffle-bootstrap = "0.1.5"
+scuffle-context = "0.1.5"
+scuffle-http = "0.3.2"
+scuffle-signal = { features = ["bootstrap"], version = "0.3.3" }
+tinc = { path = "../../crates/tinc" }
+tonic = "0.13.1"
 
 [package.metadata.sync-readme.badges]
 docs-rs = false

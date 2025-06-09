@@ -1,0 +1,38 @@
+syntax = "proto3";
+
+package scufflecloud.core.v1;
+
+import "tinc/annotations.proto";
+
+service CoreService {
+    rpc RegisterWithEmail(RegisterWithEmailRequest) returns (SessionToken) {
+        option (tinc.method).endpoint = {
+            post: "/register/email"
+        };
+    }
+    rpc RegisterWithExternalProvider(RegisterWithExternalProviderRequest) returns (RegisterWithExternalProviderResponse) {
+        option (tinc.method).endpoint = {
+            post: "/register/external"
+        };
+    }
+}
+
+message RegisterWithEmailRequest {
+    string email = 1;
+}
+
+message SessionToken {
+    string token = 1;
+}
+
+enum ExternalProvider {
+    GOOGLE = 0;
+}
+
+message RegisterWithExternalProviderRequest {
+    ExternalProvider provider = 1;
+}
+
+message RegisterWithExternalProviderResponse {
+    string authorization_url = 1;
+}

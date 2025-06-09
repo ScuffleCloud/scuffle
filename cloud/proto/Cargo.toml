@@ -10,6 +10,7 @@ repository = "https://github.com/scufflecloud/scuffle"
 description = "Protobuf definitions for various services used by scuffle.cloud"
 
 [dependencies]
+prost = "0.13.5"
 tinc = { path = "../../crates/tinc" }
 
 [build-dependencies]

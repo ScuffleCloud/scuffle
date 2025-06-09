@@ -4008,6 +4008,7 @@ dependencies = [
  "toml_datetime 0.7.0",
  "toml_parser",
  "tower",
+ "tower-http",
  "tracing",
  "tracing-core",
  "tracing-log",
@@ -4037,6 +4038,7 @@ dependencies = [
  "smart-default",
  "tinc",
  "tonic 0.13.1",
+ "tower-http",
  "tracing",
  "tracing-subscriber",
 ]

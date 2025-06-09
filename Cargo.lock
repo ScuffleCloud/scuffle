@@ -3279,12 +3279,12 @@ dependencies = [
  "insta",
  "pin-project-lite",
  "postcompile",
- "scuffle-bootstrap-derive",
+ "scuffle-bootstrap-derive 0.1.5",
  "scuffle-changelog",
- "scuffle-context",
+ "scuffle-context 0.1.5",
  "scuffle-future-ext",
  "scuffle-settings",
- "scuffle-signal",
+ "scuffle-signal 0.3.3",
  "scuffle-workspace-hack",
  "serde",
  "serde_derive",
@@ -3295,12 +3295,40 @@ dependencies = [
 ]
 
 [[package]]
+name = "scuffle-bootstrap"
+version = "0.1.5"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "278f28d2aea2c3b9a06ee29a3ca4c96cdc7d1f856969c1fcdc60b2a15fab6e8a"
+dependencies = [
+ "anyhow",
+ "futures",
+ "pin-project-lite",
+ "scuffle-bootstrap-derive 0.1.5 (registry+https://github.com/rust-lang/crates.io-index)",
+ "scuffle-context 0.1.5 (registry+https://github.com/rust-lang/crates.io-index)",
+ "scuffle-workspace-hack",
+ "tokio",
+]
+
+[[package]]
 name = "scuffle-bootstrap-derive"
 version = "0.1.6"
 dependencies = [
  "darling",
  "insta",
  "prettyplease",
+ "proc-macro2",
+ "quote",
+ "scuffle-workspace-hack",
+ "syn",
+]
+
+[[package]]
+name = "scuffle-bootstrap-derive"
+version = "0.1.5"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "2d98e9f1d178ee6d9efbb47d58ac565dc08df2267f933bfd59e6a188a2ead440"
+dependencies = [
+ "darling",
  "proc-macro2",
  "quote",
  "scuffle-workspace-hack",
@@ -3323,10 +3351,10 @@ dependencies = [
  "prometheus-client",
  "querystring",
  "reqwest",
- "scuffle-bootstrap",
+ "scuffle-bootstrap 0.1.5",
  "scuffle-changelog",
- "scuffle-context",
- "scuffle-http",
+ "scuffle-context 0.1.5",
+ "scuffle-http 0.3.2",
  "scuffle-metrics",
  "scuffle-pprof",
  "scuffle-workspace-hack",
@@ -3375,6 +3403,19 @@ dependencies = [
  "scuffle-workspace-hack",
  "tokio",
  "tokio-test",
+ "tokio-util",
+]
+
+[[package]]
+name = "scuffle-context"
+version = "0.1.5"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "d5b1bc272693e65a56fb6c0885609e53eb61613958284b49af9aad138c6ada35"
+dependencies = [
+ "futures-lite",
+ "pin-project-lite",
+ "scuffle-workspace-hack",
+ "tokio",
  "tokio-util",
 ]
 
@@ -3504,7 +3545,7 @@ dependencies = [
  "rustls",
  "rustls-pemfile",
  "scuffle-changelog",
- "scuffle-context",
+ "scuffle-context 0.1.5",
  "scuffle-future-ext",
  "scuffle-workspace-hack",
  "thiserror 2.0.12",
@@ -3514,6 +3555,28 @@ dependencies = [
  "tower",
  "tracing",
  "tracing-subscriber",
+]
+
+[[package]]
+name = "scuffle-http"
+version = "0.3.2"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "48128d45819f407609edefd2f36ebf65d0b171e4f4de55ed95ff6fa46d056a73"
+dependencies = [
+ "bon",
+ "bytes",
+ "futures",
+ "http",
+ "http-body",
+ "hyper",
+ "hyper-util",
+ "libc",
+ "pin-project-lite",
+ "scuffle-context 0.1.5 (registry+https://github.com/rust-lang/crates.io-index)",
+ "scuffle-workspace-hack",
+ "thiserror 2.0.12",
+ "tokio",
+ "tower",
 ]
 
 [[package]]
@@ -3596,7 +3659,7 @@ dependencies = [
  "scuffle-amf0",
  "scuffle-bytes-util",
  "scuffle-changelog",
- "scuffle-context",
+ "scuffle-context 0.1.5",
  "scuffle-flv",
  "scuffle-future-ext",
  "scuffle-workspace-hack",
@@ -3619,7 +3682,7 @@ dependencies = [
  "config",
  "document-features",
  "minijinja",
- "scuffle-bootstrap",
+ "scuffle-bootstrap 0.1.5",
  "scuffle-changelog",
  "scuffle-workspace-hack",
  "serde",
@@ -3636,14 +3699,27 @@ dependencies = [
  "document-features",
  "futures",
  "libc",
- "scuffle-bootstrap",
+ "scuffle-bootstrap 0.1.5",
  "scuffle-changelog",
- "scuffle-context",
+ "scuffle-context 0.1.5",
  "scuffle-future-ext",
  "scuffle-workspace-hack",
  "tokio",
  "tokio-stream",
  "tokio-test",
+]
+
+[[package]]
+name = "scuffle-signal"
+version = "0.3.3"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "98ed8ac9e2256164b91aa5df970f31aeb413ebd4eb35d054da9605ac4e46875d"
+dependencies = [
+ "anyhow",
+ "scuffle-bootstrap 0.1.5 (registry+https://github.com/rust-lang/crates.io-index)",
+ "scuffle-context 0.1.5 (registry+https://github.com/rust-lang/crates.io-index)",
+ "scuffle-workspace-hack",
+ "tokio",
 ]
 
 [[package]]
@@ -3757,9 +3833,17 @@ dependencies = [
 name = "scufflecloud-core"
 version = "0.1.0"
 dependencies = [
+ "anyhow",
+ "async-trait",
  "diesel",
+ "scuffle-bootstrap 0.1.5 (registry+https://github.com/rust-lang/crates.io-index)",
+ "scuffle-context 0.1.5 (registry+https://github.com/rust-lang/crates.io-index)",
+ "scuffle-http 0.3.2 (registry+https://github.com/rust-lang/crates.io-index)",
+ "scuffle-signal 0.3.3 (registry+https://github.com/rust-lang/crates.io-index)",
  "scuffle-workspace-hack",
  "scufflecloud-proto",
+ "tinc",
+ "tonic",
 ]
 
 [[package]]
@@ -3767,6 +3851,7 @@ name = "scufflecloud-proto"
 version = "0.1.0"
 dependencies = [
  "glob",
+ "prost 0.13.5",
  "scuffle-workspace-hack",
  "tinc",
  "tinc-build",

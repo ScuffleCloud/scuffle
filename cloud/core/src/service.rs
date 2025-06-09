@@ -1,6 +1,8 @@
 use std::sync::Arc;
 
+use scuffle_http::http::Method;
 use tinc::TincService;
+use tower_http::cors::CorsLayer;
 
 use crate::CoreGlobal;
 
@@ -10,8 +12,15 @@ impl<G: CoreGlobal> scuffle_bootstrap::Service<G> for CoreSvc {
     async fn run(self, global: Arc<G>, ctx: scuffle_context::Context) -> anyhow::Result<()> {
         let tinc = pb::scufflecloud::core::v1::core_service_tinc::CoreServiceTinc::new(CoreSvc);
 
+        let cors = CorsLayer::new()
+            .allow_methods([Method::GET, Method::POST])
+            .allow_origin(tower_http::cors::Any)
+            .allow_headers(tower_http::cors::Any);
+
+        let service = tinc.into_router().layer(cors).into_make_service();
+
         scuffle_http::HttpServer::builder()
-            .tower_make_service_factory(tinc.into_router().into_make_service())
+            .tower_make_service_factory(service)
             .bind(global.bind())
             .ctx(ctx)
             .build()
@@ -35,6 +44,13 @@ impl pb::scufflecloud::core::v1::core_service_server::CoreService for CoreSvc {
         &self,
         _request: tonic::Request<pb::scufflecloud::core::v1::RegisterWithExternalProviderRequest>,
     ) -> Result<tonic::Response<pb::scufflecloud::core::v1::RegisterWithExternalProviderResponse>, tonic::Status> {
+        Err(tonic::Status::unimplemented("Not implemented yet"))
+    }
+
+    async fn complete_register_with_external_provider(
+        &self,
+        _request: tonic::Request<pb::scufflecloud::core::v1::CompleteRegisterWithExternalProviderRequest>,
+    ) -> Result<tonic::Response<pb::scufflecloud::core::v1::SessionToken>, tonic::Status> {
         Err(tonic::Status::unimplemented("Not implemented yet"))
     }
 }

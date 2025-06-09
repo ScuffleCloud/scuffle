@@ -3956,6 +3956,7 @@ dependencies = [
  "tokio-stream",
  "tokio-util",
  "tower",
+ "tower-http",
  "tracing",
  "tracing-core",
  "tracing-log",
@@ -3985,6 +3986,7 @@ dependencies = [
  "smart-default",
  "tinc",
  "tonic",
+ "tower-http",
  "tracing",
  "tracing-subscriber",
 ]

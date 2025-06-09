@@ -6,8 +6,9 @@
 //!
 //! `SPDX-License-Identifier: AGPL-3.0`
 
-mod schema;
-
-fn main() {
-    println!("Hello World!");
+scuffle_bootstrap::main! {
+    scufflecloud_core::Global {
+        scuffle_signal::SignalSvc,
+        scufflecloud_core::service::CoreSvc,
+    }
 }

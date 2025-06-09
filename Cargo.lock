@@ -3283,7 +3283,7 @@ dependencies = [
  "scuffle-changelog",
  "scuffle-context 0.1.5",
  "scuffle-future-ext",
- "scuffle-settings",
+ "scuffle-settings 0.1.4",
  "scuffle-signal 0.3.3",
  "scuffle-workspace-hack",
  "serde",
@@ -3566,17 +3566,23 @@ dependencies = [
  "bon",
  "bytes",
  "futures",
+ "h3",
+ "h3-quinn",
  "http",
  "http-body",
  "hyper",
  "hyper-util",
  "libc",
  "pin-project-lite",
+ "quinn",
+ "rustls",
  "scuffle-context 0.1.5 (registry+https://github.com/rust-lang/crates.io-index)",
  "scuffle-workspace-hack",
  "thiserror 2.0.12",
  "tokio",
+ "tokio-rustls",
  "tower",
+ "tracing",
 ]
 
 [[package]]
@@ -3688,6 +3694,22 @@ dependencies = [
  "serde",
  "serde_derive",
  "smart-default",
+ "thiserror 2.0.12",
+]
+
+[[package]]
+name = "scuffle-settings"
+version = "0.1.4"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "8ac543f4568c217232119f9fc30ef01a0fcfe2309fff7bda8e2c19b13d76dcfb"
+dependencies = [
+ "anyhow",
+ "clap",
+ "config",
+ "scuffle-bootstrap 0.1.5 (registry+https://github.com/rust-lang/crates.io-index)",
+ "scuffle-workspace-hack",
+ "serde",
+ "serde_derive",
  "thiserror 2.0.12",
 ]
 
@@ -3839,11 +3861,17 @@ dependencies = [
  "scuffle-bootstrap 0.1.5 (registry+https://github.com/rust-lang/crates.io-index)",
  "scuffle-context 0.1.5 (registry+https://github.com/rust-lang/crates.io-index)",
  "scuffle-http 0.3.2 (registry+https://github.com/rust-lang/crates.io-index)",
+ "scuffle-settings 0.1.4 (registry+https://github.com/rust-lang/crates.io-index)",
  "scuffle-signal 0.3.3 (registry+https://github.com/rust-lang/crates.io-index)",
  "scuffle-workspace-hack",
  "scufflecloud-proto",
+ "serde",
+ "serde_derive",
+ "smart-default",
  "tinc",
  "tonic",
+ "tracing",
+ "tracing-subscriber",
 ]
 
 [[package]]

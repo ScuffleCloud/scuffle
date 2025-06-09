@@ -112,7 +112,10 @@ where
     }
 
     pub(crate) fn encode_object_trailer(&mut self) -> Result<(), Amf0Error> {
-        self.writer.write_u24::<BigEndian>(Amf0Marker::ObjectEnd as u32)?;
+        // Final object key length is 0
+        self.writer.write_u16::<BigEndian>(0)?;
+        // Followed by object end
+        self.writer.write_u8(Amf0Marker::ObjectEnd as u8)?;
         Ok(())
     }
 

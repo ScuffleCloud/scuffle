@@ -2,17 +2,17 @@ use std::sync::Arc;
 
 use tinc::TincService;
 
-use crate::Global;
+use crate::CoreGlobal;
 
 pub struct CoreSvc;
 
-impl scuffle_bootstrap::Service<Global> for CoreSvc {
-    async fn run(self, global: Arc<Global>, ctx: scuffle_context::Context) -> anyhow::Result<()> {
+impl<G: CoreGlobal> scuffle_bootstrap::Service<G> for CoreSvc {
+    async fn run(self, global: Arc<G>, ctx: scuffle_context::Context) -> anyhow::Result<()> {
         let tinc = pb::scufflecloud::core::v1::core_service_tinc::CoreServiceTinc::new(CoreSvc);
 
         scuffle_http::HttpServer::builder()
             .tower_make_service_factory(tinc.into_router().into_make_service())
-            .bind(global.config.bind)
+            .bind(global.bind())
             .ctx(ctx)
             .build()
             .run()

@@ -29,6 +29,7 @@ serde_derive = "1.0.219"
 smart-default = "0.7.1"
 tinc = { path = "../../crates/tinc" }
 tonic = "0.13.1"
+tower-http = { features = ["cors"], version = "0.6.6" }
 tracing = "0.1.41"
 tracing-subscriber = "0.3.19"
 

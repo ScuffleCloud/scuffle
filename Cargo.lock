@@ -3918,6 +3918,7 @@ dependencies = [
  "toml",
  "toml_edit",
  "tower",
+ "tower-http",
  "tracing",
  "tracing-core",
  "tracing-log",
@@ -3947,6 +3948,7 @@ dependencies = [
  "smart-default",
  "tinc",
  "tonic",
+ "tower-http",
  "tracing",
  "tracing-subscriber",
 ]

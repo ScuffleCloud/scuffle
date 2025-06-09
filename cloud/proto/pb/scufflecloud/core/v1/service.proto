@@ -15,10 +15,16 @@ service CoreService {
             post: "/register/external"
         };
     }
+    rpc CompleteRegisterWithExternalProvider(CompleteRegisterWithExternalProviderRequest) returns (SessionToken) {
+        option (tinc.method).endpoint = {
+            post: "/register/external/complete"
+        };
+    }
 }
 
 message RegisterWithEmailRequest {
-    string email = 1;
+    // The email address to register with.
+    string email = 1 [(tinc.field).constraint.string.email = true];
 }
 
 message SessionToken {
@@ -31,8 +37,18 @@ enum ExternalProvider {
 
 message RegisterWithExternalProviderRequest {
     ExternalProvider provider = 1;
+    // The redirect_uri that appears in the returned authorization URL.
+    // The server is not aware of this URI because it should redirect to the client application.
+    string redirect_uri = 2;
 }
 
 message RegisterWithExternalProviderResponse {
     string authorization_url = 1;
+}
+
+message CompleteRegisterWithExternalProviderRequest {
+    // The code returned by the external provider after the user has authorized the application.
+    string code = 1;
+    // The state returned by the external provider.
+    string state = 2;
 }

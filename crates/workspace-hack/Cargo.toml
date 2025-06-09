@@ -37,7 +37,7 @@ futures-executor = { version = "0.3" }
 futures-io = { version = "0.3" }
 futures-sink = { version = "0.3" }
 futures-task = { version = "0.3", default-features = false, features = ["std"] }
-futures-util = { version = "0.3", default-features = false, features = ["async-await-macro", "channel", "io", "sink"] }
+futures-util = { version = "0.3", features = ["channel", "io", "sink"] }
 hashbrown = { version = "0.15", default-features = false, features = ["default-hasher", "inline-more"] }
 hyper = { version = "1", features = ["client", "http1", "http2", "server"] }
 hyper-util = { version = "0.1", features = ["client-legacy", "server-auto", "service"] }
@@ -54,6 +54,7 @@ once_cell = { version = "1" }
 opentelemetry = { version = "0.30", features = ["spec_unstable_logs_enabled"] }
 opentelemetry_sdk = { version = "0.30", features = ["experimental_metrics_custom_reader", "spec_unstable_logs_enabled"] }
 percent-encoding = { version = "2" }
+phf_shared = { version = "0.11" }
 prettyplease = { version = "0.2", default-features = false, features = ["verbatim"] }
 proc-macro2 = { version = "1" }
 prost = { version = "0.13", features = ["prost-derive"] }
@@ -106,7 +107,7 @@ futures-executor = { version = "0.3" }
 futures-io = { version = "0.3" }
 futures-sink = { version = "0.3" }
 futures-task = { version = "0.3", default-features = false, features = ["std"] }
-futures-util = { version = "0.3", default-features = false, features = ["async-await-macro", "channel", "io", "sink"] }
+futures-util = { version = "0.3", features = ["channel", "io", "sink"] }
 hashbrown = { version = "0.15", default-features = false, features = ["default-hasher", "inline-more"] }
 hyper = { version = "1", features = ["client", "http1", "http2", "server"] }
 hyper-util = { version = "0.1", features = ["client-legacy", "server-auto", "service"] }
@@ -123,6 +124,7 @@ once_cell = { version = "1" }
 opentelemetry = { version = "0.30", features = ["spec_unstable_logs_enabled"] }
 opentelemetry_sdk = { version = "0.30", features = ["experimental_metrics_custom_reader", "spec_unstable_logs_enabled"] }
 percent-encoding = { version = "2" }
+phf_shared = { version = "0.11" }
 prettyplease = { version = "0.2", default-features = false, features = ["verbatim"] }
 proc-macro2 = { version = "1" }
 prost = { version = "0.13", features = ["prost-derive"] }

@@ -37,7 +37,7 @@ futures-executor = { version = "0.3" }
 futures-io = { version = "0.3" }
 futures-sink = { version = "0.3" }
 futures-task = { version = "0.3", default-features = false, features = ["std"] }
-futures-util = { version = "0.3", default-features = false, features = ["async-await-macro", "channel", "io", "sink"] }
+futures-util = { version = "0.3", features = ["channel", "io", "sink"] }
 hashbrown = { version = "0.15", default-features = false, features = ["default-hasher", "inline-more"] }
 hyper = { version = "1", features = ["client", "http1", "http2", "server"] }
 hyper-util = { version = "0.1", features = ["client-legacy", "server-auto", "service"] }
@@ -54,6 +54,7 @@ once_cell = { version = "1" }
 opentelemetry = { version = "0.30", features = ["spec_unstable_logs_enabled"] }
 opentelemetry_sdk = { version = "0.30", features = ["experimental_metrics_custom_reader", "spec_unstable_logs_enabled"] }
 percent-encoding = { version = "2" }
+phf_shared = { version = "0.11" }
 prettyplease = { version = "0.2", default-features = false, features = ["verbatim"] }
 proc-macro2 = { version = "1" }
 prost = { version = "0.14" }
@@ -108,7 +109,7 @@ futures-executor = { version = "0.3" }
 futures-io = { version = "0.3" }
 futures-sink = { version = "0.3" }
 futures-task = { version = "0.3", default-features = false, features = ["std"] }
-futures-util = { version = "0.3", default-features = false, features = ["async-await-macro", "channel", "io", "sink"] }
+futures-util = { version = "0.3", features = ["channel", "io", "sink"] }
 hashbrown = { version = "0.15", default-features = false, features = ["default-hasher", "inline-more"] }
 hyper = { version = "1", features = ["client", "http1", "http2", "server"] }
 hyper-util = { version = "0.1", features = ["client-legacy", "server-auto", "service"] }
@@ -125,6 +126,7 @@ once_cell = { version = "1" }
 opentelemetry = { version = "0.30", features = ["spec_unstable_logs_enabled"] }
 opentelemetry_sdk = { version = "0.30", features = ["experimental_metrics_custom_reader", "spec_unstable_logs_enabled"] }
 percent-encoding = { version = "2" }
+phf_shared = { version = "0.11" }
 prettyplease = { version = "0.2", default-features = false, features = ["verbatim"] }
 proc-macro2 = { version = "1" }
 prost = { version = "0.14" }
@@ -169,6 +171,7 @@ quinn-proto = { version = "0.11", default-features = false, features = ["log", "
 quinn-udp = { version = "0.5", default-features = false, features = ["log"] }
 rustls = { version = "0.23", default-features = false, features = ["aws-lc-rs", "aws_lc_rs", "logging", "ring", "std", "tls12"] }
 rustls-webpki = { version = "0.103", default-features = false, features = ["aws-lc-rs", "ring", "std"] }
+socket2 = { version = "0.5", default-features = false, features = ["all"] }
 stable_deref_trait = { version = "1" }
 tokio-rustls = { version = "0.26", default-features = false, features = ["aws_lc_rs", "logging", "ring", "tls12"] }
 tower = { version = "0.5", default-features = false, features = ["retry", "timeout"] }
@@ -186,6 +189,7 @@ quinn-proto = { version = "0.11", default-features = false, features = ["log", "
 quinn-udp = { version = "0.5", default-features = false, features = ["log"] }
 rustls = { version = "0.23", default-features = false, features = ["aws-lc-rs", "aws_lc_rs", "logging", "ring", "std", "tls12"] }
 rustls-webpki = { version = "0.103", default-features = false, features = ["aws-lc-rs", "ring", "std"] }
+socket2 = { version = "0.5", default-features = false, features = ["all"] }
 stable_deref_trait = { version = "1" }
 tokio-rustls = { version = "0.26", default-features = false, features = ["aws_lc_rs", "logging", "ring", "tls12"] }
 tower = { version = "0.5", default-features = false, features = ["retry", "timeout"] }
@@ -202,6 +206,7 @@ quinn-proto = { version = "0.11", default-features = false, features = ["log", "
 quinn-udp = { version = "0.5", default-features = false, features = ["log"] }
 rustls = { version = "0.23", default-features = false, features = ["aws-lc-rs", "aws_lc_rs", "logging", "ring", "std", "tls12"] }
 rustls-webpki = { version = "0.103", default-features = false, features = ["aws-lc-rs", "ring", "std"] }
+socket2 = { version = "0.5", default-features = false, features = ["all"] }
 stable_deref_trait = { version = "1" }
 tokio-rustls = { version = "0.26", default-features = false, features = ["aws_lc_rs", "logging", "ring", "tls12"] }
 tower = { version = "0.5", default-features = false, features = ["retry", "timeout"] }
@@ -219,6 +224,7 @@ quinn-proto = { version = "0.11", default-features = false, features = ["log", "
 quinn-udp = { version = "0.5", default-features = false, features = ["log"] }
 rustls = { version = "0.23", default-features = false, features = ["aws-lc-rs", "aws_lc_rs", "logging", "ring", "std", "tls12"] }
 rustls-webpki = { version = "0.103", default-features = false, features = ["aws-lc-rs", "ring", "std"] }
+socket2 = { version = "0.5", default-features = false, features = ["all"] }
 stable_deref_trait = { version = "1" }
 tokio-rustls = { version = "0.26", default-features = false, features = ["aws_lc_rs", "logging", "ring", "tls12"] }
 tower = { version = "0.5", default-features = false, features = ["retry", "timeout"] }
@@ -235,6 +241,7 @@ quinn-proto = { version = "0.11", default-features = false, features = ["log", "
 quinn-udp = { version = "0.5", default-features = false, features = ["log"] }
 rustls = { version = "0.23", default-features = false, features = ["aws-lc-rs", "aws_lc_rs", "logging", "ring", "std", "tls12"] }
 rustls-webpki = { version = "0.103", default-features = false, features = ["aws-lc-rs", "ring", "std"] }
+socket2 = { version = "0.5", default-features = false, features = ["all"] }
 stable_deref_trait = { version = "1" }
 tokio-rustls = { version = "0.26", default-features = false, features = ["aws_lc_rs", "logging", "ring", "tls12"] }
 tower = { version = "0.5", default-features = false, features = ["retry", "timeout"] }
@@ -252,6 +259,7 @@ quinn-proto = { version = "0.11", default-features = false, features = ["log", "
 quinn-udp = { version = "0.5", default-features = false, features = ["log"] }
 rustls = { version = "0.23", default-features = false, features = ["aws-lc-rs", "aws_lc_rs", "logging", "ring", "std", "tls12"] }
 rustls-webpki = { version = "0.103", default-features = false, features = ["aws-lc-rs", "ring", "std"] }
+socket2 = { version = "0.5", default-features = false, features = ["all"] }
 stable_deref_trait = { version = "1" }
 tokio-rustls = { version = "0.26", default-features = false, features = ["aws_lc_rs", "logging", "ring", "tls12"] }
 tower = { version = "0.5", default-features = false, features = ["retry", "timeout"] }
@@ -268,6 +276,7 @@ quinn-proto = { version = "0.11", default-features = false, features = ["log", "
 quinn-udp = { version = "0.5", default-features = false, features = ["log"] }
 rustls = { version = "0.23", default-features = false, features = ["aws-lc-rs", "aws_lc_rs", "logging", "ring", "std", "tls12"] }
 rustls-webpki = { version = "0.103", default-features = false, features = ["aws-lc-rs", "ring", "std"] }
+socket2 = { version = "0.5", default-features = false, features = ["all"] }
 stable_deref_trait = { version = "1" }
 tokio-rustls = { version = "0.26", default-features = false, features = ["aws_lc_rs", "logging", "ring", "tls12"] }
 tower = { version = "0.5", default-features = false, features = ["retry", "timeout"] }
@@ -285,6 +294,7 @@ quinn-proto = { version = "0.11", default-features = false, features = ["log", "
 quinn-udp = { version = "0.5", default-features = false, features = ["log"] }
 rustls = { version = "0.23", default-features = false, features = ["aws-lc-rs", "aws_lc_rs", "logging", "ring", "std", "tls12"] }
 rustls-webpki = { version = "0.103", default-features = false, features = ["aws-lc-rs", "ring", "std"] }
+socket2 = { version = "0.5", default-features = false, features = ["all"] }
 stable_deref_trait = { version = "1" }
 tokio-rustls = { version = "0.26", default-features = false, features = ["aws_lc_rs", "logging", "ring", "tls12"] }
 tower = { version = "0.5", default-features = false, features = ["retry", "timeout"] }
@@ -299,6 +309,7 @@ quinn-proto = { version = "0.11", default-features = false, features = ["log", "
 quinn-udp = { version = "0.5", default-features = false, features = ["log"] }
 rustls = { version = "0.23", default-features = false, features = ["aws-lc-rs", "aws_lc_rs", "logging", "ring", "std", "tls12"] }
 rustls-webpki = { version = "0.103", default-features = false, features = ["aws-lc-rs", "ring", "std"] }
+socket2 = { version = "0.5", default-features = false, features = ["all"] }
 tokio-rustls = { version = "0.26", default-features = false, features = ["aws_lc_rs", "logging", "ring", "tls12"] }
 tokio-stream = { version = "0.1", default-features = false, features = ["sync"] }
 tower = { version = "0.5", default-features = false, features = ["retry", "timeout"] }
@@ -316,6 +327,7 @@ quinn-proto = { version = "0.11", default-features = false, features = ["log", "
 quinn-udp = { version = "0.5", default-features = false, features = ["log"] }
 rustls = { version = "0.23", default-features = false, features = ["aws-lc-rs", "aws_lc_rs", "logging", "ring", "std", "tls12"] }
 rustls-webpki = { version = "0.103", default-features = false, features = ["aws-lc-rs", "ring", "std"] }
+socket2 = { version = "0.5", default-features = false, features = ["all"] }
 tokio-rustls = { version = "0.26", default-features = false, features = ["aws_lc_rs", "logging", "ring", "tls12"] }
 tokio-stream = { version = "0.1", default-features = false, features = ["sync"] }
 tower = { version = "0.5", default-features = false, features = ["retry", "timeout"] }
@@ -332,6 +344,7 @@ quinn-proto = { version = "0.11", default-features = false, features = ["log", "
 quinn-udp = { version = "0.5", default-features = false, features = ["log"] }
 rustls = { version = "0.23", default-features = false, features = ["aws-lc-rs", "aws_lc_rs", "logging", "ring", "std", "tls12"] }
 rustls-webpki = { version = "0.103", default-features = false, features = ["aws-lc-rs", "ring", "std"] }
+socket2 = { version = "0.5", default-features = false, features = ["all"] }
 tokio-rustls = { version = "0.26", default-features = false, features = ["aws_lc_rs", "logging", "ring", "tls12"] }
 tokio-stream = { version = "0.1", default-features = false, features = ["sync"] }
 tower = { version = "0.5", default-features = false, features = ["retry", "timeout"] }
@@ -349,6 +362,7 @@ quinn-proto = { version = "0.11", default-features = false, features = ["log", "
 quinn-udp = { version = "0.5", default-features = false, features = ["log"] }
 rustls = { version = "0.23", default-features = false, features = ["aws-lc-rs", "aws_lc_rs", "logging", "ring", "std", "tls12"] }
 rustls-webpki = { version = "0.103", default-features = false, features = ["aws-lc-rs", "ring", "std"] }
+socket2 = { version = "0.5", default-features = false, features = ["all"] }
 tokio-rustls = { version = "0.26", default-features = false, features = ["aws_lc_rs", "logging", "ring", "tls12"] }
 tokio-stream = { version = "0.1", default-features = false, features = ["sync"] }
 tower = { version = "0.5", default-features = false, features = ["retry", "timeout"] }

@@ -16,7 +16,8 @@ path = "src/bin/standalone.rs"
 [dependencies]
 anyhow = "1.0.98"
 async-trait = "0.1.88"
-diesel = { features = ["postgres"], version = "2.2.10" } # libpq-dev has to be installed
+diesel = { version = "2.2.10", features = ["chrono"] }
+diesel-async = { version = "0.5.2", features = ["postgres", "bb8", "async-connection-wrapper"] }
 pb = { package = "scufflecloud-proto", path = "../proto" }
 scuffle-bootstrap = "0.1.5"
 scuffle-context = "0.1.5"

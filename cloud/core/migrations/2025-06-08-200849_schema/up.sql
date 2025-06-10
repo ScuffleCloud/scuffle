@@ -3,9 +3,13 @@
 CREATE TABLE "users" (
 	"id" UUID NOT NULL UNIQUE,
 	"name" VARCHAR(255) NOT NULL,
-	"password" VARCHAR(255), -- Nullable for users who register via external providers
+    "primary_email" UUID NOT NULL,
+	"password_hash" VARCHAR(255), -- Nullable for users who register via external providers
 	PRIMARY KEY("id")
 );
+
+ALTER TABLE "users"
+ADD FOREIGN KEY("primary_email") REFERENCES "user_emails"("id");
 
 CREATE TABLE "user_emails" (
 	"id" UUID NOT NULL,
@@ -40,22 +44,11 @@ ON "user_connections" ("user_id", "provider");
 ALTER TABLE "user_connections"
 ADD FOREIGN KEY("user_id") REFERENCES "users"("id");
 
--- "Magic Link" login requests via email.
--- This can be used by users who don't want to use a password.
-CREATE TABLE "email_login_requests" (
-	"id" UUID NOT NULL UNIQUE,
-	"user_id" UUID NOT NULL,
-	"token" VARCHAR(255) NOT NULL UNIQUE,
-	"expiry" TIMESTAMPTZ NOT NULL,
-	PRIMARY KEY("id")
-);
-
-ALTER TABLE "email_login_requests"
-ADD FOREIGN KEY("user_id") REFERENCES "users"("id");
-
 CREATE TABLE "sessions" (
 	"id" UUID NOT NULL UNIQUE,
 	"user_id" UUID NOT NULL,
+    "last_used" TIMESTAMPTZ NOT NULL,
+    "last_ip" CIDR NOT NULL,
 	"expiry" TIMESTAMPTZ,
 	PRIMARY KEY("id")
 );
@@ -67,7 +60,7 @@ ADD FOREIGN KEY("user_id") REFERENCES "users"("id");
 
 CREATE TYPE "mfa_factor_type" AS ENUM (
 	'totp',
-	'passkey'
+	'webauthn' -- Passkeys are WebAuthn
 );
 
 CREATE TABLE "mfa_factors" (

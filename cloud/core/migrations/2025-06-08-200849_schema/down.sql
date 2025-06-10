@@ -3,7 +3,6 @@ DROP TABLE "users";
 DROP TABLE "user_emails";
 DROP TYPE "external_provider";
 DROP TABLE "user_connections";
-DROP TABLE "email_login_requests";
 DROP TABLE "sessions";
 
 DROP TYPE "mfa_factor_type";

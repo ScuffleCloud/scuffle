@@ -227,7 +227,7 @@ impl Encoder {
             outgoing_time_base,
             encoder,
             stream_index: ost.index(),
-            previous_dts: std::i64::MIN,
+            previous_dts: i64::MIN,
         })
     }
 

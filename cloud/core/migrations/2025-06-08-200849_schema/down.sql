@@ -1,4 +1,3 @@
-DROP TABLE "email_registration_requests";
 DROP TABLE "users";
 DROP TABLE "user_emails";
 DROP TYPE "external_provider";
@@ -14,3 +13,5 @@ DROP TABLE "projects";
 DROP TABLE "service_accounts";
 DROP TYPE "resource_owner_type";
 DROP TABLE "api_tokens";
+DROP TABLE "email_registration_requests";
+DROP TABLE "email_invites";

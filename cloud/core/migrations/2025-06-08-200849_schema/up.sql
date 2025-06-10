@@ -14,7 +14,7 @@ ADD FOREIGN KEY("primary_email") REFERENCES "user_emails"("id");
 CREATE TABLE "user_emails" (
 	"id" UUID NOT NULL,
 	"user_id" UUID NOT NULL,
-	"email" VARCHAR(255) NOT NULL,
+	"email" VARCHAR(255) NOT NULL UNIQUE,
 	PRIMARY KEY("id")
 );
 
@@ -137,14 +137,11 @@ CREATE TABLE "api_tokens" (
 	PRIMARY KEY("id")
 );
 
--- This is used for user registration requests via email, email invites and adding new email addresses to existing accounts.
--- When organization_id is set, it indicates that the request is an invite from an organization.
+-- This is used for user registration requests via email and adding new email addresses to existing accounts.
 -- When user_id is set, it indicates that the request is for an existing user to add a new email address.
--- Both should not be set.
 CREATE TABLE "email_registration_requests" (
 	"id" UUID NOT NULL UNIQUE,
 	"user_id" UUID,
-	"organization_id" UUID,
 	"email" VARCHAR(255) NOT NULL,
 	"token" VARCHAR(255) NOT NULL,
 	"expiry" TIMESTAMPTZ NOT NULL,
@@ -154,5 +151,21 @@ CREATE TABLE "email_registration_requests" (
 ALTER TABLE "email_registration_requests"
 ADD FOREIGN KEY("user_id") REFERENCES "users"("id");
 
-ALTER TABLE "email_registration_requests"
+-- This is used for inviting users to an organization via email.
+-- When user_id is set, it indicates that the invite is for an existing user to join the organization and can
+-- only be used for that selected user.
+CREATE TABLE "email_invites" (
+    "id" UUID NOT NULL UNIQUE,
+	"user_id" UUID,
+	"organization_id" UUID NOT NULL,
+	"email" VARCHAR(255) NOT NULL,
+	"token" VARCHAR(255) NOT NULL,
+	"expiry" TIMESTAMPTZ NOT NULL,
+	PRIMARY KEY("id")
+);
+
+ALTER TABLE "email_invites"
+ADD FOREIGN KEY("user_id") REFERENCES "users"("id");
+
+ALTER TABLE "email_invites"
 ADD FOREIGN KEY("organization_id") REFERENCES "organizations"("id");

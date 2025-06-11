@@ -1,17 +1,21 @@
-DROP TABLE "users";
-DROP TABLE "user_emails";
-DROP TYPE "external_provider";
-DROP TABLE "user_connections";
-DROP TABLE "devices";
-DROP TABLE "session_tokens";
+DROP TABLE IF EXISTS "email_invites" CASCADE;
+DROP TABLE IF EXISTS "email_registration_requests" CASCADE;
+DROP TABLE IF EXISTS "service_account_tokens" CASCADE;
+DROP TABLE IF EXISTS "service_accounts" CASCADE;
+DROP TABLE IF EXISTS "projects" CASCADE;
+DROP TABLE IF EXISTS "organization_members" CASCADE;
+DROP TABLE IF EXISTS "organizations" CASCADE;
 
-DROP TYPE "mfa_factor_type";
-DROP TABLE "mfa_factors";
+DROP TABLE IF EXISTS "mfa_factors" CASCADE;
+DROP TYPE IF EXISTS "mfa_factor_type" CASCADE;
 
-DROP TABLE "organizations";
-DROP TABLE "organization_members";
-DROP TABLE "projects";
-DROP TABLE "service_accounts";
-DROP TABLE "service_account_tokens";
-DROP TABLE "email_registration_requests";
-DROP TABLE "email_invites";
+DROP INDEX IF EXISTS "session_tokens_index_0" CASCADE;
+DROP TABLE IF EXISTS "session_tokens" CASCADE;
+DROP TABLE IF EXISTS "devices" CASCADE;
+DROP INDEX IF EXISTS "user_connections_index_1" CASCADE;
+DROP INDEX IF EXISTS "user_connections_index_0" CASCADE;
+DROP TABLE IF EXISTS "user_connections" CASCADE;
+DROP TYPE IF EXISTS "external_provider" CASCADE;
+DROP INDEX IF EXISTS "user_emails_index_0" CASCADE;
+DROP TABLE IF EXISTS "user_emails" CASCADE;
+DROP TABLE IF EXISTS "users" CASCADE;

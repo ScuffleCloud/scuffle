@@ -35,26 +35,39 @@ CREATE TABLE "user_connections" (
 	PRIMARY KEY("id")
 );
 
-CREATE UNIQUE INDEX "user_connection_index_0"
+CREATE UNIQUE INDEX "user_connections_index_0"
 ON "user_connections" ("provider", "external_id");
 
-CREATE UNIQUE INDEX "user_connection_index_1"
+CREATE UNIQUE INDEX "user_connections_index_1"
 ON "user_connections" ("user_id", "provider");
 
 ALTER TABLE "user_connections"
 ADD FOREIGN KEY("user_id") REFERENCES "users"("id");
 
-CREATE TABLE "sessions" (
+CREATE TABLE "devices" (
+	"id" UUID NOT NULL UNIQUE,
+	"fingerprint" VARCHAR(255) NOT NULL,
+	PRIMARY KEY("id")
+);
+
+CREATE TABLE "session_tokens" (
 	"id" UUID NOT NULL UNIQUE,
 	"user_id" UUID NOT NULL,
+	"device_id" UUID NOT NULL,
     "last_used" TIMESTAMPTZ NOT NULL,
     "last_ip" CIDR NOT NULL,
 	"expiry" TIMESTAMPTZ,
 	PRIMARY KEY("id")
 );
 
-ALTER TABLE "sessions"
+CREATE UNIQUE INDEX "session_tokens_index_0"
+ON "session_tokens" ("user_id", "device_id");
+
+ALTER TABLE "session_tokens"
 ADD FOREIGN KEY("user_id") REFERENCES "users"("id");
+
+ALTER TABLE "session_tokens"
+ADD FOREIGN KEY("device_id") REFERENCES "devices"("id");
 
 --- MFA
 
@@ -121,21 +134,18 @@ ADD FOREIGN KEY("project_id") REFERENCES "projects"("id");
 ALTER TABLE "service_accounts"
 ADD FOREIGN KEY("organization_id") REFERENCES "organizations"("id");
 
-CREATE TYPE "resource_owner_type" AS ENUM (
-	'user',
-	'service_account'
-);
-
-CREATE TABLE "api_tokens" (
+CREATE TABLE "service_account_tokens" (
 	"id" UUID NOT NULL UNIQUE,
 	"active" BOOLEAN NOT NULL,
-	"resource_owner_type" RESOURCE_OWNER_TYPE NOT NULL,
-	"resource_owner_id" UUID NOT NULL,
+	"service_account_id" UUID NOT NULL,
 	"token" VARCHAR(255) NOT NULL,
 	"policies" JSONB,
 	"expiry" TIMESTAMPTZ,
 	PRIMARY KEY("id")
 );
+
+ALTER TABLE "service_account_tokens"
+ADD FOREIGN KEY("service_account_id") REFERENCES "service_accounts"("id");
 
 -- This is used for user registration requests via email and adding new email addresses to existing accounts.
 -- When user_id is set, it indicates that the request is for an existing user to add a new email address.

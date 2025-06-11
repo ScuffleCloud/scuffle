@@ -1724,6 +1724,41 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "7943c866cc5cd64cbc25b2e01621d07fa8eb2a1a23160ee81ce38704e97b8ecf"
 
 [[package]]
+name = "isobmff"
+version = "0.1.0"
+dependencies = [
+ "base64 0.22.1",
+ "bitflags 2.9.1",
+ "byteorder",
+ "bytes",
+ "document-features",
+ "fixed",
+ "insta",
+ "isobmff-derive",
+ "nutype-enum",
+ "scuffle-bytes-util",
+ "scuffle-changelog",
+ "scuffle-workspace-hack",
+ "serde",
+ "serde_derive",
+ "serde_json",
+ "uuid",
+]
+
+[[package]]
+name = "isobmff-derive"
+version = "0.1.0"
+dependencies = [
+ "darling",
+ "isobmff",
+ "proc-macro2",
+ "quote",
+ "scuffle-bytes-util",
+ "scuffle-workspace-hack",
+ "syn",
+]
+
+[[package]]
 name = "itertools"
 version = "0.10.5"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -2288,12 +2323,6 @@ dependencies = [
  "smallvec",
  "windows-targets 0.52.6",
 ]
-
-[[package]]
-name = "paste"
-version = "1.0.15"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "57c0d7b74b563b49d38dae00a0c37d4d6de9b432382b2892f0574ddcae73fd0a"
 
 [[package]]
 name = "pathdiff"
@@ -3187,6 +3216,8 @@ dependencies = [
  "bytes",
  "document-features",
  "insta",
+ "isobmff",
+ "isobmff-derive",
  "scuffle-bytes-util",
  "scuffle-changelog",
  "scuffle-workspace-hack",
@@ -3336,12 +3367,13 @@ dependencies = [
  "crossbeam-channel",
  "document-features",
  "insta",
+ "isobmff",
  "libc",
  "nutype-enum",
  "rand 0.9.1",
  "rusty_ffmpeg",
+ "scuffle-bytes-util",
  "scuffle-changelog",
- "scuffle-mp4",
  "scuffle-workspace-hack",
  "sha2",
  "tempfile",
@@ -3393,9 +3425,9 @@ name = "scuffle-h264"
 version = "0.2.2"
 dependencies = [
  "byteorder",
- "bytes",
  "document-features",
  "insta",
+ "isobmff",
  "nutype-enum",
  "scuffle-bytes-util",
  "scuffle-changelog",
@@ -3412,6 +3444,8 @@ dependencies = [
  "bytes",
  "document-features",
  "insta",
+ "isobmff",
+ "isobmff-derive",
  "nutype-enum",
  "scuffle-bytes-util",
  "scuffle-changelog",
@@ -3488,20 +3522,27 @@ dependencies = [
 name = "scuffle-mp4"
 version = "0.1.4"
 dependencies = [
- "byteorder",
- "bytes",
  "document-features",
- "fixed",
- "paste",
- "scuffle-aac",
- "scuffle-av1",
+ "isobmff",
+ "isobmff-derive",
+ "nutype-enum",
  "scuffle-bytes-util",
  "scuffle-changelog",
- "scuffle-h264",
- "scuffle-h265",
  "scuffle-workspace-hack",
  "serde",
  "serde_json",
+]
+
+[[package]]
+name = "scuffle-opus"
+version = "0.1.0"
+dependencies = [
+ "document-features",
+ "isobmff",
+ "isobmff-derive",
+ "scuffle-bytes-util",
+ "scuffle-changelog",
+ "scuffle-workspace-hack",
 ]
 
 [[package]]
@@ -3590,6 +3631,8 @@ dependencies = [
  "byteorder",
  "bytes",
  "document-features",
+ "fixed",
+ "isobmff",
  "scuffle-aac",
  "scuffle-av1",
  "scuffle-bytes-util",

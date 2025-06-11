@@ -1,5 +1,6 @@
 -- User Management
 
+-- Real users
 CREATE TABLE "users" (
 	"id" UUID NOT NULL UNIQUE,
 	"name" VARCHAR(255) NOT NULL,
@@ -7,6 +8,8 @@ CREATE TABLE "users" (
 	PRIMARY KEY("id")
 );
 
+-- User emails
+-- There can be multiple emails per user, but only one can be primary.
 CREATE TABLE "user_emails" (
 	"id" UUID NOT NULL,
 	"user_id" UUID NOT NULL,
@@ -23,10 +26,12 @@ WHERE "primary" = TRUE;
 ALTER TABLE "user_emails"
 ADD FOREIGN KEY("user_id") REFERENCES "users"("id");
 
+-- Possible user connection providers
 CREATE TYPE "external_provider" AS ENUM (
 	'google'
 );
 
+-- User connections to external authentication providers.
 CREATE TABLE "user_connections" (
 	"id" UUID NOT NULL UNIQUE,
 	"user_id" UUID NOT NULL,
@@ -46,22 +51,27 @@ ON "user_connections" ("user_id", "provider");
 ALTER TABLE "user_connections"
 ADD FOREIGN KEY("user_id") REFERENCES "users"("id");
 
+-- Registered devices
+-- Every device has a uniquely generated fingerprint.
 CREATE TABLE "devices" (
 	"id" UUID NOT NULL UNIQUE,
 	"fingerprint" VARCHAR(255) NOT NULL,
 	PRIMARY KEY("id")
 );
 
+-- A short lived token for a session (combination of device and user).
+-- "last_used" and "last_ip" is updated every time the token is used.
 CREATE TABLE "session_tokens" (
 	"id" UUID NOT NULL UNIQUE,
 	"user_id" UUID NOT NULL,
 	"device_id" UUID NOT NULL,
     "last_used" TIMESTAMPTZ NOT NULL,
-    "last_ip" CIDR NOT NULL,
+    "last_ip" INET NOT NULL,
 	"expiry" TIMESTAMPTZ,
 	PRIMARY KEY("id")
 );
 
+-- There can be only one session token per session.
 CREATE UNIQUE INDEX "session_tokens_index_0"
 ON "session_tokens" ("user_id", "device_id");
 
@@ -71,8 +81,9 @@ ADD FOREIGN KEY("user_id") REFERENCES "users"("id");
 ALTER TABLE "session_tokens"
 ADD FOREIGN KEY("device_id") REFERENCES "devices"("id");
 
---- MFA
+--- MFA (Multi-Factor Authentication)
 
+-- Different factor types for MFA
 CREATE TYPE "mfa_factor_type" AS ENUM (
 	'totp',
 	'webauthn' -- Passkeys are WebAuthn
@@ -110,6 +121,9 @@ CREATE TABLE "organization_members" (
 
 ALTER TABLE "organization_members"
 ADD FOREIGN KEY("organization_id") REFERENCES "organizations"("id");
+
+ALTER TABLE "organization_members"
+ADD FOREIGN KEY("user_id") REFERENCES "users"("id");
 
 CREATE TABLE "projects" (
 	"id" UUID NOT NULL UNIQUE,

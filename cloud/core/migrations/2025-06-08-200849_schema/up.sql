@@ -3,20 +3,22 @@
 CREATE TABLE "users" (
 	"id" UUID NOT NULL UNIQUE,
 	"name" VARCHAR(255) NOT NULL,
-    "primary_email" UUID NOT NULL,
 	"password_hash" VARCHAR(255), -- Nullable for users who register via external providers
 	PRIMARY KEY("id")
 );
-
-ALTER TABLE "users"
-ADD FOREIGN KEY("primary_email") REFERENCES "user_emails"("id");
 
 CREATE TABLE "user_emails" (
 	"id" UUID NOT NULL,
 	"user_id" UUID NOT NULL,
 	"email" VARCHAR(255) NOT NULL UNIQUE,
+    "primary" BOOLEAN NOT NULL DEFAULT FALSE,
 	PRIMARY KEY("id")
 );
+
+-- Only one email can be primary per user
+CREATE UNIQUE INDEX "user_emails_index_0"
+ON "user_emails" ("user_id", "primary")
+WHERE "primary" = TRUE;
 
 ALTER TABLE "user_emails"
 ADD FOREIGN KEY("user_id") REFERENCES "users"("id");

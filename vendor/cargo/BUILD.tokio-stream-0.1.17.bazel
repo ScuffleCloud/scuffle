@@ -82,10 +82,10 @@ rust_library(
         "@cargo_vendor__tokio-1.47.1//:tokio",
     ] + select({
         "@rules_rust//rust/platform:aarch64-pc-windows-msvc": [
-            "@cargo_vendor__tokio-util-0.7.16//:tokio_util",
+            "@cargo_vendor__tokio-util-0.7.15//:tokio_util",
         ],
         "@rules_rust//rust/platform:x86_64-pc-windows-msvc": [
-            "@cargo_vendor__tokio-util-0.7.16//:tokio_util",
+            "@cargo_vendor__tokio-util-0.7.15//:tokio_util",
         ],
         "//conditions:default": [],
     }),

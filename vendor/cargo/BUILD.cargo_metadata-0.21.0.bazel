@@ -64,12 +64,12 @@ rust_library(
     }),
     version = "0.21.0",
     deps = [
-        "@cargo_vendor__camino-1.1.12//:camino",
+        "@cargo_vendor__camino-1.1.10//:camino",
         "@cargo_vendor__cargo-platform-0.2.0//:cargo_platform",
         "@cargo_vendor__cargo-util-schemas-0.8.2//:cargo_util_schemas",
         "@cargo_vendor__semver-1.0.26//:semver",
         "@cargo_vendor__serde-1.0.219//:serde",
         "@cargo_vendor__serde_json-1.0.143//:serde_json",
-        "@cargo_vendor__thiserror-2.0.16//:thiserror",
+        "@cargo_vendor__thiserror-2.0.12//:thiserror",
     ],
 )

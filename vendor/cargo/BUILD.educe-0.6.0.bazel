@@ -76,8 +76,8 @@ rust_proc_macro(
     version = "0.6.0",
     deps = [
         "@cargo_vendor__enum-ordinalize-4.3.0//:enum_ordinalize",
-        "@cargo_vendor__proc-macro2-1.0.101//:proc_macro2",
+        "@cargo_vendor__proc-macro2-1.0.95//:proc_macro2",
         "@cargo_vendor__quote-1.0.40//:quote",
-        "@cargo_vendor__syn-2.0.106//:syn",
+        "@cargo_vendor__syn-2.0.101//:syn",
     ],
 )

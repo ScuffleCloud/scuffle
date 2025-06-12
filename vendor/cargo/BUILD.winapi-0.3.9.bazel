@@ -40,6 +40,8 @@ rust_library(
     ),
     crate_features = [
         "consoleapi",
+        "errhandlingapi",
+        "fileapi",
         "handleapi",
         "impl-default",
         "processenv",
@@ -95,6 +97,8 @@ cargo_build_script(
     ),
     crate_features = [
         "consoleapi",
+        "errhandlingapi",
+        "fileapi",
         "handleapi",
         "impl-default",
         "processenv",

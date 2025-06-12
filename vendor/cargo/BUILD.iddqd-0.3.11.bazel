@@ -70,7 +70,7 @@ rust_library(
         "@cargo_vendor__allocator-api2-0.2.21//:allocator_api2",
         "@cargo_vendor__equivalent-1.0.2//:equivalent",
         "@cargo_vendor__foldhash-0.1.5//:foldhash",
-        "@cargo_vendor__hashbrown-0.15.5//:hashbrown",
+        "@cargo_vendor__hashbrown-0.15.4//:hashbrown",
         "@cargo_vendor__rustc-hash-2.1.1//:rustc_hash",
     ],
 )

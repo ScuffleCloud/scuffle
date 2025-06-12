@@ -75,7 +75,7 @@ rust_library(
         "@cargo_vendor__cfg-if-1.0.3//:cfg_if",
         "@cargo_vendor__getrandom-0.3.3//:getrandom",
         "@cargo_vendor__once_cell-1.21.3//:once_cell",  # cfg(not(all(target_arch = "arm", target_os = "none")))
-        "@cargo_vendor__zerocopy-0.8.26//:zerocopy",
+        "@cargo_vendor__zerocopy-0.8.25//:zerocopy",
     ],
 )
 

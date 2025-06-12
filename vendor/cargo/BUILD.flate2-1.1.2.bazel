@@ -67,7 +67,7 @@ rust_library(
     }),
     version = "1.1.2",
     deps = [
-        "@cargo_vendor__crc32fast-1.5.0//:crc32fast",
-        "@cargo_vendor__miniz_oxide-0.8.9//:miniz_oxide",  # cfg(all(target_arch = "wasm32", not(target_os = "emscripten")))
+        "@cargo_vendor__crc32fast-1.4.2//:crc32fast",
+        "@cargo_vendor__miniz_oxide-0.8.8//:miniz_oxide",  # cfg(all(target_arch = "wasm32", not(target_os = "emscripten")))
     ],
 )

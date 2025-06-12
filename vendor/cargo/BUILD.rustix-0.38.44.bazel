@@ -28,13 +28,19 @@ rust_library(
     ),
     aliases = select({
         "@rules_rust//rust/platform:aarch64-apple-darwin": {
-            "@cargo_vendor__errno-0.3.13//:errno": "libc_errno",  # cfg(all(not(windows), any(rustix_use_libc, miri, not(all(target_os = "linux", any(target_endian = "little", target_arch = "s390x"), any(target_arch = "arm", all(target_arch = "aarch64", target_pointer_width = "64"), target_arch = "riscv64", all(rustix_use_experimental_asm, target_arch = "powerpc64"), all(rustix_use_experimental_asm, target_arch = "s390x"), all(rustix_use_experimental_asm, target_arch = "mips"), all(rustix_use_experimental_asm, target_arch = "mips32r6"), all(rustix_use_experimental_asm, target_arch = "mips64"), all(rustix_use_experimental_asm, target_arch = "mips64r6"), target_arch = "x86", all(target_arch = "x86_64", target_pointer_width = "64")))))))
+            "@cargo_vendor__errno-0.3.12//:errno": "libc_errno",  # cfg(all(not(windows), any(rustix_use_libc, miri, not(all(target_os = "linux", any(target_endian = "little", target_arch = "s390x"), any(target_arch = "arm", all(target_arch = "aarch64", target_pointer_width = "64"), target_arch = "riscv64", all(rustix_use_experimental_asm, target_arch = "powerpc64"), all(rustix_use_experimental_asm, target_arch = "s390x"), all(rustix_use_experimental_asm, target_arch = "mips"), all(rustix_use_experimental_asm, target_arch = "mips32r6"), all(rustix_use_experimental_asm, target_arch = "mips64"), all(rustix_use_experimental_asm, target_arch = "mips64r6"), target_arch = "x86", all(target_arch = "x86_64", target_pointer_width = "64")))))))
+        },
+        "@rules_rust//rust/platform:aarch64-pc-windows-msvc": {
+            "@cargo_vendor__errno-0.3.12//:errno": "libc_errno",  # cfg(windows)
         },
         "@rules_rust//rust/platform:wasm32-unknown-unknown": {
-            "@cargo_vendor__errno-0.3.13//:errno": "libc_errno",  # cfg(all(not(windows), any(rustix_use_libc, miri, not(all(target_os = "linux", any(target_endian = "little", target_arch = "s390x"), any(target_arch = "arm", all(target_arch = "aarch64", target_pointer_width = "64"), target_arch = "riscv64", all(rustix_use_experimental_asm, target_arch = "powerpc64"), all(rustix_use_experimental_asm, target_arch = "s390x"), all(rustix_use_experimental_asm, target_arch = "mips"), all(rustix_use_experimental_asm, target_arch = "mips32r6"), all(rustix_use_experimental_asm, target_arch = "mips64"), all(rustix_use_experimental_asm, target_arch = "mips64r6"), target_arch = "x86", all(target_arch = "x86_64", target_pointer_width = "64")))))))
+            "@cargo_vendor__errno-0.3.12//:errno": "libc_errno",  # cfg(all(not(windows), any(rustix_use_libc, miri, not(all(target_os = "linux", any(target_endian = "little", target_arch = "s390x"), any(target_arch = "arm", all(target_arch = "aarch64", target_pointer_width = "64"), target_arch = "riscv64", all(rustix_use_experimental_asm, target_arch = "powerpc64"), all(rustix_use_experimental_asm, target_arch = "s390x"), all(rustix_use_experimental_asm, target_arch = "mips"), all(rustix_use_experimental_asm, target_arch = "mips32r6"), all(rustix_use_experimental_asm, target_arch = "mips64"), all(rustix_use_experimental_asm, target_arch = "mips64r6"), target_arch = "x86", all(target_arch = "x86_64", target_pointer_width = "64")))))))
         },
         "@rules_rust//rust/platform:x86_64-apple-darwin": {
-            "@cargo_vendor__errno-0.3.13//:errno": "libc_errno",  # cfg(all(not(windows), any(rustix_use_libc, miri, not(all(target_os = "linux", any(target_endian = "little", target_arch = "s390x"), any(target_arch = "arm", all(target_arch = "aarch64", target_pointer_width = "64"), target_arch = "riscv64", all(rustix_use_experimental_asm, target_arch = "powerpc64"), all(rustix_use_experimental_asm, target_arch = "s390x"), all(rustix_use_experimental_asm, target_arch = "mips"), all(rustix_use_experimental_asm, target_arch = "mips32r6"), all(rustix_use_experimental_asm, target_arch = "mips64"), all(rustix_use_experimental_asm, target_arch = "mips64r6"), target_arch = "x86", all(target_arch = "x86_64", target_pointer_width = "64")))))))
+            "@cargo_vendor__errno-0.3.12//:errno": "libc_errno",  # cfg(all(not(windows), any(rustix_use_libc, miri, not(all(target_os = "linux", any(target_endian = "little", target_arch = "s390x"), any(target_arch = "arm", all(target_arch = "aarch64", target_pointer_width = "64"), target_arch = "riscv64", all(rustix_use_experimental_asm, target_arch = "powerpc64"), all(rustix_use_experimental_asm, target_arch = "s390x"), all(rustix_use_experimental_asm, target_arch = "mips"), all(rustix_use_experimental_asm, target_arch = "mips32r6"), all(rustix_use_experimental_asm, target_arch = "mips64"), all(rustix_use_experimental_asm, target_arch = "mips64r6"), target_arch = "x86", all(target_arch = "x86_64", target_pointer_width = "64")))))))
+        },
+        "@rules_rust//rust/platform:x86_64-pc-windows-msvc": {
+            "@cargo_vendor__errno-0.3.12//:errno": "libc_errno",  # cfg(windows)
         },
         "//conditions:default": {},
     }),
@@ -52,12 +58,28 @@ rust_library(
     ),
     crate_features = [
         "alloc",
-        "default",
         "fs",
         "libc-extra-traits",
         "std",
-        "use-libc-auxv",
-    ],
+    ] + select({
+        "@rules_rust//rust/platform:aarch64-apple-darwin": [
+            "default",
+            "use-libc-auxv",
+        ],
+        "@rules_rust//rust/platform:aarch64-unknown-linux-gnu": [
+            "default",
+            "use-libc-auxv",
+        ],
+        "@rules_rust//rust/platform:x86_64-apple-darwin": [
+            "default",
+            "use-libc-auxv",
+        ],
+        "@rules_rust//rust/platform:x86_64-unknown-linux-gnu": [
+            "default",
+            "use-libc-auxv",
+        ],
+        "//conditions:default": [],
+    }),
     crate_root = "src/lib.rs",
     edition = "2021",
     rustc_env_files = [
@@ -75,8 +97,10 @@ rust_library(
     ],
     target_compatible_with = select({
         "@rules_rust//rust/platform:aarch64-apple-darwin": [],
+        "@rules_rust//rust/platform:aarch64-pc-windows-msvc": [],
         "@rules_rust//rust/platform:aarch64-unknown-linux-gnu": [],
         "@rules_rust//rust/platform:x86_64-apple-darwin": [],
+        "@rules_rust//rust/platform:x86_64-pc-windows-msvc": [],
         "@rules_rust//rust/platform:x86_64-unknown-linux-gnu": [],
         "//conditions:default": ["@platforms//:incompatible"],
     }),
@@ -85,25 +109,35 @@ rust_library(
         "@cargo_vendor__rustix-0.38.44//:build_script_build",
     ] + select({
         "@rules_rust//rust/platform:aarch64-apple-darwin": [
-            "@cargo_vendor__bitflags-2.9.3//:bitflags",
-            "@cargo_vendor__errno-0.3.13//:errno",  # cfg(all(not(windows), any(rustix_use_libc, miri, not(all(target_os = "linux", any(target_endian = "little", target_arch = "s390x"), any(target_arch = "arm", all(target_arch = "aarch64", target_pointer_width = "64"), target_arch = "riscv64", all(rustix_use_experimental_asm, target_arch = "powerpc64"), all(rustix_use_experimental_asm, target_arch = "s390x"), all(rustix_use_experimental_asm, target_arch = "mips"), all(rustix_use_experimental_asm, target_arch = "mips32r6"), all(rustix_use_experimental_asm, target_arch = "mips64"), all(rustix_use_experimental_asm, target_arch = "mips64r6"), target_arch = "x86", all(target_arch = "x86_64", target_pointer_width = "64")))))))
+            "@cargo_vendor__bitflags-2.9.1//:bitflags",
+            "@cargo_vendor__errno-0.3.12//:errno",  # cfg(all(not(windows), any(rustix_use_libc, miri, not(all(target_os = "linux", any(target_endian = "little", target_arch = "s390x"), any(target_arch = "arm", all(target_arch = "aarch64", target_pointer_width = "64"), target_arch = "riscv64", all(rustix_use_experimental_asm, target_arch = "powerpc64"), all(rustix_use_experimental_asm, target_arch = "s390x"), all(rustix_use_experimental_asm, target_arch = "mips"), all(rustix_use_experimental_asm, target_arch = "mips32r6"), all(rustix_use_experimental_asm, target_arch = "mips64"), all(rustix_use_experimental_asm, target_arch = "mips64r6"), target_arch = "x86", all(target_arch = "x86_64", target_pointer_width = "64")))))))
             "@cargo_vendor__libc-0.2.175//:libc",  # cfg(all(not(windows), any(rustix_use_libc, miri, not(all(target_os = "linux", any(target_endian = "little", target_arch = "s390x"), any(target_arch = "arm", all(target_arch = "aarch64", target_pointer_width = "64"), target_arch = "riscv64", all(rustix_use_experimental_asm, target_arch = "powerpc64"), all(rustix_use_experimental_asm, target_arch = "s390x"), all(rustix_use_experimental_asm, target_arch = "mips"), all(rustix_use_experimental_asm, target_arch = "mips32r6"), all(rustix_use_experimental_asm, target_arch = "mips64"), all(rustix_use_experimental_asm, target_arch = "mips64r6"), target_arch = "x86", all(target_arch = "x86_64", target_pointer_width = "64")))))))
         ],
+        "@rules_rust//rust/platform:aarch64-pc-windows-msvc": [
+            "@cargo_vendor__bitflags-2.9.1//:bitflags",
+            "@cargo_vendor__errno-0.3.12//:errno",  # cfg(windows)
+            "@cargo_vendor__windows-sys-0.59.0//:windows_sys",  # cfg(windows)
+        ],
         "@rules_rust//rust/platform:aarch64-unknown-linux-gnu": [
-            "@cargo_vendor__bitflags-2.9.3//:bitflags",
+            "@cargo_vendor__bitflags-2.9.1//:bitflags",
             "@cargo_vendor__linux-raw-sys-0.4.15//:linux_raw_sys",  # cfg(all(not(rustix_use_libc), not(miri), target_os = "linux", any(target_endian = "little", target_arch = "s390x"), any(target_arch = "arm", all(target_arch = "aarch64", target_pointer_width = "64"), target_arch = "riscv64", all(rustix_use_experimental_asm, target_arch = "powerpc64"), all(rustix_use_experimental_asm, target_arch = "s390x"), all(rustix_use_experimental_asm, target_arch = "mips"), all(rustix_use_experimental_asm, target_arch = "mips32r6"), all(rustix_use_experimental_asm, target_arch = "mips64"), all(rustix_use_experimental_asm, target_arch = "mips64r6"), target_arch = "x86", all(target_arch = "x86_64", target_pointer_width = "64"))))
         ],
         "@rules_rust//rust/platform:wasm32-unknown-unknown": [
-            "@cargo_vendor__errno-0.3.13//:errno",  # cfg(all(not(windows), any(rustix_use_libc, miri, not(all(target_os = "linux", any(target_endian = "little", target_arch = "s390x"), any(target_arch = "arm", all(target_arch = "aarch64", target_pointer_width = "64"), target_arch = "riscv64", all(rustix_use_experimental_asm, target_arch = "powerpc64"), all(rustix_use_experimental_asm, target_arch = "s390x"), all(rustix_use_experimental_asm, target_arch = "mips"), all(rustix_use_experimental_asm, target_arch = "mips32r6"), all(rustix_use_experimental_asm, target_arch = "mips64"), all(rustix_use_experimental_asm, target_arch = "mips64r6"), target_arch = "x86", all(target_arch = "x86_64", target_pointer_width = "64")))))))
+            "@cargo_vendor__errno-0.3.12//:errno",  # cfg(all(not(windows), any(rustix_use_libc, miri, not(all(target_os = "linux", any(target_endian = "little", target_arch = "s390x"), any(target_arch = "arm", all(target_arch = "aarch64", target_pointer_width = "64"), target_arch = "riscv64", all(rustix_use_experimental_asm, target_arch = "powerpc64"), all(rustix_use_experimental_asm, target_arch = "s390x"), all(rustix_use_experimental_asm, target_arch = "mips"), all(rustix_use_experimental_asm, target_arch = "mips32r6"), all(rustix_use_experimental_asm, target_arch = "mips64"), all(rustix_use_experimental_asm, target_arch = "mips64r6"), target_arch = "x86", all(target_arch = "x86_64", target_pointer_width = "64")))))))
             "@cargo_vendor__libc-0.2.175//:libc",  # cfg(all(not(windows), any(rustix_use_libc, miri, not(all(target_os = "linux", any(target_endian = "little", target_arch = "s390x"), any(target_arch = "arm", all(target_arch = "aarch64", target_pointer_width = "64"), target_arch = "riscv64", all(rustix_use_experimental_asm, target_arch = "powerpc64"), all(rustix_use_experimental_asm, target_arch = "s390x"), all(rustix_use_experimental_asm, target_arch = "mips"), all(rustix_use_experimental_asm, target_arch = "mips32r6"), all(rustix_use_experimental_asm, target_arch = "mips64"), all(rustix_use_experimental_asm, target_arch = "mips64r6"), target_arch = "x86", all(target_arch = "x86_64", target_pointer_width = "64")))))))
         ],
         "@rules_rust//rust/platform:x86_64-apple-darwin": [
-            "@cargo_vendor__bitflags-2.9.3//:bitflags",
-            "@cargo_vendor__errno-0.3.13//:errno",  # cfg(all(not(windows), any(rustix_use_libc, miri, not(all(target_os = "linux", any(target_endian = "little", target_arch = "s390x"), any(target_arch = "arm", all(target_arch = "aarch64", target_pointer_width = "64"), target_arch = "riscv64", all(rustix_use_experimental_asm, target_arch = "powerpc64"), all(rustix_use_experimental_asm, target_arch = "s390x"), all(rustix_use_experimental_asm, target_arch = "mips"), all(rustix_use_experimental_asm, target_arch = "mips32r6"), all(rustix_use_experimental_asm, target_arch = "mips64"), all(rustix_use_experimental_asm, target_arch = "mips64r6"), target_arch = "x86", all(target_arch = "x86_64", target_pointer_width = "64")))))))
+            "@cargo_vendor__bitflags-2.9.1//:bitflags",
+            "@cargo_vendor__errno-0.3.12//:errno",  # cfg(all(not(windows), any(rustix_use_libc, miri, not(all(target_os = "linux", any(target_endian = "little", target_arch = "s390x"), any(target_arch = "arm", all(target_arch = "aarch64", target_pointer_width = "64"), target_arch = "riscv64", all(rustix_use_experimental_asm, target_arch = "powerpc64"), all(rustix_use_experimental_asm, target_arch = "s390x"), all(rustix_use_experimental_asm, target_arch = "mips"), all(rustix_use_experimental_asm, target_arch = "mips32r6"), all(rustix_use_experimental_asm, target_arch = "mips64"), all(rustix_use_experimental_asm, target_arch = "mips64r6"), target_arch = "x86", all(target_arch = "x86_64", target_pointer_width = "64")))))))
             "@cargo_vendor__libc-0.2.175//:libc",  # cfg(all(not(windows), any(rustix_use_libc, miri, not(all(target_os = "linux", any(target_endian = "little", target_arch = "s390x"), any(target_arch = "arm", all(target_arch = "aarch64", target_pointer_width = "64"), target_arch = "riscv64", all(rustix_use_experimental_asm, target_arch = "powerpc64"), all(rustix_use_experimental_asm, target_arch = "s390x"), all(rustix_use_experimental_asm, target_arch = "mips"), all(rustix_use_experimental_asm, target_arch = "mips32r6"), all(rustix_use_experimental_asm, target_arch = "mips64"), all(rustix_use_experimental_asm, target_arch = "mips64r6"), target_arch = "x86", all(target_arch = "x86_64", target_pointer_width = "64")))))))
         ],
+        "@rules_rust//rust/platform:x86_64-pc-windows-msvc": [
+            "@cargo_vendor__bitflags-2.9.1//:bitflags",
+            "@cargo_vendor__errno-0.3.12//:errno",  # cfg(windows)
+            "@cargo_vendor__windows-sys-0.59.0//:windows_sys",  # cfg(windows)
+        ],
         "@rules_rust//rust/platform:x86_64-unknown-linux-gnu": [
-            "@cargo_vendor__bitflags-2.9.3//:bitflags",
+            "@cargo_vendor__bitflags-2.9.1//:bitflags",
             "@cargo_vendor__linux-raw-sys-0.4.15//:linux_raw_sys",  # cfg(all(not(rustix_use_libc), not(miri), target_os = "linux", any(target_endian = "little", target_arch = "s390x"), any(target_arch = "arm", all(target_arch = "aarch64", target_pointer_width = "64"), target_arch = "riscv64", all(rustix_use_experimental_asm, target_arch = "powerpc64"), all(rustix_use_experimental_asm, target_arch = "s390x"), all(rustix_use_experimental_asm, target_arch = "mips"), all(rustix_use_experimental_asm, target_arch = "mips32r6"), all(rustix_use_experimental_asm, target_arch = "mips64"), all(rustix_use_experimental_asm, target_arch = "mips64r6"), target_arch = "x86", all(target_arch = "x86_64", target_pointer_width = "64"))))
         ],
         "//conditions:default": [],
@@ -131,12 +165,28 @@ cargo_build_script(
     ),
     crate_features = [
         "alloc",
-        "default",
         "fs",
         "libc-extra-traits",
         "std",
-        "use-libc-auxv",
-    ],
+    ] + select({
+        "@rules_rust//rust/platform:aarch64-apple-darwin": [
+            "default",
+            "use-libc-auxv",
+        ],
+        "@rules_rust//rust/platform:aarch64-unknown-linux-gnu": [
+            "default",
+            "use-libc-auxv",
+        ],
+        "@rules_rust//rust/platform:x86_64-apple-darwin": [
+            "default",
+            "use-libc-auxv",
+        ],
+        "@rules_rust//rust/platform:x86_64-unknown-linux-gnu": [
+            "default",
+            "use-libc-auxv",
+        ],
+        "//conditions:default": [],
+    }),
     crate_name = "build_script_build",
     crate_root = "build.rs",
     data = glob(

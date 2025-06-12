@@ -75,6 +75,6 @@ rust_library(
         "@cargo_vendor__toml_datetime-0.7.0//:toml_datetime",
         "@cargo_vendor__toml_parser-1.0.2//:toml_parser",
         "@cargo_vendor__toml_writer-1.0.2//:toml_writer",
-        "@cargo_vendor__winnow-0.7.13//:winnow",
+        "@cargo_vendor__winnow-0.7.10//:winnow",
     ],
 )

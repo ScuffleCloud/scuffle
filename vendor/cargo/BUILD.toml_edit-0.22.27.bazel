@@ -72,6 +72,6 @@ rust_library(
         "@cargo_vendor__serde_spanned-0.6.9//:serde_spanned",
         "@cargo_vendor__toml_datetime-0.6.11//:toml_datetime",
         "@cargo_vendor__toml_write-0.1.2//:toml_write",
-        "@cargo_vendor__winnow-0.7.13//:winnow",
+        "@cargo_vendor__winnow-0.7.10//:winnow",
     ],
 )

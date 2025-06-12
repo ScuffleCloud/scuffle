@@ -67,7 +67,7 @@ rust_library(
         "@cargo_vendor__logos-0.15.1//:logos",
         "@cargo_vendor__miette-7.6.0//:miette",
         "@cargo_vendor__pretty-0.12.4//:pretty",
-        "@cargo_vendor__regex-1.11.2//:regex",
+        "@cargo_vendor__regex-1.11.1//:regex",
         "@cargo_vendor__smol_str-0.3.2//:smol_str",
     ],
 )

@@ -1,6 +1,7 @@
 _packages = [
     "//cloud/core",
     "//cloud/proto",
+    "//cloud/redis-module",
     "//crates/aac",
     "//crates/amf0",
     "//crates/av1",

@@ -64,7 +64,7 @@ rust_library(
     }),
     version = "0.25.6",
     deps = [
-        "@cargo_vendor__bytemuck-1.23.2//:bytemuck",
+        "@cargo_vendor__bytemuck-1.23.0//:bytemuck",
         "@cargo_vendor__byteorder-lite-0.1.0//:byteorder_lite",
         "@cargo_vendor__num-traits-0.2.19//:num_traits",
         "@cargo_vendor__png-0.17.16//:png",

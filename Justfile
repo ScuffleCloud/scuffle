@@ -34,7 +34,7 @@ clean *args="--async":
     bazel --output_base="${output_base}_rust_analyzer" clean {{ args }}
 
 run core *args:
-    cargo +stable run --bin scufflecloud-core -- {{args}}
+    cargo run --bin scufflecloud-core -- {{args}}
 
 alias coverage := test
 

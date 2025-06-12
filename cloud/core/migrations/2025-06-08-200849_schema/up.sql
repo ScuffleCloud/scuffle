@@ -2,120 +2,172 @@
 
 -- Real users
 CREATE TABLE "users" (
-	"id" UUID NOT NULL UNIQUE,
-	"name" VARCHAR(255) NOT NULL,
+	"id" UUID PRIMARY KEY,
+	"preferred_name" VARCHAR(255),
+	"first_name" VARCHAR(255),
+	"last_name" VARCHAR(255),
 	"password_hash" VARCHAR(255), -- Nullable for users who register via external providers
-	PRIMARY KEY("id")
+    "primary_email" VARCHAR(255) NOT NULL
 );
 
 -- User emails
 -- There can be multiple emails per user, but only one can be primary.
 CREATE TABLE "user_emails" (
-	"id" UUID NOT NULL,
+	"email" VARCHAR(255) PRIMARY KEY, -- should be normalized (to ascii lowercase?)
 	"user_id" UUID NOT NULL,
-	"email" VARCHAR(255) NOT NULL UNIQUE,
-    "primary" BOOLEAN NOT NULL DEFAULT FALSE,
-	PRIMARY KEY("id")
+    "created_at" TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
 
--- Only one email can be primary per user
-CREATE UNIQUE INDEX "user_emails_index_0"
-ON "user_emails" ("user_id", "primary")
-WHERE "primary" = TRUE;
+ALTER TABLE "users"
+ADD FOREIGN KEY("primary_email") REFERENCES "user_emails"("email")
+DEFERRABLE INITIALLY DEFERRED;
+
+CREATE INDEX ON "users"("primary_email");
 
 ALTER TABLE "user_emails"
-ADD FOREIGN KEY("user_id") REFERENCES "users"("id");
+ADD FOREIGN KEY("user_id") REFERENCES "users"("id")
+ON DELETE CASCADE
+DEFERRABLE INITIALLY DEFERRED;
 
--- Possible user connection providers
-CREATE TYPE "external_provider" AS ENUM (
-	'google'
-);
+CREATE INDEX ON "user_emails"("user_id");
 
 -- User connections to external authentication providers.
-CREATE TABLE "user_connections" (
-	"id" UUID NOT NULL UNIQUE,
+--
+-- TODO: Research required for workspaces API.
+CREATE TABLE "user_google_accounts" (
+	"id" VARCHAR(255) PRIMARY KEY, -- Research required
 	"user_id" UUID NOT NULL,
-	"provider" EXTERNAL_PROVIDER NOT NULL,
-	"external_id" VARCHAR(255) NOT NULL,
 	"access_token" VARCHAR(255) NOT NULL,
 	"refresh_token" VARCHAR(255) NOT NULL,
-	PRIMARY KEY("id")
+    -- workspace and role within the workspace...
+    "created_at" TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
 
-CREATE UNIQUE INDEX "user_connections_index_0"
-ON "user_connections" ("provider", "external_id");
+ALTER TABLE "user_google_accounts"
+ADD FOREIGN KEY("user_id") REFERENCES "users"("id")
+ON DELETE CASCADE;
 
-CREATE UNIQUE INDEX "user_connections_index_1"
-ON "user_connections" ("user_id", "provider");
+CREATE INDEX ON "user_google_accounts"("user_id");
 
-ALTER TABLE "user_connections"
-ADD FOREIGN KEY("user_id") REFERENCES "users"("id");
-
--- Registered devices
--- Every device has a uniquely generated fingerprint.
-CREATE TABLE "devices" (
-	"id" UUID NOT NULL UNIQUE,
-	"fingerprint" VARCHAR(255) NOT NULL,
-	PRIMARY KEY("id")
-);
-
--- A short lived token for a session (combination of device and user).
--- "last_used" and "last_ip" is updated every time the token is used.
-CREATE TABLE "session_tokens" (
-	"id" UUID NOT NULL UNIQUE,
+-- A combination of device and user.
+-- "last_used_at" and "last_ip" is updated every time this session is reactivated.
+CREATE TABLE "user_sessions" (
 	"user_id" UUID NOT NULL,
 	"device_id" UUID NOT NULL,
-    "last_used" TIMESTAMPTZ NOT NULL,
+	"device_public_key" VARCHAR(255) NOT NULL, -- TODO: research webauthn format
+    "last_used_at" TIMESTAMPTZ NOT NULL,
     "last_ip" INET NOT NULL,
-	"expiry" TIMESTAMPTZ,
-	PRIMARY KEY("id")
+    "token" VARCHAR(255),
+    "token_expires_at" TIMESTAMPTZ,
+    PRIMARY KEY("user_id", "device_id")
 );
 
--- There can be only one session token per session.
-CREATE UNIQUE INDEX "session_tokens_index_0"
-ON "session_tokens" ("user_id", "device_id");
+ALTER TABLE "user_sessions"
+ADD FOREIGN KEY("user_id") REFERENCES "users"("id")
+ON DELETE CASCADE;
 
-ALTER TABLE "session_tokens"
-ADD FOREIGN KEY("user_id") REFERENCES "users"("id");
+CREATE INDEX ON "user_sessions"("device_id")
+WHERE "token" IS NOT NULL;
 
-ALTER TABLE "session_tokens"
-ADD FOREIGN KEY("device_id") REFERENCES "devices"("id");
+CREATE INDEX ON "user_sessions"("user_id");
 
 --- MFA (Multi-Factor Authentication)
 
 -- Different factor types for MFA
 CREATE TYPE "mfa_factor_type" AS ENUM (
 	'totp',
-	'webauthn' -- Passkeys are WebAuthn
+	'passkey'
 );
 
 CREATE TABLE "mfa_factors" (
-	"id" UUID NOT NULL UNIQUE,
+	"id" UUID PRIMARY KEY,
 	"user_id" UUID NOT NULL,
 	"type" MFA_FACTOR_TYPE NOT NULL,
-	"secret" VARCHAR(255) NOT NULL,
-	PRIMARY KEY("id")
+	"secret" VARCHAR(255) NOT NULL -- TODO: research format
 );
 
 ALTER TABLE "mfa_factors"
-ADD FOREIGN KEY("user_id") REFERENCES "users"("id");
+ADD FOREIGN KEY("user_id") REFERENCES "users"("id")
+ON DELETE CASCADE;
+
+CREATE INDEX ON "mfa_factors"("user_id");
 
 --- Organizations and Projects
 
 CREATE TABLE "organizations" (
-	"id" UUID NOT NULL UNIQUE,
+	"id" UUID PRIMARY KEY,
 	"name" VARCHAR(255) NOT NULL,
-	"owner_id" UUID NOT NULL,
-	PRIMARY KEY("id")
+	"owner_id" UUID NOT NULL
 );
 
+-- Explicitly not cascading on delete.
 ALTER TABLE "organizations"
 ADD FOREIGN KEY("owner_id") REFERENCES "users"("id");
 
+CREATE TABLE "projects" (
+	"id" UUID PRIMARY KEY,
+	"name" VARCHAR(255) NOT NULL,
+	"organization_id" UUID NOT NULL
+);
+
+ALTER TABLE "projects"
+ADD FOREIGN KEY("organization_id") REFERENCES "organizations"("id");
+
+CREATE TABLE "policies" (
+    "id" UUID PRIMARY KEY,
+    "organization_id" UUID NOT NULL,
+    "project_id" UUID,
+    "name" VARCHAR(255) NOT NULL,
+    "description" TEXT,
+    "policy" JSONB NOT NULL
+);
+
+ALTER TABLE "policies"
+ADD FOREIGN KEY("organization_id") REFERENCES "organizations"("id")
+ON DELETE CASCADE;
+
+ALTER TABLE "policies"
+ADD FOREIGN KEY("project_id") REFERENCES "projects"("id")
+ON DELETE CASCADE;
+
+CREATE INDEX ON "policies"("organization_id");
+CREATE INDEX ON "policies"("project_id");
+
+CREATE TABLE "roles" (
+    "id" UUID PRIMARY KEY,
+    "organization_id" UUID NOT NULL,
+    "name" VARCHAR(255) NOT NULL,
+    "description" TEXT,
+    "inline_policy" JSONB
+);
+
+ALTER TABLE "roles"
+ADD FOREIGN KEY("organization_id") REFERENCES "organizations"("id")
+ON DELETE CASCADE;
+
+CREATE INDEX ON "roles"("organization_id");
+
+CREATE TABLE "role_policies" (
+    "role_id" UUID NOT NULL,
+    "policy_id" UUID NOT NULL,
+    PRIMARY KEY("role_id", "policy_id")
+);
+
+ALTER TABLE "role_policies"
+ADD FOREIGN KEY("role_id") REFERENCES "roles"("id")
+ON DELETE CASCADE;
+
+ALTER TABLE "role_policies"
+ADD FOREIGN KEY("policy_id") REFERENCES "policies"("id")
+ON DELETE CASCADE;
+
+CREATE INDEX ON "role_policies"("policy_id", "role_id");
+
 CREATE TABLE "organization_members" (
 	"organization_id" UUID NOT NULL,
-	"user_id" UUID NOT NULL UNIQUE,
-	"policies" JSONB NOT NULL,
+	"user_id" UUID NOT NULL,
+    "invited_by_id" UUID,
+	"inline_policy" JSONB,
 	PRIMARY KEY("organization_id", "user_id")
 );
 
@@ -125,23 +177,35 @@ ADD FOREIGN KEY("organization_id") REFERENCES "organizations"("id");
 ALTER TABLE "organization_members"
 ADD FOREIGN KEY("user_id") REFERENCES "users"("id");
 
-CREATE TABLE "projects" (
-	"id" UUID NOT NULL UNIQUE,
-	"name" VARCHAR(255) NOT NULL,
-	"organization_id" UUID NOT NULL,
-	PRIMARY KEY("id")
+ALTER TABLE "organization_members"
+ADD FOREIGN KEY("invited_by_id") REFERENCES "users"("id")
+ON DELETE SET NULL;
+
+CREATE INDEX ON "organization_members"("user_id", "organization_id");
+
+CREATE TABLE "organization_member_policies" (
+    "organization_id" UUID NOT NULL,
+    "user_id" UUID NOT NULL,
+    "policy_id" UUID NOT NULL,
+    PRIMARY KEY("organization_id", "user_id", "policy_id")
 );
 
-ALTER TABLE "projects"
-ADD FOREIGN KEY("organization_id") REFERENCES "organizations"("id");
+ALTER TABLE "organization_member_policies"
+ADD FOREIGN KEY("organization_id", "user_id") REFERENCES "organization_members"("organization_id", "user_id")
+ON DELETE CASCADE;
+
+ALTER TABLE "organization_member_policies"
+ADD FOREIGN KEY("policy_id") REFERENCES "policies"("id")
+ON DELETE CASCADE;
+
+CREATE INDEX ON "organization_member_policies"("policy_id");
 
 CREATE TABLE "service_accounts" (
-	"id" UUID NOT NULL UNIQUE,
+	"id" UUID PRIMARY KEY,
 	"name" VARCHAR(255) NOT NULL,
 	"organization_id" UUID NOT NULL,
 	"project_id" UUID,
-	"policies" JSONB,
-	PRIMARY KEY("id")
+	"inline_policy" JSONB
 );
 
 ALTER TABLE "service_accounts"
@@ -151,47 +215,67 @@ ALTER TABLE "service_accounts"
 ADD FOREIGN KEY("organization_id") REFERENCES "organizations"("id");
 
 CREATE TABLE "service_account_tokens" (
-	"id" UUID NOT NULL UNIQUE,
+	"id" UUID PRIMARY KEY,
 	"active" BOOLEAN NOT NULL,
 	"service_account_id" UUID NOT NULL,
 	"token" VARCHAR(255) NOT NULL,
-	"policies" JSONB,
-	"expiry" TIMESTAMPTZ,
-	PRIMARY KEY("id")
+	"inline_policy" JSONB,
+	"expires_at" TIMESTAMPTZ
 );
 
 ALTER TABLE "service_account_tokens"
 ADD FOREIGN KEY("service_account_id") REFERENCES "service_accounts"("id");
 
+-- Service account project id has to be the same as the project id of the policy.
+CREATE TABLE "service_account_policies" (
+    "service_account_id" UUID NOT NULL,
+    "policy_id" UUID NOT NULL,
+    PRIMARY KEY("service_account_id", "policy_id")
+);
+
+ALTER TABLE "service_account_policies"
+ADD FOREIGN KEY("service_account_id") REFERENCES "service_accounts"("id")
+ON DELETE CASCADE;
+
+ALTER TABLE "service_account_policies"
+ADD FOREIGN KEY("policy_id") REFERENCES "policies"("id")
+ON DELETE CASCADE;
+
+CREATE INDEX ON "service_account_policies"("policy_id", "service_account_id");
+
 -- This is used for user registration requests via email and adding new email addresses to existing accounts.
 -- When user_id is set, it indicates that the request is for an existing user to add a new email address.
 CREATE TABLE "email_registration_requests" (
-	"id" UUID NOT NULL UNIQUE,
+	"id" UUID PRIMARY KEY,
 	"user_id" UUID,
 	"email" VARCHAR(255) NOT NULL,
 	"token" VARCHAR(255) NOT NULL,
-	"expiry" TIMESTAMPTZ NOT NULL,
-	PRIMARY KEY("id")
+	"expires_at" TIMESTAMPTZ NOT NULL
 );
 
 ALTER TABLE "email_registration_requests"
 ADD FOREIGN KEY("user_id") REFERENCES "users"("id");
 
--- This is used for inviting users to an organization via email.
+-- This is used for inviting users to an organization.
 -- When user_id is set, it indicates that the invite is for an existing user to join the organization and can
 -- only be used for that selected user.
-CREATE TABLE "email_invites" (
-    "id" UUID NOT NULL UNIQUE,
+CREATE TABLE "organization_invites" (
+    "id" UUID PRIMARY KEY,
 	"user_id" UUID,
 	"organization_id" UUID NOT NULL,
 	"email" VARCHAR(255) NOT NULL,
-	"token" VARCHAR(255) NOT NULL,
-	"expiry" TIMESTAMPTZ NOT NULL,
-	PRIMARY KEY("id")
+    "invited_by_id" UUID NOT NULL,
+	"expiries_at" TIMESTAMPTZ
 );
 
-ALTER TABLE "email_invites"
-ADD FOREIGN KEY("user_id") REFERENCES "users"("id");
+ALTER TABLE "organization_invites"
+ADD FOREIGN KEY("user_id") REFERENCES "users"("id")
+ON DELETE CASCADE;
 
-ALTER TABLE "email_invites"
-ADD FOREIGN KEY("organization_id") REFERENCES "organizations"("id");
+ALTER TABLE "organization_invites"
+ADD FOREIGN KEY("organization_id") REFERENCES "organizations"("id")
+ON DELETE CASCADE;
+
+ALTER TABLE "organization_invites"
+ADD FOREIGN KEY("invited_by_id") REFERENCES "users"("id")
+ON DELETE CASCADE;

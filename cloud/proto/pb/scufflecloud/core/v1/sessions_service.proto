@@ -1,0 +1,21 @@
+syntax = "proto3";
+
+package scufflecloud.core.v1;
+
+import "tinc/annotations.proto";
+
+service SessionsService {
+    rpc CreateSession(CreateSessionRequest) returns (CreateSessionResponse) {
+        option (tinc.method).endpoint = {
+            post: "/sessions"
+        };
+    }
+}
+
+message CreateSessionRequest {
+    string test = 1;
+}
+
+message CreateSessionResponse {
+    string test = 1;
+}

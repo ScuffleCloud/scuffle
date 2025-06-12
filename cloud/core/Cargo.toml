@@ -14,6 +14,7 @@ name = "scufflecloud-core"
 path = "src/bin/standalone.rs"
 
 [dependencies]
+axum = "0.8.4"
 anyhow = "1.0.98"
 async-trait = "0.1.88"
 diesel = { features = ["chrono"], version = "2.2.10" }

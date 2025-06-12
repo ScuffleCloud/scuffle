@@ -39,6 +39,7 @@ members = [
   "crates/changelog",
   "cloud/proto",
   "cloud/core",
+  "cloud/redis-module",
 ]
 
 resolver = "3"

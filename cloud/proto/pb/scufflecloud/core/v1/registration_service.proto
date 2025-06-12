@@ -2,12 +2,20 @@ syntax = "proto3";
 
 package scufflecloud.core.v1;
 
+import "google/protobuf/empty.proto";
 import "tinc/annotations.proto";
 
-service CoreService {
-    rpc RegisterWithEmail(RegisterWithEmailRequest) returns (SessionToken) {
+import "scufflecloud/core/v1/constraints.proto";
+
+service RegistrationService {
+    rpc RegisterWithEmail(RegisterWithEmailRequest) returns (google.protobuf.Empty) {
         option (tinc.method).endpoint = {
             post: "/register/email"
+        };
+    }
+    rpc CompleteRegisterWithEmail(CompleteRegisterWithEmailRequest) returns (SessionToken) {
+        option (tinc.method).endpoint = {
+            post: "/register/email/complete"
         };
     }
     rpc RegisterWithExternalProvider(RegisterWithExternalProviderRequest) returns (RegisterWithExternalProviderResponse) {
@@ -22,9 +30,27 @@ service CoreService {
     }
 }
 
+enum CaptchaProvider {
+    // Cloudflare Turnstile
+    TURNSTILE = 0;
+}
+
+message CaptchaChallengeResponse {
+    CaptchaProvider provider = 1;
+    string token = 2;
+}
+
 message RegisterWithEmailRequest {
+    CaptchaChallengeResponse captcha = 1;
     // The email address to register with.
-    string email = 1 [(tinc.field).constraint.string.email = true];
+    string email = 2 [(tinc.field).constraint.string.email = true];
+}
+
+message CompleteRegisterWithEmailRequest {
+    // The token received via email.
+    string token = 1;
+    // The password.
+    string password = 2 [(constraints_string).password = true];
 }
 
 message SessionToken {
@@ -32,14 +58,12 @@ message SessionToken {
 }
 
 enum ExternalProvider {
+    // Google
     GOOGLE = 0;
 }
 
 message RegisterWithExternalProviderRequest {
     ExternalProvider provider = 1;
-    // The redirect_uri that appears in the returned authorization URL.
-    // The server is not aware of this URI because it should redirect to the client application.
-    string redirect_uri = 2;
 }
 
 message RegisterWithExternalProviderResponse {

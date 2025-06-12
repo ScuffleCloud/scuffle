@@ -3972,6 +3972,7 @@ version = "0.1.0"
 dependencies = [
  "anyhow",
  "async-trait",
+ "axum",
  "diesel",
  "diesel-async",
  "scuffle-bootstrap 0.1.5",

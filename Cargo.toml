@@ -40,6 +40,8 @@ members = [
   "cloud/proto",
   "cloud/core",
   "cloud/redis-module",
+  "crates/redis-module-ext",
+  "crates/redis-module-ext/macros",
 ]
 
 resolver = "3"

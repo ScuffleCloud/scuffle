@@ -1,0 +1,13 @@
+[package]
+name = "redis-module-ext-macros"
+version = "0.1.0"
+edition = "2024"
+
+[lib]
+proc-macro = true
+
+[dependencies]
+syn = "2"
+proc-macro2 = "1"
+darling = "0.20"
+quote = "1"

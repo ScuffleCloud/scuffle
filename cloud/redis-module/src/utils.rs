@@ -2,24 +2,12 @@ use std::collections::BTreeSet;
 use std::num::NonZeroU64;
 use std::rc::Rc;
 
+use redis_module_ext::utils::redis_time_millis;
+
 pub type Str = Rc<str>;
 
-macro_rules! extern_fn {
-    (
-        |$($arg:ident:$arg_ty:ty),*$(,)?| $body:expr
-    ) => {{
-        const fn cast<R>(func: fn($($arg_ty),*) -> R) -> unsafe extern "C" fn($($arg_ty),*) -> R {
-            unsafe { std::mem::transmute(func) }
-        }
-
-        cast(|$($arg:$arg_ty),*| $body)
-    }};
-}
-
-pub(super) use extern_fn;
-
 pub fn now() -> NonZeroU64 {
-    NonZeroU64::new(chrono::Utc::now().timestamp() as u64).unwrap()
+    NonZeroU64::new(redis_time_millis() as u64).unwrap()
 }
 
 pub trait SetExt<T> {

@@ -1,16 +1,9 @@
+use redis_module_ext::{export_redis_module, redis_module};
+
 mod quota;
 mod utils;
 
-#[cfg(not(test))]
-use quota::QUOTA_TYPE;
+#[redis_module(name = "scuffle", version = 1, merge(quota::QuotaModule))]
+struct ScuffleModule;
 
-#[cfg(not(test))]
-redis_module::redis_module! {
-    name: "scuffle",
-    version: 1,
-    allocator: (redis_module::alloc::RedisAlloc, redis_module::alloc::RedisAlloc),
-    data_types: [
-        QUOTA_TYPE,
-    ],
-    commands: [],
-}
+export_redis_module!(ScuffleModule);

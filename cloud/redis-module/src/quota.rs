@@ -5,18 +5,16 @@ use std::time::Duration;
 use deepsize::DeepSizeOf;
 use fnv::FnvHashMap;
 use redis_module::key::RedisKeyWritable;
-use redis_module::logging::RedisLogLevel;
-use redis_module::native_types::RedisType;
-use redis_module::{
-    Context, NextArg, RedisError, RedisModuleIO, RedisModuleString, RedisResult, RedisString, RedisValue, raw,
-};
-use redis_module_macros::command;
+use redis_module::{Context, NextArg, RedisError, RedisResult, RedisString, RedisValue};
+use redis_module_ext::data_type::{AofRewriteIo, RdbLoadIo, RdbSaveIo};
+use redis_module_ext::prelude::{IoLoggingExt, RedisKeyWritableExt};
+use redis_module_ext::{CommandArgs, redis_command, redis_data_type, redis_module};
 
-use crate::utils::{self, SetExt, Str, extern_fn};
+use crate::utils::{self, SetExt, Str, now};
 
 #[derive(Clone, bincode::Encode, bincode::Decode, deepsize::DeepSizeOf)]
 struct Lease {
-    key: Str,
+    id: Str,
     qty: u64,
     expires_at: Option<NonZeroU64>,
     dims: Vec<Str>,
@@ -25,7 +23,7 @@ struct Lease {
 impl Lease {
     fn restore_args(&self) -> impl Iterator<Item = String> {
         [
-            self.key.to_string(),
+            self.id.to_string(),
             self.qty.to_string(),
             if let Some(expiry) = self.expires_at {
                 expiry.to_string()
@@ -38,6 +36,18 @@ impl Lease {
     }
 }
 
+const QUOTA_TYPE_VERSION: i32 = 0;
+
+#[redis_data_type(
+    name = "scufquota",
+    version = QUOTA_TYPE_VERSION,
+    methods(
+        rdb_load,
+        rdb_save,
+        aof_rewrite,
+        mem_usage,
+    )
+)]
 #[derive(Default, Clone, deepsize::DeepSizeOf)]
 struct Quota {
     leases: FnvHashMap<Str, Lease>,
@@ -79,109 +89,58 @@ impl<C> bincode::Decode<C> for Quota {
     }
 }
 
-const QUOTA_TYPE_VERSION: i32 = 0;
+const BINCODE_CONFIG: bincode::config::Configuration = bincode::config::standard();
 
-pub static QUOTA_TYPE: RedisType = RedisType::new(
-    "scufquota",
-    QUOTA_TYPE_VERSION,
-    raw::RedisModuleTypeMethods {
-        version: raw::REDISMODULE_TYPE_METHOD_VERSION as u64,
-        rdb_load: Some(extern_fn!(|module: *mut RedisModuleIO, version: i32| {
-            if version != QUOTA_TYPE_VERSION {
-                return std::ptr::null_mut();
+impl Quota {
+    fn rdb_load(rdb: &mut RdbLoadIo, version: i32) -> RedisResult<Self> {
+        if version != QUOTA_TYPE_VERSION {
+            return Err(RedisError::String(format!(
+                "unsupported quota type version expected: {QUOTA_TYPE_VERSION}, actual: {version}"
+            )));
+        }
+
+        let buf = rdb.load_string_buffer()?;
+        let quota: Quota = match bincode::decode_from_slice(buf.as_ref(), BINCODE_CONFIG) {
+            Ok((v, _)) => v,
+            Err(err) => return Err(RedisError::String(format!("failed to decode quota: {err}"))),
+        };
+
+        Ok(quota)
+    }
+
+    fn rdb_save(&mut self, rdb: &mut RdbSaveIo) {
+        self.gc(now());
+
+        match bincode::encode_to_vec(&*self, BINCODE_CONFIG) {
+            Ok(buf) => {
+                rdb.save_slice(buf);
             }
-
-            let Ok(buffer) = raw::load_string_buffer(module) else {
-                return std::ptr::null_mut();
-            };
-
-            let quota: Quota = match bincode::decode_from_slice(buffer.as_ref(), bincode::config::standard()) {
-                Ok((v, _)) => v,
-                Err(_) => return std::ptr::null_mut(),
-            };
-
-            if quota.leases.is_empty() {
-                std::ptr::null_mut()
-            } else {
-                Box::into_raw(Box::new(quota)).cast::<libc::c_void>()
+            Err(err) => {
+                rdb.log_warning(format!("failed to encode: {err}"));
             }
-        })),
-        rdb_save: Some(extern_fn!(|module: *mut RedisModuleIO, value: *mut libc::c_void| {
-            let quota = unsafe { value.cast::<Quota>().as_mut().expect("null pointer") };
-            quota.gc(utils::now());
-            if !quota.leases.is_empty() {
-                let Ok(buf) = bincode::encode_to_vec(&*quota, bincode::config::standard()) else {
-                    return;
-                };
+        }
+    }
 
-                raw::save_slice(module, &buf);
-            }
-        })),
-        aof_rewrite: Some(extern_fn!(|module: *mut RedisModuleIO,
-                                      key: *mut RedisModuleString,
-                                      value: *mut libc::c_void| {
-            let key = RedisString::create_from_slice(std::ptr::null_mut(), RedisString::string_as_slice(key));
+    fn aof_rewrite(&mut self, aof: &mut AofRewriteIo, key: RedisString) -> RedisResult<()> {
+        self.gc(utils::now());
+        if self.leases.is_empty() {
+            return Ok(());
+        }
 
-            let quota = unsafe { value.cast::<Quota>().as_mut().expect("null pointer") };
-            quota.gc(utils::now());
-            if quota.leases.is_empty() {
-                return;
-            }
-            let emit_aof = unsafe { raw::RedisModule_EmitAOF };
-            let Some(emit_aof) = emit_aof else {
-                return;
-            };
+        for lease in self.leases.values() {
+            aof.emit_command(c"quota.restore")
+                .arg(&*key)
+                .args(lease.restore_args())
+                .dispatch()?;
+        }
 
-            for lease in quota.leases.values() {
-                let restore_args = lease
-                    .restore_args()
-                    .map(|a| RedisString::create_from_slice(std::ptr::null_mut(), a.as_bytes()))
-                    .collect::<Vec<_>>();
-                let mut inner_args: Vec<_> = std::iter::once(key.inner)
-                    .chain(restore_args.iter().map(|s| s.inner))
-                    .collect();
+        Ok(())
+    }
 
-                redis_module::logging::log_io_error(module, RedisLogLevel::Warning, "calling emit_aof");
-
-                unsafe {
-                    emit_aof(
-                        module,
-                        c"quota.restore".as_ptr(),
-                        raw::FMT,
-                        inner_args.as_mut_ptr(),
-                        inner_args.len(),
-                    )
-                };
-            }
-        })),
-        free: Some(extern_fn!(|ptr: *mut libc::c_void| {
-            drop(unsafe { Box::from_raw(ptr.cast::<Quota>()) });
-        })),
-        mem_usage: Some(extern_fn!(|ptr: *const libc::c_void| {
-            let quota = unsafe { ptr.cast::<Quota>().as_ref().expect("null pointer") };
-
-            quota.deep_size_of()
-        })),
-        digest: None,
-        aux_load: None,
-        aux_save: None,
-        aux_save2: None,
-        aux_save_triggers: 0,
-        free_effort: None,
-        unlink: None,
-        copy: Some(extern_fn!(|_fromkey: *mut RedisModuleString,
-                               _tokey: *mut RedisModuleString,
-                               value: *const libc::c_void| {
-            let quota = unsafe { value.cast::<Quota>().as_ref().expect("null pointer") };
-            Box::into_raw(Box::new(quota.clone())).cast::<libc::c_void>()
-        })),
-        copy2: None,
-        defrag: None,
-        free_effort2: None,
-        mem_usage2: None,
-        unlink2: None,
-    },
-);
+    fn mem_usage(&self) -> usize {
+        self.deep_size_of()
+    }
+}
 
 enum QuotaMutRef<'a> {
     Owned(Quota),
@@ -224,7 +183,7 @@ fn quota_scope(
     } else {
         let expires = quota.expires_at();
         if let QuotaMutRef::Owned(o) = quota {
-            key.set_value(&QUOTA_TYPE, o)?;
+            key.set(o)?;
         }
 
         if let Some(seconds) = expires.map(|ex| ex.get() - now.get()) {
@@ -237,34 +196,62 @@ fn quota_scope(
     ret
 }
 
-#[command({
-    name: "quota.lease",
-    summary: "aquire a new lease",
-    complexity: "O(log(N) + D): Where N is the number of pending leases and D is the number of dimentions.",
-    flags: [Write, DenyOOM, Fast],
-    arity: -7,
-    key_spec: [
-        {
-            flags: [ReadWrite, Access, Update],
-            begin_search: Index({ index: 1 }),
-            find_keys: Range({ last_key: 0, steps: 1, limit: 0 }),
-        }
-    ]
-})]
-fn quota_lease(ctx: &Context, args: Vec<RedisString>) -> RedisResult {
+#[redis_command(
+    name = "quota.lease",
+    summary = "aquire a new lease",
+    complexity = "O(log(N) + D): Where N is the number of pending leases and D is the number of dimentions.",
+    flags(Write, DenyOOM, Fast),
+    arity = -7,
+    key_spec(
+        flags(ReadWrite, Access, Update),
+        begin_search(index = 1),
+        find_keys(range(last_key = 1, steps = 1, limit = 1))
+    ),
+    arg(
+        name = "KEY",
+        kind = Key,
+        key_spec_index = 0,
+    ),
+    arg(
+        name = "ID",
+        kind = String,
+    ),
+    arg(
+        name = "QTY",
+        kind = Integer,
+    ),
+    arg(
+        name = "TTL",
+        kind = Integer,
+    ),
+    arg(
+        name = "dim_limit",
+        kind = Block,
+        flags = 2,
+        arg(
+            name = "DIM",
+            kind = String,
+        ),
+        arg(
+            name = "LIMIT",
+            kind = Integer,
+        ),
+    )
+)]
+fn quota_lease(ctx: &Context, args: CommandArgs) -> RedisResult {
     let mut args = args.into_iter().skip(1).peekable();
     let resource = args.next_arg()?;
     let key = ctx.open_key_writable(&resource);
 
-    let quota = if let Some(value) = key.get_value::<Quota>(&QUOTA_TYPE)? {
+    let quota = if let Some(value) = key.get::<Quota>()? {
         QuotaMutRef::Ref(value)
     } else {
         QuotaMutRef::Owned(Quota::default())
     };
 
     quota_scope(&key, quota, |quota, now| {
-        let key = Str::from(args.next_str()?);
-        if quota.leases.contains_key(&key) {
+        let lease_id = Str::from(args.next_str()?);
+        if quota.leases.contains_key(&lease_id) {
             return Err(RedisError::Str("LEASE_ALREADY_EXISTS"));
         }
 
@@ -293,7 +280,7 @@ fn quota_lease(ctx: &Context, args: Vec<RedisString>) -> RedisResult {
         }
 
         let lease = Lease {
-            key,
+            id: lease_id,
             dims,
             expires_at,
             qty,
@@ -309,34 +296,30 @@ fn quota_lease(ctx: &Context, args: Vec<RedisString>) -> RedisResult {
     })
 }
 
-#[command({
-    name: "quota.restore",
-    summary: "restore a lease (used by aof)",
-    complexity: "O(log(N) + D): Where N is the number of pending leases and D is the number of dimentions.",
-    flags: [Write, DenyOOM, Fast],
-    arity: -7,
-    key_spec: [
-        {
-            flags: [ReadWrite, Access, Update],
-            begin_search: Index({ index: 1 }),
-            find_keys: Range({ last_key: 0, steps: 1, limit: 0 }),
-        }
-    ]
-})]
-fn quota_restore(ctx: &Context, args: Vec<RedisString>) -> RedisResult {
+#[redis_command(
+    name = "quota.restore",
+    flags(Internal),
+    arity = -7,
+    key_spec(
+        flags(ReadWrite, Access, Update),
+        begin_search(index = 1),
+        find_keys(range(last_key = 1, steps = 1, limit = 1)),
+    )
+)]
+fn quota_restore(ctx: &Context, args: CommandArgs) -> RedisResult {
     let mut args = args.into_iter().skip(1).peekable();
     let resource = args.next_arg()?;
     let key = ctx.open_key_writable(&resource);
 
-    let quota = if let Some(value) = key.get_value::<Quota>(&QUOTA_TYPE)? {
+    let quota = if let Some(value) = key.get::<Quota>()? {
         QuotaMutRef::Ref(value)
     } else {
         QuotaMutRef::Owned(Quota::default())
     };
 
     quota_scope(&key, quota, |quota, now| {
-        let key = Str::from(args.next_str()?);
-        quota.remove_lease(&key);
+        let lease_id = Str::from(args.next_str()?);
+        quota.remove_lease(&lease_id);
 
         let qty = args.next_u64()?;
         let expires_at = if let Some(expires_at) = NonZeroU64::new(args.next_u64()?) {
@@ -357,7 +340,7 @@ fn quota_restore(ctx: &Context, args: Vec<RedisString>) -> RedisResult {
         quota.insert_lease(Lease {
             dims,
             expires_at,
-            key,
+            id: lease_id,
             qty,
         });
 
@@ -365,26 +348,37 @@ fn quota_restore(ctx: &Context, args: Vec<RedisString>) -> RedisResult {
     })
 }
 
-#[command({
-    name: "quota.renew",
-    summary: "renew a previously allocated lease",
-    complexity: "O(log(N)): Where N is the number of pending leases.",
-    flags: [Write, DenyOOM],
-    arity: 4,
-    key_spec: [
-        {
-            flags: [ReadWrite, Access, Update],
-            begin_search: Index({ index: 1 }),
-            find_keys: Range({ last_key: 1, steps: 1, limit: 1 }),
-        }
-    ]
-})]
-fn quota_renew(ctx: &Context, args: Vec<RedisString>) -> RedisResult {
+#[redis_command(
+    name = "quota.renew",
+    summary = "renew a previously allocated lease",
+    complexity = "O(log(N)): Where N is the number of pending leases.",
+    flags(Write, DenyOOM),
+    arity = 4,
+    key_spec(
+        flags(ReadWrite, Access, Update),
+        begin_search(index = 1),
+        find_keys(range(last_key = 1, steps = 1, limit = 1)),
+    ),
+    arg(
+        name = "KEY",
+        kind = Key,
+        key_spec_index = 0,
+    ),
+    arg(
+        name = "ID",
+        kind = String,
+    ),
+    arg(
+        name = "TTL",
+        kind = Integer,
+    ),
+)]
+fn quota_renew(ctx: &Context, args: CommandArgs) -> RedisResult {
     let mut args = args.into_iter().skip(1).peekable();
     let resource = args.next_arg()?;
     let key = ctx.open_key_writable(&resource);
 
-    let Some(quota) = key.get_value::<Quota>(&QUOTA_TYPE)? else {
+    let Some(quota) = key.get::<Quota>()? else {
         return Ok(RedisValue::Integer(0));
     };
 
@@ -417,26 +411,37 @@ fn quota_renew(ctx: &Context, args: Vec<RedisString>) -> RedisResult {
     })
 }
 
-#[command({
-    name: "quota.renew_at",
-    summary: "renew a previously allocated lease",
-    complexity: "O(log(N)): Where N is the number of pending leases.",
-    flags: [Write, DenyOOM],
-    arity: 4,
-    key_spec: [
-        {
-            flags: [ReadWrite, Access, Update],
-            begin_search: Index({ index: 1 }),
-            find_keys: Range({ last_key: 1, steps: 1, limit: 1 }),
-        }
-    ]
-})]
-fn quota_renew_at(ctx: &Context, args: Vec<RedisString>) -> RedisResult {
+#[redis_command(
+    name = "quota.renew_at",
+    summary = "renew a previously allocated lease",
+    complexity = "O(log(N)): Where N is the number of pending leases.",
+    flags(Write, DenyOOM),
+    arity = 4,
+    key_spec(
+        flags(ReadWrite, Access, Update),
+        begin_search(index = 1),
+        find_keys(range(last_key = 1, steps = 1, limit = 1)),
+    ),
+    arg(
+        name = "KEY",
+        kind = Key,
+        key_spec_index = 0,
+    ),
+    arg(
+        name = "ID",
+        kind = String,
+    ),
+    arg(
+        name = "EXPIRY",
+        kind = Integer,
+    ),
+)]
+fn quota_renew_at(ctx: &Context, args: CommandArgs) -> RedisResult {
     let mut args = args.into_iter().skip(1).peekable();
     let resource = args.next_arg()?;
     let key = ctx.open_key_writable(&resource);
 
-    let Some(quota) = key.get_value::<Quota>(&QUOTA_TYPE)? else {
+    let Some(quota) = key.get::<Quota>()? else {
         return Ok(RedisValue::Integer(0));
     };
 
@@ -465,26 +470,33 @@ fn quota_renew_at(ctx: &Context, args: Vec<RedisString>) -> RedisResult {
     })
 }
 
-#[command({
-    name: "quota.commit",
-    summary: "commits a previously allocated lease",
-    complexity: "O(log(N)): Where N is the number of pending leases.",
-    flags: [Write, DenyOOM],
-    arity: 3,
-    key_spec: [
-        {
-            flags: [ReadWrite, Access, Update],
-            begin_search: Index({ index: 1 }),
-            find_keys: Range({ last_key: 1, steps: 1, limit: 1 }),
-        }
-    ]
-})]
-fn quota_commit(ctx: &Context, args: Vec<RedisString>) -> RedisResult {
+#[redis_command(
+    name = "quota.commit",
+    summary = "commits a previously allocated lease",
+    complexity = "O(log(N)): Where N is the number of pending leases.",
+    flags(Write, DenyOOM),
+    arity = 3,
+    key_spec(
+        flags(ReadWrite, Access, Update),
+        begin_search(index = 1),
+        find_keys(range(last_key = 1, steps = 1, limit = 1)),
+    ),
+    arg(
+        name = "KEY",
+        kind = Key,
+        key_spec_index = 0,
+    ),
+    arg(
+        name = "ID",
+        kind = String,
+    ),
+)]
+fn quota_commit(ctx: &Context, args: CommandArgs) -> RedisResult {
     let mut args = args.into_iter().skip(1).peekable();
     let resource = args.next_arg()?;
     let key = ctx.open_key_writable(&resource);
 
-    let Some(quota) = key.get_value::<Quota>(&QUOTA_TYPE)? else {
+    let Some(quota) = key.get::<Quota>()? else {
         return Ok(RedisValue::Integer(0));
     };
 
@@ -500,26 +512,33 @@ fn quota_commit(ctx: &Context, args: Vec<RedisString>) -> RedisResult {
     })
 }
 
-#[command({
-    name: "quota.free",
-    summary: "free a previouly allocated lease",
-    complexity: "O(log(N) + D): Where N is the number of pending leases and D is the number of dimentions.",
-    flags: [Write, DenyOOM],
-    arity: 3,
-    key_spec: [
-        {
-            flags: [ReadWrite, Access, Update],
-            begin_search: Index({ index: 1 }),
-            find_keys: Range({ last_key: 1, steps: 1, limit: 1 }),
-        }
-    ]
-})]
-fn quota_free(ctx: &Context, args: Vec<RedisString>) -> RedisResult {
+#[redis_command(
+    name = "quota.free",
+    summary = "free a previouly allocated lease",
+    complexity = "O(log(N) + D): Where N is the number of pending leases and D is the number of dimentions.",
+    flags(Write, DenyOOM),
+    arity = 3,
+    key_spec(
+        flags(ReadWrite, Access, Update),
+        begin_search(index = 1),
+        find_keys(range(last_key = 1, steps = 1, limit = 1)),
+    ),
+    arg(
+        name = "KEY",
+        kind = Key,
+        key_spec_index = 0,
+    ),
+    arg(
+        name = "ID",
+        kind = String,
+    ),
+)]
+fn quota_free(ctx: &Context, args: CommandArgs) -> RedisResult {
     let mut args = args.into_iter().skip(1).peekable();
     let resource = args.next_arg()?;
     let key = ctx.open_key_writable(&resource);
 
-    let Some(quota) = key.get_value::<Quota>(&QUOTA_TYPE)? else {
+    let Some(quota) = key.get::<Quota>()? else {
         return Ok(RedisValue::Integer(0));
     };
 
@@ -572,7 +591,7 @@ impl Quota {
         }
 
         if let Some(expiry_ts) = lease.expires_at {
-            self.expiry_timeouts.remove(&(expiry_ts, lease.key));
+            self.expiry_timeouts.remove(&(expiry_ts, lease.id));
         }
 
         true
@@ -585,10 +604,10 @@ impl Quota {
         }
 
         if let Some(expires_ts) = lease.expires_at {
-            self.expiry_timeouts.insert((expires_ts, lease.key.clone()));
+            self.expiry_timeouts.insert((expires_ts, lease.id.clone()));
         }
 
-        self.leases.insert(lease.key.clone(), lease);
+        self.leases.insert(lease.id.clone(), lease);
     }
 
     fn renew_lease(&mut self, id: &str, now: NonZeroU64, expires_at: Option<NonZeroU64>) -> bool {
@@ -605,11 +624,11 @@ impl Quota {
         }
 
         if let Some(expires_at) = lease.expires_at {
-            self.expiry_timeouts.remove(&(expires_at, lease.key.clone()));
+            self.expiry_timeouts.remove(&(expires_at, lease.id.clone()));
         }
 
         if let Some(expires_at) = expires_at {
-            self.expiry_timeouts.insert((expires_at, lease.key.clone()));
+            self.expiry_timeouts.insert((expires_at, lease.id.clone()));
         }
 
         lease.expires_at = expires_at;
@@ -617,3 +636,11 @@ impl Quota {
         true
     }
 }
+
+#[redis_module(
+    name = "quota",
+    version = 1,
+    types(Quota),
+    commands(quota_free, quota_commit, quota_renew_at, quota_renew, quota_restore, quota_lease,)
+)]
+pub struct QuotaModule;

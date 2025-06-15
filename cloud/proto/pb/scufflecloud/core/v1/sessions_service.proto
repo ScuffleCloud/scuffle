@@ -79,6 +79,7 @@ service SessionsService {
             post: "/session-requests/{id}/complete"
         };
     }
+
     rpc RefreshUserSession(RefreshUserSessionRequest) returns (NewUserSession) {
         option (tinc.method).endpoint = {
             post: "/sessions/refresh"

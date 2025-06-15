@@ -2,19 +2,19 @@
 
 -- Real users
 CREATE TABLE "users" (
-	"id" UUID PRIMARY KEY,
-	"preferred_name" VARCHAR(255),
-	"first_name" VARCHAR(255),
-	"last_name" VARCHAR(255),
-	"password_hash" VARCHAR(255), -- Nullable for users who register via external providers
+    "id" UUID PRIMARY KEY,
+    "preferred_name" VARCHAR(255),
+    "first_name" VARCHAR(255),
+    "last_name" VARCHAR(255),
+    "password_hash" VARCHAR(255), -- Nullable for users who register via external providers
     "primary_email" VARCHAR(255) NOT NULL
 );
 
 -- User emails
 -- There can be multiple emails per user, but only one can be primary.
 CREATE TABLE "user_emails" (
-	"email" VARCHAR(255) PRIMARY KEY, -- should be normalized (to ascii lowercase?)
-	"user_id" UUID NOT NULL,
+    "email" VARCHAR(255) PRIMARY KEY, -- should be normalized (to ascii lowercase?)
+    "user_id" UUID NOT NULL,
     "created_at" TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
 
@@ -35,10 +35,10 @@ CREATE INDEX ON "user_emails"("user_id");
 --
 -- TODO: Research required for workspaces API.
 CREATE TABLE "user_google_accounts" (
-	"id" VARCHAR(255) PRIMARY KEY, -- Research required
-	"user_id" UUID NOT NULL,
-	"access_token" VARCHAR(255) NOT NULL,
-	"refresh_token" VARCHAR(255) NOT NULL,
+    "id" VARCHAR(255) PRIMARY KEY, -- Research required
+    "user_id" UUID NOT NULL,
+    "access_token" VARCHAR(255) NOT NULL,
+    "refresh_token" VARCHAR(255) NOT NULL,
     -- workspace and role within the workspace...
     "created_at" TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
@@ -105,9 +105,9 @@ CREATE INDEX ON "user_sessions"("token_id");
 --- MFA (Multi-Factor Authentication)
 
 CREATE TABLE "mfa_totps" (
-	"id" UUID PRIMARY KEY,
-	"user_id" UUID NOT NULL,
-	"secret" VARCHAR(255) NOT NULL
+    "id" UUID PRIMARY KEY,
+    "user_id" UUID NOT NULL,
+    "secret" VARCHAR(255) NOT NULL
 );
 
 ALTER TABLE "mfa_totps"
@@ -117,10 +117,10 @@ ON DELETE CASCADE;
 CREATE INDEX ON "mfa_totps"("user_id");
 
 CREATE TABLE "mfa_webauthn_pks" (
-	"id" UUID PRIMARY KEY,
-	"user_id" UUID NOT NULL,
+    "id" UUID PRIMARY KEY,
+    "user_id" UUID NOT NULL,
     "algorithm" CRYPTO_ALGORITHM NOT NULL,
-	"pk_id" BYTEA NOT NULL,
+    "pk_id" BYTEA NOT NULL,
     "pk_data" BYTEA NOT NULL,
     "current_challenge" BYTEA,
     "current_challenge_expires_at" TIMESTAMPTZ
@@ -135,9 +135,9 @@ CREATE INDEX ON "mfa_webauthn_pks"("user_id");
 --- Organizations and Projects
 
 CREATE TABLE "organizations" (
-	"id" UUID PRIMARY KEY,
-	"name" VARCHAR(255) NOT NULL,
-	"owner_id" UUID NOT NULL
+    "id" UUID PRIMARY KEY,
+    "name" VARCHAR(255) NOT NULL,
+    "owner_id" UUID NOT NULL
 );
 
 -- Explicitly not cascading on delete.
@@ -145,9 +145,9 @@ ALTER TABLE "organizations"
 ADD FOREIGN KEY("owner_id") REFERENCES "users"("id");
 
 CREATE TABLE "projects" (
-	"id" UUID PRIMARY KEY,
-	"name" VARCHAR(255) NOT NULL,
-	"organization_id" UUID NOT NULL
+    "id" UUID PRIMARY KEY,
+    "name" VARCHAR(255) NOT NULL,
+    "organization_id" UUID NOT NULL
 );
 
 ALTER TABLE "projects"
@@ -204,11 +204,11 @@ ON DELETE CASCADE;
 CREATE INDEX ON "role_policies"("policy_id", "role_id");
 
 CREATE TABLE "organization_members" (
-	"organization_id" UUID NOT NULL,
-	"user_id" UUID NOT NULL,
+    "organization_id" UUID NOT NULL,
+    "user_id" UUID NOT NULL,
     "invited_by_id" UUID,
-	"inline_policy" JSONB,
-	PRIMARY KEY("organization_id", "user_id")
+    "inline_policy" JSONB,
+    PRIMARY KEY("organization_id", "user_id")
 );
 
 ALTER TABLE "organization_members"
@@ -241,11 +241,11 @@ ON DELETE CASCADE;
 CREATE INDEX ON "organization_member_policies"("policy_id");
 
 CREATE TABLE "service_accounts" (
-	"id" UUID PRIMARY KEY,
-	"name" VARCHAR(255) NOT NULL,
-	"organization_id" UUID NOT NULL,
-	"project_id" UUID,
-	"inline_policy" JSONB
+    "id" UUID PRIMARY KEY,
+    "name" VARCHAR(255) NOT NULL,
+    "organization_id" UUID NOT NULL,
+    "project_id" UUID,
+    "inline_policy" JSONB
 );
 
 ALTER TABLE "service_accounts"
@@ -255,12 +255,12 @@ ALTER TABLE "service_accounts"
 ADD FOREIGN KEY("organization_id") REFERENCES "organizations"("id");
 
 CREATE TABLE "service_account_tokens" (
-	"id" UUID PRIMARY KEY,
-	"active" BOOLEAN NOT NULL,
-	"service_account_id" UUID NOT NULL,
-	"token" VARCHAR(255) NOT NULL,
-	"inline_policy" JSONB,
-	"expires_at" TIMESTAMPTZ
+    "id" UUID PRIMARY KEY,
+    "active" BOOLEAN NOT NULL,
+    "service_account_id" UUID NOT NULL,
+    "token" VARCHAR(255) NOT NULL,
+    "inline_policy" JSONB,
+    "expires_at" TIMESTAMPTZ
 );
 
 ALTER TABLE "service_account_tokens"
@@ -286,11 +286,11 @@ CREATE INDEX ON "service_account_policies"("policy_id", "service_account_id");
 -- This is used for user registration requests via email and adding new email addresses to existing accounts.
 -- When user_id is set, it indicates that the request is for an existing user to add a new email address.
 CREATE TABLE "email_registration_requests" (
-	"id" UUID PRIMARY KEY,
-	"user_id" UUID,
-	"email" VARCHAR(255) NOT NULL,
-	"token" VARCHAR(255) NOT NULL,
-	"expires_at" TIMESTAMPTZ NOT NULL
+    "id" UUID PRIMARY KEY,
+    "user_id" UUID,
+    "email" VARCHAR(255) NOT NULL,
+    "token" VARCHAR(255) NOT NULL,
+    "expires_at" TIMESTAMPTZ NOT NULL
 );
 
 ALTER TABLE "email_registration_requests"
@@ -301,11 +301,11 @@ ADD FOREIGN KEY("user_id") REFERENCES "users"("id");
 -- only be used for that selected user.
 CREATE TABLE "organization_invites" (
     "id" UUID PRIMARY KEY,
-	"user_id" UUID,
-	"organization_id" UUID NOT NULL,
-	"email" VARCHAR(255) NOT NULL,
+    "user_id" UUID,
+    "organization_id" UUID NOT NULL,
+    "email" VARCHAR(255) NOT NULL,
     "invited_by_id" UUID NOT NULL,
-	"expiries_at" TIMESTAMPTZ
+    "expiries_at" TIMESTAMPTZ
 );
 
 ALTER TABLE "organization_invites"

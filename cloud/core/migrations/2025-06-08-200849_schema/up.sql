@@ -68,7 +68,7 @@ CREATE INDEX ON "user_session_requests"("code");
 
 -- https://www.iana.org/assignments/cose/cose.xhtml#algorithms
 CREATE TYPE "crypto_algorithm" AS ENUM (
-    'EDDSA', -- Ed25519 -- Deprecated
+    'EDDSA', -- Deprecated
     'ES256', -- ECDSA w/ SHA-256 -- Deprecated
     'RS256', -- RSASSA-PKCS1-v1_5 using SHA-256 -- Not recommended
     'ESP512', -- ECDSA using P-521 curve and SHA-512 -- Recommended

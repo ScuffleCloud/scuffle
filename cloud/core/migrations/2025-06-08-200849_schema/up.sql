@@ -49,12 +49,41 @@ ON DELETE CASCADE;
 
 CREATE INDEX ON "user_google_accounts"("user_id");
 
+-- This table contains user session requests which precede a full user session.
+-- This is usually used for the CLI application.
+CREATE TABLE "user_session_requests" (
+    "id" UUID PRIMARY KEY,
+    "device_name" VARCHAR(255) NOT NULL, -- Name of the device which is requesting the session
+    "device_ip" INET NOT NULL,
+    "code" VARCHAR(6) NOT NULL UNIQUE, -- 6 digits code
+    "approved_by" UUID, -- Only set if this request was approved by a user.
+    "expires_at" TIMESTAMPTZ NOT NULL
+);
+
+ALTER TABLE "user_session_requests"
+ADD FOREIGN KEY("approved_by") REFERENCES "users"("id")
+ON DELETE CASCADE;
+
+CREATE INDEX ON "user_session_requests"("code");
+
+-- https://www.iana.org/assignments/cose/cose.xhtml#algorithms
+CREATE TYPE "crypto_algorithm" AS ENUM (
+    'EDDSA', -- Ed25519 -- Deprecated
+    'ES256', -- ECDSA w/ SHA-256 -- Deprecated
+    'RS256', -- RSASSA-PKCS1-v1_5 using SHA-256 -- Not recommended
+    'ESP512', -- ECDSA using P-521 curve and SHA-512 -- Recommended
+    'ESP384', -- ECDSA using P-384 curve and SHA-384 -- Recommended
+    'ESP256' -- ECDSA using P-256 curve and SHA-256 -- Recommended
+    -- ...
+);
+
 -- A combination of device and user.
 -- "last_used_at" and "last_ip" is updated every time this session is reactivated.
 CREATE TABLE "user_sessions" (
-	"user_id" UUID NOT NULL,
-	"device_id" UUID NOT NULL,
-	"device_public_key" VARCHAR(255) NOT NULL, -- TODO: research webauthn format
+    "user_id" UUID NOT NULL,
+    "device_id" UUID NOT NULL,
+    "device_algorithm" CRYPTO_ALGORITHM NOT NULL,
+    "device_pk_data" BYTEA NOT NULL,
     "last_used_at" TIMESTAMPTZ NOT NULL,
     "last_ip" INET NOT NULL,
     "token" VARCHAR(255),
@@ -73,24 +102,33 @@ CREATE INDEX ON "user_sessions"("user_id");
 
 --- MFA (Multi-Factor Authentication)
 
--- Different factor types for MFA
-CREATE TYPE "mfa_factor_type" AS ENUM (
-	'totp',
-	'passkey'
-);
-
-CREATE TABLE "mfa_factors" (
+CREATE TABLE "mfa_totps" (
 	"id" UUID PRIMARY KEY,
 	"user_id" UUID NOT NULL,
-	"type" MFA_FACTOR_TYPE NOT NULL,
-	"secret" VARCHAR(255) NOT NULL -- TODO: research format
+	"secret" VARCHAR(255) NOT NULL
 );
 
-ALTER TABLE "mfa_factors"
+ALTER TABLE "mfa_totps"
 ADD FOREIGN KEY("user_id") REFERENCES "users"("id")
 ON DELETE CASCADE;
 
-CREATE INDEX ON "mfa_factors"("user_id");
+CREATE INDEX ON "mfa_totps"("user_id");
+
+CREATE TABLE "mfa_webauthn_pks" (
+	"id" UUID PRIMARY KEY,
+	"user_id" UUID NOT NULL,
+    "algorithm" CRYPTO_ALGORITHM NOT NULL,
+	"pk_id" BYTEA NOT NULL,
+    "pk_data" BYTEA NOT NULL,
+    "current_challenge" BYTEA,
+    "current_challenge_expires_at" TIMESTAMPTZ
+);
+
+ALTER TABLE "mfa_webauthn_pks"
+ADD FOREIGN KEY("user_id") REFERENCES "users"("id")
+ON DELETE CASCADE;
+
+CREATE INDEX ON "mfa_webauthn_pks"("user_id");
 
 --- Organizations and Projects
 

@@ -6,13 +6,13 @@ import "google/protobuf/descriptor.proto";
 import "tinc/annotations.proto";
 
 extend google.protobuf.FieldOptions {
-    ConstraintsString constraints_string = 5001;
+    StringConstraints string_constraints = 5001;
 }
 
-message ConstraintsString {
+message StringConstraints {
     bool password = 1 [(tinc.predefined).cel = {
         message: "must be at least 8 characters long, contain lowercase, uppercase as well as special characters",
-        expression: "this && input.size() >= 8 && input.size() <= 100 && input.matches('[a-z]') && input.matches('[A-Z]') && input.matches('[^a-zA-Z]')",
-        jsonschemas: 'this ? { "minLength": 8, "maxLength": 100, "allOf": [ { "pattern": "[a-z]" }, { "pattern": "[A-Z]" }, { "pattern": "[^a-zA-Z]" } ] } : {}',
+        expression: "this && input.size() >= 8 && input.size() <= 200 && input.matches('[a-z]') && input.matches('[A-Z]') && input.matches('[^a-zA-Z]')",
+        jsonschemas: 'this ? { "minLength": 8, "maxLength": 200, "allOf": [ { "pattern": "[a-z]" }, { "pattern": "[A-Z]" }, { "pattern": "[^a-zA-Z]" } ] } : {}',
     }];
 }

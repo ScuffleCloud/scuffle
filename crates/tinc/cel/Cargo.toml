@@ -33,6 +33,7 @@ scuffle-workspace-hack.workspace = true
 thiserror = "2"
 url = "2"
 uuid = "1"
+ulid = "1"
 
 [dev-dependencies]
 insta = "1.43"

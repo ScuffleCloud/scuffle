@@ -10,6 +10,7 @@ readme = "README.md"
 publish = false
 
 [dependencies]
+prost = "0.13.5"
 scuffle-workspace-hack.workspace = true
 tinc = { path = "../../crates/tinc" }
 

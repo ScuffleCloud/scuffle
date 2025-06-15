@@ -2,20 +2,211 @@ syntax = "proto3";
 
 package scufflecloud.core.v1;
 
+import "google/protobuf/empty.proto";
+import "google/protobuf/timestamp.proto";
 import "tinc/annotations.proto";
 
+import "scufflecloud/core/v1/common.proto";
+import "scufflecloud/core/v1/constraints.proto";
+
 service SessionsService {
-    rpc CreateSession(CreateSessionRequest) returns (CreateSessionResponse) {
+    rpc RegisterWithEmail(RegisterWithEmailRequest) returns (google.protobuf.Empty) {
         option (tinc.method).endpoint = {
-            post: "/sessions"
+            post: "/users"
+        };
+    }
+    rpc CompleteRegisterWithEmail(CompleteRegisterWithEmailRequest) returns (NewUserSession) {
+        option (tinc.method).endpoint = {
+            post: "/users/complete"
+        };
+    }
+
+    rpc LoginWithEmail(LoginWithEmailRequest) returns (LoginWithEmailResponse) {
+        option (tinc.method).endpoint = {
+            post: "/sessions/email"
+        };
+    }
+    rpc CompleteLoginWithEmail(CompleteLoginWithEmailRequest) returns (NewUserSession) {
+        option (tinc.method).endpoint = {
+            post: "/sessions/email/complete"
+        };
+    }
+
+    rpc LoginWithExternalProvider(LoginWithExternalProviderRequest) returns (LoginWithExternalProviderResponse) {
+        option (tinc.method).endpoint = {
+            post: "/sessions/external"
+        };
+    }
+    rpc CompleteLoginWithExternalProvider(CompleteLoginWithExternalProviderRequest) returns (NewUserSession) {
+        option (tinc.method).endpoint = {
+            post: "/sessions/external/complete"
+        };
+    }
+
+    rpc LoginWithWebauthnPublicKey(LoginWithWebauthnPublicKeyRequest) returns (LoginWithWebauthnPublicKeyResponse) {
+        option (tinc.method).endpoint = {
+            post: "/sessions/webauthn"
+        };
+    }
+    rpc CompleteLoginWithWebauthnPublicKey(CompleteLoginWithWebauthnPublicKeyRequest) returns (NewUserSession) {
+        option (tinc.method).endpoint = {
+            post: "/sessions/webauthn/complete"
+        };
+    }
+
+    rpc CreateUserSessionRequest(CreateUserSessionRequestRequest) returns (UserSessionRequest) {
+        option (tinc.method).endpoint = {
+            post: "/session-requests"
+        };
+    }
+    rpc GetUserSessionRequest(GetUserSessionRequestRequest) returns (UserSessionRequest) {
+        option (tinc.method).endpoint = {
+            get: "/session-requests/{id}"
+        };
+    }
+    rpc GetUserSessionRequestByCode(GetUserSessionRequestByCodeRequest) returns (UserSessionRequest) {
+        option (tinc.method).endpoint = {
+            get: "/session-requests/code/{code}"
+        };
+    }
+    rpc ApproveUserSessionRequestByCode(ApproveUserSessionRequestByCodeRequest) returns (UserSessionRequest) {
+        option (tinc.method).endpoint = {
+            patch: "/session-requests/code/{code}/approve"
+        };
+    }
+    rpc CompleteUserSessionRequest(CompleteUserSessionRequestRequest) returns (NewUserSession) {
+        option (tinc.method).endpoint = {
+            post: "/session-requests/{id}/complete"
+        };
+    }
+    rpc RefreshUserSession(RefreshUserSessionRequest) returns (NewUserSession) {
+        option (tinc.method).endpoint = {
+            post: "/sessions/refresh"
         };
     }
 }
 
-message CreateSessionRequest {
-    string test = 1;
+message Device {
+    CryptoAlgorithm algorithm = 1;
+    bytes public_key_data = 2;
 }
 
-message CreateSessionResponse {
-    string test = 1;
+message UserSession {
+    string user_id = 1;
+    string device_id = 2 [(tinc.field).constraint.string.ulid = true];
+    CryptoAlgorithm device_algorithm = 3;
+    bytes device_public_key_data = 4;
+    google.protobuf.Timestamp last_used_at_utc = 5;
+    string last_ip = 6;
+    // ? last_location = 7;
+    google.protobuf.Timestamp token_expires_at_utc = 8;
+}
+
+message NewUserSession {
+    UserSession session = 1;
+    bytes encrypted_token = 2;
+}
+
+message RegisterWithEmailRequest {
+    CaptchaChallengeResponse captcha = 1;
+    // The email address to register with.
+    string email = 2 [(tinc.field).constraint.string.email = true];
+}
+
+message CompleteRegisterWithEmailRequest {
+    // The token received via email.
+    string token = 1;
+    // The password.
+    string password = 2 [(string_constraints).password = true];
+    Device device = 3;
+}
+
+message LoginWithEmailRequest {
+    CaptchaChallengeResponse captcha = 1;
+    string email = 2 [(tinc.field).constraint.string.email = true];
+}
+
+enum LoginWithEmailOptions {
+    PASSWORD = 0;
+    MAGIC_LINK = 1;
+}
+
+message LoginWithEmailResponse {
+    repeated LoginWithEmailOptions options = 1;
+}
+
+message CompleteLoginWithEmailRequest {
+    LoginWithEmailOptions option = 1;
+    // Based on the option, this is either the password or the magic link token.
+    string secret = 2;
+    Device device = 3;
+}
+
+enum ExternalProvider {
+    // Google
+    GOOGLE = 0;
+}
+
+message LoginWithExternalProviderRequest {
+    ExternalProvider provider = 1;
+}
+
+message LoginWithExternalProviderResponse {
+    string authorization_url = 1;
+}
+
+message CompleteLoginWithExternalProviderRequest {
+    // The code returned by the external provider after the user has authorized the application.
+    string code = 1;
+    // The state returned by the external provider.
+    string state = 2;
+    Device device = 3;
+}
+
+message LoginWithWebauthnPublicKeyRequest {
+    bytes pk_id = 1;
+}
+
+message LoginWithWebauthnPublicKeyResponse {
+    bytes challenge = 1;
+}
+
+// See https://developer.mozilla.org/en-US/docs/Web/API/AuthenticatorAssertionResponse
+message CompleteLoginWithWebauthnPublicKeyRequest {
+    bytes authenticator_data = 1;
+    bytes signature = 2;
+    bytes user_handle = 3;
+}
+
+message CreateUserSessionRequestRequest {
+    string name = 1;
+}
+
+message UserSessionRequest {
+    string id = 1 [(tinc.field).constraint.string.ulid = true];
+    string name = 2;
+    string ip = 3;
+    string approved_by = 4 [(tinc.field).constraint.string.ulid = true];
+    google.protobuf.Timestamp expires_at_utc = 5;
+}
+
+message GetUserSessionRequestRequest {
+    string id = 1 [(tinc.field).constraint.string.ulid = true];
+}
+
+message GetUserSessionRequestByCodeRequest {
+    string code = 1 [(tinc.field).constraint.string.len = 6];
+}
+
+message ApproveUserSessionRequestByCodeRequest {
+    string code = 1 [(tinc.field).constraint.string.len = 6];
+}
+
+message CompleteUserSessionRequestRequest {
+    string id = 1 [(tinc.field).constraint.string.ulid = true];
+    Device device = 2;
+}
+
+message RefreshUserSessionRequest {
+    string device_id = 1 [(tinc.field).constraint.string.ulid = true];
 }

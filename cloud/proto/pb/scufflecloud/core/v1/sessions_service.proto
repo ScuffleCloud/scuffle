@@ -15,7 +15,7 @@ service SessionsService {
             post: "/users"
         };
     }
-    rpc CompleteRegisterWithEmail(CompleteRegisterWithEmailRequest) returns (NewUserSession) {
+    rpc CompleteRegisterWithEmail(CompleteRegisterWithEmailRequest) returns (NewUserSessionToken) {
         option (tinc.method).endpoint = {
             post: "/users/complete"
         };
@@ -26,7 +26,7 @@ service SessionsService {
             post: "/sessions/email"
         };
     }
-    rpc CompleteLoginWithEmail(CompleteLoginWithEmailRequest) returns (NewUserSession) {
+    rpc CompleteLoginWithEmail(CompleteLoginWithEmailRequest) returns (NewUserSessionToken) {
         option (tinc.method).endpoint = {
             post: "/sessions/email/complete"
         };
@@ -37,7 +37,7 @@ service SessionsService {
             post: "/sessions/external"
         };
     }
-    rpc CompleteLoginWithExternalProvider(CompleteLoginWithExternalProviderRequest) returns (NewUserSession) {
+    rpc CompleteLoginWithExternalProvider(CompleteLoginWithExternalProviderRequest) returns (NewUserSessionToken) {
         option (tinc.method).endpoint = {
             post: "/sessions/external/complete"
         };
@@ -48,7 +48,7 @@ service SessionsService {
             post: "/sessions/webauthn"
         };
     }
-    rpc CompleteLoginWithWebauthnPublicKey(CompleteLoginWithWebauthnPublicKeyRequest) returns (NewUserSession) {
+    rpc CompleteLoginWithWebauthnPublicKey(CompleteLoginWithWebauthnPublicKeyRequest) returns (NewUserSessionToken) {
         option (tinc.method).endpoint = {
             post: "/sessions/webauthn/complete"
         };
@@ -74,15 +74,16 @@ service SessionsService {
             patch: "/session-requests/code/{code}/approve"
         };
     }
-    rpc CompleteUserSessionRequest(CompleteUserSessionRequestRequest) returns (NewUserSession) {
+    rpc CompleteUserSessionRequest(CompleteUserSessionRequestRequest) returns (NewUserSessionToken) {
         option (tinc.method).endpoint = {
             post: "/session-requests/{id}/complete"
         };
     }
 
-    rpc RefreshUserSession(RefreshUserSessionRequest) returns (NewUserSession) {
+    // The actual session that gets refreshed is the current.
+    rpc RefreshUserSession(google.protobuf.Empty) returns (NewUserSessionToken) {
         option (tinc.method).endpoint = {
-            post: "/sessions/refresh"
+            put: "/sessions/refresh"
         };
     }
 }
@@ -104,9 +105,10 @@ message Device {
 // }
 
 message NewUserSessionToken {
-    bytes encrypted_token = 1;
-    google.protobuf.Timestamp token_expires_at_utc = 2;
-    google.protobuf.Timestamp session_expires_at_utc = 3;
+    string id = 1 [(tinc.field).constraint.string.ulid = true];
+    bytes encrypted_token = 2;
+    google.protobuf.Timestamp expires_at_utc = 3;
+    google.protobuf.Timestamp session_expires_at_utc = 4;
 }
 
 message RegisterWithEmailRequest {
@@ -207,8 +209,4 @@ message ApproveUserSessionRequestByCodeRequest {
 message CompleteUserSessionRequestRequest {
     string id = 1 [(tinc.field).constraint.string.ulid = true];
     Device device = 2;
-}
-
-message RefreshUserSessionRequest {
-    bytes device_fingerprint = 1;
 }

@@ -1,0 +1,23 @@
+syntax = "proto3";
+
+package scufflecloud.core.v1;
+
+enum CaptchaProvider {
+    // Cloudflare Turnstile
+    TURNSTILE = 0;
+}
+
+message CaptchaChallengeResponse {
+    CaptchaProvider provider = 1;
+    string token = 2;
+}
+
+// https://www.iana.org/assignments/cose/cose.xhtml#algorithms
+enum CryptoAlgorithm {
+    EDDSA = 0; // Ed25519 -- Deprecated
+    ES256 = 1; // ECDSA w/ SHA-256 -- Deprecated
+    RS256 = 2; // RSASSA-PKCS1-v1_5 using SHA-256 -- Not recommended
+    ESP512 = 3; // ECDSA using P-521 curve and SHA-512 -- Recommended
+    ESP384 = 4; // ECDSA using P-384 curve and SHA-384 -- Recommended
+    ESP256 = 5;// ECDSA using P-256 curve and SHA-256 -- Recommended
+}

@@ -497,6 +497,22 @@ impl<'a> CelValue<'a> {
         }
     }
 
+    pub fn cel_is_ulid(value: impl CelValueConv<'a>) -> Result<bool, CelError<'a>> {
+        match value.conv() {
+            CelValue::String(s) => Ok(s.parse::<ulid::Ulid>().is_ok()),
+            CelValue::Bytes(b) => {
+                if b.as_ref().len() == 16 {
+                    Ok(true)
+                } else if let Ok(s) = std::str::from_utf8(b.as_ref()) {
+                    Ok(s.parse::<ulid::Ulid>().is_ok())
+                } else {
+                    Ok(false)
+                }
+            }
+            value => Err(CelError::BadUnaryOperation { op: "isUlid", value }),
+        }
+    }
+
     pub fn cel_is_hostname(value: impl CelValueConv<'a>) -> Result<bool, CelError<'a>> {
         match value.conv() {
             CelValue::String(s) => Ok(matches!(url::Host::parse(&s), Ok(url::Host::Domain(_)))),

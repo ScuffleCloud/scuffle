@@ -210,5 +210,5 @@ message CompleteUserSessionRequestRequest {
 }
 
 message RefreshUserSessionRequest {
-    string device_id = 1 [(tinc.field).constraint.string.ulid = true];
+    bytes device_fingerprint = 1;
 }

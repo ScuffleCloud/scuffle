@@ -578,9 +578,9 @@ message StringConstraints {
             expression: "!this || input.isIpv6()"
             jsonschemas: 'this ? { "format": "ipv6" } : {}'
         }];
-        // Requires the input value to be a valid uuid.
+        // Requires the input value to be a valid UUID.
         bool uuid = 17 [(predefined).cel = {
-            message: "value must be a valid uuid"
+            message: "value must be a valid UUID"
             expression: "!this || input.isUuid()"
             jsonschemas: 'this ? { "format": "uuid" } : {}'
         }];
@@ -595,6 +595,12 @@ message StringConstraints {
             message: "value must be a valid uri"
             expression: "!this || input.isUri()"
             jsonschemas: 'this ? { "format": "uri" } : {}'
+        }];
+        // Requires the input value to be a valid ULID.
+        bool ulid = 20 [(predefined).cel = {
+            message: "value must be a valid ULID"
+            expression: "!this || input.isUlid()"
+            jsonschemas: 'this ? { "pattern": "^[0123456789ABCDEFGHJKMNPQRSTVWXYZabcdefghjkmnpqrstvwxyz]{26}$" } : {}'
         }];
     }
 }

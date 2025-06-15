@@ -86,8 +86,10 @@ CREATE TABLE "user_sessions" (
     "device_pk_data" BYTEA NOT NULL,
     "last_used_at" TIMESTAMPTZ NOT NULL,
     "last_ip" INET NOT NULL,
-    "token" VARCHAR(255),
+    "token_id" UUID UNIQUE,
+    "token" VARCHAR(255) UNIQUE,
     "token_expires_at" TIMESTAMPTZ,
+    "expires_at" TIMESTAMPTZ NOT NULL,
     PRIMARY KEY("user_id", "device_fingerprint")
 );
 
@@ -95,10 +97,12 @@ ALTER TABLE "user_sessions"
 ADD FOREIGN KEY("user_id") REFERENCES "users"("id")
 ON DELETE CASCADE;
 
+CREATE INDEX ON "user_sessions"("user_id");
+
 CREATE INDEX ON "user_sessions"("device_fingerprint")
 WHERE "token" IS NOT NULL;
 
-CREATE INDEX ON "user_sessions"("user_id");
+CREATE INDEX ON "user_sessions"("token_id");
 
 --- MFA (Multi-Factor Authentication)
 

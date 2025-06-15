@@ -81,21 +81,21 @@ CREATE TYPE "crypto_algorithm" AS ENUM (
 -- "last_used_at" and "last_ip" is updated every time this session is reactivated.
 CREATE TABLE "user_sessions" (
     "user_id" UUID NOT NULL,
-    "device_id" UUID NOT NULL,
+    "device_fingerprint" BIT[265] NOT NULL,
     "device_algorithm" CRYPTO_ALGORITHM NOT NULL,
     "device_pk_data" BYTEA NOT NULL,
     "last_used_at" TIMESTAMPTZ NOT NULL,
     "last_ip" INET NOT NULL,
     "token" VARCHAR(255),
     "token_expires_at" TIMESTAMPTZ,
-    PRIMARY KEY("user_id", "device_id")
+    PRIMARY KEY("user_id", "device_fingerprint")
 );
 
 ALTER TABLE "user_sessions"
 ADD FOREIGN KEY("user_id") REFERENCES "users"("id")
 ON DELETE CASCADE;
 
-CREATE INDEX ON "user_sessions"("device_id")
+CREATE INDEX ON "user_sessions"("device_fingerprint")
 WHERE "token" IS NOT NULL;
 
 CREATE INDEX ON "user_sessions"("user_id");

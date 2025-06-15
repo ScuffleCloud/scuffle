@@ -92,20 +92,21 @@ message Device {
     bytes public_key_data = 2;
 }
 
-message UserSession {
-    string user_id = 1;
-    string device_id = 2 [(tinc.field).constraint.string.ulid = true];
-    CryptoAlgorithm device_algorithm = 3;
-    bytes device_public_key_data = 4;
-    google.protobuf.Timestamp last_used_at_utc = 5;
-    string last_ip = 6;
-    // ? last_location = 7;
-    google.protobuf.Timestamp token_expires_at_utc = 8;
-}
+// message UserSession {
+//     string user_id = 1;
+//     bytes device_fingerprint = 2;
+//     CryptoAlgorithm device_algorithm = 3;
+//     bytes device_public_key_data = 4;
+//     google.protobuf.Timestamp last_used_at_utc = 5;
+//     string last_ip = 6;
+//     // ? last_location = 7;
+//     google.protobuf.Timestamp token_expires_at_utc = 8;
+// }
 
-message NewUserSession {
-    UserSession session = 1;
-    bytes encrypted_token = 2;
+message NewUserSessionToken {
+    bytes encrypted_token = 1;
+    google.protobuf.Timestamp token_expires_at_utc = 2;
+    google.protobuf.Timestamp session_expires_at_utc = 3;
 }
 
 message RegisterWithEmailRequest {

@@ -311,7 +311,7 @@ mod tests {
     use crate::ffi::AVCodecContext;
     use crate::io::{Input, Output, OutputOptions};
     use crate::rational::Rational;
-    use crate::{AVChannelOrder, AVCodecID, AVMediaType, AVPixelFormat, AVSampleFormat};
+    use crate::{AVChannelOrder, AVCodecID, AVMediaType, AVPixelFormat, AVSampleFormat, file_path};
 
     #[test]
     fn test_video_encoder_apply() {
@@ -752,7 +752,7 @@ mod tests {
 
     #[test]
     fn test_encoder_encode_video() {
-        let mut input = Input::open("../../assets/avc_aac.mp4").expect("Failed to open input file");
+        let mut input = Input::open(file_path("avc_aac.mp4")).expect("Failed to open input file");
         let streams = input.streams();
         let video_stream = streams.best(AVMediaType::Video).expect("No video stream found");
         let mut decoder = Decoder::new(&video_stream)

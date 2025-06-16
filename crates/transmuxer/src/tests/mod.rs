@@ -11,10 +11,17 @@ use scuffle_mp4::codec::{AudioCodec, VideoCodec};
 use crate::define::{AudioSettings, VideoSettings};
 use crate::{TransmuxResult, Transmuxer};
 
+fn file_path(item: &str) -> PathBuf {
+    if let Some(env) = std::env::var_os("ASSETS_DIR") {
+        PathBuf::from(env).join(item)
+    } else {
+        PathBuf::from(env!("CARGO_MANIFEST_DIR")).join(format!("../../assets/{item}"))
+    }
+}
+
 #[test]
 fn test_transmuxer_avc_aac() {
-    let dir = PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("../../assets");
-    let data = std::fs::read(dir.join("avc_aac.flv").to_str().unwrap()).unwrap();
+    let data = std::fs::read(file_path("avc_aac.flv")).unwrap();
 
     let mut transmuxer = Transmuxer::new();
 
@@ -73,7 +80,7 @@ fn test_transmuxer_avc_aac() {
         writer.write_all(&data.into_bytes()).unwrap();
     }
 
-    let mut ffprobe = Command::new("ffprobe")
+    let mut ffprobe = Command::new(std::env::var_os("FFPROBE").unwrap_or_else(|| "ffprobe".into()))
         .arg("-v")
         .arg("error")
         .arg("-fpsprobesize")
@@ -122,8 +129,7 @@ fn test_transmuxer_avc_aac() {
 
 #[test]
 fn test_transmuxer_av1_aac() {
-    let dir = PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("../../assets");
-    let data = std::fs::read(dir.join("av1_aac.flv").to_str().unwrap()).unwrap();
+    let data = std::fs::read(file_path("av1_aac.flv")).unwrap();
 
     let mut transmuxer = Transmuxer::new();
 
@@ -191,7 +197,7 @@ fn test_transmuxer_av1_aac() {
         writer.write_all(&data.into_bytes()).unwrap();
     }
 
-    let mut ffprobe = Command::new("ffprobe")
+    let mut ffprobe = Command::new(std::env::var_os("FFPROBE").unwrap_or_else(|| "ffprobe".into()))
         .arg("-v")
         .arg("error")
         .arg("-fpsprobesize")
@@ -235,8 +241,7 @@ fn test_transmuxer_av1_aac() {
 
 #[test]
 fn test_transmuxer_hevc_aac() {
-    let dir = PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("../../assets");
-    let data = std::fs::read(dir.join("hevc_aac.flv").to_str().unwrap()).unwrap();
+    let data = std::fs::read(file_path("hevc_aac.flv")).unwrap();
 
     let mut transmuxer = Transmuxer::new();
 
@@ -300,7 +305,7 @@ fn test_transmuxer_hevc_aac() {
         writer.write_all(&data.into_bytes()).unwrap();
     }
 
-    let mut ffprobe = Command::new("ffprobe")
+    let mut ffprobe = Command::new(std::env::var_os("FFPROBE").unwrap_or_else(|| "ffprobe".into()))
         .arg("-v")
         .arg("error")
         .arg("-fpsprobesize")

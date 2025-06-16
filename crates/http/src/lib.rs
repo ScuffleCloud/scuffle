@@ -84,6 +84,7 @@ pub mod changelog {}
 #[cfg_attr(all(test, coverage_nightly), coverage(off))]
 mod tests {
     use std::convert::Infallible;
+    use std::path::PathBuf;
     use std::time::Duration;
 
     use scuffle_future_ext::FutureExt;
@@ -97,6 +98,15 @@ mod tests {
     }
 
     const RESPONSE_TEXT: &str = "Hello, world!";
+
+    #[allow(unused)]
+    fn file_path(item: &str) -> PathBuf {
+        if let Some(env) = std::env::var_os("ASSETS_DIR") {
+            PathBuf::from(env).join(item)
+        } else {
+            PathBuf::from(env!("CARGO_MANIFEST_DIR")).join(format!("../../assets/{item}"))
+        }
+    }
 
     #[allow(dead_code)]
     async fn test_server<F, S>(builder: crate::HttpServerBuilder<F, S>, versions: &[reqwest::Version])
@@ -255,15 +265,11 @@ mod tests {
 
     #[cfg(feature = "tls-rustls")]
     fn rustls_config() -> rustls::ServerConfig {
-        rustls::crypto::aws_lc_rs::default_provider()
-            .install_default()
-            .expect("failed to install aws lc provider");
-
-        let certfile = std::fs::File::open("../../assets/cert.pem").expect("cert not found");
+        let certfile = std::fs::File::open(file_path("cert.pem")).expect("cert not found");
         let certs = rustls_pemfile::certs(&mut std::io::BufReader::new(certfile))
             .collect::<Result<Vec<_>, _>>()
             .expect("failed to load certs");
-        let keyfile = std::fs::File::open("../../assets/key.pem").expect("key not found");
+        let keyfile = std::fs::File::open(file_path("key.pem")).expect("key not found");
         let key = rustls_pemfile::private_key(&mut std::io::BufReader::new(keyfile))
             .expect("failed to load key")
             .expect("no key found");

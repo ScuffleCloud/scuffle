@@ -5,11 +5,6 @@ readme = "README.md"
 publish = false
 license = "MIT OR Apache-2.0"
 
-# This package is a special package as its used by developers to run commands in the workspace.
-# Therefore we should try to keep the dependencies to a minimum. If you need to add a command that is
-# particularly heavy that includes a lot of dependencies consider adding it to a separate specialized
-# package.
-
 [dependencies]
 anyhow = "1.0"
 cargo-platform = "0.2"

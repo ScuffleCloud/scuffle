@@ -10,7 +10,6 @@ readme = "README.md"
 publish = false
 
 [dependencies]
-scuffle-workspace-hack.workspace = true
 tinc = { path = "../../crates/tinc" }
 
 [build-dependencies]

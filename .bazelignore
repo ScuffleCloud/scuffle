@@ -1,0 +1,6 @@
+.cargo/
+.git/
+.github/
+target/
+target-bazel/
+.direnv/

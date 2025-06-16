@@ -3,6 +3,7 @@ target/
 !.vscode/extensions.json
 node_modules/
 .env*
+!.envrc
 *.log
 .DS_Store
 *.lcov
@@ -39,3 +40,10 @@ website/Thumbs.db
 # Vite
 website/vite.config.js.timestamp-*
 website/vite.config.ts.timestamp-*
+
+# bazel
+target-bazel/
+.bazel_compact_execution_log
+rust-project.json
+.user.bazelrc
+.direnv/

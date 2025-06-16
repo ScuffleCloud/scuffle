@@ -1,0 +1,32 @@
+new_local_repository = use_repo_rule("@bazel_tools//tools/build_defs/repo:local.bzl", "new_local_repository")
+
+ASSETS_BUILD_FILE = """
+load("@aspect_bazel_lib//lib:copy_to_directory.bzl", "copy_to_directory")
+
+copy_to_directory(
+    name = "flv",
+    srcs = glob(["*.flv"]),
+    tags = ["no-cache", "manual"],
+    visibility = ["//visibility:public"],
+)
+
+copy_to_directory(
+    name = "mp4",
+    srcs = glob(["*.mp4"]),
+    tags = ["no-cache", "manual"],
+    visibility = ["//visibility:public"],
+)
+
+copy_to_directory(
+    name = "pem",
+    srcs = glob(["*.pem"]),
+    tags = ["no-cache", "manual"],
+    visibility = ["//visibility:public"],
+)
+"""
+
+new_local_repository(
+    name = "scuffle_assets",
+    build_file_content = ASSETS_BUILD_FILE,
+    path = "assets",
+)

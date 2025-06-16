@@ -20,7 +20,6 @@ proc-macro = true
 darling = "0.21"
 proc-macro2 = "1"
 quote = "1"
-scuffle-workspace-hack.workspace = true
 syn = "2"
 
 [dev-dependencies]

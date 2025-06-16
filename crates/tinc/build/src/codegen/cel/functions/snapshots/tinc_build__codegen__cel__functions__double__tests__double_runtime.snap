@@ -1,6 +1,6 @@
 ---
 source: crates/tinc/build/src/codegen/cel/functions/double.rs
-expression: "postcompile::compile_str!(postcompile::config!\n{\n    test: true, dependencies:\n    vec![postcompile::Dependency::workspace(\"tinc\"),],\n}, quote::quote!\n{\n    fn to_double(input: &str) -> Result<::tinc::__private::cel::CelValue<'_>,\n    ::tinc::__private::cel::CelError<'_>> { Ok(#output) } #[test] fn\n    test_to_double()\n    {\n        assert_eq!(to_double(\"54.4\").unwrap(),\n        ::tinc::__private::cel::CelValueConv::conv(54.4));\n    }\n},)"
+expression: "postcompile::compile_str!(postcompile::config!\n{\n    test: true, dependencies:\n    vec![postcompile::Dependency::version(\"tinc\", \"*\"),],\n}, quote::quote!\n{\n    fn to_double(input: &str) -> Result<::tinc::__private::cel::CelValue<'_>,\n    ::tinc::__private::cel::CelError<'_>> { Ok(#output) } #[test] fn\n    test_to_double()\n    {\n        assert_eq!(to_double(\"54.4\").unwrap(),\n        ::tinc::__private::cel::CelValueConv::conv(54.4));\n    }\n},)"
 ---
 exit status: 0
 --- test_stdout

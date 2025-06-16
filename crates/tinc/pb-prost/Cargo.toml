@@ -21,9 +21,10 @@ docs = ["dep:document-features"]
 document-features = { optional = true, version = "0.2" }
 prost = "0.14"
 prost-types = "0.14"
-scuffle-workspace-hack.workspace = true
 
 [build-dependencies]
+prost = "0.13.5"
+prost-types = "0.13.5"
 prost-build = "0.14"
 
 [package.metadata.docs.rs]

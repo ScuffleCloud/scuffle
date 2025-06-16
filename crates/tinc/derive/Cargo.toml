@@ -19,7 +19,6 @@ proc-macro = true
 [dependencies]
 proc-macro2 = { version = "1.0" }
 quote = { version = "1.0" }
-scuffle-workspace-hack.workspace = true
 syn = { version = "2" }
 
 [package.metadata.docs.rs]

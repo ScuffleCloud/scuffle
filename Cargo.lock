@@ -2118,7 +2118,6 @@ version = "0.1.5"
 dependencies = [
  "document-features",
  "scuffle-changelog",
- "scuffle-workspace-hack",
 ]
 
 [[package]]
@@ -2158,7 +2157,6 @@ dependencies = [
  "insta",
  "ordered-float 5.0.0",
  "scuffle-changelog",
- "scuffle-workspace-hack",
  "serde",
  "serde_derive",
  "serde_json",
@@ -2309,9 +2307,9 @@ checksum = "e3148f5046208a5d56bcfc03053e3ca6334e51da8dfb19b6cdc8b306fae3283e"
 
 [[package]]
 name = "pest"
-version = "2.8.0"
+version = "2.8.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "198db74531d58c70a361c42201efde7e2591e976d518caf7662a47dc5720e7b6"
+checksum = "1db05f56d34358a8b1066f67cbb203ee3e7ed2ba674a6263a1d5ec6db2204323"
 dependencies = [
  "memchr",
  "thiserror 2.0.12",
@@ -2320,9 +2318,9 @@ dependencies = [
 
 [[package]]
 name = "pest_derive"
-version = "2.8.0"
+version = "2.8.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "d725d9cfd79e87dccc9341a2ef39d1b6f6353d68c4b33c177febbe1a402c97c5"
+checksum = "bb056d9e8ea77922845ec74a1c4e8fb17e7c218cc4fc11a15c5d25e189aa40bc"
 dependencies = [
  "pest",
  "pest_generator",
@@ -2330,9 +2328,9 @@ dependencies = [
 
 [[package]]
 name = "pest_generator"
-version = "2.8.0"
+version = "2.8.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "db7d01726be8ab66ab32f9df467ae8b1148906685bbe75c82d1e65d7f5b3f841"
+checksum = "87e404e638f781eb3202dc82db6760c8ae8a1eeef7fb3fa8264b2ef280504966"
 dependencies = [
  "pest",
  "pest_meta",
@@ -2343,11 +2341,10 @@ dependencies = [
 
 [[package]]
 name = "pest_meta"
-version = "2.8.0"
+version = "2.8.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "7f9f832470494906d1fca5329f8ab5791cc60beb230c74815dff541cbd2b5ca0"
+checksum = "edd1101f170f5903fde0914f899bb503d9ff5271d7ba76bbb70bea63690cc0d5"
 dependencies = [
- "once_cell",
  "pest",
  "sha2",
 ]
@@ -2464,7 +2461,6 @@ dependencies = [
  "prettyplease",
  "regex",
  "scuffle-changelog",
- "scuffle-workspace-hack",
  "syn",
  "target-triple",
  "toml",
@@ -3010,9 +3006,9 @@ dependencies = [
 
 [[package]]
 name = "rustls"
-version = "0.23.27"
+version = "0.23.28"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "730944ca083c1c233a75c09f199e973ca499344a2b7ba9e755c457e86fb4a321"
+checksum = "7160e3e10bf4535308537f3c4e1641468cd0e485175d6163087c0393c7d46643"
 dependencies = [
  "aws-lc-rs",
  "log",
@@ -3154,7 +3150,6 @@ dependencies = [
  "num-traits",
  "scuffle-bytes-util",
  "scuffle-changelog",
- "scuffle-workspace-hack",
 ]
 
 [[package]]
@@ -3169,7 +3164,6 @@ dependencies = [
  "num-traits",
  "scuffle-bytes-util",
  "scuffle-changelog",
- "scuffle-workspace-hack",
  "serde",
  "serde_derive",
  "thiserror 2.0.12",
@@ -3185,7 +3179,6 @@ dependencies = [
  "insta",
  "scuffle-bytes-util",
  "scuffle-changelog",
- "scuffle-workspace-hack",
 ]
 
 [[package]]
@@ -3196,7 +3189,6 @@ dependencies = [
  "document-features",
  "futures",
  "scuffle-changelog",
- "scuffle-workspace-hack",
  "tokio",
  "tokio-test",
  "tokio-util",
@@ -3218,7 +3210,6 @@ dependencies = [
  "scuffle-future-ext",
  "scuffle-settings",
  "scuffle-signal",
- "scuffle-workspace-hack",
  "serde",
  "serde_derive",
  "smart-default",
@@ -3236,7 +3227,6 @@ dependencies = [
  "prettyplease",
  "proc-macro2",
  "quote",
- "scuffle-workspace-hack",
  "syn",
 ]
 
@@ -3262,7 +3252,6 @@ dependencies = [
  "scuffle-http",
  "scuffle-metrics",
  "scuffle-pprof",
- "scuffle-workspace-hack",
  "thiserror 2.0.12",
  "tokio",
  "tracing",
@@ -3278,7 +3267,6 @@ dependencies = [
  "bytestring",
  "document-features",
  "scuffle-changelog",
- "scuffle-workspace-hack",
  "serde",
 ]
 
@@ -3291,7 +3279,6 @@ dependencies = [
  "proc-macro2",
  "quote",
  "regex",
- "scuffle-workspace-hack",
  "semver",
  "syn",
 ]
@@ -3305,7 +3292,6 @@ dependencies = [
  "pin-project-lite",
  "scuffle-changelog",
  "scuffle-future-ext",
- "scuffle-workspace-hack",
  "tokio",
  "tokio-test",
  "tokio-util",
@@ -3319,7 +3305,6 @@ dependencies = [
  "document-features",
  "scuffle-bytes-util",
  "scuffle-changelog",
- "scuffle-workspace-hack",
 ]
 
 [[package]]
@@ -3338,7 +3323,6 @@ dependencies = [
  "rusty_ffmpeg",
  "scuffle-changelog",
  "scuffle-mp4",
- "scuffle-workspace-hack",
  "sha2",
  "tempfile",
  "thiserror 2.0.12",
@@ -3368,7 +3352,6 @@ dependencies = [
  "scuffle-changelog",
  "scuffle-h264",
  "scuffle-h265",
- "scuffle-workspace-hack",
  "serde",
  "serde_derive",
  "thiserror 2.0.12",
@@ -3380,7 +3363,6 @@ version = "0.1.4"
 dependencies = [
  "document-features",
  "scuffle-changelog",
- "scuffle-workspace-hack",
  "tokio",
 ]
 
@@ -3396,7 +3378,6 @@ dependencies = [
  "scuffle-bytes-util",
  "scuffle-changelog",
  "scuffle-expgolomb",
- "scuffle-workspace-hack",
 ]
 
 [[package]]
@@ -3412,7 +3393,6 @@ dependencies = [
  "scuffle-bytes-util",
  "scuffle-changelog",
  "scuffle-expgolomb",
- "scuffle-workspace-hack",
 ]
 
 [[package]]
@@ -3439,7 +3419,6 @@ dependencies = [
  "scuffle-changelog",
  "scuffle-context",
  "scuffle-future-ext",
- "scuffle-workspace-hack",
  "thiserror 2.0.12",
  "tokio",
  "tokio-rustls",
@@ -3463,7 +3442,6 @@ dependencies = [
  "prometheus-client",
  "scuffle-changelog",
  "scuffle-metrics-derive",
- "scuffle-workspace-hack",
  "tokio",
  "tracing",
 ]
@@ -3476,7 +3454,6 @@ dependencies = [
  "proc-macro2",
  "quote",
  "scuffle-metrics",
- "scuffle-workspace-hack",
  "syn",
 ]
 
@@ -3495,7 +3472,6 @@ dependencies = [
  "scuffle-changelog",
  "scuffle-h264",
  "scuffle-h265",
- "scuffle-workspace-hack",
  "serde",
  "serde_json",
 ]
@@ -3509,7 +3485,6 @@ dependencies = [
  "pprof",
  "rand 0.9.1",
  "scuffle-changelog",
- "scuffle-workspace-hack",
  "thiserror 2.0.12",
 ]
 
@@ -3532,7 +3507,6 @@ dependencies = [
  "scuffle-context",
  "scuffle-flv",
  "scuffle-future-ext",
- "scuffle-workspace-hack",
  "serde",
  "serde_derive",
  "serde_json",
@@ -3554,7 +3528,6 @@ dependencies = [
  "minijinja",
  "scuffle-bootstrap",
  "scuffle-changelog",
- "scuffle-workspace-hack",
  "serde",
  "serde_derive",
  "smart-default",
@@ -3573,7 +3546,6 @@ dependencies = [
  "scuffle-changelog",
  "scuffle-context",
  "scuffle-future-ext",
- "scuffle-workspace-hack",
  "tokio",
  "tokio-stream",
  "tokio-test",
@@ -3594,102 +3566,15 @@ dependencies = [
  "scuffle-h264",
  "scuffle-h265",
  "scuffle-mp4",
- "scuffle-workspace-hack",
  "serde",
  "serde_json",
  "thiserror 2.0.12",
-]
-
-[[package]]
-name = "scuffle-workspace-hack"
-version = "0.1.0"
-dependencies = [
- "aho-corasick",
- "axum",
- "bitflags 2.9.1",
- "bytes",
- "camino",
- "cc",
- "chrono",
- "clap",
- "clap_builder",
- "config",
- "crossbeam-utils",
- "crypto-common",
- "digest",
- "either",
- "fastrand",
- "form_urlencoded",
- "futures",
- "futures-channel",
- "futures-executor",
- "futures-io",
- "futures-sink",
- "futures-task",
- "futures-util",
- "getrandom 0.3.3",
- "h3",
- "h3-quinn",
- "hashbrown 0.15.4",
- "hyper",
- "hyper-util",
- "indexmap",
- "insta",
- "itertools 0.13.0",
- "itertools 0.14.0",
- "lalrpop-util",
- "libc",
- "log",
- "memchr",
- "num-traits",
- "opentelemetry",
- "opentelemetry_sdk",
- "percent-encoding",
- "prettyplease",
- "proc-macro2",
- "prost 0.13.5",
- "prost-types 0.13.5",
- "quinn",
- "quinn-proto",
- "quinn-udp",
- "quote",
- "rand 0.9.1",
- "regex",
- "regex-automata 0.4.9",
- "regex-syntax 0.8.5",
- "reqwest",
- "rustls",
- "rustls-webpki",
- "rusty_ffmpeg",
- "semver",
- "serde",
- "serde_json",
- "smallvec",
- "stable_deref_trait",
- "syn",
- "sync_wrapper",
- "thiserror 2.0.12",
- "tokio",
- "tokio-rustls",
- "tokio-stream",
- "tokio-util",
- "toml",
- "toml_edit",
- "tower",
- "tracing",
- "tracing-core",
- "tracing-log",
- "tracing-subscriber",
- "unicode-xid",
- "windows-sys 0.52.0",
- "windows-sys 0.59.0",
 ]
 
 [[package]]
 name = "scufflecloud-core"
 version = "0.1.0"
 dependencies = [
- "scuffle-workspace-hack",
  "scufflecloud-proto",
 ]
 
@@ -3698,7 +3583,6 @@ name = "scufflecloud-proto"
 version = "0.1.0"
 dependencies = [
  "glob",
- "scuffle-workspace-hack",
  "tinc",
  "tinc-build",
 ]
@@ -3924,12 +3808,9 @@ checksum = "56199f7ddabf13fe5074ce809e7d3f42b42ae711800501b5b16ea82ad029c39d"
 
 [[package]]
 name = "slab"
-version = "0.4.9"
+version = "0.4.10"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "8f92a496fb766b417c996b9c5e57daf2f7ad3b0bebe1ccfca4856390e3d3bb67"
-dependencies = [
- "autocfg",
-]
+checksum = "04dc19736151f35336d325007ac991178d504a119863a2fcb3758cdb5e52c50d"
 
 [[package]]
 name = "smallvec"
@@ -4150,7 +4031,6 @@ dependencies = [
  "prost-types 0.13.5",
  "regex",
  "scuffle-changelog",
- "scuffle-workspace-hack",
  "serde",
  "serde_derive",
  "serde_json",
@@ -4187,7 +4067,6 @@ dependencies = [
  "quote",
  "regex",
  "runtime-format",
- "scuffle-workspace-hack",
  "serde",
  "serde_derive",
  "serde_json",
@@ -4212,7 +4091,6 @@ dependencies = [
  "linkme",
  "num-traits",
  "regex",
- "scuffle-workspace-hack",
  "thiserror 2.0.12",
  "url",
  "uuid",
@@ -4224,7 +4102,6 @@ version = "0.1.6"
 dependencies = [
  "proc-macro2",
  "quote",
- "scuffle-workspace-hack",
  "syn",
 ]
 
@@ -4240,7 +4117,6 @@ dependencies = [
  "prost-build 0.13.5",
  "prost-types 0.13.5",
  "rand 0.9.1",
- "scuffle-workspace-hack",
  "serde",
  "serde_json",
  "tinc",
@@ -4258,7 +4134,6 @@ dependencies = [
  "prost 0.13.5",
  "prost-build 0.13.5",
  "prost-types 0.13.5",
- "scuffle-workspace-hack",
 ]
 
 [[package]]

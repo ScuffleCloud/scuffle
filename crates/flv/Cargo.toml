@@ -36,7 +36,6 @@ scuffle-bytes-util = { features = ["serde"], path = "../bytes-util", version = "
 scuffle-changelog = { optional = true, path = "../changelog", version = "0.1.0" }
 scuffle-h264 = { path = "../h264", version = "0.2.1" }
 scuffle-h265 = { path = "../h265", version = "0.2.1" }
-scuffle-workspace-hack.workspace = true
 
 [dev-dependencies]
 insta = "1.42"

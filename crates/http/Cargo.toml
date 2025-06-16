@@ -116,7 +116,6 @@ tower = { default-features = false, features = ["make"], optional = true, versio
 document-features = { optional = true, version = "0.2" }
 scuffle-changelog = { optional = true, path = "../changelog", version = "0.1.0" }
 
-scuffle-workspace-hack.workspace = true
 
 [dev-dependencies]
 # The http3 feature requires a custom build flag (see .cargo/config.toml)

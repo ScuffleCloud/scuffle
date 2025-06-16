@@ -1,0 +1,24 @@
+os = ["linux", "macos", "windows"]
+arch = ["x86_64", "aarch64"]
+
+[
+    config_setting(
+        name = "{}-{}".format(o, a),
+        constraint_values = [
+            "@platforms//os:" + o,
+            "@platforms//cpu:" + a,
+        ],
+        visibility = ["//visibility:public"],
+    )
+    for a in arch
+    for o in os
+]
+
+config_setting(
+    name = "none_wasm32",
+    constraint_values = [
+        "@platforms//os:none",
+        "@platforms//cpu:wasm32",
+    ],
+    visibility = ["//visibility:public"],
+)

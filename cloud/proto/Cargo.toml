@@ -14,7 +14,6 @@ unexpected_cfgs = { level = "warn", check-cfg = ['cfg(coverage_nightly)'] }
 
 [dependencies]
 prost = "0.13.5"
-scuffle-workspace-hack.workspace = true
 serde = "1.0.219"
 tinc = { path = "../../crates/tinc" }
 

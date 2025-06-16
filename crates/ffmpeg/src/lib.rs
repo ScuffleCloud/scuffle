@@ -273,6 +273,9 @@ pub mod stream;
 /// Utility functionality.
 pub mod utils;
 
+#[cfg(test)]
+use std::path::PathBuf;
+
 pub use rusty_ffmpeg::ffi;
 
 mod smart_object;
@@ -285,3 +288,12 @@ pub use enums::*;
 #[cfg(feature = "docs")]
 #[scuffle_changelog::changelog]
 pub mod changelog {}
+
+#[cfg(test)]
+fn file_path(item: &str) -> PathBuf {
+    if let Some(env) = std::env::var_os("ASSETS_DIR") {
+        PathBuf::from(env).join(item)
+    } else {
+        PathBuf::from(env!("CARGO_MANIFEST_DIR")).join(format!("../../assets/{item}"))
+    }
+}

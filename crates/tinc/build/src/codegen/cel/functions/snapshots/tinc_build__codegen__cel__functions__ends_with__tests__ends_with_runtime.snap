@@ -1,6 +1,6 @@
 ---
 source: crates/tinc/build/src/codegen/cel/functions/ends_with.rs
-expression: "postcompile::compile_str!(postcompile::config!\n{\n    test: true, dependencies:\n    vec![postcompile::Dependency::workspace(\"tinc\"),],\n}, quote::quote!\n{\n    fn ends_with(input: &str) -> Result<bool,\n    ::tinc::__private::cel::CelError<'_>> { Ok(#output) } #[test] fn\n    test_to_double()\n    {\n        assert_eq!(ends_with(\"testing\").unwrap(), true);\n        assert_eq!(ends_with(\"smile\").unwrap(), false);\n    }\n},)"
+expression: "postcompile::compile_str!(postcompile::config!\n{\n    test: true, dependencies:\n    vec![postcompile::Dependency::version(\"tinc\", \"*\"),],\n}, quote::quote!\n{\n    fn ends_with(input: &str) -> Result<bool,\n    ::tinc::__private::cel::CelError<'_>> { Ok(#output) } #[test] fn\n    test_to_double()\n    {\n        assert_eq!(ends_with(\"testing\").unwrap(), true);\n        assert_eq!(ends_with(\"smile\").unwrap(), false);\n    }\n},)"
 ---
 exit status: 0
 --- test_stdout

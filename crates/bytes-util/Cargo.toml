@@ -18,16 +18,15 @@ byteorder = "1.5.0"
 bytes = "1.5"
 bytestring = "1.4.0"
 document-features = { optional = true, version = "0.2" }
-scuffle-changelog = { optional = true, path = "../changelog", version = "0.1.0" }
+scuffle-changelog = { path = "../changelog", version = "0.1.0" }
 serde = { optional = true, version = "1.0.129" }
 
-scuffle-workspace-hack.workspace = true
 
 [features]
 ## Enables serde support
 serde = ["dep:serde"]
 ## Enables changelog and documentation of feature flags
-docs = ["dep:scuffle-changelog", "dep:document-features"]
+docs = ["dep:document-features"]
 
 [package.metadata.docs.rs]
 all-features = true

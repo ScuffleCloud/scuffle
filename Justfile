@@ -9,8 +9,9 @@ powerset *args:
 
 # An alias for cargo fmt --all
 fmt *args:
-    cargo +{{RUST_TOOLCHAIN}} fmt --all {{args}}
     taplo fmt
+    cargo +nightly fmt --all
+    find . \( -name '*.bazel' -o -name '*.bzl' \) -exec buildifier {} \;
 
 lint *args:
     cargo +{{RUST_TOOLCHAIN}} clippy --fix --allow-dirty --allow-staged --all-features --all-targets {{args}} -- -Aclippy::collapsible_if

@@ -3,6 +3,7 @@ target/
 !.vscode/extensions.json
 node_modules/
 .env*
+!.envrc
 *.log
 .DS_Store
 *.lcov
@@ -19,3 +20,11 @@ docs/build
 docs/.docusaurus
 docs/.cache-loader
 .runner/
+target/
+
+# bazel
+target-bazel/
+.bazel_compact_execution_log
+rust-project.json
+.user.bazelrc
+.direnv/

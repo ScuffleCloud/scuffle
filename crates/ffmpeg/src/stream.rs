@@ -335,16 +335,15 @@ mod tests {
 
     use insta::{Settings, assert_debug_snapshot};
 
-    use crate::AVDiscard;
     use crate::ffi::AVStream;
     use crate::io::Input;
     use crate::rational::Rational;
     use crate::stream::AVMediaType;
+    use crate::{AVDiscard, file_path};
 
     #[test]
     fn test_best_stream() {
-        let valid_file_path = "../../assets/avc_aac_large.mp4";
-        let input = Input::open(valid_file_path).expect("Failed to open valid file");
+        let input = Input::open(file_path("avc_aac_large.mp4")).expect("Failed to open valid file");
         let streams = input.streams();
 
         let media_type = AVMediaType::Video;
@@ -357,8 +356,7 @@ mod tests {
 
     #[test]
     fn test_best_none_stream() {
-        let valid_file_path = "../../assets/avc_aac_large.mp4";
-        let input = Input::open(valid_file_path).expect("Failed to open valid file");
+        let input = Input::open(file_path("avc_aac_large.mp4")).expect("Failed to open valid file");
         let streams = input.streams();
         let invalid_media_type = AVMediaType::Subtitle;
         let best_stream = streams.best(invalid_media_type);
@@ -371,8 +369,7 @@ mod tests {
 
     #[test]
     fn test_best_mut_stream() {
-        let valid_file_path = "../../assets/avc_aac_large.mp4";
-        let mut input = Input::open(valid_file_path).expect("Failed to open valid file");
+        let mut input = Input::open(file_path("avc_aac_large.mp4")).expect("Failed to open valid file");
         let mut streams = input.streams_mut();
 
         let media_type = AVMediaType::Video;
@@ -385,8 +382,7 @@ mod tests {
 
     #[test]
     fn test_streams_into_iter() {
-        let valid_file_path = "../../assets/avc_aac_large.mp4";
-        let mut input = Input::open(valid_file_path).expect("Failed to open valid file");
+        let mut input = Input::open(file_path("avc_aac_large.mp4")).expect("Failed to open valid file");
         let streams = input.streams_mut();
         let streams_len = streams.len();
         let iter = streams.into_iter();
@@ -405,8 +401,7 @@ mod tests {
 
     #[test]
     fn test_streams_iter() {
-        let valid_file_path = "../../assets/avc_aac_large.mp4";
-        let mut input = Input::open(valid_file_path).expect("Failed to open valid file");
+        let mut input = Input::open(file_path("avc_aac_large.mp4")).expect("Failed to open valid file");
         let streams = input.streams_mut();
         let iter = streams.iter();
         let collected_streams: Vec<_> = iter.collect();
@@ -424,8 +419,7 @@ mod tests {
 
     #[test]
     fn test_streams_get_valid_index() {
-        let valid_file_path = "../../assets/avc_aac_large.mp4";
-        let mut input = Input::open(valid_file_path).expect("Failed to open valid file");
+        let mut input = Input::open(file_path("avc_aac_large.mp4")).expect("Failed to open valid file");
         let mut streams = input.streams_mut();
         let stream_index = 0;
         let stream = streams.get(stream_index);
@@ -439,8 +433,7 @@ mod tests {
 
     #[test]
     fn test_streams_get_invalid_index() {
-        let valid_file_path = "../../assets/avc_aac_large.mp4";
-        let mut input = Input::open(valid_file_path).expect("Failed to open valid file");
+        let mut input = Input::open(file_path("avc_aac_large.mp4")).expect("Failed to open valid file");
         let mut streams = input.streams_mut();
         let invalid_index = streams.len();
         let stream = streams.get(invalid_index);
@@ -450,8 +443,7 @@ mod tests {
 
     #[test]
     fn test_stream_as_mut_ptr() {
-        let valid_file_path = "../../assets/avc_aac_large.mp4";
-        let mut input = Input::open(valid_file_path).expect("Failed to open valid file");
+        let mut input = Input::open(file_path("avc_aac_large.mp4")).expect("Failed to open valid file");
         let mut streams = input.streams_mut();
         let stream_index = 0;
         let mut stream = streams.get(stream_index).expect("Expected a valid stream");
@@ -467,8 +459,7 @@ mod tests {
 
     #[test]
     fn test_stream_nb_frames() {
-        let valid_file_path = "../../assets/avc_aac_large.mp4";
-        let mut input = Input::open(valid_file_path).expect("Failed to open valid file");
+        let mut input = Input::open(file_path("avc_aac_large.mp4")).expect("Failed to open valid file");
         let mut streams = input.streams_mut();
         let mut stream = streams.get(0).expect("Expected a valid stream");
 
@@ -483,8 +474,7 @@ mod tests {
 
     #[test]
     fn test_stream_disposition() {
-        let valid_file_path = "../../assets/avc_aac_large.mp4";
-        let mut input = Input::open(valid_file_path).expect("Failed to open valid file");
+        let mut input = Input::open(file_path("avc_aac_large.mp4")).expect("Failed to open valid file");
         let mut streams = input.streams_mut();
         let mut stream = streams.get(0).expect("Expected a valid stream");
 
@@ -499,8 +489,7 @@ mod tests {
 
     #[test]
     fn test_stream_discard() {
-        let valid_file_path = "../../assets/avc_aac_large.mp4";
-        let mut input = Input::open(valid_file_path).expect("Failed to open valid file");
+        let mut input = Input::open(file_path("avc_aac_large.mp4")).expect("Failed to open valid file");
         let mut streams = input.streams_mut();
         let mut stream = streams.get(0).expect("Expected a valid stream");
 
@@ -511,8 +500,7 @@ mod tests {
 
     #[test]
     fn test_stream_sample_aspect_ratio() {
-        let valid_file_path = "../../assets/avc_aac_large.mp4";
-        let mut input = Input::open(valid_file_path).expect("Failed to open valid file");
+        let mut input = Input::open(file_path("avc_aac_large.mp4")).expect("Failed to open valid file");
         let mut streams = input.streams_mut();
         let mut stream = streams.get(0).expect("Expected a valid stream");
 
@@ -527,8 +515,7 @@ mod tests {
 
     #[test]
     fn test_stream_metadata_insta() {
-        let valid_file_path = "../../assets/avc_aac_large.mp4";
-        let mut input = Input::open(valid_file_path).expect("Failed to open valid file");
+        let mut input = Input::open(file_path("avc_aac_large.mp4")).expect("Failed to open valid file");
         let mut streams = input.streams_mut();
         let mut stream = streams.get(0).expect("Expected a valid stream");
         let mut metadata = stream.metadata_mut();
@@ -561,8 +548,7 @@ mod tests {
 
     #[test]
     fn test_stream_frame_rates() {
-        let valid_file_path = "../../assets/avc_aac_large.mp4";
-        let mut input = Input::open(valid_file_path).expect("Failed to open valid file");
+        let mut input = Input::open(file_path("avc_aac_large.mp4")).expect("Failed to open valid file");
         let mut streams = input.streams_mut();
         let stream = streams.get(0).expect("Expected a valid stream");
         let avg_frame_rate = stream.avg_frame_rate();
@@ -574,8 +560,7 @@ mod tests {
 
     #[test]
     fn test_stream_format_context() {
-        let valid_file_path = "../../assets/avc_aac_large.mp4";
-        let mut input = Input::open(valid_file_path).expect("Failed to open valid file");
+        let mut input = Input::open(file_path("avc_aac_large.mp4")).expect("Failed to open valid file");
         let mut streams = input.streams_mut();
         let stream = streams.get(0).expect("Expected a valid stream");
 
@@ -591,8 +576,7 @@ mod tests {
 
     #[test]
     fn test_stream_debug() {
-        let valid_file_path = "../../assets/avc_aac_large.mp4";
-        let mut input = Input::open(valid_file_path).expect("Failed to open valid file");
+        let mut input = Input::open(file_path("avc_aac_large.mp4")).expect("Failed to open valid file");
         let mut streams = input.streams_mut();
         let stream = streams.get(0).expect("Expected a valid stream");
 

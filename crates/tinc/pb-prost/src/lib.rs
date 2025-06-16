@@ -17,7 +17,5 @@ include!(concat!(env!("OUT_DIR"), "/tinc.rs"));
 
 /// The raw protobuf file
 pub const TINC_ANNOTATIONS: &str = include_str!("../annotations.proto");
-/// Path to the pre-compiled field-descriptors
-pub const TINC_ANNOTATIONS_PB_PATH: &str = concat!(env!("OUT_DIR"), "/tinc.annotations.pb");
 /// Field descriptor binary
 pub const TINC_ANNOTATIONS_PB: &[u8] = include_bytes!(concat!(env!("OUT_DIR"), "/tinc.annotations.pb"));

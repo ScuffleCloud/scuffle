@@ -96,17 +96,17 @@ h3-quinn = { default-features = false, optional = true, version = "0.0.10" }
 quinn = { default-features = false, features = [
   "platform-verifier",
   "runtime-tokio",
-  "rustls-aws-lc-rs",
+  "rustls-ring",
 ], optional = true, version = "0.11.6" }
 
 # TLS
 rustls = { default-features = false, features = [
-  "aws_lc_rs",
+  "ring",
   "std",
   "tls12",
 ], optional = true, version = "0.23.21" }
 tokio-rustls = { default-features = false, features = [
-  "aws_lc_rs",
+  "ring",
   "tls12",
 ], optional = true, version = "0.26.1" }
 
@@ -116,7 +116,6 @@ tower = { default-features = false, features = ["make"], optional = true, versio
 document-features = { optional = true, version = "0.2" }
 scuffle-changelog = { optional = true, path = "../changelog", version = "0.1.0" }
 
-scuffle-workspace-hack.workspace = true
 
 [dev-dependencies]
 # The http3 feature requires a custom build flag (see .cargo/config.toml)

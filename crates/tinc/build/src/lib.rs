@@ -30,7 +30,7 @@
 #![cfg_attr(not(feature = "prost"), allow(unused_variables, dead_code))]
 
 use std::io::ErrorKind;
-use std::path::Path;
+use std::path::{Path, PathBuf};
 
 use anyhow::Context;
 use extern_paths::ExternPaths;
@@ -76,6 +76,7 @@ pub struct Config {
     mode: Mode,
     paths: PathConfigs,
     extern_paths: ExternPaths,
+    out_dir: PathBuf,
 }
 
 impl Config {
@@ -87,12 +88,18 @@ impl Config {
 
     /// Make a new config with a given mode.
     pub fn new(mode: Mode) -> Self {
+        Self::new_with_out_dir(mode, std::env::var_os("OUT_DIR").expect("OUT_DIR not set"))
+    }
+
+    /// Make a new config with a given mode.
+    pub fn new_with_out_dir(mode: Mode, out_dir: impl Into<PathBuf>) -> Self {
         Self {
             disable_tinc_include: false,
             mode,
             paths: PathConfigs::default(),
             extern_paths: ExternPaths::new(mode),
             root_module: true,
+            out_dir: out_dir.into(),
         }
     }
 
@@ -137,24 +144,59 @@ impl Config {
         }
     }
 
+    /// Generate tinc code based on a precompiled FileDescriptorSet.
+    pub fn load_fds(&mut self, fds: impl bytes::Buf) -> anyhow::Result<()> {
+        match self.mode {
+            #[cfg(feature = "prost")]
+            Mode::Prost => self.load_fds_prost(fds),
+        }
+    }
+
     #[cfg(feature = "prost")]
     fn compile_protos_prost(&mut self, protos: &[impl AsRef<Path>], includes: &[impl AsRef<Path>]) -> anyhow::Result<()> {
+        let fd_path = self.out_dir.join("tinc.fd.bin");
+
+        let mut config = prost_build::Config::new();
+        config.file_descriptor_set_path(&fd_path);
+
+        let mut includes = includes.iter().map(|i| i.as_ref()).collect::<Vec<_>>();
+
+        {
+            let tinc_out = self.out_dir.join("tinc");
+            std::fs::create_dir_all(&tinc_out).context("failed to create tinc directory")?;
+            std::fs::write(tinc_out.join("annotations.proto"), tinc_pb_prost::TINC_ANNOTATIONS)
+                .context("failed to write tinc_annotations.rs")?;
+            includes.push(&self.out_dir);
+        }
+
+        config.load_fds(protos, &includes).context("failed to generate tonic fds")?;
+        let fds_bytes = std::fs::read(fd_path).context("failed to read tonic fds")?;
+        self.load_fds_prost(fds_bytes.as_slice())
+    }
+
+    #[cfg(feature = "prost")]
+    fn load_fds_prost(&mut self, fds: impl bytes::Buf) -> anyhow::Result<()> {
         use std::collections::BTreeMap;
 
         use codegen::prost_sanatize::to_snake;
         use codegen::utils::get_common_import_path;
         use proc_macro2::Span;
         use prost_reflect::DescriptorPool;
+        use prost_types::FileDescriptorSet;
         use quote::{ToTokens, quote};
         use syn::parse_quote;
         use types::{ProtoPath, ProtoTypeRegistry};
 
-        let out_dir_str = std::env::var("OUT_DIR").context("OUT_DIR must be set, typically set by a cargo build script")?;
-        let out_dir = std::path::PathBuf::from(&out_dir_str);
-        let ft_path = out_dir.join("tinc.fd.bin");
+        let pool = DescriptorPool::decode(fds).context("failed to add tonic fds")?;
+
+        let mut registry = ProtoTypeRegistry::new(self.mode, self.extern_paths.clone());
 
         let mut config = prost_build::Config::new();
-        config.file_descriptor_set_path(&ft_path);
+
+        // This option is provided to make sure prost_build does not internally
+        // set extern_paths. We manage that via a re-export of prost_types in the
+        // tinc crate.
+        config.compile_well_known_types();
 
         config.btree_map(self.paths.btree_maps.iter());
         self.paths.boxed.iter().for_each(|path| {
@@ -162,26 +204,6 @@ impl Config {
         });
         config.bytes(self.paths.bytes.iter());
 
-        let mut includes = includes.iter().map(|i| i.as_ref()).collect::<Vec<_>>();
-
-        {
-            let tinc_out = out_dir.join("tinc");
-            std::fs::create_dir_all(&tinc_out).context("failed to create tinc directory")?;
-            std::fs::write(tinc_out.join("annotations.proto"), tinc_pb_prost::TINC_ANNOTATIONS)
-                .context("failed to write tinc_annotations.rs")?;
-            includes.push(Path::new(&out_dir_str));
-            config.protoc_arg(format!("--descriptor_set_in={}", tinc_pb_prost::TINC_ANNOTATIONS_PB_PATH));
-        }
-
-        let fds = config.load_fds(protos, &includes).context("failed to generate tonic fds")?;
-
-        let fds_bytes = std::fs::read(ft_path).context("failed to read tonic fds")?;
-
-        let pool = DescriptorPool::decode(&mut fds_bytes.as_slice()).context("failed to decode tonic fds")?;
-
-        let mut registry = ProtoTypeRegistry::new(self.mode, self.extern_paths.clone());
-
-        config.compile_well_known_types();
         for (proto, rust) in self.extern_paths.paths() {
             let proto = if proto.starts_with('.') {
                 proto.to_string()
@@ -330,20 +352,24 @@ impl Config {
         });
 
         for package in packages.keys() {
-            match std::fs::remove_file(out_dir.join(format!("{package}.rs"))) {
+            match std::fs::remove_file(self.out_dir.join(format!("{package}.rs"))) {
                 Err(err) if err.kind() != ErrorKind::NotFound => return Err(anyhow::anyhow!(err).context("remove")),
                 _ => {}
             }
         }
 
-        config.compile_fds(fds).context("prost compile")?;
+        config
+            .compile_fds(FileDescriptorSet {
+                file: pool.file_descriptor_protos().cloned().collect(),
+            })
+            .context("prost compile")?;
 
         for (package, module) in &mut packages {
             if self.extern_paths.contains(package) {
                 continue;
             };
 
-            let path = out_dir.join(format!("{package}.rs"));
+            let path = self.out_dir.join(format!("{package}.rs"));
             write_module(&path, std::mem::take(&mut module.extra_items)).with_context(|| package.to_owned())?;
         }
 
@@ -386,7 +412,8 @@ impl Config {
             }
 
             let file: syn::File = parse_quote!(#module);
-            std::fs::write(out_dir.join("___root_module.rs"), prettyplease::unparse(&file)).context("write root module")?;
+            std::fs::write(self.out_dir.join("___root_module.rs"), prettyplease::unparse(&file))
+                .context("write root module")?;
         }
 
         Ok(())

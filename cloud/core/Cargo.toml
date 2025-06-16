@@ -11,7 +11,6 @@ publish = false
 
 [dependencies]
 pb = { package = "scufflecloud-proto", path = "../proto" }
-scuffle-workspace-hack.workspace = true
 
 [package.metadata.cargo-sync-rdme.badge]
 style = "flat-square"

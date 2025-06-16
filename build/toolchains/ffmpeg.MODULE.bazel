@@ -1,0 +1,69 @@
+http_archive = use_repo_rule("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive")
+
+_LINUX_BUILD_FILE = """
+load("@aspect_bazel_lib//lib:copy_to_directory.bzl", "copy_to_directory")
+
+copy_to_directory(
+    name = "include",
+    srcs = glob(["include/**"]),
+    root_paths = ["include"],
+    include_external_repositories = ["*"],
+    tags = ["no-cache", "manual"],
+    visibility = ["//visibility:public"],
+)
+
+copy_to_directory(
+    name = "lib",
+    srcs = glob(["lib/**"]),
+    root_paths = ["lib"],
+    include_external_repositories = ["*"],
+    tags = ["no-cache", "manual"],
+    visibility = ["//visibility:public"],
+)
+
+filegroup(
+    name = "ffmpeg_tool",
+    srcs = ["bin/ffmpeg"],
+    visibility = ["//visibility:public"],
+)
+
+filegroup(
+    name = "ffprobe_tool",
+    srcs = ["bin/ffprobe"],
+    visibility = ["//visibility:public"],
+)
+
+filegroup(
+    name = "ffplay_tool",
+    srcs = ["bin/ffplay"],
+    visibility = ["//visibility:public"],
+)
+"""
+
+build_url = "https://github.com/BtbN/FFmpeg-Builds/releases/download/autobuild-2025-05-31-14-01"
+
+linux_x86_64 = "ffmpeg-n7.1.1-20-g9373b442a6-linux64-lgpl-shared-7.1"
+
+http_archive(
+    name = "ffmpeg-linux-x86_64",
+    build_file_content = _LINUX_BUILD_FILE,
+    sha256 = "4ef92effe5c53814e45dbf2ffcea9f1d808e411d3447409c01656865141346c7",
+    strip_prefix = linux_x86_64,
+    url = "{url}/{name}.tar.xz".format(
+        name = linux_x86_64,
+        url = build_url,
+    ),
+)
+
+linux_aarch64 = "ffmpeg-n7.1.1-20-g9373b442a6-linuxarm64-lgpl-shared-7.1"
+
+http_archive(
+    name = "ffmpeg-linux-aarch64",
+    build_file_content = _LINUX_BUILD_FILE,
+    sha256 = "d19d135cf9ff42b1994a811929e15e1b9fa75f2ab13164cbe33a5f5aab457103",
+    strip_prefix = linux_aarch64,
+    url = "{url}/{name}.tar.xz".format(
+        name = linux_aarch64,
+        url = build_url,
+    ),
+)

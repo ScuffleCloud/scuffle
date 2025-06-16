@@ -313,7 +313,6 @@ impl Output<()> {
 mod tests {
     use std::ffi::CString;
     use std::io::{Cursor, Write};
-    use std::path::PathBuf;
     use std::ptr;
 
     use bytes::{Buf, Bytes};
@@ -324,7 +323,7 @@ mod tests {
     use crate::error::FfmpegError;
     use crate::io::output::{AVCodec, AVRational, OutputState};
     use crate::io::{Input, Output, OutputOptions};
-    use crate::{AVFmtFlags, AVMediaType};
+    use crate::{AVFmtFlags, AVMediaType, file_path};
 
     #[test]
     fn test_output_options_get_format_ffi_null() {
@@ -503,9 +502,8 @@ mod tests {
         let options = OutputOptions::builder().format_name("mp4").unwrap().build();
 
         let mut output = Output::seekable(data, options).expect("Failed to create Output");
-        let dir = PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("../../assets");
 
-        let mut input = Input::seekable(std::fs::File::open(dir.join("avc_aac.mp4")).expect("Failed to open file"))
+        let mut input = Input::seekable(std::fs::File::open(file_path("avc_aac.mp4")).expect("Failed to open file"))
             .expect("Failed to create Input");
         let streams = input.streams();
         let best_video_stream = streams.best(AVMediaType::Video).expect("no video stream found");
@@ -543,9 +541,8 @@ mod tests {
         let options = OutputOptions::builder().format_name("mp4").unwrap().build();
 
         let mut output = Output::seekable(data, options).expect("Failed to create Output");
-        let dir = PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("../../assets");
 
-        let mut input = Input::seekable(std::fs::File::open(dir.join("avc_aac.mp4")).expect("Failed to open file"))
+        let mut input = Input::seekable(std::fs::File::open(file_path("avc_aac.mp4")).expect("Failed to open file"))
             .expect("Failed to create Input");
         let streams = input.streams();
         let best_video_stream = streams.best(AVMediaType::Video).expect("no video stream found");

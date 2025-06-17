@@ -1,0 +1,130 @@
+syntax = "proto3";
+
+package scufflecloud.core.v1;
+
+import "tinc/annotations.proto";
+import "google/protobuf/timestamp.proto";
+import "google/protobuf/empty.proto";
+
+import "scufflecloud/core/v1/common.proto";
+import "scufflecloud/core/v1/constraints.proto";
+
+service UsersService {
+    rpc GetUser(UserByIdRequest) returns (User) {
+        option (tinc.method).endpoint = {
+            get: "/users/{id}"
+        };
+    }
+    rpc UpdateUserPassword(UpdateUserPasswordRequest) returns (User) {
+        option (tinc.method).endpoint = {
+            patch: "/users/{id}/password"
+        };
+    }
+    rpc UpdateUserNames(UpdateUserNamesRequest) returns (User) {
+        option (tinc.method).endpoint = {
+            patch: "/users/{id}/names"
+        };
+    }
+    rpc UpdateUserPrimaryEmail(UpdateUserPrimaryEmailRequest) returns (User) {
+        option (tinc.method).endpoint = {
+            patch: "/users/{id}/primary-email"
+        };
+    }
+
+    rpc GetUserEmails(UserByIdRequest) returns (GetUserEmailsResponse) {
+        option (tinc.method).endpoint = {
+            get: "/users/{id}/emails"
+        };
+    }
+    rpc CreateUserEmail(CreateUserEmailRequest) returns (google.protobuf.Empty) {
+        option (tinc.method).endpoint = {
+            post: "/users/{id}/emails"
+        };
+    }
+    rpc CompleteCreateUserEmail(CompleteCreateUserEmailRequest) returns (UserEmail) {
+        option (tinc.method).endpoint = {
+            post: "/users/{id}/emails/complete"
+        };
+    }
+    rpc DeleteUserEmail(DeleteUserEmailRequest) returns (UserEmail) {
+        option (tinc.method).endpoint = {
+            delete: "/users/{id}/emails/{email}"
+        };
+    }
+}
+
+message UserByIdRequest {
+    string id = 1 [(tinc.field).constraint.string.ulid = true];
+}
+
+message User {
+    string id = 1 [(tinc.field).constraint.string.ulid = true];
+    string preferred_name = 2 [(tinc.field).constraint.string = {
+        min_len: 1,
+        max_len: 255
+    }];
+    string first_name = 3 [(tinc.field).constraint.string = {
+        min_len: 1,
+        max_len: 255
+    }];
+    string last_name = 4 [(tinc.field).constraint.string = {
+        min_len: 1,
+        max_len: 255
+    }];
+    string primary_email = 5 [(tinc.field).constraint.string.email = true];
+}
+
+message UpdateUserPasswordRequest {
+    // Can only be the authenticated user's ID.
+    string id = 1 [(tinc.field).constraint.string.ulid = true];
+    optional string current_password = 2 [(string_constraint).password = true];
+    string new_password = 3 [(string_constraint).password = true];
+}
+
+message UpdateUserNamesRequest {
+    string id = 1 [(tinc.field).constraint.string.ulid = true];
+    string preferred_name = 2 [(tinc.field).constraint.string = {
+        min_len: 1,
+        max_len: 255
+    }];
+    string first_name = 3 [(tinc.field).constraint.string = {
+        min_len: 1,
+        max_len: 255
+    }];
+    string last_name = 4 [(tinc.field).constraint.string = {
+        min_len: 1,
+        max_len: 255
+    }];
+}
+
+message UpdateUserPrimaryEmailRequest {
+    // Can only be the authenticated user's ID.
+    string id = 1 [(tinc.field).constraint.string.ulid = true];
+    string primary_email = 2 [(tinc.field).constraint.string.email = true];
+}
+
+message GetUserEmailsResponse {
+    repeated UserEmail emails = 1;
+}
+
+message UserEmail {
+    string email = 1 [(tinc.field).constraint.string.email = true];
+    google.protobuf.Timestamp created_at_utc = 2;
+}
+
+message CreateUserEmailRequest {
+    string id = 1 [(tinc.field).constraint.string.ulid = true];
+    CaptchaChallengeResponse captcha = 2;
+    string email = 3 [(tinc.field).constraint.string.email = true];
+}
+
+message CompleteCreateUserEmailRequest {
+    // Can only be the authenticated user's ID.
+    string id = 1 [(tinc.field).constraint.string.ulid = true];
+    string token = 2;
+}
+
+message DeleteUserEmailRequest {
+    string id = 1 [(tinc.field).constraint.string.ulid = true];
+    string email = 2 [(tinc.field).constraint.string.email = true];
+}

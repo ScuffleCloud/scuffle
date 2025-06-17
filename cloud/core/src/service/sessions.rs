@@ -99,4 +99,8 @@ impl pb::scufflecloud::core::v1::sessions_service_server::SessionsService for Co
     ) -> Result<tonic::Response<pb::scufflecloud::core::v1::NewUserSessionToken>, tonic::Status> {
         Err(tonic::Status::unimplemented("not implemented yet"))
     }
+
+    async fn invalidate_user_session(&self, _request: tonic::Request<()>) -> Result<tonic::Response<()>, tonic::Status> {
+        Err(tonic::Status::unimplemented("not implemented yet"))
+    }
 }

@@ -80,16 +80,25 @@ service SessionsService {
         };
     }
 
-    // The actual session that gets refreshed is the current.
+    // Refresh the current session.
+    // Returns a new session token and invalidates the current one.
     rpc RefreshUserSession(google.protobuf.Empty) returns (NewUserSessionToken) {
         option (tinc.method).endpoint = {
             put: "/sessions/refresh"
         };
     }
+    // Deletes the current session.
+    rpc InvalidateUserSession(google.protobuf.Empty) returns (google.protobuf.Empty) {
+        option (tinc.method).endpoint = {
+            delete: "/sessions"
+        };
+    }
 }
 
 message Device {
+    // The crypto algorithm (e.g. RSA) used for the public key.
     CryptoAlgorithm algorithm = 1;
+    // Raw public key data.
     bytes public_key_data = 2;
 }
 
@@ -110,7 +119,7 @@ message CompleteRegisterWithEmailRequest {
     // The token received via email.
     string token = 1;
     // The password.
-    string password = 2 [(string_constraints).password = true];
+    string password = 2 [(string_constraint).password = true];
     Device device = 3;
 }
 

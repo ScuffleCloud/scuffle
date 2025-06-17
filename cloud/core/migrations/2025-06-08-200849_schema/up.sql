@@ -67,13 +67,13 @@ ON DELETE CASCADE;
 CREATE INDEX ON "user_session_requests"("code");
 
 -- https://www.iana.org/assignments/cose/cose.xhtml#algorithms
+-- https://w3c.github.io/webauthn/#dom-publickeycredentialcreationoptions-pubkeycredparams
 CREATE TYPE "crypto_algorithm" AS ENUM (
-    'EDDSA', -- Deprecated
-    'ES256', -- ECDSA w/ SHA-256 -- Deprecated
-    'RS256', -- RSASSA-PKCS1-v1_5 using SHA-256 -- Not recommended
-    'ESP512', -- ECDSA using P-521 curve and SHA-512 -- Recommended
-    'ESP384', -- ECDSA using P-384 curve and SHA-384 -- Recommended
-    'ESP256' -- ECDSA using P-256 curve and SHA-256 -- Recommended
+    'ED25519', -- -8 and -19
+    'ESP256', -- -7 and -9
+    'RS256', -- -257
+    'ESP384', -- -35 and -51
+    'ESP512' -- -36 and -52
     -- ...
 );
 

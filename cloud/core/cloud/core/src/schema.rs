@@ -2,6 +2,10 @@
 
 pub mod sql_types {
     #[derive(diesel::query_builder::QueryId, Clone, diesel::sql_types::SqlType)]
+    #[diesel(postgres_type(name = "crypto_algorithm"))]
+    pub struct CryptoAlgorithm;
+
+    #[derive(diesel::query_builder::QueryId, Clone, diesel::sql_types::SqlType)]
     #[diesel(postgres_type(name = "mfa_factor_type"))]
     pub struct MfaFactorType;
 }
@@ -29,6 +33,30 @@ diesel::table! {
         type_ -> MfaFactorType,
         #[max_length = 255]
         secret -> Varchar,
+    }
+}
+
+diesel::table! {
+    mfa_totps (id) {
+        id -> Uuid,
+        user_id -> Uuid,
+        #[max_length = 255]
+        secret -> Varchar,
+    }
+}
+
+diesel::table! {
+    use diesel::sql_types::*;
+    use super::sql_types::CryptoAlgorithm;
+
+    mfa_webauthn_pks (id) {
+        id -> Uuid,
+        user_id -> Uuid,
+        algorithm -> CryptoAlgorithm,
+        pk_id -> Bytea,
+        pk_data -> Bytea,
+        current_challenge -> Nullable<Bytea>,
+        current_challenge_expires_at -> Nullable<Timestamptz>,
     }
 }
 
@@ -162,16 +190,34 @@ diesel::table! {
 }
 
 diesel::table! {
-    user_sessions (user_id, device_id) {
-        user_id -> Uuid,
-        device_id -> Uuid,
+    user_session_requests (id) {
+        id -> Uuid,
         #[max_length = 255]
-        device_public_key -> Varchar,
+        device_name -> Varchar,
+        device_ip -> Inet,
+        #[max_length = 6]
+        code -> Varchar,
+        approved_by -> Nullable<Uuid>,
+        expires_at -> Timestamptz,
+    }
+}
+
+diesel::table! {
+    use diesel::sql_types::*;
+    use super::sql_types::CryptoAlgorithm;
+
+    user_sessions (user_id, device_fingerprint) {
+        user_id -> Uuid,
+        device_fingerprint -> Array<Nullable<Bit>>,
+        device_algorithm -> CryptoAlgorithm,
+        device_pk_data -> Bytea,
         last_used_at -> Timestamptz,
         last_ip -> Inet,
+        token_id -> Nullable<Uuid>,
         #[max_length = 255]
         token -> Nullable<Varchar>,
         token_expires_at -> Nullable<Timestamptz>,
+        expires_at -> Timestamptz,
     }
 }
 
@@ -192,7 +238,8 @@ diesel::table! {
 }
 
 diesel::joinable!(email_registration_requests -> users (user_id));
-diesel::joinable!(mfa_factors -> users (user_id));
+diesel::joinable!(mfa_totps -> users (user_id));
+diesel::joinable!(mfa_webauthn_pks -> users (user_id));
 diesel::joinable!(organization_invites -> organizations (organization_id));
 diesel::joinable!(organization_member_policies -> policies (policy_id));
 diesel::joinable!(organization_members -> organizations (organization_id));
@@ -209,11 +256,14 @@ diesel::joinable!(service_account_tokens -> service_accounts (service_account_id
 diesel::joinable!(service_accounts -> organizations (organization_id));
 diesel::joinable!(service_accounts -> projects (project_id));
 diesel::joinable!(user_google_accounts -> users (user_id));
+diesel::joinable!(user_session_requests -> users (approved_by));
 diesel::joinable!(user_sessions -> users (user_id));
 
 diesel::allow_tables_to_appear_in_same_query!(
     email_registration_requests,
     mfa_factors,
+    mfa_totps,
+    mfa_webauthn_pks,
     organization_invites,
     organization_member_policies,
     organization_members,
@@ -227,6 +277,7 @@ diesel::allow_tables_to_appear_in_same_query!(
     service_accounts,
     user_emails,
     user_google_accounts,
+    user_session_requests,
     user_sessions,
     users,
 );

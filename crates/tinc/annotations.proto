@@ -619,10 +619,10 @@ message StringConstraints {
       expression: "!this || input.isUri()"
       jsonschemas: 'this ? { "format": "uri" } : {}'
     }];
-        bool ulid = 20 [(predefined).cel = {
-            expression: "!this || input.isUri()"
-            jsonschemas: 'this ? { "format": "uri" } : {}'
-        }];
+    bool ulid = 20 [(predefined).cel = {
+        expression: "!this || input.isUri()"
+        jsonschemas: 'this ? { "format": "uri" } : {}'
+    }];
 
     }
 }

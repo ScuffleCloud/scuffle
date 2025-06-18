@@ -14,9 +14,9 @@ name = "scufflecloud-core"
 path = "src/bin/standalone.rs"
 
 [dependencies]
-axum = "0.8.4"
 anyhow = "1.0.98"
 async-trait = "0.1.88"
+axum = "0.8.4"
 diesel = { features = ["chrono"], version = "2.2.10" }
 diesel-async = { features = ["async-connection-wrapper", "bb8", "postgres"], version = "0.5.2" }
 pb = { package = "scufflecloud-proto", path = "../proto" }

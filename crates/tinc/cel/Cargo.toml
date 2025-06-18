@@ -31,9 +31,9 @@ num-traits = "0.2.19"
 regex = "1"
 scuffle-workspace-hack.workspace = true
 thiserror = "2"
+ulid = "1"
 url = "2"
 uuid = "1"
-ulid = "1"
 
 [dev-dependencies]
 insta = "1.43"

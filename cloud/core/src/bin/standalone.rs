@@ -46,6 +46,6 @@ impl scuffle_bootstrap::Global for Global {
 scuffle_bootstrap::main! {
     Global {
         scuffle_signal::SignalSvc,
-        scufflecloud_core::service::CoreSvc,
+        scufflecloud_core::services::CoreSvc,
     }
 }

@@ -932,7 +932,10 @@ dependencies = [
  "byteorder",
  "chrono",
  "diesel_derives",
+ "ipnetwork",
  "itoa",
+ "libc",
+ "uuid",
 ]
 
 [[package]]
@@ -1788,6 +1791,12 @@ name = "ipnet"
 version = "2.11.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "469fb0b9cefa57e3ef31275ee7cacb78f2fdca44e4765491884a2b119d4eb130"
+
+[[package]]
+name = "ipnetwork"
+version = "0.21.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "cf370abdafd54d13e54a620e8c3e1145f28e46cc9d704bc6d94414559df41763"
 
 [[package]]
 name = "iri-string"
@@ -3923,6 +3932,7 @@ dependencies = [
  "tracing-core",
  "tracing-log",
  "tracing-subscriber",
+ "ulid",
  "unicode-xid",
  "windows-sys 0.52.0",
  "windows-sys 0.59.0",
@@ -3952,6 +3962,8 @@ dependencies = [
  "tower-http",
  "tracing",
  "tracing-subscriber",
+ "ulid",
+ "uuid",
 ]
 
 [[package]]
@@ -4406,7 +4418,7 @@ dependencies = [
 
 [[package]]
 name = "tinc"
-version = "0.1.5"
+version = "0.1.6"
 dependencies = [
  "axum",
  "base64 0.22.1",
@@ -4440,7 +4452,7 @@ dependencies = [
 
 [[package]]
 name = "tinc-build"
-version = "0.1.5"
+version = "0.1.6"
 dependencies = [
  "anyhow",
  "base64 0.22.1",
@@ -4475,7 +4487,7 @@ dependencies = [
 
 [[package]]
 name = "tinc-cel"
-version = "0.1.5"
+version = "0.1.6"
 dependencies = [
  "bytes",
  "chrono",
@@ -4496,7 +4508,7 @@ dependencies = [
 
 [[package]]
 name = "tinc-derive"
-version = "0.1.5"
+version = "0.1.6"
 dependencies = [
  "proc-macro2",
  "quote",
@@ -4528,7 +4540,7 @@ dependencies = [
 
 [[package]]
 name = "tinc-pb-prost"
-version = "0.1.5"
+version = "0.1.6"
 dependencies = [
  "document-features",
  "prost 0.13.5",
@@ -4994,6 +5006,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "470dbf6591da1b39d43c14523b2b469c86879a53e8b758c8e090a470fe7b1fbe"
 dependencies = [
  "rand 0.9.1",
+ "uuid",
  "web-time",
 ]
 

@@ -7,6 +7,7 @@ use tower_http::cors::CorsLayer;
 
 use crate::CoreGlobal;
 
+mod organization_invitations;
 mod organizations;
 mod sessions;
 mod users;

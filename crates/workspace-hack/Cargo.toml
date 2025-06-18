@@ -82,6 +82,7 @@ tracing = { version = "0.1", features = ["log"] }
 tracing-core = { version = "0.1" }
 tracing-log = { version = "0.2", default-features = false, features = ["log-tracer", "std"] }
 tracing-subscriber = { version = "0.3", features = ["env-filter"] }
+ulid = { version = "1", features = ["uuid"] }
 unicode-xid = { version = "0.2" }
 
 [build-dependencies]
@@ -151,6 +152,7 @@ tracing = { version = "0.1", features = ["log"] }
 tracing-core = { version = "0.1" }
 tracing-log = { version = "0.2", default-features = false, features = ["log-tracer", "std"] }
 tracing-subscriber = { version = "0.3", features = ["env-filter"] }
+ulid = { version = "1", features = ["uuid"] }
 unicode-xid = { version = "0.2" }
 
 [target.x86_64-unknown-linux-gnu.dependencies]

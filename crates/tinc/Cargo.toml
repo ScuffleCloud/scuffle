@@ -1,6 +1,6 @@
 [package]
 name = "tinc"
-version = "0.1.5"
+version = "0.1.6"
 edition = "2024"
 description = "GRPc to REST transcoding library"
 repository = "https://github.com/scufflecloud/scuffle"
@@ -53,8 +53,8 @@ document-features = { optional = true, version = "0.2" }
 openapiv3_1 = { path = "../openapiv3_1", version = "0.1.1" }
 scuffle-changelog = { optional = true, path = "../changelog", version = "0.1.0" }
 scuffle-workspace-hack.workspace = true
-tinc-cel = { features = ["runtime"], path = "cel", version = "=0.1.5" }
-tinc-derive = { path = "derive", version = "=0.1.5" }
+tinc-cel = { features = ["runtime"], path = "cel", version = "=0.1.6" }
+tinc-derive = { path = "derive", version = "=0.1.6" }
 
 [package.metadata.docs.rs]
 all-features = true

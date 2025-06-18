@@ -133,9 +133,9 @@ mod tests {
                 }
 
                 #[test]
-                fn test_is_hostname() {
+                fn test_is_ulid() {
                     assert_eq!(is_ulid("01F6MKTFTG0009C9ZSNZTFV2ZF").unwrap(), true);
-                    assert_eq!(is_ulid("not-a-uri").unwrap(), false);
+                    assert_eq!(is_ulid("not-a-ulid").unwrap(), false);
                 }
             },
         ));

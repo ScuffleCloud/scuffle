@@ -1,4 +1,4 @@
-use crate::service::CoreSvc;
+use crate::services::CoreSvc;
 
 #[async_trait::async_trait]
 impl pb::scufflecloud::core::v1::organizations_service_server::OrganizationsService for CoreSvc {

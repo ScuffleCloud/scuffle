@@ -8,8 +8,9 @@
 
 use std::net::SocketAddr;
 
+pub mod models;
 pub mod schema;
-pub mod service;
+pub mod services;
 
 pub trait CoreGlobal: scuffle_bootstrap::Global + scuffle_signal::SignalConfig {
     fn bind(&self) -> SocketAddr;

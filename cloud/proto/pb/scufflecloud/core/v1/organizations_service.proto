@@ -4,6 +4,8 @@ package scufflecloud.core.v1;
 
 import "tinc/annotations.proto";
 
+import "scufflecloud/core/v1/users_service.proto";
+
 service OrganizationsService {
     rpc CreateOrganization(CreateOrganizationRequest) returns (Organization) {
         option (tinc.method).endpoint = {
@@ -15,9 +17,15 @@ service OrganizationsService {
             get: "/organizations/{id}"
         };
     }
-    rpc GetOrganizationMembers(OrganizationByIdRequest) returns (OrganizationMembers) {
+    rpc ListOrganizationMembers(OrganizationByIdRequest) returns (OrganizationMemberList) {
         option (tinc.method).endpoint = {
             get: "/organizations/{id}/members"
+        };
+    }
+
+    rpc ListOrganizationsByUser(UserByIdRequest) returns (OrganizationList) {
+        option (tinc.method).endpoint = {
+            get: "/users/{id}/organizations"
         };
     }
 }
@@ -38,6 +46,10 @@ message Organization {
     string owner_id = 3 [(tinc.field).constraint.string.ulid = true];
 }
 
+message OrganizationList {
+    repeated Organization organizations = 1;
+}
+
 message OrganizationByIdRequest {
     string id = 1 [(tinc.field).constraint.string.ulid = true];
 }
@@ -47,6 +59,6 @@ message OrganizationMember {
     optional string invited_by_id = 2 [(tinc.field).constraint.string.ulid = true];
 }
 
-message OrganizationMembers {
+message OrganizationMemberList {
     repeated OrganizationMember members = 1;
 }

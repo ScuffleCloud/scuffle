@@ -1,0 +1,65 @@
+syntax = "proto3";
+
+package scufflecloud.core.v1;
+
+import "google/protobuf/timestamp.proto";
+import "tinc/annotations.proto";
+
+import "scufflecloud/core/v1/users_service.proto";
+import "scufflecloud/core/v1/organizations_service.proto";
+
+service OrganizationInvitationsService {
+    rpc CreateOrganizationInvitation(CreateOrganizationInvitationRequest) returns (OrganizationInvitation) {
+        option (tinc.method).endpoint = {
+            post: "/organization-invitations"
+        };
+    }
+
+    rpc ListOrganizationInvitationsByOrganization(OrganizationByIdRequest) returns (OrganizationInvitationList) {
+        option (tinc.method).endpoint = {
+            get: "/organizations/{id}/invitations"
+        };
+    }
+    rpc ListOrgnizationInvitesByUser(UserByIdRequest) returns (OrganizationInvitationList) {
+        option (tinc.method).endpoint = {
+            get: "/users/{id}/invitations"
+        };
+    }
+
+    rpc GetOrganizationInvitation(OrganizationInvitationByIdRequest) returns (OrganizationInvitation) {
+        option (tinc.method).endpoint = {
+            get: "/organization-invitations/{id}"
+        };
+    }
+    rpc AcceptOrganizationInvitation(OrganizationInvitationByIdRequest) returns (OrganizationInvitation) {
+        option (tinc.method).endpoint = {
+            post: "/organization-invitations/{id}/accept"
+        };
+    }
+    rpc DeclineOrganizationInvitation(OrganizationInvitationByIdRequest) returns (OrganizationInvitation) {
+        option (tinc.method).endpoint = {
+            post: "/organization-invitations/{id}/decline"
+        };
+    }
+}
+
+message OrganizationInvitation {
+    string id = 1 [(tinc.field).constraint.string.ulid = true];
+    optional string user_id = 2 [(tinc.field).constraint.string.ulid = true];
+    string organization_id = 3 [(tinc.field).constraint.string.ulid = true];
+    string email = 4 [(tinc.field).constraint.string.email = true];
+    string invited_by_id = 5 [(tinc.field).constraint.string.ulid = true];
+    optional google.protobuf.Timestamp expires_at_utc = 6;
+}
+
+message CreateOrganizationInvitationRequest {
+    string email = 1 [(tinc.field).constraint.string.email = true];
+}
+
+message OrganizationInvitationList {
+    repeated OrganizationInvitation invitation = 1;
+}
+
+message OrganizationInvitationByIdRequest {
+    string id = 1 [(tinc.field).constraint.string.ulid = true];
+}

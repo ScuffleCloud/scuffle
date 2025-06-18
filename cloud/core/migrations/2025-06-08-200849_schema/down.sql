@@ -1,4 +1,4 @@
-DROP TABLE IF EXISTS "organization_invites" CASCADE;
+DROP TABLE IF EXISTS "organization_invitations" CASCADE;
 DROP TABLE IF EXISTS "email_registration_requests" CASCADE;
 DROP TABLE IF EXISTS "service_account_policies" CASCADE;
 DROP TABLE IF EXISTS "service_account_tokens" CASCADE;

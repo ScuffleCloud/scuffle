@@ -33,7 +33,9 @@ CREATE INDEX ON "user_emails"("user_id");
 
 -- User connections to external authentication providers.
 --
--- TODO: Research required for workspaces API.
+-- https://developers.google.com/people/api/rest/v1/people/get
+-- https://developers.google.com/people/api/rest/v1/people#Person
+-- https://developers.google.com/people/api/rest/v1/people#Person.Organization
 CREATE TABLE "user_google_accounts" (
     "id" VARCHAR(255) PRIMARY KEY, -- Research required
     "user_id" UUID NOT NULL,
@@ -299,7 +301,7 @@ ADD FOREIGN KEY("user_id") REFERENCES "users"("id");
 -- This is used for inviting users to an organization.
 -- When user_id is set, it indicates that the invite is for an existing user to join the organization and can
 -- only be used for that selected user.
-CREATE TABLE "organization_invites" (
+CREATE TABLE "organization_invitations" (
     "id" UUID PRIMARY KEY,
     "user_id" UUID,
     "organization_id" UUID NOT NULL,
@@ -308,14 +310,14 @@ CREATE TABLE "organization_invites" (
     "expiries_at" TIMESTAMPTZ
 );
 
-ALTER TABLE "organization_invites"
+ALTER TABLE "organization_invitations"
 ADD FOREIGN KEY("user_id") REFERENCES "users"("id")
 ON DELETE CASCADE;
 
-ALTER TABLE "organization_invites"
+ALTER TABLE "organization_invitations"
 ADD FOREIGN KEY("organization_id") REFERENCES "organizations"("id")
 ON DELETE CASCADE;
 
-ALTER TABLE "organization_invites"
+ALTER TABLE "organization_invitations"
 ADD FOREIGN KEY("invited_by_id") REFERENCES "users"("id")
 ON DELETE CASCADE;

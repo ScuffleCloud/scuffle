@@ -1,0 +1,14 @@
+[[tinc-cel]]
+category = "feat"
+description = "Add a ULID constraint"
+authors = ["@lennartkloock"]
+
+[[tinc-build]]
+category = "feat"
+description = "Add a ULID constraint"
+authors = ["@lennartkloock"]
+
+[[tinc-build]]
+category = "feat"
+description = "Ignore all clippy lints in generated code"
+authors = ["@lennartkloock"]

@@ -8,6 +8,7 @@
 
 use std::net::SocketAddr;
 
+pub mod id;
 pub mod models;
 pub mod schema;
 pub mod services;

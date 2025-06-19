@@ -935,6 +935,7 @@ dependencies = [
  "ipnetwork",
  "itoa",
  "libc",
+ "serde_json",
  "uuid",
 ]
 
@@ -3950,8 +3951,10 @@ dependencies = [
  "anyhow",
  "async-trait",
  "axum",
+ "chrono",
  "diesel",
  "diesel-async",
+ "ipnetwork",
  "scuffle-bootstrap 0.1.5",
  "scuffle-context 0.1.5 (registry+https://github.com/rust-lang/crates.io-index)",
  "scuffle-http 0.3.2 (registry+https://github.com/rust-lang/crates.io-index)",
@@ -3961,6 +3964,7 @@ dependencies = [
  "scufflecloud-proto",
  "serde",
  "serde_derive",
+ "serde_json",
  "smart-default",
  "tinc",
  "tonic",

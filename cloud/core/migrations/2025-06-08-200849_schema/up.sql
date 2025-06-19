@@ -35,9 +35,10 @@ CREATE INDEX ON "user_emails"("user_id");
 --
 -- https://developers.google.com/people/api/rest/v1/people/get
 -- https://developers.google.com/people/api/rest/v1/people#Person
--- https://developers.google.com/people/api/rest/v1/people#Person.Organization
+-- Person.memberships.metadata.source
+-- Also: Person.metadata.sources.profileMetadata.userTypes == GOOGLE_APPS_USER
 CREATE TABLE "user_google_accounts" (
-    "id" VARCHAR(255) PRIMARY KEY, -- Research required
+    "id" VARCHAR(255) PRIMARY KEY,
     "user_id" UUID NOT NULL,
     "access_token" VARCHAR(255) NOT NULL,
     "refresh_token" VARCHAR(255) NOT NULL,
@@ -83,7 +84,7 @@ CREATE TYPE "crypto_algorithm" AS ENUM (
 -- "last_used_at" and "last_ip" is updated every time this session is reactivated.
 CREATE TABLE "user_sessions" (
     "user_id" UUID NOT NULL,
-    "device_fingerprint" BIT[256] NOT NULL UNIQUE,
+    "device_fingerprint" BIT(256) NOT NULL UNIQUE,
     "device_algorithm" CRYPTO_ALGORITHM NOT NULL,
     "device_pk_data" BYTEA NOT NULL,
     "last_used_at" TIMESTAMPTZ NOT NULL,
@@ -307,7 +308,7 @@ CREATE TABLE "organization_invitations" (
     "organization_id" UUID NOT NULL,
     "email" VARCHAR(255) NOT NULL,
     "invited_by_id" UUID NOT NULL,
-    "expiries_at" TIMESTAMPTZ
+    "expires_at" TIMESTAMPTZ
 );
 
 ALTER TABLE "organization_invitations"

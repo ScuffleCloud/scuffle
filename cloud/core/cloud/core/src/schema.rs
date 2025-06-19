@@ -4,10 +4,6 @@ pub mod sql_types {
     #[derive(diesel::query_builder::QueryId, Clone, diesel::sql_types::SqlType)]
     #[diesel(postgres_type(name = "crypto_algorithm"))]
     pub struct CryptoAlgorithm;
-
-    #[derive(diesel::query_builder::QueryId, Clone, diesel::sql_types::SqlType)]
-    #[diesel(postgres_type(name = "mfa_factor_type"))]
-    pub struct MfaFactorType;
 }
 
 diesel::table! {
@@ -19,20 +15,6 @@ diesel::table! {
         #[max_length = 255]
         token -> Varchar,
         expires_at -> Timestamptz,
-    }
-}
-
-diesel::table! {
-    use diesel::sql_types::*;
-    use super::sql_types::MfaFactorType;
-
-    mfa_factors (id) {
-        id -> Uuid,
-        user_id -> Uuid,
-        #[sql_name = "type"]
-        type_ -> MfaFactorType,
-        #[max_length = 255]
-        secret -> Varchar,
     }
 }
 
@@ -61,14 +43,14 @@ diesel::table! {
 }
 
 diesel::table! {
-    organization_invites (id) {
+    organization_invitations (id) {
         id -> Uuid,
         user_id -> Nullable<Uuid>,
         organization_id -> Uuid,
         #[max_length = 255]
         email -> Varchar,
         invited_by_id -> Uuid,
-        expiries_at -> Nullable<Timestamptz>,
+        expires_at -> Nullable<Timestamptz>,
     }
 }
 
@@ -208,7 +190,8 @@ diesel::table! {
 
     user_sessions (user_id, device_fingerprint) {
         user_id -> Uuid,
-        device_fingerprint -> Array<Nullable<Bit>>,
+        #[max_length = 256]
+        device_fingerprint -> Bit,
         device_algorithm -> CryptoAlgorithm,
         device_pk_data -> Bytea,
         last_used_at -> Timestamptz,
@@ -240,7 +223,7 @@ diesel::table! {
 diesel::joinable!(email_registration_requests -> users (user_id));
 diesel::joinable!(mfa_totps -> users (user_id));
 diesel::joinable!(mfa_webauthn_pks -> users (user_id));
-diesel::joinable!(organization_invites -> organizations (organization_id));
+diesel::joinable!(organization_invitations -> organizations (organization_id));
 diesel::joinable!(organization_member_policies -> policies (policy_id));
 diesel::joinable!(organization_members -> organizations (organization_id));
 diesel::joinable!(organizations -> users (owner_id));
@@ -261,10 +244,9 @@ diesel::joinable!(user_sessions -> users (user_id));
 
 diesel::allow_tables_to_appear_in_same_query!(
     email_registration_requests,
-    mfa_factors,
     mfa_totps,
     mfa_webauthn_pks,
-    organization_invites,
+    organization_invitations,
     organization_member_policies,
     organization_members,
     organizations,

@@ -19,3 +19,8 @@ docs/build
 docs/.docusaurus
 docs/.cache-loader
 .runner/
+
+# bazel
+bazel-*
+target/
+rust-project.json

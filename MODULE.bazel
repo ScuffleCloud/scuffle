@@ -1,0 +1,8 @@
+module(
+    name = "scuffle",
+    version = "1.0",
+)
+
+bazel_dep(name = "bazel_skylib", version = "1.7.1")
+
+include("//bazel:rust.MODULE.bazel")

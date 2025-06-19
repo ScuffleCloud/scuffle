@@ -1,0 +1,7 @@
+common --color=yes
+
+# Enforce BzlMod usage
+common --noenable_workspace
+common --enable_bzlmod=true
+
+common --experimental_isolated_extension_usages

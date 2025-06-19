@@ -17,8 +17,10 @@ path = "src/bin/standalone.rs"
 anyhow = "1.0.98"
 async-trait = "0.1.88"
 axum = "0.8.4"
-diesel = { features = ["chrono", "network-address", "uuid"], version = "2.2.10" }
+chrono = "0.4.41"
+diesel = { features = ["chrono", "network-address", "serde_json", "uuid"], version = "2.2.10" }
 diesel-async = { features = ["async-connection-wrapper", "bb8", "postgres"], version = "0.5.2" }
+ipnetwork = "0.21.1"
 pb = { package = "scufflecloud-proto", path = "../proto" }
 scuffle-bootstrap = "0.1.5"
 scuffle-context = "0.1.5"
@@ -27,6 +29,7 @@ scuffle-settings = { features = ["all-formats", "bootstrap"], version = "0.1.4" 
 scuffle-signal = { features = ["bootstrap"], version = "0.3.3" }
 serde = "1.0.219"
 serde_derive = "1.0.219"
+serde_json = "1.0.140"
 smart-default = "0.7.1"
 tinc = { path = "../../crates/tinc" }
 tonic = "0.13.1"

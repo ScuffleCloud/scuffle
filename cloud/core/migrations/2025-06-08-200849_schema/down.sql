@@ -15,7 +15,7 @@ DROP TABLE IF EXISTS "mfa_webauthn_pks" CASCADE;
 DROP TABLE IF EXISTS "mfa_totps" CASCADE;
 
 DROP TABLE IF EXISTS "user_sessions" CASCADE;
-DROP TABLE IF EXISTS "crypto_algorithm" CASCADE;
+DROP TYPE IF EXISTS "crypto_algorithm" CASCADE;
 DROP TABLE IF EXISTS "user_session_requests" CASCADE;
 DROP TABLE IF EXISTS "user_google_accounts" CASCADE;
 DROP TABLE IF EXISTS "user_emails" CASCADE;

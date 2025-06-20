@@ -34,9 +34,21 @@ rust_library(
             "WORKSPACE.bazel",
         ],
     ),
-    crate_features = [
-        "with-alloc",
-    ],
+    crate_features = select({
+        "@rules_rust//rust/platform:aarch64-apple-darwin": [
+            "with-alloc",  # aarch64-apple-darwin
+        ],
+        "@rules_rust//rust/platform:aarch64-unknown-linux-gnu": [
+            "with-alloc",  # aarch64-unknown-linux-gnu
+        ],
+        "@rules_rust//rust/platform:x86_64-apple-darwin": [
+            "with-alloc",  # x86_64-apple-darwin
+        ],
+        "@rules_rust//rust/platform:x86_64-unknown-linux-gnu": [
+            "with-alloc",  # x86_64-unknown-linux-gnu
+        ],
+        "//conditions:default": [],
+    }),
     crate_root = "src/lib.rs",
     edition = "2021",
     rustc_env_files = [
@@ -63,7 +75,19 @@ rust_library(
         "//conditions:default": ["@platforms//:incompatible"],
     }),
     version = "0.8.9",
-    deps = [
-        "@crates_vendor__adler2-2.0.1//:adler2",
-    ],
+    deps = select({
+        "@rules_rust//rust/platform:aarch64-apple-darwin": [
+            "@crates_vendor__adler2-2.0.1//:adler2",  # aarch64-apple-darwin
+        ],
+        "@rules_rust//rust/platform:aarch64-unknown-linux-gnu": [
+            "@crates_vendor__adler2-2.0.1//:adler2",  # aarch64-unknown-linux-gnu
+        ],
+        "@rules_rust//rust/platform:x86_64-apple-darwin": [
+            "@crates_vendor__adler2-2.0.1//:adler2",  # x86_64-apple-darwin
+        ],
+        "@rules_rust//rust/platform:x86_64-unknown-linux-gnu": [
+            "@crates_vendor__adler2-2.0.1//:adler2",  # x86_64-unknown-linux-gnu
+        ],
+        "//conditions:default": [],
+    }),
 )

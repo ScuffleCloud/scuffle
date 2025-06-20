@@ -38,7 +38,6 @@ rust_library(
         "follow-redirect",
         "futures-util",
         "iri-string",
-        "tower",
     ],
     crate_root = "src/lib.rs",
     edition = "2018",

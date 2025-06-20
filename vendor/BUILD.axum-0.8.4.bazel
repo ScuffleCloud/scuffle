@@ -22,6 +22,9 @@ rust_library(
         include = ["**/*.rs"],
         allow_empty = True,
     ),
+    aliases = {
+        "@crates_vendor__tokio-1.45.1//:tokio": "tokio",
+    },
     compile_data = glob(
         include = ["**"],
         allow_empty = True,

@@ -3453,7 +3453,6 @@ dependencies = [
  "darling",
  "proc-macro2",
  "quote",
- "scuffle-metrics",
  "syn",
 ]
 

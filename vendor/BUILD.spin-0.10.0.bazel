@@ -22,9 +22,21 @@ rust_library(
         include = ["**/*.rs"],
         allow_empty = True,
     ),
-    aliases = {
-        "@crates_vendor__lock_api-0.4.13//:lock_api": "lock_api_crate",
-    },
+    aliases = select({
+        "@rules_rust//rust/platform:aarch64-apple-darwin": {
+            "@crates_vendor__lock_api-0.4.13//:lock_api": "lock_api_crate",  # aarch64-apple-darwin
+        },
+        "@rules_rust//rust/platform:aarch64-unknown-linux-gnu": {
+            "@crates_vendor__lock_api-0.4.13//:lock_api": "lock_api_crate",  # aarch64-unknown-linux-gnu
+        },
+        "@rules_rust//rust/platform:x86_64-apple-darwin": {
+            "@crates_vendor__lock_api-0.4.13//:lock_api": "lock_api_crate",  # x86_64-apple-darwin
+        },
+        "@rules_rust//rust/platform:x86_64-unknown-linux-gnu": {
+            "@crates_vendor__lock_api-0.4.13//:lock_api": "lock_api_crate",  # x86_64-unknown-linux-gnu
+        },
+        "//conditions:default": {},
+    }),
     compile_data = glob(
         include = ["**"],
         allow_empty = True,
@@ -37,16 +49,49 @@ rust_library(
             "WORKSPACE.bazel",
         ],
     ),
-    crate_features = [
-        "barrier",
-        "default",
-        "lazy",
-        "lock_api",
-        "mutex",
-        "once",
-        "rwlock",
-        "spin_mutex",
-    ],
+    crate_features = select({
+        "@rules_rust//rust/platform:aarch64-apple-darwin": [
+            "barrier",  # aarch64-apple-darwin
+            "default",  # aarch64-apple-darwin
+            "lazy",  # aarch64-apple-darwin
+            "lock_api",  # aarch64-apple-darwin
+            "mutex",  # aarch64-apple-darwin
+            "once",  # aarch64-apple-darwin
+            "rwlock",  # aarch64-apple-darwin
+            "spin_mutex",  # aarch64-apple-darwin
+        ],
+        "@rules_rust//rust/platform:aarch64-unknown-linux-gnu": [
+            "barrier",  # aarch64-unknown-linux-gnu
+            "default",  # aarch64-unknown-linux-gnu
+            "lazy",  # aarch64-unknown-linux-gnu
+            "lock_api",  # aarch64-unknown-linux-gnu
+            "mutex",  # aarch64-unknown-linux-gnu
+            "once",  # aarch64-unknown-linux-gnu
+            "rwlock",  # aarch64-unknown-linux-gnu
+            "spin_mutex",  # aarch64-unknown-linux-gnu
+        ],
+        "@rules_rust//rust/platform:x86_64-apple-darwin": [
+            "barrier",  # x86_64-apple-darwin
+            "default",  # x86_64-apple-darwin
+            "lazy",  # x86_64-apple-darwin
+            "lock_api",  # x86_64-apple-darwin
+            "mutex",  # x86_64-apple-darwin
+            "once",  # x86_64-apple-darwin
+            "rwlock",  # x86_64-apple-darwin
+            "spin_mutex",  # x86_64-apple-darwin
+        ],
+        "@rules_rust//rust/platform:x86_64-unknown-linux-gnu": [
+            "barrier",  # x86_64-unknown-linux-gnu
+            "default",  # x86_64-unknown-linux-gnu
+            "lazy",  # x86_64-unknown-linux-gnu
+            "lock_api",  # x86_64-unknown-linux-gnu
+            "mutex",  # x86_64-unknown-linux-gnu
+            "once",  # x86_64-unknown-linux-gnu
+            "rwlock",  # x86_64-unknown-linux-gnu
+            "spin_mutex",  # x86_64-unknown-linux-gnu
+        ],
+        "//conditions:default": [],
+    }),
     crate_root = "src/lib.rs",
     edition = "2015",
     rustc_env_files = [
@@ -73,7 +118,19 @@ rust_library(
         "//conditions:default": ["@platforms//:incompatible"],
     }),
     version = "0.10.0",
-    deps = [
-        "@crates_vendor__lock_api-0.4.13//:lock_api",
-    ],
+    deps = select({
+        "@rules_rust//rust/platform:aarch64-apple-darwin": [
+            "@crates_vendor__lock_api-0.4.13//:lock_api",  # aarch64-apple-darwin
+        ],
+        "@rules_rust//rust/platform:aarch64-unknown-linux-gnu": [
+            "@crates_vendor__lock_api-0.4.13//:lock_api",  # aarch64-unknown-linux-gnu
+        ],
+        "@rules_rust//rust/platform:x86_64-apple-darwin": [
+            "@crates_vendor__lock_api-0.4.13//:lock_api",  # x86_64-apple-darwin
+        ],
+        "@rules_rust//rust/platform:x86_64-unknown-linux-gnu": [
+            "@crates_vendor__lock_api-0.4.13//:lock_api",  # x86_64-unknown-linux-gnu
+        ],
+        "//conditions:default": [],
+    }),
 )

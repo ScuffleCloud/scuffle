@@ -72,5 +72,13 @@ rust_library(
         "@crates_vendor__colorchoice-1.0.4//:colorchoice",
         "@crates_vendor__is_terminal_polyfill-1.70.1//:is_terminal_polyfill",
         "@crates_vendor__utf8parse-0.2.2//:utf8parse",
-    ],
+    ] + select({
+        "@rules_rust//rust/platform:aarch64-pc-windows-msvc": [
+            "@crates_vendor__anstyle-wincon-3.0.9//:anstyle_wincon",  # aarch64-pc-windows-msvc
+        ],
+        "@rules_rust//rust/platform:x86_64-pc-windows-msvc": [
+            "@crates_vendor__anstyle-wincon-3.0.9//:anstyle_wincon",  # x86_64-pc-windows-msvc
+        ],
+        "//conditions:default": [],
+    }),
 )

@@ -34,12 +34,33 @@ rust_library(
             "WORKSPACE.bazel",
         ],
     ),
-    crate_features = [
-        "any_impl",
-        "default",
-        "miniz_oxide",
-        "rust_backend",
-    ],
+    crate_features = select({
+        "@rules_rust//rust/platform:aarch64-apple-darwin": [
+            "any_impl",  # aarch64-apple-darwin
+            "default",  # aarch64-apple-darwin
+            "miniz_oxide",  # aarch64-apple-darwin
+            "rust_backend",  # aarch64-apple-darwin
+        ],
+        "@rules_rust//rust/platform:aarch64-unknown-linux-gnu": [
+            "any_impl",  # aarch64-unknown-linux-gnu
+            "default",  # aarch64-unknown-linux-gnu
+            "miniz_oxide",  # aarch64-unknown-linux-gnu
+            "rust_backend",  # aarch64-unknown-linux-gnu
+        ],
+        "@rules_rust//rust/platform:x86_64-apple-darwin": [
+            "any_impl",  # x86_64-apple-darwin
+            "default",  # x86_64-apple-darwin
+            "miniz_oxide",  # x86_64-apple-darwin
+            "rust_backend",  # x86_64-apple-darwin
+        ],
+        "@rules_rust//rust/platform:x86_64-unknown-linux-gnu": [
+            "any_impl",  # x86_64-unknown-linux-gnu
+            "default",  # x86_64-unknown-linux-gnu
+            "miniz_oxide",  # x86_64-unknown-linux-gnu
+            "rust_backend",  # x86_64-unknown-linux-gnu
+        ],
+        "//conditions:default": [],
+    }),
     crate_root = "src/lib.rs",
     edition = "2018",
     rustc_env_files = [
@@ -66,8 +87,23 @@ rust_library(
         "//conditions:default": ["@platforms//:incompatible"],
     }),
     version = "1.1.2",
-    deps = [
-        "@crates_vendor__crc32fast-1.4.2//:crc32fast",
-        "@crates_vendor__miniz_oxide-0.8.9//:miniz_oxide",
-    ],
+    deps = select({
+        "@rules_rust//rust/platform:aarch64-apple-darwin": [
+            "@crates_vendor__crc32fast-1.4.2//:crc32fast",  # aarch64-apple-darwin
+            "@crates_vendor__miniz_oxide-0.8.9//:miniz_oxide",  # aarch64-apple-darwin
+        ],
+        "@rules_rust//rust/platform:aarch64-unknown-linux-gnu": [
+            "@crates_vendor__crc32fast-1.4.2//:crc32fast",  # aarch64-unknown-linux-gnu
+            "@crates_vendor__miniz_oxide-0.8.9//:miniz_oxide",  # aarch64-unknown-linux-gnu
+        ],
+        "@rules_rust//rust/platform:x86_64-apple-darwin": [
+            "@crates_vendor__crc32fast-1.4.2//:crc32fast",  # x86_64-apple-darwin
+            "@crates_vendor__miniz_oxide-0.8.9//:miniz_oxide",  # x86_64-apple-darwin
+        ],
+        "@rules_rust//rust/platform:x86_64-unknown-linux-gnu": [
+            "@crates_vendor__crc32fast-1.4.2//:crc32fast",  # x86_64-unknown-linux-gnu
+            "@crates_vendor__miniz_oxide-0.8.9//:miniz_oxide",  # x86_64-unknown-linux-gnu
+        ],
+        "//conditions:default": [],
+    }),
 )

@@ -38,13 +38,23 @@ rust_library(
             "WORKSPACE.bazel",
         ],
     ),
-    crate_features = [
-        "consoleapi",
-        "errhandlingapi",
-        "fileapi",
-        "handleapi",
-        "processenv",
-    ],
+    crate_features = select({
+        "@rules_rust//rust/platform:aarch64-pc-windows-msvc": [
+            "consoleapi",  # aarch64-pc-windows-msvc
+            "errhandlingapi",  # aarch64-pc-windows-msvc
+            "fileapi",  # aarch64-pc-windows-msvc
+            "handleapi",  # aarch64-pc-windows-msvc
+            "processenv",  # aarch64-pc-windows-msvc
+        ],
+        "@rules_rust//rust/platform:x86_64-pc-windows-msvc": [
+            "consoleapi",  # x86_64-pc-windows-msvc
+            "errhandlingapi",  # x86_64-pc-windows-msvc
+            "fileapi",  # x86_64-pc-windows-msvc
+            "handleapi",  # x86_64-pc-windows-msvc
+            "processenv",  # x86_64-pc-windows-msvc
+        ],
+        "//conditions:default": [],
+    }),
     crate_root = "src/lib.rs",
     edition = "2015",
     rustc_env_files = [
@@ -95,13 +105,23 @@ cargo_build_script(
             "WORKSPACE.bazel",
         ],
     ),
-    crate_features = [
-        "consoleapi",
-        "errhandlingapi",
-        "fileapi",
-        "handleapi",
-        "processenv",
-    ],
+    crate_features = select({
+        "@rules_rust//rust/platform:aarch64-pc-windows-msvc": [
+            "consoleapi",  # aarch64-pc-windows-msvc
+            "errhandlingapi",  # aarch64-pc-windows-msvc
+            "fileapi",  # aarch64-pc-windows-msvc
+            "handleapi",  # aarch64-pc-windows-msvc
+            "processenv",  # aarch64-pc-windows-msvc
+        ],
+        "@rules_rust//rust/platform:x86_64-pc-windows-msvc": [
+            "consoleapi",  # x86_64-pc-windows-msvc
+            "errhandlingapi",  # x86_64-pc-windows-msvc
+            "fileapi",  # x86_64-pc-windows-msvc
+            "handleapi",  # x86_64-pc-windows-msvc
+            "processenv",  # x86_64-pc-windows-msvc
+        ],
+        "//conditions:default": [],
+    }),
     crate_name = "build_script_build",
     crate_root = "build.rs",
     data = glob(

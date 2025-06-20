@@ -34,10 +34,17 @@ rust_library(
             "WORKSPACE.bazel",
         ],
     ),
-    crate_features = [
-        "default",
-        "link",
-    ],
+    crate_features = select({
+        "@rules_rust//rust/platform:aarch64-apple-darwin": [
+            "default",  # aarch64-apple-darwin
+            "link",  # aarch64-apple-darwin
+        ],
+        "@rules_rust//rust/platform:x86_64-apple-darwin": [
+            "default",  # x86_64-apple-darwin
+            "link",  # x86_64-apple-darwin
+        ],
+        "//conditions:default": [],
+    }),
     crate_root = "src/lib.rs",
     edition = "2021",
     rustc_env_files = [
@@ -64,8 +71,15 @@ rust_library(
         "//conditions:default": ["@platforms//:incompatible"],
     }),
     version = "0.10.1",
-    deps = [
-        "@crates_vendor__core-foundation-sys-0.8.7//:core_foundation_sys",
-        "@crates_vendor__libc-0.2.173//:libc",
-    ],
+    deps = select({
+        "@rules_rust//rust/platform:aarch64-apple-darwin": [
+            "@crates_vendor__core-foundation-sys-0.8.7//:core_foundation_sys",  # aarch64-apple-darwin
+            "@crates_vendor__libc-0.2.173//:libc",  # aarch64-apple-darwin
+        ],
+        "@rules_rust//rust/platform:x86_64-apple-darwin": [
+            "@crates_vendor__core-foundation-sys-0.8.7//:core_foundation_sys",  # x86_64-apple-darwin
+            "@crates_vendor__libc-0.2.173//:libc",  # x86_64-apple-darwin
+        ],
+        "//conditions:default": [],
+    }),
 )

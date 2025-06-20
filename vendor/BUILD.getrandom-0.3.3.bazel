@@ -40,12 +40,7 @@ rust_library(
     ),
     crate_features = [
         "std",
-    ] + select({
-        "@rules_rust//rust/platform:wasm32-unknown-unknown": [
-            "wasm_js",  # wasm32-unknown-unknown
-        ],
-        "//conditions:default": [],
-    }),
+    ],
     crate_root = "src/lib.rs",
     edition = "2021",
     rustc_env_files = [
@@ -77,16 +72,16 @@ rust_library(
         "@crates_vendor__getrandom-0.3.3//:build_script_build",
     ] + select({
         "@rules_rust//rust/platform:aarch64-apple-darwin": [
-            "@crates_vendor__libc-0.2.173//:libc",  # cfg(any(target_os = "macos", target_os = "openbsd", target_os = "vita", target_os = "emscripten"))
+            "@crates_vendor__libc-0.2.173//:libc",  # aarch64-apple-darwin
         ],
         "@rules_rust//rust/platform:aarch64-unknown-linux-gnu": [
-            "@crates_vendor__libc-0.2.173//:libc",  # cfg(all(any(target_os = "linux", target_os = "android"), not(any(all(target_os = "linux", target_env = ""), getrandom_backend = "custom", getrandom_backend = "linux_raw", getrandom_backend = "rdrand", getrandom_backend = "rndr"))))
+            "@crates_vendor__libc-0.2.173//:libc",  # aarch64-unknown-linux-gnu
         ],
         "@rules_rust//rust/platform:x86_64-apple-darwin": [
-            "@crates_vendor__libc-0.2.173//:libc",  # cfg(any(target_os = "macos", target_os = "openbsd", target_os = "vita", target_os = "emscripten"))
+            "@crates_vendor__libc-0.2.173//:libc",  # x86_64-apple-darwin
         ],
         "@rules_rust//rust/platform:x86_64-unknown-linux-gnu": [
-            "@crates_vendor__libc-0.2.173//:libc",  # cfg(all(any(target_os = "linux", target_os = "android"), not(any(all(target_os = "linux", target_env = ""), getrandom_backend = "custom", getrandom_backend = "linux_raw", getrandom_backend = "rdrand", getrandom_backend = "rndr"))))
+            "@crates_vendor__libc-0.2.173//:libc",  # x86_64-unknown-linux-gnu
         ],
         "//conditions:default": [],
     }),
@@ -113,12 +108,7 @@ cargo_build_script(
     ),
     crate_features = [
         "std",
-    ] + select({
-        "@rules_rust//rust/platform:wasm32-unknown-unknown": [
-            "wasm_js",  # wasm32-unknown-unknown
-        ],
-        "//conditions:default": [],
-    }),
+    ],
     crate_name = "build_script_build",
     crate_root = "build.rs",
     data = glob(

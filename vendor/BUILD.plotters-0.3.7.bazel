@@ -70,11 +70,5 @@ rust_library(
         "@crates_vendor__num-traits-0.2.19//:num_traits",
         "@crates_vendor__plotters-backend-0.3.7//:plotters_backend",
         "@crates_vendor__plotters-svg-0.3.7//:plotters_svg",
-    ] + select({
-        "@rules_rust//rust/platform:wasm32-unknown-unknown": [
-            "@crates_vendor__wasm-bindgen-0.2.100//:wasm_bindgen",  # cfg(all(target_arch = "wasm32", not(target_os = "wasi")))
-            "@crates_vendor__web-sys-0.3.77//:web_sys",  # cfg(all(target_arch = "wasm32", not(target_os = "wasi")))
-        ],
-        "//conditions:default": [],
-    }),
+    ],
 )

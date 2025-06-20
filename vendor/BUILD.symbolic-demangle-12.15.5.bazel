@@ -38,12 +38,33 @@ rust_library(
             "WORKSPACE.bazel",
         ],
     ),
-    crate_features = [
-        "cpp",
-        "cpp_demangle",
-        "rust",
-        "rustc-demangle",
-    ],
+    crate_features = select({
+        "@rules_rust//rust/platform:aarch64-apple-darwin": [
+            "cpp",  # aarch64-apple-darwin
+            "cpp_demangle",  # aarch64-apple-darwin
+            "rust",  # aarch64-apple-darwin
+            "rustc-demangle",  # aarch64-apple-darwin
+        ],
+        "@rules_rust//rust/platform:aarch64-unknown-linux-gnu": [
+            "cpp",  # aarch64-unknown-linux-gnu
+            "cpp_demangle",  # aarch64-unknown-linux-gnu
+            "rust",  # aarch64-unknown-linux-gnu
+            "rustc-demangle",  # aarch64-unknown-linux-gnu
+        ],
+        "@rules_rust//rust/platform:x86_64-apple-darwin": [
+            "cpp",  # x86_64-apple-darwin
+            "cpp_demangle",  # x86_64-apple-darwin
+            "rust",  # x86_64-apple-darwin
+            "rustc-demangle",  # x86_64-apple-darwin
+        ],
+        "@rules_rust//rust/platform:x86_64-unknown-linux-gnu": [
+            "cpp",  # x86_64-unknown-linux-gnu
+            "cpp_demangle",  # x86_64-unknown-linux-gnu
+            "rust",  # x86_64-unknown-linux-gnu
+            "rustc-demangle",  # x86_64-unknown-linux-gnu
+        ],
+        "//conditions:default": [],
+    }),
     crate_root = "src/lib.rs",
     edition = "2021",
     rustc_env_files = [
@@ -71,11 +92,30 @@ rust_library(
     }),
     version = "12.15.5",
     deps = [
-        "@crates_vendor__cpp_demangle-0.4.4//:cpp_demangle",
-        "@crates_vendor__rustc-demangle-0.1.25//:rustc_demangle",
-        "@crates_vendor__symbolic-common-12.15.5//:symbolic_common",
         "@crates_vendor__symbolic-demangle-12.15.5//:build_script_build",
-    ],
+    ] + select({
+        "@rules_rust//rust/platform:aarch64-apple-darwin": [
+            "@crates_vendor__cpp_demangle-0.4.4//:cpp_demangle",  # aarch64-apple-darwin
+            "@crates_vendor__rustc-demangle-0.1.25//:rustc_demangle",  # aarch64-apple-darwin
+            "@crates_vendor__symbolic-common-12.15.5//:symbolic_common",  # aarch64-apple-darwin
+        ],
+        "@rules_rust//rust/platform:aarch64-unknown-linux-gnu": [
+            "@crates_vendor__cpp_demangle-0.4.4//:cpp_demangle",  # aarch64-unknown-linux-gnu
+            "@crates_vendor__rustc-demangle-0.1.25//:rustc_demangle",  # aarch64-unknown-linux-gnu
+            "@crates_vendor__symbolic-common-12.15.5//:symbolic_common",  # aarch64-unknown-linux-gnu
+        ],
+        "@rules_rust//rust/platform:x86_64-apple-darwin": [
+            "@crates_vendor__cpp_demangle-0.4.4//:cpp_demangle",  # x86_64-apple-darwin
+            "@crates_vendor__rustc-demangle-0.1.25//:rustc_demangle",  # x86_64-apple-darwin
+            "@crates_vendor__symbolic-common-12.15.5//:symbolic_common",  # x86_64-apple-darwin
+        ],
+        "@rules_rust//rust/platform:x86_64-unknown-linux-gnu": [
+            "@crates_vendor__cpp_demangle-0.4.4//:cpp_demangle",  # x86_64-unknown-linux-gnu
+            "@crates_vendor__rustc-demangle-0.1.25//:rustc_demangle",  # x86_64-unknown-linux-gnu
+            "@crates_vendor__symbolic-common-12.15.5//:symbolic_common",  # x86_64-unknown-linux-gnu
+        ],
+        "//conditions:default": [],
+    }),
 )
 
 cargo_build_script(
@@ -97,12 +137,33 @@ cargo_build_script(
             "WORKSPACE.bazel",
         ],
     ),
-    crate_features = [
-        "cpp",
-        "cpp_demangle",
-        "rust",
-        "rustc-demangle",
-    ],
+    crate_features = select({
+        "@rules_rust//rust/platform:aarch64-apple-darwin": [
+            "cpp",  # aarch64-apple-darwin
+            "cpp_demangle",  # aarch64-apple-darwin
+            "rust",  # aarch64-apple-darwin
+            "rustc-demangle",  # aarch64-apple-darwin
+        ],
+        "@rules_rust//rust/platform:aarch64-unknown-linux-gnu": [
+            "cpp",  # aarch64-unknown-linux-gnu
+            "cpp_demangle",  # aarch64-unknown-linux-gnu
+            "rust",  # aarch64-unknown-linux-gnu
+            "rustc-demangle",  # aarch64-unknown-linux-gnu
+        ],
+        "@rules_rust//rust/platform:x86_64-apple-darwin": [
+            "cpp",  # x86_64-apple-darwin
+            "cpp_demangle",  # x86_64-apple-darwin
+            "rust",  # x86_64-apple-darwin
+            "rustc-demangle",  # x86_64-apple-darwin
+        ],
+        "@rules_rust//rust/platform:x86_64-unknown-linux-gnu": [
+            "cpp",  # x86_64-unknown-linux-gnu
+            "cpp_demangle",  # x86_64-unknown-linux-gnu
+            "rust",  # x86_64-unknown-linux-gnu
+            "rustc-demangle",  # x86_64-unknown-linux-gnu
+        ],
+        "//conditions:default": [],
+    }),
     crate_name = "build_script_build",
     crate_root = "build.rs",
     data = glob(

@@ -39,7 +39,6 @@ rust_library(
         "async-await",
         "default",
         "executor",
-        "futures-executor",
         "std",
     ],
     crate_root = "src/lib.rs",

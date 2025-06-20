@@ -43,7 +43,6 @@ rust_library(
         "io-util",
         "libc",
         "macros",
-        "mio",
         "net",
         "parking_lot",
         "process",
@@ -56,27 +55,7 @@ rust_library(
         "test-util",
         "time",
         "tokio-macros",
-    ] + select({
-        "@rules_rust//rust/platform:aarch64-apple-darwin": [
-            "windows-sys",  # aarch64-apple-darwin
-        ],
-        "@rules_rust//rust/platform:aarch64-pc-windows-msvc": [
-            "windows-sys",  # aarch64-pc-windows-msvc
-        ],
-        "@rules_rust//rust/platform:aarch64-unknown-linux-gnu": [
-            "windows-sys",  # aarch64-unknown-linux-gnu
-        ],
-        "@rules_rust//rust/platform:x86_64-apple-darwin": [
-            "windows-sys",  # x86_64-apple-darwin
-        ],
-        "@rules_rust//rust/platform:x86_64-pc-windows-msvc": [
-            "windows-sys",  # x86_64-pc-windows-msvc
-        ],
-        "@rules_rust//rust/platform:x86_64-unknown-linux-gnu": [
-            "windows-sys",  # x86_64-unknown-linux-gnu
-        ],
-        "//conditions:default": [],
-    }),
+    ],
     crate_root = "src/lib.rs",
     edition = "2021",
     proc_macro_deps = [
@@ -111,5 +90,30 @@ rust_library(
         "@crates_vendor__mio-1.0.4//:mio",
         "@crates_vendor__parking_lot-0.12.4//:parking_lot",
         "@crates_vendor__pin-project-lite-0.2.16//:pin_project_lite",
-    ],
+        "@crates_vendor__socket2-0.5.10//:socket2",
+    ] + select({
+        "@rules_rust//rust/platform:aarch64-apple-darwin": [
+            "@crates_vendor__libc-0.2.173//:libc",  # aarch64-apple-darwin
+            "@crates_vendor__signal-hook-registry-1.4.5//:signal_hook_registry",  # aarch64-apple-darwin
+        ],
+        "@rules_rust//rust/platform:aarch64-pc-windows-msvc": [
+            "@crates_vendor__windows-sys-0.52.0//:windows_sys",  # aarch64-pc-windows-msvc
+        ],
+        "@rules_rust//rust/platform:aarch64-unknown-linux-gnu": [
+            "@crates_vendor__libc-0.2.173//:libc",  # aarch64-unknown-linux-gnu
+            "@crates_vendor__signal-hook-registry-1.4.5//:signal_hook_registry",  # aarch64-unknown-linux-gnu
+        ],
+        "@rules_rust//rust/platform:x86_64-apple-darwin": [
+            "@crates_vendor__libc-0.2.173//:libc",  # x86_64-apple-darwin
+            "@crates_vendor__signal-hook-registry-1.4.5//:signal_hook_registry",  # x86_64-apple-darwin
+        ],
+        "@rules_rust//rust/platform:x86_64-pc-windows-msvc": [
+            "@crates_vendor__windows-sys-0.52.0//:windows_sys",  # x86_64-pc-windows-msvc
+        ],
+        "@rules_rust//rust/platform:x86_64-unknown-linux-gnu": [
+            "@crates_vendor__libc-0.2.173//:libc",  # x86_64-unknown-linux-gnu
+            "@crates_vendor__signal-hook-registry-1.4.5//:signal_hook_registry",  # x86_64-unknown-linux-gnu
+        ],
+        "//conditions:default": [],
+    }),
 )

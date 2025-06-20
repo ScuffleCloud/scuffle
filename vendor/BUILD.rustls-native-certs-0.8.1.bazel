@@ -22,9 +22,15 @@ rust_library(
         include = ["**/*.rs"],
         allow_empty = True,
     ),
-    aliases = {
-        "@crates_vendor__rustls-pki-types-1.12.0//:rustls_pki_types": "pki_types",
-    },
+    aliases = select({
+        "@rules_rust//rust/platform:aarch64-unknown-linux-gnu": {
+            "@crates_vendor__rustls-pki-types-1.12.0//:rustls_pki_types": "pki-types",  # aarch64-unknown-linux-gnu
+        },
+        "@rules_rust//rust/platform:x86_64-unknown-linux-gnu": {
+            "@crates_vendor__rustls-pki-types-1.12.0//:rustls_pki_types": "pki-types",  # x86_64-unknown-linux-gnu
+        },
+        "//conditions:default": {},
+    }),
     compile_data = glob(
         include = ["**"],
         allow_empty = True,
@@ -63,26 +69,14 @@ rust_library(
         "//conditions:default": ["@platforms//:incompatible"],
     }),
     version = "0.8.1",
-    deps = [
-        "@crates_vendor__rustls-pki-types-1.12.0//:rustls_pki_types",
-    ] + select({
-        "@rules_rust//rust/platform:aarch64-apple-darwin": [
-            "@crates_vendor__security-framework-3.2.0//:security_framework",  # cfg(target_os = "macos")
-        ],
-        "@rules_rust//rust/platform:aarch64-pc-windows-msvc": [
-            "@crates_vendor__schannel-0.1.27//:schannel",  # cfg(windows)
-        ],
+    deps = select({
         "@rules_rust//rust/platform:aarch64-unknown-linux-gnu": [
-            "@crates_vendor__openssl-probe-0.1.6//:openssl_probe",  # cfg(all(unix, not(target_os = "macos")))
-        ],
-        "@rules_rust//rust/platform:x86_64-apple-darwin": [
-            "@crates_vendor__security-framework-3.2.0//:security_framework",  # cfg(target_os = "macos")
-        ],
-        "@rules_rust//rust/platform:x86_64-pc-windows-msvc": [
-            "@crates_vendor__schannel-0.1.27//:schannel",  # cfg(windows)
+            "@crates_vendor__openssl-probe-0.1.6//:openssl_probe",  # aarch64-unknown-linux-gnu
+            "@crates_vendor__rustls-pki-types-1.12.0//:rustls_pki_types",  # aarch64-unknown-linux-gnu
         ],
         "@rules_rust//rust/platform:x86_64-unknown-linux-gnu": [
-            "@crates_vendor__openssl-probe-0.1.6//:openssl_probe",  # cfg(all(unix, not(target_os = "macos")))
+            "@crates_vendor__openssl-probe-0.1.6//:openssl_probe",  # x86_64-unknown-linux-gnu
+            "@crates_vendor__rustls-pki-types-1.12.0//:rustls_pki_types",  # x86_64-unknown-linux-gnu
         ],
         "//conditions:default": [],
     }),

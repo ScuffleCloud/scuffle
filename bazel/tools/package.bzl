@@ -84,9 +84,9 @@ def scuffle_package(
 
 
     if crate_type == "proc_macro":
-        test_proc_macro_deps.append(":" + name)
+        test_proc_macro_deps += [":" + name]
     else:
-        test_deps.append(":" +name)
+        test_deps += [":" +name]
 
     if crate_test:
         rust_test(

@@ -38,16 +38,49 @@ rust_library(
             "WORKSPACE.bazel",
         ],
     ),
-    crate_features = [
-        "archive",
-        "coff",
-        "elf",
-        "macho",
-        "pe",
-        "read_core",
-        "unaligned",
-        "xcoff",
-    ],
+    crate_features = select({
+        "@rules_rust//rust/platform:aarch64-apple-darwin": [
+            "archive",  # aarch64-apple-darwin
+            "coff",  # aarch64-apple-darwin
+            "elf",  # aarch64-apple-darwin
+            "macho",  # aarch64-apple-darwin
+            "pe",  # aarch64-apple-darwin
+            "read_core",  # aarch64-apple-darwin
+            "unaligned",  # aarch64-apple-darwin
+            "xcoff",  # aarch64-apple-darwin
+        ],
+        "@rules_rust//rust/platform:aarch64-unknown-linux-gnu": [
+            "archive",  # aarch64-unknown-linux-gnu
+            "coff",  # aarch64-unknown-linux-gnu
+            "elf",  # aarch64-unknown-linux-gnu
+            "macho",  # aarch64-unknown-linux-gnu
+            "pe",  # aarch64-unknown-linux-gnu
+            "read_core",  # aarch64-unknown-linux-gnu
+            "unaligned",  # aarch64-unknown-linux-gnu
+            "xcoff",  # aarch64-unknown-linux-gnu
+        ],
+        "@rules_rust//rust/platform:x86_64-apple-darwin": [
+            "archive",  # x86_64-apple-darwin
+            "coff",  # x86_64-apple-darwin
+            "elf",  # x86_64-apple-darwin
+            "macho",  # x86_64-apple-darwin
+            "pe",  # x86_64-apple-darwin
+            "read_core",  # x86_64-apple-darwin
+            "unaligned",  # x86_64-apple-darwin
+            "xcoff",  # x86_64-apple-darwin
+        ],
+        "@rules_rust//rust/platform:x86_64-unknown-linux-gnu": [
+            "archive",  # x86_64-unknown-linux-gnu
+            "coff",  # x86_64-unknown-linux-gnu
+            "elf",  # x86_64-unknown-linux-gnu
+            "macho",  # x86_64-unknown-linux-gnu
+            "pe",  # x86_64-unknown-linux-gnu
+            "read_core",  # x86_64-unknown-linux-gnu
+            "unaligned",  # x86_64-unknown-linux-gnu
+            "xcoff",  # x86_64-unknown-linux-gnu
+        ],
+        "//conditions:default": [],
+    }),
     crate_root = "src/lib.rs",
     edition = "2018",
     rustc_env_files = [
@@ -75,9 +108,22 @@ rust_library(
     }),
     version = "0.36.7",
     deps = [
-        "@crates_vendor__memchr-2.7.5//:memchr",
         "@crates_vendor__object-0.36.7//:build_script_build",
-    ],
+    ] + select({
+        "@rules_rust//rust/platform:aarch64-apple-darwin": [
+            "@crates_vendor__memchr-2.7.5//:memchr",  # aarch64-apple-darwin
+        ],
+        "@rules_rust//rust/platform:aarch64-unknown-linux-gnu": [
+            "@crates_vendor__memchr-2.7.5//:memchr",  # aarch64-unknown-linux-gnu
+        ],
+        "@rules_rust//rust/platform:x86_64-apple-darwin": [
+            "@crates_vendor__memchr-2.7.5//:memchr",  # x86_64-apple-darwin
+        ],
+        "@rules_rust//rust/platform:x86_64-unknown-linux-gnu": [
+            "@crates_vendor__memchr-2.7.5//:memchr",  # x86_64-unknown-linux-gnu
+        ],
+        "//conditions:default": [],
+    }),
 )
 
 cargo_build_script(
@@ -99,16 +145,49 @@ cargo_build_script(
             "WORKSPACE.bazel",
         ],
     ),
-    crate_features = [
-        "archive",
-        "coff",
-        "elf",
-        "macho",
-        "pe",
-        "read_core",
-        "unaligned",
-        "xcoff",
-    ],
+    crate_features = select({
+        "@rules_rust//rust/platform:aarch64-apple-darwin": [
+            "archive",  # aarch64-apple-darwin
+            "coff",  # aarch64-apple-darwin
+            "elf",  # aarch64-apple-darwin
+            "macho",  # aarch64-apple-darwin
+            "pe",  # aarch64-apple-darwin
+            "read_core",  # aarch64-apple-darwin
+            "unaligned",  # aarch64-apple-darwin
+            "xcoff",  # aarch64-apple-darwin
+        ],
+        "@rules_rust//rust/platform:aarch64-unknown-linux-gnu": [
+            "archive",  # aarch64-unknown-linux-gnu
+            "coff",  # aarch64-unknown-linux-gnu
+            "elf",  # aarch64-unknown-linux-gnu
+            "macho",  # aarch64-unknown-linux-gnu
+            "pe",  # aarch64-unknown-linux-gnu
+            "read_core",  # aarch64-unknown-linux-gnu
+            "unaligned",  # aarch64-unknown-linux-gnu
+            "xcoff",  # aarch64-unknown-linux-gnu
+        ],
+        "@rules_rust//rust/platform:x86_64-apple-darwin": [
+            "archive",  # x86_64-apple-darwin
+            "coff",  # x86_64-apple-darwin
+            "elf",  # x86_64-apple-darwin
+            "macho",  # x86_64-apple-darwin
+            "pe",  # x86_64-apple-darwin
+            "read_core",  # x86_64-apple-darwin
+            "unaligned",  # x86_64-apple-darwin
+            "xcoff",  # x86_64-apple-darwin
+        ],
+        "@rules_rust//rust/platform:x86_64-unknown-linux-gnu": [
+            "archive",  # x86_64-unknown-linux-gnu
+            "coff",  # x86_64-unknown-linux-gnu
+            "elf",  # x86_64-unknown-linux-gnu
+            "macho",  # x86_64-unknown-linux-gnu
+            "pe",  # x86_64-unknown-linux-gnu
+            "read_core",  # x86_64-unknown-linux-gnu
+            "unaligned",  # x86_64-unknown-linux-gnu
+            "xcoff",  # x86_64-unknown-linux-gnu
+        ],
+        "//conditions:default": [],
+    }),
     crate_name = "build_script_build",
     crate_root = "build.rs",
     data = glob(

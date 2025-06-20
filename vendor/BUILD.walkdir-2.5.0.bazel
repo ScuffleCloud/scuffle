@@ -64,10 +64,10 @@ rust_library(
         "@crates_vendor__same-file-1.0.6//:same_file",
     ] + select({
         "@rules_rust//rust/platform:aarch64-pc-windows-msvc": [
-            "@crates_vendor__winapi-util-0.1.9//:winapi_util",  # cfg(windows)
+            "@crates_vendor__winapi-util-0.1.9//:winapi_util",  # aarch64-pc-windows-msvc
         ],
         "@rules_rust//rust/platform:x86_64-pc-windows-msvc": [
-            "@crates_vendor__winapi-util-0.1.9//:winapi_util",  # cfg(windows)
+            "@crates_vendor__winapi-util-0.1.9//:winapi_util",  # x86_64-pc-windows-msvc
         ],
         "//conditions:default": [],
     }),

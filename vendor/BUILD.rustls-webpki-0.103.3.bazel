@@ -23,7 +23,7 @@ rust_library(
         allow_empty = True,
     ),
     aliases = {
-        "@crates_vendor__rustls-pki-types-1.12.0//:rustls_pki_types": "pki_types",
+        "@crates_vendor__rustls-pki-types-1.12.0//:rustls_pki_types": "pki-types",
     },
     compile_data = glob(
         include = ["**"],
@@ -40,28 +40,9 @@ rust_library(
     crate_features = [
         "alloc",
         "aws-lc-rs",
+        "ring",
         "std",
-    ] + select({
-        "@rules_rust//rust/platform:aarch64-apple-darwin": [
-            "ring",  # aarch64-apple-darwin
-        ],
-        "@rules_rust//rust/platform:aarch64-pc-windows-msvc": [
-            "ring",  # aarch64-pc-windows-msvc
-        ],
-        "@rules_rust//rust/platform:aarch64-unknown-linux-gnu": [
-            "ring",  # aarch64-unknown-linux-gnu
-        ],
-        "@rules_rust//rust/platform:x86_64-apple-darwin": [
-            "ring",  # x86_64-apple-darwin
-        ],
-        "@rules_rust//rust/platform:x86_64-pc-windows-msvc": [
-            "ring",  # x86_64-pc-windows-msvc
-        ],
-        "@rules_rust//rust/platform:x86_64-unknown-linux-gnu": [
-            "ring",  # x86_64-unknown-linux-gnu
-        ],
-        "//conditions:default": [],
-    }),
+    ],
     crate_root = "src/lib.rs",
     edition = "2021",
     rustc_env_files = [
@@ -90,27 +71,8 @@ rust_library(
     version = "0.103.3",
     deps = [
         "@crates_vendor__aws-lc-rs-1.13.1//:aws_lc_rs",
+        "@crates_vendor__ring-0.17.14//:ring",
         "@crates_vendor__rustls-pki-types-1.12.0//:rustls_pki_types",
         "@crates_vendor__untrusted-0.9.0//:untrusted",
-    ] + select({
-        "@rules_rust//rust/platform:aarch64-apple-darwin": [
-            "@crates_vendor__ring-0.17.14//:ring",  # aarch64-apple-darwin
-        ],
-        "@rules_rust//rust/platform:aarch64-pc-windows-msvc": [
-            "@crates_vendor__ring-0.17.14//:ring",  # aarch64-pc-windows-msvc
-        ],
-        "@rules_rust//rust/platform:aarch64-unknown-linux-gnu": [
-            "@crates_vendor__ring-0.17.14//:ring",  # aarch64-unknown-linux-gnu
-        ],
-        "@rules_rust//rust/platform:x86_64-apple-darwin": [
-            "@crates_vendor__ring-0.17.14//:ring",  # x86_64-apple-darwin
-        ],
-        "@rules_rust//rust/platform:x86_64-pc-windows-msvc": [
-            "@crates_vendor__ring-0.17.14//:ring",  # x86_64-pc-windows-msvc
-        ],
-        "@rules_rust//rust/platform:x86_64-unknown-linux-gnu": [
-            "@crates_vendor__ring-0.17.14//:ring",  # x86_64-unknown-linux-gnu
-        ],
-        "//conditions:default": [],
-    }),
+    ],
 )

@@ -752,18 +752,6 @@ alias(
 )
 
 alias(
-    name = "postcompile-0.3.2",
-    actual = "@crates_vendor__postcompile-0.3.2//:postcompile",
-    tags = ["manual"],
-)
-
-alias(
-    name = "postcompile",
-    actual = "@crates_vendor__postcompile-0.3.2//:postcompile",
-    tags = ["manual"],
-)
-
-alias(
     name = "pprof-0.15.0",
     actual = "@crates_vendor__pprof-0.15.0//:pprof",
     tags = ["manual"],
@@ -980,18 +968,6 @@ alias(
 )
 
 alias(
-    name = "scufflecloud-proto-0.1.0",
-    actual = "@crates_vendor__scufflecloud-proto-0.1.0//:scufflecloud_proto",
-    tags = ["manual"],
-)
-
-alias(
-    name = "scufflecloud-proto",
-    actual = "@crates_vendor__scufflecloud-proto-0.1.0//:scufflecloud_proto",
-    tags = ["manual"],
-)
-
-alias(
     name = "semver-1.0.26",
     actual = "@crates_vendor__semver-1.0.26//:semver",
     tags = ["manual"],
@@ -1144,30 +1120,6 @@ alias(
 alias(
     name = "thiserror",
     actual = "@crates_vendor__thiserror-2.0.12//:thiserror",
-    tags = ["manual"],
-)
-
-alias(
-    name = "tinc-integration-tests-0.0.0",
-    actual = "@crates_vendor__tinc-integration-tests-0.0.0//:tinc_integration_tests",
-    tags = ["manual"],
-)
-
-alias(
-    name = "tinc-integration-tests",
-    actual = "@crates_vendor__tinc-integration-tests-0.0.0//:tinc_integration_tests",
-    tags = ["manual"],
-)
-
-alias(
-    name = "tinc-pb-prost-0.1.6",
-    actual = "@crates_vendor__tinc-pb-prost-0.1.6//:tinc_pb_prost",
-    tags = ["manual"],
-)
-
-alias(
-    name = "tinc-pb-prost",
-    actual = "@crates_vendor__tinc-pb-prost-0.1.6//:tinc_pb_prost",
     tags = ["manual"],
 )
 

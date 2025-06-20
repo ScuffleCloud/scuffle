@@ -34,9 +34,21 @@ rust_library(
             "WORKSPACE.bazel",
         ],
     ),
-    crate_features = [
-        "fallback",
-    ],
+    crate_features = select({
+        "@rules_rust//rust/platform:aarch64-apple-darwin": [
+            "fallback",  # aarch64-apple-darwin
+        ],
+        "@rules_rust//rust/platform:aarch64-unknown-linux-gnu": [
+            "fallback",  # aarch64-unknown-linux-gnu
+        ],
+        "@rules_rust//rust/platform:x86_64-apple-darwin": [
+            "fallback",  # x86_64-apple-darwin
+        ],
+        "@rules_rust//rust/platform:x86_64-unknown-linux-gnu": [
+            "fallback",  # x86_64-unknown-linux-gnu
+        ],
+        "//conditions:default": [],
+    }),
     crate_root = "src/lib.rs",
     edition = "2021",
     rustc_env_files = [
@@ -65,21 +77,10 @@ rust_library(
     version = "0.1.63",
     deps = select({
         "@rules_rust//rust/platform:aarch64-apple-darwin": [
-            "@crates_vendor__core-foundation-sys-0.8.7//:core_foundation_sys",  # cfg(target_vendor = "apple")
-        ],
-        "@rules_rust//rust/platform:aarch64-pc-windows-msvc": [
-            "@crates_vendor__windows-core-0.61.2//:windows_core",  # cfg(target_os = "windows")
-        ],
-        "@rules_rust//rust/platform:wasm32-unknown-unknown": [
-            "@crates_vendor__js-sys-0.3.77//:js_sys",  # cfg(all(target_arch = "wasm32", target_os = "unknown"))
-            "@crates_vendor__log-0.4.27//:log",  # cfg(all(target_arch = "wasm32", target_os = "unknown"))
-            "@crates_vendor__wasm-bindgen-0.2.100//:wasm_bindgen",  # cfg(all(target_arch = "wasm32", target_os = "unknown"))
+            "@crates_vendor__core-foundation-sys-0.8.7//:core_foundation_sys",  # aarch64-apple-darwin
         ],
         "@rules_rust//rust/platform:x86_64-apple-darwin": [
-            "@crates_vendor__core-foundation-sys-0.8.7//:core_foundation_sys",  # cfg(target_vendor = "apple")
-        ],
-        "@rules_rust//rust/platform:x86_64-pc-windows-msvc": [
-            "@crates_vendor__windows-core-0.61.2//:windows_core",  # cfg(target_os = "windows")
+            "@crates_vendor__core-foundation-sys-0.8.7//:core_foundation_sys",  # x86_64-apple-darwin
         ],
         "//conditions:default": [],
     }),

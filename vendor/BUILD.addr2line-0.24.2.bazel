@@ -60,7 +60,19 @@ rust_library(
         "//conditions:default": ["@platforms//:incompatible"],
     }),
     version = "0.24.2",
-    deps = [
-        "@crates_vendor__gimli-0.31.1//:gimli",
-    ],
+    deps = select({
+        "@rules_rust//rust/platform:aarch64-apple-darwin": [
+            "@crates_vendor__gimli-0.31.1//:gimli",  # aarch64-apple-darwin
+        ],
+        "@rules_rust//rust/platform:aarch64-unknown-linux-gnu": [
+            "@crates_vendor__gimli-0.31.1//:gimli",  # aarch64-unknown-linux-gnu
+        ],
+        "@rules_rust//rust/platform:x86_64-apple-darwin": [
+            "@crates_vendor__gimli-0.31.1//:gimli",  # x86_64-apple-darwin
+        ],
+        "@rules_rust//rust/platform:x86_64-unknown-linux-gnu": [
+            "@crates_vendor__gimli-0.31.1//:gimli",  # x86_64-unknown-linux-gnu
+        ],
+        "//conditions:default": [],
+    }),
 )

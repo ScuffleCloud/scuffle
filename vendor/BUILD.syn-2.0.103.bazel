@@ -39,14 +39,43 @@ rust_library(
         "default",
         "derive",
         "extra-traits",
-        "fold",
         "full",
         "parsing",
         "printing",
         "proc-macro",
-        "visit",
-        "visit-mut",
-    ],
+    ] + select({
+        "@rules_rust//rust/platform:aarch64-apple-darwin": [
+            "fold",  # aarch64-apple-darwin
+            "visit",  # aarch64-apple-darwin
+            "visit-mut",  # aarch64-apple-darwin
+        ],
+        "@rules_rust//rust/platform:aarch64-pc-windows-msvc": [
+            "fold",  # aarch64-pc-windows-msvc
+            "visit",  # aarch64-pc-windows-msvc
+            "visit-mut",  # aarch64-pc-windows-msvc
+        ],
+        "@rules_rust//rust/platform:aarch64-unknown-linux-gnu": [
+            "fold",  # aarch64-unknown-linux-gnu
+            "visit",  # aarch64-unknown-linux-gnu
+            "visit-mut",  # aarch64-unknown-linux-gnu
+        ],
+        "@rules_rust//rust/platform:x86_64-apple-darwin": [
+            "fold",  # x86_64-apple-darwin
+            "visit",  # x86_64-apple-darwin
+            "visit-mut",  # x86_64-apple-darwin
+        ],
+        "@rules_rust//rust/platform:x86_64-pc-windows-msvc": [
+            "fold",  # x86_64-pc-windows-msvc
+            "visit",  # x86_64-pc-windows-msvc
+            "visit-mut",  # x86_64-pc-windows-msvc
+        ],
+        "@rules_rust//rust/platform:x86_64-unknown-linux-gnu": [
+            "fold",  # x86_64-unknown-linux-gnu
+            "visit",  # x86_64-unknown-linux-gnu
+            "visit-mut",  # x86_64-unknown-linux-gnu
+        ],
+        "//conditions:default": [],
+    }),
     crate_root = "src/lib.rs",
     edition = "2021",
     rustc_env_files = [

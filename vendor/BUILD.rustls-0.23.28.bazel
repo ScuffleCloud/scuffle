@@ -26,10 +26,39 @@ rust_library(
         include = ["**/*.rs"],
         allow_empty = True,
     ),
-    aliases = {
-        "@crates_vendor__rustls-pki-types-1.12.0//:rustls_pki_types": "pki-types",
-        "@crates_vendor__rustls-webpki-0.103.3//:webpki": "webpki",
-    },
+    aliases = select({
+        "@rules_rust//rust/platform:aarch64-apple-darwin": {
+            "@crates_vendor__rustls-pki-types-1.12.0//:rustls_pki_types": "pki-types",
+            "@crates_vendor__rustls-webpki-0.103.3//:webpki": "webpki",  # aarch64-apple-darwin
+        },
+        "@rules_rust//rust/platform:aarch64-pc-windows-msvc": {
+            "@crates_vendor__rustls-pki-types-1.12.0//:rustls_pki_types": "pki-types",
+            "@crates_vendor__rustls-webpki-0.103.3//:webpki": "webpki",  # aarch64-pc-windows-msvc
+        },
+        "@rules_rust//rust/platform:aarch64-unknown-linux-gnu": {
+            "@crates_vendor__rustls-pki-types-1.12.0//:rustls_pki_types": "pki-types",
+            "@crates_vendor__rustls-webpki-0.103.3//:webpki": "webpki",  # aarch64-unknown-linux-gnu
+        },
+        "@rules_rust//rust/platform:wasm32-unknown-unknown": {
+            "@crates_vendor__rustls-pki-types-1.12.0//:rustls_pki_types": "pki-types",
+            "@crates_vendor__rustls-webpki-0.103.3//:webpki": "webpki",  # wasm32-unknown-unknown
+        },
+        "@rules_rust//rust/platform:x86_64-apple-darwin": {
+            "@crates_vendor__rustls-pki-types-1.12.0//:rustls_pki_types": "pki-types",
+            "@crates_vendor__rustls-webpki-0.103.3//:webpki": "webpki",  # x86_64-apple-darwin
+        },
+        "@rules_rust//rust/platform:x86_64-pc-windows-msvc": {
+            "@crates_vendor__rustls-pki-types-1.12.0//:rustls_pki_types": "pki-types",
+            "@crates_vendor__rustls-webpki-0.103.3//:webpki": "webpki",  # x86_64-pc-windows-msvc
+        },
+        "@rules_rust//rust/platform:x86_64-unknown-linux-gnu": {
+            "@crates_vendor__rustls-pki-types-1.12.0//:rustls_pki_types": "pki-types",
+            "@crates_vendor__rustls-webpki-0.103.3//:webpki": "webpki",  # x86_64-unknown-linux-gnu
+        },
+        "//conditions:default": {
+            "@crates_vendor__rustls-pki-types-1.12.0//:rustls_pki_types": "pki-types",
+        },
+    }),
     compile_data = glob(
         include = ["**"],
         allow_empty = True,
@@ -47,10 +76,29 @@ rust_library(
         "aws_lc_rs",
         "log",
         "logging",
-        "ring",
         "std",
         "tls12",
-    ],
+    ] + select({
+        "@rules_rust//rust/platform:aarch64-apple-darwin": [
+            "ring",  # aarch64-apple-darwin
+        ],
+        "@rules_rust//rust/platform:aarch64-pc-windows-msvc": [
+            "ring",  # aarch64-pc-windows-msvc
+        ],
+        "@rules_rust//rust/platform:aarch64-unknown-linux-gnu": [
+            "ring",  # aarch64-unknown-linux-gnu
+        ],
+        "@rules_rust//rust/platform:x86_64-apple-darwin": [
+            "ring",  # x86_64-apple-darwin
+        ],
+        "@rules_rust//rust/platform:x86_64-pc-windows-msvc": [
+            "ring",  # x86_64-pc-windows-msvc
+        ],
+        "@rules_rust//rust/platform:x86_64-unknown-linux-gnu": [
+            "ring",  # x86_64-unknown-linux-gnu
+        ],
+        "//conditions:default": [],
+    }),
     crate_root = "src/lib.rs",
     edition = "2021",
     rustc_env_files = [
@@ -81,13 +129,40 @@ rust_library(
         "@crates_vendor__aws-lc-rs-1.13.1//:aws_lc_rs",
         "@crates_vendor__log-0.4.27//:log",
         "@crates_vendor__once_cell-1.21.3//:once_cell",
-        "@crates_vendor__ring-0.17.14//:ring",
         "@crates_vendor__rustls-0.23.28//:build_script_build",
         "@crates_vendor__rustls-pki-types-1.12.0//:rustls_pki_types",
-        "@crates_vendor__rustls-webpki-0.103.3//:webpki",
         "@crates_vendor__subtle-2.6.1//:subtle",
         "@crates_vendor__zeroize-1.8.1//:zeroize",
-    ],
+    ] + select({
+        "@rules_rust//rust/platform:aarch64-apple-darwin": [
+            "@crates_vendor__ring-0.17.14//:ring",  # aarch64-apple-darwin
+            "@crates_vendor__rustls-webpki-0.103.3//:webpki",  # aarch64-apple-darwin
+        ],
+        "@rules_rust//rust/platform:aarch64-pc-windows-msvc": [
+            "@crates_vendor__ring-0.17.14//:ring",  # aarch64-pc-windows-msvc
+            "@crates_vendor__rustls-webpki-0.103.3//:webpki",  # aarch64-pc-windows-msvc
+        ],
+        "@rules_rust//rust/platform:aarch64-unknown-linux-gnu": [
+            "@crates_vendor__ring-0.17.14//:ring",  # aarch64-unknown-linux-gnu
+            "@crates_vendor__rustls-webpki-0.103.3//:webpki",  # aarch64-unknown-linux-gnu
+        ],
+        "@rules_rust//rust/platform:wasm32-unknown-unknown": [
+            "@crates_vendor__rustls-webpki-0.103.3//:webpki",  # wasm32-unknown-unknown
+        ],
+        "@rules_rust//rust/platform:x86_64-apple-darwin": [
+            "@crates_vendor__ring-0.17.14//:ring",  # x86_64-apple-darwin
+            "@crates_vendor__rustls-webpki-0.103.3//:webpki",  # x86_64-apple-darwin
+        ],
+        "@rules_rust//rust/platform:x86_64-pc-windows-msvc": [
+            "@crates_vendor__ring-0.17.14//:ring",  # x86_64-pc-windows-msvc
+            "@crates_vendor__rustls-webpki-0.103.3//:webpki",  # x86_64-pc-windows-msvc
+        ],
+        "@rules_rust//rust/platform:x86_64-unknown-linux-gnu": [
+            "@crates_vendor__ring-0.17.14//:ring",  # x86_64-unknown-linux-gnu
+            "@crates_vendor__rustls-webpki-0.103.3//:webpki",  # x86_64-unknown-linux-gnu
+        ],
+        "//conditions:default": [],
+    }),
 )
 
 cargo_build_script(
@@ -114,10 +189,29 @@ cargo_build_script(
         "aws_lc_rs",
         "log",
         "logging",
-        "ring",
         "std",
         "tls12",
-    ],
+    ] + select({
+        "@rules_rust//rust/platform:aarch64-apple-darwin": [
+            "ring",  # aarch64-apple-darwin
+        ],
+        "@rules_rust//rust/platform:aarch64-pc-windows-msvc": [
+            "ring",  # aarch64-pc-windows-msvc
+        ],
+        "@rules_rust//rust/platform:aarch64-unknown-linux-gnu": [
+            "ring",  # aarch64-unknown-linux-gnu
+        ],
+        "@rules_rust//rust/platform:x86_64-apple-darwin": [
+            "ring",  # x86_64-apple-darwin
+        ],
+        "@rules_rust//rust/platform:x86_64-pc-windows-msvc": [
+            "ring",  # x86_64-pc-windows-msvc
+        ],
+        "@rules_rust//rust/platform:x86_64-unknown-linux-gnu": [
+            "ring",  # x86_64-unknown-linux-gnu
+        ],
+        "//conditions:default": [],
+    }),
     crate_name = "build_script_build",
     crate_root = "build.rs",
     data = glob(
@@ -135,8 +229,27 @@ cargo_build_script(
     edition = "2021",
     link_deps = [
         "@crates_vendor__aws-lc-rs-1.13.1//:aws_lc_rs",
-        "@crates_vendor__ring-0.17.14//:ring",
-    ],
+    ] + select({
+        "@rules_rust//rust/platform:aarch64-apple-darwin": [
+            "@crates_vendor__ring-0.17.14//:ring",  # aarch64-apple-darwin
+        ],
+        "@rules_rust//rust/platform:aarch64-pc-windows-msvc": [
+            "@crates_vendor__ring-0.17.14//:ring",  # aarch64-pc-windows-msvc
+        ],
+        "@rules_rust//rust/platform:aarch64-unknown-linux-gnu": [
+            "@crates_vendor__ring-0.17.14//:ring",  # aarch64-unknown-linux-gnu
+        ],
+        "@rules_rust//rust/platform:x86_64-apple-darwin": [
+            "@crates_vendor__ring-0.17.14//:ring",  # x86_64-apple-darwin
+        ],
+        "@rules_rust//rust/platform:x86_64-pc-windows-msvc": [
+            "@crates_vendor__ring-0.17.14//:ring",  # x86_64-pc-windows-msvc
+        ],
+        "@rules_rust//rust/platform:x86_64-unknown-linux-gnu": [
+            "@crates_vendor__ring-0.17.14//:ring",  # x86_64-unknown-linux-gnu
+        ],
+        "//conditions:default": [],
+    }),
     pkg_name = "rustls",
     rustc_env_files = [
         ":cargo_toml_env_vars",

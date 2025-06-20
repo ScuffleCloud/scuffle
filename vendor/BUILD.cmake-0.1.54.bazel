@@ -60,7 +60,25 @@ rust_library(
         "//conditions:default": ["@platforms//:incompatible"],
     }),
     version = "0.1.54",
-    deps = [
-        "@crates_vendor__cc-1.2.27//:cc",
-    ],
+    deps = select({
+        "@rules_rust//rust/platform:aarch64-apple-darwin": [
+            "@crates_vendor__cc-1.2.27//:cc",  # aarch64-apple-darwin
+        ],
+        "@rules_rust//rust/platform:aarch64-pc-windows-msvc": [
+            "@crates_vendor__cc-1.2.27//:cc",  # aarch64-pc-windows-msvc
+        ],
+        "@rules_rust//rust/platform:aarch64-unknown-linux-gnu": [
+            "@crates_vendor__cc-1.2.27//:cc",  # aarch64-unknown-linux-gnu
+        ],
+        "@rules_rust//rust/platform:x86_64-apple-darwin": [
+            "@crates_vendor__cc-1.2.27//:cc",  # x86_64-apple-darwin
+        ],
+        "@rules_rust//rust/platform:x86_64-pc-windows-msvc": [
+            "@crates_vendor__cc-1.2.27//:cc",  # x86_64-pc-windows-msvc
+        ],
+        "@rules_rust//rust/platform:x86_64-unknown-linux-gnu": [
+            "@crates_vendor__cc-1.2.27//:cc",  # x86_64-unknown-linux-gnu
+        ],
+        "//conditions:default": [],
+    }),
 )

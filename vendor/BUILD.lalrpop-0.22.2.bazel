@@ -34,12 +34,45 @@ rust_library(
             "WORKSPACE.bazel",
         ],
     ),
-    crate_features = [
-        "default",
-        "lexer",
-        "pico-args",
-        "unicode",
-    ],
+    crate_features = select({
+        "@rules_rust//rust/platform:aarch64-apple-darwin": [
+            "default",  # aarch64-apple-darwin
+            "lexer",  # aarch64-apple-darwin
+            "pico-args",  # aarch64-apple-darwin
+            "unicode",  # aarch64-apple-darwin
+        ],
+        "@rules_rust//rust/platform:aarch64-pc-windows-msvc": [
+            "default",  # aarch64-pc-windows-msvc
+            "lexer",  # aarch64-pc-windows-msvc
+            "pico-args",  # aarch64-pc-windows-msvc
+            "unicode",  # aarch64-pc-windows-msvc
+        ],
+        "@rules_rust//rust/platform:aarch64-unknown-linux-gnu": [
+            "default",  # aarch64-unknown-linux-gnu
+            "lexer",  # aarch64-unknown-linux-gnu
+            "pico-args",  # aarch64-unknown-linux-gnu
+            "unicode",  # aarch64-unknown-linux-gnu
+        ],
+        "@rules_rust//rust/platform:x86_64-apple-darwin": [
+            "default",  # x86_64-apple-darwin
+            "lexer",  # x86_64-apple-darwin
+            "pico-args",  # x86_64-apple-darwin
+            "unicode",  # x86_64-apple-darwin
+        ],
+        "@rules_rust//rust/platform:x86_64-pc-windows-msvc": [
+            "default",  # x86_64-pc-windows-msvc
+            "lexer",  # x86_64-pc-windows-msvc
+            "pico-args",  # x86_64-pc-windows-msvc
+            "unicode",  # x86_64-pc-windows-msvc
+        ],
+        "@rules_rust//rust/platform:x86_64-unknown-linux-gnu": [
+            "default",  # x86_64-unknown-linux-gnu
+            "lexer",  # x86_64-unknown-linux-gnu
+            "pico-args",  # x86_64-unknown-linux-gnu
+            "unicode",  # x86_64-unknown-linux-gnu
+        ],
+        "//conditions:default": [],
+    }),
     crate_root = "src/lib.rs",
     edition = "2021",
     rustc_env_files = [
@@ -66,20 +99,103 @@ rust_library(
         "//conditions:default": ["@platforms//:incompatible"],
     }),
     version = "0.22.2",
-    deps = [
-        "@crates_vendor__ascii-canvas-4.0.0//:ascii_canvas",
-        "@crates_vendor__bit-set-0.8.0//:bit_set",
-        "@crates_vendor__ena-0.14.3//:ena",
-        "@crates_vendor__itertools-0.14.0//:itertools",
-        "@crates_vendor__lalrpop-util-0.22.2//:lalrpop_util",
-        "@crates_vendor__petgraph-0.7.1//:petgraph",
-        "@crates_vendor__pico-args-0.5.0//:pico_args",
-        "@crates_vendor__regex-1.11.1//:regex",
-        "@crates_vendor__regex-syntax-0.8.5//:regex_syntax",
-        "@crates_vendor__sha3-0.10.8//:sha3",
-        "@crates_vendor__string_cache-0.8.9//:string_cache",
-        "@crates_vendor__term-1.0.2//:term",
-        "@crates_vendor__unicode-xid-0.2.6//:unicode_xid",
-        "@crates_vendor__walkdir-2.5.0//:walkdir",
-    ],
+    deps = select({
+        "@rules_rust//rust/platform:aarch64-apple-darwin": [
+            "@crates_vendor__ascii-canvas-4.0.0//:ascii_canvas",  # aarch64-apple-darwin
+            "@crates_vendor__bit-set-0.8.0//:bit_set",  # aarch64-apple-darwin
+            "@crates_vendor__ena-0.14.3//:ena",  # aarch64-apple-darwin
+            "@crates_vendor__itertools-0.14.0//:itertools",  # aarch64-apple-darwin
+            "@crates_vendor__lalrpop-util-0.22.2//:lalrpop_util",  # aarch64-apple-darwin
+            "@crates_vendor__petgraph-0.7.1//:petgraph",  # aarch64-apple-darwin
+            "@crates_vendor__pico-args-0.5.0//:pico_args",  # aarch64-apple-darwin
+            "@crates_vendor__regex-1.11.1//:regex",  # aarch64-apple-darwin
+            "@crates_vendor__regex-syntax-0.8.5//:regex_syntax",  # aarch64-apple-darwin
+            "@crates_vendor__sha3-0.10.8//:sha3",  # aarch64-apple-darwin
+            "@crates_vendor__string_cache-0.8.9//:string_cache",  # aarch64-apple-darwin
+            "@crates_vendor__term-1.0.2//:term",  # aarch64-apple-darwin
+            "@crates_vendor__unicode-xid-0.2.6//:unicode_xid",  # aarch64-apple-darwin
+            "@crates_vendor__walkdir-2.5.0//:walkdir",  # aarch64-apple-darwin
+        ],
+        "@rules_rust//rust/platform:aarch64-pc-windows-msvc": [
+            "@crates_vendor__ascii-canvas-4.0.0//:ascii_canvas",  # aarch64-pc-windows-msvc
+            "@crates_vendor__bit-set-0.8.0//:bit_set",  # aarch64-pc-windows-msvc
+            "@crates_vendor__ena-0.14.3//:ena",  # aarch64-pc-windows-msvc
+            "@crates_vendor__itertools-0.14.0//:itertools",  # aarch64-pc-windows-msvc
+            "@crates_vendor__lalrpop-util-0.22.2//:lalrpop_util",  # aarch64-pc-windows-msvc
+            "@crates_vendor__petgraph-0.7.1//:petgraph",  # aarch64-pc-windows-msvc
+            "@crates_vendor__pico-args-0.5.0//:pico_args",  # aarch64-pc-windows-msvc
+            "@crates_vendor__regex-1.11.1//:regex",  # aarch64-pc-windows-msvc
+            "@crates_vendor__regex-syntax-0.8.5//:regex_syntax",  # aarch64-pc-windows-msvc
+            "@crates_vendor__sha3-0.10.8//:sha3",  # aarch64-pc-windows-msvc
+            "@crates_vendor__string_cache-0.8.9//:string_cache",  # aarch64-pc-windows-msvc
+            "@crates_vendor__term-1.0.2//:term",  # aarch64-pc-windows-msvc
+            "@crates_vendor__unicode-xid-0.2.6//:unicode_xid",  # aarch64-pc-windows-msvc
+            "@crates_vendor__walkdir-2.5.0//:walkdir",  # aarch64-pc-windows-msvc
+        ],
+        "@rules_rust//rust/platform:aarch64-unknown-linux-gnu": [
+            "@crates_vendor__ascii-canvas-4.0.0//:ascii_canvas",  # aarch64-unknown-linux-gnu
+            "@crates_vendor__bit-set-0.8.0//:bit_set",  # aarch64-unknown-linux-gnu
+            "@crates_vendor__ena-0.14.3//:ena",  # aarch64-unknown-linux-gnu
+            "@crates_vendor__itertools-0.14.0//:itertools",  # aarch64-unknown-linux-gnu
+            "@crates_vendor__lalrpop-util-0.22.2//:lalrpop_util",  # aarch64-unknown-linux-gnu
+            "@crates_vendor__petgraph-0.7.1//:petgraph",  # aarch64-unknown-linux-gnu
+            "@crates_vendor__pico-args-0.5.0//:pico_args",  # aarch64-unknown-linux-gnu
+            "@crates_vendor__regex-1.11.1//:regex",  # aarch64-unknown-linux-gnu
+            "@crates_vendor__regex-syntax-0.8.5//:regex_syntax",  # aarch64-unknown-linux-gnu
+            "@crates_vendor__sha3-0.10.8//:sha3",  # aarch64-unknown-linux-gnu
+            "@crates_vendor__string_cache-0.8.9//:string_cache",  # aarch64-unknown-linux-gnu
+            "@crates_vendor__term-1.0.2//:term",  # aarch64-unknown-linux-gnu
+            "@crates_vendor__unicode-xid-0.2.6//:unicode_xid",  # aarch64-unknown-linux-gnu
+            "@crates_vendor__walkdir-2.5.0//:walkdir",  # aarch64-unknown-linux-gnu
+        ],
+        "@rules_rust//rust/platform:x86_64-apple-darwin": [
+            "@crates_vendor__ascii-canvas-4.0.0//:ascii_canvas",  # x86_64-apple-darwin
+            "@crates_vendor__bit-set-0.8.0//:bit_set",  # x86_64-apple-darwin
+            "@crates_vendor__ena-0.14.3//:ena",  # x86_64-apple-darwin
+            "@crates_vendor__itertools-0.14.0//:itertools",  # x86_64-apple-darwin
+            "@crates_vendor__lalrpop-util-0.22.2//:lalrpop_util",  # x86_64-apple-darwin
+            "@crates_vendor__petgraph-0.7.1//:petgraph",  # x86_64-apple-darwin
+            "@crates_vendor__pico-args-0.5.0//:pico_args",  # x86_64-apple-darwin
+            "@crates_vendor__regex-1.11.1//:regex",  # x86_64-apple-darwin
+            "@crates_vendor__regex-syntax-0.8.5//:regex_syntax",  # x86_64-apple-darwin
+            "@crates_vendor__sha3-0.10.8//:sha3",  # x86_64-apple-darwin
+            "@crates_vendor__string_cache-0.8.9//:string_cache",  # x86_64-apple-darwin
+            "@crates_vendor__term-1.0.2//:term",  # x86_64-apple-darwin
+            "@crates_vendor__unicode-xid-0.2.6//:unicode_xid",  # x86_64-apple-darwin
+            "@crates_vendor__walkdir-2.5.0//:walkdir",  # x86_64-apple-darwin
+        ],
+        "@rules_rust//rust/platform:x86_64-pc-windows-msvc": [
+            "@crates_vendor__ascii-canvas-4.0.0//:ascii_canvas",  # x86_64-pc-windows-msvc
+            "@crates_vendor__bit-set-0.8.0//:bit_set",  # x86_64-pc-windows-msvc
+            "@crates_vendor__ena-0.14.3//:ena",  # x86_64-pc-windows-msvc
+            "@crates_vendor__itertools-0.14.0//:itertools",  # x86_64-pc-windows-msvc
+            "@crates_vendor__lalrpop-util-0.22.2//:lalrpop_util",  # x86_64-pc-windows-msvc
+            "@crates_vendor__petgraph-0.7.1//:petgraph",  # x86_64-pc-windows-msvc
+            "@crates_vendor__pico-args-0.5.0//:pico_args",  # x86_64-pc-windows-msvc
+            "@crates_vendor__regex-1.11.1//:regex",  # x86_64-pc-windows-msvc
+            "@crates_vendor__regex-syntax-0.8.5//:regex_syntax",  # x86_64-pc-windows-msvc
+            "@crates_vendor__sha3-0.10.8//:sha3",  # x86_64-pc-windows-msvc
+            "@crates_vendor__string_cache-0.8.9//:string_cache",  # x86_64-pc-windows-msvc
+            "@crates_vendor__term-1.0.2//:term",  # x86_64-pc-windows-msvc
+            "@crates_vendor__unicode-xid-0.2.6//:unicode_xid",  # x86_64-pc-windows-msvc
+            "@crates_vendor__walkdir-2.5.0//:walkdir",  # x86_64-pc-windows-msvc
+        ],
+        "@rules_rust//rust/platform:x86_64-unknown-linux-gnu": [
+            "@crates_vendor__ascii-canvas-4.0.0//:ascii_canvas",  # x86_64-unknown-linux-gnu
+            "@crates_vendor__bit-set-0.8.0//:bit_set",  # x86_64-unknown-linux-gnu
+            "@crates_vendor__ena-0.14.3//:ena",  # x86_64-unknown-linux-gnu
+            "@crates_vendor__itertools-0.14.0//:itertools",  # x86_64-unknown-linux-gnu
+            "@crates_vendor__lalrpop-util-0.22.2//:lalrpop_util",  # x86_64-unknown-linux-gnu
+            "@crates_vendor__petgraph-0.7.1//:petgraph",  # x86_64-unknown-linux-gnu
+            "@crates_vendor__pico-args-0.5.0//:pico_args",  # x86_64-unknown-linux-gnu
+            "@crates_vendor__regex-1.11.1//:regex",  # x86_64-unknown-linux-gnu
+            "@crates_vendor__regex-syntax-0.8.5//:regex_syntax",  # x86_64-unknown-linux-gnu
+            "@crates_vendor__sha3-0.10.8//:sha3",  # x86_64-unknown-linux-gnu
+            "@crates_vendor__string_cache-0.8.9//:string_cache",  # x86_64-unknown-linux-gnu
+            "@crates_vendor__term-1.0.2//:term",  # x86_64-unknown-linux-gnu
+            "@crates_vendor__unicode-xid-0.2.6//:unicode_xid",  # x86_64-unknown-linux-gnu
+            "@crates_vendor__walkdir-2.5.0//:walkdir",  # x86_64-unknown-linux-gnu
+        ],
+        "//conditions:default": [],
+    }),
 )

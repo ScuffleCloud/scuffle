@@ -22,9 +22,27 @@ rust_library(
         include = ["**/*.rs"],
         allow_empty = True,
     ),
-    aliases = {
-        "@crates_vendor__rustls-pki-types-1.12.0//:rustls_pki_types": "pki-types",
-    },
+    aliases = select({
+        "@rules_rust//rust/platform:aarch64-apple-darwin": {
+            "@crates_vendor__rustls-pki-types-1.12.0//:rustls_pki_types": "pki-types",  # aarch64-apple-darwin
+        },
+        "@rules_rust//rust/platform:aarch64-pc-windows-msvc": {
+            "@crates_vendor__rustls-pki-types-1.12.0//:rustls_pki_types": "pki-types",  # aarch64-pc-windows-msvc
+        },
+        "@rules_rust//rust/platform:aarch64-unknown-linux-gnu": {
+            "@crates_vendor__rustls-pki-types-1.12.0//:rustls_pki_types": "pki-types",  # aarch64-unknown-linux-gnu
+        },
+        "@rules_rust//rust/platform:x86_64-apple-darwin": {
+            "@crates_vendor__rustls-pki-types-1.12.0//:rustls_pki_types": "pki-types",  # x86_64-apple-darwin
+        },
+        "@rules_rust//rust/platform:x86_64-pc-windows-msvc": {
+            "@crates_vendor__rustls-pki-types-1.12.0//:rustls_pki_types": "pki-types",  # x86_64-pc-windows-msvc
+        },
+        "@rules_rust//rust/platform:x86_64-unknown-linux-gnu": {
+            "@crates_vendor__rustls-pki-types-1.12.0//:rustls_pki_types": "pki-types",  # x86_64-unknown-linux-gnu
+        },
+        "//conditions:default": {},
+    }),
     compile_data = glob(
         include = ["**"],
         allow_empty = True,
@@ -37,14 +55,57 @@ rust_library(
             "WORKSPACE.bazel",
         ],
     ),
-    crate_features = [
-        "http1",
-        "http2",
-        "ring",
-        "tls12",
-        "webpki-roots",
-        "webpki-tokio",
-    ],
+    crate_features = select({
+        "@rules_rust//rust/platform:aarch64-apple-darwin": [
+            "http1",  # aarch64-apple-darwin
+            "http2",  # aarch64-apple-darwin
+            "ring",  # aarch64-apple-darwin
+            "tls12",  # aarch64-apple-darwin
+            "webpki-roots",  # aarch64-apple-darwin
+            "webpki-tokio",  # aarch64-apple-darwin
+        ],
+        "@rules_rust//rust/platform:aarch64-pc-windows-msvc": [
+            "http1",  # aarch64-pc-windows-msvc
+            "http2",  # aarch64-pc-windows-msvc
+            "ring",  # aarch64-pc-windows-msvc
+            "tls12",  # aarch64-pc-windows-msvc
+            "webpki-roots",  # aarch64-pc-windows-msvc
+            "webpki-tokio",  # aarch64-pc-windows-msvc
+        ],
+        "@rules_rust//rust/platform:aarch64-unknown-linux-gnu": [
+            "http1",  # aarch64-unknown-linux-gnu
+            "http2",  # aarch64-unknown-linux-gnu
+            "ring",  # aarch64-unknown-linux-gnu
+            "tls12",  # aarch64-unknown-linux-gnu
+            "webpki-roots",  # aarch64-unknown-linux-gnu
+            "webpki-tokio",  # aarch64-unknown-linux-gnu
+        ],
+        "@rules_rust//rust/platform:x86_64-apple-darwin": [
+            "http1",  # x86_64-apple-darwin
+            "http2",  # x86_64-apple-darwin
+            "ring",  # x86_64-apple-darwin
+            "tls12",  # x86_64-apple-darwin
+            "webpki-roots",  # x86_64-apple-darwin
+            "webpki-tokio",  # x86_64-apple-darwin
+        ],
+        "@rules_rust//rust/platform:x86_64-pc-windows-msvc": [
+            "http1",  # x86_64-pc-windows-msvc
+            "http2",  # x86_64-pc-windows-msvc
+            "ring",  # x86_64-pc-windows-msvc
+            "tls12",  # x86_64-pc-windows-msvc
+            "webpki-roots",  # x86_64-pc-windows-msvc
+            "webpki-tokio",  # x86_64-pc-windows-msvc
+        ],
+        "@rules_rust//rust/platform:x86_64-unknown-linux-gnu": [
+            "http1",  # x86_64-unknown-linux-gnu
+            "http2",  # x86_64-unknown-linux-gnu
+            "ring",  # x86_64-unknown-linux-gnu
+            "tls12",  # x86_64-unknown-linux-gnu
+            "webpki-roots",  # x86_64-unknown-linux-gnu
+            "webpki-tokio",  # x86_64-unknown-linux-gnu
+        ],
+        "//conditions:default": [],
+    }),
     crate_root = "src/lib.rs",
     edition = "2021",
     rustc_env_files = [
@@ -71,15 +132,73 @@ rust_library(
         "//conditions:default": ["@platforms//:incompatible"],
     }),
     version = "0.27.7",
-    deps = [
-        "@crates_vendor__http-1.3.1//:http",
-        "@crates_vendor__hyper-1.6.0//:hyper",
-        "@crates_vendor__hyper-util-0.1.14//:hyper_util",
-        "@crates_vendor__rustls-0.23.28//:rustls",
-        "@crates_vendor__rustls-pki-types-1.12.0//:rustls_pki_types",
-        "@crates_vendor__tokio-1.45.1//:tokio",
-        "@crates_vendor__tokio-rustls-0.26.2//:tokio_rustls",
-        "@crates_vendor__tower-service-0.3.3//:tower_service",
-        "@crates_vendor__webpki-roots-1.0.0//:webpki_roots",
-    ],
+    deps = select({
+        "@rules_rust//rust/platform:aarch64-apple-darwin": [
+            "@crates_vendor__http-1.3.1//:http",  # aarch64-apple-darwin
+            "@crates_vendor__hyper-1.6.0//:hyper",  # aarch64-apple-darwin
+            "@crates_vendor__hyper-util-0.1.14//:hyper_util",  # aarch64-apple-darwin
+            "@crates_vendor__rustls-0.23.28//:rustls",  # aarch64-apple-darwin
+            "@crates_vendor__rustls-pki-types-1.12.0//:rustls_pki_types",  # aarch64-apple-darwin
+            "@crates_vendor__tokio-1.45.1//:tokio",  # aarch64-apple-darwin
+            "@crates_vendor__tokio-rustls-0.26.2//:tokio_rustls",  # aarch64-apple-darwin
+            "@crates_vendor__tower-service-0.3.3//:tower_service",  # aarch64-apple-darwin
+            "@crates_vendor__webpki-roots-1.0.0//:webpki_roots",  # aarch64-apple-darwin
+        ],
+        "@rules_rust//rust/platform:aarch64-pc-windows-msvc": [
+            "@crates_vendor__http-1.3.1//:http",  # aarch64-pc-windows-msvc
+            "@crates_vendor__hyper-1.6.0//:hyper",  # aarch64-pc-windows-msvc
+            "@crates_vendor__hyper-util-0.1.14//:hyper_util",  # aarch64-pc-windows-msvc
+            "@crates_vendor__rustls-0.23.28//:rustls",  # aarch64-pc-windows-msvc
+            "@crates_vendor__rustls-pki-types-1.12.0//:rustls_pki_types",  # aarch64-pc-windows-msvc
+            "@crates_vendor__tokio-1.45.1//:tokio",  # aarch64-pc-windows-msvc
+            "@crates_vendor__tokio-rustls-0.26.2//:tokio_rustls",  # aarch64-pc-windows-msvc
+            "@crates_vendor__tower-service-0.3.3//:tower_service",  # aarch64-pc-windows-msvc
+            "@crates_vendor__webpki-roots-1.0.0//:webpki_roots",  # aarch64-pc-windows-msvc
+        ],
+        "@rules_rust//rust/platform:aarch64-unknown-linux-gnu": [
+            "@crates_vendor__http-1.3.1//:http",  # aarch64-unknown-linux-gnu
+            "@crates_vendor__hyper-1.6.0//:hyper",  # aarch64-unknown-linux-gnu
+            "@crates_vendor__hyper-util-0.1.14//:hyper_util",  # aarch64-unknown-linux-gnu
+            "@crates_vendor__rustls-0.23.28//:rustls",  # aarch64-unknown-linux-gnu
+            "@crates_vendor__rustls-pki-types-1.12.0//:rustls_pki_types",  # aarch64-unknown-linux-gnu
+            "@crates_vendor__tokio-1.45.1//:tokio",  # aarch64-unknown-linux-gnu
+            "@crates_vendor__tokio-rustls-0.26.2//:tokio_rustls",  # aarch64-unknown-linux-gnu
+            "@crates_vendor__tower-service-0.3.3//:tower_service",  # aarch64-unknown-linux-gnu
+            "@crates_vendor__webpki-roots-1.0.0//:webpki_roots",  # aarch64-unknown-linux-gnu
+        ],
+        "@rules_rust//rust/platform:x86_64-apple-darwin": [
+            "@crates_vendor__http-1.3.1//:http",  # x86_64-apple-darwin
+            "@crates_vendor__hyper-1.6.0//:hyper",  # x86_64-apple-darwin
+            "@crates_vendor__hyper-util-0.1.14//:hyper_util",  # x86_64-apple-darwin
+            "@crates_vendor__rustls-0.23.28//:rustls",  # x86_64-apple-darwin
+            "@crates_vendor__rustls-pki-types-1.12.0//:rustls_pki_types",  # x86_64-apple-darwin
+            "@crates_vendor__tokio-1.45.1//:tokio",  # x86_64-apple-darwin
+            "@crates_vendor__tokio-rustls-0.26.2//:tokio_rustls",  # x86_64-apple-darwin
+            "@crates_vendor__tower-service-0.3.3//:tower_service",  # x86_64-apple-darwin
+            "@crates_vendor__webpki-roots-1.0.0//:webpki_roots",  # x86_64-apple-darwin
+        ],
+        "@rules_rust//rust/platform:x86_64-pc-windows-msvc": [
+            "@crates_vendor__http-1.3.1//:http",  # x86_64-pc-windows-msvc
+            "@crates_vendor__hyper-1.6.0//:hyper",  # x86_64-pc-windows-msvc
+            "@crates_vendor__hyper-util-0.1.14//:hyper_util",  # x86_64-pc-windows-msvc
+            "@crates_vendor__rustls-0.23.28//:rustls",  # x86_64-pc-windows-msvc
+            "@crates_vendor__rustls-pki-types-1.12.0//:rustls_pki_types",  # x86_64-pc-windows-msvc
+            "@crates_vendor__tokio-1.45.1//:tokio",  # x86_64-pc-windows-msvc
+            "@crates_vendor__tokio-rustls-0.26.2//:tokio_rustls",  # x86_64-pc-windows-msvc
+            "@crates_vendor__tower-service-0.3.3//:tower_service",  # x86_64-pc-windows-msvc
+            "@crates_vendor__webpki-roots-1.0.0//:webpki_roots",  # x86_64-pc-windows-msvc
+        ],
+        "@rules_rust//rust/platform:x86_64-unknown-linux-gnu": [
+            "@crates_vendor__http-1.3.1//:http",  # x86_64-unknown-linux-gnu
+            "@crates_vendor__hyper-1.6.0//:hyper",  # x86_64-unknown-linux-gnu
+            "@crates_vendor__hyper-util-0.1.14//:hyper_util",  # x86_64-unknown-linux-gnu
+            "@crates_vendor__rustls-0.23.28//:rustls",  # x86_64-unknown-linux-gnu
+            "@crates_vendor__rustls-pki-types-1.12.0//:rustls_pki_types",  # x86_64-unknown-linux-gnu
+            "@crates_vendor__tokio-1.45.1//:tokio",  # x86_64-unknown-linux-gnu
+            "@crates_vendor__tokio-rustls-0.26.2//:tokio_rustls",  # x86_64-unknown-linux-gnu
+            "@crates_vendor__tower-service-0.3.3//:tower_service",  # x86_64-unknown-linux-gnu
+            "@crates_vendor__webpki-roots-1.0.0//:webpki_roots",  # x86_64-unknown-linux-gnu
+        ],
+        "//conditions:default": [],
+    }),
 )

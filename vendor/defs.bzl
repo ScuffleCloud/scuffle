@@ -3332,6 +3332,16 @@ def crate_repositories():
 
     maybe(
         http_archive,
+        name = "crates_vendor__bumpalo-3.18.1",
+        sha256 = "793db76d6187cd04dff33004d8e6c9cc4e05cd330500379d2394209271b4aeee",
+        type = "tar.gz",
+        urls = ["https://static.crates.io/crates/bumpalo/3.18.1/download"],
+        strip_prefix = "bumpalo-3.18.1",
+        build_file = Label("//vendor:BUILD.bumpalo-3.18.1.bazel"),
+    )
+
+    maybe(
+        http_archive,
         name = "crates_vendor__bytemuck-1.23.1",
         sha256 = "5c76a5792e44e4abe34d3abf15636779261d45a7450612059293d1d2cfc63422",
         type = "tar.gz",
@@ -4678,6 +4688,16 @@ def crate_repositories():
         urls = ["https://static.crates.io/crates/jobserver/0.1.33/download"],
         strip_prefix = "jobserver-0.1.33",
         build_file = Label("//vendor:BUILD.jobserver-0.1.33.bazel"),
+    )
+
+    maybe(
+        http_archive,
+        name = "crates_vendor__js-sys-0.3.77",
+        sha256 = "1cfaf33c695fc6e08064efbc1f72ec937429614f25eef83af942d0e227c3a28f",
+        type = "tar.gz",
+        urls = ["https://static.crates.io/crates/js-sys/0.3.77/download"],
+        strip_prefix = "js-sys-0.3.77",
+        build_file = Label("//vendor:BUILD.js-sys-0.3.77.bazel"),
     )
 
     maybe(
@@ -6838,6 +6858,106 @@ def crate_repositories():
         urls = ["https://static.crates.io/crates/want/0.3.1/download"],
         strip_prefix = "want-0.3.1",
         build_file = Label("//vendor:BUILD.want-0.3.1.bazel"),
+    )
+
+    maybe(
+        http_archive,
+        name = "crates_vendor__wasm-bindgen-0.2.100",
+        sha256 = "1edc8929d7499fc4e8f0be2262a241556cfc54a0bea223790e71446f2aab1ef5",
+        type = "tar.gz",
+        urls = ["https://static.crates.io/crates/wasm-bindgen/0.2.100/download"],
+        strip_prefix = "wasm-bindgen-0.2.100",
+        build_file = Label("//vendor:BUILD.wasm-bindgen-0.2.100.bazel"),
+    )
+
+    maybe(
+        http_archive,
+        name = "crates_vendor__wasm-bindgen-backend-0.2.100",
+        sha256 = "2f0a0651a5c2bc21487bde11ee802ccaf4c51935d0d3d42a6101f98161700bc6",
+        type = "tar.gz",
+        urls = ["https://static.crates.io/crates/wasm-bindgen-backend/0.2.100/download"],
+        strip_prefix = "wasm-bindgen-backend-0.2.100",
+        build_file = Label("//vendor:BUILD.wasm-bindgen-backend-0.2.100.bazel"),
+    )
+
+    maybe(
+        http_archive,
+        name = "crates_vendor__wasm-bindgen-futures-0.4.50",
+        sha256 = "555d470ec0bc3bb57890405e5d4322cc9ea83cebb085523ced7be4144dac1e61",
+        type = "tar.gz",
+        urls = ["https://static.crates.io/crates/wasm-bindgen-futures/0.4.50/download"],
+        strip_prefix = "wasm-bindgen-futures-0.4.50",
+        build_file = Label("//vendor:BUILD.wasm-bindgen-futures-0.4.50.bazel"),
+    )
+
+    maybe(
+        http_archive,
+        name = "crates_vendor__wasm-bindgen-macro-0.2.100",
+        sha256 = "7fe63fc6d09ed3792bd0897b314f53de8e16568c2b3f7982f468c0bf9bd0b407",
+        type = "tar.gz",
+        urls = ["https://static.crates.io/crates/wasm-bindgen-macro/0.2.100/download"],
+        strip_prefix = "wasm-bindgen-macro-0.2.100",
+        build_file = Label("//vendor:BUILD.wasm-bindgen-macro-0.2.100.bazel"),
+    )
+
+    maybe(
+        http_archive,
+        name = "crates_vendor__wasm-bindgen-macro-support-0.2.100",
+        sha256 = "8ae87ea40c9f689fc23f209965b6fb8a99ad69aeeb0231408be24920604395de",
+        type = "tar.gz",
+        urls = ["https://static.crates.io/crates/wasm-bindgen-macro-support/0.2.100/download"],
+        strip_prefix = "wasm-bindgen-macro-support-0.2.100",
+        build_file = Label("//vendor:BUILD.wasm-bindgen-macro-support-0.2.100.bazel"),
+    )
+
+    maybe(
+        http_archive,
+        name = "crates_vendor__wasm-bindgen-shared-0.2.100",
+        sha256 = "1a05d73b933a847d6cccdda8f838a22ff101ad9bf93e33684f39c1f5f0eece3d",
+        type = "tar.gz",
+        urls = ["https://static.crates.io/crates/wasm-bindgen-shared/0.2.100/download"],
+        strip_prefix = "wasm-bindgen-shared-0.2.100",
+        build_file = Label("//vendor:BUILD.wasm-bindgen-shared-0.2.100.bazel"),
+    )
+
+    maybe(
+        http_archive,
+        name = "crates_vendor__web-sys-0.3.77",
+        sha256 = "33b6dd2ef9186f1f2072e409e99cd22a975331a6b3591b12c764e0e55c60d5d2",
+        type = "tar.gz",
+        urls = ["https://static.crates.io/crates/web-sys/0.3.77/download"],
+        strip_prefix = "web-sys-0.3.77",
+        build_file = Label("//vendor:BUILD.web-sys-0.3.77.bazel"),
+    )
+
+    maybe(
+        http_archive,
+        name = "crates_vendor__web-time-1.1.0",
+        sha256 = "5a6580f308b1fad9207618087a65c04e7a10bc77e02c8e84e9b00dd4b12fa0bb",
+        type = "tar.gz",
+        urls = ["https://static.crates.io/crates/web-time/1.1.0/download"],
+        strip_prefix = "web-time-1.1.0",
+        build_file = Label("//vendor:BUILD.web-time-1.1.0.bazel"),
+    )
+
+    maybe(
+        http_archive,
+        name = "crates_vendor__webpki-root-certs-0.26.11",
+        sha256 = "75c7f0ef91146ebfb530314f5f1d24528d7f0767efbfd31dce919275413e393e",
+        type = "tar.gz",
+        urls = ["https://static.crates.io/crates/webpki-root-certs/0.26.11/download"],
+        strip_prefix = "webpki-root-certs-0.26.11",
+        build_file = Label("//vendor:BUILD.webpki-root-certs-0.26.11.bazel"),
+    )
+
+    maybe(
+        http_archive,
+        name = "crates_vendor__webpki-root-certs-1.0.0",
+        sha256 = "01a83f7e1a9f8712695c03eabe9ed3fbca0feff0152f33f12593e5a6303cb1a4",
+        type = "tar.gz",
+        urls = ["https://static.crates.io/crates/webpki-root-certs/1.0.0/download"],
+        strip_prefix = "webpki-root-certs-1.0.0",
+        build_file = Label("//vendor:BUILD.webpki-root-certs-1.0.0.bazel"),
     )
 
     maybe(

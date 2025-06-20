@@ -89,6 +89,10 @@ rust_library(
         "@rules_rust//rust/platform:aarch64-unknown-linux-gnu": [
             "@crates_vendor__iana-time-zone-0.1.63//:iana_time_zone",  # aarch64-unknown-linux-gnu
         ],
+        "@rules_rust//rust/platform:wasm32-unknown-unknown": [
+            "@crates_vendor__js-sys-0.3.77//:js_sys",  # wasm32-unknown-unknown
+            "@crates_vendor__wasm-bindgen-0.2.100//:wasm_bindgen",  # wasm32-unknown-unknown
+        ],
         "@rules_rust//rust/platform:x86_64-apple-darwin": [
             "@crates_vendor__iana-time-zone-0.1.63//:iana_time_zone",  # x86_64-apple-darwin
         ],

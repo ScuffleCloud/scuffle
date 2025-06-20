@@ -38,23 +38,111 @@ rust_library(
             "WORKSPACE.bazel",
         ],
     ),
-    crate_features = [
-        "clang_10_0",
-        "clang_11_0",
-        "clang_3_5",
-        "clang_3_6",
-        "clang_3_7",
-        "clang_3_8",
-        "clang_3_9",
-        "clang_4_0",
-        "clang_5_0",
-        "clang_6_0",
-        "clang_7_0",
-        "clang_8_0",
-        "clang_9_0",
-        "libloading",
-        "runtime",
-    ],
+    crate_features = select({
+        "@rules_rust//rust/platform:aarch64-apple-darwin": [
+            "clang_10_0",  # aarch64-apple-darwin
+            "clang_11_0",  # aarch64-apple-darwin
+            "clang_3_5",  # aarch64-apple-darwin
+            "clang_3_6",  # aarch64-apple-darwin
+            "clang_3_7",  # aarch64-apple-darwin
+            "clang_3_8",  # aarch64-apple-darwin
+            "clang_3_9",  # aarch64-apple-darwin
+            "clang_4_0",  # aarch64-apple-darwin
+            "clang_5_0",  # aarch64-apple-darwin
+            "clang_6_0",  # aarch64-apple-darwin
+            "clang_7_0",  # aarch64-apple-darwin
+            "clang_8_0",  # aarch64-apple-darwin
+            "clang_9_0",  # aarch64-apple-darwin
+            "libloading",  # aarch64-apple-darwin
+            "runtime",  # aarch64-apple-darwin
+        ],
+        "@rules_rust//rust/platform:aarch64-pc-windows-msvc": [
+            "clang_10_0",  # aarch64-pc-windows-msvc
+            "clang_11_0",  # aarch64-pc-windows-msvc
+            "clang_3_5",  # aarch64-pc-windows-msvc
+            "clang_3_6",  # aarch64-pc-windows-msvc
+            "clang_3_7",  # aarch64-pc-windows-msvc
+            "clang_3_8",  # aarch64-pc-windows-msvc
+            "clang_3_9",  # aarch64-pc-windows-msvc
+            "clang_4_0",  # aarch64-pc-windows-msvc
+            "clang_5_0",  # aarch64-pc-windows-msvc
+            "clang_6_0",  # aarch64-pc-windows-msvc
+            "clang_7_0",  # aarch64-pc-windows-msvc
+            "clang_8_0",  # aarch64-pc-windows-msvc
+            "clang_9_0",  # aarch64-pc-windows-msvc
+            "libloading",  # aarch64-pc-windows-msvc
+            "runtime",  # aarch64-pc-windows-msvc
+        ],
+        "@rules_rust//rust/platform:aarch64-unknown-linux-gnu": [
+            "clang_10_0",  # aarch64-unknown-linux-gnu
+            "clang_11_0",  # aarch64-unknown-linux-gnu
+            "clang_3_5",  # aarch64-unknown-linux-gnu
+            "clang_3_6",  # aarch64-unknown-linux-gnu
+            "clang_3_7",  # aarch64-unknown-linux-gnu
+            "clang_3_8",  # aarch64-unknown-linux-gnu
+            "clang_3_9",  # aarch64-unknown-linux-gnu
+            "clang_4_0",  # aarch64-unknown-linux-gnu
+            "clang_5_0",  # aarch64-unknown-linux-gnu
+            "clang_6_0",  # aarch64-unknown-linux-gnu
+            "clang_7_0",  # aarch64-unknown-linux-gnu
+            "clang_8_0",  # aarch64-unknown-linux-gnu
+            "clang_9_0",  # aarch64-unknown-linux-gnu
+            "libloading",  # aarch64-unknown-linux-gnu
+            "runtime",  # aarch64-unknown-linux-gnu
+        ],
+        "@rules_rust//rust/platform:x86_64-apple-darwin": [
+            "clang_10_0",  # x86_64-apple-darwin
+            "clang_11_0",  # x86_64-apple-darwin
+            "clang_3_5",  # x86_64-apple-darwin
+            "clang_3_6",  # x86_64-apple-darwin
+            "clang_3_7",  # x86_64-apple-darwin
+            "clang_3_8",  # x86_64-apple-darwin
+            "clang_3_9",  # x86_64-apple-darwin
+            "clang_4_0",  # x86_64-apple-darwin
+            "clang_5_0",  # x86_64-apple-darwin
+            "clang_6_0",  # x86_64-apple-darwin
+            "clang_7_0",  # x86_64-apple-darwin
+            "clang_8_0",  # x86_64-apple-darwin
+            "clang_9_0",  # x86_64-apple-darwin
+            "libloading",  # x86_64-apple-darwin
+            "runtime",  # x86_64-apple-darwin
+        ],
+        "@rules_rust//rust/platform:x86_64-pc-windows-msvc": [
+            "clang_10_0",  # x86_64-pc-windows-msvc
+            "clang_11_0",  # x86_64-pc-windows-msvc
+            "clang_3_5",  # x86_64-pc-windows-msvc
+            "clang_3_6",  # x86_64-pc-windows-msvc
+            "clang_3_7",  # x86_64-pc-windows-msvc
+            "clang_3_8",  # x86_64-pc-windows-msvc
+            "clang_3_9",  # x86_64-pc-windows-msvc
+            "clang_4_0",  # x86_64-pc-windows-msvc
+            "clang_5_0",  # x86_64-pc-windows-msvc
+            "clang_6_0",  # x86_64-pc-windows-msvc
+            "clang_7_0",  # x86_64-pc-windows-msvc
+            "clang_8_0",  # x86_64-pc-windows-msvc
+            "clang_9_0",  # x86_64-pc-windows-msvc
+            "libloading",  # x86_64-pc-windows-msvc
+            "runtime",  # x86_64-pc-windows-msvc
+        ],
+        "@rules_rust//rust/platform:x86_64-unknown-linux-gnu": [
+            "clang_10_0",  # x86_64-unknown-linux-gnu
+            "clang_11_0",  # x86_64-unknown-linux-gnu
+            "clang_3_5",  # x86_64-unknown-linux-gnu
+            "clang_3_6",  # x86_64-unknown-linux-gnu
+            "clang_3_7",  # x86_64-unknown-linux-gnu
+            "clang_3_8",  # x86_64-unknown-linux-gnu
+            "clang_3_9",  # x86_64-unknown-linux-gnu
+            "clang_4_0",  # x86_64-unknown-linux-gnu
+            "clang_5_0",  # x86_64-unknown-linux-gnu
+            "clang_6_0",  # x86_64-unknown-linux-gnu
+            "clang_7_0",  # x86_64-unknown-linux-gnu
+            "clang_8_0",  # x86_64-unknown-linux-gnu
+            "clang_9_0",  # x86_64-unknown-linux-gnu
+            "libloading",  # x86_64-unknown-linux-gnu
+            "runtime",  # x86_64-unknown-linux-gnu
+        ],
+        "//conditions:default": [],
+    }),
     crate_root = "src/lib.rs",
     edition = "2021",
     rustc_env_files = [
@@ -83,10 +171,39 @@ rust_library(
     version = "1.8.1",
     deps = [
         "@crates_vendor__clang-sys-1.8.1//:build_script_build",
-        "@crates_vendor__glob-0.3.2//:glob",
-        "@crates_vendor__libc-0.2.173//:libc",
-        "@crates_vendor__libloading-0.8.8//:libloading",
-    ],
+    ] + select({
+        "@rules_rust//rust/platform:aarch64-apple-darwin": [
+            "@crates_vendor__glob-0.3.2//:glob",  # aarch64-apple-darwin
+            "@crates_vendor__libc-0.2.173//:libc",  # aarch64-apple-darwin
+            "@crates_vendor__libloading-0.8.8//:libloading",  # aarch64-apple-darwin
+        ],
+        "@rules_rust//rust/platform:aarch64-pc-windows-msvc": [
+            "@crates_vendor__glob-0.3.2//:glob",  # aarch64-pc-windows-msvc
+            "@crates_vendor__libc-0.2.173//:libc",  # aarch64-pc-windows-msvc
+            "@crates_vendor__libloading-0.8.8//:libloading",  # aarch64-pc-windows-msvc
+        ],
+        "@rules_rust//rust/platform:aarch64-unknown-linux-gnu": [
+            "@crates_vendor__glob-0.3.2//:glob",  # aarch64-unknown-linux-gnu
+            "@crates_vendor__libc-0.2.173//:libc",  # aarch64-unknown-linux-gnu
+            "@crates_vendor__libloading-0.8.8//:libloading",  # aarch64-unknown-linux-gnu
+        ],
+        "@rules_rust//rust/platform:x86_64-apple-darwin": [
+            "@crates_vendor__glob-0.3.2//:glob",  # x86_64-apple-darwin
+            "@crates_vendor__libc-0.2.173//:libc",  # x86_64-apple-darwin
+            "@crates_vendor__libloading-0.8.8//:libloading",  # x86_64-apple-darwin
+        ],
+        "@rules_rust//rust/platform:x86_64-pc-windows-msvc": [
+            "@crates_vendor__glob-0.3.2//:glob",  # x86_64-pc-windows-msvc
+            "@crates_vendor__libc-0.2.173//:libc",  # x86_64-pc-windows-msvc
+            "@crates_vendor__libloading-0.8.8//:libloading",  # x86_64-pc-windows-msvc
+        ],
+        "@rules_rust//rust/platform:x86_64-unknown-linux-gnu": [
+            "@crates_vendor__glob-0.3.2//:glob",  # x86_64-unknown-linux-gnu
+            "@crates_vendor__libc-0.2.173//:libc",  # x86_64-unknown-linux-gnu
+            "@crates_vendor__libloading-0.8.8//:libloading",  # x86_64-unknown-linux-gnu
+        ],
+        "//conditions:default": [],
+    }),
 )
 
 cargo_build_script(
@@ -108,23 +225,111 @@ cargo_build_script(
             "WORKSPACE.bazel",
         ],
     ),
-    crate_features = [
-        "clang_10_0",
-        "clang_11_0",
-        "clang_3_5",
-        "clang_3_6",
-        "clang_3_7",
-        "clang_3_8",
-        "clang_3_9",
-        "clang_4_0",
-        "clang_5_0",
-        "clang_6_0",
-        "clang_7_0",
-        "clang_8_0",
-        "clang_9_0",
-        "libloading",
-        "runtime",
-    ],
+    crate_features = select({
+        "@rules_rust//rust/platform:aarch64-apple-darwin": [
+            "clang_10_0",  # aarch64-apple-darwin
+            "clang_11_0",  # aarch64-apple-darwin
+            "clang_3_5",  # aarch64-apple-darwin
+            "clang_3_6",  # aarch64-apple-darwin
+            "clang_3_7",  # aarch64-apple-darwin
+            "clang_3_8",  # aarch64-apple-darwin
+            "clang_3_9",  # aarch64-apple-darwin
+            "clang_4_0",  # aarch64-apple-darwin
+            "clang_5_0",  # aarch64-apple-darwin
+            "clang_6_0",  # aarch64-apple-darwin
+            "clang_7_0",  # aarch64-apple-darwin
+            "clang_8_0",  # aarch64-apple-darwin
+            "clang_9_0",  # aarch64-apple-darwin
+            "libloading",  # aarch64-apple-darwin
+            "runtime",  # aarch64-apple-darwin
+        ],
+        "@rules_rust//rust/platform:aarch64-pc-windows-msvc": [
+            "clang_10_0",  # aarch64-pc-windows-msvc
+            "clang_11_0",  # aarch64-pc-windows-msvc
+            "clang_3_5",  # aarch64-pc-windows-msvc
+            "clang_3_6",  # aarch64-pc-windows-msvc
+            "clang_3_7",  # aarch64-pc-windows-msvc
+            "clang_3_8",  # aarch64-pc-windows-msvc
+            "clang_3_9",  # aarch64-pc-windows-msvc
+            "clang_4_0",  # aarch64-pc-windows-msvc
+            "clang_5_0",  # aarch64-pc-windows-msvc
+            "clang_6_0",  # aarch64-pc-windows-msvc
+            "clang_7_0",  # aarch64-pc-windows-msvc
+            "clang_8_0",  # aarch64-pc-windows-msvc
+            "clang_9_0",  # aarch64-pc-windows-msvc
+            "libloading",  # aarch64-pc-windows-msvc
+            "runtime",  # aarch64-pc-windows-msvc
+        ],
+        "@rules_rust//rust/platform:aarch64-unknown-linux-gnu": [
+            "clang_10_0",  # aarch64-unknown-linux-gnu
+            "clang_11_0",  # aarch64-unknown-linux-gnu
+            "clang_3_5",  # aarch64-unknown-linux-gnu
+            "clang_3_6",  # aarch64-unknown-linux-gnu
+            "clang_3_7",  # aarch64-unknown-linux-gnu
+            "clang_3_8",  # aarch64-unknown-linux-gnu
+            "clang_3_9",  # aarch64-unknown-linux-gnu
+            "clang_4_0",  # aarch64-unknown-linux-gnu
+            "clang_5_0",  # aarch64-unknown-linux-gnu
+            "clang_6_0",  # aarch64-unknown-linux-gnu
+            "clang_7_0",  # aarch64-unknown-linux-gnu
+            "clang_8_0",  # aarch64-unknown-linux-gnu
+            "clang_9_0",  # aarch64-unknown-linux-gnu
+            "libloading",  # aarch64-unknown-linux-gnu
+            "runtime",  # aarch64-unknown-linux-gnu
+        ],
+        "@rules_rust//rust/platform:x86_64-apple-darwin": [
+            "clang_10_0",  # x86_64-apple-darwin
+            "clang_11_0",  # x86_64-apple-darwin
+            "clang_3_5",  # x86_64-apple-darwin
+            "clang_3_6",  # x86_64-apple-darwin
+            "clang_3_7",  # x86_64-apple-darwin
+            "clang_3_8",  # x86_64-apple-darwin
+            "clang_3_9",  # x86_64-apple-darwin
+            "clang_4_0",  # x86_64-apple-darwin
+            "clang_5_0",  # x86_64-apple-darwin
+            "clang_6_0",  # x86_64-apple-darwin
+            "clang_7_0",  # x86_64-apple-darwin
+            "clang_8_0",  # x86_64-apple-darwin
+            "clang_9_0",  # x86_64-apple-darwin
+            "libloading",  # x86_64-apple-darwin
+            "runtime",  # x86_64-apple-darwin
+        ],
+        "@rules_rust//rust/platform:x86_64-pc-windows-msvc": [
+            "clang_10_0",  # x86_64-pc-windows-msvc
+            "clang_11_0",  # x86_64-pc-windows-msvc
+            "clang_3_5",  # x86_64-pc-windows-msvc
+            "clang_3_6",  # x86_64-pc-windows-msvc
+            "clang_3_7",  # x86_64-pc-windows-msvc
+            "clang_3_8",  # x86_64-pc-windows-msvc
+            "clang_3_9",  # x86_64-pc-windows-msvc
+            "clang_4_0",  # x86_64-pc-windows-msvc
+            "clang_5_0",  # x86_64-pc-windows-msvc
+            "clang_6_0",  # x86_64-pc-windows-msvc
+            "clang_7_0",  # x86_64-pc-windows-msvc
+            "clang_8_0",  # x86_64-pc-windows-msvc
+            "clang_9_0",  # x86_64-pc-windows-msvc
+            "libloading",  # x86_64-pc-windows-msvc
+            "runtime",  # x86_64-pc-windows-msvc
+        ],
+        "@rules_rust//rust/platform:x86_64-unknown-linux-gnu": [
+            "clang_10_0",  # x86_64-unknown-linux-gnu
+            "clang_11_0",  # x86_64-unknown-linux-gnu
+            "clang_3_5",  # x86_64-unknown-linux-gnu
+            "clang_3_6",  # x86_64-unknown-linux-gnu
+            "clang_3_7",  # x86_64-unknown-linux-gnu
+            "clang_3_8",  # x86_64-unknown-linux-gnu
+            "clang_3_9",  # x86_64-unknown-linux-gnu
+            "clang_4_0",  # x86_64-unknown-linux-gnu
+            "clang_5_0",  # x86_64-unknown-linux-gnu
+            "clang_6_0",  # x86_64-unknown-linux-gnu
+            "clang_7_0",  # x86_64-unknown-linux-gnu
+            "clang_8_0",  # x86_64-unknown-linux-gnu
+            "clang_9_0",  # x86_64-unknown-linux-gnu
+            "libloading",  # x86_64-unknown-linux-gnu
+            "runtime",  # x86_64-unknown-linux-gnu
+        ],
+        "//conditions:default": [],
+    }),
     crate_name = "build_script_build",
     crate_root = "build.rs",
     data = glob(
@@ -157,9 +362,27 @@ cargo_build_script(
     ],
     version = "1.8.1",
     visibility = ["//visibility:private"],
-    deps = [
-        "@crates_vendor__glob-0.3.2//:glob",
-    ],
+    deps = select({
+        "@rules_rust//rust/platform:aarch64-apple-darwin": [
+            "@crates_vendor__glob-0.3.2//:glob",  # aarch64-apple-darwin
+        ],
+        "@rules_rust//rust/platform:aarch64-pc-windows-msvc": [
+            "@crates_vendor__glob-0.3.2//:glob",  # aarch64-pc-windows-msvc
+        ],
+        "@rules_rust//rust/platform:aarch64-unknown-linux-gnu": [
+            "@crates_vendor__glob-0.3.2//:glob",  # aarch64-unknown-linux-gnu
+        ],
+        "@rules_rust//rust/platform:x86_64-apple-darwin": [
+            "@crates_vendor__glob-0.3.2//:glob",  # x86_64-apple-darwin
+        ],
+        "@rules_rust//rust/platform:x86_64-pc-windows-msvc": [
+            "@crates_vendor__glob-0.3.2//:glob",  # x86_64-pc-windows-msvc
+        ],
+        "@rules_rust//rust/platform:x86_64-unknown-linux-gnu": [
+            "@crates_vendor__glob-0.3.2//:glob",  # x86_64-unknown-linux-gnu
+        ],
+        "//conditions:default": [],
+    }),
 )
 
 alias(

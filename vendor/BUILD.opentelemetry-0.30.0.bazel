@@ -80,5 +80,10 @@ rust_library(
         "@crates_vendor__pin-project-lite-0.2.16//:pin_project_lite",
         "@crates_vendor__thiserror-2.0.12//:thiserror",
         "@crates_vendor__tracing-0.1.41//:tracing",
-    ],
+    ] + select({
+        "@rules_rust//rust/platform:wasm32-unknown-unknown": [
+            "@crates_vendor__js-sys-0.3.77//:js_sys",  # wasm32-unknown-unknown
+        ],
+        "//conditions:default": [],
+    }),
 )

@@ -75,5 +75,11 @@ rust_library(
         "@crates_vendor__tracing-core-0.1.34//:tracing_core",
         "@crates_vendor__tracing-log-0.2.0//:tracing_log",
         "@crates_vendor__tracing-subscriber-0.3.19//:tracing_subscriber",
-    ],
+    ] + select({
+        "@rules_rust//rust/platform:wasm32-unknown-unknown": [
+            "@crates_vendor__js-sys-0.3.77//:js_sys",  # wasm32-unknown-unknown
+            "@crates_vendor__web-time-1.1.0//:web_time",  # wasm32-unknown-unknown
+        ],
+        "//conditions:default": [],
+    }),
 )

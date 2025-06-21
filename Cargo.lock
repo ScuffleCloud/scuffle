@@ -3656,23 +3656,17 @@ dependencies = [
  "bon",
  "bytes",
  "futures",
- "h3",
- "h3-quinn",
  "http",
  "http-body",
  "hyper",
  "hyper-util",
  "libc",
  "pin-project-lite",
- "quinn",
- "rustls",
  "scuffle-context 0.1.5 (registry+https://github.com/rust-lang/crates.io-index)",
  "scuffle-workspace-hack",
  "thiserror 2.0.12",
  "tokio",
- "tokio-rustls",
  "tower",
- "tracing",
 ]
 
 [[package]]

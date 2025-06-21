@@ -26,7 +26,9 @@ ipnetwork = "0.21.1"
 pb = { package = "scufflecloud-proto", path = "../proto" }
 scuffle-bootstrap = "0.1.5"
 scuffle-context = "0.1.5"
-scuffle-http = { features = ["tracing"], version = "0.3.2" }
+# Disable tracing for now because it spams stdout
+# scuffle-http = { features = ["tracing"], version = "0.3.2" }
+scuffle-http = "0.3.2"
 scuffle-settings = { features = ["all-formats", "bootstrap"], version = "0.1.4" }
 scuffle-signal = { features = ["bootstrap"], version = "0.3.3" }
 serde = "1.0.219"

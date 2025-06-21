@@ -90,7 +90,7 @@ CREATE TABLE "user_sessions" (
     "last_used_at" TIMESTAMPTZ NOT NULL,
     "last_ip" INET NOT NULL,
     "token_id" UUID UNIQUE,
-    "token" VARCHAR(255),
+    "token" BYTEA,
     "token_expires_at" TIMESTAMPTZ,
     "expires_at" TIMESTAMPTZ NOT NULL,
     PRIMARY KEY("user_id", "device_fingerprint")
@@ -261,7 +261,7 @@ CREATE TABLE "service_account_tokens" (
     "id" UUID PRIMARY KEY,
     "active" BOOLEAN NOT NULL,
     "service_account_id" UUID NOT NULL,
-    "token" VARCHAR(255) NOT NULL,
+    "token" BYTEA NOT NULL,
     "inline_policy" JSONB,
     "expires_at" TIMESTAMPTZ
 );
@@ -292,7 +292,7 @@ CREATE TABLE "email_registration_requests" (
     "id" UUID PRIMARY KEY,
     "user_id" UUID,
     "email" VARCHAR(255) NOT NULL,
-    "token" VARCHAR(255) NOT NULL,
+    "code" VARCHAR(255) NOT NULL,
     "expires_at" TIMESTAMPTZ NOT NULL
 );
 

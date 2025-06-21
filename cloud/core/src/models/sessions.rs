@@ -45,7 +45,7 @@ pub struct UserSession {
     pub last_used_at: chrono::DateTime<chrono::Utc>,
     pub last_ip: ipnetwork::IpNetwork,
     pub token_id: Option<UserSessionTokenId>,
-    pub token: Option<String>,
+    pub token: Option<Vec<u8>>,
     pub token_expires_at: Option<chrono::DateTime<chrono::Utc>>,
     pub expires_at: chrono::DateTime<chrono::Utc>,
 }
@@ -60,7 +60,7 @@ pub struct EmailRegistrationRequest {
     pub id: EmailRegistrationRequestId,
     pub user_id: Option<UserId>,
     pub email: String,
-    pub token: String,
+    pub code: String,
     pub expires_at: chrono::DateTime<chrono::Utc>,
 }
 

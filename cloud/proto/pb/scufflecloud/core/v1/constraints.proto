@@ -10,7 +10,12 @@ extend google.protobuf.FieldOptions {
 }
 
 message StringConstraint {
-    bool password = 1 [(tinc.predefined).cel = {
+    bool id = 1 [(tinc.predefined).cel = {
+        message: "must be a valid ID",
+        expression: "this && input.matches('^([A-Za-z]+_)?[0123456789ABCDEFGHJKMNPQRSTVWXYZabcdefghjkmnpqrstvwxyz]{26}$')",
+        jsonschemas: 'this ? { "pattern": "^([A-Za-z]+_)?[0123456789ABCDEFGHJKMNPQRSTVWXYZabcdefghjkmnpqrstvwxyz]{26}$" } : {}',
+    }];
+    bool password = 2 [(tinc.predefined).cel = {
         message: "must be at least 8 characters long, contain lowercase, uppercase as well as special characters",
         expression: "this && input.size() >= 8 && input.size() <= 200 && input.matches('[a-z]') && input.matches('[A-Z]') && input.matches('[^a-zA-Z]')",
         jsonschemas: 'this ? { "minLength": 8, "maxLength": 200, "allOf": [ { "pattern": "[a-z]" }, { "pattern": "[A-Z]" }, { "pattern": "[^a-zA-Z]" } ] } : {}',

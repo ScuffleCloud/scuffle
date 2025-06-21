@@ -140,7 +140,7 @@ pub struct ServiceAccountToken {
     pub id: ServiceAccountTokenId,
     pub active: bool,
     pub service_account_id: ServiceAccountId,
-    pub token: String,
+    pub token: Vec<u8>,
     pub inline_policy: Option<serde_json::Value>,
     pub expires_at: Option<chrono::DateTime<chrono::Utc>>,
 }

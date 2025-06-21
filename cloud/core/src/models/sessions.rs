@@ -7,7 +7,7 @@ use crate::models::users::{User, UserId};
 
 pub type UserSessionRequestId = Id<UserSessionRequest>;
 
-#[derive(Queryable, Selectable, Insertable, Identifiable, AsChangeset)]
+#[derive(Debug, Queryable, Selectable, Insertable, Identifiable, AsChangeset)]
 #[diesel(table_name = crate::schema::user_session_requests)]
 #[diesel(check_for_backend(diesel::pg::Pg))]
 pub struct UserSessionRequest {
@@ -23,6 +23,7 @@ impl PrefixedId for UserSessionRequest {
     const PREFIX: &'static str = "session_req";
 }
 
+#[derive(Debug)]
 pub struct UserSessionToken;
 
 impl PrefixedId for UserSessionToken {
@@ -31,7 +32,7 @@ impl PrefixedId for UserSessionToken {
 
 pub type UserSessionTokenId = Id<UserSessionToken>;
 
-#[derive(Queryable, Selectable, Insertable, Identifiable, AsChangeset, Associations)]
+#[derive(Queryable, Selectable, Insertable, Identifiable, AsChangeset, Associations, Clone)]
 #[diesel(table_name = crate::schema::user_sessions)]
 #[diesel(primary_key(user_id, device_fingerprint))]
 #[diesel(belongs_to(User))]

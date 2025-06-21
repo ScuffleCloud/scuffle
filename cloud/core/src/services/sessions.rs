@@ -1,7 +1,8 @@
+use crate::CoreGlobal;
 use crate::services::CoreSvc;
 
 #[async_trait::async_trait]
-impl pb::scufflecloud::core::v1::sessions_service_server::SessionsService for CoreSvc {
+impl<G: CoreGlobal> pb::scufflecloud::core::v1::sessions_service_server::SessionsService for CoreSvc<G> {
     async fn register_with_email(
         &self,
         _request: tonic::Request<pb::scufflecloud::core::v1::RegisterWithEmailRequest>,

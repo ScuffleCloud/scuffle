@@ -59,15 +59,15 @@ message UserByIdRequest {
 
 message User {
     string id = 1 [(tinc.field).constraint.string.ulid = true];
-    string preferred_name = 2 [(tinc.field).constraint.string = {
+    optional string preferred_name = 2 [(tinc.field).constraint.string = {
         min_len: 1,
         max_len: 255
     }];
-    string first_name = 3 [(tinc.field).constraint.string = {
+    optional string first_name = 3 [(tinc.field).constraint.string = {
         min_len: 1,
         max_len: 255
     }];
-    string last_name = 4 [(tinc.field).constraint.string = {
+    optional string last_name = 4 [(tinc.field).constraint.string = {
         min_len: 1,
         max_len: 255
     }];

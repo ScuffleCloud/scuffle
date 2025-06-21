@@ -5,7 +5,7 @@ use crate::id::{Id, PrefixedId};
 
 pub type UserId = Id<User>;
 
-#[derive(Queryable, Selectable, Insertable, Identifiable, AsChangeset)]
+#[derive(Debug, Queryable, Selectable, Insertable, Identifiable, AsChangeset)]
 #[diesel(table_name = crate::schema::users)]
 #[diesel(check_for_backend(diesel::pg::Pg))]
 pub struct User {
@@ -19,6 +19,18 @@ pub struct User {
 
 impl PrefixedId for User {
     const PREFIX: &'static str = "user";
+}
+
+impl From<User> for pb::scufflecloud::core::v1::User {
+    fn from(value: User) -> Self {
+        pb::scufflecloud::core::v1::User {
+            id: value.id.to_string(),
+            preferred_name: value.preferred_name,
+            first_name: value.first_name,
+            last_name: value.last_name,
+            primary_email: value.primary_email,
+        }
+    }
 }
 
 #[derive(Queryable, Selectable, Insertable, Identifiable, AsChangeset, Associations)]

@@ -99,11 +99,11 @@ impl<T: PrefixedId> FromStr for Id<T> {
             let parts: Vec<&str> = s.rsplitn(2, '_').collect();
             // guaranteed to contain at least two parts here because s contains '_'
 
-            if parts[0] != T::PREFIX {
+            if parts[1] != T::PREFIX {
                 return Err(IdParseError::PrefixMismatch);
             }
 
-            let id = ulid::Ulid::from_str(parts[1])?;
+            let id = ulid::Ulid::from_str(parts[0])?;
             Ok(Self {
                 id,
                 _phantom: std::marker::PhantomData,

@@ -103,7 +103,7 @@ message Device {
 }
 
 message NewUserSessionToken {
-    string id = 1 [(tinc.field).constraint.string.ulid = true];
+    string id = 1 [(string_constraint).id = true];
     bytes encrypted_token = 2;
     google.protobuf.Timestamp expires_at_utc = 3;
     google.protobuf.Timestamp session_expires_at_utc = 4;
@@ -185,15 +185,15 @@ message CreateUserSessionRequestRequest {
 }
 
 message UserSessionRequest {
-    string id = 1 [(tinc.field).constraint.string.ulid = true];
+    string id = 1 [(string_constraint).id = true];
     string name = 2;
     string ip = 3;
-    string approved_by = 4 [(tinc.field).constraint.string.ulid = true];
+    string approved_by = 4 [(string_constraint).id = true];
     google.protobuf.Timestamp expires_at_utc = 5;
 }
 
 message GetUserSessionRequestRequest {
-    string id = 1 [(tinc.field).constraint.string.ulid = true];
+    string id = 1 [(string_constraint).id = true];
 }
 
 message GetUserSessionRequestByCodeRequest {
@@ -205,6 +205,6 @@ message ApproveUserSessionRequestByCodeRequest {
 }
 
 message CompleteUserSessionRequestRequest {
-    string id = 1 [(tinc.field).constraint.string.ulid = true];
+    string id = 1 [(string_constraint).id = true];
     Device device = 2;
 }

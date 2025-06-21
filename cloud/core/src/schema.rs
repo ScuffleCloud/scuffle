@@ -13,7 +13,7 @@ diesel::table! {
         #[max_length = 255]
         email -> Varchar,
         #[max_length = 255]
-        token -> Varchar,
+        code -> Varchar,
         expires_at -> Timestamptz,
     }
 }
@@ -131,8 +131,7 @@ diesel::table! {
         id -> Uuid,
         active -> Bool,
         service_account_id -> Uuid,
-        #[max_length = 255]
-        token -> Varchar,
+        token -> Bytea,
         inline_policy -> Nullable<Jsonb>,
         expires_at -> Nullable<Timestamptz>,
     }
@@ -197,8 +196,7 @@ diesel::table! {
         last_used_at -> Timestamptz,
         last_ip -> Inet,
         token_id -> Nullable<Uuid>,
-        #[max_length = 255]
-        token -> Nullable<Varchar>,
+        token -> Nullable<Bytea>,
         token_expires_at -> Nullable<Timestamptz>,
         expires_at -> Timestamptz,
     }

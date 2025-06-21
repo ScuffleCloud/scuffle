@@ -14,9 +14,9 @@ use crate::CoreGlobal;
 use crate::models::{UserSession, UserSessionTokenId};
 use crate::schema::user_sessions;
 
-const SESSION_TOKEN_ID_HEADER: &str = "Scuf-Session-Token-Id";
-const AUTHENTICATION_METHOD_HEADER: &str = "Scuf-Auth-Method";
-const AUTHENTICATION_HMAC_HEADER: &str = "Scuf-Auth-Hmac";
+const TOKEN_ID_HEADER: HeaderName = HeaderName::from_static("scuf-token-id");
+const AUTHENTICATION_METHOD_HEADER: HeaderName = HeaderName::from_static("scuf-auth-method");
+const AUTHENTICATION_HMAC_HEADER: HeaderName = HeaderName::from_static("scuf-auth-hmac");
 
 pub async fn auth<G: CoreGlobal>(mut req: Request, next: Next) -> Result<Response, StatusCode> {
     let global = req.extensions().get::<Arc<G>>().ok_or(StatusCode::INTERNAL_SERVER_ERROR)?;
@@ -29,7 +29,7 @@ pub async fn auth<G: CoreGlobal>(mut req: Request, next: Next) -> Result<Respons
     Ok(next.run(req).await)
 }
 
-fn get_auth_header<'a, T>(headers: &'a HeaderMap, header_name: &str) -> Result<Option<T>, StatusCode>
+fn get_auth_header<'a, T>(headers: &'a HeaderMap, header_name: &HeaderName) -> Result<Option<T>, StatusCode>
 where
     T: FromStr + 'a,
 {
@@ -91,36 +91,6 @@ impl FromStr for AuthenticationMethod {
     }
 }
 
-#[derive(Debug, thiserror::Error)]
-enum AuthenticationVerifyError {
-    #[error("invalid HMAC key length")]
-    InvalidKeyLength(#[from] hmac::digest::InvalidLength),
-    #[error("missing header in request")]
-    MissingHeader,
-    #[error("invalid HMAC")]
-    InvalidHmac(#[from] hmac::digest::MacError),
-}
-
-impl AuthenticationMethod {
-    pub fn verify(&self, expected_hmac: &[u8], token: &str, headers: &HeaderMap) -> Result<(), AuthenticationVerifyError> {
-        let mut mac = match self.algorithm {
-            AuthenticationAlgorithm::HmacSha256 => hmac::Hmac::<sha2::Sha256>::new_from_slice(token.as_bytes())?,
-        };
-
-        for header_name in &self.headers {
-            if let Some(value) = headers.get(header_name) {
-                mac.update(value.as_bytes());
-            } else {
-                return Err(AuthenticationVerifyError::MissingHeader);
-            }
-        }
-
-        mac.verify_slice(expected_hmac)?;
-
-        Ok(())
-    }
-}
-
 #[derive(Debug)]
 struct AuthenticationHmac(Vec<u8>);
 
@@ -136,21 +106,17 @@ impl FromStr for AuthenticationHmac {
 async fn get_active_session<G: CoreGlobal>(global: &Arc<G>, headers: &HeaderMap) -> Result<Option<UserSession>, StatusCode> {
     let mut db = global.db().await.map_err(|_| StatusCode::INTERNAL_SERVER_ERROR)?;
 
-    let Some(session_token_id) = get_auth_header::<UserSessionTokenId>(headers, SESSION_TOKEN_ID_HEADER)? else {
+    let Some(session_token_id) = get_auth_header::<UserSessionTokenId>(headers, &TOKEN_ID_HEADER)? else {
         return Ok(None);
     };
-    let Some(auth_method) = get_auth_header::<AuthenticationMethod>(headers, AUTHENTICATION_METHOD_HEADER)? else {
+    let Some(auth_method) = get_auth_header::<AuthenticationMethod>(headers, &AUTHENTICATION_METHOD_HEADER)? else {
         return Ok(None);
     };
-    let Some(auth_hmac) = get_auth_header::<AuthenticationHmac>(headers, AUTHENTICATION_HMAC_HEADER)? else {
+    let Some(auth_hmac) = get_auth_header::<AuthenticationHmac>(headers, &AUTHENTICATION_HMAC_HEADER)? else {
         return Ok(None);
     };
 
-    if !auth_method.headers.contains(&http::header::DATE)
-        || !auth_method
-            .headers
-            .contains(&HeaderName::from_static(SESSION_TOKEN_ID_HEADER))
-    {
+    if !auth_method.headers.contains(&http::header::DATE) || !auth_method.headers.contains(&TOKEN_ID_HEADER) {
         return Err(StatusCode::BAD_REQUEST);
     }
 
@@ -173,10 +139,23 @@ async fn get_active_session<G: CoreGlobal>(global: &Arc<G>, headers: &HeaderMap)
 
     let token = session.token.as_ref().expect("known to be not null due to filter");
 
-    // Check HMAC
-    auth_method
-        .verify(&auth_hmac.0, token, headers)
-        .map_err(|_| StatusCode::UNAUTHORIZED)?;
+    // Verify HMAC
+    match auth_method.algorithm {
+        AuthenticationAlgorithm::HmacSha256 => {
+            let mut mac =
+                hmac::Hmac::<sha2::Sha256>::new_from_slice(token).map_err(|_| StatusCode::INTERNAL_SERVER_ERROR)?;
+
+            for header_name in &auth_method.headers {
+                if let Some(value) = headers.get(header_name) {
+                    mac.update(value.as_bytes());
+                } else {
+                    return Err(StatusCode::BAD_REQUEST);
+                }
+            }
+
+            mac.verify_slice(&auth_hmac.0).map_err(|_| StatusCode::UNAUTHORIZED)?;
+        }
+    }
 
     Ok(Some(session))
 }

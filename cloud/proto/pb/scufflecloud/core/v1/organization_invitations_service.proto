@@ -7,6 +7,7 @@ import "tinc/annotations.proto";
 
 import "scufflecloud/core/v1/users_service.proto";
 import "scufflecloud/core/v1/organizations_service.proto";
+import "scufflecloud/core/v1/constraints.proto";
 
 service OrganizationInvitationsService {
     rpc CreateOrganizationInvitation(CreateOrganizationInvitationRequest) returns (OrganizationInvitation) {
@@ -44,11 +45,11 @@ service OrganizationInvitationsService {
 }
 
 message OrganizationInvitation {
-    string id = 1 [(tinc.field).constraint.string.ulid = true];
-    optional string user_id = 2 [(tinc.field).constraint.string.ulid = true];
-    string organization_id = 3 [(tinc.field).constraint.string.ulid = true];
+    string id = 1 [(string_constraint).id = true];
+    optional string user_id = 2 [(string_constraint).id = true];
+    string organization_id = 3 [(string_constraint).id = true];
     string email = 4 [(tinc.field).constraint.string.email = true];
-    string invited_by_id = 5 [(tinc.field).constraint.string.ulid = true];
+    string invited_by_id = 5 [(string_constraint).id = true];
     optional google.protobuf.Timestamp expires_at_utc = 6;
 }
 
@@ -61,5 +62,5 @@ message OrganizationInvitationList {
 }
 
 message OrganizationInvitationByIdRequest {
-    string id = 1 [(tinc.field).constraint.string.ulid = true];
+    string id = 1 [(string_constraint).id = true];
 }

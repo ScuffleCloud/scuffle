@@ -54,11 +54,11 @@ service UsersService {
 }
 
 message UserByIdRequest {
-    string id = 1 [(tinc.field).constraint.string.ulid = true];
+    string id = 1 [(string_constraint).id = true];
 }
 
 message User {
-    string id = 1 [(tinc.field).constraint.string.ulid = true];
+    string id = 1 [(string_constraint).id = true];
     optional string preferred_name = 2 [(tinc.field).constraint.string = {
         min_len: 1,
         max_len: 255
@@ -76,13 +76,13 @@ message User {
 
 message UpdateUserPasswordRequest {
     // Can only be the authenticated user's ID.
-    string id = 1 [(tinc.field).constraint.string.ulid = true];
+    string id = 1 [(string_constraint).id = true];
     optional string current_password = 2 [(string_constraint).password = true];
     string new_password = 3 [(string_constraint).password = true];
 }
 
 message UpdateUserNamesRequest {
-    string id = 1 [(tinc.field).constraint.string.ulid = true];
+    string id = 1 [(string_constraint).id = true];
     string preferred_name = 2 [(tinc.field).constraint.string = {
         min_len: 1,
         max_len: 255
@@ -99,7 +99,7 @@ message UpdateUserNamesRequest {
 
 message UpdateUserPrimaryEmailRequest {
     // Can only be the authenticated user's ID.
-    string id = 1 [(tinc.field).constraint.string.ulid = true];
+    string id = 1 [(string_constraint).id = true];
     string primary_email = 2 [(tinc.field).constraint.string.email = true];
 }
 
@@ -113,18 +113,18 @@ message UserEmail {
 }
 
 message CreateUserEmailRequest {
-    string id = 1 [(tinc.field).constraint.string.ulid = true];
+    string id = 1 [(string_constraint).id = true];
     CaptchaChallengeResponse captcha = 2;
     string email = 3 [(tinc.field).constraint.string.email = true];
 }
 
 message CompleteCreateUserEmailRequest {
     // Can only be the authenticated user's ID.
-    string id = 1 [(tinc.field).constraint.string.ulid = true];
+    string id = 1 [(string_constraint).id = true];
     string token = 2;
 }
 
 message DeleteUserEmailRequest {
-    string id = 1 [(tinc.field).constraint.string.ulid = true];
+    string id = 1 [(string_constraint).id = true];
     string email = 2 [(tinc.field).constraint.string.email = true];
 }

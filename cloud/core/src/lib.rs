@@ -8,11 +8,17 @@
 
 use std::net::SocketAddr;
 
+use diesel_async::AsyncPgConnection;
+
 pub mod id;
+pub mod middleware;
 pub mod models;
 pub mod schema;
 pub mod services;
 
-pub trait CoreGlobal: scuffle_bootstrap::Global + scuffle_signal::SignalConfig {
+pub trait CoreGlobal: scuffle_bootstrap::Global + scuffle_signal::SignalConfig + Sync + Send + 'static {
     fn bind(&self) -> SocketAddr;
+    fn db(
+        &self,
+    ) -> impl Future<Output = anyhow::Result<diesel_async::pooled_connection::bb8::PooledConnection<'_, AsyncPgConnection>>> + Send;
 }

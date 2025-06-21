@@ -3951,9 +3951,11 @@ dependencies = [
  "anyhow",
  "async-trait",
  "axum",
+ "base64 0.22.1",
  "chrono",
  "diesel",
  "diesel-async",
+ "hmac",
  "ipnetwork",
  "scuffle-bootstrap 0.1.5",
  "scuffle-context 0.1.5 (registry+https://github.com/rust-lang/crates.io-index)",
@@ -3965,9 +3967,12 @@ dependencies = [
  "serde",
  "serde_derive",
  "serde_json",
+ "sha2",
  "smart-default",
+ "thiserror 2.0.12",
  "tinc",
  "tonic",
+ "tonic-reflection",
  "tower-http",
  "tracing",
  "tracing-subscriber",
@@ -4799,6 +4804,19 @@ dependencies = [
 ]
 
 [[package]]
+name = "tonic-reflection"
+version = "0.13.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "f9687bd5bfeafebdded2356950f278bba8226f0b32109537c4253406e09aafe1"
+dependencies = [
+ "prost 0.13.5",
+ "prost-types 0.13.5",
+ "tokio",
+ "tokio-stream",
+ "tonic",
+]
+
+[[package]]
 name = "tonic-types"
 version = "0.13.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -4844,6 +4862,7 @@ dependencies = [
  "tower",
  "tower-layer",
  "tower-service",
+ "tracing",
 ]
 
 [[package]]

@@ -4,6 +4,12 @@ mod organizations;
 mod sessions;
 mod users;
 
+pub use crypto::*;
+pub use mfa::*;
+pub use organizations::*;
+pub use sessions::*;
+pub use users::*;
+
 /// A macro helper to implement the `ToSql` and `FromSql` traits for an enum.
 /// Unfortunately diesel doesn't automatically generate these for enums, so we
 /// have to do it manually. This means we need to make sure that this enum

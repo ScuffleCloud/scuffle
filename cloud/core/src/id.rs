@@ -2,6 +2,7 @@ use std::fmt::{Debug, Display};
 use std::hash::Hash;
 use std::io::Write;
 use std::ops::Deref;
+use std::str::FromStr;
 
 use diesel::deserialize::{FromSql, FromSqlRow};
 use diesel::expression::AsExpression;
@@ -67,6 +68,54 @@ impl<T: PrefixedId> Display for Id<T> {
         let mut id_str = self.id.to_string();
         id_str.make_ascii_lowercase();
         write!(f, "{}_{}", T::PREFIX, id_str)
+    }
+}
+
+impl<T: PrefixedId> Clone for Id<T> {
+    fn clone(&self) -> Self {
+        Self {
+            id: self.id,
+            _phantom: std::marker::PhantomData,
+        }
+    }
+}
+
+impl<T: PrefixedId> Copy for Id<T> {}
+
+#[derive(Debug, thiserror::Error)]
+pub enum IdParseError {
+    #[error("ID prefix does not match")]
+    PrefixMismatch,
+    #[error("invalid ID: {0}")]
+    Ulid(#[from] ulid::DecodeError),
+}
+
+impl<T: PrefixedId> FromStr for Id<T> {
+    type Err = IdParseError;
+
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        if s.contains('_') {
+            // get last _
+            let parts: Vec<&str> = s.rsplitn(2, '_').collect();
+            // guaranteed to contain at least two parts here because s contains '_'
+
+            if parts[0] != T::PREFIX {
+                return Err(IdParseError::PrefixMismatch);
+            }
+
+            let id = ulid::Ulid::from_str(parts[1])?;
+            Ok(Self {
+                id,
+                _phantom: std::marker::PhantomData,
+            })
+        } else {
+            let id = ulid::Ulid::from_str(s)?;
+
+            Ok(Self {
+                id,
+                _phantom: std::marker::PhantomData,
+            })
+        }
     }
 }
 

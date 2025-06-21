@@ -1,7 +1,8 @@
+use crate::CoreGlobal;
 use crate::services::CoreSvc;
 
 #[async_trait::async_trait]
-impl pb::scufflecloud::core::v1::organizations_service_server::OrganizationsService for CoreSvc {
+impl<G: CoreGlobal> pb::scufflecloud::core::v1::organizations_service_server::OrganizationsService for CoreSvc<G> {
     async fn create_organization(
         &self,
         _request: tonic::Request<pb::scufflecloud::core::v1::CreateOrganizationRequest>,

@@ -4,7 +4,7 @@ use diesel::{OptionalExtension, QueryDsl, SelectableHelper};
 use diesel_async::RunQueryDsl;
 
 use crate::CoreGlobal;
-use crate::models::{User, UserId};
+use crate::models::{User, UserId, UserSession};
 use crate::schema::users;
 use crate::services::CoreSvc;
 
@@ -14,7 +14,10 @@ impl<G: CoreGlobal> pb::scufflecloud::core::v1::users_service_server::UsersServi
         &self,
         request: tonic::Request<pb::scufflecloud::core::v1::UserByIdRequest>,
     ) -> Result<tonic::Response<pb::scufflecloud::core::v1::User>, tonic::Status> {
-        // request.extensions()
+        if request.extensions().get::<UserSession>().is_none() {
+            return Err(tonic::Status::unauthenticated("authentication required"));
+        }
+
         let mut db = request
             .extensions()
             .get::<Arc<G>>()

@@ -429,9 +429,12 @@ where
 #[cfg(test)]
 #[cfg_attr(all(test, coverage_nightly), coverage(off))]
 mod tests {
+    use std::collections::HashMap;
+
     use scuffle_bytes_util::StringCow;
     #[cfg(feature = "serde")]
     use serde::Deserialize;
+    use serde::Serialize;
 
     use super::Amf0Value;
     use crate::{Amf0Decoder, Amf0Encoder, Amf0Error, Amf0Marker, Amf0Object};
@@ -805,5 +808,272 @@ mod tests {
                 flag: true
             }
         );
+    }
+
+    #[test]
+    fn roundtrip_number() {
+        let original: f64 = 3.22;
+        let mut buf = Vec::new();
+
+        {
+            let mut encoder = Amf0Encoder::new(&mut buf);
+            original.serialize(&mut encoder).unwrap();
+        }
+
+        let decoded_value = Amf0Decoder::from_slice(&buf).decode_value().unwrap();
+        let decoded_native: f64 = Amf0Decoder::from_slice(&buf).deserialize().unwrap();
+        let decoded_value_native: f64 = Deserialize::deserialize(decoded_value.clone()).unwrap();
+        assert_eq!(original, decoded_native);
+        assert_eq!(original, decoded_value_native);
+
+        let mut buf2 = Vec::new();
+        {
+            let mut encoder = Amf0Encoder::new(&mut buf2);
+            decoded_value.serialize(&mut encoder).unwrap();
+        }
+
+        assert_eq!(buf, buf2);
+    }
+
+    #[test]
+    fn roundtrip_boolean() {
+        let original: bool = true;
+        let mut buf = Vec::new();
+        {
+            let mut encoder = Amf0Encoder::new(&mut buf);
+            original.serialize(&mut encoder).unwrap();
+        }
+        let decoded_value = Amf0Decoder::from_slice(&buf).decode_value().unwrap();
+        let decoded_native: bool = Amf0Decoder::from_slice(&buf).deserialize().unwrap();
+        let decoded_value_native: bool = Deserialize::deserialize(decoded_value.clone()).unwrap();
+        assert_eq!(original, decoded_native);
+        assert_eq!(original, decoded_value_native);
+        let mut buf2 = Vec::new();
+        {
+            let mut encoder = Amf0Encoder::new(&mut buf2);
+            decoded_value.serialize(&mut encoder).unwrap();
+        }
+        assert_eq!(buf, buf2);
+    }
+
+    #[test]
+    fn roundtrip_string() {
+        let original: String = "hello".to_string();
+        let mut buf = Vec::new();
+        {
+            let mut encoder = Amf0Encoder::new(&mut buf);
+            original.serialize(&mut encoder).unwrap();
+        }
+        let decoded_value = Amf0Decoder::from_slice(&buf).decode_value().unwrap();
+        let decoded_native: String = Amf0Decoder::from_slice(&buf).deserialize().unwrap();
+        let decoded_value_native: String = Deserialize::deserialize(decoded_value.clone()).unwrap();
+        assert_eq!(original, decoded_native);
+        assert_eq!(original, decoded_value_native);
+        let mut buf2 = Vec::new();
+        {
+            let mut encoder = Amf0Encoder::new(&mut buf2);
+            decoded_value.serialize(&mut encoder).unwrap();
+        }
+        assert_eq!(buf, buf2);
+    }
+
+    #[test]
+    fn roundtrip_null() {
+        let original: Option<bool> = None;
+        let mut buf = Vec::new();
+        {
+            let mut encoder = Amf0Encoder::new(&mut buf);
+            original.serialize(&mut encoder).unwrap();
+        }
+        let decoded_value = Amf0Decoder::from_slice(&buf).decode_value().unwrap();
+        let decoded_native: Option<bool> = Amf0Decoder::from_slice(&buf).deserialize().unwrap();
+        let decoded_value_native: Option<bool> = Deserialize::deserialize(decoded_value.clone()).unwrap();
+        assert_eq!(original, decoded_native);
+        assert_eq!(original, decoded_value_native);
+        let mut buf2 = Vec::new();
+        {
+            let mut encoder = Amf0Encoder::new(&mut buf2);
+            decoded_value.serialize(&mut encoder).unwrap();
+        }
+        assert_eq!(buf, buf2);
+    }
+
+    #[test]
+    fn roundtrip_array() {
+        let original: Vec<f64> = vec![1.0, 2.0, 3.0];
+        let mut buf = Vec::new();
+        {
+            let mut encoder = Amf0Encoder::new(&mut buf);
+            original.serialize(&mut encoder).unwrap();
+        }
+        let decoded_value = Amf0Decoder::from_slice(&buf).decode_value().unwrap();
+        let decoded_native: Vec<f64> = Amf0Decoder::from_slice(&buf).deserialize().unwrap();
+        let decoded_value_native: Vec<f64> = Deserialize::deserialize(decoded_value.clone()).unwrap();
+        assert_eq!(original, decoded_native);
+        assert_eq!(original, decoded_value_native);
+        let mut buf2 = Vec::new();
+        {
+            let mut encoder = Amf0Encoder::new(&mut buf2);
+            decoded_value.serialize(&mut encoder).unwrap();
+        }
+        assert_eq!(buf, buf2);
+    }
+
+    #[test]
+    fn roundtrip_map() {
+        let mut original: HashMap<String, String> = HashMap::new();
+        original.insert("key".to_string(), "val".to_string());
+        let mut buf = Vec::new();
+        {
+            let mut encoder = Amf0Encoder::new(&mut buf);
+            original.serialize(&mut encoder).unwrap();
+        }
+        let decoded_value = Amf0Decoder::from_slice(&buf).decode_value().unwrap();
+        let decoded_native: HashMap<String, String> = Amf0Decoder::from_slice(&buf).deserialize().unwrap();
+        let decoded_value_native: HashMap<String, String> = Deserialize::deserialize(decoded_value.clone()).unwrap();
+        assert_eq!(original, decoded_native);
+        assert_eq!(original, decoded_value_native);
+        let mut buf2 = Vec::new();
+        {
+            let mut encoder = Amf0Encoder::new(&mut buf2);
+            decoded_value.serialize(&mut encoder).unwrap();
+        }
+        assert_eq!(buf, buf2);
+    }
+
+    #[derive(Serialize, Deserialize, PartialEq, Debug)]
+    struct TestStruct { x: i32, y: String }
+
+    #[test]
+    fn roundtrip_struct() {
+        let original = TestStruct { x: 42, y: "foo".to_string() };
+        let mut buf = Vec::new();
+        {
+            let mut encoder = Amf0Encoder::new(&mut buf);
+            original.serialize(&mut encoder).unwrap();
+        }
+        let decoded_value = Amf0Decoder::from_slice(&buf).decode_value().unwrap();
+        let decoded_native: TestStruct = Amf0Decoder::from_slice(&buf).deserialize().unwrap();
+        let decoded_value_native: TestStruct = Deserialize::deserialize(decoded_value.clone()).unwrap();
+        assert_eq!(original, decoded_native);
+        assert_eq!(original, decoded_value_native);
+        let mut buf2 = Vec::new();
+        {
+            let mut encoder = Amf0Encoder::new(&mut buf2);
+            decoded_value.serialize(&mut encoder).unwrap();
+        }
+        assert_eq!(buf, buf2);
+    }
+
+    #[derive(Serialize, Deserialize, PartialEq, Debug)]
+    enum TestEnum { Unit, NewType(i16), Struct { name: String } }
+
+    #[test]
+    fn roundtrip_enum_unit() {
+        let original = TestEnum::Unit;
+        let mut buf = Vec::new();
+        {
+            let mut encoder = Amf0Encoder::new(&mut buf);
+            original.serialize(&mut encoder).unwrap();
+        }
+        let decoded_value = Amf0Decoder::from_slice(&buf).decode_value().unwrap();
+        let decoded_native: TestEnum = Amf0Decoder::from_slice(&buf).deserialize().unwrap();
+        let decoded_value_native: TestEnum = Deserialize::deserialize(decoded_value.clone()).unwrap();
+        assert_eq!(original, decoded_native);
+        assert_eq!(original, decoded_value_native);
+        let mut buf2 = Vec::new();
+        {
+            let mut encoder = Amf0Encoder::new(&mut buf2);
+            decoded_value.serialize(&mut encoder).unwrap();
+        }
+        assert_eq!(buf, buf2);
+    }
+
+    #[test]
+    fn roundtrip_enum_newtype() {
+        let original = TestEnum::NewType(7);
+        let mut buf = Vec::new();
+        {
+            let mut encoder = Amf0Encoder::new(&mut buf);
+            original.serialize(&mut encoder).unwrap();
+        }
+        let decoded_value = Amf0Decoder::from_slice(&buf).decode_value().unwrap();
+        let decoded_native: TestEnum = Amf0Decoder::from_slice(&buf).deserialize().unwrap();
+        let decoded_value_native: TestEnum = Deserialize::deserialize(decoded_value.clone()).unwrap();
+        assert_eq!(original, decoded_native);
+        assert_eq!(original, decoded_value_native);
+        let mut buf2 = Vec::new();
+        {
+            let mut encoder = Amf0Encoder::new(&mut buf2);
+            decoded_value.serialize(&mut encoder).unwrap();
+        }
+        assert_eq!(buf, buf2);
+    }
+
+    #[test]
+    fn roundtrip_enum_struct() {
+        let original = TestEnum::Struct { name: "bar".to_string() };
+        let mut buf = Vec::new();
+        {
+            let mut encoder = Amf0Encoder::new(&mut buf);
+            original.serialize(&mut encoder).unwrap();
+        }
+        let decoded_value = Amf0Decoder::from_slice(&buf).decode_value().unwrap();
+        let decoded_native: TestEnum = Amf0Decoder::from_slice(&buf).deserialize().unwrap();
+        let decoded_value_native: TestEnum = Deserialize::deserialize(decoded_value.clone()).unwrap();
+        assert_eq!(original, decoded_native);
+        assert_eq!(original, decoded_value_native);
+        let mut buf2 = Vec::new();
+        {
+            let mut encoder = Amf0Encoder::new(&mut buf2);
+            decoded_value.serialize(&mut encoder).unwrap();
+        }
+        assert_eq!(buf, buf2);
+    }
+
+    #[derive(Serialize, Deserialize, PartialEq, Debug)]
+    struct UnitStruct;
+
+    #[test]
+    fn roundtrip_unit_struct() {
+        let original = UnitStruct;
+        let mut buf = Vec::new();
+        {
+            let mut encoder = Amf0Encoder::new(&mut buf);
+            original.serialize(&mut encoder).unwrap();
+        }
+        let decoded_value = Amf0Decoder::from_slice(&buf).decode_value().unwrap();
+        let decoded_native: UnitStruct = Amf0Decoder::from_slice(&buf).deserialize().unwrap();
+        let decoded_value_native: UnitStruct = Deserialize::deserialize(decoded_value.clone()).unwrap();
+        assert_eq!(&original, &decoded_native);
+        assert_eq!(&original, &decoded_value_native);
+        let mut buf2 = Vec::new();
+        {
+            let mut encoder = Amf0Encoder::new(&mut buf2);
+            decoded_value.serialize(&mut encoder).unwrap();
+        }
+        assert_eq!(buf, buf2);
+    }
+
+    #[test]
+    fn roundtrip_enum_map() {
+        let mut original: HashMap<String, TestEnum> = HashMap::new();
+        original.insert("k1".to_string(), TestEnum::NewType(99));
+        let mut buf = Vec::new();
+        {
+            let mut encoder = Amf0Encoder::new(&mut buf);
+            original.serialize(&mut encoder).unwrap();
+        }
+        let decoded_value = Amf0Decoder::from_slice(&buf).decode_value().unwrap();
+        let decoded_native: HashMap<String, TestEnum> = Amf0Decoder::from_slice(&buf).deserialize().unwrap();
+        let decoded_value_native: HashMap<String, TestEnum> = Deserialize::deserialize(decoded_value.clone()).unwrap();
+        assert_eq!(original, decoded_native);
+        assert_eq!(original, decoded_value_native);
+        let mut buf2 = Vec::new();
+        {
+            let mut encoder = Amf0Encoder::new(&mut buf2);
+            decoded_value.serialize(&mut encoder).unwrap();
+        }
+        assert_eq!(buf, buf2);
     }
 }

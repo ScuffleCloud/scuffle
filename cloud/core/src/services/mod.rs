@@ -6,7 +6,7 @@ use tinc::TincService;
 use tower_http::cors::CorsLayer;
 use tower_http::trace::TraceLayer;
 
-use crate::CoreGlobal;
+use crate::CoreConfig;
 
 mod organization_invitations;
 mod organizations;
@@ -26,7 +26,7 @@ impl<G> Default for CoreSvc<G> {
     }
 }
 
-impl<G: CoreGlobal> scuffle_bootstrap::Service<G> for CoreSvc<G> {
+impl<G: CoreConfig> scuffle_bootstrap::Service<G> for CoreSvc<G> {
     async fn run(self, global: Arc<G>, ctx: scuffle_context::Context) -> anyhow::Result<()> {
         // REST
         let organizations_svc_tinc =

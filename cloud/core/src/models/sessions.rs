@@ -32,7 +32,7 @@ impl PrefixedId for UserSessionToken {
 
 pub type UserSessionTokenId = Id<UserSessionToken>;
 
-#[derive(Queryable, Selectable, Insertable, Identifiable, AsChangeset, Associations, Clone)]
+#[derive(Queryable, Selectable, Insertable, Identifiable, AsChangeset, Associations, Debug, Clone)]
 #[diesel(table_name = crate::schema::user_sessions)]
 #[diesel(primary_key(user_id, device_fingerprint))]
 #[diesel(belongs_to(User))]
@@ -52,7 +52,7 @@ pub struct UserSession {
 
 pub type EmailRegistrationRequestId = Id<EmailRegistrationRequest>;
 
-#[derive(Queryable, Selectable, Insertable, Identifiable, AsChangeset, Associations)]
+#[derive(Queryable, Selectable, Insertable, Identifiable, AsChangeset, Associations, Debug)]
 #[diesel(table_name = crate::schema::email_registration_requests)]
 #[diesel(belongs_to(User))]
 #[diesel(check_for_backend(diesel::pg::Pg))]

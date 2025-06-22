@@ -19,6 +19,21 @@ pub struct Id<T: PrefixedId> {
     _phantom: std::marker::PhantomData<T>,
 }
 
+impl<T: PrefixedId> Default for Id<T> {
+    fn default() -> Self {
+        Self {
+            id: ulid::Ulid::new(),
+            _phantom: std::marker::PhantomData,
+        }
+    }
+}
+
+impl<T: PrefixedId> Id<T> {
+    pub fn new() -> Self {
+        Self::default()
+    }
+}
+
 impl<T: PrefixedId> Debug for Id<T> {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         Debug::fmt(&self.id, f)
@@ -73,10 +88,7 @@ impl<T: PrefixedId> Display for Id<T> {
 
 impl<T: PrefixedId> Clone for Id<T> {
     fn clone(&self) -> Self {
-        Self {
-            id: self.id,
-            _phantom: std::marker::PhantomData,
-        }
+        *self
     }
 }
 

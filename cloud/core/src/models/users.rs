@@ -33,7 +33,7 @@ impl From<User> for pb::scufflecloud::core::v1::User {
     }
 }
 
-#[derive(Queryable, Selectable, Insertable, Identifiable, AsChangeset, Associations)]
+#[derive(Queryable, Selectable, Insertable, Identifiable, AsChangeset, Associations, Debug)]
 #[diesel(table_name = crate::schema::user_emails)]
 #[diesel(primary_key(email))]
 #[diesel(belongs_to(User))]
@@ -44,7 +44,7 @@ pub struct UserEmail {
     pub created_at: chrono::DateTime<chrono::Utc>,
 }
 
-#[derive(Queryable, Selectable, Insertable, Identifiable, AsChangeset, Associations)]
+#[derive(Queryable, Selectable, Insertable, Identifiable, AsChangeset, Associations, Debug)]
 #[diesel(table_name = crate::schema::user_google_accounts)]
 #[diesel(belongs_to(User))]
 #[diesel(check_for_backend(diesel::pg::Pg))]

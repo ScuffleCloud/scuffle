@@ -16,6 +16,8 @@ pub struct Config {
     pub level: String,
     #[default(None)]
     pub db_url: Option<String>,
+    #[default = "1x0000000000000000000000000000000AA"]
+    pub turnstile_secret_key: String,
 }
 
 scuffle_settings::bootstrap!(Config);
@@ -23,15 +25,24 @@ scuffle_settings::bootstrap!(Config);
 struct Global {
     config: Config,
     database: bb8::Pool<diesel_async::AsyncPgConnection>,
+    http_client: reqwest::Client,
 }
 
-impl scufflecloud_core::CoreGlobal for Global {
+impl scufflecloud_core::CoreConfig for Global {
     fn bind(&self) -> std::net::SocketAddr {
         self.config.bind
     }
 
     async fn db(&self) -> anyhow::Result<bb8::PooledConnection<'_, diesel_async::AsyncPgConnection>> {
-        Ok(self.database.get().await.context("get database connection")?)
+        self.database.get().await.context("get database connection")
+    }
+
+    fn turnstile_secret_key(&self) -> &str {
+        &self.config.turnstile_secret_key
+    }
+
+    fn http_client(&self) -> &reqwest::Client {
+        &self.http_client
     }
 }
 
@@ -59,7 +70,16 @@ impl scuffle_bootstrap::Global for Global {
             .await
             .context("build database pool")?;
 
-        Ok(Arc::new(Self { config, database }))
+        let http_client = reqwest::Client::builder()
+            .user_agent(concat!(env!("CARGO_PKG_NAME"), "/", env!("CARGO_PKG_VERSION")))
+            .build()
+            .context("create HTTP client")?;
+
+        Ok(Arc::new(Self {
+            config,
+            database,
+            http_client,
+        }))
     }
 }
 

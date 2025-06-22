@@ -3,13 +3,13 @@ use std::sync::Arc;
 use diesel::{OptionalExtension, QueryDsl, SelectableHelper};
 use diesel_async::RunQueryDsl;
 
-use crate::CoreGlobal;
+use crate::CoreConfig;
 use crate::models::{User, UserId, UserSession};
 use crate::schema::users;
 use crate::services::CoreSvc;
 
 #[async_trait::async_trait]
-impl<G: CoreGlobal> pb::scufflecloud::core::v1::users_service_server::UsersService for CoreSvc<G> {
+impl<G: CoreConfig> pb::scufflecloud::core::v1::users_service_server::UsersService for CoreSvc<G> {
     async fn get_user(
         &self,
         request: tonic::Request<pb::scufflecloud::core::v1::UserByIdRequest>,

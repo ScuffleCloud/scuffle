@@ -24,11 +24,11 @@ diesel-async = { features = ["async-connection-wrapper", "bb8", "postgres"], ver
 hmac = "0.12.1"
 ipnetwork = "0.21.1"
 pb = { package = "scufflecloud-proto", path = "../proto" }
+rand = "0.9.1"
+reqwest = { features = ["json"], version = "0.12.20" }
 scuffle-bootstrap = "0.1.5"
 scuffle-context = "0.1.5"
-# Disable tracing for now because it spams stdout
-# scuffle-http = { features = ["tracing"], version = "0.3.2" }
-scuffle-http = "0.3.2"
+scuffle-http = { features = ["tracing"], version = "0.3.2" }
 scuffle-settings = { features = ["all-formats", "bootstrap"], version = "0.1.4" }
 scuffle-signal = { features = ["bootstrap"], version = "0.3.3" }
 serde = "1.0.219"

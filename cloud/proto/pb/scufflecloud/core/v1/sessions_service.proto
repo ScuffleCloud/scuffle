@@ -116,8 +116,8 @@ message RegisterWithEmailRequest {
 }
 
 message CompleteRegisterWithEmailRequest {
-    // The token received via email.
-    string token = 1;
+    // The code received via email.
+    bytes code = 1;
     // The password.
     string password = 2 [(string_constraint).password = true];
     Device device = 3;

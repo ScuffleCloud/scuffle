@@ -31,7 +31,7 @@ DEFERRABLE INITIALLY DEFERRED;
 
 CREATE INDEX ON "user_emails"("user_id");
 
--- User connections to external authentication providers.
+-- User connections to Google.
 --
 -- https://developers.google.com/people/api/rest/v1/people/get
 -- https://developers.google.com/people/api/rest/v1/people#Person
@@ -292,7 +292,7 @@ CREATE TABLE "email_registration_requests" (
     "id" UUID PRIMARY KEY,
     "user_id" UUID,
     "email" VARCHAR(255) NOT NULL,
-    "code" VARCHAR(255) NOT NULL,
+    "code" BYTEA NOT NULL,
     "expires_at" TIMESTAMPTZ NOT NULL
 );
 

@@ -10,7 +10,7 @@ use diesel::{BoolExpressionMethods, ExpressionMethods, OptionalExtension, QueryD
 use diesel_async::RunQueryDsl;
 use hmac::Mac;
 
-use crate::CoreGlobal;
+use crate::CoreConfig;
 use crate::models::{UserSession, UserSessionTokenId};
 use crate::schema::user_sessions;
 
@@ -18,7 +18,7 @@ const TOKEN_ID_HEADER: HeaderName = HeaderName::from_static("scuf-token-id");
 const AUTHENTICATION_METHOD_HEADER: HeaderName = HeaderName::from_static("scuf-auth-method");
 const AUTHENTICATION_HMAC_HEADER: HeaderName = HeaderName::from_static("scuf-auth-hmac");
 
-pub async fn auth<G: CoreGlobal>(mut req: Request, next: Next) -> Result<Response, StatusCode> {
+pub async fn auth<G: CoreConfig>(mut req: Request, next: Next) -> Result<Response, StatusCode> {
     let global = req.extensions().get::<Arc<G>>().ok_or(StatusCode::INTERNAL_SERVER_ERROR)?;
 
     if let Some(session) = get_active_session(global, req.headers()).await? {
@@ -103,7 +103,7 @@ impl FromStr for AuthenticationHmac {
     }
 }
 
-async fn get_active_session<G: CoreGlobal>(global: &Arc<G>, headers: &HeaderMap) -> Result<Option<UserSession>, StatusCode> {
+async fn get_active_session<G: CoreConfig>(global: &Arc<G>, headers: &HeaderMap) -> Result<Option<UserSession>, StatusCode> {
     let mut db = global.db().await.map_err(|_| StatusCode::INTERNAL_SERVER_ERROR)?;
 
     let Some(session_token_id) = get_auth_header::<UserSessionTokenId>(headers, &TOKEN_ID_HEADER)? else {

@@ -6,7 +6,7 @@ use crate::models::users::{User, UserId};
 
 pub type OrganizationId = Id<Organization>;
 
-#[derive(Queryable, Selectable, Insertable, Identifiable, AsChangeset, Associations)]
+#[derive(Queryable, Selectable, Insertable, Identifiable, AsChangeset, Associations, Debug)]
 #[diesel(table_name = crate::schema::organizations)]
 #[diesel(belongs_to(User, foreign_key = owner_id))]
 #[diesel(check_for_backend(diesel::pg::Pg))]
@@ -22,7 +22,7 @@ impl PrefixedId for Organization {
 
 pub type ProjectId = Id<Project>;
 
-#[derive(Queryable, Selectable, Insertable, Identifiable, AsChangeset, Associations)]
+#[derive(Queryable, Selectable, Insertable, Identifiable, AsChangeset, Associations, Debug)]
 #[diesel(table_name = crate::schema::projects)]
 #[diesel(belongs_to(Organization))]
 #[diesel(check_for_backend(diesel::pg::Pg))]
@@ -38,7 +38,7 @@ impl PrefixedId for Project {
 
 pub type PolicyId = Id<Policy>;
 
-#[derive(Queryable, Selectable, Insertable, Identifiable, AsChangeset, Associations)]
+#[derive(Queryable, Selectable, Insertable, Identifiable, AsChangeset, Associations, Debug)]
 #[diesel(table_name = crate::schema::policies)]
 #[diesel(belongs_to(Organization))]
 #[diesel(belongs_to(Project))]
@@ -58,7 +58,7 @@ impl PrefixedId for Policy {
 
 pub type RoleId = Id<Role>;
 
-#[derive(Queryable, Selectable, Insertable, Identifiable, AsChangeset, Associations)]
+#[derive(Queryable, Selectable, Insertable, Identifiable, AsChangeset, Associations, Debug)]
 #[diesel(table_name = crate::schema::roles)]
 #[diesel(belongs_to(Organization))]
 #[diesel(check_for_backend(diesel::pg::Pg))]
@@ -74,7 +74,7 @@ impl PrefixedId for Role {
     const PREFIX: &'static str = "role";
 }
 
-#[derive(Queryable, Selectable, Insertable, Identifiable, Associations)]
+#[derive(Queryable, Selectable, Insertable, Identifiable, Associations, Debug)]
 #[diesel(table_name = crate::schema::role_policies)]
 #[diesel(primary_key(role_id, policy_id))]
 #[diesel(belongs_to(Role))]
@@ -85,7 +85,7 @@ pub struct RolePolicy {
     pub policy_id: PolicyId,
 }
 
-#[derive(Queryable, Selectable, Insertable, Identifiable, AsChangeset, Associations)]
+#[derive(Queryable, Selectable, Insertable, Identifiable, AsChangeset, Associations, Debug)]
 #[diesel(table_name = crate::schema::organization_members)]
 #[diesel(primary_key(organization_id, user_id))]
 #[diesel(belongs_to(Organization))]
@@ -98,7 +98,7 @@ pub struct OrganizationMember {
     pub inline_policy: Option<serde_json::Value>,
 }
 
-#[derive(Queryable, Selectable, Insertable, Identifiable, Associations)]
+#[derive(Queryable, Selectable, Insertable, Identifiable, Associations, Debug)]
 #[diesel(table_name = crate::schema::organization_member_policies)]
 #[diesel(primary_key(organization_id, user_id, policy_id))]
 #[diesel(belongs_to(Organization))]
@@ -113,7 +113,7 @@ pub struct OrganizationMemberPolicy {
 
 pub type ServiceAccountId = Id<ServiceAccount>;
 
-#[derive(Queryable, Selectable, Insertable, Identifiable, AsChangeset, Associations)]
+#[derive(Queryable, Selectable, Insertable, Identifiable, AsChangeset, Associations, Debug)]
 #[diesel(table_name = crate::schema::service_accounts)]
 #[diesel(belongs_to(Organization))]
 #[diesel(belongs_to(Project))]
@@ -132,7 +132,7 @@ impl PrefixedId for ServiceAccount {
 
 pub type ServiceAccountTokenId = Id<ServiceAccountToken>;
 
-#[derive(Queryable, Selectable, Insertable, Identifiable, AsChangeset, Associations)]
+#[derive(Queryable, Selectable, Insertable, Identifiable, AsChangeset, Associations, Debug)]
 #[diesel(table_name = crate::schema::service_account_tokens)]
 #[diesel(belongs_to(ServiceAccount))]
 #[diesel(check_for_backend(diesel::pg::Pg))]
@@ -151,7 +151,7 @@ impl PrefixedId for ServiceAccountToken {
 
 pub type OrganizationInvitationId = Id<OrganizationInvitation>;
 
-#[derive(Queryable, Selectable, Insertable, Identifiable, AsChangeset, Associations)]
+#[derive(Queryable, Selectable, Insertable, Identifiable, AsChangeset, Associations, Debug)]
 #[diesel(table_name = crate::schema::organization_invitations)]
 #[diesel(belongs_to(Organization))]
 #[diesel(belongs_to(User))]

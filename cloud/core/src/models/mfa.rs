@@ -7,7 +7,7 @@ use crate::models::users::{User, UserId};
 
 pub type MfaTotpId = Id<MfaTotp>;
 
-#[derive(Queryable, Selectable, Insertable, Identifiable, AsChangeset, Associations)]
+#[derive(Queryable, Selectable, Insertable, Identifiable, AsChangeset, Associations, Debug)]
 #[diesel(table_name = crate::schema::mfa_totps)]
 #[diesel(belongs_to(User))]
 #[diesel(check_for_backend(diesel::pg::Pg))]
@@ -23,7 +23,7 @@ impl PrefixedId for MfaTotp {
 
 pub type MfaWebauthnPkId = Id<MfaWebauthnPk>;
 
-#[derive(Queryable, Selectable, Insertable, Identifiable, AsChangeset, Associations)]
+#[derive(Queryable, Selectable, Insertable, Identifiable, AsChangeset, Associations, Debug)]
 #[diesel(table_name = crate::schema::mfa_webauthn_pks)]
 #[diesel(belongs_to(User))]
 #[diesel(check_for_backend(diesel::pg::Pg))]

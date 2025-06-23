@@ -1,7 +1,6 @@
 use std::io::{
     Write, {self},
 };
-use std::path::PathBuf;
 use std::process::{Command, Stdio};
 
 use bytes::{Buf, Bytes};
@@ -13,7 +12,7 @@ use scuffle_h265::{
     ProfileCompatibilityFlags,
 };
 
-use crate::boxes::DynBox;
+use crate::{boxes::DynBox, file_path};
 use crate::boxes::header::{BoxHeader, FullBoxHeader};
 use crate::boxes::types::avc1::Avc1;
 use crate::boxes::types::avcc::AvcC;
@@ -61,9 +60,7 @@ use crate::types::trex::Trex;
 
 #[test]
 fn test_demux_avc_aac() {
-    let dir = PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("../../assets");
-
-    let data = std::fs::read(dir.join("avc_aac_fragmented.mp4").to_str().unwrap()).unwrap();
+    let data = std::fs::read(file_path("assets/avc_aac_fragmented.mp4").to_str().unwrap()).unwrap();
 
     let mut boxes = Vec::new();
     let mut reader = io::Cursor::new(data.into());
@@ -920,8 +917,7 @@ fn test_demux_avc_aac() {
 
 #[test]
 fn test_mux_avc_aac() {
-    let dir = PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("../../assets");
-    let data = std::fs::read(dir.join("avc_aac_fragmented.mp4").to_str().unwrap()).unwrap();
+    let data = std::fs::read(file_path("assets/avc_aac_fragmented.mp4").to_str().unwrap()).unwrap();
 
     let mut boxes = Vec::new();
     let mut reader = io::Cursor::new(data.into());
@@ -989,9 +985,7 @@ fn test_mux_avc_aac() {
 
 #[test]
 fn test_demux_av1_aac() {
-    let dir = PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("../../assets");
-
-    let data = std::fs::read(dir.join("av1_aac_fragmented.mp4").to_str().unwrap()).unwrap();
+    let data = std::fs::read(file_path("assets/av1_aac_fragmented.mp4").to_str().unwrap()).unwrap();
 
     let mut boxes = Vec::new();
     let mut reader = io::Cursor::new(data.into());
@@ -1687,9 +1681,7 @@ fn test_demux_av1_aac() {
 
 #[test]
 fn test_demux_hevc_aac() {
-    let dir = PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("../../assets");
-
-    let data = std::fs::read(dir.join("hevc_aac_fragmented.mp4").to_str().unwrap()).unwrap();
+    let data = std::fs::read(file_path("assets/hevc_aac_fragmented.mp4").to_str().unwrap()).unwrap();
 
     let mut boxes = Vec::new();
     let mut reader = io::Cursor::new(data.into());
@@ -2408,8 +2400,7 @@ fn test_demux_hevc_aac() {
 
 #[test]
 fn test_mux_av1_aac() {
-    let dir = PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("../../assets");
-    let data = std::fs::read(dir.join("av1_aac_fragmented.mp4").to_str().unwrap()).unwrap();
+    let data = std::fs::read(file_path("assets/av1_aac_fragmented.mp4").to_str().unwrap()).unwrap();
 
     let mut boxes = Vec::new();
     let mut reader = io::Cursor::new(data.into());
@@ -2477,8 +2468,7 @@ fn test_mux_av1_aac() {
 
 #[test]
 fn test_mux_hevc_aac() {
-    let dir = PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("../../assets");
-    let data = std::fs::read(dir.join("hevc_aac_fragmented.mp4").to_str().unwrap()).unwrap();
+    let data = std::fs::read(file_path("assets/hevc_aac_fragmented.mp4").to_str().unwrap()).unwrap();
 
     let mut boxes = Vec::new();
     let mut reader = io::Cursor::new(data.into());

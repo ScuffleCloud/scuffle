@@ -11,10 +11,25 @@ use scuffle_mp4::codec::{AudioCodec, VideoCodec};
 use crate::define::{AudioSettings, VideoSettings};
 use crate::{TransmuxResult, Transmuxer};
 
+fn file_path(item: &str) -> PathBuf {
+    #[cfg(not(bazel_test))]
+    {
+        PathBuf::from(env!("CARGO_MANIFEST_DIR")).join(format!("../../{item}"))
+    }
+    #[cfg(bazel_test)]
+    {
+        extern crate runfiles;
+
+        static RUNFILES: std::sync::LazyLock<runfiles::Runfiles> =
+            std::sync::LazyLock::new(|| runfiles::Runfiles::create().unwrap());
+
+        RUNFILES.rlocation(format!("_main/{item}")).unwrap()
+    }
+}
+
 #[test]
 fn test_transmuxer_avc_aac() {
-    let dir = PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("../../assets");
-    let data = std::fs::read(dir.join("avc_aac.flv").to_str().unwrap()).unwrap();
+    let data = std::fs::read(file_path("assets/avc_aac.flv")).unwrap();
 
     let mut transmuxer = Transmuxer::new();
 
@@ -122,8 +137,7 @@ fn test_transmuxer_avc_aac() {
 
 #[test]
 fn test_transmuxer_av1_aac() {
-    let dir = PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("../../assets");
-    let data = std::fs::read(dir.join("av1_aac.flv").to_str().unwrap()).unwrap();
+    let data = std::fs::read(file_path("assets/av1_aac.flv")).unwrap();
 
     let mut transmuxer = Transmuxer::new();
 
@@ -235,8 +249,7 @@ fn test_transmuxer_av1_aac() {
 
 #[test]
 fn test_transmuxer_hevc_aac() {
-    let dir = PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("../../assets");
-    let data = std::fs::read(dir.join("hevc_aac.flv").to_str().unwrap()).unwrap();
+    let data = std::fs::read(file_path("assets/hevc_aac.flv")).unwrap();
 
     let mut transmuxer = Transmuxer::new();
 

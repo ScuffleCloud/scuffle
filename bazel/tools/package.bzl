@@ -90,7 +90,8 @@ def scuffle_package(
     cargo_toml_env_vars(
         name = "cargo_toml_env",
         src = ":Cargo.toml",
-        workspace = "//:Cargo.toml"
+        workspace = "//:Cargo.toml",
+        visibility = ["//visibility:private"],
     )
 
     kwargs = dict(
@@ -140,6 +141,7 @@ def scuffle_package(
                 "--cfg=bazel_test",
             ],
             rustc_env_files = [":cargo_toml_env"],
+            visibility = ["//visibility:private"],
         )
 
         sh_test(

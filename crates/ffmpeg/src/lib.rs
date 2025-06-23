@@ -273,6 +273,9 @@ pub mod stream;
 /// Utility functionality.
 pub mod utils;
 
+#[cfg(test)]
+use std::path::PathBuf;
+
 pub use rusty_ffmpeg::ffi;
 
 mod smart_object;
@@ -285,3 +288,20 @@ pub use enums::*;
 #[cfg(feature = "docs")]
 #[scuffle_changelog::changelog]
 pub mod changelog {}
+
+#[cfg(test)]
+fn file_path(item: &str) -> PathBuf {
+    #[cfg(not(bazel_test))]
+    {
+        PathBuf::from(env!("CARGO_MANIFEST_DIR")).join(format!("../../{item}"))
+    }
+    #[cfg(bazel_test)]
+    {
+        extern crate runfiles;
+
+        static RUNFILES: std::sync::LazyLock<runfiles::Runfiles> =
+            std::sync::LazyLock::new(|| runfiles::Runfiles::create().unwrap());
+
+        RUNFILES.rlocation(format!("_main/{item}")).unwrap()
+    }
+}

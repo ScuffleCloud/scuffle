@@ -205,7 +205,6 @@
                     variant: 'danger',
                     onClick: () => {
                         console.log('Delete account clicked');
-                        // In a real app, you'd show a confirmation modal here
                     },
                 },
             ],
@@ -224,10 +223,6 @@
     <SettingsBlock title="Notification Settings" cards={notificationCards} icon={IconBell} />
 
     <SettingsBlock title="Security & Privacy" cards={securityCards} icon={IconShield} />
-
-    <!-- <SettingsBlock title="Account Settings" cards={accountCards} icon={IconUser} />
-
-        <SettingsBlock title="Danger Zone" cards={dangerCards} icon={IconAlertTriangle} /> -->
 </div>
 
 <style>

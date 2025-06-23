@@ -59,7 +59,7 @@
             <div class="stream-option">
                 <div class="option-header">
                     <div class="option-title">
-                        <IconStream />
+                        <IconStream size={24} />
                         <h3>Configured Stream</h3>
                     </div>
                     <div class="option-info">

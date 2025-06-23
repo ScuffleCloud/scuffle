@@ -53,38 +53,14 @@ rust_library(
         "@rules_rust//rust/platform:aarch64-apple-darwin": [],
         "@rules_rust//rust/platform:aarch64-pc-windows-msvc": [],
         "@rules_rust//rust/platform:aarch64-unknown-linux-gnu": [],
-        "@rules_rust//rust/platform:wasm32-unknown-unknown": [],
         "@rules_rust//rust/platform:x86_64-apple-darwin": [],
         "@rules_rust//rust/platform:x86_64-pc-windows-msvc": [],
         "@rules_rust//rust/platform:x86_64-unknown-linux-gnu": [],
         "//conditions:default": ["@platforms//:incompatible"],
     }),
     version = "0.6.5",
-    deps = select({
-        "@rules_rust//rust/platform:aarch64-apple-darwin": [
-            "@crates_vendor__fixedbitset-0.4.2//:fixedbitset",  # aarch64-apple-darwin
-            "@crates_vendor__indexmap-2.9.0//:indexmap",  # aarch64-apple-darwin
-        ],
-        "@rules_rust//rust/platform:aarch64-pc-windows-msvc": [
-            "@crates_vendor__fixedbitset-0.4.2//:fixedbitset",  # aarch64-pc-windows-msvc
-            "@crates_vendor__indexmap-2.9.0//:indexmap",  # aarch64-pc-windows-msvc
-        ],
-        "@rules_rust//rust/platform:aarch64-unknown-linux-gnu": [
-            "@crates_vendor__fixedbitset-0.4.2//:fixedbitset",  # aarch64-unknown-linux-gnu
-            "@crates_vendor__indexmap-2.9.0//:indexmap",  # aarch64-unknown-linux-gnu
-        ],
-        "@rules_rust//rust/platform:x86_64-apple-darwin": [
-            "@crates_vendor__fixedbitset-0.4.2//:fixedbitset",  # x86_64-apple-darwin
-            "@crates_vendor__indexmap-2.9.0//:indexmap",  # x86_64-apple-darwin
-        ],
-        "@rules_rust//rust/platform:x86_64-pc-windows-msvc": [
-            "@crates_vendor__fixedbitset-0.4.2//:fixedbitset",  # x86_64-pc-windows-msvc
-            "@crates_vendor__indexmap-2.9.0//:indexmap",  # x86_64-pc-windows-msvc
-        ],
-        "@rules_rust//rust/platform:x86_64-unknown-linux-gnu": [
-            "@crates_vendor__fixedbitset-0.4.2//:fixedbitset",  # x86_64-unknown-linux-gnu
-            "@crates_vendor__indexmap-2.9.0//:indexmap",  # x86_64-unknown-linux-gnu
-        ],
-        "//conditions:default": [],
-    }),
+    deps = [
+        "@crates_vendor__fixedbitset-0.4.2//:fixedbitset",
+        "@crates_vendor__indexmap-2.9.0//:indexmap",
+    ],
 )

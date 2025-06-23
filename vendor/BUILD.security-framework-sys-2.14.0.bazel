@@ -34,27 +34,15 @@ rust_library(
             "WORKSPACE.bazel",
         ],
     ),
-    crate_features = select({
-        "@rules_rust//rust/platform:aarch64-apple-darwin": [
-            "OSX_10_10",  # aarch64-apple-darwin
-            "OSX_10_11",  # aarch64-apple-darwin
-            "OSX_10_12",  # aarch64-apple-darwin
-            "OSX_10_13",  # aarch64-apple-darwin
-            "OSX_10_14",  # aarch64-apple-darwin
-            "OSX_10_9",  # aarch64-apple-darwin
-            "default",  # aarch64-apple-darwin
-        ],
-        "@rules_rust//rust/platform:x86_64-apple-darwin": [
-            "OSX_10_10",  # x86_64-apple-darwin
-            "OSX_10_11",  # x86_64-apple-darwin
-            "OSX_10_12",  # x86_64-apple-darwin
-            "OSX_10_13",  # x86_64-apple-darwin
-            "OSX_10_14",  # x86_64-apple-darwin
-            "OSX_10_9",  # x86_64-apple-darwin
-            "default",  # x86_64-apple-darwin
-        ],
-        "//conditions:default": [],
-    }),
+    crate_features = [
+        "OSX_10_10",
+        "OSX_10_11",
+        "OSX_10_12",
+        "OSX_10_13",
+        "OSX_10_14",
+        "OSX_10_9",
+        "default",
+    ],
     crate_root = "src/lib.rs",
     edition = "2021",
     rustc_env_files = [
@@ -72,24 +60,12 @@ rust_library(
     ],
     target_compatible_with = select({
         "@rules_rust//rust/platform:aarch64-apple-darwin": [],
-        "@rules_rust//rust/platform:aarch64-pc-windows-msvc": [],
-        "@rules_rust//rust/platform:aarch64-unknown-linux-gnu": [],
-        "@rules_rust//rust/platform:wasm32-unknown-unknown": [],
         "@rules_rust//rust/platform:x86_64-apple-darwin": [],
-        "@rules_rust//rust/platform:x86_64-pc-windows-msvc": [],
-        "@rules_rust//rust/platform:x86_64-unknown-linux-gnu": [],
         "//conditions:default": ["@platforms//:incompatible"],
     }),
     version = "2.14.0",
-    deps = select({
-        "@rules_rust//rust/platform:aarch64-apple-darwin": [
-            "@crates_vendor__core-foundation-sys-0.8.7//:core_foundation_sys",  # aarch64-apple-darwin
-            "@crates_vendor__libc-0.2.173//:libc",  # aarch64-apple-darwin
-        ],
-        "@rules_rust//rust/platform:x86_64-apple-darwin": [
-            "@crates_vendor__core-foundation-sys-0.8.7//:core_foundation_sys",  # x86_64-apple-darwin
-            "@crates_vendor__libc-0.2.173//:libc",  # x86_64-apple-darwin
-        ],
-        "//conditions:default": [],
-    }),
+    deps = [
+        "@crates_vendor__core-foundation-sys-0.8.7//:core_foundation_sys",
+        "@crates_vendor__libc-0.2.173//:libc",
+    ],
 )

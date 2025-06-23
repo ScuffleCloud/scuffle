@@ -45,34 +45,34 @@ rust_library(
         "proc-macro",
     ] + select({
         "@rules_rust//rust/platform:aarch64-apple-darwin": [
-            "fold",  # aarch64-apple-darwin
-            "visit",  # aarch64-apple-darwin
-            "visit-mut",  # aarch64-apple-darwin
+            "fold",
+            "visit",
+            "visit-mut",
         ],
         "@rules_rust//rust/platform:aarch64-pc-windows-msvc": [
-            "fold",  # aarch64-pc-windows-msvc
-            "visit",  # aarch64-pc-windows-msvc
-            "visit-mut",  # aarch64-pc-windows-msvc
+            "fold",
+            "visit",
+            "visit-mut",
         ],
         "@rules_rust//rust/platform:aarch64-unknown-linux-gnu": [
-            "fold",  # aarch64-unknown-linux-gnu
-            "visit",  # aarch64-unknown-linux-gnu
-            "visit-mut",  # aarch64-unknown-linux-gnu
+            "fold",
+            "visit",
+            "visit-mut",
         ],
         "@rules_rust//rust/platform:x86_64-apple-darwin": [
-            "fold",  # x86_64-apple-darwin
-            "visit",  # x86_64-apple-darwin
-            "visit-mut",  # x86_64-apple-darwin
+            "fold",
+            "visit",
+            "visit-mut",
         ],
         "@rules_rust//rust/platform:x86_64-pc-windows-msvc": [
-            "fold",  # x86_64-pc-windows-msvc
-            "visit",  # x86_64-pc-windows-msvc
-            "visit-mut",  # x86_64-pc-windows-msvc
+            "fold",
+            "visit",
+            "visit-mut",
         ],
         "@rules_rust//rust/platform:x86_64-unknown-linux-gnu": [
-            "fold",  # x86_64-unknown-linux-gnu
-            "visit",  # x86_64-unknown-linux-gnu
-            "visit-mut",  # x86_64-unknown-linux-gnu
+            "fold",
+            "visit",
+            "visit-mut",
         ],
         "//conditions:default": [],
     }),

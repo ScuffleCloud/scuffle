@@ -38,10 +38,12 @@ rust_library(
         ],
     ),
     crate_features = [
+        "indexmap",
         "ini",
         "json",
         "json5",
         "json5_rs",
+        "preserve_order",
         "ron",
         "rust-ini",
         "serde_json",
@@ -76,6 +78,7 @@ rust_library(
     }),
     version = "0.15.11",
     deps = [
+        "@crates_vendor__indexmap-2.9.0//:indexmap",
         "@crates_vendor__json5-0.4.1//:json5",
         "@crates_vendor__pathdiff-0.2.3//:pathdiff",
         "@crates_vendor__ron-0.8.1//:ron",

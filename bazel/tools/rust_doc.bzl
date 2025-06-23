@@ -180,13 +180,12 @@ def _zip_action(ctx, input_dir, output_zip):
         tools = [ctx.executable._zipper],
     )
 
-
 def _sort_topological_rev(crates):
     """
     Sort crates by reverse topological
 
     The reason we sort the crates by topological reverse is because
-    rust-doc uses the previous build folder to extend the build and 
+    rust-doc uses the previous build folder to extend the build and
     inserts links. The reverse topological order is from least dependant
     to most dependant. So if a depends on b and b depends on c,
     topological ordering would be [a, b, c] and reverse would be [c, b, a]
@@ -195,7 +194,7 @@ def _sort_topological_rev(crates):
     """
 
     all_dep_sets = []
-    crate_set = { crate.label: crate for crate in crates }
+    crate_set = {crate.label: crate for crate in crates}
 
     for crate in crates:
         dep_info, _, _ = collect_deps(
@@ -205,9 +204,7 @@ def _sort_topological_rev(crates):
         )
         all_dep_sets.append(depset([c.owner for c in dep_info.transitive_crates.to_list() if c.owner in crate_set]))
 
-
     return [crate_set[c] for c in depset(transitive = all_dep_sets, order = "topological").to_list()[::-1]]
-
 
 def _rust_doc_impl(ctx):
     """The implementation of the `rust_doc` rule
@@ -233,6 +230,7 @@ def _rust_doc_impl(ctx):
         args_file = ctx.actions.declare_file("{}.{}.args.txt".format(ctx.label.name, str(crate.label).replace("/", ".")))
         crate_info = crate[rust_common.crate_info]
         lints_info = crate[LintsInfo] if LintsInfo in crate else None
+
         # Add the current crate as an extern for the compile action
         rustdoc_flags = [
             "--extern",

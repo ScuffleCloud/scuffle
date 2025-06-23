@@ -64,10 +64,10 @@ rust_library(
         "@crates_vendor__overload-0.1.1//:overload",
     ] + select({
         "@rules_rust//rust/platform:aarch64-pc-windows-msvc": [
-            "@crates_vendor__winapi-0.3.9//:winapi",  # aarch64-pc-windows-msvc
+            "@crates_vendor__winapi-0.3.9//:winapi",  # cfg(target_os = "windows")
         ],
         "@rules_rust//rust/platform:x86_64-pc-windows-msvc": [
-            "@crates_vendor__winapi-0.3.9//:winapi",  # x86_64-pc-windows-msvc
+            "@crates_vendor__winapi-0.3.9//:winapi",  # cfg(target_os = "windows")
         ],
         "//conditions:default": [],
     }),

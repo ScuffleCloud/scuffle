@@ -1,8 +1,22 @@
-load("@rules_rust//crate_universe:defs.bzl", "crates_vendor")
+load("@rules_rust//crate_universe:defs.bzl", "crates_vendor", "crate")
+
+exports_files(["Cargo.toml"])
+
+genrule(
+    name = "cargo_metadata",
+    outs = ["cargo-metadata.json"],
+    srcs = glob([
+        "**/Cargo.toml",
+    ]) + ["Cargo.lock"],
+    cmd = "cargo metadata --format-version 1 --manifest-path $(location //:Cargo.toml) > $@",
+    visibility = ["//visibility:public"],
+    tags = ["manual", "no-sandbox"],
+)
 
 crates_vendor(
     name = "crates_vendor",
     cargo_lockfile = "//:Cargo.lock",
+    generate_build_scripts = True,
     manifests = [
         "//:Cargo.toml",
         "//cloud/core:Cargo.toml",
@@ -27,7 +41,7 @@ crates_vendor(
         "//crates/metrics:Cargo.toml",
         "//crates/metrics/derive:Cargo.toml",
         "//crates/mp4:Cargo.toml",
-        "//crates/nutype_enum:Cargo.toml",
+        "//crates/nutype-enum:Cargo.toml",
         "//crates/openapiv3_1:Cargo.toml",
         "//crates/postcompile:Cargo.toml",
         "//crates/pprof:Cargo.toml",
@@ -42,8 +56,16 @@ crates_vendor(
         "//crates/tinc/pb-prost:Cargo.toml",
         "//crates/transmuxer:Cargo.toml",
         "//dev-tools/xtask:Cargo.toml",
+        "//dev-tools/test-runner:Cargo.toml",
     ],
-    generate_build_scripts = True,
+    annotations = {
+        "reqwest": [
+            crate.annotation(
+                rustc_flags = ["--cfg=reqwest_unstable"],
+            ),
+        ],
+    },
+    mode = "remote",
     supported_platform_triples = [
         "x86_64-unknown-linux-gnu",
         "aarch64-unknown-linux-gnu",
@@ -53,7 +75,7 @@ crates_vendor(
         "aarch64-pc-windows-msvc",
         "wasm32-unknown-unknown",
     ],
-    mode = "remote",
     vendor_path = "vendor",
     visibility = ["//visibility:public"],
+    tags = ["manual"]
 )

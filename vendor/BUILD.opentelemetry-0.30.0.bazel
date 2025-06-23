@@ -82,7 +82,7 @@ rust_library(
         "@crates_vendor__tracing-0.1.41//:tracing",
     ] + select({
         "@rules_rust//rust/platform:wasm32-unknown-unknown": [
-            "@crates_vendor__js-sys-0.3.77//:js_sys",  # wasm32-unknown-unknown
+            "@crates_vendor__js-sys-0.3.77//:js_sys",  # cfg(all(target_arch = "wasm32", not(target_os = "wasi")))
         ],
         "//conditions:default": [],
     }),

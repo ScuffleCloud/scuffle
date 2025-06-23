@@ -55,31 +55,21 @@ rust_library(
     ],
     target_compatible_with = select({
         "@rules_rust//rust/platform:aarch64-apple-darwin": [],
-        "@rules_rust//rust/platform:aarch64-pc-windows-msvc": [],
         "@rules_rust//rust/platform:aarch64-unknown-linux-gnu": [],
-        "@rules_rust//rust/platform:wasm32-unknown-unknown": [],
         "@rules_rust//rust/platform:x86_64-apple-darwin": [],
-        "@rules_rust//rust/platform:x86_64-pc-windows-msvc": [],
         "@rules_rust//rust/platform:x86_64-unknown-linux-gnu": [],
         "//conditions:default": ["@platforms//:incompatible"],
     }),
     version = "0.10.2",
     deps = [
         "@crates_vendor__findshlibs-0.10.2//:build_script_build",
+        "@crates_vendor__libc-0.2.173//:libc",
     ] + select({
         "@rules_rust//rust/platform:aarch64-apple-darwin": [
-            "@crates_vendor__lazy_static-1.5.0//:lazy_static",  # aarch64-apple-darwin
-            "@crates_vendor__libc-0.2.173//:libc",  # aarch64-apple-darwin
-        ],
-        "@rules_rust//rust/platform:aarch64-unknown-linux-gnu": [
-            "@crates_vendor__libc-0.2.173//:libc",  # aarch64-unknown-linux-gnu
+            "@crates_vendor__lazy_static-1.5.0//:lazy_static",  # cfg(any(target_os = "macos", target_os = "ios"))
         ],
         "@rules_rust//rust/platform:x86_64-apple-darwin": [
-            "@crates_vendor__lazy_static-1.5.0//:lazy_static",  # x86_64-apple-darwin
-            "@crates_vendor__libc-0.2.173//:libc",  # x86_64-apple-darwin
-        ],
-        "@rules_rust//rust/platform:x86_64-unknown-linux-gnu": [
-            "@crates_vendor__libc-0.2.173//:libc",  # x86_64-unknown-linux-gnu
+            "@crates_vendor__lazy_static-1.5.0//:lazy_static",  # cfg(any(target_os = "macos", target_os = "ios"))
         ],
         "//conditions:default": [],
     }),
@@ -135,21 +125,9 @@ cargo_build_script(
     ],
     version = "0.10.2",
     visibility = ["//visibility:private"],
-    deps = select({
-        "@rules_rust//rust/platform:aarch64-apple-darwin": [
-            "@crates_vendor__cc-1.2.27//:cc",  # aarch64-apple-darwin
-        ],
-        "@rules_rust//rust/platform:aarch64-unknown-linux-gnu": [
-            "@crates_vendor__cc-1.2.27//:cc",  # aarch64-unknown-linux-gnu
-        ],
-        "@rules_rust//rust/platform:x86_64-apple-darwin": [
-            "@crates_vendor__cc-1.2.27//:cc",  # x86_64-apple-darwin
-        ],
-        "@rules_rust//rust/platform:x86_64-unknown-linux-gnu": [
-            "@crates_vendor__cc-1.2.27//:cc",  # x86_64-unknown-linux-gnu
-        ],
-        "//conditions:default": [],
-    }),
+    deps = [
+        "@crates_vendor__cc-1.2.27//:cc",
+    ],
 )
 
 alias(

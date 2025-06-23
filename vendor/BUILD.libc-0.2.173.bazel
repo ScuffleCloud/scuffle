@@ -43,16 +43,16 @@ rust_library(
         "std",
     ] + select({
         "@rules_rust//rust/platform:aarch64-apple-darwin": [
-            "extra_traits",  # aarch64-apple-darwin
+            "extra_traits",
         ],
         "@rules_rust//rust/platform:aarch64-unknown-linux-gnu": [
-            "extra_traits",  # aarch64-unknown-linux-gnu
+            "extra_traits",
         ],
         "@rules_rust//rust/platform:x86_64-apple-darwin": [
-            "extra_traits",  # x86_64-apple-darwin
+            "extra_traits",
         ],
         "@rules_rust//rust/platform:x86_64-unknown-linux-gnu": [
-            "extra_traits",  # x86_64-unknown-linux-gnu
+            "extra_traits",
         ],
         "//conditions:default": [],
     }),
@@ -111,16 +111,16 @@ cargo_build_script(
         "std",
     ] + select({
         "@rules_rust//rust/platform:aarch64-apple-darwin": [
-            "extra_traits",  # aarch64-apple-darwin
+            "extra_traits",
         ],
         "@rules_rust//rust/platform:aarch64-unknown-linux-gnu": [
-            "extra_traits",  # aarch64-unknown-linux-gnu
+            "extra_traits",
         ],
         "@rules_rust//rust/platform:x86_64-apple-darwin": [
-            "extra_traits",  # x86_64-apple-darwin
+            "extra_traits",
         ],
         "@rules_rust//rust/platform:x86_64-unknown-linux-gnu": [
-            "extra_traits",  # x86_64-unknown-linux-gnu
+            "extra_traits",
         ],
         "//conditions:default": [],
     }),

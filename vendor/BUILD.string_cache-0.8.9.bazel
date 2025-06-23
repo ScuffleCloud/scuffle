@@ -53,50 +53,16 @@ rust_library(
         "@rules_rust//rust/platform:aarch64-apple-darwin": [],
         "@rules_rust//rust/platform:aarch64-pc-windows-msvc": [],
         "@rules_rust//rust/platform:aarch64-unknown-linux-gnu": [],
-        "@rules_rust//rust/platform:wasm32-unknown-unknown": [],
         "@rules_rust//rust/platform:x86_64-apple-darwin": [],
         "@rules_rust//rust/platform:x86_64-pc-windows-msvc": [],
         "@rules_rust//rust/platform:x86_64-unknown-linux-gnu": [],
         "//conditions:default": ["@platforms//:incompatible"],
     }),
     version = "0.8.9",
-    deps = select({
-        "@rules_rust//rust/platform:aarch64-apple-darwin": [
-            "@crates_vendor__new_debug_unreachable-1.0.6//:debug_unreachable",  # aarch64-apple-darwin
-            "@crates_vendor__parking_lot-0.12.4//:parking_lot",  # aarch64-apple-darwin
-            "@crates_vendor__phf_shared-0.11.3//:phf_shared",  # aarch64-apple-darwin
-            "@crates_vendor__precomputed-hash-0.1.1//:precomputed_hash",  # aarch64-apple-darwin
-        ],
-        "@rules_rust//rust/platform:aarch64-pc-windows-msvc": [
-            "@crates_vendor__new_debug_unreachable-1.0.6//:debug_unreachable",  # aarch64-pc-windows-msvc
-            "@crates_vendor__parking_lot-0.12.4//:parking_lot",  # aarch64-pc-windows-msvc
-            "@crates_vendor__phf_shared-0.11.3//:phf_shared",  # aarch64-pc-windows-msvc
-            "@crates_vendor__precomputed-hash-0.1.1//:precomputed_hash",  # aarch64-pc-windows-msvc
-        ],
-        "@rules_rust//rust/platform:aarch64-unknown-linux-gnu": [
-            "@crates_vendor__new_debug_unreachable-1.0.6//:debug_unreachable",  # aarch64-unknown-linux-gnu
-            "@crates_vendor__parking_lot-0.12.4//:parking_lot",  # aarch64-unknown-linux-gnu
-            "@crates_vendor__phf_shared-0.11.3//:phf_shared",  # aarch64-unknown-linux-gnu
-            "@crates_vendor__precomputed-hash-0.1.1//:precomputed_hash",  # aarch64-unknown-linux-gnu
-        ],
-        "@rules_rust//rust/platform:x86_64-apple-darwin": [
-            "@crates_vendor__new_debug_unreachable-1.0.6//:debug_unreachable",  # x86_64-apple-darwin
-            "@crates_vendor__parking_lot-0.12.4//:parking_lot",  # x86_64-apple-darwin
-            "@crates_vendor__phf_shared-0.11.3//:phf_shared",  # x86_64-apple-darwin
-            "@crates_vendor__precomputed-hash-0.1.1//:precomputed_hash",  # x86_64-apple-darwin
-        ],
-        "@rules_rust//rust/platform:x86_64-pc-windows-msvc": [
-            "@crates_vendor__new_debug_unreachable-1.0.6//:debug_unreachable",  # x86_64-pc-windows-msvc
-            "@crates_vendor__parking_lot-0.12.4//:parking_lot",  # x86_64-pc-windows-msvc
-            "@crates_vendor__phf_shared-0.11.3//:phf_shared",  # x86_64-pc-windows-msvc
-            "@crates_vendor__precomputed-hash-0.1.1//:precomputed_hash",  # x86_64-pc-windows-msvc
-        ],
-        "@rules_rust//rust/platform:x86_64-unknown-linux-gnu": [
-            "@crates_vendor__new_debug_unreachable-1.0.6//:debug_unreachable",  # x86_64-unknown-linux-gnu
-            "@crates_vendor__parking_lot-0.12.4//:parking_lot",  # x86_64-unknown-linux-gnu
-            "@crates_vendor__phf_shared-0.11.3//:phf_shared",  # x86_64-unknown-linux-gnu
-            "@crates_vendor__precomputed-hash-0.1.1//:precomputed_hash",  # x86_64-unknown-linux-gnu
-        ],
-        "//conditions:default": [],
-    }),
+    deps = [
+        "@crates_vendor__new_debug_unreachable-1.0.6//:debug_unreachable",
+        "@crates_vendor__parking_lot-0.12.4//:parking_lot",
+        "@crates_vendor__phf_shared-0.11.3//:phf_shared",
+        "@crates_vendor__precomputed-hash-0.1.1//:precomputed_hash",
+    ],
 )

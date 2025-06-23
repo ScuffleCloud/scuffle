@@ -65,11 +65,25 @@ mod tests {
     use crate::video::header::legacy::{LegacyVideoTagHeader, LegacyVideoTagHeaderAvcPacket, VideoCodecId};
     use crate::video::header::{VideoFrameType, VideoTagHeader, VideoTagHeaderData};
 
+    fn file_path(item: &str) -> PathBuf {
+        #[cfg(not(bazel_test))]
+        {
+            PathBuf::from(env!("CARGO_MANIFEST_DIR")).join(format!("../../{item}"))
+        }
+        #[cfg(bazel_test)]
+        {
+            extern crate runfiles;
+
+            static RUNFILES: std::sync::LazyLock<runfiles::Runfiles> =
+                std::sync::LazyLock::new(|| runfiles::Runfiles::create().unwrap());
+
+            RUNFILES.rlocation(format!("_main/{item}")).unwrap()
+        }
+    }
+
     #[test]
     fn test_demux_flv_avc_aac() {
-        let dir = PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("../../assets");
-
-        let data = Bytes::from(std::fs::read(dir.join("avc_aac.flv")).expect("failed to read file"));
+        let data = Bytes::from(std::fs::read(file_path("assets/avc_aac.flv")).expect("failed to read file"));
         let mut reader = io::Cursor::new(data);
 
         let flv = FlvFile::demux(&mut reader).expect("failed to demux flv");
@@ -328,9 +342,7 @@ mod tests {
 
     #[test]
     fn test_demux_flv_av1_aac() {
-        let dir = PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("../../assets");
-
-        let data = Bytes::from(std::fs::read(dir.join("av1_aac.flv")).expect("failed to read file"));
+        let data = Bytes::from(std::fs::read(file_path("assets/av1_aac.flv")).expect("failed to read file"));
         let mut reader = io::Cursor::new(data);
 
         let flv = FlvFile::demux(&mut reader).expect("failed to demux flv");
@@ -538,9 +550,7 @@ mod tests {
 
     #[test]
     fn test_demux_flv_hevc_aac() {
-        let dir = PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("../../assets");
-
-        let data = Bytes::from(std::fs::read(dir.join("hevc_aac.flv")).expect("failed to read file"));
+        let data = Bytes::from(std::fs::read(file_path("assets/hevc_aac.flv")).expect("failed to read file"));
         let mut reader = io::Cursor::new(data);
 
         let flv = FlvFile::demux(&mut reader).expect("failed to demux flv");

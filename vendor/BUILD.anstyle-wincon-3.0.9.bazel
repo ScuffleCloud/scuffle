@@ -50,27 +50,14 @@ rust_library(
         "norustfmt",
     ],
     target_compatible_with = select({
-        "@rules_rust//rust/platform:aarch64-apple-darwin": [],
         "@rules_rust//rust/platform:aarch64-pc-windows-msvc": [],
-        "@rules_rust//rust/platform:aarch64-unknown-linux-gnu": [],
-        "@rules_rust//rust/platform:wasm32-unknown-unknown": [],
-        "@rules_rust//rust/platform:x86_64-apple-darwin": [],
         "@rules_rust//rust/platform:x86_64-pc-windows-msvc": [],
-        "@rules_rust//rust/platform:x86_64-unknown-linux-gnu": [],
         "//conditions:default": ["@platforms//:incompatible"],
     }),
     version = "3.0.9",
-    deps = select({
-        "@rules_rust//rust/platform:aarch64-pc-windows-msvc": [
-            "@crates_vendor__anstyle-1.0.11//:anstyle",  # aarch64-pc-windows-msvc
-            "@crates_vendor__once_cell_polyfill-1.70.1//:once_cell_polyfill",  # aarch64-pc-windows-msvc
-            "@crates_vendor__windows-sys-0.59.0//:windows_sys",  # aarch64-pc-windows-msvc
-        ],
-        "@rules_rust//rust/platform:x86_64-pc-windows-msvc": [
-            "@crates_vendor__anstyle-1.0.11//:anstyle",  # x86_64-pc-windows-msvc
-            "@crates_vendor__once_cell_polyfill-1.70.1//:once_cell_polyfill",  # x86_64-pc-windows-msvc
-            "@crates_vendor__windows-sys-0.59.0//:windows_sys",  # x86_64-pc-windows-msvc
-        ],
-        "//conditions:default": [],
-    }),
+    deps = [
+        "@crates_vendor__anstyle-1.0.11//:anstyle",
+        "@crates_vendor__once_cell_polyfill-1.70.1//:once_cell_polyfill",  # cfg(windows)
+        "@crates_vendor__windows-sys-0.59.0//:windows_sys",  # cfg(windows)
+    ],
 )

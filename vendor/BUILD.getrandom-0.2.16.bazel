@@ -36,9 +36,9 @@ rust_library(
     ),
     crate_features = select({
         "@rules_rust//rust/platform:wasm32-unknown-unknown": [
-            "js",  # wasm32-unknown-unknown
-            "js-sys",  # wasm32-unknown-unknown
-            "wasm-bindgen",  # wasm32-unknown-unknown
+            "js",
+            "js-sys",
+            "wasm-bindgen",
         ],
         "//conditions:default": [],
     }),
@@ -72,20 +72,20 @@ rust_library(
         "@crates_vendor__cfg-if-1.0.1//:cfg_if",
     ] + select({
         "@rules_rust//rust/platform:aarch64-apple-darwin": [
-            "@crates_vendor__libc-0.2.173//:libc",  # aarch64-apple-darwin
+            "@crates_vendor__libc-0.2.173//:libc",  # cfg(unix)
         ],
         "@rules_rust//rust/platform:aarch64-unknown-linux-gnu": [
-            "@crates_vendor__libc-0.2.173//:libc",  # aarch64-unknown-linux-gnu
+            "@crates_vendor__libc-0.2.173//:libc",  # cfg(unix)
         ],
         "@rules_rust//rust/platform:wasm32-unknown-unknown": [
-            "@crates_vendor__js-sys-0.3.77//:js_sys",  # wasm32-unknown-unknown
-            "@crates_vendor__wasm-bindgen-0.2.100//:wasm_bindgen",  # wasm32-unknown-unknown
+            "@crates_vendor__js-sys-0.3.77//:js_sys",  # cfg(all(any(target_arch = "wasm32", target_arch = "wasm64"), target_os = "unknown"))
+            "@crates_vendor__wasm-bindgen-0.2.100//:wasm_bindgen",  # cfg(all(any(target_arch = "wasm32", target_arch = "wasm64"), target_os = "unknown"))
         ],
         "@rules_rust//rust/platform:x86_64-apple-darwin": [
-            "@crates_vendor__libc-0.2.173//:libc",  # x86_64-apple-darwin
+            "@crates_vendor__libc-0.2.173//:libc",  # cfg(unix)
         ],
         "@rules_rust//rust/platform:x86_64-unknown-linux-gnu": [
-            "@crates_vendor__libc-0.2.173//:libc",  # x86_64-unknown-linux-gnu
+            "@crates_vendor__libc-0.2.173//:libc",  # cfg(unix)
         ],
         "//conditions:default": [],
     }),

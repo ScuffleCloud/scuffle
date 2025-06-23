@@ -1,7 +1,6 @@
-load("@rules_rust//rust/private:utils.bzl", "transform_deps")
-load("@rules_rust//rust/private:rustc.bzl", "collect_deps")
 load("@bazel_skylib//lib:paths.bzl", "paths")
-
+load("@rules_rust//rust/private:rustc.bzl", "collect_deps")
+load("@rules_rust//rust/private:utils.bzl", "transform_deps")
 
 def _postcompile_deps_impl(ctx):
     dep_info, _, _ = collect_deps(
@@ -12,7 +11,7 @@ def _postcompile_deps_impl(ctx):
 
     postcompile_args = {
         "direct": {},
-        "search": []
+        "search": [],
     }
 
     runfiles = []
@@ -38,10 +37,12 @@ def _postcompile_deps_impl(ctx):
         content = json.encode(postcompile_args),
     )
 
-    return DefaultInfo(
-        files = depset([out]),
-        runfiles = ctx.runfiles(files = runfiles + [out])
-    )
+    return [
+        DefaultInfo(
+            files = depset([out]),
+            runfiles = ctx.runfiles(files = runfiles + [out]),
+        ),
+    ]
 
 postcompile_deps = rule(
     implementation = _postcompile_deps_impl,

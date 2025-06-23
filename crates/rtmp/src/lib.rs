@@ -94,6 +94,22 @@ mod tests {
 
     use crate::session::server::{ServerSession, ServerSessionError, SessionData, SessionHandler};
 
+    fn file_path(item: &str) -> PathBuf {
+        #[cfg(not(bazel_test))]
+        {
+            PathBuf::from(env!("CARGO_MANIFEST_DIR")).join(format!("../../{item}"))
+        }
+        #[cfg(bazel_test)]
+        {
+            extern crate runfiles;
+
+            static RUNFILES: std::sync::LazyLock<runfiles::Runfiles> =
+                std::sync::LazyLock::new(|| runfiles::Runfiles::create().unwrap());
+
+            RUNFILES.rlocation(format!("_main/{item}")).unwrap()
+        }
+    }
+
     enum Event {
         Publish {
             stream_id: u32,
@@ -160,15 +176,13 @@ mod tests {
         let listener = tokio::net::TcpListener::bind("127.0.0.1:0").await.expect("failed to bind");
         let addr = listener.local_addr().unwrap();
 
-        let dir = PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("../../assets");
-
         let _ffmpeg = Command::new("ffmpeg")
             .args([
                 "-loglevel",
                 "debug",
                 "-re",
                 "-i",
-                dir.join("avc_aac.mp4").to_str().expect("failed to get path"),
+                file_path("assets/avc_aac.mp4").to_str().expect("failed to get path"),
                 "-r",
                 "30",
                 "-t",
@@ -294,15 +308,13 @@ mod tests {
         let listener = tokio::net::TcpListener::bind("127.0.0.1:0").await.expect("failed to bind");
         let addr = listener.local_addr().unwrap();
 
-        let dir = PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("../../assets");
-
         let mut ffmpeg = Command::new("ffmpeg")
             .args([
                 "-loglevel",
                 "debug",
                 "-re",
                 "-i",
-                dir.join("avc_aac.mp4").to_str().expect("failed to get path"),
+                file_path("assets/avc_aac.mp4").to_str().expect("failed to get path"),
                 "-r",
                 "30",
                 "-t",

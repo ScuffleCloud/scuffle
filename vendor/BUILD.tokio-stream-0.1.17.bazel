@@ -37,15 +37,16 @@ rust_library(
     crate_features = [
         "default",
         "net",
+        "signal",
         "time",
     ] + select({
         "@rules_rust//rust/platform:aarch64-pc-windows-msvc": [
-            "sync",  # aarch64-pc-windows-msvc
-            "tokio-util",  # aarch64-pc-windows-msvc
+            "sync",
+            "tokio-util",
         ],
         "@rules_rust//rust/platform:x86_64-pc-windows-msvc": [
-            "sync",  # x86_64-pc-windows-msvc
-            "tokio-util",  # x86_64-pc-windows-msvc
+            "sync",
+            "tokio-util",
         ],
         "//conditions:default": [],
     }),
@@ -81,10 +82,10 @@ rust_library(
         "@crates_vendor__tokio-1.45.1//:tokio",
     ] + select({
         "@rules_rust//rust/platform:aarch64-pc-windows-msvc": [
-            "@crates_vendor__tokio-util-0.7.15//:tokio_util",  # aarch64-pc-windows-msvc
+            "@crates_vendor__tokio-util-0.7.15//:tokio_util",
         ],
         "@rules_rust//rust/platform:x86_64-pc-windows-msvc": [
-            "@crates_vendor__tokio-util-0.7.15//:tokio_util",  # x86_64-pc-windows-msvc
+            "@crates_vendor__tokio-util-0.7.15//:tokio_util",
         ],
         "//conditions:default": [],
     }),

@@ -40,8 +40,8 @@ rust_library(
         "std",
     ] + select({
         "@rules_rust//rust/platform:wasm32-unknown-unknown": [
-            "web",  # wasm32-unknown-unknown
-            "web-time",  # wasm32-unknown-unknown
+            "web",
+            "web-time",
         ],
         "//conditions:default": [],
     }),
@@ -75,7 +75,7 @@ rust_library(
         "@crates_vendor__zeroize-1.8.1//:zeroize",
     ] + select({
         "@rules_rust//rust/platform:wasm32-unknown-unknown": [
-            "@crates_vendor__web-time-1.1.0//:web_time",  # wasm32-unknown-unknown
+            "@crates_vendor__web-time-1.1.0//:web_time",  # cfg(all(target_family = "wasm", target_os = "unknown"))
         ],
         "//conditions:default": [],
     }),

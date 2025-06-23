@@ -38,66 +38,21 @@ rust_library(
             "WORKSPACE.bazel",
         ],
     ),
-    crate_features = select({
-        "@rules_rust//rust/platform:aarch64-apple-darwin": [
-            "_protobuf",  # aarch64-apple-darwin
-            "cpp",  # aarch64-apple-darwin
-            "default",  # aarch64-apple-darwin
-            "prost",  # aarch64-apple-darwin
-            "prost-build",  # aarch64-apple-darwin
-            "prost-codec",  # aarch64-apple-darwin
-            "prost-derive",  # aarch64-apple-darwin
-            "sha2",  # aarch64-apple-darwin
-        ],
-        "@rules_rust//rust/platform:aarch64-unknown-linux-gnu": [
-            "_protobuf",  # aarch64-unknown-linux-gnu
-            "cpp",  # aarch64-unknown-linux-gnu
-            "default",  # aarch64-unknown-linux-gnu
-            "prost",  # aarch64-unknown-linux-gnu
-            "prost-build",  # aarch64-unknown-linux-gnu
-            "prost-codec",  # aarch64-unknown-linux-gnu
-            "prost-derive",  # aarch64-unknown-linux-gnu
-            "sha2",  # aarch64-unknown-linux-gnu
-        ],
-        "@rules_rust//rust/platform:x86_64-apple-darwin": [
-            "_protobuf",  # x86_64-apple-darwin
-            "cpp",  # x86_64-apple-darwin
-            "default",  # x86_64-apple-darwin
-            "prost",  # x86_64-apple-darwin
-            "prost-build",  # x86_64-apple-darwin
-            "prost-codec",  # x86_64-apple-darwin
-            "prost-derive",  # x86_64-apple-darwin
-            "sha2",  # x86_64-apple-darwin
-        ],
-        "@rules_rust//rust/platform:x86_64-unknown-linux-gnu": [
-            "_protobuf",  # x86_64-unknown-linux-gnu
-            "cpp",  # x86_64-unknown-linux-gnu
-            "default",  # x86_64-unknown-linux-gnu
-            "prost",  # x86_64-unknown-linux-gnu
-            "prost-build",  # x86_64-unknown-linux-gnu
-            "prost-codec",  # x86_64-unknown-linux-gnu
-            "prost-derive",  # x86_64-unknown-linux-gnu
-            "sha2",  # x86_64-unknown-linux-gnu
-        ],
-        "//conditions:default": [],
-    }),
+    crate_features = [
+        "_protobuf",
+        "cpp",
+        "default",
+        "prost",
+        "prost-build",
+        "prost-codec",
+        "prost-derive",
+        "sha2",
+    ],
     crate_root = "src/lib.rs",
     edition = "2021",
-    proc_macro_deps = select({
-        "@rules_rust//rust/platform:aarch64-apple-darwin": [
-            "@crates_vendor__prost-derive-0.12.6//:prost_derive",  # aarch64-apple-darwin
-        ],
-        "@rules_rust//rust/platform:aarch64-unknown-linux-gnu": [
-            "@crates_vendor__prost-derive-0.12.6//:prost_derive",  # aarch64-unknown-linux-gnu
-        ],
-        "@rules_rust//rust/platform:x86_64-apple-darwin": [
-            "@crates_vendor__prost-derive-0.12.6//:prost_derive",  # x86_64-apple-darwin
-        ],
-        "@rules_rust//rust/platform:x86_64-unknown-linux-gnu": [
-            "@crates_vendor__prost-derive-0.12.6//:prost_derive",  # x86_64-unknown-linux-gnu
-        ],
-        "//conditions:default": [],
-    }),
+    proc_macro_deps = [
+        "@crates_vendor__prost-derive-0.12.6//:prost_derive",
+    ],
     rustc_env_files = [
         ":cargo_toml_env_vars",
     ],
@@ -113,84 +68,29 @@ rust_library(
     ],
     target_compatible_with = select({
         "@rules_rust//rust/platform:aarch64-apple-darwin": [],
-        "@rules_rust//rust/platform:aarch64-pc-windows-msvc": [],
         "@rules_rust//rust/platform:aarch64-unknown-linux-gnu": [],
-        "@rules_rust//rust/platform:wasm32-unknown-unknown": [],
         "@rules_rust//rust/platform:x86_64-apple-darwin": [],
-        "@rules_rust//rust/platform:x86_64-pc-windows-msvc": [],
         "@rules_rust//rust/platform:x86_64-unknown-linux-gnu": [],
         "//conditions:default": ["@platforms//:incompatible"],
     }),
     version = "0.15.0",
     deps = [
+        "@crates_vendor__aligned-vec-0.6.4//:aligned_vec",
+        "@crates_vendor__backtrace-0.3.75//:backtrace",
+        "@crates_vendor__cfg-if-1.0.1//:cfg_if",
+        "@crates_vendor__findshlibs-0.10.2//:findshlibs",
+        "@crates_vendor__libc-0.2.173//:libc",
+        "@crates_vendor__log-0.4.27//:log",
+        "@crates_vendor__nix-0.26.4//:nix",
+        "@crates_vendor__once_cell-1.21.3//:once_cell",
         "@crates_vendor__pprof-0.15.0//:build_script_build",
-    ] + select({
-        "@rules_rust//rust/platform:aarch64-apple-darwin": [
-            "@crates_vendor__aligned-vec-0.6.4//:aligned_vec",  # aarch64-apple-darwin
-            "@crates_vendor__backtrace-0.3.75//:backtrace",  # aarch64-apple-darwin
-            "@crates_vendor__cfg-if-1.0.1//:cfg_if",  # aarch64-apple-darwin
-            "@crates_vendor__findshlibs-0.10.2//:findshlibs",  # aarch64-apple-darwin
-            "@crates_vendor__libc-0.2.173//:libc",  # aarch64-apple-darwin
-            "@crates_vendor__log-0.4.27//:log",  # aarch64-apple-darwin
-            "@crates_vendor__nix-0.26.4//:nix",  # aarch64-apple-darwin
-            "@crates_vendor__once_cell-1.21.3//:once_cell",  # aarch64-apple-darwin
-            "@crates_vendor__prost-0.12.6//:prost",  # aarch64-apple-darwin
-            "@crates_vendor__smallvec-1.15.1//:smallvec",  # aarch64-apple-darwin
-            "@crates_vendor__spin-0.10.0//:spin",  # aarch64-apple-darwin
-            "@crates_vendor__symbolic-demangle-12.15.5//:symbolic_demangle",  # aarch64-apple-darwin
-            "@crates_vendor__tempfile-3.20.0//:tempfile",  # aarch64-apple-darwin
-            "@crates_vendor__thiserror-2.0.12//:thiserror",  # aarch64-apple-darwin
-        ],
-        "@rules_rust//rust/platform:aarch64-unknown-linux-gnu": [
-            "@crates_vendor__aligned-vec-0.6.4//:aligned_vec",  # aarch64-unknown-linux-gnu
-            "@crates_vendor__backtrace-0.3.75//:backtrace",  # aarch64-unknown-linux-gnu
-            "@crates_vendor__cfg-if-1.0.1//:cfg_if",  # aarch64-unknown-linux-gnu
-            "@crates_vendor__findshlibs-0.10.2//:findshlibs",  # aarch64-unknown-linux-gnu
-            "@crates_vendor__libc-0.2.173//:libc",  # aarch64-unknown-linux-gnu
-            "@crates_vendor__log-0.4.27//:log",  # aarch64-unknown-linux-gnu
-            "@crates_vendor__nix-0.26.4//:nix",  # aarch64-unknown-linux-gnu
-            "@crates_vendor__once_cell-1.21.3//:once_cell",  # aarch64-unknown-linux-gnu
-            "@crates_vendor__prost-0.12.6//:prost",  # aarch64-unknown-linux-gnu
-            "@crates_vendor__smallvec-1.15.1//:smallvec",  # aarch64-unknown-linux-gnu
-            "@crates_vendor__spin-0.10.0//:spin",  # aarch64-unknown-linux-gnu
-            "@crates_vendor__symbolic-demangle-12.15.5//:symbolic_demangle",  # aarch64-unknown-linux-gnu
-            "@crates_vendor__tempfile-3.20.0//:tempfile",  # aarch64-unknown-linux-gnu
-            "@crates_vendor__thiserror-2.0.12//:thiserror",  # aarch64-unknown-linux-gnu
-        ],
-        "@rules_rust//rust/platform:x86_64-apple-darwin": [
-            "@crates_vendor__aligned-vec-0.6.4//:aligned_vec",  # x86_64-apple-darwin
-            "@crates_vendor__backtrace-0.3.75//:backtrace",  # x86_64-apple-darwin
-            "@crates_vendor__cfg-if-1.0.1//:cfg_if",  # x86_64-apple-darwin
-            "@crates_vendor__findshlibs-0.10.2//:findshlibs",  # x86_64-apple-darwin
-            "@crates_vendor__libc-0.2.173//:libc",  # x86_64-apple-darwin
-            "@crates_vendor__log-0.4.27//:log",  # x86_64-apple-darwin
-            "@crates_vendor__nix-0.26.4//:nix",  # x86_64-apple-darwin
-            "@crates_vendor__once_cell-1.21.3//:once_cell",  # x86_64-apple-darwin
-            "@crates_vendor__prost-0.12.6//:prost",  # x86_64-apple-darwin
-            "@crates_vendor__smallvec-1.15.1//:smallvec",  # x86_64-apple-darwin
-            "@crates_vendor__spin-0.10.0//:spin",  # x86_64-apple-darwin
-            "@crates_vendor__symbolic-demangle-12.15.5//:symbolic_demangle",  # x86_64-apple-darwin
-            "@crates_vendor__tempfile-3.20.0//:tempfile",  # x86_64-apple-darwin
-            "@crates_vendor__thiserror-2.0.12//:thiserror",  # x86_64-apple-darwin
-        ],
-        "@rules_rust//rust/platform:x86_64-unknown-linux-gnu": [
-            "@crates_vendor__aligned-vec-0.6.4//:aligned_vec",  # x86_64-unknown-linux-gnu
-            "@crates_vendor__backtrace-0.3.75//:backtrace",  # x86_64-unknown-linux-gnu
-            "@crates_vendor__cfg-if-1.0.1//:cfg_if",  # x86_64-unknown-linux-gnu
-            "@crates_vendor__findshlibs-0.10.2//:findshlibs",  # x86_64-unknown-linux-gnu
-            "@crates_vendor__libc-0.2.173//:libc",  # x86_64-unknown-linux-gnu
-            "@crates_vendor__log-0.4.27//:log",  # x86_64-unknown-linux-gnu
-            "@crates_vendor__nix-0.26.4//:nix",  # x86_64-unknown-linux-gnu
-            "@crates_vendor__once_cell-1.21.3//:once_cell",  # x86_64-unknown-linux-gnu
-            "@crates_vendor__prost-0.12.6//:prost",  # x86_64-unknown-linux-gnu
-            "@crates_vendor__smallvec-1.15.1//:smallvec",  # x86_64-unknown-linux-gnu
-            "@crates_vendor__spin-0.10.0//:spin",  # x86_64-unknown-linux-gnu
-            "@crates_vendor__symbolic-demangle-12.15.5//:symbolic_demangle",  # x86_64-unknown-linux-gnu
-            "@crates_vendor__tempfile-3.20.0//:tempfile",  # x86_64-unknown-linux-gnu
-            "@crates_vendor__thiserror-2.0.12//:thiserror",  # x86_64-unknown-linux-gnu
-        ],
-        "//conditions:default": [],
-    }),
+        "@crates_vendor__prost-0.12.6//:prost",
+        "@crates_vendor__smallvec-1.15.1//:smallvec",
+        "@crates_vendor__spin-0.10.0//:spin",
+        "@crates_vendor__symbolic-demangle-12.15.5//:symbolic_demangle",
+        "@crates_vendor__tempfile-3.20.0//:tempfile",
+        "@crates_vendor__thiserror-2.0.12//:thiserror",
+    ],
 )
 
 cargo_build_script(
@@ -212,49 +112,16 @@ cargo_build_script(
             "WORKSPACE.bazel",
         ],
     ),
-    crate_features = select({
-        "@rules_rust//rust/platform:aarch64-apple-darwin": [
-            "_protobuf",  # aarch64-apple-darwin
-            "cpp",  # aarch64-apple-darwin
-            "default",  # aarch64-apple-darwin
-            "prost",  # aarch64-apple-darwin
-            "prost-build",  # aarch64-apple-darwin
-            "prost-codec",  # aarch64-apple-darwin
-            "prost-derive",  # aarch64-apple-darwin
-            "sha2",  # aarch64-apple-darwin
-        ],
-        "@rules_rust//rust/platform:aarch64-unknown-linux-gnu": [
-            "_protobuf",  # aarch64-unknown-linux-gnu
-            "cpp",  # aarch64-unknown-linux-gnu
-            "default",  # aarch64-unknown-linux-gnu
-            "prost",  # aarch64-unknown-linux-gnu
-            "prost-build",  # aarch64-unknown-linux-gnu
-            "prost-codec",  # aarch64-unknown-linux-gnu
-            "prost-derive",  # aarch64-unknown-linux-gnu
-            "sha2",  # aarch64-unknown-linux-gnu
-        ],
-        "@rules_rust//rust/platform:x86_64-apple-darwin": [
-            "_protobuf",  # x86_64-apple-darwin
-            "cpp",  # x86_64-apple-darwin
-            "default",  # x86_64-apple-darwin
-            "prost",  # x86_64-apple-darwin
-            "prost-build",  # x86_64-apple-darwin
-            "prost-codec",  # x86_64-apple-darwin
-            "prost-derive",  # x86_64-apple-darwin
-            "sha2",  # x86_64-apple-darwin
-        ],
-        "@rules_rust//rust/platform:x86_64-unknown-linux-gnu": [
-            "_protobuf",  # x86_64-unknown-linux-gnu
-            "cpp",  # x86_64-unknown-linux-gnu
-            "default",  # x86_64-unknown-linux-gnu
-            "prost",  # x86_64-unknown-linux-gnu
-            "prost-build",  # x86_64-unknown-linux-gnu
-            "prost-codec",  # x86_64-unknown-linux-gnu
-            "prost-derive",  # x86_64-unknown-linux-gnu
-            "sha2",  # x86_64-unknown-linux-gnu
-        ],
-        "//conditions:default": [],
-    }),
+    crate_features = [
+        "_protobuf",
+        "cpp",
+        "default",
+        "prost",
+        "prost-build",
+        "prost-codec",
+        "prost-derive",
+        "sha2",
+    ],
     crate_name = "build_script_build",
     crate_root = "build.rs",
     data = glob(
@@ -286,25 +153,10 @@ cargo_build_script(
     ],
     version = "0.15.0",
     visibility = ["//visibility:private"],
-    deps = select({
-        "@rules_rust//rust/platform:aarch64-apple-darwin": [
-            "@crates_vendor__prost-build-0.12.6//:prost_build",  # aarch64-apple-darwin
-            "@crates_vendor__sha2-0.10.9//:sha2",  # aarch64-apple-darwin
-        ],
-        "@rules_rust//rust/platform:aarch64-unknown-linux-gnu": [
-            "@crates_vendor__prost-build-0.12.6//:prost_build",  # aarch64-unknown-linux-gnu
-            "@crates_vendor__sha2-0.10.9//:sha2",  # aarch64-unknown-linux-gnu
-        ],
-        "@rules_rust//rust/platform:x86_64-apple-darwin": [
-            "@crates_vendor__prost-build-0.12.6//:prost_build",  # x86_64-apple-darwin
-            "@crates_vendor__sha2-0.10.9//:sha2",  # x86_64-apple-darwin
-        ],
-        "@rules_rust//rust/platform:x86_64-unknown-linux-gnu": [
-            "@crates_vendor__prost-build-0.12.6//:prost_build",  # x86_64-unknown-linux-gnu
-            "@crates_vendor__sha2-0.10.9//:sha2",  # x86_64-unknown-linux-gnu
-        ],
-        "//conditions:default": [],
-    }),
+    deps = [
+        "@crates_vendor__prost-build-0.12.6//:prost_build",
+        "@crates_vendor__sha2-0.10.9//:sha2",
+    ],
 )
 
 alias(

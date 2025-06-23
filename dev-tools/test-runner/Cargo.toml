@@ -1,0 +1,11 @@
+[package]
+name = "test-runner"
+version = "0.1.0"
+edition = "2024"
+
+[dependencies]
+nextest-runner = "0.82"
+nextest-metadata = "0.12"
+nextest-filtering = "0.16"
+camino = "1"
+guppy = "0.17"

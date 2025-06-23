@@ -1,0 +1,15 @@
+load("//bazel/tools:package.bzl", "scuffle_package")
+
+exports_files(["Cargo.toml"])
+
+scuffle_package(
+    crate_name = "test-runner",
+    crate_type = "bin",
+    tags = ["manual"],
+)
+
+filegroup(
+    name = "script",
+    srcs = [":script.sh"],
+    visibility = ["//visibility:public"],
+)

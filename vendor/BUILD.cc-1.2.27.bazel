@@ -34,27 +34,9 @@ rust_library(
             "WORKSPACE.bazel",
         ],
     ),
-    crate_features = select({
-        "@rules_rust//rust/platform:aarch64-apple-darwin": [
-            "parallel",  # aarch64-apple-darwin
-        ],
-        "@rules_rust//rust/platform:aarch64-pc-windows-msvc": [
-            "parallel",  # aarch64-pc-windows-msvc
-        ],
-        "@rules_rust//rust/platform:aarch64-unknown-linux-gnu": [
-            "parallel",  # aarch64-unknown-linux-gnu
-        ],
-        "@rules_rust//rust/platform:x86_64-apple-darwin": [
-            "parallel",  # x86_64-apple-darwin
-        ],
-        "@rules_rust//rust/platform:x86_64-pc-windows-msvc": [
-            "parallel",  # x86_64-pc-windows-msvc
-        ],
-        "@rules_rust//rust/platform:x86_64-unknown-linux-gnu": [
-            "parallel",  # x86_64-unknown-linux-gnu
-        ],
-        "//conditions:default": [],
-    }),
+    crate_features = [
+        "parallel",
+    ],
     crate_root = "src/lib.rs",
     edition = "2018",
     rustc_env_files = [
@@ -74,41 +56,27 @@ rust_library(
         "@rules_rust//rust/platform:aarch64-apple-darwin": [],
         "@rules_rust//rust/platform:aarch64-pc-windows-msvc": [],
         "@rules_rust//rust/platform:aarch64-unknown-linux-gnu": [],
-        "@rules_rust//rust/platform:wasm32-unknown-unknown": [],
         "@rules_rust//rust/platform:x86_64-apple-darwin": [],
         "@rules_rust//rust/platform:x86_64-pc-windows-msvc": [],
         "@rules_rust//rust/platform:x86_64-unknown-linux-gnu": [],
         "//conditions:default": ["@platforms//:incompatible"],
     }),
     version = "1.2.27",
-    deps = select({
+    deps = [
+        "@crates_vendor__jobserver-0.1.33//:jobserver",
+        "@crates_vendor__shlex-1.3.0//:shlex",
+    ] + select({
         "@rules_rust//rust/platform:aarch64-apple-darwin": [
-            "@crates_vendor__jobserver-0.1.33//:jobserver",  # aarch64-apple-darwin
-            "@crates_vendor__libc-0.2.173//:libc",  # aarch64-apple-darwin
-            "@crates_vendor__shlex-1.3.0//:shlex",  # aarch64-apple-darwin
-        ],
-        "@rules_rust//rust/platform:aarch64-pc-windows-msvc": [
-            "@crates_vendor__jobserver-0.1.33//:jobserver",  # aarch64-pc-windows-msvc
-            "@crates_vendor__shlex-1.3.0//:shlex",  # aarch64-pc-windows-msvc
+            "@crates_vendor__libc-0.2.173//:libc",  # cfg(unix)
         ],
         "@rules_rust//rust/platform:aarch64-unknown-linux-gnu": [
-            "@crates_vendor__jobserver-0.1.33//:jobserver",  # aarch64-unknown-linux-gnu
-            "@crates_vendor__libc-0.2.173//:libc",  # aarch64-unknown-linux-gnu
-            "@crates_vendor__shlex-1.3.0//:shlex",  # aarch64-unknown-linux-gnu
+            "@crates_vendor__libc-0.2.173//:libc",  # cfg(unix)
         ],
         "@rules_rust//rust/platform:x86_64-apple-darwin": [
-            "@crates_vendor__jobserver-0.1.33//:jobserver",  # x86_64-apple-darwin
-            "@crates_vendor__libc-0.2.173//:libc",  # x86_64-apple-darwin
-            "@crates_vendor__shlex-1.3.0//:shlex",  # x86_64-apple-darwin
-        ],
-        "@rules_rust//rust/platform:x86_64-pc-windows-msvc": [
-            "@crates_vendor__jobserver-0.1.33//:jobserver",  # x86_64-pc-windows-msvc
-            "@crates_vendor__shlex-1.3.0//:shlex",  # x86_64-pc-windows-msvc
+            "@crates_vendor__libc-0.2.173//:libc",  # cfg(unix)
         ],
         "@rules_rust//rust/platform:x86_64-unknown-linux-gnu": [
-            "@crates_vendor__jobserver-0.1.33//:jobserver",  # x86_64-unknown-linux-gnu
-            "@crates_vendor__libc-0.2.173//:libc",  # x86_64-unknown-linux-gnu
-            "@crates_vendor__shlex-1.3.0//:shlex",  # x86_64-unknown-linux-gnu
+            "@crates_vendor__libc-0.2.173//:libc",  # cfg(unix)
         ],
         "//conditions:default": [],
     }),

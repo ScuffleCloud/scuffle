@@ -152,6 +152,18 @@ alias(
 )
 
 alias(
+    name = "camino-1.1.10",
+    actual = "@crates_vendor__camino-1.1.10//:camino",
+    tags = ["manual"],
+)
+
+alias(
+    name = "camino",
+    actual = "@crates_vendor__camino-1.1.10//:camino",
+    tags = ["manual"],
+)
+
+alias(
     name = "cargo-manifest-0.19.1",
     actual = "@crates_vendor__cargo-manifest-0.19.1//:cargo_manifest",
     tags = ["manual"],
@@ -392,6 +404,18 @@ alias(
 )
 
 alias(
+    name = "guppy-0.17.19",
+    actual = "@crates_vendor__guppy-0.17.19//:guppy",
+    tags = ["manual"],
+)
+
+alias(
+    name = "guppy",
+    actual = "@crates_vendor__guppy-0.17.19//:guppy",
+    tags = ["manual"],
+)
+
+alias(
     name = "h3-0.0.8",
     actual = "@crates_vendor__h3-0.0.8//:h3",
     tags = ["manual"],
@@ -616,6 +640,42 @@ alias(
 alias(
     name = "minijinja",
     actual = "@crates_vendor__minijinja-2.10.2//:minijinja",
+    tags = ["manual"],
+)
+
+alias(
+    name = "nextest-filtering-0.16.0",
+    actual = "@crates_vendor__nextest-filtering-0.16.0//:nextest_filtering",
+    tags = ["manual"],
+)
+
+alias(
+    name = "nextest-filtering",
+    actual = "@crates_vendor__nextest-filtering-0.16.0//:nextest_filtering",
+    tags = ["manual"],
+)
+
+alias(
+    name = "nextest-metadata-0.12.2",
+    actual = "@crates_vendor__nextest-metadata-0.12.2//:nextest_metadata",
+    tags = ["manual"],
+)
+
+alias(
+    name = "nextest-metadata",
+    actual = "@crates_vendor__nextest-metadata-0.12.2//:nextest_metadata",
+    tags = ["manual"],
+)
+
+alias(
+    name = "nextest-runner-0.82.0",
+    actual = "@crates_vendor__nextest-runner-0.82.0//:nextest_runner",
+    tags = ["manual"],
+)
+
+alias(
+    name = "nextest-runner",
+    actual = "@crates_vendor__nextest-runner-0.82.0//:nextest_runner",
     tags = ["manual"],
 )
 

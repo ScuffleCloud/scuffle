@@ -34,29 +34,11 @@ rust_library(
             "WORKSPACE.bazel",
         ],
     ),
-    crate_features = select({
-        "@rules_rust//rust/platform:aarch64-apple-darwin": [
-            "fs",  # aarch64-apple-darwin
-            "process",  # aarch64-apple-darwin
-            "signal",  # aarch64-apple-darwin
-        ],
-        "@rules_rust//rust/platform:aarch64-unknown-linux-gnu": [
-            "fs",  # aarch64-unknown-linux-gnu
-            "process",  # aarch64-unknown-linux-gnu
-            "signal",  # aarch64-unknown-linux-gnu
-        ],
-        "@rules_rust//rust/platform:x86_64-apple-darwin": [
-            "fs",  # x86_64-apple-darwin
-            "process",  # x86_64-apple-darwin
-            "signal",  # x86_64-apple-darwin
-        ],
-        "@rules_rust//rust/platform:x86_64-unknown-linux-gnu": [
-            "fs",  # x86_64-unknown-linux-gnu
-            "process",  # x86_64-unknown-linux-gnu
-            "signal",  # x86_64-unknown-linux-gnu
-        ],
-        "//conditions:default": [],
-    }),
+    crate_features = [
+        "fs",
+        "process",
+        "signal",
+    ],
     crate_root = "src/lib.rs",
     edition = "2018",
     rustc_env_files = [
@@ -74,36 +56,15 @@ rust_library(
     ],
     target_compatible_with = select({
         "@rules_rust//rust/platform:aarch64-apple-darwin": [],
-        "@rules_rust//rust/platform:aarch64-pc-windows-msvc": [],
         "@rules_rust//rust/platform:aarch64-unknown-linux-gnu": [],
-        "@rules_rust//rust/platform:wasm32-unknown-unknown": [],
         "@rules_rust//rust/platform:x86_64-apple-darwin": [],
-        "@rules_rust//rust/platform:x86_64-pc-windows-msvc": [],
         "@rules_rust//rust/platform:x86_64-unknown-linux-gnu": [],
         "//conditions:default": ["@platforms//:incompatible"],
     }),
     version = "0.26.4",
-    deps = select({
-        "@rules_rust//rust/platform:aarch64-apple-darwin": [
-            "@crates_vendor__bitflags-1.3.2//:bitflags",  # aarch64-apple-darwin
-            "@crates_vendor__cfg-if-1.0.1//:cfg_if",  # aarch64-apple-darwin
-            "@crates_vendor__libc-0.2.173//:libc",  # aarch64-apple-darwin
-        ],
-        "@rules_rust//rust/platform:aarch64-unknown-linux-gnu": [
-            "@crates_vendor__bitflags-1.3.2//:bitflags",  # aarch64-unknown-linux-gnu
-            "@crates_vendor__cfg-if-1.0.1//:cfg_if",  # aarch64-unknown-linux-gnu
-            "@crates_vendor__libc-0.2.173//:libc",  # aarch64-unknown-linux-gnu
-        ],
-        "@rules_rust//rust/platform:x86_64-apple-darwin": [
-            "@crates_vendor__bitflags-1.3.2//:bitflags",  # x86_64-apple-darwin
-            "@crates_vendor__cfg-if-1.0.1//:cfg_if",  # x86_64-apple-darwin
-            "@crates_vendor__libc-0.2.173//:libc",  # x86_64-apple-darwin
-        ],
-        "@rules_rust//rust/platform:x86_64-unknown-linux-gnu": [
-            "@crates_vendor__bitflags-1.3.2//:bitflags",  # x86_64-unknown-linux-gnu
-            "@crates_vendor__cfg-if-1.0.1//:cfg_if",  # x86_64-unknown-linux-gnu
-            "@crates_vendor__libc-0.2.173//:libc",  # x86_64-unknown-linux-gnu
-        ],
-        "//conditions:default": [],
-    }),
+    deps = [
+        "@crates_vendor__bitflags-1.3.2//:bitflags",
+        "@crates_vendor__cfg-if-1.0.1//:cfg_if",
+        "@crates_vendor__libc-0.2.173//:libc",
+    ],
 )

@@ -34,23 +34,13 @@ rust_library(
             "WORKSPACE.bazel",
         ],
     ),
-    crate_features = select({
-        "@rules_rust//rust/platform:aarch64-unknown-linux-gnu": [
-            "elf",  # aarch64-unknown-linux-gnu
-            "errno",  # aarch64-unknown-linux-gnu
-            "general",  # aarch64-unknown-linux-gnu
-            "ioctl",  # aarch64-unknown-linux-gnu
-            "no_std",  # aarch64-unknown-linux-gnu
-        ],
-        "@rules_rust//rust/platform:x86_64-unknown-linux-gnu": [
-            "elf",  # x86_64-unknown-linux-gnu
-            "errno",  # x86_64-unknown-linux-gnu
-            "general",  # x86_64-unknown-linux-gnu
-            "ioctl",  # x86_64-unknown-linux-gnu
-            "no_std",  # x86_64-unknown-linux-gnu
-        ],
-        "//conditions:default": [],
-    }),
+    crate_features = [
+        "elf",
+        "errno",
+        "general",
+        "ioctl",
+        "no_std",
+    ],
     crate_root = "src/lib.rs",
     edition = "2021",
     rustc_env_files = [
@@ -67,12 +57,7 @@ rust_library(
         "norustfmt",
     ],
     target_compatible_with = select({
-        "@rules_rust//rust/platform:aarch64-apple-darwin": [],
-        "@rules_rust//rust/platform:aarch64-pc-windows-msvc": [],
         "@rules_rust//rust/platform:aarch64-unknown-linux-gnu": [],
-        "@rules_rust//rust/platform:wasm32-unknown-unknown": [],
-        "@rules_rust//rust/platform:x86_64-apple-darwin": [],
-        "@rules_rust//rust/platform:x86_64-pc-windows-msvc": [],
         "@rules_rust//rust/platform:x86_64-unknown-linux-gnu": [],
         "//conditions:default": ["@platforms//:incompatible"],
     }),

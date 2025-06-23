@@ -55,22 +55,22 @@ rust_library(
         "util",
     ] + select({
         "@rules_rust//rust/platform:aarch64-apple-darwin": [
-            "timeout",  # aarch64-apple-darwin
+            "timeout",
         ],
         "@rules_rust//rust/platform:aarch64-pc-windows-msvc": [
-            "timeout",  # aarch64-pc-windows-msvc
+            "timeout",
         ],
         "@rules_rust//rust/platform:aarch64-unknown-linux-gnu": [
-            "timeout",  # aarch64-unknown-linux-gnu
+            "timeout",
         ],
         "@rules_rust//rust/platform:x86_64-apple-darwin": [
-            "timeout",  # x86_64-apple-darwin
+            "timeout",
         ],
         "@rules_rust//rust/platform:x86_64-pc-windows-msvc": [
-            "timeout",  # x86_64-pc-windows-msvc
+            "timeout",
         ],
         "@rules_rust//rust/platform:x86_64-unknown-linux-gnu": [
-            "timeout",  # x86_64-unknown-linux-gnu
+            "timeout",
         ],
         "//conditions:default": [],
     }),

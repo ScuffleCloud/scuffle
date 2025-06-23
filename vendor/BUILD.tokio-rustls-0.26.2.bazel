@@ -40,22 +40,22 @@ rust_library(
         "tls12",
     ] + select({
         "@rules_rust//rust/platform:aarch64-apple-darwin": [
-            "ring",  # aarch64-apple-darwin
+            "ring",
         ],
         "@rules_rust//rust/platform:aarch64-pc-windows-msvc": [
-            "ring",  # aarch64-pc-windows-msvc
+            "ring",
         ],
         "@rules_rust//rust/platform:aarch64-unknown-linux-gnu": [
-            "ring",  # aarch64-unknown-linux-gnu
+            "ring",
         ],
         "@rules_rust//rust/platform:x86_64-apple-darwin": [
-            "ring",  # x86_64-apple-darwin
+            "ring",
         ],
         "@rules_rust//rust/platform:x86_64-pc-windows-msvc": [
-            "ring",  # x86_64-pc-windows-msvc
+            "ring",
         ],
         "@rules_rust//rust/platform:x86_64-unknown-linux-gnu": [
-            "ring",  # x86_64-unknown-linux-gnu
+            "ring",
         ],
         "//conditions:default": [],
     }),
@@ -86,29 +86,7 @@ rust_library(
     }),
     version = "0.26.2",
     deps = [
+        "@crates_vendor__rustls-0.23.28//:rustls",
         "@crates_vendor__tokio-1.45.1//:tokio",
-    ] + select({
-        "@rules_rust//rust/platform:aarch64-apple-darwin": [
-            "@crates_vendor__rustls-0.23.28//:rustls",  # aarch64-apple-darwin
-        ],
-        "@rules_rust//rust/platform:aarch64-pc-windows-msvc": [
-            "@crates_vendor__rustls-0.23.28//:rustls",  # aarch64-pc-windows-msvc
-        ],
-        "@rules_rust//rust/platform:aarch64-unknown-linux-gnu": [
-            "@crates_vendor__rustls-0.23.28//:rustls",  # aarch64-unknown-linux-gnu
-        ],
-        "@rules_rust//rust/platform:wasm32-unknown-unknown": [
-            "@crates_vendor__rustls-0.23.28//:rustls",  # wasm32-unknown-unknown
-        ],
-        "@rules_rust//rust/platform:x86_64-apple-darwin": [
-            "@crates_vendor__rustls-0.23.28//:rustls",  # x86_64-apple-darwin
-        ],
-        "@rules_rust//rust/platform:x86_64-pc-windows-msvc": [
-            "@crates_vendor__rustls-0.23.28//:rustls",  # x86_64-pc-windows-msvc
-        ],
-        "@rules_rust//rust/platform:x86_64-unknown-linux-gnu": [
-            "@crates_vendor__rustls-0.23.28//:rustls",  # x86_64-unknown-linux-gnu
-        ],
-        "//conditions:default": [],
-    }),
+    ],
 )

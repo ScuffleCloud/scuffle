@@ -77,8 +77,8 @@ rust_library(
         "@crates_vendor__tracing-subscriber-0.3.19//:tracing_subscriber",
     ] + select({
         "@rules_rust//rust/platform:wasm32-unknown-unknown": [
-            "@crates_vendor__js-sys-0.3.77//:js_sys",  # wasm32-unknown-unknown
-            "@crates_vendor__web-time-1.1.0//:web_time",  # wasm32-unknown-unknown
+            "@crates_vendor__js-sys-0.3.77//:js_sys",  # cfg(all(target_arch = "wasm32", not(target_os = "wasi")))
+            "@crates_vendor__web-time-1.1.0//:web_time",  # cfg(all(target_arch = "wasm32", not(target_os = "wasi")))
         ],
         "//conditions:default": [],
     }),

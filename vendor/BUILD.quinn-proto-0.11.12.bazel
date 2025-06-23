@@ -41,28 +41,28 @@ rust_library(
         "rustls-aws-lc-rs",
     ] + select({
         "@rules_rust//rust/platform:aarch64-apple-darwin": [
-            "ring",  # aarch64-apple-darwin
-            "rustls-ring",  # aarch64-apple-darwin
+            "ring",
+            "rustls-ring",
         ],
         "@rules_rust//rust/platform:aarch64-pc-windows-msvc": [
-            "ring",  # aarch64-pc-windows-msvc
-            "rustls-ring",  # aarch64-pc-windows-msvc
+            "ring",
+            "rustls-ring",
         ],
         "@rules_rust//rust/platform:aarch64-unknown-linux-gnu": [
-            "ring",  # aarch64-unknown-linux-gnu
-            "rustls-ring",  # aarch64-unknown-linux-gnu
+            "ring",
+            "rustls-ring",
         ],
         "@rules_rust//rust/platform:x86_64-apple-darwin": [
-            "ring",  # x86_64-apple-darwin
-            "rustls-ring",  # x86_64-apple-darwin
+            "ring",
+            "rustls-ring",
         ],
         "@rules_rust//rust/platform:x86_64-pc-windows-msvc": [
-            "ring",  # x86_64-pc-windows-msvc
-            "rustls-ring",  # x86_64-pc-windows-msvc
+            "ring",
+            "rustls-ring",
         ],
         "@rules_rust//rust/platform:x86_64-unknown-linux-gnu": [
-            "ring",  # x86_64-unknown-linux-gnu
-            "rustls-ring",  # x86_64-unknown-linux-gnu
+            "ring",
+            "rustls-ring",
         ],
         "//conditions:default": [],
     }),
@@ -97,43 +97,19 @@ rust_library(
         "@crates_vendor__bytes-1.10.1//:bytes",
         "@crates_vendor__lru-slab-0.1.2//:lru_slab",
         "@crates_vendor__rand-0.9.1//:rand",
+        "@crates_vendor__ring-0.17.14//:ring",  # cfg(all(target_family = "wasm", target_os = "unknown"))
         "@crates_vendor__rustc-hash-2.1.1//:rustc_hash",
+        "@crates_vendor__rustls-0.23.28//:rustls",
         "@crates_vendor__rustls-platform-verifier-0.5.3//:rustls_platform_verifier",
         "@crates_vendor__slab-0.4.10//:slab",
         "@crates_vendor__thiserror-2.0.12//:thiserror",
         "@crates_vendor__tinyvec-1.9.0//:tinyvec",
         "@crates_vendor__tracing-0.1.41//:tracing",
     ] + select({
-        "@rules_rust//rust/platform:aarch64-apple-darwin": [
-            "@crates_vendor__ring-0.17.14//:ring",  # aarch64-apple-darwin
-            "@crates_vendor__rustls-0.23.28//:rustls",  # aarch64-apple-darwin
-        ],
-        "@rules_rust//rust/platform:aarch64-pc-windows-msvc": [
-            "@crates_vendor__ring-0.17.14//:ring",  # aarch64-pc-windows-msvc
-            "@crates_vendor__rustls-0.23.28//:rustls",  # aarch64-pc-windows-msvc
-        ],
-        "@rules_rust//rust/platform:aarch64-unknown-linux-gnu": [
-            "@crates_vendor__ring-0.17.14//:ring",  # aarch64-unknown-linux-gnu
-            "@crates_vendor__rustls-0.23.28//:rustls",  # aarch64-unknown-linux-gnu
-        ],
         "@rules_rust//rust/platform:wasm32-unknown-unknown": [
-            "@crates_vendor__getrandom-0.3.3//:getrandom",  # wasm32-unknown-unknown
-            "@crates_vendor__ring-0.17.14//:ring",  # wasm32-unknown-unknown
-            "@crates_vendor__rustls-0.23.28//:rustls",  # wasm32-unknown-unknown
-            "@crates_vendor__rustls-pki-types-1.12.0//:rustls_pki_types",  # wasm32-unknown-unknown
-            "@crates_vendor__web-time-1.1.0//:web_time",  # wasm32-unknown-unknown
-        ],
-        "@rules_rust//rust/platform:x86_64-apple-darwin": [
-            "@crates_vendor__ring-0.17.14//:ring",  # x86_64-apple-darwin
-            "@crates_vendor__rustls-0.23.28//:rustls",  # x86_64-apple-darwin
-        ],
-        "@rules_rust//rust/platform:x86_64-pc-windows-msvc": [
-            "@crates_vendor__ring-0.17.14//:ring",  # x86_64-pc-windows-msvc
-            "@crates_vendor__rustls-0.23.28//:rustls",  # x86_64-pc-windows-msvc
-        ],
-        "@rules_rust//rust/platform:x86_64-unknown-linux-gnu": [
-            "@crates_vendor__ring-0.17.14//:ring",  # x86_64-unknown-linux-gnu
-            "@crates_vendor__rustls-0.23.28//:rustls",  # x86_64-unknown-linux-gnu
+            "@crates_vendor__getrandom-0.3.3//:getrandom",  # cfg(all(target_family = "wasm", target_os = "unknown"))
+            "@crates_vendor__rustls-pki-types-1.12.0//:rustls_pki_types",  # cfg(all(target_family = "wasm", target_os = "unknown"))
+            "@crates_vendor__web-time-1.1.0//:web_time",  # cfg(all(target_family = "wasm", target_os = "unknown"))
         ],
         "//conditions:default": [],
     }),

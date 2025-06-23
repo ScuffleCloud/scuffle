@@ -39,6 +39,7 @@ rust_library(
         "dfa-onepass",
         "hybrid",
         "meta",
+        "nfa",
         "nfa-backtrack",
         "nfa-pikevm",
         "nfa-thompson",

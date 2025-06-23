@@ -46,22 +46,22 @@ rust_library(
         "tokio",
     ] + select({
         "@rules_rust//rust/platform:aarch64-apple-darwin": [
-            "client-proxy",  # aarch64-apple-darwin
+            "client-proxy",
         ],
         "@rules_rust//rust/platform:aarch64-pc-windows-msvc": [
-            "client-proxy",  # aarch64-pc-windows-msvc
+            "client-proxy",
         ],
         "@rules_rust//rust/platform:aarch64-unknown-linux-gnu": [
-            "client-proxy",  # aarch64-unknown-linux-gnu
+            "client-proxy",
         ],
         "@rules_rust//rust/platform:x86_64-apple-darwin": [
-            "client-proxy",  # x86_64-apple-darwin
+            "client-proxy",
         ],
         "@rules_rust//rust/platform:x86_64-pc-windows-msvc": [
-            "client-proxy",  # x86_64-pc-windows-msvc
+            "client-proxy",
         ],
         "@rules_rust//rust/platform:x86_64-unknown-linux-gnu": [
-            "client-proxy",  # x86_64-unknown-linux-gnu
+            "client-proxy",
         ],
         "//conditions:default": [],
     }),
@@ -107,34 +107,34 @@ rust_library(
         "@crates_vendor__tracing-0.1.41//:tracing",
     ] + select({
         "@rules_rust//rust/platform:aarch64-apple-darwin": [
-            "@crates_vendor__base64-0.22.1//:base64",  # aarch64-apple-darwin
-            "@crates_vendor__ipnet-2.11.0//:ipnet",  # aarch64-apple-darwin
-            "@crates_vendor__percent-encoding-2.3.1//:percent_encoding",  # aarch64-apple-darwin
+            "@crates_vendor__base64-0.22.1//:base64",
+            "@crates_vendor__ipnet-2.11.0//:ipnet",
+            "@crates_vendor__percent-encoding-2.3.1//:percent_encoding",
         ],
         "@rules_rust//rust/platform:aarch64-pc-windows-msvc": [
-            "@crates_vendor__base64-0.22.1//:base64",  # aarch64-pc-windows-msvc
-            "@crates_vendor__ipnet-2.11.0//:ipnet",  # aarch64-pc-windows-msvc
-            "@crates_vendor__percent-encoding-2.3.1//:percent_encoding",  # aarch64-pc-windows-msvc
+            "@crates_vendor__base64-0.22.1//:base64",
+            "@crates_vendor__ipnet-2.11.0//:ipnet",
+            "@crates_vendor__percent-encoding-2.3.1//:percent_encoding",
         ],
         "@rules_rust//rust/platform:aarch64-unknown-linux-gnu": [
-            "@crates_vendor__base64-0.22.1//:base64",  # aarch64-unknown-linux-gnu
-            "@crates_vendor__ipnet-2.11.0//:ipnet",  # aarch64-unknown-linux-gnu
-            "@crates_vendor__percent-encoding-2.3.1//:percent_encoding",  # aarch64-unknown-linux-gnu
+            "@crates_vendor__base64-0.22.1//:base64",
+            "@crates_vendor__ipnet-2.11.0//:ipnet",
+            "@crates_vendor__percent-encoding-2.3.1//:percent_encoding",
         ],
         "@rules_rust//rust/platform:x86_64-apple-darwin": [
-            "@crates_vendor__base64-0.22.1//:base64",  # x86_64-apple-darwin
-            "@crates_vendor__ipnet-2.11.0//:ipnet",  # x86_64-apple-darwin
-            "@crates_vendor__percent-encoding-2.3.1//:percent_encoding",  # x86_64-apple-darwin
+            "@crates_vendor__base64-0.22.1//:base64",
+            "@crates_vendor__ipnet-2.11.0//:ipnet",
+            "@crates_vendor__percent-encoding-2.3.1//:percent_encoding",
         ],
         "@rules_rust//rust/platform:x86_64-pc-windows-msvc": [
-            "@crates_vendor__base64-0.22.1//:base64",  # x86_64-pc-windows-msvc
-            "@crates_vendor__ipnet-2.11.0//:ipnet",  # x86_64-pc-windows-msvc
-            "@crates_vendor__percent-encoding-2.3.1//:percent_encoding",  # x86_64-pc-windows-msvc
+            "@crates_vendor__base64-0.22.1//:base64",
+            "@crates_vendor__ipnet-2.11.0//:ipnet",
+            "@crates_vendor__percent-encoding-2.3.1//:percent_encoding",
         ],
         "@rules_rust//rust/platform:x86_64-unknown-linux-gnu": [
-            "@crates_vendor__base64-0.22.1//:base64",  # x86_64-unknown-linux-gnu
-            "@crates_vendor__ipnet-2.11.0//:ipnet",  # x86_64-unknown-linux-gnu
-            "@crates_vendor__percent-encoding-2.3.1//:percent_encoding",  # x86_64-unknown-linux-gnu
+            "@crates_vendor__base64-0.22.1//:base64",
+            "@crates_vendor__ipnet-2.11.0//:ipnet",
+            "@crates_vendor__percent-encoding-2.3.1//:percent_encoding",
         ],
         "//conditions:default": [],
     }),

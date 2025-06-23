@@ -34,43 +34,23 @@ rust_library(
             "WORKSPACE.bazel",
         ],
     ),
-    crate_features = select({
-        "@rules_rust//rust/platform:aarch64-pc-windows-msvc": [
-            "Win32",  # aarch64-pc-windows-msvc
-            "Win32_Foundation",  # aarch64-pc-windows-msvc
-            "Win32_Networking",  # aarch64-pc-windows-msvc
-            "Win32_Networking_WinSock",  # aarch64-pc-windows-msvc
-            "Win32_Security",  # aarch64-pc-windows-msvc
-            "Win32_Storage",  # aarch64-pc-windows-msvc
-            "Win32_Storage_FileSystem",  # aarch64-pc-windows-msvc
-            "Win32_System",  # aarch64-pc-windows-msvc
-            "Win32_System_Console",  # aarch64-pc-windows-msvc
-            "Win32_System_IO",  # aarch64-pc-windows-msvc
-            "Win32_System_Pipes",  # aarch64-pc-windows-msvc
-            "Win32_System_SystemServices",  # aarch64-pc-windows-msvc
-            "Win32_System_Threading",  # aarch64-pc-windows-msvc
-            "Win32_System_WindowsProgramming",  # aarch64-pc-windows-msvc
-            "default",  # aarch64-pc-windows-msvc
-        ],
-        "@rules_rust//rust/platform:x86_64-pc-windows-msvc": [
-            "Win32",  # x86_64-pc-windows-msvc
-            "Win32_Foundation",  # x86_64-pc-windows-msvc
-            "Win32_Networking",  # x86_64-pc-windows-msvc
-            "Win32_Networking_WinSock",  # x86_64-pc-windows-msvc
-            "Win32_Security",  # x86_64-pc-windows-msvc
-            "Win32_Storage",  # x86_64-pc-windows-msvc
-            "Win32_Storage_FileSystem",  # x86_64-pc-windows-msvc
-            "Win32_System",  # x86_64-pc-windows-msvc
-            "Win32_System_Console",  # x86_64-pc-windows-msvc
-            "Win32_System_IO",  # x86_64-pc-windows-msvc
-            "Win32_System_Pipes",  # x86_64-pc-windows-msvc
-            "Win32_System_SystemServices",  # x86_64-pc-windows-msvc
-            "Win32_System_Threading",  # x86_64-pc-windows-msvc
-            "Win32_System_WindowsProgramming",  # x86_64-pc-windows-msvc
-            "default",  # x86_64-pc-windows-msvc
-        ],
-        "//conditions:default": [],
-    }),
+    crate_features = [
+        "Win32",
+        "Win32_Foundation",
+        "Win32_Networking",
+        "Win32_Networking_WinSock",
+        "Win32_Security",
+        "Win32_Storage",
+        "Win32_Storage_FileSystem",
+        "Win32_System",
+        "Win32_System_Console",
+        "Win32_System_IO",
+        "Win32_System_Pipes",
+        "Win32_System_SystemServices",
+        "Win32_System_Threading",
+        "Win32_System_WindowsProgramming",
+        "default",
+    ],
     crate_root = "src/lib.rs",
     edition = "2021",
     rustc_env_files = [
@@ -87,23 +67,12 @@ rust_library(
         "norustfmt",
     ],
     target_compatible_with = select({
-        "@rules_rust//rust/platform:aarch64-apple-darwin": [],
         "@rules_rust//rust/platform:aarch64-pc-windows-msvc": [],
-        "@rules_rust//rust/platform:aarch64-unknown-linux-gnu": [],
-        "@rules_rust//rust/platform:wasm32-unknown-unknown": [],
-        "@rules_rust//rust/platform:x86_64-apple-darwin": [],
         "@rules_rust//rust/platform:x86_64-pc-windows-msvc": [],
-        "@rules_rust//rust/platform:x86_64-unknown-linux-gnu": [],
         "//conditions:default": ["@platforms//:incompatible"],
     }),
     version = "0.52.0",
-    deps = select({
-        "@rules_rust//rust/platform:aarch64-pc-windows-msvc": [
-            "@crates_vendor__windows-targets-0.52.6//:windows_targets",  # aarch64-pc-windows-msvc
-        ],
-        "@rules_rust//rust/platform:x86_64-pc-windows-msvc": [
-            "@crates_vendor__windows-targets-0.52.6//:windows_targets",  # x86_64-pc-windows-msvc
-        ],
-        "//conditions:default": [],
-    }),
+    deps = [
+        "@crates_vendor__windows-targets-0.52.6//:windows_targets",
+    ],
 )

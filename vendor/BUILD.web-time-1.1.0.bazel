@@ -50,21 +50,12 @@ rust_library(
         "norustfmt",
     ],
     target_compatible_with = select({
-        "@rules_rust//rust/platform:aarch64-apple-darwin": [],
-        "@rules_rust//rust/platform:aarch64-pc-windows-msvc": [],
-        "@rules_rust//rust/platform:aarch64-unknown-linux-gnu": [],
         "@rules_rust//rust/platform:wasm32-unknown-unknown": [],
-        "@rules_rust//rust/platform:x86_64-apple-darwin": [],
-        "@rules_rust//rust/platform:x86_64-pc-windows-msvc": [],
-        "@rules_rust//rust/platform:x86_64-unknown-linux-gnu": [],
         "//conditions:default": ["@platforms//:incompatible"],
     }),
     version = "1.1.0",
-    deps = select({
-        "@rules_rust//rust/platform:wasm32-unknown-unknown": [
-            "@crates_vendor__js-sys-0.3.77//:js_sys",  # wasm32-unknown-unknown
-            "@crates_vendor__wasm-bindgen-0.2.100//:wasm_bindgen",  # wasm32-unknown-unknown
-        ],
-        "//conditions:default": [],
-    }),
+    deps = [
+        "@crates_vendor__js-sys-0.3.77//:js_sys",  # cfg(all(target_family = "wasm", target_os = "unknown"))
+        "@crates_vendor__wasm-bindgen-0.2.100//:wasm_bindgen",  # cfg(all(target_family = "wasm", target_os = "unknown"))
+    ],
 )

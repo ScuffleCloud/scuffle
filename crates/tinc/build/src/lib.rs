@@ -170,7 +170,6 @@ impl Config {
             std::fs::write(tinc_out.join("annotations.proto"), tinc_pb_prost::TINC_ANNOTATIONS)
                 .context("failed to write tinc_annotations.rs")?;
             includes.push(Path::new(&out_dir_str));
-            config.protoc_arg(format!("--descriptor_set_in={}", tinc_pb_prost::TINC_ANNOTATIONS_PB_PATH));
         }
 
         let fds = config.load_fds(protos, &includes).context("failed to generate tonic fds")?;

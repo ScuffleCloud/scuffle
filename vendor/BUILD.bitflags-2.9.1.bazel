@@ -38,16 +38,16 @@ rust_library(
         "serde",
     ] + select({
         "@rules_rust//rust/platform:aarch64-apple-darwin": [
-            "std",  # aarch64-apple-darwin
+            "std",
         ],
         "@rules_rust//rust/platform:aarch64-unknown-linux-gnu": [
-            "std",  # aarch64-unknown-linux-gnu
+            "std",
         ],
         "@rules_rust//rust/platform:x86_64-apple-darwin": [
-            "std",  # x86_64-apple-darwin
+            "std",
         ],
         "@rules_rust//rust/platform:x86_64-unknown-linux-gnu": [
-            "std",  # x86_64-unknown-linux-gnu
+            "std",
         ],
         "//conditions:default": [],
     }),

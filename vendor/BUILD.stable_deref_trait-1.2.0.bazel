@@ -38,20 +38,20 @@ rust_library(
         "alloc",
     ] + select({
         "@rules_rust//rust/platform:aarch64-apple-darwin": [
-            "default",  # aarch64-apple-darwin
-            "std",  # aarch64-apple-darwin
+            "default",
+            "std",
         ],
         "@rules_rust//rust/platform:aarch64-unknown-linux-gnu": [
-            "default",  # aarch64-unknown-linux-gnu
-            "std",  # aarch64-unknown-linux-gnu
+            "default",
+            "std",
         ],
         "@rules_rust//rust/platform:x86_64-apple-darwin": [
-            "default",  # x86_64-apple-darwin
-            "std",  # x86_64-apple-darwin
+            "default",
+            "std",
         ],
         "@rules_rust//rust/platform:x86_64-unknown-linux-gnu": [
-            "default",  # x86_64-unknown-linux-gnu
-            "std",  # x86_64-unknown-linux-gnu
+            "default",
+            "std",
         ],
         "//conditions:default": [],
     }),

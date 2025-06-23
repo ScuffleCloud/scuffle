@@ -38,24 +38,18 @@ rust_library(
             "WORKSPACE.bazel",
         ],
     ),
-    crate_features = select({
-        "@rules_rust//rust/platform:wasm32-unknown-unknown": [
-            "default",  # wasm32-unknown-unknown
-            "msrv",  # wasm32-unknown-unknown
-            "rustversion",  # wasm32-unknown-unknown
-            "std",  # wasm32-unknown-unknown
-        ],
-        "//conditions:default": [],
-    }),
+    crate_features = [
+        "default",
+        "msrv",
+        "rustversion",
+        "std",
+    ],
     crate_root = "src/lib.rs",
     edition = "2021",
-    proc_macro_deps = select({
-        "@rules_rust//rust/platform:wasm32-unknown-unknown": [
-            "@crates_vendor__rustversion-1.0.21//:rustversion",  # wasm32-unknown-unknown
-            "@crates_vendor__wasm-bindgen-macro-0.2.100//:wasm_bindgen_macro",  # wasm32-unknown-unknown
-        ],
-        "//conditions:default": [],
-    }),
+    proc_macro_deps = [
+        "@crates_vendor__rustversion-1.0.21//:rustversion",
+        "@crates_vendor__wasm-bindgen-macro-0.2.100//:wasm_bindgen_macro",
+    ],
     rustc_env_files = [
         ":cargo_toml_env_vars",
     ],
@@ -70,25 +64,15 @@ rust_library(
         "norustfmt",
     ],
     target_compatible_with = select({
-        "@rules_rust//rust/platform:aarch64-apple-darwin": [],
-        "@rules_rust//rust/platform:aarch64-pc-windows-msvc": [],
-        "@rules_rust//rust/platform:aarch64-unknown-linux-gnu": [],
         "@rules_rust//rust/platform:wasm32-unknown-unknown": [],
-        "@rules_rust//rust/platform:x86_64-apple-darwin": [],
-        "@rules_rust//rust/platform:x86_64-pc-windows-msvc": [],
-        "@rules_rust//rust/platform:x86_64-unknown-linux-gnu": [],
         "//conditions:default": ["@platforms//:incompatible"],
     }),
     version = "0.2.100",
     deps = [
+        "@crates_vendor__cfg-if-1.0.1//:cfg_if",
+        "@crates_vendor__once_cell-1.21.3//:once_cell",
         "@crates_vendor__wasm-bindgen-0.2.100//:build_script_build",
-    ] + select({
-        "@rules_rust//rust/platform:wasm32-unknown-unknown": [
-            "@crates_vendor__cfg-if-1.0.1//:cfg_if",  # wasm32-unknown-unknown
-            "@crates_vendor__once_cell-1.21.3//:once_cell",  # wasm32-unknown-unknown
-        ],
-        "//conditions:default": [],
-    }),
+    ],
 )
 
 cargo_build_script(
@@ -110,15 +94,12 @@ cargo_build_script(
             "WORKSPACE.bazel",
         ],
     ),
-    crate_features = select({
-        "@rules_rust//rust/platform:wasm32-unknown-unknown": [
-            "default",  # wasm32-unknown-unknown
-            "msrv",  # wasm32-unknown-unknown
-            "rustversion",  # wasm32-unknown-unknown
-            "std",  # wasm32-unknown-unknown
-        ],
-        "//conditions:default": [],
-    }),
+    crate_features = [
+        "default",
+        "msrv",
+        "rustversion",
+        "std",
+    ],
     crate_name = "build_script_build",
     crate_root = "build.rs",
     data = glob(

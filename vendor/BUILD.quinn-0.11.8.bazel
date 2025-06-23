@@ -26,39 +26,10 @@ rust_library(
         include = ["**/*.rs"],
         allow_empty = True,
     ),
-    aliases = select({
-        "@rules_rust//rust/platform:aarch64-apple-darwin": {
-            "@crates_vendor__quinn-proto-0.11.12//:quinn_proto": "proto",  # aarch64-apple-darwin
-            "@crates_vendor__quinn-udp-0.5.12//:quinn_udp": "udp",
-        },
-        "@rules_rust//rust/platform:aarch64-pc-windows-msvc": {
-            "@crates_vendor__quinn-proto-0.11.12//:quinn_proto": "proto",  # aarch64-pc-windows-msvc
-            "@crates_vendor__quinn-udp-0.5.12//:quinn_udp": "udp",
-        },
-        "@rules_rust//rust/platform:aarch64-unknown-linux-gnu": {
-            "@crates_vendor__quinn-proto-0.11.12//:quinn_proto": "proto",  # aarch64-unknown-linux-gnu
-            "@crates_vendor__quinn-udp-0.5.12//:quinn_udp": "udp",
-        },
-        "@rules_rust//rust/platform:wasm32-unknown-unknown": {
-            "@crates_vendor__quinn-proto-0.11.12//:quinn_proto": "proto",  # wasm32-unknown-unknown
-            "@crates_vendor__quinn-udp-0.5.12//:quinn_udp": "udp",
-        },
-        "@rules_rust//rust/platform:x86_64-apple-darwin": {
-            "@crates_vendor__quinn-proto-0.11.12//:quinn_proto": "proto",  # x86_64-apple-darwin
-            "@crates_vendor__quinn-udp-0.5.12//:quinn_udp": "udp",
-        },
-        "@rules_rust//rust/platform:x86_64-pc-windows-msvc": {
-            "@crates_vendor__quinn-proto-0.11.12//:quinn_proto": "proto",  # x86_64-pc-windows-msvc
-            "@crates_vendor__quinn-udp-0.5.12//:quinn_udp": "udp",
-        },
-        "@rules_rust//rust/platform:x86_64-unknown-linux-gnu": {
-            "@crates_vendor__quinn-proto-0.11.12//:quinn_proto": "proto",  # x86_64-unknown-linux-gnu
-            "@crates_vendor__quinn-udp-0.5.12//:quinn_udp": "udp",
-        },
-        "//conditions:default": {
-            "@crates_vendor__quinn-udp-0.5.12//:quinn_udp": "udp",
-        },
-    }),
+    aliases = {
+        "@crates_vendor__quinn-proto-0.11.12//:quinn_proto": "proto",
+        "@crates_vendor__quinn-udp-0.5.12//:quinn_udp": "udp",
+    },
     compile_data = glob(
         include = ["**"],
         allow_empty = True,
@@ -80,34 +51,34 @@ rust_library(
         "rustls-aws-lc-rs",
     ] + select({
         "@rules_rust//rust/platform:aarch64-apple-darwin": [
-            "ring",  # aarch64-apple-darwin
-            "rustls",  # aarch64-apple-darwin
-            "rustls-ring",  # aarch64-apple-darwin
+            "ring",
+            "rustls",
+            "rustls-ring",
         ],
         "@rules_rust//rust/platform:aarch64-pc-windows-msvc": [
-            "ring",  # aarch64-pc-windows-msvc
-            "rustls",  # aarch64-pc-windows-msvc
-            "rustls-ring",  # aarch64-pc-windows-msvc
+            "ring",
+            "rustls",
+            "rustls-ring",
         ],
         "@rules_rust//rust/platform:aarch64-unknown-linux-gnu": [
-            "ring",  # aarch64-unknown-linux-gnu
-            "rustls",  # aarch64-unknown-linux-gnu
-            "rustls-ring",  # aarch64-unknown-linux-gnu
+            "ring",
+            "rustls",
+            "rustls-ring",
         ],
         "@rules_rust//rust/platform:x86_64-apple-darwin": [
-            "ring",  # x86_64-apple-darwin
-            "rustls",  # x86_64-apple-darwin
-            "rustls-ring",  # x86_64-apple-darwin
+            "ring",
+            "rustls",
+            "rustls-ring",
         ],
         "@rules_rust//rust/platform:x86_64-pc-windows-msvc": [
-            "ring",  # x86_64-pc-windows-msvc
-            "rustls",  # x86_64-pc-windows-msvc
-            "rustls-ring",  # x86_64-pc-windows-msvc
+            "ring",
+            "rustls",
+            "rustls-ring",
         ],
         "@rules_rust//rust/platform:x86_64-unknown-linux-gnu": [
-            "ring",  # x86_64-unknown-linux-gnu
-            "rustls",  # x86_64-unknown-linux-gnu
-            "rustls-ring",  # x86_64-unknown-linux-gnu
+            "ring",
+            "rustls",
+            "rustls-ring",
         ],
         "//conditions:default": [],
     }),
@@ -142,6 +113,7 @@ rust_library(
         "@crates_vendor__futures-io-0.3.31//:futures_io",
         "@crates_vendor__pin-project-lite-0.2.16//:pin_project_lite",
         "@crates_vendor__quinn-0.11.8//:build_script_build",
+        "@crates_vendor__quinn-proto-0.11.12//:quinn_proto",
         "@crates_vendor__quinn-udp-0.5.12//:quinn_udp",
         "@crates_vendor__rustc-hash-2.1.1//:rustc_hash",
         "@crates_vendor__rustls-0.23.28//:rustls",
@@ -150,32 +122,25 @@ rust_library(
         "@crates_vendor__tracing-0.1.41//:tracing",
     ] + select({
         "@rules_rust//rust/platform:aarch64-apple-darwin": [
-            "@crates_vendor__quinn-proto-0.11.12//:quinn_proto",  # aarch64-apple-darwin
-            "@crates_vendor__socket2-0.5.10//:socket2",  # aarch64-apple-darwin
+            "@crates_vendor__socket2-0.5.10//:socket2",  # cfg(not(all(target_family = "wasm", target_os = "unknown")))
         ],
         "@rules_rust//rust/platform:aarch64-pc-windows-msvc": [
-            "@crates_vendor__quinn-proto-0.11.12//:quinn_proto",  # aarch64-pc-windows-msvc
-            "@crates_vendor__socket2-0.5.10//:socket2",  # aarch64-pc-windows-msvc
+            "@crates_vendor__socket2-0.5.10//:socket2",  # cfg(not(all(target_family = "wasm", target_os = "unknown")))
         ],
         "@rules_rust//rust/platform:aarch64-unknown-linux-gnu": [
-            "@crates_vendor__quinn-proto-0.11.12//:quinn_proto",  # aarch64-unknown-linux-gnu
-            "@crates_vendor__socket2-0.5.10//:socket2",  # aarch64-unknown-linux-gnu
+            "@crates_vendor__socket2-0.5.10//:socket2",  # cfg(not(all(target_family = "wasm", target_os = "unknown")))
         ],
         "@rules_rust//rust/platform:wasm32-unknown-unknown": [
-            "@crates_vendor__quinn-proto-0.11.12//:quinn_proto",  # wasm32-unknown-unknown
-            "@crates_vendor__web-time-1.1.0//:web_time",  # wasm32-unknown-unknown
+            "@crates_vendor__web-time-1.1.0//:web_time",  # cfg(all(target_family = "wasm", target_os = "unknown"))
         ],
         "@rules_rust//rust/platform:x86_64-apple-darwin": [
-            "@crates_vendor__quinn-proto-0.11.12//:quinn_proto",  # x86_64-apple-darwin
-            "@crates_vendor__socket2-0.5.10//:socket2",  # x86_64-apple-darwin
+            "@crates_vendor__socket2-0.5.10//:socket2",  # cfg(not(all(target_family = "wasm", target_os = "unknown")))
         ],
         "@rules_rust//rust/platform:x86_64-pc-windows-msvc": [
-            "@crates_vendor__quinn-proto-0.11.12//:quinn_proto",  # x86_64-pc-windows-msvc
-            "@crates_vendor__socket2-0.5.10//:socket2",  # x86_64-pc-windows-msvc
+            "@crates_vendor__socket2-0.5.10//:socket2",  # cfg(not(all(target_family = "wasm", target_os = "unknown")))
         ],
         "@rules_rust//rust/platform:x86_64-unknown-linux-gnu": [
-            "@crates_vendor__quinn-proto-0.11.12//:quinn_proto",  # x86_64-unknown-linux-gnu
-            "@crates_vendor__socket2-0.5.10//:socket2",  # x86_64-unknown-linux-gnu
+            "@crates_vendor__socket2-0.5.10//:socket2",  # cfg(not(all(target_family = "wasm", target_os = "unknown")))
         ],
         "//conditions:default": [],
     }),
@@ -209,34 +174,34 @@ cargo_build_script(
         "rustls-aws-lc-rs",
     ] + select({
         "@rules_rust//rust/platform:aarch64-apple-darwin": [
-            "ring",  # aarch64-apple-darwin
-            "rustls",  # aarch64-apple-darwin
-            "rustls-ring",  # aarch64-apple-darwin
+            "ring",
+            "rustls",
+            "rustls-ring",
         ],
         "@rules_rust//rust/platform:aarch64-pc-windows-msvc": [
-            "ring",  # aarch64-pc-windows-msvc
-            "rustls",  # aarch64-pc-windows-msvc
-            "rustls-ring",  # aarch64-pc-windows-msvc
+            "ring",
+            "rustls",
+            "rustls-ring",
         ],
         "@rules_rust//rust/platform:aarch64-unknown-linux-gnu": [
-            "ring",  # aarch64-unknown-linux-gnu
-            "rustls",  # aarch64-unknown-linux-gnu
-            "rustls-ring",  # aarch64-unknown-linux-gnu
+            "ring",
+            "rustls",
+            "rustls-ring",
         ],
         "@rules_rust//rust/platform:x86_64-apple-darwin": [
-            "ring",  # x86_64-apple-darwin
-            "rustls",  # x86_64-apple-darwin
-            "rustls-ring",  # x86_64-apple-darwin
+            "ring",
+            "rustls",
+            "rustls-ring",
         ],
         "@rules_rust//rust/platform:x86_64-pc-windows-msvc": [
-            "ring",  # x86_64-pc-windows-msvc
-            "rustls",  # x86_64-pc-windows-msvc
-            "rustls-ring",  # x86_64-pc-windows-msvc
+            "ring",
+            "rustls",
+            "rustls-ring",
         ],
         "@rules_rust//rust/platform:x86_64-unknown-linux-gnu": [
-            "ring",  # x86_64-unknown-linux-gnu
-            "rustls",  # x86_64-unknown-linux-gnu
-            "rustls-ring",  # x86_64-unknown-linux-gnu
+            "ring",
+            "rustls",
+            "rustls-ring",
         ],
         "//conditions:default": [],
     }),

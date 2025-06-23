@@ -34,64 +34,33 @@ rust_library(
             "WORKSPACE.bazel",
         ],
     ),
-    crate_features = select({
+    crate_features = [
+        "derive",
+        "prost-derive",
+    ] + select({
         "@rules_rust//rust/platform:aarch64-apple-darwin": [
-            "default",  # aarch64-apple-darwin
-            "derive",  # aarch64-apple-darwin
-            "prost-derive",  # aarch64-apple-darwin
-            "std",  # aarch64-apple-darwin
-        ],
-        "@rules_rust//rust/platform:aarch64-pc-windows-msvc": [
-            "derive",  # aarch64-pc-windows-msvc
-            "prost-derive",  # aarch64-pc-windows-msvc
+            "default",
+            "std",
         ],
         "@rules_rust//rust/platform:aarch64-unknown-linux-gnu": [
-            "default",  # aarch64-unknown-linux-gnu
-            "derive",  # aarch64-unknown-linux-gnu
-            "prost-derive",  # aarch64-unknown-linux-gnu
-            "std",  # aarch64-unknown-linux-gnu
+            "default",
+            "std",
         ],
         "@rules_rust//rust/platform:x86_64-apple-darwin": [
-            "default",  # x86_64-apple-darwin
-            "derive",  # x86_64-apple-darwin
-            "prost-derive",  # x86_64-apple-darwin
-            "std",  # x86_64-apple-darwin
-        ],
-        "@rules_rust//rust/platform:x86_64-pc-windows-msvc": [
-            "derive",  # x86_64-pc-windows-msvc
-            "prost-derive",  # x86_64-pc-windows-msvc
+            "default",
+            "std",
         ],
         "@rules_rust//rust/platform:x86_64-unknown-linux-gnu": [
-            "default",  # x86_64-unknown-linux-gnu
-            "derive",  # x86_64-unknown-linux-gnu
-            "prost-derive",  # x86_64-unknown-linux-gnu
-            "std",  # x86_64-unknown-linux-gnu
+            "default",
+            "std",
         ],
         "//conditions:default": [],
     }),
     crate_root = "src/lib.rs",
     edition = "2021",
-    proc_macro_deps = select({
-        "@rules_rust//rust/platform:aarch64-apple-darwin": [
-            "@crates_vendor__prost-derive-0.12.6//:prost_derive",  # aarch64-apple-darwin
-        ],
-        "@rules_rust//rust/platform:aarch64-pc-windows-msvc": [
-            "@crates_vendor__prost-derive-0.12.6//:prost_derive",  # aarch64-pc-windows-msvc
-        ],
-        "@rules_rust//rust/platform:aarch64-unknown-linux-gnu": [
-            "@crates_vendor__prost-derive-0.12.6//:prost_derive",  # aarch64-unknown-linux-gnu
-        ],
-        "@rules_rust//rust/platform:x86_64-apple-darwin": [
-            "@crates_vendor__prost-derive-0.12.6//:prost_derive",  # x86_64-apple-darwin
-        ],
-        "@rules_rust//rust/platform:x86_64-pc-windows-msvc": [
-            "@crates_vendor__prost-derive-0.12.6//:prost_derive",  # x86_64-pc-windows-msvc
-        ],
-        "@rules_rust//rust/platform:x86_64-unknown-linux-gnu": [
-            "@crates_vendor__prost-derive-0.12.6//:prost_derive",  # x86_64-unknown-linux-gnu
-        ],
-        "//conditions:default": [],
-    }),
+    proc_macro_deps = [
+        "@crates_vendor__prost-derive-0.12.6//:prost_derive",
+    ],
     rustc_env_files = [
         ":cargo_toml_env_vars",
     ],
@@ -109,32 +78,13 @@ rust_library(
         "@rules_rust//rust/platform:aarch64-apple-darwin": [],
         "@rules_rust//rust/platform:aarch64-pc-windows-msvc": [],
         "@rules_rust//rust/platform:aarch64-unknown-linux-gnu": [],
-        "@rules_rust//rust/platform:wasm32-unknown-unknown": [],
         "@rules_rust//rust/platform:x86_64-apple-darwin": [],
         "@rules_rust//rust/platform:x86_64-pc-windows-msvc": [],
         "@rules_rust//rust/platform:x86_64-unknown-linux-gnu": [],
         "//conditions:default": ["@platforms//:incompatible"],
     }),
     version = "0.12.6",
-    deps = select({
-        "@rules_rust//rust/platform:aarch64-apple-darwin": [
-            "@crates_vendor__bytes-1.10.1//:bytes",  # aarch64-apple-darwin
-        ],
-        "@rules_rust//rust/platform:aarch64-pc-windows-msvc": [
-            "@crates_vendor__bytes-1.10.1//:bytes",  # aarch64-pc-windows-msvc
-        ],
-        "@rules_rust//rust/platform:aarch64-unknown-linux-gnu": [
-            "@crates_vendor__bytes-1.10.1//:bytes",  # aarch64-unknown-linux-gnu
-        ],
-        "@rules_rust//rust/platform:x86_64-apple-darwin": [
-            "@crates_vendor__bytes-1.10.1//:bytes",  # x86_64-apple-darwin
-        ],
-        "@rules_rust//rust/platform:x86_64-pc-windows-msvc": [
-            "@crates_vendor__bytes-1.10.1//:bytes",  # x86_64-pc-windows-msvc
-        ],
-        "@rules_rust//rust/platform:x86_64-unknown-linux-gnu": [
-            "@crates_vendor__bytes-1.10.1//:bytes",  # x86_64-unknown-linux-gnu
-        ],
-        "//conditions:default": [],
-    }),
+    deps = [
+        "@crates_vendor__bytes-1.10.1//:bytes",
+    ],
 )

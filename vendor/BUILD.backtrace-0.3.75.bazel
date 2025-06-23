@@ -34,25 +34,10 @@ rust_library(
             "WORKSPACE.bazel",
         ],
     ),
-    crate_features = select({
-        "@rules_rust//rust/platform:aarch64-apple-darwin": [
-            "default",  # aarch64-apple-darwin
-            "std",  # aarch64-apple-darwin
-        ],
-        "@rules_rust//rust/platform:aarch64-unknown-linux-gnu": [
-            "default",  # aarch64-unknown-linux-gnu
-            "std",  # aarch64-unknown-linux-gnu
-        ],
-        "@rules_rust//rust/platform:x86_64-apple-darwin": [
-            "default",  # x86_64-apple-darwin
-            "std",  # x86_64-apple-darwin
-        ],
-        "@rules_rust//rust/platform:x86_64-unknown-linux-gnu": [
-            "default",  # x86_64-unknown-linux-gnu
-            "std",  # x86_64-unknown-linux-gnu
-        ],
-        "//conditions:default": [],
-    }),
+    crate_features = [
+        "default",
+        "std",
+    ],
     crate_root = "src/lib.rs",
     edition = "2021",
     rustc_env_files = [
@@ -70,47 +55,33 @@ rust_library(
     ],
     target_compatible_with = select({
         "@rules_rust//rust/platform:aarch64-apple-darwin": [],
-        "@rules_rust//rust/platform:aarch64-pc-windows-msvc": [],
         "@rules_rust//rust/platform:aarch64-unknown-linux-gnu": [],
-        "@rules_rust//rust/platform:wasm32-unknown-unknown": [],
         "@rules_rust//rust/platform:x86_64-apple-darwin": [],
-        "@rules_rust//rust/platform:x86_64-pc-windows-msvc": [],
         "@rules_rust//rust/platform:x86_64-unknown-linux-gnu": [],
         "//conditions:default": ["@platforms//:incompatible"],
     }),
     version = "0.3.75",
-    deps = select({
+    deps = [
+        "@crates_vendor__addr2line-0.24.2//:addr2line",  # cfg(not(all(windows, target_env = "msvc", not(target_vendor = "uwp"))))
+        "@crates_vendor__libc-0.2.173//:libc",  # cfg(not(all(windows, target_env = "msvc", not(target_vendor = "uwp"))))
+        "@crates_vendor__miniz_oxide-0.8.9//:miniz_oxide",  # cfg(not(all(windows, target_env = "msvc", not(target_vendor = "uwp"))))
+        "@crates_vendor__object-0.36.7//:object",  # cfg(not(all(windows, target_env = "msvc", not(target_vendor = "uwp"))))
+    ] + select({
         "@rules_rust//rust/platform:aarch64-apple-darwin": [
-            "@crates_vendor__addr2line-0.24.2//:addr2line",  # aarch64-apple-darwin
-            "@crates_vendor__cfg-if-1.0.1//:cfg_if",  # aarch64-apple-darwin
-            "@crates_vendor__libc-0.2.173//:libc",  # aarch64-apple-darwin
-            "@crates_vendor__miniz_oxide-0.8.9//:miniz_oxide",  # aarch64-apple-darwin
-            "@crates_vendor__object-0.36.7//:object",  # aarch64-apple-darwin
-            "@crates_vendor__rustc-demangle-0.1.25//:rustc_demangle",  # aarch64-apple-darwin
+            "@crates_vendor__cfg-if-1.0.1//:cfg_if",
+            "@crates_vendor__rustc-demangle-0.1.25//:rustc_demangle",
         ],
         "@rules_rust//rust/platform:aarch64-unknown-linux-gnu": [
-            "@crates_vendor__addr2line-0.24.2//:addr2line",  # aarch64-unknown-linux-gnu
-            "@crates_vendor__cfg-if-1.0.1//:cfg_if",  # aarch64-unknown-linux-gnu
-            "@crates_vendor__libc-0.2.173//:libc",  # aarch64-unknown-linux-gnu
-            "@crates_vendor__miniz_oxide-0.8.9//:miniz_oxide",  # aarch64-unknown-linux-gnu
-            "@crates_vendor__object-0.36.7//:object",  # aarch64-unknown-linux-gnu
-            "@crates_vendor__rustc-demangle-0.1.25//:rustc_demangle",  # aarch64-unknown-linux-gnu
+            "@crates_vendor__cfg-if-1.0.1//:cfg_if",
+            "@crates_vendor__rustc-demangle-0.1.25//:rustc_demangle",
         ],
         "@rules_rust//rust/platform:x86_64-apple-darwin": [
-            "@crates_vendor__addr2line-0.24.2//:addr2line",  # x86_64-apple-darwin
-            "@crates_vendor__cfg-if-1.0.1//:cfg_if",  # x86_64-apple-darwin
-            "@crates_vendor__libc-0.2.173//:libc",  # x86_64-apple-darwin
-            "@crates_vendor__miniz_oxide-0.8.9//:miniz_oxide",  # x86_64-apple-darwin
-            "@crates_vendor__object-0.36.7//:object",  # x86_64-apple-darwin
-            "@crates_vendor__rustc-demangle-0.1.25//:rustc_demangle",  # x86_64-apple-darwin
+            "@crates_vendor__cfg-if-1.0.1//:cfg_if",
+            "@crates_vendor__rustc-demangle-0.1.25//:rustc_demangle",
         ],
         "@rules_rust//rust/platform:x86_64-unknown-linux-gnu": [
-            "@crates_vendor__addr2line-0.24.2//:addr2line",  # x86_64-unknown-linux-gnu
-            "@crates_vendor__cfg-if-1.0.1//:cfg_if",  # x86_64-unknown-linux-gnu
-            "@crates_vendor__libc-0.2.173//:libc",  # x86_64-unknown-linux-gnu
-            "@crates_vendor__miniz_oxide-0.8.9//:miniz_oxide",  # x86_64-unknown-linux-gnu
-            "@crates_vendor__object-0.36.7//:object",  # x86_64-unknown-linux-gnu
-            "@crates_vendor__rustc-demangle-0.1.25//:rustc_demangle",  # x86_64-unknown-linux-gnu
+            "@crates_vendor__cfg-if-1.0.1//:cfg_if",
+            "@crates_vendor__rustc-demangle-0.1.25//:rustc_demangle",
         ],
         "//conditions:default": [],
     }),

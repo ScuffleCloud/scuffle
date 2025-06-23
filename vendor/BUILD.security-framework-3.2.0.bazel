@@ -34,25 +34,14 @@ rust_library(
             "WORKSPACE.bazel",
         ],
     ),
-    crate_features = select({
-        "@rules_rust//rust/platform:aarch64-apple-darwin": [
-            "OSX_10_12",  # aarch64-apple-darwin
-            "OSX_10_13",  # aarch64-apple-darwin
-            "OSX_10_14",  # aarch64-apple-darwin
-            "alpn",  # aarch64-apple-darwin
-            "default",  # aarch64-apple-darwin
-            "session-tickets",  # aarch64-apple-darwin
-        ],
-        "@rules_rust//rust/platform:x86_64-apple-darwin": [
-            "OSX_10_12",  # x86_64-apple-darwin
-            "OSX_10_13",  # x86_64-apple-darwin
-            "OSX_10_14",  # x86_64-apple-darwin
-            "alpn",  # x86_64-apple-darwin
-            "default",  # x86_64-apple-darwin
-            "session-tickets",  # x86_64-apple-darwin
-        ],
-        "//conditions:default": [],
-    }),
+    crate_features = [
+        "OSX_10_12",
+        "OSX_10_13",
+        "OSX_10_14",
+        "alpn",
+        "default",
+        "session-tickets",
+    ],
     crate_root = "src/lib.rs",
     edition = "2021",
     rustc_env_files = [
@@ -70,30 +59,15 @@ rust_library(
     ],
     target_compatible_with = select({
         "@rules_rust//rust/platform:aarch64-apple-darwin": [],
-        "@rules_rust//rust/platform:aarch64-pc-windows-msvc": [],
-        "@rules_rust//rust/platform:aarch64-unknown-linux-gnu": [],
-        "@rules_rust//rust/platform:wasm32-unknown-unknown": [],
         "@rules_rust//rust/platform:x86_64-apple-darwin": [],
-        "@rules_rust//rust/platform:x86_64-pc-windows-msvc": [],
-        "@rules_rust//rust/platform:x86_64-unknown-linux-gnu": [],
         "//conditions:default": ["@platforms//:incompatible"],
     }),
     version = "3.2.0",
-    deps = select({
-        "@rules_rust//rust/platform:aarch64-apple-darwin": [
-            "@crates_vendor__bitflags-2.9.1//:bitflags",  # aarch64-apple-darwin
-            "@crates_vendor__core-foundation-0.10.1//:core_foundation",  # aarch64-apple-darwin
-            "@crates_vendor__core-foundation-sys-0.8.7//:core_foundation_sys",  # aarch64-apple-darwin
-            "@crates_vendor__libc-0.2.173//:libc",  # aarch64-apple-darwin
-            "@crates_vendor__security-framework-sys-2.14.0//:security_framework_sys",  # aarch64-apple-darwin
-        ],
-        "@rules_rust//rust/platform:x86_64-apple-darwin": [
-            "@crates_vendor__bitflags-2.9.1//:bitflags",  # x86_64-apple-darwin
-            "@crates_vendor__core-foundation-0.10.1//:core_foundation",  # x86_64-apple-darwin
-            "@crates_vendor__core-foundation-sys-0.8.7//:core_foundation_sys",  # x86_64-apple-darwin
-            "@crates_vendor__libc-0.2.173//:libc",  # x86_64-apple-darwin
-            "@crates_vendor__security-framework-sys-2.14.0//:security_framework_sys",  # x86_64-apple-darwin
-        ],
-        "//conditions:default": [],
-    }),
+    deps = [
+        "@crates_vendor__bitflags-2.9.1//:bitflags",
+        "@crates_vendor__core-foundation-0.10.1//:core_foundation",
+        "@crates_vendor__core-foundation-sys-0.8.7//:core_foundation_sys",
+        "@crates_vendor__libc-0.2.173//:libc",
+        "@crates_vendor__security-framework-sys-2.14.0//:security_framework_sys",
+    ],
 )

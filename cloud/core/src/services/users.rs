@@ -1,10 +1,10 @@
-use std::sync::Arc;
-
 use diesel::{OptionalExtension, QueryDsl, SelectableHelper};
 use diesel_async::RunQueryDsl;
+use tonic_types::{ErrorDetails, StatusExt};
 
 use crate::CoreConfig;
 use crate::models::{User, UserId, UserSession};
+use crate::request_ext::RequestExt;
 use crate::schema::users;
 use crate::services::CoreSvc;
 
@@ -12,21 +12,19 @@ use crate::services::CoreSvc;
 impl<G: CoreConfig> pb::scufflecloud::core::v1::users_service_server::UsersService for CoreSvc<G> {
     async fn get_user(
         &self,
-        request: tonic::Request<pb::scufflecloud::core::v1::UserByIdRequest>,
+        req: tonic::Request<pb::scufflecloud::core::v1::UserByIdRequest>,
     ) -> Result<tonic::Response<pb::scufflecloud::core::v1::User>, tonic::Status> {
-        if request.extensions().get::<UserSession>().is_none() {
+        if req.extensions().get::<UserSession>().is_none() {
             return Err(tonic::Status::unauthenticated("authentication required"));
         }
 
-        let mut db = request
-            .extensions()
-            .get::<Arc<G>>()
-            .expect("global not found")
+        let mut db = req
+            .global::<G>()?
             .db()
             .await
             .map_err(|e| tonic::Status::internal(e.to_string()))?;
 
-        let user_id: UserId = request
+        let user_id: UserId = req
             .get_ref()
             .id
             .parse()
@@ -46,50 +44,78 @@ impl<G: CoreConfig> pb::scufflecloud::core::v1::users_service_server::UsersServi
 
     async fn update_user_password(
         &self,
-        _request: tonic::Request<pb::scufflecloud::core::v1::UpdateUserPasswordRequest>,
+        _req: tonic::Request<pb::scufflecloud::core::v1::UpdateUserPasswordRequest>,
     ) -> Result<tonic::Response<pb::scufflecloud::core::v1::User>, tonic::Status> {
-        Err(tonic::Status::unimplemented("not implemented yet"))
+        Err(tonic::Status::with_error_details(
+            tonic::Code::Unimplemented,
+            "this endpoint is not implemented",
+            ErrorDetails::new(),
+        ))
     }
 
     async fn update_user_names(
         &self,
-        _request: tonic::Request<pb::scufflecloud::core::v1::UpdateUserNamesRequest>,
+        _req: tonic::Request<pb::scufflecloud::core::v1::UpdateUserNamesRequest>,
     ) -> Result<tonic::Response<pb::scufflecloud::core::v1::User>, tonic::Status> {
-        Err(tonic::Status::unimplemented("not implemented yet"))
+        Err(tonic::Status::with_error_details(
+            tonic::Code::Unimplemented,
+            "this endpoint is not implemented",
+            ErrorDetails::new(),
+        ))
     }
 
     async fn update_user_primary_email(
         &self,
-        _request: tonic::Request<pb::scufflecloud::core::v1::UpdateUserPrimaryEmailRequest>,
+        _req: tonic::Request<pb::scufflecloud::core::v1::UpdateUserPrimaryEmailRequest>,
     ) -> Result<tonic::Response<pb::scufflecloud::core::v1::User>, tonic::Status> {
-        Err(tonic::Status::unimplemented("not implemented yet"))
+        Err(tonic::Status::with_error_details(
+            tonic::Code::Unimplemented,
+            "this endpoint is not implemented",
+            ErrorDetails::new(),
+        ))
     }
 
     async fn get_user_emails(
         &self,
-        _request: tonic::Request<pb::scufflecloud::core::v1::UserByIdRequest>,
+        _req: tonic::Request<pb::scufflecloud::core::v1::UserByIdRequest>,
     ) -> Result<tonic::Response<pb::scufflecloud::core::v1::GetUserEmailsResponse>, tonic::Status> {
-        Err(tonic::Status::unimplemented("not implemented yet"))
+        Err(tonic::Status::with_error_details(
+            tonic::Code::Unimplemented,
+            "this endpoint is not implemented",
+            ErrorDetails::new(),
+        ))
     }
 
     async fn create_user_email(
         &self,
-        _request: tonic::Request<pb::scufflecloud::core::v1::CreateUserEmailRequest>,
+        _req: tonic::Request<pb::scufflecloud::core::v1::CreateUserEmailRequest>,
     ) -> Result<tonic::Response<()>, tonic::Status> {
-        Err(tonic::Status::unimplemented("not implemented yet"))
+        Err(tonic::Status::with_error_details(
+            tonic::Code::Unimplemented,
+            "this endpoint is not implemented",
+            ErrorDetails::new(),
+        ))
     }
 
     async fn complete_create_user_email(
         &self,
-        _request: tonic::Request<pb::scufflecloud::core::v1::CompleteCreateUserEmailRequest>,
+        _req: tonic::Request<pb::scufflecloud::core::v1::CompleteCreateUserEmailRequest>,
     ) -> Result<tonic::Response<pb::scufflecloud::core::v1::UserEmail>, tonic::Status> {
-        Err(tonic::Status::unimplemented("not implemented yet"))
+        Err(tonic::Status::with_error_details(
+            tonic::Code::Unimplemented,
+            "this endpoint is not implemented",
+            ErrorDetails::new(),
+        ))
     }
 
     async fn delete_user_email(
         &self,
-        _request: tonic::Request<pb::scufflecloud::core::v1::DeleteUserEmailRequest>,
+        _req: tonic::Request<pb::scufflecloud::core::v1::DeleteUserEmailRequest>,
     ) -> Result<tonic::Response<pb::scufflecloud::core::v1::UserEmail>, tonic::Status> {
-        Err(tonic::Status::unimplemented("not implemented yet"))
+        Err(tonic::Status::with_error_details(
+            tonic::Code::Unimplemented,
+            "this endpoint is not implemented",
+            ErrorDetails::new(),
+        ))
     }
 }

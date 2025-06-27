@@ -1,11 +1,23 @@
 use diesel::Selectable;
 use diesel::prelude::{AsChangeset, Associations, Identifiable, Insertable, Queryable};
 
+use super::impl_enum;
 use crate::id::{Id, PrefixedId};
-use crate::models::crypto::CryptoAlgorithm;
 use crate::models::users::{User, UserId};
 
-pub type UserSessionRequestId = Id<UserSessionRequest>;
+impl_enum!(DeviceAlgorithm, crate::schema::sql_types::DeviceAlgorithm, {
+    RsaOaepSha256 => b"RSA_OAEP_SHA256",
+});
+
+impl From<pb::scufflecloud::core::v1::DeviceAlgorithm> for DeviceAlgorithm {
+    fn from(value: pb::scufflecloud::core::v1::DeviceAlgorithm) -> Self {
+        match value {
+            pb::scufflecloud::core::v1::DeviceAlgorithm::RsaOaepSha256 => DeviceAlgorithm::RsaOaepSha256,
+        }
+    }
+}
+
+pub(crate) type UserSessionRequestId = Id<UserSessionRequest>;
 
 #[derive(Debug, Queryable, Selectable, Insertable, Identifiable, AsChangeset)]
 #[diesel(table_name = crate::schema::user_session_requests)]
@@ -30,7 +42,7 @@ impl PrefixedId for UserSessionToken {
     const PREFIX: &'static str = "user_session_token";
 }
 
-pub type UserSessionTokenId = Id<UserSessionToken>;
+pub(crate) type UserSessionTokenId = Id<UserSessionToken>;
 
 #[derive(Queryable, Selectable, Insertable, Identifiable, AsChangeset, Associations, Debug, Clone)]
 #[diesel(table_name = crate::schema::user_sessions)]
@@ -40,7 +52,7 @@ pub type UserSessionTokenId = Id<UserSessionToken>;
 pub struct UserSession {
     pub user_id: UserId,
     pub device_fingerprint: Vec<u8>,
-    pub device_algorithm: CryptoAlgorithm,
+    pub device_algorithm: DeviceAlgorithm,
     pub device_pk_data: Vec<u8>,
     pub last_used_at: chrono::DateTime<chrono::Utc>,
     pub last_ip: ipnetwork::IpNetwork,
@@ -50,7 +62,7 @@ pub struct UserSession {
     pub expires_at: chrono::DateTime<chrono::Utc>,
 }
 
-pub type EmailRegistrationRequestId = Id<EmailRegistrationRequest>;
+pub(crate) type EmailRegistrationRequestId = Id<EmailRegistrationRequest>;
 
 #[derive(Queryable, Selectable, Insertable, Identifiable, AsChangeset, Associations, Debug)]
 #[diesel(table_name = crate::schema::email_registration_requests)]
@@ -60,7 +72,7 @@ pub struct EmailRegistrationRequest {
     pub id: EmailRegistrationRequestId,
     pub user_id: Option<UserId>,
     pub email: String,
-    pub code: String,
+    pub code: Vec<u8>,
     pub expires_at: chrono::DateTime<chrono::Utc>,
 }
 

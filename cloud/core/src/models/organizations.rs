@@ -4,7 +4,7 @@ use diesel::prelude::{AsChangeset, Associations, Identifiable, Insertable, Query
 use crate::id::{Id, PrefixedId};
 use crate::models::users::{User, UserId};
 
-pub type OrganizationId = Id<Organization>;
+pub(crate) type OrganizationId = Id<Organization>;
 
 #[derive(Queryable, Selectable, Insertable, Identifiable, AsChangeset, Associations, Debug)]
 #[diesel(table_name = crate::schema::organizations)]
@@ -20,7 +20,7 @@ impl PrefixedId for Organization {
     const PREFIX: &'static str = "org";
 }
 
-pub type ProjectId = Id<Project>;
+pub(crate) type ProjectId = Id<Project>;
 
 #[derive(Queryable, Selectable, Insertable, Identifiable, AsChangeset, Associations, Debug)]
 #[diesel(table_name = crate::schema::projects)]
@@ -36,7 +36,7 @@ impl PrefixedId for Project {
     const PREFIX: &'static str = "proj";
 }
 
-pub type PolicyId = Id<Policy>;
+pub(crate) type PolicyId = Id<Policy>;
 
 #[derive(Queryable, Selectable, Insertable, Identifiable, AsChangeset, Associations, Debug)]
 #[diesel(table_name = crate::schema::policies)]
@@ -56,7 +56,7 @@ impl PrefixedId for Policy {
     const PREFIX: &'static str = "policy";
 }
 
-pub type RoleId = Id<Role>;
+pub(crate) type RoleId = Id<Role>;
 
 #[derive(Queryable, Selectable, Insertable, Identifiable, AsChangeset, Associations, Debug)]
 #[diesel(table_name = crate::schema::roles)]
@@ -111,7 +111,7 @@ pub struct OrganizationMemberPolicy {
     pub policy_id: PolicyId,
 }
 
-pub type ServiceAccountId = Id<ServiceAccount>;
+pub(crate) type ServiceAccountId = Id<ServiceAccount>;
 
 #[derive(Queryable, Selectable, Insertable, Identifiable, AsChangeset, Associations, Debug)]
 #[diesel(table_name = crate::schema::service_accounts)]
@@ -130,7 +130,7 @@ impl PrefixedId for ServiceAccount {
     const PREFIX: &'static str = "svc_acc";
 }
 
-pub type ServiceAccountTokenId = Id<ServiceAccountToken>;
+pub(crate) type ServiceAccountTokenId = Id<ServiceAccountToken>;
 
 #[derive(Queryable, Selectable, Insertable, Identifiable, AsChangeset, Associations, Debug)]
 #[diesel(table_name = crate::schema::service_account_tokens)]
@@ -149,7 +149,7 @@ impl PrefixedId for ServiceAccountToken {
     const PREFIX: &'static str = "svc_acc_token";
 }
 
-pub type OrganizationInvitationId = Id<OrganizationInvitation>;
+pub(crate) type OrganizationInvitationId = Id<OrganizationInvitation>;
 
 #[derive(Queryable, Selectable, Insertable, Identifiable, AsChangeset, Associations, Debug)]
 #[diesel(table_name = crate::schema::organization_invitations)]

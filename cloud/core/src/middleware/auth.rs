@@ -6,22 +6,26 @@ use axum::http::{self, HeaderMap, HeaderName, StatusCode};
 use axum::middleware::Next;
 use axum::response::Response;
 use base64::Engine;
-use diesel::{BoolExpressionMethods, ExpressionMethods, OptionalExtension, QueryDsl, SelectableHelper};
+use diesel::{BoolExpressionMethods, ExpressionMethods, SelectableHelper};
 use diesel_async::RunQueryDsl;
 use hmac::Mac;
 
 use crate::CoreConfig;
+use crate::middleware::IpAddressInfo;
 use crate::models::{UserSession, UserSessionTokenId};
+use crate::request_ext::RequestExt;
 use crate::schema::user_sessions;
 
 const TOKEN_ID_HEADER: HeaderName = HeaderName::from_static("scuf-token-id");
 const AUTHENTICATION_METHOD_HEADER: HeaderName = HeaderName::from_static("scuf-auth-method");
 const AUTHENTICATION_HMAC_HEADER: HeaderName = HeaderName::from_static("scuf-auth-hmac");
 
-pub async fn auth<G: CoreConfig>(mut req: Request, next: Next) -> Result<Response, StatusCode> {
-    let global = req.extensions().get::<Arc<G>>().ok_or(StatusCode::INTERNAL_SERVER_ERROR)?;
+pub(crate) async fn auth<G: CoreConfig>(mut req: Request, next: Next) -> Result<Response, StatusCode> {
+    let global = req.global::<G>().map_err(|_| StatusCode::INTERNAL_SERVER_ERROR)?;
 
-    if let Some(session) = get_active_session(global, req.headers()).await? {
+    let ip_info = req.ip_address_info().map_err(|_| StatusCode::INTERNAL_SERVER_ERROR)?;
+
+    if let Some(session) = get_and_update_active_session(global, ip_info, req.headers()).await? {
         // Append exntesion
         req.extensions_mut().insert(session);
     }
@@ -103,8 +107,15 @@ impl FromStr for AuthenticationHmac {
     }
 }
 
-async fn get_active_session<G: CoreConfig>(global: &Arc<G>, headers: &HeaderMap) -> Result<Option<UserSession>, StatusCode> {
-    let mut db = global.db().await.map_err(|_| StatusCode::INTERNAL_SERVER_ERROR)?;
+async fn get_and_update_active_session<G: CoreConfig>(
+    global: &Arc<G>,
+    ip_info: &IpAddressInfo,
+    headers: &HeaderMap,
+) -> Result<Option<UserSession>, StatusCode> {
+    let mut db = global.db().await.map_err(|e| {
+        tracing::error!(error = %e, "failed to connect to database");
+        StatusCode::INTERNAL_SERVER_ERROR
+    })?;
 
     let Some(session_token_id) = get_auth_header::<UserSessionTokenId>(headers, &TOKEN_ID_HEADER)? else {
         return Ok(None);
@@ -117,10 +128,15 @@ async fn get_active_session<G: CoreConfig>(global: &Arc<G>, headers: &HeaderMap)
     };
 
     if !auth_method.headers.contains(&http::header::DATE) || !auth_method.headers.contains(&TOKEN_ID_HEADER) {
+        tracing::debug!("missing required headers in authentication method");
         return Err(StatusCode::BAD_REQUEST);
     }
 
-    let Some(session) = user_sessions::dsl::user_sessions
+    let Some(session) = diesel::update(user_sessions::dsl::user_sessions)
+        .set((
+            user_sessions::dsl::last_ip.eq(ip_info.to_network()),
+            user_sessions::dsl::last_used_at.eq(chrono::Utc::now()),
+        ))
         .filter(
             user_sessions::dsl::token_id
                 .eq(session_token_id)
@@ -128,11 +144,15 @@ async fn get_active_session<G: CoreConfig>(global: &Arc<G>, headers: &HeaderMap)
                 .and(user_sessions::dsl::token_expires_at.gt(chrono::Utc::now()))
                 .and(user_sessions::dsl::expires_at.gt(chrono::Utc::now())),
         )
-        .select(UserSession::as_select())
-        .first::<UserSession>(&mut *db)
+        .returning(UserSession::as_select())
+        .get_results::<UserSession>(&mut *db)
         .await
-        .optional()
-        .map_err(|_| StatusCode::INTERNAL_SERVER_ERROR)?
+        .map_err(|e| {
+            tracing::error!(error = %e, "failed to update user session");
+            StatusCode::INTERNAL_SERVER_ERROR
+        })?
+        .into_iter()
+        .next()
     else {
         return Ok(None);
     };
@@ -142,8 +162,10 @@ async fn get_active_session<G: CoreConfig>(global: &Arc<G>, headers: &HeaderMap)
     // Verify HMAC
     match auth_method.algorithm {
         AuthenticationAlgorithm::HmacSha256 => {
-            let mut mac =
-                hmac::Hmac::<sha2::Sha256>::new_from_slice(token).map_err(|_| StatusCode::INTERNAL_SERVER_ERROR)?;
+            let mut mac = hmac::Hmac::<sha2::Sha256>::new_from_slice(token).map_err(|e| {
+                tracing::error!(error = %e, "failed to create HMAC instance");
+                StatusCode::INTERNAL_SERVER_ERROR
+            })?;
 
             for header_name in &auth_method.headers {
                 if let Some(value) = headers.get(header_name) {
@@ -153,7 +175,10 @@ async fn get_active_session<G: CoreConfig>(global: &Arc<G>, headers: &HeaderMap)
                 }
             }
 
-            mac.verify_slice(&auth_hmac.0).map_err(|_| StatusCode::UNAUTHORIZED)?;
+            mac.verify_slice(&auth_hmac.0).map_err(|e| {
+                tracing::debug!(error = %e, "HMAC verification failed");
+                StatusCode::UNAUTHORIZED
+            })?;
         }
     }
 

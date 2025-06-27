@@ -2,8 +2,12 @@
 
 pub mod sql_types {
     #[derive(diesel::query_builder::QueryId, Clone, diesel::sql_types::SqlType)]
-    #[diesel(postgres_type(name = "crypto_algorithm"))]
-    pub struct CryptoAlgorithm;
+    #[diesel(postgres_type(name = "device_algorithm"))]
+    pub struct DeviceAlgorithm;
+
+    #[derive(diesel::query_builder::QueryId, Clone, diesel::sql_types::SqlType)]
+    #[diesel(postgres_type(name = "webauthn_algorithm"))]
+    pub struct WebauthnAlgorithm;
 }
 
 diesel::table! {
@@ -12,8 +16,7 @@ diesel::table! {
         user_id -> Nullable<Uuid>,
         #[max_length = 255]
         email -> Varchar,
-        #[max_length = 255]
-        code -> Varchar,
+        code -> Bytea,
         expires_at -> Timestamptz,
     }
 }
@@ -29,12 +32,12 @@ diesel::table! {
 
 diesel::table! {
     use diesel::sql_types::*;
-    use super::sql_types::CryptoAlgorithm;
+    use super::sql_types::WebauthnAlgorithm;
 
     mfa_webauthn_pks (id) {
         id -> Uuid,
         user_id -> Uuid,
-        algorithm -> CryptoAlgorithm,
+        algorithm -> WebauthnAlgorithm,
         pk_id -> Bytea,
         pk_data -> Bytea,
         current_challenge -> Nullable<Bytea>,
@@ -185,13 +188,13 @@ diesel::table! {
 
 diesel::table! {
     use diesel::sql_types::*;
-    use super::sql_types::CryptoAlgorithm;
+    use super::sql_types::DeviceAlgorithm;
 
     user_sessions (user_id, device_fingerprint) {
         user_id -> Uuid,
         #[max_length = 256]
         device_fingerprint -> Bit,
-        device_algorithm -> CryptoAlgorithm,
+        device_algorithm -> DeviceAlgorithm,
         device_pk_data -> Bytea,
         last_used_at -> Timestamptz,
         last_ip -> Inet,

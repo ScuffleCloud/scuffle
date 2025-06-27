@@ -3,7 +3,7 @@ use diesel::prelude::{AsChangeset, Associations, Identifiable, Insertable, Query
 
 use crate::id::{Id, PrefixedId};
 
-pub type UserId = Id<User>;
+pub(crate) type UserId = Id<User>;
 
 #[derive(Debug, Queryable, Selectable, Insertable, Identifiable, AsChangeset)]
 #[diesel(table_name = crate::schema::users)]

@@ -9,6 +9,9 @@ readme = "README.md"
 repository = "https://github.com/scufflecloud/scuffle"
 description = "Protobuf definitions for various services used by scuffle.cloud"
 
+[lints.rust]
+unexpected_cfgs = { level = "warn", check-cfg = ['cfg(coverage_nightly)'] }
+
 [dependencies]
 prost = "0.13.5"
 tinc = { path = "../../crates/tinc" }

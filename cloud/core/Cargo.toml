@@ -13,8 +13,12 @@ description = "Authentication/Core server for scuffle.cloud"
 name = "scufflecloud-core"
 path = "src/bin/standalone.rs"
 
+[lints.rust]
+unexpected_cfgs = { level = "warn", check-cfg = ['cfg(coverage_nightly)'] }
+
 [dependencies]
 anyhow = "1.0.98"
+argon2 = { features = ["std"], version = "0.5.3" }
 async-trait = "0.1.88"
 axum = "0.8.4"
 base64 = "0.22.1"
@@ -26,6 +30,7 @@ ipnetwork = "0.21.1"
 pb = { package = "scufflecloud-proto", path = "../proto" }
 rand = "0.9.1"
 reqwest = { features = ["json"], version = "0.12.20" }
+rsa = { features = ["sha2"], version = "0.9.8" }
 scuffle-bootstrap = "0.1.5"
 scuffle-context = "0.1.5"
 scuffle-http = { features = ["tracing"], version = "0.3.2" }
@@ -40,6 +45,7 @@ thiserror = "2.0.12"
 tinc = { path = "../../crates/tinc" }
 tonic = "0.13.1"
 tonic-reflection = "0.13.1"
+tonic-types = "0.13.1"
 tower-http = { features = ["cors", "trace"], version = "0.6.6" }
 tracing = "0.1.41"
 tracing-subscriber = "0.3.19"

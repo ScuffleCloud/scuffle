@@ -9,6 +9,9 @@ authors = ["Scuffle <opensource@scuffle.cloud>"]
 readme = "README.md"
 publish = false
 
+[lints.rust]
+unexpected_cfgs = { level = "warn", check-cfg = ['cfg(coverage_nightly)'] }
+
 [dependencies]
 prost = "0.13.5"
 scuffle-workspace-hack.workspace = true

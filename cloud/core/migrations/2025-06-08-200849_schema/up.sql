@@ -69,15 +69,8 @@ ON DELETE CASCADE;
 
 CREATE INDEX ON "user_session_requests"("code");
 
--- https://www.iana.org/assignments/cose/cose.xhtml#algorithms
--- https://w3c.github.io/webauthn/#dom-publickeycredentialcreationoptions-pubkeycredparams
-CREATE TYPE "crypto_algorithm" AS ENUM (
-    'ED25519', -- -8 and -19
-    'ESP256', -- -7 and -9
-    'RS256', -- -257
-    'ESP384', -- -35 and -51
-    'ESP512' -- -36 and -52
-    -- ...
+CREATE TYPE "device_algorithm" AS ENUM (
+    'RSA_OAEP_SHA256' -- RSA with OAEP padding and SHA-256 hashing
 );
 
 -- A combination of device and user.
@@ -85,8 +78,8 @@ CREATE TYPE "crypto_algorithm" AS ENUM (
 CREATE TABLE "user_sessions" (
     "user_id" UUID NOT NULL,
     "device_fingerprint" BIT(256) NOT NULL UNIQUE,
-    "device_algorithm" CRYPTO_ALGORITHM NOT NULL,
-    "device_pk_data" BYTEA NOT NULL,
+    "device_algorithm" DEVICE_ALGORITHM NOT NULL,
+    "device_pk_data" BYTEA NOT NULL, -- PKCS#8 DER
     "last_used_at" TIMESTAMPTZ NOT NULL,
     "last_ip" INET NOT NULL,
     "token_id" UUID UNIQUE,
@@ -119,10 +112,21 @@ ON DELETE CASCADE;
 
 CREATE INDEX ON "mfa_totps"("user_id");
 
+-- https://www.iana.org/assignments/cose/cose.xhtml#algorithms
+-- https://w3c.github.io/webauthn/#dom-publickeycredentialcreationoptions-pubkeycredparams
+CREATE TYPE "webauthn_algorithm" AS ENUM (
+    'ED25519', -- -8 and -19
+    'ESP256', -- -7 and -9
+    'RS256', -- -257
+    'ESP384', -- -35 and -51
+    'ESP512' -- -36 and -52
+    -- ...
+);
+
 CREATE TABLE "mfa_webauthn_pks" (
     "id" UUID PRIMARY KEY,
     "user_id" UUID NOT NULL,
-    "algorithm" CRYPTO_ALGORITHM NOT NULL,
+    "algorithm" WEBAUTHN_ALGORITHM NOT NULL,
     "pk_id" BYTEA NOT NULL,
     "pk_data" BYTEA NOT NULL,
     "current_challenge" BYTEA,

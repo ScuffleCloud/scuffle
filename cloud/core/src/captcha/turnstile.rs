@@ -1,5 +1,7 @@
 use std::sync::Arc;
 
+use tonic_types::{ErrorDetails, StatusExt};
+
 use crate::CoreConfig;
 
 const TURNSTILE_VERIFY_URL: &str = "https://challenges.cloudflare.com/turnstile/v0/siteverify";
@@ -21,7 +23,7 @@ struct TurnstileSiteVerifyResponse {
 }
 
 #[derive(Debug, thiserror::Error)]
-pub enum TrunstileVerifyError {
+pub(crate) enum TrunstileVerifyError {
     #[error("request to verify server failed: {0}")]
     HttpRequest(#[from] reqwest::Error),
     #[error("turnstile error code: {0}")]
@@ -30,7 +32,7 @@ pub enum TrunstileVerifyError {
     MissingErrorCode,
 }
 
-pub async fn verify<G: CoreConfig>(global: &Arc<G>, token: &str) -> Result<(), TrunstileVerifyError> {
+pub(crate) async fn verify<G: CoreConfig>(global: &Arc<G>, token: &str) -> Result<(), TrunstileVerifyError> {
     let payload = TurnstileSiteVerifyPayload {
         secret: global.turnstile_secret_key().to_string(),
         response: token.to_string(),
@@ -56,12 +58,18 @@ pub async fn verify<G: CoreConfig>(global: &Arc<G>, token: &str) -> Result<(), T
     Ok(())
 }
 
-pub async fn verify_in_tonic<G: CoreConfig>(global: &Arc<G>, token: &str) -> Result<(), tonic::Status> {
+pub(crate) async fn verify_in_tonic<G: CoreConfig>(global: &Arc<G>, token: &str) -> Result<(), tonic::Status> {
     match verify(global, token).await {
         Ok(_) => Ok(()),
-        Err(TrunstileVerifyError::TurnstileError(e)) => Err(tonic::Status::unauthenticated(
+        Err(TrunstileVerifyError::TurnstileError(e)) => Err(tonic::Status::with_error_details(
+            tonic::Code::Unauthenticated,
             TrunstileVerifyError::TurnstileError(e).to_string(),
+            ErrorDetails::new(),
         )),
-        Err(e) => Err(tonic::Status::internal(e.to_string())),
+        Err(e) => Err(tonic::Status::with_error_details(
+            tonic::Code::Internal,
+            e.to_string(),
+            ErrorDetails::new(),
+        )),
     }
 }

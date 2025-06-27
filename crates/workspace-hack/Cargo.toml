@@ -27,7 +27,7 @@ clap_builder = { version = "4", default-features = false, features = ["color", "
 config = { version = "0.15", default-features = false, features = ["ini", "json", "json5", "ron", "toml", "yaml"] }
 crossbeam-utils = { version = "0.8" }
 crypto-common = { version = "0.1", default-features = false, features = ["std"] }
-digest = { version = "0.10", features = ["mac", "std"] }
+digest = { version = "0.10", features = ["mac", "oid", "std"] }
 either = { version = "1", features = ["use_std"] }
 fastrand = { version = "2" }
 form_urlencoded = { version = "1" }
@@ -38,6 +38,7 @@ futures-io = { version = "0.3" }
 futures-sink = { version = "0.3" }
 futures-task = { version = "0.3", default-features = false, features = ["std"] }
 futures-util = { version = "0.3", features = ["channel", "io", "sink"] }
+getrandom-6f8ce4dd05d13bba = { package = "getrandom", version = "0.2", default-features = false, features = ["std"] }
 hashbrown = { version = "0.15", default-features = false, features = ["default-hasher", "inline-more"] }
 hyper = { version = "1", features = ["client", "http1", "http2", "server"] }
 hyper-util = { version = "0.1", features = ["client-legacy", "server-auto", "service"] }
@@ -46,10 +47,11 @@ insta = { version = "1", features = ["filters", "json", "redactions"] }
 itertools-582f2526e08bb6a0 = { package = "itertools", version = "0.14" }
 itertools-594e8ee84c453af0 = { package = "itertools", version = "0.13" }
 lalrpop-util = { version = "0.22", features = ["lexer"] }
+lazy_static = { version = "1", default-features = false, features = ["spin_no_std"] }
 libc = { version = "0.2" }
 log = { version = "0.4", default-features = false, features = ["std"] }
 memchr = { version = "2" }
-num-traits = { version = "0.2" }
+num-traits = { version = "0.2", features = ["i128", "libm"] }
 once_cell = { version = "1" }
 opentelemetry = { version = "0.30", features = ["spec_unstable_logs_enabled"] }
 opentelemetry_sdk = { version = "0.30", features = ["experimental_metrics_custom_reader", "spec_unstable_logs_enabled"] }
@@ -69,6 +71,7 @@ rusty_ffmpeg = { version = "0.16", default-features = false, features = ["link_s
 semver = { version = "1", features = ["serde"] }
 serde = { version = "1", features = ["alloc", "derive"] }
 serde_json = { version = "1", features = ["raw_value", "unbounded_depth"] }
+sha2 = { version = "0.10", features = ["oid"] }
 smallvec = { version = "1", default-features = false, features = ["const_new"] }
 syn = { version = "2", features = ["extra-traits", "fold", "full", "visit", "visit-mut"] }
 sync_wrapper = { version = "1", default-features = false, features = ["futures"] }
@@ -98,7 +101,7 @@ clap_builder = { version = "4", default-features = false, features = ["color", "
 config = { version = "0.15", default-features = false, features = ["ini", "json", "json5", "ron", "toml", "yaml"] }
 crossbeam-utils = { version = "0.8" }
 crypto-common = { version = "0.1", default-features = false, features = ["std"] }
-digest = { version = "0.10", features = ["mac", "std"] }
+digest = { version = "0.10", features = ["mac", "oid", "std"] }
 either = { version = "1", features = ["use_std"] }
 fastrand = { version = "2" }
 form_urlencoded = { version = "1" }
@@ -109,6 +112,7 @@ futures-io = { version = "0.3" }
 futures-sink = { version = "0.3" }
 futures-task = { version = "0.3", default-features = false, features = ["std"] }
 futures-util = { version = "0.3", features = ["channel", "io", "sink"] }
+getrandom-6f8ce4dd05d13bba = { package = "getrandom", version = "0.2", default-features = false, features = ["std"] }
 hashbrown = { version = "0.15", default-features = false, features = ["default-hasher", "inline-more"] }
 hyper = { version = "1", features = ["client", "http1", "http2", "server"] }
 hyper-util = { version = "0.1", features = ["client-legacy", "server-auto", "service"] }
@@ -117,10 +121,11 @@ insta = { version = "1", features = ["filters", "json", "redactions"] }
 itertools-582f2526e08bb6a0 = { package = "itertools", version = "0.14" }
 itertools-594e8ee84c453af0 = { package = "itertools", version = "0.13" }
 lalrpop-util = { version = "0.22", features = ["lexer"] }
+lazy_static = { version = "1", default-features = false, features = ["spin_no_std"] }
 libc = { version = "0.2" }
 log = { version = "0.4", default-features = false, features = ["std"] }
 memchr = { version = "2" }
-num-traits = { version = "0.2" }
+num-traits = { version = "0.2", features = ["i128", "libm"] }
 once_cell = { version = "1" }
 opentelemetry = { version = "0.30", features = ["spec_unstable_logs_enabled"] }
 opentelemetry_sdk = { version = "0.30", features = ["experimental_metrics_custom_reader", "spec_unstable_logs_enabled"] }
@@ -140,6 +145,7 @@ rusty_ffmpeg = { version = "0.16", default-features = false, features = ["link_s
 semver = { version = "1", features = ["serde"] }
 serde = { version = "1", features = ["alloc", "derive"] }
 serde_json = { version = "1", features = ["raw_value", "unbounded_depth"] }
+sha2 = { version = "0.10", features = ["oid"] }
 smallvec = { version = "1", default-features = false, features = ["const_new"] }
 syn = { version = "2", features = ["extra-traits", "fold", "full", "visit", "visit-mut"] }
 sync_wrapper = { version = "1", default-features = false, features = ["futures"] }
@@ -159,7 +165,7 @@ unicode-xid = { version = "0.2" }
 
 [target.x86_64-unknown-linux-gnu.dependencies]
 bitflags = { version = "2", default-features = false, features = ["std"] }
-getrandom = { version = "0.3", default-features = false, features = ["std"] }
+getrandom-468e82937335b1c9 = { package = "getrandom", version = "0.3", default-features = false, features = ["std"] }
 h3 = { version = "0.0.8", default-features = false, features = ["tracing"] }
 h3-quinn = { version = "0.0.10", default-features = false, features = ["tracing"] }
 hyper-util = { version = "0.1", default-features = false, features = ["client-proxy", "client-proxy-system"] }
@@ -177,7 +183,7 @@ tower-http = { version = "0.6", features = ["cors", "follow-redirect", "trace"] 
 [target.x86_64-unknown-linux-gnu.build-dependencies]
 bitflags = { version = "2", default-features = false, features = ["std"] }
 cc = { version = "1", default-features = false, features = ["parallel"] }
-getrandom = { version = "0.3", default-features = false, features = ["std"] }
+getrandom-468e82937335b1c9 = { package = "getrandom", version = "0.3", default-features = false, features = ["std"] }
 h3 = { version = "0.0.8", default-features = false, features = ["tracing"] }
 h3-quinn = { version = "0.0.10", default-features = false, features = ["tracing"] }
 hyper-util = { version = "0.1", default-features = false, features = ["client-proxy", "client-proxy-system"] }
@@ -194,7 +200,7 @@ tower-http = { version = "0.6", features = ["cors", "follow-redirect", "trace"] 
 
 [target.aarch64-unknown-linux-gnu.dependencies]
 bitflags = { version = "2", default-features = false, features = ["std"] }
-getrandom = { version = "0.3", default-features = false, features = ["std"] }
+getrandom-468e82937335b1c9 = { package = "getrandom", version = "0.3", default-features = false, features = ["std"] }
 h3 = { version = "0.0.8", default-features = false, features = ["tracing"] }
 h3-quinn = { version = "0.0.10", default-features = false, features = ["tracing"] }
 hyper-util = { version = "0.1", default-features = false, features = ["client-proxy", "client-proxy-system"] }
@@ -212,7 +218,7 @@ tower-http = { version = "0.6", features = ["cors", "follow-redirect", "trace"] 
 [target.aarch64-unknown-linux-gnu.build-dependencies]
 bitflags = { version = "2", default-features = false, features = ["std"] }
 cc = { version = "1", default-features = false, features = ["parallel"] }
-getrandom = { version = "0.3", default-features = false, features = ["std"] }
+getrandom-468e82937335b1c9 = { package = "getrandom", version = "0.3", default-features = false, features = ["std"] }
 h3 = { version = "0.0.8", default-features = false, features = ["tracing"] }
 h3-quinn = { version = "0.0.10", default-features = false, features = ["tracing"] }
 hyper-util = { version = "0.1", default-features = false, features = ["client-proxy", "client-proxy-system"] }
@@ -229,7 +235,7 @@ tower-http = { version = "0.6", features = ["cors", "follow-redirect", "trace"] 
 
 [target.x86_64-apple-darwin.dependencies]
 bitflags = { version = "2", default-features = false, features = ["std"] }
-getrandom = { version = "0.3", default-features = false, features = ["std"] }
+getrandom-468e82937335b1c9 = { package = "getrandom", version = "0.3", default-features = false, features = ["std"] }
 h3 = { version = "0.0.8", default-features = false, features = ["tracing"] }
 h3-quinn = { version = "0.0.10", default-features = false, features = ["tracing"] }
 hyper-util = { version = "0.1", default-features = false, features = ["client-proxy", "client-proxy-system"] }
@@ -248,7 +254,7 @@ tower-http = { version = "0.6", features = ["cors", "follow-redirect", "trace"] 
 [target.x86_64-apple-darwin.build-dependencies]
 bitflags = { version = "2", default-features = false, features = ["std"] }
 cc = { version = "1", default-features = false, features = ["parallel"] }
-getrandom = { version = "0.3", default-features = false, features = ["std"] }
+getrandom-468e82937335b1c9 = { package = "getrandom", version = "0.3", default-features = false, features = ["std"] }
 h3 = { version = "0.0.8", default-features = false, features = ["tracing"] }
 h3-quinn = { version = "0.0.10", default-features = false, features = ["tracing"] }
 hyper-util = { version = "0.1", default-features = false, features = ["client-proxy", "client-proxy-system"] }
@@ -266,7 +272,7 @@ tower-http = { version = "0.6", features = ["cors", "follow-redirect", "trace"] 
 
 [target.aarch64-apple-darwin.dependencies]
 bitflags = { version = "2", default-features = false, features = ["std"] }
-getrandom = { version = "0.3", default-features = false, features = ["std"] }
+getrandom-468e82937335b1c9 = { package = "getrandom", version = "0.3", default-features = false, features = ["std"] }
 h3 = { version = "0.0.8", default-features = false, features = ["tracing"] }
 h3-quinn = { version = "0.0.10", default-features = false, features = ["tracing"] }
 hyper-util = { version = "0.1", default-features = false, features = ["client-proxy", "client-proxy-system"] }
@@ -285,7 +291,7 @@ tower-http = { version = "0.6", features = ["cors", "follow-redirect", "trace"] 
 [target.aarch64-apple-darwin.build-dependencies]
 bitflags = { version = "2", default-features = false, features = ["std"] }
 cc = { version = "1", default-features = false, features = ["parallel"] }
-getrandom = { version = "0.3", default-features = false, features = ["std"] }
+getrandom-468e82937335b1c9 = { package = "getrandom", version = "0.3", default-features = false, features = ["std"] }
 h3 = { version = "0.0.8", default-features = false, features = ["tracing"] }
 h3-quinn = { version = "0.0.10", default-features = false, features = ["tracing"] }
 hyper-util = { version = "0.1", default-features = false, features = ["client-proxy", "client-proxy-system"] }
@@ -302,7 +308,7 @@ tower = { version = "0.5", default-features = false, features = ["timeout"] }
 tower-http = { version = "0.6", features = ["cors", "follow-redirect", "trace"] }
 
 [target.x86_64-pc-windows-msvc.dependencies]
-getrandom = { version = "0.3", default-features = false, features = ["std"] }
+getrandom-468e82937335b1c9 = { package = "getrandom", version = "0.3", default-features = false, features = ["std"] }
 h3 = { version = "0.0.8", default-features = false, features = ["tracing"] }
 h3-quinn = { version = "0.0.10", default-features = false, features = ["tracing"] }
 hyper-util = { version = "0.1", default-features = false, features = ["client-proxy", "client-proxy-system"] }
@@ -320,7 +326,7 @@ windows-sys-b21d60becc0929df = { package = "windows-sys", version = "0.52", feat
 
 [target.x86_64-pc-windows-msvc.build-dependencies]
 cc = { version = "1", default-features = false, features = ["parallel"] }
-getrandom = { version = "0.3", default-features = false, features = ["std"] }
+getrandom-468e82937335b1c9 = { package = "getrandom", version = "0.3", default-features = false, features = ["std"] }
 h3 = { version = "0.0.8", default-features = false, features = ["tracing"] }
 h3-quinn = { version = "0.0.10", default-features = false, features = ["tracing"] }
 hyper-util = { version = "0.1", default-features = false, features = ["client-proxy", "client-proxy-system"] }
@@ -337,7 +343,7 @@ windows-sys-73dcd821b1037cfd = { package = "windows-sys", version = "0.59", feat
 windows-sys-b21d60becc0929df = { package = "windows-sys", version = "0.52", features = ["Win32_Foundation", "Win32_Networking_WinSock", "Win32_Security", "Win32_Storage_FileSystem", "Win32_System_Console", "Win32_System_IO", "Win32_System_Pipes", "Win32_System_SystemServices", "Win32_System_Threading", "Win32_System_WindowsProgramming"] }
 
 [target.x86_64-pc-windows-gnu.dependencies]
-getrandom = { version = "0.3", default-features = false, features = ["std"] }
+getrandom-468e82937335b1c9 = { package = "getrandom", version = "0.3", default-features = false, features = ["std"] }
 h3 = { version = "0.0.8", default-features = false, features = ["tracing"] }
 h3-quinn = { version = "0.0.10", default-features = false, features = ["tracing"] }
 hyper-util = { version = "0.1", default-features = false, features = ["client-proxy", "client-proxy-system"] }
@@ -355,7 +361,7 @@ windows-sys-b21d60becc0929df = { package = "windows-sys", version = "0.52", feat
 
 [target.x86_64-pc-windows-gnu.build-dependencies]
 cc = { version = "1", default-features = false, features = ["parallel"] }
-getrandom = { version = "0.3", default-features = false, features = ["std"] }
+getrandom-468e82937335b1c9 = { package = "getrandom", version = "0.3", default-features = false, features = ["std"] }
 h3 = { version = "0.0.8", default-features = false, features = ["tracing"] }
 h3-quinn = { version = "0.0.10", default-features = false, features = ["tracing"] }
 hyper-util = { version = "0.1", default-features = false, features = ["client-proxy", "client-proxy-system"] }

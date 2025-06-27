@@ -95,10 +95,15 @@ service SessionsService {
     }
 }
 
+enum DeviceAlgorithm {
+    // RSA with OAEP padding and SHA-256 hashing.
+    RSA_OAEP_SHA256 = 0;
+}
+
 message Device {
     // The crypto algorithm (e.g. RSA) used for the public key.
-    CryptoAlgorithm algorithm = 1;
-    // Raw public key data.
+    DeviceAlgorithm algorithm = 1;
+    // Public key data in PKCS#8 DER format.
     bytes public_key_data = 2;
 }
 

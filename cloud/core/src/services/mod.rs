@@ -1,3 +1,4 @@
+use std::net::SocketAddr;
 use std::sync::Arc;
 
 use axum::{Extension, Json};
@@ -80,11 +81,12 @@ impl<G: CoreConfig> scuffle_bootstrap::Service<G> for CoreSvc<G> {
             .nest("/v1", v1_rest_router)
             .merge(grpc_router)
             .route_layer(axum::middleware::from_fn(crate::middleware::auth::<G>))
+            .layer(axum::middleware::from_fn(crate::middleware::ip_address::<G>))
             .layer(TraceLayer::new_for_http())
             .layer(Extension(Arc::clone(&global)));
 
         scuffle_http::HttpServer::builder()
-            .tower_make_service_factory(router.into_make_service())
+            .tower_make_service_with_addr(router.into_make_service_with_connect_info::<SocketAddr>())
             .bind(global.bind())
             .ctx(ctx)
             .build()

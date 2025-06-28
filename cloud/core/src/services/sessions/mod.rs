@@ -1,23 +1,21 @@
-use argon2::password_hash::SaltString;
-use argon2::{Argon2, PasswordHasher};
-use diesel::{ExpressionMethods, OptionalExtension, QueryDsl, SelectableHelper};
+use base64::Engine;
+use diesel::{ExpressionMethods, JoinOnDsl, OptionalExtension, QueryDsl, SelectableHelper};
 use diesel_async::scoped_futures::ScopedFutureExt;
 use diesel_async::{AsyncConnection, RunQueryDsl};
 use rand::TryRngCore;
-use sha2::Digest;
 use tonic::Code;
 use tonic_types::{ErrorDetails, StatusExt};
 
-use crate::chrono_datetime_ext::ChronoDateTimeExt;
-use crate::id::Id;
-use crate::models::{EmailRegistrationRequest, EmailRegistrationRequestId, User, UserEmail, UserSession};
+use crate::models::{EmailRegistrationRequest, EmailRegistrationRequestId, User, UserEmail};
 use crate::request_ext::RequestExt;
 use crate::result_ext::ResultExt;
-use crate::schema::{email_registration_requests, user_emails, user_sessions, users};
+use crate::schema::{email_registration_requests, user_emails, users};
 use crate::services::CoreSvc;
-use crate::session_crypto::{encrypt_token, generate_token};
 use crate::utils::TxError;
 use crate::{CoreConfig, captcha};
+
+mod crypto;
+mod registration;
 
 #[async_trait::async_trait]
 impl<G: CoreConfig> pb::scufflecloud::core::v1::sessions_service_server::SessionsService for CoreSvc<G> {
@@ -79,6 +77,9 @@ impl<G: CoreConfig> pb::scufflecloud::core::v1::sessions_service_server::Session
             expires_at: chrono::Utc::now() + chrono::Duration::hours(1),
         };
 
+        let code_base64 = base64::prelude::BASE64_STANDARD.encode(code);
+        tracing::info!(reg_req = ?registration_request, code = %code_base64, "inserting registration request");
+
         diesel::insert_into(email_registration_requests::dsl::email_registration_requests)
             .values(registration_request)
             .execute(&mut *db)
@@ -123,74 +124,15 @@ impl<G: CoreConfig> pb::scufflecloud::core::v1::sessions_service_server::Session
                         tonic::Status::with_error_details(Code::NotFound, "unknown code", ErrorDetails::new())
                     })?;
 
-                    // Create user with given password
-                    let salt = SaltString::generate(&mut argon2::password_hash::rand_core::OsRng);
-                    let argon2 = Argon2::default();
-                    let password_hash = argon2
-                        .hash_password(payload.password.as_bytes(), &salt)
-                        .into_tonic_internal("failed to hash password")?
-                        .to_string();
-
-                    let user = User {
-                        id: Id::new(),
-                        preferred_name: None,
-                        first_name: None,
-                        last_name: None,
-                        password_hash: Some(password_hash),
-                        primary_email: registration_request.email.clone(),
-                    };
-                    diesel::insert_into(users::dsl::users)
-                        .values(&user)
-                        .execute(conn)
-                        .await
-                        .into_tonic_internal("failed to insert user")?;
-
-                    let user_email = UserEmail {
-                        email: registration_request.email.clone(),
-                        user_id: user.id,
-                        created_at: chrono::Utc::now(),
-                    };
-                    diesel::insert_into(user_emails::dsl::user_emails)
-                        .values(&user_email)
-                        .execute(conn)
-                        .await
-                        .into_tonic_internal("failed to insert user email")?;
-
-                    // Create user session, device and token
-                    let device_fingerprint = sha2::Sha256::digest(&device.public_key_data).to_vec();
-
-                    let token_id = Id::new();
-                    let token_expires_at = chrono::Utc::now() + chrono::Duration::hours(1);
-                    let session_expires_at = chrono::Utc::now() + chrono::Duration::days(30);
-
-                    let token = generate_token().into_tonic_internal("failed to generate token")?;
-
-                    let encrypted_token = encrypt_token(device.algorithm(), &token, &device.public_key_data)?;
-
-                    let user_session = UserSession {
-                        user_id: user.id,
-                        device_fingerprint,
-                        device_algorithm: device.algorithm().into(),
-                        device_pk_data: device.public_key_data,
-                        last_used_at: chrono::Utc::now(),
-                        last_ip: ip_info.to_network(),
-                        token_id: Some(token_id),
-                        token: Some(token.to_vec()),
-                        token_expires_at: Some(token_expires_at),
-                        expires_at: session_expires_at,
-                    };
-                    diesel::insert_into(user_sessions::dsl::user_sessions)
-                        .values(&user_session)
-                        .execute(conn)
-                        .await
-                        .into_tonic_internal("failed to insert user session")?;
-
-                    Ok(pb::scufflecloud::core::v1::NewUserSessionToken {
-                        id: token_id.to_string(),
-                        encrypted_token,
-                        expires_at_utc: Some(token_expires_at.to_prost_timestamp_utc()),
-                        session_expires_at_utc: Some(session_expires_at.to_prost_timestamp_utc()),
-                    })
+                    let (_, new_token) = registration::create_new_user_and_session(
+                        conn,
+                        registration_request.email,
+                        Some(&payload.password),
+                        device,
+                        ip_info,
+                    )
+                    .await?;
+                    Ok(new_token)
                 }
                 .scope_boxed()
             })
@@ -199,20 +141,60 @@ impl<G: CoreConfig> pb::scufflecloud::core::v1::sessions_service_server::Session
         Ok(tonic::Response::new(new_token))
     }
 
-    async fn login_with_email(
+    async fn login_with_email_options(
         &self,
-        _req: tonic::Request<pb::scufflecloud::core::v1::LoginWithEmailRequest>,
-    ) -> Result<tonic::Response<pb::scufflecloud::core::v1::LoginWithEmailResponse>, tonic::Status> {
-        Err(tonic::Status::with_error_details(
-            tonic::Code::Unimplemented,
-            "this endpoint is not implemented",
-            ErrorDetails::new(),
+        req: tonic::Request<pb::scufflecloud::core::v1::LoginWithEmailOptionsRequest>,
+    ) -> Result<tonic::Response<pb::scufflecloud::core::v1::LoginWithEmailOptionsResponse>, tonic::Status> {
+        let (_, extensions, payload) = req.into_parts();
+        let global = extensions.global::<G>()?;
+
+        let mut db = global.db().await.into_tonic_internal("failed to connect to database")?;
+
+        // Check captcha
+        let Some(captcha) = payload.captcha else {
+            return Err(tonic::Status::with_error_details(
+                Code::InvalidArgument,
+                "missing captcha",
+                ErrorDetails::with_bad_request_violation("captcha", "not set"),
+            ));
+        };
+
+        match captcha.provider() {
+            pb::scufflecloud::core::v1::CaptchaProvider::Turnstile => {
+                captcha::turnstile::verify_in_tonic(global, &captcha.token).await?;
+            }
+        }
+
+        let Some((user, _)) = users::dsl::users
+            .inner_join(user_emails::dsl::user_emails.on(users::dsl::primary_email.eq(user_emails::dsl::email)))
+            .filter(user_emails::dsl::email.eq(&payload.email))
+            .select((User::as_select(), user_emails::dsl::email))
+            .first::<(User, String)>(&mut *db)
+            .await
+            .optional()
+            .into_tonic_internal("failed to query user by email")?
+        else {
+            return Err(tonic::Status::with_error_details(
+                tonic::Code::NotFound,
+                "user not found",
+                ErrorDetails::new(),
+            ));
+        };
+
+        let mut options = vec![pb::scufflecloud::core::v1::LoginWithEmailOptions::MagicLink as i32];
+
+        if user.password_hash.is_some() {
+            options.push(pb::scufflecloud::core::v1::LoginWithEmailOptions::Password as i32);
+        }
+
+        Ok(tonic::Response::new(
+            pb::scufflecloud::core::v1::LoginWithEmailOptionsResponse { options },
         ))
     }
 
-    async fn complete_login_with_email(
+    async fn login_with_email(
         &self,
-        _req: tonic::Request<pb::scufflecloud::core::v1::CompleteLoginWithEmailRequest>,
+        _req: tonic::Request<pb::scufflecloud::core::v1::LoginWithEmailRequest>,
     ) -> Result<tonic::Response<pb::scufflecloud::core::v1::NewUserSessionToken>, tonic::Status> {
         Err(tonic::Status::with_error_details(
             tonic::Code::Unimplemented,

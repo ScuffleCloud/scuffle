@@ -50,7 +50,7 @@ message OrganizationInvitation {
     string organization_id = 3 [(string_constraint).id = true];
     string email = 4 [(tinc.field).constraint.string.email = true];
     string invited_by_id = 5 [(string_constraint).id = true];
-    optional google.protobuf.Timestamp expires_at_utc = 6;
+    optional google.protobuf.Timestamp expires_at = 6;
 }
 
 message CreateOrganizationInvitationRequest {

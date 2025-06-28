@@ -21,14 +21,14 @@ service SessionsService {
         };
     }
 
-    rpc LoginWithEmail(LoginWithEmailRequest) returns (LoginWithEmailResponse) {
+    rpc LoginWithEmailOptions(LoginWithEmailOptionsRequest) returns (LoginWithEmailOptionsResponse) {
         option (tinc.method).endpoint = {
-            post: "/sessions/email"
+            post: "/sessions/email/options"
         };
     }
-    rpc CompleteLoginWithEmail(CompleteLoginWithEmailRequest) returns (NewUserSessionToken) {
+    rpc LoginWithEmail(LoginWithEmailRequest) returns (NewUserSessionToken) {
         option (tinc.method).endpoint = {
-            post: "/sessions/email/complete"
+            post: "/sessions/email"
         };
     }
 
@@ -110,8 +110,8 @@ message Device {
 message NewUserSessionToken {
     string id = 1 [(string_constraint).id = true];
     bytes encrypted_token = 2;
-    google.protobuf.Timestamp expires_at_utc = 3;
-    google.protobuf.Timestamp session_expires_at_utc = 4;
+    google.protobuf.Timestamp expires_at = 3;
+    google.protobuf.Timestamp session_expires_at = 4;
 }
 
 message RegisterWithEmailRequest {
@@ -128,7 +128,7 @@ message CompleteRegisterWithEmailRequest {
     Device device = 3;
 }
 
-message LoginWithEmailRequest {
+message LoginWithEmailOptionsRequest {
     CaptchaChallengeResponse captcha = 1;
     string email = 2 [(tinc.field).constraint.string.email = true];
 }
@@ -138,15 +138,16 @@ enum LoginWithEmailOptions {
     MAGIC_LINK = 1;
 }
 
-message LoginWithEmailResponse {
+message LoginWithEmailOptionsResponse {
     repeated LoginWithEmailOptions options = 1;
 }
 
-message CompleteLoginWithEmailRequest {
-    LoginWithEmailOptions option = 1;
+message LoginWithEmailRequest {
+    CaptchaChallengeResponse captcha = 1;
+    LoginWithEmailOptions option = 2;
     // Based on the option, this is either the password or the magic link token.
-    string secret = 2;
-    Device device = 3;
+    string secret = 3;
+    Device device = 4;
 }
 
 enum ExternalProvider {
@@ -194,7 +195,7 @@ message UserSessionRequest {
     string name = 2;
     string ip = 3;
     string approved_by = 4 [(string_constraint).id = true];
-    google.protobuf.Timestamp expires_at_utc = 5;
+    google.protobuf.Timestamp expires_at = 5;
 }
 
 message GetUserSessionRequestRequest {

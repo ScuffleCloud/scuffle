@@ -30,7 +30,6 @@ mod request_ext;
 mod result_ext;
 mod schema;
 pub mod services;
-mod session_crypto;
 mod utils;
 
 pub trait CoreConfig: scuffle_bootstrap::Global + scuffle_signal::SignalConfig + Sync + Send + 'static {

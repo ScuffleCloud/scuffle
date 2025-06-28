@@ -77,7 +77,7 @@ CREATE TYPE "device_algorithm" AS ENUM (
 -- "last_used_at" and "last_ip" is updated every time this session is reactivated.
 CREATE TABLE "user_sessions" (
     "user_id" UUID NOT NULL,
-    "device_fingerprint" BIT(256) NOT NULL UNIQUE,
+    "device_fingerprint" BYTEA NOT NULL UNIQUE,
     "device_algorithm" DEVICE_ALGORITHM NOT NULL,
     "device_pk_data" BYTEA NOT NULL, -- PKCS#8 DER
     "last_used_at" TIMESTAMPTZ NOT NULL,
@@ -299,6 +299,8 @@ CREATE TABLE "email_registration_requests" (
     "code" BYTEA NOT NULL,
     "expires_at" TIMESTAMPTZ NOT NULL
 );
+
+CREATE INDEX ON "email_registration_requests"("code");
 
 ALTER TABLE "email_registration_requests"
 ADD FOREIGN KEY("user_id") REFERENCES "users"("id");

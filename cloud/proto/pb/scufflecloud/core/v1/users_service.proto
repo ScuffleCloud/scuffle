@@ -130,7 +130,7 @@ message GetUserEmailsResponse {
 
 message UserEmail {
     string email = 1 [(tinc.field).constraint.string.email = true];
-    google.protobuf.Timestamp created_at_utc = 2;
+    google.protobuf.Timestamp created_at = 2;
 }
 
 message CreateUserEmailRequest {

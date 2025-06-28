@@ -192,8 +192,7 @@ diesel::table! {
 
     user_sessions (user_id, device_fingerprint) {
         user_id -> Uuid,
-        #[max_length = 256]
-        device_fingerprint -> Bit,
+        device_fingerprint -> Bytea,
         device_algorithm -> DeviceAlgorithm,
         device_pk_data -> Bytea,
         last_used_at -> Timestamptz,

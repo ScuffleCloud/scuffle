@@ -83,9 +83,9 @@ rust_library(
         "@crates_vendor__guppy-0.17.19//:guppy",
         "@crates_vendor__home-0.5.11//:home",
         "@crates_vendor__humantime-serde-1.1.1//:humantime_serde",
-        "@crates_vendor__iddqd-0.3.7//:iddqd",
+        "@crates_vendor__iddqd-0.3.8//:iddqd",
         "@crates_vendor__indent_write-2.2.0//:indent_write",
-        "@crates_vendor__indexmap-2.9.0//:indexmap",
+        "@crates_vendor__indexmap-2.10.0//:indexmap",
         "@crates_vendor__indicatif-0.17.11//:indicatif",
         "@crates_vendor__is_ci-1.2.0//:is_ci",
         "@crates_vendor__itertools-0.14.0//:itertools",
@@ -94,7 +94,7 @@ rust_library(
         "@crates_vendor__nextest-filtering-0.16.0//:nextest_filtering",
         "@crates_vendor__nextest-metadata-0.12.2//:nextest_metadata",
         "@crates_vendor__nextest-workspace-hack-0.1.0//:nextest_workspace_hack",
-        "@crates_vendor__owo-colors-4.2.1//:owo_colors",
+        "@crates_vendor__owo-colors-4.2.2//:owo_colors",
         "@crates_vendor__pin-project-lite-0.2.16//:pin_project_lite",
         "@crates_vendor__quick-junit-0.5.1//:quick_junit",
         "@crates_vendor__rand-0.9.1//:rand",
@@ -125,7 +125,7 @@ rust_library(
         "@crates_vendor__zstd-0.13.3//:zstd",
     ] + select({
         "@rules_rust//rust/platform:aarch64-apple-darwin": [
-            "@crates_vendor__libc-0.2.173//:libc",  # cfg(unix)
+            "@crates_vendor__libc-0.2.174//:libc",  # cfg(unix)
             "@crates_vendor__nix-0.30.1//:nix",  # cfg(unix)
         ],
         "@rules_rust//rust/platform:aarch64-pc-windows-msvc": [
@@ -134,11 +134,11 @@ rust_library(
             "@crates_vendor__windows-sys-0.60.2//:windows_sys",  # cfg(windows)
         ],
         "@rules_rust//rust/platform:aarch64-unknown-linux-gnu": [
-            "@crates_vendor__libc-0.2.173//:libc",  # cfg(unix)
+            "@crates_vendor__libc-0.2.174//:libc",  # cfg(unix)
             "@crates_vendor__nix-0.30.1//:nix",  # cfg(unix)
         ],
         "@rules_rust//rust/platform:x86_64-apple-darwin": [
-            "@crates_vendor__libc-0.2.173//:libc",  # cfg(unix)
+            "@crates_vendor__libc-0.2.174//:libc",  # cfg(unix)
             "@crates_vendor__nix-0.30.1//:nix",  # cfg(unix)
         ],
         "@rules_rust//rust/platform:x86_64-pc-windows-msvc": [
@@ -147,7 +147,7 @@ rust_library(
             "@crates_vendor__windows-sys-0.60.2//:windows_sys",  # cfg(windows)
         ],
         "@rules_rust//rust/platform:x86_64-unknown-linux-gnu": [
-            "@crates_vendor__libc-0.2.173//:libc",  # cfg(unix)
+            "@crates_vendor__libc-0.2.174//:libc",  # cfg(unix)
             "@crates_vendor__nix-0.30.1//:nix",  # cfg(unix)
         ],
         "//conditions:default": [],

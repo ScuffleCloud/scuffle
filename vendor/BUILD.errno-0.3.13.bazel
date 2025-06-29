@@ -7,7 +7,7 @@
 ###############################################################################
 
 load("@rules_rust//cargo:defs.bzl", "cargo_toml_env_vars")
-load("@rules_rust//rust:defs.bzl", "rust_proc_macro")
+load("@rules_rust//rust:defs.bzl", "rust_library")
 
 package(default_visibility = ["//visibility:public"])
 
@@ -16,8 +16,8 @@ cargo_toml_env_vars(
     src = "Cargo.toml",
 )
 
-rust_proc_macro(
-    name = "tracing_attributes",
+rust_library(
+    name = "errno",
     srcs = glob(
         include = ["**/*.rs"],
         allow_empty = True,
@@ -34,6 +34,9 @@ rust_proc_macro(
             "WORKSPACE.bazel",
         ],
     ),
+    crate_features = [
+        "std",
+    ],
     crate_root = "src/lib.rs",
     edition = "2018",
     rustc_env_files = [
@@ -44,24 +47,18 @@ rust_proc_macro(
     ],
     tags = [
         "cargo-bazel",
-        "crate-name=tracing-attributes",
+        "crate-name=errno",
         "manual",
         "noclippy",
         "norustfmt",
     ],
     target_compatible_with = select({
         "@rules_rust//rust/platform:aarch64-apple-darwin": [],
-        "@rules_rust//rust/platform:aarch64-pc-windows-msvc": [],
-        "@rules_rust//rust/platform:aarch64-unknown-linux-gnu": [],
         "@rules_rust//rust/platform:x86_64-apple-darwin": [],
-        "@rules_rust//rust/platform:x86_64-pc-windows-msvc": [],
-        "@rules_rust//rust/platform:x86_64-unknown-linux-gnu": [],
         "//conditions:default": ["@platforms//:incompatible"],
     }),
-    version = "0.1.29",
+    version = "0.3.13",
     deps = [
-        "@crates_vendor__proc-macro2-1.0.95//:proc_macro2",
-        "@crates_vendor__quote-1.0.40//:quote",
-        "@crates_vendor__syn-2.0.103//:syn",
+        "@crates_vendor__libc-0.2.174//:libc",  # cfg(unix)
     ],
 )

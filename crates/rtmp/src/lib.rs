@@ -95,11 +95,11 @@ mod tests {
     use crate::session::server::{ServerSession, ServerSessionError, SessionData, SessionHandler};
 
     fn file_path(item: &str) -> PathBuf {
-        #[cfg(not(bazel_test))]
+        #[cfg(not(bazel_runfiles))]
         {
             PathBuf::from(env!("CARGO_MANIFEST_DIR")).join(format!("../../{item}"))
         }
-        #[cfg(bazel_test)]
+        #[cfg(bazel_runfiles)]
         {
             extern crate runfiles;
 
@@ -176,7 +176,7 @@ mod tests {
         let listener = tokio::net::TcpListener::bind("127.0.0.1:0").await.expect("failed to bind");
         let addr = listener.local_addr().unwrap();
 
-        let _ffmpeg = Command::new("ffmpeg")
+        let _ffmpeg = Command::new(std::env::var_os("FFMPEG").unwrap_or("ffmpeg".into()))
             .args([
                 "-loglevel",
                 "debug",
@@ -308,7 +308,9 @@ mod tests {
         let listener = tokio::net::TcpListener::bind("127.0.0.1:0").await.expect("failed to bind");
         let addr = listener.local_addr().unwrap();
 
-        let mut ffmpeg = Command::new("ffmpeg")
+        println!("ffmpeg from {}", std::env::var("FFMPEG").unwrap_or("ffmpeg".into()));
+
+        let mut ffmpeg = Command::new(std::env::var_os("FFMPEG").unwrap_or("ffmpeg".into()))
             .args([
                 "-loglevel",
                 "debug",

@@ -7,9 +7,3 @@ scuffle_package(
     crate_type = "bin",
     tags = ["manual"],
 )
-
-filegroup(
-    name = "script",
-    srcs = [":script.sh"],
-    visibility = ["//visibility:public"],
-)

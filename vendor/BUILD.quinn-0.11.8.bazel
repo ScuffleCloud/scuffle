@@ -28,7 +28,7 @@ rust_library(
     ),
     aliases = {
         "@crates_vendor__quinn-proto-0.11.12//:quinn_proto": "proto",
-        "@crates_vendor__quinn-udp-0.5.12//:quinn_udp": "udp",
+        "@crates_vendor__quinn-udp-0.5.13//:quinn_udp": "udp",
     },
     compile_data = glob(
         include = ["**"],
@@ -43,42 +43,30 @@ rust_library(
         ],
     ),
     crate_features = [
-        "aws-lc-rs",
         "futures-io",
         "log",
         "platform-verifier",
+        "ring",
         "runtime-tokio",
-        "rustls-aws-lc-rs",
+        "rustls-ring",
     ] + select({
         "@rules_rust//rust/platform:aarch64-apple-darwin": [
-            "ring",
             "rustls",
-            "rustls-ring",
         ],
         "@rules_rust//rust/platform:aarch64-pc-windows-msvc": [
-            "ring",
             "rustls",
-            "rustls-ring",
         ],
         "@rules_rust//rust/platform:aarch64-unknown-linux-gnu": [
-            "ring",
             "rustls",
-            "rustls-ring",
         ],
         "@rules_rust//rust/platform:x86_64-apple-darwin": [
-            "ring",
             "rustls",
-            "rustls-ring",
         ],
         "@rules_rust//rust/platform:x86_64-pc-windows-msvc": [
-            "ring",
             "rustls",
-            "rustls-ring",
         ],
         "@rules_rust//rust/platform:x86_64-unknown-linux-gnu": [
-            "ring",
             "rustls",
-            "rustls-ring",
         ],
         "//conditions:default": [],
     }),
@@ -114,7 +102,7 @@ rust_library(
         "@crates_vendor__pin-project-lite-0.2.16//:pin_project_lite",
         "@crates_vendor__quinn-0.11.8//:build_script_build",
         "@crates_vendor__quinn-proto-0.11.12//:quinn_proto",
-        "@crates_vendor__quinn-udp-0.5.12//:quinn_udp",
+        "@crates_vendor__quinn-udp-0.5.13//:quinn_udp",
         "@crates_vendor__rustc-hash-2.1.1//:rustc_hash",
         "@crates_vendor__rustls-0.23.28//:rustls",
         "@crates_vendor__thiserror-2.0.12//:thiserror",
@@ -166,42 +154,30 @@ cargo_build_script(
         ],
     ),
     crate_features = [
-        "aws-lc-rs",
         "futures-io",
         "log",
         "platform-verifier",
+        "ring",
         "runtime-tokio",
-        "rustls-aws-lc-rs",
+        "rustls-ring",
     ] + select({
         "@rules_rust//rust/platform:aarch64-apple-darwin": [
-            "ring",
             "rustls",
-            "rustls-ring",
         ],
         "@rules_rust//rust/platform:aarch64-pc-windows-msvc": [
-            "ring",
             "rustls",
-            "rustls-ring",
         ],
         "@rules_rust//rust/platform:aarch64-unknown-linux-gnu": [
-            "ring",
             "rustls",
-            "rustls-ring",
         ],
         "@rules_rust//rust/platform:x86_64-apple-darwin": [
-            "ring",
             "rustls",
-            "rustls-ring",
         ],
         "@rules_rust//rust/platform:x86_64-pc-windows-msvc": [
-            "ring",
             "rustls",
-            "rustls-ring",
         ],
         "@rules_rust//rust/platform:x86_64-unknown-linux-gnu": [
-            "ring",
             "rustls",
-            "rustls-ring",
         ],
         "//conditions:default": [],
     }),

@@ -17,7 +17,7 @@ cargo_toml_env_vars(
 )
 
 rust_library(
-    name = "errno",
+    name = "indexmap",
     srcs = glob(
         include = ["**/*.rs"],
         allow_empty = True,
@@ -35,10 +35,12 @@ rust_library(
         ],
     ),
     crate_features = [
+        "default",
+        "serde",
         "std",
     ],
     crate_root = "src/lib.rs",
-    edition = "2018",
+    edition = "2021",
     rustc_env_files = [
         ":cargo_toml_env_vars",
     ],
@@ -47,18 +49,25 @@ rust_library(
     ],
     tags = [
         "cargo-bazel",
-        "crate-name=errno",
+        "crate-name=indexmap",
         "manual",
         "noclippy",
         "norustfmt",
     ],
     target_compatible_with = select({
         "@rules_rust//rust/platform:aarch64-apple-darwin": [],
+        "@rules_rust//rust/platform:aarch64-pc-windows-msvc": [],
+        "@rules_rust//rust/platform:aarch64-unknown-linux-gnu": [],
+        "@rules_rust//rust/platform:wasm32-unknown-unknown": [],
         "@rules_rust//rust/platform:x86_64-apple-darwin": [],
+        "@rules_rust//rust/platform:x86_64-pc-windows-msvc": [],
+        "@rules_rust//rust/platform:x86_64-unknown-linux-gnu": [],
         "//conditions:default": ["@platforms//:incompatible"],
     }),
-    version = "0.3.12",
+    version = "2.10.0",
     deps = [
-        "@crates_vendor__libc-0.2.173//:libc",  # cfg(unix)
+        "@crates_vendor__equivalent-1.0.2//:equivalent",
+        "@crates_vendor__hashbrown-0.15.4//:hashbrown",
+        "@crates_vendor__serde-1.0.219//:serde",
     ],
 )

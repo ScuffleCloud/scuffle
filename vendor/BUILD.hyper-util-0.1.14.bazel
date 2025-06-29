@@ -99,7 +99,7 @@ rust_library(
         "@crates_vendor__http-1.3.1//:http",
         "@crates_vendor__http-body-1.0.1//:http_body",
         "@crates_vendor__hyper-1.6.0//:hyper",
-        "@crates_vendor__libc-0.2.173//:libc",
+        "@crates_vendor__libc-0.2.174//:libc",
         "@crates_vendor__pin-project-lite-0.2.16//:pin_project_lite",
         "@crates_vendor__socket2-0.5.10//:socket2",
         "@crates_vendor__tokio-1.45.1//:tokio",

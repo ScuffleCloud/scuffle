@@ -1,14 +1,26 @@
-load("//bazel/tools:package.bzl", "scuffle_package")
+load("//bazel/tools:package.bzl", "scuffle_package", "scuffle_test")
 
 exports_files(["Cargo.toml"])
 
 scuffle_package(
     crate_name = "scuffle-mp4",
-    data = [
+    compile_data = [
         ":CHANGELOG.md",
         ":Cargo.toml",
     ],
     proc_macro_deps = ["//crates/changelog"],
-    deps = ["//crates/aac", "//crates/av1", "//crates/bytes-util", "//crates/h264", "//crates/h265"],
-    test_data = ["//assets:mp4"],
+    deps = [
+        "//crates/aac",
+        "//crates/av1",
+        "//crates/bytes-util",
+        "//crates/h264",
+        "//crates/h265",
+    ],
+    test = scuffle_test(
+        data = ["//assets:mp4", "//bazel/tools:ffprobe"],
+        insta = True,
+        env = {
+            "FFPROBE": "$(rootpath //bazel/tools:ffprobe)",
+        },
+    ),
 )

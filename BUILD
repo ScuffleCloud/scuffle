@@ -1,20 +1,46 @@
-load("@rules_rust//crate_universe:defs.bzl", "crates_vendor", "crate")
+load("@rules_rust//crate_universe:defs.bzl", "crate", "crates_vendor")
+load("@bazel_skylib//rules:common_settings.bzl", "string_flag")
 
-exports_files(["Cargo.toml"])
+exports_files(["Cargo.toml", ".config/nextest.toml"])
 
-genrule(
-    name = "cargo_metadata",
-    outs = ["cargo-metadata.json"],
-    srcs = glob([
-        "**/Cargo.toml",
-    ]) + ["Cargo.lock"],
-    cmd = "cargo metadata --format-version 1 --manifest-path $(location //:Cargo.toml) > $@",
+string_flag(
+    name = "test_profile",
+    build_setting_default = "default",
+    values = ["ci", "default"],
     visibility = ["//visibility:public"],
-    tags = ["manual", "no-sandbox"],
+)
+
+string_flag(
+    name = "test_workspace_root",
+    build_setting_default = "",
+    visibility = ["//visibility:public"],
 )
 
 crates_vendor(
     name = "crates_vendor",
+    annotations = {
+        "reqwest": [
+            crate.annotation(
+                rustc_flags = ["--cfg=reqwest_unstable"],
+            ),
+        ],
+        "rusty_ffmpeg": [
+            crate.annotation(
+                build_script_env = {
+                    "FFMPEG_INCLUDE_DIR": "$(execpath @//bazel/toolchains/ffmpeg:include)",
+                    "FFMPEG_DLL_PATH": "$(execpath @//bazel/toolchains/ffmpeg:lib)",
+                    "LIBCLANG_PATH": "$(execpath @//bazel/toolchains/llvm:libclang)",
+                    "BINDGEN_EXTRA_CLANG_ARGS": "--sysroot=$(execpath @//bazel/toolchains/llvm:sysroot)",
+                },
+                build_script_data = [
+                    "@//bazel/toolchains/ffmpeg:lib",
+                    "@//bazel/toolchains/ffmpeg:include",
+                    "@//bazel/toolchains/llvm:libclang",
+                    "@//bazel/toolchains/llvm:sysroot",
+                ],
+            ),
+        ],
+    },
     cargo_lockfile = "//:Cargo.lock",
     generate_build_scripts = True,
     manifests = [
@@ -58,13 +84,6 @@ crates_vendor(
         "//dev-tools/xtask:Cargo.toml",
         "//dev-tools/test-runner:Cargo.toml",
     ],
-    annotations = {
-        "reqwest": [
-            crate.annotation(
-                rustc_flags = ["--cfg=reqwest_unstable"],
-            ),
-        ],
-    },
     mode = "remote",
     supported_platform_triples = [
         "x86_64-unknown-linux-gnu",
@@ -75,7 +94,7 @@ crates_vendor(
         "aarch64-pc-windows-msvc",
         "wasm32-unknown-unknown",
     ],
+    tags = ["manual"],
     vendor_path = "vendor",
     visibility = ["//visibility:public"],
-    tags = ["manual"]
 )

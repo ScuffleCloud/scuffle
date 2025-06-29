@@ -5,5 +5,14 @@ module(
 
 bazel_dep(name = "bazel_skylib", version = "1.7.1")
 bazel_dep(name = "rules_shell", version = "0.5.0")
+bazel_dep(name = "platforms", version = "1.0.0")
+bazel_dep(name = "rules_cc", version = "0.1.2")
+bazel_dep(name = "aspect_bazel_lib", version = "2.19.4")
 
-include("//bazel:rust.MODULE.bazel")
+include("//bazel/toolchains:protobuf.MODULE.bazel")
+
+include("//bazel/toolchains:llvm.MODULE.bazel")
+
+include("//bazel/toolchains:rust.MODULE.bazel")
+
+include("//bazel/toolchains:ffmpeg.MODULE.bazel")

@@ -23,6 +23,8 @@ prost = "0.13.5"
 prost-types = "0.13.5"
 
 [build-dependencies]
+prost = "0.13.5"
+prost-types = "0.13.5"
 prost-build = "0.13.5"
 
 [package.metadata.docs.rs]

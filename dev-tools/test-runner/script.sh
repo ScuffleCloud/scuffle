@@ -1,3 +1,0 @@
-set -eux
-
-exec "$@"

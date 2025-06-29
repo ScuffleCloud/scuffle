@@ -1,27 +1,22 @@
 load("@rules_rust//cargo:defs.bzl", "cargo_build_script", "cargo_toml_env_vars")
-load("@rules_rust//rust:defs.bzl", "rust_binary", "rust_library", "rust_proc_macro", "rust_test")
+load("@rules_rust//rust:defs.bzl", "rust_binary", "rust_library", "rust_proc_macro")
+load("//dev-tools/test-runner:defs.bzl", "nextest_test")
 load("//vendor:defs.bzl", "all_crate_deps", "crate_features", dep_aliases = "aliases")
-load("@rules_shell//shell:sh_test.bzl", "sh_test")
+
 
 def scuffle_package(
-        crate_name,
-        features = None,
-        crate_type = "rlib",
-        srcs = None,
-        visibility = None,
-        aliases = None,
-        deps = None,
-        test_deps = None,
-        proc_macro_deps = None,
-        proc_macro_test_deps = None,
-        crate_test = None,
-        data = None,
-        test_data = None,
-        test_env = None,
-        test_insta = False,
-        tags = None,
-        test_tags = None,
-    ):
+    crate_name,
+    features = None,
+    crate_type = "rlib",
+    srcs = None,
+    visibility = None,
+    aliases = None,
+    deps = None,
+    proc_macro_deps = None,
+    compile_data = None,
+    tags = None,
+    test = None,
+):
     """Creates a rust_library and corresponding rust_test target.
 
     Args:
@@ -32,16 +27,10 @@ def scuffle_package(
         visibility: Visibility for the library target. Defaults to ["//visibility:public"]
         aliases: Dependency aliases
         deps: Additional deps to add.
-        test_deps: Additional deps to add to the test.
         proc_macro_deps: Additional proc macro deps to add.
-        proc_macro_test_deps: Additional proc macro deps to add to tests.
-        crate_test: Make a crate test
-        data: Data to include during compile time
-        test_data: Data to include during runtime
-        test_env: Additional env variables when running a test.
-        test_insta: Setup the test to work with Insta
+        compile_data: Data to include during compile time
         tags: Additional tags to add to the package
-        test_tags: Additional tags to add to the test.
+        test: A config for testing this library.
     """
 
     package_name = native.package_name()
@@ -57,24 +46,14 @@ def scuffle_package(
         aliases = {}
     if proc_macro_deps == None:
         proc_macro_deps = []
-    if test_deps == None:
-        test_deps = []
-    if proc_macro_test_deps == None:
-        proc_macro_test_deps = []
-    if crate_test == None:
-        crate_test = crate_type == "rlib"
-    if data == None:
-        data = []
-    if test_data == None:
-        test_data = []
+    if compile_data == None:
+        compile_data = []
     if features == None:
         features = crate_features(package_name = package_name, all = True)
-    if test_env == None:
-        test_env = {}
     if tags == None:
         tags = []
-    if test_tags == None:
-        test_tags = []
+    if test == None:
+        test = {} if crate_type == "rlib" else False
 
     NAME_MAPPINGS = {
         "rlib": "lib",
@@ -100,11 +79,15 @@ def scuffle_package(
         srcs = srcs,
         crate_features = features.select(),
         aliases = aliases | dep_aliases(package_name = package_name, features = features),
-        deps = all_crate_deps(normal = True, package_name = package_name, features = features) + deps,
+        deps = all_crate_deps(normal = True, package_name = package_name, features = features) + deps + ["@rules_rust//rust/runfiles"],
         proc_macro_deps = all_crate_deps(proc_macro = True, package_name = package_name, features = features) + proc_macro_deps,
         visibility = visibility,
-        compile_data = data,
+        compile_data = compile_data,
         tags = tags,
+        rustc_flags = [
+            "--cfg=bazel_runfiles",
+            "-Clink-arg=-Wl,-znostart-stop-gc",
+        ],
         rustc_env_files = [":cargo_toml_env"],
     )
 
@@ -116,42 +99,62 @@ def scuffle_package(
     elif crate_type == "bin":
         rust_binary(**kwargs)
 
-    if crate_type == "proc_macro":
-        proc_macro_test_deps += [":" + name]
-    else:
-        test_deps += [":" + name]
+    if test != False:
+        test_deps = test.get("deps", []) + ["@rules_rust//rust/runfiles"]
+        test_proc_macro_deps = test.get("proc_macro_deps", []) + []
+        test_env = test.get("env", {}) | {}
+        test_data = test.get("data", []) + []
+        test_insta = test.get("insta", False)
+        test_tags = test.get("tags", []) + []
 
-    if test_insta:
-        test_data += native.glob(["src/**"])
-        test_tags += ["no-sandbox"]
+        if crate_type == "proc_macro":
+            test_proc_macro_deps += [":" + name]
+        else:
+            test_deps += [":" + name]
 
-    if crate_test:
-        rust_test(
-            name = "__rust_test",
-            crate = ":" + name,
-            aliases = aliases | dep_aliases(package_name = package_name, features = features),
-            deps = all_crate_deps(normal = True, normal_dev = True, package_name = package_name, features = features) + deps + test_deps + ["@rules_rust//rust/runfiles"],
-            proc_macro_deps = all_crate_deps(proc_macro = True, proc_macro_dev = True, package_name = package_name, features = features) + proc_macro_deps + proc_macro_test_deps,
-            crate_features = features.select(),
-            compile_data = data,
+        workspace_root = None
+        if test_insta:
+            test_data += native.glob(["src/**/*"])
+            workspace_root = "//:test_workspace_root"
+
+        nextest_test(
+            name = "test",
+            workspace_root = workspace_root,
             data = test_data,
             env = test_env,
-            tags = ["manual"] + test_tags,
-            rustc_flags = [
-                "--cfg=bazel_test",
-            ],
+            tags = test_tags,
+            crate = ":" + name,
+            aliases = aliases | dep_aliases(package_name = package_name, features = features),
+            deps = all_crate_deps(normal = True, normal_dev = True, package_name = package_name, features = features) + deps + test_deps,
+            proc_macro_deps = all_crate_deps(proc_macro = True, proc_macro_dev = True, package_name = package_name, features = features) + proc_macro_deps + test_proc_macro_deps,
+            crate_features = features.select(),
             rustc_env_files = [":cargo_toml_env"],
+            rustc_flags = [
+                "--cfg=bazel_runfiles",
+                "-Clink-arg=-Wl,-znostart-stop-gc",
+            ],
+            rustc_env = {
+                "RUSTC_BOOTSTRAP": "1",
+            },
             visibility = ["//visibility:private"],
         )
 
-        sh_test(
-            name = "test",
-            srcs = ["//dev-tools/test-runner:script"],
-            args = ["$(location //dev-tools/test-runner)", "$(location //:cargo_metadata)", crate_name, "$(location :__rust_test)"],
-            data = [":__rust_test", "//dev-tools/test-runner", "//:cargo_metadata"] + test_data,
-            tags = test_tags,
-            env = test_env,
-        )
+def scuffle_test(
+    deps = [],
+    proc_macro_deps = [],
+    env = {},
+    data = [],
+    insta = False,
+    tags = [],
+):
+    return {
+        "deps": deps,
+        "proc_macro_deps": proc_macro_deps,
+        "env": env,
+        "data": data,
+        "insta": insta,
+        "tags": tags,
+    }
 
 def scuffle_build_script(
         name,
@@ -162,7 +165,8 @@ def scuffle_build_script(
         deps = None,
         proc_macro_deps = None,
         data = None,
-        env = None):
+        env = None,
+        tools = None):
     """Creates a cargo build script
 
     Args:
@@ -175,6 +179,7 @@ def scuffle_build_script(
         proc_macro_deps: Additional proc macro deps to add.
         data: Data to include during compile time
         env: Additional env variables to add when running the script.
+        tools: A list of tools needed by the script.
     """
 
     package_name = native.package_name()
@@ -196,6 +201,8 @@ def scuffle_build_script(
         features = crate_features(package_name = package_name)
     if env == None:
         env = {}
+    if tools == None:
+        tools = []
 
     cargo_build_script(
         name = name,
@@ -208,4 +215,9 @@ def scuffle_build_script(
         data = data,
         compile_data = data,
         build_script_env = env,
+        tools = tools,
+        rustc_flags = [
+            "--cfg=bazel_runfiles",
+            "-Clink-arg=-Wl,-znostart-stop-gc",
+        ],
     )

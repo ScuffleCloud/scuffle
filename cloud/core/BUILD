@@ -2,12 +2,13 @@ load("//bazel/tools:package.bzl", "scuffle_package")
 
 exports_files(["Cargo.toml"])
 
-scuffle_package(
-    crate_name = "scufflecloud-core",
-    aliases = {
-        "//cloud/proto": "pb"
-    },
-    deps = [
-        "//cloud/proto",
-    ],
-)
+# scuffle_package(
+#     aliases = {
+#         "//cloud/proto": "pb",
+#     },
+#     crate_name = "scufflecloud-core",
+#     crate_type = "bin",
+#     deps = [
+#         "//cloud/proto",
+#     ],
+# )

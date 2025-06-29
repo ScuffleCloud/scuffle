@@ -311,7 +311,7 @@ mod tests {
     use crate::ffi::AVCodecContext;
     use crate::io::{Input, Output, OutputOptions};
     use crate::rational::Rational;
-    use crate::{file_path, AVChannelOrder, AVCodecID, AVMediaType, AVPixelFormat, AVSampleFormat};
+    use crate::{AVChannelOrder, AVCodecID, AVMediaType, AVPixelFormat, AVSampleFormat, file_path};
 
     #[test]
     fn test_video_encoder_apply() {

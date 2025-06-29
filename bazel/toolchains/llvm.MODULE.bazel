@@ -1,0 +1,167 @@
+bazel_dep(name = "toolchains_llvm", version = "1.4.0")
+
+git_override(
+    module_name = "toolchains_llvm",
+    commit = "37b0fef6c4111ecc0615e067ff8764b39a5f1d10",
+    remote = "https://github.com/ScuffleCloud/toolchains_llvm.git",
+)
+
+http_archive = use_repo_rule("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive")
+
+_LINUX_SYSROOT_BUILD_FILE = """
+filegroup(
+    name = "sysroot",
+    srcs = glob(["*/**"]),
+    visibility = ["//visibility:public"],
+)
+"""
+
+http_archive(
+    name = "linux-x86_64-sysroots",
+    build_file_content = _LINUX_SYSROOT_BUILD_FILE,
+    sha256 = "ea827763bac1ae25228708a820235bbfe69b57c87683742dcc49ddee6efa86c0",
+    url = "https://github.com/ScuffleCloud/toolchains/releases/download/linux-sysroots-3/linux-sysroot-focal-x86_64.tar.zst",
+)
+
+http_archive(
+    name = "linux-aarch64-sysroots",
+    build_file_content = _LINUX_SYSROOT_BUILD_FILE,
+    sha256 = "f19c122b7d16a23935301b8627db6a401559c0981254b36991e97bcde5af9393",
+    url = "https://github.com/ScuffleCloud/toolchains/releases/download/linux-sysroots-3/linux-sysroot-focal-aarch64.tar.zst",
+)
+
+_SYSROOT_DARWIN_BUILD_FILE = """
+filegroup(
+    name = "sysroot",
+    srcs = glob(
+        include = ["**"],
+        exclude = ["**/*:*"],
+    ),
+    visibility = ["//visibility:public"],
+)
+"""
+
+http_archive(
+    name = "darwin-universal-sysroots",
+    build_file_content = _SYSROOT_DARWIN_BUILD_FILE,
+    sha256 = "1eadf666e7e0299a75212205f83f3b7b7b0657f55aad83540409b13f0a281312",
+    strip_prefix = "MacOSX14.5.sdk-min",
+    url = "https://github.com/ScuffleCloud/toolchains/releases/download/macos-sysroots-1/MacOSX14.5.sdk-min.tar.zst",
+)
+
+llvm = use_extension("@toolchains_llvm//toolchain/extensions:llvm.bzl", "llvm")
+
+LLVM_VERSION = "20.1.7"
+
+LLVM_BUILD = "1"
+
+LLVM_BASE_URL = "https://github.com/scufflecloud/toolchains/releases/download/llvm-{version}-{build}/{file}"
+
+llvm.toolchain(
+    name = "llvm_toolchain",
+    llvm_version = LLVM_VERSION,
+    sha256 = {
+        "darwin-aarch64": "300a3c105a90360d3ff760c522cf0c545b5cc126d7e81ad8651b410ea62195e8",
+        "darwin-x86_64": "3d268ede7d7d7321c67c8cee5abfabdbae871e9f04cc65fbe1f018c4b9956fc4",
+        "linux-aarch64": "3a43705c1f0ec75e9976bd9404aba31a85efba4ae321bd548d3d821de2e61a4a",
+        "linux-x86_64": "f82c79734b77502769012e95497ea29b2b59261243f50856a1159768e6dab9d8",
+    },
+    urls = {
+        "darwin-aarch64": [LLVM_BASE_URL.format(
+            build = LLVM_BUILD,
+            file = "darwin_aarch64.tar.zst",
+            version = LLVM_VERSION,
+        )],
+        "darwin-x86_64": [LLVM_BASE_URL.format(
+            build = LLVM_BUILD,
+            file = "darwin_x86_64.tar.zst",
+            version = LLVM_VERSION,
+        )],
+        "linux-aarch64": [LLVM_BASE_URL.format(
+            build = LLVM_BUILD,
+            file = "linux_aarch64.tar.zst",
+            version = LLVM_VERSION,
+        )],
+        "linux-x86_64": [LLVM_BASE_URL.format(
+            build = LLVM_BUILD,
+            file = "linux_x86_64.tar.zst",
+            version = LLVM_VERSION,
+        )],
+    },
+)
+llvm.sysroot(
+    label = "@darwin-universal-sysroots//:sysroot",
+    targets = [
+        "darwin-aarch64",
+        "darwin-x86_64",
+    ],
+)
+llvm.sysroot(
+    label = "@linux-x86_64-sysroots//:sysroot",
+    targets = ["linux-x86_64"],
+)
+llvm.sysroot(
+    label = "@linux-aarch64-sysroots//:sysroot",
+    targets = ["linux-aarch64"],
+)
+use_repo(llvm, "llvm_toolchain")
+
+register_toolchains("@llvm_toolchain//:all")
+
+_LIBCLANG_BUILD_FILE = """
+filegroup(
+    name = "lib",
+    srcs = glob(["lib/**"]),
+    visibility = ["//visibility:public"],
+)
+
+filegroup(
+    name = "bin",
+    srcs = glob(["bin/**"]),
+    visibility = ["//visibility:public"],
+)
+"""
+
+http_archive(
+    name = "libclang-linux-x86_64",
+    build_file_content = _LIBCLANG_BUILD_FILE,
+    sha256 = "34595e7bcea0ad21f817ea6c313831226104e1c3264487beec77ddf3b263d748",
+    url = LLVM_BASE_URL.format(
+        build = LLVM_BUILD,
+        file = "linux_x86_64_libclang.tar.zst",
+        version = LLVM_VERSION,
+    ),
+)
+
+http_archive(
+    name = "libclang-linux-aarch64",
+    build_file_content = _LIBCLANG_BUILD_FILE,
+    sha256 = "75152a9bebab19684ca76e3d6b5460d85de9312c5a8659d350307a348554a4eb",
+    url = LLVM_BASE_URL.format(
+        build = LLVM_BUILD,
+        file = "linux_aarch64_libclang.tar.zst",
+        version = LLVM_VERSION,
+    ),
+)
+
+http_archive(
+    name = "libclang-darwin-x86_64",
+    build_file_content = _LIBCLANG_BUILD_FILE,
+    sha256 = "5de9f5bec2ef11401ff8fcfb8da676e353f722040cb1f0078d0b9482bcdb5779",
+    url = LLVM_BASE_URL.format(
+        build = LLVM_BUILD,
+        file = "darwin_x86_64_libclang.tar.zst",
+        version = LLVM_VERSION,
+    ),
+)
+
+http_archive(
+    name = "libclang-darwin-aarch64",
+    build_file_content = _LIBCLANG_BUILD_FILE,
+    sha256 = "5dbdd1af66b6d8055d279dcaf418c71ab47e5604f29118e5f399004a88166021",
+    url = LLVM_BASE_URL.format(
+        build = LLVM_BUILD,
+        file = "darwin_aarch64_libclang.tar.zst",
+        version = LLVM_VERSION,
+    ),
+)

@@ -12,7 +12,7 @@ use scuffle_h265::{
     ProfileCompatibilityFlags,
 };
 
-use crate::{boxes::DynBox, file_path};
+use crate::boxes::DynBox;
 use crate::boxes::header::{BoxHeader, FullBoxHeader};
 use crate::boxes::types::avc1::Avc1;
 use crate::boxes::types::avcc::AvcC;
@@ -50,6 +50,7 @@ use crate::boxes::types::traf::Traf;
 use crate::boxes::types::trun::{Trun, TrunSample};
 use crate::boxes::types::url::Url;
 use crate::boxes::types::vmhd::Vmhd;
+use crate::file_path;
 use crate::types::av01::Av01;
 use crate::types::av1c::Av1C;
 use crate::types::colr::{ColorType, Colr};
@@ -944,7 +945,7 @@ fn test_mux_avc_aac() {
     assert_eq!(boxes, new_boxes);
 
     // Pipe into ffprobe to check the output is valid.
-    let mut ffprobe = Command::new("ffprobe")
+    let mut ffprobe = Command::new(std::env::var_os("FFPROBE").unwrap_or_else(|| "ffprobe".into()))
         .arg("-v")
         .arg("error")
         .arg("-show_format")
@@ -2427,7 +2428,7 @@ fn test_mux_av1_aac() {
     assert_eq!(boxes, new_boxes);
 
     // Pipe into ffprobe to check the output is valid.
-    let mut ffprobe = Command::new("ffprobe")
+    let mut ffprobe = Command::new(std::env::var_os("FFPROBE").unwrap_or_else(|| "ffprobe".into()))
         .arg("-v")
         .arg("error")
         .arg("-show_format")
@@ -2495,7 +2496,7 @@ fn test_mux_hevc_aac() {
     assert_eq!(boxes, new_boxes);
 
     // Pipe into ffprobe to check the output is valid.
-    let mut ffprobe = Command::new("ffprobe")
+    let mut ffprobe = Command::new(std::env::var_os("FFPROBE").unwrap_or_else(|| "ffprobe".into()))
         .arg("-v")
         .arg("error")
         .arg("-show_format")

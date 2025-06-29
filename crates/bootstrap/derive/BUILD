@@ -1,9 +1,11 @@
-load("//bazel/tools:package.bzl", "scuffle_package")
+load("//bazel/tools:package.bzl", "scuffle_package", "scuffle_test")
 
 exports_files(["Cargo.toml"])
 
 scuffle_package(
     crate_name = "scuffle-bootstrap-derive",
     crate_type = "proc_macro",
-    test_insta = True,
+    test = scuffle_test(
+        insta = True,
+    ),
 )

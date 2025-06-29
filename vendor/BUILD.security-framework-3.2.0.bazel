@@ -67,7 +67,7 @@ rust_library(
         "@crates_vendor__bitflags-2.9.1//:bitflags",
         "@crates_vendor__core-foundation-0.10.1//:core_foundation",
         "@crates_vendor__core-foundation-sys-0.8.7//:core_foundation_sys",
-        "@crates_vendor__libc-0.2.173//:libc",
+        "@crates_vendor__libc-0.2.174//:libc",
         "@crates_vendor__security-framework-sys-2.14.0//:security_framework_sys",
     ],
 )

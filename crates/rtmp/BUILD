@@ -1,15 +1,21 @@
-load("//bazel/tools:package.bzl", "scuffle_package")
+load("//bazel/tools:package.bzl", "scuffle_package", "scuffle_test")
 
 exports_files(["Cargo.toml"])
 
 scuffle_package(
-    crate_name = "openapiv3_1",
-    data = [
+    crate_name = "scuffle-rtmp",
+    compile_data = [
         ":CHANGELOG.md",
         ":Cargo.toml",
     ],
     proc_macro_deps = ["//crates/changelog"],
-    test_deps = ["//crates/flv"],
+    test = scuffle_test(
+        data = ["//assets:mp4", "//bazel/tools:ffmpeg"],
+        deps = ["//crates/flv"],
+        env = {
+            "FFMPEG": "$(rootpath //bazel/tools:ffmpeg)",
+        },
+    ),
     deps = [
         "//crates/amf0",
         "//crates/bytes-util",
@@ -17,5 +23,4 @@ scuffle_package(
         "//crates/future-ext",
         "//crates/nutype-enum",
     ],
-    test_data = ["//assets:mp4"]
 )

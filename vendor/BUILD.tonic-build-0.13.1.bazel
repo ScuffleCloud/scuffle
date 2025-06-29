@@ -61,9 +61,9 @@ rust_library(
     }),
     version = "0.13.1",
     deps = [
-        "@crates_vendor__prettyplease-0.2.34//:prettyplease",
+        "@crates_vendor__prettyplease-0.2.35//:prettyplease",
         "@crates_vendor__proc-macro2-1.0.95//:proc_macro2",
         "@crates_vendor__quote-1.0.40//:quote",
-        "@crates_vendor__syn-2.0.103//:syn",
+        "@crates_vendor__syn-2.0.104//:syn",
     ],
 )

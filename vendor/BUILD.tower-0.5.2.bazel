@@ -103,7 +103,7 @@ rust_library(
     deps = [
         "@crates_vendor__futures-core-0.3.31//:futures_core",
         "@crates_vendor__futures-util-0.3.31//:futures_util",
-        "@crates_vendor__indexmap-2.9.0//:indexmap",
+        "@crates_vendor__indexmap-2.10.0//:indexmap",
         "@crates_vendor__pin-project-lite-0.2.16//:pin_project_lite",
         "@crates_vendor__slab-0.4.10//:slab",
         "@crates_vendor__sync_wrapper-1.0.2//:sync_wrapper",

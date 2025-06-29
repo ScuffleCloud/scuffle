@@ -62,7 +62,7 @@ rust_library(
     version = "0.5.1",
     deps = [
         "@crates_vendor__chrono-0.4.41//:chrono",
-        "@crates_vendor__indexmap-2.9.0//:indexmap",
+        "@crates_vendor__indexmap-2.10.0//:indexmap",
         "@crates_vendor__newtype-uuid-1.2.4//:newtype_uuid",
         "@crates_vendor__quick-xml-0.37.5//:quick_xml",
         "@crates_vendor__strip-ansi-escapes-0.2.1//:strip_ansi_escapes",

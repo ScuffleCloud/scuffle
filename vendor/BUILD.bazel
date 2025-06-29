@@ -560,14 +560,14 @@ alias(
 )
 
 alias(
-    name = "indexmap-2.9.0",
-    actual = "@crates_vendor__indexmap-2.9.0//:indexmap",
+    name = "indexmap-2.10.0",
+    actual = "@crates_vendor__indexmap-2.10.0//:indexmap",
     tags = ["manual"],
 )
 
 alias(
     name = "indexmap",
-    actual = "@crates_vendor__indexmap-2.9.0//:indexmap",
+    actual = "@crates_vendor__indexmap-2.10.0//:indexmap",
     tags = ["manual"],
 )
 
@@ -584,14 +584,14 @@ alias(
 )
 
 alias(
-    name = "libc-0.2.173",
-    actual = "@crates_vendor__libc-0.2.173//:libc",
+    name = "libc-0.2.174",
+    actual = "@crates_vendor__libc-0.2.174//:libc",
     tags = ["manual"],
 )
 
 alias(
     name = "libc",
-    actual = "@crates_vendor__libc-0.2.173//:libc",
+    actual = "@crates_vendor__libc-0.2.174//:libc",
     tags = ["manual"],
 )
 
@@ -824,14 +824,14 @@ alias(
 )
 
 alias(
-    name = "prettyplease-0.2.34",
-    actual = "@crates_vendor__prettyplease-0.2.34//:prettyplease",
+    name = "prettyplease-0.2.35",
+    actual = "@crates_vendor__prettyplease-0.2.35//:prettyplease",
     tags = ["manual"],
 )
 
 alias(
     name = "prettyplease",
-    actual = "@crates_vendor__prettyplease-0.2.34//:prettyplease",
+    actual = "@crates_vendor__prettyplease-0.2.35//:prettyplease",
     tags = ["manual"],
 )
 
@@ -1136,14 +1136,14 @@ alias(
 )
 
 alias(
-    name = "syn-2.0.103",
-    actual = "@crates_vendor__syn-2.0.103//:syn",
+    name = "syn-2.0.104",
+    actual = "@crates_vendor__syn-2.0.104//:syn",
     tags = ["manual"],
 )
 
 alias(
     name = "syn",
-    actual = "@crates_vendor__syn-2.0.103//:syn",
+    actual = "@crates_vendor__syn-2.0.104//:syn",
     tags = ["manual"],
 )
 

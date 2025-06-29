@@ -21,7 +21,7 @@ cargo_toml_env_vars(
 )
 
 rust_library(
-    name = "aws_lc_sys",
+    name = "owo_colors",
     srcs = glob(
         include = ["**/*.rs"],
         allow_empty = True,
@@ -38,9 +38,6 @@ rust_library(
             "WORKSPACE.bazel",
         ],
     ),
-    crate_features = [
-        "prebuilt-nasm",
-    ],
     crate_root = "src/lib.rs",
     edition = "2021",
     rustc_env_files = [
@@ -51,7 +48,7 @@ rust_library(
     ],
     tags = [
         "cargo-bazel",
-        "crate-name=aws-lc-sys",
+        "crate-name=owo-colors",
         "manual",
         "noclippy",
         "norustfmt",
@@ -66,9 +63,9 @@ rust_library(
         "@rules_rust//rust/platform:x86_64-unknown-linux-gnu": [],
         "//conditions:default": ["@platforms//:incompatible"],
     }),
-    version = "0.29.0",
+    version = "4.2.2",
     deps = [
-        "@crates_vendor__aws-lc-sys-0.29.0//:build_script_main",
+        "@crates_vendor__owo-colors-4.2.2//:build_script_build",
     ],
 )
 
@@ -91,11 +88,8 @@ cargo_build_script(
             "WORKSPACE.bazel",
         ],
     ),
-    crate_features = [
-        "prebuilt-nasm",
-    ],
-    crate_name = "build_script_main",
-    crate_root = "builder/main.rs",
+    crate_name = "build_script_build",
+    crate_root = "build.rs",
     data = glob(
         include = ["**"],
         allow_empty = True,
@@ -109,8 +103,7 @@ cargo_build_script(
         ],
     ),
     edition = "2021",
-    links = "aws_lc_0_29_0",
-    pkg_name = "aws-lc-sys",
+    pkg_name = "owo-colors",
     rustc_env_files = [
         ":cargo_toml_env_vars",
     ],
@@ -119,23 +112,17 @@ cargo_build_script(
     ],
     tags = [
         "cargo-bazel",
-        "crate-name=aws-lc-sys",
+        "crate-name=owo-colors",
         "manual",
         "noclippy",
         "norustfmt",
     ],
-    version = "0.29.0",
+    version = "4.2.2",
     visibility = ["//visibility:private"],
-    deps = [
-        "@crates_vendor__cc-1.2.27//:cc",
-        "@crates_vendor__cmake-0.1.54//:cmake",
-        "@crates_vendor__dunce-1.0.5//:dunce",
-        "@crates_vendor__fs_extra-1.3.0//:fs_extra",
-    ],
 )
 
 alias(
-    name = "build_script_main",
+    name = "build_script_build",
     actual = ":_bs",
     tags = ["manual"],
 )

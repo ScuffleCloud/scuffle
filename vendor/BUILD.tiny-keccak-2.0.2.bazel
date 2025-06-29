@@ -68,7 +68,7 @@ rust_library(
     }),
     version = "2.0.2",
     deps = [
-        "@crates_vendor__crunchy-0.2.3//:crunchy",
+        "@crates_vendor__crunchy-0.2.4//:crunchy",
         "@crates_vendor__tiny-keccak-2.0.2//:build_script_build",
     ],
 )

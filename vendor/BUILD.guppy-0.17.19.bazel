@@ -69,7 +69,7 @@ rust_library(
         "@crates_vendor__debug-ignore-1.0.5//:debug_ignore",
         "@crates_vendor__fixedbitset-0.5.7//:fixedbitset",
         "@crates_vendor__guppy-workspace-hack-0.1.0//:guppy_workspace_hack",
-        "@crates_vendor__indexmap-2.9.0//:indexmap",
+        "@crates_vendor__indexmap-2.10.0//:indexmap",
         "@crates_vendor__itertools-0.14.0//:itertools",
         "@crates_vendor__nested-0.1.1//:nested",
         "@crates_vendor__once_cell-1.21.3//:once_cell",

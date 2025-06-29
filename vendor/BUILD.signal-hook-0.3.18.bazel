@@ -86,7 +86,7 @@ rust_library(
     }),
     version = "0.3.18",
     deps = [
-        "@crates_vendor__libc-0.2.173//:libc",
+        "@crates_vendor__libc-0.2.174//:libc",
         "@crates_vendor__signal-hook-0.3.18//:build_script_build",
         "@crates_vendor__signal-hook-registry-1.4.5//:signal_hook_registry",
     ],

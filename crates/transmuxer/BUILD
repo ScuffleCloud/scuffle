@@ -1,10 +1,10 @@
-load("//bazel/tools:package.bzl", "scuffle_package")
+load("//bazel/tools:package.bzl", "scuffle_package", "scuffle_test")
 
 exports_files(["Cargo.toml"])
 
 scuffle_package(
     crate_name = "scuffle-transmuxer",
-    data = [
+    compile_data = [
         ":CHANGELOG.md",
         ":Cargo.toml",
     ],
@@ -18,5 +18,10 @@ scuffle_package(
         "//crates/h265",
         "//crates/mp4",
     ],
-    test_data = ["//assets:flv"],
+    test = scuffle_test(
+        data = ["//assets:flv", "//bazel/tools:ffprobe"],
+        env = {
+            "FFPROBE": "$(rootpath //bazel/tools:ffprobe)",
+        },
+    ),
 )

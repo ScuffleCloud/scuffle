@@ -1,7 +1,34 @@
 common --color=yes
 
+startup --digest_function=blake3
+
 # Enforce BzlMod usage
 common --noenable_workspace
 common --enable_bzlmod=true
 
 common --experimental_isolated_extension_usages
+# common --define WORKSPACE_ROOT=/home/troy/github/scuffle/scuffle
+common --enable_platform_specific_config
+
+common --action_env BAZEL_DO_NOT_DETECT_CPP_TOOLCHAIN=1
+
+common --remote_cache_compression
+
+build --incompatible_strict_action_env
+common --worker_sandboxing
+
+# common --experimental_cc_static_library
+# common --experimental_cc_shared_library
+# common --incompatible_use_cc_configure_from_rules_cc
+# common --experimental_starlark_cc_import
+
+# common --copt=-nostdinc --cxxopt=-nostdinc++
+
+# Ensure that we don't accidentally build protobuf or gRPC
+common --per_file_copt=external/.*protobuf.*@--PROTOBUF_WAS_NOT_SUPPOSED_TO_BE_BUILT
+common --host_per_file_copt=external/.*protobuf.*@--PROTOBUF_WAS_NOT_SUPPOSED_TO_BE_BUILT
+common --per_file_copt=external/.*grpc.*@--GRPC_WAS_NOT_SUPPOSED_TO_BE_BUILT
+common --host_per_file_copt=external/.*grpc.*@--GRPC_WAS_NOT_SUPPOSED_TO_BE_BUILT
+
+# Use prebuilt protoc
+common --incompatible_enable_proto_toolchain_resolution

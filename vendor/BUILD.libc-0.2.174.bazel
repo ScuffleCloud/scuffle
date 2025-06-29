@@ -21,7 +21,7 @@ cargo_toml_env_vars(
 )
 
 rust_library(
-    name = "aws_lc_rs",
+    name = "libc",
     srcs = glob(
         include = ["**/*.rs"],
         allow_empty = True,
@@ -39,9 +39,23 @@ rust_library(
         ],
     ),
     crate_features = [
-        "aws-lc-sys",
-        "prebuilt-nasm",
-    ],
+        "default",
+        "std",
+    ] + select({
+        "@rules_rust//rust/platform:aarch64-apple-darwin": [
+            "extra_traits",
+        ],
+        "@rules_rust//rust/platform:aarch64-unknown-linux-gnu": [
+            "extra_traits",
+        ],
+        "@rules_rust//rust/platform:x86_64-apple-darwin": [
+            "extra_traits",
+        ],
+        "@rules_rust//rust/platform:x86_64-unknown-linux-gnu": [
+            "extra_traits",
+        ],
+        "//conditions:default": [],
+    }),
     crate_root = "src/lib.rs",
     edition = "2021",
     rustc_env_files = [
@@ -52,7 +66,7 @@ rust_library(
     ],
     tags = [
         "cargo-bazel",
-        "crate-name=aws-lc-rs",
+        "crate-name=libc",
         "manual",
         "noclippy",
         "norustfmt",
@@ -67,11 +81,9 @@ rust_library(
         "@rules_rust//rust/platform:x86_64-unknown-linux-gnu": [],
         "//conditions:default": ["@platforms//:incompatible"],
     }),
-    version = "1.13.1",
+    version = "0.2.174",
     deps = [
-        "@crates_vendor__aws-lc-rs-1.13.1//:build_script_build",
-        "@crates_vendor__aws-lc-sys-0.29.0//:aws_lc_sys",
-        "@crates_vendor__zeroize-1.8.1//:zeroize",
+        "@crates_vendor__libc-0.2.174//:build_script_build",
     ],
 )
 
@@ -95,9 +107,23 @@ cargo_build_script(
         ],
     ),
     crate_features = [
-        "aws-lc-sys",
-        "prebuilt-nasm",
-    ],
+        "default",
+        "std",
+    ] + select({
+        "@rules_rust//rust/platform:aarch64-apple-darwin": [
+            "extra_traits",
+        ],
+        "@rules_rust//rust/platform:aarch64-unknown-linux-gnu": [
+            "extra_traits",
+        ],
+        "@rules_rust//rust/platform:x86_64-apple-darwin": [
+            "extra_traits",
+        ],
+        "@rules_rust//rust/platform:x86_64-unknown-linux-gnu": [
+            "extra_traits",
+        ],
+        "//conditions:default": [],
+    }),
     crate_name = "build_script_build",
     crate_root = "build.rs",
     data = glob(
@@ -113,11 +139,7 @@ cargo_build_script(
         ],
     ),
     edition = "2021",
-    link_deps = [
-        "@crates_vendor__aws-lc-sys-0.29.0//:aws_lc_sys",
-    ],
-    links = "aws_lc_rs_1_13_1_sys",
-    pkg_name = "aws-lc-rs",
+    pkg_name = "libc",
     rustc_env_files = [
         ":cargo_toml_env_vars",
     ],
@@ -126,12 +148,12 @@ cargo_build_script(
     ],
     tags = [
         "cargo-bazel",
-        "crate-name=aws-lc-rs",
+        "crate-name=libc",
         "manual",
         "noclippy",
         "norustfmt",
     ],
-    version = "1.13.1",
+    version = "0.2.174",
     visibility = ["//visibility:private"],
 )
 

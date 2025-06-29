@@ -105,7 +105,7 @@ rust_library(
             "@crates_vendor__tokio-rustls-0.26.2//:tokio_rustls",  # cfg(not(target_arch = "wasm32"))
             "@crates_vendor__tower-0.5.2//:tower",  # cfg(not(target_arch = "wasm32"))
             "@crates_vendor__tower-http-0.6.6//:tower_http",  # cfg(not(target_arch = "wasm32"))
-            "@crates_vendor__webpki-roots-1.0.0//:webpki_roots",  # cfg(not(target_arch = "wasm32"))
+            "@crates_vendor__webpki-roots-1.0.1//:webpki_roots",  # cfg(not(target_arch = "wasm32"))
         ],
         "@rules_rust//rust/platform:aarch64-pc-windows-msvc": [
             "@crates_vendor__h2-0.4.10//:h2",  # cfg(not(target_arch = "wasm32"))
@@ -127,7 +127,7 @@ rust_library(
             "@crates_vendor__tokio-rustls-0.26.2//:tokio_rustls",  # cfg(not(target_arch = "wasm32"))
             "@crates_vendor__tower-0.5.2//:tower",  # cfg(not(target_arch = "wasm32"))
             "@crates_vendor__tower-http-0.6.6//:tower_http",  # cfg(not(target_arch = "wasm32"))
-            "@crates_vendor__webpki-roots-1.0.0//:webpki_roots",  # cfg(not(target_arch = "wasm32"))
+            "@crates_vendor__webpki-roots-1.0.1//:webpki_roots",  # cfg(not(target_arch = "wasm32"))
         ],
         "@rules_rust//rust/platform:aarch64-unknown-linux-gnu": [
             "@crates_vendor__h2-0.4.10//:h2",  # cfg(not(target_arch = "wasm32"))
@@ -149,7 +149,7 @@ rust_library(
             "@crates_vendor__tokio-rustls-0.26.2//:tokio_rustls",  # cfg(not(target_arch = "wasm32"))
             "@crates_vendor__tower-0.5.2//:tower",  # cfg(not(target_arch = "wasm32"))
             "@crates_vendor__tower-http-0.6.6//:tower_http",  # cfg(not(target_arch = "wasm32"))
-            "@crates_vendor__webpki-roots-1.0.0//:webpki_roots",  # cfg(not(target_arch = "wasm32"))
+            "@crates_vendor__webpki-roots-1.0.1//:webpki_roots",  # cfg(not(target_arch = "wasm32"))
         ],
         "@rules_rust//rust/platform:wasm32-unknown-unknown": [
             "@crates_vendor__js-sys-0.3.77//:js_sys",  # cfg(target_arch = "wasm32")
@@ -178,7 +178,7 @@ rust_library(
             "@crates_vendor__tokio-rustls-0.26.2//:tokio_rustls",  # cfg(not(target_arch = "wasm32"))
             "@crates_vendor__tower-0.5.2//:tower",  # cfg(not(target_arch = "wasm32"))
             "@crates_vendor__tower-http-0.6.6//:tower_http",  # cfg(not(target_arch = "wasm32"))
-            "@crates_vendor__webpki-roots-1.0.0//:webpki_roots",  # cfg(not(target_arch = "wasm32"))
+            "@crates_vendor__webpki-roots-1.0.1//:webpki_roots",  # cfg(not(target_arch = "wasm32"))
         ],
         "@rules_rust//rust/platform:x86_64-pc-windows-msvc": [
             "@crates_vendor__h2-0.4.10//:h2",  # cfg(not(target_arch = "wasm32"))
@@ -200,7 +200,7 @@ rust_library(
             "@crates_vendor__tokio-rustls-0.26.2//:tokio_rustls",  # cfg(not(target_arch = "wasm32"))
             "@crates_vendor__tower-0.5.2//:tower",  # cfg(not(target_arch = "wasm32"))
             "@crates_vendor__tower-http-0.6.6//:tower_http",  # cfg(not(target_arch = "wasm32"))
-            "@crates_vendor__webpki-roots-1.0.0//:webpki_roots",  # cfg(not(target_arch = "wasm32"))
+            "@crates_vendor__webpki-roots-1.0.1//:webpki_roots",  # cfg(not(target_arch = "wasm32"))
         ],
         "@rules_rust//rust/platform:x86_64-unknown-linux-gnu": [
             "@crates_vendor__h2-0.4.10//:h2",  # cfg(not(target_arch = "wasm32"))
@@ -222,7 +222,7 @@ rust_library(
             "@crates_vendor__tokio-rustls-0.26.2//:tokio_rustls",  # cfg(not(target_arch = "wasm32"))
             "@crates_vendor__tower-0.5.2//:tower",  # cfg(not(target_arch = "wasm32"))
             "@crates_vendor__tower-http-0.6.6//:tower_http",  # cfg(not(target_arch = "wasm32"))
-            "@crates_vendor__webpki-roots-1.0.0//:webpki_roots",  # cfg(not(target_arch = "wasm32"))
+            "@crates_vendor__webpki-roots-1.0.1//:webpki_roots",  # cfg(not(target_arch = "wasm32"))
         ],
         "//conditions:default": [],
     }),

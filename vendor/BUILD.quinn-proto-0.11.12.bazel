@@ -35,37 +35,11 @@ rust_library(
         ],
     ),
     crate_features = [
-        "aws-lc-rs",
         "log",
         "platform-verifier",
-        "rustls-aws-lc-rs",
-    ] + select({
-        "@rules_rust//rust/platform:aarch64-apple-darwin": [
-            "ring",
-            "rustls-ring",
-        ],
-        "@rules_rust//rust/platform:aarch64-pc-windows-msvc": [
-            "ring",
-            "rustls-ring",
-        ],
-        "@rules_rust//rust/platform:aarch64-unknown-linux-gnu": [
-            "ring",
-            "rustls-ring",
-        ],
-        "@rules_rust//rust/platform:x86_64-apple-darwin": [
-            "ring",
-            "rustls-ring",
-        ],
-        "@rules_rust//rust/platform:x86_64-pc-windows-msvc": [
-            "ring",
-            "rustls-ring",
-        ],
-        "@rules_rust//rust/platform:x86_64-unknown-linux-gnu": [
-            "ring",
-            "rustls-ring",
-        ],
-        "//conditions:default": [],
-    }),
+        "ring",
+        "rustls-ring",
+    ],
     crate_root = "src/lib.rs",
     edition = "2021",
     rustc_env_files = [
@@ -93,7 +67,6 @@ rust_library(
     }),
     version = "0.11.12",
     deps = [
-        "@crates_vendor__aws-lc-rs-1.13.1//:aws_lc_rs",
         "@crates_vendor__bytes-1.10.1//:bytes",
         "@crates_vendor__lru-slab-0.1.2//:lru_slab",
         "@crates_vendor__rand-0.9.1//:rand",

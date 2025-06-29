@@ -17,7 +17,7 @@ cargo_toml_env_vars(
 )
 
 rust_library(
-    name = "iddqd",
+    name = "xattr",
     srcs = glob(
         include = ["**/*.rs"],
         allow_empty = True,
@@ -35,10 +35,8 @@ rust_library(
         ],
     ),
     crate_features = [
-        "allocator-api2",
         "default",
-        "default-hasher",
-        "std",
+        "unsupported",
     ],
     crate_root = "src/lib.rs",
     edition = "2021",
@@ -50,27 +48,20 @@ rust_library(
     ],
     tags = [
         "cargo-bazel",
-        "crate-name=iddqd",
+        "crate-name=xattr",
         "manual",
         "noclippy",
         "norustfmt",
     ],
     target_compatible_with = select({
         "@rules_rust//rust/platform:aarch64-apple-darwin": [],
-        "@rules_rust//rust/platform:aarch64-pc-windows-msvc": [],
         "@rules_rust//rust/platform:aarch64-unknown-linux-gnu": [],
-        "@rules_rust//rust/platform:wasm32-unknown-unknown": [],
         "@rules_rust//rust/platform:x86_64-apple-darwin": [],
-        "@rules_rust//rust/platform:x86_64-pc-windows-msvc": [],
         "@rules_rust//rust/platform:x86_64-unknown-linux-gnu": [],
         "//conditions:default": ["@platforms//:incompatible"],
     }),
-    version = "0.3.7",
+    version = "1.5.1",
     deps = [
-        "@crates_vendor__allocator-api2-0.2.21//:allocator_api2",
-        "@crates_vendor__equivalent-1.0.2//:equivalent",
-        "@crates_vendor__foldhash-0.1.5//:foldhash",
-        "@crates_vendor__hashbrown-0.15.4//:hashbrown",
-        "@crates_vendor__rustc-hash-2.1.1//:rustc_hash",
+        "@crates_vendor__rustix-1.0.7//:rustix",  # cfg(any(target_os = "android", target_os = "linux", target_os = "macos", target_os = "hurd"))
     ],
 )

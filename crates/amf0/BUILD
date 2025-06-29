@@ -4,7 +4,7 @@ exports_files(["Cargo.toml"])
 
 scuffle_package(
     crate_name = "scuffle-amf0",
-    data = [
+    compile_data = [
         ":CHANGELOG.md",
         ":Cargo.toml",
     ],

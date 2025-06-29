@@ -58,6 +58,6 @@ rust_library(
     }),
     version = "0.9.5",
     deps = [
-        "@crates_vendor__libc-0.2.173//:libc",  # cfg(unix)
+        "@crates_vendor__libc-0.2.174//:libc",  # cfg(unix)
     ],
 )

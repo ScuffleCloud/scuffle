@@ -1,10 +1,10 @@
-load("//bazel/tools:package.bzl", "scuffle_package")
+load("//bazel/tools:package.bzl", "scuffle_package", "scuffle_test")
 
 exports_files(["Cargo.toml"])
 
 scuffle_package(
     crate_name = "scuffle-bootstrap",
-    data = [
+    compile_data = [
         ":CHANGELOG.md",
         ":Cargo.toml",
     ],
@@ -12,12 +12,14 @@ scuffle_package(
         "//crates/changelog",
         "//crates/bootstrap/derive",
     ],
-    test_deps = [
-        "//crates/future-ext",
-        "//crates/postcompile",
-        "//crates/settings",
-        "//crates/signal",
-    ],
     deps = ["//crates/context"],
-    test_insta = True,
+    test = scuffle_test(
+        deps = [
+            "//crates/future-ext",
+            "//crates/postcompile",
+            "//crates/settings",
+            "//crates/signal",
+        ],
+        insta = True,
+    ),
 )

@@ -21,7 +21,7 @@ cargo_toml_env_vars(
 )
 
 rust_library(
-    name = "libc",
+    name = "prettyplease",
     srcs = glob(
         include = ["**/*.rs"],
         allow_empty = True,
@@ -38,21 +38,24 @@ rust_library(
             "WORKSPACE.bazel",
         ],
     ),
-    crate_features = [
-        "default",
-        "std",
-    ] + select({
+    crate_features = select({
         "@rules_rust//rust/platform:aarch64-apple-darwin": [
-            "extra_traits",
+            "verbatim",
+        ],
+        "@rules_rust//rust/platform:aarch64-pc-windows-msvc": [
+            "verbatim",
         ],
         "@rules_rust//rust/platform:aarch64-unknown-linux-gnu": [
-            "extra_traits",
+            "verbatim",
         ],
         "@rules_rust//rust/platform:x86_64-apple-darwin": [
-            "extra_traits",
+            "verbatim",
+        ],
+        "@rules_rust//rust/platform:x86_64-pc-windows-msvc": [
+            "verbatim",
         ],
         "@rules_rust//rust/platform:x86_64-unknown-linux-gnu": [
-            "extra_traits",
+            "verbatim",
         ],
         "//conditions:default": [],
     }),
@@ -66,7 +69,7 @@ rust_library(
     ],
     tags = [
         "cargo-bazel",
-        "crate-name=libc",
+        "crate-name=prettyplease",
         "manual",
         "noclippy",
         "norustfmt",
@@ -81,9 +84,11 @@ rust_library(
         "@rules_rust//rust/platform:x86_64-unknown-linux-gnu": [],
         "//conditions:default": ["@platforms//:incompatible"],
     }),
-    version = "0.2.173",
+    version = "0.2.35",
     deps = [
-        "@crates_vendor__libc-0.2.173//:build_script_build",
+        "@crates_vendor__prettyplease-0.2.35//:build_script_build",
+        "@crates_vendor__proc-macro2-1.0.95//:proc_macro2",
+        "@crates_vendor__syn-2.0.104//:syn",
     ],
 )
 
@@ -106,21 +111,24 @@ cargo_build_script(
             "WORKSPACE.bazel",
         ],
     ),
-    crate_features = [
-        "default",
-        "std",
-    ] + select({
+    crate_features = select({
         "@rules_rust//rust/platform:aarch64-apple-darwin": [
-            "extra_traits",
+            "verbatim",
+        ],
+        "@rules_rust//rust/platform:aarch64-pc-windows-msvc": [
+            "verbatim",
         ],
         "@rules_rust//rust/platform:aarch64-unknown-linux-gnu": [
-            "extra_traits",
+            "verbatim",
         ],
         "@rules_rust//rust/platform:x86_64-apple-darwin": [
-            "extra_traits",
+            "verbatim",
+        ],
+        "@rules_rust//rust/platform:x86_64-pc-windows-msvc": [
+            "verbatim",
         ],
         "@rules_rust//rust/platform:x86_64-unknown-linux-gnu": [
-            "extra_traits",
+            "verbatim",
         ],
         "//conditions:default": [],
     }),
@@ -139,7 +147,8 @@ cargo_build_script(
         ],
     ),
     edition = "2021",
-    pkg_name = "libc",
+    links = "prettyplease02",
+    pkg_name = "prettyplease",
     rustc_env_files = [
         ":cargo_toml_env_vars",
     ],
@@ -148,12 +157,12 @@ cargo_build_script(
     ],
     tags = [
         "cargo-bazel",
-        "crate-name=libc",
+        "crate-name=prettyplease",
         "manual",
         "noclippy",
         "norustfmt",
     ],
-    version = "0.2.173",
+    version = "0.2.35",
     visibility = ["//visibility:private"],
 )
 

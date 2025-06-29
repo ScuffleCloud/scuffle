@@ -96,17 +96,17 @@ h3-quinn = { default-features = false, optional = true, version = "0.0.10" }
 quinn = { default-features = false, features = [
   "platform-verifier",
   "runtime-tokio",
-  "rustls-aws-lc-rs",
+  "rustls-ring",
 ], optional = true, version = "0.11.6" }
 
 # TLS
 rustls = { default-features = false, features = [
-  "aws_lc_rs",
+  "ring",
   "std",
   "tls12",
 ], optional = true, version = "0.23.21" }
 tokio-rustls = { default-features = false, features = [
-  "aws_lc_rs",
+  "ring",
   "tls12",
 ], optional = true, version = "0.26.1" }
 

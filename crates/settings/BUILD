@@ -1,14 +1,16 @@
-load("//bazel/tools:package.bzl", "scuffle_package")
+load("//bazel/tools:package.bzl", "scuffle_package", "scuffle_test")
 
 exports_files(["Cargo.toml"])
 
 scuffle_package(
     crate_name = "scuffle-settings",
-    data = [
+    compile_data = [
         ":CHANGELOG.md",
         ":Cargo.toml",
     ],
     proc_macro_deps = ["//crates/changelog"],
     deps = ["//crates/bootstrap"],
-    test_data = glob(["assets/*"]),
+    test = scuffle_test(
+        data = glob(["assets/*"]),
+    ),
 )

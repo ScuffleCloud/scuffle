@@ -65,3 +65,6 @@ scuffle-mp4 = "0.1.5"
 [profile.release-debug]
 inherits = "release"
 debug = true
+
+[patch.crates-io]
+rusty_ffmpeg = { git = "https://github.com/TroyKomodo/rusty_ffmpeg.git", rev = "cca349e5cc0764f00112c6fc6066f831c601a9b9"}

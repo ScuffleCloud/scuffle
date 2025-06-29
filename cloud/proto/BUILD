@@ -1,17 +1,33 @@
-load("//bazel/tools:package.bzl", "scuffle_package", "scuffle_build_script")
+load("//bazel/tools:package.bzl", "scuffle_build_script", "scuffle_package")
+load("@protobuf//bazel:proto_library.bzl", "proto_library")
+load("//bazel/protobuf:proto_descriptor_set.bzl", "proto_descriptor_set")
 
 exports_files(["Cargo.toml"])
 
+proto_library(
+    name = "pb",
+    srcs = glob(["pb/**"]),
+    deps = ["//crates/tinc:protobuf", "@protobuf//:empty_proto"],
+)
+
+proto_descriptor_set(
+    name = "tinc_fds",
+    deps = [":pb"],
+)
+
 scuffle_build_script(
     name = "build_script",
-    data = glob(["pb/**"]),
     deps = ["//crates/tinc/build"],
+    data = [":tinc_fds"],
+    env = {
+        "TINC_SCUFFLE_CLOUD_COMPILED_FD": "$(location :tinc_fds)",
+    },
 )
 
 scuffle_package(
     crate_name = "scufflecloud-proto",
     deps = [
-        "//crates/tinc",
         ":build_script",
+        "//crates/tinc",
     ],
 )

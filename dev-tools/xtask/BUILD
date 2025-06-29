@@ -5,6 +5,6 @@ exports_files(["Cargo.toml"])
 scuffle_package(
     crate_name = "xtask",
     crate_type = "bin",
-    data = glob(["**/*.md"]),
+    compile_data = glob(["**/*.md"]),
     tags = ["manual"],
 )

@@ -28,11 +28,11 @@ mod tests;
 
 #[cfg(test)]
 fn file_path(item: &str) -> PathBuf {
-    #[cfg(not(bazel_test))]
+    #[cfg(not(bazel_runfiles))]
     {
         PathBuf::from(env!("CARGO_MANIFEST_DIR")).join(format!("../../{item}"))
     }
-    #[cfg(bazel_test)]
+    #[cfg(bazel_runfiles)]
     {
         extern crate runfiles;
 

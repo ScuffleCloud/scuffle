@@ -137,7 +137,7 @@
 use std::borrow::Cow;
 use std::collections::{BTreeMap, BTreeSet};
 use std::io;
-use std::path::Path;
+use std::path::{Path, PathBuf};
 use std::process::Command;
 
 use cargo_manifest::DependencyDetail;
@@ -146,6 +146,7 @@ use cargo_manifest::DependencyDetail;
 struct DepsManifest {
     direct: BTreeMap<String, String>,
     search: BTreeSet<String>,
+    extra_rustc_args: Vec<String>,
 }
 
 /// The return status of the compilation.
@@ -203,8 +204,26 @@ impl std::fmt::Display for CompileOutput {
     }
 }
 
+fn file_path(item: &str) -> PathBuf {
+    #[cfg(bazel_runfiles)]
+    {
+        extern crate runfiles;
+
+        static RUNFILES: std::sync::LazyLock<runfiles::Runfiles> =
+            std::sync::LazyLock::new(|| runfiles::Runfiles::create().unwrap());
+
+        if let Some(path) = RUNFILES.rlocation(item) {
+            if path.exists() {
+                return path;
+            }
+        }
+    }
+
+    PathBuf::from(item)
+}
+
 fn cargo(config: &Config, manifest_path: &Path, subcommand: &str) -> Command {
-    let mut program = Command::new(std::env::var_os("CARGO").unwrap_or_else(|| "cargo".into()));
+    let mut program = Command::new(file_path(&std::env::var("CARGO").unwrap_or_else(|_| "cargo".into())));
     program.arg(subcommand);
     program.current_dir(manifest_path.parent().unwrap());
 
@@ -224,7 +243,10 @@ fn cargo(config: &Config, manifest_path: &Path, subcommand: &str) -> Command {
     program.arg("--manifest-path").arg(manifest_path);
     program.arg("--target-dir").arg(target_dir);
 
-    if !cfg!(trybuild_no_target) && !cfg!(postcompile_no_target) && config.target_dir.as_ref().unwrap().ends_with(target_triple::TARGET) {
+    if !cfg!(trybuild_no_target)
+        && !cfg!(postcompile_no_target)
+        && config.target_dir.as_ref().unwrap().ends_with(target_triple::TARGET)
+    {
         program.arg("--target").arg(target_triple::TARGET);
     }
 
@@ -232,7 +254,7 @@ fn cargo(config: &Config, manifest_path: &Path, subcommand: &str) -> Command {
 }
 
 fn rustc() -> Command {
-    let mut program = Command::new(std::env::var_os("RUSTC").unwrap_or_else(|| "rustc".into()));
+    let mut program = Command::new(file_path(&std::env::var("RUSTC").unwrap_or_else(|_| "rustc".into())));
     program.stderr(std::process::Stdio::piped());
     program.stdout(std::process::Stdio::piped());
     program
@@ -344,7 +366,15 @@ fn generate_cargo_toml(config: &Config, crate_name: &str) -> std::io::Result<(St
                 detail.default_features = Some(dep.default_features);
                 if let Some(mut path) = dep.path.clone() {
                     if std::path::Path::new(path.as_str()).is_relative() {
-                        path = config.manifest.as_ref().unwrap().parent().unwrap().join(path).to_string_lossy().to_string();
+                        path = config
+                            .manifest
+                            .as_ref()
+                            .unwrap()
+                            .parent()
+                            .unwrap()
+                            .join(path)
+                            .to_string_lossy()
+                            .to_string();
                     }
                     detail.path = Some(path);
                 }
@@ -466,27 +496,40 @@ pub fn compile_custom(tokens: impl std::fmt::Display, config: &Config) -> std::i
     Ok(result)
 }
 
-fn manifest_mode(
-    deps_manifest_path: String,
-    config: &Config,
-    tokens: String,
-) -> std::io::Result<CompileOutput> {
-    let deps_manifest = std::fs::read_to_string(deps_manifest_path).unwrap();
-    let manifest: DepsManifest = serde_json::from_str(&deps_manifest).map_err(|err| io::Error::new(
-        io::ErrorKind::InvalidData,
-        err
-    )).unwrap();
+fn manifest_mode(deps_manifest_path: String, config: &Config, tokens: String) -> std::io::Result<CompileOutput> {
+    let deps_manifest = match std::fs::read_to_string(file_path(&deps_manifest_path)) {
+        Ok(o) => o,
+        Err(err) => panic!("error opening file: {deps_manifest_path} {err}"),
+    };
+    let manifest: DepsManifest = serde_json::from_str(&deps_manifest)
+        .map_err(|err| io::Error::new(io::ErrorKind::InvalidData, err))
+        .unwrap();
 
     let current_dir = std::env::current_dir().unwrap();
 
-    let args: Vec<_> = manifest.direct.iter().map(|(name, file)| {
-        format!("--extern={name}={file}", file = current_dir.join(file).display())
-    }).chain(manifest.search.iter().map(|search| {
-        format!("-Ldependency={search}", search = current_dir.join(search).display())
-    })).chain([
-        "--crate-type=lib".into(),
-        format!("--edition={}", if config.edition.is_empty() { "2024" } else { config.edition.as_str() }),
-    ]).collect();
+    let args: Vec<_> = manifest
+        .direct
+        .iter()
+        .map(|(name, file)| format!("--extern={name}={file}", file = current_dir.join(file).display()))
+        .chain(
+            manifest
+                .search
+                .iter()
+                .map(|search| format!("-Ldependency={search}", search = current_dir.join(search).display())),
+        )
+        .chain(manifest.extra_rustc_args.iter().cloned())
+        .chain([
+            "--crate-type=lib".into(),
+            format!(
+                "--edition={}",
+                if config.edition.is_empty() {
+                    "2024"
+                } else {
+                    config.edition.as_str()
+                }
+            ),
+        ])
+        .collect();
 
     let tmp_dir = std::env::var("TEST_TMPDIR").expect("TEST_TMPDIR must be set when using manifest mode.");
     let name = config.function_name.replace("::", "__");
@@ -498,7 +541,8 @@ fn manifest_mode(
         .arg("-Zunpretty=expanded")
         .args(args.iter())
         .arg(&tmp_rs_path)
-        .output().unwrap();
+        .output()
+        .unwrap();
 
     let stdout = String::from_utf8(output.stdout).unwrap();
     let syn_file = syn::parse_file(&stdout);
@@ -531,11 +575,19 @@ fn manifest_mode(
     if result.status == ExitStatus::Success {
         let mut program = rustc();
 
-        program.arg("--test").args(args.iter()).arg("-o").arg(tmp_rs_path.with_extension("bin")).arg(&tmp_rs_path);
+        program
+            .arg("--test")
+            .args(args.iter())
+            .arg("-o")
+            .arg(tmp_rs_path.with_extension("bin"))
+            .arg(&tmp_rs_path);
 
         let mut comp_output = program.output().unwrap();
         if comp_output.status.success() && config.test {
-            comp_output = Command::new(tmp_rs_path.with_extension("bin")).arg("--quiet").output().unwrap();
+            comp_output = Command::new(tmp_rs_path.with_extension("bin"))
+                .arg("--quiet")
+                .output()
+                .unwrap();
         }
 
         result.status = if comp_output.status.success() {
@@ -662,11 +714,7 @@ pub fn build_dir() -> Option<&'static Path> {
 
 #[doc(hidden)]
 pub fn target_dir() -> Option<&'static Path> {
-    build_dir()?
-        .parent()?
-        .parent()?
-        .parent()?
-        .parent()
+    build_dir()?.parent()?.parent()?.parent()?.parent()
 }
 
 /// Define a config to use when compiling crates.

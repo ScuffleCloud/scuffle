@@ -67,10 +67,10 @@ rust_library(
         "@rules_rust//rust/platform:x86_64-unknown-linux-gnu": [],
         "//conditions:default": ["@platforms//:incompatible"],
     }),
-    version = "0.5.12",
+    version = "0.5.13",
     deps = [
-        "@crates_vendor__libc-0.2.173//:libc",
-        "@crates_vendor__quinn-udp-0.5.12//:build_script_build",
+        "@crates_vendor__libc-0.2.174//:libc",
+        "@crates_vendor__quinn-udp-0.5.13//:build_script_build",
         "@crates_vendor__tracing-0.1.41//:tracing",
     ] + select({
         "@rules_rust//rust/platform:aarch64-apple-darwin": [
@@ -151,7 +151,7 @@ cargo_build_script(
         "noclippy",
         "norustfmt",
     ],
-    version = "0.5.12",
+    version = "0.5.13",
     visibility = ["//visibility:private"],
     deps = [
         "@crates_vendor__cfg_aliases-0.2.1//:cfg_aliases",

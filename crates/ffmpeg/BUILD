@@ -1,16 +1,26 @@
-load("//bazel/tools:package.bzl", "scuffle_package")
+load("//bazel/tools:package.bzl", "scuffle_package", "scuffle_test")
 
 exports_files(["Cargo.toml"])
 
 scuffle_package(
     crate_name = "scuffle-ffmpeg",
-    data = [
+    compile_data = [
         ":CHANGELOG.md",
         ":Cargo.toml",
     ],
     proc_macro_deps = ["//crates/changelog"],
     deps = ["//crates/nutype-enum"],
-    test_deps = ["//crates/mp4"],
-    test_insta = True,
-    test_data = ["//assets:mp4"],
+    test = scuffle_test(
+        deps = ["//crates/mp4"],
+        insta = True,
+        data = ["//assets:mp4", "//bazel/toolchains/ffmpeg:lib"],
+        env = select({
+            "@platforms//os:windows": {
+                "PATH": "./$(rootpath //bazel/toolchains/ffmpeg:lib)"
+            },
+            "//conditions:default": {
+                "LD_LIBRARY_PATH": "./$(rootpath //bazel/toolchains/ffmpeg:lib)"
+            },
+        })
+    ),
 )

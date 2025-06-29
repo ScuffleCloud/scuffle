@@ -168,7 +168,11 @@ impl Input<()> {
 
         let path = path.as_ref().to_string_lossy();
 
-        Self::create_input(inner, Some(&std::ffi::CString::new(path.as_bytes()).unwrap()), &mut Dictionary::new())
+        Self::create_input(
+            inner,
+            Some(&std::ffi::CString::new(path.as_bytes()).unwrap()),
+            &mut Dictionary::new(),
+        )
     }
 }
 
@@ -179,9 +183,8 @@ mod tests {
 
     use insta::Settings;
 
-    use crate::file_path;
-
     use super::{DEFAULT_BUFFER_SIZE, FfmpegError, Input, InputOptions};
+    use crate::file_path;
 
     fn configure_insta_filters(settings: &mut Settings) {
         settings.add_filter(r"0x0000000000000000", "[NULL_POINTER]");
@@ -221,7 +224,7 @@ mod tests {
 
     #[test]
     fn test_new_with_default_options() {
-        let valid_media_data: Vec<u8> = include_bytes!("../../../../assets/avc_aac_large.mp4").to_vec();
+        let valid_media_data = std::fs::read(file_path("assets/avc_aac_large.mp4")).unwrap();
         let data = Cursor::new(valid_media_data);
         let result = Input::new(data);
 
@@ -234,7 +237,7 @@ mod tests {
 
     #[test]
     fn test_seekable_with_valid_input() {
-        let valid_media_data: Vec<u8> = include_bytes!("../../../../assets/avc_aac_large.mp4").to_vec();
+        let valid_media_data = std::fs::read(file_path("assets/avc_aac_large.mp4")).unwrap();
         let data = Cursor::new(valid_media_data);
         let result = Input::seekable(data);
 
@@ -247,8 +250,7 @@ mod tests {
 
     #[test]
     fn test_as_ptr() {
-        let valid_file_path = "assets/avc_aac_large.mp4";
-        let input = Input::open(file_path(valid_file_path)).expect("Failed to open valid file");
+        let input = Input::open(file_path("assets/avc_aac_large.mp4")).expect("Failed to open valid file");
 
         let ptr = input.as_ptr();
         assert!(!ptr.is_null(), "Expected non-null pointer");

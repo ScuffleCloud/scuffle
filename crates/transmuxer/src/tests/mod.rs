@@ -12,11 +12,11 @@ use crate::define::{AudioSettings, VideoSettings};
 use crate::{TransmuxResult, Transmuxer};
 
 fn file_path(item: &str) -> PathBuf {
-    #[cfg(not(bazel_test))]
+    #[cfg(not(bazel_runfiles))]
     {
         PathBuf::from(env!("CARGO_MANIFEST_DIR")).join(format!("../../{item}"))
     }
-    #[cfg(bazel_test)]
+    #[cfg(bazel_runfiles)]
     {
         extern crate runfiles;
 
@@ -88,7 +88,7 @@ fn test_transmuxer_avc_aac() {
         writer.write_all(&data.into_bytes()).unwrap();
     }
 
-    let mut ffprobe = Command::new("ffprobe")
+    let mut ffprobe = Command::new(std::env::var_os("FFPROBE").unwrap_or_else(|| "ffprobe".into()))
         .arg("-v")
         .arg("error")
         .arg("-fpsprobesize")
@@ -205,7 +205,7 @@ fn test_transmuxer_av1_aac() {
         writer.write_all(&data.into_bytes()).unwrap();
     }
 
-    let mut ffprobe = Command::new("ffprobe")
+    let mut ffprobe = Command::new(std::env::var_os("FFPROBE").unwrap_or_else(|| "ffprobe".into()))
         .arg("-v")
         .arg("error")
         .arg("-fpsprobesize")
@@ -313,7 +313,7 @@ fn test_transmuxer_hevc_aac() {
         writer.write_all(&data.into_bytes()).unwrap();
     }
 
-    let mut ffprobe = Command::new("ffprobe")
+    let mut ffprobe = Command::new(std::env::var_os("FFPROBE").unwrap_or_else(|| "ffprobe".into()))
         .arg("-v")
         .arg("error")
         .arg("-fpsprobesize")

@@ -71,11 +71,11 @@ rust_library(
         "@crates_vendor__multimap-0.10.1//:multimap",
         "@crates_vendor__once_cell-1.21.3//:once_cell",
         "@crates_vendor__petgraph-0.6.5//:petgraph",
-        "@crates_vendor__prettyplease-0.2.34//:prettyplease",
+        "@crates_vendor__prettyplease-0.2.35//:prettyplease",
         "@crates_vendor__prost-0.12.6//:prost",
         "@crates_vendor__prost-types-0.12.6//:prost_types",
         "@crates_vendor__regex-1.11.1//:regex",
-        "@crates_vendor__syn-2.0.103//:syn",
+        "@crates_vendor__syn-2.0.104//:syn",
         "@crates_vendor__tempfile-3.20.0//:tempfile",
     ],
 )

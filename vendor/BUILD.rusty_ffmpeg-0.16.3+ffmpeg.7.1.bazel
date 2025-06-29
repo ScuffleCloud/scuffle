@@ -80,6 +80,13 @@ cargo_build_script(
         include = ["**/*.rs"],
         allow_empty = True,
     ),
+    build_script_env = {
+        "CLANG_PATH": "$${pwd}/$(CC)",
+        "BINDGEN_EXTRA_CLANG_ARGS": "--sysroot=$(execpath @//bazel/toolchains/llvm:sysroot)",
+        "FFMPEG_DLL_PATH": "$(execpath @//bazel/toolchains/ffmpeg:lib)",
+        "FFMPEG_INCLUDE_DIR": "$(execpath @//bazel/toolchains/ffmpeg:include)",
+        "LIBCLANG_PATH": "$(execpath @//bazel/toolchains/llvm:libclang)",
+    },
     compile_data = glob(
         include = ["**"],
         allow_empty = True,
@@ -111,7 +118,12 @@ cargo_build_script(
             "WORKSPACE",
             "WORKSPACE.bazel",
         ],
-    ),
+    ) + [
+        "@//bazel/toolchains/ffmpeg:include",
+        "@//bazel/toolchains/ffmpeg:lib",
+        "@//bazel/toolchains/llvm:libclang",
+        "@//bazel/toolchains/llvm:sysroot",
+    ],
     edition = "2021",
     links = "ffmpeg",
     pkg_name = "rusty_ffmpeg",

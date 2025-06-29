@@ -347,11 +347,11 @@ mod tests {
     }
 
     fn file_path(item: &str) -> PathBuf {
-        #[cfg(not(bazel_test))]
+        #[cfg(not(bazel_runfiles))]
         {
             PathBuf::from(env!("CARGO_MANIFEST_DIR")).join(item)
         }
-        #[cfg(bazel_test)]
+        #[cfg(bazel_runfiles)]
         {
             extern crate runfiles;
 
@@ -445,7 +445,11 @@ mod tests {
         let err = parse_settings::<TestSettings>(options).expect_err("expected error");
 
         if let crate::SettingsError::Config(config::ConfigError::FileParse { uri: Some(uri), cause }) = err {
-            assert!(path.display().to_string().ends_with(&uri), "path ({}) ends with {uri}", path.display());
+            assert!(
+                path.display().to_string().ends_with(&uri),
+                "path ({}) ends with {uri}",
+                path.display()
+            );
             assert_eq!(
                 cause.to_string(),
                 format!("No supported format found for file: {:?}", Some(uri))
@@ -512,7 +516,11 @@ mod tests {
                 version: "0.1.0",
                 about: "test",
                 author: "test",
-                argv: vec!["test".to_string(), "-c".to_string(), file_path("assets/templates.toml").to_string_lossy().to_string()],
+                argv: vec![
+                    "test".to_string(),
+                    "-c".to_string(),
+                    file_path("assets/templates.toml").to_string_lossy().to_string(),
+                ],
             }),
             ..Default::default()
         };

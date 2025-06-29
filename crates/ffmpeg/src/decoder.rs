@@ -306,7 +306,7 @@ mod tests {
     use crate::codec::DecoderCodec;
     use crate::decoder::{Decoder, DecoderOptions};
     use crate::io::Input;
-    use crate::{file_path, AVCodecID, AVMediaType};
+    use crate::{AVCodecID, AVMediaType, file_path};
 
     #[test]
     fn test_generic_decoder_debug() {

@@ -100,11 +100,11 @@ mod tests {
     const RESPONSE_TEXT: &str = "Hello, world!";
 
     fn file_path(item: &str) -> PathBuf {
-        #[cfg(not(bazel_test))]
+        #[cfg(not(bazel_runfiles))]
         {
             PathBuf::from(env!("CARGO_MANIFEST_DIR")).join(format!("../../{item}"))
         }
-        #[cfg(bazel_test)]
+        #[cfg(bazel_runfiles)]
         {
             extern crate runfiles;
 
@@ -272,10 +272,6 @@ mod tests {
 
     #[cfg(feature = "tls-rustls")]
     fn rustls_config() -> rustls::ServerConfig {
-        rustls::crypto::aws_lc_rs::default_provider()
-            .install_default()
-            .expect("failed to install aws lc provider");
-
         let certfile = std::fs::File::open(file_path("assets/cert.pem")).expect("cert not found");
         let certs = rustls_pemfile::certs(&mut std::io::BufReader::new(certfile))
             .collect::<Result<Vec<_>, _>>()

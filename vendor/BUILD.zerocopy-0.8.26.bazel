@@ -21,7 +21,7 @@ cargo_toml_env_vars(
 )
 
 rust_library(
-    name = "prettyplease",
+    name = "zerocopy",
     srcs = glob(
         include = ["**/*.rs"],
         allow_empty = True,
@@ -38,27 +38,9 @@ rust_library(
             "WORKSPACE.bazel",
         ],
     ),
-    crate_features = select({
-        "@rules_rust//rust/platform:aarch64-apple-darwin": [
-            "verbatim",
-        ],
-        "@rules_rust//rust/platform:aarch64-pc-windows-msvc": [
-            "verbatim",
-        ],
-        "@rules_rust//rust/platform:aarch64-unknown-linux-gnu": [
-            "verbatim",
-        ],
-        "@rules_rust//rust/platform:x86_64-apple-darwin": [
-            "verbatim",
-        ],
-        "@rules_rust//rust/platform:x86_64-pc-windows-msvc": [
-            "verbatim",
-        ],
-        "@rules_rust//rust/platform:x86_64-unknown-linux-gnu": [
-            "verbatim",
-        ],
-        "//conditions:default": [],
-    }),
+    crate_features = [
+        "simd",
+    ],
     crate_root = "src/lib.rs",
     edition = "2021",
     rustc_env_files = [
@@ -69,7 +51,7 @@ rust_library(
     ],
     tags = [
         "cargo-bazel",
-        "crate-name=prettyplease",
+        "crate-name=zerocopy",
         "manual",
         "noclippy",
         "norustfmt",
@@ -84,11 +66,9 @@ rust_library(
         "@rules_rust//rust/platform:x86_64-unknown-linux-gnu": [],
         "//conditions:default": ["@platforms//:incompatible"],
     }),
-    version = "0.2.34",
+    version = "0.8.26",
     deps = [
-        "@crates_vendor__prettyplease-0.2.34//:build_script_build",
-        "@crates_vendor__proc-macro2-1.0.95//:proc_macro2",
-        "@crates_vendor__syn-2.0.103//:syn",
+        "@crates_vendor__zerocopy-0.8.26//:build_script_build",
     ],
 )
 
@@ -111,27 +91,9 @@ cargo_build_script(
             "WORKSPACE.bazel",
         ],
     ),
-    crate_features = select({
-        "@rules_rust//rust/platform:aarch64-apple-darwin": [
-            "verbatim",
-        ],
-        "@rules_rust//rust/platform:aarch64-pc-windows-msvc": [
-            "verbatim",
-        ],
-        "@rules_rust//rust/platform:aarch64-unknown-linux-gnu": [
-            "verbatim",
-        ],
-        "@rules_rust//rust/platform:x86_64-apple-darwin": [
-            "verbatim",
-        ],
-        "@rules_rust//rust/platform:x86_64-pc-windows-msvc": [
-            "verbatim",
-        ],
-        "@rules_rust//rust/platform:x86_64-unknown-linux-gnu": [
-            "verbatim",
-        ],
-        "//conditions:default": [],
-    }),
+    crate_features = [
+        "simd",
+    ],
     crate_name = "build_script_build",
     crate_root = "build.rs",
     data = glob(
@@ -147,8 +109,7 @@ cargo_build_script(
         ],
     ),
     edition = "2021",
-    links = "prettyplease02",
-    pkg_name = "prettyplease",
+    pkg_name = "zerocopy",
     rustc_env_files = [
         ":cargo_toml_env_vars",
     ],
@@ -157,12 +118,12 @@ cargo_build_script(
     ],
     tags = [
         "cargo-bazel",
-        "crate-name=prettyplease",
+        "crate-name=zerocopy",
         "manual",
         "noclippy",
         "norustfmt",
     ],
-    version = "0.2.34",
+    version = "0.8.26",
     visibility = ["//visibility:private"],
 )
 

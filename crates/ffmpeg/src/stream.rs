@@ -335,11 +335,11 @@ mod tests {
 
     use insta::{Settings, assert_debug_snapshot};
 
-    use crate::{file_path, AVDiscard};
     use crate::ffi::AVStream;
     use crate::io::Input;
     use crate::rational::Rational;
     use crate::stream::AVMediaType;
+    use crate::{AVDiscard, file_path};
 
     #[test]
     fn test_best_stream() {

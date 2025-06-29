@@ -4,7 +4,7 @@ exports_files(["Cargo.toml"])
 
 scuffle_package(
     crate_name = "scuffle-aac",
-    data = [
+    compile_data = [
         ":CHANGELOG.md",
         ":Cargo.toml",
     ],

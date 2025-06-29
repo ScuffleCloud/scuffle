@@ -1,6 +1,6 @@
 use argon2::password_hash::SaltString;
 use argon2::{Argon2, PasswordHasher};
-use diesel::{BoolExpressionMethods, ExpressionMethods, JoinOnDsl, OptionalExtension, QueryDsl, SelectableHelper};
+use diesel::{ExpressionMethods, JoinOnDsl, OptionalExtension, QueryDsl, SelectableHelper};
 use diesel_async::RunQueryDsl;
 use sha2::Digest;
 use tonic_types::{ErrorDetails, StatusExt};
@@ -8,8 +8,8 @@ use tonic_types::{ErrorDetails, StatusExt};
 use crate::chrono_ext::ChronoDateTimeExt;
 use crate::id::Id;
 use crate::middleware::IpAddressInfo;
-use crate::models::{OrganizationInvitation, OrganizationMember, User, UserEmail, UserId, UserSession};
-use crate::schema::{organization_invitations, organization_members, user_emails, user_sessions, users};
+use crate::models::{User, UserEmail, UserId, UserSession};
+use crate::schema::{user_emails, user_sessions, users};
 use crate::services::sessions::crypto;
 use crate::std_ext::ResultExt;
 
@@ -83,34 +83,6 @@ pub(crate) async fn create_new_user_and_session(
         .execute(db)
         .await
         .into_tonic_internal("failed to insert user email")?;
-
-    // Process existing invitations
-    let invitations = diesel::delete(organization_invitations::dsl::organization_invitations)
-        .filter(
-            organization_invitations::dsl::email
-                .eq(&email)
-                .and(organization_invitations::dsl::expires_at.gt(chrono::Utc::now())),
-        )
-        .returning(OrganizationInvitation::as_select())
-        .get_results::<OrganizationInvitation>(db)
-        .await
-        .into_tonic_internal("failed to load organization invitations")?;
-
-    let memberships: Vec<_> = invitations
-        .into_iter()
-        .map(|inv| OrganizationMember {
-            organization_id: inv.organization_id,
-            user_id: user.id,
-            invited_by_id: Some(inv.invited_by_id),
-            inline_policy: None,
-        })
-        .collect();
-
-    diesel::insert_into(organization_members::dsl::organization_members)
-        .values(memberships)
-        .execute(db)
-        .await
-        .into_tonic_internal("failed to insert organization member")?;
 
     let new_token = create_session(db, user.id, device, ip_info).await?;
 

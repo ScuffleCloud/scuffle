@@ -101,15 +101,19 @@ impl<G: CoreConfig> pb::scufflecloud::core::v1::sessions_service_server::Session
             .transaction::<_, TxError, _>(|conn| {
                 async move {
                     // Delete email registration request
-                    let registration_request = diesel::delete(email_registration_requests::dsl::email_registration_requests)
-                        .filter(email_registration_requests::dsl::code.eq(&payload.code))
-                        .returning(EmailRegistrationRequest::as_select())
-                        .get_results::<EmailRegistrationRequest>(conn)
-                        .await
-                        .into_tonic_internal("failed to delete email registration request")?;
-                    let registration_request = registration_request.into_iter().next().ok_or_else(|| {
-                        tonic::Status::with_error_details(Code::NotFound, "unknown code", ErrorDetails::new())
-                    })?;
+                    let Some(registration_request) =
+                        diesel::delete(email_registration_requests::dsl::email_registration_requests)
+                            .filter(email_registration_requests::dsl::code.eq(&payload.code))
+                            .returning(EmailRegistrationRequest::as_select())
+                            .get_result::<EmailRegistrationRequest>(conn)
+                            .await
+                            .optional()
+                            .into_tonic_internal("failed to delete email registration request")?
+                    else {
+                        return Err(
+                            tonic::Status::with_error_details(Code::NotFound, "unknown code", ErrorDetails::new()).into(),
+                        );
+                    };
 
                     let (_, new_token) = common::create_new_user_and_session(
                         conn,
@@ -276,13 +280,44 @@ impl<G: CoreConfig> pb::scufflecloud::core::v1::sessions_service_server::Session
 
     async fn complete_login_with_magic_link(
         &self,
-        _req: tonic::Request<pb::scufflecloud::core::v1::CompleteLoginWithMagicLinkRequest>,
+        req: tonic::Request<pb::scufflecloud::core::v1::CompleteLoginWithMagicLinkRequest>,
     ) -> Result<tonic::Response<pb::scufflecloud::core::v1::NewUserSessionToken>, tonic::Status> {
-        Err(tonic::Status::with_error_details(
-            tonic::Code::Unimplemented,
-            "this endpoint is not implemented",
-            ErrorDetails::new(),
-        ))
+        let (_, extensions, payload) = req.into_parts();
+        let global = extensions.global::<G>()?;
+
+        let ip_info = extensions.ip_address_info()?;
+        let mut db = global.db().await.into_tonic_internal("failed to connect to database")?;
+
+        let device = payload.device.require("device")?;
+
+        let new_token = db
+            .transaction::<_, TxError, _>(|conn| {
+                async move {
+                    // Find and delete magic link user session request
+                    let Some(session_request) =
+                        diesel::delete(magic_link_user_session_requests::dsl::magic_link_user_session_requests)
+                            .filter(magic_link_user_session_requests::dsl::code.eq(&payload.code))
+                            .returning(MagicLinkUserSessionRequest::as_select())
+                            .get_result::<MagicLinkUserSessionRequest>(conn)
+                            .await
+                            .optional()
+                            .into_tonic_internal("failed to delete magic link user session request")?
+                    else {
+                        return Err(
+                            tonic::Status::with_error_details(Code::NotFound, "unknown code", ErrorDetails::new()).into(),
+                        );
+                    };
+
+                    // Create a new session for the user
+                    let new_token = common::create_session(conn, session_request.user_id, device, ip_info).await?;
+
+                    Ok(new_token)
+                }
+                .scope_boxed()
+            })
+            .await?;
+
+        Ok(tonic::Response::new(new_token))
     }
 
     async fn login_with_external_provider(

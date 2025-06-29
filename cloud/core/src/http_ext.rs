@@ -20,6 +20,12 @@ pub(crate) trait RequestExt {
         self.extensions().get::<UserSession>()
     }
 
+    fn session_or_err(&self) -> Result<&UserSession, tonic::Status> {
+        self.session().ok_or_else(|| {
+            tonic::Status::with_error_details(Code::Unauthenticated, "you must be logged in", ErrorDetails::new())
+        })
+    }
+
     fn ip_address_info(&self) -> Result<&crate::middleware::IpAddressInfo, tonic::Status> {
         self.extensions().get::<crate::middleware::IpAddressInfo>().ok_or_else(|| {
             tracing::error!("missing IpAddressInfo extension");

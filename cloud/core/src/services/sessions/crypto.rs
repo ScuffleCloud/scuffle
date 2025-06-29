@@ -5,7 +5,7 @@ use tonic::Code;
 
 use crate::std_ext::ResultExt;
 
-pub(crate) fn generate_token() -> Result<[u8; 32], rand::rand_core::OsError> {
+pub(crate) fn generate_random_bytes() -> Result<[u8; 32], rand::rand_core::OsError> {
     let mut token = [0u8; 32];
     rand::rngs::OsRng.try_fill_bytes(&mut token)?;
     Ok(token)

@@ -3,7 +3,7 @@ use rand::TryRngCore;
 use rsa::pkcs8::DecodePublicKey;
 use tonic::Code;
 
-use crate::result_ext::ResultExt;
+use crate::std_ext::ResultExt;
 
 pub(crate) fn generate_token() -> Result<[u8; 32], rand::rand_core::OsError> {
     let mut token = [0u8; 32];

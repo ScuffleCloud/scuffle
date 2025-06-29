@@ -52,13 +52,13 @@ ON DELETE CASCADE;
 
 CREATE INDEX ON "user_google_accounts"("user_id");
 
--- This table contains user session requests which precede a full user session.
+-- This table contains one-time code user session requests which precede a full user session.
 -- This is usually used for the CLI application.
 CREATE TABLE "user_session_requests" (
     "id" UUID PRIMARY KEY,
     "device_name" VARCHAR(255) NOT NULL, -- Name of the device which is requesting the session
     "device_ip" INET NOT NULL,
-    "code" VARCHAR(6) NOT NULL UNIQUE, -- 6 digits code
+    "code" VARCHAR(6) NOT NULL UNIQUE, -- 6 digit code
     "approved_by" UUID, -- Only set if this request was approved by a user.
     "expires_at" TIMESTAMPTZ NOT NULL
 );
@@ -68,6 +68,20 @@ ADD FOREIGN KEY("approved_by") REFERENCES "users"("id")
 ON DELETE CASCADE;
 
 CREATE INDEX ON "user_session_requests"("code");
+
+-- Used for magic link login.
+CREATE TABLE "magic_link_user_session_requests" (
+    "id" UUID PRIMARY KEY,
+    "user_id" UUID NOT NULL,
+    "code" BYTEA NOT NULL UNIQUE,
+    "expires_at" TIMESTAMPTZ NOT NULL
+);
+
+ALTER TABLE "magic_link_user_session_requests"
+ADD FOREIGN KEY("user_id") REFERENCES "users"("id")
+ON DELETE CASCADE;
+
+CREATE INDEX ON "magic_link_user_session_requests"("code");
 
 CREATE TYPE "device_algorithm" AS ENUM (
     'RSA_OAEP_SHA256' -- RSA with OAEP padding and SHA-256 hashing

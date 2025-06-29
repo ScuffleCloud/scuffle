@@ -4,6 +4,8 @@
 [print_schema]
 file = "cloud/core/src/schema.rs"
 custom_type_derives = ["diesel::query_builder::QueryId", "Clone"]
+with_docs = true
+patch_file = "./src/schema.patch"
 
 [migrations_directory]
 dir = "./migrations"

@@ -167,7 +167,7 @@ message LoginWithMagicLinkRequest {
 }
 
 message CompleteLoginWithMagicLinkRequest {
-    string code = 1;
+    bytes code = 1;
     Device device = 2;
 }
 

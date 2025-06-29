@@ -193,7 +193,8 @@ message CompleteLoginWithExternalProviderRequest {
 }
 
 message LoginWithWebauthnPublicKeyRequest {
-    bytes pk_id = 1;
+    CaptchaChallengeResponse captcha = 1;
+    bytes pk_id = 2;
 }
 
 message LoginWithWebauthnPublicKeyResponse {
@@ -215,7 +216,7 @@ message UserSessionRequest {
     string id = 1 [(string_constraint).id = true];
     string name = 2;
     string ip = 3;
-    string approved_by = 4 [(string_constraint).id = true];
+    optional string approved_by = 4 [(string_constraint).id = true];
     google.protobuf.Timestamp expires_at = 5;
 }
 

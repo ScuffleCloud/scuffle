@@ -102,7 +102,7 @@ pub(crate) async fn create_session(
     let token_expires_at = chrono::Utc::now() + chrono::Duration::hours(1);
     let session_expires_at = chrono::Utc::now() + chrono::Duration::days(30);
 
-    let token = crypto::generate_token().into_tonic_internal("failed to generate token")?;
+    let token = crypto::generate_random_bytes().into_tonic_internal("failed to generate token")?;
 
     let encrypted_token = crypto::encrypt_token(device.algorithm(), &token, &device.public_key_data)?;
 

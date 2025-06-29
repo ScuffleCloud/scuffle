@@ -10,6 +10,7 @@ use crate::http_ext::RequestExt;
 use crate::id::Id;
 use crate::models::{
     EmailRegistrationRequest, EmailRegistrationRequestId, MagicLinkUserSessionRequest, UserEmail, UserSessionRequest,
+    UserSessionRequestId,
 };
 use crate::schema::{
     email_registration_requests, magic_link_user_session_requests, mfa_webauthn_pks, user_emails, user_session_requests,
@@ -443,46 +444,138 @@ impl<G: CoreConfig> pb::scufflecloud::core::v1::sessions_service_server::Session
 
     async fn get_user_session_request(
         &self,
-        _req: tonic::Request<pb::scufflecloud::core::v1::GetUserSessionRequestRequest>,
+        req: tonic::Request<pb::scufflecloud::core::v1::GetUserSessionRequestRequest>,
     ) -> Result<tonic::Response<pb::scufflecloud::core::v1::UserSessionRequest>, tonic::Status> {
-        Err(tonic::Status::with_error_details(
-            tonic::Code::Unimplemented,
-            "this endpoint is not implemented",
-            ErrorDetails::new(),
-        ))
+        let (_, extensions, payload) = req.into_parts();
+        let global = extensions.global::<G>()?;
+
+        let mut db = global.db().await.into_tonic_internal("failed to connect to database")?;
+
+        let id: UserSessionRequestId = payload.id.parse().into_tonic_internal("failed to parse id")?;
+
+        let Some(session_request) = user_session_requests::dsl::user_session_requests
+            .find(&id)
+            .select(UserSessionRequest::as_select())
+            .first::<UserSessionRequest>(&mut *db)
+            .await
+            .optional()
+            .into_tonic_internal("failed to query user session request")?
+        else {
+            return Err(tonic::Status::with_error_details(
+                tonic::Code::NotFound,
+                "user session request not found",
+                ErrorDetails::new(),
+            ));
+        };
+
+        Ok(tonic::Response::new(session_request.into()))
     }
 
     async fn get_user_session_request_by_code(
         &self,
-        _req: tonic::Request<pb::scufflecloud::core::v1::GetUserSessionRequestByCodeRequest>,
+        req: tonic::Request<pb::scufflecloud::core::v1::GetUserSessionRequestByCodeRequest>,
     ) -> Result<tonic::Response<pb::scufflecloud::core::v1::UserSessionRequest>, tonic::Status> {
-        Err(tonic::Status::with_error_details(
-            tonic::Code::Unimplemented,
-            "this endpoint is not implemented",
-            ErrorDetails::new(),
-        ))
+        let (_, extensions, payload) = req.into_parts();
+        let global = extensions.global::<G>()?;
+
+        let mut db = global.db().await.into_tonic_internal("failed to connect to database")?;
+
+        let Some(session_request) = user_session_requests::dsl::user_session_requests
+            .filter(user_session_requests::dsl::code.eq(&payload.code))
+            .select(UserSessionRequest::as_select())
+            .first::<UserSessionRequest>(&mut *db)
+            .await
+            .optional()
+            .into_tonic_internal("failed to query user session request")?
+        else {
+            return Err(tonic::Status::with_error_details(
+                tonic::Code::NotFound,
+                "user session request not found",
+                ErrorDetails::new(),
+            ));
+        };
+
+        Ok(tonic::Response::new(session_request.into()))
     }
 
     async fn approve_user_session_request_by_code(
         &self,
-        _req: tonic::Request<pb::scufflecloud::core::v1::ApproveUserSessionRequestByCodeRequest>,
+        req: tonic::Request<pb::scufflecloud::core::v1::ApproveUserSessionRequestByCodeRequest>,
     ) -> Result<tonic::Response<pb::scufflecloud::core::v1::UserSessionRequest>, tonic::Status> {
-        Err(tonic::Status::with_error_details(
-            tonic::Code::Unimplemented,
-            "this endpoint is not implemented",
-            ErrorDetails::new(),
-        ))
+        let (_, extensions, payload) = req.into_parts();
+        let global = extensions.global::<G>()?;
+
+        let session = extensions.session_or_err()?;
+
+        let mut db = global.db().await.into_tonic_internal("failed to connect to database")?;
+
+        let Some(session_request) = diesel::update(user_session_requests::dsl::user_session_requests)
+            .filter(user_session_requests::dsl::code.eq(&payload.code))
+            .set(user_session_requests::dsl::approved_by.eq(&session.user_id))
+            .returning(UserSessionRequest::as_select())
+            .get_result::<UserSessionRequest>(&mut *db)
+            .await
+            .optional()
+            .into_tonic_internal("failed to update user session request")?
+        else {
+            return Err(tonic::Status::with_error_details(
+                tonic::Code::NotFound,
+                "user session request not found",
+                ErrorDetails::new(),
+            ));
+        };
+
+        Ok(tonic::Response::new(session_request.into()))
     }
 
     async fn complete_user_session_request(
         &self,
-        _req: tonic::Request<pb::scufflecloud::core::v1::CompleteUserSessionRequestRequest>,
+        req: tonic::Request<pb::scufflecloud::core::v1::CompleteUserSessionRequestRequest>,
     ) -> Result<tonic::Response<pb::scufflecloud::core::v1::NewUserSessionToken>, tonic::Status> {
-        Err(tonic::Status::with_error_details(
-            tonic::Code::Unimplemented,
-            "this endpoint is not implemented",
-            ErrorDetails::new(),
-        ))
+        let (_, extensions, payload) = req.into_parts();
+        let global = extensions.global::<G>()?;
+
+        let ip_info = extensions.ip_address_info()?;
+        let mut db = global.db().await.into_tonic_internal("failed to connect to database")?;
+
+        let id: UserSessionRequestId = payload.id.parse().into_tonic_internal("failed to parse id")?;
+        let device = payload.device.require("device")?;
+
+        let new_token = db
+            .transaction::<_, TxError, _>(move |conn| {
+                async move {
+                    // Delete user session request
+                    let Some(session_request) = diesel::delete(user_session_requests::dsl::user_session_requests)
+                        .filter(user_session_requests::dsl::id.eq(id))
+                        .returning(UserSessionRequest::as_select())
+                        .get_result::<UserSessionRequest>(conn)
+                        .await
+                        .optional()
+                        .into_tonic_internal("failed to delete user session request")?
+                    else {
+                        return Err(
+                            tonic::Status::with_error_details(Code::NotFound, "unknown id", ErrorDetails::new()).into(),
+                        );
+                    };
+
+                    let Some(approved_by) = session_request.approved_by else {
+                        return Err(tonic::Status::with_error_details(
+                            tonic::Code::FailedPrecondition,
+                            "user session request is not approved",
+                            ErrorDetails::new(),
+                        )
+                        .into());
+                    };
+
+                    let new_token = common::create_session(conn, approved_by, device, ip_info).await?;
+
+                    Ok(new_token)
+                }
+                .scope_boxed()
+            })
+            .await?;
+
+        Ok(tonic::Response::new(new_token))
     }
 
     async fn refresh_user_session(

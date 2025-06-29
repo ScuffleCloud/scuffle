@@ -1,0 +1,163 @@
+use argon2::password_hash::SaltString;
+use argon2::{Argon2, PasswordHasher};
+use diesel::{BoolExpressionMethods, ExpressionMethods, JoinOnDsl, OptionalExtension, QueryDsl, SelectableHelper};
+use diesel_async::RunQueryDsl;
+use sha2::Digest;
+use tonic_types::{ErrorDetails, StatusExt};
+
+use crate::chrono_ext::ChronoDateTimeExt;
+use crate::id::Id;
+use crate::middleware::IpAddressInfo;
+use crate::models::{OrganizationInvitation, OrganizationMember, User, UserEmail, UserId, UserSession};
+use crate::schema::{organization_invitations, organization_members, user_emails, user_sessions, users};
+use crate::services::sessions::crypto;
+use crate::std_ext::ResultExt;
+
+pub(crate) async fn get_user_by_email(db: &mut diesel_async::AsyncPgConnection, email: &str) -> Result<User, tonic::Status> {
+    let Some((user, _)) = users::dsl::users
+        .inner_join(user_emails::dsl::user_emails.on(users::dsl::primary_email.eq(user_emails::dsl::email)))
+        .filter(user_emails::dsl::email.eq(&email))
+        .select((User::as_select(), user_emails::dsl::email))
+        .first::<(User, String)>(&mut *db)
+        .await
+        .optional()
+        .into_tonic_internal("failed to query user by email")?
+    else {
+        return Err(tonic::Status::with_error_details(
+            tonic::Code::NotFound,
+            "user not found",
+            ErrorDetails::new(),
+        ));
+    };
+
+    Ok(user)
+}
+
+pub(crate) fn normalize_email(email: &str) -> String {
+    email.trim().to_ascii_lowercase()
+}
+
+pub(crate) async fn create_new_user_and_session(
+    db: &mut diesel_async::AsyncPgConnection,
+    email: String,
+    password: Option<&str>,
+    device: pb::scufflecloud::core::v1::Device,
+    ip_info: &IpAddressInfo,
+) -> Result<(User, pb::scufflecloud::core::v1::NewUserSessionToken), tonic::Status> {
+    let email = normalize_email(&email);
+
+    let password_hash = if let Some(password) = password {
+        // Create user with given password
+        let salt = SaltString::generate(&mut argon2::password_hash::rand_core::OsRng);
+        let argon2 = Argon2::default();
+        let hash = argon2
+            .hash_password(password.as_bytes(), &salt)
+            .into_tonic_internal("failed to hash password")?
+            .to_string();
+        Some(hash)
+    } else {
+        None
+    };
+
+    let user = User {
+        id: Id::new(),
+        preferred_name: None,
+        first_name: None,
+        last_name: None,
+        password_hash,
+        primary_email: email.clone(),
+    };
+    diesel::insert_into(users::dsl::users)
+        .values(&user)
+        .execute(db)
+        .await
+        .into_tonic_internal("failed to insert user")?;
+
+    let user_email = UserEmail {
+        email: email.clone(),
+        user_id: user.id,
+        created_at: chrono::Utc::now(),
+    };
+    diesel::insert_into(user_emails::dsl::user_emails)
+        .values(&user_email)
+        .execute(db)
+        .await
+        .into_tonic_internal("failed to insert user email")?;
+
+    // Process existing invitations
+    let invitations = diesel::delete(organization_invitations::dsl::organization_invitations)
+        .filter(
+            organization_invitations::dsl::email
+                .eq(&email)
+                .and(organization_invitations::dsl::expires_at.gt(chrono::Utc::now())),
+        )
+        .returning(OrganizationInvitation::as_select())
+        .get_results::<OrganizationInvitation>(db)
+        .await
+        .into_tonic_internal("failed to load organization invitations")?;
+
+    let memberships: Vec<_> = invitations
+        .into_iter()
+        .map(|inv| OrganizationMember {
+            organization_id: inv.organization_id,
+            user_id: user.id,
+            invited_by_id: Some(inv.invited_by_id),
+            inline_policy: None,
+        })
+        .collect();
+
+    diesel::insert_into(organization_members::dsl::organization_members)
+        .values(memberships)
+        .execute(db)
+        .await
+        .into_tonic_internal("failed to insert organization member")?;
+
+    let new_token = create_session(db, user.id, device, ip_info).await?;
+
+    Ok((user, new_token))
+}
+
+pub(crate) async fn create_session(
+    db: &mut diesel_async::AsyncPgConnection,
+    user_id: UserId,
+    device: pb::scufflecloud::core::v1::Device,
+    ip_info: &IpAddressInfo,
+) -> Result<pb::scufflecloud::core::v1::NewUserSessionToken, tonic::Status> {
+    // Create user session, device and token
+    let device_fingerprint = sha2::Sha256::digest(&device.public_key_data).to_vec();
+
+    let token_id = Id::new();
+    let token_expires_at = chrono::Utc::now() + chrono::Duration::hours(1);
+    let session_expires_at = chrono::Utc::now() + chrono::Duration::days(30);
+
+    let token = crypto::generate_token().into_tonic_internal("failed to generate token")?;
+
+    let encrypted_token = crypto::encrypt_token(device.algorithm(), &token, &device.public_key_data)?;
+
+    let user_session = UserSession {
+        user_id,
+        device_fingerprint,
+        device_algorithm: device.algorithm().into(),
+        device_pk_data: device.public_key_data,
+        last_used_at: chrono::Utc::now(),
+        last_ip: ip_info.to_network(),
+        token_id: Some(token_id),
+        token: Some(token.to_vec()),
+        token_expires_at: Some(token_expires_at),
+        expires_at: session_expires_at,
+    };
+    diesel::insert_into(user_sessions::dsl::user_sessions)
+        .values(&user_session)
+        .execute(db)
+        .await
+        .into_tonic_internal("failed to insert user session")?;
+
+    let new_token = pb::scufflecloud::core::v1::NewUserSessionToken {
+        id: token_id.to_string(),
+        encrypted_token,
+        expires_at: Some(token_expires_at.to_prost_timestamp_utc()),
+        session_expires_at: Some(session_expires_at.to_prost_timestamp_utc()),
+    };
+
+    Ok(new_token)
+}

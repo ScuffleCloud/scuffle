@@ -22,14 +22,14 @@ use std::net::SocketAddr;
 use diesel_async::AsyncPgConnection;
 
 mod captcha;
-mod chrono_datetime_ext;
+mod chrono_ext;
+mod http_ext;
 mod id;
 mod middleware;
 mod models;
-mod request_ext;
-mod result_ext;
 mod schema;
 pub mod services;
+mod std_ext;
 mod utils;
 
 pub trait CoreConfig: scuffle_bootstrap::Global + scuffle_signal::SignalConfig + Sync + Send + 'static {

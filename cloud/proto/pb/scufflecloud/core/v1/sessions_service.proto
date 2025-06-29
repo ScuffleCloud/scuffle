@@ -23,12 +23,24 @@ service SessionsService {
 
     rpc LoginWithEmailOptions(LoginWithEmailOptionsRequest) returns (LoginWithEmailOptionsResponse) {
         option (tinc.method).endpoint = {
-            post: "/sessions/email/options"
+            post: "/sessions/email"
         };
     }
-    rpc LoginWithEmail(LoginWithEmailRequest) returns (NewUserSessionToken) {
+
+    rpc LoginWithEmailAndPassword(LoginWithEmailAndPasswordRequest) returns (NewUserSessionToken) {
         option (tinc.method).endpoint = {
-            post: "/sessions/email"
+            post: "/sessions/email/password"
+        };
+    }
+
+    rpc LoginWithMagicLink(LoginWithMagicLinkRequest) returns (google.protobuf.Empty) {
+        option (tinc.method).endpoint = {
+            post: "/sessions/email/magic-link"
+        };
+    }
+    rpc CompleteLoginWithMagicLink(CompleteLoginWithMagicLinkRequest) returns (NewUserSessionToken) {
+        option (tinc.method).endpoint = {
+            post: "/sessions/email/magic-link/complete"
         };
     }
 
@@ -142,12 +154,21 @@ message LoginWithEmailOptionsResponse {
     repeated LoginWithEmailOptions options = 1;
 }
 
-message LoginWithEmailRequest {
+message LoginWithEmailAndPasswordRequest {
     CaptchaChallengeResponse captcha = 1;
-    LoginWithEmailOptions option = 2;
-    // Based on the option, this is either the password or the magic link token.
-    string secret = 3;
+    string email = 2 [(tinc.field).constraint.string.email = true];
+    string password = 3 [(string_constraint).password = true];
     Device device = 4;
+}
+
+message LoginWithMagicLinkRequest {
+    CaptchaChallengeResponse captcha = 1;
+    string email = 2 [(tinc.field).constraint.string.email = true];
+}
+
+message CompleteLoginWithMagicLinkRequest {
+    string code = 1;
+    Device device = 2;
 }
 
 enum ExternalProvider {

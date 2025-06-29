@@ -6,7 +6,7 @@ use axum::response::Response;
 use reqwest::StatusCode;
 
 use crate::CoreConfig;
-use crate::request_ext::RequestExt;
+use crate::http_ext::RequestExt;
 
 #[derive(Debug, Clone)]
 pub(crate) struct IpAddressInfo {

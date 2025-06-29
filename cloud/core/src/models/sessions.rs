@@ -35,6 +35,22 @@ impl PrefixedId for UserSessionRequest {
     const PREFIX: &'static str = "session_req";
 }
 
+pub(crate) type MagicLinkUserSessionRequestId = Id<MagicLinkUserSessionRequest>;
+
+#[derive(Debug, Queryable, Selectable, Insertable, Identifiable, AsChangeset)]
+#[diesel(table_name = crate::schema::magic_link_user_session_requests)]
+#[diesel(check_for_backend(diesel::pg::Pg))]
+pub struct MagicLinkUserSessionRequest {
+    pub id: MagicLinkUserSessionRequestId,
+    pub user_id: UserId,
+    pub code: Vec<u8>,
+    pub expires_at: chrono::DateTime<chrono::Utc>,
+}
+
+impl PrefixedId for MagicLinkUserSessionRequest {
+    const PREFIX: &'static str = "magic_link";
+}
+
 #[derive(Debug)]
 pub struct UserSessionToken;
 

@@ -3,8 +3,8 @@ use diesel_async::RunQueryDsl;
 use tonic_types::{ErrorDetails, StatusExt};
 
 use crate::CoreConfig;
+use crate::http_ext::RequestExt;
 use crate::models::{User, UserId, UserSession};
-use crate::request_ext::RequestExt;
 use crate::schema::users;
 use crate::services::CoreSvc;
 

@@ -11,9 +11,9 @@ use diesel_async::RunQueryDsl;
 use hmac::Mac;
 
 use crate::CoreConfig;
+use crate::http_ext::RequestExt;
 use crate::middleware::IpAddressInfo;
 use crate::models::{UserSession, UserSessionTokenId};
-use crate::request_ext::RequestExt;
 use crate::schema::user_sessions;
 
 const TOKEN_ID_HEADER: HeaderName = HeaderName::from_static("scuf-token-id");

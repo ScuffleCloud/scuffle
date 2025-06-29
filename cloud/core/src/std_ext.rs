@@ -30,3 +30,19 @@ where
         }
     }
 }
+
+pub(crate) trait OptionExt<T> {
+    fn require(self, field: &str) -> Result<T, tonic::Status>;
+}
+
+impl<T> OptionExt<T> for Option<T> {
+    fn require(self, field: &str) -> Result<T, tonic::Status> {
+        self.ok_or_else(|| {
+            tonic::Status::with_error_details(
+                tonic::Code::InvalidArgument,
+                format!("missing {field}"),
+                tonic_types::ErrorDetails::with_bad_request_violation(field, "not set"),
+            )
+        })
+    }
+}

@@ -2,6 +2,7 @@ use diesel::Selectable;
 use diesel::prelude::{AsChangeset, Associations, Identifiable, Insertable, Queryable};
 
 use super::impl_enum;
+use crate::chrono_ext::ChronoDateTimeExt;
 use crate::id::{Id, PrefixedId};
 use crate::models::users::{User, UserId};
 
@@ -33,6 +34,18 @@ pub struct UserSessionRequest {
 
 impl PrefixedId for UserSessionRequest {
     const PREFIX: &'static str = "session_req";
+}
+
+impl From<UserSessionRequest> for pb::scufflecloud::core::v1::UserSessionRequest {
+    fn from(value: UserSessionRequest) -> Self {
+        pb::scufflecloud::core::v1::UserSessionRequest {
+            id: value.id.to_string(),
+            name: value.device_name,
+            ip: value.device_ip.to_string(),
+            approved_by: value.approved_by.map(|id| id.to_string()),
+            expires_at: Some(value.expires_at.to_prost_timestamp_utc()),
+        }
+    }
 }
 
 pub(crate) type MagicLinkUserSessionRequestId = Id<MagicLinkUserSessionRequest>;

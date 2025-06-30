@@ -1,3 +1,5 @@
+use std::sync::Arc;
+
 use argon2::password_hash::SaltString;
 use argon2::{Argon2, PasswordHasher};
 use diesel::{ExpressionMethods, JoinOnDsl, OptionalExtension, QueryDsl, SelectableHelper};
@@ -5,6 +7,7 @@ use diesel_async::RunQueryDsl;
 use sha2::Digest;
 use tonic_types::{ErrorDetails, StatusExt};
 
+use crate::CoreConfig;
 use crate::chrono_ext::ChronoDateTimeExt;
 use crate::id::Id;
 use crate::middleware::IpAddressInfo;
@@ -37,7 +40,8 @@ pub(crate) fn normalize_email(email: &str) -> String {
     email.trim().to_ascii_lowercase()
 }
 
-pub(crate) async fn create_new_user_and_session(
+pub(crate) async fn create_new_user_and_session<G: CoreConfig>(
+    global: &Arc<G>,
     db: &mut diesel_async::AsyncPgConnection,
     email: String,
     password: Option<&str>,
@@ -84,12 +88,13 @@ pub(crate) async fn create_new_user_and_session(
         .await
         .into_tonic_internal("failed to insert user email")?;
 
-    let new_token = create_session(db, user.id, device, ip_info).await?;
+    let new_token = create_session(global, db, user.id, device, ip_info).await?;
 
     Ok((user, new_token))
 }
 
-pub(crate) async fn create_session(
+pub(crate) async fn create_session<G: CoreConfig>(
+    global: &Arc<G>,
     db: &mut diesel_async::AsyncPgConnection,
     user_id: UserId,
     device: pb::scufflecloud::core::v1::Device,
@@ -98,9 +103,9 @@ pub(crate) async fn create_session(
     // Create user session, device and token
     let device_fingerprint = sha2::Sha256::digest(&device.public_key_data).to_vec();
 
+    let session_expires_at = chrono::Utc::now() + global.user_session_validity();
     let token_id = Id::new();
-    let token_expires_at = chrono::Utc::now() + chrono::Duration::hours(1);
-    let session_expires_at = chrono::Utc::now() + chrono::Duration::days(30);
+    let token_expires_at = chrono::Utc::now() + global.user_session_token_validity();
 
     let token = crypto::generate_random_bytes().into_tonic_internal("failed to generate token")?;
 

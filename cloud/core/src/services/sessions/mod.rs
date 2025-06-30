@@ -1,19 +1,20 @@
 use argon2::{Argon2, PasswordVerifier};
-use base64::Engine;
-use diesel::{ExpressionMethods, OptionalExtension, QueryDsl, SelectableHelper};
+use diesel::{BoolExpressionMethods, ExpressionMethods, OptionalExtension, QueryDsl, SelectableHelper};
 use diesel_async::scoped_futures::ScopedFutureExt;
 use diesel_async::{AsyncConnection, RunQueryDsl};
 use tonic::Code;
 use tonic_types::{ErrorDetails, StatusExt};
 
+use crate::chrono_ext::ChronoDateTimeExt;
 use crate::http_ext::RequestExt;
 use crate::id::Id;
 use crate::models::{
-    EmailRegistrationRequest, EmailRegistrationRequestId, MagicLinkUserSessionRequest, UserEmail, UserSessionRequest,
-    UserSessionRequestId,
+    EmailRegistrationRequest, EmailRegistrationRequestId, MagicLinkUserSessionRequest, UserEmail, UserSession,
+    UserSessionRequest, UserSessionRequestId,
 };
 use crate::schema::{
     email_registration_requests, magic_link_user_session_requests, mfa_webauthn_pks, user_emails, user_session_requests,
+    user_sessions,
 };
 use crate::services::CoreSvc;
 use crate::std_ext::{OptionExt, ResultExt};
@@ -42,50 +43,54 @@ impl<G: CoreConfig> pb::scufflecloud::core::v1::sessions_service_server::Session
             }
         }
 
-        // TODO: In transaction?
-
         // Check if email is already registered
         let email = common::normalize_email(&payload.email);
 
-        if user_emails::dsl::user_emails
-            .find(&email)
-            .select(UserEmail::as_select())
-            .first::<UserEmail>(&mut *db)
-            .await
-            .optional()
-            .into_tonic_internal("failed to query database")?
-            .is_some()
-        {
-            return Err(tonic::Status::with_error_details(
-                Code::AlreadyExists,
-                "email is already registered",
-                ErrorDetails::new(),
-            ));
-        }
-
         // Generate random code
         let code = crypto::generate_random_bytes().into_tonic_internal("failed to generate registration code")?;
+        // let code_base64 = base64::prelude::BASE64_URL_SAFE.encode(&code);
 
-        // Create email registration request
-        let registration_request = EmailRegistrationRequest {
-            id: EmailRegistrationRequestId::new(),
-            user_id: None,
-            email,
-            code: code.to_vec(),
-            expires_at: chrono::Utc::now() + chrono::Duration::hours(1),
-        };
+        db.transaction::<_, TxError, _>(move |conn| {
+            async move {
+                if user_emails::dsl::user_emails
+                    .find(&email)
+                    .select(UserEmail::as_select())
+                    .first::<UserEmail>(conn)
+                    .await
+                    .optional()
+                    .into_tonic_internal("failed to query database")?
+                    .is_some()
+                {
+                    return Err(tonic::Status::with_error_details(
+                        Code::AlreadyExists,
+                        "email is already registered",
+                        ErrorDetails::new(),
+                    )
+                    .into());
+                }
 
-        let code_base64 = base64::prelude::BASE64_STANDARD.encode(code);
-        tracing::info!(reg_req = ?registration_request, code = %code_base64, "inserting registration request");
+                // Create email registration request
+                let registration_request = EmailRegistrationRequest {
+                    id: EmailRegistrationRequestId::new(),
+                    user_id: None,
+                    email,
+                    code: code.to_vec(),
+                    expires_at: chrono::Utc::now() + global.email_registration_request_validity(),
+                };
 
-        diesel::insert_into(email_registration_requests::dsl::email_registration_requests)
-            .values(registration_request)
-            .execute(&mut *db)
-            .await
-            .into_tonic_internal("failed to insert email registration request")?;
+                diesel::insert_into(email_registration_requests::dsl::email_registration_requests)
+                    .values(registration_request)
+                    .execute(conn)
+                    .await
+                    .into_tonic_internal("failed to insert email registration request")?;
 
-        // TODO: Send email with registration code link
-        // let code = base64::prelude::BASE64_URL_SAFE.encode(code);
+                Ok(())
+            }
+            .scope_boxed()
+        })
+        .await?;
+
+        // TODO: Send email with registration code link code_base64
 
         Ok(tonic::Response::new(()))
     }
@@ -121,6 +126,7 @@ impl<G: CoreConfig> pb::scufflecloud::core::v1::sessions_service_server::Session
                     };
 
                     let (_, new_token) = common::create_new_user_and_session(
+                        global,
                         conn,
                         registration_request.email,
                         Some(&payload.password),
@@ -226,7 +232,7 @@ impl<G: CoreConfig> pb::scufflecloud::core::v1::sessions_service_server::Session
                         }
                     }
 
-                    Ok(common::create_session(conn, user.id, device, ip_info).await?)
+                    Ok(common::create_session(global, conn, user.id, device, ip_info).await?)
                 }
                 .scope_boxed()
             })
@@ -264,7 +270,7 @@ impl<G: CoreConfig> pb::scufflecloud::core::v1::sessions_service_server::Session
                     id: Id::new(),
                     user_id: user.id,
                     code: code.to_vec(),
-                    expires_at: chrono::Utc::now() + chrono::Duration::hours(1),
+                    expires_at: chrono::Utc::now() + global.magic_link_user_session_request_validity(),
                 };
                 diesel::insert_into(magic_link_user_session_requests::dsl::magic_link_user_session_requests)
                     .values(session_request)
@@ -272,13 +278,13 @@ impl<G: CoreConfig> pb::scufflecloud::core::v1::sessions_service_server::Session
                     .await
                     .into_tonic_internal("failed to insert magic link user session request")?;
 
-                // TODO: Send email with code
-
                 Ok(())
             }
             .scope_boxed()
         })
         .await?;
+
+        // TODO: Send email with code
 
         Ok(tonic::Response::new(()))
     }
@@ -314,7 +320,7 @@ impl<G: CoreConfig> pb::scufflecloud::core::v1::sessions_service_server::Session
                     };
 
                     // Create a new session for the user
-                    let new_token = common::create_session(conn, session_request.user_id, device, ip_info).await?;
+                    let new_token = common::create_session(global, conn, session_request.user_id, device, ip_info).await?;
 
                     Ok(new_token)
                 }
@@ -375,7 +381,7 @@ impl<G: CoreConfig> pb::scufflecloud::core::v1::sessions_service_server::Session
                         .set((
                             mfa_webauthn_pks::dsl::current_challenge.eq(&challenge),
                             mfa_webauthn_pks::dsl::current_challenge_expires_at
-                                .eq(chrono::Utc::now() + chrono::Duration::minutes(5)),
+                                .eq(chrono::Utc::now() + global.mfa_webauthn_challenge_validity()),
                         ))
                         .execute(conn)
                         .await
@@ -430,12 +436,12 @@ impl<G: CoreConfig> pb::scufflecloud::core::v1::sessions_service_server::Session
             device_ip: ip_info.to_network(),
             code,
             approved_by: None,
-            expires_at: chrono::Utc::now() + chrono::Duration::minutes(5),
+            expires_at: chrono::Utc::now() + global.user_session_request_validity(),
         };
 
         diesel::insert_into(user_session_requests::dsl::user_session_requests)
             .values(&session_request)
-            .execute(&mut *db)
+            .execute(&mut db)
             .await
             .into_tonic_internal("failed to insert user session request")?;
 
@@ -456,7 +462,7 @@ impl<G: CoreConfig> pb::scufflecloud::core::v1::sessions_service_server::Session
         let Some(session_request) = user_session_requests::dsl::user_session_requests
             .find(&id)
             .select(UserSessionRequest::as_select())
-            .first::<UserSessionRequest>(&mut *db)
+            .first::<UserSessionRequest>(&mut db)
             .await
             .optional()
             .into_tonic_internal("failed to query user session request")?
@@ -483,7 +489,7 @@ impl<G: CoreConfig> pb::scufflecloud::core::v1::sessions_service_server::Session
         let Some(session_request) = user_session_requests::dsl::user_session_requests
             .filter(user_session_requests::dsl::code.eq(&payload.code))
             .select(UserSessionRequest::as_select())
-            .first::<UserSessionRequest>(&mut *db)
+            .first::<UserSessionRequest>(&mut db)
             .await
             .optional()
             .into_tonic_internal("failed to query user session request")?
@@ -513,7 +519,7 @@ impl<G: CoreConfig> pb::scufflecloud::core::v1::sessions_service_server::Session
             .filter(user_session_requests::dsl::code.eq(&payload.code))
             .set(user_session_requests::dsl::approved_by.eq(&session.user_id))
             .returning(UserSessionRequest::as_select())
-            .get_result::<UserSessionRequest>(&mut *db)
+            .get_result::<UserSessionRequest>(&mut db)
             .await
             .optional()
             .into_tonic_internal("failed to update user session request")?
@@ -561,13 +567,13 @@ impl<G: CoreConfig> pb::scufflecloud::core::v1::sessions_service_server::Session
                     let Some(approved_by) = session_request.approved_by else {
                         return Err(tonic::Status::with_error_details(
                             tonic::Code::FailedPrecondition,
-                            "user session request is not approved",
+                            "user session request is not approved yet",
                             ErrorDetails::new(),
                         )
                         .into());
                     };
 
-                    let new_token = common::create_session(conn, approved_by, device, ip_info).await?;
+                    let new_token = common::create_session(global, conn, approved_by, device, ip_info).await?;
 
                     Ok(new_token)
                 }
@@ -580,20 +586,65 @@ impl<G: CoreConfig> pb::scufflecloud::core::v1::sessions_service_server::Session
 
     async fn refresh_user_session(
         &self,
-        _req: tonic::Request<()>,
+        req: tonic::Request<()>,
     ) -> Result<tonic::Response<pb::scufflecloud::core::v1::NewUserSessionToken>, tonic::Status> {
-        Err(tonic::Status::with_error_details(
-            tonic::Code::Unimplemented,
-            "this endpoint is not implemented",
-            ErrorDetails::new(),
-        ))
+        let global = req.global::<G>()?;
+        let session = req.session_or_err()?;
+
+        let mut db = global.db().await.into_tonic_internal("failed to connect to database")?;
+
+        let token = crypto::generate_random_bytes().into_tonic_internal("failed to generate token")?;
+        let encrypted_token = crypto::encrypt_token(session.device_algorithm.into(), &token, &session.device_pk_data)?;
+
+        let session = diesel::update(user_sessions::dsl::user_sessions)
+            .filter(
+                user_sessions::dsl::user_id
+                    .eq(&session.user_id)
+                    .and(user_sessions::dsl::device_fingerprint.eq(&session.device_fingerprint)),
+            )
+            .set((
+                user_sessions::dsl::token.eq(token),
+                user_sessions::dsl::token_expires_at.eq(chrono::Utc::now() + global.user_session_token_validity()),
+            ))
+            .returning(UserSession::as_select())
+            .get_result::<UserSession>(&mut db)
+            .await
+            .into_tonic_internal("failed to update user session")?;
+
+        let (Some(token_id), Some(token_expires_at)) = (session.token_id, session.token_expires_at) else {
+            return Err(tonic::Status::with_error_details(
+                tonic::Code::Internal,
+                "user session does not have a token",
+                ErrorDetails::new(),
+            ));
+        };
+
+        let new_token = pb::scufflecloud::core::v1::NewUserSessionToken {
+            id: token_id.to_string(),
+            encrypted_token,
+            expires_at: Some(token_expires_at.to_prost_timestamp_utc()),
+            session_expires_at: Some(session.expires_at.to_prost_timestamp_utc()),
+        };
+
+        Ok(tonic::Response::new(new_token))
     }
 
-    async fn invalidate_user_session(&self, _req: tonic::Request<()>) -> Result<tonic::Response<()>, tonic::Status> {
-        Err(tonic::Status::with_error_details(
-            tonic::Code::Unimplemented,
-            "this endpoint is not implemented",
-            ErrorDetails::new(),
-        ))
+    async fn invalidate_user_session(&self, req: tonic::Request<()>) -> Result<tonic::Response<()>, tonic::Status> {
+        let global = req.global::<G>()?;
+        let session = req.session_or_err()?;
+
+        let mut db = global.db().await.into_tonic_internal("failed to connect to database")?;
+
+        diesel::delete(user_sessions::dsl::user_sessions)
+            .filter(
+                user_sessions::dsl::user_id
+                    .eq(&session.user_id)
+                    .and(user_sessions::dsl::device_fingerprint.eq(&session.device_fingerprint)),
+            )
+            .execute(&mut db)
+            .await
+            .into_tonic_internal("failed to update user session")?;
+
+        Ok(tonic::Response::new(()))
     }
 }

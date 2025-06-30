@@ -10,6 +10,14 @@ impl_enum!(DeviceAlgorithm, crate::schema::sql_types::DeviceAlgorithm, {
     RsaOaepSha256 => b"RSA_OAEP_SHA256",
 });
 
+impl From<DeviceAlgorithm> for pb::scufflecloud::core::v1::DeviceAlgorithm {
+    fn from(value: DeviceAlgorithm) -> Self {
+        match value {
+            DeviceAlgorithm::RsaOaepSha256 => pb::scufflecloud::core::v1::DeviceAlgorithm::RsaOaepSha256,
+        }
+    }
+}
+
 impl From<pb::scufflecloud::core::v1::DeviceAlgorithm> for DeviceAlgorithm {
     fn from(value: pb::scufflecloud::core::v1::DeviceAlgorithm) -> Self {
         match value {

@@ -18,6 +18,24 @@ pub struct Config {
     pub db_url: Option<String>,
     #[default = "1x0000000000000000000000000000000AA"]
     pub turnstile_secret_key: String,
+    pub validaty: ValidatyConfig,
+}
+
+#[derive(serde_derive::Deserialize, smart_default::SmartDefault, Debug, Clone)]
+#[serde(default)]
+pub struct ValidatyConfig {
+    #[default(chrono::Duration::days(30))]
+    pub user_session: chrono::Duration,
+    #[default(chrono::Duration::hours(4))]
+    pub user_session_token: chrono::Duration,
+    #[default(chrono::Duration::hours(1))]
+    pub email_registration_request: chrono::Duration,
+    #[default(chrono::Duration::minutes(5))]
+    pub user_session_request: chrono::Duration,
+    #[default(chrono::Duration::minutes(15))]
+    pub magic_link_user_session_request: chrono::Duration,
+    #[default(chrono::Duration::minutes(5))]
+    pub mfa_webauthn_challenge: chrono::Duration,
 }
 
 scuffle_settings::bootstrap!(Config);
@@ -43,6 +61,30 @@ impl scufflecloud_core::CoreConfig for Global {
 
     fn http_client(&self) -> &reqwest::Client {
         &self.http_client
+    }
+
+    fn user_session_validity(&self) -> chrono::Duration {
+        self.config.validaty.user_session
+    }
+
+    fn user_session_token_validity(&self) -> chrono::Duration {
+        self.config.validaty.user_session_token
+    }
+
+    fn email_registration_request_validity(&self) -> chrono::Duration {
+        self.config.validaty.email_registration_request
+    }
+
+    fn user_session_request_validity(&self) -> chrono::Duration {
+        self.config.validaty.user_session_request
+    }
+
+    fn magic_link_user_session_request_validity(&self) -> chrono::Duration {
+        self.config.validaty.magic_link_user_session_request
+    }
+
+    fn mfa_webauthn_challenge_validity(&self) -> chrono::Duration {
+        self.config.validaty.mfa_webauthn_challenge
     }
 }
 

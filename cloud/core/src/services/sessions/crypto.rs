@@ -1,4 +1,3 @@
-use pb::scufflecloud::core::v1::DeviceAlgorithm;
 use rand::TryRngCore;
 use rsa::pkcs8::DecodePublicKey;
 use tonic::Code;
@@ -11,9 +10,13 @@ pub(crate) fn generate_random_bytes() -> Result<[u8; 32], rand::rand_core::OsErr
     Ok(token)
 }
 
-pub(crate) fn encrypt_token(algorithm: DeviceAlgorithm, token: &[u8], pk_der_data: &[u8]) -> Result<Vec<u8>, tonic::Status> {
+pub(crate) fn encrypt_token(
+    algorithm: pb::scufflecloud::core::v1::DeviceAlgorithm,
+    token: &[u8],
+    pk_der_data: &[u8],
+) -> Result<Vec<u8>, tonic::Status> {
     match algorithm {
-        DeviceAlgorithm::RsaOaepSha256 => {
+        pb::scufflecloud::core::v1::DeviceAlgorithm::RsaOaepSha256 => {
             let pk = rsa::RsaPublicKey::from_public_key_der(pk_der_data)
                 .into_tonic(Code::InvalidArgument, "failed to parse public key")?;
             let padding = rsa::Oaep::new::<sha2::Sha256>();

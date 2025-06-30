@@ -145,7 +145,7 @@ async fn get_and_update_active_session<G: CoreConfig>(
                 .and(user_sessions::dsl::expires_at.gt(chrono::Utc::now())),
         )
         .returning(UserSession::as_select())
-        .get_results::<UserSession>(&mut *db)
+        .get_results::<UserSession>(&mut db)
         .await
         .map_err(|e| {
             tracing::error!(error = %e, "failed to update user session");

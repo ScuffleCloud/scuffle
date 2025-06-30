@@ -33,7 +33,7 @@ impl<G: CoreConfig> pb::scufflecloud::core::v1::users_service_server::UsersServi
         let user = users::dsl::users
             .find(user_id)
             .select(User::as_select())
-            .first::<User>(&mut *db)
+            .first::<User>(&mut db)
             .await
             .optional()
             .map_err(|e| tonic::Status::internal(e.to_string()))?

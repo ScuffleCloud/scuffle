@@ -387,8 +387,7 @@ impl<G: CoreConfig> pb::scufflecloud::core::v1::sessions_service_server::Session
                 tonic::Code::NotFound,
                 "webauthn public key not found",
                 ErrorDetails::new(),
-            )
-            .into());
+            ));
         }
 
         Ok(tonic::Response::new(

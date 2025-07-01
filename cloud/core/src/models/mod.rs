@@ -27,6 +27,16 @@ macro_rules! impl_enum {
         }
 
         const _: () = {
+            impl ::std::fmt::Display for $enum {
+                fn fmt(&self, f: &mut ::std::fmt::Formatter<'_>) -> ::std::fmt::Result {
+                    match self {
+                        $(
+                            $enum::$variant => ::std::write!(f, "{}", stringify!($variant)),
+                        )*
+                    }
+                }
+            }
+
             impl ::diesel::serialize::ToSql<$sql_type, ::diesel::pg::Pg> for $enum {
                 fn to_sql<'b>(&'b self, out: &mut ::diesel::serialize::Output<'b, '_, ::diesel::pg::Pg>) -> ::diesel::serialize::Result {
                     match self {

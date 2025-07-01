@@ -31,6 +31,7 @@ mod schema;
 pub mod services;
 mod std_ext;
 mod utils;
+mod webauthn;
 
 pub trait CoreConfig: scuffle_bootstrap::Global + scuffle_signal::SignalConfig + Sync + Send + 'static {
     fn bind(&self) -> SocketAddr;

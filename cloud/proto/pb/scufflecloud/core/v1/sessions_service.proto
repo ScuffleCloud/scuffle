@@ -194,18 +194,26 @@ message CompleteLoginWithExternalProviderRequest {
 
 message LoginWithWebauthnPublicKeyRequest {
     CaptchaChallengeResponse captcha = 1;
-    bytes pk_id = 2;
+    bytes credential_id = 2;
 }
 
 message LoginWithWebauthnPublicKeyResponse {
     bytes challenge = 1;
 }
 
-// See https://developer.mozilla.org/en-US/docs/Web/API/AuthenticatorAssertionResponse
+// https://developer.mozilla.org/en-US/docs/Web/API/PublicKeyCredential
 message CompleteLoginWithWebauthnPublicKeyRequest {
-    bytes authenticator_data = 1;
-    bytes signature = 2;
-    bytes user_handle = 3;
+    bytes credential_id = 1;
+    AuthenticatorAssertionResponse response = 2;
+    Device device = 3;
+}
+
+// https://developer.mozilla.org/en-US/docs/Web/API/AuthenticatorAssertionResponse
+// https://w3c.github.io/webauthn/#iface-authenticatorassertionresponse
+message AuthenticatorAssertionResponse {
+    bytes client_data_json = 1;
+    bytes authenticator_data = 2;
+    bytes signature = 3;
 }
 
 message CreateUserSessionRequestRequest {

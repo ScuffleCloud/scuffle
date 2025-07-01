@@ -9,8 +9,8 @@ use crate::chrono_ext::ChronoDateTimeExt;
 use crate::http_ext::RequestExt;
 use crate::id::Id;
 use crate::models::{
-    EmailRegistrationRequest, EmailRegistrationRequestId, MagicLinkUserSessionRequest, UserEmail, UserSession,
-    UserSessionRequest, UserSessionRequestId,
+    EmailRegistrationRequest, EmailRegistrationRequestId, MagicLinkUserSessionRequest, MfaWebauthnPk, UserEmail,
+    UserSession, UserSessionRequest, UserSessionRequestId,
 };
 use crate::schema::{
     email_registration_requests, magic_link_user_session_requests, mfa_webauthn_pks, user_emails, user_session_requests,
@@ -19,7 +19,7 @@ use crate::schema::{
 use crate::services::CoreSvc;
 use crate::std_ext::{OptionExt, ResultExt};
 use crate::utils::TxError;
-use crate::{CoreConfig, captcha};
+use crate::{CoreConfig, captcha, webauthn};
 
 mod common;
 mod crypto;
@@ -370,52 +370,116 @@ impl<G: CoreConfig> pb::scufflecloud::core::v1::sessions_service_server::Session
             }
         }
 
-        let challenge = db
+        let challenge = crypto::generate_random_bytes().into_tonic_internal("failed to generate webauthn challenge")?;
+
+        let n = diesel::update(mfa_webauthn_pks::dsl::mfa_webauthn_pks)
+            .filter(mfa_webauthn_pks::dsl::credential_id.eq(&payload.credential_id))
+            .set((
+                mfa_webauthn_pks::dsl::current_challenge.eq(&challenge),
+                mfa_webauthn_pks::dsl::current_challenge_expires_at
+                    .eq(chrono::Utc::now() + global.mfa_webauthn_challenge_validity()),
+            ))
+            .execute(&mut db)
+            .await
+            .into_tonic_internal("failed to update webauthn public key")?;
+
+        if n == 0 {
+            return Err(tonic::Status::with_error_details(
+                tonic::Code::NotFound,
+                "webauthn public key not found",
+                ErrorDetails::new(),
+            )
+            .into());
+        }
+
+        Ok(tonic::Response::new(
+            pb::scufflecloud::core::v1::LoginWithWebauthnPublicKeyResponse {
+                challenge: challenge.to_vec(),
+            },
+        ))
+    }
+
+    async fn complete_login_with_webauthn_public_key(
+        &self,
+        req: tonic::Request<pb::scufflecloud::core::v1::CompleteLoginWithWebauthnPublicKeyRequest>,
+    ) -> Result<tonic::Response<pb::scufflecloud::core::v1::NewUserSessionToken>, tonic::Status> {
+        let (_, extensions, payload) = req.into_parts();
+        let global = extensions.global::<G>()?;
+
+        let ip_info = extensions.ip_address_info()?;
+        let mut db = global.db().await.into_tonic_internal("failed to connect to database")?;
+
+        let assertion_response = payload.response.require("response")?;
+        let device = payload.device.require("device")?;
+
+        let new_token = db
             .transaction::<_, TxError, _>(|conn| {
                 async move {
-                    let challenge =
-                        crypto::generate_random_bytes().into_tonic_internal("failed to generate webauthn challenge")?;
-
-                    let n = diesel::update(mfa_webauthn_pks::dsl::mfa_webauthn_pks)
-                        .filter(mfa_webauthn_pks::dsl::pk_id.eq(&payload.pk_id))
-                        .set((
-                            mfa_webauthn_pks::dsl::current_challenge.eq(&challenge),
-                            mfa_webauthn_pks::dsl::current_challenge_expires_at
-                                .eq(chrono::Utc::now() + global.mfa_webauthn_challenge_validity()),
-                        ))
-                        .execute(conn)
+                    let Some(webauthn_pk) = mfa_webauthn_pks::dsl::mfa_webauthn_pks
+                        .filter(mfa_webauthn_pks::dsl::credential_id.eq(&payload.credential_id))
+                        .select(MfaWebauthnPk::as_select())
+                        .first::<MfaWebauthnPk>(conn)
                         .await
-                        .into_tonic_internal("failed to update webauthn public key")?;
-
-                    if n == 0 {
+                        .optional()
+                        .into_tonic_internal("failed to query webauthn public key")?
+                    else {
                         return Err(tonic::Status::with_error_details(
                             tonic::Code::NotFound,
                             "webauthn public key not found",
                             ErrorDetails::new(),
                         )
                         .into());
+                    };
+
+                    let (Some(current_challenge), Some(current_challenge_expires_at)) =
+                        (webauthn_pk.current_challenge, webauthn_pk.current_challenge_expires_at)
+                    else {
+                        return Err(tonic::Status::with_error_details(
+                            tonic::Code::FailedPrecondition,
+                            "webauthn public key does not have a current challenge",
+                            ErrorDetails::new(),
+                        )
+                        .into());
+                    };
+
+                    if current_challenge_expires_at < chrono::Utc::now() {
+                        return Err(tonic::Status::with_error_details(
+                            tonic::Code::DeadlineExceeded,
+                            "webauthn challenge has expired",
+                            ErrorDetails::new(),
+                        )
+                        .into());
                     }
 
-                    Ok(challenge.to_vec())
+                    // Verify the challenge
+                    webauthn::verify_challenge(
+                        webauthn::CollectedClientDataType::Get,
+                        &current_challenge,
+                        &webauthn_pk.spki_data,
+                        &assertion_response,
+                    )
+                    .into_tonic(Code::PermissionDenied, "failed to verify webauthn challenge")?;
+
+                    diesel::update(mfa_webauthn_pks::dsl::mfa_webauthn_pks)
+                        .filter(mfa_webauthn_pks::dsl::id.eq(webauthn_pk.id))
+                        .set((
+                            mfa_webauthn_pks::dsl::current_challenge.eq(None::<Vec<u8>>),
+                            mfa_webauthn_pks::dsl::current_challenge_expires_at.eq(None::<chrono::NaiveDateTime>),
+                        ))
+                        .execute(conn)
+                        .await
+                        .into_tonic_internal("failed to clear webauthn challenge")?;
+
+                    // Create a new session for the user
+                    let new_token = common::create_session(global, conn, webauthn_pk.user_id, device, ip_info).await?;
+
+                    Ok(new_token)
                 }
                 .scope_boxed()
             })
             .await?;
 
-        Ok(tonic::Response::new(
-            pb::scufflecloud::core::v1::LoginWithWebauthnPublicKeyResponse { challenge },
-        ))
-    }
-
-    async fn complete_login_with_webauthn_public_key(
-        &self,
-        _req: tonic::Request<pb::scufflecloud::core::v1::CompleteLoginWithWebauthnPublicKeyRequest>,
-    ) -> Result<tonic::Response<pb::scufflecloud::core::v1::NewUserSessionToken>, tonic::Status> {
-        Err(tonic::Status::with_error_details(
-            tonic::Code::Unimplemented,
-            "this endpoint is not implemented",
-            ErrorDetails::new(),
-        ))
+        Ok(tonic::Response::new(new_token))
     }
 
     async fn create_user_session_request(

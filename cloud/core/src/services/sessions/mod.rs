@@ -22,7 +22,6 @@ use crate::utils::TxError;
 use crate::{CoreConfig, captcha, webauthn};
 
 mod common;
-mod crypto;
 
 #[async_trait::async_trait]
 impl<G: CoreConfig> pb::scufflecloud::core::v1::sessions_service_server::SessionsService for CoreSvc<G> {
@@ -47,7 +46,7 @@ impl<G: CoreConfig> pb::scufflecloud::core::v1::sessions_service_server::Session
         let email = common::normalize_email(&payload.email);
 
         // Generate random code
-        let code = crypto::generate_random_bytes().into_tonic_internal("failed to generate registration code")?;
+        let code = common::generate_random_bytes().into_tonic_internal("failed to generate registration code")?;
         // let code_base64 = base64::prelude::BASE64_URL_SAFE.encode(&code);
 
         db.transaction::<_, TxError, _>(move |conn| {
@@ -263,7 +262,7 @@ impl<G: CoreConfig> pb::scufflecloud::core::v1::sessions_service_server::Session
             async move {
                 let user = common::get_user_by_email(conn, &payload.email).await?;
 
-                let code = crypto::generate_random_bytes().into_tonic_internal("failed to generate magic link code")?;
+                let code = common::generate_random_bytes().into_tonic_internal("failed to generate magic link code")?;
 
                 // Insert email link user session request
                 let session_request = MagicLinkUserSessionRequest {
@@ -370,7 +369,7 @@ impl<G: CoreConfig> pb::scufflecloud::core::v1::sessions_service_server::Session
             }
         }
 
-        let challenge = crypto::generate_random_bytes().into_tonic_internal("failed to generate webauthn challenge")?;
+        let challenge = common::generate_random_bytes().into_tonic_internal("failed to generate webauthn challenge")?;
 
         let n = diesel::update(mfa_webauthn_pks::dsl::mfa_webauthn_pks)
             .filter(mfa_webauthn_pks::dsl::credential_id.eq(&payload.credential_id))
@@ -657,8 +656,8 @@ impl<G: CoreConfig> pb::scufflecloud::core::v1::sessions_service_server::Session
 
         let mut db = global.db().await.into_tonic_internal("failed to connect to database")?;
 
-        let token = crypto::generate_random_bytes().into_tonic_internal("failed to generate token")?;
-        let encrypted_token = crypto::encrypt_token(session.device_algorithm.into(), &token, &session.device_pk_data)?;
+        let token = common::generate_random_bytes().into_tonic_internal("failed to generate token")?;
+        let encrypted_token = common::encrypt_token(session.device_algorithm.into(), &token, &session.device_pk_data)?;
 
         let session = diesel::update(user_sessions::dsl::user_sessions)
             .filter(

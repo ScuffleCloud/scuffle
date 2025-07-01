@@ -4,7 +4,10 @@ use argon2::password_hash::SaltString;
 use argon2::{Argon2, PasswordHasher};
 use diesel::{ExpressionMethods, JoinOnDsl, OptionalExtension, QueryDsl, SelectableHelper};
 use diesel_async::RunQueryDsl;
+use pkcs8::DecodePublicKey;
+use rand::TryRngCore;
 use sha2::Digest;
+use tonic::Code;
 use tonic_types::{ErrorDetails, StatusExt};
 
 use crate::CoreConfig;
@@ -13,8 +16,31 @@ use crate::id::Id;
 use crate::middleware::IpAddressInfo;
 use crate::models::{User, UserEmail, UserId, UserSession};
 use crate::schema::{user_emails, user_sessions, users};
-use crate::services::sessions::crypto;
 use crate::std_ext::ResultExt;
+
+pub(crate) fn generate_random_bytes() -> Result<[u8; 32], rand::rand_core::OsError> {
+    let mut token = [0u8; 32];
+    rand::rngs::OsRng.try_fill_bytes(&mut token)?;
+    Ok(token)
+}
+
+pub(crate) fn encrypt_token(
+    algorithm: pb::scufflecloud::core::v1::DeviceAlgorithm,
+    token: &[u8],
+    pk_der_data: &[u8],
+) -> Result<Vec<u8>, tonic::Status> {
+    match algorithm {
+        pb::scufflecloud::core::v1::DeviceAlgorithm::RsaOaepSha256 => {
+            let pk = rsa::RsaPublicKey::from_public_key_der(pk_der_data)
+                .into_tonic(Code::InvalidArgument, "failed to parse public key")?;
+            let padding = rsa::Oaep::new::<sha2::Sha256>();
+            let enc_data = pk
+                .encrypt(&mut rsa::rand_core::OsRng, padding, token)
+                .into_tonic_internal("failed to encrypt token")?;
+            Ok(enc_data)
+        }
+    }
+}
 
 pub(crate) async fn get_user_by_email(db: &mut diesel_async::AsyncPgConnection, email: &str) -> Result<User, tonic::Status> {
     let Some((user, _)) = users::dsl::users
@@ -107,9 +133,8 @@ pub(crate) async fn create_session<G: CoreConfig>(
     let token_id = Id::new();
     let token_expires_at = chrono::Utc::now() + global.user_session_token_validity();
 
-    let token = crypto::generate_random_bytes().into_tonic_internal("failed to generate token")?;
-
-    let encrypted_token = crypto::encrypt_token(device.algorithm(), &token, &device.public_key_data)?;
+    let token = generate_random_bytes().into_tonic_internal("failed to generate token")?;
+    let encrypted_token = encrypt_token(device.algorithm(), &token, &device.public_key_data)?;
 
     let user_session = UserSession {
         user_id,

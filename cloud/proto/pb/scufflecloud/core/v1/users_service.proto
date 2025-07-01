@@ -53,27 +53,6 @@ service UsersService {
     }
 }
 
-// https://www.iana.org/assignments/cose/cose.xhtml#algorithms
-//
-// https://w3c.github.io/webauthn/#dom-publickeycredentialcreationoptions-pubkeycredparams
-enum WebauthnAlgorithm {
-    // EdDSA using Ed25519 curve -- Recommended
-    // IDs: -8 and -19
-    ED25519 = 0;
-    // ECDSA using P-256 curve and SHA-256 -- Recommended
-    // IDs: -7 and -9
-    ESP256 = 1;
-    // RSASSA-PKCS1-v1_5 using SHA-256 -- Not recommended
-    // ID: -257
-    RS256 = 2;
-    // ECDSA using P-384 curve and SHA-384 -- Recommended
-    // IDs: -35 and -51
-    ESP384 = 3;
-    // ECDSA using P-521 curve and SHA-512 -- Recommended
-    // IDs: -36 and -52
-    ESP512 = 4;
-}
-
 message UserByIdRequest {
     string id = 1 [(string_constraint).id = true];
 }

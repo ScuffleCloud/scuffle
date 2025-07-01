@@ -126,23 +126,11 @@ ON DELETE CASCADE;
 
 CREATE INDEX ON "mfa_totps"("user_id");
 
--- https://www.iana.org/assignments/cose/cose.xhtml#algorithms
--- https://w3c.github.io/webauthn/#dom-publickeycredentialcreationoptions-pubkeycredparams
-CREATE TYPE "webauthn_algorithm" AS ENUM (
-    'ED25519', -- -8 and -19
-    'ESP256', -- -7 and -9
-    'RS256', -- -257
-    'ESP384', -- -35 and -51
-    'ESP512' -- -36 and -52
-    -- ...
-);
-
 CREATE TABLE "mfa_webauthn_pks" (
     "id" UUID PRIMARY KEY,
     "user_id" UUID NOT NULL,
-    "algorithm" WEBAUTHN_ALGORITHM NOT NULL,
-    "pk_id" BYTEA NOT NULL,
-    "pk_data" BYTEA NOT NULL,
+    "credential_id" BYTEA NOT NULL,
+    "spki_data" BYTEA NOT NULL, -- SPKI DER
     "current_challenge" BYTEA,
     "current_challenge_expires_at" TIMESTAMPTZ
 );
@@ -152,6 +140,8 @@ ADD FOREIGN KEY("user_id") REFERENCES "users"("id")
 ON DELETE CASCADE;
 
 CREATE INDEX ON "mfa_webauthn_pks"("user_id");
+
+CREATE INDEX ON "mfa_webauthn_pks"("credential_id");
 
 --- Organizations and Projects
 

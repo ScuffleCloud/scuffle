@@ -44,14 +44,14 @@ service SessionsService {
         };
     }
 
-    rpc LoginWithExternalProvider(LoginWithExternalProviderRequest) returns (LoginWithExternalProviderResponse) {
+    rpc LoginWithGoogle(LoginWithGoogleRequest) returns (LoginWithGoogleResponse) {
         option (tinc.method).endpoint = {
-            post: "/sessions/external"
+            post: "/sessions/google"
         };
     }
-    rpc CompleteLoginWithExternalProvider(CompleteLoginWithExternalProviderRequest) returns (NewUserSessionToken) {
+    rpc CompleteLoginWithGoogle(CompleteLoginWithGoogleRequest) returns (CompleteLoginWithGoogleResponse) {
         option (tinc.method).endpoint = {
-            post: "/sessions/external/complete"
+            post: "/sessions/google/complete"
         };
     }
 
@@ -171,25 +171,25 @@ message CompleteLoginWithMagicLinkRequest {
     Device device = 2;
 }
 
-enum ExternalProvider {
-    // Google
-    GOOGLE = 0;
+message LoginWithGoogleRequest {
+    // The device is only used to generate a state parameter, it is not saved and
+    // should therefore be sent again on the complete request.
+    Device device = 1;
 }
 
-message LoginWithExternalProviderRequest {
-    ExternalProvider provider = 1;
-}
-
-message LoginWithExternalProviderResponse {
+message LoginWithGoogleResponse {
     string authorization_url = 1;
 }
 
-message CompleteLoginWithExternalProviderRequest {
-    // The code returned by the external provider after the user has authorized the application.
+message CompleteLoginWithGoogleRequest {
+    // The code returned by Google after the user has authorized the application.
     string code = 1;
-    // The state returned by the external provider.
     string state = 2;
     Device device = 3;
+}
+
+message CompleteLoginWithGoogleResponse {
+    NewUserSessionToken new_user_session_token = 1;
 }
 
 message LoginWithWebauthnPublicKeyRequest {

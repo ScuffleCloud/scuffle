@@ -7,12 +7,14 @@ string_flag(
     name = "test_profile",
     build_setting_default = "default",
     values = ["ci", "default"],
+    tags = ["manual", "no-cache"],
     visibility = ["//visibility:public"],
 )
 
 string_flag(
     name = "test_workspace_root",
     build_setting_default = "",
+    tags = ["manual", "no-cache"],
     visibility = ["//visibility:public"],
 )
 

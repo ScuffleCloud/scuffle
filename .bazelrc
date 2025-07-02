@@ -33,6 +33,10 @@ build --jobs=18
 test --test_output=errors
 test --verbose_failures
 
+# Enable a combined coverage report
+# Found at: $(bazel info output_path)/_coverage/_coverage_report.dat
+coverage --combined_report=lcov
+
 ###############################################################################
 ## Common configuration
 ###############################################################################

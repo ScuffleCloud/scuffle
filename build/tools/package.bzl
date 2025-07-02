@@ -70,6 +70,7 @@ def scuffle_package(
         name = "cargo_toml_env",
         src = ":Cargo.toml",
         workspace = "//:Cargo.toml",
+        tags = ["manual"],
         visibility = ["//visibility:private"],
     )
 
@@ -131,6 +132,7 @@ def scuffle_package(
             rustc_env_files = [":cargo_toml_env"],
             rustc_flags = [
                 "--cfg=bazel_runfiles",
+                "--cfg=coverage_nightly",
                 "-Clink-arg=-Wl,-znostart-stop-gc",
             ],
             rustc_env = {

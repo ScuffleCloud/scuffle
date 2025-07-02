@@ -73,6 +73,7 @@ def _nextest_test_impl(ctx):
     return [
         DefaultInfo(
             executable = wrapper_script,
+            files = default_info.files,
             runfiles = runfiles,
         ),
         RunEnvironmentInfo(

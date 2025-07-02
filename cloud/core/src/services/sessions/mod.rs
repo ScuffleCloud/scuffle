@@ -1,7 +1,9 @@
 use argon2::{Argon2, PasswordVerifier};
+use base64::Engine;
 use diesel::{BoolExpressionMethods, ExpressionMethods, OptionalExtension, QueryDsl, SelectableHelper};
 use diesel_async::scoped_futures::ScopedFutureExt;
 use diesel_async::{AsyncConnection, RunQueryDsl};
+use sha2::Digest;
 use tonic::Code;
 use tonic_types::{ErrorDetails, StatusExt};
 
@@ -9,17 +11,17 @@ use crate::chrono_ext::ChronoDateTimeExt;
 use crate::http_ext::RequestExt;
 use crate::id::Id;
 use crate::models::{
-    EmailRegistrationRequest, EmailRegistrationRequestId, MagicLinkUserSessionRequest, MfaWebauthnPk, UserEmail,
-    UserSession, UserSessionRequest, UserSessionRequestId,
+    EmailRegistrationRequest, EmailRegistrationRequestId, MagicLinkUserSessionRequest, MfaWebauthnPk, Organization,
+    OrganizationMember, UserEmail, UserGoogleAccount, UserSession, UserSessionRequest, UserSessionRequestId,
 };
 use crate::schema::{
-    email_registration_requests, magic_link_user_session_requests, mfa_webauthn_pks, user_emails, user_session_requests,
-    user_sessions,
+    email_registration_requests, magic_link_user_session_requests, mfa_webauthn_pks, organization_members, organizations,
+    user_emails, user_google_accounts, user_session_requests, user_sessions,
 };
 use crate::services::CoreSvc;
 use crate::std_ext::{OptionExt, ResultExt};
 use crate::utils::TxError;
-use crate::{CoreConfig, captcha, webauthn};
+use crate::{CoreConfig, captcha, google_api, webauthn};
 
 mod common;
 
@@ -32,7 +34,7 @@ impl<G: CoreConfig> pb::scufflecloud::core::v1::sessions_service_server::Session
         let (_, extensions, payload) = req.into_parts();
         let global = extensions.global::<G>()?;
 
-        let mut db = global.db().await.into_tonic_internal("failed to connect to database")?;
+        let mut db = global.db().await.into_tonic_internal_err("failed to connect to database")?;
 
         // Check captcha
         let captcha = payload.captcha.require("captcha")?;
@@ -46,7 +48,7 @@ impl<G: CoreConfig> pb::scufflecloud::core::v1::sessions_service_server::Session
         let email = common::normalize_email(&payload.email);
 
         // Generate random code
-        let code = common::generate_random_bytes().into_tonic_internal("failed to generate registration code")?;
+        let code = common::generate_random_bytes().into_tonic_internal_err("failed to generate registration code")?;
         // let code_base64 = base64::prelude::BASE64_URL_SAFE.encode(&code);
 
         db.transaction::<_, TxError, _>(move |conn| {
@@ -57,7 +59,7 @@ impl<G: CoreConfig> pb::scufflecloud::core::v1::sessions_service_server::Session
                     .first::<UserEmail>(conn)
                     .await
                     .optional()
-                    .into_tonic_internal("failed to query database")?
+                    .into_tonic_internal_err("failed to query database")?
                     .is_some()
                 {
                     return Err(tonic::Status::with_error_details(
@@ -81,7 +83,7 @@ impl<G: CoreConfig> pb::scufflecloud::core::v1::sessions_service_server::Session
                     .values(registration_request)
                     .execute(conn)
                     .await
-                    .into_tonic_internal("failed to insert email registration request")?;
+                    .into_tonic_internal_err("failed to insert email registration request")?;
 
                 Ok(())
             }
@@ -102,7 +104,7 @@ impl<G: CoreConfig> pb::scufflecloud::core::v1::sessions_service_server::Session
         let global = extensions.global::<G>()?;
 
         let ip_info = extensions.ip_address_info()?;
-        let mut db = global.db().await.into_tonic_internal("failed to connect to database")?;
+        let mut db = global.db().await.into_tonic_internal_err("failed to connect to database")?;
 
         let device = payload.device.require("device")?;
 
@@ -117,7 +119,7 @@ impl<G: CoreConfig> pb::scufflecloud::core::v1::sessions_service_server::Session
                             .get_result::<EmailRegistrationRequest>(conn)
                             .await
                             .optional()
-                            .into_tonic_internal("failed to delete email registration request")?
+                            .into_tonic_internal_err("failed to delete email registration request")?
                     else {
                         return Err(
                             tonic::Status::with_error_details(Code::NotFound, "unknown code", ErrorDetails::new()).into(),
@@ -127,7 +129,10 @@ impl<G: CoreConfig> pb::scufflecloud::core::v1::sessions_service_server::Session
                     let (_, new_token) = common::create_new_user_and_session(
                         global,
                         conn,
-                        registration_request.email,
+                        Some(registration_request.email),
+                        None, // preferred_name
+                        None, // first_name
+                        None, // last_name
                         Some(&payload.password),
                         device,
                         ip_info,
@@ -150,7 +155,7 @@ impl<G: CoreConfig> pb::scufflecloud::core::v1::sessions_service_server::Session
         let (_, extensions, payload) = req.into_parts();
         let global = extensions.global::<G>()?;
 
-        let mut db = global.db().await.into_tonic_internal("failed to connect to database")?;
+        let mut db = global.db().await.into_tonic_internal_err("failed to connect to database")?;
 
         // Check captcha
         let captcha = payload.captcha.require("captcha")?;
@@ -181,7 +186,7 @@ impl<G: CoreConfig> pb::scufflecloud::core::v1::sessions_service_server::Session
         let global = extensions.global::<G>()?;
 
         let ip_info = extensions.ip_address_info()?;
-        let mut db = global.db().await.into_tonic_internal("failed to connect to database")?;
+        let mut db = global.db().await.into_tonic_internal_err("failed to connect to database")?;
 
         let device = payload.device.require("device")?;
         let captcha = payload.captcha.require("captcha")?;
@@ -209,7 +214,7 @@ impl<G: CoreConfig> pb::scufflecloud::core::v1::sessions_service_server::Session
                     };
 
                     let password_hash =
-                        argon2::PasswordHash::new(password_hash).into_tonic_internal("failed to parse password hash")?;
+                        argon2::PasswordHash::new(password_hash).into_tonic_internal_err("failed to parse password hash")?;
 
                     match Argon2::default().verify_password(payload.password.as_bytes(), &password_hash) {
                         Ok(_) => {}
@@ -247,7 +252,7 @@ impl<G: CoreConfig> pb::scufflecloud::core::v1::sessions_service_server::Session
         let (_, extensions, payload) = req.into_parts();
         let global = extensions.global::<G>()?;
 
-        let mut db = global.db().await.into_tonic_internal("failed to connect to database")?;
+        let mut db = global.db().await.into_tonic_internal_err("failed to connect to database")?;
 
         let captcha = payload.captcha.require("captcha")?;
 
@@ -262,7 +267,7 @@ impl<G: CoreConfig> pb::scufflecloud::core::v1::sessions_service_server::Session
             async move {
                 let user = common::get_user_by_email(conn, &payload.email).await?;
 
-                let code = common::generate_random_bytes().into_tonic_internal("failed to generate magic link code")?;
+                let code = common::generate_random_bytes().into_tonic_internal_err("failed to generate magic link code")?;
 
                 // Insert email link user session request
                 let session_request = MagicLinkUserSessionRequest {
@@ -275,7 +280,7 @@ impl<G: CoreConfig> pb::scufflecloud::core::v1::sessions_service_server::Session
                     .values(session_request)
                     .execute(conn)
                     .await
-                    .into_tonic_internal("failed to insert magic link user session request")?;
+                    .into_tonic_internal_err("failed to insert magic link user session request")?;
 
                 Ok(())
             }
@@ -296,7 +301,7 @@ impl<G: CoreConfig> pb::scufflecloud::core::v1::sessions_service_server::Session
         let global = extensions.global::<G>()?;
 
         let ip_info = extensions.ip_address_info()?;
-        let mut db = global.db().await.into_tonic_internal("failed to connect to database")?;
+        let mut db = global.db().await.into_tonic_internal_err("failed to connect to database")?;
 
         let device = payload.device.require("device")?;
 
@@ -311,7 +316,7 @@ impl<G: CoreConfig> pb::scufflecloud::core::v1::sessions_service_server::Session
                             .get_result::<MagicLinkUserSessionRequest>(conn)
                             .await
                             .optional()
-                            .into_tonic_internal("failed to delete magic link user session request")?
+                            .into_tonic_internal_err("failed to delete magic link user session request")?
                     else {
                         return Err(
                             tonic::Status::with_error_details(Code::NotFound, "unknown code", ErrorDetails::new()).into(),
@@ -330,26 +335,132 @@ impl<G: CoreConfig> pb::scufflecloud::core::v1::sessions_service_server::Session
         Ok(tonic::Response::new(new_token))
     }
 
-    async fn login_with_external_provider(
+    async fn login_with_google(
         &self,
-        _req: tonic::Request<pb::scufflecloud::core::v1::LoginWithExternalProviderRequest>,
-    ) -> Result<tonic::Response<pb::scufflecloud::core::v1::LoginWithExternalProviderResponse>, tonic::Status> {
-        Err(tonic::Status::with_error_details(
-            tonic::Code::Unimplemented,
-            "this endpoint is not implemented",
-            ErrorDetails::new(),
-        ))
+        req: tonic::Request<pb::scufflecloud::core::v1::LoginWithGoogleRequest>,
+    ) -> Result<tonic::Response<pb::scufflecloud::core::v1::LoginWithGoogleResponse>, tonic::Status> {
+        let (_, extensions, payload) = req.into_parts();
+        let global = extensions.global::<G>()?;
+
+        let device = payload.device.require("device")?;
+        let device_fingerprint = sha2::Sha256::digest(&device.public_key_data);
+        let state = base64::prelude::BASE64_URL_SAFE.encode(&device_fingerprint);
+
+        let authorization_url = google_api::authorization_url(&global, &state);
+
+        Ok(tonic::Response::new(pb::scufflecloud::core::v1::LoginWithGoogleResponse {
+            authorization_url,
+        }))
     }
 
-    async fn complete_login_with_external_provider(
+    async fn complete_login_with_google(
         &self,
-        _req: tonic::Request<pb::scufflecloud::core::v1::CompleteLoginWithExternalProviderRequest>,
+        req: tonic::Request<pb::scufflecloud::core::v1::CompleteLoginWithGoogleRequest>,
     ) -> Result<tonic::Response<pb::scufflecloud::core::v1::NewUserSessionToken>, tonic::Status> {
-        Err(tonic::Status::with_error_details(
-            tonic::Code::Unimplemented,
-            "this endpoint is not implemented",
-            ErrorDetails::new(),
-        ))
+        let (_, extensions, payload) = req.into_parts();
+        let global = extensions.global::<G>()?;
+
+        let ip_info = extensions.ip_address_info()?;
+        let mut db = global.db().await.into_tonic_internal_err("failed to connect to database")?;
+
+        let device = payload.device.require("device")?;
+        let device_fingerprint = sha2::Sha256::digest(&device.public_key_data);
+        let state = base64::prelude::BASE64_URL_SAFE
+            .decode(&payload.state)
+            .into_tonic_internal_err("failed to decode state")?;
+
+        if *device_fingerprint != state {
+            return Err(tonic::Status::with_error_details(
+                tonic::Code::FailedPrecondition,
+                "device fingerprint does not match state",
+                ErrorDetails::new(),
+            ));
+        }
+
+        let google_token = google_api::request_tokens(&global, &payload.code)
+            .await
+            .into_tonic_err_with_field_violation("code", "failed to request google token")?;
+
+        let new_token = db
+            .transaction::<_, TxError, _>(move |conn| {
+                async move {
+                    let google_account = user_google_accounts::dsl::user_google_accounts
+                        .find(&google_token.id_token.sub)
+                        .first::<UserGoogleAccount>(conn)
+                        .await
+                        .optional()?;
+
+                    match google_account {
+                        Some(google_account) => {
+                            // Create a new session for the user
+                            let new_token =
+                                common::create_session(global, conn, google_account.user_id, device, ip_info).await?;
+                            Ok(new_token)
+                        }
+                        None => {
+                            let (user, new_token) = common::create_new_user_and_session(
+                                global,
+                                conn,
+                                google_token.id_token.email_verified.then_some(google_token.id_token.email),
+                                google_token.id_token.name,
+                                google_token.id_token.given_name,
+                                google_token.id_token.family_name,
+                                None, // password
+                                device,
+                                ip_info,
+                            )
+                            .await?;
+
+                            let google_account = UserGoogleAccount {
+                                sub: google_token.id_token.sub,
+                                access_token: google_token.access_token,
+                                access_token_expires_at: chrono::Utc::now()
+                                    + chrono::Duration::seconds(google_token.expires_in as i64),
+                                user_id: user.id,
+                                created_at: chrono::Utc::now(),
+                            };
+
+                            diesel::insert_into(user_google_accounts::dsl::user_google_accounts)
+                                .values(google_account)
+                                .execute(conn)
+                                .await
+                                .into_tonic_internal_err("failed to insert user google account")?;
+
+                            if let Some(hd) = google_token.id_token.hd {
+                                // Check if the organization exists for the hosted domain
+                                let organization = organizations::dsl::organizations
+                                    .filter(organizations::dsl::google_hosted_domain.eq(hd))
+                                    .first::<Organization>(conn)
+                                    .await
+                                    .optional()
+                                    .into_tonic_internal_err("failed to query organization")?;
+
+                                if let Some(org) = organization {
+                                    // Associate user with the organization
+                                    let membership = OrganizationMember {
+                                        organization_id: org.id,
+                                        user_id: user.id,
+                                        invited_by_id: None,
+                                        inline_policy: None,
+                                    };
+
+                                    diesel::insert_into(organization_members::dsl::organization_members)
+                                        .values(membership)
+                                        .execute(conn)
+                                        .await
+                                        .into_tonic_internal_err("failed to insert organization membership")?;
+                                }
+                            }
+
+                            Ok(new_token)
+                        }
+                    }
+                }
+                .scope_boxed()
+            })
+            .await?;
+
+        Ok(tonic::Response::new(new_token))
     }
 
     async fn login_with_webauthn_public_key(
@@ -359,7 +470,7 @@ impl<G: CoreConfig> pb::scufflecloud::core::v1::sessions_service_server::Session
         let (_, extensions, payload) = req.into_parts();
         let global = extensions.global::<G>()?;
 
-        let mut db = global.db().await.into_tonic_internal("failed to connect to database")?;
+        let mut db = global.db().await.into_tonic_internal_err("failed to connect to database")?;
 
         // Check captcha
         let captcha = payload.captcha.require("captcha")?;
@@ -369,7 +480,7 @@ impl<G: CoreConfig> pb::scufflecloud::core::v1::sessions_service_server::Session
             }
         }
 
-        let challenge = common::generate_random_bytes().into_tonic_internal("failed to generate webauthn challenge")?;
+        let challenge = common::generate_random_bytes().into_tonic_internal_err("failed to generate webauthn challenge")?;
 
         let n = diesel::update(mfa_webauthn_pks::dsl::mfa_webauthn_pks)
             .filter(mfa_webauthn_pks::dsl::credential_id.eq(&payload.credential_id))
@@ -380,7 +491,7 @@ impl<G: CoreConfig> pb::scufflecloud::core::v1::sessions_service_server::Session
             ))
             .execute(&mut db)
             .await
-            .into_tonic_internal("failed to update webauthn public key")?;
+            .into_tonic_internal_err("failed to update webauthn public key")?;
 
         if n == 0 {
             return Err(tonic::Status::with_error_details(
@@ -405,7 +516,7 @@ impl<G: CoreConfig> pb::scufflecloud::core::v1::sessions_service_server::Session
         let global = extensions.global::<G>()?;
 
         let ip_info = extensions.ip_address_info()?;
-        let mut db = global.db().await.into_tonic_internal("failed to connect to database")?;
+        let mut db = global.db().await.into_tonic_internal_err("failed to connect to database")?;
 
         let assertion_response = payload.response.require("response")?;
         let device = payload.device.require("device")?;
@@ -419,7 +530,7 @@ impl<G: CoreConfig> pb::scufflecloud::core::v1::sessions_service_server::Session
                         .first::<MfaWebauthnPk>(conn)
                         .await
                         .optional()
-                        .into_tonic_internal("failed to query webauthn public key")?
+                        .into_tonic_internal_err("failed to query webauthn public key")?
                     else {
                         return Err(tonic::Status::with_error_details(
                             tonic::Code::NotFound,
@@ -456,7 +567,11 @@ impl<G: CoreConfig> pb::scufflecloud::core::v1::sessions_service_server::Session
                         &webauthn_pk.spki_data,
                         &assertion_response,
                     )
-                    .into_tonic(Code::PermissionDenied, "failed to verify webauthn challenge")?;
+                    .into_tonic_err(
+                        Code::PermissionDenied,
+                        "failed to verify webauthn challenge",
+                        ErrorDetails::new(),
+                    )?;
 
                     diesel::update(mfa_webauthn_pks::dsl::mfa_webauthn_pks)
                         .filter(mfa_webauthn_pks::dsl::id.eq(webauthn_pk.id))
@@ -466,7 +581,7 @@ impl<G: CoreConfig> pb::scufflecloud::core::v1::sessions_service_server::Session
                         ))
                         .execute(conn)
                         .await
-                        .into_tonic_internal("failed to clear webauthn challenge")?;
+                        .into_tonic_internal_err("failed to clear webauthn challenge")?;
 
                     // Create a new session for the user
                     let new_token = common::create_session(global, conn, webauthn_pk.user_id, device, ip_info).await?;
@@ -488,7 +603,7 @@ impl<G: CoreConfig> pb::scufflecloud::core::v1::sessions_service_server::Session
         let global = extensions.global::<G>()?;
 
         let ip_info = extensions.ip_address_info()?;
-        let mut db = global.db().await.into_tonic_internal("failed to connect to database")?;
+        let mut db = global.db().await.into_tonic_internal_err("failed to connect to database")?;
 
         let code = format!("{:06}", rand::random_range(0..=999999));
 
@@ -505,7 +620,7 @@ impl<G: CoreConfig> pb::scufflecloud::core::v1::sessions_service_server::Session
             .values(&session_request)
             .execute(&mut db)
             .await
-            .into_tonic_internal("failed to insert user session request")?;
+            .into_tonic_internal_err("failed to insert user session request")?;
 
         Ok(tonic::Response::new(session_request.into()))
     }
@@ -517,9 +632,9 @@ impl<G: CoreConfig> pb::scufflecloud::core::v1::sessions_service_server::Session
         let (_, extensions, payload) = req.into_parts();
         let global = extensions.global::<G>()?;
 
-        let mut db = global.db().await.into_tonic_internal("failed to connect to database")?;
+        let mut db = global.db().await.into_tonic_internal_err("failed to connect to database")?;
 
-        let id: UserSessionRequestId = payload.id.parse().into_tonic_internal("failed to parse id")?;
+        let id: UserSessionRequestId = payload.id.parse().into_tonic_internal_err("failed to parse id")?;
 
         let Some(session_request) = user_session_requests::dsl::user_session_requests
             .find(&id)
@@ -527,7 +642,7 @@ impl<G: CoreConfig> pb::scufflecloud::core::v1::sessions_service_server::Session
             .first::<UserSessionRequest>(&mut db)
             .await
             .optional()
-            .into_tonic_internal("failed to query user session request")?
+            .into_tonic_internal_err("failed to query user session request")?
         else {
             return Err(tonic::Status::with_error_details(
                 tonic::Code::NotFound,
@@ -546,7 +661,7 @@ impl<G: CoreConfig> pb::scufflecloud::core::v1::sessions_service_server::Session
         let (_, extensions, payload) = req.into_parts();
         let global = extensions.global::<G>()?;
 
-        let mut db = global.db().await.into_tonic_internal("failed to connect to database")?;
+        let mut db = global.db().await.into_tonic_internal_err("failed to connect to database")?;
 
         let Some(session_request) = user_session_requests::dsl::user_session_requests
             .filter(user_session_requests::dsl::code.eq(&payload.code))
@@ -554,7 +669,7 @@ impl<G: CoreConfig> pb::scufflecloud::core::v1::sessions_service_server::Session
             .first::<UserSessionRequest>(&mut db)
             .await
             .optional()
-            .into_tonic_internal("failed to query user session request")?
+            .into_tonic_internal_err("failed to query user session request")?
         else {
             return Err(tonic::Status::with_error_details(
                 tonic::Code::NotFound,
@@ -575,7 +690,7 @@ impl<G: CoreConfig> pb::scufflecloud::core::v1::sessions_service_server::Session
 
         let session = extensions.session_or_err()?;
 
-        let mut db = global.db().await.into_tonic_internal("failed to connect to database")?;
+        let mut db = global.db().await.into_tonic_internal_err("failed to connect to database")?;
 
         let Some(session_request) = diesel::update(user_session_requests::dsl::user_session_requests)
             .filter(user_session_requests::dsl::code.eq(&payload.code))
@@ -584,7 +699,7 @@ impl<G: CoreConfig> pb::scufflecloud::core::v1::sessions_service_server::Session
             .get_result::<UserSessionRequest>(&mut db)
             .await
             .optional()
-            .into_tonic_internal("failed to update user session request")?
+            .into_tonic_internal_err("failed to update user session request")?
         else {
             return Err(tonic::Status::with_error_details(
                 tonic::Code::NotFound,
@@ -604,9 +719,9 @@ impl<G: CoreConfig> pb::scufflecloud::core::v1::sessions_service_server::Session
         let global = extensions.global::<G>()?;
 
         let ip_info = extensions.ip_address_info()?;
-        let mut db = global.db().await.into_tonic_internal("failed to connect to database")?;
+        let mut db = global.db().await.into_tonic_internal_err("failed to connect to database")?;
 
-        let id: UserSessionRequestId = payload.id.parse().into_tonic_internal("failed to parse id")?;
+        let id: UserSessionRequestId = payload.id.parse().into_tonic_internal_err("failed to parse id")?;
         let device = payload.device.require("device")?;
 
         let new_token = db
@@ -619,7 +734,7 @@ impl<G: CoreConfig> pb::scufflecloud::core::v1::sessions_service_server::Session
                         .get_result::<UserSessionRequest>(conn)
                         .await
                         .optional()
-                        .into_tonic_internal("failed to delete user session request")?
+                        .into_tonic_internal_err("failed to delete user session request")?
                     else {
                         return Err(
                             tonic::Status::with_error_details(Code::NotFound, "unknown id", ErrorDetails::new()).into(),
@@ -653,9 +768,9 @@ impl<G: CoreConfig> pb::scufflecloud::core::v1::sessions_service_server::Session
         let global = req.global::<G>()?;
         let session = req.session_or_err()?;
 
-        let mut db = global.db().await.into_tonic_internal("failed to connect to database")?;
+        let mut db = global.db().await.into_tonic_internal_err("failed to connect to database")?;
 
-        let token = common::generate_random_bytes().into_tonic_internal("failed to generate token")?;
+        let token = common::generate_random_bytes().into_tonic_internal_err("failed to generate token")?;
         let encrypted_token = common::encrypt_token(session.device_algorithm.into(), &token, &session.device_pk_data)?;
 
         let session = diesel::update(user_sessions::dsl::user_sessions)
@@ -671,7 +786,7 @@ impl<G: CoreConfig> pb::scufflecloud::core::v1::sessions_service_server::Session
             .returning(UserSession::as_select())
             .get_result::<UserSession>(&mut db)
             .await
-            .into_tonic_internal("failed to update user session")?;
+            .into_tonic_internal_err("failed to update user session")?;
 
         let (Some(token_id), Some(token_expires_at)) = (session.token_id, session.token_expires_at) else {
             return Err(tonic::Status::with_error_details(
@@ -695,7 +810,7 @@ impl<G: CoreConfig> pb::scufflecloud::core::v1::sessions_service_server::Session
         let global = req.global::<G>()?;
         let session = req.session_or_err()?;
 
-        let mut db = global.db().await.into_tonic_internal("failed to connect to database")?;
+        let mut db = global.db().await.into_tonic_internal_err("failed to connect to database")?;
 
         diesel::delete(user_sessions::dsl::user_sessions)
             .filter(
@@ -705,7 +820,7 @@ impl<G: CoreConfig> pb::scufflecloud::core::v1::sessions_service_server::Session
             )
             .execute(&mut db)
             .await
-            .into_tonic_internal("failed to update user session")?;
+            .into_tonic_internal_err("failed to update user session")?;
 
         Ok(tonic::Response::new(()))
     }

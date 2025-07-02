@@ -16,9 +16,12 @@ pub struct Config {
     pub level: String,
     #[default(None)]
     pub db_url: Option<String>,
+    #[default = "https://dashboard.scuffle.cloud"]
+    pub dashboard_url: String,
     #[default = "1x0000000000000000000000000000000AA"]
     pub turnstile_secret_key: String,
     pub validaty: ValidatyConfig,
+    pub google_oauth2: GoogleOAuth2Config,
 }
 
 #[derive(serde_derive::Deserialize, smart_default::SmartDefault, Debug, Clone)]
@@ -38,6 +41,12 @@ pub struct ValidatyConfig {
     pub mfa_webauthn_challenge: chrono::Duration,
 }
 
+#[derive(serde_derive::Deserialize, smart_default::SmartDefault, Debug, Clone)]
+pub struct GoogleOAuth2Config {
+    pub client_id: String,
+    pub client_secret: String,
+}
+
 scuffle_settings::bootstrap!(Config);
 
 struct Global {
@@ -55,12 +64,16 @@ impl scufflecloud_core::CoreConfig for Global {
         self.database.get().await.context("get database connection")
     }
 
-    fn turnstile_secret_key(&self) -> &str {
-        &self.config.turnstile_secret_key
-    }
-
     fn http_client(&self) -> &reqwest::Client {
         &self.http_client
+    }
+
+    fn dashboard_url(&self) -> &str {
+        &self.config.dashboard_url
+    }
+
+    fn turnstile_secret_key(&self) -> &str {
+        &self.config.turnstile_secret_key
     }
 
     fn user_session_validity(&self) -> chrono::Duration {
@@ -85,6 +98,14 @@ impl scufflecloud_core::CoreConfig for Global {
 
     fn mfa_webauthn_challenge_validity(&self) -> chrono::Duration {
         self.config.validaty.mfa_webauthn_challenge
+    }
+
+    fn google_client_id(&self) -> &str {
+        &self.config.google_oauth2.client_id
+    }
+
+    fn google_client_secret(&self) -> &str {
+        &self.config.google_oauth2.client_secret
     }
 }
 

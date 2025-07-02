@@ -12,5 +12,8 @@ scuffle_package(
     deps = ["//crates/bootstrap"],
     test = scuffle_test(
         data = glob(["assets/*"]),
+        env = {
+            "ASSETS_DIR": "crates/settings/assets"
+        }
     ),
 )

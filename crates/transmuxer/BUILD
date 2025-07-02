@@ -19,9 +19,10 @@ scuffle_package(
         "//crates/mp4",
     ],
     test = scuffle_test(
-        data = ["//assets:flv", "//bazel/tools:ffprobe"],
+        data = ["@scuffle_assets//:flv", "//bazel/tools:ffprobe"],
         env = {
             "FFPROBE": "$(rootpath //bazel/tools:ffprobe)",
+            "ASSETS_DIR": "$(rootpath @scuffle_assets//:flv)",
         },
     ),
 )

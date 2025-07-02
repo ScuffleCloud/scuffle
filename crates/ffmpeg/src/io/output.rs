@@ -503,7 +503,7 @@ mod tests {
 
         let mut output = Output::seekable(data, options).expect("Failed to create Output");
 
-        let mut input = Input::seekable(std::fs::File::open(file_path("assets/avc_aac.mp4")).expect("Failed to open file"))
+        let mut input = Input::seekable(std::fs::File::open(file_path("avc_aac.mp4")).expect("Failed to open file"))
             .expect("Failed to create Input");
         let streams = input.streams();
         let best_video_stream = streams.best(AVMediaType::Video).expect("no video stream found");
@@ -542,7 +542,7 @@ mod tests {
 
         let mut output = Output::seekable(data, options).expect("Failed to create Output");
 
-        let mut input = Input::seekable(std::fs::File::open(file_path("assets/avc_aac.mp4")).expect("Failed to open file"))
+        let mut input = Input::seekable(std::fs::File::open(file_path("avc_aac.mp4")).expect("Failed to open file"))
             .expect("Failed to create Input");
         let streams = input.streams();
         let best_video_stream = streams.best(AVMediaType::Video).expect("no video stream found");

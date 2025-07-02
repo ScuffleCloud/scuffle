@@ -291,17 +291,9 @@ pub mod changelog {}
 
 #[cfg(test)]
 fn file_path(item: &str) -> PathBuf {
-    #[cfg(not(bazel_runfiles))]
-    {
-        PathBuf::from(env!("CARGO_MANIFEST_DIR")).join(format!("../../{item}"))
-    }
-    #[cfg(bazel_runfiles)]
-    {
-        extern crate runfiles;
-
-        static RUNFILES: std::sync::LazyLock<runfiles::Runfiles> =
-            std::sync::LazyLock::new(|| runfiles::Runfiles::create().unwrap());
-
-        RUNFILES.rlocation(format!("_main/{item}")).unwrap()
+    if let Some(env) = std::env::var_os("ASSETS_DIR") {
+        PathBuf::from(env).join(item)
+    } else {
+        PathBuf::from(env!("CARGO_MANIFEST_DIR")).join(format!("../../assets/{item}"))
     }
 }

@@ -951,6 +951,7 @@ _NORMAL_DEPENDENCIES = {
                 "nextest-metadata": Label("@crates_vendor//:nextest-metadata-0.12.2"),
                 "nextest-runner": Label("@crates_vendor//:nextest-runner-0.82.0"),
                 "serde_json": Label("@crates_vendor//:serde_json-1.0.140"),
+                "toml_edit": Label("@crates_vendor//:toml_edit-0.22.27"),
             },
         },
     },

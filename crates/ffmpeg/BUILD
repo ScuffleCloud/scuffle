@@ -13,7 +13,7 @@ scuffle_package(
     test = scuffle_test(
         deps = ["//crates/mp4"],
         insta = True,
-        data = ["//assets:mp4", "//bazel/toolchains/ffmpeg:lib"],
+        data = ["@scuffle_assets//:mp4", "//bazel/toolchains/ffmpeg:lib"],
         env = select({
             "@platforms//os:windows": {
                 "PATH": "./$(rootpath //bazel/toolchains/ffmpeg:lib)"
@@ -21,6 +21,8 @@ scuffle_package(
             "//conditions:default": {
                 "LD_LIBRARY_PATH": "./$(rootpath //bazel/toolchains/ffmpeg:lib)"
             },
-        })
+        }) | {
+            "ASSETS_DIR": "$(rootpath @scuffle_assets//:mp4)",
+        }
     ),
 )

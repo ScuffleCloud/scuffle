@@ -16,3 +16,5 @@ include("//bazel/toolchains:llvm.MODULE.bazel")
 include("//bazel/toolchains:rust.MODULE.bazel")
 
 include("//bazel/toolchains:ffmpeg.MODULE.bazel")
+
+include("//bazel/toolchains:assets.MODULE.bazel")

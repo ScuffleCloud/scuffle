@@ -30,8 +30,9 @@ def _nextest_test_impl(ctx):
 
     env = {
         "RUNNER_CRATE": crate_info.name,
-        "RUNNER_BINARY": "{}".format(test_binary.short_path),
-        "RUNNER_CONFIG": "{}".format(ctx.attr._nextest_config[DefaultInfo].files.to_list()[0].short_path),
+        "RUNNER_BINARY": test_binary.short_path,
+        "COVERAGE_BINARY": test_binary.short_path,
+        "RUNNER_CONFIG": ctx.attr._nextest_config[DefaultInfo].files.to_list()[0].short_path,
         "RUNNER_PROFILE": ctx.attr._profile[BuildSettingInfo].value,
     }
 
@@ -81,15 +82,7 @@ def _nextest_test_impl(ctx):
     ] + parent_providers
 
 nextest_test = rule(
-    doc = """A test rule that runs tests using a custom test runner.
-
-    Args:
-        binary: The test binary to run
-        crate_name: The name of the crate this test is for
-        env: Additional environment variables
-        data: Runtime dependencies for the test
-        workspace_root: Optional workspace root setting
-    """,
+    doc = "A test rule that runs tests using a custom test runner.",
     implementation = _nextest_test_impl,
     parent = rust_test,
     attrs = {

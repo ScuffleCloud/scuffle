@@ -1,5 +1,4 @@
 bazel_dep(name = "toolchains_llvm", version = "1.4.0")
-
 git_override(
     module_name = "toolchains_llvm",
     commit = "37b0fef6c4111ecc0615e067ff8764b39a5f1d10",
@@ -8,9 +7,18 @@ git_override(
 
 http_archive = use_repo_rule("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive")
 
-_LINUX_SYSROOT_BUILD_FILE = """
+_SYSROOT_BUILD_FILE = """
+load("@aspect_bazel_lib//lib:copy_to_directory.bzl", "copy_to_directory")
+
 filegroup(
     name = "sysroot",
+    srcs = glob(["*/**"]),
+    visibility = ["//visibility:public"],
+)
+
+copy_to_directory(
+    name = "sysroot_dir",
+    include_external_repositories = ["*"],
     srcs = glob(["*/**"]),
     visibility = ["//visibility:public"],
 )
@@ -18,32 +26,21 @@ filegroup(
 
 http_archive(
     name = "linux-x86_64-sysroots",
-    build_file_content = _LINUX_SYSROOT_BUILD_FILE,
+    build_file_content = _SYSROOT_BUILD_FILE,
     sha256 = "ea827763bac1ae25228708a820235bbfe69b57c87683742dcc49ddee6efa86c0",
     url = "https://github.com/ScuffleCloud/toolchains/releases/download/linux-sysroots-3/linux-sysroot-focal-x86_64.tar.zst",
 )
 
 http_archive(
     name = "linux-aarch64-sysroots",
-    build_file_content = _LINUX_SYSROOT_BUILD_FILE,
+    build_file_content = _SYSROOT_BUILD_FILE,
     sha256 = "f19c122b7d16a23935301b8627db6a401559c0981254b36991e97bcde5af9393",
     url = "https://github.com/ScuffleCloud/toolchains/releases/download/linux-sysroots-3/linux-sysroot-focal-aarch64.tar.zst",
 )
 
-_SYSROOT_DARWIN_BUILD_FILE = """
-filegroup(
-    name = "sysroot",
-    srcs = glob(
-        include = ["**"],
-        exclude = ["**/*:*"],
-    ),
-    visibility = ["//visibility:public"],
-)
-"""
-
 http_archive(
     name = "darwin-universal-sysroots",
-    build_file_content = _SYSROOT_DARWIN_BUILD_FILE,
+    build_file_content = _SYSROOT_BUILD_FILE,
     sha256 = "1eadf666e7e0299a75212205f83f3b7b7b0657f55aad83540409b13f0a281312",
     strip_prefix = "MacOSX14.5.sdk-min",
     url = "https://github.com/ScuffleCloud/toolchains/releases/download/macos-sysroots-1/MacOSX14.5.sdk-min.tar.zst",
@@ -53,9 +50,9 @@ llvm = use_extension("@toolchains_llvm//toolchain/extensions:llvm.bzl", "llvm")
 
 LLVM_VERSION = "20.1.7"
 
-LLVM_BUILD = "1"
+LLVM_BUILD = "16029568006"
 
-LLVM_BASE_URL = "https://github.com/scufflecloud/toolchains/releases/download/llvm-{version}-{build}/{file}"
+LLVM_BASE_URL = "https://github.com/scufflecloud/toolchains/releases/download/clang-{version}-{build}/{file}"
 
 llvm.toolchain(
     name = "llvm_toolchain",
@@ -63,8 +60,8 @@ llvm.toolchain(
     sha256 = {
         "darwin-aarch64": "300a3c105a90360d3ff760c522cf0c545b5cc126d7e81ad8651b410ea62195e8",
         "darwin-x86_64": "3d268ede7d7d7321c67c8cee5abfabdbae871e9f04cc65fbe1f018c4b9956fc4",
-        "linux-aarch64": "3a43705c1f0ec75e9976bd9404aba31a85efba4ae321bd548d3d821de2e61a4a",
-        "linux-x86_64": "f82c79734b77502769012e95497ea29b2b59261243f50856a1159768e6dab9d8",
+        "linux-aarch64": "49299344cc4fec03cd17b5c60eb6c5ef41c048eee6d362157d43adafbc54668a",
+        "linux-x86_64": "d2bc9a4c6676279010bbac67005d521b45194724c3d333620363479ed1bdf447",
     },
     urls = {
         "darwin-aarch64": [LLVM_BASE_URL.format(
@@ -109,15 +106,21 @@ use_repo(llvm, "llvm_toolchain")
 register_toolchains("@llvm_toolchain//:all")
 
 _LIBCLANG_BUILD_FILE = """
-filegroup(
+load("@aspect_bazel_lib//lib:copy_to_directory.bzl", "copy_to_directory")
+
+copy_to_directory(
     name = "lib",
+    include_external_repositories = ["*"],
     srcs = glob(["lib/**"]),
+    root_paths = ["lib"],
     visibility = ["//visibility:public"],
 )
 
-filegroup(
+copy_to_directory(
     name = "bin",
+    include_external_repositories = ["*"],
     srcs = glob(["bin/**"]),
+    root_paths = ["bin"],
     visibility = ["//visibility:public"],
 )
 """
@@ -125,7 +128,7 @@ filegroup(
 http_archive(
     name = "libclang-linux-x86_64",
     build_file_content = _LIBCLANG_BUILD_FILE,
-    sha256 = "34595e7bcea0ad21f817ea6c313831226104e1c3264487beec77ddf3b263d748",
+    sha256 = "b45ad84d61ea823392a0ddc24758bdd0ef61a5fb3f3fed186055963538431144",
     url = LLVM_BASE_URL.format(
         build = LLVM_BUILD,
         file = "linux_x86_64_libclang.tar.zst",
@@ -136,7 +139,7 @@ http_archive(
 http_archive(
     name = "libclang-linux-aarch64",
     build_file_content = _LIBCLANG_BUILD_FILE,
-    sha256 = "75152a9bebab19684ca76e3d6b5460d85de9312c5a8659d350307a348554a4eb",
+    sha256 = "0c572d901f11d7f272d047bb3b75fe00d2d75c508b7cc484ecfcbdece792d69a",
     url = LLVM_BASE_URL.format(
         build = LLVM_BUILD,
         file = "linux_aarch64_libclang.tar.zst",

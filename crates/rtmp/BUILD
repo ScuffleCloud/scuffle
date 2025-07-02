@@ -10,10 +10,11 @@ scuffle_package(
     ],
     proc_macro_deps = ["//crates/changelog"],
     test = scuffle_test(
-        data = ["//assets:mp4", "//bazel/tools:ffmpeg"],
+        data = ["@scuffle_assets//:mp4", "//bazel/tools:ffmpeg"],
         deps = ["//crates/flv"],
         env = {
             "FFMPEG": "$(rootpath //bazel/tools:ffmpeg)",
+            "ASSETS_DIR": "$(rootpath @scuffle_assets//:mp4)",
         },
     ),
     deps = [

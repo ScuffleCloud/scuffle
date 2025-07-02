@@ -198,7 +198,7 @@
   "moduleExtensions": {
     "//bazel:vendor_extensions.bzl%vendored": {
       "general": {
-        "bzlTransitiveDigest": "ymR0NlM+c7X9ce/h/9+QoacaqRO0ee3Wh3xdbi0ZBKo=",
+        "bzlTransitiveDigest": "mthqtUvkPRQbXywVw23Y3aR90L9j0yODCNO4eoV/hz8=",
         "usagesDigest": "Ps8bwiADwJZu50XNjuy9ZxIaTnUQhb07qyiUrf/OlN8=",
         "recordedFileInputs": {},
         "recordedDirentsInputs": {},
@@ -8931,8 +8931,8 @@
     },
     "@@rules_rust+//crate_universe/private:internal_extensions.bzl%cu_nr": {
       "general": {
-        "bzlTransitiveDigest": "npG7fwqJihs8BWBZGga9oekjNh9ZOR6ZisShL8xGfuc=",
-        "usagesDigest": "P4qQAUEHFUvz2hoKWGeiduz89B6xDuZJ/1Wo8WBYRKY=",
+        "bzlTransitiveDigest": "QfHXcmaGkPJB8pfLfhoupz43zsxVvxnQrZDtnXx5mZ0=",
+        "usagesDigest": "a6bBXoROFcQm7kFLJ8kE1V+xNy4S3eDkGNB4whTDQ0w=",
         "recordedFileInputs": {},
         "recordedDirentsInputs": {},
         "envVariables": {},
@@ -9079,7 +9079,7 @@
     "@@toolchains_llvm+//toolchain/extensions:llvm.bzl%llvm": {
       "general": {
         "bzlTransitiveDigest": "BbimcWtxzSMcAKKK+FJBcDw+Lan8lRLfZXNz6gZKpyU=",
-        "usagesDigest": "GLxSQdFQA3lFN7Sy6LPUMkOPi6F9himqZSfwYZMnzKk=",
+        "usagesDigest": "1XA1v6UyDeJLkZ1rScXyO5yI8NgZEEtW6oYpHKcrE+8=",
         "recordedFileInputs": {},
         "recordedDirentsInputs": {},
         "envVariables": {},
@@ -9100,22 +9100,22 @@
               "sha256": {
                 "darwin-aarch64": "300a3c105a90360d3ff760c522cf0c545b5cc126d7e81ad8651b410ea62195e8",
                 "darwin-x86_64": "3d268ede7d7d7321c67c8cee5abfabdbae871e9f04cc65fbe1f018c4b9956fc4",
-                "linux-aarch64": "3a43705c1f0ec75e9976bd9404aba31a85efba4ae321bd548d3d821de2e61a4a",
-                "linux-x86_64": "f82c79734b77502769012e95497ea29b2b59261243f50856a1159768e6dab9d8"
+                "linux-aarch64": "49299344cc4fec03cd17b5c60eb6c5ef41c048eee6d362157d43adafbc54668a",
+                "linux-x86_64": "d2bc9a4c6676279010bbac67005d521b45194724c3d333620363479ed1bdf447"
               },
               "strip_prefix": {},
               "urls": {
                 "darwin-aarch64": [
-                  "https://github.com/scufflecloud/toolchains/releases/download/llvm-20.1.7-1/darwin_aarch64.tar.zst"
+                  "https://github.com/scufflecloud/toolchains/releases/download/clang-20.1.7-16029568006/darwin_aarch64.tar.zst"
                 ],
                 "darwin-x86_64": [
-                  "https://github.com/scufflecloud/toolchains/releases/download/llvm-20.1.7-1/darwin_x86_64.tar.zst"
+                  "https://github.com/scufflecloud/toolchains/releases/download/clang-20.1.7-16029568006/darwin_x86_64.tar.zst"
                 ],
                 "linux-aarch64": [
-                  "https://github.com/scufflecloud/toolchains/releases/download/llvm-20.1.7-1/linux_aarch64.tar.zst"
+                  "https://github.com/scufflecloud/toolchains/releases/download/clang-20.1.7-16029568006/linux_aarch64.tar.zst"
                 ],
                 "linux-x86_64": [
-                  "https://github.com/scufflecloud/toolchains/releases/download/llvm-20.1.7-1/linux_x86_64.tar.zst"
+                  "https://github.com/scufflecloud/toolchains/releases/download/clang-20.1.7-16029568006/linux_x86_64.tar.zst"
                 ]
               }
             }

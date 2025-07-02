@@ -752,7 +752,7 @@ mod tests {
 
     #[test]
     fn test_encoder_encode_video() {
-        let mut input = Input::open(file_path("assets/avc_aac.mp4")).expect("Failed to open input file");
+        let mut input = Input::open(file_path("avc_aac.mp4")).expect("Failed to open input file");
         let streams = input.streams();
         let video_stream = streams.best(AVMediaType::Video).expect("No video stream found");
         let mut decoder = Decoder::new(&video_stream)

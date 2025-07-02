@@ -347,18 +347,10 @@ mod tests {
     }
 
     fn file_path(item: &str) -> PathBuf {
-        #[cfg(not(bazel_runfiles))]
-        {
-            PathBuf::from(env!("CARGO_MANIFEST_DIR")).join(item)
-        }
-        #[cfg(bazel_runfiles)]
-        {
-            extern crate runfiles;
-
-            static RUNFILES: std::sync::LazyLock<runfiles::Runfiles> =
-                std::sync::LazyLock::new(|| runfiles::Runfiles::create().unwrap());
-
-            RUNFILES.rlocation(format!("_main/crates/settings/{item}")).unwrap()
+        if let Some(env) = std::env::var_os("ASSETS_DIR") {
+            PathBuf::from(env).join(item)
+        } else {
+            PathBuf::from(env!("CARGO_MANIFEST_DIR")).join(format!("../../assets/{item}"))
         }
     }
 
@@ -412,7 +404,7 @@ mod tests {
     #[test]
     #[cfg(all(feature = "cli", feature = "toml"))]
     fn parse_file() {
-        let path = file_path("assets/test.toml");
+        let path = file_path("test.toml");
         let options = Options {
             cli: Some(Cli {
                 name: "test",
@@ -431,7 +423,7 @@ mod tests {
     #[test]
     #[cfg(feature = "cli")]
     fn file_error() {
-        let path = file_path("assets/invalid.txt");
+        let path = file_path("invalid.txt");
         let options = Options {
             cli: Some(Cli {
                 name: "test",
@@ -519,7 +511,7 @@ mod tests {
                 argv: vec![
                     "test".to_string(),
                     "-c".to_string(),
-                    file_path("assets/templates.toml").to_string_lossy().to_string(),
+                    file_path("templates.toml").to_string_lossy().to_string(),
                 ],
             }),
             ..Default::default()

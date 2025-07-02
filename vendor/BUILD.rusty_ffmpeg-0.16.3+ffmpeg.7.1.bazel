@@ -81,8 +81,8 @@ cargo_build_script(
         allow_empty = True,
     ),
     build_script_env = {
-        "CLANG_PATH": "$${pwd}/$(CC)",
         "BINDGEN_EXTRA_CLANG_ARGS": "--sysroot=$(execpath @//bazel/toolchains/llvm:sysroot)",
+        "CLANG_PATH": "$${pwd}/$(CC)",
         "FFMPEG_DLL_PATH": "$(execpath @//bazel/toolchains/ffmpeg:lib)",
         "FFMPEG_INCLUDE_DIR": "$(execpath @//bazel/toolchains/ffmpeg:include)",
         "LIBCLANG_PATH": "$(execpath @//bazel/toolchains/llvm:libclang)",

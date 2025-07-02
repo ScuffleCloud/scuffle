@@ -1,15 +1,21 @@
 http_archive = use_repo_rule("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive")
 
 _LINUX_BUILD_FILE = """
-filegroup(
+load("@aspect_bazel_lib//lib:copy_to_directory.bzl", "copy_to_directory")
+
+copy_to_directory(
     name = "include",
     srcs = glob(["include/**"]),
+    root_paths = ["include"],
+    include_external_repositories = ["*"],
     visibility = ["//visibility:public"],
 )
 
-filegroup(
+copy_to_directory(
     name = "lib",
     srcs = glob(["lib/**"]),
+    root_paths = ["lib"],
+    include_external_repositories = ["*"],
     visibility = ["//visibility:public"],
 )
 

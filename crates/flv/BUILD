@@ -11,8 +11,11 @@ scuffle_package(
     proc_macro_deps = ["//crates/changelog"],
     test = scuffle_test(
         data = [
-            "//assets:flv",
+            "@scuffle_assets//:flv",
         ],
+        env = {
+            "ASSETS_DIR": "$(rootpath @scuffle_assets//:flv)",
+        },
         insta = True,
     ),
     deps = [

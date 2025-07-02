@@ -12,8 +12,11 @@ scuffle_package(
     deps = ["//crates/context"],
     test = scuffle_test(
         data = [
-            "//assets:pem",
+            "@scuffle_assets//:pem",
         ],
+        env = {
+            "ASSETS_DIR": "$(rootpath @scuffle_assets//:pem)",
+        },
         deps = ["//crates/future-ext"],
     ),
 )

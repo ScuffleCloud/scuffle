@@ -100,18 +100,10 @@ mod tests {
     const RESPONSE_TEXT: &str = "Hello, world!";
 
     fn file_path(item: &str) -> PathBuf {
-        #[cfg(not(bazel_runfiles))]
-        {
-            PathBuf::from(env!("CARGO_MANIFEST_DIR")).join(format!("../../{item}"))
-        }
-        #[cfg(bazel_runfiles)]
-        {
-            extern crate runfiles;
-
-            static RUNFILES: std::sync::LazyLock<runfiles::Runfiles> =
-                std::sync::LazyLock::new(|| runfiles::Runfiles::create().unwrap());
-
-            RUNFILES.rlocation(format!("_main/{item}")).unwrap()
+        if let Some(env) = std::env::var_os("ASSETS_DIR") {
+            PathBuf::from(env).join(item)
+        } else {
+            PathBuf::from(env!("CARGO_MANIFEST_DIR")).join(format!("../../assets/{item}"))
         }
     }
 
@@ -272,11 +264,11 @@ mod tests {
 
     #[cfg(feature = "tls-rustls")]
     fn rustls_config() -> rustls::ServerConfig {
-        let certfile = std::fs::File::open(file_path("assets/cert.pem")).expect("cert not found");
+        let certfile = std::fs::File::open(file_path("cert.pem")).expect("cert not found");
         let certs = rustls_pemfile::certs(&mut std::io::BufReader::new(certfile))
             .collect::<Result<Vec<_>, _>>()
             .expect("failed to load certs");
-        let keyfile = std::fs::File::open(file_path("assets/key.pem")).expect("key not found");
+        let keyfile = std::fs::File::open(file_path("key.pem")).expect("key not found");
         let key = rustls_pemfile::private_key(&mut std::io::BufReader::new(keyfile))
             .expect("failed to load key")
             .expect("no key found");

@@ -95,18 +95,10 @@ mod tests {
     use crate::session::server::{ServerSession, ServerSessionError, SessionData, SessionHandler};
 
     fn file_path(item: &str) -> PathBuf {
-        #[cfg(not(bazel_runfiles))]
-        {
-            PathBuf::from(env!("CARGO_MANIFEST_DIR")).join(format!("../../{item}"))
-        }
-        #[cfg(bazel_runfiles)]
-        {
-            extern crate runfiles;
-
-            static RUNFILES: std::sync::LazyLock<runfiles::Runfiles> =
-                std::sync::LazyLock::new(|| runfiles::Runfiles::create().unwrap());
-
-            RUNFILES.rlocation(format!("_main/{item}")).unwrap()
+        if let Some(env) = std::env::var_os("ASSETS_DIR") {
+            PathBuf::from(env).join(item)
+        } else {
+            PathBuf::from(env!("CARGO_MANIFEST_DIR")).join(format!("../../assets/{item}"))
         }
     }
 
@@ -182,7 +174,7 @@ mod tests {
                 "debug",
                 "-re",
                 "-i",
-                file_path("assets/avc_aac.mp4").to_str().expect("failed to get path"),
+                file_path("avc_aac.mp4").to_str().expect("failed to get path"),
                 "-r",
                 "30",
                 "-t",
@@ -316,7 +308,7 @@ mod tests {
                 "debug",
                 "-re",
                 "-i",
-                file_path("assets/avc_aac.mp4").to_str().expect("failed to get path"),
+                file_path("avc_aac.mp4").to_str().expect("failed to get path"),
                 "-r",
                 "30",
                 "-t",

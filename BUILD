@@ -27,6 +27,7 @@ crates_vendor(
         "rusty_ffmpeg": [
             crate.annotation(
                 build_script_env = {
+                    "CLANG_PATH": "$${pwd}/$(CC)",
                     "FFMPEG_INCLUDE_DIR": "$(execpath @//bazel/toolchains/ffmpeg:include)",
                     "FFMPEG_DLL_PATH": "$(execpath @//bazel/toolchains/ffmpeg:lib)",
                     "LIBCLANG_PATH": "$(execpath @//bazel/toolchains/llvm:libclang)",

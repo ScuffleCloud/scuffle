@@ -24,3 +24,4 @@ docs/.cache-loader
 bazel-*
 target/
 rust-project.json
+.user.bazelrc

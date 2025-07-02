@@ -1,5 +1,5 @@
 def _make_ffmpeg_wrapper_impl(ctx):
-    is_windows = False
+    is_windows = ctx.target_platform_has_constraint(ctx.attr._windows_constraint[platform_common.ConstraintValueInfo])
     ext = ".bat" if is_windows else ".sh"
     template = ctx.attr._template_file_win if is_windows else ctx.attr._template_file
 
@@ -28,6 +28,9 @@ make_ffmpeg_wrapper = rule(
         "libs": attr.label(),
         "_template_file_win": attr.label(default = ":ffmpeg/wrapper.bat", allow_single_file = True),
         "_template_file": attr.label(default = ":ffmpeg/wrapper.sh", allow_single_file = True),
+        "_windows_constraint": attr.label(
+            default = "@platforms//os:windows"
+        ),
     },
     executable = True,
 )

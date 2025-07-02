@@ -202,7 +202,7 @@ mod tests {
 
     #[test]
     fn test_open_valid_file() {
-        let valid_file_path = file_path("assets/avc_aac_large.mp4");
+        let valid_file_path = file_path("avc_aac_large.mp4");
         assert!(valid_file_path.exists(), "Test file does not exist");
 
         let result = Input::open(valid_file_path);
@@ -224,7 +224,7 @@ mod tests {
 
     #[test]
     fn test_new_with_default_options() {
-        let valid_media_data = std::fs::read(file_path("assets/avc_aac_large.mp4")).unwrap();
+        let valid_media_data = std::fs::read(file_path("avc_aac_large.mp4")).unwrap();
         let data = Cursor::new(valid_media_data);
         let result = Input::new(data);
 
@@ -237,7 +237,7 @@ mod tests {
 
     #[test]
     fn test_seekable_with_valid_input() {
-        let valid_media_data = std::fs::read(file_path("assets/avc_aac_large.mp4")).unwrap();
+        let valid_media_data = std::fs::read(file_path("avc_aac_large.mp4")).unwrap();
         let data = Cursor::new(valid_media_data);
         let result = Input::seekable(data);
 
@@ -250,7 +250,7 @@ mod tests {
 
     #[test]
     fn test_as_ptr() {
-        let input = Input::open(file_path("assets/avc_aac_large.mp4")).expect("Failed to open valid file");
+        let input = Input::open(file_path("avc_aac_large.mp4")).expect("Failed to open valid file");
 
         let ptr = input.as_ptr();
         assert!(!ptr.is_null(), "Expected non-null pointer");
@@ -258,8 +258,7 @@ mod tests {
 
     #[test]
     fn test_as_mut_ptr() {
-        let valid_file_path = file_path("assets/avc_aac_large.mp4");
-        let mut input = Input::open(valid_file_path).expect("Failed to open valid file");
+        let mut input = Input::open(file_path("avc_aac_large.mp4")).expect("Failed to open valid file");
 
         let ptr = input.as_mut_ptr();
         assert!(!ptr.is_null(), "Expected non-null mutable pointer");
@@ -267,8 +266,7 @@ mod tests {
 
     #[test]
     fn test_streams() {
-        let valid_file_path = "assets/avc_aac_large.mp4";
-        let input = Input::open(file_path(valid_file_path)).expect("Failed to open valid file");
+        let input = Input::open(file_path("avc_aac_large.mp4")).expect("Failed to open valid file");
         let streams = input.streams();
 
         assert!(!streams.is_empty(), "Expected at least one stream");
@@ -362,8 +360,7 @@ mod tests {
 
     #[test]
     fn test_packets() {
-        let valid_file_path = "assets/avc_aac_large.mp4";
-        let mut input = Input::open(file_path(valid_file_path)).expect("Failed to open valid file");
+        let mut input = Input::open(file_path("avc_aac_large.mp4")).expect("Failed to open valid file");
         let mut packets = input.packets();
 
         for _ in 0..5 {
@@ -388,8 +385,7 @@ mod tests {
 
     #[test]
     fn test_receive_packet() {
-        let valid_file_path = "assets/avc_aac_large.mp4";
-        let mut input = Input::open(file_path(valid_file_path)).expect("Failed to open valid file");
+        let mut input = Input::open(file_path("avc_aac_large.mp4")).expect("Failed to open valid file");
 
         let mut packets = Vec::new();
         while let Ok(Some(packet)) = input.receive_packet() {

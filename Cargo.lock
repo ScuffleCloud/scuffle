@@ -4559,6 +4559,7 @@ dependencies = [
  "nextest-metadata",
  "nextest-runner",
  "serde_json",
+ "toml_edit",
 ]
 
 [[package]]

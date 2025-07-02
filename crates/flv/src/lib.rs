@@ -66,24 +66,16 @@ mod tests {
     use crate::video::header::{VideoFrameType, VideoTagHeader, VideoTagHeaderData};
 
     fn file_path(item: &str) -> PathBuf {
-        #[cfg(not(bazel_runfiles))]
-        {
-            PathBuf::from(env!("CARGO_MANIFEST_DIR")).join(format!("../../{item}"))
-        }
-        #[cfg(bazel_runfiles)]
-        {
-            extern crate runfiles;
-
-            static RUNFILES: std::sync::LazyLock<runfiles::Runfiles> =
-                std::sync::LazyLock::new(|| runfiles::Runfiles::create().unwrap());
-
-            RUNFILES.rlocation(format!("_main/{item}")).unwrap()
+        if let Some(env) = std::env::var_os("ASSETS_DIR") {
+            PathBuf::from(env).join(item)
+        } else {
+            PathBuf::from(env!("CARGO_MANIFEST_DIR")).join(format!("../../assets/{item}"))
         }
     }
 
     #[test]
     fn test_demux_flv_avc_aac() {
-        let data = Bytes::from(std::fs::read(file_path("assets/avc_aac.flv")).expect("failed to read file"));
+        let data = Bytes::from(std::fs::read(file_path("avc_aac.flv")).expect("failed to read file"));
         let mut reader = io::Cursor::new(data);
 
         let flv = FlvFile::demux(&mut reader).expect("failed to demux flv");
@@ -342,7 +334,7 @@ mod tests {
 
     #[test]
     fn test_demux_flv_av1_aac() {
-        let data = Bytes::from(std::fs::read(file_path("assets/av1_aac.flv")).expect("failed to read file"));
+        let data = Bytes::from(std::fs::read(file_path("av1_aac.flv")).expect("failed to read file"));
         let mut reader = io::Cursor::new(data);
 
         let flv = FlvFile::demux(&mut reader).expect("failed to demux flv");
@@ -550,7 +542,7 @@ mod tests {
 
     #[test]
     fn test_demux_flv_hevc_aac() {
-        let data = Bytes::from(std::fs::read(file_path("assets/hevc_aac.flv")).expect("failed to read file"));
+        let data = Bytes::from(std::fs::read(file_path("hevc_aac.flv")).expect("failed to read file"));
         let mut reader = io::Cursor::new(data);
 
         let flv = FlvFile::demux(&mut reader).expect("failed to demux flv");

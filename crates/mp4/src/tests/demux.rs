@@ -61,7 +61,7 @@ use crate::types::trex::Trex;
 
 #[test]
 fn test_demux_avc_aac() {
-    let data = std::fs::read(file_path("assets/avc_aac_fragmented.mp4").to_str().unwrap()).unwrap();
+    let data = std::fs::read(file_path("avc_aac_fragmented.mp4").to_str().unwrap()).unwrap();
 
     let mut boxes = Vec::new();
     let mut reader = io::Cursor::new(data.into());
@@ -918,7 +918,7 @@ fn test_demux_avc_aac() {
 
 #[test]
 fn test_mux_avc_aac() {
-    let data = std::fs::read(file_path("assets/avc_aac_fragmented.mp4").to_str().unwrap()).unwrap();
+    let data = std::fs::read(file_path("avc_aac_fragmented.mp4").to_str().unwrap()).unwrap();
 
     let mut boxes = Vec::new();
     let mut reader = io::Cursor::new(data.into());
@@ -986,7 +986,7 @@ fn test_mux_avc_aac() {
 
 #[test]
 fn test_demux_av1_aac() {
-    let data = std::fs::read(file_path("assets/av1_aac_fragmented.mp4").to_str().unwrap()).unwrap();
+    let data = std::fs::read(file_path("av1_aac_fragmented.mp4").to_str().unwrap()).unwrap();
 
     let mut boxes = Vec::new();
     let mut reader = io::Cursor::new(data.into());
@@ -1682,7 +1682,7 @@ fn test_demux_av1_aac() {
 
 #[test]
 fn test_demux_hevc_aac() {
-    let data = std::fs::read(file_path("assets/hevc_aac_fragmented.mp4").to_str().unwrap()).unwrap();
+    let data = std::fs::read(file_path("hevc_aac_fragmented.mp4").to_str().unwrap()).unwrap();
 
     let mut boxes = Vec::new();
     let mut reader = io::Cursor::new(data.into());
@@ -2401,7 +2401,7 @@ fn test_demux_hevc_aac() {
 
 #[test]
 fn test_mux_av1_aac() {
-    let data = std::fs::read(file_path("assets/av1_aac_fragmented.mp4").to_str().unwrap()).unwrap();
+    let data = std::fs::read(file_path("av1_aac_fragmented.mp4").to_str().unwrap()).unwrap();
 
     let mut boxes = Vec::new();
     let mut reader = io::Cursor::new(data.into());
@@ -2469,7 +2469,7 @@ fn test_mux_av1_aac() {
 
 #[test]
 fn test_mux_hevc_aac() {
-    let data = std::fs::read(file_path("assets/hevc_aac_fragmented.mp4").to_str().unwrap()).unwrap();
+    let data = std::fs::read(file_path("hevc_aac_fragmented.mp4").to_str().unwrap()).unwrap();
 
     let mut boxes = Vec::new();
     let mut reader = io::Cursor::new(data.into());

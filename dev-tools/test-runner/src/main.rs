@@ -32,6 +32,15 @@ struct Args {
 
     #[arg(env = "RUNNER_PROFILE")]
     profile: String,
+
+    #[arg(env = "TEST_TMPDIR")]
+    tmp_dir: Utf8PathBuf,
+
+    #[arg(env = "XML_OUTPUT_FILE")]
+    xml_output_file: Option<Utf8PathBuf>,
+
+    #[arg(env = "TEST_TARGET")]
+    target: Option<String>,
 }
 
 fn main() {
@@ -88,7 +97,7 @@ fn main() {
     };
 
     let artifact = RustTestArtifact {
-        binary_id: RustBinaryId::new("test-id"),
+        binary_id: RustBinaryId::new(args.target.as_ref().unwrap_or(&args.package)),
         binary_name: args.binary.file_name().unwrap().to_string(),
         binary_path: args.binary,
         cwd: cwd.clone(),
@@ -98,15 +107,24 @@ fn main() {
         package: package,
     };
 
+    let mut nextest_config = std::fs::read_to_string(&args.config).unwrap().parse::<toml_edit::DocumentMut>().unwrap();
+
+    nextest_config["store"]["dir"] = "".to_string().into();
+
+    let nextest_config_path = args.tmp_dir.join("__nextest-config.toml");
+
+    std::fs::write(&nextest_config_path, nextest_config.to_string()).unwrap();
+
     let build_platforms = BuildPlatforms::new_with_no_target().unwrap();
     let config = NextestConfig::from_sources(
-        Utf8PathBuf::new(),
+        &args.tmp_dir,
         &ParseContext::new(&graph),
-        Some(&args.config),
+        Some(&nextest_config_path),
         [],
         &BTreeSet::new(),
     )
     .unwrap();
+
     let profile = config.profile(&args.profile).unwrap().apply_build_platforms(&build_platforms);
     let meta = RustBuildMeta::new(cwd, build_platforms).map_paths(&PathMapper::noop());
     let filter = TestFilterBuilder::default_set(RunIgnored::Default);
@@ -147,6 +165,13 @@ fn main() {
             reporter.report_event(event).unwrap();
         })
         .unwrap();
+
+    reporter.finish();
+
+    if let (Some(junit), Some(output)) = (profile.junit(), args.xml_output_file.as_ref()) {
+        let junit = std::fs::read(junit.path()).unwrap();
+        std::fs::write(output, junit).unwrap();
+    }
 
     if r.has_failures() {
         std::process::exit(1)

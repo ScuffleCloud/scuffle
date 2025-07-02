@@ -137,7 +137,7 @@
 use std::borrow::Cow;
 use std::collections::{BTreeMap, BTreeSet};
 use std::io;
-use std::path::{Path, PathBuf};
+use std::path::Path;
 use std::process::Command;
 
 use cargo_manifest::DependencyDetail;
@@ -204,26 +204,8 @@ impl std::fmt::Display for CompileOutput {
     }
 }
 
-fn file_path(item: &str) -> PathBuf {
-    #[cfg(bazel_runfiles)]
-    {
-        extern crate runfiles;
-
-        static RUNFILES: std::sync::LazyLock<runfiles::Runfiles> =
-            std::sync::LazyLock::new(|| runfiles::Runfiles::create().unwrap());
-
-        if let Some(path) = RUNFILES.rlocation(item) {
-            if path.exists() {
-                return path;
-            }
-        }
-    }
-
-    PathBuf::from(item)
-}
-
 fn cargo(config: &Config, manifest_path: &Path, subcommand: &str) -> Command {
-    let mut program = Command::new(file_path(&std::env::var("CARGO").unwrap_or_else(|_| "cargo".into())));
+    let mut program = Command::new(&std::env::var("CARGO").unwrap_or_else(|_| "cargo".into()));
     program.arg(subcommand);
     program.current_dir(manifest_path.parent().unwrap());
 
@@ -254,7 +236,7 @@ fn cargo(config: &Config, manifest_path: &Path, subcommand: &str) -> Command {
 }
 
 fn rustc() -> Command {
-    let mut program = Command::new(file_path(&std::env::var("RUSTC").unwrap_or_else(|_| "rustc".into())));
+    let mut program = Command::new(&std::env::var("RUSTC").unwrap_or_else(|_| "rustc".into()));
     program.stderr(std::process::Stdio::piped());
     program.stdout(std::process::Stdio::piped());
     program
@@ -497,7 +479,7 @@ pub fn compile_custom(tokens: impl std::fmt::Display, config: &Config) -> std::i
 }
 
 fn manifest_mode(deps_manifest_path: String, config: &Config, tokens: String) -> std::io::Result<CompileOutput> {
-    let deps_manifest = match std::fs::read_to_string(file_path(&deps_manifest_path)) {
+    let deps_manifest = match std::fs::read_to_string(&deps_manifest_path) {
         Ok(o) => o,
         Err(err) => panic!("error opening file: {deps_manifest_path} {err}"),
     };

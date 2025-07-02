@@ -8,6 +8,7 @@ copy_to_directory(
     srcs = glob(["include/**"]),
     root_paths = ["include"],
     include_external_repositories = ["*"],
+    tags = ["no-cache", "manual"],
     visibility = ["//visibility:public"],
 )
 
@@ -16,6 +17,7 @@ copy_to_directory(
     srcs = glob(["lib/**"]),
     root_paths = ["lib"],
     include_external_repositories = ["*"],
+    tags = ["no-cache", "manual"],
     visibility = ["//visibility:public"],
 )
 

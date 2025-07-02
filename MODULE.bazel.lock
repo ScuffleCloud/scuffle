@@ -196,10 +196,10 @@
   },
   "selectedYankedVersions": {},
   "moduleExtensions": {
-    "//bazel:vendor_extensions.bzl%vendored": {
+    "//build:vendor_extensions.bzl%vendored": {
       "general": {
         "bzlTransitiveDigest": "mthqtUvkPRQbXywVw23Y3aR90L9j0yODCNO4eoV/hz8=",
-        "usagesDigest": "Ps8bwiADwJZu50XNjuy9ZxIaTnUQhb07qyiUrf/OlN8=",
+        "usagesDigest": "R00NwfirBfGsFtSeXYNezH2WzYDo/O4OImsxOtONMeg=",
         "recordedFileInputs": {},
         "recordedDirentsInputs": {},
         "envVariables": {},

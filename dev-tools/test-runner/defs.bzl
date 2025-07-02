@@ -1,6 +1,6 @@
 load("@bazel_skylib//rules:common_settings.bzl", "BuildSettingInfo")
 load("@rules_rust//rust:defs.bzl", "rust_test")
-load("//bazel/tools:postcompile.bzl", "PostcompilerDepsInfo")
+load("//build/tools:postcompile.bzl", "PostcompilerDepsInfo")
 
 def to_dict(**kwargs):
     return kwargs

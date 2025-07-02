@@ -1,4 +1,4 @@
-load("//bazel/tools:package.bzl", "scuffle_package", "scuffle_test")
+load("//build/tools:package.bzl", "scuffle_package", "scuffle_test")
 
 exports_files(["Cargo.toml"])
 
@@ -17,10 +17,10 @@ scuffle_package(
         "//crates/h265",
     ],
     test = scuffle_test(
-        data = ["@scuffle_assets//:mp4", "//bazel/tools:ffprobe"],
+        data = ["@scuffle_assets//:mp4", "//build/tools:ffprobe"],
         insta = True,
         env = {
-            "FFPROBE": "$(rootpath //bazel/tools:ffprobe)",
+            "FFPROBE": "$(rootpath //build/tools:ffprobe)",
             "ASSETS_DIR": "$(rootpath @scuffle_assets//:mp4)",
         },
     ),

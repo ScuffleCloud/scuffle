@@ -1,20 +1,61 @@
-common --color=yes
+###############################################################################
+## Bazel Configuration Flags
+##
+## `.bazelrc` is a Bazel configuration file.
+## https://bazel.build/docs/best-practices#bazelrc-file
+###############################################################################
 
+###############################################################################
+## Build configuration
+###############################################################################
+
+# Run the workspace status command to generate a git hash used for OCI image tagging.
+build --workspace_status_command=build/tools/workspace_status.sh
+
+# Don't create bazel-* symlinks in the project root directory.
+# Instead, set a prefix and put it in .gitignore
+build --symlink_prefix=target-bazel/
+
+# Non-empty glob test is disabled because some Bazels deps fail the test.
+build --incompatible_disallow_empty_glob=false
+
+# Disable C++ Host Toolchain Resolution
+build --action_env BAZEL_DO_NOT_DETECT_CPP_TOOLCHAIN=1
+
+# This flag improves local execution throughput by executing more actions in parallel.
+build --jobs=18
+
+###############################################################################
+## Test configuration
+###############################################################################
+
+# Reduce test output to just error cases and report timeout warnings.
+test --test_output=errors
+test --verbose_failures
+
+###############################################################################
+## Common configuration
+###############################################################################
+
+# Faster hashing algo
 startup --digest_function=blake3
+
+# https://github.com/bazel-contrib/bazel-lib/blob/main/docs/copy_directory.md#copy_directory
+startup --host_jvm_args=-DBAZEL_TRACK_SOURCE_DIRECTORIES=1
 
 # Enforce BzlMod usage
 common --noenable_workspace
 common --enable_bzlmod=true
 
-common --experimental_isolated_extension_usages
+# Enable platform configs
 common --enable_platform_specific_config
 
-common --action_env BAZEL_DO_NOT_DETECT_CPP_TOOLCHAIN=1
+# Write build outputs in a platform-specific directory;
+# avoid outputs being wiped and rewritten when switching between platforms.
+common --experimental_platform_in_output_dir
 
-common --remote_cache_compression
-
-build --incompatible_strict_action_env
-common --worker_sandboxing
+# Enable proto toolchain resolution.
+common --incompatible_enable_proto_toolchain_resolution
 
 # Ensure that we don't accidentally build protobuf or gRPC
 common --per_file_copt=external/.*protobuf.*@--PROTOBUF_WAS_NOT_SUPPOSED_TO_BE_BUILT
@@ -22,14 +63,38 @@ common --host_per_file_copt=external/.*protobuf.*@--PROTOBUF_WAS_NOT_SUPPOSED_TO
 common --per_file_copt=external/.*grpc.*@--GRPC_WAS_NOT_SUPPOSED_TO_BE_BUILT
 common --host_per_file_copt=external/.*grpc.*@--GRPC_WAS_NOT_SUPPOSED_TO_BE_BUILT
 
-# Use prebuilt protoc
-common --incompatible_enable_proto_toolchain_resolution
+# Enable misc. performance optimizations.
+# https://www.buildbuddy.io/blog/debugging-slow-bazel-builds/
+# https://www.buildbuddy.io/blog/how-bazel-7-0-makes-your-builds-faster/
+common --nolegacy_important_outputs
+common --verbose_failures
+common --noexperimental_merged_skyframe_analysis_execution
+common --reuse_sandbox_directories
 
-# Remote Cache
-common --remote_cache_compression
-common --experimental_remote_cache_compression_threshold=100
+# Enable a more detailed performance profile
+common --noslim_profile
 common --experimental_profile_include_target_label
 common --experimental_profile_include_primary_output
-common --noslim_profile
+common --execution_log_compact_file=.bazel_compact_execution_log
 
+# Disable host env from polluting the build
+common --incompatible_strict_action_env
+
+###############################################################################
+## Remote configuration
+###############################################################################
+
+# Enable remote cache compression
+common --remote_cache_compression
+
+# Disable cache on smaller files
+common --experimental_remote_cache_compression_threshold=1000
+
+###############################################################################
+## Custom user flags
+##
+## This should always be the last thing in the `.bazelrc` file to ensure
+## consistent behavior when setting flags in that file as `.bazelrc` files are
+## evaluated top to bottom.
+###############################################################################
 try-import %workspace%/.user.bazelrc

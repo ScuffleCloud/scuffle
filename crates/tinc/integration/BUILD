@@ -1,6 +1,6 @@
-load("//bazel/tools:package.bzl", "scuffle_build_script", "scuffle_package", "scuffle_test")
+load("//build/tools:package.bzl", "scuffle_build_script", "scuffle_package", "scuffle_test")
 load("@protobuf//bazel:proto_library.bzl", "proto_library")
-load("//bazel/protobuf:proto_descriptor_set.bzl", "proto_descriptor_set")
+load("//build/protobuf:proto_descriptor_set.bzl", "proto_descriptor_set")
 
 exports_files(["Cargo.toml"])
 

@@ -9,12 +9,12 @@ bazel_dep(name = "platforms", version = "1.0.0")
 bazel_dep(name = "rules_cc", version = "0.1.2")
 bazel_dep(name = "aspect_bazel_lib", version = "2.19.4")
 
-include("//bazel/toolchains:protobuf.MODULE.bazel")
+include("//build/toolchains:protobuf.MODULE.bazel")
 
-include("//bazel/toolchains:llvm.MODULE.bazel")
+include("//build/toolchains:llvm.MODULE.bazel")
 
-include("//bazel/toolchains:rust.MODULE.bazel")
+include("//build/toolchains:rust.MODULE.bazel")
 
-include("//bazel/toolchains:ffmpeg.MODULE.bazel")
+include("//build/toolchains:ffmpeg.MODULE.bazel")
 
-include("//bazel/toolchains:assets.MODULE.bazel")
+include("//build/toolchains:assets.MODULE.bazel")

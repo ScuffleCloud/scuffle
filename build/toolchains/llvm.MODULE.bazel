@@ -19,7 +19,8 @@ filegroup(
 copy_to_directory(
     name = "sysroot_dir",
     include_external_repositories = ["*"],
-    srcs = glob(["*/**"]),
+    srcs = [":sysroot"],
+    tags = ["no-cache", "manual"],
     visibility = ["//visibility:public"],
 )
 """

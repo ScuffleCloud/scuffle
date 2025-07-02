@@ -27,7 +27,7 @@ use_repo(
 
 register_toolchains("@rust_toolchains//:all")
 
-vendored = use_extension("//bazel:vendor_extensions.bzl", "vendored")
+vendored = use_extension("//build:vendor_extensions.bzl", "vendored")
 use_repo(
     vendored,
     "crates_vendor",

@@ -1,5 +1,5 @@
-load("//bazel/tools:package.bzl", "scuffle_package", "scuffle_test")
-load("//bazel/tools:postcompile.bzl", "postcompile_deps")
+load("//build/tools:package.bzl", "scuffle_package", "scuffle_test")
+load("//build/tools:postcompile.bzl", "postcompile_deps")
 
 exports_files(["Cargo.toml"])
 

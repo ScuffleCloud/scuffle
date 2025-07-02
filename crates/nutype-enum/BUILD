@@ -1,4 +1,4 @@
-load("//bazel/tools:package.bzl", "scuffle_package")
+load("//build/tools:package.bzl", "scuffle_package")
 
 exports_files(["Cargo.toml"])
 

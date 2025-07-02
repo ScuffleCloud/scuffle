@@ -1,4 +1,4 @@
-load("//bazel/tools:package.bzl", "scuffle_package", "scuffle_test")
+load("//build/tools:package.bzl", "scuffle_package", "scuffle_test")
 
 exports_files(["Cargo.toml"])
 
@@ -13,13 +13,13 @@ scuffle_package(
     test = scuffle_test(
         deps = ["//crates/mp4"],
         insta = True,
-        data = ["@scuffle_assets//:mp4", "//bazel/toolchains/ffmpeg:lib"],
+        data = ["@scuffle_assets//:mp4", "//build/toolchains/ffmpeg:lib"],
         env = select({
             "@platforms//os:windows": {
-                "PATH": "./$(rootpath //bazel/toolchains/ffmpeg:lib)"
+                "PATH": "./$(rootpath //build/toolchains/ffmpeg:lib)"
             },
             "//conditions:default": {
-                "LD_LIBRARY_PATH": "./$(rootpath //bazel/toolchains/ffmpeg:lib)"
+                "LD_LIBRARY_PATH": "./$(rootpath //build/toolchains/ffmpeg:lib)"
             },
         }) | {
             "ASSETS_DIR": "$(rootpath @scuffle_assets//:mp4)",

@@ -1,4 +1,4 @@
-load("//bazel/tools:package.bzl", "scuffle_package", "scuffle_test")
+load("//build/tools:package.bzl", "scuffle_package", "scuffle_test")
 load("@protobuf//bazel:proto_library.bzl", "proto_library")
 
 exports_files(["Cargo.toml"])

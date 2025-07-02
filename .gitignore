@@ -19,9 +19,10 @@ docs/build
 docs/.docusaurus
 docs/.cache-loader
 .runner/
+target/
 
 # bazel
-bazel-*
-target/
+target-bazel/
+.bazel_compact_execution_log
 rust-project.json
 .user.bazelrc

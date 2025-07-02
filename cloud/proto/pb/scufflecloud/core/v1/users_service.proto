@@ -71,7 +71,7 @@ message User {
         min_len: 1,
         max_len: 255
     }];
-    string primary_email = 5 [(tinc.field).constraint.string.email = true];
+    optional string primary_email = 5 [(tinc.field).constraint.string.email = true];
 }
 
 message UpdateUserPasswordRequest {

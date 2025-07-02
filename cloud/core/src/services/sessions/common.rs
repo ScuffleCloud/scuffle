@@ -2,12 +2,11 @@ use std::sync::Arc;
 
 use argon2::password_hash::SaltString;
 use argon2::{Argon2, PasswordHasher};
-use diesel::{ExpressionMethods, JoinOnDsl, OptionalExtension, QueryDsl, SelectableHelper};
+use diesel::{ExpressionMethods, JoinOnDsl, NullableExpressionMethods, OptionalExtension, QueryDsl, SelectableHelper};
 use diesel_async::RunQueryDsl;
 use pkcs8::DecodePublicKey;
 use rand::TryRngCore;
 use sha2::Digest;
-use tonic::Code;
 use tonic_types::{ErrorDetails, StatusExt};
 
 use crate::CoreConfig;
@@ -32,11 +31,11 @@ pub(crate) fn encrypt_token(
     match algorithm {
         pb::scufflecloud::core::v1::DeviceAlgorithm::RsaOaepSha256 => {
             let pk = rsa::RsaPublicKey::from_public_key_der(pk_der_data)
-                .into_tonic(Code::InvalidArgument, "failed to parse public key")?;
+                .into_tonic_err_with_field_violation("public_key_data", "failed to parse public key")?;
             let padding = rsa::Oaep::new::<sha2::Sha256>();
             let enc_data = pk
                 .encrypt(&mut rsa::rand_core::OsRng, padding, token)
-                .into_tonic_internal("failed to encrypt token")?;
+                .into_tonic_internal_err("failed to encrypt token")?;
             Ok(enc_data)
         }
     }
@@ -44,13 +43,13 @@ pub(crate) fn encrypt_token(
 
 pub(crate) async fn get_user_by_email(db: &mut diesel_async::AsyncPgConnection, email: &str) -> Result<User, tonic::Status> {
     let Some((user, _)) = users::dsl::users
-        .inner_join(user_emails::dsl::user_emails.on(users::dsl::primary_email.eq(user_emails::dsl::email)))
+        .inner_join(user_emails::dsl::user_emails.on(users::dsl::primary_email.eq(user_emails::dsl::email.nullable())))
         .filter(user_emails::dsl::email.eq(&email))
         .select((User::as_select(), user_emails::dsl::email))
         .first::<(User, String)>(&mut *db)
         .await
         .optional()
-        .into_tonic_internal("failed to query user by email")?
+        .into_tonic_internal_err("failed to query user by email")?
     else {
         return Err(tonic::Status::with_error_details(
             tonic::Code::NotFound,
@@ -69,12 +68,15 @@ pub(crate) fn normalize_email(email: &str) -> String {
 pub(crate) async fn create_new_user_and_session<G: CoreConfig>(
     global: &Arc<G>,
     db: &mut diesel_async::AsyncPgConnection,
-    email: String,
+    email: Option<String>,
+    preferred_name: Option<String>,
+    first_name: Option<String>,
+    last_name: Option<String>,
     password: Option<&str>,
     device: pb::scufflecloud::core::v1::Device,
     ip_info: &IpAddressInfo,
 ) -> Result<(User, pb::scufflecloud::core::v1::NewUserSessionToken), tonic::Status> {
-    let email = normalize_email(&email);
+    let email = email.as_ref().map(|e| normalize_email(e));
 
     let password_hash = if let Some(password) = password {
         // Create user with given password
@@ -82,7 +84,7 @@ pub(crate) async fn create_new_user_and_session<G: CoreConfig>(
         let argon2 = Argon2::default();
         let hash = argon2
             .hash_password(password.as_bytes(), &salt)
-            .into_tonic_internal("failed to hash password")?
+            .into_tonic_internal_err("failed to hash password")?
             .to_string();
         Some(hash)
     } else {
@@ -91,9 +93,9 @@ pub(crate) async fn create_new_user_and_session<G: CoreConfig>(
 
     let user = User {
         id: Id::new(),
-        preferred_name: None,
-        first_name: None,
-        last_name: None,
+        preferred_name,
+        first_name,
+        last_name,
         password_hash,
         primary_email: email.clone(),
     };
@@ -101,18 +103,20 @@ pub(crate) async fn create_new_user_and_session<G: CoreConfig>(
         .values(&user)
         .execute(db)
         .await
-        .into_tonic_internal("failed to insert user")?;
+        .into_tonic_internal_err("failed to insert user")?;
 
-    let user_email = UserEmail {
-        email: email.clone(),
-        user_id: user.id,
-        created_at: chrono::Utc::now(),
-    };
-    diesel::insert_into(user_emails::dsl::user_emails)
-        .values(&user_email)
-        .execute(db)
-        .await
-        .into_tonic_internal("failed to insert user email")?;
+    if let Some(email) = email {
+        let user_email = UserEmail {
+            email: email.clone(),
+            user_id: user.id,
+            created_at: chrono::Utc::now(),
+        };
+        diesel::insert_into(user_emails::dsl::user_emails)
+            .values(&user_email)
+            .execute(db)
+            .await
+            .into_tonic_internal_err("failed to insert user email")?;
+    }
 
     let new_token = create_session(global, db, user.id, device, ip_info).await?;
 
@@ -133,7 +137,7 @@ pub(crate) async fn create_session<G: CoreConfig>(
     let token_id = Id::new();
     let token_expires_at = chrono::Utc::now() + global.user_session_token_validity();
 
-    let token = generate_random_bytes().into_tonic_internal("failed to generate token")?;
+    let token = generate_random_bytes().into_tonic_internal_err("failed to generate token")?;
     let encrypted_token = encrypt_token(device.algorithm(), &token, &device.public_key_data)?;
 
     let user_session = UserSession {
@@ -152,7 +156,7 @@ pub(crate) async fn create_session<G: CoreConfig>(
         .values(&user_session)
         .execute(db)
         .await
-        .into_tonic_internal("failed to insert user session")?;
+        .into_tonic_internal_err("failed to insert user session")?;
 
     let new_token = pb::scufflecloud::core::v1::NewUserSessionToken {
         id: token_id.to_string(),

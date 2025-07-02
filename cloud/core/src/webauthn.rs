@@ -103,6 +103,12 @@ pub(crate) fn verify_challenge<'a>(
             &message,
             &assertion_response.signature,
         )?,
+        // TODO: wait for stable release 0.14.0
+        // p521::NistP521::OID => verify_signature::<p384::ecdsa::VerifyingKey, p384::ecdsa::Signature>(
+        //     spki,
+        //     &message,
+        //     &assertion_response.signature,
+        // )?,
         _ => return Err(VerifyError::UnsupportedAlgorithm(spki.algorithm)),
     }
 

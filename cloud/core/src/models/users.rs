@@ -14,7 +14,7 @@ pub struct User {
     pub first_name: Option<String>,
     pub last_name: Option<String>,
     pub password_hash: Option<String>,
-    pub primary_email: String,
+    pub primary_email: Option<String>,
 }
 
 impl PrefixedId for User {
@@ -45,13 +45,14 @@ pub struct UserEmail {
 }
 
 #[derive(Queryable, Selectable, Insertable, Identifiable, AsChangeset, Associations, Debug)]
+#[diesel(primary_key(sub))]
 #[diesel(table_name = crate::schema::user_google_accounts)]
 #[diesel(belongs_to(User))]
 #[diesel(check_for_backend(diesel::pg::Pg))]
 pub struct UserGoogleAccount {
-    pub id: String,
+    pub sub: String,
     pub user_id: UserId,
     pub access_token: String,
-    pub refresh_token: String,
+    pub access_token_expires_at: chrono::DateTime<chrono::Utc>,
     pub created_at: chrono::DateTime<chrono::Utc>,
 }

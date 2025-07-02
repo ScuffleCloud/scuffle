@@ -12,6 +12,7 @@ pub(crate) type OrganizationId = Id<Organization>;
 #[diesel(check_for_backend(diesel::pg::Pg))]
 pub struct Organization {
     pub id: OrganizationId,
+    pub google_hosted_domain: Option<String>,
     pub name: String,
     pub owner_id: UserId,
 }

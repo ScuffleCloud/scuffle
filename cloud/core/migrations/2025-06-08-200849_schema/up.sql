@@ -7,7 +7,7 @@ CREATE TABLE "users" (
     "first_name" VARCHAR(255),
     "last_name" VARCHAR(255),
     "password_hash" VARCHAR(255), -- Nullable for users who register via external providers
-    "primary_email" VARCHAR(255) NOT NULL
+    "primary_email" VARCHAR(255)
 );
 
 -- User emails
@@ -38,10 +38,10 @@ CREATE INDEX ON "user_emails"("user_id");
 -- Person.memberships.metadata.source
 -- Also: Person.metadata.sources.profileMetadata.userTypes == GOOGLE_APPS_USER
 CREATE TABLE "user_google_accounts" (
-    "id" VARCHAR(255) PRIMARY KEY,
+    "sub" VARCHAR(255) PRIMARY KEY,
     "user_id" UUID NOT NULL,
     "access_token" VARCHAR(255) NOT NULL,
-    "refresh_token" VARCHAR(255) NOT NULL,
+    "access_token_expires_at" TIMESTAMPTZ NOT NULL,
     -- workspace and role within the workspace...
     "created_at" TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
@@ -147,6 +147,7 @@ CREATE INDEX ON "mfa_webauthn_pks"("credential_id");
 
 CREATE TABLE "organizations" (
     "id" UUID PRIMARY KEY,
+    "google_hosted_domain" VARCHAR(255) UNIQUE,
     "name" VARCHAR(255) NOT NULL,
     "owner_id" UUID NOT NULL
 );
@@ -154,6 +155,8 @@ CREATE TABLE "organizations" (
 -- Explicitly not cascading on delete.
 ALTER TABLE "organizations"
 ADD FOREIGN KEY("owner_id") REFERENCES "users"("id");
+
+CREATE INDEX ON "organizations"("google_hosted_domain");
 
 CREATE TABLE "projects" (
     "id" UUID PRIMARY KEY,

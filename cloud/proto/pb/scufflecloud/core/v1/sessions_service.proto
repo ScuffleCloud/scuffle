@@ -6,6 +6,7 @@ import "google/protobuf/empty.proto";
 import "google/protobuf/timestamp.proto";
 import "tinc/annotations.proto";
 
+import "scufflecloud/core/v1/organizations_service.proto";
 import "scufflecloud/core/v1/common.proto";
 import "scufflecloud/core/v1/constraints.proto";
 
@@ -190,6 +191,14 @@ message CompleteLoginWithGoogleRequest {
 
 message CompleteLoginWithGoogleResponse {
     NewUserSessionToken new_user_session_token = 1;
+    bool first_login = 2;
+    oneof google_workspace {
+        // This is present if the user just joined a Google Workspace organization by logging in.
+        Organization joined = 3;
+        // This is present if the user is an admin of a Google Workspace that has not been associated with an organization yet.
+        // The user should be offered the option to create the organization after this.
+        string unassociated_google_hosted_domain = 4;
+    }
 }
 
 message LoginWithWebauthnPublicKeyRequest {

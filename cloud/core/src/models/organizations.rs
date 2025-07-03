@@ -12,6 +12,7 @@ pub(crate) type OrganizationId = Id<Organization>;
 #[diesel(check_for_backend(diesel::pg::Pg))]
 pub struct Organization {
     pub id: OrganizationId,
+    pub google_customer_id: Option<String>,
     pub google_hosted_domain: Option<String>,
     pub name: String,
     pub owner_id: UserId,
@@ -19,6 +20,17 @@ pub struct Organization {
 
 impl PrefixedId for Organization {
     const PREFIX: &'static str = "org";
+}
+
+impl From<Organization> for pb::scufflecloud::core::v1::Organization {
+    fn from(value: Organization) -> Self {
+        pb::scufflecloud::core::v1::Organization {
+            id: value.id.to_string(),
+            google_hosted_domain: value.google_hosted_domain,
+            name: value.name,
+            owner_id: value.owner_id.to_string(),
+        }
+    }
 }
 
 pub(crate) type ProjectId = Id<Project>;

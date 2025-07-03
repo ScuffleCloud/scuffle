@@ -323,7 +323,7 @@ mod tests {
     use crate::error::FfmpegError;
     use crate::io::output::{AVCodec, AVRational, OutputState};
     use crate::io::{Input, Output, OutputOptions};
-    use crate::{file_path, AVFmtFlags, AVMediaType};
+    use crate::{AVFmtFlags, AVMediaType, file_path};
 
     #[test]
     fn test_output_options_get_format_ffi_null() {

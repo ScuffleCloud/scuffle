@@ -28,7 +28,7 @@ members = [
   "crates/signal",
   "crates/transmuxer",
   "dev-tools/xtask",
-  "dev-tools/test-runner",
+  "build/tools/nextest_test_runner",
   "crates/tinc",
   "crates/tinc/cel",
   "crates/tinc/pb-prost",

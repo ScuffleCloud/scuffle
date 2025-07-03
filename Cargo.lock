@@ -2429,6 +2429,21 @@ dependencies = [
 ]
 
 [[package]]
+name = "nextest-runner-wrapper"
+version = "0.1.0"
+dependencies = [
+ "camino",
+ "cargo_metadata",
+ "clap",
+ "guppy",
+ "nextest-filtering",
+ "nextest-metadata",
+ "nextest-runner",
+ "serde_json",
+ "toml_edit",
+]
+
+[[package]]
 name = "nextest-workspace-hack"
 version = "0.1.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -4545,21 +4560,6 @@ checksum = "8a984c8d058c627faaf5e8e2ed493fa3c51771889196de1016cf9c1c6e90d750"
 dependencies = [
  "home",
  "windows-sys 0.59.0",
-]
-
-[[package]]
-name = "test-runner"
-version = "0.1.0"
-dependencies = [
- "camino",
- "cargo_metadata",
- "clap",
- "guppy",
- "nextest-filtering",
- "nextest-metadata",
- "nextest-runner",
- "serde_json",
- "toml_edit",
 ]
 
 [[package]]

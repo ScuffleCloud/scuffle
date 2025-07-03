@@ -5,7 +5,7 @@ exports_files(["Cargo.toml"])
 
 postcompile_deps(
     name = "postcompile_deps",
-    deps = ["//vendor:tokio"],
+    deps = ["//vendor/cargo:tokio"],
 )
 
 scuffle_package(

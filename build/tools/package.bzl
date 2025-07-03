@@ -1,7 +1,8 @@
 load("@rules_rust//cargo:defs.bzl", "cargo_build_script", "cargo_toml_env_vars")
 load("@rules_rust//rust:defs.bzl", "rust_binary", "rust_library", "rust_proc_macro")
-load("//dev-tools/test-runner:defs.bzl", "nextest_test")
-load("//vendor:defs.bzl", "all_crate_deps", "crate_features", dep_aliases = "aliases")
+load("@rules_rust//rust:defs.bzl", "rustfmt_test")
+load("//build/tools/nextest_test_runner:defs.bzl", "nextest_test")
+load("//vendor/cargo:defs.bzl", "all_crate_deps", "crate_features", dep_aliases = "aliases")
 
 
 def scuffle_package(
@@ -99,6 +100,11 @@ def scuffle_package(
         rust_proc_macro(**kwargs)
     elif crate_type == "bin":
         rust_binary(**kwargs)
+
+    rustfmt_test(
+        name = "fmt_test",
+        targets = [":" + name],
+    )
 
     if test != False:
         test_deps = test.get("deps", []) + ["@rules_rust//rust/runfiles"]

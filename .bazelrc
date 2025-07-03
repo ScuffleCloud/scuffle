@@ -85,6 +85,15 @@ common --execution_log_compact_file=.bazel_compact_execution_log
 common --incompatible_strict_action_env
 
 ###############################################################################
+## Rust tooling configuration
+###############################################################################
+
+# Rustfmt
+build --@rules_rust//rust/settings:rustfmt.toml=//:rustfmt.toml
+# build --aspects=@rules_rust//rust:defs.bzl%rustfmt_aspect
+build --output_groups=+rustfmt_checks
+
+###############################################################################
 ## Remote configuration
 ###############################################################################
 

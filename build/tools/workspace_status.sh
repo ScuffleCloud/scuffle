@@ -10,7 +10,7 @@
 # If the script exits with non-zero code, it's considered as a failure
 # and the output will be discarded.
 
-set -eo pipefail # exit immediately if any command fails.
+set -euo pipefail # exit immediately if any command fails.
 
 function remove_url_credentials() {
   which perl >/dev/null && perl -pe 's#//.*?:.*?@#//#' || cat

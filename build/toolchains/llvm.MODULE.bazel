@@ -1,8 +1,8 @@
 bazel_dep(name = "toolchains_llvm", version = "1.4.0")
 git_override(
     module_name = "toolchains_llvm",
-    commit = "37b0fef6c4111ecc0615e067ff8764b39a5f1d10",
-    remote = "https://github.com/ScuffleCloud/toolchains_llvm.git",
+    commit = "6eef27401b4dff9de4ca6f66aea7592a90305789",
+    remote = "https://github.com/bazel-contrib/toolchains_llvm.git",
 )
 
 http_archive = use_repo_rule("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive")

@@ -147,6 +147,7 @@ CREATE INDEX ON "mfa_webauthn_pks"("credential_id");
 
 CREATE TABLE "organizations" (
     "id" UUID PRIMARY KEY,
+    "google_customer_id" VARCHAR(255) UNIQUE,
     "google_hosted_domain" VARCHAR(255) UNIQUE,
     "name" VARCHAR(255) NOT NULL,
     "owner_id" UUID NOT NULL
@@ -156,6 +157,7 @@ CREATE TABLE "organizations" (
 ALTER TABLE "organizations"
 ADD FOREIGN KEY("owner_id") REFERENCES "users"("id");
 
+CREATE INDEX ON "organizations"("google_customer_id");
 CREATE INDEX ON "organizations"("google_hosted_domain");
 
 CREATE TABLE "projects" (

@@ -4,7 +4,7 @@ use base64::Engine;
 
 use crate::CoreConfig;
 
-const ADMIN_DIRECTORY_API_USER_SCOPE: &str = "https://www.googleapis.com/auth/admin.directory.user.readonly";
+pub(crate) const ADMIN_DIRECTORY_API_USER_SCOPE: &str = "https://www.googleapis.com/auth/admin.directory.user.readonly";
 const ALL_SCOPES: [&'static str; 4] = ["openid", "profile", "email", ADMIN_DIRECTORY_API_USER_SCOPE];
 const REQUIRED_SCOPES: [&'static str; 3] = ["openid", "profile", "email"];
 
@@ -92,4 +92,43 @@ pub(crate) async fn request_tokens<G: CoreConfig>(global: &Arc<G>, code: &str) -
     }
 
     Ok(tokens)
+}
+
+#[derive(serde_derive::Deserialize, Debug)]
+pub(crate) struct GoogleWorkspaceUser {
+    #[serde(rename = "isAdmin")]
+    pub is_admin: bool,
+    #[serde(rename = "customerId")]
+    pub customer_id: String,
+}
+
+#[derive(thiserror::Error, Debug)]
+pub(crate) enum GoogleWorkspaceGetUserError {
+    #[error("HTTP request failed: {0}")]
+    RequestFailed(#[from] reqwest::Error),
+    #[error("invalid status code: {0}")]
+    InvalidStatusCode(reqwest::StatusCode),
+}
+
+pub(crate) async fn request_google_workspace_user<G: CoreConfig>(
+    global: &Arc<G>,
+    access_token: &str,
+    user_id: &str,
+) -> Result<Option<GoogleWorkspaceUser>, GoogleWorkspaceGetUserError> {
+    let response = global
+        .http_client()
+        .get(format!("https://www.googleapis.com/admin/directory/v1/users/{user_id}"))
+        .bearer_auth(&access_token)
+        .send()
+        .await?;
+
+    if response.status() == reqwest::StatusCode::FORBIDDEN {
+        return Ok(None);
+    }
+
+    if !response.status().is_success() {
+        return Err(GoogleWorkspaceGetUserError::InvalidStatusCode(response.status()));
+    }
+
+    Ok(Some(response.json().await?))
 }

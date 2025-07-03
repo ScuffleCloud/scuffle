@@ -356,7 +356,7 @@ impl<G: CoreConfig> pb::scufflecloud::core::v1::sessions_service_server::Session
     async fn complete_login_with_google(
         &self,
         req: tonic::Request<pb::scufflecloud::core::v1::CompleteLoginWithGoogleRequest>,
-    ) -> Result<tonic::Response<pb::scufflecloud::core::v1::NewUserSessionToken>, tonic::Status> {
+    ) -> Result<tonic::Response<pb::scufflecloud::core::v1::CompleteLoginWithGoogleResponse>, tonic::Status> {
         let (_, extensions, payload) = req.into_parts();
         let global = extensions.global::<G>()?;
 
@@ -381,9 +381,41 @@ impl<G: CoreConfig> pb::scufflecloud::core::v1::sessions_service_server::Session
             .await
             .into_tonic_err_with_field_violation("code", "failed to request google token")?;
 
-        let new_token = db
+        // If user is part of a Google Workspace
+        let workspace_user = if google_token.scope.contains(google_api::ADMIN_DIRECTORY_API_USER_SCOPE) {
+            if let Some(hd) = google_token.id_token.hd.clone() {
+                google_api::request_google_workspace_user(global, &google_token.access_token, &google_token.id_token.sub)
+                    .await
+                    .into_tonic_internal_err("failed to request Google Workspace user")?
+                    .map(|u| (u, hd))
+            } else {
+                None
+            }
+        } else {
+            None
+        };
+
+        let response = db
             .transaction::<_, TxError, _>(move |conn| {
                 async move {
+                    let mut google_workspace = None;
+
+                    // Update the organization if the user is an admin of a Google Workspace
+                    if let Some((workspace_user, hd)) = workspace_user {
+                        if workspace_user.is_admin {
+                            let n = diesel::update(organizations::dsl::organizations)
+                                .filter(organizations::dsl::google_customer_id.eq(&workspace_user.customer_id))
+                                .set(organizations::dsl::google_hosted_domain.eq(&google_token.id_token.hd))
+                                .execute(conn)
+                                .await
+                                .into_tonic_internal_err("failed to update organization")?;
+
+                            if n == 0 {
+                                google_workspace = Some(pb::scufflecloud::core::v1::complete_login_with_google_response::GoogleWorkspace::UnassociatedGoogleHostedDomain(hd));
+                            }
+                        }
+                    }
+
                     let google_account = user_google_accounts::dsl::user_google_accounts
                         .find(&google_token.id_token.sub)
                         .first::<UserGoogleAccount>(conn)
@@ -395,7 +427,11 @@ impl<G: CoreConfig> pb::scufflecloud::core::v1::sessions_service_server::Session
                             // Create a new session for the user
                             let new_token =
                                 common::create_session(global, conn, google_account.user_id, device, ip_info).await?;
-                            Ok(new_token)
+                            Ok(pb::scufflecloud::core::v1::CompleteLoginWithGoogleResponse {
+                                new_user_session_token: Some(new_token),
+                                first_login: false,
+                                google_workspace,
+                            })
                         }
                         None => {
                             let (user, new_token) = common::create_new_user_and_session(
@@ -449,10 +485,18 @@ impl<G: CoreConfig> pb::scufflecloud::core::v1::sessions_service_server::Session
                                         .execute(conn)
                                         .await
                                         .into_tonic_internal_err("failed to insert organization membership")?;
+
+                                    google_workspace = Some(
+                                        pb::scufflecloud::core::v1::complete_login_with_google_response::GoogleWorkspace::Joined(org.into())
+                                    );
                                 }
                             }
 
-                            Ok(new_token)
+                            Ok(pb::scufflecloud::core::v1::CompleteLoginWithGoogleResponse {
+                                new_user_session_token: Some(new_token),
+                                first_login: true,
+                                google_workspace,
+                            })
                         }
                     }
                 }
@@ -460,7 +504,7 @@ impl<G: CoreConfig> pb::scufflecloud::core::v1::sessions_service_server::Session
             })
             .await?;
 
-        Ok(tonic::Response::new(new_token))
+        Ok(tonic::Response::new(response))
     }
 
     async fn login_with_webauthn_public_key(

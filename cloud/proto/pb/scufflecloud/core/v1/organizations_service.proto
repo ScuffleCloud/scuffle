@@ -40,11 +40,12 @@ message CreateOrganizationRequest {
 
 message Organization {
     string id = 1 [(string_constraint).id = true];
-    string name = 2 [(tinc.field).constraint.string = {
+    optional string google_hosted_domain = 2;
+    string name = 3 [(tinc.field).constraint.string = {
         min_len: 1,
         max_len: 255
     }];
-    string owner_id = 3 [(string_constraint).id = true];
+    string owner_id = 4 [(string_constraint).id = true];
 }
 
 message OrganizationList {

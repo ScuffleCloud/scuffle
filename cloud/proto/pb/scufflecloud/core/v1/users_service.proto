@@ -31,7 +31,7 @@ service UsersService {
         };
     }
 
-    rpc GetUserEmails(UserByIdRequest) returns (GetUserEmailsResponse) {
+    rpc ListUserEmails(UserByIdRequest) returns (ListUserEmailsResponse) {
         option (tinc.method).endpoint = {
             get: "/users/{id}/emails"
         };
@@ -49,6 +49,17 @@ service UsersService {
     rpc DeleteUserEmail(DeleteUserEmailRequest) returns (UserEmail) {
         option (tinc.method).endpoint = {
             delete: "/users/{id}/emails/{email}"
+        };
+    }
+
+    rpc CreateWebauthnCredentialChallenge(CreateWebauthnCredentialChallengeRequest) returns (CreateWebauthnCredentialChallengeResponse) {
+        option (tinc.method).endpoint = {
+            post: "/webauthn-credentials/challenges"
+        };
+    }
+    rpc ListUserWebauthnCredentials(UserByIdRequest) returns (ListUserWebauthnCredentialsResponse) {
+        option (tinc.method).endpoint = {
+            get: "/users/{id}/webauthn-credentials"
         };
     }
 }
@@ -103,7 +114,7 @@ message UpdateUserPrimaryEmailRequest {
     string primary_email = 2 [(tinc.field).constraint.string.email = true];
 }
 
-message GetUserEmailsResponse {
+message ListUserEmailsResponse {
     repeated UserEmail emails = 1;
 }
 
@@ -127,4 +138,21 @@ message CompleteCreateUserEmailRequest {
 message DeleteUserEmailRequest {
     string id = 1 [(string_constraint).id = true];
     string email = 2 [(tinc.field).constraint.string.email = true];
+}
+
+message MfaWebauthnCredential {
+    bytes credential_id = 1;
+}
+
+message ListUserWebauthnCredentialsResponse {
+    repeated MfaWebauthnCredential credentials = 1;
+}
+
+message CreateWebauthnCredentialChallengeRequest {
+    CaptchaChallengeResponse captcha = 1;
+    bytes credential_id = 2;
+}
+
+message CreateWebauthnCredentialChallengeResponse {
+    bytes challenge = 1;
 }

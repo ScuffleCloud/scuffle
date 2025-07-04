@@ -19,8 +19,9 @@ use crate::schema::{
     user_emails, user_google_accounts, user_session_requests, user_sessions,
 };
 use crate::services::CoreSvc;
+use crate::services::sessions::common::NewUserData;
 use crate::std_ext::{OptionExt, ResultExt};
-use crate::utils::TxError;
+use crate::utils::{self, TxError};
 use crate::{CoreConfig, captcha, google_api, webauthn};
 
 mod common;
@@ -48,7 +49,7 @@ impl<G: CoreConfig> pb::scufflecloud::core::v1::sessions_service_server::Session
         let email = common::normalize_email(&payload.email);
 
         // Generate random code
-        let code = common::generate_random_bytes().into_tonic_internal_err("failed to generate registration code")?;
+        let code = utils::generate_random_bytes().into_tonic_internal_err("failed to generate registration code")?;
         // let code_base64 = base64::prelude::BASE64_URL_SAFE.encode(&code);
 
         db.transaction::<_, TxError, _>(move |conn| {
@@ -76,7 +77,7 @@ impl<G: CoreConfig> pb::scufflecloud::core::v1::sessions_service_server::Session
                     user_id: None,
                     email,
                     code: code.to_vec(),
-                    expires_at: chrono::Utc::now() + global.email_registration_request_validity(),
+                    expires_at: chrono::Utc::now() + global.email_registration_request_timeout(),
                 };
 
                 diesel::insert_into(email_registration_requests::dsl::email_registration_requests)
@@ -129,11 +130,13 @@ impl<G: CoreConfig> pb::scufflecloud::core::v1::sessions_service_server::Session
                     let (_, new_token) = common::create_new_user_and_session(
                         global,
                         conn,
-                        Some(registration_request.email),
-                        None, // preferred_name
-                        None, // first_name
-                        None, // last_name
-                        Some(&payload.password),
+                        NewUserData {
+                            email: Some(registration_request.email),
+                            preferred_name: None,
+                            first_name: None,
+                            last_name: None,
+                            password: Some(&payload.password),
+                        },
                         device,
                         ip_info,
                     )
@@ -236,7 +239,7 @@ impl<G: CoreConfig> pb::scufflecloud::core::v1::sessions_service_server::Session
                         }
                     }
 
-                    Ok(common::create_session(global, conn, user.id, device, ip_info).await?)
+                    Ok(common::create_session(global, conn, user.id, device, ip_info, true).await?)
                 }
                 .scope_boxed()
             })
@@ -267,14 +270,14 @@ impl<G: CoreConfig> pb::scufflecloud::core::v1::sessions_service_server::Session
             async move {
                 let user = common::get_user_by_email(conn, &payload.email).await?;
 
-                let code = common::generate_random_bytes().into_tonic_internal_err("failed to generate magic link code")?;
+                let code = utils::generate_random_bytes().into_tonic_internal_err("failed to generate magic link code")?;
 
                 // Insert email link user session request
                 let session_request = MagicLinkUserSessionRequest {
                     id: Id::new(),
                     user_id: user.id,
                     code: code.to_vec(),
-                    expires_at: chrono::Utc::now() + global.magic_link_user_session_request_validity(),
+                    expires_at: chrono::Utc::now() + global.magic_link_user_session_request_timeout(),
                 };
                 diesel::insert_into(magic_link_user_session_requests::dsl::magic_link_user_session_requests)
                     .values(session_request)
@@ -324,7 +327,8 @@ impl<G: CoreConfig> pb::scufflecloud::core::v1::sessions_service_server::Session
                     };
 
                     // Create a new session for the user
-                    let new_token = common::create_session(global, conn, session_request.user_id, device, ip_info).await?;
+                    let new_token =
+                        common::create_session(global, conn, session_request.user_id, device, ip_info, true).await?;
 
                     Ok(new_token)
                 }
@@ -344,9 +348,9 @@ impl<G: CoreConfig> pb::scufflecloud::core::v1::sessions_service_server::Session
 
         let device = payload.device.require("device")?;
         let device_fingerprint = sha2::Sha256::digest(&device.public_key_data);
-        let state = base64::prelude::BASE64_URL_SAFE.encode(&device_fingerprint);
+        let state = base64::prelude::BASE64_URL_SAFE.encode(device_fingerprint);
 
-        let authorization_url = google_api::authorization_url(&global, &state);
+        let authorization_url = google_api::authorization_url(global, &state);
 
         Ok(tonic::Response::new(pb::scufflecloud::core::v1::LoginWithGoogleResponse {
             authorization_url,
@@ -377,7 +381,7 @@ impl<G: CoreConfig> pb::scufflecloud::core::v1::sessions_service_server::Session
             ));
         }
 
-        let google_token = google_api::request_tokens(&global, &payload.code)
+        let google_token = google_api::request_tokens(global, &payload.code)
             .await
             .into_tonic_err_with_field_violation("code", "failed to request google token")?;
 
@@ -426,7 +430,7 @@ impl<G: CoreConfig> pb::scufflecloud::core::v1::sessions_service_server::Session
                         Some(google_account) => {
                             // Create a new session for the user
                             let new_token =
-                                common::create_session(global, conn, google_account.user_id, device, ip_info).await?;
+                                common::create_session(global, conn, google_account.user_id, device, ip_info, false).await?;
                             Ok(pb::scufflecloud::core::v1::CompleteLoginWithGoogleResponse {
                                 new_user_session_token: Some(new_token),
                                 first_login: false,
@@ -437,11 +441,7 @@ impl<G: CoreConfig> pb::scufflecloud::core::v1::sessions_service_server::Session
                             let (user, new_token) = common::create_new_user_and_session(
                                 global,
                                 conn,
-                                google_token.id_token.email_verified.then_some(google_token.id_token.email),
-                                google_token.id_token.name,
-                                google_token.id_token.given_name,
-                                google_token.id_token.family_name,
-                                None, // password
+                                google_token.id_token.clone().into(),
                                 device,
                                 ip_info,
                             )
@@ -510,51 +510,6 @@ impl<G: CoreConfig> pb::scufflecloud::core::v1::sessions_service_server::Session
     async fn login_with_webauthn_public_key(
         &self,
         req: tonic::Request<pb::scufflecloud::core::v1::LoginWithWebauthnPublicKeyRequest>,
-    ) -> Result<tonic::Response<pb::scufflecloud::core::v1::LoginWithWebauthnPublicKeyResponse>, tonic::Status> {
-        let (_, extensions, payload) = req.into_parts();
-        let global = extensions.global::<G>()?;
-
-        let mut db = global.db().await.into_tonic_internal_err("failed to connect to database")?;
-
-        // Check captcha
-        let captcha = payload.captcha.require("captcha")?;
-        match captcha.provider() {
-            pb::scufflecloud::core::v1::CaptchaProvider::Turnstile => {
-                captcha::turnstile::verify_in_tonic(global, &captcha.token).await?;
-            }
-        }
-
-        let challenge = common::generate_random_bytes().into_tonic_internal_err("failed to generate webauthn challenge")?;
-
-        let n = diesel::update(mfa_webauthn_pks::dsl::mfa_webauthn_pks)
-            .filter(mfa_webauthn_pks::dsl::credential_id.eq(&payload.credential_id))
-            .set((
-                mfa_webauthn_pks::dsl::current_challenge.eq(&challenge),
-                mfa_webauthn_pks::dsl::current_challenge_expires_at
-                    .eq(chrono::Utc::now() + global.mfa_webauthn_challenge_validity()),
-            ))
-            .execute(&mut db)
-            .await
-            .into_tonic_internal_err("failed to update webauthn public key")?;
-
-        if n == 0 {
-            return Err(tonic::Status::with_error_details(
-                tonic::Code::NotFound,
-                "webauthn public key not found",
-                ErrorDetails::new(),
-            ));
-        }
-
-        Ok(tonic::Response::new(
-            pb::scufflecloud::core::v1::LoginWithWebauthnPublicKeyResponse {
-                challenge: challenge.to_vec(),
-            },
-        ))
-    }
-
-    async fn complete_login_with_webauthn_public_key(
-        &self,
-        req: tonic::Request<pb::scufflecloud::core::v1::CompleteLoginWithWebauthnPublicKeyRequest>,
     ) -> Result<tonic::Response<pb::scufflecloud::core::v1::NewUserSessionToken>, tonic::Status> {
         let (_, extensions, payload) = req.into_parts();
         let global = extensions.global::<G>()?;
@@ -628,7 +583,8 @@ impl<G: CoreConfig> pb::scufflecloud::core::v1::sessions_service_server::Session
                         .into_tonic_internal_err("failed to clear webauthn challenge")?;
 
                     // Create a new session for the user
-                    let new_token = common::create_session(global, conn, webauthn_pk.user_id, device, ip_info).await?;
+                    let new_token =
+                        common::create_session(global, conn, webauthn_pk.user_id, device, ip_info, false).await?;
 
                     Ok(new_token)
                 }
@@ -657,7 +613,7 @@ impl<G: CoreConfig> pb::scufflecloud::core::v1::sessions_service_server::Session
             device_ip: ip_info.to_network(),
             code,
             approved_by: None,
-            expires_at: chrono::Utc::now() + global.user_session_request_validity(),
+            expires_at: chrono::Utc::now() + global.user_session_request_timeout(),
         };
 
         diesel::insert_into(user_session_requests::dsl::user_session_requests)
@@ -794,7 +750,7 @@ impl<G: CoreConfig> pb::scufflecloud::core::v1::sessions_service_server::Session
                         .into());
                     };
 
-                    let new_token = common::create_session(global, conn, approved_by, device, ip_info).await?;
+                    let new_token = common::create_session(global, conn, approved_by, device, ip_info, false).await?;
 
                     Ok(new_token)
                 }
@@ -803,6 +759,23 @@ impl<G: CoreConfig> pb::scufflecloud::core::v1::sessions_service_server::Session
             .await?;
 
         Ok(tonic::Response::new(new_token))
+    }
+
+    async fn validate_mfa_for_user_session(
+        &self,
+        req: tonic::Request<pb::scufflecloud::core::v1::ValidateMfaForUserSessionRequest>,
+    ) -> Result<tonic::Response<pb::scufflecloud::core::v1::UserSession>, tonic::Status> {
+        // let global = req.global::<G>()?;
+        let _session = &req.unverified_session_or_err()?.0;
+
+        // Verify MFA challenge response
+        // Set mfa_pending=false and reset session expiry
+
+        Err(tonic::Status::with_error_details(
+            tonic::Code::Unimplemented,
+            "this endpoint is not implemented",
+            ErrorDetails::new(),
+        ))
     }
 
     async fn refresh_user_session(
@@ -814,7 +787,7 @@ impl<G: CoreConfig> pb::scufflecloud::core::v1::sessions_service_server::Session
 
         let mut db = global.db().await.into_tonic_internal_err("failed to connect to database")?;
 
-        let token = common::generate_random_bytes().into_tonic_internal_err("failed to generate token")?;
+        let token = utils::generate_random_bytes().into_tonic_internal_err("failed to generate token")?;
         let encrypted_token = common::encrypt_token(session.device_algorithm.into(), &token, &session.device_pk_data)?;
 
         let session = diesel::update(user_sessions::dsl::user_sessions)
@@ -825,7 +798,7 @@ impl<G: CoreConfig> pb::scufflecloud::core::v1::sessions_service_server::Session
             )
             .set((
                 user_sessions::dsl::token.eq(token),
-                user_sessions::dsl::token_expires_at.eq(chrono::Utc::now() + global.user_session_token_validity()),
+                user_sessions::dsl::token_expires_at.eq(chrono::Utc::now() + global.user_session_token_timeout()),
             ))
             .returning(UserSession::as_select())
             .get_result::<UserSession>(&mut db)
@@ -844,7 +817,7 @@ impl<G: CoreConfig> pb::scufflecloud::core::v1::sessions_service_server::Session
             id: token_id.to_string(),
             encrypted_token,
             expires_at: Some(token_expires_at.to_prost_timestamp_utc()),
-            session_expires_at: Some(session.expires_at.to_prost_timestamp_utc()),
+            session_mfa_pending: session.mfa_pending,
         };
 
         Ok(tonic::Response::new(new_token))

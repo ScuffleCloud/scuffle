@@ -56,14 +56,9 @@ service SessionsService {
         };
     }
 
-    rpc LoginWithWebauthnPublicKey(LoginWithWebauthnPublicKeyRequest) returns (LoginWithWebauthnPublicKeyResponse) {
+    rpc LoginWithWebauthnPublicKey(LoginWithWebauthnPublicKeyRequest) returns (NewUserSessionToken) {
         option (tinc.method).endpoint = {
             post: "/sessions/webauthn"
-        };
-    }
-    rpc CompleteLoginWithWebauthnPublicKey(CompleteLoginWithWebauthnPublicKeyRequest) returns (NewUserSessionToken) {
-        option (tinc.method).endpoint = {
-            post: "/sessions/webauthn/complete"
         };
     }
 
@@ -93,6 +88,12 @@ service SessionsService {
         };
     }
 
+    // Validate the current session with MFA.
+    rpc ValidateMfaForUserSession(ValidateMfaForUserSessionRequest) returns (UserSession) {
+        option (tinc.method).endpoint = {
+            post: "/sessions/mfa"
+        };
+    }
     // Refresh the current session.
     // Returns a new session token and invalidates the current one.
     rpc RefreshUserSession(google.protobuf.Empty) returns (NewUserSessionToken) {
@@ -124,7 +125,18 @@ message NewUserSessionToken {
     string id = 1 [(string_constraint).id = true];
     bytes encrypted_token = 2;
     google.protobuf.Timestamp expires_at = 3;
-    google.protobuf.Timestamp session_expires_at = 4;
+    bool session_mfa_pending = 4;
+}
+
+message UserSession {
+    string user_id = 1 [(string_constraint).id = true];
+    bytes device_fingerprint = 2;
+    google.protobuf.Timestamp last_used_at = 3;
+    string last_ip = 4;
+    optional string token_id = 5 [(string_constraint).id = true];
+    optional google.protobuf.Timestamp token_expires_at = 6;
+    google.protobuf.Timestamp created_at = 7;
+    bool mfa_pending = 8;
 }
 
 message RegisterWithEmailRequest {
@@ -201,17 +213,8 @@ message CompleteLoginWithGoogleResponse {
     }
 }
 
-message LoginWithWebauthnPublicKeyRequest {
-    CaptchaChallengeResponse captcha = 1;
-    bytes credential_id = 2;
-}
-
-message LoginWithWebauthnPublicKeyResponse {
-    bytes challenge = 1;
-}
-
 // https://developer.mozilla.org/en-US/docs/Web/API/PublicKeyCredential
-message CompleteLoginWithWebauthnPublicKeyRequest {
+message LoginWithWebauthnPublicKeyRequest {
     bytes credential_id = 1;
     AuthenticatorAssertionResponse response = 2;
     Device device = 3;
@@ -252,4 +255,20 @@ message ApproveUserSessionRequestByCodeRequest {
 message CompleteUserSessionRequestRequest {
     string id = 1 [(string_constraint).id = true];
     Device device = 2;
+}
+
+message ValidateMfaForUserSessionWebauthn {
+    bytes credential_id = 1;
+    AuthenticatorAssertionResponse response = 2;
+}
+
+message ValidateMfaForUserSessionTotp {
+    string code = 1 [(tinc.field).constraint.string.len = 6];
+}
+
+message ValidateMfaForUserSessionRequest {
+    oneof response {
+        ValidateMfaForUserSessionWebauthn webauthn = 1;
+        ValidateMfaForUserSessionTotp totp = 2;
+    }
 }

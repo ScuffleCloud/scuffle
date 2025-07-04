@@ -17,14 +17,11 @@ cargo_toml_env_vars(
 )
 
 rust_library(
-    name = "hyper_rustls",
+    name = "jiff",
     srcs = glob(
         include = ["**/*.rs"],
         allow_empty = True,
     ),
-    aliases = {
-        "@cargo_vendor__rustls-pki-types-1.12.0//:rustls_pki_types": "pki_types",
-    },
     compile_data = glob(
         include = ["**"],
         allow_empty = True,
@@ -38,12 +35,8 @@ rust_library(
         ],
     ),
     crate_features = [
-        "http1",
-        "http2",
-        "ring",
-        "tls12",
-        "webpki-roots",
-        "webpki-tokio",
+        "alloc",
+        "std",
     ],
     crate_root = "src/lib.rs",
     edition = "2021",
@@ -55,7 +48,7 @@ rust_library(
     ],
     tags = [
         "cargo-bazel",
-        "crate-name=hyper-rustls",
+        "crate-name=jiff",
         "manual",
         "noclippy",
         "norustfmt",
@@ -64,21 +57,11 @@ rust_library(
         "@rules_rust//rust/platform:aarch64-apple-darwin": [],
         "@rules_rust//rust/platform:aarch64-pc-windows-msvc": [],
         "@rules_rust//rust/platform:aarch64-unknown-linux-gnu": [],
+        "@rules_rust//rust/platform:wasm32-unknown-unknown": [],
         "@rules_rust//rust/platform:x86_64-apple-darwin": [],
         "@rules_rust//rust/platform:x86_64-pc-windows-msvc": [],
         "@rules_rust//rust/platform:x86_64-unknown-linux-gnu": [],
         "//conditions:default": ["@platforms//:incompatible"],
     }),
-    version = "0.27.7",
-    deps = [
-        "@cargo_vendor__http-1.3.1//:http",
-        "@cargo_vendor__hyper-1.6.0//:hyper",
-        "@cargo_vendor__hyper-util-0.1.14//:hyper_util",
-        "@cargo_vendor__rustls-0.23.28//:rustls",
-        "@cargo_vendor__rustls-pki-types-1.12.0//:rustls_pki_types",
-        "@cargo_vendor__tokio-1.46.0//:tokio",
-        "@cargo_vendor__tokio-rustls-0.26.2//:tokio_rustls",
-        "@cargo_vendor__tower-service-0.3.3//:tower_service",
-        "@cargo_vendor__webpki-roots-1.0.1//:webpki_roots",
-    ],
+    version = "0.2.15",
 )

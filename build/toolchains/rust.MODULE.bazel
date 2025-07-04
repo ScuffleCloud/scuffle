@@ -1,13 +1,14 @@
 bazel_dep(name = "rules_rust", version = "0.61.0")
-git_override(
-    module_name = "rules_rust",
-    commit = "dc1384751c88e2e0f941a6abc7ceb4c05de0e72a",
-    remote = "https://github.com/ScuffleCloud/rules_rust.git",
-)
-# local_path_override(
+
+# git_override(
 #     module_name = "rules_rust",
-#     path = "../rules_rust",
+#     commit = "dc1384751c88e2e0f941a6abc7ceb4c05de0e72a",
+#     remote = "https://github.com/ScuffleCloud/rules_rust.git",
 # )
+local_path_override(
+    module_name = "rules_rust",
+    path = "../rules_rust",
+)
 
 rust = use_extension(
     "@rules_rust//rust:extensions.bzl",
@@ -55,6 +56,7 @@ use_repo(
     "cargo_vendor__darling-0.20.11",
     "cargo_vendor__document-features-0.2.11",
     "cargo_vendor__email_address-0.2.9",
+    "cargo_vendor__env_logger-0.11.8",
     "cargo_vendor__fixed-1.29.0",
     "cargo_vendor__flate2-1.1.2",
     "cargo_vendor__float-cmp-0.10.0",
@@ -80,8 +82,9 @@ use_repo(
     "cargo_vendor__libc-0.2.174",
     "cargo_vendor__linear-map-1.2.0",
     "cargo_vendor__linkme-0.3.33",
+    "cargo_vendor__log-0.4.27",
     "cargo_vendor__mediatype-0.20.0",
-    "cargo_vendor__minijinja-2.10.2",
+    "cargo_vendor__minijinja-2.11.0",
     "cargo_vendor__nextest-filtering-0.16.0",
     "cargo_vendor__nextest-metadata-0.12.2",
     "cargo_vendor__nextest-runner-0.82.0",
@@ -109,8 +112,9 @@ use_repo(
     "cargo_vendor__quote-1.0.40",
     "cargo_vendor__rand-0.9.1",
     "cargo_vendor__regex-1.11.1",
-    "cargo_vendor__reqwest-0.12.20",
+    "cargo_vendor__reqwest-0.12.22",
     "cargo_vendor__runtime-format-0.1.3",
+    "cargo_vendor__rustfix-0.9.1",
     "cargo_vendor__rustls-0.23.28",
     "cargo_vendor__rustls-pemfile-2.2.0",
     "cargo_vendor__rusty_ffmpeg-0.16.3-ffmpeg.7.1",
@@ -123,11 +127,12 @@ use_repo(
     "cargo_vendor__serde_repr-0.1.20",
     "cargo_vendor__sha2-0.10.9",
     "cargo_vendor__smart-default-0.7.1",
+    "cargo_vendor__strip-ansi-escapes-0.2.1",
     "cargo_vendor__syn-2.0.104",
     "cargo_vendor__target-triple-0.1.4",
     "cargo_vendor__tempfile-3.20.0",
     "cargo_vendor__thiserror-2.0.12",
-    "cargo_vendor__tokio-1.45.1",
+    "cargo_vendor__tokio-1.46.0",
     "cargo_vendor__tokio-rustls-0.26.2",
     "cargo_vendor__tokio-stream-0.1.17",
     "cargo_vendor__tokio-test-0.4.4",

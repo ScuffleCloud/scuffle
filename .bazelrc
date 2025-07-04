@@ -25,6 +25,9 @@ build --action_env BAZEL_DO_NOT_DETECT_CPP_TOOLCHAIN=1
 # This flag improves local execution throughput by executing more actions in parallel.
 build --jobs=18
 
+# Dont stop on the first erorr
+build --keep_going
+
 ###############################################################################
 ## Test configuration
 ###############################################################################
@@ -32,6 +35,7 @@ build --jobs=18
 # Reduce test output to just error cases and report timeout warnings.
 test --test_output=errors
 test --verbose_failures
+test --test_keep_going
 
 # Enable a combined coverage report
 # Found at: $(bazel info output_path)/_coverage/_coverage_report.dat
@@ -89,9 +93,7 @@ common --incompatible_strict_action_env
 ###############################################################################
 
 # Rustfmt
-build --@rules_rust//rust/settings:rustfmt.toml=//:rustfmt.toml
-# build --aspects=@rules_rust//rust:defs.bzl%rustfmt_aspect
-build --output_groups=+rustfmt_checks
+common --@rules_rust//rust/settings:rustfmt.toml=//:rustfmt.toml
 
 ###############################################################################
 ## Remote configuration

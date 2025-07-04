@@ -23,7 +23,7 @@ rust_library(
         allow_empty = True,
     ),
     aliases = {
-        "@cargo_vendor__tokio-1.45.1//:tokio": "tokio",
+        "@cargo_vendor__tokio-1.46.0//:tokio": "tokio",
     },
     compile_data = glob(
         include = ["**"],
@@ -102,7 +102,7 @@ rust_library(
         "@cargo_vendor__serde_urlencoded-0.7.1//:serde_urlencoded",
         "@cargo_vendor__sha1-0.10.6//:sha1",
         "@cargo_vendor__sync_wrapper-1.0.2//:sync_wrapper",
-        "@cargo_vendor__tokio-1.45.1//:tokio",
+        "@cargo_vendor__tokio-1.46.0//:tokio",
         "@cargo_vendor__tokio-tungstenite-0.26.2//:tokio_tungstenite",
         "@cargo_vendor__tower-0.5.2//:tower",
         "@cargo_vendor__tower-layer-0.3.3//:tower_layer",

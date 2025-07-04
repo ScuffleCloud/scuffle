@@ -17,7 +17,7 @@ cargo_toml_env_vars(
 )
 
 rust_library(
-    name = "trim_in_place",
+    name = "minijinja",
     srcs = glob(
         include = ["**/*.rs"],
         allow_empty = True,
@@ -34,6 +34,22 @@ rust_library(
             "WORKSPACE.bazel",
         ],
     ),
+    crate_features = [
+        "adjacent_loop_items",
+        "builtins",
+        "custom_syntax",
+        "debug",
+        "default",
+        "deserialization",
+        "json",
+        "macros",
+        "multi_template",
+        "percent-encoding",
+        "serde",
+        "serde_json",
+        "std_collections",
+        "urlencode",
+    ],
     crate_root = "src/lib.rs",
     edition = "2021",
     rustc_env_files = [
@@ -44,7 +60,7 @@ rust_library(
     ],
     tags = [
         "cargo-bazel",
-        "crate-name=trim-in-place",
+        "crate-name=minijinja",
         "manual",
         "noclippy",
         "norustfmt",
@@ -59,5 +75,11 @@ rust_library(
         "@rules_rust//rust/platform:x86_64-unknown-linux-gnu": [],
         "//conditions:default": ["@platforms//:incompatible"],
     }),
-    version = "0.1.7",
+    version = "2.11.0",
+    deps = [
+        "@cargo_vendor__aho-corasick-1.1.3//:aho_corasick",
+        "@cargo_vendor__percent-encoding-2.3.1//:percent_encoding",
+        "@cargo_vendor__serde-1.0.219//:serde",
+        "@cargo_vendor__serde_json-1.0.140//:serde_json",
+    ],
 )

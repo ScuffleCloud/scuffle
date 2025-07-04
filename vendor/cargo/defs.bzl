@@ -201,7 +201,7 @@ def crate_features(
     features = _make_crate_features().add(additional)
 
     if all:
-        features.add(_FEATURE_FLAGS.get(package_name, []).keys())
+        features.add(_FEATURE_FLAGS.get(package_name, {}).keys())
 
     if default:
         features.add(_RESOLVED_FEATURE_FLAGS.get(package_name, {}))
@@ -425,6 +425,26 @@ def aliases(
 ###############################################################################
 
 _NORMAL_DEPENDENCIES = {
+    "build/tools/clippy": {
+        _REQUIRED_FEATURE: {
+            _COMMON_CONDITION: {
+                "camino": Label("@cargo_vendor//:camino-1.1.10"),
+                "clap": Label("@cargo_vendor//:clap-4.5.40"),
+                "serde": Label("@cargo_vendor//:serde-1.0.219"),
+                "serde_json": Label("@cargo_vendor//:serde_json-1.0.140"),
+                "strip-ansi-escapes": Label("@cargo_vendor//:strip-ansi-escapes-0.2.1"),
+            },
+        },
+    },
+    "build/tools/collect_args": {
+        _REQUIRED_FEATURE: {
+            _COMMON_CONDITION: {
+                "camino": Label("@cargo_vendor//:camino-1.1.10"),
+                "clap": Label("@cargo_vendor//:clap-4.5.40"),
+                "serde_json": Label("@cargo_vendor//:serde_json-1.0.140"),
+            },
+        },
+    },
     "build/tools/nextest_test_runner": {
         _REQUIRED_FEATURE: {
             _COMMON_CONDITION: {
@@ -437,6 +457,16 @@ _NORMAL_DEPENDENCIES = {
                 "nextest-runner": Label("@cargo_vendor//:nextest-runner-0.82.0"),
                 "serde_json": Label("@cargo_vendor//:serde_json-1.0.140"),
                 "toml_edit": Label("@cargo_vendor//:toml_edit-0.22.27"),
+            },
+        },
+    },
+    "build/tools/process_wrapper": {
+        _REQUIRED_FEATURE: {
+            _COMMON_CONDITION: {
+                "camino": Label("@cargo_vendor//:camino-1.1.10"),
+                "clap": Label("@cargo_vendor//:clap-4.5.40"),
+                "regex": Label("@cargo_vendor//:regex-1.11.1"),
+                "serde_json": Label("@cargo_vendor//:serde_json-1.0.140"),
             },
         },
     },
@@ -480,7 +510,7 @@ _NORMAL_DEPENDENCIES = {
     "crates/batching": {
         _REQUIRED_FEATURE: {
             _COMMON_CONDITION: {
-                "tokio": Label("@cargo_vendor//:tokio-1.45.1"),
+                "tokio": Label("@cargo_vendor//:tokio-1.46.0"),
                 "tokio-util": Label("@cargo_vendor//:tokio-util-0.7.15"),
             },
         },
@@ -491,7 +521,7 @@ _NORMAL_DEPENDENCIES = {
                 "anyhow": Label("@cargo_vendor//:anyhow-1.0.98"),
                 "futures": Label("@cargo_vendor//:futures-0.3.31"),
                 "pin-project-lite": Label("@cargo_vendor//:pin-project-lite-0.2.16"),
-                "tokio": Label("@cargo_vendor//:tokio-1.45.1"),
+                "tokio": Label("@cargo_vendor//:tokio-1.46.0"),
             },
         },
     },
@@ -534,7 +564,7 @@ _NORMAL_DEPENDENCIES = {
         },
         "tokio": {
             _COMMON_CONDITION: {
-                "tokio": Label("@cargo_vendor//:tokio-1.45.1"),
+                "tokio": Label("@cargo_vendor//:tokio-1.46.0"),
             },
         },
         "tracing-opentelemetry": {
@@ -585,7 +615,7 @@ _NORMAL_DEPENDENCIES = {
             _COMMON_CONDITION: {
                 "futures-lite": Label("@cargo_vendor//:futures-lite-2.6.0"),
                 "pin-project-lite": Label("@cargo_vendor//:pin-project-lite-0.2.16"),
-                "tokio": Label("@cargo_vendor//:tokio-1.45.1"),
+                "tokio": Label("@cargo_vendor//:tokio-1.46.0"),
                 "tokio-util": Label("@cargo_vendor//:tokio-util-0.7.15"),
             },
         },
@@ -616,7 +646,7 @@ _NORMAL_DEPENDENCIES = {
         },
         "tokio-channel": {
             _COMMON_CONDITION: {
-                "tokio": Label("@cargo_vendor//:tokio-1.45.1"),
+                "tokio": Label("@cargo_vendor//:tokio-1.46.0"),
             },
         },
         "tracing": {
@@ -639,7 +669,7 @@ _NORMAL_DEPENDENCIES = {
     "crates/future-ext": {
         _REQUIRED_FEATURE: {
             _COMMON_CONDITION: {
-                "tokio": Label("@cargo_vendor//:tokio-1.45.1"),
+                "tokio": Label("@cargo_vendor//:tokio-1.46.0"),
             },
         },
     },
@@ -670,7 +700,7 @@ _NORMAL_DEPENDENCIES = {
                 "http-body": Label("@cargo_vendor//:http-body-1.0.1"),
                 "pin-project-lite": Label("@cargo_vendor//:pin-project-lite-0.2.16"),
                 "thiserror": Label("@cargo_vendor//:thiserror-2.0.12"),
-                "tokio": Label("@cargo_vendor//:tokio-1.45.1"),
+                "tokio": Label("@cargo_vendor//:tokio-1.46.0"),
             },
         },
         "http1": {
@@ -802,7 +832,7 @@ _NORMAL_DEPENDENCIES = {
                 "serde": Label("@cargo_vendor//:serde-1.0.219"),
                 "sha2": Label("@cargo_vendor//:sha2-0.10.9"),
                 "thiserror": Label("@cargo_vendor//:thiserror-2.0.12"),
-                "tokio": Label("@cargo_vendor//:tokio-1.45.1"),
+                "tokio": Label("@cargo_vendor//:tokio-1.46.0"),
                 "tracing": Label("@cargo_vendor//:tracing-0.1.41"),
             },
         },
@@ -827,14 +857,14 @@ _NORMAL_DEPENDENCIES = {
         },
         "minijinja": {
             _COMMON_CONDITION: {
-                "minijinja": Label("@cargo_vendor//:minijinja-2.10.2"),
+                "minijinja": Label("@cargo_vendor//:minijinja-2.11.0"),
             },
         },
     },
     "crates/signal": {
         _REQUIRED_FEATURE: {
             _COMMON_CONDITION: {
-                "tokio": Label("@cargo_vendor//:tokio-1.45.1"),
+                "tokio": Label("@cargo_vendor//:tokio-1.46.0"),
             },
         },
         "anyhow": {
@@ -967,7 +997,7 @@ _NORMAL_DEPENDENCIES = {
                 "hex": Label("@cargo_vendor//:hex-0.4.3"),
                 "home": Label("@cargo_vendor//:home-0.5.11"),
                 "indent_write": Label("@cargo_vendor//:indent_write-2.2.0"),
-                "minijinja": Label("@cargo_vendor//:minijinja-2.10.2"),
+                "minijinja": Label("@cargo_vendor//:minijinja-2.11.0"),
                 "num_cpus": Label("@cargo_vendor//:num_cpus-1.17.0"),
                 "serde": Label("@cargo_vendor//:serde-1.0.219"),
                 "serde_json": Label("@cargo_vendor//:serde_json-1.0.140"),
@@ -978,10 +1008,41 @@ _NORMAL_DEPENDENCIES = {
             },
         },
     },
+    "tools/cargo/clippy": {
+        _REQUIRED_FEATURE: {
+            _COMMON_CONDITION: {
+                "anyhow": Label("@cargo_vendor//:anyhow-1.0.98"),
+                "camino": Label("@cargo_vendor//:camino-1.1.10"),
+                "clap": Label("@cargo_vendor//:clap-4.5.40"),
+                "env_logger": Label("@cargo_vendor//:env_logger-0.11.8"),
+                "log": Label("@cargo_vendor//:log-0.4.27"),
+                "rustfix": Label("@cargo_vendor//:rustfix-0.9.1"),
+                "serde_json": Label("@cargo_vendor//:serde_json-1.0.140"),
+            },
+        },
+    },
 }
 
 _NORMAL_ALIASES = {
+    "build/tools/clippy": {
+        _REQUIRED_FEATURE: {
+            _COMMON_CONDITION: {
+            },
+        },
+    },
+    "build/tools/collect_args": {
+        _REQUIRED_FEATURE: {
+            _COMMON_CONDITION: {
+            },
+        },
+    },
     "build/tools/nextest_test_runner": {
+        _REQUIRED_FEATURE: {
+            _COMMON_CONDITION: {
+            },
+        },
+    },
+    "build/tools/process_wrapper": {
         _REQUIRED_FEATURE: {
             _COMMON_CONDITION: {
             },
@@ -1305,10 +1366,22 @@ _NORMAL_ALIASES = {
             },
         },
     },
+    "tools/cargo/clippy": {
+        _REQUIRED_FEATURE: {
+            _COMMON_CONDITION: {
+            },
+        },
+    },
 }
 
 _NORMAL_DEV_DEPENDENCIES = {
+    "build/tools/clippy": {
+    },
+    "build/tools/collect_args": {
+    },
     "build/tools/nextest_test_runner": {
+    },
+    "build/tools/process_wrapper": {
     },
     "cloud/core": {
     },
@@ -1330,7 +1403,7 @@ _NORMAL_DEV_DEPENDENCIES = {
             _COMMON_CONDITION: {
                 "criterion": Label("@cargo_vendor//:criterion-0.6.0"),
                 "futures": Label("@cargo_vendor//:futures-0.3.31"),
-                "tokio": Label("@cargo_vendor//:tokio-1.45.1"),
+                "tokio": Label("@cargo_vendor//:tokio-1.46.0"),
                 "tokio-test": Label("@cargo_vendor//:tokio-test-0.4.4"),
             },
         },
@@ -1348,7 +1421,7 @@ _NORMAL_DEV_DEPENDENCIES = {
     "crates/bootstrap-telemetry": {
         _REQUIRED_FEATURE: {
             _COMMON_CONDITION: {
-                "reqwest": Label("@cargo_vendor//:reqwest-0.12.20"),
+                "reqwest": Label("@cargo_vendor//:reqwest-0.12.22"),
             },
         },
     },
@@ -1367,7 +1440,7 @@ _NORMAL_DEV_DEPENDENCIES = {
     "crates/context": {
         _REQUIRED_FEATURE: {
             _COMMON_CONDITION: {
-                "tokio": Label("@cargo_vendor//:tokio-1.45.1"),
+                "tokio": Label("@cargo_vendor//:tokio-1.46.0"),
                 "tokio-test": Label("@cargo_vendor//:tokio-test-0.4.4"),
             },
         },
@@ -1418,9 +1491,9 @@ _NORMAL_DEV_DEPENDENCIES = {
         _REQUIRED_FEATURE: {
             _COMMON_CONDITION: {
                 "axum": Label("@cargo_vendor//:axum-0.8.4"),
-                "reqwest": Label("@cargo_vendor//:reqwest-0.12.20"),
+                "reqwest": Label("@cargo_vendor//:reqwest-0.12.22"),
                 "rustls-pemfile": Label("@cargo_vendor//:rustls-pemfile-2.2.0"),
-                "tokio": Label("@cargo_vendor//:tokio-1.45.1"),
+                "tokio": Label("@cargo_vendor//:tokio-1.46.0"),
                 "tokio-test": Label("@cargo_vendor//:tokio-test-0.4.4"),
                 "tracing": Label("@cargo_vendor//:tracing-0.1.41"),
                 "tracing-subscriber": Label("@cargo_vendor//:tracing-subscriber-0.3.19"),
@@ -1432,7 +1505,7 @@ _NORMAL_DEV_DEPENDENCIES = {
             _COMMON_CONDITION: {
                 "insta": Label("@cargo_vendor//:insta-1.43.1"),
                 "opentelemetry-stdout": Label("@cargo_vendor//:opentelemetry-stdout-0.30.0"),
-                "tokio": Label("@cargo_vendor//:tokio-1.45.1"),
+                "tokio": Label("@cargo_vendor//:tokio-1.46.0"),
             },
         },
     },
@@ -1473,7 +1546,7 @@ _NORMAL_DEV_DEPENDENCIES = {
         _REQUIRED_FEATURE: {
             _COMMON_CONDITION: {
                 "serde_json": Label("@cargo_vendor//:serde_json-1.0.140"),
-                "tokio": Label("@cargo_vendor//:tokio-1.45.1"),
+                "tokio": Label("@cargo_vendor//:tokio-1.46.0"),
                 "tracing": Label("@cargo_vendor//:tracing-0.1.41"),
                 "tracing-subscriber": Label("@cargo_vendor//:tracing-subscriber-0.3.19"),
             },
@@ -1486,7 +1559,7 @@ _NORMAL_DEV_DEPENDENCIES = {
             _COMMON_CONDITION: {
                 "futures": Label("@cargo_vendor//:futures-0.3.31"),
                 "libc": Label("@cargo_vendor//:libc-0.2.174"),
-                "tokio": Label("@cargo_vendor//:tokio-1.45.1"),
+                "tokio": Label("@cargo_vendor//:tokio-1.46.0"),
                 "tokio-test": Label("@cargo_vendor//:tokio-test-0.4.4"),
             },
             "cfg(windows)": {
@@ -1524,7 +1597,7 @@ _NORMAL_DEV_DEPENDENCIES = {
                 "rand": Label("@cargo_vendor//:rand-0.9.1"),
                 "serde": Label("@cargo_vendor//:serde-1.0.219"),
                 "serde_json": Label("@cargo_vendor//:serde_json-1.0.140"),
-                "tokio": Label("@cargo_vendor//:tokio-1.45.1"),
+                "tokio": Label("@cargo_vendor//:tokio-1.46.0"),
                 "tonic": Label("@cargo_vendor//:tonic-0.13.1"),
                 "tower": Label("@cargo_vendor//:tower-0.5.2"),
             },
@@ -1542,10 +1615,18 @@ _NORMAL_DEV_DEPENDENCIES = {
     },
     "dev-tools/xtask": {
     },
+    "tools/cargo/clippy": {
+    },
 }
 
 _NORMAL_DEV_ALIASES = {
+    "build/tools/clippy": {
+    },
+    "build/tools/collect_args": {
+    },
     "build/tools/nextest_test_runner": {
+    },
+    "build/tools/process_wrapper": {
     },
     "cloud/core": {
     },
@@ -1715,10 +1796,23 @@ _NORMAL_DEV_ALIASES = {
     },
     "dev-tools/xtask": {
     },
+    "tools/cargo/clippy": {
+    },
 }
 
 _PROC_MACRO_DEPENDENCIES = {
+    "build/tools/clippy": {
+        _REQUIRED_FEATURE: {
+            _COMMON_CONDITION: {
+                "serde_derive": Label("@cargo_vendor//:serde_derive-1.0.219"),
+            },
+        },
+    },
+    "build/tools/collect_args": {
+    },
     "build/tools/nextest_test_runner": {
+    },
+    "build/tools/process_wrapper": {
     },
     "cloud/core": {
     },
@@ -1999,10 +2093,18 @@ _PROC_MACRO_DEPENDENCIES = {
             },
         },
     },
+    "tools/cargo/clippy": {
+    },
 }
 
 _PROC_MACRO_ALIASES = {
+    "build/tools/clippy": {
+    },
+    "build/tools/collect_args": {
+    },
     "build/tools/nextest_test_runner": {
+    },
+    "build/tools/process_wrapper": {
     },
     "cloud/core": {
     },
@@ -2089,11 +2191,19 @@ _PROC_MACRO_ALIASES = {
     "crates/transmuxer": {
     },
     "dev-tools/xtask": {
+    },
+    "tools/cargo/clippy": {
     },
 }
 
 _PROC_MACRO_DEV_DEPENDENCIES = {
+    "build/tools/clippy": {
+    },
+    "build/tools/collect_args": {
+    },
     "build/tools/nextest_test_runner": {
+    },
+    "build/tools/process_wrapper": {
     },
     "cloud/core": {
     },
@@ -2186,10 +2296,18 @@ _PROC_MACRO_DEV_DEPENDENCIES = {
     },
     "dev-tools/xtask": {
     },
+    "tools/cargo/clippy": {
+    },
 }
 
 _PROC_MACRO_DEV_ALIASES = {
+    "build/tools/clippy": {
+    },
+    "build/tools/collect_args": {
+    },
     "build/tools/nextest_test_runner": {
+    },
+    "build/tools/process_wrapper": {
     },
     "cloud/core": {
     },
@@ -2359,10 +2477,18 @@ _PROC_MACRO_DEV_ALIASES = {
     },
     "dev-tools/xtask": {
     },
+    "tools/cargo/clippy": {
+    },
 }
 
 _BUILD_DEPENDENCIES = {
+    "build/tools/clippy": {
+    },
+    "build/tools/collect_args": {
+    },
     "build/tools/nextest_test_runner": {
+    },
+    "build/tools/process_wrapper": {
     },
     "cloud/core": {
     },
@@ -2455,10 +2581,18 @@ _BUILD_DEPENDENCIES = {
     },
     "dev-tools/xtask": {
     },
+    "tools/cargo/clippy": {
+    },
 }
 
 _BUILD_ALIASES = {
+    "build/tools/clippy": {
+    },
+    "build/tools/collect_args": {
+    },
     "build/tools/nextest_test_runner": {
+    },
+    "build/tools/process_wrapper": {
     },
     "cloud/core": {
     },
@@ -2545,11 +2679,19 @@ _BUILD_ALIASES = {
     "crates/transmuxer": {
     },
     "dev-tools/xtask": {
+    },
+    "tools/cargo/clippy": {
     },
 }
 
 _BUILD_PROC_MACRO_DEPENDENCIES = {
+    "build/tools/clippy": {
+    },
+    "build/tools/collect_args": {
+    },
     "build/tools/nextest_test_runner": {
+    },
+    "build/tools/process_wrapper": {
     },
     "cloud/core": {
     },
@@ -2624,11 +2766,19 @@ _BUILD_PROC_MACRO_DEPENDENCIES = {
     "crates/transmuxer": {
     },
     "dev-tools/xtask": {
+    },
+    "tools/cargo/clippy": {
     },
 }
 
 _BUILD_PROC_MACRO_ALIASES = {
+    "build/tools/clippy": {
+    },
+    "build/tools/collect_args": {
+    },
     "build/tools/nextest_test_runner": {
+    },
+    "build/tools/process_wrapper": {
     },
     "cloud/core": {
     },
@@ -2704,10 +2854,18 @@ _BUILD_PROC_MACRO_ALIASES = {
     },
     "dev-tools/xtask": {
     },
+    "tools/cargo/clippy": {
+    },
 }
 
 _FEATURE_FLAGS = {
+    "build/tools/clippy": {
+    },
+    "build/tools/collect_args": {
+    },
     "build/tools/nextest_test_runner": {
+    },
+    "build/tools/process_wrapper": {
     },
     "cloud/core": {
     },
@@ -3010,10 +3168,18 @@ _FEATURE_FLAGS = {
     },
     "dev-tools/xtask": {
     },
+    "tools/cargo/clippy": {
+    },
 }
 
 _RESOLVED_FEATURE_FLAGS = {
+    "build/tools/clippy": {
+    },
+    "build/tools/collect_args": {
+    },
     "build/tools/nextest_test_runner": {
+    },
+    "build/tools/process_wrapper": {
     },
     "cloud/core": {
     },
@@ -3133,6 +3299,8 @@ _RESOLVED_FEATURE_FLAGS = {
     "crates/transmuxer": {
     },
     "dev-tools/xtask": {
+    },
+    "tools/cargo/clippy": {
     },
 }
 
@@ -3706,12 +3874,12 @@ def crate_repositories():
 
     maybe(
         http_archive,
-        name = "cargo_vendor__cc-1.2.27",
-        sha256 = "d487aa071b5f64da6f19a3e848e3578944b726ee5a4854b82172f02aa876bfdc",
+        name = "cargo_vendor__cc-1.2.28",
+        sha256 = "4ad45f4f74e4e20eaa392913b7b33a7091c87e59628f4dd27888205ad888843c",
         type = "tar.gz",
-        urls = ["https://static.crates.io/crates/cc/1.2.27/download"],
-        strip_prefix = "cc-1.2.27",
-        build_file = Label("//vendor/cargo:BUILD.cc-1.2.27.bazel"),
+        urls = ["https://static.crates.io/crates/cc/1.2.28/download"],
+        strip_prefix = "cc-1.2.28",
+        build_file = Label("//vendor/cargo:BUILD.cc-1.2.28.bazel"),
     )
 
     maybe(
@@ -4286,6 +4454,26 @@ def crate_repositories():
 
     maybe(
         http_archive,
+        name = "cargo_vendor__env_filter-0.1.3",
+        sha256 = "186e05a59d4c50738528153b83b0b0194d3a29507dfec16eccd4b342903397d0",
+        type = "tar.gz",
+        urls = ["https://static.crates.io/crates/env_filter/0.1.3/download"],
+        strip_prefix = "env_filter-0.1.3",
+        build_file = Label("//vendor/cargo:BUILD.env_filter-0.1.3.bazel"),
+    )
+
+    maybe(
+        http_archive,
+        name = "cargo_vendor__env_logger-0.11.8",
+        sha256 = "13c863f0904021b108aa8b2f55046443e6b1ebde8fd4a15c399893aae4fa069f",
+        type = "tar.gz",
+        urls = ["https://static.crates.io/crates/env_logger/0.11.8/download"],
+        strip_prefix = "env_logger-0.11.8",
+        build_file = Label("//vendor/cargo:BUILD.env_logger-0.11.8.bazel"),
+    )
+
+    maybe(
+        http_archive,
         name = "cargo_vendor__equator-0.4.2",
         sha256 = "4711b213838dfee0117e3be6ac926007d7f433d7bbe33595975d4190cb07e6fc",
         type = "tar.gz",
@@ -4646,12 +4834,12 @@ def crate_repositories():
 
     maybe(
         http_archive,
-        name = "cargo_vendor__h2-0.4.10",
-        sha256 = "a9421a676d1b147b16b82c9225157dc629087ef8ec4d5e2960f9437a90dac0a5",
+        name = "cargo_vendor__h2-0.4.11",
+        sha256 = "17da50a276f1e01e0ba6c029e47b7100754904ee8a278f886546e98575380785",
         type = "tar.gz",
-        urls = ["https://static.crates.io/crates/h2/0.4.10/download"],
-        strip_prefix = "h2-0.4.10",
-        build_file = Label("//vendor/cargo:BUILD.h2-0.4.10.bazel"),
+        urls = ["https://static.crates.io/crates/h2/0.4.11/download"],
+        strip_prefix = "h2-0.4.11",
+        build_file = Label("//vendor/cargo:BUILD.h2-0.4.11.bazel"),
     )
 
     maybe(
@@ -5116,6 +5304,16 @@ def crate_repositories():
 
     maybe(
         http_archive,
+        name = "cargo_vendor__jiff-0.2.15",
+        sha256 = "be1f93b8b1eb69c77f24bbb0afdf66f54b632ee39af40ca21c4365a1d7347e49",
+        type = "tar.gz",
+        urls = ["https://static.crates.io/crates/jiff/0.2.15/download"],
+        strip_prefix = "jiff-0.2.15",
+        build_file = Label("//vendor/cargo:BUILD.jiff-0.2.15.bazel"),
+    )
+
+    maybe(
+        http_archive,
         name = "cargo_vendor__jobserver-0.1.33",
         sha256 = "38f262f097c174adebe41eb73d66ae9c06b2844fb0da69969647bbddd9b0538a",
         type = "tar.gz",
@@ -5386,12 +5584,12 @@ def crate_repositories():
 
     maybe(
         http_archive,
-        name = "cargo_vendor__minijinja-2.10.2",
-        sha256 = "dd72e8b4e42274540edabec853f607c015c73436159b06c39c7af85a20433155",
+        name = "cargo_vendor__minijinja-2.11.0",
+        sha256 = "4e60ac08614cc09062820e51d5d94c2fce16b94ea4e5003bb81b99a95f84e876",
         type = "tar.gz",
-        urls = ["https://static.crates.io/crates/minijinja/2.10.2/download"],
-        strip_prefix = "minijinja-2.10.2",
-        build_file = Label("//vendor/cargo:BUILD.minijinja-2.10.2.bazel"),
+        urls = ["https://static.crates.io/crates/minijinja/2.11.0/download"],
+        strip_prefix = "minijinja-2.11.0",
+        build_file = Label("//vendor/cargo:BUILD.minijinja-2.11.0.bazel"),
     )
 
     maybe(
@@ -6316,12 +6514,12 @@ def crate_repositories():
 
     maybe(
         http_archive,
-        name = "cargo_vendor__reqwest-0.12.20",
-        sha256 = "eabf4c97d9130e2bf606614eb937e86edac8292eaa6f422f995d7e8de1eb1813",
+        name = "cargo_vendor__reqwest-0.12.22",
+        sha256 = "cbc931937e6ca3a06e3b6c0aa7841849b160a90351d6ab467a8b9b9959767531",
         type = "tar.gz",
-        urls = ["https://static.crates.io/crates/reqwest/0.12.20/download"],
-        strip_prefix = "reqwest-0.12.20",
-        build_file = Label("//vendor/cargo:BUILD.reqwest-0.12.20.bazel"),
+        urls = ["https://static.crates.io/crates/reqwest/0.12.22/download"],
+        strip_prefix = "reqwest-0.12.22",
+        build_file = Label("//vendor/cargo:BUILD.reqwest-0.12.22.bazel"),
     )
 
     maybe(
@@ -6356,12 +6554,12 @@ def crate_repositories():
 
     maybe(
         http_archive,
-        name = "cargo_vendor__rust-ini-0.21.1",
-        sha256 = "4e310ef0e1b6eeb79169a1171daf9abcb87a2e17c03bee2c4bb100b55c75409f",
+        name = "cargo_vendor__rust-ini-0.21.2",
+        sha256 = "e7295b7ce3bf4806b419dc3420745998b447178b7005e2011947b38fc5aa6791",
         type = "tar.gz",
-        urls = ["https://static.crates.io/crates/rust-ini/0.21.1/download"],
-        strip_prefix = "rust-ini-0.21.1",
-        build_file = Label("//vendor/cargo:BUILD.rust-ini-0.21.1.bazel"),
+        urls = ["https://static.crates.io/crates/rust-ini/0.21.2/download"],
+        strip_prefix = "rust-ini-0.21.2",
+        build_file = Label("//vendor/cargo:BUILD.rust-ini-0.21.2.bazel"),
     )
 
     maybe(
@@ -6382,6 +6580,16 @@ def crate_repositories():
         urls = ["https://static.crates.io/crates/rustc-hash/2.1.1/download"],
         strip_prefix = "rustc-hash-2.1.1",
         build_file = Label("//vendor/cargo:BUILD.rustc-hash-2.1.1.bazel"),
+    )
+
+    maybe(
+        http_archive,
+        name = "cargo_vendor__rustfix-0.9.1",
+        sha256 = "8abe01883100061761642e19324f87514bcaed7ddaab2dfd68041c992987b289",
+        type = "tar.gz",
+        urls = ["https://static.crates.io/crates/rustfix/0.9.1/download"],
+        strip_prefix = "rustfix-0.9.1",
+        build_file = Label("//vendor/cargo:BUILD.rustfix-0.9.1.bazel"),
     )
 
     maybe(
@@ -7155,12 +7363,12 @@ def crate_repositories():
 
     maybe(
         http_archive,
-        name = "cargo_vendor__tokio-1.45.1",
-        sha256 = "75ef51a33ef1da925cea3e4eb122833cb377c61439ca401b770f54902b806779",
+        name = "cargo_vendor__tokio-1.46.0",
+        sha256 = "1140bb80481756a8cbe10541f37433b459c5aa1e727b4c020fbfebdc25bf3ec4",
         type = "tar.gz",
-        urls = ["https://static.crates.io/crates/tokio/1.45.1/download"],
-        strip_prefix = "tokio-1.45.1",
-        build_file = Label("//vendor/cargo:BUILD.tokio-1.45.1.bazel"),
+        urls = ["https://static.crates.io/crates/tokio/1.46.0/download"],
+        strip_prefix = "tokio-1.46.0",
+        build_file = Label("//vendor/cargo:BUILD.tokio-1.46.0.bazel"),
     )
 
     maybe(
@@ -7411,16 +7619,6 @@ def crate_repositories():
         urls = ["https://static.crates.io/crates/tracing-test-macro/0.2.5/download"],
         strip_prefix = "tracing-test-macro-0.2.5",
         build_file = Label("//vendor/cargo:BUILD.tracing-test-macro-0.2.5.bazel"),
-    )
-
-    maybe(
-        http_archive,
-        name = "cargo_vendor__trim-in-place-0.1.7",
-        sha256 = "343e926fc669bc8cde4fa3129ab681c63671bae288b1f1081ceee6d9d37904fc",
-        type = "tar.gz",
-        urls = ["https://static.crates.io/crates/trim-in-place/0.1.7/download"],
-        strip_prefix = "trim-in-place-0.1.7",
-        build_file = Label("//vendor/cargo:BUILD.trim-in-place-0.1.7.bazel"),
     )
 
     maybe(
@@ -8197,6 +8395,7 @@ def crate_repositories():
         struct(repo = "cargo_vendor__darling-0.20.11", is_dev_dep = False),
         struct(repo = "cargo_vendor__document-features-0.2.11", is_dev_dep = False),
         struct(repo = "cargo_vendor__email_address-0.2.9", is_dev_dep = False),
+        struct(repo = "cargo_vendor__env_logger-0.11.8", is_dev_dep = False),
         struct(repo = "cargo_vendor__fixed-1.29.0", is_dev_dep = False),
         struct(repo = "cargo_vendor__flate2-1.1.2", is_dev_dep = False),
         struct(repo = "cargo_vendor__float-cmp-0.10.0", is_dev_dep = False),
@@ -8221,8 +8420,9 @@ def crate_repositories():
         struct(repo = "cargo_vendor__libc-0.2.174", is_dev_dep = False),
         struct(repo = "cargo_vendor__linear-map-1.2.0", is_dev_dep = False),
         struct(repo = "cargo_vendor__linkme-0.3.33", is_dev_dep = False),
+        struct(repo = "cargo_vendor__log-0.4.27", is_dev_dep = False),
         struct(repo = "cargo_vendor__mediatype-0.20.0", is_dev_dep = False),
-        struct(repo = "cargo_vendor__minijinja-2.10.2", is_dev_dep = False),
+        struct(repo = "cargo_vendor__minijinja-2.11.0", is_dev_dep = False),
         struct(repo = "cargo_vendor__nextest-filtering-0.16.0", is_dev_dep = False),
         struct(repo = "cargo_vendor__nextest-metadata-0.12.2", is_dev_dep = False),
         struct(repo = "cargo_vendor__nextest-runner-0.82.0", is_dev_dep = False),
@@ -8250,6 +8450,7 @@ def crate_repositories():
         struct(repo = "cargo_vendor__rand-0.9.1", is_dev_dep = False),
         struct(repo = "cargo_vendor__regex-1.11.1", is_dev_dep = False),
         struct(repo = "cargo_vendor__runtime-format-0.1.3", is_dev_dep = False),
+        struct(repo = "cargo_vendor__rustfix-0.9.1", is_dev_dep = False),
         struct(repo = "cargo_vendor__rustls-0.23.28", is_dev_dep = False),
         struct(repo = "cargo_vendor__rusty_ffmpeg-0.16.3-ffmpeg.7.1", is_dev_dep = False),
         struct(repo = "cargo_vendor__semver-1.0.26", is_dev_dep = False),
@@ -8260,10 +8461,11 @@ def crate_repositories():
         struct(repo = "cargo_vendor__serde_qs-0.15.0", is_dev_dep = False),
         struct(repo = "cargo_vendor__serde_repr-0.1.20", is_dev_dep = False),
         struct(repo = "cargo_vendor__sha2-0.10.9", is_dev_dep = False),
+        struct(repo = "cargo_vendor__strip-ansi-escapes-0.2.1", is_dev_dep = False),
         struct(repo = "cargo_vendor__syn-2.0.104", is_dev_dep = False),
         struct(repo = "cargo_vendor__target-triple-0.1.4", is_dev_dep = False),
         struct(repo = "cargo_vendor__thiserror-2.0.12", is_dev_dep = False),
-        struct(repo = "cargo_vendor__tokio-1.45.1", is_dev_dep = False),
+        struct(repo = "cargo_vendor__tokio-1.46.0", is_dev_dep = False),
         struct(repo = "cargo_vendor__tokio-rustls-0.26.2", is_dev_dep = False),
         struct(repo = "cargo_vendor__tokio-util-0.7.15", is_dev_dep = False),
         struct(repo = "cargo_vendor__toml-0.8.23", is_dev_dep = False),
@@ -8281,7 +8483,7 @@ def crate_repositories():
         struct(repo = "cargo_vendor__criterion-0.6.0", is_dev_dep = True),
         struct(repo = "cargo_vendor__insta-1.43.1", is_dev_dep = True),
         struct(repo = "cargo_vendor__opentelemetry-stdout-0.30.0", is_dev_dep = True),
-        struct(repo = "cargo_vendor__reqwest-0.12.20", is_dev_dep = True),
+        struct(repo = "cargo_vendor__reqwest-0.12.22", is_dev_dep = True),
         struct(repo = "cargo_vendor__rustls-pemfile-2.2.0", is_dev_dep = True),
         struct(repo = "cargo_vendor__smart-default-0.7.1", is_dev_dep = True),
         struct(repo = "cargo_vendor__tempfile-3.20.0", is_dev_dep = True),

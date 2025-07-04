@@ -205,7 +205,7 @@ impl std::fmt::Display for CompileOutput {
 }
 
 fn cargo(config: &Config, manifest_path: &Path, subcommand: &str) -> Command {
-    let mut program = Command::new(&std::env::var("CARGO").unwrap_or_else(|_| "cargo".into()));
+    let mut program = Command::new(std::env::var("CARGO").unwrap_or_else(|_| "cargo".into()));
     program.arg(subcommand);
     program.current_dir(manifest_path.parent().unwrap());
 
@@ -236,7 +236,7 @@ fn cargo(config: &Config, manifest_path: &Path, subcommand: &str) -> Command {
 }
 
 fn rustc() -> Command {
-    let mut program = Command::new(&std::env::var("RUSTC").unwrap_or_else(|_| "rustc".into()));
+    let mut program = Command::new(std::env::var("RUSTC").unwrap_or_else(|_| "rustc".into()));
     program.stderr(std::process::Stdio::piped());
     program.stdout(std::process::Stdio::piped());
     program

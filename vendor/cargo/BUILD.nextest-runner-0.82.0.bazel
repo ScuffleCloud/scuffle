@@ -114,7 +114,7 @@ rust_library(
         "@cargo_vendor__target-spec-3.4.2//:target_spec",
         "@cargo_vendor__target-spec-miette-0.4.4//:target_spec_miette",
         "@cargo_vendor__thiserror-2.0.12//:thiserror",
-        "@cargo_vendor__tokio-1.45.1//:tokio",
+        "@cargo_vendor__tokio-1.46.0//:tokio",
         "@cargo_vendor__tokio-stream-0.1.17//:tokio_stream",
         "@cargo_vendor__toml-0.8.23//:toml",
         "@cargo_vendor__toml_edit-0.22.27//:toml_edit",

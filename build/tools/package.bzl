@@ -1,12 +1,14 @@
 load("@rules_rust//cargo:defs.bzl", "cargo_build_script", "cargo_toml_env_vars")
 load("@rules_rust//rust:defs.bzl", "rust_binary", "rust_library", "rust_proc_macro")
 load("@rules_rust//rust:defs.bzl", "rustfmt_test")
+load("//build/tools:clippy.bzl", "rust_clippy", "rust_clippy_test")
 load("//build/tools/nextest_test_runner:defs.bzl", "nextest_test")
 load("//vendor/cargo:defs.bzl", "all_crate_deps", "crate_features", dep_aliases = "aliases")
 
 
 def scuffle_package(
     crate_name,
+    name = None,
     features = None,
     crate_type = "rlib",
     srcs = None,
@@ -22,6 +24,7 @@ def scuffle_package(
 
     Args:
         crate_name: Name of the crate.
+        name: Name of the target
         features: A set of features this crate has
         crate_type: The type of crate to build: Default "rlib"
         srcs: Source files. Defaults to glob(["src/**/*.rs"]) if not provided
@@ -65,15 +68,17 @@ def scuffle_package(
     if crate_type not in NAME_MAPPINGS:
         fail("crate_type must be one of: %s" % [kind for kind in NAME_MAPPINGS.keys()])
 
-    name = package_name.split("/")[-1]
+    name = package_name.split("/")[-1] if name == None else name
 
     cargo_toml_env_vars(
-        name = "cargo_toml_env",
+        name = name + "_cargo_toml_env",
         src = ":Cargo.toml",
         workspace = "//:Cargo.toml",
         tags = ["manual"],
         visibility = ["//visibility:private"],
     )
+
+    colon_name = ":" + name
 
     kwargs = dict(
         name = name,
@@ -90,7 +95,7 @@ def scuffle_package(
             "--cfg=bazel_runfiles",
             "-Clink-arg=-Wl,-znostart-stop-gc",
         ],
-        rustc_env_files = [":cargo_toml_env"],
+        rustc_env_files = [colon_name + "_cargo_toml_env"],
     )
 
     # Create the library target
@@ -101,10 +106,7 @@ def scuffle_package(
     elif crate_type == "bin":
         rust_binary(**kwargs)
 
-    rustfmt_test(
-        name = "fmt_test",
-        targets = [":" + name],
-    )
+    rust_targets = [colon_name]
 
     if test != False:
         test_deps = test.get("deps", []) + ["@rules_rust//rust/runfiles"]
@@ -115,9 +117,9 @@ def scuffle_package(
         test_tags = test.get("tags", []) + []
 
         if crate_type == "proc_macro":
-            test_proc_macro_deps += [":" + name]
+            test_proc_macro_deps += [colon_name]
         else:
-            test_deps += [":" + name]
+            test_deps += [colon_name]
 
         workspace_root = None
         if test_insta:
@@ -125,7 +127,7 @@ def scuffle_package(
             workspace_root = "//:test_workspace_root"
 
         nextest_test(
-            name = "test",
+            name = name + "_test",
             workspace_root = workspace_root,
             data = test_data,
             env = test_env,
@@ -135,7 +137,7 @@ def scuffle_package(
             deps = all_crate_deps(normal = True, normal_dev = True, package_name = package_name, features = features) + deps + test_deps,
             proc_macro_deps = all_crate_deps(proc_macro = True, proc_macro_dev = True, package_name = package_name, features = features) + proc_macro_deps + test_proc_macro_deps,
             crate_features = features.select(),
-            rustc_env_files = [":cargo_toml_env"],
+            rustc_env_files = [colon_name + "_cargo_toml_env"],
             rustc_flags = [
                 "--cfg=bazel_runfiles",
                 "--cfg=coverage_nightly",
@@ -144,8 +146,30 @@ def scuffle_package(
             rustc_env = {
                 "RUSTC_BOOTSTRAP": "1",
             },
+            # Needs to be marked as not testonly because the rust_clippy
+            # rule depends on this, which we use to generate clippy suggestions
+            testonly = False,
             visibility = ["//visibility:private"],
         )
+
+        rust_targets.append(colon_name + "_test")
+
+    rust_clippy(
+        name = name + "_clippy",
+        targets = rust_targets,
+        visibility = ["//visibility:private"],
+    )
+
+    rust_clippy_test(
+        name = name + "_clippy_test",
+        targets = [colon_name + "_clippy"],
+        visibility = ["//visibility:private"],
+    )
+
+    rustfmt_test(
+        name = name + "_fmt_test",
+        targets = rust_targets,
+    )
 
 def scuffle_test(
     deps = [],

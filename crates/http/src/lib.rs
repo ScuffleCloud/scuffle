@@ -99,6 +99,7 @@ mod tests {
 
     const RESPONSE_TEXT: &str = "Hello, world!";
 
+    #[allow(unused)]
     fn file_path(item: &str) -> PathBuf {
         if let Some(env) = std::env::var_os("ASSETS_DIR") {
             PathBuf::from(env).join(item)

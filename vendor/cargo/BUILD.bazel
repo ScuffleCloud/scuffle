@@ -320,6 +320,18 @@ alias(
 )
 
 alias(
+    name = "env_logger-0.11.8",
+    actual = "@cargo_vendor__env_logger-0.11.8//:env_logger",
+    tags = ["manual"],
+)
+
+alias(
+    name = "env_logger",
+    actual = "@cargo_vendor__env_logger-0.11.8//:env_logger",
+    tags = ["manual"],
+)
+
+alias(
     name = "fixed-1.29.0",
     actual = "@cargo_vendor__fixed-1.29.0//:fixed",
     tags = ["manual"],
@@ -620,6 +632,18 @@ alias(
 )
 
 alias(
+    name = "log-0.4.27",
+    actual = "@cargo_vendor__log-0.4.27//:log",
+    tags = ["manual"],
+)
+
+alias(
+    name = "log",
+    actual = "@cargo_vendor__log-0.4.27//:log",
+    tags = ["manual"],
+)
+
+alias(
     name = "mediatype-0.20.0",
     actual = "@cargo_vendor__mediatype-0.20.0//:mediatype",
     tags = ["manual"],
@@ -632,14 +656,14 @@ alias(
 )
 
 alias(
-    name = "minijinja-2.10.2",
-    actual = "@cargo_vendor__minijinja-2.10.2//:minijinja",
+    name = "minijinja-2.11.0",
+    actual = "@cargo_vendor__minijinja-2.11.0//:minijinja",
     tags = ["manual"],
 )
 
 alias(
     name = "minijinja",
-    actual = "@cargo_vendor__minijinja-2.10.2//:minijinja",
+    actual = "@cargo_vendor__minijinja-2.11.0//:minijinja",
     tags = ["manual"],
 )
 
@@ -968,14 +992,14 @@ alias(
 )
 
 alias(
-    name = "reqwest-0.12.20",
-    actual = "@cargo_vendor__reqwest-0.12.20//:reqwest",
+    name = "reqwest-0.12.22",
+    actual = "@cargo_vendor__reqwest-0.12.22//:reqwest",
     tags = ["manual"],
 )
 
 alias(
     name = "reqwest",
-    actual = "@cargo_vendor__reqwest-0.12.20//:reqwest",
+    actual = "@cargo_vendor__reqwest-0.12.22//:reqwest",
     tags = ["manual"],
 )
 
@@ -988,6 +1012,18 @@ alias(
 alias(
     name = "runtime-format",
     actual = "@cargo_vendor__runtime-format-0.1.3//:runtime_format",
+    tags = ["manual"],
+)
+
+alias(
+    name = "rustfix-0.9.1",
+    actual = "@cargo_vendor__rustfix-0.9.1//:rustfix",
+    tags = ["manual"],
+)
+
+alias(
+    name = "rustfix",
+    actual = "@cargo_vendor__rustfix-0.9.1//:rustfix",
     tags = ["manual"],
 )
 
@@ -1136,6 +1172,18 @@ alias(
 )
 
 alias(
+    name = "strip-ansi-escapes-0.2.1",
+    actual = "@cargo_vendor__strip-ansi-escapes-0.2.1//:strip_ansi_escapes",
+    tags = ["manual"],
+)
+
+alias(
+    name = "strip-ansi-escapes",
+    actual = "@cargo_vendor__strip-ansi-escapes-0.2.1//:strip_ansi_escapes",
+    tags = ["manual"],
+)
+
+alias(
     name = "syn-2.0.104",
     actual = "@cargo_vendor__syn-2.0.104//:syn",
     tags = ["manual"],
@@ -1184,14 +1232,14 @@ alias(
 )
 
 alias(
-    name = "tokio-1.45.1",
-    actual = "@cargo_vendor__tokio-1.45.1//:tokio",
+    name = "tokio-1.46.0",
+    actual = "@cargo_vendor__tokio-1.46.0//:tokio",
     tags = ["manual"],
 )
 
 alias(
     name = "tokio",
-    actual = "@cargo_vendor__tokio-1.45.1//:tokio",
+    actual = "@cargo_vendor__tokio-1.46.0//:tokio",
     tags = ["manual"],
 )
 

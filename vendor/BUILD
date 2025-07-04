@@ -67,7 +67,11 @@ crates_vendor(
         "//crates/tinc/pb-prost:Cargo.toml",
         "//crates/transmuxer:Cargo.toml",
         "//dev-tools/xtask:Cargo.toml",
+        "//build/tools/collect_args:Cargo.toml",
+        "//build/tools/clippy:Cargo.toml",
         "//build/tools/nextest_test_runner:Cargo.toml",
+        "//build/tools/process_wrapper:Cargo.toml",
+        "//tools/cargo/clippy:Cargo.toml",
     ],
     mode = "remote",
     supported_platform_triples = [
@@ -82,4 +86,5 @@ crates_vendor(
     tags = ["manual"],
     vendor_path = "cargo",
     visibility = ["//visibility:public"],
+
 )

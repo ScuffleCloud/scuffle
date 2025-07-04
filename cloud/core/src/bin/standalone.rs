@@ -20,15 +20,17 @@ pub struct Config {
     pub dashboard_url: String,
     #[default = "1x0000000000000000000000000000000AA"]
     pub turnstile_secret_key: String,
-    pub validaty: ValidatyConfig,
+    pub timeouts: TimeoutConfig,
     pub google_oauth2: GoogleOAuth2Config,
 }
 
 #[derive(serde_derive::Deserialize, smart_default::SmartDefault, Debug, Clone)]
 #[serde(default)]
-pub struct ValidatyConfig {
+pub struct TimeoutConfig {
     #[default(chrono::Duration::days(30))]
     pub user_session: chrono::Duration,
+    #[default(chrono::Duration::minutes(5))]
+    pub mfa: chrono::Duration,
     #[default(chrono::Duration::hours(4))]
     pub user_session_token: chrono::Duration,
     #[default(chrono::Duration::hours(1))]
@@ -37,8 +39,6 @@ pub struct ValidatyConfig {
     pub user_session_request: chrono::Duration,
     #[default(chrono::Duration::minutes(15))]
     pub magic_link_user_session_request: chrono::Duration,
-    #[default(chrono::Duration::minutes(5))]
-    pub mfa_webauthn_challenge: chrono::Duration,
 }
 
 #[derive(serde_derive::Deserialize, smart_default::SmartDefault, Debug, Clone)]
@@ -76,28 +76,28 @@ impl scufflecloud_core::CoreConfig for Global {
         &self.config.turnstile_secret_key
     }
 
-    fn user_session_validity(&self) -> chrono::Duration {
-        self.config.validaty.user_session
+    fn user_session_timeout(&self) -> chrono::Duration {
+        self.config.timeouts.user_session
     }
 
-    fn user_session_token_validity(&self) -> chrono::Duration {
-        self.config.validaty.user_session_token
+    fn mfa_timeout(&self) -> chrono::Duration {
+        self.config.timeouts.mfa
     }
 
-    fn email_registration_request_validity(&self) -> chrono::Duration {
-        self.config.validaty.email_registration_request
+    fn user_session_token_timeout(&self) -> chrono::Duration {
+        self.config.timeouts.user_session_token
     }
 
-    fn user_session_request_validity(&self) -> chrono::Duration {
-        self.config.validaty.user_session_request
+    fn email_registration_request_timeout(&self) -> chrono::Duration {
+        self.config.timeouts.email_registration_request
     }
 
-    fn magic_link_user_session_request_validity(&self) -> chrono::Duration {
-        self.config.validaty.magic_link_user_session_request
+    fn user_session_request_timeout(&self) -> chrono::Duration {
+        self.config.timeouts.user_session_request
     }
 
-    fn mfa_webauthn_challenge_validity(&self) -> chrono::Duration {
-        self.config.validaty.mfa_webauthn_challenge
+    fn magic_link_user_session_request_timeout(&self) -> chrono::Duration {
+        self.config.timeouts.magic_link_user_session_request
     }
 
     fn google_client_id(&self) -> &str {

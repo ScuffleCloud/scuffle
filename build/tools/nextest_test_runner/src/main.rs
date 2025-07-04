@@ -104,7 +104,7 @@ fn main() {
         build_platform: BuildPlatform::Target,
         kind: RustTestBinaryKind::LIB,
         non_test_binaries: BTreeSet::new(),
-        package: package,
+        package,
     };
 
     let mut nextest_config = std::fs::read_to_string(&args.config)
@@ -159,7 +159,7 @@ fn main() {
         .unwrap();
 
     let mut reporter = ReporterBuilder::default()
-        .set_colorize(false)
+        .set_colorize(true)
         .set_hide_progress_bar(true)
         .build(&list, &profile, ReporterStderr::Terminal, StructuredReporter::new());
 

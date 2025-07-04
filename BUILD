@@ -16,4 +16,3 @@ string_flag(
     tags = ["manual", "no-cache"],
     visibility = ["//visibility:public"],
 )
-

@@ -22,11 +22,11 @@ fn main() {
     for manifest in args.outputs {
         let manifest = std::fs::read_to_string(manifest).expect("CLIPPY_OUTPUTS malformed");
         for line in manifest.lines().map(|line| line.trim()).filter(|line| !line.is_empty()) {
-            let diagnostic = serde_json::from_str::<ClippyJson>(&line).expect("DIAGNOSTIC malformed");
+            let diagnostic = serde_json::from_str::<ClippyJson>(line).expect("DIAGNOSTIC malformed");
             if diagnostic.message_type == "diagnostic" {
                 failed |= true;
                 if let Some(rendered) = diagnostic.rendered {
-                    eprintln!("{}", strip_ansi_escapes::strip_str(&rendered))
+                    eprintln!("{rendered}")
                 }
             }
         }

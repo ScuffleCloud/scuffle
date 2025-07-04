@@ -706,7 +706,6 @@ dependencies = [
  "serde",
  "serde_derive",
  "serde_json",
- "strip-ansi-escapes",
 ]
 
 [[package]]

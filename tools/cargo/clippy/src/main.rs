@@ -1,20 +1,14 @@
-use anyhow::{bail, Context};
-use camino::Utf8PathBuf;
+use std::collections::{BTreeMap, HashSet, btree_map};
+use std::io::Read;
+use std::process::{Command, Stdio};
+
+use anyhow::{Context, bail};
+use camino::{Utf8Path, Utf8PathBuf};
 use clap::Parser;
 use rustfix::{CodeFix, Filter};
-use similar::ChangeTag;
-
-use std::{collections::{BTreeMap, HashSet}, fmt, io::Read, process::{Command, Stdio}};
-
-use camino::Utf8Path;
-
-pub const WORKSPACE_ROOT_FILE_NAMES: &[&str] =
-    &["MODULE.bazel", "REPO.bazel", "WORKSPACE.bazel", "WORKSPACE"];
-
-pub const BUILD_FILE_NAMES: &[&str] = &["BUILD.bazel", "BUILD"];
 
 /// Executes `bazel info` to get a map of context information.
-pub fn bazel_info(
+fn bazel_info(
     bazel: &Utf8Path,
     workspace: Option<&Utf8Path>,
     output_base: Option<&Utf8Path>,
@@ -44,11 +38,7 @@ pub fn bazel_info(
     Ok(info_map)
 }
 
-fn bazel_command(
-    bazel: &Utf8Path,
-    workspace: Option<&Utf8Path>,
-    output_base: Option<&Utf8Path>,
-) -> Command {
+fn bazel_command(bazel: &Utf8Path, workspace: Option<&Utf8Path>, output_base: Option<&Utf8Path>) -> Command {
     let mut cmd = Command::new(bazel);
 
     cmd
@@ -75,6 +65,7 @@ fn main() -> anyhow::Result<()> {
 
     let mut command = bazel_command(&config.bazel, Some(&config.workspace), Some(&config.output_base))
         .arg("cquery")
+        .args(&config.bazel_args)
         .arg(format!(r#"kind("rust_clippy rule", set({}))"#, config.targets.join(" ")))
         .arg("--output=starlark")
         .arg("--starlark:expr=[file.path for file in target.files.to_list()]")
@@ -105,7 +96,7 @@ fn main() -> anyhow::Result<()> {
     for file in clippy_files {
         let path = config.execution_root.join(&file);
         if !path.exists() {
-            log::warn!("missing {}", file);
+            log::warn!("missing {file}");
             continue;
         }
 
@@ -115,13 +106,13 @@ fn main() -> anyhow::Result<()> {
                 continue;
             }
 
-            suggestions.extend(rustfix::get_suggestions_from_json(&line, &only, Filter::MachineApplicableOnly).context("items")?)
+            suggestions
+                .extend(rustfix::get_suggestions_from_json(line, &only, Filter::MachineApplicableOnly).context("items")?)
         }
     }
 
     struct File {
         codefix: CodeFix,
-        src: String,
     }
 
     let mut files = BTreeMap::new();
@@ -131,16 +122,19 @@ fn main() -> anyhow::Result<()> {
             continue;
         };
 
-        if !files.contains_key(&replacement.snippet.file_name) {
-            let file = std::fs::read_to_string(config.workspace.join(&replacement.snippet.file_name)).context("read source")?;
-    
-            files.insert(replacement.snippet.file_name.clone(), File {
-                codefix: CodeFix::new(&file),
-                src: file,
-            });
-        }
+        let path = config.workspace.join(&replacement.snippet.file_name);
+        let mut entry = files.entry(path);
+        let file = match entry {
+            btree_map::Entry::Vacant(v) => {
+                let file = std::fs::read_to_string(v.key()).context("read source")?;
 
-        let file = files.get_mut(&replacement.snippet.file_name).unwrap();
+                v.insert(File {
+                    codefix: CodeFix::new(&file),
+                })
+            }
+            btree_map::Entry::Occupied(ref mut o) => o.get_mut(),
+        };
+
         file.codefix.apply_solution(solution).context("apply solution")?;
     }
 
@@ -157,7 +151,7 @@ fn main() -> anyhow::Result<()> {
 }
 
 #[derive(Debug)]
-pub struct Config {
+struct Config {
     /// The path to the Bazel workspace directory. If not specified, uses the result of `bazel info workspace`.
     workspace: Utf8PathBuf,
 
@@ -181,7 +175,7 @@ pub struct Config {
 
 impl Config {
     // Parse the configuration flags and supplement with bazel info as needed.
-    pub fn parse() -> anyhow::Result<Self> {
+    fn parse() -> anyhow::Result<Self> {
         let ConfigParser {
             workspace,
             execution_root,
@@ -191,31 +185,20 @@ impl Config {
             targets,
         } = ConfigParser::parse();
 
-        let bazel_args = config
-            .into_iter()
-            .map(|s| format!("--config={s}"))
-            .collect();
+        let bazel_args = config.into_iter().map(|s| format!("--config={s}")).collect();
 
         match (workspace, execution_root, output_base) {
-            (Some(workspace), Some(execution_root), Some(output_base)) => {
-                return Ok(Config {
-                    workspace,
-                    execution_root,
-                    output_base,
-                    bazel,
-                    bazel_args,
-                    targets,
-                });
-            },
+            (Some(workspace), Some(execution_root), Some(output_base)) => Ok(Config {
+                workspace,
+                execution_root,
+                output_base,
+                bazel,
+                bazel_args,
+                targets,
+            }),
             (workspace, _, output_base) => {
-                let mut info_map = bazel_info(
-                    &bazel,
-                    workspace.as_deref(),
-                    output_base.as_deref(),
-                    &[],
-                    &[],
-                )?;
-        
+                let mut info_map = bazel_info(&bazel, workspace.as_deref(), output_base.as_deref(), &[], &bazel_args)?;
+
                 let config = Config {
                     workspace: info_map
                         .remove("workspace")
@@ -233,7 +216,7 @@ impl Config {
                     bazel_args,
                     targets,
                 };
-        
+
                 Ok(config)
             }
         }

@@ -61,7 +61,7 @@ llvm.toolchain(
     sha256 = {
         "darwin-aarch64": "300a3c105a90360d3ff760c522cf0c545b5cc126d7e81ad8651b410ea62195e8",
         "darwin-x86_64": "3d268ede7d7d7321c67c8cee5abfabdbae871e9f04cc65fbe1f018c4b9956fc4",
-        "linux-aarch64": "49299344cc4fec03cd17b5c60eb6c5ef41c048eee6d362157d43adafbc54668a",
+        "linux-aarch64": "64ebf72a925ed7a7af2603fb84065fb6f2121552c8292d7a819614204d625926",
         "linux-x86_64": "d2bc9a4c6676279010bbac67005d521b45194724c3d333620363479ed1bdf447",
     },
     urls = {
@@ -140,7 +140,7 @@ http_archive(
 http_archive(
     name = "libclang-linux-aarch64",
     build_file_content = _LIBCLANG_BUILD_FILE,
-    sha256 = "0c572d901f11d7f272d047bb3b75fe00d2d75c508b7cc484ecfcbdece792d69a",
+    sha256 = "0342801577b3b8a8e94d393cd086f021963192bd7322f49ba7fe16ac3a7c3769",
     url = LLVM_BASE_URL.format(
         build = LLVM_BUILD,
         file = "linux_aarch64_libclang.tar.zst",

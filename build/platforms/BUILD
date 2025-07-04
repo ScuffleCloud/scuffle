@@ -1,17 +1,23 @@
-config_setting(
-    name = "linux_x86_64",
-    constraint_values = [
-        "@platforms//os:linux",
-        "@platforms//cpu:x86_64",
-    ],
-    visibility = ["//visibility:public"],
-)
+load(":defs.bzl", "os", "arch")
+
+[
+    config_setting(
+        name = "{}_{}".format(o, a),
+        constraint_values = [
+            "@platforms//os:" + o,
+            "@platforms//cpu:" + a,
+        ],
+        visibility = ["//visibility:public"],
+    )
+    for a in arch
+    for o in os
+]
 
 config_setting(
-    name = "linux_aarch64",
+    name = "none_wasm32",
     constraint_values = [
-        "@platforms//os:linux",
-        "@platforms//cpu:aarch64",
+        "@platforms//os:none",
+        "@platforms//cpu:wasm32",
     ],
     visibility = ["//visibility:public"],
 )

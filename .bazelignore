@@ -2,4 +2,4 @@
 .git/
 .github/
 target/
-target-bzl/
+target-bazel/

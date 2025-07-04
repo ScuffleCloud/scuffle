@@ -1,26 +1,25 @@
+load("//build/platforms:defs.bzl", "platform_select")
+
+# Currently our llvm builds do not support windows.
+os = ["linux", "macos"]
+
 alias(
     name = "libclang",
-    actual = select({
-        "//build/platforms:linux_x86_64": "@libclang-linux-x86_64//:lib"
-    }),
+    actual = select(platform_select("@libclang-{os}-{arch}//:lib", os = os)),
     tags = ["no-cache", "manual"],
     visibility = ["//visibility:public"],
 )
 
 alias(
     name = "clang",
-    actual = select({
-        "//build/platforms:linux_x86_64": "@libclang-linux-x86_64//:bin"
-    }),
+    actual = select(platform_select("@libclang-{os}-{arch}//:lib", os = os)),
     tags = ["no-cache", "manual"],
     visibility = ["//visibility:public"],
 )
 
 alias(
     name = "sysroot",
-    actual = select({
-        "//build/platforms:linux_x86_64": "@linux-x86_64-sysroots//:sysroot_dir",
-    }),
+    actual = select(platform_select("@libclang-{os}-{arch}//:lib", os = os)),
     tags = ["no-cache", "manual"],
     visibility = ["//visibility:public"],
 )

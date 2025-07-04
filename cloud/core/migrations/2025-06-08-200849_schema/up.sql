@@ -93,13 +93,14 @@ CREATE TABLE "user_sessions" (
     "user_id" UUID NOT NULL,
     "device_fingerprint" BYTEA NOT NULL UNIQUE,
     "device_algorithm" DEVICE_ALGORITHM NOT NULL,
-    "device_pk_data" BYTEA NOT NULL, -- PKCS#8 DER
+    "device_pk_data" BYTEA NOT NULL, -- PKCS#8 DER SPKI
     "last_used_at" TIMESTAMPTZ NOT NULL,
     "last_ip" INET NOT NULL,
     "token_id" UUID UNIQUE,
     "token" BYTEA,
     "token_expires_at" TIMESTAMPTZ,
     "expires_at" TIMESTAMPTZ NOT NULL,
+    "mfa_pending" BOOLEAN NOT NULL,
     PRIMARY KEY("user_id", "device_fingerprint")
 );
 
@@ -130,7 +131,7 @@ CREATE TABLE "mfa_webauthn_pks" (
     "id" UUID PRIMARY KEY,
     "user_id" UUID NOT NULL,
     "credential_id" BYTEA NOT NULL,
-    "spki_data" BYTEA NOT NULL, -- SPKI DER
+    "spki_data" BYTEA NOT NULL, -- PKCS#8 DER SPKI
     "current_challenge" BYTEA,
     "current_challenge_expires_at" TIMESTAMPTZ
 );

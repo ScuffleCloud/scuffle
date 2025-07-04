@@ -5,8 +5,8 @@ use base64::Engine;
 use crate::CoreConfig;
 
 pub(crate) const ADMIN_DIRECTORY_API_USER_SCOPE: &str = "https://www.googleapis.com/auth/admin.directory.user.readonly";
-const ALL_SCOPES: [&'static str; 4] = ["openid", "profile", "email", ADMIN_DIRECTORY_API_USER_SCOPE];
-const REQUIRED_SCOPES: [&'static str; 3] = ["openid", "profile", "email"];
+const ALL_SCOPES: [&str; 4] = ["openid", "profile", "email", ADMIN_DIRECTORY_API_USER_SCOPE];
+const REQUIRED_SCOPES: [&str; 3] = ["openid", "profile", "email"];
 
 #[derive(serde_derive::Deserialize, Debug)]
 pub(crate) struct GoogleToken {
@@ -18,7 +18,7 @@ pub(crate) struct GoogleToken {
     pub token_type: String,
 }
 
-#[derive(serde_derive::Deserialize, Debug)]
+#[derive(serde_derive::Deserialize, Debug, Clone)]
 pub(crate) struct GoogleIdToken {
     pub sub: String,
     pub email: String,
@@ -66,7 +66,7 @@ pub(crate) fn authorization_url<G: CoreConfig>(global: &Arc<G>, state: &str) -> 
 }
 
 pub(crate) async fn request_tokens<G: CoreConfig>(global: &Arc<G>, code: &str) -> Result<GoogleToken, GoogleTokenError> {
-    let redirect_uri = format!("{}/google_oauth2_callback", global.dashboard_url());
+    let redirect_uri = format!("{}/oauth2-callback/google", global.dashboard_url());
 
     let tokens: GoogleToken = global
         .http_client()
@@ -118,7 +118,7 @@ pub(crate) async fn request_google_workspace_user<G: CoreConfig>(
     let response = global
         .http_client()
         .get(format!("https://www.googleapis.com/admin/directory/v1/users/{user_id}"))
-        .bearer_auth(&access_token)
+        .bearer_auth(access_token)
         .send()
         .await?;
 

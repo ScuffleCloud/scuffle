@@ -4,6 +4,7 @@ use axum::http;
 use tonic::Code;
 use tonic_types::{ErrorDetails, StatusExt};
 
+use crate::middleware::UnverifiedUserSession;
 use crate::models::UserSession;
 
 pub(crate) trait RequestExt {
@@ -22,6 +23,16 @@ pub(crate) trait RequestExt {
 
     fn session_or_err(&self) -> Result<&UserSession, tonic::Status> {
         self.session().ok_or_else(|| {
+            tonic::Status::with_error_details(Code::Unauthenticated, "you must be logged in", ErrorDetails::new())
+        })
+    }
+
+    fn unverified_session(&self) -> Option<&UnverifiedUserSession> {
+        self.extensions().get::<UnverifiedUserSession>()
+    }
+
+    fn unverified_session_or_err(&self) -> Result<&UnverifiedUserSession, tonic::Status> {
+        self.unverified_session().ok_or_else(|| {
             tonic::Status::with_error_details(Code::Unauthenticated, "you must be logged in", ErrorDetails::new())
         })
     }

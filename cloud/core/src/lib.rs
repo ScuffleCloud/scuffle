@@ -44,23 +44,23 @@ pub trait CoreConfig: scuffle_bootstrap::Global + scuffle_signal::SignalConfig +
     fn turnstile_secret_key(&self) -> &str {
         "1x0000000000000000000000000000000AA"
     }
-    fn user_session_validity(&self) -> chrono::Duration {
+    fn user_session_timeout(&self) -> chrono::Duration {
         chrono::Duration::days(30)
     }
-    fn user_session_token_validity(&self) -> chrono::Duration {
+    fn mfa_timeout(&self) -> chrono::Duration {
+        chrono::Duration::minutes(5)
+    }
+    fn user_session_token_timeout(&self) -> chrono::Duration {
         chrono::Duration::hours(4)
     }
-    fn email_registration_request_validity(&self) -> chrono::Duration {
+    fn email_registration_request_timeout(&self) -> chrono::Duration {
         chrono::Duration::hours(1)
     }
-    fn user_session_request_validity(&self) -> chrono::Duration {
+    fn user_session_request_timeout(&self) -> chrono::Duration {
         chrono::Duration::minutes(5)
     }
-    fn magic_link_user_session_request_validity(&self) -> chrono::Duration {
+    fn magic_link_user_session_request_timeout(&self) -> chrono::Duration {
         chrono::Duration::minutes(15)
-    }
-    fn mfa_webauthn_challenge_validity(&self) -> chrono::Duration {
-        chrono::Duration::minutes(5)
     }
     fn google_client_id(&self) -> &str;
     fn google_client_secret(&self) -> &str;

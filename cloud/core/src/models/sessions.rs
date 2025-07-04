@@ -97,6 +97,7 @@ pub struct UserSession {
     pub token: Option<Vec<u8>>,
     pub token_expires_at: Option<chrono::DateTime<chrono::Utc>>,
     pub expires_at: chrono::DateTime<chrono::Utc>,
+    pub mfa_pending: bool,
 }
 
 pub(crate) type EmailRegistrationRequestId = Id<EmailRegistrationRequest>;

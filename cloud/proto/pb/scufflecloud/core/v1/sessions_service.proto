@@ -135,7 +135,7 @@ message UserSession {
     string last_ip = 4;
     optional string token_id = 5 [(string_constraint).id = true];
     optional google.protobuf.Timestamp token_expires_at = 6;
-    google.protobuf.Timestamp created_at = 7;
+    google.protobuf.Timestamp expires_at = 7;
     bool mfa_pending = 8;
 }
 

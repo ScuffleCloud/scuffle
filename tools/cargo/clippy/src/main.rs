@@ -64,9 +64,26 @@ fn main() -> anyhow::Result<()> {
     log::info!("running build query");
 
     let mut command = bazel_command(&config.bazel, Some(&config.workspace), Some(&config.output_base))
+        .arg("query")
+        .arg(format!(r#"kind("rust_clippy rule", set({}))"#, config.targets.join(" ")))
+        .stderr(Stdio::inherit())
+        .stdout(Stdio::piped())
+        .spawn()
+        .context("bazel query")?;
+
+    let mut stdout = command.stdout.take().unwrap();
+    let mut targets = String::new();
+    stdout.read_to_string(&mut targets).context("stdout read")?;
+    if !command.wait().context("query wait")?.success() {
+        bail!("failed to run bazel query")
+    }
+
+    let items: Vec<_> = targets.lines().map(|l| l.trim()).filter(|l| !l.is_empty()).collect();
+
+    let mut command = bazel_command(&config.bazel, Some(&config.workspace), Some(&config.output_base))
         .arg("cquery")
         .args(&config.bazel_args)
-        .arg(format!(r#"kind("rust_clippy rule", set({}))"#, config.targets.join(" ")))
+        .arg(format!("set({})", items.join(" ")))
         .arg("--output=starlark")
         .arg("--starlark:expr=[file.path for file in target.files.to_list()]")
         .arg("--build")
@@ -74,14 +91,14 @@ fn main() -> anyhow::Result<()> {
         .stderr(Stdio::inherit())
         .stdout(Stdio::piped())
         .spawn()
-        .context("bazel cquery command")?;
+        .context("bazel cquery")?;
 
     let mut stdout = command.stdout.take().unwrap();
 
     let mut targets = String::new();
     stdout.read_to_string(&mut targets).context("stdout read")?;
 
-    if !command.wait().context("wait")?.success() {
+    if !command.wait().context("cquery wait")?.success() {
         bail!("failed to run bazel cquery")
     }
 

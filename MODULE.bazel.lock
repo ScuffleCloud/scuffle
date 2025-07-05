@@ -9418,7 +9418,7 @@
     "@@toolchains_llvm+//toolchain/extensions:llvm.bzl%llvm": {
       "general": {
         "bzlTransitiveDigest": "tcqg8WOqugro6TfiOZjT7NjAgsKMgFz7d/vsdAbOs1M=",
-        "usagesDigest": "1XA1v6UyDeJLkZ1rScXyO5yI8NgZEEtW6oYpHKcrE+8=",
+        "usagesDigest": "SQ999uMVTS6udRccH3/IVnTpuTmh1K5QxH2qz6S1gjU=",
         "recordedFileInputs": {},
         "recordedDirentsInputs": {},
         "envVariables": {},
@@ -9440,7 +9440,7 @@
               "sha256": {
                 "darwin-aarch64": "300a3c105a90360d3ff760c522cf0c545b5cc126d7e81ad8651b410ea62195e8",
                 "darwin-x86_64": "3d268ede7d7d7321c67c8cee5abfabdbae871e9f04cc65fbe1f018c4b9956fc4",
-                "linux-aarch64": "49299344cc4fec03cd17b5c60eb6c5ef41c048eee6d362157d43adafbc54668a",
+                "linux-aarch64": "64ebf72a925ed7a7af2603fb84065fb6f2121552c8292d7a819614204d625926",
                 "linux-x86_64": "d2bc9a4c6676279010bbac67005d521b45194724c3d333620363479ed1bdf447"
               },
               "strip_prefix": {},

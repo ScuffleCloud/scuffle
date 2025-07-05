@@ -118,7 +118,7 @@ CREATE INDEX ON "user_sessions"("token_id");
 CREATE TABLE "mfa_totps" (
     "id" UUID PRIMARY KEY,
     "user_id" UUID NOT NULL,
-    "secret" VARCHAR(255) NOT NULL
+    "secret" BYTEA NOT NULL
 );
 
 ALTER TABLE "mfa_totps"

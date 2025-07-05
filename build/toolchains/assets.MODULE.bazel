@@ -6,7 +6,6 @@ load("@aspect_bazel_lib//lib:copy_to_directory.bzl", "copy_to_directory")
 copy_to_directory(
     name = "flv",
     srcs = glob(["*.flv"]),
-    hardlink = "off",
     tags = ["no-cache", "manual"],
     visibility = ["//visibility:public"],
 )
@@ -14,7 +13,6 @@ copy_to_directory(
 copy_to_directory(
     name = "mp4",
     srcs = glob(["*.mp4"]),
-    hardlink = "off",
     tags = ["no-cache", "manual"],
     visibility = ["//visibility:public"],
 )
@@ -22,7 +20,6 @@ copy_to_directory(
 copy_to_directory(
     name = "pem",
     srcs = glob(["*.pem"]),
-    hardlink = "off",
     tags = ["no-cache", "manual"],
     visibility = ["//visibility:public"],
 )

@@ -19,7 +19,7 @@ alias(
 
 alias(
     name = "sysroot",
-    actual = select(platform_select("@libclang-{os}-{arch}//:lib", os = os)),
+    actual = select(platform_select("@{os}-{arch}-sysroots//:sysroot_dir", os = os)),
     tags = ["no-cache", "manual"],
     visibility = ["//visibility:public"],
 )

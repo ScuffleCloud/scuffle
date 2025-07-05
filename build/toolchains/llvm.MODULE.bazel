@@ -20,7 +20,6 @@ copy_to_directory(
     name = "sysroot_dir",
     include_external_repositories = ["*"],
     srcs = [":sysroot"],
-    hardlink = "off",
     tags = ["no-cache", "manual"],
     visibility = ["//visibility:public"],
 )

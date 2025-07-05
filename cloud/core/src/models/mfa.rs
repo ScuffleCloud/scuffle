@@ -13,7 +13,7 @@ pub(crate) type MfaTotpId = Id<MfaTotp>;
 pub struct MfaTotp {
     pub id: MfaTotpId,
     pub user_id: UserId,
-    pub secret: String,
+    pub secret: Vec<u8>,
 }
 
 impl PrefixedId for MfaTotp {

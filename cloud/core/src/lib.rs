@@ -31,6 +31,7 @@ mod models;
 mod schema;
 pub mod services;
 mod std_ext;
+mod totp;
 mod utils;
 mod webauthn;
 

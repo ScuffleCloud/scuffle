@@ -84,7 +84,7 @@ impl From<GoogleIdToken> for NewUserData<'_> {
 
 pub(crate) async fn create_new_user_and_session<G: CoreConfig>(
     global: &Arc<G>,
-    db: &mut diesel_async::AsyncPgConnection,
+    tx: &mut diesel_async::AsyncPgConnection,
     new_user_data: NewUserData<'_>,
     device: pb::scufflecloud::core::v1::Device,
     ip_info: &IpAddressInfo,
@@ -114,7 +114,7 @@ pub(crate) async fn create_new_user_and_session<G: CoreConfig>(
     };
     diesel::insert_into(users::dsl::users)
         .values(&user)
-        .execute(db)
+        .execute(tx)
         .await
         .into_tonic_internal_err("failed to insert user")?;
 
@@ -126,19 +126,19 @@ pub(crate) async fn create_new_user_and_session<G: CoreConfig>(
         };
         diesel::insert_into(user_emails::dsl::user_emails)
             .values(&user_email)
-            .execute(db)
+            .execute(tx)
             .await
             .into_tonic_internal_err("failed to insert user email")?;
     }
 
-    let new_token = create_session(global, db, user.id, device, ip_info, false).await?;
+    let new_token = create_session(global, tx, user.id, device, ip_info, false).await?;
 
     Ok((user, new_token))
 }
 
 pub(crate) async fn create_session<G: CoreConfig>(
     global: &Arc<G>,
-    db: &mut diesel_async::AsyncPgConnection,
+    tx: &mut diesel_async::AsyncPgConnection,
     user_id: UserId,
     device: pb::scufflecloud::core::v1::Device,
     ip_info: &IpAddressInfo,
@@ -153,7 +153,7 @@ pub(crate) async fn create_session<G: CoreConfig>(
                     .filter(mfa_webauthn_pks::dsl::user_id.eq(user_id))
                     .select(mfa_webauthn_pks::dsl::user_id),
             )
-            .load::<UserId>(db)
+            .load::<UserId>(tx)
             .await
             .into_tonic_internal_err("failed to query mfa factors")?
             .is_empty();
@@ -187,7 +187,7 @@ pub(crate) async fn create_session<G: CoreConfig>(
     };
     diesel::insert_into(user_sessions::dsl::user_sessions)
         .values(&user_session)
-        .execute(db)
+        .execute(tx)
         .await
         .into_tonic_internal_err("failed to insert user session")?;
 

@@ -20,6 +20,7 @@ copy_to_directory(
     name = "sysroot_dir",
     include_external_repositories = ["*"],
     srcs = [":sysroot"],
+    hardlink = "off",
     tags = ["no-cache", "manual"],
     visibility = ["//visibility:public"],
 )
@@ -114,6 +115,8 @@ copy_to_directory(
     include_external_repositories = ["*"],
     srcs = glob(["lib/**"]),
     root_paths = ["lib"],
+    hardlink = "off",
+    tags = ["no-cache", "manual"],
     visibility = ["//visibility:public"],
 )
 
@@ -122,6 +125,8 @@ copy_to_directory(
     include_external_repositories = ["*"],
     srcs = glob(["bin/**"]),
     root_paths = ["bin"],
+    hardlink = "off",
+    tags = ["no-cache", "manual"],
     visibility = ["//visibility:public"],
 )
 """

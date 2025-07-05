@@ -1,6 +1,13 @@
 use base64::Engine;
+use diesel::{ExpressionMethods, OptionalExtension, QueryDsl, SelectableHelper};
+use diesel_async::RunQueryDsl;
 use pkcs8::AssociatedOid;
 use sha2::Digest;
+use tonic_types::{ErrorDetails, StatusExt};
+
+use crate::models::MfaWebauthnPk;
+use crate::schema::mfa_webauthn_pks;
+use crate::std_ext::ResultExt;
 
 /// <https://w3c.github.io/webauthn/#dictionary-client-data>
 #[derive(Debug, serde_derive::Deserialize)]
@@ -113,4 +120,68 @@ pub(crate) fn verify_challenge<'a>(
     }
 
     Ok(())
+}
+
+pub(crate) async fn process_challenge(
+    tx: &mut diesel_async::AsyncPgConnection,
+    credential_id: &[u8],
+    assertion_response: &pb::scufflecloud::core::v1::AuthenticatorAssertionResponse,
+) -> Result<MfaWebauthnPk, tonic::Status> {
+    let Some(webauthn_pk) = mfa_webauthn_pks::dsl::mfa_webauthn_pks
+        .filter(mfa_webauthn_pks::dsl::credential_id.eq(&credential_id))
+        .select(MfaWebauthnPk::as_select())
+        .first::<MfaWebauthnPk>(tx)
+        .await
+        .optional()
+        .into_tonic_internal_err("failed to query webauthn public key")?
+    else {
+        return Err(tonic::Status::with_error_details(
+            tonic::Code::NotFound,
+            "webauthn public key not found",
+            ErrorDetails::new(),
+        ));
+    };
+
+    let (Some(current_challenge), Some(current_challenge_expires_at)) =
+        (&webauthn_pk.current_challenge, webauthn_pk.current_challenge_expires_at)
+    else {
+        return Err(tonic::Status::with_error_details(
+            tonic::Code::FailedPrecondition,
+            "webauthn public key does not have a current challenge",
+            ErrorDetails::new(),
+        ));
+    };
+
+    if current_challenge_expires_at < chrono::Utc::now() {
+        return Err(tonic::Status::with_error_details(
+            tonic::Code::DeadlineExceeded,
+            "webauthn challenge has expired",
+            ErrorDetails::new(),
+        ));
+    }
+
+    // Verify the challenge
+    verify_challenge(
+        CollectedClientDataType::Get,
+        current_challenge,
+        &webauthn_pk.spki_data,
+        assertion_response,
+    )
+    .into_tonic_err(
+        tonic::Code::PermissionDenied,
+        "failed to verify webauthn challenge",
+        ErrorDetails::new(),
+    )?;
+
+    diesel::update(mfa_webauthn_pks::dsl::mfa_webauthn_pks)
+        .filter(mfa_webauthn_pks::dsl::id.eq(webauthn_pk.id))
+        .set((
+            mfa_webauthn_pks::dsl::current_challenge.eq(None::<Vec<u8>>),
+            mfa_webauthn_pks::dsl::current_challenge_expires_at.eq(None::<chrono::NaiveDateTime>),
+        ))
+        .execute(tx)
+        .await
+        .into_tonic_internal_err("failed to clear webauthn challenge")?;
+
+    Ok(webauthn_pk)
 }

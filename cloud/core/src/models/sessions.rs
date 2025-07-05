@@ -100,6 +100,21 @@ pub struct UserSession {
     pub mfa_pending: bool,
 }
 
+impl From<UserSession> for pb::scufflecloud::core::v1::UserSession {
+    fn from(value: UserSession) -> Self {
+        pb::scufflecloud::core::v1::UserSession {
+            user_id: value.user_id.to_string(),
+            device_fingerprint: value.device_fingerprint,
+            last_used_at: Some(value.last_used_at.to_prost_timestamp_utc()),
+            last_ip: value.last_ip.to_string(),
+            token_id: value.token_id.map(|id| id.to_string()),
+            token_expires_at: value.token_expires_at.map(|t| t.to_prost_timestamp_utc()),
+            expires_at: Some(value.expires_at.to_prost_timestamp_utc()),
+            mfa_pending: value.mfa_pending,
+        }
+    }
+}
+
 pub(crate) type EmailRegistrationRequestId = Id<EmailRegistrationRequest>;
 
 #[derive(Queryable, Selectable, Insertable, Identifiable, AsChangeset, Associations, Debug)]

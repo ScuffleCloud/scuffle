@@ -11,18 +11,18 @@ use crate::chrono_ext::ChronoDateTimeExt;
 use crate::http_ext::RequestExt;
 use crate::id::Id;
 use crate::models::{
-    EmailRegistrationRequest, EmailRegistrationRequestId, MagicLinkUserSessionRequest, MfaWebauthnPk, Organization,
-    OrganizationMember, UserEmail, UserGoogleAccount, UserSession, UserSessionRequest, UserSessionRequestId,
+    EmailRegistrationRequest, EmailRegistrationRequestId, MagicLinkUserSessionRequest, Organization, OrganizationMember,
+    UserEmail, UserGoogleAccount, UserSession, UserSessionRequest, UserSessionRequestId,
 };
 use crate::schema::{
-    email_registration_requests, magic_link_user_session_requests, mfa_webauthn_pks, organization_members, organizations,
-    user_emails, user_google_accounts, user_session_requests, user_sessions,
+    email_registration_requests, magic_link_user_session_requests, organization_members, organizations, user_emails,
+    user_google_accounts, user_session_requests, user_sessions,
 };
 use crate::services::CoreSvc;
 use crate::services::sessions::common::NewUserData;
 use crate::std_ext::{OptionExt, ResultExt};
 use crate::utils::{self, TxError};
-use crate::{CoreConfig, captcha, google_api, webauthn};
+use crate::{CoreConfig, captcha, google_api, totp, webauthn};
 
 mod common;
 
@@ -523,64 +523,7 @@ impl<G: CoreConfig> pb::scufflecloud::core::v1::sessions_service_server::Session
         let new_token = db
             .transaction::<_, TxError, _>(|conn| {
                 async move {
-                    let Some(webauthn_pk) = mfa_webauthn_pks::dsl::mfa_webauthn_pks
-                        .filter(mfa_webauthn_pks::dsl::credential_id.eq(&payload.credential_id))
-                        .select(MfaWebauthnPk::as_select())
-                        .first::<MfaWebauthnPk>(conn)
-                        .await
-                        .optional()
-                        .into_tonic_internal_err("failed to query webauthn public key")?
-                    else {
-                        return Err(tonic::Status::with_error_details(
-                            tonic::Code::NotFound,
-                            "webauthn public key not found",
-                            ErrorDetails::new(),
-                        )
-                        .into());
-                    };
-
-                    let (Some(current_challenge), Some(current_challenge_expires_at)) =
-                        (webauthn_pk.current_challenge, webauthn_pk.current_challenge_expires_at)
-                    else {
-                        return Err(tonic::Status::with_error_details(
-                            tonic::Code::FailedPrecondition,
-                            "webauthn public key does not have a current challenge",
-                            ErrorDetails::new(),
-                        )
-                        .into());
-                    };
-
-                    if current_challenge_expires_at < chrono::Utc::now() {
-                        return Err(tonic::Status::with_error_details(
-                            tonic::Code::DeadlineExceeded,
-                            "webauthn challenge has expired",
-                            ErrorDetails::new(),
-                        )
-                        .into());
-                    }
-
-                    // Verify the challenge
-                    webauthn::verify_challenge(
-                        webauthn::CollectedClientDataType::Get,
-                        &current_challenge,
-                        &webauthn_pk.spki_data,
-                        &assertion_response,
-                    )
-                    .into_tonic_err(
-                        Code::PermissionDenied,
-                        "failed to verify webauthn challenge",
-                        ErrorDetails::new(),
-                    )?;
-
-                    diesel::update(mfa_webauthn_pks::dsl::mfa_webauthn_pks)
-                        .filter(mfa_webauthn_pks::dsl::id.eq(webauthn_pk.id))
-                        .set((
-                            mfa_webauthn_pks::dsl::current_challenge.eq(None::<Vec<u8>>),
-                            mfa_webauthn_pks::dsl::current_challenge_expires_at.eq(None::<chrono::NaiveDateTime>),
-                        ))
-                        .execute(conn)
-                        .await
-                        .into_tonic_internal_err("failed to clear webauthn challenge")?;
+                    let webauthn_pk = webauthn::process_challenge(conn, &payload.credential_id, &assertion_response).await?;
 
                     // Create a new session for the user
                     let new_token =
@@ -765,17 +708,54 @@ impl<G: CoreConfig> pb::scufflecloud::core::v1::sessions_service_server::Session
         &self,
         req: tonic::Request<pb::scufflecloud::core::v1::ValidateMfaForUserSessionRequest>,
     ) -> Result<tonic::Response<pb::scufflecloud::core::v1::UserSession>, tonic::Status> {
-        // let global = req.global::<G>()?;
-        let _session = &req.unverified_session_or_err()?.0;
+        let (_, extensions, payload) = req.into_parts();
+        let global = extensions.global::<G>()?;
 
-        // Verify MFA challenge response
-        // Set mfa_pending=false and reset session expiry
+        let session = &extensions.unverified_session_or_err()?.0;
 
-        Err(tonic::Status::with_error_details(
-            tonic::Code::Unimplemented,
-            "this endpoint is not implemented",
-            ErrorDetails::new(),
-        ))
+        let mut db = global.db().await.into_tonic_internal_err("failed to connect to database")?;
+
+        let session = db
+            .transaction::<_, TxError, _>(move |conn| {
+                async move {
+                    // Verify MFA challenge response
+                    match payload.response.require("response")? {
+                        pb::scufflecloud::core::v1::validate_mfa_for_user_session_request::Response::Totp(
+                            pb::scufflecloud::core::v1::ValidateMfaForUserSessionTotp { code },
+                        ) => {
+                            totp::process_token(conn, session.user_id, &code).await?;
+                        }
+                        pb::scufflecloud::core::v1::validate_mfa_for_user_session_request::Response::Webauthn(
+                            pb::scufflecloud::core::v1::ValidateMfaForUserSessionWebauthn { credential_id, response },
+                        ) => {
+                            let assertion_response = response.require("response.response")?;
+                            webauthn::process_challenge(conn, &credential_id, &assertion_response).await?;
+                        }
+                    }
+
+                    // Set mfa_pending=false and reset session expiry
+                    let session = diesel::update(user_sessions::dsl::user_sessions)
+                        .filter(
+                            user_sessions::dsl::user_id
+                                .eq(&session.user_id)
+                                .and(user_sessions::dsl::device_fingerprint.eq(&session.device_fingerprint)),
+                        )
+                        .set((
+                            user_sessions::dsl::mfa_pending.eq(false),
+                            user_sessions::dsl::expires_at.eq(chrono::Utc::now() + global.user_session_timeout()),
+                        ))
+                        .returning(UserSession::as_select())
+                        .get_result::<UserSession>(conn)
+                        .await
+                        .into_tonic_internal_err("failed to update user session")?;
+
+                    Ok(session)
+                }
+                .scope_boxed()
+            })
+            .await?;
+
+        Ok(tonic::Response::new(session.into()))
     }
 
     async fn refresh_user_session(

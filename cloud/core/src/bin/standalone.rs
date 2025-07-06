@@ -52,6 +52,7 @@ scuffle_settings::bootstrap!(Config);
 struct Global {
     config: Config,
     database: bb8::Pool<diesel_async::AsyncPgConnection>,
+    authorizer: cedar_policy::Authorizer,
     http_client: reqwest::Client,
 }
 
@@ -62,6 +63,10 @@ impl scufflecloud_core::CoreConfig for Global {
 
     async fn db(&self) -> anyhow::Result<bb8::PooledConnection<'_, diesel_async::AsyncPgConnection>> {
         self.database.get().await.context("get database connection")
+    }
+
+    fn authorizer(&self) -> &cedar_policy::Authorizer {
+        &self.authorizer
     }
 
     fn http_client(&self) -> &reqwest::Client {
@@ -141,6 +146,7 @@ impl scuffle_bootstrap::Global for Global {
         Ok(Arc::new(Self {
             config,
             database,
+            authorizer: cedar_policy::Authorizer::new(),
             http_client,
         }))
     }

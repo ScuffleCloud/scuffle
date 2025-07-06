@@ -22,10 +22,11 @@ use std::net::SocketAddr;
 use diesel_async::AsyncPgConnection;
 
 mod captcha;
+pub mod cedar;
 mod chrono_ext;
 mod google_api;
 mod http_ext;
-mod id;
+pub mod id;
 mod middleware;
 mod models;
 mod schema;
@@ -40,6 +41,7 @@ pub trait CoreConfig: scuffle_bootstrap::Global + scuffle_signal::SignalConfig +
     fn db(
         &self,
     ) -> impl Future<Output = anyhow::Result<diesel_async::pooled_connection::bb8::PooledConnection<'_, AsyncPgConnection>>> + Send;
+    fn authorizer(&self) -> &cedar_policy::Authorizer;
     fn http_client(&self) -> &reqwest::Client;
     fn dashboard_url(&self) -> &str;
     fn turnstile_secret_key(&self) -> &str {

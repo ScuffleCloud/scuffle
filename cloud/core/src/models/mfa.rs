@@ -1,6 +1,7 @@
 use diesel::Selectable;
 use diesel::prelude::{AsChangeset, Associations, Identifiable, Insertable, Queryable};
 
+use crate::cedar::CedarEntity;
 use crate::id::{Id, PrefixedId};
 use crate::models::users::{User, UserId};
 
@@ -20,6 +21,18 @@ impl PrefixedId for MfaTotp {
     const PREFIX: &'static str = "totp";
 }
 
+impl CedarEntity for MfaTotp {
+    const ENTITY_TYPE: &'static str = "MfaTotp";
+
+    fn entity_id(&self) -> cedar_policy::EntityId {
+        cedar_policy::EntityId::new(self.id.to_string_unprefixed())
+    }
+
+    fn attributes(&self) -> std::collections::HashMap<String, cedar_policy::RestrictedExpression> {
+        self.id.attributes()
+    }
+}
+
 pub(crate) type MfaWebauthnPkId = Id<MfaWebauthnPk>;
 
 #[derive(Queryable, Selectable, Insertable, Identifiable, AsChangeset, Associations, Debug)]
@@ -37,4 +50,16 @@ pub struct MfaWebauthnPk {
 
 impl PrefixedId for MfaWebauthnPk {
     const PREFIX: &'static str = "webauthn";
+}
+
+impl CedarEntity for MfaWebauthnPk {
+    const ENTITY_TYPE: &'static str = "MfaWebauthnPk";
+
+    fn entity_id(&self) -> cedar_policy::EntityId {
+        cedar_policy::EntityId::new(self.id.to_string_unprefixed())
+    }
+
+    fn attributes(&self) -> std::collections::HashMap<String, cedar_policy::RestrictedExpression> {
+        self.id.attributes()
+    }
 }

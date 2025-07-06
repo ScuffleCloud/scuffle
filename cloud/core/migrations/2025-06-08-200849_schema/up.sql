@@ -176,7 +176,7 @@ CREATE TABLE "policies" (
     "project_id" UUID,
     "name" VARCHAR(255) NOT NULL,
     "description" TEXT,
-    "policy" JSONB NOT NULL
+    "policy" VARCHAR(255) NOT NULL
 );
 
 ALTER TABLE "policies"
@@ -195,7 +195,7 @@ CREATE TABLE "roles" (
     "organization_id" UUID NOT NULL,
     "name" VARCHAR(255) NOT NULL,
     "description" TEXT,
-    "inline_policy" JSONB
+    "inline_policy" VARCHAR(255)
 );
 
 ALTER TABLE "roles"
@@ -224,7 +224,7 @@ CREATE TABLE "organization_members" (
     "organization_id" UUID NOT NULL,
     "user_id" UUID NOT NULL,
     "invited_by_id" UUID,
-    "inline_policy" JSONB,
+    "inline_policy" VARCHAR(255),
     PRIMARY KEY("organization_id", "user_id")
 );
 
@@ -262,7 +262,7 @@ CREATE TABLE "service_accounts" (
     "name" VARCHAR(255) NOT NULL,
     "organization_id" UUID NOT NULL,
     "project_id" UUID,
-    "inline_policy" JSONB
+    "inline_policy" VARCHAR(255)
 );
 
 ALTER TABLE "service_accounts"
@@ -276,7 +276,7 @@ CREATE TABLE "service_account_tokens" (
     "active" BOOLEAN NOT NULL,
     "service_account_id" UUID NOT NULL,
     "token" BYTEA NOT NULL,
-    "inline_policy" JSONB,
+    "inline_policy" VARCHAR(255),
     "expires_at" TIMESTAMPTZ
 );
 

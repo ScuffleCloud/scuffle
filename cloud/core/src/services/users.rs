@@ -19,11 +19,9 @@ impl<G: CoreConfig> pb::scufflecloud::core::v1::users_service_server::UsersServi
             return Err(tonic::Status::unauthenticated("authentication required"));
         }
 
-        let mut db = req
-            .global::<G>()?
-            .db()
-            .await
-            .map_err(|e| tonic::Status::internal(e.to_string()))?;
+        let global = req.global::<G>()?;
+
+        let mut db = global.db().await.into_tonic_internal_err("failed to get db connection")?;
 
         let user_id: UserId = req
             .get_ref()
@@ -37,8 +35,10 @@ impl<G: CoreConfig> pb::scufflecloud::core::v1::users_service_server::UsersServi
             .first::<User>(&mut db)
             .await
             .optional()
-            .map_err(|e| tonic::Status::internal(e.to_string()))?
-            .ok_or_else(|| tonic::Status::not_found("user not found"))?;
+            .into_tonic_internal_err("failed to query user")?
+            .ok_or_else(|| {
+                tonic::Status::with_error_details(tonic::Code::NotFound, "user not found", ErrorDetails::new())
+            })?;
 
         Ok(tonic::Response::new(user.into()))
     }
@@ -79,7 +79,7 @@ impl<G: CoreConfig> pb::scufflecloud::core::v1::users_service_server::UsersServi
     async fn list_user_emails(
         &self,
         _req: tonic::Request<pb::scufflecloud::core::v1::UserByIdRequest>,
-    ) -> Result<tonic::Response<pb::scufflecloud::core::v1::ListUserEmailsResponse>, tonic::Status> {
+    ) -> Result<tonic::Response<pb::scufflecloud::core::v1::UserEmailsList>, tonic::Status> {
         Err(tonic::Status::with_error_details(
             tonic::Code::Unimplemented,
             "this endpoint is not implemented",
@@ -124,8 +124,8 @@ impl<G: CoreConfig> pb::scufflecloud::core::v1::users_service_server::UsersServi
         &self,
         req: tonic::Request<pb::scufflecloud::core::v1::CreateWebauthnCredentialChallengeRequest>,
     ) -> Result<tonic::Response<pb::scufflecloud::core::v1::CreateWebauthnCredentialChallengeResponse>, tonic::Status> {
-        let (_, extensions, payload) = req.into_parts();
-        let global = extensions.global::<G>()?;
+        let global = &req.global::<G>()?;
+        let payload = req.into_inner();
 
         let mut db = global.db().await.into_tonic_internal_err("failed to connect to database")?;
 
@@ -167,7 +167,7 @@ impl<G: CoreConfig> pb::scufflecloud::core::v1::users_service_server::UsersServi
     async fn list_user_webauthn_credentials(
         &self,
         _req: tonic::Request<pb::scufflecloud::core::v1::UserByIdRequest>,
-    ) -> Result<tonic::Response<pb::scufflecloud::core::v1::ListUserWebauthnCredentialsResponse>, tonic::Status> {
+    ) -> Result<tonic::Response<pb::scufflecloud::core::v1::UserWebauthnCredentialsList>, tonic::Status> {
         Err(tonic::Status::with_error_details(
             tonic::Code::Unimplemented,
             "this endpoint is not implemented",

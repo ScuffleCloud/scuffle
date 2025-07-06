@@ -10,7 +10,7 @@ use pkcs8::DecodePublicKey;
 use sha2::Digest;
 use tonic_types::{ErrorDetails, StatusExt};
 
-use crate::CoreConfig;
+use crate::cedar::{Action, UnauthenticatedPrincipal};
 use crate::chrono_ext::ChronoDateTimeExt;
 use crate::google_api::GoogleIdToken;
 use crate::id::Id;
@@ -19,6 +19,7 @@ use crate::models::{User, UserEmail, UserId, UserSession};
 use crate::schema::{mfa_totps, mfa_webauthn_pks, user_emails, user_sessions, users};
 use crate::std_ext::ResultExt;
 use crate::utils::generate_random_bytes;
+use crate::{CoreConfig, cedar};
 
 pub(crate) fn encrypt_token(
     algorithm: pb::scufflecloud::core::v1::DeviceAlgorithm,
@@ -89,6 +90,8 @@ pub(crate) async fn create_new_user_and_session<G: CoreConfig>(
     device: pb::scufflecloud::core::v1::Device,
     ip_info: &IpAddressInfo,
 ) -> Result<(User, pb::scufflecloud::core::v1::NewUserSessionToken), tonic::Status> {
+    let new_user_id = UserId::new();
+    cedar::is_authorized(global, None, UnauthenticatedPrincipal, Action::Create, new_user_id)?;
     let email = new_user_data.email.as_ref().map(|e| normalize_email(e));
 
     let password_hash = if let Some(password) = new_user_data.password {
@@ -105,7 +108,7 @@ pub(crate) async fn create_new_user_and_session<G: CoreConfig>(
     };
 
     let user = User {
-        id: Id::new(),
+        id: new_user_id,
         preferred_name: new_user_data.preferred_name,
         first_name: new_user_data.first_name,
         last_name: new_user_data.last_name,
@@ -124,6 +127,8 @@ pub(crate) async fn create_new_user_and_session<G: CoreConfig>(
             user_id: user.id,
             created_at: chrono::Utc::now(),
         };
+        cedar::is_authorized(global, None, &user, Action::Create, &user_email)?;
+
         diesel::insert_into(user_emails::dsl::user_emails)
             .values(&user_email)
             .execute(tx)
@@ -185,6 +190,9 @@ pub(crate) async fn create_session<G: CoreConfig>(
         expires_at: session_expires_at,
         mfa_pending,
     };
+
+    cedar::is_authorized(global, None, user_id, Action::Create, &user_session)?;
+
     diesel::insert_into(user_sessions::dsl::user_sessions)
         .values(&user_session)
         .execute(tx)

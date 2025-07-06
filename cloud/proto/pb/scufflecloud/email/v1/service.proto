@@ -2,6 +2,8 @@ syntax = "proto3";
 
 package scufflecloud.email.v1;
 
+import "google/protobuf/empty.proto";
+
 service EmailService {
     rpc SendEmail(EmailRequest) returns (google.protobuf.Empty);
 }

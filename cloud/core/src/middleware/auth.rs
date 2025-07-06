@@ -20,22 +20,13 @@ const TOKEN_ID_HEADER: HeaderName = HeaderName::from_static("scuf-token-id");
 const AUTHENTICATION_METHOD_HEADER: HeaderName = HeaderName::from_static("scuf-auth-method");
 const AUTHENTICATION_HMAC_HEADER: HeaderName = HeaderName::from_static("scuf-auth-hmac");
 
-#[derive(Debug, Clone)]
-pub(crate) struct UnverifiedUserSession(pub UserSession);
-
 pub(crate) async fn auth<G: CoreConfig>(mut req: Request, next: Next) -> Result<Response, StatusCode> {
     let global = req.global::<G>().map_err(|_| StatusCode::INTERNAL_SERVER_ERROR)?;
 
     let ip_info = req.ip_address_info().map_err(|_| StatusCode::INTERNAL_SERVER_ERROR)?;
 
-    if let Some(session) = get_and_update_active_session(global, ip_info, req.headers()).await? {
-        if session.mfa_pending {
-            // Insert an unverified session if the session is pending MFA verification
-            req.extensions_mut().insert(UnverifiedUserSession(session));
-        } else {
-            // Insert a normal session if the session is not pending MFA verification
-            req.extensions_mut().insert(session);
-        }
+    if let Some(session) = get_and_update_active_session(&global, &ip_info, req.headers()).await? {
+        req.extensions_mut().insert(session);
     }
 
     Ok(next.run(req).await)

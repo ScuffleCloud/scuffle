@@ -31,7 +31,7 @@ service UsersService {
         };
     }
 
-    rpc ListUserEmails(UserByIdRequest) returns (ListUserEmailsResponse) {
+    rpc ListUserEmails(UserByIdRequest) returns (UserEmailsList) {
         option (tinc.method).endpoint = {
             get: "/users/{id}/emails"
         };
@@ -57,7 +57,7 @@ service UsersService {
             post: "/webauthn-credentials/challenges"
         };
     }
-    rpc ListUserWebauthnCredentials(UserByIdRequest) returns (ListUserWebauthnCredentialsResponse) {
+    rpc ListUserWebauthnCredentials(UserByIdRequest) returns (UserWebauthnCredentialsList) {
         option (tinc.method).endpoint = {
             get: "/users/{id}/webauthn-credentials"
         };
@@ -114,7 +114,7 @@ message UpdateUserPrimaryEmailRequest {
     string primary_email = 2 [(tinc.field).constraint.string.email = true];
 }
 
-message ListUserEmailsResponse {
+message UserEmailsList {
     repeated UserEmail emails = 1;
 }
 
@@ -144,7 +144,7 @@ message MfaWebauthnCredential {
     bytes credential_id = 1;
 }
 
-message ListUserWebauthnCredentialsResponse {
+message UserWebauthnCredentialsList {
     repeated MfaWebauthnCredential credentials = 1;
 }
 

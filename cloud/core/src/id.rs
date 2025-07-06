@@ -8,7 +8,7 @@ use diesel::deserialize::{FromSql, FromSqlRow};
 use diesel::expression::AsExpression;
 use diesel::serialize::ToSql;
 
-pub trait PrefixedId {
+pub trait PrefixedId: Sized {
     const PREFIX: &str;
 }
 
@@ -17,6 +17,14 @@ pub trait PrefixedId {
 pub struct Id<T: PrefixedId> {
     id: ulid::Ulid,
     _phantom: std::marker::PhantomData<T>,
+}
+
+impl<T: PrefixedId> Id<T> {
+    pub fn to_string_unprefixed(&self) -> String {
+        let mut id_str = self.id.to_string();
+        id_str.make_ascii_lowercase();
+        id_str
+    }
 }
 
 impl<T: PrefixedId> Default for Id<T> {
@@ -80,9 +88,7 @@ where
 
 impl<T: PrefixedId> Display for Id<T> {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        let mut id_str = self.id.to_string();
-        id_str.make_ascii_lowercase();
-        write!(f, "{}_{}", T::PREFIX, id_str)
+        write!(f, "{}_{}", T::PREFIX, self.to_string_unprefixed())
     }
 }
 
@@ -128,6 +134,15 @@ impl<T: PrefixedId> FromStr for Id<T> {
                 _phantom: std::marker::PhantomData,
             })
         }
+    }
+}
+
+impl<T: PrefixedId> serde::Serialize for Id<T> {
+    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+    where
+        S: serde::Serializer,
+    {
+        self.to_string().serialize(serializer)
     }
 }
 

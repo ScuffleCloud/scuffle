@@ -1,7 +1,10 @@
+use base64::Engine;
+use cedar_policy::RestrictedExpression;
 use diesel::Selectable;
 use diesel::prelude::{AsChangeset, Associations, Identifiable, Insertable, Queryable};
 
 use super::impl_enum;
+use crate::cedar::CedarEntity;
 use crate::chrono_ext::ChronoDateTimeExt;
 use crate::id::{Id, PrefixedId};
 use crate::models::users::{User, UserId};
@@ -44,6 +47,18 @@ impl PrefixedId for UserSessionRequest {
     const PREFIX: &'static str = "session_req";
 }
 
+impl CedarEntity for UserSessionRequest {
+    const ENTITY_TYPE: &'static str = "UserSessionRequest";
+
+    fn entity_id(&self) -> cedar_policy::EntityId {
+        cedar_policy::EntityId::new(self.id.to_string_unprefixed())
+    }
+
+    fn attributes(&self) -> std::collections::HashMap<String, cedar_policy::RestrictedExpression> {
+        self.id.attributes()
+    }
+}
+
 impl From<UserSessionRequest> for pb::scufflecloud::core::v1::UserSessionRequest {
     fn from(value: UserSessionRequest) -> Self {
         pb::scufflecloud::core::v1::UserSessionRequest {
@@ -72,16 +87,47 @@ impl PrefixedId for MagicLinkUserSessionRequest {
     const PREFIX: &'static str = "magic_link";
 }
 
-#[derive(Debug)]
-pub struct UserSessionToken;
+impl CedarEntity for MagicLinkUserSessionRequest {
+    const ENTITY_TYPE: &'static str = "MagicLinkUserSessionRequest";
 
-impl PrefixedId for UserSessionToken {
-    const PREFIX: &'static str = "user_session_token";
+    fn entity_id(&self) -> cedar_policy::EntityId {
+        cedar_policy::EntityId::new(self.id.to_string_unprefixed())
+    }
+
+    fn attributes(&self) -> std::collections::HashMap<String, cedar_policy::RestrictedExpression> {
+        self.id.attributes()
+    }
 }
 
 pub(crate) type UserSessionTokenId = Id<UserSessionToken>;
 
-#[derive(Queryable, Selectable, Insertable, Identifiable, AsChangeset, Associations, Debug, Clone)]
+/// Does not represent a real database table as it is always part of a [`UserSession`].
+#[derive(Debug)]
+pub struct UserSessionToken {
+    pub id: UserSessionTokenId,
+    pub token: Vec<u8>,
+    pub expires_at: chrono::DateTime<chrono::Utc>,
+}
+
+impl PrefixedId for UserSessionToken {
+    const PREFIX: &'static str = "session_token";
+}
+
+impl CedarEntity for UserSessionToken {
+    const ENTITY_TYPE: &'static str = "UserSessionToken";
+
+    fn entity_id(&self) -> cedar_policy::EntityId {
+        cedar_policy::EntityId::new(self.id.to_string_unprefixed())
+    }
+
+    fn attributes(&self) -> std::collections::HashMap<String, cedar_policy::RestrictedExpression> {
+        self.id.attributes()
+    }
+}
+
+#[derive(
+    Queryable, Selectable, Insertable, Identifiable, AsChangeset, Associations, Debug, Clone, serde_derive::Serialize,
+)]
 #[diesel(table_name = crate::schema::user_sessions)]
 #[diesel(primary_key(user_id, device_fingerprint))]
 #[diesel(belongs_to(User))]
@@ -98,6 +144,31 @@ pub struct UserSession {
     pub token_expires_at: Option<chrono::DateTime<chrono::Utc>>,
     pub expires_at: chrono::DateTime<chrono::Utc>,
     pub mfa_pending: bool,
+}
+
+impl CedarEntity for UserSession {
+    const ENTITY_TYPE: &'static str = "UserSession";
+
+    fn entity_id(&self) -> cedar_policy::EntityId {
+        let user_id = (*self.user_id).to_string();
+        let fingerprint = base64::prelude::BASE64_STANDARD.encode(&self.device_fingerprint);
+        cedar_policy::EntityId::new(format!("{user_id}-{fingerprint}"))
+    }
+
+    fn attributes(&self) -> std::collections::HashMap<String, RestrictedExpression> {
+        [
+            (
+                "user_id".to_string(),
+                RestrictedExpression::new_string(self.user_id.to_string()),
+            ),
+            (
+                "device_fingerprint".to_string(),
+                RestrictedExpression::new_string(base64::prelude::BASE64_STANDARD.encode(&self.device_fingerprint)),
+            ),
+        ]
+        .into_iter()
+        .collect()
+    }
 }
 
 impl From<UserSession> for pb::scufflecloud::core::v1::UserSession {
@@ -131,4 +202,16 @@ pub struct EmailRegistrationRequest {
 
 impl PrefixedId for EmailRegistrationRequest {
     const PREFIX: &'static str = "email_reg_req";
+}
+
+impl CedarEntity for EmailRegistrationRequest {
+    const ENTITY_TYPE: &'static str = "EmailRegistrationRequest";
+
+    fn entity_id(&self) -> cedar_policy::EntityId {
+        cedar_policy::EntityId::new(self.id.to_string_unprefixed())
+    }
+
+    fn attributes(&self) -> std::collections::HashMap<String, cedar_policy::RestrictedExpression> {
+        self.id.attributes()
+    }
 }

@@ -22,12 +22,13 @@ argon2 = { features = ["std"], version = "0.5.3" }
 async-trait = "0.1.88"
 axum = "0.8.4"
 base64 = "0.22.1"
+cedar-policy = "4.5.0"
 chrono = "0.4.41"
 diesel = { features = ["chrono", "network-address", "serde_json", "uuid"], version = "2.2.10" }
 diesel-async = { features = ["async-connection-wrapper", "bb8", "postgres"], version = "0.5.2" }
 ed25519-dalek = { features = ["pkcs8"], version = "2.1.1" }
 hmac = "0.12.1"
-ipnetwork = "0.21.1"
+ipnetwork = { features = ["serde"], version = "0.21.1" }
 p256 = "0.13.2"
 p384 = "0.13.1"
 # p521 = "0.14.0-pre.8"

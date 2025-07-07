@@ -160,6 +160,33 @@ pub struct OrganizationMember {
     pub inline_policy: Option<String>,
 }
 
+impl CedarEntity for OrganizationMember {
+    const ENTITY_TYPE: &'static str = "OrganizationMember";
+
+    fn entity_id(&self) -> cedar_policy::EntityId {
+        cedar_policy::EntityId::new(format!(
+            "{}:{}",
+            self.organization_id.to_string_unprefixed(),
+            self.user_id.to_string_unprefixed()
+        ))
+    }
+
+    fn attributes(&self) -> std::collections::HashMap<String, cedar_policy::RestrictedExpression> {
+        [
+            (
+                "organization_id".to_string(),
+                cedar_policy::RestrictedExpression::new_string(self.organization_id.to_string()),
+            ),
+            (
+                "user_id".to_string(),
+                cedar_policy::RestrictedExpression::new_string(self.user_id.to_string()),
+            ),
+        ]
+        .into_iter()
+        .collect()
+    }
+}
+
 #[derive(Queryable, Selectable, Insertable, Identifiable, Associations, Debug)]
 #[diesel(table_name = crate::schema::organization_member_policies)]
 #[diesel(primary_key(organization_id, user_id, policy_id))]

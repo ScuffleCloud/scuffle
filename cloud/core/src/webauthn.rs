@@ -1,3 +1,5 @@
+use std::sync::Arc;
+
 use base64::Engine;
 use diesel::{ExpressionMethods, OptionalExtension, QueryDsl, SelectableHelper};
 use diesel_async::RunQueryDsl;
@@ -5,9 +7,11 @@ use pkcs8::AssociatedOid;
 use sha2::Digest;
 use tonic_types::{ErrorDetails, StatusExt};
 
-use crate::models::MfaWebauthnPk;
+use crate::cedar::Action;
+use crate::models::{MfaWebauthnPk, MfaWebauthnPkId, UserSession};
 use crate::schema::mfa_webauthn_pks;
 use crate::std_ext::ResultExt;
+use crate::{CoreConfig, cedar};
 
 /// <https://w3c.github.io/webauthn/#dictionary-client-data>
 #[derive(Debug, serde_derive::Deserialize)]
@@ -122,8 +126,10 @@ pub(crate) fn verify_challenge<'a>(
     Ok(())
 }
 
-pub(crate) async fn process_challenge(
+pub(crate) async fn process_challenge<G: CoreConfig>(
+    global: &Arc<G>,
     tx: &mut diesel_async::AsyncPgConnection,
+    user_session: Option<&UserSession>,
     credential_id: &[u8],
     assertion_response: &pb::scufflecloud::core::v1::AuthenticatorAssertionResponse,
 ) -> Result<MfaWebauthnPk, tonic::Status> {
@@ -173,15 +179,18 @@ pub(crate) async fn process_challenge(
         ErrorDetails::new(),
     )?;
 
-    diesel::update(mfa_webauthn_pks::dsl::mfa_webauthn_pks)
+    let id = diesel::update(mfa_webauthn_pks::dsl::mfa_webauthn_pks)
         .filter(mfa_webauthn_pks::dsl::id.eq(webauthn_pk.id))
         .set((
             mfa_webauthn_pks::dsl::current_challenge.eq(None::<Vec<u8>>),
             mfa_webauthn_pks::dsl::current_challenge_expires_at.eq(None::<chrono::NaiveDateTime>),
         ))
-        .execute(tx)
+        .returning(mfa_webauthn_pks::dsl::id)
+        .get_result::<MfaWebauthnPkId>(tx)
         .await
         .into_tonic_internal_err("failed to clear webauthn challenge")?;
+
+    cedar::is_authorized(global, user_session, Action::Update, id)?;
 
     Ok(webauthn_pk)
 }

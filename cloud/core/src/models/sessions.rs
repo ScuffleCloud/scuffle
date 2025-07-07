@@ -152,7 +152,7 @@ impl CedarEntity for UserSession {
     fn entity_id(&self) -> cedar_policy::EntityId {
         let user_id = (*self.user_id).to_string();
         let fingerprint = base64::prelude::BASE64_STANDARD.encode(&self.device_fingerprint);
-        cedar_policy::EntityId::new(format!("{user_id}-{fingerprint}"))
+        cedar_policy::EntityId::new(format!("{user_id}:{fingerprint}"))
     }
 
     fn attributes(&self) -> std::collections::HashMap<String, RestrictedExpression> {

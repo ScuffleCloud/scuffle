@@ -40,11 +40,10 @@ pub(crate) trait RequestExt {
 
     fn is_authorized<G: CoreConfig>(
         &self,
-        principal: impl CedarEntity,
         action: impl CedarEntity,
         resource: impl CedarEntity,
     ) -> Result<(), tonic::Status> {
-        cedar::is_authorized(&self.global::<G>()?, self.session(), principal, action, resource)
+        cedar::is_authorized(&self.global::<G>()?, self.session(), action, resource)
     }
 }
 

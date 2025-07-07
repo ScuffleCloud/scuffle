@@ -21,7 +21,6 @@ fn static_policies() -> &'static PolicySet {
 pub fn is_authorized<G: CoreConfig>(
     global: &Arc<G>,
     user_session: Option<&UserSession>,
-    principal: impl CedarEntity,
     action: impl CedarEntity,
     resource: impl CedarEntity,
 ) -> Result<(), tonic::Status> {
@@ -36,8 +35,13 @@ pub fn is_authorized<G: CoreConfig>(
     let context = cedar_policy::Context::from_json_value(serde_json::Value::Object(context), None)
         .into_tonic_internal_err("failed to create cedar context")?;
 
+    let (principal_uid, principal_attrs) = user_session.map_or_else(
+        || (UnauthenticatedPrincipal.entity_uid(), UnauthenticatedPrincipal.attributes()),
+        |session| (session.user_id.entity_uid(), session.user_id.attributes()),
+    );
+
     let r = cedar_policy::Request::new(
-        principal.entity_uid(),
+        principal_uid.clone(),
         action.entity_uid(),
         resource.entity_uid(),
         context,
@@ -46,7 +50,7 @@ pub fn is_authorized<G: CoreConfig>(
     .into_tonic_internal_err("failed to validate cedar request")?;
 
     let entities = vec![
-        Entity::new(principal.entity_uid(), principal.attributes(), HashSet::new())
+        Entity::new(principal_uid, principal_attrs, HashSet::new())
             .into_tonic_internal_err("failed to create cedar entity")?,
         Entity::new(action.entity_uid(), action.attributes(), HashSet::new())
             .into_tonic_internal_err("failed to create cedar entity")?,
@@ -135,7 +139,6 @@ impl CedarEntity for UnauthenticatedPrincipal {
 /// A CRUD action.
 pub enum Action {
     Create,
-    Read,
     Update,
     Delete,
 }
@@ -144,7 +147,6 @@ impl Display for Action {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match self {
             Action::Create => write!(f, "create"),
-            Action::Read => write!(f, "read"),
             Action::Update => write!(f, "update"),
             Action::Delete => write!(f, "delete"),
         }

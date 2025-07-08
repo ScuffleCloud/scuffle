@@ -4,7 +4,8 @@ package scufflecloud.core.v1;
 
 import "tinc/annotations.proto";
 
-import "scufflecloud/core/v1/users_service.proto";
+import "scufflecloud/core/v1/organizations.proto";
+import "scufflecloud/core/v1/users.proto";
 import "scufflecloud/core/v1/constraints.proto";
 
 service OrganizationsService {
@@ -38,22 +39,8 @@ message CreateOrganizationRequest {
     }];
 }
 
-message Organization {
-    string id = 1 [(string_constraint).id = true];
-    optional string google_hosted_domain = 2;
-    string name = 3 [(tinc.field).constraint.string = {
-        min_len: 1,
-        max_len: 255
-    }];
-    string owner_id = 4 [(string_constraint).id = true];
-}
-
 message OrganizationList {
     repeated Organization organizations = 1;
-}
-
-message OrganizationByIdRequest {
-    string id = 1 [(string_constraint).id = true];
 }
 
 message OrganizationMember {

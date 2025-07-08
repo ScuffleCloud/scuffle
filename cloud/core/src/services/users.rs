@@ -1,15 +1,12 @@
 use diesel::{ExpressionMethods, OptionalExtension, QueryDsl, SelectableHelper};
-use diesel_async::scoped_futures::ScopedFutureExt;
-use diesel_async::{AsyncConnection, RunQueryDsl};
+use diesel_async::RunQueryDsl;
 use tonic_types::{ErrorDetails, StatusExt};
 
-use crate::cedar::Action;
 use crate::http_ext::RequestExt;
 use crate::models::{MfaWebauthnPkId, User, UserId};
 use crate::schema::{mfa_webauthn_pks, users};
 use crate::services::CoreSvc;
 use crate::std_ext::{OptionExt, ResultExt};
-use crate::utils::TxError;
 use crate::{CoreConfig, captcha, utils};
 
 #[async_trait::async_trait]
@@ -125,7 +122,7 @@ impl<G: CoreConfig> pb::scufflecloud::core::v1::users_service_server::UsersServi
         req: tonic::Request<pb::scufflecloud::core::v1::CreateWebauthnCredentialChallengeRequest>,
     ) -> Result<tonic::Response<pb::scufflecloud::core::v1::CreateWebauthnCredentialChallengeResponse>, tonic::Status> {
         let global = &req.global::<G>()?;
-        let (_, ext, payload) = req.into_parts();
+        let payload = req.into_inner();
 
         let mut db = global.db().await.into_tonic_internal_err("failed to connect to database")?;
 
@@ -140,36 +137,25 @@ impl<G: CoreConfig> pb::scufflecloud::core::v1::users_service_server::UsersServi
         let challenge = utils::generate_random_bytes().into_tonic_internal_err("failed to generate webauthn challenge")?;
         let challenge_vec = challenge.to_vec();
 
-        db.transaction::<_, TxError, _>(move |conn| {
-            async move {
-                let pk_id = diesel::update(mfa_webauthn_pks::dsl::mfa_webauthn_pks)
-                    .filter(mfa_webauthn_pks::dsl::credential_id.eq(&payload.credential_id))
-                    .set((
-                        mfa_webauthn_pks::dsl::current_challenge.eq(&challenge),
-                        mfa_webauthn_pks::dsl::current_challenge_expires_at.eq(chrono::Utc::now() + global.mfa_timeout()),
-                    ))
-                    .returning(mfa_webauthn_pks::dsl::id)
-                    .get_result::<MfaWebauthnPkId>(conn)
-                    .await
-                    .optional()
-                    .into_tonic_internal_err("failed to update webauthn public key")?;
+        let pk_id = diesel::update(mfa_webauthn_pks::dsl::mfa_webauthn_pks)
+            .filter(mfa_webauthn_pks::dsl::credential_id.eq(&payload.credential_id))
+            .set((
+                mfa_webauthn_pks::dsl::current_challenge.eq(&challenge),
+                mfa_webauthn_pks::dsl::current_challenge_expires_at.eq(chrono::Utc::now() + global.mfa_timeout()),
+            ))
+            .returning(mfa_webauthn_pks::dsl::id)
+            .get_result::<MfaWebauthnPkId>(&mut db)
+            .await
+            .optional()
+            .into_tonic_internal_err("failed to update webauthn public key")?;
 
-                let Some(pk_id) = pk_id else {
-                    return Err(tonic::Status::with_error_details(
-                        tonic::Code::NotFound,
-                        "webauthn public key not found",
-                        ErrorDetails::new(),
-                    )
-                    .into());
-                };
-
-                ext.is_authorized::<G>(Action::Update, pk_id)?;
-
-                Ok(())
-            }
-            .scope_boxed()
-        })
-        .await?;
+        if pk_id.is_none() {
+            return Err(tonic::Status::with_error_details(
+                tonic::Code::NotFound,
+                "webauthn public key not found",
+                ErrorDetails::new(),
+            ));
+        }
 
         Ok(tonic::Response::new(
             pb::scufflecloud::core::v1::CreateWebauthnCredentialChallengeResponse {

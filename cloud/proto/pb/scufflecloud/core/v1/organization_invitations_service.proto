@@ -5,8 +5,8 @@ package scufflecloud.core.v1;
 import "google/protobuf/timestamp.proto";
 import "tinc/annotations.proto";
 
-import "scufflecloud/core/v1/users_service.proto";
-import "scufflecloud/core/v1/organizations_service.proto";
+import "scufflecloud/core/v1/users.proto";
+import "scufflecloud/core/v1/organizations.proto";
 import "scufflecloud/core/v1/constraints.proto";
 
 service OrganizationInvitationsService {
@@ -42,15 +42,6 @@ service OrganizationInvitationsService {
             post: "/organization-invitations/{id}/decline"
         };
     }
-}
-
-message OrganizationInvitation {
-    string id = 1 [(string_constraint).id = true];
-    optional string user_id = 2 [(string_constraint).id = true];
-    string organization_id = 3 [(string_constraint).id = true];
-    string email = 4 [(tinc.field).constraint.string.email = true];
-    string invited_by_id = 5 [(string_constraint).id = true];
-    optional google.protobuf.Timestamp expires_at = 6;
 }
 
 message CreateOrganizationInvitationRequest {

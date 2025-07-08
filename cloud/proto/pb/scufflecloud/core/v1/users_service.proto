@@ -8,6 +8,8 @@ import "google/protobuf/empty.proto";
 
 import "scufflecloud/core/v1/common.proto";
 import "scufflecloud/core/v1/constraints.proto";
+import "scufflecloud/core/v1/users.proto";
+import "scufflecloud/core/v1/sessions.proto";
 
 service UsersService {
     rpc GetUser(UserByIdRequest) returns (User) {
@@ -62,27 +64,6 @@ service UsersService {
             get: "/users/{id}/webauthn-credentials"
         };
     }
-}
-
-message UserByIdRequest {
-    string id = 1 [(string_constraint).id = true];
-}
-
-message User {
-    string id = 1 [(string_constraint).id = true];
-    optional string preferred_name = 2 [(tinc.field).constraint.string = {
-        min_len: 1,
-        max_len: 255
-    }];
-    optional string first_name = 3 [(tinc.field).constraint.string = {
-        min_len: 1,
-        max_len: 255
-    }];
-    optional string last_name = 4 [(tinc.field).constraint.string = {
-        min_len: 1,
-        max_len: 255
-    }];
-    optional string primary_email = 5 [(tinc.field).constraint.string.email = true];
 }
 
 message UpdateUserPasswordRequest {

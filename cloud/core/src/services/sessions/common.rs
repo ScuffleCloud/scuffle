@@ -10,7 +10,7 @@ use pkcs8::DecodePublicKey;
 use sha2::Digest;
 use tonic_types::{ErrorDetails, StatusExt};
 
-use crate::cedar::Action;
+use crate::CoreConfig;
 use crate::chrono_ext::ChronoDateTimeExt;
 use crate::google_api::GoogleIdToken;
 use crate::id::Id;
@@ -19,7 +19,6 @@ use crate::models::{User, UserEmail, UserId, UserSession};
 use crate::schema::{mfa_totps, mfa_webauthn_pks, user_emails, user_sessions, users};
 use crate::std_ext::ResultExt;
 use crate::utils::generate_random_bytes;
-use crate::{CoreConfig, cedar};
 
 pub(crate) fn encrypt_token(
     algorithm: pb::scufflecloud::core::v1::DeviceAlgorithm,
@@ -91,7 +90,6 @@ pub(crate) async fn create_new_user_and_session<G: CoreConfig>(
     ip_info: &IpAddressInfo,
 ) -> Result<(User, pb::scufflecloud::core::v1::NewUserSessionToken), tonic::Status> {
     let new_user_id = UserId::new();
-    cedar::is_authorized(global, None, Action::Create, new_user_id)?;
     let email = new_user_data.email.as_ref().map(|e| normalize_email(e));
 
     let password_hash = if let Some(password) = new_user_data.password {
@@ -121,7 +119,7 @@ pub(crate) async fn create_new_user_and_session<G: CoreConfig>(
         .await
         .into_tonic_internal_err("failed to insert user")?;
 
-    let (user_session, new_token) = create_session(global, tx, user.id, device, ip_info, false).await?;
+    let new_token = create_session(global, tx, user.id, device, ip_info, false).await?;
 
     if let Some(email) = email {
         let user_email = UserEmail {
@@ -129,7 +127,6 @@ pub(crate) async fn create_new_user_and_session<G: CoreConfig>(
             user_id: user.id,
             created_at: chrono::Utc::now(),
         };
-        cedar::is_authorized(global, Some(&user_session), Action::Create, &user_email)?;
 
         diesel::insert_into(user_emails::dsl::user_emails)
             .values(&user_email)
@@ -148,7 +145,7 @@ pub(crate) async fn create_session<G: CoreConfig>(
     device: pb::scufflecloud::core::v1::Device,
     ip_info: &IpAddressInfo,
     check_mfa: bool,
-) -> Result<(UserSession, pb::scufflecloud::core::v1::NewUserSessionToken), tonic::Status> {
+) -> Result<pb::scufflecloud::core::v1::NewUserSessionToken, tonic::Status> {
     let mfa_pending = check_mfa
         && !mfa_totps::dsl::mfa_totps
             .filter(mfa_totps::dsl::user_id.eq(user_id))
@@ -191,9 +188,6 @@ pub(crate) async fn create_session<G: CoreConfig>(
         mfa_pending,
     };
 
-    cedar::is_authorized(global, Some(&user_session), Action::Create, &user_session)?;
-    cedar::is_authorized(global, Some(&user_session), Action::Create, token_id)?;
-
     diesel::insert_into(user_sessions::dsl::user_sessions)
         .values(&user_session)
         .execute(tx)
@@ -207,5 +201,5 @@ pub(crate) async fn create_session<G: CoreConfig>(
         session_mfa_pending: mfa_pending,
     };
 
-    Ok((user_session, new_token))
+    Ok(new_token)
 }

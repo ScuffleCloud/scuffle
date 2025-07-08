@@ -1,9 +1,11 @@
 use std::collections::{HashMap, HashSet};
-use std::fmt::Display;
 use std::str::FromStr;
 use std::sync::{Arc, OnceLock};
 
-use cedar_policy::{Decision, Entities, Entity, EntityId, EntityTypeName, EntityUid, PolicySet, RestrictedExpression};
+use cedar_policy::{
+    Decision, Entities, Entity, EntityAttrEvaluationError, EntityId, EntityTypeName, EntityUid, PolicySet,
+    RestrictedExpression,
+};
 use tonic_types::{ErrorDetails, StatusExt};
 
 use crate::CoreConfig;
@@ -16,70 +18,6 @@ fn static_policies() -> &'static PolicySet {
     static STATIC_POLICIES: OnceLock<PolicySet> = OnceLock::new();
 
     STATIC_POLICIES.get_or_init(|| PolicySet::from_str(STATIC_POLICIES_STR).expect("failed to parse static policies"))
-}
-
-pub fn is_authorized<G: CoreConfig>(
-    global: &Arc<G>,
-    user_session: Option<&UserSession>,
-    action: impl CedarEntity,
-    resource: impl CedarEntity,
-) -> Result<(), tonic::Status> {
-    let mut context = serde_json::Map::new();
-    if let Some(session) = user_session {
-        context.insert(
-            "user_session".to_string(),
-            serde_json::to_value(session).into_tonic_internal_err("failed to serialize user session")?,
-        );
-    }
-
-    let context = cedar_policy::Context::from_json_value(serde_json::Value::Object(context), None)
-        .into_tonic_internal_err("failed to create cedar context")?;
-
-    let (principal_uid, principal_attrs) = user_session.map_or_else(
-        || (UnauthenticatedPrincipal.entity_uid(), UnauthenticatedPrincipal.attributes()),
-        |session| (session.user_id.entity_uid(), session.user_id.attributes()),
-    );
-
-    let r = cedar_policy::Request::new(
-        principal_uid.clone(),
-        action.entity_uid(),
-        resource.entity_uid(),
-        context,
-        None,
-    )
-    .into_tonic_internal_err("failed to validate cedar request")?;
-
-    let entities = vec![
-        Entity::new(principal_uid, principal_attrs, HashSet::new())
-            .into_tonic_internal_err("failed to create cedar entity")?,
-        Entity::new(action.entity_uid(), action.attributes(), HashSet::new())
-            .into_tonic_internal_err("failed to create cedar entity")?,
-        Entity::new(resource.entity_uid(), resource.attributes(), HashSet::new())
-            .into_tonic_internal_err("failed to create cedar entity")?,
-    ];
-
-    let entities = Entities::empty()
-        .add_entities(entities, None)
-        .into_tonic_internal_err("failed to create cedar entities")?;
-
-    match global.authorizer().is_authorized(&r, static_policies(), &entities).decision() {
-        Decision::Allow => Ok(()),
-        Decision::Deny => {
-            tracing::warn!(request = ?r, "authorization denied");
-            let message = format!(
-                "{} is not authorized to perform {} on {}",
-                r.principal().expect("is always known"),
-                r.action().expect("is always known"),
-                r.resource().expect("is always known")
-            );
-
-            Err(tonic::Status::with_error_details(
-                tonic::Code::PermissionDenied,
-                "you are not authorized to perform this action",
-                ErrorDetails::with_debug_info(vec![], message),
-            ))
-        }
-    }
 }
 
 pub trait CedarEntity {
@@ -97,6 +35,14 @@ pub trait CedarEntity {
 
     fn attributes(&self) -> HashMap<String, RestrictedExpression> {
         HashMap::new()
+    }
+
+    fn parents(&self) -> HashSet<EntityUid> {
+        HashSet::new()
+    }
+
+    fn to_entity(&self) -> Result<Entity, EntityAttrEvaluationError> {
+        Entity::new(self.entity_uid(), self.attributes(), self.parents())
     }
 }
 
@@ -126,31 +72,35 @@ impl<T: PrefixedId + CedarEntity> CedarEntity for Id<T> {
     }
 }
 
-pub struct UnauthenticatedPrincipal;
-
-impl CedarEntity for UnauthenticatedPrincipal {
-    const ENTITY_TYPE: &'static str = "Unauthenticated";
-
-    fn entity_id(&self) -> EntityId {
-        EntityId::new("") // empty id because all unauthenticated prinicipals are the same
-    }
-}
-
-/// A CRUD action.
+#[derive(Debug, Clone, Copy, derive_more::Display)]
 pub enum Action {
-    Create,
-    Update,
-    Delete,
-}
+    // User related
+    /// Register with email and password.
+    #[display("register_with_email_password")]
+    RegisterWithEmailPassword,
+    /// Register with Google OAuth2.
+    #[display("register_with_google")]
+    RegisterWithGoogle,
+    /// Login to an existing account with email and password.
+    #[display("login_with_email_password")]
+    LoginWithEmailPassword,
+    #[display("request_magic_link")]
+    RequestMagicLink,
+    #[display("login_with_magic_link")]
+    LoginWithMagicLink,
+    /// Login to an existing account with Google OAuth2.
+    #[display("login_with_google")]
+    LoginWithGoogle,
+    #[display("login_with_webauthn")]
+    LoginWithWebauthn,
 
-impl Display for Action {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        match self {
-            Action::Create => write!(f, "create"),
-            Action::Update => write!(f, "update"),
-            Action::Delete => write!(f, "delete"),
-        }
-    }
+    // UserSession related
+    #[display("approve_user_session_request")]
+    ApproveUserSessionRequest,
+    #[display("refresh_user_session")]
+    RefreshUserSession,
+    #[display("invalidate_user_session")]
+    InvalidateUserSession,
 }
 
 impl CedarEntity for Action {
@@ -158,5 +108,77 @@ impl CedarEntity for Action {
 
     fn entity_id(&self) -> EntityId {
         EntityId::new(self.to_string())
+    }
+}
+
+/// A general resource that is used whenever there is no specific resource for a request. (e.g. user login)
+pub struct CoreApplication;
+
+impl CedarEntity for CoreApplication {
+    const ENTITY_TYPE: &'static str = "Application";
+
+    fn entity_id(&self) -> EntityId {
+        EntityId::new("core")
+    }
+}
+
+pub fn is_authorized<G: CoreConfig>(
+    global: &Arc<G>,
+    user_session: Option<&UserSession>,
+    principal: impl CedarEntity,
+    action: impl CedarEntity,
+    resource: impl CedarEntity,
+) -> Result<(), tonic::Status> {
+    let mut context = serde_json::Map::new();
+    if let Some(session) = user_session {
+        context.insert(
+            "user_session".to_string(),
+            serde_json::to_value(session).into_tonic_internal_err("failed to serialize user session")?,
+        );
+    }
+
+    let context = cedar_policy::Context::from_json_value(serde_json::Value::Object(context), None)
+        .into_tonic_internal_err("failed to create cedar context")?;
+
+    let r = cedar_policy::Request::new(
+        principal.entity_uid(),
+        action.entity_uid(),
+        resource.entity_uid(),
+        context,
+        None,
+    )
+    .into_tonic_internal_err("failed to validate cedar request")?;
+
+    let entities = vec![
+        principal
+            .to_entity()
+            .into_tonic_internal_err("failed to create cedar entity")?,
+        action.to_entity().into_tonic_internal_err("failed to create cedar entity")?,
+        resource
+            .to_entity()
+            .into_tonic_internal_err("failed to create cedar entity")?,
+    ];
+
+    let entities = Entities::empty()
+        .add_entities(entities, None)
+        .into_tonic_internal_err("failed to create cedar entities")?;
+
+    match global.authorizer().is_authorized(&r, static_policies(), &entities).decision() {
+        Decision::Allow => Ok(()),
+        Decision::Deny => {
+            tracing::warn!(request = ?r, "authorization denied");
+            let message = format!(
+                "{} is not authorized to perform {} on {}",
+                r.principal().expect("is always known"),
+                r.action().expect("is always known"),
+                r.resource().expect("is always known")
+            );
+
+            Err(tonic::Status::with_error_details(
+                tonic::Code::PermissionDenied,
+                "you are not authorized to perform this action",
+                ErrorDetails::with_debug_info(vec![], message),
+            ))
+        }
     }
 }

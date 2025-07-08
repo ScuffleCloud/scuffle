@@ -32,6 +32,7 @@ ipnetwork = { features = ["serde"], version = "0.21.1" }
 p256 = "0.13.2"
 p384 = "0.13.1"
 # p521 = "0.14.0-pre.8"
+derive_more = { features = ["display"], version = "2.0.1" }
 pb = { package = "scufflecloud-proto", path = "../proto" }
 pkcs8 = "0.10.2"
 rand = "0.9.1"

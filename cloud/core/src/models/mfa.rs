@@ -2,6 +2,7 @@ use diesel::Selectable;
 use diesel::prelude::{AsChangeset, Associations, Identifiable, Insertable, Queryable};
 
 use crate::cedar::CedarEntity;
+use crate::chrono_ext::ChronoDateTimeExt;
 use crate::id::{Id, PrefixedId};
 use crate::models::users::{User, UserId};
 
@@ -33,14 +34,14 @@ impl CedarEntity for MfaTotp {
     }
 }
 
-pub(crate) type MfaWebauthnPkId = Id<MfaWebauthnPk>;
+pub(crate) type MfaWebauthnCredentialId = Id<MfaWebauthnCredential>;
 
 #[derive(Queryable, Selectable, Insertable, Identifiable, AsChangeset, Associations, Debug)]
-#[diesel(table_name = crate::schema::mfa_webauthn_pks)]
+#[diesel(table_name = crate::schema::mfa_webauthn_credentials)]
 #[diesel(belongs_to(User))]
 #[diesel(check_for_backend(diesel::pg::Pg))]
-pub struct MfaWebauthnPk {
-    pub id: MfaWebauthnPkId,
+pub struct MfaWebauthnCredential {
+    pub id: MfaWebauthnCredentialId,
     pub user_id: UserId,
     pub credential_id: Vec<u8>,
     pub spki_data: Vec<u8>,
@@ -48,11 +49,11 @@ pub struct MfaWebauthnPk {
     pub current_challenge_expires_at: Option<chrono::DateTime<chrono::Utc>>,
 }
 
-impl PrefixedId for MfaWebauthnPk {
+impl PrefixedId for MfaWebauthnCredential {
     const PREFIX: &'static str = "mfw";
 }
 
-impl CedarEntity for MfaWebauthnPk {
+impl CedarEntity for MfaWebauthnCredential {
     const ENTITY_TYPE: &'static str = "MfaWebauthnPk";
 
     fn entity_id(&self) -> cedar_policy::EntityId {
@@ -61,5 +62,16 @@ impl CedarEntity for MfaWebauthnPk {
 
     fn attributes(&self) -> std::collections::HashMap<String, cedar_policy::RestrictedExpression> {
         self.id.attributes()
+    }
+}
+
+impl From<MfaWebauthnCredential> for pb::scufflecloud::core::v1::MfaWebauthnCredential {
+    fn from(value: MfaWebauthnCredential) -> Self {
+        Self {
+            id: value.id.to_string(),
+            user_id: value.user_id.to_string(),
+            credential_id: value.credential_id,
+            current_challenge_expires_at: value.current_challenge_expires_at.map(|dt| dt.to_prost_timestamp_utc()),
+        }
     }
 }

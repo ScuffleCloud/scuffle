@@ -125,9 +125,7 @@ impl CedarEntity for UserSessionToken {
     }
 }
 
-#[derive(
-    Queryable, Selectable, Insertable, Identifiable, AsChangeset, Associations, Debug, Clone, serde_derive::Serialize,
-)]
+#[derive(Queryable, Selectable, Insertable, Identifiable, AsChangeset, Associations, Debug, Clone)]
 #[diesel(table_name = crate::schema::user_sessions)]
 #[diesel(primary_key(user_id, device_fingerprint))]
 #[diesel(belongs_to(User))]

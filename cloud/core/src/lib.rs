@@ -24,6 +24,7 @@ use diesel_async::AsyncPgConnection;
 mod captcha;
 pub mod cedar;
 mod chrono_ext;
+mod common;
 mod google_api;
 mod http_ext;
 pub mod id;
@@ -33,7 +34,6 @@ mod schema;
 pub mod services;
 mod std_ext;
 mod totp;
-mod utils;
 mod webauthn;
 
 pub trait CoreConfig: scuffle_bootstrap::Global + scuffle_signal::SignalConfig + Sync + Send + 'static {

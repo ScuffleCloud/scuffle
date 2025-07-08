@@ -1,4 +1,3 @@
-use argon2::{Argon2, PasswordVerifier};
 use base64::Engine;
 use diesel::{BoolExpressionMethods, ExpressionMethods, OptionalExtension, QueryDsl, SelectableHelper};
 use diesel_async::scoped_futures::ScopedFutureExt;
@@ -9,6 +8,7 @@ use tonic_types::{ErrorDetails, StatusExt};
 
 use crate::cedar::{Action, CoreApplication};
 use crate::chrono_ext::ChronoDateTimeExt;
+use crate::common::{self, NewUserData, TxError};
 use crate::http_ext::RequestExt;
 use crate::models::{
     EmailRegistrationRequest, EmailRegistrationRequestId, MagicLinkUserSessionRequest, MagicLinkUserSessionRequestId,
@@ -20,12 +20,8 @@ use crate::schema::{
     user_google_accounts, user_session_requests, user_sessions,
 };
 use crate::services::CoreSvc;
-use crate::services::sessions::common::NewUserData;
 use crate::std_ext::{OptionExt, ResultExt};
-use crate::utils::{self, TxError};
 use crate::{CoreConfig, captcha, google_api, totp, webauthn};
-
-mod common;
 
 #[async_trait::async_trait]
 impl<G: CoreConfig> pb::scufflecloud::core::v1::sessions_service_server::SessionsService for CoreSvc<G> {
@@ -45,15 +41,15 @@ impl<G: CoreConfig> pb::scufflecloud::core::v1::sessions_service_server::Session
             }
         }
 
-        // Check if email is already registered
         let email = common::normalize_email(&payload.email);
 
         // Generate random code
-        let code = utils::generate_random_bytes().into_tonic_internal_err("failed to generate registration code")?;
+        let code = common::generate_random_bytes().into_tonic_internal_err("failed to generate registration code")?;
         // let code_base64 = base64::prelude::BASE64_URL_SAFE.encode(&code);
 
         db.transaction::<_, TxError, _>(move |conn| {
             async move {
+                // Check if email is already registered
                 if user_emails::dsl::user_emails
                     .find(&email)
                     .select(user_emails::dsl::email)
@@ -115,7 +111,12 @@ impl<G: CoreConfig> pb::scufflecloud::core::v1::sessions_service_server::Session
                     // Delete email registration request
                     let Some(registration_request) =
                         diesel::delete(email_registration_requests::dsl::email_registration_requests)
-                            .filter(email_registration_requests::dsl::code.eq(&payload.code))
+                            .filter(
+                                email_registration_requests::dsl::code
+                                    .eq(&payload.code)
+                                    .and(email_registration_requests::dsl::user_id.is_null())
+                                    .and(email_registration_requests::dsl::expires_at.gt(chrono::Utc::now())),
+                            )
                             .returning(EmailRegistrationRequest::as_select())
                             .get_result::<EmailRegistrationRequest>(conn)
                             .await
@@ -232,28 +233,7 @@ impl<G: CoreConfig> pb::scufflecloud::core::v1::sessions_service_server::Session
                         .into());
                     };
 
-                    let password_hash =
-                        argon2::PasswordHash::new(password_hash).into_tonic_internal_err("failed to parse password hash")?;
-
-                    match Argon2::default().verify_password(payload.password.as_bytes(), &password_hash) {
-                        Ok(_) => {}
-                        Err(argon2::password_hash::Error::Password) => {
-                            return Err(tonic::Status::with_error_details(
-                                tonic::Code::PermissionDenied,
-                                "invalid password",
-                                ErrorDetails::with_bad_request_violation("password", "invalid password"),
-                            )
-                            .into());
-                        }
-                        Err(_) => {
-                            return Err(tonic::Status::with_error_details(
-                                tonic::Code::Internal,
-                                "failed to verify password",
-                                ErrorDetails::new(),
-                            )
-                            .into());
-                        }
-                    }
+                    common::verify_password(password_hash, &payload.password)?;
 
                     Ok(common::create_session(global, conn, user.id, device, &ip_info, true).await?)
                 }
@@ -288,7 +268,7 @@ impl<G: CoreConfig> pb::scufflecloud::core::v1::sessions_service_server::Session
 
                 ext.is_authorized::<G>(&user, Action::RequestMagicLink, CoreApplication)?;
 
-                let code = utils::generate_random_bytes().into_tonic_internal_err("failed to generate magic link code")?;
+                let code = common::generate_random_bytes().into_tonic_internal_err("failed to generate magic link code")?;
 
                 // Insert email link user session request
                 let session_request = MagicLinkUserSessionRequest {
@@ -332,7 +312,11 @@ impl<G: CoreConfig> pb::scufflecloud::core::v1::sessions_service_server::Session
                     // Find and delete magic link user session request
                     let Some(session_request) =
                         diesel::delete(magic_link_user_session_requests::dsl::magic_link_user_session_requests)
-                            .filter(magic_link_user_session_requests::dsl::code.eq(&payload.code))
+                            .filter(
+                                magic_link_user_session_requests::dsl::code
+                                    .eq(&payload.code)
+                                    .and(magic_link_user_session_requests::dsl::expires_at.gt(chrono::Utc::now())),
+                            )
                             .returning(MagicLinkUserSessionRequest::as_select())
                             .get_result::<MagicLinkUserSessionRequest>(conn)
                             .await
@@ -607,6 +591,7 @@ impl<G: CoreConfig> pb::scufflecloud::core::v1::sessions_service_server::Session
 
         let Some(session_request) = user_session_requests::dsl::user_session_requests
             .find(&id)
+            .filter(user_session_requests::dsl::expires_at.gt(chrono::Utc::now()))
             .select(UserSessionRequest::as_select())
             .first::<UserSessionRequest>(&mut db)
             .await
@@ -633,7 +618,11 @@ impl<G: CoreConfig> pb::scufflecloud::core::v1::sessions_service_server::Session
         let mut db = global.db().await.into_tonic_internal_err("failed to connect to database")?;
 
         let Some(session_request) = user_session_requests::dsl::user_session_requests
-            .filter(user_session_requests::dsl::code.eq(&payload.code))
+            .filter(
+                user_session_requests::dsl::code
+                    .eq(&payload.code)
+                    .and(user_session_requests::dsl::expires_at.gt(chrono::Utc::now())),
+            )
             .select(UserSessionRequest::as_select())
             .first::<UserSessionRequest>(&mut db)
             .await
@@ -665,7 +654,12 @@ impl<G: CoreConfig> pb::scufflecloud::core::v1::sessions_service_server::Session
                     let session = ext.session_or_err()?;
 
                     let Some(session_request) = diesel::update(user_session_requests::dsl::user_session_requests)
-                        .filter(user_session_requests::dsl::code.eq(&payload.code))
+                        .filter(
+                            user_session_requests::dsl::code
+                                .eq(&payload.code)
+                                .and(user_session_requests::dsl::approved_by.is_null())
+                                .and(user_session_requests::dsl::expires_at.gt(chrono::Utc::now())),
+                        )
                         .set(user_session_requests::dsl::approved_by.eq(&session.user_id))
                         .returning(UserSessionRequest::as_select())
                         .get_result::<UserSessionRequest>(conn)
@@ -806,7 +800,7 @@ impl<G: CoreConfig> pb::scufflecloud::core::v1::sessions_service_server::Session
         let mut db = global.db().await.into_tonic_internal_err("failed to connect to database")?;
 
         let token_id = UserSessionTokenId::new();
-        let token = utils::generate_random_bytes().into_tonic_internal_err("failed to generate token")?;
+        let token = common::generate_random_bytes().into_tonic_internal_err("failed to generate token")?;
         let encrypted_token = common::encrypt_token(session.device_algorithm.into(), &token, &session.device_pk_data)?;
 
         let session = diesel::update(user_sessions::dsl::user_sessions)

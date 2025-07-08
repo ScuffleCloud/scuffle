@@ -1,3 +1,11 @@
+forbid(
+    principal is User,
+    action,
+    resource
+) when {
+    context.user_session_mfa_pending == true
+};
+
 permit(
     principal is User,
     action == Action::"register_with_email_password",
@@ -39,6 +47,14 @@ permit(
     action == Action::"login_with_webauthn",
     resource == Application::"core"
 );
+
+permit(
+    principal is User,
+    action,
+    resource is User
+) when {
+    principal.id == resource.id
+};
 
 permit(
     principal is User,

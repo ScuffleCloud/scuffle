@@ -44,6 +44,7 @@ impl From<User> for pb::scufflecloud::core::v1::User {
             first_name: value.first_name,
             last_name: value.last_name,
             primary_email: value.primary_email,
+            created_at: Some(tinc::well_known::prost::Timestamp::from(value.id.datetime())),
         }
     }
 }

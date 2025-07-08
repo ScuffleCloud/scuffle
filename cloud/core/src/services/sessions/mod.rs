@@ -7,12 +7,13 @@ use sha2::Digest;
 use tonic::Code;
 use tonic_types::{ErrorDetails, StatusExt};
 
-use crate::cedar::{self, Action};
+use crate::cedar::{Action, CoreApplication};
 use crate::chrono_ext::ChronoDateTimeExt;
 use crate::http_ext::RequestExt;
 use crate::models::{
     EmailRegistrationRequest, EmailRegistrationRequestId, MagicLinkUserSessionRequest, MagicLinkUserSessionRequestId,
-    Organization, OrganizationMember, UserEmail, UserGoogleAccount, UserSession, UserSessionRequest, UserSessionRequestId,
+    Organization, OrganizationMember, UserGoogleAccount, UserSession, UserSessionRequest, UserSessionRequestId,
+    UserSessionTokenId,
 };
 use crate::schema::{
     email_registration_requests, magic_link_user_session_requests, organization_members, organizations, user_emails,
@@ -32,9 +33,6 @@ impl<G: CoreConfig> pb::scufflecloud::core::v1::sessions_service_server::Session
         &self,
         req: tonic::Request<pb::scufflecloud::core::v1::RegisterWithEmailRequest>,
     ) -> Result<tonic::Response<()>, tonic::Status> {
-        let new_id = EmailRegistrationRequestId::new();
-        req.is_authorized::<G>(Action::Create, new_id)?;
-
         let global = &req.global::<G>()?;
         let mut db = global.db().await.into_tonic_internal_err("failed to connect to database")?;
         let payload = req.into_inner();
@@ -58,8 +56,8 @@ impl<G: CoreConfig> pb::scufflecloud::core::v1::sessions_service_server::Session
             async move {
                 if user_emails::dsl::user_emails
                     .find(&email)
-                    .select(UserEmail::as_select())
-                    .first::<UserEmail>(conn)
+                    .select(user_emails::dsl::email)
+                    .first::<String>(conn)
                     .await
                     .optional()
                     .into_tonic_internal_err("failed to query database")?
@@ -75,7 +73,7 @@ impl<G: CoreConfig> pb::scufflecloud::core::v1::sessions_service_server::Session
 
                 // Create email registration request
                 let registration_request = EmailRegistrationRequest {
-                    id: new_id,
+                    id: EmailRegistrationRequestId::new(),
                     user_id: None,
                     email,
                     code: code.to_vec(),
@@ -129,7 +127,7 @@ impl<G: CoreConfig> pb::scufflecloud::core::v1::sessions_service_server::Session
                         );
                     };
 
-                    let (_, new_token) = common::create_new_user_and_session(
+                    let (user, new_token) = common::create_new_user_and_session(
                         global,
                         conn,
                         NewUserData {
@@ -145,7 +143,7 @@ impl<G: CoreConfig> pb::scufflecloud::core::v1::sessions_service_server::Session
                     .await?;
 
                     // Check if this transaction was allowed
-                    ext.is_authorized::<G>(Action::Delete, &registration_request)?;
+                    ext.is_authorized::<G>(&user, Action::RegisterWithEmailPassword, CoreApplication)?;
 
                     Ok(new_token)
                 }
@@ -161,7 +159,7 @@ impl<G: CoreConfig> pb::scufflecloud::core::v1::sessions_service_server::Session
         req: tonic::Request<pb::scufflecloud::core::v1::LoginWithEmailOptionsRequest>,
     ) -> Result<tonic::Response<pb::scufflecloud::core::v1::LoginWithEmailOptionsResponse>, tonic::Status> {
         let global = &req.global::<G>()?;
-        let payload = req.into_inner();
+        let (_, ext, payload) = req.into_parts();
 
         let mut db = global.db().await.into_tonic_internal_err("failed to connect to database")?;
 
@@ -175,10 +173,21 @@ impl<G: CoreConfig> pb::scufflecloud::core::v1::sessions_service_server::Session
 
         let user = common::get_user_by_email(&mut db, &payload.email).await?;
 
-        let mut options = vec![pb::scufflecloud::core::v1::LoginWithEmailOptions::MagicLink as i32];
+        let mut options = vec![];
 
-        if user.password_hash.is_some() {
+        if user.password_hash.is_some()
+            && ext
+                .is_authorized::<G>(&user, Action::LoginWithEmailPassword, CoreApplication)
+                .is_ok()
+        {
             options.push(pb::scufflecloud::core::v1::LoginWithEmailOptions::Password as i32);
+        }
+
+        if ext
+            .is_authorized::<G>(&user, Action::LoginWithMagicLink, CoreApplication)
+            .is_ok()
+        {
+            options.push(pb::scufflecloud::core::v1::LoginWithEmailOptions::MagicLink as i32);
         }
 
         Ok(tonic::Response::new(
@@ -192,7 +201,7 @@ impl<G: CoreConfig> pb::scufflecloud::core::v1::sessions_service_server::Session
     ) -> Result<tonic::Response<pb::scufflecloud::core::v1::NewUserSessionToken>, tonic::Status> {
         let global = &req.global::<G>()?;
         let ip_info = req.ip_address_info()?;
-        let payload = req.into_inner();
+        let (_, ext, payload) = req.into_parts();
 
         let mut db = global.db().await.into_tonic_internal_err("failed to connect to database")?;
 
@@ -210,6 +219,8 @@ impl<G: CoreConfig> pb::scufflecloud::core::v1::sessions_service_server::Session
             .transaction::<_, TxError, _>(|conn| {
                 async move {
                     let user = common::get_user_by_email(conn, &payload.email).await?;
+
+                    ext.is_authorized::<G>(&user, Action::LoginWithEmailPassword, CoreApplication)?;
 
                     // Verify password
                     let Some(password_hash) = &user.password_hash else {
@@ -244,7 +255,7 @@ impl<G: CoreConfig> pb::scufflecloud::core::v1::sessions_service_server::Session
                         }
                     }
 
-                    Ok(common::create_session(global, conn, user.id, device, &ip_info, true).await?.1)
+                    Ok(common::create_session(global, conn, user.id, device, &ip_info, true).await?)
                 }
                 .scope_boxed()
             })
@@ -257,11 +268,8 @@ impl<G: CoreConfig> pb::scufflecloud::core::v1::sessions_service_server::Session
         &self,
         req: tonic::Request<pb::scufflecloud::core::v1::LoginWithMagicLinkRequest>,
     ) -> Result<tonic::Response<()>, tonic::Status> {
-        let new_id = MagicLinkUserSessionRequestId::new();
-        req.is_authorized::<G>(Action::Create, new_id)?;
-
         let global = &req.global::<G>()?;
-        let payload = req.into_inner();
+        let (_, ext, payload) = req.into_parts();
 
         let mut db = global.db().await.into_tonic_internal_err("failed to connect to database")?;
 
@@ -278,11 +286,13 @@ impl<G: CoreConfig> pb::scufflecloud::core::v1::sessions_service_server::Session
             async move {
                 let user = common::get_user_by_email(conn, &payload.email).await?;
 
+                ext.is_authorized::<G>(&user, Action::RequestMagicLink, CoreApplication)?;
+
                 let code = utils::generate_random_bytes().into_tonic_internal_err("failed to generate magic link code")?;
 
                 // Insert email link user session request
                 let session_request = MagicLinkUserSessionRequest {
-                    id: new_id,
+                    id: MagicLinkUserSessionRequestId::new(),
                     user_id: user.id,
                     code: code.to_vec(),
                     expires_at: chrono::Utc::now() + global.magic_link_user_session_request_timeout(),
@@ -334,10 +344,10 @@ impl<G: CoreConfig> pb::scufflecloud::core::v1::sessions_service_server::Session
                         );
                     };
 
-                    ext.is_authorized::<G>(Action::Delete, &session_request)?;
+                    ext.is_authorized::<G>(session_request.user_id, Action::LoginWithMagicLink, CoreApplication)?;
 
                     // Create a new session for the user
-                    let (_, new_token) =
+                    let new_token =
                         common::create_session(global, conn, session_request.user_id, device, &ip_info, true).await?;
 
                     Ok(new_token)
@@ -438,8 +448,10 @@ impl<G: CoreConfig> pb::scufflecloud::core::v1::sessions_service_server::Session
 
                     match google_account {
                         Some(google_account) => {
+                            ext.is_authorized::<G>(google_account.user_id, Action::LoginWithGoogle, CoreApplication)?;
+
                             // Create a new session for the user
-                            let (_, new_token) =
+                            let new_token =
                                 common::create_session(global, conn, google_account.user_id, device, &ip_info, false).await?;
                             Ok(pb::scufflecloud::core::v1::CompleteLoginWithGoogleResponse {
                                 new_user_session_token: Some(new_token),
@@ -457,6 +469,8 @@ impl<G: CoreConfig> pb::scufflecloud::core::v1::sessions_service_server::Session
                             )
                             .await?;
 
+                            ext.is_authorized::<G>(&user, Action::RegisterWithGoogle, CoreApplication)?;
+
                             let google_account = UserGoogleAccount {
                                 sub: google_token.id_token.sub,
                                 access_token: google_token.access_token,
@@ -465,8 +479,6 @@ impl<G: CoreConfig> pb::scufflecloud::core::v1::sessions_service_server::Session
                                 user_id: user.id,
                                 created_at: chrono::Utc::now(),
                             };
-
-                            ext.is_authorized::<G>(Action::Create, &google_account)?;
 
                             diesel::insert_into(user_google_accounts::dsl::user_google_accounts)
                                 .values(google_account)
@@ -525,7 +537,7 @@ impl<G: CoreConfig> pb::scufflecloud::core::v1::sessions_service_server::Session
     ) -> Result<tonic::Response<pb::scufflecloud::core::v1::NewUserSessionToken>, tonic::Status> {
         let global = &req.global::<G>()?;
         let ip_info = req.ip_address_info()?;
-        let payload = req.into_inner();
+        let (_, ext, payload) = req.into_parts();
 
         let mut db = global.db().await.into_tonic_internal_err("failed to connect to database")?;
 
@@ -535,11 +547,12 @@ impl<G: CoreConfig> pb::scufflecloud::core::v1::sessions_service_server::Session
         let new_token = db
             .transaction::<_, TxError, _>(|conn| {
                 async move {
-                    let webauthn_pk =
-                        webauthn::process_challenge(global, conn, None, &payload.credential_id, &assertion_response).await?;
+                    let webauthn_pk = webauthn::process_challenge(conn, &payload.credential_id, &assertion_response).await?;
+
+                    ext.is_authorized::<G>(webauthn_pk.user_id, Action::LoginWithWebauthn, CoreApplication)?;
 
                     // Create a new session for the user
-                    let (_, new_token) =
+                    let new_token =
                         common::create_session(global, conn, webauthn_pk.user_id, device, &ip_info, false).await?;
 
                     Ok(new_token)
@@ -555,9 +568,6 @@ impl<G: CoreConfig> pb::scufflecloud::core::v1::sessions_service_server::Session
         &self,
         req: tonic::Request<pb::scufflecloud::core::v1::CreateUserSessionRequestRequest>,
     ) -> Result<tonic::Response<pb::scufflecloud::core::v1::UserSessionRequest>, tonic::Status> {
-        let new_id = UserSessionRequestId::new();
-        req.is_authorized::<G>(Action::Create, new_id)?;
-
         let global = &req.global::<G>()?;
         let ip_info = req.ip_address_info()?;
         let payload = req.into_inner();
@@ -567,7 +577,7 @@ impl<G: CoreConfig> pb::scufflecloud::core::v1::sessions_service_server::Session
         let code = format!("{:06}", rand::random_range(0..=999999));
 
         let session_request = UserSessionRequest {
-            id: new_id,
+            id: UserSessionRequestId::new(),
             device_name: payload.name,
             device_ip: ip_info.to_network(),
             code,
@@ -646,13 +656,14 @@ impl<G: CoreConfig> pb::scufflecloud::core::v1::sessions_service_server::Session
     ) -> Result<tonic::Response<pb::scufflecloud::core::v1::UserSessionRequest>, tonic::Status> {
         let global = &req.global::<G>()?;
         let (_, ext, payload) = req.into_parts();
-        let session = ext.session_or_err()?;
 
         let mut db = global.db().await.into_tonic_internal_err("failed to connect to database")?;
 
         let session_request = db
             .transaction::<_, TxError, _>(move |conn| {
                 async move {
+                    let session = ext.session_or_err()?;
+
                     let Some(session_request) = diesel::update(user_session_requests::dsl::user_session_requests)
                         .filter(user_session_requests::dsl::code.eq(&payload.code))
                         .set(user_session_requests::dsl::approved_by.eq(&session.user_id))
@@ -670,7 +681,7 @@ impl<G: CoreConfig> pb::scufflecloud::core::v1::sessions_service_server::Session
                         .into());
                     };
 
-                    cedar::is_authorized(global, Some(session), Action::Update, &session_request)?;
+                    ext.is_authorized::<G>(session.user_id, Action::ApproveUserSessionRequest, &session_request)?;
 
                     Ok(session_request)
                 }
@@ -687,14 +698,12 @@ impl<G: CoreConfig> pb::scufflecloud::core::v1::sessions_service_server::Session
     ) -> Result<tonic::Response<pb::scufflecloud::core::v1::NewUserSessionToken>, tonic::Status> {
         let global = &req.global::<G>()?;
         let ip_info = req.ip_address_info()?;
-        let (_, ext, payload) = req.into_parts();
+        let payload = req.into_inner();
 
         let mut db = global.db().await.into_tonic_internal_err("failed to connect to database")?;
 
         let id: UserSessionRequestId = payload.id.parse().into_tonic_internal_err("failed to parse id")?;
         let device = payload.device.require("device")?;
-
-        ext.is_authorized::<G>(Action::Delete, id)?;
 
         let new_token = db
             .transaction::<_, TxError, _>(move |conn| {
@@ -722,7 +731,7 @@ impl<G: CoreConfig> pb::scufflecloud::core::v1::sessions_service_server::Session
                         .into());
                     };
 
-                    let (_, new_token) = common::create_session(global, conn, approved_by, device, &ip_info, false).await?;
+                    let new_token = common::create_session(global, conn, approved_by, device, &ip_info, false).await?;
 
                     Ok(new_token)
                 }
@@ -740,7 +749,6 @@ impl<G: CoreConfig> pb::scufflecloud::core::v1::sessions_service_server::Session
         let global = &req.global::<G>()?;
         let (_, ext, payload) = req.into_parts();
         let session = ext.session_or_err()?;
-        ext.is_authorized::<G>(Action::Update, &session)?;
 
         let mut db = global.db().await.into_tonic_internal_err("failed to connect to database")?;
 
@@ -758,8 +766,7 @@ impl<G: CoreConfig> pb::scufflecloud::core::v1::sessions_service_server::Session
                             pb::scufflecloud::core::v1::ValidateMfaForUserSessionWebauthn { credential_id, response },
                         ) => {
                             let assertion_response = response.require("response.response")?;
-                            webauthn::process_challenge(global, conn, Some(session), &credential_id, &assertion_response)
-                                .await?;
+                            webauthn::process_challenge(conn, &credential_id, &assertion_response).await?;
                         }
                     }
 
@@ -794,10 +801,11 @@ impl<G: CoreConfig> pb::scufflecloud::core::v1::sessions_service_server::Session
     ) -> Result<tonic::Response<pb::scufflecloud::core::v1::NewUserSessionToken>, tonic::Status> {
         let global = &req.global::<G>()?;
         let session = req.session_or_err()?;
-        req.is_authorized::<G>(Action::Update, &session)?;
+        req.is_authorized::<G>(session.user_id, Action::RefreshUserSession, session)?;
 
         let mut db = global.db().await.into_tonic_internal_err("failed to connect to database")?;
 
+        let token_id = UserSessionTokenId::new();
         let token = utils::generate_random_bytes().into_tonic_internal_err("failed to generate token")?;
         let encrypted_token = common::encrypt_token(session.device_algorithm.into(), &token, &session.device_pk_data)?;
 
@@ -808,6 +816,7 @@ impl<G: CoreConfig> pb::scufflecloud::core::v1::sessions_service_server::Session
                     .and(user_sessions::dsl::device_fingerprint.eq(&session.device_fingerprint)),
             )
             .set((
+                user_sessions::dsl::token_id.eq(token_id),
                 user_sessions::dsl::token.eq(token),
                 user_sessions::dsl::token_expires_at.eq(chrono::Utc::now() + global.user_session_token_timeout()),
             ))
@@ -837,7 +846,7 @@ impl<G: CoreConfig> pb::scufflecloud::core::v1::sessions_service_server::Session
     async fn invalidate_user_session(&self, req: tonic::Request<()>) -> Result<tonic::Response<()>, tonic::Status> {
         let global = req.global::<G>()?;
         let session = req.session_or_err()?;
-        req.is_authorized::<G>(Action::Delete, &session)?;
+        req.is_authorized::<G>(session.user_id, Action::InvalidateUserSession, session)?;
 
         let mut db = global.db().await.into_tonic_internal_err("failed to connect to database")?;
 

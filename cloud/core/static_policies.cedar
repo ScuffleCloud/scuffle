@@ -1,49 +1,63 @@
-// Allow unauthenticated users to register via email
 permit(
-    principal is Unauthenticated,
-    action == Action::"create",
-    resource is EmailRegistrationRequest
-);
-permit(
-    principal is Unauthenticated,
-    action == Action::"create",
-    resource is User
+    principal is User,
+    action == Action::"register_with_email_password",
+    resource == Application::"core"
 );
 
-// Allow existing users to register a new email address
 permit(
     principal is User,
-    action == Action::"create",
-    resource is EmailRegistrationRequest
-);
-permit(
-    principal is User,
-    action == Action::"create",
-    resource is UserEmail
+    action == Action::"register_with_google",
+    resource == Application::"core"
 );
 
-// Allow login
 permit(
     principal is User,
-    action == Action::"create",
+    action == Action::"login_with_email_password",
+    resource == Application::"core"
+);
+
+permit(
+    principal is User,
+    action == Action::"request_magic_link",
+    resource == Application::"core"
+);
+
+permit(
+    principal is User,
+    action == Action::"login_with_magic_link",
+    resource == Application::"core"
+);
+
+permit(
+    principal is User,
+    action == Action::"login_with_google",
+    resource == Application::"core"
+);
+
+permit(
+    principal is User,
+    action == Action::"login_with_webauthn",
+    resource == Application::"core"
+);
+
+permit(
+    principal is User,
+    action == Action::"approve_user_session_request",
+    resource is UserSessionRequest
+);
+
+permit(
+    principal is User,
+    action == Action::"refresh_user_session",
     resource is UserSession
-);
-
-// Allow logout
-permit(
-    principal is User,
-    action == Action::"delete",
-    resource is UserSession
-);
-
-// Forbid actions when MFA is pending
-forbid(
-    principal is User,
-    action,
-    resource
 ) when {
-    context.user_session.user_id == principal.id &&
-    context.user_session.mfa_pending == true
-} unless {
-    action == Action::"update" && resource is UserSession
+    principal.id == resource.user_id
+};
+
+permit(
+    principal is User,
+    action == Action::"invalidate_user_session",
+    resource is UserSession
+) when {
+    principal.id == resource.user_id
 };

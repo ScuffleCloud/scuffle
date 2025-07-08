@@ -113,7 +113,7 @@ message CreateUserEmailRequest {
 message CompleteCreateUserEmailRequest {
     // Can only be the authenticated user's ID.
     string id = 1 [(string_constraint).id = true];
-    string token = 2;
+    bytes code = 2;
 }
 
 message DeleteUserEmailRequest {
@@ -122,7 +122,10 @@ message DeleteUserEmailRequest {
 }
 
 message MfaWebauthnCredential {
-    bytes credential_id = 1;
+    string id = 1 [(string_constraint).id = true];
+    string user_id = 2 [(string_constraint).id = true];
+    bytes credential_id = 3;
+    google.protobuf.Timestamp current_challenge_expires_at = 4;
 }
 
 message UserWebauthnCredentialsList {

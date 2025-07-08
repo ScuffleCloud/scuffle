@@ -5,8 +5,8 @@ use pkcs8::AssociatedOid;
 use sha2::Digest;
 use tonic_types::{ErrorDetails, StatusExt};
 
-use crate::models::MfaWebauthnPk;
-use crate::schema::mfa_webauthn_pks;
+use crate::models::MfaWebauthnCredential;
+use crate::schema::mfa_webauthn_credentials;
 use crate::std_ext::ResultExt;
 
 /// <https://w3c.github.io/webauthn/#dictionary-client-data>
@@ -126,11 +126,11 @@ pub(crate) async fn process_challenge(
     tx: &mut diesel_async::AsyncPgConnection,
     credential_id: &[u8],
     assertion_response: &pb::scufflecloud::core::v1::AuthenticatorAssertionResponse,
-) -> Result<MfaWebauthnPk, tonic::Status> {
-    let Some(webauthn_pk) = mfa_webauthn_pks::dsl::mfa_webauthn_pks
-        .filter(mfa_webauthn_pks::dsl::credential_id.eq(&credential_id))
-        .select(MfaWebauthnPk::as_select())
-        .first::<MfaWebauthnPk>(tx)
+) -> Result<MfaWebauthnCredential, tonic::Status> {
+    let Some(webauthn_pk) = mfa_webauthn_credentials::dsl::mfa_webauthn_credentials
+        .filter(mfa_webauthn_credentials::dsl::credential_id.eq(&credential_id))
+        .select(MfaWebauthnCredential::as_select())
+        .first::<MfaWebauthnCredential>(tx)
         .await
         .optional()
         .into_tonic_internal_err("failed to query webauthn public key")?
@@ -173,11 +173,11 @@ pub(crate) async fn process_challenge(
         ErrorDetails::new(),
     )?;
 
-    diesel::update(mfa_webauthn_pks::dsl::mfa_webauthn_pks)
-        .filter(mfa_webauthn_pks::dsl::id.eq(webauthn_pk.id))
+    diesel::update(mfa_webauthn_credentials::dsl::mfa_webauthn_credentials)
+        .filter(mfa_webauthn_credentials::dsl::id.eq(webauthn_pk.id))
         .set((
-            mfa_webauthn_pks::dsl::current_challenge.eq(None::<Vec<u8>>),
-            mfa_webauthn_pks::dsl::current_challenge_expires_at.eq(None::<chrono::NaiveDateTime>),
+            mfa_webauthn_credentials::dsl::current_challenge.eq(None::<Vec<u8>>),
+            mfa_webauthn_credentials::dsl::current_challenge_expires_at.eq(None::<chrono::NaiveDateTime>),
         ))
         .execute(tx)
         .await

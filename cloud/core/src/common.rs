@@ -1,13 +1,15 @@
 use std::sync::Arc;
 
 use argon2::password_hash::SaltString;
-use argon2::{Argon2, PasswordHasher};
+use argon2::{Argon2, PasswordHasher, PasswordVerifier};
 use diesel::{
     CombineDsl, ExpressionMethods, JoinOnDsl, NullableExpressionMethods, OptionalExtension, QueryDsl, SelectableHelper,
 };
 use diesel_async::RunQueryDsl;
 use pkcs8::DecodePublicKey;
+use rand::TryRngCore;
 use sha2::Digest;
+use tonic::Code;
 use tonic_types::{ErrorDetails, StatusExt};
 
 use crate::CoreConfig;
@@ -16,9 +18,35 @@ use crate::google_api::GoogleIdToken;
 use crate::id::Id;
 use crate::middleware::IpAddressInfo;
 use crate::models::{User, UserEmail, UserId, UserSession};
-use crate::schema::{mfa_totps, mfa_webauthn_pks, user_emails, user_sessions, users};
+use crate::schema::{mfa_totps, mfa_webauthn_credentials, user_emails, user_sessions, users};
 use crate::std_ext::ResultExt;
-use crate::utils::generate_random_bytes;
+
+pub(crate) fn generate_random_bytes() -> Result<[u8; 32], rand::rand_core::OsError> {
+    let mut token = [0u8; 32];
+    rand::rngs::OsRng.try_fill_bytes(&mut token)?;
+    Ok(token)
+}
+
+#[derive(Debug, thiserror::Error)]
+pub(crate) enum TxError {
+    #[error("diesel transaction error: {0}")]
+    Diesel(#[from] diesel::result::Error),
+    #[error("tonic status error: {0}")]
+    Status(#[from] tonic::Status),
+}
+
+impl From<TxError> for tonic::Status {
+    fn from(err: TxError) -> Self {
+        match err {
+            TxError::Diesel(e) => tonic::Status::with_error_details(
+                tonic::Code::Internal,
+                format!("transaction error: {e}"),
+                ErrorDetails::new(),
+            ),
+            TxError::Status(s) => s,
+        }
+    }
+}
 
 pub(crate) fn encrypt_token(
     algorithm: pb::scufflecloud::core::v1::DeviceAlgorithm,
@@ -122,6 +150,23 @@ pub(crate) async fn create_new_user_and_session<G: CoreConfig>(
     let new_token = create_session(global, tx, user.id, device, ip_info, false).await?;
 
     if let Some(email) = email {
+        // Check if email is already registered
+        if user_emails::dsl::user_emails
+            .find(&email)
+            .select(user_emails::dsl::email)
+            .first::<String>(tx)
+            .await
+            .optional()
+            .into_tonic_internal_err("failed to query user emails")?
+            .is_some()
+        {
+            return Err(tonic::Status::with_error_details(
+                Code::AlreadyExists,
+                "email is already registered",
+                ErrorDetails::new(),
+            ));
+        }
+
         let user_email = UserEmail {
             email: email.clone(),
             user_id: user.id,
@@ -151,9 +196,9 @@ pub(crate) async fn create_session<G: CoreConfig>(
             .filter(mfa_totps::dsl::user_id.eq(user_id))
             .select(mfa_totps::dsl::user_id)
             .union(
-                mfa_webauthn_pks::dsl::mfa_webauthn_pks
-                    .filter(mfa_webauthn_pks::dsl::user_id.eq(user_id))
-                    .select(mfa_webauthn_pks::dsl::user_id),
+                mfa_webauthn_credentials::dsl::mfa_webauthn_credentials
+                    .filter(mfa_webauthn_credentials::dsl::user_id.eq(user_id))
+                    .select(mfa_webauthn_credentials::dsl::user_id),
             )
             .load::<UserId>(tx)
             .await
@@ -202,4 +247,22 @@ pub(crate) async fn create_session<G: CoreConfig>(
     };
 
     Ok(new_token)
+}
+
+pub(crate) fn verify_password(password_hash: &str, password: &str) -> Result<(), tonic::Status> {
+    let password_hash = argon2::PasswordHash::new(password_hash).into_tonic_internal_err("failed to parse password hash")?;
+
+    match Argon2::default().verify_password(password.as_bytes(), &password_hash) {
+        Ok(_) => Ok(()),
+        Err(argon2::password_hash::Error::Password) => Err(tonic::Status::with_error_details(
+            tonic::Code::PermissionDenied,
+            "invalid password",
+            ErrorDetails::with_bad_request_violation("password", "invalid password"),
+        )),
+        Err(_) => Err(tonic::Status::with_error_details(
+            tonic::Code::Internal,
+            "failed to verify password",
+            ErrorDetails::new(),
+        )),
+    }
 }

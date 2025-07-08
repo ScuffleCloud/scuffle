@@ -42,6 +42,7 @@ impl From<Organization> for pb::scufflecloud::core::v1::Organization {
             google_hosted_domain: value.google_hosted_domain,
             name: value.name,
             owner_id: value.owner_id.to_string(),
+            created_at: Some(tinc::well_known::prost::Timestamp::from(value.id.datetime())),
         }
     }
 }
@@ -158,6 +159,7 @@ pub struct OrganizationMember {
     pub user_id: UserId,
     pub invited_by_id: Option<UserId>,
     pub inline_policy: Option<String>,
+    pub created_at: chrono::DateTime<chrono::Utc>,
 }
 
 impl CedarEntity for OrganizationMember {

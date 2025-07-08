@@ -99,11 +99,6 @@ message UserEmailsList {
     repeated UserEmail emails = 1;
 }
 
-message UserEmail {
-    string email = 1 [(tinc.field).constraint.string.email = true];
-    google.protobuf.Timestamp created_at = 2;
-}
-
 message CreateUserEmailRequest {
     string id = 1 [(string_constraint).id = true];
     CaptchaChallengeResponse captcha = 2;

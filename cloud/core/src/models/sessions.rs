@@ -44,7 +44,7 @@ pub struct UserSessionRequest {
 }
 
 impl PrefixedId for UserSessionRequest {
-    const PREFIX: &'static str = "session_req";
+    const PREFIX: &'static str = "sr";
 }
 
 impl CedarEntity for UserSessionRequest {
@@ -84,7 +84,7 @@ pub struct MagicLinkUserSessionRequest {
 }
 
 impl PrefixedId for MagicLinkUserSessionRequest {
-    const PREFIX: &'static str = "magic_link";
+    const PREFIX: &'static str = "ml";
 }
 
 impl CedarEntity for MagicLinkUserSessionRequest {
@@ -110,7 +110,7 @@ pub struct UserSessionToken {
 }
 
 impl PrefixedId for UserSessionToken {
-    const PREFIX: &'static str = "session_token";
+    const PREFIX: &'static str = "st";
 }
 
 impl CedarEntity for UserSessionToken {
@@ -201,7 +201,7 @@ pub struct EmailRegistrationRequest {
 }
 
 impl PrefixedId for EmailRegistrationRequest {
-    const PREFIX: &'static str = "email_reg_req";
+    const PREFIX: &'static str = "er";
 }
 
 impl CedarEntity for EmailRegistrationRequest {

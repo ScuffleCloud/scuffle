@@ -18,7 +18,7 @@ pub struct MfaTotp {
 }
 
 impl PrefixedId for MfaTotp {
-    const PREFIX: &'static str = "totp";
+    const PREFIX: &'static str = "mft";
 }
 
 impl CedarEntity for MfaTotp {
@@ -49,7 +49,7 @@ pub struct MfaWebauthnPk {
 }
 
 impl PrefixedId for MfaWebauthnPk {
-    const PREFIX: &'static str = "webauthn";
+    const PREFIX: &'static str = "mfw";
 }
 
 impl CedarEntity for MfaWebauthnPk {

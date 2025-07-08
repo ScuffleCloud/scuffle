@@ -20,7 +20,7 @@ pub struct User {
 }
 
 impl PrefixedId for User {
-    const PREFIX: &'static str = "user";
+    const PREFIX: &'static str = "u";
 }
 
 impl CedarEntity for User {

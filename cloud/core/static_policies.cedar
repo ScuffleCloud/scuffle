@@ -58,6 +58,14 @@ permit(
 
 permit(
     principal is User,
+    action in [Action::"create_user_email", Action::"delete_user_email"],
+    resource is UserEmail
+) when {
+    principal.id == resource.user_id
+};
+
+permit(
+    principal is User,
     action == Action::"approve_user_session_request",
     resource is UserSessionRequest
 );

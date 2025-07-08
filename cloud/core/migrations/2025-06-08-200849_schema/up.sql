@@ -224,6 +224,7 @@ CREATE TABLE "organization_members" (
     "user_id" UUID NOT NULL,
     "invited_by_id" UUID,
     "inline_policy" VARCHAR(255),
+    "created_at" TIMESTAMPTZ NOT NULL,
     PRIMARY KEY("organization_id", "user_id")
 );
 

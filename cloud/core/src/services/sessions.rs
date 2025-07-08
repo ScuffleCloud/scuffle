@@ -486,6 +486,7 @@ impl<G: CoreConfig> pb::scufflecloud::core::v1::sessions_service_server::Session
                                         user_id: user.id,
                                         invited_by_id: None,
                                         inline_policy: None,
+                                        created_at: chrono::Utc::now(),
                                     };
 
                                     diesel::insert_into(organization_members::dsl::organization_members)

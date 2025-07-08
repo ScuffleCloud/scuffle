@@ -42,7 +42,6 @@ CREATE TABLE "user_google_accounts" (
     "user_id" UUID NOT NULL,
     "access_token" VARCHAR(255) NOT NULL,
     "access_token_expires_at" TIMESTAMPTZ NOT NULL,
-    -- workspace and role within the workspace...
     "created_at" TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
 
@@ -127,7 +126,7 @@ ON DELETE CASCADE;
 
 CREATE INDEX ON "mfa_totps"("user_id");
 
-CREATE TABLE "mfa_webauthn_pks" (
+CREATE TABLE "mfa_webauthn_credentials" (
     "id" UUID PRIMARY KEY,
     "user_id" UUID NOT NULL,
     "credential_id" BYTEA NOT NULL,
@@ -136,13 +135,13 @@ CREATE TABLE "mfa_webauthn_pks" (
     "current_challenge_expires_at" TIMESTAMPTZ
 );
 
-ALTER TABLE "mfa_webauthn_pks"
+ALTER TABLE "mfa_webauthn_credentials"
 ADD FOREIGN KEY("user_id") REFERENCES "users"("id")
 ON DELETE CASCADE;
 
-CREATE INDEX ON "mfa_webauthn_pks"("user_id");
+CREATE INDEX ON "mfa_webauthn_credentials"("user_id");
 
-CREATE INDEX ON "mfa_webauthn_pks"("credential_id");
+CREATE INDEX ON "mfa_webauthn_credentials"("credential_id");
 
 --- Organizations and Projects
 

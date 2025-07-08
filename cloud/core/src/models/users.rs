@@ -3,6 +3,7 @@ use diesel::Selectable;
 use diesel::prelude::{AsChangeset, Associations, Identifiable, Insertable, Queryable};
 
 use crate::cedar::CedarEntity;
+use crate::chrono_ext::ChronoDateTimeExt;
 use crate::id::{Id, PrefixedId};
 
 pub(crate) type UserId = Id<User>;
@@ -69,6 +70,15 @@ impl CedarEntity for UserEmail {
         [("email".to_string(), RestrictedExpression::new_string(self.email.clone()))]
             .into_iter()
             .collect()
+    }
+}
+
+impl From<UserEmail> for pb::scufflecloud::core::v1::UserEmail {
+    fn from(value: UserEmail) -> Self {
+        pb::scufflecloud::core::v1::UserEmail {
+            email: value.email,
+            created_at: Some(value.created_at.to_prost_timestamp_utc()),
+        }
     }
 }
 

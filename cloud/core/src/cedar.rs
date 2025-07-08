@@ -93,6 +93,22 @@ pub enum Action {
     LoginWithGoogle,
     #[display("login_with_webauthn")]
     LoginWithWebauthn,
+    #[display("get_user")]
+    GetUser,
+    #[display("update_user_password")]
+    UpdateUserPassword,
+    #[display("update_user_names")]
+    UpdateUserNames,
+    #[display("update_user_primary_email")]
+    UpdateUserPrimaryEmail,
+    #[display("list_user_emails")]
+    ListUserEmails,
+    #[display("create_user_email")]
+    CreateUserEmail,
+    #[display("delete_user_email")]
+    DeleteUserEmail,
+    #[display("list_user_webauthn_credentials")]
+    ListUserWebauthnCredentials,
 
     // UserSession related
     #[display("approve_user_session_request")]
@@ -132,8 +148,8 @@ pub fn is_authorized<G: CoreConfig>(
     let mut context = serde_json::Map::new();
     if let Some(session) = user_session {
         context.insert(
-            "user_session".to_string(),
-            serde_json::to_value(session).into_tonic_internal_err("failed to serialize user session")?,
+            "user_session_mfa_pending".to_string(),
+            serde_json::Value::Bool(session.mfa_pending),
         );
     }
 

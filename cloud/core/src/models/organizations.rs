@@ -20,7 +20,7 @@ pub struct Organization {
 }
 
 impl PrefixedId for Organization {
-    const PREFIX: &'static str = "org";
+    const PREFIX: &'static str = "o";
 }
 
 impl CedarEntity for Organization {
@@ -59,7 +59,7 @@ pub struct Project {
 }
 
 impl PrefixedId for Project {
-    const PREFIX: &'static str = "proj";
+    const PREFIX: &'static str = "p";
 }
 
 impl CedarEntity for Project {
@@ -91,7 +91,7 @@ pub struct Policy {
 }
 
 impl PrefixedId for Policy {
-    const PREFIX: &'static str = "policy";
+    const PREFIX: &'static str = "po";
 }
 
 impl CedarEntity for Policy {
@@ -121,7 +121,7 @@ pub struct Role {
 }
 
 impl PrefixedId for Role {
-    const PREFIX: &'static str = "role";
+    const PREFIX: &'static str = "r";
 }
 
 impl CedarEntity for Role {
@@ -216,7 +216,7 @@ pub struct ServiceAccount {
 }
 
 impl PrefixedId for ServiceAccount {
-    const PREFIX: &'static str = "svc_acc";
+    const PREFIX: &'static str = "sa";
 }
 
 impl CedarEntity for ServiceAccount {
@@ -247,7 +247,7 @@ pub struct ServiceAccountToken {
 }
 
 impl PrefixedId for ServiceAccountToken {
-    const PREFIX: &'static str = "svc_acc_token";
+    const PREFIX: &'static str = "sat";
 }
 
 impl CedarEntity for ServiceAccountToken {
@@ -279,7 +279,7 @@ pub struct OrganizationInvitation {
 }
 
 impl PrefixedId for OrganizationInvitation {
-    const PREFIX: &'static str = "org_inv";
+    const PREFIX: &'static str = "oi";
 }
 
 impl CedarEntity for OrganizationInvitation {

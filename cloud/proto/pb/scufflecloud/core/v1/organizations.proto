@@ -22,6 +22,13 @@ message OrganizationByIdRequest {
     string id = 1 [(string_constraint).id = true];
 }
 
+message OrganizationMember {
+    string organization_id = 1 [(string_constraint).id = true];
+    string user_id = 2 [(string_constraint).id = true];
+    optional string invited_by_id = 3 [(string_constraint).id = true];
+    google.protobuf.Timestamp created_at = 4;
+}
+
 message OrganizationInvitation {
     string id = 1 [(string_constraint).id = true];
     optional string user_id = 2 [(string_constraint).id = true];

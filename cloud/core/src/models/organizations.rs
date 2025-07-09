@@ -2,6 +2,7 @@ use diesel::Selectable;
 use diesel::prelude::{AsChangeset, Associations, Identifiable, Insertable, Queryable};
 
 use crate::cedar::CedarEntity;
+use crate::chrono_ext::ChronoDateTimeExt;
 use crate::id::{Id, PrefixedId};
 use crate::models::users::{User, UserId};
 
@@ -186,6 +187,17 @@ impl CedarEntity for OrganizationMember {
         ]
         .into_iter()
         .collect()
+    }
+}
+
+impl From<OrganizationMember> for pb::scufflecloud::core::v1::OrganizationMember {
+    fn from(value: OrganizationMember) -> Self {
+        Self {
+            organization_id: value.organization_id.to_string(),
+            user_id: value.user_id.to_string(),
+            invited_by_id: value.invited_by_id.map(|id| id.to_string()),
+            created_at: Some(value.created_at.to_prost_timestamp_utc()),
+        }
     }
 }
 

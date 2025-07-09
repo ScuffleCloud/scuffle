@@ -43,11 +43,6 @@ message OrganizationList {
     repeated Organization organizations = 1;
 }
 
-message OrganizationMember {
-    string user_id = 1 [(string_constraint).id = true];
-    optional string invited_by_id = 2 [(string_constraint).id = true];
-}
-
 message OrganizationMemberList {
     repeated OrganizationMember members = 1;
 }

@@ -117,6 +117,28 @@ pub enum Action {
     RefreshUserSession,
     #[display("invalidate_user_session")]
     InvalidateUserSession,
+
+    // Organization related
+    #[display("create_organization")]
+    CreateOrganization,
+    #[display("get_organization")]
+    GetOrganization,
+    #[display("list_organization_members")]
+    ListOrganizationMembers,
+    #[display("list_organizations_by_user")]
+    ListOrganizationsByUser,
+
+    // OrganizationInvitation related
+    #[display("create_organization_invitation")]
+    CreateOrganizationInvitation,
+    #[display("get_organization_invitation")]
+    GetOrganizationInvitation,
+    #[display("list_organization_invitations")]
+    ListOrganizationInvitations,
+    #[display("accept_organization_invitation")]
+    AcceptOrganizationInvitation,
+    #[display("decline_organization_invitation")]
+    DeclineOrganizationInvitation,
 }
 
 impl CedarEntity for Action {

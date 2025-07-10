@@ -79,7 +79,7 @@ rust_library(
     deps = [
         "@cargo_vendor__futures-core-0.3.31//:futures_core",
         "@cargo_vendor__pin-project-lite-0.2.16//:pin_project_lite",
-        "@cargo_vendor__tokio-1.46.0//:tokio",
+        "@cargo_vendor__tokio-1.46.1//:tokio",
     ] + select({
         "@rules_rust//rust/platform:aarch64-pc-windows-msvc": [
             "@cargo_vendor__tokio-util-0.7.15//:tokio_util",

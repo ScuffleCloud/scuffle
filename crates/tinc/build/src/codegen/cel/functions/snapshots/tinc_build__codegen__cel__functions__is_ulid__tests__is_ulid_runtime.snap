@@ -1,0 +1,22 @@
+---
+source: crates/tinc/build/src/codegen/cel/functions/is_ulid.rs
+expression: "postcompile::compile_str!(postcompile::config!\n{\n    test: true, dependencies:\n    vec![postcompile::Dependency::version(\"tinc\", \"*\"),],\n}, quote::quote!\n{\n    fn is_ulid(input: &str) -> Result<bool,\n    ::tinc::__private::cel::CelError<'_>> { Ok(#output) } #[test] fn\n    test_is_ulid()\n    {\n        assert_eq!(is_ulid(\"01F6MKTFTG0009C9ZSNZTFV2ZF\").unwrap(), true);\n        assert_eq!(is_ulid(\"not-a-ulid\").unwrap(), false);\n    }\n},)"
+---
+exit status: 0
+--- test_stdout
+running 1 test
+.
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in [ELAPSED]s
+--- expanded
+#![feature(prelude_import)]
+#[prelude_import]
+use std::prelude::rust_2024::*;
+#[macro_use]
+extern crate std;
+fn is_ulid(input: &str) -> Result<bool, ::tinc::__private::cel::CelError<'_>> {
+    Ok({
+        ::tinc::__private::cel::CelValue::cel_is_ulid(
+            ::tinc::__private::cel::CelValueConv::conv(input),
+        )?
+    })
+}

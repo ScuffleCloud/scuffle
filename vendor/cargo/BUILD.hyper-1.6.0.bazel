@@ -79,7 +79,7 @@ rust_library(
         "@cargo_vendor__itoa-1.0.15//:itoa",
         "@cargo_vendor__pin-project-lite-0.2.16//:pin_project_lite",
         "@cargo_vendor__smallvec-1.15.1//:smallvec",
-        "@cargo_vendor__tokio-1.46.0//:tokio",
+        "@cargo_vendor__tokio-1.46.1//:tokio",
         "@cargo_vendor__want-0.3.1//:want",
     ],
 )

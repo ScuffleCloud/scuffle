@@ -7,7 +7,13 @@ exports_files(["Cargo.toml"])
 proto_library(
     name = "pb",
     srcs = glob(["pb/**"]),
-    deps = ["//crates/tinc:protobuf", "@protobuf//:empty_proto"],
+    deps = [
+        "//crates/tinc:protobuf",
+        "@protobuf//:empty_proto",
+        "@protobuf//:timestamp_proto",
+        "@protobuf//:descriptor_proto",
+    ],
+    strip_import_prefix = "/cloud/proto/pb",
 )
 
 proto_descriptor_set(

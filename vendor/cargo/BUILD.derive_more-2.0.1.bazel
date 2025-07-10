@@ -36,6 +36,7 @@ rust_library(
     ),
     crate_features = [
         "default",
+        "display",
         "is_variant",
         "std",
     ],

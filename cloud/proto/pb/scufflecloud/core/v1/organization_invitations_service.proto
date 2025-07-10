@@ -2,7 +2,6 @@ syntax = "proto3";
 
 package scufflecloud.core.v1;
 
-import "google/protobuf/timestamp.proto";
 import "tinc/annotations.proto";
 
 import "scufflecloud/core/v1/users.proto";

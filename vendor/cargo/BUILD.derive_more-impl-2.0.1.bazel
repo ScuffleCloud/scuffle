@@ -36,6 +36,7 @@ rust_proc_macro(
     ),
     crate_features = [
         "default",
+        "display",
         "is_variant",
     ],
     crate_root = "src/lib.rs",
@@ -68,5 +69,6 @@ rust_proc_macro(
         "@cargo_vendor__proc-macro2-1.0.95//:proc_macro2",
         "@cargo_vendor__quote-1.0.40//:quote",
         "@cargo_vendor__syn-2.0.104//:syn",
+        "@cargo_vendor__unicode-xid-0.2.6//:unicode_xid",
     ],
 )

@@ -72,7 +72,7 @@ rust_library(
         "@cargo_vendor__rand-0.9.1//:rand",
         "@cargo_vendor__ring-0.17.14//:ring",  # cfg(all(target_family = "wasm", target_os = "unknown"))
         "@cargo_vendor__rustc-hash-2.1.1//:rustc_hash",
-        "@cargo_vendor__rustls-0.23.28//:rustls",
+        "@cargo_vendor__rustls-0.23.29//:rustls",
         "@cargo_vendor__rustls-platform-verifier-0.5.3//:rustls_platform_verifier",
         "@cargo_vendor__slab-0.4.10//:slab",
         "@cargo_vendor__thiserror-2.0.12//:thiserror",

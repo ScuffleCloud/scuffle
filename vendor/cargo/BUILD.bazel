@@ -56,6 +56,30 @@ alias(
 )
 
 alias(
+    name = "argon2-0.5.3",
+    actual = "@cargo_vendor__argon2-0.5.3//:argon2",
+    tags = ["manual"],
+)
+
+alias(
+    name = "argon2",
+    actual = "@cargo_vendor__argon2-0.5.3//:argon2",
+    tags = ["manual"],
+)
+
+alias(
+    name = "async-trait-0.1.88",
+    actual = "@cargo_vendor__async-trait-0.1.88//:async_trait",
+    tags = ["manual"],
+)
+
+alias(
+    name = "async-trait",
+    actual = "@cargo_vendor__async-trait-0.1.88//:async_trait",
+    tags = ["manual"],
+)
+
+alias(
     name = "axum-0.8.4",
     actual = "@cargo_vendor__axum-0.8.4//:axum",
     tags = ["manual"],
@@ -200,6 +224,18 @@ alias(
 )
 
 alias(
+    name = "cedar-policy-4.5.0",
+    actual = "@cargo_vendor__cedar-policy-4.5.0//:cedar_policy",
+    tags = ["manual"],
+)
+
+alias(
+    name = "cedar-policy",
+    actual = "@cargo_vendor__cedar-policy-4.5.0//:cedar_policy",
+    tags = ["manual"],
+)
+
+alias(
     name = "cel-parser-0.8.1",
     actual = "@cargo_vendor__cel-parser-0.8.1//:cel_parser",
     tags = ["manual"],
@@ -224,26 +260,26 @@ alias(
 )
 
 alias(
-    name = "clap-4.5.40",
-    actual = "@cargo_vendor__clap-4.5.40//:clap",
+    name = "clap-4.5.41",
+    actual = "@cargo_vendor__clap-4.5.41//:clap",
     tags = ["manual"],
 )
 
 alias(
     name = "clap",
-    actual = "@cargo_vendor__clap-4.5.40//:clap",
+    actual = "@cargo_vendor__clap-4.5.41//:clap",
     tags = ["manual"],
 )
 
 alias(
-    name = "config-0.15.11",
-    actual = "@cargo_vendor__config-0.15.11//:config",
+    name = "config-0.15.13",
+    actual = "@cargo_vendor__config-0.15.13//:config",
     tags = ["manual"],
 )
 
 alias(
     name = "config",
-    actual = "@cargo_vendor__config-0.15.11//:config",
+    actual = "@cargo_vendor__config-0.15.13//:config",
     tags = ["manual"],
 )
 
@@ -296,6 +332,42 @@ alias(
 )
 
 alias(
+    name = "derive_more-2.0.1",
+    actual = "@cargo_vendor__derive_more-2.0.1//:derive_more",
+    tags = ["manual"],
+)
+
+alias(
+    name = "derive_more",
+    actual = "@cargo_vendor__derive_more-2.0.1//:derive_more",
+    tags = ["manual"],
+)
+
+alias(
+    name = "diesel-2.2.11",
+    actual = "@cargo_vendor__diesel-2.2.11//:diesel",
+    tags = ["manual"],
+)
+
+alias(
+    name = "diesel",
+    actual = "@cargo_vendor__diesel-2.2.11//:diesel",
+    tags = ["manual"],
+)
+
+alias(
+    name = "diesel-async-0.5.2",
+    actual = "@cargo_vendor__diesel-async-0.5.2//:diesel_async",
+    tags = ["manual"],
+)
+
+alias(
+    name = "diesel-async",
+    actual = "@cargo_vendor__diesel-async-0.5.2//:diesel_async",
+    tags = ["manual"],
+)
+
+alias(
     name = "document-features-0.2.11",
     actual = "@cargo_vendor__document-features-0.2.11//:document_features",
     tags = ["manual"],
@@ -304,6 +376,18 @@ alias(
 alias(
     name = "document-features",
     actual = "@cargo_vendor__document-features-0.2.11//:document_features",
+    tags = ["manual"],
+)
+
+alias(
+    name = "ed25519-dalek-2.2.0",
+    actual = "@cargo_vendor__ed25519-dalek-2.2.0//:ed25519_dalek",
+    tags = ["manual"],
+)
+
+alias(
+    name = "ed25519-dalek",
+    actual = "@cargo_vendor__ed25519-dalek-2.2.0//:ed25519_dalek",
     tags = ["manual"],
 )
 
@@ -548,14 +632,14 @@ alias(
 )
 
 alias(
-    name = "hyper-util-0.1.14",
-    actual = "@cargo_vendor__hyper-util-0.1.14//:hyper_util",
+    name = "hyper-util-0.1.15",
+    actual = "@cargo_vendor__hyper-util-0.1.15//:hyper_util",
     tags = ["manual"],
 )
 
 alias(
     name = "hyper-util",
-    actual = "@cargo_vendor__hyper-util-0.1.14//:hyper_util",
+    actual = "@cargo_vendor__hyper-util-0.1.15//:hyper_util",
     tags = ["manual"],
 )
 
@@ -592,6 +676,18 @@ alias(
 alias(
     name = "insta",
     actual = "@cargo_vendor__insta-1.43.1//:insta",
+    tags = ["manual"],
+)
+
+alias(
+    name = "ipnetwork-0.21.1",
+    actual = "@cargo_vendor__ipnetwork-0.21.1//:ipnetwork",
+    tags = ["manual"],
+)
+
+alias(
+    name = "ipnetwork",
+    actual = "@cargo_vendor__ipnetwork-0.21.1//:ipnetwork",
     tags = ["manual"],
 )
 
@@ -800,6 +896,30 @@ alias(
 )
 
 alias(
+    name = "p256-0.13.2",
+    actual = "@cargo_vendor__p256-0.13.2//:p256",
+    tags = ["manual"],
+)
+
+alias(
+    name = "p256",
+    actual = "@cargo_vendor__p256-0.13.2//:p256",
+    tags = ["manual"],
+)
+
+alias(
+    name = "p384-0.13.1",
+    actual = "@cargo_vendor__p384-0.13.1//:p384",
+    tags = ["manual"],
+)
+
+alias(
+    name = "p384",
+    actual = "@cargo_vendor__p384-0.13.1//:p384",
+    tags = ["manual"],
+)
+
+alias(
     name = "parking_lot-0.12.4",
     actual = "@cargo_vendor__parking_lot-0.12.4//:parking_lot",
     tags = ["manual"],
@@ -832,6 +952,18 @@ alias(
 alias(
     name = "pin-project-lite",
     actual = "@cargo_vendor__pin-project-lite-0.2.16//:pin_project_lite",
+    tags = ["manual"],
+)
+
+alias(
+    name = "pkcs8-0.10.2",
+    actual = "@cargo_vendor__pkcs8-0.10.2//:pkcs8",
+    tags = ["manual"],
+)
+
+alias(
+    name = "pkcs8",
+    actual = "@cargo_vendor__pkcs8-0.10.2//:pkcs8",
     tags = ["manual"],
 )
 
@@ -1004,6 +1136,18 @@ alias(
 )
 
 alias(
+    name = "rsa-0.9.8",
+    actual = "@cargo_vendor__rsa-0.9.8//:rsa",
+    tags = ["manual"],
+)
+
+alias(
+    name = "rsa",
+    actual = "@cargo_vendor__rsa-0.9.8//:rsa",
+    tags = ["manual"],
+)
+
+alias(
     name = "runtime-format-0.1.3",
     actual = "@cargo_vendor__runtime-format-0.1.3//:runtime_format",
     tags = ["manual"],
@@ -1028,14 +1172,14 @@ alias(
 )
 
 alias(
-    name = "rustls-0.23.28",
-    actual = "@cargo_vendor__rustls-0.23.28//:rustls",
+    name = "rustls-0.23.29",
+    actual = "@cargo_vendor__rustls-0.23.29//:rustls",
     tags = ["manual"],
 )
 
 alias(
     name = "rustls",
-    actual = "@cargo_vendor__rustls-0.23.28//:rustls",
+    actual = "@cargo_vendor__rustls-0.23.29//:rustls",
     tags = ["manual"],
 )
 
@@ -1160,6 +1304,18 @@ alias(
 )
 
 alias(
+    name = "signature-2.2.0",
+    actual = "@cargo_vendor__signature-2.2.0//:signature",
+    tags = ["manual"],
+)
+
+alias(
+    name = "signature",
+    actual = "@cargo_vendor__signature-2.2.0//:signature",
+    tags = ["manual"],
+)
+
+alias(
     name = "smart-default-0.7.1",
     actual = "@cargo_vendor__smart-default-0.7.1//:smart_default",
     tags = ["manual"],
@@ -1220,14 +1376,14 @@ alias(
 )
 
 alias(
-    name = "tokio-1.46.0",
-    actual = "@cargo_vendor__tokio-1.46.0//:tokio",
+    name = "tokio-1.46.1",
+    actual = "@cargo_vendor__tokio-1.46.1//:tokio",
     tags = ["manual"],
 )
 
 alias(
     name = "tokio",
-    actual = "@cargo_vendor__tokio-1.46.0//:tokio",
+    actual = "@cargo_vendor__tokio-1.46.1//:tokio",
     tags = ["manual"],
 )
 
@@ -1328,6 +1484,18 @@ alias(
 )
 
 alias(
+    name = "tonic-reflection-0.13.1",
+    actual = "@cargo_vendor__tonic-reflection-0.13.1//:tonic_reflection",
+    tags = ["manual"],
+)
+
+alias(
+    name = "tonic-reflection",
+    actual = "@cargo_vendor__tonic-reflection-0.13.1//:tonic_reflection",
+    tags = ["manual"],
+)
+
+alias(
     name = "tonic-types-0.13.1",
     actual = "@cargo_vendor__tonic-types-0.13.1//:tonic_types",
     tags = ["manual"],
@@ -1340,6 +1508,18 @@ alias(
 )
 
 alias(
+    name = "totp-rs-5.7.0",
+    actual = "@cargo_vendor__totp-rs-5.7.0//:totp_rs",
+    tags = ["manual"],
+)
+
+alias(
+    name = "totp-rs",
+    actual = "@cargo_vendor__totp-rs-5.7.0//:totp_rs",
+    tags = ["manual"],
+)
+
+alias(
     name = "tower-0.5.2",
     actual = "@cargo_vendor__tower-0.5.2//:tower",
     tags = ["manual"],
@@ -1348,6 +1528,18 @@ alias(
 alias(
     name = "tower",
     actual = "@cargo_vendor__tower-0.5.2//:tower",
+    tags = ["manual"],
+)
+
+alias(
+    name = "tower-http-0.6.6",
+    actual = "@cargo_vendor__tower-http-0.6.6//:tower_http",
+    tags = ["manual"],
+)
+
+alias(
+    name = "tower-http",
+    actual = "@cargo_vendor__tower-http-0.6.6//:tower_http",
     tags = ["manual"],
 )
 
@@ -1396,6 +1588,18 @@ alias(
 alias(
     name = "tracing-test",
     actual = "@cargo_vendor__tracing-test-0.2.5//:tracing_test",
+    tags = ["manual"],
+)
+
+alias(
+    name = "ulid-1.2.1",
+    actual = "@cargo_vendor__ulid-1.2.1//:ulid",
+    tags = ["manual"],
+)
+
+alias(
+    name = "ulid",
+    actual = "@cargo_vendor__ulid-1.2.1//:ulid",
     tags = ["manual"],
 )
 

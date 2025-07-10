@@ -23,7 +23,7 @@ rust_library(
         allow_empty = True,
     ),
     aliases = {
-        "@cargo_vendor__tokio-1.46.0//:tokio": "tokio",
+        "@cargo_vendor__tokio-1.46.1//:tokio": "tokio",
     },
     compile_data = glob(
         include = ["**"],
@@ -89,7 +89,7 @@ rust_library(
         "@cargo_vendor__http-body-1.0.1//:http_body",
         "@cargo_vendor__http-body-util-0.1.3//:http_body_util",
         "@cargo_vendor__hyper-1.6.0//:hyper",
-        "@cargo_vendor__hyper-util-0.1.14//:hyper_util",
+        "@cargo_vendor__hyper-util-0.1.15//:hyper_util",
         "@cargo_vendor__itoa-1.0.15//:itoa",
         "@cargo_vendor__matchit-0.8.4//:matchit",
         "@cargo_vendor__memchr-2.7.5//:memchr",
@@ -102,7 +102,7 @@ rust_library(
         "@cargo_vendor__serde_urlencoded-0.7.1//:serde_urlencoded",
         "@cargo_vendor__sha1-0.10.6//:sha1",
         "@cargo_vendor__sync_wrapper-1.0.2//:sync_wrapper",
-        "@cargo_vendor__tokio-1.46.0//:tokio",
+        "@cargo_vendor__tokio-1.46.1//:tokio",
         "@cargo_vendor__tokio-tungstenite-0.26.2//:tokio_tungstenite",
         "@cargo_vendor__tower-0.5.2//:tower",
         "@cargo_vendor__tower-layer-0.3.3//:tower_layer",

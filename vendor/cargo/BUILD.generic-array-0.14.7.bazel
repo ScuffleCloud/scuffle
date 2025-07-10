@@ -40,6 +40,7 @@ rust_library(
     ),
     crate_features = [
         "more_lengths",
+        "zeroize",
     ],
     crate_root = "src/lib.rs",
     edition = "2015",
@@ -70,6 +71,7 @@ rust_library(
     deps = [
         "@cargo_vendor__generic-array-0.14.7//:build_script_build",
         "@cargo_vendor__typenum-1.18.0//:typenum",
+        "@cargo_vendor__zeroize-1.8.1//:zeroize",
     ],
 )
 
@@ -94,6 +96,7 @@ cargo_build_script(
     ),
     crate_features = [
         "more_lengths",
+        "zeroize",
     ],
     crate_name = "build_script_build",
     crate_root = "build.rs",

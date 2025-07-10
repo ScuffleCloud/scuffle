@@ -34,7 +34,9 @@ rust_library(
             "WORKSPACE.bazel",
         ],
     ),
-    crate_features = select({
+    crate_features = [
+        "std",
+    ] + select({
         "@rules_rust//rust/platform:wasm32-unknown-unknown": [
             "js",
             "js-sys",

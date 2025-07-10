@@ -69,7 +69,7 @@ rust_library(
         "@cargo_vendor__futures-util-0.3.31//:futures_util",
         "@cargo_vendor__http-1.3.1//:http",
         "@cargo_vendor__pin-project-lite-0.2.16//:pin_project_lite",
-        "@cargo_vendor__tokio-1.46.0//:tokio",
+        "@cargo_vendor__tokio-1.46.1//:tokio",
         "@cargo_vendor__tracing-0.1.41//:tracing",
     ],
 )

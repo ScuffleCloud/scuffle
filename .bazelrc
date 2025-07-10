@@ -95,6 +95,14 @@ common --incompatible_strict_action_env
 # Run binaries in the directory they are invoked from
 run --run_under='cd "$BUILD_WORKING_DIRECTORY" && exec'
 
+run:wrapper --bes_backend=""
+run:wrapper --build_event_json_file=""
+run:wrapper --nobuild_runfile_links
+run:wrapper --ui_event_filters=fatal,warning
+run:wrapper --noshow_progress
+run:wrapper --noshow_loading_progress
+run:wrapper --noshow_timestamps
+
 ###############################################################################
 ## Rust tooling configuration
 ###############################################################################

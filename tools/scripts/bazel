@@ -1,0 +1,26 @@
+#!/usr/bin/env bash
+
+set -euo pipefail
+
+command_not_found_handler() {
+    if command -v command-not-found >/dev/null 2>&1; then
+        bin="command-not-found"
+    elif [ -x /usr/lib/command-not-found ]; then
+        bin="/usr/lib/command-not-found"
+    elif [ -x /usr/share/command-not-found/command-not-found ]; then
+        bin="/usr/share/command-not-found/command-not-found"
+    else
+        printf "%s: command not found\n" "$1" 1>&2;
+        return;
+    fi
+
+    "$bin" "$1" || true;
+}
+
+if ! command -v bazelisk >/dev/null 2>&1; then
+    command_not_found_handler bazelisk
+    printf "%s\n" "You can get the latest version from: https://github.com/bazelbuild/bazelisk/releases/latest"
+    exit 127
+fi
+
+exec bazelisk "$@"

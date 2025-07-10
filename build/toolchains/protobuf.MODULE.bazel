@@ -1,0 +1,7 @@
+bazel_dep(name = "toolchains_protoc", version = "0.4.3")
+bazel_dep(name = "protobuf", version = "31.1")
+
+protoc = use_extension("@toolchains_protoc//protoc:extensions.bzl", "protoc")
+use_repo(protoc, "toolchains_protoc_hub")
+
+register_toolchains("@toolchains_protoc_hub//:all")

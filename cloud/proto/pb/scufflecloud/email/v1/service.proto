@@ -1,0 +1,16 @@
+syntax = "proto3";
+
+package scufflecloud.email.v1;
+
+import "google/protobuf/empty.proto";
+
+service EmailService {
+    rpc SendEmail(EmailRequest) returns (google.protobuf.Empty);
+}
+
+message EmailRequest {
+    string sender = 1;
+    string recipient = 2;
+    string subject = 3;
+    string body = 4;
+}

@@ -1,6 +1,6 @@
 ---
 source: crates/tinc/build/src/codegen/cel/functions/bytes.rs
-expression: "postcompile::compile_str!(postcompile::config!\n{\n    test: true, dependencies:\n    vec![postcompile::Dependency::workspace(\"tinc\"),],\n}, quote!\n{\n    fn to_bytes(input: &str) -> Result<::tinc::__private::cel::CelValue<'_>,\n    ::tinc::__private::cel::CelError<'_>> { Ok(#output) } #[test] fn\n    test_to_bytes()\n    {\n        assert_eq!(to_bytes(\"some string\").unwrap(),\n        ::tinc::__private::cel::CelValueConv::conv(b\"some string\"));\n    }\n},)"
+expression: "postcompile::compile_str!(postcompile::config!\n{\n    test: true, dependencies:\n    vec![postcompile::Dependency::version(\"tinc\", \"*\"),],\n}, quote!\n{\n    fn to_bytes(input: &str) -> Result<::tinc::__private::cel::CelValue<'_>,\n    ::tinc::__private::cel::CelError<'_>> { Ok(#output) } #[test] fn\n    test_to_bytes()\n    {\n        assert_eq!(to_bytes(\"some string\").unwrap(),\n        ::tinc::__private::cel::CelValueConv::conv(b\"some string\"));\n    }\n},)"
 ---
 exit status: 0
 --- test_stdout

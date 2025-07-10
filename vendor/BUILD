@@ -86,5 +86,4 @@ crates_vendor(
     tags = ["manual"],
     vendor_path = "cargo",
     visibility = ["//visibility:public"],
-
 )

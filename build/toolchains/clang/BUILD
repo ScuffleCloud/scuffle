@@ -235,7 +235,7 @@ cc_toolchain(
     }),
     compiler = "clang",
     make_variables = [],
-    # supports_param_files = True,
+    supports_param_files = True,
     tool_map = "//build/toolchains/clang/tools:all_tools",
 )
 

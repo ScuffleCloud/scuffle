@@ -26,7 +26,7 @@ alias(
         "@platforms//os:macos": ":macos-tools",
         "//conditions:default": ":default_tools",
     }),
-    tags = ["manual"],
+    tags = ["manual", "no-cache"],
     visibility = ["//visibility:public"],
 )
 
@@ -41,7 +41,7 @@ COMMON_TOOLS = {
 
 cc_tool_map(
     name = "default_tools",
-    tags = ["manual"],
+    tags = ["manual", "no-cache"],
     tools = COMMON_TOOLS | {
         "@rules_cc//cc/toolchains/actions:ar_actions": ":llvm-ar",
     },
@@ -69,7 +69,7 @@ cc_tool(
         ":exec_platform_builtin_headers",
         ":exec_platform_multicall_support_files",
     ],
-    tags = ["manual"],
+    tags = ["manual", "no-cache"],
 )
 
 cc_tool(
@@ -84,7 +84,7 @@ cc_tool(
         ":exec_platform_builtin_headers",
         ":exec_platform_multicall_support_files",
     ],
-    tags = ["manual"],
+    tags = ["manual", "no-cache"],
 )
 
 cc_tool(
@@ -99,7 +99,7 @@ cc_tool(
         ":exec_platform_linker_builtins",
         ":exec_platform_multicall_support_files",
     ],
-    tags = ["manual"],
+    tags = ["manual", "no-cache"],
 )
 
 cc_tool(
@@ -111,7 +111,7 @@ cc_tool(
         "//build/platforms:macos-x86_64": "@clang-macos-x86_64//:bin/llvm-ar",
     }),
     data = [":exec_platform_multicall_support_files"],
-    tags = ["manual"],
+    tags = ["manual", "no-cache"],
 )
 
 cc_tool(
@@ -123,7 +123,7 @@ cc_tool(
         "//build/platforms:macos-x86_64": "@clang-macos-x86_64//:bin/llvm-libtool-darwin",
     }),
     data = [":exec_platform_multicall_support_files"],
-    tags = ["manual"],
+    tags = ["manual", "no-cache"],
 )
 
 cc_tool(
@@ -135,7 +135,7 @@ cc_tool(
         "//build/platforms:macos-x86_64": "@clang-macos-x86_64//:bin/llvm-objcopy",
     }),
     data = [":exec_platform_multicall_support_files"],
-    tags = ["manual"],
+    tags = ["manual", "no-cache"],
 )
 
 cc_tool(
@@ -147,7 +147,7 @@ cc_tool(
         "//build/platforms:macos-x86_64": "@clang-macos-x86_64//:bin/llvm-objdump",
     }),
     data = [":exec_platform_multicall_support_files"],
-    tags = ["manual"],
+    tags = ["manual", "no-cache"],
 )
 
 cc_tool(
@@ -159,7 +159,7 @@ cc_tool(
         "//build/platforms:macos-x86_64": "@clang-macos-x86_64//:bin/llvm-cov",
     }),
     data = [":exec_platform_multicall_support_files"],
-    tags = ["manual"],
+    tags = ["manual", "no-cache"],
 )
 
 cc_tool(
@@ -171,7 +171,7 @@ cc_tool(
         "//build/platforms:macos-x86_64": "@clang-macos-x86_64//:bin/llvm-strip",
     }),
     data = [":exec_platform_multicall_support_files"],
-    tags = ["manual"],
+    tags = ["manual", "no-cache"],
 )
 
 cc_tool(
@@ -186,7 +186,7 @@ cc_tool(
         ":exec_platform_builtin_headers",
         ":exec_platform_multicall_support_files",
     ],
-    tags = ["manual"],
+    tags = ["manual", "no-cache"],
 )
 
 #################################
@@ -205,7 +205,7 @@ alias(
         "//build/platforms:macos-aarch64": "@clang-macos-aarch64//:builtin_headers",
         "//build/platforms:macos-x86_64": "@clang-macos-x86_64//:builtin_headers",
     }),
-    tags = ["manual"],
+    tags = ["manual", "no-cache"],
     visibility = ["//visibility:public"],
 )
 
@@ -217,7 +217,7 @@ alias(
         "//build/platforms:macos-aarch64": "@clang-macos-aarch64//:multicall_support_files",
         "//build/platforms:macos-x86_64": "@clang-macos-x86_64//:multicall_support_files",
     }),
-    tags = ["manual"],
+    tags = ["manual", "no-cache"],
     visibility = ["//visibility:private"],
 )
 
@@ -229,6 +229,6 @@ alias(
         "//build/platforms:macos-aarch64": "@clang-macos-aarch64//:linker_builtins",
         "//build/platforms:macos-x86_64": "@clang-macos-x86_64//:linker_builtins",
     }),
-    tags = ["manual"],
+    tags = ["manual", "no-cache"],
     visibility = ["//visibility:private"],
 )

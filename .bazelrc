@@ -89,11 +89,21 @@ common --execution_log_compact_file=.bazel_compact_execution_log
 common --incompatible_strict_action_env
 
 ###############################################################################
+## Run configuration
+###############################################################################
+
+# Run binaries in the directory they are invoked from
+run --run_under='cd "$BUILD_WORKING_DIRECTORY" && exec'
+
+###############################################################################
 ## Rust tooling configuration
 ###############################################################################
 
 # Rustfmt
 common --@rules_rust//rust/settings:rustfmt.toml=//:rustfmt.toml
+
+# Use sh_toolchain for `/usr/bin/env bash` resolution
+common --@rules_rust//rust/settings:experimental_use_sh_toolchain_for_bootstrap_process_wrapper
 
 ###############################################################################
 ## Remote configuration

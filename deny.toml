@@ -28,6 +28,9 @@ ignore = [
   # todo: remove once aws-lc-rs is updated
   # https://github.com/aws/aws-lc-rs/issues/722
   "RUSTSEC-2024-0436",
+  # This vulnerability does not affect us since we are not dealing with any private RSA keys at any time.
+  # Therefore we can't leak any private information through a timing attack.
+  "RUSTSEC-2023-0071",
 ]
 
 [bans]

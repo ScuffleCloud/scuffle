@@ -131,10 +131,12 @@ pub enum Action {
     // OrganizationInvitation related
     #[display("create_organization_invitation")]
     CreateOrganizationInvitation,
+    #[display("list_organization_invitations_by_user")]
+    ListOrganizationInvitationsByUser,
+    #[display("list_organization_invitations_by_organization")]
+    ListOrganizationInvitationsByOrganization,
     #[display("get_organization_invitation")]
     GetOrganizationInvitation,
-    #[display("list_organization_invitations")]
-    ListOrganizationInvitations,
     #[display("accept_organization_invitation")]
     AcceptOrganizationInvitation,
     #[display("decline_organization_invitation")]

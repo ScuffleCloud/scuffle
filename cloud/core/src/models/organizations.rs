@@ -1,5 +1,6 @@
 use diesel::Selectable;
 use diesel::prelude::{AsChangeset, Associations, Identifiable, Insertable, Queryable};
+use tinc::well_known::prost::Timestamp;
 
 use crate::cedar::CedarEntity;
 use crate::chrono_ext::ChronoDateTimeExt;
@@ -305,5 +306,19 @@ impl CedarEntity for OrganizationInvitation {
 
     fn attributes(&self) -> std::collections::HashMap<String, cedar_policy::RestrictedExpression> {
         self.id.attributes()
+    }
+}
+
+impl From<OrganizationInvitation> for pb::scufflecloud::core::v1::OrganizationInvitation {
+    fn from(value: OrganizationInvitation) -> Self {
+        Self {
+            id: value.id.to_string(),
+            user_id: value.user_id.map(|id| id.to_string()),
+            organization_id: value.organization_id.to_string(),
+            email: value.email,
+            invited_by_id: value.invited_by_id.to_string(),
+            expires_at: value.expires_at.map(|dt| dt.to_prost_timestamp_utc()),
+            created_at: Some(Timestamp::from(value.id.datetime())),
+        }
     }
 }

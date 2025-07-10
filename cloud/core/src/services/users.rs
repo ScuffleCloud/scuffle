@@ -35,7 +35,7 @@ impl<G: CoreConfig> pb::scufflecloud::core::v1::users_service_server::UsersServi
             .parse()
             .map_err(|e| tonic::Status::invalid_argument(format!("invalid user ID format: {e}")))?;
 
-        ext.is_authorized::<G>(session.user_id, Action::GetUser, user_id)?;
+        session.is_authorized(global, session.user_id, Action::GetUser, user_id)?;
 
         let user = users::dsl::users
             .find(user_id)
@@ -66,7 +66,7 @@ impl<G: CoreConfig> pb::scufflecloud::core::v1::users_service_server::UsersServi
             .parse()
             .map_err(|e| tonic::Status::invalid_argument(format!("invalid user ID format: {e}")))?;
 
-        ext.is_authorized::<G>(session.user_id, Action::UpdateUserPassword, user_id)?;
+        session.is_authorized(global, session.user_id, Action::UpdateUserPassword, user_id)?;
 
         let salt = SaltString::generate(&mut argon2::password_hash::rand_core::OsRng);
         let new_hash = Argon2::default()
@@ -129,7 +129,7 @@ impl<G: CoreConfig> pb::scufflecloud::core::v1::users_service_server::UsersServi
             .parse()
             .map_err(|e| tonic::Status::invalid_argument(format!("invalid user ID format: {e}")))?;
 
-        ext.is_authorized::<G>(session.user_id, Action::UpdateUserNames, user_id)?;
+        session.is_authorized(global, session.user_id, Action::UpdateUserNames, user_id)?;
 
         let user = diesel::update(users::dsl::users)
             .filter(users::dsl::id.eq(user_id))
@@ -167,7 +167,7 @@ impl<G: CoreConfig> pb::scufflecloud::core::v1::users_service_server::UsersServi
 
         let email = common::normalize_email(&payload.primary_email);
 
-        ext.is_authorized::<G>(session.user_id, Action::UpdateUserPrimaryEmail, user_id)?;
+        session.is_authorized(global, session.user_id, Action::UpdateUserPrimaryEmail, user_id)?;
 
         let user = db
             .transaction::<_, TxError, _>(move |conn| {
@@ -219,7 +219,7 @@ impl<G: CoreConfig> pb::scufflecloud::core::v1::users_service_server::UsersServi
             .parse()
             .map_err(|e| tonic::Status::invalid_argument(format!("invalid user ID format: {e}")))?;
 
-        ext.is_authorized::<G>(session.user_id, Action::ListUserEmails, user_id)?;
+        session.is_authorized(global, session.user_id, Action::ListUserEmails, user_id)?;
 
         let emails = user_emails::dsl::user_emails
             .filter(user_emails::dsl::user_id.eq(user_id))
@@ -243,7 +243,8 @@ impl<G: CoreConfig> pb::scufflecloud::core::v1::users_service_server::UsersServi
 
         let email = common::normalize_email(&payload.email);
 
-        ext.is_authorized::<G>(
+        session.is_authorized(
+            global,
             session.user_id,
             Action::CreateUserEmail,
             UserEmail {
@@ -311,14 +312,13 @@ impl<G: CoreConfig> pb::scufflecloud::core::v1::users_service_server::UsersServi
     ) -> Result<tonic::Response<pb::scufflecloud::core::v1::UserEmail>, tonic::Status> {
         let global = &req.global::<G>()?;
         let (_, ext, payload) = req.into_parts();
+        let session = ext.session_or_err()?;
 
         let mut db = global.db().await.into_tonic_internal_err("failed to connect to database")?;
 
         let user_email = db
             .transaction::<_, TxError, _>(move |conn| {
                 async move {
-                    let session = ext.session_or_err()?;
-
                     // Delete email registration request
                     let Some(registration_request) =
                         diesel::delete(email_registration_requests::dsl::email_registration_requests)
@@ -363,7 +363,7 @@ impl<G: CoreConfig> pb::scufflecloud::core::v1::users_service_server::UsersServi
                         created_at: chrono::Utc::now(),
                     };
 
-                    ext.is_authorized::<G>(session.user_id, Action::CreateUserEmail, &user_email)?;
+                    session.is_authorized(global, session.user_id, Action::CreateUserEmail, &user_email)?;
 
                     diesel::insert_into(user_emails::dsl::user_emails)
                         .values(&user_email)
@@ -386,14 +386,13 @@ impl<G: CoreConfig> pb::scufflecloud::core::v1::users_service_server::UsersServi
     ) -> Result<tonic::Response<pb::scufflecloud::core::v1::UserEmail>, tonic::Status> {
         let global = &req.global::<G>()?;
         let (_, ext, payload) = req.into_parts();
+        let session = ext.session_or_err()?;
 
         let mut db = global.db().await.into_tonic_internal_err("failed to connect to database")?;
 
         let user_email = db
             .transaction::<_, TxError, _>(move |conn| {
                 async move {
-                    let session = ext.session_or_err()?;
-
                     let user_email = diesel::delete(user_emails::dsl::user_emails)
                         .filter(
                             user_emails::dsl::user_id
@@ -405,7 +404,7 @@ impl<G: CoreConfig> pb::scufflecloud::core::v1::users_service_server::UsersServi
                         .await
                         .into_tonic_internal_err("failed to delete user email")?;
 
-                    ext.is_authorized::<G>(session.user_id, Action::DeleteUserEmail, &user_email)?;
+                    session.is_authorized(global, session.user_id, Action::DeleteUserEmail, &user_email)?;
 
                     Ok(user_email)
                 }
@@ -478,7 +477,7 @@ impl<G: CoreConfig> pb::scufflecloud::core::v1::users_service_server::UsersServi
             .parse()
             .map_err(|e| tonic::Status::invalid_argument(format!("invalid user ID format: {e}")))?;
 
-        ext.is_authorized::<G>(session.user_id, Action::ListUserWebauthnCredentials, user_id)?;
+        session.is_authorized(global, session.user_id, Action::ListUserWebauthnCredentials, user_id)?;
 
         let credentials = mfa_webauthn_credentials::dsl::mfa_webauthn_credentials
             .filter(mfa_webauthn_credentials::dsl::user_id.eq(user_id))

@@ -4,8 +4,6 @@ use axum::http;
 use tonic::Code;
 use tonic_types::{ErrorDetails, StatusExt};
 
-use crate::CoreConfig;
-use crate::cedar::{self, CedarEntity};
 use crate::models::UserSession;
 
 pub(crate) trait RequestExt {
@@ -36,15 +34,6 @@ pub(crate) trait RequestExt {
                 tracing::error!("missing IpAddressInfo extension");
                 tonic::Status::with_error_details(Code::Internal, "missing IpAddressInfo extension", ErrorDetails::new())
             })
-    }
-
-    fn is_authorized<G: CoreConfig>(
-        &self,
-        principal: impl CedarEntity,
-        action: impl CedarEntity,
-        resource: impl CedarEntity,
-    ) -> Result<(), tonic::Status> {
-        cedar::is_authorized(&self.global::<G>()?, self.session(), principal, action, resource)
     }
 }
 

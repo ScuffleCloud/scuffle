@@ -28,7 +28,7 @@ impl<G: CoreConfig> pb::scufflecloud::core::v1::organizations_service_server::Or
             owner_id: session.user_id,
         };
 
-        ext.is_authorized::<G>(session.user_id, Action::CreateOrganization, &organization)?;
+        session.is_authorized(global, session.user_id, Action::CreateOrganization, &organization)?;
 
         let mut db = global.db().await.into_tonic_internal_err("failed to connect to database")?;
 
@@ -51,7 +51,7 @@ impl<G: CoreConfig> pb::scufflecloud::core::v1::organizations_service_server::Or
 
         let id: OrganizationId = payload.id.parse().into_tonic_internal_err("failed to parse id")?;
 
-        ext.is_authorized::<G>(session.user_id, Action::GetOrganization, id)?;
+        session.is_authorized(global, session.user_id, Action::GetOrganization, id)?;
 
         let mut db = global.db().await.into_tonic_internal_err("failed to connect to database")?;
 
@@ -78,7 +78,7 @@ impl<G: CoreConfig> pb::scufflecloud::core::v1::organizations_service_server::Or
 
         let id: OrganizationId = payload.id.parse().into_tonic_internal_err("failed to parse id")?;
 
-        ext.is_authorized::<G>(session.user_id, Action::ListOrganizationMembers, id)?;
+        session.is_authorized(global, session.user_id, Action::ListOrganizationMembers, id)?;
 
         let mut db = global.db().await.into_tonic_internal_err("failed to connect to database")?;
 
@@ -103,7 +103,7 @@ impl<G: CoreConfig> pb::scufflecloud::core::v1::organizations_service_server::Or
 
         let id: UserId = payload.id.parse().into_tonic_internal_err("failed to parse id")?;
 
-        ext.is_authorized::<G>(session.user_id, Action::ListOrganizationsByUser, id)?;
+        session.is_authorized(global, session.user_id, Action::ListOrganizationsByUser, id)?;
 
         let mut db = global.db().await.into_tonic_internal_err("failed to connect to database")?;
 

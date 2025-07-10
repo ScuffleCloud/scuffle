@@ -36,7 +36,7 @@ derive_more = { features = ["display"], version = "2.0.1" }
 pb = { package = "scufflecloud-proto", path = "../proto" }
 pkcs8 = "0.10.2"
 rand = "0.9.1"
-reqwest = { features = ["json"], version = "0.12.20" }
+reqwest = { features = ["json", "rustls-tls"], version = "0.12.20" }
 rsa = { features = ["sha2"], version = "0.9.8" }
 scuffle-bootstrap = "0.1.5"
 scuffle-context = "0.1.5"

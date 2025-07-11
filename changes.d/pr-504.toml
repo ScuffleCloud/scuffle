@@ -13,7 +13,7 @@ category = "chore"
 description = "fix clippy::manual_is_multiple_of"
 authors = ["@lennartkloock"]
 
-[[tinc-build]]
+[[tinc]]
 category = "chore"
 description = "fix clippy::manual_is_multiple_of"
 authors = ["@lennartkloock"]

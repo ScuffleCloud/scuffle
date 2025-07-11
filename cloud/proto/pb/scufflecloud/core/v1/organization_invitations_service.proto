@@ -2,6 +2,7 @@ syntax = "proto3";
 
 package scufflecloud.core.v1;
 
+import "google/protobuf/empty.proto";
 import "google/protobuf/timestamp.proto";
 import "tinc/annotations.proto";
 
@@ -32,12 +33,12 @@ service OrganizationInvitationsService {
             get: "/organization-invitations/{id}"
         };
     }
-    rpc AcceptOrganizationInvitation(OrganizationInvitationByIdRequest) returns (OrganizationInvitation) {
+    rpc AcceptOrganizationInvitation(OrganizationInvitationByIdRequest) returns (OrganizationMember) {
         option (tinc.method).endpoint = {
             post: "/organization-invitations/{id}/accept"
         };
     }
-    rpc DeclineOrganizationInvitation(OrganizationInvitationByIdRequest) returns (OrganizationInvitation) {
+    rpc DeclineOrganizationInvitation(OrganizationInvitationByIdRequest) returns (google.protobuf.Empty) {
         option (tinc.method).endpoint = {
             post: "/organization-invitations/{id}/decline"
         };
@@ -45,11 +46,14 @@ service OrganizationInvitationsService {
 }
 
 message CreateOrganizationInvitationRequest {
-    string email = 1 [(tinc.field).constraint.string.email = true];
+    string organization_id = 1 [(string_constraint).id = true];
+    string email = 2 [(tinc.field).constraint.string.email = true];
+    // In how many seconds the invitation will expire.
+    optional uint64 expires_in_s = 3;
 }
 
 message OrganizationInvitationList {
-    repeated OrganizationInvitation invitation = 1;
+    repeated OrganizationInvitation invitations = 1;
 }
 
 message OrganizationInvitationByIdRequest {

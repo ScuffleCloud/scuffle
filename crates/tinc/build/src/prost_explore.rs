@@ -237,7 +237,7 @@ impl<'a> FileWalker<'a> {
                 .map(|mut si| {
                     si.location.retain(|l| {
                         let len = l.path.len();
-                        len > 0 && len % 2 == 0
+                        len > 0 && len.is_multiple_of(2)
                     });
 
                     si.location.sort_by(|a, b| a.path.cmp(&b.path));

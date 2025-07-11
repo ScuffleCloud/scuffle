@@ -1,0 +1,19 @@
+[[scuffle-bytes-util]]
+category = "chore"
+description = "fix clippy::manual_is_multiple_of"
+authors = ["@lennartkloock"]
+
+[[scuffle-expgolomb]]
+category = "chore"
+description = "fix clippy::manual_is_multiple_of"
+authors = ["@lennartkloock"]
+
+[[scuffle-metrics]]
+category = "chore"
+description = "fix clippy::manual_is_multiple_of"
+authors = ["@lennartkloock"]
+
+[[tinc-build]]
+category = "chore"
+description = "fix clippy::manual_is_multiple_of"
+authors = ["@lennartkloock"]

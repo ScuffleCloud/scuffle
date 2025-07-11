@@ -90,7 +90,7 @@ impl<W> BitWriter<W> {
     #[inline(always)]
     #[must_use]
     pub const fn is_aligned(&self) -> bool {
-        self.bit_pos % 8 == 0
+        self.bit_pos.is_multiple_of(8)
     }
 
     /// Returns a reference to the underlying writer

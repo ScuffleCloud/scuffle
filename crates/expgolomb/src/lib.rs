@@ -64,7 +64,7 @@ pub trait BitReaderExpGolombExt {
     fn read_signed_exp_golomb(&mut self) -> io::Result<i64> {
         let exp_glob = self.read_exp_golomb()?;
 
-        if exp_glob % 2 == 0 {
+        if exp_glob.is_multiple_of(2) {
             Ok(-((exp_glob / 2) as i64))
         } else {
             Ok((exp_glob / 2) as i64 + 1)

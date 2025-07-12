@@ -15,6 +15,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.1.5](https://github.com/ScuffleCloud/scuffle/releases/tag/scuffle-expgolomb-v0.1.5) - 2025-07-12
+
+[View diff on diff.rs](https://diff.rs/scuffle-expgolomb/0.1.4/scuffle-expgolomb/0.1.5/Cargo.toml)
+
+### 🛠️ Non-breaking changes
+
+- chore: fix clippy::manual_is_multiple_of ([#504](https://github.com/scufflecloud/scuffle/pull/504)) (@lennartkloock)
+
 ## [0.1.4](https://github.com/ScuffleCloud/scuffle/releases/tag/scuffle-expgolomb-v0.1.4) - 2025-05-17
 
 [View diff on diff.rs](https://diff.rs/scuffle-expgolomb/0.1.3/scuffle-expgolomb/0.1.4/Cargo.toml)

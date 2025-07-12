@@ -15,6 +15,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.1.7](https://github.com/ScuffleCloud/scuffle/releases/tag/tinc-v0.1.7) - 2025-07-12
+
+[View diff on diff.rs](https://diff.rs/tinc/0.1.6/tinc/0.1.7/Cargo.toml)
+
+### 🛠️ Non-breaking changes
+
+- chore: fix clippy::manual_is_multiple_of ([#504](https://github.com/scufflecloud/scuffle/pull/504)) (@lennartkloock)
+
 ## [0.1.6](https://github.com/ScuffleCloud/scuffle/releases/tag/tinc-v0.1.6) - 2025-06-16
 
 [View diff on diff.rs](https://diff.rs/tinc/0.1.5/tinc/0.1.6/Cargo.toml)

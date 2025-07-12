@@ -158,6 +158,8 @@ mod tests {
                 ],
             },
             quote::quote! {
+                #![allow(unused_parens)]
+
                 fn size(input: &std::collections::HashMap<String, bool>) -> Result<u64, ::tinc::__private::cel::CelError<'_>> {
                     Ok(#output)
                 }
@@ -204,6 +206,8 @@ mod tests {
                 ],
             },
             quote::quote! {
+                #![allow(unused_parens)]
+
                 fn size(input: &Vec<String>) -> Result<u64, ::tinc::__private::cel::CelError<'_>> {
                     Ok(#output)
                 }

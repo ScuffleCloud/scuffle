@@ -2,12 +2,12 @@
 source: crates/postcompile/src/lib.rs
 expression: out
 ---
-exit status: 101
+exit status: 1
 --- expand_stderr
 error: expected one of `!` or `::`, found `<eof>`
- --> [POST_COMPILE]:1:1
+ --> [BUILD_DIR]/[POST_COMPILE]:1:1
   |
 1 | invalid_rust_code
   | ^^^^^^^^^^^^^^^^^ expected one of `!` or `::`
 
-error: could not compile `postcompile__tests__compile_failure` (bin "postcompile__tests__compile_failure") due to 1 previous error
+error: aborting due to 1 previous error

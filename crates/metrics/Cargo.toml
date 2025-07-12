@@ -43,7 +43,6 @@ parking_lot = "0.12"
 prometheus-client = { optional = true, version = "0.23" }
 scuffle-changelog = { optional = true, path = "../changelog", version = "0.1.0" }
 scuffle-metrics-derive = { path = "derive", version = "=0.4.0" }
-scuffle-workspace-hack.workspace = true
 tracing = { optional = true, version = "0.1" }
 
 [dev-dependencies]

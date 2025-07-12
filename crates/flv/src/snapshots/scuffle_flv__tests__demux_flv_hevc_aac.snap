@@ -1,7 +1,6 @@
 ---
 source: crates/flv/src/lib.rs
 expression: sps
-snapshot_kind: text
 ---
 SpsNALUnit {
     nal_unit_header: NALUnitHeader {

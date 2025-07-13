@@ -36,7 +36,14 @@ mod std_ext;
 mod totp;
 mod webauthn;
 
-pub trait CoreConfig: scuffle_bootstrap::Global + scuffle_signal::SignalConfig + Sync + Send + 'static {
+pub trait CoreConfig:
+    scuffle_bootstrap::Global
+    + scuffle_signal::SignalConfig
+    + scuffle_bootstrap_telemetry::TelemetryConfig
+    + Sync
+    + Send
+    + 'static
+{
     fn bind(&self) -> SocketAddr;
     fn db(
         &self,

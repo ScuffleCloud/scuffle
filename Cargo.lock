@@ -329,11 +329,10 @@ checksum = "55248b47b0caf0546f7988906588779981c43bb1bc9d0c44087278f80cdb44ba"
 
 [[package]]
 name = "bb8"
-version = "0.8.6"
+version = "0.9.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "d89aabfae550a5c44b43ab941844ffcd2e993cb6900b342debf59e9ea74acdb8"
+checksum = "212d8b8e1a22743d9241575c6ba822cf9c8fef34771c86ab7e477a4fbfd254e5"
 dependencies = [
- "async-trait",
  "futures-util",
  "parking_lot",
  "tokio",
@@ -1236,13 +1235,13 @@ dependencies = [
 
 [[package]]
 name = "diesel-async"
-version = "0.5.2"
+version = "0.6.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "51a307ac00f7c23f526a04a77761a0519b9f0eb2838ebf5b905a58580095bdcb"
+checksum = "7fcc26599f590c7e5b182a05061cfb445f216bb069df72eb31f38cffde8ca598"
 dependencies = [
- "async-trait",
  "bb8",
  "diesel",
+ "futures-core",
  "futures-util",
  "scoped-futures",
  "tokio",
@@ -4337,7 +4336,34 @@ dependencies = [
  "scuffle-context 0.1.5",
  "scuffle-http 0.3.2",
  "scuffle-metrics",
- "scuffle-pprof",
+ "scuffle-pprof 0.2.0",
+ "scuffle-workspace-hack",
+ "thiserror 2.0.15",
+ "tokio",
+ "tracing",
+ "tracing-opentelemetry",
+]
+
+[[package]]
+name = "scuffle-bootstrap-telemetry"
+version = "0.3.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "b4d7bb764a948c376e15640ea81ccfaeb87c1fb80a515854ac020b0230c80ab4"
+dependencies = [
+ "anyhow",
+ "bytes",
+ "http",
+ "http-body",
+ "http-body-util",
+ "opentelemetry",
+ "opentelemetry-appender-tracing",
+ "opentelemetry_sdk",
+ "prometheus-client",
+ "querystring",
+ "scuffle-bootstrap 0.1.7 (registry+https://github.com/rust-lang/crates.io-index)",
+ "scuffle-context 0.1.5 (registry+https://github.com/rust-lang/crates.io-index)",
+ "scuffle-http 0.3.2 (registry+https://github.com/rust-lang/crates.io-index)",
+ "scuffle-pprof 0.2.0 (registry+https://github.com/rust-lang/crates.io-index)",
  "scuffle-workspace-hack",
  "thiserror 2.0.15",
  "tokio",
@@ -4631,6 +4657,18 @@ dependencies = [
 ]
 
 [[package]]
+name = "scuffle-pprof"
+version = "0.2.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "ec24dc2d060594caaf3f39792f27ac5d148dee8b3f7147fde52c349b79170893"
+dependencies = [
+ "flate2",
+ "pprof",
+ "scuffle-workspace-hack",
+ "thiserror 2.0.15",
+]
+
+[[package]]
 name = "scuffle-rtmp"
 version = "0.2.3"
 dependencies = [
@@ -4871,6 +4909,7 @@ dependencies = [
  "reqwest",
  "rsa",
  "scuffle-bootstrap 0.1.7 (registry+https://github.com/rust-lang/crates.io-index)",
+ "scuffle-bootstrap-telemetry 0.3.0 (registry+https://github.com/rust-lang/crates.io-index)",
  "scuffle-context 0.1.5 (registry+https://github.com/rust-lang/crates.io-index)",
  "scuffle-http 0.3.2 (registry+https://github.com/rust-lang/crates.io-index)",
  "scuffle-settings 0.1.4 (registry+https://github.com/rust-lang/crates.io-index)",

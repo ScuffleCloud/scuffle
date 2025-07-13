@@ -3,6 +3,9 @@ use std::sync::Arc;
 
 use anyhow::Context;
 use diesel_async::pooled_connection::bb8;
+use scuffle_bootstrap_telemetry::opentelemetry;
+use scuffle_bootstrap_telemetry::opentelemetry_sdk::logs::SdkLoggerProvider;
+use scuffle_bootstrap_telemetry::opentelemetry_sdk::trace::SdkTracerProvider;
 use tracing_subscriber::Layer;
 use tracing_subscriber::layer::SubscriberExt;
 use tracing_subscriber::util::SubscriberInitExt;
@@ -22,6 +25,7 @@ pub struct Config {
     pub turnstile_secret_key: String,
     pub timeouts: TimeoutConfig,
     pub google_oauth2: GoogleOAuth2Config,
+    pub telemetry: Option<TelemetryConfig>,
 }
 
 #[derive(serde_derive::Deserialize, smart_default::SmartDefault, Debug, Clone)]
@@ -47,6 +51,12 @@ pub struct GoogleOAuth2Config {
     pub client_secret: String,
 }
 
+#[derive(serde_derive::Deserialize, smart_default::SmartDefault, Debug, Clone)]
+pub struct TelemetryConfig {
+    #[default("[::1]:4317".parse().unwrap())]
+    pub bind: SocketAddr,
+}
+
 scuffle_settings::bootstrap!(Config);
 
 struct Global {
@@ -54,6 +64,7 @@ struct Global {
     database: bb8::Pool<diesel_async::AsyncPgConnection>,
     authorizer: cedar_policy::Authorizer,
     http_client: reqwest::Client,
+    open_telemetry: opentelemetry::OpenTelemetry,
 }
 
 impl scufflecloud_core::CoreConfig for Global {
@@ -116,6 +127,24 @@ impl scufflecloud_core::CoreConfig for Global {
 
 impl scuffle_signal::SignalConfig for Global {}
 
+impl scuffle_bootstrap_telemetry::TelemetryConfig for Global {
+    fn enabled(&self) -> bool {
+        self.config.telemetry.is_some()
+    }
+
+    fn bind_address(&self) -> Option<std::net::SocketAddr> {
+        self.config.telemetry.as_ref().map(|telemetry| telemetry.bind)
+    }
+
+    fn http_server_name(&self) -> &str {
+        "scufflecloud-core-telemetry"
+    }
+
+    fn opentelemetry(&self) -> Option<&opentelemetry::OpenTelemetry> {
+        Some(&self.open_telemetry)
+    }
+}
+
 impl scuffle_bootstrap::Global for Global {
     type Config = Config;
 
@@ -143,11 +172,21 @@ impl scuffle_bootstrap::Global for Global {
             .build()
             .context("create HTTP client")?;
 
+        let tracer = SdkTracerProvider::default();
+        opentelemetry::global::set_tracer_provider(tracer.clone());
+
+        let logger = SdkLoggerProvider::builder().build();
+
+        let open_telemetry = crate::opentelemetry::OpenTelemetry::new()
+            .with_traces(tracer)
+            .with_logs(logger);
+
         Ok(Arc::new(Self {
             config,
             database,
             authorizer: cedar_policy::Authorizer::new(),
             http_client,
+            open_telemetry,
         }))
     }
 }

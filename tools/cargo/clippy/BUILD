@@ -1,8 +1,10 @@
 load("//build/tools:package.bzl", "scuffle_package")
+load("//build/tools:cargo_toml.bzl", "cargo_toml")
 
-exports_files(["Cargo.toml"])
+cargo_toml()
 
 scuffle_package(
+    name = "fix",
     crate_name = "clippy-runner",
     crate_type = "bin",
     tags = ["manual"],

@@ -1,7 +1,6 @@
 use std::collections::BTreeSet;
 
 use camino::Utf8PathBuf;
-use clap::Parser;
 use nextest_filtering::ParseContext;
 use nextest_metadata::{BuildPlatform, RustBinaryId, RustTestBinaryKind};
 use nextest_runner::cargo_config::{CargoConfigs, EnvironmentMap};
@@ -17,35 +16,22 @@ use nextest_runner::signal::SignalHandlerKind;
 use nextest_runner::target_runner::TargetRunner;
 use nextest_runner::test_filter::{FilterBound, RunIgnored, TestFilterBuilder};
 
-/// Simple program to greet a person
-#[derive(Parser, Debug)]
-#[command(version, about, long_about = None)]
-struct Args {
-    #[arg(env = "RUNNER_CRATE")]
-    package: String,
-
-    #[arg(env = "RUNNER_BINARY")]
-    binary: Utf8PathBuf,
-
-    #[arg(env = "RUNNER_CONFIG")]
-    config: Utf8PathBuf,
-
-    #[arg(env = "RUNNER_PROFILE")]
-    profile: String,
-
-    #[arg(env = "TEST_TMPDIR")]
-    tmp_dir: Utf8PathBuf,
-
-    #[arg(env = "XML_OUTPUT_FILE")]
-    xml_output_file: Option<Utf8PathBuf>,
-
-    #[arg(env = "TEST_TARGET")]
-    target: Option<String>,
+pub struct Config {
+    pub package: String,
+    pub config_path: Utf8PathBuf,
+    pub tmp_dir: Utf8PathBuf,
+    pub profile: String,
+    pub xml_output_file: Option<Utf8PathBuf>,
+    pub binaries: Vec<Binary>,
 }
 
-fn main() {
-    let args = Args::parse();
-    let cwd = Utf8PathBuf::from_path_buf(std::env::current_dir().unwrap()).unwrap();
+pub struct Binary {
+    pub name: String,
+    pub path: Utf8PathBuf,
+}
+
+pub fn run_nextest(config: Config) {
+    let cwd = &Utf8PathBuf::from_path_buf(std::env::current_dir().unwrap()).unwrap();
 
     let metadata = serde_json::json!({
         "version": 1,
@@ -53,9 +39,9 @@ fn main() {
         "workspace_default_members": [],
         "packages": [
             {
-                "name": args.package,
+                "name": config.package,
                 "version": "0.0.0",
-                "id": args.package,
+                "id": config.package,
                 "license": null,
                 "license_file": null,
                 "description": null,
@@ -85,7 +71,7 @@ fn main() {
     let metadata = guppy::CargoMetadata::parse_json(metadata).unwrap();
     let graph = metadata.build_graph().unwrap();
 
-    let package = graph.packages().find(|p| p.name() == args.package).unwrap();
+    let package = graph.packages().find(|p| p.name() == config.package).unwrap();
 
     let double_spawn = DoubleSpawnInfo::disabled();
     let target_runner = TargetRunner::empty();
@@ -96,31 +82,31 @@ fn main() {
         target_runner: &target_runner,
     };
 
-    let artifact = RustTestArtifact {
-        binary_id: RustBinaryId::new(args.target.as_ref().unwrap_or(&args.package)),
-        binary_name: args.binary.file_name().unwrap().to_string(),
-        binary_path: args.binary,
+    let artifacts = config.binaries.iter().map(|binary| RustTestArtifact {
+        binary_id: RustBinaryId::new(&binary.name),
+        binary_name: binary.name.clone(),
+        binary_path: binary.path.clone(),
         cwd: cwd.clone(),
         build_platform: BuildPlatform::Target,
         kind: RustTestBinaryKind::LIB,
         non_test_binaries: BTreeSet::new(),
         package,
-    };
+    });
 
-    let mut nextest_config = std::fs::read_to_string(&args.config)
+    let mut nextest_config = std::fs::read_to_string(&config.config_path)
         .unwrap()
         .parse::<toml_edit::DocumentMut>()
         .unwrap();
 
     nextest_config["store"]["dir"] = "".to_string().into();
 
-    let nextest_config_path = args.tmp_dir.join("__nextest-config.toml");
+    let nextest_config_path = config.tmp_dir.join("__nextest-config.toml");
 
     std::fs::write(&nextest_config_path, nextest_config.to_string()).unwrap();
 
     let build_platforms = BuildPlatforms::new_with_no_target().unwrap();
-    let config = NextestConfig::from_sources(
-        &args.tmp_dir,
+    let nextest_config = NextestConfig::from_sources(
+        &config.tmp_dir,
         &ParseContext::new(&graph),
         Some(&nextest_config_path),
         [],
@@ -128,14 +114,17 @@ fn main() {
     )
     .unwrap();
 
-    let profile = config.profile(&args.profile).unwrap().apply_build_platforms(&build_platforms);
+    let profile = nextest_config
+        .profile(&config.profile)
+        .unwrap()
+        .apply_build_platforms(&build_platforms);
     let meta = RustBuildMeta::new(cwd, build_platforms).map_paths(&PathMapper::noop());
     let filter = TestFilterBuilder::default_set(RunIgnored::Default);
     let env = EnvironmentMap::new(&CargoConfigs::new([] as [&str; 0]).unwrap());
 
-    let list = nextest_runner::list::TestList::new(
+    let list = match nextest_runner::list::TestList::new(
         &ctx,
-        Some(artifact),
+        artifacts,
         meta,
         &filter,
         Utf8PathBuf::new(),
@@ -143,8 +132,12 @@ fn main() {
         &profile,
         FilterBound::DefaultSet,
         1,
-    )
-    .unwrap();
+    ) {
+        Ok(l) => l,
+        Err(err) => {
+            panic!("{err:#}");
+        }
+    };
 
     let runner = nextest_runner::runner::TestRunnerBuilder::default()
         .build(
@@ -171,7 +164,7 @@ fn main() {
 
     reporter.finish();
 
-    if let (Some(junit), Some(output)) = (profile.junit(), args.xml_output_file.as_ref()) {
+    if let (Some(junit), Some(output)) = (profile.junit(), config.xml_output_file.as_ref()) {
         let junit = std::fs::read(junit.path()).unwrap();
         std::fs::write(output, junit).unwrap();
     }

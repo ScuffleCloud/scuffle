@@ -10,7 +10,7 @@ readme = "README.md"
 publish = false
 
 [[bin]]
-name = "scufflecloud-core"
+name = "scufflecloud-core-bin"
 path = "src/bin/standalone.rs"
 
 [lints.rust]

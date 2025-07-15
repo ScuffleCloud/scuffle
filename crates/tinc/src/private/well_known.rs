@@ -742,22 +742,22 @@ unsafe impl WellKnownAlias for () {
     type Helper = Empty;
 }
 
-/// Safety: If `T` is a [`SerializeWellKnown`] type, then its safe to cast `Option<T>` to `Option<T::Helper>`.
+/// Safety: If `T` is a [`WellKnownAlias`] type, then its safe to cast `Option<T>` to `Option<T::Helper>`.
 unsafe impl<T: WellKnownAlias> WellKnownAlias for Option<T> {
     type Helper = Option<T::Helper>;
 }
 
-/// Safety: If `T` is a [`SerializeWellKnown`] type, then its safe to cast `Vec<T>` to `Vec<T::Helper>`.
+/// Safety: If `T` is a [`WellKnownAlias`] type, then its safe to cast `Vec<T>` to `Vec<T::Helper>`.
 unsafe impl<T: WellKnownAlias> WellKnownAlias for Vec<T> {
     type Helper = Vec<T::Helper>;
 }
 
-/// Safety: `V` is a [`SerializeWellKnown`] type, then its safe to cast `BTreeMap<K, V>` to `BTreeMap<K, V::Helper>`.
+/// Safety: `V` is a [`WellKnownAlias`] type, then its safe to cast `BTreeMap<K, V>` to `BTreeMap<K, V::Helper>`.
 unsafe impl<K, V: WellKnownAlias> WellKnownAlias for BTreeMap<K, V> {
     type Helper = BTreeMap<K, V::Helper>;
 }
 
-/// Safety: `V` is a [`SerializeWellKnown`] type, then its safe to cast `HashMap<K, V>` to `HashMap<K, V::Helper>`.
+/// Safety: `V` is a [`WellKnownAlias`] type, then its safe to cast `HashMap<K, V>` to `HashMap<K, V::Helper>`.
 unsafe impl<K, V: WellKnownAlias, S> WellKnownAlias for HashMap<K, V, S> {
     type Helper = HashMap<K, V::Helper, S>;
 }
@@ -765,12 +765,12 @@ unsafe impl<K, V: WellKnownAlias, S> WellKnownAlias for HashMap<K, V, S> {
 #[repr(transparent)]
 pub(crate) struct Bytes<T>(T);
 
-/// Safety: [`Bytes<T>`] is `#[repr(transparent)]` for [`T`]
+/// Safety: [`Bytes<T>`] is `#[repr(transparent)]` for `T`
 unsafe impl WellKnownAlias for Vec<u8> {
     type Helper = Bytes<Self>;
 }
 
-/// Safety: [`Bytes<T>`] is `#[repr(transparent)]` for [`T`]
+/// Safety: [`Bytes<T>`] is `#[repr(transparent)]` for `T`
 unsafe impl WellKnownAlias for bytes::Bytes {
     type Helper = Bytes<Self>;
 }

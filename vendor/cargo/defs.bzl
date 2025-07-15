@@ -201,7 +201,7 @@ def crate_features(
     features = _make_crate_features().add(additional)
 
     if all:
-        features.add(_FEATURE_FLAGS.get(package_name, []).keys())
+        features.add(_FEATURE_FLAGS.get(package_name, {}).keys())
 
     if default:
         features.add(_RESOLVED_FEATURE_FLAGS.get(package_name, {}))
@@ -324,7 +324,7 @@ def all_crate_deps(
         all_dependency_maps.append(_BUILD_PROC_MACRO_DEPENDENCIES.get(package_name, {}))
 
     if not all_dependency_maps:
-        fail("Tried to get all_crate_deps for package " + package_name + " but that package had no Cargo.toml file")
+        print("Tried to get all_crate_deps for package " + package_name + " but that package had no Cargo.toml file")
 
     features = _make_crate_features(package_name = package_name).add(features).flatten()
     dependencies = _flatten_dependency_maps(all_dependency_maps, features)
@@ -432,6 +432,14 @@ _NORMAL_DEPENDENCIES = {
             },
         },
     },
+    "build/tools/cargo_metadata": {
+        _REQUIRED_FEATURE: {
+            _COMMON_CONDITION: {
+                "camino": Label("@cargo_vendor//:camino-1.1.10"),
+                "clap": Label("@cargo_vendor//:clap-4.5.41"),
+            },
+        },
+    },
     "build/tools/clippy": {
         _REQUIRED_FEATURE: {
             _COMMON_CONDITION: {
@@ -451,7 +459,7 @@ _NORMAL_DEPENDENCIES = {
             },
         },
     },
-    "build/tools/nextest_test_runner": {
+    "build/tools/nextest_runner": {
         _REQUIRED_FEATURE: {
             _COMMON_CONDITION: {
                 "camino": Label("@cargo_vendor//:camino-1.1.10"),
@@ -473,6 +481,54 @@ _NORMAL_DEPENDENCIES = {
                 "clap": Label("@cargo_vendor//:clap-4.5.41"),
                 "regex": Label("@cargo_vendor//:regex-1.11.1"),
                 "serde_json": Label("@cargo_vendor//:serde_json-1.0.140"),
+            },
+        },
+    },
+    "build/tools/rust_doctest_builder": {
+        _REQUIRED_FEATURE: {
+            _COMMON_CONDITION: {
+                "camino": Label("@cargo_vendor//:camino-1.1.10"),
+                "clap": Label("@cargo_vendor//:clap-4.5.41"),
+                "quote": Label("@cargo_vendor//:quote-1.0.40"),
+                "serde": Label("@cargo_vendor//:serde-1.0.219"),
+                "serde_json": Label("@cargo_vendor//:serde_json-1.0.140"),
+            },
+        },
+    },
+    "build/tools/rust_doctest_common": {
+        _REQUIRED_FEATURE: {
+            _COMMON_CONDITION: {
+                "camino": Label("@cargo_vendor//:camino-1.1.10"),
+                "serde": Label("@cargo_vendor//:serde-1.0.219"),
+                "serde_json": Label("@cargo_vendor//:serde_json-1.0.140"),
+            },
+        },
+    },
+    "build/tools/rust_doctest_runner": {
+        _REQUIRED_FEATURE: {
+            _COMMON_CONDITION: {
+                "camino": Label("@cargo_vendor//:camino-1.1.10"),
+                "clap": Label("@cargo_vendor//:clap-4.5.41"),
+                "serde": Label("@cargo_vendor//:serde-1.0.219"),
+                "serde_json": Label("@cargo_vendor//:serde_json-1.0.140"),
+            },
+        },
+    },
+    "build/tools/rustdoc_merger": {
+        _REQUIRED_FEATURE: {
+            _COMMON_CONDITION: {
+                "camino": Label("@cargo_vendor//:camino-1.1.10"),
+                "camino-tempfile": Label("@cargo_vendor//:camino-tempfile-1.4.1"),
+                "clap": Label("@cargo_vendor//:clap-4.5.41"),
+            },
+        },
+    },
+    "build/tools/rustdoc_wrapper": {
+        _REQUIRED_FEATURE: {
+            _COMMON_CONDITION: {
+                "camino": Label("@cargo_vendor//:camino-1.1.10"),
+                "camino-tempfile": Label("@cargo_vendor//:camino-tempfile-1.4.1"),
+                "clap": Label("@cargo_vendor//:clap-4.5.41"),
             },
         },
     },
@@ -1070,10 +1126,23 @@ _NORMAL_DEPENDENCIES = {
             },
         },
     },
+    "tools/cargo/deny": {
+        _REQUIRED_FEATURE: {
+            _COMMON_CONDITION: {
+                "clap": Label("@cargo_vendor//:clap-4.5.41"),
+            },
+        },
+    },
 }
 
 _NORMAL_ALIASES = {
     "build/protobuf": {
+        _REQUIRED_FEATURE: {
+            _COMMON_CONDITION: {
+            },
+        },
+    },
+    "build/tools/cargo_metadata": {
         _REQUIRED_FEATURE: {
             _COMMON_CONDITION: {
             },
@@ -1091,13 +1160,43 @@ _NORMAL_ALIASES = {
             },
         },
     },
-    "build/tools/nextest_test_runner": {
+    "build/tools/nextest_runner": {
         _REQUIRED_FEATURE: {
             _COMMON_CONDITION: {
             },
         },
     },
     "build/tools/process_wrapper": {
+        _REQUIRED_FEATURE: {
+            _COMMON_CONDITION: {
+            },
+        },
+    },
+    "build/tools/rust_doctest_builder": {
+        _REQUIRED_FEATURE: {
+            _COMMON_CONDITION: {
+            },
+        },
+    },
+    "build/tools/rust_doctest_common": {
+        _REQUIRED_FEATURE: {
+            _COMMON_CONDITION: {
+            },
+        },
+    },
+    "build/tools/rust_doctest_runner": {
+        _REQUIRED_FEATURE: {
+            _COMMON_CONDITION: {
+            },
+        },
+    },
+    "build/tools/rustdoc_merger": {
+        _REQUIRED_FEATURE: {
+            _COMMON_CONDITION: {
+            },
+        },
+    },
+    "build/tools/rustdoc_wrapper": {
         _REQUIRED_FEATURE: {
             _COMMON_CONDITION: {
             },
@@ -1435,18 +1534,36 @@ _NORMAL_ALIASES = {
             },
         },
     },
+    "tools/cargo/deny": {
+        _REQUIRED_FEATURE: {
+            _COMMON_CONDITION: {
+            },
+        },
+    },
 }
 
 _NORMAL_DEV_DEPENDENCIES = {
     "build/protobuf": {
     },
+    "build/tools/cargo_metadata": {
+    },
     "build/tools/clippy": {
     },
     "build/tools/collect_args": {
     },
-    "build/tools/nextest_test_runner": {
+    "build/tools/nextest_runner": {
     },
     "build/tools/process_wrapper": {
+    },
+    "build/tools/rust_doctest_builder": {
+    },
+    "build/tools/rust_doctest_common": {
+    },
+    "build/tools/rust_doctest_runner": {
+    },
+    "build/tools/rustdoc_merger": {
+    },
+    "build/tools/rustdoc_wrapper": {
     },
     "cloud/core": {
     },
@@ -1682,18 +1799,32 @@ _NORMAL_DEV_DEPENDENCIES = {
     },
     "tools/cargo/clippy": {
     },
+    "tools/cargo/deny": {
+    },
 }
 
 _NORMAL_DEV_ALIASES = {
     "build/protobuf": {
     },
+    "build/tools/cargo_metadata": {
+    },
     "build/tools/clippy": {
     },
     "build/tools/collect_args": {
     },
-    "build/tools/nextest_test_runner": {
+    "build/tools/nextest_runner": {
     },
     "build/tools/process_wrapper": {
+    },
+    "build/tools/rust_doctest_builder": {
+    },
+    "build/tools/rust_doctest_common": {
+    },
+    "build/tools/rust_doctest_runner": {
+    },
+    "build/tools/rustdoc_merger": {
+    },
+    "build/tools/rustdoc_wrapper": {
     },
     "cloud/core": {
     },
@@ -1865,10 +1996,14 @@ _NORMAL_DEV_ALIASES = {
     },
     "tools/cargo/clippy": {
     },
+    "tools/cargo/deny": {
+    },
 }
 
 _PROC_MACRO_DEPENDENCIES = {
     "build/protobuf": {
+    },
+    "build/tools/cargo_metadata": {
     },
     "build/tools/clippy": {
         _REQUIRED_FEATURE: {
@@ -1879,9 +2014,34 @@ _PROC_MACRO_DEPENDENCIES = {
     },
     "build/tools/collect_args": {
     },
-    "build/tools/nextest_test_runner": {
+    "build/tools/nextest_runner": {
     },
     "build/tools/process_wrapper": {
+    },
+    "build/tools/rust_doctest_builder": {
+        _REQUIRED_FEATURE: {
+            _COMMON_CONDITION: {
+                "serde_derive": Label("@cargo_vendor//:serde_derive-1.0.219"),
+            },
+        },
+    },
+    "build/tools/rust_doctest_common": {
+        _REQUIRED_FEATURE: {
+            _COMMON_CONDITION: {
+                "serde_derive": Label("@cargo_vendor//:serde_derive-1.0.219"),
+            },
+        },
+    },
+    "build/tools/rust_doctest_runner": {
+        _REQUIRED_FEATURE: {
+            _COMMON_CONDITION: {
+                "serde_derive": Label("@cargo_vendor//:serde_derive-1.0.219"),
+            },
+        },
+    },
+    "build/tools/rustdoc_merger": {
+    },
+    "build/tools/rustdoc_wrapper": {
     },
     "cloud/core": {
         _REQUIRED_FEATURE: {
@@ -2171,18 +2331,32 @@ _PROC_MACRO_DEPENDENCIES = {
     },
     "tools/cargo/clippy": {
     },
+    "tools/cargo/deny": {
+    },
 }
 
 _PROC_MACRO_ALIASES = {
     "build/protobuf": {
     },
+    "build/tools/cargo_metadata": {
+    },
     "build/tools/clippy": {
     },
     "build/tools/collect_args": {
     },
-    "build/tools/nextest_test_runner": {
+    "build/tools/nextest_runner": {
     },
     "build/tools/process_wrapper": {
+    },
+    "build/tools/rust_doctest_builder": {
+    },
+    "build/tools/rust_doctest_common": {
+    },
+    "build/tools/rust_doctest_runner": {
+    },
+    "build/tools/rustdoc_merger": {
+    },
+    "build/tools/rustdoc_wrapper": {
     },
     "cloud/core": {
     },
@@ -2271,19 +2445,33 @@ _PROC_MACRO_ALIASES = {
     "dev-tools/xtask": {
     },
     "tools/cargo/clippy": {
+    },
+    "tools/cargo/deny": {
     },
 }
 
 _PROC_MACRO_DEV_DEPENDENCIES = {
     "build/protobuf": {
     },
+    "build/tools/cargo_metadata": {
+    },
     "build/tools/clippy": {
     },
     "build/tools/collect_args": {
     },
-    "build/tools/nextest_test_runner": {
+    "build/tools/nextest_runner": {
     },
     "build/tools/process_wrapper": {
+    },
+    "build/tools/rust_doctest_builder": {
+    },
+    "build/tools/rust_doctest_common": {
+    },
+    "build/tools/rust_doctest_runner": {
+    },
+    "build/tools/rustdoc_merger": {
+    },
+    "build/tools/rustdoc_wrapper": {
     },
     "cloud/core": {
     },
@@ -2378,18 +2566,32 @@ _PROC_MACRO_DEV_DEPENDENCIES = {
     },
     "tools/cargo/clippy": {
     },
+    "tools/cargo/deny": {
+    },
 }
 
 _PROC_MACRO_DEV_ALIASES = {
     "build/protobuf": {
     },
+    "build/tools/cargo_metadata": {
+    },
     "build/tools/clippy": {
     },
     "build/tools/collect_args": {
     },
-    "build/tools/nextest_test_runner": {
+    "build/tools/nextest_runner": {
     },
     "build/tools/process_wrapper": {
+    },
+    "build/tools/rust_doctest_builder": {
+    },
+    "build/tools/rust_doctest_common": {
+    },
+    "build/tools/rust_doctest_runner": {
+    },
+    "build/tools/rustdoc_merger": {
+    },
+    "build/tools/rustdoc_wrapper": {
     },
     "cloud/core": {
     },
@@ -2561,18 +2763,32 @@ _PROC_MACRO_DEV_ALIASES = {
     },
     "tools/cargo/clippy": {
     },
+    "tools/cargo/deny": {
+    },
 }
 
 _BUILD_DEPENDENCIES = {
     "build/protobuf": {
     },
+    "build/tools/cargo_metadata": {
+    },
     "build/tools/clippy": {
     },
     "build/tools/collect_args": {
     },
-    "build/tools/nextest_test_runner": {
+    "build/tools/nextest_runner": {
     },
     "build/tools/process_wrapper": {
+    },
+    "build/tools/rust_doctest_builder": {
+    },
+    "build/tools/rust_doctest_common": {
+    },
+    "build/tools/rust_doctest_runner": {
+    },
+    "build/tools/rustdoc_merger": {
+    },
+    "build/tools/rustdoc_wrapper": {
     },
     "cloud/core": {
     },
@@ -2667,18 +2883,32 @@ _BUILD_DEPENDENCIES = {
     },
     "tools/cargo/clippy": {
     },
+    "tools/cargo/deny": {
+    },
 }
 
 _BUILD_ALIASES = {
     "build/protobuf": {
     },
+    "build/tools/cargo_metadata": {
+    },
     "build/tools/clippy": {
     },
     "build/tools/collect_args": {
     },
-    "build/tools/nextest_test_runner": {
+    "build/tools/nextest_runner": {
     },
     "build/tools/process_wrapper": {
+    },
+    "build/tools/rust_doctest_builder": {
+    },
+    "build/tools/rust_doctest_common": {
+    },
+    "build/tools/rust_doctest_runner": {
+    },
+    "build/tools/rustdoc_merger": {
+    },
+    "build/tools/rustdoc_wrapper": {
     },
     "cloud/core": {
     },
@@ -2767,19 +2997,33 @@ _BUILD_ALIASES = {
     "dev-tools/xtask": {
     },
     "tools/cargo/clippy": {
+    },
+    "tools/cargo/deny": {
     },
 }
 
 _BUILD_PROC_MACRO_DEPENDENCIES = {
     "build/protobuf": {
     },
+    "build/tools/cargo_metadata": {
+    },
     "build/tools/clippy": {
     },
     "build/tools/collect_args": {
     },
-    "build/tools/nextest_test_runner": {
+    "build/tools/nextest_runner": {
     },
     "build/tools/process_wrapper": {
+    },
+    "build/tools/rust_doctest_builder": {
+    },
+    "build/tools/rust_doctest_common": {
+    },
+    "build/tools/rust_doctest_runner": {
+    },
+    "build/tools/rustdoc_merger": {
+    },
+    "build/tools/rustdoc_wrapper": {
     },
     "cloud/core": {
     },
@@ -2856,19 +3100,33 @@ _BUILD_PROC_MACRO_DEPENDENCIES = {
     "dev-tools/xtask": {
     },
     "tools/cargo/clippy": {
+    },
+    "tools/cargo/deny": {
     },
 }
 
 _BUILD_PROC_MACRO_ALIASES = {
     "build/protobuf": {
     },
+    "build/tools/cargo_metadata": {
+    },
     "build/tools/clippy": {
     },
     "build/tools/collect_args": {
     },
-    "build/tools/nextest_test_runner": {
+    "build/tools/nextest_runner": {
     },
     "build/tools/process_wrapper": {
+    },
+    "build/tools/rust_doctest_builder": {
+    },
+    "build/tools/rust_doctest_common": {
+    },
+    "build/tools/rust_doctest_runner": {
+    },
+    "build/tools/rustdoc_merger": {
+    },
+    "build/tools/rustdoc_wrapper": {
     },
     "cloud/core": {
     },
@@ -2946,18 +3204,32 @@ _BUILD_PROC_MACRO_ALIASES = {
     },
     "tools/cargo/clippy": {
     },
+    "tools/cargo/deny": {
+    },
 }
 
 _FEATURE_FLAGS = {
     "build/protobuf": {
     },
+    "build/tools/cargo_metadata": {
+    },
     "build/tools/clippy": {
     },
     "build/tools/collect_args": {
     },
-    "build/tools/nextest_test_runner": {
+    "build/tools/nextest_runner": {
     },
     "build/tools/process_wrapper": {
+    },
+    "build/tools/rust_doctest_builder": {
+    },
+    "build/tools/rust_doctest_common": {
+    },
+    "build/tools/rust_doctest_runner": {
+    },
+    "build/tools/rustdoc_merger": {
+    },
+    "build/tools/rustdoc_wrapper": {
     },
     "cloud/core": {
     },
@@ -3262,18 +3534,32 @@ _FEATURE_FLAGS = {
     },
     "tools/cargo/clippy": {
     },
+    "tools/cargo/deny": {
+    },
 }
 
 _RESOLVED_FEATURE_FLAGS = {
     "build/protobuf": {
     },
+    "build/tools/cargo_metadata": {
+    },
     "build/tools/clippy": {
     },
     "build/tools/collect_args": {
     },
-    "build/tools/nextest_test_runner": {
+    "build/tools/nextest_runner": {
     },
     "build/tools/process_wrapper": {
+    },
+    "build/tools/rust_doctest_builder": {
+    },
+    "build/tools/rust_doctest_common": {
+    },
+    "build/tools/rust_doctest_runner": {
+    },
+    "build/tools/rustdoc_merger": {
+    },
+    "build/tools/rustdoc_wrapper": {
     },
     "cloud/core": {
     },
@@ -3397,6 +3683,8 @@ _RESOLVED_FEATURE_FLAGS = {
     "dev-tools/xtask": {
     },
     "tools/cargo/clippy": {
+    },
+    "tools/cargo/deny": {
     },
 }
 
@@ -9365,6 +9653,7 @@ def crate_repositories():
         struct(repo = "cargo_vendor__bytes-1.10.1", is_dev_dep = False),
         struct(repo = "cargo_vendor__bytestring-1.4.0", is_dev_dep = False),
         struct(repo = "cargo_vendor__camino-1.1.10", is_dev_dep = False),
+        struct(repo = "cargo_vendor__camino-tempfile-1.4.1", is_dev_dep = False),
         struct(repo = "cargo_vendor__cargo-manifest-0.19.1", is_dev_dep = False),
         struct(repo = "cargo_vendor__cargo-platform-0.2.0", is_dev_dep = False),
         struct(repo = "cargo_vendor__cargo_metadata-0.20.0", is_dev_dep = False),

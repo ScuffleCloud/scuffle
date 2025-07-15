@@ -33,7 +33,7 @@ def _nextest_test_impl(ctx):
         "RUNNER_BINARY": test_binary.short_path,
         "COVERAGE_BINARY": test_binary.short_path,
         "RUNNER_CONFIG": ctx.attr._nextest_config[DefaultInfo].files.to_list()[0].short_path,
-        "RUNNER_PROFILE": ctx.attr._profile[BuildSettingInfo].value,
+        "RUNNER_PROFILE": ctx.attr._nextest_profile[BuildSettingInfo].value,
     }
 
     env.update(run_environment_info.environment)
@@ -56,14 +56,20 @@ def _nextest_test_impl(ctx):
         wrapper_script = ctx.actions.declare_file(ctx.label.name + ".bat")
         ctx.actions.write(
             output = wrapper_script,
-            content = '@"%~dp0{}" %*'.format(ctx.attr._test_runner[DefaultInfo].files_to_run.executable.short_path),
+            content = '@"{}" --subst "pwd=${{pwd}}" -- "{}" %*'.format(
+                ctx.executable._process_wrapper.short_path,
+                ctx.executable._test_runner.short_path
+            ),
             is_executable = True,
         )
     else:
         wrapper_script = ctx.actions.declare_file(ctx.label.name + ".sh")
         ctx.actions.write(
             output = wrapper_script,
-            content = '#!/bin/env bash\nexec "{}" --subst pwd=$(pwd) -- "{}" $@'.format(ctx.executable._process_wrapper.short_path, ctx.executable._test_runner.short_path),
+            content = '#!/usr/bin/env bash\nexec "{}" --subst \'pwd=${{pwd}}\' -- "{}" $@'.format(
+                ctx.executable._process_wrapper.short_path,
+                ctx.executable._test_runner.short_path,
+            ),
             is_executable = True,
         )
 
@@ -88,9 +94,9 @@ nextest_test = rule(
     parent = rust_test,
     attrs = {
         "workspace_root": attr.label(mandatory = False),
-        "_profile": attr.label(mandatory = False, default = "//:test_profile"),
+        "_nextest_profile": attr.label(mandatory = False, default = "//:test_profile"),
         "_test_runner": attr.label(
-            default = "//build/tools/nextest_test_runner",
+            default = "//build/tools/nextest_runner:bin",
             executable = True,
             cfg = "exec"
         ),

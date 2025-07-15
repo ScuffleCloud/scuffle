@@ -1,6 +1,7 @@
 load("//build/tools:package.bzl", "scuffle_package")
+load("//build/tools:cargo_toml.bzl", "cargo_toml")
 
-exports_files(["Cargo.toml"])
+cargo_toml()
 
 scuffle_package(
     aliases = {
@@ -34,7 +35,7 @@ scuffle_package(
     srcs = [
         "src/bin/standalone.rs"
     ],
-    crate_name = "scufflecloud-core",
+    crate_name = "scufflecloud-core-bin",
     crate_type = "bin",
     deps = [
         ":core",

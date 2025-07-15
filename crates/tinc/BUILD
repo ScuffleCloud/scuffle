@@ -1,7 +1,8 @@
 load("//build/tools:package.bzl", "scuffle_package", "scuffle_test")
 load("@protobuf//bazel:proto_library.bzl", "proto_library")
+load("//build/tools:cargo_toml.bzl", "cargo_toml")
 
-exports_files(["Cargo.toml"])
+cargo_toml()
 
 proto_library(
     name = "protobuf",

@@ -295,7 +295,7 @@ http_archive(
 )
 
 http_archive(
-    name = "libclang-darwin-x86_64",
+    name = "libclang-macos-x86_64",
     build_file_content = _LIBCLANG_BUILD_FILE,
     sha256 = "",
     url = LLVM_BASE_URL.format(
@@ -306,7 +306,7 @@ http_archive(
 )
 
 http_archive(
-    name = "libclang-darwin-aarch64",
+    name = "libclang-macos-aarch64",
     build_file_content = _LIBCLANG_BUILD_FILE,
     sha256 = "54349e1f18abbd6f17c98ef1a845dfb0f262560a3da8964ba6a841e46408fbd5",
     url = LLVM_BASE_URL.format(

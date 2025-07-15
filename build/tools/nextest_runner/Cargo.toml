@@ -1,7 +1,12 @@
 [package]
-name = "nextest-runner-wrapper"
+name = "nextest_runner_lib"
 version = "0.1.0"
 edition = "2024"
+license = "MIT OR Apache-2.0"
+
+[[bin]]
+name = "nextest_runner_bin"
+path = "src/main.rs"
 
 [dependencies]
 toml_edit = "0.22"

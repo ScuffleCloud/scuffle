@@ -2,8 +2,9 @@ load("@rules_rust//cargo:defs.bzl", "cargo_build_script", "cargo_toml_env_vars")
 load("@rules_rust//rust:defs.bzl", "rust_binary", "rust_library", "rust_proc_macro")
 load("@rules_rust//rust:defs.bzl", "rustfmt_test")
 load("//build/tools:clippy.bzl", "rust_clippy", "rust_clippy_test")
-load("//build/tools/nextest_test_runner:defs.bzl", "nextest_test")
-load("//vendor/cargo:defs.bzl", "all_crate_deps", "crate_features", dep_aliases = "aliases")
+load("//build/tools:rustdoc.bzl", "rustdoc", "rustdoc_test")
+load("//build/tools:nextest_test.bzl", "nextest_test")
+load("@cargo_vendor//:defs.bzl", "all_crate_deps", "crate_features", dep_aliases = "aliases")
 
 def scuffle_package(
     crate_name,
@@ -18,6 +19,7 @@ def scuffle_package(
     compile_data = None,
     tags = None,
     test = None,
+    extra_target_kwargs = None,
 ):
     """Creates a rust_library and corresponding rust_test target.
 
@@ -57,6 +59,8 @@ def scuffle_package(
         tags = []
     if test == None:
         test = {} if crate_type == "rlib" else False
+    if extra_target_kwargs == None:
+        extra_target_kwargs = {}
 
     NAME_MAPPINGS = {
         "rlib": "lib",
@@ -79,14 +83,18 @@ def scuffle_package(
 
     colon_name = ":" + name
 
-    kwargs = dict(
+    normal_deps = all_crate_deps(normal = True, package_name = package_name, features = features) + deps + ["@rules_rust//rust/runfiles"]
+    normal_proc_macro_deps = all_crate_deps(proc_macro = True, package_name = package_name, features = features) + proc_macro_deps
+    aliases = aliases | dep_aliases(package_name = package_name, features = features)
+
+    kwargs = extra_target_kwargs | dict(
         name = name,
         crate_name = crate_name.replace("-", "_"),
         srcs = srcs,
         crate_features = features.select(),
-        aliases = aliases | dep_aliases(package_name = package_name, features = features),
-        deps = all_crate_deps(normal = True, package_name = package_name, features = features) + deps + ["@rules_rust//rust/runfiles"],
-        proc_macro_deps = all_crate_deps(proc_macro = True, package_name = package_name, features = features) + proc_macro_deps,
+        aliases = aliases,
+        deps = normal_deps,
+        proc_macro_deps = normal_proc_macro_deps,
         visibility = visibility,
         compile_data = compile_data,
         tags = tags,
@@ -108,7 +116,7 @@ def scuffle_package(
     rust_targets = [colon_name]
 
     if test != False:
-        test_deps = test.get("deps", []) + ["@rules_rust//rust/runfiles"]
+        test_deps = test.get("deps", [])[:]
         test_proc_macro_deps = test.get("proc_macro_deps", []) + []
         test_env = test.get("env", {}) | {}
         test_data = test.get("data", []) + []
@@ -125,16 +133,19 @@ def scuffle_package(
             test_data += native.glob(["src/**/*"])
             workspace_root = "//:test_workspace_root"
 
+        all_test_deps = all_crate_deps(normal = True, normal_dev = True, package_name = package_name, features = features) + deps + test_deps + ["@rules_rust//rust/runfiles"]
+        all_test_proc_macro_deps = all_crate_deps(proc_macro = True, proc_macro_dev = True, package_name = package_name, features = features) + proc_macro_deps + test_proc_macro_deps
+
         nextest_test(
             name = name + "_test",
             workspace_root = workspace_root,
             data = test_data,
             env = test_env,
             tags = test_tags,
-            crate = ":" + name,
+            crate = colon_name,
             aliases = aliases | dep_aliases(package_name = package_name, features = features),
-            deps = all_crate_deps(normal = True, normal_dev = True, package_name = package_name, features = features) + deps + test_deps,
-            proc_macro_deps = all_crate_deps(proc_macro = True, proc_macro_dev = True, package_name = package_name, features = features) + proc_macro_deps + test_proc_macro_deps,
+            deps = all_test_deps,
+            proc_macro_deps = all_test_proc_macro_deps,
             crate_features = features.select(),
             rustc_env_files = [colon_name + "_cargo_toml_env"],
             rustc_flags = [
@@ -149,6 +160,21 @@ def scuffle_package(
             # rule depends on this, which we use to generate clippy suggestions
             testonly = False,
             visibility = ["//visibility:private"],
+        )
+
+        rustdoc_test(
+            name = name + "_doc_test",
+            crate = colon_name,
+            deps = all_test_deps,
+            aliases = aliases,
+            proc_macro_deps = all_test_proc_macro_deps,
+            data = test_data,
+            env = test_env,
+            tags = test_tags,
+            rustc_flags = [
+                "--cfg=bazel_runfiles",
+                "-Clink-arg=-Wl,-znostart-stop-gc",
+            ],
         )
 
         rust_targets.append(colon_name + "_test")
@@ -170,14 +196,59 @@ def scuffle_package(
         targets = rust_targets,
     )
 
+    rustdoc(
+        name = name + "_doc",
+        crate = colon_name,
+        generate_parts = True,
+        rustdoc_env = {
+            "RUSTC_BOOTSTRAP": "1",
+        },
+        rustdoc_flags = [
+            "-Dwarnings",
+            "-Zunstable-options",
+            "--cfg=docsrs",
+            "--sort-modules-by-appearance",
+            "--generate-link-to-definition",
+            "--document-private-items",
+            "--document-hidden-items",
+        ]
+    )
+
+    rustdoc(
+        name = name + "_doc_json",
+        crate = colon_name,
+        output_format = "json",
+        rustdoc_env = {
+            "RUSTC_BOOTSTRAP": "1",
+        },
+        rustdoc_flags = [
+            "-Zunstable-options",
+            "--cap-lints=allow",
+            "--cfg=docsrs",
+            "--sort-modules-by-appearance",
+            "--document-private-items",
+            "--document-hidden-items",
+        ]
+    )
+
 def scuffle_test(
-    deps = [],
-    proc_macro_deps = [],
-    env = {},
-    data = [],
+    deps = None,
+    proc_macro_deps = None,
+    env = None,
+    data = None,
     insta = False,
-    tags = [],
+    tags = None,
 ):
+    if deps == None:
+        deps = []
+    if proc_macro_deps == None:
+        proc_macro_deps = []
+    if env == None:
+        env = {}
+    if data == None:
+        data = []
+    if tags == None:
+        tags = []
     return {
         "deps": deps,
         "proc_macro_deps": proc_macro_deps,

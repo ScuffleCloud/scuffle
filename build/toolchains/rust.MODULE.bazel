@@ -1,8 +1,13 @@
 bazel_dep(name = "rules_rust", version = "0.61.0")
-git_override(
+
+# git_override(
+#     module_name = "rules_rust",
+#     commit = "c5d8a04b9eedeb689b06e4bfdb245892c3048850",
+#     remote = "https://github.com/ScuffleCloud/rules_rust.git",
+# )
+local_path_override(
     module_name = "rules_rust",
-    commit = "c5d8a04b9eedeb689b06e4bfdb245892c3048850",
-    remote = "https://github.com/ScuffleCloud/rules_rust.git",
+    path = "../rules_rust",
 )
 
 rust = use_extension(
@@ -40,6 +45,7 @@ use_repo(
     "cargo_vendor__bytes-1.10.1",
     "cargo_vendor__bytestring-1.4.0",
     "cargo_vendor__camino-1.1.10",
+    "cargo_vendor__camino-tempfile-1.4.1",
     "cargo_vendor__cargo-manifest-0.19.1",
     "cargo_vendor__cargo-platform-0.2.0",
     "cargo_vendor__cargo_metadata-0.20.0",
@@ -162,3 +168,20 @@ use_repo(
     "cargo_vendor__uuid-1.17.0",
     "cargo_vendor__va_list-0.2.1",
 )
+
+bindeps = use_extension("@rules_rust//crate_universe:extension.bzl", "crate")
+bindeps.spec(
+    artifact = "bin",
+    git = "https://github.com/TroyKomodo/cargo-deny.git",
+    package = "cargo-deny",
+    rev = "5ff948502ef83870c128e7e7af5cb17db6588dd8",
+)
+bindeps.annotation(
+    crate = "cargo-deny",
+    gen_all_binaries = True,
+)
+bindeps.from_specs(
+    name = "bindeps",
+    stable_as_nightly = True,
+)
+use_repo(bindeps, "bindeps")

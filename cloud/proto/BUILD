@@ -1,8 +1,9 @@
 load("//build/tools:package.bzl", "scuffle_build_script", "scuffle_package")
 load("@protobuf//bazel:proto_library.bzl", "proto_library")
 load("//build/protobuf:proto_descriptor_set.bzl", "proto_descriptor_set")
+load("//build/tools:cargo_toml.bzl", "cargo_toml")
 
-exports_files(["Cargo.toml"])
+cargo_toml()
 
 proto_library(
     name = "pb",
@@ -33,7 +34,7 @@ scuffle_build_script(
 scuffle_package(
     crate_name = "scufflecloud-proto",
     deps = [
-        ":build_script",
         "//crates/tinc",
+        ":build_script"
     ],
 )

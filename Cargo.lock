@@ -589,6 +589,14 @@ dependencies = [
 ]
 
 [[package]]
+name = "cargo_metadata_runner"
+version = "0.1.0"
+dependencies = [
+ "camino",
+ "clap",
+]
+
+[[package]]
 name = "cast"
 version = "0.3.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1190,6 +1198,13 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "bef552e6f588e446098f6ba40d89ac146c8c7b64aade83c051ee00bb5d2bc18d"
 dependencies = [
  "uuid",
+]
+
+[[package]]
+name = "deny_runner"
+version = "0.0.0"
+dependencies = [
+ "clap",
 ]
 
 [[package]]
@@ -3010,7 +3025,13 @@ dependencies = [
 ]
 
 [[package]]
-name = "nextest-runner-wrapper"
+name = "nextest-workspace-hack"
+version = "0.1.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "d906846a98739ed9d73d66e62c2641eef8321f1734b7a1156ab045a0248fb2b3"
+
+[[package]]
+name = "nextest_runner_lib"
 version = "0.1.0"
 dependencies = [
  "camino",
@@ -3023,12 +3044,6 @@ dependencies = [
  "serde_json",
  "toml_edit",
 ]
-
-[[package]]
-name = "nextest-workspace-hack"
-version = "0.1.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "d906846a98739ed9d73d66e62c2641eef8321f1734b7a1156ab045a0248fb2b3"
 
 [[package]]
 name = "nix"
@@ -4294,6 +4309,42 @@ dependencies = [
 ]
 
 [[package]]
+name = "rust_doctest_builder"
+version = "0.1.0"
+dependencies = [
+ "camino",
+ "clap",
+ "quote",
+ "rust_doctest_common",
+ "serde",
+ "serde_derive",
+ "serde_json",
+]
+
+[[package]]
+name = "rust_doctest_common"
+version = "0.1.0"
+dependencies = [
+ "camino",
+ "serde",
+ "serde_derive",
+ "serde_json",
+]
+
+[[package]]
+name = "rust_doctest_runner"
+version = "0.1.0"
+dependencies = [
+ "camino",
+ "clap",
+ "nextest_runner_lib",
+ "rust_doctest_common",
+ "serde",
+ "serde_derive",
+ "serde_json",
+]
+
+[[package]]
 name = "rustc-demangle"
 version = "0.1.25"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -4321,6 +4372,24 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "cfcb3a22ef46e85b45de6ee7e79d063319ebb6594faafcf1c225ea92ab6e9b92"
 dependencies = [
  "semver",
+]
+
+[[package]]
+name = "rustdoc_merger"
+version = "0.1.0"
+dependencies = [
+ "camino",
+ "camino-tempfile",
+ "clap",
+]
+
+[[package]]
+name = "rustdoc_wrapper"
+version = "0.1.0"
+dependencies = [
+ "camino",
+ "camino-tempfile",
+ "clap",
 ]
 
 [[package]]

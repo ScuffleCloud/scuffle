@@ -138,9 +138,7 @@ message RegisterWithEmailRequest {
 message CompleteRegisterWithEmailRequest {
     // The code received via email.
     bytes code = 1;
-    // The password.
-    string password = 2 [(string_constraint).password = true];
-    Device device = 3;
+    Device device = 2;
 }
 
 message LoginWithEmailOptionsRequest {

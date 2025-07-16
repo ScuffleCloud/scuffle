@@ -136,7 +136,6 @@ impl<G: CoreConfig> pb::scufflecloud::core::v1::sessions_service_server::Session
                             preferred_name: None,
                             first_name: None,
                             last_name: None,
-                            password: Some(&payload.password),
                         },
                         device,
                         &ip_info,

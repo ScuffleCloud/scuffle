@@ -1,0 +1,48 @@
+syntax = "proto3";
+
+package scufflecloud.core.v1;
+
+import "tinc/annotations.proto";
+
+import "scufflecloud/core/v1/organizations.proto";
+import "scufflecloud/core/v1/users.proto";
+import "scufflecloud/core/v1/constraints.proto";
+
+service OrganizationsService {
+    rpc CreateOrganization(CreateOrganizationRequest) returns (Organization) {
+        option (tinc.method).endpoint = {
+            post: "/organizations"
+        };
+    }
+    rpc GetOrganization(OrganizationByIdRequest) returns (Organization) {
+        option (tinc.method).endpoint = {
+            get: "/organizations/{id}"
+        };
+    }
+    rpc ListOrganizationMembers(OrganizationByIdRequest) returns (OrganizationMemberList) {
+        option (tinc.method).endpoint = {
+            get: "/organizations/{id}/members"
+        };
+    }
+
+    rpc ListOrganizationsByUser(UserByIdRequest) returns (OrganizationList) {
+        option (tinc.method).endpoint = {
+            get: "/users/{id}/organizations"
+        };
+    }
+}
+
+message CreateOrganizationRequest {
+    string name = 1 [(tinc.field).constraint.string = {
+        min_len: 1,
+        max_len: 255
+    }];
+}
+
+message OrganizationList {
+    repeated Organization organizations = 1;
+}
+
+message OrganizationMemberList {
+    repeated OrganizationMember members = 1;
+}

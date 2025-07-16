@@ -1,0 +1,61 @@
+syntax = "proto3";
+
+package scufflecloud.core.v1;
+
+import "google/protobuf/empty.proto";
+import "google/protobuf/timestamp.proto";
+import "tinc/annotations.proto";
+
+import "scufflecloud/core/v1/users.proto";
+import "scufflecloud/core/v1/organizations.proto";
+import "scufflecloud/core/v1/constraints.proto";
+
+service OrganizationInvitationsService {
+    rpc CreateOrganizationInvitation(CreateOrganizationInvitationRequest) returns (OrganizationInvitation) {
+        option (tinc.method).endpoint = {
+            post: "/organization-invitations"
+        };
+    }
+
+    rpc ListOrganizationInvitationsByOrganization(OrganizationByIdRequest) returns (OrganizationInvitationList) {
+        option (tinc.method).endpoint = {
+            get: "/organizations/{id}/invitations"
+        };
+    }
+    rpc ListOrgnizationInvitesByUser(UserByIdRequest) returns (OrganizationInvitationList) {
+        option (tinc.method).endpoint = {
+            get: "/users/{id}/invitations"
+        };
+    }
+
+    rpc GetOrganizationInvitation(OrganizationInvitationByIdRequest) returns (OrganizationInvitation) {
+        option (tinc.method).endpoint = {
+            get: "/organization-invitations/{id}"
+        };
+    }
+    rpc AcceptOrganizationInvitation(OrganizationInvitationByIdRequest) returns (OrganizationMember) {
+        option (tinc.method).endpoint = {
+            post: "/organization-invitations/{id}/accept"
+        };
+    }
+    rpc DeclineOrganizationInvitation(OrganizationInvitationByIdRequest) returns (google.protobuf.Empty) {
+        option (tinc.method).endpoint = {
+            post: "/organization-invitations/{id}/decline"
+        };
+    }
+}
+
+message CreateOrganizationInvitationRequest {
+    string organization_id = 1 [(string_constraint).id = true];
+    string email = 2 [(tinc.field).constraint.string.email = true];
+    // In how many seconds the invitation will expire.
+    optional uint64 expires_in_s = 3;
+}
+
+message OrganizationInvitationList {
+    repeated OrganizationInvitation invitations = 1;
+}
+
+message OrganizationInvitationByIdRequest {
+    string id = 1 [(string_constraint).id = true];
+}

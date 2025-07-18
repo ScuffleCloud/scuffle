@@ -86,7 +86,8 @@ where
     }
 
     fn serialize_char(self, v: char) -> Result<Self::Ok, Self::Error> {
-        self.serialize_u8(v as u8)
+        let mut buf: [u8; 4] = [0; 4];
+        self.serialize_str(v.encode_utf8(&mut buf))
     }
 
     fn serialize_str(self, v: &str) -> Result<Self::Ok, Self::Error> {
@@ -582,9 +583,10 @@ mod tests {
         let value = 'a';
         let bytes = to_bytes(&value).unwrap();
 
-        let mut expected = vec![Amf0Marker::Number as u8];
-        expected.extend((b'a' as f64).to_be_bytes());
-        #[rustfmt::skip]
+        let mut expected = vec![Amf0Marker::String as u8];
+        expected.extend((1u16).to_be_bytes());
+        expected.extend(b"a");
+
         assert_eq!(bytes, expected);
     }
 

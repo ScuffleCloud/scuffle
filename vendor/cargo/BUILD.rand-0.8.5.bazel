@@ -37,7 +37,27 @@ rust_library(
     crate_features = [
         "rand_chacha",
         "std_rng",
-    ],
+    ] + select({
+        "@rules_rust//rust/platform:aarch64-apple-darwin": [
+            "small_rng",
+        ],
+        "@rules_rust//rust/platform:aarch64-pc-windows-msvc": [
+            "small_rng",
+        ],
+        "@rules_rust//rust/platform:aarch64-unknown-linux-gnu": [
+            "small_rng",
+        ],
+        "@rules_rust//rust/platform:x86_64-apple-darwin": [
+            "small_rng",
+        ],
+        "@rules_rust//rust/platform:x86_64-pc-windows-msvc": [
+            "small_rng",
+        ],
+        "@rules_rust//rust/platform:x86_64-unknown-linux-gnu": [
+            "small_rng",
+        ],
+        "//conditions:default": [],
+    }),
     crate_root = "src/lib.rs",
     edition = "2018",
     rustc_env_files = [

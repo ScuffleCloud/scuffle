@@ -1,0 +1,15 @@
+[package]
+name = "rustdoc_merger"
+version = "0.1.0"
+edition = "2024"
+license = "MIT OR Apache-2.0"
+
+[dependencies]
+camino = { version = "1", features = ["serde"] }
+camino-tempfile = "1.4"
+lol_html = "2.6"
+copy_dir = "0.1"
+serde = "1"
+serde_derive = "1"
+serde_json = "1"
+clap = { version = "4.5", features = ["derive", "env"] }

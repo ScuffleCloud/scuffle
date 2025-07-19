@@ -1,6 +1,6 @@
 load("@bazel_skylib//rules:common_settings.bzl", "string_flag")
 load("//:cargo_targets.bzl", "cargo_manifests", "cargo_targets", "cargo_workspace_manifest", "cargo_lock")
-load("//build/tools:cargo_metadata.bzl", "cargo_metadata")
+load("//build/utils:rustdoc.bzl", "rustdoc_merge")
 
 exports_files(["Cargo.toml", "Cargo.lock", "rustfmt.toml", ".config/nextest.toml", "deny.toml"])
 
@@ -19,12 +19,32 @@ string_flag(
     visibility = ["//visibility:public"],
 )
 
-# rustdoc(
-#     name = "rustdoc",
-#     crates = cargo_targets(exclude = [
-#         "//tools/cargo/clippy",
-#         "//build/tools/clippy",
-#         "//build/protobuf",
-#     ]),
-#     visibility = ["//visibility:public"],
-# )
+html_docs = cargo_targets(target = "{name}_doc", exclude = [
+    "//tools/cargo/clippy",
+    "//build/utils/clippy",
+    "//build/utils/protobuf",
+]) + [
+    "//tools/cargo/clippy:fix_doc",
+    "//build/utils/nextest_runner:bin_doc",
+    "//build/utils/clippy:test_runner_doc",
+    "//build/utils/protobuf:file_concat_doc",
+    "//cloud/core:bin_doc",
+]
+
+json_docs = cargo_targets(target = "{name}_doc_json", exclude = [
+    "//tools/cargo/clippy",
+    "//build/utils/clippy",
+    "//build/utils/protobuf",
+]) + [
+    "//tools/cargo/clippy:fix_doc_json",
+    "//build/utils/nextest_runner:bin_doc_json",
+    "//build/utils/clippy:test_runner_doc_json",
+    "//build/utils/protobuf:file_concat_doc_json",
+    "//cloud/core:bin_doc_json",
+]
+
+rustdoc_merge(
+    name = "rustdoc",
+    targets = html_docs + json_docs,
+    visibility = ["//visibility:public"],
+)

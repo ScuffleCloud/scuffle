@@ -1,5 +1,5 @@
-load("//build/tools:package.bzl", "scuffle_package", "scuffle_test")
-load("//build/tools:cargo_toml.bzl", "cargo_toml")
+load("//build/utils:package.bzl", "scuffle_package", "scuffle_test")
+load("//build/utils:cargo_toml.bzl", "cargo_toml")
 
 cargo_toml()
 
@@ -11,10 +11,10 @@ scuffle_package(
     ],
     proc_macro_deps = ["//crates/changelog"],
     test = scuffle_test(
-        data = ["@scuffle_assets//:mp4", "//build/tools:ffmpeg"],
+        data = ["@scuffle_assets//:mp4", "//build/utils:ffmpeg"],
         deps = ["//crates/flv"],
         env = {
-            "FFMPEG": "$(rootpath //build/tools:ffmpeg)",
+            "FFMPEG": "$(rootpath //build/utils:ffmpeg)",
             "ASSETS_DIR": "$(rootpath @scuffle_assets//:mp4)",
         },
     ),

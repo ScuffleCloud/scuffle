@@ -35,6 +35,8 @@ rust_proc_macro(
         ],
     ),
     crate_features = [
+        "add",
+        "add_assign",
         "default",
         "display",
         "is_variant",

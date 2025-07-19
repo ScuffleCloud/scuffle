@@ -425,14 +425,7 @@ def aliases(
 ###############################################################################
 
 _NORMAL_DEPENDENCIES = {
-    "build/protobuf": {
-        _REQUIRED_FEATURE: {
-            _COMMON_CONDITION: {
-                "anyhow": Label("@cargo_vendor//:anyhow-1.0.98"),
-            },
-        },
-    },
-    "build/tools/cargo_metadata": {
+    "build/utils/cargo_metadata": {
         _REQUIRED_FEATURE: {
             _COMMON_CONDITION: {
                 "camino": Label("@cargo_vendor//:camino-1.1.10"),
@@ -440,7 +433,7 @@ _NORMAL_DEPENDENCIES = {
             },
         },
     },
-    "build/tools/clippy": {
+    "build/utils/clippy": {
         _REQUIRED_FEATURE: {
             _COMMON_CONDITION: {
                 "camino": Label("@cargo_vendor//:camino-1.1.10"),
@@ -450,7 +443,7 @@ _NORMAL_DEPENDENCIES = {
             },
         },
     },
-    "build/tools/collect_args": {
+    "build/utils/collect_args": {
         _REQUIRED_FEATURE: {
             _COMMON_CONDITION: {
                 "camino": Label("@cargo_vendor//:camino-1.1.10"),
@@ -459,7 +452,7 @@ _NORMAL_DEPENDENCIES = {
             },
         },
     },
-    "build/tools/nextest_runner": {
+    "build/utils/nextest_runner": {
         _REQUIRED_FEATURE: {
             _COMMON_CONDITION: {
                 "camino": Label("@cargo_vendor//:camino-1.1.10"),
@@ -474,7 +467,7 @@ _NORMAL_DEPENDENCIES = {
             },
         },
     },
-    "build/tools/process_wrapper": {
+    "build/utils/process_wrapper": {
         _REQUIRED_FEATURE: {
             _COMMON_CONDITION: {
                 "camino": Label("@cargo_vendor//:camino-1.1.10"),
@@ -484,7 +477,14 @@ _NORMAL_DEPENDENCIES = {
             },
         },
     },
-    "build/tools/rust_doctest_builder": {
+    "build/utils/protobuf": {
+        _REQUIRED_FEATURE: {
+            _COMMON_CONDITION: {
+                "anyhow": Label("@cargo_vendor//:anyhow-1.0.98"),
+            },
+        },
+    },
+    "build/utils/rust_doctest_builder": {
         _REQUIRED_FEATURE: {
             _COMMON_CONDITION: {
                 "camino": Label("@cargo_vendor//:camino-1.1.10"),
@@ -495,7 +495,7 @@ _NORMAL_DEPENDENCIES = {
             },
         },
     },
-    "build/tools/rust_doctest_common": {
+    "build/utils/rust_doctest_common": {
         _REQUIRED_FEATURE: {
             _COMMON_CONDITION: {
                 "camino": Label("@cargo_vendor//:camino-1.1.10"),
@@ -504,7 +504,7 @@ _NORMAL_DEPENDENCIES = {
             },
         },
     },
-    "build/tools/rust_doctest_runner": {
+    "build/utils/rust_doctest_runner": {
         _REQUIRED_FEATURE: {
             _COMMON_CONDITION: {
                 "camino": Label("@cargo_vendor//:camino-1.1.10"),
@@ -514,16 +514,20 @@ _NORMAL_DEPENDENCIES = {
             },
         },
     },
-    "build/tools/rustdoc_merger": {
+    "build/utils/rustdoc_merger": {
         _REQUIRED_FEATURE: {
             _COMMON_CONDITION: {
                 "camino": Label("@cargo_vendor//:camino-1.1.10"),
                 "camino-tempfile": Label("@cargo_vendor//:camino-tempfile-1.4.1"),
                 "clap": Label("@cargo_vendor//:clap-4.5.41"),
+                "copy_dir": Label("@cargo_vendor//:copy_dir-0.1.3"),
+                "lol_html": Label("@cargo_vendor//:lol_html-2.6.0"),
+                "serde": Label("@cargo_vendor//:serde-1.0.219"),
+                "serde_json": Label("@cargo_vendor//:serde_json-1.0.140"),
             },
         },
     },
-    "build/tools/rustdoc_wrapper": {
+    "build/utils/rustdoc_wrapper": {
         _REQUIRED_FEATURE: {
             _COMMON_CONDITION: {
                 "camino": Label("@cargo_vendor//:camino-1.1.10"),
@@ -1136,67 +1140,67 @@ _NORMAL_DEPENDENCIES = {
 }
 
 _NORMAL_ALIASES = {
-    "build/protobuf": {
+    "build/utils/cargo_metadata": {
         _REQUIRED_FEATURE: {
             _COMMON_CONDITION: {
             },
         },
     },
-    "build/tools/cargo_metadata": {
+    "build/utils/clippy": {
         _REQUIRED_FEATURE: {
             _COMMON_CONDITION: {
             },
         },
     },
-    "build/tools/clippy": {
+    "build/utils/collect_args": {
         _REQUIRED_FEATURE: {
             _COMMON_CONDITION: {
             },
         },
     },
-    "build/tools/collect_args": {
+    "build/utils/nextest_runner": {
         _REQUIRED_FEATURE: {
             _COMMON_CONDITION: {
             },
         },
     },
-    "build/tools/nextest_runner": {
+    "build/utils/process_wrapper": {
         _REQUIRED_FEATURE: {
             _COMMON_CONDITION: {
             },
         },
     },
-    "build/tools/process_wrapper": {
+    "build/utils/protobuf": {
         _REQUIRED_FEATURE: {
             _COMMON_CONDITION: {
             },
         },
     },
-    "build/tools/rust_doctest_builder": {
+    "build/utils/rust_doctest_builder": {
         _REQUIRED_FEATURE: {
             _COMMON_CONDITION: {
             },
         },
     },
-    "build/tools/rust_doctest_common": {
+    "build/utils/rust_doctest_common": {
         _REQUIRED_FEATURE: {
             _COMMON_CONDITION: {
             },
         },
     },
-    "build/tools/rust_doctest_runner": {
+    "build/utils/rust_doctest_runner": {
         _REQUIRED_FEATURE: {
             _COMMON_CONDITION: {
             },
         },
     },
-    "build/tools/rustdoc_merger": {
+    "build/utils/rustdoc_merger": {
         _REQUIRED_FEATURE: {
             _COMMON_CONDITION: {
             },
         },
     },
-    "build/tools/rustdoc_wrapper": {
+    "build/utils/rustdoc_wrapper": {
         _REQUIRED_FEATURE: {
             _COMMON_CONDITION: {
             },
@@ -1543,27 +1547,27 @@ _NORMAL_ALIASES = {
 }
 
 _NORMAL_DEV_DEPENDENCIES = {
-    "build/protobuf": {
+    "build/utils/cargo_metadata": {
     },
-    "build/tools/cargo_metadata": {
+    "build/utils/clippy": {
     },
-    "build/tools/clippy": {
+    "build/utils/collect_args": {
     },
-    "build/tools/collect_args": {
+    "build/utils/nextest_runner": {
     },
-    "build/tools/nextest_runner": {
+    "build/utils/process_wrapper": {
     },
-    "build/tools/process_wrapper": {
+    "build/utils/protobuf": {
     },
-    "build/tools/rust_doctest_builder": {
+    "build/utils/rust_doctest_builder": {
     },
-    "build/tools/rust_doctest_common": {
+    "build/utils/rust_doctest_common": {
     },
-    "build/tools/rust_doctest_runner": {
+    "build/utils/rust_doctest_runner": {
     },
-    "build/tools/rustdoc_merger": {
+    "build/utils/rustdoc_merger": {
     },
-    "build/tools/rustdoc_wrapper": {
+    "build/utils/rustdoc_wrapper": {
     },
     "cloud/core": {
     },
@@ -1804,27 +1808,27 @@ _NORMAL_DEV_DEPENDENCIES = {
 }
 
 _NORMAL_DEV_ALIASES = {
-    "build/protobuf": {
+    "build/utils/cargo_metadata": {
     },
-    "build/tools/cargo_metadata": {
+    "build/utils/clippy": {
     },
-    "build/tools/clippy": {
+    "build/utils/collect_args": {
     },
-    "build/tools/collect_args": {
+    "build/utils/nextest_runner": {
     },
-    "build/tools/nextest_runner": {
+    "build/utils/process_wrapper": {
     },
-    "build/tools/process_wrapper": {
+    "build/utils/protobuf": {
     },
-    "build/tools/rust_doctest_builder": {
+    "build/utils/rust_doctest_builder": {
     },
-    "build/tools/rust_doctest_common": {
+    "build/utils/rust_doctest_common": {
     },
-    "build/tools/rust_doctest_runner": {
+    "build/utils/rust_doctest_runner": {
     },
-    "build/tools/rustdoc_merger": {
+    "build/utils/rustdoc_merger": {
     },
-    "build/tools/rustdoc_wrapper": {
+    "build/utils/rustdoc_wrapper": {
     },
     "cloud/core": {
     },
@@ -2001,47 +2005,52 @@ _NORMAL_DEV_ALIASES = {
 }
 
 _PROC_MACRO_DEPENDENCIES = {
-    "build/protobuf": {
+    "build/utils/cargo_metadata": {
     },
-    "build/tools/cargo_metadata": {
-    },
-    "build/tools/clippy": {
+    "build/utils/clippy": {
         _REQUIRED_FEATURE: {
             _COMMON_CONDITION: {
                 "serde_derive": Label("@cargo_vendor//:serde_derive-1.0.219"),
             },
         },
     },
-    "build/tools/collect_args": {
+    "build/utils/collect_args": {
     },
-    "build/tools/nextest_runner": {
+    "build/utils/nextest_runner": {
     },
-    "build/tools/process_wrapper": {
+    "build/utils/process_wrapper": {
     },
-    "build/tools/rust_doctest_builder": {
+    "build/utils/protobuf": {
+    },
+    "build/utils/rust_doctest_builder": {
         _REQUIRED_FEATURE: {
             _COMMON_CONDITION: {
                 "serde_derive": Label("@cargo_vendor//:serde_derive-1.0.219"),
             },
         },
     },
-    "build/tools/rust_doctest_common": {
+    "build/utils/rust_doctest_common": {
         _REQUIRED_FEATURE: {
             _COMMON_CONDITION: {
                 "serde_derive": Label("@cargo_vendor//:serde_derive-1.0.219"),
             },
         },
     },
-    "build/tools/rust_doctest_runner": {
+    "build/utils/rust_doctest_runner": {
         _REQUIRED_FEATURE: {
             _COMMON_CONDITION: {
                 "serde_derive": Label("@cargo_vendor//:serde_derive-1.0.219"),
             },
         },
     },
-    "build/tools/rustdoc_merger": {
+    "build/utils/rustdoc_merger": {
+        _REQUIRED_FEATURE: {
+            _COMMON_CONDITION: {
+                "serde_derive": Label("@cargo_vendor//:serde_derive-1.0.219"),
+            },
+        },
     },
-    "build/tools/rustdoc_wrapper": {
+    "build/utils/rustdoc_wrapper": {
     },
     "cloud/core": {
         _REQUIRED_FEATURE: {
@@ -2336,27 +2345,27 @@ _PROC_MACRO_DEPENDENCIES = {
 }
 
 _PROC_MACRO_ALIASES = {
-    "build/protobuf": {
+    "build/utils/cargo_metadata": {
     },
-    "build/tools/cargo_metadata": {
+    "build/utils/clippy": {
     },
-    "build/tools/clippy": {
+    "build/utils/collect_args": {
     },
-    "build/tools/collect_args": {
+    "build/utils/nextest_runner": {
     },
-    "build/tools/nextest_runner": {
+    "build/utils/process_wrapper": {
     },
-    "build/tools/process_wrapper": {
+    "build/utils/protobuf": {
     },
-    "build/tools/rust_doctest_builder": {
+    "build/utils/rust_doctest_builder": {
     },
-    "build/tools/rust_doctest_common": {
+    "build/utils/rust_doctest_common": {
     },
-    "build/tools/rust_doctest_runner": {
+    "build/utils/rust_doctest_runner": {
     },
-    "build/tools/rustdoc_merger": {
+    "build/utils/rustdoc_merger": {
     },
-    "build/tools/rustdoc_wrapper": {
+    "build/utils/rustdoc_wrapper": {
     },
     "cloud/core": {
     },
@@ -2451,27 +2460,27 @@ _PROC_MACRO_ALIASES = {
 }
 
 _PROC_MACRO_DEV_DEPENDENCIES = {
-    "build/protobuf": {
+    "build/utils/cargo_metadata": {
     },
-    "build/tools/cargo_metadata": {
+    "build/utils/clippy": {
     },
-    "build/tools/clippy": {
+    "build/utils/collect_args": {
     },
-    "build/tools/collect_args": {
+    "build/utils/nextest_runner": {
     },
-    "build/tools/nextest_runner": {
+    "build/utils/process_wrapper": {
     },
-    "build/tools/process_wrapper": {
+    "build/utils/protobuf": {
     },
-    "build/tools/rust_doctest_builder": {
+    "build/utils/rust_doctest_builder": {
     },
-    "build/tools/rust_doctest_common": {
+    "build/utils/rust_doctest_common": {
     },
-    "build/tools/rust_doctest_runner": {
+    "build/utils/rust_doctest_runner": {
     },
-    "build/tools/rustdoc_merger": {
+    "build/utils/rustdoc_merger": {
     },
-    "build/tools/rustdoc_wrapper": {
+    "build/utils/rustdoc_wrapper": {
     },
     "cloud/core": {
     },
@@ -2571,27 +2580,27 @@ _PROC_MACRO_DEV_DEPENDENCIES = {
 }
 
 _PROC_MACRO_DEV_ALIASES = {
-    "build/protobuf": {
+    "build/utils/cargo_metadata": {
     },
-    "build/tools/cargo_metadata": {
+    "build/utils/clippy": {
     },
-    "build/tools/clippy": {
+    "build/utils/collect_args": {
     },
-    "build/tools/collect_args": {
+    "build/utils/nextest_runner": {
     },
-    "build/tools/nextest_runner": {
+    "build/utils/process_wrapper": {
     },
-    "build/tools/process_wrapper": {
+    "build/utils/protobuf": {
     },
-    "build/tools/rust_doctest_builder": {
+    "build/utils/rust_doctest_builder": {
     },
-    "build/tools/rust_doctest_common": {
+    "build/utils/rust_doctest_common": {
     },
-    "build/tools/rust_doctest_runner": {
+    "build/utils/rust_doctest_runner": {
     },
-    "build/tools/rustdoc_merger": {
+    "build/utils/rustdoc_merger": {
     },
-    "build/tools/rustdoc_wrapper": {
+    "build/utils/rustdoc_wrapper": {
     },
     "cloud/core": {
     },
@@ -2768,27 +2777,27 @@ _PROC_MACRO_DEV_ALIASES = {
 }
 
 _BUILD_DEPENDENCIES = {
-    "build/protobuf": {
+    "build/utils/cargo_metadata": {
     },
-    "build/tools/cargo_metadata": {
+    "build/utils/clippy": {
     },
-    "build/tools/clippy": {
+    "build/utils/collect_args": {
     },
-    "build/tools/collect_args": {
+    "build/utils/nextest_runner": {
     },
-    "build/tools/nextest_runner": {
+    "build/utils/process_wrapper": {
     },
-    "build/tools/process_wrapper": {
+    "build/utils/protobuf": {
     },
-    "build/tools/rust_doctest_builder": {
+    "build/utils/rust_doctest_builder": {
     },
-    "build/tools/rust_doctest_common": {
+    "build/utils/rust_doctest_common": {
     },
-    "build/tools/rust_doctest_runner": {
+    "build/utils/rust_doctest_runner": {
     },
-    "build/tools/rustdoc_merger": {
+    "build/utils/rustdoc_merger": {
     },
-    "build/tools/rustdoc_wrapper": {
+    "build/utils/rustdoc_wrapper": {
     },
     "cloud/core": {
     },
@@ -2888,27 +2897,27 @@ _BUILD_DEPENDENCIES = {
 }
 
 _BUILD_ALIASES = {
-    "build/protobuf": {
+    "build/utils/cargo_metadata": {
     },
-    "build/tools/cargo_metadata": {
+    "build/utils/clippy": {
     },
-    "build/tools/clippy": {
+    "build/utils/collect_args": {
     },
-    "build/tools/collect_args": {
+    "build/utils/nextest_runner": {
     },
-    "build/tools/nextest_runner": {
+    "build/utils/process_wrapper": {
     },
-    "build/tools/process_wrapper": {
+    "build/utils/protobuf": {
     },
-    "build/tools/rust_doctest_builder": {
+    "build/utils/rust_doctest_builder": {
     },
-    "build/tools/rust_doctest_common": {
+    "build/utils/rust_doctest_common": {
     },
-    "build/tools/rust_doctest_runner": {
+    "build/utils/rust_doctest_runner": {
     },
-    "build/tools/rustdoc_merger": {
+    "build/utils/rustdoc_merger": {
     },
-    "build/tools/rustdoc_wrapper": {
+    "build/utils/rustdoc_wrapper": {
     },
     "cloud/core": {
     },
@@ -3003,27 +3012,27 @@ _BUILD_ALIASES = {
 }
 
 _BUILD_PROC_MACRO_DEPENDENCIES = {
-    "build/protobuf": {
+    "build/utils/cargo_metadata": {
     },
-    "build/tools/cargo_metadata": {
+    "build/utils/clippy": {
     },
-    "build/tools/clippy": {
+    "build/utils/collect_args": {
     },
-    "build/tools/collect_args": {
+    "build/utils/nextest_runner": {
     },
-    "build/tools/nextest_runner": {
+    "build/utils/process_wrapper": {
     },
-    "build/tools/process_wrapper": {
+    "build/utils/protobuf": {
     },
-    "build/tools/rust_doctest_builder": {
+    "build/utils/rust_doctest_builder": {
     },
-    "build/tools/rust_doctest_common": {
+    "build/utils/rust_doctest_common": {
     },
-    "build/tools/rust_doctest_runner": {
+    "build/utils/rust_doctest_runner": {
     },
-    "build/tools/rustdoc_merger": {
+    "build/utils/rustdoc_merger": {
     },
-    "build/tools/rustdoc_wrapper": {
+    "build/utils/rustdoc_wrapper": {
     },
     "cloud/core": {
     },
@@ -3106,27 +3115,27 @@ _BUILD_PROC_MACRO_DEPENDENCIES = {
 }
 
 _BUILD_PROC_MACRO_ALIASES = {
-    "build/protobuf": {
+    "build/utils/cargo_metadata": {
     },
-    "build/tools/cargo_metadata": {
+    "build/utils/clippy": {
     },
-    "build/tools/clippy": {
+    "build/utils/collect_args": {
     },
-    "build/tools/collect_args": {
+    "build/utils/nextest_runner": {
     },
-    "build/tools/nextest_runner": {
+    "build/utils/process_wrapper": {
     },
-    "build/tools/process_wrapper": {
+    "build/utils/protobuf": {
     },
-    "build/tools/rust_doctest_builder": {
+    "build/utils/rust_doctest_builder": {
     },
-    "build/tools/rust_doctest_common": {
+    "build/utils/rust_doctest_common": {
     },
-    "build/tools/rust_doctest_runner": {
+    "build/utils/rust_doctest_runner": {
     },
-    "build/tools/rustdoc_merger": {
+    "build/utils/rustdoc_merger": {
     },
-    "build/tools/rustdoc_wrapper": {
+    "build/utils/rustdoc_wrapper": {
     },
     "cloud/core": {
     },
@@ -3209,27 +3218,27 @@ _BUILD_PROC_MACRO_ALIASES = {
 }
 
 _FEATURE_FLAGS = {
-    "build/protobuf": {
+    "build/utils/cargo_metadata": {
     },
-    "build/tools/cargo_metadata": {
+    "build/utils/clippy": {
     },
-    "build/tools/clippy": {
+    "build/utils/collect_args": {
     },
-    "build/tools/collect_args": {
+    "build/utils/nextest_runner": {
     },
-    "build/tools/nextest_runner": {
+    "build/utils/process_wrapper": {
     },
-    "build/tools/process_wrapper": {
+    "build/utils/protobuf": {
     },
-    "build/tools/rust_doctest_builder": {
+    "build/utils/rust_doctest_builder": {
     },
-    "build/tools/rust_doctest_common": {
+    "build/utils/rust_doctest_common": {
     },
-    "build/tools/rust_doctest_runner": {
+    "build/utils/rust_doctest_runner": {
     },
-    "build/tools/rustdoc_merger": {
+    "build/utils/rustdoc_merger": {
     },
-    "build/tools/rustdoc_wrapper": {
+    "build/utils/rustdoc_wrapper": {
     },
     "cloud/core": {
     },
@@ -3539,27 +3548,27 @@ _FEATURE_FLAGS = {
 }
 
 _RESOLVED_FEATURE_FLAGS = {
-    "build/protobuf": {
+    "build/utils/cargo_metadata": {
     },
-    "build/tools/cargo_metadata": {
+    "build/utils/clippy": {
     },
-    "build/tools/clippy": {
+    "build/utils/collect_args": {
     },
-    "build/tools/collect_args": {
+    "build/utils/nextest_runner": {
     },
-    "build/tools/nextest_runner": {
+    "build/utils/process_wrapper": {
     },
-    "build/tools/process_wrapper": {
+    "build/utils/protobuf": {
     },
-    "build/tools/rust_doctest_builder": {
+    "build/utils/rust_doctest_builder": {
     },
-    "build/tools/rust_doctest_common": {
+    "build/utils/rust_doctest_common": {
     },
-    "build/tools/rust_doctest_runner": {
+    "build/utils/rust_doctest_runner": {
     },
-    "build/tools/rustdoc_merger": {
+    "build/utils/rustdoc_merger": {
     },
-    "build/tools/rustdoc_wrapper": {
+    "build/utils/rustdoc_wrapper": {
     },
     "cloud/core": {
     },
@@ -4612,6 +4621,16 @@ def crate_repositories():
 
     maybe(
         http_archive,
+        name = "cargo_vendor__copy_dir-0.1.3",
+        sha256 = "543d1dd138ef086e2ff05e3a48cf9da045da2033d16f8538fd76b86cd49b2ca3",
+        type = "tar.gz",
+        urls = ["https://static.crates.io/crates/copy_dir/0.1.3/download"],
+        strip_prefix = "copy_dir-0.1.3",
+        build_file = Label("//vendor/cargo:BUILD.copy_dir-0.1.3.bazel"),
+    )
+
+    maybe(
+        http_archive,
         name = "cargo_vendor__core-foundation-0.10.1",
         sha256 = "b2a6cd9ae233e7f62ba4e9353e81a88df7fc8a5987b8d445b4d90c879bd156f6",
         type = "tar.gz",
@@ -4768,6 +4787,26 @@ def crate_repositories():
         urls = ["https://static.crates.io/crates/crypto-common/0.1.6/download"],
         strip_prefix = "crypto-common-0.1.6",
         build_file = Label("//vendor/cargo:BUILD.crypto-common-0.1.6.bazel"),
+    )
+
+    maybe(
+        http_archive,
+        name = "cargo_vendor__cssparser-0.35.0",
+        sha256 = "4e901edd733a1472f944a45116df3f846f54d37e67e68640ac8bb69689aca2aa",
+        type = "tar.gz",
+        urls = ["https://static.crates.io/crates/cssparser/0.35.0/download"],
+        strip_prefix = "cssparser-0.35.0",
+        build_file = Label("//vendor/cargo:BUILD.cssparser-0.35.0.bazel"),
+    )
+
+    maybe(
+        http_archive,
+        name = "cargo_vendor__cssparser-macros-0.6.1",
+        sha256 = "13b588ba4ac1a99f7f2964d24b3d896ddc6bf847ee3855dbd4366f058cfcd331",
+        type = "tar.gz",
+        urls = ["https://static.crates.io/crates/cssparser-macros/0.6.1/download"],
+        strip_prefix = "cssparser-macros-0.6.1",
+        build_file = Label("//vendor/cargo:BUILD.cssparser-macros-0.6.1.bazel"),
     )
 
     maybe(
@@ -4988,6 +5027,16 @@ def crate_repositories():
         urls = ["https://static.crates.io/crates/dtoa/1.0.10/download"],
         strip_prefix = "dtoa-1.0.10",
         build_file = Label("//vendor/cargo:BUILD.dtoa-1.0.10.bazel"),
+    )
+
+    maybe(
+        http_archive,
+        name = "cargo_vendor__dtoa-short-0.3.5",
+        sha256 = "cd1511a7b6a56299bd043a9c167a6d2bfb37bf84a6dfceaba651168adfb43c87",
+        type = "tar.gz",
+        urls = ["https://static.crates.io/crates/dtoa-short/0.3.5/download"],
+        strip_prefix = "dtoa-short-0.3.5",
+        build_file = Label("//vendor/cargo:BUILD.dtoa-short-0.3.5.bazel"),
     )
 
     maybe(
@@ -5448,6 +5497,16 @@ def crate_repositories():
         urls = ["https://static.crates.io/crates/futures-util/0.3.31/download"],
         strip_prefix = "futures-util-0.3.31",
         build_file = Label("//vendor/cargo:BUILD.futures-util-0.3.31.bazel"),
+    )
+
+    maybe(
+        http_archive,
+        name = "cargo_vendor__fxhash-0.2.1",
+        sha256 = "c31b6d751ae2c7f11320402d34e41349dd1016f8d5d45e48c4312bc8625af50c",
+        type = "tar.gz",
+        urls = ["https://static.crates.io/crates/fxhash/0.2.1/download"],
+        strip_prefix = "fxhash-0.2.1",
+        build_file = Label("//vendor/cargo:BUILD.fxhash-0.2.1.bazel"),
     )
 
     maybe(
@@ -6262,6 +6321,16 @@ def crate_repositories():
 
     maybe(
         http_archive,
+        name = "cargo_vendor__lol_html-2.6.0",
+        sha256 = "b63d49c99bfbf3400dd6450e516515b7014fcb49b5cb533f4b725a00c1462a36",
+        type = "tar.gz",
+        urls = ["https://static.crates.io/crates/lol_html/2.6.0/download"],
+        strip_prefix = "lol_html-2.6.0",
+        build_file = Label("//vendor/cargo:BUILD.lol_html-2.6.0.bazel"),
+    )
+
+    maybe(
+        http_archive,
         name = "cargo_vendor__lru-slab-0.1.2",
         sha256 = "112b39cec0b298b6c1999fee3e31427f74f676e4cb9879ed1a121b43661a4154",
         type = "tar.gz",
@@ -6918,6 +6987,36 @@ def crate_repositories():
         urls = ["https://static.crates.io/crates/phf/0.11.3/download"],
         strip_prefix = "phf-0.11.3",
         build_file = Label("//vendor/cargo:BUILD.phf-0.11.3.bazel"),
+    )
+
+    maybe(
+        http_archive,
+        name = "cargo_vendor__phf_codegen-0.11.3",
+        sha256 = "aef8048c789fa5e851558d709946d6d79a8ff88c0440c587967f8e94bfb1216a",
+        type = "tar.gz",
+        urls = ["https://static.crates.io/crates/phf_codegen/0.11.3/download"],
+        strip_prefix = "phf_codegen-0.11.3",
+        build_file = Label("//vendor/cargo:BUILD.phf_codegen-0.11.3.bazel"),
+    )
+
+    maybe(
+        http_archive,
+        name = "cargo_vendor__phf_generator-0.11.3",
+        sha256 = "3c80231409c20246a13fddb31776fb942c38553c51e871f8cbd687a4cfb5843d",
+        type = "tar.gz",
+        urls = ["https://static.crates.io/crates/phf_generator/0.11.3/download"],
+        strip_prefix = "phf_generator-0.11.3",
+        build_file = Label("//vendor/cargo:BUILD.phf_generator-0.11.3.bazel"),
+    )
+
+    maybe(
+        http_archive,
+        name = "cargo_vendor__phf_macros-0.11.3",
+        sha256 = "f84ac04429c13a7ff43785d75ad27569f2951ce0ffd30a3321230db2fc727216",
+        type = "tar.gz",
+        urls = ["https://static.crates.io/crates/phf_macros/0.11.3/download"],
+        strip_prefix = "phf_macros-0.11.3",
+        build_file = Label("//vendor/cargo:BUILD.phf_macros-0.11.3.bazel"),
     )
 
     maybe(
@@ -7791,6 +7890,16 @@ def crate_repositories():
 
     maybe(
         http_archive,
+        name = "cargo_vendor__selectors-0.30.0",
+        sha256 = "3df44ba8a7ca7a4d28c589e04f526266ed76b6cc556e33fe69fa25de31939a65",
+        type = "tar.gz",
+        urls = ["https://static.crates.io/crates/selectors/0.30.0/download"],
+        strip_prefix = "selectors-0.30.0",
+        build_file = Label("//vendor/cargo:BUILD.selectors-0.30.0.bazel"),
+    )
+
+    maybe(
+        http_archive,
         name = "cargo_vendor__semver-1.0.26",
         sha256 = "56e6fa9c48d24d85fb3de5ad847117517440f6beceb7798af16b4a87d616b8d0",
         type = "tar.gz",
@@ -7947,6 +8056,16 @@ def crate_repositories():
         urls = ["https://static.crates.io/crates/serde_with_macros/3.14.0/download"],
         strip_prefix = "serde_with_macros-3.14.0",
         build_file = Label("//vendor/cargo:BUILD.serde_with_macros-3.14.0.bazel"),
+    )
+
+    maybe(
+        http_archive,
+        name = "cargo_vendor__servo_arc-0.4.1",
+        sha256 = "204ea332803bd95a0b60388590d59cf6468ec9becf626e2451f1d26a1d972de4",
+        type = "tar.gz",
+        urls = ["https://static.crates.io/crates/servo_arc/0.4.1/download"],
+        strip_prefix = "servo_arc-0.4.1",
+        build_file = Label("//vendor/cargo:BUILD.servo_arc-0.4.1.bazel"),
     )
 
     maybe(
@@ -9663,6 +9782,7 @@ def crate_repositories():
         struct(repo = "cargo_vendor__clap-4.5.41", is_dev_dep = False),
         struct(repo = "cargo_vendor__config-0.15.13", is_dev_dep = False),
         struct(repo = "cargo_vendor__convert_case-0.8.0", is_dev_dep = False),
+        struct(repo = "cargo_vendor__copy_dir-0.1.3", is_dev_dep = False),
         struct(repo = "cargo_vendor__crossbeam-channel-0.5.15", is_dev_dep = False),
         struct(repo = "cargo_vendor__darling-0.20.11", is_dev_dep = False),
         struct(repo = "cargo_vendor__derive_more-2.0.1", is_dev_dep = False),
@@ -9698,6 +9818,7 @@ def crate_repositories():
         struct(repo = "cargo_vendor__linear-map-1.2.0", is_dev_dep = False),
         struct(repo = "cargo_vendor__linkme-0.3.33", is_dev_dep = False),
         struct(repo = "cargo_vendor__log-0.4.27", is_dev_dep = False),
+        struct(repo = "cargo_vendor__lol_html-2.6.0", is_dev_dep = False),
         struct(repo = "cargo_vendor__mediatype-0.20.0", is_dev_dep = False),
         struct(repo = "cargo_vendor__minijinja-2.11.0", is_dev_dep = False),
         struct(repo = "cargo_vendor__nextest-filtering-0.16.0", is_dev_dep = False),

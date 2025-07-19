@@ -310,6 +310,18 @@ transition_alias_opt(
 )
 
 transition_alias_opt(
+    name = "copy_dir-0.1.3",
+    actual = "@cargo_vendor__copy_dir-0.1.3//:copy_dir",
+    tags = ["manual"],
+)
+
+transition_alias_opt(
+    name = "copy_dir",
+    actual = "@cargo_vendor__copy_dir-0.1.3//:copy_dir",
+    tags = ["manual"],
+)
+
+transition_alias_opt(
     name = "criterion-0.6.0",
     actual = "@cargo_vendor__criterion-0.6.0//:criterion",
     tags = ["manual"],
@@ -750,6 +762,18 @@ transition_alias_opt(
 transition_alias_opt(
     name = "log",
     actual = "@cargo_vendor__log-0.4.27//:log",
+    tags = ["manual"],
+)
+
+transition_alias_opt(
+    name = "lol_html-2.6.0",
+    actual = "@cargo_vendor__lol_html-2.6.0//:lol_html",
+    tags = ["manual"],
+)
+
+transition_alias_opt(
+    name = "lol_html",
+    actual = "@cargo_vendor__lol_html-2.6.0//:lol_html",
     tags = ["manual"],
 )
 

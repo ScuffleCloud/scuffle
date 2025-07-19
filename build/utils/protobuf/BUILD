@@ -1,0 +1,10 @@
+load("//build/utils:package.bzl", "scuffle_package")
+load("//build/utils:cargo_toml.bzl", "cargo_toml")
+
+cargo_toml()
+
+scuffle_package(
+    name = "file_concat",
+    crate_name = "protobuf-concat",
+    crate_type = "bin",
+)

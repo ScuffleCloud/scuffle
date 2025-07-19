@@ -1,6 +1,6 @@
-load("//build/tools:package.bzl", "scuffle_package", "scuffle_test")
+load("//build/utils:package.bzl", "scuffle_package", "scuffle_test")
 load("@protobuf//bazel:proto_library.bzl", "proto_library")
-load("//build/tools:cargo_toml.bzl", "cargo_toml")
+load("//build/utils:cargo_toml.bzl", "cargo_toml")
 
 cargo_toml()
 

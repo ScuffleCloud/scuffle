@@ -208,6 +208,22 @@ def crate_features(
 
     return features
 
+def crate_version(package_name = None):
+    """Returns the defined version in the Cargo.toml
+
+    Args:
+        package_name (str, optional): The package name of the set of dependencies to look up.
+            Defaults to `native.package_name()`.
+
+    Returns:
+        list: a map of features based on some conditions
+    """
+
+    if package_name == None:
+        package_name = native.package_name()
+
+    return _VERSIONS.get(package_name, "0.0.0")
+
 def crate_deps(deps, package_name = None):
     """Finds the fully qualified label of the requested crates for the package where this macro is called.
 
@@ -3695,6 +3711,59 @@ _RESOLVED_FEATURE_FLAGS = {
     },
     "tools/cargo/deny": {
     },
+}
+
+_VERSIONS = {
+    "build/utils/cargo_metadata": "0.1.0",
+    "build/utils/clippy": "0.1.0",
+    "build/utils/collect_args": "0.1.0",
+    "build/utils/nextest_runner": "0.1.0",
+    "build/utils/process_wrapper": "0.1.0",
+    "build/utils/protobuf": "0.0.0",
+    "build/utils/rust_doctest_builder": "0.1.0",
+    "build/utils/rust_doctest_common": "0.1.0",
+    "build/utils/rust_doctest_runner": "0.1.0",
+    "build/utils/rustdoc_merger": "0.1.0",
+    "build/utils/rustdoc_wrapper": "0.1.0",
+    "cloud/core": "0.1.0",
+    "cloud/proto": "0.1.0",
+    "crates/aac": "0.1.4",
+    "crates/amf0": "0.2.4",
+    "crates/av1": "0.1.4",
+    "crates/batching": "0.1.5",
+    "crates/bootstrap": "0.1.6",
+    "crates/bootstrap-telemetry": "0.3.0",
+    "crates/bootstrap/derive": "0.1.6",
+    "crates/bytes-util": "0.1.4",
+    "crates/changelog": "0.1.1",
+    "crates/context": "0.1.5",
+    "crates/expgolomb": "0.1.4",
+    "crates/ffmpeg": "0.3.5",
+    "crates/flv": "0.2.2",
+    "crates/future-ext": "0.1.4",
+    "crates/h264": "0.2.2",
+    "crates/h265": "0.2.2",
+    "crates/http": "0.3.2",
+    "crates/metrics": "0.4.0",
+    "crates/metrics/derive": "0.4.0",
+    "crates/mp4": "0.1.5",
+    "crates/nutype-enum": "0.1.5",
+    "crates/openapiv3_1": "0.1.3",
+    "crates/postcompile": "0.3.2",
+    "crates/pprof": "0.2.0",
+    "crates/rtmp": "0.2.3",
+    "crates/settings": "0.1.4",
+    "crates/signal": "0.3.3",
+    "crates/tinc": "0.1.6",
+    "crates/tinc/build": "0.1.6",
+    "crates/tinc/cel": "0.1.6",
+    "crates/tinc/derive": "0.1.6",
+    "crates/tinc/integration": "0.0.0",
+    "crates/tinc/pb-prost": "0.1.6",
+    "crates/transmuxer": "0.2.2",
+    "dev-tools/xtask": "0.0.0",
+    "tools/cargo/clippy": "0.0.0",
+    "tools/cargo/deny": "0.0.0",
 }
 
 _CONDITIONS = {

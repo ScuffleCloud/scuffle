@@ -10,7 +10,7 @@ load("@rules_rust//rust/private:utils.bzl", "dedent", "find_cc_toolchain", "find
 load("@bazel_skylib//lib:paths.bzl", "paths")
 load("//build/utils:postcompile.bzl", "PostcompilerDepsInfo")
 
-def _init_rust_doc_info(*, crate_name, html_out = None, json_out = None, parts_out = None):
+def _init_rust_doc_info(*, crate_name, crate_version, html_out = None, json_out = None, parts_out = None):
     if not (html_out or json_out) or (html_out and json_out):
         fail("at most one of html_out or json_out must be provided")
     
@@ -22,6 +22,7 @@ def _init_rust_doc_info(*, crate_name, html_out = None, json_out = None, parts_o
         "json_out": json_out,
         "parts_out": parts_out,
         "crate_name": crate_name,
+        "crate_version": crate_version,
     }
 
 RustDocInfo, _new_rust_doc_info = provider(
@@ -30,6 +31,7 @@ RustDocInfo, _new_rust_doc_info = provider(
         "json_out",
         "parts_out",
         "crate_name",
+        "crate_version",
     ],
     init = _init_rust_doc_info,
 )
@@ -130,6 +132,28 @@ def _rustdoc_compile_action(
         aliases = crate_info.aliases if aliases == None else aliases,
     )
 
+    def update_external_links(external_links, crate):
+        if hasattr(crate, "dep"):
+            name = crate.name
+            crate_info = crate.dep
+        else:
+            name = crate.name
+            crate_info = crate
+        external_links[name] = "https://docs.rs/{name}/{version}".format(name = name, version = crate_info.version)
+
+    external_links = {}
+    if hasattr(ctx.attr, "rustdoc_map") and ctx.attr.rustdoc_map:
+        for crate in dep_info.transitive_crates.to_list():
+            update_external_links(external_links, crate)
+        for crate in dep_info.direct_crates.to_list():
+            update_external_links(external_links, crate)
+
+    if hasattr(ctx.attr, "external_links"):
+        external_links.update(ctx.attr.external_links)
+    
+    for name, link in external_links.items():
+        rustdoc_flags.append("--extern-html-root-url={}={}".format(name, link))
+
     compile_inputs, out_dir, build_env_files, build_flags_files, linkstamp_outs, ambiguous_libs = collect_inputs(
         ctx = ctx,
         file = ctx.file,
@@ -186,9 +210,9 @@ def _rustdoc_compile_action(
     ))
 
     # Create the combined inputs including HTML customization files
-    all_inputs = depset([crate_info.output], transitive = [compile_inputs, depset(ctx.attr.rustdoc_env_files)])
+    all_inputs = depset([crate_info.output], transitive = [compile_inputs, depset(ctx.files.rustdoc_env_files)])
 
-    for build_env_file in ctx.attr.rustdoc_env_files:
+    for build_env_file in ctx.files.rustdoc_env_files:
         args.process_wrapper_flags.add("--env-file", build_env_file)
 
     return struct(
@@ -219,12 +243,14 @@ def _rustdoc_impl(ctx):
 
     # Add the current crate as an extern for the compile action
     rustdoc_flags = [
+        "-Zunstable-options",
         "--output-format",
         ctx.attr.output_format,
         "--extern",
         "{}={}".format(crate_info.name, crate_info.output.path),
+        "--crate-version",
+        crate_info.version,
     ]
-
 
     if ctx.attr.output_format == "html":
         html_out = ctx.actions.declare_directory("{}.rustdoc".format(ctx.label.name))
@@ -260,7 +286,9 @@ def _rustdoc_impl(ctx):
         outputs = outputs,
         executable = ctx.executable._rustdoc_wrapper,
         inputs = depset([action.executable], transitive = [action.inputs]),
-        env = action.env,
+        env = action.env | {
+            "RUSTC_BOOTSTRAP": "1",
+        },
         arguments = [args] + action.arguments,
         tools = action.tools,
     )
@@ -271,6 +299,7 @@ def _rustdoc_impl(ctx):
         ),
         RustDocInfo(
             crate_name = crate_info.name,
+            crate_version = crate_info.version,
             json_out = json_out,
             html_out = html_out,
             parts_out = parts_out,
@@ -329,6 +358,8 @@ rustdoc = rule(
             providers = [rust_common.crate_info],
             mandatory = True,
         ),
+        "rustdoc_map": attr.bool(default = True),
+        "external_links": attr.string_dict(),
         "output_format": attr.string(
             default = "html",
             values = ["json", "html"],
@@ -497,9 +528,9 @@ def _rustc_doctest_compile_action(
     ))
 
     # Create the combined inputs including HTML customization files
-    all_inputs = depset([crate_info.output], transitive = [compile_inputs, depset(ctx.attr.rustc_env_files)])
+    all_inputs = depset([crate_info.output], transitive = [compile_inputs, depset(ctx.files.rustc_env_files)])
 
-    for build_env_file in ctx.attr.rustc_env_files:
+    for build_env_file in ctx.files.rustc_env_files:
         args.process_wrapper_flags.add("--env-file", build_env_file)
 
     return struct(
@@ -812,6 +843,7 @@ def _rustdoc_merge_impl(ctx):
             "json_out": info.json_out.path if info.json_out else None,
             "parts_out": info.parts_out.path if info.parts_out else None,
             "crate_name": info.crate_name,
+            "crate_version": info.crate_version,
         })
     
     manifest = ctx.actions.declare_file("{}.rustdoc_merge.manifest.json".format(ctx.label.name))

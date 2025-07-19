@@ -1,14 +1,15 @@
-load("@rules_rust//cargo:defs.bzl", "cargo_build_script", "cargo_toml_env_vars")
+load("@rules_rust//cargo:defs.bzl", "cargo_build_script", "cargo_toml_env_vars", "extract_cargo_lints")
 load("@rules_rust//rust:defs.bzl", "rust_binary", "rust_library", "rust_proc_macro")
 load("@rules_rust//rust:defs.bzl", "rustfmt_test")
 load("//build/utils:clippy.bzl", "rust_clippy", "rust_clippy_test")
 load("//build/utils:rustdoc.bzl", "rustdoc", "rustdoc_test")
 load("//build/utils:nextest_test.bzl", "nextest_test")
-load("@cargo_vendor//:defs.bzl", "all_crate_deps", "crate_features", dep_aliases = "aliases")
+load("@cargo_vendor//:defs.bzl", "all_crate_deps", "crate_features", dep_aliases = "aliases", "crate_version")
 
 def scuffle_package(
     crate_name,
     name = None,
+    version = None,
     features = None,
     crate_type = "rlib",
     srcs = None,
@@ -61,6 +62,8 @@ def scuffle_package(
         test = {} if crate_type == "rlib" else False
     if extra_target_kwargs == None:
         extra_target_kwargs = {}
+    if version == None:
+        version = crate_version()
 
     NAME_MAPPINGS = {
         "rlib": "lib",
@@ -81,6 +84,14 @@ def scuffle_package(
         visibility = ["//visibility:private"],
     )
 
+    extract_cargo_lints(
+        name = name + "_cargo_toml_lints",
+        manifest = ":Cargo.toml",
+        workspace = "//:Cargo.toml",
+        tags = ["manual"],
+        visibility = ["//visibility:private"],
+    )
+
     colon_name = ":" + name
 
     normal_deps = all_crate_deps(normal = True, package_name = package_name, features = features) + deps + ["@rules_rust//rust/runfiles"]
@@ -90,6 +101,7 @@ def scuffle_package(
     kwargs = extra_target_kwargs | dict(
         name = name,
         crate_name = crate_name.replace("-", "_"),
+        lint_config = colon_name + "_cargo_toml_lints",
         srcs = srcs,
         crate_features = features.select(),
         aliases = aliases,
@@ -97,6 +109,7 @@ def scuffle_package(
         proc_macro_deps = normal_proc_macro_deps,
         visibility = visibility,
         compile_data = compile_data,
+        version = version,
         tags = tags,
         rustc_flags = [
             "--cfg=bazel_runfiles",
@@ -171,6 +184,7 @@ def scuffle_package(
             data = test_data,
             env = test_env,
             tags = test_tags,
+            rustc_env_files = [colon_name + "_cargo_toml_env"],
             rustc_flags = [
                 "--cfg=bazel_runfiles",
                 "-Clink-arg=-Wl,-znostart-stop-gc",
@@ -214,9 +228,7 @@ def scuffle_package(
     rustdoc(
         name = name + "_doc",
         crate = colon_name,
-        rustdoc_env = {
-            "RUSTC_BOOTSTRAP": "1",
-        },
+        rustdoc_env_files = [colon_name + "_cargo_toml_env"],
         rustdoc_flags = rustdoc_flags,
         visibility = visibility,
     )
@@ -225,9 +237,7 @@ def scuffle_package(
         name = name + "_doc_json",
         crate = colon_name,
         output_format = "json",
-        rustdoc_env = {
-            "RUSTC_BOOTSTRAP": "1",
-        },
+        rustdoc_env_files = [colon_name + "_cargo_toml_env"],
         rustdoc_flags = [
             "-Zunstable-options",
             "--cap-lints=allow",

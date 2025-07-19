@@ -1,3 +1,4 @@
+use std::path::Path;
 use std::process::Stdio;
 
 use camino::{Utf8Path, Utf8PathBuf};
@@ -28,10 +29,69 @@ struct ManifestEntry {
     parts_out: Option<Utf8PathBuf>,
     json_out: Option<Utf8PathBuf>,
     crate_name: String,
+    crate_version: String,
 }
 
 fn copy(input: &Utf8Path, output: &Utf8Path, make_path: impl Fn(&Utf8Path) -> Utf8PathBuf) {
     copy_dir::copy_dir(make_path(input), make_path(output)).expect("failed to copy");
+}
+
+fn path_depth(mut path: &Path) -> usize {
+    let mut count = 0;
+    while let Some(parent) = path.parent() {
+        path = parent;
+        count +=  1;
+    }
+    count
+}
+
+fn process_file(target: &Path, file: &Path,  replacements: &[String]) -> std::io::Result<()> {
+    if file.extension().and_then(|ext| ext.to_str()).is_none_or(|ext| !matches!(ext, "css" | "js" | "html")) {
+        return Ok(());
+    }
+
+    let content = std::fs::read(file)?;
+    let Ok(content_str) = String::from_utf8(content) else {
+        return Ok(())
+    };
+
+    let depth = path_depth(file.parent().unwrap().strip_prefix(target).unwrap());
+    let mut prefix = String::new();
+    for _ in 0..depth {
+        prefix.push_str("../");
+    }
+
+    let mut prefix = prefix.trim_matches('/');
+    if prefix == "" {
+        prefix = "."
+    }
+
+    let mut changed = content_str.clone();
+    for replace in replacements {
+        changed = changed.replace(replace, prefix);
+    }
+
+    if changed != content_str {
+        std::fs::remove_file(file)?;
+        std::fs::write(file, changed)?;
+    }
+
+    Ok(())
+}
+
+fn walk_and_replace(target: &Path, replacements: &[String]) -> std::io::Result<()> {
+    let mut entries: Vec<_> = std::fs::read_dir(target)?.collect();
+    while let Some(entry) = entries.pop() {
+        let entry = entry?;
+        let file_type = entry.file_type()?;
+        if file_type.is_dir() {
+            entries.extend(std::fs::read_dir(entry.path())?);
+        } else if file_type.is_file() {
+            process_file(target, &entry.path(), replacements)?;
+        }
+    }
+
+    Ok(())
 }
 
 fn main() {
@@ -146,6 +206,8 @@ fn main() {
         .arg("-o")
         .arg(&args.output);
 
+    let mut replacements = Vec::new();
+
     for entry in &manifest.entries {
         let crate_name = entry.crate_name.replace("-", "_");
         if let (Some(parts_out), Some(html_out)) = (&entry.parts_out, &entry.html_out) {
@@ -153,6 +215,7 @@ fn main() {
             copy(html_out, &args.output, |path| path.join(&crate_name));
             copy(html_out, &args.output, |path| path.join("src").join(&crate_name));
             copy(html_out, &args.output, |path| path.join("search.desc").join(&crate_name));
+            replacements.push(format!("https://docs.rs/{crate_name}/{}", entry.crate_version))
         } else if let Some(json_out) = &entry.json_out {
             std::fs::copy(json_out, args.output.join(format!("{crate_name}.json"))).expect("failed to copy json output");
         }
@@ -162,4 +225,6 @@ fn main() {
     if !status.success() {
         panic!("failed to run rustdoc finalize");
     }
+
+    walk_and_replace(args.output.as_std_path(), &replacements).expect("failed to replace paths")
 }

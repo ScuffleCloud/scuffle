@@ -5,7 +5,7 @@ edition = "2024"
 license = "MIT OR Apache-2.0"
 
 [dependencies]
-camino = { version = "1", features = ["serde"] }
+camino = { version = "1", features = ["serde1"] }
 camino-tempfile = "1.4"
 lol_html = "2.6"
 copy_dir = "0.1"

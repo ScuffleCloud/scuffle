@@ -38,6 +38,7 @@ _packages = [
     "//dev-tools/xtask",
     "//tools/cargo/clippy",
     "//tools/cargo/deny",
+    "//tools/cargo/sync-rdme",
     "//build/utils/collect_args",
     "//build/utils/clippy",
     "//build/utils/nextest_runner",

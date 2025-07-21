@@ -40,6 +40,7 @@ members = [
   "dev-tools/xtask",
   "tools/cargo/deny",
   "tools/cargo/clippy",
+  "tools/cargo/sync-rdme",
   "build/utils/protobuf",
   "build/utils/collect_args",
   "build/utils/nextest_runner",

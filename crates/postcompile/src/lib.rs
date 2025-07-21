@@ -11,12 +11,11 @@
 #![cfg_attr(feature = "docs", doc = document_features::document_features!())]
 //! ## Usage
 //!
-//! ```rust
+//! ```rust,standalone_crate,test_harness
 //! # macro_rules! assert_snapshot {
 //! #     ($expr:expr) => { $expr };
 //! # }
 //! #[test]
-//! # fn some_cool_test_() {}
 //! fn some_cool_test() {
 //!     assert_snapshot!(postcompile::compile!({
 //!         #![allow(unused)]
@@ -32,13 +31,11 @@
 //! }
 //!
 //! #[test]
-//! # fn some_cool_test_extern_() {}
 //! fn some_cool_test_extern() {
 //!     assert_snapshot!(postcompile::compile_str!(include_str!("some_file.rs")));
 //! }
 //!
 //! #[test]
-//! # fn test_inside_test_() {}
 //! fn test_inside_test() {
 //!     assert_snapshot!(postcompile::compile!(
 //!         postcompile::config! {
@@ -58,7 +55,6 @@
 //! }
 //!
 //! #[test]
-//! # fn test_inside_test_with_tokio() {}
 //! fn test_inside_test_with_tokio() {
 //!     assert_snapshot!(postcompile::compile!(
 //!         postcompile::config! {
@@ -805,7 +801,7 @@ macro_rules! compile {
 ///
 /// Same as the [`compile!`] macro, but for strings. This allows you to do:
 ///
-/// ```rust
+/// ```rust,standalone_crate
 /// let output = postcompile::compile_str!(include_str!("some_file.rs"));
 ///
 /// // ... do something with the output

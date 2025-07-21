@@ -76,7 +76,7 @@ rust_library(
         "@cargo_vendor__clang-sys-1.8.1//:clang_sys",
         "@cargo_vendor__itertools-0.13.0//:itertools",
         "@cargo_vendor__log-0.4.27//:log",
-        "@cargo_vendor__prettyplease-0.2.35//:prettyplease",
+        "@cargo_vendor__prettyplease-0.2.36//:prettyplease",
         "@cargo_vendor__proc-macro2-1.0.95//:proc_macro2",
         "@cargo_vendor__quote-1.0.40//:quote",
         "@cargo_vendor__regex-1.11.1//:regex",
@@ -128,7 +128,7 @@ cargo_build_script(
     edition = "2021",
     link_deps = [
         "@cargo_vendor__clang-sys-1.8.1//:clang_sys",
-        "@cargo_vendor__prettyplease-0.2.35//:prettyplease",
+        "@cargo_vendor__prettyplease-0.2.36//:prettyplease",
     ],
     pkg_name = "bindgen",
     rustc_env_files = [

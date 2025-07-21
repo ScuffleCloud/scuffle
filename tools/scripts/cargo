@@ -1,0 +1,12 @@
+#!/usr/bin/env bash
+
+set -euo pipefail
+
+if [[ "${BAZEL_CARGO:-}" != "1" ]]; then
+    printf "%s\n" "This project uses \`bazel\` to build, so we shim \`cargo\` to a empty script"
+    printf "%s\n" "If you actually need a cargo tool, please add it as a bazel tool instead"
+    printf "%s\n" "You can bypass this error by setting the \`BAZEL_CARGO=1\` env variable"
+    exit 127
+fi
+
+exec bazel run //tools:cargo --config=wrapper -- "$@"

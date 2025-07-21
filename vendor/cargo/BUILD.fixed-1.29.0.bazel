@@ -66,7 +66,7 @@ rust_library(
     version = "1.29.0",
     deps = [
         "@cargo_vendor__az-1.2.1//:az",
-        "@cargo_vendor__bytemuck-1.23.1//:bytemuck",
+        "@cargo_vendor__bytemuck-1.23.2//:bytemuck",
         "@cargo_vendor__fixed-1.29.0//:build_script_build",
         "@cargo_vendor__half-2.6.0//:half",
         "@cargo_vendor__typenum-1.18.0//:typenum",

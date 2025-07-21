@@ -64,6 +64,6 @@ rust_library(
     }),
     version = "0.2.3",
     deps = [
-        "@cargo_vendor__camino-1.1.10//:camino",
+        "@cargo_vendor__camino-1.1.11//:camino",
     ],
 )

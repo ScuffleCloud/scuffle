@@ -1,6 +1,7 @@
-load("//build/tools:package.bzl", "scuffle_package")
+load("//build/utils:package.bzl", "scuffle_package")
+load("//build/utils:cargo_toml.bzl", "cargo_toml")
 
-exports_files(["Cargo.toml"])
+cargo_toml()
 
 scuffle_package(
     crate_name = "tinc-derive",

@@ -65,7 +65,7 @@ rust_library(
     version = "0.16.0",
     deps = [
         "@cargo_vendor__globset-0.4.16//:globset",
-        "@cargo_vendor__guppy-0.17.19//:guppy",
+        "@cargo_vendor__guppy-0.17.20//:guppy",
         "@cargo_vendor__miette-7.6.0//:miette",
         "@cargo_vendor__nextest-metadata-0.12.2//:nextest_metadata",
         "@cargo_vendor__nextest-workspace-hack-0.1.0//:nextest_workspace_hack",
@@ -74,6 +74,6 @@ rust_library(
         "@cargo_vendor__regex-syntax-0.8.5//:regex_syntax",
         "@cargo_vendor__smol_str-0.3.2//:smol_str",
         "@cargo_vendor__thiserror-2.0.12//:thiserror",
-        "@cargo_vendor__winnow-0.7.11//:winnow",
+        "@cargo_vendor__winnow-0.7.12//:winnow",
     ],
 )

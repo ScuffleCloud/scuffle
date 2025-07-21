@@ -75,6 +75,6 @@ rust_library(
         "@cargo_vendor__yoke-0.8.0//:yoke",
         "@cargo_vendor__zerofrom-0.1.6//:zerofrom",
         "@cargo_vendor__zerotrie-0.2.2//:zerotrie",
-        "@cargo_vendor__zerovec-0.11.2//:zerovec",
+        "@cargo_vendor__zerovec-0.11.4//:zerovec",
     ],
 )

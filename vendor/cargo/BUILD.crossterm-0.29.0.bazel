@@ -79,7 +79,7 @@ rust_library(
     ] + select({
         "@rules_rust//rust/platform:aarch64-apple-darwin": [
             "@cargo_vendor__mio-1.0.4//:mio",  # cfg(unix)
-            "@cargo_vendor__rustix-1.0.7//:rustix",  # cfg(unix)
+            "@cargo_vendor__rustix-1.0.8//:rustix",  # cfg(unix)
             "@cargo_vendor__signal-hook-0.3.18//:signal_hook",  # cfg(unix)
             "@cargo_vendor__signal-hook-mio-0.2.4//:signal_hook_mio",  # cfg(unix)
         ],
@@ -89,13 +89,13 @@ rust_library(
         ],
         "@rules_rust//rust/platform:aarch64-unknown-linux-gnu": [
             "@cargo_vendor__mio-1.0.4//:mio",  # cfg(unix)
-            "@cargo_vendor__rustix-1.0.7//:rustix",  # cfg(unix)
+            "@cargo_vendor__rustix-1.0.8//:rustix",  # cfg(unix)
             "@cargo_vendor__signal-hook-0.3.18//:signal_hook",  # cfg(unix)
             "@cargo_vendor__signal-hook-mio-0.2.4//:signal_hook_mio",  # cfg(unix)
         ],
         "@rules_rust//rust/platform:x86_64-apple-darwin": [
             "@cargo_vendor__mio-1.0.4//:mio",  # cfg(unix)
-            "@cargo_vendor__rustix-1.0.7//:rustix",  # cfg(unix)
+            "@cargo_vendor__rustix-1.0.8//:rustix",  # cfg(unix)
             "@cargo_vendor__signal-hook-0.3.18//:signal_hook",  # cfg(unix)
             "@cargo_vendor__signal-hook-mio-0.2.4//:signal_hook_mio",  # cfg(unix)
         ],
@@ -105,7 +105,7 @@ rust_library(
         ],
         "@rules_rust//rust/platform:x86_64-unknown-linux-gnu": [
             "@cargo_vendor__mio-1.0.4//:mio",  # cfg(unix)
-            "@cargo_vendor__rustix-1.0.7//:rustix",  # cfg(unix)
+            "@cargo_vendor__rustix-1.0.8//:rustix",  # cfg(unix)
             "@cargo_vendor__signal-hook-0.3.18//:signal_hook",  # cfg(unix)
             "@cargo_vendor__signal-hook-mio-0.2.4//:signal_hook_mio",  # cfg(unix)
         ],

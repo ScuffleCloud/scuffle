@@ -68,8 +68,8 @@ rust_library(
         "@cargo_vendor__futures-0.3.31//:futures",
         "@cargo_vendor__h3-0.0.8//:h3",
         "@cargo_vendor__quinn-0.11.8//:quinn",
-        "@cargo_vendor__tokio-1.46.0//:tokio",
-        "@cargo_vendor__tokio-util-0.7.15//:tokio_util",
+        "@cargo_vendor__tokio-1.47.1//:tokio",
+        "@cargo_vendor__tokio-util-0.7.16//:tokio_util",
         "@cargo_vendor__tracing-0.1.41//:tracing",
     ],
 )

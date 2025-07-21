@@ -64,6 +64,6 @@ rust_library(
     }),
     version = "0.1.2",
     deps = [
-        "@cargo_vendor__zerovec-0.11.2//:zerovec",
+        "@cargo_vendor__zerovec-0.11.4//:zerovec",
     ],
 )

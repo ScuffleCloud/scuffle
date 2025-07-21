@@ -77,7 +77,7 @@ rust_library(
         "@cargo_vendor__regex-syntax-0.8.5//:regex_syntax",
         "@cargo_vendor__sha3-0.10.8//:sha3",
         "@cargo_vendor__string_cache-0.8.9//:string_cache",
-        "@cargo_vendor__term-1.0.2//:term",
+        "@cargo_vendor__term-1.1.0//:term",
         "@cargo_vendor__unicode-xid-0.2.6//:unicode_xid",
         "@cargo_vendor__walkdir-2.5.0//:walkdir",
     ],

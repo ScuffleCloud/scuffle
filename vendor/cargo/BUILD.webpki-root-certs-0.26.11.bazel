@@ -23,7 +23,7 @@ rust_library(
         allow_empty = True,
     ),
     aliases = {
-        "@cargo_vendor__webpki-root-certs-1.0.1//:webpki_root_certs": "parent",
+        "@cargo_vendor__webpki-root-certs-1.0.2//:webpki_root_certs": "parent",
     },
     compile_data = glob(
         include = ["**"],
@@ -58,6 +58,6 @@ rust_library(
     }),
     version = "0.26.11",
     deps = [
-        "@cargo_vendor__webpki-root-certs-1.0.1//:webpki_root_certs",
+        "@cargo_vendor__webpki-root-certs-1.0.2//:webpki_root_certs",
     ],
 )

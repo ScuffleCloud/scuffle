@@ -21,8 +21,15 @@
 //! ```rust
 //! # use std::path::PathBuf;
 //! # use scuffle_ffmpeg::AVMediaType;
+//! # fn file_path(item: &str) -> PathBuf {
+//! #   if let Some(env) = std::env::var_os("ASSETS_DIR") {
+//! #     PathBuf::from(env).join(item)
+//! #   } else {
+//! #     PathBuf::from(env!("CARGO_MANIFEST_DIR")).join(format!("../../assets/{item}"))
+//! #   }
+//! # }
 //! # fn test_fn() -> Result<(), Box<dyn std::error::Error>> {
-//! # let path = PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("../../assets").join("avc_aac.mp4");
+//! # let path = file_path("avc_aac.mp4");
 //! // 1. Store the input of the file from the path `path`
 //! // this can be any seekable io stream (std::io::Read + std::io::Seek)
 //! // if you don't have seek, you can just use Input::new(std::io::Read) (no seeking support)
@@ -97,9 +104,15 @@
 //! # use scuffle_ffmpeg::encoder::{AudioEncoderSettings, VideoEncoderSettings};
 //! # use scuffle_ffmpeg::io::OutputOptions;
 //! # use scuffle_ffmpeg::frame::AudioChannelLayout;
-//! #
+//! # fn file_path(item: &str) -> PathBuf {
+//! #   if let Some(env) = std::env::var_os("ASSETS_DIR") {
+//! #     PathBuf::from(env).join(item)
+//! #   } else {
+//! #     PathBuf::from(env!("CARGO_MANIFEST_DIR")).join(format!("../../assets/{item}"))
+//! #   }
+//! # }
 //! # fn test_fn() -> Result<(), Box<dyn std::error::Error>> {
-//! # let path = PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("../../assets").join("avc_aac.mp4");
+//! # let path = file_path("avc_aac.mp4");
 //! // 1. Create an input for reading. In this case we open it from a std::fs::File, however
 //! // it can be from any seekable io stream (std::io::Read + std::io::Seek) for example a std::io::Cursor.
 //! // It can also be a non-seekable stream in that case you can use Input::new(std::io::Read)
@@ -130,7 +143,7 @@
 //! )?;
 //!
 //! // 6. Find encoders for the streams by name or codec
-//! let x264 = scuffle_ffmpeg::codec::EncoderCodec::by_name("libx264")
+//! let h264 = scuffle_ffmpeg::codec::EncoderCodec::new(AVCodecID::H264)
 //!     .expect("no h264 encoder found");
 //! let aac = scuffle_ffmpeg::codec::EncoderCodec::new(AVCodecID::Aac)
 //!     .expect("no aac encoder found");
@@ -153,7 +166,7 @@
 //!
 //! // 8. Initialize the encoders
 //! let mut video_encoder = scuffle_ffmpeg::encoder::Encoder::new(
-//!     x264,
+//!     h264,
 //!     &mut output,
 //!     best_video_stream.time_base(),
 //!     best_video_stream.time_base(),

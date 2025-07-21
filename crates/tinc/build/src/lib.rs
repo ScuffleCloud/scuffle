@@ -181,6 +181,7 @@ impl Config {
         use codegen::prost_sanatize::to_snake;
         use codegen::utils::get_common_import_path;
         use proc_macro2::Span;
+        use prost::Message;
         use prost_reflect::DescriptorPool;
         use prost_types::FileDescriptorSet;
         use quote::{ToTokens, quote};
@@ -358,11 +359,14 @@ impl Config {
             }
         }
 
-        config
-            .compile_fds(FileDescriptorSet {
-                file: pool.file_descriptor_protos().cloned().collect(),
-            })
-            .context("prost compile")?;
+        let fds = FileDescriptorSet {
+            file: pool.file_descriptor_protos().cloned().collect(),
+        };
+
+        let fd_path = self.out_dir.join("tinc.fd.bin");
+        std::fs::write(fd_path, fds.encode_to_vec()).context("write fds")?;
+
+        config.compile_fds(fds).context("prost compile")?;
 
         for (package, module) in &mut packages {
             if self.extern_paths.contains(package) {

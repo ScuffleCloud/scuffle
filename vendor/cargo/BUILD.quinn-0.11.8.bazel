@@ -104,9 +104,9 @@ rust_library(
         "@cargo_vendor__quinn-proto-0.11.12//:quinn_proto",
         "@cargo_vendor__quinn-udp-0.5.13//:quinn_udp",
         "@cargo_vendor__rustc-hash-2.1.1//:rustc_hash",
-        "@cargo_vendor__rustls-0.23.28//:rustls",
+        "@cargo_vendor__rustls-0.23.31//:rustls",
         "@cargo_vendor__thiserror-2.0.12//:thiserror",
-        "@cargo_vendor__tokio-1.46.0//:tokio",
+        "@cargo_vendor__tokio-1.47.1//:tokio",
         "@cargo_vendor__tracing-0.1.41//:tracing",
     ] + select({
         "@rules_rust//rust/platform:aarch64-apple-darwin": [

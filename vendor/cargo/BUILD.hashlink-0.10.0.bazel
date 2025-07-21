@@ -61,6 +61,6 @@ rust_library(
     }),
     version = "0.10.0",
     deps = [
-        "@cargo_vendor__hashbrown-0.15.4//:hashbrown",
+        "@cargo_vendor__hashbrown-0.15.5//:hashbrown",
     ],
 )

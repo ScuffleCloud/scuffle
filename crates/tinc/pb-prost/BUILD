@@ -1,5 +1,7 @@
-load("//build/tools:package.bzl", "scuffle_build_script", "scuffle_package")
-exports_files(["Cargo.toml"])
+load("//build/utils:package.bzl", "scuffle_build_script", "scuffle_package")
+load("//build/utils:cargo_toml.bzl", "cargo_toml")
+
+cargo_toml()
 
 scuffle_build_script(
     name = "build_script",

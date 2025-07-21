@@ -63,6 +63,6 @@ rust_proc_macro(
     }),
     version = "0.2.11",
     deps = [
-        "@cargo_vendor__litrs-0.4.1//:litrs",
+        "@cargo_vendor__litrs-0.4.2//:litrs",
     ],
 )

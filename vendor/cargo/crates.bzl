@@ -25,6 +25,7 @@ def crate_repositories():
         name = "cargo_vendor",
         build_file = Label("//vendor/cargo:BUILD.bazel"),
         defs_module = Label("//vendor/cargo:defs.bzl"),
+        alias_rules_module = Label("//vendor/cargo:alias_rules.bzl"),
     )
 
     direct_deps = [struct(repo = "cargo_vendor", is_dev_dep = False)]

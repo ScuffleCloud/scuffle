@@ -47,7 +47,7 @@ rust_library(
     crate_root = "src/lib.rs",
     edition = "2021",
     proc_macro_deps = [
-        "@cargo_vendor__rustversion-1.0.21//:rustversion",
+        "@cargo_vendor__rustversion-1.0.22//:rustversion",
         "@cargo_vendor__wasm-bindgen-macro-0.2.100//:wasm_bindgen_macro",
     ],
     rustc_env_files = [

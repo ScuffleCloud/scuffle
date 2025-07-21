@@ -32,12 +32,6 @@ filegroup(
     srcs = ["bin/ffprobe"],
     visibility = ["//visibility:public"],
 )
-
-filegroup(
-    name = "ffplay_tool",
-    srcs = ["bin/ffplay"],
-    visibility = ["//visibility:public"],
-)
 """
 
 build_url = "https://github.com/BtbN/FFmpeg-Builds/releases/download/autobuild-2025-05-31-14-01"

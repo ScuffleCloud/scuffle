@@ -70,7 +70,7 @@ rust_library(
     ] + select({
         "@rules_rust//rust/platform:aarch64-apple-darwin": [
             "@cargo_vendor__getrandom-0.3.3//:getrandom",  # cfg(any(unix, windows, target_os = "wasi"))
-            "@cargo_vendor__rustix-1.0.7//:rustix",  # cfg(any(unix, target_os = "wasi"))
+            "@cargo_vendor__rustix-1.0.8//:rustix",  # cfg(any(unix, target_os = "wasi"))
         ],
         "@rules_rust//rust/platform:aarch64-pc-windows-msvc": [
             "@cargo_vendor__getrandom-0.3.3//:getrandom",  # cfg(any(unix, windows, target_os = "wasi"))
@@ -78,11 +78,11 @@ rust_library(
         ],
         "@rules_rust//rust/platform:aarch64-unknown-linux-gnu": [
             "@cargo_vendor__getrandom-0.3.3//:getrandom",  # cfg(any(unix, windows, target_os = "wasi"))
-            "@cargo_vendor__rustix-1.0.7//:rustix",  # cfg(any(unix, target_os = "wasi"))
+            "@cargo_vendor__rustix-1.0.8//:rustix",  # cfg(any(unix, target_os = "wasi"))
         ],
         "@rules_rust//rust/platform:x86_64-apple-darwin": [
             "@cargo_vendor__getrandom-0.3.3//:getrandom",  # cfg(any(unix, windows, target_os = "wasi"))
-            "@cargo_vendor__rustix-1.0.7//:rustix",  # cfg(any(unix, target_os = "wasi"))
+            "@cargo_vendor__rustix-1.0.8//:rustix",  # cfg(any(unix, target_os = "wasi"))
         ],
         "@rules_rust//rust/platform:x86_64-pc-windows-msvc": [
             "@cargo_vendor__getrandom-0.3.3//:getrandom",  # cfg(any(unix, windows, target_os = "wasi"))
@@ -90,7 +90,7 @@ rust_library(
         ],
         "@rules_rust//rust/platform:x86_64-unknown-linux-gnu": [
             "@cargo_vendor__getrandom-0.3.3//:getrandom",  # cfg(any(unix, windows, target_os = "wasi"))
-            "@cargo_vendor__rustix-1.0.7//:rustix",  # cfg(any(unix, target_os = "wasi"))
+            "@cargo_vendor__rustix-1.0.8//:rustix",  # cfg(any(unix, target_os = "wasi"))
         ],
         "//conditions:default": [],
     }),

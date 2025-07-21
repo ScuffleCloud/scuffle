@@ -36,25 +36,9 @@ rust_library(
     ),
     crate_features = [
         "alloc",
-    ] + select({
-        "@rules_rust//rust/platform:aarch64-apple-darwin": [
-            "default",
-            "std",
-        ],
-        "@rules_rust//rust/platform:aarch64-unknown-linux-gnu": [
-            "default",
-            "std",
-        ],
-        "@rules_rust//rust/platform:x86_64-apple-darwin": [
-            "default",
-            "std",
-        ],
-        "@rules_rust//rust/platform:x86_64-unknown-linux-gnu": [
-            "default",
-            "std",
-        ],
-        "//conditions:default": [],
-    }),
+        "default",
+        "std",
+    ],
     crate_root = "src/lib.rs",
     edition = "2015",
     rustc_env_files = [

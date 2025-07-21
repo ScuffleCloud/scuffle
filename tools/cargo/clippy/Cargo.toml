@@ -1,7 +1,6 @@
 [package]
 name = "clippy_fixer"
 edition = "2024"
-readme = "README.md"
 publish = false
 license = "MIT OR Apache-2.0"
 

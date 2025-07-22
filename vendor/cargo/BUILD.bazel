@@ -202,13 +202,13 @@ transition_alias_opt(
 )
 
 transition_alias_opt(
-    name = "cargo_metadata-0.20.0",
-    actual = "@cargo_vendor__cargo_metadata-0.20.0//:cargo_metadata",
+    name = "cargo_metadata-0.21.0",
+    actual = "@cargo_vendor__cargo_metadata-0.21.0//:cargo_metadata",
     tags = ["manual"],
 )
 
 transition_alias_opt(
-    name = "cargo_metadata-0.21.0",
+    name = "cargo_metadata",
     actual = "@cargo_vendor__cargo_metadata-0.21.0//:cargo_metadata",
     tags = ["manual"],
 )
@@ -754,14 +754,14 @@ transition_alias_opt(
 )
 
 transition_alias_opt(
-    name = "nextest-runner-0.82.0",
-    actual = "@cargo_vendor__nextest-runner-0.82.0//:nextest_runner",
+    name = "nextest-runner-0.84.0",
+    actual = "@cargo_vendor__nextest-runner-0.84.0//:nextest_runner",
     tags = ["manual"],
 )
 
 transition_alias_opt(
     name = "nextest-runner",
-    actual = "@cargo_vendor__nextest-runner-0.82.0//:nextest_runner",
+    actual = "@cargo_vendor__nextest-runner-0.84.0//:nextest_runner",
     tags = ["manual"],
 )
 

@@ -17,7 +17,7 @@ cargo_toml_env_vars(
 )
 
 rust_library(
-    name = "windows_sys",
+    name = "duct",
     srcs = glob(
         include = ["**/*.rs"],
         allow_empty = True,
@@ -35,21 +35,8 @@ rust_library(
         ],
     ),
     crate_features = [
-        "Win32",
-        "Win32_Foundation",
-        "Win32_Globalization",
-        "Win32_Security",
-        "Win32_Storage",
-        "Win32_Storage_FileSystem",
-        "Win32_System",
-        "Win32_System_Console",
-        "Win32_System_JobObjects",
-        "Win32_System_Pipes",
-        "Win32_System_Threading",
-        "Win32_UI",
-        "Win32_UI_Input",
-        "Win32_UI_Input_KeyboardAndMouse",
         "default",
+        "timeout",
     ],
     crate_root = "src/lib.rs",
     edition = "2021",
@@ -61,18 +48,39 @@ rust_library(
     ],
     tags = [
         "cargo-bazel",
-        "crate-name=windows-sys",
+        "crate-name=duct",
         "manual",
         "noclippy",
         "norustfmt",
     ],
     target_compatible_with = select({
+        "@rules_rust//rust/platform:aarch64-apple-darwin": [],
         "@rules_rust//rust/platform:aarch64-pc-windows-msvc": [],
+        "@rules_rust//rust/platform:aarch64-unknown-linux-gnu": [],
+        "@rules_rust//rust/platform:wasm32-unknown-unknown": [],
+        "@rules_rust//rust/platform:x86_64-apple-darwin": [],
         "@rules_rust//rust/platform:x86_64-pc-windows-msvc": [],
+        "@rules_rust//rust/platform:x86_64-unknown-linux-gnu": [],
         "//conditions:default": ["@platforms//:incompatible"],
     }),
-    version = "0.60.2",
+    version = "1.1.0",
     deps = [
-        "@cargo_vendor__windows-targets-0.53.3//:windows_targets",
-    ],
+        "@cargo_vendor__os_pipe-1.2.2//:os_pipe",
+        "@cargo_vendor__shared_child-1.1.1//:shared_child",
+        "@cargo_vendor__shared_thread-0.2.0//:shared_thread",
+    ] + select({
+        "@rules_rust//rust/platform:aarch64-apple-darwin": [
+            "@cargo_vendor__libc-0.2.174//:libc",  # cfg(unix)
+        ],
+        "@rules_rust//rust/platform:aarch64-unknown-linux-gnu": [
+            "@cargo_vendor__libc-0.2.174//:libc",  # cfg(unix)
+        ],
+        "@rules_rust//rust/platform:x86_64-apple-darwin": [
+            "@cargo_vendor__libc-0.2.174//:libc",  # cfg(unix)
+        ],
+        "@rules_rust//rust/platform:x86_64-unknown-linux-gnu": [
+            "@cargo_vendor__libc-0.2.174//:libc",  # cfg(unix)
+        ],
+        "//conditions:default": [],
+    }),
 )

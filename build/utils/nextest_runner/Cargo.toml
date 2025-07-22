@@ -10,11 +10,11 @@ path = "src/main.rs"
 
 [dependencies]
 toml_edit = "0.22"
-nextest-runner = "0.82"
+nextest-runner = "0.84"
 nextest-metadata = "0.12"
 nextest-filtering = "0.16"
 serde_json = "1"
-cargo_metadata = "0.20"
+cargo_metadata = "0.21"
 camino = "1"
 guppy = "0.17"
 clap = { version = "4.5", features = ["derive", "env"] }

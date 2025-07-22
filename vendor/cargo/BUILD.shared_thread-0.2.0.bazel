@@ -17,7 +17,7 @@ cargo_toml_env_vars(
 )
 
 rust_library(
-    name = "cargo_metadata",
+    name = "shared_thread",
     srcs = glob(
         include = ["**/*.rs"],
         allow_empty = True,
@@ -34,9 +34,6 @@ rust_library(
             "WORKSPACE.bazel",
         ],
     ),
-    crate_features = [
-        "default",
-    ],
     crate_root = "src/lib.rs",
     edition = "2021",
     rustc_env_files = [
@@ -47,7 +44,7 @@ rust_library(
     ],
     tags = [
         "cargo-bazel",
-        "crate-name=cargo_metadata",
+        "crate-name=shared_thread",
         "manual",
         "noclippy",
         "norustfmt",
@@ -62,14 +59,5 @@ rust_library(
         "@rules_rust//rust/platform:x86_64-unknown-linux-gnu": [],
         "//conditions:default": ["@platforms//:incompatible"],
     }),
-    version = "0.20.0",
-    deps = [
-        "@cargo_vendor__camino-1.1.11//:camino",
-        "@cargo_vendor__cargo-platform-0.2.0//:cargo_platform",
-        "@cargo_vendor__cargo-util-schemas-0.2.0//:cargo_util_schemas",
-        "@cargo_vendor__semver-1.0.26//:semver",
-        "@cargo_vendor__serde-1.0.219//:serde",
-        "@cargo_vendor__serde_json-1.0.142//:serde_json",
-        "@cargo_vendor__thiserror-2.0.12//:thiserror",
-    ],
+    version = "0.2.0",
 )

@@ -201,7 +201,7 @@
   "moduleExtensions": {
     "//vendor:cargo_ext.bzl%cargo_vendor": {
       "general": {
-        "bzlTransitiveDigest": "ZBXXMJ+nlGQTDsyTC71Tc67bAqPDSApJEgVjzgJP+dw=",
+        "bzlTransitiveDigest": "PC2J7Uy5eCBWDVqJCWwRMbREt0nR99cL2rJYuDpSiec=",
         "usagesDigest": "mtR+K4/VVAmhgoN1cG7MXxv6mAD1vfxRZ8SSM66EtxE=",
         "recordedFileInputs": {},
         "recordedDirentsInputs": {},
@@ -791,18 +791,6 @@
               "build_file": "@@//vendor/cargo:BUILD.cargo-platform-0.2.0.bazel"
             }
           },
-          "cargo_vendor__cargo-util-schemas-0.2.0": {
-            "repoRuleId": "@@bazel_tools//tools/build_defs/repo:http.bzl%http_archive",
-            "attributes": {
-              "sha256": "e63d2780ac94487eb9f1fea7b0d56300abc9eb488800854ca217f102f5caccca",
-              "type": "tar.gz",
-              "urls": [
-                "https://static.crates.io/crates/cargo-util-schemas/0.2.0/download"
-              ],
-              "strip_prefix": "cargo-util-schemas-0.2.0",
-              "build_file": "@@//vendor/cargo:BUILD.cargo-util-schemas-0.2.0.bazel"
-            }
-          },
           "cargo_vendor__cargo-util-schemas-0.8.2": {
             "repoRuleId": "@@bazel_tools//tools/build_defs/repo:http.bzl%http_archive",
             "attributes": {
@@ -813,18 +801,6 @@
               ],
               "strip_prefix": "cargo-util-schemas-0.8.2",
               "build_file": "@@//vendor/cargo:BUILD.cargo-util-schemas-0.8.2.bazel"
-            }
-          },
-          "cargo_vendor__cargo_metadata-0.20.0": {
-            "repoRuleId": "@@bazel_tools//tools/build_defs/repo:http.bzl%http_archive",
-            "attributes": {
-              "sha256": "4f7835cfc6135093070e95eb2b53e5d9b5c403dc3a6be6040ee026270aa82502",
-              "type": "tar.gz",
-              "urls": [
-                "https://static.crates.io/crates/cargo_metadata/0.20.0/download"
-              ],
-              "strip_prefix": "cargo_metadata-0.20.0",
-              "build_file": "@@//vendor/cargo:BUILD.cargo_metadata-0.20.0.bazel"
             }
           },
           "cargo_vendor__cargo_metadata-0.21.0": {
@@ -1065,6 +1041,18 @@
               ],
               "strip_prefix": "console-0.15.11",
               "build_file": "@@//vendor/cargo:BUILD.console-0.15.11.bazel"
+            }
+          },
+          "cargo_vendor__console-0.16.0": {
+            "repoRuleId": "@@bazel_tools//tools/build_defs/repo:http.bzl%http_archive",
+            "attributes": {
+              "sha256": "2e09ced7ebbccb63b4c65413d821f2e00ce54c5ca4514ddc6b3c892fdbcbc69d",
+              "type": "tar.gz",
+              "urls": [
+                "https://static.crates.io/crates/console/0.16.0/download"
+              ],
+              "strip_prefix": "console-0.16.0",
+              "build_file": "@@//vendor/cargo:BUILD.console-0.16.0.bazel"
             }
           },
           "cargo_vendor__const-random-0.1.18": {
@@ -1511,16 +1499,16 @@
               "build_file": "@@//vendor/cargo:BUILD.dtoa-short-0.3.5.bazel"
             }
           },
-          "cargo_vendor__duct-0.13.7": {
+          "cargo_vendor__duct-1.1.0": {
             "repoRuleId": "@@bazel_tools//tools/build_defs/repo:http.bzl%http_archive",
             "attributes": {
-              "sha256": "e4ab5718d1224b63252cd0c6f74f6480f9ffeb117438a2e0f5cf6d9a4798929c",
+              "sha256": "d7478638a31d1f1f3d6c9f5e57c76b906a04ac4879d6fd0fb6245bc88f73fd0b",
               "type": "tar.gz",
               "urls": [
-                "https://static.crates.io/crates/duct/0.13.7/download"
+                "https://static.crates.io/crates/duct/1.1.0/download"
               ],
-              "strip_prefix": "duct-0.13.7",
-              "build_file": "@@//vendor/cargo:BUILD.duct-0.13.7.bazel"
+              "strip_prefix": "duct-1.1.0",
+              "build_file": "@@//vendor/cargo:BUILD.duct-1.1.0.bazel"
             }
           },
           "cargo_vendor__dunce-1.0.5": {
@@ -2519,16 +2507,16 @@
               "build_file": "@@//vendor/cargo:BUILD.indexmap-2.10.0.bazel"
             }
           },
-          "cargo_vendor__indicatif-0.17.11": {
+          "cargo_vendor__indicatif-0.18.0": {
             "repoRuleId": "@@bazel_tools//tools/build_defs/repo:http.bzl%http_archive",
             "attributes": {
-              "sha256": "183b3088984b400f4cfac3620d5e076c84da5364016b4f49473de574b2586235",
+              "sha256": "70a646d946d06bedbbc4cac4c218acf4bbf2d87757a784857025f4d447e4e1cd",
               "type": "tar.gz",
               "urls": [
-                "https://static.crates.io/crates/indicatif/0.17.11/download"
+                "https://static.crates.io/crates/indicatif/0.18.0/download"
               ],
-              "strip_prefix": "indicatif-0.17.11",
-              "build_file": "@@//vendor/cargo:BUILD.indicatif-0.17.11.bazel"
+              "strip_prefix": "indicatif-0.18.0",
+              "build_file": "@@//vendor/cargo:BUILD.indicatif-0.18.0.bazel"
             }
           },
           "cargo_vendor__indoc-2.0.6": {
@@ -3131,16 +3119,16 @@
               "build_file": "@@//vendor/cargo:BUILD.nextest-metadata-0.12.2.bazel"
             }
           },
-          "cargo_vendor__nextest-runner-0.82.0": {
+          "cargo_vendor__nextest-runner-0.84.0": {
             "repoRuleId": "@@bazel_tools//tools/build_defs/repo:http.bzl%http_archive",
             "attributes": {
-              "sha256": "fc3a78ca18caa582725b10b0d70e78f41c63701d2390884d48e1ac902e842e36",
+              "sha256": "0af04de0e7adcbf90af1eca73b089fd364b023844ccc1692dd532ab5ae062936",
               "type": "tar.gz",
               "urls": [
-                "https://static.crates.io/crates/nextest-runner/0.82.0/download"
+                "https://static.crates.io/crates/nextest-runner/0.84.0/download"
               ],
-              "strip_prefix": "nextest-runner-0.82.0",
-              "build_file": "@@//vendor/cargo:BUILD.nextest-runner-0.82.0.bazel"
+              "strip_prefix": "nextest-runner-0.84.0",
+              "build_file": "@@//vendor/cargo:BUILD.nextest-runner-0.84.0.bazel"
             }
           },
           "cargo_vendor__nextest-workspace-hack-0.1.0": {
@@ -3237,18 +3225,6 @@
               ],
               "strip_prefix": "num_cpus-1.17.0",
               "build_file": "@@//vendor/cargo:BUILD.num_cpus-1.17.0.bazel"
-            }
-          },
-          "cargo_vendor__number_prefix-0.4.0": {
-            "repoRuleId": "@@bazel_tools//tools/build_defs/repo:http.bzl%http_archive",
-            "attributes": {
-              "sha256": "830b246a0e5f20af87141b25c173cd1b609bd7779a4617d6ec582abaf90870f3",
-              "type": "tar.gz",
-              "urls": [
-                "https://static.crates.io/crates/number_prefix/0.4.0/download"
-              ],
-              "strip_prefix": "number_prefix-0.4.0",
-              "build_file": "@@//vendor/cargo:BUILD.number_prefix-0.4.0.bazel"
             }
           },
           "cargo_vendor__object-0.36.7": {
@@ -4832,6 +4808,18 @@
               "build_file": "@@//vendor/cargo:BUILD.shared_child-1.1.1.bazel"
             }
           },
+          "cargo_vendor__shared_thread-0.2.0": {
+            "repoRuleId": "@@bazel_tools//tools/build_defs/repo:http.bzl%http_archive",
+            "attributes": {
+              "sha256": "52b86057fcb5423f5018e331ac04623e32d6b5ce85e33300f92c79a1973928b0",
+              "type": "tar.gz",
+              "urls": [
+                "https://static.crates.io/crates/shared_thread/0.2.0/download"
+              ],
+              "strip_prefix": "shared_thread-0.2.0",
+              "build_file": "@@//vendor/cargo:BUILD.shared_thread-0.2.0.bazel"
+            }
+          },
           "cargo_vendor__shell-words-1.1.0": {
             "repoRuleId": "@@bazel_tools//tools/build_defs/repo:http.bzl%http_archive",
             "attributes": {
@@ -5516,6 +5504,18 @@
               "build_file": "@@//vendor/cargo:BUILD.toml_edit-0.22.27.bazel"
             }
           },
+          "cargo_vendor__toml_edit-0.23.3": {
+            "repoRuleId": "@@bazel_tools//tools/build_defs/repo:http.bzl%http_archive",
+            "attributes": {
+              "sha256": "17d3b47e6b7a040216ae5302712c94d1cf88c95b47efa80e2c59ce96c878267e",
+              "type": "tar.gz",
+              "urls": [
+                "https://static.crates.io/crates/toml_edit/0.23.3/download"
+              ],
+              "strip_prefix": "toml_edit-0.23.3",
+              "build_file": "@@//vendor/cargo:BUILD.toml_edit-0.23.3.bazel"
+            }
+          },
           "cargo_vendor__toml_parser-1.0.2": {
             "repoRuleId": "@@bazel_tools//tools/build_defs/repo:http.bzl%http_archive",
             "attributes": {
@@ -5898,6 +5898,18 @@
               ],
               "strip_prefix": "unicode-xid-0.2.6",
               "build_file": "@@//vendor/cargo:BUILD.unicode-xid-0.2.6.bazel"
+            }
+          },
+          "cargo_vendor__unit-prefix-0.5.1": {
+            "repoRuleId": "@@bazel_tools//tools/build_defs/repo:http.bzl%http_archive",
+            "attributes": {
+              "sha256": "323402cff2dd658f39ca17c789b502021b3f18707c91cdf22e3838e1b4023817",
+              "type": "tar.gz",
+              "urls": [
+                "https://static.crates.io/crates/unit-prefix/0.5.1/download"
+              ],
+              "strip_prefix": "unit-prefix-0.5.1",
+              "build_file": "@@//vendor/cargo:BUILD.unit-prefix-0.5.1.bazel"
             }
           },
           "cargo_vendor__unsafe-libyaml-norway-0.2.15": {
@@ -6698,7 +6710,6 @@
             "cargo_vendor__camino-tempfile-1.4.1",
             "cargo_vendor__cargo-manifest-0.19.1",
             "cargo_vendor__cargo-platform-0.2.0",
-            "cargo_vendor__cargo_metadata-0.20.0",
             "cargo_vendor__cargo_metadata-0.21.0",
             "cargo_vendor__cel-parser-0.8.1",
             "cargo_vendor__chrono-0.4.41",
@@ -6742,7 +6753,7 @@
             "cargo_vendor__minijinja-2.11.0",
             "cargo_vendor__nextest-filtering-0.16.0",
             "cargo_vendor__nextest-metadata-0.12.2",
-            "cargo_vendor__nextest-runner-0.82.0",
+            "cargo_vendor__nextest-runner-0.84.0",
             "cargo_vendor__num-derive-0.4.2",
             "cargo_vendor__num-traits-0.2.19",
             "cargo_vendor__num_cpus-1.17.0",

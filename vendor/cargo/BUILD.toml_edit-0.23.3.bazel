@@ -17,7 +17,7 @@ cargo_toml_env_vars(
 )
 
 rust_library(
-    name = "number_prefix",
+    name = "toml_edit",
     srcs = glob(
         include = ["**/*.rs"],
         allow_empty = True,
@@ -36,10 +36,12 @@ rust_library(
     ),
     crate_features = [
         "default",
-        "std",
+        "display",
+        "parse",
+        "serde",
     ],
     crate_root = "src/lib.rs",
-    edition = "2015",
+    edition = "2021",
     rustc_env_files = [
         ":cargo_toml_env_vars",
     ],
@@ -48,7 +50,7 @@ rust_library(
     ],
     tags = [
         "cargo-bazel",
-        "crate-name=number_prefix",
+        "crate-name=toml_edit",
         "manual",
         "noclippy",
         "norustfmt",
@@ -63,5 +65,14 @@ rust_library(
         "@rules_rust//rust/platform:x86_64-unknown-linux-gnu": [],
         "//conditions:default": ["@platforms//:incompatible"],
     }),
-    version = "0.4.0",
+    version = "0.23.3",
+    deps = [
+        "@cargo_vendor__indexmap-2.10.0//:indexmap",
+        "@cargo_vendor__serde-1.0.219//:serde",
+        "@cargo_vendor__serde_spanned-1.0.0//:serde_spanned",
+        "@cargo_vendor__toml_datetime-0.7.0//:toml_datetime",
+        "@cargo_vendor__toml_parser-1.0.2//:toml_parser",
+        "@cargo_vendor__toml_writer-1.0.2//:toml_writer",
+        "@cargo_vendor__winnow-0.7.12//:winnow",
+    ],
 )

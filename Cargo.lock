@@ -522,22 +522,6 @@ dependencies = [
 
 [[package]]
 name = "cargo-util-schemas"
-version = "0.2.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "e63d2780ac94487eb9f1fea7b0d56300abc9eb488800854ca217f102f5caccca"
-dependencies = [
- "semver",
- "serde",
- "serde-untagged",
- "serde-value",
- "thiserror 1.0.69",
- "toml 0.8.23",
- "unicode-xid",
- "url 2.5.4",
-]
-
-[[package]]
-name = "cargo-util-schemas"
 version = "0.8.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "7dc1a6f7b5651af85774ae5a34b4e8be397d9cf4bc063b7e6dbd99a841837830"
@@ -554,28 +538,13 @@ dependencies = [
 
 [[package]]
 name = "cargo_metadata"
-version = "0.20.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "4f7835cfc6135093070e95eb2b53e5d9b5c403dc3a6be6040ee026270aa82502"
-dependencies = [
- "camino",
- "cargo-platform",
- "cargo-util-schemas 0.2.0",
- "semver",
- "serde",
- "serde_json",
- "thiserror 2.0.15",
-]
-
-[[package]]
-name = "cargo_metadata"
 version = "0.21.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "5cfca2aaa699835ba88faf58a06342a314a950d2b9686165e038286c30316868"
 dependencies = [
  "camino",
  "cargo-platform",
- "cargo-util-schemas 0.8.2",
+ "cargo-util-schemas",
  "semver",
  "serde",
  "serde_json",
@@ -826,8 +795,20 @@ dependencies = [
  "encode_unicode",
  "libc",
  "once_cell",
- "unicode-width 0.2.1",
  "windows-sys 0.59.0",
+]
+
+[[package]]
+name = "console"
+version = "0.16.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "2e09ced7ebbccb63b4c65413d821f2e00ce54c5ca4514ddc6b3c892fdbcbc69d"
+dependencies = [
+ "encode_unicode",
+ "libc",
+ "once_cell",
+ "unicode-width 0.2.1",
+ "windows-sys 0.60.2",
 ]
 
 [[package]]
@@ -1207,14 +1188,14 @@ dependencies = [
 
 [[package]]
 name = "duct"
-version = "0.13.7"
+version = "1.1.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "e4ab5718d1224b63252cd0c6f74f6480f9ffeb117438a2e0f5cf6d9a4798929c"
+checksum = "d7478638a31d1f1f3d6c9f5e57c76b906a04ac4879d6fd0fb6245bc88f73fd0b"
 dependencies = [
  "libc",
- "once_cell",
  "os_pipe",
  "shared_child",
+ "shared_thread",
 ]
 
 [[package]]
@@ -1633,7 +1614,7 @@ checksum = "7eadc0c380d2c5f421758a5838ce593687da4a47d1dcf1169bf3bad629b764e7"
 dependencies = [
  "ahash",
  "camino",
- "cargo_metadata 0.21.0",
+ "cargo_metadata",
  "cfg-if",
  "debug-ignore",
  "fixedbitset 0.5.7",
@@ -2096,14 +2077,14 @@ dependencies = [
 
 [[package]]
 name = "indicatif"
-version = "0.17.11"
+version = "0.18.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "183b3088984b400f4cfac3620d5e076c84da5364016b4f49473de574b2586235"
+checksum = "70a646d946d06bedbbc4cac4c218acf4bbf2d87757a784857025f4d447e4e1cd"
 dependencies = [
- "console",
- "number_prefix",
+ "console 0.16.0",
  "portable-atomic",
  "unicode-width 0.2.1",
+ "unit-prefix",
  "web-time",
 ]
 
@@ -2119,7 +2100,7 @@ version = "1.43.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "154934ea70c58054b556dd430b99a98c2a7ff5309ac9891597e339b5c28f4371"
 dependencies = [
- "console",
+ "console 0.15.11",
  "once_cell",
  "pest",
  "pest_derive",
@@ -2612,9 +2593,9 @@ dependencies = [
 
 [[package]]
 name = "nextest-runner"
-version = "0.82.0"
+version = "0.84.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "fc3a78ca18caa582725b10b0d70e78f41c63701d2390884d48e1ac902e842e36"
+checksum = "0af04de0e7adcbf90af1eca73b089fd364b023844ccc1692dd532ab5ae062936"
 dependencies = [
  "aho-corasick",
  "async-scoped",
@@ -2623,7 +2604,7 @@ dependencies = [
  "bytes",
  "camino",
  "camino-tempfile",
- "cargo_metadata 0.20.0",
+ "cargo_metadata",
  "cfg-if",
  "chrono",
  "config",
@@ -2673,7 +2654,7 @@ dependencies = [
  "tokio",
  "tokio-stream",
  "toml 0.8.23",
- "toml_edit",
+ "toml_edit 0.23.3",
  "tracing",
  "unicode-ident",
  "unicode-normalization",
@@ -2694,14 +2675,14 @@ name = "nextest_runner_lib"
 version = "0.1.0"
 dependencies = [
  "camino",
- "cargo_metadata 0.20.0",
+ "cargo_metadata",
  "clap",
  "guppy",
  "nextest-filtering",
  "nextest-metadata",
  "nextest-runner",
  "serde_json",
- "toml_edit",
+ "toml_edit 0.22.27",
 ]
 
 [[package]]
@@ -2776,12 +2757,6 @@ dependencies = [
  "hermit-abi",
  "libc",
 ]
-
-[[package]]
-name = "number_prefix"
-version = "0.4.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "830b246a0e5f20af87141b25c173cd1b609bd7779a4617d6ec582abaf90870f3"
 
 [[package]]
 name = "nutype-enum"
@@ -3220,7 +3195,7 @@ name = "postcompile"
 version = "0.3.3"
 dependencies = [
  "cargo-manifest",
- "cargo_metadata 0.21.0",
+ "cargo_metadata",
  "document-features",
  "insta",
  "prettyplease",
@@ -4783,6 +4758,12 @@ dependencies = [
 ]
 
 [[package]]
+name = "shared_thread"
+version = "0.2.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "52b86057fcb5423f5018e331ac04623e32d6b5ce85e33300f92c79a1973928b0"
+
+[[package]]
 name = "shell-words"
 version = "1.1.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -5414,7 +5395,7 @@ dependencies = [
  "serde",
  "serde_spanned 0.6.9",
  "toml_datetime 0.6.11",
- "toml_edit",
+ "toml_edit 0.22.27",
 ]
 
 [[package]]
@@ -5461,6 +5442,21 @@ dependencies = [
  "serde_spanned 0.6.9",
  "toml_datetime 0.6.11",
  "toml_write",
+ "winnow",
+]
+
+[[package]]
+name = "toml_edit"
+version = "0.23.3"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "17d3b47e6b7a040216ae5302712c94d1cf88c95b47efa80e2c59ce96c878267e"
+dependencies = [
+ "indexmap",
+ "serde",
+ "serde_spanned 1.0.0",
+ "toml_datetime 0.7.0",
+ "toml_parser",
+ "toml_writer",
  "winnow",
 ]
 
@@ -5795,6 +5791,12 @@ name = "unicode-xid"
 version = "0.2.6"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "ebc1c04c71510c7f702b52b7c350734c9ff1295c464a03335b00bb84fc54f853"
+
+[[package]]
+name = "unit-prefix"
+version = "0.5.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "323402cff2dd658f39ca17c789b502021b3f18707c91cdf22e3838e1b4023817"
 
 [[package]]
 name = "unsafe-libyaml-norway"
@@ -6458,7 +6460,7 @@ version = "0.0.0"
 dependencies = [
  "anyhow",
  "cargo-platform",
- "cargo_metadata 0.20.0",
+ "cargo_metadata",
  "chrono",
  "clap",
  "fmtools",
@@ -6471,7 +6473,7 @@ dependencies = [
  "serde_derive",
  "serde_json",
  "sha2",
- "toml_edit",
+ "toml_edit 0.22.27",
  "tracing",
  "tracing-subscriber",
 ]

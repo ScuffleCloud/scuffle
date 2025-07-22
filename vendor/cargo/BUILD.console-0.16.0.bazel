@@ -17,7 +17,7 @@ cargo_toml_env_vars(
 )
 
 rust_library(
-    name = "cargo_util_schemas",
+    name = "console",
     srcs = glob(
         include = ["**/*.rs"],
         allow_empty = True,
@@ -34,6 +34,12 @@ rust_library(
             "WORKSPACE.bazel",
         ],
     ),
+    crate_features = [
+        "alloc",
+        "ansi-parsing",
+        "std",
+        "unicode-width",
+    ],
     crate_root = "src/lib.rs",
     edition = "2021",
     rustc_env_files = [
@@ -44,7 +50,7 @@ rust_library(
     ],
     tags = [
         "cargo-bazel",
-        "crate-name=cargo-util-schemas",
+        "crate-name=console",
         "manual",
         "noclippy",
         "norustfmt",
@@ -59,15 +65,20 @@ rust_library(
         "@rules_rust//rust/platform:x86_64-unknown-linux-gnu": [],
         "//conditions:default": ["@platforms//:incompatible"],
     }),
-    version = "0.2.0",
+    version = "0.16.0",
     deps = [
-        "@cargo_vendor__semver-1.0.26//:semver",
-        "@cargo_vendor__serde-1.0.219//:serde",
-        "@cargo_vendor__serde-untagged-0.1.7//:serde_untagged",
-        "@cargo_vendor__serde-value-0.7.0//:serde_value",
-        "@cargo_vendor__thiserror-1.0.69//:thiserror",
-        "@cargo_vendor__toml-0.8.23//:toml",
-        "@cargo_vendor__unicode-xid-0.2.6//:unicode_xid",
-        "@cargo_vendor__url-2.5.4//:url",
-    ],
+        "@cargo_vendor__libc-0.2.174//:libc",
+        "@cargo_vendor__once_cell-1.21.3//:once_cell",
+        "@cargo_vendor__unicode-width-0.2.1//:unicode_width",
+    ] + select({
+        "@rules_rust//rust/platform:aarch64-pc-windows-msvc": [
+            "@cargo_vendor__encode_unicode-1.0.0//:encode_unicode",  # cfg(windows)
+            "@cargo_vendor__windows-sys-0.60.2//:windows_sys",  # cfg(windows)
+        ],
+        "@rules_rust//rust/platform:x86_64-pc-windows-msvc": [
+            "@cargo_vendor__encode_unicode-1.0.0//:encode_unicode",  # cfg(windows)
+            "@cargo_vendor__windows-sys-0.60.2//:windows_sys",  # cfg(windows)
+        ],
+        "//conditions:default": [],
+    }),
 )

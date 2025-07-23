@@ -30,6 +30,7 @@ mod http_ext;
 pub mod id;
 mod middleware;
 mod models;
+mod prost_ext;
 mod schema;
 pub mod services;
 mod std_ext;
@@ -44,6 +45,7 @@ pub trait CoreConfig:
     + Send
     + 'static
 {
+    fn service_name(&self) -> &str;
     fn bind(&self) -> SocketAddr;
     fn db(
         &self,
@@ -74,4 +76,5 @@ pub trait CoreConfig:
     }
     fn google_client_id(&self) -> &str;
     fn google_client_secret(&self) -> &str;
+    fn webauthn_challenge_secret(&self) -> &[u8];
 }

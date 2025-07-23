@@ -2,7 +2,6 @@ use diesel::Selectable;
 use diesel::prelude::{AsChangeset, Associations, Identifiable, Insertable, Queryable};
 
 use crate::cedar::CedarEntity;
-use crate::chrono_ext::ChronoDateTimeExt;
 use crate::id::{Id, PrefixedId};
 use crate::models::users::{User, UserId};
 
@@ -45,8 +44,6 @@ pub struct MfaWebauthnCredential {
     pub user_id: UserId,
     pub credential_id: Vec<u8>,
     pub spki_data: Vec<u8>,
-    pub current_challenge: Option<Vec<u8>>,
-    pub current_challenge_expires_at: Option<chrono::DateTime<chrono::Utc>>,
 }
 
 impl PrefixedId for MfaWebauthnCredential {
@@ -71,7 +68,6 @@ impl From<MfaWebauthnCredential> for pb::scufflecloud::core::v1::MfaWebauthnCred
             id: value.id.to_string(),
             user_id: value.user_id.to_string(),
             credential_id: value.credential_id,
-            current_challenge_expires_at: value.current_challenge_expires_at.map(|dt| dt.to_prost_timestamp_utc()),
         }
     }
 }

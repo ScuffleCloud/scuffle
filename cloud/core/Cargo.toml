@@ -35,6 +35,7 @@ p384 = "0.13.1"
 derive_more = { features = ["display"], version = "2.0.1" }
 pb = { package = "scufflecloud-proto", path = "../proto" }
 pkcs8 = "0.10.2"
+prost = "0.13.5"
 rand = "0.9.1"
 reqwest = { features = ["json", "rustls-tls"], version = "0.12.20" }
 rsa = { features = ["sha2"], version = "0.9.8" }

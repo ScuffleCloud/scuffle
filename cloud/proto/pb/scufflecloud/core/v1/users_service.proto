@@ -3,13 +3,11 @@ syntax = "proto3";
 package scufflecloud.core.v1;
 
 import "tinc/annotations.proto";
-import "google/protobuf/timestamp.proto";
 import "google/protobuf/empty.proto";
 
 import "scufflecloud/core/v1/common.proto";
 import "scufflecloud/core/v1/constraints.proto";
 import "scufflecloud/core/v1/users.proto";
-import "scufflecloud/core/v1/sessions.proto";
 
 service UsersService {
     rpc GetUser(UserByIdRequest) returns (User) {
@@ -54,11 +52,6 @@ service UsersService {
         };
     }
 
-    rpc CreateWebauthnCredentialChallenge(CreateWebauthnCredentialChallengeRequest) returns (CreateWebauthnCredentialChallengeResponse) {
-        option (tinc.method).endpoint = {
-            post: "/webauthn-credentials/challenges"
-        };
-    }
     rpc ListUserWebauthnCredentials(UserByIdRequest) returns (UserWebauthnCredentialsList) {
         option (tinc.method).endpoint = {
             get: "/users/{id}/webauthn-credentials"
@@ -120,18 +113,8 @@ message MfaWebauthnCredential {
     string id = 1 [(string_constraint).id = true];
     string user_id = 2 [(string_constraint).id = true];
     bytes credential_id = 3;
-    google.protobuf.Timestamp current_challenge_expires_at = 4;
 }
 
 message UserWebauthnCredentialsList {
     repeated MfaWebauthnCredential credentials = 1;
-}
-
-message CreateWebauthnCredentialChallengeRequest {
-    CaptchaChallengeResponse captcha = 1;
-    bytes credential_id = 2;
-}
-
-message CreateWebauthnCredentialChallengeResponse {
-    bytes challenge = 1;
 }

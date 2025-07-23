@@ -1,3 +1,5 @@
+use std::sync::Arc;
+
 use base64::Engine;
 use diesel::{ExpressionMethods, OptionalExtension, QueryDsl, SelectableHelper};
 use diesel_async::RunQueryDsl;
@@ -5,9 +7,14 @@ use pkcs8::AssociatedOid;
 use sha2::Digest;
 use tonic_types::{ErrorDetails, StatusExt};
 
+use crate::CoreConfig;
 use crate::models::MfaWebauthnCredential;
 use crate::schema::mfa_webauthn_credentials;
 use crate::std_ext::ResultExt;
+
+mod challenge;
+
+pub(crate) use challenge::new_challenge;
 
 /// <https://w3c.github.io/webauthn/#dictionary-client-data>
 #[derive(Debug, serde_derive::Deserialize)]
@@ -52,8 +59,8 @@ pub(crate) enum VerifyError<'a> {
     },
     #[error("failed to decode challenge: {0}")]
     InvalidChallenge(#[from] base64::DecodeError),
-    #[error("the challenge in the client data does not match the expected challenge")]
-    UnexpectedChallenge,
+    #[error("failed to verify challenge")]
+    VerifyChallenge(#[from] challenge::ChallengeError),
     #[error("failed to decode public key: {0}")]
     InvalidPublicKey(#[from] pkcs8::spki::Error),
     #[error("failed to verify signature: {0}")]
@@ -62,9 +69,9 @@ pub(crate) enum VerifyError<'a> {
     UnsupportedAlgorithm(pkcs8::spki::AlgorithmIdentifier<pkcs8::spki::der::AnyRef<'a>>),
 }
 
-pub(crate) fn verify_challenge<'a>(
+pub(crate) fn verify_challenge<'a, G: CoreConfig>(
+    global: &Arc<G>,
     expected_type: CollectedClientDataType,
-    expected_challenge: &[u8],
     spki_data: &'a [u8],
     assertion_response: &pb::scufflecloud::core::v1::AuthenticatorAssertionResponse,
 ) -> Result<(), VerifyError<'a>> {
@@ -78,9 +85,7 @@ pub(crate) fn verify_challenge<'a>(
     }
 
     let challenge = base64::prelude::BASE64_URL_SAFE.decode(client_data.challenge)?;
-    if challenge != expected_challenge {
-        return Err(VerifyError::UnexpectedChallenge);
-    }
+    challenge::verify_challenge(global, &challenge)?;
 
     let spki = GenericSpki::try_from(spki_data)?;
 
@@ -122,7 +127,8 @@ pub(crate) fn verify_challenge<'a>(
     Ok(())
 }
 
-pub(crate) async fn process_challenge(
+pub(crate) async fn process_challenge<G: CoreConfig>(
+    global: &Arc<G>,
     tx: &mut diesel_async::AsyncPgConnection,
     credential_id: &[u8],
     assertion_response: &pb::scufflecloud::core::v1::AuthenticatorAssertionResponse,
@@ -142,28 +148,10 @@ pub(crate) async fn process_challenge(
         ));
     };
 
-    let (Some(current_challenge), Some(current_challenge_expires_at)) =
-        (&webauthn_pk.current_challenge, webauthn_pk.current_challenge_expires_at)
-    else {
-        return Err(tonic::Status::with_error_details(
-            tonic::Code::FailedPrecondition,
-            "webauthn public key does not have a current challenge",
-            ErrorDetails::new(),
-        ));
-    };
-
-    if current_challenge_expires_at < chrono::Utc::now() {
-        return Err(tonic::Status::with_error_details(
-            tonic::Code::DeadlineExceeded,
-            "webauthn challenge has expired",
-            ErrorDetails::new(),
-        ));
-    }
-
     // Verify the challenge
     verify_challenge(
+        global,
         CollectedClientDataType::Get,
-        current_challenge,
         &webauthn_pk.spki_data,
         assertion_response,
     )
@@ -172,16 +160,6 @@ pub(crate) async fn process_challenge(
         "failed to verify webauthn challenge",
         ErrorDetails::new(),
     )?;
-
-    diesel::update(mfa_webauthn_credentials::dsl::mfa_webauthn_credentials)
-        .filter(mfa_webauthn_credentials::dsl::id.eq(webauthn_pk.id))
-        .set((
-            mfa_webauthn_credentials::dsl::current_challenge.eq(None::<Vec<u8>>),
-            mfa_webauthn_credentials::dsl::current_challenge_expires_at.eq(None::<chrono::NaiveDateTime>),
-        ))
-        .execute(tx)
-        .await
-        .into_tonic_internal_err("failed to clear webauthn challenge")?;
 
     Ok(webauthn_pk)
 }

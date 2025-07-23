@@ -14,6 +14,7 @@ mod organization_invitations;
 mod organizations;
 mod sessions;
 mod users;
+mod webauthn_challenges;
 
 #[derive(Debug)]
 pub struct CoreSvc<G> {

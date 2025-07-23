@@ -6,7 +6,6 @@ import "tinc/annotations.proto";
 
 import "scufflecloud/core/v1/organizations.proto";
 import "scufflecloud/core/v1/users.proto";
-import "scufflecloud/core/v1/constraints.proto";
 
 service OrganizationsService {
     rpc CreateOrganization(CreateOrganizationRequest) returns (Organization) {

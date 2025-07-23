@@ -9,14 +9,11 @@ use tonic_types::{ErrorDetails, StatusExt};
 use crate::cedar::Action;
 use crate::common::TxError;
 use crate::http_ext::RequestExt;
-use crate::models::{
-    EmailRegistrationRequest, EmailRegistrationRequestId, MfaWebauthnCredential, MfaWebauthnCredentialId, User, UserEmail,
-    UserId,
-};
+use crate::models::{EmailRegistrationRequest, EmailRegistrationRequestId, MfaWebauthnCredential, User, UserEmail, UserId};
 use crate::schema::{email_registration_requests, mfa_webauthn_credentials, user_emails, users};
 use crate::services::CoreSvc;
 use crate::std_ext::{OptionExt, ResultExt};
-use crate::{CoreConfig, captcha, common};
+use crate::{CoreConfig, common};
 
 #[async_trait::async_trait]
 impl<G: CoreConfig> pb::scufflecloud::core::v1::users_service_server::UsersService for CoreSvc<G> {
@@ -413,53 +410,6 @@ impl<G: CoreConfig> pb::scufflecloud::core::v1::users_service_server::UsersServi
             .await?;
 
         Ok(tonic::Response::new(user_email.into()))
-    }
-
-    async fn create_webauthn_credential_challenge(
-        &self,
-        req: tonic::Request<pb::scufflecloud::core::v1::CreateWebauthnCredentialChallengeRequest>,
-    ) -> Result<tonic::Response<pb::scufflecloud::core::v1::CreateWebauthnCredentialChallengeResponse>, tonic::Status> {
-        let global = &req.global::<G>()?;
-        let payload = req.into_inner();
-
-        let mut db = global.db().await.into_tonic_internal_err("failed to connect to database")?;
-
-        // Check captcha
-        let captcha = payload.captcha.require("captcha")?;
-        match captcha.provider() {
-            pb::scufflecloud::core::v1::CaptchaProvider::Turnstile => {
-                captcha::turnstile::verify_in_tonic(global, &captcha.token).await?;
-            }
-        }
-
-        let challenge = common::generate_random_bytes().into_tonic_internal_err("failed to generate webauthn challenge")?;
-        let challenge_vec = challenge.to_vec();
-
-        let pk_id = diesel::update(mfa_webauthn_credentials::dsl::mfa_webauthn_credentials)
-            .filter(mfa_webauthn_credentials::dsl::credential_id.eq(&payload.credential_id))
-            .set((
-                mfa_webauthn_credentials::dsl::current_challenge.eq(&challenge),
-                mfa_webauthn_credentials::dsl::current_challenge_expires_at.eq(chrono::Utc::now() + global.mfa_timeout()),
-            ))
-            .returning(mfa_webauthn_credentials::dsl::id)
-            .get_result::<MfaWebauthnCredentialId>(&mut db)
-            .await
-            .optional()
-            .into_tonic_internal_err("failed to update webauthn public key")?;
-
-        if pk_id.is_none() {
-            return Err(tonic::Status::with_error_details(
-                tonic::Code::NotFound,
-                "webauthn public key not found",
-                ErrorDetails::new(),
-            ));
-        }
-
-        Ok(tonic::Response::new(
-            pb::scufflecloud::core::v1::CreateWebauthnCredentialChallengeResponse {
-                challenge: challenge_vec,
-            },
-        ))
     }
 
     async fn list_user_webauthn_credentials(

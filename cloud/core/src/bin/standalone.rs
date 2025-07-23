@@ -2,6 +2,7 @@ use std::net::SocketAddr;
 use std::sync::Arc;
 
 use anyhow::Context;
+use base64::Engine;
 use diesel_async::pooled_connection::bb8;
 use scuffle_bootstrap_telemetry::opentelemetry;
 use scuffle_bootstrap_telemetry::opentelemetry_sdk::logs::SdkLoggerProvider;
@@ -13,6 +14,8 @@ use tracing_subscriber::util::SubscriberInitExt;
 #[derive(serde_derive::Deserialize, smart_default::SmartDefault, Debug, Clone)]
 #[serde(default)]
 pub struct Config {
+    #[default(env!("CARGO_PKG_NAME").to_string())]
+    pub service_name: String,
     #[default(SocketAddr::from(([127, 0, 0, 1], 3000)))]
     pub bind: SocketAddr,
     #[default = "info"]
@@ -26,6 +29,9 @@ pub struct Config {
     pub timeouts: TimeoutConfig,
     pub google_oauth2: GoogleOAuth2Config,
     pub telemetry: Option<TelemetryConfig>,
+    /// Base64 encoded JWT secret key.
+    #[default = "fEoUb9KpeJJTtfo3uUhehNHJBAeBL47fatN01OBlceg="]
+    pub jwt_secret: String,
 }
 
 #[derive(serde_derive::Deserialize, smart_default::SmartDefault, Debug, Clone)]
@@ -61,6 +67,7 @@ scuffle_settings::bootstrap!(Config);
 
 struct Global {
     config: Config,
+    decoded_jwt_secret: Vec<u8>,
     database: bb8::Pool<diesel_async::AsyncPgConnection>,
     authorizer: cedar_policy::Authorizer,
     http_client: reqwest::Client,
@@ -68,6 +75,10 @@ struct Global {
 }
 
 impl scufflecloud_core::CoreConfig for Global {
+    fn service_name(&self) -> &str {
+        &self.config.service_name
+    }
+
     fn bind(&self) -> std::net::SocketAddr {
         self.config.bind
     }
@@ -123,6 +134,10 @@ impl scufflecloud_core::CoreConfig for Global {
     fn google_client_secret(&self) -> &str {
         &self.config.google_oauth2.client_secret
     }
+
+    fn webauthn_challenge_secret(&self) -> &[u8] {
+        &self.decoded_jwt_secret
+    }
 }
 
 impl scuffle_signal::SignalConfig for Global {}
@@ -156,6 +171,10 @@ impl scuffle_bootstrap::Global for Global {
             )
             .init();
 
+        let decoded_jwt_secret = base64::prelude::BASE64_STANDARD
+            .decode(config.jwt_secret.as_bytes())
+            .context("decode JWT secret")?;
+
         let Some(db_url) = config.db_url.as_deref() else {
             anyhow::bail!("DATABASE_URL is not set");
         };
@@ -168,7 +187,7 @@ impl scuffle_bootstrap::Global for Global {
             .context("build database pool")?;
 
         let http_client = reqwest::Client::builder()
-            .user_agent(concat!(env!("CARGO_PKG_NAME"), "/", env!("CARGO_PKG_VERSION")))
+            .user_agent(&config.service_name)
             .build()
             .context("create HTTP client")?;
 
@@ -183,6 +202,7 @@ impl scuffle_bootstrap::Global for Global {
 
         Ok(Arc::new(Self {
             config,
+            decoded_jwt_secret,
             database,
             authorizer: cedar_policy::Authorizer::new(),
             http_client,

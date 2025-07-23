@@ -532,7 +532,8 @@ impl<G: CoreConfig> pb::scufflecloud::core::v1::sessions_service_server::Session
         let new_token = db
             .transaction::<_, TxError, _>(|conn| {
                 async move {
-                    let webauthn_pk = webauthn::process_challenge(conn, &payload.credential_id, &assertion_response).await?;
+                    let webauthn_pk =
+                        webauthn::process_challenge(global, conn, &payload.credential_id, &assertion_response).await?;
 
                     cedar::is_authorized(global, None, webauthn_pk.user_id, Action::LoginWithWebauthn, CoreApplication)?;
 
@@ -760,7 +761,7 @@ impl<G: CoreConfig> pb::scufflecloud::core::v1::sessions_service_server::Session
                             pb::scufflecloud::core::v1::ValidateMfaForUserSessionWebauthn { credential_id, response },
                         ) => {
                             let assertion_response = response.require("response.response")?;
-                            webauthn::process_challenge(conn, &credential_id, &assertion_response).await?;
+                            webauthn::process_challenge(global, conn, &credential_id, &assertion_response).await?;
                         }
                     }
 

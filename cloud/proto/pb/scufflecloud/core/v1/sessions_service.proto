@@ -122,11 +122,17 @@ message Device {
     bytes public_key_data = 2;
 }
 
+enum MfaOption {
+    TOTP = 0;
+    WEB_AUTHN = 1;
+}
+
 message NewUserSessionToken {
     string id = 1 [(string_constraint).id = true];
     bytes encrypted_token = 2;
     google.protobuf.Timestamp expires_at = 3;
     bool session_mfa_pending = 4;
+    repeated MfaOption mfa_options = 5;
 }
 
 message RegisterWithEmailRequest {

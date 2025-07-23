@@ -828,11 +828,18 @@ impl<G: CoreConfig> pb::scufflecloud::core::v1::sessions_service_server::Session
             ));
         };
 
+        let mfa_options = if session.mfa_pending {
+            common::mfa_options(&mut db, session.user_id).await?
+        } else {
+            vec![]
+        };
+
         let new_token = pb::scufflecloud::core::v1::NewUserSessionToken {
             id: token_id.to_string(),
             encrypted_token,
             expires_at: Some(token_expires_at.to_prost_timestamp_utc()),
             session_mfa_pending: session.mfa_pending,
+            mfa_options: mfa_options.into_iter().map(|o| o as i32).collect(),
         };
 
         Ok(tonic::Response::new(new_token))

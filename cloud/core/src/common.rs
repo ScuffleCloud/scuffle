@@ -1,9 +1,7 @@
 use std::sync::Arc;
 
 use argon2::{Argon2, PasswordVerifier};
-use diesel::{
-    CombineDsl, ExpressionMethods, JoinOnDsl, NullableExpressionMethods, OptionalExtension, QueryDsl, SelectableHelper,
-};
+use diesel::{ExpressionMethods, JoinOnDsl, NullableExpressionMethods, OptionalExtension, QueryDsl, SelectableHelper};
 use diesel_async::RunQueryDsl;
 use pkcs8::DecodePublicKey;
 use rand::TryRngCore;
@@ -167,6 +165,37 @@ pub(crate) async fn create_new_user_and_session<G: CoreConfig>(
     Ok((user, new_token))
 }
 
+pub(crate) async fn mfa_options(
+    tx: &mut diesel_async::AsyncPgConnection,
+    user_id: UserId,
+) -> Result<Vec<pb::scufflecloud::core::v1::MfaOption>, tonic::Status> {
+    let mut mfa_options = vec![];
+
+    if !mfa_totps::dsl::mfa_totps
+        .filter(mfa_totps::dsl::user_id.eq(user_id))
+        .select(mfa_totps::dsl::user_id)
+        .load::<UserId>(tx)
+        .await
+        .into_tonic_internal_err("failed to query mfa factors")?
+        .is_empty()
+    {
+        mfa_options.push(pb::scufflecloud::core::v1::MfaOption::Totp);
+    }
+
+    if !mfa_webauthn_credentials::dsl::mfa_webauthn_credentials
+        .filter(mfa_webauthn_credentials::dsl::user_id.eq(user_id))
+        .select(mfa_webauthn_credentials::dsl::user_id)
+        .load::<UserId>(tx)
+        .await
+        .into_tonic_internal_err("failed to query mfa factors")?
+        .is_empty()
+    {
+        mfa_options.push(pb::scufflecloud::core::v1::MfaOption::WebAuthn);
+    }
+
+    Ok(mfa_options)
+}
+
 pub(crate) async fn create_session<G: CoreConfig>(
     global: &Arc<G>,
     tx: &mut diesel_async::AsyncPgConnection,
@@ -175,24 +204,12 @@ pub(crate) async fn create_session<G: CoreConfig>(
     ip_info: &IpAddressInfo,
     check_mfa: bool,
 ) -> Result<pb::scufflecloud::core::v1::NewUserSessionToken, tonic::Status> {
-    let mfa_pending = check_mfa
-        && !mfa_totps::dsl::mfa_totps
-            .filter(mfa_totps::dsl::user_id.eq(user_id))
-            .select(mfa_totps::dsl::user_id)
-            .union(
-                mfa_webauthn_credentials::dsl::mfa_webauthn_credentials
-                    .filter(mfa_webauthn_credentials::dsl::user_id.eq(user_id))
-                    .select(mfa_webauthn_credentials::dsl::user_id),
-            )
-            .load::<UserId>(tx)
-            .await
-            .into_tonic_internal_err("failed to query mfa factors")?
-            .is_empty();
+    let mfa_options = if check_mfa { mfa_options(tx, user_id).await? } else { vec![] };
 
     // Create user session, device and token
     let device_fingerprint = sha2::Sha256::digest(&device.public_key_data).to_vec();
 
-    let session_expires_at = if mfa_pending {
+    let session_expires_at = if !mfa_options.is_empty() {
         chrono::Utc::now() + global.mfa_timeout()
     } else {
         chrono::Utc::now() + global.user_session_timeout()
@@ -214,7 +231,7 @@ pub(crate) async fn create_session<G: CoreConfig>(
         token: Some(token.to_vec()),
         token_expires_at: Some(token_expires_at),
         expires_at: session_expires_at,
-        mfa_pending,
+        mfa_pending: !mfa_options.is_empty(),
     };
 
     diesel::insert_into(user_sessions::dsl::user_sessions)
@@ -227,7 +244,8 @@ pub(crate) async fn create_session<G: CoreConfig>(
         id: token_id.to_string(),
         encrypted_token,
         expires_at: Some(token_expires_at.to_prost_timestamp_utc()),
-        session_mfa_pending: mfa_pending,
+        session_mfa_pending: user_session.mfa_pending,
+        mfa_options: mfa_options.into_iter().map(|o| o as i32).collect(),
     };
 
     Ok(new_token)

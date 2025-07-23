@@ -27,11 +27,9 @@ pub(crate) enum ChallengeError {
 pub(crate) fn new_challenge<G: CoreConfig>(global: &Arc<G>) -> Result<Vec<u8>, ChallengeError> {
     let mut mac = Hmac::<Sha256>::new_from_slice(global.webauthn_challenge_secret())?;
 
-    let created_at = chrono::Utc::now();
     let challenge = pb::scufflecloud::core::v1::WebauthnChallenge {
         nonce: common::generate_random_bytes()?.to_vec(),
-        created_at: Some(created_at.to_prost_timestamp_utc()),
-        expires_at: Some((created_at + global.mfa_timeout()).to_prost_timestamp_utc()),
+        expires_at: Some((chrono::Utc::now() + global.mfa_timeout()).to_prost_timestamp_utc()),
     }
     .encode_to_vec();
 
@@ -54,10 +52,6 @@ pub(crate) fn verify_challenge<G: CoreConfig>(global: &Arc<G>, challenge: &[u8])
         .map_err(ChallengeError::Verify)?;
 
     let challenge = pb::scufflecloud::core::v1::WebauthnChallenge::decode(signed_challenge.challenge.as_slice())?;
-
-    if challenge.created_at.ok_or(ChallengeError::Invalid)?.to_chrono() > chrono::Utc::now() {
-        return Err(ChallengeError::Invalid);
-    }
 
     let expires_at = challenge.expires_at.ok_or(ChallengeError::Invalid)?.to_chrono();
     if expires_at < chrono::Utc::now() {

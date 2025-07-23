@@ -26,7 +26,6 @@ message CreateWebauthnChallengeResponse {
 message WebauthnChallenge {
     bytes nonce = 1;
     google.protobuf.Timestamp expires_at = 2;
-    google.protobuf.Timestamp created_at = 3;
 }
 
 message SignedWebauthnChallenge {

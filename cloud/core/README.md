@@ -13,6 +13,10 @@
 <!-- cargo-sync-rdme rustdoc [[ -->
 Core/Authentication server for <https://scuffle.cloud/>.
 
+### Authentication
+
+TODO
+
 ### License
 
 This project is licensed under the [AGPL-3.0](./LICENSE.AGPL-3.0).

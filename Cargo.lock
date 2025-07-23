@@ -4706,6 +4706,7 @@ dependencies = [
  "p256",
  "p384",
  "pkcs8",
+ "prost 0.13.5",
  "rand 0.9.1",
  "reqwest",
  "rsa",

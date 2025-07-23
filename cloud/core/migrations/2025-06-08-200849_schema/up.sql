@@ -130,9 +130,7 @@ CREATE TABLE "mfa_webauthn_credentials" (
     "id" UUID PRIMARY KEY,
     "user_id" UUID NOT NULL,
     "credential_id" BYTEA NOT NULL,
-    "spki_data" BYTEA NOT NULL, -- PKCS#8 DER SPKI
-    "current_challenge" BYTEA,
-    "current_challenge_expires_at" TIMESTAMPTZ
+    "spki_data" BYTEA NOT NULL -- PKCS#8 DER SPKI
 );
 
 ALTER TABLE "mfa_webauthn_credentials"

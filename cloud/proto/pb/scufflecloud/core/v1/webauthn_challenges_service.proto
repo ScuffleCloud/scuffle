@@ -7,6 +7,7 @@ import "google/protobuf/timestamp.proto";
 
 import "scufflecloud/core/v1/common.proto";
 
+// Service for requesting WebAuthn challenges.
 service WebauthnChallengesService {
     rpc CreateWebauthnChallenge(CreateWebauthnChallengeRequest) returns (CreateWebauthnChallengeResponse) {
         option (tinc.method).endpoint = {

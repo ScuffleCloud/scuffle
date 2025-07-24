@@ -11,6 +11,7 @@ import "scufflecloud/core/v1/constraints.proto";
 import "scufflecloud/core/v1/sessions.proto";
 import "scufflecloud/core/v1/organizations.proto";
 
+// Service for managing user sessions, including registration and login.
 service SessionsService {
     rpc RegisterWithEmail(RegisterWithEmailRequest) returns (google.protobuf.Empty) {
         option (tinc.method).endpoint = {

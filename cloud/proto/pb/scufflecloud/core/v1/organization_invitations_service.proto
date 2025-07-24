@@ -9,6 +9,7 @@ import "scufflecloud/core/v1/users.proto";
 import "scufflecloud/core/v1/organizations.proto";
 import "scufflecloud/core/v1/constraints.proto";
 
+// Service for managing organization invitations.
 service OrganizationInvitationsService {
     rpc CreateOrganizationInvitation(CreateOrganizationInvitationRequest) returns (OrganizationInvitation) {
         option (tinc.method).endpoint = {

@@ -7,6 +7,7 @@ import "tinc/annotations.proto";
 import "scufflecloud/core/v1/organizations.proto";
 import "scufflecloud/core/v1/users.proto";
 
+// Service for managing organizations and their members.
 service OrganizationsService {
     rpc CreateOrganization(CreateOrganizationRequest) returns (Organization) {
         option (tinc.method).endpoint = {

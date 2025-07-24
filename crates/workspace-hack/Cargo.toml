@@ -170,6 +170,7 @@ zeroize = { version = "1" }
 
 [target.x86_64-unknown-linux-gnu.dependencies]
 bitflags = { version = "2", default-features = false, features = ["std"] }
+flate2 = { version = "1", features = ["zlib-rs"] }
 getrandom-468e82937335b1c9 = { package = "getrandom", version = "0.3", default-features = false, features = ["std"] }
 h3 = { version = "0.0.8", default-features = false, features = ["tracing"] }
 h3-quinn = { version = "0.0.10", default-features = false, features = ["tracing"] }
@@ -187,6 +188,7 @@ tower-http = { version = "0.6", features = ["cors", "follow-redirect", "trace"] 
 
 [target.x86_64-unknown-linux-gnu.build-dependencies]
 bitflags = { version = "2", default-features = false, features = ["std"] }
+flate2 = { version = "1", features = ["zlib-rs"] }
 getrandom-468e82937335b1c9 = { package = "getrandom", version = "0.3", default-features = false, features = ["std"] }
 h3 = { version = "0.0.8", default-features = false, features = ["tracing"] }
 h3-quinn = { version = "0.0.10", default-features = false, features = ["tracing"] }
@@ -204,6 +206,7 @@ tower-http = { version = "0.6", features = ["cors", "follow-redirect", "trace"] 
 
 [target.aarch64-unknown-linux-gnu.dependencies]
 bitflags = { version = "2", default-features = false, features = ["std"] }
+flate2 = { version = "1", features = ["zlib-rs"] }
 getrandom-468e82937335b1c9 = { package = "getrandom", version = "0.3", default-features = false, features = ["std"] }
 h3 = { version = "0.0.8", default-features = false, features = ["tracing"] }
 h3-quinn = { version = "0.0.10", default-features = false, features = ["tracing"] }
@@ -221,6 +224,7 @@ tower-http = { version = "0.6", features = ["cors", "follow-redirect", "trace"] 
 
 [target.aarch64-unknown-linux-gnu.build-dependencies]
 bitflags = { version = "2", default-features = false, features = ["std"] }
+flate2 = { version = "1", features = ["zlib-rs"] }
 getrandom-468e82937335b1c9 = { package = "getrandom", version = "0.3", default-features = false, features = ["std"] }
 h3 = { version = "0.0.8", default-features = false, features = ["tracing"] }
 h3-quinn = { version = "0.0.10", default-features = false, features = ["tracing"] }
@@ -238,6 +242,7 @@ tower-http = { version = "0.6", features = ["cors", "follow-redirect", "trace"] 
 
 [target.x86_64-apple-darwin.dependencies]
 bitflags = { version = "2", default-features = false, features = ["std"] }
+flate2 = { version = "1", features = ["zlib-rs"] }
 getrandom-468e82937335b1c9 = { package = "getrandom", version = "0.3", default-features = false, features = ["std"] }
 h3 = { version = "0.0.8", default-features = false, features = ["tracing"] }
 h3-quinn = { version = "0.0.10", default-features = false, features = ["tracing"] }
@@ -256,6 +261,7 @@ tower-http = { version = "0.6", features = ["cors", "follow-redirect", "trace"] 
 
 [target.x86_64-apple-darwin.build-dependencies]
 bitflags = { version = "2", default-features = false, features = ["std"] }
+flate2 = { version = "1", features = ["zlib-rs"] }
 getrandom-468e82937335b1c9 = { package = "getrandom", version = "0.3", default-features = false, features = ["std"] }
 h3 = { version = "0.0.8", default-features = false, features = ["tracing"] }
 h3-quinn = { version = "0.0.10", default-features = false, features = ["tracing"] }
@@ -274,6 +280,7 @@ tower-http = { version = "0.6", features = ["cors", "follow-redirect", "trace"] 
 
 [target.aarch64-apple-darwin.dependencies]
 bitflags = { version = "2", default-features = false, features = ["std"] }
+flate2 = { version = "1", features = ["zlib-rs"] }
 getrandom-468e82937335b1c9 = { package = "getrandom", version = "0.3", default-features = false, features = ["std"] }
 h3 = { version = "0.0.8", default-features = false, features = ["tracing"] }
 h3-quinn = { version = "0.0.10", default-features = false, features = ["tracing"] }
@@ -292,6 +299,7 @@ tower-http = { version = "0.6", features = ["cors", "follow-redirect", "trace"] 
 
 [target.aarch64-apple-darwin.build-dependencies]
 bitflags = { version = "2", default-features = false, features = ["std"] }
+flate2 = { version = "1", features = ["zlib-rs"] }
 getrandom-468e82937335b1c9 = { package = "getrandom", version = "0.3", default-features = false, features = ["std"] }
 h3 = { version = "0.0.8", default-features = false, features = ["tracing"] }
 h3-quinn = { version = "0.0.10", default-features = false, features = ["tracing"] }

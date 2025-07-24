@@ -22,6 +22,8 @@ pub struct Config {
     pub level: String,
     #[default(None)]
     pub db_url: Option<String>,
+    #[default(false)]
+    pub swagger_ui: bool,
     #[default = "https://dashboard.scuffle.cloud"]
     pub dashboard_url: String,
     #[default = "1x0000000000000000000000000000000AA"]
@@ -93,6 +95,10 @@ impl scufflecloud_core::CoreConfig for Global {
 
     fn http_client(&self) -> &reqwest::Client {
         &self.http_client
+    }
+
+    fn swagger_ui_enabled(&self) -> bool {
+        self.config.swagger_ui
     }
 
     fn dashboard_url(&self) -> &str {

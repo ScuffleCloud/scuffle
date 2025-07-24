@@ -5,8 +5,10 @@ use axum::http::StatusCode;
 use axum::{Extension, Json};
 use scuffle_http::http::Method;
 use tinc::TincService;
+use tinc::openapi::Server;
 use tower_http::cors::CorsLayer;
 use tower_http::trace::TraceLayer;
+use utoipa_swagger_ui::SwaggerUi;
 
 use crate::CoreConfig;
 
@@ -58,6 +60,7 @@ impl<G: CoreConfig> scuffle_bootstrap::Service<G> for CoreSvc<G> {
         openapi_schema.merge(webauthn_challenges_svc_tinc.openapi_schema());
         openapi_schema.info.title = "Scuffle Cloud Core API".to_string();
         openapi_schema.info.version = "v1".to_string();
+        openapi_schema.servers = Some(vec![Server::new("/v1")]);
 
         let v1_rest_router = axum::Router::new()
             .route("/openapi.json", axum::routing::get(Json(openapi_schema)))
@@ -101,7 +104,7 @@ impl<G: CoreConfig> scuffle_bootstrap::Service<G> for CoreSvc<G> {
         builder.add_service(reflection_v1alpha_svc);
         let grpc_router = builder.routes().prepare().into_axum_router();
 
-        let router = axum::Router::new()
+        let mut router = axum::Router::new()
             .nest("/v1", v1_rest_router)
             .merge(grpc_router)
             .route_layer(axum::middleware::from_fn(crate::middleware::auth::<G>))
@@ -109,6 +112,10 @@ impl<G: CoreConfig> scuffle_bootstrap::Service<G> for CoreSvc<G> {
             .layer(TraceLayer::new_for_http())
             .layer(Extension(Arc::clone(&global)))
             .fallback(StatusCode::NOT_FOUND);
+
+        if global.swagger_ui_enabled() {
+            router = router.merge(SwaggerUi::new("/v1/docs").config(utoipa_swagger_ui::Config::from("/v1/openapi.json")));
+        }
 
         scuffle_http::HttpServer::builder()
             .tower_make_service_with_addr(router.into_make_service_with_connect_info::<SocketAddr>())

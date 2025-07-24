@@ -64,6 +64,7 @@ tower-http = { features = ["cors", "trace"], version = "0.6.6" }
 tracing = "0.1.41"
 tracing-subscriber = "0.3.19"
 ulid = { features = ["uuid"], version = "1.2.1" }
+utoipa-swagger-ui = { features = ["axum", "vendored"], version = "9.0.2" }
 uuid = "1.17.0"
 
 [package.metadata.sync-readme.badges]

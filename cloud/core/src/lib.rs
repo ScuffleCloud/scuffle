@@ -52,6 +52,9 @@ pub trait CoreConfig:
     ) -> impl Future<Output = anyhow::Result<diesel_async::pooled_connection::bb8::PooledConnection<'_, AsyncPgConnection>>> + Send;
     fn authorizer(&self) -> &cedar_policy::Authorizer;
     fn http_client(&self) -> &reqwest::Client;
+    fn swagger_ui_enabled(&self) -> bool {
+        false
+    }
     fn dashboard_url(&self) -> &str;
     fn turnstile_secret_key(&self) -> &str {
         "1x0000000000000000000000000000000AA"

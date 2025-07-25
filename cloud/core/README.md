@@ -1,16 +1,15 @@
-<!-- cargo-sync-rdme title [[ -->
+<!-- sync-readme title [[ -->
 # scufflecloud-core
-<!-- cargo-sync-rdme ]] -->
+<!-- sync-readme ]] -->
 
-<!-- cargo-sync-rdme badge [[ -->
-![License: AGPL-3.0](https://img.shields.io/crates/l/scufflecloud-core.svg?style=flat-square)
-[![GitHub Actions: ci](https://img.shields.io/github/actions/workflow/status/scufflecloud/scuffle/ci.yaml.svg?label=ci&logo=github&style=flat-square)](https://github.com/scufflecloud/scuffle/actions/workflows/ci.yaml)
-[![Codecov](https://img.shields.io/codecov/c/github/scufflecloud/scuffle.svg?label=codecov&logo=codecov&style=flat-square)](https://codecov.io/gh/scufflecloud/scuffle)
-<!-- cargo-sync-rdme ]] -->
+<!-- sync-readme badge [[ -->
+![License: AGPL-3.0](https://img.shields.io/badge/license-AGPL--3.0-purple.svg?style=flat-square)
+[![Codecov](https://img.shields.io/codecov/c/github/scufflecloud/scuffle.svg?label=codecov&logo=codecov&style=flat-square)](https://app.codecov.io/gh/scufflecloud/scuffle)
+<!-- sync-readme ]] -->
 
 ---
 
-<!-- cargo-sync-rdme rustdoc [[ -->
+<!-- sync-readme rustdoc [[ -->
 Core/Authentication server for <https://scuffle.cloud/>.
 
 ### License
@@ -18,4 +17,4 @@ Core/Authentication server for <https://scuffle.cloud/>.
 This project is licensed under the [AGPL-3.0](./LICENSE.AGPL-3.0).
 
 `SPDX-License-Identifier: AGPL-3.0`
-<!-- cargo-sync-rdme ]] -->
+<!-- sync-readme ]] -->

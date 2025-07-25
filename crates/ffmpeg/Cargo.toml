@@ -76,15 +76,14 @@ rustdoc-args = [
   "--generate-link-to-definition",
 ]
 
-[package.metadata.cargo-sync-rdme.rustdoc.mappings]
+[package.metadata.sync-readme]
+badge-style = "flat-square"
+
+[package.metadata.sync-readme.rustdoc-mappings]
 changelog = "./CHANGELOG.md"
 
-[package.metadata.cargo-sync-rdme.badge]
-style = "flat-square"
-
-[package.metadata.cargo-sync-rdme.badge.badges]
-license = true
+[package.metadata.sync-readme.badges]
 docs-rs = true
 crates-io = true
-github-actions = { workflows = "ci.yaml" }
+license = true
 codecov = true

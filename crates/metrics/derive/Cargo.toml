@@ -22,15 +22,17 @@ syn = { features = ["full"], version = "2" }
 [dev-dependencies]
 # scuffle-metrics = { path = ".." }
 
-[package.metadata.cargo-sync-rdme.badge]
-style = "flat-square"
-
-[package.metadata.cargo-sync-rdme.badge.badges]
-license = true
-docs-rs = true
-crates-io = true
-github-actions = { workflows = "ci.yaml" }
-codecov = true
-
 [package.metadata.xtask.release]
 group = "scuffle-metrics"
+
+[package.metadata.sync-readme]
+badge-style = "flat-square"
+
+[package.metadata.sync-readme.rustdoc-mappings]
+changelog = "./CHANGELOG.md"
+
+[package.metadata.sync-readme.badges]
+docs-rs = true
+crates-io = true
+license = true
+codecov = true

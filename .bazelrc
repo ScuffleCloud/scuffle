@@ -98,13 +98,13 @@ common --incompatible_strict_action_env
 # Run binaries in the directory they are invoked from
 run --run_under='//build/utils/run_under:run'
 
-run:wrapper --bes_backend=""
-run:wrapper --build_event_json_file=""
-run:wrapper --nobuild_runfile_links
-run:wrapper --ui_event_filters=fatal
-run:wrapper --noshow_progress
-run:wrapper --noshow_loading_progress
-run:wrapper --noshow_timestamps
+common:wrapper --bes_backend=""
+common:wrapper --build_event_json_file=""
+common:wrapper --nobuild_runfile_links
+common:wrapper --ui_event_filters=fatal
+common:wrapper --noshow_progress
+common:wrapper --noshow_loading_progress
+common:wrapper --noshow_timestamps
 
 ###############################################################################
 ## Rust tooling configuration

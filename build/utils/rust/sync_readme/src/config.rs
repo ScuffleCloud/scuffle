@@ -19,7 +19,7 @@ pub struct Metadata {
 impl Default for Metadata {
     fn default() -> Self {
         Self {
-            badge_style: "flat-sqare".to_string(),
+            badge_style: "flat-square".to_string(),
             rustdoc_html_root_url: Default::default(),
             badges: Default::default(),
             rustdoc_mappings: Default::default(),

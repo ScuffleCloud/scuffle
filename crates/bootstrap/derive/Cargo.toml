@@ -29,9 +29,6 @@ prettyplease = "0.2"
 [package.metadata.xtask.release]
 group = "scuffle-bootstrap"
 
-[package.metadata.sync-readme]
-badge-style = "flat-square"
-
 [package.metadata.sync-readme.badges]
 docs-rs = true
 crates-io = true

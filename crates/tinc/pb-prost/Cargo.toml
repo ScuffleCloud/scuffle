@@ -42,9 +42,6 @@ additive-features = ["docs"]
 [package.metadata.xtask.release]
 group = "tinc"
 
-[package.metadata.sync-readme]
-badge-style = "flat-square"
-
 [package.metadata.sync-readme.rustdoc-mappings]
 changelog = "./CHANGELOG.md"
 Annotations = "./annotations.proto"

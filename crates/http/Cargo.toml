@@ -147,9 +147,6 @@ rustdoc-args = [
 additive-features = ["tracing", "tower", "docs"]
 ignore-features = ["http3"]
 
-[package.metadata.sync-readme]
-badge-style = "flat-square"
-
 [package.metadata.sync-readme.rustdoc-mappings]
 changelog = "./CHANGELOG.md"
 

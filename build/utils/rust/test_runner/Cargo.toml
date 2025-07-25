@@ -1,0 +1,13 @@
+[package]
+name = "test_runner"
+edition = "2024"
+license = "MIT OR Apache-2.0"
+publish = false
+
+[dependencies]
+test_runner_lib.path = "lib"
+camino = "1"
+clap = { version = "4.5", features = ["derive", "env"] }
+
+[package.metadata.sync-readme.badges]
+license = true

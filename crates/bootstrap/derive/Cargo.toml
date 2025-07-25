@@ -26,15 +26,14 @@ syn = "2"
 insta = "1.42"
 prettyplease = "0.2"
 
-[package.metadata.cargo-sync-rdme.badge]
-style = "flat-square"
-
-[package.metadata.cargo-sync-rdme.badge.badges]
-license = true
-docs-rs = true
-crates-io = true
-github-actions = { workflows = "ci.yaml" }
-codecov = true
-
 [package.metadata.xtask.release]
 group = "scuffle-bootstrap"
+
+[package.metadata.sync-readme]
+badge-style = "flat-square"
+
+[package.metadata.sync-readme.badges]
+docs-rs = true
+crates-io = true
+license = true
+codecov = true

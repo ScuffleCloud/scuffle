@@ -33,6 +33,7 @@
             pkg-config
             ffmpeg-full
             miniserve
+            just
             llvmPackages_20.clang-unwrapped
             llvmPackages_20.libcxxClang
           ];

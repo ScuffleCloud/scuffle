@@ -214,6 +214,18 @@ transition_alias_opt(
 )
 
 transition_alias_opt(
+    name = "cargo_toml-0.22.3",
+    actual = "@cargo_vendor__cargo_toml-0.22.3//:cargo_toml",
+    tags = ["manual"],
+)
+
+transition_alias_opt(
+    name = "cargo_toml",
+    actual = "@cargo_vendor__cargo_toml-0.22.3//:cargo_toml",
+    tags = ["manual"],
+)
+
+transition_alias_opt(
     name = "cel-parser-0.8.1",
     actual = "@cargo_vendor__cel-parser-0.8.1//:cel_parser",
     tags = ["manual"],
@@ -258,6 +270,18 @@ transition_alias_opt(
 transition_alias_opt(
     name = "config",
     actual = "@cargo_vendor__config-0.15.13//:config",
+    tags = ["manual"],
+)
+
+transition_alias_opt(
+    name = "console-0.16.0",
+    actual = "@cargo_vendor__console-0.16.0//:console",
+    tags = ["manual"],
+)
+
+transition_alias_opt(
+    name = "console",
+    actual = "@cargo_vendor__console-0.16.0//:console",
     tags = ["manual"],
 )
 
@@ -610,18 +634,6 @@ transition_alias_opt(
 )
 
 transition_alias_opt(
-    name = "indoc-2.0.6",
-    actual = "@cargo_vendor__indoc-2.0.6//:indoc",
-    tags = ["manual"],
-)
-
-transition_alias_opt(
-    name = "indoc",
-    actual = "@cargo_vendor__indoc-2.0.6//:indoc",
-    tags = ["manual"],
-)
-
-transition_alias_opt(
     name = "insta-1.43.1",
     actual = "@cargo_vendor__insta-1.43.1//:insta",
     tags = ["manual"],
@@ -702,18 +714,6 @@ transition_alias_opt(
 transition_alias_opt(
     name = "mediatype",
     actual = "@cargo_vendor__mediatype-0.20.0//:mediatype",
-    tags = ["manual"],
-)
-
-transition_alias_opt(
-    name = "miette-7.6.0",
-    actual = "@cargo_vendor__miette-7.6.0//:miette",
-    tags = ["manual"],
-)
-
-transition_alias_opt(
-    name = "miette",
-    actual = "@cargo_vendor__miette-7.6.0//:miette",
     tags = ["manual"],
 )
 
@@ -1254,6 +1254,18 @@ transition_alias_opt(
 transition_alias_opt(
     name = "sha2",
     actual = "@cargo_vendor__sha2-0.10.9//:sha2",
+    tags = ["manual"],
+)
+
+transition_alias_opt(
+    name = "similar-2.7.0",
+    actual = "@cargo_vendor__similar-2.7.0//:similar",
+    tags = ["manual"],
+)
+
+transition_alias_opt(
+    name = "similar",
+    actual = "@cargo_vendor__similar-2.7.0//:similar",
     tags = ["manual"],
 )
 

@@ -1,0 +1,13 @@
+[package]
+name = "sync_readme_common"
+edition = "2024"
+publish = false
+license = "MIT OR Apache-2.0"
+
+[dependencies]
+serde_derive = "1"
+serde = "1"
+camino = { version = "1", features = ["serde1"] }
+
+[package.metadata.sync-readme.badges]
+license = true

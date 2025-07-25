@@ -1,21 +1,22 @@
-<!-- cargo-sync-rdme title [[ -->
+<!-- sync-readme title [[ -->
 # tinc-build
-<!-- cargo-sync-rdme ]] -->
+<!-- sync-readme ]] -->
 
 > [!WARNING]  
 > This crate is under active development and may not be stable.
 
-<!-- cargo-sync-rdme badge [[ -->
-![License: MIT OR Apache-2.0](https://img.shields.io/crates/l/tinc-build.svg?style=flat-square)
-[![docs.rs](https://img.shields.io/docsrs/tinc-build.svg?logo=docs.rs&style=flat-square)](https://docs.rs/tinc-build)
-[![crates.io](https://img.shields.io/crates/v/tinc-build.svg?logo=rust&style=flat-square)](https://crates.io/crates/tinc-build)
-[![GitHub Actions: ci](https://img.shields.io/github/actions/workflow/status/scufflecloud/scuffle/ci.yaml.svg?label=ci&logo=github&style=flat-square)](https://github.com/scufflecloud/scuffle/actions/workflows/ci.yaml)
-[![Codecov](https://img.shields.io/codecov/c/github/scufflecloud/scuffle.svg?label=codecov&logo=codecov&style=flat-square)](https://codecov.io/gh/scufflecloud/scuffle)
-<!-- cargo-sync-rdme ]] -->
+<!-- sync-readme badge [[ -->
+[![docs.rs](https://img.shields.io/docsrs/tinc-build/0.1.7.svg?logo=docs.rs&label=docs.rs&style=flat-square)](https://docs.rs/tinc-build/0.1.7)
+[![crates.io](https://img.shields.io/badge/crates.io-v0.1.7-orange?style=flat-square&logo=rust&logoColor=white)](https://crates.io/crates/tinc-build/0.1.7)
+![License: MIT OR Apache-2.0](https://img.shields.io/badge/license-MIT%20OR%20Apache--2.0-purple.svg?style=flat-square)
+![Crates.io Size](https://img.shields.io/crates/size/tinc-build/0.1.7.svg?style=flat-square)
+![Crates.io Downloads](https://img.shields.io/crates/dv/tinc-build/0.1.7.svg?&label=downloads&style=flat-square)
+[![Codecov](https://img.shields.io/codecov/c/github/scufflecloud/scuffle.svg?label=codecov&logo=codecov&style=flat-square)](https://app.codecov.io/gh/scufflecloud/scuffle)
+<!-- sync-readme ]] -->
 
 ---
 
-<!-- cargo-sync-rdme rustdoc [[ -->
+<!-- sync-readme rustdoc [[ -->
 The code generator for [`tinc`](https://crates.io/crates/tinc).
 
 ### Feature flags
@@ -43,4 +44,4 @@ This project is licensed under the MIT or Apache-2.0 license.
 You can choose between one of them if you use this work.
 
 `SPDX-License-Identifier: MIT OR Apache-2.0`
-<!-- cargo-sync-rdme ]] -->
+<!-- sync-readme ]] -->

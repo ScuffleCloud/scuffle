@@ -495,32 +495,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "cargo-sync-rdme"
-version = "0.0.0"
-dependencies = [
- "camino",
- "clap",
- "env_logger",
- "indoc",
- "log",
- "miette",
- "pulldown-cmark",
- "pulldown-cmark-to-cmark",
- "rustdoc-types",
- "rustfix",
- "semver",
- "serde",
- "serde_derive",
- "serde_json",
- "serde_norway",
- "tempfile",
- "thiserror 2.0.15",
- "toml 0.9.5",
- "tracing",
- "url 1.7.2",
-]
-
-[[package]]
 name = "cargo-util-schemas"
 version = "0.8.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -552,11 +526,13 @@ dependencies = [
 ]
 
 [[package]]
-name = "cargo_metadata_runner"
-version = "0.1.0"
+name = "cargo_toml"
+version = "0.22.3"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "374b7c592d9c00c1f4972ea58390ac6b18cbb6ab79011f3bdc90a0b82ca06b77"
 dependencies = [
- "camino",
- "clap",
+ "serde",
+ "toml 0.9.5",
 ]
 
 [[package]]
@@ -739,15 +715,6 @@ dependencies = [
  "clap",
  "serde",
  "serde_derive",
- "serde_json",
-]
-
-[[package]]
-name = "collect_args"
-version = "0.1.0"
-dependencies = [
- "camino",
- "clap",
  "serde_json",
 ]
 
@@ -2089,12 +2056,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "indoc"
-version = "2.0.6"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "f4c7245a08504955605670dbf141fceab975f15ca21570696aebe9d2e71576bd"
-
-[[package]]
 name = "insta"
 version = "1.43.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -2669,21 +2630,6 @@ name = "nextest-workspace-hack"
 version = "0.1.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "d906846a98739ed9d73d66e62c2641eef8321f1734b7a1156ab045a0248fb2b3"
-
-[[package]]
-name = "nextest_runner_lib"
-version = "0.1.0"
-dependencies = [
- "camino",
- "cargo_metadata",
- "clap",
- "guppy",
- "nextest-filtering",
- "nextest-metadata",
- "nextest-runner",
- "serde_json",
- "toml_edit 0.22.27",
-]
 
 [[package]]
 name = "nix"
@@ -3838,11 +3784,11 @@ version = "0.1.0"
 dependencies = [
  "camino",
  "clap",
- "nextest_runner_lib",
  "rust_doctest_common",
  "serde",
  "serde_derive",
  "serde_json",
+ "test_runner_lib",
 ]
 
 [[package]]
@@ -4982,6 +4928,62 @@ dependencies = [
 ]
 
 [[package]]
+name = "sync_readme"
+version = "0.0.0"
+dependencies = [
+ "anyhow",
+ "camino",
+ "cargo_toml",
+ "clap",
+ "pulldown-cmark",
+ "pulldown-cmark-to-cmark",
+ "regex",
+ "rustdoc-types",
+ "semver",
+ "serde",
+ "serde_derive",
+ "serde_json",
+ "sync_readme_common",
+ "toml 0.9.5",
+ "url 1.7.2",
+]
+
+[[package]]
+name = "sync_readme_common"
+version = "0.0.0"
+dependencies = [
+ "camino",
+ "serde",
+ "serde_derive",
+]
+
+[[package]]
+name = "sync_readme_fixer"
+version = "0.0.0"
+dependencies = [
+ "anyhow",
+ "camino",
+ "clap",
+ "env_logger",
+ "log",
+ "serde_json",
+ "sync_readme_common",
+]
+
+[[package]]
+name = "sync_readme_test_runner"
+version = "0.0.0"
+dependencies = [
+ "anyhow",
+ "camino",
+ "clap",
+ "console 0.16.0",
+ "serde_json",
+ "similar",
+ "sync_readme_common",
+]
+
+[[package]]
 name = "sync_wrapper"
 version = "1.0.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -5068,6 +5070,30 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "a43bddab41f8626c7bdaab872bbba75f8df5847b516d77c569c746e2ae5eb746"
 dependencies = [
  "windows-sys 0.60.2",
+]
+
+[[package]]
+name = "test_runner"
+version = "0.0.0"
+dependencies = [
+ "camino",
+ "clap",
+ "test_runner_lib",
+]
+
+[[package]]
+name = "test_runner_lib"
+version = "0.0.0"
+dependencies = [
+ "camino",
+ "cargo_metadata",
+ "clap",
+ "guppy",
+ "nextest-filtering",
+ "nextest-metadata",
+ "nextest-runner",
+ "serde_json",
+ "toml_edit 0.22.27",
 ]
 
 [[package]]

@@ -6,7 +6,6 @@ allow = [
   "BSD-3-Clause",
   "Unicode-3.0",
   "Apache-2.0 WITH LLVM-exception",
-  "CDLA-Permissive-2.0",
   "ISC",
   "Zlib",
   "CC0-1.0",

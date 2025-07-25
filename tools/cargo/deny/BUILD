@@ -1,7 +1,7 @@
 load("@rules_shell//shell:sh_test.bzl", "sh_test")
 
-load("//build/utils:package.bzl", "scuffle_package")
-load("//build/utils:cargo_toml.bzl", "cargo_toml")
+load("//build/utils/rust:package.bzl", "scuffle_package")
+load("//build/utils/rust:manifest.bzl", "cargo_toml")
 
 cargo_toml()
 

@@ -33,9 +33,14 @@
     bazel build //...
     ```
 
+- cargo sync-rdme + fix
+    ```
+    bazel test //... # for checking the readme
+    bazel run //tools/cargo/sync-readme:fix # for fixing the readme
+    ```
+
 # easy to do
 
-- cargo syncreadme
 - rust analyzer
 - cargo valgrind
 

@@ -39,9 +39,3 @@ doc-serve: doc
 
 deny *args:
     bazel run //tools/cargo/deny
-
-# readme:
-#     #!/usr/bin/env bash
-#     set -euo pipefail
-
-#     RUSTDOCFLAGS="-Dwarnings --cfg docsrs --sort-modules-by-appearance --enable-index-page -Zunstable-options"  cargo +nightly sync-rdme --all-features --workspace

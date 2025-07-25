@@ -25,9 +25,6 @@ syn = { features = ["full"], version = "2" }
 [package.metadata.xtask.release]
 group = "scuffle-metrics"
 
-[package.metadata.sync-readme]
-badge-style = "flat-square"
-
 [package.metadata.sync-readme.rustdoc-mappings]
 changelog = "./CHANGELOG.md"
 

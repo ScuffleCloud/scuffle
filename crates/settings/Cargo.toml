@@ -86,12 +86,9 @@ rustdoc-args = [
   "--generate-link-to-definition",
 ]
 
-[package.metadata.sync-readme]
-badge-style = "flat-square"
-
 [package.metadata.sync-readme.rustdoc-mappings]
 changelog = "./CHANGELOG.md"
-scuffle_bootstrap = "https://docs.rs/scuffle-bootstrap/latest"
+scuffle_bootstrap = "../bootstrap"
 
 [package.metadata.sync-readme.badges]
 docs-rs = true

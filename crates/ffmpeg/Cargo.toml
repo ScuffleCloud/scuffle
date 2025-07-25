@@ -76,9 +76,6 @@ rustdoc-args = [
   "--generate-link-to-definition",
 ]
 
-[package.metadata.sync-readme]
-badge-style = "flat-square"
-
 [package.metadata.sync-readme.rustdoc-mappings]
 changelog = "./CHANGELOG.md"
 

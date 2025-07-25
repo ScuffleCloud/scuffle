@@ -12,9 +12,6 @@ publish = false
 [dependencies]
 pb = { package = "scufflecloud-proto", path = "../proto" }
 
-[package.metadata.sync-readme]
-badge-style = "flat-square"
-
 [package.metadata.sync-readme.badges]
 docs-rs = false
 crates-io = false

@@ -16,9 +16,6 @@ tinc = { path = "../../crates/tinc" }
 glob = "0.3"
 tinc-build = { path = "../../crates/tinc/build" }
 
-[package.metadata.sync-readme]
-badge-style = "flat-square"
-
 [package.metadata.sync-readme.badges]
 docs-rs = false
 crates-io = false

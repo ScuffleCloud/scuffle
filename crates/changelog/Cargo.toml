@@ -26,9 +26,6 @@ semver = "1"
 # unfortunately we need syn full for `ItemMod`w
 syn = { features = ["full"], version = "2" }
 
-[package.metadata.sync-readme]
-badge-style = "flat-square"
-
 [package.metadata.sync-readme.rustdoc-mappings]
 changelog = "./CHANGELOG.md"
 

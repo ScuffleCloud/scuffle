@@ -41,7 +41,7 @@ See the [changelog](./CHANGELOG.md) for a full release history.
 
 ### Examples
 
-#### With [`scuffle_bootstrap`](https://docs.rs/scuffle-bootstrap/latest)
+#### With [`scuffle_bootstrap`](../bootstrap)
 
 ````rust
 // Define a config struct like this

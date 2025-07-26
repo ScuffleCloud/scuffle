@@ -1,0 +1,36 @@
+load("//build/utils/rust:package.bzl", "scuffle_package")
+load("//build/utils/rust:manifest.bzl", "cargo_toml")
+
+cargo_toml()
+
+scuffle_package(
+    crate_name = "rust_analyzer_gen_project",
+    crate_type = "bin",
+    tags = ["manual"],
+    extra_target_kwargs = {
+        "data": ["@rules_rust//rust/private:rust_analyzer_detect_sysroot"],
+        "env": {
+            "RUST_ANALYZER_TOOLCHAIN_PATH": "$(rlocationpath @rules_rust//rust/private:rust_analyzer_detect_sysroot)"
+        },
+    },
+    visibility = ["//visibility:public"],
+)
+
+# rust_binary(
+#     name = "gen_rust_project",
+#     srcs = ["bin/gen_rust_project.rs"],
+#     edition = "2018",
+#     rustc_env = {
+#         "ASPECT_REPOSITORY": aspect_repository(),
+#     },
+#     visibility = ["//visibility:public"],
+#     deps = [
+#         ":gen_rust_project_lib",
+#         "//tools/rust_analyzer/3rdparty/crates:anyhow",
+#         "//tools/rust_analyzer/3rdparty/crates:camino",
+#         "//tools/rust_analyzer/3rdparty/crates:clap",
+#         "//tools/rust_analyzer/3rdparty/crates:env_logger",
+#         "//tools/rust_analyzer/3rdparty/crates:log",
+#         "//tools/rust_analyzer/3rdparty/crates:serde_json",
+#     ],
+# )

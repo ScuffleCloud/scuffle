@@ -521,6 +521,19 @@ _NORMAL_DEPENDENCIES = {
             },
         },
     },
+    "build/utils/rust/rust_analyzer": {
+        _REQUIRED_FEATURE: {
+            _COMMON_CONDITION: {
+                "anyhow": Label("@cargo_vendor//:anyhow-1.0.98"),
+                "camino": Label("@cargo_vendor//:camino-1.1.11"),
+                "clap": Label("@cargo_vendor//:clap-4.5.43"),
+                "env_logger": Label("@cargo_vendor//:env_logger-0.10.2"),
+                "log": Label("@cargo_vendor//:log-0.4.27"),
+                "serde": Label("@cargo_vendor//:serde-1.0.219"),
+                "serde_json": Label("@cargo_vendor//:serde_json-1.0.142"),
+            },
+        },
+    },
     "build/utils/rust/sync_readme": {
         _REQUIRED_FEATURE: {
             _COMMON_CONDITION: {
@@ -1205,6 +1218,12 @@ _NORMAL_ALIASES = {
             },
         },
     },
+    "build/utils/rust/rust_analyzer": {
+        _REQUIRED_FEATURE: {
+            _COMMON_CONDITION: {
+            },
+        },
+    },
     "build/utils/rust/sync_readme": {
         _REQUIRED_FEATURE: {
             _COMMON_CONDITION: {
@@ -1590,6 +1609,8 @@ _NORMAL_DEV_DEPENDENCIES = {
     },
     "build/utils/rust/doc/wrapper": {
     },
+    "build/utils/rust/rust_analyzer": {
+    },
     "build/utils/rust/sync_readme": {
     },
     "build/utils/rust/sync_readme/common": {
@@ -1857,6 +1878,8 @@ _NORMAL_DEV_ALIASES = {
     },
     "build/utils/rust/doc/wrapper": {
     },
+    "build/utils/rust/rust_analyzer": {
+    },
     "build/utils/rust/sync_readme": {
     },
     "build/utils/rust/sync_readme/common": {
@@ -2084,6 +2107,13 @@ _PROC_MACRO_DEPENDENCIES = {
         },
     },
     "build/utils/rust/doc/wrapper": {
+    },
+    "build/utils/rust/rust_analyzer": {
+        _REQUIRED_FEATURE: {
+            _COMMON_CONDITION: {
+                "serde_derive": Label("@cargo_vendor//:serde_derive-1.0.219"),
+            },
+        },
     },
     "build/utils/rust/sync_readme": {
         _REQUIRED_FEATURE: {
@@ -2409,6 +2439,8 @@ _PROC_MACRO_ALIASES = {
     },
     "build/utils/rust/doc/wrapper": {
     },
+    "build/utils/rust/rust_analyzer": {
+    },
     "build/utils/rust/sync_readme": {
     },
     "build/utils/rust/sync_readme/common": {
@@ -2529,6 +2561,8 @@ _PROC_MACRO_DEV_DEPENDENCIES = {
     "build/utils/rust/doc/test/runner": {
     },
     "build/utils/rust/doc/wrapper": {
+    },
+    "build/utils/rust/rust_analyzer": {
     },
     "build/utils/rust/sync_readme": {
     },
@@ -2655,6 +2689,8 @@ _PROC_MACRO_DEV_ALIASES = {
     "build/utils/rust/doc/test/runner": {
     },
     "build/utils/rust/doc/wrapper": {
+    },
+    "build/utils/rust/rust_analyzer": {
     },
     "build/utils/rust/sync_readme": {
     },
@@ -2859,6 +2895,8 @@ _BUILD_DEPENDENCIES = {
     },
     "build/utils/rust/doc/wrapper": {
     },
+    "build/utils/rust/rust_analyzer": {
+    },
     "build/utils/rust/sync_readme": {
     },
     "build/utils/rust/sync_readme/common": {
@@ -2985,6 +3023,8 @@ _BUILD_ALIASES = {
     },
     "build/utils/rust/doc/wrapper": {
     },
+    "build/utils/rust/rust_analyzer": {
+    },
     "build/utils/rust/sync_readme": {
     },
     "build/utils/rust/sync_readme/common": {
@@ -3106,6 +3146,8 @@ _BUILD_PROC_MACRO_DEPENDENCIES = {
     },
     "build/utils/rust/doc/wrapper": {
     },
+    "build/utils/rust/rust_analyzer": {
+    },
     "build/utils/rust/sync_readme": {
     },
     "build/utils/rust/sync_readme/common": {
@@ -3215,6 +3257,8 @@ _BUILD_PROC_MACRO_ALIASES = {
     },
     "build/utils/rust/doc/wrapper": {
     },
+    "build/utils/rust/rust_analyzer": {
+    },
     "build/utils/rust/sync_readme": {
     },
     "build/utils/rust/sync_readme/common": {
@@ -3323,6 +3367,8 @@ _FEATURE_FLAGS = {
     "build/utils/rust/doc/test/runner": {
     },
     "build/utils/rust/doc/wrapper": {
+    },
+    "build/utils/rust/rust_analyzer": {
     },
     "build/utils/rust/sync_readme": {
     },
@@ -3660,6 +3706,8 @@ _RESOLVED_FEATURE_FLAGS = {
     },
     "build/utils/rust/doc/wrapper": {
     },
+    "build/utils/rust/rust_analyzer": {
+    },
     "build/utils/rust/sync_readme": {
     },
     "build/utils/rust/sync_readme/common": {
@@ -3806,6 +3854,7 @@ _VERSIONS = {
     "build/utils/rust/doc/test/common": "0.1.0",
     "build/utils/rust/doc/test/runner": "0.1.0",
     "build/utils/rust/doc/wrapper": "0.1.0",
+    "build/utils/rust/rust_analyzer": "0.0.0",
     "build/utils/rust/sync_readme": "0.0.0",
     "build/utils/rust/sync_readme/common": "0.0.0",
     "build/utils/rust/sync_readme/test_runner": "0.0.0",
@@ -5073,6 +5122,16 @@ def crate_repositories():
 
     maybe(
         http_archive,
+        name = "cargo_vendor__env_logger-0.10.2",
+        sha256 = "4cd405aab171cb85d6735e5c8d9db038c17d3ca007a4d2c25f337935c3d90580",
+        type = "tar.gz",
+        urls = ["https://static.crates.io/crates/env_logger/0.10.2/download"],
+        strip_prefix = "env_logger-0.10.2",
+        build_file = Label("//vendor/cargo:BUILD.env_logger-0.10.2.bazel"),
+    )
+
+    maybe(
+        http_archive,
         name = "cargo_vendor__env_logger-0.11.8",
         sha256 = "13c863f0904021b108aa8b2f55046443e6b1ebde8fd4a15c399893aae4fa069f",
         type = "tar.gz",
@@ -5869,6 +5928,16 @@ def crate_repositories():
         urls = ["https://static.crates.io/crates/iri-string/0.7.8/download"],
         strip_prefix = "iri-string-0.7.8",
         build_file = Label("//vendor/cargo:BUILD.iri-string-0.7.8.bazel"),
+    )
+
+    maybe(
+        http_archive,
+        name = "cargo_vendor__is-terminal-0.4.16",
+        sha256 = "e04d7f318608d35d4b61ddd75cbdaee86b023ebe2bd5a66ee0915f0bf93095a9",
+        type = "tar.gz",
+        urls = ["https://static.crates.io/crates/is-terminal/0.4.16/download"],
+        strip_prefix = "is-terminal-0.4.16",
+        build_file = Label("//vendor/cargo:BUILD.is-terminal-0.4.16.bazel"),
     )
 
     maybe(
@@ -8102,6 +8171,16 @@ def crate_repositories():
 
     maybe(
         http_archive,
+        name = "cargo_vendor__termcolor-1.4.1",
+        sha256 = "06794f8f6c5c898b3275aebefa6b8a1cb24cd2c6c79397ab15774837a0bc5755",
+        type = "tar.gz",
+        urls = ["https://static.crates.io/crates/termcolor/1.4.1/download"],
+        strip_prefix = "termcolor-1.4.1",
+        build_file = Label("//vendor/cargo:BUILD.termcolor-1.4.1.bazel"),
+    )
+
+    maybe(
+        http_archive,
         name = "cargo_vendor__thiserror-1.0.69",
         sha256 = "b6aaf5339b578ea85b50e080feb250a3e8ae8cfcdff9a461c9ec2904bc923f52",
         type = "tar.gz",
@@ -9338,6 +9417,7 @@ def crate_repositories():
         struct(repo = "cargo_vendor__darling-0.21.1", is_dev_dep = False),
         struct(repo = "cargo_vendor__document-features-0.2.11", is_dev_dep = False),
         struct(repo = "cargo_vendor__email_address-0.2.9", is_dev_dep = False),
+        struct(repo = "cargo_vendor__env_logger-0.10.2", is_dev_dep = False),
         struct(repo = "cargo_vendor__env_logger-0.11.8", is_dev_dep = False),
         struct(repo = "cargo_vendor__fixed-1.29.0", is_dev_dep = False),
         struct(repo = "cargo_vendor__flate2-1.1.2", is_dev_dep = False),

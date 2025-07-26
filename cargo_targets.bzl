@@ -49,6 +49,7 @@ _packages = [
     "//build/utils/rust/doc/test/common",
     "//build/utils/rust/doc/merger",
     "//build/utils/rust/doc/wrapper",
+    "//build/utils/rust/rust_analyzer",
     "//build/utils/rust/sync_readme",
     "//build/utils/rust/sync_readme/common",
     "//build/utils/rust/sync_readme/test_runner",

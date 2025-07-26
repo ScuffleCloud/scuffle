@@ -370,13 +370,13 @@ transition_alias_opt(
 )
 
 transition_alias_opt(
-    name = "env_logger-0.11.8",
-    actual = "@cargo_vendor__env_logger-0.11.8//:env_logger",
+    name = "env_logger-0.10.2",
+    actual = "@cargo_vendor__env_logger-0.10.2//:env_logger",
     tags = ["manual"],
 )
 
 transition_alias_opt(
-    name = "env_logger",
+    name = "env_logger-0.11.8",
     actual = "@cargo_vendor__env_logger-0.11.8//:env_logger",
     tags = ["manual"],
 )

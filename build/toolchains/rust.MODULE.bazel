@@ -60,6 +60,7 @@ use_repo(
     "cargo_vendor__darling-0.21.1",
     "cargo_vendor__document-features-0.2.11",
     "cargo_vendor__email_address-0.2.9",
+    "cargo_vendor__env_logger-0.10.2",
     "cargo_vendor__env_logger-0.11.8",
     "cargo_vendor__fixed-1.29.0",
     "cargo_vendor__flate2-1.1.2",

@@ -1,6 +1,7 @@
 <!-- website/src/components/streams/StreamDetailsHeader.svelte -->
 <script lang="ts">
     import IconDate from '$lib/images/icon-date.svelte';
+    import IconPuzzle from '$lib/images/icon-puzzle.svelte';
     import StreamStatusPill from '$lib/shared-components/stream-status-pill.svelte';
     import type { VideoStream } from './types';
     export let stream: VideoStream;
@@ -43,7 +44,10 @@
             </div>
 
             <div class="right-section">
-                <button class="common-action">Common Action 🧩</button>
+                <button class="common-action">
+                    <span class="common-action-text">Common Action</span>
+                    <IconPuzzle />
+                </button>
                 <button class="more-options">⋯</button>
             </div>
         </div>
@@ -108,10 +112,21 @@
                     gap: 0.5rem;
 
                     .common-action {
-                        padding: 0.5rem 1rem;
+                        display: flex;
+                        align-items: center;
+                        justify-content: center;
+                        gap: 0.25rem;
+                        padding: 0.5rem;
                         border: 1px solid #ddd;
                         border-radius: 0.5rem;
                         background: white;
+
+                        .common-action-text {
+                            color: var(--colors-brown-90);
+                            font-size: 1rem;
+                            font-weight: 700;
+                            padding: 0rem 0.25rem;
+                        }
                     }
 
                     .more-options {

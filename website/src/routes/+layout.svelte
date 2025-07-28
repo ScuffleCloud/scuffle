@@ -9,7 +9,15 @@
     import { PUBLIC_VITE_MSW_ENABLED } from '$env/static/public';
     import { enableMocking } from '$msw/setup';
     import RightNav from '$components/right-nav/RightNav.svelte';
+    import { authState, initializeAuth, authAPI, type AuthResult } from '$lib/authState.svelte';
+    import LoginPage from '$components/login/login-page.svelte';
 
+    // Let's put all this in a hook to check auth status and who the user is
+    $effect(() => {
+        initializeAuth();
+    });
+
+    // Maybe don't need this code since we'll mock functions in a different way
     const requireMsw = dev && browser && PUBLIC_VITE_MSW_ENABLED === 'true';
     let mockingReady = $state(!requireMsw);
 
@@ -33,6 +41,7 @@
         .map(([key, value]) => `--colors-${key}: ${value}`)
         .join(';');
 
+    // This is being used so not sure why the linter is complaining
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const inlineStyleForRoot = `:root { ${rootCssVariables} }`;
 </script>
@@ -42,21 +51,28 @@
     {@html `<style>${inlineStyleForRoot}</style>`}
 </svelte:head>
 
+<!-- TODO: Clean this up at some point -->
 {#if mockingReady}
-    <div class="app">
-        <QueryClientProvider client={queryClient}>
-            <Navbar />
-            <main>
-                <TopNav />
-                <div class="content">
-                    <div class="main-content">
-                        {@render children()}
+    {#if authState.isLoading}
+        <div>Loading...</div>
+    {:else if !authState.isLoggedIn}
+        {@render children()}
+    {:else}
+        <div class="app">
+            <QueryClientProvider client={queryClient}>
+                <Navbar />
+                <main>
+                    <TopNav />
+                    <div class="content">
+                        <div class="main-content">
+                            {@render children()}
+                        </div>
+                        <RightNav />
                     </div>
-                    <RightNav />
-                </div>
-            </main>
-        </QueryClientProvider>
-    </div>
+                </main>
+            </QueryClientProvider>
+        </div>
+    {/if}
 {:else}
     <div>Error loading mocks...</div>
 {/if}

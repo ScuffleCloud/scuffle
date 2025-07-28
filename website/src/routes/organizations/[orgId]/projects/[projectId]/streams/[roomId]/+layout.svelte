@@ -9,6 +9,7 @@
     import IconEvents from '$lib/images/icon-events.svelte';
     import IconAssets_2 from '$lib/images/icon-assets-2.svelte';
     import type { LayoutData } from './$types';
+    import IconSettings2 from '$lib/images/icon-settings2.svelte';
 
     type ChildProps = {
         data: VideoStream;
@@ -25,6 +26,7 @@
         { id: 'overview', label: 'Overview', icon: IconPuzzle },
         { id: 'events', label: 'Events', icon: IconEvents },
         { id: 'assets', label: 'Assets', icon: IconAssets_2 },
+        { id: 'settings', label: 'Settings', icon: IconSettings2 },
     ];
     const baseUrl = `/organizations/${page.params.orgId}/projects/${page.params.projectId}/streams/${page.params.roomId}/`;
 </script>

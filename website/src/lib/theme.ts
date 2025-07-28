@@ -1,3 +1,5 @@
+// We probably don't need this now that I understand svelte more.
+// Can later move this to css classes when design system is complete
 export const theme = {
     colors: {
         teal10: '#FEFCFB',

@@ -25,6 +25,7 @@ mod captcha;
 pub mod cedar;
 mod chrono_ext;
 mod common;
+mod emails;
 mod google_api;
 mod http_ext;
 pub mod id;
@@ -80,4 +81,5 @@ pub trait CoreConfig:
     fn google_client_id(&self) -> &str;
     fn google_client_secret(&self) -> &str;
     fn webauthn_challenge_secret(&self) -> &[u8];
+    fn email_from_address(&self) -> &str;
 }

@@ -66,6 +66,8 @@ tracing-subscriber = "0.3.19"
 ulid = { features = ["uuid"], version = "1.2.1" }
 utoipa-swagger-ui = { features = ["axum", "vendored"], version = "9.0.2" }
 uuid = "1.17.0"
+sailfish = "0.9.1"
+sailfish-macros = "0.9.1"
 
 [package.metadata.sync-readme.badges]
 docs-rs = false

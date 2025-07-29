@@ -1,6 +1,6 @@
 <script lang="ts">
-    import { theme } from '$lib/theme';
     import '$styles/global.css';
+    import '$styles/variables.css';
     import Navbar from '$components/left-nav/navbar.svelte';
     import TopNav from '$components/top-nav/TopNav.svelte';
     import { QueryClient, QueryClientProvider } from '@tanstack/svelte-query';
@@ -36,20 +36,7 @@
             },
         },
     });
-
-    const rootCssVariables = Object.entries(theme.colors)
-        .map(([key, value]) => `--colors-${key}: ${value}`)
-        .join(';');
-
-    // This is being used so not sure why the linter is complaining
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    const inlineStyleForRoot = `:root { ${rootCssVariables} }`;
 </script>
-
-<!-- Otherwise dynamically generated CSS variables aren't correctly available in the app -->
-<svelte:head>
-    {@html `<style>${inlineStyleForRoot}</style>`}
-</svelte:head>
 
 <!-- TODO: Clean this up at some point -->
 {#if mockingReady}

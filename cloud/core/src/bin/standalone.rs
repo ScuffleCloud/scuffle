@@ -34,6 +34,8 @@ pub struct Config {
     /// Base64 encoded JWT secret key.
     #[default = "fEoUb9KpeJJTtfo3uUhehNHJBAeBL47fatN01OBlceg="]
     pub jwt_secret: String,
+    #[default = "no-reply@scuffle.cloud"]
+    pub email_from_address: String,
 }
 
 #[derive(serde_derive::Deserialize, smart_default::SmartDefault, Debug, Clone)]
@@ -143,6 +145,10 @@ impl scufflecloud_core::CoreConfig for Global {
 
     fn webauthn_challenge_secret(&self) -> &[u8] {
         &self.decoded_jwt_secret
+    }
+
+    fn email_from_address(&self) -> &str {
+        &self.config.email_from_address
     }
 }
 

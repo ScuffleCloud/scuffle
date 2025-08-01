@@ -11,13 +11,15 @@
     import RightNav from '$components/right-nav/RightNav.svelte';
     import { authState, initializeAuth, authAPI, type AuthResult } from '$lib/authState.svelte';
     import LoginPage from '$components/login/login-page.svelte';
+    import LoginHeader from '$components/login/login-header.svelte';
+    import LoginFooter from '$components/login/login-footer.svelte';
 
     // Let's put all this in a hook to check auth status and who the user is
     $effect(() => {
         initializeAuth();
     });
 
-    // Maybe don't need this code since we'll mock functions in a different way
+    // Maybe don't need this code since we'll mock functions in a different way but leaving it for now
     const requireMsw = dev && browser && PUBLIC_VITE_MSW_ENABLED === 'true';
     let mockingReady = $state(!requireMsw);
 
@@ -43,7 +45,11 @@
     {#if authState.isLoading}
         <div>Loading...</div>
     {:else if !authState.isLoggedIn}
-        {@render children()}
+        <div class="login-page-container">
+            <LoginHeader />
+            <LoginPage />
+            <LoginFooter />
+        </div>
     {:else}
         <div class="app">
             <QueryClientProvider client={queryClient}>
@@ -94,5 +100,15 @@
                 min-width: 0;
             }
         }
+    }
+
+    .login-page-container {
+        min-height: 100vh;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background-color: #f5f3f0;
+        padding: 2rem;
+        flex-direction: column;
     }
 </style>

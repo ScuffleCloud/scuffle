@@ -17,6 +17,7 @@ export interface AuthState {
     isLoggedIn: boolean;
     isLoading: boolean;
     error: string | null;
+    magicLinkSent: boolean;
 }
 
 export interface AuthResult {
@@ -36,6 +37,7 @@ export const authState = $state<AuthState>({
     isLoggedIn: false,
     isLoading: true,
     error: null,
+    magicLinkSent: false,
 });
 
 export function getUserDisplayName(): string {
@@ -62,6 +64,10 @@ export function getError(): string | null {
     return authState.error;
 }
 
+export function getMagicLinkSent(): boolean {
+    return authState.magicLinkSent;
+}
+
 // Pure functions that operate on the state
 export const setLoading = (loading: boolean): void => {
     authState.isLoading = loading;
@@ -73,6 +79,10 @@ export const setError = (error: string | null): void => {
 
 export const clearError = (): void => {
     authState.error = null;
+};
+
+export const setMagicLinkSent = (sent: boolean): void => {
+    authState.magicLinkSent = sent;
 };
 
 export const login = (userData: User): void => {
@@ -159,24 +169,54 @@ export const initializeAuth = async (): Promise<void> => {
     }
 };
 
-// Auth API functions - replace these with your auth package calls
+// Auth API functions - replace with api calls but these are all that should exist
 export const authAPI = {
-    async loginWithEmail(email: string): Promise<AuthResult> {
+    async sendMagicLink(email: string): Promise<AuthResult> {
+        try {
+            setLoading(true);
+            clearError();
+            setMagicLinkSent(false);
+
+            // Your auth package magic link would go here
+            // const result = await yourAuthPackage.sendMagicLink(email);
+
+            console.log('Sending magic link to:', email);
+            // await new Promise((resolve) => setTimeout(resolve, 1500));
+
+            setMagicLinkSent(true);
+            return {
+                success: true,
+                message: 'Check your email for a magic link to continue!',
+            };
+        } catch (error) {
+            console.error('Magic link failed:', error);
+            const errorMessage =
+                error instanceof Error
+                    ? error.message
+                    : 'Failed to send magic link. Please try again.';
+            setError(errorMessage);
+            return { success: false, error: errorMessage };
+        } finally {
+            setLoading(false);
+        }
+    },
+
+    async verifyMagicLink(token: string): Promise<AuthResult> {
         try {
             setLoading(true);
             clearError();
 
-            // Your auth package login would go here
-            // const result = await yourAuthPackage.loginWithEmail(email);
+            // Your auth package verify magic link would go here
+            // const result = await yourAuthPackage.verifyMagicLink(token);
 
-            // Mock login - replace with actual auth logic
-            console.log('Logging in with email:', email);
+            console.log('Verifying magic link token:', token);
             await new Promise((resolve) => setTimeout(resolve, 1000));
 
+            // Mock user data - replace with actual response from your auth service
             const userData: User = {
-                id: '123',
-                name: 'John Doe',
-                email,
+                id: crypto.randomUUID(),
+                name: 'John Doe', // This would come from your auth service
+                email: 'user@example.com', // This would come from the verified token
                 avatar: null,
                 createdAt: new Date(),
                 updatedAt: new Date(),
@@ -185,9 +225,9 @@ export const authAPI = {
             login(userData);
             return { success: true };
         } catch (error) {
-            console.error('Email login failed:', error);
+            console.error('Magic link verification failed:', error);
             const errorMessage =
-                error instanceof Error ? error.message : 'Login failed. Please try again.';
+                error instanceof Error ? error.message : 'Invalid or expired magic link.';
             setError(errorMessage);
             return { success: false, error: errorMessage };
         } finally {
@@ -262,32 +302,6 @@ export const authAPI = {
         }
     },
 
-    async signUp(email: string, additionalData: Partial<User> = {}): Promise<AuthResult> {
-        try {
-            setLoading(true);
-            clearError();
-
-            // Your auth package sign up would go here
-            // const result = await yourAuthPackage.signUp(email, additionalData);
-
-            console.log('Signing up with email:', email, additionalData);
-            await new Promise((resolve) => setTimeout(resolve, 1000));
-
-            return {
-                success: true,
-                message: 'Please check your email to verify your account.',
-            };
-        } catch (error) {
-            console.error('Sign up failed:', error);
-            const errorMessage =
-                error instanceof Error ? error.message : 'Sign up failed. Please try again.';
-            setError(errorMessage);
-            return { success: false, error: errorMessage };
-        } finally {
-            setLoading(false);
-        }
-    },
-
     async logoutUser(): Promise<AuthResult> {
         try {
             setLoading(true);
@@ -305,32 +319,6 @@ export const authAPI = {
             console.error('Logout failed:', error);
             const errorMessage =
                 error instanceof Error ? error.message : 'Logout failed. Please try again.';
-            setError(errorMessage);
-            return { success: false, error: errorMessage };
-        } finally {
-            setLoading(false);
-        }
-    },
-
-    async forgotPassword(email: string): Promise<AuthResult> {
-        try {
-            setLoading(true);
-            clearError();
-
-            // Your auth package forgot password would go here
-            // const result = await yourAuthPackage.forgotPassword(email);
-
-            console.log('Password reset requested for:', email);
-            await new Promise((resolve) => setTimeout(resolve, 1000));
-
-            return {
-                success: true,
-                message: 'Password reset email sent.',
-            };
-        } catch (error) {
-            console.error('Forgot password failed:', error);
-            const errorMessage =
-                error instanceof Error ? error.message : 'Failed to send password reset email.';
             setError(errorMessage);
             return { success: false, error: errorMessage };
         } finally {

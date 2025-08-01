@@ -1,4 +1,4 @@
-/* Eventually ideally the colors are aren't accessed by name and by --bg-light or --bg-medium */
+/* Eventually ideally the colors are aren't accessed directly and instead by --bg-light or --bg-medium */
 :root {
     /* Red Colors */
     --colors-red10: #ffd5d3;

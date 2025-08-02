@@ -1,8 +1,11 @@
-<!-- src/routes/LoginPage.svelte -->
 <script lang="ts">
     import { authState, authAPI, clearError, type AuthResult } from '$lib/authState.svelte';
     import IconArrowDialogLink from '$lib/images/icon-arrow-dialog-link.svelte';
     import SigninOptions from './signin-options.svelte';
+    import TurnstileOverlay from '$components/turnstile-overlay.svelte';
+
+    let turnstileOverlayComponent: TurnstileOverlay | null = null;
+    const getToken = async () => await turnstileOverlayComponent?.getToken();
 
     let email = $state<string>('tim.jennings@example.com');
     let localLoading = $state<boolean>(false);
@@ -12,8 +15,11 @@
 
     async function handleSubmit(event: SubmitEvent): Promise<void> {
         event.preventDefault();
-        if (email && !localLoading) {
-            localLoading = true;
+        if (localLoading) return;
+
+        localLoading = true;
+        const token = await getToken();
+        if (email && token) {
             // Hopefully this authAPI comes with ways to check query status instead of using local state
             try {
                 const result: AuthResult = await authAPI.sendMagicLink(email);
@@ -87,6 +93,7 @@
         Contact Support <IconArrowDialogLink />
     </button>
 </div>
+<TurnstileOverlay bind:this={turnstileOverlayComponent} />
 
 <style>
     .login-card {

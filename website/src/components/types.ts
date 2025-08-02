@@ -11,3 +11,8 @@ export type NavItemChild = {
     label: string;
     path: string;
 };
+
+export type TurnstileError = {
+    message: string;
+    wasCaptcha: boolean;
+};

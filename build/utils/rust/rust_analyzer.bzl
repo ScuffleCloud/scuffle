@@ -104,8 +104,7 @@ def _rust_analyzer_aspect_impl(target, ctx):
     # Always add `test` & `debug_assertions`. See rust-analyzer source code:
     # https://github.com/rust-analyzer/rust-analyzer/blob/2021-11-15/crates/project_model/src/workspace.rs#L529-L531
     cfgs = ["debug_assertions"]
-    if hasattr(ctx.rule.attr, "crate_features"):
-        cfgs += ['feature="{}"'.format(f) for f in ctx.rule.attr.crate_features]
+
     if hasattr(ctx.rule.attr, "rustc_flags"):
         cfgs += [f[6:] for f in ctx.rule.attr.rustc_flags if f.startswith("--cfg ") or f.startswith("--cfg=")]
 
@@ -135,6 +134,8 @@ def _rust_analyzer_aspect_impl(target, ctx):
 
     if crate_info.is_test:
         cfgs.append("test")
+
+    cfgs += ['feature="{}"'.format(f) for f in crate_info.crate_features]
 
     aliases = {}
     for aliased_target, aliased_name in getattr(ctx.rule.attr, "aliases", {}).items():
@@ -191,8 +192,6 @@ def find_proc_macro_dylib(toolchain, target):
         if file.extension == dylib_ext[1:]:
             return file
 
-    # Failed to find the dylib path inside a proc-macro crate.
-    # TODO: Should this be an error?
     fail("failed to find proc-macro inside proc-macro crate: {}".format(crate_info.name))
 
 rust_analyzer_aspect = aspect(
@@ -294,4 +293,5 @@ def _create_single_crate(ctx, attrs, info):
     crate["target"] = (_EXEC_ROOT_TEMPLATE + toolchain.target_json.path) if toolchain.target_json else toolchain.target_flag_value
     if info.proc_macro_dylib != None:
         crate["proc_macro_dylib_path"] = _EXEC_ROOT_TEMPLATE + info.proc_macro_dylib.path
+
     return crate

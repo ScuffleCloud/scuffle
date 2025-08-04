@@ -82,6 +82,7 @@ fn main() -> anyhow::Result<()> {
         .args(&config.bazel_args)
         .arg(format!("set({})", items.join(" ")))
         .arg("--output=starlark")
+        .arg("--keep_going")
         .arg("--starlark:expr=[file.path for file in target.files.to_list()]")
         .arg("--build")
         .arg("--config=no_bes")
@@ -96,9 +97,7 @@ fn main() -> anyhow::Result<()> {
     let mut targets = String::new();
     stdout.read_to_string(&mut targets).context("stdout read")?;
 
-    if !command.wait().context("cquery wait")?.success() {
-        bail!("failed to run bazel cquery")
-    }
+    command.wait().context("cquery wait")?;
 
     let mut clippy_files = Vec::new();
 

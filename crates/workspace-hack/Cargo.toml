@@ -68,6 +68,7 @@ rusty_ffmpeg = { version = "0.16", default-features = false, features = ["link_s
 semver = { version = "1", features = ["serde"] }
 serde = { version = "1", features = ["alloc", "derive"] }
 serde_json = { version = "1", features = ["raw_value", "unbounded_depth"] }
+serde_spanned = { version = "1", default-features = false, features = ["serde", "std"] }
 smallvec = { version = "1", default-features = false, features = ["const_new"] }
 syn = { version = "2", features = ["extra-traits", "fold", "full", "visit", "visit-mut"] }
 sync_wrapper = { version = "1", default-features = false, features = ["futures"] }
@@ -75,6 +76,9 @@ thiserror = { version = "2" }
 tokio = { version = "1", features = ["full", "test-util"] }
 tokio-stream = { version = "0.1", features = ["net"] }
 tokio-util = { version = "0.7", features = ["codec", "io"] }
+toml = { version = "0.9" }
+toml_datetime = { version = "0.7", default-features = false, features = ["serde", "std"] }
+toml_parser = { version = "1", default-features = false, features = ["std"] }
 tower = { version = "0.5", default-features = false, features = ["balance", "buffer", "limit", "log"] }
 tracing = { version = "0.1", features = ["log"] }
 tracing-core = { version = "0.1" }
@@ -135,6 +139,7 @@ rusty_ffmpeg = { version = "0.16", default-features = false, features = ["link_s
 semver = { version = "1", features = ["serde"] }
 serde = { version = "1", features = ["alloc", "derive"] }
 serde_json = { version = "1", features = ["raw_value", "unbounded_depth"] }
+serde_spanned = { version = "1", default-features = false, features = ["serde", "std"] }
 smallvec = { version = "1", default-features = false, features = ["const_new"] }
 syn = { version = "2", features = ["extra-traits", "fold", "full", "visit", "visit-mut"] }
 sync_wrapper = { version = "1", default-features = false, features = ["futures"] }
@@ -142,6 +147,9 @@ thiserror = { version = "2" }
 tokio = { version = "1", features = ["full", "test-util"] }
 tokio-stream = { version = "0.1", features = ["net"] }
 tokio-util = { version = "0.7", features = ["codec", "io"] }
+toml = { version = "0.9" }
+toml_datetime = { version = "0.7", default-features = false, features = ["serde", "std"] }
+toml_parser = { version = "1", default-features = false, features = ["std"] }
 tower = { version = "0.5", default-features = false, features = ["balance", "buffer", "limit", "log"] }
 tracing = { version = "0.1", features = ["log"] }
 tracing-core = { version = "0.1" }

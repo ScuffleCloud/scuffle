@@ -38,7 +38,7 @@ tokio = { default-features = false, features = ["rt", "sync", "time"], version =
 tokio-util = "0.7"
 
 [dev-dependencies]
-criterion = { features = ["async_tokio"], version = "0.6" }
+criterion = { features = ["async_tokio"], version = "0.7" }
 futures = "0.3"
 tokio = { features = ["macros"], version = "1" }
 tokio-test = "0.4.4"

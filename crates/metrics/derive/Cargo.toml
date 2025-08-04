@@ -14,7 +14,7 @@ keywords = ["metrics", "derive", "macros"]
 proc-macro = true
 
 [dependencies]
-darling = "0.20"
+darling = "0.21"
 proc-macro2 = "1"
 quote = "1"
 scuffle-workspace-hack.workspace = true

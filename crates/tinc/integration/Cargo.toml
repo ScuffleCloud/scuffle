@@ -12,17 +12,17 @@ bytes = "1"
 http = "1"
 http-body-util = "0.1"
 insta = { features = ["json"], version = "1.30.0" }
-prost = "0.13.5"
-prost-types = "0.13.5"
+prost = "0.14"
+prost-types = "0.14"
 rand = "0.9"
 scuffle-workspace-hack.workspace = true
 serde = "1.0.215"
 serde_json = "1.0.115"
 tinc = { path = ".." }
 tokio = { features = ["full"], version = "1.4.2" }
-tonic = "0.13"
+tonic = "0.14"
 tower = "0.5"
 
 [build-dependencies]
-prost-build = "0.13.5"
+prost-build = "0.14"
 tinc-build = { path = "../build", version = "0.1.1" }

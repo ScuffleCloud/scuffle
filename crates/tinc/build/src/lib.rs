@@ -268,9 +268,9 @@ impl Config {
                             let codec_path =
                                 if let Some(Some(codec_path)) = (!is_client).then_some(method.codec_path.as_ref()) {
                                     let path = get_common_import_path(&service.full_name, codec_path);
-                                    quote!(#path::<::tinc::reexports::tonic::codec::ProstCodec<_, _>>)
+                                    quote!(#path::<::tinc::reexports::tonic_prost::ProstCodec<_, _>>)
                                 } else {
-                                    quote!(::tinc::reexports::tonic::codec::ProstCodec)
+                                    quote!(::tinc::reexports::tonic_prost::ProstCodec)
                                 };
 
                             let mut builder = tonic_build::manual::Method::builder()

@@ -227,7 +227,7 @@ pub mod reexports {
     pub use tonic;
     pub use {axum, bytes, chrono, http, linkme, mediatype, regex, serde, serde_derive, serde_json, serde_repr};
     #[cfg(feature = "prost")]
-    pub use {prost, prost_types};
+    pub use {prost, prost_types, tonic_prost};
 }
 
 #[doc(hidden)]

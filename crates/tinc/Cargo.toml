@@ -30,10 +30,11 @@ http = "1"
 http-body = "1"
 http-body-util = "0.1.0"
 
-prost = { optional = true, version = "0.13.5" }
-prost-types = { optional = true, version = "0.13.5" }
-tonic = { optional = true, version = "0.13.0" }
-tonic-types = { optional = true, version = "0.13.0" }
+prost = { optional = true, version = "0.14" }
+prost-types = { optional = true, version = "0.14" }
+tonic = { optional = true, version = "0.14" }
+tonic-prost = { optional = true, version = "0.14" }
+tonic-types = { optional = true, version = "0.14" }
 
 serde = "1"
 serde_derive = "1"

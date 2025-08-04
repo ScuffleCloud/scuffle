@@ -103,6 +103,7 @@ def _rust_clippy_rule_impl(ctx):
         # or rustc may fail to create intermediate output files because the directory does not exist.
         clippy_out = ctx.actions.declare_file(ctx.label.name + ".clippy.out", sibling = crate_info.output)
         args.process_wrapper_flags.add("--stderr-file", clippy_out)
+        args.process_wrapper_flags.add("--do-not-fail", "true")
         args.rustc_flags.add_all(clippy_flags)
 
         # Upstream clippy requires one of these two filenames or it silently uses

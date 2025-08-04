@@ -1,27 +1,29 @@
 //! Binary used for automatic Rust workspace discovery by `rust-analyzer`.
 //! See [rust-analyzer documentation][rd] for a thorough description of this interface.
-//! [rd]: <https://rust-analyzer.github.io/manual.html#rust-analyzer.workspace.discoverConfig>.
+//!
+//! [rd]: <https://rust-analyzer.github.io/manual.html#rust-analyzer.workspace.discoverConfig>
 
 mod aquery;
 mod rust_project;
 
-use std::{collections::BTreeMap, convert::TryInto, fs, process::Command};
+use std::collections::BTreeMap;
+use std::convert::TryInto;
+use std::fs;
+use std::io::{self, Write};
+use std::process::Command;
 
-use anyhow::{bail, Context};
+use anyhow::{Context, bail};
 use camino::{Utf8Path, Utf8PathBuf};
+use clap::Parser;
+use env_logger::fmt::Formatter;
+use env_logger::{Target, WriteStyle};
+use log::{LevelFilter, Record};
 use runfiles::Runfiles;
 use rust_project::RustProject;
 pub use rust_project::{DiscoverProject, RustAnalyzerArg};
 use serde::de::DeserializeOwned;
 
-use std::io::{self, Write};
-
-use clap::Parser;
-use env_logger::{fmt::Formatter, Target, WriteStyle};
-use log::{LevelFilter, Record};
-
-pub const WORKSPACE_ROOT_FILE_NAMES: &[&str] =
-    &["MODULE.bazel", "REPO.bazel", "WORKSPACE.bazel", "WORKSPACE"];
+pub const WORKSPACE_ROOT_FILE_NAMES: &[&str] = &["MODULE.bazel", "REPO.bazel", "WORKSPACE.bazel", "WORKSPACE"];
 
 pub const BUILD_FILE_NAMES: &[&str] = &["BUILD.bazel", "BUILD"];
 
@@ -57,8 +59,6 @@ fn project_discovery() -> anyhow::Result<DiscoverProject<'static>> {
         None => RustAnalyzerArg::Buildfile(find_workspace_root_file(&workspace)?),
     };
 
-    let rules_rust_name = "@rules_rust";
-
     log::info!("resolved rust-analyzer argument: {ra_arg:?}");
 
     let (buildfile, targets) = ra_arg.into_target_details(&workspace)?;
@@ -74,9 +74,10 @@ fn project_discovery() -> anyhow::Result<DiscoverProject<'static>> {
         &execution_root,
         &bazel_startup_options,
         &bazel_args,
-        rules_rust_name,
         &[targets],
     )?;
+
+    std::fs::write(workspace.join(".rust-project.bazel.json"), serde_json::to_string_pretty(&project).unwrap()).context("failed to write output")?;
 
     Ok(DiscoverProject::Finished { buildfile, project })
 }
@@ -105,7 +106,7 @@ fn main() -> anyhow::Result<()> {
         // Format logs as progress messages
         .format(log_format_fn)
         // `rust-analyzer` reads the stdout
-        .filter_level(LevelFilter::Debug)
+        .filter_level(LevelFilter::Trace)
         .target(Target::Stdout)
         .init();
 
@@ -161,13 +162,7 @@ impl Config {
         } = ConfigParser::parse();
 
         // We need some info from `bazel info`. Fetch it now.
-        let mut info_map = bazel_info(
-            &bazel,
-            workspace.as_deref(),
-            None,
-            &bazel_startup_options,
-            &bazel_args,
-        )?;
+        let mut info_map = bazel_info(&bazel, workspace.as_deref(), None, &bazel_startup_options, &bazel_args)?;
 
         let config = Config {
             workspace: info_map
@@ -199,7 +194,7 @@ struct ConfigParser {
     workspace: Option<Utf8PathBuf>,
 
     /// The path to a Bazel binary.
-    #[clap(long, default_value = "bazel")]
+    #[clap(long, default_value = "bazel", env = "BAZEL")]
     bazel: Utf8PathBuf,
 
     /// Startup options to pass to `bazel` invocations.
@@ -218,7 +213,6 @@ struct ConfigParser {
     rust_analyzer_argument: Option<RustAnalyzerArg>,
 }
 
-
 #[allow(clippy::too_many_arguments)]
 pub fn generate_rust_project(
     bazel: &Utf8Path,
@@ -227,18 +221,30 @@ pub fn generate_rust_project(
     execution_root: &Utf8Path,
     bazel_startup_options: &[String],
     bazel_args: &[String],
-    rules_rust_name: &str,
     targets: &[String],
 ) -> anyhow::Result<RustProject> {
-    generate_crate_info(
-        bazel,
-        output_base,
-        workspace,
-        bazel_startup_options,
-        bazel_args,
-        rules_rust_name,
-        targets,
-    )?;
+    let query_command = bazel_command(bazel, Some(workspace), Some(output_base))
+        .args(bazel_startup_options)
+        .arg("query")
+        .arg("--config=no_bes")
+        .arg(format!("set({})", targets.join(" ")))
+        .output()
+        .context("bazel query")?;
+
+    if !query_command.status.success() {
+        anyhow::bail!(
+            "query command failed ({:?}): {}",
+            query_command.status,
+            String::from_utf8_lossy(&query_command.stderr)
+        );
+    }
+    let output = String::from_utf8(query_command.stdout).context("invalid query stdout")?;
+
+    let targets: Vec<_> = output
+        .lines()
+        .map(|l| l.trim().to_owned())
+        .filter(|l| !l.is_empty())
+        .collect();
 
     let crate_specs = aquery::get_crate_specs(
         bazel,
@@ -247,18 +253,19 @@ pub fn generate_rust_project(
         execution_root,
         bazel_startup_options,
         bazel_args,
-        targets,
-        rules_rust_name,
+        &targets,
     )?;
 
     let runfiles = Runfiles::create()?;
     let path = std::env::var("RUST_ANALYZER_TOOLCHAIN_PATH").context("MISSING RUST_ANALYZER_TOOLCHAIN_PATH")?;
 
-    let path: Utf8PathBuf = runfiles::rlocation!(runfiles, path).context("toolchain runfile not found")?.try_into()?;
+    let path: Utf8PathBuf = runfiles::rlocation!(runfiles, path)
+        .context("toolchain runfile not found")?
+        .try_into()?;
 
     let toolchain_info = deserialize_file_content(&path, output_base, workspace, execution_root)?;
 
-    rust_project::assemble_rust_project(bazel, workspace, toolchain_info, &crate_specs)
+    rust_project::assemble_rust_project(bazel, workspace, toolchain_info, crate_specs)
 }
 
 /// Executes `bazel info` to get a map of context information.
@@ -292,48 +299,7 @@ pub fn bazel_info(
     Ok(info_map)
 }
 
-fn generate_crate_info(
-    bazel: &Utf8Path,
-    output_base: &Utf8Path,
-    workspace: &Utf8Path,
-    bazel_startup_options: &[String],
-    bazel_args: &[String],
-    rules_rust: &str,
-    targets: &[String],
-) -> anyhow::Result<()> {
-    log::info!("running bazel build...");
-    log::debug!("Building rust_analyzer_crate_spec files for {:?}", targets);
-
-    let output = bazel_command(bazel, Some(workspace), Some(output_base))
-        .args(bazel_startup_options)
-        .arg("build")
-        .args(bazel_args)
-        .arg("--norun_validations")
-        .arg("--config=wrapper")
-        .arg("--remote_download_all")
-        .arg(format!(
-            "--aspects={rules_rust}//rust:defs.bzl%rust_analyzer_aspect"
-        ))
-        .arg("--output_groups=rust_analyzer_crate_spec,rust_generated_srcs,rust_analyzer_proc_macro_dylib,rust_analyzer_src")
-        .args(targets)
-        .output()?;
-
-    if !output.status.success() {
-        let status = output.status;
-        let stderr = String::from_utf8_lossy(&output.stderr);
-        bail!("bazel build failed: ({status})\n{stderr}");
-    }
-
-    log::info!("bazel build finished");
-
-    Ok(())
-}
-
-fn bazel_command(
-    bazel: &Utf8Path,
-    workspace: Option<&Utf8Path>,
-    output_base: Option<&Utf8Path>,
-) -> Command {
+fn bazel_command(bazel: &Utf8Path, workspace: Option<&Utf8Path>, output_base: Option<&Utf8Path>) -> Command {
     let mut cmd = Command::new(bazel);
 
     cmd
@@ -364,7 +330,7 @@ where
         .replace("__EXEC_ROOT__", execution_root.as_str())
         .replace("__OUTPUT_BASE__", output_base.as_str());
 
-    log::trace!("{}\n{}", path, content);
+    log::trace!("{path}\n{content}");
 
     serde_json::from_str(&content).with_context(|| format!("failed to deserialize file: {path}"))
 }

@@ -10,23 +10,26 @@ use test_runner_lib::{Binary, Config};
 #[derive(Parser, Debug)]
 #[command(version, about, long_about = None)]
 struct Args {
-    #[arg(env = "RUNNER_CRATE")]
+    #[arg(long, env = "RUNNER_CRATE")]
     package: String,
 
-    #[arg(env = "RUNNER_DOCTEST_OUT")]
+    #[arg(long, env = "RUNNER_DOCTEST_OUT")]
     doctest_out: Utf8PathBuf,
 
-    #[arg(env = "RUNNER_CONFIG")]
+    #[arg(long, env = "RUNNER_CONFIG")]
     config: Utf8PathBuf,
 
-    #[arg(env = "RUNNER_PROFILE")]
+    #[arg(long, env = "RUNNER_PROFILE")]
     profile: String,
 
-    #[arg(env = "TEST_TMPDIR")]
+    #[arg(long, env = "TEST_TMPDIR")]
     tmp_dir: Utf8PathBuf,
 
-    #[arg(env = "XML_OUTPUT_FILE")]
+    #[arg(long, env = "XML_OUTPUT_FILE")]
     xml_output_file: Option<Utf8PathBuf>,
+
+    #[arg(trailing_var_arg = true, allow_hyphen_values = true, hide = true)]
+    extra_args: Vec<String>,
 }
 
 fn main() {
@@ -48,6 +51,7 @@ fn main() {
         profile: args.profile,
         tmp_dir: args.tmp_dir,
         xml_output_file: args.xml_output_file,
+        args: args.extra_args,
         binaries: manifest
             .test_binaries
             .into_iter()

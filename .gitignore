@@ -47,3 +47,4 @@ target-bazel/
 rust-project.json
 .user.bazelrc
 .direnv/
+.rust-project.bazel.json

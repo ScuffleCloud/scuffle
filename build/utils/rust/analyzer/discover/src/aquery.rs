@@ -1,4 +1,5 @@
 use std::collections::{BTreeMap, BTreeSet};
+use std::fmt::Write;
 
 use anyhow::Context;
 use camino::{Utf8Path, Utf8PathBuf};
@@ -89,38 +90,42 @@ pub fn get_crate_specs(
     bazel_startup_options: &[String],
     bazel_args: &[String],
     targets: &[String],
-    rules_rust_name: &str,
-) -> anyhow::Result<BTreeSet<CrateSpec>> {
+) -> anyhow::Result<impl IntoIterator<Item = CrateSpec>> {
     log::info!("running bazel aquery...");
-    log::debug!("Get crate specs with targets: {:?}", targets);
-    let target_pattern = format!("deps({})", targets.join("+"));
+    log::debug!("Get crate specs with targets: {targets:?}");
+    let target_pattern = fmtools::fmt(|f| {
+        f.write_str("deps(")?;
+        for (idx, target) in targets.iter().enumerate() {
+            if idx != 0 {
+                f.write_char('+')?;
+            }
+            f.write_char('"')?;
+            f.write_str(target)?;
+            f.write_char('"')?;
+        }
+        f.write_char(')')?;
+        Ok(())
+    });
 
     let mut aquery_command = bazel_command(bazel, Some(workspace), Some(output_base));
     aquery_command
         .args(bazel_startup_options)
         .arg("aquery")
         .args(bazel_args)
+        .arg("--build")
         .arg("--include_aspects")
         .arg("--include_artifacts")
-        .arg(format!(
-            "--aspects={rules_rust_name}//rust:defs.bzl%rust_analyzer_aspect"
-        ))
-        .arg("--output_groups=rust_analyzer_crate_spec")
-        .arg(format!(
-            r#"outputs(".*\.rust_analyzer_crate_spec\.json",{target_pattern})"#
-        ))
+        .arg("--aspects=//build/utils/rust:rust_analyzer.bzl%rust_analyzer_aspect")
+        .arg("--output_groups=rust_analyzer_crate_spec,rust_generated_srcs,rust_analyzer_proc_macro_dylib,rust_analyzer_src")
+        .arg(format!(r#"outputs(".*\.rust_analyzer_crate_spec\.json",{target_pattern})"#))
         .arg("--output=jsonproto");
-    log::trace!("Running aquery: {:#?}", aquery_command);
-    let aquery_output = aquery_command
-        .output()
-        .context("Failed to spawn aquery command")?;
+
+    log::trace!("Running aquery: {aquery_command:#?}");
+    let aquery_output = aquery_command.output().context("Failed to spawn aquery command")?;
 
     log::info!("bazel aquery finished; parsing spec files...");
 
-    let aquery_results = String::from_utf8(aquery_output.stdout)
-        .context("Failed to decode aquery results as utf-8.")?;
-
-    log::trace!("Aquery results: {}", &aquery_results);
+    let aquery_results = String::from_utf8(aquery_output.stdout).context("Failed to decode aquery results as utf-8.")?;
 
     let crate_spec_files = parse_aquery_output_files(execution_root, &aquery_results)?;
 
@@ -132,10 +137,7 @@ pub fn get_crate_specs(
     consolidate_crate_specs(crate_specs)
 }
 
-fn parse_aquery_output_files(
-    execution_root: &Utf8Path,
-    aquery_stdout: &str,
-) -> anyhow::Result<Vec<Utf8PathBuf>> {
+fn parse_aquery_output_files(execution_root: &Utf8Path, aquery_stdout: &str) -> anyhow::Result<Vec<Utf8PathBuf>> {
     let out: AqueryOutput = serde_json::from_str(aquery_stdout).map_err(|_| {
         // Parsing to `AqueryOutput` failed, try parsing into a `serde_json::Value`:
         match serde_json::from_str::<serde_json::Value>(aquery_stdout) {
@@ -149,29 +151,19 @@ fn parse_aquery_output_files(
         }
     })?;
 
-    let artifacts = out
-        .artifacts
-        .iter()
-        .map(|a| (a.id, a))
-        .collect::<BTreeMap<_, _>>();
-    let path_fragments = out
-        .path_fragments
-        .iter()
-        .map(|pf| (pf.id, pf))
-        .collect::<BTreeMap<_, _>>();
+    let artifacts = out.artifacts.iter().map(|a| (a.id, a)).collect::<BTreeMap<_, _>>();
+    let path_fragments = out.path_fragments.iter().map(|pf| (pf.id, pf)).collect::<BTreeMap<_, _>>();
 
     let mut output_files: Vec<Utf8PathBuf> = Vec::new();
     for action in out.actions {
         for output_id in action.output_ids {
-            let artifact = artifacts
-                .get(&output_id)
-                .expect("internal consistency error in bazel output");
+            let artifact = artifacts.get(&output_id).expect("internal consistency error in bazel output");
             let path = path_from_fragments(artifact.path_fragment_id, &path_fragments)?;
             let path = execution_root.join(path);
             if path.exists() {
                 output_files.push(path);
             } else {
-                log::warn!("Skipping missing crate_spec file: {:?}", path);
+                log::warn!("Skipping missing crate_spec file: {path:?}");
             }
         }
     }
@@ -179,17 +171,11 @@ fn parse_aquery_output_files(
     Ok(output_files)
 }
 
-fn path_from_fragments(
-    id: u32,
-    fragments: &BTreeMap<u32, &PathFragment>,
-) -> anyhow::Result<Utf8PathBuf> {
-    let path_fragment = fragments
-        .get(&id)
-        .expect("internal consistency error in bazel output");
+fn path_from_fragments(id: u32, fragments: &BTreeMap<u32, &PathFragment>) -> anyhow::Result<Utf8PathBuf> {
+    let path_fragment = fragments.get(&id).expect("internal consistency error in bazel output");
 
     let buf = match path_fragment.parent_id {
-        Some(parent_id) => path_from_fragments(parent_id, fragments)?
-            .join(Utf8PathBuf::from(&path_fragment.label.clone())),
+        Some(parent_id) => path_from_fragments(parent_id, fragments)?.join(Utf8PathBuf::from(&path_fragment.label.clone())),
         None => Utf8PathBuf::from(&path_fragment.label.clone()),
     };
 
@@ -198,10 +184,9 @@ fn path_from_fragments(
 
 /// Read all crate specs, deduplicating crates with the same ID. This happens when
 /// a rust_test depends on a rust_library, for example.
-fn consolidate_crate_specs(crate_specs: Vec<CrateSpec>) -> anyhow::Result<BTreeSet<CrateSpec>> {
+fn consolidate_crate_specs(crate_specs: Vec<CrateSpec>) -> anyhow::Result<impl IntoIterator<Item = CrateSpec>> {
     let mut consolidated_specs: BTreeMap<String, CrateSpec> = BTreeMap::new();
     for mut spec in crate_specs.into_iter() {
-        log::debug!("{:?}", spec);
         if let Some(existing) = consolidated_specs.get_mut(&spec.crate_id) {
             existing.deps.extend(spec.deps);
             existing.env.extend(spec.env);
@@ -209,12 +194,8 @@ fn consolidate_crate_specs(crate_specs: Vec<CrateSpec>) -> anyhow::Result<BTreeS
 
             if let Some(source) = &mut existing.source {
                 if let Some(mut new_source) = spec.source {
-                    new_source
-                        .exclude_dirs
-                        .retain(|src| !source.exclude_dirs.contains(src));
-                    new_source
-                        .include_dirs
-                        .retain(|src| !source.include_dirs.contains(src));
+                    new_source.exclude_dirs.retain(|src| !source.exclude_dirs.contains(src));
+                    new_source.include_dirs.retain(|src| !source.include_dirs.contains(src));
                     source.exclude_dirs.extend(new_source.exclude_dirs);
                     source.include_dirs.extend(new_source.include_dirs);
                 }
@@ -257,5 +238,5 @@ fn consolidate_crate_specs(crate_specs: Vec<CrateSpec>) -> anyhow::Result<BTreeS
         }
     }
 
-    Ok(consolidated_specs.into_values().collect())
+    Ok(consolidated_specs.into_values())
 }

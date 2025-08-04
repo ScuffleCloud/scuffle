@@ -3780,13 +3780,26 @@ dependencies = [
 ]
 
 [[package]]
-name = "rust_analyzer_gen_project"
+name = "rust_analyzer_check"
+version = "0.0.0"
+dependencies = [
+ "anyhow",
+ "camino",
+ "clap",
+ "serde",
+ "serde_derive",
+ "serde_json",
+]
+
+[[package]]
+name = "rust_analyzer_discover"
 version = "0.0.0"
 dependencies = [
  "anyhow",
  "camino",
  "clap",
  "env_logger 0.10.2",
+ "fmtools",
  "log",
  "serde",
  "serde_derive",

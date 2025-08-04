@@ -201,7 +201,7 @@
   "moduleExtensions": {
     "//vendor:cargo_ext.bzl%cargo_vendor": {
       "general": {
-        "bzlTransitiveDigest": "NVMep6Trp+IGUhrMVjcpQ8tJYXEolFLEs6hDpuLPpYE=",
+        "bzlTransitiveDigest": "MwzwEFfNHuEYdGef+Ke469bpFO+Kdn1U6Q87bMeidnA=",
         "usagesDigest": "mtR+K4/VVAmhgoN1cG7MXxv6mAD1vfxRZ8SSM66EtxE=",
         "recordedFileInputs": {},
         "recordedDirentsInputs": {},

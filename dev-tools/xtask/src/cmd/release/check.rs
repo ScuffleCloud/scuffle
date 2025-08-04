@@ -478,7 +478,7 @@ impl Package {
                     continue;
                 };
 
-                if let Some(Some(version)) = (dep.req != pkg.unreleased_req()).then(|| {
+                if let Some(Some(version)) = (dep.req != pkg.unreleased_req() && pkg.group() != self.group()).then(|| {
                     pkg.published_versions()
                         .into_iter()
                         .find(|v| dep.req.matches(&v.vers))

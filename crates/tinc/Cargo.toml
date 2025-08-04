@@ -16,7 +16,7 @@ unexpected_cfgs = { level = "warn", check-cfg = ['cfg(coverage_nightly)'] }
 [features]
 default = ["prost", "tonic"]
 ## Enables prost support
-prost = ["dep:prost", "dep:prost-types"]
+prost = ["dep:prost", "dep:prost-types", "dep:tonic-prost"]
 ## Enables tonic support
 tonic = ["dep:tonic", "dep:tonic-types"]
 ## Enables changelog and documentation of feature flags

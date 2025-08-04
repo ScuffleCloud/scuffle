@@ -24,6 +24,7 @@ pub struct Config {
     pub profile: String,
     pub xml_output_file: Option<Utf8PathBuf>,
     pub binaries: Vec<Binary>,
+    pub args: Vec<String>,
 }
 
 pub struct Binary {

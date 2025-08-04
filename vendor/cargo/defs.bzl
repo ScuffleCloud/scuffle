@@ -459,6 +459,31 @@ _NORMAL_DEPENDENCIES = {
             },
         },
     },
+    "build/utils/rust/analyzer/check": {
+        _REQUIRED_FEATURE: {
+            _COMMON_CONDITION: {
+                "anyhow": Label("@cargo_vendor//:anyhow-1.0.98"),
+                "camino": Label("@cargo_vendor//:camino-1.1.11"),
+                "clap": Label("@cargo_vendor//:clap-4.5.43"),
+                "serde": Label("@cargo_vendor//:serde-1.0.219"),
+                "serde_json": Label("@cargo_vendor//:serde_json-1.0.142"),
+            },
+        },
+    },
+    "build/utils/rust/analyzer/discover": {
+        _REQUIRED_FEATURE: {
+            _COMMON_CONDITION: {
+                "anyhow": Label("@cargo_vendor//:anyhow-1.0.98"),
+                "camino": Label("@cargo_vendor//:camino-1.1.11"),
+                "clap": Label("@cargo_vendor//:clap-4.5.43"),
+                "env_logger": Label("@cargo_vendor//:env_logger-0.10.2"),
+                "fmtools": Label("@cargo_vendor//:fmtools-0.1.2"),
+                "log": Label("@cargo_vendor//:log-0.4.27"),
+                "serde": Label("@cargo_vendor//:serde-1.0.219"),
+                "serde_json": Label("@cargo_vendor//:serde_json-1.0.142"),
+            },
+        },
+    },
     "build/utils/rust/clippy": {
         _REQUIRED_FEATURE: {
             _COMMON_CONDITION: {
@@ -518,19 +543,6 @@ _NORMAL_DEPENDENCIES = {
                 "camino": Label("@cargo_vendor//:camino-1.1.11"),
                 "camino-tempfile": Label("@cargo_vendor//:camino-tempfile-1.4.1"),
                 "clap": Label("@cargo_vendor//:clap-4.5.43"),
-            },
-        },
-    },
-    "build/utils/rust/rust_analyzer": {
-        _REQUIRED_FEATURE: {
-            _COMMON_CONDITION: {
-                "anyhow": Label("@cargo_vendor//:anyhow-1.0.98"),
-                "camino": Label("@cargo_vendor//:camino-1.1.11"),
-                "clap": Label("@cargo_vendor//:clap-4.5.43"),
-                "env_logger": Label("@cargo_vendor//:env_logger-0.10.2"),
-                "log": Label("@cargo_vendor//:log-0.4.27"),
-                "serde": Label("@cargo_vendor//:serde-1.0.219"),
-                "serde_json": Label("@cargo_vendor//:serde_json-1.0.142"),
             },
         },
     },
@@ -1182,6 +1194,18 @@ _NORMAL_ALIASES = {
             },
         },
     },
+    "build/utils/rust/analyzer/check": {
+        _REQUIRED_FEATURE: {
+            _COMMON_CONDITION: {
+            },
+        },
+    },
+    "build/utils/rust/analyzer/discover": {
+        _REQUIRED_FEATURE: {
+            _COMMON_CONDITION: {
+            },
+        },
+    },
     "build/utils/rust/clippy": {
         _REQUIRED_FEATURE: {
             _COMMON_CONDITION: {
@@ -1213,12 +1237,6 @@ _NORMAL_ALIASES = {
         },
     },
     "build/utils/rust/doc/wrapper": {
-        _REQUIRED_FEATURE: {
-            _COMMON_CONDITION: {
-            },
-        },
-    },
-    "build/utils/rust/rust_analyzer": {
         _REQUIRED_FEATURE: {
             _COMMON_CONDITION: {
             },
@@ -1597,6 +1615,10 @@ _NORMAL_DEV_DEPENDENCIES = {
     },
     "build/utils/protobuf": {
     },
+    "build/utils/rust/analyzer/check": {
+    },
+    "build/utils/rust/analyzer/discover": {
+    },
     "build/utils/rust/clippy": {
     },
     "build/utils/rust/doc/merger": {
@@ -1608,8 +1630,6 @@ _NORMAL_DEV_DEPENDENCIES = {
     "build/utils/rust/doc/test/runner": {
     },
     "build/utils/rust/doc/wrapper": {
-    },
-    "build/utils/rust/rust_analyzer": {
     },
     "build/utils/rust/sync_readme": {
     },
@@ -1866,6 +1886,10 @@ _NORMAL_DEV_ALIASES = {
     },
     "build/utils/protobuf": {
     },
+    "build/utils/rust/analyzer/check": {
+    },
+    "build/utils/rust/analyzer/discover": {
+    },
     "build/utils/rust/clippy": {
     },
     "build/utils/rust/doc/merger": {
@@ -1877,8 +1901,6 @@ _NORMAL_DEV_ALIASES = {
     "build/utils/rust/doc/test/runner": {
     },
     "build/utils/rust/doc/wrapper": {
-    },
-    "build/utils/rust/rust_analyzer": {
     },
     "build/utils/rust/sync_readme": {
     },
@@ -2071,6 +2093,20 @@ _PROC_MACRO_DEPENDENCIES = {
     },
     "build/utils/protobuf": {
     },
+    "build/utils/rust/analyzer/check": {
+        _REQUIRED_FEATURE: {
+            _COMMON_CONDITION: {
+                "serde_derive": Label("@cargo_vendor//:serde_derive-1.0.219"),
+            },
+        },
+    },
+    "build/utils/rust/analyzer/discover": {
+        _REQUIRED_FEATURE: {
+            _COMMON_CONDITION: {
+                "serde_derive": Label("@cargo_vendor//:serde_derive-1.0.219"),
+            },
+        },
+    },
     "build/utils/rust/clippy": {
         _REQUIRED_FEATURE: {
             _COMMON_CONDITION: {
@@ -2107,13 +2143,6 @@ _PROC_MACRO_DEPENDENCIES = {
         },
     },
     "build/utils/rust/doc/wrapper": {
-    },
-    "build/utils/rust/rust_analyzer": {
-        _REQUIRED_FEATURE: {
-            _COMMON_CONDITION: {
-                "serde_derive": Label("@cargo_vendor//:serde_derive-1.0.219"),
-            },
-        },
     },
     "build/utils/rust/sync_readme": {
         _REQUIRED_FEATURE: {
@@ -2427,6 +2456,10 @@ _PROC_MACRO_ALIASES = {
     },
     "build/utils/protobuf": {
     },
+    "build/utils/rust/analyzer/check": {
+    },
+    "build/utils/rust/analyzer/discover": {
+    },
     "build/utils/rust/clippy": {
     },
     "build/utils/rust/doc/merger": {
@@ -2438,8 +2471,6 @@ _PROC_MACRO_ALIASES = {
     "build/utils/rust/doc/test/runner": {
     },
     "build/utils/rust/doc/wrapper": {
-    },
-    "build/utils/rust/rust_analyzer": {
     },
     "build/utils/rust/sync_readme": {
     },
@@ -2550,6 +2581,10 @@ _PROC_MACRO_DEV_DEPENDENCIES = {
     },
     "build/utils/protobuf": {
     },
+    "build/utils/rust/analyzer/check": {
+    },
+    "build/utils/rust/analyzer/discover": {
+    },
     "build/utils/rust/clippy": {
     },
     "build/utils/rust/doc/merger": {
@@ -2561,8 +2596,6 @@ _PROC_MACRO_DEV_DEPENDENCIES = {
     "build/utils/rust/doc/test/runner": {
     },
     "build/utils/rust/doc/wrapper": {
-    },
-    "build/utils/rust/rust_analyzer": {
     },
     "build/utils/rust/sync_readme": {
     },
@@ -2678,6 +2711,10 @@ _PROC_MACRO_DEV_ALIASES = {
     },
     "build/utils/protobuf": {
     },
+    "build/utils/rust/analyzer/check": {
+    },
+    "build/utils/rust/analyzer/discover": {
+    },
     "build/utils/rust/clippy": {
     },
     "build/utils/rust/doc/merger": {
@@ -2689,8 +2726,6 @@ _PROC_MACRO_DEV_ALIASES = {
     "build/utils/rust/doc/test/runner": {
     },
     "build/utils/rust/doc/wrapper": {
-    },
-    "build/utils/rust/rust_analyzer": {
     },
     "build/utils/rust/sync_readme": {
     },
@@ -2883,6 +2918,10 @@ _BUILD_DEPENDENCIES = {
     },
     "build/utils/protobuf": {
     },
+    "build/utils/rust/analyzer/check": {
+    },
+    "build/utils/rust/analyzer/discover": {
+    },
     "build/utils/rust/clippy": {
     },
     "build/utils/rust/doc/merger": {
@@ -2894,8 +2933,6 @@ _BUILD_DEPENDENCIES = {
     "build/utils/rust/doc/test/runner": {
     },
     "build/utils/rust/doc/wrapper": {
-    },
-    "build/utils/rust/rust_analyzer": {
     },
     "build/utils/rust/sync_readme": {
     },
@@ -3011,6 +3048,10 @@ _BUILD_ALIASES = {
     },
     "build/utils/protobuf": {
     },
+    "build/utils/rust/analyzer/check": {
+    },
+    "build/utils/rust/analyzer/discover": {
+    },
     "build/utils/rust/clippy": {
     },
     "build/utils/rust/doc/merger": {
@@ -3022,8 +3063,6 @@ _BUILD_ALIASES = {
     "build/utils/rust/doc/test/runner": {
     },
     "build/utils/rust/doc/wrapper": {
-    },
-    "build/utils/rust/rust_analyzer": {
     },
     "build/utils/rust/sync_readme": {
     },
@@ -3134,6 +3173,10 @@ _BUILD_PROC_MACRO_DEPENDENCIES = {
     },
     "build/utils/protobuf": {
     },
+    "build/utils/rust/analyzer/check": {
+    },
+    "build/utils/rust/analyzer/discover": {
+    },
     "build/utils/rust/clippy": {
     },
     "build/utils/rust/doc/merger": {
@@ -3145,8 +3188,6 @@ _BUILD_PROC_MACRO_DEPENDENCIES = {
     "build/utils/rust/doc/test/runner": {
     },
     "build/utils/rust/doc/wrapper": {
-    },
-    "build/utils/rust/rust_analyzer": {
     },
     "build/utils/rust/sync_readme": {
     },
@@ -3245,6 +3286,10 @@ _BUILD_PROC_MACRO_ALIASES = {
     },
     "build/utils/protobuf": {
     },
+    "build/utils/rust/analyzer/check": {
+    },
+    "build/utils/rust/analyzer/discover": {
+    },
     "build/utils/rust/clippy": {
     },
     "build/utils/rust/doc/merger": {
@@ -3256,8 +3301,6 @@ _BUILD_PROC_MACRO_ALIASES = {
     "build/utils/rust/doc/test/runner": {
     },
     "build/utils/rust/doc/wrapper": {
-    },
-    "build/utils/rust/rust_analyzer": {
     },
     "build/utils/rust/sync_readme": {
     },
@@ -3356,6 +3399,10 @@ _FEATURE_FLAGS = {
     },
     "build/utils/protobuf": {
     },
+    "build/utils/rust/analyzer/check": {
+    },
+    "build/utils/rust/analyzer/discover": {
+    },
     "build/utils/rust/clippy": {
     },
     "build/utils/rust/doc/merger": {
@@ -3367,8 +3414,6 @@ _FEATURE_FLAGS = {
     "build/utils/rust/doc/test/runner": {
     },
     "build/utils/rust/doc/wrapper": {
-    },
-    "build/utils/rust/rust_analyzer": {
     },
     "build/utils/rust/sync_readme": {
     },
@@ -3694,6 +3739,10 @@ _RESOLVED_FEATURE_FLAGS = {
     },
     "build/utils/protobuf": {
     },
+    "build/utils/rust/analyzer/check": {
+    },
+    "build/utils/rust/analyzer/discover": {
+    },
     "build/utils/rust/clippy": {
     },
     "build/utils/rust/doc/merger": {
@@ -3705,8 +3754,6 @@ _RESOLVED_FEATURE_FLAGS = {
     "build/utils/rust/doc/test/runner": {
     },
     "build/utils/rust/doc/wrapper": {
-    },
-    "build/utils/rust/rust_analyzer": {
     },
     "build/utils/rust/sync_readme": {
     },
@@ -3848,13 +3895,14 @@ _RESOLVED_FEATURE_FLAGS = {
 _VERSIONS = {
     "build/utils/process_wrapper": "0.1.0",
     "build/utils/protobuf": "0.0.0",
+    "build/utils/rust/analyzer/check": "0.0.0",
+    "build/utils/rust/analyzer/discover": "0.0.0",
     "build/utils/rust/clippy": "0.1.0",
     "build/utils/rust/doc/merger": "0.1.0",
     "build/utils/rust/doc/test/builder": "0.1.0",
     "build/utils/rust/doc/test/common": "0.1.0",
     "build/utils/rust/doc/test/runner": "0.1.0",
     "build/utils/rust/doc/wrapper": "0.1.0",
-    "build/utils/rust/rust_analyzer": "0.0.0",
     "build/utils/rust/sync_readme": "0.0.0",
     "build/utils/rust/sync_readme/common": "0.0.0",
     "build/utils/rust/sync_readme/test_runner": "0.0.0",

@@ -58,6 +58,9 @@ startup --host_jvm_args=-DBAZEL_TRACK_SOURCE_DIRECTORIES=1
 common --noenable_workspace
 common --enable_bzlmod=true
 
+# Use watchfs
+common --watchfs
+
 # Enable platform configs
 common --enable_platform_specific_config
 
@@ -100,7 +103,6 @@ run --run_under='//build/utils/run_under:run'
 
 common:wrapper --bes_backend=""
 common:wrapper --build_event_json_file=""
-common:wrapper --nobuild_runfile_links
 common:wrapper --ui_event_filters=fatal
 common:wrapper --noshow_progress
 common:wrapper --noshow_loading_progress
@@ -134,3 +136,6 @@ common --experimental_remote_cache_compression_threshold=1000
 ## evaluated top to bottom.
 ###############################################################################
 try-import %workspace%/.user.bazelrc
+
+common:no_bes --bes_results_url=""
+common:no_bes --bes_backend=""

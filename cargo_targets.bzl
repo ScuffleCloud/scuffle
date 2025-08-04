@@ -40,7 +40,7 @@ _packages = [
     "//tools/cargo/deny",
     "//tools/cargo/sync-readme",
     "//build/utils/protobuf",
-    "//build/utils/process_wrapper", 
+    "//build/utils/process_wrapper",
     "//build/utils/rust/clippy",
     "//build/utils/rust/test_runner",
     "//build/utils/rust/test_runner/lib",
@@ -49,7 +49,8 @@ _packages = [
     "//build/utils/rust/doc/test/common",
     "//build/utils/rust/doc/merger",
     "//build/utils/rust/doc/wrapper",
-    "//build/utils/rust/rust_analyzer",
+    "//build/utils/rust/analyzer/check",
+    "//build/utils/rust/analyzer/discover",
     "//build/utils/rust/sync_readme",
     "//build/utils/rust/sync_readme/common",
     "//build/utils/rust/sync_readme/test_runner",
@@ -70,5 +71,5 @@ def cargo_targets(
 ):
     return [
         package + ":" + target.format(name = _last_part(package))
-        for package in _packages if package not in exclude 
+        for package in _packages if package not in exclude
     ]

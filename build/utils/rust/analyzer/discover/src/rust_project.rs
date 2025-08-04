@@ -1,19 +1,15 @@
 //! Library for generating rust_project.json files from a `Vec<CrateSpec>`
-//! See official documentation of file format at https://rust-analyzer.github.io/manual.html
+//! See official documentation of file format at <https://rust-analyzer.github.io/manual.html>
 
 use core::fmt;
-use std::{
-    collections::{BTreeMap, BTreeSet, HashMap},
-    str::FromStr,
-};
+use std::collections::{BTreeMap, HashMap};
+use std::str::FromStr;
 
-use anyhow::{anyhow, Context};
+use anyhow::Context;
 use camino::{Utf8Path, Utf8PathBuf};
 
-use crate::{
-    aquery::{CrateSpec, CrateType},
-    buildfile_to_targets, source_file_to_buildfile, ToolchainInfo,
-};
+use crate::aquery::{CrateSpec, CrateType};
+use crate::{ToolchainInfo, buildfile_to_targets, source_file_to_buildfile};
 
 /// The argument that `rust-analyzer` can pass to the workspace discovery command.
 #[derive(Clone, Debug, serde_derive::Deserialize, serde_derive::Serialize)]
@@ -25,18 +21,13 @@ pub enum RustAnalyzerArg {
 
 impl RustAnalyzerArg {
     /// Consumes itself to return a build file and the targets to build.
-    pub fn into_target_details(
-        self,
-        workspace: &Utf8Path,
-    ) -> anyhow::Result<(Utf8PathBuf, String)> {
+    pub fn into_target_details(self, workspace: &Utf8Path) -> anyhow::Result<(Utf8PathBuf, String)> {
         match self {
             Self::Path(file) => {
                 let buildfile = source_file_to_buildfile(&file)?;
                 buildfile_to_targets(workspace, &buildfile).map(|t| (buildfile, t))
             }
-            Self::Buildfile(buildfile) => {
-                buildfile_to_targets(workspace, &buildfile).map(|t| (buildfile, t))
-            }
+            Self::Buildfile(buildfile) => buildfile_to_targets(workspace, &buildfile).map(|t| (buildfile, t)),
         }
     }
 }
@@ -51,7 +42,8 @@ impl FromStr for RustAnalyzerArg {
 
 /// The format that `rust_analyzer` expects as a response when automatically invoked.
 /// See [rust-analyzer documentation][rd] for a thorough description of this interface.
-/// [rd]: <https://rust-analyzer.github.io/manual.html#rust-analyzer.workspace.discoverConfig>.
+///
+/// [rd]: <https://rust-analyzer.github.io/manual.html#rust-analyzer.workspace.discoverConfig>
 #[derive(Debug, serde_derive::Serialize)]
 #[serde(tag = "kind")]
 #[serde(rename_all = "snake_case")]
@@ -71,7 +63,8 @@ pub enum DiscoverProject<'a> {
 
 /// A `rust-project.json` workspace representation. See
 /// [rust-analyzer documentation][rd] for a thorough description of this interface.
-/// [rd]: https://rust-analyzer.github.io/manual.html#non-cargo-based-projects
+///
+/// [rd]: <https://rust-analyzer.github.io/manual.html#non-cargo-based-projects>
 #[derive(Debug, serde_derive::Serialize)]
 pub struct RustProject {
     /// The path to a Rust sysroot.
@@ -94,7 +87,8 @@ pub struct RustProject {
 
 /// A `rust-project.json` crate representation. See
 /// [rust-analyzer documentation][rd] for a thorough description of this interface.
-/// [rd]: https://rust-analyzer.github.io/manual.html#non-cargo-based-projects
+///
+/// [rd]: <https://rust-analyzer.github.io/manual.html#non-cargo-based-projects>
 #[derive(Debug, serde_derive::Serialize)]
 pub struct Crate {
     /// A name used in the package's project declaration
@@ -176,10 +170,6 @@ pub struct Build {
     /// identifier similar to [`Crate::display_name`].
     label: String,
     /// Path corresponding to the build system-specific file defining the crate.
-    ///
-    /// It is roughly analogous to [`ManifestPath`], but it should *not* be used with
-    /// [`crate::ProjectManifest::from_manifest_file`], as the build file may not be
-    /// be in the `rust-project.json`.
     build_file: Utf8PathBuf,
     /// The kind of target.
     ///
@@ -255,7 +245,7 @@ pub fn assemble_rust_project(
     bazel: &Utf8Path,
     workspace: &Utf8Path,
     toolchain_info: ToolchainInfo,
-    crate_specs: &BTreeSet<CrateSpec>,
+    crate_specs: impl IntoIterator<Item = CrateSpec>,
 ) -> anyhow::Result<RustProject> {
     let mut project = RustProject {
         sysroot: toolchain_info.sysroot,
@@ -264,7 +254,7 @@ pub fn assemble_rust_project(
         runnables: vec![
             Runnable {
                 program: bazel.to_string(),
-                args: vec!["build".to_owned(), "{label}".to_owned()],
+                args: vec!["build".to_owned(), "//{label}".to_owned()],
                 cwd: workspace.to_owned(),
                 kind: RunnableKind::Check,
             },
@@ -272,9 +262,13 @@ pub fn assemble_rust_project(
                 program: bazel.to_string(),
                 args: vec![
                     "test".to_owned(),
-                    "{label}".to_owned(),
+                    "//{label}".to_owned(),
                     "--test_output".to_owned(),
                     "streamed".to_owned(),
+                    "--test_arg".to_owned(),
+                    "--no-wrapper".to_owned(),
+                    "--test_arg".to_owned(),
+                    "--".to_owned(),
                     "--test_arg".to_owned(),
                     "--nocapture".to_owned(),
                     "--test_arg".to_owned(),
@@ -288,161 +282,81 @@ pub fn assemble_rust_project(
         ],
     };
 
-    let mut unmerged_crates: Vec<&CrateSpec> = crate_specs.iter().collect();
-    let mut skipped_crates: Vec<&CrateSpec> = Vec::new();
-    let mut merged_crates_index: HashMap<String, usize> = HashMap::new();
+    let mut all_crates: Vec<_> = crate_specs.into_iter().collect();
 
-    while !unmerged_crates.is_empty() {
-        for c in unmerged_crates.iter() {
-            if c.deps
-                .iter()
-                .any(|dep| !merged_crates_index.contains_key(dep))
-            {
-                log::trace!(
-                    "Skipped crate {} because missing deps: {:?}",
-                    &c.crate_id,
-                    c.deps
-                        .iter()
-                        .filter(|dep| !merged_crates_index.contains_key(*dep))
-                        .cloned()
-                        .collect::<Vec<_>>()
-                );
-                skipped_crates.push(c);
-            } else {
-                log::trace!("Merging crate {}", &c.crate_id);
-                merged_crates_index.insert(c.crate_id.clone(), project.crates.len());
+    all_crates.sort_by_key(|a| !a.is_test);
 
-                let target_kind = match c.crate_type {
-                    CrateType::Bin if c.is_test => TargetKind::Test,
-                    CrateType::Bin => TargetKind::Bin,
-                    CrateType::Rlib
-                    | CrateType::Lib
-                    | CrateType::Dylib
-                    | CrateType::Cdylib
-                    | CrateType::Staticlib
-                    | CrateType::ProcMacro => TargetKind::Lib,
-                };
+    let merged_crates_index: HashMap<_, _> = all_crates.iter().enumerate().map(|(idx, c)| (&c.crate_id, idx)).collect();
 
-                if let Some(build) = &c.build {
-                    if target_kind == TargetKind::Bin {
-                        project.runnables.push(Runnable {
-                            program: bazel.to_string(),
-                            args: vec!["run".to_string(), build.label.to_owned()],
-                            cwd: workspace.to_owned(),
-                            kind: RunnableKind::Run,
-                        });
-                    }
-                }
+    for c in all_crates.iter() {
+        log::trace!("Merging crate {}", &c.crate_id);
 
-                project.crates.push(Crate {
-                    display_name: Some(c.display_name.clone()),
-                    root_module: c.root_module.clone(),
-                    edition: c.edition.clone(),
-                    deps: c
-                        .deps
-                        .iter()
-                        .map(|dep| {
-                            let crate_index = *merged_crates_index
-                                .get(dep)
-                                .expect("failed to find dependency on second lookup");
-                            let dep_crate = &project.crates[crate_index];
-                            let name = if let Some(alias) = c.aliases.get(dep) {
-                                alias.clone()
-                            } else {
-                                dep_crate
-                                    .display_name
-                                    .as_ref()
-                                    .expect("all crates should have display_name")
-                                    .clone()
-                            };
-                            Dependency { crate_index, name }
-                        })
-                        .collect(),
-                    is_workspace_member: Some(c.is_workspace_member),
-                    source: match &c.source {
-                        Some(s) => Source {
-                            exclude_dirs: s.exclude_dirs.clone(),
-                            include_dirs: s.include_dirs.clone(),
-                        },
-                        None => Source::default(),
-                    },
-                    cfg: c.cfg.clone(),
-                    target: Some(c.target.clone()),
-                    env: Some(c.env.clone()),
-                    is_proc_macro: c.proc_macro_dylib_path.is_some(),
-                    proc_macro_dylib_path: c.proc_macro_dylib_path.clone(),
-                    build: c.build.as_ref().map(|b| Build {
-                        label: b.label.clone(),
-                        build_file: b.build_file.clone().into(),
-                        target_kind,
-                    }),
+        let target_kind = match c.crate_type {
+            CrateType::Bin if c.is_test => TargetKind::Test,
+            CrateType::Bin => TargetKind::Bin,
+            CrateType::Rlib
+            | CrateType::Lib
+            | CrateType::Dylib
+            | CrateType::Cdylib
+            | CrateType::Staticlib
+            | CrateType::ProcMacro => TargetKind::Lib,
+        };
+
+        if let Some(build) = &c.build {
+            if target_kind == TargetKind::Bin {
+                project.runnables.push(Runnable {
+                    program: bazel.to_string(),
+                    args: vec!["run".to_string(), build.label.to_owned()],
+                    cwd: workspace.to_owned(),
+                    kind: RunnableKind::Run,
                 });
             }
         }
 
-        // This should not happen, but if it does exit to prevent infinite loop.
-        if unmerged_crates.len() == skipped_crates.len() {
-            log::debug!(
-                "Did not make progress on {} unmerged crates. Crates: {:?}",
-                skipped_crates.len(),
-                skipped_crates
-            );
-            let crate_map: BTreeMap<String, &CrateSpec> = unmerged_crates
+        project.crates.push(Crate {
+            display_name: Some(if c.is_test {
+                format!("{}_test", c.display_name)
+            } else {
+                c.display_name.clone()
+            }),
+            root_module: c.root_module.clone(),
+            edition: c.edition.clone(),
+            deps: c
+                .deps
                 .iter()
-                .map(|c| (c.crate_id.to_string(), *c))
-                .collect();
-
-            for unmerged_crate in &unmerged_crates {
-                let mut path = vec![];
-                if let Some(cycle) = detect_cycle(unmerged_crate, &crate_map, &mut path) {
-                    log::warn!(
-                        "Cycle detected: {:?}",
-                        cycle
-                            .iter()
-                            .map(|c| c.crate_id.to_string())
-                            .collect::<Vec<String>>()
-                    );
-                }
-            }
-            return Err(anyhow!(
-                "Failed to make progress on building crate dependency graph"
-            ));
-        }
-        std::mem::swap(&mut unmerged_crates, &mut skipped_crates);
-        skipped_crates.clear();
+                .map(|dep| {
+                    let crate_index = *merged_crates_index
+                        .get(dep)
+                        .expect("failed to find dependency on second lookup");
+                    let dep_crate = &all_crates[crate_index];
+                    let name = if let Some(alias) = c.aliases.get(dep) {
+                        alias.clone()
+                    } else {
+                        dep_crate.display_name.clone()
+                    };
+                    Dependency { crate_index, name }
+                })
+                .collect(),
+            is_workspace_member: Some(c.is_workspace_member),
+            source: match &c.source {
+                Some(s) => Source {
+                    exclude_dirs: s.exclude_dirs.clone(),
+                    include_dirs: s.include_dirs.clone(),
+                },
+                None => Source::default(),
+            },
+            cfg: c.cfg.clone(),
+            target: Some(c.target.clone()),
+            env: Some(c.env.clone()),
+            is_proc_macro: c.proc_macro_dylib_path.is_some(),
+            proc_macro_dylib_path: c.proc_macro_dylib_path.clone(),
+            build: c.build.as_ref().map(|b| Build {
+                label: b.label.clone(),
+                build_file: b.build_file.clone().into(),
+                target_kind,
+            }),
+        });
     }
 
     Ok(project)
-}
-
-fn detect_cycle<'a>(
-    current_crate: &'a CrateSpec,
-    all_crates: &'a BTreeMap<String, &'a CrateSpec>,
-    path: &mut Vec<&'a CrateSpec>,
-) -> Option<Vec<&'a CrateSpec>> {
-    if path
-        .iter()
-        .any(|dependent_crate| dependent_crate.crate_id == current_crate.crate_id)
-    {
-        let mut cycle_path = path.clone();
-        cycle_path.push(current_crate);
-        return Some(cycle_path);
-    }
-
-    path.push(current_crate);
-
-    for dep in &current_crate.deps {
-        match all_crates.get(dep) {
-            Some(dep_crate) => {
-                if let Some(cycle) = detect_cycle(dep_crate, all_crates, path) {
-                    return Some(cycle);
-                }
-            }
-            None => log::debug!("dep {dep} not found in unmerged crate map"),
-        }
-    }
-
-    path.pop();
-
-    None
 }

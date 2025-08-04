@@ -1,14 +1,14 @@
 bazel_dep(name = "rules_rust", version = "0.61.0")
 
-# git_override(
-#     module_name = "rules_rust",
-#     commit = "c5d8a04b9eedeb689b06e4bfdb245892c3048850",
-#     remote = "https://github.com/ScuffleCloud/rules_rust.git",
-# )
-local_path_override(
+git_override(
     module_name = "rules_rust",
-    path = "../rules_rust",
+    commit = "a34816bb7e059074d863bb39489fcc4583daa4f0",
+    remote = "https://github.com/ScuffleCloud/rules_rust.git",
 )
+# local_path_override(
+#     module_name = "rules_rust",
+#     path = "../rules_rust",
+# )
 
 rust = use_extension(
     "@rules_rust//rust:extensions.bzl",

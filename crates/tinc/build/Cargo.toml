@@ -36,9 +36,9 @@ num-traits = "0.2.19"
 openapiv3_1 = { features = ["debug"], path = "../../openapiv3_1", version = "0.1.1" }
 prettyplease = "0.2"
 proc-macro2 = "1"
-prost = { optional = true, version = "0.13.5" }
-prost-build = { optional = true, version = "0.13.5" }
-prost-reflect = { optional = true, version = "0.15.1" }
+prost = { optional = true, version = "0.14" }
+prost-build = { optional = true, version = "0.14" }
+prost-reflect = { optional = true, version = "0.16" }
 quote = "1"
 regex = "1"
 runtime-format = "0.1.3"
@@ -50,7 +50,7 @@ syn = "2"
 thiserror = "2"
 tinc-cel = { path = "../cel", version = "=0.1.7" }
 tinc-pb-prost = { path = "../pb-prost", version = "=0.1.7" }
-tonic-build = { default-features = false, version = "0.13.0" }
+tonic-build = { default-features = false, version = "0.14" }
 
 [dev-dependencies]
 insta = "1"

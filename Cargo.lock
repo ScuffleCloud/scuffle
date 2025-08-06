@@ -2487,7 +2487,7 @@ dependencies = [
 
 [[package]]
 name = "postcompile"
-version = "0.3.2"
+version = "0.3.3"
 dependencies = [
  "cargo-manifest",
  "cargo_metadata 0.21.0",
@@ -3220,7 +3220,7 @@ dependencies = [
 
 [[package]]
 name = "scuffle-batching"
-version = "0.1.5"
+version = "0.1.6"
 dependencies = [
  "criterion",
  "document-features",
@@ -3234,7 +3234,7 @@ dependencies = [
 
 [[package]]
 name = "scuffle-bootstrap"
-version = "0.1.6"
+version = "0.1.7"
 dependencies = [
  "anyhow",
  "document-features",
@@ -3259,7 +3259,7 @@ dependencies = [
 
 [[package]]
 name = "scuffle-bootstrap-derive"
-version = "0.1.6"
+version = "0.1.7"
 dependencies = [
  "darling",
  "insta",
@@ -3481,7 +3481,7 @@ dependencies = [
 
 [[package]]
 name = "scuffle-metrics"
-version = "0.4.1"
+version = "0.4.2"
 dependencies = [
  "document-features",
  "insta",
@@ -3500,7 +3500,7 @@ dependencies = [
 
 [[package]]
 name = "scuffle-metrics-derive"
-version = "0.4.1"
+version = "0.4.2"
 dependencies = [
  "darling",
  "proc-macro2",
@@ -4178,7 +4178,7 @@ dependencies = [
 
 [[package]]
 name = "tinc"
-version = "0.1.7"
+version = "0.2.0"
 dependencies = [
  "axum",
  "base64 0.22.1",
@@ -4213,7 +4213,7 @@ dependencies = [
 
 [[package]]
 name = "tinc-build"
-version = "0.1.7"
+version = "0.2.0"
 dependencies = [
  "anyhow",
  "base64 0.22.1",
@@ -4248,7 +4248,7 @@ dependencies = [
 
 [[package]]
 name = "tinc-cel"
-version = "0.1.7"
+version = "0.2.0"
 dependencies = [
  "bytes",
  "chrono",
@@ -4268,7 +4268,7 @@ dependencies = [
 
 [[package]]
 name = "tinc-derive"
-version = "0.1.7"
+version = "0.2.0"
 dependencies = [
  "proc-macro2",
  "quote",
@@ -4300,7 +4300,7 @@ dependencies = [
 
 [[package]]
 name = "tinc-pb-prost"
-version = "0.1.7"
+version = "0.2.0"
 dependencies = [
  "document-features",
  "prost 0.14.1",

@@ -15,6 +15,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.1.6](https://github.com/ScuffleCloud/scuffle/releases/tag/scuffle-batching-v0.1.6) - 2025-08-06
+
+[View diff on diff.rs](https://diff.rs/scuffle-batching/0.1.5/scuffle-batching/0.1.6/Cargo.toml)
+
+### 🛠️ Non-breaking changes
+
+- chore: bumped internal deps ([#512](https://github.com/scufflecloud/scuffle/pull/512)) (@TroyKomodo)
+
 ## [0.1.5](https://github.com/ScuffleCloud/scuffle/releases/tag/scuffle-batching-v0.1.5) - 2025-06-11
 
 [View diff on diff.rs](https://diff.rs/scuffle-batching/0.1.4/scuffle-batching/0.1.5/Cargo.toml)

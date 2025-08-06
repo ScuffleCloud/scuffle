@@ -1,5 +1,0 @@
-[[tinc]]
-category = "chore"
-description = "bump tonic & prost versions to 0.14"
-breaking = true
-authors = ["@TroyKomodo"]

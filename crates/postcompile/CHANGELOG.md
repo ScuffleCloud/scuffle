@@ -15,6 +15,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.3.3](https://github.com/ScuffleCloud/scuffle/releases/tag/postcompile-v0.3.3) - 2025-08-06
+
+[View diff on diff.rs](https://diff.rs/postcompile/0.3.2/postcompile/0.3.3/Cargo.toml)
+
+### 🛠️ Non-breaking changes
+
+- chore: bumped internal deps ([#512](https://github.com/scufflecloud/scuffle/pull/512)) (@TroyKomodo)
+
 ## [0.3.2](https://github.com/ScuffleCloud/scuffle/releases/tag/postcompile-v0.3.2) - 2025-06-11
 
 [View diff on diff.rs](https://diff.rs/postcompile/0.3.1/postcompile/0.3.2/Cargo.toml)

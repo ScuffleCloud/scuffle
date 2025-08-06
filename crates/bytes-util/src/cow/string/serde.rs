@@ -60,6 +60,22 @@ where
     }
 }
 
+impl<'de, E> serde::de::IntoDeserializer<'de, E> for &'de StringCow<'de>
+where
+    E: serde::de::Error,
+{
+    type Deserializer = StringCowDeserializer<'de, E>;
+
+    fn into_deserializer(self) -> Self::Deserializer {
+        StringCowDeserializer::<E>::new(match self {
+            StringCow::Bytes(b) => StringCow::Bytes(b.clone()),
+            StringCow::Ref(r) => StringCow::Ref(r),
+            StringCow::StaticRef(r) => StringCow::StaticRef(r),
+            StringCow::String(s) => StringCow::Ref(s),
+        })
+    }
+}
+
 /// A deserializer for [`StringCow`].
 pub struct StringCowDeserializer<'a, E> {
     cow: StringCow<'a>,

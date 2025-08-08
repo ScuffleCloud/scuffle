@@ -754,14 +754,14 @@ transition_alias_opt(
 )
 
 transition_alias_opt(
-    name = "nextest-runner-0.84.0",
-    actual = "@cargo_vendor__nextest-runner-0.84.0//:nextest_runner",
+    name = "nextest-runner-0.85.0",
+    actual = "@cargo_vendor__nextest-runner-0.85.0//:nextest_runner",
     tags = ["manual"],
 )
 
 transition_alias_opt(
     name = "nextest-runner",
-    actual = "@cargo_vendor__nextest-runner-0.84.0//:nextest_runner",
+    actual = "@cargo_vendor__nextest-runner-0.85.0//:nextest_runner",
     tags = ["manual"],
 )
 
@@ -1408,8 +1408,8 @@ transition_alias_opt(
 )
 
 transition_alias_opt(
-    name = "toml_edit",
-    actual = "@cargo_vendor__toml_edit-0.22.27//:toml_edit",
+    name = "toml_edit-0.23.3",
+    actual = "@cargo_vendor__toml_edit-0.23.3//:toml_edit",
     tags = ["manual"],
 )
 

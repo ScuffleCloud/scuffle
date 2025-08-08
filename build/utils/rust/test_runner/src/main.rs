@@ -29,26 +29,12 @@ struct Args {
     #[arg(long, env = "TEST_TARGET")]
     target: Option<String>,
 
-    #[arg(long, env = "RUNNER_NO_WRAPPER")]
-    no_wrapper: bool,
-
-    #[arg(trailing_var_arg = true, allow_hyphen_values = true, hide = true)]
-    extra_args: Vec<String>,
+    #[command(flatten)]
+    args: test_runner_lib::Args,
 }
 
 fn main() {
     let args = Args::parse();
-
-    if args.no_wrapper {
-        let code = std::process::Command::new(args.binary)
-            .args(args.extra_args)
-            .status()
-            .unwrap()
-            .code()
-            .unwrap_or(127);
-
-        std::process::exit(code)
-    }
 
     test_runner_lib::run_nextest(Config {
         config_path: args.config,
@@ -56,7 +42,7 @@ fn main() {
         profile: args.profile,
         tmp_dir: args.tmp_dir,
         xml_output_file: args.xml_output_file,
-        args: args.extra_args,
+        args: args.args,
         binaries: vec![Binary {
             name: args.target.unwrap_or(args.package),
             path: args.binary,

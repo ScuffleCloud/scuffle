@@ -2578,9 +2578,9 @@ dependencies = [
 
 [[package]]
 name = "nextest-runner"
-version = "0.84.0"
+version = "0.85.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "0af04de0e7adcbf90af1eca73b089fd364b023844ccc1692dd532ab5ae062936"
+checksum = "8e2f3283b46e15d80958a9aa22877bcfc14855e20cfdae060c6bfda170131f4b"
 dependencies = [
  "aho-corasick",
  "async-scoped",
@@ -5153,7 +5153,7 @@ dependencies = [
  "nextest-metadata",
  "nextest-runner",
  "serde_json",
- "toml_edit 0.22.27",
+ "toml_edit 0.23.3",
 ]
 
 [[package]]

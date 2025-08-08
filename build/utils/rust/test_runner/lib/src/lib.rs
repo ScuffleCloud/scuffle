@@ -2,10 +2,10 @@
 use std::collections::BTreeSet;
 
 use camino::Utf8PathBuf;
-use nextest_filtering::ParseContext;
+use nextest_filtering::{Filterset, FiltersetKind, ParseContext};
 use nextest_metadata::{BuildPlatform, RustBinaryId, RustTestBinaryKind};
 use nextest_runner::cargo_config::{CargoConfigs, EnvironmentMap};
-use nextest_runner::config::NextestConfig;
+use nextest_runner::config::core::NextestConfig;
 use nextest_runner::double_spawn::DoubleSpawnInfo;
 use nextest_runner::input::InputHandlerKind;
 use nextest_runner::list::{RustBuildMeta, RustTestArtifact, TestExecuteContext};
@@ -15,7 +15,7 @@ use nextest_runner::reporter::{ReporterBuilder, ReporterStderr};
 use nextest_runner::reuse_build::PathMapper;
 use nextest_runner::signal::SignalHandlerKind;
 use nextest_runner::target_runner::TargetRunner;
-use nextest_runner::test_filter::{FilterBound, RunIgnored, TestFilterBuilder};
+use nextest_runner::test_filter::{FilterBound, RunIgnored, TestFilterBuilder, TestFilterPatterns};
 
 pub struct Config {
     pub package: String,
@@ -24,7 +24,23 @@ pub struct Config {
     pub profile: String,
     pub xml_output_file: Option<Utf8PathBuf>,
     pub binaries: Vec<Binary>,
-    pub args: Vec<String>,
+    pub args: Args,
+}
+
+#[derive(clap::Args, Debug)]
+pub struct Args {
+    #[arg(long = "expr", short = 'E')]
+    pub expressions: Vec<String>,
+    #[arg(long = "skip")]
+    pub skipped: Vec<String>,
+    #[arg(long)]
+    pub exact: bool,
+    #[arg(long)]
+    pub ignored: bool,
+    #[arg(long)]
+    pub include_ignored: bool,
+    #[arg(name = "TEST")]
+    pub tests: Vec<String>,
 }
 
 pub struct Binary {
@@ -116,12 +132,44 @@ pub fn run_nextest(config: Config) {
     )
     .unwrap();
 
+    let run_ignored = match (config.args.ignored, config.args.include_ignored) {
+        (true, _) => RunIgnored::Only,
+        (false, true) => RunIgnored::All,
+        (false, false) => RunIgnored::Default,
+    };
+
+    let mut patterns = TestFilterPatterns::default();
+
+    for test in config.args.tests {
+        if config.args.exact {
+            patterns.add_exact_pattern(test);
+        } else {
+            patterns.add_substring_pattern(test);
+        }
+    }
+
+    for test in config.args.skipped {
+        if config.args.exact {
+            patterns.add_skip_exact_pattern(test);
+        } else {
+            patterns.add_skip_pattern(test);
+        }
+    }
+
+    let exprs = config
+        .args
+        .expressions
+        .into_iter()
+        .map(|expr| Filterset::parse(expr, &ParseContext::new(&graph), FiltersetKind::Test))
+        .collect::<Result<Vec<_>, _>>()
+        .expect("failed to parse exprs");
+
     let profile = nextest_config
         .profile(&config.profile)
         .unwrap()
         .apply_build_platforms(&build_platforms);
     let meta = RustBuildMeta::new(cwd, build_platforms).map_paths(&PathMapper::noop());
-    let filter = TestFilterBuilder::default_set(RunIgnored::Default);
+    let filter = TestFilterBuilder::new(run_ignored, None, patterns, exprs).unwrap();
     let configs = CargoConfigs::new([] as [&str; 0]).unwrap();
     let env = EnvironmentMap::new(&configs);
 

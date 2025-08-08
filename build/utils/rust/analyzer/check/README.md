@@ -1,5 +1,5 @@
 <!-- sync-readme title [[ -->
-# clippy_test_runner
+# rust_analyzer_check
 <!-- sync-readme ]] -->
 
 <!-- sync-readme badge [[ -->
@@ -8,7 +8,4 @@
 
 ---
 
-<!-- sync-readme rustdoc [[ -->
-This is a helper binary used to convert the raw clippy rustc rustc-diagnostics
-into pretty printed ansi-color diagnostics.
-<!-- sync-readme ]] -->
+<!-- sync-readme rustdoc -->

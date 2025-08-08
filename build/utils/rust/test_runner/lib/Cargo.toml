@@ -5,8 +5,8 @@ license = "MIT OR Apache-2.0"
 publish = false
 
 [dependencies]
-toml_edit = "0.22"
-nextest-runner = "0.84"
+toml_edit = "0.23"
+nextest-runner = "0.85"
 nextest-metadata = "0.12"
 nextest-filtering = "0.16"
 serde_json = "1"

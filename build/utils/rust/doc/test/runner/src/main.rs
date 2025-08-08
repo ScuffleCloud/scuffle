@@ -28,8 +28,8 @@ struct Args {
     #[arg(long, env = "XML_OUTPUT_FILE")]
     xml_output_file: Option<Utf8PathBuf>,
 
-    #[arg(trailing_var_arg = true, allow_hyphen_values = true, hide = true)]
-    extra_args: Vec<String>,
+    #[command(flatten)]
+    args: test_runner_lib::Args,
 }
 
 fn main() {
@@ -51,7 +51,7 @@ fn main() {
         profile: args.profile,
         tmp_dir: args.tmp_dir,
         xml_output_file: args.xml_output_file,
-        args: args.extra_args,
+        args: args.args,
         binaries: manifest
             .test_binaries
             .into_iter()

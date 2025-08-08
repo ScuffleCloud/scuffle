@@ -13,7 +13,7 @@ load("//build/utils/rust:postcompile.bzl", "PostcompilerDepsInfo")
 def _init_rust_doc_info(*, crate_name, crate_version, html_out = None, json_out = None, parts_out = None):
     if not (html_out or json_out) or (html_out and json_out):
         fail("at most one of html_out or json_out must be provided")
-    
+
     if parts_out and not html_out:
         fail("parts_out can only be provided with html_out")
 
@@ -150,7 +150,7 @@ def _rustdoc_compile_action(
 
     if hasattr(ctx.attr, "external_links"):
         external_links.update(ctx.attr.external_links)
-    
+
     for name, link in external_links.items():
         rustdoc_flags.append("--extern-html-root-url={}={}".format(name, link))
 
@@ -665,7 +665,7 @@ def _rustdoc_test_impl(ctx):
     for data in ctx.attr.data:
         if PostcompilerDepsInfo in data:
             env.update(data[PostcompilerDepsInfo].env)
-        
+
         runfiles.append(data[DefaultInfo].files)
 
     runfiles = ctx.runfiles(files = [build_out, nextest_config, ctx.executable._process_wrapper, ctx.executable._rust_doctest_runner], transitive_files = depset([], transitive = runfiles))
@@ -699,7 +699,7 @@ rustdoc_test = rule(
                 source/output path variables like `$location`, `$execpath`, and
                 `$rootpath`. This expansion is useful if you wish to pass a generated
                 file of arguments to rustc: `@$(location //package:target)`.
-            """), 
+            """),
         ),
         "rustc_flags": attr.string_list(
             doc = dedent("""\
@@ -709,7 +709,7 @@ rustdoc_test = rule(
                 source/output path variables like `$location`, `$execpath`, and
                 `$rootpath`. This expansion is useful if you wish to pass a generated
                 file of arguments to rustc: `@$(location //package:target)`.
-            """), 
+            """),
         ),
         "deps": attr.label_list(
             doc = "Additional deps needed by the doctests.",
@@ -845,7 +845,7 @@ def _rustdoc_merge_impl(ctx):
             "crate_name": info.crate_name,
             "crate_version": info.crate_version,
         })
-    
+
     manifest = ctx.actions.declare_file("{}.rustdoc_merge.manifest.json".format(ctx.label.name))
     ctx.actions.write(
         output = manifest,

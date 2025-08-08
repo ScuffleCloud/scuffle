@@ -99,11 +99,12 @@ common --incompatible_strict_action_env
 ###############################################################################
 
 # Run binaries in the directory they are invoked from
-run --run_under='//build/utils/run_under:run'
+run --run_under='exec $BUILD_WORKING_DIRECTORY/build/utils/run_under.sh'
 
+common:wrapper --bes_results_url=""
 common:wrapper --bes_backend=""
 common:wrapper --build_event_json_file=""
-common:wrapper --ui_event_filters=fatal
+common:wrapper --ui_event_filters=stdout
 common:wrapper --noshow_progress
 common:wrapper --noshow_loading_progress
 common:wrapper --noshow_timestamps
@@ -136,6 +137,3 @@ common --experimental_remote_cache_compression_threshold=1000
 ## evaluated top to bottom.
 ###############################################################################
 try-import %workspace%/.user.bazelrc
-
-common:no_bes --bes_results_url=""
-common:no_bes --bes_backend=""

@@ -2,13 +2,13 @@
 //! See official documentation of file format at <https://rust-analyzer.github.io/manual.html>
 
 use core::fmt;
-use std::collections::{BTreeMap, HashMap};
+use std::collections::{BTreeMap, BTreeSet, HashMap};
 use std::str::FromStr;
 
 use anyhow::Context;
 use camino::{Utf8Path, Utf8PathBuf};
 
-use crate::aquery::{CrateSpec, CrateType};
+use crate::query::{CrateSpec, CrateType};
 use crate::{ToolchainInfo, buildfile_to_targets, source_file_to_buildfile};
 
 /// The argument that `rust-analyzer` can pass to the workspace discovery command.
@@ -114,7 +114,7 @@ pub struct Crate {
 
     /// The set of cfgs activated for a given crate, like
     /// `["unix", "feature=\"foo\"", "feature=\"bar\""]`.
-    cfg: Vec<String>,
+    cfg: BTreeSet<String>,
 
     /// Target triple for this Crate.
     #[serde(skip_serializing_if = "Option::is_none")]
@@ -177,6 +177,7 @@ pub struct Build {
     /// and [`TargetKind::Test`]. This information is used to determine what sort
     /// of runnable codelens to provide, if any.
     target_kind: TargetKind,
+    runnables: Vec<Runnable>,
 }
 
 #[derive(Clone, Copy, Debug, PartialEq, serde_derive::Serialize)]
@@ -232,6 +233,7 @@ pub struct Runnable {
 #[derive(Debug, Clone, Copy, serde_derive::Serialize)]
 #[serde(rename_all = "camelCase")]
 pub enum RunnableKind {
+    /// Output rustc diagnostics
     Check,
 
     /// Can run a binary.
@@ -239,6 +241,12 @@ pub enum RunnableKind {
 
     /// Run a single test.
     TestOne,
+
+    /// Runs a module of tests
+    TestMod,
+
+    /// Runs a doc test
+    DocTest,
 }
 
 pub fn assemble_rust_project(
@@ -251,35 +259,7 @@ pub fn assemble_rust_project(
         sysroot: toolchain_info.sysroot,
         sysroot_src: toolchain_info.sysroot_src,
         crates: Vec::new(),
-        runnables: vec![
-            Runnable {
-                program: bazel.to_string(),
-                args: vec!["build".to_owned(), "//{label}".to_owned()],
-                cwd: workspace.to_owned(),
-                kind: RunnableKind::Check,
-            },
-            Runnable {
-                program: bazel.to_string(),
-                args: vec![
-                    "test".to_owned(),
-                    "//{label}".to_owned(),
-                    "--test_output".to_owned(),
-                    "streamed".to_owned(),
-                    "--test_arg".to_owned(),
-                    "--no-wrapper".to_owned(),
-                    "--test_arg".to_owned(),
-                    "--".to_owned(),
-                    "--test_arg".to_owned(),
-                    "--nocapture".to_owned(),
-                    "--test_arg".to_owned(),
-                    "--exact".to_owned(),
-                    "--test_arg".to_owned(),
-                    "{test_id}".to_owned(),
-                ],
-                cwd: workspace.to_owned(),
-                kind: RunnableKind::TestOne,
-            },
-        ],
+        runnables: vec![],
     };
 
     let mut all_crates: Vec<_> = crate_specs.into_iter().collect();
@@ -302,23 +282,83 @@ pub fn assemble_rust_project(
             | CrateType::ProcMacro => TargetKind::Lib,
         };
 
-        if let Some(build) = &c.build {
-            if target_kind == TargetKind::Bin {
-                project.runnables.push(Runnable {
+        let mut runnables = Vec::new();
+
+        if let Some(info) = &c.info {
+            if let Some(crate_label) = &info.crate_label {
+                runnables.push(Runnable {
                     program: bazel.to_string(),
-                    args: vec!["run".to_string(), build.label.to_owned()],
+                    args: vec!["run".to_string(), format!("//{crate_label}")],
                     cwd: workspace.to_owned(),
                     kind: RunnableKind::Run,
+                });
+            }
+            if let Some(test_label) = &info.test_label {
+                runnables.extend([
+                    Runnable {
+                        program: bazel.to_string(),
+                        args: vec![
+                            "test".to_owned(),
+                            format!("//{test_label}"),
+                            "--test_output".to_owned(),
+                            "streamed".to_owned(),
+                            "--test_arg".to_owned(),
+                            "--exact".to_owned(),
+                            "--test_arg".to_owned(),
+                            "{test_id}".to_owned(),
+                        ],
+                        cwd: workspace.to_owned(),
+                        kind: RunnableKind::TestOne,
+                    },
+                    Runnable {
+                        program: bazel.to_string(),
+                        args: vec![
+                            "test".to_owned(),
+                            format!("//{test_label}"),
+                            "--test_output".to_owned(),
+                            "streamed".to_owned(),
+                            "--test_arg".to_owned(),
+                            "{path}".to_owned(),
+                        ],
+                        cwd: workspace.to_owned(),
+                        kind: RunnableKind::TestMod,
+                    },
+                ]);
+            }
+            if let Some(doc_test_label) = &info.doc_test_label {
+                runnables.push(Runnable {
+                    program: bazel.to_string(),
+                    args: vec![
+                        "test".to_owned(),
+                        format!("//{doc_test_label}"),
+                        "--test_output".to_owned(),
+                        "streamed".to_owned(),
+                        "--test_arg".to_owned(),
+                        "{test_id}".to_owned(),
+                    ],
+                    cwd: workspace.to_owned(),
+                    kind: RunnableKind::DocTest,
+                });
+            }
+            if let Some(clippy_label) = &info.clippy_label {
+                runnables.push(Runnable {
+                    program: bazel.to_string(),
+                    args: vec![
+                        "run".to_owned(),
+                        "--config=wrapper".to_owned(),
+                        "//build/utils/rust/analyzer/check".to_owned(),
+                        "--".to_owned(),
+                        "--config=wrapper".to_owned(),
+                        format!("//{clippy_label}"),
+                    ],
+                    cwd: workspace.to_owned(),
+                    kind: RunnableKind::Check,
                 });
             }
         }
 
         project.crates.push(Crate {
-            display_name: Some(if c.is_test {
-                format!("{}_test", c.display_name)
-            } else {
-                c.display_name.clone()
-            }),
+            display_name: Some(c.display_name.clone()),
             root_module: c.root_module.clone(),
             edition: c.edition.clone(),
             deps: c
@@ -354,6 +394,7 @@ pub fn assemble_rust_project(
                 label: b.label.clone(),
                 build_file: b.build_file.clone().into(),
                 target_kind,
+                runnables,
             }),
         });
     }

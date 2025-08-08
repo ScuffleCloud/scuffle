@@ -7,4 +7,6 @@ export BAZEL="$(which bazelisk)"
 bazelisk \
     run \
     --config=wrapper \
-    //build/utils/rust/analyzer/discover 2> /dev/null
+    //build/utils/rust/analyzer/discover \
+    -- \
+    --bazel_arg=--config=wrapper 2> /dev/null

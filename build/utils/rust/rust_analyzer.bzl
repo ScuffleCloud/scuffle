@@ -99,6 +99,16 @@ def _rust_analyzer_aspect_impl(target, ctx):
     if RustAnalyzerInfo in target or RustAnalyzerGroupInfo in target:
         return []
 
+    # When its a transition rule / alias we just return the pre-computed parts from
+    if hasattr(ctx.rule.attr, "actual"):
+        actual = ctx.rule.attr.actual[0]
+        outputs = []
+        if RustAnalyzerInfo in actual:
+            outputs.append(actual[RustAnalyzerInfo])
+        if RustAnalyzerGroupInfo in actual:
+            outputs.append(actual[RustAnalyzerGroupInfo])
+        return outputs
+
     toolchain = find_toolchain(ctx)
 
     # Always add `test` & `debug_assertions`. See rust-analyzer source code:
@@ -201,6 +211,9 @@ rust_analyzer_aspect = aspect(
     doc = "Annotates rust rules with RustAnalyzerInfo later used to build a rust-project.json",
 )
 
+def label_to_str(label):
+    return label.package + ":" + label.name
+
 # Paths in the generated JSON file begin with one of these placeholders.
 # The `rust-analyzer` driver will replace them with absolute paths.
 _WORKSPACE_TEMPLATE = "__WORKSPACE__/"
@@ -250,7 +263,7 @@ def _create_single_crate(ctx, attrs, info):
     if not is_external and not is_generated:
         crate["build"] = {
             "build_file": _WORKSPACE_TEMPLATE + ctx.build_file_path,
-            "label": ctx.label.package + ":" + ctx.label.name,
+            "label": label_to_str(ctx.label),
         }
 
     if is_generated:
@@ -295,3 +308,62 @@ def _create_single_crate(ctx, attrs, info):
         crate["proc_macro_dylib_path"] = _EXEC_ROOT_TEMPLATE + info.proc_macro_dylib.path
 
     return crate
+
+def _rust_analyzer_info_impl(ctx):
+    info = {
+        "id": _crate_id(ctx.attr.crate[rust_common.crate_info]),
+    }
+    spec_files = []
+
+    if ctx.attr.crate:
+        info["crate_label"] = label_to_str(ctx.attr.crate.label)
+        if RustAnalyzerInfo in ctx.attr.crate:
+            spec_files.append(ctx.attr.crate[RustAnalyzerInfo].crate_specs)
+    if ctx.attr.test:
+        info["test_label"] = label_to_str(ctx.attr.test.label)
+        if RustAnalyzerInfo in ctx.attr.test:
+            spec_files.append(ctx.attr.test[RustAnalyzerInfo].crate_specs)
+    if ctx.attr.doc_test:
+        info["doc_test_label"] = label_to_str(ctx.attr.doc_test.label)
+        if RustAnalyzerInfo in ctx.attr.doc_test:
+            spec_files.append(ctx.attr.doc_test[RustAnalyzerInfo].crate_specs)
+    if ctx.attr.clippy:
+        info["clippy_label"] = label_to_str(ctx.attr.clippy.label)
+
+    info_file = ctx.actions.declare_file("{}.rust_analyzer_info.json".format(ctx.label.name))
+
+    ctx.actions.write(
+        output = info_file,
+        content = json.encode_indent(
+            info,
+            indent = " " * 4,
+        ),
+    )
+
+    return [
+        OutputGroupInfo(
+            rust_analyzer_info = depset([info_file]),
+            rust_analyzer_spec = depset(transitive = spec_files),
+        ),
+    ]
+
+rust_analyzer_info = rule(
+    implementation = _rust_analyzer_info_impl,
+    attrs = {
+        "crate": attr.label(
+            providers = [rust_common.crate_info],
+            aspects = [rust_analyzer_aspect],
+        ),
+        "test": attr.label(
+            providers = [rust_common.crate_info],
+            aspects = [rust_analyzer_aspect],
+        ),
+        "doc_test": attr.label(
+            providers = [],
+            aspects = [rust_analyzer_aspect],
+        ),
+        "clippy": attr.label(
+            providers = [ClippyOutputInfo],
+        ),
+    },
+)

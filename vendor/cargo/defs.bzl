@@ -602,9 +602,9 @@ _NORMAL_DEPENDENCIES = {
                 "guppy": Label("@cargo_vendor//:guppy-0.17.20"),
                 "nextest-filtering": Label("@cargo_vendor//:nextest-filtering-0.16.0"),
                 "nextest-metadata": Label("@cargo_vendor//:nextest-metadata-0.12.2"),
-                "nextest-runner": Label("@cargo_vendor//:nextest-runner-0.84.0"),
+                "nextest-runner": Label("@cargo_vendor//:nextest-runner-0.85.0"),
                 "serde_json": Label("@cargo_vendor//:serde_json-1.0.142"),
-                "toml_edit": Label("@cargo_vendor//:toml_edit-0.22.27"),
+                "toml_edit": Label("@cargo_vendor//:toml_edit-0.23.3"),
             },
         },
     },
@@ -6450,12 +6450,12 @@ def crate_repositories():
 
     maybe(
         http_archive,
-        name = "cargo_vendor__nextest-runner-0.84.0",
-        sha256 = "0af04de0e7adcbf90af1eca73b089fd364b023844ccc1692dd532ab5ae062936",
+        name = "cargo_vendor__nextest-runner-0.85.0",
+        sha256 = "8e2f3283b46e15d80958a9aa22877bcfc14855e20cfdae060c6bfda170131f4b",
         type = "tar.gz",
-        urls = ["https://static.crates.io/crates/nextest-runner/0.84.0/download"],
-        strip_prefix = "nextest-runner-0.84.0",
-        build_file = Label("//vendor/cargo:BUILD.nextest-runner-0.84.0.bazel"),
+        urls = ["https://static.crates.io/crates/nextest-runner/0.85.0/download"],
+        strip_prefix = "nextest-runner-0.85.0",
+        build_file = Label("//vendor/cargo:BUILD.nextest-runner-0.85.0.bazel"),
     )
 
     maybe(
@@ -9497,7 +9497,7 @@ def crate_repositories():
         struct(repo = "cargo_vendor__minijinja-2.11.0", is_dev_dep = False),
         struct(repo = "cargo_vendor__nextest-filtering-0.16.0", is_dev_dep = False),
         struct(repo = "cargo_vendor__nextest-metadata-0.12.2", is_dev_dep = False),
-        struct(repo = "cargo_vendor__nextest-runner-0.84.0", is_dev_dep = False),
+        struct(repo = "cargo_vendor__nextest-runner-0.85.0", is_dev_dep = False),
         struct(repo = "cargo_vendor__num-derive-0.4.2", is_dev_dep = False),
         struct(repo = "cargo_vendor__num-traits-0.2.19", is_dev_dep = False),
         struct(repo = "cargo_vendor__num_cpus-1.17.0", is_dev_dep = False),
@@ -9547,6 +9547,7 @@ def crate_repositories():
         struct(repo = "cargo_vendor__tokio-util-0.7.16", is_dev_dep = False),
         struct(repo = "cargo_vendor__toml-0.9.5", is_dev_dep = False),
         struct(repo = "cargo_vendor__toml_edit-0.22.27", is_dev_dep = False),
+        struct(repo = "cargo_vendor__toml_edit-0.23.3", is_dev_dep = False),
         struct(repo = "cargo_vendor__tonic-0.14.1", is_dev_dep = False),
         struct(repo = "cargo_vendor__tonic-build-0.14.1", is_dev_dep = False),
         struct(repo = "cargo_vendor__tonic-prost-0.14.1", is_dev_dep = False),

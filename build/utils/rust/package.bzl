@@ -7,6 +7,7 @@ load("//build/utils/rust:clippy.bzl", "rust_clippy", "rust_clippy_test")
 load("//build/utils/rust:rustdoc.bzl", "rustdoc", "rustdoc_test")
 load("//build/utils/rust:test.bzl", "nextest_test")
 load("//build/utils/rust:sync_readme.bzl", "sync_readme", "sync_readme_test")
+load("//build/utils/rust:rust_analyzer.bzl", "rust_analyzer_info")
 
 def scuffle_package(
     crate_name,
@@ -194,6 +195,9 @@ def scuffle_package(
                 "--cfg=bazel_runfiles",
                 "-Clink-arg=-Wl,-znostart-stop-gc",
             ],
+            # Needs to be marked as not testonly because the rust_clippy
+            # rule depends on this, which we use to generate clippy suggestions
+            testonly = False,
         )
 
         rust_targets.append(colon_name + "_test")
@@ -252,6 +256,14 @@ def scuffle_package(
             "--document-hidden-items",
         ],
         visibility = visibility,
+    )
+
+    rust_analyzer_info(
+        name = name + "_rust_analyzer",
+        crate = colon_name,
+        test = (colon_name + "_test") if test != False else None,
+        doc_test = (colon_name + "_doc_test") if test != False else None,
+        clippy = colon_name + "_clippy",
     )
 
     if readme != False:

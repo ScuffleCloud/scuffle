@@ -1,6 +1,5 @@
 use std::collections::BTreeMap;
-use std::io::Read;
-use std::process::{Command, Stdio};
+use std::process::Command;
 
 use anyhow::{Context, bail};
 use camino::{Utf8Path, Utf8PathBuf};
@@ -56,28 +55,22 @@ fn bazel_command(bazel: &Utf8Path, workspace: Option<&Utf8Path>, output_base: Op
 // It would be more convenient if it could automatically discover all the rust code in the workspace if this target
 // does not exist.
 fn main() -> anyhow::Result<()> {
-    let start = std::time::Instant::now();
     let config = Config::parse()?;
 
-    let mut command = bazel_command(&config.bazel, Some(&config.workspace), Some(&config.output_base))
+    let command = bazel_command(&config.bazel, Some(&config.workspace), Some(&config.output_base))
         .arg("query")
-        .arg("--config=no_bes")
         .arg(format!(r#"kind("rust_clippy rule", set({}))"#, config.targets.join(" ")))
-        .stderr(Stdio::inherit())
-        .stdout(Stdio::piped())
-        .spawn()
+        .output()
         .context("bazel query")?;
 
-    let mut stdout = command.stdout.take().unwrap();
-    let mut targets = String::new();
-    stdout.read_to_string(&mut targets).context("stdout read")?;
-    if !command.wait().context("query wait")?.success() {
-        bail!("failed to run bazel query")
+    if !command.status.success() {
+        anyhow::bail!("failed to query targets: {}", String::from_utf8_lossy(&command.stderr))
     }
 
+    let targets = String::from_utf8_lossy(&command.stdout);
     let items: Vec<_> = targets.lines().map(|l| l.trim()).filter(|l| !l.is_empty()).collect();
 
-    let mut command = bazel_command(&config.bazel, Some(&config.workspace), Some(&config.output_base))
+    let command = bazel_command(&config.bazel, Some(&config.workspace), Some(&config.output_base))
         .arg("cquery")
         .args(&config.bazel_args)
         .arg(format!("set({})", items.join(" ")))
@@ -85,22 +78,13 @@ fn main() -> anyhow::Result<()> {
         .arg("--keep_going")
         .arg("--starlark:expr=[file.path for file in target.files.to_list()]")
         .arg("--build")
-        .arg("--config=no_bes")
         .arg("--output_groups=rust_clippy")
-        .stderr(Stdio::inherit())
-        .stdout(Stdio::piped())
-        .spawn()
+        .output()
         .context("bazel cquery")?;
 
-    let mut stdout = command.stdout.take().unwrap();
-
-    let mut targets = String::new();
-    stdout.read_to_string(&mut targets).context("stdout read")?;
-
-    command.wait().context("cquery wait")?;
+    let targets = String::from_utf8_lossy(&command.stdout);
 
     let mut clippy_files = Vec::new();
-
     for line in targets.lines().map(|l| l.trim()).filter(|l| !l.is_empty()) {
         clippy_files.extend(serde_json::from_str::<Vec<String>>(line).context("parse line")?);
     }
@@ -116,8 +100,6 @@ fn main() -> anyhow::Result<()> {
             println!("{line}");
         }
     }
-
-    eprintln!("{:?}", start.elapsed());
 
     Ok(())
 }

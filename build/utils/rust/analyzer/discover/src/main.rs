@@ -3,7 +3,7 @@
 //!
 //! [rd]: <https://rust-analyzer.github.io/manual.html#rust-analyzer.workspace.discoverConfig>
 
-mod aquery;
+mod query;
 mod rust_project;
 
 use std::collections::BTreeMap;
@@ -77,7 +77,11 @@ fn project_discovery() -> anyhow::Result<DiscoverProject<'static>> {
         &[targets],
     )?;
 
-    std::fs::write(workspace.join(".rust-project.bazel.json"), serde_json::to_string_pretty(&project).unwrap()).context("failed to write output")?;
+    std::fs::write(
+        workspace.join(".rust-project.bazel.json"),
+        serde_json::to_string_pretty(&project).unwrap(),
+    )
+    .context("failed to write output")?;
 
     Ok(DiscoverProject::Finished { buildfile, project })
 }
@@ -223,37 +227,14 @@ pub fn generate_rust_project(
     bazel_args: &[String],
     targets: &[String],
 ) -> anyhow::Result<RustProject> {
-    let query_command = bazel_command(bazel, Some(workspace), Some(output_base))
-        .args(bazel_startup_options)
-        .arg("query")
-        .arg("--config=no_bes")
-        .arg(format!("set({})", targets.join(" ")))
-        .output()
-        .context("bazel query")?;
-
-    if !query_command.status.success() {
-        anyhow::bail!(
-            "query command failed ({:?}): {}",
-            query_command.status,
-            String::from_utf8_lossy(&query_command.stderr)
-        );
-    }
-    let output = String::from_utf8(query_command.stdout).context("invalid query stdout")?;
-
-    let targets: Vec<_> = output
-        .lines()
-        .map(|l| l.trim().to_owned())
-        .filter(|l| !l.is_empty())
-        .collect();
-
-    let crate_specs = aquery::get_crate_specs(
+    let crate_specs = query::get_crate_specs(
         bazel,
         output_base,
         workspace,
         execution_root,
         bazel_startup_options,
         bazel_args,
-        &targets,
+        targets,
     )?;
 
     let runfiles = Runfiles::create()?;

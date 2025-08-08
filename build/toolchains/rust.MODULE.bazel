@@ -1,8 +1,7 @@
 bazel_dep(name = "rules_rust", version = "0.61.0")
-
 git_override(
     module_name = "rules_rust",
-    commit = "a34816bb7e059074d863bb39489fcc4583daa4f0",
+    commit = "a2f16606ee6d9ec11fa1512d95cc1803eab5e128",
     remote = "https://github.com/ScuffleCloud/rules_rust.git",
 )
 # local_path_override(
@@ -93,7 +92,7 @@ use_repo(
     "cargo_vendor__minijinja-2.11.0",
     "cargo_vendor__nextest-filtering-0.16.0",
     "cargo_vendor__nextest-metadata-0.12.2",
-    "cargo_vendor__nextest-runner-0.84.0",
+    "cargo_vendor__nextest-runner-0.85.0",
     "cargo_vendor__num-derive-0.4.2",
     "cargo_vendor__num-traits-0.2.19",
     "cargo_vendor__num_cpus-1.17.0",
@@ -150,6 +149,7 @@ use_repo(
     "cargo_vendor__tokio-util-0.7.16",
     "cargo_vendor__toml-0.9.5",
     "cargo_vendor__toml_edit-0.22.27",
+    "cargo_vendor__toml_edit-0.23.3",
     "cargo_vendor__tonic-0.14.1",
     "cargo_vendor__tonic-build-0.14.1",
     "cargo_vendor__tonic-prost-0.14.1",

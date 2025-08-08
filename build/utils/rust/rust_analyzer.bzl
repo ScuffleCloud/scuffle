@@ -309,24 +309,27 @@ def _create_single_crate(ctx, attrs, info):
 
     return crate
 
+def _add_rust_analyzer_info(specs, proc_macros, target):
+    if RustAnalyzerInfo in target:
+        specs.append(target[RustAnalyzerInfo].crate_specs)
+        proc_macros.append(target[RustAnalyzerInfo].proc_macro_dylibs)
+
 def _rust_analyzer_info_impl(ctx):
     info = {
         "id": _crate_id(ctx.attr.crate[rust_common.crate_info]),
     }
-    spec_files = []
+    specs = []
+    proc_macros = []
 
     if ctx.attr.crate:
         info["crate_label"] = label_to_str(ctx.attr.crate.label)
-        if RustAnalyzerInfo in ctx.attr.crate:
-            spec_files.append(ctx.attr.crate[RustAnalyzerInfo].crate_specs)
+        _add_rust_analyzer_info(specs, proc_macros, ctx.attr.crate)
     if ctx.attr.test:
         info["test_label"] = label_to_str(ctx.attr.test.label)
-        if RustAnalyzerInfo in ctx.attr.test:
-            spec_files.append(ctx.attr.test[RustAnalyzerInfo].crate_specs)
+        _add_rust_analyzer_info(specs, proc_macros, ctx.attr.test)
     if ctx.attr.doc_test:
         info["doc_test_label"] = label_to_str(ctx.attr.doc_test.label)
-        if RustAnalyzerInfo in ctx.attr.doc_test:
-            spec_files.append(ctx.attr.doc_test[RustAnalyzerInfo].crate_specs)
+        _add_rust_analyzer_info(specs, proc_macros, ctx.attr.doc_test)
     if ctx.attr.clippy:
         info["clippy_label"] = label_to_str(ctx.attr.clippy.label)
 
@@ -343,7 +346,8 @@ def _rust_analyzer_info_impl(ctx):
     return [
         OutputGroupInfo(
             rust_analyzer_info = depset([info_file]),
-            rust_analyzer_spec = depset(transitive = spec_files),
+            rust_analyzer_crate_spec = depset(transitive = specs),
+            rust_analyzer_proc_macro_dylib = depset(transitive = proc_macros)
         ),
     ]
 

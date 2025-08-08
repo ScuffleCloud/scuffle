@@ -101,9 +101,9 @@ pub fn get_crate_specs(
         .args(bazel_args)
         .arg(format!("set({})", queried_targets.join(" ")))
         .arg("--output=starlark")
-        .arg(r#"--starlark:expr={"specs":[file.path for file in target.output_groups.rust_analyzer_spec.to_list()],"info":target.output_groups.rust_analyzer_info.to_list()[0].path}"#)
+        .arg(r#"--starlark:expr={"specs":[file.path for file in target.output_groups.rust_analyzer_crate_spec.to_list()],"info":target.output_groups.rust_analyzer_info.to_list()[0].path}"#)
         .arg("--build")
-        .arg("--output_groups=rust_analyzer_info,rust_analyzer_spec");
+        .arg("--output_groups=rust_analyzer_info,rust_analyzer_proc_macro_dylib,rust_analyzer_src,rust_analyzer_crate_spec");
 
     log::trace!("Running cquery: {command:#?}");
     let cquery_output = command.output().context("Failed to spawn cquery command")?;

@@ -58,7 +58,7 @@ def _nextest_test_impl(ctx):
             output = wrapper_script,
             content = '@"{}" --subst "pwd=${{pwd}}" -- "{}" %*'.format(
                 ctx.executable._process_wrapper.short_path,
-                ctx.executable._test_runner.short_path
+                ctx.executable._test_runner.short_path,
             ),
             is_executable = True,
         )
@@ -84,7 +84,7 @@ def _nextest_test_impl(ctx):
         ),
         RunEnvironmentInfo(
             environment = env,
-            inherited_environment = run_environment_info.inherited_environment
+            inherited_environment = run_environment_info.inherited_environment,
         ),
     ] + parent_providers
 
@@ -98,14 +98,14 @@ nextest_test = rule(
         "_test_runner": attr.label(
             default = "//build/utils/rust/test_runner",
             executable = True,
-            cfg = "exec"
+            cfg = "exec",
         ),
         "_nextest_config": attr.label(
             default = "//:.config/nextest.toml",
-            allow_single_file = True
+            allow_single_file = True,
         ),
         "_windows_constraint": attr.label(
-            default = "@platforms//os:windows"
+            default = "@platforms//os:windows",
         ),
     },
 )

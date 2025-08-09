@@ -33,7 +33,6 @@ docs = ["dep:scuffle-changelog", "dep:document-features"]
 [dependencies]
 document-features = { optional = true, version = "0.2" }
 scuffle-changelog = { optional = true, path = "../changelog", version = "0.1.0" }
-scuffle-workspace-hack.workspace = true
 tokio = { default-features = false, features = ["rt", "sync", "time"], version = "1" }
 tokio-util = "0.7"
 
@@ -55,15 +54,11 @@ rustdoc-args = [
 [package.metadata.xtask.powerset]
 additive-features = ["docs"]
 
-[package.metadata.cargo-sync-rdme.rustdoc.mappings]
+[package.metadata.sync-readme.rustdoc-mappings]
 changelog = "./CHANGELOG.md"
 
-[package.metadata.cargo-sync-rdme.badge]
-style = "flat-square"
-
-[package.metadata.cargo-sync-rdme.badge.badges]
-license = true
+[package.metadata.sync-readme.badges]
 docs-rs = true
 crates-io = true
-github-actions = { workflows = "ci.yaml" }
+license = true
 codecov = true

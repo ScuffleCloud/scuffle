@@ -19,7 +19,6 @@ proc-macro = true
 [dependencies]
 proc-macro2 = { version = "1.0" }
 quote = { version = "1.0" }
-scuffle-workspace-hack.workspace = true
 syn = { version = "2" }
 
 [package.metadata.docs.rs]
@@ -31,15 +30,15 @@ rustdoc-args = [
   "--generate-link-to-definition",
 ]
 
-[package.metadata.cargo-sync-rdme.badge]
-style = "flat-square"
-
-[package.metadata.cargo-sync-rdme.badge.badges]
-license = true
-docs-rs = true
-crates-io = true
-github-actions = { workflows = "ci.yaml" }
-codecov = true
-
 [package.metadata.xtask.release]
 group = "tinc"
+
+[package.metadata.sync-readme.rustdoc-mappings]
+changelog = "./CHANGELOG.md"
+Annotations = "./annotations.proto"
+
+[package.metadata.sync-readme.badges]
+docs-rs = true
+crates-io = true
+license = true
+codecov = true

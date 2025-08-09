@@ -1,7 +1,6 @@
 use std::io::{
     Write, {self},
 };
-use std::path::PathBuf;
 use std::process::{Command, Stdio};
 
 use bytes::{Buf, Bytes};
@@ -51,6 +50,7 @@ use crate::boxes::types::traf::Traf;
 use crate::boxes::types::trun::{Trun, TrunSample};
 use crate::boxes::types::url::Url;
 use crate::boxes::types::vmhd::Vmhd;
+use crate::file_path;
 use crate::types::av01::Av01;
 use crate::types::av1c::Av1C;
 use crate::types::colr::{ColorType, Colr};
@@ -61,9 +61,7 @@ use crate::types::trex::Trex;
 
 #[test]
 fn test_demux_avc_aac() {
-    let dir = PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("../../assets");
-
-    let data = std::fs::read(dir.join("avc_aac_fragmented.mp4").to_str().unwrap()).unwrap();
+    let data = std::fs::read(file_path("avc_aac_fragmented.mp4").to_str().unwrap()).unwrap();
 
     let mut boxes = Vec::new();
     let mut reader = io::Cursor::new(data.into());
@@ -920,8 +918,7 @@ fn test_demux_avc_aac() {
 
 #[test]
 fn test_mux_avc_aac() {
-    let dir = PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("../../assets");
-    let data = std::fs::read(dir.join("avc_aac_fragmented.mp4").to_str().unwrap()).unwrap();
+    let data = std::fs::read(file_path("avc_aac_fragmented.mp4").to_str().unwrap()).unwrap();
 
     let mut boxes = Vec::new();
     let mut reader = io::Cursor::new(data.into());
@@ -948,7 +945,7 @@ fn test_mux_avc_aac() {
     assert_eq!(boxes, new_boxes);
 
     // Pipe into ffprobe to check the output is valid.
-    let mut ffprobe = Command::new("ffprobe")
+    let mut ffprobe = Command::new(std::env::var_os("FFPROBE").unwrap_or_else(|| "ffprobe".into()))
         .arg("-v")
         .arg("error")
         .arg("-show_format")
@@ -989,9 +986,7 @@ fn test_mux_avc_aac() {
 
 #[test]
 fn test_demux_av1_aac() {
-    let dir = PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("../../assets");
-
-    let data = std::fs::read(dir.join("av1_aac_fragmented.mp4").to_str().unwrap()).unwrap();
+    let data = std::fs::read(file_path("av1_aac_fragmented.mp4").to_str().unwrap()).unwrap();
 
     let mut boxes = Vec::new();
     let mut reader = io::Cursor::new(data.into());
@@ -1687,9 +1682,7 @@ fn test_demux_av1_aac() {
 
 #[test]
 fn test_demux_hevc_aac() {
-    let dir = PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("../../assets");
-
-    let data = std::fs::read(dir.join("hevc_aac_fragmented.mp4").to_str().unwrap()).unwrap();
+    let data = std::fs::read(file_path("hevc_aac_fragmented.mp4").to_str().unwrap()).unwrap();
 
     let mut boxes = Vec::new();
     let mut reader = io::Cursor::new(data.into());
@@ -2408,8 +2401,7 @@ fn test_demux_hevc_aac() {
 
 #[test]
 fn test_mux_av1_aac() {
-    let dir = PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("../../assets");
-    let data = std::fs::read(dir.join("av1_aac_fragmented.mp4").to_str().unwrap()).unwrap();
+    let data = std::fs::read(file_path("av1_aac_fragmented.mp4").to_str().unwrap()).unwrap();
 
     let mut boxes = Vec::new();
     let mut reader = io::Cursor::new(data.into());
@@ -2436,7 +2428,7 @@ fn test_mux_av1_aac() {
     assert_eq!(boxes, new_boxes);
 
     // Pipe into ffprobe to check the output is valid.
-    let mut ffprobe = Command::new("ffprobe")
+    let mut ffprobe = Command::new(std::env::var_os("FFPROBE").unwrap_or_else(|| "ffprobe".into()))
         .arg("-v")
         .arg("error")
         .arg("-show_format")
@@ -2477,8 +2469,7 @@ fn test_mux_av1_aac() {
 
 #[test]
 fn test_mux_hevc_aac() {
-    let dir = PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("../../assets");
-    let data = std::fs::read(dir.join("hevc_aac_fragmented.mp4").to_str().unwrap()).unwrap();
+    let data = std::fs::read(file_path("hevc_aac_fragmented.mp4").to_str().unwrap()).unwrap();
 
     let mut boxes = Vec::new();
     let mut reader = io::Cursor::new(data.into());
@@ -2505,7 +2496,7 @@ fn test_mux_hevc_aac() {
     assert_eq!(boxes, new_boxes);
 
     // Pipe into ffprobe to check the output is valid.
-    let mut ffprobe = Command::new("ffprobe")
+    let mut ffprobe = Command::new(std::env::var_os("FFPROBE").unwrap_or_else(|| "ffprobe".into()))
         .arg("-v")
         .arg("error")
         .arg("-show_format")

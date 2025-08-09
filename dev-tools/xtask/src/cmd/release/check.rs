@@ -369,13 +369,12 @@ impl Package {
                         {
                             self.report_issue(PackageError::grouped_version(dep));
                         }
-                    } else if self.should_publish() {
-                        if dep.registry.is_some()
+                    } else if self.should_publish()
+                        && (dep.registry.is_some()
                             || dep.req.comparators.is_empty()
-                            || dep.source.as_ref().is_some_and(|s| !s.is_crates_io())
-                        {
-                            self.report_issue(PackageError::not_publish(dep));
-                        }
+                            || dep.source.as_ref().is_some_and(|s| !s.is_crates_io()))
+                    {
+                        self.report_issue(PackageError::not_publish(dep));
                     }
                 }
                 DependencyKind::Development => {

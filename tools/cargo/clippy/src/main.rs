@@ -202,7 +202,7 @@ impl Config {
             targets,
         } = ConfigParser::parse();
 
-        let bazel_args = config.into_iter().map(|s| format!("--config={s}")).collect();
+        let bazel_args = vec![format!("--config={config}")];
 
         match (workspace, execution_root, output_base) {
             (Some(workspace), Some(execution_root), Some(output_base)) => Ok(Config {
@@ -259,8 +259,8 @@ struct ConfigParser {
     bazel: Utf8PathBuf,
 
     /// A config to pass to Bazel invocations with `--config=<config>`.
-    #[clap(long)]
-    config: Option<String>,
+    #[clap(long, default_value = "wrapper")]
+    config: String,
 
     /// Space separated list of target patterns that comes after all other args.
     #[clap(default_value = "@//...")]

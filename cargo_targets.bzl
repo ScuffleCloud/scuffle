@@ -63,13 +63,13 @@ def cargo_manifests(exclude = []):
     return cargo_targets(target = "cargo_toml", exclude = exclude) + [cargo_workspace_manifest]
 
 def _last_part(package):
-    return package.split('/')[-1]
+    return package.split("/")[-1]
 
 def cargo_targets(
-    target = "{name}",
-    exclude = [],
-):
+        target = "{name}",
+        exclude = []):
     return [
         package + ":" + target.format(name = _last_part(package))
-        for package in _packages if package not in exclude
+        for package in _packages
+        if package not in exclude
     ]

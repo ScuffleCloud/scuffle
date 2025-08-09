@@ -1,31 +1,28 @@
+load("@cargo_vendor//:defs.bzl", "all_crate_deps", "crate_features", "crate_version", dep_aliases = "aliases")
 load("@rules_rust//cargo:defs.bzl", "cargo_build_script", "cargo_toml_env_vars", "extract_cargo_lints")
-load("@rules_rust//rust:defs.bzl", "rust_binary", "rust_library", "rust_proc_macro")
-load("@rules_rust//rust:defs.bzl", "rustfmt_test")
-load("@cargo_vendor//:defs.bzl", "all_crate_deps", "crate_features", dep_aliases = "aliases", "crate_version")
-
+load("@rules_rust//rust:defs.bzl", "rust_binary", "rust_library", "rust_proc_macro", "rustfmt_test")
 load("//build/utils/rust:clippy.bzl", "rust_clippy", "rust_clippy_test")
-load("//build/utils/rust:rustdoc.bzl", "rustdoc", "rustdoc_test")
-load("//build/utils/rust:test.bzl", "nextest_test")
-load("//build/utils/rust:sync_readme.bzl", "sync_readme", "sync_readme_test")
 load("//build/utils/rust:rust_analyzer.bzl", "rust_analyzer_info")
+load("//build/utils/rust:rustdoc.bzl", "rustdoc", "rustdoc_test")
+load("//build/utils/rust:sync_readme.bzl", "sync_readme", "sync_readme_test")
+load("//build/utils/rust:test.bzl", "nextest_test")
 
 def scuffle_package(
-    crate_name,
-    name = None,
-    version = None,
-    features = None,
-    crate_type = "rlib",
-    srcs = None,
-    visibility = None,
-    aliases = None,
-    deps = None,
-    proc_macro_deps = None,
-    compile_data = None,
-    tags = None,
-    test = None,
-    readme = None,
-    extra_target_kwargs = None,
-):
+        crate_name,
+        name = None,
+        version = None,
+        features = None,
+        crate_type = "rlib",
+        srcs = None,
+        visibility = None,
+        aliases = None,
+        deps = None,
+        proc_macro_deps = None,
+        compile_data = None,
+        tags = None,
+        test = None,
+        readme = None,
+        extra_target_kwargs = None):
     """Creates a rust_library and corresponding rust_test target.
 
     Args:
@@ -280,13 +277,12 @@ def scuffle_package(
         )
 
 def scuffle_test(
-    deps = None,
-    proc_macro_deps = None,
-    env = None,
-    data = None,
-    insta = False,
-    tags = None,
-):
+        deps = None,
+        proc_macro_deps = None,
+        env = None,
+        data = None,
+        insta = False,
+        tags = None):
     if deps == None:
         deps = []
     if proc_macro_deps == None:

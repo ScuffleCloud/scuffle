@@ -81,7 +81,10 @@ impl<G: CoreConfig> pb::scufflecloud::core::v1::organization_invitations_service
         let (_, ext, payload) = req.into_parts();
         let session = ext.session_or_err()?;
 
-        let organization_id: OrganizationId = payload.id.parse().into_tonic_internal_err("failed to parse id")?;
+        let organization_id: OrganizationId = payload
+            .id
+            .parse()
+            .map_err(|e| tonic::Status::invalid_argument(format!("invalid ID: {e}")))?;
 
         session.is_authorized(
             global,
@@ -111,7 +114,10 @@ impl<G: CoreConfig> pb::scufflecloud::core::v1::organization_invitations_service
         let (_, ext, payload) = req.into_parts();
         let session = ext.session_or_err()?;
 
-        let user_id: UserId = payload.id.parse().into_tonic_internal_err("failed to parse id")?;
+        let user_id: UserId = payload
+            .id
+            .parse()
+            .map_err(|e| tonic::Status::invalid_argument(format!("invalid ID: {e}")))?;
 
         session.is_authorized(global, session.user_id, Action::ListOrganizationInvitationsByUser, user_id)?;
 
@@ -136,7 +142,10 @@ impl<G: CoreConfig> pb::scufflecloud::core::v1::organization_invitations_service
         let (_, ext, payload) = req.into_parts();
         let session = ext.session_or_err()?;
 
-        let id: OrganizationInvitationId = payload.id.parse().into_tonic_internal_err("failed to parse id")?;
+        let id: OrganizationInvitationId = payload
+            .id
+            .parse()
+            .map_err(|e| tonic::Status::invalid_argument(format!("invalid ID: {e}")))?;
 
         session.is_authorized(global, session.user_id, Action::GetOrganizationInvitation, id)?;
 
@@ -167,7 +176,10 @@ impl<G: CoreConfig> pb::scufflecloud::core::v1::organization_invitations_service
         let (_, ext, payload) = req.into_parts();
         let session = ext.session_or_err()?;
 
-        let id: OrganizationInvitationId = payload.id.parse().into_tonic_internal_err("failed to parse id")?;
+        let id: OrganizationInvitationId = payload
+            .id
+            .parse()
+            .map_err(|e| tonic::Status::invalid_argument(format!("invalid ID: {e}")))?;
 
         let mut db = global.db().await.into_tonic_internal_err("failed to connect to database")?;
 
@@ -231,7 +243,10 @@ impl<G: CoreConfig> pb::scufflecloud::core::v1::organization_invitations_service
         let (_, ext, payload) = req.into_parts();
         let session = ext.session_or_err()?;
 
-        let id: OrganizationInvitationId = payload.id.parse().into_tonic_internal_err("failed to parse id")?;
+        let id: OrganizationInvitationId = payload
+            .id
+            .parse()
+            .map_err(|e| tonic::Status::invalid_argument(format!("invalid ID: {e}")))?;
 
         let mut db = global.db().await.into_tonic_internal_err("failed to connect to database")?;
 

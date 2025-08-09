@@ -6,11 +6,11 @@
 > This crate is under active development and may not be stable.
 
 <!-- sync-readme badge [[ -->
-[![docs.rs](https://img.shields.io/docsrs/scuffle-batching/0.1.5.svg?logo=docs.rs&label=docs.rs&style=flat-square)](https://docs.rs/scuffle-batching/0.1.5)
-[![crates.io](https://img.shields.io/badge/crates.io-v0.1.5-orange?style=flat-square&logo=rust&logoColor=white)](https://crates.io/crates/scuffle-batching/0.1.5)
+[![docs.rs](https://img.shields.io/docsrs/scuffle-batching/0.1.6.svg?logo=docs.rs&label=docs.rs&style=flat-square)](https://docs.rs/scuffle-batching/0.1.6)
+[![crates.io](https://img.shields.io/badge/crates.io-v0.1.6-orange?style=flat-square&logo=rust&logoColor=white)](https://crates.io/crates/scuffle-batching/0.1.6)
 ![License: MIT OR Apache-2.0](https://img.shields.io/badge/license-MIT%20OR%20Apache--2.0-purple.svg?style=flat-square)
-![Crates.io Size](https://img.shields.io/crates/size/scuffle-batching/0.1.5.svg?style=flat-square)
-![Crates.io Downloads](https://img.shields.io/crates/dv/scuffle-batching/0.1.5.svg?&label=downloads&style=flat-square)
+![Crates.io Size](https://img.shields.io/crates/size/scuffle-batching/0.1.6.svg?style=flat-square)
+![Crates.io Downloads](https://img.shields.io/crates/dv/scuffle-batching/0.1.6.svg?&label=downloads&style=flat-square)
 [![Codecov](https://img.shields.io/codecov/c/github/scufflecloud/scuffle.svg?label=codecov&logo=codecov&style=flat-square)](https://app.codecov.io/gh/scufflecloud/scuffle)
 <!-- sync-readme ]] -->
 

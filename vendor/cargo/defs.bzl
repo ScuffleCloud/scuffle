@@ -1075,7 +1075,7 @@ _NORMAL_DEPENDENCIES = {
                 "prost": Label("@cargo_vendor//:prost-0.14.1"),
                 "prost-build": Label("@cargo_vendor//:prost-build-0.14.1"),
                 "prost-reflect": Label("@cargo_vendor//:prost-reflect-0.16.1"),
-                "prost-types": Label("@cargo_vendor//:prost-types-0.13.5"),
+                "prost-types": Label("@cargo_vendor//:prost-types-0.14.1"),
             },
         },
     },
@@ -3025,9 +3025,9 @@ _BUILD_DEPENDENCIES = {
     "crates/tinc/pb-prost": {
         _REQUIRED_FEATURE: {
             _COMMON_CONDITION: {
-                "prost": Label("@cargo_vendor//:prost-0.13.5"),
+                "prost": Label("@cargo_vendor//:prost-0.14.1"),
                 "prost-build": Label("@cargo_vendor//:prost-build-0.14.1"),
-                "prost-types": Label("@cargo_vendor//:prost-types-0.13.5"),
+                "prost-types": Label("@cargo_vendor//:prost-types-0.14.1"),
             },
         },
     },
@@ -7070,16 +7070,6 @@ def crate_repositories():
 
     maybe(
         http_archive,
-        name = "cargo_vendor__prost-0.13.5",
-        sha256 = "2796faa41db3ec313a31f7624d9286acf277b52de526150b7e69f3debf891ee5",
-        type = "tar.gz",
-        urls = ["https://static.crates.io/crates/prost/0.13.5/download"],
-        strip_prefix = "prost-0.13.5",
-        build_file = Label("//vendor/cargo:BUILD.prost-0.13.5.bazel"),
-    )
-
-    maybe(
-        http_archive,
         name = "cargo_vendor__prost-0.14.1",
         sha256 = "7231bd9b3d3d33c86b58adbac74b5ec0ad9f496b19d22801d773636feaa95f3d",
         type = "tar.gz",
@@ -7120,16 +7110,6 @@ def crate_repositories():
 
     maybe(
         http_archive,
-        name = "cargo_vendor__prost-derive-0.13.5",
-        sha256 = "8a56d757972c98b346a9b766e3f02746cde6dd1cd1d1d563472929fdd74bec4d",
-        type = "tar.gz",
-        urls = ["https://static.crates.io/crates/prost-derive/0.13.5/download"],
-        strip_prefix = "prost-derive-0.13.5",
-        build_file = Label("//vendor/cargo:BUILD.prost-derive-0.13.5.bazel"),
-    )
-
-    maybe(
-        http_archive,
         name = "cargo_vendor__prost-derive-0.14.1",
         sha256 = "9120690fafc389a67ba3803df527d0ec9cbbc9cc45e4cc20b332996dfb672425",
         type = "tar.gz",
@@ -7156,16 +7136,6 @@ def crate_repositories():
         urls = ["https://static.crates.io/crates/prost-types/0.12.6/download"],
         strip_prefix = "prost-types-0.12.6",
         build_file = Label("//vendor/cargo:BUILD.prost-types-0.12.6.bazel"),
-    )
-
-    maybe(
-        http_archive,
-        name = "cargo_vendor__prost-types-0.13.5",
-        sha256 = "52c2c1bf36ddb1a1c396b3601a3cec27c2462e45f07c386894ec3ccf5332bd16",
-        type = "tar.gz",
-        urls = ["https://static.crates.io/crates/prost-types/0.13.5/download"],
-        strip_prefix = "prost-types-0.13.5",
-        build_file = Label("//vendor/cargo:BUILD.prost-types-0.13.5.bazel"),
     )
 
     maybe(
@@ -9512,11 +9482,9 @@ def crate_repositories():
         struct(repo = "cargo_vendor__prettyplease-0.2.36", is_dev_dep = False),
         struct(repo = "cargo_vendor__proc-macro2-1.0.95", is_dev_dep = False),
         struct(repo = "cargo_vendor__prometheus-client-0.23.1", is_dev_dep = False),
-        struct(repo = "cargo_vendor__prost-0.13.5", is_dev_dep = False),
         struct(repo = "cargo_vendor__prost-0.14.1", is_dev_dep = False),
         struct(repo = "cargo_vendor__prost-build-0.14.1", is_dev_dep = False),
         struct(repo = "cargo_vendor__prost-reflect-0.16.1", is_dev_dep = False),
-        struct(repo = "cargo_vendor__prost-types-0.13.5", is_dev_dep = False),
         struct(repo = "cargo_vendor__prost-types-0.14.1", is_dev_dep = False),
         struct(repo = "cargo_vendor__pulldown-cmark-0.13.0", is_dev_dep = False),
         struct(repo = "cargo_vendor__pulldown-cmark-to-cmark-21.0.0", is_dev_dep = False),

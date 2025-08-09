@@ -946,13 +946,13 @@ transition_alias_opt(
 )
 
 transition_alias_opt(
-    name = "prost-0.13.5",
-    actual = "@cargo_vendor__prost-0.13.5//:prost",
+    name = "prost-0.14.1",
+    actual = "@cargo_vendor__prost-0.14.1//:prost",
     tags = ["manual"],
 )
 
 transition_alias_opt(
-    name = "prost-0.14.1",
+    name = "prost",
     actual = "@cargo_vendor__prost-0.14.1//:prost",
     tags = ["manual"],
 )
@@ -982,13 +982,13 @@ transition_alias_opt(
 )
 
 transition_alias_opt(
-    name = "prost-types-0.13.5",
-    actual = "@cargo_vendor__prost-types-0.13.5//:prost_types",
+    name = "prost-types-0.14.1",
+    actual = "@cargo_vendor__prost-types-0.14.1//:prost_types",
     tags = ["manual"],
 )
 
 transition_alias_opt(
-    name = "prost-types-0.14.1",
+    name = "prost-types",
     actual = "@cargo_vendor__prost-types-0.14.1//:prost_types",
     tags = ["manual"],
 )

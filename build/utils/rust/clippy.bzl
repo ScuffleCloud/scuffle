@@ -1,6 +1,6 @@
 load("@rules_rust//rust:rust_common.bzl", "CrateInfo")
-load("@rules_rust//rust/private:providers.bzl", "LintsInfo")
 load("@rules_rust//rust/private:clippy.bzl", "ClippyFlagsInfo")
+load("@rules_rust//rust/private:providers.bzl", "LintsInfo")
 load(
     "@rules_rust//rust/private:rustc.bzl",
     "collect_deps",
@@ -114,7 +114,6 @@ def _rust_clippy_rule_impl(ctx):
         env["CLIPPY_CONF_DIR"] = "${{pwd}}/{}".format(ctx.file._config.dirname)
         inputs = depset([ctx.file._config], transitive = [compile_inputs])
 
-
         outputs.append(clippy_out)
 
         ctx.actions.run(
@@ -146,7 +145,7 @@ rust_clippy = rule(
         ),
         "lint_config": attr.label(
             doc = "A set of lints to use for clippy.",
-            providers = [LintsInfo]
+            providers = [LintsInfo],
         ),
         "clippy_flags": attr.string_list(
             doc = "Additional flags to provide to clippy",
@@ -217,9 +216,8 @@ rust_clippy(
 """,
 )
 
-
 def _rust_clippy_test_impl(ctx):
-    wrapper = ctx.actions.declare_file(ctx.label.name + "_" +  ctx.executable._clippy_test_runner.basename)
+    wrapper = ctx.actions.declare_file(ctx.label.name + "_" + ctx.executable._clippy_test_runner.basename)
     ctx.actions.symlink(
         output = wrapper,
         target_file = ctx.executable._clippy_test_runner,

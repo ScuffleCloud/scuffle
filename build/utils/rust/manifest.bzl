@@ -25,11 +25,10 @@ _cargo_toml = rule(
 )
 
 def cargo_toml(
-    name = None,
-    manifest = None,
-    srcs = None,
-    visibility = None,
-):
+        name = None,
+        manifest = None,
+        srcs = None,
+        visibility = None):
     if name == None:
         name = "cargo_toml"
     if manifest == None:

@@ -168,9 +168,8 @@ use_repo(
 bindeps = use_extension("@rules_rust//crate_universe:extension.bzl", "crate")
 bindeps.spec(
     artifact = "bin",
-    git = "https://github.com/TroyKomodo/cargo-deny.git",
     package = "cargo-deny",
-    rev = "5ff948502ef83870c128e7e7af5cb17db6588dd8",
+    version = "0.18.3",
 )
 bindeps.annotation(
     crate = "cargo-deny",

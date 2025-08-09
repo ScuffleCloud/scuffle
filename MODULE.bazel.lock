@@ -7001,7 +7001,7 @@
     "@@rules_rust+//crate_universe:extension.bzl%crate": {
       "general": {
         "bzlTransitiveDigest": "vqM+52llh7l2JAvo7yDVsIv4YgPtj6/8nBkx95HFppo=",
-        "usagesDigest": "i6+7hNoGWdWqbf7vK/NUlRMfFp/zFLem0UeDWEjy5Pg=",
+        "usagesDigest": "HnGyeU2IZ28La6ib64m+ROIPpGtmRsrbL9iNRNO9r0E=",
         "recordedFileInputs": {},
         "recordedDirentsInputs": {},
         "envVariables": {
@@ -7410,9 +7410,8 @@
             }
           },
           "bindeps__cargo-deny-0.18.3": {
-            "repoRuleId": "@@bazel_tools//tools/build_defs/repo:git.bzl%git_repository",
+            "repoRuleId": "@@bazel_tools//tools/build_defs/repo:http.bzl%http_archive",
             "attributes": {
-              "init_submodules": true,
               "patch_args": [],
               "patch_tool": "",
               "patches": [],

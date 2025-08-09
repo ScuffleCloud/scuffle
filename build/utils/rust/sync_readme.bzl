@@ -74,9 +74,8 @@ sync_readme = rule(
     implementation = _sync_readme_rule_impl,
 )
 
-
 def _sync_readme_test_rule_impl(ctx):
-    wrapper = ctx.actions.declare_file(ctx.label.name + "_" +  ctx.executable._sync_readme_test.basename)
+    wrapper = ctx.actions.declare_file(ctx.label.name + "_" + ctx.executable._sync_readme_test.basename)
     ctx.actions.symlink(
         output = wrapper,
         target_file = ctx.executable._sync_readme_test,

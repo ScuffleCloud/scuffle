@@ -1,13 +1,12 @@
 """Rules for generating documentation with `rustdoc` for Bazel built crates"""
 
-load("@rules_cc//cc/common:cc_info.bzl", "CcInfo")
-load("@bazel_skylib//rules:common_settings.bzl", "BuildSettingInfo")
-load("@rules_rust//rust/private:providers.bzl", "CrateInfo")
-load("@rules_rust//rust/private:common.bzl", "rust_common")
-load("@rules_rust//rust/private:providers.bzl", "LintsInfo")
-load("@rules_rust//rust/private:rustc.bzl", "collect_deps", "collect_inputs", "construct_arguments", "rustc_compile_action")
-load("@rules_rust//rust/private:utils.bzl", "dedent", "find_cc_toolchain", "find_toolchain", "transform_deps", "expand_dict_value_locations")
 load("@bazel_skylib//lib:paths.bzl", "paths")
+load("@bazel_skylib//rules:common_settings.bzl", "BuildSettingInfo")
+load("@rules_cc//cc/common:cc_info.bzl", "CcInfo")
+load("@rules_rust//rust/private:common.bzl", "rust_common")
+load("@rules_rust//rust/private:providers.bzl", "CrateInfo", "LintsInfo")
+load("@rules_rust//rust/private:rustc.bzl", "collect_deps", "collect_inputs", "construct_arguments", "rustc_compile_action")
+load("@rules_rust//rust/private:utils.bzl", "dedent", "expand_dict_value_locations", "find_cc_toolchain", "find_toolchain", "transform_deps")
 load("//build/utils/rust:postcompile.bzl", "PostcompilerDepsInfo")
 
 def _init_rust_doc_info(*, crate_name, crate_version, html_out = None, json_out = None, parts_out = None):
@@ -95,15 +94,14 @@ def _strip_crate_info_output_doctest(crate_info):
     )
 
 def _rustdoc_compile_action(
-    ctx,
-    toolchain,
-    crate_info,
-    deps = None,
-    proc_macro_deps = None,
-    aliases = None,
-    lints_info = None,
-    rustdoc_flags = [],
-):
+        ctx,
+        toolchain,
+        crate_info,
+        deps = None,
+        proc_macro_deps = None,
+        aliases = None,
+        lints_info = None,
+        rustdoc_flags = []):
     """Create a struct of information needed for a `rustdoc` compile action based on crate passed to the rustdoc rule.
 
     Args:
@@ -222,8 +220,6 @@ def _rustdoc_compile_action(
         arguments = args.all,
         tools = [toolchain.rust_doc],
     )
-
-
 
 def _rustdoc_impl(ctx):
     """The implementation of the `rust_doc` rule
@@ -438,15 +434,14 @@ def _are_linkstamps_supported(feature_configuration):
             hasattr(cc_common, "register_linkstamp_compile_action"))
 
 def _rustc_doctest_compile_action(
-    ctx,
-    toolchain,
-    crate_info,
-    deps = None,
-    proc_macro_deps = None,
-    aliases = None,
-    lints_info = None,
-    rustc_flags = [],
-):
+        ctx,
+        toolchain,
+        crate_info,
+        deps = None,
+        proc_macro_deps = None,
+        aliases = None,
+        lints_info = None,
+        rustc_flags = []):
     """Create a struct of information needed for a `rustc` compile action based on crate passed to the rustdoc rule.
 
     Args:
@@ -466,7 +461,6 @@ def _rustc_doctest_compile_action(
     if lints_info:
         rustc_flags = rustc_flags + lints_info.rustc_lint_flags
         lint_files = lint_files + lints_info.rustc_lint_files
-
 
     dep_info, build_info, linkstamps = collect_deps(
         deps = crate_info.deps if deps == None else deps,
@@ -646,7 +640,7 @@ def _rustdoc_test_impl(ctx):
             output = wrapper_script,
             content = '@"{}" --subst "pwd=${{pwd}}" -- "{}" %*'.format(
                 ctx.executable._process_wrapper.short_path,
-                ctx.executable._rust_doctest_runner.short_path
+                ctx.executable._rust_doctest_runner.short_path,
             ),
             is_executable = True,
         )
@@ -815,10 +809,10 @@ rustdoc_test = rule(
         "_nextest_profile": attr.label(mandatory = False, default = "//:test_profile"),
         "_nextest_config": attr.label(
             default = "//:.config/nextest.toml",
-            allow_single_file = True
+            allow_single_file = True,
         ),
         "_windows_constraint": attr.label(
-            default = "@platforms//os:windows"
+            default = "@platforms//os:windows",
         ),
     },
     fragments = ["cpp"],

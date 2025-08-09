@@ -1,13 +1,13 @@
 load("@bazel_skylib//lib:paths.bzl", "paths")
-load("@rules_rust//rust/private:rustc.bzl", "collect_deps", "get_linker_and_args")
-load("@rules_cc//cc/common:cc_common.bzl", "cc_common")
 load("@rules_cc//cc:action_names.bzl", "ACTION_NAMES")
+load("@rules_cc//cc/common:cc_common.bzl", "cc_common")
 load("@rules_rust//cargo/private:cargo_build_script.bzl", "get_cc_compile_args_and_env")
-load("@rules_rust//rust/private:utils.bzl", "transform_deps", "find_toolchain", "find_cc_toolchain")
+load("@rules_rust//rust/private:rustc.bzl", "collect_deps", "get_linker_and_args")
+load("@rules_rust//rust/private:utils.bzl", "find_cc_toolchain", "find_toolchain", "transform_deps")
 
 def _PostcompilerDepsInfo_init(**kwargs):
     return kwargs | {
-        "__PostcompilerDepsInfo": True
+        "__PostcompilerDepsInfo": True,
     }
 
 PostcompilerDepsInfo, _ = provider(
@@ -16,7 +16,7 @@ PostcompilerDepsInfo, _ = provider(
         "__PostcompilerDepsInfo",
         "env",
     ],
-    init = _PostcompilerDepsInfo_init
+    init = _PostcompilerDepsInfo_init,
 )
 
 def _pwd_flags_sysroot(args):
@@ -110,7 +110,7 @@ def _postcompile_deps_impl(ctx):
     env = {}
     linker, link_args, linker_env = get_linker_and_args(ctx, "bin", cc_toolchain, feature_configuration, None)
 
-    env.update({ k: _transform_path(v) for k, v in linker_env.items() })
+    env.update({k: _transform_path(v) for k, v in linker_env.items()})
     env["LD"] = _transform_path(linker)
     env["LDFLAGS"] = _transform_path(" ".join(_pwd_flags(link_args)))
 
@@ -122,8 +122,10 @@ def _postcompile_deps_impl(ctx):
     toolchain_tools = [rust_toolchain.all_files]
 
     extra_rustc_args = [
-        "-C", "linker={}".format(env["LD"]),
-        "-C", "link-arg=-Wl,-znostart-stop-gc",
+        "-C",
+        "linker={}".format(env["LD"]),
+        "-C",
+        "link-arg=-Wl,-znostart-stop-gc",
     ]
     for flag in _pwd_flags(link_args):
         extra_rustc_args += ["-C", "link-arg={}".format(_transform_path(flag))]
@@ -165,7 +167,6 @@ def _postcompile_deps_impl(ctx):
             content = '#!/bin/env bash\nexec "{}" --subst pwd=$(pwd) -- "{}" $@'.format(ctx.executable._process_wrapper.short_path, rust_toolchain.rustc.short_path),
             is_executable = True,
         )
-    
 
     env.update({
         "RUSTC": rustc_wrapper.short_path,
@@ -244,7 +245,7 @@ postcompile_deps = rule(
             cfg = "exec",
         ),
         "_windows_constraint": attr.label(
-            default = "@platforms//os:windows"
+            default = "@platforms//os:windows",
         ),
     },
     fragments = ["cpp"],

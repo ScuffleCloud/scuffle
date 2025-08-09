@@ -347,7 +347,7 @@ def _rust_analyzer_info_impl(ctx):
         OutputGroupInfo(
             rust_analyzer_info = depset([info_file]),
             rust_analyzer_crate_spec = depset(transitive = specs),
-            rust_analyzer_proc_macro_dylib = depset(transitive = proc_macros)
+            rust_analyzer_proc_macro_dylib = depset(transitive = proc_macros),
         ),
     ]
 

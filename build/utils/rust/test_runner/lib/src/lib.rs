@@ -92,7 +92,9 @@ pub fn run_nextest(config: Config) {
     let package = graph.packages().find(|p| p.name() == config.package).unwrap();
 
     let double_spawn = DoubleSpawnInfo::disabled();
-    let target_runner = TargetRunner::empty();
+    let build_platforms = BuildPlatforms::new_with_no_target().unwrap();
+    let configs = CargoConfigs::new([] as [&str; 0]).unwrap();
+    let target_runner = TargetRunner::new(&configs, &build_platforms).unwrap();
 
     let ctx = TestExecuteContext {
         double_spawn: &double_spawn,
@@ -170,7 +172,6 @@ pub fn run_nextest(config: Config) {
         .apply_build_platforms(&build_platforms);
     let meta = RustBuildMeta::new(cwd, build_platforms).map_paths(&PathMapper::noop());
     let filter = TestFilterBuilder::new(run_ignored, None, patterns, exprs).unwrap();
-    let configs = CargoConfigs::new([] as [&str; 0]).unwrap();
     let env = EnvironmentMap::new(&configs);
 
     let list = match nextest_runner::list::TestList::new(

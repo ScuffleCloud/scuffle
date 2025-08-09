@@ -15,7 +15,7 @@ def _make_ffmpeg_wrapper_impl(ctx):
     runfiles = ctx.runfiles(files = [ctx.executable.binary], transitive_files = ctx.attr.libs.files)
 
     return [
-        DefaultInfo(files = depset([out]), executable = out, runfiles = runfiles)
+        DefaultInfo(files = depset([out]), executable = out, runfiles = runfiles),
     ]
 
 make_ffmpeg_wrapper = rule(
@@ -29,7 +29,7 @@ make_ffmpeg_wrapper = rule(
         "_template_file_win": attr.label(default = ":ffmpeg/wrapper.bat", allow_single_file = True),
         "_template_file": attr.label(default = ":ffmpeg/wrapper.sh", allow_single_file = True),
         "_windows_constraint": attr.label(
-            default = "@platforms//os:windows"
+            default = "@platforms//os:windows",
         ),
     },
     executable = True,

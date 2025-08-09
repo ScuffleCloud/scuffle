@@ -58,9 +58,14 @@ service SessionsService {
         };
     }
 
-    rpc LoginWithWebauthnPublicKey(LoginWithWebauthnPublicKeyRequest) returns (NewUserSessionToken) {
+    rpc LoginWithWebauthn(LoginWithWebauthnRequest) returns (LoginWithWebauthnResponse) {
         option (tinc.method).endpoint = {
             post: "/sessions/webauthn"
+        };
+    }
+    rpc CompleteLoginWithWebauthn(CompleteLoginWithWebauthnRequest) returns (NewUserSessionToken) {
+        option (tinc.method).endpoint = {
+            post: "/sessions/webauthn/complete"
         };
     }
 
@@ -156,6 +161,7 @@ message LoginWithEmailOptionsRequest {
 enum LoginWithEmailOptions {
     PASSWORD = 0;
     MAGIC_LINK = 1;
+    WEBAUTHN = 2;
 }
 
 message LoginWithEmailOptionsResponse {
@@ -208,19 +214,22 @@ message CompleteLoginWithGoogleResponse {
     }
 }
 
-// https://developer.mozilla.org/en-US/docs/Web/API/PublicKeyCredential
-message LoginWithWebauthnPublicKeyRequest {
-    bytes credential_id = 1;
-    AuthenticatorAssertionResponse response = 2;
-    Device device = 3;
+message LoginWithWebauthnRequest {
+    string email = 1 [(tinc.field).constraint.string.email = true];
 }
 
-// https://developer.mozilla.org/en-US/docs/Web/API/AuthenticatorAssertionResponse
-// https://w3c.github.io/webauthn/#iface-authenticatorassertionresponse
-message AuthenticatorAssertionResponse {
-    bytes client_data_json = 1;
-    bytes authenticator_data = 2;
-    bytes signature = 3;
+message LoginWithWebauthnResponse {
+    // JSON encoded
+    // https://developer.mozilla.org/en-US/docs/Web/API/CredentialsContainer/get#options
+    // https://docs.rs/webauthn-rs/latest/webauthn_rs/prelude/struct.RequestChallengeResponse.html
+    string options_json = 1;
+}
+
+message CompleteLoginWithWebauthnRequest {
+    // JSON encoded
+    // https://docs.rs/webauthn-rs/latest/webauthn_rs/prelude/struct.PublicKeyCredential.html
+    string response_json = 1;
+    Device device = 2;
 }
 
 message CreateUserSessionRequestRequest {
@@ -253,8 +262,9 @@ message CompleteUserSessionRequestRequest {
 }
 
 message ValidateMfaForUserSessionWebauthn {
-    bytes credential_id = 1;
-    AuthenticatorAssertionResponse response = 2;
+    // JSON encoded
+    // https://docs.rs/webauthn-rs/latest/webauthn_rs/prelude/struct.PublicKeyCredential.html
+    string response_json = 1;
 }
 
 message ValidateMfaForUserSessionTotp {

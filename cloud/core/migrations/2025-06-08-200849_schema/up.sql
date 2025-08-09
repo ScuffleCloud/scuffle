@@ -126,6 +126,28 @@ ON DELETE CASCADE;
 
 CREATE INDEX ON "mfa_totps"("user_id");
 
+CREATE TABLE "mfa_webauthn_reg_sessions" (
+    "id" UUID PRIMARY KEY,
+    "user_id" UUID NOT NULL,
+    "state" JSONB NOT NULL, -- contains the PasskeyRegistration (https://docs.rs/webauthn-rs/latest/webauthn_rs/prelude/struct.PasskeyRegistration.html)
+    "expires_at" TIMESTAMPTZ NOT NULL
+);
+
+ALTER TABLE "mfa_webauthn_reg_sessions"
+ADD FOREIGN KEY("user_id") REFERENCES "users"("id")
+ON DELETE CASCADE;
+
+CREATE TABLE "mfa_webauthn_auth_sessions" (
+    "id" UUID PRIMARY KEY,
+    "user_id" UUID NOT NULL,
+    "state" JSONB NOT NULL, -- contains the PasskeyAuthentication (https://docs.rs/webauthn-rs/latest/webauthn_rs/prelude/struct.PasskeyAuthentication.html)
+    "expires_at" TIMESTAMPTZ NOT NULL
+);
+
+ALTER TABLE "mfa_webauthn_auth_sessions"
+ADD FOREIGN KEY("user_id") REFERENCES "users"("id")
+ON DELETE CASCADE;
+
 CREATE TABLE "mfa_webauthn_credentials" (
     "id" UUID PRIMARY KEY,
     "user_id" UUID NOT NULL,

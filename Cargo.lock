@@ -4840,6 +4840,7 @@ dependencies = [
  "base64 0.22.1",
  "cedar-policy",
  "chrono",
+ "ciborium",
  "derive_more",
  "diesel",
  "diesel-async",

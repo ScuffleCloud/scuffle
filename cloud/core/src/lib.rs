@@ -36,7 +36,6 @@ mod schema;
 pub mod services;
 mod std_ext;
 mod totp;
-mod webauthn;
 
 pub trait CoreConfig:
     scuffle_bootstrap::Global

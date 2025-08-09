@@ -1,9 +1,12 @@
-use diesel::{ExpressionMethods, OptionalExtension, QueryDsl, SelectableHelper};
-use diesel_async::RunQueryDsl;
+use diesel::result::EmptyChangeset;
+use diesel::{AsChangeset, ExpressionMethods, OptionalExtension, QueryDsl, SelectableHelper};
+use diesel_async::scoped_futures::ScopedFutureExt;
+use diesel_async::{AsyncConnection, RunQueryDsl};
 use tonic_types::{ErrorDetails, StatusExt};
 
 use crate::CoreConfig;
 use crate::cedar::Action;
+use crate::common::TxError;
 use crate::http_ext::RequestExt;
 use crate::models::{Organization, OrganizationId, OrganizationMember, UserId};
 use crate::schema::{organization_members, organizations};
@@ -49,7 +52,10 @@ impl<G: CoreConfig> pb::scufflecloud::core::v1::organizations_service_server::Or
         let (_, ext, payload) = req.into_parts();
         let session = ext.session_or_err()?;
 
-        let id: OrganizationId = payload.id.parse().into_tonic_internal_err("failed to parse id")?;
+        let id: OrganizationId = payload
+            .id
+            .parse()
+            .map_err(|e| tonic::Status::invalid_argument(format!("invalid ID: {e}")))?;
 
         session.is_authorized(global, session.user_id, Action::GetOrganization, id)?;
 
@@ -68,6 +74,76 @@ impl<G: CoreConfig> pb::scufflecloud::core::v1::organizations_service_server::Or
         Ok(tonic::Response::new(organization.into()))
     }
 
+    async fn update_organization(
+        &self,
+        req: tonic::Request<pb::scufflecloud::core::v1::UpdateOrganizationRequest>,
+    ) -> Result<tonic::Response<pb::scufflecloud::core::v1::Organization>, tonic::Status> {
+        let global = &req.global::<G>()?;
+        let (_, ext, payload) = req.into_parts();
+        let session = ext.session_or_err()?;
+
+        let id: OrganizationId = payload
+            .id
+            .parse()
+            .map_err(|e| tonic::Status::invalid_argument(format!("invalid ID: {e}")))?;
+
+        if payload.owner.is_some() {
+            session.is_authorized(global, session.user_id, Action::UpdateOrganizationOwner, id)?;
+        }
+        if payload.name.is_some() {
+            session.is_authorized(global, session.user_id, Action::UpdateOrganizationName, id)?;
+        }
+
+        let owner_update_id = payload
+            .owner
+            .map(|owner| {
+                owner
+                    .owner_id
+                    .parse::<UserId>()
+                    .map_err(|e| tonic::Status::invalid_argument(format!("invalid owner ID: {e}")))
+            })
+            .transpose()?;
+
+        let mut db = global.db().await.into_tonic_internal_err("failed to connect to database")?;
+
+        let organization = db
+            .transaction::<_, TxError, _>(move |conn| {
+                async move {
+                    let mut organization = organizations::dsl::organizations
+                        .find(id)
+                        .first::<Organization>(conn)
+                        .await
+                        .into_tonic_internal_err("failed to load organization")?;
+
+                    if let Some(owner_update_id) = owner_update_id {
+                        organization = diesel::update(organizations::dsl::organizations)
+                            .filter(organizations::dsl::id.eq(id))
+                            .set(organizations::dsl::owner_id.eq(&owner_update_id))
+                            .returning(Organization::as_returning())
+                            .get_result::<Organization>(conn)
+                            .await
+                            .into_tonic_internal_err("failed to update organization owner")?;
+                    }
+
+                    if let Some(name) = &payload.name {
+                        organization = diesel::update(organizations::dsl::organizations)
+                            .filter(organizations::dsl::id.eq(id))
+                            .set(organizations::dsl::name.eq(&name.name))
+                            .returning(Organization::as_returning())
+                            .get_result::<Organization>(conn)
+                            .await
+                            .into_tonic_internal_err("failed to update organization name")?;
+                    }
+
+                    Ok(organization)
+                }
+                .scope_boxed()
+            })
+            .await?;
+
+        Ok(tonic::Response::new(organization.into()))
+    }
+
     async fn list_organization_members(
         &self,
         req: tonic::Request<pb::scufflecloud::core::v1::OrganizationByIdRequest>,
@@ -76,7 +152,10 @@ impl<G: CoreConfig> pb::scufflecloud::core::v1::organizations_service_server::Or
         let (_, ext, payload) = req.into_parts();
         let session = ext.session_or_err()?;
 
-        let id: OrganizationId = payload.id.parse().into_tonic_internal_err("failed to parse id")?;
+        let id: OrganizationId = payload
+            .id
+            .parse()
+            .map_err(|e| tonic::Status::invalid_argument(format!("invalid ID: {e}")))?;
 
         session.is_authorized(global, session.user_id, Action::ListOrganizationMembers, id)?;
 
@@ -101,7 +180,10 @@ impl<G: CoreConfig> pb::scufflecloud::core::v1::organizations_service_server::Or
         let (_, ext, payload) = req.into_parts();
         let session = ext.session_or_err()?;
 
-        let id: UserId = payload.id.parse().into_tonic_internal_err("failed to parse id")?;
+        let id: UserId = payload
+            .id
+            .parse()
+            .map_err(|e| tonic::Status::invalid_argument(format!("invalid ID: {e}")))?;
 
         session.is_authorized(global, session.user_id, Action::ListOrganizationsByUser, id)?;
 

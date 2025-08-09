@@ -107,8 +107,14 @@ pub enum Action {
     CreateUserEmail,
     #[display("delete_user_email")]
     DeleteUserEmail,
-    #[display("list_user_webauthn_credentials")]
-    ListUserWebauthnCredentials,
+    #[display("create_webauthn_credential")]
+    CreateWebauthnCredential,
+    #[display("delete_webauthn_credential")]
+    DeleteWebauthnCredential,
+    #[display("list_webauthn_credentials")]
+    ListWebauthnCredentials,
+    #[display("delete_user")]
+    DeleteUser,
 
     // UserSession related
     #[display("approve_user_session_request")]
@@ -123,6 +129,10 @@ pub enum Action {
     CreateOrganization,
     #[display("get_organization")]
     GetOrganization,
+    #[display("update_organization_owner")]
+    UpdateOrganizationOwner,
+    #[display("update_organization_name")]
+    UpdateOrganizationName,
     #[display("list_organization_members")]
     ListOrganizationMembers,
     #[display("list_organizations_by_user")]

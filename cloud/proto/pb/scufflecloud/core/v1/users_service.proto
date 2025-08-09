@@ -16,21 +16,11 @@ service UsersService {
             get: "/users/{id}"
         };
     }
-    rpc UpdateUserPassword(UpdateUserPasswordRequest) returns (User) {
+    rpc UpdateUser(UpdateUserRequest) returns (User) {
         option (tinc.method).endpoint = {
-            patch: "/users/{id}/password"
+            patch: "/users/{id}"
         };
-    }
-    rpc UpdateUserNames(UpdateUserNamesRequest) returns (User) {
-        option (tinc.method).endpoint = {
-            patch: "/users/{id}/names"
-        };
-    }
-    rpc UpdateUserPrimaryEmail(UpdateUserPrimaryEmailRequest) returns (User) {
-        option (tinc.method).endpoint = {
-            patch: "/users/{id}/primary-email"
-        };
-    }
+    };
 
     rpc ListUserEmails(UserByIdRequest) returns (UserEmailsList) {
         option (tinc.method).endpoint = {
@@ -53,40 +43,86 @@ service UsersService {
         };
     }
 
-    rpc ListUserWebauthnCredentials(UserByIdRequest) returns (UserWebauthnCredentialsList) {
+    rpc CreateWebauthnCredential(CreateWebauthnCredentialRequest) returns (CreateWebauthnCredentialResponse) {
+        option (tinc.method).endpoint = {
+            post: "/users/{id}/webauthn-credentials"
+        };
+    }
+    rpc CompleteCreateWebauthnCredential(CompleteCreateWebauthnCredentialRequest) returns (WebauthnCredential) {
+        option (tinc.method).endpoint = {
+            post: "/users/{id}/webauthn-credentials/complete"
+        };
+    }
+    rpc ListWebauthnCredentials(UserByIdRequest) returns (WebauthnCredentialsList) {
         option (tinc.method).endpoint = {
             get: "/users/{id}/webauthn-credentials"
         };
     }
+    rpc DeleteWebauthnCredential(DeleteWebauthnCredentialRequest) returns (WebauthnCredential) {
+        option (tinc.method).endpoint = {
+            delete: "/users/{user_id}/webauthn-credentials/{id}"
+        };
+    }
+
+    rpc CreateTotpCredential(UserByIdRequest) returns (NewTotpCredential) {
+        option (tinc.method).endpoint = {
+            post: "/users/{id}/totp-credentials"
+        };
+    }
+    rpc ListTotpCredentials(UserByIdRequest) returns (TotpCredentialsList) {
+        option (tinc.method).endpoint = {
+            get: "/users/{id}/totp-credentials"
+        };
+    }
+    rpc DeleteTotpCredential(DeleteTotpCredentialRequest) returns (TotpCredential) {
+        option (tinc.method).endpoint = {
+            delete: "/users/{user_id}/totp-credentials/{id}"
+        };
+    }
+
+    rpc RegenerateRecoveryCodes(UserByIdRequest) returns (RecoveryCodes) {
+        option (tinc.method).endpoint = {
+            post: "/users/{id}/recovery-codes"
+        };
+    }
+
+    rpc DeleteUser(UserByIdRequest) returns (User) {
+        option (tinc.method).endpoint = {
+            delete: "/users/{id}"
+        };
+    }
 }
 
-message UpdateUserPasswordRequest {
+message UpdateUserRequest {
     // Can only be the authenticated user's ID.
     string id = 1 [(string_constraint).id = true];
-    optional string current_password = 2 [(string_constraint).password = true];
-    string new_password = 3 [(string_constraint).password = true];
+    optional UpdateUserPassword password = 2;
+    optional UpdateUserNames names = 3;
+    optional UpdateUserPrimaryEmail primary_email = 4;
 }
 
-message UpdateUserNamesRequest {
-    string id = 1 [(string_constraint).id = true];
-    string preferred_name = 2 [(tinc.field).constraint.string = {
+message UpdateUserPassword {
+    optional string current_password = 1 [(string_constraint).password = true];
+    string new_password = 2 [(string_constraint).password = true];
+}
+
+message UpdateUserNames {
+    string preferred_name = 1 [(tinc.field).constraint.string = {
         min_len: 1,
         max_len: 255
     }];
-    string first_name = 3 [(tinc.field).constraint.string = {
+    string first_name = 2 [(tinc.field).constraint.string = {
         min_len: 1,
         max_len: 255
     }];
-    string last_name = 4 [(tinc.field).constraint.string = {
+    string last_name = 3 [(tinc.field).constraint.string = {
         min_len: 1,
         max_len: 255
     }];
 }
 
-message UpdateUserPrimaryEmailRequest {
-    // Can only be the authenticated user's ID.
-    string id = 1 [(string_constraint).id = true];
-    string primary_email = 2 [(tinc.field).constraint.string.email = true];
+message UpdateUserPrimaryEmail {
+    string primary_email = 1 [(tinc.field).constraint.string.email = true];
 }
 
 message UserEmailsList {
@@ -102,7 +138,7 @@ message CreateUserEmailRequest {
 message CompleteCreateUserEmailRequest {
     // Can only be the authenticated user's ID.
     string id = 1 [(string_constraint).id = true];
-    bytes code = 2;
+    bytes code = 2 [(tinc.field).constraint.bytes.len = 32];
 }
 
 message DeleteUserEmailRequest {
@@ -110,12 +146,57 @@ message DeleteUserEmailRequest {
     string email = 2 [(tinc.field).constraint.string.email = true];
 }
 
-message MfaWebauthnCredential {
+message WebauthnCredential {
     string id = 1 [(string_constraint).id = true];
     string user_id = 2 [(string_constraint).id = true];
-    bytes credential_id = 3;
+    bytes credential_id = 3 [(tinc.field).constraint.bytes.max_len = 1023];
 }
 
-message UserWebauthnCredentialsList {
-    repeated MfaWebauthnCredential credentials = 1;
+message WebauthnCredentialsList {
+    repeated WebauthnCredential credentials = 1;
+}
+
+message CreateWebauthnCredentialRequest {
+    string id = 1 [(string_constraint).id = true];
+}
+
+message CreateWebauthnCredentialResponse {
+    // JSON encoded
+    // https://developer.mozilla.org/en-US/docs/Web/API/CredentialsContainer/create#options
+    // https://docs.rs/webauthn-rs/latest/webauthn_rs/prelude/struct.PublicKeyCredentialCreationOptions.html
+    string options_json = 1;
+}
+
+message CompleteCreateWebauthnCredentialRequest {
+    string id = 1 [(string_constraint).id = true];
+    // JSON encoded
+    // https://docs.rs/webauthn-rs/latest/webauthn_rs/prelude/struct.RegisterPublicKeyCredential.html
+    // https://w3c.github.io/webauthn/#iface-pkcredential
+    string response_json = 2;
+}
+
+message DeleteWebauthnCredentialRequest {
+    string user_id = 1 [(string_constraint).id = true];
+    string id = 2 [(string_constraint).id = true];
+}
+
+message NewTotpCredential {
+    string id = 1 [(string_constraint).id = true];
+}
+
+message TotpCredential {
+    string id = 1 [(string_constraint).id = true];
+}
+
+message TotpCredentialsList {
+    repeated TotpCredential credentials = 1;
+}
+
+message DeleteTotpCredentialRequest {
+    string user_id = 1 [(string_constraint).id = true];
+    string id = 2 [(string_constraint).id = true];
+}
+
+message RecoveryCodes {
+    repeated string codes = 1 [(tinc.field).constraint.repeated.item.string.len = 8];
 }

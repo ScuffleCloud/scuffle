@@ -16,7 +16,6 @@ mod organization_invitations;
 mod organizations;
 mod sessions;
 mod users;
-mod webauthn_challenges;
 
 #[derive(Debug)]
 pub struct CoreSvc<G> {
@@ -43,10 +42,6 @@ impl<G: CoreConfig> scuffle_bootstrap::Service<G> for CoreSvc<G> {
         let sessions_svc_tinc =
             pb::scufflecloud::core::v1::sessions_service_tinc::SessionsServiceTinc::new(CoreSvc::<G>::default());
         let users_svc_tinc = pb::scufflecloud::core::v1::users_service_tinc::UsersServiceTinc::new(CoreSvc::<G>::default());
-        let webauthn_challenges_svc_tinc =
-            pb::scufflecloud::core::v1::webauthn_challenges_service_tinc::WebauthnChallengesServiceTinc::new(
-                CoreSvc::<G>::default(),
-            );
 
         let cors = CorsLayer::new()
             .allow_methods([Method::GET, Method::POST, Method::OPTIONS])
@@ -57,7 +52,6 @@ impl<G: CoreConfig> scuffle_bootstrap::Service<G> for CoreSvc<G> {
         openapi_schema.merge(organizations_svc_tinc.openapi_schema());
         openapi_schema.merge(sessions_svc_tinc.openapi_schema());
         openapi_schema.merge(users_svc_tinc.openapi_schema());
-        openapi_schema.merge(webauthn_challenges_svc_tinc.openapi_schema());
         openapi_schema.info.title = "Scuffle Cloud Core API".to_string();
         openapi_schema.info.version = "v1".to_string();
         openapi_schema.servers = Some(vec![Server::new("/v1")]);
@@ -68,7 +62,6 @@ impl<G: CoreConfig> scuffle_bootstrap::Service<G> for CoreSvc<G> {
             .merge(organizations_svc_tinc.into_router())
             .merge(sessions_svc_tinc.into_router())
             .merge(users_svc_tinc.into_router())
-            .merge(webauthn_challenges_svc_tinc.into_router())
             .layer(cors);
 
         // gRPC
@@ -82,10 +75,6 @@ impl<G: CoreConfig> scuffle_bootstrap::Service<G> for CoreSvc<G> {
         let sessions_svc =
             pb::scufflecloud::core::v1::sessions_service_server::SessionsServiceServer::new(CoreSvc::<G>::default());
         let users_svc = pb::scufflecloud::core::v1::users_service_server::UsersServiceServer::new(CoreSvc::<G>::default());
-        let webauthn_challenges_svc =
-            pb::scufflecloud::core::v1::webauthn_challenges_service_server::WebauthnChallengesServiceServer::new(
-                CoreSvc::<G>::default(),
-            );
 
         let reflection_v1_svc = tonic_reflection::server::Builder::configure()
             .register_encoded_file_descriptor_set(pb::ANNOTATIONS_PB)
@@ -99,7 +88,6 @@ impl<G: CoreConfig> scuffle_bootstrap::Service<G> for CoreSvc<G> {
         builder.add_service(organizations_svc);
         builder.add_service(sessions_svc);
         builder.add_service(users_svc);
-        builder.add_service(webauthn_challenges_svc);
         builder.add_service(reflection_v1_svc);
         builder.add_service(reflection_v1alpha_svc);
         let grpc_router = builder.routes().prepare().into_axum_router();

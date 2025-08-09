@@ -21,7 +21,7 @@ use crate::schema::{
 };
 use crate::services::CoreSvc;
 use crate::std_ext::{OptionExt, ResultExt};
-use crate::{CoreConfig, captcha, google_api, totp, webauthn};
+use crate::{CoreConfig, captcha, google_api, totp};
 
 #[async_trait::async_trait]
 impl<G: CoreConfig> pb::scufflecloud::core::v1::sessions_service_server::SessionsService for CoreSvc<G> {
@@ -516,10 +516,10 @@ impl<G: CoreConfig> pb::scufflecloud::core::v1::sessions_service_server::Session
         Ok(tonic::Response::new(response))
     }
 
-    async fn login_with_webauthn_public_key(
+    async fn login_with_webauthn(
         &self,
-        req: tonic::Request<pb::scufflecloud::core::v1::LoginWithWebauthnPublicKeyRequest>,
-    ) -> Result<tonic::Response<pb::scufflecloud::core::v1::NewUserSessionToken>, tonic::Status> {
+        req: tonic::Request<pb::scufflecloud::core::v1::LoginWithWebauthnRequest>,
+    ) -> Result<tonic::Response<pb::scufflecloud::core::v1::LoginWithWebauthnResponse>, tonic::Status> {
         let global = &req.global::<G>()?;
         let ip_info = req.ip_address_info()?;
         let payload = req.into_inner();
@@ -548,6 +548,13 @@ impl<G: CoreConfig> pb::scufflecloud::core::v1::sessions_service_server::Session
             .await?;
 
         Ok(tonic::Response::new(new_token))
+    }
+
+    async fn complete_login_with_webauthn(
+        &self,
+        req: tonic::Request<pb::scufflecloud::core::v1::CompleteLoginWithWebauthnRequest>,
+    ) -> Result<tonic::Response<pb::scufflecloud::core::v1::NewUserSessionToken>, tonic::Status> {
+        todo!()
     }
 
     async fn create_user_session_request(
@@ -589,7 +596,10 @@ impl<G: CoreConfig> pb::scufflecloud::core::v1::sessions_service_server::Session
 
         let mut db = global.db().await.into_tonic_internal_err("failed to connect to database")?;
 
-        let id: UserSessionRequestId = payload.id.parse().into_tonic_internal_err("failed to parse id")?;
+        let id: UserSessionRequestId = payload
+            .id
+            .parse()
+            .map_err(|e| tonic::Status::invalid_argument(format!("invalid ID: {e}")))?;
 
         let Some(session_request) = user_session_requests::dsl::user_session_requests
             .find(&id)
@@ -697,7 +707,10 @@ impl<G: CoreConfig> pb::scufflecloud::core::v1::sessions_service_server::Session
 
         let mut db = global.db().await.into_tonic_internal_err("failed to connect to database")?;
 
-        let id: UserSessionRequestId = payload.id.parse().into_tonic_internal_err("failed to parse id")?;
+        let id: UserSessionRequestId = payload
+            .id
+            .parse()
+            .map_err(|e| tonic::Status::invalid_argument(format!("invalid ID: {e}")))?;
         let device = payload.device.require("device")?;
 
         let new_token = db

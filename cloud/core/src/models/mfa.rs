@@ -62,7 +62,7 @@ impl CedarEntity for MfaWebauthnCredential {
     }
 }
 
-impl From<MfaWebauthnCredential> for pb::scufflecloud::core::v1::MfaWebauthnCredential {
+impl From<MfaWebauthnCredential> for pb::scufflecloud::core::v1::WebauthnCredential {
     fn from(value: MfaWebauthnCredential) -> Self {
         Self {
             id: value.id.to_string(),
@@ -70,4 +70,38 @@ impl From<MfaWebauthnCredential> for pb::scufflecloud::core::v1::MfaWebauthnCred
             credential_id: value.credential_id,
         }
     }
+}
+
+pub(crate) type MfaWebauthnRegistrationSessionId = Id<MfaWebauthnRegistrationSession>;
+
+#[derive(Queryable, Selectable, Insertable, Identifiable, AsChangeset, Associations, Debug)]
+#[diesel(table_name = crate::schema::mfa_webauthn_reg_sessions)]
+#[diesel(belongs_to(User))]
+#[diesel(check_for_backend(diesel::pg::Pg))]
+pub struct MfaWebauthnRegistrationSession {
+    pub id: MfaWebauthnRegistrationSessionId,
+    pub user_id: UserId,
+    pub state: serde_json::Value,
+    pub expires_at: chrono::DateTime<chrono::Utc>,
+}
+
+impl PrefixedId for MfaWebauthnRegistrationSession {
+    const PREFIX: &'static str = "mfwr";
+}
+
+pub(crate) type MfaWebauthnAuthenticationSessionId = Id<MfaWebauthnAuthenticationSession>;
+
+#[derive(Queryable, Selectable, Insertable, Identifiable, AsChangeset, Associations, Debug)]
+#[diesel(table_name = crate::schema::mfa_webauthn_auth_sessions)]
+#[diesel(belongs_to(User))]
+#[diesel(check_for_backend(diesel::pg::Pg))]
+pub struct MfaWebauthnAuthenticationSession {
+    pub id: MfaWebauthnAuthenticationSessionId,
+    pub user_id: UserId,
+    pub state: serde_json::Value,
+    pub expires_at: chrono::DateTime<chrono::Utc>,
+}
+
+impl PrefixedId for MfaWebauthnAuthenticationSession {
+    const PREFIX: &'static str = "mfwa";
 }

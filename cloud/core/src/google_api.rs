@@ -60,13 +60,13 @@ pub(crate) fn authorization_url<G: CoreConfig>(global: &Arc<G>, state: &str) -> 
     format!(
         "https://accounts.google.com/o/oauth2/v2/auth?client_id={}&redirect_uri={}&response_type=code&scope={}&state={state}",
         global.google_client_id(),
-        global.dashboard_url(),
+        urlencoding::encode(global.dashboard_origin().as_str()),
         ALL_SCOPES.join("%20"), // URL-encoded space
     )
 }
 
 pub(crate) async fn request_tokens<G: CoreConfig>(global: &Arc<G>, code: &str) -> Result<GoogleToken, GoogleTokenError> {
-    let redirect_uri = format!("{}/oauth2-callback/google", global.dashboard_url());
+    let redirect_uri = format!("{}/oauth2-callback/google", global.dashboard_origin());
 
     let tokens: GoogleToken = global
         .http_client()

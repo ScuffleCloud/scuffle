@@ -6,14 +6,17 @@ use diesel_async::{AsyncConnection, RunQueryDsl};
 use tonic::Code;
 use tonic_types::{ErrorDetails, StatusExt};
 
-use crate::cedar::Action;
+use crate::cedar::{self, Action, CoreApplication};
 use crate::common::TxError;
 use crate::http_ext::RequestExt;
 use crate::models::{
-    EmailRegistrationRequest, EmailRegistrationRequestId, MfaWebauthnCredential, MfaWebauthnCredentialId, User, UserEmail,
-    UserId,
+    EmailRegistrationRequest, EmailRegistrationRequestId, MfaWebauthnAuthenticationSession, MfaWebauthnCredential,
+    MfaWebauthnCredentialId, MfaWebauthnRegistrationSession, User, UserEmail, UserId,
 };
-use crate::schema::{email_registration_requests, mfa_webauthn_credentials, user_emails, users};
+use crate::schema::{
+    email_registration_requests, mfa_webauthn_auth_sessions, mfa_webauthn_credentials, mfa_webauthn_reg_sessions,
+    user_emails, users,
+};
 use crate::services::CoreSvc;
 use crate::std_ext::{OptionExt, ResultExt};
 use crate::{CoreConfig, common};
@@ -411,6 +414,89 @@ impl<G: CoreConfig> pb::scufflecloud::core::v1::users_service_server::UsersServi
         req: tonic::Request<pb::scufflecloud::core::v1::CreateWebauthnCredentialRequest>,
     ) -> Result<tonic::Response<pb::scufflecloud::core::v1::CreateWebauthnCredentialResponse>, tonic::Status> {
         let global = &req.global::<G>()?;
+        let payload = req.into_inner();
+
+        let user_id: UserId = payload
+            .id
+            .parse()
+            .map_err(|e| tonic::Status::invalid_argument(format!("invalid user ID: {e}")))?;
+
+        let mut db = global.db().await.into_tonic_internal_err("failed to connect to database")?;
+
+        let options_json = db
+            .transaction::<_, TxError, _>(|conn| {
+                async move {
+                    let user = users::dsl::users
+                        .find(user_id)
+                        .select(User::as_select())
+                        .first::<User>(conn)
+                        .await
+                        .optional()
+                        .into_tonic_internal_err("failed to query user")?
+                        .ok_or_else(|| {
+                            tonic::Status::with_error_details(Code::NotFound, "user not found", ErrorDetails::new())
+                        })?;
+
+                    let exclude_credentials: Vec<_> = mfa_webauthn_credentials::dsl::mfa_webauthn_credentials
+                        .filter(mfa_webauthn_credentials::dsl::user_id.eq(user_id))
+                        .select(mfa_webauthn_credentials::dsl::credential_id)
+                        .load::<Vec<u8>>(conn)
+                        .await
+                        .into_tonic_internal_err("failed to query webauthn credentials")?
+                        .into_iter()
+                        .map(webauthn_rs::prelude::CredentialID::from)
+                        .collect();
+
+                    let user_name = user.primary_email.unwrap_or(user_id.to_string());
+                    let user_display_name = user.preferred_name.or_else(|| {
+                        if let (Some(first_name), Some(last_name)) = (user.first_name, user.last_name) {
+                            Some(format!("{} {}", first_name, last_name))
+                        } else {
+                            None
+                        }
+                    });
+
+                    let (response, state) = global
+                        .webauthn()
+                        .start_passkey_registration(
+                            user_id.into(),
+                            &user_name,
+                            user_display_name.as_ref().unwrap_or(&user_name),
+                            Some(exclude_credentials),
+                        )
+                        .into_tonic_internal_err("failed to start webauthn registration")?;
+
+                    let reg_session = MfaWebauthnRegistrationSession {
+                        user_id,
+                        state: serde_json::to_value(&state).into_tonic_internal_err("failed to serialize webauthn state")?,
+                        expires_at: chrono::Utc::now() + global.mfa_timeout(),
+                    };
+
+                    let options_json =
+                        serde_json::to_string(&response).into_tonic_internal_err("failed to serialize webauthn options")?;
+
+                    diesel::insert_into(mfa_webauthn_reg_sessions::dsl::mfa_webauthn_reg_sessions)
+                        .values(reg_session)
+                        .execute(conn)
+                        .await
+                        .into_tonic_internal_err("failed to insert webauthn authentication session")?;
+
+                    Ok(options_json)
+                }
+                .scope_boxed()
+            })
+            .await?;
+
+        Ok(tonic::Response::new(
+            pb::scufflecloud::core::v1::CreateWebauthnCredentialResponse { options_json },
+        ))
+    }
+
+    async fn complete_create_webauthn_credential(
+        &self,
+        req: tonic::Request<pb::scufflecloud::core::v1::CompleteCreateWebauthnCredentialRequest>,
+    ) -> Result<tonic::Response<pb::scufflecloud::core::v1::WebauthnCredential>, tonic::Status> {
+        let global = &req.global::<G>()?;
         let (_, ext, payload) = req.into_parts();
         let session = ext.session_or_err()?;
 
@@ -419,36 +505,67 @@ impl<G: CoreConfig> pb::scufflecloud::core::v1::users_service_server::UsersServi
             .parse()
             .map_err(|e| tonic::Status::invalid_argument(format!("invalid user ID format: {e}")))?;
 
-        let attestation_response = payload.response.require("response.response")?;
-
-        let new_credential = MfaWebauthnCredential {
-            id: MfaWebauthnCredentialId::new(),
-            credential_id: payload.credential_id,
-            user_id,
-            spki_data: attestation_response.public_key.clone(),
-        };
-
-        session.is_authorized(global, session.user_id, Action::CreateWebauthnCredential, &new_credential)?;
+        let reg = serde_json::from_str(&payload.response_json)
+            .into_tonic_err_with_field_violation("response_json", "invalid register public key credential")?;
 
         let mut db = global.db().await.into_tonic_internal_err("failed to get db connection")?;
 
-        // We do not verify the attestation certificate because we want to allow all kinds of devices to register.
+        let new_credential = db
+            .transaction::<_, TxError, _>(move |conn| {
+                async move {
+                    let state = diesel::delete(mfa_webauthn_reg_sessions::dsl::mfa_webauthn_reg_sessions)
+                        .filter(
+                            mfa_webauthn_reg_sessions::dsl::user_id
+                                .eq(user_id)
+                                .and(mfa_webauthn_reg_sessions::dsl::expires_at.gt(chrono::Utc::now())),
+                        )
+                        .returning(mfa_webauthn_reg_sessions::dsl::state)
+                        .get_result::<serde_json::Value>(conn)
+                        .await
+                        .optional()
+                        .into_tonic_internal_err("failed to query webauthn registration session")?
+                        .ok_or_else(|| {
+                            tonic::Status::with_error_details(
+                                tonic::Code::FailedPrecondition,
+                                "no webauthn registration session found",
+                                ErrorDetails::new(),
+                            )
+                        })?;
 
-        let new_credential = diesel::insert_into(mfa_webauthn_credentials::dsl::mfa_webauthn_credentials)
-            .values(&new_credential)
-            .returning(MfaWebauthnCredential::as_returning())
-            .get_result::<MfaWebauthnCredential>(&mut db)
-            .await
-            .into_tonic_internal_err("failed to insert webauthn credential")?;
+                    let state: webauthn_rs::prelude::PasskeyRegistration =
+                        serde_json::from_value(state).into_tonic_internal_err("failed to deserialize webauthn state")?;
+
+                    let credential = global
+                        .webauthn()
+                        .finish_passkey_registration(&reg, &state)
+                        .into_tonic_internal_err("failed to finish webauthn registration")?;
+
+                    let credential = MfaWebauthnCredential {
+                        id: MfaWebauthnCredentialId::new(),
+                        user_id,
+                        name: payload.name,
+                        credential_id: credential.cred_id().to_vec(),
+                        credential: serde_json::to_value(credential)
+                            .into_tonic_internal_err("failed to serialize credential")?,
+                        counter: None,
+                        last_used_at: chrono::Utc::now(),
+                    };
+
+                    session.is_authorized(global, session.user_id, Action::CreateWebauthnCredential, &credential)?;
+
+                    diesel::insert_into(mfa_webauthn_credentials::dsl::mfa_webauthn_credentials)
+                        .values(&credential)
+                        .execute(conn)
+                        .await
+                        .into_tonic_internal_err("failed to insert webauthn credential")?;
+
+                    Ok(credential)
+                }
+                .scope_boxed()
+            })
+            .await?;
 
         Ok(tonic::Response::new(new_credential.into()))
-    }
-
-    async fn complete_create_webauthn_credential(
-        &self,
-        req: tonic::Request<pb::scufflecloud::core::v1::CompleteCreateWebauthnCredentialRequest>,
-    ) -> Result<tonic::Response<pb::scufflecloud::core::v1::WebauthnCredential>, tonic::Status> {
-        todo!()
     }
 
     async fn list_webauthn_credentials(
@@ -514,6 +631,67 @@ impl<G: CoreConfig> pb::scufflecloud::core::v1::users_service_server::UsersServi
             .into_tonic_internal_err("failed to delete webauthn credential")?;
 
         Ok(tonic::Response::new(credential.into()))
+    }
+
+    async fn create_webauthn_challenge(
+        &self,
+        req: tonic::Request<pb::scufflecloud::core::v1::UserByIdRequest>,
+    ) -> Result<tonic::Response<pb::scufflecloud::core::v1::WebauthnChallenge>, tonic::Status> {
+        let global = &req.global::<G>()?;
+        let payload = req.into_inner();
+
+        let user_id: UserId = payload
+            .id
+            .parse()
+            .map_err(|e| tonic::Status::invalid_argument(format!("invalid user ID: {e}")))?;
+
+        cedar::is_authorized(global, None, user_id, Action::LoginWithWebauthn, CoreApplication)?;
+
+        let mut db = global.db().await.into_tonic_internal_err("failed to connect to database")?;
+
+        let options_json = db
+            .transaction::<_, TxError, _>(|conn| {
+                async move {
+                    let credentials = mfa_webauthn_credentials::dsl::mfa_webauthn_credentials
+                        .filter(mfa_webauthn_credentials::dsl::user_id.eq(user_id))
+                        .select(mfa_webauthn_credentials::dsl::credential)
+                        .load::<serde_json::Value>(conn)
+                        .await
+                        .into_tonic_internal_err("failed to query webauthn credentials")?
+                        .into_iter()
+                        .map(serde_json::from_value)
+                        .collect::<Result<Vec<webauthn_rs::prelude::Passkey>, _>>()
+                        .into_tonic_internal_err("failed to deserialize webauthn credentials")?;
+
+                    let (response, state) = global
+                        .webauthn()
+                        .start_passkey_authentication(&credentials)
+                        .into_tonic_internal_err("failed to start webauthn authentication")?;
+
+                    let auth_session = MfaWebauthnAuthenticationSession {
+                        user_id,
+                        state: serde_json::to_value(&state).into_tonic_internal_err("failed to serialize webauthn state")?,
+                        expires_at: chrono::Utc::now() + global.mfa_timeout(),
+                    };
+
+                    let options_json =
+                        serde_json::to_string(&response).into_tonic_internal_err("failed to serialize webauthn options")?;
+
+                    diesel::insert_into(mfa_webauthn_auth_sessions::dsl::mfa_webauthn_auth_sessions)
+                        .values(auth_session)
+                        .execute(conn)
+                        .await
+                        .into_tonic_internal_err("failed to insert webauthn authentication session")?;
+
+                    Ok(options_json)
+                }
+                .scope_boxed()
+            })
+            .await?;
+
+        Ok(tonic::Response::new(pb::scufflecloud::core::v1::WebauthnChallenge {
+            options_json,
+        }))
     }
 
     async fn create_totp_credential(

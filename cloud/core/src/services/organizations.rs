@@ -1,5 +1,4 @@
-use diesel::result::EmptyChangeset;
-use diesel::{AsChangeset, ExpressionMethods, OptionalExtension, QueryDsl, SelectableHelper};
+use diesel::{ExpressionMethods, OptionalExtension, QueryDsl, SelectableHelper};
 use diesel_async::scoped_futures::ScopedFutureExt;
 use diesel_async::{AsyncConnection, RunQueryDsl};
 use tonic_types::{ErrorDetails, StatusExt};

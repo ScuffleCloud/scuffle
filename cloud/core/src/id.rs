@@ -100,6 +100,12 @@ impl<T: PrefixedId> Clone for Id<T> {
 
 impl<T: PrefixedId> Copy for Id<T> {}
 
+impl<T: PrefixedId> From<Id<T>> for uuid::Uuid {
+    fn from(value: Id<T>) -> Self {
+        uuid::Uuid::from(value.id)
+    }
+}
+
 #[derive(Debug, thiserror::Error)]
 pub enum IdParseError {
     #[error("ID prefix does not match")]

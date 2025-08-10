@@ -53,6 +53,7 @@ lazy_static = { version = "1", default-features = false, features = ["spin_no_st
 libc = { version = "0.2" }
 log = { version = "0.4", default-features = false, features = ["std"] }
 memchr = { version = "2" }
+nom = { version = "7" }
 num-traits = { version = "0.2", features = ["i128", "libm"] }
 once_cell = { version = "1" }
 opentelemetry = { version = "0.30", features = ["spec_unstable_logs_enabled"] }
@@ -90,6 +91,8 @@ tracing-log = { version = "0.2", default-features = false, features = ["log-trac
 tracing-subscriber = { version = "0.3", features = ["env-filter"] }
 ulid = { version = "1", features = ["uuid"] }
 unicode-xid = { version = "0.2" }
+url = { version = "2", features = ["serde"] }
+uuid = { version = "1", features = ["serde", "v4"] }
 zeroize = { version = "1" }
 
 [build-dependencies]
@@ -106,6 +109,7 @@ config = { version = "0.15", default-features = false, features = ["ini", "json"
 crossbeam-utils = { version = "0.8" }
 crypto-common = { version = "0.1", default-features = false, features = ["std"] }
 digest = { version = "0.10", features = ["mac", "oid", "std"] }
+displaydoc = { version = "0.2" }
 either = { version = "1", features = ["use_std"] }
 fastrand = { version = "2" }
 form_urlencoded = { version = "1" }
@@ -131,6 +135,7 @@ lazy_static = { version = "1", default-features = false, features = ["spin_no_st
 libc = { version = "0.2" }
 log = { version = "0.4", default-features = false, features = ["std"] }
 memchr = { version = "2" }
+nom = { version = "7" }
 num-traits = { version = "0.2", features = ["i128", "libm"] }
 once_cell = { version = "1" }
 opentelemetry = { version = "0.30", features = ["spec_unstable_logs_enabled"] }
@@ -168,6 +173,8 @@ tracing-log = { version = "0.2", default-features = false, features = ["log-trac
 tracing-subscriber = { version = "0.3", features = ["env-filter"] }
 ulid = { version = "1", features = ["uuid"] }
 unicode-xid = { version = "0.2" }
+url = { version = "2", features = ["serde"] }
+uuid = { version = "1", features = ["serde", "v4"] }
 zeroize = { version = "1" }
 
 [target.x86_64-unknown-linux-gnu.dependencies]

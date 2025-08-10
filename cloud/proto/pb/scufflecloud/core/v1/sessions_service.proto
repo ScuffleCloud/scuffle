@@ -58,14 +58,9 @@ service SessionsService {
         };
     }
 
-    rpc LoginWithWebauthn(LoginWithWebauthnRequest) returns (LoginWithWebauthnResponse) {
+    rpc LoginWithWebauthn(LoginWithWebauthnRequest) returns (NewUserSessionToken) {
         option (tinc.method).endpoint = {
             post: "/sessions/webauthn"
-        };
-    }
-    rpc CompleteLoginWithWebauthn(CompleteLoginWithWebauthnRequest) returns (NewUserSessionToken) {
-        option (tinc.method).endpoint = {
-            post: "/sessions/webauthn/complete"
         };
     }
 
@@ -215,21 +210,11 @@ message CompleteLoginWithGoogleResponse {
 }
 
 message LoginWithWebauthnRequest {
-    string email = 1 [(tinc.field).constraint.string.email = true];
-}
-
-message LoginWithWebauthnResponse {
-    // JSON encoded
-    // https://developer.mozilla.org/en-US/docs/Web/API/CredentialsContainer/get#options
-    // https://docs.rs/webauthn-rs/latest/webauthn_rs/prelude/struct.RequestChallengeResponse.html
-    string options_json = 1;
-}
-
-message CompleteLoginWithWebauthnRequest {
+    string user_id = 1 [(string_constraint).id = true];
     // JSON encoded
     // https://docs.rs/webauthn-rs/latest/webauthn_rs/prelude/struct.PublicKeyCredential.html
-    string response_json = 1;
-    Device device = 2;
+    string response_json = 2;
+    Device device = 3;
 }
 
 message CreateUserSessionRequestRequest {

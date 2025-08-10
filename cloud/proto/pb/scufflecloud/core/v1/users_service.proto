@@ -63,6 +63,11 @@ service UsersService {
             delete: "/users/{user_id}/webauthn-credentials/{id}"
         };
     }
+    rpc CreateWebauthnChallenge(UserByIdRequest) returns (WebauthnChallenge) {
+        option (tinc.method).endpoint = {
+            post: "/users/{id}/webauthn-challenge"
+        };
+    }
 
     rpc CreateTotpCredential(UserByIdRequest) returns (NewTotpCredential) {
         option (tinc.method).endpoint = {
@@ -149,7 +154,6 @@ message DeleteUserEmailRequest {
 message WebauthnCredential {
     string id = 1 [(string_constraint).id = true];
     string user_id = 2 [(string_constraint).id = true];
-    bytes credential_id = 3 [(tinc.field).constraint.bytes.max_len = 1023];
 }
 
 message WebauthnCredentialsList {
@@ -169,15 +173,26 @@ message CreateWebauthnCredentialResponse {
 
 message CompleteCreateWebauthnCredentialRequest {
     string id = 1 [(string_constraint).id = true];
+    string name = 2 [(tinc.field).constraint.string = {
+        min_len: 1,
+        max_len: 255
+    }];
     // JSON encoded
     // https://docs.rs/webauthn-rs/latest/webauthn_rs/prelude/struct.RegisterPublicKeyCredential.html
     // https://w3c.github.io/webauthn/#iface-pkcredential
-    string response_json = 2;
+    string response_json = 3;
 }
 
 message DeleteWebauthnCredentialRequest {
     string user_id = 1 [(string_constraint).id = true];
     string id = 2 [(string_constraint).id = true];
+}
+
+message WebauthnChallenge {
+    // JSON encoded
+    // https://developer.mozilla.org/en-US/docs/Web/API/CredentialsContainer/get#options
+    // https://docs.rs/webauthn-rs/latest/webauthn_rs/prelude/struct.RequestChallengeResponse.html
+    string options_json = 1;
 }
 
 message NewTotpCredential {

@@ -12,7 +12,7 @@ use crate::common::{self, NewUserData, TxError};
 use crate::http_ext::RequestExt;
 use crate::models::{
     EmailRegistrationRequest, EmailRegistrationRequestId, MagicLinkUserSessionRequest, MagicLinkUserSessionRequestId,
-    Organization, OrganizationMember, UserGoogleAccount, UserSession, UserSessionRequest, UserSessionRequestId,
+    Organization, OrganizationMember, UserGoogleAccount, UserId, UserSession, UserSessionRequest, UserSessionRequestId,
     UserSessionTokenId,
 };
 use crate::schema::{
@@ -519,27 +519,30 @@ impl<G: CoreConfig> pb::scufflecloud::core::v1::sessions_service_server::Session
     async fn login_with_webauthn(
         &self,
         req: tonic::Request<pb::scufflecloud::core::v1::LoginWithWebauthnRequest>,
-    ) -> Result<tonic::Response<pb::scufflecloud::core::v1::LoginWithWebauthnResponse>, tonic::Status> {
+    ) -> Result<tonic::Response<pb::scufflecloud::core::v1::NewUserSessionToken>, tonic::Status> {
         let global = &req.global::<G>()?;
         let ip_info = req.ip_address_info()?;
         let payload = req.into_inner();
 
-        let mut db = global.db().await.into_tonic_internal_err("failed to connect to database")?;
-
-        let assertion_response = payload.response.require("response")?;
+        let user_id: UserId = payload
+            .user_id
+            .parse()
+            .map_err(|e| tonic::Status::invalid_argument(format!("invalid user ID: {e}")))?;
+        let pk_cred: webauthn_rs::prelude::PublicKeyCredential = serde_json::from_str(&payload.response_json)
+            .into_tonic_err_with_field_violation("response_json", "invalid public key credential")?;
         let device = payload.device.require("device")?;
+
+        cedar::is_authorized(global, None, user_id, Action::LoginWithWebauthn, CoreApplication)?;
+
+        let mut db = global.db().await.into_tonic_internal_err("failed to connect to database")?;
 
         let new_token = db
             .transaction::<_, TxError, _>(|conn| {
                 async move {
-                    let webauthn_pk =
-                        webauthn::process_challenge(global, conn, &payload.credential_id, &assertion_response).await?;
-
-                    cedar::is_authorized(global, None, webauthn_pk.user_id, Action::LoginWithWebauthn, CoreApplication)?;
+                    common::finish_webauthn_authentication(global, conn, user_id, &pk_cred).await?;
 
                     // Create a new session for the user
-                    let new_token =
-                        common::create_session(global, conn, webauthn_pk.user_id, device, &ip_info, false).await?;
+                    let new_token = common::create_session(global, conn, user_id, device, &ip_info, false).await?;
 
                     Ok(new_token)
                 }
@@ -548,13 +551,6 @@ impl<G: CoreConfig> pb::scufflecloud::core::v1::sessions_service_server::Session
             .await?;
 
         Ok(tonic::Response::new(new_token))
-    }
-
-    async fn complete_login_with_webauthn(
-        &self,
-        req: tonic::Request<pb::scufflecloud::core::v1::CompleteLoginWithWebauthnRequest>,
-    ) -> Result<tonic::Response<pb::scufflecloud::core::v1::NewUserSessionToken>, tonic::Status> {
-        todo!()
     }
 
     async fn create_user_session_request(
@@ -771,10 +767,11 @@ impl<G: CoreConfig> pb::scufflecloud::core::v1::sessions_service_server::Session
                             totp::process_token(conn, session.user_id, &code).await?;
                         }
                         pb::scufflecloud::core::v1::validate_mfa_for_user_session_request::Response::Webauthn(
-                            pb::scufflecloud::core::v1::ValidateMfaForUserSessionWebauthn { credential_id, response },
+                            pb::scufflecloud::core::v1::ValidateMfaForUserSessionWebauthn { response_json },
                         ) => {
-                            let assertion_response = response.require("response.response")?;
-                            webauthn::process_challenge(global, conn, &credential_id, &assertion_response).await?;
+                            let pk_cred: webauthn_rs::prelude::PublicKeyCredential = serde_json::from_str(&response_json)
+                                .into_tonic_err_with_field_violation("response_json", "invalid public key credential")?;
+                            common::finish_webauthn_authentication(global, conn, session.user_id, &pk_cred).await?;
                         }
                     }
 

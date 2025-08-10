@@ -1,7 +1,10 @@
 use std::sync::Arc;
 
 use argon2::{Argon2, PasswordVerifier};
-use diesel::{ExpressionMethods, JoinOnDsl, NullableExpressionMethods, OptionalExtension, QueryDsl, SelectableHelper};
+use diesel::{
+    BoolExpressionMethods, ExpressionMethods, JoinOnDsl, NullableExpressionMethods, OptionalExtension, QueryDsl,
+    SelectableHelper,
+};
 use diesel_async::RunQueryDsl;
 use pkcs8::DecodePublicKey;
 use rand::TryRngCore;
@@ -14,8 +17,8 @@ use crate::chrono_ext::ChronoDateTimeExt;
 use crate::google_api::GoogleIdToken;
 use crate::id::Id;
 use crate::middleware::IpAddressInfo;
-use crate::models::{User, UserEmail, UserId, UserSession};
-use crate::schema::{mfa_totps, mfa_webauthn_credentials, user_emails, user_sessions, users};
+use crate::models::{MfaWebauthnCredential, User, UserEmail, UserId, UserSession};
+use crate::schema::{mfa_totps, mfa_webauthn_auth_sessions, mfa_webauthn_credentials, user_emails, user_sessions, users};
 use crate::std_ext::ResultExt;
 
 pub(crate) fn generate_random_bytes() -> Result<[u8; 32], rand::rand_core::OsError> {
@@ -267,4 +270,74 @@ pub(crate) fn verify_password(password_hash: &str, password: &str) -> Result<(),
             ErrorDetails::new(),
         )),
     }
+}
+
+pub(crate) async fn finish_webauthn_authentication<G: CoreConfig>(
+    global: &Arc<G>,
+    tx: &mut diesel_async::AsyncPgConnection,
+    user_id: UserId,
+    reg: &webauthn_rs::prelude::PublicKeyCredential,
+) -> Result<(), tonic::Status> {
+    let state = diesel::delete(mfa_webauthn_auth_sessions::dsl::mfa_webauthn_auth_sessions)
+        .filter(
+            mfa_webauthn_auth_sessions::dsl::user_id
+                .eq(user_id)
+                .and(mfa_webauthn_auth_sessions::dsl::expires_at.gt(chrono::Utc::now())),
+        )
+        .returning(mfa_webauthn_auth_sessions::dsl::state)
+        .get_result::<serde_json::Value>(tx)
+        .await
+        .optional()
+        .into_tonic_internal_err("failed to query webauthn authentication session")?
+        .ok_or_else(|| {
+            tonic::Status::with_error_details(
+                tonic::Code::FailedPrecondition,
+                "no webauthn authentication session found",
+                ErrorDetails::new(),
+            )
+        })?;
+
+    let state: webauthn_rs::prelude::PasskeyAuthentication =
+        serde_json::from_value(state).into_tonic_internal_err("failed to deserialize webauthn state")?;
+
+    let result = global
+        .webauthn()
+        .finish_passkey_authentication(reg, &state)
+        .into_tonic_internal_err("failed to finish webauthn authentication")?;
+
+    let counter = result.counter() as i64;
+
+    let credential = mfa_webauthn_credentials::dsl::mfa_webauthn_credentials
+        .filter(mfa_webauthn_credentials::dsl::credential_id.eq(result.cred_id().as_ref()))
+        .select(MfaWebauthnCredential::as_select())
+        .first::<MfaWebauthnCredential>(tx)
+        .await
+        .into_tonic_internal_err("failed to find webauthn credential")?;
+
+    if counter == 0 || credential.counter.is_none_or(|c| c < counter) {
+        diesel::update(mfa_webauthn_credentials::dsl::mfa_webauthn_credentials)
+            .filter(mfa_webauthn_credentials::dsl::credential_id.eq(result.cred_id().as_ref()))
+            .set((
+                mfa_webauthn_credentials::dsl::counter.eq(counter),
+                mfa_webauthn_credentials::dsl::last_used_at.eq(chrono::Utc::now()),
+            ))
+            .execute(tx)
+            .await
+            .into_tonic_internal_err("failed to update webauthn credential")?;
+    } else {
+        // Invalid credential
+        diesel::delete(mfa_webauthn_credentials::dsl::mfa_webauthn_credentials)
+            .filter(mfa_webauthn_credentials::dsl::credential_id.eq(result.cred_id().as_ref()))
+            .execute(tx)
+            .await
+            .into_tonic_internal_err("failed to delete webauthn credential")?;
+
+        return Err(tonic::Status::with_error_details(
+            tonic::Code::FailedPrecondition,
+            "invalid webauthn credential",
+            ErrorDetails::new(),
+        ));
+    }
+
+    Ok(())
 }

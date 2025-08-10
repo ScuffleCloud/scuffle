@@ -1,8 +1,8 @@
 use std::net::SocketAddr;
+use std::str::FromStr;
 use std::sync::Arc;
 
 use anyhow::Context;
-use base64::Engine;
 use diesel_async::pooled_connection::bb8;
 use scuffle_bootstrap_telemetry::opentelemetry;
 use scuffle_bootstrap_telemetry::opentelemetry_sdk::logs::SdkLoggerProvider;
@@ -24,16 +24,13 @@ pub struct Config {
     pub db_url: Option<String>,
     #[default(false)]
     pub swagger_ui: bool,
-    #[default = "https://dashboard.scuffle.cloud"]
-    pub dashboard_url: String,
+    #[default(url::Url::from_str("https://dashboard.scuffle.cloud").unwrap())]
+    pub dashboard_origin: url::Url,
     #[default = "1x0000000000000000000000000000000AA"]
     pub turnstile_secret_key: String,
     pub timeouts: TimeoutConfig,
     pub google_oauth2: GoogleOAuth2Config,
     pub telemetry: Option<TelemetryConfig>,
-    /// Base64 encoded JWT secret key.
-    #[default = "fEoUb9KpeJJTtfo3uUhehNHJBAeBL47fatN01OBlceg="]
-    pub jwt_secret: String,
     #[default = "no-reply@scuffle.cloud"]
     pub email_from_address: String,
 }
@@ -71,10 +68,10 @@ scuffle_settings::bootstrap!(Config);
 
 struct Global {
     config: Config,
-    decoded_jwt_secret: Vec<u8>,
     database: bb8::Pool<diesel_async::AsyncPgConnection>,
     authorizer: cedar_policy::Authorizer,
     http_client: reqwest::Client,
+    webauthn: webauthn_rs::Webauthn,
     open_telemetry: opentelemetry::OpenTelemetry,
 }
 
@@ -99,12 +96,16 @@ impl scufflecloud_core::CoreConfig for Global {
         &self.http_client
     }
 
+    fn webauthn(&self) -> &webauthn_rs::Webauthn {
+        &self.webauthn
+    }
+
     fn swagger_ui_enabled(&self) -> bool {
         self.config.swagger_ui
     }
 
-    fn dashboard_url(&self) -> &str {
-        &self.config.dashboard_url
+    fn dashboard_origin(&self) -> &url::Url {
+        &self.config.dashboard_origin
     }
 
     fn turnstile_secret_key(&self) -> &str {
@@ -143,10 +144,6 @@ impl scufflecloud_core::CoreConfig for Global {
         &self.config.google_oauth2.client_secret
     }
 
-    fn webauthn_challenge_secret(&self) -> &[u8] {
-        &self.decoded_jwt_secret
-    }
-
     fn email_from_address(&self) -> &str {
         &self.config.email_from_address
     }
@@ -183,10 +180,6 @@ impl scuffle_bootstrap::Global for Global {
             )
             .init();
 
-        let decoded_jwt_secret = base64::prelude::BASE64_STANDARD
-            .decode(config.jwt_secret.as_bytes())
-            .context("decode JWT secret")?;
-
         let Some(db_url) = config.db_url.as_deref() else {
             anyhow::bail!("DATABASE_URL is not set");
         };
@@ -203,6 +196,12 @@ impl scuffle_bootstrap::Global for Global {
             .build()
             .context("create HTTP client")?;
 
+        let webauthn = webauthn_rs::WebauthnBuilder::new(&config.service_name, &config.dashboard_origin)
+            .context("build webauthn")?
+            .timeout(config.timeouts.mfa.to_std().context("convert mfa timeout to std")?)
+            .build()
+            .context("initialize webauthn")?;
+
         let tracer = SdkTracerProvider::default();
         opentelemetry::global::set_tracer_provider(tracer.clone());
 
@@ -214,10 +213,10 @@ impl scuffle_bootstrap::Global for Global {
 
         Ok(Arc::new(Self {
             config,
-            decoded_jwt_secret,
             database,
             authorizer: cedar_policy::Authorizer::new(),
             http_client,
+            webauthn,
             open_telemetry,
         }))
     }

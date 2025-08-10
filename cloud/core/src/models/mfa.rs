@@ -42,8 +42,11 @@ pub(crate) type MfaWebauthnCredentialId = Id<MfaWebauthnCredential>;
 pub struct MfaWebauthnCredential {
     pub id: MfaWebauthnCredentialId,
     pub user_id: UserId,
+    pub name: String,
     pub credential_id: Vec<u8>,
-    pub spki_data: Vec<u8>,
+    pub credential: serde_json::Value,
+    pub counter: Option<i64>,
+    pub last_used_at: chrono::DateTime<chrono::Utc>,
 }
 
 impl PrefixedId for MfaWebauthnCredential {
@@ -67,19 +70,16 @@ impl From<MfaWebauthnCredential> for pb::scufflecloud::core::v1::WebauthnCredent
         Self {
             id: value.id.to_string(),
             user_id: value.user_id.to_string(),
-            credential_id: value.credential_id,
         }
     }
 }
 
-pub(crate) type MfaWebauthnRegistrationSessionId = Id<MfaWebauthnRegistrationSession>;
-
 #[derive(Queryable, Selectable, Insertable, Identifiable, AsChangeset, Associations, Debug)]
 #[diesel(table_name = crate::schema::mfa_webauthn_reg_sessions)]
+#[diesel(primary_key(user_id))]
 #[diesel(belongs_to(User))]
 #[diesel(check_for_backend(diesel::pg::Pg))]
 pub struct MfaWebauthnRegistrationSession {
-    pub id: MfaWebauthnRegistrationSessionId,
     pub user_id: UserId,
     pub state: serde_json::Value,
     pub expires_at: chrono::DateTime<chrono::Utc>,
@@ -89,14 +89,12 @@ impl PrefixedId for MfaWebauthnRegistrationSession {
     const PREFIX: &'static str = "mfwr";
 }
 
-pub(crate) type MfaWebauthnAuthenticationSessionId = Id<MfaWebauthnAuthenticationSession>;
-
 #[derive(Queryable, Selectable, Insertable, Identifiable, AsChangeset, Associations, Debug)]
 #[diesel(table_name = crate::schema::mfa_webauthn_auth_sessions)]
+#[diesel(primary_key(user_id))]
 #[diesel(belongs_to(User))]
 #[diesel(check_for_backend(diesel::pg::Pg))]
 pub struct MfaWebauthnAuthenticationSession {
-    pub id: MfaWebauthnAuthenticationSessionId,
     pub user_id: UserId,
     pub state: serde_json::Value,
     pub expires_at: chrono::DateTime<chrono::Utc>,

@@ -127,8 +127,7 @@ ON DELETE CASCADE;
 CREATE INDEX ON "mfa_totps"("user_id");
 
 CREATE TABLE "mfa_webauthn_reg_sessions" (
-    "id" UUID PRIMARY KEY,
-    "user_id" UUID NOT NULL,
+    "user_id" UUID PRIMARY KEY,
     "state" JSONB NOT NULL, -- contains the PasskeyRegistration (https://docs.rs/webauthn-rs/latest/webauthn_rs/prelude/struct.PasskeyRegistration.html)
     "expires_at" TIMESTAMPTZ NOT NULL
 );
@@ -138,8 +137,7 @@ ADD FOREIGN KEY("user_id") REFERENCES "users"("id")
 ON DELETE CASCADE;
 
 CREATE TABLE "mfa_webauthn_auth_sessions" (
-    "id" UUID PRIMARY KEY,
-    "user_id" UUID NOT NULL,
+    "user_id" UUID PRIMARY KEY,
     "state" JSONB NOT NULL, -- contains the PasskeyAuthentication (https://docs.rs/webauthn-rs/latest/webauthn_rs/prelude/struct.PasskeyAuthentication.html)
     "expires_at" TIMESTAMPTZ NOT NULL
 );
@@ -150,9 +148,12 @@ ON DELETE CASCADE;
 
 CREATE TABLE "mfa_webauthn_credentials" (
     "id" UUID PRIMARY KEY,
-    "user_id" UUID NOT NULL,
-    "credential_id" BYTEA NOT NULL,
-    "spki_data" BYTEA NOT NULL -- PKCS#8 DER SPKI
+    "user_id" UUID NOT NULL UNIQUE,
+    "name" VARCHAR(255) NOT NULL,
+    "credential_id" BYTEA NOT NULL UNIQUE,
+    "credential" JSONB NOT NULL, -- contains the Passkey (https://docs.rs/webauthn-rs/latest/webauthn_rs/prelude/struct.Passkey.html)
+    "counter" BIGINT,
+    "last_used_at" TIMESTAMPTZ NOT NULL
 );
 
 ALTER TABLE "mfa_webauthn_credentials"
@@ -160,7 +161,6 @@ ADD FOREIGN KEY("user_id") REFERENCES "users"("id")
 ON DELETE CASCADE;
 
 CREATE INDEX ON "mfa_webauthn_credentials"("user_id");
-
 CREATE INDEX ON "mfa_webauthn_credentials"("credential_id");
 
 --- Organizations and Projects

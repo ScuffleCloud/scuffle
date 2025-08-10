@@ -31,7 +31,6 @@ mod http_ext;
 pub mod id;
 mod middleware;
 mod models;
-mod prost_ext;
 mod schema;
 pub mod services;
 mod std_ext;
@@ -52,10 +51,11 @@ pub trait CoreConfig:
     ) -> impl Future<Output = anyhow::Result<diesel_async::pooled_connection::bb8::PooledConnection<'_, AsyncPgConnection>>> + Send;
     fn authorizer(&self) -> &cedar_policy::Authorizer;
     fn http_client(&self) -> &reqwest::Client;
+    fn webauthn(&self) -> &webauthn_rs::Webauthn;
     fn swagger_ui_enabled(&self) -> bool {
         false
     }
-    fn dashboard_url(&self) -> &str;
+    fn dashboard_origin(&self) -> &url::Url;
     fn turnstile_secret_key(&self) -> &str {
         "1x0000000000000000000000000000000AA"
     }
@@ -79,6 +79,5 @@ pub trait CoreConfig:
     }
     fn google_client_id(&self) -> &str;
     fn google_client_secret(&self) -> &str;
-    fn webauthn_challenge_secret(&self) -> &[u8];
     fn email_from_address(&self) -> &str;
 }

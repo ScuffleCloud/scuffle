@@ -285,7 +285,7 @@ pub fn assemble_rust_project(
         let mut runnables = Vec::new();
 
         if let Some(info) = &c.info {
-            if let Some(crate_label) = &info.crate_label {
+            if let Some(crate_label) = &info.crate_label && matches!(target_kind, TargetKind::Bin) {
                 runnables.push(Runnable {
                     program: bazel.to_string(),
                     args: vec!["run".to_string(), format!("//{crate_label}")],
@@ -293,6 +293,7 @@ pub fn assemble_rust_project(
                     kind: RunnableKind::Run,
                 });
             }
+
             if let Some(test_label) = &info.test_label {
                 runnables.extend([
                     Runnable {
@@ -325,6 +326,7 @@ pub fn assemble_rust_project(
                     },
                 ]);
             }
+
             if let Some(doc_test_label) = &info.doc_test_label {
                 runnables.push(Runnable {
                     program: bazel.to_string(),
@@ -340,6 +342,7 @@ pub fn assemble_rust_project(
                     kind: RunnableKind::DocTest,
                 });
             }
+
             if let Some(clippy_label) = &info.clippy_label {
                 runnables.push(Runnable {
                     program: bazel.to_string(),

@@ -30,19 +30,14 @@
             bazelisk
             stdenv
             bash
-            pkg-config
-            ffmpeg-full
             miniserve
             just
-            llvmPackages_20.clang-unwrapped
-            llvmPackages_20.libcxxClang
+            buildifier
+            valgrind
           ];
 
           shellHook = ''
             export LD_LIBRARY_PATH="$LD_LIBRARY_PATH:${stdenv.cc.cc.lib}/lib";
-            export PKG_CONFIG_PATH="$PKG_CONFIG_PATH:${ffmpeg-full.dev}/lib/pkgconfig";
-            export LIBCLANG_PATH="${llvmPackages_20.clang-unwrapped.lib}/lib";
-            export CLANG_PATH="${llvmPackages_20.libcxxClang}/bin/clang";
           '';
         };
 

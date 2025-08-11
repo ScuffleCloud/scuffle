@@ -169,8 +169,18 @@ bindeps.spec(
     package = "cargo-deny",
     version = "0.18.3",
 )
+bindeps.spec(
+    artifact = "bin",
+    package = "rust-analyzer",
+    git = "https://github.com/TroyKomodo/rust-analyzer.git",
+    rev = "e9ca9f8ec88a207891c32da4fc6523026ea03c6f",
+)
 bindeps.annotation(
     crate = "cargo-deny",
+    gen_all_binaries = True,
+)
+bindeps.annotation(
+    crate = "rust-analyzer",
     gen_all_binaries = True,
 )
 bindeps.from_specs(

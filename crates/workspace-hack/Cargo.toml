@@ -40,10 +40,8 @@ futures-io = { version = "0.3" }
 futures-sink = { version = "0.3" }
 futures-task = { version = "0.3", default-features = false, features = ["std"] }
 futures-util = { version = "0.3", features = ["channel", "io", "sink"] }
-generic-array = { version = "0.14", default-features = false, features = ["more_lengths", "zeroize"] }
 getrandom-6f8ce4dd05d13bba = { package = "getrandom", version = "0.2", default-features = false, features = ["std"] }
 hashbrown = { version = "0.15", default-features = false, features = ["default-hasher", "inline-more"] }
-hmac = { version = "0.12", default-features = false, features = ["reset"] }
 hyper = { version = "1", features = ["client", "http1", "http2", "server"] }
 hyper-util = { version = "0.1", features = ["client-legacy", "server-auto", "service"] }
 indexmap = { version = "2", features = ["serde"] }
@@ -80,7 +78,6 @@ serde_json = { version = "1", features = ["alloc", "preserve_order", "raw_value"
 sha2 = { version = "0.10", features = ["oid"] }
 simd-adler32 = { version = "0.3" }
 smallvec = { version = "1", default-features = false, features = ["const_new"] }
-subtle = { version = "2", default-features = false, features = ["i128"] }
 syn = { version = "2", features = ["extra-traits", "fold", "full", "visit", "visit-mut"] }
 sync_wrapper = { version = "1", default-features = false, features = ["futures"] }
 thiserror = { version = "2" }
@@ -97,7 +94,6 @@ ulid = { version = "1", features = ["uuid"] }
 unicode-xid = { version = "0.2" }
 url = { version = "2", features = ["serde"] }
 uuid = { version = "1", features = ["serde", "v4"] }
-zeroize = { version = "1" }
 
 [build-dependencies]
 aho-corasick = { version = "1", default-features = false, features = ["perf-literal", "std"] }
@@ -126,10 +122,8 @@ futures-io = { version = "0.3" }
 futures-sink = { version = "0.3" }
 futures-task = { version = "0.3", default-features = false, features = ["std"] }
 futures-util = { version = "0.3", features = ["channel", "io", "sink"] }
-generic-array = { version = "0.14", default-features = false, features = ["more_lengths", "zeroize"] }
 getrandom-6f8ce4dd05d13bba = { package = "getrandom", version = "0.2", default-features = false, features = ["std"] }
 hashbrown = { version = "0.15", default-features = false, features = ["default-hasher", "inline-more"] }
-hmac = { version = "0.12", default-features = false, features = ["reset"] }
 hyper = { version = "1", features = ["client", "http1", "http2", "server"] }
 hyper-util = { version = "0.1", features = ["client-legacy", "server-auto", "service"] }
 indexmap = { version = "2", features = ["serde"] }
@@ -166,7 +160,6 @@ serde_json = { version = "1", features = ["alloc", "preserve_order", "raw_value"
 sha2 = { version = "0.10", features = ["oid"] }
 simd-adler32 = { version = "0.3" }
 smallvec = { version = "1", default-features = false, features = ["const_new"] }
-subtle = { version = "2", default-features = false, features = ["i128"] }
 syn = { version = "2", features = ["extra-traits", "fold", "full", "visit", "visit-mut"] }
 sync_wrapper = { version = "1", default-features = false, features = ["futures"] }
 thiserror = { version = "2" }
@@ -183,7 +176,6 @@ ulid = { version = "1", features = ["uuid"] }
 unicode-xid = { version = "0.2" }
 url = { version = "2", features = ["serde"] }
 uuid = { version = "1", features = ["serde", "v4"] }
-zeroize = { version = "1" }
 
 [target.x86_64-unknown-linux-gnu.dependencies]
 bitflags = { version = "2", default-features = false, features = ["std"] }

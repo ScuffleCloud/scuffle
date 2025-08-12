@@ -3,6 +3,7 @@ use argon2::{Argon2, PasswordHasher};
 use diesel::{BoolExpressionMethods, ExpressionMethods, OptionalExtension, QueryDsl, SelectableHelper};
 use diesel_async::scoped_futures::ScopedFutureExt;
 use diesel_async::{AsyncConnection, RunQueryDsl};
+use rand::distributions::DistString;
 use tonic::Code;
 use tonic_types::{ErrorDetails, StatusExt};
 
@@ -10,13 +11,13 @@ use crate::cedar::{self, Action, CoreApplication};
 use crate::common::TxError;
 use crate::http_ext::RequestExt;
 use crate::models::{
-    EmailRegistrationRequest, EmailRegistrationRequestId, MfaTotpCredential, MfaTotpCredentialId,
-    MfaTotpRegistrationSession, MfaWebauthnAuthenticationSession, MfaWebauthnCredential, MfaWebauthnCredentialId,
-    MfaWebauthnRegistrationSession, User, UserEmail, UserId,
+    EmailRegistrationRequest, EmailRegistrationRequestId, MfaRecoveryCode, MfaRecoveryCodeId, MfaTotpCredential,
+    MfaTotpCredentialId, MfaTotpRegistrationSession, MfaWebauthnAuthenticationSession, MfaWebauthnCredential,
+    MfaWebauthnCredentialId, MfaWebauthnRegistrationSession, User, UserEmail, UserId,
 };
 use crate::schema::{
-    email_registration_requests, mfa_totp_credentials, mfa_totp_reg_sessions, mfa_webauthn_auth_sessions,
-    mfa_webauthn_credentials, mfa_webauthn_reg_sessions, user_emails, users,
+    email_registration_requests, mfa_recovery_codes, mfa_totp_credentials, mfa_totp_reg_sessions,
+    mfa_webauthn_auth_sessions, mfa_webauthn_credentials, mfa_webauthn_reg_sessions, user_emails, users,
 };
 use crate::services::CoreSvc;
 use crate::std_ext::{DisplayExt, OptionExt, ResultExt};
@@ -799,7 +800,7 @@ impl<G: CoreConfig> pb::scufflecloud::core::v1::users_service_server::UsersServi
                         last_used_at: chrono::Utc::now(),
                     };
 
-                    cedar::is_authorized(global, Some(session), user_id, Action::CreateTotpCredential, &credential)?;
+                    session.is_authorized(global, session.user_id, Action::CreateTotpCredential, &credential)?;
 
                     diesel::insert_into(mfa_totp_credentials::dsl::mfa_totp_credentials)
                         .values(&credential)
@@ -820,21 +821,127 @@ impl<G: CoreConfig> pb::scufflecloud::core::v1::users_service_server::UsersServi
         &self,
         req: tonic::Request<pb::scufflecloud::core::v1::UserByIdRequest>,
     ) -> Result<tonic::Response<pb::scufflecloud::core::v1::TotpCredentialsList>, tonic::Status> {
-        todo!()
+        let global = &req.global::<G>()?;
+        let (_, ext, payload) = req.into_parts();
+        let session = ext.session_or_err()?;
+
+        let user_id: UserId = payload
+            .id
+            .parse()
+            .map_err(|e| tonic::Status::invalid_argument(format!("invalid user ID: {e}")))?;
+
+        session.is_authorized(global, session.user_id, Action::ListTotpCredentials, user_id)?;
+
+        let mut db = global.db().await.into_tonic_internal_err("failed to connect to database")?;
+
+        let credentials = mfa_totp_credentials::dsl::mfa_totp_credentials
+            .filter(mfa_totp_credentials::dsl::user_id.eq(user_id))
+            .select(MfaTotpCredential::as_select())
+            .load::<MfaTotpCredential>(&mut db)
+            .await
+            .into_tonic_internal_err("failed to query TOTP credentials")?;
+
+        Ok(tonic::Response::new(pb::scufflecloud::core::v1::TotpCredentialsList {
+            credentials: credentials.into_iter().map(Into::into).collect(),
+        }))
     }
 
     async fn delete_totp_credential(
         &self,
         req: tonic::Request<pb::scufflecloud::core::v1::DeleteTotpCredentialRequest>,
     ) -> Result<tonic::Response<pb::scufflecloud::core::v1::TotpCredential>, tonic::Status> {
-        todo!()
+        let global = &req.global::<G>()?;
+        let (_, ext, payload) = req.into_parts();
+        let session = ext.session_or_err()?;
+
+        let mut db = global.db().await.into_tonic_internal_err("failed to get db connection")?;
+
+        let user_id: UserId = payload
+            .user_id
+            .parse()
+            .map_err(|e| tonic::Status::invalid_argument(format!("invalid user ID format: {e}")))?;
+
+        let credential_id: MfaTotpCredentialId = payload
+            .id
+            .parse()
+            .map_err(|e| tonic::Status::invalid_argument(format!("invalid TOTP credential ID format: {e}")))?;
+
+        session.is_authorized(global, session.user_id, Action::DeleteTotpCredential, credential_id)?;
+
+        let credential = diesel::delete(mfa_totp_credentials::dsl::mfa_totp_credentials)
+            .filter(
+                mfa_totp_credentials::dsl::id
+                    .eq(credential_id)
+                    .and(mfa_totp_credentials::dsl::user_id.eq(user_id)),
+            )
+            .returning(MfaTotpCredential::as_select())
+            .get_result::<MfaTotpCredential>(&mut db)
+            .await
+            .into_tonic_internal_err("failed to delete TOTP credential")?;
+
+        Ok(tonic::Response::new(credential.into()))
     }
 
     async fn regenerate_recovery_codes(
         &self,
         req: tonic::Request<pb::scufflecloud::core::v1::UserByIdRequest>,
     ) -> Result<tonic::Response<pb::scufflecloud::core::v1::RecoveryCodes>, tonic::Status> {
-        todo!()
+        let global = &req.global::<G>()?;
+        let (_, ext, payload) = req.into_parts();
+        let session = ext.session_or_err()?;
+
+        let user_id: UserId = payload
+            .id
+            .parse()
+            .map_err(|e| tonic::Status::invalid_argument(format!("invalid user ID: {e}")))?;
+
+        session.is_authorized(global, session.user_id, Action::RegenerateRecoveryCodes, user_id)?;
+
+        let mut db = global.db().await.into_tonic_internal_err("failed to connect to database")?;
+
+        let mut rng = rand::rngs::OsRng;
+        let codes: Vec<_> = (0..12)
+            .map(|_| rand::distributions::Alphanumeric.sample_string(&mut rng, 8))
+            .collect();
+
+        let argon2 = Argon2::default();
+        let recovery_codes = codes
+            .iter()
+            .map(|code| {
+                let salt = SaltString::generate(&mut rng);
+                argon2.hash_password(code.as_bytes(), &salt).map(|hash| hash.to_string())
+            })
+            .map(|code_hash| {
+                code_hash.map(|code_hash| MfaRecoveryCode {
+                    id: MfaRecoveryCodeId::new(),
+                    user_id,
+                    code_hash,
+                })
+            })
+            .collect::<Result<Vec<_>, _>>()
+            .into_tonic_internal_err("failed to generate recovery codes")?;
+
+        db.transaction::<_, TxError, _>(|conn| {
+            async move {
+                diesel::delete(mfa_recovery_codes::dsl::mfa_recovery_codes)
+                    .filter(mfa_recovery_codes::dsl::user_id.eq(user_id))
+                    .execute(conn)
+                    .await
+                    .into_tonic_internal_err("failed to delete existing recovery codes")?;
+
+                diesel::insert_into(mfa_recovery_codes::dsl::mfa_recovery_codes)
+                    .values(recovery_codes)
+                    .execute(conn)
+                    .await
+                    .into_tonic_internal_err("failed to insert new recovery codes")?;
+
+                Ok(())
+            }
+            .scope_boxed()
+        })
+        .await?;
+
+        Ok(tonic::Response::new(pb::scufflecloud::core::v1::RecoveryCodes { codes }))
     }
 
     async fn delete_user(

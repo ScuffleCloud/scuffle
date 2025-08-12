@@ -7,7 +7,7 @@ use diesel::{
 };
 use diesel_async::RunQueryDsl;
 use pkcs8::DecodePublicKey;
-use rand::TryRngCore;
+use rand::RngCore;
 use sha2::Digest;
 use tonic::Code;
 use tonic_types::{ErrorDetails, StatusExt};
@@ -23,7 +23,7 @@ use crate::schema::{
 };
 use crate::std_ext::ResultExt;
 
-pub(crate) fn generate_random_bytes() -> Result<[u8; 32], rand::rand_core::OsError> {
+pub(crate) fn generate_random_bytes() -> Result<[u8; 32], rand::Error> {
     let mut token = [0u8; 32];
     rand::rngs::OsRng.try_fill_bytes(&mut token)?;
     Ok(token)

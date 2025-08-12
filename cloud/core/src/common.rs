@@ -17,11 +17,12 @@ use crate::chrono_ext::ChronoDateTimeExt;
 use crate::google_api::GoogleIdToken;
 use crate::id::Id;
 use crate::middleware::IpAddressInfo;
-use crate::models::{MfaWebauthnCredential, User, UserEmail, UserId, UserSession};
+use crate::models::{MfaRecoveryCode, MfaWebauthnCredential, User, UserEmail, UserId, UserSession};
 use crate::schema::{
-    mfa_totp_credentials, mfa_webauthn_auth_sessions, mfa_webauthn_credentials, user_emails, user_sessions, users,
+    mfa_recovery_codes, mfa_totp_credentials, mfa_webauthn_auth_sessions, mfa_webauthn_credentials, user_emails,
+    user_sessions, users,
 };
-use crate::std_ext::ResultExt;
+use crate::std_ext::{DisplayExt, ResultExt};
 
 pub(crate) fn generate_random_bytes() -> Result<[u8; 32], rand::Error> {
     let mut token = [0u8; 32];
@@ -176,26 +177,37 @@ pub(crate) async fn mfa_options(
 ) -> Result<Vec<pb::scufflecloud::core::v1::MfaOption>, tonic::Status> {
     let mut mfa_options = vec![];
 
-    if !mfa_totp_credentials::dsl::mfa_totp_credentials
+    if mfa_totp_credentials::dsl::mfa_totp_credentials
         .filter(mfa_totp_credentials::dsl::user_id.eq(user_id))
-        .select(mfa_totp_credentials::dsl::user_id)
-        .load::<UserId>(tx)
+        .count()
+        .get_result::<i64>(tx)
         .await
         .into_tonic_internal_err("failed to query mfa factors")?
-        .is_empty()
+        > 0
     {
         mfa_options.push(pb::scufflecloud::core::v1::MfaOption::Totp);
     }
 
-    if !mfa_webauthn_credentials::dsl::mfa_webauthn_credentials
+    if mfa_webauthn_credentials::dsl::mfa_webauthn_credentials
         .filter(mfa_webauthn_credentials::dsl::user_id.eq(user_id))
-        .select(mfa_webauthn_credentials::dsl::user_id)
-        .load::<UserId>(tx)
+        .count()
+        .get_result::<i64>(tx)
         .await
         .into_tonic_internal_err("failed to query mfa factors")?
-        .is_empty()
+        > 0
     {
         mfa_options.push(pb::scufflecloud::core::v1::MfaOption::WebAuthn);
+    }
+
+    if mfa_recovery_codes::dsl::mfa_recovery_codes
+        .filter(mfa_recovery_codes::dsl::user_id.eq(user_id))
+        .count()
+        .get_result::<i64>(tx)
+        .await
+        .into_tonic_internal_err("failed to query mfa factors")?
+        > 0
+    {
+        mfa_options.push(pb::scufflecloud::core::v1::MfaOption::RecoveryCodes);
     }
 
     Ok(mfa_options)
@@ -339,6 +351,43 @@ pub(crate) async fn finish_webauthn_authentication<G: CoreConfig>(
             "invalid webauthn credential",
             ErrorDetails::new(),
         ));
+    }
+
+    Ok(())
+}
+
+pub(crate) async fn process_recovery_code(
+    tx: &mut diesel_async::AsyncPgConnection,
+    user_id: UserId,
+    code: &str,
+) -> Result<(), tonic::Status> {
+    let codes = mfa_recovery_codes::dsl::mfa_recovery_codes
+        .filter(mfa_recovery_codes::dsl::user_id.eq(user_id))
+        .limit(20)
+        .load::<MfaRecoveryCode>(tx)
+        .await
+        .into_tonic_internal_err("failed to load MFA recovery codes")?;
+
+    let argon2 = Argon2::default();
+
+    for recovery_code in codes {
+        let hash = argon2::PasswordHash::new(&recovery_code.code_hash)
+            .into_tonic_internal_err("failed to parse recovery code hash")?;
+        match argon2.verify_password(code.as_bytes(), &hash) {
+            Ok(()) => {
+                diesel::delete(mfa_recovery_codes::dsl::mfa_recovery_codes)
+                    .filter(mfa_recovery_codes::dsl::id.eq(recovery_code.id))
+                    .execute(tx)
+                    .await
+                    .into_tonic_internal_err("failed to delete recovery code")?;
+
+                break;
+            }
+            Err(argon2::password_hash::Error::Password) => continue,
+            Err(e) => {
+                return Err(e.into_tonic_internal_err("failed to verify recovery code"));
+            }
+        }
     }
 
     Ok(())

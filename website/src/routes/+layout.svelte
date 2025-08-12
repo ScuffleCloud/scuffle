@@ -46,8 +46,9 @@
         <div>Loading...</div>
     {:else if !authState.isLoggedIn}
         <div class="login-page-container">
+            <!-- TODO: Add protection to routes if not logged in -->
             <LoginHeader />
-            <LoginPage />
+            {@render children()}
             <LoginFooter />
         </div>
     {:else}

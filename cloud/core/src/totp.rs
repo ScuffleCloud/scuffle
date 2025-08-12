@@ -1,11 +1,12 @@
-use diesel::{ExpressionMethods, QueryDsl};
+use diesel::{ExpressionMethods, QueryDsl, SelectableHelper};
 use diesel_async::RunQueryDsl;
 use tonic_types::{ErrorDetails, StatusExt};
 use totp_rs::{Algorithm, TOTP, TotpUrlError};
 
-use crate::models::UserId;
-use crate::schema::mfa_totps;
-use crate::std_ext::ResultExt;
+use crate::common;
+use crate::models::{MfaTotpCredential, UserId};
+use crate::schema::mfa_totp_credentials;
+use crate::std_ext::{DisplayExt, ResultExt};
 
 const ISSUER: &str = "scuffle.cloud";
 
@@ -17,6 +18,23 @@ pub(crate) enum TotpError {
     SystemTime(#[from] std::time::SystemTimeError),
     #[error("invalid TOTP token")]
     InvalidToken,
+    #[error("failed to generate random secret: {0}")]
+    GenerateSecret(#[from] rand::rand_core::OsError),
+}
+
+pub(crate) fn new_token(account_name: String) -> Result<TOTP, TotpError> {
+    // Generate a new secret for TOTP
+    let secret = common::generate_random_bytes()?;
+    let totp = TOTP::new(
+        Algorithm::SHA1,
+        6,
+        1,
+        30,
+        secret.to_vec(),
+        Some(ISSUER.to_string()),
+        account_name,
+    )?;
+    Ok(totp)
 }
 
 pub(crate) fn verify_token(secret: Vec<u8>, token: &str) -> Result<(), TotpError> {
@@ -36,18 +54,27 @@ pub(crate) async fn process_token(
     user_id: UserId,
     token: &str,
 ) -> Result<(), tonic::Status> {
-    let secrets = mfa_totps::dsl::mfa_totps
-        .filter(mfa_totps::dsl::user_id.eq(user_id))
-        .select(mfa_totps::dsl::secret)
-        .load::<Vec<u8>>(tx)
+    let credentials = mfa_totp_credentials::dsl::mfa_totp_credentials
+        .filter(mfa_totp_credentials::dsl::user_id.eq(user_id))
+        .select(MfaTotpCredential::as_select())
+        .load::<MfaTotpCredential>(tx)
         .await
         .into_tonic_internal_err("failed to query TOTP secrets")?;
 
-    for secret in secrets {
-        match verify_token(secret, token) {
-            Ok(_) => return Ok(()),
+    for credential in credentials {
+        match verify_token(credential.secret, token) {
+            Ok(_) => {
+                // Update the last used timestamp
+                diesel::update(mfa_totp_credentials::dsl::mfa_totp_credentials)
+                    .filter(mfa_totp_credentials::dsl::id.eq(credential.id))
+                    .set(mfa_totp_credentials::dsl::last_used_at.eq(chrono::Utc::now()))
+                    .execute(tx)
+                    .await
+                    .into_tonic_internal_err("failed to update TOTP credential")?;
+                return Ok(());
+            }
             Err(TotpError::InvalidToken) => {} // Try the next secret
-            Err(e) => return Err(e).into_tonic_internal_err("failed to verify TOTP token"),
+            Err(e) => return Err(e.into_tonic_internal_err("failed to verify TOTP token")),
         }
     }
 

@@ -122,3 +122,20 @@ pub struct MfaWebauthnAuthenticationSession {
     pub state: serde_json::Value,
     pub expires_at: chrono::DateTime<chrono::Utc>,
 }
+
+pub(crate) type MfaRecoveryCodeId = Id<MfaRecoveryCode>;
+
+#[derive(Queryable, Selectable, Insertable, Identifiable, AsChangeset, Associations, Debug)]
+#[diesel(table_name = crate::schema::mfa_recovery_codes)]
+#[diesel(primary_key(id))]
+#[diesel(belongs_to(User))]
+#[diesel(check_for_backend(diesel::pg::Pg))]
+pub struct MfaRecoveryCode {
+    pub id: MfaRecoveryCodeId,
+    pub user_id: UserId,
+    pub code_hash: String,
+}
+
+impl PrefixedId for MfaRecoveryCode {
+    const PREFIX: &'static str = "mrc";
+}

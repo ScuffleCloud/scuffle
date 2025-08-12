@@ -175,6 +175,18 @@ ON DELETE CASCADE;
 CREATE INDEX ON "mfa_webauthn_credentials"("user_id");
 CREATE INDEX ON "mfa_webauthn_credentials"("credential_id");
 
+CREATE TABLE "mfa_recovery_codes" (
+    "id" UUID PRIMARY KEY,
+    "user_id" UUID NOT NULL,
+    "code_hash" VARCHAR(255) NOT NULL -- ARGON2 hashed 12 character alphanumeric code
+);
+
+ALTER TABLE "mfa_recovery_codes"
+ADD FOREIGN KEY("user_id") REFERENCES "users"("id")
+ON DELETE CASCADE;
+
+CREATE INDEX ON "mfa_recovery_codes"("user_id");
+
 --- Organizations and Projects
 
 CREATE TABLE "organizations" (

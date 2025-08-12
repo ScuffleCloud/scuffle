@@ -107,14 +107,23 @@ pub enum Action {
     CreateUserEmail,
     #[display("delete_user_email")]
     DeleteUserEmail,
+
     #[display("create_webauthn_credential")]
     CreateWebauthnCredential,
     #[display("delete_webauthn_credential")]
     DeleteWebauthnCredential,
     #[display("list_webauthn_credentials")]
     ListWebauthnCredentials,
+
     #[display("create_totp_credential")]
     CreateTotpCredential,
+    #[display("delete_totp_credential")]
+    DeleteTotpCredential,
+    #[display("list_totp_credentials")]
+    ListTotpCredentials,
+
+    #[display("regenerate_recovery_codes")]
+    RegenerateRecoveryCodes,
     #[display("delete_user")]
     DeleteUser,
 

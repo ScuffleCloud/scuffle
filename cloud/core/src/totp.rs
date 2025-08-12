@@ -19,7 +19,7 @@ pub(crate) enum TotpError {
     #[error("invalid TOTP token")]
     InvalidToken,
     #[error("failed to generate random secret: {0}")]
-    GenerateSecret(#[from] rand::rand_core::OsError),
+    GenerateSecret(#[from] rand::Error),
 }
 
 pub(crate) fn new_token(account_name: String) -> Result<TOTP, TotpError> {

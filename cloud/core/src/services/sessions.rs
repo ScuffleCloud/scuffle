@@ -2,6 +2,7 @@ use base64::Engine;
 use diesel::{BoolExpressionMethods, ExpressionMethods, OptionalExtension, QueryDsl, SelectableHelper};
 use diesel_async::scoped_futures::ScopedFutureExt;
 use diesel_async::{AsyncConnection, RunQueryDsl};
+use rand::Rng;
 use sha2::Digest;
 use tonic::Code;
 use tonic_types::{ErrorDetails, StatusExt};
@@ -563,7 +564,7 @@ impl<G: CoreConfig> pb::scufflecloud::core::v1::sessions_service_server::Session
 
         let mut db = global.db().await.into_tonic_internal_err("failed to connect to database")?;
 
-        let code = format!("{:06}", rand::random_range(0..=999999));
+        let code = format!("{:06}", rand::rngs::OsRng.gen_range(0..=999999));
 
         let session_request = UserSessionRequest {
             id: UserSessionRequestId::new(),

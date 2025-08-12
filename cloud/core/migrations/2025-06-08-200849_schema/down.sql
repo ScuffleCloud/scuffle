@@ -11,6 +11,7 @@ DROP TABLE IF EXISTS "policies" CASCADE;
 DROP TABLE IF EXISTS "projects" CASCADE;
 DROP TABLE IF EXISTS "organizations" CASCADE;
 
+DROP TABLE IF EXISTS "mfa_recovery_codes" CASCADE;
 DROP TABLE IF EXISTS "mfa_webauthn_credentials" CASCADE;
 DROP TABLE IF EXISTS "mfa_webauthn_reg_sessions" CASCADE;
 DROP TABLE IF EXISTS "mfa_webauthn_auth_sessions" CASCADE;

@@ -2,27 +2,30 @@ use diesel::Selectable;
 use diesel::prelude::{AsChangeset, Associations, Identifiable, Insertable, Queryable};
 
 use crate::cedar::CedarEntity;
+use crate::chrono_ext::ChronoDateTimeExt;
 use crate::id::{Id, PrefixedId};
 use crate::models::users::{User, UserId};
 
-pub(crate) type MfaTotpId = Id<MfaTotp>;
+pub(crate) type MfaTotpCredentialId = Id<MfaTotpCredential>;
 
 #[derive(Queryable, Selectable, Insertable, Identifiable, AsChangeset, Associations, Debug)]
-#[diesel(table_name = crate::schema::mfa_totps)]
+#[diesel(table_name = crate::schema::mfa_totp_credentials)]
 #[diesel(belongs_to(User))]
 #[diesel(check_for_backend(diesel::pg::Pg))]
-pub struct MfaTotp {
-    pub id: MfaTotpId,
+pub struct MfaTotpCredential {
+    pub id: MfaTotpCredentialId,
     pub user_id: UserId,
+    pub name: String,
     pub secret: Vec<u8>,
+    pub last_used_at: chrono::DateTime<chrono::Utc>,
 }
 
-impl PrefixedId for MfaTotp {
+impl PrefixedId for MfaTotpCredential {
     const PREFIX: &'static str = "mft";
 }
 
-impl CedarEntity for MfaTotp {
-    const ENTITY_TYPE: &'static str = "MfaTotp";
+impl CedarEntity for MfaTotpCredential {
+    const ENTITY_TYPE: &'static str = "MfaTotpCredential";
 
     fn entity_id(&self) -> cedar_policy::EntityId {
         cedar_policy::EntityId::new(self.id.to_string_unprefixed())
@@ -31,6 +34,28 @@ impl CedarEntity for MfaTotp {
     fn attributes(&self) -> std::collections::HashMap<String, cedar_policy::RestrictedExpression> {
         self.id.attributes()
     }
+}
+
+impl From<MfaTotpCredential> for pb::scufflecloud::core::v1::TotpCredential {
+    fn from(value: MfaTotpCredential) -> Self {
+        Self {
+            id: value.id.to_string(),
+            user_id: value.user_id.to_string(),
+            name: value.name,
+            last_used_at_utc: Some(value.last_used_at.to_prost_timestamp_utc()),
+        }
+    }
+}
+
+#[derive(Queryable, Selectable, Insertable, Identifiable, AsChangeset, Associations, Debug)]
+#[diesel(table_name = crate::schema::mfa_totp_reg_sessions)]
+#[diesel(primary_key(user_id))]
+#[diesel(belongs_to(User))]
+#[diesel(check_for_backend(diesel::pg::Pg))]
+pub struct MfaTotpRegistrationSession {
+    pub user_id: UserId,
+    pub secret: Vec<u8>,
+    pub expires_at: chrono::DateTime<chrono::Utc>,
 }
 
 pub(crate) type MfaWebauthnCredentialId = Id<MfaWebauthnCredential>;
@@ -70,6 +95,8 @@ impl From<MfaWebauthnCredential> for pb::scufflecloud::core::v1::WebauthnCredent
         Self {
             id: value.id.to_string(),
             user_id: value.user_id.to_string(),
+            name: value.name,
+            last_used_at_utc: Some(value.last_used_at.to_prost_timestamp_utc()),
         }
     }
 }
@@ -85,10 +112,6 @@ pub struct MfaWebauthnRegistrationSession {
     pub expires_at: chrono::DateTime<chrono::Utc>,
 }
 
-impl PrefixedId for MfaWebauthnRegistrationSession {
-    const PREFIX: &'static str = "mfwr";
-}
-
 #[derive(Queryable, Selectable, Insertable, Identifiable, AsChangeset, Associations, Debug)]
 #[diesel(table_name = crate::schema::mfa_webauthn_auth_sessions)]
 #[diesel(primary_key(user_id))]
@@ -98,8 +121,4 @@ pub struct MfaWebauthnAuthenticationSession {
     pub user_id: UserId,
     pub state: serde_json::Value,
     pub expires_at: chrono::DateTime<chrono::Utc>,
-}
-
-impl PrefixedId for MfaWebauthnAuthenticationSession {
-    const PREFIX: &'static str = "mfwa";
 }

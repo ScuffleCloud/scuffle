@@ -18,7 +18,9 @@ use crate::google_api::GoogleIdToken;
 use crate::id::Id;
 use crate::middleware::IpAddressInfo;
 use crate::models::{MfaWebauthnCredential, User, UserEmail, UserId, UserSession};
-use crate::schema::{mfa_totps, mfa_webauthn_auth_sessions, mfa_webauthn_credentials, user_emails, user_sessions, users};
+use crate::schema::{
+    mfa_totp_credentials, mfa_webauthn_auth_sessions, mfa_webauthn_credentials, user_emails, user_sessions, users,
+};
 use crate::std_ext::ResultExt;
 
 pub(crate) fn generate_random_bytes() -> Result<[u8; 32], rand::rand_core::OsError> {
@@ -174,9 +176,9 @@ pub(crate) async fn mfa_options(
 ) -> Result<Vec<pb::scufflecloud::core::v1::MfaOption>, tonic::Status> {
     let mut mfa_options = vec![];
 
-    if !mfa_totps::dsl::mfa_totps
-        .filter(mfa_totps::dsl::user_id.eq(user_id))
-        .select(mfa_totps::dsl::user_id)
+    if !mfa_totp_credentials::dsl::mfa_totp_credentials
+        .filter(mfa_totp_credentials::dsl::user_id.eq(user_id))
+        .select(mfa_totp_credentials::dsl::user_id)
         .load::<UserId>(tx)
         .await
         .into_tonic_internal_err("failed to query mfa factors")?

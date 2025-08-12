@@ -114,17 +114,29 @@ CREATE INDEX ON "user_sessions"("token_id");
 
 --- MFA (Multi-Factor Authentication)
 
-CREATE TABLE "mfa_totps" (
-    "id" UUID PRIMARY KEY,
-    "user_id" UUID NOT NULL,
-    "secret" BYTEA NOT NULL
+CREATE TABLE "mfa_totp_reg_sessions" (
+    "user_id" UUID PRIMARY KEY,
+    "secret" BYTEA NOT NULL,
+    "expires_at" TIMESTAMPTZ NOT NULL
 );
 
-ALTER TABLE "mfa_totps"
+ALTER TABLE "mfa_totp_reg_sessions"
 ADD FOREIGN KEY("user_id") REFERENCES "users"("id")
 ON DELETE CASCADE;
 
-CREATE INDEX ON "mfa_totps"("user_id");
+CREATE TABLE "mfa_totp_credentials" (
+    "id" UUID PRIMARY KEY,
+    "user_id" UUID NOT NULL,
+    "name" VARCHAR(255) NOT NULL,
+    "secret" BYTEA NOT NULL,
+    "last_used_at" TIMESTAMPTZ NOT NULL
+);
+
+ALTER TABLE "mfa_totp_credentials"
+ADD FOREIGN KEY("user_id") REFERENCES "users"("id")
+ON DELETE CASCADE;
+
+CREATE INDEX ON "mfa_totp_credentials"("user_id");
 
 CREATE TABLE "mfa_webauthn_reg_sessions" (
     "user_id" UUID PRIMARY KEY,

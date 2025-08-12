@@ -4,6 +4,7 @@ package scufflecloud.core.v1;
 
 import "tinc/annotations.proto";
 import "google/protobuf/empty.proto";
+import "google/protobuf/timestamp.proto";
 
 import "scufflecloud/core/v1/common.proto";
 import "scufflecloud/core/v1/constraints.proto";
@@ -69,9 +70,14 @@ service UsersService {
         };
     }
 
-    rpc CreateTotpCredential(UserByIdRequest) returns (NewTotpCredential) {
+    rpc CreateTotpCredential(UserByIdRequest) returns (CreateTotpCredentialResponse) {
         option (tinc.method).endpoint = {
             post: "/users/{id}/totp-credentials"
+        };
+    }
+    rpc CompleteCreateTotpCredential(CompleteCreateTotpCredentialRequest) returns (TotpCredential) {
+        option (tinc.method).endpoint = {
+            post: "/users/{id}/totp-credentials/complete"
         };
     }
     rpc ListTotpCredentials(UserByIdRequest) returns (TotpCredentialsList) {
@@ -151,9 +157,28 @@ message DeleteUserEmailRequest {
     string email = 2 [(tinc.field).constraint.string.email = true];
 }
 
+message CreateTotpCredentialResponse {
+    bytes secret_qrcode_png = 1;
+    string secret_url = 2;
+}
+
+message CompleteCreateTotpCredentialRequest {
+    string id = 1 [(string_constraint).id = true];
+    string name = 2 [(tinc.field).constraint.string = {
+        min_len: 1,
+        max_len: 255
+    }];
+    string code = 3 [(tinc.field).constraint.string.len = 6];
+}
+
 message WebauthnCredential {
     string id = 1 [(string_constraint).id = true];
     string user_id = 2 [(string_constraint).id = true];
+    string name = 3 [(tinc.field).constraint.string = {
+        min_len: 1,
+        max_len: 255
+    }];
+    google.protobuf.Timestamp last_used_at_utc = 4;
 }
 
 message WebauthnCredentialsList {
@@ -195,12 +220,14 @@ message WebauthnChallenge {
     string options_json = 1;
 }
 
-message NewTotpCredential {
-    string id = 1 [(string_constraint).id = true];
-}
-
 message TotpCredential {
     string id = 1 [(string_constraint).id = true];
+    string user_id = 2 [(string_constraint).id = true];
+    string name = 3 [(tinc.field).constraint.string = {
+        min_len: 1,
+        max_len: 255
+    }];
+    google.protobuf.Timestamp last_used_at_utc = 4;
 }
 
 message TotpCredentialsList {

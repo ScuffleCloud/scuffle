@@ -14,7 +14,8 @@ DROP TABLE IF EXISTS "organizations" CASCADE;
 DROP TABLE IF EXISTS "mfa_webauthn_credentials" CASCADE;
 DROP TABLE IF EXISTS "mfa_webauthn_reg_sessions" CASCADE;
 DROP TABLE IF EXISTS "mfa_webauthn_auth_sessions" CASCADE;
-DROP TABLE IF EXISTS "mfa_totps" CASCADE;
+DROP TABLE IF EXISTS "mfa_totp_credentials" CASCADE;
+DROP TABLE IF EXISTS "mfa_totp_reg_sessions" CASCADE;
 
 DROP TABLE IF EXISTS "user_sessions" CASCADE;
 DROP TYPE IF EXISTS "device_algorithm" CASCADE;

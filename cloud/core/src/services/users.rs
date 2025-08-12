@@ -10,16 +10,18 @@ use crate::cedar::{self, Action, CoreApplication};
 use crate::common::TxError;
 use crate::http_ext::RequestExt;
 use crate::models::{
-    EmailRegistrationRequest, EmailRegistrationRequestId, MfaWebauthnAuthenticationSession, MfaWebauthnCredential,
-    MfaWebauthnCredentialId, MfaWebauthnRegistrationSession, User, UserEmail, UserId,
+    EmailRegistrationRequest, EmailRegistrationRequestId, MfaTotpCredential, MfaTotpCredentialId,
+    MfaTotpRegistrationSession, MfaWebauthnAuthenticationSession, MfaWebauthnCredential, MfaWebauthnCredentialId,
+    MfaWebauthnRegistrationSession, User, UserEmail, UserId,
 };
 use crate::schema::{
-    email_registration_requests, mfa_webauthn_auth_sessions, mfa_webauthn_credentials, mfa_webauthn_reg_sessions,
-    user_emails, users,
+    email_registration_requests, mfa_totp_credentials, mfa_totp_reg_sessions, mfa_webauthn_auth_sessions,
+    mfa_webauthn_credentials, mfa_webauthn_reg_sessions, user_emails, users,
 };
 use crate::services::CoreSvc;
-use crate::std_ext::{OptionExt, ResultExt};
-use crate::{CoreConfig, common};
+use crate::std_ext::{DisplayExt, OptionExt, ResultExt};
+use crate::totp::TotpError;
+use crate::{CoreConfig, common, totp};
 
 #[async_trait::async_trait]
 impl<G: CoreConfig> pb::scufflecloud::core::v1::users_service_server::UsersService for CoreSvc<G> {
@@ -697,8 +699,121 @@ impl<G: CoreConfig> pb::scufflecloud::core::v1::users_service_server::UsersServi
     async fn create_totp_credential(
         &self,
         req: tonic::Request<pb::scufflecloud::core::v1::UserByIdRequest>,
-    ) -> Result<tonic::Response<pb::scufflecloud::core::v1::NewTotpCredential>, tonic::Status> {
-        todo!()
+    ) -> Result<tonic::Response<pb::scufflecloud::core::v1::CreateTotpCredentialResponse>, tonic::Status> {
+        let global = &req.global::<G>()?;
+        let (_, ext, payload) = req.into_parts();
+        ext.session_or_err()?;
+
+        let user_id: UserId = payload
+            .id
+            .parse()
+            .map_err(|e| tonic::Status::invalid_argument(format!("invalid user ID: {e}")))?;
+
+        let mut db = global.db().await.into_tonic_internal_err("failed to connect to database")?;
+
+        let response = db
+            .transaction::<_, TxError, _>(|conn| {
+                async move {
+                    let user: User = users::dsl::users
+                        .find(user_id)
+                        .select(User::as_select())
+                        .first(conn)
+                        .await
+                        .into_tonic_internal_err("failed to query user")?;
+
+                    let totp = totp::new_token(user.primary_email.unwrap_or(user.id.to_string()))
+                        .into_tonic_internal_err("failed to generate TOTP token")?;
+
+                    let response = pb::scufflecloud::core::v1::CreateTotpCredentialResponse {
+                        secret_url: totp.get_url(),
+                        secret_qrcode_png: totp.get_qr_png().into_tonic_internal_err("failed to generate TOTP QR code")?,
+                    };
+
+                    diesel::insert_into(mfa_totp_reg_sessions::dsl::mfa_totp_reg_sessions)
+                        .values(MfaTotpRegistrationSession {
+                            user_id,
+                            secret: totp.secret,
+                            expires_at: chrono::Utc::now() + global.mfa_timeout(),
+                        })
+                        .execute(conn)
+                        .await?;
+
+                    Ok(response)
+                }
+                .scope_boxed()
+            })
+            .await?;
+
+        Ok(tonic::Response::new(response))
+    }
+
+    async fn complete_create_totp_credential(
+        &self,
+        req: tonic::Request<pb::scufflecloud::core::v1::CompleteCreateTotpCredentialRequest>,
+    ) -> Result<tonic::Response<pb::scufflecloud::core::v1::TotpCredential>, tonic::Status> {
+        let global = &req.global::<G>()?;
+        let (_, ext, payload) = req.into_parts();
+        let session = ext.session_or_err()?;
+
+        let user_id: UserId = payload
+            .id
+            .parse()
+            .map_err(|e| tonic::Status::invalid_argument(format!("invalid user ID: {e}")))?;
+
+        let mut db = global.db().await.into_tonic_internal_err("failed to connect to database")?;
+
+        let credential = db
+            .transaction::<_, TxError, _>(|conn| {
+                async move {
+                    let secret = mfa_totp_reg_sessions::dsl::mfa_totp_reg_sessions
+                        .find(user_id)
+                        .filter(mfa_totp_reg_sessions::dsl::expires_at.gt(chrono::Utc::now()))
+                        .select(mfa_totp_reg_sessions::dsl::secret)
+                        .first::<Vec<u8>>(conn)
+                        .await
+                        .optional()
+                        .into_tonic_internal_err("failed to query TOTP registration session")?
+                        .ok_or_else(|| {
+                            tonic::Status::with_error_details(
+                                tonic::Code::FailedPrecondition,
+                                "no TOTP registration session found",
+                                ErrorDetails::new(),
+                            )
+                        })?;
+
+                    match totp::verify_token(secret.clone(), &payload.code) {
+                        Ok(()) => {}
+                        Err(TotpError::InvalidToken) => {
+                            return Err(TotpError::InvalidToken
+                                .into_tonic_err_with_field_violation("code", "invalid TOTP token")
+                                .into());
+                        }
+                        Err(e) => return Err(e.into_tonic_internal_err("failed to verify TOTP token").into()),
+                    }
+
+                    let credential = MfaTotpCredential {
+                        id: MfaTotpCredentialId::new(),
+                        user_id,
+                        name: payload.name,
+                        secret,
+                        last_used_at: chrono::Utc::now(),
+                    };
+
+                    cedar::is_authorized(global, Some(session), user_id, Action::CreateTotpCredential, &credential)?;
+
+                    diesel::insert_into(mfa_totp_credentials::dsl::mfa_totp_credentials)
+                        .values(&credential)
+                        .execute(conn)
+                        .await
+                        .into_tonic_internal_err("failed to insert TOTP credential")?;
+
+                    Ok(credential)
+                }
+                .scope_boxed()
+            })
+            .await?;
+
+        Ok(tonic::Response::new(credential.into()))
     }
 
     async fn list_totp_credentials(

@@ -113,6 +113,8 @@ pub enum Action {
     DeleteWebauthnCredential,
     #[display("list_webauthn_credentials")]
     ListWebauthnCredentials,
+    #[display("create_totp_credential")]
+    CreateTotpCredential,
     #[display("delete_user")]
     DeleteUser,
 

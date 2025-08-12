@@ -19,6 +19,7 @@ publish = false
 aho-corasick = { version = "1", default-features = false, features = ["perf-literal", "std"] }
 axum = { version = "0.8", features = ["ws"] }
 bitflags = { version = "2", default-features = false, features = ["serde"] }
+bytemuck = { version = "1", default-features = false, features = ["extern_crate_alloc"] }
 bytes = { version = "1" }
 camino = { version = "1", default-features = false, features = ["serde1"] }
 chrono = { version = "0.4", features = ["serde"] }
@@ -30,6 +31,7 @@ crypto-common = { version = "0.1", default-features = false, features = ["std"] 
 digest = { version = "0.10", features = ["mac", "oid", "std"] }
 either = { version = "1", features = ["use_std"] }
 fastrand = { version = "2" }
+flate2 = { version = "1", features = ["zlib-rs"] }
 form_urlencoded = { version = "1" }
 futures = { version = "0.3" }
 futures-channel = { version = "0.3", features = ["sink"] }
@@ -53,6 +55,7 @@ lazy_static = { version = "1", default-features = false, features = ["spin_no_st
 libc = { version = "0.2" }
 log = { version = "0.4", default-features = false, features = ["std"] }
 memchr = { version = "2" }
+miniz_oxide = { version = "0.8", features = ["simd"] }
 nom = { version = "7" }
 num-traits = { version = "0.2", features = ["i128", "libm"] }
 once_cell = { version = "1" }
@@ -75,6 +78,7 @@ semver = { version = "1", features = ["serde"] }
 serde = { version = "1", features = ["alloc", "derive", "rc"] }
 serde_json = { version = "1", features = ["alloc", "preserve_order", "raw_value", "unbounded_depth"] }
 sha2 = { version = "0.10", features = ["oid"] }
+simd-adler32 = { version = "0.3" }
 smallvec = { version = "1", default-features = false, features = ["const_new"] }
 subtle = { version = "2", default-features = false, features = ["i128"] }
 syn = { version = "2", features = ["extra-traits", "fold", "full", "visit", "visit-mut"] }
@@ -99,6 +103,7 @@ zeroize = { version = "1" }
 aho-corasick = { version = "1", default-features = false, features = ["perf-literal", "std"] }
 axum = { version = "0.8", features = ["ws"] }
 bitflags = { version = "2", default-features = false, features = ["serde"] }
+bytemuck = { version = "1", default-features = false, features = ["extern_crate_alloc"] }
 bytes = { version = "1" }
 camino = { version = "1", default-features = false, features = ["serde1"] }
 cc = { version = "1", default-features = false, features = ["parallel"] }
@@ -112,6 +117,7 @@ digest = { version = "0.10", features = ["mac", "oid", "std"] }
 displaydoc = { version = "0.2" }
 either = { version = "1", features = ["use_std"] }
 fastrand = { version = "2" }
+flate2 = { version = "1", features = ["zlib-rs"] }
 form_urlencoded = { version = "1" }
 futures = { version = "0.3" }
 futures-channel = { version = "0.3", features = ["sink"] }
@@ -135,6 +141,7 @@ lazy_static = { version = "1", default-features = false, features = ["spin_no_st
 libc = { version = "0.2" }
 log = { version = "0.4", default-features = false, features = ["std"] }
 memchr = { version = "2" }
+miniz_oxide = { version = "0.8", features = ["simd"] }
 nom = { version = "7" }
 num-traits = { version = "0.2", features = ["i128", "libm"] }
 once_cell = { version = "1" }
@@ -157,6 +164,7 @@ semver = { version = "1", features = ["serde"] }
 serde = { version = "1", features = ["alloc", "derive", "rc"] }
 serde_json = { version = "1", features = ["alloc", "preserve_order", "raw_value", "unbounded_depth"] }
 sha2 = { version = "0.10", features = ["oid"] }
+simd-adler32 = { version = "0.3" }
 smallvec = { version = "1", default-features = false, features = ["const_new"] }
 subtle = { version = "2", default-features = false, features = ["i128"] }
 syn = { version = "2", features = ["extra-traits", "fold", "full", "visit", "visit-mut"] }
@@ -179,7 +187,6 @@ zeroize = { version = "1" }
 
 [target.x86_64-unknown-linux-gnu.dependencies]
 bitflags = { version = "2", default-features = false, features = ["std"] }
-flate2 = { version = "1", features = ["zlib-rs"] }
 getrandom-468e82937335b1c9 = { package = "getrandom", version = "0.3", default-features = false, features = ["std"] }
 h3 = { version = "0.0.8", default-features = false, features = ["tracing"] }
 h3-quinn = { version = "0.0.10", default-features = false, features = ["tracing"] }
@@ -197,7 +204,6 @@ tower-http = { version = "0.6", features = ["cors", "follow-redirect", "trace"] 
 
 [target.x86_64-unknown-linux-gnu.build-dependencies]
 bitflags = { version = "2", default-features = false, features = ["std"] }
-flate2 = { version = "1", features = ["zlib-rs"] }
 getrandom-468e82937335b1c9 = { package = "getrandom", version = "0.3", default-features = false, features = ["std"] }
 h3 = { version = "0.0.8", default-features = false, features = ["tracing"] }
 h3-quinn = { version = "0.0.10", default-features = false, features = ["tracing"] }
@@ -215,7 +221,6 @@ tower-http = { version = "0.6", features = ["cors", "follow-redirect", "trace"] 
 
 [target.aarch64-unknown-linux-gnu.dependencies]
 bitflags = { version = "2", default-features = false, features = ["std"] }
-flate2 = { version = "1", features = ["zlib-rs"] }
 getrandom-468e82937335b1c9 = { package = "getrandom", version = "0.3", default-features = false, features = ["std"] }
 h3 = { version = "0.0.8", default-features = false, features = ["tracing"] }
 h3-quinn = { version = "0.0.10", default-features = false, features = ["tracing"] }
@@ -233,7 +238,6 @@ tower-http = { version = "0.6", features = ["cors", "follow-redirect", "trace"] 
 
 [target.aarch64-unknown-linux-gnu.build-dependencies]
 bitflags = { version = "2", default-features = false, features = ["std"] }
-flate2 = { version = "1", features = ["zlib-rs"] }
 getrandom-468e82937335b1c9 = { package = "getrandom", version = "0.3", default-features = false, features = ["std"] }
 h3 = { version = "0.0.8", default-features = false, features = ["tracing"] }
 h3-quinn = { version = "0.0.10", default-features = false, features = ["tracing"] }
@@ -251,7 +255,6 @@ tower-http = { version = "0.6", features = ["cors", "follow-redirect", "trace"] 
 
 [target.x86_64-apple-darwin.dependencies]
 bitflags = { version = "2", default-features = false, features = ["std"] }
-flate2 = { version = "1", features = ["zlib-rs"] }
 getrandom-468e82937335b1c9 = { package = "getrandom", version = "0.3", default-features = false, features = ["std"] }
 h3 = { version = "0.0.8", default-features = false, features = ["tracing"] }
 h3-quinn = { version = "0.0.10", default-features = false, features = ["tracing"] }
@@ -270,7 +273,6 @@ tower-http = { version = "0.6", features = ["cors", "follow-redirect", "trace"] 
 
 [target.x86_64-apple-darwin.build-dependencies]
 bitflags = { version = "2", default-features = false, features = ["std"] }
-flate2 = { version = "1", features = ["zlib-rs"] }
 getrandom-468e82937335b1c9 = { package = "getrandom", version = "0.3", default-features = false, features = ["std"] }
 h3 = { version = "0.0.8", default-features = false, features = ["tracing"] }
 h3-quinn = { version = "0.0.10", default-features = false, features = ["tracing"] }
@@ -289,7 +291,6 @@ tower-http = { version = "0.6", features = ["cors", "follow-redirect", "trace"] 
 
 [target.aarch64-apple-darwin.dependencies]
 bitflags = { version = "2", default-features = false, features = ["std"] }
-flate2 = { version = "1", features = ["zlib-rs"] }
 getrandom-468e82937335b1c9 = { package = "getrandom", version = "0.3", default-features = false, features = ["std"] }
 h3 = { version = "0.0.8", default-features = false, features = ["tracing"] }
 h3-quinn = { version = "0.0.10", default-features = false, features = ["tracing"] }
@@ -308,7 +309,6 @@ tower-http = { version = "0.6", features = ["cors", "follow-redirect", "trace"] 
 
 [target.aarch64-apple-darwin.build-dependencies]
 bitflags = { version = "2", default-features = false, features = ["std"] }
-flate2 = { version = "1", features = ["zlib-rs"] }
 getrandom-468e82937335b1c9 = { package = "getrandom", version = "0.3", default-features = false, features = ["std"] }
 h3 = { version = "0.0.8", default-features = false, features = ["tracing"] }
 h3-quinn = { version = "0.0.10", default-features = false, features = ["tracing"] }

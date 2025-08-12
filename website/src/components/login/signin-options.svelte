@@ -1,4 +1,5 @@
-<script>
+<script lang="ts">
+    import { goto } from '$app/navigation';
     import IconGoogle from '$lib/images/icon-google.svelte';
     import IconLoginKey from '$lib/images/icon-login-key.svelte';
 
@@ -6,10 +7,6 @@
 
     function handleGoogleLogin() {
         console.log('Google login');
-    }
-
-    function handlePasskeyLogin() {
-        console.log('Passkey login');
     }
 </script>
 
@@ -19,10 +16,12 @@
     Continue with Google
 </button>
 
-<button type="button" onclick={handlePasskeyLogin} class="btn-social passkey" disabled={isLoading}>
-    <IconLoginKey />
-    Continue with Passkey
-</button>
+<a href="/log-in/passkey" class="passkey-link">
+    <button type="button" class="btn-social passkey" disabled={isLoading}>
+        <IconLoginKey />
+        Continue with Passkey
+    </button>
+</a>
 
 <style>
     .divider {
@@ -74,5 +73,9 @@
         background: white;
         color: #9ca3af;
         cursor: not-allowed;
+    }
+
+    .passkey-link {
+        text-decoration: none;
     }
 </style>

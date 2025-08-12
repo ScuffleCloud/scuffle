@@ -62,7 +62,7 @@
         flex-direction: column;
         position: sticky;
         top: 0;
-        background-color: var(--colors-teal70);
+        background-color: var(--colors-gray50);
         padding: 0rem 0.5rem;
         transition: width 0.25s cubic-bezier(0.4, 0, 0.2, 1);
 
@@ -98,7 +98,6 @@
             .logo-container-image {
                 display: flex;
                 align-items: center;
-                justify-content: center;
                 filter: drop-shadow(0px 2px 4px 0px rgb(0, 0, 0, 0.05));
                 flex-shrink: 0;
             }

@@ -302,6 +302,40 @@ export const authAPI = {
         }
     },
 
+    async loginWithPassword(email: string, password: string): Promise<AuthResult> {
+        try {
+            setLoading(true);
+            clearError();
+
+            // Your auth package passkey login would go here
+            // const result = await yourAuthPackage.loginWithPasskey();
+
+            console.log('Logging in with passkey');
+            await new Promise((resolve) => setTimeout(resolve, 1000));
+
+            const userData: User = {
+                id: '789',
+                name: 'John Doe',
+                email: 'john@example.com',
+                isAdmin: true,
+                avatar: null,
+                createdAt: new Date(),
+                updatedAt: new Date(),
+            };
+
+            login(userData);
+            return { success: true };
+        } catch (error) {
+            console.error('Passkey login failed:', error);
+            const errorMessage =
+                error instanceof Error ? error.message : 'Passkey login failed. Please try again.';
+            setError(errorMessage);
+            return { success: false, error: errorMessage };
+        } finally {
+            setLoading(false);
+        }
+    },
+
     async logoutUser(): Promise<AuthResult> {
         try {
             setLoading(true);

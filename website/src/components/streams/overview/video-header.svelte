@@ -110,6 +110,9 @@
     .container-wrapper {
         display: flex;
         flex-direction: column;
+        background: var(--colors-gray50);
+        border-radius: 0.5rem;
+        padding: 1px;
     }
 
     .overview-container {
@@ -166,7 +169,7 @@
             margin-bottom: 1.5rem;
 
             .info-item {
-                background: var(--colors-teal60);
+                background: var(--colors-gray20);
                 padding: 0.5rem 1rem;
                 border-radius: 0.625rem;
                 display: flex;

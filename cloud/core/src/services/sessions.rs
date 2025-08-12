@@ -774,6 +774,11 @@ impl<G: CoreConfig> pb::scufflecloud::core::v1::sessions_service_server::Session
                                 .into_tonic_err_with_field_violation("response_json", "invalid public key credential")?;
                             common::finish_webauthn_authentication(global, conn, session.user_id, &pk_cred).await?;
                         }
+                        pb::scufflecloud::core::v1::validate_mfa_for_user_session_request::Response::RecoveryCode(
+                            pb::scufflecloud::core::v1::ValidateMfaForUserSessionRecoveryCode { code },
+                        ) => {
+                            common::process_recovery_code(conn, session.user_id, &code).await?;
+                        }
                     }
 
                     // Set mfa_pending=false and reset session expiry

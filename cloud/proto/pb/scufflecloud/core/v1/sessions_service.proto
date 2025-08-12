@@ -126,6 +126,7 @@ message Device {
 enum MfaOption {
     TOTP = 0;
     WEB_AUTHN = 1;
+    RECOVERY_CODES = 2;
 }
 
 message NewUserSessionToken {
@@ -246,19 +247,24 @@ message CompleteUserSessionRequestRequest {
     Device device = 2;
 }
 
+message ValidateMfaForUserSessionTotp {
+    string code = 1 [(tinc.field).constraint.string.len = 6];
+}
+
 message ValidateMfaForUserSessionWebauthn {
     // JSON encoded
     // https://docs.rs/webauthn-rs/latest/webauthn_rs/prelude/struct.PublicKeyCredential.html
     string response_json = 1;
 }
 
-message ValidateMfaForUserSessionTotp {
-    string code = 1 [(tinc.field).constraint.string.len = 6];
+message ValidateMfaForUserSessionRecoveryCode {
+    string code = 1 [(tinc.field).constraint.string.len = 8];
 }
 
 message ValidateMfaForUserSessionRequest {
     oneof response {
-        ValidateMfaForUserSessionWebauthn webauthn = 1;
-        ValidateMfaForUserSessionTotp totp = 2;
+        ValidateMfaForUserSessionTotp totp = 1;
+        ValidateMfaForUserSessionWebauthn webauthn = 2;
+        ValidateMfaForUserSessionRecoveryCode recovery_code = 3;
     }
 }

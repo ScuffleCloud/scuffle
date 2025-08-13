@@ -43,33 +43,13 @@ rust_library(
         ],
     ),
     crate_features = [
+        "aws-lc-rs",
         "futures-io",
         "log",
         "platform-verifier",
-        "ring",
         "runtime-tokio",
-        "rustls-ring",
-    ] + select({
-        "@rules_rust//rust/platform:aarch64-apple-darwin": [
-            "rustls",
-        ],
-        "@rules_rust//rust/platform:aarch64-pc-windows-msvc": [
-            "rustls",
-        ],
-        "@rules_rust//rust/platform:aarch64-unknown-linux-gnu": [
-            "rustls",
-        ],
-        "@rules_rust//rust/platform:x86_64-apple-darwin": [
-            "rustls",
-        ],
-        "@rules_rust//rust/platform:x86_64-pc-windows-msvc": [
-            "rustls",
-        ],
-        "@rules_rust//rust/platform:x86_64-unknown-linux-gnu": [
-            "rustls",
-        ],
-        "//conditions:default": [],
-    }),
+        "rustls-aws-lc-rs",
+    ],
     crate_root = "src/lib.rs",
     edition = "2021",
     rustc_env_files = [
@@ -105,7 +85,7 @@ rust_library(
         "@cargo_vendor__quinn-udp-0.5.13//:quinn_udp",
         "@cargo_vendor__rustc-hash-2.1.1//:rustc_hash",
         "@cargo_vendor__rustls-0.23.31//:rustls",
-        "@cargo_vendor__thiserror-2.0.12//:thiserror",
+        "@cargo_vendor__thiserror-2.0.14//:thiserror",
         "@cargo_vendor__tokio-1.47.1//:tokio",
         "@cargo_vendor__tracing-0.1.41//:tracing",
     ] + select({
@@ -154,33 +134,13 @@ cargo_build_script(
         ],
     ),
     crate_features = [
+        "aws-lc-rs",
         "futures-io",
         "log",
         "platform-verifier",
-        "ring",
         "runtime-tokio",
-        "rustls-ring",
-    ] + select({
-        "@rules_rust//rust/platform:aarch64-apple-darwin": [
-            "rustls",
-        ],
-        "@rules_rust//rust/platform:aarch64-pc-windows-msvc": [
-            "rustls",
-        ],
-        "@rules_rust//rust/platform:aarch64-unknown-linux-gnu": [
-            "rustls",
-        ],
-        "@rules_rust//rust/platform:x86_64-apple-darwin": [
-            "rustls",
-        ],
-        "@rules_rust//rust/platform:x86_64-pc-windows-msvc": [
-            "rustls",
-        ],
-        "@rules_rust//rust/platform:x86_64-unknown-linux-gnu": [
-            "rustls",
-        ],
-        "//conditions:default": [],
-    }),
+        "rustls-aws-lc-rs",
+    ],
     crate_name = "build_script_build",
     crate_root = "build.rs",
     data = glob(

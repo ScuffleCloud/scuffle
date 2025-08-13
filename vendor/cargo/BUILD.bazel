@@ -34,14 +34,14 @@ filegroup(
 
 # Workspace Member Dependencies
 transition_alias_opt(
-    name = "anyhow-1.0.98",
-    actual = "@cargo_vendor__anyhow-1.0.98//:anyhow",
+    name = "anyhow-1.0.99",
+    actual = "@cargo_vendor__anyhow-1.0.99//:anyhow",
     tags = ["manual"],
 )
 
 transition_alias_opt(
     name = "anyhow",
-    actual = "@cargo_vendor__anyhow-1.0.98//:anyhow",
+    actual = "@cargo_vendor__anyhow-1.0.99//:anyhow",
     tags = ["manual"],
 )
 
@@ -106,14 +106,14 @@ transition_alias_opt(
 )
 
 transition_alias_opt(
-    name = "bon-3.6.5",
-    actual = "@cargo_vendor__bon-3.6.5//:bon",
+    name = "bon-3.7.0",
+    actual = "@cargo_vendor__bon-3.7.0//:bon",
     tags = ["manual"],
 )
 
 transition_alias_opt(
     name = "bon",
-    actual = "@cargo_vendor__bon-3.6.5//:bon",
+    actual = "@cargo_vendor__bon-3.7.0//:bon",
     tags = ["manual"],
 )
 
@@ -250,26 +250,26 @@ transition_alias_opt(
 )
 
 transition_alias_opt(
-    name = "clap-4.5.43",
-    actual = "@cargo_vendor__clap-4.5.43//:clap",
+    name = "clap-4.5.45",
+    actual = "@cargo_vendor__clap-4.5.45//:clap",
     tags = ["manual"],
 )
 
 transition_alias_opt(
     name = "clap",
-    actual = "@cargo_vendor__clap-4.5.43//:clap",
+    actual = "@cargo_vendor__clap-4.5.45//:clap",
     tags = ["manual"],
 )
 
 transition_alias_opt(
-    name = "config-0.15.13",
-    actual = "@cargo_vendor__config-0.15.13//:config",
+    name = "config-0.15.14",
+    actual = "@cargo_vendor__config-0.15.14//:config",
     tags = ["manual"],
 )
 
 transition_alias_opt(
     name = "config",
-    actual = "@cargo_vendor__config-0.15.13//:config",
+    actual = "@cargo_vendor__config-0.15.14//:config",
     tags = ["manual"],
 )
 
@@ -454,14 +454,14 @@ transition_alias_opt(
 )
 
 transition_alias_opt(
-    name = "glob-0.3.2",
-    actual = "@cargo_vendor__glob-0.3.2//:glob",
+    name = "glob-0.3.3",
+    actual = "@cargo_vendor__glob-0.3.3//:glob",
     tags = ["manual"],
 )
 
 transition_alias_opt(
     name = "glob",
-    actual = "@cargo_vendor__glob-0.3.2//:glob",
+    actual = "@cargo_vendor__glob-0.3.3//:glob",
     tags = ["manual"],
 )
 
@@ -646,14 +646,14 @@ transition_alias_opt(
 )
 
 transition_alias_opt(
-    name = "libc-0.2.174",
-    actual = "@cargo_vendor__libc-0.2.174//:libc",
+    name = "libc-0.2.175",
+    actual = "@cargo_vendor__libc-0.2.175//:libc",
     tags = ["manual"],
 )
 
 transition_alias_opt(
     name = "libc",
-    actual = "@cargo_vendor__libc-0.2.174//:libc",
+    actual = "@cargo_vendor__libc-0.2.175//:libc",
     tags = ["manual"],
 )
 
@@ -922,14 +922,14 @@ transition_alias_opt(
 )
 
 transition_alias_opt(
-    name = "proc-macro2-1.0.95",
-    actual = "@cargo_vendor__proc-macro2-1.0.95//:proc_macro2",
+    name = "proc-macro2-1.0.97",
+    actual = "@cargo_vendor__proc-macro2-1.0.97//:proc_macro2",
     tags = ["manual"],
 )
 
 transition_alias_opt(
     name = "proc-macro2",
-    actual = "@cargo_vendor__proc-macro2-1.0.95//:proc_macro2",
+    actual = "@cargo_vendor__proc-macro2-1.0.97//:proc_macro2",
     tags = ["manual"],
 )
 
@@ -1078,14 +1078,14 @@ transition_alias_opt(
 )
 
 transition_alias_opt(
-    name = "reqwest-0.12.22",
-    actual = "@cargo_vendor__reqwest-0.12.22//:reqwest",
+    name = "reqwest-0.12.23",
+    actual = "@cargo_vendor__reqwest-0.12.23//:reqwest",
     tags = ["manual"],
 )
 
 transition_alias_opt(
     name = "reqwest",
-    actual = "@cargo_vendor__reqwest-0.12.22//:reqwest",
+    actual = "@cargo_vendor__reqwest-0.12.23//:reqwest",
     tags = ["manual"],
 )
 
@@ -1282,14 +1282,14 @@ transition_alias_opt(
 )
 
 transition_alias_opt(
-    name = "syn-2.0.104",
-    actual = "@cargo_vendor__syn-2.0.104//:syn",
+    name = "syn-2.0.105",
+    actual = "@cargo_vendor__syn-2.0.105//:syn",
     tags = ["manual"],
 )
 
 transition_alias_opt(
     name = "syn",
-    actual = "@cargo_vendor__syn-2.0.104//:syn",
+    actual = "@cargo_vendor__syn-2.0.105//:syn",
     tags = ["manual"],
 )
 
@@ -1318,14 +1318,14 @@ transition_alias_opt(
 )
 
 transition_alias_opt(
-    name = "thiserror-2.0.12",
-    actual = "@cargo_vendor__thiserror-2.0.12//:thiserror",
+    name = "thiserror-2.0.14",
+    actual = "@cargo_vendor__thiserror-2.0.14//:thiserror",
     tags = ["manual"],
 )
 
 transition_alias_opt(
     name = "thiserror",
-    actual = "@cargo_vendor__thiserror-2.0.12//:thiserror",
+    actual = "@cargo_vendor__thiserror-2.0.14//:thiserror",
     tags = ["manual"],
 )
 
@@ -1534,14 +1534,14 @@ transition_alias_opt(
 )
 
 transition_alias_opt(
-    name = "uuid-1.17.0",
-    actual = "@cargo_vendor__uuid-1.17.0//:uuid",
+    name = "uuid-1.18.0",
+    actual = "@cargo_vendor__uuid-1.18.0//:uuid",
     tags = ["manual"],
 )
 
 transition_alias_opt(
     name = "uuid",
-    actual = "@cargo_vendor__uuid-1.17.0//:uuid",
+    actual = "@cargo_vendor__uuid-1.18.0//:uuid",
     tags = ["manual"],
 )
 

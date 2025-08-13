@@ -57,21 +57,27 @@ rust_library(
         "util",
     ] + select({
         "@rules_rust//rust/platform:aarch64-apple-darwin": [
+            "retry",
             "timeout",
         ],
         "@rules_rust//rust/platform:aarch64-pc-windows-msvc": [
+            "retry",
             "timeout",
         ],
         "@rules_rust//rust/platform:aarch64-unknown-linux-gnu": [
+            "retry",
             "timeout",
         ],
         "@rules_rust//rust/platform:x86_64-apple-darwin": [
+            "retry",
             "timeout",
         ],
         "@rules_rust//rust/platform:x86_64-pc-windows-msvc": [
+            "retry",
             "timeout",
         ],
         "@rules_rust//rust/platform:x86_64-unknown-linux-gnu": [
+            "retry",
             "timeout",
         ],
         "//conditions:default": [],

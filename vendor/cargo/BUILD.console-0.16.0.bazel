@@ -68,7 +68,7 @@ rust_library(
     }),
     version = "0.16.0",
     deps = [
-        "@cargo_vendor__libc-0.2.174//:libc",
+        "@cargo_vendor__libc-0.2.175//:libc",
         "@cargo_vendor__once_cell-1.21.3//:once_cell",
         "@cargo_vendor__unicode-width-0.2.1//:unicode_width",
     ] + select({

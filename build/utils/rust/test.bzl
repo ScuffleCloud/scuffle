@@ -94,7 +94,7 @@ nextest_test = rule(
     parent = rust_test,
     attrs = {
         "workspace_root": attr.label(mandatory = False),
-        "_nextest_profile": attr.label(mandatory = False, default = "//:test_profile"),
+        "_nextest_profile": attr.label(mandatory = False, default = "//settings:test_profile"),
         "_test_runner": attr.label(
             default = "//build/utils/rust/test_runner",
             executable = True,

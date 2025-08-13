@@ -15,13 +15,45 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
-## [0.1.2](https://github.com/ScuffleCloud/scuffle/compare/scuffle-batching-v0.1.1...scuffle-batching-v0.1.2) - 2025-04-27
+## [0.1.6](https://github.com/ScuffleCloud/scuffle/releases/tag/scuffle-batching-v0.1.6) - 2025-08-06
+
+[View diff on diff.rs](https://diff.rs/scuffle-batching/0.1.5/scuffle-batching/0.1.6/Cargo.toml)
+
+### 🛠️ Non-breaking changes
+
+- chore: bumped internal deps ([#512](https://github.com/scufflecloud/scuffle/pull/512)) (@TroyKomodo)
+
+## [0.1.5](https://github.com/ScuffleCloud/scuffle/releases/tag/scuffle-batching-v0.1.5) - 2025-06-11
+
+[View diff on diff.rs](https://diff.rs/scuffle-batching/0.1.4/scuffle-batching/0.1.5/Cargo.toml)
+
+### 🛠️ Non-breaking changes
+
+- chore: bumped criterion to `0.6` ([#491](https://github.com/scufflecloud/scuffle/pull/491)) (@troykomodo)
+
+## [0.1.4](https://github.com/ScuffleCloud/scuffle/releases/tag/scuffle-batching-v0.1.4) - 2025-05-17
+
+[View diff on diff.rs](https://diff.rs/scuffle-batching/0.1.3/scuffle-batching/0.1.4/Cargo.toml)
+
+### 🛠️ Non-breaking changes
+
+- chore: fix changelog entry & release process ([#465](https://github.com/scufflecloud/scuffle/pull/465)) (@troykomodo, @SimaoMoreira5228, @philipch07)
+
+## [0.1.3](https://github.com/ScuffleCloud/scuffle/releases/tag/scuffle-batching-v0.1.3) - 2025-05-14
+
+[View diff on diff.rs](https://diff.rs/scuffle-batching/0.1.2/scuffle-batching/0.1.3/Cargo.toml)
+
+### 🛠️ Non-breaking changes
+
+- chore: cleanup readme and crate docs ([#458](https://github.com/scufflecloud/scuffle/pull/458)) (@troykomodo)
+
+## [0.1.2](https://github.com/ScuffleCloud/scuffle/releases/tag/scuffle-batching-v0.1.2) - 2025-04-27
 
 ### 🛠️ Non-breaking changes
 
 - docs: improved documentation ([#372](https://github.com/scufflecloud/scuffle/pull/372)) (@lennartkloock)
 
-## [0.1.1](https://github.com/ScuffleCloud/scuffle/compare/scuffle-batching-v0.1.0...scuffle-batching-v0.1.1) - 2025-02-21
+## [0.1.1](https://github.com/ScuffleCloud/scuffle/releases/tag/scuffle-batching-v0.1.1) - 2025-02-21
 
 ### 🛠️ Non-breaking changes
 

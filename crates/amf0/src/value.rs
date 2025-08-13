@@ -112,7 +112,6 @@ impl<'a> FromIterator<Amf0Value<'a>> for Amf0Value<'a> {
 }
 
 #[cfg(feature = "serde")]
-#[cfg_attr(docsrs, doc(cfg(feature = "serde")))]
 impl<'de> serde::de::Deserialize<'de> for Amf0Value<'de> {
     fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
     where
@@ -247,7 +246,6 @@ impl<'de> serde::de::Deserialize<'de> for Amf0Value<'de> {
 }
 
 #[cfg(feature = "serde")]
-#[cfg_attr(docsrs, doc(cfg(feature = "serde")))]
 impl serde::ser::Serialize for Amf0Value<'_> {
     fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
     where

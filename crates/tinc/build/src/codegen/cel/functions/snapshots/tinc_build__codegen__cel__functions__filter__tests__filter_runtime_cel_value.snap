@@ -1,0 +1,36 @@
+---
+source: crates/tinc/build/src/codegen/cel/functions/filter.rs
+expression: "postcompile::compile_str!(postcompile::config!\n{\n    test: true, dependencies:\n    vec![postcompile::Dependency::workspace(\"tinc\"),],\n}, quote!\n{\n    fn filter<'a>(input: &'a ::tinc::__private::cel::CelValue<'a>) ->\n    Result<::tinc::__private::cel::CelValue<'a>,\n    ::tinc::__private::cel::CelError<'a>> { Ok(#output) } #[test] fn\n    test_filter()\n    {\n        assert_eq!(filter(&tinc::__private::cel::CelValue::List([tinc::__private::cel::CelValueConv::conv(5),\n        tinc::__private::cel::CelValueConv::conv(1),\n        tinc::__private::cel::CelValueConv::conv(50),\n        tinc::__private::cel::CelValueConv::conv(-50),].into_iter().collect())).unwrap(),\n        tinc::__private::cel::CelValue::List([tinc::__private::cel::CelValueConv::conv(50),].into_iter().collect()));\n    }\n},)"
+---
+exit status: 0
+--- test_stdout
+running 1 test
+.
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in [ELAPSED]s
+--- expanded
+#![feature(prelude_import)]
+#[prelude_import]
+use std::prelude::rust_2024::*;
+#[macro_use]
+extern crate std;
+fn filter<'a>(
+    input: &'a ::tinc::__private::cel::CelValue<'a>,
+) -> Result<::tinc::__private::cel::CelValue<'a>, ::tinc::__private::cel::CelError<'a>> {
+    Ok(
+        ::tinc::__private::cel::CelValue::cel_filter(
+            input,
+            |item| {
+                ::core::result::Result::Ok(
+                    ::tinc::__private::cel::to_bool(
+                        ::tinc::__private::cel::CelValue::cel_gt(
+                            item,
+                            ::tinc::__private::cel::CelValue::Number(
+                                ::tinc::__private::cel::NumberTy::I64(5i64),
+                            ),
+                        )?,
+                    ),
+                )
+            },
+        )?,
+    )
+}

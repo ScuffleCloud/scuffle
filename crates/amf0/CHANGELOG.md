@@ -15,7 +15,40 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
-## [0.2.0](https://github.com/ScuffleCloud/scuffle/compare/scuffle-amf0-v0.1.1...scuffle-amf0-v0.2.0) - 2025-04-27
+## [0.2.4](https://github.com/ScuffleCloud/scuffle/releases/tag/scuffle-amf0-v0.2.4) - 2025-06-16
+
+[View diff on diff.rs](https://diff.rs/scuffle-amf0/0.2.3/scuffle-amf0/0.2.4/Cargo.toml)
+
+### 🛠️ Non-breaking changes
+
+- chore: update fmt style ([#496](https://github.com/scufflecloud/scuffle/pull/496)) (@troykomodo)
+
+## [0.2.3](https://github.com/ScuffleCloud/scuffle/releases/tag/scuffle-amf0-v0.2.3) - 2025-05-30
+
+[View diff on diff.rs](https://diff.rs/scuffle-amf0/0.2.2/scuffle-amf0/0.2.3/Cargo.toml)
+
+### 🛠️ Non-breaking changes
+
+- docs: cleaned up documentation ([#473](https://github.com/scufflecloud/scuffle/pull/473)) (@troykomodo)
+
+## [0.2.2](https://github.com/ScuffleCloud/scuffle/releases/tag/scuffle-amf0-v0.2.2) - 2025-05-17
+
+[View diff on diff.rs](https://diff.rs/scuffle-amf0/0.2.1/scuffle-amf0/0.2.2/Cargo.toml)
+
+### 🛠️ Non-breaking changes
+
+- chore: fix changelog entry & release process ([#465](https://github.com/scufflecloud/scuffle/pull/465)) (@troykomodo, @SimaoMoreira5228, @philipch07)
+
+## [0.2.1](https://github.com/ScuffleCloud/scuffle/releases/tag/scuffle-amf0-v0.2.1) - 2025-05-14
+
+[View diff on diff.rs](https://diff.rs/scuffle-amf0/0.2.0/scuffle-amf0/0.2.1/Cargo.toml)
+
+### 🛠️ Non-breaking changes
+
+- chore: cleanup readme and crate docs ([#458](https://github.com/scufflecloud/scuffle/pull/458)) (@troykomodo)
+- chore: Use serde_derive instead of serde's derive feature for improved compile times ([#440](https://github.com/scufflecloud/scuffle/pull/440)) (@philipch07)
+
+## [0.2.0](https://github.com/ScuffleCloud/scuffle/releases/tag/scuffle-amf0-v0.2.0) - 2025-04-27
 
 ### ⚠️ Breaking changes
 
@@ -27,7 +60,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - docs: improved documentation ([#372](https://github.com/scufflecloud/scuffle/pull/372)) (@lennartkloock)
 - feat: add utility functions and types ([#396](https://github.com/scufflecloud/scuffle/pull/396)) (@lennartkloock)
 
-## [0.1.1](https://github.com/ScuffleCloud/scuffle/compare/scuffle-amf0-v0.1.0...scuffle-amf0-v0.1.1) - 2025-02-21
+## [0.1.1](https://github.com/ScuffleCloud/scuffle/releases/tag/scuffle-amf0-v0.1.1) - 2025-02-21
 
 ### 🛠️ Non-breaking changes
 

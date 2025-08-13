@@ -1,0 +1,61 @@
+syntax = "proto3";
+
+package simple_enum;
+
+import "tinc/annotations.proto";
+
+message Simple {
+    option (tinc.message).generate = true;
+
+    SimpleEnum value = 1;
+    repeated SimpleEnum values = 2;
+    map<string, SimpleEnum> map = 3;
+    optional SimpleEnum optional = 4;
+}
+
+enum SimpleEnum {
+    SIMPLE_ENUM_UNSPECIFIED = 0;
+    SIMPLE_ENUM_ONE = 1;
+    SIMPLE_ENUM_TWO = 2;
+    SIMPLE_ENUM_THREE = 3;
+}
+
+message SimpleRenamed {
+    option (tinc.message).generate = true;
+
+    SimpleEnumRenamed value = 1;
+    repeated SimpleEnumRenamed values = 2;
+    map<string, SimpleEnumRenamed> map = 3;
+    optional SimpleEnumRenamed optional = 4;
+}
+
+enum SimpleEnumRenamed {
+    option (tinc.enum) = {
+        rename_all: CAMEL_CASE
+    };
+
+    SIMPLE_ENUM_RENAMED_UNSPECIFIED = 0;
+    SIMPLE_ENUM_RENAMED_ONE = 1;
+    SIMPLE_ENUM_RENAMED_TWO = 2;
+    SIMPLE_ENUM_RENAMED_THREE = 3;
+}
+
+message SimpleRepr {
+    option (tinc.message).generate = true;
+
+    SimpleEnumRepr value = 1;
+    repeated SimpleEnumRepr values = 2;
+    map<string, SimpleEnumRepr> map = 3;
+    optional SimpleEnumRepr optional = 4;
+}
+
+enum SimpleEnumRepr {
+    option (tinc.enum) = {
+        repr_enum: true
+    };
+
+    SIMPLE_ENUM_REPR_UNSPECIFIED = 0;
+    SIMPLE_ENUM_REPR_ONE = 1;
+    SIMPLE_ENUM_REPR_TWO = 2;
+    SIMPLE_ENUM_REPR_THREE = 3;
+}

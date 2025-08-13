@@ -822,7 +822,10 @@ mod tests {
         #[derive(Deserialize, Debug, PartialEq)]
         enum Test {
             A(bool),
-            B { a: String, b: String },
+            B {
+                a: String,
+                b: String,
+            },
             C(bool, String),
         }
 

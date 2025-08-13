@@ -12,7 +12,7 @@ fmt *args:
     cargo +{{RUST_TOOLCHAIN}} fmt --all {{args}}
 
 lint *args:
-    cargo +{{RUST_TOOLCHAIN}} clippy --fix --allow-dirty --allow-staged --all-features --all-targets {{args}}
+    cargo +{{RUST_TOOLCHAIN}} clippy --fix --allow-dirty --allow-staged --all-features --all-targets {{args}} -- -Aclippy::collapsible_if
 
 alias coverage := test
 test *args:
@@ -27,8 +27,8 @@ test *args:
 
     # Do not generate the coverage report on CI
     cargo insta review
-    cargo +{{RUST_TOOLCHAIN}} llvm-cov report --lcov --output-path ./lcov.info
-    cargo +{{RUST_TOOLCHAIN}} llvm-cov report --html
+    cargo +{{RUST_TOOLCHAIN}} llvm-cov report --include-build-script --lcov --output-path ./lcov.info
+    cargo +{{RUST_TOOLCHAIN}} llvm-cov report --include-build-script --html
 
 coverage-serve:
     miniserve target/llvm-cov/html --index index.html --port 3000
@@ -51,9 +51,11 @@ doc *args:
 
     # `--cfg docsrs` enables us to write feature hints in the form of `#[cfg_attr(docsrs, doc(cfg(feature = "some-feature")))]`
     # `--enable-index-page` makes the command generate an index page which lists all crates (unstable)
+    # `--generate-link-to-definition` generates source code links (unstable)
+    # `--sort-modules-by-appearance` sorts modules by the order they were defined in (unstable)
     # `-D warnings` disallow all warnings
     # `-Zunstable-options` enables unstable options (for the `--enable-index-page` flag)
-    export RUSTDOCFLAGS="-D warnings --cfg docsrs --enable-index-page -Zunstable-options"
+    export RUSTDOCFLAGS="${RUSTDOCFLAGS:-} -Dwarnings --cfg docsrs --sort-modules-by-appearance --generate-link-to-definition --enable-index-page -Zunstable-options"
     cargo +{{RUST_TOOLCHAIN}} doc --no-deps --all-features {{args}}
 
 alias docs-serve := doc-serve
@@ -67,10 +69,14 @@ workspace-hack:
     cargo +{{RUST_TOOLCHAIN}} hakari manage-deps
     cargo +{{RUST_TOOLCHAIN}} hakari generate
 
-create-release package:
-    cargo +{{RUST_TOOLCHAIN}} xtask change-logs generate --package {{package}}
-    release-plz update --package {{package}}
+alias version-check := check-versions
+alias check-version := check-versions
+alias versions-check := check-versions
+check-versions:
+    release-plz update --disable-dependant-updates --no-changelog --check-only --exit-status
 
-create-release-all:
-    cargo +{{RUST_TOOLCHAIN}} xtask change-logs generate
-    release-plz update
+readme:
+    #!/usr/bin/env bash
+    set -euo pipefail
+
+    RUSTDOCFLAGS="-Dwarnings --cfg docsrs --sort-modules-by-appearance --enable-index-page -Zunstable-options"  cargo +nightly sync-rdme --all-features --workspace

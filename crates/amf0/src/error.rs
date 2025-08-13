@@ -54,13 +54,11 @@ pub enum Amf0Error {
     CharNotSupported,
     /// Custom error message.
     #[cfg(feature = "serde")]
-    #[cfg_attr(docsrs, doc(cfg(feature = "serde")))]
     #[error("{0}")]
     Custom(String),
 }
 
 #[cfg(feature = "serde")]
-#[cfg_attr(docsrs, doc(cfg(feature = "serde")))]
 impl serde::ser::Error for Amf0Error {
     fn custom<T: std::fmt::Display>(msg: T) -> Self {
         Amf0Error::Custom(msg.to_string())
@@ -68,7 +66,6 @@ impl serde::ser::Error for Amf0Error {
 }
 
 #[cfg(feature = "serde")]
-#[cfg_attr(docsrs, doc(cfg(feature = "serde")))]
 impl serde::de::Error for Amf0Error {
     fn custom<T: std::fmt::Display>(msg: T) -> Self {
         Amf0Error::Custom(msg.to_string())

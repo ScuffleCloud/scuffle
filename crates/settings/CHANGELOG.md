@@ -15,13 +15,30 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
-## [0.1.2](https://github.com/ScuffleCloud/scuffle/compare/scuffle-settings-v0.1.1...scuffle-settings-v0.1.2) - 2025-04-27
+## [0.1.4](https://github.com/ScuffleCloud/scuffle/releases/tag/scuffle-settings-v0.1.4) - 2025-05-17
+
+[View diff on diff.rs](https://diff.rs/scuffle-settings/0.1.3/scuffle-settings/0.1.4/Cargo.toml)
+
+### 🛠️ Non-breaking changes
+
+- chore: fix changelog entry & release process ([#465](https://github.com/scufflecloud/scuffle/pull/465)) (@troykomodo, @SimaoMoreira5228, @philipch07)
+
+## [0.1.3](https://github.com/ScuffleCloud/scuffle/releases/tag/scuffle-settings-v0.1.3) - 2025-05-14
+
+[View diff on diff.rs](https://diff.rs/scuffle-settings/0.1.2/scuffle-settings/0.1.3/Cargo.toml)
+
+### 🛠️ Non-breaking changes
+
+- chore: cleanup readme and crate docs ([#458](https://github.com/scufflecloud/scuffle/pull/458)) (@troykomodo)
+- chore: Use serde_derive instead of serde's derive feature for improved compile times ([#440](https://github.com/scufflecloud/scuffle/pull/440)) (@philipch07)
+
+## [0.1.2](https://github.com/ScuffleCloud/scuffle/releases/tag/scuffle-settings-v0.1.2) - 2025-04-27
 
 ### 🛠️ Non-breaking changes
 
 - docs: improved documentation ([#372](https://github.com/scufflecloud/scuffle/pull/372)) (@lennartkloock)
 
-## [0.1.1](https://github.com/ScuffleCloud/scuffle/compare/scuffle-settings-v0.1.0...scuffle-settings-v0.1.1) - 2025-02-21
+## [0.1.1](https://github.com/ScuffleCloud/scuffle/releases/tag/scuffle-settings-v0.1.1) - 2025-02-21
 
 ### 🛠️ Non-breaking changes
 

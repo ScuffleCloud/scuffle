@@ -29,28 +29,23 @@ pub struct HttpServer<F> {
     /// Enable HTTP/1.1.
     #[builder(default = true)]
     #[cfg(feature = "http1")]
-    #[cfg_attr(docsrs, doc(cfg(feature = "http1")))]
     enable_http1: bool,
     /// Enable HTTP/2.
     #[builder(default = true)]
     #[cfg(feature = "http2")]
-    #[cfg_attr(docsrs, doc(cfg(feature = "http2")))]
     enable_http2: bool,
     #[builder(default = false, setters(vis = "", name = enable_http3_internal))]
     #[cfg(feature = "http3")]
-    #[cfg_attr(docsrs, doc(cfg(feature = "http3")))]
     enable_http3: bool,
     /// rustls config.
     ///
     /// Use this field to set the server into TLS mode.
     /// It will only accept TLS connections when this is set.
     #[cfg(feature = "tls-rustls")]
-    #[cfg_attr(docsrs, doc(cfg(feature = "tls-rustls")))]
     rustls_config: Option<rustls::ServerConfig>,
 }
 
 #[cfg(feature = "http3")]
-#[cfg_attr(docsrs, doc(cfg(feature = "http3")))]
 impl<F, S> HttpServerBuilder<F, S>
 where
     S: http_server_builder::State,
@@ -66,7 +61,6 @@ where
 }
 
 #[cfg(feature = "tower")]
-#[cfg_attr(docsrs, doc(cfg(feature = "tower")))]
 impl<M, S> HttpServerBuilder<crate::service::TowerMakeServiceFactory<M, ()>, S>
 where
     M: tower::MakeService<(), crate::IncomingRequest> + Send,
@@ -90,7 +84,6 @@ where
 }
 
 #[cfg(feature = "tower")]
-#[cfg_attr(docsrs, doc(cfg(feature = "tower")))]
 impl<M, S> HttpServerBuilder<crate::service::TowerMakeServiceWithAddrFactory<M>, S>
 where
     M: tower::MakeService<SocketAddr, crate::IncomingRequest> + Send,
@@ -115,7 +108,6 @@ where
 }
 
 #[cfg(feature = "tower")]
-#[cfg_attr(docsrs, doc(cfg(feature = "tower")))]
 impl<M, T, S> HttpServerBuilder<crate::service::TowerMakeServiceFactory<M, T>, S>
 where
     M: tower::MakeService<T, crate::IncomingRequest> + Send,

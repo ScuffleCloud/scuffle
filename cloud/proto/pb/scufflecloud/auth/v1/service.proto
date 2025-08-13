@@ -1,0 +1,9 @@
+syntax = "proto3";
+
+package scufflecloud.auth.v1;
+
+import "google/protobuf/empty.proto";
+
+service AuthService {
+    rpc Test(google.protobuf.Empty) returns (google.protobuf.Empty) {}
+}

@@ -1,0 +1,118 @@
+// protolint:disable FIELD_NAMES_LOWER_SNAKE_CASE
+
+syntax = "proto3";
+
+package renamed;
+
+import "tinc/annotations.proto";
+
+message ScreamingSnakeCaseMessage {
+    option (tinc.message) = {
+        rename_all: SCREAMING_SNAKE_CASE
+    };
+
+    // This field will be renamed to MY_CUSTOM_FIELD
+    string myCustomField = 1;
+}
+
+message LowerCaseMessage {
+    option (tinc.message) = {
+        rename_all: LOWER_CASE
+    };
+
+    // This field will be renamed to my_custom_field
+    string MY_CUSTOM_FIELD = 1;
+}
+
+message UpperCaseMessage {
+    option (tinc.message) = {
+        rename_all: UPPER_CASE
+    };
+
+    // This field will be renamed to MYCUSTOMFIELD
+    string myCustomField = 1;
+}
+
+message PascalCaseMessage {
+    option (tinc.message) = {
+        rename_all: PASCAL_CASE
+    };
+
+    // This field will be renamed to MyCustomField
+    string my_custom_field = 1;
+}
+
+message CamelCaseMessage {
+    option (tinc.message) = {
+        rename_all: CAMEL_CASE
+    };
+
+    // This field will be renamed to myCustomField
+    string MY_CUSTOM_FIELD = 1;
+}
+message KebabCaseMessage {
+    option (tinc.message) = {
+        rename_all: KEBAB_CASE
+    };
+
+    // This field will be renamed to my-custom-field
+    string MY_CUSTOM_FIELD = 1;
+}
+
+message ScreamingKebabCaseMessage {
+    option (tinc.message) = {
+        rename_all: SCREAMING_KEBAB_CASE
+    };
+
+    // This field will be renamed to MY-CUSTOM-FIELD
+    string myCustomField = 1;
+}
+
+message RenameAllWithOverrideMessage {
+    option (tinc.message) = {
+        rename_all: SCREAMING_KEBAB_CASE
+    };
+
+    // This field will be renamed to myCustomField
+    string myCustomField = 1 [(tinc.field) = {
+        rename: "myCustomField"
+    }];
+    // This field will be renamed to MY_CUSTOM_FIELD
+    string my_custom_field2 = 2 [(tinc.field) = {
+        rename: "MY_CUSTOM_FIELD"
+    }];
+    // This field will be renamed to my_custom_field
+    string MY_CUSTOM_FIELD3 = 3 [(tinc.field) = {
+        rename: "my_custom_field"
+    }];
+    // This field will be renamed to myCustomField
+    string MY_CUSTOM_FIELD4 = 4;
+}
+
+enum RenameEnum {
+    option (tinc.enum) = {
+        rename_all: PASCAL_CASE
+    };
+
+    // This field will be renamed to MY_CUSTOM_FIELD
+    RENAME_ENUM_UNSPECIFIED = 0;
+    // OneValue
+    RENAME_ENUM_ONE_VALUE = 1;
+    // TwoValue
+    RENAME_ENUM_TWO_VALUE = 2;
+    // ThreeValue
+    RENAME_ENUM_THREE_VALUE = 3;
+    // four-value
+    RENAME_ENUM_FOUR_VALUE = 4 [(tinc.variant) = {
+        rename: "four-value"
+    }];
+}
+
+message ScreamingSnakeCaseEnumMessage {
+    option (tinc.message) = {
+        rename_all: SCREAMING_SNAKE_CASE
+    };
+
+    // This field will be renamed to MY_CUSTOM_FIELD
+    RenameEnum myCustomField = 1;
+}

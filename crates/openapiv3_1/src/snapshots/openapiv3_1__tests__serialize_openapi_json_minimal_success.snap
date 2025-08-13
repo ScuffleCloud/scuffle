@@ -1,0 +1,17 @@
+---
+source: crates/openapiv3_1/src/lib.rs
+expression: openapi
+---
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "My api",
+    "description": "My api description",
+    "license": {
+      "name": "MIT",
+      "url": "http://mit.licence"
+    },
+    "version": "1.0.0"
+  },
+  "paths": {}
+}

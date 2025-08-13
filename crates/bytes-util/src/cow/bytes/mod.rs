@@ -4,7 +4,6 @@ use std::hash::Hash;
 use bytes::Bytes;
 
 #[cfg(feature = "serde")]
-#[cfg_attr(docsrs, doc(cfg(feature = "serde")))]
 pub(crate) mod serde;
 
 /// A [`Cow`] type for bytes.

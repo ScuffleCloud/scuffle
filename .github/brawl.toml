@@ -1,12 +1,8 @@
 enabled = true
 
-branches = [
-    "main",
-]
+branches = ["main"]
 
-merge_permissions = [
-    "role:write",
-]
+merge_permissions = ["role:write"]
 
 [labels]
 on_merge_queued = "B-brawl-queued"

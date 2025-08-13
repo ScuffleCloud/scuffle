@@ -1,6 +1,6 @@
 [package]
 name = "scuffle-bytes-util"
-version = "0.1.2"
+version = "0.1.5"
 edition = "2024"
 description = "A utility crate for working with bytes."
 repository = "https://github.com/scufflecloud/scuffle"
@@ -14,15 +14,42 @@ keywords = ["bytes", "util"]
 unexpected_cfgs = { level = "warn", check-cfg = ['cfg(coverage_nightly)'] }
 
 [dependencies]
+byteorder = "1.5.0"
 bytes = "1.5"
 bytestring = "1.4.0"
-byteorder = "1.5.0"
-serde = { version = "1.0.129", optional = true }
+document-features = { optional = true, version = "0.2" }
+scuffle-changelog = { optional = true, path = "../changelog", version = "0.1.0" }
+serde = { optional = true, version = "1.0.129" }
+
 scuffle-workspace-hack.workspace = true
 
 [features]
+## Enables serde support
 serde = ["dep:serde"]
+## Enables changelog and documentation of feature flags
+docs = ["dep:scuffle-changelog", "dep:document-features"]
 
 [package.metadata.docs.rs]
 all-features = true
-rustdoc-args = ["--cfg", "docsrs"]
+rustdoc-args = [
+  "--cfg",
+  "docsrs",
+  "--sort-modules-by-appearance",
+  "--generate-link-to-definition",
+]
+
+[package.metadata.xtask.powerset]
+additive-features = ["docs"]
+
+[package.metadata.cargo-sync-rdme.rustdoc.mappings]
+changelog = "./CHANGELOG.md"
+
+[package.metadata.cargo-sync-rdme.badge]
+style = "flat-square"
+
+[package.metadata.cargo-sync-rdme.badge.badges]
+license = true
+docs-rs = true
+crates-io = true
+github-actions = { workflows = "ci.yaml" }
+codecov = true

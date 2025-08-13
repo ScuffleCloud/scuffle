@@ -138,7 +138,6 @@ unsafe extern "C" fn log_cb(ptr: *mut libc::c_void, level: libc::c_int, fmt: *co
 
 /// Sets the log callback to use tracing.
 #[cfg(feature = "tracing")]
-#[cfg_attr(docsrs, doc(cfg(feature = "tracing")))]
 pub fn log_callback_tracing() {
     log_callback_set(|mut level, class, msg| {
         let class = class.as_deref().unwrap_or("ffmpeg");

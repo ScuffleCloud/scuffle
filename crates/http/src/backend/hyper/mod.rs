@@ -38,16 +38,13 @@ pub struct HyperBackend<F> {
     /// Use this field to set the server into TLS mode.
     /// It will only accept TLS connections when this is set.
     #[cfg(feature = "tls-rustls")]
-    #[cfg_attr(docsrs, doc(cfg(feature = "tls-rustls")))]
     rustls_config: Option<rustls::ServerConfig>,
     /// Enable HTTP/1.1.
     #[cfg(feature = "http1")]
-    #[cfg_attr(docsrs, doc(cfg(feature = "http1")))]
     #[builder(default = true)]
     http1_enabled: bool,
     /// Enable HTTP/2.
     #[cfg(feature = "http2")]
-    #[cfg_attr(docsrs, doc(cfg(feature = "http2")))]
     #[builder(default = true)]
     http2_enabled: bool,
 }

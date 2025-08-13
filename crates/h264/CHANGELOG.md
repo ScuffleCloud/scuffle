@@ -15,7 +15,24 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
-## [0.2.0](https://github.com/ScuffleCloud/scuffle/compare/scuffle-h264-v0.1.1...scuffle-h264-v0.2.0) - 2025-04-27
+## [0.2.2](https://github.com/ScuffleCloud/scuffle/releases/tag/scuffle-h264-v0.2.2) - 2025-05-17
+
+[View diff on diff.rs](https://diff.rs/scuffle-h264/0.2.1/scuffle-h264/0.2.2/Cargo.toml)
+
+### 🛠️ Non-breaking changes
+
+- chore: fix changelog entry & release process ([#465](https://github.com/scufflecloud/scuffle/pull/465)) (@troykomodo, @SimaoMoreira5228, @philipch07)
+
+## [0.2.1](https://github.com/ScuffleCloud/scuffle/releases/tag/scuffle-h264-v0.2.1) - 2025-05-14
+
+[View diff on diff.rs](https://diff.rs/scuffle-h264/0.2.0/scuffle-h264/0.2.1/Cargo.toml)
+
+### 🛠️ Non-breaking changes
+
+- chore: cleanup readme and crate docs ([#458](https://github.com/scufflecloud/scuffle/pull/458)) (@troykomodo)
+- feat: Use `range_check` macro from scuffle-bytes-util to enforce range checks ([#444](https://github.com/scufflecloud/scuffle/pull/444)) (@philipch07, @lennartkloock)
+
+## [0.2.0](https://github.com/ScuffleCloud/scuffle/releases/tag/scuffle-h264-v0.2.0) - 2025-04-27
 
 ### ⚠️ Breaking changes
 
@@ -37,7 +54,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - refactor: Refactored how tests work so they work like the tests in our other crates ([#370](https://github.com/scufflecloud/scuffle/pull/370)) (@philipch07)
 - test: Improved test coverage for sps and config ([#370](https://github.com/scufflecloud/scuffle/pull/370)) (@philipch07)
 
-## [0.1.1](https://github.com/ScuffleCloud/scuffle/compare/scuffle-h264-v0.1.0...scuffle-h264-v0.1.1) - 2025-02-21
+## [0.1.1](https://github.com/ScuffleCloud/scuffle/releases/tag/scuffle-h264-v0.1.1) - 2025-02-21
 
 ### 🛠️ Non-breaking changes
 

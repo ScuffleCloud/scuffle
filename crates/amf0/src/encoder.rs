@@ -125,7 +125,6 @@ where
 
     /// Encode a given value using [serde].
     #[cfg(feature = "serde")]
-    #[cfg_attr(docsrs, doc(cfg(feature = "serde")))]
     pub fn serialize<T>(&mut self, value: T) -> Result<(), Amf0Error>
     where
         T: serde::Serialize,

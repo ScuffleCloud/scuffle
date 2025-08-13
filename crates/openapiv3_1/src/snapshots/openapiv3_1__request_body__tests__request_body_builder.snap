@@ -1,0 +1,15 @@
+---
+source: crates/openapiv3_1/src/request_body.rs
+expression: request_body
+---
+{
+  "content": {
+    "application/json": {
+      "schema": {
+        "$ref": "#/components/schemas/EmailPayload"
+      }
+    }
+  },
+  "description": "A sample requestBody",
+  "required": true
+}

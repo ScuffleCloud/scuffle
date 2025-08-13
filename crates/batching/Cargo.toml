@@ -1,6 +1,6 @@
 [package]
 name = "scuffle-batching"
-version = "0.1.2"
+version = "0.1.6"
 edition = "2024"
 repository = "https://github.com/scufflecloud/scuffle"
 authors = ["Scuffle <opensource@scuffle.cloud>"]
@@ -21,14 +21,49 @@ harness = false
 path = "benchmarks/dataloader.rs"
 
 [lints.rust]
-unexpected_cfgs = { level = "warn", check-cfg = ['cfg(coverage_nightly)', 'cfg(valgrind)'] }
+unexpected_cfgs = { level = "warn", check-cfg = [
+  'cfg(coverage_nightly)',
+  'cfg(valgrind)',
+] }
+
+[features]
+## Enables changelog and documentation of feature flags
+docs = ["dep:scuffle-changelog", "dep:document-features"]
 
 [dependencies]
-tokio = { version = "1", default-features = false, features = ["time", "sync", "rt"] }
-tokio-util = "0.7"
+document-features = { optional = true, version = "0.2" }
+scuffle-changelog = { optional = true, path = "../changelog", version = "0.1.0" }
 scuffle-workspace-hack.workspace = true
+tokio = { default-features = false, features = ["rt", "sync", "time"], version = "1" }
+tokio-util = "0.7"
 
 [dev-dependencies]
-criterion = { version = "0.5.1", features = ["async_tokio"] }
+criterion = { features = ["async_tokio"], version = "0.7" }
 futures = "0.3"
+tokio = { features = ["macros"], version = "1" }
 tokio-test = "0.4.4"
+
+[package.metadata.docs.rs]
+all-features = true
+rustdoc-args = [
+  "--cfg",
+  "docsrs",
+  "--sort-modules-by-appearance",
+  "--generate-link-to-definition",
+]
+
+[package.metadata.xtask.powerset]
+additive-features = ["docs"]
+
+[package.metadata.cargo-sync-rdme.rustdoc.mappings]
+changelog = "./CHANGELOG.md"
+
+[package.metadata.cargo-sync-rdme.badge]
+style = "flat-square"
+
+[package.metadata.cargo-sync-rdme.badge.badges]
+license = true
+docs-rs = true
+crates-io = true
+github-actions = { workflows = "ci.yaml" }
+codecov = true

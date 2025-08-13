@@ -1,0 +1,63 @@
+[package]
+name = "tinc-cel"
+version = "0.2.0"
+edition = "2024"
+description = "A CEL Type used by tinc-build and tinc for validating protobuf messages"
+repository = "https://github.com/scufflecloud/scuffle"
+authors = ["Scuffle <opensource@scuffle.cloud>"]
+readme = "README.md"
+documentation = "https://docs.rs/tinc-build"
+license = "MIT OR Apache-2.0"
+keywords = ["grpc", "protobuf", "tonic", "codegen"]
+
+[lints.rust]
+unexpected_cfgs = { level = "warn", check-cfg = ['cfg(coverage_nightly)'] }
+
+[features]
+## Enables runtime enum type indexing
+runtime = []
+## Enables documentation of feature flags
+docs = ["dep:document-features"]
+
+[dependencies]
+bytes = "1.5"
+chrono = "0.4"
+document-features = { optional = true, version = "0.2" }
+email_address = "0.2.9"
+float-cmp = "0.10"
+fmtools = "0.1"
+linkme = "0.3"
+num-traits = "0.2.19"
+regex = "1"
+scuffle-workspace-hack.workspace = true
+thiserror = "2"
+url = "2"
+uuid = "1"
+
+[dev-dependencies]
+insta = "1.43"
+
+[package.metadata.xtask.powerset]
+additive-features = ["docs"]
+
+[package.metadata.docs.rs]
+all-features = true
+rustdoc-args = [
+  "--cfg",
+  "docsrs",
+  "--sort-modules-by-appearance",
+  "--generate-link-to-definition",
+]
+
+[package.metadata.cargo-sync-rdme.badge]
+style = "flat-square"
+
+[package.metadata.cargo-sync-rdme.badge.badges]
+license = true
+docs-rs = true
+crates-io = true
+github-actions = { workflows = "ci.yaml" }
+codecov = true
+
+[package.metadata.xtask.release]
+group = "tinc"

@@ -1853,6 +1853,7 @@ nutype_enum! {
 
         /// LC3 codec.
         /// Low Complexity Communication Codec, used in Bluetooth LE Audio.
+        #[cfg(not(docsrs))]
         Lc3 = AV_CODEC_ID_LC3 as _,
 
         /// DVD Subtitle codec.
@@ -2009,6 +2010,7 @@ nutype_enum! {
 
         /// LCEVC codec.
         /// Low Complexity Enhancement Video Coding, a scalable video enhancement format.
+        #[cfg(not(docsrs))]
         Lcevc = AV_CODEC_ID_LCEVC as _,
 
         /// Probe codec.

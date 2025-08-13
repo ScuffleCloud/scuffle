@@ -1,6 +1,6 @@
 [package]
 name = "scuffle-metrics"
-version = "0.2.0"
+version = "0.4.2"
 edition = "2024"
 repository = "https://github.com/scufflecloud/scuffle"
 authors = ["Scuffle <opensource@scuffle.cloud>"]
@@ -23,37 +23,65 @@ name = "scuffle-metrics-prometheus"
 path = "examples/prometheus.rs"
 required-features = ["default"]
 
+[features]
+default = ["prometheus"]
+## Enables prometheus support
+prometheus = ["dep:prometheus-client"]
+## Enables tracing support
+tracing = ["dep:tracing"]
+## Enables changelog and documentation of feature flags
+docs = ["dep:scuffle-changelog", "dep:document-features"]
+
 [dependencies]
-prometheus-client = { version = "0.23", optional = true }
-opentelemetry = { version = "0.29", default-features = false, features = ["metrics"] }
-opentelemetry_sdk = { version = "0.29", default-features = false, features = ["metrics"] }
-scuffle-metrics-derive.workspace = true
-tracing = { version = "0.1", optional = true }
+document-features = { optional = true, version = "0.2" }
+opentelemetry = { default-features = false, features = ["metrics"], version = "0.30" }
+opentelemetry_sdk = { default-features = false, features = [
+  "experimental_metrics_custom_reader",
+  "metrics",
+], version = "0.30" }
 parking_lot = "0.12"
+prometheus-client = { optional = true, version = "0.23" }
+scuffle-changelog = { optional = true, path = "../changelog", version = "0.1.0" }
+scuffle-metrics-derive = { path = "derive", version = "=0.4.2" }
 scuffle-workspace-hack.workspace = true
+tracing = { optional = true, version = "0.1" }
 
 [dev-dependencies]
 insta = "1.42.0"
-postcompile = { workspace = true, features = ["prettyplease"] }
+postcompile = { path = "../postcompile" }
 
 # For examples:
-tokio = { version = "1", features = ["full"] }
-opentelemetry-stdout = "0.29"
-
-[features]
-default = ["prometheus"]
-internal-logs = ["dep:tracing"]
-prometheus = ["dep:prometheus-client"]
-tracing = ["internal-logs", "dep:tracing"]
+opentelemetry-stdout = "0.30"
+tokio = { features = ["full"], version = "1" }
 
 [package.metadata.docs.rs]
 all-features = true
-rustdoc-args = ["--cfg", "docsrs"]
+rustdoc-args = [
+  "--cfg",
+  "docsrs",
+  "--sort-modules-by-appearance",
+  "--generate-link-to-definition",
+]
 
 [package.metadata.xtask.powerset]
 additive-features = [
-    "prometheus",
-    "tracing",
-    "internal-logs",
-    "default",
+  "prometheus",
+  "tracing",
+  "internal-logs",
+  "default",
+  "docs",
 ]
+
+[package.metadata.cargo-sync-rdme.rustdoc.mappings]
+changelog = "./CHANGELOG.md"
+metrics = "."
+
+[package.metadata.cargo-sync-rdme.badge]
+style = "flat-square"
+
+[package.metadata.cargo-sync-rdme.badge.badges]
+license = true
+docs-rs = true
+crates-io = true
+github-actions = { workflows = "ci.yaml" }
+codecov = true

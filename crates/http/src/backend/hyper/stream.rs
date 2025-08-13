@@ -6,7 +6,6 @@ use tokio::io::{AsyncRead, AsyncWrite};
 pub(crate) enum Stream {
     Tcp(tokio::net::TcpStream),
     #[cfg(feature = "tls-rustls")]
-    #[cfg_attr(docsrs, doc(cfg(feature = "tls-rustls")))]
     Tls(Box<tokio_rustls::server::TlsStream<tokio::net::TcpStream>>),
 }
 
@@ -15,7 +14,6 @@ impl Stream {
     ///
     /// If the stream is already a TLS stream, this function will return the stream unchanged.
     #[cfg(feature = "tls-rustls")]
-    #[cfg_attr(docsrs, doc(cfg(feature = "tls-rustls")))]
     pub(crate) async fn try_accept_tls(self, tls_acceptor: &tokio_rustls::TlsAcceptor) -> std::io::Result<Self> {
         match self {
             Stream::Tcp(stream) => {

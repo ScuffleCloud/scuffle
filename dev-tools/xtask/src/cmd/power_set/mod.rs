@@ -114,10 +114,10 @@ impl PowerSet {
         let total = tests.values().map(|s| s.len()).sum::<usize>();
 
         if self.dry_run {
-            println!("dry run: {} packages with a total of {} feature sets", tests.len(), total);
+            tracing::info!("dry run: {} packages with a total of {} feature sets", tests.len(), total);
 
             for (package, sets) in tests.iter() {
-                println!("dry run: {} with {} feature sets: {:#?}", package, sets.len(), sets);
+                tracing::info!("dry run: {} with {} feature sets: {:#?}", package, sets.len(), sets);
             }
 
             return Ok(());
@@ -147,7 +147,7 @@ impl PowerSet {
 
                 cmd.args(&self.args);
 
-                println!("executing {cmd:?} ({i}/{total})");
+                tracing::info!("executing {cmd} ({i}/{total})");
 
                 if !cmd.status()?.success() {
                     failed.push((*package, features));
@@ -166,15 +166,15 @@ impl PowerSet {
         }
 
         if !failed.is_empty() {
-            eprintln!("failed to execute command for the following:");
+            tracing::info!("failed to execute command for the following:");
             for (package, features) in failed {
-                eprintln!("  {package} with features {features:?}");
+                tracing::info!("  {package} with features {features:?}");
             }
 
             anyhow::bail!("failed to execute command for some packages after {:?}", start.elapsed());
         }
 
-        println!("all commands executed successfully after {:?}", start.elapsed());
+        tracing::info!("all commands executed successfully after {:?}", start.elapsed());
 
         Ok(())
     }

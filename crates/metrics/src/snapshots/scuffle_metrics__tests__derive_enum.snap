@@ -1,16 +1,14 @@
 ---
 source: crates/metrics/src/lib.rs
-expression: "postcompile::compile!\n{\n    use scuffle_metrics::MetricEnum; #[derive(MetricEnum)] pub enum Kind\n    { Http, Grpc, }\n}"
-snapshot_kind: text
+expression: "postcompile::compile!({\n    #[derive(scuffle_metrics::MetricEnum)] pub enum Kind { Http, Grpc, }\n})"
 ---
 exit status: 0
---- stdout 
+--- expanded
 #![feature(prelude_import)]
 #[prelude_import]
 use std::prelude::rust_2024::*;
 #[macro_use]
 extern crate std;
-use scuffle_metrics::MetricEnum;
 pub enum Kind {
     Http,
     Grpc,

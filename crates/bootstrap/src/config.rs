@@ -3,13 +3,15 @@
 /// This trait is used to parse a configuration for the application.
 ///
 /// The avoid having to manually implement this trait, the `bootstrap!` macro in
-/// the [`scuffle_settings`](../../scuffle_settings) crate can be used to
+/// the [`scuffle-settings`] crate can be used to
 /// generate an implementation.
 ///
 /// # See Also
 ///
 /// - [`Global`](crate::Global)
-/// - [`scuffle_settings`](../../scuffle_settings)
+/// - [`scuffle-settings`]
+///
+/// [scuffle-settings]: ../scuffle-settings
 pub trait ConfigParser: Sized {
     /// Parse the configuration for the application.
     fn parse() -> impl std::future::Future<Output = anyhow::Result<Self>>;

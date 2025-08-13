@@ -128,7 +128,16 @@ where
 
                                 loop {
                                     match h3_conn.accept().with_context(&ctx).await {
-                                        Some(Ok(Some((req, stream)))) => {
+                                        Some(Ok(Some(resolver))) => {
+                                            let (req, stream) = match resolver.resolve_request().await {
+                                                Ok(r) => r,
+                                                Err(_err) => {
+                                                    #[cfg(feature = "tracing")]
+                                                    tracing::warn!("error on accept: {}", _err);
+                                                    continue;
+                                                }
+                                            };
+
                                             #[cfg(feature = "tracing")]
                                             tracing::debug!(method = %req.method(), uri = %req.uri(), "received request");
 
@@ -171,14 +180,7 @@ where
                                         Some(Ok(None)) => {
                                             break;
                                         }
-                                        Some(Err(err)) => match err.get_error_level() {
-                                            h3::error::ErrorLevel::ConnectionError => return Err(err.into()),
-                                            h3::error::ErrorLevel::StreamError => {
-                                                #[cfg(feature = "tracing")]
-                                                tracing::warn!("error on accept: {}", err);
-                                                continue;
-                                            }
-                                        },
+                                        Some(Err(err)) => return Err(err.into()),
                                         // context is done
                                         None => {
                                             #[cfg(feature = "tracing")]

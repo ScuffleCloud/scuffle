@@ -1,6 +1,6 @@
 [package]
 name = "postcompile"
-version = "0.2.0"
+version = "0.3.3"
 edition = "2024"
 build = "build.rs"
 repository = "https://github.com/scufflecloud/scuffle"
@@ -12,21 +12,53 @@ description = "Helper crate for post-compiling Rust code."
 keywords = ["postcompile", "snapshot", "test", "proc-macro"]
 
 [lints.rust]
-unexpected_cfgs = { level = "warn", check-cfg = ['cfg(trybuild_no_target)', 'cfg(postcompile_no_target)', 'cfg(coverage_nightly)'] }
+unexpected_cfgs = { level = "warn", check-cfg = [
+  'cfg(trybuild_no_target)',
+  'cfg(postcompile_no_target)',
+  'cfg(coverage_nightly)',
+  'cfg(valgrind)',
+] }
+
+[features]
+## Enables changelog and documentation of feature flags
+docs = ["dep:scuffle-changelog", "dep:document-features"]
 
 [dependencies]
-serde_json = "1.0"
-cargo_metadata = "0.19.1"
-cargo-platform = "0.1"
-target-triple = "0.1"
-serde = "1"
-serde_derive = "1"
-prettyplease = { version = "0.2", optional = true }
-syn = { version = "2", features = ["full"] }
+cargo-manifest = "0.19"
+cargo_metadata = "0.21"
+document-features = { optional = true, version = "0.2" }
+prettyplease = "0.2"
+regex = "1"
+scuffle-changelog = { optional = true, path = "../changelog", version = "0.1.0" }
 scuffle-workspace-hack.workspace = true
+syn = "2"
+target-triple = "0.1"
+toml = "0.9"
 
 [dev-dependencies]
 insta = "1.42.0"
 
-[features]
-prettyplease = ["dep:prettyplease"]
+[package.metadata.docs.rs]
+all-features = true
+rustdoc-args = [
+  "--cfg",
+  "docsrs",
+  "--sort-modules-by-appearance",
+  "--generate-link-to-definition",
+]
+
+[package.metadata.xtask.powerset]
+additive-features = ["docs"]
+
+[package.metadata.cargo-sync-rdme.rustdoc.mappings]
+changelog = "./CHANGELOG.md"
+
+[package.metadata.cargo-sync-rdme.badge]
+style = "flat-square"
+
+[package.metadata.cargo-sync-rdme.badge.badges]
+license = true
+docs-rs = true
+crates-io = true
+github-actions = { workflows = "ci.yaml" }
+codecov = true

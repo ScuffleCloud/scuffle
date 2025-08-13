@@ -6,13 +6,19 @@
 //!
 //! This is particularly useful when making snapshot tests of proc-macros, look
 //! below for an example with the `insta` crate.
-//!
+#![cfg_attr(feature = "docs", doc = "\n\nSee the [changelog][changelog] for a full release history.")]
+#![cfg_attr(feature = "docs", doc = "## Feature flags")]
+#![cfg_attr(feature = "docs", doc = document_features::document_features!())]
 //! ## Usage
 //!
-//! ```rs
+//! ```rust
+//! # macro_rules! assert_snapshot {
+//! #     ($expr:expr) => { $expr };
+//! # }
 //! #[test]
+//! # fn some_cool_test_() {}
 //! fn some_cool_test() {
-//!     insta::assert_snapshot!(postcompile::compile! {
+//!     assert_snapshot!(postcompile::compile!({
 //!         #![allow(unused)]
 //!
 //!         #[derive(Debug, Clone)]
@@ -22,12 +28,56 @@
 //!         }
 //!
 //!         const TEST: Test = Test { a: 1, b: 3 };
-//!     });
+//!     }));
 //! }
 //!
 //! #[test]
+//! # fn some_cool_test_extern_() {}
 //! fn some_cool_test_extern() {
-//!     insta::assert_snapshot!(postcompile::compile_str!(include_str!("some_file.rs")));
+//!     assert_snapshot!(postcompile::compile_str!(include_str!("some_file.rs")));
+//! }
+//!
+//! #[test]
+//! # fn test_inside_test_() {}
+//! fn test_inside_test() {
+//!     assert_snapshot!(postcompile::compile!(
+//!         postcompile::config! {
+//!             test: true,
+//!         },
+//!         {
+//!             fn add(a: i32, b: i32) -> i32 {
+//!                 a + b
+//!             }
+//!
+//!             #[test]
+//!             fn test_add() {
+//!                 assert_eq!(add(1, 2), 3);
+//!             }
+//!         },
+//!     ));
+//! }
+//!
+//! #[test]
+//! # fn test_inside_test_with_tokio() {}
+//! fn test_inside_test_with_tokio() {
+//!     assert_snapshot!(postcompile::compile!(
+//!         postcompile::config! {
+//!             test: true,
+//!             dependencies: vec![
+//!                 postcompile::Dependency::version("tokio", "1").feature("full")
+//!             ]
+//!         },
+//!         {
+//!             async fn async_add(a: i32, b: i32) -> i32 {
+//!                 a + b
+//!             }
+//!
+//!             #[tokio::test]
+//!             async fn test_add() {
+//!                 assert_eq!(async_add(1, 2).await, 3);
+//!             }
+//!         },
+//!     ));
 //! }
 //! ```
 //!
@@ -38,6 +88,7 @@
 //!   additional dependencies.
 //! - Coverage: This crate works with [`cargo-llvm-cov`](https://crates.io/crates/cargo-llvm-cov)
 //!   out of the box, which allows you to instrument the proc-macro expansion.
+//! - Testing: You can define tests with the `#[test]` macro and the tests will run on the generated code.
 //!
 //! ## Alternatives
 //!
@@ -61,12 +112,6 @@
 //! In the examples above I showcase how to use this crate with the `insta`
 //! crate for snapshot testing.
 //!
-//! ## Status
-//!
-//! This crate is currently under development and is not yet stable.
-//!
-//! Unit tests are not yet fully implemented. Use at your own risk.
-//!
 //! ## Limitations
 //!
 //! Please note that this crate does not work inside a running compiler process
@@ -79,26 +124,22 @@
 //!
 //! ## License
 //!
-//! This project is licensed under the [MIT](./LICENSE.MIT) or
-//! [Apache-2.0](./LICENSE.Apache-2.0) license. You can choose between one of
-//! them if you use this work.
+//! This project is licensed under the MIT or Apache-2.0 license.
+//! You can choose between one of them if you use this work.
 //!
 //! `SPDX-License-Identifier: MIT OR Apache-2.0`
 #![cfg_attr(all(coverage_nightly, test), feature(coverage_attribute))]
+#![cfg_attr(docsrs, feature(doc_auto_cfg))]
 #![deny(missing_docs)]
+#![deny(unsafe_code)]
 #![deny(unreachable_pub)]
-#![deny(clippy::undocumented_unsafe_blocks)]
-#![deny(clippy::multiple_unsafe_ops_per_block)]
 
 use std::borrow::Cow;
-use std::ffi::OsStr;
+use std::collections::BTreeMap;
 use std::path::Path;
 use std::process::Command;
 
-use deps::{Dependencies, Errored};
-
-mod deps;
-mod features;
+use cargo_manifest::DependencyDetail;
 
 /// The return status of the compilation.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -125,47 +166,60 @@ pub struct CompileOutput {
     pub status: ExitStatus,
     /// The stdout of the compilation.
     /// This will contain the expanded code.
-    pub stdout: String,
+    pub expanded: String,
     /// The stderr of the compilation.
     /// This will contain any errors or warnings from the compiler.
-    pub stderr: String,
+    pub expand_stderr: String,
+    /// The stderr of the compilation.
+    /// This will contain any errors or warnings from the compiler.
+    pub test_stderr: String,
+    /// The stdout of the test results.
+    pub test_stdout: String,
 }
 
 impl std::fmt::Display for CompileOutput {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         writeln!(f, "exit status: {}", self.status)?;
-        if !self.stderr.is_empty() {
-            write!(f, "--- stderr \n{}\n", self.stderr)?;
+        if !self.expand_stderr.is_empty() {
+            write!(f, "--- expand_stderr\n{}\n", self.expand_stderr)?;
         }
-        if !self.stdout.is_empty() {
-            write!(f, "--- stdout \n{}\n", self.stdout)?;
+        if !self.test_stderr.is_empty() {
+            write!(f, "--- test_stderr\n{}\n", self.test_stderr)?;
+        }
+        if !self.test_stdout.is_empty() {
+            write!(f, "--- test_stdout\n{}\n", self.test_stdout)?;
+        }
+        if !self.expanded.is_empty() {
+            write!(f, "--- expanded\n{}\n", self.expanded)?;
         }
         Ok(())
     }
 }
 
-fn rustc(config: &Config, tmp_file: &Path) -> Command {
-    let mut program = Command::new(std::env::var_os("RUSTC").unwrap_or_else(|| "rustc".into()));
-    program.env("RUSTC_BOOTSTRAP", "1");
-    let rust_flags = std::env::var_os("RUSTFLAGS");
+fn cargo(config: &Config, manifest_path: &Path, subcommand: &str) -> Command {
+    let mut program = Command::new(std::env::var_os("CARGO").unwrap_or_else(|| "cargo".into()));
+    program.arg(subcommand);
+    program.current_dir(manifest_path.parent().unwrap());
 
-    if let Some(rust_flags) = &rust_flags {
-        program.args(
-            rust_flags
-                .as_encoded_bytes()
-                .split(|&b| b == b' ')
-                // Safety: The bytes are already encoded (we call OsString::as_encoded_bytes above)
-                .map(|flag| unsafe { OsStr::from_encoded_bytes_unchecked(flag) }),
-        );
-    }
-
-    program.arg("--crate-name");
-    program.arg(config.function_name.split("::").last().unwrap_or("unnamed"));
-    program.arg(tmp_file);
-    program.envs(std::env::vars());
-
+    program.env_clear();
+    program.envs(std::env::vars().filter(|(k, _)| !k.starts_with("CARGO_") && k != "OUT_DIR"));
+    program.env("CARGO_TERM_COLOR", "never");
     program.stderr(std::process::Stdio::piped());
     program.stdout(std::process::Stdio::piped());
+
+    let target_dir = if config.target_dir.ends_with(target_triple::TARGET) {
+        config.target_dir.parent().unwrap()
+    } else {
+        config.target_dir.as_ref()
+    };
+
+    program.arg("--quiet");
+    program.arg("--manifest-path").arg(manifest_path);
+    program.arg("--target-dir").arg(target_dir);
+
+    if !cfg!(trybuild_no_target) && !cfg!(postcompile_no_target) && config.target_dir.ends_with(target_triple::TARGET) {
+        program.arg("--target").arg(target_triple::TARGET);
+    }
 
     program
 }
@@ -173,84 +227,230 @@ fn rustc(config: &Config, tmp_file: &Path) -> Command {
 fn write_tmp_file(tokens: &str, tmp_file: &Path) {
     std::fs::create_dir_all(tmp_file.parent().unwrap()).unwrap();
 
-    #[cfg(feature = "prettyplease")]
-    {
-        if let Ok(syn_file) = syn::parse_file(tokens) {
-            let pretty_file = prettyplease::unparse(&syn_file);
-            std::fs::write(tmp_file, pretty_file).unwrap();
-            return;
-        }
-    }
+    let tokens = if let Ok(file) = syn::parse_file(tokens) {
+        prettyplease::unparse(&file)
+    } else {
+        tokens.to_owned()
+    };
 
     std::fs::write(tmp_file, tokens).unwrap();
 }
 
+fn generate_cargo_toml(config: &Config, crate_name: &str) -> std::io::Result<(String, String)> {
+    let metadata = cargo_metadata::MetadataCommand::new()
+        .manifest_path(config.manifest.as_ref())
+        .exec()
+        .map_err(|err| std::io::Error::new(std::io::ErrorKind::InvalidData, err))?;
+
+    let workspace_manifest = cargo_manifest::Manifest::from_path(metadata.workspace_root.join("Cargo.toml"))
+        .map_err(|err| std::io::Error::new(std::io::ErrorKind::InvalidData, err))?;
+
+    let manifest = cargo_manifest::Manifest::<cargo_manifest::Value, cargo_manifest::Value> {
+        package: Some(cargo_manifest::Package {
+            publish: Some(cargo_manifest::MaybeInherited::Local(cargo_manifest::Publish::Flag(false))),
+            edition: match config.edition.as_str() {
+                "2024" => Some(cargo_manifest::MaybeInherited::Local(cargo_manifest::Edition::E2024)),
+                "2021" => Some(cargo_manifest::MaybeInherited::Local(cargo_manifest::Edition::E2021)),
+                "2018" => Some(cargo_manifest::MaybeInherited::Local(cargo_manifest::Edition::E2018)),
+                "2015" => Some(cargo_manifest::MaybeInherited::Local(cargo_manifest::Edition::E2015)),
+                _ => match metadata
+                    .packages
+                    .iter()
+                    .find(|p| p.name.as_ref() == config.package_name)
+                    .map(|p| p.edition)
+                {
+                    Some(cargo_metadata::Edition::E2015) => {
+                        Some(cargo_manifest::MaybeInherited::Local(cargo_manifest::Edition::E2015))
+                    }
+                    Some(cargo_metadata::Edition::E2018) => {
+                        Some(cargo_manifest::MaybeInherited::Local(cargo_manifest::Edition::E2018))
+                    }
+                    Some(cargo_metadata::Edition::E2021) => {
+                        Some(cargo_manifest::MaybeInherited::Local(cargo_manifest::Edition::E2021))
+                    }
+                    Some(cargo_metadata::Edition::E2024) => {
+                        Some(cargo_manifest::MaybeInherited::Local(cargo_manifest::Edition::E2024))
+                    }
+                    _ => None,
+                },
+            },
+            ..cargo_manifest::Package::<cargo_manifest::Value>::new(crate_name.to_owned(), "0.1.0".into())
+        }),
+        workspace: Some(cargo_manifest::Workspace {
+            default_members: None,
+            dependencies: None,
+            exclude: None,
+            members: Vec::new(),
+            metadata: None,
+            package: None,
+            resolver: None,
+        }),
+        dependencies: Some({
+            let mut deps = BTreeMap::new();
+
+            for dep in &config.dependencies {
+                let mut detail = if dep.workspace {
+                    let Some(dep) = workspace_manifest
+                        .workspace
+                        .as_ref()
+                        .and_then(|workspace| workspace.dependencies.as_ref())
+                        .or(workspace_manifest.dependencies.as_ref())
+                        .and_then(|deps| deps.get(&dep.name))
+                    else {
+                        return Err(std::io::Error::new(
+                            std::io::ErrorKind::InvalidInput,
+                            format!("workspace has no dep: {}", dep.name),
+                        ));
+                    };
+
+                    let mut dep = match dep {
+                        cargo_manifest::Dependency::Detailed(d) => d.clone(),
+                        cargo_manifest::Dependency::Simple(version) => DependencyDetail {
+                            version: Some(version.clone()),
+                            ..Default::default()
+                        },
+                        cargo_manifest::Dependency::Inherited(_) => panic!("workspace deps cannot be inherited"),
+                    };
+
+                    if let Some(path) = dep.path.as_mut() {
+                        if std::path::Path::new(path.as_str()).is_relative() {
+                            *path = metadata.workspace_root.join(path.as_str()).to_string()
+                        }
+                    }
+
+                    dep
+                } else {
+                    Default::default()
+                };
+
+                if !dep.default_features {
+                    detail.features = None;
+                }
+
+                detail.default_features = Some(dep.default_features);
+                if let Some(mut path) = dep.path.clone() {
+                    if std::path::Path::new(path.as_str()).is_relative() {
+                        path = config.manifest.parent().unwrap().join(path).to_string_lossy().to_string();
+                    }
+                    detail.path = Some(path);
+                }
+                if let Some(version) = dep.version.clone() {
+                    detail.version = Some(version);
+                }
+
+                detail.features.get_or_insert_default().extend(dep.features.iter().cloned());
+
+                deps.insert(dep.name.clone(), cargo_manifest::Dependency::Detailed(detail));
+            }
+
+            deps
+        }),
+        patch: workspace_manifest.patch.clone().map(|mut patch| {
+            patch.values_mut().for_each(|deps| {
+                deps.values_mut().for_each(|dep| {
+                    if let cargo_manifest::Dependency::Detailed(dep) = dep {
+                        if let Some(path) = &mut dep.path {
+                            if std::path::Path::new(path.as_str()).is_relative() {
+                                *path = metadata.workspace_root.join(path.as_str()).to_string()
+                            }
+                        }
+                    }
+                });
+            });
+
+            patch
+        }),
+        ..Default::default()
+    };
+
+    Ok((
+        toml::to_string(&manifest).map_err(|err| std::io::Error::new(std::io::ErrorKind::InvalidData, err))?,
+        std::fs::read_to_string(metadata.workspace_root.join("Cargo.lock"))?,
+    ))
+}
+
+static TEST_TIME_RE: std::sync::LazyLock<regex::Regex> =
+    std::sync::LazyLock::new(|| regex::Regex::new(r"\d+\.\d+s").expect("failed to compile regex"));
+
 /// Compiles the given tokens and returns the output.
-pub fn compile_custom(tokens: &str, config: &Config) -> Result<CompileOutput, Errored> {
-    let dependencies = Dependencies::new(config)?;
+pub fn compile_custom(tokens: impl std::fmt::Display, config: &Config) -> std::io::Result<CompileOutput> {
+    let tokens = tokens.to_string();
 
-    let tmp_file = Path::new(config.tmp_dir.as_ref()).join(format!("{}.rs", config.function_name.replace("::", "____")));
-    write_tmp_file(tokens, &tmp_file);
+    let crate_name = config.function_name.replace("::", "__");
+    let tmp_crate_path = Path::new(config.tmp_dir.as_ref()).join(&crate_name);
+    std::fs::create_dir_all(&tmp_crate_path)?;
 
-    let mut program = rustc(config, &tmp_file);
+    let manifest_path = tmp_crate_path.join("Cargo.toml");
+    let (cargo_toml, cargo_lock) = generate_cargo_toml(config, &crate_name)?;
 
-    dependencies.apply(&mut program);
+    std::fs::write(&manifest_path, cargo_toml)?;
+    std::fs::write(tmp_crate_path.join("Cargo.lock"), cargo_lock)?;
+
+    let main_path = tmp_crate_path.join("src").join("main.rs");
+
+    write_tmp_file(&tokens, &main_path);
+
+    let mut program = cargo(config, &manifest_path, "rustc");
+
     // The first invoke is used to get the macro expanded code.
-    program.arg("-Zunpretty=expanded");
+    // We set this env variable so that this compiler can accept nightly options.)
+    program.env("RUSTC_BOOTSTRAP", "1");
+    program.arg("--").arg("-Zunpretty=expanded");
 
     let output = program.output().unwrap();
 
     let stdout = String::from_utf8(output.stdout).unwrap();
     let syn_file = syn::parse_file(&stdout);
-    #[cfg(feature = "prettyplease")]
     let stdout = syn_file.as_ref().map(prettyplease::unparse).unwrap_or(stdout);
 
-    let mut crate_type = "lib";
+    let cleanup_output = |out: &[u8]| {
+        let out = String::from_utf8_lossy(out);
+        let tmp_dir = config.tmp_dir.display().to_string();
+        let main_relative = main_path.strip_prefix(&tmp_crate_path).unwrap().display().to_string();
+        let main_path = main_path.display().to_string();
+        TEST_TIME_RE
+            .replace_all(out.as_ref(), "[ELAPSED]s")
+            .trim()
+            .replace(&main_relative, "[POST_COMPILE]")
+            .replace(&main_path, "[POST_COMPILE]")
+            .replace(&tmp_dir, "[BUILD_DIR]")
+    };
 
-    if let Ok(file) = syn_file {
-        if file.items.iter().any(|item| {
-            let syn::Item::Fn(func) = item else {
-                return false;
-            };
+    let mut result = CompileOutput {
+        status: if output.status.success() {
+            ExitStatus::Success
+        } else {
+            ExitStatus::Failure(output.status.code().unwrap_or(-1))
+        },
+        expand_stderr: cleanup_output(&output.stderr),
+        expanded: stdout,
+        test_stderr: String::new(),
+        test_stdout: String::new(),
+    };
 
-            func.sig.ident == "main"
-        }) {
-            crate_type = "bin";
+    if result.status == ExitStatus::Success {
+        let mut program = cargo(config, &manifest_path, "test");
+
+        if !config.test {
+            program.arg("--no-run");
         }
-    };
 
-    let mut status = if output.status.success() {
-        ExitStatus::Success
-    } else {
-        ExitStatus::Failure(output.status.code().unwrap_or(-1))
-    };
-
-    let stderr = if status == ExitStatus::Success {
-        let mut program = rustc(config, &tmp_file);
-        dependencies.apply(&mut program);
-        program.arg("--emit=llvm-ir");
-        program.arg(format!("--crate-type={crate_type}"));
-        program.arg("-o");
-        program.arg("-");
         let comp_output = program.output().unwrap();
-        status = if comp_output.status.success() {
+        result.status = if comp_output.status.success() {
             ExitStatus::Success
         } else {
             ExitStatus::Failure(comp_output.status.code().unwrap_or(-1))
         };
-        String::from_utf8(comp_output.stderr).unwrap()
-    } else {
-        String::from_utf8(output.stderr).unwrap()
+
+        result.test_stderr = cleanup_output(&comp_output.stderr);
+        result.test_stdout = cleanup_output(&comp_output.stdout);
     };
 
-    let stderr = stderr.replace(tmp_file.as_os_str().to_string_lossy().as_ref(), "<postcompile>");
-    let stdout = stdout.replace(tmp_file.as_os_str().to_string_lossy().as_ref(), "<postcompile>");
-
-    Ok(CompileOutput { status, stdout, stderr })
+    Ok(result)
 }
 
 /// The configuration for the compilation.
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, Default)]
 pub struct Config {
     /// The path to the cargo manifest file of the library being tested.
     /// This is so that we can include the `dependencies` & `dev-dependencies`
@@ -267,6 +467,74 @@ pub struct Config {
     pub file_path: Cow<'static, Path>,
     /// The name of the package being compiled.
     pub package_name: Cow<'static, str>,
+    /// The dependencies to add to the temporary crate.
+    pub dependencies: Vec<Dependency>,
+    /// Run any unit tests in the package.
+    pub test: bool,
+    /// The rust edition to use.
+    pub edition: String,
+}
+
+/// A dependency to apply to the code
+#[derive(Debug, Clone)]
+pub struct Dependency {
+    name: String,
+    path: Option<String>,
+    version: Option<String>,
+    workspace: bool,
+    features: Vec<String>,
+    default_features: bool,
+}
+
+impl Dependency {
+    fn new(name: String) -> Self {
+        Self {
+            name,
+            workspace: false,
+            default_features: true,
+            features: Vec::new(),
+            path: None,
+            version: None,
+        }
+    }
+
+    /// Create a dependency using the workspace dependency
+    pub fn workspace(name: impl std::fmt::Display) -> Self {
+        Self {
+            workspace: true,
+            ..Self::new(name.to_string())
+        }
+    }
+
+    /// Create a dependency using a path to the crate root, relative to the root of the current package.
+    pub fn path(name: impl std::fmt::Display, path: impl std::fmt::Display) -> Self {
+        Self {
+            path: Some(path.to_string()),
+            ..Self::new(name.to_string())
+        }
+    }
+
+    /// Create a dependency using a name and version from crates.io
+    pub fn version(name: impl std::fmt::Display, version: impl std::fmt::Display) -> Self {
+        Self {
+            version: Some(version.to_string()),
+            ..Self::new(name.to_string())
+        }
+    }
+
+    /// Add a feature to the dependency
+    pub fn feature(mut self, feature: impl std::fmt::Display) -> Self {
+        self.features.push(feature.to_string());
+        self
+    }
+
+    /// Toggle the default features flag
+    pub fn default_features(self, default_features: bool) -> Self {
+        Self {
+            default_features,
+            ..self
+        }
+    }
 }
 
 #[macro_export]
@@ -303,18 +571,43 @@ pub fn target_dir() -> &'static Path {
         .unwrap()
 }
 
+/// Define a config to use when compiling crates.
+/// This macro is allows you to provide values for the config items.
+/// ```rust
+/// let config = postcompile::config! {
+///     edition: "2021".into(),
+///     dependencies: Vec::new()
+/// };
+/// ```
+///
+/// By default the current crate is included as the only dependency. You can undo this by
+/// setting the Dependencies field to an empty vector.
+///
+/// By default the edition is set to whatever the current edition is set to.
 #[macro_export]
-#[doc(hidden)]
-macro_rules! _config {
-    () => {{
-        $crate::Config {
+macro_rules! config {
+    (
+        $($item:ident: $value:expr),*$(,)?
+    ) => {{
+        #[allow(unused_mut)]
+        let mut config = $crate::Config {
             manifest: ::std::borrow::Cow::Borrowed(::std::path::Path::new(env!("CARGO_MANIFEST_PATH"))),
             tmp_dir: ::std::borrow::Cow::Borrowed($crate::build_dir()),
             target_dir: ::std::borrow::Cow::Borrowed($crate::target_dir()),
             function_name: ::std::borrow::Cow::Borrowed($crate::_function_name!()),
             file_path: ::std::borrow::Cow::Borrowed(::std::path::Path::new(file!())),
             package_name: ::std::borrow::Cow::Borrowed(env!("CARGO_PKG_NAME")),
-        }
+            dependencies: vec![
+                $crate::Dependency::path(env!("CARGO_PKG_NAME"), ".")
+            ],
+            ..::core::default::Default::default()
+        };
+
+        $(
+            config.$item = $value;
+        )*
+
+        config
     }};
 }
 
@@ -322,23 +615,58 @@ macro_rules! _config {
 ///
 /// This macro will panic if we fail to invoke the compiler.
 ///
-/// ```rs
+/// ```rust
 /// // Dummy macro to assert the snapshot.
-/// macro_rules! assert_snapshot {
-///     ($expr:expr) => {};
-/// }
-///
-/// let output = postcompile::compile! {
+/// # macro_rules! assert_snapshot {
+/// #     ($expr:expr) => { $expr };
+/// # }
+/// let output = postcompile::compile!({
 ///     const TEST: u32 = 1;
-/// };
+/// });
 ///
 /// assert_eq!(output.status, postcompile::ExitStatus::Success);
-/// assert!(output.stderr.is_empty());
-/// assert_snapshot!(output.stdout); // We dont have an assert_snapshot! macro in this crate, but you get the idea.
+/// // We dont have an assert_snapshot! macro in this crate, but you get the idea.
+/// assert_snapshot!(output);
+/// ```
+///
+/// You can provide a custom config using the [`config!`] macro. If not provided the default config is used.
+///
+/// In this example we enable the `test` flag which will run the tests inside the provided source code.
+///
+/// ```rust
+/// // Dummy macro to assert the snapshot.
+/// # macro_rules! assert_snapshot {
+/// #     ($expr:expr) => { $expr };
+/// # }
+/// let output = postcompile::compile!(
+///     postcompile::config! {
+///         test: true
+///     },
+///     {
+///         const TEST: u32 = 1;
+///
+///         #[test]
+///         fn test() {
+///             assert_eq!(TEST, 1);
+///         }
+///     }
+/// );
+///
+/// assert_eq!(output.status, postcompile::ExitStatus::Success);
+/// // We dont have an assert_snapshot! macro in this crate, but you get the idea.
+/// assert_snapshot!(output);
 /// ```
 #[macro_export]
 macro_rules! compile {
-    ($($tokens:tt)*) => {
+    (
+        $config:expr,
+        { $($tokens:tt)* }$(,)?
+    ) => {
+        $crate::compile_str!($config, stringify!($($tokens)*))
+    };
+    (
+        { $($tokens:tt)* }$(,)?
+    ) => {
         $crate::compile_str!(stringify!($($tokens)*))
     };
 }
@@ -349,15 +677,18 @@ macro_rules! compile {
 ///
 /// Same as the [`compile!`] macro, but for strings. This allows you to do:
 ///
-/// ```rs
+/// ```rust
 /// let output = postcompile::compile_str!(include_str!("some_file.rs"));
 ///
 /// // ... do something with the output
 /// ```
 #[macro_export]
 macro_rules! compile_str {
-    ($expr:expr) => {
-        $crate::try_compile_str!($expr).expect("failed to compile")
+    ($config:expr, $expr:expr $(,)?) => {
+        $crate::try_compile_str!($config, $expr).expect("failed to compile")
+    };
+    ($expr:expr $(,)?) => {
+        $crate::try_compile_str!($crate::config!(), $expr).expect("failed to compile")
     };
 }
 
@@ -366,18 +697,21 @@ macro_rules! compile_str {
 /// This macro will return an error if we fail to invoke the compiler. Unlike
 /// the [`compile!`] macro, this will not panic.
 ///
-/// ```rs
-/// let output = postcompile::try_compile! {
+/// ```rust
+/// let output = postcompile::try_compile!({
 ///     const TEST: u32 = 1;
-/// };
+/// });
 ///
 /// assert!(output.is_ok());
 /// assert_eq!(output.unwrap().status, postcompile::ExitStatus::Success);
 /// ```
 #[macro_export]
 macro_rules! try_compile {
-    ($($tokens:tt)*) => {
-        $crate::try_compile_str!(stringify!($($tokens)*))
+    ($config:expr, { $($tokens:tt)* }$(,)?) => {
+        $crate::try_compile_str!($crate::config!(), stringify!($($tokens)*))
+    };
+    ({ $($tokens:tt)* }$(,)?) => {
+        $crate::try_compile_str!($crate::config!(), stringify!($($tokens)*))
     };
 }
 
@@ -389,77 +723,78 @@ macro_rules! try_compile {
 /// [`compile_str!`].
 #[macro_export]
 macro_rules! try_compile_str {
-    ($expr:expr) => {
-        $crate::compile_custom($expr, &$crate::_config!())
+    ($config:expr, $expr:expr $(,)?) => {
+        $crate::compile_custom($expr, &$config)
+    };
+    ($expr:expr $(,)?) => {
+        $crate::compile_custom($expr, &$crate::config!())
     };
 }
+
+/// Changelogs generated by [scuffle_changelog]
+#[cfg(feature = "docs")]
+#[scuffle_changelog::changelog]
+pub mod changelog {}
 
 #[cfg(test)]
 #[cfg_attr(all(test, coverage_nightly), coverage(off))]
 mod tests {
     use insta::assert_snapshot;
 
-    use crate::ExitStatus;
+    use crate::Dependency;
 
     #[test]
     fn compile_success() {
-        let out = compile! {
+        let out = compile!({
             #[allow(unused)]
             fn main() {
                 let a = 1;
                 let b = 2;
                 let c = a + b;
             }
-        };
+        });
 
-        dbg!(&out);
-
-        assert_eq!(out.status, ExitStatus::Success);
-        assert!(out.stderr.is_empty());
         assert_snapshot!(out);
-    }
-
-    #[test]
-    fn try_compile_success() {
-        let out = try_compile! {
-            #[allow(unused)]
-            fn main() {
-                let xd = 0xd;
-                let xdd = 0xdd;
-                let xddd = xd + xdd;
-                println!("{}", xddd);
-            }
-        };
-
-        assert!(out.is_ok());
-        let out = out.unwrap();
-        dbg!(&out);
-        assert_eq!(out.status, ExitStatus::Success);
-        assert!(out.stderr.is_empty());
-        assert!(!out.stdout.is_empty());
     }
 
     #[test]
     fn compile_failure() {
-        let out = compile! {
-            invalid_rust_code
-        };
+        let out = compile!({ invalid_rust_code });
 
-        assert_eq!(out.status, ExitStatus::Failure(1));
-        assert!(out.stdout.is_empty());
         assert_snapshot!(out);
     }
 
+    #[cfg(not(valgrind))]
     #[test]
-    fn try_compile_failure() {
-        let out = try_compile! {
-            invalid rust code
-        };
+    fn compile_tests() {
+        let out = compile!(
+            config! {
+                test: true,
+                dependencies: vec![
+                    Dependency::version("tokio", "1").feature("full"),
+                ]
+            },
+            {
+                #[allow(unused)]
+                fn fib(n: i32) -> i32 {
+                    match n {
+                        i32::MIN..=0 => 0,
+                        1 => 1,
+                        n => fib(n - 1) + fib(n - 2),
+                    }
+                }
 
-        assert!(out.is_ok());
-        let out = out.unwrap();
-        assert_eq!(out.status, ExitStatus::Failure(1));
-        assert!(out.stdout.is_empty());
-        assert!(!out.stderr.is_empty());
+                #[tokio::test]
+                async fn test_fib() {
+                    assert_eq!(fib(0), 0);
+                    assert_eq!(fib(1), 1);
+                    assert_eq!(fib(2), 1);
+                    assert_eq!(fib(3), 2);
+                    assert_eq!(fib(10), 55);
+                }
+            }
+        );
+
+        assert_snapshot!(out)
     }
 }

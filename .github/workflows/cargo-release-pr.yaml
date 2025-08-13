@@ -2,18 +2,15 @@ name: Cargo Release PR
 
 on:
   workflow_dispatch:
-    inputs:
-      crate:
-        required: true
-        type: string
-
-env:
-  RUST_TOOLCHAIN: nightly
+  schedule:
+    - cron: '0 12 * * 1'  # Monday at 12:00 UTC
+    - cron: '0 12 * * 3'  # Wednesday at 12:00 UTC
+    - cron: '0 12 * * 6'  # Saturday at 12:00 UTC
 
 jobs:
   cargo-release-pr:
     name: Cargo Release PR
-    runs-on: ubicloud-standard-8
+    runs-on: ubicloud-standard-8-ubuntu-2404
     permissions:
       contents: write
       pull-requests: write
@@ -21,21 +18,47 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
+      - name: Fetch History
+        shell: bash
+        run: |
+          git fetch --unshallow
+
+      - name: Setup FFmpeg
+        uses: ./.github/actions/setup-ffmpeg
+
+      - name: Setup Protoc
+        uses: arduino/setup-protoc@v3
+        with:
+          repo-token: ${{ secrets.GITHUB_TOKEN }}
+
       - name: Setup Rust
         uses: ./.github/actions/setup-rust
         with:
-          toolchain: ${{ env.RUST_TOOLCHAIN }}
-          shared-key: cargo-release-pr
-          tools: just,release-plz,cargo-hakari
-          cache-backend: ubicloud
+          shared_key: release-pr
+          tools: cargo-semver-checks,cargo-binstall
+          cache_backend: ubicloud
+
+      - name: Install cargo-sync-rdme
+        run: |
+          cargo binstall cargo-sync-rdme --git https://github.com/TroyKomodo/cargo-sync-rdme.git --force -y
+
+      - name: Install taplo
+        run: curl -fsSL https://github.com/tamasfe/taplo/releases/download/0.10.0/taplo-linux-x86_64.gz | gzip -d - | install -m 755 /dev/stdin /usr/local/bin/taplo
 
       - name: Create release
-        id: create
         run: |
           set -eo pipefail
-          echo "Release workflow triggered by @${{ github.actor }}" > /tmp/pr-body.txt
-          just create-release ${{ inputs.crate }} | tee -a /tmp/pr-body.txt
-          cat /tmp/pr-body.txt > $GITHUB_STEP_SUMMARY
+          cargo xtask release update 2> >(tee /tmp/.release-update.stderr >&2) 1> >(tee /tmp/.release-update.stdout)
+
+      - name: PR Body
+        shell: bash
+        run: |
+          {
+            cat /tmp/.release-update.stdout
+            printf '\n\n<details><summary>cargo xtask release update</summary>\n\n`````\n'
+            sed -E "s/\x1B\[[0-9;]*[mK]//g" /tmp/.release-update.stderr
+            printf '`````\n\n</details>'
+          } | tee /tmp/.release-update-body $GITHUB_STEP_SUMMARY
 
       # Check if any files changed
       - name: Check if anything changed
@@ -44,18 +67,27 @@ jobs:
           result=$((git diff --exit-code > /dev/null && echo '0') || echo '1')
           echo "result=$result" >> $GITHUB_OUTPUT
 
+      - name: Sync readme
+        if: ${{ steps.changed.outputs.result == 1 }}
+        env:
+          RUSTDOCFLAGS: "-Dwarnings --cfg docsrs --sort-modules-by-appearance --enable-index-page -Zunstable-options"
+          RUSTC_BOOTSTRAP: "1"
+        run: cargo sync-rdme --all-features --workspace
+
+      - name: fmt cargo toml
+        if: ${{ steps.changed.outputs.result == 1 }}
+        run: taplo fmt
+
       - name: Create github PR
         uses: peter-evans/create-pull-request@v7
         if: ${{ steps.changed.outputs.result == 1 }}
         with:
-          title: Automated release of ${{ inputs.crate }}
-          body-path: /tmp/pr-body.txt
-          branch: automation/cargo-release/${{ inputs.crate }}
-          labels: release,automated,change-log-not-required
+          title: Release Crates
+          body-path: /tmp/.release-update-body
+          branch: automation/cargo-release
+          labels: release,automated
           commit-message: |
-            Automated release of ${{ inputs.crate }}
-
-            Release triggered by @${{ github.actor }}
+            release crates
           author: github-actions[bot] <41898282+github-actions[bot]@users.noreply.github.com>
           sign-commits: true
           reviewers: ${{ github.actor }}

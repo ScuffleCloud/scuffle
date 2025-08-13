@@ -1,67 +1,74 @@
+<!-- cargo-sync-rdme title [[ -->
 # scuffle-h264
+<!-- cargo-sync-rdme ]] -->
 
 > [!WARNING]  
 > This crate is under active development and may not be stable.
 
-[![crates.io](https://img.shields.io/crates/v/scuffle-h264.svg)](https://crates.io/crates/scuffle-h264) [![docs.rs](https://img.shields.io/docsrs/scuffle-h264)](https://docs.rs/scuffle-h264)
+<!-- cargo-sync-rdme badge [[ -->
+![License: MIT OR Apache-2.0](https://img.shields.io/crates/l/scuffle-h264.svg?style=flat-square)
+[![docs.rs](https://img.shields.io/docsrs/scuffle-h264.svg?logo=docs.rs&style=flat-square)](https://docs.rs/scuffle-h264)
+[![crates.io](https://img.shields.io/crates/v/scuffle-h264.svg?logo=rust&style=flat-square)](https://crates.io/crates/scuffle-h264)
+[![GitHub Actions: ci](https://img.shields.io/github/actions/workflow/status/scufflecloud/scuffle/ci.yaml.svg?label=ci&logo=github&style=flat-square)](https://github.com/scufflecloud/scuffle/actions/workflows/ci.yaml)
+[![Codecov](https://img.shields.io/codecov/c/github/scufflecloud/scuffle.svg?label=codecov&logo=codecov&style=flat-square)](https://codecov.io/gh/scufflecloud/scuffle)
+<!-- cargo-sync-rdme ]] -->
 
 ---
 
+<!-- cargo-sync-rdme rustdoc [[ -->
 A pure Rust implementation of the H.264 (header only) builder and parser.
 
 This crate is designed to provide a simple and safe interface to build and parse H.264 headers.
 
-## Why do we need this?
+See the [changelog](./CHANGELOG.md) for a full release history.
 
-This crate aims to provides a simple and safe interface for h264.
+### Feature flags
 
-## How is this different from other h264 crates?
+* **`docs`** —  Enables changelog and documentation of feature flags
 
-This crate is only for encoding and decoding H.264 headers.
+### Examples
 
-## Notable features
+#### Parsing
 
-This crate is a completely safe implementation of encoding and decoding H.264 headers.
-
-We mainly use this with scuffle-mp4 and scuffle-flv to work with mp4 and flv container formats respectively.
-
-## Examples
-
-### Parsing
-
-```rust
+````rust
 use std::io;
 
 use bytes::Bytes;
 
-use scuffle_h264::{Sps, AVCDecoderConfigurationRecord};
+use scuffle_h264::{AVCDecoderConfigurationRecord, Sps};
 
 // A sample h264 bytestream to parse
-let data = Bytes::from(b"\x01d\0\x1f\xff\xe1\0\x1dgd\0\x1f\xac\xd9A\xe0m\xf9\xe6\xa0  (\0\0\x03\0\x08\0\0\x03\x01\xe0x\xc1\x8c\xb0\x01\0\x06h\xeb\xe3\xcb\"\xc0\xfd\xf8\xf8\0".to_vec());
 
 // Parsing
-let result = AVCDecoderConfigurationRecord::parse(&mut io::Cursor::new(data.into())).unwrap();
+let result = AVCDecoderConfigurationRecord::parse(&mut io::Cursor::new(bytes)).unwrap();
 
 // Do something with it!
 
-// You can also access the sps bytestream and parse it:
-let sps = Sps::parse_with_emulation_prevention(&result.sps[0]).unwrap();
-```
+// You can also parse an Sps from the Sps struct:
+let sps = Sps::parse_with_emulation_prevention(io::Cursor::new(&result.sps[0]));
+````
 
 For more examples, check out the tests in the source code for the parse function.
 
-### Building
+#### Building
 
-```rust
+````rust
 use bytes::Bytes;
 
-use scuffle_h264::{AVCDecoderConfigurationRecord, AvccExtendedConfig};
+use scuffle_h264::{AVCDecoderConfigurationRecord, AvccExtendedConfig, Sps, SpsExtended};
 
 let extended_config = AvccExtendedConfig {
     chroma_format_idc: 1,
     bit_depth_luma_minus8: 0,
     bit_depth_chroma_minus8: 0,
-    sequence_parameter_set_ext: vec![Bytes::from_static(b"extra")],
+    sequence_parameter_set_ext: vec![SpsExtended {
+        chroma_format_idc: 1,
+        separate_color_plane_flag: false,
+        bit_depth_luma_minus8: 2,
+        bit_depth_chroma_minus8: 3,
+        qpprime_y_zero_transform_bypass_flag: false,
+        scaling_matrix: vec![],
+    }],
 };
 let config = AVCDecoderConfigurationRecord {
     configuration_version: 1,
@@ -69,7 +76,9 @@ let config = AVCDecoderConfigurationRecord {
     profile_compatibility: 0,
     level_indication: 31,
     length_size_minus_one: 3,
-    sps: vec![Bytes::from_static(b"spsdata")],
+    sps: vec![
+        Bytes::from_static(b"spsdata"),
+    ],
     pps: vec![Bytes::from_static(b"ppsdata")],
     extended_config: Some(extended_config),
 };
@@ -81,19 +90,14 @@ let mut built = Vec::new();
 config.build(&mut built).unwrap();
 
 // Do something with it!
-```
+````
 
 For more examples, check out the tests in the source code for the build function.
 
-## Status
+### License
 
-This crate is currently under development and is not yet stable.
-
-Unit tests are not yet fully implemented. Use at your own risk.
-
-## License
-
-This project is licensed under the [MIT](./LICENSE.MIT) or [Apache-2.0](./LICENSE.Apache-2.0) license.
+This project is licensed under the MIT or Apache-2.0 license.
 You can choose between one of them if you use this work.
 
 `SPDX-License-Identifier: MIT OR Apache-2.0`
+<!-- cargo-sync-rdme ]] -->

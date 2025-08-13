@@ -15,13 +15,37 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
-## [0.1.2](https://github.com/ScuffleCloud/scuffle/compare/scuffle-context-v0.1.1...scuffle-context-v0.1.2) - 2025-04-27
+## [0.1.5](https://github.com/ScuffleCloud/scuffle/releases/tag/scuffle-context-v0.1.5) - 2025-05-30
+
+[View diff on diff.rs](https://diff.rs/scuffle-context/0.1.4/scuffle-context/0.1.5/Cargo.toml)
+
+### 🛠️ Non-breaking changes
+
+- chore: cleaned up dev-dependencies ([#473](https://github.com/scufflecloud/scuffle/pull/473)) (@troykomodo)
+
+## [0.1.4](https://github.com/ScuffleCloud/scuffle/releases/tag/scuffle-context-v0.1.4) - 2025-05-17
+
+[View diff on diff.rs](https://diff.rs/scuffle-context/0.1.3/scuffle-context/0.1.4/Cargo.toml)
+
+### 🛠️ Non-breaking changes
+
+- chore: fix changelog entry & release process ([#465](https://github.com/scufflecloud/scuffle/pull/465)) (@troykomodo, @SimaoMoreira5228, @philipch07)
+
+## [0.1.3](https://github.com/ScuffleCloud/scuffle/releases/tag/scuffle-context-v0.1.3) - 2025-05-14
+
+[View diff on diff.rs](https://diff.rs/scuffle-context/0.1.2/scuffle-context/0.1.3/Cargo.toml)
+
+### 🛠️ Non-breaking changes
+
+- chore: cleanup readme and crate docs ([#458](https://github.com/scufflecloud/scuffle/pull/458)) (@troykomodo)
+
+## [0.1.2](https://github.com/ScuffleCloud/scuffle/releases/tag/scuffle-context-v0.1.2) - 2025-04-27
 
 ### 🛠️ Non-breaking changes
 
 - docs: improved documentation ([#372](https://github.com/scufflecloud/scuffle/pull/372)) (@lennartkloock)
 
-## [0.1.1](https://github.com/ScuffleCloud/scuffle/compare/scuffle-context-v0.1.0...scuffle-context-v0.1.1) - 2025-02-21
+## [0.1.1](https://github.com/ScuffleCloud/scuffle/releases/tag/scuffle-context-v0.1.1) - 2025-02-21
 
 ### 🛠️ Non-breaking changes
 

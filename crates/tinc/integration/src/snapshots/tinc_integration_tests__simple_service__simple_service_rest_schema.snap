@@ -1,0 +1,94 @@
+---
+source: crates/tinc/integration/src/simple_service.rs
+expression: svc.openapi_schema()
+---
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "",
+    "version": ""
+  },
+  "paths": {
+    "/ping": {
+      "post": {
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/simple_service.PingResponse"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/simple_service.PingRequest"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/ping/{arg}": {
+      "get": {
+        "parameters": [
+          {
+            "name": "arg",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/simple_service.PingResponse"
+                }
+              }
+            },
+            "description": ""
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "simple_service.PingRequest": {
+        "properties": {
+          "arg": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "arg"
+        ],
+        "title": "simple_service.PingRequest",
+        "type": "object",
+        "unevaluatedProperties": false
+      },
+      "simple_service.PingResponse": {
+        "properties": {
+          "result": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "result"
+        ],
+        "title": "simple_service.PingResponse",
+        "type": "object",
+        "unevaluatedProperties": false
+      }
+    }
+  }
+}

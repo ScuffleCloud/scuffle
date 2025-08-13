@@ -1,11 +1,11 @@
 //! A wrapper around opentelemetry to provide a more ergonomic interface for
 //! creating metrics.
 //!
-//! This crate can be used together with the
-//! [`scuffle-bootstrap-telemetry`](../scuffle_bootstrap_telemetry) crate
-//! which provides a service that integrates with the
-//! [`scuffle-bootstrap`](../scuffle_bootstrap) ecosystem.
-//!
+//! This crate can be used together with the [`scuffle-bootstrap-telemetry`](https://docs.rs/scuffle-bootstrap-telemetry) crate
+//! which provides a service that integrates with the [`scuffle-bootstrap`](https://docs.rs/scuffle-bootstrap) ecosystem.
+#![cfg_attr(feature = "docs", doc = "\n\nSee the [changelog][changelog] for a full release history.")]
+#![cfg_attr(feature = "docs", doc = "## Feature flags")]
+#![cfg_attr(feature = "docs", doc = document_features::document_features!())]
 //! ## Example
 //!
 //! ```rust
@@ -29,21 +29,14 @@
 //!
 //! For details see [`metrics!`](metrics).
 //!
-//! ## Status
-//!
-//! This crate is currently under development and is not yet stable.
-//!
-//! Unit tests are not yet fully implemented. Use at your own risk.
-//!
 //! ## License
 //!
-//! This project is licensed under the [MIT](./LICENSE.MIT) or
-//! [Apache-2.0](./LICENSE.Apache-2.0) license. You can choose between one of
-//! them if you use this work.
+//! This project is licensed under the MIT or Apache-2.0 license.
+//! You can choose between one of them if you use this work.
 //!
 //! `SPDX-License-Identifier: MIT OR Apache-2.0`
 #![cfg_attr(all(coverage_nightly, test), feature(coverage_attribute))]
-#![cfg_attr(docsrs, feature(doc_cfg))]
+#![cfg_attr(docsrs, feature(doc_auto_cfg))]
 #![deny(missing_docs)]
 #![deny(unreachable_pub)]
 #![deny(clippy::undocumented_unsafe_blocks)]
@@ -52,7 +45,6 @@
 /// A copy of the opentelemetry-prometheus crate, updated to work with the
 /// latest version of opentelemetry.
 #[cfg(feature = "prometheus")]
-#[cfg_attr(docsrs, doc(cfg(feature = "prometheus")))]
 pub mod prometheus;
 
 #[doc(hidden)]
@@ -73,21 +65,19 @@ mod tests {
 
     use opentelemetry::{Key, KeyValue, Value};
     use opentelemetry_sdk::Resource;
-    use opentelemetry_sdk::metrics::data::{ResourceMetrics, Sum};
+    use opentelemetry_sdk::metrics::data::{AggregatedMetrics, MetricData, ResourceMetrics};
     use opentelemetry_sdk::metrics::reader::MetricReader;
     use opentelemetry_sdk::metrics::{ManualReader, ManualReaderBuilder, SdkMeterProvider};
 
     #[test]
     fn derive_enum() {
-        insta::assert_snapshot!(postcompile::compile! {
-            use scuffle_metrics::MetricEnum;
-
-            #[derive(MetricEnum)]
+        insta::assert_snapshot!(postcompile::compile!({
+            #[derive(scuffle_metrics::MetricEnum)]
             pub enum Kind {
                 Http,
                 Grpc,
             }
-        });
+        }));
     }
 
     #[test]
@@ -101,10 +91,7 @@ mod tests {
             }
 
             fn read(&self) -> ResourceMetrics {
-                let mut metrics = ResourceMetrics {
-                    resource: Resource::builder_empty().build(),
-                    scope_metrics: vec![],
-                };
+                let mut metrics = ResourceMetrics::default();
 
                 self.0.collect(&mut metrics).expect("collect");
 
@@ -120,7 +107,7 @@ mod tests {
             fn collect(
                 &self,
                 rm: &mut opentelemetry_sdk::metrics::data::ResourceMetrics,
-            ) -> opentelemetry_sdk::metrics::MetricResult<()> {
+            ) -> opentelemetry_sdk::error::OTelSdkResult {
                 self.0.collect(rm)
             }
 
@@ -128,8 +115,8 @@ mod tests {
                 self.0.force_flush()
             }
 
-            fn shutdown(&self) -> opentelemetry_sdk::error::OTelSdkResult {
-                self.0.shutdown()
+            fn shutdown_with_timeout(&self, timeout: std::time::Duration) -> opentelemetry_sdk::error::OTelSdkResult {
+                self.0.shutdown_with_timeout(timeout)
             }
 
             fn temporality(
@@ -168,85 +155,98 @@ mod tests {
 
         let metrics = reader.read();
 
-        assert!(!metrics.resource.is_empty());
+        assert!(!metrics.resource().is_empty());
         assert_eq!(
-            metrics.resource.get(&Key::from_static_str("service.name")),
+            metrics.resource().get(&Key::from_static_str("service.name")),
             Some(Value::from("test_service"))
         );
         assert_eq!(
-            metrics.resource.get(&Key::from_static_str("telemetry.sdk.name")),
+            metrics.resource().get(&Key::from_static_str("telemetry.sdk.name")),
             Some(Value::from("opentelemetry"))
         );
-        assert!(metrics.resource.get(&Key::from_static_str("telemetry.sdk.version")).is_some());
+        assert!(
+            metrics
+                .resource()
+                .get(&Key::from_static_str("telemetry.sdk.version"))
+                .is_some()
+        );
         assert_eq!(
-            metrics.resource.get(&Key::from_static_str("telemetry.sdk.language")),
+            metrics.resource().get(&Key::from_static_str("telemetry.sdk.language")),
             Some(Value::from("rust"))
         );
 
-        assert!(metrics.scope_metrics.is_empty());
+        assert!(metrics.scope_metrics().next().is_none());
 
         example::request(example::Kind::Http).incr();
 
         let metrics = reader.read();
 
-        assert_eq!(metrics.scope_metrics.len(), 1);
-        assert_eq!(metrics.scope_metrics[0].scope.name(), "scuffle-metrics");
-        assert!(metrics.scope_metrics[0].scope.version().is_some());
-        assert_eq!(metrics.scope_metrics[0].metrics.len(), 1);
-        assert_eq!(metrics.scope_metrics[0].metrics[0].name, "example_request");
-        assert_eq!(metrics.scope_metrics[0].metrics[0].description, "");
-        assert_eq!(metrics.scope_metrics[0].metrics[0].unit, "requests");
-        let sum: &Sum<u64> = metrics.scope_metrics[0].metrics[0]
-            .data
-            .as_any()
-            .downcast_ref()
-            .expect("wrong data type");
-        assert_eq!(sum.temporality, opentelemetry_sdk::metrics::Temporality::Cumulative);
-        assert!(sum.is_monotonic);
-        assert_eq!(sum.data_points.len(), 1);
-        assert_eq!(sum.data_points[0].value, 1);
-        assert_eq!(sum.data_points[0].attributes.len(), 1);
-        assert_eq!(sum.data_points[0].attributes[0].key, Key::from_static_str("kind"));
-        assert_eq!(sum.data_points[0].attributes[0].value, Value::from("Http"));
+        assert_eq!(metrics.scope_metrics().count(), 1);
+        let scoped_metric = metrics.scope_metrics().next().unwrap();
+        assert_eq!(scoped_metric.scope().name(), "scuffle-metrics");
+        assert!(scoped_metric.scope().version().is_some());
+        assert_eq!(scoped_metric.metrics().count(), 1);
+        let scoped_metric_metric = scoped_metric.metrics().next().unwrap();
+        assert_eq!(scoped_metric_metric.name(), "example_request");
+        assert_eq!(scoped_metric_metric.description(), "");
+        assert_eq!(scoped_metric_metric.unit(), "requests");
+        let AggregatedMetrics::U64(MetricData::Sum(sum)) = scoped_metric_metric.data() else {
+            unreachable!()
+        };
+        assert_eq!(sum.temporality(), opentelemetry_sdk::metrics::Temporality::Cumulative);
+        assert!(sum.is_monotonic());
+        assert_eq!(sum.data_points().count(), 1);
+        let data_point = sum.data_points().next().unwrap();
+        assert_eq!(data_point.value(), 1);
+        assert_eq!(data_point.attributes().count(), 1);
+        let attribute = data_point.attributes().next().unwrap();
+        assert_eq!(attribute.key, Key::from_static_str("kind"));
+        assert_eq!(attribute.value, Value::from("Http"));
 
         example::request(example::Kind::Http).incr();
 
         let metrics = reader.read();
 
-        assert_eq!(metrics.scope_metrics.len(), 1);
-        assert_eq!(metrics.scope_metrics[0].metrics.len(), 1);
-        let sum: &Sum<u64> = metrics.scope_metrics[0].metrics[0]
-            .data
-            .as_any()
-            .downcast_ref()
-            .expect("wrong data type");
-        assert_eq!(sum.data_points.len(), 1);
-        assert_eq!(sum.data_points[0].value, 2);
-        assert_eq!(sum.data_points[0].attributes.len(), 1);
-        assert_eq!(sum.data_points[0].attributes[0].key, Key::from_static_str("kind"));
-        assert_eq!(sum.data_points[0].attributes[0].value, Value::from("Http"));
+        assert_eq!(metrics.scope_metrics().count(), 1);
+        let scope_metric = metrics.scope_metrics().next().unwrap();
+        assert_eq!(scope_metric.metrics().count(), 1);
+        let scope_metric_metric = scope_metric.metrics().next().unwrap();
+        let AggregatedMetrics::U64(MetricData::Sum(sum)) = scope_metric_metric.data() else {
+            unreachable!()
+        };
+        assert_eq!(sum.data_points().count(), 1);
+        let data_point = sum.data_points().next().unwrap();
+        assert_eq!(data_point.value(), 2);
+        assert_eq!(data_point.attributes().count(), 1);
+        let attribute = data_point.attributes().next().unwrap();
+        assert_eq!(attribute.key, Key::from_static_str("kind"));
+        assert_eq!(attribute.value, Value::from("Http"));
 
         example::request(example::Kind::Grpc).incr();
 
         let metrics = reader.read();
 
-        assert_eq!(metrics.scope_metrics.len(), 1);
-        assert_eq!(metrics.scope_metrics[0].metrics.len(), 1);
-        let sum: &Sum<u64> = metrics.scope_metrics[0].metrics[0]
-            .data
-            .as_any()
-            .downcast_ref()
-            .expect("wrong data type");
-        assert_eq!(sum.data_points.len(), 2);
+        assert_eq!(metrics.scope_metrics().count(), 1);
+        let scope_metric = metrics.scope_metrics().next().unwrap();
+        assert_eq!(scope_metric.metrics().count(), 1);
+        let scope_metric_metric = scope_metric.metrics().next().unwrap();
+        let AggregatedMetrics::U64(MetricData::Sum(sum)) = scope_metric_metric.data() else {
+            unreachable!()
+        };
+        assert_eq!(sum.data_points().count(), 2);
         let grpc = sum
-            .data_points
-            .iter()
+            .data_points()
             .find(|dp| {
-                dp.attributes.len() == 1
-                    && dp.attributes[0].key == Key::from_static_str("kind")
-                    && dp.attributes[0].value == Value::from("Grpc")
+                dp.attributes().count() == 1
+                    && dp.attributes().next().unwrap().key == Key::from_static_str("kind")
+                    && dp.attributes().next().unwrap().value == Value::from("Grpc")
             })
             .expect("grpc data point not found");
-        assert_eq!(grpc.value, 1);
+        assert_eq!(grpc.value(), 1);
     }
 }
+
+/// Changelogs generated by [scuffle_changelog]
+#[cfg(feature = "docs")]
+#[scuffle_changelog::changelog]
+pub mod changelog {}

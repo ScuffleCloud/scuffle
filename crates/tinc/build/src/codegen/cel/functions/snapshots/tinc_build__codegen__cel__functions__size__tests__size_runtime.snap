@@ -1,0 +1,22 @@
+---
+source: crates/tinc/build/src/codegen/cel/functions/size.rs
+expression: "postcompile::compile_str!(postcompile::config!\n{\n    test: true, dependencies:\n    vec![postcompile::Dependency::workspace(\"tinc\"),],\n}, quote::quote!\n{\n    fn size(input: &str) -> Result<u64, ::tinc::__private::cel::CelError<'_>>\n    { Ok(#output) } #[test] fn test_size()\n    { assert_eq!(size(\"55\").unwrap(), 2); }\n},)"
+---
+exit status: 0
+--- test_stdout
+running 1 test
+.
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in [ELAPSED]s
+--- expanded
+#![feature(prelude_import)]
+#[prelude_import]
+use std::prelude::rust_2024::*;
+#[macro_use]
+extern crate std;
+fn size(input: &str) -> Result<u64, ::tinc::__private::cel::CelError<'_>> {
+    Ok(
+        ::tinc::__private::cel::CelValue::cel_size(
+            ::tinc::__private::cel::CelValueConv::conv(input),
+        )?,
+    )
+}

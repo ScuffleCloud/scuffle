@@ -1,9 +1,9 @@
 use std::borrow::Cow;
 use std::sync::Arc;
 
-use opentelemetry::{InstrumentationScope, KeyValue, otel_error, otel_warn};
+use opentelemetry::{InstrumentationScope, KeyValue};
 use opentelemetry_sdk::Resource;
-use opentelemetry_sdk::metrics::data::{Gauge, Histogram, ResourceMetrics, Sum};
+use opentelemetry_sdk::metrics::data::{AggregatedMetrics, Metric, MetricData, ResourceMetrics};
 use opentelemetry_sdk::metrics::reader::MetricReader;
 use opentelemetry_sdk::metrics::{ManualReader, ManualReaderBuilder};
 use prometheus_client::encoding::{EncodeCounterValue, EncodeGaugeValue, NoLabelSet};
@@ -50,7 +50,7 @@ impl MetricReader for PrometheusExporter {
     fn collect(
         &self,
         rm: &mut opentelemetry_sdk::metrics::data::ResourceMetrics,
-    ) -> opentelemetry_sdk::metrics::MetricResult<()> {
+    ) -> opentelemetry_sdk::error::OTelSdkResult {
         self.reader.collect(rm)
     }
 
@@ -58,8 +58,8 @@ impl MetricReader for PrometheusExporter {
         self.reader.force_flush()
     }
 
-    fn shutdown(&self) -> opentelemetry_sdk::error::OTelSdkResult {
-        self.reader.shutdown()
+    fn shutdown_with_timeout(&self, timeout: std::time::Duration) -> opentelemetry_sdk::error::OTelSdkResult {
+        self.reader.shutdown_with_timeout(timeout)
     }
 
     fn temporality(&self, kind: opentelemetry_sdk::metrics::InstrumentKind) -> opentelemetry_sdk::metrics::Temporality {
@@ -104,197 +104,151 @@ pub fn exporter() -> PrometheusExporterBuilder {
     PrometheusExporter::builder()
 }
 
-#[derive(Debug, Clone, Copy)]
-enum RawNumber {
-    U64(u64),
-    I64(i64),
-    F64(f64),
+trait EncodeNumber {
+    fn into_gauge(self) -> impl EncodeGaugeValue;
+    fn into_counter(self) -> impl EncodeCounterValue;
+    fn to_f64(self) -> f64;
 }
 
-impl RawNumber {
-    fn as_f64(&self) -> f64 {
-        match *self {
-            RawNumber::U64(value) => value as f64,
-            RawNumber::I64(value) => value as f64,
-            RawNumber::F64(value) => value,
-        }
+impl EncodeNumber for f64 {
+    fn into_gauge(self) -> impl EncodeGaugeValue {
+        self
+    }
+
+    fn into_counter(self) -> impl EncodeCounterValue {
+        self
+    }
+
+    fn to_f64(self) -> f64 {
+        self
     }
 }
 
-impl EncodeGaugeValue for RawNumber {
-    fn encode(&self, encoder: &mut prometheus_client::encoding::GaugeValueEncoder) -> Result<(), std::fmt::Error> {
-        match *self {
-            RawNumber::U64(value) => EncodeGaugeValue::encode(&(value as i64), encoder),
-            RawNumber::I64(value) => EncodeGaugeValue::encode(&value, encoder),
-            RawNumber::F64(value) => EncodeGaugeValue::encode(&value, encoder),
-        }
+impl EncodeNumber for i64 {
+    fn into_gauge(self) -> impl EncodeGaugeValue {
+        self
+    }
+
+    fn into_counter(self) -> impl EncodeCounterValue {
+        self.max(0) as u64
+    }
+
+    fn to_f64(self) -> f64 {
+        self as f64
     }
 }
 
-impl EncodeCounterValue for RawNumber {
-    fn encode(&self, encoder: &mut prometheus_client::encoding::CounterValueEncoder) -> Result<(), std::fmt::Error> {
-        match *self {
-            RawNumber::U64(value) => EncodeCounterValue::encode(&value, encoder),
-            RawNumber::I64(value) => EncodeCounterValue::encode(&(value as f64), encoder),
-            RawNumber::F64(value) => EncodeCounterValue::encode(&value, encoder),
-        }
+impl EncodeNumber for u64 {
+    fn into_gauge(self) -> impl EncodeGaugeValue {
+        self
+    }
+
+    fn into_counter(self) -> impl EncodeCounterValue {
+        self
+    }
+
+    fn to_f64(self) -> f64 {
+        self as f64
     }
 }
 
-macro_rules! impl_raw_number {
-    ($t:ty, $variant:ident) => {
-        impl From<$t> for RawNumber {
-            fn from(value: $t) -> Self {
-                RawNumber::$variant(value)
-            }
-        }
-    };
-}
-
-impl_raw_number!(u64, U64);
-impl_raw_number!(i64, I64);
-impl_raw_number!(f64, F64);
-
-enum KnownMetricT<'a, T> {
-    Gauge(&'a Gauge<T>),
-    Sum(&'a Sum<T>),
-    Histogram(&'a Histogram<T>),
-}
-
-impl<'a, T: 'static> KnownMetricT<'a, T>
-where
-    RawNumber: From<T>,
-    T: Copy,
-{
-    fn from_any(any: &'a dyn std::any::Any) -> Option<Self> {
-        if let Some(gauge) = any.downcast_ref::<Gauge<T>>() {
-            Some(KnownMetricT::Gauge(gauge))
-        } else if let Some(sum) = any.downcast_ref::<Sum<T>>() {
-            Some(KnownMetricT::Sum(sum))
-        } else {
-            any.downcast_ref::<Histogram<T>>()
-                .map(|histogram| KnownMetricT::Histogram(histogram))
-        }
-    }
-
-    fn metric_type(&self) -> MetricType {
-        match self {
-            KnownMetricT::Gauge(_) => MetricType::Gauge,
-            KnownMetricT::Sum(sum) => {
-                if sum.is_monotonic {
-                    MetricType::Counter
-                } else {
-                    MetricType::Gauge
-                }
-            }
-            KnownMetricT::Histogram(_) => MetricType::Histogram,
-        }
-    }
-
-    fn encode(
-        &self,
-        mut encoder: prometheus_client::encoding::MetricEncoder,
-        labels: KeyValueEncoder<'a>,
+fn encode_aggregated_metrics(
+    encoder: &mut prometheus_client::encoding::DescriptorEncoder,
+    metric: &Metric,
+    labels: KeyValueEncoder,
+) -> Result<(), std::fmt::Error> {
+    fn encode_metric_data<T: EncodeNumber + Copy>(
+        encoder: &mut prometheus_client::encoding::DescriptorEncoder,
+        metric: &Metric,
+        metric_data: &MetricData<T>,
+        labels: KeyValueEncoder,
     ) -> Result<(), std::fmt::Error> {
-        match self {
-            KnownMetricT::Gauge(gauge) => {
-                for data_point in &gauge.data_points {
-                    let number = RawNumber::from(data_point.value);
+        let unit = if metric.unit().is_empty() {
+            None
+        } else {
+            Some(Unit::Other(metric.unit().to_string()))
+        };
+
+        match metric_data {
+            MetricData::ExponentialHistogram(_) => {
+                // TODO: support native histograms when https://github.com/prometheus/client_rust/issues/150
+                // is merged.
+                #[cfg(feature = "tracing")]
+                tracing::warn!(
+                    name = "prometheus_collector_unknown_metric_type",
+                    target = env!("CARGO_PKG_NAME"),
+                    metric_name = metric.name(),
+                    "exponential histograms are not supported"
+                );
+                return Ok(());
+            }
+            MetricData::Gauge(gauge) => {
+                let mut encoder =
+                    encoder.encode_descriptor(metric.name(), metric.description(), unit.as_ref(), MetricType::Gauge)?;
+                for data_point in gauge.data_points() {
                     encoder
-                        .encode_family(&labels.with_attrs(Some(&data_point.attributes)))?
-                        .encode_gauge(&number)?;
+                        .encode_family(&labels.with_attrs(|| data_point.attributes()))?
+                        .encode_gauge(&data_point.value().into_gauge())?;
                 }
             }
-            KnownMetricT::Sum(sum) => {
-                for data_point in &sum.data_points {
-                    let number = RawNumber::from(data_point.value);
-                    let attrs = labels.with_attrs(Some(&data_point.attributes));
+            MetricData::Histogram(histogram) => {
+                let mut encoder =
+                    encoder.encode_descriptor(metric.name(), metric.description(), unit.as_ref(), MetricType::Histogram)?;
+                for data_point in histogram.data_points() {
+                    let buckets = data_point.bounds().zip(data_point.bucket_counts()).collect::<Vec<_>>();
+
+                    encoder
+                        .encode_family(&labels.with_attrs(|| data_point.attributes()))?
+                        .encode_histogram::<NoLabelSet>(data_point.sum().to_f64(), data_point.count(), &buckets, None)?;
+                }
+            }
+            MetricData::Sum(sum) => {
+                let mut encoder = encoder.encode_descriptor(
+                    metric.name(),
+                    metric.description(),
+                    unit.as_ref(),
+                    if sum.is_monotonic() {
+                        MetricType::Counter
+                    } else {
+                        MetricType::Gauge
+                    },
+                )?;
+                for data_point in sum.data_points() {
+                    let attrs = labels.with_attrs(|| data_point.attributes());
                     let mut encoder = encoder.encode_family(&attrs)?;
 
-                    if sum.is_monotonic {
+                    if sum.is_monotonic() {
                         // TODO(troy): Exemplar support
-                        encoder.encode_counter::<NoLabelSet, _, f64>(&number, None)?;
+                        encoder.encode_counter::<NoLabelSet, _, f64>(&data_point.value().into_counter(), None)?;
                     } else {
-                        encoder.encode_gauge(&number)?;
+                        encoder.encode_gauge(&data_point.value().into_gauge())?;
                     }
                 }
             }
-            KnownMetricT::Histogram(histogram) => {
-                for data_point in &histogram.data_points {
-                    let attrs = labels.with_attrs(Some(&data_point.attributes));
-                    let mut encoder = encoder.encode_family(&attrs)?;
-
-                    let sum = RawNumber::from(data_point.sum);
-
-                    let buckets = data_point
-                        .bounds
-                        .iter()
-                        .copied()
-                        .zip(data_point.bucket_counts.iter().copied())
-                        .collect::<Vec<_>>();
-
-                    encoder.encode_histogram::<NoLabelSet>(sum.as_f64(), data_point.count, &buckets, None)?;
-                }
-            }
         }
-
         Ok(())
     }
-}
 
-enum KnownMetric<'a> {
-    U64(KnownMetricT<'a, u64>),
-    I64(KnownMetricT<'a, i64>),
-    F64(KnownMetricT<'a, f64>),
-}
-
-impl<'a> KnownMetric<'a> {
-    fn from_any(any: &'a dyn std::any::Any) -> Option<Self> {
-        macro_rules! try_decode {
-            ($t:ty, $variant:ident) => {
-                if let Some(metric) = KnownMetricT::<$t>::from_any(any) {
-                    return Some(KnownMetric::$variant(metric));
-                }
-            };
-        }
-
-        try_decode!(u64, U64);
-        try_decode!(i64, I64);
-        try_decode!(f64, F64);
-
-        None
-    }
-
-    fn metric_type(&self) -> MetricType {
-        match self {
-            KnownMetric::U64(metric) => metric.metric_type(),
-            KnownMetric::I64(metric) => metric.metric_type(),
-            KnownMetric::F64(metric) => metric.metric_type(),
-        }
-    }
-
-    fn encode(
-        &self,
-        encoder: prometheus_client::encoding::MetricEncoder,
-        labels: KeyValueEncoder<'a>,
-    ) -> Result<(), std::fmt::Error> {
-        match self {
-            KnownMetric::U64(metric) => metric.encode(encoder, labels),
-            KnownMetric::I64(metric) => metric.encode(encoder, labels),
-            KnownMetric::F64(metric) => metric.encode(encoder, labels),
-        }
+    match metric.data() {
+        AggregatedMetrics::F64(metric_data) => encode_metric_data(encoder, metric, metric_data, labels),
+        AggregatedMetrics::I64(metric_data) => encode_metric_data(encoder, metric, metric_data, labels),
+        AggregatedMetrics::U64(metric_data) => encode_metric_data(encoder, metric, metric_data, labels),
     }
 }
 
 impl prometheus_client::collector::Collector for PrometheusExporter {
     fn encode(&self, mut encoder: prometheus_client::encoding::DescriptorEncoder) -> Result<(), std::fmt::Error> {
-        let mut metrics = ResourceMetrics {
-            resource: Resource::builder_empty().build(),
-            scope_metrics: vec![],
-        };
+        let mut metrics = ResourceMetrics::default();
 
         if let Err(err) = self.reader.collect(&mut metrics) {
-            otel_error!(name: "prometheus_collector_collect_error", error = err.to_string());
+            #[cfg(feature = "tracing")]
+            tracing::error!(
+                name = "prometheus_collector_collect_error",
+                target = env!("CARGO_PKG_NAME"),
+                error = err.to_string(),
+                ""
+            );
+            let _ = err;
             return Err(std::fmt::Error);
         }
 
@@ -302,30 +256,11 @@ impl prometheus_client::collector::Collector for PrometheusExporter {
 
         encoder
             .encode_descriptor("target", "Information about the target", None, MetricType::Info)?
-            .encode_info(&labels.with_resource(Some(&metrics.resource)))?;
+            .encode_info(&labels.with_resource(Some(metrics.resource())))?;
 
-        for scope_metrics in &metrics.scope_metrics {
-            for metric in &scope_metrics.metrics {
-                let Some(known_metric) = KnownMetric::from_any(metric.data.as_any()) else {
-                    otel_warn!(name: "prometheus_collector_unknown_metric_type", metric_name = metric.name.as_ref());
-                    continue;
-                };
-
-                let unit = if metric.unit.is_empty() {
-                    None
-                } else {
-                    Some(Unit::Other(metric.unit.to_string()))
-                };
-
-                known_metric.encode(
-                    encoder.encode_descriptor(
-                        &metric.name,
-                        &metric.description,
-                        unit.as_ref(),
-                        known_metric.metric_type(),
-                    )?,
-                    labels.with_scope(Some(&scope_metrics.scope)),
-                )?;
+        for scope_metrics in metrics.scope_metrics() {
+            for metric in scope_metrics.metrics() {
+                encode_aggregated_metrics(&mut encoder, metric, labels.with_scope(Some(scope_metrics.scope())))?;
             }
         }
 
@@ -345,10 +280,10 @@ fn scope_to_iter(scope: &InstrumentationScope) -> impl Iterator<Item = (&str, Co
 }
 
 #[derive(Debug, Clone, Copy)]
-struct KeyValueEncoder<'a> {
+struct KeyValueEncoder<'a, F = fn() -> std::iter::Empty<&'a KeyValue>> {
     resource: Option<&'a Resource>,
     scope: Option<&'a InstrumentationScope>,
-    attrs: Option<&'a [KeyValue]>,
+    get_attrs: F,
     prometheus_full_utf8: bool,
 }
 
@@ -357,7 +292,7 @@ impl<'a> KeyValueEncoder<'a> {
         Self {
             resource: None,
             scope: None,
-            attrs: None,
+            get_attrs: || std::iter::empty(),
             prometheus_full_utf8,
         }
     }
@@ -370,8 +305,13 @@ impl<'a> KeyValueEncoder<'a> {
         Self { scope, ..self }
     }
 
-    fn with_attrs(self, attrs: Option<&'a [KeyValue]>) -> Self {
-        Self { attrs, ..self }
+    fn with_attrs<F>(self, get_attrs: F) -> KeyValueEncoder<'a, F> {
+        KeyValueEncoder {
+            get_attrs,
+            prometheus_full_utf8: self.prometheus_full_utf8,
+            resource: self.resource,
+            scope: self.scope,
+        }
     }
 }
 
@@ -410,7 +350,11 @@ fn escape_key(s: &str) -> Cow<'_, str> {
     }
 }
 
-impl prometheus_client::encoding::EncodeLabelSet for KeyValueEncoder<'_> {
+impl<'a, F, I> prometheus_client::encoding::EncodeLabelSet for KeyValueEncoder<'a, F>
+where
+    F: Fn() -> I,
+    I: IntoIterator<Item = &'a KeyValue>,
+{
     fn encode(&self, mut encoder: prometheus_client::encoding::LabelSetEncoder) -> Result<(), std::fmt::Error> {
         use std::fmt::Write;
 
@@ -448,15 +392,13 @@ impl prometheus_client::encoding::EncodeLabelSet for KeyValueEncoder<'_> {
             }
         }
 
-        if let Some(attrs) = self.attrs {
-            for kv in attrs {
-                write_kv(
-                    &mut encoder,
-                    kv.key.as_str(),
-                    kv.value.as_str().as_ref(),
-                    self.prometheus_full_utf8,
-                )?;
-            }
+        for kv in (self.get_attrs)() {
+            write_kv(
+                &mut encoder,
+                kv.key.as_str(),
+                kv.value.as_str().as_ref(),
+                self.prometheus_full_utf8,
+            )?;
         }
 
         Ok(())
@@ -470,6 +412,7 @@ mod tests {
     use opentelemetry::metrics::MeterProvider;
     use opentelemetry_sdk::Resource;
     use opentelemetry_sdk::metrics::SdkMeterProvider;
+    use opentelemetry_sdk::metrics::data::{AggregatedMetrics, MetricData};
     use prometheus_client::registry::Registry;
 
     use super::*;
@@ -551,84 +494,6 @@ mod tests {
     }
 
     #[test]
-    fn test_raw_number_as_f64() {
-        assert_eq!(RawNumber::U64(42).as_f64(), 42.0);
-        assert_eq!(RawNumber::I64(-42).as_f64(), -42.0);
-        assert_eq!(RawNumber::F64(5.44).as_f64(), 5.44);
-    }
-
-    #[test]
-    fn test_known_metric_t_from_any() {
-        let time = std::time::SystemTime::now();
-        let gauge = Gauge::<u64> {
-            data_points: vec![],
-            start_time: Some(time - std::time::Duration::from_secs(10)),
-            time,
-        };
-        let sum = Sum::<u64> {
-            data_points: vec![],
-            is_monotonic: true,
-            start_time: time - std::time::Duration::from_secs(10),
-            time,
-            temporality: opentelemetry_sdk::metrics::Temporality::Cumulative,
-        };
-        let histogram = Histogram::<u64> {
-            data_points: vec![],
-            start_time: time - std::time::Duration::from_secs(10),
-            time,
-            temporality: opentelemetry_sdk::metrics::Temporality::Cumulative,
-        };
-
-        assert!(matches!(KnownMetricT::<u64>::from_any(&gauge), Some(KnownMetricT::Gauge(_))));
-        assert!(matches!(KnownMetricT::<u64>::from_any(&sum), Some(KnownMetricT::Sum(_))));
-        assert!(matches!(
-            KnownMetricT::<u64>::from_any(&histogram),
-            Some(KnownMetricT::Histogram(_))
-        ));
-    }
-
-    #[test]
-    fn test_known_metric_t_metric_type() {
-        let time = std::time::SystemTime::now();
-        let gauge = Gauge::<u64> {
-            data_points: vec![],
-            start_time: Some(time - std::time::Duration::from_secs(10)),
-            time,
-        };
-        let gauge = KnownMetricT::Gauge(&gauge);
-        matches!(gauge.metric_type(), MetricType::Gauge);
-
-        let sum = Sum::<u64> {
-            data_points: vec![],
-            is_monotonic: true,
-            start_time: time - std::time::Duration::from_secs(10),
-            time,
-            temporality: opentelemetry_sdk::metrics::Temporality::Cumulative,
-        };
-        let sum_monotonic = KnownMetricT::Sum(&sum);
-        matches!(sum_monotonic.metric_type(), MetricType::Counter);
-
-        let sum = Sum::<u64> {
-            data_points: vec![],
-            is_monotonic: false,
-            start_time: time - std::time::Duration::from_secs(10),
-            time,
-            temporality: opentelemetry_sdk::metrics::Temporality::Cumulative,
-        };
-        let sum_non_monotonic = KnownMetricT::Sum(&sum);
-        matches!(sum_non_monotonic.metric_type(), MetricType::Gauge);
-
-        let histogram = Histogram::<u64> {
-            data_points: vec![],
-            start_time: time - std::time::Duration::from_secs(10),
-            time,
-            temporality: opentelemetry_sdk::metrics::Temporality::Cumulative,
-        };
-        let histogram = KnownMetricT::Histogram(&histogram);
-        matches!(histogram.metric_type(), MetricType::Histogram);
-    }
-
-    #[test]
     fn test_known_metric_t_encode() {
         let (exporter, registry) = setup_prometheus_exporter(opentelemetry_sdk::metrics::Temporality::Cumulative, false);
         let provider = SdkMeterProvider::builder().with_reader(exporter.clone()).build();
@@ -645,75 +510,6 @@ mod tests {
 
         let encoded = collect_and_encode(&registry);
         assert!(encoded.contains(r#"test_i64_counter{otel_scope_name="test_meter",key="value"} -42"#));
-    }
-
-    #[test]
-    fn test_known_metric_from_any() {
-        let time = std::time::SystemTime::now();
-        let gauge_u64 = Gauge::<u64> {
-            data_points: vec![],
-            start_time: Some(time),
-            time,
-        };
-        let sum_i64 = Sum::<i64> {
-            data_points: vec![],
-            is_monotonic: true,
-            start_time: time,
-            time,
-            temporality: opentelemetry_sdk::metrics::Temporality::Cumulative,
-        };
-        let histogram_f64 = Histogram::<f64> {
-            data_points: vec![],
-            start_time: time,
-            time,
-            temporality: opentelemetry_sdk::metrics::Temporality::Cumulative,
-        };
-
-        assert!(matches!(
-            KnownMetric::from_any(&gauge_u64),
-            Some(KnownMetric::U64(KnownMetricT::Gauge(_)))
-        ));
-        assert!(matches!(
-            KnownMetric::from_any(&sum_i64),
-            Some(KnownMetric::I64(KnownMetricT::Sum(_)))
-        ));
-        assert!(matches!(
-            KnownMetric::from_any(&histogram_f64),
-            Some(KnownMetric::F64(KnownMetricT::Histogram(_)))
-        ));
-        assert!(KnownMetric::from_any(&true).is_none());
-    }
-
-    #[test]
-    fn test_known_metric_metric_type() {
-        let time = std::time::SystemTime::now();
-        let gauge = Gauge::<u64> {
-            data_points: vec![],
-            start_time: Some(time),
-            time,
-        };
-        let metric = KnownMetric::U64(KnownMetricT::Gauge(&gauge));
-        assert!(matches!(metric.metric_type(), MetricType::Gauge));
-
-        let sum_mono = Sum::<i64> {
-            data_points: vec![],
-            is_monotonic: true,
-            start_time: time,
-            time,
-            temporality: opentelemetry_sdk::metrics::Temporality::Cumulative,
-        };
-        let metric = KnownMetric::I64(KnownMetricT::Sum(&sum_mono));
-        assert!(matches!(metric.metric_type(), MetricType::Counter));
-
-        let sum_non_mono = Sum::<f64> {
-            data_points: vec![],
-            is_monotonic: false,
-            start_time: time,
-            time,
-            temporality: opentelemetry_sdk::metrics::Temporality::Cumulative,
-        };
-        let metric = KnownMetric::F64(KnownMetricT::Sum(&sum_non_mono));
-        assert!(matches!(metric.metric_type(), MetricType::Gauge));
     }
 
     #[test]
@@ -799,34 +595,28 @@ mod tests {
         histogram.record(12, &[KeyValue::new("key", "value")]);
         histogram.record(25, &[KeyValue::new("key", "value")]);
 
-        let mut metrics = ResourceMetrics {
-            scope_metrics: vec![],
-            resource: Resource::builder_empty().build(),
-        };
+        let mut metrics = ResourceMetrics::default();
         exporter.collect(&mut metrics).unwrap();
 
-        let scope_metrics = metrics.scope_metrics.first().expect("scope metrics should be present");
+        let scope_metrics = metrics.scope_metrics().next().expect("scope metrics should be present");
         let metric = scope_metrics
-            .metrics
-            .iter()
-            .find(|m| m.name == "test_histogram")
+            .metrics()
+            .find(|m| m.name() == "test_histogram")
             .expect("histogram metric should be present");
-        let histogram_data = metric
-            .data
-            .as_any()
-            .downcast_ref::<Histogram<u64>>()
-            .expect("metric data should be a histogram");
+        let AggregatedMetrics::U64(MetricData::Histogram(histogram_data)) = metric.data() else {
+            unreachable!();
+        };
 
-        let data_point = histogram_data.data_points.first().expect("data point should be present");
-        assert_eq!(data_point.sum, 47, "sum should be 3 + 7 + 12 + 25 = 47");
-        assert_eq!(data_point.count, 4, "count should be 4");
+        let data_point = histogram_data.data_points().next().expect("data point should be present");
+        assert_eq!(data_point.sum(), 47, "sum should be 3 + 7 + 12 + 25 = 47");
+        assert_eq!(data_point.count(), 4, "count should be 4");
         assert_eq!(
-            data_point.bucket_counts,
+            data_point.bucket_counts().collect::<Vec<_>>(),
             vec![1, 1, 1, 1],
             "each value should fall into a separate bucket"
         );
         assert_eq!(
-            data_point.bounds,
+            data_point.bounds().collect::<Vec<_>>(),
             vec![5.0, 10.0, 20.0],
             "boundaries should match the defined ones"
         );

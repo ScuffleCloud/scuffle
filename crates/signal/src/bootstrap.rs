@@ -97,7 +97,7 @@ mod test {
     use scuffle_future_ext::FutureExt;
 
     use super::SignalConfig;
-    use crate::test::raise_signal;
+    use crate::tests::raise_signal;
     use crate::{SignalKind, SignalSvc};
 
     async fn force_shutdown_two_signals<Global: GlobalWithoutConfig + SignalConfig>() {

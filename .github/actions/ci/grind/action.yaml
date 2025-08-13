@@ -13,6 +13,10 @@ runs:
         echo "::error::This action only supports Linux runners for now."
         exit 1
 
+    - name: Disable hakari
+      shell: bash
+      run: cargo hakari disable
+
     - name: Install Valgrind
       shell: bash
       if: ${{ runner.os == 'Linux' }}

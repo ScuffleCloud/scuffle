@@ -1,6 +1,6 @@
 [package]
 name = "scuffle-context"
-version = "0.1.2"
+version = "0.1.5"
 edition = "2024"
 repository = "https://github.com/scufflecloud/scuffle"
 authors = ["Scuffle <opensource@scuffle.cloud>"]
@@ -14,12 +14,44 @@ keywords = ["context", "async"]
 unexpected_cfgs = { level = "warn", check-cfg = ['cfg(coverage_nightly)'] }
 
 [dependencies]
+document-features = { optional = true, version = "0.2" }
 futures-lite = "2"
 pin-project-lite = "0.2"
-tokio-util = "0.7"
-tokio = "1"
+scuffle-changelog = { optional = true, path = "../changelog", version = "0.1.0" }
 scuffle-workspace-hack.workspace = true
+tokio = "1"
+tokio-util = "0.7"
 
 [dev-dependencies]
+scuffle-future-ext = { path = "../future-ext" }
+tokio = { features = ["macros"], version = "1" }
 tokio-test = "0.4.4"
-scuffle-future-ext.workspace = true
+
+[features]
+## Enables changelog and documentation of feature flags
+docs = ["dep:scuffle-changelog", "dep:document-features"]
+
+[package.metadata.docs.rs]
+all-features = true
+rustdoc-args = [
+  "--cfg",
+  "docsrs",
+  "--sort-modules-by-appearance",
+  "--generate-link-to-definition",
+]
+
+[package.metadata.xtask.powerset]
+additive-features = ["docs"]
+
+[package.metadata.cargo-sync-rdme.rustdoc.mappings]
+changelog = "./CHANGELOG.md"
+
+[package.metadata.cargo-sync-rdme.badge]
+style = "flat-square"
+
+[package.metadata.cargo-sync-rdme.badge.badges]
+license = true
+docs-rs = true
+crates-io = true
+github-actions = { workflows = "ci.yaml" }
+codecov = true

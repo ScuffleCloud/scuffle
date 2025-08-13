@@ -15,7 +15,47 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
-## [0.3.0](https://github.com/ScuffleCloud/scuffle/compare/scuffle-ffmpeg-v0.2.0...scuffle-ffmpeg-v0.3.0) - 2025-04-27
+## [0.3.5](https://github.com/ScuffleCloud/scuffle/releases/tag/scuffle-ffmpeg-v0.3.5) - 2025-06-11
+
+[View diff on diff.rs](https://diff.rs/scuffle-ffmpeg/0.3.4/scuffle-ffmpeg/0.3.5/Cargo.toml)
+
+### 🛠️ Non-breaking changes
+
+- chore: fix new lint `mismatched-lifetime-syntaxes` ([#492](https://github.com/scufflecloud/scuffle/pull/492)) (@lennartkloock)
+
+## [0.3.4](https://github.com/ScuffleCloud/scuffle/releases/tag/scuffle-ffmpeg-v0.3.4) - 2025-05-30
+
+[View diff on diff.rs](https://diff.rs/scuffle-ffmpeg/0.3.3/scuffle-ffmpeg/0.3.4/Cargo.toml)
+
+### 🛠️ Non-breaking changes
+
+- chore: cleaned up dev-dependencies ([#473](https://github.com/scufflecloud/scuffle/pull/473)) (@troykomodo)
+
+## [0.3.3](https://github.com/ScuffleCloud/scuffle/releases/tag/scuffle-ffmpeg-v0.3.3) - 2025-05-17
+
+[View diff on diff.rs](https://diff.rs/scuffle-ffmpeg/0.3.2/scuffle-ffmpeg/0.3.3/Cargo.toml)
+
+### 🛠️ Non-breaking changes
+
+- chore: fix changelog entry & release process ([#465](https://github.com/scufflecloud/scuffle/pull/465)) (@troykomodo, @SimaoMoreira5228, @philipch07)
+
+## [0.3.2](https://github.com/ScuffleCloud/scuffle/releases/tag/scuffle-ffmpeg-v0.3.2) - 2025-05-15
+
+[View diff on diff.rs](https://diff.rs/scuffle-ffmpeg/0.3.1/scuffle-ffmpeg/0.3.2/Cargo.toml)
+
+### 🛠️ Non-breaking changes
+
+- chore: fix docs.rs building ([#464](https://github.com/scufflecloud/scuffle/pull/464)) (@troykomodo)
+
+## [0.3.1](https://github.com/ScuffleCloud/scuffle/releases/tag/scuffle-ffmpeg-v0.3.1) - 2025-05-14
+
+[View diff on diff.rs](https://diff.rs/scuffle-ffmpeg/0.3.0/scuffle-ffmpeg/0.3.1/Cargo.toml)
+
+### 🛠️ Non-breaking changes
+
+- chore: cleanup readme and crate docs ([#458](https://github.com/scufflecloud/scuffle/pull/458)) (@troykomodo)
+
+## [0.3.0](https://github.com/ScuffleCloud/scuffle/releases/tag/scuffle-ffmpeg-v0.3.0) - 2025-04-27
 
 ### ⚠️ Breaking changes
 
@@ -28,7 +68,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - feat: Add `AudioFrame::format` ([#437](https://github.com/scufflecloud/scuffle/pull/437)) (@Juliapixel)
 - fix: fix windows memory corruption issue ([#378](https://github.com/scufflecloud/scuffle/pull/378)) (@TroyKomodo)
 
-## [0.2.0](https://github.com/ScuffleCloud/scuffle/compare/scuffle-ffmpeg-v0.1.3...scuffle-ffmpeg-v0.2.0) - 2025-02-21
+## [0.2.0](https://github.com/ScuffleCloud/scuffle/releases/tag/scuffle-ffmpeg-v0.2.0) - 2025-02-21
 
 ### ⚠️ Breaking changes
 
@@ -44,10 +84,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - feat: `AudioFrame` data is now accessible via the `data` and `data_mut` methods ([#303](https://github.com/scufflecloud/scuffle/pull/303)) (@Juliapixel)
 - feat: new `Resampler` type exposes `libswresample` functionality ([#303](https://github.com/scufflecloud/scuffle/pull/303)) (@Juliapixel)
 
-## [0.1.3](https://github.com/ScuffleCloud/scuffle/compare/scuffle-ffmpeg-v0.1.2...scuffle-ffmpeg-v0.1.3) - 2025-02-11
+## [0.1.3](https://github.com/ScuffleCloud/scuffle/releases/tag/scuffle-ffmpeg-v0.1.3) - 2025-02-11
 
 - Fixed windows build (#238)
 
-## [0.1.2](https://github.com/ScuffleCloud/scuffle/compare/scuffle-ffmpeg-v0.1.1...scuffle-ffmpeg-v0.1.2) - 2025-02-10
+## [0.1.2](https://github.com/ScuffleCloud/scuffle/releases/tag/scuffle-ffmpeg-v0.1.2) - 2025-02-10
 
-## [0.1.1](https://github.com/ScuffleCloud/scuffle/compare/scuffle-ffmpeg-v0.1.0...scuffle-ffmpeg-v0.1.1) - 2025-02-10
+## [0.1.1](https://github.com/ScuffleCloud/scuffle/releases/tag/scuffle-ffmpeg-v0.1.1) - 2025-02-10

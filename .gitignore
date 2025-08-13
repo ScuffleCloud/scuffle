@@ -41,3 +41,4 @@ website/.env.*
 # Vite
 website/vite.config.js.timestamp-*
 website/vite.config.ts.timestamp-*
+.runner/

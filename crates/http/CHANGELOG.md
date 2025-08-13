@@ -15,7 +15,36 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
-## [0.2.1](https://github.com/ScuffleCloud/scuffle/compare/scuffle-http-v0.2.0...scuffle-http-v0.2.1) - 2025-04-27
+## [0.3.2](https://github.com/ScuffleCloud/scuffle/releases/tag/scuffle-http-v0.3.2) - 2025-05-30
+
+[View diff on diff.rs](https://diff.rs/scuffle-http/0.3.1/scuffle-http/0.3.2/Cargo.toml)
+
+### 🛠️ Non-breaking changes
+
+- chore: cleaned up dev-dependencies ([#473](https://github.com/scufflecloud/scuffle/pull/473)) (@troykomodo)
+
+## [0.3.1](https://github.com/ScuffleCloud/scuffle/releases/tag/scuffle-http-v0.3.1) - 2025-05-17
+
+[View diff on diff.rs](https://diff.rs/scuffle-http/0.3.0/scuffle-http/0.3.1/Cargo.toml)
+
+### 🛠️ Non-breaking changes
+
+- chore: fix changelog entry & release process ([#465](https://github.com/scufflecloud/scuffle/pull/465)) (@troykomodo, @SimaoMoreira5228, @philipch07)
+
+## [0.3.0](https://github.com/ScuffleCloud/scuffle/releases/tag/scuffle-http-v0.3.0) - 2025-05-14
+
+[View diff on diff.rs](https://diff.rs/scuffle-http/0.2.1/scuffle-http/0.3.0/Cargo.toml)
+
+### ⚠️ Breaking changes
+
+- chore: update to h3 0.0.8 ([#452](https://github.com/scufflecloud/scuffle/pull/452)) (@lennartkloock)
+- chore: update to h3-quinn 0.0.10 ([#452](https://github.com/scufflecloud/scuffle/pull/452)) (@lennartkloock)
+
+### 🛠️ Non-breaking changes
+
+- chore: cleanup readme and crate docs ([#458](https://github.com/scufflecloud/scuffle/pull/458)) (@troykomodo)
+
+## [0.2.1](https://github.com/ScuffleCloud/scuffle/releases/tag/scuffle-http-v0.2.1) - 2025-04-27
 
 ### ⚠️ Breaking changes
 
@@ -29,7 +58,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - docs: improved documentation ([#372](https://github.com/scufflecloud/scuffle/pull/372)) (@lennartkloock)
 - fix: fix windows blocking event-loop when running a http server ([#378](https://github.com/scufflecloud/scuffle/pull/378)) (@TroyKomodo)
 
-## [0.2.0](https://github.com/ScuffleCloud/scuffle/compare/scuffle-http-v0.1.0...scuffle-http-v0.2.0) - 2025-02-21
+## [0.2.0](https://github.com/ScuffleCloud/scuffle/releases/tag/scuffle-http-v0.2.0) - 2025-02-21
 
 ### ⚠️ Breaking changes
 

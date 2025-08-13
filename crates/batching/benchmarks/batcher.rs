@@ -1,8 +1,9 @@
 use std::future::Future;
+use std::hint::black_box;
 use std::marker::PhantomData;
 use std::sync::Arc;
 
-use criterion::{BenchmarkId, Criterion, black_box, criterion_group, criterion_main};
+use criterion::{BenchmarkId, Criterion, criterion_group, criterion_main};
 use scuffle_batching::batch::BatchResponse;
 
 struct DataloaderImpl<F, P>(F, PhantomData<P>);

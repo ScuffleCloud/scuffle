@@ -1,0 +1,16 @@
+name: Sync Rdme
+runs:
+  using: "composite"
+  steps:
+    - name: Install
+      shell: bash
+      run: |
+        cargo binstall cargo-sync-rdme --git https://github.com/TroyKomodo/cargo-sync-rdme.git --force -y
+
+    - name: Check
+      shell: bash
+      env:
+        RUSTDOCFLAGS: "-Dwarnings --cfg docsrs --sort-modules-by-appearance --enable-index-page -Zunstable-options"
+      run: |
+        set -xeo pipefail
+        cargo sync-rdme --all-features --workspace --check

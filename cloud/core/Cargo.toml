@@ -1,0 +1,24 @@
+[package]
+name = "scufflecloud-core"
+version = "0.1.0"
+edition = "2024"
+license = "AGPL-3.0"
+description = "Authentication/Core server for scuffle.cloud"
+repository = "https://github.com/scufflecloud/scuffle"
+authors = ["Scuffle <opensource@scuffle.cloud>"]
+readme = "README.md"
+publish = false
+
+[dependencies]
+pb = { package = "scufflecloud-proto", path = "../proto" }
+scuffle-workspace-hack.workspace = true
+
+[package.metadata.cargo-sync-rdme.badge]
+style = "flat-square"
+
+[package.metadata.cargo-sync-rdme.badge.badges]
+license = true
+docs-rs = false
+crates-io = false
+github-actions = { workflows = "ci.yaml" }
+codecov = true

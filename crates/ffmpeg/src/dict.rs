@@ -209,7 +209,7 @@ impl Dictionary {
     }
 
     /// Returns an iterator over the dictionary.
-    pub const fn iter(&self) -> DictionaryIterator {
+    pub const fn iter(&self) -> DictionaryIterator<'_> {
         DictionaryIterator::new(self)
     }
 

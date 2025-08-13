@@ -21,8 +21,12 @@ pub struct Amf0Decoder<R> {
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub(crate) enum ObjectHeader<'a> {
     Object,
-    TypedObject { name: StringCow<'a> },
-    EcmaArray { size: u32 },
+    TypedObject {
+        name: StringCow<'a>,
+    },
+    EcmaArray {
+        size: u32,
+    },
 }
 
 impl<B> Amf0Decoder<scuffle_bytes_util::zero_copy::BytesBuf<B>>
@@ -195,7 +199,6 @@ where
 
     /// Deserialize a value from the buffer using [serde].
     #[cfg(feature = "serde")]
-    #[cfg_attr(docsrs, doc(cfg(feature = "serde")))]
     pub fn deserialize<T>(&mut self) -> Result<T, Amf0Error>
     where
         T: serde::de::Deserialize<'a>,
@@ -205,7 +208,6 @@ where
 
     /// Deserialize a stream of values from the buffer using [serde].
     #[cfg(feature = "serde")]
-    #[cfg_attr(docsrs, doc(cfg(feature = "serde")))]
     pub fn deserialize_stream<T>(&mut self) -> crate::de::Amf0DeserializerStream<'_, R, T>
     where
         T: serde::de::Deserialize<'a>,

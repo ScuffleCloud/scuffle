@@ -803,7 +803,10 @@ mod tests {
         #[derive(Serialize)]
         enum Test {
             A(bool),
-            B { a: String, b: String },
+            B {
+                a: String,
+                b: String,
+            },
             C(bool, String),
         }
 
@@ -920,7 +923,9 @@ mod tests {
             A,
             B(bool),
             C(String, String),
-            D { a: String },
+            D {
+                a: String,
+            },
         }
         test_invalid_map_key(Enum::A);
         test_invalid_map_key(Enum::B(true));

@@ -1,0 +1,30 @@
+syntax = "proto3";
+
+package bytes_service;
+
+import "tinc/annotations.proto";
+
+service BytesService {
+    rpc Bytes(BytesPayload) returns (BytesPayload) {
+        option (tinc.method).endpoint = {
+            post: "/upload"
+            request: {
+                binary: {
+                    field: "data"
+                    content_type_field: "mime"
+                }
+            }
+            response: {
+                binary: {
+                    field: "data"
+                    content_type_field: "mime"
+                }
+            }
+        };
+    }
+}
+
+message BytesPayload {
+    bytes data = 1;
+    string mime = 2;
+}

@@ -1,0 +1,14 @@
+---
+source: crates/openapiv3_1/src/response.rs
+expression: request_body
+---
+{
+  "content": {
+    "application/json": {
+      "schema": {
+        "$ref": "#/components/schemas/MySchemaPayload"
+      }
+    }
+  },
+  "description": "A sample response"
+}

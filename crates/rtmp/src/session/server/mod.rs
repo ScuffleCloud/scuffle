@@ -214,7 +214,7 @@ impl<S: tokio::io::AsyncRead + tokio::io::AsyncWrite + Unpin, H: SessionHandler>
     /// It is used to read data from the stream and parse it into RTMP messages.
     /// We also send data to the client if they are playing a stream.
     ///
-    /// Finish the handshake first by repeatedly calling [`drive_handshake`](Session::drive_handshake)
+    /// Finish the handshake first by repeatedly calling [`drive_handshake`][ServerSession::drive_handshake]
     /// until it returns true before calling this function.
     ///
     /// Returns true if the session is still active, false if the client has closed the connection.

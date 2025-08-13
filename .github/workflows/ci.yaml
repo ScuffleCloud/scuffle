@@ -7,6 +7,9 @@ on:
       - automation/brawl/merge/*
 
   pull_request:
+  workflow_dispatch:
+  schedule:
+    - cron: "0 13 * * *"
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
@@ -37,6 +40,11 @@ jobs:
         with:
           ref: ${{ env.SHA }}
 
+      - name: Switch to Branch
+        run: |
+          set -xeo pipefail
+          git switch -C ${{ github.ref_name }}
+
       - name: Run matrix prep
         id: compute
         env:
@@ -49,6 +57,7 @@ jobs:
     name: ${{ matrix.job_name || 'Jobs' }}
     needs: matrix_prep
     strategy:
+      fail-fast: ${{ github.event_name == 'push' }}
       matrix:
         include: ${{ fromJson(needs.matrix_prep.outputs.matrix) }}
     runs-on: ${{ matrix.runner }}
@@ -56,6 +65,11 @@ jobs:
       - uses: actions/checkout@v4
         with:
           ref: ${{ env.SHA }}
+
+      - name: Switch to Branch
+        run: |
+          set -xeo pipefail
+          git switch -C ${{ github.ref_name }}
 
       - name: Setup FFmpeg
         if: ${{ matrix.ffmpeg != null }}
@@ -66,6 +80,12 @@ jobs:
         if: ${{ matrix.rust != null }}
         uses: ./.github/actions/setup-rust
         with: ${{ matrix.rust }}
+
+      - name: Setup Protoc
+        if: ${{ matrix.setup_protoc }}
+        uses: arduino/setup-protoc@v3
+        with:
+          repo-token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Setup Secrets
         if: ${{ matrix.secrets != null }}

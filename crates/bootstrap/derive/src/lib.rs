@@ -1,20 +1,17 @@
 //! A proc-macro to generate the main function for the application.
 //!
-//! For more information checkout the [scuffle-bootstrap](../README.md) crate.
-//!
-//! ## Status
-//!
-//! This crate is currently under development and is not yet stable, unit tests are not yet fully implemented.
-//!
-//! Unit tests are not yet fully implemented. Use at your own risk.
+//! For more information checkout the [`scuffle-bootstrap`][scuffle_bootstrap] crate.
 //!
 //! ## License
 //!
-//! This project is licensed under the [MIT](./LICENSE.MIT) or [Apache-2.0](./LICENSE.Apache-2.0) license.
+//! This project is licensed under the MIT or Apache-2.0 license.
 //! You can choose between one of them if you use this work.
 //!
 //! `SPDX-License-Identifier: MIT OR Apache-2.0`
+//!
+//! [scuffle_bootstrap]: https://docs.rs/scuffle-bootstrap
 #![cfg_attr(all(coverage_nightly, test), feature(coverage_attribute))]
+#![cfg_attr(docsrs, feature(doc_auto_cfg))]
 #![deny(missing_docs)]
 #![deny(unsafe_code)]
 #![deny(unreachable_pub)]

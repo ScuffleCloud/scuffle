@@ -6,6 +6,22 @@ use std::task::{Context, Poll};
 use bytes::{Buf, Bytes};
 use h3::server::RequestStream;
 
+/// Error type for [`QuicIncomingBody`].
+#[derive(thiserror::Error, Debug)]
+pub enum H3BodyError {
+    /// h3 stream error.
+    ///
+    /// Refer to [`h3::error::StreamError`] for more information.
+    #[error("h3 error: {0}")]
+    StreamError(#[from] h3::error::StreamError),
+    /// Unexpected data after receiving HTTP/3 trailers.
+    #[error("unexpected data after trailers")]
+    DataAfterTrailers,
+    /// The given size hint was exceeded.
+    #[error("the given buffer size hint was exceeded")]
+    BufferExceeded,
+}
+
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 enum State {
     Data(Option<u64>),
@@ -33,7 +49,7 @@ impl<S> QuicIncomingBody<S> {
 
 impl<S: h3::quic::RecvStream> http_body::Body for QuicIncomingBody<S> {
     type Data = Bytes;
-    type Error = h3::Error;
+    type Error = H3BodyError;
 
     fn poll_frame(
         mut self: Pin<&mut Self>,
@@ -53,7 +69,7 @@ impl<S: h3::quic::RecvStream> http_body::Body for QuicIncomingBody<S> {
                     if let Some(remaining) = remaining {
                         if buf_size > *remaining {
                             *state = State::Done;
-                            return Poll::Ready(Some(Err(h3::error::Code::H3_FRAME_UNEXPECTED.into())));
+                            return Poll::Ready(Some(Err(H3BodyError::BufferExceeded)));
                         }
 
                         *remaining -= buf_size;
@@ -66,7 +82,7 @@ impl<S: h3::quic::RecvStream> http_body::Body for QuicIncomingBody<S> {
                 }
                 Poll::Ready(Err(err)) => {
                     *state = State::Done;
-                    return Poll::Ready(Some(Err(err)));
+                    return Poll::Ready(Some(Err(err.into())));
                 }
                 Poll::Pending => {
                     return Poll::Pending;
@@ -89,11 +105,11 @@ impl<S: h3::quic::RecvStream> http_body::Body for QuicIncomingBody<S> {
                     Poll::Ready(None)
                 }
                 Poll::Ready(Ok(None)) => Poll::Ready(None),
-                Poll::Ready(Err(err)) => Poll::Ready(Some(Err(err))),
+                Poll::Ready(Err(err)) => Poll::Ready(Some(Err(err.into()))),
             },
             // We are not expecting any data after the previous poll returned None
-            Poll::Ready(Ok(Some(_))) => Poll::Ready(Some(Err(h3::error::Code::H3_FRAME_UNEXPECTED.into()))),
-            Poll::Ready(Err(err)) => Poll::Ready(Some(Err(err))),
+            Poll::Ready(Ok(Some(_))) => Poll::Ready(Some(Err(H3BodyError::DataAfterTrailers))),
+            Poll::Ready(Err(err)) => Poll::Ready(Some(Err(err.into()))),
             Poll::Pending => return Poll::Pending,
         };
 

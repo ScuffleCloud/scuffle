@@ -5,7 +5,6 @@ use std::hash::Hash;
 use bytestring::ByteString;
 
 #[cfg(feature = "serde")]
-#[cfg_attr(docsrs, doc(cfg(feature = "serde")))]
 pub(crate) mod serde;
 
 /// A [`Cow`] type for strings.

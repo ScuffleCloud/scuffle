@@ -1,6 +1,8 @@
 // Define types
 export type VideoStatus = 'live' | 'finished';
 
+export type LoginMode = 'magic-link' | 'password' | 'passkey' | 'magic-link-sent';
+
 export interface VideoStream {
     id: string;
     name: string;

@@ -1,42 +1,65 @@
 <script lang="ts">
     import { authState, authAPI, clearError, type AuthResult } from '$lib/authState.svelte';
-    import { goto } from '$app/navigation';
     import IconArrowDialogLink from '$lib/images/icon-arrow-dialog-link.svelte';
     import SigninOptions from './signin-options.svelte';
     import TurnstileOverlay from '$components/turnstile-overlay.svelte';
+    import MagicLinkForm from './magic-link-form.svelte';
+    import PasswordForm from './password-form.svelte';
+    import PasskeyForm from './passkey-form.svelte';
+    import MagicLinkSent from './magic-link-sent.svelte';
+    import type { LoginMode } from '$components/streams/types';
 
     let turnstileOverlayComponent: TurnstileOverlay | null = null;
+    let loginMode = $state<LoginMode>('magic-link');
+
     const getToken = async () => await turnstileOverlayComponent?.getToken();
 
-    // This initial value should come from local storage if it exists
-    let email = $state<string>('');
+    let userEmail = $state<string>('');
     let localLoading = $state<boolean>(false);
 
-    // Get this from authState TBD
-    let magicLinkSent = $state<boolean>(false);
-
-    async function handleSubmit(event: SubmitEvent): Promise<void> {
-        event.preventDefault();
-        if (localLoading) return;
-
-        localLoading = true;
+    async function handleMagicLinkSubmit(email: string): Promise<void> {
         const token = await getToken();
         if (email && token) {
-            // Hopefully this authAPI comes with ways to check query status instead of using local state
             try {
                 const result: AuthResult = await authAPI.sendMagicLink(email);
-                if (!result.success) {
-                    console.error('Login failed:', result.error);
+                if (result.success) {
+                    userEmail = email;
+                    loginMode = 'magic-link-sent';
                 } else {
-                    magicLinkSent = true;
+                    console.error('Magic link failed:', result.error);
                 }
-                console.log('magicLinkSent', magicLinkSent);
             } catch (error) {
-                console.error('Login error:', error);
-            } finally {
-                localLoading = false;
+                console.error('Magic link error:', error);
             }
         }
+    }
+
+    async function handlePasswordSubmit(email: string, password: string): Promise<void> {
+        const token = await getToken();
+        if (email && password && token) {
+            try {
+                // const result: AuthResult = await authAPI.loginWithPassword(email, password);
+                console.log('Password login for:', email);
+            } catch (error) {
+                console.error('Password login error:', error);
+            }
+        }
+    }
+
+    async function handlePasskeySubmit(email: string): Promise<void> {
+        const token = await getToken();
+        if (email && token) {
+            try {
+                // const result: AuthResult = await authAPI.loginWithPasskey(email);
+                console.log('Passkey login for:', email);
+            } catch (error) {
+                console.error('Passkey login error:', error);
+            }
+        }
+    }
+
+    function handleBack(): void {
+        loginMode = 'magic-link';
     }
 
     // Clear errors when user starts typing
@@ -47,62 +70,55 @@
     }
 
     const isLoading = $derived(authState.isLoading || localLoading);
+
+    function handleContactSupport(): void {
+        console.log('Contact support clicked');
+    }
 </script>
 
 <div class="login-card">
-    {#if !magicLinkSent}
-        <h1 class="title">Log in to Scuffle</h1>
-        {#if authState.error}
-            {authState.error}
-        {/if}
-        <form onsubmit={handleSubmit} class="login-form">
-            <div class="form-group">
-                <label for="email" class="form-label">Email</label>
-                <input
-                    type="email"
-                    id="email"
-                    bind:value={email}
-                    oninput={handleEmailInput}
-                    class="form-input"
-                    placeholder="Enter your email"
-                    disabled={isLoading}
-                    required
-                    autocomplete="email"
-                />
-            </div>
-
-            <button type="submit" class="btn-primary" disabled={isLoading}>
-                {#if isLoading}
-                    <span class="loading-spinner-small"></span>
-                    Logging in...
-                {:else}
-                    Continue with email
-                {/if}
-            </button>
-        </form>
-        <SigninOptions />
-    {:else}
-        <h1 class="title">Check your email for a magic link to continue!</h1>
-        <p class="subtitle">We've sent you an email with a magic link to verify your account.</p>
-        <button
-            onclick={async () => {
-                console.log('clicked');
-                await authAPI.verifyMagicLink('1234567890');
-            }}
-        >
-            enter app: (updates local storage state to enter app)
-        </button>
+    {#if loginMode === 'magic-link'}
+        <MagicLinkForm onSubmit={handleMagicLinkSubmit} {isLoading} />
+        <SigninOptions onModeChange={(mode) => (loginMode = mode)} {isLoading} />
+    {:else if loginMode === 'password'}
+        <PasswordForm onSubmit={handlePasswordSubmit} onBack={handleBack} {isLoading} />
+    {:else if loginMode === 'passkey'}
+        <PasskeyForm onSubmit={handlePasskeySubmit} onBack={handleBack} {isLoading} />
+    {:else if loginMode === 'magic-link-sent'}
+        <MagicLinkSent email={userEmail} />
     {/if}
 </div>
+
 <div class="footer-links">
-    <a href="/log-in/password" class="link">
-        <button type="button" class="link" disabled={isLoading}> Login with password </button>
-    </a>
-    <a href="/contact-support" class="link">
-        <button type="button" class="link" disabled={isLoading}>
+    {#if loginMode === 'magic-link'}
+        <button
+            type="button"
+            onclick={() => (loginMode = 'password')}
+            class="link"
+            disabled={isLoading}
+        >
+            Login with password
+        </button>
+        <button type="button" onclick={handleContactSupport} class="link" disabled={isLoading}>
             Contact Support <IconArrowDialogLink />
         </button>
-    </a>
+    {:else if loginMode === 'password'}
+        <button
+            type="button"
+            onclick={() => console.log('Forgot password')}
+            class="link"
+            disabled={isLoading}
+        >
+            Forgot password?
+        </button>
+        <button type="button" onclick={handleContactSupport} class="link" disabled={isLoading}>
+            Contact Support <IconArrowDialogLink />
+        </button>
+    {:else if loginMode === 'passkey'}
+        <button type="button" onclick={handleContactSupport} class="link" disabled={isLoading}>
+            Contact Support <IconArrowDialogLink />
+        </button>
+    {/if}
 </div>
 <TurnstileOverlay bind:this={turnstileOverlayComponent} />
 
@@ -118,109 +134,34 @@
         text-align: center;
     }
 
-    .title {
-        font-size: 1.5rem;
-        font-weight: 600;
-        margin: 0 0 2rem 0;
-    }
-
-    .login-form {
-        margin-bottom: 0.5rem;
-    }
-
-    .form-group {
-        margin-bottom: 1.25rem;
-        text-align: left;
-    }
-
-    .form-label {
-        display: block;
-        font-size: 0.875rem;
-        font-weight: 500;
-        color: #374151;
-        margin-bottom: 0.375rem;
-    }
-
-    .form-input {
-        width: 100%;
-        padding: 0.75rem 1rem;
-        border: 1px solid #d1d5db;
-        border-radius: 0.5rem;
-        font-size: 1rem;
-        background: white;
-        box-sizing: border-box;
-        transition:
-            border-color 0.2s,
-            box-shadow 0.2s;
-    }
-
-    .form-input:focus {
-        outline: none;
-        border-color: #f59e0b;
-        box-shadow: 0 0 0 3px rgba(245, 158, 11, 0.1);
-    }
-
-    .form-input:disabled {
-        background: #f9fafb;
-        color: #9ca3af;
-        cursor: not-allowed;
-    }
-
-    .btn-primary {
-        width: 100%;
-        padding: 0.75rem;
-        background: var(--colors-yellow40);
-        color: var(--colors-yellow80);
-        border: none;
-        border-radius: 0.5rem;
-        font-size: 1rem;
-        font-weight: 500;
-        cursor: pointer;
-        transition: background-color 0.2s;
-        margin-bottom: 0.5rem;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        gap: 0.5rem;
-    }
-
-    .btn-primary:hover:not(:disabled) {
-        background: #d97706;
-    }
-
     .footer-links {
         display: flex;
         justify-content: space-between;
         margin: 2rem 0 1.25rem 0;
         gap: 1rem;
         align-items: center;
-
-        .link {
-            background: none;
-            border: none;
-            color: #6b7280;
-            cursor: pointer;
-            text-decoration: none;
-            display: flex;
-            align-items: center;
-            gap: 0.25rem;
-        }
-
-        .link:hover:not(:disabled) {
-            color: #374151;
-            text-decoration: underline;
-        }
-
-        .link:disabled {
-            color: #9ca3af;
-            cursor: not-allowed;
-        }
     }
 
-    .subtitle {
-        font-size: 0.875rem;
+    .link {
+        background: none;
+        border: none;
         color: #6b7280;
-        margin-bottom: 1.25rem;
+        cursor: pointer;
+        text-decoration: none;
+        display: flex;
+        align-items: center;
+        gap: 0.25rem;
+        font-size: 0.875rem;
+    }
+
+    .link:hover:not(:disabled) {
+        color: #374151;
+        text-decoration: underline;
+    }
+
+    .link:disabled {
+        color: #9ca3af;
+        cursor: not-allowed;
     }
 
     @media (max-width: 480px) {

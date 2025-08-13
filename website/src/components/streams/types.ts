@@ -1,6 +1,8 @@
 // Define types
 export type VideoStatus = 'live' | 'finished';
 
+export const DEFAULT_LOGIN_MODE: LoginMode = 'magic-link';
+
 export type LoginMode =
     | 'magic-link'
     | 'password'

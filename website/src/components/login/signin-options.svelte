@@ -2,11 +2,21 @@
     import { goto } from '$app/navigation';
     import IconGoogle from '$lib/images/icon-google.svelte';
     import IconLoginKey from '$lib/images/icon-login-key.svelte';
+    import type { LoginMode } from '$components/streams/types';
+    interface Props {
+        onModeChange: (mode: LoginMode) => void;
+        isLoading?: boolean;
+    }
 
-    let isLoading = $state(false);
+    let { onModeChange, isLoading = false }: Props = $props();
 
     function handleGoogleLogin() {
+        // TODO: Implement Google login
         console.log('Google login');
+    }
+
+    function handlePasskeyLogin() {
+        onModeChange('passkey');
     }
 </script>
 
@@ -16,12 +26,10 @@
     Continue with Google
 </button>
 
-<a href="/log-in/passkey" class="passkey-link">
-    <button type="button" class="btn-social passkey" disabled={isLoading}>
-        <IconLoginKey />
-        Continue with Passkey
-    </button>
-</a>
+<button type="button" onclick={handlePasskeyLogin} class="btn-social passkey" disabled={isLoading}>
+    <IconLoginKey />
+    Continue with Passkey
+</button>
 
 <style>
     .divider {

@@ -48,7 +48,7 @@
         <div class="login-page-container">
             <!-- TODO: Add protection to routes if not logged in -->
             <LoginHeader />
-            {@render children()}
+            <LoginPage />
             <LoginFooter />
         </div>
     {:else}

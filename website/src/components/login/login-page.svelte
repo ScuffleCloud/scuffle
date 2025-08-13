@@ -8,6 +8,8 @@
     import PasskeyForm from './passkey-form.svelte';
     import MagicLinkSent from './magic-link-sent.svelte';
     import type { LoginMode } from '$components/streams/types';
+    import ForgotPasswordForm from './forgot-password-form.svelte';
+    import PasswordResetSent from './password-reset-sent.svelte';
 
     let turnstileOverlayComponent: TurnstileOverlay | null = null;
     let loginMode = $state<LoginMode>('magic-link');
@@ -58,6 +60,20 @@
         }
     }
 
+    async function handleForgotPasswordSubmit(email: string): Promise<void> {
+        const token = await getToken();
+        if (email && token) {
+            try {
+                // const result: AuthResult = await authAPI.sendPasswordReset(email);
+                console.log('Password reset for:', email);
+                userEmail = email;
+                loginMode = 'password-reset-sent';
+            } catch (error) {
+                console.error('Password reset error:', error);
+            }
+        }
+    }
+
     function handleBack(): void {
         loginMode = 'magic-link';
     }
@@ -86,6 +102,10 @@
         <PasskeyForm onSubmit={handlePasskeySubmit} onBack={handleBack} {isLoading} />
     {:else if loginMode === 'magic-link-sent'}
         <MagicLinkSent email={userEmail} />
+    {:else if loginMode === 'forgot-password'}
+        <ForgotPasswordForm onSubmit={handleForgotPasswordSubmit} onBack={handleBack} {isLoading} />
+    {:else if loginMode === 'password-reset-sent'}
+        <PasswordResetSent email={userEmail} onBack={handleBack} />
     {/if}
 </div>
 
@@ -105,7 +125,7 @@
     {:else if loginMode === 'password'}
         <button
             type="button"
-            onclick={() => console.log('Forgot password')}
+            onclick={() => (loginMode = 'forgot-password')}
             class="link"
             disabled={isLoading}
         >

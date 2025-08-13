@@ -67,7 +67,7 @@ rust_library(
     version = "2.8.1",
     deps = [
         "@cargo_vendor__memchr-2.7.5//:memchr",
-        "@cargo_vendor__thiserror-2.0.12//:thiserror",
+        "@cargo_vendor__thiserror-2.0.14//:thiserror",
         "@cargo_vendor__ucd-trie-0.1.7//:ucd_trie",
     ],
 )

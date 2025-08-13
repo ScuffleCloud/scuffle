@@ -35,8 +35,8 @@ rust_library(
         ],
     ),
     crate_features = [
+        "aws_lc_rs",
         "logging",
-        "ring",
         "tls12",
     ],
     crate_root = "src/lib.rs",

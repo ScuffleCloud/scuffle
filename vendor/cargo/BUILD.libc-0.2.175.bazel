@@ -21,7 +21,7 @@ cargo_toml_env_vars(
 )
 
 rust_library(
-    name = "quinn_udp",
+    name = "libc",
     srcs = glob(
         include = ["**/*.rs"],
         allow_empty = True,
@@ -39,9 +39,23 @@ rust_library(
         ],
     ),
     crate_features = [
-        "log",
-        "tracing",
-    ],
+        "default",
+        "std",
+    ] + select({
+        "@rules_rust//rust/platform:aarch64-apple-darwin": [
+            "extra_traits",
+        ],
+        "@rules_rust//rust/platform:aarch64-unknown-linux-gnu": [
+            "extra_traits",
+        ],
+        "@rules_rust//rust/platform:x86_64-apple-darwin": [
+            "extra_traits",
+        ],
+        "@rules_rust//rust/platform:x86_64-unknown-linux-gnu": [
+            "extra_traits",
+        ],
+        "//conditions:default": [],
+    }),
     crate_root = "src/lib.rs",
     edition = "2021",
     rustc_env_files = [
@@ -52,7 +66,7 @@ rust_library(
     ],
     tags = [
         "cargo-bazel",
-        "crate-name=quinn-udp",
+        "crate-name=libc",
         "manual",
         "noclippy",
         "norustfmt",
@@ -67,36 +81,10 @@ rust_library(
         "@rules_rust//rust/platform:x86_64-unknown-linux-gnu": [],
         "//conditions:default": ["@platforms//:incompatible"],
     }),
-    version = "0.5.13",
+    version = "0.2.175",
     deps = [
-        "@cargo_vendor__libc-0.2.175//:libc",
-        "@cargo_vendor__quinn-udp-0.5.13//:build_script_build",
-        "@cargo_vendor__tracing-0.1.41//:tracing",
-    ] + select({
-        "@rules_rust//rust/platform:aarch64-apple-darwin": [
-            "@cargo_vendor__socket2-0.5.10//:socket2",  # cfg(not(all(target_family = "wasm", target_os = "unknown")))
-        ],
-        "@rules_rust//rust/platform:aarch64-pc-windows-msvc": [
-            "@cargo_vendor__once_cell-1.21.3//:once_cell",  # cfg(windows)
-            "@cargo_vendor__socket2-0.5.10//:socket2",  # cfg(not(all(target_family = "wasm", target_os = "unknown")))
-            "@cargo_vendor__windows-sys-0.59.0//:windows_sys",  # cfg(windows)
-        ],
-        "@rules_rust//rust/platform:aarch64-unknown-linux-gnu": [
-            "@cargo_vendor__socket2-0.5.10//:socket2",  # cfg(not(all(target_family = "wasm", target_os = "unknown")))
-        ],
-        "@rules_rust//rust/platform:x86_64-apple-darwin": [
-            "@cargo_vendor__socket2-0.5.10//:socket2",  # cfg(not(all(target_family = "wasm", target_os = "unknown")))
-        ],
-        "@rules_rust//rust/platform:x86_64-pc-windows-msvc": [
-            "@cargo_vendor__once_cell-1.21.3//:once_cell",  # cfg(windows)
-            "@cargo_vendor__socket2-0.5.10//:socket2",  # cfg(not(all(target_family = "wasm", target_os = "unknown")))
-            "@cargo_vendor__windows-sys-0.59.0//:windows_sys",  # cfg(windows)
-        ],
-        "@rules_rust//rust/platform:x86_64-unknown-linux-gnu": [
-            "@cargo_vendor__socket2-0.5.10//:socket2",  # cfg(not(all(target_family = "wasm", target_os = "unknown")))
-        ],
-        "//conditions:default": [],
-    }),
+        "@cargo_vendor__libc-0.2.175//:build_script_build",
+    ],
 )
 
 cargo_build_script(
@@ -119,9 +107,23 @@ cargo_build_script(
         ],
     ),
     crate_features = [
-        "log",
-        "tracing",
-    ],
+        "default",
+        "std",
+    ] + select({
+        "@rules_rust//rust/platform:aarch64-apple-darwin": [
+            "extra_traits",
+        ],
+        "@rules_rust//rust/platform:aarch64-unknown-linux-gnu": [
+            "extra_traits",
+        ],
+        "@rules_rust//rust/platform:x86_64-apple-darwin": [
+            "extra_traits",
+        ],
+        "@rules_rust//rust/platform:x86_64-unknown-linux-gnu": [
+            "extra_traits",
+        ],
+        "//conditions:default": [],
+    }),
     crate_name = "build_script_build",
     crate_root = "build.rs",
     data = glob(
@@ -137,7 +139,7 @@ cargo_build_script(
         ],
     ),
     edition = "2021",
-    pkg_name = "quinn-udp",
+    pkg_name = "libc",
     rustc_env_files = [
         ":cargo_toml_env_vars",
     ],
@@ -146,16 +148,13 @@ cargo_build_script(
     ],
     tags = [
         "cargo-bazel",
-        "crate-name=quinn-udp",
+        "crate-name=libc",
         "manual",
         "noclippy",
         "norustfmt",
     ],
-    version = "0.5.13",
+    version = "0.2.175",
     visibility = ["//visibility:private"],
-    deps = [
-        "@cargo_vendor__cfg_aliases-0.2.1//:cfg_aliases",
-    ],
 )
 
 alias(

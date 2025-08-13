@@ -43,9 +43,10 @@ rust_library(
         ],
     ),
     crate_features = [
+        "aws-lc-rs",
+        "aws_lc_rs",
         "log",
         "logging",
-        "ring",
         "std",
         "tls12",
     ],
@@ -76,9 +77,9 @@ rust_library(
     }),
     version = "0.23.31",
     deps = [
+        "@cargo_vendor__aws-lc-rs-1.13.3//:aws_lc_rs",
         "@cargo_vendor__log-0.4.27//:log",
         "@cargo_vendor__once_cell-1.21.3//:once_cell",
-        "@cargo_vendor__ring-0.17.14//:ring",
         "@cargo_vendor__rustls-0.23.31//:build_script_build",
         "@cargo_vendor__rustls-pki-types-1.12.0//:rustls_pki_types",
         "@cargo_vendor__rustls-webpki-0.103.4//:webpki",
@@ -107,9 +108,10 @@ cargo_build_script(
         ],
     ),
     crate_features = [
+        "aws-lc-rs",
+        "aws_lc_rs",
         "log",
         "logging",
-        "ring",
         "std",
         "tls12",
     ],
@@ -129,7 +131,7 @@ cargo_build_script(
     ),
     edition = "2021",
     link_deps = [
-        "@cargo_vendor__ring-0.17.14//:ring",
+        "@cargo_vendor__aws-lc-rs-1.13.3//:aws_lc_rs",
     ],
     pkg_name = "rustls",
     rustc_env_files = [

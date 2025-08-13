@@ -7,7 +7,7 @@
 ###############################################################################
 
 load("@rules_rust//cargo:defs.bzl", "cargo_toml_env_vars")
-load("@rules_rust//rust:defs.bzl", "rust_library")
+load("@rules_rust//rust:defs.bzl", "rust_proc_macro")
 
 package(default_visibility = ["//visibility:public"])
 
@@ -16,8 +16,8 @@ cargo_toml_env_vars(
     src = "Cargo.toml",
 )
 
-rust_library(
-    name = "clap",
+rust_proc_macro(
+    name = "clap_derive",
     srcs = glob(
         include = ["**/*.rs"],
         allow_empty = True,
@@ -35,21 +35,10 @@ rust_library(
         ],
     ),
     crate_features = [
-        "color",
         "default",
-        "derive",
-        "env",
-        "error-context",
-        "help",
-        "std",
-        "suggestions",
-        "usage",
     ],
     crate_root = "src/lib.rs",
     edition = "2021",
-    proc_macro_deps = [
-        "@cargo_vendor__clap_derive-4.5.41//:clap_derive",
-    ],
     rustc_env_files = [
         ":cargo_toml_env_vars",
     ],
@@ -58,7 +47,7 @@ rust_library(
     ],
     tags = [
         "cargo-bazel",
-        "crate-name=clap",
+        "crate-name=clap_derive",
         "manual",
         "noclippy",
         "norustfmt",
@@ -67,14 +56,16 @@ rust_library(
         "@rules_rust//rust/platform:aarch64-apple-darwin": [],
         "@rules_rust//rust/platform:aarch64-pc-windows-msvc": [],
         "@rules_rust//rust/platform:aarch64-unknown-linux-gnu": [],
-        "@rules_rust//rust/platform:wasm32-unknown-unknown": [],
         "@rules_rust//rust/platform:x86_64-apple-darwin": [],
         "@rules_rust//rust/platform:x86_64-pc-windows-msvc": [],
         "@rules_rust//rust/platform:x86_64-unknown-linux-gnu": [],
         "//conditions:default": ["@platforms//:incompatible"],
     }),
-    version = "4.5.43",
+    version = "4.5.45",
     deps = [
-        "@cargo_vendor__clap_builder-4.5.43//:clap_builder",
+        "@cargo_vendor__heck-0.5.0//:heck",
+        "@cargo_vendor__proc-macro2-1.0.97//:proc_macro2",
+        "@cargo_vendor__quote-1.0.40//:quote",
+        "@cargo_vendor__syn-2.0.105//:syn",
     ],
 )

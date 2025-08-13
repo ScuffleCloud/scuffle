@@ -6,10 +6,10 @@ load("@rules_rust//rust:rust_common.bzl", "COMMON_PROVIDERS")
 def _transition_alias_impl(ctx):
     # `ctx.attr.actual` is a list of 1 item due to the transition
     output = ctx.actions.declare_file("{}_{}".format(ctx.label.name, ctx.executable.actual.basename))
-    ctx.actions.symlink(output=output, target_file=ctx.executable.actual, is_executable=True)
+    ctx.actions.symlink(output = output, target_file = ctx.executable.actual, is_executable = True)
 
     return [DefaultInfo(
-        executable = output
+        executable = output,
     )]
 
 def _change_compilation_mode(compilation_mode):

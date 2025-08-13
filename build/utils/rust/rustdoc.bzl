@@ -806,7 +806,7 @@ rustdoc_test = rule(
             allow_single_file = True,
             cfg = "exec",
         ),
-        "_nextest_profile": attr.label(mandatory = False, default = "//:test_profile"),
+        "_nextest_profile": attr.label(mandatory = False, default = "//settings:test_profile"),
         "_nextest_config": attr.label(
             default = "//:.config/nextest.toml",
             allow_single_file = True,

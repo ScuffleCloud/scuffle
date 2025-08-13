@@ -147,7 +147,7 @@ def scuffle_package(
         workspace_root = None
         if test_insta:
             test_data += native.glob(["src/**/*"])
-            workspace_root = "//:test_workspace_root"
+            workspace_root = "//settings:test_workspace_root"
 
         all_test_deps = all_crate_deps(normal = True, normal_dev = True, package_name = package_name, features = features) + deps + test_deps + ["@rules_rust//rust/runfiles"]
         all_test_proc_macro_deps = all_crate_deps(proc_macro = True, proc_macro_dev = True, package_name = package_name, features = features) + proc_macro_deps + test_proc_macro_deps
@@ -156,6 +156,7 @@ def scuffle_package(
             name = name + "_test",
             workspace_root = workspace_root,
             data = test_data,
+            compile_data = ["//settings:test_rustc_flags"],
             env = test_env,
             tags = test_tags,
             crate = colon_name,
@@ -168,6 +169,7 @@ def scuffle_package(
                 "--cfg=bazel_runfiles",
                 "--cfg=coverage_nightly",
                 "-Clink-arg=-Wl,-znostart-stop-gc",
+                "@$(location //settings:test_rustc_flags)",
             ],
             rustc_env = {
                 "RUSTC_BOOTSTRAP": "1",

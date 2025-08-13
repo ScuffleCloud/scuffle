@@ -67,16 +67,16 @@ rust_library(
         "@cargo_vendor__shlex-1.3.0//:shlex",
     ] + select({
         "@rules_rust//rust/platform:aarch64-apple-darwin": [
-            "@cargo_vendor__libc-0.2.174//:libc",  # cfg(unix)
+            "@cargo_vendor__libc-0.2.175//:libc",  # cfg(unix)
         ],
         "@rules_rust//rust/platform:aarch64-unknown-linux-gnu": [
-            "@cargo_vendor__libc-0.2.174//:libc",  # cfg(unix)
+            "@cargo_vendor__libc-0.2.175//:libc",  # cfg(unix)
         ],
         "@rules_rust//rust/platform:x86_64-apple-darwin": [
-            "@cargo_vendor__libc-0.2.174//:libc",  # cfg(unix)
+            "@cargo_vendor__libc-0.2.175//:libc",  # cfg(unix)
         ],
         "@rules_rust//rust/platform:x86_64-unknown-linux-gnu": [
-            "@cargo_vendor__libc-0.2.174//:libc",  # cfg(unix)
+            "@cargo_vendor__libc-0.2.175//:libc",  # cfg(unix)
         ],
         "//conditions:default": [],
     }),

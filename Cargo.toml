@@ -86,3 +86,4 @@ debug = true
 
 [patch.crates-io]
 rusty_ffmpeg = { git = "https://github.com/TroyKomodo/rusty_ffmpeg.git", rev = "cca349e5cc0764f00112c6fc6066f831c601a9b9"}
+reqwest = { git = "https://github.com/TroyKomodo/reqwest.git", rev = "1b659fc2ec02363a04dcdc08d1989560ed5a5e7f" }

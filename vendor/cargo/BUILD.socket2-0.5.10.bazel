@@ -61,22 +61,22 @@ rust_library(
     version = "0.5.10",
     deps = select({
         "@rules_rust//rust/platform:aarch64-apple-darwin": [
-            "@cargo_vendor__libc-0.2.174//:libc",  # cfg(unix)
+            "@cargo_vendor__libc-0.2.175//:libc",  # cfg(unix)
         ],
         "@rules_rust//rust/platform:aarch64-pc-windows-msvc": [
             "@cargo_vendor__windows-sys-0.52.0//:windows_sys",  # cfg(windows)
         ],
         "@rules_rust//rust/platform:aarch64-unknown-linux-gnu": [
-            "@cargo_vendor__libc-0.2.174//:libc",  # cfg(unix)
+            "@cargo_vendor__libc-0.2.175//:libc",  # cfg(unix)
         ],
         "@rules_rust//rust/platform:x86_64-apple-darwin": [
-            "@cargo_vendor__libc-0.2.174//:libc",  # cfg(unix)
+            "@cargo_vendor__libc-0.2.175//:libc",  # cfg(unix)
         ],
         "@rules_rust//rust/platform:x86_64-pc-windows-msvc": [
             "@cargo_vendor__windows-sys-0.52.0//:windows_sys",  # cfg(windows)
         ],
         "@rules_rust//rust/platform:x86_64-unknown-linux-gnu": [
-            "@cargo_vendor__libc-0.2.174//:libc",  # cfg(unix)
+            "@cargo_vendor__libc-0.2.175//:libc",  # cfg(unix)
         ],
         "//conditions:default": [],
     }),

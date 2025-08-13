@@ -113,6 +113,9 @@
     </form>
 </div>
 <div class="footer-links">
+    <a href="/log-in/forgot-password" class="link">
+        <button type="button" class="link" disabled={isLoading}>Forgot password?</button>
+    </a>
     <button type="button" onclick={handleContactSupport} class="link" disabled={isLoading}>
         Contact Support <IconArrowDialogLink />
     </button>

@@ -17,7 +17,7 @@ cargo_toml_env_vars(
 )
 
 rust_proc_macro(
-    name = "bon_macros",
+    name = "thiserror_impl",
     srcs = glob(
         include = ["**/*.rs"],
         allow_empty = True,
@@ -34,14 +34,8 @@ rust_proc_macro(
             "WORKSPACE.bazel",
         ],
     ),
-    crate_features = [
-        "default",
-    ],
     crate_root = "src/lib.rs",
     edition = "2021",
-    proc_macro_deps = [
-        "@cargo_vendor__rustversion-1.0.22//:rustversion",
-    ],
     rustc_env_files = [
         ":cargo_toml_env_vars",
     ],
@@ -50,7 +44,7 @@ rust_proc_macro(
     ],
     tags = [
         "cargo-bazel",
-        "crate-name=bon-macros",
+        "crate-name=thiserror-impl",
         "manual",
         "noclippy",
         "norustfmt",
@@ -64,13 +58,10 @@ rust_proc_macro(
         "@rules_rust//rust/platform:x86_64-unknown-linux-gnu": [],
         "//conditions:default": ["@platforms//:incompatible"],
     }),
-    version = "3.6.5",
+    version = "2.0.14",
     deps = [
-        "@cargo_vendor__darling-0.21.1//:darling",
-        "@cargo_vendor__ident_case-1.0.1//:ident_case",
-        "@cargo_vendor__prettyplease-0.2.36//:prettyplease",
-        "@cargo_vendor__proc-macro2-1.0.95//:proc_macro2",
+        "@cargo_vendor__proc-macro2-1.0.97//:proc_macro2",
         "@cargo_vendor__quote-1.0.40//:quote",
-        "@cargo_vendor__syn-2.0.104//:syn",
+        "@cargo_vendor__syn-2.0.105//:syn",
     ],
 )

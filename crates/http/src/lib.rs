@@ -92,6 +92,19 @@ mod tests {
     use crate::HttpServer;
     use crate::service::{fn_http_service, service_clone_factory};
 
+    fn install_provider() {
+        #[cfg(feature = "tls-rustls")]
+        {
+            static ONCE: std::sync::Once = std::sync::Once::new();
+
+            ONCE.call_once(|| {
+                rustls::crypto::aws_lc_rs::default_provider()
+                    .install_default()
+                    .expect("failed to install aws lc provider");
+            });
+        }
+    }
+
     fn get_available_addr() -> std::io::Result<std::net::SocketAddr> {
         let listener = std::net::TcpListener::bind("127.0.0.1:0")?;
         listener.local_addr()
@@ -123,6 +136,8 @@ mod tests {
         S::Bind: crate::server::http_server_builder::IsUnset,
         S::Ctx: crate::server::http_server_builder::IsUnset,
     {
+        install_provider();
+
         let addr = get_available_addr().expect("failed to get available address");
         let (ctx, handler) = scuffle_context::Context::new();
 
@@ -188,6 +203,8 @@ mod tests {
         S::Bind: crate::server::http_server_builder::IsUnset,
         S::Ctx: crate::server::http_server_builder::IsUnset,
     {
+        install_provider();
+
         let addr = get_available_addr().expect("failed to get available address");
         let (ctx, handler) = scuffle_context::Context::new();
 
@@ -265,6 +282,8 @@ mod tests {
 
     #[cfg(feature = "tls-rustls")]
     fn rustls_config() -> rustls::ServerConfig {
+        install_provider();
+
         let certfile = std::fs::File::open(file_path("cert.pem")).expect("cert not found");
         let certs = rustls_pemfile::certs(&mut std::io::BufReader::new(certfile))
             .collect::<Result<Vec<_>, _>>()

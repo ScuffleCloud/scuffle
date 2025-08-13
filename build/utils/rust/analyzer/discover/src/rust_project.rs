@@ -285,7 +285,9 @@ pub fn assemble_rust_project(
         let mut runnables = Vec::new();
 
         if let Some(info) = &c.info {
-            if let Some(crate_label) = &info.crate_label && matches!(target_kind, TargetKind::Bin) {
+            if let Some(crate_label) = &info.crate_label
+                && matches!(target_kind, TargetKind::Bin)
+            {
                 runnables.push(Runnable {
                     program: bazel.to_string(),
                     args: vec!["run".to_string(), format!("//{crate_label}")],

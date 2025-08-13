@@ -67,9 +67,9 @@ rust_library(
         "@rules_rust//rust/platform:x86_64-unknown-linux-gnu": [],
         "//conditions:default": ["@platforms//:incompatible"],
     }),
-    version = "1.0.95",
+    version = "1.0.97",
     deps = [
-        "@cargo_vendor__proc-macro2-1.0.95//:build_script_build",
+        "@cargo_vendor__proc-macro2-1.0.97//:build_script_build",
         "@cargo_vendor__unicode-ident-1.0.18//:unicode_ident",
     ],
 )
@@ -126,7 +126,7 @@ cargo_build_script(
         "noclippy",
         "norustfmt",
     ],
-    version = "1.0.95",
+    version = "1.0.97",
     visibility = ["//visibility:private"],
 )
 

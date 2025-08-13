@@ -21,7 +21,7 @@ cargo_toml_env_vars(
 )
 
 rust_library(
-    name = "rayon_core",
+    name = "aws_lc_rs",
     srcs = glob(
         include = ["**/*.rs"],
         allow_empty = True,
@@ -38,6 +38,10 @@ rust_library(
             "WORKSPACE.bazel",
         ],
     ),
+    crate_features = [
+        "aws-lc-sys",
+        "prebuilt-nasm",
+    ],
     crate_root = "src/lib.rs",
     edition = "2021",
     rustc_env_files = [
@@ -48,7 +52,7 @@ rust_library(
     ],
     tags = [
         "cargo-bazel",
-        "crate-name=rayon-core",
+        "crate-name=aws-lc-rs",
         "manual",
         "noclippy",
         "norustfmt",
@@ -63,11 +67,11 @@ rust_library(
         "@rules_rust//rust/platform:x86_64-unknown-linux-gnu": [],
         "//conditions:default": ["@platforms//:incompatible"],
     }),
-    version = "1.12.1",
+    version = "1.13.3",
     deps = [
-        "@cargo_vendor__crossbeam-deque-0.8.6//:crossbeam_deque",
-        "@cargo_vendor__crossbeam-utils-0.8.21//:crossbeam_utils",
-        "@cargo_vendor__rayon-core-1.12.1//:build_script_build",
+        "@cargo_vendor__aws-lc-rs-1.13.3//:build_script_build",
+        "@cargo_vendor__aws-lc-sys-0.30.0//:aws_lc_sys",
+        "@cargo_vendor__zeroize-1.8.1//:zeroize",
     ],
 )
 
@@ -90,6 +94,10 @@ cargo_build_script(
             "WORKSPACE.bazel",
         ],
     ),
+    crate_features = [
+        "aws-lc-sys",
+        "prebuilt-nasm",
+    ],
     crate_name = "build_script_build",
     crate_root = "build.rs",
     data = glob(
@@ -105,8 +113,11 @@ cargo_build_script(
         ],
     ),
     edition = "2021",
-    links = "rayon-core",
-    pkg_name = "rayon-core",
+    link_deps = [
+        "@cargo_vendor__aws-lc-sys-0.30.0//:aws_lc_sys",
+    ],
+    links = "aws_lc_rs_1_13_3_sys",
+    pkg_name = "aws-lc-rs",
     rustc_env_files = [
         ":cargo_toml_env_vars",
     ],
@@ -115,12 +126,12 @@ cargo_build_script(
     ],
     tags = [
         "cargo-bazel",
-        "crate-name=rayon-core",
+        "crate-name=aws-lc-rs",
         "manual",
         "noclippy",
         "norustfmt",
     ],
-    version = "1.12.1",
+    version = "1.13.3",
     visibility = ["//visibility:private"],
 )
 

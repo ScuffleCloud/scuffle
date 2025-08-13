@@ -96,17 +96,17 @@ h3-quinn = { default-features = false, optional = true, version = "0.0.10" }
 quinn = { default-features = false, features = [
   "platform-verifier",
   "runtime-tokio",
-  "rustls-ring",
+  "rustls-aws-lc-rs",
 ], optional = true, version = "0.11.6" }
 
 # TLS
 rustls = { default-features = false, features = [
-  "ring",
+  "aws_lc_rs",
   "std",
   "tls12",
 ], optional = true, version = "0.23.21" }
 tokio-rustls = { default-features = false, features = [
-  "ring",
+  "aws_lc_rs",
   "tls12",
 ], optional = true, version = "0.26.1" }
 
@@ -123,7 +123,7 @@ axum = { features = ["ws"], version = "0.8.1" }
 reqwest = { default-features = false, features = [
   "http2",
   "http3",
-  "rustls-tls",
+  "rustls-tls-no-provider",
 ], version = "0.12.15" }
 rustls-pemfile = "2.2.0"
 scuffle-future-ext = { path = "../future-ext" }

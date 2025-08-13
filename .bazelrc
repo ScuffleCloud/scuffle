@@ -119,6 +119,9 @@ common --@rules_rust//rust/settings:rustfmt.toml=//:rustfmt.toml
 # Use sh_toolchain for `/usr/bin/env bash` resolution
 common --@rules_rust//rust/settings:experimental_use_sh_toolchain_for_bootstrap_process_wrapper
 
+# disable source transform
+common --@rules_rust//rust/settings:incompatible_do_not_transform_sources
+
 ###############################################################################
 ## Remote configuration
 ###############################################################################

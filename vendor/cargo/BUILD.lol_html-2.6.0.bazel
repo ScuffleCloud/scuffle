@@ -70,6 +70,6 @@ rust_library(
         "@cargo_vendor__mime-0.3.17//:mime",
         "@cargo_vendor__precomputed-hash-0.1.1//:precomputed_hash",
         "@cargo_vendor__selectors-0.30.0//:selectors",
-        "@cargo_vendor__thiserror-2.0.12//:thiserror",
+        "@cargo_vendor__thiserror-2.0.14//:thiserror",
     ],
 )

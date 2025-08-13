@@ -25,6 +25,13 @@ crates_vendor(
                 ],
             ),
         ],
+        "aws-lc-sys": [
+            crate.annotation(
+                build_script_env = {
+                    "CFLAGS": "$(CFLAGS) -fuse-ld=lld -Wno-error -w",
+                },
+            ),
+        ],
     },
     render_config = render_config(
         default_alias_rule = "opt",

@@ -87,8 +87,8 @@ rust_library(
     version = "0.2.36",
     deps = [
         "@cargo_vendor__prettyplease-0.2.36//:build_script_build",
-        "@cargo_vendor__proc-macro2-1.0.95//:proc_macro2",
-        "@cargo_vendor__syn-2.0.104//:syn",
+        "@cargo_vendor__proc-macro2-1.0.97//:proc_macro2",
+        "@cargo_vendor__syn-2.0.105//:syn",
     ],
 )
 

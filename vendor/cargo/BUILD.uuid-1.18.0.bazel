@@ -7,7 +7,7 @@
 ###############################################################################
 
 load("@rules_rust//cargo:defs.bzl", "cargo_toml_env_vars")
-load("@rules_rust//rust:defs.bzl", "rust_proc_macro")
+load("@rules_rust//rust:defs.bzl", "rust_library")
 
 package(default_visibility = ["//visibility:public"])
 
@@ -16,8 +16,8 @@ cargo_toml_env_vars(
     src = "Cargo.toml",
 )
 
-rust_proc_macro(
-    name = "clap_derive",
+rust_library(
+    name = "uuid",
     srcs = glob(
         include = ["**/*.rs"],
         allow_empty = True,
@@ -36,9 +36,12 @@ rust_proc_macro(
     ),
     crate_features = [
         "default",
+        "rng",
+        "std",
+        "v4",
     ],
     crate_root = "src/lib.rs",
-    edition = "2021",
+    edition = "2018",
     rustc_env_files = [
         ":cargo_toml_env_vars",
     ],
@@ -47,7 +50,7 @@ rust_proc_macro(
     ],
     tags = [
         "cargo-bazel",
-        "crate-name=clap_derive",
+        "crate-name=uuid",
         "manual",
         "noclippy",
         "norustfmt",
@@ -56,16 +59,32 @@ rust_proc_macro(
         "@rules_rust//rust/platform:aarch64-apple-darwin": [],
         "@rules_rust//rust/platform:aarch64-pc-windows-msvc": [],
         "@rules_rust//rust/platform:aarch64-unknown-linux-gnu": [],
+        "@rules_rust//rust/platform:wasm32-unknown-unknown": [],
         "@rules_rust//rust/platform:x86_64-apple-darwin": [],
         "@rules_rust//rust/platform:x86_64-pc-windows-msvc": [],
         "@rules_rust//rust/platform:x86_64-unknown-linux-gnu": [],
         "//conditions:default": ["@platforms//:incompatible"],
     }),
-    version = "4.5.41",
-    deps = [
-        "@cargo_vendor__heck-0.5.0//:heck",
-        "@cargo_vendor__proc-macro2-1.0.95//:proc_macro2",
-        "@cargo_vendor__quote-1.0.40//:quote",
-        "@cargo_vendor__syn-2.0.104//:syn",
-    ],
+    version = "1.18.0",
+    deps = select({
+        "@rules_rust//rust/platform:aarch64-apple-darwin": [
+            "@cargo_vendor__getrandom-0.3.3//:getrandom",  # cfg(not(all(target_arch = "wasm32", any(target_os = "unknown", target_os = "none"))))
+        ],
+        "@rules_rust//rust/platform:aarch64-pc-windows-msvc": [
+            "@cargo_vendor__getrandom-0.3.3//:getrandom",  # cfg(not(all(target_arch = "wasm32", any(target_os = "unknown", target_os = "none"))))
+        ],
+        "@rules_rust//rust/platform:aarch64-unknown-linux-gnu": [
+            "@cargo_vendor__getrandom-0.3.3//:getrandom",  # cfg(not(all(target_arch = "wasm32", any(target_os = "unknown", target_os = "none"))))
+        ],
+        "@rules_rust//rust/platform:x86_64-apple-darwin": [
+            "@cargo_vendor__getrandom-0.3.3//:getrandom",  # cfg(not(all(target_arch = "wasm32", any(target_os = "unknown", target_os = "none"))))
+        ],
+        "@rules_rust//rust/platform:x86_64-pc-windows-msvc": [
+            "@cargo_vendor__getrandom-0.3.3//:getrandom",  # cfg(not(all(target_arch = "wasm32", any(target_os = "unknown", target_os = "none"))))
+        ],
+        "@rules_rust//rust/platform:x86_64-unknown-linux-gnu": [
+            "@cargo_vendor__getrandom-0.3.3//:getrandom",  # cfg(not(all(target_arch = "wasm32", any(target_os = "unknown", target_os = "none"))))
+        ],
+        "//conditions:default": [],
+    }),
 )

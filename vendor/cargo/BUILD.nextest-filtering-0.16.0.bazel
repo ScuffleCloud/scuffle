@@ -73,7 +73,7 @@ rust_library(
         "@cargo_vendor__regex-1.11.1//:regex",
         "@cargo_vendor__regex-syntax-0.8.5//:regex_syntax",
         "@cargo_vendor__smol_str-0.3.2//:smol_str",
-        "@cargo_vendor__thiserror-2.0.12//:thiserror",
+        "@cargo_vendor__thiserror-2.0.14//:thiserror",
         "@cargo_vendor__winnow-0.7.12//:winnow",
     ],
 )

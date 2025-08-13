@@ -17,7 +17,7 @@ cargo_toml_env_vars(
 )
 
 rust_library(
-    name = "rayon",
+    name = "cmake",
     srcs = glob(
         include = ["**/*.rs"],
         allow_empty = True,
@@ -44,7 +44,7 @@ rust_library(
     ],
     tags = [
         "cargo-bazel",
-        "crate-name=rayon",
+        "crate-name=cmake",
         "manual",
         "noclippy",
         "norustfmt",
@@ -53,15 +53,13 @@ rust_library(
         "@rules_rust//rust/platform:aarch64-apple-darwin": [],
         "@rules_rust//rust/platform:aarch64-pc-windows-msvc": [],
         "@rules_rust//rust/platform:aarch64-unknown-linux-gnu": [],
-        "@rules_rust//rust/platform:wasm32-unknown-unknown": [],
         "@rules_rust//rust/platform:x86_64-apple-darwin": [],
         "@rules_rust//rust/platform:x86_64-pc-windows-msvc": [],
         "@rules_rust//rust/platform:x86_64-unknown-linux-gnu": [],
         "//conditions:default": ["@platforms//:incompatible"],
     }),
-    version = "1.10.0",
+    version = "0.1.54",
     deps = [
-        "@cargo_vendor__either-1.15.0//:either",
-        "@cargo_vendor__rayon-core-1.12.1//:rayon_core",
+        "@cargo_vendor__cc-1.2.32//:cc",
     ],
 )

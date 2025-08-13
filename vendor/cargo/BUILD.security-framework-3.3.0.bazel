@@ -67,7 +67,7 @@ rust_library(
         "@cargo_vendor__bitflags-2.9.1//:bitflags",
         "@cargo_vendor__core-foundation-0.10.1//:core_foundation",
         "@cargo_vendor__core-foundation-sys-0.8.7//:core_foundation_sys",
-        "@cargo_vendor__libc-0.2.174//:libc",
+        "@cargo_vendor__libc-0.2.175//:libc",
         "@cargo_vendor__security-framework-sys-2.14.0//:security_framework_sys",
     ],
 )

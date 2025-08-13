@@ -53,6 +53,7 @@ rust_library(
         "Node",
         "ReadableStream",
         "Request",
+        "RequestCache",
         "RequestCredentials",
         "RequestInit",
         "RequestMode",

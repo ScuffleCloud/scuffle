@@ -72,7 +72,7 @@ rust_library(
     version = "1.2.4",
     deps = [
         "@cargo_vendor__newtype-uuid-1.2.4//:build_script_build",
-        "@cargo_vendor__uuid-1.17.0//:uuid",
+        "@cargo_vendor__uuid-1.18.0//:uuid",
     ],
 )
 

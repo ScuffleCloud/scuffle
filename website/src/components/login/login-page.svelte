@@ -7,12 +7,32 @@
     import PasswordForm from './password-form.svelte';
     import PasskeyForm from './passkey-form.svelte';
     import MagicLinkSent from './magic-link-sent.svelte';
-    import type { LoginMode } from '$components/streams/types';
+    import { DEFAULT_LOGIN_MODE, type LoginMode } from '$components/streams/types';
     import ForgotPasswordForm from './forgot-password-form.svelte';
     import PasswordResetSent from './password-reset-sent.svelte';
 
     let turnstileOverlayComponent: TurnstileOverlay | null = null;
-    let loginMode = $state<LoginMode>('magic-link');
+    let loginMode = $state<LoginMode>(DEFAULT_LOGIN_MODE);
+
+    $effect(() => {
+        history.pushState({ loginMode }, '', window.location.href);
+    });
+
+    $effect(() => {
+        function handlePopState(event: PopStateEvent) {
+            if (event.state?.loginMode) {
+                loginMode = event.state.loginMode;
+            } else {
+                loginMode = DEFAULT_LOGIN_MODE;
+            }
+        }
+
+        window.addEventListener('popstate', handlePopState);
+
+        return () => {
+            window.removeEventListener('popstate', handlePopState);
+        };
+    });
 
     const getToken = async () => await turnstileOverlayComponent?.getToken();
 

@@ -49,24 +49,4 @@
         margin: 0;
         line-height: 1.4;
     }
-
-    .btn-secondary {
-        width: 100%;
-        padding: 0.75rem;
-        background: white;
-        color: #374151;
-        border: 1px solid #d1d5db;
-        border-radius: 0.5rem;
-        font-size: 1rem;
-        font-weight: 500;
-        cursor: pointer;
-        transition:
-            background-color 0.2s,
-            border-color 0.2s;
-    }
-
-    .btn-secondary:hover {
-        background: #f9fafb;
-        border-color: #9ca3af;
-    }
 </style>

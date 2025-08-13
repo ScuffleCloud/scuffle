@@ -14,12 +14,11 @@
     let turnstileOverlayComponent: TurnstileOverlay | null = null;
     let loginMode = $state<LoginMode>(DEFAULT_LOGIN_MODE);
 
-    $effect(() => {
-        history.pushState({ loginMode }, '', window.location.href);
-    });
-
+    // Manage routing here. Could add shallow routing in the future if we feel necessary
+    let isRestoringFromHistory = false;
     $effect(() => {
         function handlePopState(event: PopStateEvent) {
+            isRestoringFromHistory = true;
             if (event.state?.loginMode) {
                 loginMode = event.state.loginMode;
             } else {
@@ -28,6 +27,11 @@
         }
 
         window.addEventListener('popstate', handlePopState);
+
+        if (!isRestoringFromHistory) {
+            history.pushState({ loginMode }, '', window.location.href);
+        }
+        isRestoringFromHistory = false;
 
         return () => {
             window.removeEventListener('popstate', handlePopState);

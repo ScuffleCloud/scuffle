@@ -54,12 +54,9 @@ grind *targets="//...":
     set -euxo pipefail
 
     output_base=$(bazel info output_base)
-
     targets=$(bazel query 'kind("nextest_test rule", set({{targets}}))')
-    target_runner_value="$(which valgrind) --error-exitcode=1 --leak-check=full --show-leak-kinds=definite --errors-for-leak-kinds=definite --track-origins=yes"
-    target_runner_name="CARGO_TARGET_X86_64_UNKNOWN_LINUX_GNU_RUNNER"
 
-    bazel --output_base="${output_base}_grind" test ${targets} --test_env="${target_runner_name}=${target_runner_value}" --//settings:test_rustc_flags="--cfg=valgrind"
+    bazel --output_base="${output_base}_grind" test ${targets} --//settings:test_rustc_flags="--cfg=valgrind" --//settings:test_valgrind
 
 alias docs := doc
 

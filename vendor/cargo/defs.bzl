@@ -580,6 +580,7 @@ _NORMAL_DEPENDENCIES = {
             _COMMON_CONDITION: {
                 "camino": Label("@cargo_vendor//:camino-1.1.11"),
                 "clap": Label("@cargo_vendor//:clap-4.5.45"),
+                "target-spec": Label("@cargo_vendor//:target-spec-3.5.0"),
             },
         },
     },
@@ -9407,6 +9408,7 @@ def crate_repositories():
         struct(repo = "cargo_vendor__sha2-0.10.9", is_dev_dep = False),
         struct(repo = "cargo_vendor__similar-2.7.0", is_dev_dep = False),
         struct(repo = "cargo_vendor__syn-2.0.105", is_dev_dep = False),
+        struct(repo = "cargo_vendor__target-spec-3.5.0", is_dev_dep = False),
         struct(repo = "cargo_vendor__target-triple-0.1.4", is_dev_dep = False),
         struct(repo = "cargo_vendor__thiserror-2.0.14", is_dev_dep = False),
         struct(repo = "cargo_vendor__tokio-1.47.1", is_dev_dep = False),

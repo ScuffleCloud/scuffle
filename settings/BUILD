@@ -16,6 +16,13 @@ bool_flag(
     visibility = ["//visibility:public"],
 )
 
+bool_flag(
+    name = "test_valgrind",
+    build_setting_default = False,
+    tags = ["manual", "no-cache"],
+    visibility = ["//visibility:public"],
+)
+
 rustc_flags_file(
     name = "test_rustc_flags",
     build_setting_default = [],

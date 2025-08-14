@@ -194,12 +194,12 @@ fn type_to_struct_type(ty: syn::Type) -> syn::Result<StructTy> {
                 return Ok(StructTy::Raw(ty));
             }
 
-            if let syn::Type::Path(syn::TypePath { path, .. }) = &*elem {
-                if path.is_ident("str") {
-                    return Ok(StructTy::Str(
-                        syn::parse_quote_spanned! { ty.span() => ::std::sync::Arc<#path> },
-                    ));
-                }
+            if let syn::Type::Path(syn::TypePath { path, .. }) = &*elem
+                && path.is_ident("str")
+            {
+                return Ok(StructTy::Str(
+                    syn::parse_quote_spanned! { ty.span() => ::std::sync::Arc<#path> },
+                ));
             }
 
             Ok(StructTy::Clone(*elem))

@@ -1102,14 +1102,14 @@ transition_alias_opt(
 )
 
 transition_alias_opt(
-    name = "rustdoc-types-0.41.0",
-    actual = "@cargo_vendor__rustdoc-types-0.41.0//:rustdoc_types",
+    name = "rustdoc-types-0.53.0",
+    actual = "@cargo_vendor__rustdoc-types-0.53.0//:rustdoc_types",
     tags = ["manual"],
 )
 
 transition_alias_opt(
     name = "rustdoc-types",
-    actual = "@cargo_vendor__rustdoc-types-0.41.0//:rustdoc_types",
+    actual = "@cargo_vendor__rustdoc-types-0.53.0//:rustdoc_types",
     tags = ["manual"],
 )
 
@@ -1522,13 +1522,13 @@ transition_alias_opt(
 )
 
 transition_alias_opt(
-    name = "url-1.7.2",
-    actual = "@cargo_vendor__url-1.7.2//:url",
+    name = "url-2.5.4",
+    actual = "@cargo_vendor__url-2.5.4//:url",
     tags = ["manual"],
 )
 
 transition_alias_opt(
-    name = "url-2.5.4",
+    name = "url",
     actual = "@cargo_vendor__url-2.5.4//:url",
     tags = ["manual"],
 )
@@ -1554,5 +1554,17 @@ transition_alias_opt(
 transition_alias_opt(
     name = "va_list",
     actual = "@cargo_vendor__va_list-0.2.1//:va_list",
+    tags = ["manual"],
+)
+
+transition_alias_opt(
+    name = "walkdir-2.5.0",
+    actual = "@cargo_vendor__walkdir-2.5.0//:walkdir",
+    tags = ["manual"],
+)
+
+transition_alias_opt(
+    name = "walkdir",
+    actual = "@cargo_vendor__walkdir-2.5.0//:walkdir",
     tags = ["manual"],
 )

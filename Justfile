@@ -1,41 +1,59 @@
 mod? local
 
-# By default we use the nightly toolchain, however you can override this by setting the RUST_TOOLCHAIN environment variable.
-export RUST_TOOLCHAIN := env_var_or_default('RUST_TOOLCHAIN', 'nightly')
-
 # Format all code
 fmt:
     bazel run //tools/cargo/fmt:fix
     find . \( -name '*.bazel' -o -name '*.bzl' \) -exec buildifier {} \;
 
-lint *args:
-    bazel run //tools/cargo/clippy:fix {{args}}
+lint:
+    bazel run //tools/cargo/clippy:fix
+
+clean *args="--async":
+    bazel clean {{args}}
+    bazel --output_base=.cache/bazel/coverage clean {{args}}
+    bazel --output_base=.cache/bazel/grind clean {{args}}
+    bazel --output_base=.cache/bazel/rust_analyzer clean {{args}}
 
 alias coverage := test
-test *args:
-    bazel coverage //... {{args}}
+test *targets="//...":
+    #!/usr/bin/env bash
+    set -euo pipefail
 
-coverage-serve:
-    miniserve target/llvm-cov/html --index index.html --port 3000
+    cargo insta reject > /dev/null
 
-# grind *args:
-#     #!/usr/bin/env bash
-#     set -euo pipefail
+    bazel --output_base=.cache/bazel/coverage coverage {{targets}} --//settings:test_insta_force_pass
 
-#     # Runs valgrind on the tests.
-#     # If there are errors due to tests using global (and not actual memory leaks) then use the
-#     # information given by valgrind to replace the "<insert_a_suppression_name_here>" with the actual test name.
-#     export RUSTFLAGS="--cfg reqwest_unstable --cfg valgrind"
-#     export CARGO_TARGET_X86_64_UNKNOWN_LINUX_GNU_RUNNER="valgrind --error-exitcode=1 --leak-check=full --gen-suppressions=all --suppressions=$(pwd)/valgrind_suppressions.log"
-#     cargo +{{RUST_TOOLCHAIN}} nextest run --all-features --no-fail-fast {{args}}
+    snaps=$(find -L target-bazel/testlogs \( -name '*.snap.new' -o -name '*.pending-snap' \))
+    # Loop over each found file
+    for snap in $snaps; do
+        rel_path="${snap#*test.outputs/}"
+        # Create the symbolic link inside the target directory
+        ln -sf "$(realpath "$snap")" "$(dirname "$rel_path")/$(basename "$rel_path")"
+    done
+
+    cargo insta review
+
+vendor:
+    cargo update --workspace
+    bazel run //tools/cargo/vendor
+
+grind *targets="//...":
+    #!/usr/bin/env bash
+    set -euo pipefail
+
+    targets=$(bazel query 'kind("nextest_test rule", set({{targets}}))')
+    target_runner_value="$(which valgrind) --error-exitcode=1 --leak-check=full --show-leak-kinds=definite --errors-for-leak-kinds=definite --track-origins=yes"
+    target_runner_name="CARGO_TARGET_X86_64_UNKNOWN_LINUX_GNU_RUNNER"
+
+    bazel --output_base=.cache/bazel/grind test ${targets} --test_env="${target_runner_name}=${target_runner_value}" --//settings:test_rustc_flags="--cfg=valgrind"
 
 alias docs := doc
-doc *args:
-    bazel build //:rustdoc
+doc:
+    bazel build //docs:rustdoc
 
 alias docs-serve := doc-serve
 doc-serve: doc
-    miniserve target-bazel/bin/rustdoc.rustdoc_merge --index index.html --port 3000
+    miniserve target-bazel/bin/docs/rustdoc.rustdoc_merge --index index.html --port 3000
 
-deny *args:
+deny:
     bazel run //tools/cargo/deny

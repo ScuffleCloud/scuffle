@@ -20,6 +20,12 @@ struct Args {
     #[arg(long, env = "RUNNER_PROFILE")]
     profile: String,
 
+    #[arg(long, env = "RUNNER_INSTA")]
+    insta: bool,
+
+    #[arg(long, env = "RUNNER_SOURCE_DIR")]
+    source_dir: Utf8PathBuf,
+
     #[arg(long, env = "TEST_TMPDIR")]
     tmp_dir: Utf8PathBuf,
 
@@ -28,6 +34,9 @@ struct Args {
 
     #[arg(long, env = "TEST_TARGET")]
     target: Option<String>,
+
+    #[arg(long, env = "TEST_UNDECLARED_OUTPUTS_DIR")]
+    test_output_dir: Option<Utf8PathBuf>,
 
     #[command(flatten)]
     args: test_runner_lib::Args,
@@ -43,6 +52,9 @@ fn main() {
         tmp_dir: args.tmp_dir,
         xml_output_file: args.xml_output_file,
         args: args.args,
+        insta: args.insta,
+        source_dir: args.source_dir,
+        test_output_dir: args.test_output_dir,
         binaries: vec![Binary {
             name: args.target.unwrap_or(args.package),
             path: args.binary,

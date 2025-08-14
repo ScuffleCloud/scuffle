@@ -23,8 +23,11 @@ pub struct Config {
     pub tmp_dir: Utf8PathBuf,
     pub profile: String,
     pub xml_output_file: Option<Utf8PathBuf>,
+    pub test_output_dir: Option<Utf8PathBuf>,
     pub binaries: Vec<Binary>,
     pub args: Args,
+    pub insta: bool,
+    pub source_dir: Utf8PathBuf,
 }
 
 #[derive(clap::Args, Debug)]
@@ -219,6 +222,27 @@ pub fn run_nextest(config: Config) {
     if let (Some(junit), Some(output)) = (profile.junit(), config.xml_output_file.as_ref()) {
         let junit = std::fs::read(junit.path()).unwrap();
         std::fs::write(output, junit).unwrap();
+    }
+
+    if config.insta
+        && let Some(test_output_dir) = &config.test_output_dir
+    {
+        for entry in walkdir::WalkDir::new(&config.source_dir) {
+            let Ok(entry) = entry else {
+                continue;
+            };
+
+            if entry
+                .file_name()
+                .to_str()
+                .is_some_and(|s| s.ends_with(".snap.new") || s.ends_with(".pending-snap"))
+            {
+                if let Some(parent) = entry.path().parent() {
+                    std::fs::create_dir_all(test_output_dir.join_os(parent)).unwrap();
+                }
+                std::fs::copy(entry.path(), test_output_dir.join_os(entry.path())).unwrap();
+            }
+        }
     }
 
     if r.has_failures() {

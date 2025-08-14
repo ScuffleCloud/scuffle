@@ -326,10 +326,10 @@ fn generate_cargo_toml(config: &Config, crate_name: &str) -> std::io::Result<(St
                         cargo_manifest::Dependency::Inherited(_) => panic!("workspace deps cannot be inherited"),
                     };
 
-                    if let Some(path) = dep.path.as_mut() {
-                        if std::path::Path::new(path.as_str()).is_relative() {
-                            *path = metadata.workspace_root.join(path.as_str()).to_string()
-                        }
+                    if let Some(path) = dep.path.as_mut()
+                        && std::path::Path::new(path.as_str()).is_relative()
+                    {
+                        *path = metadata.workspace_root.join(path.as_str()).to_string()
                     }
 
                     dep
@@ -370,12 +370,11 @@ fn generate_cargo_toml(config: &Config, crate_name: &str) -> std::io::Result<(St
         patch: workspace_manifest.patch.clone().map(|mut patch| {
             patch.values_mut().for_each(|deps| {
                 deps.values_mut().for_each(|dep| {
-                    if let cargo_manifest::Dependency::Detailed(dep) = dep {
-                        if let Some(path) = &mut dep.path {
-                            if std::path::Path::new(path.as_str()).is_relative() {
-                                *path = metadata.workspace_root.join(path.as_str()).to_string()
-                            }
-                        }
+                    if let cargo_manifest::Dependency::Detailed(dep) = dep
+                        && let Some(path) = &mut dep.path
+                        && std::path::Path::new(path.as_str()).is_relative()
+                    {
+                        *path = metadata.workspace_root.join(path.as_str()).to_string()
                     }
                 });
             });

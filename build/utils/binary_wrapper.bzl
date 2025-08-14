@@ -12,7 +12,7 @@ def _binary_wrapper_impl(ctx):
     )
 
     export_lines = "\n".join(
-        ['export {}="{}"'.format(k, v.replace('"', '\\"')) for k, v in env.items()]
+        ['export {}="{}"'.format(k, v.replace('"', '\\"')) for k, v in env.items()],
     )
 
     ctx.actions.expand_template(
@@ -26,14 +26,13 @@ def _binary_wrapper_impl(ctx):
     )
 
     runfiles = (
-        ctx.runfiles(files=[ctx.executable.binary])
-        .merge(ctx.attr.binary[DefaultInfo].default_runfiles)
-        .merge_all([ctx.runfiles(files=data.files.to_list()) for data in ctx.attr.data])
+        ctx.runfiles(files = [ctx.executable.binary])
+            .merge(ctx.attr.binary[DefaultInfo].default_runfiles)
+            .merge_all([ctx.runfiles(files = data.files.to_list()) for data in ctx.attr.data])
     )
 
     return [
         DefaultInfo(files = depset([out]), executable = out, runfiles = runfiles),
-
     ]
 
 binary_wrapper = rule(

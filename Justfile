@@ -23,7 +23,7 @@ test *targets="//...":
 
     bazel --output_base=.cache/bazel/coverage coverage {{targets}} --//settings:test_insta_force_pass
 
-    snaps=$(find -L target-bazel/testlogs \( -name '*.snap.new' -o -name '*.pending-snap' \))
+    snaps=$(find -L $(bazel --output_base=.cache/bazel/coverage info bazel-testlogs) \( -name '*.snap.new' -o -name '*.pending-snap' \))
     # Loop over each found file
     for snap in $snaps; do
         rel_path="${snap#*test.outputs/}"
@@ -48,12 +48,15 @@ grind *targets="//...":
     bazel --output_base=.cache/bazel/grind test ${targets} --test_env="${target_runner_name}=${target_runner_value}" --//settings:test_rustc_flags="--cfg=valgrind"
 
 alias docs := doc
+
+rustdoc_target := "//docs:rustdoc"
+
 doc:
-    bazel build //docs:rustdoc
+    bazel build {{rustdoc_target}}
 
 alias docs-serve := doc-serve
 doc-serve: doc
-    miniserve target-bazel/bin/docs/rustdoc.rustdoc_merge --index index.html --port 3000
+    miniserve $(bazel info execution_root)/$(bazel cquery --config=wrapper {{rustdoc_target}} --output=files) --index index.html --port 3000
 
 deny:
     bazel run //tools/cargo/deny

@@ -109,6 +109,9 @@ common:wrapper --noshow_progress
 common:wrapper --noshow_loading_progress
 common:wrapper --noshow_timestamps
 
+# Disable info logging when using `bazel info`
+info --ui_event_filters=-info
+
 ###############################################################################
 ## Rust tooling configuration
 ###############################################################################

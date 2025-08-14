@@ -17,11 +17,7 @@ else
 fi
 
 # Resolve binary path within runfiles
-BINARY="$RUNFILES/_main/%%BINARY%%"
+PROCESS_WRAPPER="$RUNFILES/_main/%%PROCESS_WRAPPER%%"
+TARGET_BINARY="$RUNFILES/_main/%%TARGET_BINARY%%"
 
-# Calculate lib directory relative to binary
-LIB_DIR="$(dirname $(dirname "$BINARY"))/lib"
-
-# Set up library path and execute
-export LD_LIBRARY_PATH="$LIB_DIR:${LD_LIBRARY_PATH:-}"
-exec "$BINARY" "$@"
+exec "${PROCESS_WRAPPER}" --subst 'pwd=${pwd}' -- "${TARGET_BINARY}" "$@"

@@ -24,6 +24,7 @@ target/
 
 # bazel
 target-bazel/
+.cache/
 .bazel_compact_execution_log
 rust-project.json
 .user.bazelrc

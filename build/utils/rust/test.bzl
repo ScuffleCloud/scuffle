@@ -34,6 +34,8 @@ def _nextest_test_impl(ctx):
         "COVERAGE_BINARY": test_binary.short_path,
         "RUNNER_CONFIG": ctx.attr._nextest_config[DefaultInfo].files.to_list()[0].short_path,
         "RUNNER_PROFILE": ctx.attr._nextest_profile[BuildSettingInfo].value,
+        "RUNNER_INSTA": "true" if ctx.attr.insta else "false",
+        "RUNNER_SOURCE_DIR": ctx.label.package,
     }
 
     env.update(run_environment_info.environment)
@@ -43,43 +45,35 @@ def _nextest_test_impl(ctx):
             env.update(data[PostcompilerDepsInfo].env)
 
     # Add workspace root if specified
-    if ctx.attr.workspace_root:
-        env["INSTA_WORKSPACE_ROOT"] = ctx.attr.workspace_root[BuildSettingInfo].value
+    if ctx.attr.insta:
+        env["INSTA_WORKSPACE_ROOT"] = ""
+        if ctx.attr._insta_force_pass[BuildSettingInfo].value:
+            env["INSTA_FORCE_PASS"] = "1"
 
     runfiles = ctx.runfiles(files = ctx.files.data + ctx.attr._nextest_config[DefaultInfo].files.to_list() + [test_binary, ctx.executable._process_wrapper])
     runfiles = runfiles.merge(default_info.default_runfiles)
     runfiles = runfiles.merge(ctx.attr._test_runner[DefaultInfo].default_runfiles)
     runfiles = runfiles.merge_all([dep[DefaultInfo].default_runfiles for dep in ctx.attr.data])
 
-    is_windows = ctx.target_platform_has_constraint(ctx.attr._windows_constraint[platform_common.ConstraintValueInfo])
-    if is_windows:
-        wrapper_script = ctx.actions.declare_file(ctx.label.name + ".bat")
-        ctx.actions.write(
-            output = wrapper_script,
-            content = '@"{}" --subst "pwd=${{pwd}}" -- "{}" %*'.format(
-                ctx.executable._process_wrapper.short_path,
-                ctx.executable._test_runner.short_path,
-            ),
-            is_executable = True,
-        )
-    else:
-        wrapper_script = ctx.actions.declare_file(ctx.label.name + ".sh")
-        ctx.actions.write(
-            output = wrapper_script,
-            content = '#!/usr/bin/env bash\nexec "{}" --subst \'pwd=${{pwd}}\' -- "{}" $@'.format(
-                ctx.executable._process_wrapper.short_path,
-                ctx.executable._test_runner.short_path,
-            ),
-            is_executable = True,
-        )
+    out = ctx.actions.declare_file(ctx.label.name + ".sh")
+    sh_toolchain = ctx.toolchains["@bazel_tools//tools/sh:toolchain_type"]
+    ctx.actions.expand_template(
+        output = out,
+        template = ctx.file._template_file,
+        substitutions = {
+            "%%PROCESS_WRAPPER%%": ctx.executable._process_wrapper.short_path,
+            "%%TARGET_BINARY%%": ctx.executable._test_runner.short_path,
+            "#!/usr/bin/env bash": "#!{}".format(sh_toolchain.path),
+        },
+    )
 
     parent_providers.remove(default_info)
     parent_providers.remove(run_environment_info)
 
     return [
         DefaultInfo(
-            executable = wrapper_script,
-            files = default_info.files,
+            executable = out,
+            files = depset([out], transitive = [default_info.files]),
             runfiles = runfiles,
         ),
         RunEnvironmentInfo(
@@ -93,8 +87,9 @@ nextest_test = rule(
     implementation = _nextest_test_impl,
     parent = rust_test,
     attrs = {
-        "workspace_root": attr.label(mandatory = False),
+        "insta": attr.bool(default = False),
         "_nextest_profile": attr.label(mandatory = False, default = "//settings:test_profile"),
+        "_insta_force_pass": attr.label(default = "//settings:test_insta_force_pass"),
         "_test_runner": attr.label(
             default = "//build/utils/rust/test_runner",
             executable = True,
@@ -104,8 +99,7 @@ nextest_test = rule(
             default = "//:.config/nextest.toml",
             allow_single_file = True,
         ),
-        "_windows_constraint": attr.label(
-            default = "@platforms//os:windows",
-        ),
+        "_template_file": attr.label(default = "test_wrapper.sh", allow_single_file = True),
     },
+    toolchains = ["@bazel_tools//tools/sh:toolchain_type"],
 )

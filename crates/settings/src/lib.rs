@@ -274,10 +274,8 @@ pub fn parse_settings<T: serde::de::DeserializeOwned>(options: Options) -> Resul
         }
     }
 
-    if !added_files {
-        if let Some(default_config_file) = options.default_config_file {
-            config = config.add_source(config::File::new(default_config_file, FormatWrapper).required(false));
-        }
+    if !added_files && let Some(default_config_file) = options.default_config_file {
+        config = config.add_source(config::File::new(default_config_file, FormatWrapper).required(false));
     }
 
     if let Some(env_prefix) = options.env_prefix {

@@ -52,6 +52,9 @@ fn main() {
         tmp_dir: args.tmp_dir,
         xml_output_file: args.xml_output_file,
         args: args.args,
+        insta: false,
+        source_dir: Utf8PathBuf::new(),
+        test_output_dir: None,
         binaries: manifest
             .test_binaries
             .into_iter()

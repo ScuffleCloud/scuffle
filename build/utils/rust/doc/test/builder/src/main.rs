@@ -40,8 +40,21 @@ struct ExtractedDocTest {
     file: String,
     line: i32,
     doctest_attributes: DoctestAttributes,
-    doctest_code: String,
+    doctest_code: DocTestCode,
     name: String,
+}
+
+#[derive(Debug, Clone, serde_derive::Deserialize)]
+struct DocTestCode {
+    crate_level: String,
+    code: String,
+    wrapper: Option<DocTestCodeWrapper>,
+}
+
+#[derive(Debug, Clone, serde_derive::Deserialize)]
+struct DocTestCodeWrapper {
+    before: String,
+    after: String,
 }
 
 #[derive(Debug, serde_derive::Deserialize)]
@@ -85,7 +98,7 @@ fn test_binary(extern_crates: &str, test_cases: &[String]) -> String {
 
 extern crate test;
 {extern_crates}
-        
+
 #[doc(hidden)]
 #[coverage(off)]
 fn main() {{
@@ -97,10 +110,8 @@ fn main() {{
 fn test_function(test_ident: &str, code: &str) -> String {
     format!(
         "pub mod {test_ident} {{
-    {code}
-
     pub fn __main_fn() -> impl std::process::Termination {{
-        main()
+        {code}
     }}
 }}"
     )
@@ -218,8 +229,7 @@ fn compile_merged(
 
 fn standalone_test_runner(env_var: &str) -> String {
     format!(
-        r#"fn main() {{
-    if let Some(binary) = std::env::var_os("{env_var}") {{
+        r#"if let Some(binary) = std::env::var_os("{env_var}") {{
         let status = ::std::process::Command::new(binary)
             .status()
             .expect("failed to run test binary");
@@ -228,20 +238,33 @@ fn standalone_test_runner(env_var: &str) -> String {
         }}
     }} else {{
         panic!("{env_var} is not set");
-    }}
-}}"#
+    }}"#
     )
 }
 
 fn compile_fail_test_result(error: Option<&str>) -> String {
     let Some(error) = error else {
-        return "fn main() {}".into();
+        return String::new();
     };
 
+    format!(r#"panic!("{error}");"#)
+}
+
+fn doctest_to_code(doctest: &DocTestCode) -> String {
     format!(
-        r#"fn main() {{
-    panic!("{error}");
-}}"#
+        "{crate_level}{before}{code}{after}",
+        crate_level = doctest.crate_level,
+        before = doctest
+            .wrapper
+            .as_ref()
+            .map(|wrapper| wrapper.before.as_str())
+            .unwrap_or_default(),
+        code = doctest.code,
+        after = doctest
+            .wrapper
+            .as_ref()
+            .map(|wrapper| wrapper.after.as_str())
+            .unwrap_or_default(),
     )
 }
 
@@ -253,8 +276,10 @@ fn main() {
     let mut all_tests = Vec::new();
 
     for line in extracted_tests.lines() {
-        let extract: RustDocExtract = serde_json::from_str(line).expect("invalid doctest output");
-        if extract.format_version != 1 {
+        let extract: RustDocExtract = serde_json::from_str(line)
+            .map_err(|err| format!("invalid rustdoc line: {line} - {err}"))
+            .unwrap();
+        if extract.format_version != 2 {
             panic!("format version mismatch: 1 != {}", extract.format_version);
         }
 
@@ -290,7 +315,7 @@ fn main() {
             edition_merged_tests
                 .entry(test.doctest_attributes.edition.as_ref().unwrap_or(&args.edition).as_str())
                 .or_default()
-                .push((idx, test.doctest_code.clone()));
+                .push((idx, doctest_to_code(&test.doctest_code)));
         } else {
             match (test.doctest_attributes.compile_fail, test.doctest_attributes.test_harness) {
                 (true, _) => compile_fail_tests.push(idx),
@@ -324,7 +349,9 @@ fn main() {
 
         let mut stdin = child.stdin.take().unwrap();
 
-        stdin.write_all(test.doctest_code.as_bytes()).expect("failed to write stdin");
+        stdin
+            .write_all(doctest_to_code(&test.doctest_code).as_bytes())
+            .expect("failed to write stdin");
         drop(stdin);
 
         let output = child.wait_with_output().expect("failed to wait for output");
@@ -386,7 +413,9 @@ fn main() {
 
         let mut stdin = child.stdin.take().unwrap();
 
-        stdin.write_all(test.doctest_code.as_bytes()).expect("failed to write stdin");
+        stdin
+            .write_all(doctest_to_code(&test.doctest_code).as_bytes())
+            .expect("failed to write stdin");
         drop(stdin);
 
         let status = child.wait().expect("failed to wait for output");
@@ -445,7 +474,9 @@ fn main() {
 
         let mut stdin = child.stdin.take().unwrap();
 
-        stdin.write_all(test.doctest_code.as_bytes()).expect("failed to write stdin");
+        stdin
+            .write_all(doctest_to_code(&test.doctest_code).as_bytes())
+            .expect("failed to write stdin");
         drop(stdin);
 
         let status = child.wait().expect("failed to wait for output");

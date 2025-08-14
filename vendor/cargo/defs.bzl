@@ -1151,13 +1151,6 @@ _NORMAL_DEPENDENCIES = {
             },
         },
     },
-    "tools/cargo/deny": {
-        _REQUIRED_FEATURE: {
-            _COMMON_CONDITION: {
-                "clap": Label("@cargo_vendor//:clap-4.5.45"),
-            },
-        },
-    },
     "tools/cargo/sync-readme": {
         _REQUIRED_FEATURE: {
             _COMMON_CONDITION: {
@@ -1581,12 +1574,6 @@ _NORMAL_ALIASES = {
             },
         },
     },
-    "tools/cargo/deny": {
-        _REQUIRED_FEATURE: {
-            _COMMON_CONDITION: {
-            },
-        },
-    },
     "tools/cargo/sync-readme": {
         _REQUIRED_FEATURE: {
             _COMMON_CONDITION: {
@@ -1859,8 +1846,6 @@ _NORMAL_DEV_DEPENDENCIES = {
     },
     "tools/cargo/clippy": {
     },
-    "tools/cargo/deny": {
-    },
     "tools/cargo/sync-readme": {
     },
 }
@@ -2063,8 +2048,6 @@ _NORMAL_DEV_ALIASES = {
     "dev-tools/xtask": {
     },
     "tools/cargo/clippy": {
-    },
-    "tools/cargo/deny": {
     },
     "tools/cargo/sync-readme": {
     },
@@ -2425,8 +2408,6 @@ _PROC_MACRO_DEPENDENCIES = {
     },
     "tools/cargo/clippy": {
     },
-    "tools/cargo/deny": {
-    },
     "tools/cargo/sync-readme": {
     },
 }
@@ -2547,8 +2528,6 @@ _PROC_MACRO_ALIASES = {
     "dev-tools/xtask": {
     },
     "tools/cargo/clippy": {
-    },
-    "tools/cargo/deny": {
     },
     "tools/cargo/sync-readme": {
     },
@@ -2675,8 +2654,6 @@ _PROC_MACRO_DEV_DEPENDENCIES = {
     "dev-tools/xtask": {
     },
     "tools/cargo/clippy": {
-    },
-    "tools/cargo/deny": {
     },
     "tools/cargo/sync-readme": {
     },
@@ -2881,8 +2858,6 @@ _PROC_MACRO_DEV_ALIASES = {
     },
     "tools/cargo/clippy": {
     },
-    "tools/cargo/deny": {
-    },
     "tools/cargo/sync-readme": {
     },
 }
@@ -3009,8 +2984,6 @@ _BUILD_DEPENDENCIES = {
     },
     "tools/cargo/clippy": {
     },
-    "tools/cargo/deny": {
-    },
     "tools/cargo/sync-readme": {
     },
 }
@@ -3132,8 +3105,6 @@ _BUILD_ALIASES = {
     },
     "tools/cargo/clippy": {
     },
-    "tools/cargo/deny": {
-    },
     "tools/cargo/sync-readme": {
     },
 }
@@ -3243,8 +3214,6 @@ _BUILD_PROC_MACRO_DEPENDENCIES = {
     },
     "tools/cargo/clippy": {
     },
-    "tools/cargo/deny": {
-    },
     "tools/cargo/sync-readme": {
     },
 }
@@ -3353,8 +3322,6 @@ _BUILD_PROC_MACRO_ALIASES = {
     "dev-tools/xtask": {
     },
     "tools/cargo/clippy": {
-    },
-    "tools/cargo/deny": {
     },
     "tools/cargo/sync-readme": {
     },
@@ -3692,8 +3659,6 @@ _FEATURE_FLAGS = {
     },
     "tools/cargo/clippy": {
     },
-    "tools/cargo/deny": {
-    },
     "tools/cargo/sync-readme": {
     },
 }
@@ -3848,8 +3813,6 @@ _RESOLVED_FEATURE_FLAGS = {
     },
     "tools/cargo/clippy": {
     },
-    "tools/cargo/deny": {
-    },
     "tools/cargo/sync-readme": {
     },
 }
@@ -3907,7 +3870,6 @@ _VERSIONS = {
     "crates/transmuxer": "0.2.2",
     "dev-tools/xtask": "0.0.0",
     "tools/cargo/clippy": "0.0.0",
-    "tools/cargo/deny": "0.0.0",
     "tools/cargo/sync-readme": "0.0.0",
 }
 

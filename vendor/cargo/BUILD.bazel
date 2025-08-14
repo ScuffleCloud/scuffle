@@ -1294,6 +1294,18 @@ transition_alias_opt(
 )
 
 transition_alias_opt(
+    name = "target-spec-3.5.0",
+    actual = "@cargo_vendor__target-spec-3.5.0//:target_spec",
+    tags = ["manual"],
+)
+
+transition_alias_opt(
+    name = "target-spec",
+    actual = "@cargo_vendor__target-spec-3.5.0//:target_spec",
+    tags = ["manual"],
+)
+
+transition_alias_opt(
     name = "target-triple-0.1.4",
     actual = "@cargo_vendor__target-triple-0.1.4//:target_triple",
     tags = ["manual"],

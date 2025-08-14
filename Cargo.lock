@@ -5139,6 +5139,7 @@ version = "0.0.0"
 dependencies = [
  "camino",
  "clap",
+ "target-spec",
  "test_runner_lib",
 ]
 

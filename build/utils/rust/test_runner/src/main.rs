@@ -38,12 +38,34 @@ struct Args {
     #[arg(long, env = "TEST_UNDECLARED_OUTPUTS_DIR")]
     test_output_dir: Option<Utf8PathBuf>,
 
+    #[arg(long, env = "VALGRIND")]
+    valgrind: Option<Utf8PathBuf>,
+
     #[command(flatten)]
     args: test_runner_lib::Args,
 }
 
 fn main() {
     let args = Args::parse();
+
+    if let Some(valgrind) = args.valgrind {
+        // Safety: we havent spawned any threads yet.
+        unsafe {
+            std::env::set_var(
+                format!(
+                    "CARGO_TARGET_{}_RUNNER",
+                    target_spec::Platform::build_target()
+                        .unwrap()
+                        .triple_str()
+                        .to_ascii_uppercase()
+                        .replace("-", "_")
+                ),
+                format!(
+                    "{valgrind} --error-exitcode=1 --leak-check=full --show-leak-kinds=definite --errors-for-leak-kinds=definite --track-origins=yes"
+                ),
+            );
+        }
+    }
 
     test_runner_lib::run_nextest(Config {
         config_path: args.config,

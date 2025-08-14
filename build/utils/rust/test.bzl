@@ -50,10 +50,17 @@ def _nextest_test_impl(ctx):
         if ctx.attr._insta_force_pass[BuildSettingInfo].value:
             env["INSTA_FORCE_PASS"] = "1"
 
-    runfiles = ctx.runfiles(files = ctx.files.data + ctx.attr._nextest_config[DefaultInfo].files.to_list() + [test_binary, ctx.executable._process_wrapper])
+    files = [test_binary, ctx.executable._process_wrapper]
+    data = [dep[DefaultInfo].default_runfiles for dep in ctx.attr.data]
+    if ctx.attr._valgrind_enabled[BuildSettingInfo].value:
+        env["VALGRIND"] = ctx.executable._valgrind.short_path
+        files.append(ctx.executable._valgrind)
+        data.append(ctx.attr._valgrind[DefaultInfo].default_runfiles)
+
+    runfiles = ctx.runfiles(files = ctx.files.data + ctx.attr._nextest_config[DefaultInfo].files.to_list() + files)
     runfiles = runfiles.merge(default_info.default_runfiles)
     runfiles = runfiles.merge(ctx.attr._test_runner[DefaultInfo].default_runfiles)
-    runfiles = runfiles.merge_all([dep[DefaultInfo].default_runfiles for dep in ctx.attr.data])
+    runfiles = runfiles.merge_all(data)
 
     out = ctx.actions.declare_file(ctx.label.name + ".sh")
     sh_toolchain = ctx.toolchains["@bazel_tools//tools/sh:toolchain_type"]
@@ -90,6 +97,8 @@ nextest_test = rule(
         "insta": attr.bool(default = False),
         "_nextest_profile": attr.label(mandatory = False, default = "//settings:test_profile"),
         "_insta_force_pass": attr.label(default = "//settings:test_insta_force_pass"),
+        "_valgrind_enabled": attr.label(default = "//settings:test_valgrind"),
+        "_valgrind": attr.label(default = "//tools/valgrind", cfg = "exec", executable = True),
         "_test_runner": attr.label(
             default = "//build/utils/rust/test_runner",
             executable = True,

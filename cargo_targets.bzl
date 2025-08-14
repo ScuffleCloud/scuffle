@@ -40,7 +40,6 @@ _packages = [
     "//tools/cargo/deny",
     "//tools/cargo/sync-readme",
     "//build/utils/protobuf",
-    "//build/utils/process_wrapper",
     "//build/utils/rust/clippy",
     "//build/utils/rust/test_runner",
     "//build/utils/rust/test_runner/lib",

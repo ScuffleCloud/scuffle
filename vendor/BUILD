@@ -28,6 +28,12 @@ crates_vendor(
         "aws-lc-sys": [
             crate.annotation(
                 build_script_env = {
+                    # aws-lc-sys does not respect `LDFLAGS` so we need to
+                    # add `-fuse-ld=lld` to instruct the compiler to use
+                    # `lld` instead of `ld. We also need to add `-Wno-error`
+                    # since this crate has a lot of warnings and our typical
+                    # toolchain disallows them and then we silence them with `-w`.
+                    # See https://github.com/aws/aws-lc-rs/issues/858
                     "CFLAGS": "$(CFLAGS) -fuse-ld=lld -Wno-error -w",
                 },
             ),

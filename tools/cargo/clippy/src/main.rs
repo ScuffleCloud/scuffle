@@ -133,7 +133,7 @@ fn main() -> anyhow::Result<()> {
     }
 
     let mut files = BTreeMap::new();
-    let solutions = suggestions.iter().flat_map(|s| &s.solutions);
+    let solutions: HashSet<_> = suggestions.iter().flat_map(|s| &s.solutions).collect();
     for solution in solutions {
         let Some(replacement) = solution.replacements.first() else {
             continue;

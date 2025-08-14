@@ -1,4 +1,4 @@
-load("@bazel_skylib//rules:common_settings.bzl", "string_flag")
+load("@bazel_skylib//rules:common_settings.bzl", "string_flag", "bool_flag")
 load("//settings:rustc_flags_file.bzl", "rustc_flags_file")
 
 string_flag(
@@ -9,9 +9,9 @@ string_flag(
     visibility = ["//visibility:public"],
 )
 
-string_flag(
-    name = "test_workspace_root",
-    build_setting_default = "",
+bool_flag(
+    name = "test_insta_force_pass",
+    build_setting_default = False,
     tags = ["manual", "no-cache"],
     visibility = ["//visibility:public"],
 )

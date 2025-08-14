@@ -1090,10 +1090,10 @@ fn merge_schema_map(value: &mut IndexMap<String, Schema>, other: &mut IndexMap<S
         match value.entry(key) {
             indexmap::map::Entry::Occupied(mut value) => {
                 value.get_mut().merge(&mut other);
-                if !other.is_empty() {
-                    if let Some(obj) = value.get_mut().as_object_mut() {
-                        obj.all_of.push(other);
-                    }
+                if !other.is_empty()
+                    && let Some(obj) = value.get_mut().as_object_mut()
+                {
+                    obj.all_of.push(other);
                 }
             }
             indexmap::map::Entry::Vacant(v) => {
@@ -1128,10 +1128,10 @@ fn merge_prefix_items(value: &mut Option<Vec<Schema>>, other: &mut Option<Vec<Sc
     value.extend(other.drain(value.len()..));
     for (value, mut other) in value.iter_mut().zip(other) {
         value.merge(&mut other);
-        if !other.is_empty() {
-            if let Some(obj) = value.as_object_mut() {
-                obj.all_of.push(other);
-            }
+        if !other.is_empty()
+            && let Some(obj) = value.as_object_mut()
+        {
+            obj.all_of.push(other);
         }
     }
 }

@@ -1,13 +1,8 @@
 bazel_dep(name = "rules_rust", version = "0.61.0")
-
-# git_override(
-#     module_name = "rules_rust",
-#     commit = "a2f16606ee6d9ec11fa1512d95cc1803eab5e128",
-#     remote = "https://github.com/ScuffleCloud/rules_rust.git",
-# )
-local_path_override(
+git_override(
     module_name = "rules_rust",
-    path = "../rules_rust",
+    commit = "cdd40e2f11ad7c77077680b991eb4f926bfa7cc1",
+    remote = "https://github.com/ScuffleCloud/rules_rust.git",
 )
 
 rust = use_extension(
@@ -19,7 +14,7 @@ rust.toolchain(
     extra_target_triples = [
         "wasm32-unknown-unknown",
     ],
-    versions = ["1.88.0"],
+    versions = ["1.89.0"],
 )
 use_repo(
     rust,
@@ -122,7 +117,7 @@ use_repo(
     "cargo_vendor__regex-1.11.1",
     "cargo_vendor__reqwest-0.12.23",
     "cargo_vendor__runtime-format-0.1.3",
-    "cargo_vendor__rustdoc-types-0.41.0",
+    "cargo_vendor__rustdoc-types-0.53.0",
     "cargo_vendor__rustfix-0.9.1",
     "cargo_vendor__rustls-0.23.31",
     "cargo_vendor__rustls-pemfile-2.2.0",
@@ -158,10 +153,10 @@ use_repo(
     "cargo_vendor__tracing-opentelemetry-0.31.0",
     "cargo_vendor__tracing-subscriber-0.3.19",
     "cargo_vendor__tracing-test-0.2.5",
-    "cargo_vendor__url-1.7.2",
     "cargo_vendor__url-2.5.4",
     "cargo_vendor__uuid-1.18.0",
     "cargo_vendor__va_list-0.2.1",
+    "cargo_vendor__walkdir-2.5.0",
 )
 
 bindeps = use_extension("@rules_rust//crate_universe:extension.bzl", "crate")

@@ -11,8 +11,8 @@ pulldown-cmark = "0.13"
 anyhow = "1"
 serde_derive = "1"
 serde = "1"
-url = "1"
-rustdoc-types = { version = "0.41", features = ["rustc-hash"] }
+url = "2"
+rustdoc-types = { version = "0.53", features = ["rustc-hash"] }
 semver = "1"
 toml = "0.9"
 pulldown-cmark-to-cmark = "21"

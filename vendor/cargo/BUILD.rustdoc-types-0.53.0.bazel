@@ -17,7 +17,7 @@ cargo_toml_env_vars(
 )
 
 rust_library(
-    name = "percent_encoding",
+    name = "rustdoc_types",
     srcs = glob(
         include = ["**/*.rs"],
         allow_empty = True,
@@ -34,8 +34,15 @@ rust_library(
             "WORKSPACE.bazel",
         ],
     ),
-    crate_root = "lib.rs",
-    edition = "2015",
+    crate_features = [
+        "default",
+        "rustc-hash",
+    ],
+    crate_root = "src/lib.rs",
+    edition = "2018",
+    proc_macro_deps = [
+        "@cargo_vendor__serde_derive-1.0.219//:serde_derive",
+    ],
     rustc_env_files = [
         ":cargo_toml_env_vars",
     ],
@@ -44,7 +51,7 @@ rust_library(
     ],
     tags = [
         "cargo-bazel",
-        "crate-name=percent-encoding",
+        "crate-name=rustdoc-types",
         "manual",
         "noclippy",
         "norustfmt",
@@ -59,5 +66,9 @@ rust_library(
         "@rules_rust//rust/platform:x86_64-unknown-linux-gnu": [],
         "//conditions:default": ["@platforms//:incompatible"],
     }),
-    version = "1.0.1",
+    version = "0.53.0",
+    deps = [
+        "@cargo_vendor__rustc-hash-2.1.1//:rustc_hash",
+        "@cargo_vendor__serde-1.0.219//:serde",
+    ],
 )

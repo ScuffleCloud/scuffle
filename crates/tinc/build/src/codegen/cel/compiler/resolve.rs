@@ -417,26 +417,25 @@ fn resolve_relation(
             ..
         }),
     ) = (op, &right)
+        && !matches!(item, ProtoValueType::Message { .. })
     {
-        if !matches!(item, ProtoValueType::Message { .. }) {
-            let op = match &right_ty {
-                CelType::Proto(ProtoType::Modified(ProtoModifiedValueType::Repeated(_))) => {
-                    quote! { array_contains }
-                }
-                CelType::Proto(ProtoType::Modified(ProtoModifiedValueType::Map(_, _))) => quote! { map_contains },
-                _ => unreachable!(),
-            };
+        let op = match &right_ty {
+            CelType::Proto(ProtoType::Modified(ProtoModifiedValueType::Repeated(_))) => {
+                quote! { array_contains }
+            }
+            CelType::Proto(ProtoType::Modified(ProtoModifiedValueType::Map(_, _))) => quote! { map_contains },
+            _ => unreachable!(),
+        };
 
-            return Ok(CompiledExpr::runtime(
-                CelType::Proto(ProtoType::Value(ProtoValueType::Bool)),
-                parse_quote! {
-                    ::tinc::__private::cel::#op(
-                        #right,
-                        #left,
-                    )
-                },
-            ));
-        }
+        return Ok(CompiledExpr::runtime(
+            CelType::Proto(ProtoType::Value(ProtoValueType::Bool)),
+            parse_quote! {
+                ::tinc::__private::cel::#op(
+                    #right,
+                    #left,
+                )
+            },
+        ));
     }
 
     let right = right.into_cel()?;

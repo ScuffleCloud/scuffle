@@ -133,6 +133,14 @@ common --remote_cache_compression
 common --experimental_remote_cache_compression_threshold=1000
 
 ###############################################################################
+## Output bases configuration
+###############################################################################
+common --repo_contents_cache=~/.cache/scuffle/bazel/repo
+common --disk_cache=~/.cache/scuffle/bazel/disk
+common --experimental_repository_cache_hardlinks
+common --noallow_analysis_cache_discard
+
+###############################################################################
 ## Custom user flags
 ##
 ## This should always be the last thing in the `.bazelrc` file to ensure

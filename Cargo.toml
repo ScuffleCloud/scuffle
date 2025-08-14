@@ -42,7 +42,6 @@ members = [
   "tools/cargo/clippy",
   "tools/cargo/sync-readme",
   "build/utils/protobuf",
-  "build/utils/process_wrapper",
   "build/utils/rust/test_runner",
   "build/utils/rust/clippy",
   "build/utils/rust/doc/test/builder",

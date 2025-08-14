@@ -43,6 +43,7 @@ website/vite.config.ts.timestamp-*
 
 # bazel
 target-bazel/
+.cache/
 .bazel_compact_execution_log
 rust-project.json
 .user.bazelrc

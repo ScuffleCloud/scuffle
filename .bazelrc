@@ -140,7 +140,6 @@ common --experimental_remote_cache_compression_threshold=1000
 ###############################################################################
 common --disk_cache=~/.cache/scuffle/bazel/disk
 common --experimental_repository_cache_hardlinks
-common --noallow_analysis_cache_discard
 
 ###############################################################################
 ## Custom user flags

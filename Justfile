@@ -24,8 +24,6 @@ test *targets="//...":
     #!/usr/bin/env bash
     set -exuo pipefail
 
-    echo "cargo insta reject"
-
     cargo insta reject > /dev/null
 
     output_base=$(bazel info output_base)

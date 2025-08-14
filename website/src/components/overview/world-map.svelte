@@ -251,11 +251,6 @@
             isLoading = false;
         }
     });
-
-    const handleChartInit = (chart: EChartsType) => {
-        chartInstance = chart;
-        onChartReady?.(chart);
-    };
 </script>
 
 <div class="map-container">
@@ -265,7 +260,7 @@
             <p>Loading world map data...</p>
         </div>
     {:else}
-        <Chart {init} {options} {theme} oninit={handleChartInit} onclick={handleClick} />
+        <Chart {init} {options} {theme} onclick={handleClick} />
     {/if}
 </div>
 

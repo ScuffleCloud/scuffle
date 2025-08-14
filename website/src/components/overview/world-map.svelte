@@ -14,6 +14,7 @@
     import { onMount } from 'svelte';
     import { getCssVar } from '$lib/utils';
 
+    // Register the required components
     use([
         GeoComponent,
         TitleComponent,
@@ -28,63 +29,82 @@
         mapData?: Array<{ name: string; value: number }> | null;
         theme?: 'light' | 'dark' | object;
         onChartReady?: (chart: EChartsType) => void;
+        title?: string;
+        dataLabel?: string;
     };
 
-    const { mapData = null, theme = 'light' }: Props = $props();
+    const {
+        mapData = null,
+        theme = 'light',
+        onChartReady,
+        title = 'Global Technology Innovation Index 2024',
+        dataLabel = 'Innovation Score',
+    }: Props = $props();
 
-    // Hong Kong districts data (matching the original example)
+    // Sample world data - Technology Innovation scores by country
     const defaultData = [
-        { name: '中西区', value: 20057.34 },
-        { name: '湾仔', value: 15477.48 },
-        { name: '东区', value: 31686.1 },
-        { name: '南区', value: 6992.6 },
-        { name: '油尖旺', value: 44045.49 },
-        { name: '深水埗', value: 40689.64 },
-        { name: '九龙城', value: 37659.78 },
-        { name: '黄大仙', value: 45180.97 },
-        { name: '观塘', value: 55204.26 },
-        { name: '葵青', value: 21900.9 },
-        { name: '荃湾', value: 4918.26 },
-        { name: '屯门', value: 5881.84 },
-        { name: '元朗', value: 4178.01 },
-        { name: '北区', value: 2227.92 },
-        { name: '大埔', value: 2180.98 },
-        { name: '沙田', value: 9172.94 },
-        { name: '西贡', value: 3368 },
-        { name: '离岛', value: 806.98 },
+        { name: 'United States', value: 95 },
+        { name: 'China', value: 88 },
+        { name: 'Japan', value: 85 },
+        { name: 'Germany', value: 82 },
+        { name: 'South Korea', value: 80 },
+        { name: 'United Kingdom', value: 78 },
+        { name: 'France', value: 76 },
+        { name: 'Canada', value: 74 },
+        { name: 'Israel', value: 72 },
+        { name: 'Singapore', value: 70 },
+        { name: 'Sweden', value: 68 },
+        { name: 'Switzerland', value: 66 },
+        { name: 'Netherlands', value: 64 },
+        { name: 'Finland', value: 62 },
+        { name: 'Denmark', value: 60 },
+        { name: 'Norway', value: 58 },
+        { name: 'Australia', value: 56 },
+        { name: 'Belgium', value: 54 },
+        { name: 'Austria', value: 52 },
+        { name: 'Ireland', value: 50 },
+        { name: 'Taiwan', value: 48 },
+        { name: 'India', value: 46 },
+        { name: 'Italy', value: 44 },
+        { name: 'Spain', value: 42 },
+        { name: 'Russia', value: 40 },
+        { name: 'Brazil', value: 38 },
+        { name: 'Mexico', value: 36 },
+        { name: 'Poland', value: 34 },
+        { name: 'Turkey', value: 32 },
+        { name: 'Czech Republic', value: 30 },
+        { name: 'Portugal', value: 28 },
+        { name: 'Hungary', value: 26 },
+        { name: 'Chile', value: 24 },
+        { name: 'Greece', value: 22 },
+        { name: 'Thailand', value: 20 },
+        { name: 'Malaysia', value: 18 },
+        { name: 'South Africa', value: 16 },
+        { name: 'Argentina', value: 14 },
+        { name: 'Colombia', value: 12 },
+        { name: 'Philippines', value: 10 },
+        { name: 'Indonesia', value: 8 },
+        { name: 'Vietnam', value: 6 },
+        { name: 'Egypt', value: 4 },
+        { name: 'Nigeria', value: 2 },
     ];
 
     const data = $derived(mapData || defaultData);
     let isLoading = $state(true);
+    let chartInstance: EChartsType | null = $state(null);
 
-    const nameMap = {
-        'Central and Western': '中西区',
-        Eastern: '东区',
-        Islands: '离岛',
-        'Kowloon City': '九龙城',
-        'Kwai Tsing': '葵青',
-        'Kwun Tong': '观塘',
-        North: '北区',
-        'Sai Kung': '西贡',
-        'Sha Tin': '沙田',
-        'Sham Shui Po': '深水埗',
-        Southern: '南区',
-        'Tai Po': '大埔',
-        'Tsuen Wan': '荃湾',
-        'Tuen Mun': '屯门',
-        'Wan Chai': '湾仔',
-        'Wong Tai Sin': '黄大仙',
-        'Yau Tsim Mong': '油尖旺',
-        'Yuen Long': '元朗',
-    };
+    const maxValue = $derived(Math.max(...data.map((item) => item.value)));
+    const minValue = $derived(Math.min(...data.map((item) => item.value)));
 
     const option = $derived({
         title: {
-            text: 'Population Density of Hong Kong (2011)',
-            subtext: 'Data from Wikipedia',
+            text: title,
+            subtext: `Data represents ${dataLabel.toLowerCase()} across different countries`,
+            left: 'center',
+            top: 20,
             textStyle: {
                 color: getCssVar('--colors-gray100'),
-                fontSize: 18,
+                fontSize: 20,
                 fontWeight: 'bold',
             },
             subtextStyle: {
@@ -94,22 +114,36 @@
         },
         tooltip: {
             trigger: 'item',
-            formatter: '{b}<br/>{c} (p / km2)',
+            formatter: function (params: any) {
+                if (params.data) {
+                    return `<strong>${params.name}</strong><br/>${dataLabel}: ${params.data.value}`;
+                }
+                return `<strong>${params.name}</strong><br/>No data available`;
+            },
             backgroundColor: getCssVar('--colors-gray10'),
             borderColor: getCssVar('--colors-gray50'),
             textStyle: {
                 color: getCssVar('--colors-gray110'),
             },
         },
+        // Toolbox on the right to zoom, refresh, copy, download, ect.
         toolbox: {
             show: true,
-            orient: 'vertical',
+            orient: 'horizontal',
             left: 'right',
-            top: 'center',
+            top: 80,
             feature: {
-                dataView: { readOnly: false },
-                restore: {},
-                saveAsImage: {},
+                dataView: {
+                    readOnly: false,
+                    title: 'View Data',
+                    lang: ['Data View', 'Close', 'Refresh'],
+                },
+                restore: {
+                    title: 'Reset Zoom',
+                },
+                saveAsImage: {
+                    title: 'Save as Image',
+                },
             },
             iconStyle: {
                 borderColor: getCssVar('--colors-gray80'),
@@ -121,46 +155,69 @@
             },
         },
         visualMap: {
-            min: 800,
-            max: 50000,
+            min: minValue,
+            max: maxValue,
             text: ['High', 'Low'],
             realtime: false,
             calculable: true,
+            orient: 'horizontal',
+            left: 'center',
+            bottom: 30,
             inRange: {
                 color: [
                     getCssVar('--colors-blue10'),
-                    getCssVar('--colors-yellow40'),
-                    getCssVar('--colors-red60'),
+                    getCssVar('--colors-blue30'),
+                    getCssVar('--colors-blue50'),
+                    getCssVar('--colors-blue70'),
+                    getCssVar('--colors-blue90'),
                 ],
             },
             textStyle: {
                 color: getCssVar('--colors-gray80'),
             },
         },
-        series: [
-            {
-                name: '香港18区人口密度',
-                type: 'map',
-                map: 'HK',
+        geo: {
+            map: 'world',
+            roam: true,
+            zoom: 1.2,
+            center: [0, 20],
+            label: {
+                show: false,
+                color: getCssVar('--colors-gray90'),
+                fontSize: 8,
+            },
+            itemStyle: {
+                borderColor: getCssVar('--colors-gray50'),
+                borderWidth: 0.8,
+                areaColor: getCssVar('--colors-gray20'),
+            },
+            emphasis: {
+                itemStyle: {
+                    borderColor: getCssVar('--colors-gray70'),
+                    borderWidth: 2,
+                    areaColor: getCssVar('--colors-gray30'),
+                },
                 label: {
                     show: true,
-                    color: getCssVar('--colors-gray90'),
+                    color: getCssVar('--colors-gray110'),
                     fontSize: 10,
                 },
+            },
+        },
+        series: [
+            {
+                name: dataLabel,
+                type: 'map',
+                geoIndex: 0,
                 data: data,
-                nameMap: nameMap,
                 itemStyle: {
                     borderColor: getCssVar('--colors-gray50'),
-                    borderWidth: 1,
+                    borderWidth: 0.8,
                 },
                 emphasis: {
                     itemStyle: {
                         borderColor: getCssVar('--colors-gray70'),
                         borderWidth: 2,
-                    },
-                    label: {
-                        color: getCssVar('--colors-gray110'),
-                        fontSize: 12,
                     },
                 },
             },
@@ -171,39 +228,44 @@
 
     const handleClick = (event: ECMouseEvent) => {
         if (event.data) {
-            alert(`${event.name}: ${(event.data as any).value} (p / km2)`);
+            alert(`${event.name}\n${dataLabel}: ${event.data.value}`);
         } else {
-            alert(`${event.name}: No data available`);
+            alert(`${event.name}\nNo data available`);
         }
     };
 
-    // Load the Hong Kong GeoJSON data from local file
+    // Load the simplified world GeoJSON data
     onMount(async () => {
         try {
-            // If you have HK.json in your static folder
-            const response = await fetch('/HK.json');
+            // Use the simplified world map from CodePen
+            const response = await fetch('/world.json');
             const geoJson = await response.json();
 
             // Register the map with ECharts directly
             const { registerMap } = await import('echarts/core');
-            registerMap('HK', geoJson);
+            registerMap('world', geoJson);
 
             isLoading = false;
         } catch (error) {
-            console.error('Failed to load Hong Kong map data:', error);
+            console.error('Failed to load world map data:', error);
             isLoading = false;
         }
     });
+
+    const handleChartInit = (chart: EChartsType) => {
+        chartInstance = chart;
+        onChartReady?.(chart);
+    };
 </script>
 
 <div class="map-container">
     {#if isLoading}
         <div class="loading-overlay">
             <div class="loading-spinner"></div>
-            <p>Loading Hong Kong map data...</p>
+            <p>Loading world map data...</p>
         </div>
     {:else}
-        <Chart {init} {options} {theme} onclick={handleClick} />
+        <Chart {init} {options} {theme} oninit={handleChartInit} onclick={handleClick} />
     {/if}
 </div>
 
@@ -211,7 +273,7 @@
     .map-container {
         position: relative;
         width: 100%;
-        height: 600px;
+        height: 700px;
         background-color: var(--colors-gray20);
         border-radius: 0.5rem;
         border: 1px solid var(--colors-gray40);

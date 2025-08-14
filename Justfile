@@ -10,7 +10,7 @@ lint:
 
 clean *args="--async":
     #!/usr/bin/env bash
-    set -euo pipefail
+    set -exuo pipefail
 
     output_base=$(bazel info output_base)
 
@@ -22,7 +22,9 @@ clean *args="--async":
 alias coverage := test
 test *targets="//...":
     #!/usr/bin/env bash
-    set -euo pipefail
+    set -exuo pipefail
+
+    echo "cargo insta reject"
 
     cargo insta reject > /dev/null
 
@@ -48,7 +50,7 @@ vendor:
 
 grind *targets="//...":
     #!/usr/bin/env bash
-    set -euo pipefail
+    set -euxo pipefail
 
     output_base=$(bazel info output_base)
 

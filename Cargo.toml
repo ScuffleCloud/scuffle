@@ -38,7 +38,6 @@ members = [
   "cloud/proto",
   "cloud/core",
   "dev-tools/xtask",
-  "tools/cargo/deny",
   "tools/cargo/clippy",
   "tools/cargo/sync-readme",
   "build/utils/protobuf",

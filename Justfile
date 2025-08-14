@@ -3,16 +3,21 @@ mod? local
 # Format all code
 fmt:
     bazel run //tools/cargo/fmt:fix
-    find . \( -name '*.bazel' -o -name '*.bzl' \) -exec buildifier {} \;
+    buildifier $(git ls-files "*.bzl" "*.bazel" | xargs ls 2>/dev/null)
 
 lint:
     bazel run //tools/cargo/clippy:fix
 
 clean *args="--async":
-    bazel clean {{args}}
-    bazel --output_base=.cache/bazel/coverage clean {{args}}
-    bazel --output_base=.cache/bazel/grind clean {{args}}
-    bazel --output_base=.cache/bazel/rust_analyzer clean {{args}}
+    #!/usr/bin/env bash
+    set -euo pipefail
+
+    output_base=$(bazel info output_base)
+
+    bazel --output_base="${output_base}" clean {{args}}
+    bazel --output_base="${output_base}_coverage" clean {{args}}
+    bazel --output_base="${output_base}_grind" clean {{args}}
+    bazel --output_base="${output_base}_rust_analyzer" clean {{args}}
 
 alias coverage := test
 test *targets="//...":
@@ -21,9 +26,13 @@ test *targets="//...":
 
     cargo insta reject > /dev/null
 
-    bazel --output_base=.cache/bazel/coverage coverage {{targets}} --//settings:test_insta_force_pass
+    output_base=$(bazel info output_base)
 
-    snaps=$(find -L $(bazel --output_base=.cache/bazel/coverage info bazel-testlogs) \( -name '*.snap.new' -o -name '*.pending-snap' \))
+    bazel --output_base="${output_base}_coverage" coverage {{targets}} --//settings:test_insta_force_pass
+
+    test_logs=$(bazel --output_base="${output_base}_coverage" info bazel-testlogs)
+
+    snaps=$(find -L "${test_logs}" \( -name '*.snap.new' -o -name '*.pending-snap' \))
     # Loop over each found file
     for snap in $snaps; do
         rel_path="${snap#*test.outputs/}"
@@ -41,11 +50,13 @@ grind *targets="//...":
     #!/usr/bin/env bash
     set -euo pipefail
 
+    output_base=$(bazel info output_base)
+
     targets=$(bazel query 'kind("nextest_test rule", set({{targets}}))')
     target_runner_value="$(which valgrind) --error-exitcode=1 --leak-check=full --show-leak-kinds=definite --errors-for-leak-kinds=definite --track-origins=yes"
     target_runner_name="CARGO_TARGET_X86_64_UNKNOWN_LINUX_GNU_RUNNER"
 
-    bazel --output_base=.cache/bazel/grind test ${targets} --test_env="${target_runner_name}=${target_runner_value}" --//settings:test_rustc_flags="--cfg=valgrind"
+    bazel --output_base="${output_base}_grind" test ${targets} --test_env="${target_runner_name}=${target_runner_value}" --//settings:test_rustc_flags="--cfg=valgrind"
 
 alias docs := doc
 

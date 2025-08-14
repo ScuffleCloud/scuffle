@@ -1,8 +1,0 @@
-[package]
-name = "deny_runner"
-edition = "2024"
-publish = false
-license = "MIT OR Apache-2.0"
-
-[dependencies]
-clap = { version = "4.5", features = ["derive", "env"] }

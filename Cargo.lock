@@ -1115,13 +1115,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "deny_runner"
-version = "0.0.0"
-dependencies = [
- "clap",
-]
-
-[[package]]
 name = "derive-where"
 version = "1.6.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"

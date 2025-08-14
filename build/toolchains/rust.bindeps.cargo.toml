@@ -1,0 +1,2 @@
+[patch.crates-io]
+include_sass = { git = "https://github.com/TroyKomodo/grass.git", rev = "437c274bfa45a474a6f2e7c700c994d4e5e278b8" }

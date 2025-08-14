@@ -18,10 +18,10 @@ scuffle_package(
         "//crates/h265",
     ],
     test = scuffle_test(
-        data = ["@scuffle_assets//:mp4", "//build/utils:ffprobe"],
+        data = ["@scuffle_assets//:mp4", "//tools/ffmpeg:ffprobe"],
         insta = True,
         env = {
-            "FFPROBE": "$(rootpath //build/utils:ffprobe)",
+            "FFPROBE": "$(rootpath //tools/ffmpeg:ffprobe)",
             "ASSETS_DIR": "$(rootpath @scuffle_assets//:mp4)",
         },
     ),

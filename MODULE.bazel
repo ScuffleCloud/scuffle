@@ -17,4 +17,6 @@ include("//build/toolchains:rust.MODULE.bazel")
 
 include("//build/toolchains:ffmpeg.MODULE.bazel")
 
+include("//build/toolchains:valgrind.MODULE.bazel")
+
 include("//build/toolchains:assets.MODULE.bazel")

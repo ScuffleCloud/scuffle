@@ -167,20 +167,29 @@ bindeps.spec(
 )
 bindeps.spec(
     artifact = "bin",
+    package = "cargo-insta",
+    version = "1.43.1",
+)
+bindeps.spec(
+    artifact = "bin",
+    package = "just",
+    version = "1.42.4",
+)
+bindeps.spec(
+    artifact = "bin",
+    package = "miniserve",
+    version = "0.31.0",
+)
+bindeps.spec(
+    artifact = "bin",
     git = "https://github.com/TroyKomodo/rust-analyzer.git",
     package = "rust-analyzer",
     rev = "e9ca9f8ec88a207891c32da4fc6523026ea03c6f",
 )
-bindeps.annotation(
-    crate = "cargo-deny",
-    gen_all_binaries = True,
-)
-bindeps.annotation(
-    crate = "rust-analyzer",
-    gen_all_binaries = True,
-)
 bindeps.from_specs(
     name = "bindeps",
+    cargo_config = "//build/toolchains:rust.bindeps.cargo.toml",
+    generate_binaries = True,
     stable_as_nightly = True,
 )
 use_repo(bindeps, "bindeps")

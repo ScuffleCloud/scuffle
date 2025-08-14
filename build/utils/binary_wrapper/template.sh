@@ -12,16 +12,13 @@ if [[ -n "${RUNFILES_DIR:-}" ]]; then
 elif [[ -f "${SCRIPT_DIR}/MANIFEST" ]]; then
     RUNFILES="${SCRIPT_DIR}"
 else
-    # Fallback: assume runfiles directory is adjacent to script
     RUNFILES="${SCRIPT}.runfiles"
 fi
 
-# Resolve binary path within runfiles
-BINARY="$RUNFILES/_main/%%BINARY%%"
+pwd="${RUNFILES}/_main"
 
-# Calculate lib directory relative to binary
-LIB_DIR="$(dirname $(dirname "$BINARY"))/lib"
+# User-specified environment variables
+%%EXPORT_ENVS%%
 
 # Set up library path and execute
-export LD_LIBRARY_PATH="$LIB_DIR:${LD_LIBRARY_PATH:-}"
-exec "$BINARY" "$@"
+exec "$RUNFILES/_main/%%BINARY%%" "$@"

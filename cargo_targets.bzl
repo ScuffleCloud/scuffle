@@ -37,7 +37,6 @@ _packages = [
     "//crates/transmuxer",
     "//dev-tools/xtask",
     "//tools/cargo/clippy",
-    "//tools/cargo/deny",
     "//tools/cargo/sync-readme",
     "//build/utils/protobuf",
     "//build/utils/rust/clippy",

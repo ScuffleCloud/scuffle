@@ -30,9 +30,6 @@
             bazelisk
             stdenv
             bash
-            miniserve
-            just
-            buildifier
             valgrind
           ];
 

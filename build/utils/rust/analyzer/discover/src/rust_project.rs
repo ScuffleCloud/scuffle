@@ -252,6 +252,7 @@ pub enum RunnableKind {
 pub fn assemble_rust_project(
     bazel: &Utf8Path,
     workspace: &Utf8Path,
+    output_base: &Utf8Path,
     toolchain_info: ToolchainInfo,
     crate_specs: impl IntoIterator<Item = CrateSpec>,
 ) -> anyhow::Result<RustProject> {
@@ -301,7 +302,7 @@ pub fn assemble_rust_project(
                     Runnable {
                         program: bazel.to_string(),
                         args: vec![
-                            "--output_base=.cache/bazel/rust_analyzer".to_owned(),
+                            format!("--output_base={output_base}"),
                             "test".to_owned(),
                             format!("//{test_label}"),
                             "--test_output".to_owned(),
@@ -317,7 +318,7 @@ pub fn assemble_rust_project(
                     Runnable {
                         program: bazel.to_string(),
                         args: vec![
-                            "--output_base=.cache/bazel/rust_analyzer".to_owned(),
+                            format!("--output_base={output_base}"),
                             "test".to_owned(),
                             format!("//{test_label}"),
                             "--test_output".to_owned(),
@@ -335,7 +336,7 @@ pub fn assemble_rust_project(
                 runnables.push(Runnable {
                     program: bazel.to_string(),
                     args: vec![
-                        "--output_base=.cache/bazel/rust_analyzer".to_owned(),
+                        format!("--output_base={output_base}"),
                         "test".to_owned(),
                         format!("//{doc_test_label}"),
                         "--test_output".to_owned(),
@@ -352,7 +353,7 @@ pub fn assemble_rust_project(
                 runnables.push(Runnable {
                     program: bazel.to_string(),
                     args: vec![
-                        "--output_base=.cache/bazel/rust_analyzer".to_owned(),
+                        format!("--output_base={output_base}"),
                         "run".to_owned(),
                         "--config=wrapper".to_owned(),
                         "//build/utils/rust/analyzer/check".to_owned(),

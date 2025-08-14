@@ -4,10 +4,12 @@ set -euo pipefail
 
 export BAZEL="$(which bazelisk)"
 
+output_base="$(bazelisk info output_base)"
+
 bazelisk \
-    --output_base=.cache/bazel/rust_analyzer \
+    --output_base="${output_base}_rust_analyzer" \
     run \
     --config=wrapper \
     //build/utils/rust/analyzer/check \
     -- \
-    --config=wrapper 2> /dev/null
+    --config=wrapper --output-base="${output_base}_rust_analyzer" 2> /dev/null

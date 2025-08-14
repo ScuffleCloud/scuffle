@@ -246,7 +246,7 @@ pub fn generate_rust_project(
 
     let toolchain_info = deserialize_file_content(&path, output_base, workspace, execution_root)?;
 
-    rust_project::assemble_rust_project(bazel, workspace, toolchain_info, crate_specs)
+    rust_project::assemble_rust_project(bazel, workspace, output_base, toolchain_info, crate_specs)
 }
 
 /// Executes `bazel info` to get a map of context information.

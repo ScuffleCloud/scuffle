@@ -30,7 +30,6 @@
             bazelisk
             stdenv
             bash
-            valgrind
           ];
 
           shellHook = ''

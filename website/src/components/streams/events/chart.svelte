@@ -16,8 +16,8 @@
 
     import { CanvasRenderer } from 'echarts/renderers';
     import { renderItem } from './shape-renderers';
-    import { theme } from '$lib/theme';
     import type { ChartData } from '../types';
+    import { getCssVar } from '$lib/utils';
     use([
         DatasetComponent,
         TitleComponent,
@@ -72,11 +72,11 @@
                         },
                         {
                             offset: 0.15,
-                            color: theme.colors.gray40,
+                            color: getCssVar('--colors-gray40'),
                         },
                         {
                             offset: 0.85,
-                            color: theme.colors.gray40,
+                            color: getCssVar('--colors-gray40'),
                         },
                         {
                             offset: 0.85,
@@ -109,11 +109,11 @@
                     colorStops: [
                         {
                             offset: 0,
-                            color: theme.colors.gray60,
+                            color: getCssVar('--colors-gray60'),
                         },
                         {
                             offset: 0.5,
-                            color: theme.colors.gray60,
+                            color: getCssVar('--colors-gray60'),
                         },
                         {
                             offset: 0.5,
@@ -147,7 +147,7 @@
             alignMaxLabel: 'right',
             hideOverlap: true,
             interval: 'auto',
-            color: theme.colors.gray60,
+            color: getCssVar('--colors-gray60'),
             margin: 10,
         },
     };
@@ -160,8 +160,8 @@
                 top: '28%',
                 height: '25%',
                 show: true,
-                backgroundColor: theme.colors.teal30,
-                borderColor: theme.colors.teal30,
+                backgroundColor: getCssVar('--colors-teal30'),
+                borderColor: getCssVar('--colors-teal30'),
             },
             {
                 left: '8%',
@@ -169,8 +169,8 @@
                 top: '55%',
                 height: '25%',
                 show: true,
-                backgroundColor: theme.colors.teal30,
-                borderColor: theme.colors.teal30,
+                backgroundColor: getCssVar('--colors-teal30'),
+                borderColor: getCssVar('--colors-teal30'),
             },
         ],
         xAxis: [
@@ -228,17 +228,15 @@
                 labelFormatter: '{value}',
                 borderRadius: 4,
                 fillerColor: '#EEE6E2',
-                // This background color seems to ignore the borderRadius. TBD
-                // backgroundColor: theme.colors.teal100,
-                borderColor: theme.colors.teal100,
+                borderColor: getCssVar('--colors-teal100'),
                 handleStyle: {
-                    color: theme.colors.yellow40,
-                    borderColor: theme.colors.yellow40,
+                    color: getCssVar('--colors-yellow40'),
+                    borderColor: getCssVar('--colors-yellow40'),
                     borderWidth: 1,
                     borderRadius: 4,
                 },
                 moveHandleStyle: {
-                    color: theme.colors.brown50,
+                    color: getCssVar('--colors-brown50'),
                     opacity: 0.7,
                 },
             },

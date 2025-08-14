@@ -1,5 +1,6 @@
-import { theme, type ThemeColors } from '$lib/theme';
-
-export const getColor = (col: ThemeColors | string) => {
-    return col in theme.colors ? theme.colors[col as ThemeColors] : col;
-};
+export function getCssVar(varName: string): string {
+    if (typeof window === 'undefined') {
+        return '';
+    }
+    return getComputedStyle(document.documentElement).getPropertyValue(varName).trim();
+}

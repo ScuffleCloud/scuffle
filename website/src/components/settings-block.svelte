@@ -140,7 +140,7 @@
 
 <style>
     .settings-block {
-        background: var(--colors-teal70);
+        background: var(--colors-gray50);
         border-radius: 8px;
         padding: 0.25rem;
         max-width: 100%;
@@ -181,10 +181,10 @@
             gap: 0.25rem;
 
             .card {
-                background: var(--colors-teal30);
+                background: var(--colors-teal20);
                 border-radius: 0.5rem;
                 padding: 1rem;
-                border: 1px solid var(--colors-teal10);
+                border: 1px solid var(--colors-teal30);
 
                 .card-header {
                     display: flex;

@@ -1,0 +1,155 @@
+<!-- This will hold all event stuff for a stream.
+ we will have a dropdown selector that is defaulted to the current stream and can show past streams
+ There will be an adjacent button to resume or stop live updates
+ Then we will have our chart. We need to leverage a charting library to get this working properly probably but we will see
+  Then there will be a
+
+ -->
+
+<script lang="ts">
+    import EventsChart from './chart.svelte';
+    import type { VideoStream } from '../types';
+    import EventsList from './events-list.svelte';
+    import type { StreamEvent } from './types';
+    import EventsLegend from './events-legend.svelte';
+    import IconPlayBig from '$lib/images/icon-play-big.svelte';
+    import StreamSelect from './stream-select.svelte';
+
+    import { goto } from '$app/navigation';
+    import { page } from '$app/state';
+    import type { ChartData } from '../types';
+
+    type Props = {
+        events: VideoStream[];
+        eventDetails?: ChartData;
+        currentEventId?: string;
+    };
+
+    const { events = [], eventDetails, currentEventId = '' }: Props = $props();
+
+    // It doesn't matter what we fetch, we need to reformat the events before dumping it in our chart
+
+    const eventContent: StreamEvent[] = [
+        {
+            id: '1',
+            type: 'info',
+            text: 'Neutral event',
+            timestamp: 'May 5, 04:01:11 PM EDT',
+        },
+        {
+            id: '2',
+            type: 'asset_created',
+            text: 'Success event',
+            timestamp: 'May 5, 04:01:11 PM EDT',
+        },
+        {
+            id: '3',
+            type: 'error',
+            text: 'Error event',
+            timestamp: 'May 5, 04:01:11 PM EDT',
+        },
+    ];
+
+    let currentEvent = $state(page.params.eventId || '');
+
+    function handleStreamChange(value: string) {
+        if (value && value !== page.params.roomId) {
+            const baseUrl = `/organizations/${page.params.orgId}/projects/${page.params.projectId}/streams/${page.params.roomId}/events`;
+            goto(`${baseUrl}/${value}`);
+        }
+    }
+</script>
+
+<div class="events-tab-container">
+    <div class="card">
+        <div class="header">
+            <!-- TODO: Can use design system select here and migrate things when needed or at least reuse css classes -->
+            <StreamSelect
+                streams={events}
+                bind:value={currentEvent}
+                onValueChange={handleStreamChange}
+            />
+            <button class="resume-button">
+                <div class="resume-button-text">Resume Live Updates</div>
+                <IconPlayBig />
+            </button>
+        </div>
+
+        <!-- For the data-zoom slider + chart -->
+        <div class="events-chart-container">
+            {#if eventDetails}
+                <EventsChart {eventDetails} />
+            {/if}
+        </div>
+        <div class="events-legend-container">
+            <EventsLegend />
+        </div>
+    </div>
+
+    <EventsList events={eventContent} />
+</div>
+
+<style>
+    .events-tab-container {
+        display: flex;
+        flex-direction: column;
+        gap: 0.25rem;
+    }
+
+    .card {
+        background: var(--colors-gray20);
+        border-radius: 8px;
+        padding: 1rem;
+        display: flex;
+        flex-direction: column;
+        gap: 1rem;
+    }
+
+    .header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 1rem;
+    }
+
+    .resume-button {
+        padding: 0.5rem 1rem;
+        background: var(--colors-gray50);
+        border: none;
+        border-radius: 0.5rem;
+        font-size: 0.875rem;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        gap: 0.625rem;
+        transition: background-color 0.2s;
+        flex-shrink: 0;
+    }
+
+    .resume-button-text {
+        color: var(--colors-brown90);
+        font-size: 1rem;
+        font-weight: 700;
+        line-height: 1.5rem;
+    }
+
+    .resume-button:hover {
+        background-color: #e2e8f0;
+    }
+
+    .events-chart-container {
+        height: 250px;
+        border-radius: 4px;
+        width: 100%;
+        padding: 0.25rem;
+    }
+
+    .events-legend-container {
+        padding: 1.5rem 1rem 1rem 1rem;
+        border-radius: 0rem 0rem 0.5rem 0.5rem;
+        background: var(--colors-gray50);
+        display: flex;
+        flex-direction: column;
+        gap: 0.75rem;
+    }
+</style>

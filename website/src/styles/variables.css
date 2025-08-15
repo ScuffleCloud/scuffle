@@ -1,0 +1,90 @@
+/* Eventually ideally the colors are aren't accessed directly and instead by --bg-light or --bg-medium */
+:root {
+    /* Red Colors */
+    --colors-red10: #ffd5d3;
+    --colors-red20: #ffc7c4;
+    --colors-red30: #fe9e9b;
+    --colors-red40: #fd5957;
+    --colors-red50: #fd3837;
+    --colors-red60: #fc1315;
+    --colors-red70: #8e0119;
+    --colors-red80: #5d0018;
+    --colors-red90: #4e0016;
+
+    /* Purple Colors */
+    --colors-purple10: #e1cdfe;
+    --colors-purple20: #dbbffd;
+    --colors-purple30: #d1a1f9;
+    --colors-purple40: #cf95f7;
+    --colors-purple50: #cb7cf0;
+    --colors-purple60: #ca3fd1;
+    --colors-purple70: #812a5b;
+    --colors-purple80: #480a21;
+    --colors-purple90: #3a0820;
+
+    /* Blue Colors */
+    --colors-blue10: #d6e6ff;
+    --colors-blue20: #cee1ff;
+    --colors-blue30: #b6d5ff;
+    --colors-blue40: #93c3ff;
+    --colors-blue50: #65afff;
+    --colors-blue60: #4095fc;
+    --colors-blue70: #0b53c8;
+    --colors-blue80: #1d1fa5;
+    --colors-blue90: #07085a;
+
+    /* Green Colors */
+    --colors-green10: #cffb99;
+    --colors-green20: #ccfa8d;
+    --colors-green30: #c6f56e;
+    --colors-green40: #c3ed49;
+    --colors-green50: #b8e730;
+    --colors-green60: #5bc81a;
+    --colors-green70: #116936;
+    --colors-green80: #0e5033;
+    --colors-green90: #0a3a2d;
+
+    /* Yellow Colors */
+    --colors-yellow10: #ffeccd;
+    --colors-yellow20: #ffe2b2;
+    --colors-yellow30: #ffd794;
+    --colors-yellow40: #ffc461;
+    --colors-yellow50: #ffb63b;
+    --colors-yellow60: #f99600;
+    --colors-yellow70: #803100;
+    --colors-yellow80: #592200;
+    --colors-yellow90: #461b00;
+
+    /* Gray Colors */
+    --colors-gray10: #fefcfb; /* outline */
+    --colors-gray20: #faf5f1; /* card */
+    --colors-gray30: #f5efec; /* body */
+    --colors-gray40: #f1eae7; /* card-group */
+    --colors-gray50: #e6dedb;
+    --colors-gray60: #ddd5d2;
+    --colors-gray70: #a69e9b;
+    --colors-gray80: #857a76;
+    --colors-gray90: #645c59;
+    --colors-gray100: #45413f;
+    --colors-gray110: #373332;
+    --colors-gray120: #282625;
+    --colors-gray130: #1d1c1b;
+    --colors-gray140: #181716;
+    --colors-gray150: #0b0b0a;
+
+    /* Alpha Dark Colors */
+    --colors-alpha-dark10: #1817160d;
+    --colors-alpha-dark20: #1817161f;
+    --colors-alpha-dark30: #1817164d;
+    --colors-alpha-dark40: #18171680;
+    --colors-alpha-dark50: #181716b2;
+    --colors-alpha-dark60: #181716d9;
+
+    /* Alpha Light Colors */
+    --colors-alpha-light10: #faf5f10d;
+    --colors-alpha-light20: #faf5f11f;
+    --colors-alpha-light30: #faf5f14d;
+    --colors-alpha-light40: #faf5f180;
+    --colors-alpha-light50: #faf5f1b2;
+    --colors-alpha-light60: #faf5f1d9;
+}

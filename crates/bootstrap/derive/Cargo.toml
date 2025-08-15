@@ -20,22 +20,17 @@ proc-macro = true
 darling = "0.21"
 proc-macro2 = "1"
 quote = "1"
-scuffle-workspace-hack.workspace = true
 syn = "2"
 
 [dev-dependencies]
 insta = "1.42"
 prettyplease = "0.2"
 
-[package.metadata.cargo-sync-rdme.badge]
-style = "flat-square"
-
-[package.metadata.cargo-sync-rdme.badge.badges]
-license = true
-docs-rs = true
-crates-io = true
-github-actions = { workflows = "ci.yaml" }
-codecov = true
-
 [package.metadata.xtask.release]
 group = "scuffle-bootstrap"
+
+[package.metadata.sync-readme.badges]
+docs-rs = true
+crates-io = true
+license = true
+codecov = true

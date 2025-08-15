@@ -1,4 +1,5 @@
 target/
+.cache/
 .vscode/
 !.vscode/extensions.json
 node_modules/
@@ -13,3 +14,4 @@ coverage/
 **/.dockerignore
 **/*.dockerfile
 **/*.docker
+.direnv/

@@ -11,14 +11,9 @@ publish = false
 
 [dependencies]
 pb = { package = "scufflecloud-proto", path = "../proto" }
-scuffle-workspace-hack.workspace = true
 
-[package.metadata.cargo-sync-rdme.badge]
-style = "flat-square"
-
-[package.metadata.cargo-sync-rdme.badge.badges]
-license = true
+[package.metadata.sync-readme.badges]
 docs-rs = false
 crates-io = false
-github-actions = { workflows = "ci.yaml" }
+license = true
 codecov = true

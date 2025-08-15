@@ -1,6 +1,6 @@
 ---
 source: crates/tinc/build/src/codegen/cel/functions/contains.rs
-expression: "postcompile::compile_str!(postcompile::config!\n{\n    test: true, dependencies:\n    vec![postcompile::Dependency::workspace(\"tinc\"),],\n}, quote!\n{\n    fn contains(input: &String) -> Result<bool,\n    ::tinc::__private::cel::CelError<'_>> { Ok(#output) } #[test] fn\n    test_contains()\n    {\n        assert_eq!(contains(&\"in2dastring\".into()).unwrap(), true);\n        assert_eq!(contains(&\"in3dastring\".into()).unwrap(), false);\n    }\n},)"
+expression: "postcompile::compile_str!(postcompile::config!\n{\n    test: true, dependencies:\n    vec![postcompile::Dependency::version(\"tinc\", \"*\"),],\n}, quote!\n{\n    fn contains(input: &String) -> Result<bool,\n    ::tinc::__private::cel::CelError<'_>> { Ok(#output) } #[test] fn\n    test_contains()\n    {\n        assert_eq!(contains(&\"in2dastring\".into()).unwrap(), true);\n        assert_eq!(contains(&\"in3dastring\".into()).unwrap(), false);\n    }\n},)"
 ---
 exit status: 0
 --- test_stdout

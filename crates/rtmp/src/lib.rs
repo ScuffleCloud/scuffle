@@ -94,6 +94,14 @@ mod tests {
 
     use crate::session::server::{ServerSession, ServerSessionError, SessionData, SessionHandler};
 
+    fn file_path(item: &str) -> PathBuf {
+        if let Some(env) = std::env::var_os("ASSETS_DIR") {
+            PathBuf::from(env).join(item)
+        } else {
+            PathBuf::from(env!("CARGO_MANIFEST_DIR")).join(format!("../../assets/{item}"))
+        }
+    }
+
     enum Event {
         Publish {
             stream_id: u32,
@@ -160,15 +168,13 @@ mod tests {
         let listener = tokio::net::TcpListener::bind("127.0.0.1:0").await.expect("failed to bind");
         let addr = listener.local_addr().unwrap();
 
-        let dir = PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("../../assets");
-
-        let _ffmpeg = Command::new("ffmpeg")
+        let _ffmpeg = Command::new(std::env::var_os("FFMPEG").unwrap_or("ffmpeg".into()))
             .args([
                 "-loglevel",
                 "debug",
                 "-re",
                 "-i",
-                dir.join("avc_aac.mp4").to_str().expect("failed to get path"),
+                file_path("avc_aac.mp4").to_str().expect("failed to get path"),
                 "-r",
                 "30",
                 "-t",
@@ -294,15 +300,15 @@ mod tests {
         let listener = tokio::net::TcpListener::bind("127.0.0.1:0").await.expect("failed to bind");
         let addr = listener.local_addr().unwrap();
 
-        let dir = PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("../../assets");
+        println!("ffmpeg from {}", std::env::var("FFMPEG").unwrap_or("ffmpeg".into()));
 
-        let mut ffmpeg = Command::new("ffmpeg")
+        let mut ffmpeg = Command::new(std::env::var_os("FFMPEG").unwrap_or("ffmpeg".into()))
             .args([
                 "-loglevel",
                 "debug",
                 "-re",
                 "-i",
-                dir.join("avc_aac.mp4").to_str().expect("failed to get path"),
+                file_path("avc_aac.mp4").to_str().expect("failed to get path"),
                 "-r",
                 "30",
                 "-t",

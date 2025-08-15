@@ -37,8 +37,6 @@ async fn main() {
 }
 
 pub fn get_tls_config() -> io::Result<rustls::ServerConfig> {
-    rustls::crypto::aws_lc_rs::default_provider().install_default().unwrap();
-
     let certs = load_certs("local/fullchain.pem")?;
     let key = load_private_key("local/privkey.pem")?;
 

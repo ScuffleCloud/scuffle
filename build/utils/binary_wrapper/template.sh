@@ -20,5 +20,8 @@ pwd="${RUNFILES}/_main"
 # User-specified environment variables
 %%EXPORT_ENVS%%
 
+# User-specified extra commands
+%%EXTRA_COMMANDS%%
+
 # Set up library path and execute
 exec "$RUNFILES/_main/%%BINARY%%" "$@"

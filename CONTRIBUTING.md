@@ -6,140 +6,68 @@ We have a [Code of Conduct](./CODE_OF_CONDUCT.md) that we expect all contributor
 
 ## Developer Environment
 
-All developers need to have a working rust developer environment setup. You can install rust via [rustup](https://rustup.rs/).
+### Bazel
 
-After that you can run the following command to install all the other tools.
+All developers need to have [bazelisk](https://github.com/bazelbuild/bazelisk) installed, you can find the installation instructions [here](https://bazel.build/install/bazelisk).
 
-```bash
-cargo xtask dev-tools
+We use bazel instead of cargo to build the project. This is because cargo struggles to cache builds for large projects and we often ended up having cache invalidation issues. Bazel also allows us to have a more consistent build environment across different machines and CI and support for languages other than rust.
+
+One example of how we optimize our cache use is external dependencies:
+
+We vendor all our dependencies [`just vendor`](#local-commnads), and have them built in `opt` (release) mode. This means that we do not need to rebuild dependencies when switching between debug and release builds, and also we don't instrument coverage. Meaning we can use the same cached builds for debug, release, coverage, valgrind, clippy, rust-analyzer builds.
+
+#### Scripts / Tools
+
+We provide a bunch of tools which we vendor by wrapping them into a bazel rule, you can find them in [`tools/scripts`](./tools/scripts/README.md). We recommend adding this directory to the front of your `PATH` (automatically done if you use [direnv](#environment-variables)).
+
+### VSCode Setup
+
+If you use vscode you can setup rust-analyzer to work by adding the following to your settings.json:
+
+```json
+{
+    "rust-analyzer.server.path": "${workspaceFolder}/build/utils/rust/analyzer/lsp.sh",
+    "rust-analyzer.workspace.discoverConfig": {
+        "command": [
+            "${workspaceFolder}/build/utils/rust/analyzer/discover.sh"
+        ],
+        "progressLabel": "rust_analyzer",
+        "filesToWatch": [
+            "BUILD",
+            "BUILD.bazel",
+            "MODULE.bazel"
+        ]
+    },
+    "rust-analyzer.check.overrideCommand": [
+        "${workspaceFolder}/build/utils/rust/analyzer/check.sh"
+    ],
+}
 ```
 
-<details>
-<summary>If you want to install the tools manually you can do so with the following commands.</summary>
+for a bazel lsp you can use the bazel extension for vscode and download [starpls](https://github.com/withered-magic/starpls), adding the following to your settings.json:
 
-You should install both the stable and nightly rust toolchains.
-
-```bash
-rustup install stable
-rustup install nightly
+```json
+{
+   "bazel.lsp.command": "starpls",
+   "bazel.lsp.args": [
+      "server",
+      "--experimental_infer_ctx_attributes",
+      "--experimental_enable_label_completions",
+      "--experimental_use_code_flow_analysis",
+      "--bazel_path=bazelisk",
+   ],
+   "bazel.executable": "bazelisk",
+   "bazel.enableCodeLens": true
+}
 ```
 
-After installing rust you should also install a few components.
+### Environment Variables
 
-```bash
-rustup component add clippy
-rustup component add rustfmt
-rustup component add llvm-tools-preview
-rustup component add rust-src
-rustup component add rust-docs
-```
+We advice you to use [direnv](https://direnv.net/) to load the .envrc file, which sets up a few environment variables needed for development.
 
-Then we need to install `cargo-binstall` to be able to install the other crates.
+### Nix
 
-```bash
-cargo install cargo-binstall
-```
-
-then all of the other crates can be installed with `cargo binstall`.
-
-```bash
-cargo binstall just cargo-llvm-cov cargo-nextest cargo-insta cargo-hakari miniserve
-```
-
-</details>
-
-### FFmpeg
-
-You need to have ffmpeg 7.1, with dev headers and shared libraries, installed.
-
-#### Package Managers
-
-Package managers often have an out-dated version of ffmpeg, so make sure you check your package manager before installing ffmpeg.
-
-For MacOS (or Linux) you can install ffmpeg via homebrew.
-
-```bash
-brew install ffmpeg
-```
-
-For Windows you can install ffmpeg via chocolatey or scoop.
-
-```bash
-choco install ffmpeg
-scoop install ffmpeg
-```
-
-#### Pre-built Binaries (Windows / Linux)
-
-However its far easier to download pre-built binaries from [here](https://github.com/BtbN/FFmpeg-Builds/releases/tag/latest) (linux or windows).
-
-| Platform | Download |
-|----------|----------|
-| Windows | [**`ffmpeg-n7.1-latest-win64-gpl-shared-7.1.zip`**](https://github.com/BtbN/FFmpeg-Builds/releases/download/latest/ffmpeg-n7.1-latest-win64-gpl-shared-7.1.zip) |
-| Windows ARM | [**`ffmpeg-n7.1-latest-win64-gpl-shared-7.1.zip`**](https://github.com/BtbN/FFmpeg-Builds/releases/download/latest/ffmpeg-n7.1-latest-winarm64-gpl-shared-7.1.zip) |
-| Linux | [**`ffmpeg-n7.1-latest-linux64-gpl-shared-7.1.zip`**](https://github.com/BtbN/FFmpeg-Builds/releases/download/latest/ffmpeg-n7.1-latest-linux64-gpl-shared-7.1.zip) |
-| Linux ARM | [**`ffmpeg-n7.1-latest-linuxarm64-gpl-shared-7.1.tar.xz`**](https://github.com/BtbN/FFmpeg-Builds/releases/download/latest/ffmpeg-n7.1-latest-linuxarm64-gpl-shared-7.1.tar.xz) |
-
-#### Installing from source
-
-You can download it from source and build it with at least the following libraries:
-
-- libx264
-- libx265
-- libvpx
-- libopus
-- libdav1d
-
-For more information on building ffmpeg from source, you can refer to the [FFmpeg Documentation](https://trac.ffmpeg.org/wiki/CompilationGuide).
-
-### Valgrind (Linux / WSL Only)
-
-You need to have valgrind (at least version 3.24) installed.
-
-You can either build it from source or download it from our pre-built binaries [here](https://github.com/ScuffleCloud/valgrind-builds/releases/tag/latest).
-
-### Common Build Issues
-
-#### Cargo build fails with unable to find ffmpeg installation.
-
-Make sure ffmpeg is actually installed. If you are on linux or macos that you have `pkg-config` installed.
-
-```bash
-# Ubuntu / Debian
-sudo apt-get install pkg-config
-
-# MacOS
-brew install pkg-config
-```
-
-If this fails, try setting the following environment variables:
-
-These assume you have the path to ffmpeg installed in `${FFMPEG_ROOT}` and that you have an environment variable `FFMPEG_ROOT` set.
-
-##### Linux / MacOS
-
-```bash
-export FFMPEG_PKG_CONFIG_PATH="${FFMPEG_ROOT}/lib/pkgconfig"
-export FFMPEG_LIBS_DIR="${FFMPEG_ROOT}/lib"
-export FFMPEG_INCLUDE_DIR="${FFMPEG_ROOT}/include"
-export PATH="${FFMPEG_ROOT}/bin:${FFMPEG_ROOT}/lib:${FFMPEG_ROOT}/include:${PATH}"
-```
-
-##### Windows
-
-```ps1
-$env:FFMPEG_PKG_CONFIG_PATH="${$env:FFMPEG_ROOT}\lib\pkgconfig"
-$env:FFMPEG_LIBS_DIR="${$env:FFMPEG_ROOT}\lib"
-$env:FFMPEG_INCLUDE_DIR="${$env:FFMPEG_ROOT}\include"
-$env:PATH="${$env:FFMPEG_ROOT}\bin;${$env:FFMPEG_ROOT}\lib;${$env:FFMPEG_ROOT}\include;${env:PATH}"
-```
-
-On windows you need to include not just the binary directory but also the lib and include directories in your path, so that the linker can find the libraries.
-
-### Protobuf-compiler
-
-In `scuffle-tinc` we use the protobuf compiler which you can install via the following instructions: https://protobuf.dev/installation/
-
+We have a [nix shell setup](nix/README.md) too, (automatically loaded if you use direnv).
 
 ## Local Commnads
 
@@ -148,13 +76,11 @@ In `scuffle-tinc` we use the protobuf compiler which you can install via the fol
 | `just test` | Run all tests |
 | `just grind` | Run tests with valgrind |
 | `just lint` | Lint the code & try auto-fix linting errors |
-| `just format` | Format the code |
-| `just workspace-hack` | Update the workspace hack cache, when adding / removing dependencies |
-| `just powerset <command>` | Run the powerset tests for a command |
+| `just fmt` | Format the code |
 | `just deny` | Check that all dependencies have allowed licenses |
 | `just docs` | Build the docs |
 | `just docs-serve` | Serve the docs locally |
-| `just coverage-serve` | Serve the coverage report locally |
+| `just vendor` | Vendor the dependencies |
 
 ## CLA
 
@@ -213,96 +139,6 @@ We have a ci job that will check that the tests are passing, you can run `just t
 ##### Coverage
 
 You can also see the coverage of the tests generated by the command by either previewing the `lcov.info` file or by running `just coverage-serve` to serve the coverage report.
-
-##### Valgrind
-
-We use valgrind to check for memory leaks in our tests. You can run `just valgrind` to run the tests with valgrind. Some tests are disabled because they are tests based on timings and valgrind runs them much too slow. If you add a test that is based on timings, you should disable it with valgrind `#[cfg(not(valgrind))]`.
-
-###### Updating the `valgrind_supressions.log` file
-
-If you add some new tests that leak some memory into the global state you need to update the `valgrind_supressions.log` file in order to keep the CI green.
-
-After you run `just grind` you will see an output of all of the failed tests along with a valgrind output like such
-
-```
-──── STDERR:             scuffle-metrics collector::tests::test_metric_with_string_attribute
-==551264== Memcheck, a memory error detector
-==551264== Copyright (C) 2002-2024, and GNU GPL'd, by Julian Seward et al.
-==551264== Using Valgrind-3.24.0 and LibVEX; rerun with -h for copyright info
-==551264== Command: /home/simao/Projects/rust/scuffle/target/debug/deps/scuffle_metrics-44942b38869cd765 --exact collector::tests::test_metric_with_string_attribute --nocapture
-==551264== 
-==551264== 
-==551264== HEAP SUMMARY:
-==551264==     in use at exit: 139,300 bytes in 32 blocks
-==551264==   total heap usage: 718 allocs, 686 frees, 230,102 bytes allocated
-==551264== 
-==551264== 24 bytes in 1 blocks are possibly lost in loss record 4 of 28
-==551264==    at 0x48457A8: malloc (vg_replace_malloc.c:446)
-==551264==    by 0x61A6F1: alloc::alloc::alloc (alloc.rs:96)
-==551264==    by 0x61A7F9: alloc::alloc::Global::alloc_impl (alloc.rs:192)
-==551264==    by 0x61A178: allocate (alloc.rs:254)
-==551264==    by 0x61A178: alloc::sync::Arc<[T]>::allocate_for_slice::{{closure}} (sync.rs:2039)
-==551264==    by 0x619E6E: alloc::sync::Arc<T>::allocate_for_layout (sync.rs:1952)
-==551264==    by 0x61A121: alloc::sync::Arc<[T]>::allocate_for_slice (sync.rs:2037)
-==551264==    by 0x619FD2: alloc::sync::Arc<[T]>::copy_from_slice (sync.rs:2051)
-==551264==    by 0x35C9C0: from_slice<u8> (sync.rs:2142)
-==551264==    by 0x35C9C0: from<u8> (sync.rs:3631)
-==551264==    by 0x35C9C0: <alloc::sync::Arc<str> as core::convert::From<&str>>::from (sync.rs:3669)
-==551264==    by 0x385E61: scuffle_metrics::collector::tests::test_metric_with_string_attribute::example::request_with_method (collector.rs:608)
-==551264==    by 0x38555C: scuffle_metrics::collector::tests::test_metric_with_string_attribute (collector.rs:624)
-==551264==    by 0x37E3D6: scuffle_metrics::collector::tests::test_metric_with_string_attribute::{{closure}} (collector.rs:607)
-==551264==    by 0x359A25: core::ops::function::FnOnce::call_once (function.rs:250)
-==551264== 
-{
-   <insert_a_suppression_name_here>
-   Memcheck:Leak
-   match-leak-kinds: possible
-   fun:malloc
-   fun:_ZN5alloc5alloc5alloc17h9107b1cc2a0aa61aE
-   fun:_ZN5alloc5alloc6Global10alloc_impl17hd5a77936c3f57790E
-   fun:allocate
-   fun:_ZN5alloc4sync22Arc$LT$$u5b$T$u5d$$GT$18allocate_for_slice28_$u7b$$u7b$closure$u7d$$u7d$17hfb887c7502b0a26dE
-   fun:_ZN5alloc4sync12Arc$LT$T$GT$19allocate_for_layout17hd0c84398dc717102E
-   fun:_ZN5alloc4sync22Arc$LT$$u5b$T$u5d$$GT$18allocate_for_slice17h390937e173d2416aE
-   fun:_ZN5alloc4sync22Arc$LT$$u5b$T$u5d$$GT$15copy_from_slice17h846493007d1e92a5E
-   fun:from_slice<u8>
-   fun:from<u8>
-   fun:_ZN82_$LT$alloc..sync..Arc$LT$str$GT$$u20$as$u20$core..convert..From$LT$$RF$str$GT$$GT$4from17h453e33cc9264d222E
-   fun:_ZN15scuffle_metrics9collector5tests33test_metric_with_string_attribute7example19request_with_method17ha517184047e9b9a5E
-   fun:_ZN15scuffle_metrics9collector5tests33test_metric_with_string_attribute17hc35b598541e835dfE
-   fun:_ZN15scuffle_metrics9collector5tests33test_metric_with_string_attribute28_$u7b$$u7b$closure$u7d$$u7d$17h39e89abbe5c8ab7eE
-   fun:_ZN4core3ops8function6FnOnce9call_once17h64835dc5cce34b93E
-}
-```
-
-At the end of the output there is a section that starts with `{` and ends with `}`. This is the suppression that you need to add to the `valgrind_supressions.log` file. We typically clean up this supression a bit by removing unneeded function calls.
-
-In the above it would be the `fun:_ZN15scuffle_metrics9collector5tests33test_metric_with_string_attribute17hc35b598541e835dfE` line as that maps to `scuffle_metrics::collector::tests::test_metric_with_string_attribute (collector.rs:624)` in the code.
-
-We must remove the end hash (`17hc35b598541e835dfE`) and replace it with a `*`
-
-So it looks like `fun:_ZN15scuffle_metrics9collector5tests33test_metric_with_string_attribute*`
-
-Then we can remove all other lines and replace it with a `...`
-
-So the final supression comes out to
-
-```
-{
-   <insert_a_suppression_name_here>
-   Memcheck:Leak
-   match-leak-kinds: possible
-   ...
-   fun:_ZN15scuffle_metrics9collector5tests33test_metric_with_string_attribute*
-   ...
-}
-```
-
-We then add a useful description for why we are supressing this leak, and then we add it to the `valgrind_supressions.log` file and run `just grind` again to make sure the leak is fixed.
-
-#### Hakari
-
-Hackari is a way to improve build times when using workspaces. If you make any dependency changes, you should run `just workspace-hack` to update the hackari cache.
 
 ### Merging
 

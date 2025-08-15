@@ -1,1 +1,1 @@
-exports_files(["test_wrapper.sh"])
+exports_files(["process_wrapper_tmpl.sh"])

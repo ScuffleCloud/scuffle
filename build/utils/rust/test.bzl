@@ -108,7 +108,7 @@ nextest_test = rule(
             default = "//:.config/nextest.toml",
             allow_single_file = True,
         ),
-        "_template_file": attr.label(default = "test_wrapper.sh", allow_single_file = True),
+        "_template_file": attr.label(default = "process_wrapper_tmpl.sh", allow_single_file = True),
     },
     toolchains = ["@bazel_tools//tools/sh:toolchain_type"],
 )

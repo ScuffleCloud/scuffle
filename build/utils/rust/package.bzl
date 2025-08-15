@@ -141,7 +141,7 @@ def scuffle_package(
     if test != False:
         test_deps = test.get("deps", [])[:]
         test_proc_macro_deps = test.get("proc_macro_deps", [])[:]
-        test_env = test.get("env", {})[:]
+        test_env = test.get("env", {}) | {}
         test_data = test.get("data", [])[:]
         test_insta = test.get("insta", False)
         test_tags = test.get("tags", [])[:]

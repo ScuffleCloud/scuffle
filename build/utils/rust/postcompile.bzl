@@ -152,21 +152,17 @@ def _postcompile_deps_impl(ctx):
         env["CFLAGS"] = " ".join(_pwd_flags(cc_c_args))
         env["CXXFLAGS"] = " ".join(_pwd_flags(cc_cxx_args))
 
-    is_windows = ctx.target_platform_has_constraint(ctx.attr._windows_constraint[platform_common.ConstraintValueInfo])
-    if is_windows:
-        rustc_wrapper = ctx.actions.declare_file(ctx.label.name + ".bat")
-        ctx.actions.write(
-            output = rustc_wrapper,
-            content = '@"%~dp0{}" %*'.format(ctx.attr._test_runner[DefaultInfo].files_to_run.executable.short_path),
-            is_executable = True,
-        )
-    else:
-        rustc_wrapper = ctx.actions.declare_file(ctx.label.name + ".sh")
-        ctx.actions.write(
-            output = rustc_wrapper,
-            content = '#!/bin/env bash\nexec "{}" --subst pwd=$(pwd) -- "{}" $@'.format(ctx.executable._process_wrapper.short_path, rust_toolchain.rustc.short_path),
-            is_executable = True,
-        )
+    rustc_wrapper = ctx.actions.declare_file(ctx.label.name + ".sh")
+    sh_toolchain = ctx.toolchains["@bazel_tools//tools/sh:toolchain_type"]
+    ctx.actions.expand_template(
+        output = rustc_wrapper,
+        template = ctx.file._template_file,
+        substitutions = {
+            "%%PROCESS_WRAPPER%%": ctx.executable._process_wrapper.short_path,
+            "%%TARGET_BINARY%%": rust_toolchain.rustc.short_path,
+            "#!/usr/bin/env bash": "#!{}".format(sh_toolchain.path),
+        },
+    )
 
     env.update({
         "RUSTC": rustc_wrapper.short_path,
@@ -244,14 +240,13 @@ postcompile_deps = rule(
             allow_single_file = True,
             cfg = "exec",
         ),
-        "_windows_constraint": attr.label(
-            default = "@platforms//os:windows",
-        ),
+        "_template_file": attr.label(default = "process_wrapper_tmpl.sh", allow_single_file = True),
     },
     fragments = ["cpp"],
     toolchains = [
         "@rules_rust//rust:toolchain_type",
         "@bazel_tools//tools/cpp:toolchain_type",
+        "@bazel_tools//tools/sh:toolchain_type",
     ],
     provides = [DefaultInfo, PostcompilerDepsInfo],
 )

@@ -1,13 +1,12 @@
 """Rules for generating documentation with `rustdoc` for Bazel built crates"""
 
-load("@bazel_skylib//lib:paths.bzl", "paths")
 load("@bazel_skylib//rules:common_settings.bzl", "BuildSettingInfo")
-load("@rules_cc//cc/common:cc_info.bzl", "CcInfo")
 load("@rules_rust//rust/private:common.bzl", "rust_common")
-load("@rules_rust//rust/private:providers.bzl", "CrateInfo", "LintsInfo")
-load("@rules_rust//rust/private:rustc.bzl", "collect_deps", "collect_inputs", "construct_arguments", "rustc_compile_action")
-load("@rules_rust//rust/private:utils.bzl", "dedent", "expand_dict_value_locations", "find_cc_toolchain", "find_toolchain", "transform_deps")
+load("@rules_rust//rust/private:providers.bzl", "LintsInfo")
+load("@rules_rust//rust/private:rustc.bzl", "collect_deps", "collect_inputs", "construct_arguments")
+load("@rules_rust//rust/private:utils.bzl", "dedent", "expand_dict_value_locations", "find_cc_toolchain", "find_toolchain")
 load("//build/utils/rust:postcompile.bzl", "PostcompilerDepsInfo")
+load("@rules_cc//cc/common:cc_common.bzl", "cc_common")
 
 def _init_rust_doc_info(*, crate_name, crate_version, html_out = None, json_out = None, parts_out = None):
     if not (html_out or json_out) or (html_out and json_out):
@@ -24,7 +23,10 @@ def _init_rust_doc_info(*, crate_name, crate_version, html_out = None, json_out 
         "crate_version": crate_version,
     }
 
-RustDocInfo, _new_rust_doc_info = provider(
+RustDocInfo, _ = provider(
+    doc = """
+    Info related to rustdoc generation.
+    """,
     fields = [
         "html_out",
         "json_out",
@@ -109,8 +111,10 @@ def _rustdoc_compile_action(
         toolchain (rust_toolchain): The currently configured `rust_toolchain`.
         crate_info (CrateInfo): The provider of the crate passed to a rustdoc rule.
         lints_info (LintsInfo, optional): The LintsInfo provider of the crate passed to the rustdoc rule.
-        output (File, optional): An optional output a `rustdoc` action is intended to produce.
         rustdoc_flags (list, optional): A list of `rustdoc` specific flags.
+        deps (list, optional): A list of deps.
+        proc_macro_deps (list, optional): A list of proc macro deps.
+        aliases: (dict, optional): A set of aliases in the crate.
 
     Returns:
         struct: A struct of some `ctx.actions.run` arguments.
@@ -442,15 +446,17 @@ def _rustc_doctest_compile_action(
         aliases = None,
         lints_info = None,
         rustc_flags = []):
-    """Create a struct of information needed for a `rustc` compile action based on crate passed to the rustdoc rule.
+    """Create a struct of information needed for a `rustdoc` compile action based on crate passed to the rustdoc_test rule.
 
     Args:
         ctx (ctx): The rule's context object.
         toolchain (rust_toolchain): The currently configured `rust_toolchain`.
         crate_info (CrateInfo): The provider of the crate passed to a rustdoc rule.
         lints_info (LintsInfo, optional): The LintsInfo provider of the crate passed to the rustdoc rule.
-        output (File, optional): An optional output a `rustdoc` action is intended to produce.
-        rustdoc_flags (list, optional): A list of `rustdoc` specific flags.
+        rustc_flags (list, optional): A list of `rustc` specific flags.
+        deps (list, optional): A list of deps.
+        proc_macro_deps (list, optional): A list of proc macro deps.
+        aliases: (dict, optional): A set of aliases in the crate.
 
     Returns:
         struct: A struct of some `ctx.actions.run` arguments.

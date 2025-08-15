@@ -1,3 +1,7 @@
+"""
+Helper rule to wrap a binary inside a script file.
+"""
+
 load("@rules_rust//rust/private:utils.bzl", "expand_dict_value_locations")
 
 def _binary_wrapper_impl(ctx):
@@ -18,6 +22,7 @@ def _binary_wrapper_impl(ctx):
     ctx.actions.expand_template(
         output = out,
         template = ctx.file._template_file,
+        is_executable = True,
         substitutions = {
             "%%BINARY%%": ctx.executable.binary.short_path,
             "%%EXPORT_ENVS%%": export_lines,
@@ -29,7 +34,7 @@ def _binary_wrapper_impl(ctx):
     runfiles = (
         ctx.runfiles(files = [ctx.executable.binary])
             .merge(ctx.attr.binary[DefaultInfo].default_runfiles)
-            .merge_all([ctx.runfiles(files = data.files.to_list()) for data in ctx.attr.data])
+            .merge_all([data[DefaultInfo].default_runfiles.merge(ctx.runfiles(files = data[DefaultInfo].files.to_list())) for data in ctx.attr.data])
     )
 
     return [

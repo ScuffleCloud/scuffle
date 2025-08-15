@@ -27,7 +27,6 @@ load("@rules_rust//rust/private:rustc.bzl", "BuildInfo")
 load(
     "@rules_rust//rust/private:utils.bzl",
     "concat",
-    "dedent",
     "dedup_expand_location",
     "find_toolchain",
 )
@@ -187,6 +186,7 @@ def find_proc_macro_dylib(toolchain, target):
     Returns:
         (File): The path to the proc macro dylib, or None if this crate is not a proc-macro.
     """
+    crate_info = None
     if rust_common.crate_info in target:
         crate_info = target[rust_common.crate_info]
     elif rust_common.test_crate_info in target:
@@ -218,7 +218,6 @@ def label_to_str(label):
 # The `rust-analyzer` driver will replace them with absolute paths.
 _WORKSPACE_TEMPLATE = "__WORKSPACE__/"
 _EXEC_ROOT_TEMPLATE = "__EXEC_ROOT__/"
-_OUTPUT_BASE_TEMPLATE = "__OUTPUT_BASE__/"
 
 def _crate_id(crate_info):
     """Returns a unique stable identifier for a crate

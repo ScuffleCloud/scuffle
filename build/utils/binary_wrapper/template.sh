@@ -2,7 +2,6 @@
 
 set -euo pipefail
 
-# Get the directory where this script is located (preserving symlinks)
 SCRIPT="${BASH_SOURCE[0]}"
 SCRIPT_DIR="$(dirname "${SCRIPT}")"
 
@@ -14,6 +13,8 @@ elif [[ -f "${SCRIPT_DIR}/MANIFEST" ]]; then
 else
     RUNFILES="${SCRIPT}.runfiles"
 fi
+
+export RUNFILES_DIR="${RUNFILES_DIR}"
 
 pwd="${RUNFILES}/_main"
 

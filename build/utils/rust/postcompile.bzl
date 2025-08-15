@@ -1,3 +1,7 @@
+"""
+Helper utils to generate information needed to perform postcompile tests.
+"""
+
 load("@bazel_skylib//lib:paths.bzl", "paths")
 load("@rules_cc//cc:action_names.bzl", "ACTION_NAMES")
 load("@rules_cc//cc/common:cc_common.bzl", "cc_common")
@@ -157,6 +161,7 @@ def _postcompile_deps_impl(ctx):
     ctx.actions.expand_template(
         output = rustc_wrapper,
         template = ctx.file._template_file,
+        is_executable = True,
         substitutions = {
             "%%PROCESS_WRAPPER%%": ctx.executable._process_wrapper.short_path,
             "%%TARGET_BINARY%%": rust_toolchain.rustc.short_path,

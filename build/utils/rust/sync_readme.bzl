@@ -1,4 +1,7 @@
-load("@rules_rust//rust:rust_common.bzl", "CrateInfo")
+"""
+A utility to keep a README.md in sync with a rust crate's root doc.
+"""
+
 load("//build/utils/rust:rustdoc.bzl", "RustDocInfo")
 
 def _init_SyncReadmeInfo(render_output):
@@ -7,8 +10,8 @@ def _init_SyncReadmeInfo(render_output):
         "_SyncReadmeInfo": "_SyncReadmeInfo",
     }
 
-SyncReadmeInfo, _new_SyncReadmeInfo = provider(
-    doc = "A set of clippy json diagnostics.",
+SyncReadmeInfo, _ = provider(
+    doc = "The result from rendering the crates readme file.",
     fields = {
         "_SyncReadmeInfo": "A tag to identify this provider by",
         "render_output": "A json file containing the rendered output",

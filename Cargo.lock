@@ -4019,7 +4019,7 @@ checksum = "b39cdef0fa800fc44525c84ccb54a029961a8215f9619753635a9c0d2538d46d"
 [[package]]
 name = "rusty_ffmpeg"
 version = "0.16.3+ffmpeg.7.1"
-source = "git+https://github.com/TroyKomodo/rusty_ffmpeg.git?rev=cca349e5cc0764f00112c6fc6066f831c601a9b9#cca349e5cc0764f00112c6fc6066f831c601a9b9"
+source = "git+https://github.com/TroyKomodo/rusty_ffmpeg.git?rev=267c225b5d0fb7ccae9c66139f7fb517a212dc6b#267c225b5d0fb7ccae9c66139f7fb517a212dc6b"
 dependencies = [
  "bindgen 0.71.1",
  "camino",

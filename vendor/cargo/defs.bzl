@@ -7491,7 +7491,7 @@ def crate_repositories():
     maybe(
         new_git_repository,
         name = "cargo_vendor__rusty_ffmpeg-0.16.3-ffmpeg.7.1",
-        commit = "cca349e5cc0764f00112c6fc6066f831c601a9b9",
+        commit = "267c225b5d0fb7ccae9c66139f7fb517a212dc6b",
         init_submodules = True,
         remote = "https://github.com/TroyKomodo/rusty_ffmpeg.git",
         build_file = Label("//vendor/cargo:BUILD.rusty_ffmpeg-0.16.3+ffmpeg.7.1.bazel"),

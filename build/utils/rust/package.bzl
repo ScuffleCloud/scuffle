@@ -1,3 +1,7 @@
+"""
+Helper scripts for setting up rust targets.
+"""
+
 load("@cargo_vendor//:defs.bzl", "all_crate_deps", "crate_features", "crate_version", dep_aliases = "aliases")
 load("@rules_rust//cargo:defs.bzl", "cargo_build_script", "cargo_toml_env_vars", "extract_cargo_lints")
 load("@rules_rust//rust:defs.bzl", "rust_binary", "rust_library", "rust_proc_macro", "rustfmt_test")
@@ -28,6 +32,7 @@ def scuffle_package(
     Args:
         crate_name: Name of the crate.
         name: Name of the target
+        version: Version of the crate.
         features: A set of features this crate has
         crate_type: The type of crate to build: Default "rlib"
         srcs: Source files. Defaults to glob(["src/**/*.rs"]) if not provided
@@ -38,6 +43,8 @@ def scuffle_package(
         compile_data: Data to include during compile time
         tags: Additional tags to add to the package
         test: A config for testing this library.
+        readme: The readme file, if set to `False` disable sync-readme
+        extra_target_kwargs: additional kwargs to pass to the target.
     """
 
     package_name = native.package_name()
@@ -133,16 +140,16 @@ def scuffle_package(
 
     if test != False:
         test_deps = test.get("deps", [])[:]
-        test_proc_macro_deps = test.get("proc_macro_deps", []) + []
-        test_env = test.get("env", {}) | {}
-        test_data = test.get("data", []) + []
+        test_proc_macro_deps = test.get("proc_macro_deps", [])[:]
+        test_env = test.get("env", {})[:]
+        test_data = test.get("data", [])[:]
         test_insta = test.get("insta", False)
-        test_tags = test.get("tags", []) + []
+        test_tags = test.get("tags", [])[:]
 
         if crate_type == "proc_macro":
-            test_proc_macro_deps += [colon_name]
+            test_proc_macro_deps.append(colon_name)
         else:
-            test_deps += [colon_name]
+            test_deps.append(colon_name)
 
         if test_insta:
             test_data += native.glob(["src/**/*"])
@@ -283,6 +290,18 @@ def scuffle_test(
         data = None,
         insta = False,
         tags = None):
+    """Helper function to add additional typed testing values.
+
+    Returns:
+        A dict with the provided and default values.
+    Args:
+        deps: Test only dependencies.
+        proc_macro_deps: Test only proc-macro deps.
+        env: Additional env to add to the test.
+        data: Additional data needed by the test.
+        insta: If the test needs to work with insta snapshots.
+        tags: Additional tags to add to the test.
+    """
     if deps == None:
         deps = []
     if proc_macro_deps == None:

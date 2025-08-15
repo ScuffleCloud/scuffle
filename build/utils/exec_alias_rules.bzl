@@ -1,8 +1,5 @@
 """Alias that transitions its target to `compilation_mode=opt`.  Use `transition_alias="opt"` to enable."""
 
-load("@rules_cc//cc:defs.bzl", "CcInfo")
-load("@rules_rust//rust:rust_common.bzl", "COMMON_PROVIDERS")
-
 def _transition_alias_impl(ctx):
     # `ctx.attr.actual` is a list of 1 item due to the transition
     output = ctx.actions.declare_file("{}_{}".format(ctx.label.name, ctx.executable.actual.basename))

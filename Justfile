@@ -67,7 +67,7 @@ doc:
 
 alias docs-serve := doc-serve
 doc-serve: doc
-    miniserve $(bazel info execution_root)/$(bazel cquery --config=wrapper {{rustdoc_target}} --output=files) --index index.html --port 3000
+    miniserve "$(bazel info execution_root)"/"$(bazel cquery --config=wrapper {{rustdoc_target}} --output=files)" --index index.html --port 3000
 
 deny:
     bazel run //tools/cargo/deny check

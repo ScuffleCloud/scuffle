@@ -18,6 +18,9 @@ binary_wrapper(
     env = {
         "VALGRIND_LIB": "$$RUNFILES/$(rlocationpath :libexec)/valgrind",
     },
+    extra_commands = [
+        "ulimit -n 4096",
+    ],
     data = [":libexec"],
     tags = ["manual", "no-cache"],
     visibility = ["//visibility:public"],

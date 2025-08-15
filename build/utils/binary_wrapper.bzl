@@ -21,6 +21,7 @@ def _binary_wrapper_impl(ctx):
         substitutions = {
             "%%BINARY%%": ctx.executable.binary.short_path,
             "%%EXPORT_ENVS%%": export_lines,
+            "%%EXTRA_COMMANDS%%": "\n".join(ctx.attr.extra_commands),
             "#!/usr/bin/env bash": "#!{}".format(sh_toolchain.path),
         },
     )
@@ -42,6 +43,7 @@ binary_wrapper = rule(
             executable = True,
             cfg = "target",
         ),
+        "extra_commands": attr.string_list(),
         "env": attr.string_dict(),
         "data": attr.label_list(),
         "_template_file": attr.label(default = "//build/utils:binary_wrapper/template.sh", allow_single_file = True),

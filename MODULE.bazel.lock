@@ -201,7 +201,7 @@
   "moduleExtensions": {
     "//vendor:cargo_ext.bzl%cargo_vendor": {
       "general": {
-        "bzlTransitiveDigest": "fGwvUOB/5YNVUY2yUHfuT9tILRg/U4kyPVg7t3A4Kps=",
+        "bzlTransitiveDigest": "8GY6nraGq7exeJC02Onsogy8VcntQE1UOUujxg6fgo8=",
         "usagesDigest": "mtR+K4/VVAmhgoN1cG7MXxv6mAD1vfxRZ8SSM66EtxE=",
         "recordedFileInputs": {},
         "recordedDirentsInputs": {},
@@ -4487,7 +4487,7 @@
           "cargo_vendor__rusty_ffmpeg-0.16.3-ffmpeg.7.1": {
             "repoRuleId": "@@bazel_tools//tools/build_defs/repo:git.bzl%git_repository",
             "attributes": {
-              "commit": "cca349e5cc0764f00112c6fc6066f831c601a9b9",
+              "commit": "267c225b5d0fb7ccae9c66139f7fb517a212dc6b",
               "init_submodules": true,
               "remote": "https://github.com/TroyKomodo/rusty_ffmpeg.git",
               "build_file": "@@//vendor/cargo:BUILD.rusty_ffmpeg-0.16.3+ffmpeg.7.1.bazel"

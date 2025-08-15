@@ -13,6 +13,7 @@
     import { CanvasRenderer } from 'echarts/renderers';
     import { onMount } from 'svelte';
     import { getCssVar } from '$lib/utils';
+    import { geoMercator } from 'd3-geo';
 
     // Register the required components
     use([
@@ -40,6 +41,8 @@
         title = 'Global Technology Innovation Index 2024',
         dataLabel = 'Innovation Score',
     }: Props = $props();
+
+    const projection = geoMercator();
 
     // Sample world data - Technology Innovation scores by country
     const defaultData = [
@@ -180,7 +183,7 @@
             map: 'world',
             roam: true,
             zoom: 1.2,
-            center: [0, 20],
+            center: [500, 40],
             label: {
                 show: false,
                 color: getCssVar('--colors-gray90'),
@@ -201,6 +204,14 @@
                     show: true,
                     color: getCssVar('--colors-gray110'),
                     fontSize: 10,
+                },
+            },
+            projection: {
+                project: function (point: [number, number]) {
+                    return projection(point);
+                },
+                unproject: function (point: [number, number]) {
+                    return projection.invert?.(point);
                 },
             },
         },
@@ -228,7 +239,7 @@
 
     const handleClick = (event: ECMouseEvent) => {
         if (event.data) {
-            alert(`${event.name}\n${dataLabel}: ${event.data.value}`);
+            alert(`${event.name}\n${dataLabel}: ${(event.data as any).value}`);
         } else {
             alert(`${event.name}\nNo data available`);
         }
@@ -238,7 +249,7 @@
     onMount(async () => {
         try {
             // Use the simplified world map from CodePen
-            const response = await fetch('/world.json');
+            const response = await fetch('/world.geojson');
             const geoJson = await response.json();
 
             // Register the map with ECharts directly

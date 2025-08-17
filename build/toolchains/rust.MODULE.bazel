@@ -1,7 +1,7 @@
 bazel_dep(name = "rules_rust", version = "0.61.0")
 git_override(
     module_name = "rules_rust",
-    commit = "cdd40e2f11ad7c77077680b991eb4f926bfa7cc1",
+    commit = "19423de5a54be92a5bff80506846b35cb506fe39",
     remote = "https://github.com/ScuffleCloud/rules_rust.git",
 )
 

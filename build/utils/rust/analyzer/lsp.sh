@@ -11,10 +11,11 @@ cd "${SCRIPT_DIR}/../../../../"
 
 output_base="$(bazelisk info output_base)"
 
-export RA_LOG="lsp_server=debug"
+echo "Running rust-analyzer" >&2
 
 bazelisk \
     --output_base="${output_base}_rust_analyzer" \
+    --preemptible \
     run \
     --config=wrapper \
     //tools/rust-analyzer -- $@

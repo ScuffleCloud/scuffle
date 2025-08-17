@@ -2,18 +2,17 @@
 Wrapper around `rust_test` running with nextest.
 """
 
-
 load("@bazel_skylib//rules:common_settings.bzl", "BuildSettingInfo")
 load("@rules_rust//rust:defs.bzl", "rust_test")
-load("@rules_rust//rust/private:providers.bzl", _CrateInfo = "CrateInfo") # @unused
+load("@rules_rust//rust/private:providers.bzl", _CrateInfo = "CrateInfo")  # @unused
 load("//build/utils/rust:postcompile.bzl", "PostcompilerDepsInfo")
 
 def _nextest_test_impl(ctx):
     parent_providers = ctx.super()
 
-    default_info = None # type: DefaultInfo | None
-    crate_info = None # type: _CrateInfo | None
-    run_environment_info = None # type: RunEnvironmentInfo | None
+    default_info = None  # type: DefaultInfo | None
+    crate_info = None  # type: _CrateInfo | None
+    run_environment_info = None  # type: RunEnvironmentInfo | None
     for provider in parent_providers:
         if hasattr(provider, "wrapped_crate_type"):
             crate_info = provider

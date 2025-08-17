@@ -1,12 +1,12 @@
 """Rules for generating documentation with `rustdoc` for Bazel built crates"""
 
 load("@bazel_skylib//rules:common_settings.bzl", "BuildSettingInfo")
+load("@rules_cc//cc/common:cc_common.bzl", "cc_common")
 load("@rules_rust//rust/private:common.bzl", "rust_common")
 load("@rules_rust//rust/private:providers.bzl", "LintsInfo")
 load("@rules_rust//rust/private:rustc.bzl", "collect_deps", "collect_inputs", "construct_arguments")
 load("@rules_rust//rust/private:utils.bzl", "dedent", "expand_dict_value_locations", "find_cc_toolchain", "find_toolchain")
 load("//build/utils/rust:postcompile.bzl", "PostcompilerDepsInfo")
-load("@rules_cc//cc/common:cc_common.bzl", "cc_common")
 
 def _init_rust_doc_info(*, crate_name, crate_version, html_out = None, json_out = None, parts_out = None):
     if not (html_out or json_out) or (html_out and json_out):

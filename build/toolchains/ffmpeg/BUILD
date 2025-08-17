@@ -3,8 +3,8 @@ alias(
     actual = select({
         "//build/platforms:linux-x86_64": "@ffmpeg-linux-x86_64//:lib",
         "//build/platforms:linux-aarch64": "@ffmpeg-linux-aarch64//:lib",
-        # "//build/platforms:macos-x86_64": "@ffmpeg-macos-universal//:lib",
-        # "//build/platforms:macos-aarch64": "@ffmpeg-macos-universal//:lib",
+        "//build/platforms:windows-x86_64": "@ffmpeg-windows-x86_64//:lib",
+        "//build/platforms:windows-aarch64": "@ffmpeg-windows-aarch64//:lib",
     }),
     tags = ["no-cache", "manual"],
     visibility = ["//visibility:public"],
@@ -15,8 +15,8 @@ alias(
     actual = select({
         "//build/platforms:linux-x86_64": "@ffmpeg-linux-x86_64//:include",
         "//build/platforms:linux-aarch64": "@ffmpeg-linux-aarch64//:include",
-        # "//build/platforms:macos-x86_64": "@ffmpeg-macos-universal//:include",
-        # "//build/platforms:macos-aarch64": "@ffmpeg-macos-universal//:include",
+        "//build/platforms:windows-x86_64": "@ffmpeg-windows-x86_64//:include",
+        "//build/platforms:windows-aarch64": "@ffmpeg-windows-aarch64//:include",
     }),
     tags = ["no-cache", "manual"],
     visibility = ["//visibility:public"],

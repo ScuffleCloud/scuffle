@@ -1,0 +1,115 @@
+---
+source: crates/tinc/integration/src/floats.rs
+expression: svc.openapi_schema()
+---
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "",
+    "version": ""
+  },
+  "paths": {
+    "/float": {
+      "post": {
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/floats.FloatResponse"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/floats.FloatRequest"
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "floats.FloatRequest": {
+        "properties": {
+          "arg_f32": {
+            "allOf": [
+              {}
+            ],
+            "oneOf": [
+              {
+                "type": "number"
+              },
+              {
+                "enum": [
+                  "Infinity",
+                  "-Infinity",
+                  "NaN"
+                ],
+                "type": "string"
+              }
+            ],
+            "not": {
+              "enum": [
+                "NaN"
+              ]
+            }
+          },
+          "arg_f64": {
+            "allOf": [
+              {}
+            ],
+            "oneOf": [
+              {
+                "type": "number"
+              },
+              {
+                "enum": [
+                  "Infinity",
+                  "-Infinity",
+                  "NaN"
+                ],
+                "type": "string"
+              }
+            ],
+            "exclusiveMinimum": 0.0,
+            "not": {
+              "enum": [
+                "Infinity",
+                "-Infinity",
+                "NaN"
+              ]
+            }
+          }
+        },
+        "required": [
+          "arg_f32",
+          "arg_f64"
+        ],
+        "title": "floats.FloatRequest",
+        "type": "object",
+        "unevaluatedProperties": false
+      },
+      "floats.FloatResponse": {
+        "properties": {
+          "param": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "param"
+        ],
+        "title": "floats.FloatResponse",
+        "type": "object",
+        "unevaluatedProperties": false
+      }
+    }
+  }
+}

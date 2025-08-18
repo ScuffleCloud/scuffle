@@ -92,6 +92,15 @@ message FloatExpressions {
   float finite_values_only = 8 [(tinc.field).constraint.float = {
     disallow_infinity: true
   }];
+
+  float typical_values_only = 9 [(tinc.field).constraint.float = {
+    disallow_nan_and_infinity: true
+  }];
+
+  float positive_infinity_ok = 10 [(tinc.field).constraint.float = {
+    gte: 0.0,
+    disallow_nan: true
+  }];
 }
 
 message DoubleExpressions {
@@ -130,6 +139,15 @@ message DoubleExpressions {
 
   double finite_values_only = 8 [(tinc.field).constraint.double = {
     disallow_infinity: true
+  }];
+
+  double typical_values_only = 9 [(tinc.field).constraint.double = {
+    disallow_nan_and_infinity: true
+  }];
+
+  double positive_infinity_ok = 10 [(tinc.field).constraint.double = {
+    gte: 0.0,
+    disallow_nan: true
   }];
 }
 

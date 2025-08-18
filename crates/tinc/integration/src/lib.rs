@@ -5,6 +5,8 @@
 mod bytes_service;
 mod expressions;
 mod flattened;
+#[cfg(feature = "ext_float")]
+mod floats;
 mod nested;
 mod oneof;
 mod recursive;

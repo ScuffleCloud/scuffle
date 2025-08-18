@@ -7,6 +7,11 @@ publish = false
 [lints.rust]
 unexpected_cfgs = { level = "warn", check-cfg = ['cfg(coverage_nightly)'] }
 
+[features]
+default = ["ext_float"]
+## Enables extended float support (NaN, Infinity, -Infinity)
+ext_float = ["tinc/ext_float", "tinc-build/ext_float"]
+
 [dev-dependencies]
 bytes = "1"
 http = "1"
@@ -17,11 +22,11 @@ prost-types = "0.14"
 rand = "0.9"
 serde = "1.0.215"
 serde_json = "1.0.115"
-tinc = { path = ".." }
+tinc = { path = "..", default-features = false, features = ["prost", "tonic"] }
 tokio = { features = ["full"], version = "1.4.2" }
 tonic = "0.14"
 tower = "0.5"
 
 [build-dependencies]
 prost-build = "0.14"
-tinc-build = { path = "../build", version = "0.2.0" }
+tinc-build = { path = "../build", version = "0.2.0", default-features = false, features = ["prost"] }

@@ -229,6 +229,17 @@ fn handle_oneof(
                     );
                 }
             }
+            ProtoValueType::Float | ProtoValueType::Double => {
+                #[cfg(feature = "ext_float")]
+                {
+                    if field.options.visibility.has_output() {
+                        oneof_config.field_attribute(
+                            field_name,
+                            parse_quote!(#[serde(serialize_with = "::tinc::__private::serialize_floats")]),
+                        );
+                    }
+                }
+            }
             _ => {}
         }
     }
@@ -447,6 +458,17 @@ fn handle_message_field(
                     field_name,
                     parse_quote!(#[serde(serialize_with = "::tinc::__private::serialize_well_known")]),
                 );
+            }
+        }
+        Some(ProtoValueType::Float | ProtoValueType::Double) => {
+            #[cfg(feature = "ext_float")]
+            {
+                if field.options.visibility.has_output() {
+                    message_config.field_attribute(
+                        field_name,
+                        parse_quote!(#[serde(serialize_with = "::tinc::__private::serialize_floats")]),
+                    );
+                }
             }
         }
         _ => {}

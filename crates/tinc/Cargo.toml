@@ -21,6 +21,8 @@ prost = ["dep:prost", "dep:prost-types", "dep:tonic-prost"]
 tonic = ["dep:tonic", "dep:tonic-types"]
 ## Enables changelog and documentation of feature flags
 docs = ["dep:scuffle-changelog", "dep:document-features"]
+## Enables extended float support (NaN, Infinity, -Infinity)
+ext_float = []
 
 [dependencies]
 axum = "0.8"

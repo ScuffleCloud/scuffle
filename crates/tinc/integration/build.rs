@@ -24,6 +24,7 @@ fn main() {
                     "pb/simple_service.proto",
                     "pb/bytes_service.proto",
                     "pb/expressions.proto",
+                    "pb/floats.proto",
                 ],
                 &["pb"],
             )

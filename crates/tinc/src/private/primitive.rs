@@ -57,6 +57,10 @@ macro_rules! impl_tracker_for_primitive {
     };
 }
 
+#[cfg(feature = "ext_float")]
+impl_tracker_for_primitive!(String, bool, u32, u64, i32, i64);
+
+#[cfg(not(feature = "ext_float"))]
 impl_tracker_for_primitive!(String, bool, u32, u64, i32, i64, f32, f64);
 
 impl<'de, T> TrackerDeserializer<'de> for PrimitiveTracker<T>

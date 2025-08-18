@@ -1135,7 +1135,30 @@ fn generate(
                     .build(),
             ),
             ProtoType::Value(ProtoValueType::Double | ProtoValueType::Float) => {
-                Schema::object(Object::builder().schema_type(Type::Number).build())
+                #[cfg(feature = "ext_float")]
+                {
+                    Schema::object(
+                        Object::builder()
+                            .one_ofs([
+                                Schema::object(Object::builder().schema_type(Type::Number).build()),
+                                Schema::object(
+                                    Object::builder()
+                                        .schema_type(Type::String)
+                                        .enum_values(vec![
+                                            serde_json::Value::from("Infinity"),
+                                            serde_json::Value::from("-Infinity"),
+                                            serde_json::Value::from("NaN"),
+                                        ])
+                                        .build(),
+                                ),
+                            ])
+                            .build(),
+                    )
+                }
+                #[cfg(not(feature = "ext_float"))]
+                {
+                    Schema::object(Object::builder().schema_type(Type::Number).build())
+                }
             }
             ProtoType::Value(ProtoValueType::Int32) => Schema::object(Object::int32()),
             ProtoType::Value(ProtoValueType::UInt32) => Schema::object(Object::uint32()),

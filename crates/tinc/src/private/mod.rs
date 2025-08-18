@@ -56,6 +56,11 @@ pub use fmt::*;
 mod bytes;
 pub use bytes::*;
 
+#[cfg(feature = "ext_float")]
+mod ext_floats;
+#[cfg(feature = "ext_float")]
+pub use ext_floats::*;
+
 #[macro_export]
 #[doc(hidden)]
 macro_rules! __tinc_field_from_str {

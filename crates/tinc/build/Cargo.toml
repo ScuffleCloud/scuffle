@@ -22,6 +22,8 @@ default = ["prost"]
 prost = ["dep:prost", "dep:prost-reflect", "dep:prost-build"]
 ## Enables documentation of feature flags
 docs = ["dep:document-features"]
+## Enables extended float support (NaN, Infinity, -Infinity)
+ext_float = []
 
 [dependencies]
 anyhow = "1.0.79"

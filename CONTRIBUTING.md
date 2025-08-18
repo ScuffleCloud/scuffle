@@ -8,9 +8,9 @@ We have a [Code of Conduct](./CODE_OF_CONDUCT.md) that we expect all contributor
 
 ### Bazel
 
-All developers need to have [bazelisk](https://github.com/bazelbuild/bazelisk) installed, you can find the installation instructions [here](https://bazel.build/install/bazelisk).
+All developers need to have [Bazelisk](https://github.com/bazelbuild/bazelisk) installed, you can find the installation instructions [here](https://bazel.build/install/bazelisk).
 
-We use bazel instead of cargo to build the project. This is because cargo struggles to cache builds for large projects and we often ended up having cache invalidation issues. Bazel also allows us to have a more consistent build environment across different machines and CI and support for languages other than rust.
+We use Bazel instead of Cargo to build the project. This is because Cargo struggles to cache builds for large projects and we often ended up having cache invalidation issues. Bazel also allows us to have a more consistent build environment across different machines and CI and support for languages other than Rust.
 
 One example of how we optimize our cache use is external dependencies:
 
@@ -18,11 +18,11 @@ We vendor all our dependencies [`just vendor`](#local-commnads), and have them b
 
 #### Scripts / Tools
 
-We provide a bunch of tools which we vendor by wrapping them into a bazel rule, you can find them in [`tools/scripts`](./tools/scripts/README.md). We recommend adding this directory to the front of your `PATH` (automatically done if you use [direnv](#environment-variables)).
+We provide a bunch of tools which we vendor by wrapping them into a Bazel rule, you can find them in [`tools/scripts`](./tools/scripts/README.md). We recommend adding this directory to the front of your `PATH` (automatically done if you use [direnv](#environment-variables)).
 
 ### VSCode Setup
 
-If you use vscode you can setup rust-analyzer to work by adding the following to your settings.json:
+If you use VSCode you can setup rust-analyzer to work by adding the following to your `settings.json`:
 
 ```json
 {
@@ -44,7 +44,7 @@ If you use vscode you can setup rust-analyzer to work by adding the following to
 }
 ```
 
-for a bazel lsp you can use the bazel extension for vscode and download [starpls](https://github.com/withered-magic/starpls), adding the following to your settings.json:
+for a Bazel LSP you can use the Bazel extension for VSCode and download [starpls](https://github.com/withered-magic/starpls), adding the following to your `settings.json`:
 
 ```json
 {
@@ -63,7 +63,7 @@ for a bazel lsp you can use the bazel extension for vscode and download [starpls
 
 ### Environment Variables
 
-We advice you to use [direnv](https://direnv.net/) to load the .envrc file, which sets up a few environment variables needed for development.
+We advice you to use [direnv](https://direnv.net/) to load the `.envrc` file, which sets up a few environment variables needed for development.
 
 ### Nix
 

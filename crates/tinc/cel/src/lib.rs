@@ -539,6 +539,28 @@ impl<'a> CelValue<'a> {
         }
     }
 
+    pub fn cel_is_nan(value: impl CelValueConv<'a>) -> Result<bool, CelError<'a>> {
+        match value.conv() {
+            CelValue::Number(n) => match n {
+                NumberTy::I64(_) => Ok(false),
+                NumberTy::U64(_) => Ok(false),
+                NumberTy::F64(f) => Ok(f.is_nan()),
+            },
+            value => Err(CelError::BadUnaryOperation { op: "isNaN", value }),
+        }
+    }
+
+    pub fn cel_is_inf(value: impl CelValueConv<'a>) -> Result<bool, CelError<'a>> {
+        match value.conv() {
+            CelValue::Number(n) => match n {
+                NumberTy::I64(_) => Ok(false),
+                NumberTy::U64(_) => Ok(false),
+                NumberTy::F64(f) => Ok(f.is_infinite()),
+            },
+            value => Err(CelError::BadUnaryOperation { op: "isInf", value }),
+        }
+    }
+
     pub fn cel_size(item: impl CelValueConv<'a>) -> Result<u64, CelError<'a>> {
         match item.conv() {
             Self::Bytes(b) => Ok(b.as_ref().len() as u64),
@@ -2086,6 +2108,54 @@ mod tests {
         let invalid = Bytes::from_static(&[0xff, 0xfe, 0xff]);
         let result = CelValue::cel_is_email(invalid).unwrap();
         assert!(!result, "Expected false for invalid UTF-8 email bytes");
+    }
+
+    #[test]
+    fn celvalue_is_nan() {
+        assert!(
+            !CelValue::cel_is_nan(NumberTy::from(2.0)).unwrap(),
+            "Expected false for valid number"
+        );
+        assert!(
+            !CelValue::cel_is_nan(NumberTy::from(5)).unwrap(),
+            "Expected false for valid number"
+        );
+        assert!(
+            !CelValue::cel_is_nan(NumberTy::from(f64::INFINITY)).unwrap(),
+            "Expected false for infinity"
+        );
+        assert!(
+            !CelValue::cel_is_nan(NumberTy::from(f64::NEG_INFINITY)).unwrap(),
+            "Expected false for neg infinity"
+        );
+        assert!(
+            CelValue::cel_is_nan(NumberTy::from(f64::NAN)).unwrap(),
+            "Expected true for nan"
+        );
+    }
+
+    #[test]
+    fn celvalue_is_inf() {
+        assert!(
+            !CelValue::cel_is_inf(NumberTy::from(2.0)).unwrap(),
+            "Expected false for valid number"
+        );
+        assert!(
+            !CelValue::cel_is_inf(NumberTy::from(5)).unwrap(),
+            "Expected false for valid number"
+        );
+        assert!(
+            CelValue::cel_is_inf(NumberTy::from(f64::INFINITY)).unwrap(),
+            "Expected true for infinity"
+        );
+        assert!(
+            CelValue::cel_is_inf(NumberTy::from(f64::NEG_INFINITY)).unwrap(),
+            "Expected true for neg infinity"
+        );
+        assert!(
+            !CelValue::cel_is_inf(NumberTy::from(f64::NAN)).unwrap(),
+            "Expected false for nan"
+        );
     }
 
     #[test]

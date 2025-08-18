@@ -74,30 +74,30 @@ fn test_parse_simple() {
     StructTracker(
         FloatMessageTracker {
             simple_f32: Some(
-                ExtFloatTracker<f32>,
+                FloatWithNonFinTracker<f32>,
             ),
             simple_f64: Some(
-                ExtFloatTracker<f64>,
+                FloatWithNonFinTracker<f64>,
             ),
             rep_f32: Some(
                 RepeatedVecTracker(
                     [
-                        ExtFloatTracker<f32>,
-                        ExtFloatTracker<f32>,
+                        FloatWithNonFinTracker<f32>,
+                        FloatWithNonFinTracker<f32>,
                     ],
                 ),
             ),
             rep_f64: Some(
                 RepeatedVecTracker(
                     [
-                        ExtFloatTracker<f64>,
+                        FloatWithNonFinTracker<f64>,
                     ],
                 ),
             ),
             opt_f32: Some(
                 OptionalTracker(
                     Some(
-                        ExtFloatTracker<f32>,
+                        FloatWithNonFinTracker<f32>,
                     ),
                 ),
             ),
@@ -106,25 +106,25 @@ fn test_parse_simple() {
             google_f64: Some(
                 OptionalTracker(
                     Some(
-                        ExtFloatTracker<f64>,
+                        FloatWithNonFinTracker<f64>,
                     ),
                 ),
             ),
             map_f32: Some(
                 {
-                    "k1": ExtFloatTracker<f32>,
+                    "k1": FloatWithNonFinTracker<f32>,
                 },
             ),
             map_f64: Some(
                 {
-                    "k2": ExtFloatTracker<f64>,
+                    "k2": FloatWithNonFinTracker<f64>,
                 },
             ),
             variant: Some(
                 OneOfTracker(
                     Some(
                         OneofF64(
-                            ExtFloatTracker<f64>,
+                            FloatWithNonFinTracker<f64>,
                         ),
                     ),
                 ),
@@ -233,23 +233,23 @@ fn test_parse_with_special_values() {
     StructTracker(
         FloatMessageTracker {
             simple_f32: Some(
-                ExtFloatTracker<f32>,
+                FloatWithNonFinTracker<f32>,
             ),
             simple_f64: Some(
-                ExtFloatTracker<f64>,
+                FloatWithNonFinTracker<f64>,
             ),
             rep_f32: Some(
                 RepeatedVecTracker(
                     [
-                        ExtFloatTracker<f32>,
-                        ExtFloatTracker<f32>,
+                        FloatWithNonFinTracker<f32>,
+                        FloatWithNonFinTracker<f32>,
                     ],
                 ),
             ),
             rep_f64: Some(
                 RepeatedVecTracker(
                     [
-                        ExtFloatTracker<f64>,
+                        FloatWithNonFinTracker<f64>,
                     ],
                 ),
             ),
@@ -257,39 +257,39 @@ fn test_parse_with_special_values() {
             opt_f64: Some(
                 OptionalTracker(
                     Some(
-                        ExtFloatTracker<f64>,
+                        FloatWithNonFinTracker<f64>,
                     ),
                 ),
             ),
             google_f32: Some(
                 OptionalTracker(
                     Some(
-                        ExtFloatTracker<f32>,
+                        FloatWithNonFinTracker<f32>,
                     ),
                 ),
             ),
             google_f64: Some(
                 OptionalTracker(
                     Some(
-                        ExtFloatTracker<f64>,
+                        FloatWithNonFinTracker<f64>,
                     ),
                 ),
             ),
             map_f32: Some(
                 {
-                    "k1": ExtFloatTracker<f32>,
+                    "k1": FloatWithNonFinTracker<f32>,
                 },
             ),
             map_f64: Some(
                 {
-                    "k2": ExtFloatTracker<f64>,
+                    "k2": FloatWithNonFinTracker<f64>,
                 },
             ),
             variant: Some(
                 OneOfTracker(
                     Some(
                         OneofF64(
-                            ExtFloatTracker<f64>,
+                            FloatWithNonFinTracker<f64>,
                         ),
                     ),
                 ),

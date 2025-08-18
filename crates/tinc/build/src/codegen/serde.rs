@@ -230,12 +230,12 @@ fn handle_oneof(
                 }
             }
             ProtoValueType::Float | ProtoValueType::Double => {
-                #[cfg(feature = "ext_float")]
+                #[cfg(feature = "non_finite_floats")]
                 {
                     if field.options.visibility.has_output() {
                         oneof_config.field_attribute(
                             field_name,
-                            parse_quote!(#[serde(serialize_with = "::tinc::__private::serialize_floats")]),
+                            parse_quote!(#[serde(serialize_with = "::tinc::__private::serialize_floats_with_non_finite")]),
                         );
                     }
                 }
@@ -461,12 +461,12 @@ fn handle_message_field(
             }
         }
         Some(ProtoValueType::Float | ProtoValueType::Double) => {
-            #[cfg(feature = "ext_float")]
+            #[cfg(feature = "non_finite_floats")]
             {
                 if field.options.visibility.has_output() {
                     message_config.field_attribute(
                         field_name,
-                        parse_quote!(#[serde(serialize_with = "::tinc::__private::serialize_floats")]),
+                        parse_quote!(#[serde(serialize_with = "::tinc::__private::serialize_floats_with_non_finite")]),
                     );
                 }
             }

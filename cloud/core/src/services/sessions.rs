@@ -16,6 +16,7 @@ use crate::models::{
     Organization, OrganizationMember, UserGoogleAccount, UserId, UserSession, UserSessionRequest, UserSessionRequestId,
     UserSessionTokenId,
 };
+use crate::operations::Operation;
 use crate::schema::{
     email_registration_requests, magic_link_user_session_requests, organization_members, organizations, user_emails,
     user_google_accounts, user_session_requests, user_sessions,
@@ -195,48 +196,7 @@ impl<G: CoreConfig> pb::scufflecloud::core::v1::sessions_service_server::Session
         &self,
         req: tonic::Request<pb::scufflecloud::core::v1::LoginWithEmailAndPasswordRequest>,
     ) -> Result<tonic::Response<pb::scufflecloud::core::v1::NewUserSessionToken>, tonic::Status> {
-        let global = &req.global::<G>()?;
-        let ip_info = req.ip_address_info()?;
-        let payload = req.into_inner();
-
-        let mut db = global.db().await.into_tonic_internal_err("failed to connect to database")?;
-
-        let device = payload.device.require("device")?;
-        let captcha = payload.captcha.require("captcha")?;
-
-        // Check captcha
-        match captcha.provider() {
-            pb::scufflecloud::core::v1::CaptchaProvider::Turnstile => {
-                captcha::turnstile::verify_in_tonic(global, &captcha.token).await?;
-            }
-        }
-
-        let new_token = db
-            .transaction::<_, TxError, _>(|conn| {
-                async move {
-                    let user = common::get_user_by_email(conn, &payload.email).await?;
-
-                    cedar::is_authorized(global, None, &user, Action::LoginWithEmailPassword, CoreApplication)?;
-
-                    // Verify password
-                    let Some(password_hash) = &user.password_hash else {
-                        return Err(tonic::Status::with_error_details(
-                            tonic::Code::FailedPrecondition,
-                            "user does not have a password set",
-                            ErrorDetails::new(),
-                        )
-                        .into());
-                    };
-
-                    common::verify_password(password_hash, &payload.password)?;
-
-                    Ok(common::create_session(global, conn, user.id, device, &ip_info, true).await?)
-                }
-                .scope_boxed()
-            })
-            .await?;
-
-        Ok(tonic::Response::new(new_token))
+        Operation::<G>::run(req).await.map(tonic::Response::new)
     }
 
     async fn login_with_magic_link(

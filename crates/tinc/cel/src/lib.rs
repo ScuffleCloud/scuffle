@@ -2121,6 +2121,10 @@ mod tests {
             "Expected false for valid number"
         );
         assert!(
+            !CelValue::cel_is_nan(NumberTy::from(13u64)).unwrap(),
+            "Expected false for valid number"
+        );
+        assert!(
             !CelValue::cel_is_nan(NumberTy::from(f64::INFINITY)).unwrap(),
             "Expected false for infinity"
         );
@@ -2132,6 +2136,10 @@ mod tests {
             CelValue::cel_is_nan(NumberTy::from(f64::NAN)).unwrap(),
             "Expected true for nan"
         );
+        assert!(matches!(
+            CelValue::cel_is_nan("str").unwrap_err(),
+            CelError::BadUnaryOperation { op, .. } if op == "isNaN"
+        ));
     }
 
     #[test]
@@ -2142,6 +2150,10 @@ mod tests {
         );
         assert!(
             !CelValue::cel_is_inf(NumberTy::from(5)).unwrap(),
+            "Expected false for valid number"
+        );
+        assert!(
+            !CelValue::cel_is_nan(NumberTy::from(13u64)).unwrap(),
             "Expected false for valid number"
         );
         assert!(
@@ -2156,6 +2168,10 @@ mod tests {
             !CelValue::cel_is_inf(NumberTy::from(f64::NAN)).unwrap(),
             "Expected false for nan"
         );
+        assert!(matches!(
+            CelValue::cel_is_inf("str").unwrap_err(),
+            CelError::BadUnaryOperation { op, .. } if op == "isInf"
+        ));
     }
 
     #[test]

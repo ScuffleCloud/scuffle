@@ -31,6 +31,7 @@ mod http_ext;
 pub mod id;
 mod middleware;
 mod models;
+mod operations;
 mod schema;
 pub mod services;
 mod std_ext;

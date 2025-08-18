@@ -24,6 +24,8 @@ pub struct Config {
     pub db_url: Option<String>,
     #[default(false)]
     pub swagger_ui: bool,
+    #[default = "scuffle.cloud"]
+    pub rp_id: String,
     #[default(url::Url::from_str("https://dashboard.scuffle.cloud").unwrap())]
     pub dashboard_origin: url::Url,
     #[default = "1x0000000000000000000000000000000AA"]
@@ -196,8 +198,9 @@ impl scuffle_bootstrap::Global for Global {
             .build()
             .context("create HTTP client")?;
 
-        let webauthn = webauthn_rs::WebauthnBuilder::new(&config.service_name, &config.dashboard_origin)
+        let webauthn = webauthn_rs::WebauthnBuilder::new(&config.rp_id, &config.dashboard_origin)
             .context("build webauthn")?
+            .allow_subdomains(true)
             .timeout(config.timeouts.mfa.to_std().context("convert mfa timeout to std")?)
             .build()
             .context("initialize webauthn")?;

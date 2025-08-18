@@ -183,6 +183,8 @@ fn test_float_expressions_valid() {
         pi: 3.0,
         valid_values_only: 16.0,
         finite_values_only: 8.0,
+        typical_values_only: 4.0,
+        positive_infinity_ok: f32::INFINITY,
     };
 
     state.in_scope(|| valid.validate(None)).unwrap();
@@ -207,6 +209,8 @@ fn test_float_expressions_invalid() {
         pi: 3.14,
         valid_values_only: f32::NAN,
         finite_values_only: f32::INFINITY,
+        typical_values_only: f32::NEG_INFINITY,
+        positive_infinity_ok: f32::NEG_INFINITY,
     };
 
     state.in_scope(|| valid.validate(None)).unwrap();
@@ -271,6 +275,20 @@ fn test_float_expressions_invalid() {
                 fatal: true,
                 path: "finite_values_only",
             },
+            TrackedError {
+                kind: InvalidField {
+                    message: "value must not be of nan/infinity kind",
+                },
+                fatal: true,
+                path: "typical_values_only",
+            },
+            TrackedError {
+                kind: InvalidField {
+                    message: "value must be greater than or equal to `0.00`",
+                },
+                fatal: true,
+                path: "positive_infinity_ok",
+            },
         ],
     }
     "#);
@@ -288,6 +306,8 @@ fn test_double_expressions_valid() {
         pi: 3.0,
         valid_values_only: 16.0,
         finite_values_only: 8.0,
+        typical_values_only: 4.0,
+        positive_infinity_ok: f64::INFINITY,
     };
 
     state.in_scope(|| valid.validate(None)).unwrap();
@@ -312,6 +332,8 @@ fn test_double_expressions_invalid() {
         pi: 3.14,
         valid_values_only: f64::NAN,
         finite_values_only: f64::NEG_INFINITY,
+        typical_values_only: f64::NAN,
+        positive_infinity_ok: f64::NEG_INFINITY,
     };
 
     state.in_scope(|| valid.validate(None)).unwrap();
@@ -375,6 +397,20 @@ fn test_double_expressions_invalid() {
                 },
                 fatal: true,
                 path: "finite_values_only",
+            },
+            TrackedError {
+                kind: InvalidField {
+                    message: "value must not be of nan/infinity kind",
+                },
+                fatal: true,
+                path: "typical_values_only",
+            },
+            TrackedError {
+                kind: InvalidField {
+                    message: "value must be greater than or equal to `0.00`",
+                },
+                fatal: true,
+                path: "positive_infinity_ok",
             },
         ],
     }

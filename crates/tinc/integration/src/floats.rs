@@ -1,8 +1,18 @@
 use tinc::__private::{TincValidate, TrackerFor, TrackerSharedState, deserialize_tracker_target};
+use tinc::TincService;
 
 mod pb {
     #![allow(clippy::all)]
     tinc::include_proto!("floats");
+}
+
+struct Svc {}
+
+#[tonic::async_trait]
+impl pb::float_service_server::FloatService for Svc {
+    async fn float(&self, _: tonic::Request<pb::FloatRequest>) -> tonic::Result<tonic::Response<pb::FloatResponse>> {
+        Ok(pb::FloatResponse { param: "OK".to_string() }.into())
+    }
 }
 
 #[test]
@@ -324,4 +334,11 @@ fn test_parse_with_special_values() {
       }
     }
     "#);
+}
+
+#[test]
+fn test_float_service_rest_schema() {
+    let svc = pb::float_service_tinc::FloatServiceTinc::new(Svc {});
+
+    insta::assert_json_snapshot!(svc.openapi_schema());
 }

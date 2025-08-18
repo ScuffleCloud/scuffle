@@ -29,3 +29,28 @@ message FloatMessage {
         double oneof_f64 = 12;
     }
 }
+
+service FloatService {
+    rpc Float(FloatRequest) returns (FloatResponse) {
+        option (tinc.method).endpoint = {
+            post: "/float"
+        };
+    }
+}
+
+message FloatRequest {
+    option (tinc.message).generate = true;
+
+    float arg_f32 = 1 [(tinc.field).constraint.float = {
+        disallow_nan: true
+    }];;
+
+    double arg_f64 = 2 [(tinc.field).constraint.double = {
+        disallow_nan_and_infinity: true
+        gt: 0.0
+    }];;
+}
+
+message FloatResponse {
+    string param = 1;
+}

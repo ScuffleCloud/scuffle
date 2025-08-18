@@ -230,13 +230,19 @@ message FloatConstraints {
     optional bool disallow_nan = 9 [(predefined).cel = {
         message: "value must not be NaN"
         expression: "!this || !input.isNaN()"
-        jsonschemas: 'this ? { "not": { "enum": "NaN" }} : {}'
+        jsonschemas: 'this ? { "not": { "enum": ["NaN"] }} : {}'
     }];
     // If true, pos/neg Infinity values are not allowed.
     optional bool disallow_infinity = 10 [(predefined).cel = {
         message: "value must not be of infinity kind"
         expression: "!this || !input.isInf()"
         jsonschemas: 'this ? { "not": { "enum": ["Infinity", "-Infinity"] }} : {}'
+    }];
+    // If true, all special values: NaN or pos/neg Infinity are not allowed.
+    optional bool disallow_nan_and_infinity = 11 [(predefined).cel = {
+        message: "value must not be of nan/infinity kind"
+        expression: "!this || !(input.isInf() || input.isNaN())"
+        jsonschemas: 'this ? { "not": { "enum": ["Infinity", "-Infinity", "NaN"] }} : {}'
     }];
 }
 
@@ -293,13 +299,19 @@ message DoubleConstraints {
     optional bool disallow_nan = 9 [(predefined).cel = {
         message: "value must not be NaN"
         expression: "!this || !input.isNaN()"
-        jsonschemas: 'this ? { "not": { "enum": "NaN" }} : {}'
+        jsonschemas: 'this ? { "not": { "enum": ["NaN"] }} : {}'
     }];
     // If true, pos/neg Infinity values are not allowed.
     optional bool disallow_infinity = 10 [(predefined).cel = {
         message: "value must not be of infinity kind"
         expression: "!this || !input.isInf()"
         jsonschemas: 'this ? { "not": { "enum": ["Infinity", "-Infinity"] }} : {}'
+    }];
+    // If true, all special values: NaN or pos/neg Infinity are not allowed.
+    optional bool disallow_nan_and_infinity = 11 [(predefined).cel = {
+        message: "value must not be of nan/infinity kind"
+        expression: "!this || !(input.isInf() || input.isNaN())"
+        jsonschemas: 'this ? { "not": { "enum": ["Infinity", "-Infinity", "NaN"] }} : {}'
     }];
 }
 

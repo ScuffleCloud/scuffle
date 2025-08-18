@@ -7,7 +7,6 @@ mod query;
 mod rust_project;
 
 use std::collections::BTreeMap;
-use std::convert::TryInto;
 use std::fs;
 use std::io::{self, Write};
 use std::process::Command;
@@ -18,7 +17,6 @@ use clap::Parser;
 use env_logger::fmt::Formatter;
 use env_logger::{Target, WriteStyle};
 use log::{LevelFilter, Record};
-use runfiles::Runfiles;
 use rust_project::RustProject;
 pub use rust_project::{DiscoverProject, RustAnalyzerArg};
 use serde::de::DeserializeOwned;
@@ -237,12 +235,15 @@ pub fn generate_rust_project(
         targets,
     )?;
 
-    let runfiles = Runfiles::create()?;
     let path = std::env::var("RUST_ANALYZER_TOOLCHAIN_PATH").context("MISSING RUST_ANALYZER_TOOLCHAIN_PATH")?;
 
-    let path: Utf8PathBuf = runfiles::rlocation!(runfiles, path)
+    #[cfg(bazel_runfiles)]
+    let path: Utf8PathBuf = runfiles::rlocation!(runfiles::Runfiles::create()?, path)
         .context("toolchain runfile not found")?
         .try_into()?;
+
+    #[cfg(not(bazel_runfiles))]
+    let path = Utf8PathBuf::from(path);
 
     let toolchain_info = deserialize_file_content(&path, output_base, workspace, execution_root)?;
 

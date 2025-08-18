@@ -13,8 +13,10 @@ mod has;
 mod int;
 mod is_email;
 mod is_hostname;
+mod is_inf;
 mod is_ipv4;
 mod is_ipv6;
+mod is_nan;
 mod is_uri;
 mod is_uuid;
 mod map;
@@ -39,8 +41,10 @@ pub(crate) use has::Has;
 pub(crate) use int::Int;
 pub(crate) use is_email::IsEmail;
 pub(crate) use is_hostname::IsHostname;
+pub(crate) use is_inf::IsInf;
 pub(crate) use is_ipv4::IsIpv4;
 pub(crate) use is_ipv6::IsIpv6;
+pub(crate) use is_nan::IsNaN;
 pub(crate) use is_uri::IsUri;
 pub(crate) use is_uuid::IsUuid;
 pub(crate) use map::Map;
@@ -77,6 +81,8 @@ pub(crate) fn add_to_compiler(compiler: &mut Compiler) {
     IsHostname.add_to_compiler(compiler);
     IsUri.add_to_compiler(compiler);
     IsEmail.add_to_compiler(compiler);
+    IsNaN.add_to_compiler(compiler);
+    IsInf.add_to_compiler(compiler);
     Dyn.add_to_compiler(compiler);
 }
 

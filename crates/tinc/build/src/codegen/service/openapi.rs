@@ -1135,7 +1135,7 @@ fn generate(
                     .build(),
             ),
             ProtoType::Value(ProtoValueType::Double | ProtoValueType::Float) => {
-                #[cfg(feature = "ext_float")]
+                #[cfg(feature = "non_finite_floats")]
                 {
                     Schema::object(
                         Object::builder()
@@ -1155,7 +1155,7 @@ fn generate(
                             .build(),
                     )
                 }
-                #[cfg(not(feature = "ext_float"))]
+                #[cfg(not(feature = "non_finite_floats"))]
                 {
                     Schema::object(Object::builder().schema_type(Type::Number).build())
                 }

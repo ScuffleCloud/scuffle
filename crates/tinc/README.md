@@ -29,7 +29,7 @@ See the [changelog](./CHANGELOG.md) for a full release history.
 * **`prost`** *(enabled by default)* —  Enables prost support
 * **`tonic`** *(enabled by default)* —  Enables tonic support
 * **`docs`** —  Enables changelog and documentation of feature flags
-* **`ext_float`** — Enables extended values for floats (NaN, Infinity, -Infinity)
+* **`non_finite_floats`** — Enables non-finite float values support (NaN, Infinity, -Infinity)
 
 ### Examples
 

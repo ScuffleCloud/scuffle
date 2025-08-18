@@ -56,10 +56,10 @@ pub use fmt::*;
 mod bytes;
 pub use bytes::*;
 
-#[cfg(feature = "ext_float")]
-mod ext_floats;
-#[cfg(feature = "ext_float")]
-pub use ext_floats::*;
+#[cfg(feature = "non_finite_floats")]
+mod float_with_non_finite;
+#[cfg(feature = "non_finite_floats")]
+pub use float_with_non_finite::*;
 
 #[macro_export]
 #[doc(hidden)]

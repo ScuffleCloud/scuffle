@@ -181,6 +181,8 @@ fn test_float_expressions_valid() {
         bucket: -5.2,
         coolest_float: 34.4,
         pi: 3.0,
+        valid_values_only: 16.0,
+        finite_values_only: 8.0,
     };
 
     state.in_scope(|| valid.validate(None)).unwrap();
@@ -203,6 +205,8 @@ fn test_float_expressions_invalid() {
         bucket: -5.3,
         coolest_float: 3.14,
         pi: 3.14,
+        valid_values_only: f32::NAN,
+        finite_values_only: f32::INFINITY,
     };
 
     state.in_scope(|| valid.validate(None)).unwrap();
@@ -253,6 +257,20 @@ fn test_float_expressions_invalid() {
                 fatal: true,
                 path: "pi",
             },
+            TrackedError {
+                kind: InvalidField {
+                    message: "value must not be NaN",
+                },
+                fatal: true,
+                path: "valid_values_only",
+            },
+            TrackedError {
+                kind: InvalidField {
+                    message: "value must not be of infinity kind",
+                },
+                fatal: true,
+                path: "finite_values_only",
+            },
         ],
     }
     "#);
@@ -268,6 +286,8 @@ fn test_double_expressions_valid() {
         bucket: -5.2,
         coolest_float: 34.4,
         pi: 3.0,
+        valid_values_only: 16.0,
+        finite_values_only: 8.0,
     };
 
     state.in_scope(|| valid.validate(None)).unwrap();
@@ -290,6 +310,8 @@ fn test_double_expressions_invalid() {
         bucket: -5.3,
         coolest_float: 3.14,
         pi: 3.14,
+        valid_values_only: f64::NAN,
+        finite_values_only: f64::NEG_INFINITY,
     };
 
     state.in_scope(|| valid.validate(None)).unwrap();
@@ -339,6 +361,20 @@ fn test_double_expressions_invalid() {
                 },
                 fatal: true,
                 path: "pi",
+            },
+            TrackedError {
+                kind: InvalidField {
+                    message: "value must not be NaN",
+                },
+                fatal: true,
+                path: "valid_values_only",
+            },
+            TrackedError {
+                kind: InvalidField {
+                    message: "value must not be of infinity kind",
+                },
+                fatal: true,
+                path: "finite_values_only",
             },
         ],
     }

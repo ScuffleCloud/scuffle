@@ -5,7 +5,7 @@
 mod bytes_service;
 mod expressions;
 mod flattened;
-#[cfg(feature = "ext_float")]
+#[cfg(feature = "non_finite_floats")]
 mod floats;
 mod nested;
 mod oneof;

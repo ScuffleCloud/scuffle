@@ -29,4 +29,6 @@ tower = "0.5"
 
 [build-dependencies]
 prost-build = "0.14"
-tinc-build = { default-features = false, features = ["prost"], path = "../build", version = "0.2.0" }
+tinc-build = { default-features = false, features = [
+  "prost",
+], path = "../build", version = "0.2.0" }

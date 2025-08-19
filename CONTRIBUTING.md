@@ -20,8 +20,8 @@ The hope with bazel is for the toolchain / environment to be entirely hermetic (
 
 - `git`
 - `bash`
-- `libc6-dev`
 - `locales`
+- `libc6-dbg` (for valgrind)
 
 You will also need to have a valid UTF-8 locale set up on your system, you can do this by running the following command:
 
@@ -31,6 +31,28 @@ sudo update-locale LANG=en_US.UTF-8
 ```
 
 If someone knows how to make our build system fully hermetic, please let us know!
+
+You should be able to build the project in a docker container with the following command:
+```bash
+docker run --rm -it ubuntu:22.04 bash -c '
+apt update 
+apt install wget git bash libc6-dbg locales -y
+
+locale-gen en_US.UTF-8
+update-locale LANG=en_US.UTF-8
+export LANG="en_US.UTF-8"
+
+wget https://github.com/bazelbuild/bazelisk/releases/download/v1.26.0/bazelisk-amd64.deb
+apt install ./bazelisk-amd64.deb
+
+git clone https://github.com/scufflecloud/scuffle -b troy/bazel
+
+cd scuffle 
+export PATH="$(pwd)/tools/scripts:$PATH"
+
+just test
+just grind'
+```
 
 #### Scripts / Tools
 

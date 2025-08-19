@@ -160,37 +160,11 @@ use_repo(
     "cargo_vendor__walkdir-2.5.0",
 )
 
-bindeps = use_extension("@rules_rust//crate_universe:extension.bzl", "crate")
-bindeps.spec(
-    artifact = "bin",
-    package = "cargo-deny",
-    version = "0.18.3",
+bindeps = use_extension("//vendor:cargo_ext.bzl", "bindeps")
+use_repo(
+    bindeps,
+    "bindeps",
+    "bindeps__cargo-deny-0.18.4",
+    "bindeps__just-1.42.4",
+    "bindeps__rust-analyzer-0.0.0",
 )
-bindeps.spec(
-    artifact = "bin",
-    package = "cargo-insta",
-    version = "1.43.1",
-)
-bindeps.spec(
-    artifact = "bin",
-    package = "just",
-    version = "1.42.4",
-)
-bindeps.spec(
-    artifact = "bin",
-    package = "miniserve",
-    version = "0.31.0",
-)
-bindeps.spec(
-    artifact = "bin",
-    git = "https://github.com/TroyKomodo/rust-analyzer.git",
-    package = "rust-analyzer",
-    rev = "e9ca9f8ec88a207891c32da4fc6523026ea03c6f",
-)
-bindeps.from_specs(
-    name = "bindeps",
-    cargo_config = "//build/toolchains:rust.bindeps.cargo.toml",
-    generate_binaries = True,
-    stable_as_nightly = True,
-)
-use_repo(bindeps, "bindeps")

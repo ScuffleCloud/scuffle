@@ -49,7 +49,8 @@ test *targets="//...":
 
 vendor:
     cargo update --workspace
-    bazel run //tools/cargo/vendor
+    bazel run //vendor:cargo_vendor
+    bazel run //vendor:bindeps
 
 grind *targets="//...":
     #!/usr/bin/env bash

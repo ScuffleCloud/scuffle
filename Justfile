@@ -44,7 +44,7 @@ test *targets="//...":
 
     cargo insta review
 
-    rm lcov.info
+    rm lcov.info || true
     ln -s "$(bazel --output_base="${output_base}_coverage" info output_path)"/_coverage/_coverage_report.dat lcov.info
 
 vendor:

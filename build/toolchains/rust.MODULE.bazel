@@ -1,8 +1,55 @@
-bazel_dep(name = "rules_rust", version = "0.61.0")
+bazel_dep(name = "rules_rust")
+
 git_override(
     module_name = "rules_rust",
-    commit = "19423de5a54be92a5bff80506846b35cb506fe39",
+    commit = "05927d34aaf8384d534aba8ebcb4ef059265d05f",
     remote = "https://github.com/ScuffleCloud/rules_rust.git",
+)
+
+http_archive = use_repo_rule("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive")
+
+cargo_bazel_url = "https://github.com/ScuffleCloud/rules_rust/releases/download/commit-05927d34aaf8384d534aba8ebcb4ef059265d05f/"
+
+http_archive(
+    name = "cargo-bazel-darwin-aarch64",
+    sha256 = "0c74406c538c2f53e66ace434459cf5432ee10c713c1a8b878460ef369840765",
+    strip_prefix = "cargo-bazel-darwin-aarch64",
+    url = cargo_bazel_url + "cargo-bazel-darwin-aarch64.tar.zst",
+)
+
+http_archive(
+    name = "cargo-bazel-darwin-x86_64",
+    sha256 = "ccc332fd141bae40d3537ccfc4676d7e316dbce50595360d08922be31ca3cc03",
+    strip_prefix = "cargo-bazel-darwin-x86_64",
+    url = cargo_bazel_url + "cargo-bazel-darwin-x86_64.tar.zst",
+)
+
+http_archive(
+    name = "cargo-bazel-linux-aarch64",
+    sha256 = "9defe3b719210667ed7d46e88069281c162800245c41da3e1b89da3e2cc40449",
+    strip_prefix = "cargo-bazel-linux-aarch64",
+    url = cargo_bazel_url + "cargo-bazel-linux-aarch64.tar.zst",
+)
+
+http_archive(
+    name = "cargo-bazel-linux-x86_64",
+    sha256 = "99ade9f88470eb1845948ba91d45b5bb2bd6074ef36cded3d7b09636c0653c8b",
+    strip_prefix = "cargo-bazel-linux-x86_64",
+    url = cargo_bazel_url + "cargo-bazel-linux-x86_64.tar.zst",
+)
+
+http_archive(
+    name = "cargo-bazel-windows-aarch64",
+    sha256 = "dd3247c5c8ac2e5fa463d957b2be506104d607c3b9afecf0b9cb6110bc81f3da",
+    strip_prefix = "cargo-bazel-windows-aarch64",
+    url = cargo_bazel_url + "cargo-bazel-windows-aarch64.tar.zst",
+)
+
+http_archive(
+    name = "cargo-bazel-windows-x86_64",
+    sha256 = "bb64e46e08511806267ce37f4774fde3804580cef4c8be12e348282085870305",
+    strip_prefix = "cargo-bazel-windows-x86_64",
+    url = cargo_bazel_url + "cargo-bazel-windows-x86_64.tar.zst",
 )
 
 rust = use_extension(

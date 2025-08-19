@@ -29,3 +29,10 @@ rustc_flags_file(
     tags = ["manual", "no-cache"],
     visibility = ["//visibility:public"],
 )
+
+bool_flag(
+    name = "cargo_bazel_vendor",
+    build_setting_default = False,
+    tags = ["manual", "no-cache"],
+    visibility = ["//visibility:public"],
+)

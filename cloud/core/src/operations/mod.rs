@@ -8,6 +8,7 @@ use crate::http_ext::RequestExt;
 use crate::std_ext::ResultExt;
 
 mod login;
+mod register;
 
 pub(crate) trait Operation<G: CoreConfig>: RequestExt + Sized + Send {
     type Principal: CedarEntity + Send;

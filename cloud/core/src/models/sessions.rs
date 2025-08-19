@@ -1,7 +1,6 @@
 use std::sync::Arc;
 
 use base64::Engine;
-use cedar_policy::RestrictedExpression;
 use diesel::Selectable;
 use diesel::prelude::{AsChangeset, Associations, Identifiable, Insertable, Queryable};
 
@@ -34,7 +33,7 @@ impl From<pb::scufflecloud::core::v1::DeviceAlgorithm> for DeviceAlgorithm {
 
 pub(crate) type UserSessionRequestId = Id<UserSessionRequest>;
 
-#[derive(Debug, Queryable, Selectable, Insertable, Identifiable, AsChangeset)]
+#[derive(Debug, Queryable, Selectable, Insertable, Identifiable, AsChangeset, serde::Serialize)]
 #[diesel(table_name = crate::schema::user_session_requests)]
 #[diesel(check_for_backend(diesel::pg::Pg))]
 pub struct UserSessionRequest {
@@ -56,10 +55,6 @@ impl CedarEntity for UserSessionRequest {
     fn entity_id(&self) -> cedar_policy::EntityId {
         cedar_policy::EntityId::new(self.id.to_string_unprefixed())
     }
-
-    fn attributes(&self) -> std::collections::HashMap<String, cedar_policy::RestrictedExpression> {
-        self.id.attributes()
-    }
 }
 
 impl From<UserSessionRequest> for pb::scufflecloud::core::v1::UserSessionRequest {
@@ -76,7 +71,7 @@ impl From<UserSessionRequest> for pb::scufflecloud::core::v1::UserSessionRequest
 
 pub(crate) type MagicLinkUserSessionRequestId = Id<MagicLinkUserSessionRequest>;
 
-#[derive(Debug, Queryable, Selectable, Insertable, Identifiable, AsChangeset)]
+#[derive(Debug, Queryable, Selectable, Insertable, Identifiable, AsChangeset, serde::Serialize)]
 #[diesel(table_name = crate::schema::magic_link_user_session_requests)]
 #[diesel(check_for_backend(diesel::pg::Pg))]
 pub struct MagicLinkUserSessionRequest {
@@ -96,16 +91,12 @@ impl CedarEntity for MagicLinkUserSessionRequest {
     fn entity_id(&self) -> cedar_policy::EntityId {
         cedar_policy::EntityId::new(self.id.to_string_unprefixed())
     }
-
-    fn attributes(&self) -> std::collections::HashMap<String, cedar_policy::RestrictedExpression> {
-        self.id.attributes()
-    }
 }
 
 pub(crate) type UserSessionTokenId = Id<UserSessionToken>;
 
 /// Does not represent a real database table as it is always part of a [`UserSession`].
-#[derive(Debug)]
+#[derive(Debug, serde::Serialize)]
 pub struct UserSessionToken {
     pub id: UserSessionTokenId,
     pub token: Vec<u8>,
@@ -122,13 +113,9 @@ impl CedarEntity for UserSessionToken {
     fn entity_id(&self) -> cedar_policy::EntityId {
         cedar_policy::EntityId::new(self.id.to_string_unprefixed())
     }
-
-    fn attributes(&self) -> std::collections::HashMap<String, cedar_policy::RestrictedExpression> {
-        self.id.attributes()
-    }
 }
 
-#[derive(Queryable, Selectable, Insertable, Identifiable, AsChangeset, Associations, Debug, Clone)]
+#[derive(Queryable, Selectable, Insertable, Identifiable, AsChangeset, Associations, Debug, Clone, serde::Serialize)]
 #[diesel(table_name = crate::schema::user_sessions)]
 #[diesel(primary_key(user_id, device_fingerprint))]
 #[diesel(belongs_to(User))]
@@ -154,21 +141,6 @@ impl CedarEntity for UserSession {
         let user_id = (*self.user_id).to_string();
         let fingerprint = base64::prelude::BASE64_STANDARD.encode(&self.device_fingerprint);
         cedar_policy::EntityId::new(format!("{user_id}:{fingerprint}"))
-    }
-
-    fn attributes(&self) -> std::collections::HashMap<String, RestrictedExpression> {
-        [
-            (
-                "user_id".to_string(),
-                RestrictedExpression::new_string(self.user_id.to_string()),
-            ),
-            (
-                "device_fingerprint".to_string(),
-                RestrictedExpression::new_string(base64::prelude::BASE64_STANDARD.encode(&self.device_fingerprint)),
-            ),
-        ]
-        .into_iter()
-        .collect()
     }
 }
 
@@ -201,7 +173,7 @@ impl UserSession {
 
 pub(crate) type EmailRegistrationRequestId = Id<EmailRegistrationRequest>;
 
-#[derive(Queryable, Selectable, Insertable, Identifiable, AsChangeset, Associations, Debug)]
+#[derive(Queryable, Selectable, Insertable, Identifiable, AsChangeset, Associations, Debug, serde::Serialize)]
 #[diesel(table_name = crate::schema::email_registration_requests)]
 #[diesel(belongs_to(User))]
 #[diesel(check_for_backend(diesel::pg::Pg))]
@@ -222,9 +194,5 @@ impl CedarEntity for EmailRegistrationRequest {
 
     fn entity_id(&self) -> cedar_policy::EntityId {
         cedar_policy::EntityId::new(self.id.to_string_unprefixed())
-    }
-
-    fn attributes(&self) -> std::collections::HashMap<String, cedar_policy::RestrictedExpression> {
-        self.id.attributes()
     }
 }

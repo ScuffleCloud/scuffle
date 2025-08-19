@@ -1,4 +1,3 @@
-use cedar_policy::RestrictedExpression;
 use diesel::Selectable;
 use diesel::prelude::{AsChangeset, Associations, Identifiable, Insertable, Queryable};
 
@@ -8,7 +7,7 @@ use crate::id::{Id, PrefixedId};
 
 pub(crate) type UserId = Id<User>;
 
-#[derive(Debug, Queryable, Selectable, Insertable, Identifiable, AsChangeset)]
+#[derive(Debug, Queryable, Selectable, Insertable, Identifiable, AsChangeset, serde::Serialize)]
 #[diesel(table_name = crate::schema::users)]
 #[diesel(check_for_backend(diesel::pg::Pg))]
 pub struct User {
@@ -30,10 +29,6 @@ impl CedarEntity for User {
     fn entity_id(&self) -> cedar_policy::EntityId {
         cedar_policy::EntityId::new(self.id.to_string_unprefixed())
     }
-
-    fn attributes(&self) -> std::collections::HashMap<String, cedar_policy::RestrictedExpression> {
-        self.id.attributes()
-    }
 }
 
 impl From<User> for pb::scufflecloud::core::v1::User {
@@ -49,7 +44,7 @@ impl From<User> for pb::scufflecloud::core::v1::User {
     }
 }
 
-#[derive(Queryable, Selectable, Insertable, Identifiable, AsChangeset, Associations, Debug)]
+#[derive(Queryable, Selectable, Insertable, Identifiable, AsChangeset, Associations, Debug, serde::Serialize)]
 #[diesel(table_name = crate::schema::user_emails)]
 #[diesel(primary_key(email))]
 #[diesel(belongs_to(User))]
@@ -66,12 +61,6 @@ impl CedarEntity for UserEmail {
     fn entity_id(&self) -> cedar_policy::EntityId {
         cedar_policy::EntityId::new(&self.email)
     }
-
-    fn attributes(&self) -> std::collections::HashMap<String, cedar_policy::RestrictedExpression> {
-        [("email".to_string(), RestrictedExpression::new_string(self.email.clone()))]
-            .into_iter()
-            .collect()
-    }
 }
 
 impl From<UserEmail> for pb::scufflecloud::core::v1::UserEmail {
@@ -83,7 +72,7 @@ impl From<UserEmail> for pb::scufflecloud::core::v1::UserEmail {
     }
 }
 
-#[derive(Queryable, Selectable, Insertable, Identifiable, AsChangeset, Associations, Debug)]
+#[derive(Queryable, Selectable, Insertable, Identifiable, AsChangeset, Associations, Debug, serde::Serialize)]
 #[diesel(primary_key(sub))]
 #[diesel(table_name = crate::schema::user_google_accounts)]
 #[diesel(belongs_to(User))]
@@ -101,11 +90,5 @@ impl CedarEntity for UserGoogleAccount {
 
     fn entity_id(&self) -> cedar_policy::EntityId {
         cedar_policy::EntityId::new(&self.sub)
-    }
-
-    fn attributes(&self) -> std::collections::HashMap<String, RestrictedExpression> {
-        [("sub".to_string(), RestrictedExpression::new_string(self.sub.clone()))]
-            .into_iter()
-            .collect()
     }
 }

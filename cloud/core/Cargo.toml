@@ -22,7 +22,7 @@ argon2 = { features = ["std"], version = "0.5.3" }
 async-trait = "0.1.88"
 axum = "0.8.4"
 base64 = "0.22.1"
-cedar-policy = "4.5.0"
+cedar-policy = "4.5.1"
 chrono = "0.4.41"
 derive_more = { features = ["display"], version = "2.0.1" }
 diesel = { features = ["chrono", "network-address", "serde_json", "uuid"], version = "2.2.10" }

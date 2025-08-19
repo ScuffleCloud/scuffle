@@ -1,11 +1,8 @@
-use std::collections::{HashMap, HashSet};
+use std::collections::HashSet;
 use std::str::FromStr;
 use std::sync::{Arc, OnceLock};
 
-use cedar_policy::{
-    Decision, Entities, Entity, EntityAttrEvaluationError, EntityId, EntityTypeName, EntityUid, PolicySet,
-    RestrictedExpression,
-};
+use cedar_policy::{Decision, Entities, Entity, EntityId, EntityTypeName, EntityUid, PolicySet};
 use tonic_types::{ErrorDetails, StatusExt};
 
 use crate::CoreConfig;
@@ -20,7 +17,22 @@ fn static_policies() -> &'static PolicySet {
     STATIC_POLICIES.get_or_init(|| PolicySet::from_str(STATIC_POLICIES_STR).expect("failed to parse static policies"))
 }
 
-pub trait CedarEntity {
+fn uid_to_json(uid: EntityUid) -> serde_json::Value {
+    serde_json::json!({
+        "type": uid.type_name().to_string(),
+        "id": uid.id().unescaped(),
+    })
+}
+
+#[derive(Debug, thiserror::Error)]
+pub enum CedarEntityError {
+    #[error("failed to serialize attributes: {0}")]
+    AttributeSerialization(#[from] serde_json::Error),
+    #[error("failed to create cedar entity: {0}")]
+    Entity(#[from] cedar_policy::entities_errors::EntitiesError),
+}
+
+pub trait CedarEntity: serde::Serialize {
     /// MUST be a normalized cedar entity type name.
     ///
     /// See [`cedar_policy::EntityTypeName`] and <https://github.com/cedar-policy/rfcs/blob/main/text/0009-disallow-whitespace-in-entityuid.md>.
@@ -33,16 +45,29 @@ pub trait CedarEntity {
         EntityUid::from_type_name_and_id(name, self.entity_id())
     }
 
-    fn attributes(&self) -> HashMap<String, RestrictedExpression> {
-        HashMap::new()
+    fn attributes(&self) -> Result<serde_json::value::Map<String, serde_json::Value>, CedarEntityError> {
+        if let serde_json::Value::Object(object) = serde_json::to_value(self)? {
+            Ok(object)
+        } else {
+            Ok(serde_json::value::Map::new())
+        }
     }
 
     fn parents(&self) -> HashSet<EntityUid> {
         HashSet::new()
     }
 
-    fn to_entity(&self) -> Result<Entity, EntityAttrEvaluationError> {
-        Entity::new(self.entity_uid(), self.attributes(), self.parents())
+    fn to_entity(&self) -> Result<Entity, CedarEntityError> {
+        let mut value = serde_json::value::Map::new();
+        value.insert("uid".to_string(), uid_to_json(self.entity_uid()));
+        value.insert("attrs".to_string(), serde_json::Value::Object(self.attributes()?));
+        value.insert(
+            "parents".to_string(),
+            serde_json::Value::Array(self.parents().into_iter().map(uid_to_json).collect()),
+        );
+
+        let entity = Entity::from_json_value(serde_json::Value::Object(value), None)?;
+        Ok(entity)
     }
 }
 
@@ -64,23 +89,30 @@ impl<T: PrefixedId + CedarEntity> CedarEntity for Id<T> {
     fn entity_id(&self) -> EntityId {
         EntityId::new(self.to_string_unprefixed())
     }
+}
 
-    fn attributes(&self) -> HashMap<String, RestrictedExpression> {
-        [("id".to_string(), RestrictedExpression::new_string(self.to_string()))]
-            .into_iter()
-            .collect()
+#[derive(Debug, serde::Serialize)]
+pub struct Unauthenticated;
+
+impl CedarEntity for Unauthenticated {
+    const ENTITY_TYPE: &'static str = "Unauthorized";
+
+    fn entity_id(&self) -> EntityId {
+        EntityId::new("unauthorized")
     }
 }
 
-#[derive(Debug, Clone, Copy, derive_more::Display)]
+#[derive(Debug, Clone, Copy, derive_more::Display, serde::Serialize)]
 pub enum Action {
     // User related
     /// Register with email and password.
-    #[display("register_with_email_password")]
-    RegisterWithEmailPassword,
+    #[display("register_with_email")]
+    RegisterWithEmail,
     /// Register with Google OAuth2.
     #[display("register_with_google")]
     RegisterWithGoogle,
+    #[display("get_login_with_email_options")]
+    GetLoginWithEmailOptions,
     /// Login to an existing account with email and password.
     #[display("login_with_email_password")]
     LoginWithEmailPassword,
@@ -173,6 +205,7 @@ impl CedarEntity for Action {
 }
 
 /// A general resource that is used whenever there is no specific resource for a request. (e.g. user login)
+#[derive(serde::Serialize)]
 pub struct CoreApplication;
 
 impl CedarEntity for CoreApplication {

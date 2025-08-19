@@ -8,7 +8,7 @@ use crate::models::users::{User, UserId};
 
 pub(crate) type MfaTotpCredentialId = Id<MfaTotpCredential>;
 
-#[derive(Queryable, Selectable, Insertable, Identifiable, AsChangeset, Associations, Debug)]
+#[derive(Queryable, Selectable, Insertable, Identifiable, AsChangeset, Associations, Debug, serde::Serialize)]
 #[diesel(table_name = crate::schema::mfa_totp_credentials)]
 #[diesel(belongs_to(User))]
 #[diesel(check_for_backend(diesel::pg::Pg))]
@@ -29,10 +29,6 @@ impl CedarEntity for MfaTotpCredential {
 
     fn entity_id(&self) -> cedar_policy::EntityId {
         cedar_policy::EntityId::new(self.id.to_string_unprefixed())
-    }
-
-    fn attributes(&self) -> std::collections::HashMap<String, cedar_policy::RestrictedExpression> {
-        self.id.attributes()
     }
 }
 
@@ -60,7 +56,7 @@ pub struct MfaTotpRegistrationSession {
 
 pub(crate) type MfaWebauthnCredentialId = Id<MfaWebauthnCredential>;
 
-#[derive(Queryable, Selectable, Insertable, Identifiable, AsChangeset, Associations, Debug)]
+#[derive(Queryable, Selectable, Insertable, Identifiable, AsChangeset, Associations, Debug, serde::Serialize)]
 #[diesel(table_name = crate::schema::mfa_webauthn_credentials)]
 #[diesel(belongs_to(User))]
 #[diesel(check_for_backend(diesel::pg::Pg))]
@@ -83,10 +79,6 @@ impl CedarEntity for MfaWebauthnCredential {
 
     fn entity_id(&self) -> cedar_policy::EntityId {
         cedar_policy::EntityId::new(self.id.to_string_unprefixed())
-    }
-
-    fn attributes(&self) -> std::collections::HashMap<String, cedar_policy::RestrictedExpression> {
-        self.id.attributes()
     }
 }
 

@@ -9,17 +9,16 @@ use tonic_types::{ErrorDetails, StatusExt};
 
 use crate::cedar::{self, Action, CoreApplication};
 use crate::chrono_ext::ChronoDateTimeExt;
-use crate::common::{self, NewUserData, TxError};
+use crate::common::{self, TxError, normalize_email};
 use crate::http_ext::RequestExt;
 use crate::models::{
-    EmailRegistrationRequest, EmailRegistrationRequestId, MagicLinkUserSessionRequest, MagicLinkUserSessionRequestId,
-    Organization, OrganizationMember, UserGoogleAccount, UserId, UserSession, UserSessionRequest, UserSessionRequestId,
-    UserSessionTokenId,
+    MagicLinkUserSessionRequest, MagicLinkUserSessionRequestId, Organization, OrganizationMember, User, UserGoogleAccount,
+    UserId, UserSession, UserSessionRequest, UserSessionRequestId, UserSessionTokenId,
 };
 use crate::operations::Operation;
 use crate::schema::{
-    email_registration_requests, magic_link_user_session_requests, organization_members, organizations, user_emails,
-    user_google_accounts, user_session_requests, user_sessions,
+    magic_link_user_session_requests, organization_members, organizations, user_google_accounts, user_session_requests,
+    user_sessions,
 };
 use crate::services::CoreSvc;
 use crate::std_ext::{OptionExt, ResultExt};
@@ -31,165 +30,21 @@ impl<G: CoreConfig> pb::scufflecloud::core::v1::sessions_service_server::Session
         &self,
         req: tonic::Request<pb::scufflecloud::core::v1::RegisterWithEmailRequest>,
     ) -> Result<tonic::Response<()>, tonic::Status> {
-        let global = &req.global::<G>()?;
-        let mut db = global.db().await.into_tonic_internal_err("failed to connect to database")?;
-        let payload = req.into_inner();
-
-        // Check captcha
-        let captcha = payload.captcha.require("captcha")?;
-        match captcha.provider() {
-            pb::scufflecloud::core::v1::CaptchaProvider::Turnstile => {
-                captcha::turnstile::verify_in_tonic(global, &captcha.token).await?;
-            }
-        }
-
-        let email = common::normalize_email(&payload.email);
-
-        // Generate random code
-        let code = common::generate_random_bytes().into_tonic_internal_err("failed to generate registration code")?;
-        // let code_base64 = base64::prelude::BASE64_URL_SAFE.encode(&code);
-
-        db.transaction::<_, TxError, _>(move |conn| {
-            async move {
-                // Check if email is already registered
-                if user_emails::dsl::user_emails
-                    .find(&email)
-                    .select(user_emails::dsl::email)
-                    .first::<String>(conn)
-                    .await
-                    .optional()
-                    .into_tonic_internal_err("failed to query database")?
-                    .is_some()
-                {
-                    return Err(tonic::Status::with_error_details(
-                        Code::AlreadyExists,
-                        "email is already registered",
-                        ErrorDetails::new(),
-                    )
-                    .into());
-                }
-
-                // Create email registration request
-                let registration_request = EmailRegistrationRequest {
-                    id: EmailRegistrationRequestId::new(),
-                    user_id: None,
-                    email,
-                    code: code.to_vec(),
-                    expires_at: chrono::Utc::now() + global.email_registration_request_timeout(),
-                };
-
-                diesel::insert_into(email_registration_requests::dsl::email_registration_requests)
-                    .values(registration_request)
-                    .execute(conn)
-                    .await
-                    .into_tonic_internal_err("failed to insert email registration request")?;
-
-                Ok(())
-            }
-            .scope_boxed()
-        })
-        .await?;
-
-        // TODO: Send email with registration code link code_base64
-
-        Ok(tonic::Response::new(()))
+        Operation::<G>::run(req).await.map(tonic::Response::new)
     }
 
     async fn complete_register_with_email(
         &self,
         req: tonic::Request<pb::scufflecloud::core::v1::CompleteRegisterWithEmailRequest>,
     ) -> Result<tonic::Response<pb::scufflecloud::core::v1::NewUserSessionToken>, tonic::Status> {
-        let global = &req.global::<G>()?;
-        let ip_info = req.ip_address_info()?;
-        let payload = req.into_inner();
-
-        let mut db = global.db().await.into_tonic_internal_err("failed to connect to database")?;
-
-        let device = payload.device.require("device")?;
-
-        let new_token = db
-            .transaction::<_, TxError, _>(|conn| {
-                async move {
-                    // Delete email registration request
-                    let Some(registration_request) =
-                        diesel::delete(email_registration_requests::dsl::email_registration_requests)
-                            .filter(
-                                email_registration_requests::dsl::code
-                                    .eq(&payload.code)
-                                    .and(email_registration_requests::dsl::user_id.is_null())
-                                    .and(email_registration_requests::dsl::expires_at.gt(chrono::Utc::now())),
-                            )
-                            .returning(EmailRegistrationRequest::as_select())
-                            .get_result::<EmailRegistrationRequest>(conn)
-                            .await
-                            .optional()
-                            .into_tonic_internal_err("failed to delete email registration request")?
-                    else {
-                        return Err(
-                            tonic::Status::with_error_details(Code::NotFound, "unknown code", ErrorDetails::new()).into(),
-                        );
-                    };
-
-                    let (user, new_token) = common::create_new_user_and_session(
-                        global,
-                        conn,
-                        NewUserData {
-                            email: Some(registration_request.email.clone()),
-                            preferred_name: None,
-                            first_name: None,
-                            last_name: None,
-                        },
-                        device,
-                        &ip_info,
-                    )
-                    .await?;
-
-                    // Check if this transaction was allowed
-                    cedar::is_authorized(global, None, &user, Action::RegisterWithEmailPassword, CoreApplication)?;
-
-                    Ok(new_token)
-                }
-                .scope_boxed()
-            })
-            .await?;
-
-        Ok(tonic::Response::new(new_token))
+        Operation::<G>::run(req).await.map(tonic::Response::new)
     }
 
     async fn login_with_email_options(
         &self,
         req: tonic::Request<pb::scufflecloud::core::v1::LoginWithEmailOptionsRequest>,
     ) -> Result<tonic::Response<pb::scufflecloud::core::v1::LoginWithEmailOptionsResponse>, tonic::Status> {
-        let global = &req.global::<G>()?;
-        let payload = req.into_inner();
-
-        let mut db = global.db().await.into_tonic_internal_err("failed to connect to database")?;
-
-        // Check captcha
-        let captcha = payload.captcha.require("captcha")?;
-        match captcha.provider() {
-            pb::scufflecloud::core::v1::CaptchaProvider::Turnstile => {
-                captcha::turnstile::verify_in_tonic(global, &captcha.token).await?;
-            }
-        }
-
-        let user = common::get_user_by_email(&mut db, &payload.email).await?;
-
-        let mut options = vec![];
-
-        if user.password_hash.is_some()
-            && cedar::is_authorized(global, None, &user, Action::LoginWithEmailPassword, CoreApplication).is_ok()
-        {
-            options.push(pb::scufflecloud::core::v1::LoginWithEmailOptions::Password as i32);
-        }
-
-        if cedar::is_authorized(global, None, &user, Action::LoginWithMagicLink, CoreApplication).is_ok() {
-            options.push(pb::scufflecloud::core::v1::LoginWithEmailOptions::MagicLink as i32);
-        }
-
-        Ok(tonic::Response::new(
-            pb::scufflecloud::core::v1::LoginWithEmailOptionsResponse { options },
-        ))
+        Operation::<G>::run(req).await.map(tonic::Response::new)
     }
 
     async fn login_with_email_and_password(
@@ -405,10 +260,19 @@ impl<G: CoreConfig> pb::scufflecloud::core::v1::sessions_service_server::Session
                             })
                         }
                         None => {
-                            let (user, new_token) = common::create_new_user_and_session(
+                            let user = User {
+                                id: UserId::new(),
+                                preferred_name: google_token.id_token.name,
+                                first_name: google_token.id_token.given_name,
+                                last_name: google_token.id_token.family_name,
+                                password_hash: None,
+                                primary_email: google_token.id_token.email_verified.then(|| normalize_email(&google_token.id_token.email)),
+                            };
+
+                            let new_token = common::create_new_user_and_session(
                                 global,
                                 conn,
-                                google_token.id_token.clone().into(),
+                                &user,
                                 device,
                                 &ip_info,
                             )

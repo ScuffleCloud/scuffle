@@ -14,7 +14,6 @@ use tonic_types::{ErrorDetails, StatusExt};
 
 use crate::CoreConfig;
 use crate::chrono_ext::ChronoDateTimeExt;
-use crate::google_api::GoogleIdToken;
 use crate::id::Id;
 use crate::middleware::IpAddressInfo;
 use crate::models::{MfaRecoveryCode, MfaWebauthnCredential, User, UserEmail, UserId, UserSession};
@@ -93,54 +92,25 @@ pub(crate) fn normalize_email(email: &str) -> String {
     email.trim().to_ascii_lowercase()
 }
 
-pub(crate) struct NewUserData {
-    pub email: Option<String>,
-    pub preferred_name: Option<String>,
-    pub first_name: Option<String>,
-    pub last_name: Option<String>,
-}
-
-impl From<GoogleIdToken> for NewUserData {
-    fn from(value: GoogleIdToken) -> Self {
-        Self {
-            email: value.email_verified.then_some(value.email),
-            preferred_name: value.name,
-            first_name: value.given_name,
-            last_name: value.family_name,
-        }
-    }
-}
-
 pub(crate) async fn create_new_user_and_session<G: CoreConfig>(
     global: &Arc<G>,
     tx: &mut diesel_async::AsyncPgConnection,
-    new_user_data: NewUserData,
+    new_user: &User,
     device: pb::scufflecloud::core::v1::Device,
     ip_info: &IpAddressInfo,
-) -> Result<(User, pb::scufflecloud::core::v1::NewUserSessionToken), tonic::Status> {
-    let new_user_id = UserId::new();
-    let email = new_user_data.email.as_ref().map(|e| normalize_email(e));
-
-    let user = User {
-        id: new_user_id,
-        preferred_name: new_user_data.preferred_name,
-        first_name: new_user_data.first_name,
-        last_name: new_user_data.last_name,
-        password_hash: None,
-        primary_email: email.clone(),
-    };
+) -> Result<pb::scufflecloud::core::v1::NewUserSessionToken, tonic::Status> {
     diesel::insert_into(users::dsl::users)
-        .values(&user)
+        .values(new_user)
         .execute(tx)
         .await
         .into_tonic_internal_err("failed to insert user")?;
 
-    let new_token = create_session(global, tx, user.id, device, ip_info, false).await?;
+    let new_token = create_session(global, tx, new_user.id, device, ip_info, false).await?;
 
-    if let Some(email) = email {
+    if let Some(email) = new_user.primary_email.as_ref() {
         // Check if email is already registered
         if user_emails::dsl::user_emails
-            .find(&email)
+            .find(email)
             .select(user_emails::dsl::email)
             .first::<String>(tx)
             .await
@@ -157,7 +127,7 @@ pub(crate) async fn create_new_user_and_session<G: CoreConfig>(
 
         let user_email = UserEmail {
             email: email.clone(),
-            user_id: user.id,
+            user_id: new_user.id,
             created_at: chrono::Utc::now(),
         };
 
@@ -168,7 +138,7 @@ pub(crate) async fn create_new_user_and_session<G: CoreConfig>(
             .into_tonic_internal_err("failed to insert user email")?;
     }
 
-    Ok((user, new_token))
+    Ok(new_token)
 }
 
 pub(crate) async fn mfa_options(

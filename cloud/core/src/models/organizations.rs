@@ -9,7 +9,7 @@ use crate::models::users::{User, UserId};
 
 pub(crate) type OrganizationId = Id<Organization>;
 
-#[derive(Queryable, Selectable, Insertable, Identifiable, AsChangeset, Associations, Debug)]
+#[derive(Queryable, Selectable, Insertable, Identifiable, AsChangeset, Associations, Debug, serde::Serialize)]
 #[diesel(table_name = crate::schema::organizations)]
 #[diesel(belongs_to(User, foreign_key = owner_id))]
 #[diesel(check_for_backend(diesel::pg::Pg))]
@@ -31,10 +31,6 @@ impl CedarEntity for Organization {
     fn entity_id(&self) -> cedar_policy::EntityId {
         cedar_policy::EntityId::new(self.id.to_string_unprefixed())
     }
-
-    fn attributes(&self) -> std::collections::HashMap<String, cedar_policy::RestrictedExpression> {
-        self.id.attributes()
-    }
 }
 
 impl From<Organization> for pb::scufflecloud::core::v1::Organization {
@@ -51,7 +47,7 @@ impl From<Organization> for pb::scufflecloud::core::v1::Organization {
 
 pub(crate) type ProjectId = Id<Project>;
 
-#[derive(Queryable, Selectable, Insertable, Identifiable, AsChangeset, Associations, Debug)]
+#[derive(Queryable, Selectable, Insertable, Identifiable, AsChangeset, Associations, Debug, serde::Serialize)]
 #[diesel(table_name = crate::schema::projects)]
 #[diesel(belongs_to(Organization))]
 #[diesel(check_for_backend(diesel::pg::Pg))]
@@ -71,15 +67,11 @@ impl CedarEntity for Project {
     fn entity_id(&self) -> cedar_policy::EntityId {
         cedar_policy::EntityId::new(self.id.to_string_unprefixed())
     }
-
-    fn attributes(&self) -> std::collections::HashMap<String, cedar_policy::RestrictedExpression> {
-        self.id.attributes()
-    }
 }
 
 pub(crate) type PolicyId = Id<Policy>;
 
-#[derive(Queryable, Selectable, Insertable, Identifiable, AsChangeset, Associations, Debug)]
+#[derive(Queryable, Selectable, Insertable, Identifiable, AsChangeset, Associations, Debug, serde::Serialize)]
 #[diesel(table_name = crate::schema::policies)]
 #[diesel(belongs_to(Organization))]
 #[diesel(belongs_to(Project))]
@@ -103,15 +95,11 @@ impl CedarEntity for Policy {
     fn entity_id(&self) -> cedar_policy::EntityId {
         cedar_policy::EntityId::new(self.id.to_string_unprefixed())
     }
-
-    fn attributes(&self) -> std::collections::HashMap<String, cedar_policy::RestrictedExpression> {
-        self.id.attributes()
-    }
 }
 
 pub(crate) type RoleId = Id<Role>;
 
-#[derive(Queryable, Selectable, Insertable, Identifiable, AsChangeset, Associations, Debug)]
+#[derive(Queryable, Selectable, Insertable, Identifiable, AsChangeset, Associations, Debug, serde::Serialize)]
 #[diesel(table_name = crate::schema::roles)]
 #[diesel(belongs_to(Organization))]
 #[diesel(check_for_backend(diesel::pg::Pg))]
@@ -133,10 +121,6 @@ impl CedarEntity for Role {
     fn entity_id(&self) -> cedar_policy::EntityId {
         cedar_policy::EntityId::new(self.id.to_string_unprefixed())
     }
-
-    fn attributes(&self) -> std::collections::HashMap<String, cedar_policy::RestrictedExpression> {
-        self.id.attributes()
-    }
 }
 
 #[derive(Queryable, Selectable, Insertable, Identifiable, Associations, Debug)]
@@ -150,7 +134,7 @@ pub struct RolePolicy {
     pub policy_id: PolicyId,
 }
 
-#[derive(Queryable, Selectable, Insertable, Identifiable, AsChangeset, Associations, Debug)]
+#[derive(Queryable, Selectable, Insertable, Identifiable, AsChangeset, Associations, Debug, serde::Serialize)]
 #[diesel(table_name = crate::schema::organization_members)]
 #[diesel(primary_key(organization_id, user_id))]
 #[diesel(belongs_to(Organization))]
@@ -173,21 +157,6 @@ impl CedarEntity for OrganizationMember {
             self.organization_id.to_string_unprefixed(),
             self.user_id.to_string_unprefixed()
         ))
-    }
-
-    fn attributes(&self) -> std::collections::HashMap<String, cedar_policy::RestrictedExpression> {
-        [
-            (
-                "organization_id".to_string(),
-                cedar_policy::RestrictedExpression::new_string(self.organization_id.to_string()),
-            ),
-            (
-                "user_id".to_string(),
-                cedar_policy::RestrictedExpression::new_string(self.user_id.to_string()),
-            ),
-        ]
-        .into_iter()
-        .collect()
     }
 }
 
@@ -217,7 +186,7 @@ pub struct OrganizationMemberPolicy {
 
 pub(crate) type ServiceAccountId = Id<ServiceAccount>;
 
-#[derive(Queryable, Selectable, Insertable, Identifiable, AsChangeset, Associations, Debug)]
+#[derive(Queryable, Selectable, Insertable, Identifiable, AsChangeset, Associations, Debug, serde::Serialize)]
 #[diesel(table_name = crate::schema::service_accounts)]
 #[diesel(belongs_to(Organization))]
 #[diesel(belongs_to(Project))]
@@ -240,15 +209,11 @@ impl CedarEntity for ServiceAccount {
     fn entity_id(&self) -> cedar_policy::EntityId {
         cedar_policy::EntityId::new(self.id.to_string_unprefixed())
     }
-
-    fn attributes(&self) -> std::collections::HashMap<String, cedar_policy::RestrictedExpression> {
-        self.id.attributes()
-    }
 }
 
 pub(crate) type ServiceAccountTokenId = Id<ServiceAccountToken>;
 
-#[derive(Queryable, Selectable, Insertable, Identifiable, AsChangeset, Associations, Debug)]
+#[derive(Queryable, Selectable, Insertable, Identifiable, AsChangeset, Associations, Debug, serde::Serialize)]
 #[diesel(table_name = crate::schema::service_account_tokens)]
 #[diesel(belongs_to(ServiceAccount))]
 #[diesel(check_for_backend(diesel::pg::Pg))]
@@ -271,15 +236,11 @@ impl CedarEntity for ServiceAccountToken {
     fn entity_id(&self) -> cedar_policy::EntityId {
         cedar_policy::EntityId::new(self.id.to_string_unprefixed())
     }
-
-    fn attributes(&self) -> std::collections::HashMap<String, cedar_policy::RestrictedExpression> {
-        self.id.attributes()
-    }
 }
 
 pub(crate) type OrganizationInvitationId = Id<OrganizationInvitation>;
 
-#[derive(Queryable, Selectable, Insertable, Identifiable, AsChangeset, Associations, Debug)]
+#[derive(Queryable, Selectable, Insertable, Identifiable, AsChangeset, Associations, Debug, serde::Serialize)]
 #[diesel(table_name = crate::schema::organization_invitations)]
 #[diesel(belongs_to(Organization))]
 #[diesel(belongs_to(User))]
@@ -302,10 +263,6 @@ impl CedarEntity for OrganizationInvitation {
 
     fn entity_id(&self) -> cedar_policy::EntityId {
         cedar_policy::EntityId::new(self.id.to_string_unprefixed())
-    }
-
-    fn attributes(&self) -> std::collections::HashMap<String, cedar_policy::RestrictedExpression> {
-        self.id.attributes()
     }
 }
 

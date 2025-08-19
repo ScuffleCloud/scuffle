@@ -59,3 +59,43 @@ crates_vendor(
     vendor_path = "cargo",
     visibility = ["//visibility:public"],
 )
+
+crates_vendor(
+    name = "bindeps",
+    cargo_lockfile = ":Cargo.bindeps.lock",
+    generate_build_scripts = True,
+    packages = {
+        "cargo-deny": crate.spec(
+            artifact = "bin",
+            version = "0.18.3",
+        ),
+        "just": crate.spec(
+            artifact = "bin",
+            version = "1.42.4",
+        ),
+        "miniserve": crate.spec(
+            artifact = "bin",
+            version = "0.31.0",
+        ),
+        "rust-analyzer": crate.spec(
+            artifact = "bin",
+            git = "https://github.com/TroyKomodo/rust-analyzer.git",
+            rev = "e9ca9f8ec88a207891c32da4fc6523026ea03c6f",
+        ),
+    },
+    cargo_config = ":rust.bindeps.cargo.toml",
+    mode = "remote",
+    supported_platform_triples = [
+        "x86_64-unknown-linux-gnu",
+        "aarch64-unknown-linux-gnu",
+        "x86_64-apple-darwin",
+        "aarch64-apple-darwin",
+        "x86_64-pc-windows-msvc",
+        "aarch64-pc-windows-msvc",
+    ],
+    generate_binaries = True,
+    stable_as_nightly = True,
+    tags = ["manual"],
+    vendor_path = "bindeps",
+    visibility = ["//visibility:public"],
+)

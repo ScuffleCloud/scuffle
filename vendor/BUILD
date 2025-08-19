@@ -3,6 +3,7 @@ load("//:cargo_targets.bzl", "cargo_manifests")
 
 crates_vendor(
     name = "cargo_vendor",
+    cargo_bazel = "//build/toolchains/rust:cargo-bazel",
     annotations = {
         "reqwest": [
             crate.annotation(
@@ -41,6 +42,7 @@ crates_vendor(
     },
     render_config = render_config(
         default_alias_rule = "opt",
+
     ),
     cargo_lockfile = "//:Cargo.lock",
     generate_build_scripts = True,
@@ -62,6 +64,7 @@ crates_vendor(
 
 crates_vendor(
     name = "bindeps",
+    cargo_bazel = "//build/toolchains/rust:cargo-bazel",
     cargo_lockfile = ":Cargo.bindeps.lock",
     generate_build_scripts = True,
     packages = {

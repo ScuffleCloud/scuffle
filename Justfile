@@ -4,6 +4,7 @@ mod? local
 fmt:
     bazel run //tools/cargo/fmt:fix
     buildifier $(git ls-files "*.bzl" "*.bazel" | xargs ls 2>/dev/null)
+    just --unstable --fmt
 
 lint:
     bazel run //tools/cargo/clippy:fix
@@ -14,12 +15,13 @@ clean *args="--async":
 
     output_base=$(bazel info output_base)
 
-    bazel --output_base="${output_base}" clean {{args}}
-    bazel --output_base="${output_base}_coverage" clean {{args}}
-    bazel --output_base="${output_base}_grind" clean {{args}}
-    bazel --output_base="${output_base}_rust_analyzer" clean {{args}}
+    bazel --output_base="${output_base}" clean {{ args }}
+    bazel --output_base="${output_base}_coverage" clean {{ args }}
+    bazel --output_base="${output_base}_grind" clean {{ args }}
+    bazel --output_base="${output_base}_rust_analyzer" clean {{ args }}
 
 alias coverage := test
+
 test *targets="//...":
     #!/usr/bin/env bash
     set -exuo pipefail
@@ -28,7 +30,7 @@ test *targets="//...":
 
     output_base=$(bazel info output_base)
 
-    bazel --output_base="${output_base}_coverage" coverage {{targets}} --//settings:test_insta_force_pass
+    bazel --output_base="${output_base}_coverage" coverage {{ targets }} --//settings:test_insta_force_pass
 
     test_logs=$(bazel --output_base="${output_base}_coverage" info bazel-testlogs)
 
@@ -54,7 +56,7 @@ grind *targets="//...":
     set -euxo pipefail
 
     output_base=$(bazel info output_base)
-    targets=$(bazel query 'kind("nextest_test rule", set({{targets}}))')
+    targets=$(bazel query 'kind("nextest_test rule", set({{ targets }}))')
 
     bazel --output_base="${output_base}_grind" test ${targets} --//settings:test_rustc_flags="--cfg=valgrind" --//settings:test_valgrind
 
@@ -63,11 +65,12 @@ alias docs := doc
 rustdoc_target := "//docs:rustdoc"
 
 doc:
-    bazel build {{rustdoc_target}}
+    bazel build {{ rustdoc_target }}
 
 alias docs-serve := doc-serve
+
 doc-serve: doc
-    miniserve "$(bazel info execution_root)"/"$(bazel cquery --config=wrapper {{rustdoc_target}} --output=files)" --index index.html --port 3000
+    miniserve "$(bazel info execution_root)"/"$(bazel cquery --config=wrapper {{ rustdoc_target }} --output=files)" --index index.html --port 3000
 
 deny:
     bazel run //tools/cargo/deny check

@@ -21,7 +21,7 @@ binary_wrapper(
         "VALGRIND_LIB": "$$RUNFILES/$(rlocationpath :libexec)/valgrind",
     },
     extra_commands = [
-        "ulimit -n 4096 2&1>/dev/null || true",
+        "ulimit -n 4096",
     ],
     data = [":libexec"],
     tags = ["manual", "no-cache"],

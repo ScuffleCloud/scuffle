@@ -16,6 +16,22 @@ One example of how we optimize our cache use is external dependencies:
 
 We vendor all our dependencies [`just vendor`](#local-commnads), and have them built in `opt` (release) mode. This means that we do not need to rebuild dependencies when switching between debug and release builds, and also we don't instrument coverage. Meaning we can use the same cached builds for debug, release, coverage, valgrind, clippy, rust-analyzer builds.
 
+The hope with bazel is for the toolchain / environment to be entirely hermetic (self-contained) and not require any additional tools to be installed on the system. However this is currently not possible due to bazels limitations with sysroots and shell scripts. So on your host system you will need to have the following tools installed:
+
+- `git`
+- `bash`
+- `libc6-dev`
+- `locales`
+
+You will also need to have a valid UTF-8 locale set up on your system, you can do this by running the following command:
+
+```bash
+sudo locale-gen en_US.UTF-8
+sudo update-locale LANG=en_US.UTF-8
+```
+
+If someone knows how to make our build system fully hermetic, please let us know!
+
 #### Scripts / Tools
 
 We provide a bunch of tools which we vendor by wrapping them into a Bazel rule, you can find them in [`tools/scripts`](./tools/scripts/README.md). We recommend adding this directory to the front of your `PATH` (automatically done if you use [direnv](#environment-variables)).

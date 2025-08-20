@@ -29,7 +29,6 @@
     type Props = {
         mapData?: Array<{ name: string; value: number }> | null;
         theme?: 'light' | 'dark' | object;
-        onChartReady?: (chart: EChartsType) => void;
         title?: string;
         dataLabel?: string;
     };
@@ -37,12 +36,14 @@
     const {
         mapData = null,
         theme = 'light',
-        onChartReady,
         title = 'Global Technology Innovation Index 2024',
         dataLabel = 'Innovation Score',
     }: Props = $props();
 
     const projection = geoMercator();
+
+    let hoveredCountry: string | null = $state(null);
+    let chartInstance = $state<EChartsType | EChartsType | undefined>();
 
     // Sample world data - Technology Innovation scores by country
     const defaultData = [
@@ -94,8 +95,12 @@
 
     const data = $derived(mapData || defaultData);
     let isLoading = $state(true);
-    let chartInstance: EChartsType | null = $state(null);
 
+    const resetZoom = () => {
+        if (chartInstance) {
+            chartInstance.dispatchAction({ type: 'restore' });
+        }
+    };
     const maxValue = $derived(Math.max(...data.map((item) => item.value)));
     const minValue = $derived(Math.min(...data.map((item) => item.value)));
 
@@ -118,6 +123,7 @@
         tooltip: {
             trigger: 'item',
             formatter: function (params: any) {
+                hoveredCountry = params.name;
                 if (params.data) {
                     return `<strong>${params.name}</strong><br/>${dataLabel}: ${params.data.value}`;
                 }
@@ -140,6 +146,11 @@
                     readOnly: false,
                     title: 'View Data',
                     lang: ['Data View', 'Close', 'Refresh'],
+                    backgroundColor: '#f0f0f0',
+                    textColor: '#333',
+                    textareaColor: '#fff',
+                    textareaBorderColor: '#ccc',
+                    buttonColor: getCssVar('--colors-blue60'),
                 },
                 restore: {
                     title: 'Reset Zoom',
@@ -182,8 +193,9 @@
         geo: {
             map: 'world',
             roam: true,
-            zoom: 1.2,
-            center: [500, 40],
+            // If this changes. 1.7 zoom and 475, 170 center of the map i think looks fine
+            zoom: 1.7,
+            center: [475, 170],
             label: {
                 show: false,
                 color: getCssVar('--colors-gray90'),
@@ -264,6 +276,11 @@
     });
 </script>
 
+<div class="hovered-country-info">
+    <h3>{hoveredCountry}</h3>
+    <p>Innovation Score: {hoveredCountry}</p>
+</div>
+<button onclick={resetZoom}> Reset Zoom </button>
 <div class="map-container">
     {#if isLoading}
         <div class="loading-overlay">
@@ -271,7 +288,7 @@
             <p>Loading world map data...</p>
         </div>
     {:else}
-        <Chart {init} {options} {theme} onclick={handleClick} />
+        <Chart {init} {options} {theme} onclick={handleClick} bind:chart={chartInstance} />
     {/if}
 </div>
 

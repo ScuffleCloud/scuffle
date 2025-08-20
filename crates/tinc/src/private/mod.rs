@@ -56,9 +56,7 @@ pub use fmt::*;
 mod bytes;
 pub use bytes::*;
 
-#[cfg(feature = "non_finite_floats")]
 mod float_with_non_finite;
-#[cfg(feature = "non_finite_floats")]
 pub use float_with_non_finite::*;
 
 #[macro_export]

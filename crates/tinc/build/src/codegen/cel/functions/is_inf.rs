@@ -56,11 +56,13 @@ mod tests {
     use crate::codegen::cel::compiler::{CompiledExpr, Compiler, CompilerCtx};
     use crate::codegen::cel::functions::{Function, IsInf};
     use crate::codegen::cel::types::CelType;
+    use crate::extern_paths::ExternPaths;
+    use crate::path_set::PathSet;
     use crate::types::{ProtoType, ProtoTypeRegistry, ProtoValueType};
 
     #[test]
     fn test_is_inf_syntax() {
-        let registry = ProtoTypeRegistry::new(crate::Mode::Prost, crate::extern_paths::ExternPaths::new(crate::Mode::Prost));
+        let registry = ProtoTypeRegistry::new(crate::Mode::Prost, ExternPaths::new(crate::Mode::Prost), PathSet::default());
         let compiler = Compiler::new(&registry);
         insta::assert_debug_snapshot!(IsInf.compile(CompilerCtx::new(compiler.child(), None, &[])), @r#"
         Err(
@@ -110,7 +112,7 @@ mod tests {
     #[test]
     #[cfg(not(valgrind))]
     fn test_is_inf_runtime() {
-        let registry = ProtoTypeRegistry::new(crate::Mode::Prost, crate::extern_paths::ExternPaths::new(crate::Mode::Prost));
+        let registry = ProtoTypeRegistry::new(crate::Mode::Prost, ExternPaths::new(crate::Mode::Prost), PathSet::default());
         let compiler = Compiler::new(&registry);
 
         let double_value =

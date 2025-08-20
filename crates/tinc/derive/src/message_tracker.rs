@@ -5,12 +5,14 @@ use syn::spanned::Spanned;
 struct TincContainerOptions {
     pub crate_path: syn::Path,
     pub tagged: bool,
+    pub with_non_finite_values: bool,
 }
 
 impl TincContainerOptions {
     fn from_attributes<'a>(attrs: impl IntoIterator<Item = &'a syn::Attribute>) -> syn::Result<Self> {
         let mut crate_ = None;
         let mut tagged = false;
+        let mut with_non_finite_values = false;
 
         for attr in attrs {
             let syn::Meta::List(list) = &attr.meta else {
@@ -29,6 +31,8 @@ impl TincContainerOptions {
                         crate_ = Some(syn::parse_str(&path.value())?);
                     } else if meta.path.is_ident("tagged") {
                         tagged = true;
+                    } else if meta.path.is_ident("with_non_finite_values") {
+                        with_non_finite_values = true;
                     } else {
                         return Err(meta.error("unsupported attribute"));
                     }
@@ -46,6 +50,9 @@ impl TincContainerOptions {
         if tagged {
             options.tagged = true;
         }
+        if with_non_finite_values {
+            options.with_non_finite_values = true;
+        }
 
         Ok(options)
     }
@@ -56,6 +63,7 @@ impl Default for TincContainerOptions {
         Self {
             crate_path: syn::parse_str("::tinc").unwrap(),
             tagged: false,
+            with_non_finite_values: false,
         }
     }
 }
@@ -64,12 +72,14 @@ impl Default for TincContainerOptions {
 struct TincFieldOptions {
     pub enum_path: Option<syn::Path>,
     pub oneof: bool,
+    pub with_non_finite_values: bool,
 }
 
 impl TincFieldOptions {
     fn from_attributes<'a>(attrs: impl IntoIterator<Item = &'a syn::Attribute>) -> syn::Result<Self> {
         let mut enum_ = None;
         let mut oneof = false;
+        let mut with_non_finite_values = false;
 
         for attr in attrs {
             let syn::Meta::List(list) = &attr.meta else {
@@ -88,6 +98,8 @@ impl TincFieldOptions {
                         enum_ = Some(syn::parse_str(&path.value())?);
                     } else if meta.path.is_ident("oneof") {
                         oneof = true;
+                    } else if meta.path.is_ident("with_non_finite_values") {
+                        with_non_finite_values = true;
                     } else {
                         return Err(meta.error("unsupported attribute"));
                     }
@@ -104,6 +116,9 @@ impl TincFieldOptions {
 
         if oneof {
             options.oneof = true;
+        }
+        if with_non_finite_values {
+            options.with_non_finite_values = true;
         }
 
         Ok(options)
@@ -129,9 +144,16 @@ pub(crate) fn derive_message_tracker(input: TokenStream) -> TokenStream {
 }
 
 fn derive_message_tracker_struct(ident: syn::Ident, opts: TincContainerOptions, data: &syn::DataStruct) -> TokenStream {
-    let TincContainerOptions { crate_path, tagged } = opts;
+    let TincContainerOptions {
+        crate_path,
+        tagged,
+        with_non_finite_values,
+    } = opts;
     if tagged {
         return syn::Error::new(ident.span(), "tagged can only be used on enums").into_compile_error();
+    }
+    if with_non_finite_values {
+        return syn::Error::new(ident.span(), "with_non_finite_values can only be used on floats").into_compile_error();
     }
 
     let syn::Fields::Named(fields) = &data.fields else {
@@ -148,15 +170,28 @@ fn derive_message_tracker_struct(ident: syn::Ident, opts: TincContainerOptions, 
             let field_ident = f.ident.as_ref().expect("field must have an identifier");
             let ty = &f.ty;
 
-            let TincFieldOptions { enum_path, oneof } = TincFieldOptions::from_attributes(&f.attrs)?;
+            let TincFieldOptions {
+                enum_path,
+                oneof,
+                with_non_finite_values,
+            } = TincFieldOptions::from_attributes(&f.attrs)?;
 
-            if enum_path.is_some() && oneof {
-                return Err(syn::Error::new(f.span(), "enum and oneof cannot both be set"));
+            if enum_path.is_some() && (oneof || with_non_finite_values) {
+                return Err(syn::Error::new(
+                    f.span(),
+                    "enum cannot be set with oneof or with_non_finite_values",
+                ));
+            }
+            if oneof && with_non_finite_values {
+                return Err(syn::Error::new(f.span(), "oneof cannot be set with with_non_finite_values"));
             }
 
             let ty = match enum_path {
                 Some(enum_path) => quote! { <#ty as #crate_path::__private::EnumHelper>::Target<#enum_path> },
                 None if oneof => quote! { <#ty as #crate_path::__private::OneOfHelper>::Target },
+                None if with_non_finite_values => {
+                    quote! { <#ty as #crate_path::__private::FloatWithNonFinDesHelper>::Target }
+                }
                 None => quote! { #ty },
             };
 
@@ -196,8 +231,16 @@ fn derive_message_tracker_struct(ident: syn::Ident, opts: TincContainerOptions, 
 }
 
 fn derive_message_tracker_enum(ident: syn::Ident, opts: TincContainerOptions, data: &syn::DataEnum) -> TokenStream {
-    let TincContainerOptions { crate_path, tagged } = opts;
+    let TincContainerOptions {
+        crate_path,
+        tagged,
+        with_non_finite_values,
+    } = opts;
     let tracker_ident = syn::Ident::new(&format!("{ident}Tracker"), ident.span());
+
+    if with_non_finite_values {
+        return syn::Error::new(ident.span(), "with_non_finite_values can only be used on floats").into_compile_error();
+    }
 
     let variants = data
         .variants
@@ -221,8 +264,11 @@ fn derive_message_tracker_enum(ident: syn::Ident, opts: TincContainerOptions, da
             let field = &unnamed.unnamed[0];
             let ty = &field.ty;
 
-            let TincFieldOptions { enum_path, oneof } =
-                TincFieldOptions::from_attributes(v.attrs.iter().chain(field.attrs.iter()))?;
+            let TincFieldOptions {
+                enum_path,
+                oneof,
+                with_non_finite_values,
+            } = TincFieldOptions::from_attributes(v.attrs.iter().chain(field.attrs.iter()))?;
 
             if oneof {
                 return Err(syn::Error::new(
@@ -234,6 +280,9 @@ fn derive_message_tracker_enum(ident: syn::Ident, opts: TincContainerOptions, da
             let ty = match enum_path {
                 Some(enum_path) => quote! {
                     <#ty as #crate_path::__private::EnumHelper>::Target<#enum_path>
+                },
+                None if with_non_finite_values => quote! {
+                    <#ty as #crate_path::__private::FloatWithNonFinDesHelper>::Target
                 },
                 None => quote! {
                     #ty

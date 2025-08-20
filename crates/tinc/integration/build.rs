@@ -4,6 +4,11 @@
 fn main() {
     tinc_build::Config::prost()
         .btree_map(".")
+        .float_with_non_finite_vals(".floats.FloatMessageWithNonFinite")
+        .float_with_non_finite_vals(".floats.FloatMessageWithSomeNonFinite.f32_with_non_finite_serializer")
+        .float_with_non_finite_vals(".floats.FloatMessageWithSomeNonFinite.f64_with_non_finite_serializer")
+        .float_with_non_finite_vals(".expressions.FloatExpressions")
+        .float_with_non_finite_vals(".expressions.DoubleExpressions")
         .compile_protos(
             &[
                 "pb/simple.proto",

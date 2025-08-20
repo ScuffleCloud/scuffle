@@ -105,7 +105,8 @@ message FloatExpressions {
     }];
 
     float typical_values_only = 9 [(tinc.field).constraint.float = {
-        disallow_nan_and_infinity: true
+        disallow_infinity: true
+        disallow_nan: true
     }];
 
     float positive_infinity_ok = 10 [(tinc.field).constraint.float = {
@@ -151,7 +152,8 @@ message DoubleExpressions {
     }];
 
     double typical_values_only = 9 [(tinc.field).constraint.double = {
-        disallow_nan_and_infinity: true
+        disallow_nan: true
+        disallow_infinity: true
     }];
 
     double positive_infinity_ok = 10 [(tinc.field).constraint.double = {

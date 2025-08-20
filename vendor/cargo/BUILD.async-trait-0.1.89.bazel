@@ -17,7 +17,7 @@ cargo_toml_env_vars(
 )
 
 rust_proc_macro(
-    name = "darling_macro",
+    name = "async_trait",
     srcs = glob(
         include = ["**/*.rs"],
         allow_empty = True,
@@ -44,7 +44,7 @@ rust_proc_macro(
     ],
     tags = [
         "cargo-bazel",
-        "crate-name=darling_macro",
+        "crate-name=async-trait",
         "manual",
         "noclippy",
         "norustfmt",
@@ -58,10 +58,10 @@ rust_proc_macro(
         "@rules_rust//rust/platform:x86_64-unknown-linux-gnu": [],
         "//conditions:default": ["@platforms//:incompatible"],
     }),
-    version = "0.21.1",
+    version = "0.1.89",
     deps = [
-        "@cargo_vendor__darling_core-0.21.1//:darling_core",
+        "@cargo_vendor__proc-macro2-1.0.101//:proc_macro2",
         "@cargo_vendor__quote-1.0.40//:quote",
-        "@cargo_vendor__syn-2.0.105//:syn",
+        "@cargo_vendor__syn-2.0.106//:syn",
     ],
 )

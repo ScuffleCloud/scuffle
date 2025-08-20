@@ -75,7 +75,7 @@ rust_library(
         "@cargo_vendor__prost-0.12.6//:prost",
         "@cargo_vendor__prost-types-0.12.6//:prost_types",
         "@cargo_vendor__regex-1.11.1//:regex",
-        "@cargo_vendor__syn-2.0.105//:syn",
+        "@cargo_vendor__syn-2.0.106//:syn",
         "@cargo_vendor__tempfile-3.20.0//:tempfile",
     ],
 )

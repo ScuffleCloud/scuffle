@@ -10,7 +10,12 @@ runs:
         bazelisk-cache: true
         repository-cache: true
         bazelrc: |
-          build --config=ci
+          build --bes_results_url=https://scuffle.buildbuddy.io/invocation/
+          build --bes_backend=grpcs://scuffle.buildbuddy.io
+          build --remote_cache=grpcs://scuffle.buildbuddy.io
+          build --remote_timeout=10m
+          build --build_metadata=ROLE=CI
+          build --build_metadata=VISIBILITY=PUBLIC
           build --remote_header=x-buildbuddy-api-key=${{ inputs.build_buddy_token }}
 
     - name: Setup path

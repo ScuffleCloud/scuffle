@@ -181,7 +181,7 @@
             gap: 0.25rem;
 
             .card {
-                background: var(--colors-teal20);
+                background: var(--colors-gray20);
                 border-radius: 0.5rem;
                 padding: 1rem;
                 border: 1px solid var(--colors-teal30);
@@ -209,31 +209,30 @@
                             font-weight: 700;
                             line-height: 1.5rem;
                         }
-                    }
-                }
 
-                .status-badge {
-                    color: var(--colors-gray90);
-                    font-size: 0.875rem;
-                    font-style: normal;
-                    font-weight: 700;
-                    line-height: 1rem;
-                    white-space: nowrap;
-                    border-radius: 5.25rem;
-                    padding: 0.25rem 0.5625rem;
+                        .status-badge {
+                            color: var(--colors-gray90);
+                            font-size: 0.875rem;
+                            font-style: normal;
+                            font-weight: 700;
+                            line-height: 1rem;
+                            border-radius: 5.25rem;
+                            padding: 0.25rem 0.5625rem;
 
-                    &.status-enabled {
-                        background: #dcfce7;
-                        color: #16a34a;
-                    }
+                            &.status-enabled {
+                                background: #dcfce7;
+                                color: #16a34a;
+                            }
 
-                    &.status-disabled {
-                        background: var(--colors-gray20);
-                    }
+                            &.status-disabled {
+                                background: var(--colors-gray50);
+                            }
 
-                    &.status-warning {
-                        background: #fef3c7;
-                        color: #d97706;
+                            &.status-warning {
+                                background: #fef3c7;
+                                color: #d97706;
+                            }
+                        }
                     }
                 }
 

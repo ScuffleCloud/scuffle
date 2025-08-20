@@ -61,6 +61,9 @@ common --enable_bzlmod=true
 # Use watchfs
 common --watchfs
 
+# Enable windows symlinks
+startup --windows_enable_symlinks
+
 # Enable platform configs
 common --enable_platform_specific_config
 

@@ -1,0 +1,4 @@
+[[openapiv3_1]]
+category = "fix"
+description = "openapi: correct merging JSON objects with not operation"
+authors = ["@alicjaceligowska"]

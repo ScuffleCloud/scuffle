@@ -35,7 +35,7 @@ jobs:
 
       - name: Install libc6-dbg
         if: ${{ runner.os == 'Linux' }}
-        run: apt-get update && apt-get install libc6-dbg -y
+        run: sudo apt-get update && sudo apt-get install libc6-dbg -y
 
       - name: Run tests with valgrind
         run: |

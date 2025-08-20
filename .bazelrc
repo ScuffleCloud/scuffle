@@ -147,15 +147,6 @@ common --disk_cache=~/.cache/scuffle/bazel/disk
 common --experimental_repository_cache_hardlinks
 
 ###############################################################################
-## CI configuration
-###############################################################################
-common:ci --disk_cache=""
-common:ci --experimental_async_execution
-common:ci --remote_max_connections=500
-build:ci --nokeep_going
-build:ci --jobs=500
-
-###############################################################################
 ## Custom user flags
 ##
 ## This should always be the last thing in the `.bazelrc` file to ensure

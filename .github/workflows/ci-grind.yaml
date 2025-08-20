@@ -33,6 +33,10 @@ jobs:
         with:
           build_buddy_token: ${{ secrets.build_buddy_token }}
 
+      - name: Install libc6-dbg
+        if: ${{ runner.os == 'Linux' }}
+        run: apt-get update && apt-get install libc6-dbg -y
+
       - name: Run tests with valgrind
         run: |
           targets=$(bazel query 'kind("nextest_test rule", set(//...))')

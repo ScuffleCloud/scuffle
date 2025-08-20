@@ -11,7 +11,7 @@ defaults:
     shell: bash
 
 jobs:
-  test:
+  fetch:
     name: ${{ matrix.os }}-${{ matrix.arch }}
     strategy:
       matrix:
@@ -23,6 +23,7 @@ jobs:
       - uses: ./.github/actions/setup-bazel
         id: bazel
         with:
+          lookup-only: true
           build_buddy_token: ${{ secrets.build_buddy_token }}
 
       - name: Run

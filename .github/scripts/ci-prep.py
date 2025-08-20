@@ -61,6 +61,7 @@ def pr_number() -> Optional[int]:
 class Rustdoc:
     artifact_name: Optional[str]
     pr_number: Optional[int]
+    commit_sha: str
     deploy_docs: bool
 
 

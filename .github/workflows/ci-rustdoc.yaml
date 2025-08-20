@@ -27,7 +27,6 @@ defaults:
 
 jobs:
   rustdoc:
-    name: rustdoc
     runs-on: ubicloud-standard-8-ubuntu-2404
     steps:
       - uses: actions/checkout@v4
@@ -36,10 +35,10 @@ jobs:
         with:
           build_buddy_token: ${{ secrets.build_buddy_token }}
 
-      - name: Run tests
+      - name: Build
         run: bazel build //docs:rustdoc
 
-      - name: Upload docs
+      - name: Upload
         uses: actions/upload-artifact@v4
         if: ${{ inputs.artifact_name }}
         with:
@@ -47,7 +46,7 @@ jobs:
           path: ./target-bazel/bin/docs/rustdoc.rustdoc_merge
 
       - name: Deploy
-        if: ${{ inputs.deploy_docs == 'true' }}
+        if: ${{ inputs.deploy_docs }}
         uses: cloudflare/wrangler-action@v3
         with:
           apiToken: ${{ secrets.cf_api_key }}

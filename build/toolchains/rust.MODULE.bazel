@@ -1,52 +1,52 @@
 bazel_dep(name = "rules_rust")
 git_override(
     module_name = "rules_rust",
-    commit = "05927d34aaf8384d534aba8ebcb4ef059265d05f",
+    commit = "94131bfa1e2455daaf477c373942ee5db9e09a0b",
     remote = "https://github.com/ScuffleCloud/rules_rust.git",
 )
 
 http_archive = use_repo_rule("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive")
 
-cargo_bazel_url = "https://github.com/ScuffleCloud/rules_rust/releases/download/commit-05927d34aaf8384d534aba8ebcb4ef059265d05f/"
+cargo_bazel_url = "https://github.com/ScuffleCloud/rules_rust/releases/download/commit-94131bfa1e2455daaf477c373942ee5db9e09a0b/"
 
 http_archive(
     name = "cargo-bazel-darwin-aarch64",
-    sha256 = "0c74406c538c2f53e66ace434459cf5432ee10c713c1a8b878460ef369840765",
+    sha256 = "31c39e879ab341cdde2349747da5d3e0f2bf0ae8b88ef2fbba056eb48426e21a",
     strip_prefix = "cargo-bazel-darwin-aarch64",
     url = cargo_bazel_url + "cargo-bazel-darwin-aarch64.tar.zst",
 )
 
 http_archive(
     name = "cargo-bazel-darwin-x86_64",
-    sha256 = "ccc332fd141bae40d3537ccfc4676d7e316dbce50595360d08922be31ca3cc03",
+    sha256 = "b976f948985e7d491a70790f8a2ebf20139779b4202e31c4051e479925ac4055",
     strip_prefix = "cargo-bazel-darwin-x86_64",
     url = cargo_bazel_url + "cargo-bazel-darwin-x86_64.tar.zst",
 )
 
 http_archive(
     name = "cargo-bazel-linux-aarch64",
-    sha256 = "9defe3b719210667ed7d46e88069281c162800245c41da3e1b89da3e2cc40449",
+    sha256 = "bbace08361351ed754973a5f6c5bfd06c827b23cc7215bb61eca0b7073bc52b7",
     strip_prefix = "cargo-bazel-linux-aarch64",
     url = cargo_bazel_url + "cargo-bazel-linux-aarch64.tar.zst",
 )
 
 http_archive(
     name = "cargo-bazel-linux-x86_64",
-    sha256 = "99ade9f88470eb1845948ba91d45b5bb2bd6074ef36cded3d7b09636c0653c8b",
+    sha256 = "a7fdc84aba3a0791988618f03886d0933e300a4d8d623a1016e553af9c6bb612",
     strip_prefix = "cargo-bazel-linux-x86_64",
     url = cargo_bazel_url + "cargo-bazel-linux-x86_64.tar.zst",
 )
 
 http_archive(
     name = "cargo-bazel-windows-aarch64",
-    sha256 = "dd3247c5c8ac2e5fa463d957b2be506104d607c3b9afecf0b9cb6110bc81f3da",
+    sha256 = "f9c292475bbfa5673b6d95d5aadccf5b259d753696e359645c3f8ced4abe9f05",
     strip_prefix = "cargo-bazel-windows-aarch64",
     url = cargo_bazel_url + "cargo-bazel-windows-aarch64.tar.zst",
 )
 
 http_archive(
     name = "cargo-bazel-windows-x86_64",
-    sha256 = "bb64e46e08511806267ce37f4774fde3804580cef4c8be12e348282085870305",
+    sha256 = "a202a1b478271ec4d9e095155132e7675a1cd5f9f66350504aa9e5bee7e43b65",
     strip_prefix = "cargo-bazel-windows-x86_64",
     url = cargo_bazel_url + "cargo-bazel-windows-x86_64.tar.zst",
 )
@@ -59,6 +59,56 @@ rust.toolchain(
     edition = "2024",
     extra_target_triples = [
         "wasm32-unknown-unknown",
+    ],
+    rustfmt_version = "nightly",
+    sha256s = {
+        "cargo-1.89.0-aarch64-apple-darwin": "0cafb390fa0b64b0cf47a2053cf8c7f6d3557e13b9861f3521a384d1c2e7c45b",
+        "cargo-1.89.0-aarch64-pc-windows-msvc": "56e9f72886982401b8d17b869f411795ba33622a38f1a5c58d1f9d72517ab2e5",
+        "cargo-1.89.0-aarch64-unknown-linux-gnu": "43d25c6a9d6eda87f17694c83667407362d0b49f08af8f50703f78015390bdba",
+        "cargo-1.89.0-x86_64-apple-darwin": "e89f41c3e7bf2e3537db28e5a81bc96709c80564cb18065dd14c7cf6c6e2e565",
+        "cargo-1.89.0-x86_64-pc-windows-msvc": "29ca1fa1620b40aeb85724f484a469c73410a998a2680de2db5a9a6121147609",
+        "cargo-1.89.0-x86_64-unknown-linux-gnu": "7e5b5e754083b5209be03cdf00aae2456da6bf86207c10598093e080584dce2d",
+        "clippy-1.89.0-aarch64-apple-darwin": "e982eb150bf2697497211c9e7b79b8a2624c88a9ac69a1922f6fdea974f3377b",
+        "clippy-1.89.0-aarch64-pc-windows-msvc": "76f985f36ae699637dc0f02d3140359257f8643666607149d8b7c4959859d42d",
+        "clippy-1.89.0-aarch64-unknown-linux-gnu": "527ef0edbb59ec53a745a82878d6d3b6adeffa951e92f0c78bf141cf0eed7a4d",
+        "clippy-1.89.0-x86_64-apple-darwin": "3110e1ce515e7f7c0e7f2e1accb3114de5a38a9f3e121497d8bf846b08220ff2",
+        "clippy-1.89.0-x86_64-pc-windows-msvc": "ef57ab5d36832ebd837270699cad39c24f386845af2bfddecf18b60c8294fc48",
+        "clippy-1.89.0-x86_64-unknown-linux-gnu": "bd679522c34ef5f0bbf655f616933dc454685dc13609962ea08e2bcf4274a374",
+        "llvm-tools-1.89.0-aarch64-apple-darwin": "2f226503fc3bd02e969d87efd90bfdcfde08a877dbed63fd5ac39411b021d1a0",
+        "llvm-tools-1.89.0-aarch64-pc-windows-msvc": "7410bfa4e7a6d5aa0216757071d4f7c11e931f03cdb53460e6419e32807d961b",
+        "llvm-tools-1.89.0-aarch64-unknown-linux-gnu": "b1c6bd65e26a17af72df8ddc4b3879da1ed90734fb874c7947a1db6f0e69ac31",
+        "llvm-tools-1.89.0-x86_64-apple-darwin": "5baa7b3fc58fadfd7775309d43fd7dff82197ab2c9cf70b02a77aa625a6bd9ff",
+        "llvm-tools-1.89.0-x86_64-pc-windows-msvc": "e5e79f66462cc6853317d2db0e1dada8e17f64d300abff2cc0f9bddad0d3177c",
+        "llvm-tools-1.89.0-x86_64-unknown-linux-gnu": "e13ad91c62bd6ed6dd68ae4a33cb3c3c47e0e8fd9360b921da3fa4872b84c3fe",
+        "rust-src-1.89.0": "6ef67256a62d00d7119fe9b19259e5a1099d74cbff9c005bf36d7e86ccced450",
+        "rust-std-1.89.0-aarch64-apple-darwin": "36ee7d68a6fed9a69ffea5942bd69e0d024258ddf3ebd2fc0833fba408a79458",
+        "rust-std-1.89.0-aarch64-pc-windows-msvc": "45b64546fa50593f78769e73d9e6475ce4d8e46c83fff2564625b9625ae992c8",
+        "rust-std-1.89.0-aarch64-unknown-linux-gnu": "388af40240e37ef283121152906738b1ddf9dee95af9f46209f228c97bd1d6f4",
+        "rust-std-1.89.0-wasm32-unknown-unknown": "1e7a7969023c173f727a386d6298f0b6109ef2223275c5ba468dff3f0b0e8271",
+        "rust-std-1.89.0-x86_64-apple-darwin": "3d930f78fdc86b42ead5b74e78bec14963ab4f316611d63be89ad10b9ce5de9a",
+        "rust-std-1.89.0-x86_64-pc-windows-msvc": "f9fe711a78d645ae4c60eeb5eb5aba7a526d3cde592fa8cfba1c2069ded4d081",
+        "rust-std-1.89.0-x86_64-unknown-linux-gnu": "5af338771e1420090450822c6c200931aad3b6024186c6143bd3f844a1c9a6c7",
+        "rustc-1.89.0-aarch64-apple-darwin": "f6c0aed786b0fe6b5e4f40030744219e6dedfd93210537171b7d7d8b15c4c8a3",
+        "rustc-1.89.0-aarch64-pc-windows-msvc": "f003c4ab40bf382f15c538d750bbcfc3b3f0d34d10c99402e9cf7dfb973949af",
+        "rustc-1.89.0-aarch64-unknown-linux-gnu": "7df19eae7152c0c6c7d9c666ef381ec67ab01caa6c2b2736068126944f935029",
+        "rustc-1.89.0-x86_64-apple-darwin": "c1581e699b530780e3e7e4b7877e7159372ac7ada30c168ea3683cca04263ab1",
+        "rustc-1.89.0-x86_64-pc-windows-msvc": "2c178e1ea6f31af395d12f37173fe1046ebc3e1a04e8b76fd83abed0d5bc023b",
+        "rustc-1.89.0-x86_64-unknown-linux-gnu": "e8c76ca2cf71b9e598eca10f8eb9223f93522d111c2282d56b6d668ce44246e2",
+        "rustc-dev-1.89.0-aarch64-apple-darwin": "cbf2fdb6ba4324f365f4bf65c4401ff47b7339fa24f704c89ec197efe668442b",
+        "rustc-dev-1.89.0-aarch64-pc-windows-msvc": "ee4d39df4766d25c6656d428eecfbe44fa25f94f958cec468acd941d92fb91ed",
+        "rustc-dev-1.89.0-aarch64-unknown-linux-gnu": "7543d4ee146820924961012dc099658d3ed3283f67a10d07ce8c57c5b1a96adc",
+        "rustc-dev-1.89.0-x86_64-apple-darwin": "17f498b68cfe5b50a57160bfbbf15e4e0952735b3926617eb40d6e7ffcfdd830",
+        "rustc-dev-1.89.0-x86_64-pc-windows-msvc": "9d552fdb573d4098efb79658e52c9a44775b438ce41f2896a7249ec85ad2491f",
+        "rustc-dev-1.89.0-x86_64-unknown-linux-gnu": "6851d19b20d65fe2a248ea48c99bb0b6f6ca7740020df9a44443ec5292fff0a9",
+        "rustfmt-nightly-aarch64-apple-darwin": "a6b9d1870b38258633c1910e1725ff3649fc4b35c472963f749abd1fb9e43cca",
+        "rustfmt-nightly-aarch64-pc-windows-msvc": "ba9cc73dcca3f7c744f4f328ea08ca4978bac853b4c91fb1c7f6718b15f67f7f",
+        "rustfmt-nightly-aarch64-unknown-linux-gnu": "b8115c6ee18941b2b6ec3847030fd024686a1be79babc490275efdf4492eb747",
+        "rustfmt-nightly-x86_64-apple-darwin": "5680448e1ff2991d0d5b4783aabc079b9b092236377180eb1fa4c34d1e742a32",
+        "rustfmt-nightly-x86_64-pc-windows-msvc": "40bdc240a305a8ce2f3bc69953af355eb9434785a37f7f017befef947abf1d15",
+        "rustfmt-nightly-x86_64-unknown-linux-gnu": "be96bad25adc1d35c21bc9fa151f71327bd4d6b3981fb92ea7dbffa9f477283d",
+    },
+    urls = [
+        "https://github.com/ScuffleCloud/toolchains/releases/download/rust-1/{}.tar.zst",
     ],
     versions = ["1.89.0"],
 )

@@ -21,7 +21,7 @@ defaults:
 
 jobs:
   grind:
-    name: Grind - ${{ matrix.os }}_${{ matrix.arch }}
+    name: ${{ matrix.os }}-${{ matrix.arch }}
     runs-on: ${{ matrix.runner }}
     strategy:
       matrix:
@@ -33,7 +33,7 @@ jobs:
         with:
           build_buddy_token: ${{ secrets.build_buddy_token }}
 
-      - name: Run test with valgrind
+      - name: Run tests with valgrind
         run: |
           targets=$(bazel query 'kind("nextest_test rule", set(//...))')
           bazel test ${targets} --//settings:test_rustc_flags="--cfg=valgrind" --//settings:test_valgrind

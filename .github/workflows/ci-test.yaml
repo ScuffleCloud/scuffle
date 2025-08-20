@@ -21,7 +21,7 @@ defaults:
 
 jobs:
   test:
-    name: Test - ${{ matrix.os }}_${{ matrix.arch }}
+    name: ${{ matrix.os }}-${{ matrix.arch }}
     strategy:
       matrix:
         include: ${{ fromJson(inputs.matrix) }}
@@ -33,7 +33,7 @@ jobs:
         with:
           build_buddy_token: ${{ secrets.build_buddy_token }}
 
-      - name: Run tests
+      - name: Run
         run: bazel coverage //...
 
       - uses: codecov/codecov-action@v5

@@ -2,17 +2,6 @@ name: Setup bazel
 inputs:
   build_buddy_token:
     required: true
-  lookup-only:
-    required: false
-    default: "false"
-  cache-key-prefix:
-    required: false
-    default: "bazel-repo-v2-"
-outputs:
-  cache-hit:
-    value: ${{ steps.restore.outputs.cache-hit }}
-  cache-key:
-    value: ${{ steps.cache-key.outputs.cache-key }}
 runs:
   using: "composite"
   steps:
@@ -36,21 +25,6 @@ runs:
           common --experimental_async_execution
           common --disk_cache=""
           common --repository_cache=~/.cache/bazel-repo
-
-    - name: Generate cache key
-      id: cache-key
-      shell: bash
-      run: |
-        echo "cache-key=${{ inputs.cache-key-prefix }}-${{ runner.os }}-${{ runner.arch }}-${{ hashFiles('MODULE.bazel.lock') }}" >> $GITHUB_OUTPUT
-
-    - name: Cache repository
-      uses: actions/cache/restore@v4
-      id: restore
-      with:
-        path: ~/.cache/bazel-repo
-        key: bazel-repo-v2-${{ runner.os }}-${{ runner.arch }}-${{ hashFiles('MODULE.bazel.lock') }}
-        restore-keys: ${{ inputs.cache-key-prefix }}-${{ runner.os }}-${{ runner.arch }}-
-        lookup-only: ${{ inputs.lookup-only }}
 
     - name: Setup path
       shell: bash

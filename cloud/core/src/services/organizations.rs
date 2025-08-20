@@ -1,16 +1,6 @@
-use diesel::{ExpressionMethods, OptionalExtension, QueryDsl, SelectableHelper};
-use diesel_async::scoped_futures::ScopedFutureExt;
-use diesel_async::{AsyncConnection, RunQueryDsl};
-use tonic_types::{ErrorDetails, StatusExt};
-
 use crate::CoreConfig;
-use crate::cedar::Action;
-use crate::common::TxError;
-use crate::http_ext::RequestExt;
-use crate::models::{Organization, OrganizationId, OrganizationMember, UserId};
-use crate::schema::{organization_members, organizations};
+use crate::operations::Operation;
 use crate::services::CoreSvc;
-use crate::std_ext::ResultExt;
 
 #[async_trait::async_trait]
 impl<G: CoreConfig> pb::scufflecloud::core::v1::organizations_service_server::OrganizationsService for CoreSvc<G> {
@@ -18,186 +8,34 @@ impl<G: CoreConfig> pb::scufflecloud::core::v1::organizations_service_server::Or
         &self,
         req: tonic::Request<pb::scufflecloud::core::v1::CreateOrganizationRequest>,
     ) -> Result<tonic::Response<pb::scufflecloud::core::v1::Organization>, tonic::Status> {
-        let global = &req.global::<G>()?;
-        let (_, ext, payload) = req.into_parts();
-        let session = ext.session_or_err()?;
-
-        let organization = Organization {
-            id: OrganizationId::new(),
-            google_customer_id: None,
-            google_hosted_domain: None,
-            name: payload.name,
-            owner_id: session.user_id,
-        };
-
-        session.is_authorized(global, session.user_id, Action::CreateOrganization, &organization)?;
-
-        let mut db = global.db().await.into_tonic_internal_err("failed to connect to database")?;
-
-        diesel::insert_into(organizations::dsl::organizations)
-            .values(&organization)
-            .execute(&mut db)
-            .await
-            .into_tonic_internal_err("failed to create organization")?;
-
-        Ok(tonic::Response::new(organization.into()))
+        Operation::<G>::run(req).await.map(tonic::Response::new)
     }
 
     async fn get_organization(
         &self,
-        req: tonic::Request<pb::scufflecloud::core::v1::OrganizationByIdRequest>,
+        req: tonic::Request<pb::scufflecloud::core::v1::GetOrganizationRequest>,
     ) -> Result<tonic::Response<pb::scufflecloud::core::v1::Organization>, tonic::Status> {
-        let global = &req.global::<G>()?;
-        let (_, ext, payload) = req.into_parts();
-        let session = ext.session_or_err()?;
-
-        let id: OrganizationId = payload
-            .id
-            .parse()
-            .map_err(|e| tonic::Status::invalid_argument(format!("invalid ID: {e}")))?;
-
-        session.is_authorized(global, session.user_id, Action::GetOrganization, id)?;
-
-        let mut db = global.db().await.into_tonic_internal_err("failed to connect to database")?;
-
-        let organization = organizations::dsl::organizations
-            .find(id)
-            .first::<Organization>(&mut db)
-            .await
-            .optional()
-            .into_tonic_internal_err("failed to load organization")?
-            .ok_or_else(|| {
-                tonic::Status::with_error_details(tonic::Code::NotFound, "organization not found", ErrorDetails::new())
-            })?;
-
-        Ok(tonic::Response::new(organization.into()))
+        Operation::<G>::run(req).await.map(tonic::Response::new)
     }
 
     async fn update_organization(
         &self,
         req: tonic::Request<pb::scufflecloud::core::v1::UpdateOrganizationRequest>,
     ) -> Result<tonic::Response<pb::scufflecloud::core::v1::Organization>, tonic::Status> {
-        let global = &req.global::<G>()?;
-        let (_, ext, payload) = req.into_parts();
-        let session = ext.session_or_err()?;
-
-        let id: OrganizationId = payload
-            .id
-            .parse()
-            .map_err(|e| tonic::Status::invalid_argument(format!("invalid ID: {e}")))?;
-
-        if payload.owner.is_some() {
-            session.is_authorized(global, session.user_id, Action::UpdateOrganizationOwner, id)?;
-        }
-        if payload.name.is_some() {
-            session.is_authorized(global, session.user_id, Action::UpdateOrganizationName, id)?;
-        }
-
-        let owner_update_id = payload
-            .owner
-            .map(|owner| {
-                owner
-                    .owner_id
-                    .parse::<UserId>()
-                    .map_err(|e| tonic::Status::invalid_argument(format!("invalid owner ID: {e}")))
-            })
-            .transpose()?;
-
-        let mut db = global.db().await.into_tonic_internal_err("failed to connect to database")?;
-
-        let organization = db
-            .transaction::<_, TxError, _>(move |conn| {
-                async move {
-                    let mut organization = organizations::dsl::organizations
-                        .find(id)
-                        .first::<Organization>(conn)
-                        .await
-                        .into_tonic_internal_err("failed to load organization")?;
-
-                    if let Some(owner_update_id) = owner_update_id {
-                        organization = diesel::update(organizations::dsl::organizations)
-                            .filter(organizations::dsl::id.eq(id))
-                            .set(organizations::dsl::owner_id.eq(&owner_update_id))
-                            .returning(Organization::as_returning())
-                            .get_result::<Organization>(conn)
-                            .await
-                            .into_tonic_internal_err("failed to update organization owner")?;
-                    }
-
-                    if let Some(name) = &payload.name {
-                        organization = diesel::update(organizations::dsl::organizations)
-                            .filter(organizations::dsl::id.eq(id))
-                            .set(organizations::dsl::name.eq(&name.name))
-                            .returning(Organization::as_returning())
-                            .get_result::<Organization>(conn)
-                            .await
-                            .into_tonic_internal_err("failed to update organization name")?;
-                    }
-
-                    Ok(organization)
-                }
-                .scope_boxed()
-            })
-            .await?;
-
-        Ok(tonic::Response::new(organization.into()))
+        Operation::<G>::run(req).await.map(tonic::Response::new)
     }
 
     async fn list_organization_members(
         &self,
-        req: tonic::Request<pb::scufflecloud::core::v1::OrganizationByIdRequest>,
-    ) -> Result<tonic::Response<pb::scufflecloud::core::v1::OrganizationMemberList>, tonic::Status> {
-        let global = &req.global::<G>()?;
-        let (_, ext, payload) = req.into_parts();
-        let session = ext.session_or_err()?;
-
-        let id: OrganizationId = payload
-            .id
-            .parse()
-            .map_err(|e| tonic::Status::invalid_argument(format!("invalid ID: {e}")))?;
-
-        session.is_authorized(global, session.user_id, Action::ListOrganizationMembers, id)?;
-
-        let mut db = global.db().await.into_tonic_internal_err("failed to connect to database")?;
-
-        let members = organization_members::dsl::organization_members
-            .filter(organization_members::dsl::organization_id.eq(id))
-            .load::<OrganizationMember>(&mut db)
-            .await
-            .into_tonic_internal_err("failed to load organization members")?;
-
-        Ok(tonic::Response::new(pb::scufflecloud::core::v1::OrganizationMemberList {
-            members: members.into_iter().map(Into::into).collect(),
-        }))
+        req: tonic::Request<pb::scufflecloud::core::v1::ListOrganizationMembersRequest>,
+    ) -> Result<tonic::Response<pb::scufflecloud::core::v1::OrganizationMembersList>, tonic::Status> {
+        Operation::<G>::run(req).await.map(tonic::Response::new)
     }
 
     async fn list_organizations_by_user(
         &self,
-        req: tonic::Request<pb::scufflecloud::core::v1::UserByIdRequest>,
-    ) -> Result<tonic::Response<pb::scufflecloud::core::v1::OrganizationList>, tonic::Status> {
-        let global = &req.global::<G>()?;
-        let (_, ext, payload) = req.into_parts();
-        let session = ext.session_or_err()?;
-
-        let id: UserId = payload
-            .id
-            .parse()
-            .map_err(|e| tonic::Status::invalid_argument(format!("invalid ID: {e}")))?;
-
-        session.is_authorized(global, session.user_id, Action::ListOrganizationsByUser, id)?;
-
-        let mut db = global.db().await.into_tonic_internal_err("failed to connect to database")?;
-
-        let organizations = organization_members::dsl::organization_members
-            .filter(organization_members::dsl::user_id.eq(id))
-            .inner_join(organizations::dsl::organizations)
-            .select(Organization::as_select())
-            .load::<Organization>(&mut db)
-            .await
-            .into_tonic_internal_err("failed to load organizations")?;
-
-        Ok(tonic::Response::new(pb::scufflecloud::core::v1::OrganizationList {
-            organizations: organizations.into_iter().map(Into::into).collect(),
-        }))
+        req: tonic::Request<pb::scufflecloud::core::v1::ListOrganizationsByUserRequest>,
+    ) -> Result<tonic::Response<pb::scufflecloud::core::v1::OrganizationsList>, tonic::Status> {
+        Operation::<G>::run(req).await.map(tonic::Response::new)
     }
 }

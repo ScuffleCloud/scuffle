@@ -16,10 +16,12 @@ use crate::CoreConfig;
 use crate::chrono_ext::ChronoDateTimeExt;
 use crate::id::Id;
 use crate::middleware::IpAddressInfo;
-use crate::models::{MfaRecoveryCode, MfaWebauthnCredential, User, UserEmail, UserId, UserSession};
+use crate::models::{
+    MfaRecoveryCode, MfaWebauthnCredential, Organization, OrganizationId, User, UserEmail, UserId, UserSession,
+};
 use crate::schema::{
-    mfa_recovery_codes, mfa_totp_credentials, mfa_webauthn_auth_sessions, mfa_webauthn_credentials, user_emails,
-    user_sessions, users,
+    mfa_recovery_codes, mfa_totp_credentials, mfa_webauthn_auth_sessions, mfa_webauthn_credentials, organizations,
+    user_emails, user_sessions, users,
 };
 use crate::std_ext::{DisplayExt, ResultExt};
 
@@ -68,12 +70,28 @@ pub(crate) fn encrypt_token(
     }
 }
 
+pub(crate) async fn get_user_by_id(
+    db: &mut diesel_async::AsyncPgConnection,
+    user_id: UserId,
+) -> Result<User, tonic::Status> {
+    let user = users::dsl::users
+        .find(user_id)
+        .select(User::as_select())
+        .first::<User>(db)
+        .await
+        .optional()
+        .into_tonic_internal_err("failed to query user")?
+        .ok_or_else(|| tonic::Status::with_error_details(Code::NotFound, "user not found", ErrorDetails::new()))?;
+
+    Ok(user)
+}
+
 pub(crate) async fn get_user_by_email(db: &mut diesel_async::AsyncPgConnection, email: &str) -> Result<User, tonic::Status> {
     let Some((user, _)) = users::dsl::users
         .inner_join(user_emails::dsl::user_emails.on(users::dsl::primary_email.eq(user_emails::dsl::email.nullable())))
         .filter(user_emails::dsl::email.eq(&email))
         .select((User::as_select(), user_emails::dsl::email))
-        .first::<(User, String)>(&mut *db)
+        .first::<(User, String)>(db)
         .await
         .optional()
         .into_tonic_internal_err("failed to query user by email")?
@@ -88,24 +106,33 @@ pub(crate) async fn get_user_by_email(db: &mut diesel_async::AsyncPgConnection, 
     Ok(user)
 }
 
+pub(crate) async fn get_organization_by_id(
+    db: &mut diesel_async::AsyncPgConnection,
+    organization_id: OrganizationId,
+) -> Result<Organization, tonic::Status> {
+    let organization = organizations::dsl::organizations
+        .find(organization_id)
+        .first::<Organization>(db)
+        .await
+        .optional()
+        .into_tonic_internal_err("failed to load organization")?
+        .ok_or_else(|| {
+            tonic::Status::with_error_details(tonic::Code::NotFound, "organization not found", ErrorDetails::new())
+        })?;
+
+    Ok(organization)
+}
+
 pub(crate) fn normalize_email(email: &str) -> String {
     email.trim().to_ascii_lowercase()
 }
 
-pub(crate) async fn create_new_user_and_session<G: CoreConfig>(
-    global: &Arc<G>,
-    tx: &mut diesel_async::AsyncPgConnection,
-    new_user: &User,
-    device: pb::scufflecloud::core::v1::Device,
-    ip_info: &IpAddressInfo,
-) -> Result<pb::scufflecloud::core::v1::NewUserSessionToken, tonic::Status> {
+pub(crate) async fn create_user(tx: &mut diesel_async::AsyncPgConnection, new_user: &User) -> Result<(), tonic::Status> {
     diesel::insert_into(users::dsl::users)
         .values(new_user)
         .execute(tx)
         .await
         .into_tonic_internal_err("failed to insert user")?;
-
-    let new_token = create_session(global, tx, new_user.id, device, ip_info, false).await?;
 
     if let Some(email) = new_user.primary_email.as_ref() {
         // Check if email is already registered
@@ -138,7 +165,7 @@ pub(crate) async fn create_new_user_and_session<G: CoreConfig>(
             .into_tonic_internal_err("failed to insert user email")?;
     }
 
-    Ok(new_token)
+    Ok(())
 }
 
 pub(crate) async fn mfa_options(

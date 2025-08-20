@@ -18,10 +18,6 @@ message Organization {
     google.protobuf.Timestamp created_at = 5;
 }
 
-message OrganizationByIdRequest {
-    string id = 1 [(string_constraint).id = true];
-}
-
 message OrganizationMember {
     string organization_id = 1 [(string_constraint).id = true];
     string user_id = 2 [(string_constraint).id = true];

@@ -1,5 +1,3 @@
-use std::sync::Arc;
-
 use base64::Engine;
 use diesel::Selectable;
 use diesel::prelude::{AsChangeset, Associations, Identifiable, Insertable, Queryable};
@@ -9,7 +7,6 @@ use crate::cedar::CedarEntity;
 use crate::chrono_ext::ChronoDateTimeExt;
 use crate::id::{Id, PrefixedId};
 use crate::models::users::{User, UserId};
-use crate::{CoreConfig, cedar};
 
 impl_enum!(DeviceAlgorithm, crate::schema::sql_types::DeviceAlgorithm, {
     RsaOaepSha256 => b"RSA_OAEP_SHA256",
@@ -156,18 +153,6 @@ impl From<UserSession> for pb::scufflecloud::core::v1::UserSession {
             expires_at: Some(value.expires_at.to_prost_timestamp_utc()),
             mfa_pending: value.mfa_pending,
         }
-    }
-}
-
-impl UserSession {
-    pub fn is_authorized<G: CoreConfig>(
-        &self,
-        global: &Arc<G>,
-        principal: impl CedarEntity,
-        action: impl CedarEntity,
-        resource: impl CedarEntity,
-    ) -> Result<(), tonic::Status> {
-        cedar::is_authorized(global, Some(self), principal, action, resource)
     }
 }
 

@@ -29,7 +29,13 @@ pub enum CedarEntityError {
     #[error("failed to serialize attributes: {0}")]
     AttributeSerialization(#[from] serde_json::Error),
     #[error("failed to create cedar entity: {0}")]
-    Entity(#[from] cedar_policy::entities_errors::EntitiesError),
+    Entity(Box<cedar_policy::entities_errors::EntitiesError>),
+}
+
+impl From<cedar_policy::entities_errors::EntitiesError> for CedarEntityError {
+    fn from(err: cedar_policy::entities_errors::EntitiesError) -> Self {
+        CedarEntityError::Entity(Box::new(err))
+    }
 }
 
 pub trait CedarEntity: serde::Serialize {
@@ -127,12 +133,8 @@ pub enum Action {
     LoginWithWebauthn,
     #[display("get_user")]
     GetUser,
-    #[display("update_user_password")]
-    UpdateUserPassword,
-    #[display("update_user_names")]
-    UpdateUserNames,
-    #[display("update_user_primary_email")]
-    UpdateUserPrimaryEmail,
+    #[display("update_user")]
+    UpdateUser,
     #[display("list_user_emails")]
     ListUserEmails,
     #[display("create_user_email")]
@@ -142,6 +144,10 @@ pub enum Action {
 
     #[display("create_webauthn_credential")]
     CreateWebauthnCredential,
+    #[display("complete_create_webauthn_credential")]
+    CompleteCreateWebauthnCredential,
+    #[display("create_webauthn_challenge")]
+    CreateWebauthnChallenge,
     #[display("delete_webauthn_credential")]
     DeleteWebauthnCredential,
     #[display("list_webauthn_credentials")]
@@ -149,6 +155,8 @@ pub enum Action {
 
     #[display("create_totp_credential")]
     CreateTotpCredential,
+    #[display("complete_create_totp_credential")]
+    CompleteCreateTotpCredential,
     #[display("delete_totp_credential")]
     DeleteTotpCredential,
     #[display("list_totp_credentials")]
@@ -159,9 +167,19 @@ pub enum Action {
     #[display("delete_user")]
     DeleteUser,
 
-    // UserSession related
+    // UserSessionRequest related
+    #[display("create_user_session_request")]
+    CreateUserSessionRequest,
+    #[display("get_user_session_request")]
+    GetUserSessionRequest,
     #[display("approve_user_session_request")]
     ApproveUserSessionRequest,
+    #[display("complete_user_session_request")]
+    CompleteUserSessionRequest,
+
+    // UserSession related
+    #[display("validate_mfa_for_user_session")]
+    ValidateMfaForUserSession,
     #[display("refresh_user_session")]
     RefreshUserSession,
     #[display("invalidate_user_session")]
@@ -172,10 +190,8 @@ pub enum Action {
     CreateOrganization,
     #[display("get_organization")]
     GetOrganization,
-    #[display("update_organization_owner")]
-    UpdateOrganizationOwner,
-    #[display("update_organization_name")]
-    UpdateOrganizationName,
+    #[display("update_organization")]
+    UpdateOrganization,
     #[display("list_organization_members")]
     ListOrganizationMembers,
     #[display("list_organizations_by_user")]

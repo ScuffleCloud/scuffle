@@ -1,28 +1,12 @@
 use base64::Engine;
-use diesel::{BoolExpressionMethods, ExpressionMethods, OptionalExtension, QueryDsl, SelectableHelper};
-use diesel_async::scoped_futures::ScopedFutureExt;
-use diesel_async::{AsyncConnection, RunQueryDsl};
-use rand::Rng;
 use sha2::Digest;
-use tonic::Code;
-use tonic_types::{ErrorDetails, StatusExt};
 
-use crate::cedar::{self, Action, CoreApplication};
-use crate::chrono_ext::ChronoDateTimeExt;
-use crate::common::{self, TxError, normalize_email};
 use crate::http_ext::RequestExt;
-use crate::models::{
-    MagicLinkUserSessionRequest, MagicLinkUserSessionRequestId, Organization, OrganizationMember, User, UserGoogleAccount,
-    UserId, UserSession, UserSessionRequest, UserSessionRequestId, UserSessionTokenId,
-};
 use crate::operations::Operation;
-use crate::schema::{
-    magic_link_user_session_requests, organization_members, organizations, user_google_accounts, user_session_requests,
-    user_sessions,
-};
+use crate::operations::user_sessions::{InvalidateUserSessionRequest, RefreshUserSessionRequest};
 use crate::services::CoreSvc;
-use crate::std_ext::{OptionExt, ResultExt};
-use crate::{CoreConfig, captcha, google_api, totp};
+use crate::std_ext::OptionExt;
+use crate::{CoreConfig, google_api};
 
 #[async_trait::async_trait]
 impl<G: CoreConfig> pb::scufflecloud::core::v1::sessions_service_server::SessionsService for CoreSvc<G> {
@@ -58,105 +42,14 @@ impl<G: CoreConfig> pb::scufflecloud::core::v1::sessions_service_server::Session
         &self,
         req: tonic::Request<pb::scufflecloud::core::v1::LoginWithMagicLinkRequest>,
     ) -> Result<tonic::Response<()>, tonic::Status> {
-        let global = &req.global::<G>()?;
-        let payload = req.into_inner();
-
-        let mut db = global.db().await.into_tonic_internal_err("failed to connect to database")?;
-
-        let captcha = payload.captcha.require("captcha")?;
-
-        // Check captcha
-        match captcha.provider() {
-            pb::scufflecloud::core::v1::CaptchaProvider::Turnstile => {
-                captcha::turnstile::verify_in_tonic(global, &captcha.token).await?;
-            }
-        }
-
-        db.transaction::<_, TxError, _>(|conn| {
-            async move {
-                let user = common::get_user_by_email(conn, &payload.email).await?;
-
-                cedar::is_authorized(global, None, &user, Action::RequestMagicLink, CoreApplication)?;
-
-                let code = common::generate_random_bytes().into_tonic_internal_err("failed to generate magic link code")?;
-
-                // Insert email link user session request
-                let session_request = MagicLinkUserSessionRequest {
-                    id: MagicLinkUserSessionRequestId::new(),
-                    user_id: user.id,
-                    code: code.to_vec(),
-                    expires_at: chrono::Utc::now() + global.magic_link_user_session_request_timeout(),
-                };
-                diesel::insert_into(magic_link_user_session_requests::dsl::magic_link_user_session_requests)
-                    .values(session_request)
-                    .execute(conn)
-                    .await
-                    .into_tonic_internal_err("failed to insert magic link user session request")?;
-
-                Ok(())
-            }
-            .scope_boxed()
-        })
-        .await?;
-
-        // TODO: Send email with code
-
-        Ok(tonic::Response::new(()))
+        Operation::<G>::run(req).await.map(tonic::Response::new)
     }
 
     async fn complete_login_with_magic_link(
         &self,
         req: tonic::Request<pb::scufflecloud::core::v1::CompleteLoginWithMagicLinkRequest>,
     ) -> Result<tonic::Response<pb::scufflecloud::core::v1::NewUserSessionToken>, tonic::Status> {
-        let global = &req.global::<G>()?;
-        let ip_info = req.ip_address_info()?;
-        let payload = req.into_inner();
-
-        let mut db = global.db().await.into_tonic_internal_err("failed to connect to database")?;
-
-        let device = payload.device.require("device")?;
-
-        let new_token = db
-            .transaction::<_, TxError, _>(|conn| {
-                async move {
-                    // Find and delete magic link user session request
-                    let Some(session_request) =
-                        diesel::delete(magic_link_user_session_requests::dsl::magic_link_user_session_requests)
-                            .filter(
-                                magic_link_user_session_requests::dsl::code
-                                    .eq(&payload.code)
-                                    .and(magic_link_user_session_requests::dsl::expires_at.gt(chrono::Utc::now())),
-                            )
-                            .returning(MagicLinkUserSessionRequest::as_select())
-                            .get_result::<MagicLinkUserSessionRequest>(conn)
-                            .await
-                            .optional()
-                            .into_tonic_internal_err("failed to delete magic link user session request")?
-                    else {
-                        return Err(
-                            tonic::Status::with_error_details(Code::NotFound, "unknown code", ErrorDetails::new()).into(),
-                        );
-                    };
-
-                    cedar::is_authorized(
-                        global,
-                        None,
-                        session_request.user_id,
-                        Action::LoginWithMagicLink,
-                        CoreApplication,
-                    )?;
-
-                    // Create a new session for the user
-                    let new_token =
-                        common::create_session(global, conn, session_request.user_id, device, &ip_info, true).await?;
-
-                    Ok(new_token)
-                }
-                .scope_boxed()
-            })
-            .await?;
-
-        Ok(tonic::Response::new(new_token))
+        Operation::<G>::run(req).await.map(tonic::Response::new)
     }
 
     async fn login_with_google(
@@ -181,527 +74,70 @@ impl<G: CoreConfig> pb::scufflecloud::core::v1::sessions_service_server::Session
         &self,
         req: tonic::Request<pb::scufflecloud::core::v1::CompleteLoginWithGoogleRequest>,
     ) -> Result<tonic::Response<pb::scufflecloud::core::v1::CompleteLoginWithGoogleResponse>, tonic::Status> {
-        let global = &req.global::<G>()?;
-        let ip_info = req.ip_address_info()?;
-        let payload = req.into_inner();
-
-        let mut db = global.db().await.into_tonic_internal_err("failed to connect to database")?;
-
-        let device = payload.device.require("device")?;
-        let device_fingerprint = sha2::Sha256::digest(&device.public_key_data);
-        let state = base64::prelude::BASE64_URL_SAFE
-            .decode(&payload.state)
-            .into_tonic_internal_err("failed to decode state")?;
-
-        if *device_fingerprint != state {
-            return Err(tonic::Status::with_error_details(
-                tonic::Code::FailedPrecondition,
-                "device fingerprint does not match state",
-                ErrorDetails::new(),
-            ));
-        }
-
-        let google_token = google_api::request_tokens(global, &payload.code)
-            .await
-            .into_tonic_err_with_field_violation("code", "failed to request google token")?;
-
-        // If user is part of a Google Workspace
-        let workspace_user = if google_token.scope.contains(google_api::ADMIN_DIRECTORY_API_USER_SCOPE) {
-            if let Some(hd) = google_token.id_token.hd.clone() {
-                google_api::request_google_workspace_user(global, &google_token.access_token, &google_token.id_token.sub)
-                    .await
-                    .into_tonic_internal_err("failed to request Google Workspace user")?
-                    .map(|u| (u, hd))
-            } else {
-                None
-            }
-        } else {
-            None
-        };
-
-        let response = db
-            .transaction::<_, TxError, _>(move |conn| {
-                async move {
-                    let mut google_workspace = None;
-
-                    // Update the organization if the user is an admin of a Google Workspace
-                    if let Some((workspace_user, hd)) = workspace_user {
-                        if workspace_user.is_admin {
-                            let n = diesel::update(organizations::dsl::organizations)
-                                .filter(organizations::dsl::google_customer_id.eq(&workspace_user.customer_id))
-                                .set(organizations::dsl::google_hosted_domain.eq(&google_token.id_token.hd))
-                                .execute(conn)
-                                .await
-                                .into_tonic_internal_err("failed to update organization")?;
-
-                            if n == 0 {
-                                google_workspace = Some(pb::scufflecloud::core::v1::complete_login_with_google_response::GoogleWorkspace::UnassociatedGoogleHostedDomain(hd));
-                            }
-                        }
-                    }
-
-                    let google_account = user_google_accounts::dsl::user_google_accounts
-                        .find(&google_token.id_token.sub)
-                        .first::<UserGoogleAccount>(conn)
-                        .await
-                        .optional()?;
-
-                    match google_account {
-                        Some(google_account) => {
-                            cedar::is_authorized(global, None, google_account.user_id, Action::LoginWithGoogle, CoreApplication)?;
-
-                            // Create a new session for the user
-                            let new_token =
-                                common::create_session(global, conn, google_account.user_id, device, &ip_info, false).await?;
-                            Ok(pb::scufflecloud::core::v1::CompleteLoginWithGoogleResponse {
-                                new_user_session_token: Some(new_token),
-                                first_login: false,
-                                google_workspace,
-                            })
-                        }
-                        None => {
-                            let user = User {
-                                id: UserId::new(),
-                                preferred_name: google_token.id_token.name,
-                                first_name: google_token.id_token.given_name,
-                                last_name: google_token.id_token.family_name,
-                                password_hash: None,
-                                primary_email: google_token.id_token.email_verified.then(|| normalize_email(&google_token.id_token.email)),
-                            };
-
-                            let new_token = common::create_new_user_and_session(
-                                global,
-                                conn,
-                                &user,
-                                device,
-                                &ip_info,
-                            )
-                            .await?;
-
-                            cedar::is_authorized(global, None, &user, Action::RegisterWithGoogle, CoreApplication)?;
-
-                            let google_account = UserGoogleAccount {
-                                sub: google_token.id_token.sub,
-                                access_token: google_token.access_token,
-                                access_token_expires_at: chrono::Utc::now()
-                                    + chrono::Duration::seconds(google_token.expires_in as i64),
-                                user_id: user.id,
-                                created_at: chrono::Utc::now(),
-                            };
-
-                            diesel::insert_into(user_google_accounts::dsl::user_google_accounts)
-                                .values(google_account)
-                                .execute(conn)
-                                .await
-                                .into_tonic_internal_err("failed to insert user google account")?;
-
-                            if let Some(hd) = google_token.id_token.hd {
-                                // Check if the organization exists for the hosted domain
-                                let organization = organizations::dsl::organizations
-                                    .filter(organizations::dsl::google_hosted_domain.eq(hd))
-                                    .first::<Organization>(conn)
-                                    .await
-                                    .optional()
-                                    .into_tonic_internal_err("failed to query organization")?;
-
-                                if let Some(org) = organization {
-                                    // Associate user with the organization
-                                    let membership = OrganizationMember {
-                                        organization_id: org.id,
-                                        user_id: user.id,
-                                        invited_by_id: None,
-                                        inline_policy: None,
-                                        created_at: chrono::Utc::now(),
-                                    };
-
-                                    diesel::insert_into(organization_members::dsl::organization_members)
-                                        .values(membership)
-                                        .execute(conn)
-                                        .await
-                                        .into_tonic_internal_err("failed to insert organization membership")?;
-
-                                    google_workspace = Some(
-                                        pb::scufflecloud::core::v1::complete_login_with_google_response::GoogleWorkspace::Joined(org.into())
-                                    );
-                                }
-                            }
-
-                            Ok(pb::scufflecloud::core::v1::CompleteLoginWithGoogleResponse {
-                                new_user_session_token: Some(new_token),
-                                first_login: true,
-                                google_workspace,
-                            })
-                        }
-                    }
-                }
-                .scope_boxed()
-            })
-            .await?;
-
-        Ok(tonic::Response::new(response))
+        Operation::<G>::run(req).await.map(tonic::Response::new)
     }
 
     async fn login_with_webauthn(
         &self,
         req: tonic::Request<pb::scufflecloud::core::v1::LoginWithWebauthnRequest>,
     ) -> Result<tonic::Response<pb::scufflecloud::core::v1::NewUserSessionToken>, tonic::Status> {
-        let global = &req.global::<G>()?;
-        let ip_info = req.ip_address_info()?;
-        let payload = req.into_inner();
-
-        let user_id: UserId = payload
-            .user_id
-            .parse()
-            .map_err(|e| tonic::Status::invalid_argument(format!("invalid user ID: {e}")))?;
-        let pk_cred: webauthn_rs::prelude::PublicKeyCredential = serde_json::from_str(&payload.response_json)
-            .into_tonic_err_with_field_violation("response_json", "invalid public key credential")?;
-        let device = payload.device.require("device")?;
-
-        cedar::is_authorized(global, None, user_id, Action::LoginWithWebauthn, CoreApplication)?;
-
-        let mut db = global.db().await.into_tonic_internal_err("failed to connect to database")?;
-
-        let new_token = db
-            .transaction::<_, TxError, _>(|conn| {
-                async move {
-                    common::finish_webauthn_authentication(global, conn, user_id, &pk_cred).await?;
-
-                    // Create a new session for the user
-                    let new_token = common::create_session(global, conn, user_id, device, &ip_info, false).await?;
-
-                    Ok(new_token)
-                }
-                .scope_boxed()
-            })
-            .await?;
-
-        Ok(tonic::Response::new(new_token))
+        Operation::<G>::run(req).await.map(tonic::Response::new)
     }
 
     async fn create_user_session_request(
         &self,
         req: tonic::Request<pb::scufflecloud::core::v1::CreateUserSessionRequestRequest>,
     ) -> Result<tonic::Response<pb::scufflecloud::core::v1::UserSessionRequest>, tonic::Status> {
-        let global = &req.global::<G>()?;
-        let ip_info = req.ip_address_info()?;
-        let payload = req.into_inner();
-
-        let mut db = global.db().await.into_tonic_internal_err("failed to connect to database")?;
-
-        let code = format!("{:06}", rand::rngs::OsRng.gen_range(0..=999999));
-
-        let session_request = UserSessionRequest {
-            id: UserSessionRequestId::new(),
-            device_name: payload.name,
-            device_ip: ip_info.to_network(),
-            code,
-            approved_by: None,
-            expires_at: chrono::Utc::now() + global.user_session_request_timeout(),
-        };
-
-        diesel::insert_into(user_session_requests::dsl::user_session_requests)
-            .values(&session_request)
-            .execute(&mut db)
-            .await
-            .into_tonic_internal_err("failed to insert user session request")?;
-
-        Ok(tonic::Response::new(session_request.into()))
+        Operation::<G>::run(req).await.map(tonic::Response::new)
     }
 
     async fn get_user_session_request(
         &self,
         req: tonic::Request<pb::scufflecloud::core::v1::GetUserSessionRequestRequest>,
     ) -> Result<tonic::Response<pb::scufflecloud::core::v1::UserSessionRequest>, tonic::Status> {
-        let global = &req.global::<G>()?;
-        let payload = req.into_inner();
-
-        let mut db = global.db().await.into_tonic_internal_err("failed to connect to database")?;
-
-        let id: UserSessionRequestId = payload
-            .id
-            .parse()
-            .map_err(|e| tonic::Status::invalid_argument(format!("invalid ID: {e}")))?;
-
-        let Some(session_request) = user_session_requests::dsl::user_session_requests
-            .find(&id)
-            .filter(user_session_requests::dsl::expires_at.gt(chrono::Utc::now()))
-            .select(UserSessionRequest::as_select())
-            .first::<UserSessionRequest>(&mut db)
-            .await
-            .optional()
-            .into_tonic_internal_err("failed to query user session request")?
-        else {
-            return Err(tonic::Status::with_error_details(
-                tonic::Code::NotFound,
-                "user session request not found",
-                ErrorDetails::new(),
-            ));
-        };
-
-        Ok(tonic::Response::new(session_request.into()))
+        Operation::<G>::run(req).await.map(tonic::Response::new)
     }
 
     async fn get_user_session_request_by_code(
         &self,
         req: tonic::Request<pb::scufflecloud::core::v1::GetUserSessionRequestByCodeRequest>,
     ) -> Result<tonic::Response<pb::scufflecloud::core::v1::UserSessionRequest>, tonic::Status> {
-        let global = &req.global::<G>()?;
-        let payload = req.into_inner();
-
-        let mut db = global.db().await.into_tonic_internal_err("failed to connect to database")?;
-
-        let Some(session_request) = user_session_requests::dsl::user_session_requests
-            .filter(
-                user_session_requests::dsl::code
-                    .eq(&payload.code)
-                    .and(user_session_requests::dsl::expires_at.gt(chrono::Utc::now())),
-            )
-            .select(UserSessionRequest::as_select())
-            .first::<UserSessionRequest>(&mut db)
-            .await
-            .optional()
-            .into_tonic_internal_err("failed to query user session request")?
-        else {
-            return Err(tonic::Status::with_error_details(
-                tonic::Code::NotFound,
-                "user session request not found",
-                ErrorDetails::new(),
-            ));
-        };
-
-        Ok(tonic::Response::new(session_request.into()))
+        Operation::<G>::run(req).await.map(tonic::Response::new)
     }
 
     async fn approve_user_session_request_by_code(
         &self,
         req: tonic::Request<pb::scufflecloud::core::v1::ApproveUserSessionRequestByCodeRequest>,
     ) -> Result<tonic::Response<pb::scufflecloud::core::v1::UserSessionRequest>, tonic::Status> {
-        let global = &req.global::<G>()?;
-        let (_, ext, payload) = req.into_parts();
-        let session = ext.session_or_err()?;
-
-        let mut db = global.db().await.into_tonic_internal_err("failed to connect to database")?;
-
-        let session_request = db
-            .transaction::<_, TxError, _>(move |conn| {
-                async move {
-                    let Some(session_request) = diesel::update(user_session_requests::dsl::user_session_requests)
-                        .filter(
-                            user_session_requests::dsl::code
-                                .eq(&payload.code)
-                                .and(user_session_requests::dsl::approved_by.is_null())
-                                .and(user_session_requests::dsl::expires_at.gt(chrono::Utc::now())),
-                        )
-                        .set(user_session_requests::dsl::approved_by.eq(&session.user_id))
-                        .returning(UserSessionRequest::as_select())
-                        .get_result::<UserSessionRequest>(conn)
-                        .await
-                        .optional()
-                        .into_tonic_internal_err("failed to update user session request")?
-                    else {
-                        return Err(tonic::Status::with_error_details(
-                            tonic::Code::NotFound,
-                            "user session request not found",
-                            ErrorDetails::new(),
-                        )
-                        .into());
-                    };
-
-                    session.is_authorized(global, session.user_id, Action::ApproveUserSessionRequest, &session_request)?;
-
-                    Ok(session_request)
-                }
-                .scope_boxed()
-            })
-            .await?;
-
-        Ok(tonic::Response::new(session_request.into()))
+        Operation::<G>::run(req).await.map(tonic::Response::new)
     }
 
     async fn complete_user_session_request(
         &self,
         req: tonic::Request<pb::scufflecloud::core::v1::CompleteUserSessionRequestRequest>,
     ) -> Result<tonic::Response<pb::scufflecloud::core::v1::NewUserSessionToken>, tonic::Status> {
-        let global = &req.global::<G>()?;
-        let ip_info = req.ip_address_info()?;
-        let payload = req.into_inner();
-
-        let mut db = global.db().await.into_tonic_internal_err("failed to connect to database")?;
-
-        let id: UserSessionRequestId = payload
-            .id
-            .parse()
-            .map_err(|e| tonic::Status::invalid_argument(format!("invalid ID: {e}")))?;
-        let device = payload.device.require("device")?;
-
-        let new_token = db
-            .transaction::<_, TxError, _>(move |conn| {
-                async move {
-                    // Delete user session request
-                    let Some(session_request) = diesel::delete(user_session_requests::dsl::user_session_requests)
-                        .filter(user_session_requests::dsl::id.eq(id))
-                        .returning(UserSessionRequest::as_select())
-                        .get_result::<UserSessionRequest>(conn)
-                        .await
-                        .optional()
-                        .into_tonic_internal_err("failed to delete user session request")?
-                    else {
-                        return Err(
-                            tonic::Status::with_error_details(Code::NotFound, "unknown id", ErrorDetails::new()).into(),
-                        );
-                    };
-
-                    let Some(approved_by) = session_request.approved_by else {
-                        return Err(tonic::Status::with_error_details(
-                            tonic::Code::FailedPrecondition,
-                            "user session request is not approved yet",
-                            ErrorDetails::new(),
-                        )
-                        .into());
-                    };
-
-                    let new_token = common::create_session(global, conn, approved_by, device, &ip_info, false).await?;
-
-                    Ok(new_token)
-                }
-                .scope_boxed()
-            })
-            .await?;
-
-        Ok(tonic::Response::new(new_token))
+        Operation::<G>::run(req).await.map(tonic::Response::new)
     }
 
     async fn validate_mfa_for_user_session(
         &self,
         req: tonic::Request<pb::scufflecloud::core::v1::ValidateMfaForUserSessionRequest>,
     ) -> Result<tonic::Response<pb::scufflecloud::core::v1::UserSession>, tonic::Status> {
-        let global = &req.global::<G>()?;
-        let (_, ext, payload) = req.into_parts();
-        let session = ext.session_or_err()?;
-
-        let mut db = global.db().await.into_tonic_internal_err("failed to connect to database")?;
-
-        let session = db
-            .transaction::<_, TxError, _>(move |conn| {
-                async move {
-                    // Verify MFA challenge response
-                    match payload.response.require("response")? {
-                        pb::scufflecloud::core::v1::validate_mfa_for_user_session_request::Response::Totp(
-                            pb::scufflecloud::core::v1::ValidateMfaForUserSessionTotp { code },
-                        ) => {
-                            totp::process_token(conn, session.user_id, &code).await?;
-                        }
-                        pb::scufflecloud::core::v1::validate_mfa_for_user_session_request::Response::Webauthn(
-                            pb::scufflecloud::core::v1::ValidateMfaForUserSessionWebauthn { response_json },
-                        ) => {
-                            let pk_cred: webauthn_rs::prelude::PublicKeyCredential = serde_json::from_str(&response_json)
-                                .into_tonic_err_with_field_violation("response_json", "invalid public key credential")?;
-                            common::finish_webauthn_authentication(global, conn, session.user_id, &pk_cred).await?;
-                        }
-                        pb::scufflecloud::core::v1::validate_mfa_for_user_session_request::Response::RecoveryCode(
-                            pb::scufflecloud::core::v1::ValidateMfaForUserSessionRecoveryCode { code },
-                        ) => {
-                            common::process_recovery_code(conn, session.user_id, &code).await?;
-                        }
-                    }
-
-                    // Set mfa_pending=false and reset session expiry
-                    let session = diesel::update(user_sessions::dsl::user_sessions)
-                        .filter(
-                            user_sessions::dsl::user_id
-                                .eq(&session.user_id)
-                                .and(user_sessions::dsl::device_fingerprint.eq(&session.device_fingerprint)),
-                        )
-                        .set((
-                            user_sessions::dsl::mfa_pending.eq(false),
-                            user_sessions::dsl::expires_at.eq(chrono::Utc::now() + global.user_session_timeout()),
-                        ))
-                        .returning(UserSession::as_select())
-                        .get_result::<UserSession>(conn)
-                        .await
-                        .into_tonic_internal_err("failed to update user session")?;
-
-                    Ok(session)
-                }
-                .scope_boxed()
-            })
-            .await?;
-
-        Ok(tonic::Response::new(session.into()))
+        Operation::<G>::run(req).await.map(tonic::Response::new)
     }
 
     async fn refresh_user_session(
         &self,
         req: tonic::Request<()>,
     ) -> Result<tonic::Response<pb::scufflecloud::core::v1::NewUserSessionToken>, tonic::Status> {
-        let global = &req.global::<G>()?;
-        let session = req.session_or_err()?;
-        session.is_authorized(global, session.user_id, Action::RefreshUserSession, session)?;
-
-        let mut db = global.db().await.into_tonic_internal_err("failed to connect to database")?;
-
-        let token_id = UserSessionTokenId::new();
-        let token = common::generate_random_bytes().into_tonic_internal_err("failed to generate token")?;
-        let encrypted_token = common::encrypt_token(session.device_algorithm.into(), &token, &session.device_pk_data)?;
-
-        let session = diesel::update(user_sessions::dsl::user_sessions)
-            .filter(
-                user_sessions::dsl::user_id
-                    .eq(&session.user_id)
-                    .and(user_sessions::dsl::device_fingerprint.eq(&session.device_fingerprint)),
-            )
-            .set((
-                user_sessions::dsl::token_id.eq(token_id),
-                user_sessions::dsl::token.eq(token),
-                user_sessions::dsl::token_expires_at.eq(chrono::Utc::now() + global.user_session_token_timeout()),
-            ))
-            .returning(UserSession::as_select())
-            .get_result::<UserSession>(&mut db)
-            .await
-            .into_tonic_internal_err("failed to update user session")?;
-
-        let (Some(token_id), Some(token_expires_at)) = (session.token_id, session.token_expires_at) else {
-            return Err(tonic::Status::with_error_details(
-                tonic::Code::Internal,
-                "user session does not have a token",
-                ErrorDetails::new(),
-            ));
-        };
-
-        let mfa_options = if session.mfa_pending {
-            common::mfa_options(&mut db, session.user_id).await?
-        } else {
-            vec![]
-        };
-
-        let new_token = pb::scufflecloud::core::v1::NewUserSessionToken {
-            id: token_id.to_string(),
-            encrypted_token,
-            expires_at: Some(token_expires_at.to_prost_timestamp_utc()),
-            session_mfa_pending: session.mfa_pending,
-            mfa_options: mfa_options.into_iter().map(|o| o as i32).collect(),
-        };
-
-        Ok(tonic::Response::new(new_token))
+        let (metadata, extensions, _) = req.into_parts();
+        let req = tonic::Request::from_parts(metadata, extensions, RefreshUserSessionRequest);
+        Operation::<G>::run(req).await.map(tonic::Response::new)
     }
 
     async fn invalidate_user_session(&self, req: tonic::Request<()>) -> Result<tonic::Response<()>, tonic::Status> {
-        let global = &req.global::<G>()?;
-        let session = req.session_or_err()?;
-        session.is_authorized(global, session.user_id, Action::InvalidateUserSession, session)?;
-
-        let mut db = global.db().await.into_tonic_internal_err("failed to connect to database")?;
-
-        diesel::delete(user_sessions::dsl::user_sessions)
-            .filter(
-                user_sessions::dsl::user_id
-                    .eq(&session.user_id)
-                    .and(user_sessions::dsl::device_fingerprint.eq(&session.device_fingerprint)),
-            )
-            .execute(&mut db)
-            .await
-            .into_tonic_internal_err("failed to update user session")?;
-
-        Ok(tonic::Response::new(()))
+        let (metadata, extensions, _) = req.into_parts();
+        let req = tonic::Request::from_parts(metadata, extensions, InvalidateUserSessionRequest);
+        Operation::<G>::run(req).await.map(tonic::Response::new)
     }
 }

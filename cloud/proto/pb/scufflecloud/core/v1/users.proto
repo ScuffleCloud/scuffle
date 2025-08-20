@@ -29,7 +29,3 @@ message UserEmail {
     string email = 1 [(tinc.field).constraint.string.email = true];
     google.protobuf.Timestamp created_at = 2;
 }
-
-message UserByIdRequest {
-    string id = 1 [(string_constraint).id = true];
-}

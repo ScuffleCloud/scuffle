@@ -17,28 +17,28 @@ service OrganizationInvitationsService {
         };
     }
 
-    rpc ListOrganizationInvitationsByOrganization(OrganizationByIdRequest) returns (OrganizationInvitationList) {
+    rpc ListOrganizationInvitationsByOrganization(ListOrganizationInvitationsByOrganizationRequest) returns (OrganizationInvitationList) {
         option (tinc.method).endpoint = {
             get: "/organizations/{id}/invitations"
         };
     }
-    rpc ListOrgnizationInvitesByUser(UserByIdRequest) returns (OrganizationInvitationList) {
+    rpc ListOrgnizationInvitesByUser(ListOrgnizationInvitesByUserRequest) returns (OrganizationInvitationList) {
         option (tinc.method).endpoint = {
             get: "/users/{id}/invitations"
         };
     }
 
-    rpc GetOrganizationInvitation(OrganizationInvitationByIdRequest) returns (OrganizationInvitation) {
+    rpc GetOrganizationInvitation(GetOrganizationInvitationRequest) returns (OrganizationInvitation) {
         option (tinc.method).endpoint = {
             get: "/organization-invitations/{id}"
         };
     }
-    rpc AcceptOrganizationInvitation(OrganizationInvitationByIdRequest) returns (OrganizationMember) {
+    rpc AcceptOrganizationInvitation(AcceptOrganizationInvitationRequest) returns (OrganizationMember) {
         option (tinc.method).endpoint = {
             post: "/organization-invitations/{id}/accept"
         };
     }
-    rpc DeclineOrganizationInvitation(OrganizationInvitationByIdRequest) returns (google.protobuf.Empty) {
+    rpc DeclineOrganizationInvitation(DeclineOrganizationInvitationRequest) returns (google.protobuf.Empty) {
         option (tinc.method).endpoint = {
             post: "/organization-invitations/{id}/decline"
         };
@@ -52,10 +52,26 @@ message CreateOrganizationInvitationRequest {
     optional uint64 expires_in_s = 3;
 }
 
+message ListOrgnizationInvitesByUserRequest {
+    string id = 1 [(string_constraint).id = true];
+}
+
+message ListOrganizationInvitationsByOrganizationRequest {
+    string id = 1 [(string_constraint).id = true];
+}
+
 message OrganizationInvitationList {
     repeated OrganizationInvitation invitations = 1;
 }
 
-message OrganizationInvitationByIdRequest {
+message GetOrganizationInvitationRequest {
+    string id = 1 [(string_constraint).id = true];
+}
+
+message AcceptOrganizationInvitationRequest {
+    string id = 1 [(string_constraint).id = true];
+}
+
+message DeclineOrganizationInvitationRequest {
     string id = 1 [(string_constraint).id = true];
 }

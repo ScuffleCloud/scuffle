@@ -18,7 +18,7 @@ impl<G: CoreConfig> Operation<G> for tonic::Request<pb::scufflecloud::core::v1::
 
     const ACTION: Action = Action::RegisterWithEmail;
 
-    async fn validate(&self) -> Result<(), tonic::Status> {
+    async fn validate(&mut self) -> Result<(), tonic::Status> {
         let global = &self.global::<G>()?;
 
         // Check captcha
@@ -32,11 +32,11 @@ impl<G: CoreConfig> Operation<G> for tonic::Request<pb::scufflecloud::core::v1::
         Ok(())
     }
 
-    async fn load_principal(&self, _tx: &mut diesel_async::AsyncPgConnection) -> Result<Self::Principal, tonic::Status> {
+    async fn load_principal(&mut self, _tx: &mut diesel_async::AsyncPgConnection) -> Result<Self::Principal, tonic::Status> {
         Ok(Unauthenticated)
     }
 
-    async fn load_resource(&self, _tx: &mut diesel_async::AsyncPgConnection) -> Result<Self::Resource, tonic::Status> {
+    async fn load_resource(&mut self, _tx: &mut diesel_async::AsyncPgConnection) -> Result<Self::Resource, tonic::Status> {
         Ok(CoreApplication)
     }
 
@@ -69,8 +69,7 @@ impl<G: CoreConfig> Operation<G> for tonic::Request<pb::scufflecloud::core::v1::
                 Code::AlreadyExists,
                 "email is already registered",
                 ErrorDetails::new(),
-            )
-            .into());
+            ));
         }
 
         // Create email registration request
@@ -101,7 +100,7 @@ impl<G: CoreConfig> Operation<G> for tonic::Request<pb::scufflecloud::core::v1::
 
     const ACTION: Action = Action::RegisterWithEmail;
 
-    async fn load_principal(&self, tx: &mut diesel_async::AsyncPgConnection) -> Result<Self::Principal, tonic::Status> {
+    async fn load_principal(&mut self, tx: &mut diesel_async::AsyncPgConnection) -> Result<Self::Principal, tonic::Status> {
         // Delete email registration request
         let Some(registration_request) = diesel::delete(email_registration_requests::dsl::email_registration_requests)
             .filter(
@@ -116,7 +115,11 @@ impl<G: CoreConfig> Operation<G> for tonic::Request<pb::scufflecloud::core::v1::
             .optional()
             .into_tonic_internal_err("failed to delete email registration request")?
         else {
-            return Err(tonic::Status::with_error_details(Code::NotFound, "unknown code", ErrorDetails::new()).into());
+            return Err(tonic::Status::with_error_details(
+                Code::NotFound,
+                "unknown code",
+                ErrorDetails::new(),
+            ));
         };
 
         Ok(User {
@@ -129,7 +132,7 @@ impl<G: CoreConfig> Operation<G> for tonic::Request<pb::scufflecloud::core::v1::
         })
     }
 
-    async fn load_resource(&self, _tx: &mut diesel_async::AsyncPgConnection) -> Result<Self::Resource, tonic::Status> {
+    async fn load_resource(&mut self, _tx: &mut diesel_async::AsyncPgConnection) -> Result<Self::Resource, tonic::Status> {
         Ok(CoreApplication)
     }
 
@@ -143,7 +146,8 @@ impl<G: CoreConfig> Operation<G> for tonic::Request<pb::scufflecloud::core::v1::
         let ip_info = self.ip_address_info()?;
 
         let device = self.into_inner().device.require("device")?;
-        let new_token = common::create_new_user_and_session(global, tx, &principal, device, &ip_info).await?;
+        common::create_user(tx, &principal).await?;
+        let new_token = common::create_session(global, tx, principal.id, device, &ip_info, false).await?;
 
         Ok(new_token)
     }

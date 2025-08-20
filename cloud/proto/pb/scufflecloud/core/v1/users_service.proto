@@ -12,7 +12,7 @@ import "scufflecloud/core/v1/users.proto";
 
 // Service for managing existing users.
 service UsersService {
-    rpc GetUser(UserByIdRequest) returns (User) {
+    rpc GetUser(GetUserRequest) returns (User) {
         option (tinc.method).endpoint = {
             get: "/users/{id}"
         };
@@ -23,7 +23,7 @@ service UsersService {
         };
     };
 
-    rpc ListUserEmails(UserByIdRequest) returns (UserEmailsList) {
+    rpc ListUserEmails(ListUserEmailsRequest) returns (UserEmailsList) {
         option (tinc.method).endpoint = {
             get: "/users/{id}/emails"
         };
@@ -54,7 +54,7 @@ service UsersService {
             post: "/users/{id}/webauthn-credentials/complete"
         };
     }
-    rpc ListWebauthnCredentials(UserByIdRequest) returns (WebauthnCredentialsList) {
+    rpc ListWebauthnCredentials(ListWebauthnCredentialsRequest) returns (WebauthnCredentialsList) {
         option (tinc.method).endpoint = {
             get: "/users/{id}/webauthn-credentials"
         };
@@ -64,13 +64,13 @@ service UsersService {
             delete: "/users/{user_id}/webauthn-credentials/{id}"
         };
     }
-    rpc CreateWebauthnChallenge(UserByIdRequest) returns (WebauthnChallenge) {
+    rpc CreateWebauthnChallenge(CreateWebauthnChallengeRequest) returns (WebauthnChallenge) {
         option (tinc.method).endpoint = {
             post: "/users/{id}/webauthn-challenge"
         };
     }
 
-    rpc CreateTotpCredential(UserByIdRequest) returns (CreateTotpCredentialResponse) {
+    rpc CreateTotpCredential(CreateTotpCredentialRequest) returns (CreateTotpCredentialResponse) {
         option (tinc.method).endpoint = {
             post: "/users/{id}/totp-credentials"
         };
@@ -80,7 +80,7 @@ service UsersService {
             post: "/users/{id}/totp-credentials/complete"
         };
     }
-    rpc ListTotpCredentials(UserByIdRequest) returns (TotpCredentialsList) {
+    rpc ListTotpCredentials(ListTotpCredentialsRequest) returns (TotpCredentialsList) {
         option (tinc.method).endpoint = {
             get: "/users/{id}/totp-credentials"
         };
@@ -91,17 +91,21 @@ service UsersService {
         };
     }
 
-    rpc RegenerateRecoveryCodes(UserByIdRequest) returns (RecoveryCodes) {
+    rpc RegenerateRecoveryCodes(RegenerateRecoveryCodesRequest) returns (RecoveryCodes) {
         option (tinc.method).endpoint = {
             post: "/users/{id}/recovery-codes"
         };
     }
 
-    rpc DeleteUser(UserByIdRequest) returns (User) {
+    rpc DeleteUser(DeleteUserRequest) returns (User) {
         option (tinc.method).endpoint = {
             delete: "/users/{id}"
         };
     }
+}
+
+message GetUserRequest {
+    string id = 1 [(string_constraint).id = true];
 }
 
 message UpdateUserRequest {
@@ -136,6 +140,10 @@ message UpdateUserPrimaryEmail {
     string primary_email = 1 [(tinc.field).constraint.string.email = true];
 }
 
+message ListUserEmailsRequest {
+    string id = 1 [(string_constraint).id = true];
+}
+
 message UserEmailsList {
     repeated UserEmail emails = 1;
 }
@@ -157,6 +165,10 @@ message DeleteUserEmailRequest {
     string email = 2 [(tinc.field).constraint.string.email = true];
 }
 
+message CreateTotpCredentialRequest {
+    string id = 1 [(string_constraint).id = true];
+}
+
 message CreateTotpCredentialResponse {
     bytes secret_qrcode_png = 1;
     string secret_url = 2;
@@ -169,6 +181,10 @@ message CompleteCreateTotpCredentialRequest {
         max_len: 255
     }];
     string code = 3 [(tinc.field).constraint.string.len = 6];
+}
+
+message ListWebauthnCredentialsRequest {
+    string id = 1 [(string_constraint).id = true];
 }
 
 message WebauthnCredential {
@@ -220,6 +236,10 @@ message WebauthnChallenge {
     string options_json = 1;
 }
 
+message CreateWebauthnChallengeRequest {
+    string id = 1 [(string_constraint).id = true];
+}
+
 message TotpCredential {
     string id = 1 [(string_constraint).id = true];
     string user_id = 2 [(string_constraint).id = true];
@@ -228,6 +248,10 @@ message TotpCredential {
         max_len: 255
     }];
     google.protobuf.Timestamp last_used_at_utc = 4;
+}
+
+message ListTotpCredentialsRequest {
+    string id = 1 [(string_constraint).id = true];
 }
 
 message TotpCredentialsList {
@@ -239,6 +263,14 @@ message DeleteTotpCredentialRequest {
     string id = 2 [(string_constraint).id = true];
 }
 
+message RegenerateRecoveryCodesRequest {
+    string id = 1 [(string_constraint).id = true];
+}
+
 message RecoveryCodes {
     repeated string codes = 1 [(tinc.field).constraint.repeated.item.string.len = 8];
+}
+
+message DeleteUserRequest {
+    string id = 1 [(string_constraint).id = true];
 }

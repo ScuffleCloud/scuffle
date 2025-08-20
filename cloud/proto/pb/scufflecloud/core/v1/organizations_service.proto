@@ -15,7 +15,7 @@ service OrganizationsService {
             post: "/organizations"
         };
     }
-    rpc GetOrganization(OrganizationByIdRequest) returns (Organization) {
+    rpc GetOrganization(GetOrganizationRequest) returns (Organization) {
         option (tinc.method).endpoint = {
             get: "/organizations/{id}"
         };
@@ -25,13 +25,13 @@ service OrganizationsService {
             patch: "/organizations/{id}"
         };
     }
-    rpc ListOrganizationMembers(OrganizationByIdRequest) returns (OrganizationMemberList) {
+    rpc ListOrganizationMembers(ListOrganizationMembersRequest) returns (OrganizationMembersList) {
         option (tinc.method).endpoint = {
             get: "/organizations/{id}/members"
         };
     }
 
-    rpc ListOrganizationsByUser(UserByIdRequest) returns (OrganizationList) {
+    rpc ListOrganizationsByUser(ListOrganizationsByUserRequest) returns (OrganizationsList) {
         option (tinc.method).endpoint = {
             get: "/users/{id}/organizations"
         };
@@ -43,6 +43,10 @@ message CreateOrganizationRequest {
         min_len: 1,
         max_len: 255
     }];
+}
+
+message GetOrganizationRequest {
+    string id = 1 [(string_constraint).id = true];
 }
 
 message UpdateOrganizationRequest {
@@ -65,10 +69,18 @@ message UpdateOrganizationName {
     }];
 }
 
-message OrganizationList {
+message ListOrganizationsByUserRequest {
+    string id = 1 [(string_constraint).id = true];
+}
+
+message OrganizationsList {
     repeated Organization organizations = 1;
 }
 
-message OrganizationMemberList {
+message ListOrganizationMembersRequest {
+    string id = 1 [(string_constraint).id = true];
+}
+
+message OrganizationMembersList {
     repeated OrganizationMember members = 1;
 }

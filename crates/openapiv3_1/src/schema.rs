@@ -959,7 +959,7 @@ impl Object {
     pub fn is_empty(&self) -> bool {
         static DEFAULT: std::sync::LazyLock<Object> = std::sync::LazyLock::new(Object::default);
 
-        self == &*DEFAULT
+        self == &*DEFAULT || (serde_json::to_string(self).unwrap_or("{}".to_string()) == "{}")
     }
 
     fn take_all_ofs(&mut self, collection: &mut Vec<Schema>) {
@@ -1019,7 +1019,7 @@ impl Object {
                 // _else
                 any_of => merge_array_combine_optional,
                 one_of => merge_array_combine_optional,
-                not => merge_sub_schema,
+                not => merge_inverted_if_possible,
                 unevaluated_items => merge_sub_schema,
                 unevaluated_properties => merge_sub_schema,
                 deprecated => merge_set_true,
@@ -1059,6 +1059,102 @@ fn merge_sub_schema(value: &mut Option<Schema>, other_opt: &mut Option<Schema>) 
     value.merge(&mut other);
     if !other.is_empty() {
         other_opt.replace(other);
+    }
+}
+
+fn merge_inverted_if_possible(value_opt: &mut Option<Schema>, other_opt: &mut Option<Schema>) {
+    // merging inverted objects is more tricky.
+    // If they have different "schema" or things like "title", we should
+    // refrain from "optimization". We can however merge certain
+    // types, for example {not { enum: [A] }} and {not { enum: [B] }}
+    // can be merged fully into {not { enum: [A,B] }}.
+    // If merge is not fully successful, just leave separated.
+    // There is some risk that we may be merging for example different schemas.
+
+    let value = value_opt.as_ref().unwrap();
+    let other = other_opt.as_ref().unwrap();
+    if let (Schema::Object(value_obj), Schema::Object(other_obj)) = (value, other) {
+        let mut self_copy = (*value_obj).clone();
+        let mut other_copy = (*other_obj).clone();
+        // This has much more skips, min/max & union/combine are inverted
+        {
+            merge_item!(
+                [self_copy, other_copy] => {
+                    id => merge_skip,
+                    schema => merge_skip,
+                    reference => merge_skip,
+                    comment => merge_skip,
+                    title => merge_skip,
+                    description => merge_skip,
+                    summary => merge_skip,
+                    default => merge_skip,
+                    read_only => merge_skip,
+                    examples => merge_skip,
+                    multiple_of => merge_skip,
+                    maximum => merge_max,
+                    exclusive_maximum => merge_max,
+                    minimum => merge_min,
+                    exclusive_minimum => merge_max,
+                    max_length => merge_max,
+                    min_length => merge_min,
+                    pattern => merge_skip,
+                    additional_items => merge_skip,
+                    items => merge_skip,
+                    prefix_items => merge_skip,
+                    max_items => merge_max,
+                    min_items => merge_min,
+                    unique_items => merge_skip,
+                    contains => merge_skip,
+                    max_properties => merge_max,
+                    min_properties => merge_min,
+                    max_contains => merge_max,
+                    min_contains => merge_min,
+                    required => merge_skip,
+                    additional_properties => merge_skip,
+                    definitions => merge_skip,
+                    properties => merge_skip,
+                    pattern_properties => merge_skip,
+                    dependencies => merge_skip,
+                    property_names => merge_skip,
+                    const_value => merge_skip,
+                    enum_values => merge_array_combine_optional,
+                    schema_type => merge_skip,
+                    format => merge_skip,
+                    content_media_type => merge_skip,
+                    content_encoding => merge_skip,
+                    // _if
+                    // then
+                    // _else
+                    any_of => merge_array_combine_optional,
+                    one_of => merge_array_combine_optional,
+                    not => merge_skip,
+                    unevaluated_items => merge_skip,
+                    unevaluated_properties => merge_skip,
+                    deprecated => merge_skip,
+                    write_only => merge_skip,
+                    content_schema => merge_skip,
+                }
+            );
+        }
+
+        // Special case -> const can be merged into array of disallowed values.
+        if other_copy.const_value.is_some() {
+            let mut disallowed = self_copy.enum_values.unwrap_or_default();
+            disallowed.push(other_copy.const_value.unwrap());
+            other_copy.const_value = None;
+            if self_copy.const_value.is_some() {
+                disallowed.push(self_copy.const_value.unwrap());
+                self_copy.const_value = None;
+            }
+            disallowed.dedup();
+            self_copy.enum_values = Some(disallowed);
+        }
+
+        // If other got emptied, we successfully merged all inverted items.
+        if other_copy.is_empty() {
+            value_opt.replace(Schema::Object(self_copy));
+            *other_opt = Default::default();
+        }
     }
 }
 
@@ -1805,5 +1901,169 @@ mod tests {
 
         let value = serde_json::to_value(&json_value).unwrap();
         assert_eq!(value["anyOf"][0].get("x-some-extension"), Some(&expected));
+    }
+
+    #[test]
+    fn merge_objects_with_not_enum_values() {
+        let main_obj = Schema::object(
+            Object::builder()
+                .one_ofs([
+                    Schema::object(Object::builder().schema_type(Type::Number).build()),
+                    Schema::object(
+                        Object::builder()
+                            .schema_type(Type::String)
+                            .enum_values(vec![
+                                serde_json::Value::from("Infinity"),
+                                serde_json::Value::from("-Infinity"),
+                                serde_json::Value::from("NaN"),
+                            ])
+                            .build(),
+                    ),
+                ])
+                .build(),
+        );
+
+        let not_nan = Schema::object(
+            Object::builder()
+                .not(Schema::object(
+                    Object::builder()
+                        .schema_type(Type::String)
+                        .enum_values(vec![serde_json::Value::from("NaN")])
+                        .build(),
+                ))
+                .build(),
+        );
+
+        let not_infinity = Schema::object(
+            Object::builder()
+                .not(Schema::object(
+                    Object::builder()
+                        .schema_type(Type::String)
+                        .enum_values(vec![serde_json::Value::from("Infinity")])
+                        .build(),
+                ))
+                .build(),
+        );
+
+        let schemas = vec![main_obj, not_nan, not_infinity];
+        let merged = Object::all_ofs(schemas).into_optimized();
+
+        assert_json_snapshot!(merged, @r#"
+        {
+          "oneOf": [
+            {
+              "type": "number"
+            },
+            {
+              "enum": [
+                "Infinity",
+                "-Infinity",
+                "NaN"
+              ],
+              "type": "string"
+            }
+          ],
+          "not": {
+            "enum": [
+              "NaN",
+              "Infinity"
+            ],
+            "type": "string"
+          }
+        }
+        "#);
+    }
+
+    #[test]
+    fn merge_objects_with_not_consts() {
+        let not_a = Schema::object(
+            Object::builder()
+                .not(Schema::object(
+                    Object::builder()
+                        .schema_type(Type::String)
+                        .const_value(serde_json::Value::from("A"))
+                        .build(),
+                ))
+                .build(),
+        );
+
+        let not_b = Schema::object(
+            Object::builder()
+                .not(Schema::object(
+                    Object::builder()
+                        .schema_type(Type::String)
+                        .const_value(serde_json::Value::from("B"))
+                        .build(),
+                ))
+                .build(),
+        );
+
+        let schemas = vec![not_a, not_b];
+        let merged = Object::all_ofs(schemas).into_optimized();
+
+        assert_json_snapshot!(merged, @r#"
+        {
+          "not": {
+            "enum": [
+              "B",
+              "A"
+            ],
+            "type": "string"
+          }
+        }
+        "#);
+    }
+
+    #[test]
+    fn dont_merge_objects_with_not_if_impossible() {
+        let not_format_a = Schema::object(
+            Object::builder()
+                .not(Schema::object(
+                    Object::builder().schema_type(Type::String).format("email").build(),
+                ))
+                .build(),
+        );
+
+        let not_format_b = Schema::object(
+            Object::builder()
+                .not(Schema::object(
+                    Object::builder().schema_type(Type::String).format("date-time").build(),
+                ))
+                .build(),
+        );
+
+        let not_format_c = Schema::object(
+            Object::builder()
+                .not(Schema::object(
+                    Object::builder().schema_type(Type::String).format("ipv4").build(),
+                ))
+                .build(),
+        );
+
+        let schemas = vec![not_format_a, not_format_b, not_format_c];
+        let merged = Object::all_ofs(schemas).into_optimized();
+
+        assert_json_snapshot!(merged, @r#"
+        {
+          "allOf": [
+            {
+              "not": {
+                "type": "string",
+                "format": "date-time"
+              }
+            },
+            {
+              "not": {
+                "type": "string",
+                "format": "ipv4"
+              }
+            }
+          ],
+          "not": {
+            "type": "string",
+            "format": "email"
+          }
+        }
+        "#);
     }
 }

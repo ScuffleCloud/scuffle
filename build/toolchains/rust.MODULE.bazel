@@ -106,6 +106,12 @@ rust.toolchain(
         "rustfmt-nightly-x86_64-apple-darwin": "5680448e1ff2991d0d5b4783aabc079b9b092236377180eb1fa4c34d1e742a32",
         "rustfmt-nightly-x86_64-pc-windows-msvc": "40bdc240a305a8ce2f3bc69953af355eb9434785a37f7f017befef947abf1d15",
         "rustfmt-nightly-x86_64-unknown-linux-gnu": "be96bad25adc1d35c21bc9fa151f71327bd4d6b3981fb92ea7dbffa9f477283d",
+        "rustc-nightly-aarch64-apple-darwin": "44d152370943475e2fee5818a0f4f31fb9c0406de88842296e475dfca36ab152",
+        "rustc-nightly-aarch64-pc-windows-msvc": "ebeca798c756a09c58718ed2a6846f784032cc75e1952ac4f52553713f0125a6",
+        "rustc-nightly-aarch64-unknown-linux-gnu": "179ca4a51ff1088800873b0b1bb4b0db278ee8b3307de265807d200855e643e3",
+        "rustc-nightly-x86_64-apple-darwin": "0225335bfd3f7b2055ba6dd35335392db24218336d4dd920e2bfd22d3ce520a4",
+        "rustc-nightly-x86_64-pc-windows-msvc": "fe948d315a5fe36abda253f4094ef9e3d7d0a9d7a1ce8f38a393f784cbb2326b",
+        "rustc-nightly-x86_64-unknown-linux-gnu": "9316fd94ec2e31cdc8bd70eb6a9ebce91dc10259bbb863f6e2d869d9bfc055c8",
     },
     urls = [
         "https://github.com/ScuffleCloud/toolchains/releases/download/rust-1/{}.tar.zst",

@@ -1,11 +1,10 @@
 use core::fmt;
+use num_traits::{Float, FromPrimitive, ToPrimitive};
+use serde::Serialize;
+use serde::de::Error;
 use std::collections::{BTreeMap, HashMap};
 use std::fmt::Display;
 use std::marker::PhantomData;
-
-use num_traits::{Float, ToPrimitive};
-use serde::Serialize;
-use serde::de::Error;
 
 use super::{DeserializeContent, DeserializeHelper, Expected, Tracker, TrackerDeserializer, TrackerFor};
 
@@ -23,9 +22,67 @@ impl<T> Default for FloatWithNonFinTracker<T> {
     }
 }
 
+impl<T: Expected> Tracker for FloatWithNonFinTracker<T> {
+    type Target = T;
+
+    #[inline(always)]
+    fn allow_duplicates(&self) -> bool {
+        false
+    }
+}
+
+#[repr(transparent)]
+pub struct FloatWithNonFinite<T>(T);
+
+impl<T: Default> Default for FloatWithNonFinite<T> {
+    fn default() -> Self {
+        Self(Default::default())
+    }
+}
+
+impl<T: Expected> TrackerFor for FloatWithNonFinite<T> {
+    type Tracker = FloatWithNonFinTracker<T>;
+}
+
+impl<T> Expected for FloatWithNonFinite<T> {
+    fn expecting(formatter: &mut fmt::Formatter) -> fmt::Result {
+        write!(formatter, stringify!(T))
+    }
+}
+
+// Deserialization
+
+pub trait FloatWithNonFinDesHelper: Sized {
+    type Target;
+}
+
+impl FloatWithNonFinDesHelper for f32 {
+    type Target = FloatWithNonFinite<f32>;
+}
+
+impl FloatWithNonFinDesHelper for f64 {
+    type Target = FloatWithNonFinite<f64>;
+}
+
+impl<T: FloatWithNonFinDesHelper> FloatWithNonFinDesHelper for Option<T> {
+    type Target = Option<T::Target>;
+}
+
+impl<T: FloatWithNonFinDesHelper> FloatWithNonFinDesHelper for Vec<T> {
+    type Target = Vec<T::Target>;
+}
+
+impl<K, V: FloatWithNonFinDesHelper> FloatWithNonFinDesHelper for BTreeMap<K, V> {
+    type Target = BTreeMap<K, V::Target>;
+}
+
+impl<K, V: FloatWithNonFinDesHelper, S> FloatWithNonFinDesHelper for HashMap<K, V, S> {
+    type Target = HashMap<K, V::Target, S>;
+}
+
 impl<'de, T> serde::de::DeserializeSeed<'de> for DeserializeHelper<'_, FloatWithNonFinTracker<T>>
 where
-    T: serde::Deserialize<'de> + Float,
+    T: serde::Deserialize<'de> + Float + ToPrimitive + FromPrimitive,
     FloatWithNonFinTracker<T>: Tracker<Target = T>,
 {
     type Value = ();
@@ -43,41 +100,35 @@ where
         }
 
         macro_rules! visit_convert_to_float {
-            ($deserialize:ident => $ty:ident) => {
-                fn $deserialize<E>(self, v: $ty) -> Result<Self::Value, E>
+            ($visitor_func:ident, $conv_func:ident, $ty:ident) => {
+                fn $visitor_func<E>(self, v: $ty) -> Result<Self::Value, E>
                 where
                     E: Error,
                 {
-                    Ok(T::from(v).unwrap())
+                    match T::$conv_func(v) {
+                        Some(v) => Ok(v),
+                        None => Err(E::custom(format!("unable to extract float-type from {}", v))),
+                    }
                 }
             };
         }
 
         impl<'de, T> serde::de::Visitor<'de> for Visitor<T>
         where
-            T: serde::Deserialize<'de> + Float,
+            T: serde::Deserialize<'de> + Float + ToPrimitive + FromPrimitive,
         {
             type Value = T;
 
-            visit_convert_to_float!(visit_f32 => f32);
-
-            visit_convert_to_float!(visit_f64 => f64);
-
-            visit_convert_to_float!(visit_u8 => u8);
-
-            visit_convert_to_float!(visit_u16 => u16);
-
-            visit_convert_to_float!(visit_u32 => u32);
-
-            visit_convert_to_float!(visit_u64 => u64);
-
-            visit_convert_to_float!(visit_i8 => i8);
-
-            visit_convert_to_float!(visit_i16 => i16);
-
-            visit_convert_to_float!(visit_i32 => i32);
-
-            visit_convert_to_float!(visit_i64 => i64);
+            visit_convert_to_float!(visit_f32, from_f32, f32);
+            visit_convert_to_float!(visit_f64, from_f64, f64);
+            visit_convert_to_float!(visit_u8, from_u8, u8);
+            visit_convert_to_float!(visit_u16, from_u16, u16);
+            visit_convert_to_float!(visit_u32, from_u32, u32);
+            visit_convert_to_float!(visit_u64, from_u64, u64);
+            visit_convert_to_float!(visit_i8, from_i8, i8);
+            visit_convert_to_float!(visit_i16, from_i16, i16);
+            visit_convert_to_float!(visit_i32, from_i32, i32);
+            visit_convert_to_float!(visit_i64, from_i64, i64);
 
             fn expecting(&self, formatter: &mut fmt::Formatter) -> fmt::Result {
                 write!(formatter, stringify!(T))
@@ -115,36 +166,9 @@ where
     }
 }
 
-impl<T: Default + Expected + Float> Tracker for FloatWithNonFinTracker<T> {
-    type Target = T;
-
-    #[inline(always)]
-    fn allow_duplicates(&self) -> bool {
-        false
-    }
-}
-
-macro_rules! impl_tracker_for_float_with_non_finite {
-    ($($ty:ty),*) => {
-        $(
-            impl TrackerFor for $ty {
-                type Tracker = FloatWithNonFinTracker<$ty>;
-            }
-
-            impl Expected for $ty {
-                fn expecting(formatter: &mut std::fmt::Formatter) -> std::fmt::Result {
-                    write!(formatter, stringify!($ty))
-                }
-            }
-        )*
-    };
-}
-
-impl_tracker_for_float_with_non_finite!(f64, f32);
-
 impl<'de, T> TrackerDeserializer<'de> for FloatWithNonFinTracker<T>
 where
-    T: serde::Deserialize<'de> + Float,
+    T: serde::Deserialize<'de> + Float + FromPrimitive,
     FloatWithNonFinTracker<T>: Tracker<Target = T>,
 {
     fn deserialize<D>(&mut self, value: &mut Self::Target, deserializer: D) -> Result<(), D::Error>
@@ -155,21 +179,9 @@ where
     }
 }
 
-/// # Safety
-/// This trait is marked as unsafe because the implementator
-/// must ensure that Helper has the same layout & memory representation as Self.
-pub(crate) unsafe trait FloatWithNonFinAlias: Sized {
-    type Helper: Sized;
+// Serialization
 
-    fn cast_ref(value: &Self) -> &Self::Helper {
-        // Safety: this is safe given that the `unsafe trait`'s precondition is held.
-        unsafe { &*(value as *const Self as *const Self::Helper) }
-    }
-}
-
-pub struct FWrapper<T: Float + ToPrimitive + Display>(T);
-
-impl<T: Float + ToPrimitive + Display> serde::Serialize for FWrapper<T> {
+impl<T: Float + FromPrimitive + Display> serde::Serialize for FloatWithNonFinite<T> {
     fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
     where
         S: serde::Serializer,
@@ -189,47 +201,59 @@ impl<T: Float + ToPrimitive + Display> serde::Serialize for FWrapper<T> {
     }
 }
 
-/// Safety: f32 can be wrapped by FWrapper
-unsafe impl FloatWithNonFinAlias for f32 {
-    type Helper = FWrapper<f32>;
+/// # Safety
+/// This trait is marked as unsafe because the implementator
+/// must ensure that Helper has the same layout & memory representation as Self.
+unsafe trait FloatWithNonFinSerHelper: Sized {
+    type Helper: Sized;
+
+    fn cast(value: &Self) -> &Self::Helper {
+        // Safety: this is safe given that the `unsafe trait`'s precondition is held.
+        unsafe { &*(value as *const Self as *const Self::Helper) }
+    }
 }
 
-/// Safety: f64 can be wrapped by FWrapper
-unsafe impl FloatWithNonFinAlias for f64 {
-    type Helper = FWrapper<f64>;
+/// Safety: [`FloatWithNonFinite`] is `#[repr(transparent)]` for [`f32`].
+unsafe impl FloatWithNonFinSerHelper for f32 {
+    type Helper = FloatWithNonFinite<f32>;
 }
 
-/// Safety: [`Float + ToPrimitive + Display`] is `#[repr(transparent)]` for [`FWrapper`]
-unsafe impl<T: Float + ToPrimitive + Display> FloatWithNonFinAlias for FWrapper<T> {
-    type Helper = T;
+/// Safety: [`FloatWithNonFinite`] is `#[repr(transparent)]` for [`f64`].
+unsafe impl FloatWithNonFinSerHelper for f64 {
+    type Helper = FloatWithNonFinite<f64>;
 }
 
-/// Safety: If `T` is a [`FloatWithNonFinAlias`] type, then its safe to cast `Option<T>` to `Option<T::Helper>`.
-unsafe impl<T: FloatWithNonFinAlias> FloatWithNonFinAlias for Option<T> {
+/// Safety: [`FloatWithNonFinite<T>`] is naturally same as [`FloatWithNonFinite<T>`].
+unsafe impl<T: Float + FromPrimitive> FloatWithNonFinSerHelper for FloatWithNonFinite<T> {
+    type Helper = FloatWithNonFinite<T>;
+}
+
+/// Safety: If `T` is a [`FloatWithNonFinSerHelper`] type, then `Option<T>` can be cast to `Option<T::Helper>`
+unsafe impl<T: FloatWithNonFinSerHelper> FloatWithNonFinSerHelper for Option<T> {
     type Helper = Option<T::Helper>;
 }
 
-/// Safety: If `T` is a [`FloatWithNonFinAlias`] type, then its safe to cast `Vec<T>` to `Vec<T::Helper>`.
-unsafe impl<T: FloatWithNonFinAlias> FloatWithNonFinAlias for Vec<T> {
+/// Safety: If `T` is a [`FloatWithNonFinSerHelper`] type, then `Vec<T>` can be cast to `Vec<T::Helper>`
+unsafe impl<T: FloatWithNonFinSerHelper> FloatWithNonFinSerHelper for Vec<T> {
     type Helper = Vec<T::Helper>;
 }
 
-/// Safety: `V` is a [`FloatWithNonFinAlias`] type, then its safe to cast `BTreeMap<K, V>` to `BTreeMap<K, V::Helper>`.
-unsafe impl<K, V: FloatWithNonFinAlias> FloatWithNonFinAlias for BTreeMap<K, V> {
+/// Safety: If `T` is a [`FloatWithNonFinSerHelper`] type, then `BTreeMap<K,V>` can be cast to `BTreeMap<K,V::Helper>`
+unsafe impl<K, V: FloatWithNonFinSerHelper> FloatWithNonFinSerHelper for BTreeMap<K, V> {
     type Helper = BTreeMap<K, V::Helper>;
 }
 
-/// Safety: `V` is a [`FloatWithNonFinAlias`] type, then its safe to cast `HashMap<K, V>` to `HashMap<K, V::Helper>`.
-unsafe impl<K, V: FloatWithNonFinAlias, S> FloatWithNonFinAlias for HashMap<K, V, S> {
+/// Safety: If `T` is a [`FloatWithNonFinSerHelper`] type, then `HashMap<K,V>` can be cast to `HashMap<K,V::Helper>`
+unsafe impl<K, V: FloatWithNonFinSerHelper, S> FloatWithNonFinSerHelper for HashMap<K, V, S> {
     type Helper = HashMap<K, V::Helper, S>;
 }
 
 #[allow(private_bounds)]
 pub fn serialize_floats_with_non_finite<V, S>(value: &V, serializer: S) -> Result<S::Ok, S::Error>
 where
-    V: FloatWithNonFinAlias,
+    V: FloatWithNonFinSerHelper,
     V::Helper: serde::Serialize,
     S: serde::Serializer,
 {
-    V::cast_ref(value).serialize(serializer)
+    V::cast(value).serialize(serializer)
 }

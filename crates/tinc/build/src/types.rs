@@ -7,6 +7,7 @@ use tinc_pb_prost::http_endpoint_options;
 
 use crate::codegen::cel::{CelExpression, CelExpressions};
 use crate::codegen::utils::{field_ident_from_str, get_common_import_path, type_ident_from_str};
+use crate::path_set::PathSet;
 use crate::{ExternPaths, Mode};
 
 #[derive(Debug, Clone, PartialEq)]
@@ -458,16 +459,18 @@ pub(crate) struct ProtoTypeRegistry {
     enums: BTreeMap<ProtoPath, ProtoEnumType>,
     services: BTreeMap<ProtoPath, ProtoService>,
     extern_paths: ExternPaths,
+    floats_with_non_finite_vals: PathSet,
     _mode: Mode,
 }
 
 impl ProtoTypeRegistry {
-    pub(crate) fn new(mode: Mode, extern_paths: ExternPaths) -> Self {
+    pub(crate) fn new(mode: Mode, extern_paths: ExternPaths, floats_with_non_finite_vals: PathSet) -> Self {
         Self {
             messages: BTreeMap::new(),
             enums: BTreeMap::new(),
             services: BTreeMap::new(),
             extern_paths,
+            floats_with_non_finite_vals,
             _mode: mode,
         }
     }
@@ -517,5 +520,9 @@ impl ProtoTypeRegistry {
 
     pub(crate) fn has_extern(&self, path: &str) -> bool {
         self.extern_paths.contains(path)
+    }
+
+    pub(crate) fn support_non_finite_vals(&self, path: &ProtoPath) -> bool {
+        self.floats_with_non_finite_vals.contains(path)
     }
 }

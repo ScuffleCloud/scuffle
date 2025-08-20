@@ -7,11 +7,6 @@ publish = false
 [lints.rust]
 unexpected_cfgs = { level = "warn", check-cfg = ['cfg(coverage_nightly)'] }
 
-[features]
-default = ["non_finite_floats"]
-## Enables non-finite float values support (NaN, Infinity, -Infinity)
-non_finite_floats = ["tinc/non_finite_floats", "tinc-build/non_finite_floats"]
-
 [dev-dependencies]
 bytes = "1"
 http = "1"
@@ -22,13 +17,11 @@ prost-types = "0.14"
 rand = "0.9"
 serde = "1.0.215"
 serde_json = "1.0.115"
-tinc = { default-features = false, features = ["prost", "tonic"], path = ".." }
+tinc = { path = ".." }
 tokio = { features = ["full"], version = "1.4.2" }
 tonic = "0.14"
 tower = "0.5"
 
 [build-dependencies]
 prost-build = "0.14"
-tinc-build = { default-features = false, features = [
-  "prost",
-], path = "../build", version = "0.2.0" }
+tinc-build = { path = "../build", version = "0.2.0" }

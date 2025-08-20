@@ -16,7 +16,7 @@ expression: svc.openapi_schema()
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/floats.FloatResponse"
+                  "$ref": "#/components/schemas/floats.FloatMessageWithSomeNonFinite"
                 }
               }
             },
@@ -27,7 +27,7 @@ expression: svc.openapi_schema()
           "content": {
             "application/json": {
               "schema": {
-                "$ref": "#/components/schemas/floats.FloatRequest"
+                "$ref": "#/components/schemas/floats.FloatMessageWithNonFinite"
               }
             }
           }
@@ -37,12 +37,272 @@ expression: svc.openapi_schema()
   },
   "components": {
     "schemas": {
-      "floats.FloatRequest": {
+      "floats.FloatMessageWithNonFinite": {
         "properties": {
-          "arg_f32": {
-            "allOf": [
-              {}
+          "simple_f32": {
+            "oneOf": [
+              {
+                "type": "number"
+              },
+              {
+                "enum": [
+                  "Infinity",
+                  "-Infinity",
+                  "NaN"
+                ],
+                "type": "string"
+              }
+            ]
+          },
+          "simple_f64": {
+            "oneOf": [
+              {
+                "type": "number"
+              },
+              {
+                "enum": [
+                  "Infinity",
+                  "-Infinity",
+                  "NaN"
+                ],
+                "type": "string"
+              }
+            ]
+          },
+          "rep_f32": {
+            "items": {
+              "oneOf": [
+                {
+                  "type": "number"
+                },
+                {
+                  "enum": [
+                    "Infinity",
+                    "-Infinity",
+                    "NaN"
+                  ],
+                  "type": "string"
+                }
+              ]
+            },
+            "type": "array"
+          },
+          "rep_f64": {
+            "items": {
+              "oneOf": [
+                {
+                  "type": "number"
+                },
+                {
+                  "enum": [
+                    "Infinity",
+                    "-Infinity",
+                    "NaN"
+                  ],
+                  "type": "string"
+                }
+              ]
+            },
+            "type": "array"
+          },
+          "opt_f32": {
+            "oneOf": [
+              {
+                "type": "null"
+              },
+              {
+                "oneOf": [
+                  {
+                    "type": "number"
+                  },
+                  {
+                    "enum": [
+                      "Infinity",
+                      "-Infinity",
+                      "NaN"
+                    ],
+                    "type": "string"
+                  }
+                ]
+              }
+            ]
+          },
+          "opt_f64": {
+            "oneOf": [
+              {
+                "type": "null"
+              },
+              {
+                "oneOf": [
+                  {
+                    "type": "number"
+                  },
+                  {
+                    "enum": [
+                      "Infinity",
+                      "-Infinity",
+                      "NaN"
+                    ],
+                    "type": "string"
+                  }
+                ]
+              }
+            ]
+          },
+          "google_f32": {
+            "oneOf": [
+              {
+                "type": "null"
+              },
+              {
+                "oneOf": [
+                  {
+                    "type": "number"
+                  },
+                  {
+                    "enum": [
+                      "Infinity",
+                      "-Infinity",
+                      "NaN"
+                    ],
+                    "type": "string"
+                  }
+                ]
+              }
+            ]
+          },
+          "google_f64": {
+            "oneOf": [
+              {
+                "type": "null"
+              },
+              {
+                "oneOf": [
+                  {
+                    "type": "number"
+                  },
+                  {
+                    "enum": [
+                      "Infinity",
+                      "-Infinity",
+                      "NaN"
+                    ],
+                    "type": "string"
+                  }
+                ]
+              }
+            ]
+          },
+          "map_f32": {
+            "additionalProperties": {
+              "oneOf": [
+                {
+                  "type": "number"
+                },
+                {
+                  "enum": [
+                    "Infinity",
+                    "-Infinity",
+                    "NaN"
+                  ],
+                  "type": "string"
+                }
+              ]
+            },
+            "propertyNames": {
+              "type": "string"
+            },
+            "type": "object"
+          },
+          "map_f64": {
+            "additionalProperties": {
+              "oneOf": [
+                {
+                  "type": "number"
+                },
+                {
+                  "enum": [
+                    "Infinity",
+                    "-Infinity",
+                    "NaN"
+                  ],
+                  "type": "string"
+                }
+              ]
+            },
+            "propertyNames": {
+              "type": "string"
+            },
+            "type": "object"
+          },
+          "variant": {
+            "oneOf": [
+              {
+                "properties": {
+                  "oneof_f32": {
+                    "oneOf": [
+                      {
+                        "type": "number"
+                      },
+                      {
+                        "enum": [
+                          "Infinity",
+                          "-Infinity",
+                          "NaN"
+                        ],
+                        "type": "string"
+                      }
+                    ]
+                  }
+                },
+                "title": "oneof_f32",
+                "type": "object",
+                "unevaluatedProperties": false
+              },
+              {
+                "properties": {
+                  "oneof_f64": {
+                    "oneOf": [
+                      {
+                        "type": "number"
+                      },
+                      {
+                        "enum": [
+                          "Infinity",
+                          "-Infinity",
+                          "NaN"
+                        ],
+                        "type": "string"
+                      }
+                    ]
+                  }
+                },
+                "title": "oneof_f64",
+                "type": "object",
+                "unevaluatedProperties": false
+              }
             ],
+            "title": "floats.FloatMessageWithNonFinite.variant",
+            "type": "object",
+            "unevaluatedProperties": false
+          }
+        },
+        "required": [
+          "simple_f32",
+          "simple_f64",
+          "rep_f32",
+          "rep_f64",
+          "map_f32",
+          "map_f64",
+          "variant"
+        ],
+        "title": "floats.FloatMessageWithNonFinite",
+        "type": "object",
+        "unevaluatedProperties": false
+      },
+      "floats.FloatMessageWithSomeNonFinite": {
+        "properties": {
+          "f32_with_non_finite_serializer": {
             "oneOf": [
               {
                 "type": "number"
@@ -56,16 +316,14 @@ expression: svc.openapi_schema()
                 "type": "string"
               }
             ],
+            "description": "In build.rs some of these fields are marked as using\n serializer with NaN/Infinity support, some without",
             "not": {
               "enum": [
                 "NaN"
               ]
             }
           },
-          "arg_f64": {
-            "allOf": [
-              {}
-            ],
+          "f64_with_non_finite_serializer": {
             "oneOf": [
               {
                 "type": "number"
@@ -82,31 +340,26 @@ expression: svc.openapi_schema()
             "exclusiveMinimum": 0.0,
             "not": {
               "enum": [
+                "NaN",
                 "Infinity",
-                "-Infinity",
-                "NaN"
+                "-Infinity"
               ]
             }
+          },
+          "f32_with_primitive_serializer": {
+            "type": "number"
+          },
+          "f64_with_primitive_serializer": {
+            "type": "number"
           }
         },
         "required": [
-          "arg_f32",
-          "arg_f64"
+          "f32_with_non_finite_serializer",
+          "f64_with_non_finite_serializer",
+          "f32_with_primitive_serializer",
+          "f64_with_primitive_serializer"
         ],
-        "title": "floats.FloatRequest",
-        "type": "object",
-        "unevaluatedProperties": false
-      },
-      "floats.FloatResponse": {
-        "properties": {
-          "param": {
-            "type": "string"
-          }
-        },
-        "required": [
-          "param"
-        ],
-        "title": "floats.FloatResponse",
+        "title": "floats.FloatMessageWithSomeNonFinite",
         "type": "object",
         "unevaluatedProperties": false
       }

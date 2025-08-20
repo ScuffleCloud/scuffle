@@ -10,15 +10,24 @@ struct Svc {}
 
 #[tonic::async_trait]
 impl pb::float_service_server::FloatService for Svc {
-    async fn float(&self, _: tonic::Request<pb::FloatRequest>) -> tonic::Result<tonic::Response<pb::FloatResponse>> {
-        Ok(pb::FloatResponse { param: "OK".to_string() }.into())
+    async fn float(
+        &self,
+        _: tonic::Request<pb::FloatMessageWithNonFinite>,
+    ) -> tonic::Result<tonic::Response<pb::FloatMessageWithSomeNonFinite>> {
+        Ok(pb::FloatMessageWithSomeNonFinite {
+            f32_with_non_finite_serializer: 0.0,
+            f64_with_non_finite_serializer: 0.0,
+            f32_with_primitive_serializer: 0.0,
+            f64_with_primitive_serializer: 0.0,
+        }
+        .into())
     }
 }
 
 #[test]
-fn test_parse_simple() {
-    let mut message = pb::FloatMessage::default();
-    let mut tracker = <pb::FloatMessage as TrackerFor>::Tracker::default();
+fn test_parse_floats_message_with_regular_floats_only() {
+    let mut message = pb::FloatMessageWithNonFinite::default();
+    let mut tracker = <pb::FloatMessageWithNonFinite as TrackerFor>::Tracker::default();
     let mut state = TrackerSharedState::default();
 
     let mut de = serde_json::Deserializer::from_str(
@@ -49,7 +58,7 @@ fn test_parse_simple() {
     }
     ");
     insta::assert_debug_snapshot!(message, @r#"
-    FloatMessage {
+    FloatMessageWithNonFinite {
         simple_f32: 0.5,
         simple_f64: 0.25,
         rep_f32: [
@@ -82,7 +91,7 @@ fn test_parse_simple() {
     "#);
     insta::assert_debug_snapshot!(tracker, @r#"
     StructTracker(
-        FloatMessageTracker {
+        FloatMessageWithNonFiniteTracker {
             simple_f32: Some(
                 FloatWithNonFinTracker<f32>,
             ),
@@ -172,9 +181,9 @@ fn test_parse_simple() {
 }
 
 #[test]
-fn test_parse_with_special_values() {
-    let mut message = pb::FloatMessage::default();
-    let mut tracker = <pb::FloatMessage as TrackerFor>::Tracker::default();
+fn test_parse_floats_message_with_special_values() {
+    let mut message = pb::FloatMessageWithNonFinite::default();
+    let mut tracker = <pb::FloatMessageWithNonFinite as TrackerFor>::Tracker::default();
     let mut state = TrackerSharedState::default();
 
     let mut de = serde_json::Deserializer::from_str(
@@ -206,7 +215,7 @@ fn test_parse_with_special_values() {
     }
     ");
     insta::assert_debug_snapshot!(message, @r#"
-    FloatMessage {
+    FloatMessageWithNonFinite {
         simple_f32: NaN,
         simple_f64: inf,
         rep_f32: [
@@ -241,7 +250,7 @@ fn test_parse_with_special_values() {
     "#);
     insta::assert_debug_snapshot!(tracker, @r#"
     StructTracker(
-        FloatMessageTracker {
+        FloatMessageWithNonFiniteTracker {
             simple_f32: Some(
                 FloatWithNonFinTracker<f32>,
             ),
@@ -333,6 +342,53 @@ fn test_parse_with_special_values() {
         "oneof_f64": "NaN"
       }
     }
+    "#);
+}
+
+#[test]
+fn test_check_floats_message_mixed_serializers() {
+    let mut message = pb::FloatMessageWithSomeNonFinite::default();
+    let mut tracker = <pb::FloatMessageWithSomeNonFinite as TrackerFor>::Tracker::default();
+    let mut state = TrackerSharedState::default();
+
+    let mut de = serde_json::Deserializer::from_str(
+        r#"{
+        "f32_with_non_finite_serializer": 0.5,
+        "f64_with_non_finite_serializer": 0.25,
+        "f32_with_primitive_serializer": 2.0,
+        "f64_with_primitive_serializer": 4.0
+    }"#,
+    );
+
+    deserialize_tracker_target(&mut state, &mut de, &mut tracker, &mut message).unwrap();
+    state.in_scope(|| {
+        TincValidate::validate(&message, Some(&tracker)).unwrap();
+    });
+
+    insta::assert_debug_snapshot!(state, @r"
+    TrackerSharedState {
+        fail_fast: false,
+        errors: [],
+    }
+    ");
+
+    insta::assert_debug_snapshot!(tracker, @r#"
+    StructTracker(
+        FloatMessageWithSomeNonFiniteTracker {
+            f32_with_non_finite_serializer: Some(
+                FloatWithNonFinTracker<f32>,
+            ),
+            f64_with_non_finite_serializer: Some(
+                FloatWithNonFinTracker<f64>,
+            ),
+            f32_with_primitive_serializer: Some(
+                PrimitiveTracker<f32>,
+            ),
+            f64_with_primitive_serializer: Some(
+                PrimitiveTracker<f64>,
+            ),
+        },
+    )
     "#);
 }
 

@@ -230,13 +230,15 @@ fn handle_oneof(
                 }
             }
             ProtoValueType::Float | ProtoValueType::Double => {
-                #[cfg(feature = "non_finite_floats")]
-                {
+                if registry.support_non_finite_vals(&field.full_name) {
                     if field.options.visibility.has_output() {
                         oneof_config.field_attribute(
                             field_name,
                             parse_quote!(#[serde(serialize_with = "::tinc::__private::serialize_floats_with_non_finite")]),
                         );
+                    }
+                    if field.options.visibility.has_input() {
+                        oneof_config.field_attribute(field_name, parse_quote!(#[tinc(with_non_finite_values)]));
                     }
                 }
             }
@@ -461,13 +463,15 @@ fn handle_message_field(
             }
         }
         Some(ProtoValueType::Float | ProtoValueType::Double) => {
-            #[cfg(feature = "non_finite_floats")]
-            {
+            if registry.support_non_finite_vals(&field.full_name) {
                 if field.options.visibility.has_output() {
                     message_config.field_attribute(
                         field_name,
                         parse_quote!(#[serde(serialize_with = "::tinc::__private::serialize_floats_with_non_finite")]),
                     );
+                }
+                if field.options.visibility.has_input() {
+                    message_config.field_attribute(field_name, parse_quote!(#[tinc(with_non_finite_values)]));
                 }
             }
         }

@@ -24,7 +24,6 @@ The code generator for [`tinc`](https://crates.io/crates/tinc).
 
 * **`prost`** *(enabled by default)* —  Enables prost codegen
 * **`docs`** —  Enables documentation of feature flags
-* **`non_finite_floats`** — Enables non-finite float values support (NaN, Infinity, -Infinity)
 
 ### Usage
 

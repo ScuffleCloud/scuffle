@@ -277,7 +277,7 @@ fn test_float_expressions_invalid() {
             },
             TrackedError {
                 kind: InvalidField {
-                    message: "value must not be of nan/infinity kind",
+                    message: "value must not be of infinity kind",
                 },
                 fatal: true,
                 path: "typical_values_only",
@@ -400,7 +400,7 @@ fn test_double_expressions_invalid() {
             },
             TrackedError {
                 kind: InvalidField {
-                    message: "value must not be of nan/infinity kind",
+                    message: "value must not be NaN",
                 },
                 fatal: true,
                 path: "typical_values_only",

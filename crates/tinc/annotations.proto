@@ -237,12 +237,6 @@ message FloatConstraints {
     expression: "!this || !input.isInf()"
     jsonschemas: 'this ? { "not": { "enum": ["Infinity", "-Infinity"] }} : {}'
   }];
-  // If true, all special values: NaN or pos/neg Infinity are not allowed.
-  optional bool disallow_nan_and_infinity = 11 [(predefined).cel = {
-    message: "value must not be of nan/infinity kind"
-    expression: "!this || !(input.isInf() || input.isNaN())"
-    jsonschemas: 'this ? { "not": { "enum": ["Infinity", "-Infinity", "NaN"] }} : {}'
-  }];
 }
 
 message DoubleConstraints {
@@ -305,12 +299,6 @@ message DoubleConstraints {
     message: "value must not be of infinity kind"
     expression: "!this || !input.isInf()"
     jsonschemas: 'this ? { "not": { "enum": ["Infinity", "-Infinity"] }} : {}'
-  }];
-  // If true, all special values: NaN or pos/neg Infinity are not allowed.
-  optional bool disallow_nan_and_infinity = 11 [(predefined).cel = {
-    message: "value must not be of nan/infinity kind"
-    expression: "!this || !(input.isInf() || input.isNaN())"
-    jsonschemas: 'this ? { "not": { "enum": ["Infinity", "-Infinity", "NaN"] }} : {}'
   }];
 }
 

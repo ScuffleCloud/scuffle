@@ -19,8 +19,6 @@ default = ["prost"]
 prost = ["dep:prost", "dep:prost-reflect", "dep:prost-build", "dep:prost-types"]
 ## Enables documentation of feature flags
 docs = ["dep:document-features"]
-## Enables non-finite float values support (NaN, Infinity, -Infinity)
-non_finite_floats = []
 
 [dependencies]
 anyhow = "1.0.79"

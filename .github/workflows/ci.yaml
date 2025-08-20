@@ -24,7 +24,7 @@ jobs:
     name: Prep
     runs-on: ubuntu-24.04
     outputs:
-      prep: ${{ fromJson(steps.compute.outputs.prep) }}
+      prep: ${{ steps.compute.outputs.prep }}
     steps:
       - uses: actions/checkout@v4
 
@@ -43,38 +43,38 @@ jobs:
 
   check_vendor:
     needs: [prep]
-    if: ${{ needs.prep.outputs.prep['check_vendor'] != null }}
+    if: ${{ fromJson(needs.prep.outputs.prep).check_vendor != null }}
     uses: ./.github/workflows/ci-check-vendor.yaml
     secrets:
       build_buddy_token: ${{ secrets.BUILD_BUDDY_TOKEN }}
 
   test:
     needs: [prep]
-    if: ${{ needs.prep.outputs.prep['test'] != null }}
+    if: ${{ fromJson(needs.prep.outputs.prep).test != null }}
     uses: ./.github/workflows/ci-test.yaml
     with:
-      commit_sha: ${{ needs.prep.outputs.prep['test']['commit_sha'] }}
-      pr_number: ${{ needs.prep.outputs.prep['test']['pr_number'] }}
-      matrix: ${{ toJson(needs.prep.outputs.prep['test']['matrix']) }}
+      commit_sha: ${{ fromJson(needs.prep.outputs.prep).test.commit_sha }}
+      pr_number: ${{ fromJson(needs.prep.outputs.prep).test.pr_number }}
+      matrix: ${{ toJson(fromJson(needs.prep.outputs.prep).test.matrix) }}
     secrets:
       codecov_token: ${{ secrets.CODECOV_TOKEN }}
       build_buddy_token: ${{ secrets.BUILD_BUDDY_TOKEN }}
 
   grind:
     needs: [prep]
-    if: ${{ needs.prep.outputs.prep['grind'] != null }}
+    if: ${{ fromJson(needs.prep.outputs.prep).grind != null }}
     uses: ./.github/workflows/ci-grind.yaml
     with:
-      commit_sha: ${{ needs.prep.outputs.prep['grind']['commit_sha'] }}
-      pr_number: ${{ needs.prep.outputs.prep['grind']['pr_number'] }}
-      matrix: ${{ toJson(needs.prep.outputs.prep['grind']['matrix']) }}
+      commit_sha: ${{ fromJson(needs.prep.outputs.prep).grind.commit_sha }}
+      pr_number: ${{ fromJson(needs.prep.outputs.prep).grind.pr_number }}
+      matrix: ${{ toJson(fromJson(needs.prep.outputs.prep).grind.matrix) }}
     secrets:
       codecov_token: ${{ secrets.CODECOV_TOKEN }}
       build_buddy_token: ${{ secrets.BUILD_BUDDY_TOKEN }}
 
   rustdoc:
     needs: [prep]
-    if: ${{ needs.prep.outputs.prep['rustdoc'] != null }}
+    if: ${{ fromJson(needs.prep.outputs.prep).rustdoc != null }}
     uses: ./.github/workflows/ci-rustdoc.yaml
     secrets:
       build_buddy_token: ${{ secrets.BUILD_BUDDY_TOKEN }}

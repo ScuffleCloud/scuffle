@@ -38,4 +38,5 @@ jobs:
         uses: actions/cache/save@v4
         with:
           path: ~/.cache/bazel-repo
-          key: bazel-repo-${{ runner.os }}-${{ runner.arch }}-${{ hashFiles('MODULE.bazel.lock') }}
+          key: ${{ steps.bazel.outputs.cache-key }}
+

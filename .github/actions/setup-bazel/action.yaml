@@ -21,7 +21,6 @@ runs:
           build --jobs=250
           common --remote_max_connections=500
           build --nokeep_going
-          common --config=ci
           common --announce_rc
           common --experimental_async_execution
           common --disk_cache=""

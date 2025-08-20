@@ -202,7 +202,7 @@
   "moduleExtensions": {
     "//vendor:cargo_ext.bzl%bindeps": {
       "general": {
-        "bzlTransitiveDigest": "vjWrQrrSbqqzFHFuOhAkGTjSVHo8WsQw9tBgeajdpuM=",
+        "bzlTransitiveDigest": "PlF62Had0oXSFYTPvk9kjKJTnFrU6V3DkuYuBLx/bdA=",
         "usagesDigest": "0vyNdgUB6Py8EFEYeVm1fABbu9FAMVvr905hmQzVjfU=",
         "recordedFileInputs": {},
         "recordedDirentsInputs": {},
@@ -7657,7 +7657,7 @@
     },
     "//vendor:cargo_ext.bzl%cargo_vendor": {
       "general": {
-        "bzlTransitiveDigest": "vjWrQrrSbqqzFHFuOhAkGTjSVHo8WsQw9tBgeajdpuM=",
+        "bzlTransitiveDigest": "PlF62Had0oXSFYTPvk9kjKJTnFrU6V3DkuYuBLx/bdA=",
         "usagesDigest": "mtR+K4/VVAmhgoN1cG7MXxv6mAD1vfxRZ8SSM66EtxE=",
         "recordedFileInputs": {},
         "recordedDirentsInputs": {},
@@ -11940,13 +11940,16 @@
               "build_file": "@@//vendor/cargo:BUILD.rustversion-1.0.22.bazel"
             }
           },
-          "cargo_vendor__rusty_ffmpeg-0.16.3-ffmpeg.7.1": {
-            "repoRuleId": "@@bazel_tools//tools/build_defs/repo:git.bzl%git_repository",
+          "cargo_vendor__rusty_ffmpeg-0.16.5-ffmpeg.7.1": {
+            "repoRuleId": "@@bazel_tools//tools/build_defs/repo:http.bzl%http_archive",
             "attributes": {
-              "commit": "267c225b5d0fb7ccae9c66139f7fb517a212dc6b",
-              "init_submodules": true,
-              "remote": "https://github.com/TroyKomodo/rusty_ffmpeg.git",
-              "build_file": "@@//vendor/cargo:BUILD.rusty_ffmpeg-0.16.3+ffmpeg.7.1.bazel"
+              "sha256": "0b371deca3d03b0b82510dccb72ad4d54d37a1f638e298f29da87063d4d525e5",
+              "type": "tar.gz",
+              "urls": [
+                "https://static.crates.io/crates/rusty_ffmpeg/0.16.5+ffmpeg.7.1/download"
+              ],
+              "strip_prefix": "rusty_ffmpeg-0.16.5+ffmpeg.7.1",
+              "build_file": "@@//vendor/cargo:BUILD.rusty_ffmpeg-0.16.5+ffmpeg.7.1.bazel"
             }
           },
           "cargo_vendor__ryu-1.0.20": {
@@ -14226,7 +14229,7 @@
             "cargo_vendor__rustdoc-types-0.53.0",
             "cargo_vendor__rustfix-0.9.1",
             "cargo_vendor__rustls-0.23.31",
-            "cargo_vendor__rusty_ffmpeg-0.16.3-ffmpeg.7.1",
+            "cargo_vendor__rusty_ffmpeg-0.16.5-ffmpeg.7.1",
             "cargo_vendor__semver-1.0.26",
             "cargo_vendor__serde-1.0.219",
             "cargo_vendor__serde_derive-1.0.219",

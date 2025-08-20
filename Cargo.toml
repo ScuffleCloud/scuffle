@@ -83,9 +83,6 @@ inherits = "release"
 debug = true
 
 [patch.crates-io]
-# support for dynamic linking ffmpeg
-# https://github.com/CCExtractor/rusty_ffmpeg/pull/139
-rusty_ffmpeg = { git = "https://github.com/TroyKomodo/rusty_ffmpeg.git", rev = "267c225b5d0fb7ccae9c66139f7fb517a212dc6b"}
 # removal of ring forced dependency when using http3 feature.
 # https://github.com/seanmonstar/reqwest/pull/2796
 reqwest = { git = "https://github.com/TroyKomodo/reqwest.git", rev = "1b659fc2ec02363a04dcdc08d1989560ed5a5e7f" }

@@ -4018,8 +4018,9 @@ checksum = "b39cdef0fa800fc44525c84ccb54a029961a8215f9619753635a9c0d2538d46d"
 
 [[package]]
 name = "rusty_ffmpeg"
-version = "0.16.3+ffmpeg.7.1"
-source = "git+https://github.com/TroyKomodo/rusty_ffmpeg.git?rev=267c225b5d0fb7ccae9c66139f7fb517a212dc6b#267c225b5d0fb7ccae9c66139f7fb517a212dc6b"
+version = "0.16.5+ffmpeg.7.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "0b371deca3d03b0b82510dccb72ad4d54d37a1f638e298f29da87063d4d525e5"
 dependencies = [
  "bindgen 0.71.1",
  "camino",

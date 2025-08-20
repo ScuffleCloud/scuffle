@@ -2,6 +2,9 @@ name: Setup bazel
 inputs:
   build_buddy_token:
     required: true
+outputs:
+  cache-hit:
+    value: ${{ steps.restore.outputs.cache-hit }}
 runs:
   using: "composite"
   steps:
@@ -27,7 +30,8 @@ runs:
           common --repository_cache=~/.cache/bazel-repo
 
     - name: Cache repository
-      uses: actions/cache@v4
+      uses: actions/cache/restore@v4
+      id: restore
       with:
         path: ~/.cache/bazel-repo
         key: bazel-repo-${{ runner.os }}-${{ runner.arch }}-${{ hashFiles('MODULE.bazel.lock') }}

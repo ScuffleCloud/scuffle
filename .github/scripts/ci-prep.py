@@ -95,6 +95,10 @@ class Grind:
 
 
 @dataclass
+class Fetch:
+    matrix: list[MatrixEntry]
+
+@dataclass
 class CheckVendor:
     pass
 
@@ -106,6 +110,7 @@ class Jobs:
     test: Optional[Test]
     grind: Optional[Grind]
     check_vendor: Optional[CheckVendor]
+    fetch: Optional[Fetch]
 
 
 def deploy_docs() -> bool:
@@ -161,6 +166,14 @@ def create_grind() -> Optional[Grind]:
 def create_check_vendor() -> Optional[CheckVendor]:
     return CheckVendor()
 
+def create_fetch() -> Optional[Test]:
+    matrix = [MatrixEntry(runner=LINUX_X86_64, os="linux", arch="x86_64")]
+    if is_brawl() or is_dispatch_or_cron():
+        matrix.append(MatrixEntry(runner=LINUX_ARM64, os="linux", arch="aarch64"))
+
+    return Fetch(
+        matrix=matrix,
+    )
 
 def create_jobs() -> Jobs:
     return Jobs(
@@ -169,6 +182,7 @@ def create_jobs() -> Jobs:
         docusaurus=create_docusaurus(),
         grind=create_grind(),
         test=create_test(),
+        fetch=create_fetch(),
     )
 
 

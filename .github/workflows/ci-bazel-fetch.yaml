@@ -1,0 +1,37 @@
+name: Test
+
+on:
+  workflow_call:
+    inputs:
+      matrix:
+        type: string
+
+defaults:
+  run:
+    shell: bash
+
+jobs:
+  test:
+    name: ${{ matrix.os }}-${{ matrix.arch }}
+    strategy:
+      matrix:
+        include: ${{ fromJson(inputs.matrix) }}
+    runs-on: ${{ matrix.runner }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: ./.github/actions/setup-bazel
+        id: bazel
+        with:
+          build_buddy_token: ${{ secrets.build_buddy_token }}
+
+      - name: Run
+        if: ${{ steps.bazel.outputs.cache-hit != 'true' }}
+        run: bazel fetch //...
+
+      - name: Cache repository
+        if: ${{ steps.bazel.outputs.cache-hit != 'true' }}
+        uses: actions/cache/save@v4
+        with:
+          path: ~/.cache/bazel-repo
+          key: bazel-repo-${{ runner.os }}-${{ runner.arch }}-${{ hashFiles('MODULE.bazel.lock') }}

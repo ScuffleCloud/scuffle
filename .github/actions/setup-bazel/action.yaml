@@ -1,0 +1,17 @@
+name: Setup bazel
+inputs:
+  build_buddy_token:
+    required: true
+runs:
+  using: "composite"
+  steps:
+    - uses: bazel-contrib/setup-bazel@0.15.0
+      with:
+        bazelisk-cache: true
+        repository-cache: true
+        bazelrc: |
+          build --config=ci
+          build --remote_header=x-buildbuddy-api-key=${{ inputs.build_buddy_token }}
+
+    - name: Setup path
+      run: echo "$GITHUB_WORKSPACE/tools/scripts" >> $GITHUB_PATH

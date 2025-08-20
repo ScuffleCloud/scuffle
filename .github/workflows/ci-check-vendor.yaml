@@ -1,0 +1,28 @@
+name: Check Vendor
+
+on:
+  workflow_call:
+    secrets:
+      build_buddy_token:
+        required: true
+
+defaults:
+  run:
+    shell: bash
+
+jobs:
+  check_vendor:
+    name: Check Vendor
+    runs-on: ubicloud-standard-8-ubuntu-2404
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: ./.github/actions/setup-bazel
+        with:
+          build_buddy_token: ${{ secrets.build_buddy_token }}
+
+      - name: Run Vendor
+        run: just vendor
+
+      - name: Exit on change
+        run: git diff --exit-code

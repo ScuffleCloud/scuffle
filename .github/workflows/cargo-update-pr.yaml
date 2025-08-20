@@ -5,9 +5,6 @@ on:
   schedule:
     - cron: "0 0 * * 0" # Every Sunday at midnight
 
-env:
-  RUST_TOOLCHAIN: nightly
-
 jobs:
   cargo-update:
     name: Cargo Update PR
@@ -20,18 +17,12 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Setup Rust
-        uses: ./.github/actions/setup-rust
-        with:
-          toolchain: ${{ env.RUST_TOOLCHAIN }}
-          tools: just,cargo-hakari
-
       - name: Update Cargo.lock
         shell: bash
         run: |
           set -eo pipefail
-          cargo +${{ env.RUST_TOOLCHAIN }} update --verbose 2>&1 | tee /tmp/cargo-update.log
-          just workspace-hack
+          cargo update --verbose 2>&1 | tee /tmp/cargo-update.log
+          just vendor
 
           echo "## Cargo update log" > /tmp/pr-body.txt
           cat /tmp/cargo-update.log | .github/scripts/cargo-update-table.sh >> /tmp/pr-body.txt

@@ -142,6 +142,16 @@ common --disk_cache=~/.cache/scuffle/bazel/disk
 common --experimental_repository_cache_hardlinks
 
 ###############################################################################
+## CI configuration
+###############################################################################
+build:ci --bes_results_url=https://scuffle.buildbuddy.io/invocation/
+build:ci --bes_backend=grpcs://scuffle.buildbuddy.io
+build:ci --remote_cache=grpcs://scuffle.buildbuddy.io
+build:ci --remote_timeout=10m
+build:ci --build_metadata=ROLE=CI
+build:ci --build_metadata=VISIBILITY=PUBLIC
+
+###############################################################################
 ## Custom user flags
 ##
 ## This should always be the last thing in the `.bazelrc` file to ensure

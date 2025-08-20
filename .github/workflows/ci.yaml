@@ -15,6 +15,9 @@ concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
 
+env:
+  SHA: ${{ github.event.pull_request.head.sha || github.sha }}
+
 defaults:
   run:
     shell: bash
@@ -27,11 +30,6 @@ jobs:
       prep: ${{ steps.compute.outputs.prep }}
     steps:
       - uses: actions/checkout@v4
-
-      - name: Switch to Branch
-        run: |
-          set -xeo pipefail
-          git switch -C ${{ github.ref_name }}
 
       - name: Run prep
         id: compute

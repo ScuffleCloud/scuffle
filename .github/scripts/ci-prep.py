@@ -129,11 +129,7 @@ def create_docusaurus() -> Optional[Docusaurus]:
 
 
 def commit_sha() -> str:
-    return (
-        subprocess.check_output(["git", "log", "-n", "1", "--pretty=format:%H"])
-        .decode()
-        .strip()
-    )
+    return os.environ["SHA"]
 
 
 def create_test() -> Optional[Test]:

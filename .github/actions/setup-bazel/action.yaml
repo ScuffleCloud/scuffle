@@ -18,7 +18,7 @@ runs:
           build --build_metadata=VISIBILITY=PUBLIC
           build --remote_header=x-buildbuddy-api-key=${{ inputs.build_buddy_token }}
           build --isatty=1
-          build --color=always
+          build --color=yes
           build --jobs=500
           build --nokeep_going
           common --config=ci

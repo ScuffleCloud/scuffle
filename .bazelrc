@@ -139,7 +139,7 @@ common --experimental_remote_cache_compression_threshold=1000
 ## Output bases configuration
 ###############################################################################
 common --disk_cache=~/.cache/scuffle/bazel/disk
-common:ci --nodisk_cache
+common:ci --disk_cache=""
 common --experimental_repository_cache_hardlinks
 
 ###############################################################################

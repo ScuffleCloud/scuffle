@@ -23,7 +23,7 @@ build --incompatible_disallow_empty_glob=false
 build --action_env BAZEL_DO_NOT_DETECT_CPP_TOOLCHAIN=1
 
 # This flag improves local execution throughput by executing more actions in parallel.
-build --jobs=18
+build --jobs=75
 
 # Dont stop on the first erorr
 build --keep_going
@@ -131,6 +131,8 @@ common --@rules_rust//rust/settings:incompatible_do_not_transform_sources
 
 # Enable remote cache compression
 common --remote_cache_compression
+common --remote_download_toplevel
+common --experimental_remote_merkle_tree_cache
 
 # Disable cache on smaller files
 common --experimental_remote_cache_compression_threshold=1000
@@ -139,8 +141,16 @@ common --experimental_remote_cache_compression_threshold=1000
 ## Output bases configuration
 ###############################################################################
 common --disk_cache=~/.cache/scuffle/bazel/disk
-common:ci --disk_cache=""
 common --experimental_repository_cache_hardlinks
+
+###############################################################################
+## CI configuration
+###############################################################################
+common:ci --disk_cache=""
+common:ci --experimental_async_execution
+common:ci --remote_max_connections=500
+build:ci --nokeep_going
+build:ci --jobs=500
 
 ###############################################################################
 ## Custom user flags

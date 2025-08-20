@@ -223,7 +223,7 @@ use_repo(
     "cargo_vendor__rustfix-0.9.1",
     "cargo_vendor__rustls-0.23.31",
     "cargo_vendor__rustls-pemfile-2.2.0",
-    "cargo_vendor__rusty_ffmpeg-0.16.3-ffmpeg.7.1",
+    "cargo_vendor__rusty_ffmpeg-0.16.5-ffmpeg.7.1",
     "cargo_vendor__semver-1.0.26",
     "cargo_vendor__serde-1.0.219",
     "cargo_vendor__serde_derive-1.0.219",

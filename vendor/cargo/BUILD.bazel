@@ -1150,14 +1150,14 @@ transition_alias_opt(
 )
 
 transition_alias_opt(
-    name = "rusty_ffmpeg-0.16.3+ffmpeg.7.1",
-    actual = "@cargo_vendor__rusty_ffmpeg-0.16.3-ffmpeg.7.1//:rusty_ffmpeg",
+    name = "rusty_ffmpeg-0.16.5+ffmpeg.7.1",
+    actual = "@cargo_vendor__rusty_ffmpeg-0.16.5-ffmpeg.7.1//:rusty_ffmpeg",
     tags = ["manual"],
 )
 
 transition_alias_opt(
     name = "rusty_ffmpeg",
-    actual = "@cargo_vendor__rusty_ffmpeg-0.16.3-ffmpeg.7.1//:rusty_ffmpeg",
+    actual = "@cargo_vendor__rusty_ffmpeg-0.16.5-ffmpeg.7.1//:rusty_ffmpeg",
     tags = ["manual"],
 )
 

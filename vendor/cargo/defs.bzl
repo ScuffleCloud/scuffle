@@ -759,7 +759,7 @@ _NORMAL_DEPENDENCIES = {
                 "bon": Label("@cargo_vendor//:bon-3.7.0"),
                 "libc": Label("@cargo_vendor//:libc-0.2.175"),
                 "rand": Label("@cargo_vendor//:rand-0.9.2"),
-                "rusty_ffmpeg": Label("@cargo_vendor//:rusty_ffmpeg-0.16.3+ffmpeg.7.1"),
+                "rusty_ffmpeg": Label("@cargo_vendor//:rusty_ffmpeg-0.16.5+ffmpeg.7.1"),
                 "thiserror": Label("@cargo_vendor//:thiserror-2.0.15"),
                 "va_list": Label("@cargo_vendor//:va_list-0.2.1"),
             },
@@ -7489,12 +7489,13 @@ def crate_repositories():
     )
 
     maybe(
-        new_git_repository,
-        name = "cargo_vendor__rusty_ffmpeg-0.16.3-ffmpeg.7.1",
-        commit = "267c225b5d0fb7ccae9c66139f7fb517a212dc6b",
-        init_submodules = True,
-        remote = "https://github.com/TroyKomodo/rusty_ffmpeg.git",
-        build_file = Label("//vendor/cargo:BUILD.rusty_ffmpeg-0.16.3+ffmpeg.7.1.bazel"),
+        http_archive,
+        name = "cargo_vendor__rusty_ffmpeg-0.16.5-ffmpeg.7.1",
+        sha256 = "0b371deca3d03b0b82510dccb72ad4d54d37a1f638e298f29da87063d4d525e5",
+        type = "tar.gz",
+        urls = ["https://static.crates.io/crates/rusty_ffmpeg/0.16.5+ffmpeg.7.1/download"],
+        strip_prefix = "rusty_ffmpeg-0.16.5+ffmpeg.7.1",
+        build_file = Label("//vendor/cargo:BUILD.rusty_ffmpeg-0.16.5+ffmpeg.7.1.bazel"),
     )
 
     maybe(
@@ -9407,7 +9408,7 @@ def crate_repositories():
         struct(repo = "cargo_vendor__rustdoc-types-0.53.0", is_dev_dep = False),
         struct(repo = "cargo_vendor__rustfix-0.9.1", is_dev_dep = False),
         struct(repo = "cargo_vendor__rustls-0.23.31", is_dev_dep = False),
-        struct(repo = "cargo_vendor__rusty_ffmpeg-0.16.3-ffmpeg.7.1", is_dev_dep = False),
+        struct(repo = "cargo_vendor__rusty_ffmpeg-0.16.5-ffmpeg.7.1", is_dev_dep = False),
         struct(repo = "cargo_vendor__semver-1.0.26", is_dev_dep = False),
         struct(repo = "cargo_vendor__serde-1.0.219", is_dev_dep = False),
         struct(repo = "cargo_vendor__serde_derive-1.0.219", is_dev_dep = False),

@@ -46,15 +46,6 @@ jobs:
     secrets:
       build_buddy_token: ${{ secrets.BUILD_BUDDY_TOKEN }}
 
-  bazel_fetch:
-    needs: [prep]
-    if: ${{ fromJson(needs.prep.outputs.prep).fetch != null }}
-    uses: ./.github/workflows/ci-bazel-fetch.yaml
-    with:
-      matrix: ${{ toJson(fromJson(needs.prep.outputs.prep).fetch.matrix) }}
-    secrets:
-      build_buddy_token: ${{ secrets.BUILD_BUDDY_TOKEN }}
-
   test:
     needs: [prep]
     if: ${{ fromJson(needs.prep.outputs.prep).test != null }}

@@ -64,7 +64,7 @@ rust_library(
     }),
     version = "3.3.0",
     deps = [
-        "@cargo_vendor__bitflags-2.9.1//:bitflags",
+        "@cargo_vendor__bitflags-2.9.2//:bitflags",
         "@cargo_vendor__core-foundation-0.10.1//:core_foundation",
         "@cargo_vendor__core-foundation-sys-0.8.7//:core_foundation_sys",
         "@cargo_vendor__libc-0.2.175//:libc",

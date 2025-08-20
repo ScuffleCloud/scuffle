@@ -66,7 +66,7 @@ rust_library(
     }),
     version = "0.6.6",
     deps = [
-        "@cargo_vendor__bitflags-2.9.1//:bitflags",
+        "@cargo_vendor__bitflags-2.9.2//:bitflags",
         "@cargo_vendor__bytes-1.10.1//:bytes",
         "@cargo_vendor__futures-util-0.3.31//:futures_util",
         "@cargo_vendor__http-1.3.1//:http",

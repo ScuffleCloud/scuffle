@@ -60,8 +60,8 @@ rust_proc_macro(
     }),
     version = "0.59.1",
     deps = [
-        "@cargo_vendor__proc-macro2-1.0.97//:proc_macro2",
+        "@cargo_vendor__proc-macro2-1.0.101//:proc_macro2",
         "@cargo_vendor__quote-1.0.40//:quote",
-        "@cargo_vendor__syn-2.0.105//:syn",
+        "@cargo_vendor__syn-2.0.106//:syn",
     ],
 )

@@ -17,7 +17,7 @@ cargo_toml_env_vars(
 )
 
 rust_library(
-    name = "ini",
+    name = "darling_core",
     srcs = glob(
         include = ["**/*.rs"],
         allow_empty = True,
@@ -35,10 +35,11 @@ rust_library(
         ],
     ),
     crate_features = [
-        "default",
+        "strsim",
+        "suggestions",
     ],
     crate_root = "src/lib.rs",
-    edition = "2018",
+    edition = "2021",
     rustc_env_files = [
         ":cargo_toml_env_vars",
     ],
@@ -47,7 +48,7 @@ rust_library(
     ],
     tags = [
         "cargo-bazel",
-        "crate-name=rust-ini",
+        "crate-name=darling_core",
         "manual",
         "noclippy",
         "norustfmt",
@@ -64,7 +65,11 @@ rust_library(
     }),
     version = "0.21.2",
     deps = [
-        "@cargo_vendor__cfg-if-1.0.1//:cfg_if",
-        "@cargo_vendor__ordered-multimap-0.7.3//:ordered_multimap",
+        "@cargo_vendor__fnv-1.0.7//:fnv",
+        "@cargo_vendor__ident_case-1.0.1//:ident_case",
+        "@cargo_vendor__proc-macro2-1.0.101//:proc_macro2",
+        "@cargo_vendor__quote-1.0.40//:quote",
+        "@cargo_vendor__strsim-0.11.1//:strsim",
+        "@cargo_vendor__syn-2.0.106//:syn",
     ],
 )

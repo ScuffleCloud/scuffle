@@ -82,14 +82,14 @@ transition_alias_opt(
 )
 
 transition_alias_opt(
-    name = "bitflags-2.9.1",
-    actual = "@cargo_vendor__bitflags-2.9.1//:bitflags",
+    name = "bitflags-2.9.2",
+    actual = "@cargo_vendor__bitflags-2.9.2//:bitflags",
     tags = ["manual"],
 )
 
 transition_alias_opt(
     name = "bitflags",
-    actual = "@cargo_vendor__bitflags-2.9.1//:bitflags",
+    actual = "@cargo_vendor__bitflags-2.9.2//:bitflags",
     tags = ["manual"],
 )
 
@@ -334,14 +334,14 @@ transition_alias_opt(
 )
 
 transition_alias_opt(
-    name = "darling-0.21.1",
-    actual = "@cargo_vendor__darling-0.21.1//:darling",
+    name = "darling-0.21.2",
+    actual = "@cargo_vendor__darling-0.21.2//:darling",
     tags = ["manual"],
 )
 
 transition_alias_opt(
     name = "darling",
-    actual = "@cargo_vendor__darling-0.21.1//:darling",
+    actual = "@cargo_vendor__darling-0.21.2//:darling",
     tags = ["manual"],
 )
 
@@ -922,14 +922,14 @@ transition_alias_opt(
 )
 
 transition_alias_opt(
-    name = "proc-macro2-1.0.97",
-    actual = "@cargo_vendor__proc-macro2-1.0.97//:proc_macro2",
+    name = "proc-macro2-1.0.101",
+    actual = "@cargo_vendor__proc-macro2-1.0.101//:proc_macro2",
     tags = ["manual"],
 )
 
 transition_alias_opt(
     name = "proc-macro2",
-    actual = "@cargo_vendor__proc-macro2-1.0.97//:proc_macro2",
+    actual = "@cargo_vendor__proc-macro2-1.0.101//:proc_macro2",
     tags = ["manual"],
 )
 
@@ -1282,14 +1282,14 @@ transition_alias_opt(
 )
 
 transition_alias_opt(
-    name = "syn-2.0.105",
-    actual = "@cargo_vendor__syn-2.0.105//:syn",
+    name = "syn-2.0.106",
+    actual = "@cargo_vendor__syn-2.0.106//:syn",
     tags = ["manual"],
 )
 
 transition_alias_opt(
     name = "syn",
-    actual = "@cargo_vendor__syn-2.0.105//:syn",
+    actual = "@cargo_vendor__syn-2.0.106//:syn",
     tags = ["manual"],
 )
 
@@ -1330,14 +1330,14 @@ transition_alias_opt(
 )
 
 transition_alias_opt(
-    name = "thiserror-2.0.14",
-    actual = "@cargo_vendor__thiserror-2.0.14//:thiserror",
+    name = "thiserror-2.0.15",
+    actual = "@cargo_vendor__thiserror-2.0.15//:thiserror",
     tags = ["manual"],
 )
 
 transition_alias_opt(
     name = "thiserror",
-    actual = "@cargo_vendor__thiserror-2.0.14//:thiserror",
+    actual = "@cargo_vendor__thiserror-2.0.15//:thiserror",
     tags = ["manual"],
 )
 

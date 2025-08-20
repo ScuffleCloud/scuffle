@@ -2,6 +2,9 @@ name: Setup bazel
 inputs:
   build_buddy_token:
     required: true
+  lookup-only:
+    required: false
+    default: "false"
 outputs:
   cache-hit:
     value: ${{ steps.restore.outputs.cache-hit }}
@@ -35,6 +38,8 @@ runs:
       with:
         path: ~/.cache/bazel-repo
         key: bazel-repo-${{ runner.os }}-${{ runner.arch }}-${{ hashFiles('MODULE.bazel.lock') }}
+        restore-keys: bazel-repo-${{ runner.os }}-${{ runner.arch }}-
+        lookup-only: ${{ inputs.lookup-only }}
 
     - name: Setup path
       shell: bash

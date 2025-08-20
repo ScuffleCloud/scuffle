@@ -37,8 +37,8 @@ runs:
       id: restore
       with:
         path: ~/.cache/bazel-repo
-        key: bazel-repo-${{ runner.os }}-${{ runner.arch }}-${{ hashFiles('MODULE.bazel.lock') }}
-        restore-keys: bazel-repo-${{ runner.os }}-${{ runner.arch }}-
+        key: bazel-repo-v2-${{ runner.os }}-${{ runner.arch }}-${{ hashFiles('MODULE.bazel.lock') }}
+        restore-keys: bazel-repo-v2-${{ runner.os }}-${{ runner.arch }}-
         lookup-only: ${{ inputs.lookup-only }}
 
     - name: Setup path

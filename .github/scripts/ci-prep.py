@@ -41,8 +41,10 @@ def is_fork_pr() -> bool:
         != "scufflecloud/scuffle".casefold()
     )
 
+
 def is_dispatch_or_cron() -> bool:
     return GITHUB_CONTEXT["event_name"] in ["workflow_dispatch", "schedule"]
+
 
 def pr_number() -> Optional[int]:
     if is_pr():
@@ -70,11 +72,13 @@ class Docusaurus:
     pr_number: Optional[int]
     deploy_docs: bool
 
+
 @dataclass
 class MatrixEntry:
     runner: str
     os: str
     arch: str
+
 
 @dataclass
 class Test:
@@ -89,9 +93,11 @@ class Grind:
     commit_sha: str
     matrix: list[MatrixEntry]
 
+
 @dataclass
 class CheckVendor:
     pass
+
 
 @dataclass
 class Jobs:
@@ -101,21 +107,26 @@ class Jobs:
     grind: Optional[Grind]
     check_vendor: Optional[CheckVendor]
 
+
 def deploy_docs() -> bool:
     return not is_brawl("merge") and not is_fork_pr() and not is_dispatch_or_cron()
+
 
 def create_rustdoc() -> Optional[Rustdoc]:
     return Rustdoc(
         artifact_name="rustdoc",
         deploy_docs=deploy_docs(),
-        pr_number=pr_number()
+        pr_number=pr_number(),
+        commit_sha=commit_sha(),
     )
+
 
 def create_docusaurus() -> Optional[Docusaurus]:
     return Docusaurus(
         pr_number=pr_number(),
         deploy_docs=deploy_docs(),
     )
+
 
 def commit_sha() -> str:
     return (
@@ -124,10 +135,9 @@ def commit_sha() -> str:
         .strip()
     )
 
+
 def create_test() -> Optional[Test]:
-    matrix = [
-        MatrixEntry(runner=LINUX_X86_64, os="linux", arch="x86_64")
-    ]
+    matrix = [MatrixEntry(runner=LINUX_X86_64, os="linux", arch="x86_64")]
     if is_brawl() or is_dispatch_or_cron():
         matrix.append(MatrixEntry(runner=LINUX_ARM64, os="linux", arch="aarch64"))
 
@@ -136,6 +146,7 @@ def create_test() -> Optional[Test]:
         commit_sha=commit_sha(),
         matrix=matrix,
     )
+
 
 def create_grind() -> Optional[Grind]:
     if not is_brawl() and not is_dispatch_or_cron():
@@ -150,8 +161,10 @@ def create_grind() -> Optional[Grind]:
         ],
     )
 
+
 def create_check_vendor() -> Optional[CheckVendor]:
     return CheckVendor()
+
 
 def create_jobs() -> Jobs:
     return Jobs(

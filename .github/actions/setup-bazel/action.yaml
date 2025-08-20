@@ -17,6 +17,7 @@ runs:
           build --build_metadata=ROLE=CI
           build --build_metadata=VISIBILITY=PUBLIC
           build --remote_header=x-buildbuddy-api-key=${{ inputs.build_buddy_token }}
+          common --config=ci
 
     - name: Setup path
       shell: bash

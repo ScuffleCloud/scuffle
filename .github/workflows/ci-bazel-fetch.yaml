@@ -5,6 +5,9 @@ on:
     inputs:
       matrix:
         type: string
+    secrets:
+      build_buddy_token:
+        required: true
 
 defaults:
   run:

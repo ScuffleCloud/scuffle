@@ -7,7 +7,7 @@
 ###############################################################################
 
 load("@rules_rust//cargo:defs.bzl", "cargo_toml_env_vars")
-load("@rules_rust//rust:defs.bzl", "rust_library")
+load("@rules_rust//rust:defs.bzl", "rust_proc_macro")
 
 package(default_visibility = ["//visibility:public"])
 
@@ -16,8 +16,8 @@ cargo_toml_env_vars(
     src = "Cargo.toml",
 )
 
-rust_library(
-    name = "brotli_decompressor",
+rust_proc_macro(
+    name = "pest_derive",
     srcs = glob(
         include = ["**/*.rs"],
         allow_empty = True,
@@ -35,11 +35,11 @@ rust_library(
         ],
     ),
     crate_features = [
-        "alloc-stdlib",
+        "default",
         "std",
     ],
     crate_root = "src/lib.rs",
-    edition = "2015",
+    edition = "2021",
     rustc_env_files = [
         ":cargo_toml_env_vars",
     ],
@@ -48,7 +48,7 @@ rust_library(
     ],
     tags = [
         "cargo-bazel",
-        "crate-name=brotli-decompressor",
+        "crate-name=pest_derive",
         "manual",
         "noclippy",
         "norustfmt",
@@ -62,9 +62,9 @@ rust_library(
         "@rules_rust//rust/platform:x86_64-unknown-linux-gnu": [],
         "//conditions:default": ["@platforms//:incompatible"],
     }),
-    version = "5.0.0",
+    version = "2.8.1",
     deps = [
-        "@bindeps__alloc-no-stdlib-2.0.4//:alloc_no_stdlib",
-        "@bindeps__alloc-stdlib-0.2.2//:alloc_stdlib",
+        "@bindeps__pest-2.8.1//:pest",
+        "@bindeps__pest_generator-2.8.1//:pest_generator",
     ],
 )

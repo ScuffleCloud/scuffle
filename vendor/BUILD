@@ -67,10 +67,18 @@ crates_vendor(
     cargo_bazel = "//build/toolchains/rust:cargo-bazel",
     cargo_lockfile = ":Cargo.bindeps.lock",
     generate_build_scripts = True,
+    annotations = {
+        binary: [crate.annotation(gen_binaries = True)]
+        for binary in ["cargo-deny", "cargo-insta", "just", "miniserve", "rust-analyzer"]
+    },
     packages = {
         "cargo-deny": crate.spec(
             artifact = "bin",
             version = "0.18.3",
+        ),
+        "cargo-insta": crate.spec(
+            artifact = "bin",
+            version = "1.43.1",
         ),
         "just": crate.spec(
             artifact = "bin",
@@ -96,7 +104,6 @@ crates_vendor(
         "x86_64-pc-windows-msvc",
         "aarch64-pc-windows-msvc",
     ],
-    generate_binaries = True,
     stable_as_nightly = True,
     tags = ["manual"],
     vendor_path = "bindeps",

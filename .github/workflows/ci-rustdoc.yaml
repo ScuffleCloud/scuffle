@@ -2,9 +2,24 @@ name: ci - rustdoc
 
 on:
   workflow_call:
+    inputs:
+      artifact_name:
+        type: string
+      deploy_docs:
+        type: boolean
+      pr_number:
+        type: string
+        required: true
+      commit_sha:
+        type: string
+        required: true
     secrets:
       build_buddy_token:
         required: true
+      cf_api_key:
+        required: false
+      cf_account_id:
+        required: false
 
 defaults:
   run:
@@ -22,4 +37,20 @@ jobs:
           build_buddy_token: ${{ secrets.build_buddy_token }}
 
       - name: Run tests
-        run: just doc
+        run: bazel build //docs:rustdoc
+
+      - name: Upload docs
+        uses: actions/upload-artifact@v4
+        if: ${{ inputs.artifact_name }}
+        with:
+          name: ${{ inputs.artifact_name }}
+          path: ./target-bazel/bin/docs/rustdoc.rustdoc_merge
+
+      - name: Deploy
+        if: ${{ inputs.deploy_docs == 'true' }}
+        uses: cloudflare/wrangler-action@v3
+        with:
+          apiToken: ${{ secrets.cf_api_key }}
+          packageManager: npm
+          accountId: ${{ secrets.cf_account_id }}
+          command: pages deploy --project-name=scuffle-docrs --branch=pr/${{ inputs.pr_number }} --commit-hash=${{ inputs.commit_sha }} ./target-bazel/bin/docs/rustdoc.rustdoc_merge

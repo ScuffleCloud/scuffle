@@ -58,7 +58,7 @@ def pr_number() -> Optional[int]:
 
 
 @dataclass
-class DocsRs:
+class Rustdoc:
     artifact_name: Optional[str]
     pr_number: Optional[int]
     deploy_docs: bool
@@ -94,7 +94,7 @@ class CheckVendor:
 
 @dataclass
 class Jobs:
-    docsrs: Optional[DocsRs]
+    rustdoc: Optional[Rustdoc]
     docusaurus: Optional[Docusaurus]
     test: Optional[Test]
     grind: Optional[Grind]
@@ -103,9 +103,9 @@ class Jobs:
 def deploy_docs() -> bool:
     return not is_brawl("merge") and not is_fork_pr() and not is_dispatch_or_cron()
 
-def create_docsrs() -> Optional[DocsRs]:
-    return DocsRs(
-        artifact_name="docsrs",
+def create_rustdoc() -> Optional[Rustdoc]:
+    return Rustdoc(
+        artifact_name="rustdoc",
         deploy_docs=deploy_docs(),
         pr_number=pr_number()
     )
@@ -154,7 +154,7 @@ def create_check_vendor() -> Optional[CheckVendor]:
 
 def create_jobs() -> Jobs:
     return Jobs(
-        docsrs=create_docsrs(),
+        rustdoc=create_rustdoc(),
         check_vendor=create_check_vendor(),
         docusaurus=create_docusaurus(),
         grind=create_grind(),

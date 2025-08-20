@@ -17,7 +17,7 @@ cargo_toml_env_vars(
 )
 
 rust_library(
-    name = "brotli_decompressor",
+    name = "is_wsl",
     srcs = glob(
         include = ["**/*.rs"],
         allow_empty = True,
@@ -34,10 +34,6 @@ rust_library(
             "WORKSPACE.bazel",
         ],
     ),
-    crate_features = [
-        "alloc-stdlib",
-        "std",
-    ],
     crate_root = "src/lib.rs",
     edition = "2015",
     rustc_env_files = [
@@ -48,23 +44,19 @@ rust_library(
     ],
     tags = [
         "cargo-bazel",
-        "crate-name=brotli-decompressor",
+        "crate-name=is-wsl",
         "manual",
         "noclippy",
         "norustfmt",
     ],
     target_compatible_with = select({
-        "@rules_rust//rust/platform:aarch64-apple-darwin": [],
-        "@rules_rust//rust/platform:aarch64-pc-windows-msvc": [],
         "@rules_rust//rust/platform:aarch64-unknown-linux-gnu": [],
-        "@rules_rust//rust/platform:x86_64-apple-darwin": [],
-        "@rules_rust//rust/platform:x86_64-pc-windows-msvc": [],
         "@rules_rust//rust/platform:x86_64-unknown-linux-gnu": [],
         "//conditions:default": ["@platforms//:incompatible"],
     }),
-    version = "5.0.0",
+    version = "0.4.0",
     deps = [
-        "@bindeps__alloc-no-stdlib-2.0.4//:alloc_no_stdlib",
-        "@bindeps__alloc-stdlib-0.2.2//:alloc_stdlib",
+        "@bindeps__is-docker-0.2.0//:is_docker",
+        "@bindeps__once_cell-1.21.3//:once_cell",
     ],
 )

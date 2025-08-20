@@ -7,11 +7,7 @@
 ###############################################################################
 
 load("@rules_rust//cargo:defs.bzl", "cargo_toml_env_vars")
-load(
-    "@rules_rust//rust:defs.bzl",
-    "rust_binary",
-    "rust_library",
-)
+load("@rules_rust//rust:defs.bzl", "rust_library")
 
 package(default_visibility = ["//visibility:public"])
 
@@ -81,72 +77,6 @@ rust_library(
     }),
     version = "4.5.45",
     deps = [
-        "@bindeps__clap_builder-4.5.44//:clap_builder",
-    ],
-)
-
-rust_binary(
-    name = "stdio-fixture__bin",
-    srcs = glob(
-        include = ["**/*.rs"],
-        allow_empty = True,
-    ),
-    compile_data = glob(
-        include = ["**"],
-        allow_empty = True,
-        exclude = [
-            "**/* *",
-            ".tmp_git_root/**/*",
-            "BUILD",
-            "BUILD.bazel",
-            "WORKSPACE",
-            "WORKSPACE.bazel",
-        ],
-    ),
-    crate_features = [
-        "cargo",
-        "color",
-        "default",
-        "deprecated",
-        "derive",
-        "env",
-        "error-context",
-        "help",
-        "std",
-        "suggestions",
-        "usage",
-        "wrap_help",
-    ],
-    crate_root = "src/bin/stdio-fixture.rs",
-    edition = "2021",
-    proc_macro_deps = [
-        "@bindeps__clap_derive-4.5.45//:clap_derive",
-    ],
-    rustc_env_files = [
-        ":cargo_toml_env_vars",
-    ],
-    rustc_flags = [
-        "--cap-lints=allow",
-    ],
-    tags = [
-        "cargo-bazel",
-        "crate-name=clap",
-        "manual",
-        "noclippy",
-        "norustfmt",
-    ],
-    target_compatible_with = select({
-        "@rules_rust//rust/platform:aarch64-apple-darwin": [],
-        "@rules_rust//rust/platform:aarch64-pc-windows-msvc": [],
-        "@rules_rust//rust/platform:aarch64-unknown-linux-gnu": [],
-        "@rules_rust//rust/platform:x86_64-apple-darwin": [],
-        "@rules_rust//rust/platform:x86_64-pc-windows-msvc": [],
-        "@rules_rust//rust/platform:x86_64-unknown-linux-gnu": [],
-        "//conditions:default": ["@platforms//:incompatible"],
-    }),
-    version = "4.5.45",
-    deps = [
-        ":clap",
         "@bindeps__clap_builder-4.5.44//:clap_builder",
     ],
 )

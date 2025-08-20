@@ -34,13 +34,6 @@ jobs:
           build_buddy_token: ${{ secrets.build_buddy_token }}
 
       - name: Run test with valgrind
-        run: just grind
-
-      - uses: codecov/codecov-action@v5
-        with:
-            fail_ci_if_error: true
-            files: ./lcov.info
-            token: ${{ secrets.codecov_token }}
-            override_pr: ${{ inputs.pr_number }}
-            override_commit: ${{ inputs.commit_sha }}
-            verbose: true
+        run: |
+          targets=$(bazel query 'kind("nextest_test rule", set(//...))')
+          bazel test ${targets} --//settings:test_rustc_flags="--cfg=valgrind" --//settings:test_valgrind

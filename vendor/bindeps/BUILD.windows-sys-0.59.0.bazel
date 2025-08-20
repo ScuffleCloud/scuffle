@@ -64,6 +64,8 @@ rust_library(
         "Win32_System_Time",
         "Win32_System_WindowsProgramming",
         "Win32_UI",
+        "Win32_UI_Input",
+        "Win32_UI_Input_KeyboardAndMouse",
         "Win32_UI_Shell",
         "default",
     ],

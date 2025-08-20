@@ -34,12 +34,12 @@ jobs:
           build_buddy_token: ${{ secrets.build_buddy_token }}
 
       - name: Run tests
-        run: just test
+        run: bazel coverage //...
 
       - uses: codecov/codecov-action@v5
         with:
             fail_ci_if_error: true
-            files: ./lcov.info
+            files: ./target-bazel/out/_coverage/_coverage_report.dat
             token: ${{ secrets.codecov_token }}
             override_pr: ${{ inputs.pr_number }}
             override_commit: ${{ inputs.commit_sha }}

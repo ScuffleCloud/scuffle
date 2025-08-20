@@ -17,7 +17,7 @@ cargo_toml_env_vars(
 )
 
 rust_library(
-    name = "brotli_decompressor",
+    name = "ignore",
     srcs = glob(
         include = ["**/*.rs"],
         allow_empty = True,
@@ -34,12 +34,8 @@ rust_library(
             "WORKSPACE.bazel",
         ],
     ),
-    crate_features = [
-        "alloc-stdlib",
-        "std",
-    ],
     crate_root = "src/lib.rs",
-    edition = "2015",
+    edition = "2021",
     rustc_env_files = [
         ":cargo_toml_env_vars",
     ],
@@ -48,7 +44,7 @@ rust_library(
     ],
     tags = [
         "cargo-bazel",
-        "crate-name=brotli-decompressor",
+        "crate-name=ignore",
         "manual",
         "noclippy",
         "norustfmt",
@@ -62,9 +58,22 @@ rust_library(
         "@rules_rust//rust/platform:x86_64-unknown-linux-gnu": [],
         "//conditions:default": ["@platforms//:incompatible"],
     }),
-    version = "5.0.0",
+    version = "0.4.23",
     deps = [
-        "@bindeps__alloc-no-stdlib-2.0.4//:alloc_no_stdlib",
-        "@bindeps__alloc-stdlib-0.2.2//:alloc_stdlib",
-    ],
+        "@bindeps__crossbeam-deque-0.8.6//:crossbeam_deque",
+        "@bindeps__globset-0.4.16//:globset",
+        "@bindeps__log-0.4.27//:log",
+        "@bindeps__memchr-2.7.5//:memchr",
+        "@bindeps__regex-automata-0.4.9//:regex_automata",
+        "@bindeps__same-file-1.0.6//:same_file",
+        "@bindeps__walkdir-2.5.0//:walkdir",
+    ] + select({
+        "@rules_rust//rust/platform:aarch64-pc-windows-msvc": [
+            "@bindeps__winapi-util-0.1.9//:winapi_util",  # cfg(windows)
+        ],
+        "@rules_rust//rust/platform:x86_64-pc-windows-msvc": [
+            "@bindeps__winapi-util-0.1.9//:winapi_util",  # cfg(windows)
+        ],
+        "//conditions:default": [],
+    }),
 )

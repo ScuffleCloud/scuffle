@@ -12,7 +12,7 @@ defaults:
 
 jobs:
   check_vendor:
-    name: Check Vendor
+    name: check
     runs-on: ubicloud-standard-8-ubuntu-2404
     steps:
       - uses: actions/checkout@v4
@@ -21,8 +21,14 @@ jobs:
         with:
           build_buddy_token: ${{ secrets.build_buddy_token }}
 
-      - name: Run Vendor
-        run: just vendor
+      - name: Update Cargo
+        run: bazel run //tools/cargo -- update --workspace
+
+      - name: Vendor Cargo
+        run: bazel run //vendor:cargo_vendor
+
+      - name: Vendor Bindeps
+        run: bazel run //vendor:bindeps
 
       - name: Exit on change
         run: git diff --exit-code

@@ -7,11 +7,7 @@
 ###############################################################################
 
 load("@rules_rust//cargo:defs.bzl", "cargo_toml_env_vars")
-load(
-    "@rules_rust//rust:defs.bzl",
-    "rust_binary",
-    "rust_library",
-)
+load("@rules_rust//rust:defs.bzl", "rust_library")
 
 package(default_visibility = ["//visibility:public"])
 
@@ -69,118 +65,6 @@ rust_library(
     }),
     version = "8.0.2",
     deps = [
-        "@bindeps__alloc-no-stdlib-2.0.4//:alloc_no_stdlib",
-        "@bindeps__alloc-stdlib-0.2.2//:alloc_stdlib",
-        "@bindeps__brotli-decompressor-5.0.0//:brotli_decompressor",
-    ],
-)
-
-rust_binary(
-    name = "brotli__bin",
-    srcs = glob(
-        include = ["**/*.rs"],
-        allow_empty = True,
-    ),
-    compile_data = glob(
-        include = ["**"],
-        allow_empty = True,
-        exclude = [
-            "**/* *",
-            ".tmp_git_root/**/*",
-            "BUILD",
-            "BUILD.bazel",
-            "WORKSPACE",
-            "WORKSPACE.bazel",
-        ],
-    ),
-    crate_features = [
-        "alloc-stdlib",
-        "default",
-        "std",
-    ],
-    crate_root = "src/bin/brotli.rs",
-    edition = "2015",
-    rustc_env_files = [
-        ":cargo_toml_env_vars",
-    ],
-    rustc_flags = [
-        "--cap-lints=allow",
-    ],
-    tags = [
-        "cargo-bazel",
-        "crate-name=brotli",
-        "manual",
-        "noclippy",
-        "norustfmt",
-    ],
-    target_compatible_with = select({
-        "@rules_rust//rust/platform:aarch64-apple-darwin": [],
-        "@rules_rust//rust/platform:aarch64-pc-windows-msvc": [],
-        "@rules_rust//rust/platform:aarch64-unknown-linux-gnu": [],
-        "@rules_rust//rust/platform:x86_64-apple-darwin": [],
-        "@rules_rust//rust/platform:x86_64-pc-windows-msvc": [],
-        "@rules_rust//rust/platform:x86_64-unknown-linux-gnu": [],
-        "//conditions:default": ["@platforms//:incompatible"],
-    }),
-    version = "8.0.2",
-    deps = [
-        ":brotli",
-        "@bindeps__alloc-no-stdlib-2.0.4//:alloc_no_stdlib",
-        "@bindeps__alloc-stdlib-0.2.2//:alloc_stdlib",
-        "@bindeps__brotli-decompressor-5.0.0//:brotli_decompressor",
-    ],
-)
-
-rust_binary(
-    name = "catbrotli__bin",
-    srcs = glob(
-        include = ["**/*.rs"],
-        allow_empty = True,
-    ),
-    compile_data = glob(
-        include = ["**"],
-        allow_empty = True,
-        exclude = [
-            "**/* *",
-            ".tmp_git_root/**/*",
-            "BUILD",
-            "BUILD.bazel",
-            "WORKSPACE",
-            "WORKSPACE.bazel",
-        ],
-    ),
-    crate_features = [
-        "alloc-stdlib",
-        "default",
-        "std",
-    ],
-    crate_root = "src/bin/catbrotli.rs",
-    edition = "2015",
-    rustc_env_files = [
-        ":cargo_toml_env_vars",
-    ],
-    rustc_flags = [
-        "--cap-lints=allow",
-    ],
-    tags = [
-        "cargo-bazel",
-        "crate-name=brotli",
-        "manual",
-        "noclippy",
-        "norustfmt",
-    ],
-    target_compatible_with = select({
-        "@rules_rust//rust/platform:aarch64-apple-darwin": [],
-        "@rules_rust//rust/platform:aarch64-pc-windows-msvc": [],
-        "@rules_rust//rust/platform:aarch64-unknown-linux-gnu": [],
-        "@rules_rust//rust/platform:x86_64-apple-darwin": [],
-        "@rules_rust//rust/platform:x86_64-pc-windows-msvc": [],
-        "@rules_rust//rust/platform:x86_64-unknown-linux-gnu": [],
-        "//conditions:default": ["@platforms//:incompatible"],
-    }),
-    version = "8.0.2",
-    deps = [
-        ":brotli",
         "@bindeps__alloc-no-stdlib-2.0.4//:alloc_no_stdlib",
         "@bindeps__alloc-stdlib-0.2.2//:alloc_stdlib",
         "@bindeps__brotli-decompressor-5.0.0//:brotli_decompressor",

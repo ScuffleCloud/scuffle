@@ -1,0 +1,25 @@
+name: ci - rustdoc
+
+on:
+  workflow_call:
+    secrets:
+      build_buddy_token:
+        required: true
+
+defaults:
+  run:
+    shell: bash
+
+jobs:
+  rustdoc:
+    name: rustdoc
+    runs-on: ubicloud-standard-8-ubuntu-2404
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: ./.github/actions/setup-bazel
+        with:
+          build_buddy_token: ${{ secrets.build_buddy_token }}
+
+      - name: Run tests
+        run: just doc

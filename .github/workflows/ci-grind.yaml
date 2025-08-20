@@ -1,0 +1,46 @@
+name: Test
+
+on:
+  workflow_call:
+    inputs:
+      commit_sha:
+        type: string
+      pr_number:
+        type: number
+      matrix:
+        type: string
+    secrets:
+      codecov_token:
+        required: true
+      build_buddy_token:
+        required: true
+
+defaults:
+  run:
+    shell: bash
+
+jobs:
+  grind:
+    name: Grind - ${{ matrix.os }}_${{ matrix.arch }}
+    runs-on: ${{ matrix.runner }}
+    strategy:
+      matrix:
+        include: ${{ fromJson(inputs.matrix) }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: ./.github/actions/setup-bazel
+        with:
+          build_buddy_token: ${{ secrets.build_buddy_token }}
+
+      - name: Run test with valgrind
+        run: just grind
+
+      - uses: codecov/codecov-action@v5
+        with:
+            fail_ci_if_error: true
+            files: ./lcov.info
+            token: ${{ secrets.codecov_token }}
+            override_pr: ${{ inputs.pr_number }}
+            override_commit: ${{ inputs.commit_sha }}
+            verbose: true

@@ -1,10 +1,10 @@
-name: Security audit
+name: cargo deny
 on:
   push:
     branches-ignore:
       - "automation/**"
     paths:
-      - ".github/workflows/audit.yaml"
+      - ".github/workflows/cargo-deny.yaml"
       - "**/Cargo.toml"
       - "**/Cargo.lock"
       - "deny.toml"
@@ -12,14 +12,17 @@ on:
     - cron: "0 0 * * *"
 
 jobs:
-  audit:
-    runs-on: ubuntu-latest
+  check:
+    runs-on: ubicloud-standard-8-ubuntu-2404
     permissions:
       contents: read
       issues: write
     steps:
       - uses: actions/checkout@v4
 
-      - uses: EmbarkStudios/cargo-deny-action@v2
+      - uses: ./.github/actions/setup-bazel
         with:
-          rust-version: "stable"
+          build_buddy_token: ${{ secrets.build_buddy_token }}
+
+      - name: Build
+        run: bazel run //tools/just -- deny

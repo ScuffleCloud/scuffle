@@ -98,7 +98,7 @@ impl<G: CoreConfig> Operation<G> for tonic::Request<pb::scufflecloud::core::v1::
     type Resource = CoreApplication;
     type Response = pb::scufflecloud::core::v1::NewUserSessionToken;
 
-    const ACTION: Action = Action::RegisterWithEmail;
+    const ACTION: Action = Action::CompleteRegisterWithEmail;
 
     async fn load_principal(&mut self, tx: &mut diesel_async::AsyncPgConnection) -> Result<Self::Principal, tonic::Status> {
         // Delete email registration request

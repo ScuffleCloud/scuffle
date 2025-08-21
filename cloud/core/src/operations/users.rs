@@ -501,7 +501,7 @@ impl<G: CoreConfig> Operation<G> for tonic::Request<pb::scufflecloud::core::v1::
     type Resource = MfaWebauthnCredential;
     type Response = pb::scufflecloud::core::v1::WebauthnCredential;
 
-    const ACTION: Action = Action::CreateWebauthnCredential;
+    const ACTION: Action = Action::CompleteCreateWebauthnCredential;
 
     async fn load_principal(
         &mut self,
@@ -626,7 +626,7 @@ impl<G: CoreConfig> Operation<G> for tonic::Request<pb::scufflecloud::core::v1::
     type Resource = MfaWebauthnCredential;
     type Response = pb::scufflecloud::core::v1::WebauthnCredential;
 
-    const ACTION: Action = Action::ListWebauthnCredentials;
+    const ACTION: Action = Action::DeleteWebauthnCredential;
 
     async fn load_principal(
         &mut self,

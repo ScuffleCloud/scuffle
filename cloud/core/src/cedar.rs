@@ -114,9 +114,8 @@ pub enum Action {
     /// Register with email and password.
     #[display("register_with_email")]
     RegisterWithEmail,
-    /// Register with Google OAuth2.
-    #[display("register_with_google")]
-    RegisterWithGoogle,
+    #[display("complete_register_with_email")]
+    CompleteRegisterWithEmail,
     #[display("get_login_with_email_options")]
     GetLoginWithEmailOptions,
     /// Login to an existing account with email and password.

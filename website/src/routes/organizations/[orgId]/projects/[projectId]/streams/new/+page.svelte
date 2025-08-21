@@ -1,5 +1,5 @@
 <script lang="ts">
-    import NewStream from '$components/streams/NewStream.svelte';
+    import NewStream from '$components/streams/new-stream.svelte';
 </script>
 
 <svelte:head>

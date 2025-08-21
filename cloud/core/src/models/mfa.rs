@@ -75,7 +75,7 @@ impl PrefixedId for MfaWebauthnCredential {
 }
 
 impl CedarEntity for MfaWebauthnCredential {
-    const ENTITY_TYPE: &'static str = "MfaWebauthnPk";
+    const ENTITY_TYPE: &'static str = "MfaWebauthnCredential";
 
     fn entity_id(&self) -> cedar_policy::EntityId {
         cedar_policy::EntityId::new(self.id.to_string_unprefixed())

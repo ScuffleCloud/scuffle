@@ -102,6 +102,29 @@ impl FromStr for AuthenticationMethod {
     }
 }
 
+#[derive(thiserror::Error, Debug)]
+enum NonceParseError {
+    #[error("failed to decode: {0}")]
+    Base64(#[from] base64::DecodeError),
+    #[error("invalid nonce length {0}, must be 32 bytes")]
+    InvalidLength(usize),
+}
+
+#[derive(Debug)]
+struct Nonce(Vec<u8>);
+
+impl FromStr for Nonce {
+    type Err = NonceParseError;
+
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        let bytes = base64::prelude::BASE64_STANDARD.decode(s)?;
+        if bytes.len() != 32 {
+            return Err(NonceParseError::InvalidLength(bytes.len()));
+        }
+        Ok(Nonce(bytes))
+    }
+}
+
 #[derive(Debug)]
 struct AuthenticationHmac(Vec<u8>);
 
@@ -119,17 +142,15 @@ async fn get_and_update_active_session<G: CoreConfig>(
     ip_info: &IpAddressInfo,
     headers: &HeaderMap,
 ) -> Result<Option<UserSession>, StatusCode> {
-    let mut db = global.db().await.map_err(|e| {
-        tracing::error!(error = %e, "failed to connect to database");
-        StatusCode::INTERNAL_SERVER_ERROR
-    })?;
-
     let Some(session_token_id) = get_auth_header::<UserSessionTokenId>(headers, &TOKEN_ID_HEADER)? else {
         return Ok(None);
     };
     let Some(timestamp) =
         get_auth_header::<u64>(headers, &TIMESTAMP_HEADER)?.and_then(|t| chrono::DateTime::from_timestamp_millis(t as i64))
     else {
+        return Ok(None);
+    };
+    let Some(nonce) = get_auth_header::<Nonce>(headers, &NONCE_HEADER)? else {
         return Ok(None);
     };
 
@@ -140,7 +161,7 @@ async fn get_and_update_active_session<G: CoreConfig>(
         return Ok(None);
     };
 
-    if timestamp > chrono::Utc::now() || timestamp < chrono::Utc::now() - chrono::Duration::minutes(2) {
+    if timestamp > chrono::Utc::now() || timestamp < chrono::Utc::now() - global.max_request_lifetime() {
         tracing::debug!(timestamp = %timestamp, "invalid request timestamp");
         return Err(StatusCode::UNAUTHORIZED);
     }
@@ -152,6 +173,11 @@ async fn get_and_update_active_session<G: CoreConfig>(
         tracing::debug!("missing required headers in authentication method");
         return Err(StatusCode::BAD_REQUEST);
     }
+
+    let mut db = global.db().await.map_err(|e| {
+        tracing::error!(error = %e, "failed to connect to database");
+        StatusCode::INTERNAL_SERVER_ERROR
+    })?;
 
     let Some(session) = diesel::update(user_sessions::dsl::user_sessions)
         .set((
@@ -202,6 +228,8 @@ async fn get_and_update_active_session<G: CoreConfig>(
             })?;
         }
     }
+
+    // TODO: Check and save nonce
 
     Ok(Some(session))
 }

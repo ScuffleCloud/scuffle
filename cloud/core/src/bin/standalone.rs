@@ -40,6 +40,8 @@ pub struct Config {
 #[derive(serde_derive::Deserialize, smart_default::SmartDefault, Debug, Clone)]
 #[serde(default)]
 pub struct TimeoutConfig {
+    #[default(chrono::Duration::minutes(2))]
+    pub max_request_lifetime: chrono::Duration,
     #[default(chrono::Duration::days(30))]
     pub user_session: chrono::Duration,
     #[default(chrono::Duration::minutes(5))]
@@ -112,6 +114,10 @@ impl scufflecloud_core::CoreConfig for Global {
 
     fn turnstile_secret_key(&self) -> &str {
         &self.config.turnstile_secret_key
+    }
+
+    fn max_request_lifetime(&self) -> chrono::Duration {
+        self.config.timeouts.max_request_lifetime
     }
 
     fn user_session_timeout(&self) -> chrono::Duration {

@@ -1,9 +1,7 @@
 use std::str::FromStr;
 use std::sync::Arc;
 
-use axum::body::Body;
 use axum::extract::Request;
-use axum::http::request::Parts;
 use axum::http::{HeaderMap, HeaderName, StatusCode};
 use axum::middleware::Next;
 use axum::response::Response;
@@ -11,7 +9,6 @@ use base64::Engine;
 use diesel::{BoolExpressionMethods, ExpressionMethods, SelectableHelper};
 use diesel_async::RunQueryDsl;
 use hmac::Mac;
-use sha2::Digest;
 
 use crate::CoreConfig;
 use crate::http_ext::RequestExt;
@@ -22,31 +19,25 @@ use crate::schema::user_sessions;
 const TOKEN_ID_HEADER: HeaderName = HeaderName::from_static("scuf-token-id");
 const TIMESTAMP_HEADER: HeaderName = HeaderName::from_static("scuf-timestamp");
 const NONCE_HEADER: HeaderName = HeaderName::from_static("scuf-nonce");
-const BODY_SHA256_HEADER: HeaderName = HeaderName::from_static("scuf-body-sha256");
 
 const AUTHENTICATION_METHOD_HEADER: HeaderName = HeaderName::from_static("scuf-auth-method");
 const AUTHENTICATION_HMAC_HEADER: HeaderName = HeaderName::from_static("scuf-auth-hmac");
 
-pub(crate) async fn auth<G: CoreConfig>(req: Request, next: Next) -> Result<Response, StatusCode> {
-    let (mut parts, body) = req.into_parts();
-    let bytes = axum::body::to_bytes(body, 1024 * 1024 * 1024) // 1GiB
-        .await
-        .map_err(|_| StatusCode::PAYLOAD_TOO_LARGE)?;
-
-    let global = parts
-        .extensions
+pub(crate) async fn auth<G: CoreConfig>(mut req: Request, next: Next) -> Result<Response, StatusCode> {
+    let global = req
+        .extensions()
         .global::<G>()
         .map_err(|_| StatusCode::INTERNAL_SERVER_ERROR)?;
-    let ip_info = parts
-        .extensions
+    let ip_info = req
+        .extensions()
         .ip_address_info()
         .map_err(|_| StatusCode::INTERNAL_SERVER_ERROR)?;
 
-    if let Some(session) = get_and_update_active_session(&global, &ip_info, &parts, &bytes).await? {
-        parts.extensions.insert(session);
+    if let Some(session) = get_and_update_active_session(&global, &ip_info, req.headers()).await? {
+        req.extensions_mut().insert(session);
     }
 
-    Ok(next.run(Request::from_parts(parts, Body::from(bytes))).await)
+    Ok(next.run(req).await)
 }
 
 fn get_auth_header<'a, T>(headers: &'a HeaderMap, header_name: &HeaderName) -> Result<Option<T>, StatusCode>
@@ -126,11 +117,8 @@ impl FromStr for AuthenticationHmac {
 async fn get_and_update_active_session<G: CoreConfig>(
     global: &Arc<G>,
     ip_info: &IpAddressInfo,
-    parts: &Parts,
-    body: &[u8],
+    headers: &HeaderMap,
 ) -> Result<Option<UserSession>, StatusCode> {
-    let headers = &parts.headers;
-
     let mut db = global.db().await.map_err(|e| {
         tracing::error!(error = %e, "failed to connect to database");
         StatusCode::INTERNAL_SERVER_ERROR
@@ -144,11 +132,6 @@ async fn get_and_update_active_session<G: CoreConfig>(
     else {
         return Ok(None);
     };
-    let Some(body_sha256) = get_auth_header::<String>(headers, &BODY_SHA256_HEADER)?
-        .and_then(|h| base64::prelude::BASE64_STANDARD.decode(h).ok())
-    else {
-        return Ok(None);
-    };
 
     let Some(auth_method) = get_auth_header::<AuthenticationMethod>(headers, &AUTHENTICATION_METHOD_HEADER)? else {
         return Ok(None);
@@ -156,11 +139,6 @@ async fn get_and_update_active_session<G: CoreConfig>(
     let Some(auth_hmac) = get_auth_header::<AuthenticationHmac>(headers, &AUTHENTICATION_HMAC_HEADER)? else {
         return Ok(None);
     };
-
-    if !sha2::Sha256::digest(body).as_slice().eq(&body_sha256) {
-        tracing::debug!("body SHA256 mismatch");
-        return Err(StatusCode::UNAUTHORIZED);
-    }
 
     if timestamp > chrono::Utc::now() || timestamp < chrono::Utc::now() - chrono::Duration::minutes(2) {
         tracing::debug!(timestamp = %timestamp, "invalid request timestamp");
@@ -170,7 +148,6 @@ async fn get_and_update_active_session<G: CoreConfig>(
     if !auth_method.headers.contains(&TOKEN_ID_HEADER)
         || !auth_method.headers.contains(&TIMESTAMP_HEADER)
         || !auth_method.headers.contains(&NONCE_HEADER)
-        || !auth_method.headers.contains(&BODY_SHA256_HEADER)
     {
         tracing::debug!("missing required headers in authentication method");
         return Err(StatusCode::BAD_REQUEST);
@@ -210,9 +187,6 @@ async fn get_and_update_active_session<G: CoreConfig>(
                 tracing::error!(error = %e, "failed to create HMAC instance");
                 StatusCode::INTERNAL_SERVER_ERROR
             })?;
-
-            mac.update(parts.method.as_str().as_bytes());
-            mac.update(parts.uri.path().as_bytes());
 
             for header_name in &auth_method.headers {
                 if let Some(value) = headers.get(header_name) {

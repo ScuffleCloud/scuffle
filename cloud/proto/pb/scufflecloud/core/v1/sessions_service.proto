@@ -119,7 +119,7 @@ enum DeviceAlgorithm {
 message Device {
     // The crypto algorithm (e.g. RSA) used for the public key.
     DeviceAlgorithm algorithm = 1;
-    // Public key data in PKCS#8 DER format.
+    // Public key data in SPKI format.
     bytes public_key_data = 2;
 }
 

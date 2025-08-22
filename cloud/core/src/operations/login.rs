@@ -63,12 +63,17 @@ impl<G: CoreConfig> Operation<G> for tonic::Request<pb::scufflecloud::core::v1::
         let mut options = vec![];
 
         if user.password_hash.is_some()
-            && cedar::is_authorized(global, None, &user, Action::LoginWithEmailPassword, CoreApplication).is_ok()
+            && cedar::is_authorized(global, None, &user, Action::LoginWithEmailPassword, CoreApplication)
+                .await
+                .is_ok()
         {
             options.push(pb::scufflecloud::core::v1::LoginWithEmailOptions::Password as i32);
         }
 
-        if cedar::is_authorized(global, None, &user, Action::LoginWithMagicLink, CoreApplication).is_ok() {
+        if cedar::is_authorized(global, None, &user, Action::LoginWithMagicLink, CoreApplication)
+            .await
+            .is_ok()
+        {
             options.push(pb::scufflecloud::core::v1::LoginWithEmailOptions::MagicLink as i32);
         }
 

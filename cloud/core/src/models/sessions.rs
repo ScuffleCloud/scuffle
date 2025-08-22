@@ -46,7 +46,7 @@ impl PrefixedId for UserSessionRequest {
     const PREFIX: &'static str = "sr";
 }
 
-impl CedarEntity for UserSessionRequest {
+impl<G> CedarEntity<G> for UserSessionRequest {
     const ENTITY_TYPE: &'static str = "UserSessionRequest";
 
     fn entity_id(&self) -> cedar_policy::EntityId {
@@ -82,7 +82,7 @@ impl PrefixedId for MagicLinkUserSessionRequest {
     const PREFIX: &'static str = "ml";
 }
 
-impl CedarEntity for MagicLinkUserSessionRequest {
+impl<G> CedarEntity<G> for MagicLinkUserSessionRequest {
     const ENTITY_TYPE: &'static str = "MagicLinkUserSessionRequest";
 
     fn entity_id(&self) -> cedar_policy::EntityId {
@@ -104,7 +104,7 @@ impl PrefixedId for UserSessionToken {
     const PREFIX: &'static str = "st";
 }
 
-impl CedarEntity for UserSessionToken {
+impl<G> CedarEntity<G> for UserSessionToken {
     const ENTITY_TYPE: &'static str = "UserSessionToken";
 
     fn entity_id(&self) -> cedar_policy::EntityId {
@@ -131,7 +131,7 @@ pub struct UserSession {
     pub mfa_pending: bool,
 }
 
-impl CedarEntity for UserSession {
+impl<G> CedarEntity<G> for UserSession {
     const ENTITY_TYPE: &'static str = "UserSession";
 
     fn entity_id(&self) -> cedar_policy::EntityId {
@@ -174,7 +174,7 @@ impl PrefixedId for EmailRegistrationRequest {
     const PREFIX: &'static str = "er";
 }
 
-impl CedarEntity for EmailRegistrationRequest {
+impl<G> CedarEntity<G> for EmailRegistrationRequest {
     const ENTITY_TYPE: &'static str = "EmailRegistrationRequest";
 
     fn entity_id(&self) -> cedar_policy::EntityId {

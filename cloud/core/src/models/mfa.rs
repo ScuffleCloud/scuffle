@@ -1,6 +1,10 @@
+use std::collections::HashSet;
+use std::sync::Arc;
+
 use diesel::Selectable;
 use diesel::prelude::{AsChangeset, Associations, Identifiable, Insertable, Queryable};
 
+use crate::CoreConfig;
 use crate::cedar::CedarEntity;
 use crate::chrono_ext::ChronoDateTimeExt;
 use crate::id::{Id, PrefixedId};
@@ -24,11 +28,15 @@ impl PrefixedId for MfaTotpCredential {
     const PREFIX: &'static str = "mft";
 }
 
-impl CedarEntity for MfaTotpCredential {
+impl<G: CoreConfig> CedarEntity<G> for MfaTotpCredential {
     const ENTITY_TYPE: &'static str = "MfaTotpCredential";
 
     fn entity_id(&self) -> cedar_policy::EntityId {
         cedar_policy::EntityId::new(self.id.to_string_unprefixed())
+    }
+
+    async fn parents(&self, _global: &Arc<G>) -> Result<HashSet<cedar_policy::EntityUid>, tonic::Status> {
+        Ok(std::iter::once(CedarEntity::<G>::entity_uid(&self.user_id)).collect())
     }
 }
 
@@ -74,11 +82,15 @@ impl PrefixedId for MfaWebauthnCredential {
     const PREFIX: &'static str = "mfw";
 }
 
-impl CedarEntity for MfaWebauthnCredential {
+impl<G: CoreConfig> CedarEntity<G> for MfaWebauthnCredential {
     const ENTITY_TYPE: &'static str = "MfaWebauthnCredential";
 
     fn entity_id(&self) -> cedar_policy::EntityId {
         cedar_policy::EntityId::new(self.id.to_string_unprefixed())
+    }
+
+    async fn parents(&self, _global: &Arc<G>) -> Result<HashSet<cedar_policy::EntityUid>, tonic::Status> {
+        Ok(std::iter::once(CedarEntity::<G>::entity_uid(&self.user_id)).collect())
     }
 }
 

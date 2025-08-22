@@ -27,9 +27,9 @@ pub(crate) mod users;
 /// 7. Commit the database transaction. (If `Self::TRANSACTION` is `true`)
 pub(crate) trait Operation<G: CoreConfig>: RequestExt + Sized + Send {
     /// The cedar principal type for the operation.
-    type Principal: CedarEntity + Send;
+    type Principal: CedarEntity<G> + Send + Sync;
     /// The cedar resource type for the operation.
-    type Resource: CedarEntity + Send;
+    type Resource: CedarEntity<G> + Send + Sync;
     /// The response type for the operation.
     type Response: Send;
 
@@ -75,7 +75,7 @@ pub(crate) trait Operation<G: CoreConfig>: RequestExt + Sized + Send {
                         let principal = self.load_principal(tx).await?;
                         let resource = self.load_resource(tx).await?;
 
-                        cedar::is_authorized(global, self.session(), &principal, Self::ACTION, &resource)?;
+                        cedar::is_authorized(global, self.session(), &principal, Self::ACTION, &resource).await?;
 
                         self.execute(tx, principal, resource).await.map_err(Into::into)
                     }
@@ -88,7 +88,7 @@ pub(crate) trait Operation<G: CoreConfig>: RequestExt + Sized + Send {
             let principal = self.load_principal(&mut db).await?;
             let resource = self.load_resource(&mut db).await?;
 
-            cedar::is_authorized(global, self.session(), &principal, Self::ACTION, &resource)?;
+            cedar::is_authorized(global, self.session(), &principal, Self::ACTION, &resource).await?;
 
             self.execute(&mut db, principal, resource).await
         }

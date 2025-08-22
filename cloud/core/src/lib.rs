@@ -60,6 +60,9 @@ pub trait CoreConfig:
     fn turnstile_secret_key(&self) -> &str {
         "1x0000000000000000000000000000000AA"
     }
+    fn max_request_lifetime(&self) -> chrono::Duration {
+        chrono::Duration::minutes(2)
+    }
     fn user_session_timeout(&self) -> chrono::Duration {
         chrono::Duration::days(30)
     }

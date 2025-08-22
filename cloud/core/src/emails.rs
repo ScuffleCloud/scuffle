@@ -39,6 +39,40 @@ pub(crate) async fn register_with_email_email<G: CoreConfig>(
 }
 
 #[derive(sailfish::TemplateSimple)]
+#[template(path = "emails/add_new_email/subject.stpl")]
+struct AddNewEmailSubjectTemplate;
+
+#[derive(sailfish::Template)]
+#[template(path = "emails/add_new_email/text.stpl")]
+struct AddNewEmailTextTemplate {
+    pub url: String,
+}
+
+#[derive(sailfish::Template)]
+#[template(path = "emails/add_new_email/html.stpl")]
+struct AddNewEmailHtmlTemplate {
+    pub url: String,
+}
+
+pub(crate) async fn add_new_email_email<G: CoreConfig>(
+    global: &Arc<G>,
+    to_address: String,
+    url: String,
+) -> Result<pb::scufflecloud::email::v1::Email, sailfish::RenderError> {
+    let subject = AddNewEmailSubjectTemplate.render_once()?;
+    let text = AddNewEmailTextTemplate { url: url.to_string() }.render_once()?;
+    let html = AddNewEmailHtmlTemplate { url }.render_once()?;
+
+    Ok(pb::scufflecloud::email::v1::Email {
+        to_address,
+        source_address: global.email_from_address().to_string(),
+        subject,
+        text,
+        html,
+    })
+}
+
+#[derive(sailfish::TemplateSimple)]
 #[template(path = "emails/magic_link/subject.stpl")]
 struct MagicLinkSubjectTemplate;
 

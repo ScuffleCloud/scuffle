@@ -4,54 +4,56 @@ forbid(
     resource
 ) when {
     context.user_session_mfa_pending == true
+} unless {
+    action == Action::"validate_mfa_for_user_session"
 };
 
 permit(
     principal is Unauthenticated,
     action == Action::"register_with_email",
-    resource is CoreApplication
+    resource == Application::"core"
 );
 
 permit(
     principal is User,
     action == Action::"complete_register_with_email",
-    resource is CoreApplication
+    resource == Application::"core"
 );
 
 permit(
     principal is Unauthenticated,
     action == Action::"get_login_with_email_options",
-    resource is CoreApplication
+    resource == Application::"core"
 );
 
 permit(
     principal is User,
     action == Action::"login_with_email_password",
-    resource is CoreApplication
+    resource == Application::"core"
 );
 
 permit(
     principal is User,
     action == Action::"request_magic_link",
-    resource is CoreApplication
+    resource == Application::"core"
 );
 
 permit(
     principal is User,
     action == Action::"login_with_magic_link",
-    resource is CoreApplication
+    resource == Application::"core"
 );
 
 permit(
     principal is User,
     action == Action::"login_with_google",
-    resource is CoreApplication
+    resource == Application::"core"
 );
 
 permit(
     principal is User,
     action == Action::"login_with_webauthn",
-    resource is CoreApplication
+    resource == Application::"core"
 );
 
 permit(
@@ -242,7 +244,9 @@ permit(
     principal is User,
     action == Action::"get_organization",
     resource is Organization
-); // TODO: condition
+) when {
+    principal in resource
+};
 
 permit(
     principal is User,
@@ -256,7 +260,9 @@ permit(
     principal is User,
     action == Action::"list_organization_members",
     resource is Organization
-); // TODO: condition for members
+) when {
+    principal in resource
+};
 
 permit(
     principal is User,

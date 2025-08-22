@@ -1,9 +1,18 @@
-use diesel::Selectable;
-use diesel::prelude::{AsChangeset, Associations, Identifiable, Insertable, Queryable};
+use std::collections::HashSet;
+use std::sync::Arc;
 
+use diesel::prelude::{AsChangeset, Associations, Identifiable, Insertable, Queryable};
+use diesel::query_dsl::methods::{FilterDsl, SelectDsl};
+use diesel::{ExpressionMethods, Selectable};
+use diesel_async::RunQueryDsl;
+
+use crate::CoreConfig;
 use crate::cedar::CedarEntity;
 use crate::chrono_ext::ChronoDateTimeExt;
 use crate::id::{Id, PrefixedId};
+use crate::models::OrganizationId;
+use crate::schema::organization_members;
+use crate::std_ext::ResultExt;
 
 pub(crate) type UserId = Id<User>;
 
@@ -23,11 +32,30 @@ impl PrefixedId for User {
     const PREFIX: &'static str = "u";
 }
 
-impl CedarEntity for User {
+impl<G: CoreConfig> CedarEntity<G> for User {
     const ENTITY_TYPE: &'static str = "User";
 
     fn entity_id(&self) -> cedar_policy::EntityId {
         cedar_policy::EntityId::new(self.id.to_string_unprefixed())
+    }
+
+    async fn parents(&self, global: &Arc<G>) -> Result<HashSet<cedar_policy::EntityUid>, tonic::Status> {
+        let mut db = global
+            .db()
+            .await
+            .into_tonic_internal_err("failed to get database connection")?;
+
+        let organization_ids = organization_members::dsl::organization_members
+            .filter(organization_members::dsl::user_id.eq(self.id))
+            .select(organization_members::dsl::organization_id)
+            .load::<OrganizationId>(&mut db)
+            .await
+            .into_tonic_internal_err("failed to load organization members")?;
+
+        Ok(organization_ids
+            .into_iter()
+            .map(|id| CedarEntity::<G>::entity_uid(&id))
+            .collect::<HashSet<_>>())
     }
 }
 
@@ -55,7 +83,7 @@ pub struct UserEmail {
     pub created_at: chrono::DateTime<chrono::Utc>,
 }
 
-impl CedarEntity for UserEmail {
+impl<G> CedarEntity<G> for UserEmail {
     const ENTITY_TYPE: &'static str = "UserEmail";
 
     fn entity_id(&self) -> cedar_policy::EntityId {
@@ -85,7 +113,7 @@ pub struct UserGoogleAccount {
     pub created_at: chrono::DateTime<chrono::Utc>,
 }
 
-impl CedarEntity for UserGoogleAccount {
+impl<G> CedarEntity<G> for UserGoogleAccount {
     const ENTITY_TYPE: &'static str = "UserGoogleAccount";
 
     fn entity_id(&self) -> cedar_policy::EntityId {

@@ -1,5 +1,5 @@
 <script lang="ts">
-    import Header from './Header.svelte';
+    import Header from './header.svelte';
     import StreamsTable from './streams-table.svelte';
 
     import type { ListResponse, Streamed } from '$lib/types';

@@ -2,7 +2,7 @@
     import IconConfigureTab from '$lib/images/icon-configure-tab.svelte';
     import ScuffleLogo from '$lib/images/scuffle-logo.svelte';
     import NavLinks from './nav-links.svelte';
-    import OrganizationInfo from './OrganizationToggle.svelte';
+    import OrganizationInfo from './organization-toggle.svelte';
     import { browser } from '$app/environment';
 
     let isCollapsed = $state(

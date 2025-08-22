@@ -2,13 +2,13 @@
     import '$styles/global.css';
     import '$styles/variables.css';
     import Navbar from '$components/left-nav/navbar.svelte';
-    import TopNav from '$components/top-nav/TopNav.svelte';
+    import TopNav from '$components/top-nav/top-nav.svelte';
     import { QueryClient, QueryClientProvider } from '@tanstack/svelte-query';
     import '@fontsource-variable/archivo';
     import { browser, dev } from '$app/environment';
     import { PUBLIC_VITE_MSW_ENABLED } from '$env/static/public';
     import { enableMocking } from '$msw/setup';
-    import RightNav from '$components/right-nav/RightNav.svelte';
+    import RightNav from '$components/right-nav/right-nav.svelte';
     import { authState, initializeAuth, authAPI, type AuthResult } from '$lib/authState.svelte';
     import LoginPage from '$components/login/login-page.svelte';
     import LoginHeader from '$components/login/login-header.svelte';

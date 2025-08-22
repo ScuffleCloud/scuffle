@@ -1,7 +1,7 @@
 <script lang="ts">
     import IconSwitch from '$lib/images/icon-switch.svelte';
     import { userStore } from '$lib/stores/user-store.svelte';
-    import OrganizationDropdown from './OrganizationDropdown.svelte';
+    import OrganizationDropdown from './organization-dropdown.svelte';
     import { createPopover, melt } from '@melt-ui/svelte';
 
     type Props = {

@@ -6,7 +6,7 @@
     import { page } from '$app/state';
     import { useUser } from '$lib/useUser';
     import IconSwitch from '$lib/images/icon-switch.svelte';
-    import NavSwitcher from './NavSwitcher.svelte';
+    import NavSwitcher from './nav-switcher.svelte';
     import IconConfigureTab from '$lib/images/icon-configure-tab.svelte';
 
     let showSearchModal = $state(false);

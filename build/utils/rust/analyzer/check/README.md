@@ -1,3 +1,4 @@
+<!-- dprint-ignore-file -->
 <!-- sync-readme title [[ -->
 # rust_analyzer_check
 <!-- sync-readme ]] -->

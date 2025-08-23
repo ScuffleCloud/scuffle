@@ -1,3 +1,4 @@
+<!-- dprint-ignore-file -->
 <!-- sync-readme title [[ -->
 # clippy_fixer
 <!-- sync-readme ]] -->

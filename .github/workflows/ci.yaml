@@ -58,6 +58,13 @@ jobs:
       codecov_token: ${{ secrets.CODECOV_TOKEN }}
       build_buddy_token: ${{ secrets.BUILD_BUDDY_TOKEN }}
 
+  check_fmt:
+    needs: [prep]
+    if: ${{ fromJson(needs.prep.outputs.prep).check_fmt != null }}
+    uses: ./.github/workflows/ci-check_fmt.yaml
+    secrets:
+      build_buddy_token: ${{ secrets.BUILD_BUDDY_TOKEN }}
+
   grind:
     needs: [prep]
     if: ${{ fromJson(needs.prep.outputs.prep).grind != null }}

@@ -153,7 +153,9 @@ def create_grind() -> Optional[Grind]:
         pr_number=pr_number(),
         matrix=[
             MatrixEntry(runner=LINUX_X86_64, os="linux", arch="x86_64"),
-            MatrixEntry(runner=LINUX_ARM64, os="linux", arch="aarch64"),
+            # Currently aarch64 has an issue with valgrind not respecting
+            # padding being uninitialized, reporting it as a "jump based on uninitialized"
+            # MatrixEntry(runner=LINUX_ARM64, os="linux", arch="aarch64"),
         ],
     )
 

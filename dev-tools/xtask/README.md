@@ -1,7 +1,10 @@
-<!-- cargo-sync-rdme title [[ -->
+<!-- dprint-ignore-file -->
+<!-- sync-readme title [[ -->
 # xtask
-<!-- cargo-sync-rdme ]] -->
+<!-- sync-readme ]] -->
+
+<!-- sync-readme badge -->
 
 ---
 
-Developer tools
+<!-- sync-readme rustdoc -->

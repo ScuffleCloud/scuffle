@@ -1,14 +1,14 @@
 [package]
 name = "scuffle-settings"
 version = "0.1.4"
-edition = "2024"
-repository = "https://github.com/scufflecloud/scuffle"
 authors = ["Scuffle <opensource@scuffle.cloud>"]
-readme = "README.md"
 documentation = "https://docs.rs/scuffle-settings"
-license = "MIT OR Apache-2.0"
-description = "Tools for managing configuration from environment variables or config files."
+edition = "2024"
 keywords = ["settings", "configuration", "environment", "config"]
+license = "MIT OR Apache-2.0"
+readme = "README.md"
+repository = "https://github.com/scufflecloud/scuffle"
+description = "Tools for managing configuration from environment variables or config files."
 
 [lints.rust]
 unexpected_cfgs = { level = "warn", check-cfg = ['cfg(coverage_nightly)'] }
@@ -52,7 +52,6 @@ document-features = { optional = true, version = "0.2" }
 minijinja = { features = ["custom_syntax", "json", "urlencode"], optional = true, version = "2.5" }
 scuffle-bootstrap = { optional = true, path = "../bootstrap", version = "0.1.3" }
 scuffle-changelog = { optional = true, path = "../changelog", version = "0.1.0" }
-scuffle-workspace-hack.workspace = true
 serde = "1"
 serde_derive = "1"
 thiserror = "2"
@@ -87,16 +86,12 @@ rustdoc-args = [
   "--generate-link-to-definition",
 ]
 
-[package.metadata.cargo-sync-rdme.rustdoc.mappings]
+[package.metadata.sync-readme.rustdoc-mappings]
 changelog = "./CHANGELOG.md"
-scuffle_bootstrap = "https://docs.rs/scuffle-bootstrap"
+scuffle_bootstrap = "../bootstrap"
 
-[package.metadata.cargo-sync-rdme.badge]
-style = "flat-square"
-
-[package.metadata.cargo-sync-rdme.badge.badges]
-license = true
+[package.metadata.sync-readme.badges]
 docs-rs = true
 crates-io = true
-github-actions = { workflows = "ci.yaml" }
+license = true
 codecov = true

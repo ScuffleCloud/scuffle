@@ -1,9 +1,0 @@
-name: Lockfile
-runs:
-  using: "composite"
-  steps:
-    - name: Make sure lockfile is up-to-date
-      shell: bash
-      run: |
-        cargo update --workspace
-        git diff --exit-code

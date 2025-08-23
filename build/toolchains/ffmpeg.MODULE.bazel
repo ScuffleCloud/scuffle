@@ -1,0 +1,123 @@
+http_archive = use_repo_rule("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive")
+
+_LINUX_BUILD_FILE = """
+load("@aspect_bazel_lib//lib:copy_to_directory.bzl", "copy_to_directory")
+
+copy_to_directory(
+    name = "include",
+    srcs = glob(["include/**"]),
+    root_paths = ["include"],
+    include_external_repositories = ["*"],
+    tags = ["no-cache", "manual"],
+    visibility = ["//visibility:public"],
+)
+
+copy_to_directory(
+    name = "lib",
+    srcs = glob(["lib/**"]),
+    root_paths = ["lib"],
+    include_external_repositories = ["*"],
+    tags = ["no-cache", "manual"],
+    visibility = ["//visibility:public"],
+)
+
+filegroup(
+    name = "ffmpeg_tool",
+    srcs = ["bin/ffmpeg"],
+    visibility = ["//visibility:public"],
+)
+
+filegroup(
+    name = "ffprobe_tool",
+    srcs = ["bin/ffprobe"],
+    visibility = ["//visibility:public"],
+)
+"""
+
+build_url = "https://github.com/BtbN/FFmpeg-Builds/releases/download/autobuild-2025-05-31-14-01"
+
+linux_x86_64 = "ffmpeg-n7.1.1-20-g9373b442a6-linux64-lgpl-shared-7.1"
+
+http_archive(
+    name = "ffmpeg-linux-x86_64",
+    build_file_content = _LINUX_BUILD_FILE,
+    sha256 = "4ef92effe5c53814e45dbf2ffcea9f1d808e411d3447409c01656865141346c7",
+    strip_prefix = linux_x86_64,
+    url = "{url}/{name}.tar.xz".format(
+        name = linux_x86_64,
+        url = build_url,
+    ),
+)
+
+linux_aarch64 = "ffmpeg-n7.1.1-20-g9373b442a6-linuxarm64-lgpl-shared-7.1"
+
+http_archive(
+    name = "ffmpeg-linux-aarch64",
+    build_file_content = _LINUX_BUILD_FILE,
+    sha256 = "d19d135cf9ff42b1994a811929e15e1b9fa75f2ab13164cbe33a5f5aab457103",
+    strip_prefix = linux_aarch64,
+    url = "{url}/{name}.tar.xz".format(
+        name = linux_aarch64,
+        url = build_url,
+    ),
+)
+
+_WINDOWS_BUILD_FILE = """
+load("@aspect_bazel_lib//lib:copy_to_directory.bzl", "copy_to_directory")
+
+copy_to_directory(
+    name = "include",
+    srcs = glob(["include/**"]),
+    root_paths = ["include"],
+    include_external_repositories = ["*"],
+    tags = ["no-cache", "manual"],
+    visibility = ["//visibility:public"],
+)
+
+copy_to_directory(
+    name = "lib",
+    srcs = glob(["bin/**"], exclude = ["bin/*.exe"]),
+    root_paths = ["bin"],
+    include_external_repositories = ["*"],
+    tags = ["no-cache", "manual"],
+    visibility = ["//visibility:public"],
+)
+
+filegroup(
+    name = "ffmpeg_tool",
+    srcs = ["bin/ffmpeg.exe"],
+    visibility = ["//visibility:public"],
+)
+
+filegroup(
+    name = "ffprobe_tool",
+    srcs = ["bin/ffprobe.exe"],
+    visibility = ["//visibility:public"],
+)
+"""
+
+windows_x86_64 = "ffmpeg-n7.1.1-20-g9373b442a6-win64-lgpl-shared-7.1"
+
+http_archive(
+    name = "ffmpeg-windows-x86_64",
+    build_file_content = _WINDOWS_BUILD_FILE,
+    sha256 = "5c57faa5289c0cc564687a5f6af91f486f163d7e0e83fae9b33fe2ad67094813",
+    strip_prefix = windows_x86_64,
+    url = "{url}/{name}.zip".format(
+        name = windows_x86_64,
+        url = build_url,
+    ),
+)
+
+windows_aarch64 = "ffmpeg-n7.1.1-20-g9373b442a6-winarm64-lgpl-shared-7.1"
+
+http_archive(
+    name = "ffmpeg-windows-aarch64",
+    build_file_content = _WINDOWS_BUILD_FILE,
+    sha256 = "df3927e9e7e359b44fc758b065ed642713b0d751fef878d9e83eb07290f4d367",
+    strip_prefix = windows_aarch64,
+    url = "{url}/{name}.zip".format(
+        name = windows_aarch64,
+        url = build_url,
+    ),
+)

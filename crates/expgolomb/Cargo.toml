@@ -1,14 +1,14 @@
 [package]
 name = "scuffle-expgolomb"
 version = "0.1.5"
-edition = "2024"
-repository = "https://github.com/scufflecloud/scuffle"
 authors = ["Scuffle <opensource@scuffle.cloud>"]
-readme = "README.md"
 documentation = "https://docs.rs/scuffle-expgolomb"
-license = "MIT OR Apache-2.0"
-description = "Exponential-Golomb encoder and decoder."
+edition = "2024"
 keywords = ["exp-golomb", "video", "h264", "h265"]
+license = "MIT OR Apache-2.0"
+readme = "README.md"
+repository = "https://github.com/scufflecloud/scuffle"
+description = "Exponential-Golomb encoder and decoder."
 
 [lints.rust]
 unexpected_cfgs = { level = "warn", check-cfg = ['cfg(coverage_nightly)'] }
@@ -21,7 +21,6 @@ docs = ["dep:scuffle-changelog", "dep:document-features"]
 document-features = { optional = true, version = "0.2" }
 scuffle-bytes-util = { path = "../bytes-util", version = "0.1.3" }
 scuffle-changelog = { optional = true, path = "../changelog", version = "0.1.0" }
-scuffle-workspace-hack.workspace = true
 
 [dev-dependencies]
 bytes = "1.5"
@@ -38,15 +37,11 @@ rustdoc-args = [
 [package.metadata.xtask.powerset]
 additive-features = ["docs"]
 
-[package.metadata.cargo-sync-rdme.rustdoc.mappings]
+[package.metadata.sync-readme.rustdoc-mappings]
 changelog = "./CHANGELOG.md"
 
-[package.metadata.cargo-sync-rdme.badge]
-style = "flat-square"
-
-[package.metadata.cargo-sync-rdme.badge.badges]
-license = true
+[package.metadata.sync-readme.badges]
 docs-rs = true
 crates-io = true
-github-actions = { workflows = "ci.yaml" }
+license = true
 codecov = true

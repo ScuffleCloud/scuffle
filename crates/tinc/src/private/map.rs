@@ -143,14 +143,14 @@ where
         })? {
             let _token = SerdePathToken::push_key(&key);
             let entry = self.tracker.entry(key.clone());
-            if let linear_map::Entry::Occupied(entry) = &entry {
-                if !entry.get().allow_duplicates() {
-                    report_tracked_error(TrackedError::duplicate_field())?;
-                    map.next_value::<serde::de::IgnoredAny>().inspect_err(|_| {
-                        set_irrecoverable();
-                    })?;
-                    continue;
-                }
+            if let linear_map::Entry::Occupied(entry) = &entry
+                && !entry.get().allow_duplicates()
+            {
+                report_tracked_error(TrackedError::duplicate_field())?;
+                map.next_value::<serde::de::IgnoredAny>().inspect_err(|_| {
+                    set_irrecoverable();
+                })?;
+                continue;
             }
 
             let tracker = entry.or_insert_with(Default::default);

@@ -306,12 +306,11 @@ mod tests {
     use crate::codec::DecoderCodec;
     use crate::decoder::{Decoder, DecoderOptions};
     use crate::io::Input;
-    use crate::{AVCodecID, AVMediaType};
+    use crate::{AVCodecID, AVMediaType, file_path};
 
     #[test]
     fn test_generic_decoder_debug() {
-        let valid_file_path = "../../assets/avc_aac_large.mp4";
-        let input = Input::open(valid_file_path).expect("Failed to open valid file");
+        let input = Input::open(file_path("avc_aac_large.mp4")).expect("Failed to open valid file");
         let streams = input.streams();
         let stream = streams
             .iter()
@@ -352,8 +351,7 @@ mod tests {
 
     #[test]
     fn test_video_decoder_debug() {
-        let valid_file_path = "../../assets/avc_aac_large.mp4";
-        let input = Input::open(valid_file_path).expect("Failed to open valid file");
+        let input = Input::open(file_path("avc_aac_large.mp4")).expect("Failed to open valid file");
         let streams = input.streams();
         let stream = streams
             .iter()
@@ -406,8 +404,7 @@ mod tests {
 
     #[test]
     fn test_audio_decoder_debug() {
-        let valid_file_path = "../../assets/avc_aac_large.mp4";
-        let input = Input::open(valid_file_path).expect("Failed to open valid file");
+        let input = Input::open(file_path("avc_aac_large.mp4")).expect("Failed to open valid file");
         let streams = input.streams();
         let stream = streams
             .iter()
@@ -458,8 +455,7 @@ mod tests {
 
     #[test]
     fn test_decoder_new() {
-        let valid_file_path = "../../assets/avc_aac_large.mp4";
-        let input = Input::open(valid_file_path).expect("Failed to open valid file");
+        let input = Input::open(file_path("avc_aac_large.mp4")).expect("Failed to open valid file");
         let streams = input.streams();
         let stream = streams
             .iter()
@@ -484,8 +480,7 @@ mod tests {
 
     #[test]
     fn test_decoder_with_options_missing_codec_parameters() {
-        let valid_file_path = "../../assets/avc_aac_large.mp4";
-        let mut input = Input::open(valid_file_path).expect("Failed to open valid file");
+        let mut input = Input::open(file_path("avc_aac_large.mp4")).expect("Failed to open valid file");
         let mut streams = input.streams_mut();
         let mut stream = streams.get(0).expect("Expected a valid stream");
         // Safety: Stream is a valid pointer.
@@ -511,8 +506,7 @@ mod tests {
 
     #[test]
     fn test_decoder_with_options_non_video_audio_codec_type() {
-        let valid_file_path = "../../assets/avc_aac_large.mp4";
-        let mut input = Input::open(valid_file_path).expect("Failed to open valid file");
+        let mut input = Input::open(file_path("avc_aac_large.mp4")).expect("Failed to open valid file");
         let mut streams = input.streams_mut();
         let mut stream = streams.get(0).expect("Expected a valid stream");
         // Safety: We are setting the `codecpar` to `null` to simulate a missing codec parameters.
@@ -537,8 +531,7 @@ mod tests {
 
     #[test]
     fn test_video_decoder_deref_mut_safe() {
-        let valid_file_path = "../../assets/avc_aac_large.mp4";
-        let input = Input::open(valid_file_path).expect("Failed to open valid file");
+        let input = Input::open(file_path("avc_aac_large.mp4")).expect("Failed to open valid file");
         let streams = input.streams();
         let stream = streams
             .iter()
@@ -573,8 +566,7 @@ mod tests {
 
     #[test]
     fn test_audio_decoder_deref_mut() {
-        let valid_file_path = "../../assets/avc_aac_large.mp4";
-        let input = Input::open(valid_file_path).expect("Failed to open valid file");
+        let input = Input::open(file_path("avc_aac_large.mp4")).expect("Failed to open valid file");
         let streams = input.streams();
         let stream = streams
             .iter()
@@ -609,8 +601,7 @@ mod tests {
 
     #[test]
     fn test_decoder_video() {
-        let valid_file_path = "../../assets/avc_aac_large.mp4";
-        let mut input = Input::open(valid_file_path).expect("Failed to open valid file");
+        let mut input = Input::open(file_path("avc_aac_large.mp4")).expect("Failed to open valid file");
         let streams = input.streams();
         let video_stream = streams.best(AVMediaType::Video).expect("No video stream found");
         let audio_stream = streams.best(AVMediaType::Audio).expect("No audio stream found");

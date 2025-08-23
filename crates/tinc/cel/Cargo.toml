@@ -1,14 +1,14 @@
 [package]
 name = "tinc-cel"
 version = "0.2.0"
-edition = "2024"
-description = "A CEL Type used by tinc-build and tinc for validating protobuf messages"
-repository = "https://github.com/scufflecloud/scuffle"
 authors = ["Scuffle <opensource@scuffle.cloud>"]
-readme = "README.md"
 documentation = "https://docs.rs/tinc-build"
-license = "MIT OR Apache-2.0"
+edition = "2024"
 keywords = ["grpc", "protobuf", "tonic", "codegen"]
+license = "MIT OR Apache-2.0"
+readme = "README.md"
+repository = "https://github.com/scufflecloud/scuffle"
+description = "A CEL Type used by tinc-build and tinc for validating protobuf messages"
 
 [lints.rust]
 unexpected_cfgs = { level = "warn", check-cfg = ['cfg(coverage_nightly)'] }
@@ -29,7 +29,6 @@ fmtools = "0.1"
 linkme = "0.3"
 num-traits = "0.2.19"
 regex = "1"
-scuffle-workspace-hack.workspace = true
 thiserror = "2"
 url = "2"
 uuid = "1"
@@ -49,15 +48,15 @@ rustdoc-args = [
   "--generate-link-to-definition",
 ]
 
-[package.metadata.cargo-sync-rdme.badge]
-style = "flat-square"
-
-[package.metadata.cargo-sync-rdme.badge.badges]
-license = true
-docs-rs = true
-crates-io = true
-github-actions = { workflows = "ci.yaml" }
-codecov = true
-
 [package.metadata.xtask.release]
 group = "tinc"
+
+[package.metadata.sync-readme.rustdoc-mappings]
+changelog = "./CHANGELOG.md"
+Annotations = "./annotations.proto"
+
+[package.metadata.sync-readme.badges]
+docs-rs = true
+crates-io = true
+license = true
+codecov = true

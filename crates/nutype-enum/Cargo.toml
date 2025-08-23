@@ -1,0 +1,43 @@
+[package]
+name = "nutype-enum"
+version = "0.1.5"
+authors = ["Scuffle <opensource@scuffle.cloud>"]
+documentation = "https://docs.rs/nutype-enum"
+edition = "2024"
+keywords = ["enum", "nutype"]
+license = "MIT OR Apache-2.0"
+readme = "README.md"
+repository = "https://github.com/scufflecloud/scuffle"
+description = "Helper macro to create a nutype that behaves like an enum."
+
+[lints.rust]
+unexpected_cfgs = { level = "warn", check-cfg = ['cfg(coverage_nightly)'] }
+
+[features]
+## Enables changelog and documentation of feature flags
+docs = ["dep:scuffle-changelog", "dep:document-features"]
+
+[dependencies]
+document-features = { optional = true, version = "0.2" }
+scuffle-changelog = { optional = true, path = "../changelog", version = "0.1.0" }
+
+[package.metadata.docs.rs]
+all-features = true
+rustdoc-args = [
+  "--cfg",
+  "docsrs",
+  "--sort-modules-by-appearance",
+  "--generate-link-to-definition",
+]
+
+[package.metadata.xtask.powerset]
+additive-features = ["docs"]
+
+[package.metadata.sync-readme.rustdoc-mappings]
+changelog = "./CHANGELOG.md"
+
+[package.metadata.sync-readme.badges]
+docs-rs = true
+crates-io = true
+license = true
+codecov = true

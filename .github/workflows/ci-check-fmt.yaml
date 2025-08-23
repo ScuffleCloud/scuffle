@@ -1,0 +1,36 @@
+name: Check Fmt
+
+on:
+  workflow_call:
+    secrets:
+      build_buddy_token:
+        required: true
+
+defaults:
+  run:
+    shell: bash
+
+jobs:
+  check_fmt:
+    runs-on: ubicloud-standard-8-ubuntu-2404
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: ./.github/actions/setup-bazel
+        with:
+          build_buddy_token: ${{ secrets.build_buddy_token }}
+
+      - name: Format bazel
+        run: bazel run //tools/buildifier -- $(git ls-files "*.bzl" "*.bazel" | xargs ls 2>/dev/null)
+
+      - name: Format dprint
+        run: bazel run //tools/dprint -- fmt
+
+      - name: Format buf
+        run: bazel run //tools/buf -- format -w --disable-symlinks --debug
+
+      - name: Format just
+        run: bazel run //tools/just -- --unstable --fmt
+
+      - name: Exit on diff
+        run: git diff --exit-code

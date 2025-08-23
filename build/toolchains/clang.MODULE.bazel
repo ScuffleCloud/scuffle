@@ -1,0 +1,317 @@
+http_archive = use_repo_rule("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive")
+
+_LINUX_SYSROOT_BUILD_FILE = """
+load("@bazel_skylib//rules/directory:directory.bzl", "directory")
+load("@bazel_skylib//rules/directory:subdirectory.bzl", "subdirectory")
+load("@rules_cc//cc/toolchains/args:sysroot.bzl", "cc_sysroot")
+
+package(default_visibility = ["//visibility:public"])
+
+licenses(["notice"])
+
+directory(
+    name = "root",
+    srcs = glob(["**/*"]),
+)
+
+subdirectory(
+    name = "usr-include-arch",
+    parent = ":root",
+    path = "usr/include/{target_arch}",
+)
+
+subdirectory(
+    name = "usr-include",
+    parent = ":root",
+    path = "usr/include",
+)
+
+cc_sysroot(
+    name = "sysroot",
+    data = [":root"],
+    sysroot = ":root",
+)
+
+subdirectory(
+    name = "usr-lib",
+    parent = ":root",
+    path = "usr/lib/{target_arch}",
+)
+"""
+
+_MACOS_SYSROOT_BUILD_FILE = """
+load("@bazel_skylib//rules/directory:directory.bzl", "directory")
+load("@bazel_skylib//rules/directory:subdirectory.bzl", "subdirectory")
+load("@rules_cc//cc/toolchains/args:sysroot.bzl", "cc_sysroot")
+
+package(default_visibility = ["//visibility:public"])
+
+licenses(["notice"])
+
+directory(
+    name = "root",
+    srcs = glob(["**/*"]),
+)
+
+subdirectory(
+    name = "usr-include",
+    parent = ":root",
+    path = "usr/include",
+)
+
+cc_sysroot(
+    name = "sysroot",
+    data = [":root"],
+    sysroot = ":root",
+)
+
+subdirectory(
+    name = "usr-lib",
+    parent = ":root",
+    path = "usr/lib",
+)
+"""
+
+http_archive(
+    name = "sysroots-linux-x86_64",
+    build_file_content = _LINUX_SYSROOT_BUILD_FILE.format(target_arch = "x86_64-linux-gnu"),
+    sha256 = "ea827763bac1ae25228708a820235bbfe69b57c87683742dcc49ddee6efa86c0",
+    url = "https://github.com/ScuffleCloud/toolchains/releases/download/linux-sysroots-3/linux-sysroot-focal-x86_64.tar.zst",
+)
+
+http_archive(
+    name = "sysroots-linux-aarch64",
+    build_file_content = _LINUX_SYSROOT_BUILD_FILE.format(target_arch = "aarch64-linux-gnu"),
+    sha256 = "f19c122b7d16a23935301b8627db6a401559c0981254b36991e97bcde5af9393",
+    url = "https://github.com/ScuffleCloud/toolchains/releases/download/linux-sysroots-3/linux-sysroot-focal-aarch64.tar.zst",
+)
+
+http_archive(
+    name = "sysroots-macos-universal",
+    build_file_content = _MACOS_SYSROOT_BUILD_FILE,
+    sha256 = "1eadf666e7e0299a75212205f83f3b7b7b0657f55aad83540409b13f0a281312",
+    strip_prefix = "MacOSX14.5.sdk-min",
+    url = "https://github.com/ScuffleCloud/toolchains/releases/download/macos-sysroots-1/MacOSX14.5.sdk-min.tar.zst",
+)
+
+_CLANG_BUILD_FILE = """
+load("@bazel_skylib//rules/directory:directory.bzl", "directory")
+load("@bazel_skylib//rules/directory:subdirectory.bzl", "subdirectory")
+load("@rules_cc//cc/toolchains:args.bzl", "cc_args")
+
+package(default_visibility = ["//visibility:public"])
+
+licenses(["notice"])
+
+exports_files(glob(["bin/**"]))
+
+# Directory-based rules in this toolchain only referece things in
+# lib/ or include/ subdirectories.
+directory(
+    name = "toolchain_root",
+    srcs = glob([
+        "lib/**",
+        "include/**",
+    ]),
+)
+
+subdirectory(
+    name = "cxx-include",
+    parent = ":toolchain_root",
+    path = "include/c++/v1",
+)
+
+subdirectory(
+    name = "libclang-include",
+    parent = ":toolchain_root",
+    path = "lib/clang/{clang_major}/include",
+)
+
+filegroup(
+    name = "builtin_headers",
+    srcs = [
+        ":cxx-include",
+        ":libclang-include",
+    ],
+)
+
+cc_args(
+    name = "system_includes",
+    actions = ["@rules_cc//cc/toolchains/actions:compile_actions"],
+    args = [
+        "-isystem",
+        "{{cxx-include}}",
+        "-isystem",
+        "{{libclang-include}}",
+    ],
+    data = [
+        ":cxx-include",
+        ":libclang-include",
+    ],
+    format = {{
+        "cxx-include": ":cxx-include",
+        "libclang-include": ":libclang-include",
+    }},
+)
+
+
+# Various supporting files needed to run the linker.
+filegroup(
+    name = "linker_builtins",
+    data = glob([
+        "bin/lld*",
+        "bin/ld*",
+        "lib/**/*.a",
+        "lib/**/*.so*",
+        "lib/**/*.o",
+    ]) + [
+        ":multicall_support_files",
+    ],
+)
+
+filegroup(
+    name = "dynamic_runtime_lib",
+    data = glob([
+        "lib/**/*.so*",
+    ]),
+)
+
+filegroup(
+    name = "static_runtime_lib",
+    data = glob([
+        "lib/**/*.a",
+    ]),
+)
+
+# Some toolchain distributions use busybox-style handling of tools, so things
+# like `clang++` just redirect to a `llvm` binary. This glob catches this
+# binary if it's included in the distribution, and is a no-op if the multicall
+# binary doesn't exist.
+filegroup(
+    name = "multicall_support_files",
+    srcs = glob(
+        ["bin/llvm"],
+        allow_empty = True,
+    ),
+)
+"""
+
+LLVM_VERSION = "20.1.7"
+
+LLVM_BUILD = "16152059701"
+
+LLVM_BASE_URL = "https://github.com/scufflecloud/toolchains/releases/download/clang-{version}-{build}/{file}"
+
+http_archive(
+    name = "clang-macos-aarch64",
+    build_file_content = _CLANG_BUILD_FILE.format(clang_major = LLVM_VERSION.split(".")[0]),
+    sha256 = "56d0383118caede29c00c1b3fbbffde8829004ffdfb45965416371858798debe",
+    url = LLVM_BASE_URL.format(
+        build = LLVM_BUILD,
+        file = "darwin_aarch64.tar.zst",
+        version = LLVM_VERSION,
+    ),
+)
+
+http_archive(
+    name = "clang-macos-x86_64",
+    build_file_content = _CLANG_BUILD_FILE.format(clang_major = LLVM_VERSION.split(".")[0]),
+    sha256 = "",
+    url = LLVM_BASE_URL.format(
+        build = LLVM_BUILD,
+        file = "darwin_x86_64.tar.zst",
+        version = LLVM_VERSION,
+    ),
+)
+
+http_archive(
+    name = "clang-linux-aarch64",
+    build_file_content = _CLANG_BUILD_FILE.format(clang_major = LLVM_VERSION.split(".")[0]),
+    sha256 = "2345ce3a2d9a733c607fc1de2c323812dcf9519a6861117e742435244862b0a6",
+    url = LLVM_BASE_URL.format(
+        build = LLVM_BUILD,
+        file = "linux_aarch64.tar.zst",
+        version = LLVM_VERSION,
+    ),
+)
+
+http_archive(
+    name = "clang-linux-x86_64",
+    build_file_content = _CLANG_BUILD_FILE.format(clang_major = LLVM_VERSION.split(".")[0]),
+    sha256 = "7357ea1df7855f4a2c7e48f267a2e1cef82f781dedd4787856640586fd5852ac",
+    url = LLVM_BASE_URL.format(
+        build = LLVM_BUILD,
+        file = "linux_x86_64.tar.zst",
+        version = LLVM_VERSION,
+    ),
+)
+
+register_toolchains(
+    "//build/toolchains/clang:host_clang_toolchain",
+)
+
+_LIBCLANG_BUILD_FILE = """
+load("@aspect_bazel_lib//lib:copy_to_directory.bzl", "copy_to_directory")
+
+copy_to_directory(
+    name = "lib",
+    include_external_repositories = ["*"],
+    srcs = glob(["lib/**"]),
+    root_paths = ["lib"],
+    tags = ["no-cache", "manual"],
+    visibility = ["//visibility:public"],
+)
+
+copy_to_directory(
+    name = "bin",
+    include_external_repositories = ["*"],
+    srcs = glob(["bin/**"]),
+    root_paths = ["bin"],
+    tags = ["no-cache", "manual"],
+    visibility = ["//visibility:public"],
+)
+"""
+
+http_archive(
+    name = "libclang-linux-x86_64",
+    build_file_content = _LIBCLANG_BUILD_FILE,
+    sha256 = "b6f796b7d6c57ec453d89ae006951465ab4993abe49dc28d7dbaa689e9ba7062",
+    url = LLVM_BASE_URL.format(
+        build = LLVM_BUILD,
+        file = "linux_x86_64_libclang.tar.zst",
+        version = LLVM_VERSION,
+    ),
+)
+
+http_archive(
+    name = "libclang-linux-aarch64",
+    build_file_content = _LIBCLANG_BUILD_FILE,
+    sha256 = "575c887ccb48e0ec7edfd91cc526c4de0776c5893feeb4e7c3af85a0c32406ad",
+    url = LLVM_BASE_URL.format(
+        build = LLVM_BUILD,
+        file = "linux_aarch64_libclang.tar.zst",
+        version = LLVM_VERSION,
+    ),
+)
+
+http_archive(
+    name = "libclang-macos-x86_64",
+    build_file_content = _LIBCLANG_BUILD_FILE,
+    sha256 = "",
+    url = LLVM_BASE_URL.format(
+        build = LLVM_BUILD,
+        file = "darwin_x86_64_libclang.tar.zst",
+        version = LLVM_VERSION,
+    ),
+)
+
+http_archive(
+    name = "libclang-macos-aarch64",
+    build_file_content = _LIBCLANG_BUILD_FILE,
+    sha256 = "54349e1f18abbd6f17c98ef1a845dfb0f262560a3da8964ba6a841e46408fbd5",
+    url = LLVM_BASE_URL.format(
+        build = LLVM_BUILD,
+        file = "darwin_aarch64_libclang.tar.zst",
+        version = LLVM_VERSION,
+    ),
+)

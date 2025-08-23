@@ -1,14 +1,14 @@
 [package]
 name = "scuffle-ffmpeg"
 version = "0.3.5"
-edition = "2024"
-repository = "https://github.com/scufflecloud/scuffle"
 authors = ["Scuffle <opensource@scuffle.cloud>"]
-readme = "README.md"
 documentation = "https://docs.rs/scuffle-ffmpeg"
-license = "MIT OR Apache-2.0"
-description = "FFmpeg bindings for Rust."
+edition = "2024"
 keywords = ["ffmpeg", "video", "audio", "media"]
+license = "MIT OR Apache-2.0"
+readme = "README.md"
+repository = "https://github.com/scufflecloud/scuffle"
+description = "FFmpeg bindings for Rust."
 
 [lints.rust]
 unexpected_cfgs = { level = "warn", check-cfg = ['cfg(coverage_nightly)'] }
@@ -20,11 +20,10 @@ bytes = { optional = true, version = "1" }
 crossbeam-channel = { optional = true, version = "0.5.13" }
 document-features = { optional = true, version = "0.2" }
 libc = "0.2"
-nutype-enum = { path = "../nutype_enum", version = "0.1.4" }
+nutype-enum = { path = "../nutype-enum", version = "0.1.4" }
 rand = "0.9"
-rusty_ffmpeg = "0.16.1"
+rusty_ffmpeg = "0.16.4"
 scuffle-changelog = { optional = true, path = "../changelog", version = "0.1.0" }
-scuffle-workspace-hack.workspace = true
 thiserror = "2.0"
 tokio = { features = ["sync"], optional = true, version = "1" }
 tracing = { optional = true, version = "0.1" }
@@ -77,15 +76,11 @@ rustdoc-args = [
   "--generate-link-to-definition",
 ]
 
-[package.metadata.cargo-sync-rdme.rustdoc.mappings]
+[package.metadata.sync-readme.rustdoc-mappings]
 changelog = "./CHANGELOG.md"
 
-[package.metadata.cargo-sync-rdme.badge]
-style = "flat-square"
-
-[package.metadata.cargo-sync-rdme.badge.badges]
-license = true
+[package.metadata.sync-readme.badges]
 docs-rs = true
 crates-io = true
-github-actions = { workflows = "ci.yaml" }
+license = true
 codecov = true

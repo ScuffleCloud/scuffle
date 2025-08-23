@@ -1,14 +1,14 @@
 [package]
 name = "scuffle-metrics"
 version = "0.4.2"
-edition = "2024"
-repository = "https://github.com/scufflecloud/scuffle"
 authors = ["Scuffle <opensource@scuffle.cloud>"]
-readme = "README.md"
 documentation = "https://docs.rs/scuffle-metrics"
-license = "MIT OR Apache-2.0"
-description = "Helper crate to instrument your code with metrics."
+edition = "2024"
 keywords = ["metrics", "prometheus", "opentelemetry"]
+license = "MIT OR Apache-2.0"
+readme = "README.md"
+repository = "https://github.com/scufflecloud/scuffle"
+description = "Helper crate to instrument your code with metrics."
 
 [lints.rust]
 unexpected_cfgs = { level = "warn", check-cfg = ['cfg(coverage_nightly)'] }
@@ -35,15 +35,11 @@ docs = ["dep:scuffle-changelog", "dep:document-features"]
 [dependencies]
 document-features = { optional = true, version = "0.2" }
 opentelemetry = { default-features = false, features = ["metrics"], version = "0.30" }
-opentelemetry_sdk = { default-features = false, features = [
-  "experimental_metrics_custom_reader",
-  "metrics",
-], version = "0.30" }
+opentelemetry_sdk = { default-features = false, features = ["experimental_metrics_custom_reader", "metrics"], version = "0.30" }
 parking_lot = "0.12"
 prometheus-client = { optional = true, version = "0.23" }
 scuffle-changelog = { optional = true, path = "../changelog", version = "0.1.0" }
 scuffle-metrics-derive = { path = "derive", version = "=0.4.2" }
-scuffle-workspace-hack.workspace = true
 tracing = { optional = true, version = "0.1" }
 
 [dev-dependencies]
@@ -72,16 +68,11 @@ additive-features = [
   "docs",
 ]
 
-[package.metadata.cargo-sync-rdme.rustdoc.mappings]
+[package.metadata.sync-readme.rustdoc-mappings]
 changelog = "./CHANGELOG.md"
-metrics = "."
 
-[package.metadata.cargo-sync-rdme.badge]
-style = "flat-square"
-
-[package.metadata.cargo-sync-rdme.badge.badges]
-license = true
+[package.metadata.sync-readme.badges]
 docs-rs = true
 crates-io = true
-github-actions = { workflows = "ci.yaml" }
+license = true
 codecov = true

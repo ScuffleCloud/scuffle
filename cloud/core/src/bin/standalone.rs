@@ -4,6 +4,7 @@ use std::sync::Arc;
 
 use anyhow::Context;
 use diesel_async::pooled_connection::bb8;
+use fred::prelude::ClientLike;
 use scuffle_bootstrap_telemetry::opentelemetry;
 use scuffle_bootstrap_telemetry::opentelemetry_sdk::logs::SdkLoggerProvider;
 use scuffle_bootstrap_telemetry::opentelemetry_sdk::trace::SdkTracerProvider;
@@ -33,6 +34,7 @@ pub struct Config {
     pub timeouts: TimeoutConfig,
     pub google_oauth2: GoogleOAuth2Config,
     pub telemetry: Option<TelemetryConfig>,
+    pub redis: RedisConfig,
     #[default = "no-reply@scuffle.cloud"]
     pub email_from_address: String,
 }
@@ -68,6 +70,69 @@ pub struct TelemetryConfig {
     pub bind: SocketAddr,
 }
 
+#[derive(serde_derive::Deserialize, smart_default::SmartDefault, Debug, Clone)]
+pub struct RedisConfig {
+    #[default(vec!["localhost:6379".to_string()])]
+    pub servers: Vec<String>,
+    #[default(None)]
+    pub username: Option<String>,
+    #[default(None)]
+    pub password: Option<String>,
+    #[default(0)]
+    pub database: u8,
+    #[default(10)]
+    pub max_connections: usize,
+    #[default(10)]
+    pub pool_size: usize,
+}
+
+fn parse_server(server: &str) -> anyhow::Result<fred::types::config::Server> {
+    let port_ip = server.split(':').collect::<Vec<_>>();
+
+    if port_ip.len() == 1 {
+        Ok(fred::types::config::Server::new(port_ip[0], 6379))
+    } else {
+        Ok(fred::types::config::Server::new(
+            port_ip[0],
+            port_ip[1].parse::<u16>().context("invalid port")?,
+        ))
+    }
+}
+
+impl RedisConfig {
+    async fn setup(&self) -> anyhow::Result<fred::clients::Pool> {
+        let redis_server_config = if self.servers.len() == 1 {
+            fred::types::config::ServerConfig::Centralized {
+                server: parse_server(&self.servers[0])?,
+            }
+        } else {
+            fred::types::config::ServerConfig::Clustered {
+                hosts: self
+                    .servers
+                    .iter()
+                    .map(|s| parse_server(s))
+                    .collect::<anyhow::Result<Vec<_>>>()?,
+                policy: Default::default(),
+            }
+        };
+
+        let config = fred::types::config::Config {
+            server: redis_server_config,
+            database: Some(self.database),
+            fail_fast: true,
+            password: self.password.clone(),
+            username: self.username.clone(),
+            ..Default::default()
+        };
+
+        let client = fred::clients::Pool::new(config, None, None, None, self.max_connections).context("redis pool")?;
+
+        client.init().await?;
+
+        Ok(client)
+    }
+}
+
 scuffle_settings::bootstrap!(Config);
 
 struct Global {
@@ -77,6 +142,7 @@ struct Global {
     http_client: reqwest::Client,
     webauthn: webauthn_rs::Webauthn,
     open_telemetry: opentelemetry::OpenTelemetry,
+    redis: fred::clients::Pool,
 }
 
 impl scufflecloud_core::CoreConfig for Global {
@@ -102,6 +168,10 @@ impl scufflecloud_core::CoreConfig for Global {
 
     fn webauthn(&self) -> &webauthn_rs::Webauthn {
         &self.webauthn
+    }
+
+    fn redis(&self) -> &fred::clients::Pool {
+        &self.redis
     }
 
     fn swagger_ui_enabled(&self) -> bool {
@@ -220,6 +290,8 @@ impl scuffle_bootstrap::Global for Global {
             .with_traces(tracer)
             .with_logs(logger);
 
+        let redis = config.redis.setup().await?;
+
         Ok(Arc::new(Self {
             config,
             database,
@@ -227,6 +299,7 @@ impl scuffle_bootstrap::Global for Global {
             http_client,
             webauthn,
             open_telemetry,
+            redis,
         }))
     }
 }

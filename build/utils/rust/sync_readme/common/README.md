@@ -1,3 +1,4 @@
+<!-- dprint-ignore-file -->
 <!-- sync-readme title [[ -->
 # sync_readme_common
 <!-- sync-readme ]] -->

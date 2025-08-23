@@ -37,9 +37,13 @@ rust_library(
     crate_features = [
         "alloc",
         "default",
+        "zeroize_derive",
     ],
     crate_root = "src/lib.rs",
     edition = "2021",
+    proc_macro_deps = [
+        "@bindeps__zeroize_derive-1.4.2//:zeroize_derive",
+    ],
     rustc_env_files = [
         ":cargo_toml_env_vars",
     ],

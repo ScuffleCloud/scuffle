@@ -1,3 +1,4 @@
+<!-- dprint-ignore-file -->
 <!-- sync-readme title [[ -->
 # scuffle-av1
 <!-- sync-readme ]] -->

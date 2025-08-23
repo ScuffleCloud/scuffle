@@ -38,6 +38,29 @@ rust_library(
             "WORKSPACE.bazel",
         ],
     ),
+    crate_features = select({
+        "@rules_rust//rust/platform:aarch64-apple-darwin": [
+            "channel",
+            "default",
+            "iterator",
+        ],
+        "@rules_rust//rust/platform:aarch64-unknown-linux-gnu": [
+            "channel",
+            "default",
+            "iterator",
+        ],
+        "@rules_rust//rust/platform:x86_64-apple-darwin": [
+            "channel",
+            "default",
+            "iterator",
+        ],
+        "@rules_rust//rust/platform:x86_64-unknown-linux-gnu": [
+            "channel",
+            "default",
+            "iterator",
+        ],
+        "//conditions:default": [],
+    }),
     crate_root = "src/lib.rs",
     edition = "2018",
     rustc_env_files = [
@@ -89,6 +112,29 @@ cargo_build_script(
             "WORKSPACE.bazel",
         ],
     ),
+    crate_features = select({
+        "@rules_rust//rust/platform:aarch64-apple-darwin": [
+            "channel",
+            "default",
+            "iterator",
+        ],
+        "@rules_rust//rust/platform:aarch64-unknown-linux-gnu": [
+            "channel",
+            "default",
+            "iterator",
+        ],
+        "@rules_rust//rust/platform:x86_64-apple-darwin": [
+            "channel",
+            "default",
+            "iterator",
+        ],
+        "@rules_rust//rust/platform:x86_64-unknown-linux-gnu": [
+            "channel",
+            "default",
+            "iterator",
+        ],
+        "//conditions:default": [],
+    }),
     crate_name = "build_script_build",
     crate_root = "build.rs",
     data = glob(

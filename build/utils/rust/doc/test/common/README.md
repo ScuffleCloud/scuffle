@@ -1,3 +1,4 @@
+<!-- dprint-ignore-file -->
 <!-- sync-readme title [[ -->
 # rust_doctest_common
 <!-- sync-readme ]] -->

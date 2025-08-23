@@ -38,6 +38,7 @@ rust_library(
         "bytes",
         "default",
         "fs",
+        "io-std",
         "io-util",
         "libc",
         "macros",

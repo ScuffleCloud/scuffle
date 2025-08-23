@@ -1,3 +1,4 @@
+<!-- dprint-ignore-file -->
 <!-- sync-readme title [[ -->
 # scufflecloud-proto
 <!-- sync-readme ]] -->

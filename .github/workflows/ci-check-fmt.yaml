@@ -1,0 +1,24 @@
+name: Check Fmt
+
+on:
+  workflow_call:
+    secrets:
+      build_buddy_token:
+        required: true
+
+defaults:
+  run:
+    shell: bash
+
+jobs:
+  check_fmt:
+    runs-on: ubicloud-standard-8-ubuntu-2404
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: ./.github/actions/setup-bazel
+        with:
+          build_buddy_token: ${{ secrets.build_buddy_token }}
+
+      - name: Run
+        run: bazel run //tools/dprint -- check

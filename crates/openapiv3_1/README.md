@@ -1,3 +1,4 @@
+<!-- dprint-ignore-file -->
 <!-- sync-readme title [[ -->
 # openapiv3_1
 <!-- sync-readme ]] -->

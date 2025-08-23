@@ -98,6 +98,10 @@ class Grind:
 class CheckVendor:
     pass
 
+@dataclass
+class CheckFmt:
+    pass
+
 
 @dataclass
 class Jobs:
@@ -106,6 +110,7 @@ class Jobs:
     test: Optional[Test]
     grind: Optional[Grind]
     check_vendor: Optional[CheckVendor]
+    check_fmt: Optional[CheckFmt]
 
 
 def deploy_docs() -> bool:
@@ -163,6 +168,9 @@ def create_grind() -> Optional[Grind]:
 def create_check_vendor() -> Optional[CheckVendor]:
     return CheckVendor()
 
+def create_fmt() -> Optional[CheckFmt]:
+    return CheckFmt()
+
 def create_jobs() -> Jobs:
     return Jobs(
         rustdoc=create_rustdoc(),
@@ -170,6 +178,7 @@ def create_jobs() -> Jobs:
         docusaurus=create_docusaurus(),
         grind=create_grind(),
         test=create_test(),
+        check_fmt=create_fmt(),
     )
 
 

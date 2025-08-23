@@ -1,3 +1,4 @@
+<!-- dprint-ignore-file -->
 <!-- sync-readme title [[ -->
 # scuffle-rtmp
 <!-- sync-readme ]] -->

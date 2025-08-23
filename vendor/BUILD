@@ -70,6 +70,20 @@ crates_vendor(
     annotations = {
         binary: [crate.annotation(gen_binaries = True)]
         for binary in ["cargo-deny", "cargo-insta", "just", "miniserve", "rust-analyzer"]
+    } | {
+        "dprint": [
+            crate.annotation(gen_binaries = True, gen_build_script = False, rustc_env = {
+                "TARGET": "",
+                "RUSTC_VERSION_TEXT": "",
+            })
+        ],
+        "bzip2-sys": [
+            crate.annotation(
+                build_script_env = {
+                    "CFLAGS": "$(CFLAGS) -Wno-error -w",
+                },
+            ),
+        ],
     },
     packages = {
         "cargo-deny": crate.spec(
@@ -80,6 +94,12 @@ crates_vendor(
             artifact = "bin",
             version = "1.43.1",
         ),
+        # Currently using a fork due to https://github.com/dprint/dprint/issues/1020
+        "dprint": crate.spec(
+            artifact = "bin",
+            git = "https://github.com/TroyKomodo/dprint.git",
+            rev = "a966de1d32d43e21711e7a46197acd5645f052be",
+        ),
         "just": crate.spec(
             artifact = "bin",
             version = "1.42.4",
@@ -88,6 +108,7 @@ crates_vendor(
             artifact = "bin",
             version = "0.31.0",
         ),
+        # Currently using a fork due to https://github.com/rust-lang/rust-analyzer/issues/20359
         "rust-analyzer": crate.spec(
             artifact = "bin",
             git = "https://github.com/TroyKomodo/rust-analyzer.git",

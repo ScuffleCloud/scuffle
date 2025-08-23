@@ -36,6 +36,7 @@ rust_library(
     ),
     crate_features = [
         "as_ref",
+        "debug",
         "default",
         "deref",
         "deref_mut",

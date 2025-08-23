@@ -24,6 +24,9 @@ const NONCE_HEADER: HeaderName = HeaderName::from_static("scuf-nonce");
 const AUTHENTICATION_METHOD_HEADER: HeaderName = HeaderName::from_static("scuf-auth-method");
 const AUTHENTICATION_HMAC_HEADER: HeaderName = HeaderName::from_static("scuf-auth-hmac");
 
+#[derive(Clone, Debug)]
+pub(crate) struct ExpiredSession(pub UserSession);
+
 pub(crate) async fn auth<G: CoreConfig>(mut req: Request, next: Next) -> Result<Response, StatusCode> {
     let global = req
         .extensions()
@@ -34,8 +37,12 @@ pub(crate) async fn auth<G: CoreConfig>(mut req: Request, next: Next) -> Result<
         .ip_address_info()
         .map_err(|_| StatusCode::INTERNAL_SERVER_ERROR)?;
 
-    if let Some(session) = get_and_update_active_session(&global, &ip_info, req.headers()).await? {
+    let (session, expired_session) = get_and_update_active_session(&global, &ip_info, req.headers()).await?;
+    if let Some(session) = session {
         req.extensions_mut().insert(session);
+    }
+    if let Some(expired_session) = expired_session {
+        req.extensions_mut().insert(expired_session);
     }
 
     Ok(next.run(req).await)
@@ -149,24 +156,24 @@ async fn get_and_update_active_session<G: CoreConfig>(
     global: &Arc<G>,
     ip_info: &IpAddressInfo,
     headers: &HeaderMap,
-) -> Result<Option<UserSession>, StatusCode> {
+) -> Result<(Option<UserSession>, Option<ExpiredSession>), StatusCode> {
     let Some(session_token_id) = get_auth_header::<UserSessionTokenId>(headers, &TOKEN_ID_HEADER)? else {
-        return Ok(None);
+        return Ok((None, None));
     };
     let Some(timestamp) =
         get_auth_header::<u64>(headers, &TIMESTAMP_HEADER)?.and_then(|t| chrono::DateTime::from_timestamp_millis(t as i64))
     else {
-        return Ok(None);
+        return Ok((None, None));
     };
     let Some(nonce) = get_auth_header::<Nonce>(headers, &NONCE_HEADER)? else {
-        return Ok(None);
+        return Ok((None, None));
     };
 
     let Some(auth_method) = get_auth_header::<AuthenticationMethod>(headers, &AUTHENTICATION_METHOD_HEADER)? else {
-        return Ok(None);
+        return Ok((None, None));
     };
     let Some(auth_hmac) = get_auth_header::<AuthenticationHmac>(headers, &AUTHENTICATION_HMAC_HEADER)? else {
-        return Ok(None);
+        return Ok((None, None));
     };
 
     if timestamp > chrono::Utc::now() || timestamp < chrono::Utc::now() - global.max_request_lifetime() {
@@ -196,7 +203,6 @@ async fn get_and_update_active_session<G: CoreConfig>(
             user_sessions::dsl::token_id
                 .eq(session_token_id)
                 .and(user_sessions::dsl::token.is_not_null())
-                .and(user_sessions::dsl::token_expires_at.gt(chrono::Utc::now()))
                 .and(user_sessions::dsl::expires_at.gt(chrono::Utc::now())),
         )
         .returning(UserSession::as_select())
@@ -261,5 +267,9 @@ async fn get_and_update_active_session<G: CoreConfig>(
         return Err(StatusCode::UNAUTHORIZED);
     }
 
-    Ok(Some(session))
+    if session.token_expires_at.is_some_and(|t| t <= chrono::Utc::now()) {
+        return Ok((None, Some(ExpiredSession(session))));
+    }
+
+    Ok((Some(session), None))
 }

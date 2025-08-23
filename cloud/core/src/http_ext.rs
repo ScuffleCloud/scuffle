@@ -4,6 +4,7 @@ use axum::http;
 use tonic::Code;
 use tonic_types::{ErrorDetails, StatusExt};
 
+use crate::middleware::ExpiredSession;
 use crate::models::UserSession;
 
 pub(crate) trait RequestExt {
@@ -24,6 +25,15 @@ pub(crate) trait RequestExt {
         self.session().ok_or_else(|| {
             tonic::Status::with_error_details(Code::Unauthenticated, "you must be logged in", ErrorDetails::new())
         })
+    }
+
+    fn expired_session_or_err(&self) -> Result<&UserSession, tonic::Status> {
+        self.extensions()
+            .get::<ExpiredSession>()
+            .ok_or_else(|| {
+                tonic::Status::with_error_details(Code::Unauthenticated, "you must be logged in", ErrorDetails::new())
+            })
+            .map(|s| &s.0)
     }
 
     fn ip_address_info(&self) -> Result<crate::middleware::IpAddressInfo, tonic::Status> {

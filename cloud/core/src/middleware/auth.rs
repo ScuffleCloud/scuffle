@@ -44,11 +44,18 @@ pub(crate) async fn auth<G: CoreConfig>(mut req: Request, next: Next) -> Result<
 fn get_auth_header<'a, T>(headers: &'a HeaderMap, header_name: &HeaderName) -> Result<Option<T>, StatusCode>
 where
     T: FromStr + 'a,
+    T::Err: std::fmt::Display,
 {
     match headers.get(header_name) {
         Some(h) => {
-            let s = h.to_str().map_err(|_| StatusCode::BAD_REQUEST)?;
-            Ok(Some(s.parse().map_err(|_| StatusCode::BAD_REQUEST)?))
+            let s = h.to_str().map_err(|e| {
+                tracing::debug!(header = %header_name, error = %e, "invalid header value");
+                StatusCode::BAD_REQUEST
+            })?;
+            Ok(Some(s.parse().map_err(|e| {
+                tracing::debug!(header = %header_name, error = %e, "failed to parse header value");
+                StatusCode::BAD_REQUEST
+            })?))
         }
         None => Ok(None),
     }
@@ -202,7 +209,8 @@ async fn get_and_update_active_session<G: CoreConfig>(
         .into_iter()
         .next()
     else {
-        return Ok(None);
+        tracing::debug!(token_id = %session_token_id, "no active session found");
+        return Err(StatusCode::UNAUTHORIZED);
     };
 
     let token = session.token.as_ref().expect("known to be not null due to filter");
@@ -219,6 +227,7 @@ async fn get_and_update_active_session<G: CoreConfig>(
                 if let Some(value) = headers.get(header_name) {
                     mac.update(value.as_bytes());
                 } else {
+                    tracing::debug!(header = %header_name, "missing header");
                     return Err(StatusCode::BAD_REQUEST);
                 }
             }

@@ -116,6 +116,8 @@ impl RedisConfig {
             }
         };
 
+        tracing::info!(config = ?redis_server_config, "connecting to redis");
+
         let config = fred::types::config::Config {
             server: redis_server_config,
             database: Some(self.database),
@@ -126,7 +128,6 @@ impl RedisConfig {
         };
 
         let client = fred::clients::Pool::new(config, None, None, None, self.max_connections).context("redis pool")?;
-
         client.init().await?;
 
         Ok(client)

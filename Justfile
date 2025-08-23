@@ -3,6 +3,9 @@ mod? local
 # this should be kept in sync with
 # .github/workflows/ci-check-fmt.yaml
 
+lockfile:
+    bazel mod deps --lockfile_mode=update
+
 fmt:
     bazel run //tools/cargo/fmt:fix
     buildifier $(git ls-files "*.bzl" "*.bazel" | xargs ls 2>/dev/null)

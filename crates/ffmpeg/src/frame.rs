@@ -128,6 +128,15 @@ impl FrameData {
         Some(unsafe { core::slice::from_raw_parts_mut(start_ptr.as_ptr(), self.linesize.unsigned_abs() as usize) })
     }
 
+    /// Returns the entire data buffer
+    pub fn get_all(&self) -> &[u8] {
+        // Safety: the pointer is within bounds & this slice is valid
+        unsafe { core::slice::from_raw_parts_mut(
+            self.ptr.as_ptr(), 
+            self.linesize.unsigned_abs() as usize * self.height.unsigned_abs() as usize
+        ) }
+    }
+
     /// Fills the data buffer with `value`
     pub fn fill(&mut self, value: u8) {
         for row in 0..self.height() {

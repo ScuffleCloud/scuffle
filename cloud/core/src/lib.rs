@@ -53,6 +53,7 @@ pub trait CoreConfig:
     fn authorizer(&self) -> &cedar_policy::Authorizer;
     fn http_client(&self) -> &reqwest::Client;
     fn webauthn(&self) -> &webauthn_rs::Webauthn;
+    fn redis(&self) -> &fred::clients::Pool;
     fn swagger_ui_enabled(&self) -> bool {
         false
     }

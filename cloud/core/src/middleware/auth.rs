@@ -8,6 +8,7 @@ use axum::response::Response;
 use base64::Engine;
 use diesel::{BoolExpressionMethods, ExpressionMethods, SelectableHelper};
 use diesel_async::RunQueryDsl;
+use fred::prelude::KeysInterface;
 use hmac::Mac;
 
 use crate::CoreConfig;
@@ -229,7 +230,27 @@ async fn get_and_update_active_session<G: CoreConfig>(
         }
     }
 
-    // TODO: Check and save nonce
+    let mut key = "nonces:".as_bytes().to_vec();
+    key.extend_from_slice(&nonce.0);
+    let value: Option<bool> = global
+        .redis()
+        .set(
+            key.as_slice(),
+            true,
+            Some(fred::types::Expiration::PX(global.max_request_lifetime().num_milliseconds())),
+            Some(fred::types::SetOptions::NX),
+            true,
+        )
+        .await
+        .map_err(|e| {
+            tracing::error!(error = %e, "failed to set nonce in redis");
+            StatusCode::INTERNAL_SERVER_ERROR
+        })?;
+
+    if value.is_some() {
+        tracing::debug!("replayed nonce detected");
+        return Err(StatusCode::UNAUTHORIZED);
+    }
 
     Ok(Some(session))
 }

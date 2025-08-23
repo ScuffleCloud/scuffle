@@ -1,14 +1,14 @@
 [package]
 name = "scuffle-flv"
 version = "0.2.2"
-edition = "2024"
-license = "MIT OR Apache-2.0"
-repository = "https://github.com/scufflecloud/scuffle"
 authors = ["Scuffle <opensource@scuffle.cloud>"]
-readme = "README.md"
 documentation = "https://docs.rs/scuffle-flv"
-description = "A pure Rust FLV demuxer."
+edition = "2024"
 keywords = ["flv", "demuxer"]
+license = "MIT OR Apache-2.0"
+readme = "README.md"
+repository = "https://github.com/scufflecloud/scuffle"
+description = "A pure Rust FLV demuxer."
 
 [lints.rust]
 unexpected_cfgs = { level = "warn", check-cfg = ['cfg(coverage_nightly)'] }

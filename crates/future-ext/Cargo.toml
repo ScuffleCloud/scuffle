@@ -1,14 +1,14 @@
 [package]
 name = "scuffle-future-ext"
 version = "0.1.4"
-edition = "2024"
-license = "MIT OR Apache-2.0"
-description = "A utility crate for working with futures."
-repository = "https://github.com/scufflecloud/scuffle"
 authors = ["Scuffle <opensource@scuffle.cloud>"]
-readme = "README.md"
 documentation = "https://docs.rs/scuffle-future-ext"
+edition = "2024"
 keywords = ["future", "async", "await"]
+license = "MIT OR Apache-2.0"
+readme = "README.md"
+repository = "https://github.com/scufflecloud/scuffle"
+description = "A utility crate for working with futures."
 
 [lints.rust]
 unexpected_cfgs = { level = "warn", check-cfg = ['cfg(coverage_nightly)'] }

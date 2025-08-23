@@ -2,8 +2,8 @@
 name = "rust_analyzer_discover"
 edition = "2024"
 license = "MIT OR Apache-2.0"
-readme = "README.md"
 publish = false
+readme = "README.md"
 
 [dependencies]
 anyhow = "1"

@@ -1,14 +1,14 @@
 [package]
 name = "scuffle-bootstrap-derive"
 version = "0.1.7"
-edition = "2024"
-repository = "https://github.com/scufflecloud/scuffle"
 authors = ["Scuffle <opensource@scuffle.cloud>"]
-readme = "README.md"
 documentation = "https://docs.rs/scuffle-bootstrap-derive"
-license = "MIT OR Apache-2.0"
-description = "Derive macros for scuffle-bootstrap."
+edition = "2024"
 keywords = ["bootstrap", "derive", "macros"]
+license = "MIT OR Apache-2.0"
+readme = "README.md"
+repository = "https://github.com/scufflecloud/scuffle"
+description = "Derive macros for scuffle-bootstrap."
 
 [lints.rust]
 unexpected_cfgs = { level = "warn", check-cfg = ['cfg(coverage_nightly)'] }

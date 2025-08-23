@@ -1,9 +1,9 @@
 [package]
 name = "xtask"
 edition = "2024"
-readme = "README.md"
-publish = false
 license = "MIT OR Apache-2.0"
+publish = false
+readme = "README.md"
 
 [dependencies]
 anyhow = "1.0"

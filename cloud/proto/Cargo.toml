@@ -1,13 +1,13 @@
 [package]
 name = "scufflecloud-proto"
 version = "0.1.0"
+authors = ["Scuffle <opensource@scuffle.cloud>"]
 edition = "2024"
 license = "AGPL-3.0"
-description = "Protobuf definitions for various services used by scuffle.cloud"
-repository = "https://github.com/scufflecloud/scuffle"
-authors = ["Scuffle <opensource@scuffle.cloud>"]
-readme = "README.md"
 publish = false
+readme = "README.md"
+repository = "https://github.com/scufflecloud/scuffle"
+description = "Protobuf definitions for various services used by scuffle.cloud"
 
 [dependencies]
 tinc = { path = "../../crates/tinc" }

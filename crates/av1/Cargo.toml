@@ -1,14 +1,14 @@
 [package]
 name = "scuffle-av1"
 version = "0.1.4"
-edition = "2024"
-license = "MIT OR Apache-2.0"
-repository = "https://github.com/scufflecloud/scuffle"
 authors = ["Scuffle <opensource@scuffle.cloud>"]
-readme = "README.md"
 documentation = "https://docs.rs/scuffle-av1"
-description = "AV1 codec header decoding & encoding."
+edition = "2024"
 keywords = ["av1", "header", "decoding", "encoding"]
+license = "MIT OR Apache-2.0"
+readme = "README.md"
+repository = "https://github.com/scufflecloud/scuffle"
+description = "AV1 codec header decoding & encoding."
 
 [lints.rust]
 unexpected_cfgs = { level = "warn", check-cfg = ['cfg(coverage_nightly)'] }

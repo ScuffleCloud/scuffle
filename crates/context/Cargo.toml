@@ -1,14 +1,14 @@
 [package]
 name = "scuffle-context"
 version = "0.1.5"
-edition = "2024"
-repository = "https://github.com/scufflecloud/scuffle"
 authors = ["Scuffle <opensource@scuffle.cloud>"]
-readme = "README.md"
 documentation = "https://docs.rs/scuffle-context"
-license = "MIT OR Apache-2.0"
-description = "Go-like context utilities for Rust."
+edition = "2024"
 keywords = ["context", "async"]
+license = "MIT OR Apache-2.0"
+readme = "README.md"
+repository = "https://github.com/scufflecloud/scuffle"
+description = "Go-like context utilities for Rust."
 
 [lints.rust]
 unexpected_cfgs = { level = "warn", check-cfg = ['cfg(coverage_nightly)'] }

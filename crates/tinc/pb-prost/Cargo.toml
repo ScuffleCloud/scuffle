@@ -1,14 +1,14 @@
 [package]
 name = "tinc-pb-prost"
 version = "0.2.0"
-edition = "2024"
-description = "Protobuf generated schama for tinc"
-repository = "https://github.com/scufflecloud/scuffle"
 authors = ["Scuffle <opensource@scuffle.cloud>"]
-readme = "README.md"
 documentation = "https://docs.rs/tinc-pb"
-license = "MIT OR Apache-2.0"
+edition = "2024"
 keywords = ["grpc", "protobuf", "prost", "codegen"]
+license = "MIT OR Apache-2.0"
+readme = "README.md"
+repository = "https://github.com/scufflecloud/scuffle"
+description = "Protobuf generated schama for tinc"
 
 [lints.rust]
 unexpected_cfgs = { level = "warn", check-cfg = ['cfg(coverage_nightly)'] }

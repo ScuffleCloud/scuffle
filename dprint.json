@@ -12,6 +12,7 @@
   "malva": {
   },
   "markup": {
+    "useTabs": true
   },
   "yaml": {
   },
@@ -19,7 +20,8 @@
     "**/node_modules",
     "**/*-lock.json",
     "**/Cargo.lock",
-    "**/pnpm-lock.yaml"
+    "**/pnpm-lock.yaml",
+    "**/*.svg"
   ],
   "plugins": [
     "https://plugins.dprint.dev/typescript-0.95.10.wasm",
@@ -29,6 +31,7 @@
     "https://plugins.dprint.dev/dockerfile-0.3.3.wasm",
     "https://plugins.dprint.dev/g-plane/malva-v0.14.2.wasm",
     "https://plugins.dprint.dev/g-plane/markup_fmt-v0.23.2.wasm",
-    "https://plugins.dprint.dev/g-plane/pretty_yaml-v0.5.1.wasm"
+    "https://plugins.dprint.dev/g-plane/pretty_yaml-v0.5.1.wasm",
+    "https://plugins.dprint.dev/ruff-0.4.8.wasm"
   ]
 }

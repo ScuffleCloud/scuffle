@@ -1,14 +1,14 @@
 [package]
 name = "scuffle-bootstrap"
 version = "0.1.7"
-edition = "2024"
-description = "A utility crate for creating binaries."
-repository = "https://github.com/scufflecloud/scuffle"
 authors = ["Scuffle <opensource@scuffle.cloud>"]
-readme = "README.md"
 documentation = "https://docs.rs/scuffle-bootstrap"
-license = "MIT OR Apache-2.0"
+edition = "2024"
 keywords = ["bootstrap", "binary", "cli", "config"]
+license = "MIT OR Apache-2.0"
+readme = "README.md"
+repository = "https://github.com/scufflecloud/scuffle"
+description = "A utility crate for creating binaries."
 
 [lints.rust]
 unexpected_cfgs = { level = "warn", check-cfg = ['cfg(coverage_nightly)'] }

@@ -1,8 +1,8 @@
 [package]
 name = "tinc-integration-tests"
 edition = "2024"
-publish = false
 license = "MIT OR Apache-2.0"
+publish = false
 
 [lints.rust]
 unexpected_cfgs = { level = "warn", check-cfg = ['cfg(coverage_nightly)'] }

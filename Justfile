@@ -1,9 +1,12 @@
 mod? local
 
-# Format all code
+# this should be kept in sync with
+# .github/workflows/ci-check-fmt.yaml
 fmt:
     bazel run //tools/cargo/fmt:fix
     buildifier $(git ls-files "*.bzl" "*.bazel" | xargs ls 2>/dev/null)
+    dprint fmt
+    buf format -w --disable-symlinks --debug
     just --unstable --fmt
 
 lint:
@@ -47,6 +50,8 @@ test *targets="//...":
     rm lcov.info || true
     ln -s "$(bazel --output_base="${output_base}_coverage" info output_path)"/_coverage/_coverage_report.dat lcov.info
 
+# this should be kept in sync with
+# .github/workflows/ci-check-vendor.yaml
 vendor:
     cargo update --workspace
     bazel run //vendor:cargo_vendor

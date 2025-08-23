@@ -22,7 +22,7 @@ description = "Added a new feature"
 authors = ["@TroyKomodo"]
 ```
 
-This will result in 2 changelog entries being added to the `scuffle-rtmp` package. 
+This will result in 2 changelog entries being added to the `scuffle-rtmp` package.
 The first entry will have the category `bug` and the description `Fixed a bug`.
 The second entry will be a breaking change and have the category `feat` and the description `Added a new feature`.
 

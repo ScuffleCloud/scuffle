@@ -27,7 +27,7 @@
     <a href="https://github.com/ScuffleCloud/scuffle/actions?query=branch%3Amain"><img height="30" src="https://img.shields.io/github/check-runs/ScuffleCloud/Scuffle/main?style=for-the-badge&logo=githubactions&logoColor=white"/></a>
 </p>
 
-> [!WARNING]  
+> [!WARNING]\
 > This repository is under active development and may not be stable.
 
 ---
@@ -46,12 +46,12 @@ Join our [Discord](https://discord.gg/scuffle) to chat with the team and other c
 
 ### Sign the Contributor License Agreement (CLA)
 
-To contribute, please sign our [Contributor License Agreement](./CLA.md).  
+To contribute, please sign our [Contributor License Agreement](./CLA.md).\
 It's quick and easy—[sign here](https://cla.scuffle.cloud) before submitting a pull request.
 
 ### Code of Conduct
 
-We believe in fostering an inclusive and respectful community.  
+We believe in fostering an inclusive and respectful community.\
 Please read our [**Code of Conduct**](./CODE_OF_CONDUCT.md) for more details.
 
 ## 💖 Support Us
@@ -93,4 +93,4 @@ Your security is our priority. 🔒 Refer to our [**Security Policy**](./.github
 
 ---
 
-*Thank you for being part of our journey! Let's build something amazing together.* ✨
+_Thank you for being part of our journey! Let's build something amazing together._ ✨

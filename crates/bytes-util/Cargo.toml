@@ -1,14 +1,14 @@
 [package]
 name = "scuffle-bytes-util"
 version = "0.1.5"
-edition = "2024"
-description = "A utility crate for working with bytes."
-repository = "https://github.com/scufflecloud/scuffle"
 authors = ["Scuffle <opensource@scuffle.cloud>"]
-readme = "README.md"
 documentation = "https://docs.rs/scuffle-bytes-util"
-license = "MIT OR Apache-2.0"
+edition = "2024"
 keywords = ["bytes", "util"]
+license = "MIT OR Apache-2.0"
+readme = "README.md"
+repository = "https://github.com/scufflecloud/scuffle"
+description = "A utility crate for working with bytes."
 
 [lints.rust]
 unexpected_cfgs = { level = "warn", check-cfg = ['cfg(coverage_nightly)'] }
@@ -20,7 +20,6 @@ bytestring = "1.4.0"
 document-features = { optional = true, version = "0.2" }
 scuffle-changelog = { optional = true, path = "../changelog", version = "0.1.0" }
 serde = { optional = true, version = "1.0.129" }
-
 
 [features]
 ## Enables serde support

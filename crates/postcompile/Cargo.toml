@@ -1,23 +1,18 @@
 [package]
 name = "postcompile"
 version = "0.3.3"
-edition = "2024"
-build = "build.rs"
-repository = "https://github.com/scufflecloud/scuffle"
 authors = ["Scuffle <opensource@scuffle.cloud>"]
-readme = "README.md"
+build = "build.rs"
 documentation = "https://docs.rs/postcompile"
-license = "MIT OR Apache-2.0"
-description = "Helper crate for post-compiling Rust code."
+edition = "2024"
 keywords = ["postcompile", "snapshot", "test", "proc-macro"]
+license = "MIT OR Apache-2.0"
+readme = "README.md"
+repository = "https://github.com/scufflecloud/scuffle"
+description = "Helper crate for post-compiling Rust code."
 
 [lints.rust]
-unexpected_cfgs = { level = "warn", check-cfg = [
-  'cfg(trybuild_no_target)',
-  'cfg(postcompile_no_target)',
-  'cfg(coverage_nightly)',
-  'cfg(valgrind)',
-] }
+unexpected_cfgs = { level = "warn", check-cfg = ['cfg(trybuild_no_target)', 'cfg(postcompile_no_target)', 'cfg(coverage_nightly)', 'cfg(valgrind)'] }
 
 [features]
 ## Enables changelog and documentation of feature flags
@@ -30,9 +25,9 @@ document-features = { optional = true, version = "0.2" }
 prettyplease = "0.2"
 regex = "1"
 scuffle-changelog = { optional = true, path = "../changelog", version = "0.1.0" }
-serde_json = "1"
 serde = "1"
 serde_derive = "1"
+serde_json = "1"
 syn = "2"
 target-triple = "0.1"
 toml = "0.9"

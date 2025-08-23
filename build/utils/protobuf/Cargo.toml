@@ -2,9 +2,9 @@
 name = "protobuf-concat"
 edition = "2024"
 license = "MIT OR Apache-2.0"
-repository = "https://github.com/scufflecloud/scuffle"
-readme = "README.md"
 publish = false
+readme = "README.md"
+repository = "https://github.com/scufflecloud/scuffle"
 
 [dependencies]
 anyhow = "1"

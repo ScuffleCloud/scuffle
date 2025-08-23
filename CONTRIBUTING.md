@@ -33,6 +33,7 @@ sudo update-locale LANG=en_US.UTF-8
 If someone knows how to make our build system fully hermetic, please let us know!
 
 You should be able to build the project in a docker container with the following command:
+
 ```bash
 docker run --rm -it ubuntu:22.04 bash -c '
 apt update 
@@ -64,21 +65,21 @@ If you use VSCode you can setup rust-analyzer to work by adding the following to
 
 ```json
 {
-    "rust-analyzer.server.path": "${workspaceFolder}/build/utils/rust/analyzer/lsp.sh",
-    "rust-analyzer.workspace.discoverConfig": {
-        "command": [
-            "${workspaceFolder}/build/utils/rust/analyzer/discover.sh"
-        ],
-        "progressLabel": "rust_analyzer",
-        "filesToWatch": [
-            "BUILD",
-            "BUILD.bazel",
-            "MODULE.bazel"
-        ]
-    },
-    "rust-analyzer.check.overrideCommand": [
-        "${workspaceFolder}/build/utils/rust/analyzer/check.sh"
+  "rust-analyzer.server.path": "${workspaceFolder}/build/utils/rust/analyzer/lsp.sh",
+  "rust-analyzer.workspace.discoverConfig": {
+    "command": [
+      "${workspaceFolder}/build/utils/rust/analyzer/discover.sh"
     ],
+    "progressLabel": "rust_analyzer",
+    "filesToWatch": [
+      "BUILD",
+      "BUILD.bazel",
+      "MODULE.bazel"
+    ]
+  },
+  "rust-analyzer.check.overrideCommand": [
+    "${workspaceFolder}/build/utils/rust/analyzer/check.sh"
+  ]
 }
 ```
 
@@ -86,16 +87,16 @@ for a Bazel LSP you can use the Bazel extension for VSCode and download [starpls
 
 ```json
 {
-   "bazel.lsp.command": "starpls",
-   "bazel.lsp.args": [
-      "server",
-      "--experimental_infer_ctx_attributes",
-      "--experimental_enable_label_completions",
-      "--experimental_use_code_flow_analysis",
-      "--bazel_path=bazelisk",
-   ],
-   "bazel.executable": "bazelisk",
-   "bazel.enableCodeLens": true
+  "bazel.lsp.command": "starpls",
+  "bazel.lsp.args": [
+    "server",
+    "--experimental_infer_ctx_attributes",
+    "--experimental_enable_label_completions",
+    "--experimental_use_code_flow_analysis",
+    "--bazel_path=bazelisk"
+  ],
+  "bazel.executable": "bazelisk",
+  "bazel.enableCodeLens": true
 }
 ```
 
@@ -109,16 +110,16 @@ We have a [nix shell setup](nix/README.md) too, (automatically loaded if you use
 
 ## Local Commnads
 
-| Command | Description |
-|---------|-------------|
-| `just test` | Run all tests |
-| `just grind` | Run tests with valgrind |
-| `just lint` | Lint the code & try auto-fix linting errors |
-| `just fmt` | Format the code |
-| `just deny` | Check that all dependencies have allowed licenses |
-| `just docs` | Build the docs |
-| `just docs-serve` | Serve the docs locally |
-| `just vendor` | Vendor the dependencies |
+| Command           | Description                                       |
+| ----------------- | ------------------------------------------------- |
+| `just test`       | Run all tests                                     |
+| `just grind`      | Run tests with valgrind                           |
+| `just lint`       | Lint the code & try auto-fix linting errors       |
+| `just fmt`        | Format the code                                   |
+| `just deny`       | Check that all dependencies have allowed licenses |
+| `just docs`       | Build the docs                                    |
+| `just docs-serve` | Serve the docs locally                            |
+| `just vendor`     | Vendor the dependencies                           |
 
 ## CLA
 
@@ -134,7 +135,7 @@ We do not squash any commits, we prefer if commits are meaningful and descriptiv
 
 ### Pull Request Body
 
-The body of the pull request should be a summary of the changes made in the pull request as well as a list of the tickets & issues that are affected by the changes. 
+The body of the pull request should be a summary of the changes made in the pull request as well as a list of the tickets & issues that are affected by the changes.
 
 ### Pull Request Title
 
@@ -146,7 +147,7 @@ We use a custom changelog format, you can read more about it [here](./changes.d/
 
 ### Documentation
 
-We require that all public methods, types, and functions are documented, with ideally doc examples on how to use the method when applicable. 
+We require that all public methods, types, and functions are documented, with ideally doc examples on how to use the method when applicable.
 
 ### CI Jobs
 

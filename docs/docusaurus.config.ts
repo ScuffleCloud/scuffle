@@ -1,14 +1,7 @@
-import { themes as prismThemes } from "prism-react-renderer";
-import type { Config } from "@docusaurus/types";
 import type * as Preset from "@docusaurus/preset-classic";
-import {
-  BLUESKY_URL,
-  DISCORD_URL,
-  GITHUB_EDIT_URL,
-  GITHUB_URL,
-  SITE_URL,
-  TWITTER_URL,
-} from "./constants";
+import type { Config } from "@docusaurus/types";
+import { themes as prismThemes } from "prism-react-renderer";
+import { BLUESKY_URL, DISCORD_URL, GITHUB_EDIT_URL, GITHUB_URL, SITE_URL, TWITTER_URL } from "./constants";
 
 // This runs in Node.js - Don't use client-side code here (browser APIs, JSX...)
 

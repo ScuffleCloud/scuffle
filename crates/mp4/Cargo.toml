@@ -1,14 +1,14 @@
 [package]
 name = "scuffle-mp4"
 version = "0.1.5"
-edition = "2024"
-description = "A pure Rust MP4 parser and writer."
-repository = "https://github.com/scufflecloud/scuffle"
 authors = ["Scuffle <opensource@scuffle.cloud>"]
-readme = "README.md"
 documentation = "https://docs.rs/scuffle-mp4"
-license = "MIT OR Apache-2.0"
+edition = "2024"
 keywords = ["mp4", "video", "codec"]
+license = "MIT OR Apache-2.0"
+readme = "README.md"
+repository = "https://github.com/scufflecloud/scuffle"
+description = "A pure Rust MP4 parser and writer."
 
 [lints.rust]
 unexpected_cfgs = { level = "warn", check-cfg = ['cfg(coverage_nightly)'] }

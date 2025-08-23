@@ -1,20 +1,17 @@
 [package]
 name = "scuffle-rtmp"
 version = "0.2.3"
-edition = "2024"
-description = "A pure Rust RTMP server"
-repository = "https://github.com/scufflecloud/scuffle"
 authors = ["Scuffle <opensource@scuffle.cloud>"]
-readme = "README.md"
 documentation = "https://docs.rs/scuffle-rtmp"
-license = "MIT OR Apache-2.0"
+edition = "2024"
 keywords = ["rtmp", "server", "streaming"]
+license = "MIT OR Apache-2.0"
+readme = "README.md"
+repository = "https://github.com/scufflecloud/scuffle"
+description = "A pure Rust RTMP server"
 
 [lints.rust]
-unexpected_cfgs = { level = "warn", check-cfg = [
-  'cfg(coverage_nightly)',
-  'cfg(valgrind)',
-] }
+unexpected_cfgs = { level = "warn", check-cfg = ['cfg(coverage_nightly)', 'cfg(valgrind)'] }
 
 [features]
 ## Enables changelog and documentation of feature flags

@@ -1,14 +1,14 @@
 [package]
 name = "scuffle-http"
 version = "0.3.2"
-edition = "2024"
-repository = "https://github.com/scufflecloud/scuffle"
 authors = ["Scuffle <opensource@scuffle.cloud>"]
-readme = "README.md"
 documentation = "https://docs.rs/scuffle-http"
-license = "MIT OR Apache-2.0"
-description = "A high-performance HTTP server supporting HTTP/1.1, HTTP/2, and HTTP/3."
+edition = "2024"
 keywords = ["http", "server", "http1", "http2", "http3"]
+license = "MIT OR Apache-2.0"
+readme = "README.md"
+repository = "https://github.com/scufflecloud/scuffle"
+description = "A high-performance HTTP server supporting HTTP/1.1, HTTP/2, and HTTP/3."
 
 [lints.rust]
 unexpected_cfgs = { level = "warn", check-cfg = ['cfg(coverage_nightly)'] }
@@ -84,31 +84,17 @@ tracing = { optional = true, version = "0.1.41" }
 
 # HTTP/1.1, HTTP/2
 hyper = { default-features = false, features = ["server"], optional = true, version = "1.6.0" }
-hyper-util = { default-features = false, features = [
-  "server",
-  "tokio",
-], optional = true, version = "0.1.10" }
+hyper-util = { default-features = false, features = ["server", "tokio"], optional = true, version = "0.1.10" }
 libc = { default-features = false, optional = true, version = "0.2.169" }
 
 # QUIC + HTTP/3
 h3 = { default-features = false, optional = true, version = "0.0.8" }
 h3-quinn = { default-features = false, optional = true, version = "0.0.10" }
-quinn = { default-features = false, features = [
-  "platform-verifier",
-  "runtime-tokio",
-  "rustls-aws-lc-rs",
-], optional = true, version = "0.11.6" }
+quinn = { default-features = false, features = ["platform-verifier", "runtime-tokio", "rustls-aws-lc-rs"], optional = true, version = "0.11.6" }
 
 # TLS
-rustls = { default-features = false, features = [
-  "aws_lc_rs",
-  "std",
-  "tls12",
-], optional = true, version = "0.23.21" }
-tokio-rustls = { default-features = false, features = [
-  "aws_lc_rs",
-  "tls12",
-], optional = true, version = "0.26.1" }
+rustls = { default-features = false, features = ["aws_lc_rs", "std", "tls12"], optional = true, version = "0.23.21" }
+tokio-rustls = { default-features = false, features = ["aws_lc_rs", "tls12"], optional = true, version = "0.26.1" }
 
 # Tower Services
 tower = { default-features = false, features = ["make"], optional = true, version = "0.5.2" }
@@ -116,15 +102,10 @@ tower = { default-features = false, features = ["make"], optional = true, versio
 document-features = { optional = true, version = "0.2" }
 scuffle-changelog = { optional = true, path = "../changelog", version = "0.1.0" }
 
-
 [dev-dependencies]
 # The http3 feature requires a custom build flag (see .cargo/config.toml)
 axum = { features = ["ws"], version = "0.8.1" }
-reqwest = { default-features = false, features = [
-  "http2",
-  "http3",
-  "rustls-tls-no-provider",
-], version = "0.12.15" }
+reqwest = { default-features = false, features = ["http2", "http3", "rustls-tls-no-provider"], version = "0.12.15" }
 rustls-pemfile = "2.2.0"
 scuffle-future-ext = { path = "../future-ext" }
 tokio-test = "0.4.4"

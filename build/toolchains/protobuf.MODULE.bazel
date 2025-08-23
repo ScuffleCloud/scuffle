@@ -1,7 +1,15 @@
 bazel_dep(name = "toolchains_protoc", version = "0.4.3")
 bazel_dep(name = "protobuf", version = "31.1")
+bazel_dep(name = "rules_buf", version = "0.5.2")
 
 protoc = use_extension("@toolchains_protoc//protoc:extensions.bzl", "protoc")
 use_repo(protoc, "toolchains_protoc_hub")
 
 register_toolchains("@toolchains_protoc_hub//:all")
+
+buf = use_extension("@rules_buf//buf:extensions.bzl", "buf")
+buf.toolchains(
+    sha256 = "5790beb45aaf51a6d7e68ca2255b22e1b14c9ae405a6c472cdcfc228c66abfc1",
+    version = "v1.56.0",
+)
+use_repo(buf, "rules_buf_toolchains")

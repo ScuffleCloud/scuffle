@@ -7,12 +7,12 @@ license = "MIT OR Apache-2.0"
 [dependencies]
 camino = { version = "1", features = ["serde1"] }
 camino-tempfile = "1.4"
-lol_html = "2.6"
+clap = { version = "4.5", features = ["derive", "env"] }
 copy_dir = "0.1"
+lol_html = "2.6"
 serde = "1"
 serde_derive = "1"
 serde_json = "1"
-clap = { version = "4.5", features = ["derive", "env"] }
 
 [package.metadata.sync-readme.badges]
 license = true

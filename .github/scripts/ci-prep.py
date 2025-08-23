@@ -98,6 +98,7 @@ class Grind:
 class CheckVendor:
     pass
 
+
 @dataclass
 class CheckFmt:
     pass
@@ -168,8 +169,10 @@ def create_grind() -> Optional[Grind]:
 def create_check_vendor() -> Optional[CheckVendor]:
     return CheckVendor()
 
+
 def create_fmt() -> Optional[CheckFmt]:
     return CheckFmt()
+
 
 def create_jobs() -> Jobs:
     return Jobs(

@@ -1,20 +1,17 @@
 [package]
 name = "tinc-build"
 version = "0.2.0"
-edition = "2024"
-description = "A build script that generates code for tinc protobuf annotations"
-repository = "https://github.com/scufflecloud/scuffle"
 authors = ["Scuffle <opensource@scuffle.cloud>"]
-readme = "README.md"
 documentation = "https://docs.rs/tinc-build"
-license = "MIT OR Apache-2.0"
+edition = "2024"
 keywords = ["grpc", "protobuf", "tonic", "codegen"]
+license = "MIT OR Apache-2.0"
+readme = "README.md"
+repository = "https://github.com/scufflecloud/scuffle"
+description = "A build script that generates code for tinc protobuf annotations"
 
 [lints.rust]
-unexpected_cfgs = { level = "warn", check-cfg = [
-  'cfg(coverage_nightly)',
-  'cfg(valgrind)',
-] }
+unexpected_cfgs = { level = "warn", check-cfg = ['cfg(coverage_nightly)', 'cfg(valgrind)'] }
 
 [features]
 default = ["prost"]
@@ -26,6 +23,7 @@ docs = ["dep:document-features"]
 [dependencies]
 anyhow = "1.0.79"
 base64 = "0.22"
+bytes = "1"
 cel-parser = { version = "0.8.0" }
 convert_case = "0.8.0"
 document-features = { optional = true, version = "0.2" }
@@ -36,11 +34,10 @@ num-traits = "0.2.19"
 openapiv3_1 = { features = ["debug"], path = "../../openapiv3_1", version = "0.1.1" }
 prettyplease = "0.2"
 proc-macro2 = "1"
-bytes = "1"
 prost = { optional = true, version = "0.14" }
-prost-types = { optional = true, version = "0.14" }
 prost-build = { optional = true, version = "0.14" }
 prost-reflect = { optional = true, version = "0.16" }
+prost-types = { optional = true, version = "0.14" }
 quote = "1"
 regex = "1"
 runtime-format = "0.1.3"

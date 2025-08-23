@@ -1,14 +1,14 @@
 [package]
 name = "scuffle-transmuxer"
 version = "0.2.2"
-edition = "2024"
-description = "A utility crate for transmuxing media streams."
-repository = "https://github.com/scufflecloud/scuffle"
 authors = ["Scuffle <opensource@scuffle.cloud>"]
-readme = "README.md"
 documentation = "https://docs.rs/scuffle-transmuxer"
-license = "MIT OR Apache-2.0"
+edition = "2024"
 keywords = ["transmuxer", "media", "streaming"]
+license = "MIT OR Apache-2.0"
+readme = "README.md"
+repository = "https://github.com/scufflecloud/scuffle"
+description = "A utility crate for transmuxing media streams."
 
 [features]
 ## Enables changelog and documentation of feature flags

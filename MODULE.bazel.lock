@@ -16522,7 +16522,7 @@
     "@@rules_buf+//buf:extensions.bzl%buf": {
       "general": {
         "bzlTransitiveDigest": "6xQjDvHAsRouWdQrXtvWVTk3ZKAGrw2HiyZR/DssCyE=",
-        "usagesDigest": "SjvjBfEW9dD7JhgYPn5+OGUBuqaMt9TsQWGSgJCJWYk=",
+        "usagesDigest": "9FHObceLnFyKkL6PSkXkKczS1YISYaqvx2LBJ5fwjpM=",
         "recordedFileInputs": {},
         "recordedDirentsInputs": {},
         "envVariables": {},

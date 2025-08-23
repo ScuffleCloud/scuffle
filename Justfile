@@ -3,8 +3,11 @@ mod? local
 # this should be kept in sync with
 # .github/workflows/ci-check-fmt.yaml
 
-lockfile:
-    bazel mod deps --lockfile_mode=update
+bzlmod:
+    # https://github.com/bazelbuild/bazel/issues/20477
+    bazel shutdown
+    bazel fetch //... --lockfile_mode=off
+    bazel fetch //... --lockfile_mode=update
 
 fmt:
     bazel run //tools/cargo/fmt:fix

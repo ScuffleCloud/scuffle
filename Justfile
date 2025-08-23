@@ -2,6 +2,7 @@ mod? local
 
 # this should be kept in sync with
 # .github/workflows/ci-check-fmt.yaml
+
 fmt:
     bazel run //tools/cargo/fmt:fix
     buildifier $(git ls-files "*.bzl" "*.bazel" | xargs ls 2>/dev/null)
@@ -52,6 +53,7 @@ test *targets="//...":
 
 # this should be kept in sync with
 # .github/workflows/ci-check-vendor.yaml
+
 vendor:
     cargo update --workspace
     bazel run //vendor:cargo_vendor

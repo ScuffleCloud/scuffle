@@ -94,12 +94,12 @@ impl<G: CoreConfig> Operation<G> for tonic::Request<RefreshUserSessionRequest> {
         &mut self,
         conn: &mut diesel_async::AsyncPgConnection,
     ) -> Result<Self::Principal, tonic::Status> {
-        let session = self.session_or_err()?;
+        let session = self.expired_session_or_err()?;
         common::get_user_by_id(conn, session.user_id).await
     }
 
     async fn load_resource(&mut self, _conn: &mut diesel_async::AsyncPgConnection) -> Result<Self::Resource, tonic::Status> {
-        let session = self.session_or_err()?;
+        let session = self.expired_session_or_err()?;
         Ok(session.clone())
     }
 

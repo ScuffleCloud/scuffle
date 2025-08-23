@@ -61,7 +61,7 @@ jobs:
   check_fmt:
     needs: [prep]
     if: ${{ fromJson(needs.prep.outputs.prep).check_fmt != null }}
-    uses: ./.github/workflows/ci-check_fmt.yaml
+    uses: ./.github/workflows/ci-check-fmt.yaml
     secrets:
       build_buddy_token: ${{ secrets.BUILD_BUDDY_TOKEN }}
 

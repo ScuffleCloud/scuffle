@@ -63,8 +63,7 @@ percent-encoding = { version = "2" }
 phf_shared = { version = "0.11" }
 prettyplease = { version = "0.2", default-features = false, features = ["verbatim"] }
 proc-macro2 = { version = "1", features = ["span-locations"] }
-prost-582f2526e08bb6a0 = { package = "prost", version = "0.14" }
-prost-594e8ee84c453af0 = { package = "prost", version = "0.13", features = ["prost-derive"] }
+prost = { version = "0.14" }
 prost-types = { version = "0.14" }
 quote = { version = "1" }
 rand = { version = "0.9" }
@@ -150,8 +149,7 @@ percent-encoding = { version = "2" }
 phf_shared = { version = "0.11" }
 prettyplease = { version = "0.2", default-features = false, features = ["verbatim"] }
 proc-macro2 = { version = "1", features = ["span-locations"] }
-prost-582f2526e08bb6a0 = { package = "prost", version = "0.14" }
-prost-594e8ee84c453af0 = { package = "prost", version = "0.13", features = ["prost-derive"] }
+prost = { version = "0.14" }
 prost-types = { version = "0.14" }
 quote = { version = "1" }
 rand = { version = "0.9" }

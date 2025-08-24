@@ -1,3 +1,4 @@
+use base64::Engine;
 use diesel::{BoolExpressionMethods, ExpressionMethods, OptionalExtension, QueryDsl, SelectableHelper};
 use diesel_async::RunQueryDsl;
 use tonic::Code;
@@ -9,7 +10,7 @@ use crate::models::{EmailRegistrationRequest, EmailRegistrationRequestId, User, 
 use crate::operations::Operation;
 use crate::schema::{email_registration_requests, user_emails};
 use crate::std_ext::{OptionExt, ResultExt};
-use crate::{CoreConfig, captcha, common};
+use crate::{CoreConfig, captcha, common, emails};
 
 impl<G: CoreConfig> Operation<G> for tonic::Request<pb::scufflecloud::core::v1::RegisterWithEmailRequest> {
     type Principal = Unauthenticated;
@@ -53,7 +54,7 @@ impl<G: CoreConfig> Operation<G> for tonic::Request<pb::scufflecloud::core::v1::
 
         // Generate random code
         let code = common::generate_random_bytes().into_tonic_internal_err("failed to generate registration code")?;
-        // let code_base64 = base64::prelude::BASE64_URL_SAFE.encode(&code);
+        let code_base64 = base64::prelude::BASE64_URL_SAFE.encode(code);
 
         // Check if email is already registered
         if user_emails::dsl::user_emails
@@ -76,7 +77,7 @@ impl<G: CoreConfig> Operation<G> for tonic::Request<pb::scufflecloud::core::v1::
         let registration_request = EmailRegistrationRequest {
             id: EmailRegistrationRequestId::new(),
             user_id: None,
-            email,
+            email: email.clone(),
             code: code.to_vec(),
             expires_at: chrono::Utc::now() + global.email_registration_request_timeout(),
         };
@@ -87,7 +88,15 @@ impl<G: CoreConfig> Operation<G> for tonic::Request<pb::scufflecloud::core::v1::
             .await
             .into_tonic_internal_err("failed to insert email registration request")?;
 
-        // TODO: Send email with registration code link code_base64
+        // Send email
+        let email = emails::register_with_email_email(global, email, code_base64)
+            .await
+            .into_tonic_internal_err("failed to render registration email")?;
+        global
+            .email_service()
+            .send_email(email)
+            .await
+            .into_tonic_internal_err("failed to send registration email")?;
 
         Ok(())
     }

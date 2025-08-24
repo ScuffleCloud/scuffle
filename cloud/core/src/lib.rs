@@ -54,6 +54,9 @@ pub trait CoreConfig:
     fn http_client(&self) -> &reqwest::Client;
     fn webauthn(&self) -> &webauthn_rs::Webauthn;
     fn redis(&self) -> &fred::clients::Pool;
+    fn email_service(
+        &self,
+    ) -> pb::scufflecloud::email::v1::email_service_client::EmailServiceClient<tonic::transport::Channel>;
     fn swagger_ui_enabled(&self) -> bool {
         false
     }

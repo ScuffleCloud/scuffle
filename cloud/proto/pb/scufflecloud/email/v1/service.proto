@@ -2,6 +2,7 @@ syntax = "proto3";
 
 package scufflecloud.email.v1;
 
+import "tinc/annotations.proto";
 import "google/protobuf/empty.proto";
 
 service EmailService {
@@ -10,7 +11,7 @@ service EmailService {
 
 message Email {
     string source_address = 1;
-    string to_address = 2;
+    string to_address = 2 [(tinc.field).constraint.string.email = true];
     string subject = 3;
     string text = 4;
     string html = 5;

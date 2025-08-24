@@ -15,7 +15,7 @@ use crate::models::{
 use crate::operations::Operation;
 use crate::schema::{magic_link_user_session_requests, organization_members, organizations, user_google_accounts, users};
 use crate::std_ext::{OptionExt, ResultExt};
-use crate::{CoreConfig, captcha, common, google_api};
+use crate::{CoreConfig, captcha, common, emails, google_api};
 
 impl<G: CoreConfig> Operation<G> for tonic::Request<pb::scufflecloud::core::v1::LoginWithEmailOptionsRequest> {
     type Principal = Unauthenticated;
@@ -175,7 +175,16 @@ impl<G: CoreConfig> Operation<G> for tonic::Request<pb::scufflecloud::core::v1::
     ) -> Result<Self::Response, tonic::Status> {
         let global = &self.global::<G>()?;
 
+        let to_address = principal.primary_email.ok_or_else(|| {
+            tonic::Status::with_error_details(
+                Code::FailedPrecondition,
+                "user does not have a primary email address",
+                ErrorDetails::new(),
+            )
+        })?;
+
         let code = common::generate_random_bytes().into_tonic_internal_err("failed to generate magic link code")?;
+        let code_base64 = base64::prelude::BASE64_URL_SAFE.encode(code);
 
         // Insert email link user session request
         let session_request = MagicLinkUserSessionRequest {
@@ -190,7 +199,14 @@ impl<G: CoreConfig> Operation<G> for tonic::Request<pb::scufflecloud::core::v1::
             .await
             .into_tonic_internal_err("failed to insert magic link user session request")?;
 
-        // TODO: Send email with magic link
+        let email = emails::magic_link_email(global, to_address, code_base64)
+            .await
+            .into_tonic_internal_err("failed to render magic link email")?;
+        global
+            .email_service()
+            .send_email(email)
+            .await
+            .into_tonic_internal_err("failed to send magic link email")?;
 
         Ok(())
     }

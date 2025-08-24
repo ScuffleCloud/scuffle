@@ -37,6 +37,8 @@ pub struct Config {
     pub redis: RedisConfig,
     #[default = "no-reply@scuffle.cloud"]
     pub email_from_address: String,
+    #[default("http://localhost:4000".to_string())]
+    pub email_service_address: String,
 }
 
 #[derive(serde_derive::Deserialize, smart_default::SmartDefault, Debug, Clone)]
@@ -144,6 +146,7 @@ struct Global {
     webauthn: webauthn_rs::Webauthn,
     open_telemetry: opentelemetry::OpenTelemetry,
     redis: fred::clients::Pool,
+    email_service_client: pb::scufflecloud::email::v1::email_service_client::EmailServiceClient<tonic::transport::Channel>,
 }
 
 impl scufflecloud_core::CoreConfig for Global {
@@ -173,6 +176,12 @@ impl scufflecloud_core::CoreConfig for Global {
 
     fn redis(&self) -> &fred::clients::Pool {
         &self.redis
+    }
+
+    fn email_service(
+        &self,
+    ) -> pb::scufflecloud::email::v1::email_service_client::EmailServiceClient<tonic::transport::Channel> {
+        self.email_service_client.clone() // Cloning the client is cheap and recommended by tonic
     }
 
     fn swagger_ui_enabled(&self) -> bool {
@@ -293,6 +302,15 @@ impl scuffle_bootstrap::Global for Global {
 
         let redis = config.redis.setup().await?;
 
+        tracing::info!(address = %config.email_service_address, "connecting to email service");
+        let email_service_channel = tonic::transport::Channel::from_shared(config.email_service_address.clone())
+            .context("create channel to email service")?
+            .connect()
+            .await
+            .context("create channel to email service")?;
+        let email_service_client =
+            pb::scufflecloud::email::v1::email_service_client::EmailServiceClient::new(email_service_channel);
+
         Ok(Arc::new(Self {
             config,
             database,
@@ -301,6 +319,7 @@ impl scuffle_bootstrap::Global for Global {
             webauthn,
             open_telemetry,
             redis,
+            email_service_client,
         }))
     }
 }

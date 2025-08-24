@@ -23,8 +23,10 @@ struct RegisterWithEmailHtmlTemplate {
 pub(crate) async fn register_with_email_email<G: CoreConfig>(
     global: &Arc<G>,
     to_address: String,
-    url: String,
+    code: String,
 ) -> Result<pb::scufflecloud::email::v1::Email, sailfish::RenderError> {
+    let url = format!("{}/register/confirm?code={}", global.dashboard_origin(), code);
+
     let subject = RegisterWithEmailSubjectTemplate.render_once()?;
     let text = RegisterWithEmailTextTemplate { url: url.to_string() }.render_once()?;
     let html = RegisterWithEmailHtmlTemplate { url }.render_once()?;
@@ -57,10 +59,12 @@ struct AddNewEmailHtmlTemplate {
 pub(crate) async fn add_new_email_email<G: CoreConfig>(
     global: &Arc<G>,
     to_address: String,
-    url: String,
+    code: String,
 ) -> Result<pb::scufflecloud::email::v1::Email, sailfish::RenderError> {
+    let url = format!("{}/settings/emails/confirm?code={}", global.dashboard_origin(), code);
+
     let subject = AddNewEmailSubjectTemplate.render_once()?;
-    let text = AddNewEmailTextTemplate { url: url.to_string() }.render_once()?;
+    let text = AddNewEmailTextTemplate { url: url.clone() }.render_once()?;
     let html = AddNewEmailHtmlTemplate { url }.render_once()?;
 
     Ok(pb::scufflecloud::email::v1::Email {
@@ -91,10 +95,12 @@ struct MagicLinkHtmlTemplate {
 pub(crate) async fn magic_link_email<G: CoreConfig>(
     global: &Arc<G>,
     to_address: String,
-    url: String,
+    code: String,
 ) -> Result<pb::scufflecloud::email::v1::Email, sailfish::RenderError> {
+    let url = format!("{}/login/magic-link?code={}", global.dashboard_origin(), code);
+
     let subject = MagicLinkSubjectTemplate.render_once()?;
-    let text = MagicLinkTextTemplate { url: url.to_string() }.render_once()?;
+    let text = MagicLinkTextTemplate { url: url.clone() }.render_once()?;
     let html = MagicLinkHtmlTemplate { url }.render_once()?;
 
     Ok(pb::scufflecloud::email::v1::Email {

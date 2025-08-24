@@ -10,7 +10,7 @@ use crate::models::{
 };
 use crate::operations::Operation;
 use crate::schema::{organization_invitations, organization_members, user_emails};
-use crate::std_ext::ResultExt;
+use crate::std_ext::{OptionExt, ResultExt};
 use crate::{CoreConfig, common};
 
 impl<G: CoreConfig> Operation<G> for tonic::Request<pb::scufflecloud::core::v1::CreateOrganizationInvitationRequest> {
@@ -22,10 +22,11 @@ impl<G: CoreConfig> Operation<G> for tonic::Request<pb::scufflecloud::core::v1::
 
     async fn load_principal(
         &mut self,
-        conn: &mut diesel_async::AsyncPgConnection,
+        _conn: &mut diesel_async::AsyncPgConnection,
     ) -> Result<Self::Principal, tonic::Status> {
+        let global = &self.global::<G>()?;
         let session = self.session_or_err()?;
-        common::get_user_by_id(conn, session.user_id).await
+        common::get_user_by_id(global, session.user_id).await
     }
 
     async fn load_resource(&mut self, conn: &mut diesel_async::AsyncPgConnection) -> Result<Self::Resource, tonic::Status> {
@@ -86,10 +87,11 @@ impl<G: CoreConfig> Operation<G>
 
     async fn load_principal(
         &mut self,
-        conn: &mut diesel_async::AsyncPgConnection,
+        _conn: &mut diesel_async::AsyncPgConnection,
     ) -> Result<Self::Principal, tonic::Status> {
+        let global = &self.global::<G>()?;
         let session = self.session_or_err()?;
-        common::get_user_by_id(conn, session.user_id).await
+        common::get_user_by_id(global, session.user_id).await
     }
 
     async fn load_resource(&mut self, conn: &mut diesel_async::AsyncPgConnection) -> Result<Self::Resource, tonic::Status> {
@@ -129,19 +131,21 @@ impl<G: CoreConfig> Operation<G> for tonic::Request<pb::scufflecloud::core::v1::
 
     async fn load_principal(
         &mut self,
-        conn: &mut diesel_async::AsyncPgConnection,
+        _conn: &mut diesel_async::AsyncPgConnection,
     ) -> Result<Self::Principal, tonic::Status> {
+        let global = &self.global::<G>()?;
         let session = self.session_or_err()?;
-        common::get_user_by_id(conn, session.user_id).await
+        common::get_user_by_id(global, session.user_id).await
     }
 
-    async fn load_resource(&mut self, conn: &mut diesel_async::AsyncPgConnection) -> Result<Self::Resource, tonic::Status> {
+    async fn load_resource(&mut self, _conn: &mut diesel_async::AsyncPgConnection) -> Result<Self::Resource, tonic::Status> {
+        let global = &self.global::<G>()?;
         let user_id: UserId = self
             .get_ref()
             .id
             .parse()
             .into_tonic_err_with_field_violation("id", "invalid ID")?;
-        common::get_user_by_id(conn, user_id).await
+        common::get_user_by_id(global, user_id).await
     }
 
     async fn execute(
@@ -172,10 +176,11 @@ impl<G: CoreConfig> Operation<G> for tonic::Request<pb::scufflecloud::core::v1::
 
     async fn load_principal(
         &mut self,
-        conn: &mut diesel_async::AsyncPgConnection,
+        _conn: &mut diesel_async::AsyncPgConnection,
     ) -> Result<Self::Principal, tonic::Status> {
+        let global = &self.global::<G>()?;
         let session = self.session_or_err()?;
-        common::get_user_by_id(conn, session.user_id).await
+        common::get_user_by_id(global, session.user_id).await
     }
 
     async fn load_resource(&mut self, conn: &mut diesel_async::AsyncPgConnection) -> Result<Self::Resource, tonic::Status> {
@@ -190,13 +195,7 @@ impl<G: CoreConfig> Operation<G> for tonic::Request<pb::scufflecloud::core::v1::
             .await
             .optional()
             .into_tonic_internal_err("failed to query organization invitation")?
-            .ok_or_else(|| {
-                tonic::Status::with_error_details(
-                    tonic::Code::NotFound,
-                    "organization invitation not found",
-                    ErrorDetails::new(),
-                )
-            })
+            .into_tonic_not_found("organization invitation not found")
     }
 
     async fn execute(
@@ -218,10 +217,11 @@ impl<G: CoreConfig> Operation<G> for tonic::Request<pb::scufflecloud::core::v1::
 
     async fn load_principal(
         &mut self,
-        conn: &mut diesel_async::AsyncPgConnection,
+        _conn: &mut diesel_async::AsyncPgConnection,
     ) -> Result<Self::Principal, tonic::Status> {
+        let global = &self.global::<G>()?;
         let session = self.session_or_err()?;
-        common::get_user_by_id(conn, session.user_id).await
+        common::get_user_by_id(global, session.user_id).await
     }
 
     async fn load_resource(&mut self, conn: &mut diesel_async::AsyncPgConnection) -> Result<Self::Resource, tonic::Status> {
@@ -236,13 +236,7 @@ impl<G: CoreConfig> Operation<G> for tonic::Request<pb::scufflecloud::core::v1::
             .await
             .optional()
             .into_tonic_internal_err("failed to query organization invitation")?
-            .ok_or_else(|| {
-                tonic::Status::with_error_details(
-                    tonic::Code::NotFound,
-                    "organization invitation not found",
-                    ErrorDetails::new(),
-                )
-            })
+            .into_tonic_not_found("organization invitation not found")
     }
 
     async fn execute(
@@ -286,10 +280,11 @@ impl<G: CoreConfig> Operation<G> for tonic::Request<pb::scufflecloud::core::v1::
 
     async fn load_principal(
         &mut self,
-        conn: &mut diesel_async::AsyncPgConnection,
+        _conn: &mut diesel_async::AsyncPgConnection,
     ) -> Result<Self::Principal, tonic::Status> {
+        let global = &self.global::<G>()?;
         let session = self.session_or_err()?;
-        common::get_user_by_id(conn, session.user_id).await
+        common::get_user_by_id(global, session.user_id).await
     }
 
     async fn load_resource(&mut self, conn: &mut diesel_async::AsyncPgConnection) -> Result<Self::Resource, tonic::Status> {
@@ -304,13 +299,7 @@ impl<G: CoreConfig> Operation<G> for tonic::Request<pb::scufflecloud::core::v1::
             .await
             .optional()
             .into_tonic_internal_err("failed to query organization invitation")?
-            .ok_or_else(|| {
-                tonic::Status::with_error_details(
-                    tonic::Code::NotFound,
-                    "organization invitation not found",
-                    ErrorDetails::new(),
-                )
-            })
+            .into_tonic_not_found("organization invitation not found")
     }
 
     async fn execute(

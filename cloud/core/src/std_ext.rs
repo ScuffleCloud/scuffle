@@ -47,7 +47,7 @@ pub(crate) trait ResultExt<T>: Sized {
 
 impl<T, E> ResultExt<T> for Result<T, E>
 where
-    E: Display,
+    E: DisplayExt,
 {
     fn into_tonic_err(self, code: tonic::Code, msg: &str, details: ErrorDetails) -> Result<T, tonic::Status> {
         match self {
@@ -57,18 +57,31 @@ where
     }
 }
 
-pub(crate) trait OptionExt<T> {
-    fn require(self, field: &str) -> Result<T, tonic::Status>;
+pub(crate) trait OptionExt<T>: Sized {
+    fn into_tonic_err(self, code: tonic::Code, msg: &str, details: ErrorDetails) -> Result<T, tonic::Status>;
+
+    fn into_tonic_not_found(self, msg: &str) -> Result<T, tonic::Status> {
+        self.into_tonic_err(tonic::Code::NotFound, msg, ErrorDetails::new())
+    }
+
+    fn into_tonic_internal_err(self, msg: &str) -> Result<T, tonic::Status> {
+        self.into_tonic_err(tonic::Code::Internal, msg, ErrorDetails::new())
+    }
+
+    fn require(self, field: &str) -> Result<T, tonic::Status> {
+        self.into_tonic_err(
+            tonic::Code::InvalidArgument,
+            format!("missing {field}").as_str(),
+            tonic_types::ErrorDetails::with_bad_request_violation(field, "not set"),
+        )
+    }
 }
 
 impl<T> OptionExt<T> for Option<T> {
-    fn require(self, field: &str) -> Result<T, tonic::Status> {
+    fn into_tonic_err(self, code: tonic::Code, msg: &str, details: ErrorDetails) -> Result<T, tonic::Status> {
         self.ok_or_else(|| {
-            tonic::Status::with_error_details(
-                tonic::Code::InvalidArgument,
-                format!("missing {field}"),
-                tonic_types::ErrorDetails::with_bad_request_violation(field, "not set"),
-            )
+            tracing::error!("{}", msg);
+            tonic::Status::with_error_details(code, msg, details)
         })
     }
 }

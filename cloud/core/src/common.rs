@@ -23,7 +23,7 @@ use crate::schema::{
     mfa_recovery_codes, mfa_totp_credentials, mfa_webauthn_auth_sessions, mfa_webauthn_credentials, organizations,
     user_emails, user_sessions, users,
 };
-use crate::std_ext::{DisplayExt, ResultExt};
+use crate::std_ext::{DisplayExt, OptionExt, ResultExt};
 
 pub(crate) fn generate_random_bytes() -> Result<[u8; 32], rand::Error> {
     let mut token = [0u8; 32];
@@ -42,11 +42,7 @@ pub(crate) enum TxError {
 impl From<TxError> for tonic::Status {
     fn from(err: TxError) -> Self {
         match err {
-            TxError::Diesel(e) => tonic::Status::with_error_details(
-                tonic::Code::Internal,
-                format!("transaction error: {e}"),
-                ErrorDetails::new(),
-            ),
+            TxError::Diesel(e) => e.into_tonic_internal_err("transaction error"),
             TxError::Status(s) => s,
         }
     }
@@ -70,7 +66,17 @@ pub(crate) fn encrypt_token(
     }
 }
 
-pub(crate) async fn get_user_by_id(
+pub(crate) async fn get_user_by_id<G: CoreConfig>(global: &Arc<G>, user_id: UserId) -> Result<User, tonic::Status> {
+    global
+        .user_loader()
+        .load(user_id)
+        .await
+        .ok()
+        .into_tonic_internal_err("failed to query user")?
+        .into_tonic_not_found("user not found")
+}
+
+pub(crate) async fn get_user_by_id_in_tx(
     db: &mut diesel_async::AsyncPgConnection,
     user_id: UserId,
 ) -> Result<User, tonic::Status> {
@@ -81,7 +87,7 @@ pub(crate) async fn get_user_by_id(
         .await
         .optional()
         .into_tonic_internal_err("failed to query user")?
-        .ok_or_else(|| tonic::Status::with_error_details(Code::NotFound, "user not found", ErrorDetails::new()))?;
+        .into_tonic_not_found("user not found")?;
 
     Ok(user)
 }
@@ -300,13 +306,11 @@ pub(crate) async fn finish_webauthn_authentication<G: CoreConfig>(
         .await
         .optional()
         .into_tonic_internal_err("failed to query webauthn authentication session")?
-        .ok_or_else(|| {
-            tonic::Status::with_error_details(
-                tonic::Code::FailedPrecondition,
-                "no webauthn authentication session found",
-                ErrorDetails::new(),
-            )
-        })?;
+        .into_tonic_err(
+            tonic::Code::FailedPrecondition,
+            "no webauthn authentication session found",
+            ErrorDetails::new(),
+        )?;
 
     let state: webauthn_rs::prelude::PasskeyAuthentication =
         serde_json::from_value(state).into_tonic_internal_err("failed to deserialize webauthn state")?;

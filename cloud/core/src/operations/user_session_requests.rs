@@ -166,10 +166,11 @@ impl<G: CoreConfig> Operation<G> for tonic::Request<pb::scufflecloud::core::v1::
 
     async fn load_principal(
         &mut self,
-        conn: &mut diesel_async::AsyncPgConnection,
+        _conn: &mut diesel_async::AsyncPgConnection,
     ) -> Result<Self::Principal, tonic::Status> {
+        let global = &self.global::<G>()?;
         let session = self.session_or_err()?;
-        common::get_user_by_id(conn, session.user_id).await
+        common::get_user_by_id(global, session.user_id).await
     }
 
     async fn load_resource(&mut self, conn: &mut diesel_async::AsyncPgConnection) -> Result<Self::Resource, tonic::Status> {

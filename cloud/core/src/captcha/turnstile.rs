@@ -3,6 +3,7 @@ use std::sync::Arc;
 use tonic_types::{ErrorDetails, StatusExt};
 
 use crate::CoreConfig;
+use crate::std_ext::DisplayExt;
 
 const TURNSTILE_VERIFY_URL: &str = "https://challenges.cloudflare.com/turnstile/v0/siteverify";
 
@@ -66,10 +67,6 @@ pub(crate) async fn verify_in_tonic<G: CoreConfig>(global: &Arc<G>, token: &str)
             TrunstileVerifyError::TurnstileError(e).to_string(),
             ErrorDetails::new(),
         )),
-        Err(e) => Err(tonic::Status::with_error_details(
-            tonic::Code::Internal,
-            e.to_string(),
-            ErrorDetails::new(),
-        )),
+        Err(e) => Err(e.into_tonic_internal_err("failed to verify turnstile token")),
     }
 }

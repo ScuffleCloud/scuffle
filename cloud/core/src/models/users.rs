@@ -16,7 +16,7 @@ use crate::std_ext::ResultExt;
 
 pub(crate) type UserId = Id<User>;
 
-#[derive(Debug, Queryable, Selectable, Insertable, Identifiable, AsChangeset, serde::Serialize)]
+#[derive(Debug, Queryable, Selectable, Insertable, Identifiable, AsChangeset, serde::Serialize, Clone)]
 #[diesel(table_name = crate::schema::users)]
 #[diesel(check_for_backend(diesel::pg::Pg))]
 pub struct User {

@@ -5,9 +5,11 @@ use std::sync::Arc;
 use anyhow::Context;
 use diesel_async::pooled_connection::bb8;
 use fred::prelude::ClientLike;
+use scuffle_batching::DataLoader;
 use scuffle_bootstrap_telemetry::opentelemetry;
 use scuffle_bootstrap_telemetry::opentelemetry_sdk::logs::SdkLoggerProvider;
 use scuffle_bootstrap_telemetry::opentelemetry_sdk::trace::SdkTracerProvider;
+use scufflecloud_core::dataloaders::UserLoader;
 use tracing_subscriber::Layer;
 use tracing_subscriber::layer::SubscriberExt;
 use tracing_subscriber::util::SubscriberInitExt;
@@ -141,6 +143,7 @@ scuffle_settings::bootstrap!(Config);
 struct Global {
     config: Config,
     database: bb8::Pool<diesel_async::AsyncPgConnection>,
+    user_loader: DataLoader<UserLoader>,
     authorizer: cedar_policy::Authorizer,
     http_client: reqwest::Client,
     webauthn: webauthn_rs::Webauthn,
@@ -182,6 +185,10 @@ impl scufflecloud_core::CoreConfig for Global {
         &self,
     ) -> pb::scufflecloud::email::v1::email_service_client::EmailServiceClient<tonic::transport::Channel> {
         self.email_service_client.clone() // Cloning the client is cheap and recommended by tonic
+    }
+
+    fn user_loader(&self) -> &DataLoader<UserLoader> {
+        &self.user_loader
     }
 
     fn swagger_ui_enabled(&self) -> bool {
@@ -279,6 +286,9 @@ impl scuffle_bootstrap::Global for Global {
             .await
             .context("build database pool")?;
 
+        let connection = database.get_owned().await.context("get database connection")?;
+        let user_loader = UserLoader::new(connection);
+
         let http_client = reqwest::Client::builder()
             .user_agent(&config.service_name)
             .build()
@@ -314,6 +324,7 @@ impl scuffle_bootstrap::Global for Global {
         Ok(Arc::new(Self {
             config,
             database,
+            user_loader,
             authorizer: cedar_policy::Authorizer::new(),
             http_client,
             webauthn,

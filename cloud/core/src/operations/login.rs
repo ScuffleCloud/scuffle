@@ -175,13 +175,11 @@ impl<G: CoreConfig> Operation<G> for tonic::Request<pb::scufflecloud::core::v1::
     ) -> Result<Self::Response, tonic::Status> {
         let global = &self.global::<G>()?;
 
-        let to_address = principal.primary_email.ok_or_else(|| {
-            tonic::Status::with_error_details(
-                Code::FailedPrecondition,
-                "user does not have a primary email address",
-                ErrorDetails::new(),
-            )
-        })?;
+        let to_address = principal.primary_email.into_tonic_err(
+            Code::FailedPrecondition,
+            "user does not have a primary email address",
+            ErrorDetails::new(),
+        )?;
 
         let code = common::generate_random_bytes().into_tonic_internal_err("failed to generate magic link code")?;
         let code_base64 = base64::prelude::BASE64_URL_SAFE.encode(code);
@@ -448,13 +446,7 @@ impl<G: CoreConfig> Operation<G> for tonic::Request<pb::scufflecloud::core::v1::
         let state = self
             .extensions_mut()
             .remove::<CompleteLoginWithGoogleState>()
-            .ok_or_else(|| {
-                tonic::Status::with_error_details(
-                    tonic::Code::Internal,
-                    "missing CompleteLoginWithGoogleState state",
-                    ErrorDetails::new(),
-                )
-            })?;
+            .into_tonic_internal_err("missing CompleteLoginWithGoogleState state")?;
 
         let device = self.into_inner().device.require("device")?;
 
@@ -476,23 +468,27 @@ impl<G: CoreConfig> Operation<G> for tonic::Request<pb::scufflecloud::core::v1::
 
     const ACTION: Action = Action::LoginWithWebauthn;
 
-    async fn load_principal(&mut self, tx: &mut diesel_async::AsyncPgConnection) -> Result<Self::Principal, tonic::Status> {
+    async fn load_principal(
+        &mut self,
+        _conn: &mut diesel_async::AsyncPgConnection,
+    ) -> Result<Self::Principal, tonic::Status> {
+        let global = &self.global::<G>()?;
         let user_id: UserId = self
             .get_ref()
             .user_id
             .parse()
             .into_tonic_err_with_field_violation("user_id", "invalid ID")?;
 
-        common::get_user_by_id(tx, user_id).await
+        common::get_user_by_id(global, user_id).await
     }
 
-    async fn load_resource(&mut self, _tx: &mut diesel_async::AsyncPgConnection) -> Result<Self::Resource, tonic::Status> {
+    async fn load_resource(&mut self, _conn: &mut diesel_async::AsyncPgConnection) -> Result<Self::Resource, tonic::Status> {
         Ok(CoreApplication)
     }
 
     async fn execute(
         self,
-        tx: &mut diesel_async::AsyncPgConnection,
+        conn: &mut diesel_async::AsyncPgConnection,
         principal: Self::Principal,
         _resource: Self::Resource,
     ) -> Result<Self::Response, tonic::Status> {
@@ -504,10 +500,10 @@ impl<G: CoreConfig> Operation<G> for tonic::Request<pb::scufflecloud::core::v1::
             .into_tonic_err_with_field_violation("response_json", "invalid public key credential")?;
         let device = payload.device.require("device")?;
 
-        common::finish_webauthn_authentication(global, tx, principal.id, &pk_cred).await?;
+        common::finish_webauthn_authentication(global, conn, principal.id, &pk_cred).await?;
 
         // Create a new session for the user
-        let new_token = common::create_session(global, tx, principal.id, device, &ip_info, false).await?;
+        let new_token = common::create_session(global, conn, principal.id, device, &ip_info, false).await?;
         Ok(new_token)
     }
 }

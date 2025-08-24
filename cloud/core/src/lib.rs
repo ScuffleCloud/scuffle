@@ -20,11 +20,13 @@
 use std::net::SocketAddr;
 
 use diesel_async::AsyncPgConnection;
+use scuffle_batching::DataLoader;
 
 mod captcha;
 pub mod cedar;
 mod chrono_ext;
 mod common;
+pub mod dataloaders;
 mod emails;
 mod google_api;
 mod http_ext;
@@ -57,6 +59,7 @@ pub trait CoreConfig:
     fn email_service(
         &self,
     ) -> pb::scufflecloud::email::v1::email_service_client::EmailServiceClient<tonic::transport::Channel>;
+    fn user_loader(&self) -> &DataLoader<dataloaders::UserLoader>;
     fn swagger_ui_enabled(&self) -> bool {
         false
     }

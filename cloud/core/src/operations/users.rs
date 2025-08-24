@@ -33,20 +33,22 @@ impl<G: CoreConfig> Operation<G> for tonic::Request<pb::scufflecloud::core::v1::
 
     async fn load_principal(
         &mut self,
-        conn: &mut diesel_async::AsyncPgConnection,
+        _conn: &mut diesel_async::AsyncPgConnection,
     ) -> Result<Self::Principal, tonic::Status> {
+        let global = &self.global::<G>()?;
         let session = self.session_or_err()?;
-        common::get_user_by_id(conn, session.user_id).await
+        common::get_user_by_id(global, session.user_id).await
     }
 
-    async fn load_resource(&mut self, conn: &mut diesel_async::AsyncPgConnection) -> Result<Self::Resource, tonic::Status> {
+    async fn load_resource(&mut self, _conn: &mut diesel_async::AsyncPgConnection) -> Result<Self::Resource, tonic::Status> {
+        let global = &self.global::<G>()?;
         let user_id: UserId = self
             .get_ref()
             .id
             .parse()
             .into_tonic_err_with_field_violation("id", "invalid ID")?;
 
-        common::get_user_by_id(conn, user_id).await
+        common::get_user_by_id(global, user_id).await
     }
 
     async fn execute(
@@ -68,10 +70,11 @@ impl<G: CoreConfig> Operation<G> for tonic::Request<pb::scufflecloud::core::v1::
 
     async fn load_principal(
         &mut self,
-        conn: &mut diesel_async::AsyncPgConnection,
+        _conn: &mut diesel_async::AsyncPgConnection,
     ) -> Result<Self::Principal, tonic::Status> {
+        let global = &self.global::<G>()?;
         let session = self.session_or_err()?;
-        common::get_user_by_id(conn, session.user_id).await
+        common::get_user_by_id(global, session.user_id).await
     }
 
     async fn load_resource(&mut self, conn: &mut diesel_async::AsyncPgConnection) -> Result<Self::Resource, tonic::Status> {
@@ -81,7 +84,7 @@ impl<G: CoreConfig> Operation<G> for tonic::Request<pb::scufflecloud::core::v1::
             .parse()
             .into_tonic_err_with_field_violation("id", "invalid ID")?;
 
-        common::get_user_by_id(conn, user_id).await
+        common::get_user_by_id_in_tx(conn, user_id).await
     }
 
     async fn execute(
@@ -141,9 +144,7 @@ impl<G: CoreConfig> Operation<G> for tonic::Request<pb::scufflecloud::core::v1::
                 .await
                 .optional()
                 .into_tonic_internal_err("failed to query user email")?
-                .ok_or_else(|| {
-                    tonic::Status::with_error_details(tonic::Code::NotFound, "user email not found", ErrorDetails::new())
-                })?;
+                .into_tonic_not_found("user email not found")?;
 
             resource = diesel::update(users::dsl::users)
                 .filter(users::dsl::id.eq(resource.id))
@@ -168,20 +169,22 @@ impl<G: CoreConfig> Operation<G> for tonic::Request<pb::scufflecloud::core::v1::
 
     async fn load_principal(
         &mut self,
-        conn: &mut diesel_async::AsyncPgConnection,
+        _conn: &mut diesel_async::AsyncPgConnection,
     ) -> Result<Self::Principal, tonic::Status> {
+        let global = &self.global::<G>()?;
         let session = self.session_or_err()?;
-        common::get_user_by_id(conn, session.user_id).await
+        common::get_user_by_id(global, session.user_id).await
     }
 
-    async fn load_resource(&mut self, conn: &mut diesel_async::AsyncPgConnection) -> Result<Self::Resource, tonic::Status> {
+    async fn load_resource(&mut self, _conn: &mut diesel_async::AsyncPgConnection) -> Result<Self::Resource, tonic::Status> {
+        let global = &self.global::<G>()?;
         let user_id: UserId = self
             .get_ref()
             .id
             .parse()
             .into_tonic_err_with_field_violation("id", "invalid ID")?;
 
-        common::get_user_by_id(conn, user_id).await
+        common::get_user_by_id(global, user_id).await
     }
 
     async fn execute(
@@ -212,10 +215,11 @@ impl<G: CoreConfig> Operation<G> for tonic::Request<pb::scufflecloud::core::v1::
 
     async fn load_principal(
         &mut self,
-        conn: &mut diesel_async::AsyncPgConnection,
+        _conn: &mut diesel_async::AsyncPgConnection,
     ) -> Result<Self::Principal, tonic::Status> {
+        let global = &self.global::<G>()?;
         let session = self.session_or_err()?;
-        common::get_user_by_id(conn, session.user_id).await
+        common::get_user_by_id(global, session.user_id).await
     }
 
     async fn load_resource(&mut self, _conn: &mut diesel_async::AsyncPgConnection) -> Result<Self::Resource, tonic::Status> {
@@ -299,10 +303,11 @@ impl<G: CoreConfig> Operation<G> for tonic::Request<pb::scufflecloud::core::v1::
 
     async fn load_principal(
         &mut self,
-        conn: &mut diesel_async::AsyncPgConnection,
+        _conn: &mut diesel_async::AsyncPgConnection,
     ) -> Result<Self::Principal, tonic::Status> {
+        let global = &self.global::<G>()?;
         let session = self.session_or_err()?;
-        common::get_user_by_id(conn, session.user_id).await
+        common::get_user_by_id(global, session.user_id).await
     }
 
     async fn load_resource(&mut self, conn: &mut diesel_async::AsyncPgConnection) -> Result<Self::Resource, tonic::Status> {
@@ -382,10 +387,11 @@ impl<G: CoreConfig> Operation<G> for tonic::Request<pb::scufflecloud::core::v1::
 
     async fn load_principal(
         &mut self,
-        conn: &mut diesel_async::AsyncPgConnection,
+        _conn: &mut diesel_async::AsyncPgConnection,
     ) -> Result<Self::Principal, tonic::Status> {
+        let global = &self.global::<G>()?;
         let session = self.session_or_err()?;
-        common::get_user_by_id(conn, session.user_id).await
+        common::get_user_by_id(global, session.user_id).await
     }
 
     async fn load_resource(&mut self, conn: &mut diesel_async::AsyncPgConnection) -> Result<Self::Resource, tonic::Status> {
@@ -434,10 +440,11 @@ impl<G: CoreConfig> Operation<G> for tonic::Request<pb::scufflecloud::core::v1::
 
     async fn load_principal(
         &mut self,
-        conn: &mut diesel_async::AsyncPgConnection,
+        _conn: &mut diesel_async::AsyncPgConnection,
     ) -> Result<Self::Principal, tonic::Status> {
+        let global = &self.global::<G>()?;
         let session = self.session_or_err()?;
-        common::get_user_by_id(conn, session.user_id).await
+        common::get_user_by_id(global, session.user_id).await
     }
 
     async fn load_resource(&mut self, conn: &mut diesel_async::AsyncPgConnection) -> Result<Self::Resource, tonic::Status> {
@@ -446,7 +453,7 @@ impl<G: CoreConfig> Operation<G> for tonic::Request<pb::scufflecloud::core::v1::
             .id
             .parse()
             .into_tonic_err_with_field_violation("id", "invalid ID")?;
-        common::get_user_by_id(conn, user_id).await
+        common::get_user_by_id_in_tx(conn, user_id).await
     }
 
     async fn execute(
@@ -514,10 +521,11 @@ impl<G: CoreConfig> Operation<G> for tonic::Request<pb::scufflecloud::core::v1::
 
     async fn load_principal(
         &mut self,
-        conn: &mut diesel_async::AsyncPgConnection,
+        _conn: &mut diesel_async::AsyncPgConnection,
     ) -> Result<Self::Principal, tonic::Status> {
+        let global = &self.global::<G>()?;
         let session = self.session_or_err()?;
-        common::get_user_by_id(conn, session.user_id).await
+        common::get_user_by_id(global, session.user_id).await
     }
 
     async fn load_resource(&mut self, conn: &mut diesel_async::AsyncPgConnection) -> Result<Self::Resource, tonic::Status> {
@@ -543,13 +551,11 @@ impl<G: CoreConfig> Operation<G> for tonic::Request<pb::scufflecloud::core::v1::
             .await
             .optional()
             .into_tonic_internal_err("failed to query webauthn registration session")?
-            .ok_or_else(|| {
-                tonic::Status::with_error_details(
-                    tonic::Code::FailedPrecondition,
-                    "no webauthn registration session found",
-                    ErrorDetails::new(),
-                )
-            })?;
+            .into_tonic_err(
+                tonic::Code::FailedPrecondition,
+                "no webauthn registration session found",
+                ErrorDetails::new(),
+            )?;
 
         let state: webauthn_rs::prelude::PasskeyRegistration =
             serde_json::from_value(state).into_tonic_internal_err("failed to deserialize webauthn state")?;
@@ -596,19 +602,21 @@ impl<G: CoreConfig> Operation<G> for tonic::Request<pb::scufflecloud::core::v1::
 
     async fn load_principal(
         &mut self,
-        conn: &mut diesel_async::AsyncPgConnection,
+        _conn: &mut diesel_async::AsyncPgConnection,
     ) -> Result<Self::Principal, tonic::Status> {
+        let global = &self.global::<G>()?;
         let session = self.session_or_err()?;
-        common::get_user_by_id(conn, session.user_id).await
+        common::get_user_by_id(global, session.user_id).await
     }
 
-    async fn load_resource(&mut self, conn: &mut diesel_async::AsyncPgConnection) -> Result<Self::Resource, tonic::Status> {
+    async fn load_resource(&mut self, _conn: &mut diesel_async::AsyncPgConnection) -> Result<Self::Resource, tonic::Status> {
+        let global = &self.global::<G>()?;
         let user_id: UserId = self
             .get_ref()
             .id
             .parse()
             .into_tonic_err_with_field_violation("id", "invalid ID")?;
-        common::get_user_by_id(conn, user_id).await
+        common::get_user_by_id(global, user_id).await
     }
 
     async fn execute(
@@ -639,10 +647,11 @@ impl<G: CoreConfig> Operation<G> for tonic::Request<pb::scufflecloud::core::v1::
 
     async fn load_principal(
         &mut self,
-        conn: &mut diesel_async::AsyncPgConnection,
+        _conn: &mut diesel_async::AsyncPgConnection,
     ) -> Result<Self::Principal, tonic::Status> {
+        let global = &self.global::<G>()?;
         let session = self.session_or_err()?;
-        common::get_user_by_id(conn, session.user_id).await
+        common::get_user_by_id(global, session.user_id).await
     }
 
     async fn load_resource(&mut self, conn: &mut diesel_async::AsyncPgConnection) -> Result<Self::Resource, tonic::Status> {
@@ -697,19 +706,21 @@ impl<G: CoreConfig> Operation<G> for tonic::Request<pb::scufflecloud::core::v1::
 
     async fn load_principal(
         &mut self,
-        conn: &mut diesel_async::AsyncPgConnection,
+        _conn: &mut diesel_async::AsyncPgConnection,
     ) -> Result<Self::Principal, tonic::Status> {
+        let global = &self.global::<G>()?;
         let session = self.session_or_err()?;
-        common::get_user_by_id(conn, session.user_id).await
+        common::get_user_by_id(global, session.user_id).await
     }
 
-    async fn load_resource(&mut self, conn: &mut diesel_async::AsyncPgConnection) -> Result<Self::Resource, tonic::Status> {
+    async fn load_resource(&mut self, _conn: &mut diesel_async::AsyncPgConnection) -> Result<Self::Resource, tonic::Status> {
+        let global = &self.global::<G>()?;
         let user_id: UserId = self
             .get_ref()
             .id
             .parse()
             .into_tonic_err_with_field_violation("id", "invalid ID")?;
-        common::get_user_by_id(conn, user_id).await
+        common::get_user_by_id(global, user_id).await
     }
 
     async fn execute(
@@ -764,10 +775,11 @@ impl<G: CoreConfig> Operation<G> for tonic::Request<pb::scufflecloud::core::v1::
 
     async fn load_principal(
         &mut self,
-        conn: &mut diesel_async::AsyncPgConnection,
+        _conn: &mut diesel_async::AsyncPgConnection,
     ) -> Result<Self::Principal, tonic::Status> {
+        let global = &self.global::<G>()?;
         let session = self.session_or_err()?;
-        common::get_user_by_id(conn, session.user_id).await
+        common::get_user_by_id(global, session.user_id).await
     }
 
     async fn load_resource(&mut self, conn: &mut diesel_async::AsyncPgConnection) -> Result<Self::Resource, tonic::Status> {
@@ -776,7 +788,7 @@ impl<G: CoreConfig> Operation<G> for tonic::Request<pb::scufflecloud::core::v1::
             .id
             .parse()
             .into_tonic_err_with_field_violation("id", "invalid ID")?;
-        common::get_user_by_id(conn, user_id).await
+        common::get_user_by_id_in_tx(conn, user_id).await
     }
 
     async fn execute(
@@ -818,10 +830,11 @@ impl<G: CoreConfig> Operation<G> for tonic::Request<pb::scufflecloud::core::v1::
 
     async fn load_principal(
         &mut self,
-        conn: &mut diesel_async::AsyncPgConnection,
+        _conn: &mut diesel_async::AsyncPgConnection,
     ) -> Result<Self::Principal, tonic::Status> {
+        let global = &self.global::<G>()?;
         let session = self.session_or_err()?;
-        common::get_user_by_id(conn, session.user_id).await
+        common::get_user_by_id(global, session.user_id).await
     }
 
     async fn load_resource(&mut self, conn: &mut diesel_async::AsyncPgConnection) -> Result<Self::Resource, tonic::Status> {
@@ -839,13 +852,11 @@ impl<G: CoreConfig> Operation<G> for tonic::Request<pb::scufflecloud::core::v1::
             .await
             .optional()
             .into_tonic_internal_err("failed to query TOTP registration session")?
-            .ok_or_else(|| {
-                tonic::Status::with_error_details(
-                    tonic::Code::FailedPrecondition,
-                    "no TOTP registration session found",
-                    ErrorDetails::new(),
-                )
-            })?;
+            .into_tonic_err(
+                tonic::Code::FailedPrecondition,
+                "no TOTP registration session found",
+                ErrorDetails::new(),
+            )?;
 
         match totp::verify_token(secret.clone(), &self.get_ref().code) {
             Ok(()) => {}
@@ -890,19 +901,21 @@ impl<G: CoreConfig> Operation<G> for tonic::Request<pb::scufflecloud::core::v1::
 
     async fn load_principal(
         &mut self,
-        conn: &mut diesel_async::AsyncPgConnection,
+        _conn: &mut diesel_async::AsyncPgConnection,
     ) -> Result<Self::Principal, tonic::Status> {
+        let global = &self.global::<G>()?;
         let session = self.session_or_err()?;
-        common::get_user_by_id(conn, session.user_id).await
+        common::get_user_by_id(global, session.user_id).await
     }
 
-    async fn load_resource(&mut self, conn: &mut diesel_async::AsyncPgConnection) -> Result<Self::Resource, tonic::Status> {
+    async fn load_resource(&mut self, _conn: &mut diesel_async::AsyncPgConnection) -> Result<Self::Resource, tonic::Status> {
+        let global = &self.global::<G>()?;
         let user_id: UserId = self
             .get_ref()
             .id
             .parse()
             .into_tonic_err_with_field_violation("id", "invalid ID")?;
-        common::get_user_by_id(conn, user_id).await
+        common::get_user_by_id(global, user_id).await
     }
 
     async fn execute(
@@ -933,10 +946,11 @@ impl<G: CoreConfig> Operation<G> for tonic::Request<pb::scufflecloud::core::v1::
 
     async fn load_principal(
         &mut self,
-        conn: &mut diesel_async::AsyncPgConnection,
+        _conn: &mut diesel_async::AsyncPgConnection,
     ) -> Result<Self::Principal, tonic::Status> {
+        let global = &self.global::<G>()?;
         let session = self.session_or_err()?;
-        common::get_user_by_id(conn, session.user_id).await
+        common::get_user_by_id(global, session.user_id).await
     }
 
     async fn load_resource(&mut self, conn: &mut diesel_async::AsyncPgConnection) -> Result<Self::Resource, tonic::Status> {
@@ -991,19 +1005,21 @@ impl<G: CoreConfig> Operation<G> for tonic::Request<pb::scufflecloud::core::v1::
 
     async fn load_principal(
         &mut self,
-        conn: &mut diesel_async::AsyncPgConnection,
+        _conn: &mut diesel_async::AsyncPgConnection,
     ) -> Result<Self::Principal, tonic::Status> {
+        let global = &self.global::<G>()?;
         let session = self.session_or_err()?;
-        common::get_user_by_id(conn, session.user_id).await
+        common::get_user_by_id(global, session.user_id).await
     }
 
-    async fn load_resource(&mut self, conn: &mut diesel_async::AsyncPgConnection) -> Result<Self::Resource, tonic::Status> {
+    async fn load_resource(&mut self, _conn: &mut diesel_async::AsyncPgConnection) -> Result<Self::Resource, tonic::Status> {
+        let global = &self.global::<G>()?;
         let user_id: UserId = self
             .get_ref()
             .id
             .parse()
             .into_tonic_err_with_field_violation("id", "invalid ID")?;
-        common::get_user_by_id(conn, user_id).await
+        common::get_user_by_id(global, user_id).await
     }
 
     async fn execute(
@@ -1059,10 +1075,11 @@ impl<G: CoreConfig> Operation<G> for tonic::Request<pb::scufflecloud::core::v1::
 
     async fn load_principal(
         &mut self,
-        conn: &mut diesel_async::AsyncPgConnection,
+        _conn: &mut diesel_async::AsyncPgConnection,
     ) -> Result<Self::Principal, tonic::Status> {
+        let global = &self.global::<G>()?;
         let session = self.session_or_err()?;
-        common::get_user_by_id(conn, session.user_id).await
+        common::get_user_by_id(global, session.user_id).await
     }
 
     async fn load_resource(&mut self, conn: &mut diesel_async::AsyncPgConnection) -> Result<Self::Resource, tonic::Status> {
@@ -1071,7 +1088,7 @@ impl<G: CoreConfig> Operation<G> for tonic::Request<pb::scufflecloud::core::v1::
             .id
             .parse()
             .into_tonic_err_with_field_violation("id", "invalid ID")?;
-        common::get_user_by_id(conn, user_id).await
+        common::get_user_by_id_in_tx(conn, user_id).await
     }
 
     async fn execute(

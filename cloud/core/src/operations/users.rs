@@ -1,5 +1,6 @@
 use argon2::Argon2;
 use argon2::password_hash::{PasswordHasher, SaltString};
+use base64::Engine;
 use diesel::{BoolExpressionMethods, ExpressionMethods, OptionalExtension, QueryDsl, SelectableHelper};
 use diesel_async::RunQueryDsl;
 use rand::distributions::DistString;
@@ -20,7 +21,7 @@ use crate::schema::{
 };
 use crate::std_ext::{DisplayExt, OptionExt, ResultExt};
 use crate::totp::TotpError;
-use crate::{CoreConfig, common, totp};
+use crate::{CoreConfig, common, emails, totp};
 
 impl<G: CoreConfig> Operation<G> for tonic::Request<pb::scufflecloud::core::v1::GetUserRequest> {
     type Principal = User;
@@ -241,7 +242,7 @@ impl<G: CoreConfig> Operation<G> for tonic::Request<pb::scufflecloud::core::v1::
 
         // Generate random code
         let code = common::generate_random_bytes().into_tonic_internal_err("failed to generate registration code")?;
-        // let code_base64 = base64::prelude::BASE64_URL_SAFE.encode(&code);
+        let code_base64 = base64::prelude::BASE64_URL_SAFE.encode(code);
 
         // Check if email is already registered
         if user_emails::dsl::user_emails
@@ -264,7 +265,7 @@ impl<G: CoreConfig> Operation<G> for tonic::Request<pb::scufflecloud::core::v1::
         let registration_request = EmailRegistrationRequest {
             id: EmailRegistrationRequestId::new(),
             user_id: Some(resource.user_id),
-            email: resource.email,
+            email: resource.email.clone(),
             code: code.to_vec(),
             expires_at: chrono::Utc::now() + global.email_registration_request_timeout(),
         };
@@ -275,7 +276,15 @@ impl<G: CoreConfig> Operation<G> for tonic::Request<pb::scufflecloud::core::v1::
             .await
             .into_tonic_internal_err("failed to insert email registration request")?;
 
-        // TODO: Send email with registration code link code_base64
+        // Send email
+        let email = emails::add_new_email_email(global, resource.email, code_base64)
+            .await
+            .into_tonic_internal_err("failed to render add new email email")?;
+        global
+            .email_service()
+            .send_email(email)
+            .await
+            .into_tonic_internal_err("failed to send add new email email")?;
 
         Ok(())
     }

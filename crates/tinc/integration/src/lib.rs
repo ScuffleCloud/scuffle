@@ -5,6 +5,7 @@
 mod bytes_service;
 mod expressions;
 mod flattened;
+mod floats;
 mod nested;
 mod oneof;
 mod recursive;

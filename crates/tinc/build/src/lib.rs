@@ -32,10 +32,13 @@
 use std::io::ErrorKind;
 use std::path::Path;
 
+use crate::path_set::PathSet;
 use anyhow::Context;
 use extern_paths::ExternPaths;
+
 mod codegen;
 mod extern_paths;
+mod path_set;
 
 #[cfg(feature = "prost")]
 mod prost_explore;
@@ -66,6 +69,7 @@ struct PathConfigs {
     btree_maps: Vec<String>,
     bytes: Vec<String>,
     boxed: Vec<String>,
+    floats_with_non_finite_vals: PathSet,
 }
 
 /// A config for configuring how tinc builds / generates code.
@@ -129,6 +133,13 @@ impl Config {
         self
     }
 
+    /// Specify a path to float/double field (or derivative, like repeated float/double)
+    /// that must use serializer/deserializer with non-finite values support (NaN/Infinity).
+    pub fn float_with_non_finite_vals(&mut self, path: impl std::fmt::Display) -> &mut Self {
+        self.paths.floats_with_non_finite_vals.insert(&path.to_string());
+        self
+    }
+
     /// Compile and generate all the protos with the includes.
     pub fn compile_protos(&mut self, protos: &[impl AsRef<Path>], includes: &[impl AsRef<Path>]) -> anyhow::Result<()> {
         match self.mode {
@@ -179,7 +190,11 @@ impl Config {
 
         let pool = DescriptorPool::decode(&mut fds_bytes.as_slice()).context("failed to decode tonic fds")?;
 
-        let mut registry = ProtoTypeRegistry::new(self.mode, self.extern_paths.clone());
+        let mut registry = ProtoTypeRegistry::new(
+            self.mode,
+            self.extern_paths.clone(),
+            self.paths.floats_with_non_finite_vals.clone(),
+        );
 
         config.compile_well_known_types();
         for (proto, rust) in self.extern_paths.paths() {

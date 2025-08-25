@@ -550,11 +550,13 @@ mod tests {
     use cel_parser::parse as parse_cel;
 
     use super::*;
+    use crate::extern_paths::ExternPaths;
+    use crate::path_set::PathSet;
     use crate::types::ProtoTypeRegistry;
 
     #[test]
     fn test_resolve_atom_int() {
-        let registry = ProtoTypeRegistry::new(crate::Mode::Prost, crate::extern_paths::ExternPaths::new(crate::Mode::Prost));
+        let registry = ProtoTypeRegistry::new(crate::Mode::Prost, ExternPaths::new(crate::Mode::Prost), PathSet::default());
         let compiler = Compiler::new(&registry);
         let expr = parse_cel("1").unwrap();
         insta::assert_debug_snapshot!(resolve(&compiler, &expr), @r"
@@ -574,7 +576,7 @@ mod tests {
 
     #[test]
     fn test_resolve_atom_uint() {
-        let registry = ProtoTypeRegistry::new(crate::Mode::Prost, crate::extern_paths::ExternPaths::new(crate::Mode::Prost));
+        let registry = ProtoTypeRegistry::new(crate::Mode::Prost, ExternPaths::new(crate::Mode::Prost), PathSet::default());
         let compiler = Compiler::new(&registry);
         let expr = parse_cel("3u").unwrap();
         insta::assert_debug_snapshot!(resolve(&compiler, &expr), @r"
@@ -594,7 +596,7 @@ mod tests {
 
     #[test]
     fn test_resolve_atom_float() {
-        let registry = ProtoTypeRegistry::new(crate::Mode::Prost, crate::extern_paths::ExternPaths::new(crate::Mode::Prost));
+        let registry = ProtoTypeRegistry::new(crate::Mode::Prost, ExternPaths::new(crate::Mode::Prost), PathSet::default());
         let compiler = Compiler::new(&registry);
         let expr = parse_cel("1.23").unwrap();
         insta::assert_debug_snapshot!(resolve(&compiler, &expr), @r"
@@ -614,7 +616,7 @@ mod tests {
 
     #[test]
     fn test_resolve_atom_string_bytes_bool_null() {
-        let registry = ProtoTypeRegistry::new(crate::Mode::Prost, crate::extern_paths::ExternPaths::new(crate::Mode::Prost));
+        let registry = ProtoTypeRegistry::new(crate::Mode::Prost, ExternPaths::new(crate::Mode::Prost), PathSet::default());
         let compiler = Compiler::new(&registry);
 
         let expr_str = parse_cel("\"foo\"").unwrap();
@@ -674,7 +676,7 @@ mod tests {
 
     #[test]
     fn test_resolve_arithmetic_constant() {
-        let registry = ProtoTypeRegistry::new(crate::Mode::Prost, crate::extern_paths::ExternPaths::new(crate::Mode::Prost));
+        let registry = ProtoTypeRegistry::new(crate::Mode::Prost, ExternPaths::new(crate::Mode::Prost), PathSet::default());
         let compiler = Compiler::new(&registry);
 
         let expr = parse_cel("10 + 5").unwrap();
@@ -755,7 +757,7 @@ mod tests {
 
     #[test]
     fn test_resolve_relation_constant() {
-        let registry = ProtoTypeRegistry::new(crate::Mode::Prost, crate::extern_paths::ExternPaths::new(crate::Mode::Prost));
+        let registry = ProtoTypeRegistry::new(crate::Mode::Prost, ExternPaths::new(crate::Mode::Prost), PathSet::default());
         let compiler = Compiler::new(&registry);
 
         let expr = parse_cel("1 < 2").unwrap();
@@ -846,7 +848,7 @@ mod tests {
 
     #[test]
     fn test_resolve_boolean_constant() {
-        let registry = ProtoTypeRegistry::new(crate::Mode::Prost, crate::extern_paths::ExternPaths::new(crate::Mode::Prost));
+        let registry = ProtoTypeRegistry::new(crate::Mode::Prost, ExternPaths::new(crate::Mode::Prost), PathSet::default());
         let compiler = Compiler::new(&registry);
 
         let expr_and = parse_cel("true && false").unwrap();
@@ -878,7 +880,7 @@ mod tests {
 
     #[test]
     fn test_resolve_unary_constant() {
-        let registry = ProtoTypeRegistry::new(crate::Mode::Prost, crate::extern_paths::ExternPaths::new(crate::Mode::Prost));
+        let registry = ProtoTypeRegistry::new(crate::Mode::Prost, ExternPaths::new(crate::Mode::Prost), PathSet::default());
         let compiler = Compiler::new(&registry);
 
         let expr_not = parse_cel("!false").unwrap();
@@ -940,7 +942,7 @@ mod tests {
 
     #[test]
     fn test_resolve_ternary_constant() {
-        let registry = ProtoTypeRegistry::new(crate::Mode::Prost, crate::extern_paths::ExternPaths::new(crate::Mode::Prost));
+        let registry = ProtoTypeRegistry::new(crate::Mode::Prost, ExternPaths::new(crate::Mode::Prost), PathSet::default());
         let compiler = Compiler::new(&registry);
 
         let expr_true = parse_cel("true ? 1 : 2").unwrap();
@@ -976,7 +978,7 @@ mod tests {
 
     #[test]
     fn test_resolve_list_map_constant() {
-        let registry = ProtoTypeRegistry::new(crate::Mode::Prost, crate::extern_paths::ExternPaths::new(crate::Mode::Prost));
+        let registry = ProtoTypeRegistry::new(crate::Mode::Prost, ExternPaths::new(crate::Mode::Prost), PathSet::default());
         let compiler = Compiler::new(&registry);
 
         let expr_list = parse_cel("[1, 2, 3]").unwrap();
@@ -1049,7 +1051,7 @@ mod tests {
 
     #[test]
     fn test_resolve_negative_variable() {
-        let registry = ProtoTypeRegistry::new(crate::Mode::Prost, crate::extern_paths::ExternPaths::new(crate::Mode::Prost));
+        let registry = ProtoTypeRegistry::new(crate::Mode::Prost, ExternPaths::new(crate::Mode::Prost), PathSet::default());
         let mut compiler = Compiler::new(&registry);
 
         compiler.add_variable("x", CompiledExpr::constant(CelValue::Number(1.into())));
@@ -1072,7 +1074,7 @@ mod tests {
 
     #[test]
     fn test_resolve_access() {
-        let registry = ProtoTypeRegistry::new(crate::Mode::Prost, crate::extern_paths::ExternPaths::new(crate::Mode::Prost));
+        let registry = ProtoTypeRegistry::new(crate::Mode::Prost, ExternPaths::new(crate::Mode::Prost), PathSet::default());
         let compiler = Compiler::new(&registry);
 
         let expr_list = parse_cel("[1, 2, 3][2]").unwrap();

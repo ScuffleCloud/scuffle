@@ -958,8 +958,18 @@ impl Object {
     /// Returns true if the object is in the default state.
     pub fn is_empty(&self) -> bool {
         static DEFAULT: std::sync::LazyLock<Object> = std::sync::LazyLock::new(Object::default);
+        static WITH_EMPTY_EXT: std::sync::LazyLock<Object> = std::sync::LazyLock::new(|| {
+            // Field "extensions" can be set to Some(Extensions::default())
+            // by serde_json - field is attributed with serde::flatten.
+            // Empty map like this should not make is_empty failing,
+            // so we need other comparison.
+            Object {
+                extensions: Some(Extensions::default()),
+                ..Default::default()
+            }
+        });
 
-        self == &*DEFAULT || (serde_json::to_string(self).unwrap_or("{}".to_string()) == "{}")
+        self == &*DEFAULT || self == &*WITH_EMPTY_EXT
     }
 
     fn take_all_ofs(&mut self, collection: &mut Vec<Schema>) {
@@ -2065,5 +2075,12 @@ mod tests {
           }
         }
         "#);
+    }
+
+    #[test]
+    fn is_empty_works_parsed_from_json() {
+        let schema: Schema = serde_json::from_str("{}").unwrap();
+
+        assert!(schema.is_empty());
     }
 }

@@ -13,9 +13,29 @@ benchmark.txt
 .aliases
 local.just
 !valgrind_suppressions.log
+.runner/
 
 # Docusaurus
 docs/build
 docs/.docusaurus
 docs/.cache-loader
-.runner/
+
+# Website
+website/node_modules/
+
+# Output
+website/.output
+website/.vercel
+website/.svelte-kit
+website/build
+
+# OS
+website/.DS_Store
+website/Thumbs.db
+
+# Env
+!website/.env
+
+# Vite
+website/vite.config.js.timestamp-*
+website/vite.config.ts.timestamp-*

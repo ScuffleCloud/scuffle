@@ -44,5 +44,6 @@ runs:
       uses: cloudflare/wrangler-action@v3
       with:
         apiToken: ${{ env.CF_DOCS_API_KEY }}
+        packageManager: npm
         accountId: ${{ env.CF_DOCS_ACCOUNT_ID }}
         command: pages deploy --project-name=scuffle-docusaurus-docs --branch=pr/${{ inputs.pr_number }} --commit-hash=${{ env.SHA }} --commit-dirty=true ./docs/build

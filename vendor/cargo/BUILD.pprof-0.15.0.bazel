@@ -77,7 +77,7 @@ rust_library(
     deps = [
         "@cargo_vendor__aligned-vec-0.6.4//:aligned_vec",
         "@cargo_vendor__backtrace-0.3.75//:backtrace",
-        "@cargo_vendor__cfg-if-1.0.1//:cfg_if",
+        "@cargo_vendor__cfg-if-1.0.3//:cfg_if",
         "@cargo_vendor__findshlibs-0.10.2//:findshlibs",
         "@cargo_vendor__libc-0.2.175//:libc",
         "@cargo_vendor__log-0.4.27//:log",
@@ -88,8 +88,8 @@ rust_library(
         "@cargo_vendor__smallvec-1.15.1//:smallvec",
         "@cargo_vendor__spin-0.10.0//:spin",
         "@cargo_vendor__symbolic-demangle-12.16.2//:symbolic_demangle",
-        "@cargo_vendor__tempfile-3.20.0//:tempfile",
-        "@cargo_vendor__thiserror-2.0.15//:thiserror",
+        "@cargo_vendor__tempfile-3.21.0//:tempfile",
+        "@cargo_vendor__thiserror-2.0.16//:thiserror",
     ],
 )
 

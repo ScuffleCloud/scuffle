@@ -82,14 +82,14 @@ transition_alias_opt(
 )
 
 transition_alias_opt(
-    name = "bitflags-2.9.2",
-    actual = "@cargo_vendor__bitflags-2.9.2//:bitflags",
+    name = "bitflags-2.9.3",
+    actual = "@cargo_vendor__bitflags-2.9.3//:bitflags",
     tags = ["manual"],
 )
 
 transition_alias_opt(
     name = "bitflags",
-    actual = "@cargo_vendor__bitflags-2.9.2//:bitflags",
+    actual = "@cargo_vendor__bitflags-2.9.3//:bitflags",
     tags = ["manual"],
 )
 
@@ -106,14 +106,14 @@ transition_alias_opt(
 )
 
 transition_alias_opt(
-    name = "bon-3.7.0",
-    actual = "@cargo_vendor__bon-3.7.0//:bon",
+    name = "bon-3.7.1",
+    actual = "@cargo_vendor__bon-3.7.1//:bon",
     tags = ["manual"],
 )
 
 transition_alias_opt(
     name = "bon",
-    actual = "@cargo_vendor__bon-3.7.0//:bon",
+    actual = "@cargo_vendor__bon-3.7.1//:bon",
     tags = ["manual"],
 )
 
@@ -154,14 +154,14 @@ transition_alias_opt(
 )
 
 transition_alias_opt(
-    name = "camino-1.1.11",
-    actual = "@cargo_vendor__camino-1.1.11//:camino",
+    name = "camino-1.1.12",
+    actual = "@cargo_vendor__camino-1.1.12//:camino",
     tags = ["manual"],
 )
 
 transition_alias_opt(
     name = "camino",
-    actual = "@cargo_vendor__camino-1.1.11//:camino",
+    actual = "@cargo_vendor__camino-1.1.12//:camino",
     tags = ["manual"],
 )
 
@@ -250,14 +250,14 @@ transition_alias_opt(
 )
 
 transition_alias_opt(
-    name = "clap-4.5.45",
-    actual = "@cargo_vendor__clap-4.5.45//:clap",
+    name = "clap-4.5.46",
+    actual = "@cargo_vendor__clap-4.5.46//:clap",
     tags = ["manual"],
 )
 
 transition_alias_opt(
     name = "clap",
-    actual = "@cargo_vendor__clap-4.5.45//:clap",
+    actual = "@cargo_vendor__clap-4.5.46//:clap",
     tags = ["manual"],
 )
 
@@ -334,14 +334,14 @@ transition_alias_opt(
 )
 
 transition_alias_opt(
-    name = "darling-0.21.2",
-    actual = "@cargo_vendor__darling-0.21.2//:darling",
+    name = "darling-0.21.3",
+    actual = "@cargo_vendor__darling-0.21.3//:darling",
     tags = ["manual"],
 )
 
 transition_alias_opt(
     name = "darling",
-    actual = "@cargo_vendor__darling-0.21.2//:darling",
+    actual = "@cargo_vendor__darling-0.21.3//:darling",
     tags = ["manual"],
 )
 
@@ -586,14 +586,14 @@ transition_alias_opt(
 )
 
 transition_alias_opt(
-    name = "hyper-1.6.0",
-    actual = "@cargo_vendor__hyper-1.6.0//:hyper",
+    name = "hyper-1.7.0",
+    actual = "@cargo_vendor__hyper-1.7.0//:hyper",
     tags = ["manual"],
 )
 
 transition_alias_opt(
     name = "hyper",
-    actual = "@cargo_vendor__hyper-1.6.0//:hyper",
+    actual = "@cargo_vendor__hyper-1.7.0//:hyper",
     tags = ["manual"],
 )
 
@@ -622,14 +622,14 @@ transition_alias_opt(
 )
 
 transition_alias_opt(
-    name = "indexmap-2.10.0",
-    actual = "@cargo_vendor__indexmap-2.10.0//:indexmap",
+    name = "indexmap-2.11.0",
+    actual = "@cargo_vendor__indexmap-2.11.0//:indexmap",
     tags = ["manual"],
 )
 
 transition_alias_opt(
     name = "indexmap",
-    actual = "@cargo_vendor__indexmap-2.10.0//:indexmap",
+    actual = "@cargo_vendor__indexmap-2.11.0//:indexmap",
     tags = ["manual"],
 )
 
@@ -718,14 +718,14 @@ transition_alias_opt(
 )
 
 transition_alias_opt(
-    name = "minijinja-2.11.0",
-    actual = "@cargo_vendor__minijinja-2.11.0//:minijinja",
+    name = "minijinja-2.12.0",
+    actual = "@cargo_vendor__minijinja-2.12.0//:minijinja",
     tags = ["manual"],
 )
 
 transition_alias_opt(
     name = "minijinja",
-    actual = "@cargo_vendor__minijinja-2.11.0//:minijinja",
+    actual = "@cargo_vendor__minijinja-2.12.0//:minijinja",
     tags = ["manual"],
 )
 
@@ -910,14 +910,14 @@ transition_alias_opt(
 )
 
 transition_alias_opt(
-    name = "prettyplease-0.2.36",
-    actual = "@cargo_vendor__prettyplease-0.2.36//:prettyplease",
+    name = "prettyplease-0.2.37",
+    actual = "@cargo_vendor__prettyplease-0.2.37//:prettyplease",
     tags = ["manual"],
 )
 
 transition_alias_opt(
     name = "prettyplease",
-    actual = "@cargo_vendor__prettyplease-0.2.36//:prettyplease",
+    actual = "@cargo_vendor__prettyplease-0.2.37//:prettyplease",
     tags = ["manual"],
 )
 
@@ -1066,14 +1066,14 @@ transition_alias_opt(
 )
 
 transition_alias_opt(
-    name = "regex-1.11.1",
-    actual = "@cargo_vendor__regex-1.11.1//:regex",
+    name = "regex-1.11.2",
+    actual = "@cargo_vendor__regex-1.11.2//:regex",
     tags = ["manual"],
 )
 
 transition_alias_opt(
     name = "regex",
-    actual = "@cargo_vendor__regex-1.11.1//:regex",
+    actual = "@cargo_vendor__regex-1.11.2//:regex",
     tags = ["manual"],
 )
 
@@ -1150,14 +1150,14 @@ transition_alias_opt(
 )
 
 transition_alias_opt(
-    name = "rusty_ffmpeg-0.16.5+ffmpeg.7.1",
-    actual = "@cargo_vendor__rusty_ffmpeg-0.16.5-ffmpeg.7.1//:rusty_ffmpeg",
+    name = "rusty_ffmpeg-0.16.7+ffmpeg.8",
+    actual = "@cargo_vendor__rusty_ffmpeg-0.16.7-ffmpeg.8//:rusty_ffmpeg",
     tags = ["manual"],
 )
 
 transition_alias_opt(
     name = "rusty_ffmpeg",
-    actual = "@cargo_vendor__rusty_ffmpeg-0.16.5-ffmpeg.7.1//:rusty_ffmpeg",
+    actual = "@cargo_vendor__rusty_ffmpeg-0.16.7-ffmpeg.8//:rusty_ffmpeg",
     tags = ["manual"],
 )
 
@@ -1198,14 +1198,14 @@ transition_alias_opt(
 )
 
 transition_alias_opt(
-    name = "serde_json-1.0.142",
-    actual = "@cargo_vendor__serde_json-1.0.142//:serde_json",
+    name = "serde_json-1.0.143",
+    actual = "@cargo_vendor__serde_json-1.0.143//:serde_json",
     tags = ["manual"],
 )
 
 transition_alias_opt(
     name = "serde_json",
-    actual = "@cargo_vendor__serde_json-1.0.142//:serde_json",
+    actual = "@cargo_vendor__serde_json-1.0.143//:serde_json",
     tags = ["manual"],
 )
 
@@ -1318,26 +1318,26 @@ transition_alias_opt(
 )
 
 transition_alias_opt(
-    name = "tempfile-3.20.0",
-    actual = "@cargo_vendor__tempfile-3.20.0//:tempfile",
+    name = "tempfile-3.21.0",
+    actual = "@cargo_vendor__tempfile-3.21.0//:tempfile",
     tags = ["manual"],
 )
 
 transition_alias_opt(
     name = "tempfile",
-    actual = "@cargo_vendor__tempfile-3.20.0//:tempfile",
+    actual = "@cargo_vendor__tempfile-3.21.0//:tempfile",
     tags = ["manual"],
 )
 
 transition_alias_opt(
-    name = "thiserror-2.0.15",
-    actual = "@cargo_vendor__thiserror-2.0.15//:thiserror",
+    name = "thiserror-2.0.16",
+    actual = "@cargo_vendor__thiserror-2.0.16//:thiserror",
     tags = ["manual"],
 )
 
 transition_alias_opt(
     name = "thiserror",
-    actual = "@cargo_vendor__thiserror-2.0.15//:thiserror",
+    actual = "@cargo_vendor__thiserror-2.0.16//:thiserror",
     tags = ["manual"],
 )
 
@@ -1420,8 +1420,8 @@ transition_alias_opt(
 )
 
 transition_alias_opt(
-    name = "toml_edit-0.23.3",
-    actual = "@cargo_vendor__toml_edit-0.23.3//:toml_edit",
+    name = "toml_edit-0.23.4",
+    actual = "@cargo_vendor__toml_edit-0.23.4//:toml_edit",
     tags = ["manual"],
 )
 
@@ -1534,14 +1534,14 @@ transition_alias_opt(
 )
 
 transition_alias_opt(
-    name = "url-2.5.4",
-    actual = "@cargo_vendor__url-2.5.4//:url",
+    name = "url-2.5.7",
+    actual = "@cargo_vendor__url-2.5.7//:url",
     tags = ["manual"],
 )
 
 transition_alias_opt(
     name = "url",
-    actual = "@cargo_vendor__url-2.5.4//:url",
+    actual = "@cargo_vendor__url-2.5.7//:url",
     tags = ["manual"],
 )
 

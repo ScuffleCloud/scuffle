@@ -1,13 +1,16 @@
 mod? local
 
 # this should be kept in sync with
-# .github/workflows/ci-check-fmt.yaml
+# .github/workflows/cargo-update-pr.yaml
 
 bzlmod:
     # https://github.com/bazelbuild/bazel/issues/20477
     bazel shutdown
     bazel fetch //... --lockfile_mode=off
     bazel fetch //... --lockfile_mode=update
+
+# this should be kept in sync with
+# .github/workflows/ci-check-fmt.yaml
 
 fmt:
     bazel run //tools/cargo/fmt:fix

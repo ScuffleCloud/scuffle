@@ -493,7 +493,7 @@ impl<'a> Transmuxer<'a> {
                 entry
             }
             VideoSequenceHeader::Hevc(config) => {
-                compatable_brands.push(FourCC::Hev1);
+                compatable_brands.push(FourCC::Hvc1);
                 video_codec = VideoCodec::Hevc {
                     constraint_indicator: config.general_constraint_indicator_flags,
                     level: config.general_level_idc,

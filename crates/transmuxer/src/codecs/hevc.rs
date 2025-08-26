@@ -5,7 +5,7 @@ use scuffle_flv::video::header::VideoFrameType;
 use scuffle_h265::{HEVCDecoderConfigurationRecord, SpsRbsp};
 use scuffle_mp4::DynBox;
 use scuffle_mp4::types::colr::{ColorType, Colr};
-use scuffle_mp4::types::hev1::Hev1;
+use scuffle_mp4::types::hvc1::Hvc1;
 use scuffle_mp4::types::hvcc::HvcC;
 use scuffle_mp4::types::stsd::{SampleEntry, VisualSampleEntry};
 use scuffle_mp4::types::trun::{TrunSample, TrunSampleFlag};
@@ -34,7 +34,7 @@ pub(crate) fn stsd_entry(config: HEVCDecoderConfigurationRecord) -> Result<(DynB
     });
 
     Ok((
-        Hev1::new(
+        Hvc1::new(
             SampleEntry::new(VisualSampleEntry::new(
                 sps.cropped_width() as u16,
                 sps.cropped_height() as u16,

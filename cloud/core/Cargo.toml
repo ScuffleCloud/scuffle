@@ -10,7 +10,7 @@ repository = "https://github.com/scufflecloud/scuffle"
 description = "Authentication/Core server for scuffle.cloud"
 
 [[bin]]
-name = "scufflecloud-core"
+name = "scufflecloud-core-standalone"
 path = "src/bin/standalone.rs"
 
 [lints.rust]
@@ -40,16 +40,10 @@ sailfish = "0.10.0"
 sailfish-macros = "0.10.0"
 scuffle-batching = { path = "../../crates/batching", version = "0.1.6" }
 scuffle-bootstrap = { path = "../../crates/bootstrap", version = "0.1.7" }
-scuffle-bootstrap-telemetry = { features = [
-  "opentelemetry-logs",
-  "opentelemetry-traces",
-], path = "../../crates/bootstrap-telemetry", version = "0.3.0" }
+scuffle-bootstrap-telemetry = { features = ["opentelemetry-logs", "opentelemetry-traces"], path = "../../crates/bootstrap-telemetry", version = "0.3.0" }
 scuffle-context = { path = "../../crates/context", version = "0.1.5" }
 scuffle-http = { features = ["tracing"], path = "../../crates/http", version = "0.3.2" }
-scuffle-settings = { features = [
-  "all-formats",
-  "bootstrap",
-], path = "../../crates/settings", version = "0.1.4" }
+scuffle-settings = { features = ["all-formats", "bootstrap"], path = "../../crates/settings", version = "0.1.4" }
 scuffle-signal = { features = ["bootstrap"], path = "../../crates/signal", version = "0.3.3" }
 serde = "1.0.219"
 serde_derive = "1.0.219"

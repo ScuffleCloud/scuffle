@@ -3,29 +3,28 @@ syntax = "proto3";
 package scufflecloud.core.v1;
 
 import "google/protobuf/timestamp.proto";
+import "scufflecloud/core/v1/constraints.proto";
 import "tinc/annotations.proto";
 
-import "scufflecloud/core/v1/constraints.proto";
-
 message User {
-    string id = 1 [(string_constraint).id = true];
-    optional string preferred_name = 2 [(tinc.field).constraint.string = {
-        min_len: 1,
-        max_len: 255
-    }];
-    optional string first_name = 3 [(tinc.field).constraint.string = {
-        min_len: 1,
-        max_len: 255
-    }];
-    optional string last_name = 4 [(tinc.field).constraint.string = {
-        min_len: 1,
-        max_len: 255
-    }];
-    optional string primary_email = 5 [(tinc.field).constraint.string.email = true];
-    google.protobuf.Timestamp created_at = 6;
+  string id = 1 [(string_constraint).id = true];
+  optional string preferred_name = 2 [(tinc.field).constraint.string = {
+    min_len: 1
+    max_len: 255
+  }];
+  optional string first_name = 3 [(tinc.field).constraint.string = {
+    min_len: 1
+    max_len: 255
+  }];
+  optional string last_name = 4 [(tinc.field).constraint.string = {
+    min_len: 1
+    max_len: 255
+  }];
+  optional string primary_email = 5 [(tinc.field).constraint.string.email = true];
+  google.protobuf.Timestamp created_at = 6;
 }
 
 message UserEmail {
-    string email = 1 [(tinc.field).constraint.string.email = true];
-    google.protobuf.Timestamp created_at = 2;
+  string email = 1 [(tinc.field).constraint.string.email = true];
+  google.protobuf.Timestamp created_at = 2;
 }

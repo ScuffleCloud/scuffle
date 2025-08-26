@@ -3,11 +3,11 @@ syntax = "proto3";
 package scufflecloud.core.v1;
 
 enum CaptchaProvider {
-    // Cloudflare Turnstile
-    TURNSTILE = 0;
+  // Cloudflare Turnstile
+  TURNSTILE = 0;
 }
 
 message CaptchaChallengeResponse {
-    CaptchaProvider provider = 1;
-    string token = 2;
+  CaptchaProvider provider = 1;
+  string token = 2;
 }

@@ -7,7 +7,7 @@ on:
         type: string
         required: false
       pr_number:
-        type: number
+        type: string
         required: false
       matrix:
         type: string

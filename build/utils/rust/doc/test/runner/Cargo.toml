@@ -1,8 +1,8 @@
 [package]
 name = "rust_doctest_runner"
-publish = false
 edition = "2024"
 license = "MIT OR Apache-2.0"
+publish = false
 
 [dependencies]
 camino = { version = "1", features = ["serde1"] }

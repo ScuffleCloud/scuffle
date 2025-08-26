@@ -1,26 +1,26 @@
 /* Put */
 :root {
-    --font-body: 'Archivo Variable', sans-serif;
-    --colors-text: var(--colors-brown800);
-    font-size: 16px;
+  --font-body: "Archivo Variable", sans-serif;
+  --colors-text: var(--colors-brown800);
+  font-size: 16px;
 
-    /* Default font */
-    font-family: var(--font-body);
-    color: var(--colors-text);
-    --layout-width: 70rem;
-    --layout-padding: 2rem;
-    --mobile-width: 768px;
+  /* Default font */
+  font-family: var(--font-body);
+  color: var(--colors-text);
+  --layout-width: 70rem;
+  --layout-padding: 2rem;
+  --mobile-width: 768px;
 }
 
 * {
-    box-sizing: border-box;
+  box-sizing: border-box;
 }
 
 html,
 body {
-    overscroll-behavior: auto;
-    /* Define in hex as globals aren't loaded in time*/
-    background-color: #f1eae7;
+  overscroll-behavior: auto;
+  /* Define in hex as globals aren't loaded in time*/
+  background-color: #f1eae7;
 }
 
 h1,
@@ -29,48 +29,48 @@ h3,
 h4,
 hr,
 p {
-    margin: 0;
+  margin: 0;
 }
 
 h1 {
-    font-size: 4rem;
+  font-size: 4rem;
 }
 
 h2 {
-    font-size: 2.5rem;
+  font-size: 2.5rem;
 }
 
 h3 {
-    font-size: 1.5rem;
+  font-size: 1.5rem;
 }
 
 body {
-    margin: 0;
-    background-size: 100vw 100vh;
-    overflow: auto;
-    height: 100%;
+  margin: 0;
+  background-size: 100vw 100vh;
+  overflow: auto;
+  height: 100%;
 }
 
 p {
-    line-height: 1.5;
+  line-height: 1.5;
 }
 
 a {
-    color: var(--colors-text);
-    text-decoration: none;
+  color: var(--colors-text);
+  text-decoration: none;
 }
 
 a:hover {
-    text-decoration: underline;
+  text-decoration: underline;
 }
 
 input,
 button {
-    font-size: inherit;
-    font-family: inherit;
+  font-size: inherit;
+  font-family: inherit;
 }
 
 /* Preserve focus outline when the button is focused via keyboard navigation but not on click */
 button:focus:not(:focus-visible) {
-    outline: none;
+  outline: none;
 }

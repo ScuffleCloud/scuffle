@@ -755,7 +755,7 @@ dependencies = [
 
 [[package]]
 name = "clippy_test_runner"
-version = "0.1.0"
+version = "0.0.0"
 dependencies = [
  "camino",
  "clap",
@@ -3801,7 +3801,7 @@ dependencies = [
 
 [[package]]
 name = "rust_doctest_builder"
-version = "0.1.0"
+version = "0.0.0"
 dependencies = [
  "camino",
  "clap",
@@ -3814,7 +3814,7 @@ dependencies = [
 
 [[package]]
 name = "rust_doctest_common"
-version = "0.1.0"
+version = "0.0.0"
 dependencies = [
  "camino",
  "serde",
@@ -3824,7 +3824,7 @@ dependencies = [
 
 [[package]]
 name = "rust_doctest_runner"
-version = "0.1.0"
+version = "0.0.0"
 dependencies = [
  "camino",
  "clap",
@@ -3866,7 +3866,7 @@ dependencies = [
 
 [[package]]
 name = "rustdoc_merger"
-version = "0.1.0"
+version = "0.0.0"
 dependencies = [
  "camino",
  "camino-tempfile",
@@ -3880,7 +3880,7 @@ dependencies = [
 
 [[package]]
 name = "rustdoc_wrapper"
-version = "0.1.0"
+version = "0.0.0"
 dependencies = [
  "camino",
  "camino-tempfile",

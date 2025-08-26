@@ -1,6 +1,3 @@
-[alias]
-xtask = "run --package xtask --target-dir target/xtask -- "
-
 # A workaround to make the reqwest_unstable feature available to the compiler.
 # https://github.com/rust-lang/cargo/issues/5376#issuecomment-2163350032
 [target.'cfg(all())']

@@ -1,0 +1,4 @@
+[[scuffle-ffmpeg]]
+category = "fix"
+description = "fixed panic when receiving packet with negative DTS from encoder"
+authors = ["@zezic"]

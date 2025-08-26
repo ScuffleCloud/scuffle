@@ -1,10 +1,11 @@
 //! AMF0 encoder
 
+use std::borrow::Borrow;
 use std::io;
 
 use byteorder::{BigEndian, WriteBytesExt};
 
-use crate::{Amf0Array, Amf0Error, Amf0Marker, Amf0Object};
+use crate::{Amf0Error, Amf0Marker, Amf0Object, Amf0Value};
 
 /// AMF0 encoder.
 ///
@@ -82,12 +83,18 @@ where
         Ok(())
     }
 
-    /// Encode an [`Amf0Array`] as an AMF0 StrictArray value.
-    pub fn encode_array(&mut self, values: &Amf0Array) -> Result<(), Amf0Error> {
-        self.encode_array_header(values.len().try_into()?)?;
+    /// Encode an Amf0Array as an AMF0 StrictArray value.
+    pub fn encode_array<'a, I, B>(&mut self, values: I) -> Result<(), Amf0Error>
+    where
+        B: Borrow<Amf0Value<'a>>,
+        I: IntoIterator<Item = B>,
+        I::IntoIter: ExactSizeIterator,
+    {
+        let iter = values.into_iter();
+        self.encode_array_header(iter.len().try_into()?)?;
 
-        for value in values.iter() {
-            value.encode(self)?;
+        for value in iter {
+            value.borrow().encode(self)?;
         }
 
         Ok(())
@@ -105,7 +112,10 @@ where
     }
 
     pub(crate) fn encode_object_trailer(&mut self) -> Result<(), Amf0Error> {
-        self.writer.write_u24::<BigEndian>(Amf0Marker::ObjectEnd as u32)?;
+        // Final object key length is 0
+        self.writer.write_u16::<BigEndian>(0)?;
+        // Followed by object end
+        self.writer.write_u8(Amf0Marker::ObjectEnd as u8)?;
         Ok(())
     }
 

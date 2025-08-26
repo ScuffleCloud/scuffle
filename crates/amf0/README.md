@@ -26,6 +26,7 @@ See the [changelog](./CHANGELOG.md) for a full release history.
 
 * **`serde`** —  Enables serde support
 * **`docs`** —  Enables changelog and documentation of feature flags
+* **`preserve_order`** —  Use an index map instead of a btree-map for Amf0Objects
 
 ### Specification
 

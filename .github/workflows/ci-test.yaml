@@ -5,8 +5,10 @@ on:
     inputs:
       commit_sha:
         type: string
+        required: false
       pr_number:
         type: number
+        required: false
       matrix:
         type: string
     secrets:

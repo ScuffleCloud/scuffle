@@ -3,10 +3,6 @@ name: Test
 on:
   workflow_call:
     inputs:
-      commit_sha:
-        type: string
-      pr_number:
-        type: number
       matrix:
         type: string
     secrets:

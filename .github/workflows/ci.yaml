@@ -70,8 +70,6 @@ jobs:
     if: ${{ fromJson(needs.prep.outputs.prep).grind != null }}
     uses: ./.github/workflows/ci-grind.yaml
     with:
-      commit_sha: "${{ fromJson(needs.prep.outputs.prep).grind.commit_sha }}"
-      pr_number: "${{ fromJson(needs.prep.outputs.prep).grind.pr_number }}"
       matrix: "${{ toJson(fromJson(needs.prep.outputs.prep).grind.matrix) }}"
     secrets:
       codecov_token: "${{ secrets.CODECOV_TOKEN }}"

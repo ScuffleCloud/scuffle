@@ -65,7 +65,7 @@ rust_library(
     }),
     version = "0.4.44",
     deps = [
-        "@cargo_vendor__filetime-0.2.25//:filetime",
+        "@cargo_vendor__filetime-0.2.26//:filetime",
     ] + select({
         "@rules_rust//rust/platform:aarch64-apple-darwin": [
             "@cargo_vendor__libc-0.2.175//:libc",  # cfg(unix)

@@ -27,7 +27,7 @@
     <a href="https://github.com/ScuffleCloud/scuffle/actions?query=branch%3Amain"><img height="30" src="https://img.shields.io/github/check-runs/ScuffleCloud/Scuffle/main?style=for-the-badge&logo=githubactions&logoColor=white"/></a>
 </p>
 
-> [!WARNING]  
+> [!WARNING]\
 > This repository is under active development and may not be stable.
 
 ---
@@ -35,41 +35,6 @@
 Welcome to **Scuffle**—a next-generation **open-source cloud provider**! 🚀
 
 We're on a mission to revolutionize **video streaming solutions** with cutting-edge tools and libraries. Dive in and explore what we have to offer! 🔗 [Visit our website](https://scuffle.cloud) to learn more.
-
-## 🛠️ Crates
-
-This repository houses a collection of crates, purpose-built libraries designed to simplify development and enhance functionality:
-
-- ⚡ **[scuffle-batching](./crates/batching)**:  Optimized batching and dataloading for external services.
-- 🚀 **[scuffle-bootstrap](./crates/bootstrap)**:  A utility crate for creating binaries.
-  - 🔧 **[scuffle-bootstrap-derive](./crates/bootstrap/derive)**:  Derive macros for `scuffle-bootstrap`.
-  - 🔭 **[scuffle-bootstrap-telemetry](./crates/bootstrap/telemetry)**:  Telemetry utilities for `scuffle-bootstrap`.
-- 📦 **[scuffle-bytes-util](./crates/bytes-util)**:  Some helpful utilities for working with bits and bytes.
-- 🧭 **[scuffle-context](./crates/context)**:  Go-like context utilities for Rust.
-- ⌛ **[scuffle-future-ext](./crates/future-ext)**:  Extensions for working with futures.
-- 🦈 **[scuffle-http](./crates/http)**:  A high-performance HTTP server supporting HTTP/1.1, HTTP/2, and HTTP/3.
-- 📊 **[scuffle-metrics](./crates/metrics)**:  Helper crate to instrument your code with metrics.
-  - 🔧 **[scuffle-metrics-derive](./crates/metrics/derive)**:  Derive macros for `scuffle-metrics`.
-- 📦 **[postcompile](./crates/postcompile)**:  A macro for compiling Rust code at runtime. Useful for snapshot testing.
-- 📈 **[scuffle-pprof](./crates/pprof)**:  Helper crate for adding pprof support to your application.
-- ⚙️ **[scuffle-settings](./crates/settings)**:  Tools for managing configuration from environment variables or config files.
-- 📶 **[scuffle-signal](./crates/signal)**:  Ergonomic async signal handling.
-
-### 🎥 Multimedia Crates
-
-Apart from utility crates, we also offer a range of multimedia crates to encode, decode, and transmux media files and streams:
-
-- 🔉 **[scuffle-aac](./crates/aac)**:  A crate for decoding AAC audio headers.
-- 🗃️ **[scuffle-amf0](./crates/amf0)**:  A pure-rust implementation of AMF0 encoder and decoder.
-- 🎥 **[scuffle-av1](./crates/av1)**:  A crate for decoding and encoding AV1 video headers.
-- 🧮 **[scuffle-expgolomb](./crates/expgolomb)**:  A set of helper functions to encode and decode exponential-golomb values.
-- 🎞️ **[scuffle-ffmpeg](./crates/ffmpeg)**:  A safe Rust wrapper around FFmpeg C-bindings.
-- 🎥 **[scuffle-flv](./crates/flv)**:  A pure Rust implementation of the FLV format, allowing for demuxing of FLV files or streams.
-<!-- - 🎥 **[scuffle-h264](./crates/h264)**: -->
-<!-- - 🎥 **[scuffle-h265](./crates/h265)**: -->
-<!-- - 🎥 **[scuffle-mp4](./crates/mp4)**: -->
-<!-- - 🎥 **[scuffle-rtmp](./crates/rtmp)**: -->
-<!-- - 🎥 **[scuffle-transmuxer](./crates/transmuxer)**: -->
 
 ---
 
@@ -81,12 +46,12 @@ Join our [Discord](https://discord.gg/scuffle) to chat with the team and other c
 
 ### Sign the Contributor License Agreement (CLA)
 
-To contribute, please sign our [Contributor License Agreement](./CLA.md).  
+To contribute, please sign our [Contributor License Agreement](./CLA.md).\
 It's quick and easy—[sign here](https://cla.scuffle.cloud) before submitting a pull request.
 
 ### Code of Conduct
 
-We believe in fostering an inclusive and respectful community.  
+We believe in fostering an inclusive and respectful community.\
 Please read our [**Code of Conduct**](./CODE_OF_CONDUCT.md) for more details.
 
 ## 💖 Support Us
@@ -128,4 +93,4 @@ Your security is our priority. 🔒 Refer to our [**Security Policy**](./.github
 
 ---
 
-*Thank you for being part of our journey! Let's build something amazing together.* ✨
+_Thank you for being part of our journey! Let's build something amazing together._ ✨

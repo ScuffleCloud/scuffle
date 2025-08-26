@@ -1,0 +1,15 @@
+# For details on buf.yaml configuration, visit https://buf.build/docs/configuration/v2/buf-yaml
+version: v2
+lint:
+  use:
+    - STANDARD
+  ignore_only:
+    ENUM_VALUE_PREFIX:
+      - crates/tinc/annotations.proto
+    PACKAGE_VERSION_SUFFIX:
+      - crates/tinc/annotations.proto
+    PACKAGE_DIRECTORY_MATCH:
+      - crates/tinc/annotations.proto
+breaking:
+  use:
+    - FILE

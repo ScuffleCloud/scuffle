@@ -16,99 +16,82 @@ concurrency:
   cancel-in-progress: true
 
 env:
-  # By default, when a action is run against a PR it will use a merge commit from the target branch & the PR branch. We want to use just the PR branch.
-  # So this changes the SHA to the PR branch SHA or falls back to the current SHA (if its not a PR)
-  # https://github.com/actions/checkout/issues/426
   SHA: ${{ github.event.pull_request.head.sha || github.sha }}
 
 defaults:
   run:
     shell: bash
 
-permissions:
-  # enable writing for semver-checks so it can write a pr comment
-  pull-requests: write
-
 jobs:
-  matrix_prep:
-    name: Matrix Prep
+  prep:
+    name: prep
     runs-on: ubuntu-24.04
     outputs:
-      matrix: ${{ steps.compute.outputs.matrix }}
+      prep: ${{ steps.compute.outputs.prep }}
     steps:
       - uses: actions/checkout@v4
-        with:
-          ref: ${{ env.SHA }}
 
-      - name: Switch to Branch
-        run: |
-          set -xeo pipefail
-          git switch -C ${{ github.ref_name }}
-
-      - name: Run matrix prep
+      - name: Run prep
         id: compute
         env:
           JSON_INPUT: ${{ toJson(github) }}
         run: |
           set -xeo pipefail
-          echo $JSON_INPUT | python3 .github/scripts/ci-matrix-prep.py | tee -a $GITHUB_OUTPUT
+          echo $JSON_INPUT | python3 .github/scripts/ci-prep.py | tee -a $GITHUB_OUTPUT
 
-  jobs:
-    name: ${{ matrix.job_name || 'Jobs' }}
-    needs: matrix_prep
-    strategy:
-      fail-fast: ${{ github.event_name == 'push' }}
-      matrix:
-        include: ${{ fromJson(needs.matrix_prep.outputs.matrix) }}
-    runs-on: ${{ matrix.runner }}
-    steps:
-      - uses: actions/checkout@v4
-        with:
-          ref: ${{ env.SHA }}
+  check_vendor:
+    needs: [prep]
+    if: ${{ fromJson(needs.prep.outputs.prep).check_vendor != null }}
+    uses: ./.github/workflows/ci-check-vendor.yaml
+    secrets:
+      build_buddy_token: ${{ secrets.BUILD_BUDDY_TOKEN }}
 
-      - name: Switch to Branch
-        run: |
-          set -xeo pipefail
-          git switch -C ${{ github.ref_name }}
+  test:
+    needs: [prep]
+    if: ${{ fromJson(needs.prep.outputs.prep).test != null }}
+    uses: ./.github/workflows/ci-test.yaml
+    with:
+      commit_sha: "${{ fromJson(needs.prep.outputs.prep).test.commit_sha }}"
+      pr_number: "${{ fromJson(needs.prep.outputs.prep).test.pr_number }}"
+      matrix: "${{ toJson(fromJson(needs.prep.outputs.prep).test.matrix) }}"
+    secrets:
+      codecov_token: "${{ secrets.CODECOV_TOKEN }}"
+      build_buddy_token: "${{ secrets.BUILD_BUDDY_TOKEN }}"
 
-      - name: Setup FFmpeg
-        if: ${{ matrix.ffmpeg != null }}
-        uses: ./.github/actions/setup-ffmpeg
-        with: ${{ matrix.ffmpeg }}
+  check_fmt:
+    needs: [prep]
+    if: ${{ fromJson(needs.prep.outputs.prep).check_fmt != null }}
+    uses: ./.github/workflows/ci-check-fmt.yaml
+    secrets:
+      build_buddy_token: ${{ secrets.BUILD_BUDDY_TOKEN }}
 
-      - name: Setup Rust
-        if: ${{ matrix.rust != null }}
-        uses: ./.github/actions/setup-rust
-        with: ${{ matrix.rust }}
+  grind:
+    needs: [prep]
+    if: ${{ fromJson(needs.prep.outputs.prep).grind != null }}
+    uses: ./.github/workflows/ci-grind.yaml
+    with:
+      matrix: "${{ toJson(fromJson(needs.prep.outputs.prep).grind.matrix) }}"
+    secrets:
+      codecov_token: "${{ secrets.CODECOV_TOKEN }}"
+      build_buddy_token: "${{ secrets.BUILD_BUDDY_TOKEN }}"
 
-      - name: Setup Protoc
-        if: ${{ matrix.setup_protoc }}
-        uses: arduino/setup-protoc@v3
-        with:
-          repo-token: ${{ secrets.GITHUB_TOKEN }}
-
-      - name: Setup Secrets
-        if: ${{ matrix.secrets != null }}
-        run: |
-          set -eo pipefail
-          secrets='${{ toJson(secrets) }}'
-
-          for secret in $(echo '${{ toJson(matrix.secrets) }}' | jq -r '.[]'); do
-            value=$(echo "$secrets" | jq -r --arg key "$secret" '.[$key]')
-            echo "$secret=$value" >> $GITHUB_ENV
-            echo "Setting $secret to $value"
-          done
-
-      - name: Run ./.github/actions/ci/${{ matrix.job }}
-        uses: ./.github/actions/ci/dynamic
-        with:
-          uses: ./.github/actions/ci/${{ matrix.job }}
-          with: |
-            ${{ toJson(matrix.inputs) }}
+  rustdoc:
+    needs: [prep]
+    if: ${{ fromJson(needs.prep.outputs.prep).rustdoc != null }}
+    uses: ./.github/workflows/ci-rustdoc.yaml
+    with:
+      artifact_name: "${{ fromJson(needs.prep.outputs.prep).rustdoc.artifact_name }}"
+      commit_sha: "${{ fromJson(needs.prep.outputs.prep).rustdoc.commit_sha }}"
+      pr_number: "${{ fromJson(needs.prep.outputs.prep).rustdoc.pr_number }}"
+      deploy_docs: "${{ fromJson(needs.prep.outputs.prep).rustdoc.deploy_docs }}"
+    secrets:
+      build_buddy_token: "${{ secrets.BUILD_BUDDY_TOKEN }}"
+      cf_account_id: "${{ secrets.CF_DOCS_ACCOUNT_ID }}"
+      cf_api_key: "${{ secrets.CF_DOCS_API_KEY }}"
 
   brawl-done:
     runs-on: ubuntu-24.04
-    needs: [matrix_prep, jobs]
+    needs: [check_vendor, test, check_fmt, grind, rustdoc]
     if: ${{ !cancelled() && github.event_name == 'push' }}
     steps:
       - name: calculate the correct exit status

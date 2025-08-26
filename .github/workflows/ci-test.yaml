@@ -1,0 +1,48 @@
+name: Test
+
+on:
+  workflow_call:
+    inputs:
+      commit_sha:
+        type: string
+        required: false
+      pr_number:
+        type: string
+        required: false
+      matrix:
+        type: string
+    secrets:
+      codecov_token:
+        required: true
+      build_buddy_token:
+        required: true
+
+defaults:
+  run:
+    shell: bash
+
+jobs:
+  test:
+    name: ${{ matrix.os }}-${{ matrix.arch }}
+    strategy:
+      matrix:
+        include: ${{ fromJson(inputs.matrix) }}
+    runs-on: ${{ matrix.runner }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: ./.github/actions/setup-bazel
+        with:
+          build_buddy_token: ${{ secrets.build_buddy_token }}
+
+      - name: Run
+        run: bazel coverage //...
+
+      - uses: codecov/codecov-action@v5
+        with:
+          fail_ci_if_error: true
+          files: ./target-bazel/out/_coverage/_coverage_report.dat
+          token: ${{ secrets.codecov_token }}
+          override_pr: ${{ inputs.pr_number }}
+          override_commit: ${{ inputs.commit_sha }}
+          verbose: true

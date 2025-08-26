@@ -1,0 +1,25 @@
+[package]
+name = "sync_readme"
+edition = "2024"
+license = "MIT OR Apache-2.0"
+publish = false
+
+[dependencies]
+anyhow = "1"
+camino = "1"
+cargo_toml = "0.22"
+clap = { version = "4.5", features = ["derive", "env"] }
+pulldown-cmark = "0.13"
+pulldown-cmark-to-cmark = "21"
+regex = "1"
+rustdoc-types = { version = "0.53", features = ["rustc-hash"] }
+semver = "1"
+serde = "1"
+serde_derive = "1"
+serde_json = "1"
+sync_readme_common.path = "common"
+toml = "0.9"
+url = "2"
+
+[package.metadata.sync-readme.badges]
+license = true

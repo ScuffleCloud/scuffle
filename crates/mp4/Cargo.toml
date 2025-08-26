@@ -1,14 +1,14 @@
 [package]
 name = "scuffle-mp4"
 version = "0.1.5"
-edition = "2024"
-description = "A pure Rust MP4 parser and writer."
-repository = "https://github.com/scufflecloud/scuffle"
 authors = ["Scuffle <opensource@scuffle.cloud>"]
-readme = "README.md"
 documentation = "https://docs.rs/scuffle-mp4"
-license = "MIT OR Apache-2.0"
+edition = "2024"
 keywords = ["mp4", "video", "codec"]
+license = "MIT OR Apache-2.0"
+readme = "README.md"
+repository = "https://github.com/scufflecloud/scuffle"
+description = "A pure Rust MP4 parser and writer."
 
 [lints.rust]
 unexpected_cfgs = { level = "warn", check-cfg = ['cfg(coverage_nightly)'] }
@@ -29,7 +29,6 @@ scuffle-bytes-util = { path = "../bytes-util", version = "0.1.3" }
 scuffle-changelog = { optional = true, path = "../changelog", version = "0.1.0" }
 scuffle-h264 = { path = "../h264", version = "0.2.1" }
 scuffle-h265 = { path = "../h265", version = "0.2.1" }
-scuffle-workspace-hack.workspace = true
 
 [dev-dependencies]
 serde = { features = ["derive"], version = "1" }
@@ -47,15 +46,11 @@ rustdoc-args = [
 [package.metadata.xtask.powerset]
 additive-features = ["docs"]
 
-[package.metadata.cargo-sync-rdme.rustdoc.mappings]
+[package.metadata.sync-readme.rustdoc-mappings]
 changelog = "./CHANGELOG.md"
 
-[package.metadata.cargo-sync-rdme.badge]
-style = "flat-square"
-
-[package.metadata.cargo-sync-rdme.badge.badges]
-license = true
+[package.metadata.sync-readme.badges]
 docs-rs = true
 crates-io = true
-github-actions = { workflows = "ci.yaml" }
+license = true
 codecov = true

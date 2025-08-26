@@ -1,14 +1,14 @@
 [package]
 name = "tinc-pb-prost"
 version = "0.2.0"
-edition = "2024"
-description = "Protobuf generated schama for tinc"
-repository = "https://github.com/scufflecloud/scuffle"
 authors = ["Scuffle <opensource@scuffle.cloud>"]
-readme = "README.md"
 documentation = "https://docs.rs/tinc-pb"
-license = "MIT OR Apache-2.0"
+edition = "2024"
 keywords = ["grpc", "protobuf", "prost", "codegen"]
+license = "MIT OR Apache-2.0"
+readme = "README.md"
+repository = "https://github.com/scufflecloud/scuffle"
+description = "Protobuf generated schama for tinc"
 
 [lints.rust]
 unexpected_cfgs = { level = "warn", check-cfg = ['cfg(coverage_nightly)'] }
@@ -21,9 +21,10 @@ docs = ["dep:document-features"]
 document-features = { optional = true, version = "0.2" }
 prost = "0.14"
 prost-types = "0.14"
-scuffle-workspace-hack.workspace = true
 
 [build-dependencies]
+prost = "0.14"
+prost-types = "0.14"
 prost-build = "0.14"
 
 [package.metadata.docs.rs]
@@ -38,15 +39,15 @@ rustdoc-args = [
 [package.metadata.xtask.powerset]
 additive-features = ["docs"]
 
-[package.metadata.cargo-sync-rdme.badge]
-style = "flat-square"
-
-[package.metadata.cargo-sync-rdme.badge.badges]
-license = true
-docs-rs = true
-crates-io = true
-github-actions = { workflows = "ci.yaml" }
-codecov = true
-
 [package.metadata.xtask.release]
 group = "tinc"
+
+[package.metadata.sync-readme.rustdoc-mappings]
+changelog = "./CHANGELOG.md"
+Annotations = "./annotations.proto"
+
+[package.metadata.sync-readme.badges]
+docs-rs = true
+crates-io = true
+license = true
+codecov = true

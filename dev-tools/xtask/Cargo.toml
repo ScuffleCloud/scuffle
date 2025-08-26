@@ -1,19 +1,14 @@
 [package]
 name = "xtask"
 edition = "2024"
-readme = "README.md"
-publish = false
 license = "MIT OR Apache-2.0"
-
-# This package is a special package as its used by developers to run commands in the workspace.
-# Therefore we should try to keep the dependencies to a minimum. If you need to add a command that is
-# particularly heavy that includes a lot of dependencies consider adding it to a separate specialized
-# package.
+publish = false
+readme = "README.md"
 
 [dependencies]
 anyhow = "1.0"
 cargo-platform = "0.2"
-cargo_metadata = "0.20"
+cargo_metadata = "0.21"
 chrono = "0.4"
 clap = { features = ["derive", "env"], version = "4.5.23" }
 fmtools = "0.1"

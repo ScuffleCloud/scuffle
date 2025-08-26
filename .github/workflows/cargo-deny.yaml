@@ -1,0 +1,28 @@
+name: cargo deny
+on:
+  push:
+    branches-ignore:
+      - "automation/**"
+    paths:
+      - ".github/workflows/cargo-deny.yaml"
+      - "**/Cargo.toml"
+      - "**/Cargo.lock"
+      - "deny.toml"
+  schedule:
+    - cron: "0 0 * * *"
+
+jobs:
+  check:
+    runs-on: ubicloud-standard-8-ubuntu-2404
+    permissions:
+      contents: read
+      issues: write
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: ./.github/actions/setup-bazel
+        with:
+          build_buddy_token: ${{ secrets.build_buddy_token }}
+
+      - name: Build
+        run: bazel run //tools/just -- deny

@@ -3,9 +3,9 @@ name: Cargo Release PR
 on:
   workflow_dispatch:
   schedule:
-    - cron: '0 12 * * 1'  # Monday at 12:00 UTC
-    - cron: '0 12 * * 3'  # Wednesday at 12:00 UTC
-    - cron: '0 12 * * 6'  # Saturday at 12:00 UTC
+    - cron: "0 12 * * 1" # Monday at 12:00 UTC
+    - cron: "0 12 * * 3" # Wednesday at 12:00 UTC
+    - cron: "0 12 * * 6" # Saturday at 12:00 UTC
 
 jobs:
   cargo-release-pr:

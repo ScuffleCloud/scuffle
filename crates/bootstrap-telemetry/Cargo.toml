@@ -1,20 +1,17 @@
 [package]
 name = "scuffle-bootstrap-telemetry"
 version = "0.3.0"
-edition = "2024"
-repository = "https://github.com/scufflecloud/scuffle"
 authors = ["Scuffle <opensource@scuffle.cloud>"]
-readme = "README.md"
 documentation = "https://docs.rs/scuffle-bootstrap-telemetry"
-license = "MIT OR Apache-2.0"
-description = "Telemetry utilities for scuffle-bootstrap."
+edition = "2024"
 keywords = ["bootstrap", "telemetry"]
+license = "MIT OR Apache-2.0"
+readme = "README.md"
+repository = "https://github.com/scufflecloud/scuffle"
+description = "Telemetry utilities for scuffle-bootstrap."
 
 [lints.rust]
-unexpected_cfgs = { level = "warn", check-cfg = [
-  'cfg(coverage_nightly)',
-  'cfg(valgrind)',
-] }
+unexpected_cfgs = { level = "warn", check-cfg = ['cfg(coverage_nightly)', 'cfg(valgrind)'] }
 
 [dependencies]
 anyhow = "1"
@@ -39,10 +36,10 @@ scuffle-changelog = { optional = true, path = "../changelog", version = "0.1.0" 
 scuffle-context = { path = "../context", version = "0.1.3" }
 scuffle-http = { path = "../http", version = "0.3.0" }
 scuffle-pprof = { optional = true, path = "../pprof", version = "0.2.0" }
-scuffle-workspace-hack.workspace = true
 
 [dev-dependencies]
 reqwest = { default-features = false, version = "0.12.12" }
+rustls = { default-features = false, version = "0.23", features = ["aws_lc_rs"] }
 scuffle-metrics = { path = "../metrics" }
 
 [features]
@@ -88,15 +85,11 @@ additive-features = [
   "docs",
 ]
 
-[package.metadata.cargo-sync-rdme.rustdoc.mappings]
+[package.metadata.sync-readme.rustdoc-mappings]
 changelog = "./CHANGELOG.md"
 
-[package.metadata.cargo-sync-rdme.badge]
-style = "flat-square"
-
-[package.metadata.cargo-sync-rdme.badge.badges]
-license = true
+[package.metadata.sync-readme.badges]
 docs-rs = true
 crates-io = true
-github-actions = { workflows = "ci.yaml" }
+license = true
 codecov = true

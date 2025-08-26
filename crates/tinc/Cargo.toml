@@ -1,14 +1,14 @@
 [package]
 name = "tinc"
 version = "0.2.0"
-edition = "2024"
-description = "GRPc to REST transcoding library"
-repository = "https://github.com/scufflecloud/scuffle"
 authors = ["Scuffle <opensource@scuffle.cloud>"]
-readme = "README.md"
 documentation = "https://docs.rs/tinc"
-license = "MIT OR Apache-2.0"
+edition = "2024"
 keywords = ["grpc", "protobuf", "tonic", "rest"]
+license = "MIT OR Apache-2.0"
+readme = "README.md"
+repository = "https://github.com/scufflecloud/scuffle"
+description = "GRPc to REST transcoding library"
 
 [lints.rust]
 unexpected_cfgs = { level = "warn", check-cfg = ['cfg(coverage_nightly)'] }
@@ -53,7 +53,6 @@ thiserror = "2"
 document-features = { optional = true, version = "0.2" }
 openapiv3_1 = { path = "../openapiv3_1", version = "0.1.1" }
 scuffle-changelog = { optional = true, path = "../changelog", version = "0.1.0" }
-scuffle-workspace-hack.workspace = true
 tinc-cel = { features = ["runtime"], path = "cel", version = "=0.2.0" }
 tinc-derive = { path = "derive", version = "=0.2.0" }
 
@@ -69,16 +68,12 @@ rustdoc-args = [
 [package.metadata.xtask.powerset]
 additive-features = ["docs", "prost", "tonic"]
 
-[package.metadata.cargo-sync-rdme.rustdoc.mappings]
+[package.metadata.sync-readme.rustdoc-mappings]
 changelog = "./CHANGELOG.md"
 Annotations = "./annotations.proto"
 
-[package.metadata.cargo-sync-rdme.badge]
-style = "flat-square"
-
-[package.metadata.cargo-sync-rdme.badge.badges]
-license = true
+[package.metadata.sync-readme.badges]
 docs-rs = true
 crates-io = true
-github-actions = { workflows = "ci.yaml" }
+license = true
 codecov = true

@@ -274,10 +274,8 @@ pub fn parse_settings<T: serde::de::DeserializeOwned>(options: Options) -> Resul
         }
     }
 
-    if !added_files {
-        if let Some(default_config_file) = options.default_config_file {
-            config = config.add_source(config::File::new(default_config_file, FormatWrapper).required(false));
-        }
+    if !added_files && let Some(default_config_file) = options.default_config_file {
+        config = config.add_source(config::File::new(default_config_file, FormatWrapper).required(false));
     }
 
     if let Some(env_prefix) = options.env_prefix {
@@ -332,6 +330,8 @@ pub mod changelog {}
 #[cfg(test)]
 #[cfg_attr(all(test, coverage_nightly), coverage(off))]
 mod tests {
+    use std::path::PathBuf;
+
     use serde_derive::Deserialize;
 
     #[cfg(feature = "cli")]
@@ -342,6 +342,15 @@ mod tests {
     struct TestSettings {
         #[cfg_attr(not(feature = "cli"), allow(dead_code))]
         key: String,
+    }
+
+    #[allow(unused)]
+    fn file_path(item: &str) -> PathBuf {
+        if let Some(env) = std::env::var_os("ASSETS_DIR") {
+            PathBuf::from(env).join(item)
+        } else {
+            PathBuf::from(env!("CARGO_MANIFEST_DIR")).join(format!("../../assets/{item}"))
+        }
     }
 
     #[test]
@@ -394,9 +403,7 @@ mod tests {
     #[test]
     #[cfg(all(feature = "cli", feature = "toml"))]
     fn parse_file() {
-        use std::path::Path;
-
-        let path = Path::new(env!("CARGO_MANIFEST_DIR")).join("assets").join("test.toml");
+        let path = file_path("test.toml");
         let options = Options {
             cli: Some(Cli {
                 name: "test",
@@ -415,9 +422,7 @@ mod tests {
     #[test]
     #[cfg(feature = "cli")]
     fn file_error() {
-        use std::path::Path;
-
-        let path = Path::new("assets").join("invalid.txt");
+        let path = file_path("invalid.txt");
         let options = Options {
             cli: Some(Cli {
                 name: "test",
@@ -431,10 +436,14 @@ mod tests {
         let err = parse_settings::<TestSettings>(options).expect_err("expected error");
 
         if let crate::SettingsError::Config(config::ConfigError::FileParse { uri: Some(uri), cause }) = err {
-            assert_eq!(uri, path.display().to_string());
+            assert!(
+                path.display().to_string().ends_with(&uri),
+                "path ({}) ends with {uri}",
+                path.display()
+            );
             assert_eq!(
                 cause.to_string(),
-                format!("No supported format found for file: {:?}", path.to_str())
+                format!("No supported format found for file: {:?}", Some(uri))
             );
         } else {
             panic!("unexpected error: {err:?}");
@@ -498,7 +507,11 @@ mod tests {
                 version: "0.1.0",
                 about: "test",
                 author: "test",
-                argv: vec!["test".to_string(), "-c".to_string(), "assets/templates.toml".to_string()],
+                argv: vec![
+                    "test".to_string(),
+                    "-c".to_string(),
+                    file_path("templates.toml").to_string_lossy().to_string(),
+                ],
             }),
             ..Default::default()
         };

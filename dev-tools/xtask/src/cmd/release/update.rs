@@ -303,40 +303,40 @@ impl Update {
                 let cargo_toml_raw = std::fs::read_to_string(&package.manifest_path).context("read cargo toml")?;
                 let mut cargo_toml_edit = cargo_toml_raw.parse::<toml_edit::DocumentMut>().context("parse toml")?;
 
-                if let Some(version) = version.as_ref() {
-                    if is_accepted_group {
-                        pr_body.push_str(
-                            &fmtools::fmt(|mut f| {
-                                let mut f = indent_write::fmt::IndentWriter::new("  ", &mut f);
-                                write!(f, "* `{}`: ", package.name)?;
-                                let last_published = package.last_published_version();
-                                f.write_str(match &last_published {
-                                    None => " 📦 **New Crate**",
-                                    Some(v) if vers_to_comp(v.vers.clone()).matches(version) => " ✨ **Minor**",
-                                    Some(_) => " 🚀 **Major**",
-                                })?;
+                if let Some(version) = version.as_ref()
+                    && is_accepted_group
+                {
+                    pr_body.push_str(
+                        &fmtools::fmt(|mut f| {
+                            let mut f = indent_write::fmt::IndentWriter::new("  ", &mut f);
+                            write!(f, "* `{}`: ", package.name)?;
+                            let last_published = package.last_published_version();
+                            f.write_str(match &last_published {
+                                None => " 📦 **New Crate**",
+                                Some(v) if vers_to_comp(v.vers.clone()).matches(version) => " ✨ **Minor**",
+                                Some(_) => " 🚀 **Major**",
+                            })?;
 
-                                let mut f = indent_write::fmt::IndentWriter::new("  ", f);
-                                match &last_published {
-                                    Some(base) => write!(f, "\n* Version: **`{}`** ➡️ **`{version}`**", base.vers)?,
-                                    None => write!(f, "\n* Version: **`{version}`**")?,
-                                }
+                            let mut f = indent_write::fmt::IndentWriter::new("  ", f);
+                            match &last_published {
+                                Some(base) => write!(f, "\n* Version: **`{}`** ➡️ **`{version}`**", base.vers)?,
+                                None => write!(f, "\n* Version: **`{version}`**")?,
+                            }
 
-                                if package.group() != package.name.as_str() {
-                                    write!(f, " (group: **`{}`**)", package.group())?;
-                                }
-                                f.write_str("\n")?;
-                                Ok(())
-                            })
-                            .to_string(),
-                        );
+                            if package.group() != package.name.as_str() {
+                                write!(f, " (group: **`{}`**)", package.group())?;
+                            }
+                            f.write_str("\n")?;
+                            Ok(())
+                        })
+                        .to_string(),
+                    );
 
-                        if let Some(workspace_metadata_packages) = &mut workspace_metadata_packages {
-                            workspace_metadata_packages.insert(package.name.as_str(), version.to_string().into());
-                        }
-
-                        cargo_toml_edit["package"]["version"] = version.to_string().into();
+                    if let Some(workspace_metadata_packages) = &mut workspace_metadata_packages {
+                        workspace_metadata_packages.insert(package.name.as_str(), version.to_string().into());
                     }
+
+                    cargo_toml_edit["package"]["version"] = version.to_string().into();
                 }
 
                 tracing::debug!("checking deps");
@@ -387,13 +387,10 @@ impl Update {
                         }
                         .to_string()
                     } else {
-                        if !depends_on {
-                            if let Some((_, changelogs)) = changelogs.as_mut() {
-                                let mut log =
-                                    PackageChangeLog::new("chore", format!("bump {} to `{pkg_version}`", dep.name));
-                                log.breaking = package.is_dep_public(&dep.name);
-                                changelogs.push(log)
-                            }
+                        if !depends_on && let Some((_, changelogs)) = changelogs.as_mut() {
+                            let mut log = PackageChangeLog::new("chore", format!("bump {} to `{pkg_version}`", dep.name));
+                            log.breaking = package.is_dep_public(&dep.name);
+                            changelogs.push(log)
                         }
 
                         pkg_version.to_string()

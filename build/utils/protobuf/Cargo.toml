@@ -1,0 +1,10 @@
+[package]
+name = "protobuf-concat"
+edition = "2024"
+license = "MIT OR Apache-2.0"
+publish = false
+readme = "README.md"
+repository = "https://github.com/scufflecloud/scuffle"
+
+[dependencies]
+anyhow = "1"

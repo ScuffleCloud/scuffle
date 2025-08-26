@@ -150,10 +150,10 @@ impl Traf {
         let trun = &self.trun;
 
         if let Some(trun) = trun {
-            if let Some(flags) = trun.first_sample_flags {
-                if flags.sample_depends_on == 2 {
-                    return true;
-                }
+            if let Some(flags) = trun.first_sample_flags
+                && flags.sample_depends_on == 2
+            {
+                return true;
             }
 
             for sample in &trun.samples {
@@ -161,10 +161,10 @@ impl Traf {
                     if flags.sample_depends_on == 2 {
                         return true;
                     }
-                } else if let Some(flags) = tfhd.default_sample_flags {
-                    if flags.sample_depends_on == 2 {
-                        return true;
-                    }
+                } else if let Some(flags) = tfhd.default_sample_flags
+                    && flags.sample_depends_on == 2
+                {
+                    return true;
                 }
             }
         }

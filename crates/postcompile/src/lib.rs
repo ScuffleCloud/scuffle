@@ -11,12 +11,11 @@
 #![cfg_attr(feature = "docs", doc = document_features::document_features!())]
 //! ## Usage
 //!
-//! ```rust
+//! ```rust,standalone_crate,test_harness
 //! # macro_rules! assert_snapshot {
 //! #     ($expr:expr) => { $expr };
 //! # }
 //! #[test]
-//! # fn some_cool_test_() {}
 //! fn some_cool_test() {
 //!     assert_snapshot!(postcompile::compile!({
 //!         #![allow(unused)]
@@ -32,13 +31,11 @@
 //! }
 //!
 //! #[test]
-//! # fn some_cool_test_extern_() {}
 //! fn some_cool_test_extern() {
 //!     assert_snapshot!(postcompile::compile_str!(include_str!("some_file.rs")));
 //! }
 //!
 //! #[test]
-//! # fn test_inside_test_() {}
 //! fn test_inside_test() {
 //!     assert_snapshot!(postcompile::compile!(
 //!         postcompile::config! {
@@ -58,7 +55,6 @@
 //! }
 //!
 //! #[test]
-//! # fn test_inside_test_with_tokio() {}
 //! fn test_inside_test_with_tokio() {
 //!     assert_snapshot!(postcompile::compile!(
 //!         postcompile::config! {
@@ -135,11 +131,19 @@
 #![deny(unreachable_pub)]
 
 use std::borrow::Cow;
-use std::collections::BTreeMap;
+use std::collections::{BTreeMap, BTreeSet};
+use std::io;
 use std::path::Path;
 use std::process::Command;
 
 use cargo_manifest::DependencyDetail;
+
+#[derive(serde_derive::Deserialize)]
+struct DepsManifest {
+    direct: BTreeMap<String, String>,
+    search: BTreeSet<String>,
+    extra_rustc_args: Vec<String>,
+}
 
 /// The return status of the compilation.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -197,7 +201,7 @@ impl std::fmt::Display for CompileOutput {
 }
 
 fn cargo(config: &Config, manifest_path: &Path, subcommand: &str) -> Command {
-    let mut program = Command::new(std::env::var_os("CARGO").unwrap_or_else(|| "cargo".into()));
+    let mut program = Command::new(std::env::var("CARGO").unwrap_or_else(|_| "cargo".into()));
     program.arg(subcommand);
     program.current_dir(manifest_path.parent().unwrap());
 
@@ -207,20 +211,30 @@ fn cargo(config: &Config, manifest_path: &Path, subcommand: &str) -> Command {
     program.stderr(std::process::Stdio::piped());
     program.stdout(std::process::Stdio::piped());
 
-    let target_dir = if config.target_dir.ends_with(target_triple::TARGET) {
-        config.target_dir.parent().unwrap()
+    let target_dir = if config.target_dir.as_ref().unwrap().ends_with(target_triple::TARGET) {
+        config.target_dir.as_ref().unwrap().parent().unwrap()
     } else {
-        config.target_dir.as_ref()
+        config.target_dir.as_ref().unwrap()
     };
 
     program.arg("--quiet");
     program.arg("--manifest-path").arg(manifest_path);
     program.arg("--target-dir").arg(target_dir);
 
-    if !cfg!(trybuild_no_target) && !cfg!(postcompile_no_target) && config.target_dir.ends_with(target_triple::TARGET) {
+    if !cfg!(trybuild_no_target)
+        && !cfg!(postcompile_no_target)
+        && config.target_dir.as_ref().unwrap().ends_with(target_triple::TARGET)
+    {
         program.arg("--target").arg(target_triple::TARGET);
     }
 
+    program
+}
+
+fn rustc() -> Command {
+    let mut program = Command::new(std::env::var("RUSTC").unwrap_or_else(|_| "rustc".into()));
+    program.stderr(std::process::Stdio::piped());
+    program.stdout(std::process::Stdio::piped());
     program
 }
 
@@ -238,7 +252,7 @@ fn write_tmp_file(tokens: &str, tmp_file: &Path) {
 
 fn generate_cargo_toml(config: &Config, crate_name: &str) -> std::io::Result<(String, String)> {
     let metadata = cargo_metadata::MetadataCommand::new()
-        .manifest_path(config.manifest.as_ref())
+        .manifest_path(config.manifest.as_deref().unwrap())
         .exec()
         .map_err(|err| std::io::Error::new(std::io::ErrorKind::InvalidData, err))?;
 
@@ -312,10 +326,10 @@ fn generate_cargo_toml(config: &Config, crate_name: &str) -> std::io::Result<(St
                         cargo_manifest::Dependency::Inherited(_) => panic!("workspace deps cannot be inherited"),
                     };
 
-                    if let Some(path) = dep.path.as_mut() {
-                        if std::path::Path::new(path.as_str()).is_relative() {
-                            *path = metadata.workspace_root.join(path.as_str()).to_string()
-                        }
+                    if let Some(path) = dep.path.as_mut()
+                        && std::path::Path::new(path.as_str()).is_relative()
+                    {
+                        *path = metadata.workspace_root.join(path.as_str()).to_string()
                     }
 
                     dep
@@ -330,7 +344,15 @@ fn generate_cargo_toml(config: &Config, crate_name: &str) -> std::io::Result<(St
                 detail.default_features = Some(dep.default_features);
                 if let Some(mut path) = dep.path.clone() {
                     if std::path::Path::new(path.as_str()).is_relative() {
-                        path = config.manifest.parent().unwrap().join(path).to_string_lossy().to_string();
+                        path = config
+                            .manifest
+                            .as_ref()
+                            .unwrap()
+                            .parent()
+                            .unwrap()
+                            .join(path)
+                            .to_string_lossy()
+                            .to_string();
                     }
                     detail.path = Some(path);
                 }
@@ -348,12 +370,11 @@ fn generate_cargo_toml(config: &Config, crate_name: &str) -> std::io::Result<(St
         patch: workspace_manifest.patch.clone().map(|mut patch| {
             patch.values_mut().for_each(|deps| {
                 deps.values_mut().for_each(|dep| {
-                    if let cargo_manifest::Dependency::Detailed(dep) = dep {
-                        if let Some(path) = &mut dep.path {
-                            if std::path::Path::new(path.as_str()).is_relative() {
-                                *path = metadata.workspace_root.join(path.as_str()).to_string()
-                            }
-                        }
+                    if let cargo_manifest::Dependency::Detailed(dep) = dep
+                        && let Some(path) = &mut dep.path
+                        && std::path::Path::new(path.as_str()).is_relative()
+                    {
+                        *path = metadata.workspace_root.join(path.as_str()).to_string()
                     }
                 });
             });
@@ -375,9 +396,12 @@ static TEST_TIME_RE: std::sync::LazyLock<regex::Regex> =
 /// Compiles the given tokens and returns the output.
 pub fn compile_custom(tokens: impl std::fmt::Display, config: &Config) -> std::io::Result<CompileOutput> {
     let tokens = tokens.to_string();
+    if let Ok(deps_manifest) = std::env::var("POSTCOMPILE_DEPS_MANIFEST") {
+        return manifest_mode(deps_manifest, config, tokens);
+    }
 
     let crate_name = config.function_name.replace("::", "__");
-    let tmp_crate_path = Path::new(config.tmp_dir.as_ref()).join(&crate_name);
+    let tmp_crate_path = Path::new(config.tmp_dir.as_deref().unwrap()).join(&crate_name);
     std::fs::create_dir_all(&tmp_crate_path)?;
 
     let manifest_path = tmp_crate_path.join("Cargo.toml");
@@ -405,7 +429,7 @@ pub fn compile_custom(tokens: impl std::fmt::Display, config: &Config) -> std::i
 
     let cleanup_output = |out: &[u8]| {
         let out = String::from_utf8_lossy(out);
-        let tmp_dir = config.tmp_dir.display().to_string();
+        let tmp_dir = config.tmp_dir.as_ref().unwrap().display().to_string();
         let main_relative = main_path.strip_prefix(&tmp_crate_path).unwrap().display().to_string();
         let main_path = main_path.display().to_string();
         TEST_TIME_RE
@@ -449,18 +473,125 @@ pub fn compile_custom(tokens: impl std::fmt::Display, config: &Config) -> std::i
     Ok(result)
 }
 
+fn manifest_mode(deps_manifest_path: String, config: &Config, tokens: String) -> std::io::Result<CompileOutput> {
+    let deps_manifest = match std::fs::read_to_string(&deps_manifest_path) {
+        Ok(o) => o,
+        Err(err) => panic!("error opening file: {deps_manifest_path} {err}"),
+    };
+    let manifest: DepsManifest = serde_json::from_str(&deps_manifest)
+        .map_err(|err| io::Error::new(io::ErrorKind::InvalidData, err))
+        .unwrap();
+
+    let current_dir = std::env::current_dir().unwrap();
+
+    let args: Vec<_> = manifest
+        .direct
+        .iter()
+        .map(|(name, file)| format!("--extern={name}={file}", file = current_dir.join(file).display()))
+        .chain(
+            manifest
+                .search
+                .iter()
+                .map(|search| format!("-Ldependency={search}", search = current_dir.join(search).display())),
+        )
+        .chain(manifest.extra_rustc_args.iter().cloned())
+        .chain([
+            "--crate-type=lib".into(),
+            format!(
+                "--edition={}",
+                if config.edition.is_empty() {
+                    "2024"
+                } else {
+                    config.edition.as_str()
+                }
+            ),
+        ])
+        .collect();
+
+    let tmp_dir = std::env::var("TEST_TMPDIR").expect("TEST_TMPDIR must be set when using manifest mode.");
+    let name = config.function_name.replace("::", "__");
+    let tmp_rs_path = Path::new(&tmp_dir).join(format!("{name}.rs"));
+    write_tmp_file(&tokens, &tmp_rs_path);
+
+    let output = rustc()
+        .env("RUSTC_BOOTSTRAP", "1")
+        .arg("-Zunpretty=expanded")
+        .args(args.iter())
+        .arg(&tmp_rs_path)
+        .output()
+        .unwrap();
+
+    let stdout = String::from_utf8(output.stdout).unwrap();
+    let syn_file = syn::parse_file(&stdout);
+    let stdout = syn_file.as_ref().map(prettyplease::unparse).unwrap_or(stdout);
+
+    let cleanup_output = |out: &[u8]| {
+        let out = String::from_utf8_lossy(out);
+        let main_relative = tmp_rs_path.strip_prefix(&tmp_dir).unwrap().display().to_string();
+        let main_path = tmp_rs_path.display().to_string();
+        TEST_TIME_RE
+            .replace_all(out.as_ref(), "[ELAPSED]s")
+            .trim()
+            .replace(&main_relative, "[POST_COMPILE]")
+            .replace(&main_path, "[POST_COMPILE]")
+            .replace(&tmp_dir, "[BUILD_DIR]")
+    };
+
+    let mut result = CompileOutput {
+        status: if output.status.success() {
+            ExitStatus::Success
+        } else {
+            ExitStatus::Failure(output.status.code().unwrap_or(-1))
+        },
+        expand_stderr: cleanup_output(&output.stderr),
+        expanded: stdout,
+        test_stderr: String::new(),
+        test_stdout: String::new(),
+    };
+
+    if result.status == ExitStatus::Success {
+        let mut program = rustc();
+
+        program
+            .arg("--test")
+            .args(args.iter())
+            .arg("-o")
+            .arg(tmp_rs_path.with_extension("bin"))
+            .arg(&tmp_rs_path);
+
+        let mut comp_output = program.output().unwrap();
+        if comp_output.status.success() && config.test {
+            comp_output = Command::new(tmp_rs_path.with_extension("bin"))
+                .arg("--quiet")
+                .output()
+                .unwrap();
+        }
+
+        result.status = if comp_output.status.success() {
+            ExitStatus::Success
+        } else {
+            ExitStatus::Failure(comp_output.status.code().unwrap_or(-1))
+        };
+
+        result.test_stderr = cleanup_output(&comp_output.stderr);
+        result.test_stdout = cleanup_output(&comp_output.stdout);
+    };
+
+    Ok(result)
+}
+
 /// The configuration for the compilation.
 #[derive(Clone, Debug, Default)]
 pub struct Config {
     /// The path to the cargo manifest file of the library being tested.
     /// This is so that we can include the `dependencies` & `dev-dependencies`
     /// making them available in the code provided.
-    pub manifest: Cow<'static, Path>,
+    pub manifest: Option<Cow<'static, Path>>,
     /// The path to the target directory, used to cache builds & find
     /// dependencies.
-    pub target_dir: Cow<'static, Path>,
+    pub target_dir: Option<Cow<'static, Path>>,
     /// A temporary directory to write the expanded code to.
-    pub tmp_dir: Cow<'static, Path>,
+    pub tmp_dir: Option<Cow<'static, Path>>,
     /// The name of the function to compile.
     pub function_name: Cow<'static, str>,
     /// The path to the file being compiled.
@@ -554,21 +685,13 @@ macro_rules! _function_name {
 }
 
 #[doc(hidden)]
-pub fn build_dir() -> &'static Path {
-    Path::new(env!("OUT_DIR"))
+pub fn build_dir() -> Option<&'static Path> {
+    Some(Path::new(option_env!("OUT_DIR")?))
 }
 
 #[doc(hidden)]
-pub fn target_dir() -> &'static Path {
-    build_dir()
-        .parent()
-        .unwrap()
-        .parent()
-        .unwrap()
-        .parent()
-        .unwrap()
-        .parent()
-        .unwrap()
+pub fn target_dir() -> Option<&'static Path> {
+    build_dir()?.parent()?.parent()?.parent()?.parent()
 }
 
 /// Define a config to use when compiling crates.
@@ -591,9 +714,9 @@ macro_rules! config {
     ) => {{
         #[allow(unused_mut)]
         let mut config = $crate::Config {
-            manifest: ::std::borrow::Cow::Borrowed(::std::path::Path::new(env!("CARGO_MANIFEST_PATH"))),
-            tmp_dir: ::std::borrow::Cow::Borrowed($crate::build_dir()),
-            target_dir: ::std::borrow::Cow::Borrowed($crate::target_dir()),
+            manifest: option_env!("CARGO_MANIFEST_PATH").map(|env| ::std::borrow::Cow::Borrowed(::std::path::Path::new(env))),
+            tmp_dir: $crate::build_dir().map(::std::borrow::Cow::Borrowed),
+            target_dir: $crate::target_dir().map(::std::borrow::Cow::Borrowed),
             function_name: ::std::borrow::Cow::Borrowed($crate::_function_name!()),
             file_path: ::std::borrow::Cow::Borrowed(::std::path::Path::new(file!())),
             package_name: ::std::borrow::Cow::Borrowed(env!("CARGO_PKG_NAME")),
@@ -677,7 +800,7 @@ macro_rules! compile {
 ///
 /// Same as the [`compile!`] macro, but for strings. This allows you to do:
 ///
-/// ```rust
+/// ```rust,standalone_crate
 /// let output = postcompile::compile_str!(include_str!("some_file.rs"));
 ///
 /// // ... do something with the output

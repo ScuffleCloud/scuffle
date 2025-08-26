@@ -1,82 +1,90 @@
 mod? local
 
-# By default we use the nightly toolchain, however you can override this by setting the RUST_TOOLCHAIN environment variable.
-export RUST_TOOLCHAIN := env_var_or_default('RUST_TOOLCHAIN', 'nightly')
+# this should be kept in sync with
+# .github/workflows/ci-check-fmt.yaml
 
-# An alias for cargo xtask check
-powerset *args:
-    cargo +{{RUST_TOOLCHAIN}} xtask powerset {{args}}
+bzlmod:
+    # https://github.com/bazelbuild/bazel/issues/20477
+    bazel shutdown
+    bazel fetch //... --lockfile_mode=off
+    bazel fetch //... --lockfile_mode=update
 
-# An alias for cargo fmt --all
-fmt *args:
-    cargo +{{RUST_TOOLCHAIN}} fmt --all {{args}}
+fmt:
+    bazel run //tools/cargo/fmt:fix
+    buildifier $(git ls-files "*.bzl" "*.bazel" | xargs ls 2>/dev/null)
+    dprint fmt
+    buf format -w --disable-symlinks --debug
+    just --unstable --fmt
 
-lint *args:
-    cargo +{{RUST_TOOLCHAIN}} clippy --fix --allow-dirty --allow-staged --all-features --all-targets {{args}} -- -Aclippy::collapsible_if
+lint:
+    bazel run //tools/cargo/clippy:fix
+
+clean *args="--async":
+    #!/usr/bin/env bash
+    set -exuo pipefail
+
+    output_base=$(bazel info output_base)
+
+    bazel --output_base="${output_base}" clean {{ args }}
+    bazel --output_base="${output_base}_coverage" clean {{ args }}
+    bazel --output_base="${output_base}_grind" clean {{ args }}
+    bazel --output_base="${output_base}_rust_analyzer" clean {{ args }}
 
 alias coverage := test
-test *args:
+
+test *targets="//...":
     #!/usr/bin/env bash
-    set -euo pipefail
+    set -exuo pipefail
 
-    INSTA_FORCE_PASS=1 cargo +{{RUST_TOOLCHAIN}} llvm-cov clean --workspace
-    INSTA_FORCE_PASS=1 cargo +{{RUST_TOOLCHAIN}} llvm-cov nextest --include-build-script --no-report --all-features -- {{args}}
-    # Coverage for doctests is currently broken in llvm-cov.
-    # Once it fully works we can add the `--doctests` flag to the test and report command again.
-    cargo +{{RUST_TOOLCHAIN}} llvm-cov test --doc --no-report --all-features {{args}}
+    cargo insta reject > /dev/null
 
-    # Do not generate the coverage report on CI
+    output_base=$(bazel info output_base)
+
+    bazel --output_base="${output_base}_coverage" coverage {{ targets }} --//settings:test_insta_force_pass
+
+    test_logs=$(bazel --output_base="${output_base}_coverage" info bazel-testlogs)
+
+    snaps=$(find -L "${test_logs}" \( -name '*.snap.new' -o -name '*.pending-snap' \))
+    # Loop over each found file
+    for snap in $snaps; do
+        rel_path="${snap#*test.outputs/}"
+        # Create the symbolic link inside the target directory
+        ln -sf "$(realpath "$snap")" "$(dirname "$rel_path")/$(basename "$rel_path")"
+    done
+
     cargo insta review
-    cargo +{{RUST_TOOLCHAIN}} llvm-cov report --include-build-script --lcov --output-path ./lcov.info
-    cargo +{{RUST_TOOLCHAIN}} llvm-cov report --include-build-script --html
 
-coverage-serve:
-    miniserve target/llvm-cov/html --index index.html --port 3000
+    rm lcov.info || true
+    ln -s "$(bazel --output_base="${output_base}_coverage" info output_path)"/_coverage/_coverage_report.dat lcov.info
 
-grind *args:
+# this should be kept in sync with
+# .github/workflows/ci-check-vendor.yaml
+
+vendor:
+    cargo update --workspace
+    bazel run //vendor:cargo_vendor
+    bazel run //vendor:bindeps
+
+grind *targets="//...":
     #!/usr/bin/env bash
-    set -euo pipefail
+    set -euxo pipefail
 
-    # Runs valgrind on the tests.
-    # If there are errors due to tests using global (and not actual memory leaks) then use the
-    # information given by valgrind to replace the "<insert_a_suppression_name_here>" with the actual test name.
-    export RUSTFLAGS="--cfg reqwest_unstable --cfg valgrind"
-    export CARGO_TARGET_X86_64_UNKNOWN_LINUX_GNU_RUNNER="valgrind --error-exitcode=1 --leak-check=full --gen-suppressions=all --suppressions=$(pwd)/valgrind_suppressions.log"
-    cargo +{{RUST_TOOLCHAIN}} nextest run --all-features --no-fail-fast {{args}}
+    output_base=$(bazel info output_base)
+    targets=$(bazel query 'kind("nextest_test rule", set({{ targets }}))')
+
+    bazel --output_base="${output_base}_grind" test ${targets} --//settings:test_rustc_flags="--cfg=valgrind" --//settings:test_valgrind
 
 alias docs := doc
-doc *args:
-    #!/usr/bin/env bash
-    set -euo pipefail
 
-    # `--cfg docsrs` enables us to write feature hints in the form of `#[cfg_attr(docsrs, doc(cfg(feature = "some-feature")))]`
-    # `--enable-index-page` makes the command generate an index page which lists all crates (unstable)
-    # `--generate-link-to-definition` generates source code links (unstable)
-    # `--sort-modules-by-appearance` sorts modules by the order they were defined in (unstable)
-    # `-D warnings` disallow all warnings
-    # `-Zunstable-options` enables unstable options (for the `--enable-index-page` flag)
-    export RUSTDOCFLAGS="${RUSTDOCFLAGS:-} -Dwarnings --cfg docsrs --sort-modules-by-appearance --generate-link-to-definition --enable-index-page -Zunstable-options"
-    cargo +{{RUST_TOOLCHAIN}} doc --no-deps --all-features {{args}}
+rustdoc_target := "//docs:rustdoc"
+
+doc:
+    bazel build {{ rustdoc_target }}
 
 alias docs-serve := doc-serve
+
 doc-serve: doc
-    miniserve target/doc --index index.html --port 3000
+    miniserve "$(bazel info execution_root)"/"$(bazel cquery --config=wrapper {{ rustdoc_target }} --output=files)" --index index.html --port 3000
 
-deny *args:
-    cargo +{{RUST_TOOLCHAIN}} deny {{args}} --all-features check
-
-workspace-hack:
-    cargo +{{RUST_TOOLCHAIN}} hakari manage-deps
-    cargo +{{RUST_TOOLCHAIN}} hakari generate
-
-alias version-check := check-versions
-alias check-version := check-versions
-alias versions-check := check-versions
-check-versions:
-    release-plz update --disable-dependant-updates --no-changelog --check-only --exit-status
-
-readme:
-    #!/usr/bin/env bash
-    set -euo pipefail
-
-    RUSTDOCFLAGS="-Dwarnings --cfg docsrs --sort-modules-by-appearance --enable-index-page -Zunstable-options"  cargo +nightly sync-rdme --all-features --workspace
+deny:
+    bazel run //tools/cargo/deny check

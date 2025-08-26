@@ -39,28 +39,27 @@ impl Function for Contains {
                     ProtoModifiedValueType::Repeated(item) | ProtoModifiedValueType::Map(item, _),
                 )),
         }) = &this
+            && !matches!(item, ProtoValueType::Message { .. } | ProtoValueType::Enum(_))
         {
-            if !matches!(item, ProtoValueType::Message { .. } | ProtoValueType::Enum(_)) {
-                let op = match &ty {
-                    CelType::Proto(ProtoType::Modified(ProtoModifiedValueType::Repeated(_))) => {
-                        quote! { array_contains }
-                    }
-                    CelType::Proto(ProtoType::Modified(ProtoModifiedValueType::Map(_, _))) => {
-                        quote! { map_contains }
-                    }
-                    _ => unreachable!(),
-                };
+            let op = match &ty {
+                CelType::Proto(ProtoType::Modified(ProtoModifiedValueType::Repeated(_))) => {
+                    quote! { array_contains }
+                }
+                CelType::Proto(ProtoType::Modified(ProtoModifiedValueType::Map(_, _))) => {
+                    quote! { map_contains }
+                }
+                _ => unreachable!(),
+            };
 
-                return Ok(CompiledExpr::runtime(
-                    CelType::Proto(ProtoType::Value(ProtoValueType::Bool)),
-                    parse_quote! {
-                        ::tinc::__private::cel::#op(
-                            #expr,
-                            #arg,
-                        )
-                    },
-                ));
-            }
+            return Ok(CompiledExpr::runtime(
+                CelType::Proto(ProtoType::Value(ProtoValueType::Bool)),
+                parse_quote! {
+                    ::tinc::__private::cel::#op(
+                        #expr,
+                        #arg,
+                    )
+                },
+            ));
         }
 
         let this = this.clone().into_cel()?;

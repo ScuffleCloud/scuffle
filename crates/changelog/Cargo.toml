@@ -1,14 +1,14 @@
 [package]
 name = "scuffle-changelog"
 version = "0.1.1"
-edition = "2024"
-description = "A helper macro to embed changelogs in crate docs."
-repository = "https://github.com/scufflecloud/scuffle"
 authors = ["Scuffle <opensource@scuffle.cloud>"]
-readme = "README.md"
 documentation = "https://docs.rs/scuffle-changelog"
-license = "MIT OR Apache-2.0"
+edition = "2024"
 keywords = ["documentation", "changelog", "embed"]
+license = "MIT OR Apache-2.0"
+readme = "README.md"
+repository = "https://github.com/scufflecloud/scuffle"
+description = "A helper macro to embed changelogs in crate docs."
 
 [lints.rust]
 unexpected_cfgs = { level = "warn", check-cfg = ['cfg(coverage_nightly)'] }
@@ -22,17 +22,15 @@ fmtools = "0.1"
 proc-macro2 = "1"
 quote = "1"
 regex = "1"
-scuffle-workspace-hack.workspace = true
 semver = "1"
 # unfortunately we need syn full for `ItemMod`w
 syn = { features = ["full"], version = "2" }
 
-[package.metadata.cargo-sync-rdme.badge]
-style = "flat-square"
+[package.metadata.sync-readme.rustdoc-mappings]
+changelog = "./CHANGELOG.md"
 
-[package.metadata.cargo-sync-rdme.badge.badges]
-license = true
+[package.metadata.sync-readme.badges]
 docs-rs = true
 crates-io = true
-github-actions = { workflows = "ci.yaml" }
+license = true
 codecov = true

@@ -428,6 +428,16 @@ mod tests {
 
     use crate::{TelemetryConfig, TelemetrySvc};
 
+    fn install_provider() {
+        static ONCE: std::sync::Once = std::sync::Once::new();
+
+        ONCE.call_once(|| {
+            rustls::crypto::aws_lc_rs::default_provider()
+                .install_default()
+                .expect("failed to install aws lc provider");
+        });
+    }
+
     async fn request_metrics(addr: SocketAddr) -> reqwest::Result<String> {
         reqwest::get(format!("http://{addr}/metrics"))
             .await
@@ -468,6 +478,8 @@ mod tests {
     #[cfg(not(valgrind))] // test is time-sensitive
     #[tokio::test]
     async fn telemetry_http_server() {
+        install_provider();
+
         struct TestGlobal {
             bind_addr: SocketAddr,
             #[cfg(feature = "prometheus")]
@@ -610,6 +622,8 @@ mod tests {
     #[cfg(not(valgrind))] // test is time-sensitive
     #[tokio::test]
     async fn empty_telemetry_http_server() {
+        install_provider();
+
         struct TestGlobal {
             bind_addr: SocketAddr,
         }

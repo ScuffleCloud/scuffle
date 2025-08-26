@@ -162,12 +162,11 @@ where
         match this.body.poll_frame(cx) {
             Poll::Pending => Poll::Pending,
             Poll::Ready(frame) => {
-                if let Some(Ok(frame)) = &frame {
-                    if let Some(data) = frame.data_ref() {
-                        if let Err(err) = this.tracker.on_data(data.remaining()) {
-                            return Poll::Ready(Some(Err(TrackedBodyError::Tracker(err))));
-                        }
-                    }
+                if let Some(Ok(frame)) = &frame
+                    && let Some(data) = frame.data_ref()
+                    && let Err(err) = this.tracker.on_data(data.remaining())
+                {
+                    return Poll::Ready(Some(Err(TrackedBodyError::Tracker(err))));
                 }
 
                 Poll::Ready(frame.transpose().map_err(TrackedBodyError::Body).transpose())

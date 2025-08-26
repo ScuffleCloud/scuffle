@@ -4,6 +4,9 @@
 		"fill-labs.dependi",
 		"tamasfe.even-better-toml",
 		"dustypomerleau.rust-syntax",
-		"editorconfig.editorconfig"
+        "editorconfig.editorconfig",
+        "bazelbuild.vscode-bazel",
+        "skellock.just",
+        "zxh404.vscode-proto3"
 	]
 }

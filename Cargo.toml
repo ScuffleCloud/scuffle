@@ -1,14 +1,29 @@
 [workspace]
-
 members = [
+  "build/utils/protobuf",
+  "build/utils/rust/analyzer/check",
+  "build/utils/rust/analyzer/discover",
+  "build/utils/rust/clippy",
+  "build/utils/rust/doc/merger",
+  "build/utils/rust/doc/test/builder",
+  "build/utils/rust/doc/test/common",
+  "build/utils/rust/doc/test/runner",
+  "build/utils/rust/doc/wrapper",
+  "build/utils/rust/sync_readme",
+  "build/utils/rust/sync_readme/common",
+  "build/utils/rust/sync_readme/test_runner",
+  "build/utils/rust/test_runner",
+  "cloud/core",
+  "cloud/proto",
   "crates/aac",
   "crates/amf0",
   "crates/av1",
   "crates/batching",
   "crates/bootstrap",
-  "crates/bootstrap/derive",
   "crates/bootstrap-telemetry",
+  "crates/bootstrap/derive",
   "crates/bytes-util",
+  "crates/changelog",
   "crates/context",
   "crates/expgolomb",
   "crates/ffmpeg",
@@ -20,31 +35,26 @@ members = [
   "crates/metrics",
   "crates/metrics/derive",
   "crates/mp4",
-  "crates/nutype_enum",
+  "crates/nutype-enum",
+  "crates/openapiv3_1",
   "crates/postcompile",
   "crates/pprof",
   "crates/rtmp",
   "crates/settings",
   "crates/signal",
-  "crates/transmuxer",
-  "crates/workspace-hack",
-  "dev-tools/xtask",
   "crates/tinc",
-  "crates/tinc/cel",
-  "crates/tinc/pb-prost",
   "crates/tinc/build",
+  "crates/tinc/cel",
   "crates/tinc/derive",
   "crates/tinc/integration",
-  "crates/openapiv3_1",
-  "crates/changelog",
-  "cloud/proto",
-  "cloud/core",
+  "crates/tinc/pb-prost",
+  "crates/transmuxer",
+  "dev-tools/xtask",
+  "tools/cargo/clippy",
+  "tools/cargo/sync-readme",
 ]
 
 resolver = "3"
-
-[workspace.dependencies]
-scuffle-workspace-hack = "0.1.0"
 
 [workspace.metadata.xtask.release.packages]
 tinc = "0.2.0"
@@ -71,5 +81,7 @@ scuffle-expgolomb = "0.1.5"
 inherits = "release"
 debug = true
 
-[patch.crates-io.scuffle-workspace-hack]
-path = "crates/workspace-hack"
+[patch.crates-io]
+# removal of ring forced dependency when using http3 feature.
+# https://github.com/seanmonstar/reqwest/pull/2796
+reqwest = { git = "https://github.com/TroyKomodo/reqwest.git", rev = "1b659fc2ec02363a04dcdc08d1989560ed5a5e7f" }

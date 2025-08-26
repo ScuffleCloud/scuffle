@@ -1,14 +1,14 @@
 [package]
 name = "scuffle-context"
 version = "0.1.5"
-edition = "2024"
-repository = "https://github.com/scufflecloud/scuffle"
 authors = ["Scuffle <opensource@scuffle.cloud>"]
-readme = "README.md"
 documentation = "https://docs.rs/scuffle-context"
-license = "MIT OR Apache-2.0"
-description = "Go-like context utilities for Rust."
+edition = "2024"
 keywords = ["context", "async"]
+license = "MIT OR Apache-2.0"
+readme = "README.md"
+repository = "https://github.com/scufflecloud/scuffle"
+description = "Go-like context utilities for Rust."
 
 [lints.rust]
 unexpected_cfgs = { level = "warn", check-cfg = ['cfg(coverage_nightly)'] }
@@ -18,7 +18,6 @@ document-features = { optional = true, version = "0.2" }
 futures-lite = "2"
 pin-project-lite = "0.2"
 scuffle-changelog = { optional = true, path = "../changelog", version = "0.1.0" }
-scuffle-workspace-hack.workspace = true
 tokio = "1"
 tokio-util = "0.7"
 
@@ -43,15 +42,11 @@ rustdoc-args = [
 [package.metadata.xtask.powerset]
 additive-features = ["docs"]
 
-[package.metadata.cargo-sync-rdme.rustdoc.mappings]
+[package.metadata.sync-readme.rustdoc-mappings]
 changelog = "./CHANGELOG.md"
 
-[package.metadata.cargo-sync-rdme.badge]
-style = "flat-square"
-
-[package.metadata.cargo-sync-rdme.badge.badges]
-license = true
+[package.metadata.sync-readme.badges]
 docs-rs = true
 crates-io = true
-github-actions = { workflows = "ci.yaml" }
+license = true
 codecov = true

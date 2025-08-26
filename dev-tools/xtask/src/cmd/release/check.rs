@@ -212,15 +212,15 @@ impl Check {
             }
         }
 
-        if let Some(mut fragment) = fragment {
-            if fragment.changed() {
-                tracing::info!(
-                    "{} {}",
-                    if fragment.deleted() { "creating" } else { "updating" },
-                    relative_to(fragment.path(), &metadata.workspace_root),
-                );
-                fragment.save().context("save changelog")?;
-            }
+        if let Some(mut fragment) = fragment
+            && fragment.changed()
+        {
+            tracing::info!(
+                "{} {}",
+                if fragment.deleted() { "creating" } else { "updating" },
+                relative_to(fragment.path(), &metadata.workspace_root),
+            );
+            fragment.save().context("save changelog")?;
         }
 
         if !self.fix {
@@ -369,13 +369,12 @@ impl Package {
                         {
                             self.report_issue(PackageError::grouped_version(dep));
                         }
-                    } else if self.should_publish() {
-                        if dep.registry.is_some()
+                    } else if self.should_publish()
+                        && (dep.registry.is_some()
                             || dep.req.comparators.is_empty()
-                            || dep.source.as_ref().is_some_and(|s| !s.is_crates_io())
-                        {
-                            self.report_issue(PackageError::not_publish(dep));
-                        }
+                            || dep.source.as_ref().is_some_and(|s| !s.is_crates_io()))
+                    {
+                        self.report_issue(PackageError::not_publish(dep));
                     }
                 }
                 DependencyKind::Development => {
@@ -866,11 +865,13 @@ impl Package {
         }
 
         let mut errors = self.errors();
-        if let Some(fragment) = &fragment {
-            if !fragment.has_package(&self.name) && self.version_bump().is_some() && self.changelog_path().is_some() {
-                tracing::warn!(package = %self.name, "changelog entry must be provided");
-                errors.insert(0, PackageError::Missing(PackageErrorMissing::ChangelogEntry));
-            }
+        if let Some(fragment) = &fragment
+            && !fragment.has_package(&self.name)
+            && self.version_bump().is_some()
+            && self.changelog_path().is_some()
+        {
+            tracing::warn!(package = %self.name, "changelog entry must be provided");
+            errors.insert(0, PackageError::Missing(PackageErrorMissing::ChangelogEntry));
         }
 
         let min_versions_output = self.min_versions_output();
@@ -945,10 +946,10 @@ impl CheckRun {
     pub fn process(&self, concurrency: usize, workspace_root: &Utf8Path, base_branch: Option<&str>) -> anyhow::Result<()> {
         let clean_target = || {
             let release_check_path = workspace_root.join("target").join("release-checks").join("package");
-            if release_check_path.exists() {
-                if let Err(err) = std::fs::remove_dir_all(release_check_path) {
-                    tracing::error!("failed to cleanup release-checks package folder: {err}")
-                }
+            if release_check_path.exists()
+                && let Err(err) = std::fs::remove_dir_all(release_check_path)
+            {
+                tracing::error!("failed to cleanup release-checks package folder: {err}")
             }
 
             let release_check_path = workspace_root.join("target").join("semver-checks");

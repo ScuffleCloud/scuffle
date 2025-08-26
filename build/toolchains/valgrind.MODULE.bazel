@@ -1,0 +1,48 @@
+http_archive = use_repo_rule("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive")
+
+_LINUX_BUILD_FILE = """
+load("@aspect_bazel_lib//lib:copy_to_directory.bzl", "copy_to_directory")
+
+copy_to_directory(
+    name = "libexec",
+    srcs = glob(["libexec/**"]),
+    root_paths = ["libexec"],
+    include_external_repositories = ["*"],
+    tags = ["no-cache", "manual"],
+    visibility = ["//visibility:public"],
+)
+
+filegroup(
+    name = "valgrind",
+    srcs = ["bin/valgrind"],
+    visibility = ["//visibility:public"],
+)
+"""
+
+build_url = "https://github.com/ScuffleCloud/valgrind-builds/releases/download/auto-release-16952537909/"
+
+linux_x86_64 = "valgrind-3.23.0-Linux-x86_64"
+
+http_archive(
+    name = "valgrind-linux-x86_64",
+    build_file_content = _LINUX_BUILD_FILE,
+    sha256 = "a97abacceb02117cf1dc675c5f692015774b8ae827ec703d0d974d90555b6e35",
+    strip_prefix = linux_x86_64,
+    url = "{url}/{name}.tar.gz".format(
+        name = linux_x86_64,
+        url = build_url,
+    ),
+)
+
+linux_aarch64 = "valgrind-3.23.0-Linux-aarch64"
+
+http_archive(
+    name = "valgrind-linux-aarch64",
+    build_file_content = _LINUX_BUILD_FILE,
+    sha256 = "0195f8d94cb577646c90acf7b1f91a27148f5fc07885046387405987f5915844",
+    strip_prefix = linux_aarch64,
+    url = "{url}/{name}.tar.gz".format(
+        name = linux_aarch64,
+        url = build_url,
+    ),
+)

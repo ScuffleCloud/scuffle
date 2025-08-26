@@ -51,12 +51,12 @@ jobs:
     if: ${{ fromJson(needs.prep.outputs.prep).test != null }}
     uses: ./.github/workflows/ci-test.yaml
     with:
-      commit_sha: ${{ fromJson(needs.prep.outputs.prep).test.commit_sha || '' }}
-      pr_number: ${{ fromJson(needs.prep.outputs.prep).test.pr_number || '' }}
-      matrix: ${{ toJson(fromJson(needs.prep.outputs.prep).test.matrix) }}
+      commit_sha: "${{ fromJson(needs.prep.outputs.prep).test.commit_sha }}"
+      pr_number: "${{ fromJson(needs.prep.outputs.prep).test.pr_number }}"
+      matrix: "${{ toJson(fromJson(needs.prep.outputs.prep).test.matrix) }}"
     secrets:
-      codecov_token: ${{ secrets.CODECOV_TOKEN }}
-      build_buddy_token: ${{ secrets.BUILD_BUDDY_TOKEN }}
+      codecov_token: "${{ secrets.CODECOV_TOKEN }}"
+      build_buddy_token: "${{ secrets.BUILD_BUDDY_TOKEN }}"
 
   check_fmt:
     needs: [prep]
@@ -70,26 +70,26 @@ jobs:
     if: ${{ fromJson(needs.prep.outputs.prep).grind != null }}
     uses: ./.github/workflows/ci-grind.yaml
     with:
-      commit_sha: ${{ fromJson(needs.prep.outputs.prep).grind.commit_sha || '' }}
-      pr_number: ${{ fromJson(needs.prep.outputs.prep).grind.pr_number || '' }}
-      matrix: ${{ toJson(fromJson(needs.prep.outputs.prep).grind.matrix) }}
+      commit_sha: "${{ fromJson(needs.prep.outputs.prep).grind.commit_sha }}"
+      pr_number: "${{ fromJson(needs.prep.outputs.prep).grind.pr_number }}"
+      matrix: "${{ toJson(fromJson(needs.prep.outputs.prep).grind.matrix) }}"
     secrets:
-      codecov_token: ${{ secrets.CODECOV_TOKEN }}
-      build_buddy_token: ${{ secrets.BUILD_BUDDY_TOKEN }}
+      codecov_token: "${{ secrets.CODECOV_TOKEN }}"
+      build_buddy_token: "${{ secrets.BUILD_BUDDY_TOKEN }}"
 
   rustdoc:
     needs: [prep]
     if: ${{ fromJson(needs.prep.outputs.prep).rustdoc != null }}
     uses: ./.github/workflows/ci-rustdoc.yaml
     with:
-      artifact_name: ${{ fromJson(needs.prep.outputs.prep).rustdoc.artifact_name }}
-      commit_sha: ${{ fromJson(needs.prep.outputs.prep).rustdoc.commit_sha }}
-      pr_number: ${{ fromJson(needs.prep.outputs.prep).rustdoc.pr_number }}
-      deploy_docs: ${{ fromJson(needs.prep.outputs.prep).rustdoc.deploy_docs }}
+      artifact_name: "${{ fromJson(needs.prep.outputs.prep).rustdoc.artifact_name }}"
+      commit_sha: "${{ fromJson(needs.prep.outputs.prep).rustdoc.commit_sha }}"
+      pr_number: "${{ fromJson(needs.prep.outputs.prep).rustdoc.pr_number }}"
+      deploy_docs: "${{ fromJson(needs.prep.outputs.prep).rustdoc.deploy_docs }}"
     secrets:
-      build_buddy_token: ${{ secrets.BUILD_BUDDY_TOKEN }}
-      cf_account_id: ${{ secrets.CF_DOCS_ACCOUNT_ID }}
-      cf_api_key: ${{ secrets.CF_DOCS_API_KEY }}
+      build_buddy_token: "${{ secrets.BUILD_BUDDY_TOKEN }}"
+      cf_account_id: "${{ secrets.CF_DOCS_ACCOUNT_ID }}"
+      cf_api_key: "${{ secrets.CF_DOCS_API_KEY }}"
 
   brawl-done:
     runs-on: ubuntu-24.04

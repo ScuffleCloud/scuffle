@@ -59,7 +59,7 @@ rust_library(
     version = "12.16.2",
     deps = [
         "@cargo_vendor__debugid-0.8.0//:debugid",
-        "@cargo_vendor__memmap2-0.9.7//:memmap2",
+        "@cargo_vendor__memmap2-0.9.8//:memmap2",
         "@cargo_vendor__stable_deref_trait-1.2.0//:stable_deref_trait",
         "@cargo_vendor__uuid-1.18.0//:uuid",
     ],

@@ -79,7 +79,7 @@ rust_library(
         "@cargo_vendor__console-0.15.11//:console",
         "@cargo_vendor__once_cell-1.21.3//:once_cell",
         "@cargo_vendor__pest-2.8.1//:pest",
-        "@cargo_vendor__regex-1.11.1//:regex",
+        "@cargo_vendor__regex-1.11.2//:regex",
         "@cargo_vendor__serde-1.0.219//:serde",
         "@cargo_vendor__similar-2.7.0//:similar",
     ],

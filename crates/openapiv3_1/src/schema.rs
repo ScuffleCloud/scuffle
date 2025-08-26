@@ -3,6 +3,7 @@
 //!
 //! [schema]: https://spec.openapis.org/oas/latest.html#schema-object
 use indexmap::IndexMap;
+use is_empty::IsEmpty;
 use ordered_float::OrderedFloat;
 use serde_derive::{Deserialize, Serialize};
 
@@ -26,7 +27,7 @@ pub fn empty() -> Schema {
 ///
 /// [components]: https://spec.openapis.org/oas/latest.html#components-object
 #[non_exhaustive]
-#[derive(Serialize, Deserialize, Default, Clone, PartialEq, bon::Builder)]
+#[derive(Serialize, Deserialize, Default, Clone, PartialEq, bon::Builder, IsEmpty)]
 #[cfg_attr(feature = "debug", derive(Debug))]
 #[serde(rename_all = "camelCase")]
 #[builder(on(_, into))]
@@ -36,6 +37,7 @@ pub struct Components {
     /// [schema]: https://spec.openapis.org/oas/latest.html#schema-object
     #[serde(skip_serializing_if = "IndexMap::is_empty", default)]
     #[builder(field)]
+    #[is_empty(if = "IndexMap::is_empty")]
     pub schemas: IndexMap<String, Schema>,
 
     /// Map of reusable response name, to [OpenAPI Response Object][response]s or [OpenAPI
@@ -45,6 +47,7 @@ pub struct Components {
     /// [reference]: https://spec.openapis.org/oas/latest.html#reference-object
     #[serde(skip_serializing_if = "IndexMap::is_empty", default)]
     #[builder(field)]
+    #[is_empty(if = "IndexMap::is_empty")]
     pub responses: IndexMap<String, RefOr<Response>>,
 
     /// Map of reusable [OpenAPI Security Scheme Object][security_scheme]s.
@@ -52,10 +55,12 @@ pub struct Components {
     /// [security_scheme]: https://spec.openapis.org/oas/latest.html#security-scheme-object
     #[serde(skip_serializing_if = "IndexMap::is_empty", default)]
     #[builder(field)]
+    #[is_empty(if = "IndexMap::is_empty")]
     pub security_schemes: IndexMap<String, SecurityScheme>,
 
     /// Optional extensions "x-something".
     #[serde(skip_serializing_if = "Option::is_none", default, flatten)]
+    #[is_empty(if = "is_empty::is_option_really_empty")]
     pub extensions: Option<Extensions>,
 }
 
@@ -195,7 +200,7 @@ impl Default for Schema {
 /// [`Object`] composite object.
 ///
 /// [discriminator]: https://spec.openapis.org/oas/latest.html#discriminator-object
-#[derive(Serialize, Deserialize, Clone, Default, PartialEq, Eq)]
+#[derive(Serialize, Deserialize, Clone, Default, PartialEq, Eq, IsEmpty)]
 #[serde(rename_all = "camelCase")]
 #[cfg_attr(feature = "debug", derive(Debug))]
 pub struct Discriminator {
@@ -207,10 +212,12 @@ pub struct Discriminator {
     /// This field can only be populated manually. There is no macro support and no
     /// validation.
     #[serde(skip_serializing_if = "IndexMap::is_empty", default)]
+    #[is_empty(if = "IndexMap::is_empty")]
     pub mapping: IndexMap<String, String>,
 
     /// Optional extensions "x-something".
     #[serde(skip_serializing_if = "Option::is_none", flatten)]
+    #[is_empty(if = "is_empty::is_option_really_empty")]
     pub extensions: Option<Extensions>,
 }
 
@@ -265,7 +272,7 @@ impl Discriminator {
 ///
 /// [reference]: https://spec.openapis.org/oas/latest.html#reference-object
 #[non_exhaustive]
-#[derive(Serialize, Deserialize, Default, Clone, PartialEq, Eq, bon::Builder)]
+#[derive(Serialize, Deserialize, Default, Clone, PartialEq, Eq, bon::Builder, IsEmpty)]
 #[cfg_attr(feature = "debug", derive(Debug))]
 #[builder(on(_, into))]
 pub struct Ref {
@@ -394,37 +401,23 @@ impl From<Vec<Type>> for Types {
     }
 }
 
-trait IsEmpty {
-    fn is_empty(&self) -> bool;
-}
-
-impl<T> IsEmpty for Option<T> {
-    fn is_empty(&self) -> bool {
-        self.is_none()
+fn is_opt_json_value_empty(t: &Option<serde_json::Value>) -> bool {
+    match t {
+        Some(j) => j.is_null(),
+        _ => true,
     }
 }
 
-impl<T> IsEmpty for Vec<T> {
-    fn is_empty(&self) -> bool {
-        Vec::is_empty(self)
-    }
-}
-
-impl<K, V> IsEmpty for IndexMap<K, V> {
-    fn is_empty(&self) -> bool {
-        IndexMap::is_empty(self)
-    }
-}
-
-impl IsEmpty for String {
-    fn is_empty(&self) -> bool {
-        self.is_empty()
+fn is_opt_bool_empty_with_default_false(t: &Option<bool>) -> bool {
+    match t {
+        None => true,
+        Some(t) => !*t,
     }
 }
 
 /// A JSON Schema Object as per JSON Schema specification.
 /// <https://www.learnjsonschema.com/2020-12/>
-#[derive(serde_derive::Serialize, serde_derive::Deserialize, Clone, PartialEq, Default, bon::Builder)]
+#[derive(Serialize, Deserialize, Clone, PartialEq, Default, bon::Builder, IsEmpty)]
 #[serde(default, deny_unknown_fields)]
 #[builder(on(_, into))]
 #[cfg_attr(feature = "debug", derive(Debug))]
@@ -433,251 +426,281 @@ pub struct Object {
     /// The `properties` keyword restricts object properties to the given subschemas.
     /// Collected annotations report which properties were evaluated.
     /// <https://www.learnjsonschema.com/2020-12/applicator/properties/>
-    #[serde(skip_serializing_if = "IsEmpty::is_empty")]
+    #[serde(skip_serializing_if = "IndexMap::is_empty")]
     #[builder(field)]
+    #[is_empty(if = "IndexMap::is_empty")]
     pub properties: IndexMap<String, Schema>,
     /// The `examples` keyword provides example instances for documentation.
     /// Does not affect validation.
     /// <https://www.learnjsonschema.com/2020-12/meta-data/examples/>
-    #[serde(skip_serializing_if = "IsEmpty::is_empty")]
+    #[serde(skip_serializing_if = "Vec::is_empty")]
     #[builder(field)]
     pub examples: Vec<serde_json::Value>,
     /// The `prefixItems` keyword validates the first items of an array against a sequence of subschemas.
     /// Remaining items fall back to `items`, if present.
     /// <https://www.learnjsonschema.com/2020-12/applicator/prefixitems/>
-    #[serde(rename = "prefixItems", skip_serializing_if = "IsEmpty::is_empty")]
+    #[serde(rename = "prefixItems", skip_serializing_if = "Option::is_none")]
     #[builder(field)]
+    #[is_empty(if = "is_empty::is_option_really_empty")]
     pub prefix_items: Option<Vec<Schema>>,
     /// The `enum` keyword restricts instances to a finite set of values.
     /// <https://www.learnjsonschema.com/2020-12/validation/enum/>
-    #[serde(rename = "enum", skip_serializing_if = "IsEmpty::is_empty")]
+    #[serde(rename = "enum", skip_serializing_if = "Option::is_none")]
     #[builder(field)]
+    #[is_empty(if = "is_empty::is_option_really_empty")]
     pub enum_values: Option<Vec<serde_json::Value>>,
     /// The `required` keyword lists property names that must be present in an object.
     /// <https://www.learnjsonschema.com/2020-12/applicator/required/>
-    #[serde(skip_serializing_if = "IsEmpty::is_empty")]
+    #[serde(skip_serializing_if = "Vec::is_empty")]
     #[builder(field)]
     pub required: Vec<String>,
     /// The `allOf` keyword requires instance validation against all subschemas.
     /// <https://www.learnjsonschema.com/2020-12/validation/allof/>
-    #[serde(rename = "allOf", skip_serializing_if = "IsEmpty::is_empty")]
+    #[serde(rename = "allOf", skip_serializing_if = "Vec::is_empty")]
     #[builder(field)]
     pub all_of: Vec<Schema>,
     /// The `anyOf` keyword requires validation against at least one subschema.
     /// <https://www.learnjsonschema.com/2020-12/validation/anyof/>
-    #[serde(rename = "anyOf", skip_serializing_if = "IsEmpty::is_empty")]
+    #[serde(rename = "anyOf", skip_serializing_if = "Option::is_none")]
     #[builder(field)]
+    #[is_empty(if = "is_empty::is_option_really_empty")]
     pub any_of: Option<Vec<Schema>>,
     /// The `oneOf` keyword requires validation against exactly one subschema.
     /// <https://www.learnjsonschema.com/2020-12/validation/oneof/>
-    #[serde(rename = "oneOf", skip_serializing_if = "IsEmpty::is_empty")]
+    #[serde(rename = "oneOf", skip_serializing_if = "Option::is_none")]
     #[builder(field)]
+    #[is_empty(if = "is_empty::is_option_really_empty")]
     pub one_of: Option<Vec<Schema>>,
     /// The `$id` keyword defines a unique identifier for the schema.
     /// <https://www.learnjsonschema.com/2020-12/meta-data/id/>
-    #[serde(rename = "$id", skip_serializing_if = "IsEmpty::is_empty")]
+    #[serde(rename = "$id", skip_serializing_if = "String::is_empty")]
     #[builder(default)]
     pub id: String,
     /// The `$schema` keyword declares the JSON Schema version.
     /// <https://www.learnjsonschema.com/2020-12/meta-data/schema/>
-    #[serde(rename = "$schema", skip_serializing_if = "IsEmpty::is_empty")]
+    #[serde(rename = "$schema", skip_serializing_if = "Option::is_none")]
+    #[is_empty(if = "is_empty::is_option_really_empty")]
     pub schema: Option<Schema>,
     /// The `$ref` keyword references an external or internal schema by URI.
     /// <https://www.learnjsonschema.com/2020-12/structure/$ref/>
-    #[serde(rename = "$ref", skip_serializing_if = "IsEmpty::is_empty")]
+    #[serde(rename = "$ref", skip_serializing_if = "String::is_empty")]
     #[builder(default, name = "reference")]
     pub reference: String,
     /// The `$comment` keyword provides annotations for documentation.
     /// <https://www.learnjsonschema.com/2020-12/meta-data/comment/>
-    #[serde(rename = "$comment", skip_serializing_if = "IsEmpty::is_empty")]
+    #[serde(rename = "$comment", skip_serializing_if = "String::is_empty")]
     #[builder(default)]
     pub comment: String,
     /// The `title` keyword provides a short descriptive title.
     /// <https://www.learnjsonschema.com/2020-12/meta-data/title/>
-    #[serde(skip_serializing_if = "IsEmpty::is_empty")]
+    #[serde(skip_serializing_if = "String::is_empty")]
     #[builder(default)]
     pub title: String,
     /// The `description` keyword provides a detailed description.
     /// <https://www.learnjsonschema.com/2020-12/meta-data/description/>
-    #[serde(skip_serializing_if = "IsEmpty::is_empty")]
+    #[serde(skip_serializing_if = "String::is_empty")]
     #[builder(default)]
     pub description: String,
     /// The `summary` keyword offers a brief summary for documentation.
     /// <https://www.learnjsonschema.com/2020-12/meta-data/summary/>
-    #[serde(skip_serializing_if = "IsEmpty::is_empty")]
+    #[serde(skip_serializing_if = "String::is_empty")]
     #[builder(default)]
     pub summary: String,
     /// The `default` keyword provides a default instance value.
     /// <https://www.learnjsonschema.com/2020-12/validation/default/>
-    #[serde(skip_serializing_if = "IsEmpty::is_empty")]
+    #[serde(skip_serializing_if = "Option::is_none")]
+    #[is_empty(if = "is_opt_json_value_empty")]
     pub default: Option<serde_json::Value>,
     /// The `readOnly` keyword marks a property as read-only.
     /// <https://www.learnjsonschema.com/2020-12/validation/readOnly/>
-    #[serde(rename = "readOnly", skip_serializing_if = "IsEmpty::is_empty")]
+    #[serde(rename = "readOnly", skip_serializing_if = "Option::is_none")]
+    #[is_empty(if = "is_opt_bool_empty_with_default_false")]
     pub read_only: Option<bool>,
     /// The `deprecated` keyword marks a schema as deprecated.
     /// <https://www.learnjsonschema.com/2020-12/meta-data/deprecated/>
-    #[serde(rename = "deprecated", skip_serializing_if = "IsEmpty::is_empty")]
+    #[serde(rename = "deprecated", skip_serializing_if = "Option::is_none")]
+    #[is_empty(if = "is_opt_bool_empty_with_default_false")]
     pub deprecated: Option<bool>,
     /// The `writeOnly` keyword marks a property as write-only.
     /// <https://www.learnjsonschema.com/2020-12/validation/writeOnly/>
-    #[serde(rename = "writeOnly", skip_serializing_if = "IsEmpty::is_empty")]
+    #[serde(rename = "writeOnly", skip_serializing_if = "Option::is_none")]
+    #[is_empty(if = "is_opt_bool_empty_with_default_false")]
     pub write_only: Option<bool>,
     /// The `multipleOf` keyword ensures the number is a multiple of this value.
     /// <https://www.learnjsonschema.com/2020-12/validation/multipleOf/>
-    #[serde(rename = "multipleOf", skip_serializing_if = "IsEmpty::is_empty")]
+    #[serde(rename = "multipleOf", skip_serializing_if = "Option::is_none")]
     pub multiple_of: Option<OrderedFloat<f64>>,
     /// The `maximum` keyword defines the maximum numeric value.
     /// <https://www.learnjsonschema.com/2020-12/validation/maximum/>
-    #[serde(skip_serializing_if = "IsEmpty::is_empty")]
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub maximum: Option<OrderedFloat<f64>>,
     /// The `exclusiveMaximum` keyword requires the number to be less than this value.
     /// <https://www.learnjsonschema.com/2020-12/validation/exclusiveMaximum/>
-    #[serde(rename = "exclusiveMaximum", skip_serializing_if = "IsEmpty::is_empty")]
+    #[serde(rename = "exclusiveMaximum", skip_serializing_if = "Option::is_none")]
     pub exclusive_maximum: Option<OrderedFloat<f64>>,
     /// The `minimum` keyword defines the minimum numeric value.
     /// <https://www.learnjsonschema.com/2020-12/validation/minimum/>
-    #[serde(skip_serializing_if = "IsEmpty::is_empty")]
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub minimum: Option<OrderedFloat<f64>>,
     /// The `exclusiveMinimum` keyword requires the number to be greater than this value.
     /// <https://www.learnjsonschema.com/2020-12/validation/exclusiveMinimum/>
-    #[serde(rename = "exclusiveMinimum", skip_serializing_if = "IsEmpty::is_empty")]
+    #[serde(rename = "exclusiveMinimum", skip_serializing_if = "Option::is_none")]
     pub exclusive_minimum: Option<OrderedFloat<f64>>,
     /// The `maxLength` keyword restricts string length to at most this value.
     /// <https://www.learnjsonschema.com/2020-12/validation/maxLength/>
-    #[serde(rename = "maxLength", skip_serializing_if = "IsEmpty::is_empty")]
+    #[serde(rename = "maxLength", skip_serializing_if = "Option::is_none")]
     pub max_length: Option<u64>,
     /// The `minLength` keyword restricts string length to at least this value.
     /// <https://www.learnjsonschema.com/2020-12/validation/minLength/>
-    #[serde(rename = "minLength", skip_serializing_if = "IsEmpty::is_empty")]
+    #[serde(rename = "minLength", skip_serializing_if = "Option::is_none")]
     pub min_length: Option<u64>,
     /// The `pattern` keyword restricts strings to those matching this regular expression.
     /// <https://www.learnjsonschema.com/2020-12/validation/pattern/>
-    #[serde(skip_serializing_if = "IsEmpty::is_empty")]
+    #[serde(skip_serializing_if = "Option::is_none")]
+    #[is_empty(if = "is_empty::is_option_really_empty")]
     pub pattern: Option<String>,
     /// The `additionalItems` keyword defines the schema for array elements beyond those covered by a tuple definition.
     /// <https://www.learnjsonschema.com/2020-12/applicator/additionalItems/>
-    #[serde(rename = "additionalItems", skip_serializing_if = "IsEmpty::is_empty")]
+    #[serde(rename = "additionalItems", skip_serializing_if = "Option::is_none")]
+    #[is_empty(if = "is_empty::is_option_really_empty")]
     pub additional_items: Option<Schema>,
     /// The `items` keyword restricts all elements in an array to this schema, or provides a tuple of schemas for positional validation.
     /// <https://www.learnjsonschema.com/2020-12/applicator/items/>
-    #[serde(skip_serializing_if = "IsEmpty::is_empty")]
+    #[serde(skip_serializing_if = "Option::is_none")]
+    #[is_empty(if = "is_empty::is_option_really_empty")]
     pub items: Option<Schema>,
     /// The `maxItems` keyword restricts the number of elements in an array to at most this value.
     /// <https://www.learnjsonschema.com/2020-12/validation/maxItems/>
-    #[serde(rename = "maxItems", skip_serializing_if = "IsEmpty::is_empty")]
+    #[serde(rename = "maxItems", skip_serializing_if = "Option::is_none")]
     pub max_items: Option<u64>,
     /// The `minItems` keyword restricts the number of elements in an array to at least this value.
     /// <https://www.learnjsonschema.com/2020-12/validation/minItems/>
-    #[serde(rename = "minItems", skip_serializing_if = "IsEmpty::is_empty")]
+    #[serde(rename = "minItems", skip_serializing_if = "Option::is_none")]
     pub min_items: Option<u64>,
     /// The `uniqueItems` keyword ensures that all elements in an array are unique.
     /// <https://www.learnjsonschema.com/2020-12/validation/uniqueItems/>
-    #[serde(rename = "uniqueItems", skip_serializing_if = "IsEmpty::is_empty")]
+    #[serde(rename = "uniqueItems", skip_serializing_if = "Option::is_none")]
+    #[is_empty(if = "is_opt_bool_empty_with_default_false")]
     pub unique_items: Option<bool>,
     /// The `contains` keyword ensures that at least one element in the array matches the specified schema.
     /// <https://www.learnjsonschema.com/2020-12/applicator/contains/>
-    #[serde(skip_serializing_if = "IsEmpty::is_empty")]
+    #[serde(skip_serializing_if = "Option::is_none")]
+    #[is_empty(if = "is_empty::is_option_really_empty")]
     pub contains: Option<Schema>,
     /// The `maxProperties` keyword restricts the number of properties in an object to at most this value.
     /// <https://www.learnjsonschema.com/2020-12/validation/maxProperties/>
-    #[serde(rename = "maxProperties", skip_serializing_if = "IsEmpty::is_empty")]
+    #[serde(rename = "maxProperties", skip_serializing_if = "Option::is_none")]
     pub max_properties: Option<u64>,
     /// The `minProperties` keyword restricts the number of properties in an object to at least this value.
     /// <https://www.learnjsonschema.com/2020-12/validation/minProperties/>
-    #[serde(rename = "minProperties", skip_serializing_if = "IsEmpty::is_empty")]
+    #[serde(rename = "minProperties", skip_serializing_if = "Option::is_none")]
     pub min_properties: Option<u64>,
     /// The `maxContains` keyword limits how many items matching `contains` may appear in an array.
     /// <https://www.learnjsonschema.com/2020-12/applicator/maxContains/>
-    #[serde(rename = "maxContains", skip_serializing_if = "IsEmpty::is_empty")]
+    #[serde(rename = "maxContains", skip_serializing_if = "Option::is_none")]
     pub max_contains: Option<u64>,
     /// The `minContains` keyword requires at least this many items matching `contains` in an array.
     /// <https://www.learnjsonschema.com/2020-12/applicator/minContains/>
-    #[serde(rename = "minContains", skip_serializing_if = "IsEmpty::is_empty")]
+    #[serde(rename = "minContains", skip_serializing_if = "Option::is_none")]
     pub min_contains: Option<u64>,
     /// The `additionalProperties` keyword defines the schema for object properties not explicitly listed.
     /// <https://www.learnjsonschema.com/2020-12/applicator/additionalProperties/>
-    #[serde(rename = "additionalProperties", skip_serializing_if = "IsEmpty::is_empty")]
+    #[serde(rename = "additionalProperties", skip_serializing_if = "Option::is_none")]
+    #[is_empty(if = "is_empty::is_option_really_empty")]
     pub additional_properties: Option<Schema>,
     /// The `definitions` section holds reusable schema definitions for reference.
     /// <https://www.learnjsonschema.com/2020-12/meta-data/definitions/>
-    #[serde(skip_serializing_if = "IsEmpty::is_empty")]
+    #[serde(skip_serializing_if = "IndexMap::is_empty")]
     #[builder(default)]
+    #[is_empty(if = "IndexMap::is_empty")]
     pub definitions: IndexMap<String, Schema>,
     /// The `patternProperties` keyword maps regex patterns to schemas for matching property names.
     /// <https://www.learnjsonschema.com/2020-12/applicator/patternProperties/>
-    #[serde(rename = "patternProperties", skip_serializing_if = "IsEmpty::is_empty")]
+    #[serde(rename = "patternProperties", skip_serializing_if = "IndexMap::is_empty")]
     #[builder(default)]
+    #[is_empty(if = "IndexMap::is_empty")]
     pub pattern_properties: IndexMap<String, Schema>,
     /// The `dependencies` keyword specifies schema or property dependencies for an object.
     /// <https://www.learnjsonschema.com/2020-12/applicator/dependencies/>
-    #[serde(skip_serializing_if = "IsEmpty::is_empty")]
+    #[serde(skip_serializing_if = "IndexMap::is_empty")]
     #[builder(default)]
+    #[is_empty(if = "IndexMap::is_empty")]
     pub dependencies: IndexMap<String, Schema>,
     /// The `propertyNames` keyword restricts all property names in an object to match this schema.
     /// <https://www.learnjsonschema.com/2020-12/applicator/propertyNames/>
-    #[serde(rename = "propertyNames", skip_serializing_if = "IsEmpty::is_empty")]
+    #[serde(rename = "propertyNames", skip_serializing_if = "Option::is_none")]
+    #[is_empty(if = "is_empty::is_option_really_empty")]
     pub property_names: Option<Schema>,
     /// The `const` keyword requires the instance to be exactly this value.
     /// <https://www.learnjsonschema.com/2020-12/validation/const/>
-    #[serde(rename = "const", skip_serializing_if = "IsEmpty::is_empty")]
+    #[serde(rename = "const", skip_serializing_if = "Option::is_none")]
     #[builder(name = "const_value")]
+    #[is_empty(if = "is_opt_json_value_empty")]
     pub const_value: Option<serde_json::Value>,
     /// The `type` keyword restricts the instance to the specified JSON types.
     /// <https://www.learnjsonschema.com/2020-12/validation/type/>
-    #[serde(rename = "type", skip_serializing_if = "IsEmpty::is_empty")]
+    #[serde(rename = "type", skip_serializing_if = "Option::is_none")]
     #[builder(name = "schema_type")]
     pub schema_type: Option<Types>,
     /// The `format` keyword provides semantic validation hints, such as "email" or "date-time".
     /// <https://www.learnjsonschema.com/2020-12/meta-data/format/>
-    #[serde(skip_serializing_if = "IsEmpty::is_empty")]
+    #[serde(skip_serializing_if = "String::is_empty")]
     #[builder(default)]
     pub format: String,
     /// The `contentMediaType` annotation describes the media type for string content.
     /// <https://www.learnjsonschema.com/2020-12/annotations/contentMediaType/>
-    #[serde(rename = "contentMediaType", skip_serializing_if = "IsEmpty::is_empty")]
+    #[serde(rename = "contentMediaType", skip_serializing_if = "String::is_empty")]
     #[builder(default)]
     pub content_media_type: String,
     /// The `contentEncoding` annotation describes the encoding (e.g., "base64") for string content.
     /// <https://www.learnjsonschema.com/2020-12/annotations/contentEncoding/>
-    #[serde(rename = "contentEncoding", skip_serializing_if = "IsEmpty::is_empty")]
+    #[serde(rename = "contentEncoding", skip_serializing_if = "String::is_empty")]
     #[builder(default)]
     pub content_encoding: String,
     /// The `contentSchema` annotation defines a schema for binary media represented as a string.
     /// <https://www.learnjsonschema.com/2020-12/applicator/contentSchema/>
-    #[serde(rename = "contentSchema", skip_serializing_if = "IsEmpty::is_empty")]
+    #[serde(rename = "contentSchema", skip_serializing_if = "Option::is_none")]
+    #[is_empty(if = "is_empty::is_option_really_empty")]
     pub content_schema: Option<Schema>,
     /// The `if` keyword applies conditional schema validation when this subschema is valid.
     /// <https://www.learnjsonschema.com/2020-12/applicator/if/>
-    #[serde(rename = "if", skip_serializing_if = "IsEmpty::is_empty")]
+    #[serde(rename = "if", skip_serializing_if = "Option::is_none")]
+    #[is_empty(if = "is_empty::is_option_really_empty")]
     pub if_cond: Option<Schema>,
     /// The `then` keyword applies this subschema when the `if` condition is met.
     /// <https://www.learnjsonschema.com/2020-12/applicator/then/>
-    #[serde(skip_serializing_if = "IsEmpty::is_empty")]
+    #[serde(skip_serializing_if = "Option::is_none")]
     #[builder(name = "then_cond")]
+    #[is_empty(if = "is_empty::is_option_really_empty")]
     pub then: Option<Schema>,
     /// The `else` keyword applies this subschema when the `if` condition is not met.
     /// <https://www.learnjsonschema.com/2020-12/applicator/else/>
-    #[serde(rename = "else", skip_serializing_if = "IsEmpty::is_empty")]
+    #[serde(rename = "else", skip_serializing_if = "Option::is_none")]
+    #[is_empty(if = "is_empty::is_option_really_empty")]
     pub else_cond: Option<Schema>,
     /// The `not` keyword ensures the instance does *not* match this subschema.
     /// <https://www.learnjsonschema.com/2020-12/applicator/not/>
-    #[serde(skip_serializing_if = "IsEmpty::is_empty")]
+    #[serde(skip_serializing_if = "Option::is_none")]
+    #[is_empty(if = "is_empty::is_option_really_empty")]
     pub not: Option<Schema>,
     /// The `unevaluatedItems` keyword applies schemas to items not covered by `items` or `contains`.
     /// <https://www.learnjsonschema.com/2020-12/applicator/unevaluatedItems/>
-    #[serde(rename = "unevaluatedItems", skip_serializing_if = "IsEmpty::is_empty")]
+    #[serde(rename = "unevaluatedItems", skip_serializing_if = "Option::is_none")]
+    #[is_empty(if = "is_empty::is_option_really_empty")]
     pub unevaluated_items: Option<Schema>,
     /// The `unevaluatedProperties` keyword applies schemas to properties not covered by `properties` or pattern-based keywords.
     /// <https://www.learnjsonschema.com/2020-12/applicator/unevaluatedProperties/>
-    #[serde(rename = "unevaluatedProperties", skip_serializing_if = "IsEmpty::is_empty")]
+    #[serde(rename = "unevaluatedProperties", skip_serializing_if = "Option::is_none")]
+    #[is_empty(if = "is_empty::is_option_really_empty")]
     pub unevaluated_properties: Option<Schema>,
     /// The `discriminator` keyword provides object property-based type differentiation (OpenAPI).
     /// <https://spec.openapis.org/oas/v3.1.0#discriminator-object>
-    #[serde(skip_serializing_if = "IsEmpty::is_empty")]
+    #[serde(skip_serializing_if = "Option::is_none")]
+    #[is_empty(if = "is_empty::is_option_really_empty")]
     pub discriminator: Option<Discriminator>,
     /// All additional, unrecognized fields are stored here as extensions.
     #[serde(flatten)]
+    #[is_empty(if = "is_empty::is_option_really_empty")]
     pub extensions: Option<Extensions>,
 }
 
@@ -872,11 +895,11 @@ macro_rules! merge_item {
     ([$self:ident, $other:ident] => { $($item:ident => $merge_behaviour:expr),*$(,)? }) => {$({
         let self_item = &mut $self.$item;
         let other_item = &mut $other.$item;
-        if IsEmpty::is_empty(self_item) {
+        if self_item.is_empty() {
             *self_item = std::mem::take(other_item);
         } else if self_item == other_item {
             std::mem::take(other_item);
-        } else if !IsEmpty::is_empty(other_item) {
+        } else if !other_item.is_empty() {
             $merge_behaviour(self_item, other_item);
         }
     })*};
@@ -953,23 +976,6 @@ impl Object {
     pub fn into_optimized(mut self) -> Self {
         self.optimize();
         self
-    }
-
-    /// Returns true if the object is in the default state.
-    pub fn is_empty(&self) -> bool {
-        static DEFAULT: std::sync::LazyLock<Object> = std::sync::LazyLock::new(Object::default);
-        static WITH_EMPTY_EXT: std::sync::LazyLock<Object> = std::sync::LazyLock::new(|| {
-            // Field "extensions" can be set to Some(Extensions::default())
-            // by serde_json - field is attributed with serde::flatten.
-            // Empty map like this should not make is_empty failing,
-            // so we need other comparison.
-            Object {
-                extensions: Some(Extensions::default()),
-                ..Default::default()
-            }
-        });
-
-        self == &*DEFAULT || self == &*WITH_EMPTY_EXT
     }
 
     fn take_all_ofs(&mut self, collection: &mut Vec<Schema>) {
@@ -1302,6 +1308,15 @@ impl From<bool> for Schema {
     }
 }
 
+impl IsEmpty for Schema {
+    fn is_empty(&self) -> bool {
+        match self {
+            Self::Bool(result) => *result,
+            Self::Object(obj) => obj.is_empty(),
+        }
+    }
+}
+
 impl Schema {
     /// Converts the schema into an array of this type.
     pub fn to_array(self) -> Self {
@@ -1334,14 +1349,6 @@ impl Schema {
         match self {
             Self::Bool(_) => {}
             Self::Object(obj) => obj.take_all_ofs(collection),
-        }
-    }
-
-    /// Returns true if the object is in its default state.
-    pub fn is_empty(&self) -> bool {
-        match self {
-            Self::Bool(result) => *result,
-            Self::Object(obj) => obj.is_empty(),
         }
     }
 

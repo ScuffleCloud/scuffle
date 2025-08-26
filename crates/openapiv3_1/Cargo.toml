@@ -25,6 +25,7 @@ yaml = ["dep:serde_norway"]
 bon = "3.6.3"
 document-features = { optional = true, version = "0.2" }
 indexmap = { features = ["serde"], version = "2" }
+is_empty = { features = ["std_impls"], version = "0.3.0" }
 ordered-float = { features = ["serde"], version = "5" }
 scuffle-changelog = { optional = true, path = "../changelog", version = "0.1.0" }
 serde = "1"

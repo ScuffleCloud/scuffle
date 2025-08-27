@@ -65,7 +65,7 @@ rust_library(
     }),
     version = "0.1.21",
     deps = [
-        "@cargo_vendor__cfg-if-1.0.1//:cfg_if",
+        "@cargo_vendor__cfg-if-1.0.3//:cfg_if",
         "@cargo_vendor__libc-0.2.175//:libc",
         "@cargo_vendor__psm-0.1.26//:psm",
         "@cargo_vendor__stacker-0.1.21//:build_script_build",
@@ -131,7 +131,7 @@ cargo_build_script(
     version = "0.1.21",
     visibility = ["//visibility:private"],
     deps = [
-        "@cargo_vendor__cc-1.2.33//:cc",
+        "@cargo_vendor__cc-1.2.34//:cc",
     ],
 )
 

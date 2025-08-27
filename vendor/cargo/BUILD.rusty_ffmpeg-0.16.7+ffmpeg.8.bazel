@@ -143,7 +143,7 @@ cargo_build_script(
     visibility = ["//visibility:private"],
     deps = [
         "@cargo_vendor__bindgen-0.71.1//:bindgen",
-        "@cargo_vendor__camino-1.1.11//:camino",
+        "@cargo_vendor__camino-1.1.12//:camino",
         "@cargo_vendor__once_cell-1.21.3//:once_cell",
         "@cargo_vendor__vcpkg-0.2.15//:vcpkg",
     ] + select({

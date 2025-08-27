@@ -75,7 +75,7 @@ rust_library(
     }),
     version = "0.17.14",
     deps = [
-        "@cargo_vendor__cfg-if-1.0.1//:cfg_if",
+        "@cargo_vendor__cfg-if-1.0.3//:cfg_if",
         "@cargo_vendor__getrandom-0.2.16//:getrandom",
         "@cargo_vendor__ring-0.17.14//:build_script_build",
         "@cargo_vendor__untrusted-0.9.0//:untrusted",
@@ -155,7 +155,7 @@ cargo_build_script(
     version = "0.17.14",
     visibility = ["//visibility:private"],
     deps = [
-        "@cargo_vendor__cc-1.2.33//:cc",
+        "@cargo_vendor__cc-1.2.34//:cc",
     ],
 )
 

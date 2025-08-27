@@ -71,7 +71,7 @@ rust_library(
     version = "0.6.1",
     deps = [
         "@cargo_vendor__bb8-0.9.0//:bb8",
-        "@cargo_vendor__diesel-2.2.10//:diesel",
+        "@cargo_vendor__diesel-2.2.12//:diesel",
         "@cargo_vendor__futures-core-0.3.31//:futures_core",
         "@cargo_vendor__futures-util-0.3.31//:futures_util",
         "@cargo_vendor__scoped-futures-0.1.4//:scoped_futures",

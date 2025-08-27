@@ -92,7 +92,7 @@ rust_library(
         "@cargo_vendor__tokio-1.47.1//:tokio",
         "@cargo_vendor__tokio-stream-0.1.17//:tokio_stream",
         "@cargo_vendor__tokio-util-0.7.16//:tokio_util",
-        "@cargo_vendor__url-2.5.4//:url",
+        "@cargo_vendor__url-2.5.7//:url",
         "@cargo_vendor__urlencoding-2.1.3//:urlencoding",
     ],
 )

@@ -64,10 +64,10 @@ rust_library(
         "@cargo_vendor__cedar-policy-core-4.5.1//:cedar_policy_core",
         "@cargo_vendor__itertools-0.14.0//:itertools",
         "@cargo_vendor__lazy_static-1.5.0//:lazy_static",
-        "@cargo_vendor__logos-0.15.0//:logos",
+        "@cargo_vendor__logos-0.15.1//:logos",
         "@cargo_vendor__miette-7.6.0//:miette",
         "@cargo_vendor__pretty-0.12.4//:pretty",
-        "@cargo_vendor__regex-1.11.1//:regex",
+        "@cargo_vendor__regex-1.11.2//:regex",
         "@cargo_vendor__smol_str-0.3.2//:smol_str",
     ],
 )

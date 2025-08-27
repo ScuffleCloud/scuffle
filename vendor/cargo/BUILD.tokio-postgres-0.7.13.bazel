@@ -75,7 +75,7 @@ rust_library(
         "@cargo_vendor__futures-util-0.3.31//:futures_util",
         "@cargo_vendor__log-0.4.27//:log",
         "@cargo_vendor__parking_lot-0.12.4//:parking_lot",
-        "@cargo_vendor__percent-encoding-2.3.1//:percent_encoding",
+        "@cargo_vendor__percent-encoding-2.3.2//:percent_encoding",
         "@cargo_vendor__phf-0.11.3//:phf",
         "@cargo_vendor__pin-project-lite-0.2.16//:pin_project_lite",
         "@cargo_vendor__postgres-protocol-0.6.8//:postgres_protocol",
@@ -83,7 +83,7 @@ rust_library(
         "@cargo_vendor__rand-0.9.2//:rand",
         "@cargo_vendor__tokio-1.47.1//:tokio",
         "@cargo_vendor__tokio-util-0.7.16//:tokio_util",
-        "@cargo_vendor__whoami-1.6.0//:whoami",
+        "@cargo_vendor__whoami-1.6.1//:whoami",
     ] + select({
         "@rules_rust//rust/platform:aarch64-apple-darwin": [
             "@cargo_vendor__socket2-0.5.10//:socket2",  # cfg(not(target_arch = "wasm32"))

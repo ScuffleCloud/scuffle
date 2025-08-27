@@ -69,7 +69,7 @@ rust_library(
         "@cargo_vendor__base64urlsafedata-0.5.2//:base64urlsafedata",
         "@cargo_vendor__serde-1.0.219//:serde",
         "@cargo_vendor__tracing-0.1.41//:tracing",
-        "@cargo_vendor__url-2.5.4//:url",
+        "@cargo_vendor__url-2.5.7//:url",
         "@cargo_vendor__uuid-1.18.0//:uuid",
         "@cargo_vendor__webauthn-rs-core-0.5.2//:webauthn_rs_core",
     ],

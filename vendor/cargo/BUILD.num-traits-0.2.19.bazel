@@ -40,6 +40,8 @@ rust_library(
     ),
     crate_features = [
         "default",
+        "i128",
+        "libm",
         "std",
     ],
     crate_root = "src/lib.rs",
@@ -69,6 +71,7 @@ rust_library(
     }),
     version = "0.2.19",
     deps = [
+        "@cargo_vendor__libm-0.2.15//:libm",
         "@cargo_vendor__num-traits-0.2.19//:build_script_build",
     ],
 )
@@ -94,6 +97,8 @@ cargo_build_script(
     ),
     crate_features = [
         "default",
+        "i128",
+        "libm",
         "std",
     ],
     crate_name = "build_script_build",

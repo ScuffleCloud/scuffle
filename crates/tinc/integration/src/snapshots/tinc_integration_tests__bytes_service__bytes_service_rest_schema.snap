@@ -11,6 +11,9 @@ expression: svc.openapi_schema()
   "paths": {
     "/upload": {
       "post": {
+        "tags": [
+          "BytesService"
+        ],
         "responses": {
           "200": {
             "content": {
@@ -37,5 +40,11 @@ expression: svc.openapi_schema()
       }
     }
   },
-  "components": {}
+  "components": {},
+  "tags": [
+    {
+      "name": "BytesService",
+      "description": ""
+    }
+  ]
 }

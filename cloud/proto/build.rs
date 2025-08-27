@@ -7,7 +7,7 @@ fn main() {
     } else {
         let mut files = Vec::new();
         for file in glob::glob("pb/**/*.proto").expect("glob failed") {
-            files.push(file.expect("bad file"))
+            files.push(file.expect("bad file"));
         }
 
         config.compile_protos(&files, &["pb"])

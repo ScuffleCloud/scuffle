@@ -42,6 +42,7 @@ rust_library(
         "form",
         "http1",
         "json",
+        "macros",
         "matched-path",
         "original-uri",
         "query",
@@ -53,6 +54,7 @@ rust_library(
     crate_root = "src/lib.rs",
     edition = "2021",
     proc_macro_deps = [
+        "@cargo_vendor__axum-macros-0.5.0//:axum_macros",
         "@cargo_vendor__rustversion-1.0.22//:rustversion",
     ],
     rustc_env_files = [

@@ -41,7 +41,27 @@ rust_library(
     crate_features = [
         "default",
         "proc-macro",
-    ],
+    ] + select({
+        "@rules_rust//rust/platform:aarch64-apple-darwin": [
+            "span-locations",
+        ],
+        "@rules_rust//rust/platform:aarch64-pc-windows-msvc": [
+            "span-locations",
+        ],
+        "@rules_rust//rust/platform:aarch64-unknown-linux-gnu": [
+            "span-locations",
+        ],
+        "@rules_rust//rust/platform:x86_64-apple-darwin": [
+            "span-locations",
+        ],
+        "@rules_rust//rust/platform:x86_64-pc-windows-msvc": [
+            "span-locations",
+        ],
+        "@rules_rust//rust/platform:x86_64-unknown-linux-gnu": [
+            "span-locations",
+        ],
+        "//conditions:default": [],
+    }),
     crate_root = "src/lib.rs",
     edition = "2021",
     rustc_env_files = [
@@ -96,7 +116,27 @@ cargo_build_script(
     crate_features = [
         "default",
         "proc-macro",
-    ],
+    ] + select({
+        "@rules_rust//rust/platform:aarch64-apple-darwin": [
+            "span-locations",
+        ],
+        "@rules_rust//rust/platform:aarch64-pc-windows-msvc": [
+            "span-locations",
+        ],
+        "@rules_rust//rust/platform:aarch64-unknown-linux-gnu": [
+            "span-locations",
+        ],
+        "@rules_rust//rust/platform:x86_64-apple-darwin": [
+            "span-locations",
+        ],
+        "@rules_rust//rust/platform:x86_64-pc-windows-msvc": [
+            "span-locations",
+        ],
+        "@rules_rust//rust/platform:x86_64-unknown-linux-gnu": [
+            "span-locations",
+        ],
+        "//conditions:default": [],
+    }),
     crate_name = "build_script_build",
     crate_root = "build.rs",
     data = glob(

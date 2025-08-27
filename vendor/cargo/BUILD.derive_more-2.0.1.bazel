@@ -38,6 +38,7 @@ rust_library(
         "add",
         "add_assign",
         "default",
+        "display",
         "is_variant",
         "std",
     ],

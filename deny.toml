@@ -11,6 +11,8 @@ allow = [
   "CC0-1.0",
   "MPL-2.0",
   "BSL-1.0",
+  "CDLA-Permissive-2.0",
+  "OpenSSL",
 ]
 
 private.ignore = true
@@ -28,6 +30,9 @@ ignore = [
   # todo: remove once aws-lc-rs is updated
   # https://github.com/aws/aws-lc-rs/issues/722
   "RUSTSEC-2024-0436",
+  # This vulnerability does not affect us since we are not dealing with any private RSA keys at any time.
+  # Therefore we can't leak any private information through a timing attack.
+  "RUSTSEC-2023-0071",
 ]
 
 [bans]
@@ -35,6 +40,4 @@ multiple-versions = "allow"
 deny = [
   # AI Fork of serde_yaml
   "serde_yml",
-  # AI Fork of paste
-  "pastey",
 ]

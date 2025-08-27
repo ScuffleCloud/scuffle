@@ -1,0 +1,17 @@
+syntax = "proto3";
+
+package scufflecloud.core.v1;
+
+import "google/protobuf/timestamp.proto";
+import "scufflecloud/core/v1/constraints.proto";
+
+message UserSession {
+  string user_id = 1 [(string_constraint).id = true];
+  bytes device_fingerprint = 2;
+  google.protobuf.Timestamp last_used_at = 3;
+  string last_ip = 4;
+  optional string token_id = 5 [(string_constraint).id = true];
+  optional google.protobuf.Timestamp token_expires_at = 6;
+  google.protobuf.Timestamp expires_at = 7;
+  bool mfa_pending = 8;
+}

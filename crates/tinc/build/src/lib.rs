@@ -408,6 +408,7 @@ impl Config {
                 let children = self.children.iter().map(|(part, child)| {
                     let ident = syn::Ident::new(&to_snake(part), Span::call_site());
                     quote! {
+                        #[allow(clippy::all)]
                         pub mod #ident {
                             #child
                         }

@@ -33,6 +33,9 @@ clean *args="--async":
     bazel --output_base="${output_base}_grind" clean {{ args }}
     bazel --output_base="${output_base}_rust_analyzer" clean {{ args }}
 
+run core *args:
+    bazel run //cloud/core:bin -- {{ args }}
+
 alias coverage := test
 
 sync-rdme:

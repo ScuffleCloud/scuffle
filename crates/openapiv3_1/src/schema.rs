@@ -1447,32 +1447,75 @@ mod tests {
             credential.get("history").is_some(),
             "could not find path: components.schemas.Credential.properties.history"
         );
+
+        let id = credential.get("id").unwrap().as_object().unwrap();
         assert_eq!(
-            credential.get("id").unwrap_or(&serde_json::value::Value::Null).to_string(),
-            r#"{"default":1,"description":"Id of credential","format":"int32","type":"integer"}"#,
-            "components.schemas.Credential.properties.id did not match"
+            id.get("default").unwrap().as_number().unwrap().as_i64().unwrap(),
+            1,
+            "components.schemas.Credential.properties.id.default did not match"
         );
         assert_eq!(
-            credential.get("name").unwrap_or(&serde_json::value::Value::Null).to_string(),
-            r#"{"description":"Name of credential","type":"string"}"#,
-            "components.schemas.Credential.properties.name did not match"
+            id.get("description").unwrap().as_str().unwrap(),
+            "Id of credential",
+            "components.schemas.Credential.properties.id.description did not match"
         );
         assert_eq!(
-            credential
-                .get("status")
-                .unwrap_or(&serde_json::value::Value::Null)
-                .to_string(),
-            r#"{"default":"Active","description":"Credential status","enum":["Active","NotActive","Locked","Expired"],"type":"string"}"#,
-            "components.schemas.Credential.properties.status did not match"
+            id.get("format").unwrap().as_str().unwrap(),
+            "int32",
+            "components.schemas.Credential.properties.id.format did not match"
         );
         assert_eq!(
-            credential
-                .get("history")
-                .unwrap_or(&serde_json::value::Value::Null)
-                .to_string(),
-            r###"{"items":{"$ref":"#/components/schemas/UpdateHistory"},"type":"array"}"###,
-            "components.schemas.Credential.properties.history did not match"
+            id.get("type").unwrap().as_str().unwrap(),
+            "integer",
+            "components.schemas.Credential.properties.id.type did not match"
         );
+
+        let name = credential.get("name").unwrap().as_object().unwrap();
+        assert_eq!(
+            name.get("description").unwrap().as_str().unwrap(),
+            "Name of credential",
+            "components.schemas.Credential.properties.name.description did not match"
+        );
+        assert_eq!(
+            name.get("type").unwrap().as_str().unwrap(),
+            "string",
+            "components.schemas.Credential.properties.name.type did not match"
+        );
+
+        let status = credential.get("status").unwrap().as_object().unwrap();
+        assert_eq!(
+            status.get("default").unwrap().as_str().unwrap(),
+            "Active",
+            "components.schemas.Credential.properties.status.default did not match"
+        );
+        assert_eq!(
+            status.get("description").unwrap().as_str().unwrap(),
+            "Credential status",
+            "components.schemas.Credential.properties.status.description did not match"
+        );
+        assert_eq!(
+            status.get("enum").unwrap().to_string(),
+            r#"["Active","NotActive","Locked","Expired"]"#,
+            "components.schemas.Credential.properties.status.enum did not match"
+        );
+        assert_eq!(
+            status.get("type").unwrap().as_str().unwrap(),
+            "string",
+            "components.schemas.Credential.properties.status.type did not match"
+        );
+
+        let history = credential.get("history").unwrap().as_object().unwrap();
+        assert_eq!(
+            history.get("items").unwrap().to_string(),
+            r###"{"$ref":"#/components/schemas/UpdateHistory"}"###,
+            "components.schemas.Credential.properties.history.items did not match"
+        );
+        assert_eq!(
+            history.get("type").unwrap().as_str().unwrap(),
+            "array",
+            "components.schemas.Credential.properties.history.type did not match"
+        );
+
         assert_eq!(
             person.to_string(),
             r###"{"$ref":"#/components/PersonModel"}"###,

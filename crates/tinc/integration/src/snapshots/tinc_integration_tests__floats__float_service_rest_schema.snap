@@ -11,6 +11,9 @@ expression: svc.openapi_schema()
   "paths": {
     "/float": {
       "post": {
+        "tags": [
+          "FloatService"
+        ],
         "responses": {
           "200": {
             "content": {
@@ -363,5 +366,11 @@ expression: svc.openapi_schema()
         "unevaluatedProperties": false
       }
     }
-  }
+  },
+  "tags": [
+    {
+      "name": "FloatService",
+      "description": ""
+    }
+  ]
 }

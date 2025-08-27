@@ -37,6 +37,7 @@ rust_library(
     crate_features = [
         "default",
         "derive",
+        "serde",
     ],
     crate_root = "src/lib.rs",
     edition = "2018",
@@ -69,6 +70,7 @@ rust_library(
     version = "7.6.0",
     deps = [
         "@cargo_vendor__cfg-if-1.0.3//:cfg_if",
+        "@cargo_vendor__serde-1.0.219//:serde",
         "@cargo_vendor__unicode-width-0.1.14//:unicode_width",
     ],
 )

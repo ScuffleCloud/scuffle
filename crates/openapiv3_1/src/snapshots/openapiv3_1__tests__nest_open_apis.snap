@@ -1,18 +1,19 @@
 ---
 source: crates/openapiv3_1/src/lib.rs
 expression: paths
+snapshot_kind: text
 ---
 {
   "/api/v1/status": {
     "get": {
-      "description": "Get status",
-      "responses": {}
+      "responses": {},
+      "description": "Get status"
     }
   },
   "/api/v1/user/": {
     "get": {
-      "description": "Get user details",
-      "responses": {}
+      "responses": {},
+      "description": "Get user details"
     }
   },
   "/api/v1/user/foo": {

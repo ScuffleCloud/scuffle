@@ -30,6 +30,7 @@ linkme = "0.3"
 num-traits = "0.2.19"
 regex = "1"
 thiserror = "2"
+ulid = "1"
 url = "2"
 uuid = "1"
 

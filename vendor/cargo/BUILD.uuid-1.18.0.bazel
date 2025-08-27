@@ -37,6 +37,7 @@ rust_library(
     crate_features = [
         "default",
         "rng",
+        "serde",
         "std",
         "v4",
     ],
@@ -66,7 +67,9 @@ rust_library(
         "//conditions:default": ["@platforms//:incompatible"],
     }),
     version = "1.18.0",
-    deps = select({
+    deps = [
+        "@cargo_vendor__serde-1.0.219//:serde",
+    ] + select({
         "@rules_rust//rust/platform:aarch64-apple-darwin": [
             "@cargo_vendor__getrandom-0.3.3//:getrandom",  # cfg(not(all(target_arch = "wasm32", any(target_os = "unknown", target_os = "none"))))
         ],

@@ -38,22 +38,6 @@ cc_args(
 )
 
 cc_args(
-    name = "warnings",
-    actions = [
-        "@rules_cc//cc/toolchains/actions:compile_actions",
-    ],
-    args = [
-        "-Werror",
-        "-Wall",
-        "-Wextra",
-        "-Wpedantic",
-        "-Wall",
-        "-Wthread-safety",
-        "-Wself-assign",
-    ],
-)
-
-cc_args(
     name = "color",
     actions = [
         "@rules_cc//cc/toolchains/actions:compile_actions",
@@ -222,7 +206,6 @@ cc_toolchain(
         ":use_lld",
         ":no_absolute_paths_for_builtins",
         ":target",
-        ":warnings",
         ":color",
         ":security",
         ":reproducibility",

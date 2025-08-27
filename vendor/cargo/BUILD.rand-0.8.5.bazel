@@ -35,8 +35,34 @@ rust_library(
         ],
     ),
     crate_features = [
-        "small_rng",
-    ],
+        "alloc",
+        "default",
+        "getrandom",
+        "libc",
+        "rand_chacha",
+        "std",
+        "std_rng",
+    ] + select({
+        "@rules_rust//rust/platform:aarch64-apple-darwin": [
+            "small_rng",
+        ],
+        "@rules_rust//rust/platform:aarch64-pc-windows-msvc": [
+            "small_rng",
+        ],
+        "@rules_rust//rust/platform:aarch64-unknown-linux-gnu": [
+            "small_rng",
+        ],
+        "@rules_rust//rust/platform:x86_64-apple-darwin": [
+            "small_rng",
+        ],
+        "@rules_rust//rust/platform:x86_64-pc-windows-msvc": [
+            "small_rng",
+        ],
+        "@rules_rust//rust/platform:x86_64-unknown-linux-gnu": [
+            "small_rng",
+        ],
+        "//conditions:default": [],
+    }),
     crate_root = "src/lib.rs",
     edition = "2018",
     rustc_env_files = [
@@ -56,6 +82,7 @@ rust_library(
         "@rules_rust//rust/platform:aarch64-apple-darwin": [],
         "@rules_rust//rust/platform:aarch64-pc-windows-msvc": [],
         "@rules_rust//rust/platform:aarch64-unknown-linux-gnu": [],
+        "@rules_rust//rust/platform:wasm32-unknown-unknown": [],
         "@rules_rust//rust/platform:x86_64-apple-darwin": [],
         "@rules_rust//rust/platform:x86_64-pc-windows-msvc": [],
         "@rules_rust//rust/platform:x86_64-unknown-linux-gnu": [],
@@ -63,6 +90,21 @@ rust_library(
     }),
     version = "0.8.5",
     deps = [
+        "@cargo_vendor__rand_chacha-0.3.1//:rand_chacha",
         "@cargo_vendor__rand_core-0.6.4//:rand_core",
-    ],
+    ] + select({
+        "@rules_rust//rust/platform:aarch64-apple-darwin": [
+            "@cargo_vendor__libc-0.2.175//:libc",  # cfg(unix)
+        ],
+        "@rules_rust//rust/platform:aarch64-unknown-linux-gnu": [
+            "@cargo_vendor__libc-0.2.175//:libc",  # cfg(unix)
+        ],
+        "@rules_rust//rust/platform:x86_64-apple-darwin": [
+            "@cargo_vendor__libc-0.2.175//:libc",  # cfg(unix)
+        ],
+        "@rules_rust//rust/platform:x86_64-unknown-linux-gnu": [
+            "@cargo_vendor__libc-0.2.175//:libc",  # cfg(unix)
+        ],
+        "//conditions:default": [],
+    }),
 )

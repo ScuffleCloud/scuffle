@@ -758,6 +758,7 @@ _NORMAL_DEPENDENCIES = {
             _COMMON_CONDITION: {
                 "bon": Label("@cargo_vendor//:bon-3.7.1"),
                 "indexmap": Label("@cargo_vendor//:indexmap-2.11.0"),
+                "is_empty": Label("@cargo_vendor//:is_empty-0.3.0"),
                 "ordered-float": Label("@cargo_vendor//:ordered-float-5.0.0"),
                 "serde": Label("@cargo_vendor//:serde-1.0.219"),
                 "serde_json": Label("@cargo_vendor//:serde_json-1.0.143"),
@@ -5951,6 +5952,26 @@ def crate_repositories():
 
     maybe(
         http_archive,
+        name = "cargo_vendor__is_empty-0.3.0",
+        sha256 = "10889632e98e3d8c1209617cf0bc8c9f40f036ee5808cd2699d2b8b77e92849e",
+        type = "tar.gz",
+        urls = ["https://static.crates.io/crates/is_empty/0.3.0/download"],
+        strip_prefix = "is_empty-0.3.0",
+        build_file = Label("//vendor/cargo:BUILD.is_empty-0.3.0.bazel"),
+    )
+
+    maybe(
+        http_archive,
+        name = "cargo_vendor__is_empty_derive-0.1.0",
+        sha256 = "d8903009eceffe882e7cb6adadd29001f4f0e46f67616247f40841a5604f1610",
+        type = "tar.gz",
+        urls = ["https://static.crates.io/crates/is_empty_derive/0.1.0/download"],
+        strip_prefix = "is_empty_derive-0.1.0",
+        build_file = Label("//vendor/cargo:BUILD.is_empty_derive-0.1.0.bazel"),
+    )
+
+    maybe(
+        http_archive,
         name = "cargo_vendor__is_terminal_polyfill-1.70.1",
         sha256 = "7943c866cc5cd64cbc25b2e01621d07fa8eb2a1a23160ee81ce38704e97b8ecf",
         type = "tar.gz",
@@ -8020,6 +8041,16 @@ def crate_repositories():
 
     maybe(
         http_archive,
+        name = "cargo_vendor__syn-1.0.109",
+        sha256 = "72b64191b275b66ffe2469e8af2c1cfe3bafa67b529ead792a6d0160888b4237",
+        type = "tar.gz",
+        urls = ["https://static.crates.io/crates/syn/1.0.109/download"],
+        strip_prefix = "syn-1.0.109",
+        build_file = Label("//vendor/cargo:BUILD.syn-1.0.109.bazel"),
+    )
+
+    maybe(
+        http_archive,
         name = "cargo_vendor__syn-2.0.106",
         sha256 = "ede7c438028d4436d71104916910f5bb611972c5cfd7f89b8300a8186e6fada6",
         type = "tar.gz",
@@ -9369,6 +9400,7 @@ def crate_repositories():
         struct(repo = "cargo_vendor__hyper-util-0.1.16", is_dev_dep = False),
         struct(repo = "cargo_vendor__indent_write-2.2.0", is_dev_dep = False),
         struct(repo = "cargo_vendor__indexmap-2.11.0", is_dev_dep = False),
+        struct(repo = "cargo_vendor__is_empty-0.3.0", is_dev_dep = False),
         struct(repo = "cargo_vendor__libc-0.2.175", is_dev_dep = False),
         struct(repo = "cargo_vendor__linear-map-1.2.0", is_dev_dep = False),
         struct(repo = "cargo_vendor__linkme-0.3.33", is_dev_dep = False),

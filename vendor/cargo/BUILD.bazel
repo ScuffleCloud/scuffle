@@ -646,6 +646,18 @@ transition_alias_opt(
 )
 
 transition_alias_opt(
+    name = "is_empty-0.3.0",
+    actual = "@cargo_vendor__is_empty-0.3.0//:is_empty",
+    tags = ["manual"],
+)
+
+transition_alias_opt(
+    name = "is_empty",
+    actual = "@cargo_vendor__is_empty-0.3.0//:is_empty",
+    tags = ["manual"],
+)
+
+transition_alias_opt(
     name = "libc-0.2.175",
     actual = "@cargo_vendor__libc-0.2.175//:libc",
     tags = ["manual"],

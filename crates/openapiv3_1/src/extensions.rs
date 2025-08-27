@@ -4,16 +4,18 @@
 use std::ops::{Deref, DerefMut};
 
 use indexmap::IndexMap;
+use is_empty::IsEmpty;
 
 const EXTENSION_PREFIX: &str = "x-";
 
 /// Additional [data for extending][extensions] the OpenAPI specification.
 ///
 /// [extensions]: https://spec.openapis.org/oas/latest.html#specification-extensions
-#[derive(Default, serde_derive::Serialize, Clone, PartialEq, Eq)]
+#[derive(Default, serde_derive::Serialize, Clone, PartialEq, Eq, IsEmpty)]
 #[cfg_attr(feature = "debug", derive(Debug))]
 pub struct Extensions {
     #[serde(flatten)]
+    #[is_empty(if = "IndexMap::is_empty")]
     extensions: IndexMap<String, serde_json::Value>,
 }
 

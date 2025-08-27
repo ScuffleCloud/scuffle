@@ -34,13 +34,6 @@ rust_library(
             "WORKSPACE.bazel",
         ],
     ),
-    crate_features = [
-        "_deflate-any",
-        "deflate",
-        "deflate-flate2",
-        "deflate-flate2-zlib-rs",
-        "deflate-zopfli",
-    ],
     crate_root = "src/lib.rs",
     edition = "2021",
     rustc_env_files = [
@@ -68,9 +61,7 @@ rust_library(
     version = "4.3.0",
     deps = [
         "@bindeps__crc32fast-1.5.0//:crc32fast",
-        "@bindeps__flate2-1.1.2//:flate2",
         "@bindeps__indexmap-2.10.0//:indexmap",
         "@bindeps__memchr-2.7.5//:memchr",
-        "@bindeps__zopfli-0.8.2//:zopfli",
     ],
 )

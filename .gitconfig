@@ -1,10 +1,3 @@
-[merge]
-    conflictStyle = "diff3"
-
 [merge "lockfile"]
     name = lockfile auto-regenerator
-    driver = ./build/utils/lockfile-rebase.sh %O %A %B %L %P
-
-[merge "mergiraf"]
-    name = mergiraf
-    driver = mergiraf merge --git %O %A %B -s %S -x %X -y %Y -p %P -l %L
+    driver = ./build/utils/lockfile_rebase.sh %O %A %B %L %P

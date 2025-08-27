@@ -1,15 +1,25 @@
-load("//misc/utils/rust:package.bzl", "scuffle_package", "scuffle_test")
 load("//misc/utils/rust:manifest.bzl", "cargo_toml")
+load("//misc/utils/rust:package.bzl", "scuffle_package", "scuffle_test")
 
 cargo_toml()
 
 scuffle_package(
-    crate_name = "scuffle-transmuxer",
     compile_data = [
         ":CHANGELOG.md",
         ":Cargo.toml",
     ],
+    crate_name = "scuffle-transmuxer",
     proc_macro_deps = ["//crates/changelog"],
+    test = scuffle_test(
+        data = [
+            "//tools/ffmpeg:ffprobe",
+            "@scuffle_assets//:flv",
+        ],
+        env = {
+            "FFPROBE": "$(rootpath //tools/ffmpeg:ffprobe)",
+            "ASSETS_DIR": "$(rootpath @scuffle_assets//:flv)",
+        },
+    ),
     deps = [
         "//crates/aac",
         "//crates/av1",
@@ -19,11 +29,4 @@ scuffle_package(
         "//crates/h265",
         "//crates/mp4",
     ],
-    test = scuffle_test(
-        data = ["@scuffle_assets//:flv", "//tools/ffmpeg:ffprobe"],
-        env = {
-            "FFPROBE": "$(rootpath //tools/ffmpeg:ffprobe)",
-            "ASSETS_DIR": "$(rootpath @scuffle_assets//:flv)",
-        },
-    ),
 )

@@ -1,6 +1,6 @@
+load("//misc/utils/rust:manifest.bzl", "cargo_toml")
 load("//misc/utils/rust:package.bzl", "scuffle_package", "scuffle_test")
 load("//misc/utils/rust:postcompile.bzl", "postcompile_deps")
-load("//misc/utils/rust:manifest.bzl", "cargo_toml")
 
 cargo_toml()
 
@@ -10,11 +10,11 @@ postcompile_deps(
 )
 
 scuffle_package(
-    crate_name = "postcompile",
     compile_data = [
         ":CHANGELOG.md",
         ":Cargo.toml",
     ],
+    crate_name = "postcompile",
     proc_macro_deps = ["//crates/changelog"],
     test = scuffle_test(
         data = [":postcompile_deps"],

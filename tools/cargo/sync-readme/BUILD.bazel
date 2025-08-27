@@ -1,5 +1,5 @@
-load("//misc/utils/rust:package.bzl", "scuffle_package")
 load("//misc/utils/rust:manifest.bzl", "cargo_toml")
+load("//misc/utils/rust:package.bzl", "scuffle_package")
 
 cargo_toml()
 
@@ -7,7 +7,7 @@ scuffle_package(
     name = "fix",
     crate_name = "sync_readme_fixer",
     crate_type = "bin",
-    deps = ["//misc/utils/rust/sync_readme/common"],
     tags = ["manual"],
     visibility = ["//visibility:public"],
+    deps = ["//misc/utils/rust/sync_readme/common"],
 )

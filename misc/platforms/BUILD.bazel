@@ -1,5 +1,13 @@
-os = ["linux", "macos", "windows"]
-arch = ["x86_64", "aarch64"]
+os = [
+    "linux",
+    "macos",
+    "windows",
+]
+
+arch = [
+    "x86_64",
+    "aarch64",
+]
 
 [
     config_setting(

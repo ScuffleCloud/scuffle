@@ -1,6 +1,6 @@
-load("//misc/utils/rust:package.bzl", "scuffle_package", "scuffle_test")
 load("@protobuf//bazel:proto_library.bzl", "proto_library")
 load("//misc/utils/rust:manifest.bzl", "cargo_toml")
+load("//misc/utils/rust:package.bzl", "scuffle_package", "scuffle_test")
 
 cargo_toml()
 
@@ -8,27 +8,27 @@ proto_library(
     name = "protobuf",
     srcs = ["annotations.proto"],
     strip_import_prefix = "/crates",
-    deps = ["@protobuf//:descriptor_proto"],
     visibility = ["//visibility:public"],
+    deps = ["@protobuf//:descriptor_proto"],
 )
 
 scuffle_package(
-    crate_name = "tinc",
     compile_data = [
         ":CHANGELOG.md",
         ":Cargo.toml",
         ":annotations.proto",
     ],
+    crate_name = "tinc",
     proc_macro_deps = [
         "//crates/changelog",
         "//crates/tinc/derive",
     ],
+    test = scuffle_test(
+        deps = ["//crates/flv"],
+    ),
     deps = [
         "//crates/context",
         "//crates/openapiv3_1",
         "//crates/tinc/cel",
     ],
-    test = scuffle_test(
-        deps = ["//crates/flv"]
-    )
 )

@@ -1,8 +1,8 @@
-load("@rules_cc//cc/toolchains:toolchain.bzl", "cc_toolchain")
 load("@rules_cc//cc/toolchains:args.bzl", "cc_args")
 load("@rules_cc//cc/toolchains:args_list.bzl", "cc_args_list")
 load("@rules_cc//cc/toolchains:feature.bzl", "cc_feature")
 load("@rules_cc//cc/toolchains:mutually_exclusive_category.bzl", "cc_mutually_exclusive_category")
+load("@rules_cc//cc/toolchains:toolchain.bzl", "cc_toolchain")
 
 cc_args(
     name = "use_lld",
@@ -17,7 +17,7 @@ cc_args(
     actions = [
         "@rules_cc//cc/toolchains/actions:compile_actions",
     ],
-    args =  [
+    args = [
         "-Wno-builtin-macro-redefined",
         "-D__DATE__=\"redacted\"",
         "-D__TIMESTAMP__=\"redacted\"",
@@ -138,7 +138,7 @@ cc_args(
     actions = [
         "@rules_cc//cc/toolchains/actions:compile_actions",
     ],
-    args =  [
+    args = [
         "-g0",
         "-O2",
         "-D_FORTIFY_SOURCE=1",
@@ -156,7 +156,7 @@ cc_args(
     args = select({
         "@platforms//os:linux": ["-Wl,--gc-sections"],
         "//conditions:default": [],
-    })
+    }),
 )
 
 cc_args(
@@ -183,16 +183,35 @@ cc_args(
     actions = [
         "@rules_cc//cc/toolchains/actions:link_actions",
     ],
-    args = ["-stdlib=libc++", "-Wl,-Bstatic", "-lc++", "-lc++abi", "-lunwind", "-Wl,-Bdynamic"],
+    args = [
+        "-stdlib=libc++",
+        "-Wl,-Bstatic",
+        "-lc++",
+        "-lc++abi",
+        "-lunwind",
+        "-Wl,-Bdynamic",
+    ],
 )
 
 cc_args_list(
     name = "platform_args",
     args = select({
-        "//misc/platforms:linux-x86_64": ["@sysroots-linux-x86_64//:sysroot", "@clang-linux-x86_64//:system_includes"],
-        "//misc/platforms:linux-aarch64": ["@sysroots-linux-aarch64//:sysroot", "@clang-linux-aarch64//:system_includes"],
-        "//misc/platforms:macos-x86_64": ["@sysroots-macos-universal//:sysroot", "@clang-macos-x86_64//:system_includes"],
-        "//misc/platforms:macos-aarch64": ["@sysroots-macos-universal//:sysroot", "@clang-macos-aarch64//:system_includes"],
+        "//misc/platforms:linux-x86_64": [
+            "@sysroots-linux-x86_64//:sysroot",
+            "@clang-linux-x86_64//:system_includes",
+        ],
+        "//misc/platforms:linux-aarch64": [
+            "@sysroots-linux-aarch64//:sysroot",
+            "@clang-linux-aarch64//:system_includes",
+        ],
+        "//misc/platforms:macos-x86_64": [
+            "@sysroots-macos-universal//:sysroot",
+            "@clang-macos-x86_64//:system_includes",
+        ],
+        "//misc/platforms:macos-aarch64": [
+            "@sysroots-macos-universal//:sysroot",
+            "@clang-macos-aarch64//:system_includes",
+        ],
     }),
 )
 
@@ -210,6 +229,13 @@ cc_toolchain(
         ":gc_sections",
         ":link_cxx_std",
     ],
+    compiler = "clang",
+    dynamic_runtime_lib = select({
+        "//misc/platforms:linux-x86_64": "@clang-linux-x86_64//:dynamic_runtime_lib",
+        "//misc/platforms:linux-aarch64": "@clang-linux-aarch64//:dynamic_runtime_lib",
+        "//misc/platforms:macos-x86_64": "@clang-macos-x86_64//:dynamic_runtime_lib",
+        "//misc/platforms:macos-aarch64": "@clang-macos-aarch64//:dynamic_runtime_lib",
+    }),
     enabled_features = [
         "@rules_cc//cc/toolchains/args:experimental_replace_legacy_action_config_features",
     ],
@@ -219,20 +245,13 @@ cc_toolchain(
         ":feat_dbg",
         ":feat_fastbuild",
     ],
-    dynamic_runtime_lib = select({
-        "//misc/platforms:linux-x86_64": "@clang-linux-x86_64//:dynamic_runtime_lib",
-        "//misc/platforms:linux-aarch64": "@clang-linux-aarch64//:dynamic_runtime_lib",
-        "//misc/platforms:macos-x86_64": "@clang-macos-x86_64//:dynamic_runtime_lib",
-        "//misc/platforms:macos-aarch64": "@clang-macos-aarch64//:dynamic_runtime_lib",
-    }),
+    make_variables = [],
     static_runtime_lib = select({
         "//misc/platforms:linux-x86_64": "@clang-linux-x86_64//:static_runtime_lib",
         "//misc/platforms:linux-aarch64": "@clang-linux-aarch64//:static_runtime_lib",
         "//misc/platforms:macos-x86_64": "@clang-macos-x86_64//:static_runtime_lib",
         "//misc/platforms:macos-aarch64": "@clang-macos-aarch64//:static_runtime_lib",
     }),
-    compiler = "clang",
-    make_variables = [],
     supports_param_files = True,
     tool_map = "//misc/toolchains/clang/tools:all_tools",
 )
@@ -252,6 +271,9 @@ alias(
         "//misc/platforms:macos-x86_64": "@libclang-macos-x86_64//:lib",
         "//misc/platforms:macos-aarch64": "@libclang-macos-aarch64//:lib",
     }),
-    tags = ["no-cache", "manual"],
+    tags = [
+        "manual",
+        "no-cache",
+    ],
     visibility = ["//visibility:public"],
 )

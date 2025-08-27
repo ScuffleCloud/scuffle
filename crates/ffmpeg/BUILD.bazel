@@ -1,29 +1,32 @@
-load("//misc/utils/rust:package.bzl", "scuffle_package", "scuffle_test")
 load("//misc/utils/rust:manifest.bzl", "cargo_toml")
+load("//misc/utils/rust:package.bzl", "scuffle_package", "scuffle_test")
 
 cargo_toml()
 
 scuffle_package(
-    crate_name = "scuffle-ffmpeg",
     compile_data = [
         ":CHANGELOG.md",
         ":Cargo.toml",
     ],
+    crate_name = "scuffle-ffmpeg",
     proc_macro_deps = ["//crates/changelog"],
-    deps = ["//crates/nutype-enum"],
     test = scuffle_test(
-        deps = ["//crates/mp4"],
-        insta = True,
-        data = ["@scuffle_assets//:mp4", "//misc/toolchains/ffmpeg:lib"],
+        data = [
+            "//misc/toolchains/ffmpeg:lib",
+            "@scuffle_assets//:mp4",
+        ],
         env = select({
             "@platforms//os:windows": {
-                "PATH": "$${pwd}/$(rootpath //misc/toolchains/ffmpeg:lib)"
+                "PATH": "$${pwd}/$(rootpath //misc/toolchains/ffmpeg:lib)",
             },
             "//conditions:default": {
-                "LD_LIBRARY_PATH": "$${pwd}/$(rootpath //misc/toolchains/ffmpeg:lib)"
+                "LD_LIBRARY_PATH": "$${pwd}/$(rootpath //misc/toolchains/ffmpeg:lib)",
             },
         }) | {
             "ASSETS_DIR": "$(rootpath @scuffle_assets//:mp4)",
-        }
+        },
+        insta = True,
+        deps = ["//crates/mp4"],
     ),
+    deps = ["//crates/nutype-enum"],
 )

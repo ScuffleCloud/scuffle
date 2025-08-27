@@ -1,20 +1,20 @@
-load("//misc/utils/rust:package.bzl", "scuffle_build_script", "scuffle_package")
 load("@protobuf//bazel:proto_library.bzl", "proto_library")
 load("//misc/utils:proto_descriptor_set.bzl", "proto_descriptor_set")
 load("//misc/utils/rust:manifest.bzl", "cargo_toml")
+load("//misc/utils/rust:package.bzl", "scuffle_build_script", "scuffle_package")
 
 cargo_toml()
 
 proto_library(
     name = "pb",
     srcs = glob(["pb/**"]),
+    strip_import_prefix = "/cloud/proto/pb",
     deps = [
         "//crates/tinc:protobuf",
+        "@protobuf//:descriptor_proto",
         "@protobuf//:empty_proto",
         "@protobuf//:timestamp_proto",
-        "@protobuf//:descriptor_proto",
     ],
-    strip_import_prefix = "/cloud/proto/pb",
 )
 
 proto_descriptor_set(
@@ -24,17 +24,17 @@ proto_descriptor_set(
 
 scuffle_build_script(
     name = "build_script",
-    deps = ["//crates/tinc/build"],
     data = [":tinc_fds"],
     env = {
         "TINC_SCUFFLE_CLOUD_COMPILED_FD": "$(location :tinc_fds)",
     },
+    deps = ["//crates/tinc/build"],
 )
 
 scuffle_package(
     crate_name = "scufflecloud-proto",
     deps = [
+        ":build_script",
         "//crates/tinc",
-        ":build_script"
     ],
 )

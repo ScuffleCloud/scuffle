@@ -1,6 +1,6 @@
+load("//misc/utils/rust:manifest.bzl", "cargo_toml")
 load("//misc/utils/rust:package.bzl", "scuffle_package", "scuffle_test")
 load("//misc/utils/rust:postcompile.bzl", "postcompile_deps")
-load("//misc/utils/rust:manifest.bzl", "cargo_toml")
 
 cargo_toml()
 
@@ -10,19 +10,19 @@ postcompile_deps(
 )
 
 scuffle_package(
-    crate_name = "tinc-build",
     compile_data = [
         ":Cargo.toml",
     ],
+    crate_name = "tinc-build",
     proc_macro_deps = ["//crates/tinc/derive"],
+    test = scuffle_test(
+        data = [":postcompile_deps"],
+        insta = True,
+        deps = ["//crates/postcompile"],
+    ),
     deps = [
         "//crates/openapiv3_1",
         "//crates/tinc/cel",
         "//crates/tinc/pb-prost",
     ],
-    test = scuffle_test(
-        deps = ["//crates/postcompile"],
-        data = [":postcompile_deps"],
-        insta = True,
-    ),
 )

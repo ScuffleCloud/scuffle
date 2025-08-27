@@ -3,7 +3,6 @@ load("//:cargo_targets.bzl", "cargo_manifests")
 
 crates_vendor(
     name = "cargo_vendor",
-    cargo_bazel = "//misc/toolchains/rust:cargo-bazel",
     annotations = {
         "reqwest": [
             crate.annotation(
@@ -12,6 +11,11 @@ crates_vendor(
         ],
         "rusty_ffmpeg": [
             crate.annotation(
+                build_script_data = [
+                    "@//misc/toolchains/ffmpeg:lib",
+                    "@//misc/toolchains/ffmpeg:include",
+                    "@//misc/toolchains/clang:libclang",
+                ],
                 build_script_env = {
                     "CLANG_PATH": "$${pwd}/$(CC)",
                     "BINDGEN_EXTRA_CLANG_ARGS": "$(CFLAGS)",
@@ -19,11 +23,6 @@ crates_vendor(
                     "FFMPEG_INCLUDE_DIR": "$(execpath @//misc/toolchains/ffmpeg:include)",
                     "LIBCLANG_PATH": "$(execpath @//misc/toolchains/clang:libclang)",
                 },
-                build_script_data = [
-                    "@//misc/toolchains/ffmpeg:lib",
-                    "@//misc/toolchains/ffmpeg:include",
-                    "@//misc/toolchains/clang:libclang",
-                ],
             ),
         ],
         "aws-lc-sys": [
@@ -40,14 +39,14 @@ crates_vendor(
             ),
         ],
     },
-    render_config = render_config(
-        default_alias_rule = "opt",
-
-    ),
+    cargo_bazel = "//misc/toolchains/rust:cargo-bazel",
     cargo_lockfile = "//:Cargo.lock",
     generate_build_scripts = True,
     manifests = cargo_manifests(),
     mode = "remote",
+    render_config = render_config(
+        default_alias_rule = "opt",
+    ),
     supported_platform_triples = [
         "x86_64-unknown-linux-gnu",
         "aarch64-unknown-linux-gnu",
@@ -64,18 +63,25 @@ crates_vendor(
 
 crates_vendor(
     name = "bindeps",
-    cargo_bazel = "//misc/toolchains/rust:cargo-bazel",
-    cargo_lockfile = ":Cargo.bindeps.lock",
-    generate_build_scripts = True,
     annotations = {
         binary: [crate.annotation(gen_binaries = True)]
-        for binary in ["cargo-deny", "cargo-insta", "just", "miniserve", "rust-analyzer"]
+        for binary in [
+            "cargo-deny",
+            "cargo-insta",
+            "just",
+            "miniserve",
+            "rust-analyzer",
+        ]
     } | {
         "dprint": [
-            crate.annotation(gen_binaries = True, gen_build_script = False, rustc_env = {
-                "TARGET": "",
-                "RUSTC_VERSION_TEXT": "",
-            })
+            crate.annotation(
+                gen_binaries = True,
+                gen_build_script = False,
+                rustc_env = {
+                    "TARGET": "",
+                    "RUSTC_VERSION_TEXT": "",
+                },
+            ),
         ],
         "bzip2-sys": [
             crate.annotation(
@@ -85,6 +91,11 @@ crates_vendor(
             ),
         ],
     },
+    cargo_bazel = "//misc/toolchains/rust:cargo-bazel",
+    cargo_config = ":rust.bindeps.cargo.toml",
+    cargo_lockfile = ":Cargo.bindeps.lock",
+    generate_build_scripts = True,
+    mode = "remote",
     packages = {
         "cargo-deny": crate.spec(
             artifact = "bin",
@@ -115,8 +126,7 @@ crates_vendor(
             rev = "e9ca9f8ec88a207891c32da4fc6523026ea03c6f",
         ),
     },
-    cargo_config = ":rust.bindeps.cargo.toml",
-    mode = "remote",
+    stable_as_nightly = True,
     supported_platform_triples = [
         "x86_64-unknown-linux-gnu",
         "aarch64-unknown-linux-gnu",
@@ -125,7 +135,6 @@ crates_vendor(
         "x86_64-pc-windows-msvc",
         "aarch64-pc-windows-msvc",
     ],
-    stable_as_nightly = True,
     tags = ["manual"],
     vendor_path = "bindeps",
     visibility = ["//visibility:public"],

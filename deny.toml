@@ -11,6 +11,8 @@ allow = [
   "CC0-1.0",
   "MPL-2.0",
   "BSL-1.0",
+  "CDLA-Permissive-2.0",
+  "OpenSSL",
 ]
 
 private.ignore = true
@@ -38,6 +40,4 @@ multiple-versions = "allow"
 deny = [
   # AI Fork of serde_yaml
   "serde_yml",
-  # AI Fork of paste
-  "pastey",
 ]

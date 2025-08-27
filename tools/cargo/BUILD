@@ -1,6 +1,0 @@
-alias(
-    name = "cargo",
-    actual = "@rules_rust//tools/upstream_wrapper:cargo",
-    tags = ["manual", "no-cache"],
-    visibility = ["//visibility:public"],
-)

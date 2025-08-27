@@ -1,0 +1,27 @@
+load("//misc/utils/rust:manifest.bzl", "cargo_toml")
+load("//misc/utils/rust:package.bzl", "scuffle_package", "scuffle_test")
+load("//misc/utils/rust:postcompile.bzl", "postcompile_deps")
+
+cargo_toml()
+
+postcompile_deps(
+    name = "postcompile_deps",
+    deps = [":metrics"],
+)
+
+scuffle_package(
+    compile_data = [
+        ":CHANGELOG.md",
+        ":Cargo.toml",
+    ],
+    crate_name = "scuffle-metrics",
+    proc_macro_deps = [
+        "//crates/changelog",
+        "//crates/metrics/derive",
+    ],
+    test = scuffle_test(
+        data = [":postcompile_deps"],
+        insta = True,
+        deps = ["//crates/postcompile"],
+    ),
+)

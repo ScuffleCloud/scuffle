@@ -1,0 +1,10 @@
+load("//misc/utils/rust:manifest.bzl", "cargo_toml")
+load("//misc/utils/rust:package.bzl", "scuffle_package")
+
+cargo_toml()
+
+scuffle_package(
+    srcs = ["src/lib.rs"],
+    crate_name = "test_runner_lib",
+    tags = ["manual"],
+)

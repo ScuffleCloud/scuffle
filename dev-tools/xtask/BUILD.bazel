@@ -1,0 +1,11 @@
+load("//misc/utils/rust:manifest.bzl", "cargo_toml")
+load("//misc/utils/rust:package.bzl", "scuffle_package")
+
+cargo_toml()
+
+scuffle_package(
+    compile_data = glob(["**/*.md"]),
+    crate_name = "xtask",
+    crate_type = "bin",
+    tags = ["manual"],
+)

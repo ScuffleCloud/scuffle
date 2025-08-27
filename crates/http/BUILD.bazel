@@ -1,0 +1,23 @@
+load("//misc/utils/rust:manifest.bzl", "cargo_toml")
+load("//misc/utils/rust:package.bzl", "scuffle_package", "scuffle_test")
+
+cargo_toml()
+
+scuffle_package(
+    compile_data = [
+        ":CHANGELOG.md",
+        ":Cargo.toml",
+    ],
+    crate_name = "scuffle-http",
+    proc_macro_deps = ["//crates/changelog"],
+    test = scuffle_test(
+        data = [
+            "@scuffle_assets//:pem",
+        ],
+        env = {
+            "ASSETS_DIR": "$(rootpath @scuffle_assets//:pem)",
+        },
+        deps = ["//crates/future-ext"],
+    ),
+    deps = ["//crates/context"],
+)

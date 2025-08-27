@@ -1,0 +1,26 @@
+load("//misc/utils/rust:manifest.bzl", "cargo_toml")
+load("//misc/utils/rust:package.bzl", "scuffle_package", "scuffle_test")
+
+cargo_toml()
+
+scuffle_package(
+    compile_data = [
+        ":CHANGELOG.md",
+        ":Cargo.toml",
+    ],
+    crate_name = "scuffle-bootstrap",
+    proc_macro_deps = [
+        "//crates/changelog",
+        "//crates/bootstrap/derive",
+    ],
+    test = scuffle_test(
+        insta = True,
+        deps = [
+            "//crates/future-ext",
+            "//crates/postcompile",
+            "//crates/settings",
+            "//crates/signal",
+        ],
+    ),
+    deps = ["//crates/context"],
+)

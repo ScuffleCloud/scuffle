@@ -1,1 +1,0 @@
-exports_files(["Cargo.toml", "Cargo.lock", "rustfmt.toml", ".config/nextest.toml", "deny.toml"])

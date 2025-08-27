@@ -65,14 +65,14 @@ jobs:
         run: tar -xf rustdoc.tar.zst -C docs
 
       - name: Deploy
-        uses: nwtgck/actions-netlify@v2
+        uses: amondnet/vercel-action@888da851026e0573da056b061931bcb765a915c4
         with:
-          publish-dir: ./target-bazel/bin/docs/rustdoc.rustdoc_merge
-          production-deploy: true
+          vercel-token: ${{ secrets.VERCEL_TOKEN }}
           github-token: ${{ secrets.GITHUB_TOKEN }}
-        env:
-          NETLIFY_AUTH_TOKEN: ${{ secrets.NETLIFY_AUTH_TOKEN }}
-          NETLIFY_SITE_ID: ${{ secrets.NETLIFY_SITE_ID_DOCS_SCUFFLE_RS }}
+          vercel-args: "--archive=tgz --prod"
+          vercel-org-id: ${{ secrets.VERCEL_ORG_ID }}
+          vercel-project-id: ${{ secrets.VERCEL_PROJECT_ID_DOCS_SCUFFLE_RS }}
+          working-directory: docs
 
   # docusaurus:
   #   name: Docusaurus

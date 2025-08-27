@@ -204,6 +204,8 @@ fn main() {
     )
     .unwrap();
 
+    std::fs::remove_dir_all(&tmp_dir).expect("remove tmp dir");
+
     std::fs::create_dir_all(&args.output).expect("create output");
     std::fs::write(args.output.join("index.html"), index_page).expect("index.html write");
     std::fs::write(args.output.join("help.html"), help_page).expect("help.html write");

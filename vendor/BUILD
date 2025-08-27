@@ -3,7 +3,7 @@ load("//:cargo_targets.bzl", "cargo_manifests")
 
 crates_vendor(
     name = "cargo_vendor",
-    cargo_bazel = "//build/toolchains/rust:cargo-bazel",
+    cargo_bazel = "//misc/toolchains/rust:cargo-bazel",
     annotations = {
         "reqwest": [
             crate.annotation(
@@ -15,14 +15,14 @@ crates_vendor(
                 build_script_env = {
                     "CLANG_PATH": "$${pwd}/$(CC)",
                     "BINDGEN_EXTRA_CLANG_ARGS": "$(CFLAGS)",
-                    "FFMPEG_DLL_PATH": "$(execpath @//build/toolchains/ffmpeg:lib)",
-                    "FFMPEG_INCLUDE_DIR": "$(execpath @//build/toolchains/ffmpeg:include)",
-                    "LIBCLANG_PATH": "$(execpath @//build/toolchains/clang:libclang)",
+                    "FFMPEG_DLL_PATH": "$(execpath @//misc/toolchains/ffmpeg:lib)",
+                    "FFMPEG_INCLUDE_DIR": "$(execpath @//misc/toolchains/ffmpeg:include)",
+                    "LIBCLANG_PATH": "$(execpath @//misc/toolchains/clang:libclang)",
                 },
                 build_script_data = [
-                    "@//build/toolchains/ffmpeg:lib",
-                    "@//build/toolchains/ffmpeg:include",
-                    "@//build/toolchains/clang:libclang",
+                    "@//misc/toolchains/ffmpeg:lib",
+                    "@//misc/toolchains/ffmpeg:include",
+                    "@//misc/toolchains/clang:libclang",
                 ],
             ),
         ],
@@ -64,7 +64,7 @@ crates_vendor(
 
 crates_vendor(
     name = "bindeps",
-    cargo_bazel = "//build/toolchains/rust:cargo-bazel",
+    cargo_bazel = "//misc/toolchains/rust:cargo-bazel",
     cargo_lockfile = ":Cargo.bindeps.lock",
     generate_build_scripts = True,
     annotations = {

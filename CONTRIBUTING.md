@@ -65,10 +65,10 @@ If you use VSCode you can setup rust-analyzer to work by adding the following to
 
 ```json
 {
-  "rust-analyzer.server.path": "${workspaceFolder}/build/utils/rust/analyzer/lsp.sh",
+  "rust-analyzer.server.path": "${workspaceFolder}/misc/utils/rust/analyzer/lsp.sh",
   "rust-analyzer.workspace.discoverConfig": {
     "command": [
-      "${workspaceFolder}/build/utils/rust/analyzer/discover.sh"
+      "${workspaceFolder}/misc/utils/rust/analyzer/discover.sh"
     ],
     "progressLabel": "rust_analyzer",
     "filesToWatch": [
@@ -78,7 +78,7 @@ If you use VSCode you can setup rust-analyzer to work by adding the following to
     ]
   },
   "rust-analyzer.check.overrideCommand": [
-    "${workspaceFolder}/build/utils/rust/analyzer/check.sh"
+    "${workspaceFolder}/misc/utils/rust/analyzer/check.sh"
   ]
 }
 ```

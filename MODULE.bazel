@@ -11,14 +11,14 @@ bazel_dep(name = "aspect_bazel_lib", version = "2.19.4")
 bazel_dep(name = "rules_python", version = "1.5.3")
 bazel_dep(name = "rules_go", version = "0.57.0")
 
-include("//build/toolchains:protobuf.MODULE.bazel")
+include("//misc/toolchains:protobuf.MODULE.bazel")
 
-include("//build/toolchains:clang.MODULE.bazel")
+include("//misc/toolchains:clang.MODULE.bazel")
 
-include("//build/toolchains:rust.MODULE.bazel")
+include("//misc/toolchains:rust.MODULE.bazel")
 
-include("//build/toolchains:ffmpeg.MODULE.bazel")
+include("//misc/toolchains:ffmpeg.MODULE.bazel")
 
-include("//build/toolchains:valgrind.MODULE.bazel")
+include("//misc/toolchains:valgrind.MODULE.bazel")
 
-include("//build/toolchains:assets.MODULE.bazel")
+include("//misc/toolchains:assets.MODULE.bazel")

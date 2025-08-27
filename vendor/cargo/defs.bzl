@@ -442,164 +442,6 @@ def aliases(
 ###############################################################################
 
 _NORMAL_DEPENDENCIES = {
-    "build/utils/protobuf": {
-        _REQUIRED_FEATURE: {
-            _COMMON_CONDITION: {
-                "anyhow": Label("@cargo_vendor//:anyhow-1.0.99"),
-            },
-        },
-    },
-    "build/utils/rust/analyzer/check": {
-        _REQUIRED_FEATURE: {
-            _COMMON_CONDITION: {
-                "anyhow": Label("@cargo_vendor//:anyhow-1.0.99"),
-                "camino": Label("@cargo_vendor//:camino-1.1.12"),
-                "clap": Label("@cargo_vendor//:clap-4.5.46"),
-                "serde": Label("@cargo_vendor//:serde-1.0.219"),
-                "serde_json": Label("@cargo_vendor//:serde_json-1.0.143"),
-            },
-        },
-    },
-    "build/utils/rust/analyzer/discover": {
-        _REQUIRED_FEATURE: {
-            _COMMON_CONDITION: {
-                "anyhow": Label("@cargo_vendor//:anyhow-1.0.99"),
-                "camino": Label("@cargo_vendor//:camino-1.1.12"),
-                "clap": Label("@cargo_vendor//:clap-4.5.46"),
-                "env_logger": Label("@cargo_vendor//:env_logger-0.10.2"),
-                "fmtools": Label("@cargo_vendor//:fmtools-0.1.2"),
-                "log": Label("@cargo_vendor//:log-0.4.27"),
-                "serde": Label("@cargo_vendor//:serde-1.0.219"),
-                "serde_json": Label("@cargo_vendor//:serde_json-1.0.143"),
-            },
-        },
-    },
-    "build/utils/rust/clippy": {
-        _REQUIRED_FEATURE: {
-            _COMMON_CONDITION: {
-                "camino": Label("@cargo_vendor//:camino-1.1.12"),
-                "clap": Label("@cargo_vendor//:clap-4.5.46"),
-                "serde": Label("@cargo_vendor//:serde-1.0.219"),
-                "serde_json": Label("@cargo_vendor//:serde_json-1.0.143"),
-            },
-        },
-    },
-    "build/utils/rust/doc/merger": {
-        _REQUIRED_FEATURE: {
-            _COMMON_CONDITION: {
-                "camino": Label("@cargo_vendor//:camino-1.1.12"),
-                "camino-tempfile": Label("@cargo_vendor//:camino-tempfile-1.4.1"),
-                "clap": Label("@cargo_vendor//:clap-4.5.46"),
-                "copy_dir": Label("@cargo_vendor//:copy_dir-0.1.3"),
-                "lol_html": Label("@cargo_vendor//:lol_html-2.6.0"),
-                "serde": Label("@cargo_vendor//:serde-1.0.219"),
-                "serde_json": Label("@cargo_vendor//:serde_json-1.0.143"),
-            },
-        },
-    },
-    "build/utils/rust/doc/test/builder": {
-        _REQUIRED_FEATURE: {
-            _COMMON_CONDITION: {
-                "camino": Label("@cargo_vendor//:camino-1.1.12"),
-                "clap": Label("@cargo_vendor//:clap-4.5.46"),
-                "quote": Label("@cargo_vendor//:quote-1.0.40"),
-                "serde": Label("@cargo_vendor//:serde-1.0.219"),
-                "serde_json": Label("@cargo_vendor//:serde_json-1.0.143"),
-            },
-        },
-    },
-    "build/utils/rust/doc/test/common": {
-        _REQUIRED_FEATURE: {
-            _COMMON_CONDITION: {
-                "camino": Label("@cargo_vendor//:camino-1.1.12"),
-                "serde": Label("@cargo_vendor//:serde-1.0.219"),
-                "serde_json": Label("@cargo_vendor//:serde_json-1.0.143"),
-            },
-        },
-    },
-    "build/utils/rust/doc/test/runner": {
-        _REQUIRED_FEATURE: {
-            _COMMON_CONDITION: {
-                "camino": Label("@cargo_vendor//:camino-1.1.12"),
-                "clap": Label("@cargo_vendor//:clap-4.5.46"),
-                "serde": Label("@cargo_vendor//:serde-1.0.219"),
-                "serde_json": Label("@cargo_vendor//:serde_json-1.0.143"),
-            },
-        },
-    },
-    "build/utils/rust/doc/wrapper": {
-        _REQUIRED_FEATURE: {
-            _COMMON_CONDITION: {
-                "camino": Label("@cargo_vendor//:camino-1.1.12"),
-                "camino-tempfile": Label("@cargo_vendor//:camino-tempfile-1.4.1"),
-                "clap": Label("@cargo_vendor//:clap-4.5.46"),
-            },
-        },
-    },
-    "build/utils/rust/sync_readme": {
-        _REQUIRED_FEATURE: {
-            _COMMON_CONDITION: {
-                "anyhow": Label("@cargo_vendor//:anyhow-1.0.99"),
-                "camino": Label("@cargo_vendor//:camino-1.1.12"),
-                "cargo_toml": Label("@cargo_vendor//:cargo_toml-0.22.3"),
-                "clap": Label("@cargo_vendor//:clap-4.5.46"),
-                "pulldown-cmark": Label("@cargo_vendor//:pulldown-cmark-0.13.0"),
-                "pulldown-cmark-to-cmark": Label("@cargo_vendor//:pulldown-cmark-to-cmark-21.0.0"),
-                "regex": Label("@cargo_vendor//:regex-1.11.2"),
-                "rustdoc-types": Label("@cargo_vendor//:rustdoc-types-0.53.0"),
-                "semver": Label("@cargo_vendor//:semver-1.0.26"),
-                "serde": Label("@cargo_vendor//:serde-1.0.219"),
-                "serde_json": Label("@cargo_vendor//:serde_json-1.0.143"),
-                "toml": Label("@cargo_vendor//:toml-0.9.5"),
-                "url": Label("@cargo_vendor//:url-2.5.7"),
-            },
-        },
-    },
-    "build/utils/rust/sync_readme/common": {
-        _REQUIRED_FEATURE: {
-            _COMMON_CONDITION: {
-                "camino": Label("@cargo_vendor//:camino-1.1.12"),
-                "serde": Label("@cargo_vendor//:serde-1.0.219"),
-            },
-        },
-    },
-    "build/utils/rust/sync_readme/test_runner": {
-        _REQUIRED_FEATURE: {
-            _COMMON_CONDITION: {
-                "anyhow": Label("@cargo_vendor//:anyhow-1.0.99"),
-                "camino": Label("@cargo_vendor//:camino-1.1.12"),
-                "clap": Label("@cargo_vendor//:clap-4.5.46"),
-                "console": Label("@cargo_vendor//:console-0.16.0"),
-                "serde_json": Label("@cargo_vendor//:serde_json-1.0.143"),
-                "similar": Label("@cargo_vendor//:similar-2.7.0"),
-            },
-        },
-    },
-    "build/utils/rust/test_runner": {
-        _REQUIRED_FEATURE: {
-            _COMMON_CONDITION: {
-                "camino": Label("@cargo_vendor//:camino-1.1.12"),
-                "clap": Label("@cargo_vendor//:clap-4.5.46"),
-                "target-spec": Label("@cargo_vendor//:target-spec-3.5.0"),
-            },
-        },
-    },
-    "build/utils/rust/test_runner/lib": {
-        _REQUIRED_FEATURE: {
-            _COMMON_CONDITION: {
-                "camino": Label("@cargo_vendor//:camino-1.1.12"),
-                "cargo_metadata": Label("@cargo_vendor//:cargo_metadata-0.21.0"),
-                "clap": Label("@cargo_vendor//:clap-4.5.46"),
-                "guppy": Label("@cargo_vendor//:guppy-0.17.20"),
-                "nextest-filtering": Label("@cargo_vendor//:nextest-filtering-0.16.0"),
-                "nextest-metadata": Label("@cargo_vendor//:nextest-metadata-0.12.2"),
-                "nextest-runner": Label("@cargo_vendor//:nextest-runner-0.85.0"),
-                "serde_json": Label("@cargo_vendor//:serde_json-1.0.143"),
-                "toml_edit": Label("@cargo_vendor//:toml_edit-0.23.4"),
-                "walkdir": Label("@cargo_vendor//:walkdir-2.5.0"),
-            },
-        },
-    },
     "cloud/core": {
     },
     "cloud/proto": {
@@ -1139,6 +981,164 @@ _NORMAL_DEPENDENCIES = {
             },
         },
     },
+    "misc/utils/protobuf": {
+        _REQUIRED_FEATURE: {
+            _COMMON_CONDITION: {
+                "anyhow": Label("@cargo_vendor//:anyhow-1.0.99"),
+            },
+        },
+    },
+    "misc/utils/rust/analyzer/check": {
+        _REQUIRED_FEATURE: {
+            _COMMON_CONDITION: {
+                "anyhow": Label("@cargo_vendor//:anyhow-1.0.99"),
+                "camino": Label("@cargo_vendor//:camino-1.1.12"),
+                "clap": Label("@cargo_vendor//:clap-4.5.46"),
+                "serde": Label("@cargo_vendor//:serde-1.0.219"),
+                "serde_json": Label("@cargo_vendor//:serde_json-1.0.143"),
+            },
+        },
+    },
+    "misc/utils/rust/analyzer/discover": {
+        _REQUIRED_FEATURE: {
+            _COMMON_CONDITION: {
+                "anyhow": Label("@cargo_vendor//:anyhow-1.0.99"),
+                "camino": Label("@cargo_vendor//:camino-1.1.12"),
+                "clap": Label("@cargo_vendor//:clap-4.5.46"),
+                "env_logger": Label("@cargo_vendor//:env_logger-0.10.2"),
+                "fmtools": Label("@cargo_vendor//:fmtools-0.1.2"),
+                "log": Label("@cargo_vendor//:log-0.4.27"),
+                "serde": Label("@cargo_vendor//:serde-1.0.219"),
+                "serde_json": Label("@cargo_vendor//:serde_json-1.0.143"),
+            },
+        },
+    },
+    "misc/utils/rust/clippy": {
+        _REQUIRED_FEATURE: {
+            _COMMON_CONDITION: {
+                "camino": Label("@cargo_vendor//:camino-1.1.12"),
+                "clap": Label("@cargo_vendor//:clap-4.5.46"),
+                "serde": Label("@cargo_vendor//:serde-1.0.219"),
+                "serde_json": Label("@cargo_vendor//:serde_json-1.0.143"),
+            },
+        },
+    },
+    "misc/utils/rust/doc/merger": {
+        _REQUIRED_FEATURE: {
+            _COMMON_CONDITION: {
+                "camino": Label("@cargo_vendor//:camino-1.1.12"),
+                "camino-tempfile": Label("@cargo_vendor//:camino-tempfile-1.4.1"),
+                "clap": Label("@cargo_vendor//:clap-4.5.46"),
+                "copy_dir": Label("@cargo_vendor//:copy_dir-0.1.3"),
+                "lol_html": Label("@cargo_vendor//:lol_html-2.6.0"),
+                "serde": Label("@cargo_vendor//:serde-1.0.219"),
+                "serde_json": Label("@cargo_vendor//:serde_json-1.0.143"),
+            },
+        },
+    },
+    "misc/utils/rust/doc/test/builder": {
+        _REQUIRED_FEATURE: {
+            _COMMON_CONDITION: {
+                "camino": Label("@cargo_vendor//:camino-1.1.12"),
+                "clap": Label("@cargo_vendor//:clap-4.5.46"),
+                "quote": Label("@cargo_vendor//:quote-1.0.40"),
+                "serde": Label("@cargo_vendor//:serde-1.0.219"),
+                "serde_json": Label("@cargo_vendor//:serde_json-1.0.143"),
+            },
+        },
+    },
+    "misc/utils/rust/doc/test/common": {
+        _REQUIRED_FEATURE: {
+            _COMMON_CONDITION: {
+                "camino": Label("@cargo_vendor//:camino-1.1.12"),
+                "serde": Label("@cargo_vendor//:serde-1.0.219"),
+                "serde_json": Label("@cargo_vendor//:serde_json-1.0.143"),
+            },
+        },
+    },
+    "misc/utils/rust/doc/test/runner": {
+        _REQUIRED_FEATURE: {
+            _COMMON_CONDITION: {
+                "camino": Label("@cargo_vendor//:camino-1.1.12"),
+                "clap": Label("@cargo_vendor//:clap-4.5.46"),
+                "serde": Label("@cargo_vendor//:serde-1.0.219"),
+                "serde_json": Label("@cargo_vendor//:serde_json-1.0.143"),
+            },
+        },
+    },
+    "misc/utils/rust/doc/wrapper": {
+        _REQUIRED_FEATURE: {
+            _COMMON_CONDITION: {
+                "camino": Label("@cargo_vendor//:camino-1.1.12"),
+                "camino-tempfile": Label("@cargo_vendor//:camino-tempfile-1.4.1"),
+                "clap": Label("@cargo_vendor//:clap-4.5.46"),
+            },
+        },
+    },
+    "misc/utils/rust/sync_readme": {
+        _REQUIRED_FEATURE: {
+            _COMMON_CONDITION: {
+                "anyhow": Label("@cargo_vendor//:anyhow-1.0.99"),
+                "camino": Label("@cargo_vendor//:camino-1.1.12"),
+                "cargo_toml": Label("@cargo_vendor//:cargo_toml-0.22.3"),
+                "clap": Label("@cargo_vendor//:clap-4.5.46"),
+                "pulldown-cmark": Label("@cargo_vendor//:pulldown-cmark-0.13.0"),
+                "pulldown-cmark-to-cmark": Label("@cargo_vendor//:pulldown-cmark-to-cmark-21.0.0"),
+                "regex": Label("@cargo_vendor//:regex-1.11.2"),
+                "rustdoc-types": Label("@cargo_vendor//:rustdoc-types-0.53.0"),
+                "semver": Label("@cargo_vendor//:semver-1.0.26"),
+                "serde": Label("@cargo_vendor//:serde-1.0.219"),
+                "serde_json": Label("@cargo_vendor//:serde_json-1.0.143"),
+                "toml": Label("@cargo_vendor//:toml-0.9.5"),
+                "url": Label("@cargo_vendor//:url-2.5.7"),
+            },
+        },
+    },
+    "misc/utils/rust/sync_readme/common": {
+        _REQUIRED_FEATURE: {
+            _COMMON_CONDITION: {
+                "camino": Label("@cargo_vendor//:camino-1.1.12"),
+                "serde": Label("@cargo_vendor//:serde-1.0.219"),
+            },
+        },
+    },
+    "misc/utils/rust/sync_readme/test_runner": {
+        _REQUIRED_FEATURE: {
+            _COMMON_CONDITION: {
+                "anyhow": Label("@cargo_vendor//:anyhow-1.0.99"),
+                "camino": Label("@cargo_vendor//:camino-1.1.12"),
+                "clap": Label("@cargo_vendor//:clap-4.5.46"),
+                "console": Label("@cargo_vendor//:console-0.16.0"),
+                "serde_json": Label("@cargo_vendor//:serde_json-1.0.143"),
+                "similar": Label("@cargo_vendor//:similar-2.7.0"),
+            },
+        },
+    },
+    "misc/utils/rust/test_runner": {
+        _REQUIRED_FEATURE: {
+            _COMMON_CONDITION: {
+                "camino": Label("@cargo_vendor//:camino-1.1.12"),
+                "clap": Label("@cargo_vendor//:clap-4.5.46"),
+                "target-spec": Label("@cargo_vendor//:target-spec-3.5.0"),
+            },
+        },
+    },
+    "misc/utils/rust/test_runner/lib": {
+        _REQUIRED_FEATURE: {
+            _COMMON_CONDITION: {
+                "camino": Label("@cargo_vendor//:camino-1.1.12"),
+                "cargo_metadata": Label("@cargo_vendor//:cargo_metadata-0.21.0"),
+                "clap": Label("@cargo_vendor//:clap-4.5.46"),
+                "guppy": Label("@cargo_vendor//:guppy-0.17.20"),
+                "nextest-filtering": Label("@cargo_vendor//:nextest-filtering-0.16.0"),
+                "nextest-metadata": Label("@cargo_vendor//:nextest-metadata-0.12.2"),
+                "nextest-runner": Label("@cargo_vendor//:nextest-runner-0.85.0"),
+                "serde_json": Label("@cargo_vendor//:serde_json-1.0.143"),
+                "toml_edit": Label("@cargo_vendor//:toml_edit-0.23.4"),
+                "walkdir": Label("@cargo_vendor//:walkdir-2.5.0"),
+            },
+        },
+    },
     "tools/cargo/clippy": {
         _REQUIRED_FEATURE: {
             _COMMON_CONDITION: {
@@ -1167,90 +1167,6 @@ _NORMAL_DEPENDENCIES = {
 }
 
 _NORMAL_ALIASES = {
-    "build/utils/protobuf": {
-        _REQUIRED_FEATURE: {
-            _COMMON_CONDITION: {
-            },
-        },
-    },
-    "build/utils/rust/analyzer/check": {
-        _REQUIRED_FEATURE: {
-            _COMMON_CONDITION: {
-            },
-        },
-    },
-    "build/utils/rust/analyzer/discover": {
-        _REQUIRED_FEATURE: {
-            _COMMON_CONDITION: {
-            },
-        },
-    },
-    "build/utils/rust/clippy": {
-        _REQUIRED_FEATURE: {
-            _COMMON_CONDITION: {
-            },
-        },
-    },
-    "build/utils/rust/doc/merger": {
-        _REQUIRED_FEATURE: {
-            _COMMON_CONDITION: {
-            },
-        },
-    },
-    "build/utils/rust/doc/test/builder": {
-        _REQUIRED_FEATURE: {
-            _COMMON_CONDITION: {
-            },
-        },
-    },
-    "build/utils/rust/doc/test/common": {
-        _REQUIRED_FEATURE: {
-            _COMMON_CONDITION: {
-            },
-        },
-    },
-    "build/utils/rust/doc/test/runner": {
-        _REQUIRED_FEATURE: {
-            _COMMON_CONDITION: {
-            },
-        },
-    },
-    "build/utils/rust/doc/wrapper": {
-        _REQUIRED_FEATURE: {
-            _COMMON_CONDITION: {
-            },
-        },
-    },
-    "build/utils/rust/sync_readme": {
-        _REQUIRED_FEATURE: {
-            _COMMON_CONDITION: {
-            },
-        },
-    },
-    "build/utils/rust/sync_readme/common": {
-        _REQUIRED_FEATURE: {
-            _COMMON_CONDITION: {
-            },
-        },
-    },
-    "build/utils/rust/sync_readme/test_runner": {
-        _REQUIRED_FEATURE: {
-            _COMMON_CONDITION: {
-            },
-        },
-    },
-    "build/utils/rust/test_runner": {
-        _REQUIRED_FEATURE: {
-            _COMMON_CONDITION: {
-            },
-        },
-    },
-    "build/utils/rust/test_runner/lib": {
-        _REQUIRED_FEATURE: {
-            _COMMON_CONDITION: {
-            },
-        },
-    },
     "cloud/core": {
     },
     "cloud/proto": {
@@ -1569,6 +1485,90 @@ _NORMAL_ALIASES = {
             },
         },
     },
+    "misc/utils/protobuf": {
+        _REQUIRED_FEATURE: {
+            _COMMON_CONDITION: {
+            },
+        },
+    },
+    "misc/utils/rust/analyzer/check": {
+        _REQUIRED_FEATURE: {
+            _COMMON_CONDITION: {
+            },
+        },
+    },
+    "misc/utils/rust/analyzer/discover": {
+        _REQUIRED_FEATURE: {
+            _COMMON_CONDITION: {
+            },
+        },
+    },
+    "misc/utils/rust/clippy": {
+        _REQUIRED_FEATURE: {
+            _COMMON_CONDITION: {
+            },
+        },
+    },
+    "misc/utils/rust/doc/merger": {
+        _REQUIRED_FEATURE: {
+            _COMMON_CONDITION: {
+            },
+        },
+    },
+    "misc/utils/rust/doc/test/builder": {
+        _REQUIRED_FEATURE: {
+            _COMMON_CONDITION: {
+            },
+        },
+    },
+    "misc/utils/rust/doc/test/common": {
+        _REQUIRED_FEATURE: {
+            _COMMON_CONDITION: {
+            },
+        },
+    },
+    "misc/utils/rust/doc/test/runner": {
+        _REQUIRED_FEATURE: {
+            _COMMON_CONDITION: {
+            },
+        },
+    },
+    "misc/utils/rust/doc/wrapper": {
+        _REQUIRED_FEATURE: {
+            _COMMON_CONDITION: {
+            },
+        },
+    },
+    "misc/utils/rust/sync_readme": {
+        _REQUIRED_FEATURE: {
+            _COMMON_CONDITION: {
+            },
+        },
+    },
+    "misc/utils/rust/sync_readme/common": {
+        _REQUIRED_FEATURE: {
+            _COMMON_CONDITION: {
+            },
+        },
+    },
+    "misc/utils/rust/sync_readme/test_runner": {
+        _REQUIRED_FEATURE: {
+            _COMMON_CONDITION: {
+            },
+        },
+    },
+    "misc/utils/rust/test_runner": {
+        _REQUIRED_FEATURE: {
+            _COMMON_CONDITION: {
+            },
+        },
+    },
+    "misc/utils/rust/test_runner/lib": {
+        _REQUIRED_FEATURE: {
+            _COMMON_CONDITION: {
+            },
+        },
+    },
     "tools/cargo/clippy": {
         _REQUIRED_FEATURE: {
             _COMMON_CONDITION: {
@@ -1584,34 +1584,6 @@ _NORMAL_ALIASES = {
 }
 
 _NORMAL_DEV_DEPENDENCIES = {
-    "build/utils/protobuf": {
-    },
-    "build/utils/rust/analyzer/check": {
-    },
-    "build/utils/rust/analyzer/discover": {
-    },
-    "build/utils/rust/clippy": {
-    },
-    "build/utils/rust/doc/merger": {
-    },
-    "build/utils/rust/doc/test/builder": {
-    },
-    "build/utils/rust/doc/test/common": {
-    },
-    "build/utils/rust/doc/test/runner": {
-    },
-    "build/utils/rust/doc/wrapper": {
-    },
-    "build/utils/rust/sync_readme": {
-    },
-    "build/utils/rust/sync_readme/common": {
-    },
-    "build/utils/rust/sync_readme/test_runner": {
-    },
-    "build/utils/rust/test_runner": {
-    },
-    "build/utils/rust/test_runner/lib": {
-    },
     "cloud/core": {
     },
     "cloud/proto": {
@@ -1845,6 +1817,34 @@ _NORMAL_DEV_DEPENDENCIES = {
     },
     "dev-tools/xtask": {
     },
+    "misc/utils/protobuf": {
+    },
+    "misc/utils/rust/analyzer/check": {
+    },
+    "misc/utils/rust/analyzer/discover": {
+    },
+    "misc/utils/rust/clippy": {
+    },
+    "misc/utils/rust/doc/merger": {
+    },
+    "misc/utils/rust/doc/test/builder": {
+    },
+    "misc/utils/rust/doc/test/common": {
+    },
+    "misc/utils/rust/doc/test/runner": {
+    },
+    "misc/utils/rust/doc/wrapper": {
+    },
+    "misc/utils/rust/sync_readme": {
+    },
+    "misc/utils/rust/sync_readme/common": {
+    },
+    "misc/utils/rust/sync_readme/test_runner": {
+    },
+    "misc/utils/rust/test_runner": {
+    },
+    "misc/utils/rust/test_runner/lib": {
+    },
     "tools/cargo/clippy": {
     },
     "tools/cargo/sync-readme": {
@@ -1852,34 +1852,6 @@ _NORMAL_DEV_DEPENDENCIES = {
 }
 
 _NORMAL_DEV_ALIASES = {
-    "build/utils/protobuf": {
-    },
-    "build/utils/rust/analyzer/check": {
-    },
-    "build/utils/rust/analyzer/discover": {
-    },
-    "build/utils/rust/clippy": {
-    },
-    "build/utils/rust/doc/merger": {
-    },
-    "build/utils/rust/doc/test/builder": {
-    },
-    "build/utils/rust/doc/test/common": {
-    },
-    "build/utils/rust/doc/test/runner": {
-    },
-    "build/utils/rust/doc/wrapper": {
-    },
-    "build/utils/rust/sync_readme": {
-    },
-    "build/utils/rust/sync_readme/common": {
-    },
-    "build/utils/rust/sync_readme/test_runner": {
-    },
-    "build/utils/rust/test_runner": {
-    },
-    "build/utils/rust/test_runner/lib": {
-    },
     "cloud/core": {
     },
     "cloud/proto": {
@@ -2048,6 +2020,34 @@ _NORMAL_DEV_ALIASES = {
     },
     "dev-tools/xtask": {
     },
+    "misc/utils/protobuf": {
+    },
+    "misc/utils/rust/analyzer/check": {
+    },
+    "misc/utils/rust/analyzer/discover": {
+    },
+    "misc/utils/rust/clippy": {
+    },
+    "misc/utils/rust/doc/merger": {
+    },
+    "misc/utils/rust/doc/test/builder": {
+    },
+    "misc/utils/rust/doc/test/common": {
+    },
+    "misc/utils/rust/doc/test/runner": {
+    },
+    "misc/utils/rust/doc/wrapper": {
+    },
+    "misc/utils/rust/sync_readme": {
+    },
+    "misc/utils/rust/sync_readme/common": {
+    },
+    "misc/utils/rust/sync_readme/test_runner": {
+    },
+    "misc/utils/rust/test_runner": {
+    },
+    "misc/utils/rust/test_runner/lib": {
+    },
     "tools/cargo/clippy": {
     },
     "tools/cargo/sync-readme": {
@@ -2055,79 +2055,6 @@ _NORMAL_DEV_ALIASES = {
 }
 
 _PROC_MACRO_DEPENDENCIES = {
-    "build/utils/protobuf": {
-    },
-    "build/utils/rust/analyzer/check": {
-        _REQUIRED_FEATURE: {
-            _COMMON_CONDITION: {
-                "serde_derive": Label("@cargo_vendor//:serde_derive-1.0.219"),
-            },
-        },
-    },
-    "build/utils/rust/analyzer/discover": {
-        _REQUIRED_FEATURE: {
-            _COMMON_CONDITION: {
-                "serde_derive": Label("@cargo_vendor//:serde_derive-1.0.219"),
-            },
-        },
-    },
-    "build/utils/rust/clippy": {
-        _REQUIRED_FEATURE: {
-            _COMMON_CONDITION: {
-                "serde_derive": Label("@cargo_vendor//:serde_derive-1.0.219"),
-            },
-        },
-    },
-    "build/utils/rust/doc/merger": {
-        _REQUIRED_FEATURE: {
-            _COMMON_CONDITION: {
-                "serde_derive": Label("@cargo_vendor//:serde_derive-1.0.219"),
-            },
-        },
-    },
-    "build/utils/rust/doc/test/builder": {
-        _REQUIRED_FEATURE: {
-            _COMMON_CONDITION: {
-                "serde_derive": Label("@cargo_vendor//:serde_derive-1.0.219"),
-            },
-        },
-    },
-    "build/utils/rust/doc/test/common": {
-        _REQUIRED_FEATURE: {
-            _COMMON_CONDITION: {
-                "serde_derive": Label("@cargo_vendor//:serde_derive-1.0.219"),
-            },
-        },
-    },
-    "build/utils/rust/doc/test/runner": {
-        _REQUIRED_FEATURE: {
-            _COMMON_CONDITION: {
-                "serde_derive": Label("@cargo_vendor//:serde_derive-1.0.219"),
-            },
-        },
-    },
-    "build/utils/rust/doc/wrapper": {
-    },
-    "build/utils/rust/sync_readme": {
-        _REQUIRED_FEATURE: {
-            _COMMON_CONDITION: {
-                "serde_derive": Label("@cargo_vendor//:serde_derive-1.0.219"),
-            },
-        },
-    },
-    "build/utils/rust/sync_readme/common": {
-        _REQUIRED_FEATURE: {
-            _COMMON_CONDITION: {
-                "serde_derive": Label("@cargo_vendor//:serde_derive-1.0.219"),
-            },
-        },
-    },
-    "build/utils/rust/sync_readme/test_runner": {
-    },
-    "build/utils/rust/test_runner": {
-    },
-    "build/utils/rust/test_runner/lib": {
-    },
     "cloud/core": {
     },
     "cloud/proto": {
@@ -2407,6 +2334,79 @@ _PROC_MACRO_DEPENDENCIES = {
             },
         },
     },
+    "misc/utils/protobuf": {
+    },
+    "misc/utils/rust/analyzer/check": {
+        _REQUIRED_FEATURE: {
+            _COMMON_CONDITION: {
+                "serde_derive": Label("@cargo_vendor//:serde_derive-1.0.219"),
+            },
+        },
+    },
+    "misc/utils/rust/analyzer/discover": {
+        _REQUIRED_FEATURE: {
+            _COMMON_CONDITION: {
+                "serde_derive": Label("@cargo_vendor//:serde_derive-1.0.219"),
+            },
+        },
+    },
+    "misc/utils/rust/clippy": {
+        _REQUIRED_FEATURE: {
+            _COMMON_CONDITION: {
+                "serde_derive": Label("@cargo_vendor//:serde_derive-1.0.219"),
+            },
+        },
+    },
+    "misc/utils/rust/doc/merger": {
+        _REQUIRED_FEATURE: {
+            _COMMON_CONDITION: {
+                "serde_derive": Label("@cargo_vendor//:serde_derive-1.0.219"),
+            },
+        },
+    },
+    "misc/utils/rust/doc/test/builder": {
+        _REQUIRED_FEATURE: {
+            _COMMON_CONDITION: {
+                "serde_derive": Label("@cargo_vendor//:serde_derive-1.0.219"),
+            },
+        },
+    },
+    "misc/utils/rust/doc/test/common": {
+        _REQUIRED_FEATURE: {
+            _COMMON_CONDITION: {
+                "serde_derive": Label("@cargo_vendor//:serde_derive-1.0.219"),
+            },
+        },
+    },
+    "misc/utils/rust/doc/test/runner": {
+        _REQUIRED_FEATURE: {
+            _COMMON_CONDITION: {
+                "serde_derive": Label("@cargo_vendor//:serde_derive-1.0.219"),
+            },
+        },
+    },
+    "misc/utils/rust/doc/wrapper": {
+    },
+    "misc/utils/rust/sync_readme": {
+        _REQUIRED_FEATURE: {
+            _COMMON_CONDITION: {
+                "serde_derive": Label("@cargo_vendor//:serde_derive-1.0.219"),
+            },
+        },
+    },
+    "misc/utils/rust/sync_readme/common": {
+        _REQUIRED_FEATURE: {
+            _COMMON_CONDITION: {
+                "serde_derive": Label("@cargo_vendor//:serde_derive-1.0.219"),
+            },
+        },
+    },
+    "misc/utils/rust/sync_readme/test_runner": {
+    },
+    "misc/utils/rust/test_runner": {
+    },
+    "misc/utils/rust/test_runner/lib": {
+    },
     "tools/cargo/clippy": {
     },
     "tools/cargo/sync-readme": {
@@ -2414,34 +2414,6 @@ _PROC_MACRO_DEPENDENCIES = {
 }
 
 _PROC_MACRO_ALIASES = {
-    "build/utils/protobuf": {
-    },
-    "build/utils/rust/analyzer/check": {
-    },
-    "build/utils/rust/analyzer/discover": {
-    },
-    "build/utils/rust/clippy": {
-    },
-    "build/utils/rust/doc/merger": {
-    },
-    "build/utils/rust/doc/test/builder": {
-    },
-    "build/utils/rust/doc/test/common": {
-    },
-    "build/utils/rust/doc/test/runner": {
-    },
-    "build/utils/rust/doc/wrapper": {
-    },
-    "build/utils/rust/sync_readme": {
-    },
-    "build/utils/rust/sync_readme/common": {
-    },
-    "build/utils/rust/sync_readme/test_runner": {
-    },
-    "build/utils/rust/test_runner": {
-    },
-    "build/utils/rust/test_runner/lib": {
-    },
     "cloud/core": {
     },
     "cloud/proto": {
@@ -2527,6 +2499,34 @@ _PROC_MACRO_ALIASES = {
     "crates/transmuxer": {
     },
     "dev-tools/xtask": {
+    },
+    "misc/utils/protobuf": {
+    },
+    "misc/utils/rust/analyzer/check": {
+    },
+    "misc/utils/rust/analyzer/discover": {
+    },
+    "misc/utils/rust/clippy": {
+    },
+    "misc/utils/rust/doc/merger": {
+    },
+    "misc/utils/rust/doc/test/builder": {
+    },
+    "misc/utils/rust/doc/test/common": {
+    },
+    "misc/utils/rust/doc/test/runner": {
+    },
+    "misc/utils/rust/doc/wrapper": {
+    },
+    "misc/utils/rust/sync_readme": {
+    },
+    "misc/utils/rust/sync_readme/common": {
+    },
+    "misc/utils/rust/sync_readme/test_runner": {
+    },
+    "misc/utils/rust/test_runner": {
+    },
+    "misc/utils/rust/test_runner/lib": {
     },
     "tools/cargo/clippy": {
     },
@@ -2535,34 +2535,6 @@ _PROC_MACRO_ALIASES = {
 }
 
 _PROC_MACRO_DEV_DEPENDENCIES = {
-    "build/utils/protobuf": {
-    },
-    "build/utils/rust/analyzer/check": {
-    },
-    "build/utils/rust/analyzer/discover": {
-    },
-    "build/utils/rust/clippy": {
-    },
-    "build/utils/rust/doc/merger": {
-    },
-    "build/utils/rust/doc/test/builder": {
-    },
-    "build/utils/rust/doc/test/common": {
-    },
-    "build/utils/rust/doc/test/runner": {
-    },
-    "build/utils/rust/doc/wrapper": {
-    },
-    "build/utils/rust/sync_readme": {
-    },
-    "build/utils/rust/sync_readme/common": {
-    },
-    "build/utils/rust/sync_readme/test_runner": {
-    },
-    "build/utils/rust/test_runner": {
-    },
-    "build/utils/rust/test_runner/lib": {
-    },
     "cloud/core": {
     },
     "cloud/proto": {
@@ -2654,6 +2626,34 @@ _PROC_MACRO_DEV_DEPENDENCIES = {
     },
     "dev-tools/xtask": {
     },
+    "misc/utils/protobuf": {
+    },
+    "misc/utils/rust/analyzer/check": {
+    },
+    "misc/utils/rust/analyzer/discover": {
+    },
+    "misc/utils/rust/clippy": {
+    },
+    "misc/utils/rust/doc/merger": {
+    },
+    "misc/utils/rust/doc/test/builder": {
+    },
+    "misc/utils/rust/doc/test/common": {
+    },
+    "misc/utils/rust/doc/test/runner": {
+    },
+    "misc/utils/rust/doc/wrapper": {
+    },
+    "misc/utils/rust/sync_readme": {
+    },
+    "misc/utils/rust/sync_readme/common": {
+    },
+    "misc/utils/rust/sync_readme/test_runner": {
+    },
+    "misc/utils/rust/test_runner": {
+    },
+    "misc/utils/rust/test_runner/lib": {
+    },
     "tools/cargo/clippy": {
     },
     "tools/cargo/sync-readme": {
@@ -2661,34 +2661,6 @@ _PROC_MACRO_DEV_DEPENDENCIES = {
 }
 
 _PROC_MACRO_DEV_ALIASES = {
-    "build/utils/protobuf": {
-    },
-    "build/utils/rust/analyzer/check": {
-    },
-    "build/utils/rust/analyzer/discover": {
-    },
-    "build/utils/rust/clippy": {
-    },
-    "build/utils/rust/doc/merger": {
-    },
-    "build/utils/rust/doc/test/builder": {
-    },
-    "build/utils/rust/doc/test/common": {
-    },
-    "build/utils/rust/doc/test/runner": {
-    },
-    "build/utils/rust/doc/wrapper": {
-    },
-    "build/utils/rust/sync_readme": {
-    },
-    "build/utils/rust/sync_readme/common": {
-    },
-    "build/utils/rust/sync_readme/test_runner": {
-    },
-    "build/utils/rust/test_runner": {
-    },
-    "build/utils/rust/test_runner/lib": {
-    },
     "cloud/core": {
     },
     "cloud/proto": {
@@ -2857,6 +2829,34 @@ _PROC_MACRO_DEV_ALIASES = {
     },
     "dev-tools/xtask": {
     },
+    "misc/utils/protobuf": {
+    },
+    "misc/utils/rust/analyzer/check": {
+    },
+    "misc/utils/rust/analyzer/discover": {
+    },
+    "misc/utils/rust/clippy": {
+    },
+    "misc/utils/rust/doc/merger": {
+    },
+    "misc/utils/rust/doc/test/builder": {
+    },
+    "misc/utils/rust/doc/test/common": {
+    },
+    "misc/utils/rust/doc/test/runner": {
+    },
+    "misc/utils/rust/doc/wrapper": {
+    },
+    "misc/utils/rust/sync_readme": {
+    },
+    "misc/utils/rust/sync_readme/common": {
+    },
+    "misc/utils/rust/sync_readme/test_runner": {
+    },
+    "misc/utils/rust/test_runner": {
+    },
+    "misc/utils/rust/test_runner/lib": {
+    },
     "tools/cargo/clippy": {
     },
     "tools/cargo/sync-readme": {
@@ -2864,34 +2864,6 @@ _PROC_MACRO_DEV_ALIASES = {
 }
 
 _BUILD_DEPENDENCIES = {
-    "build/utils/protobuf": {
-    },
-    "build/utils/rust/analyzer/check": {
-    },
-    "build/utils/rust/analyzer/discover": {
-    },
-    "build/utils/rust/clippy": {
-    },
-    "build/utils/rust/doc/merger": {
-    },
-    "build/utils/rust/doc/test/builder": {
-    },
-    "build/utils/rust/doc/test/common": {
-    },
-    "build/utils/rust/doc/test/runner": {
-    },
-    "build/utils/rust/doc/wrapper": {
-    },
-    "build/utils/rust/sync_readme": {
-    },
-    "build/utils/rust/sync_readme/common": {
-    },
-    "build/utils/rust/sync_readme/test_runner": {
-    },
-    "build/utils/rust/test_runner": {
-    },
-    "build/utils/rust/test_runner/lib": {
-    },
     "cloud/core": {
     },
     "cloud/proto": {
@@ -2983,6 +2955,34 @@ _BUILD_DEPENDENCIES = {
     },
     "dev-tools/xtask": {
     },
+    "misc/utils/protobuf": {
+    },
+    "misc/utils/rust/analyzer/check": {
+    },
+    "misc/utils/rust/analyzer/discover": {
+    },
+    "misc/utils/rust/clippy": {
+    },
+    "misc/utils/rust/doc/merger": {
+    },
+    "misc/utils/rust/doc/test/builder": {
+    },
+    "misc/utils/rust/doc/test/common": {
+    },
+    "misc/utils/rust/doc/test/runner": {
+    },
+    "misc/utils/rust/doc/wrapper": {
+    },
+    "misc/utils/rust/sync_readme": {
+    },
+    "misc/utils/rust/sync_readme/common": {
+    },
+    "misc/utils/rust/sync_readme/test_runner": {
+    },
+    "misc/utils/rust/test_runner": {
+    },
+    "misc/utils/rust/test_runner/lib": {
+    },
     "tools/cargo/clippy": {
     },
     "tools/cargo/sync-readme": {
@@ -2990,34 +2990,6 @@ _BUILD_DEPENDENCIES = {
 }
 
 _BUILD_ALIASES = {
-    "build/utils/protobuf": {
-    },
-    "build/utils/rust/analyzer/check": {
-    },
-    "build/utils/rust/analyzer/discover": {
-    },
-    "build/utils/rust/clippy": {
-    },
-    "build/utils/rust/doc/merger": {
-    },
-    "build/utils/rust/doc/test/builder": {
-    },
-    "build/utils/rust/doc/test/common": {
-    },
-    "build/utils/rust/doc/test/runner": {
-    },
-    "build/utils/rust/doc/wrapper": {
-    },
-    "build/utils/rust/sync_readme": {
-    },
-    "build/utils/rust/sync_readme/common": {
-    },
-    "build/utils/rust/sync_readme/test_runner": {
-    },
-    "build/utils/rust/test_runner": {
-    },
-    "build/utils/rust/test_runner/lib": {
-    },
     "cloud/core": {
     },
     "cloud/proto": {
@@ -3103,6 +3075,34 @@ _BUILD_ALIASES = {
     "crates/transmuxer": {
     },
     "dev-tools/xtask": {
+    },
+    "misc/utils/protobuf": {
+    },
+    "misc/utils/rust/analyzer/check": {
+    },
+    "misc/utils/rust/analyzer/discover": {
+    },
+    "misc/utils/rust/clippy": {
+    },
+    "misc/utils/rust/doc/merger": {
+    },
+    "misc/utils/rust/doc/test/builder": {
+    },
+    "misc/utils/rust/doc/test/common": {
+    },
+    "misc/utils/rust/doc/test/runner": {
+    },
+    "misc/utils/rust/doc/wrapper": {
+    },
+    "misc/utils/rust/sync_readme": {
+    },
+    "misc/utils/rust/sync_readme/common": {
+    },
+    "misc/utils/rust/sync_readme/test_runner": {
+    },
+    "misc/utils/rust/test_runner": {
+    },
+    "misc/utils/rust/test_runner/lib": {
     },
     "tools/cargo/clippy": {
     },
@@ -3111,34 +3111,6 @@ _BUILD_ALIASES = {
 }
 
 _BUILD_PROC_MACRO_DEPENDENCIES = {
-    "build/utils/protobuf": {
-    },
-    "build/utils/rust/analyzer/check": {
-    },
-    "build/utils/rust/analyzer/discover": {
-    },
-    "build/utils/rust/clippy": {
-    },
-    "build/utils/rust/doc/merger": {
-    },
-    "build/utils/rust/doc/test/builder": {
-    },
-    "build/utils/rust/doc/test/common": {
-    },
-    "build/utils/rust/doc/test/runner": {
-    },
-    "build/utils/rust/doc/wrapper": {
-    },
-    "build/utils/rust/sync_readme": {
-    },
-    "build/utils/rust/sync_readme/common": {
-    },
-    "build/utils/rust/sync_readme/test_runner": {
-    },
-    "build/utils/rust/test_runner": {
-    },
-    "build/utils/rust/test_runner/lib": {
-    },
     "cloud/core": {
     },
     "cloud/proto": {
@@ -3212,6 +3184,34 @@ _BUILD_PROC_MACRO_DEPENDENCIES = {
     "crates/transmuxer": {
     },
     "dev-tools/xtask": {
+    },
+    "misc/utils/protobuf": {
+    },
+    "misc/utils/rust/analyzer/check": {
+    },
+    "misc/utils/rust/analyzer/discover": {
+    },
+    "misc/utils/rust/clippy": {
+    },
+    "misc/utils/rust/doc/merger": {
+    },
+    "misc/utils/rust/doc/test/builder": {
+    },
+    "misc/utils/rust/doc/test/common": {
+    },
+    "misc/utils/rust/doc/test/runner": {
+    },
+    "misc/utils/rust/doc/wrapper": {
+    },
+    "misc/utils/rust/sync_readme": {
+    },
+    "misc/utils/rust/sync_readme/common": {
+    },
+    "misc/utils/rust/sync_readme/test_runner": {
+    },
+    "misc/utils/rust/test_runner": {
+    },
+    "misc/utils/rust/test_runner/lib": {
     },
     "tools/cargo/clippy": {
     },
@@ -3220,34 +3220,6 @@ _BUILD_PROC_MACRO_DEPENDENCIES = {
 }
 
 _BUILD_PROC_MACRO_ALIASES = {
-    "build/utils/protobuf": {
-    },
-    "build/utils/rust/analyzer/check": {
-    },
-    "build/utils/rust/analyzer/discover": {
-    },
-    "build/utils/rust/clippy": {
-    },
-    "build/utils/rust/doc/merger": {
-    },
-    "build/utils/rust/doc/test/builder": {
-    },
-    "build/utils/rust/doc/test/common": {
-    },
-    "build/utils/rust/doc/test/runner": {
-    },
-    "build/utils/rust/doc/wrapper": {
-    },
-    "build/utils/rust/sync_readme": {
-    },
-    "build/utils/rust/sync_readme/common": {
-    },
-    "build/utils/rust/sync_readme/test_runner": {
-    },
-    "build/utils/rust/test_runner": {
-    },
-    "build/utils/rust/test_runner/lib": {
-    },
     "cloud/core": {
     },
     "cloud/proto": {
@@ -3322,6 +3294,34 @@ _BUILD_PROC_MACRO_ALIASES = {
     },
     "dev-tools/xtask": {
     },
+    "misc/utils/protobuf": {
+    },
+    "misc/utils/rust/analyzer/check": {
+    },
+    "misc/utils/rust/analyzer/discover": {
+    },
+    "misc/utils/rust/clippy": {
+    },
+    "misc/utils/rust/doc/merger": {
+    },
+    "misc/utils/rust/doc/test/builder": {
+    },
+    "misc/utils/rust/doc/test/common": {
+    },
+    "misc/utils/rust/doc/test/runner": {
+    },
+    "misc/utils/rust/doc/wrapper": {
+    },
+    "misc/utils/rust/sync_readme": {
+    },
+    "misc/utils/rust/sync_readme/common": {
+    },
+    "misc/utils/rust/sync_readme/test_runner": {
+    },
+    "misc/utils/rust/test_runner": {
+    },
+    "misc/utils/rust/test_runner/lib": {
+    },
     "tools/cargo/clippy": {
     },
     "tools/cargo/sync-readme": {
@@ -3329,34 +3329,6 @@ _BUILD_PROC_MACRO_ALIASES = {
 }
 
 _FEATURE_FLAGS = {
-    "build/utils/protobuf": {
-    },
-    "build/utils/rust/analyzer/check": {
-    },
-    "build/utils/rust/analyzer/discover": {
-    },
-    "build/utils/rust/clippy": {
-    },
-    "build/utils/rust/doc/merger": {
-    },
-    "build/utils/rust/doc/test/builder": {
-    },
-    "build/utils/rust/doc/test/common": {
-    },
-    "build/utils/rust/doc/test/runner": {
-    },
-    "build/utils/rust/doc/wrapper": {
-    },
-    "build/utils/rust/sync_readme": {
-    },
-    "build/utils/rust/sync_readme/common": {
-    },
-    "build/utils/rust/sync_readme/test_runner": {
-    },
-    "build/utils/rust/test_runner": {
-    },
-    "build/utils/rust/test_runner/lib": {
-    },
     "cloud/core": {
     },
     "cloud/proto": {
@@ -3658,6 +3630,34 @@ _FEATURE_FLAGS = {
     },
     "dev-tools/xtask": {
     },
+    "misc/utils/protobuf": {
+    },
+    "misc/utils/rust/analyzer/check": {
+    },
+    "misc/utils/rust/analyzer/discover": {
+    },
+    "misc/utils/rust/clippy": {
+    },
+    "misc/utils/rust/doc/merger": {
+    },
+    "misc/utils/rust/doc/test/builder": {
+    },
+    "misc/utils/rust/doc/test/common": {
+    },
+    "misc/utils/rust/doc/test/runner": {
+    },
+    "misc/utils/rust/doc/wrapper": {
+    },
+    "misc/utils/rust/sync_readme": {
+    },
+    "misc/utils/rust/sync_readme/common": {
+    },
+    "misc/utils/rust/sync_readme/test_runner": {
+    },
+    "misc/utils/rust/test_runner": {
+    },
+    "misc/utils/rust/test_runner/lib": {
+    },
     "tools/cargo/clippy": {
     },
     "tools/cargo/sync-readme": {
@@ -3665,34 +3665,6 @@ _FEATURE_FLAGS = {
 }
 
 _RESOLVED_FEATURE_FLAGS = {
-    "build/utils/protobuf": {
-    },
-    "build/utils/rust/analyzer/check": {
-    },
-    "build/utils/rust/analyzer/discover": {
-    },
-    "build/utils/rust/clippy": {
-    },
-    "build/utils/rust/doc/merger": {
-    },
-    "build/utils/rust/doc/test/builder": {
-    },
-    "build/utils/rust/doc/test/common": {
-    },
-    "build/utils/rust/doc/test/runner": {
-    },
-    "build/utils/rust/doc/wrapper": {
-    },
-    "build/utils/rust/sync_readme": {
-    },
-    "build/utils/rust/sync_readme/common": {
-    },
-    "build/utils/rust/sync_readme/test_runner": {
-    },
-    "build/utils/rust/test_runner": {
-    },
-    "build/utils/rust/test_runner/lib": {
-    },
     "cloud/core": {
     },
     "cloud/proto": {
@@ -3812,6 +3784,34 @@ _RESOLVED_FEATURE_FLAGS = {
     },
     "dev-tools/xtask": {
     },
+    "misc/utils/protobuf": {
+    },
+    "misc/utils/rust/analyzer/check": {
+    },
+    "misc/utils/rust/analyzer/discover": {
+    },
+    "misc/utils/rust/clippy": {
+    },
+    "misc/utils/rust/doc/merger": {
+    },
+    "misc/utils/rust/doc/test/builder": {
+    },
+    "misc/utils/rust/doc/test/common": {
+    },
+    "misc/utils/rust/doc/test/runner": {
+    },
+    "misc/utils/rust/doc/wrapper": {
+    },
+    "misc/utils/rust/sync_readme": {
+    },
+    "misc/utils/rust/sync_readme/common": {
+    },
+    "misc/utils/rust/sync_readme/test_runner": {
+    },
+    "misc/utils/rust/test_runner": {
+    },
+    "misc/utils/rust/test_runner/lib": {
+    },
     "tools/cargo/clippy": {
     },
     "tools/cargo/sync-readme": {
@@ -3819,20 +3819,6 @@ _RESOLVED_FEATURE_FLAGS = {
 }
 
 _VERSIONS = {
-    "build/utils/protobuf": "0.0.0",
-    "build/utils/rust/analyzer/check": "0.0.0",
-    "build/utils/rust/analyzer/discover": "0.0.0",
-    "build/utils/rust/clippy": "0.0.0",
-    "build/utils/rust/doc/merger": "0.0.0",
-    "build/utils/rust/doc/test/builder": "0.0.0",
-    "build/utils/rust/doc/test/common": "0.0.0",
-    "build/utils/rust/doc/test/runner": "0.0.0",
-    "build/utils/rust/doc/wrapper": "0.0.0",
-    "build/utils/rust/sync_readme": "0.0.0",
-    "build/utils/rust/sync_readme/common": "0.0.0",
-    "build/utils/rust/sync_readme/test_runner": "0.0.0",
-    "build/utils/rust/test_runner": "0.0.0",
-    "build/utils/rust/test_runner/lib": "0.0.0",
     "cloud/core": "0.1.0",
     "cloud/proto": "0.1.0",
     "crates/aac": "0.1.4",
@@ -3870,6 +3856,20 @@ _VERSIONS = {
     "crates/tinc/pb-prost": "0.2.0",
     "crates/transmuxer": "0.2.2",
     "dev-tools/xtask": "0.0.0",
+    "misc/utils/protobuf": "0.0.0",
+    "misc/utils/rust/analyzer/check": "0.0.0",
+    "misc/utils/rust/analyzer/discover": "0.0.0",
+    "misc/utils/rust/clippy": "0.0.0",
+    "misc/utils/rust/doc/merger": "0.0.0",
+    "misc/utils/rust/doc/test/builder": "0.0.0",
+    "misc/utils/rust/doc/test/common": "0.0.0",
+    "misc/utils/rust/doc/test/runner": "0.0.0",
+    "misc/utils/rust/doc/wrapper": "0.0.0",
+    "misc/utils/rust/sync_readme": "0.0.0",
+    "misc/utils/rust/sync_readme/common": "0.0.0",
+    "misc/utils/rust/sync_readme/test_runner": "0.0.0",
+    "misc/utils/rust/test_runner": "0.0.0",
+    "misc/utils/rust/test_runner/lib": "0.0.0",
     "tools/cargo/clippy": "0.0.0",
     "tools/cargo/sync-readme": "0.0.0",
 }

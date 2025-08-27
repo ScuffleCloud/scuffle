@@ -1,4 +1,4 @@
-load("//build/utils:binary_wrapper.bzl", "binary_wrapper")
+load("//misc/utils:binary_wrapper.bzl", "binary_wrapper")
 
 binary_wrapper(
     name = "buildifier",

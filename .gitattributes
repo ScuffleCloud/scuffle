@@ -1,4 +1,3 @@
-* merge=mergiraf
 Cargo.lock merge=lockfile
 MODULE.bazel.lock merge=lockfile
 pnpm-lock.yaml merge=lockfile

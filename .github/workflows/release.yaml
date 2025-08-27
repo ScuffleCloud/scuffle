@@ -70,6 +70,7 @@ jobs:
           vercel-token: ${{ secrets.VERCEL_TOKEN }}
           github-token: ${{ secrets.GITHUB_TOKEN }}
           vercel-args: "--archive=tgz --prod"
+          github-comment: false
           vercel-org-id: ${{ secrets.VERCEL_ORG_ID }}
           vercel-project-id: ${{ secrets.VERCEL_PROJECT_ID_DOCS_SCUFFLE_RS }}
           working-directory: docs

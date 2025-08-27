@@ -73,6 +73,7 @@ jobs:
 
       - name: PR Comment
         uses: thollander/actions-comment-pull-request@v3
+        if: ${{ inputs.deploy_docs && inputs.pr_number }}
         with:
           pr-number: ${{ inputs.pr_number }}
           github-token: ${{ secrets.GITHUB_TOKEN }}

@@ -1,0 +1,9 @@
+[[tinc]]
+category = "feat"
+description = "Added support for NaN/Infinity values in Tinc crate (gRPC -> REST transcoder)"
+authors = ["@alicjaceligowska"]
+
+[[tinc]]
+category = "feat"
+description = "Tinc annotations: Added pre-defined options to disallow NaN/Infinity values from float/double types"
+authors = ["@alicjaceligowska"]

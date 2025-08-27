@@ -1,0 +1,54 @@
+syntax = "proto3";
+
+package floats;
+
+import "google/protobuf/wrappers.proto";
+import "tinc/annotations.proto";
+
+message FloatMessageWithNonFinite {
+  option (tinc.message).generate = true;
+
+  float simple_f32 = 1;
+  double simple_f64 = 2;
+
+  repeated float rep_f32 = 3;
+  repeated double rep_f64 = 4;
+
+  optional float opt_f32 = 5;
+  optional double opt_f64 = 6;
+
+  optional google.protobuf.FloatValue google_f32 = 7;
+  optional google.protobuf.DoubleValue google_f64 = 8;
+
+  map<string, float> map_f32 = 9;
+  map<string, double> map_f64 = 10;
+
+  oneof variant {
+    float oneof_f32 = 11;
+    double oneof_f64 = 12;
+  }
+}
+
+message FloatMessageWithSomeNonFinite {
+  option (tinc.message).generate = true;
+
+  // In build.rs some of these fields are marked as using
+  // serializer with NaN/Infinity support, some without
+
+  float f32_with_non_finite_serializer = 1 [(tinc.field).constraint.float = {disallow_nan: true}];
+
+  double f64_with_non_finite_serializer = 2 [(tinc.field).constraint.double = {
+    disallow_nan: true
+    disallow_infinity: true
+    gt: 0.0
+  }];
+
+  float f32_with_primitive_serializer = 3;
+  double f64_with_primitive_serializer = 4;
+}
+
+service FloatService {
+  rpc Float(FloatMessageWithNonFinite) returns (FloatMessageWithSomeNonFinite) {
+    option (tinc.method).endpoint = {post: "/float"};
+  }
+}

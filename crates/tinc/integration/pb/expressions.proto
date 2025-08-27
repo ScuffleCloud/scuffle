@@ -84,6 +84,20 @@ message FloatExpressions {
   }];
 
   float pi = 6 [(tinc.field).constraint.float = {const: 3}];
+
+  float valid_values_only = 7 [(tinc.field).constraint.float = {disallow_nan: true}];
+
+  float finite_values_only = 8 [(tinc.field).constraint.float = {disallow_infinity: true}];
+
+  float typical_values_only = 9 [(tinc.field).constraint.float = {
+    disallow_infinity: true
+    disallow_nan: true
+  }];
+
+  float positive_infinity_ok = 10 [(tinc.field).constraint.float = {
+    gte: 0.0
+    disallow_nan: true
+  }];
 }
 
 message DoubleExpressions {
@@ -115,6 +129,20 @@ message DoubleExpressions {
   }];
 
   double pi = 6 [(tinc.field).constraint.double = {const: 3}];
+
+  double valid_values_only = 7 [(tinc.field).constraint.double = {disallow_nan: true}];
+
+  double finite_values_only = 8 [(tinc.field).constraint.double = {disallow_infinity: true}];
+
+  double typical_values_only = 9 [(tinc.field).constraint.double = {
+    disallow_nan: true
+    disallow_infinity: true
+  }];
+
+  double positive_infinity_ok = 10 [(tinc.field).constraint.double = {
+    gte: 0.0
+    disallow_nan: true
+  }];
 }
 
 message Int32Expressions {

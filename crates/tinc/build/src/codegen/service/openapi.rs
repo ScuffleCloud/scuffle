@@ -11,7 +11,7 @@ use tinc_cel::{CelValue, NumberTy};
 use crate::codegen::cel::compiler::{CompiledExpr, Compiler, CompilerTarget, ConstantCompiledExpr};
 use crate::codegen::cel::{CelExpression, CelExpressions, functions};
 use crate::codegen::utils::field_ident_from_str;
-use crate::types::{ProtoModifiedValueType, ProtoType, ProtoTypeRegistry, ProtoValueType, ProtoWellKnownType};
+use crate::types::{ProtoModifiedValueType, ProtoPath, ProtoType, ProtoTypeRegistry, ProtoValueType, ProtoWellKnownType};
 
 fn cel_to_json(cel: &CelValue<'static>, type_registry: &ProtoTypeRegistry) -> anyhow::Result<serde_json::Value> {
     match cel {
@@ -156,6 +156,7 @@ enum GenerateDirection {
 }
 
 struct FieldExtract {
+    full_name: ProtoPath,
     tokens: proc_macro2::TokenStream,
     ty: ProtoType,
     cel: CelExpressions,
@@ -176,6 +177,7 @@ fn input_field_getter_gen(
     let mut is_optional = false;
     let mut kind = None;
     let mut cel = None;
+    let mut full_name = None;
     for part in field_str.split('.') {
         let Some(field) = next_message.and_then(|message| message.fields.get(part)) else {
             anyhow::bail!("message does not have field: {field_str}");
@@ -190,6 +192,7 @@ fn input_field_getter_gen(
             }
         });
 
+        full_name = Some(&field.full_name);
         kind = Some(&field.ty);
         cel = Some(&field.options.cel_exprs);
         mapping = quote! {{
@@ -214,6 +217,7 @@ fn input_field_getter_gen(
     }
 
     Ok(FieldExtract {
+        full_name: full_name.unwrap().clone(),
         tokens: mapping,
         ty: kind.unwrap().clone(),
         cel: cel.unwrap().clone(),
@@ -235,6 +239,7 @@ fn output_field_getter_gen(
     let mut was_optional = false;
     let mut kind = None;
     let mut cel = None;
+    let mut full_name = None;
     for part in field_str.split('.') {
         let Some(field) = next_message.and_then(|message| message.fields.get(part)) else {
             anyhow::bail!("message does not have field: {field_str}");
@@ -242,6 +247,7 @@ fn output_field_getter_gen(
 
         let field_ident = field_ident_from_str(part);
 
+        full_name = Some(&field.full_name);
         kind = Some(&field.ty);
         cel = Some(&field.options.cel_exprs);
         let is_optional = matches!(
@@ -268,6 +274,7 @@ fn output_field_getter_gen(
     }
 
     Ok(FieldExtract {
+        full_name: full_name.unwrap().clone(),
         cel: cel.unwrap().clone(),
         ty: kind.unwrap().clone(),
         is_optional: was_optional,
@@ -372,6 +379,7 @@ fn path_struct(
                 let field_str = field.as_ref();
                 let path_field_ident = quote::format_ident!("field_{idx}");
                 let FieldExtract {
+                    full_name: _full_name,
                     cel,
                     tokens,
                     ty,
@@ -562,6 +570,7 @@ impl InputGenerator<'_> {
             FieldExtract {
                 // openapi cannot have cross-field expressions on parameters. so it doesnt matter
                 // if we keep the cel exprs.
+                full_name: ProtoPath::new(self.root_ty.proto_path()),
                 cel: CelExpressions::default(),
                 tokens: self.base_extract(),
                 is_optional: false,
@@ -604,11 +613,14 @@ impl InputGenerator<'_> {
                     .explode(true)
                     .style(openapiv3_1::path::ParameterStyle::DeepObject)
                     .schema(generate(
+                        &FieldInfo {
+                            full_name: &field.full_name,
+                            ty: &field.ty,
+                            cel: &field.options.cel_exprs,
+                        },
                         self.components,
                         self.types,
                         exclude_paths.unwrap_or(&BTreeMap::new()),
-                        &field.options.cel_exprs,
-                        field.ty.clone(),
                         GenerateDirection::Input,
                         BytesEncoding::Base64,
                     )?)
@@ -651,17 +663,21 @@ impl InputGenerator<'_> {
 
         for (path, (ty, cel)) in param_schemas {
             self.consume_field(&path)?;
+            let full_field_path = ProtoPath::new(format!("{}.{}", self.root_ty.proto_path(), path));
 
             params.push(
                 openapiv3_1::path::Parameter::builder()
                     .name(path)
                     .required(true)
                     .schema(generate(
+                        &FieldInfo {
+                            full_name: &full_field_path,
+                            ty: &ProtoType::Value(ty.clone()),
+                            cel: &cel,
+                        },
                         self.components,
                         self.types,
                         &BTreeMap::new(),
-                        &cel,
-                        ProtoType::Value(ty.clone()),
                         GenerateDirection::Input,
                         BytesEncoding::Base64,
                     )?)
@@ -745,6 +761,7 @@ impl InputGenerator<'_> {
             input_field_getter_gen(self.types, &self.root_ty, self.base_extract(), field)?
         } else {
             FieldExtract {
+                full_name: ProtoPath::new(self.root_ty.proto_path()),
                 cel: CelExpressions {
                     field: cel.to_vec(),
                     ..Default::default()
@@ -791,11 +808,14 @@ impl InputGenerator<'_> {
                 .content(
                     body_method.content_type(),
                     openapiv3_1::content::Content::new(Some(generate(
+                        &FieldInfo {
+                            full_name: &extract.full_name,
+                            ty: &extract.ty,
+                            cel: &extract.cel,
+                        },
                         self.components,
                         self.types,
                         exclude_paths.unwrap_or(&BTreeMap::new()),
-                        &extract.cel,
-                        extract.ty,
                         GenerateDirection::Input,
                         body_method.bytes_encoding(),
                     )?)),
@@ -852,6 +872,7 @@ impl OutputGenerator<'_> {
             output_field_getter_gen(self.types, &self.root_ty, self.base_extract(), field)?
         } else {
             FieldExtract {
+                full_name: ProtoPath::new(self.root_ty.proto_path()),
                 cel: CelExpressions::default(),
                 is_optional: false,
                 tokens: self.base_extract(),
@@ -927,11 +948,14 @@ impl OutputGenerator<'_> {
                 .content(
                     body_method.content_type(),
                     openapiv3_1::Content::new(Some(generate(
+                        &FieldInfo {
+                            full_name: &extract.full_name,
+                            ty: &extract.ty,
+                            cel: &extract.cel,
+                        },
                         self.components,
                         self.types,
                         &BTreeMap::new(),
-                        &extract.cel,
-                        extract.ty,
                         GenerateDirection::Output,
                         body_method.bytes_encoding(),
                     )?)),
@@ -942,25 +966,32 @@ impl OutputGenerator<'_> {
     }
 }
 
+struct FieldInfo<'a> {
+    full_name: &'a ProtoPath,
+    ty: &'a ProtoType,
+    cel: &'a CelExpressions,
+}
+
 fn generate(
+    field_info: &FieldInfo,
     components: &mut openapiv3_1::Components,
     types: &ProtoTypeRegistry,
     used_paths: &BTreeMap<String, ExcludePaths>,
-    cel: &CelExpressions,
-    ty: ProtoType,
     direction: GenerateDirection,
     bytes: BytesEncoding,
 ) -> anyhow::Result<Schema> {
     fn internal_generate(
+        field_info: &FieldInfo,
         components: &mut openapiv3_1::Components,
         types: &ProtoTypeRegistry,
         used_paths: &BTreeMap<String, ExcludePaths>,
-        cel: &CelExpressions,
-        ty: ProtoType,
         direction: GenerateDirection,
         bytes: BytesEncoding,
     ) -> anyhow::Result<Schema> {
         let mut schemas = Vec::new();
+        let ty = field_info.ty.clone();
+        let cel = field_info.cel;
+        let full_field_name = field_info.full_name;
 
         let compiler = Compiler::new(types);
         if !matches!(ty, ProtoType::Modified(ProtoModifiedValueType::Optional(_))) {
@@ -1004,11 +1035,14 @@ fn generate(
                         }
 
                         schemas.push(internal_generate(
+                            &FieldInfo {
+                                full_name: full_field_name,
+                                ty: &ProtoType::Value(value.clone()),
+                                cel: &CelExpressions::default(),
+                            },
                             components,
                             types,
                             &BTreeMap::new(),
-                            &CelExpressions::default(),
-                            ProtoType::Value(value),
                             direction,
                             bytes,
                         )?);
@@ -1021,11 +1055,14 @@ fn generate(
                 Object::builder()
                     .schema_type(Type::Array)
                     .items(internal_generate(
+                        &FieldInfo {
+                            full_name: full_field_name,
+                            ty: &ProtoType::Value(item.clone()),
+                            cel,
+                        },
                         components,
                         types,
                         used_paths,
-                        cel,
-                        ProtoType::Value(item),
                         direction,
                         bytes,
                     )?)
@@ -1045,11 +1082,14 @@ fn generate(
                             })
                             .map(|(name, field)| {
                                 let ty = internal_generate(
+                                    &FieldInfo {
+                                        full_name: &field.full_name,
+                                        ty: &ProtoType::Value(field.ty.clone()),
+                                        cel: &field.options.cel_exprs,
+                                    },
                                     components,
                                     types,
                                     &BTreeMap::new(),
-                                    &field.options.cel_exprs,
-                                    ProtoType::Value(field.ty),
                                     direction,
                                     bytes,
                                 )?;
@@ -1066,7 +1106,7 @@ fn generate(
                                                 Schema::object(
                                                     Object::builder()
                                                         .schema_type(Type::String)
-                                                        .const_value(field.options.serde_name)
+                                                        .const_value(field.options.serde_name.clone())
                                                         .build(),
                                                 ),
                                             );
@@ -1088,11 +1128,14 @@ fn generate(
                             })
                             .map(|(name, field)| {
                                 let ty = internal_generate(
+                                    &FieldInfo {
+                                        full_name: &field.full_name,
+                                        ty: &ProtoType::Value(field.ty.clone()),
+                                        cel: &field.options.cel_exprs,
+                                    },
                                     components,
                                     types,
                                     &BTreeMap::new(),
-                                    &field.options.cel_exprs,
-                                    ProtoType::Value(field.ty),
                                     direction,
                                     bytes,
                                 )?;
@@ -1104,7 +1147,7 @@ fn generate(
                                         .description(field.comments.to_string())
                                         .properties({
                                             let mut properties = IndexMap::new();
-                                            properties.insert(field.options.serde_name, ty);
+                                            properties.insert(&field.options.serde_name, ty);
                                             properties
                                         })
                                         .unevaluated_properties(false)
@@ -1120,7 +1163,18 @@ fn generate(
                 Object::builder()
                     .one_ofs([
                         Schema::object(Object::builder().schema_type(Type::Null).build()),
-                        internal_generate(components, types, used_paths, cel, ProtoType::Value(value), direction, bytes)?,
+                        internal_generate(
+                            &FieldInfo {
+                                full_name: full_field_name,
+                                ty: &ProtoType::Value(value.clone()),
+                                cel,
+                            },
+                            components,
+                            types,
+                            used_paths,
+                            direction,
+                            bytes,
+                        )?,
                     ])
                     .build(),
             ),
@@ -1135,7 +1189,27 @@ fn generate(
                     .build(),
             ),
             ProtoType::Value(ProtoValueType::Double | ProtoValueType::Float) => {
-                Schema::object(Object::builder().schema_type(Type::Number).build())
+                if types.support_non_finite_vals(full_field_name) {
+                    Schema::object(
+                        Object::builder()
+                            .one_ofs([
+                                Schema::object(Object::builder().schema_type(Type::Number).build()),
+                                Schema::object(
+                                    Object::builder()
+                                        .schema_type(Type::String)
+                                        .enum_values(vec![
+                                            serde_json::Value::from("Infinity"),
+                                            serde_json::Value::from("-Infinity"),
+                                            serde_json::Value::from("NaN"),
+                                        ])
+                                        .build(),
+                                ),
+                            ])
+                            .build(),
+                    )
+                } else {
+                    Schema::object(Object::builder().schema_type(Type::Number).build())
+                }
             }
             ProtoType::Value(ProtoValueType::Int32) => Schema::object(Object::int32()),
             ProtoType::Value(ProtoValueType::UInt32) => Schema::object(Object::uint32()),
@@ -1235,11 +1309,14 @@ fn generate(
                         };
 
                         let field_schema = internal_generate(
+                            &FieldInfo {
+                                full_name: &field.full_name,
+                                ty: &ty,
+                                cel: &field.options.cel_exprs,
+                            },
                             components,
                             types,
                             exclude_paths.unwrap_or(&BTreeMap::new()),
-                            &field.options.cel_exprs,
-                            ty,
                             direction,
                             bytes,
                         )?;
@@ -1331,5 +1408,5 @@ fn generate(
         Ok(Schema::object(Object::all_ofs(schemas)))
     }
 
-    internal_generate(components, types, used_paths, cel, ty, direction, bytes).map(|schema| schema.into_optimized())
+    internal_generate(field_info, components, types, used_paths, direction, bytes).map(|schema| schema.into_optimized())
 }

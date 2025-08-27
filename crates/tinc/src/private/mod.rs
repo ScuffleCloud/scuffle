@@ -56,6 +56,9 @@ pub use fmt::*;
 mod bytes;
 pub use bytes::*;
 
+mod float_with_non_finite;
+pub use float_with_non_finite::*;
+
 #[macro_export]
 #[doc(hidden)]
 macro_rules! __tinc_field_from_str {

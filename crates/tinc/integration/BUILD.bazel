@@ -14,6 +14,7 @@ proto_library(
         "@protobuf//:empty_proto",
         "@protobuf//:struct_proto",
         "@protobuf//:timestamp_proto",
+        "@protobuf//:wrappers_proto",
     ],
 )
 

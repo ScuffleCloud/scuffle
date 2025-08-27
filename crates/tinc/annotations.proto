@@ -225,6 +225,18 @@ message FloatConstraints {
     expression: "input == this"
     jsonschemas: '{ "const": this }'
   }];
+  // If true, NaN values are not allowed.
+  optional bool disallow_nan = 9 [(predefined).cel = {
+    message: "value must not be NaN"
+    expression: "!this || !input.isNaN()"
+    jsonschemas: 'this ? { "not": { "enum": ["NaN"] }} : {}'
+  }];
+  // If true, pos/neg Infinity values are not allowed.
+  optional bool disallow_infinity = 10 [(predefined).cel = {
+    message: "value must not be of infinity kind"
+    expression: "!this || !input.isInf()"
+    jsonschemas: 'this ? { "not": { "enum": ["Infinity", "-Infinity"] }} : {}'
+  }];
 }
 
 message DoubleConstraints {
@@ -275,6 +287,18 @@ message DoubleConstraints {
     message: "value must be equal to `{this}`"
     expression: "input == this"
     jsonschemas: '{ "const": this }'
+  }];
+  // If true, NaN values are not allowed.
+  optional bool disallow_nan = 9 [(predefined).cel = {
+    message: "value must not be NaN"
+    expression: "!this || !input.isNaN()"
+    jsonschemas: 'this ? { "not": { "enum": ["NaN"] }} : {}'
+  }];
+  // If true, pos/neg Infinity values are not allowed.
+  optional bool disallow_infinity = 10 [(predefined).cel = {
+    message: "value must not be of infinity kind"
+    expression: "!this || !input.isInf()"
+    jsonschemas: 'this ? { "not": { "enum": ["Infinity", "-Infinity"] }} : {}'
   }];
 }
 

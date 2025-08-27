@@ -59,7 +59,7 @@ jobs:
           path: rustdoc.tar.zst
 
       - name: Install zstd
-        run: apt-get update && apt-get install zstd -y
+        run: sudo apt-get update && sudo apt-get install zstd -y
 
       - name: Extract docs
         run: tar -xf rustdoc.tar.zst -C docs

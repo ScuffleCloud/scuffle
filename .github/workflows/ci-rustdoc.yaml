@@ -32,7 +32,7 @@ jobs:
       - uses: actions/checkout@v4
 
       - name: Install zstd
-        run: apt-get update && apt-get install zstd -y
+        run: sudo apt-get update && sudo apt-get install zstd -y
 
       - uses: ./.github/actions/setup-bazel
         with:

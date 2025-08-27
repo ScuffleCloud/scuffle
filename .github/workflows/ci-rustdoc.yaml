@@ -16,9 +16,11 @@ on:
     secrets:
       build_buddy_token:
         required: true
-      netlify_site_id:
+      vercel_token:
         required: false
-      netlify_auth_token:
+      vercel_org_id:
+        required: false
+      vercel_project_id:
         required: false
 
 defaults:
@@ -43,28 +45,24 @@ jobs:
 
       - name: Compress docs
         run: |
+          pwd=$(pwd)
           cd ./target-bazel/bin/docs/rustdoc.rustdoc_merge
-          tar -cf - * | zstd --ultra -22 -o "../../../../rustdoc.tar.zst"
+          tar -cf - * | zstd -o "$pwd/rustdoc.tar.zst"
 
       - name: Upload
         uses: actions/upload-artifact@v4
         if: ${{ inputs.artifact_name }}
         with:
           name: ${{ inputs.artifact_name }}
-          path: rustdoc.tar.zst
+          path: ./rustdoc.tar.zst
 
       - name: Deploy
         if: ${{ inputs.deploy_docs }}
-        uses: nwtgck/actions-netlify@v2
+        uses: amondnet/vercel-action@888da851026e0573da056b061931bcb765a915c4
         with:
-          publish-dir: ./target-bazel/bin/docs/rustdoc.rustdoc_merge
-          production-deploy: false
+          vercel-token: ${{ secrets.vercel_token }}
           github-token: ${{ secrets.GITHUB_TOKEN }}
-          deploy-message: "Preview for PR #${{ github.event.number }}"
-          enable-pull-request-comment: true
-          enable-commit-comment: true
-          overwrites-pull-request-comment: true
-          alias: pr-${{ github.event.number }}
-        env:
-          NETLIFY_AUTH_TOKEN: ${{ secrets.netlify_auth_token }}
-          NETLIFY_SITE_ID: ${{ secrets.netlify_site_id }}
+          vercel-args: "--archive=tgz"
+          vercel-org-id: ${{ secrets.vercel_org_id }}
+          vercel-project-id: ${{ secrets.vercel_project_id }}
+          working-directory: ./target-bazel/bin/docs/rustdoc.rustdoc_merge

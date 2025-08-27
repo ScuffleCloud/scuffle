@@ -38,13 +38,13 @@ reqwest = { features = ["json", "rustls-tls"], version = "0.12.20", default-feat
 rsa = { features = ["sha2"], version = "0.9.8" }
 sailfish = "0.10.0"
 sailfish-macros = "0.10.0"
-scuffle-batching = { path = "../../crates/batching", version = "0.1.6" }
-scuffle-bootstrap = { path = "../../crates/bootstrap", version = "0.1.7" }
-scuffle-bootstrap-telemetry = { features = ["opentelemetry-logs", "opentelemetry-traces"], path = "../../crates/bootstrap-telemetry", version = "0.3.0" }
-scuffle-context = { path = "../../crates/context", version = "0.1.5" }
-scuffle-http = { features = ["tracing"], path = "../../crates/http", version = "0.3.2" }
-scuffle-settings = { features = ["all-formats", "bootstrap"], path = "../../crates/settings", version = "0.1.4" }
-scuffle-signal = { features = ["bootstrap"], path = "../../crates/signal", version = "0.3.3" }
+scuffle-batching = { path = "../../crates/batching" }
+scuffle-bootstrap = { path = "../../crates/bootstrap" }
+scuffle-bootstrap-telemetry = { features = ["opentelemetry-logs", "opentelemetry-traces"], path = "../../crates/bootstrap-telemetry" }
+scuffle-context = { path = "../../crates/context" }
+scuffle-http = { features = ["tracing"], path = "../../crates/http" }
+scuffle-settings = { features = ["all-formats", "bootstrap"], path = "../../crates/settings" }
+scuffle-signal = { features = ["bootstrap"], path = "../../crates/signal" }
 serde = "1.0.219"
 serde_derive = "1.0.219"
 serde_json = "1.0.140"
@@ -52,7 +52,7 @@ sha2 = "0.10.9"
 smart-default = "0.7.1"
 swagger-ui-dist = "5.27.1"
 thiserror = "2.0.12"
-tinc = { path = "../../crates/tinc", version = "0.2.0" }
+tinc = { path = "../../crates/tinc" }
 tokio = { default-features = false, features = ["sync"], version = "1.47.1" }
 tonic = "0.14.1"
 tonic-reflection = "0.14.1"

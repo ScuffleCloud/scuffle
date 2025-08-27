@@ -56,6 +56,18 @@ alias(
 )
 
 alias(
+    name = "mergiraf-0.13.0",
+    actual = "@bindeps__mergiraf-0.13.0//:mergiraf",
+    tags = ["manual"],
+)
+
+alias(
+    name = "mergiraf",
+    actual = "@bindeps__mergiraf-0.13.0//:mergiraf",
+    tags = ["manual"],
+)
+
+alias(
     name = "rust-analyzer-0.0.0",
     actual = "@bindeps__rust-analyzer-0.0.0//:rust_analyzer",
     tags = ["manual"],
@@ -89,6 +101,12 @@ alias(
 alias(
     name = "just__just",
     actual = "@bindeps__just-1.42.4//:just__bin",
+    tags = ["manual"],
+)
+
+alias(
+    name = "mergiraf__mergiraf",
+    actual = "@bindeps__mergiraf-0.13.0//:mergiraf__bin",
     tags = ["manual"],
 )
 

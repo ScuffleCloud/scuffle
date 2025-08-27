@@ -447,6 +447,7 @@ _NORMAL_DEPENDENCIES = {
             _COMMON_CONDITION: {
                 "cargo-deny": Label("@bindeps//:cargo-deny-0.18.4"),
                 "just": Label("@bindeps//:just-1.42.4"),
+                "mergiraf": Label("@bindeps//:mergiraf-0.13.0"),
                 "rust-analyzer": Label("@bindeps//:rust-analyzer-0.0.0"),
             },
         },
@@ -2233,6 +2234,16 @@ def crate_repositories():
 
     maybe(
         http_archive,
+        name = "bindeps__diffy-imara-0.3.2",
+        sha256 = "4429f9205ee235ccaac635400e19507240477be615c4631e3f18a0690881d6db",
+        type = "tar.gz",
+        urls = ["https://static.crates.io/crates/diffy-imara/0.3.2/download"],
+        strip_prefix = "diffy-imara-0.3.2",
+        build_file = Label("//vendor/bindeps:BUILD.diffy-imara-0.3.2.bazel"),
+    )
+
+    maybe(
+        http_archive,
         name = "bindeps__digest-0.10.7",
         sha256 = "9ed9a281f7bc9b7576e61468ba615a66a5c8cfdff42420a70aa82701a3b1e292",
         type = "tar.gz",
@@ -2489,6 +2500,16 @@ def crate_repositories():
         urls = ["https://static.crates.io/crates/errno/0.3.13/download"],
         strip_prefix = "errno-0.3.13",
         build_file = Label("//vendor/bindeps:BUILD.errno-0.3.13.bazel"),
+    )
+
+    maybe(
+        http_archive,
+        name = "bindeps__etcetera-0.10.0",
+        sha256 = "26c7b13d0780cb82722fd59f6f57f925e143427e4a75313a6c77243bf5326ae6",
+        type = "tar.gz",
+        urls = ["https://static.crates.io/crates/etcetera/0.10.0/download"],
+        strip_prefix = "etcetera-0.10.0",
+        build_file = Label("//vendor/bindeps:BUILD.etcetera-0.10.0.bazel"),
     )
 
     maybe(
@@ -3403,6 +3424,16 @@ def crate_repositories():
 
     maybe(
         http_archive,
+        name = "bindeps__hashbrown-0.12.3",
+        sha256 = "8a9ee70c43aaf417c914396645a0fa852624801b24ebb7ae78fe8272889ac888",
+        type = "tar.gz",
+        urls = ["https://static.crates.io/crates/hashbrown/0.12.3/download"],
+        strip_prefix = "hashbrown-0.12.3",
+        build_file = Label("//vendor/bindeps:BUILD.hashbrown-0.12.3.bazel"),
+    )
+
+    maybe(
+        http_archive,
         name = "bindeps__hashbrown-0.13.2",
         sha256 = "43a3c133739dddd0d2990f9a4bdf8eb4b21ef50e4851ca85ab661199821d510e",
         type = "tar.gz",
@@ -3853,6 +3884,16 @@ def crate_repositories():
 
     maybe(
         http_archive,
+        name = "bindeps__imara-diff-0.1.8",
+        sha256 = "17d34b7d42178945f775e84bc4c36dde7c1c6cdfea656d3354d009056f2bb3d2",
+        type = "tar.gz",
+        urls = ["https://static.crates.io/crates/imara-diff/0.1.8/download"],
+        strip_prefix = "imara-diff-0.1.8",
+        build_file = Label("//vendor/bindeps:BUILD.imara-diff-0.1.8.bazel"),
+    )
+
+    maybe(
+        http_archive,
         name = "bindeps__impl-more-0.1.9",
         sha256 = "e8a5a9a0ff0086c7a148acb942baaabeadf9504d10400b5a05645853729b9cd2",
         type = "tar.gz",
@@ -3869,6 +3910,16 @@ def crate_repositories():
         remote = "https://github.com/TroyKomodo/grass.git",
         build_file = Label("//vendor/bindeps:BUILD.include_sass-0.13.4.bazel"),
         strip_prefix = "crates/include_sass",
+    )
+
+    maybe(
+        http_archive,
+        name = "bindeps__indexmap-1.9.3",
+        sha256 = "bd070e393353796e801d209ad339e89596eb4c8d430d18ede6a1cced8fafbd99",
+        type = "tar.gz",
+        urls = ["https://static.crates.io/crates/indexmap/1.9.3/download"],
+        strip_prefix = "indexmap-1.9.3",
+        build_file = Label("//vendor/bindeps:BUILD.indexmap-1.9.3.bazel"),
     )
 
     maybe(
@@ -3919,6 +3970,16 @@ def crate_repositories():
         urls = ["https://static.crates.io/crates/insta/1.43.1/download"],
         strip_prefix = "insta-1.43.1",
         build_file = Label("//vendor/bindeps:BUILD.insta-1.43.1.bazel"),
+    )
+
+    maybe(
+        http_archive,
+        name = "bindeps__integer-sqrt-0.1.5",
+        sha256 = "276ec31bcb4a9ee45f58bec6f9ec700ae4cf4f4f8f2fa7e06cb406bd5ffdd770",
+        type = "tar.gz",
+        urls = ["https://static.crates.io/crates/integer-sqrt/0.1.5/download"],
+        strip_prefix = "integer-sqrt-0.1.5",
+        build_file = Label("//vendor/bindeps:BUILD.integer-sqrt-0.1.5.bazel"),
     )
 
     maybe(
@@ -3979,6 +4040,16 @@ def crate_repositories():
         urls = ["https://static.crates.io/crates/is-docker/0.2.0/download"],
         strip_prefix = "is-docker-0.2.0",
         build_file = Label("//vendor/bindeps:BUILD.is-docker-0.2.0.bazel"),
+    )
+
+    maybe(
+        http_archive,
+        name = "bindeps__is-terminal-0.4.16",
+        sha256 = "e04d7f318608d35d4b61ddd75cbdaee86b023ebe2bd5a66ee0915f0bf93095a9",
+        type = "tar.gz",
+        urls = ["https://static.crates.io/crates/is-terminal/0.4.16/download"],
+        strip_prefix = "is-terminal-0.4.16",
+        build_file = Label("//vendor/bindeps:BUILD.is-terminal-0.4.16.bazel"),
     )
 
     maybe(
@@ -4513,6 +4584,16 @@ def crate_repositories():
 
     maybe(
         http_archive,
+        name = "bindeps__mergiraf-0.13.0",
+        sha256 = "ce589af7cb137152d9dd049d2b49a053ac91607cdc496e1a7ecf3be556a66447",
+        type = "tar.gz",
+        urls = ["https://static.crates.io/crates/mergiraf/0.13.0/download"],
+        strip_prefix = "mergiraf-0.13.0",
+        build_file = Label("//vendor/bindeps:BUILD.mergiraf-0.13.0.bazel"),
+    )
+
+    maybe(
+        http_archive,
         name = "bindeps__mime-0.3.17",
         sha256 = "6877bb514081ee2a7ff5ef9de3281f14a4dd4bceac4c09388074a6b5df8a139a",
         type = "tar.gz",
@@ -4803,6 +4884,16 @@ def crate_repositories():
 
     maybe(
         http_archive,
+        name = "bindeps__oneshot-0.1.11",
+        sha256 = "b4ce411919553d3f9fa53a0880544cda985a112117a0444d5ff1e870a893d6ea",
+        type = "tar.gz",
+        urls = ["https://static.crates.io/crates/oneshot/0.1.11/download"],
+        strip_prefix = "oneshot-0.1.11",
+        build_file = Label("//vendor/bindeps:BUILD.oneshot-0.1.11.bazel"),
+    )
+
+    maybe(
+        http_archive,
         name = "bindeps__oorandom-11.1.5",
         sha256 = "d6790f58c7ff633d8771f42965289203411a5e5c68388703c06e14f24770b41e",
         type = "tar.gz",
@@ -4929,6 +5020,16 @@ def crate_repositories():
         urls = ["https://static.crates.io/crates/pathdiff/0.2.3/download"],
         strip_prefix = "pathdiff-0.2.3",
         build_file = Label("//vendor/bindeps:BUILD.pathdiff-0.2.3.bazel"),
+    )
+
+    maybe(
+        http_archive,
+        name = "bindeps__pathfinding-3.0.14",
+        sha256 = "cb45190a18e771c500291c549959777a3be38d30113a860930bc1f2119f0cc13",
+        type = "tar.gz",
+        urls = ["https://static.crates.io/crates/pathfinding/3.0.14/download"],
+        strip_prefix = "pathfinding-3.0.14",
+        build_file = Label("//vendor/bindeps:BUILD.pathfinding-3.0.14.bazel"),
     )
 
     maybe(
@@ -6512,6 +6613,16 @@ def crate_repositories():
     )
 
     maybe(
+        http_archive,
+        name = "bindeps__stderrlog-0.6.0",
+        sha256 = "61c910772f992ab17d32d6760e167d2353f4130ed50e796752689556af07dc6b",
+        type = "tar.gz",
+        urls = ["https://static.crates.io/crates/stderrlog/0.6.0/download"],
+        strip_prefix = "stderrlog-0.6.0",
+        build_file = Label("//vendor/bindeps:BUILD.stderrlog-0.6.0.bazel"),
+    )
+
+    maybe(
         new_git_repository,
         name = "bindeps__stdx-0.0.0",
         commit = "e9ca9f8ec88a207891c32da4fc6523026ea03c6f",
@@ -6519,6 +6630,16 @@ def crate_repositories():
         remote = "https://github.com/TroyKomodo/rust-analyzer.git",
         build_file = Label("//vendor/bindeps:BUILD.stdx-0.0.0.bazel"),
         strip_prefix = "crates/stdx",
+    )
+
+    maybe(
+        http_archive,
+        name = "bindeps__streaming-iterator-0.1.9",
+        sha256 = "2b2231b7c3057d5e4ad0156fb3dc807d900806020c5ffa3ee6ff2c8c76fb8520",
+        type = "tar.gz",
+        urls = ["https://static.crates.io/crates/streaming-iterator/0.1.9/download"],
+        strip_prefix = "streaming-iterator-0.1.9",
+        build_file = Label("//vendor/bindeps:BUILD.streaming-iterator-0.1.9.bazel"),
     )
 
     maybe(
@@ -6743,12 +6864,12 @@ def crate_repositories():
 
     maybe(
         http_archive,
-        name = "bindeps__termcolor-1.4.1",
-        sha256 = "06794f8f6c5c898b3275aebefa6b8a1cb24cd2c6c79397ab15774837a0bc5755",
+        name = "bindeps__termcolor-1.1.3",
+        sha256 = "bab24d30b911b2376f3a13cc2cd443142f0c81dda04c118693e35b3835757755",
         type = "tar.gz",
-        urls = ["https://static.crates.io/crates/termcolor/1.4.1/download"],
-        strip_prefix = "termcolor-1.4.1",
-        build_file = Label("//vendor/bindeps:BUILD.termcolor-1.4.1.bazel"),
+        urls = ["https://static.crates.io/crates/termcolor/1.1.3/download"],
+        strip_prefix = "termcolor-1.1.3",
+        build_file = Label("//vendor/bindeps:BUILD.termcolor-1.1.3.bazel"),
     )
 
     maybe(
@@ -7119,6 +7240,366 @@ def crate_repositories():
         urls = ["https://static.crates.io/crates/tracing-tree/0.4.0/download"],
         strip_prefix = "tracing-tree-0.4.0",
         build_file = Label("//vendor/bindeps:BUILD.tracing-tree-0.4.0.bazel"),
+    )
+
+    maybe(
+        http_archive,
+        name = "bindeps__tree-edit-distance-0.4.0",
+        sha256 = "c71cf959f76103341744494caf1ace7f105244b980b1a3b848d5b1a070c42c16",
+        type = "tar.gz",
+        urls = ["https://static.crates.io/crates/tree-edit-distance/0.4.0/download"],
+        strip_prefix = "tree-edit-distance-0.4.0",
+        build_file = Label("//vendor/bindeps:BUILD.tree-edit-distance-0.4.0.bazel"),
+    )
+
+    maybe(
+        http_archive,
+        name = "bindeps__tree-sitter-0.25.8",
+        sha256 = "6d7b8994f367f16e6fa14b5aebbcb350de5d7cbea82dc5b00ae997dd71680dd2",
+        type = "tar.gz",
+        urls = ["https://static.crates.io/crates/tree-sitter/0.25.8/download"],
+        strip_prefix = "tree-sitter-0.25.8",
+        build_file = Label("//vendor/bindeps:BUILD.tree-sitter-0.25.8.bazel"),
+    )
+
+    maybe(
+        http_archive,
+        name = "bindeps__tree-sitter-c-sharp-0.23.1",
+        sha256 = "67f06accca7b45351758663b8215089e643d53bd9a660ce0349314263737fcb0",
+        type = "tar.gz",
+        urls = ["https://static.crates.io/crates/tree-sitter-c-sharp/0.23.1/download"],
+        strip_prefix = "tree-sitter-c-sharp-0.23.1",
+        build_file = Label("//vendor/bindeps:BUILD.tree-sitter-c-sharp-0.23.1.bazel"),
+    )
+
+    maybe(
+        http_archive,
+        name = "bindeps__tree-sitter-cpp-0.23.4",
+        sha256 = "df2196ea9d47b4ab4a31b9297eaa5a5d19a0b121dceb9f118f6790ad0ab94743",
+        type = "tar.gz",
+        urls = ["https://static.crates.io/crates/tree-sitter-cpp/0.23.4/download"],
+        strip_prefix = "tree-sitter-cpp-0.23.4",
+        build_file = Label("//vendor/bindeps:BUILD.tree-sitter-cpp-0.23.4.bazel"),
+    )
+
+    maybe(
+        http_archive,
+        name = "bindeps__tree-sitter-dart-0.0.4",
+        sha256 = "19f1f70b80ce41343e14aafcef67b5ba2e9de89587535b4aabbabb8036f4e38a",
+        type = "tar.gz",
+        urls = ["https://static.crates.io/crates/tree-sitter-dart/0.0.4/download"],
+        strip_prefix = "tree-sitter-dart-0.0.4",
+        build_file = Label("//vendor/bindeps:BUILD.tree-sitter-dart-0.0.4.bazel"),
+    )
+
+    maybe(
+        http_archive,
+        name = "bindeps__tree-sitter-devicetree-0.14.1",
+        sha256 = "b1e6874b59d8252cbaf9750f7152166e17ed162921a5f6d4e8bd2a2bc2aed46b",
+        type = "tar.gz",
+        urls = ["https://static.crates.io/crates/tree-sitter-devicetree/0.14.1/download"],
+        strip_prefix = "tree-sitter-devicetree-0.14.1",
+        build_file = Label("//vendor/bindeps:BUILD.tree-sitter-devicetree-0.14.1.bazel"),
+    )
+
+    maybe(
+        http_archive,
+        name = "bindeps__tree-sitter-elixir-0.3.4",
+        sha256 = "e45d444647b4fd53d8fd32474c1b8bedc1baa22669ce3a78d083e365fa9a2d3f",
+        type = "tar.gz",
+        urls = ["https://static.crates.io/crates/tree-sitter-elixir/0.3.4/download"],
+        strip_prefix = "tree-sitter-elixir-0.3.4",
+        build_file = Label("//vendor/bindeps:BUILD.tree-sitter-elixir-0.3.4.bazel"),
+    )
+
+    maybe(
+        http_archive,
+        name = "bindeps__tree-sitter-go-0.23.4",
+        sha256 = "b13d476345220dbe600147dd444165c5791bf85ef53e28acbedd46112ee18431",
+        type = "tar.gz",
+        urls = ["https://static.crates.io/crates/tree-sitter-go/0.23.4/download"],
+        strip_prefix = "tree-sitter-go-0.23.4",
+        build_file = Label("//vendor/bindeps:BUILD.tree-sitter-go-0.23.4.bazel"),
+    )
+
+    maybe(
+        http_archive,
+        name = "bindeps__tree-sitter-gomod-orchard-0.4.0",
+        sha256 = "f0b61e7e2bbf91a29f93ba7379a48d78a9b5a596d19a833783244e4a4db4e4cd",
+        type = "tar.gz",
+        urls = ["https://static.crates.io/crates/tree-sitter-gomod-orchard/0.4.0/download"],
+        strip_prefix = "tree-sitter-gomod-orchard-0.4.0",
+        build_file = Label("//vendor/bindeps:BUILD.tree-sitter-gomod-orchard-0.4.0.bazel"),
+    )
+
+    maybe(
+        http_archive,
+        name = "bindeps__tree-sitter-gosum-orchard-0.2.0",
+        sha256 = "54ef55f106957e8e0f570fe26092d698bb97a415aa98810b359d7495757ff441",
+        type = "tar.gz",
+        urls = ["https://static.crates.io/crates/tree-sitter-gosum-orchard/0.2.0/download"],
+        strip_prefix = "tree-sitter-gosum-orchard-0.2.0",
+        build_file = Label("//vendor/bindeps:BUILD.tree-sitter-gosum-orchard-0.2.0.bazel"),
+    )
+
+    maybe(
+        http_archive,
+        name = "bindeps__tree-sitter-haskell-0.23.1",
+        sha256 = "977c51e504548cba13fc27cb5a2edab2124cf6716a1934915d07ab99523b05a4",
+        type = "tar.gz",
+        urls = ["https://static.crates.io/crates/tree-sitter-haskell/0.23.1/download"],
+        strip_prefix = "tree-sitter-haskell-0.23.1",
+        build_file = Label("//vendor/bindeps:BUILD.tree-sitter-haskell-0.23.1.bazel"),
+    )
+
+    maybe(
+        http_archive,
+        name = "bindeps__tree-sitter-hcl-1.1.0",
+        sha256 = "5a7b2cc3d7121553b84309fab9d11b3ff3d420403eef9ae50f9fd1cd9d9cf012",
+        type = "tar.gz",
+        urls = ["https://static.crates.io/crates/tree-sitter-hcl/1.1.0/download"],
+        strip_prefix = "tree-sitter-hcl-1.1.0",
+        build_file = Label("//vendor/bindeps:BUILD.tree-sitter-hcl-1.1.0.bazel"),
+    )
+
+    maybe(
+        http_archive,
+        name = "bindeps__tree-sitter-html-0.23.2",
+        sha256 = "261b708e5d92061ede329babaaa427b819329a9d427a1d710abb0f67bbef63ee",
+        type = "tar.gz",
+        urls = ["https://static.crates.io/crates/tree-sitter-html/0.23.2/download"],
+        strip_prefix = "tree-sitter-html-0.23.2",
+        build_file = Label("//vendor/bindeps:BUILD.tree-sitter-html-0.23.2.bazel"),
+    )
+
+    maybe(
+        http_archive,
+        name = "bindeps__tree-sitter-ini-1.3.0",
+        sha256 = "125cb3c7c59dae9e5b2d97002d2022680db3de7474c3fc48d99eb810e4ec80bb",
+        type = "tar.gz",
+        urls = ["https://static.crates.io/crates/tree-sitter-ini/1.3.0/download"],
+        strip_prefix = "tree-sitter-ini-1.3.0",
+        build_file = Label("//vendor/bindeps:BUILD.tree-sitter-ini-1.3.0.bazel"),
+    )
+
+    maybe(
+        http_archive,
+        name = "bindeps__tree-sitter-java-0.23.5",
+        sha256 = "0aa6cbcdc8c679b214e616fd3300da67da0e492e066df01bcf5a5921a71e90d6",
+        type = "tar.gz",
+        urls = ["https://static.crates.io/crates/tree-sitter-java/0.23.5/download"],
+        strip_prefix = "tree-sitter-java-0.23.5",
+        build_file = Label("//vendor/bindeps:BUILD.tree-sitter-java-0.23.5.bazel"),
+    )
+
+    maybe(
+        http_archive,
+        name = "bindeps__tree-sitter-javascript-0.23.1",
+        sha256 = "bf40bf599e0416c16c125c3cec10ee5ddc7d1bb8b0c60fa5c4de249ad34dc1b1",
+        type = "tar.gz",
+        urls = ["https://static.crates.io/crates/tree-sitter-javascript/0.23.1/download"],
+        strip_prefix = "tree-sitter-javascript-0.23.1",
+        build_file = Label("//vendor/bindeps:BUILD.tree-sitter-javascript-0.23.1.bazel"),
+    )
+
+    maybe(
+        http_archive,
+        name = "bindeps__tree-sitter-json-0.24.8",
+        sha256 = "4d727acca406c0020cffc6cf35516764f36c8e3dc4408e5ebe2cb35a947ec471",
+        type = "tar.gz",
+        urls = ["https://static.crates.io/crates/tree-sitter-json/0.24.8/download"],
+        strip_prefix = "tree-sitter-json-0.24.8",
+        build_file = Label("//vendor/bindeps:BUILD.tree-sitter-json-0.24.8.bazel"),
+    )
+
+    maybe(
+        http_archive,
+        name = "bindeps__tree-sitter-kotlin-ng-1.1.0",
+        sha256 = "e800ebbda938acfbf224f4d2c34947a31994b1295ee6e819b65226c7b51b4450",
+        type = "tar.gz",
+        urls = ["https://static.crates.io/crates/tree-sitter-kotlin-ng/1.1.0/download"],
+        strip_prefix = "tree-sitter-kotlin-ng-1.1.0",
+        build_file = Label("//vendor/bindeps:BUILD.tree-sitter-kotlin-ng-1.1.0.bazel"),
+    )
+
+    maybe(
+        http_archive,
+        name = "bindeps__tree-sitter-language-0.1.5",
+        sha256 = "c4013970217383f67b18aef68f6fb2e8d409bc5755227092d32efb0422ba24b8",
+        type = "tar.gz",
+        urls = ["https://static.crates.io/crates/tree-sitter-language/0.1.5/download"],
+        strip_prefix = "tree-sitter-language-0.1.5",
+        build_file = Label("//vendor/bindeps:BUILD.tree-sitter-language-0.1.5.bazel"),
+    )
+
+    maybe(
+        http_archive,
+        name = "bindeps__tree-sitter-lua-0.2.0",
+        sha256 = "5cdb9adf0965fec58e7660cbb3a059dbb12ebeec9459e6dcbae3db004739641e",
+        type = "tar.gz",
+        urls = ["https://static.crates.io/crates/tree-sitter-lua/0.2.0/download"],
+        strip_prefix = "tree-sitter-lua-0.2.0",
+        build_file = Label("//vendor/bindeps:BUILD.tree-sitter-lua-0.2.0.bazel"),
+    )
+
+    maybe(
+        http_archive,
+        name = "bindeps__tree-sitter-make-1.1.1",
+        sha256 = "c5998dc7cbcbdab19fae8aefef982bf2d6544513d8d2e69cc44aec4c63810104",
+        type = "tar.gz",
+        urls = ["https://static.crates.io/crates/tree-sitter-make/1.1.1/download"],
+        strip_prefix = "tree-sitter-make-1.1.1",
+        build_file = Label("//vendor/bindeps:BUILD.tree-sitter-make-1.1.1.bazel"),
+    )
+
+    maybe(
+        http_archive,
+        name = "bindeps__tree-sitter-md-0.3.2",
+        sha256 = "17f968c22a01010b83fc960455ae729db08dbeb6388617d9113897cb9204b030",
+        type = "tar.gz",
+        urls = ["https://static.crates.io/crates/tree-sitter-md/0.3.2/download"],
+        strip_prefix = "tree-sitter-md-0.3.2",
+        build_file = Label("//vendor/bindeps:BUILD.tree-sitter-md-0.3.2.bazel"),
+    )
+
+    maybe(
+        http_archive,
+        name = "bindeps__tree-sitter-nix-0.0.2",
+        sha256 = "3a8d4f8705d377d63242a075331d2d8c1dcc9828fd74aa13d7145185b3d9c004",
+        type = "tar.gz",
+        urls = ["https://static.crates.io/crates/tree-sitter-nix/0.0.2/download"],
+        strip_prefix = "tree-sitter-nix-0.0.2",
+        build_file = Label("//vendor/bindeps:BUILD.tree-sitter-nix-0.0.2.bazel"),
+    )
+
+    maybe(
+        http_archive,
+        name = "bindeps__tree-sitter-ocaml-0.24.2",
+        sha256 = "7d19db582b3855f56b5f9ec484170fbfb9ee60b938ec7720d76d2ee788e8b640",
+        type = "tar.gz",
+        urls = ["https://static.crates.io/crates/tree-sitter-ocaml/0.24.2/download"],
+        strip_prefix = "tree-sitter-ocaml-0.24.2",
+        build_file = Label("//vendor/bindeps:BUILD.tree-sitter-ocaml-0.24.2.bazel"),
+    )
+
+    maybe(
+        http_archive,
+        name = "bindeps__tree-sitter-php-0.23.11",
+        sha256 = "f066e94e9272cfe4f1dcb07a1c50c66097eca648f2d7233d299c8ae9ed8c130c",
+        type = "tar.gz",
+        urls = ["https://static.crates.io/crates/tree-sitter-php/0.23.11/download"],
+        strip_prefix = "tree-sitter-php-0.23.11",
+        build_file = Label("//vendor/bindeps:BUILD.tree-sitter-php-0.23.11.bazel"),
+    )
+
+    maybe(
+        http_archive,
+        name = "bindeps__tree-sitter-properties-0.3.0",
+        sha256 = "0a6c2f38dea68abd782573bb6ec3dbd14175cce2953f693055743925d785ceeb",
+        type = "tar.gz",
+        urls = ["https://static.crates.io/crates/tree-sitter-properties/0.3.0/download"],
+        strip_prefix = "tree-sitter-properties-0.3.0",
+        build_file = Label("//vendor/bindeps:BUILD.tree-sitter-properties-0.3.0.bazel"),
+    )
+
+    maybe(
+        http_archive,
+        name = "bindeps__tree-sitter-python-0.23.6",
+        sha256 = "3d065aaa27f3aaceaf60c1f0e0ac09e1cb9eb8ed28e7bcdaa52129cffc7f4b04",
+        type = "tar.gz",
+        urls = ["https://static.crates.io/crates/tree-sitter-python/0.23.6/download"],
+        strip_prefix = "tree-sitter-python-0.23.6",
+        build_file = Label("//vendor/bindeps:BUILD.tree-sitter-python-0.23.6.bazel"),
+    )
+
+    maybe(
+        http_archive,
+        name = "bindeps__tree-sitter-ruby-0.23.1",
+        sha256 = "be0484ea4ef6bb9c575b4fdabde7e31340a8d2dbc7d52b321ac83da703249f95",
+        type = "tar.gz",
+        urls = ["https://static.crates.io/crates/tree-sitter-ruby/0.23.1/download"],
+        strip_prefix = "tree-sitter-ruby-0.23.1",
+        build_file = Label("//vendor/bindeps:BUILD.tree-sitter-ruby-0.23.1.bazel"),
+    )
+
+    maybe(
+        http_archive,
+        name = "bindeps__tree-sitter-rust-orchard-0.10.0",
+        sha256 = "cef2589554b4561be7c2f9fa38b16ee2fe2b5131eec45f41a68ee075c79612b1",
+        type = "tar.gz",
+        urls = ["https://static.crates.io/crates/tree-sitter-rust-orchard/0.10.0/download"],
+        strip_prefix = "tree-sitter-rust-orchard-0.10.0",
+        build_file = Label("//vendor/bindeps:BUILD.tree-sitter-rust-orchard-0.10.0.bazel"),
+    )
+
+    maybe(
+        http_archive,
+        name = "bindeps__tree-sitter-scala-0.24.0",
+        sha256 = "7516aeb3d1f40ede8e3045b163e86993b3434514dd06c34c0b75e782d9a0b251",
+        type = "tar.gz",
+        urls = ["https://static.crates.io/crates/tree-sitter-scala/0.24.0/download"],
+        strip_prefix = "tree-sitter-scala-0.24.0",
+        build_file = Label("//vendor/bindeps:BUILD.tree-sitter-scala-0.24.0.bazel"),
+    )
+
+    maybe(
+        http_archive,
+        name = "bindeps__tree-sitter-solidity-1.2.13",
+        sha256 = "4eacf8875b70879f0cb670c60b233ad0b68752d9e1474e6c3ef168eea8a90b25",
+        type = "tar.gz",
+        urls = ["https://static.crates.io/crates/tree-sitter-solidity/1.2.13/download"],
+        strip_prefix = "tree-sitter-solidity-1.2.13",
+        build_file = Label("//vendor/bindeps:BUILD.tree-sitter-solidity-1.2.13.bazel"),
+    )
+
+    maybe(
+        http_archive,
+        name = "bindeps__tree-sitter-systemverilog-0.2.1",
+        sha256 = "6bbc6b0711f1ba6ca2531a737aec150d3ee776146b81f1a02d6122f786d0517f",
+        type = "tar.gz",
+        urls = ["https://static.crates.io/crates/tree-sitter-systemverilog/0.2.1/download"],
+        strip_prefix = "tree-sitter-systemverilog-0.2.1",
+        build_file = Label("//vendor/bindeps:BUILD.tree-sitter-systemverilog-0.2.1.bazel"),
+    )
+
+    maybe(
+        http_archive,
+        name = "bindeps__tree-sitter-toml-ng-0.7.0",
+        sha256 = "e9adc2c898ae49730e857d75be403da3f92bb81d8e37a2f918a08dd10de5ebb1",
+        type = "tar.gz",
+        urls = ["https://static.crates.io/crates/tree-sitter-toml-ng/0.7.0/download"],
+        strip_prefix = "tree-sitter-toml-ng-0.7.0",
+        build_file = Label("//vendor/bindeps:BUILD.tree-sitter-toml-ng-0.7.0.bazel"),
+    )
+
+    maybe(
+        http_archive,
+        name = "bindeps__tree-sitter-typescript-0.23.2",
+        sha256 = "6c5f76ed8d947a75cc446d5fccd8b602ebf0cde64ccf2ffa434d873d7a575eff",
+        type = "tar.gz",
+        urls = ["https://static.crates.io/crates/tree-sitter-typescript/0.23.2/download"],
+        strip_prefix = "tree-sitter-typescript-0.23.2",
+        build_file = Label("//vendor/bindeps:BUILD.tree-sitter-typescript-0.23.2.bazel"),
+    )
+
+    maybe(
+        http_archive,
+        name = "bindeps__tree-sitter-xml-0.7.0",
+        sha256 = "e670041f591d994f54d597ddcd8f4ebc930e282c4c76a42268743b71f0c8b6b3",
+        type = "tar.gz",
+        urls = ["https://static.crates.io/crates/tree-sitter-xml/0.7.0/download"],
+        strip_prefix = "tree-sitter-xml-0.7.0",
+        build_file = Label("//vendor/bindeps:BUILD.tree-sitter-xml-0.7.0.bazel"),
+    )
+
+    maybe(
+        http_archive,
+        name = "bindeps__tree-sitter-yaml-0.7.1",
+        sha256 = "3d5893f2a05e57c86a2338aa3aed167a1e5c68b8fdff3bf4a460941f2d8fc944",
+        type = "tar.gz",
+        urls = ["https://static.crates.io/crates/tree-sitter-yaml/0.7.1/download"],
+        strip_prefix = "tree-sitter-yaml-0.7.1",
+        build_file = Label("//vendor/bindeps:BUILD.tree-sitter-yaml-0.7.1.bazel"),
     )
 
     maybe(
@@ -8134,5 +8615,6 @@ def crate_repositories():
     return [
         struct(repo = "bindeps__cargo-deny-0.18.4", is_dev_dep = False),
         struct(repo = "bindeps__just-1.42.4", is_dev_dep = False),
+        struct(repo = "bindeps__mergiraf-0.13.0", is_dev_dep = False),
         struct(repo = "bindeps__rust-analyzer-0.0.0", is_dev_dep = False),
     ]

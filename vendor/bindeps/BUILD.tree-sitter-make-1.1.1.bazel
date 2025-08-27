@@ -21,7 +21,7 @@ cargo_toml_env_vars(
 )
 
 rust_library(
-    name = "num_traits",
+    name = "tree_sitter_make",
     srcs = glob(
         include = ["**/*.rs"],
         allow_empty = True,
@@ -38,11 +38,7 @@ rust_library(
             "WORKSPACE.bazel",
         ],
     ),
-    crate_features = [
-        "default",
-        "std",
-    ],
-    crate_root = "src/lib.rs",
+    crate_root = "bindings/rust/lib.rs",
     edition = "2021",
     rustc_env_files = [
         ":cargo_toml_env_vars",
@@ -52,7 +48,7 @@ rust_library(
     ],
     tags = [
         "cargo-bazel",
-        "crate-name=num-traits",
+        "crate-name=tree-sitter-make",
         "manual",
         "noclippy",
         "norustfmt",
@@ -66,9 +62,10 @@ rust_library(
         "@rules_rust//rust/platform:x86_64-unknown-linux-gnu": [],
         "//conditions:default": ["@platforms//:incompatible"],
     }),
-    version = "0.2.19",
+    version = "1.1.1",
     deps = [
-        "@bindeps__num-traits-0.2.19//:build_script_build",
+        "@bindeps__tree-sitter-language-0.1.5//:tree_sitter_language",
+        "@bindeps__tree-sitter-make-1.1.1//:build_script_build",
     ],
 )
 
@@ -91,12 +88,8 @@ cargo_build_script(
             "WORKSPACE.bazel",
         ],
     ),
-    crate_features = [
-        "default",
-        "std",
-    ],
     crate_name = "build_script_build",
-    crate_root = "build.rs",
+    crate_root = "bindings/rust/build.rs",
     data = glob(
         include = ["**"],
         allow_empty = True,
@@ -110,7 +103,7 @@ cargo_build_script(
         ],
     ),
     edition = "2021",
-    pkg_name = "num-traits",
+    pkg_name = "tree-sitter-make",
     rustc_env_files = [
         ":cargo_toml_env_vars",
     ],
@@ -119,15 +112,15 @@ cargo_build_script(
     ],
     tags = [
         "cargo-bazel",
-        "crate-name=num-traits",
+        "crate-name=tree-sitter-make",
         "manual",
         "noclippy",
         "norustfmt",
     ],
-    version = "0.2.19",
+    version = "1.1.1",
     visibility = ["//visibility:private"],
     deps = [
-        "@bindeps__autocfg-1.5.0//:autocfg",
+        "@bindeps__cc-1.2.33//:cc",
     ],
 )
 

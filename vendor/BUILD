@@ -69,7 +69,7 @@ crates_vendor(
     generate_build_scripts = True,
     annotations = {
         binary: [crate.annotation(gen_binaries = True)]
-        for binary in ["cargo-deny", "cargo-insta", "just", "miniserve", "rust-analyzer"]
+        for binary in ["cargo-deny", "cargo-insta", "just", "miniserve", "rust-analyzer", "mergiraf"]
     } | {
         "dprint": [
             crate.annotation(gen_binaries = True, gen_build_script = False, rustc_env = {
@@ -107,6 +107,10 @@ crates_vendor(
         "miniserve": crate.spec(
             artifact = "bin",
             version = "0.31.0",
+        ),
+        "mergiraf": crate.spec(
+            artifact = "bin",
+            version = "0.13.0",
         ),
         # Currently using a fork due to https://github.com/rust-lang/rust-analyzer/issues/20359
         "rust-analyzer": crate.spec(

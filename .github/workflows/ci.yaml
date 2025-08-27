@@ -79,6 +79,8 @@ jobs:
     needs: [prep]
     if: ${{ fromJson(needs.prep.outputs.prep).rustdoc != null }}
     uses: ./.github/workflows/ci-rustdoc.yaml
+    permissions:
+      pull-requests: write
     with:
       artifact_name: "${{ fromJson(needs.prep.outputs.prep).rustdoc.artifact_name }}"
       commit_sha: "${{ fromJson(needs.prep.outputs.prep).rustdoc.commit_sha }}"

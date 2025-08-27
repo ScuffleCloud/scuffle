@@ -29,6 +29,8 @@ defaults:
 
 jobs:
   rustdoc:
+    permissions:
+      pull-requests: write
     runs-on: ubicloud-standard-8-ubuntu-2404
     steps:
       - uses: actions/checkout@v4
@@ -62,6 +64,7 @@ jobs:
         with:
           vercel-token: ${{ secrets.vercel_token }}
           github-token: ${{ secrets.GITHUB_TOKEN }}
+          github-comment: Rustdoc Preview Deployment
           vercel-args: "--archive=tgz"
           vercel-org-id: ${{ secrets.vercel_org_id }}
           vercel-project-id: ${{ secrets.vercel_project_id }}

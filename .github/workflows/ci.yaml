@@ -79,6 +79,8 @@ jobs:
     needs: [prep]
     if: ${{ fromJson(needs.prep.outputs.prep).rustdoc != null }}
     uses: ./.github/workflows/ci-rustdoc.yaml
+    permissions:
+      pull-requests: write
     with:
       artifact_name: "${{ fromJson(needs.prep.outputs.prep).rustdoc.artifact_name }}"
       commit_sha: "${{ fromJson(needs.prep.outputs.prep).rustdoc.commit_sha }}"
@@ -86,8 +88,9 @@ jobs:
       deploy_docs: "${{ fromJson(needs.prep.outputs.prep).rustdoc.deploy_docs }}"
     secrets:
       build_buddy_token: "${{ secrets.BUILD_BUDDY_TOKEN }}"
-      cf_account_id: "${{ secrets.CF_DOCS_ACCOUNT_ID }}"
-      cf_api_key: "${{ secrets.CF_DOCS_API_KEY }}"
+      vercel_token: "${{ secrets.VERCEL_TOKEN }}"
+      vercel_project_id: "${{ secrets.VERCEL_PROJECT_ID_DOCS_SCUFFLE_RS }}"
+      vercel_org_id: "${{ secrets.VERCEL_ORG_ID }}"
 
   brawl-done:
     runs-on: ubuntu-24.04

@@ -16,9 +16,11 @@ on:
     secrets:
       build_buddy_token:
         required: true
-      cf_api_key:
+      vercel_token:
         required: false
-      cf_account_id:
+      vercel_org_id:
+        required: false
+      vercel_project_id:
         required: false
 
 defaults:
@@ -27,9 +29,14 @@ defaults:
 
 jobs:
   rustdoc:
+    permissions:
+      pull-requests: write
     runs-on: ubicloud-standard-8-ubuntu-2404
     steps:
       - uses: actions/checkout@v4
+
+      - name: Install zstd
+        run: sudo apt-get update && sudo apt-get install zstd -y
 
       - uses: ./.github/actions/setup-bazel
         with:
@@ -38,18 +45,26 @@ jobs:
       - name: Build
         run: bazel build //docs:rustdoc
 
+      - name: Compress docs
+        run: |
+          pwd=$(pwd)
+          cd ./target-bazel/bin/docs/rustdoc.rustdoc_merge
+          tar -cf - * | zstd -o "$pwd/rustdoc.tar.zst"
+
       - name: Upload
         uses: actions/upload-artifact@v4
         if: ${{ inputs.artifact_name }}
         with:
           name: ${{ inputs.artifact_name }}
-          path: ./target-bazel/bin/docs/rustdoc.rustdoc_merge
+          path: ./rustdoc.tar.zst
 
       - name: Deploy
         if: ${{ inputs.deploy_docs }}
-        uses: cloudflare/wrangler-action@v3
+        uses: amondnet/vercel-action@888da851026e0573da056b061931bcb765a915c4
         with:
-          apiToken: ${{ secrets.cf_api_key }}
-          packageManager: npm
-          accountId: ${{ secrets.cf_account_id }}
-          command: pages deploy --project-name=scuffle-docrs --branch=pr/${{ inputs.pr_number }} --commit-hash=${{ inputs.commit_sha }} ./target-bazel/bin/docs/rustdoc.rustdoc_merge
+          vercel-token: ${{ secrets.vercel_token }}
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          vercel-args: "--archive=tgz"
+          vercel-org-id: ${{ secrets.vercel_org_id }}
+          vercel-project-id: ${{ secrets.vercel_project_id }}
+          working-directory: ./target-bazel/bin/docs/rustdoc.rustdoc_merge

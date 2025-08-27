@@ -56,7 +56,7 @@ jobs:
           workflow_conclusion: success
           commit: ${{ github.sha }}
           name: rustdoc
-          path: rustdoc.tar.zst
+          path: ./
 
       - name: Install zstd
         run: sudo apt-get update && sudo apt-get install zstd -y

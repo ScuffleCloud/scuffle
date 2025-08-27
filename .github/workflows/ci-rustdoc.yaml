@@ -60,11 +60,25 @@ jobs:
 
       - name: Deploy
         if: ${{ inputs.deploy_docs }}
+        id: deploy
         uses: amondnet/vercel-action@888da851026e0573da056b061931bcb765a915c4
         with:
           vercel-token: ${{ secrets.vercel_token }}
           github-token: ${{ secrets.GITHUB_TOKEN }}
+          github-comment: false
           vercel-args: "--archive=tgz"
           vercel-org-id: ${{ secrets.vercel_org_id }}
           vercel-project-id: ${{ secrets.vercel_project_id }}
           working-directory: ./target-bazel/bin/docs/rustdoc.rustdoc_merge
+
+      - name: PR Comment
+        uses: thollander/actions-comment-pull-request@v3
+        if: ${{ inputs.deploy_docs && inputs.pr_number }}
+        with:
+          pr-number: ${{ inputs.pr_number }}
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          comment-tag: ${{ steps.deploy.outputs.preview-name }}
+          message: |
+            Deployment of ${{ steps.deploy.outputs.preview-name }}
+
+            ${{ steps.deploy.outputs.preview-url }}

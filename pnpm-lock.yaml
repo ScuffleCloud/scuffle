@@ -6,6 +6,8 @@ settings:
 
 importers:
 
+  .: {}
+
   docs:
     dependencies:
       '@docusaurus/core':

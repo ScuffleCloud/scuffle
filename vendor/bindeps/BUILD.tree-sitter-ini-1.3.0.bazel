@@ -21,7 +21,7 @@ cargo_toml_env_vars(
 )
 
 rust_library(
-    name = "num_traits",
+    name = "tree_sitter_ini",
     srcs = glob(
         include = ["**/*.rs"],
         allow_empty = True,
@@ -38,12 +38,8 @@ rust_library(
             "WORKSPACE.bazel",
         ],
     ),
-    crate_features = [
-        "default",
-        "std",
-    ],
-    crate_root = "src/lib.rs",
-    edition = "2021",
+    crate_root = "bindings/rust/lib.rs",
+    edition = "2018",
     rustc_env_files = [
         ":cargo_toml_env_vars",
     ],
@@ -52,7 +48,7 @@ rust_library(
     ],
     tags = [
         "cargo-bazel",
-        "crate-name=num-traits",
+        "crate-name=tree-sitter-ini",
         "manual",
         "noclippy",
         "norustfmt",
@@ -66,9 +62,10 @@ rust_library(
         "@rules_rust//rust/platform:x86_64-unknown-linux-gnu": [],
         "//conditions:default": ["@platforms//:incompatible"],
     }),
-    version = "0.2.19",
+    version = "1.3.0",
     deps = [
-        "@bindeps__num-traits-0.2.19//:build_script_build",
+        "@bindeps__tree-sitter-ini-1.3.0//:build_script_build",
+        "@bindeps__tree-sitter-language-0.1.5//:tree_sitter_language",
     ],
 )
 
@@ -91,12 +88,8 @@ cargo_build_script(
             "WORKSPACE.bazel",
         ],
     ),
-    crate_features = [
-        "default",
-        "std",
-    ],
     crate_name = "build_script_build",
-    crate_root = "build.rs",
+    crate_root = "bindings/rust/build.rs",
     data = glob(
         include = ["**"],
         allow_empty = True,
@@ -109,8 +102,8 @@ cargo_build_script(
             "WORKSPACE.bazel",
         ],
     ),
-    edition = "2021",
-    pkg_name = "num-traits",
+    edition = "2018",
+    pkg_name = "tree-sitter-ini",
     rustc_env_files = [
         ":cargo_toml_env_vars",
     ],
@@ -119,15 +112,15 @@ cargo_build_script(
     ],
     tags = [
         "cargo-bazel",
-        "crate-name=num-traits",
+        "crate-name=tree-sitter-ini",
         "manual",
         "noclippy",
         "norustfmt",
     ],
-    version = "0.2.19",
+    version = "1.3.0",
     visibility = ["//visibility:private"],
     deps = [
-        "@bindeps__autocfg-1.5.0//:autocfg",
+        "@bindeps__cc-1.2.33//:cc",
     ],
 )
 

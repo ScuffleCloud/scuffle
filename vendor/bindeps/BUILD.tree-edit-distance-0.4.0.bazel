@@ -17,7 +17,7 @@ cargo_toml_env_vars(
 )
 
 rust_library(
-    name = "simplelog",
+    name = "tree_edit_distance",
     srcs = glob(
         include = ["**/*.rs"],
         allow_empty = True,
@@ -34,13 +34,11 @@ rust_library(
             "WORKSPACE.bazel",
         ],
     ),
-    crate_features = [
-        "default",
-        "local-offset",
-        "termcolor",
-    ],
     crate_root = "src/lib.rs",
-    edition = "2018",
+    edition = "2021",
+    proc_macro_deps = [
+        "@bindeps__derive_more-0.99.20//:derive_more",
+    ],
     rustc_env_files = [
         ":cargo_toml_env_vars",
     ],
@@ -49,7 +47,7 @@ rust_library(
     ],
     tags = [
         "cargo-bazel",
-        "crate-name=simplelog",
+        "crate-name=tree-edit-distance",
         "manual",
         "noclippy",
         "norustfmt",
@@ -63,10 +61,10 @@ rust_library(
         "@rules_rust//rust/platform:x86_64-unknown-linux-gnu": [],
         "//conditions:default": ["@platforms//:incompatible"],
     }),
-    version = "0.12.2",
+    version = "0.4.0",
     deps = [
-        "@bindeps__log-0.4.27//:log",
-        "@bindeps__termcolor-1.1.3//:termcolor",
-        "@bindeps__time-0.3.41//:time",
+        "@bindeps__arrayvec-0.7.6//:arrayvec",
+        "@bindeps__itertools-0.10.5//:itertools",
+        "@bindeps__pathfinding-3.0.14//:pathfinding",
     ],
 )

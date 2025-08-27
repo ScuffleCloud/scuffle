@@ -1,5 +1,9 @@
 packages:
-  - "docs"
-  - "website"
+  - docs
+  - website
+
 onlyBuiltDependencies:
-  - "esbuild"
+  - core-js
+  - core-js-pure
+  - esbuild
+  - msw

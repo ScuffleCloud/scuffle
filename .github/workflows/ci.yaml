@@ -86,8 +86,8 @@ jobs:
       deploy_docs: "${{ fromJson(needs.prep.outputs.prep).rustdoc.deploy_docs }}"
     secrets:
       build_buddy_token: "${{ secrets.BUILD_BUDDY_TOKEN }}"
-      cf_account_id: "${{ secrets.CF_DOCS_ACCOUNT_ID }}"
-      cf_api_key: "${{ secrets.CF_DOCS_API_KEY }}"
+      netlify_auth_token: "${{ secrets.NETLIFY_AUTH_TOKEN }}"
+      netlify_site_id: "${{ secrets.NETLIFY_SITE_ID_DOCS_SCUFFLE_RS }}"
 
   brawl-done:
     runs-on: ubuntu-24.04

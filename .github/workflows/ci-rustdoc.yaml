@@ -16,9 +16,9 @@ on:
     secrets:
       build_buddy_token:
         required: true
-      cf_api_key:
+      netlify_site_id:
         required: false
-      cf_account_id:
+      netlify_auth_token:
         required: false
 
 defaults:
@@ -31,6 +31,9 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      - name: Install zstd
+        run: apt-get update && apt-get install zstd -y
+
       - uses: ./.github/actions/setup-bazel
         with:
           build_buddy_token: ${{ secrets.build_buddy_token }}
@@ -38,18 +41,30 @@ jobs:
       - name: Build
         run: bazel build //docs:rustdoc
 
+      - name: Compress docs
+        run: |
+          cd ./target-bazel/bin/docs/rustdoc.rustdoc_merge
+          tar -cf - * | zstd --ultra -22 -o "../../../../rustdoc.tar.zst"
+
       - name: Upload
         uses: actions/upload-artifact@v4
         if: ${{ inputs.artifact_name }}
         with:
           name: ${{ inputs.artifact_name }}
-          path: ./target-bazel/bin/docs/rustdoc.rustdoc_merge
+          path: rustdoc.tar.zst
 
       - name: Deploy
         if: ${{ inputs.deploy_docs }}
-        uses: cloudflare/wrangler-action@v3
+        uses: nwtgck/actions-netlify@v2
         with:
-          apiToken: ${{ secrets.cf_api_key }}
-          packageManager: npm
-          accountId: ${{ secrets.cf_account_id }}
-          command: pages deploy --project-name=scuffle-docrs --branch=pr/${{ inputs.pr_number }} --commit-hash=${{ inputs.commit_sha }} ./target-bazel/bin/docs/rustdoc.rustdoc_merge
+          publish-dir: ./target-bazel/bin/docs/rustdoc.rustdoc_merge
+          production-deploy: false
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          deploy-message: "Preview for PR #${{ github.event.number }}"
+          enable-pull-request-comment: true
+          enable-commit-comment: true
+          overwrites-pull-request-comment: true
+          alias: pr-${{ github.event.number }}
+        env:
+          NETLIFY_AUTH_TOKEN: ${{ secrets.netlify_auth_token }}
+          NETLIFY_SITE_ID: ${{ secrets.netlify_site_id }}

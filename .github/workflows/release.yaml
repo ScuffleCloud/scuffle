@@ -56,16 +56,23 @@ jobs:
           workflow_conclusion: success
           commit: ${{ github.sha }}
           name: rustdoc
-          path: target/doc
+          path: rustdoc.tar.zst
+
+      - name: Install zstd
+        run: apt-get update && apt-get install zstd -y
+
+      - name: Extract docs
+        run: tar -xf rustdoc.tar.zst -C docs
 
       - name: Deploy
-        id: deploy
-        uses: cloudflare/wrangler-action@v3
+        uses: nwtgck/actions-netlify@v2
         with:
-          packageManager: npm
-          apiToken: ${{ secrets.CF_DOCS_API_KEY }}
-          accountId: ${{ secrets.CF_DOCS_ACCOUNT_ID }}
-          command: pages deploy --project-name=scuffle-docrs --branch=main --commit-hash=${{ github.sha }} --commit-dirty=true ./target/doc
+          publish-dir: ./target-bazel/bin/docs/rustdoc.rustdoc_merge
+          production-deploy: true
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+        env:
+          NETLIFY_AUTH_TOKEN: ${{ secrets.NETLIFY_AUTH_TOKEN }}
+          NETLIFY_SITE_ID: ${{ secrets.NETLIFY_SITE_ID_DOCS_SCUFFLE_RS }}
 
   # docusaurus:
   #   name: Docusaurus

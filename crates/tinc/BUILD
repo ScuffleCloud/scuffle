@@ -1,6 +1,6 @@
-load("//build/utils/rust:package.bzl", "scuffle_package", "scuffle_test")
+load("//misc/utils/rust:package.bzl", "scuffle_package", "scuffle_test")
 load("@protobuf//bazel:proto_library.bzl", "proto_library")
-load("//build/utils/rust:manifest.bzl", "cargo_toml")
+load("//misc/utils/rust:manifest.bzl", "cargo_toml")
 
 cargo_toml()
 

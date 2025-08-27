@@ -10,7 +10,7 @@
 ###############################################################################
 
 # Run the workspace status command to generate a git hash used for OCI image tagging.
-build --workspace_status_command=build/utils/workspace_status.sh
+build --workspace_status_command=misc/utils/workspace_status.sh
 
 # Don't create bazel-* symlinks in the project root directory.
 # Instead, set a prefix and put it in .gitignore
@@ -102,7 +102,7 @@ common --incompatible_strict_action_env
 ###############################################################################
 
 # Run binaries in the directory they are invoked from
-run --run_under='exec $BUILD_WORKING_DIRECTORY/build/utils/run_under.sh'
+run --run_under='exec $BUILD_WORKING_DIRECTORY/misc/utils/run_under.sh'
 
 common:wrapper --bes_results_url=""
 common:wrapper --bes_backend=""

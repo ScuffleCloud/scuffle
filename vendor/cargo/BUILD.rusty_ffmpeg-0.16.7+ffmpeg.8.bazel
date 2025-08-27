@@ -83,9 +83,9 @@ cargo_build_script(
     build_script_env = {
         "BINDGEN_EXTRA_CLANG_ARGS": "$(CFLAGS)",
         "CLANG_PATH": "$${pwd}/$(CC)",
-        "FFMPEG_DLL_PATH": "$(execpath @//build/toolchains/ffmpeg:lib)",
-        "FFMPEG_INCLUDE_DIR": "$(execpath @//build/toolchains/ffmpeg:include)",
-        "LIBCLANG_PATH": "$(execpath @//build/toolchains/clang:libclang)",
+        "FFMPEG_DLL_PATH": "$(execpath @//misc/toolchains/ffmpeg:lib)",
+        "FFMPEG_INCLUDE_DIR": "$(execpath @//misc/toolchains/ffmpeg:include)",
+        "LIBCLANG_PATH": "$(execpath @//misc/toolchains/clang:libclang)",
     },
     compile_data = glob(
         include = ["**"],
@@ -119,9 +119,9 @@ cargo_build_script(
             "WORKSPACE.bazel",
         ],
     ) + [
-        "@//build/toolchains/clang:libclang",
-        "@//build/toolchains/ffmpeg:include",
-        "@//build/toolchains/ffmpeg:lib",
+        "@//misc/toolchains/clang:libclang",
+        "@//misc/toolchains/ffmpeg:include",
+        "@//misc/toolchains/ffmpeg:lib",
     ],
     edition = "2021",
     links = "ffmpeg",

@@ -1,7 +1,7 @@
-load("//build/utils/rust:package.bzl", "scuffle_build_script", "scuffle_package")
+load("//misc/utils/rust:package.bzl", "scuffle_build_script", "scuffle_package")
 load("@protobuf//bazel:proto_library.bzl", "proto_library")
-load("//build/utils:proto_descriptor_set.bzl", "proto_descriptor_set")
-load("//build/utils/rust:manifest.bzl", "cargo_toml")
+load("//misc/utils:proto_descriptor_set.bzl", "proto_descriptor_set")
+load("//misc/utils/rust:manifest.bzl", "cargo_toml")
 
 cargo_toml()
 

@@ -229,7 +229,7 @@ message FloatConstraints {
   optional bool disallow_nan = 9 [(predefined).cel = {
     message: "value must not be NaN"
     expression: "!this || !input.isNaN()"
-    jsonschemas: 'this ? { "not": { "enum": "NaN" }} : {}'
+    jsonschemas: 'this ? { "not": { "enum": ["NaN"] }} : {}'
   }];
   // If true, pos/neg Infinity values are not allowed.
   optional bool disallow_infinity = 10 [(predefined).cel = {
@@ -292,7 +292,7 @@ message DoubleConstraints {
   optional bool disallow_nan = 9 [(predefined).cel = {
     message: "value must not be NaN"
     expression: "!this || !input.isNaN()"
-    jsonschemas: 'this ? { "not": { "enum": "NaN" }} : {}'
+    jsonschemas: 'this ? { "not": { "enum": ["NaN"] }} : {}'
   }];
   // If true, pos/neg Infinity values are not allowed.
   optional bool disallow_infinity = 10 [(predefined).cel = {

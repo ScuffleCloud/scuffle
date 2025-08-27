@@ -613,7 +613,7 @@ impl InputGenerator<'_> {
                     .explode(true)
                     .style(openapiv3_1::path::ParameterStyle::DeepObject)
                     .schema(generate(
-                        &FieldInfo{
+                        &FieldInfo {
                             full_name: &field.full_name,
                             ty: &field.ty,
                             cel: &field.options.cel_exprs,
@@ -670,7 +670,7 @@ impl InputGenerator<'_> {
                     .name(path)
                     .required(true)
                     .schema(generate(
-                        &FieldInfo{
+                        &FieldInfo {
                             full_name: &full_field_path,
                             ty: &ProtoType::Value(ty.clone()),
                             cel: &cel,
@@ -808,7 +808,7 @@ impl InputGenerator<'_> {
                 .content(
                     body_method.content_type(),
                     openapiv3_1::content::Content::new(Some(generate(
-                        &FieldInfo{
+                        &FieldInfo {
                             full_name: &extract.full_name,
                             ty: &extract.ty,
                             cel: &extract.cel,
@@ -948,9 +948,9 @@ impl OutputGenerator<'_> {
                 .content(
                     body_method.content_type(),
                     openapiv3_1::Content::new(Some(generate(
-                        &FieldInfo{
+                        &FieldInfo {
                             full_name: &extract.full_name,
-                            ty:  &extract.ty,
+                            ty: &extract.ty,
                             cel: &extract.cel,
                         },
                         self.components,
@@ -1035,7 +1035,7 @@ fn generate(
                         }
 
                         schemas.push(internal_generate(
-                            &FieldInfo{
+                            &FieldInfo {
                                 full_name: full_field_name,
                                 ty: &ProtoType::Value(value.clone()),
                                 cel: &CelExpressions::default(),
@@ -1055,7 +1055,7 @@ fn generate(
                 Object::builder()
                     .schema_type(Type::Array)
                     .items(internal_generate(
-                        &FieldInfo{
+                        &FieldInfo {
                             full_name: full_field_name,
                             ty: &ProtoType::Value(item.clone()),
                             cel,
@@ -1082,7 +1082,7 @@ fn generate(
                             })
                             .map(|(name, field)| {
                                 let ty = internal_generate(
-                                    &FieldInfo{
+                                    &FieldInfo {
                                         full_name: &field.full_name,
                                         ty: &ProtoType::Value(field.ty.clone()),
                                         cel: &field.options.cel_exprs,
@@ -1164,7 +1164,7 @@ fn generate(
                     .one_ofs([
                         Schema::object(Object::builder().schema_type(Type::Null).build()),
                         internal_generate(
-                            &FieldInfo{
+                            &FieldInfo {
                                 full_name: full_field_name,
                                 ty: &ProtoType::Value(value.clone()),
                                 cel,
@@ -1309,7 +1309,7 @@ fn generate(
                         };
 
                         let field_schema = internal_generate(
-                            &FieldInfo{
+                            &FieldInfo {
                                 full_name: &field.full_name,
                                 ty: &ty,
                                 cel: &field.options.cel_exprs,
@@ -1408,6 +1408,5 @@ fn generate(
         Ok(Schema::object(Object::all_ofs(schemas)))
     }
 
-    internal_generate(field_info, components, types, used_paths, direction, bytes)
-        .map(|schema| schema.into_optimized())
+    internal_generate(field_info, components, types, used_paths, direction, bytes).map(|schema| schema.into_optimized())
 }

@@ -1,10 +1,11 @@
 use core::fmt;
-use num_traits::{Float, FromPrimitive, ToPrimitive};
-use serde::Serialize;
-use serde::de::Error;
 use std::collections::{BTreeMap, HashMap};
 use std::fmt::Display;
 use std::marker::PhantomData;
+
+use num_traits::{Float, FromPrimitive, ToPrimitive};
+use serde::Serialize;
+use serde::de::Error;
 
 use super::{DeserializeContent, DeserializeHelper, Expected, Tracker, TrackerDeserializer, TrackerFor};
 
@@ -120,14 +121,23 @@ where
             type Value = T;
 
             visit_convert_to_float!(visit_f32, from_f32, f32);
+
             visit_convert_to_float!(visit_f64, from_f64, f64);
+
             visit_convert_to_float!(visit_u8, from_u8, u8);
+
             visit_convert_to_float!(visit_u16, from_u16, u16);
+
             visit_convert_to_float!(visit_u32, from_u32, u32);
+
             visit_convert_to_float!(visit_u64, from_u64, u64);
+
             visit_convert_to_float!(visit_i8, from_i8, i8);
+
             visit_convert_to_float!(visit_i16, from_i16, i16);
+
             visit_convert_to_float!(visit_i32, from_i32, i32);
+
             visit_convert_to_float!(visit_i64, from_i64, i64);
 
             fn expecting(&self, formatter: &mut fmt::Formatter) -> fmt::Result {

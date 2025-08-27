@@ -1,5 +1,6 @@
-use crate::types::ProtoPath;
 use std::iter;
+
+use crate::types::ProtoPath;
 
 #[derive(Clone, Debug, Default)]
 pub(crate) struct PathSet {

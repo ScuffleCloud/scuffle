@@ -32,9 +32,10 @@
 use std::io::ErrorKind;
 use std::path::{Path, PathBuf};
 
-use crate::path_set::PathSet;
 use anyhow::Context;
 use extern_paths::ExternPaths;
+
+use crate::path_set::PathSet;
 
 mod codegen;
 mod extern_paths;

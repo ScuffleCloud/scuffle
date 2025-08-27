@@ -14,6 +14,7 @@ unexpected_cfgs = { level = "warn", check-cfg = ['cfg(coverage_nightly)'] }
 
 [dependencies]
 prost = "0.14.1"
+serde = "1"
 tinc = { path = "../../crates/tinc" }
 
 [build-dependencies]

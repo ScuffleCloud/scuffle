@@ -325,18 +325,18 @@ impl<G: CoreConfig> Operation<G> for tonic::Request<pb::scufflecloud::core::v1::
         };
 
         // Update the organization if the user is an admin of a Google Workspace
-        if let Some((workspace_user, hd)) = workspace_user {
-            if workspace_user.is_admin {
-                let n = diesel::update(organizations::dsl::organizations)
-                    .filter(organizations::dsl::google_customer_id.eq(&workspace_user.customer_id))
-                    .set(organizations::dsl::google_hosted_domain.eq(&google_token.id_token.hd))
-                    .execute(tx)
-                    .await
-                    .into_tonic_internal_err("failed to update organization")?;
+        if let Some((workspace_user, hd)) = workspace_user
+            && workspace_user.is_admin
+        {
+            let n = diesel::update(organizations::dsl::organizations)
+                .filter(organizations::dsl::google_customer_id.eq(&workspace_user.customer_id))
+                .set(organizations::dsl::google_hosted_domain.eq(&google_token.id_token.hd))
+                .execute(tx)
+                .await
+                .into_tonic_internal_err("failed to update organization")?;
 
-                if n == 0 {
-                    state.google_workspace = Some(pb::scufflecloud::core::v1::complete_login_with_google_response::GoogleWorkspace::UnassociatedGoogleHostedDomain(hd));
-                }
+            if n == 0 {
+                state.google_workspace = Some(pb::scufflecloud::core::v1::complete_login_with_google_response::GoogleWorkspace::UnassociatedGoogleHostedDomain(hd));
             }
         }
 

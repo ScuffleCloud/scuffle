@@ -11,6 +11,9 @@ expression: svc.openapi_schema()
   "paths": {
     "/ping": {
       "post": {
+        "tags": [
+          "SimpleService"
+        ],
         "responses": {
           "200": {
             "content": {
@@ -36,6 +39,9 @@ expression: svc.openapi_schema()
     },
     "/ping/{arg}": {
       "get": {
+        "tags": [
+          "SimpleService"
+        ],
         "parameters": [
           {
             "name": "arg",
@@ -90,5 +96,11 @@ expression: svc.openapi_schema()
         "unevaluatedProperties": false
       }
     }
-  }
+  },
+  "tags": [
+    {
+      "name": "SimpleService",
+      "description": ""
+    }
+  ]
 }

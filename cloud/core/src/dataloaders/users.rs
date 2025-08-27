@@ -29,7 +29,7 @@ impl DataLoaderFetcher for UserLoader {
     }
 }
 
-impl<'a> UserLoader {
+impl UserLoader {
     pub fn new(conn: PooledConnection<'static, AsyncPgConnection>) -> DataLoader<Self> {
         DataLoader::new(Self(Mutex::new(conn)), 1000, 500, Duration::from_millis(5))
     }

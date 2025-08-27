@@ -34,7 +34,9 @@ rust_library(
             "WORKSPACE.bazel",
         ],
     ),
-    crate_features = select({
+    crate_features = [
+        "std",
+    ] + select({
         "@rules_rust//rust/platform:wasm32-unknown-unknown": [
             "js",
             "js-sys",
@@ -69,7 +71,7 @@ rust_library(
     }),
     version = "0.2.16",
     deps = [
-        "@cargo_vendor__cfg-if-1.0.3//:cfg_if",
+        "@cargo_vendor__cfg-if-1.0.1//:cfg_if",
     ] + select({
         "@rules_rust//rust/platform:aarch64-apple-darwin": [
             "@cargo_vendor__libc-0.2.175//:libc",  # cfg(unix)

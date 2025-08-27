@@ -75,8 +75,8 @@ rust_library(
         "@cargo_vendor__rustls-0.23.31//:rustls",
         "@cargo_vendor__rustls-platform-verifier-0.5.3//:rustls_platform_verifier",
         "@cargo_vendor__slab-0.4.11//:slab",
-        "@cargo_vendor__thiserror-2.0.16//:thiserror",
-        "@cargo_vendor__tinyvec-1.10.0//:tinyvec",
+        "@cargo_vendor__thiserror-2.0.15//:thiserror",
+        "@cargo_vendor__tinyvec-1.9.0//:tinyvec",
         "@cargo_vendor__tracing-0.1.41//:tracing",
     ] + select({
         "@rules_rust//rust/platform:wasm32-unknown-unknown": [

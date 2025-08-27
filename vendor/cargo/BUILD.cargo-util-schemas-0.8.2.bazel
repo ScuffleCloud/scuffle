@@ -65,9 +65,9 @@ rust_library(
         "@cargo_vendor__serde-1.0.219//:serde",
         "@cargo_vendor__serde-untagged-0.1.8//:serde_untagged",
         "@cargo_vendor__serde-value-0.7.0//:serde_value",
-        "@cargo_vendor__thiserror-2.0.16//:thiserror",
+        "@cargo_vendor__thiserror-2.0.15//:thiserror",
         "@cargo_vendor__toml-0.8.23//:toml",
         "@cargo_vendor__unicode-xid-0.2.6//:unicode_xid",
-        "@cargo_vendor__url-2.5.7//:url",
+        "@cargo_vendor__url-2.5.4//:url",
     ],
 )

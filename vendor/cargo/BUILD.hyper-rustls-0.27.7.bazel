@@ -40,7 +40,10 @@ rust_library(
     crate_features = [
         "http1",
         "http2",
+        "ring",
         "tls12",
+        "webpki-roots",
+        "webpki-tokio",
     ],
     crate_root = "src/lib.rs",
     edition = "2021",
@@ -69,12 +72,13 @@ rust_library(
     version = "0.27.7",
     deps = [
         "@cargo_vendor__http-1.3.1//:http",
-        "@cargo_vendor__hyper-1.7.0//:hyper",
+        "@cargo_vendor__hyper-1.6.0//:hyper",
         "@cargo_vendor__hyper-util-0.1.16//:hyper_util",
         "@cargo_vendor__rustls-0.23.31//:rustls",
         "@cargo_vendor__rustls-pki-types-1.12.0//:rustls_pki_types",
         "@cargo_vendor__tokio-1.47.1//:tokio",
         "@cargo_vendor__tokio-rustls-0.26.2//:tokio_rustls",
         "@cargo_vendor__tower-service-0.3.3//:tower_service",
+        "@cargo_vendor__webpki-roots-1.0.2//:webpki_roots",
     ],
 )

@@ -34,6 +34,10 @@ rust_library(
             "WORKSPACE.bazel",
         ],
     ),
+    crate_features = [
+        "spin",
+        "spin_no_std",
+    ],
     crate_root = "src/lib.rs",
     edition = "2015",
     rustc_env_files = [
@@ -60,4 +64,7 @@ rust_library(
         "//conditions:default": ["@platforms//:incompatible"],
     }),
     version = "1.5.0",
+    deps = [
+        "@cargo_vendor__spin-0.9.8//:spin",
+    ],
 )

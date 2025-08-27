@@ -8,7 +8,6 @@ use tinc::TincService;
 use tinc::openapi::Server;
 use tower_http::cors::CorsLayer;
 use tower_http::trace::TraceLayer;
-use utoipa_swagger_ui::SwaggerUi;
 
 use crate::CoreConfig;
 
@@ -102,7 +101,11 @@ impl<G: CoreConfig> scuffle_bootstrap::Service<G> for CoreSvc<G> {
             .fallback(StatusCode::NOT_FOUND);
 
         if global.swagger_ui_enabled() {
-            router = router.merge(SwaggerUi::new("/v1/docs").config(utoipa_swagger_ui::Config::from("/v1/openapi.json")));
+            router = router.merge(swagger_ui_dist::generate_routes(swagger_ui_dist::ApiDefinition {
+                uri_prefix: "/v1/docs",
+                api_definition: swagger_ui_dist::OpenApiSource::Uri("/v1/openapi.json"),
+                title: Some("V1 Api Docs"),
+            }));
         }
 
         scuffle_http::HttpServer::builder()

@@ -62,11 +62,11 @@ rust_library(
     version = "0.5.1",
     deps = [
         "@cargo_vendor__chrono-0.4.41//:chrono",
-        "@cargo_vendor__indexmap-2.11.0//:indexmap",
+        "@cargo_vendor__indexmap-2.10.0//:indexmap",
         "@cargo_vendor__newtype-uuid-1.3.0//:newtype_uuid",
         "@cargo_vendor__quick-xml-0.37.5//:quick_xml",
         "@cargo_vendor__strip-ansi-escapes-0.2.1//:strip_ansi_escapes",
-        "@cargo_vendor__thiserror-2.0.16//:thiserror",
+        "@cargo_vendor__thiserror-2.0.15//:thiserror",
         "@cargo_vendor__uuid-1.18.0//:uuid",
     ],
 )

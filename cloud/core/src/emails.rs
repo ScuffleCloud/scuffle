@@ -10,12 +10,14 @@ struct RegisterWithEmailSubjectTemplate;
 
 #[derive(sailfish::Template)]
 #[template(path = "emails/register_with_email/text.stpl")]
+#[allow(dead_code)]
 struct RegisterWithEmailTextTemplate {
     pub url: String,
 }
 
 #[derive(sailfish::Template)]
 #[template(path = "emails/register_with_email/html.stpl")]
+#[allow(dead_code)]
 struct RegisterWithEmailHtmlTemplate {
     pub url: String,
 }
@@ -46,12 +48,14 @@ struct AddNewEmailSubjectTemplate;
 
 #[derive(sailfish::Template)]
 #[template(path = "emails/add_new_email/text.stpl")]
+#[allow(dead_code)]
 struct AddNewEmailTextTemplate {
     pub url: String,
 }
 
 #[derive(sailfish::Template)]
 #[template(path = "emails/add_new_email/html.stpl")]
+#[allow(dead_code)]
 struct AddNewEmailHtmlTemplate {
     pub url: String,
 }
@@ -82,12 +86,14 @@ struct MagicLinkSubjectTemplate;
 
 #[derive(sailfish::Template)]
 #[template(path = "emails/magic_link/text.stpl")]
+#[allow(dead_code)]
 struct MagicLinkTextTemplate {
     pub url: String,
 }
 
 #[derive(sailfish::Template)]
 #[template(path = "emails/magic_link/html.stpl")]
+#[allow(dead_code)]
 struct MagicLinkHtmlTemplate {
     pub url: String,
 }

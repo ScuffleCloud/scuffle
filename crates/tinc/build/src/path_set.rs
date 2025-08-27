@@ -1,10 +1,11 @@
+use std::collections::HashSet;
 use std::iter;
 
 use crate::types::ProtoPath;
 
 #[derive(Clone, Debug, Default)]
 pub(crate) struct PathSet {
-    paths: Vec<String>,
+    paths: HashSet<String>,
 }
 
 impl PathSet {
@@ -16,12 +17,18 @@ impl PathSet {
         self.find_matching(&path_str).is_some()
     }
 
-    pub(crate) fn insert(&mut self, path: &str) {
-        self.paths.push(path.to_string())
+    pub(crate) fn insert(&mut self, path: impl std::fmt::Display) {
+        self.paths.insert(path.to_string());
     }
 
-    fn find_matching(&self, full_path: &str) -> Option<&String> {
-        sub_path_iter(full_path).find_map(|path| self.paths.iter().find(|p| *p == path))
+    fn find_matching(&self, full_path: &str) -> Option<String> {
+        sub_path_iter(full_path).find_map(|path| {
+            if self.paths.contains(path) {
+                Some(path.to_string())
+            } else {
+                None
+            }
+        })
     }
 }
 
@@ -50,7 +57,6 @@ fn suffixes(fq_path: &str) -> impl Iterator<Item = &str> {
 }
 
 #[cfg(test)]
-#[cfg(feature = "prost")]
 #[cfg_attr(coverage_nightly, coverage(off))]
 mod tests {
     use crate::PathSet;

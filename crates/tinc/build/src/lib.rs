@@ -144,7 +144,7 @@ impl Config {
     /// Specify a path to float/double field (or derivative, like repeated float/double)
     /// that must use serializer/deserializer with non-finite values support (NaN/Infinity).
     pub fn float_with_non_finite_vals(&mut self, path: impl std::fmt::Display) -> &mut Self {
-        self.paths.floats_with_non_finite_vals.insert(&path.to_string());
+        self.paths.floats_with_non_finite_vals.insert(path);
         self
     }
 

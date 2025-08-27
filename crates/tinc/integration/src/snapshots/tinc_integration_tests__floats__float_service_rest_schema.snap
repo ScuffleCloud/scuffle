@@ -316,7 +316,6 @@ expression: svc.openapi_schema()
                 "type": "string"
               }
             ],
-            "description": "In build.rs some of these fields are marked as using\n serializer with NaN/Infinity support, some without",
             "not": {
               "enum": [
                 "NaN"

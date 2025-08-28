@@ -49,7 +49,9 @@ test *targets="//...":
 
     output_base=$(bazel info output_base)
 
-    bazel --output_base="${output_base}_coverage" coverage {{ targets }} --//settings:test_insta_force_pass
+    targets=$(bazel query 'tests(set({{ targets }}))')
+
+    bazel --output_base="${output_base}_coverage" coverage ${targets} --//settings:test_insta_force_pass
 
     test_logs=$(bazel --output_base="${output_base}_coverage" info bazel-testlogs)
 

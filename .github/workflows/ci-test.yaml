@@ -36,7 +36,9 @@ jobs:
           build_buddy_token: ${{ secrets.build_buddy_token }}
 
       - name: Run
-        run: bazel coverage //...
+        run: |
+            targets=$(bazel query 'tests(set(//...))')
+            bazel coverage ${targets}
 
       - uses: codecov/codecov-action@v5
         with:

@@ -1,0 +1,29 @@
+load("@npm//:defs.bzl", "npm_link_all_packages")
+load("@npm//cloud/dashboard:vite/package_json.bzl", vite_bin = "bin")
+
+npm_link_all_packages()
+
+filegroup(
+    name = "srcs",
+    srcs = glob([
+        "src/**/*.*",
+        "static/**/*.*",
+    ]),
+)
+
+vite_bin.vite(
+    name = "dashboard",
+    srcs = [
+        "vite.config.ts",
+        "package.json",
+        "tsconfig.json",
+        "svelte.config.js",
+        ".env",
+        ":node_modules",
+        ":srcs",
+    ],
+    args = ["build --config vite.config.ts"],
+    chdir = package_name(),
+    out_dirs = ["build"],
+    visibility = ["//visibility:public"],
+)

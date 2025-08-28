@@ -1,0 +1,5 @@
+alias(
+    name = "node",
+    actual = "@nodejs//:node",
+    tags = ["manual"],
+)

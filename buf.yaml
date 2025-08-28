@@ -5,6 +5,7 @@ modules:
     excludes:
       - node_modules
       - website/node_modules
+      - docs/node_modules
 lint:
   use:
     - STANDARD

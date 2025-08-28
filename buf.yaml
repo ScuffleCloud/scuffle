@@ -1,11 +1,8 @@
 # For details on buf.yaml configuration, visit https://buf.build/docs/configuration/v2/buf-yaml
 version: v2
 modules:
-  - path: .
-    excludes:
-      - node_modules
-      - website/node_modules
-      - docs/node_modules
+  - path: cloud/proto/pb
+  - path: crates/tinc
 lint:
   use:
     - STANDARD

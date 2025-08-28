@@ -1,0 +1,6 @@
+load(":alias.bzl", "protoc_alias")
+
+protoc_alias(
+    name = "protoc",
+    tags = ["manual"],
+)

@@ -3,18 +3,18 @@
 import IconArrowLeft from "$lib/images/icon-arrow-left.svelte";
 
 interface Props {
-  onSubmit: (email: string) => Promise<void>;
-  onBack: () => void;
-  isLoading: boolean;
+    onSubmit: (email: string) => Promise<void>;
+    onBack: () => void;
+    isLoading: boolean;
 }
 
 let { onSubmit, onBack, isLoading }: Props = $props();
 
 async function handleSubmit(event: SubmitEvent): Promise<void> {
-  event.preventDefault();
-  const formData = new FormData(event.target as HTMLFormElement);
-  const email = formData.get("email") as string;
-  await onSubmit(email);
+    event.preventDefault();
+    const formData = new FormData(event.target as HTMLFormElement);
+    const email = formData.get("email") as string;
+    await onSubmit(email);
 }
 </script>
 

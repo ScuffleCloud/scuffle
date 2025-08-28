@@ -6,7 +6,7 @@ import NavLinks from "./nav-links.svelte";
 import OrganizationInfo from "./organization-toggle.svelte";
 
 let isCollapsed = $state(
-  browser ? localStorage.getItem("sidebar-collapsed") === "true" : false,
+    browser ? localStorage.getItem("sidebar-collapsed") === "true" : false,
 );
 
 // Track the original collapsed state before temporary expansion
@@ -14,30 +14,30 @@ let originalCollapsedState = $state(isCollapsed);
 let isTemporarilyExpanded = $state(false);
 
 $effect(() => {
-  if (browser) {
-    localStorage.setItem("sidebar-collapsed", isCollapsed.toString());
-  }
+    if (browser) {
+        localStorage.setItem("sidebar-collapsed", isCollapsed.toString());
+    }
 });
 
 const toggleSidebar = () => {
-  isCollapsed = !isCollapsed;
-  originalCollapsedState = isCollapsed;
-  isTemporarilyExpanded = false;
+    isCollapsed = !isCollapsed;
+    originalCollapsedState = isCollapsed;
+    isTemporarilyExpanded = false;
 };
 
 // Function to temporarily expand sidebar for dropdown interaction
 const handleDropdownInteraction = (
-  shouldExpand: boolean,
-  itemPath?: string,
+    shouldExpand: boolean,
+    itemPath?: string,
 ) => {
-  if (shouldExpand && isCollapsed) {
-    isTemporarilyExpanded = true;
-    isCollapsed = false;
-  } else if (!shouldExpand && isTemporarilyExpanded) {
-    // Return to original state after navigation
-    isCollapsed = originalCollapsedState;
-    isTemporarilyExpanded = false;
-  }
+    if (shouldExpand && isCollapsed) {
+        isTemporarilyExpanded = true;
+        isCollapsed = false;
+    } else if (!shouldExpand && isTemporarilyExpanded) {
+        // Return to original state after navigation
+        isCollapsed = originalCollapsedState;
+        isTemporarilyExpanded = false;
+    }
 };
 </script>
 

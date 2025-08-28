@@ -2,70 +2,70 @@
 import { createSwitch, melt } from "@melt-ui/svelte";
 
 interface Props {
-  checked?: boolean;
-  disabled?: boolean;
-  required?: boolean;
-  name?: string;
-  value?: string;
-  label?: string;
-  showStateText?: boolean;
-  enabledText?: string;
-  disabledText?: string;
-  size?: "small" | "medium" | "large";
-  onchange?: (checked: boolean) => void;
+    checked?: boolean;
+    disabled?: boolean;
+    required?: boolean;
+    name?: string;
+    value?: string;
+    label?: string;
+    showStateText?: boolean;
+    enabledText?: string;
+    disabledText?: string;
+    size?: "small" | "medium" | "large";
+    onchange?: (checked: boolean) => void;
 }
 
 let {
-  checked = $bindable(false),
-  disabled = false,
-  required = false,
-  name = "",
-  value = "on",
-  label = "",
-  showStateText = false,
-  enabledText = "Enabled",
-  disabledText = "Disabled",
-  size = "medium",
-  onchange,
+    checked = $bindable(false),
+    disabled = false,
+    required = false,
+    name = "",
+    value = "on",
+    label = "",
+    showStateText = false,
+    enabledText = "Enabled",
+    disabledText = "Disabled",
+    size = "medium",
+    onchange,
 }: Props = $props();
 
 const {
-  elements: { root, input },
-  states: { checked: checkedState },
-  options,
+    elements: { root, input },
+    states: { checked: checkedState },
+    options,
 } = createSwitch({
-  defaultChecked: checked,
-  disabled,
-  required,
-  name,
-  value,
-  onCheckedChange: ({ next }) => {
-    checked = next;
-    onchange?.(next);
-    return next;
-  },
+    defaultChecked: checked,
+    disabled,
+    required,
+    name,
+    value,
+    onCheckedChange: ({ next }) => {
+        checked = next;
+        onchange?.(next);
+        return next;
+    },
 });
 
 // Size configurations
 const sizeConfig = {
-  small: {
-    width: "2rem",
-    height: "1rem",
-    thumbSize: "0.75rem",
-    padding: "0.125rem",
-  },
-  medium: {
-    width: "2.75rem",
-    height: "1.5rem",
-    thumbSize: "1.25rem",
-    padding: "0.125rem",
-  },
-  large: {
-    width: "3.5rem",
-    height: "2rem",
-    thumbSize: "1.75rem",
-    padding: "0.125rem",
-  },
+    small: {
+        width: "2rem",
+        height: "1rem",
+        thumbSize: "0.75rem",
+        padding: "0.125rem",
+    },
+    medium: {
+        width: "2.75rem",
+        height: "1.5rem",
+        thumbSize: "1.25rem",
+        padding: "0.125rem",
+    },
+    large: {
+        width: "3.5rem",
+        height: "2rem",
+        thumbSize: "1.75rem",
+        padding: "0.125rem",
+    },
 };
 
 const currentSize = $derived(sizeConfig[size]);

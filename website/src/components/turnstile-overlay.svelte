@@ -10,44 +10,44 @@ let reset: () => void;
 let token: string | undefined = undefined;
 
 let handleTurnstileCallback = (event: CustomEvent) => {
-  token = event.detail.token;
+    token = event.detail.token;
 };
 
 export const getToken = async (): Promise<string> => {
-  return new Promise((resolve, reject) => {
-    if (token) {
-      resolve(token);
-      token = undefined;
-      reset();
-      return;
-    } else {
-      // Otherwise reset as must be blocked or interaction needed
-      reset();
-    }
-    showTurnstileOverlay = true;
+    return new Promise((resolve, reject) => {
+        if (token) {
+            resolve(token);
+            token = undefined;
+            reset();
+            return;
+        } else {
+            // Otherwise reset as must be blocked or interaction needed
+            reset();
+        }
+        showTurnstileOverlay = true;
 
-    // Otherwise wait for token to be set and resolve
-    const originalCallback = handleTurnstileCallback;
-    handleTurnstileCallback = (event: CustomEvent) => {
-      // Reject if captcha failed
-      if (!event.detail.token) {
-        reject(
-          {
-            message: "Captcha failed",
-            wasCaptcha: true,
-          } satisfies TurnstileError,
-        );
-      } else {
-        resolve(event.detail.token);
-      }
-      token = undefined;
+        // Otherwise wait for token to be set and resolve
+        const originalCallback = handleTurnstileCallback;
+        handleTurnstileCallback = (event: CustomEvent) => {
+            // Reject if captcha failed
+            if (!event.detail.token) {
+                reject(
+                    {
+                        message: "Captcha failed",
+                        wasCaptcha: true,
+                    } satisfies TurnstileError,
+                );
+            } else {
+                resolve(event.detail.token);
+            }
+            token = undefined;
 
-      // Reset callback
-      handleTurnstileCallback = originalCallback;
-      reset();
-      showTurnstileOverlay = false;
-    };
-  });
+            // Reset callback
+            handleTurnstileCallback = originalCallback;
+            reset();
+            showTurnstileOverlay = false;
+        };
+    });
 };
 </script>
 
@@ -62,10 +62,10 @@ export const getToken = async (): Promise<string> => {
 				siteKey={PUBLIC_TURNSTILE_SITE_KEY}
 				on:callback={(event) => handleTurnstileCallback(event)}
 				on:after-interactive={() => {
-				  showTurnstileOverlay = false;
+				    showTurnstileOverlay = false;
 				}}
 				on:error={(event) => {
-				  handleTurnstileCallback(event);
+				    handleTurnstileCallback(event);
 				}}
 				bind:reset
 			/>

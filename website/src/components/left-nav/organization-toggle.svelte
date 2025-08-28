@@ -5,16 +5,16 @@ import { createPopover, melt } from "@melt-ui/svelte";
 import OrganizationDropdown from "./organization-dropdown.svelte";
 
 type Props = {
-  isCollapsed?: boolean;
+    isCollapsed?: boolean;
 };
 
 const { isCollapsed = false }: Props = $props();
 
 const {
-  elements: { trigger, content },
-  states: { open },
+    elements: { trigger, content },
+    states: { open },
 } = createPopover({
-  preventScroll: true,
+    preventScroll: true,
 });
 
 const user = $derived(userStore.user);

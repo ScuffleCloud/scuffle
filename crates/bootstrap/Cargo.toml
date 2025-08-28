@@ -58,10 +58,10 @@ tracing-subscriber = "0.3"
 all-features = true
 cargo-args = ["-Zunstable-options", "-Zrustdoc-scrape-examples"]
 rustdoc-args = [
-  "--cfg",
-  "docsrs",
-  "--sort-modules-by-appearance",
-  "--generate-link-to-definition",
+    "--cfg",
+    "docsrs",
+    "--sort-modules-by-appearance",
+    "--generate-link-to-definition",
 ]
 
 [package.metadata.sync-readme.rustdoc-mappings]

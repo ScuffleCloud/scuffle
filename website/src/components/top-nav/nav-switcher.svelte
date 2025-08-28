@@ -3,22 +3,22 @@ import IconSwitch from "$lib/images/icon-switch.svelte";
 import { createDropdownMenu, melt } from "@melt-ui/svelte";
 
 interface MenuItem {
-  id: string;
-  name: string;
-  imageUrl?: string;
+    id: string;
+    name: string;
+    imageUrl?: string;
 }
 
 interface Props {
-  name: string;
-  imageUrl?: string;
-  items: MenuItem[];
-  onClick: (id: string) => void;
+    name: string;
+    imageUrl?: string;
+    items: MenuItem[];
+    onClick: (id: string) => void;
 }
 
 const { name, imageUrl, items, onClick }: Props = $props();
 
 const {
-  elements: { trigger, menu, item },
+    elements: { trigger, menu, item },
 } = createDropdownMenu();
 </script>
 

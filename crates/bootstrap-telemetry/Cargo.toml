@@ -44,11 +44,11 @@ scuffle-metrics = { path = "../metrics" }
 
 [features]
 default = [
-  "prometheus",
-  "pprof",
-  "opentelemetry-metrics",
-  "opentelemetry-traces",
-  "opentelemetry-logs",
+    "prometheus",
+    "pprof",
+    "opentelemetry-metrics",
+    "opentelemetry-traces",
+    "opentelemetry-logs",
 ]
 ## Enables prometheus support
 prometheus = ["prometheus-client", "opentelemetry"]
@@ -56,10 +56,10 @@ prometheus = ["prometheus-client", "opentelemetry"]
 pprof = ["scuffle-pprof", "querystring", "tokio"]
 ## Enables opentelemetry
 opentelemetry = [
-  "dep:opentelemetry",
-  "dep:opentelemetry_sdk",
-  "thiserror",
-  "tokio",
+    "dep:opentelemetry",
+    "dep:opentelemetry_sdk",
+    "thiserror",
+    "tokio",
 ]
 ## Enables opentelemetry metricx exporting
 opentelemetry-metrics = ["opentelemetry"]
@@ -76,13 +76,13 @@ rustdoc-args = ["--cfg", "docsrs"]
 
 [package.metadata.xtask.powerset]
 additive-features = [
-  "default",
-  "prometheus",
-  "pprof",
-  "opentelemetry-metrics",
-  "opentelemetry-traces",
-  "opentelemetry-logs",
-  "docs",
+    "default",
+    "prometheus",
+    "pprof",
+    "opentelemetry-metrics",
+    "opentelemetry-traces",
+    "opentelemetry-logs",
+    "docs",
 ]
 
 [package.metadata.sync-readme.rustdoc-mappings]

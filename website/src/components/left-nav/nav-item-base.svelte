@@ -4,13 +4,13 @@ import IconArrowDown from "$lib/images/icon-arrow-down.svelte";
 import IconArrowUp from "$lib/images/icon-arrow-up.svelte";
 
 type Props = {
-  navItem: NavItem;
-  isCollapsed?: boolean;
-  isDropdownCollapsed?: boolean;
+    navItem: NavItem;
+    isCollapsed?: boolean;
+    isDropdownCollapsed?: boolean;
 };
 
 const { navItem, isCollapsed = false, isDropdownCollapsed = false }: Props =
-  $props();
+    $props();
 </script>
 
 <div class="header" class:collapsed={isCollapsed}>

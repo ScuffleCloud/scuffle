@@ -5,9 +5,9 @@ import type { Streamed } from "$lib/types.js";
 
 // From parent layout
 type Props = {
-  data: {
-    stream: Streamed<VideoStream>;
-  };
+    data: {
+        stream: Streamed<VideoStream>;
+    };
 };
 
 const { data }: Props = $props();

@@ -2,10 +2,10 @@
 import { DEFAULT_LOGIN_MODE, type LoginMode } from "$components/streams/types";
 import TurnstileOverlay from "$components/turnstile-overlay.svelte";
 import {
-  authAPI,
-  type AuthResult,
-  authState,
-  clearError,
+    authAPI,
+    type AuthResult,
+    authState,
+    clearError,
 } from "$lib/authState.svelte";
 import IconArrowDialogLink from "$lib/images/icon-arrow-dialog-link.svelte";
 import ForgotPasswordForm from "./forgot-password-form.svelte";
@@ -22,25 +22,25 @@ let loginMode = $state<LoginMode>(DEFAULT_LOGIN_MODE);
 // Manage routing here. Could add shallow routing in the future if we feel necessary
 let isRestoringFromHistory = false;
 $effect(() => {
-  function handlePopState(event: PopStateEvent) {
-    isRestoringFromHistory = true;
-    if (event.state?.loginMode) {
-      loginMode = event.state.loginMode;
-    } else {
-      loginMode = DEFAULT_LOGIN_MODE;
+    function handlePopState(event: PopStateEvent) {
+        isRestoringFromHistory = true;
+        if (event.state?.loginMode) {
+            loginMode = event.state.loginMode;
+        } else {
+            loginMode = DEFAULT_LOGIN_MODE;
+        }
     }
-  }
 
-  window.addEventListener("popstate", handlePopState);
+    window.addEventListener("popstate", handlePopState);
 
-  if (!isRestoringFromHistory) {
-    history.pushState({ loginMode }, "", window.location.href);
-  }
-  isRestoringFromHistory = false;
+    if (!isRestoringFromHistory) {
+        history.pushState({ loginMode }, "", window.location.href);
+    }
+    isRestoringFromHistory = false;
 
-  return () => {
-    window.removeEventListener("popstate", handlePopState);
-  };
+    return () => {
+        window.removeEventListener("popstate", handlePopState);
+    };
 });
 
 const getToken = async () => await turnstileOverlayComponent?.getToken();
@@ -49,78 +49,78 @@ let userEmail = $state<string>("");
 let localLoading = $state<boolean>(false);
 
 async function handleMagicLinkSubmit(email: string): Promise<void> {
-  const token = await getToken();
-  if (email && token) {
-    try {
-      const result: AuthResult = await authAPI.sendMagicLink(email);
-      if (result.success) {
-        userEmail = email;
-        loginMode = "magic-link-sent";
-      } else {
-        console.error("Magic link failed:", result.error);
-      }
-    } catch (error) {
-      console.error("Magic link error:", error);
+    const token = await getToken();
+    if (email && token) {
+        try {
+            const result: AuthResult = await authAPI.sendMagicLink(email);
+            if (result.success) {
+                userEmail = email;
+                loginMode = "magic-link-sent";
+            } else {
+                console.error("Magic link failed:", result.error);
+            }
+        } catch (error) {
+            console.error("Magic link error:", error);
+        }
     }
-  }
 }
 
 async function handlePasswordSubmit(
-  email: string,
-  password: string,
+    email: string,
+    password: string,
 ): Promise<void> {
-  const token = await getToken();
-  if (email && password && token) {
-    try {
-      // const result: AuthResult = await authAPI.loginWithPassword(email, password);
-      console.log("Password login for:", email);
-    } catch (error) {
-      console.error("Password login error:", error);
+    const token = await getToken();
+    if (email && password && token) {
+        try {
+            // const result: AuthResult = await authAPI.loginWithPassword(email, password);
+            console.log("Password login for:", email);
+        } catch (error) {
+            console.error("Password login error:", error);
+        }
     }
-  }
 }
 
 async function handlePasskeySubmit(email: string): Promise<void> {
-  const token = await getToken();
-  if (email && token) {
-    try {
-      // const result: AuthResult = await authAPI.loginWithPasskey(email);
-      console.log("Passkey login for:", email);
-    } catch (error) {
-      console.error("Passkey login error:", error);
+    const token = await getToken();
+    if (email && token) {
+        try {
+            // const result: AuthResult = await authAPI.loginWithPasskey(email);
+            console.log("Passkey login for:", email);
+        } catch (error) {
+            console.error("Passkey login error:", error);
+        }
     }
-  }
 }
 
 async function handleForgotPasswordSubmit(email: string): Promise<void> {
-  const token = await getToken();
-  if (email && token) {
-    try {
-      // const result: AuthResult = await authAPI.sendPasswordReset(email);
-      console.log("Password reset for:", email);
-      userEmail = email;
-      loginMode = "password-reset-sent";
-    } catch (error) {
-      console.error("Password reset error:", error);
+    const token = await getToken();
+    if (email && token) {
+        try {
+            // const result: AuthResult = await authAPI.sendPasswordReset(email);
+            console.log("Password reset for:", email);
+            userEmail = email;
+            loginMode = "password-reset-sent";
+        } catch (error) {
+            console.error("Password reset error:", error);
+        }
     }
-  }
 }
 
 function handleBack(): void {
-  loginMode = "magic-link";
+    loginMode = "magic-link";
 }
 
 // Clear errors when user starts typing
 function handleEmailInput(): void {
-  if (authState.error) {
-    clearError();
-  }
+    if (authState.error) {
+        clearError();
+    }
 }
 
 const isLoading = $derived(authState.isLoading || localLoading);
 
 function handleContactSupport(): void {
-  console.log("Contact support clicked");
+    console.log("Contact support clicked");
 }
 </script>
 

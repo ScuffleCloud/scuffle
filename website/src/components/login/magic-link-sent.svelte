@@ -1,6 +1,6 @@
 <script lang="ts">
 interface Props {
-  email?: string;
+    email?: string;
 }
 
 let { email }: Props = $props();

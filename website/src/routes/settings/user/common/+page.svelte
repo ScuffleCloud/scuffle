@@ -3,7 +3,7 @@ import SettingsPage from "$components/settings/settings-page.svelte";
 import type { PageData } from "./$types";
 
 interface Props {
-  data: PageData;
+    data: PageData;
 }
 
 const { data }: Props = $props();

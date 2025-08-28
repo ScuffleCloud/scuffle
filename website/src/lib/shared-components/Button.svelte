@@ -1,8 +1,8 @@
 <script lang="ts">
 import type { Snippet } from "svelte";
 import type {
-  HTMLAnchorAttributes,
-  HTMLButtonAttributes,
+    HTMLAnchorAttributes,
+    HTMLButtonAttributes,
 } from "svelte/elements";
 
 // different types of buttons:
@@ -15,34 +15,34 @@ import type {
 // - disabled, active, hover (focus)
 
 type Props =
-  & {
-    // href decides if this is a link looking like button or if it's a real button
-    href?: string | null;
-    primary?: boolean;
-    secondary?: boolean;
-    big?: boolean;
-    submit?: boolean;
-    hideOnMobile?: boolean;
-    hideOnDesktop?: boolean;
-    children?: Snippet;
-    icon?: Snippet;
-    iconRight?: Snippet;
-  }
-  & HTMLButtonAttributes
-  & HTMLAnchorAttributes;
+    & {
+        // href decides if this is a link looking like button or if it's a real button
+        href?: string | null;
+        primary?: boolean;
+        secondary?: boolean;
+        big?: boolean;
+        submit?: boolean;
+        hideOnMobile?: boolean;
+        hideOnDesktop?: boolean;
+        children?: Snippet;
+        icon?: Snippet;
+        iconRight?: Snippet;
+    }
+    & HTMLButtonAttributes
+    & HTMLAnchorAttributes;
 
 let {
-  href = null,
-  primary = false,
-  secondary = false,
-  big = false,
-  submit = false,
-  hideOnMobile = false,
-  hideOnDesktop = false,
-  children,
-  icon,
-  iconRight,
-  ...restProps
+    href = null,
+    primary = false,
+    secondary = false,
+    big = false,
+    submit = false,
+    hideOnMobile = false,
+    hideOnDesktop = false,
+    children,
+    icon,
+    iconRight,
+    ...restProps
 }: Props = $props();
 </script>
 

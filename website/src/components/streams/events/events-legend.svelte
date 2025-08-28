@@ -4,15 +4,15 @@ import IconEventsError from "$lib/images/icon-events-error.svelte";
 import IconEventsNeutral from "$lib/images/icon-events-neutral.svelte";
 
 const legendItems = [
-  { icon: IconEventsAsset, text: "Unexpected Error" },
-  { icon: IconEventsError, text: "Neutral Event" },
-  { icon: IconEventsNeutral, text: "Asset Created" },
+    { icon: IconEventsAsset, text: "Unexpected Error" },
+    { icon: IconEventsError, text: "Neutral Event" },
+    { icon: IconEventsNeutral, text: "Asset Created" },
 ];
 
 const metrics = [
-  { label: "Avg. GOP", value: "250 frames / 4.1s" },
-  { label: "Avg. Encoding video bitrate", value: "320 kbit/s" },
-  { label: "Avg. Ingress bitrate", value: "320 kbit/s" },
+    { label: "Avg. GOP", value: "250 frames / 4.1s" },
+    { label: "Avg. Encoding video bitrate", value: "320 kbit/s" },
+    { label: "Avg. Ingress bitrate", value: "320 kbit/s" },
 ];
 </script>
 

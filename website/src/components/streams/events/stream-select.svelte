@@ -7,30 +7,30 @@ import { Select } from "melt/builders";
 import type { VideoStream } from "../types";
 
 type Props = {
-  streams: VideoStream[];
-  value?: string;
-  onValueChange?: (value: string) => void;
+    streams: VideoStream[];
+    value?: string;
+    onValueChange?: (value: string) => void;
 };
 
 let { streams, value = $bindable(), onValueChange }: Props = $props();
 
 const select = new Select<string>({
-  value,
-  onValueChange: (newValue) => {
-    // Need to force value to not update with melt syntax when same item is selected
-    if (isNil(newValue)) {
-      select.value = value;
-      return;
-    }
-    value = newValue;
-    onValueChange?.(newValue);
-  },
+    value,
+    onValueChange: (newValue) => {
+        // Need to force value to not update with melt syntax when same item is selected
+        if (isNil(newValue)) {
+            select.value = value;
+            return;
+        }
+        value = newValue;
+        onValueChange?.(newValue);
+    },
 });
 
 const currentStreams = $derived(streams.filter((s) => s.status === "live"));
 const pastStreams = $derived(streams.filter((s) => s.status === "finished"));
 const selectedStream = $derived(
-  streams.find((stream) => stream.id === select.value),
+    streams.find((stream) => stream.id === select.value),
 );
 </script>
 

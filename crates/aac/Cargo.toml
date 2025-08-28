@@ -29,10 +29,10 @@ scuffle-changelog = { optional = true, path = "../changelog", version = "0.1.0" 
 [package.metadata.docs.rs]
 all-features = true
 rustdoc-args = [
-  "--cfg",
-  "docsrs",
-  "--sort-modules-by-appearance",
-  "--generate-link-to-definition",
+    "--cfg",
+    "docsrs",
+    "--sort-modules-by-appearance",
+    "--generate-link-to-definition",
 ]
 
 [package.metadata.sync-readme.rustdoc-mappings]

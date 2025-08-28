@@ -2,12 +2,12 @@
 import { Select } from "melt/builders";
 
 const options = [
-  "Bleach",
-  "Dan da Dan",
-  "Re: Zero",
-  "Jujutsu Kaisen",
-  "Attack on Titan",
-  "Death Note",
+    "Bleach",
+    "Dan da Dan",
+    "Re: Zero",
+    "Jujutsu Kaisen",
+    "Attack on Titan",
+    "Death Note",
 ] as const;
 type Option = (typeof options)[number];
 

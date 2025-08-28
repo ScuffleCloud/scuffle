@@ -4,71 +4,71 @@ import type { Component } from "svelte";
 import type { Snippet } from "svelte";
 
 export type BlockAction = {
-  label?: string;
-  variant?: "primary" | "secondary" | "danger" | "toggle";
-  disabled?: boolean;
-  onClick: () => void;
-  isToggled?: boolean;
-  enabledText?: string;
-  disabledText?: string;
+    label?: string;
+    variant?: "primary" | "secondary" | "danger" | "toggle";
+    disabled?: boolean;
+    onClick: () => void;
+    isToggled?: boolean;
+    enabledText?: string;
+    disabledText?: string;
 };
 
 export type Card = {
-  id: string;
-  title: string;
-  description?: string;
-  status?: {
-    label: string;
-    variant: "enabled" | "disabled" | "warning";
-  };
-  actions?: BlockAction[];
-  customContent?: Snippet;
+    id: string;
+    title: string;
+    description?: string;
+    status?: {
+        label: string;
+        variant: "enabled" | "disabled" | "warning";
+    };
+    actions?: BlockAction[];
+    customContent?: Snippet;
 };
 
 type Props = {
-  title: string;
-  subtitle?: string;
-  icon: Component;
-  cards: Card[];
+    title: string;
+    subtitle?: string;
+    icon: Component;
+    cards: Card[];
 };
 
 const { title, subtitle, cards, icon }: Props = $props();
 
 function getStatusClass(variant: "enabled" | "disabled" | "warning") {
-  switch (variant) {
-    case "enabled":
-      return "status-enabled";
-    case "disabled":
-      return "status-disabled";
-    case "warning":
-      return "status-warning";
-    default:
-      return "status-disabled";
-  }
+    switch (variant) {
+        case "enabled":
+            return "status-enabled";
+        case "disabled":
+            return "status-disabled";
+        case "warning":
+            return "status-warning";
+        default:
+            return "status-disabled";
+    }
 }
 
 function getActionClass(
-  variant: "primary" | "secondary" | "danger" | "toggle" = "secondary",
+    variant: "primary" | "secondary" | "danger" | "toggle" = "secondary",
 ) {
-  switch (variant) {
-    case "primary":
-      return "action-primary";
-    case "secondary":
-      return "action-secondary";
-    case "danger":
-      return "action-danger";
-    case "toggle":
-      return "action-toggle";
-    default:
-      return "action-secondary";
-  }
+    switch (variant) {
+        case "primary":
+            return "action-primary";
+        case "secondary":
+            return "action-secondary";
+        case "danger":
+            return "action-danger";
+        case "toggle":
+            return "action-toggle";
+        default:
+            return "action-secondary";
+    }
 }
 
 function handleToggleChange(action: BlockAction, checked: boolean) {
-  // Update the toggle state
-  action.isToggled = checked;
-  // Call the original onClick handler
-  action.onClick();
+    // Update the toggle state
+    action.isToggled = checked;
+    // Call the original onClick handler
+    action.onClick();
 }
 </script>
 

@@ -21,25 +21,25 @@ let selectedOption: "left" | "right" = "left";
 // });
 
 const mutation = createMutation({
-  mutationFn: async () => {
-    const response = await fetch("/api/v1/video-streams/new", {
-      method: "PUT",
-      headers: {
-        "Content-Type": "application/json",
-      },
-    });
+    mutationFn: async () => {
+        const response = await fetch("/api/v1/video-streams/new", {
+            method: "PUT",
+            headers: {
+                "Content-Type": "application/json",
+            },
+        });
 
-    const data = await response.json();
-    return data;
-  },
-  onSuccess: (data) => {
-    console.log("Successfully created stream:", data);
-    // onOpenChange(false);
-    goto(`/streams/${data.newId}`);
-  },
-  onError: (error) => {
-    console.error("Error creating stream:", error);
-  },
+        const data = await response.json();
+        return data;
+    },
+    onSuccess: (data) => {
+        console.log("Successfully created stream:", data);
+        // onOpenChange(false);
+        goto(`/streams/${data.newId}`);
+    },
+    onError: (error) => {
+        console.error("Error creating stream:", error);
+    },
 });
 </script>
 

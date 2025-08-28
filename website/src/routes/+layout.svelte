@@ -12,16 +12,16 @@ import LoginPage from "$components/login/login-page.svelte";
 import RightNav from "$components/right-nav/right-nav.svelte";
 import { PUBLIC_VITE_MSW_ENABLED } from "$env/static/public";
 import {
-  authAPI,
-  type AuthResult,
-  authState,
-  initializeAuth,
+    authAPI,
+    type AuthResult,
+    authState,
+    initializeAuth,
 } from "$lib/authState.svelte";
 import { enableMocking } from "$msw/setup";
 
 // Let's put all this in a hook to check auth status and who the user is
 $effect(() => {
-  initializeAuth();
+    initializeAuth();
 });
 
 // Maybe don't need this code since we'll mock functions in a different way but leaving it for now
@@ -29,19 +29,19 @@ const requireMsw = dev && browser && PUBLIC_VITE_MSW_ENABLED === "true";
 let mockingReady = $state(!requireMsw);
 
 $effect(() => {
-  if (requireMsw && !mockingReady) {
-    enableMocking().then(() => {
-      mockingReady = true;
-    });
-  }
+    if (requireMsw && !mockingReady) {
+        enableMocking().then(() => {
+            mockingReady = true;
+        });
+    }
 });
 const { children } = $props();
 const queryClient = new QueryClient({
-  defaultOptions: {
-    queries: {
-      enabled: browser,
+    defaultOptions: {
+        queries: {
+            enabled: browser,
+        },
     },
-  },
 });
 </script>
 

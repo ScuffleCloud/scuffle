@@ -6,17 +6,17 @@ import IconWebhook from "$lib/images/icon-webhook.svelte";
 import { Popover } from "melt/builders";
 
 const popover = new Popover({
-  computePositionOptions: {
-    placement: "bottom-end",
-  },
+    computePositionOptions: {
+        placement: "bottom-end",
+    },
 });
 
 function createWebhookStream() {
-  console.log("Creating webhook stream...");
+    console.log("Creating webhook stream...");
 }
 
 function createConfiguredStream() {
-  console.log("Creating configured stream...");
+    console.log("Creating configured stream...");
 }
 </script>
 

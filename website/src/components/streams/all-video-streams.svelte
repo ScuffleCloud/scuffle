@@ -6,7 +6,7 @@ import type { ListResponse, Streamed } from "$lib/types";
 import type { VideoStream } from "./types";
 
 type Props = {
-  streamedData: Streamed<ListResponse<VideoStream>>;
+    streamedData: Streamed<ListResponse<VideoStream>>;
 };
 
 const { streamedData }: Props = $props();

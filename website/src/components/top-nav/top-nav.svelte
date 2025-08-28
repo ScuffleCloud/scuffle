@@ -15,77 +15,77 @@ let searchInput = $state<HTMLInputElement | null>(null);
 const { userQuery, currentOrganization, currentProject } = useUser();
 
 $effect(() => {
-  if ($userQuery.data?.organizations) {
-    console.log("user", $userQuery.data);
-    console.log("currentOrganization", currentOrganization);
-  }
+    if ($userQuery.data?.organizations) {
+        console.log("user", $userQuery.data);
+        console.log("currentOrganization", currentOrganization);
+    }
 });
 
 function handleKeydown(event: KeyboardEvent) {
-  if ((event.metaKey || event.ctrlKey) && event.key === "k") {
-    event.preventDefault();
-    showSearchModal = true;
-  }
+    if ((event.metaKey || event.ctrlKey) && event.key === "k") {
+        event.preventDefault();
+        showSearchModal = true;
+    }
 
-  if (event.key === "Escape" && showSearchModal) {
-    showSearchModal = false;
-  }
+    if (event.key === "Escape" && showSearchModal) {
+        showSearchModal = false;
+    }
 }
 
 $effect(() => {
-  if (showSearchModal && searchInput) {
-    setTimeout(() => {
-      if (searchInput) searchInput.focus();
-    }, 50);
-  }
+    if (showSearchModal && searchInput) {
+        setTimeout(() => {
+            if (searchInput) searchInput.focus();
+        }, 50);
+    }
 });
 
 // Add and remove event listener
 onMount(() => {
-  window.addEventListener("keydown", handleKeydown);
-  return () => {
-    window.removeEventListener("keydown", handleKeydown);
-  };
+    window.addEventListener("keydown", handleKeydown);
+    return () => {
+        window.removeEventListener("keydown", handleKeydown);
+    };
 });
 
 function closeModal() {
-  showSearchModal = false;
+    showSearchModal = false;
 }
 
 // This breadcrumb logic is hacky I'm not sure how extensive this needs to be yet.
 // There's very few breadcrumbs to show other than always showing organization and project.
 let showBreadcrumbs = true;
 let breadcrumbs = $derived(
-  page.url.pathname
-    .split("/")
-    .filter(Boolean)
-    .map((segment, index, segments) => {
-      const path = "/" + segments.slice(0, index + 1).join("/");
-      const customTitle = "test";
-      return {
-        label: customTitle
-          || segment.replace(/[-_]/g, " ").replace(
-            /\b\w/g,
-            (c) => c.toUpperCase(),
-          ),
-        href: path,
-      };
-    }),
+    page.url.pathname
+        .split("/")
+        .filter(Boolean)
+        .map((segment, index, segments) => {
+            const path = "/" + segments.slice(0, index + 1).join("/");
+            const customTitle = "test";
+            return {
+                label: customTitle
+                    || segment.replace(/[-_]/g, " ").replace(
+                        /\b\w/g,
+                        (c) => c.toUpperCase(),
+                    ),
+                href: path,
+            };
+        }),
 );
 
 const organizations = $derived(
-  $userQuery.data?.organizations.map((org) => ({
-    id: org.id,
-    name: org.name,
-    imageUrl: org.image_url,
-  })),
+    $userQuery.data?.organizations.map((org) => ({
+        id: org.id,
+        name: org.name,
+        imageUrl: org.image_url,
+    })),
 );
 
 const projects = $derived(
-  $currentOrganization?.projects.map((project) => ({
-    id: project.id,
-    name: project.name,
-  })) ?? [],
+    $currentOrganization?.projects.map((project) => ({
+        id: project.id,
+        name: project.name,
+    })) ?? [],
 );
 </script>
 
@@ -111,7 +111,7 @@ const projects = $derived(
 					imageUrl={$currentOrganization?.image_url}
 					items={organizations ?? []}
 					onClick={(id) => {
-					  console.log("clicked", id);
+					    console.log("clicked", id);
 					}}
 				/>
 			</div>
@@ -121,7 +121,7 @@ const projects = $derived(
 					name={$currentProject?.name ?? ""}
 					items={projects ?? []}
 					onClick={(id) => {
-					  console.log("clicked", id);
+					    console.log("clicked", id);
 					}}
 				/>
 			</div>

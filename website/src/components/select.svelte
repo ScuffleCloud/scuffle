@@ -3,44 +3,44 @@ import { Select } from "melt/builders";
 import type { Snippet } from "svelte";
 
 type SelectItem = {
-  value: string;
-  label: string;
-  disabled?: boolean;
+    value: string;
+    label: string;
+    disabled?: boolean;
 };
 
 type Props = {
-  placeholder?: string;
-  items: SelectItem[];
-  value?: string;
-  onValueChange?: (value: string | undefined) => void;
-  multiple?: boolean;
-  customContent?: Snippet<[{ select: any }]>;
-  customTrigger?: Snippet<[{ select: any; selectedLabel: string }]>;
+    placeholder?: string;
+    items: SelectItem[];
+    value?: string;
+    onValueChange?: (value: string | undefined) => void;
+    multiple?: boolean;
+    customContent?: Snippet<[{ select: any }]>;
+    customTrigger?: Snippet<[{ select: any; selectedLabel: string }]>;
 };
 
 let {
-  value = $bindable(),
-  items,
-  placeholder = "Select an option...",
-  onValueChange,
-  multiple = false,
-  customContent,
-  customTrigger,
+    value = $bindable(),
+    items,
+    placeholder = "Select an option...",
+    onValueChange,
+    multiple = false,
+    customContent,
+    customTrigger,
 }: Props = $props();
 
 const select = new Select<string>({
-  value,
-  onValueChange: (newValue) => {
-    value = newValue;
-    onValueChange?.(newValue);
-  },
-  multiple: multiple as any,
+    value,
+    onValueChange: (newValue) => {
+        value = newValue;
+        onValueChange?.(newValue);
+    },
+    multiple: multiple as any,
 });
 
 const selectedLabel = $derived(
-  value
-    ? (items.find((item) => item.value === value)?.label ?? placeholder)
-    : placeholder,
+    value
+        ? (items.find((item) => item.value === value)?.label ?? placeholder)
+        : placeholder,
 );
 </script>
 

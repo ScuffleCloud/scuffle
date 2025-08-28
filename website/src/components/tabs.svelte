@@ -6,30 +6,30 @@ import type { Snippet } from "svelte";
 import type { Component } from "svelte";
 
 export type Tab = {
-  id: string;
-  label: string;
-  icon?: Component;
+    id: string;
+    label: string;
+    icon?: Component;
 };
 
 type Props = {
-  tabs: Tab[];
-  baseUrl: string;
-  defaultTab?: string;
-  children: Snippet;
+    tabs: Tab[];
+    baseUrl: string;
+    defaultTab?: string;
+    children: Snippet;
 };
 
 const { tabs, baseUrl, defaultTab = tabs[0]?.id, children }: Props = $props();
 
 const currentTab = $derived.by(() => {
-  const pathname = page.url.pathname;
+    const pathname = page.url.pathname;
 
-  if (pathname.startsWith(baseUrl)) {
-    const remainder = pathname.slice(baseUrl.length);
-    const firstSegment = remainder.split("/")[0];
-    return tabs.find((tab) => tab.id === firstSegment)?.id || defaultTab;
-  }
+    if (pathname.startsWith(baseUrl)) {
+        const remainder = pathname.slice(baseUrl.length);
+        const firstSegment = remainder.split("/")[0];
+        return tabs.find((tab) => tab.id === firstSegment)?.id || defaultTab;
+    }
 
-  return defaultTab;
+    return defaultTab;
 });
 </script>
 

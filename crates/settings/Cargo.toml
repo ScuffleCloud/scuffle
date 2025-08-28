@@ -63,27 +63,27 @@ smart-default = "0.7"
 
 [package.metadata.xtask.powerset]
 additive-features = [
-  "cli",
-  "ron",
-  "toml",
-  "yaml",
-  "json",
-  "json5",
-  "ini",
-  "templates",
-  "all-formats",
-  "full",
-  "bootstrap",
-  "docs",
+    "cli",
+    "ron",
+    "toml",
+    "yaml",
+    "json",
+    "json5",
+    "ini",
+    "templates",
+    "all-formats",
+    "full",
+    "bootstrap",
+    "docs",
 ]
 
 [package.metadata.docs.rs]
 all-features = true
 rustdoc-args = [
-  "--cfg",
-  "docsrs",
-  "--sort-modules-by-appearance",
-  "--generate-link-to-definition",
+    "--cfg",
+    "docsrs",
+    "--sort-modules-by-appearance",
+    "--generate-link-to-definition",
 ]
 
 [package.metadata.sync-readme.rustdoc-mappings]

@@ -32,28 +32,28 @@ required-features = ["default", "tls-rustls", "http3", "tower", "tracing"]
 default = ["http1", "http2", "tower"]
 ## Enables tracing support
 tracing = [
-  "dep:tracing",
-  "quinn?/log",
-  "h3-quinn?/tracing",
-  "h3?/tracing",
-  "tokio-rustls?/logging",
-  "rustls?/logging",
+    "dep:tracing",
+    "quinn?/log",
+    "h3-quinn?/tracing",
+    "h3?/tracing",
+    "tokio-rustls?/logging",
+    "rustls?/logging",
 ]
 ## Enables http1 support
 http1 = [
-  "dep:hyper",
-  "dep:hyper-util",
-  "dep:libc",
-  "hyper/http1",
-  "hyper-util/http1",
+    "dep:hyper",
+    "dep:hyper-util",
+    "dep:libc",
+    "hyper/http1",
+    "hyper-util/http1",
 ]
 ## Enabled http2 support
 http2 = [
-  "dep:hyper",
-  "dep:hyper-util",
-  "dep:libc",
-  "hyper/http2",
-  "hyper-util/http2",
+    "dep:hyper",
+    "dep:hyper-util",
+    "dep:libc",
+    "hyper/http2",
+    "hyper-util/http2",
 ]
 ## Enables http3 support
 http3 = ["dep:quinn", "dep:h3-quinn", "dep:h3"]
@@ -118,10 +118,10 @@ tracing-subscriber = { features = ["env-filter"], version = "0.3.19" }
 [package.metadata.docs.rs]
 all-features = true
 rustdoc-args = [
-  "--cfg",
-  "docsrs",
-  "--sort-modules-by-appearance",
-  "--generate-link-to-definition",
+    "--cfg",
+    "docsrs",
+    "--sort-modules-by-appearance",
+    "--generate-link-to-definition",
 ]
 
 [package.metadata.xtask.powerset]

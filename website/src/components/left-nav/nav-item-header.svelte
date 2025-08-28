@@ -2,7 +2,7 @@
 import type { NavItem } from "$components/types";
 
 type Props = {
-  navItem: NavItem;
+    navItem: NavItem;
 };
 
 const { navItem }: Props = $props();

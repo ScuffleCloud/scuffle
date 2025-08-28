@@ -4,9 +4,9 @@ import type { VideoStream } from "$components/streams/types";
 import type { ListResponse, Streamed } from "$lib/types";
 
 type Props = {
-  data: {
-    streams: Streamed<ListResponse<VideoStream>>;
-  };
+    data: {
+        streams: Streamed<ListResponse<VideoStream>>;
+    };
 };
 
 const { data: pageData }: Props = $props();

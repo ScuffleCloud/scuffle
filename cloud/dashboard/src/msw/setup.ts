@@ -10,13 +10,14 @@ export async function enableMocking() {
     }
 
     try {
+        // TODO: @lucassshanks this causes issues when running `vite build`
         // Dynamically import the worker
-        const { worker } = await import("$msw/browser");
+        // const { worker } = await import("$msw/browser");
 
-        // Start the worker
-        await worker.start({
-            onUnhandledRequest: "bypass",
-        });
+        // // Start the worker
+        // await worker.start({
+        //     onUnhandledRequest: "bypass",
+        // });
 
         initialized = true;
         return true;

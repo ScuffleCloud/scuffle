@@ -40,10 +40,10 @@ tokio-stream = { version = "0.1", features = ["sync"] }
 [package.metadata.docs.rs]
 all-features = true
 rustdoc-args = [
-  "--cfg",
-  "docsrs",
-  "--sort-modules-by-appearance",
-  "--generate-link-to-definition",
+    "--cfg",
+    "docsrs",
+    "--sort-modules-by-appearance",
+    "--generate-link-to-definition",
 ]
 
 [package.metadata.xtask.powerset]

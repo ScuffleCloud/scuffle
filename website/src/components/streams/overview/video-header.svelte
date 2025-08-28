@@ -5,14 +5,14 @@ import IconOverviewFilm from "$lib/images/icon-overview-film.svelte";
 import IconWebhook from "$lib/images/icon-webhook.svelte";
 
 type Props = {
-  streamId: string;
-  streamKey: string;
-  isConnected: boolean;
-  requireSignedUrls: boolean;
+    streamId: string;
+    streamKey: string;
+    isConnected: boolean;
+    requireSignedUrls: boolean;
 };
 
 const { streamId, streamKey, isConnected = true, requireSignedUrls = false }:
-  Props = $props();
+    Props = $props();
 </script>
 
 <div class="container-wrapper">

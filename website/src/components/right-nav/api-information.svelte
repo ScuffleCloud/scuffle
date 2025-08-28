@@ -2,27 +2,27 @@
 import IconCopy from "$lib/images/icon-copy.svelte";
 import IconDots from "$lib/images/icon-dots.svelte";
 let credentials = {
-  accountId: "your-account-id-here",
-  streamToken: "your-stream-token-here",
+    accountId: "your-account-id-here",
+    streamToken: "your-stream-token-here",
 };
 
 let copied = {
-  accountId: false,
-  streamToken: false,
+    accountId: false,
+    streamToken: false,
 };
 
 function copyToClipboard(text: string, field: keyof typeof copied) {
-  navigator.clipboard.writeText(text);
-  copied[field] = true;
+    navigator.clipboard.writeText(text);
+    copied[field] = true;
 
-  setTimeout(() => {
-    copied[field] = false;
-  }, 2000);
+    setTimeout(() => {
+        copied[field] = false;
+    }, 2000);
 }
 
 // Function to mask sensitive information
 function maskText(text: string) {
-  return "●".repeat(9);
+    return "●".repeat(9);
 }
 </script>
 
@@ -51,7 +51,11 @@ function maskText(text: string) {
 				<button
 					class="copy-button"
 					class:copied={copied.accountId}
-					onclick={() => copyToClipboard(credentials.accountId, "accountId")}
+					onclick={() =>
+					copyToClipboard(
+					    credentials.accountId,
+					    "accountId",
+					)}
 				>
 					{#if copied.accountId}
 						<svg
@@ -78,7 +82,10 @@ function maskText(text: string) {
 					class="copy-button"
 					class:copied={copied.streamToken}
 					onclick={() =>
-					copyToClipboard(credentials.streamToken, "streamToken")}
+					copyToClipboard(
+					    credentials.streamToken,
+					    "streamToken",
+					)}
 				>
 					{#if copied.streamToken}
 						<svg

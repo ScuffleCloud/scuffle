@@ -4,19 +4,19 @@ import type { LoginMode } from "$components/streams/types";
 import IconGoogle from "$lib/images/icon-google.svelte";
 import IconLoginKey from "$lib/images/icon-login-key.svelte";
 interface Props {
-  onModeChange: (mode: LoginMode) => void;
-  isLoading?: boolean;
+    onModeChange: (mode: LoginMode) => void;
+    isLoading?: boolean;
 }
 
 let { onModeChange, isLoading = false }: Props = $props();
 
 function handleGoogleLogin() {
-  // TODO: Implement Google login
-  console.log("Google login");
+    // TODO: Implement Google login
+    console.log("Google login");
 }
 
 function handlePasskeyLogin() {
-  onModeChange("passkey");
+    onModeChange("passkey");
 }
 </script>
 

@@ -65,21 +65,21 @@ If you use VSCode you can setup rust-analyzer to work by adding the following to
 
 ```json
 {
-  "rust-analyzer.server.path": "${workspaceFolder}/misc/utils/rust/analyzer/lsp.sh",
-  "rust-analyzer.workspace.discoverConfig": {
-    "command": [
-      "${workspaceFolder}/misc/utils/rust/analyzer/discover.sh"
-    ],
-    "progressLabel": "rust_analyzer",
-    "filesToWatch": [
-      "BUILD",
-      "BUILD.bazel",
-      "MODULE.bazel"
+    "rust-analyzer.server.path": "${workspaceFolder}/misc/utils/rust/analyzer/lsp.sh",
+    "rust-analyzer.workspace.discoverConfig": {
+        "command": [
+            "${workspaceFolder}/misc/utils/rust/analyzer/discover.sh"
+        ],
+        "progressLabel": "rust_analyzer",
+        "filesToWatch": [
+            "BUILD",
+            "BUILD.bazel",
+            "MODULE.bazel"
+        ]
+    },
+    "rust-analyzer.check.overrideCommand": [
+        "${workspaceFolder}/misc/utils/rust/analyzer/check.sh"
     ]
-  },
-  "rust-analyzer.check.overrideCommand": [
-    "${workspaceFolder}/misc/utils/rust/analyzer/check.sh"
-  ]
 }
 ```
 
@@ -87,16 +87,16 @@ for a Bazel LSP you can use the Bazel extension for VSCode and download [starpls
 
 ```json
 {
-  "bazel.lsp.command": "starpls",
-  "bazel.lsp.args": [
-    "server",
-    "--experimental_infer_ctx_attributes",
-    "--experimental_enable_label_completions",
-    "--experimental_use_code_flow_analysis",
-    "--bazel_path=bazelisk"
-  ],
-  "bazel.executable": "bazelisk",
-  "bazel.enableCodeLens": true
+    "bazel.lsp.command": "starpls",
+    "bazel.lsp.args": [
+        "server",
+        "--experimental_infer_ctx_attributes",
+        "--experimental_enable_label_completions",
+        "--experimental_use_code_flow_analysis",
+        "--bazel_path=bazelisk"
+    ],
+    "bazel.executable": "bazelisk",
+    "bazel.enableCodeLens": true
 }
 ```
 

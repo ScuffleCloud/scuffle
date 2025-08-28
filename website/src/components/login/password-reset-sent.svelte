@@ -1,7 +1,7 @@
 <script lang="ts">
 interface Props {
-  email?: string;
-  onBack?: () => void;
+    email?: string;
+    onBack?: () => void;
 }
 
 let { email, onBack }: Props = $props();

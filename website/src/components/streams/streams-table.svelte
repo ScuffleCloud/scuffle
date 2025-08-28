@@ -8,8 +8,8 @@ export let streams: VideoStream[];
 
 // Map stream statuses to text that gets displayed here
 const iconMap = {
-  live: IconWebhook,
-  finished: IconStream,
+    live: IconWebhook,
+    finished: IconStream,
 };
 </script>
 
@@ -31,7 +31,11 @@ const iconMap = {
 							<div class="row-content">
 								<div class="status-column-content">
 									<div class="status-wrapper">
-										<svelte:component this={iconMap[stream.status]} />
+										<svelte:component
+											this={iconMap[
+											    stream.status
+											]}
+										/>
 										<StreamStatusPill status={stream.status} />
 									</div>
 								</div>

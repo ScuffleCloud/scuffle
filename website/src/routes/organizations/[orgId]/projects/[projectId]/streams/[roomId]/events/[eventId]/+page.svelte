@@ -5,12 +5,12 @@ import type { ChartData, VideoStream } from "$components/streams/types.js";
 import type { Streamed } from "$lib/types.js";
 
 type Props = {
-  data: {
-    // From parent
-    stream: Streamed<VideoStream>;
-    // From page load
-    eventDetails: Streamed<ChartData>;
-  };
+    data: {
+        // From parent
+        stream: Streamed<VideoStream>;
+        // From page load
+        eventDetails: Streamed<ChartData>;
+    };
 };
 
 const { data }: Props = $props();
@@ -18,8 +18,8 @@ const { data }: Props = $props();
 const currentEventId = $derived(page.params.eventId);
 
 const events = $derived.by(async () => {
-  const stream = await data.stream;
-  return stream.relatedStreams;
+    const stream = await data.stream;
+    return stream.relatedStreams;
 });
 
 const { eventDetails } = data;

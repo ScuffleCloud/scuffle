@@ -24,10 +24,10 @@ syn = { version = "2" }
 [package.metadata.docs.rs]
 all-features = true
 rustdoc-args = [
-  "--cfg",
-  "docsrs",
-  "--sort-modules-by-appearance",
-  "--generate-link-to-definition",
+    "--cfg",
+    "docsrs",
+    "--sort-modules-by-appearance",
+    "--generate-link-to-definition",
 ]
 
 [package.metadata.xtask.release]

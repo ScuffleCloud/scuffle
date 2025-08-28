@@ -9,21 +9,21 @@ import StreamDetailsHeader from "./stream-detail-header.svelte";
 import type { VideoStream } from "./types";
 
 type Props = {
-  streamedData: Streamed<VideoStream>;
+    streamedData: Streamed<VideoStream>;
 };
 const { streamedData }: Props = $props();
 const tabIds = ["overview", "events", "assets"];
 let currentTab = $state("overview");
 
 const tabs = new Tabs({
-  value: currentTab,
-  onValueChange: (value) => {
-    currentTab = value;
-    pushState(`${value}`, {
-      ...page.state,
-      activeTab: value,
-    });
-  },
+    value: currentTab,
+    onValueChange: (value) => {
+        currentTab = value;
+        pushState(`${value}`, {
+            ...page.state,
+            activeTab: value,
+        });
+    },
 });
 </script>
 

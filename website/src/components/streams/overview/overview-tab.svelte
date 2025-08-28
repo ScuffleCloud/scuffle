@@ -10,17 +10,17 @@ import IconCopyCheckmark from "$lib/images/icon-copy-checkmark.svelte";
 import IconOverviewKey from "$lib/images/icon-overview-key.svelte";
 
 let copied = {
-  streamId: false,
-  streamKey: false,
+    streamId: false,
+    streamKey: false,
 };
 
 function copyToClipboard(text: string, field: keyof typeof copied) {
-  navigator.clipboard.writeText(text);
-  copied[field] = true;
+    navigator.clipboard.writeText(text);
+    copied[field] = true;
 
-  setTimeout(() => {
-    copied[field] = false;
-  }, 2000);
+    setTimeout(() => {
+        copied[field] = false;
+    }, 2000);
 }
 </script>
 
@@ -41,7 +41,8 @@ function copyToClipboard(text: string, field: keyof typeof copied) {
 					<button
 						class="copy-button"
 						class:copied={copied.streamId}
-						onclick={() => copyToClipboard(streamId, "streamId")}
+						onclick={() =>
+						copyToClipboard(streamId, "streamId")}
 					>
 						{#if copied.streamId}
 							<IconCopyCheckmark />
@@ -58,7 +59,8 @@ function copyToClipboard(text: string, field: keyof typeof copied) {
 					<button
 						class="copy-button"
 						class:copied={copied.streamKey}
-						onclick={() => copyToClipboard(streamKey, "streamKey")}
+						onclick={() =>
+						copyToClipboard(streamKey, "streamKey")}
 					>
 						{#if copied.streamKey}
 							<IconCopyCheckmark />
@@ -85,7 +87,8 @@ function copyToClipboard(text: string, field: keyof typeof copied) {
 					<span>{requireSignedUrls ? "Enabled" : "Disabled"}</span>
 					<button
 						class="copy-button"
-						onclick={() => (requireSignedUrls = !requireSignedUrls)}
+						onclick={() => (requireSignedUrls =
+						!requireSignedUrls)}
 					>
 						<input
 							type="checkbox"
@@ -107,7 +110,8 @@ function copyToClipboard(text: string, field: keyof typeof copied) {
 					<button
 						class="copy-button"
 						class:copied={copied.streamKey}
-						onclick={() => copyToClipboard(streamKey, "streamKey")}
+						onclick={() =>
+						copyToClipboard(streamKey, "streamKey")}
 					>
 						{#if copied.streamKey}
 							<IconCopyCheckmark />

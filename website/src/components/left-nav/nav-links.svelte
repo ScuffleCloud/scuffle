@@ -6,48 +6,48 @@ import NavItemBase from "./nav-item-base.svelte";
 import NavItemDropdown from "./nav-item-dropdown.svelte";
 
 type Props = {
-  isCollapsed?: boolean;
-  handleDropdownInteraction?: (
-    shouldExpand: boolean,
-    itemPath?: string,
-  ) => void;
-  isTemporarilyExpanded?: boolean;
+    isCollapsed?: boolean;
+    handleDropdownInteraction?: (
+        shouldExpand: boolean,
+        itemPath?: string,
+    ) => void;
+    isTemporarilyExpanded?: boolean;
 };
 
 const {
-  isCollapsed = false,
-  handleDropdownInteraction,
-  isTemporarilyExpanded = false,
+    isCollapsed = false,
+    handleDropdownInteraction,
+    isTemporarilyExpanded = false,
 }: Props = $props();
 
 const { currentOrganization, currentProject } = useUser();
 
 const basePath = $derived(
-  `/organizations/${$currentOrganization?.slug}/projects/${$currentProject?.slug}`,
+    `/organizations/${$currentOrganization?.slug}/projects/${$currentProject?.slug}`,
 );
 
 const navItemsWithPaths = $derived(
-  NAV_ITEMS.map((item) => ({
-    ...item,
-    path: `${basePath}${item.path}`,
-  })),
+    NAV_ITEMS.map((item) => ({
+        ...item,
+        path: `${basePath}${item.path}`,
+    })),
 );
 
 let shouldOpenDropdown = $state<string | null>(null);
 
 const handleDropdownClick = (event: MouseEvent, item: any) => {
-  if (isCollapsed && item.children && handleDropdownInteraction) {
-    event.preventDefault();
-    shouldOpenDropdown = item.path;
-    handleDropdownInteraction(true, item.path);
-  }
+    if (isCollapsed && item.children && handleDropdownInteraction) {
+        event.preventDefault();
+        shouldOpenDropdown = item.path;
+        handleDropdownInteraction(true, item.path);
+    }
 };
 
 afterNavigate(() => {
-  if (handleDropdownInteraction) {
-    handleDropdownInteraction(false);
-  }
-  shouldOpenDropdown = null;
+    if (handleDropdownInteraction) {
+        handleDropdownInteraction(false);
+    }
+    shouldOpenDropdown = null;
 });
 </script>
 

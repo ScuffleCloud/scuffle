@@ -6,15 +6,15 @@ import IconWallet from "$lib/images/icon-wallet.svelte";
 import type { Snippet } from "svelte";
 
 type Props = {
-  children: Snippet;
+    children: Snippet;
 };
 
 const { children }: Props = $props();
 
 const tabs = [
-  { id: "common", label: "Common", icon: IconPuzzle },
-  { id: "domains", label: "Domains", icon: IconGlobe },
-  { id: "billing", label: "Billing", icon: IconWallet },
+    { id: "common", label: "Common", icon: IconPuzzle },
+    { id: "domains", label: "Domains", icon: IconGlobe },
+    { id: "billing", label: "Billing", icon: IconWallet },
 ];
 
 const baseUrl = "/settings/user/";

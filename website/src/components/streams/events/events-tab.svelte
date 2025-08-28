@@ -20,9 +20,9 @@ import { page } from "$app/state";
 import type { ChartData } from "../types";
 
 type Props = {
-  events: VideoStream[];
-  eventDetails?: ChartData;
-  currentEventId?: string;
+    events: VideoStream[];
+    eventDetails?: ChartData;
+    currentEventId?: string;
 };
 
 const { events = [], eventDetails, currentEventId = "" }: Props = $props();
@@ -30,34 +30,34 @@ const { events = [], eventDetails, currentEventId = "" }: Props = $props();
 // It doesn't matter what we fetch, we need to reformat the events before dumping it in our chart
 
 const eventContent: StreamEvent[] = [
-  {
-    id: "1",
-    type: "info",
-    text: "Neutral event",
-    timestamp: "May 5, 04:01:11 PM EDT",
-  },
-  {
-    id: "2",
-    type: "asset_created",
-    text: "Success event",
-    timestamp: "May 5, 04:01:11 PM EDT",
-  },
-  {
-    id: "3",
-    type: "error",
-    text: "Error event",
-    timestamp: "May 5, 04:01:11 PM EDT",
-  },
+    {
+        id: "1",
+        type: "info",
+        text: "Neutral event",
+        timestamp: "May 5, 04:01:11 PM EDT",
+    },
+    {
+        id: "2",
+        type: "asset_created",
+        text: "Success event",
+        timestamp: "May 5, 04:01:11 PM EDT",
+    },
+    {
+        id: "3",
+        type: "error",
+        text: "Error event",
+        timestamp: "May 5, 04:01:11 PM EDT",
+    },
 ];
 
 let currentEvent = $state(page.params.eventId || "");
 
 function handleStreamChange(value: string) {
-  if (value && value !== page.params.roomId) {
-    const baseUrl =
-      `/organizations/${page.params.orgId}/projects/${page.params.projectId}/streams/${page.params.roomId}/events`;
-    goto(`${baseUrl}/${value}`);
-  }
+    if (value && value !== page.params.roomId) {
+        const baseUrl =
+            `/organizations/${page.params.orgId}/projects/${page.params.projectId}/streams/${page.params.roomId}/events`;
+        goto(`${baseUrl}/${value}`);
+    }
 }
 </script>
 

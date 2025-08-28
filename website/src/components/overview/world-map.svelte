@@ -4,11 +4,11 @@ import { geoMercator } from "d3-geo";
 import { type EChartsOption, type EChartsType } from "echarts";
 import { MapChart } from "echarts/charts";
 import {
-  GeoComponent,
-  TitleComponent,
-  ToolboxComponent,
-  TooltipComponent,
-  VisualMapComponent,
+    GeoComponent,
+    TitleComponent,
+    ToolboxComponent,
+    TooltipComponent,
+    VisualMapComponent,
 } from "echarts/components";
 import { init, use } from "echarts/core";
 import { CanvasRenderer } from "echarts/renderers";
@@ -17,27 +17,27 @@ import { Chart, type ECMouseEvent } from "svelte-echarts";
 
 // Register the required components
 use([
-  GeoComponent,
-  TitleComponent,
-  TooltipComponent,
-  VisualMapComponent,
-  ToolboxComponent,
-  MapChart,
-  CanvasRenderer,
+    GeoComponent,
+    TitleComponent,
+    TooltipComponent,
+    VisualMapComponent,
+    ToolboxComponent,
+    MapChart,
+    CanvasRenderer,
 ]);
 
 type Props = {
-  mapData?: Array<{ name: string; value: number }> | null;
-  theme?: "light" | "dark" | object;
-  title?: string;
-  dataLabel?: string;
+    mapData?: Array<{ name: string; value: number }> | null;
+    theme?: "light" | "dark" | object;
+    title?: string;
+    dataLabel?: string;
 };
 
 const {
-  mapData = null,
-  theme = "light",
-  title = "Global Technology Innovation Index 2024",
-  dataLabel = "Innovation Score",
+    mapData = null,
+    theme = "light",
+    title = "Global Technology Innovation Index 2024",
+    dataLabel = "Innovation Score",
 }: Props = $props();
 
 const projection = geoMercator();
@@ -47,233 +47,233 @@ let chartInstance = $state<EChartsType | EChartsType | undefined>();
 
 // Sample world data - Technology Innovation scores by country
 const defaultData = [
-  { name: "United States", value: 95 },
-  { name: "China", value: 88 },
-  { name: "Japan", value: 85 },
-  { name: "Germany", value: 82 },
-  { name: "South Korea", value: 80 },
-  { name: "United Kingdom", value: 78 },
-  { name: "France", value: 76 },
-  { name: "Canada", value: 74 },
-  { name: "Israel", value: 72 },
-  { name: "Singapore", value: 70 },
-  { name: "Sweden", value: 68 },
-  { name: "Switzerland", value: 66 },
-  { name: "Netherlands", value: 64 },
-  { name: "Finland", value: 62 },
-  { name: "Denmark", value: 60 },
-  { name: "Norway", value: 58 },
-  { name: "Australia", value: 56 },
-  { name: "Belgium", value: 54 },
-  { name: "Austria", value: 52 },
-  { name: "Ireland", value: 50 },
-  { name: "Taiwan", value: 48 },
-  { name: "India", value: 46 },
-  { name: "Italy", value: 44 },
-  { name: "Spain", value: 42 },
-  { name: "Russia", value: 40 },
-  { name: "Brazil", value: 38 },
-  { name: "Mexico", value: 36 },
-  { name: "Poland", value: 34 },
-  { name: "Turkey", value: 32 },
-  { name: "Czech Republic", value: 30 },
-  { name: "Portugal", value: 28 },
-  { name: "Hungary", value: 26 },
-  { name: "Chile", value: 24 },
-  { name: "Greece", value: 22 },
-  { name: "Thailand", value: 20 },
-  { name: "Malaysia", value: 18 },
-  { name: "South Africa", value: 16 },
-  { name: "Argentina", value: 14 },
-  { name: "Colombia", value: 12 },
-  { name: "Philippines", value: 10 },
-  { name: "Indonesia", value: 8 },
-  { name: "Vietnam", value: 6 },
-  { name: "Egypt", value: 4 },
-  { name: "Nigeria", value: 2 },
+    { name: "United States", value: 95 },
+    { name: "China", value: 88 },
+    { name: "Japan", value: 85 },
+    { name: "Germany", value: 82 },
+    { name: "South Korea", value: 80 },
+    { name: "United Kingdom", value: 78 },
+    { name: "France", value: 76 },
+    { name: "Canada", value: 74 },
+    { name: "Israel", value: 72 },
+    { name: "Singapore", value: 70 },
+    { name: "Sweden", value: 68 },
+    { name: "Switzerland", value: 66 },
+    { name: "Netherlands", value: 64 },
+    { name: "Finland", value: 62 },
+    { name: "Denmark", value: 60 },
+    { name: "Norway", value: 58 },
+    { name: "Australia", value: 56 },
+    { name: "Belgium", value: 54 },
+    { name: "Austria", value: 52 },
+    { name: "Ireland", value: 50 },
+    { name: "Taiwan", value: 48 },
+    { name: "India", value: 46 },
+    { name: "Italy", value: 44 },
+    { name: "Spain", value: 42 },
+    { name: "Russia", value: 40 },
+    { name: "Brazil", value: 38 },
+    { name: "Mexico", value: 36 },
+    { name: "Poland", value: 34 },
+    { name: "Turkey", value: 32 },
+    { name: "Czech Republic", value: 30 },
+    { name: "Portugal", value: 28 },
+    { name: "Hungary", value: 26 },
+    { name: "Chile", value: 24 },
+    { name: "Greece", value: 22 },
+    { name: "Thailand", value: 20 },
+    { name: "Malaysia", value: 18 },
+    { name: "South Africa", value: 16 },
+    { name: "Argentina", value: 14 },
+    { name: "Colombia", value: 12 },
+    { name: "Philippines", value: 10 },
+    { name: "Indonesia", value: 8 },
+    { name: "Vietnam", value: 6 },
+    { name: "Egypt", value: 4 },
+    { name: "Nigeria", value: 2 },
 ];
 
 const data = $derived(mapData || defaultData);
 let isLoading = $state(true);
 
 const resetZoom = () => {
-  if (chartInstance) {
-    chartInstance.dispatchAction({ type: "restore" });
-  }
+    if (chartInstance) {
+        chartInstance.dispatchAction({ type: "restore" });
+    }
 };
 const maxValue = $derived(Math.max(...data.map((item) => item.value)));
 const minValue = $derived(Math.min(...data.map((item) => item.value)));
 
 const option = $derived({
-  title: {
-    text: title,
-    subtext:
-      `Data represents ${dataLabel.toLowerCase()} across different countries`,
-    left: "center",
-    top: 20,
-    textStyle: {
-      color: getCssVar("--colors-gray100"),
-      fontSize: 20,
-      fontWeight: "bold",
-    },
-    subtextStyle: {
-      color: getCssVar("--colors-gray80"),
-      fontSize: 12,
-    },
-  },
-  tooltip: {
-    trigger: "item",
-    formatter: function(params: any) {
-      hoveredCountry = params.name;
-      if (params.data) {
-        return `<strong>${params.name}</strong><br/>${dataLabel}: ${params.data.value}`;
-      }
-      return `<strong>${params.name}</strong><br/>No data available`;
-    },
-    backgroundColor: getCssVar("--colors-gray10"),
-    borderColor: getCssVar("--colors-gray50"),
-    textStyle: {
-      color: getCssVar("--colors-gray110"),
-    },
-  },
-  // Toolbox on the right to zoom, refresh, copy, download, ect.
-  toolbox: {
-    show: true,
-    orient: "horizontal",
-    left: "right",
-    top: 80,
-    feature: {
-      dataView: {
-        readOnly: false,
-        title: "View Data",
-        lang: ["Data View", "Close", "Refresh"],
-        backgroundColor: "#f0f0f0",
-        textColor: "#333",
-        textareaColor: "#fff",
-        textareaBorderColor: "#ccc",
-        buttonColor: getCssVar("--colors-blue60"),
-      },
-      restore: {
-        title: "Reset Zoom",
-      },
-      saveAsImage: {
-        title: "Save as Image",
-      },
-    },
-    iconStyle: {
-      borderColor: getCssVar("--colors-gray80"),
-    },
-    emphasis: {
-      iconStyle: {
-        borderColor: getCssVar("--colors-blue60"),
-      },
-    },
-  },
-  visualMap: {
-    min: minValue,
-    max: maxValue,
-    text: ["High", "Low"],
-    realtime: false,
-    calculable: true,
-    orient: "horizontal",
-    left: "center",
-    bottom: 30,
-    inRange: {
-      color: [
-        getCssVar("--colors-blue10"),
-        getCssVar("--colors-blue30"),
-        getCssVar("--colors-blue50"),
-        getCssVar("--colors-blue70"),
-        getCssVar("--colors-blue90"),
-      ],
-    },
-    textStyle: {
-      color: getCssVar("--colors-gray80"),
-    },
-  },
-  geo: {
-    map: "world",
-    roam: true,
-    // If this changes. 1.7 zoom and 475, 170 center of the map i think looks fine
-    zoom: 1.7,
-    center: [475, 170],
-    label: {
-      show: false,
-      color: getCssVar("--colors-gray90"),
-      fontSize: 8,
-    },
-    itemStyle: {
-      borderColor: getCssVar("--colors-gray50"),
-      borderWidth: 0.8,
-      areaColor: getCssVar("--colors-gray20"),
-    },
-    emphasis: {
-      itemStyle: {
-        borderColor: getCssVar("--colors-gray70"),
-        borderWidth: 2,
-        areaColor: getCssVar("--colors-gray30"),
-      },
-      label: {
-        show: true,
-        color: getCssVar("--colors-gray110"),
-        fontSize: 10,
-      },
-    },
-    projection: {
-      project: function(point: [number, number]) {
-        return projection(point);
-      },
-      unproject: function(point: [number, number]) {
-        return projection.invert?.(point);
-      },
-    },
-  },
-  series: [
-    {
-      name: dataLabel,
-      type: "map",
-      geoIndex: 0,
-      data: data,
-      itemStyle: {
-        borderColor: getCssVar("--colors-gray50"),
-        borderWidth: 0.8,
-      },
-      emphasis: {
-        itemStyle: {
-          borderColor: getCssVar("--colors-gray70"),
-          borderWidth: 2,
+    title: {
+        text: title,
+        subtext:
+            `Data represents ${dataLabel.toLowerCase()} across different countries`,
+        left: "center",
+        top: 20,
+        textStyle: {
+            color: getCssVar("--colors-gray100"),
+            fontSize: 20,
+            fontWeight: "bold",
         },
-      },
+        subtextStyle: {
+            color: getCssVar("--colors-gray80"),
+            fontSize: 12,
+        },
     },
-  ],
+    tooltip: {
+        trigger: "item",
+        formatter: function(params: any) {
+            hoveredCountry = params.name;
+            if (params.data) {
+                return `<strong>${params.name}</strong><br/>${dataLabel}: ${params.data.value}`;
+            }
+            return `<strong>${params.name}</strong><br/>No data available`;
+        },
+        backgroundColor: getCssVar("--colors-gray10"),
+        borderColor: getCssVar("--colors-gray50"),
+        textStyle: {
+            color: getCssVar("--colors-gray110"),
+        },
+    },
+    // Toolbox on the right to zoom, refresh, copy, download, ect.
+    toolbox: {
+        show: true,
+        orient: "horizontal",
+        left: "right",
+        top: 80,
+        feature: {
+            dataView: {
+                readOnly: false,
+                title: "View Data",
+                lang: ["Data View", "Close", "Refresh"],
+                backgroundColor: "#f0f0f0",
+                textColor: "#333",
+                textareaColor: "#fff",
+                textareaBorderColor: "#ccc",
+                buttonColor: getCssVar("--colors-blue60"),
+            },
+            restore: {
+                title: "Reset Zoom",
+            },
+            saveAsImage: {
+                title: "Save as Image",
+            },
+        },
+        iconStyle: {
+            borderColor: getCssVar("--colors-gray80"),
+        },
+        emphasis: {
+            iconStyle: {
+                borderColor: getCssVar("--colors-blue60"),
+            },
+        },
+    },
+    visualMap: {
+        min: minValue,
+        max: maxValue,
+        text: ["High", "Low"],
+        realtime: false,
+        calculable: true,
+        orient: "horizontal",
+        left: "center",
+        bottom: 30,
+        inRange: {
+            color: [
+                getCssVar("--colors-blue10"),
+                getCssVar("--colors-blue30"),
+                getCssVar("--colors-blue50"),
+                getCssVar("--colors-blue70"),
+                getCssVar("--colors-blue90"),
+            ],
+        },
+        textStyle: {
+            color: getCssVar("--colors-gray80"),
+        },
+    },
+    geo: {
+        map: "world",
+        roam: true,
+        // If this changes. 1.7 zoom and 475, 170 center of the map i think looks fine
+        zoom: 1.7,
+        center: [475, 170],
+        label: {
+            show: false,
+            color: getCssVar("--colors-gray90"),
+            fontSize: 8,
+        },
+        itemStyle: {
+            borderColor: getCssVar("--colors-gray50"),
+            borderWidth: 0.8,
+            areaColor: getCssVar("--colors-gray20"),
+        },
+        emphasis: {
+            itemStyle: {
+                borderColor: getCssVar("--colors-gray70"),
+                borderWidth: 2,
+                areaColor: getCssVar("--colors-gray30"),
+            },
+            label: {
+                show: true,
+                color: getCssVar("--colors-gray110"),
+                fontSize: 10,
+            },
+        },
+        projection: {
+            project: function(point: [number, number]) {
+                return projection(point);
+            },
+            unproject: function(point: [number, number]) {
+                return projection.invert?.(point);
+            },
+        },
+    },
+    series: [
+        {
+            name: dataLabel,
+            type: "map",
+            geoIndex: 0,
+            data: data,
+            itemStyle: {
+                borderColor: getCssVar("--colors-gray50"),
+                borderWidth: 0.8,
+            },
+            emphasis: {
+                itemStyle: {
+                    borderColor: getCssVar("--colors-gray70"),
+                    borderWidth: 2,
+                },
+            },
+        },
+    ],
 });
 
 let options = $derived({ ...option } as EChartsOption);
 
 const handleClick = (event: ECMouseEvent) => {
-  if (event.data) {
-    alert(`${event.name}\n${dataLabel}: ${(event.data as any).value}`);
-  } else {
-    alert(`${event.name}\nNo data available`);
-  }
+    if (event.data) {
+        alert(`${event.name}\n${dataLabel}: ${(event.data as any).value}`);
+    } else {
+        alert(`${event.name}\nNo data available`);
+    }
 };
 
 // Load the simplified world GeoJSON data
 onMount(async () => {
-  try {
-    // Use the simplified world map from CodePen
-    const response = await fetch("/world.geojson");
-    const geoJson = await response.json();
+    try {
+        // Use the simplified world map from CodePen
+        const response = await fetch("/world.geojson");
+        const geoJson = await response.json();
 
-    // Register the map with ECharts directly
-    const { registerMap } = await import("echarts/core");
-    registerMap("world", geoJson);
+        // Register the map with ECharts directly
+        const { registerMap } = await import("echarts/core");
+        registerMap("world", geoJson);
 
-    isLoading = false;
-  } catch (error) {
-    console.error("Failed to load world map data:", error);
-    isLoading = false;
-  }
+        isLoading = false;
+    } catch (error) {
+        console.error("Failed to load world map data:", error);
+        isLoading = false;
+    }
 });
 </script>
 

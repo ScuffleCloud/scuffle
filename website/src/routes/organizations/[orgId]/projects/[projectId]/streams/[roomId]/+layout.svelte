@@ -12,24 +12,24 @@ import type { Snippet } from "svelte";
 import type { LayoutData } from "./$types";
 
 type ChildProps = {
-  data: VideoStream;
+    data: VideoStream;
 };
 
 type Props = {
-  data: LayoutData;
-  children: Snippet<[ChildProps]>;
+    data: LayoutData;
+    children: Snippet<[ChildProps]>;
 };
 
 const { data: pageData, children }: Props = $props();
 
 const tabs = [
-  { id: "overview", label: "Overview", icon: IconPuzzle },
-  { id: "events", label: "Events", icon: IconEvents },
-  { id: "assets", label: "Assets", icon: IconAssets_2 },
-  { id: "settings", label: "Settings", icon: IconSettings2 },
+    { id: "overview", label: "Overview", icon: IconPuzzle },
+    { id: "events", label: "Events", icon: IconEvents },
+    { id: "assets", label: "Assets", icon: IconAssets_2 },
+    { id: "settings", label: "Settings", icon: IconSettings2 },
 ];
 const baseUrl =
-  `/organizations/${page.params.orgId}/projects/${page.params.projectId}/streams/${page.params.roomId}/`;
+    `/organizations/${page.params.orgId}/projects/${page.params.projectId}/streams/${page.params.roomId}/`;
 </script>
 
 <div class="page-bg">

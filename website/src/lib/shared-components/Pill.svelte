@@ -4,29 +4,29 @@ import { getColor } from "$lib/utils";
 import type { Snippet } from "svelte";
 
 interface PillProps {
-  children: Snippet;
-  color: ThemeColors | string;
-  borderColor?: ThemeColors | string;
-  as?: "button" | "div";
-  onClick?: () => void;
-  class?: string;
-  disabled?: boolean;
-  type?: "button" | "submit";
-  dataTestId?: string;
-  width?: string;
+    children: Snippet;
+    color: ThemeColors | string;
+    borderColor?: ThemeColors | string;
+    as?: "button" | "div";
+    onClick?: () => void;
+    class?: string;
+    disabled?: boolean;
+    type?: "button" | "submit";
+    dataTestId?: string;
+    width?: string;
 }
 
 let {
-  children,
-  color,
-  borderColor = "inherit",
-  as = "div",
-  onClick,
-  class: className = "",
-  disabled = false,
-  type = "button",
-  dataTestId,
-  width = "fit-content",
+    children,
+    color,
+    borderColor = "inherit",
+    as = "div",
+    onClick,
+    class: className = "",
+    disabled = false,
+    type = "button",
+    dataTestId,
+    width = "fit-content",
 }: PillProps = $props();
 </script>
 

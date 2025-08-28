@@ -5,32 +5,32 @@ import IconTest from "$lib/images/icon-test.svelte";
 import type { NavItem } from "../types";
 
 export const NAV_ITEMS: NavItem[] = [
-  {
-    id: "overview",
-    label: "Overview",
-    path: "/overview",
-    icon: IconStats,
-  },
-  {
-    id: "streams",
-    label: "Streams",
-    path: "/streams",
-    icon: IconTest,
-  },
-  {
-    id: "assets",
-    label: "Assets",
-    path: "/assets",
-    icon: IconTest2,
-  },
-  {
-    id: "settings",
-    label: "Settings",
-    path: "/settings",
-    icon: Settings2,
-    children: [
-      { id: "user", label: "User", path: "/settings/user" },
-      { id: "organizations", label: "Organizations", path: "/settings/organizations" },
-    ],
-  },
+    {
+        id: "overview",
+        label: "Overview",
+        path: "/overview",
+        icon: IconStats,
+    },
+    {
+        id: "streams",
+        label: "Streams",
+        path: "/streams",
+        icon: IconTest,
+    },
+    {
+        id: "assets",
+        label: "Assets",
+        path: "/assets",
+        icon: IconTest2,
+    },
+    {
+        id: "settings",
+        label: "Settings",
+        path: "/settings",
+        icon: Settings2,
+        children: [
+            { id: "user", label: "User", path: "/settings/user" },
+            { id: "organizations", label: "Organizations", path: "/settings/organizations" },
+        ],
+    },
 ];

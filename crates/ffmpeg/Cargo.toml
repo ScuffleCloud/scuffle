@@ -59,21 +59,21 @@ docs = ["dep:scuffle-changelog", "dep:document-features"]
 # Note: `link_system_ffmpeg` nor `link_vcpkg_ffmpeg` are additive features because
 # they change the build.rs and therefore require a full rebuild of the crate.
 additive-features = [
-  "channel",
-  "tokio-channel",
-  "crossbeam-channel",
-  "tracing",
-  "docs",
+    "channel",
+    "tokio-channel",
+    "crossbeam-channel",
+    "tracing",
+    "docs",
 ]
 always_include_features = ["link_system_ffmpeg"]
 
 [package.metadata.docs.rs]
 features = ["channel", "tokio-channel", "crossbeam-channel", "tracing", "docs"]
 rustdoc-args = [
-  "--cfg",
-  "docsrs",
-  "--sort-modules-by-appearance",
-  "--generate-link-to-definition",
+    "--cfg",
+    "docsrs",
+    "--sort-modules-by-appearance",
+    "--generate-link-to-definition",
 ]
 
 [package.metadata.sync-readme.rustdoc-mappings]

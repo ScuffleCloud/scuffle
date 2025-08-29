@@ -45,7 +45,7 @@ jobs:
       - name: Build
         run: bazel build //cloud/dashboard
 
-      - name: Compress docs
+      - name: Compress
         run: |
           pwd=$(pwd)
           cd ./target-bazel/bin/cloud/dashboard/build

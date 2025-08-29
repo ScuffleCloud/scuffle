@@ -45,7 +45,7 @@ jobs:
       - name: Build
         run: bazel build //docs:rustdoc
 
-      - name: Compress docs
+      - name: Compress
         run: |
           pwd=$(pwd)
           cd ./target-bazel/bin/docs/rustdoc.rustdoc_merge

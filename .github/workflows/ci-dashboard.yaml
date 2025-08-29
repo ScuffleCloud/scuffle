@@ -1,4 +1,4 @@
-name: ci - rustdoc
+name: ci - dashboard
 
 on:
   workflow_call:
@@ -28,7 +28,7 @@ defaults:
     shell: bash
 
 jobs:
-  rustdoc:
+  dashboard:
     permissions:
       pull-requests: write
     runs-on: ubicloud-standard-8-ubuntu-2404

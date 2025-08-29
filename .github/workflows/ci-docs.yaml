@@ -1,4 +1,4 @@
-name: ci - rustdoc
+name: ci - docs
 
 on:
   workflow_call:
@@ -28,7 +28,7 @@ defaults:
     shell: bash
 
 jobs:
-  rustdoc:
+  docs:
     permissions:
       pull-requests: write
     runs-on: ubicloud-standard-8-ubuntu-2404

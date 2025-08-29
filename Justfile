@@ -71,10 +71,13 @@ test *targets="//...":
 # this should be kept in sync with
 # .github/workflows/ci-check-vendor.yaml
 
-vendor:
+alias vendor := lockfile
+
+lockfile:
     cargo update --workspace
     bazel run //vendor:cargo_vendor
     bazel run //vendor:bindeps
+    pnpm install --lockfile-only
 
 grind *targets="//...":
     #!/usr/bin/env bash

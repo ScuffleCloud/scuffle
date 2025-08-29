@@ -60,6 +60,7 @@ crates_vendor(
             ),
         ],
     },
+    cargo_bazel = "//misc/toolchains/rust:cargo-bazel",
     cargo_lockfile = "//:Cargo.lock",
     generate_build_scripts = True,
     manifests = cargo_manifests(),

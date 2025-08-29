@@ -16,11 +16,11 @@ filegroup(
 docusaurus_bin.docusaurus(
     name = "docs",
     srcs = [
-        "package.json",
-        "tsconfig.json",
-        "docusaurus.config.ts",
         "constants.ts",
+        "docusaurus.config.ts",
+        "package.json",
         "sidebars.ts",
+        "tsconfig.json",
         ":node_modules",
         ":src",
     ],

@@ -14,11 +14,11 @@ filegroup(
 vite_bin.vite(
     name = "dashboard",
     srcs = [
-        "vite.config.ts",
-        "package.json",
-        "tsconfig.json",
-        "svelte.config.js",
         ".env",
+        "package.json",
+        "svelte.config.js",
+        "tsconfig.json",
+        "vite.config.ts",
         ":node_modules",
         ":srcs",
     ],

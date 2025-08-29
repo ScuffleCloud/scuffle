@@ -112,7 +112,7 @@ jobs:
   docs:
     needs: [prep]
     if: ${{ fromJson(needs.prep.outputs.prep).docs != null }}
-    uses: ./.github/workflows/ci-dashboard.yaml
+    uses: ./.github/workflows/ci-docs.yaml
     permissions:
       pull-requests: write
     with:

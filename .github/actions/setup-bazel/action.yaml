@@ -27,6 +27,3 @@ runs:
           common --repository_cache=~/.cache/bazel-repo
           common --lockfile_mode=error
 
-    - name: Setup path
-      shell: bash
-      run: echo "$GITHUB_WORKSPACE/tools/scripts" >> $GITHUB_PATH

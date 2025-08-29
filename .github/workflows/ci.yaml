@@ -92,6 +92,40 @@ jobs:
       vercel_project_id: "${{ secrets.VERCEL_PROJECT_ID_DOCS_SCUFFLE_RS }}"
       vercel_org_id: "${{ secrets.VERCEL_ORG_ID }}"
 
+  dashboard:
+    needs: [prep]
+    if: ${{ fromJson(needs.prep.outputs.prep).dashboard != null }}
+    uses: ./.github/workflows/ci-dashboard.yaml
+    permissions:
+      pull-requests: write
+    with:
+      artifact_name: "${{ fromJson(needs.prep.outputs.prep).dashboard.artifact_name }}"
+      commit_sha: "${{ fromJson(needs.prep.outputs.prep).dashboard.commit_sha }}"
+      pr_number: "${{ fromJson(needs.prep.outputs.prep).dashboard.pr_number }}"
+      deploy_docs: "${{ fromJson(needs.prep.outputs.prep).dashboard.deploy_docs }}"
+    secrets:
+      build_buddy_token: "${{ secrets.BUILD_BUDDY_TOKEN }}"
+      vercel_token: "${{ secrets.VERCEL_TOKEN }}"
+      vercel_project_id: "${{ secrets.VERCEL_PROJECT_ID_APP_SCUFFLE_CLOUD }}"
+      vercel_org_id: "${{ secrets.VERCEL_ORG_ID }}"
+
+  docs:
+    needs: [prep]
+    if: ${{ fromJson(needs.prep.outputs.prep).docs != null }}
+    uses: ./.github/workflows/ci-docs.yaml
+    permissions:
+      pull-requests: write
+    with:
+      artifact_name: "${{ fromJson(needs.prep.outputs.prep).docs.artifact_name }}"
+      commit_sha: "${{ fromJson(needs.prep.outputs.prep).docs.commit_sha }}"
+      pr_number: "${{ fromJson(needs.prep.outputs.prep).docs.pr_number }}"
+      deploy_docs: "${{ fromJson(needs.prep.outputs.prep).docs.deploy_docs }}"
+    secrets:
+      build_buddy_token: "${{ secrets.BUILD_BUDDY_TOKEN }}"
+      vercel_token: "${{ secrets.VERCEL_TOKEN }}"
+      vercel_project_id: "${{ secrets.VERCEL_PROJECT_ID_DOCS_SCUFFLE_CLOUD }}"
+      vercel_org_id: "${{ secrets.VERCEL_ORG_ID }}"
+
   brawl-done:
     runs-on: ubuntu-24.04
     needs: [check_vendor, test, check_fmt, grind, rustdoc]

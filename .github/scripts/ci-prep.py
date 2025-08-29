@@ -68,8 +68,18 @@ class Rustdoc:
 
 
 @dataclass
-class Docusaurus:
+class Docs:
+    artifact_name: Optional[str]
     pr_number: Optional[int]
+    commit_sha: str
+    deploy_docs: bool
+
+
+@dataclass
+class Dashboard:
+    artifact_name: Optional[str]
+    pr_number: Optional[int]
+    commit_sha: str
     deploy_docs: bool
 
 
@@ -107,7 +117,8 @@ class CheckFmt:
 @dataclass
 class Jobs:
     rustdoc: Optional[Rustdoc]
-    docusaurus: Optional[Docusaurus]
+    docs: Optional[Docs]
+    dashboard: Optional[Dashboard]
     test: Optional[Test]
     grind: Optional[Grind]
     check_vendor: Optional[CheckVendor]
@@ -127,10 +138,21 @@ def create_rustdoc() -> Optional[Rustdoc]:
     )
 
 
-def create_docusaurus() -> Optional[Docusaurus]:
-    return Docusaurus(
-        pr_number=pr_number(),
+def create_docs() -> Optional[Docs]:
+    return Docs(
+        artifact_name="docs",
         deploy_docs=deploy_docs(),
+        pr_number=pr_number(),
+        commit_sha=commit_sha(),
+    )
+
+
+def create_dashboard() -> Optional[Dashboard]:
+    return Dashboard(
+        artifact_name="dashboard",
+        deploy_docs=deploy_docs(),
+        pr_number=pr_number(),
+        commit_sha=commit_sha(),
     )
 
 
@@ -178,7 +200,8 @@ def create_jobs() -> Jobs:
     return Jobs(
         rustdoc=create_rustdoc(),
         check_vendor=create_check_vendor(),
-        docusaurus=create_docusaurus(),
+        docs=create_docs(),
+        dashboard=create_dashboard(),
         grind=create_grind(),
         test=create_test(),
         check_fmt=create_fmt(),

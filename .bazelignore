@@ -5,3 +5,8 @@
 target/
 target-bazel/
 .direnv/
+node_modules
+cloud/dashboard/node_modules
+cloud/docs/node_modules
+cloud/dashboard/.svelte-kit/
+.turbo/

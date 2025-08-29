@@ -1,4 +1,4 @@
-name: ci - rustdoc
+name: ci - docs
 
 on:
   workflow_call:
@@ -28,7 +28,7 @@ defaults:
     shell: bash
 
 jobs:
-  rustdoc:
+  docs:
     permissions:
       pull-requests: write
     runs-on: ubicloud-standard-8-ubuntu-2404
@@ -43,20 +43,20 @@ jobs:
           build_buddy_token: ${{ secrets.build_buddy_token }}
 
       - name: Build
-        run: bazel build //docs:rustdoc
+        run: bazel build //cloud/docs
 
       - name: Compress
         run: |
           pwd=$(pwd)
-          cd ./target-bazel/bin/docs/rustdoc.rustdoc_merge
-          tar -cf - * | zstd -o "$pwd/rustdoc.tar.zst"
+          cd ./target-bazel/bin/cloud/docs/build
+          tar -cf - * | zstd -o "$pwd/docs-scuffle-cloud.tar.zst"
 
       - name: Upload
         uses: actions/upload-artifact@v4
         if: ${{ inputs.artifact_name }}
         with:
           name: ${{ inputs.artifact_name }}
-          path: ./rustdoc.tar.zst
+          path: ./docs-scuffle-cloud.tar.zst
 
       - name: Deploy
         if: ${{ inputs.deploy_docs }}
@@ -69,7 +69,7 @@ jobs:
           vercel-args: "--archive=tgz"
           vercel-org-id: ${{ secrets.vercel_org_id }}
           vercel-project-id: ${{ secrets.vercel_project_id }}
-          working-directory: ./target-bazel/bin/docs/rustdoc.rustdoc_merge
+          working-directory: ./target-bazel/bin/cloud/docs/build
 
       - name: PR Comment
         uses: thollander/actions-comment-pull-request@v3

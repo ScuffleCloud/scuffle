@@ -1,6 +1,6 @@
 packages:
-  - docs
-  - website
+  - cloud/docs
+  - cloud/dashboard
 
 onlyBuiltDependencies:
   - core-js

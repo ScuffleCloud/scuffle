@@ -1,0 +1,31 @@
+load("@npm//:defs.bzl", "npm_link_all_packages")
+load("@npm//cloud/docs:@docusaurus/core/package_json.bzl", docusaurus_bin = "bin")
+
+npm_link_all_packages()
+
+filegroup(
+    name = "src",
+    srcs = glob([
+        "src/**/*.*",
+        "static/**/*.*",
+        "docs/**/*.*",
+        "blog/**/*.*",
+    ]),
+)
+
+docusaurus_bin.docusaurus(
+    name = "docs",
+    srcs = [
+        "constants.ts",
+        "docusaurus.config.ts",
+        "package.json",
+        "sidebars.ts",
+        "tsconfig.json",
+        ":node_modules",
+        ":src",
+    ],
+    args = ["build"],
+    chdir = package_name(),
+    out_dirs = ["build"],
+    visibility = ["//visibility:public"],
+)

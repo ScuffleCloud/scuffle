@@ -49,7 +49,9 @@ test *targets="//...":
 
     output_base=$(bazel info output_base)
 
-    bazel --output_base="${output_base}_coverage" coverage {{ targets }} --//settings:test_insta_force_pass
+    targets=$(bazel query 'tests(set({{ targets }}))')
+
+    bazel --output_base="${output_base}_coverage" coverage ${targets} --//settings:test_insta_force_pass
 
     test_logs=$(bazel --output_base="${output_base}_coverage" info bazel-testlogs)
 
@@ -69,10 +71,13 @@ test *targets="//...":
 # this should be kept in sync with
 # .github/workflows/ci-check-vendor.yaml
 
-vendor:
+alias vendor := lockfile
+
+lockfile:
     cargo update --workspace
     bazel run //vendor:cargo_vendor
     bazel run //vendor:bindeps
+    pnpm install --lockfile-only
 
 grind *targets="//...":
     #!/usr/bin/env bash

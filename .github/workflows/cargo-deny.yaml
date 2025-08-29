@@ -24,5 +24,5 @@ jobs:
         with:
           build_buddy_token: ${{ secrets.build_buddy_token }}
 
-      - name: Build
-        run: bazel run //tools/just -- deny
+      - name: Check
+        run: bazel run //tools/cargo/deny check

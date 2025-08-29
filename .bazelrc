@@ -102,7 +102,7 @@ common --incompatible_strict_action_env
 ###############################################################################
 
 # Run binaries in the directory they are invoked from
-run --run_under='exec $BUILD_WORKING_DIRECTORY/misc/utils/run_under.sh'
+run --run_under='exec $BUILD_WORKSPACE_DIRECTORY/misc/utils/run_under.sh'
 
 common:wrapper --bes_results_url=""
 common:wrapper --bes_backend=""

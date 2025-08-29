@@ -26,4 +26,3 @@ runs:
           common --disk_cache=""
           common --repository_cache=~/.cache/bazel-repo
           common --lockfile_mode=error
-

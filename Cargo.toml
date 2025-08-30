@@ -37,7 +37,7 @@ members = [
     "crates/tinc/pb-prost",
     "crates/transmuxer",
     "dev-tools/xtask",
-    "misc/utils/protobuf",
+    "misc/utils/protobuf/file_concat",
     "misc/utils/rust/analyzer/check",
     "misc/utils/rust/analyzer/discover",
     "misc/utils/rust/clippy",

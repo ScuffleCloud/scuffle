@@ -8,5 +8,7 @@ target-bazel/
 node_modules
 cloud/dashboard/node_modules
 cloud/docs/node_modules
+cloud/proto/node_modules
+misc/utils/protobuf/ts/node_modules
 cloud/dashboard/.svelte-kit/
 .turbo/

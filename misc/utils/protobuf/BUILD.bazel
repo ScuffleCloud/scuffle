@@ -1,10 +1,5 @@
-load("//misc/utils/rust:manifest.bzl", "cargo_toml")
-load("//misc/utils/rust:package.bzl", "scuffle_package")
-
-cargo_toml()
-
-scuffle_package(
+alias(
     name = "file_concat",
-    crate_name = "protobuf-concat",
-    crate_type = "bin",
+    actual = "//misc/utils/protobuf/file_concat",
+    tags = ["manual"],
 )

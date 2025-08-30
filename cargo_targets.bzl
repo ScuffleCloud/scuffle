@@ -38,7 +38,7 @@ _packages = [
     "//dev-tools/xtask",
     "//tools/cargo/clippy",
     "//tools/cargo/sync-readme",
-    "//misc/utils/protobuf",
+    "//misc/utils/protobuf/file_concat",
     "//misc/utils/rust/clippy",
     "//misc/utils/rust/test_runner",
     "//misc/utils/rust/test_runner/lib",

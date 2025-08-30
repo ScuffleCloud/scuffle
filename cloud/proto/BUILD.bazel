@@ -1,5 +1,7 @@
+load("@aspect_rules_js//js:defs.bzl", "js_library")
 load("@protobuf//bazel:proto_library.bzl", "proto_library")
 load("//misc/utils:proto_descriptor_set.bzl", "proto_descriptor_set")
+load("//misc/utils/protobuf/ts:defs.bzl", "protobuf_ts_compile")
 load("//misc/utils/rust:manifest.bzl", "cargo_toml")
 load("//misc/utils/rust:package.bzl", "scuffle_build_script", "scuffle_package")
 
@@ -38,3 +40,21 @@ scuffle_package(
         "//crates/tinc",
     ],
 )
+
+protobuf_ts_compile(
+    name = "ts_proto",
+    # extra_protoc_args = [
+    #     "--ts_opt=generated",
+    #     "--ts_opt=optimize_code_size",
+    #     "--ts_opt=long_type_string",
+    # ],
+    protos = [":pb"],
+)
+
+# js_library(
+#     name = "ts",
+#     srcs = [
+#         "package.json",
+#         ":ts_proto",
+#     ]
+# )

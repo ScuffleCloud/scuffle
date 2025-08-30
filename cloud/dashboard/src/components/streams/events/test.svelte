@@ -1,17 +1,17 @@
 <script lang="ts">
-import { Select } from "melt/builders";
+	import { Select } from "melt/builders";
 
-const options = [
-    "Bleach",
-    "Dan da Dan",
-    "Re: Zero",
-    "Jujutsu Kaisen",
-    "Attack on Titan",
-    "Death Note",
-] as const;
-type Option = (typeof options)[number];
+    const options = [
+        "Bleach",
+        "Dan da Dan",
+        "Re: Zero",
+        "Jujutsu Kaisen",
+        "Attack on Titan",
+        "Death Note",
+    ] as const;
+    type Option = (typeof options)[number];
 
-const select = new Select<Option>();
+    const select = new Select<Option>();
 </script>
 
 <label for={select.ids.trigger}>Anime</label>

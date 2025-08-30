@@ -15,7 +15,11 @@
     "malva": {
     },
     "markup": {
-        "useTabs": true
+        "useTabs": true,
+        "svelteAttrShorthand": true,
+        "svelteDirectiveShorthand": true,
+        "scriptIndent": true,
+        "styleIndent": true
     },
     "yaml": {
     },

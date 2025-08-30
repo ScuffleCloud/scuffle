@@ -1,16 +1,16 @@
 <script lang="ts">
-import type { NavItem } from "$components/types";
-import IconArrowDown from "$lib/images/icon-arrow-down.svelte";
-import IconArrowUp from "$lib/images/icon-arrow-up.svelte";
+	import type { NavItem } from "$components/types";
+    import IconArrowDown from "$lib/images/icon-arrow-down.svelte";
+    import IconArrowUp from "$lib/images/icon-arrow-up.svelte";
 
-type Props = {
-    navItem: NavItem;
-    isCollapsed?: boolean;
-    isDropdownCollapsed?: boolean;
-};
+    type Props = {
+        navItem: NavItem;
+        isCollapsed?: boolean;
+        isDropdownCollapsed?: boolean;
+    };
 
-const { navItem, isCollapsed = false, isDropdownCollapsed = false }: Props =
-    $props();
+    const { navItem, isCollapsed = false, isDropdownCollapsed = false }:
+        Props = $props();
 </script>
 
 <div class="header" class:collapsed={isCollapsed}>
@@ -36,45 +36,45 @@ const { navItem, isCollapsed = false, isDropdownCollapsed = false }: Props =
 </div>
 
 <style>
-.header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 0.5rem;
-  border-radius: 0.25rem;
-  cursor: pointer;
-  transition: justify-content 0.3s ease;
+	.header {
+	  display: flex;
+	  align-items: center;
+	  justify-content: space-between;
+	  padding: 0.5rem;
+	  border-radius: 0.25rem;
+	  cursor: pointer;
+	  transition: justify-content 0.3s ease;
 
-  &:hover {
-    background-color: rgba(0, 0, 0, 0.05);
-  }
+	  &:hover {
+	    background-color: rgba(0, 0, 0, 0.05);
+	  }
 
-  &.collapsed {
-    justify-content: center;
-  }
+	  &.collapsed {
+	    justify-content: center;
+	  }
 
-  .content {
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
+	  .content {
+	    display: flex;
+	    align-items: center;
+	    gap: 0.5rem;
 
-    .icon {
-      display: flex;
-      flex-shrink: 0;
-    }
-  }
+	    .icon {
+	      display: flex;
+	      flex-shrink: 0;
+	    }
+	  }
 
-  .label {
-    font-size: 1rem;
-    font-weight: 500;
-    transition: opacity 0.2s ease;
-    white-space: nowrap;
-  }
+	  .label {
+	    font-size: 1rem;
+	    font-weight: 500;
+	    transition: opacity 0.2s ease;
+	    white-space: nowrap;
+	  }
 
-  .arrow {
-    display: flex;
-    align-items: center;
-    flex-shrink: 0;
-  }
-}
+	  .arrow {
+	    display: flex;
+	    align-items: center;
+	    flex-shrink: 0;
+	  }
+	}
 </style>

@@ -1,29 +1,29 @@
 <script lang="ts">
-import IconCopy from "$lib/images/icon-copy.svelte";
-import IconDots from "$lib/images/icon-dots.svelte";
-let credentials = {
-    accountId: "your-account-id-here",
-    streamToken: "your-stream-token-here",
-};
+	import IconCopy from "$lib/images/icon-copy.svelte";
+    import IconDots from "$lib/images/icon-dots.svelte";
+    let credentials = {
+        accountId: "your-account-id-here",
+        streamToken: "your-stream-token-here",
+    };
 
-let copied = {
-    accountId: false,
-    streamToken: false,
-};
+    let copied = {
+        accountId: false,
+        streamToken: false,
+    };
 
-function copyToClipboard(text: string, field: keyof typeof copied) {
-    navigator.clipboard.writeText(text);
-    copied[field] = true;
+    function copyToClipboard(text: string, field: keyof typeof copied) {
+        navigator.clipboard.writeText(text);
+        copied[field] = true;
 
-    setTimeout(() => {
-        copied[field] = false;
-    }, 2000);
-}
+        setTimeout(() => {
+            copied[field] = false;
+        }, 2000);
+    }
 
-// Function to mask sensitive information
-function maskText(text: string) {
-    return "●".repeat(9);
-}
+    // Function to mask sensitive information
+    function maskText(text: string) {
+        return "●".repeat(9);
+    }
 </script>
 
 <div class="api-information">
@@ -107,86 +107,86 @@ function maskText(text: string) {
 </div>
 
 <style>
-.api-information {
-  background-color: #a5a5a540;
-  border-radius: 10px;
-  padding: 0.125rem;
-  width: 100%;
+	.api-information {
+	  background-color: #a5a5a540;
+	  border-radius: 10px;
+	  padding: 0.125rem;
+	  width: 100%;
 
-  .header-row {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    padding: 0.5rem;
+	  .header-row {
+	    display: flex;
+	    align-items: center;
+	    justify-content: center;
+	    padding: 0.5rem;
 
-    .user-icon {
-      color: #333;
-      margin-right: 10px;
-      display: flex;
-    }
+	    .user-icon {
+	      color: #333;
+	      margin-right: 10px;
+	      display: flex;
+	    }
 
-    h2 {
-      font-size: 1rem;
-      font-weight: 500;
-      color: #201617;
-      flex-grow: 1;
-      margin: 0;
-      line-height: 1.5rem;
-    }
-  }
+	    h2 {
+	      font-size: 1rem;
+	      font-weight: 500;
+	      color: #201617;
+	      flex-grow: 1;
+	      margin: 0;
+	      line-height: 1.5rem;
+	    }
+	  }
 
-  .credential-section-container {
-    background-color: var(--colors-tan700);
-    border-radius: 0.5rem;
-    padding: 0.5rem;
-    display: flex;
-    flex-direction: column;
-    gap: 0.5rem;
+	  .credential-section-container {
+	    background-color: var(--colors-tan700);
+	    border-radius: 0.5rem;
+	    padding: 0.5rem;
+	    display: flex;
+	    flex-direction: column;
+	    gap: 0.5rem;
 
-    .label {
-      font-size: 16px;
-      color: #555;
-      margin-bottom: 8px;
-    }
+	    .label {
+	      font-size: 16px;
+	      color: #555;
+	      margin-bottom: 8px;
+	    }
 
-    .input-row {
-      display: flex;
-      align-items: center;
-      background-color: white;
-      border-radius: 8px;
-      border: 1px solid #ddd;
-      overflow: hidden;
+	    .input-row {
+	      display: flex;
+	      align-items: center;
+	      background-color: white;
+	      border-radius: 8px;
+	      border: 1px solid #ddd;
+	      overflow: hidden;
 
-      .masked-input {
-        flex-grow: 1;
-        padding: 12px;
-        font-size: 1rem;
-        line-height: 1.5rem;
-        letter-spacing: 1px;
-        font-weight: 400;
-        color: #444;
-      }
+	      .masked-input {
+	        flex-grow: 1;
+	        padding: 12px;
+	        font-size: 1rem;
+	        line-height: 1.5rem;
+	        letter-spacing: 1px;
+	        font-weight: 400;
+	        color: #444;
+	      }
 
-      .copy-button {
-        background: none;
-        border: none;
-        padding: 12px;
-        cursor: pointer;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        color: #543a3c;
-        transition: color 0.2s;
+	      .copy-button {
+	        background: none;
+	        border: none;
+	        padding: 12px;
+	        cursor: pointer;
+	        display: flex;
+	        align-items: center;
+	        justify-content: center;
+	        color: #543a3c;
+	        transition: color 0.2s;
 
-        &:hover {
-          color: #555;
-        }
+	        &:hover {
+	          color: #555;
+	        }
 
-        &.copied {
-          color: #4caf50;
-        }
-      }
-    }
-  }
-}
+	        &.copied {
+	          color: #4caf50;
+	        }
+	      }
+	    }
+	  }
+	}
 </style>

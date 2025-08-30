@@ -1,33 +1,33 @@
 <script lang="ts">
-import type { ThemeColors } from "$lib/theme";
-import { getColor } from "$lib/utils";
-import type { Snippet } from "svelte";
+	import type { ThemeColors } from "$lib/theme";
+    import { getColor } from "$lib/utils";
+    import type { Snippet } from "svelte";
 
-interface PillProps {
-    children: Snippet;
-    color: ThemeColors | string;
-    borderColor?: ThemeColors | string;
-    as?: "button" | "div";
-    onClick?: () => void;
-    class?: string;
-    disabled?: boolean;
-    type?: "button" | "submit";
-    dataTestId?: string;
-    width?: string;
-}
+    interface PillProps {
+        children: Snippet;
+        color: ThemeColors | string;
+        borderColor?: ThemeColors | string;
+        as?: "button" | "div";
+        onClick?: () => void;
+        class?: string;
+        disabled?: boolean;
+        type?: "button" | "submit";
+        dataTestId?: string;
+        width?: string;
+    }
 
-let {
-    children,
-    color,
-    borderColor = "inherit",
-    as = "div",
-    onClick,
-    class: className = "",
-    disabled = false,
-    type = "button",
-    dataTestId,
-    width = "fit-content",
-}: PillProps = $props();
+    let {
+        children,
+        color,
+        borderColor = "inherit",
+        as = "div",
+        onClick,
+        class: className = "",
+        disabled = false,
+        type = "button",
+        dataTestId,
+        width = "fit-content",
+    }: PillProps = $props();
 </script>
 
 <svelte:element
@@ -46,21 +46,21 @@ let {
 </svelte:element>
 
 <style>
-.pill {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 0.75rem 1rem;
-  gap: 0.625rem;
-  border-radius: 50rem;
-  width: fit-content;
-  cursor: pointer;
-  font-size: inherit;
-  background-color: var(--pill-background);
-  border: 1px solid var(--pill-border-color);
-  width: var(--pill-width);
-  &[disabled] {
-    color: var(--colors);
-  }
-}
+	.pill {
+	  display: flex;
+	  align-items: center;
+	  justify-content: center;
+	  padding: 0.75rem 1rem;
+	  gap: 0.625rem;
+	  border-radius: 50rem;
+	  width: fit-content;
+	  cursor: pointer;
+	  font-size: inherit;
+	  background-color: var(--pill-background);
+	  border: 1px solid var(--pill-border-color);
+	  width: var(--pill-width);
+	  &[disabled] {
+	    color: var(--colors);
+	  }
+	}
 </style>

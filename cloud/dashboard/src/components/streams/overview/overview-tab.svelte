@@ -1,27 +1,27 @@
 <script lang="ts">
-import IconCopy from "$lib/images/icon-copy.svelte";
-import VideoHeader from "./video-header.svelte";
-let streamId = "8a28e499d6s7987fd9812937fd981...";
-let streamKey = "••••••••••••••••••••••••";
-let isConnected = true;
-let requireSignedUrls = false;
+	import IconCopy from "$lib/images/icon-copy.svelte";
+    import VideoHeader from "./video-header.svelte";
+    let streamId = "8a28e499d6s7987fd9812937fd981...";
+    let streamKey = "••••••••••••••••••••••••";
+    let isConnected = true;
+    let requireSignedUrls = false;
 
-import IconCopyCheckmark from "$lib/images/icon-copy-checkmark.svelte";
-import IconOverviewKey from "$lib/images/icon-overview-key.svelte";
+    import IconCopyCheckmark from "$lib/images/icon-copy-checkmark.svelte";
+    import IconOverviewKey from "$lib/images/icon-overview-key.svelte";
 
-let copied = {
-    streamId: false,
-    streamKey: false,
-};
+    let copied = {
+        streamId: false,
+        streamKey: false,
+    };
 
-function copyToClipboard(text: string, field: keyof typeof copied) {
-    navigator.clipboard.writeText(text);
-    copied[field] = true;
+    function copyToClipboard(text: string, field: keyof typeof copied) {
+        navigator.clipboard.writeText(text);
+        copied[field] = true;
 
-    setTimeout(() => {
-        copied[field] = false;
-    }, 2000);
-}
+        setTimeout(() => {
+            copied[field] = false;
+        }, 2000);
+    }
 </script>
 
 <div class="overview-tab-container">
@@ -126,116 +126,116 @@ function copyToClipboard(text: string, field: keyof typeof copied) {
 </div>
 
 <style>
-.overview-tab-container {
-  display: flex;
-  flex-direction: column;
-  gap: 1.5rem;
-}
+	.overview-tab-container {
+	  display: flex;
+	  flex-direction: column;
+	  gap: 1.5rem;
+	}
 
-h2 {
-  font-size: 1.2rem;
-  margin-bottom: 1rem;
-  color: #333;
-}
+	h2 {
+	  font-size: 1.2rem;
+	  margin-bottom: 1rem;
+	  color: #333;
+	}
 
-.keys-section {
-  margin-bottom: 2rem;
-  background: var(--colors-teal70);
-  border-radius: 0.5rem;
-  padding: 0.25rem;
-  box-shadow:
-    0px 1px 2px 0px #e6dedb,
-    -1px 1px 0px 0px #e6dedb,
-    1px 1px 0px 0px #e6dedb,
-    1px -1px 0px 0px #e6dedb,
-    -1px -1px 0px 0px #e6dedb;
+	.keys-section {
+	  margin-bottom: 2rem;
+	  background: var(--colors-teal70);
+	  border-radius: 0.5rem;
+	  padding: 0.25rem;
+	  box-shadow:
+	    0px 1px 2px 0px #e6dedb,
+	    -1px 1px 0px 0px #e6dedb,
+	    1px 1px 0px 0px #e6dedb,
+	    1px -1px 0px 0px #e6dedb,
+	    -1px -1px 0px 0px #e6dedb;
 
-  .section-header {
-    display: flex;
-    align-items: center;
-    padding: 0.5rem;
-    align-items: center;
+	  .section-header {
+	    display: flex;
+	    align-items: center;
+	    padding: 0.5rem;
+	    align-items: center;
 
-    .section-header-icon {
-      padding: 0.5rem;
-    }
+	    .section-header-icon {
+	      padding: 0.5rem;
+	    }
 
-    h2 {
-      margin: 0;
-      color: var(--colors-brown90);
-      font-size: 1rem;
-      font-style: normal;
-      font-weight: 700;
-      line-height: 1.5rem;
-    }
-  }
+	    h2 {
+	      margin: 0;
+	      color: var(--colors-brown90);
+	      font-size: 1rem;
+	      font-style: normal;
+	      font-weight: 700;
+	      line-height: 1.5rem;
+	    }
+	  }
 
-  /* Where items start */
-  .keys-content {
-    display: flex;
-    flex-direction: column;
-    gap: 0.25rem;
-  }
+	  /* Where items start */
+	  .keys-content {
+	    display: flex;
+	    flex-direction: column;
+	    gap: 0.25rem;
+	  }
 
-  .key-card {
-    display: flex;
-    padding: 1rem;
-    justify-content: space-between;
-    align-items: center;
-    align-self: stretch;
-    background: var(--colors-teal30);
-    border-radius: 0.5rem;
-    padding: 1rem;
-    border: 1px solid var(--colors-teal-10, #fefcfb);
+	  .key-card {
+	    display: flex;
+	    padding: 1rem;
+	    justify-content: space-between;
+	    align-items: center;
+	    align-self: stretch;
+	    background: var(--colors-teal30);
+	    border-radius: 0.5rem;
+	    padding: 1rem;
+	    border: 1px solid var(--colors-teal-10, #fefcfb);
 
-    .key-label {
-      color: var(--colors-brown90);
-      text-overflow: ellipsis;
-      font-size: 1rem;
-      font-style: normal;
-      font-weight: 500;
-      line-height: 1.5rem; /* 150% */
-    }
+	    .key-label {
+	      color: var(--colors-brown90);
+	      text-overflow: ellipsis;
+	      font-size: 1rem;
+	      font-style: normal;
+	      font-weight: 500;
+	      line-height: 1.5rem; /* 150% */
+	    }
 
-    .key-value {
-      display: flex;
-      align-items: center;
-      gap: 0.75rem;
-      background: var(--colors-teal50);
-      border-radius: 0.5rem;
-      padding: 0.5rem 1rem;
+	    .key-value {
+	      display: flex;
+	      align-items: center;
+	      gap: 0.75rem;
+	      background: var(--colors-teal50);
+	      border-radius: 0.5rem;
+	      padding: 0.5rem 1rem;
 
-      span {
-        font-size: 1rem;
-        font-style: normal;
-        font-weight: 500;
-        line-height: 1.5rem; /* 150% */
-      }
+	      span {
+	        font-size: 1rem;
+	        font-style: normal;
+	        font-weight: 500;
+	        line-height: 1.5rem; /* 150% */
+	      }
 
-      .copy-button {
-        background: none;
-        border: none;
-        cursor: pointer;
-        padding: 0.25rem;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        color: #543a3c;
-        transition: color 0.2s;
+	      .copy-button {
+	        background: none;
+	        border: none;
+	        cursor: pointer;
+	        padding: 0.25rem;
+	        display: flex;
+	        align-items: center;
+	        justify-content: center;
+	        color: #543a3c;
+	        transition: color 0.2s;
 
-        &:hover {
-          color: #555;
-        }
+	        &:hover {
+	          color: #555;
+	        }
 
-        &.copied {
-          color: #4caf50;
-        }
-      }
+	        &.copied {
+	          color: #4caf50;
+	        }
+	      }
 
-      .masked-key {
-        font-family: monospace;
-      }
-    }
-  }
-}
+	      .masked-key {
+	        font-family: monospace;
+	      }
+	    }
+	  }
+	}
 </style>

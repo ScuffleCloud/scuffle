@@ -1,26 +1,27 @@
 <script lang="ts">
-import { page } from "$app/state";
-import type { NavItem } from "$components/types";
-import { Collapsible } from "melt/builders";
-import NavItemBase from "./nav-item-base.svelte";
+	import { page } from "$app/state";
+    import type { NavItem } from "$components/types";
+    import { Collapsible } from "melt/builders";
+    import NavItemBase from "./nav-item-base.svelte";
 
-type Props = {
-    navItem: NavItem;
-    isCollapsed?: boolean;
-    shouldOpen?: boolean;
-};
+    type Props = {
+        navItem: NavItem;
+        isCollapsed?: boolean;
+        shouldOpen?: boolean;
+    };
 
-const { navItem, isCollapsed = false, shouldOpen = false }: Props = $props();
+    const { navItem, isCollapsed = false, shouldOpen = false }: Props =
+        $props();
 
-const collapsible = new Collapsible();
+    const collapsible = new Collapsible();
 
-$effect(() => {
-    if (shouldOpen && !isCollapsed) {
-        setTimeout(() => {
-            collapsible.open = true;
-        }, 200);
-    }
-});
+    $effect(() => {
+        if (shouldOpen && !isCollapsed) {
+            setTimeout(() => {
+                collapsible.open = true;
+            }, 200);
+        }
+    });
 </script>
 
 <div class="root" class:collapsed={isCollapsed}>
@@ -49,45 +50,45 @@ $effect(() => {
 </div>
 
 <style>
-.root {
-  width: 100%;
+	.root {
+	  width: 100%;
 
-  .collapsible {
-    display: flex;
-    flex-direction: column;
-    gap: 0.25rem;
+	  .collapsible {
+	    display: flex;
+	    flex-direction: column;
+	    gap: 0.25rem;
 
-    .item {
-      padding: 0.75rem 2rem;
-      border-radius: 0.25rem;
-      text-decoration: none;
-      color: inherit;
-      display: block;
+	    .item {
+	      padding: 0.75rem 2rem;
+	      border-radius: 0.25rem;
+	      text-decoration: none;
+	      color: inherit;
+	      display: block;
 
-      span {
-        font-size: 1rem;
-      }
+	      span {
+	        font-size: 1rem;
+	      }
 
-      &:hover {
-        background-color: rgba(0, 0, 0, 0.05);
-      }
+	      &:hover {
+	        background-color: rgba(0, 0, 0, 0.05);
+	      }
 
-      &.active {
-        background-color: #fed48b4d;
-        position: relative;
+	      &.active {
+	        background-color: #fed48b4d;
+	        position: relative;
 
-        &::before {
-          content: "";
-          position: absolute;
-          left: 1rem;
-          top: 20%;
-          bottom: 20%;
-          width: 3px;
-          background-color: #f9a825;
-          border-radius: 1.5px;
-        }
-      }
-    }
-  }
-}
+	        &::before {
+	          content: "";
+	          position: absolute;
+	          left: 1rem;
+	          top: 20%;
+	          bottom: 20%;
+	          width: 3px;
+	          background-color: #f9a825;
+	          border-radius: 1.5px;
+	        }
+	      }
+	    }
+	  }
+	}
 </style>

@@ -1,54 +1,54 @@
 <script lang="ts">
-import { afterNavigate } from "$app/navigation";
-import { NAV_ITEMS } from "$components/left-nav/consts.svelte";
-import { useUser } from "$lib/useUser";
-import NavItemBase from "./nav-item-base.svelte";
-import NavItemDropdown from "./nav-item-dropdown.svelte";
+	import { afterNavigate } from "$app/navigation";
+    import { NAV_ITEMS } from "$components/left-nav/consts.svelte";
+    import { useUser } from "$lib/useUser";
+    import NavItemBase from "./nav-item-base.svelte";
+    import NavItemDropdown from "./nav-item-dropdown.svelte";
 
-type Props = {
-    isCollapsed?: boolean;
-    handleDropdownInteraction?: (
-        shouldExpand: boolean,
-        itemPath?: string,
-    ) => void;
-    isTemporarilyExpanded?: boolean;
-};
+    type Props = {
+        isCollapsed?: boolean;
+        handleDropdownInteraction?: (
+            shouldExpand: boolean,
+            itemPath?: string,
+        ) => void;
+        isTemporarilyExpanded?: boolean;
+    };
 
-const {
-    isCollapsed = false,
-    handleDropdownInteraction,
-    isTemporarilyExpanded = false,
-}: Props = $props();
+    const {
+        isCollapsed = false,
+        handleDropdownInteraction,
+        isTemporarilyExpanded = false,
+    }: Props = $props();
 
-const { currentOrganization, currentProject } = useUser();
+    const { currentOrganization, currentProject } = useUser();
 
-const basePath = $derived(
-    `/organizations/${$currentOrganization?.slug}/projects/${$currentProject?.slug}`,
-);
+    const basePath = $derived(
+        `/organizations/${$currentOrganization?.slug}/projects/${$currentProject?.slug}`,
+    );
 
-const navItemsWithPaths = $derived(
-    NAV_ITEMS.map((item) => ({
-        ...item,
-        path: `${basePath}${item.path}`,
-    })),
-);
+    const navItemsWithPaths = $derived(
+        NAV_ITEMS.map((item) => ({
+            ...item,
+            path: `${basePath}${item.path}`,
+        })),
+    );
 
-let shouldOpenDropdown = $state<string | null>(null);
+    let shouldOpenDropdown = $state<string | null>(null);
 
-const handleDropdownClick = (event: MouseEvent, item: any) => {
-    if (isCollapsed && item.children && handleDropdownInteraction) {
-        event.preventDefault();
-        shouldOpenDropdown = item.path;
-        handleDropdownInteraction(true, item.path);
-    }
-};
+    const handleDropdownClick = (event: MouseEvent, item: any) => {
+        if (isCollapsed && item.children && handleDropdownInteraction) {
+            event.preventDefault();
+            shouldOpenDropdown = item.path;
+            handleDropdownInteraction(true, item.path);
+        }
+    };
 
-afterNavigate(() => {
-    if (handleDropdownInteraction) {
-        handleDropdownInteraction(false);
-    }
-    shouldOpenDropdown = null;
-});
+    afterNavigate(() => {
+        if (handleDropdownInteraction) {
+            handleDropdownInteraction(false);
+        }
+        shouldOpenDropdown = null;
+    });
 </script>
 
 <ul class="nav-links" class:collapsed={isCollapsed}>
@@ -72,22 +72,22 @@ afterNavigate(() => {
 </ul>
 
 <style>
-.nav-links {
-  list-style: none;
-  margin: 0rem 0rem;
-  padding: 0rem;
-  border-radius: 0rem;
-  display: flex;
-  flex-direction: column;
-  gap: 0.25rem;
+	.nav-links {
+	  list-style: none;
+	  margin: 0rem 0rem;
+	  padding: 0rem;
+	  border-radius: 0rem;
+	  display: flex;
+	  flex-direction: column;
+	  gap: 0.25rem;
 
-  a {
-    text-decoration: none;
-  }
+	  a {
+	    text-decoration: none;
+	  }
 
-  &.collapsed a {
-    display: flex;
-    justify-content: center;
-  }
-}
+	  &.collapsed a {
+	    display: flex;
+	    justify-content: center;
+	  }
+	}
 </style>

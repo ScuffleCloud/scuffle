@@ -1,92 +1,92 @@
 <script lang="ts">
-import Search from "$lib/images/search.svelte";
-import { onMount } from "svelte";
-import { fade } from "svelte/transition";
-// TODO: Configure routing from root
-import { page } from "$app/state";
-import IconConfigureTab from "$lib/images/icon-configure-tab.svelte";
-import IconSwitch from "$lib/images/icon-switch.svelte";
-import { useUser } from "$lib/useUser";
-import NavSwitcher from "./nav-switcher.svelte";
+	import Search from "$lib/images/search.svelte";
+    import { onMount } from "svelte";
+    import { fade } from "svelte/transition";
+    // TODO: Configure routing from root
+    import { page } from "$app/state";
+    import IconConfigureTab from "$lib/images/icon-configure-tab.svelte";
+    import IconSwitch from "$lib/images/icon-switch.svelte";
+    import { useUser } from "$lib/useUser";
+    import NavSwitcher from "./nav-switcher.svelte";
 
-let showSearchModal = $state(false);
-let searchInput = $state<HTMLInputElement | null>(null);
+    let showSearchModal = $state(false);
+    let searchInput = $state<HTMLInputElement | null>(null);
 
-const { userQuery, currentOrganization, currentProject } = useUser();
+    const { userQuery, currentOrganization, currentProject } = useUser();
 
-$effect(() => {
-    if ($userQuery.data?.organizations) {
-        console.log("user", $userQuery.data);
-        console.log("currentOrganization", currentOrganization);
+    $effect(() => {
+        if ($userQuery.data?.organizations) {
+            console.log("user", $userQuery.data);
+            console.log("currentOrganization", currentOrganization);
+        }
+    });
+
+    function handleKeydown(event: KeyboardEvent) {
+        if ((event.metaKey || event.ctrlKey) && event.key === "k") {
+            event.preventDefault();
+            showSearchModal = true;
+        }
+
+        if (event.key === "Escape" && showSearchModal) {
+            showSearchModal = false;
+        }
     }
-});
 
-function handleKeydown(event: KeyboardEvent) {
-    if ((event.metaKey || event.ctrlKey) && event.key === "k") {
-        event.preventDefault();
-        showSearchModal = true;
-    }
+    $effect(() => {
+        if (showSearchModal && searchInput) {
+            setTimeout(() => {
+                if (searchInput) searchInput.focus();
+            }, 50);
+        }
+    });
 
-    if (event.key === "Escape" && showSearchModal) {
+    // Add and remove event listener
+    onMount(() => {
+        window.addEventListener("keydown", handleKeydown);
+        return () => {
+            window.removeEventListener("keydown", handleKeydown);
+        };
+    });
+
+    function closeModal() {
         showSearchModal = false;
     }
-}
 
-$effect(() => {
-    if (showSearchModal && searchInput) {
-        setTimeout(() => {
-            if (searchInput) searchInput.focus();
-        }, 50);
-    }
-});
+    // This breadcrumb logic is hacky I'm not sure how extensive this needs to be yet.
+    // There's very few breadcrumbs to show other than always showing organization and project.
+    let showBreadcrumbs = true;
+    let breadcrumbs = $derived(
+        page.url.pathname
+            .split("/")
+            .filter(Boolean)
+            .map((segment, index, segments) => {
+                const path = "/" + segments.slice(0, index + 1).join("/");
+                const customTitle = "test";
+                return {
+                    label: customTitle
+                        || segment.replace(/[-_]/g, " ").replace(
+                            /\b\w/g,
+                            (c) => c.toUpperCase(),
+                        ),
+                    href: path,
+                };
+            }),
+    );
 
-// Add and remove event listener
-onMount(() => {
-    window.addEventListener("keydown", handleKeydown);
-    return () => {
-        window.removeEventListener("keydown", handleKeydown);
-    };
-});
+    const organizations = $derived(
+        $userQuery.data?.organizations.map((org) => ({
+            id: org.id,
+            name: org.name,
+            imageUrl: org.image_url,
+        })),
+    );
 
-function closeModal() {
-    showSearchModal = false;
-}
-
-// This breadcrumb logic is hacky I'm not sure how extensive this needs to be yet.
-// There's very few breadcrumbs to show other than always showing organization and project.
-let showBreadcrumbs = true;
-let breadcrumbs = $derived(
-    page.url.pathname
-        .split("/")
-        .filter(Boolean)
-        .map((segment, index, segments) => {
-            const path = "/" + segments.slice(0, index + 1).join("/");
-            const customTitle = "test";
-            return {
-                label: customTitle
-                    || segment.replace(/[-_]/g, " ").replace(
-                        /\b\w/g,
-                        (c) => c.toUpperCase(),
-                    ),
-                href: path,
-            };
-        }),
-);
-
-const organizations = $derived(
-    $userQuery.data?.organizations.map((org) => ({
-        id: org.id,
-        name: org.name,
-        imageUrl: org.image_url,
-    })),
-);
-
-const projects = $derived(
-    $currentOrganization?.projects.map((project) => ({
-        id: project.id,
-        name: project.name,
-    })) ?? [],
-);
+    const projects = $derived(
+        $currentOrganization?.projects.map((project) => ({
+            id: project.id,
+            name: project.name,
+        })) ?? [],
+    );
 </script>
 
 <header class="top-nav">
@@ -173,163 +173,163 @@ const projects = $derived(
 {/if}
 
 <style>
-.top-nav {
-  display: grid;
-  grid-template-columns: auto 1fr auto;
-  align-items: center;
-  padding: 1rem 2rem;
+	.top-nav {
+	  display: grid;
+	  grid-template-columns: auto 1fr auto;
+	  align-items: center;
+	  padding: 1rem 2rem;
 
-  .left-nav {
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
+	  .left-nav {
+	    display: flex;
+	    align-items: center;
+	    gap: 0.5rem;
 
-    .minimize-left-nav-button {
-      background: none;
-      border: none;
-      cursor: pointer;
-      padding: 0.5rem;
-      border-radius: 6px;
-      display: flex;
-    }
+	    .minimize-left-nav-button {
+	      background: none;
+	      border: none;
+	      cursor: pointer;
+	      padding: 0.5rem;
+	      border-radius: 6px;
+	      display: flex;
+	    }
 
-    .divider {
-      width: 0.0625rem;
-      height: 1.25rem;
-      background: #c7c1bf;
-    }
+	    .divider {
+	      width: 0.0625rem;
+	      height: 1.25rem;
+	      background: #c7c1bf;
+	    }
 
-    .breadcrumb {
-      font-size: 1.1rem;
-      font-weight: 500;
-      color: var(--colors-dark100);
-      display: flex;
-      align-items: center;
-      padding: 0rem 0.125rem;
-      gap: 0.25rem;
+	    .breadcrumb {
+	      font-size: 1.1rem;
+	      font-weight: 500;
+	      color: var(--colors-dark100);
+	      display: flex;
+	      align-items: center;
+	      padding: 0rem 0.125rem;
+	      gap: 0.25rem;
 
-      .slash-divider {
-        font-size: 0.875rem;
-        font-style: normal;
-        font-weight: 600;
-        line-height: normal;
-      }
+	      .slash-divider {
+	        font-size: 0.875rem;
+	        font-style: normal;
+	        font-weight: 600;
+	        line-height: normal;
+	      }
 
-      .breadcrumb-item {
-        display: flex;
-        align-items: center;
-        padding: 0.38rem;
-      }
-    }
-  }
+	      .breadcrumb-item {
+	        display: flex;
+	        align-items: center;
+	        padding: 0.38rem;
+	      }
+	    }
+	  }
 
-  .actions {
-    display: flex;
-    align-items: center;
-    margin-left: auto;
+	  .actions {
+	    display: flex;
+	    align-items: center;
+	    margin-left: auto;
 
-    .search-button {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      background: none;
-      border: none;
-      cursor: pointer;
-      padding: 0.5rem 0.75rem;
-      border-radius: 6px;
-      transition: background-color 0.2s;
+	    .search-button {
+	      display: flex;
+	      align-items: center;
+	      gap: 8px;
+	      background: none;
+	      border: none;
+	      cursor: pointer;
+	      padding: 0.5rem 0.75rem;
+	      border-radius: 6px;
+	      transition: background-color 0.2s;
 
-      .keyboard-shortcut {
-        display: flex;
-        align-items: center;
-        gap: 0.125rem;
-        justify-content: center;
-        opacity: 0.7;
-        background-color: rgba(0, 0, 0, 0.05);
-        padding: 2px 6px;
-        border-radius: 0.25rem;
+	      .keyboard-shortcut {
+	        display: flex;
+	        align-items: center;
+	        gap: 0.125rem;
+	        justify-content: center;
+	        opacity: 0.7;
+	        background-color: rgba(0, 0, 0, 0.05);
+	        padding: 2px 6px;
+	        border-radius: 0.25rem;
 
-        .command {
-          font-size: 0.625rem;
-        }
+	        .command {
+	          font-size: 0.625rem;
+	        }
 
-        .key {
-          font-size: 0.75rem;
-        }
-      }
+	        .key {
+	          font-size: 0.75rem;
+	        }
+	      }
 
-      &:hover {
-        background-color: rgba(0, 0, 0, 0.05);
-      }
-    }
-  }
-}
+	      &:hover {
+	        background-color: rgba(0, 0, 0, 0.05);
+	      }
+	    }
+	  }
+	}
 
-.modal-backdrop {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background-color: rgba(0, 0, 0, 0.5);
-  display: flex;
-  justify-content: center;
-  align-items: flex-start;
-  padding-top: 10vh;
-  z-index: 1000;
+	.modal-backdrop {
+	  position: fixed;
+	  top: 0;
+	  left: 0;
+	  width: 100%;
+	  height: 100%;
+	  background-color: rgba(0, 0, 0, 0.5);
+	  display: flex;
+	  justify-content: center;
+	  align-items: flex-start;
+	  padding-top: 10vh;
+	  z-index: 1000;
 
-  .search-modal {
-    width: 600px;
-    max-width: 90%;
-    background-color: white;
-    border-radius: 8px;
-    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
-    overflow: hidden;
+	  .search-modal {
+	    width: 600px;
+	    max-width: 90%;
+	    background-color: white;
+	    border-radius: 8px;
+	    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+	    overflow: hidden;
 
-    .search-header {
-      display: flex;
-      align-items: center;
-      padding: 1rem;
-      border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+	    .search-header {
+	      display: flex;
+	      align-items: center;
+	      padding: 1rem;
+	      border-bottom: 1px solid rgba(0, 0, 0, 0.1);
 
-      :global(svg) {
-        margin-right: 0.75rem;
-      }
+	      :global(svg) {
+	        margin-right: 0.75rem;
+	      }
 
-      .search-input {
-        flex: 1;
-        border: none;
-        font-size: 1rem;
-        outline: none;
-        background: transparent;
-      }
+	      .search-input {
+	        flex: 1;
+	        border: none;
+	        font-size: 1rem;
+	        outline: none;
+	        background: transparent;
+	      }
 
-      .close-button {
-        background: none;
-        border: none;
-        cursor: pointer;
-        opacity: 0.6;
-        padding: 4px 8px;
-        border-radius: 4px;
-        font-size: 0.75rem;
-        background-color: rgba(0, 0, 0, 0.05);
+	      .close-button {
+	        background: none;
+	        border: none;
+	        cursor: pointer;
+	        opacity: 0.6;
+	        padding: 4px 8px;
+	        border-radius: 4px;
+	        font-size: 0.75rem;
+	        background-color: rgba(0, 0, 0, 0.05);
 
-        &:hover {
-          opacity: 1;
-        }
-      }
-    }
+	        &:hover {
+	          opacity: 1;
+	        }
+	      }
+	    }
 
-    .search-results {
-      max-height: 400px;
-      overflow-y: auto;
+	    .search-results {
+	      max-height: 400px;
+	      overflow-y: auto;
 
-      .empty-state {
-        padding: 2rem;
-        text-align: center;
-        opacity: 0.6;
-      }
-    }
-  }
-}
+	      .empty-state {
+	        padding: 2rem;
+	        text-align: center;
+	        opacity: 0.6;
+	      }
+	    }
+	  }
+	}
 </style>

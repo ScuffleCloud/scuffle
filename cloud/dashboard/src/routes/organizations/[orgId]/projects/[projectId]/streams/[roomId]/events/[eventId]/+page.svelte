@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { page } from "$app/state";
+    import { page } from "$app/state";
     import EventsTab from "$components/streams/events/events-tab.svelte";
     import type {
         ChartData,
@@ -29,13 +29,13 @@
 </script>
 
 {#await Promise.all([events, eventDetails])}
-	<div>Loading...</div>
+    <div>Loading...</div>
 {:then [resolvedEvents, resolvedEventDetails]}
-	<EventsTab
-		events={resolvedEvents || []}
-		eventDetails={resolvedEventDetails}
-		{currentEventId}
-	/>
+    <EventsTab
+        events={resolvedEvents || []}
+        eventDetails={resolvedEventDetails}
+        {currentEventId}
+    />
 {:catch error}
-	<div>Error loading data: {error.message}</div>
+    <div>Error loading data: {error.message}</div>
 {/await}

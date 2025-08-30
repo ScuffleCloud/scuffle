@@ -7,7 +7,7 @@
  -->
 
 <script lang="ts">
-	import IconPlayBig from "$lib/images/icon-play-big.svelte";
+    import IconPlayBig from "$lib/images/icon-play-big.svelte";
     import type { VideoStream } from "../types";
     import EventsChart from "./chart.svelte";
     import EventsLegend from "./events-legend.svelte";
@@ -63,95 +63,95 @@
 </script>
 
 <div class="events-tab-container">
-	<div class="card">
-		<div class="header">
-			<!-- TODO: Can use design system select here and migrate things when needed or at least reuse css classes -->
-			<StreamSelect
-				streams={events}
-				bind:value={currentEvent}
-				onValueChange={handleStreamChange}
-			/>
-			<button class="resume-button">
-				<div class="resume-button-text">Resume Live Updates</div>
-				<IconPlayBig />
-			</button>
-		</div>
+    <div class="card">
+        <div class="header">
+            <!-- TODO: Can use design system select here and migrate things when needed or at least reuse css classes -->
+            <StreamSelect
+                streams={events}
+                bind:value={currentEvent}
+                onValueChange={handleStreamChange}
+            />
+            <button class="resume-button">
+                <div class="resume-button-text">Resume Live Updates</div>
+                <IconPlayBig />
+            </button>
+        </div>
 
-		<!-- For the data-zoom slider + chart -->
-		<div class="events-chart-container">
-			{#if eventDetails}
-				<EventsChart {eventDetails} />
-			{/if}
-		</div>
-		<div class="events-legend-container">
-			<EventsLegend />
-		</div>
-	</div>
+        <!-- For the data-zoom slider + chart -->
+        <div class="events-chart-container">
+            {#if eventDetails}
+                <EventsChart {eventDetails} />
+            {/if}
+        </div>
+        <div class="events-legend-container">
+            <EventsLegend />
+        </div>
+    </div>
 
-	<EventsList events={eventContent} />
+    <EventsList events={eventContent} />
 </div>
 
 <style>
-	.events-tab-container {
-	  display: flex;
-	  flex-direction: column;
-	  gap: 0.25rem;
-	}
+    .events-tab-container {
+      display: flex;
+      flex-direction: column;
+      gap: 0.25rem;
+    }
 
-	.card {
-	  background: var(--colors-gray20);
-	  border-radius: 8px;
-	  padding: 1rem;
-	  display: flex;
-	  flex-direction: column;
-	  gap: 1rem;
-	}
+    .card {
+      background: var(--colors-gray20);
+      border-radius: 8px;
+      padding: 1rem;
+      display: flex;
+      flex-direction: column;
+      gap: 1rem;
+    }
 
-	.header {
-	  display: flex;
-	  justify-content: space-between;
-	  align-items: center;
-	  gap: 1rem;
-	}
+    .header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 1rem;
+    }
 
-	.resume-button {
-	  padding: 0.5rem 1rem;
-	  background: var(--colors-gray50);
-	  border: none;
-	  border-radius: 0.5rem;
-	  font-size: 0.875rem;
-	  cursor: pointer;
-	  display: flex;
-	  align-items: center;
-	  gap: 0.625rem;
-	  transition: background-color 0.2s;
-	  flex-shrink: 0;
-	}
+    .resume-button {
+      padding: 0.5rem 1rem;
+      background: var(--colors-gray50);
+      border: none;
+      border-radius: 0.5rem;
+      font-size: 0.875rem;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 0.625rem;
+      transition: background-color 0.2s;
+      flex-shrink: 0;
+    }
 
-	.resume-button-text {
-	  color: var(--colors-brown90);
-	  font-size: 1rem;
-	  font-weight: 700;
-	  line-height: 1.5rem;
-	}
+    .resume-button-text {
+      color: var(--colors-brown90);
+      font-size: 1rem;
+      font-weight: 700;
+      line-height: 1.5rem;
+    }
 
-	.resume-button:hover {
-	  background-color: #e2e8f0;
-	}
+    .resume-button:hover {
+      background-color: #e2e8f0;
+    }
 
-	.events-chart-container {
-	  height: 250px;
-	  border-radius: 4px;
-	  width: 100%;
-	  padding: 0.25rem;
-	}
+    .events-chart-container {
+      height: 250px;
+      border-radius: 4px;
+      width: 100%;
+      padding: 0.25rem;
+    }
 
-	.events-legend-container {
-	  padding: 1.5rem 1rem 1rem 1rem;
-	  border-radius: 0rem 0rem 0.5rem 0.5rem;
-	  background: var(--colors-gray50);
-	  display: flex;
-	  flex-direction: column;
-	  gap: 0.75rem;
-	}
+    .events-legend-container {
+      padding: 1.5rem 1rem 1rem 1rem;
+      border-radius: 0rem 0rem 0.5rem 0.5rem;
+      background: var(--colors-gray50);
+      display: flex;
+      flex-direction: column;
+      gap: 0.75rem;
+    }
 </style>

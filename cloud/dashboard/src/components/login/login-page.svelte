@@ -1,5 +1,5 @@
 <script lang="ts">
-	import {
+    import {
         DEFAULT_LOGIN_MODE,
         type LoginMode,
     } from "$components/streams/types";
@@ -133,133 +133,136 @@
 </script>
 
 <div class="login-card">
-	{#if loginMode === "magic-link"}
-		<MagicLinkForm onSubmit={handleMagicLinkSubmit} {isLoading} />
-		<SigninOptions onModeChange={(mode) => (loginMode = mode)} {isLoading} />
-	{:else if loginMode === "password"}
-		<PasswordForm
-			onSubmit={handlePasswordSubmit}
-			onBack={handleBack}
-			{isLoading}
-		/>
-	{:else if loginMode === "passkey"}
-		<PasskeyForm
-			onSubmit={handlePasskeySubmit}
-			onBack={handleBack}
-			{isLoading}
-		/>
-	{:else if loginMode === "magic-link-sent"}
-		<MagicLinkSent email={userEmail} />
-	{:else if loginMode === "forgot-password"}
-		<ForgotPasswordForm
-			onSubmit={handleForgotPasswordSubmit}
-			onBack={handleBack}
-			{isLoading}
-		/>
-	{:else if loginMode === "password-reset-sent"}
-		<PasswordResetSent email={userEmail} onBack={handleBack} />
-	{/if}
+    {#if loginMode === "magic-link"}
+        <MagicLinkForm onSubmit={handleMagicLinkSubmit} {isLoading} />
+        <SigninOptions
+            onModeChange={(mode) => (loginMode = mode)}
+            {isLoading}
+        />
+    {:else if loginMode === "password"}
+        <PasswordForm
+            onSubmit={handlePasswordSubmit}
+            onBack={handleBack}
+            {isLoading}
+        />
+    {:else if loginMode === "passkey"}
+        <PasskeyForm
+            onSubmit={handlePasskeySubmit}
+            onBack={handleBack}
+            {isLoading}
+        />
+    {:else if loginMode === "magic-link-sent"}
+        <MagicLinkSent email={userEmail} />
+    {:else if loginMode === "forgot-password"}
+        <ForgotPasswordForm
+            onSubmit={handleForgotPasswordSubmit}
+            onBack={handleBack}
+            {isLoading}
+        />
+    {:else if loginMode === "password-reset-sent"}
+        <PasswordResetSent email={userEmail} onBack={handleBack} />
+    {/if}
 </div>
 
 <div class="footer-links">
-	{#if loginMode === "magic-link"}
-		<button
-			type="button"
-			onclick={() => (loginMode = "password")}
-			class="link"
-			disabled={isLoading}
-		>
-			Login with password
-		</button>
-		<button
-			type="button"
-			onclick={handleContactSupport}
-			class="link"
-			disabled={isLoading}
-		>
-			Contact Support <IconArrowDialogLink />
-		</button>
-	{:else if loginMode === "password"}
-		<button
-			type="button"
-			onclick={() => (loginMode = "forgot-password")}
-			class="link"
-			disabled={isLoading}
-		>
-			Forgot password?
-		</button>
-		<button
-			type="button"
-			onclick={handleContactSupport}
-			class="link"
-			disabled={isLoading}
-		>
-			Contact Support <IconArrowDialogLink />
-		</button>
-	{:else if loginMode === "passkey"}
-		<button
-			type="button"
-			onclick={handleContactSupport}
-			class="link"
-			disabled={isLoading}
-		>
-			Contact Support <IconArrowDialogLink />
-		</button>
-	{/if}
+    {#if loginMode === "magic-link"}
+        <button
+            type="button"
+            onclick={() => (loginMode = "password")}
+            class="link"
+            disabled={isLoading}
+        >
+            Login with password
+        </button>
+        <button
+            type="button"
+            onclick={handleContactSupport}
+            class="link"
+            disabled={isLoading}
+        >
+            Contact Support <IconArrowDialogLink />
+        </button>
+    {:else if loginMode === "password"}
+        <button
+            type="button"
+            onclick={() => (loginMode = "forgot-password")}
+            class="link"
+            disabled={isLoading}
+        >
+            Forgot password?
+        </button>
+        <button
+            type="button"
+            onclick={handleContactSupport}
+            class="link"
+            disabled={isLoading}
+        >
+            Contact Support <IconArrowDialogLink />
+        </button>
+    {:else if loginMode === "passkey"}
+        <button
+            type="button"
+            onclick={handleContactSupport}
+            class="link"
+            disabled={isLoading}
+        >
+            Contact Support <IconArrowDialogLink />
+        </button>
+    {/if}
 </div>
 <TurnstileOverlay bind:this={turnstileOverlayComponent} />
 
 <style>
-	.login-card {
-	  border-radius: 1.25rem;
-	  padding: 2.75rem;
-	  width: 100%;
-	  max-width: 400px;
-	  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
-	  border: 1px solid var(--colors-gray50);
-	  background-color: var(--colors-gray20);
-	  text-align: center;
-	}
+    .login-card {
+      border-radius: 1.25rem;
+      padding: 2.75rem;
+      width: 100%;
+      max-width: 400px;
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+      border: 1px solid var(--colors-gray50);
+      background-color: var(--colors-gray20);
+      text-align: center;
+    }
 
-	.footer-links {
-	  display: flex;
-	  justify-content: space-between;
-	  margin: 2rem 0 1.25rem 0;
-	  gap: 1rem;
-	  align-items: center;
-	}
+    .footer-links {
+      display: flex;
+      justify-content: space-between;
+      margin: 2rem 0 1.25rem 0;
+      gap: 1rem;
+      align-items: center;
+    }
 
-	.link {
-	  background: none;
-	  border: none;
-	  color: #6b7280;
-	  cursor: pointer;
-	  text-decoration: none;
-	  display: flex;
-	  align-items: center;
-	  gap: 0.25rem;
-	  font-size: 0.875rem;
-	}
+    .link {
+      background: none;
+      border: none;
+      color: #6b7280;
+      cursor: pointer;
+      text-decoration: none;
+      display: flex;
+      align-items: center;
+      gap: 0.25rem;
+      font-size: 0.875rem;
+    }
 
-	.link:hover:not(:disabled) {
-	  color: #374151;
-	  text-decoration: underline;
-	}
+    .link:hover:not(:disabled) {
+      color: #374151;
+      text-decoration: underline;
+    }
 
-	.link:disabled {
-	  color: #9ca3af;
-	  cursor: not-allowed;
-	}
+    .link:disabled {
+      color: #9ca3af;
+      cursor: not-allowed;
+    }
 
-	@media (max-width: 480px) {
-	  .login-card {
-	    padding: 1.5rem;
-	    margin: 0 1rem;
-	  }
+    @media (max-width: 480px) {
+      .login-card {
+        padding: 1.5rem;
+        margin: 0 1rem;
+      }
 
-	  .footer-links {
-	    flex-direction: column;
-	    gap: 0.5rem;
-	  }
-	}
+      .footer-links {
+        flex-direction: column;
+        gap: 0.5rem;
+      }
+    }
 </style>

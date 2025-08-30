@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { Chart, type ECMouseEvent } from "svelte-echarts";
+    import { Chart, type ECMouseEvent } from "svelte-echarts";
 
     import { type EChartsOption } from "echarts";
     import {
@@ -212,7 +212,8 @@
         ],
         tooltip: {
             formatter: function(params: any) {
-                return params.marker + params.name + ": " + params.value[3]
+                return params.marker + params.name + ": "
+                    + params.value[3]
                     + " ms";
             },
         },
@@ -267,7 +268,9 @@
             },
             {
                 type: "line",
-                data: lineData.map((item) => [item.timestamp, item.value]),
+                data: lineData.map((
+                    item,
+                ) => [item.timestamp, item.value]),
                 xAxisIndex: 1,
                 yAxisIndex: 1,
                 showSymbol: false,
@@ -286,37 +289,37 @@
 </script>
 
 <div class="chart-container">
-	<div class="grid-overlay top"></div>
-	<div class="grid-overlay bottom"></div>
-	<Chart {init} {options} onclick={handleClick} />
+    <div class="grid-overlay top"></div>
+    <div class="grid-overlay bottom"></div>
+    <Chart {init} {options} onclick={handleClick} />
 </div>
 
 <style>
-	.chart-container {
-	  position: relative;
-	  width: 120%;
-	  height: 100%;
-	  margin-left: -10%;
-	  overflow: visible;
-	}
+    .chart-container {
+      position: relative;
+      width: 120%;
+      height: 100%;
+      margin-left: -10%;
+      overflow: visible;
+    }
 
-	.grid-overlay {
-	  position: absolute;
-	  left: 8%;
-	  right: 8%;
-	  height: 25%;
-	  border-radius: 0.25rem;
-	  pointer-events: none;
-	  z-index: 1;
-	  background-color: rgba(230, 222, 219, 0.6);
-	  mix-blend-mode: multiply;
-	}
+    .grid-overlay {
+      position: absolute;
+      left: 8%;
+      right: 8%;
+      height: 25%;
+      border-radius: 0.25rem;
+      pointer-events: none;
+      z-index: 1;
+      background-color: rgba(230, 222, 219, 0.6);
+      mix-blend-mode: multiply;
+    }
 
-	.grid-overlay.top {
-	  top: 28%;
-	}
+    .grid-overlay.top {
+      top: 28%;
+    }
 
-	.grid-overlay.bottom {
-	  top: 55%;
-	}
+    .grid-overlay.bottom {
+      top: 55%;
+    }
 </style>

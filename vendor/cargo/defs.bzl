@@ -1029,7 +1029,7 @@ _NORMAL_DEPENDENCIES = {
             },
         },
     },
-    "misc/utils/protobuf": {
+    "misc/utils/protobuf/file_concat": {
         _REQUIRED_FEATURE: {
             _COMMON_CONDITION: {
                 "anyhow": Label("@cargo_vendor//:anyhow-1.0.99"),
@@ -1541,7 +1541,7 @@ _NORMAL_ALIASES = {
             },
         },
     },
-    "misc/utils/protobuf": {
+    "misc/utils/protobuf/file_concat": {
         _REQUIRED_FEATURE: {
             _COMMON_CONDITION: {
             },
@@ -1873,7 +1873,7 @@ _NORMAL_DEV_DEPENDENCIES = {
     },
     "dev-tools/xtask": {
     },
-    "misc/utils/protobuf": {
+    "misc/utils/protobuf/file_concat": {
     },
     "misc/utils/rust/analyzer/check": {
     },
@@ -2076,7 +2076,7 @@ _NORMAL_DEV_ALIASES = {
     },
     "dev-tools/xtask": {
     },
-    "misc/utils/protobuf": {
+    "misc/utils/protobuf/file_concat": {
     },
     "misc/utils/rust/analyzer/check": {
     },
@@ -2398,7 +2398,7 @@ _PROC_MACRO_DEPENDENCIES = {
             },
         },
     },
-    "misc/utils/protobuf": {
+    "misc/utils/protobuf/file_concat": {
     },
     "misc/utils/rust/analyzer/check": {
         _REQUIRED_FEATURE: {
@@ -2564,7 +2564,7 @@ _PROC_MACRO_ALIASES = {
     },
     "dev-tools/xtask": {
     },
-    "misc/utils/protobuf": {
+    "misc/utils/protobuf/file_concat": {
     },
     "misc/utils/rust/analyzer/check": {
     },
@@ -2690,7 +2690,7 @@ _PROC_MACRO_DEV_DEPENDENCIES = {
     },
     "dev-tools/xtask": {
     },
-    "misc/utils/protobuf": {
+    "misc/utils/protobuf/file_concat": {
     },
     "misc/utils/rust/analyzer/check": {
     },
@@ -2893,7 +2893,7 @@ _PROC_MACRO_DEV_ALIASES = {
     },
     "dev-tools/xtask": {
     },
-    "misc/utils/protobuf": {
+    "misc/utils/protobuf/file_concat": {
     },
     "misc/utils/rust/analyzer/check": {
     },
@@ -3019,7 +3019,7 @@ _BUILD_DEPENDENCIES = {
     },
     "dev-tools/xtask": {
     },
-    "misc/utils/protobuf": {
+    "misc/utils/protobuf/file_concat": {
     },
     "misc/utils/rust/analyzer/check": {
     },
@@ -3140,7 +3140,7 @@ _BUILD_ALIASES = {
     },
     "dev-tools/xtask": {
     },
-    "misc/utils/protobuf": {
+    "misc/utils/protobuf/file_concat": {
     },
     "misc/utils/rust/analyzer/check": {
     },
@@ -3249,7 +3249,7 @@ _BUILD_PROC_MACRO_DEPENDENCIES = {
     },
     "dev-tools/xtask": {
     },
-    "misc/utils/protobuf": {
+    "misc/utils/protobuf/file_concat": {
     },
     "misc/utils/rust/analyzer/check": {
     },
@@ -3358,7 +3358,7 @@ _BUILD_PROC_MACRO_ALIASES = {
     },
     "dev-tools/xtask": {
     },
-    "misc/utils/protobuf": {
+    "misc/utils/protobuf/file_concat": {
     },
     "misc/utils/rust/analyzer/check": {
     },
@@ -3694,7 +3694,7 @@ _FEATURE_FLAGS = {
     },
     "dev-tools/xtask": {
     },
-    "misc/utils/protobuf": {
+    "misc/utils/protobuf/file_concat": {
     },
     "misc/utils/rust/analyzer/check": {
     },
@@ -3855,7 +3855,7 @@ _RESOLVED_FEATURE_FLAGS = {
     },
     "dev-tools/xtask": {
     },
-    "misc/utils/protobuf": {
+    "misc/utils/protobuf/file_concat": {
     },
     "misc/utils/rust/analyzer/check": {
     },
@@ -3927,7 +3927,7 @@ _VERSIONS = {
     "crates/tinc/pb-prost": "0.2.0",
     "crates/transmuxer": "0.2.2",
     "dev-tools/xtask": "0.0.0",
-    "misc/utils/protobuf": "0.0.0",
+    "misc/utils/protobuf/file_concat": "0.0.0",
     "misc/utils/rust/analyzer/check": "0.0.0",
     "misc/utils/rust/analyzer/discover": "0.0.0",
     "misc/utils/rust/clippy": "0.0.0",

@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { page } from "$app/state";
+    import { page } from "$app/state";
     import StreamDetailsHeader from "$components/streams/stream-detail-header.svelte";
     import type { VideoStream } from "$components/streams/types";
     import Tabs from "$components/tabs.svelte";
@@ -33,40 +33,40 @@
 </script>
 
 <div class="page-bg">
-	{#await pageData.stream}
-		<div class="loading">Loading...</div>
-	{:then stream}
-		<StreamDetailsHeader {stream} />
-		<Tabs {tabs} {baseUrl} defaultTab="overview">
-			{@render children({ data: stream })}
-		</Tabs>
-	{:catch error}
-		<div class="error">Error: {error.message}</div>
-	{/await}
+    {#await pageData.stream}
+        <div class="loading">Loading...</div>
+    {:then stream}
+        <StreamDetailsHeader {stream} />
+        <Tabs {tabs} {baseUrl} defaultTab="overview">
+            {@render children({ data: stream })}
+        </Tabs>
+    {:catch error}
+        <div class="error">Error: {error.message}</div>
+    {/await}
 </div>
 
 <style>
-	.page-bg {
-	  background-color: var(--colors-light100);
-	  margin: 0 auto;
-	  width: 100%;
-	  max-width: 1200px;
-	  padding: 2rem;
-	}
+    .page-bg {
+      background-color: var(--colors-light100);
+      margin: 0 auto;
+      width: 100%;
+      max-width: 1200px;
+      padding: 2rem;
+    }
 
-	.loading {
-	  display: flex;
-	  justify-content: center;
-	  align-items: center;
-	  padding: 2rem;
-	  color: var(--colors-yellow90);
-	}
+    .loading {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      padding: 2rem;
+      color: var(--colors-yellow90);
+    }
 
-	.error {
-	  display: flex;
-	  justify-content: center;
-	  align-items: center;
-	  padding: 2rem;
-	  color: #ef4444;
-	}
+    .error {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      padding: 2rem;
+      color: #ef4444;
+    }
 </style>

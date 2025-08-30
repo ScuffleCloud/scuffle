@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { afterNavigate } from "$app/navigation";
+    import { afterNavigate } from "$app/navigation";
     import { NAV_ITEMS } from "$components/left-nav/consts.svelte";
     import { useUser } from "$lib/useUser";
     import NavItemBase from "./nav-item-base.svelte";
@@ -52,42 +52,42 @@
 </script>
 
 <ul class="nav-links" class:collapsed={isCollapsed}>
-	{#each navItemsWithPaths as item}
-		{#if item.children && !isCollapsed}
-			<NavItemDropdown
-				navItem={item}
-				{isCollapsed}
-				shouldOpen={shouldOpenDropdown === item.path && isTemporarilyExpanded}
-			/>
-		{:else}
-			<a
-				href={item.path}
-				title={isCollapsed ? item.label : ""}
-				onclick={(e) => handleDropdownClick(e, item)}
-			>
-				<NavItemBase navItem={item} {isCollapsed} />
-			</a>
-		{/if}
-	{/each}
+    {#each navItemsWithPaths as item}
+        {#if item.children && !isCollapsed}
+            <NavItemDropdown
+                navItem={item}
+                {isCollapsed}
+                shouldOpen={shouldOpenDropdown === item.path && isTemporarilyExpanded}
+            />
+        {:else}
+            <a
+                href={item.path}
+                title={isCollapsed ? item.label : ""}
+                onclick={(e) => handleDropdownClick(e, item)}
+            >
+                <NavItemBase navItem={item} {isCollapsed} />
+            </a>
+        {/if}
+    {/each}
 </ul>
 
 <style>
-	.nav-links {
-	  list-style: none;
-	  margin: 0rem 0rem;
-	  padding: 0rem;
-	  border-radius: 0rem;
-	  display: flex;
-	  flex-direction: column;
-	  gap: 0.25rem;
+    .nav-links {
+      list-style: none;
+      margin: 0rem 0rem;
+      padding: 0rem;
+      border-radius: 0rem;
+      display: flex;
+      flex-direction: column;
+      gap: 0.25rem;
 
-	  a {
-	    text-decoration: none;
-	  }
+      a {
+        text-decoration: none;
+      }
 
-	  &.collapsed a {
-	    display: flex;
-	    justify-content: center;
-	  }
-	}
+      &.collapsed a {
+        display: flex;
+        justify-content: center;
+      }
+    }
 </style>

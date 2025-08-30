@@ -1,5 +1,5 @@
 <script lang="ts">
-	import type { ThemeColors } from "$lib/theme";
+    import type { ThemeColors } from "$lib/theme";
     import { getColor } from "$lib/utils";
     import type { Snippet } from "svelte";
 
@@ -31,36 +31,36 @@
 </script>
 
 <svelte:element
-	this={as}
-	class="pill ${className}"
-	style:--pill-background={getColor(color)}
-	style:--pill-border-color={getColor(borderColor)}
-	style:--pill-width={width}
-	onclick={onClick}
-	{disabled}
-	role={as === "button" ? "button" : "div"}
-	{type}
-	data-testid={dataTestId}
+    this={as}
+    class="pill ${className}"
+    style:--pill-background={getColor(color)}
+    style:--pill-border-color={getColor(borderColor)}
+    style:--pill-width={width}
+    onclick={onClick}
+    {disabled}
+    role={as === "button" ? "button" : "div"}
+    {type}
+    data-testid={dataTestId}
 >
-	{@render children()}
+    {@render children()}
 </svelte:element>
 
 <style>
-	.pill {
-	  display: flex;
-	  align-items: center;
-	  justify-content: center;
-	  padding: 0.75rem 1rem;
-	  gap: 0.625rem;
-	  border-radius: 50rem;
-	  width: fit-content;
-	  cursor: pointer;
-	  font-size: inherit;
-	  background-color: var(--pill-background);
-	  border: 1px solid var(--pill-border-color);
-	  width: var(--pill-width);
-	  &[disabled] {
-	    color: var(--colors);
-	  }
-	}
+    .pill {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 0.75rem 1rem;
+      gap: 0.625rem;
+      border-radius: 50rem;
+      width: fit-content;
+      cursor: pointer;
+      font-size: inherit;
+      background-color: var(--pill-background);
+      border: 1px solid var(--pill-border-color);
+      width: var(--pill-width);
+      &[disabled] {
+        color: var(--colors);
+      }
+    }
 </style>

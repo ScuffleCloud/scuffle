@@ -15,7 +15,7 @@
     "malva": {
     },
     "markup": {
-        "useTabs": true,
+        "indentWidth": 4,
         "svelteAttrShorthand": true,
         "svelteDirectiveShorthand": true,
         "scriptIndent": true,

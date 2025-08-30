@@ -1,6 +1,6 @@
 <!-- tabs.svelte -->
 <script lang="ts">
-	import { page } from "$app/state";
+    import { page } from "$app/state";
     import type { Snippet } from "svelte";
 
     import type { Component } from "svelte";
@@ -36,73 +36,73 @@
 </script>
 
 <div class="tabs-container">
-	<div class="tabs-list-container">
-		{#each tabs as tab}
-			<a
-				href={`${baseUrl}${tab.id}`}
-				class="tab-trigger"
-				data-selected={currentTab === tab.id}
-			>
-				{#if tab.icon}
-					<tab.icon />
-				{/if}
-				<span class="tab-label">{tab.label}</span>
-			</a>
-		{/each}
-	</div>
+    <div class="tabs-list-container">
+        {#each tabs as tab}
+            <a
+                href={`${baseUrl}${tab.id}`}
+                class="tab-trigger"
+                data-selected={currentTab === tab.id}
+            >
+                {#if tab.icon}
+                    <tab.icon />
+                {/if}
+                <span class="tab-label">{tab.label}</span>
+            </a>
+        {/each}
+    </div>
 
-	<div class="tab-content">
-		{@render children()}
-	</div>
+    <div class="tab-content">
+        {@render children()}
+    </div>
 </div>
 
 <style>
-	.tabs-container {
-	  .tabs-list-container {
-	    display: flex;
-	    gap: 1rem;
-	    border-bottom: 1px solid var(--colors-gray40);
-	    margin-bottom: 1rem;
+    .tabs-container {
+      .tabs-list-container {
+        display: flex;
+        gap: 1rem;
+        border-bottom: 1px solid var(--colors-gray40);
+        margin-bottom: 1rem;
 
-	    .tab-trigger {
-	      display: flex;
-	      align-items: center;
-	      gap: 0.5rem;
-	      padding: 0.75rem 1rem;
-	      border: none;
-	      background: none;
-	      color: var(--colors-yellow90);
-	      font-size: 1rem;
-	      font-weight: 700;
-	      line-height: 1.5rem;
-	      cursor: pointer;
-	      font-weight: 500;
-	      border-bottom: 2px solid transparent;
-	      transition: all 0.2s;
-	      text-decoration: none;
+        .tab-trigger {
+          display: flex;
+          align-items: center;
+          gap: 0.5rem;
+          padding: 0.75rem 1rem;
+          border: none;
+          background: none;
+          color: var(--colors-yellow90);
+          font-size: 1rem;
+          font-weight: 700;
+          line-height: 1.5rem;
+          cursor: pointer;
+          font-weight: 500;
+          border-bottom: 2px solid transparent;
+          transition: all 0.2s;
+          text-decoration: none;
 
-	      &[data-selected="true"] {
-	        border-bottom-color: var(--colors-yellow40);
-	      }
+          &[data-selected="true"] {
+            border-bottom-color: var(--colors-yellow40);
+          }
 
-	      &:hover:not([data-selected="true"]) {
-	        color: #334155;
-	      }
+          &:hover:not([data-selected="true"]) {
+            color: #334155;
+          }
 
-	      &:focus-visible {
-	        outline: 2px solid #3b82f6;
-	        outline-offset: 2px;
-	        border-radius: 0.25rem;
-	      }
+          &:focus-visible {
+            outline: 2px solid #3b82f6;
+            outline-offset: 2px;
+            border-radius: 0.25rem;
+          }
 
-	      .tab-label {
-	        white-space: nowrap;
-	      }
-	    }
-	  }
+          .tab-label {
+            white-space: nowrap;
+          }
+        }
+      }
 
-	  .tab-content {
-	    padding: 1rem 0;
-	  }
-	}
+      .tab-content {
+        padding: 1rem 0;
+      }
+    }
 </style>

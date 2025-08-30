@@ -1,5 +1,5 @@
 <script lang="ts">
-	import SettingsBlock from "$components/settings-block.svelte";
+    import SettingsBlock from "$components/settings-block.svelte";
     import type { Card } from "$components/settings-block.svelte";
     import IconShield from "$lib/images/icon-shield.svelte";
 
@@ -23,7 +23,7 @@
 </script>
 
 <div class="assets-page">
-	<SettingsBlock title="Assets" cards={VodCard} icon={IconShield} />
+    <SettingsBlock title="Assets" cards={VodCard} icon={IconShield} />
 </div>
 
 <style>

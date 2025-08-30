@@ -1,5 +1,5 @@
 <script lang="ts">
-	import Search from "$lib/images/search.svelte";
+    import Search from "$lib/images/search.svelte";
     import { onMount } from "svelte";
     import { fade } from "svelte/transition";
     // TODO: Configure routing from root
@@ -12,7 +12,8 @@
     let showSearchModal = $state(false);
     let searchInput = $state<HTMLInputElement | null>(null);
 
-    const { userQuery, currentOrganization, currentProject } = useUser();
+    const { userQuery, currentOrganization, currentProject } =
+        useUser();
 
     $effect(() => {
         if ($userQuery.data?.organizations) {
@@ -60,7 +61,8 @@
             .split("/")
             .filter(Boolean)
             .map((segment, index, segments) => {
-                const path = "/" + segments.slice(0, index + 1).join("/");
+                const path = "/"
+                    + segments.slice(0, index + 1).join("/");
                 const customTitle = "test";
                 return {
                     label: customTitle
@@ -90,13 +92,13 @@
 </script>
 
 <header class="top-nav">
-	<div class="left-nav">
-		<button class="minimize-left-nav-button">
-			<IconConfigureTab />
-		</button>
-		<div class="divider"></div>
-		<nav class="breadcrumb">
-			<!-- <a href="/" class="breadcrumb-link">Home</a>
+    <div class="left-nav">
+        <button class="minimize-left-nav-button">
+            <IconConfigureTab />
+        </button>
+        <div class="divider"></div>
+        <nav class="breadcrumb">
+            <!-- <a href="/" class="breadcrumb-link">Home</a>
             {#each breadcrumbs as { label, href }, i}
                 <span class="breadcrumb-separator">/</span>
                 {#if i === breadcrumbs.length - 1}
@@ -105,231 +107,231 @@
                     <a {href} class="breadcrumb-link">{label}</a>
                 {/if}
             {/each} -->
-			<div class="breadcrumb-item">
-				<NavSwitcher
-					name={$currentOrganization?.name ?? ""}
-					imageUrl={$currentOrganization?.image_url}
-					items={organizations ?? []}
-					onClick={(id) => {
-					    console.log("clicked", id);
-					}}
-				/>
-			</div>
-			<div class="slash-divider">/</div>
-			<div class="breadcrumb-item">
-				<NavSwitcher
-					name={$currentProject?.name ?? ""}
-					items={projects ?? []}
-					onClick={(id) => {
-					    console.log("clicked", id);
-					}}
-				/>
-			</div>
-		</nav>
-	</div>
-	<div class="actions">
-		<button
-			class="search-button"
-			aria-label="Search"
-			onclick={() => (showSearchModal = true)}
-		>
-			<Search />
-			<span class="keyboard-shortcut">
-				<span class="command">⌘</span>
-				<span class="key">K</span>
-			</span>
-		</button>
-	</div>
+            <div class="breadcrumb-item">
+                <NavSwitcher
+                    name={$currentOrganization?.name ?? ""}
+                    imageUrl={$currentOrganization?.image_url}
+                    items={organizations ?? []}
+                    onClick={(id) => {
+                        console.log("clicked", id);
+                    }}
+                />
+            </div>
+            <div class="slash-divider">/</div>
+            <div class="breadcrumb-item">
+                <NavSwitcher
+                    name={$currentProject?.name ?? ""}
+                    items={projects ?? []}
+                    onClick={(id) => {
+                        console.log("clicked", id);
+                    }}
+                />
+            </div>
+        </nav>
+    </div>
+    <div class="actions">
+        <button
+            class="search-button"
+            aria-label="Search"
+            onclick={() => (showSearchModal = true)}
+        >
+            <Search />
+            <span class="keyboard-shortcut">
+                <span class="command">⌘</span>
+                <span class="key">K</span>
+            </span>
+        </button>
+    </div>
 </header>
 
 {#if showSearchModal}
-	<!-- svelte-ignore a11y_click_events_have_key_events -->
-	<!-- svelte-ignore a11y_no_static_element_interactions -->
-	<div
-		class="modal-backdrop"
-		onclick={closeModal}
-		transition:fade={{ duration: 150 }}
-	>
-		<div class="search-modal" onclick={(e) => e.stopPropagation()}>
-			<div class="search-header">
-				<Search />
-				<input
-					bind:this={searchInput}
-					type="text"
-					placeholder="Search..."
-					class="search-input"
-				/>
-				<button class="close-button" onclick={closeModal}>
-					<span>ESC</span>
-				</button>
-			</div>
-			<div class="search-results">
-				<div class="empty-state">
-					<p>Type to search across the application</p>
-				</div>
-			</div>
-		</div>
-	</div>
+    <!-- svelte-ignore a11y_click_events_have_key_events -->
+    <!-- svelte-ignore a11y_no_static_element_interactions -->
+    <div
+        class="modal-backdrop"
+        onclick={closeModal}
+        transition:fade={{ duration: 150 }}
+    >
+        <div class="search-modal" onclick={(e) => e.stopPropagation()}>
+            <div class="search-header">
+                <Search />
+                <input
+                    bind:this={searchInput}
+                    type="text"
+                    placeholder="Search..."
+                    class="search-input"
+                />
+                <button class="close-button" onclick={closeModal}>
+                    <span>ESC</span>
+                </button>
+            </div>
+            <div class="search-results">
+                <div class="empty-state">
+                    <p>Type to search across the application</p>
+                </div>
+            </div>
+        </div>
+    </div>
 {/if}
 
 <style>
-	.top-nav {
-	  display: grid;
-	  grid-template-columns: auto 1fr auto;
-	  align-items: center;
-	  padding: 1rem 2rem;
+    .top-nav {
+      display: grid;
+      grid-template-columns: auto 1fr auto;
+      align-items: center;
+      padding: 1rem 2rem;
 
-	  .left-nav {
-	    display: flex;
-	    align-items: center;
-	    gap: 0.5rem;
+      .left-nav {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
 
-	    .minimize-left-nav-button {
-	      background: none;
-	      border: none;
-	      cursor: pointer;
-	      padding: 0.5rem;
-	      border-radius: 6px;
-	      display: flex;
-	    }
+        .minimize-left-nav-button {
+          background: none;
+          border: none;
+          cursor: pointer;
+          padding: 0.5rem;
+          border-radius: 6px;
+          display: flex;
+        }
 
-	    .divider {
-	      width: 0.0625rem;
-	      height: 1.25rem;
-	      background: #c7c1bf;
-	    }
+        .divider {
+          width: 0.0625rem;
+          height: 1.25rem;
+          background: #c7c1bf;
+        }
 
-	    .breadcrumb {
-	      font-size: 1.1rem;
-	      font-weight: 500;
-	      color: var(--colors-dark100);
-	      display: flex;
-	      align-items: center;
-	      padding: 0rem 0.125rem;
-	      gap: 0.25rem;
+        .breadcrumb {
+          font-size: 1.1rem;
+          font-weight: 500;
+          color: var(--colors-dark100);
+          display: flex;
+          align-items: center;
+          padding: 0rem 0.125rem;
+          gap: 0.25rem;
 
-	      .slash-divider {
-	        font-size: 0.875rem;
-	        font-style: normal;
-	        font-weight: 600;
-	        line-height: normal;
-	      }
+          .slash-divider {
+            font-size: 0.875rem;
+            font-style: normal;
+            font-weight: 600;
+            line-height: normal;
+          }
 
-	      .breadcrumb-item {
-	        display: flex;
-	        align-items: center;
-	        padding: 0.38rem;
-	      }
-	    }
-	  }
+          .breadcrumb-item {
+            display: flex;
+            align-items: center;
+            padding: 0.38rem;
+          }
+        }
+      }
 
-	  .actions {
-	    display: flex;
-	    align-items: center;
-	    margin-left: auto;
+      .actions {
+        display: flex;
+        align-items: center;
+        margin-left: auto;
 
-	    .search-button {
-	      display: flex;
-	      align-items: center;
-	      gap: 8px;
-	      background: none;
-	      border: none;
-	      cursor: pointer;
-	      padding: 0.5rem 0.75rem;
-	      border-radius: 6px;
-	      transition: background-color 0.2s;
+        .search-button {
+          display: flex;
+          align-items: center;
+          gap: 8px;
+          background: none;
+          border: none;
+          cursor: pointer;
+          padding: 0.5rem 0.75rem;
+          border-radius: 6px;
+          transition: background-color 0.2s;
 
-	      .keyboard-shortcut {
-	        display: flex;
-	        align-items: center;
-	        gap: 0.125rem;
-	        justify-content: center;
-	        opacity: 0.7;
-	        background-color: rgba(0, 0, 0, 0.05);
-	        padding: 2px 6px;
-	        border-radius: 0.25rem;
+          .keyboard-shortcut {
+            display: flex;
+            align-items: center;
+            gap: 0.125rem;
+            justify-content: center;
+            opacity: 0.7;
+            background-color: rgba(0, 0, 0, 0.05);
+            padding: 2px 6px;
+            border-radius: 0.25rem;
 
-	        .command {
-	          font-size: 0.625rem;
-	        }
+            .command {
+              font-size: 0.625rem;
+            }
 
-	        .key {
-	          font-size: 0.75rem;
-	        }
-	      }
+            .key {
+              font-size: 0.75rem;
+            }
+          }
 
-	      &:hover {
-	        background-color: rgba(0, 0, 0, 0.05);
-	      }
-	    }
-	  }
-	}
+          &:hover {
+            background-color: rgba(0, 0, 0, 0.05);
+          }
+        }
+      }
+    }
 
-	.modal-backdrop {
-	  position: fixed;
-	  top: 0;
-	  left: 0;
-	  width: 100%;
-	  height: 100%;
-	  background-color: rgba(0, 0, 0, 0.5);
-	  display: flex;
-	  justify-content: center;
-	  align-items: flex-start;
-	  padding-top: 10vh;
-	  z-index: 1000;
+    .modal-backdrop {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background-color: rgba(0, 0, 0, 0.5);
+      display: flex;
+      justify-content: center;
+      align-items: flex-start;
+      padding-top: 10vh;
+      z-index: 1000;
 
-	  .search-modal {
-	    width: 600px;
-	    max-width: 90%;
-	    background-color: white;
-	    border-radius: 8px;
-	    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
-	    overflow: hidden;
+      .search-modal {
+        width: 600px;
+        max-width: 90%;
+        background-color: white;
+        border-radius: 8px;
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+        overflow: hidden;
 
-	    .search-header {
-	      display: flex;
-	      align-items: center;
-	      padding: 1rem;
-	      border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+        .search-header {
+          display: flex;
+          align-items: center;
+          padding: 1rem;
+          border-bottom: 1px solid rgba(0, 0, 0, 0.1);
 
-	      :global(svg) {
-	        margin-right: 0.75rem;
-	      }
+          :global(svg) {
+            margin-right: 0.75rem;
+          }
 
-	      .search-input {
-	        flex: 1;
-	        border: none;
-	        font-size: 1rem;
-	        outline: none;
-	        background: transparent;
-	      }
+          .search-input {
+            flex: 1;
+            border: none;
+            font-size: 1rem;
+            outline: none;
+            background: transparent;
+          }
 
-	      .close-button {
-	        background: none;
-	        border: none;
-	        cursor: pointer;
-	        opacity: 0.6;
-	        padding: 4px 8px;
-	        border-radius: 4px;
-	        font-size: 0.75rem;
-	        background-color: rgba(0, 0, 0, 0.05);
+          .close-button {
+            background: none;
+            border: none;
+            cursor: pointer;
+            opacity: 0.6;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 0.75rem;
+            background-color: rgba(0, 0, 0, 0.05);
 
-	        &:hover {
-	          opacity: 1;
-	        }
-	      }
-	    }
+            &:hover {
+              opacity: 1;
+            }
+          }
+        }
 
-	    .search-results {
-	      max-height: 400px;
-	      overflow-y: auto;
+        .search-results {
+          max-height: 400px;
+          overflow-y: auto;
 
-	      .empty-state {
-	        padding: 2rem;
-	        text-align: center;
-	        opacity: 0.6;
-	      }
-	    }
-	  }
-	}
+          .empty-state {
+            padding: 2rem;
+            text-align: center;
+            opacity: 0.6;
+          }
+        }
+      }
+    }
 </style>

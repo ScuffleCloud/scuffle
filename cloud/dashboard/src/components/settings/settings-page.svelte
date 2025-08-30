@@ -1,5 +1,5 @@
 <script lang="ts">
-	import SettingsBlock from "$components/settings-block.svelte";
+    import SettingsBlock from "$components/settings-block.svelte";
     import type { Card } from "$components/settings-block.svelte";
     import IconBell from "$lib/images/icon-bell.svelte";
     import IconShield from "$lib/images/icon-shield.svelte";
@@ -34,9 +34,10 @@
                         : "Enable 2FA",
                     variant: "primary",
                     onClick: () => {
-                        userSettings.twoFactorAuth.enabled = !userSettings
-                            .twoFactorAuth
-                            .enabled;
+                        userSettings.twoFactorAuth.enabled =
+                            !userSettings
+                                .twoFactorAuth
+                                .enabled;
                         console.log(
                             "2FA toggled:",
                             userSettings.twoFactorAuth.enabled,
@@ -52,14 +53,15 @@
                 "Generate backup codes to access your account if you lose your authenticator device.",
             actions: [
                 {
-                    label: userSettings.twoFactorAuth.backupCodesGenerated
-                        ? "Regenerate Codes"
-                        : "Generate Codes",
+                    label:
+                        userSettings.twoFactorAuth.backupCodesGenerated
+                            ? "Regenerate Codes"
+                            : "Generate Codes",
                     variant: "secondary",
                     disabled: !userSettings.twoFactorAuth.enabled,
                     onClick: () => {
-                        userSettings.twoFactorAuth.backupCodesGenerated =
-                            true;
+                        userSettings.twoFactorAuth
+                            .backupCodesGenerated = true;
                         console.log("Recovery codes generated");
                     },
                 },
@@ -99,7 +101,8 @@
             actions: [
                 {
                     variant: "toggle",
-                    isToggled: userSettings.notifications.email.marketing,
+                    isToggled:
+                        userSettings.notifications.email.marketing,
                     onClick: () => {
                         userSettings.notifications.email.marketing =
                             !userSettings
@@ -129,12 +132,13 @@
                     enabledText: "On",
                     disabledText: "Off",
                     onClick: () => {
-                        userSettings.notifications.email.criticalAlerts =
-                            !userSettings
+                        userSettings.notifications.email
+                            .criticalAlerts = !userSettings
                                 .notifications.email.criticalAlerts;
                         console.log(
                             "Critical notifications toggled:",
-                            userSettings.notifications.email.criticalAlerts,
+                            userSettings.notifications.email
+                                .criticalAlerts,
                         );
                     },
                 },
@@ -186,9 +190,10 @@
                     enabledText: "Dark Mode",
                     disabledText: "Light Mode",
                     onClick: () => {
-                        userSettings.preferences.darkMode = !userSettings
-                            .preferences
-                            .darkMode;
+                        userSettings.preferences.darkMode =
+                            !userSettings
+                                .preferences
+                                .darkMode;
                         console.log(
                             "Dark mode toggled:",
                             userSettings.preferences.darkMode,
@@ -209,9 +214,10 @@
                     enabledText: "Enabled",
                     disabledText: "Disabled",
                     onClick: () => {
-                        userSettings.preferences.autoSave = !userSettings
-                            .preferences
-                            .autoSave;
+                        userSettings.preferences.autoSave =
+                            !userSettings
+                                .preferences
+                                .autoSave;
                         console.log(
                             "Auto-save toggled:",
                             userSettings.preferences.autoSave,
@@ -247,30 +253,30 @@
 </script>
 
 <div class="settings-page">
-	<SettingsBlock
-		title="Two-factor Authentication"
-		subtitle="(2FA)"
-		cards={twoFactorCards}
-		icon={IconShield}
-	/>
+    <SettingsBlock
+        title="Two-factor Authentication"
+        subtitle="(2FA)"
+        cards={twoFactorCards}
+        icon={IconShield}
+    />
 
-	<SettingsBlock
-		title="Notification Settings"
-		cards={notificationCards}
-		icon={IconBell}
-	/>
+    <SettingsBlock
+        title="Notification Settings"
+        cards={notificationCards}
+        icon={IconBell}
+    />
 
-	<SettingsBlock
-		title="Security & Privacy"
-		cards={securityCards}
-		icon={IconShield}
-	/>
+    <SettingsBlock
+        title="Security & Privacy"
+        cards={securityCards}
+        icon={IconShield}
+    />
 </div>
 
 <style>
-	.settings-page {
-	  display: flex;
-	  flex-direction: column;
-	  gap: 0.5rem;
-	}
+    .settings-page {
+      display: flex;
+      flex-direction: column;
+      gap: 0.5rem;
+    }
 </style>

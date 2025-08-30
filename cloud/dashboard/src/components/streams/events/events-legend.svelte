@@ -1,5 +1,5 @@
 <script lang="ts">
-	import IconEventsAsset from "$lib/images/icon-events-asset.svelte";
+    import IconEventsAsset from "$lib/images/icon-events-asset.svelte";
     import IconEventsError from "$lib/images/icon-events-error.svelte";
     import IconEventsNeutral from "$lib/images/icon-events-neutral.svelte";
 
@@ -17,77 +17,77 @@
 </script>
 
 <div class="metrics">
-	{#each metrics as metric}
-		<div class="metric">
-			<span class="label">{metric.label}</span>
-			<span class="value">{metric.value}</span>
-		</div>
-	{/each}
+    {#each metrics as metric}
+        <div class="metric">
+            <span class="label">{metric.label}</span>
+            <span class="value">{metric.value}</span>
+        </div>
+    {/each}
 </div>
 <div class="legend">
-	{#each legendItems as item}
-		<div class="legend-item">
-			<span class="icon">
-				<svelte:component this={item.icon} />
-			</span>
-			<span class="text">{item.text}</span>
-		</div>
-	{/each}
+    {#each legendItems as item}
+        <div class="legend-item">
+            <span class="icon">
+                <svelte:component this={item.icon} />
+            </span>
+            <span class="text">{item.text}</span>
+        </div>
+    {/each}
 </div>
 
 <style>
-	.metrics {
-	  display: flex;
-	  gap: 2rem;
-	  align-items: center;
-	  margin-bottom: 1rem;
-	  padding: 0.75rem;
-	  border-radius: 0.25rem;
+    .metrics {
+      display: flex;
+      gap: 2rem;
+      align-items: center;
+      margin-bottom: 1rem;
+      padding: 0.75rem;
+      border-radius: 0.25rem;
 
-	  .metric {
-	    display: flex;
-	    flex-direction: column;
-	    gap: 0.25rem;
-	    flex: 1;
+      .metric {
+        display: flex;
+        flex-direction: column;
+        gap: 0.25rem;
+        flex: 1;
 
-	    .label {
-	      color: var(--colors-brown70);
-	      font-size: 0.875rem;
-	      line-height: 1.25rem;
-	    }
+        .label {
+          color: var(--colors-brown70);
+          font-size: 0.875rem;
+          line-height: 1.25rem;
+        }
 
-	    .value {
-	      color: var(--colors-brown90);
-	      font-size: 1rem;
-	      font-weight: 500;
-	      line-height: 1.5rem;
-	    }
-	  }
-	}
-	.legend {
-	  display: flex;
-	  gap: 2rem;
-	  align-items: center;
+        .value {
+          color: var(--colors-brown90);
+          font-size: 1rem;
+          font-weight: 500;
+          line-height: 1.5rem;
+        }
+      }
+    }
+    .legend {
+      display: flex;
+      gap: 2rem;
+      align-items: center;
 
-	  .legend-item {
-	    display: flex;
-	    align-items: center;
-	    gap: 0.5rem;
+      .legend-item {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
 
-	    .icon {
-	      display: flex;
-	      align-items: center;
-	      justify-content: center;
-	    }
+        .icon {
+          display: flex;
+          align-items: center;
+          justify-content: center;
+        }
 
-	    .text {
-	      font-size: 1rem;
-	      color: var(--colors-brown70);
-	      font-size: 1rem;
-	      font-style: normal;
-	      font-weight: 500;
-	      line-height: 1.5rem; /* 150% */
-	    }
-	  }
-	}
+        .text {
+          font-size: 1rem;
+          color: var(--colors-brown70);
+          font-size: 1rem;
+          font-style: normal;
+          font-weight: 500;
+          line-height: 1.5rem; /* 150% */
+        }
+      }
+    }
 </style>

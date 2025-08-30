@@ -1,5 +1,5 @@
 <script lang="ts">
-	import AllVideoStreams from "$components/streams/all-video-streams.svelte";
+    import AllVideoStreams from "$components/streams/all-video-streams.svelte";
     import type { VideoStream } from "$components/streams/types";
     import type { ListResponse, Streamed } from "$lib/types";
 
@@ -13,19 +13,19 @@
 </script>
 
 <svelte:head>
-	<title>Video | Live Streams | Scuffle</title>
+    <title>Video | Live Streams | Scuffle</title>
 </svelte:head>
 <div class="page-bg">
-	<AllVideoStreams streamedData={pageData.streams} />
+    <AllVideoStreams streamedData={pageData.streams} />
 </div>
 
 <style>
-	.page-bg {
-	  background-color: var(--colors-light100);
-	  margin: 0 auto;
-	  width: 100%;
-	  max-width: 1200px;
-	  margin: 0 auto;
-	  padding: 2rem;
-	}
+    .page-bg {
+      background-color: var(--colors-light100);
+      margin: 0 auto;
+      width: 100%;
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 2rem;
+    }
 </style>

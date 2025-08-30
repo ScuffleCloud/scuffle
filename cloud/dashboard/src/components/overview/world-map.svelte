@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { getCssVar } from "$lib/utils";
+    import { getCssVar } from "$lib/utils";
     import { geoMercator } from "d3-geo";
     import { type EChartsOption, type EChartsType } from "echarts";
     import { MapChart } from "echarts/charts";
@@ -101,8 +101,12 @@
             chartInstance.dispatchAction({ type: "restore" });
         }
     };
-    const maxValue = $derived(Math.max(...data.map((item) => item.value)));
-    const minValue = $derived(Math.min(...data.map((item) => item.value)));
+    const maxValue = $derived(
+        Math.max(...data.map((item) => item.value)),
+    );
+    const minValue = $derived(
+        Math.min(...data.map((item) => item.value)),
+    );
 
     const option = $derived({
         title: {
@@ -253,7 +257,9 @@
     const handleClick = (event: ECMouseEvent) => {
         if (event.data) {
             alert(
-                `${event.name}\n${dataLabel}: ${(event.data as any).value}`,
+                `${event.name}\n${dataLabel}: ${
+                    (event.data as any).value
+                }`,
             );
         } else {
             alert(`${event.name}\nNo data available`);
@@ -280,73 +286,73 @@
 </script>
 
 <div class="hovered-country-info">
-	<h3>{hoveredCountry}</h3>
-	<p>Innovation Score: {hoveredCountry}</p>
+    <h3>{hoveredCountry}</h3>
+    <p>Innovation Score: {hoveredCountry}</p>
 </div>
 <button onclick={resetZoom}>Reset Zoom</button>
 <div class="map-container">
-	{#if isLoading}
-		<div class="loading-overlay">
-			<div class="loading-spinner"></div>
-			<p>Loading world map data...</p>
-		</div>
-	{:else}
-		<Chart
-			{init}
-			{options}
-			{theme}
-			onclick={handleClick}
-			bind:chart={chartInstance}
-		/>
-	{/if}
+    {#if isLoading}
+        <div class="loading-overlay">
+            <div class="loading-spinner"></div>
+            <p>Loading world map data...</p>
+        </div>
+    {:else}
+        <Chart
+            {init}
+            {options}
+            {theme}
+            onclick={handleClick}
+            bind:chart={chartInstance}
+        />
+    {/if}
 </div>
 
 <style>
-	.map-container {
-	  position: relative;
-	  width: 100%;
-	  height: 700px;
-	  background-color: var(--colors-gray20);
-	  border-radius: 0.5rem;
-	  border: 1px solid var(--colors-gray40);
-	  overflow: hidden;
-	}
+    .map-container {
+      position: relative;
+      width: 100%;
+      height: 700px;
+      background-color: var(--colors-gray20);
+      border-radius: 0.5rem;
+      border: 1px solid var(--colors-gray40);
+      overflow: hidden;
+    }
 
-	.loading-overlay {
-	  position: absolute;
-	  top: 0;
-	  left: 0;
-	  right: 0;
-	  bottom: 0;
-	  display: flex;
-	  flex-direction: column;
-	  align-items: center;
-	  justify-content: center;
-	  background-color: var(--colors-gray20);
-	  color: var(--colors-gray90);
-	  gap: 1rem;
-	}
+    .loading-overlay {
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      background-color: var(--colors-gray20);
+      color: var(--colors-gray90);
+      gap: 1rem;
+    }
 
-	.loading-spinner {
-	  width: 40px;
-	  height: 40px;
-	  border: 3px solid var(--colors-gray50);
-	  border-top: 3px solid var(--colors-blue60);
-	  border-radius: 50%;
-	  animation: spin 1s linear infinite;
-	}
+    .loading-spinner {
+      width: 40px;
+      height: 40px;
+      border: 3px solid var(--colors-gray50);
+      border-top: 3px solid var(--colors-blue60);
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+    }
 
-	@keyframes spin {
-	  0% {
-	    transform: rotate(0deg);
-	  }
-	  100% {
-	    transform: rotate(360deg);
-	  }
-	}
+    @keyframes spin {
+      0% {
+        transform: rotate(0deg);
+      }
+      100% {
+        transform: rotate(360deg);
+      }
+    }
 
-	:global(.map-container .echarts-tooltip) {
-	  border-radius: 0.25rem;
-	  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
-	}
+    :global(.map-container .echarts-tooltip) {
+      border-radius: 0.25rem;
+      box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+    }
 </style>

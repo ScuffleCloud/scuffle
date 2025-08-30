@@ -33,6 +33,7 @@ use crate::boxes::types::ftyp::Ftyp;
 use crate::boxes::types::hdlr::Hdlr;
 use crate::boxes::types::hev1::Hev1;
 use crate::boxes::types::hmhd::Hmhd;
+use crate::boxes::types::hvc1::Hvc1;
 use crate::boxes::types::hvcc::HvcC;
 use crate::boxes::types::mdat::Mdat;
 use crate::boxes::types::mdhd::Mdhd;
@@ -84,5 +85,5 @@ impl_box!(
     Url, Avc1, Clap, Pasp, AvcC, Btrt,
     Mp4a, Esds, Moof, Mfhd, Traf, Tfhd,
     Tfdt, Trun, Mdat, Av01, Av1C, Colr,
-    Hev1, HvcC, Opus,
+    Hev1, Hvc1, HvcC, Opus,
 );

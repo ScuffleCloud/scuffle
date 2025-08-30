@@ -9,12 +9,12 @@
 </div>
 
 <style>
-.container {
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  gap: 1rem;
-  text-align: center;
-  min-height: 60vh;
-}
+	.container {
+	  display: flex;
+	  flex-direction: column;
+	  justify-content: center;
+	  gap: 1rem;
+	  text-align: center;
+	  min-height: 60vh;
+	}
 </style>

@@ -1,10 +1,10 @@
 <!-- website/src/components/streams/StreamDetailsHeader.svelte -->
 <script lang="ts">
-import IconDate from "$lib/images/icon-date.svelte";
-import IconPuzzle from "$lib/images/icon-puzzle.svelte";
-import StreamStatusPill from "$lib/shared-components/stream-status-pill.svelte";
-import type { VideoStream } from "./types";
-export let stream: VideoStream;
+	import IconDate from "$lib/images/icon-date.svelte";
+    import IconPuzzle from "$lib/images/icon-puzzle.svelte";
+    import StreamStatusPill from "$lib/shared-components/stream-status-pill.svelte";
+    import type { VideoStream } from "./types";
+    export let stream: VideoStream;
 </script>
 
 <div class="stream-header">
@@ -66,95 +66,95 @@ export let stream: VideoStream;
 </div>
 
 <style>
-.stream-header {
-  padding: 1rem;
-  display: flex;
-  flex-direction: row;
-  gap: 1rem;
+	.stream-header {
+	  padding: 1rem;
+	  display: flex;
+	  flex-direction: row;
+	  gap: 1rem;
 
-  .back-button {
-    text-decoration: none;
-    color: #333;
-    width: fit-content;
-    flex-shrink: 0;
-    margin-top: 0.25rem;
+	  .back-button {
+	    text-decoration: none;
+	    color: #333;
+	    width: fit-content;
+	    flex-shrink: 0;
+	    margin-top: 0.25rem;
 
-    button {
-      padding: 0;
-      border: none;
-      background: none;
-      cursor: pointer;
-    }
-  }
+	    button {
+	      padding: 0;
+	      border: none;
+	      background: none;
+	      cursor: pointer;
+	    }
+	  }
 
-  .content {
-    flex: 1;
-    .top-bar {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      margin-bottom: 1rem;
+	  .content {
+	    flex: 1;
+	    .top-bar {
+	      display: flex;
+	      justify-content: space-between;
+	      align-items: center;
+	      margin-bottom: 1rem;
 
-      .stream-info {
-        h1 {
-          margin: 0;
-          font-size: 1.5rem;
-        }
+	      .stream-info {
+	        h1 {
+	          margin: 0;
+	          font-size: 1.5rem;
+	        }
 
-        .stream-id {
-          color: #666;
-          font-size: 0.875rem;
-        }
-      }
+	        .stream-id {
+	          color: #666;
+	          font-size: 0.875rem;
+	        }
+	      }
 
-      .right-section {
-        display: flex;
-        gap: 0.5rem;
+	      .right-section {
+	        display: flex;
+	        gap: 0.5rem;
 
-        .common-action {
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          gap: 0.25rem;
-          padding: 0.5rem;
-          border: 1px solid #ddd;
-          border-radius: 0.5rem;
-          background: white;
+	        .common-action {
+	          display: flex;
+	          align-items: center;
+	          justify-content: center;
+	          gap: 0.25rem;
+	          padding: 0.5rem;
+	          border: 1px solid #ddd;
+	          border-radius: 0.5rem;
+	          background: white;
 
-          .common-action-text {
-            color: var(--colors-brown-90);
-            font-size: 1rem;
-            font-weight: 700;
-            padding: 0rem 0.25rem;
-          }
-        }
+	          .common-action-text {
+	            color: var(--colors-brown-90);
+	            font-size: 1rem;
+	            font-weight: 700;
+	            padding: 0rem 0.25rem;
+	          }
+	        }
 
-        .more-options {
-          padding: 0.5rem;
-          border: none;
-          background: none;
-          font-size: 1.25rem;
-        }
-      }
-    }
+	        .more-options {
+	          padding: 0.5rem;
+	          border: none;
+	          background: none;
+	          font-size: 1.25rem;
+	        }
+	      }
+	    }
 
-    .status-bar {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
+	    .status-bar {
+	      display: flex;
+	      justify-content: space-between;
+	      align-items: center;
 
-      .status-indicators {
-        display: flex;
-        align-items: center;
-        gap: 0.5rem;
-      }
+	      .status-indicators {
+	        display: flex;
+	        align-items: center;
+	        gap: 0.5rem;
+	      }
 
-      .date {
-        display: flex;
-        align-items: center;
-        gap: 0.25rem;
-      }
-    }
-  }
-}
+	      .date {
+	        display: flex;
+	        align-items: center;
+	        gap: 0.25rem;
+	      }
+	    }
+	  }
+	}
 </style>

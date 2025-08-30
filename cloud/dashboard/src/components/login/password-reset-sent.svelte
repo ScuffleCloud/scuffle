@@ -1,10 +1,10 @@
 <script lang="ts">
-interface Props {
-    email?: string;
-    onBack?: () => void;
-}
+	interface Props {
+        email?: string;
+        onBack?: () => void;
+    }
 
-let { email, onBack }: Props = $props();
+    let { email, onBack }: Props = $props();
 </script>
 
 <h1 class="title">Check your email</h1>
@@ -22,31 +22,31 @@ let { email, onBack }: Props = $props();
 </div>
 
 <style>
-.title {
-  font-size: 1.5rem;
-  font-weight: 600;
-  margin: 0 0 1.5rem 0;
-}
+	.title {
+	  font-size: 1.5rem;
+	  font-weight: 600;
+	  margin: 0 0 1.5rem 0;
+	}
 
-.subtitle {
-  font-size: 0.875rem;
-  color: #6b7280;
-  margin-bottom: 2rem;
-  line-height: 1.5;
-}
+	.subtitle {
+	  font-size: 0.875rem;
+	  color: #6b7280;
+	  margin-bottom: 2rem;
+	  line-height: 1.5;
+	}
 
-.info-box {
-  background-color: #f0f9ff;
-  border: 1px solid #bae6fd;
-  border-radius: 0.5rem;
-  padding: 1rem;
-  margin-bottom: 2rem;
-}
+	.info-box {
+	  background-color: #f0f9ff;
+	  border: 1px solid #bae6fd;
+	  border-radius: 0.5rem;
+	  padding: 1rem;
+	  margin-bottom: 2rem;
+	}
 
-.info-text {
-  font-size: 0.875rem;
-  color: #0369a1;
-  margin: 0;
-  line-height: 1.4;
-}
+	.info-text {
+	  font-size: 0.875rem;
+	  color: #0369a1;
+	  margin: 0;
+	  line-height: 1.4;
+	}
 </style>

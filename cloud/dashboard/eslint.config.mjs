@@ -1,5 +1,4 @@
 import js from "@eslint/js";
-import eslintPluginPrettier from "eslint-plugin-prettier/recommended";
 import eslintPluginSvelte from "eslint-plugin-svelte";
 import globals from "globals";
 import svelteParser from "svelte-eslint-parser";
@@ -9,8 +8,6 @@ export default tsEslint.config(
     js.configs.recommended,
     ...tsEslint.configs.recommended,
     ...eslintPluginSvelte.configs["flat/recommended"],
-    eslintPluginPrettier,
-    ...eslintPluginSvelte.configs["flat/prettier"],
     {
         languageOptions: {
             ecmaVersion: 2022,

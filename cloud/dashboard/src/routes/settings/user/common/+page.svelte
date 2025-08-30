@@ -1,12 +1,12 @@
 <script lang="ts">
-import SettingsPage from "$components/settings/settings-page.svelte";
-import type { PageData } from "./$types";
+	import SettingsPage from "$components/settings/settings-page.svelte";
+    import type { PageData } from "./$types";
 
-interface Props {
-    data: PageData;
-}
+    interface Props {
+        data: PageData;
+    }
 
-const { data }: Props = $props();
+    const { data }: Props = $props();
 </script>
 
 <svelte:head>
@@ -28,11 +28,11 @@ const { data }: Props = $props();
 {/await}
 
 <style>
-.loading-state {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  min-height: 50vh;
-}
+	.loading-state {
+	  display: flex;
+	  flex-direction: column;
+	  align-items: center;
+	  justify-content: center;
+	  min-height: 50vh;
+	}
 </style>

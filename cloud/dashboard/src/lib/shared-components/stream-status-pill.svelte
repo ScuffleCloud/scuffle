@@ -1,6 +1,6 @@
 <script lang="ts">
-type Status = "live" | "finished";
-export let status: Status;
+	type Status = "live" | "finished";
+    export let status: Status;
 </script>
 
 <span
@@ -23,26 +23,26 @@ export let status: Status;
 </span>
 
 <style>
-.status-badge {
-  display: flex;
-  align-items: center;
-  gap: 0.25rem;
-  padding: 0.25rem 0.5rem;
-  border-radius: 0.25rem;
-  font-size: 0.875rem;
-  font-weight: 500;
-  text-transform: capitalize;
+	.status-badge {
+	  display: flex;
+	  align-items: center;
+	  gap: 0.25rem;
+	  padding: 0.25rem 0.5rem;
+	  border-radius: 0.25rem;
+	  font-size: 0.875rem;
+	  font-weight: 500;
+	  text-transform: capitalize;
 
-  &.live {
-    padding: 4px 9px;
-    color: var(--colors-red90);
-    background-color: var(--colors-red30);
-    border-radius: 100rem;
-  }
+	  &.live {
+	    padding: 4px 9px;
+	    color: var(--colors-red90);
+	    background-color: var(--colors-red30);
+	    border-radius: 100rem;
+	  }
 
-  &.finished {
-    color: #666;
-    background-color: #f0f0f0;
-  }
-}
+	  &.finished {
+	    color: #666;
+	    background-color: #f0f0f0;
+	  }
+	}
 </style>

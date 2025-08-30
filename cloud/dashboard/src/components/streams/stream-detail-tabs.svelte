@@ -1,30 +1,30 @@
 <script lang="ts">
-import { pushState, replaceState } from "$app/navigation";
-import { page } from "$app/state";
-import type { Streamed } from "$lib/types";
-import { Tabs } from "melt/builders";
-import EventsTab from "./events/events-tab.svelte";
-import OverviewTab from "./overview/overview-tab.svelte";
-import StreamDetailsHeader from "./stream-detail-header.svelte";
-import type { VideoStream } from "./types";
+	import { pushState, replaceState } from "$app/navigation";
+    import { page } from "$app/state";
+    import type { Streamed } from "$lib/types";
+    import { Tabs } from "melt/builders";
+    import EventsTab from "./events/events-tab.svelte";
+    import OverviewTab from "./overview/overview-tab.svelte";
+    import StreamDetailsHeader from "./stream-detail-header.svelte";
+    import type { VideoStream } from "./types";
 
-type Props = {
-    streamedData: Streamed<VideoStream>;
-};
-const { streamedData }: Props = $props();
-const tabIds = ["overview", "events", "assets"];
-let currentTab = $state("overview");
+    type Props = {
+        streamedData: Streamed<VideoStream>;
+    };
+    const { streamedData }: Props = $props();
+    const tabIds = ["overview", "events", "assets"];
+    let currentTab = $state("overview");
 
-const tabs = new Tabs({
-    value: currentTab,
-    onValueChange: (value) => {
-        currentTab = value;
-        pushState(`${value}`, {
-            ...page.state,
-            activeTab: value,
-        });
-    },
-});
+    const tabs = new Tabs({
+        value: currentTab,
+        onValueChange: (value) => {
+            currentTab = value;
+            pushState(`${value}`, {
+                ...page.state,
+                activeTab: value,
+            });
+        },
+    });
 </script>
 
 {#await streamedData}
@@ -67,62 +67,62 @@ const tabs = new Tabs({
 {/await}
 
 <style>
-.stream-details-container {
-  display: flex;
-  flex-direction: column;
-  gap: 1rem;
+	.stream-details-container {
+	  display: flex;
+	  flex-direction: column;
+	  gap: 1rem;
 
-  .tabs-container {
-    .tabs-list-container {
-      display: flex;
-      gap: 1rem;
-      border-bottom: 1px solid #e2e8f0;
-      margin-bottom: 1rem;
+	  .tabs-container {
+	    .tabs-list-container {
+	      display: flex;
+	      gap: 1rem;
+	      border-bottom: 1px solid #e2e8f0;
+	      margin-bottom: 1rem;
 
-      .tab-trigger {
-        padding: 0.75rem 1rem;
-        border: none;
-        background: none;
-        color: #64748b;
-        cursor: pointer;
-        font-weight: 500;
-        border-bottom: 2px solid transparent;
-        transition: all 0.2s;
+	      .tab-trigger {
+	        padding: 0.75rem 1rem;
+	        border: none;
+	        background: none;
+	        color: #64748b;
+	        cursor: pointer;
+	        font-weight: 500;
+	        border-bottom: 2px solid transparent;
+	        transition: all 0.2s;
 
-        &[data-selected] {
-          color: #0f172a;
-          border-bottom-color: #0f172a;
-        }
+	        &[data-selected] {
+	          color: #0f172a;
+	          border-bottom-color: #0f172a;
+	        }
 
-        &:hover:not([data-selected]) {
-          color: #334155;
-        }
+	        &:hover:not([data-selected]) {
+	          color: #334155;
+	        }
 
-        &:focus-visible {
-          outline: 2px solid #3b82f6;
-          outline-offset: 2px;
-          border-radius: 0.25rem;
-        }
-      }
-    }
+	        &:focus-visible {
+	          outline: 2px solid #3b82f6;
+	          outline-offset: 2px;
+	          border-radius: 0.25rem;
+	        }
+	      }
+	    }
 
-    .tab-content {
-      padding: 1rem 0;
+	    .tab-content {
+	      padding: 1rem 0;
 
-      .events-content {
-        position: relative;
-      }
+	      .events-content {
+	        position: relative;
+	      }
 
-      h3 {
-        margin: 0 0 1rem 0;
-        font-size: 1.25rem;
-        font-weight: 600;
-      }
+	      h3 {
+	        margin: 0 0 1rem 0;
+	        font-size: 1.25rem;
+	        font-weight: 600;
+	      }
 
-      &[hidden] {
-        display: none;
-      }
-    }
-  }
-}
+	      &[hidden] {
+	        display: none;
+	      }
+	    }
+	  }
+	}
 </style>

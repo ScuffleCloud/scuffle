@@ -1,5 +1,5 @@
 <script lang="ts">
-import ApiInformation from "./api-information.svelte";
+	import ApiInformation from "./api-information.svelte";
 </script>
 
 <nav class="right-nav">
@@ -7,7 +7,7 @@ import ApiInformation from "./api-information.svelte";
 </nav>
 
 <style>
-.right-nav {
-  width: 15rem;
-}
+	.right-nav {
+	  width: 15rem;
+	}
 </style>

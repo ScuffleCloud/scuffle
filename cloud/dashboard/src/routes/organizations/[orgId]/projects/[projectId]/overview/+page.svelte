@@ -1,5 +1,5 @@
 <script>
-import Map from "$components/overview/world-map.svelte";
+	import Map from "$components/overview/world-map.svelte";
 </script>
 
 <svelte:head>
@@ -10,12 +10,12 @@ import Map from "$components/overview/world-map.svelte";
 </div>
 
 <style>
-.page-bg {
-  background-color: var(--colors-light100);
-  margin: 0 auto;
-  width: 100%;
-  max-width: 1200px;
-  margin: 0 auto;
-  padding: 2rem;
-}
+	.page-bg {
+	  background-color: var(--colors-light100);
+	  margin: 0 auto;
+	  width: 100%;
+	  max-width: 1200px;
+	  margin: 0 auto;
+	  padding: 2rem;
+	}
 </style>

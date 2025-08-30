@@ -1,18 +1,18 @@
 <script lang="ts">
-import Header from "./header.svelte";
-import StreamsTable from "./streams-table.svelte";
+	import Header from "./header.svelte";
+    import StreamsTable from "./streams-table.svelte";
 
-import type { ListResponse, Streamed } from "$lib/types";
-import type { VideoStream } from "./types";
+    import type { ListResponse, Streamed } from "$lib/types";
+    import type { VideoStream } from "./types";
 
-type Props = {
-    streamedData: Streamed<ListResponse<VideoStream>>;
-};
+    type Props = {
+        streamedData: Streamed<ListResponse<VideoStream>>;
+    };
 
-const { streamedData }: Props = $props();
+    const { streamedData }: Props = $props();
 
-// Search functionality
-let searchQuery = $state("");
+    // Search functionality
+    let searchQuery = $state("");
 </script>
 
 <Header />
@@ -44,37 +44,37 @@ let searchQuery = $state("");
 {/await}
 
 <style>
-.search-container {
-  display: flex;
-  justify-content: space-between;
-  margin-bottom: 1.5rem;
+	.search-container {
+	  display: flex;
+	  justify-content: space-between;
+	  margin-bottom: 1.5rem;
 
-  .search-input {
-    position: relative;
-    flex: 1;
-    max-width: 600px;
+	  .search-input {
+	    position: relative;
+	    flex: 1;
+	    max-width: 600px;
 
-    svg {
-      position: absolute;
-      left: 1rem;
-      top: 50%;
-      transform: translateY(-50%);
-      color: #888;
-    }
+	    svg {
+	      position: absolute;
+	      left: 1rem;
+	      top: 50%;
+	      transform: translateY(-50%);
+	      color: #888;
+	    }
 
-    input {
-      width: 100%;
-      padding: 0.75rem 1rem 0.75rem 2.5rem;
-      border: none;
-      border-radius: 2rem;
-      background-color: #f5f5f5;
-      font-size: 1rem;
+	    input {
+	      width: 100%;
+	      padding: 0.75rem 1rem 0.75rem 2.5rem;
+	      border: none;
+	      border-radius: 2rem;
+	      background-color: #f5f5f5;
+	      font-size: 1rem;
 
-      &:focus {
-        outline: none;
-        box-shadow: 0 0 0 2px rgba(0, 0, 0, 0.1);
-      }
-    }
-  }
-}
+	      &:focus {
+	        outline: none;
+	        box-shadow: 0 0 0 2px rgba(0, 0, 0, 0.1);
+	      }
+	    }
+	  }
+	}
 </style>

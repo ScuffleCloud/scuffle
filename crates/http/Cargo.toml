@@ -113,7 +113,7 @@ tokio-test = "0.4.4"
 # For examples:
 tokio = { features = ["full"], version = "1.43.0" }
 tracing = { version = "0.1.41" }
-tracing-subscriber = { features = ["env-filter"], version = "0.3.19" }
+tracing-subscriber = { features = ["env-filter"], version = "0.3.20" }
 
 [package.metadata.docs.rs]
 all-features = true

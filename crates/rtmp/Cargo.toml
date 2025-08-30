@@ -53,7 +53,7 @@ tokio = { features = ["full"], version = "1.44.1" }
 # For examples:
 scuffle-flv = { path = "../flv" }
 tracing = "0.1.41"
-tracing-subscriber = "0.3.19"
+tracing-subscriber = "0.3.20"
 
 [package.metadata.docs.rs]
 all-features = true

@@ -128,7 +128,7 @@ jobs:
 
   docs-report:
     name: docs / deployments report
-    needs: [rustdoc, docs, dashboard]
+    needs: [prep, rustdoc, docs, dashboard]
     runs-on: ubuntu-24.04
     if: ${{ always() && (fromJson(needs.prep.outputs.prep).rustdoc != null || fromJson(needs.prep.outputs.prep).docs != null || fromJson(needs.prep.outputs.prep).dashboard != null) }}
     permissions:
@@ -140,13 +140,16 @@ jobs:
           path: ./artifacts
 
       - name: Build comment body from status artifacts
+        id: build_body
         env:
           PREP_OUTPUT: ${{ needs.prep.outputs.prep }}
         run: |
           set -xeo pipefail
           PR=$(jq -r '(.rustdoc.pr_number // .docs.pr_number // .dashboard.pr_number) // empty' <<< "$PREP_OUTPUT")
+
           if [ -z "$PR" ]; then
             echo "No PR number found in prep output; nothing to comment on. Exiting."
+            echo "PR=" >> $GITHUB_OUTPUT
             exit 0
           fi
 
@@ -179,15 +182,15 @@ jobs:
         id: find_comment
         uses: peter-evans/find-comment@v3
         with:
-          issue-number: ${{ fromJson(needs.prep.outputs.prep).rustdoc.pr_number || fromJson(needs.prep.outputs.prep).docs.pr_number || fromJson(needs.prep.outputs.prep).dashboard.pr_number }}
+          issue-number: ${{ steps.build_body.outputs.PR }}
           comment-author: "github-actions[bot]"
           body-includes: "<!-- scuffle-docs-deploy -->"
 
       - name: Create comment (if not found)
-        if: ${{ steps.find_comment.outputs.comment-id == '' }}
+        if: ${{ steps.find_comment.outputs.comment-id == '' && steps.build_body.outputs.PR != '' }}
         uses: peter-evans/create-or-update-comment@v4
         with:
-          issue-number: ${{ fromJson(needs.prep.outputs.prep).rustdoc.pr_number || fromJson(needs.prep.outputs.prep).docs.pr_number || fromJson(needs.prep.outputs.prep).dashboard.pr_number }}
+          issue-number: ${{ steps.build_body.outputs.PR }}
           body-path: body.md
 
       - name: Update comment (if found)
@@ -195,7 +198,7 @@ jobs:
         uses: peter-evans/create-or-update-comment@v4
         with:
           comment-id: ${{ steps.find_comment.outputs.comment-id }}
-          issue-number: ${{ fromJson(needs.prep.outputs.prep).rustdoc.pr_number || fromJson(needs.prep.outputs.prep).docs.pr_number || fromJson(needs.prep.outputs.prep).dashboard.pr_number }}
+          issue-number: ${{ steps.build_body.outputs.PR }}
           body-path: body.md
           edit-mode: replace
 

@@ -19,6 +19,10 @@ js_binary(
 
 proto_plugin(
     name = "protobuf_ts",
+    options = [
+        "optimize_code_size",
+        "long_type_string",
+    ],
     output_directory = True,
     tool = ":plugin_bin",
 )

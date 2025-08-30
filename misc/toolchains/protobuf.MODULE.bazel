@@ -1,6 +1,12 @@
 bazel_dep(name = "rules_proto", version = "7.1.0")
 bazel_dep(name = "toolchains_protoc", version = "0.4.3")
 bazel_dep(name = "rules_proto_grpc", version = "5.7.0")
+git_override(
+    module_name = "rules_proto_grpc",
+    remote = "https://github.com/TroyKomodo/rules_proto_grpc.git",
+    branch = "remove_experimental_cc",
+    strip_prefix = "modules/core",
+)
 bazel_dep(name = "protobuf", version = "31.1")
 bazel_dep(name = "rules_buf", version = "0.5.2")
 

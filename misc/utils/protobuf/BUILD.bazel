@@ -2,4 +2,5 @@ alias(
     name = "file_concat",
     actual = "//misc/utils/protobuf/file_concat",
     tags = ["manual"],
+    visibility = ["//visibility:public"],
 )

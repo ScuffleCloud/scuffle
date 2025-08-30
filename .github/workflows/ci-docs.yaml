@@ -71,14 +71,30 @@ jobs:
           vercel-project-id: ${{ secrets.vercel_project_id }}
           working-directory: ./target-bazel/bin/cloud/docs/build
 
-      - name: PR Comment
-        uses: thollander/actions-comment-pull-request@v3
+      - name: Write status file
         if: ${{ inputs.deploy_docs && inputs.pr_number }}
-        with:
-          pr-number: ${{ inputs.pr_number }}
-          github-token: ${{ secrets.GITHUB_TOKEN }}
-          comment-tag: ${{ steps.deploy.outputs.preview-name }}
-          message: |
-            Deployment of ${{ steps.deploy.outputs.preview-name }}
+        run: |
+          PREVIEW_NAME="${{ steps.deploy.outputs.preview-name }}"
 
-            ${{ steps.deploy.outputs.preview-url }}
+          PREVIEW_URL="${{ steps.deploy.outputs.preview-url }}"
+          if [ -z "$PREVIEW_URL" ]; then
+            STATUS="failed"
+          else
+            STATUS="success"
+          fi
+
+          cat > status.json <<EOF
+          {
+            "deployment": "docs",
+            "status": "$STATUS",
+            "name": "$PREVIEW_NAME",
+            "url": "$PREVIEW_URL"
+          }
+          EOF
+
+      - name: Upload status artifact
+        if: ${{ inputs.deploy_docs && inputs.pr_number }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: deploy-status-docs
+          path: status.json

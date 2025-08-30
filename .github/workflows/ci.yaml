@@ -126,6 +126,79 @@ jobs:
       vercel_project_id: "${{ secrets.VERCEL_PROJECT_ID_DOCS_SCUFFLE_CLOUD }}"
       vercel_org_id: "${{ secrets.VERCEL_ORG_ID }}"
 
+  docs-report:
+      name: docs / deployments report
+      needs: [rustdoc, docs, dashboard]
+      runs-on: ubuntu-24.04
+      if: ${{ always() && (fromJson(needs.prep.outputs.prep).rustdoc != null || fromJson(needs.prep.outputs.prep).docs != null || fromJson(needs.prep.outputs.prep).dashboard != null) }}
+      permissions:
+        pull-requests: write
+      steps:
+        - name: Download all artifacts
+          uses: actions/download-artifact@v4
+          with:
+            path: ./artifacts
+
+        - name: Build comment body from status artifacts
+          env:
+            PREP_OUTPUT: ${{ needs.prep.outputs.prep }}
+          run: |
+            set -xeo pipefail
+            PR=$(jq -r '(.rustdoc.pr_number // .docs.pr_number // .dashboard.pr_number) // empty' <<< "$PREP_OUTPUT")
+            if [ -z "$PR" ]; then
+              echo "No PR number found in prep output; nothing to comment on. Exiting."
+              exit 0
+            fi
+
+            MARKER="<!-- scuffle-docs-deploy -->"
+            OUT=body.md
+            echo "$MARKER" > "$OUT"
+            echo "" >> "$OUT"
+            echo "|deployment|status|name|url|" >> "$OUT"
+            echo "|---|---|---|---|" >> "$OUT"
+
+            shopt -s nullglob
+            for f in artifacts/*/status.json; do
+              dep=$(jq -r .deployment "$f" 2>/dev/null || echo "")
+              st=$(jq -r .status "$f" 2>/dev/null || echo "unknown")
+              nm=$(jq -r .name "$f" 2>/dev/null || echo "")
+              url=$(jq -r .url "$f" 2>/dev/null || echo "")
+
+              if [ -n "$dep" ]; then
+                echo "| $dep | $st | $nm | $url |" >> "$OUT"
+              fi
+            done
+
+            if [ "$(wc -l < "$OUT")" -le 3 ]; then
+              echo "| no-deploys | skipped | - | - |" >> "$OUT"
+            fi
+
+            echo "PR=$PR" >> $GITHUB_OUTPUT
+
+        - name: Find existing marker comment
+          id: find_comment
+          uses: peter-evans/find-comment@v3
+          with:
+            issue-number: ${{ fromJson(needs.prep.outputs.prep).rustdoc.pr_number || fromJson(needs.prep.outputs.prep).docs.pr_number || fromJson(needs.prep.outputs.prep).dashboard.pr_number }}
+            comment-author: "github-actions[bot]"
+            body-includes: "<!-- scuffle-docs-deploy -->"
+
+        - name: Create comment (if not found)
+          if: ${{ steps.find_comment.outputs.comment-id == '' }}
+          uses: peter-evans/create-or-update-comment@v4
+          with:
+            issue-number: ${{ fromJson(needs.prep.outputs.prep).rustdoc.pr_number || fromJson(needs.prep.outputs.prep).docs.pr_number || fromJson(needs.prep.outputs.prep).dashboard.pr_number }}
+            body-path: body.md
+
+        - name: Update comment (if found)
+          if: ${{ steps.find_comment.outputs.comment-id != '' }}
+          uses: peter-evans/create-or-update-comment@v4
+          with:
+            comment-id: ${{ steps.find_comment.outputs.comment-id }}
+            issue-number: ${{ fromJson(needs.prep.outputs.prep).rustdoc.pr_number || fromJson(needs.prep.outputs.prep).docs.pr_number || fromJson(needs.prep.outputs.prep).dashboard.pr_number }}
+            body-path: body.md
+            edit-mode: replace
+
   brawl-done:
     runs-on: ubuntu-24.04
     needs: [check_vendor, test, check_fmt, grind, rustdoc]

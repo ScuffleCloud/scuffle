@@ -55,6 +55,13 @@ def pr_number() -> Optional[int]:
     return None
 
 
+def target_exists(*paths: str) -> bool:
+    for p in paths:
+        if os.path.exists(p):
+            return True
+    return False
+
+
 # The output should be in the form
 # matrix=<json>
 
@@ -130,29 +137,38 @@ def deploy_docs() -> bool:
 
 
 def create_rustdoc() -> Optional[Rustdoc]:
+    if not target_exists("docs", "target-bazel/bin/docs", "docs/rustdoc"):
+        return None
+
     return Rustdoc(
         artifact_name="rustdoc",
         deploy_docs=deploy_docs(),
         pr_number=pr_number(),
-        commit_sha=commit_sha(),
+        commit_sha=commit_sha() or "",
     )
 
 
 def create_docs() -> Optional[Docs]:
+    if not target_exists("cloud/docs", "docs"):
+        return None
+
     return Docs(
         artifact_name="docs",
         deploy_docs=deploy_docs(),
         pr_number=pr_number(),
-        commit_sha=commit_sha(),
+        commit_sha=commit_sha() or "",
     )
 
 
 def create_dashboard() -> Optional[Dashboard]:
+    if not target_exists("cloud/dashboard"):
+        return None
+
     return Dashboard(
         artifact_name="dashboard",
         deploy_docs=deploy_docs(),
         pr_number=pr_number(),
-        commit_sha=commit_sha(),
+        commit_sha=commit_sha() or "",
     )
 
 

@@ -75,7 +75,7 @@ jobs:
       codecov_token: "${{ secrets.CODECOV_TOKEN }}"
       build_buddy_token: "${{ secrets.BUILD_BUDDY_TOKEN }}"
 
-  build-previews:
+  preview:
     needs: [prep]
     if: ${{ fromJson(needs.prep.outputs.prep).dashboard != null || fromJson(needs.prep.outputs.prep).docs != null || fromJson(needs.prep.outputs.prep).rustdoc != null }}
     uses: ./.github/workflows/ci-build-previews.yaml
@@ -93,7 +93,7 @@ jobs:
 
   brawl-done:
     runs-on: ubuntu-24.04
-    needs: [check_vendor, test, check_fmt, grind, build-previews]
+    needs: [check_vendor, test, check_fmt, grind, preview]
     if: ${{ !cancelled() && github.event_name == 'push' }}
     steps:
       - name: calculate the correct exit status

@@ -72,7 +72,7 @@ rust_library(
     version = "0.13.0",
     deps = [
         "@cargo_vendor__bitflags-2.9.3//:bitflags",
-        "@cargo_vendor__getopts-0.2.23//:getopts",
+        "@cargo_vendor__getopts-0.2.24//:getopts",
         "@cargo_vendor__memchr-2.7.5//:memchr",
         "@cargo_vendor__pulldown-cmark-0.13.0//:build_script_build",
         "@cargo_vendor__pulldown-cmark-escape-0.11.0//:pulldown_cmark_escape",

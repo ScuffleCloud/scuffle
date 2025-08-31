@@ -298,14 +298,14 @@ transition_alias_opt(
 )
 
 transition_alias_opt(
-    name = "config-0.15.14",
-    actual = "@cargo_vendor__config-0.15.14//:config",
+    name = "config-0.15.15",
+    actual = "@cargo_vendor__config-0.15.15//:config",
     tags = ["manual"],
 )
 
 transition_alias_opt(
     name = "config",
-    actual = "@cargo_vendor__config-0.15.14//:config",
+    actual = "@cargo_vendor__config-0.15.15//:config",
     tags = ["manual"],
 )
 
@@ -1150,14 +1150,14 @@ transition_alias_opt(
 )
 
 transition_alias_opt(
-    name = "quinn-0.11.8",
-    actual = "@cargo_vendor__quinn-0.11.8//:quinn",
+    name = "quinn-0.11.9",
+    actual = "@cargo_vendor__quinn-0.11.9//:quinn",
     tags = ["manual"],
 )
 
 transition_alias_opt(
     name = "quinn",
-    actual = "@cargo_vendor__quinn-0.11.8//:quinn",
+    actual = "@cargo_vendor__quinn-0.11.9//:quinn",
     tags = ["manual"],
 )
 
@@ -1438,14 +1438,14 @@ transition_alias_opt(
 )
 
 transition_alias_opt(
-    name = "swagger-ui-dist-5.27.1",
-    actual = "@cargo_vendor__swagger-ui-dist-5.27.1//:swagger_ui_dist",
+    name = "swagger-ui-dist-5.28.0",
+    actual = "@cargo_vendor__swagger-ui-dist-5.28.0//:swagger_ui_dist",
     tags = ["manual"],
 )
 
 transition_alias_opt(
     name = "swagger-ui-dist",
-    actual = "@cargo_vendor__swagger-ui-dist-5.27.1//:swagger_ui_dist",
+    actual = "@cargo_vendor__swagger-ui-dist-5.28.0//:swagger_ui_dist",
     tags = ["manual"],
 )
 
@@ -1714,14 +1714,14 @@ transition_alias_opt(
 )
 
 transition_alias_opt(
-    name = "tracing-subscriber-0.3.19",
-    actual = "@cargo_vendor__tracing-subscriber-0.3.19//:tracing_subscriber",
+    name = "tracing-subscriber-0.3.20",
+    actual = "@cargo_vendor__tracing-subscriber-0.3.20//:tracing_subscriber",
     tags = ["manual"],
 )
 
 transition_alias_opt(
     name = "tracing-subscriber",
-    actual = "@cargo_vendor__tracing-subscriber-0.3.19//:tracing_subscriber",
+    actual = "@cargo_vendor__tracing-subscriber-0.3.20//:tracing_subscriber",
     tags = ["manual"],
 )
 

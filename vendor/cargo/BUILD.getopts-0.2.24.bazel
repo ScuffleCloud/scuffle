@@ -17,14 +17,11 @@ cargo_toml_env_vars(
 )
 
 rust_library(
-    name = "webpki_root_certs",
+    name = "getopts",
     srcs = glob(
         include = ["**/*.rs"],
         allow_empty = True,
     ),
-    aliases = {
-        "@cargo_vendor__webpki-root-certs-1.0.2//:webpki_root_certs": "parent",
-    },
     compile_data = glob(
         include = ["**"],
         allow_empty = True,
@@ -37,6 +34,10 @@ rust_library(
             "WORKSPACE.bazel",
         ],
     ),
+    crate_features = [
+        "default",
+        "unicode",
+    ],
     crate_root = "src/lib.rs",
     edition = "2021",
     rustc_env_files = [
@@ -47,17 +48,23 @@ rust_library(
     ],
     tags = [
         "cargo-bazel",
-        "crate-name=webpki-root-certs",
+        "crate-name=getopts",
         "manual",
         "noclippy",
         "norustfmt",
     ],
     target_compatible_with = select({
+        "@rules_rust//rust/platform:aarch64-apple-darwin": [],
+        "@rules_rust//rust/platform:aarch64-pc-windows-msvc": [],
+        "@rules_rust//rust/platform:aarch64-unknown-linux-gnu": [],
         "@rules_rust//rust/platform:wasm32-unknown-unknown": [],
+        "@rules_rust//rust/platform:x86_64-apple-darwin": [],
+        "@rules_rust//rust/platform:x86_64-pc-windows-msvc": [],
+        "@rules_rust//rust/platform:x86_64-unknown-linux-gnu": [],
         "//conditions:default": ["@platforms//:incompatible"],
     }),
-    version = "0.26.11",
+    version = "0.2.24",
     deps = [
-        "@cargo_vendor__webpki-root-certs-1.0.2//:webpki_root_certs",
+        "@cargo_vendor__unicode-width-0.2.1//:unicode_width",
     ],
 )

@@ -17,11 +17,15 @@ cargo_toml_env_vars(
 )
 
 rust_library(
-    name = "getopts",
+    name = "swagger_ui_dist",
     srcs = glob(
         include = ["**/*.rs"],
         allow_empty = True,
     ),
+    aliases = {
+        "@cargo_vendor__axum-0.8.4//:axum": "axum_08",
+        "@cargo_vendor__axum-core-0.5.2//:axum_core": "axum_core_05",
+    },
     compile_data = glob(
         include = ["**"],
         allow_empty = True,
@@ -34,6 +38,12 @@ rust_library(
             "WORKSPACE.bazel",
         ],
     ),
+    crate_features = [
+        "axum-08",
+        "axum-core-05",
+        "default",
+        "with-axum-08",
+    ],
     crate_root = "src/lib.rs",
     edition = "2021",
     rustc_env_files = [
@@ -44,7 +54,7 @@ rust_library(
     ],
     tags = [
         "cargo-bazel",
-        "crate-name=getopts",
+        "crate-name=swagger-ui-dist",
         "manual",
         "noclippy",
         "norustfmt",
@@ -59,8 +69,9 @@ rust_library(
         "@rules_rust//rust/platform:x86_64-unknown-linux-gnu": [],
         "//conditions:default": ["@platforms//:incompatible"],
     }),
-    version = "0.2.23",
+    version = "5.28.0",
     deps = [
-        "@cargo_vendor__unicode-width-0.2.1//:unicode_width",
+        "@cargo_vendor__axum-0.8.4//:axum",
+        "@cargo_vendor__axum-core-0.5.2//:axum_core",
     ],
 )

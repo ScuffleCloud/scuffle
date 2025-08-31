@@ -67,6 +67,6 @@ rust_library(
         "@cargo_vendor__opentelemetry-0.30.0//:opentelemetry",
         "@cargo_vendor__tracing-0.1.41//:tracing",
         "@cargo_vendor__tracing-core-0.1.34//:tracing_core",
-        "@cargo_vendor__tracing-subscriber-0.3.19//:tracing_subscriber",
+        "@cargo_vendor__tracing-subscriber-0.3.20//:tracing_subscriber",
     ],
 )

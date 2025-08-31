@@ -74,7 +74,7 @@ rust_library(
         "@cargo_vendor__cargo_metadata-0.21.0//:cargo_metadata",
         "@cargo_vendor__cfg-if-1.0.3//:cfg_if",
         "@cargo_vendor__chrono-0.4.41//:chrono",
-        "@cargo_vendor__config-0.15.14//:config",
+        "@cargo_vendor__config-0.15.15//:config",
         "@cargo_vendor__crossterm-0.29.0//:crossterm",
         "@cargo_vendor__debug-ignore-1.0.5//:debug_ignore",
         "@cargo_vendor__duct-1.1.0//:duct",

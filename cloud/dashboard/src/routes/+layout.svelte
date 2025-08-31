@@ -14,13 +14,7 @@
     import LoginPage from "$components/login/login-page.svelte";
     import RightNav from "$components/right-nav/right-nav.svelte";
     import { PUBLIC_VITE_MSW_ENABLED } from "$env/static/public";
-    import {
-        authAPI,
-        type AuthResult,
-        authState,
-        initializeAuth,
-    } from "$lib/authState.svelte";
-    import { enableMocking } from "$msw/setup";
+    import { authState, initializeAuth } from "$lib/authState.svelte";
 
     // Let's put all this in a hook to check auth status and who the user is
     $effect(() => {
@@ -34,7 +28,12 @@
 
     $effect(() => {
         if (requireMsw && !mockingReady) {
-            enableMocking().then(() => {
+            console.log("Loading MSW");
+            import("$msw/setup").then(({ enableMocking }) => {
+                return enableMocking();
+            }).catch((error) => {
+                console.error("Failed to load MSW:", error);
+            }).finally(() => {
                 mockingReady = true;
             });
         }

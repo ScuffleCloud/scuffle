@@ -17,7 +17,7 @@ cargo_toml_env_vars(
 )
 
 rust_library(
-    name = "potential_utf",
+    name = "matchers",
     srcs = glob(
         include = ["**/*.rs"],
         allow_empty = True,
@@ -34,11 +34,8 @@ rust_library(
             "WORKSPACE.bazel",
         ],
     ),
-    crate_features = [
-        "zerovec",
-    ],
     crate_root = "src/lib.rs",
-    edition = "2021",
+    edition = "2018",
     rustc_env_files = [
         ":cargo_toml_env_vars",
     ],
@@ -47,7 +44,7 @@ rust_library(
     ],
     tags = [
         "cargo-bazel",
-        "crate-name=potential_utf",
+        "crate-name=matchers",
         "manual",
         "noclippy",
         "norustfmt",
@@ -62,8 +59,8 @@ rust_library(
         "@rules_rust//rust/platform:x86_64-unknown-linux-gnu": [],
         "//conditions:default": ["@platforms//:incompatible"],
     }),
-    version = "0.1.2",
+    version = "0.2.0",
     deps = [
-        "@cargo_vendor__zerovec-0.11.4//:zerovec",
+        "@cargo_vendor__regex-automata-0.4.10//:regex_automata",
     ],
 )

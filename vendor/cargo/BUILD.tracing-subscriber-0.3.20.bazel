@@ -17,7 +17,7 @@ cargo_toml_env_vars(
 )
 
 rust_library(
-    name = "trim_in_place",
+    name = "tracing_subscriber",
     srcs = glob(
         include = ["**/*.rs"],
         allow_empty = True,
@@ -34,8 +34,25 @@ rust_library(
             "WORKSPACE.bazel",
         ],
     ),
+    crate_features = [
+        "alloc",
+        "ansi",
+        "default",
+        "env-filter",
+        "fmt",
+        "matchers",
+        "nu-ansi-term",
+        "once_cell",
+        "registry",
+        "sharded-slab",
+        "smallvec",
+        "std",
+        "thread_local",
+        "tracing",
+        "tracing-log",
+    ],
     crate_root = "src/lib.rs",
-    edition = "2021",
+    edition = "2018",
     rustc_env_files = [
         ":cargo_toml_env_vars",
     ],
@@ -44,7 +61,7 @@ rust_library(
     ],
     tags = [
         "cargo-bazel",
-        "crate-name=trim-in-place",
+        "crate-name=tracing-subscriber",
         "manual",
         "noclippy",
         "norustfmt",
@@ -59,5 +76,17 @@ rust_library(
         "@rules_rust//rust/platform:x86_64-unknown-linux-gnu": [],
         "//conditions:default": ["@platforms//:incompatible"],
     }),
-    version = "0.1.7",
+    version = "0.3.20",
+    deps = [
+        "@cargo_vendor__matchers-0.2.0//:matchers",
+        "@cargo_vendor__nu-ansi-term-0.50.1//:nu_ansi_term",
+        "@cargo_vendor__once_cell-1.21.3//:once_cell",
+        "@cargo_vendor__regex-automata-0.4.10//:regex_automata",
+        "@cargo_vendor__sharded-slab-0.1.7//:sharded_slab",
+        "@cargo_vendor__smallvec-1.15.1//:smallvec",
+        "@cargo_vendor__thread_local-1.1.9//:thread_local",
+        "@cargo_vendor__tracing-0.1.41//:tracing",
+        "@cargo_vendor__tracing-core-0.1.34//:tracing_core",
+        "@cargo_vendor__tracing-log-0.2.0//:tracing_log",
+    ],
 )

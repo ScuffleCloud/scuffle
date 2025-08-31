@@ -36,7 +36,9 @@ rust_library(
     ),
     crate_features = [
         "alloc",
+        "dfa-build",
         "dfa-onepass",
+        "dfa-search",
         "hybrid",
         "meta",
         "nfa",

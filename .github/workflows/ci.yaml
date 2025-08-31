@@ -75,136 +75,25 @@ jobs:
       codecov_token: "${{ secrets.CODECOV_TOKEN }}"
       build_buddy_token: "${{ secrets.BUILD_BUDDY_TOKEN }}"
 
-  rustdoc:
+  build-previews:
     needs: [prep]
-    if: ${{ fromJson(needs.prep.outputs.prep).rustdoc != null }}
-    uses: ./.github/workflows/ci-rustdoc.yaml
+    if: ${{ fromJson(needs.prep.outputs.prep).dashboard != null || fromJson(needs.prep.outputs.prep).docs != null || fromJson(needs.prep.outputs.prep).rustdoc != null }}
+    uses: ./.github/workflows/ci-build-previews.yaml
     permissions:
       pull-requests: write
     with:
-      artifact_name: "${{ fromJson(needs.prep.outputs.prep).rustdoc.artifact_name }}"
-      commit_sha: "${{ fromJson(needs.prep.outputs.prep).rustdoc.commit_sha }}"
-      pr_number: "${{ fromJson(needs.prep.outputs.prep).rustdoc.pr_number }}"
-      deploy_docs: "${{ fromJson(needs.prep.outputs.prep).rustdoc.deploy_docs }}"
+      prep_output: "${{ needs.prep.outputs.prep }}"
     secrets:
-      build_buddy_token: "${{ secrets.BUILD_BUDDY_TOKEN }}"
-      vercel_token: "${{ secrets.VERCEL_TOKEN }}"
-      vercel_project_id: "${{ secrets.VERCEL_PROJECT_ID_DOCS_SCUFFLE_RS }}"
-      vercel_org_id: "${{ secrets.VERCEL_ORG_ID }}"
-
-  dashboard:
-    needs: [prep]
-    if: ${{ fromJson(needs.prep.outputs.prep).dashboard != null }}
-    uses: ./.github/workflows/ci-dashboard.yaml
-    permissions:
-      pull-requests: write
-    with:
-      artifact_name: "${{ fromJson(needs.prep.outputs.prep).dashboard.artifact_name }}"
-      commit_sha: "${{ fromJson(needs.prep.outputs.prep).dashboard.commit_sha }}"
-      pr_number: "${{ fromJson(needs.prep.outputs.prep).dashboard.pr_number }}"
-      deploy_docs: "${{ fromJson(needs.prep.outputs.prep).dashboard.deploy_docs }}"
-    secrets:
-      build_buddy_token: "${{ secrets.BUILD_BUDDY_TOKEN }}"
-      vercel_token: "${{ secrets.VERCEL_TOKEN }}"
-      vercel_project_id: "${{ secrets.VERCEL_PROJECT_ID_APP_SCUFFLE_CLOUD }}"
-      vercel_org_id: "${{ secrets.VERCEL_ORG_ID }}"
-
-  docs:
-    needs: [prep]
-    if: ${{ fromJson(needs.prep.outputs.prep).docs != null }}
-    uses: ./.github/workflows/ci-docs.yaml
-    permissions:
-      pull-requests: write
-    with:
-      artifact_name: "${{ fromJson(needs.prep.outputs.prep).docs.artifact_name }}"
-      commit_sha: "${{ fromJson(needs.prep.outputs.prep).docs.commit_sha }}"
-      pr_number: "${{ fromJson(needs.prep.outputs.prep).docs.pr_number }}"
-      deploy_docs: "${{ fromJson(needs.prep.outputs.prep).docs.deploy_docs }}"
-    secrets:
-      build_buddy_token: "${{ secrets.BUILD_BUDDY_TOKEN }}"
-      vercel_token: "${{ secrets.VERCEL_TOKEN }}"
-      vercel_project_id: "${{ secrets.VERCEL_PROJECT_ID_DOCS_SCUFFLE_CLOUD }}"
-      vercel_org_id: "${{ secrets.VERCEL_ORG_ID }}"
-
-  docs-report:
-    name: docs / deployments report
-    needs: [prep, rustdoc, docs, dashboard]
-    runs-on: ubuntu-24.04
-    if: ${{ always() && (fromJson(needs.prep.outputs.prep).rustdoc != null || fromJson(needs.prep.outputs.prep).docs != null || fromJson(needs.prep.outputs.prep).dashboard != null) }}
-    permissions:
-      pull-requests: write
-    steps:
-      - name: Download all artifacts
-        uses: actions/download-artifact@v4
-        with:
-          path: ./artifacts
-
-      - name: Build comment body from status artifacts
-        id: build_body
-        env:
-          PREP_OUTPUT: ${{ needs.prep.outputs.prep }}
-        run: |
-          set -xeo pipefail
-          PR=$(jq -r '(.rustdoc.pr_number // .docs.pr_number // .dashboard.pr_number) // empty' <<< "$PREP_OUTPUT")
-
-          if [ -z "$PR" ]; then
-            echo "No PR number found in prep output; nothing to comment on. Exiting."
-            echo "PR=" >> $GITHUB_OUTPUT
-            exit 0
-          fi
-
-          MARKER="<!-- scuffle-docs-deploy -->"
-          OUT=body.md
-          echo "$MARKER" > "$OUT"
-          echo "" >> "$OUT"
-          echo "|deployment|status|name|url|" >> "$OUT"
-          echo "|---|---|---|---|" >> "$OUT"
-
-          shopt -s nullglob
-          for f in artifacts/*/status.json; do
-            dep=$(jq -r .deployment "$f" 2>/dev/null || echo "")
-            st=$(jq -r .status "$f" 2>/dev/null || echo "unknown")
-            nm=$(jq -r .name "$f" 2>/dev/null || echo "")
-            url=$(jq -r .url "$f" 2>/dev/null || echo "")
-
-            if [ -n "$dep" ]; then
-              echo "| $dep | $st | $nm | $url |" >> "$OUT"
-            fi
-          done
-
-          if [ "$(wc -l < "$OUT")" -le 3 ]; then
-            echo "| no-deploys | skipped | - | - |" >> "$OUT"
-          fi
-
-          echo "PR=$PR" >> $GITHUB_OUTPUT
-
-      - name: Find existing marker comment
-        id: find_comment
-        uses: peter-evans/find-comment@v3
-        with:
-          issue-number: ${{ steps.build_body.outputs.PR }}
-          comment-author: "github-actions[bot]"
-          body-includes: "<!-- scuffle-docs-deploy -->"
-
-      - name: Create comment (if not found)
-        if: ${{ steps.find_comment.outputs.comment-id == '' && steps.build_body.outputs.PR != '' }}
-        uses: peter-evans/create-or-update-comment@v4
-        with:
-          issue-number: ${{ steps.build_body.outputs.PR }}
-          body-path: body.md
-
-      - name: Update comment (if found)
-        if: ${{ steps.find_comment.outputs.comment-id != '' }}
-        uses: peter-evans/create-or-update-comment@v4
-        with:
-          comment-id: ${{ steps.find_comment.outputs.comment-id }}
-          issue-number: ${{ steps.build_body.outputs.PR }}
-          body-path: body.md
-          edit-mode: replace
+      build_buddy_token: ${{ secrets.BUILD_BUDDY_TOKEN }}
+      vercel_token: ${{ secrets.VERCEL_TOKEN }}
+      vercel_org_id: ${{ secrets.VERCEL_ORG_ID }}
+      vercel_project_id_dashboard: ${{ secrets.VERCEL_PROJECT_ID_APP_SCUFFLE_CLOUD }}
+      vercel_project_id_docs: ${{ secrets.VERCEL_PROJECT_ID_DOCS_SCUFFLE_CLOUD }}
+      vercel_project_id_rustdoc: ${{ secrets.VERCEL_PROJECT_ID_DOCS_SCUFFLE_RS }}
 
   brawl-done:
     runs-on: ubuntu-24.04
-    needs: [check_vendor, test, check_fmt, grind, rustdoc]
+    needs: [check_vendor, test, check_fmt, grind, build-previews]
     if: ${{ !cancelled() && github.event_name == 'push' }}
     steps:
       - name: calculate the correct exit status

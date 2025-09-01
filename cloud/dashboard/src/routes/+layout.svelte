@@ -29,9 +29,10 @@
     $effect(() => {
         if (requireMsw && !mockingReady) {
             console.log("Loading MSW");
-            import("$msw/setup").then(({ enableMocking }) => {
+            import("$msw/setup").then(({ enableMocking }) =>
+                enableMocking()
+            ).then(() => {
                 mockingReady = true;
-                return enableMocking();
             }).catch((error) => {
                 console.error("Failed to load MSW:", error);
             });

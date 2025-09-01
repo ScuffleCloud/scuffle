@@ -46,7 +46,8 @@
     },
     "dependencies": {
         "date-fns": "^4.1.0",
-        "melt": "^0.17.8"
+        "melt": "^0.17.8",
+        "@scufflecloud/proto": "workspace:*"
     },
     "msw": {
         "workerDirectory": [

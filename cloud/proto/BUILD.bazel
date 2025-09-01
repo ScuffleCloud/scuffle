@@ -1,9 +1,14 @@
-load("@aspect_rules_js//js:defs.bzl", "js_library")
+load("@aspect_rules_js//npm:defs.bzl", "npm_package")
+load("@npm//:defs.bzl", "npm_link_all_packages")
+load("@npm//cloud/proto:typescript/package_json.bzl", typescript_bin = "bin")
 load("@protobuf//bazel:proto_library.bzl", "proto_library")
 load("//misc/utils:proto_descriptor_set.bzl", "proto_descriptor_set")
 load("//misc/utils/protobuf/ts:defs.bzl", "protobuf_ts_compile")
 load("//misc/utils/rust:manifest.bzl", "cargo_toml")
 load("//misc/utils/rust:package.bzl", "scuffle_build_script", "scuffle_package")
+load("@aspect_bazel_lib//lib:output_files.bzl", "output_files")
+
+npm_link_all_packages()
 
 cargo_toml()
 
@@ -43,18 +48,34 @@ scuffle_package(
 
 protobuf_ts_compile(
     name = "ts_proto",
-    # extra_protoc_args = [
-    #     "--ts_opt=generated",
-    #     "--ts_opt=optimize_code_size",
-    #     "--ts_opt=long_type_string",
-    # ],
     protos = [":pb"],
 )
 
-# js_library(
-#     name = "ts",
-#     srcs = [
-#         "package.json",
-#         ":ts_proto",
-#     ]
-# )
+typescript_bin.tsc(
+    name = "ts_lib",
+    srcs = [
+        ":ts_proto",
+        ":tsconfig.json",
+        ":package.json",
+        ":node_modules",
+    ],
+    args = [
+        "-p", "tsconfig.json",
+        "--outDir", "generated",
+    ],
+    chdir = package_name(),
+    out_dirs = ["generated"],
+    visibility = ["//visibility:public"],
+)
+
+output_files(
+    name = "ts_lib_copy",
+    paths = [package_name() + "/generated"],
+    target = ":ts_lib",
+)
+
+npm_package(
+    name = "pkg",
+    srcs = ["package.json", ":ts_lib_copy"],
+    visibility = ["//visibility:public"],
+)

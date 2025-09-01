@@ -63,7 +63,7 @@ Sequence of `ProtoInfo`s to collect `FileDescriptorSet`s from.
 """.strip(),
         ),
         "_file_concat": attr.label(
-            default = "//misc/utils/protobuf:file_concat",
+            default = "//misc/utils/protobuf/file_concat",
             executable = True,
             cfg = "exec",
         ),

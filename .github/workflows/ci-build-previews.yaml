@@ -26,13 +26,13 @@ defaults:
 
 jobs:
   dashboard:
-    if: ${{ fromJson(inputs.prep_output).dashboard != null }}
+    if: ${{ fromJson(inputs.prep_output).deploy.dashboard != null }}
     runs-on: ubicloud-standard-8-ubuntu-2404
     env:
-      ARTIFACT_NAME: ${{ fromJson(inputs.prep_output).dashboard.artifact_name }}
-      PR_NUMBER: ${{ fromJson(inputs.prep_output).dashboard.pr_number }}
-      DEPLOY_DOCS: ${{ fromJson(inputs.prep_output).dashboard.deploy_docs }}
-      COMMIT_SHA: ${{ fromJson(inputs.prep_output).dashboard.commit_sha }}
+      ARTIFACT_NAME: ${{ fromJson(inputs.prep_output).deploy.dashboard.artifact_name }}
+      PR_NUMBER: ${{ fromJson(inputs.prep_output).deploy.pr_number }}
+      DEPLOY_DOCS: ${{ fromJson(inputs.prep_output).deploy.dashboard.deploy }}
+      COMMIT_SHA: ${{ fromJson(inputs.prep_output).deploy.commit_sha }}
     steps:
       - uses: actions/checkout@v4
 
@@ -99,13 +99,13 @@ jobs:
           path: status.json
 
   docs:
-    if: ${{ fromJson(inputs.prep_output).docs != null }}
+    if: ${{ fromJson(inputs.prep_output).deploy.docs != null }}
     runs-on: ubicloud-standard-8-ubuntu-2404
     env:
-      ARTIFACT_NAME: ${{ fromJson(inputs.prep_output).docs.artifact_name }}
-      PR_NUMBER: ${{ fromJson(inputs.prep_output).docs.pr_number }}
-      DEPLOY_DOCS: ${{ fromJson(inputs.prep_output).docs.deploy_docs }}
-      COMMIT_SHA: ${{ fromJson(inputs.prep_output).docs.commit_sha }}
+      ARTIFACT_NAME: ${{ fromJson(inputs.prep_output).deploy.docs.artifact_name }}
+      PR_NUMBER: ${{ fromJson(inputs.prep_output).deploy.pr_number }}
+      DEPLOY_DOCS: ${{ fromJson(inputs.prep_output).deploy.docs.deploy }}
+      COMMIT_SHA: ${{ fromJson(inputs.prep_output).deploy.commit_sha }}
     steps:
       - uses: actions/checkout@v4
 
@@ -172,13 +172,13 @@ jobs:
           path: status.json
 
   rustdoc:
-    if: ${{ fromJson(inputs.prep_output).rustdoc != null }}
+    if: ${{ fromJson(inputs.prep_output).deploy.rustdoc != null }}
     runs-on: ubicloud-standard-8-ubuntu-2404
     env:
-      ARTIFACT_NAME: ${{ fromJson(inputs.prep_output).rustdoc.artifact_name }}
-      PR_NUMBER: ${{ fromJson(inputs.prep_output).rustdoc.pr_number }}
-      DEPLOY_DOCS: ${{ fromJson(inputs.prep_output).rustdoc.deploy_docs }}
-      COMMIT_SHA: ${{ fromJson(inputs.prep_output).rustdoc.commit_sha }}
+      ARTIFACT_NAME: ${{ fromJson(inputs.prep_output).deploy.rustdoc.artifact_name }}
+      PR_NUMBER: ${{ fromJson(inputs.prep_output).deploy.pr_number }}
+      DEPLOY_DOCS: ${{ fromJson(inputs.prep_output).deploy.rustdoc.deploy }}
+      COMMIT_SHA: ${{ fromJson(inputs.prep_output).deploy.commit_sha }}
     steps:
       - uses: actions/checkout@v4
 
@@ -247,7 +247,7 @@ jobs:
   docs-report:
     needs: [dashboard, docs, rustdoc]
     runs-on: ubuntu-24.04
-    if: ${{ always() && (fromJson(inputs.prep_output).rustdoc != null || fromJson(inputs.prep_output).docs != null || fromJson(inputs.prep_output).dashboard != null) }}
+    if: ${{ fromJson(inputs.prep_output).deploy != null }}
     steps:
       - name: Download all artifacts
         uses: actions/download-artifact@v4
@@ -260,7 +260,7 @@ jobs:
           PREP_OUTPUT: ${{ inputs.prep_output }}
         run: |
           set -xeo pipefail
-          PR=$(jq -r '(.rustdoc.pr_number // .docs.pr_number // .dashboard.pr_number) // empty' <<< "$PREP_OUTPUT")
+          PR=$(jq -r '(.deploy.pr_number // empty)' <<< "$PREP_OUTPUT")
 
           if [ -z "$PR" ]; then
             echo "No PR number found in prep output; nothing to comment on. Exiting."

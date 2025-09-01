@@ -55,39 +55,23 @@ def pr_number() -> Optional[int]:
     return None
 
 
-def target_exists(*paths: str) -> bool:
-    for p in paths:
-        if os.path.exists(p):
-            return True
-    return False
-
-
 # The output should be in the form
 # matrix=<json>
 
 
 @dataclass
-class Rustdoc:
-    artifact_name: Optional[str]
-    pr_number: Optional[int]
-    commit_sha: str
-    deploy_docs: bool
+class DeployArtifact:
+    deploy: bool
+    artifact_name: str
 
 
 @dataclass
-class Docs:
-    artifact_name: Optional[str]
+class Deploy:
     pr_number: Optional[int]
     commit_sha: str
-    deploy_docs: bool
-
-
-@dataclass
-class Dashboard:
-    artifact_name: Optional[str]
-    pr_number: Optional[int]
-    commit_sha: str
-    deploy_docs: bool
+    rustdoc: Optional[DeployArtifact]
+    docs: Optional[DeployArtifact]
+    dashboard: Optional[DeployArtifact]
 
 
 @dataclass
@@ -123,9 +107,7 @@ class CheckFmt:
 
 @dataclass
 class Jobs:
-    rustdoc: Optional[Rustdoc]
-    docs: Optional[Docs]
-    dashboard: Optional[Dashboard]
+    deploy: Optional[Deploy]
     test: Optional[Test]
     grind: Optional[Grind]
     check_vendor: Optional[CheckVendor]
@@ -136,44 +118,26 @@ def deploy_docs() -> bool:
     return not is_brawl("merge") and not is_fork_pr() and not is_dispatch_or_cron()
 
 
-def create_rustdoc() -> Optional[Rustdoc]:
-    if not target_exists("docs", "target-bazel/bin/docs", "docs/rustdoc"):
-        return None
-
-    return Rustdoc(
-        artifact_name="rustdoc",
-        deploy_docs=deploy_docs(),
-        pr_number=pr_number(),
-        commit_sha=commit_sha() or "",
-    )
-
-
-def create_docs() -> Optional[Docs]:
-    if not target_exists("cloud/docs", "docs"):
-        return None
-
-    return Docs(
-        artifact_name="docs",
-        deploy_docs=deploy_docs(),
-        pr_number=pr_number(),
-        commit_sha=commit_sha() or "",
-    )
-
-
-def create_dashboard() -> Optional[Dashboard]:
-    if not target_exists("cloud/dashboard"):
-        return None
-
-    return Dashboard(
-        artifact_name="dashboard",
-        deploy_docs=deploy_docs(),
-        pr_number=pr_number(),
-        commit_sha=commit_sha() or "",
-    )
-
-
 def commit_sha() -> str:
     return os.environ["SHA"]
+
+
+def create_deploy() -> Optional[Deploy]:
+    return Deploy(
+        pr_number=pr_number(),
+        commit_sha=commit_sha() or "",
+        rustdoc=DeployArtifact(deploy=deploy_docs(), artifact_name="rustdoc")
+        if os.path.exists("docs")
+        or os.path.exists("target-bazel/bin/docs")
+        or os.path.exists("docs/rustdoc")
+        else None,
+        docs=DeployArtifact(deploy=deploy_docs(), artifact_name="docs")
+        if os.path.exists("cloud/docs") or os.path.exists("docs")
+        else None,
+        dashboard=DeployArtifact(deploy=deploy_docs(), artifact_name="dashboard")
+        if os.path.exists("cloud/dashboard")
+        else None,
+    )
 
 
 def create_test() -> Optional[Test]:
@@ -214,10 +178,8 @@ def create_fmt() -> Optional[CheckFmt]:
 
 def create_jobs() -> Jobs:
     return Jobs(
-        rustdoc=create_rustdoc(),
+        deploy=create_deploy(),
         check_vendor=create_check_vendor(),
-        docs=create_docs(),
-        dashboard=create_dashboard(),
         grind=create_grind(),
         test=create_test(),
         check_fmt=create_fmt(),

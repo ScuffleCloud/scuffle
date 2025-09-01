@@ -77,7 +77,7 @@ jobs:
 
   preview:
     needs: [prep]
-    if: ${{ fromJson(needs.prep.outputs.prep).dashboard != null || fromJson(needs.prep.outputs.prep).docs != null || fromJson(needs.prep.outputs.prep).rustdoc != null }}
+    if: ${{ fromJson(needs.prep.outputs.prep).deploy != null }}
     uses: ./.github/workflows/ci-build-previews.yaml
     permissions:
       pull-requests: write

@@ -14,7 +14,16 @@
         "@protobuf-ts/runtime-rpc": "^2.11.1"
     },
     "exports": {
-        "./*": "./generated/*"
+        "./*": {
+            "types": "./generated/*",
+            "import": "./generated/*",
+            "require": "./generated/*"
+        }
+    },
+    "typesVersions": {
+        "*": {
+            "*": ["generated/*"]
+        }
     },
     "devDependencies": {
         "typescript": "^5.9.2"

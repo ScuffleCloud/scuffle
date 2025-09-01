@@ -16,7 +16,7 @@ importers:
     dependencies:
       '@scufflecloud/proto':
         specifier: workspace:*
-        version: link:../proto
+        version: link:../proto/ts
       date-fns:
         specifier: ^4.1.0
         version: 4.1.0
@@ -152,7 +152,7 @@ importers:
         specifier: ^5.8.3
         version: 5.8.3
 
-  cloud/proto:
+  cloud/proto/ts:
     dependencies:
       '@protobuf-ts/runtime':
         specifier: ^2.11.1

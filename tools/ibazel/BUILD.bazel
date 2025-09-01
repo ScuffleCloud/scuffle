@@ -1,0 +1,18 @@
+load("@rules_shell//shell:sh_binary.bzl", "sh_binary")
+
+alias(
+    name = "ibazel_file",
+    actual = select({
+        "//misc/platforms:linux-aarch64": "@ibazel-linux-aarch64//file",
+        "//misc/platforms:linux-x86_64": "@ibazel-linux-x86_64//file",
+        "//misc/platforms:macos-aarch64": "@ibazel-macos-aarch64//file",
+        "//misc/platforms:macos-x86_64": "@ibazel-macos-x86_64//file",
+    }),
+    tags = ["manual"],
+)
+
+sh_binary(
+    name = "ibazel",
+    srcs = [":ibazel_file"],
+    tags = ["manual"],
+)

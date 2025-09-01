@@ -22,6 +22,8 @@ include("//misc/toolchains:js.MODULE.bazel")
 
 include("//misc/toolchains:ffmpeg.MODULE.bazel")
 
+include("//misc/toolchains:ibazel.MODULE.bazel")
+
 include("//misc/toolchains:valgrind.MODULE.bazel")
 
 include("//misc/toolchains:assets.MODULE.bazel")

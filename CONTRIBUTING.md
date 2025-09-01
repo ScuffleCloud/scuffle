@@ -108,18 +108,30 @@ We advice you to use [direnv](https://direnv.net/) to load the `.envrc` file, wh
 
 We have a [nix shell setup](nix/README.md) too, (automatically loaded if you use direnv).
 
+### Frontend
+
+For the frontend we use [turbo](https://turbo.build/) to manage the monorepo. If you setup bazel and direnv correctly you only need to run `pnpm install` at the root of the repo to download all the dependencies.
+
+You can then run `pnpm dev` to start the frontend in development mode.
+
+Production builds are done via bazel and we just use turbo for dev servers and hot reloading.
+
+Linting is done through bazel as well, formatting is done via `just fmt` which uses `dprint` under the hood.
+
 ## Local Commnads
 
-| Command           | Description                                       |
-| ----------------- | ------------------------------------------------- |
-| `just test`       | Run all tests                                     |
-| `just grind`      | Run tests with valgrind                           |
-| `just lint`       | Lint the code & try auto-fix linting errors       |
-| `just fmt`        | Format the code                                   |
-| `just deny`       | Check that all dependencies have allowed licenses |
-| `just docs`       | Build the docs                                    |
-| `just docs-serve` | Serve the docs locally                            |
-| `just vendor`     | Vendor the dependencies                           |
+| Command              | Description                                       |
+| -------------------- | ------------------------------------------------- |
+| `just test`          | Run all tests                                     |
+| `just grind`         | Run tests with valgrind                           |
+| `just lint`          | Lint the code & try auto-fix linting errors       |
+| `just fmt`           | Format the code                                   |
+| `just deny`          | Check that all dependencies have allowed licenses |
+| `just docs`          | Build the docs                                    |
+| `just docs-serve`    | Serve the docs locally                            |
+| `just vendor`        | Vendor the dependencies                           |
+| `pnpm dev`           | Start all frontends dev servers                   |
+| `pnpm dev:dashboard` | Start the dashboard dev server                    |
 
 ## CLA
 

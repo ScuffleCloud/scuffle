@@ -1,10 +1,25 @@
+// We use turbo repo for frontend web development
+// this can be invoked by doing `pnpm dev` to run a dev env.
 {
     "$schema": "https://turborepo.com/schema.json",
     "ui": "tui",
     "tasks": {
         "dev": {
             "persistent": true,
-            "cache": false,
+            "cache": false
         },
-    },
+        "@scufflecloud/proto#build": {
+            "cache": false,
+            "persistent": false
+        },
+        "@scufflecloud/dashboard#dev": {
+            // We want the proto#build to happen before the dashboard#dev is run otherwise
+            // typescript will complain about types missing.
+            "dependsOn": [
+                "@scufflecloud/proto#build"
+            ],
+            "persistent": true,
+            "cache": false
+        }
+    }
 }

@@ -3,14 +3,7 @@
     "version": "0.0.0",
     "type": "module",
     "scripts": {
-        "dev": "vite dev",
-        "build": "vite build",
-        "preview": "vite preview",
-        "check": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json",
-        "check:watch": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json --watch",
-        "format": "dprint fmt",
-        "format:check": "dprint check",
-        "lint": "eslint ."
+        "dev": "vite dev"
     },
     "devDependencies": {
         "@eslint/js": "^9.16.0",

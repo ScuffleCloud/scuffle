@@ -2,7 +2,9 @@
     "packageManager": "pnpm@10.15.0",
     "private": true,
     "scripts": {
-        "dev": "turbo run dev"
+        "dev": "turbo run dev",
+        "dev:dashboard": "pnpm dev --filter=@scufflecloud/dashboard",
+        "turbo": "turbo"
     },
     "devDependencies": {
         "turbo": "^2.5.6"

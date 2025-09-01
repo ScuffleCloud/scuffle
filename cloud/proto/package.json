@@ -5,9 +5,17 @@
     "description": "Protocol Buffers for Scuffle Cloud",
     "license": "AGPL-3.0",
     "scripts": {
-        "build": ""
+        "build": "just build",
+        "clean": "just clean"
+    },
+    "dependencies": {
+        "@protobuf-ts/runtime": "^2.11.1",
+        "@protobuf-ts/runtime-rpc": "^2.11.1"
     },
     "exports": {
-        ".": "./generated"
+        "./*": "./generated/*"
+    },
+    "devDependencies": {
+        "typescript": "^5.9.2"
     }
 }

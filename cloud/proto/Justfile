@@ -1,0 +1,10 @@
+clean:
+    rm generated
+
+build:
+    #!/usr/bin/env bash
+
+    exec_root="$(bazel info execution_root)"
+    output="$(bazel cquery --output=files --build //cloud/proto:pkg)"
+    rm -r generated || true
+    ln -s "${exec_root}/${output}/generated" generated

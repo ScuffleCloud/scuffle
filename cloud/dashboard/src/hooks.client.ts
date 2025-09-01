@@ -1,5 +1,6 @@
 import { enableMocking } from "$msw/setup";
 import type { Handle } from "@sveltejs/kit";
+import {} from "@scufflecloud/proto/core/v1/common"
 
 const mockingPromise = enableMocking();
 

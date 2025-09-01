@@ -2,9 +2,7 @@
     "packageManager": "pnpm@10.15.0",
     "private": true,
     "scripts": {
-        "build": "turbo run build",
-        "dev": "turbo run dev",
-        "lint": "turbo run lint"
+        "dev": "turbo run dev"
     },
     "devDependencies": {
         "turbo": "^2.5.6"

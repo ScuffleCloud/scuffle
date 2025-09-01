@@ -18,6 +18,9 @@
             "dependsOn": [
                 "@scufflecloud/proto#build"
             ],
+            "with": [
+                "@scufflecloud/proto#dev"
+            ],
             "persistent": true,
             "cache": false
         }

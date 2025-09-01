@@ -4,10 +4,12 @@ clean:
 build:
     #!/usr/bin/env bash
 
+    set -euxo pipefail
+
     exec_root="$(bazel info execution_root)"
-    output="$(bazel cquery --output=files --build //cloud/proto:pkg)"
+    output="$(bazel cquery --output=files --build //cloud/proto/ts:pkg)"
     rm -r generated || true
     ln -s "${exec_root}/${output}/generated" generated
 
 dev: build
-    ibazel build //cloud/proto:pkg
+    ibazel build //cloud/proto/ts:pkg

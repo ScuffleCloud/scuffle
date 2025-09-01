@@ -1,5 +1,5 @@
 {
-    "name": "@scufflecloud/website",
+    "name": "@scufflecloud/dashboard",
     "version": "0.0.0",
     "type": "module",
     "scripts": {

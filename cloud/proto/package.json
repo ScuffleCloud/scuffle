@@ -6,7 +6,8 @@
     "license": "AGPL-3.0",
     "scripts": {
         "build": "just build",
-        "clean": "just clean"
+        "clean": "just clean",
+        "dev": "just dev"
     },
     "dependencies": {
         "@protobuf-ts/runtime": "^2.11.1",

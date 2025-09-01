@@ -8,3 +8,6 @@ build:
     output="$(bazel cquery --output=files --build //cloud/proto:pkg)"
     rm -r generated || true
     ln -s "${exec_root}/${output}/generated" generated
+
+dev: build
+    ibazel build //cloud/proto:pkg

@@ -30,11 +30,10 @@
         if (requireMsw && !mockingReady) {
             console.log("Loading MSW");
             import("$msw/setup").then(({ enableMocking }) => {
+                mockingReady = true;
                 return enableMocking();
             }).catch((error) => {
                 console.error("Failed to load MSW:", error);
-            }).finally(() => {
-                mockingReady = true;
             });
         }
     });

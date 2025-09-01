@@ -1,6 +1,6 @@
 {
     "include": [
-        "ts_proto/**/*.ts"
+        "proto/**/*.ts"
     ],
     "compilerOptions": {
         "declaration": true,

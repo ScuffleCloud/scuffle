@@ -3,7 +3,6 @@ use std::sync::Arc;
 
 use diesel::Selectable;
 use diesel::prelude::{AsChangeset, Associations, Identifiable, Insertable, Queryable};
-use tinc::well_known::prost::Timestamp;
 
 use crate::cedar::CedarEntity;
 use crate::chrono_ext::ChronoDateTimeExt;
@@ -73,6 +72,17 @@ impl<G> CedarEntity<G> for Project {
 
     async fn parents(&self, _global: &Arc<G>) -> Result<HashSet<cedar_policy::EntityUid>, tonic::Status> {
         Ok(std::iter::once(CedarEntity::<G>::entity_uid(&self.organization_id)).collect())
+    }
+}
+
+impl From<Project> for pb::scufflecloud::core::v1::Project {
+    fn from(value: Project) -> Self {
+        Self {
+            id: value.id.to_string(),
+            name: value.name,
+            organization_id: value.organization_id.to_string(),
+            created_at: Some(tinc::well_known::prost::Timestamp::from(value.id.datetime())),
+        }
     }
 }
 
@@ -312,7 +322,7 @@ impl From<OrganizationInvitation> for pb::scufflecloud::core::v1::OrganizationIn
             email: value.email,
             invited_by_id: value.invited_by_id.to_string(),
             expires_at: value.expires_at.map(|dt| dt.to_prost_timestamp_utc()),
-            created_at: Some(Timestamp::from(value.id.datetime())),
+            created_at: Some(tinc::well_known::prost::Timestamp::from(value.id.datetime())),
         }
     }
 }

@@ -38,4 +38,18 @@ impl<G: CoreConfig> pb::scufflecloud::core::v1::organizations_service_server::Or
     ) -> Result<tonic::Response<pb::scufflecloud::core::v1::OrganizationsList>, tonic::Status> {
         Operation::<G>::run(req).await.map(tonic::Response::new)
     }
+
+    async fn create_project(
+        &self,
+        req: tonic::Request<pb::scufflecloud::core::v1::CreateProjectRequest>,
+    ) -> Result<tonic::Response<pb::scufflecloud::core::v1::Project>, tonic::Status> {
+        Operation::<G>::run(req).await.map(tonic::Response::new)
+    }
+
+    async fn list_projects(
+        &self,
+        req: tonic::Request<pb::scufflecloud::core::v1::ListProjectsRequest>,
+    ) -> Result<tonic::Response<pb::scufflecloud::core::v1::ProjectsList>, tonic::Status> {
+        Operation::<G>::run(req).await.map(tonic::Response::new)
+    }
 }

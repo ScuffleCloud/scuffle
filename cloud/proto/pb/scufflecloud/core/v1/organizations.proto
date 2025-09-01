@@ -33,3 +33,13 @@ message OrganizationInvitation {
   optional google.protobuf.Timestamp expires_at = 6;
   google.protobuf.Timestamp created_at = 7;
 }
+
+message Project {
+  string id = 1 [(string_constraint).id = true];
+  string name = 2 [(tinc.field).constraint.string = {
+    min_len: 1
+    max_len: 255
+  }];
+  string organization_id = 3 [(string_constraint).id = true];
+  google.protobuf.Timestamp created_at = 4;
+}

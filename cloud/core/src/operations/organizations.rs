@@ -3,9 +3,9 @@ use diesel_async::RunQueryDsl;
 
 use crate::cedar::Action;
 use crate::http_ext::RequestExt;
-use crate::models::{Organization, OrganizationId, OrganizationMember, User, UserId};
+use crate::models::{Organization, OrganizationId, OrganizationMember, Project, ProjectId, User, UserId};
 use crate::operations::Operation;
-use crate::schema::{organization_members, organizations};
+use crate::schema::{organization_members, organizations, projects};
 use crate::std_ext::ResultExt;
 use crate::{CoreConfig, common};
 
@@ -245,6 +245,95 @@ impl<G: CoreConfig> Operation<G> for tonic::Request<pb::scufflecloud::core::v1::
 
         Ok(pb::scufflecloud::core::v1::OrganizationsList {
             organizations: organizations.into_iter().map(Into::into).collect(),
+        })
+    }
+}
+
+impl<G: CoreConfig> Operation<G> for tonic::Request<pb::scufflecloud::core::v1::CreateProjectRequest> {
+    type Principal = User;
+    type Resource = Project;
+    type Response = pb::scufflecloud::core::v1::Project;
+
+    const ACTION: Action = Action::CreateProject;
+
+    async fn load_principal(
+        &mut self,
+        _conn: &mut diesel_async::AsyncPgConnection,
+    ) -> Result<Self::Principal, tonic::Status> {
+        let global = &self.global::<G>()?;
+        let session = self.session_or_err()?;
+        common::get_user_by_id(global, session.user_id).await
+    }
+
+    async fn load_resource(&mut self, _conn: &mut diesel_async::AsyncPgConnection) -> Result<Self::Resource, tonic::Status> {
+        let organization_id: OrganizationId = self
+            .get_ref()
+            .id
+            .parse()
+            .into_tonic_err_with_field_violation("id", "invalid ID")?;
+
+        Ok(Project {
+            id: ProjectId::new(),
+            name: self.get_ref().name.clone(),
+            organization_id,
+        })
+    }
+
+    async fn execute(
+        self,
+        conn: &mut diesel_async::AsyncPgConnection,
+        _principal: Self::Principal,
+        resource: Self::Resource,
+    ) -> Result<Self::Response, tonic::Status> {
+        diesel::insert_into(projects::dsl::projects)
+            .values(&resource)
+            .execute(conn)
+            .await
+            .into_tonic_internal_err("failed to create project")?;
+
+        Ok(resource.into())
+    }
+}
+
+impl<G: CoreConfig> Operation<G> for tonic::Request<pb::scufflecloud::core::v1::ListProjectsRequest> {
+    type Principal = User;
+    type Resource = Organization;
+    type Response = pb::scufflecloud::core::v1::ProjectsList;
+
+    const ACTION: Action = Action::ListProjects;
+
+    async fn load_principal(
+        &mut self,
+        _conn: &mut diesel_async::AsyncPgConnection,
+    ) -> Result<Self::Principal, tonic::Status> {
+        let global = &self.global::<G>()?;
+        let session = self.session_or_err()?;
+        common::get_user_by_id(global, session.user_id).await
+    }
+
+    async fn load_resource(&mut self, conn: &mut diesel_async::AsyncPgConnection) -> Result<Self::Resource, tonic::Status> {
+        let id: OrganizationId = self
+            .get_ref()
+            .id
+            .parse()
+            .into_tonic_err_with_field_violation("id", "invalid ID")?;
+        common::get_organization_by_id(conn, id).await
+    }
+
+    async fn execute(
+        self,
+        conn: &mut diesel_async::AsyncPgConnection,
+        _principal: Self::Principal,
+        resource: Self::Resource,
+    ) -> Result<Self::Response, tonic::Status> {
+        let projects = projects::dsl::projects
+            .filter(projects::dsl::organization_id.eq(resource.id))
+            .load::<Project>(conn)
+            .await
+            .into_tonic_internal_err("failed to load projects")?;
+
+        Ok(pb::scufflecloud::core::v1::ProjectsList {
+            projects: projects.into_iter().map(Into::into).collect(),
         })
     }
 }

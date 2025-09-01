@@ -9,13 +9,13 @@ proto_library(
     name = "pb",
     srcs = glob(["pb/**"]),
     strip_import_prefix = "/cloud/proto/pb",
+    visibility = ["//visibility:public"],
     deps = [
         "//crates/tinc:protobuf",
         "@protobuf//:descriptor_proto",
         "@protobuf//:empty_proto",
         "@protobuf//:timestamp_proto",
     ],
-    visibility = ["//visibility:public"],
 )
 
 proto_descriptor_set(

@@ -17496,7 +17496,7 @@
     "@@aspect_rules_ts+//ts:extensions.bzl%ext": {
       "general": {
         "bzlTransitiveDigest": "XwLIxz66SW8tTdqnHz/ypyGXSvSmYYJ9KCTJtJFXbak=",
-        "usagesDigest": "ztoVgoERQM1NDBN5rXzVL4I1OwfnMn0a94yk8LTa52o=",
+        "usagesDigest": "+9B2Qifgc9sx20TyajZ/Zpjc/8isdpGaNqi/VBuV8nI=",
         "recordedFileInputs": {},
         "recordedDirentsInputs": {},
         "envVariables": {},

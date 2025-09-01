@@ -1,0 +1,17 @@
+{
+    "include": [
+        "proto/**/*.ts"
+    ],
+    "compilerOptions": {
+        "declaration": true,
+        "target": "es2020",
+        "moduleResolution": "node",
+        "module": "es2020",
+        "strict": true,
+        "exactOptionalPropertyTypes": true,
+        "lib": [
+            "ES2020",
+            "DOM"
+        ]
+    }
+}

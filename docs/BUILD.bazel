@@ -10,14 +10,12 @@ html_docs = cargo_targets(
     exclude = [
         "//tools/cargo/clippy",
         "//tools/cargo/sync-readme",
-        "//misc/utils/protobuf",
         "//misc/utils/rust/clippy",
     ],
     target = "{name}_doc",
 ) + [
     "//tools/cargo/clippy:fix_doc",
     "//tools/cargo/sync-readme:fix_doc",
-    "//misc/utils/protobuf:file_concat_doc",
     "//misc/utils/rust/clippy:test_runner_doc",
     ":runfiles_doc",
 ]
@@ -26,7 +24,6 @@ json_docs = cargo_targets(
     exclude = [
         "//tools/cargo/clippy",
         "//tools/cargo/sync-readme",
-        "//misc/utils/protobuf",
         "//misc/utils/rust/clippy",
     ],
     target = "{name}_doc_json",
@@ -34,7 +31,6 @@ json_docs = cargo_targets(
     "//tools/cargo/clippy:fix_doc_json",
     "//tools/cargo/sync-readme:fix_doc_json",
     "//misc/utils/rust/clippy:test_runner_doc_json",
-    "//misc/utils/protobuf:file_concat_doc_json",
 ]
 
 rustdoc_merge(

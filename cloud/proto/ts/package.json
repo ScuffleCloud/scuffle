@@ -1,0 +1,30 @@
+{
+    "name": "@scufflecloud/proto",
+    "version": "0.0.1",
+    "type": "module",
+    "description": "Protocol Buffers for Scuffle Cloud",
+    "license": "AGPL-3.0",
+    "scripts": {
+        "build": "just build",
+        "dev": "just dev"
+    },
+    "dependencies": {
+        "@protobuf-ts/runtime": "^2.11.1",
+        "@protobuf-ts/runtime-rpc": "^2.11.1"
+    },
+    "exports": {
+        "./*": {
+            "types": "./generated/*",
+            "import": "./generated/*",
+            "require": "./generated/*"
+        }
+    },
+    "typesVersions": {
+        "*": {
+            "*": ["generated/*"]
+        }
+    },
+    "devDependencies": {
+        "typescript": "^5.9.2"
+    }
+}

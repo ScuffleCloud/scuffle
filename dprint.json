@@ -3,7 +3,8 @@
         "indentWidth": 4
     },
     "json": {
-        "indentWidth": 4
+        "indentWidth": 4,
+        "trailingCommas": "never"
     },
     "markdown": {
     },

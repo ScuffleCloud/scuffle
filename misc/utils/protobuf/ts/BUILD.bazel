@@ -1,0 +1,28 @@
+load("@aspect_bazel_lib//lib:directory_path.bzl", "directory_path")
+load("@aspect_rules_js//js:defs.bzl", "js_binary")
+load("@npm//:defs.bzl", "npm_link_all_packages")
+load("@rules_proto_grpc//:defs.bzl", "proto_plugin")
+
+npm_link_all_packages()
+
+directory_path(
+    name = "protoc-gen-ts",
+    directory = ":node_modules/@protobuf-ts/plugin/dir",
+    path = "bin/protoc-gen-ts",
+)
+
+js_binary(
+    name = "plugin_bin",
+    data = [":node_modules/@protobuf-ts"],
+    entry_point = ":protoc-gen-ts",
+)
+
+proto_plugin(
+    name = "protobuf_ts",
+    options = [
+        "optimize_code_size",
+        "long_type_string",
+    ],
+    output_directory = True,
+    tool = ":plugin_bin",
+)

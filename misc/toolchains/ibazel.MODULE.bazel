@@ -1,0 +1,51 @@
+http_file = use_repo_rule("@bazel_tools//tools/build_defs/repo:http.bzl", "http_file")
+
+build_url = "https://github.com/bazelbuild/bazel-watcher/releases/download/v0.26.10/"
+
+linux_x86_64 = "ibazel_linux_amd64"
+
+http_file(
+    name = "ibazel-linux-x86_64",
+    executable = True,
+    sha256 = "83e7f76cbcbc721dc544b88edc25edc777faa8b95475a301d4d01fb6bed54b00",
+    url = "{url}/{name}".format(
+        name = linux_x86_64,
+        url = build_url,
+    ),
+)
+
+linux_aarch64 = "ibazel_linux_arm64"
+
+http_file(
+    name = "ibazel-linux-aarch64",
+    executable = True,
+    sha256 = "c535714662b8704a3ae55cd5b3cdf6c1939f5ba6ba82eb96cdac54b75ac28ffa",
+    url = "{url}/{name}".format(
+        name = linux_aarch64,
+        url = build_url,
+    ),
+)
+
+macos_x86_64 = "ibazel_darwin_amd64"
+
+http_file(
+    name = "ibazel-macos-x86_64",
+    executable = True,
+    sha256 = "ad30c44210bb0bf8663aaf29e2820dcfa0be75fe3bd81218bf7b70fbaba849b9",
+    url = "{url}/{name}".format(
+        name = macos_x86_64,
+        url = build_url,
+    ),
+)
+
+macos_aarch64 = "ibazel_darwin_arm64"
+
+http_file(
+    name = "ibazel-macos-aarch64",
+    executable = True,
+    sha256 = "c535714662b8704a3ae55cd5b3cdf6c1939f5ba6ba82eb96cdac54b75ac28ffa",
+    url = "{url}/{name}".format(
+        name = macos_aarch64,
+        url = build_url,
+    ),
+)

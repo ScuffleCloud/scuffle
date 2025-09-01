@@ -13,13 +13,6 @@ importers:
         version: 2.5.6
 
   cloud/dashboard:
-    dependencies:
-      date-fns:
-        specifier: ^4.1.0
-        version: 4.1.0
-      melt:
-        specifier: ^0.17.8
-        version: 0.17.8(@floating-ui/dom@1.7.0)(svelte@5.28.2)
     devDependencies:
       '@eslint/js':
         specifier: ^9.16.0
@@ -36,6 +29,12 @@ importers:
       '@melt-ui/svelte':
         specifier: ^0.86.4
         version: 0.86.6(svelte@5.28.2)
+      '@protobuf-ts/grpcweb-transport':
+        specifier: ^2.11.1
+        version: 2.11.1
+      '@scufflecloud/proto':
+        specifier: workspace:*
+        version: link:../proto/ts
       '@sveltejs/adapter-static':
         specifier: ^3.0.8
         version: 3.0.8(@sveltejs/kit@2.20.8(@sveltejs/vite-plugin-svelte@5.0.3(svelte@5.28.2)(vite@6.2.0(@types/node@22.13.10)(jiti@2.4.2)(lightningcss@1.29.2)(terser@5.39.0)(yaml@2.7.1)))(svelte@5.28.2)(vite@6.2.0(@types/node@22.13.10)(jiti@2.4.2)(lightningcss@1.29.2)(terser@5.39.0)(yaml@2.7.1)))
@@ -57,6 +56,9 @@ importers:
       d3-geo:
         specifier: ^3.1.1
         version: 3.1.1
+      date-fns:
+        specifier: ^4.1.0
+        version: 4.1.0
       dprint:
         specifier: ^0.50.1
         version: 0.50.1
@@ -75,6 +77,9 @@ importers:
       lodash:
         specifier: ^4.17.21
         version: 4.17.21
+      melt:
+        specifier: ^0.17.8
+        version: 0.17.8(@floating-ui/dom@1.7.0)(svelte@5.28.2)
       msw:
         specifier: ^2.7.3
         version: 2.7.6(@types/node@22.13.10)(typescript@5.8.3)
@@ -145,6 +150,25 @@ importers:
       typescript:
         specifier: ^5.8.3
         version: 5.8.3
+
+  cloud/proto/ts:
+    dependencies:
+      '@protobuf-ts/runtime':
+        specifier: ^2.11.1
+        version: 2.11.1
+      '@protobuf-ts/runtime-rpc':
+        specifier: ^2.11.1
+        version: 2.11.1
+    devDependencies:
+      typescript:
+        specifier: ^5.9.2
+        version: 5.9.2
+
+  misc/utils/protobuf/ts:
+    devDependencies:
+      '@protobuf-ts/plugin':
+        specifier: ^2.11.1
+        version: 2.11.1
 
 packages:
 
@@ -786,6 +810,12 @@ packages:
   '@babel/types@7.27.0':
     resolution: {integrity: sha512-H45s8fVLYjbhFH62dIJ3WtmJ6RSPt/3DRO0ZcT2SUiYiQyz3BLVb9ADEnLl91m74aQPS3AzzeajZHYOalWe3bg==}
     engines: {node: '>=6.9.0'}
+
+  '@bufbuild/protobuf@2.7.0':
+    resolution: {integrity: sha512-qn6tAIZEw5i/wiESBF4nQxZkl86aY4KoO0IkUa2Lh+rya64oTOdJQFlZuMwI1Qz9VBJQrQC4QlSA2DNek5gCOA==}
+
+  '@bufbuild/protoplugin@2.7.0':
+    resolution: {integrity: sha512-yUdg8hXzFGR6K8ren7aXly2hT9BxClId814VB142YeZPatY0wqD3c0D8KfIz5nIeMdoPt0/Pm/RycFJCNGMD6w==}
 
   '@bundled-es-modules/cookie@2.0.1':
     resolution: {integrity: sha512-8o+5fRPLNbjbdGRRmJj3h6Hh1AQJf2dk3qQ/5ZFb+PXkRNiSoMGGUKlsgLfrxneb72axVJyIYji64E2+nNfYyw==}
@@ -1635,6 +1665,23 @@ packages:
   '@polka/url@1.0.0-next.28':
     resolution: {integrity: sha512-8LduaNlMZGwdZ6qWrKlfa+2M4gahzFkprZiAt2TF8uS0qQgBizKXpXURqvTJ4WtmupWxaLqjRb2UCTe72mu+Aw==}
 
+  '@protobuf-ts/grpcweb-transport@2.11.1':
+    resolution: {integrity: sha512-1W4utDdvOB+RHMFQ0soL4JdnxjXV+ddeGIUg08DvZrA8Ms6k5NN6GBFU2oHZdTOcJVpPrDJ02RJlqtaoCMNBtw==}
+
+  '@protobuf-ts/plugin@2.11.1':
+    resolution: {integrity: sha512-HyuprDcw0bEEJqkOWe1rnXUP0gwYLij8YhPuZyZk6cJbIgc/Q0IFgoHQxOXNIXAcXM4Sbehh6kjVnCzasElw1A==}
+    hasBin: true
+
+  '@protobuf-ts/protoc@2.11.1':
+    resolution: {integrity: sha512-mUZJaV0daGO6HUX90o/atzQ6A7bbN2RSuHtdwo8SSF2Qoe3zHwa4IHyCN1evftTeHfLmdz+45qo47sL+5P8nyg==}
+    hasBin: true
+
+  '@protobuf-ts/runtime-rpc@2.11.1':
+    resolution: {integrity: sha512-4CqqUmNA+/uMz00+d3CYKgElXO9VrEbucjnBFEjqI4GuDrEQ32MaI3q+9qPBvIGOlL4PmHXrzM32vBPWRhQKWQ==}
+
+  '@protobuf-ts/runtime@2.11.1':
+    resolution: {integrity: sha512-KuDaT1IfHkugM2pyz+FwiY80ejWrkH1pAtOBOZFuR6SXEFTsnb/jiQWQ1rCIrcKx2BtyxnxW6BWwsVSA/Ie+WQ==}
+
   '@rollup/rollup-android-arm-eabi@4.40.1':
     resolution: {integrity: sha512-kxz0YeeCrRUHz3zyqvd7n+TVRlNyTifBsmnmNPtk3hQURUyG9eAB+usz6DAwagMusjx/zb3AjvDUvhFGDAexGw==}
     cpu: [arm]
@@ -2111,6 +2158,11 @@ packages:
   '@typescript-eslint/visitor-keys@8.31.1':
     resolution: {integrity: sha512-I+/rgqOVBn6f0o7NDTmAPWWC6NuqhV174lfYvAm9fUaWeiefLdux9/YI3/nLugEn9L8fcSi0XmpKi/r5u0nmpw==}
     engines: {node: ^18.18.0 || ^20.9.0 || >=21.1.0}
+
+  '@typescript/vfs@1.6.1':
+    resolution: {integrity: sha512-JwoxboBh7Oz1v38tPbkrZ62ZXNHAk9bJ7c9x0eI5zBfBnBYGhURdbnh7Z4smN/MV48Y5OCcZb58n972UtbazsA==}
+    peerDependencies:
+      typescript: '*'
 
   '@ungap/structured-clone@1.3.0':
     resolution: {integrity: sha512-WmoN8qaIAo7WTYWbAZuG8PYEhn5fkz7dZrqTBZ7dtt//lL2Gwms1IcnQ5yHqjDfX8Ft5j4YzDM23f87zBfDe9g==}
@@ -5845,8 +5897,23 @@ packages:
       eslint: ^8.57.0 || ^9.0.0
       typescript: '>=4.8.4 <5.9.0'
 
+  typescript@3.9.10:
+    resolution: {integrity: sha512-w6fIxVE/H1PkLKcCPsFqKE7Kv7QUwhU8qQY2MueZXWx5cPZdwFupLgKK3vntcK98BtNHZtAF4LA/yl2a7k8R6Q==}
+    engines: {node: '>=4.2.0'}
+    hasBin: true
+
+  typescript@5.4.5:
+    resolution: {integrity: sha512-vcI4UpRgg81oIRUFwR0WSIHKt11nJ7SAVlYNIu+QpqeyXP+gpQJy/Z4+F0aGxSE4MqwjyXvW/TzgkLAx2AGHwQ==}
+    engines: {node: '>=14.17'}
+    hasBin: true
+
   typescript@5.8.3:
     resolution: {integrity: sha512-p1diW6TqL9L07nNxvRMM7hMMw4c5XOo/1ibL4aAIGmSAt9slTE1Xgw5KWuof2uTOvCg9BY7ZRi+GaF+7sfgPeQ==}
+    engines: {node: '>=14.17'}
+    hasBin: true
+
+  typescript@5.9.2:
+    resolution: {integrity: sha512-CWBzXQrc/qOkhidw1OzBTQuYRbfyxDXJMVJ1XNwUHGROVmuaeiEm3OslpZ1RV96d7SKKjZKrSJu3+t/xlw3R9A==}
     engines: {node: '>=14.17'}
     hasBin: true
 
@@ -7055,6 +7122,16 @@ snapshots:
     dependencies:
       '@babel/helper-string-parser': 7.25.9
       '@babel/helper-validator-identifier': 7.25.9
+
+  '@bufbuild/protobuf@2.7.0': {}
+
+  '@bufbuild/protoplugin@2.7.0':
+    dependencies:
+      '@bufbuild/protobuf': 2.7.0
+      '@typescript/vfs': 1.6.1(typescript@5.4.5)
+      typescript: 5.4.5
+    transitivePeerDependencies:
+      - supports-color
 
   '@bundled-es-modules/cookie@2.0.1':
     dependencies:
@@ -8454,6 +8531,30 @@ snapshots:
 
   '@polka/url@1.0.0-next.28': {}
 
+  '@protobuf-ts/grpcweb-transport@2.11.1':
+    dependencies:
+      '@protobuf-ts/runtime': 2.11.1
+      '@protobuf-ts/runtime-rpc': 2.11.1
+
+  '@protobuf-ts/plugin@2.11.1':
+    dependencies:
+      '@bufbuild/protobuf': 2.7.0
+      '@bufbuild/protoplugin': 2.7.0
+      '@protobuf-ts/protoc': 2.11.1
+      '@protobuf-ts/runtime': 2.11.1
+      '@protobuf-ts/runtime-rpc': 2.11.1
+      typescript: 3.9.10
+    transitivePeerDependencies:
+      - supports-color
+
+  '@protobuf-ts/protoc@2.11.1': {}
+
+  '@protobuf-ts/runtime-rpc@2.11.1':
+    dependencies:
+      '@protobuf-ts/runtime': 2.11.1
+
+  '@protobuf-ts/runtime@2.11.1': {}
+
   '@rollup/rollup-android-arm-eabi@4.40.1':
     optional: true
 
@@ -8972,6 +9073,13 @@ snapshots:
     dependencies:
       '@typescript-eslint/types': 8.31.1
       eslint-visitor-keys: 4.2.0
+
+  '@typescript/vfs@1.6.1(typescript@5.4.5)':
+    dependencies:
+      debug: 4.4.0
+      typescript: 5.4.5
+    transitivePeerDependencies:
+      - supports-color
 
   '@ungap/structured-clone@1.3.0': {}
 
@@ -13326,7 +13434,13 @@ snapshots:
     transitivePeerDependencies:
       - supports-color
 
+  typescript@3.9.10: {}
+
+  typescript@5.4.5: {}
+
   typescript@5.8.3: {}
+
+  typescript@5.9.2: {}
 
   undici-types@6.20.0: {}
 

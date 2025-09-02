@@ -3,9 +3,24 @@ name: ci - build previews
 on:
   workflow_call:
     inputs:
-      prep_output:
+      pr_number:
+        type: string
+        required: false
+      commit_sha:
         type: string
         required: true
+      dashboard_deploy:
+        type: boolean
+        required: false
+        default: false
+      docs_deploy:
+        type: boolean
+        required: false
+        default: false
+      rustdoc_deploy:
+        type: boolean
+        required: false
+        default: false
     secrets:
       build_buddy_token:
         required: true
@@ -26,13 +41,13 @@ defaults:
 
 jobs:
   dashboard:
-    if: ${{ fromJson(inputs.prep_output).deploy.dashboard != null }}
+    if: ${{ inputs.dashboard_deploy }}
     runs-on: ubicloud-standard-8-ubuntu-2404
     env:
-      ARTIFACT_NAME: ${{ fromJson(inputs.prep_output).deploy.dashboard.artifact_name }}
-      PR_NUMBER: ${{ fromJson(inputs.prep_output).deploy.pr_number }}
-      DEPLOY_DOCS: ${{ fromJson(inputs.prep_output).deploy.dashboard.deploy }}
-      COMMIT_SHA: ${{ fromJson(inputs.prep_output).deploy.commit_sha }}
+      ARTIFACT_NAME: "dashboard"
+      PR_NUMBER: ${{ inputs.pr_number }}
+      DEPLOY_DOCS: ${{ inputs.dashboard_deploy }}
+      COMMIT_SHA: ${{ inputs.commit_sha }}
     steps:
       - uses: actions/checkout@v4
 
@@ -99,13 +114,13 @@ jobs:
           path: status.json
 
   docs:
-    if: ${{ fromJson(inputs.prep_output).deploy.docs != null }}
+    if: ${{ inputs.docs_deploy }}
     runs-on: ubicloud-standard-8-ubuntu-2404
     env:
-      ARTIFACT_NAME: ${{ fromJson(inputs.prep_output).deploy.docs.artifact_name }}
-      PR_NUMBER: ${{ fromJson(inputs.prep_output).deploy.pr_number }}
-      DEPLOY_DOCS: ${{ fromJson(inputs.prep_output).deploy.docs.deploy }}
-      COMMIT_SHA: ${{ fromJson(inputs.prep_output).deploy.commit_sha }}
+      ARTIFACT_NAME: "docs"
+      PR_NUMBER: ${{ inputs.pr_number }}
+      DEPLOY_DOCS: ${{ inputs.docs_deploy }}
+      COMMIT_SHA: ${{ inputs.commit_sha }}
     steps:
       - uses: actions/checkout@v4
 
@@ -172,13 +187,13 @@ jobs:
           path: status.json
 
   rustdoc:
-    if: ${{ fromJson(inputs.prep_output).deploy.rustdoc != null }}
+    if: ${{ inputs.rustdoc_deploy }}
     runs-on: ubicloud-standard-8-ubuntu-2404
     env:
-      ARTIFACT_NAME: ${{ fromJson(inputs.prep_output).deploy.rustdoc.artifact_name }}
-      PR_NUMBER: ${{ fromJson(inputs.prep_output).deploy.pr_number }}
-      DEPLOY_DOCS: ${{ fromJson(inputs.prep_output).deploy.rustdoc.deploy }}
-      COMMIT_SHA: ${{ fromJson(inputs.prep_output).deploy.commit_sha }}
+      ARTIFACT_NAME: "rustdoc"
+      PR_NUMBER: ${{ inputs.pr_number }}
+      DEPLOY_DOCS: ${{ inputs.rustdoc_deploy }}
+      COMMIT_SHA: ${{ inputs.commit_sha }}
     steps:
       - uses: actions/checkout@v4
 
@@ -247,7 +262,7 @@ jobs:
   docs-report:
     needs: [dashboard, docs, rustdoc]
     runs-on: ubuntu-24.04
-    if: ${{ fromJson(inputs.prep_output).deploy != null }}
+    if: ${{ always() && (inputs.dashboard_deploy || inputs.docs_deploy || inputs.rustdoc_deploy) }}
     steps:
       - name: Download all artifacts
         uses: actions/download-artifact@v4
@@ -257,12 +272,10 @@ jobs:
       - name: Build comment body from status artifacts
         id: build_body
         env:
-          PREP_OUTPUT: ${{ inputs.prep_output }}
+          PR_NUMBER: ${{ inputs.pr_number }}
         run: |
           set -xeo pipefail
-          PR=$(jq -r '(.deploy.pr_number // empty)' <<< "$PREP_OUTPUT")
-
-          if [ -z "$PR" ]; then
+          if [ -z "$PR_NUMBER" ]; then
             echo "No PR number found in prep output; nothing to comment on. Exiting."
             echo "PR=" >> $GITHUB_OUTPUT
             exit 0
@@ -302,7 +315,7 @@ jobs:
             echo "| No-Deploys | ⏭️ | - | - |" >> "$OUT"
           fi
 
-          echo "PR=$PR" >> $GITHUB_OUTPUT
+          echo "PR=$PR_NUMBER" >> $GITHUB_OUTPUT
 
       - name: Find existing marker comment
         id: find_comment

@@ -60,18 +60,18 @@ def pr_number() -> Optional[int]:
 
 
 @dataclass
-class DeployArtifact:
+class PreviewArtifact:
     deploy: bool
     artifact_name: str
 
 
 @dataclass
-class Deploy:
+class Preview:
     pr_number: Optional[int]
     commit_sha: str
-    rustdoc: Optional[DeployArtifact]
-    docs: Optional[DeployArtifact]
-    dashboard: Optional[DeployArtifact]
+    rustdoc: Optional[PreviewArtifact]
+    docs: Optional[PreviewArtifact]
+    dashboard: Optional[PreviewArtifact]
 
 
 @dataclass
@@ -107,7 +107,7 @@ class CheckFmt:
 
 @dataclass
 class Jobs:
-    deploy: Optional[Deploy]
+    preview: Optional[Preview]
     test: Optional[Test]
     grind: Optional[Grind]
     check_vendor: Optional[CheckVendor]
@@ -122,19 +122,19 @@ def commit_sha() -> str:
     return os.environ["SHA"]
 
 
-def create_deploy() -> Optional[Deploy]:
-    return Deploy(
+def create_previews() -> Optional[Preview]:
+    return Preview(
         pr_number=pr_number(),
         commit_sha=commit_sha() or "",
-        rustdoc=DeployArtifact(deploy=deploy_docs(), artifact_name="rustdoc")
+        rustdoc=PreviewArtifact(deploy=deploy_docs(), artifact_name="rustdoc")
         if os.path.exists("docs")
         or os.path.exists("target-bazel/bin/docs")
         or os.path.exists("docs/rustdoc")
         else None,
-        docs=DeployArtifact(deploy=deploy_docs(), artifact_name="docs")
+        docs=PreviewArtifact(deploy=deploy_docs(), artifact_name="docs")
         if os.path.exists("cloud/docs") or os.path.exists("docs")
         else None,
-        dashboard=DeployArtifact(deploy=deploy_docs(), artifact_name="dashboard")
+        dashboard=PreviewArtifact(deploy=deploy_docs(), artifact_name="dashboard")
         if os.path.exists("cloud/dashboard")
         else None,
     )
@@ -178,7 +178,7 @@ def create_fmt() -> Optional[CheckFmt]:
 
 def create_jobs() -> Jobs:
     return Jobs(
-        deploy=create_deploy(),
+        preview=create_previews(),
         check_vendor=create_check_vendor(),
         grind=create_grind(),
         test=create_test(),

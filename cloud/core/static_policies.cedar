@@ -274,6 +274,22 @@ permit(
 
 permit(
     principal is User,
+    action == Action::"create_project",
+    resource is Organization
+) when {
+    principal in resource
+};
+
+permit(
+    principal is User,
+    action == Action::"list_projects",
+    resource is Organization
+) when {
+    principal in resource
+};
+
+permit(
+    principal is User,
     action == Action::"create_organization_invitation",
     resource is OrganizationInvitation
 ); // TODO: condition for owner

@@ -188,6 +188,10 @@ pub enum Action {
     ListOrganizationMembers,
     #[display("list_organizations_by_user")]
     ListOrganizationsByUser,
+    #[display("create_project")]
+    CreateProject,
+    #[display("list_project")]
+    ListProjects,
 
     // OrganizationInvitation related
     #[display("create_organization_invitation")]

@@ -1,5 +1,7 @@
 load("@npm//:defs.bzl", "npm_link_all_packages")
+load("@npm//cloud/dashboard:eslint/package_json.bzl", eslint_bin = "bin")
 load("@npm//cloud/dashboard:vite/package_json.bzl", vite_bin = "bin")
+load("//misc/utils/js:eslint.bzl", "eslint_test")
 
 npm_link_all_packages()
 
@@ -9,6 +11,19 @@ filegroup(
         "src/**/*.*",
         "static/**/*.*",
     ]),
+)
+
+eslint_test(
+    name = "lint",
+    args = [
+        "--format=pretty",
+    ],
+    data = [
+        ":eslint.config.mjs",
+        ":node_modules",
+        ":srcs",
+    ],
+    eslint_bin = eslint_bin,
 )
 
 vite_bin.vite(

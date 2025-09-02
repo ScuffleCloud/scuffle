@@ -22,7 +22,7 @@
 
 <div class="organization-info" class:collapsed={isCollapsed}>
     <button type="button" class="org-header-button" use:melt={$trigger}>
-        <div class="avatar" style:background-color={"#FFCC80"}></div>
+        <div class="avatar" style:background-color="#FFCC80"></div>
         {#if !isCollapsed}
             <div class="org-details">
                 <div class="org-name">{user?.organizations[0].name}</div>

@@ -21,6 +21,7 @@ fmt:
 
 lint:
     bazel run //tools/cargo/clippy:fix
+    pnpm -r lint:fix
 
 clean *args="--async":
     #!/usr/bin/env bash

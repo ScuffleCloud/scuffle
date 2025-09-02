@@ -10,7 +10,7 @@ export const rectangleData = () => {
     const data = [];
     let baseTime = startTime;
     for (let i = 0; i < numRecords; i++) {
-        let duration = Math.round(Math.random() * 10000);
+        const duration = Math.round(Math.random() * 10000);
 
         const value = [RECTANGLE_INDEX, baseTime, baseTime += duration, duration];
         data.push({
@@ -28,7 +28,7 @@ export const diamondData = () => {
     const data = [];
     let baseTime = startTime;
     for (let i = 0; i < numRecords; i++) {
-        let duration = Math.round(Math.random() * 10000);
+        const duration = Math.round(Math.random() * 10000);
 
         const value = [TRIANGLE_INDEX, baseTime += duration];
         data.push({
@@ -45,7 +45,7 @@ export const circleData = () => {
     const data = [];
     let baseTime = startTime;
     for (let i = 0; i < numRecords; i++) {
-        let duration = Math.round(Math.random() * 10000);
+        const duration = Math.round(Math.random() * 10000);
 
         const value = [CIRCLE_INDEX, baseTime += duration];
         data.push({

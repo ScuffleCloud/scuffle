@@ -8,6 +8,7 @@
             "persistent": true,
             "cache": false
         },
+        "lint:fix": {},
         "@scufflecloud/proto#build": {
             "cache": false,
             "persistent": false

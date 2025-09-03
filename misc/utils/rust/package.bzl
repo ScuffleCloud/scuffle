@@ -207,8 +207,10 @@ def scuffle_package(
             rustc_env_files = [colon_name + "_cargo_toml_env"],
             rustc_flags = [
                 "--cfg=bazel_runfiles",
-                "-Clink-arg=-Wl,-znostart-stop-gc",
-            ],
+            ] + select({
+                "@platforms//os:linux": ["-Clink-arg=-Wl,-znostart-stop-gc"],
+                "//conditions:default": [],
+            }),
             # Needs to be marked as not testonly because the rust_clippy
             # rule depends on this, which we use to generate clippy suggestions
             testonly = False,
@@ -412,7 +414,9 @@ def scuffle_build_script(
         tools = tools,
         rustc_flags = [
             "--cfg=bazel_runfiles",
-            "-Clink-arg=-Wl,-znostart-stop-gc",
-        ],
+        ] + select({
+            "@platforms//os:linux": ["-Clink-arg=-Wl,-znostart-stop-gc"],
+            "//conditions:default": [],
+        }),
         target_compatible_with = target_compatible_with,
     )

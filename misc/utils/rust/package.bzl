@@ -26,7 +26,8 @@ def scuffle_package(
         tags = None,
         test = None,
         readme = None,
-        extra_target_kwargs = None):
+        extra_target_kwargs = None,
+        target_compatiable_with = None):
     """Creates a rust_library and corresponding rust_test target.
 
     Args:
@@ -45,6 +46,7 @@ def scuffle_package(
         test: A config for testing this library.
         readme: The readme file, if set to `False` disable sync-readme
         extra_target_kwargs: additional kwargs to pass to the target.
+        target_compatiable_with: The compatability constraint of the target.
     """
 
     package_name = native.package_name()
@@ -74,6 +76,8 @@ def scuffle_package(
         version = crate_version()
     if readme == None:
         readme = ":README.md"
+    if target_compatiable_with == None:
+        target_compatiable_with = []
 
     NAME_MAPPINGS = {
         "rlib": "lib",
@@ -91,6 +95,7 @@ def scuffle_package(
         src = ":Cargo.toml",
         workspace = "//:Cargo.toml",
         tags = ["manual"],
+        target_compatible_with = target_compatiable_with,
         visibility = ["//visibility:private"],
     )
 
@@ -99,6 +104,7 @@ def scuffle_package(
         manifest = ":Cargo.toml",
         workspace = "//:Cargo.toml",
         tags = ["manual"],
+        target_compatible_with = target_compatiable_with,
         visibility = ["//visibility:private"],
     )
 
@@ -126,6 +132,7 @@ def scuffle_package(
             "-Clink-arg=-Wl,-znostart-stop-gc",
         ],
         rustc_env_files = [colon_name + "_cargo_toml_env"],
+        target_compatible_with = target_compatiable_with,
     )
 
     # Create the library target
@@ -183,6 +190,7 @@ def scuffle_package(
             # rule depends on this, which we use to generate clippy suggestions
             testonly = False,
             visibility = ["//visibility:private"],
+            target_compatible_with = target_compatiable_with,
         )
 
         rustdoc_test(
@@ -202,6 +210,7 @@ def scuffle_package(
             # Needs to be marked as not testonly because the rust_clippy
             # rule depends on this, which we use to generate clippy suggestions
             testonly = False,
+            target_compatible_with = target_compatiable_with,
         )
 
         rust_targets.append(colon_name + "_test")
@@ -210,17 +219,20 @@ def scuffle_package(
         name = name + "_clippy",
         targets = rust_targets,
         visibility = ["//visibility:private"],
+        target_compatible_with = target_compatiable_with,
     )
 
     rust_clippy_test(
         name = name + "_clippy_test",
         targets = [colon_name + "_clippy"],
         visibility = ["//visibility:private"],
+        target_compatible_with = target_compatiable_with,
     )
 
     rustfmt_test(
         name = name + "_fmt_test",
         targets = rust_targets,
+        target_compatible_with = target_compatiable_with,
     )
 
     rustdoc_flags = [
@@ -244,6 +256,7 @@ def scuffle_package(
         rustdoc_env_files = [colon_name + "_cargo_toml_env"],
         rustdoc_flags = rustdoc_flags,
         visibility = visibility,
+        target_compatible_with = target_compatiable_with,
     )
 
     rustdoc(
@@ -260,6 +273,7 @@ def scuffle_package(
             "--document-hidden-items",
         ],
         visibility = visibility,
+        target_compatible_with = target_compatiable_with,
     )
 
     rust_analyzer_info(
@@ -268,6 +282,7 @@ def scuffle_package(
         test = (colon_name + "_test") if test != False else None,
         doc_test = (colon_name + "_doc_test") if test != False else None,
         clippy = colon_name + "_clippy",
+        target_compatible_with = target_compatiable_with,
     )
 
     if readme != False:
@@ -276,11 +291,13 @@ def scuffle_package(
             readme = readme,
             cargo_manifest = ":Cargo.toml",
             rustdoc = colon_name + "_doc_json",
+            target_compatible_with = target_compatiable_with,
         )
 
         sync_readme_test(
             name = name + "_sync_readme_test",
             sync_readme = colon_name + "_sync_readme",
+            target_compatible_with = target_compatiable_with,
         )
 
 def scuffle_test(
@@ -331,7 +348,8 @@ def scuffle_build_script(
         proc_macro_deps = None,
         data = None,
         env = None,
-        tools = None):
+        tools = None,
+        target_compatiable_with = None):
     """Creates a cargo build script
 
     Args:
@@ -345,6 +363,7 @@ def scuffle_build_script(
         data: Data to include during compile time
         env: Additional env variables to add when running the script.
         tools: A list of tools needed by the script.
+        target_compatiable_with: The compatability constraint of the target.
     """
 
     package_name = native.package_name()
@@ -368,6 +387,8 @@ def scuffle_build_script(
         env = {}
     if tools == None:
         tools = []
+    if target_compatiable_with == None:
+        target_compatiable_with = []
 
     cargo_build_script(
         name = name,
@@ -385,4 +406,5 @@ def scuffle_build_script(
             "--cfg=bazel_runfiles",
             "-Clink-arg=-Wl,-znostart-stop-gc",
         ],
+        target_compatible_with = target_compatiable_with,
     )

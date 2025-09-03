@@ -7,7 +7,6 @@
     import IconEvents from "$lib/images/icon-events.svelte";
     import IconPuzzle from "$lib/images/icon-puzzle.svelte";
     import IconSettings2 from "$lib/images/icon-settings2.svelte";
-    import type { Streamed } from "$lib/types";
     import type { Snippet } from "svelte";
     import type { LayoutData } from "./$types";
 

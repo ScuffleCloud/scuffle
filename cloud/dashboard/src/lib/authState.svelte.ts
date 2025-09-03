@@ -306,6 +306,7 @@ export const authAPI = {
             // Your auth package passkey login would go here
             // const result = await yourAuthPackage.loginWithPasskey();
 
+            console.log(email, password);
             console.log("Logging in with passkey");
             await new Promise((resolve) => setTimeout(resolve, 1000));
 

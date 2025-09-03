@@ -1,6 +1,7 @@
 <script lang="ts">
     import { afterNavigate } from "$app/navigation";
     import { NAV_ITEMS } from "$components/left-nav/consts.svelte";
+    import type { NavItem } from "$components/types";
     import { useUser } from "$lib/useUser";
     import NavItemBase from "./nav-item-base.svelte";
     import NavItemDropdown from "./nav-item-dropdown.svelte";
@@ -35,7 +36,7 @@
 
     let shouldOpenDropdown = $state<string | null>(null);
 
-    const handleDropdownClick = (event: MouseEvent, item: any) => {
+    const handleDropdownClick = (event: MouseEvent, item: NavItem) => {
         if (isCollapsed && item.children && handleDropdownInteraction) {
             event.preventDefault();
             shouldOpenDropdown = item.path;
@@ -52,7 +53,7 @@
 </script>
 
 <ul class="nav-links" class:collapsed={isCollapsed}>
-    {#each navItemsWithPaths as item}
+    {#each navItemsWithPaths as item (item.id)}
         {#if item.children && !isCollapsed}
             <NavItemDropdown
                 navItem={item}

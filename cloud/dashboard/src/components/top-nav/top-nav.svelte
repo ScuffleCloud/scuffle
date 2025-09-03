@@ -1,12 +1,9 @@
 <script lang="ts">
+    import IconConfigureTab from "$lib/images/icon-configure-tab.svelte";
     import Search from "$lib/images/search.svelte";
+    import { useUser } from "$lib/useUser";
     import { onMount } from "svelte";
     import { fade } from "svelte/transition";
-    // TODO: Configure routing from root
-    import { page } from "$app/state";
-    import IconConfigureTab from "$lib/images/icon-configure-tab.svelte";
-    import IconSwitch from "$lib/images/icon-switch.svelte";
-    import { useUser } from "$lib/useUser";
     import NavSwitcher from "./nav-switcher.svelte";
 
     let showSearchModal = $state(false);
@@ -52,28 +49,6 @@
     function closeModal() {
         showSearchModal = false;
     }
-
-    // This breadcrumb logic is hacky I'm not sure how extensive this needs to be yet.
-    // There's very few breadcrumbs to show other than always showing organization and project.
-    let showBreadcrumbs = true;
-    let breadcrumbs = $derived(
-        page.url.pathname
-            .split("/")
-            .filter(Boolean)
-            .map((segment, index, segments) => {
-                const path = "/"
-                    + segments.slice(0, index + 1).join("/");
-                const customTitle = "test";
-                return {
-                    label: customTitle
-                        || segment.replace(/[-_]/g, " ").replace(
-                            /\b\w/g,
-                            (c) => c.toUpperCase(),
-                        ),
-                    href: path,
-                };
-            }),
-    );
 
     const organizations = $derived(
         $userQuery.data?.organizations.map((org) => ({

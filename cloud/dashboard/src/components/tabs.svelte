@@ -37,7 +37,7 @@
 
 <div class="tabs-container">
     <div class="tabs-list-container">
-        {#each tabs as tab}
+        {#each tabs as tab (tab.id)}
             <a
                 href={`${baseUrl}${tab.id}`}
                 class="tab-trigger"

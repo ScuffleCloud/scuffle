@@ -35,7 +35,7 @@
     {#if collapsible.open && !isCollapsed}
         <div {...collapsible.content}>
             <div class="collapsible">
-                {#each navItem.children ?? [] as child}
+                {#each navItem.children ?? [] as child (child.path)}
                     <a
                         class="item"
                         href={child.path}

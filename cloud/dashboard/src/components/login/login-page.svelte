@@ -8,7 +8,6 @@
         authAPI,
         type AuthResult,
         authState,
-        clearError,
     } from "$lib/authState.svelte";
     import IconArrowDialogLink from "$lib/images/icon-arrow-dialog-link.svelte";
     import ForgotPasswordForm from "./forgot-password-form.svelte";
@@ -116,13 +115,6 @@
 
     function handleBack(): void {
         loginMode = "magic-link";
-    }
-
-    // Clear errors when user starts typing
-    function handleEmailInput(): void {
-        if (authState.error) {
-            clearError();
-        }
     }
 
     const isLoading = $derived(authState.isLoading || localLoading);

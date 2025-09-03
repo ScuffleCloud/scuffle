@@ -3,6 +3,7 @@ export type NavItem = {
     label: string;
     path: string;
     children?: NavItemChild[];
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     icon?: any;
 };
 

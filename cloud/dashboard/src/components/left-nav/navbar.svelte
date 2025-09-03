@@ -33,7 +33,6 @@
     // Function to temporarily expand sidebar for dropdown interaction
     const handleDropdownInteraction = (
         shouldExpand: boolean,
-        itemPath?: string,
     ) => {
         if (shouldExpand && isCollapsed) {
             isTemporarilyExpanded = true;

@@ -1,3 +1,5 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
+
 import { type CustomSeriesRenderItemAPI, type CustomSeriesRenderItemParams, graphic } from "echarts";
 
 export const renderCircle = (

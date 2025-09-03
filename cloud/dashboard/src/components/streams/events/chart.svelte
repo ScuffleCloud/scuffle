@@ -211,7 +211,13 @@
             },
         ],
         tooltip: {
-            formatter: function(params: any) {
+            formatter: function(
+                params: {
+                    marker: string;
+                    name: string;
+                    value: number[];
+                },
+            ) {
                 return params.marker + params.name + ": "
                     + params.value[3]
                     + " ms";

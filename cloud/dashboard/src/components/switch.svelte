@@ -32,7 +32,7 @@
     const {
         elements: { root, input },
         states: { checked: checkedState },
-        options,
+        // options,
     } = createSwitch({
         defaultChecked: checked,
         disabled,

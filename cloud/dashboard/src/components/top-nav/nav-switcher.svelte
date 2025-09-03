@@ -37,7 +37,7 @@
         <IconSwitch />
     </button>
     <div class="dropdown-menu" use:melt={$menu}>
-        {#each items as menuItem}
+        {#each items as menuItem (menuItem.id)}
             <div
                 class="menu-item"
                 use:melt={$item}

@@ -46,6 +46,7 @@ binary_wrapper = rule(
     attrs = {
         "binary": attr.label(
             executable = True,
+            allow_single_file = True,
             cfg = "target",
         ),
         "extra_commands": attr.string_list(),

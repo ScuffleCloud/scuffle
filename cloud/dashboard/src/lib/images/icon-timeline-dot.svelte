@@ -1,7 +1,11 @@
 <script lang="ts">
     import type { TimelineDotVariant } from "$components/assets/types";
 
-    let { variant = "default" } = $props();
+    type Props = {
+        variant: TimelineDotVariant;
+    };
+
+    let { variant = "default" }: Props = $props();
 
     type DotStyles = {
         outer: string;

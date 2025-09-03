@@ -1,12 +1,19 @@
-<script>
+<script lang="ts">
+    type Props = {
+        leftLabel: string;
+        rightLabel: string;
+        value: "left" | "right";
+        onToggle: (side: "left" | "right") => void;
+    };
+
     let {
         leftLabel = "Option 1",
         rightLabel = "Option 2",
         value = "left",
         onToggle = () => {},
-    } = $props();
+    }: Props = $props();
 
-    function handleClick(side) {
+    function handleClick(side: "left" | "right") {
         value = side;
         onToggle(side);
     }
@@ -14,14 +21,11 @@
 
 <div class="toggle-container">
     <div class="toggle-track">
-        <!-- Sliding background -->
         <div
             class="slider-bg"
             class:slide-right={value === "right"}
         >
         </div>
-
-        <!-- Left button -->
         <button
             class="toggle-button"
             class:active={value === "left"}
@@ -30,8 +34,6 @@
         >
             {leftLabel}
         </button>
-
-        <!-- Right button -->
         <button
             class="toggle-button"
             class:active={value === "right"}

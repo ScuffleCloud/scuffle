@@ -108,7 +108,7 @@ run --run_under='exec $BUILD_WORKSPACE_DIRECTORY/misc/utils/run_under.sh'
 common:wrapper --bes_results_url=""
 common:wrapper --bes_backend=""
 common:wrapper --build_event_json_file=""
-common:wrapper --ui_event_filters=stdout
+common:wrapper --ui_event_filters=stdout,error,fatal
 common:wrapper --noshow_progress
 common:wrapper --noshow_loading_progress
 common:wrapper --noshow_timestamps

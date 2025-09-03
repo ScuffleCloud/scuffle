@@ -8,7 +8,7 @@ function arrayBufferToBase64(buffer: ArrayBuffer): string {
 }
 
 function timestampToDate(timestmap: Timestamp): Date | null {
-    let seconds = parseInt(timestmap.seconds);
+    const seconds = parseInt(timestmap.seconds);
     if (isNaN(seconds)) return null;
 
     const millis = seconds * 1000 + timestmap.nanos / 1e6;
@@ -87,7 +87,7 @@ function openKeystoreTx(mode: IDBTransactionMode, onsuccess: (store: IDBObjectSt
         console.error("Failed to open IndexedDB to save device key", ev);
     };
 
-    open.onsuccess = (_ev) => {
+    open.onsuccess = () => {
         const db = open.result;
         const tx = db.transaction("keys", mode);
         const store = tx.objectStore("keys");
@@ -107,7 +107,7 @@ async function loadDeviceKeypair(): Promise<CryptoKeyPair | null> {
     if (!browser) return Promise.reject("Not in browser");
     console.log("Loading device key");
 
-    return new Promise((resolve, _reject) => {
+    return new Promise((resolve) => {
         openKeystoreTx("readonly", (store) => {
             const get = store.get("deviceKey");
             get.onsuccess = () => {

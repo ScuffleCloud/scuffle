@@ -14,7 +14,7 @@
 
 load("@rules_cc//cc/toolchains:tool.bzl", "cc_tool")
 load("@rules_cc//cc/toolchains:tool_map.bzl", "cc_tool_map")
-load("@rules_shell//shell:sh_binary.bzl", "sh_binary")
+load("//misc/utils:binary_wrapper.bzl", "binary_wrapper")
 
 licenses(["notice"])
 
@@ -144,13 +144,12 @@ alias(
     tags = ["manual"],
 )
 
-sh_binary(
+binary_wrapper(
     name = "libtool-darwin-wrapper",
-    srcs = [":libtool-darwin-wrapper.sh"],
-    data = [":libtool-darwin-actual"],
-    env = {
-        "LIBTOOL": "$(location :libtool-darwin-actual)"
-    },
+    binary = ":libtool-darwin-actual",
+    extra_commands = [
+        "set -- \"$@\" \"-static\""
+    ],
     tags = ["manual"],
 )
 

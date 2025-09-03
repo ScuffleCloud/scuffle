@@ -84,9 +84,10 @@ jobs:
     with:
       pr_number: "${{ fromJson(needs.prep.outputs.prep).preview.pr_number }}"
       commit_sha: "${{ fromJson(needs.prep.outputs.prep).preview.commit_sha }}"
-      dashboard_deploy: "${{ fromJson(needs.prep.outputs.prep).preview.dashboard }}"
-      docs_deploy: "${{ fromJson(needs.prep.outputs.prep).preview.docs  }}"
-      rustdoc_deploy: "${{ fromJson(needs.prep.outputs.prep).preview.rustdoc }}"
+      dashboard_build: "${{ fromJson(needs.prep.outputs.prep).preview.dashboard_build }}"
+      docs_build: "${{ fromJson(needs.prep.outputs.prep).preview.docs_build  }}"
+      rustdoc_build: "${{ fromJson(needs.prep.outputs.prep).preview.rustdoc_build }}"
+      deploy: "${{ fromJson(needs.prep.outputs.prep).preview.deploy }}"
     secrets:
       build_buddy_token: ${{ secrets.BUILD_BUDDY_TOKEN }}
       vercel_token: ${{ secrets.VERCEL_TOKEN }}

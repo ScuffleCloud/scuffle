@@ -35,5 +35,5 @@ jobs:
 
       - name: Run tests with valgrind
         run: |
-          targets=$(bazel cquery 'kind("nextest_test rule", set(//...))' --output=starlark --starlark:expr='target.label')
-          bazel test ${targets} --//settings:test_rustc_flags="--cfg=valgrind" --//settings:test_valgrind
+          targets=$(bazel query 'kind("nextest_test rule", set(//...))')
+          bazel test ${targets} --//settings:test_rustc_flags="--cfg=valgrind" --//settings:test_valgrind --skip_incompatible_explicit_targets

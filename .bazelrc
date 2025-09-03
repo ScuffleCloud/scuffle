@@ -36,6 +36,7 @@ build --keep_going
 test --test_output=errors
 test --verbose_failures
 test --test_keep_going
+test --build_tests_only
 
 # Enable a combined coverage report
 # Found at: $(bazel info output_path)/_coverage/_coverage_report.dat

@@ -35,12 +35,12 @@ rust_library(
         ],
     ),
     crate_features = [
-        "__http3",
         "__rustls",
         "__tls",
         "h2",
         "http2",
         "http3-aws-lc-rs",
+        "http3-no-provider",
         "json",
         "rustls-tls-manual-roots-no-provider",
         "rustls-tls-no-provider",

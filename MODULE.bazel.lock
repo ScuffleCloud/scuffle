@@ -245,7 +245,7 @@
   "moduleExtensions": {
     "//vendor:cargo_ext.bzl%bindeps": {
       "general": {
-        "bzlTransitiveDigest": "pBs9fpl47KzFQb3z6x4gMFm6gq8LeMXKVfKf6UN3kaU=",
+        "bzlTransitiveDigest": "5hxtLZDg4kFoK4xmbeS4HC/szYU4f8TelKS3L4/QtC8=",
         "usagesDigest": "0vyNdgUB6Py8EFEYeVm1fABbu9FAMVvr905hmQzVjfU=",
         "recordedFileInputs": {},
         "recordedDirentsInputs": {},
@@ -9391,7 +9391,7 @@
     },
     "//vendor:cargo_ext.bzl%cargo_vendor": {
       "general": {
-        "bzlTransitiveDigest": "pBs9fpl47KzFQb3z6x4gMFm6gq8LeMXKVfKf6UN3kaU=",
+        "bzlTransitiveDigest": "5hxtLZDg4kFoK4xmbeS4HC/szYU4f8TelKS3L4/QtC8=",
         "usagesDigest": "mtR+K4/VVAmhgoN1cG7MXxv6mAD1vfxRZ8SSM66EtxE=",
         "recordedFileInputs": {},
         "recordedDirentsInputs": {},
@@ -14376,7 +14376,7 @@
           "cargo_vendor__reqwest-0.12.23": {
             "repoRuleId": "@@bazel_tools//tools/build_defs/repo:git.bzl%git_repository",
             "attributes": {
-              "commit": "2bf85a741c6820dfc365b0aad5b0b9c97ef25e04",
+              "commit": "9cce4657b902263c762d34a3c6a5addb44988359",
               "init_submodules": true,
               "remote": "https://github.com/TroyKomodo/reqwest.git",
               "build_file": "@@//vendor/cargo:BUILD.reqwest-0.12.23.bazel"

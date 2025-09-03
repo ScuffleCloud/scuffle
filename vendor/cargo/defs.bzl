@@ -8145,7 +8145,7 @@ def crate_repositories():
     maybe(
         new_git_repository,
         name = "cargo_vendor__reqwest-0.12.23",
-        commit = "2bf85a741c6820dfc365b0aad5b0b9c97ef25e04",
+        commit = "9cce4657b902263c762d34a3c6a5addb44988359",
         init_submodules = True,
         remote = "https://github.com/TroyKomodo/reqwest.git",
         build_file = Label("//vendor/cargo:BUILD.reqwest-0.12.23.bazel"),

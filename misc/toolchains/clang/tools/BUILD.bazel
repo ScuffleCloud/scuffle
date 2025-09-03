@@ -14,6 +14,7 @@
 
 load("@rules_cc//cc/toolchains:tool.bzl", "cc_tool")
 load("@rules_cc//cc/toolchains:tool_map.bzl", "cc_tool_map")
+load("@rules_shell//shell:sh_binary.bzl", "sh_binary")
 
 licenses(["notice"])
 
@@ -132,14 +133,30 @@ cc_tool(
     ],
 )
 
-cc_tool(
-    name = "llvm-libtool-darwin",
-    src = select({
+alias(
+    name = "libtool-darwin-actual",
+    actual = select({
         "//misc/platforms:linux-aarch64": "@clang-linux-aarch64//:bin/llvm-libtool-darwin",
         "//misc/platforms:linux-x86_64": "@clang-linux-x86_64//:bin/llvm-libtool-darwin",
         "//misc/platforms:macos-aarch64": "@clang-macos-aarch64//:bin/llvm-libtool-darwin",
         "//misc/platforms:macos-x86_64": "@clang-macos-x86_64//:bin/llvm-libtool-darwin",
     }),
+    tags = ["manual"],
+)
+
+sh_binary(
+    name = "libtool-darwin-wrapper",
+    srcs = [":libtool-darwin-wrapper.sh"],
+    data = [":libtool-darwin-actual"],
+    env = {
+        "LIBTOOL": "$(location :libtool-darwin-actual)"
+    },
+    tags = ["manual"],
+)
+
+cc_tool(
+    name = "llvm-libtool-darwin",
+    src = ":libtool-darwin-wrapper",
     data = [":exec_platform_multicall_support_files"],
     tags = [
         "manual",

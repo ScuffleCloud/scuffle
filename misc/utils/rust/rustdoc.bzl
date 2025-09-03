@@ -232,7 +232,13 @@ def _rustdoc_impl(ctx):
         ctx (ctx): The rule's context object
     """
     crate = ctx.attr.crate
-    crate_info = crate[rust_common.crate_info]
+    if rust_common.crate_info in crate:
+        crate_info = crate[rust_common.crate_info]
+    elif rust_common.test_crate_info in crate:
+        crate_info = crate[rust_common.test_crate_info].crate
+    else:
+        fail("cannot get crate info")
+
     lints_info = crate[LintsInfo] if LintsInfo in crate else None
 
     html_out = None
@@ -355,7 +361,7 @@ rustdoc = rule(
                 "`rust_doc` can generate HTML code documentation for the source files of " +
                 "`rust_library` or `rust_binary` targets."
             ),
-            providers = [rust_common.crate_info],
+            providers = [[rust_common.crate_info], [rust_common.test_crate_info]],
             mandatory = True,
         ),
         "rustdoc_map": attr.bool(default = True),
@@ -549,7 +555,12 @@ def _rustdoc_test_impl(ctx):
     """
 
     crate = ctx.attr.crate
-    crate_info = crate[rust_common.crate_info]
+    if rust_common.crate_info in crate:
+        crate_info = crate[rust_common.crate_info]
+    elif rust_common.test_crate_info in crate:
+        crate_info = crate[rust_common.test_crate_info].crate
+    else:
+        fail("cannot get crate info")
     lints_info = crate[LintsInfo] if LintsInfo in crate else None
 
     extract_out = ctx.actions.declare_file("{}.rustdoc_tests.jsonl".format(ctx.label.name))
@@ -688,7 +699,7 @@ rustdoc_test = rule(
     test = True,
     attrs = {
         "crate": attr.label(
-            providers = [rust_common.crate_info],
+            providers = [[rust_common.crate_info], [rust_common.test_crate_info]],
             mandatory = True,
         ),
         "rustdoc_flags": attr.string_list(

@@ -4,9 +4,6 @@ load("//misc/utils/rust:package.bzl", "scuffle_package")
 cargo_toml()
 
 scuffle_package(
-    crate_name = "scufflecloud-redis-module",
-    crate_type = "cydlib",
-    deps = [
-        "//crates/redis-module-ext",
-    ],
+    crate_name = "redis-module-ext-macros",
+    crate_type = "proc_macro",
 )

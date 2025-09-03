@@ -14,8 +14,8 @@ pub trait RedisCommand: Sized {
     fn invoke(ctx: &redis_module::Context, args: CommandArgs) -> redis_module::RedisResult;
 
     fn invoke_raw(ctx: *mut raw::RedisModuleCtx, argv: *mut *mut raw::RedisModuleString, argc: i32) -> i32 {
-        let mut wctx = redis_module::Context::new(ctx);
-        let resp = Self::invoke(&mut wctx, CommandArgs::new(ctx, argv, argc as usize));
+        let wctx = redis_module::Context::new(ctx);
+        let resp = Self::invoke(&wctx, CommandArgs::new(ctx, argv, argc as usize));
         wctx.reply(resp) as i32
     }
 
@@ -218,7 +218,7 @@ pub enum CommandFlag {
 
     /// The command may have different outputs even starting from the same input arguments and key values.
     /// Starting from Redis 7.0 this flag has been deprecated. Declaring a command as "random" can be done using
-    /// command tips, see https://redis.io/topics/command-tips.
+    /// command tips, see <https://redis.io/topics/command-tips>.
     #[deprecated = "Declaring a command as 'random' can be done using command tips, see https://redis.io/topics/command-tips."]
     Random,
 
@@ -450,7 +450,7 @@ impl RedisModuleCommandInfo {
                         range: raw::RedisModuleCommandKeySpec__bindgen_ty_2__bindgen_ty_1 {
                             keystep: key_step,
                             lastkey: last_key,
-                            limit: limit,
+                            limit,
                         },
                     },
                     None => unsafe { std::mem::zeroed() },

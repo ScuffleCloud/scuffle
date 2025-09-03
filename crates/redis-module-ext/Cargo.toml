@@ -5,6 +5,6 @@ edition = "2024"
 publish = false
 
 [dependencies]
+fmtools = "0.1"
 redis-module = { git = "https://github.com/RedisLabsModules/redismodule-rs", rev = "v2.1.1" }
 redis-module-ext-macros = { path = "./macros" }
-fmtools = "0.1"

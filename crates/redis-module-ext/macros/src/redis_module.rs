@@ -21,7 +21,7 @@ struct Args {
 }
 
 pub fn macro_impl(attr: TokenStream, item: TokenStream) -> syn::Result<TokenStream> {
-    let attr_args = NestedMeta::parse_meta_list(attr.into())?;
+    let attr_args = NestedMeta::parse_meta_list(attr)?;
 
     let args = Args::from_list(&attr_args)?;
 
@@ -60,23 +60,20 @@ pub fn macro_impl(attr: TokenStream, item: TokenStream) -> syn::Result<TokenStre
         last.ident = format_command_ident(&last.ident);
 
         let last = cmd_path.segments.last_mut().unwrap();
-        match &mut last.arguments {
-            syn::PathArguments::AngleBracketed(args) => {
-                args.colon2_token = Some(Default::default());
-                let generics = args
-                    .args
-                    .clone()
-                    .into_pairs()
-                    .filter(|generic| {
-                        matches!(
-                            generic.value(),
-                            syn::GenericArgument::Const(_) | syn::GenericArgument::Type(_)
-                        )
-                    })
-                    .collect();
-                args.args = generics;
-            }
-            _ => {}
+        if let syn::PathArguments::AngleBracketed(args) = &mut last.arguments {
+            args.colon2_token = Some(Default::default());
+            let generics = args
+                .args
+                .clone()
+                .into_pairs()
+                .filter(|generic| {
+                    matches!(
+                        generic.value(),
+                        syn::GenericArgument::Const(_) | syn::GenericArgument::Type(_)
+                    )
+                })
+                .collect();
+            args.args = generics;
         }
 
         quote::quote! {

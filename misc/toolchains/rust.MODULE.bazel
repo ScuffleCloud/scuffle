@@ -231,7 +231,6 @@ use_repo(
     "cargo_vendor__rand-0.8.5",
     "cargo_vendor__rand-0.9.2",
     "cargo_vendor__redis-module-2.1.1",
-    "cargo_vendor__redis-module-macros-99.99.99",
     "cargo_vendor__regex-1.11.1",
     "cargo_vendor__reqwest-0.12.23",
     "cargo_vendor__rsa-0.9.8",

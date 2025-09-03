@@ -31,6 +31,9 @@ macro_rules! export_redis_module {
     };
 }
 
+/// # Safety
+/// The `ctx` must be a valid ptr and this function must only be called once when redis is loading the module.
+/// Calling this function outside of the redis loading is UB.
 pub unsafe fn on_load<M: RedisModule>(
     ctx: *mut raw::RedisModuleCtx,
     _: *mut *mut raw::RedisModuleString,
@@ -80,6 +83,9 @@ pub unsafe fn on_load<M: RedisModule>(
     raw::Status::Ok as c_int
 }
 
+/// # Safety
+/// The `ctx` must be a valid ptr and this function must only be called once when redis is unloading the module.
+/// Calling this function outside of the redis unloading is UB.
 pub unsafe fn on_unload<M: RedisModule>(ctx: *mut raw::RedisModuleCtx) -> std::os::raw::c_int {
     let context = redis_module::Context::new(ctx);
 

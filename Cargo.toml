@@ -27,6 +27,8 @@ members = [
     "crates/openapiv3_1",
     "crates/postcompile",
     "crates/pprof",
+    "crates/redis-module-ext",
+    "crates/redis-module-ext/macros",
     "crates/rtmp",
     "crates/settings",
     "crates/signal",

@@ -104,7 +104,7 @@ struct FindKeysKeynum {
 }
 
 pub fn macro_impl(attr: TokenStream, item: TokenStream) -> syn::Result<TokenStream> {
-    let attr_args = NestedMeta::parse_meta_list(attr.into())?;
+    let attr_args = NestedMeta::parse_meta_list(attr)?;
 
     let macro_args = Args::from_list(&attr_args)?;
 

@@ -5,6 +5,7 @@ use crate::RedisDataType;
 
 pub trait RedisKeyWritableExt {
     /// Get a custom [RedisDataType] from a key.
+    #[allow(clippy::mut_from_ref)]
     fn get<T: RedisDataType>(&self) -> RedisResult<Option<&mut T>>;
     /// Set a key to a custom [RedisDataType].
     fn set<T: RedisDataType>(&self, value: T) -> RedisResult<()>;

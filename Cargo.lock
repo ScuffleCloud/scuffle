@@ -4619,15 +4619,22 @@ dependencies = [
 ]
 
 [[package]]
-name = "redis-module-macros"
-version = "99.99.99"
-source = "git+https://github.com/RedisLabsModules/redismodule-rs?rev=v2.1.1#503d94e254bd167c5163c18b701f05dcb78a1270"
+name = "redis-module-ext"
+version = "0.1.0"
 dependencies = [
+ "fmtools",
+ "redis-module",
+ "redis-module-ext-macros",
+]
+
+[[package]]
+name = "redis-module-ext-macros"
+version = "0.1.0"
+dependencies = [
+ "darling 0.21.3",
  "proc-macro2",
  "quote 1.0.40",
- "serde",
- "serde_syn",
- "syn 1.0.109",
+ "syn 2.0.101",
 ]
 
 [[package]]
@@ -5731,7 +5738,7 @@ dependencies = [
  "libc",
  "linkme",
  "redis-module",
- "redis-module-macros",
+ "redis-module-ext",
 ]
 
 [[package]]
@@ -5919,18 +5926,6 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "40734c41988f7306bb04f0ecf60ec0f3f1caa34290e4e8ea471dcd3346483b83"
 dependencies = [
  "serde",
-]
-
-[[package]]
-name = "serde_syn"
-version = "0.1.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "0e0ca8adcbd02c69d24859f7f0c54ede988e4509c8767c8a3185ec0eb158281c"
-dependencies = [
- "bitflags 1.3.2",
- "proc-macro2",
- "serde",
- "syn 1.0.109",
 ]
 
 [[package]]

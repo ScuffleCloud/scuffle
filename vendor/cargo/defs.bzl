@@ -853,6 +853,24 @@ _NORMAL_DEPENDENCIES = {
             },
         },
     },
+    "crates/redis-module-ext": {
+        _REQUIRED_FEATURE: {
+            _COMMON_CONDITION: {
+                "fmtools": Label("@cargo_vendor//:fmtools-0.1.2"),
+                "redis-module": Label("@cargo_vendor//:redis-module-2.1.1"),
+            },
+        },
+    },
+    "crates/redis-module-ext/macros": {
+        _REQUIRED_FEATURE: {
+            _COMMON_CONDITION: {
+                "darling": Label("@cargo_vendor//:darling-0.21.3"),
+                "proc-macro2": Label("@cargo_vendor//:proc-macro2-1.0.95"),
+                "quote": Label("@cargo_vendor//:quote-1.0.40"),
+                "syn": Label("@cargo_vendor//:syn-2.0.101"),
+            },
+        },
+    },
     "crates/rtmp": {
         _REQUIRED_FEATURE: {
             _COMMON_CONDITION: {
@@ -1470,6 +1488,18 @@ _NORMAL_ALIASES = {
             },
         },
     },
+    "crates/redis-module-ext": {
+        _REQUIRED_FEATURE: {
+            _COMMON_CONDITION: {
+            },
+        },
+    },
+    "crates/redis-module-ext/macros": {
+        _REQUIRED_FEATURE: {
+            _COMMON_CONDITION: {
+            },
+        },
+    },
     "crates/rtmp": {
         _REQUIRED_FEATURE: {
             _COMMON_CONDITION: {
@@ -1821,6 +1851,10 @@ _NORMAL_DEV_DEPENDENCIES = {
             },
         },
     },
+    "crates/redis-module-ext": {
+    },
+    "crates/redis-module-ext/macros": {
+    },
     "crates/rtmp": {
         _REQUIRED_FEATURE: {
             _COMMON_CONDITION: {
@@ -2051,6 +2085,10 @@ _NORMAL_DEV_ALIASES = {
             },
         },
     },
+    "crates/redis-module-ext": {
+    },
+    "crates/redis-module-ext/macros": {
+    },
     "crates/rtmp": {
         _REQUIRED_FEATURE: {
             _COMMON_CONDITION: {
@@ -2147,11 +2185,6 @@ _PROC_MACRO_DEPENDENCIES = {
     "cloud/proto": {
     },
     "cloud/redis-module": {
-        _REQUIRED_FEATURE: {
-            _COMMON_CONDITION: {
-                "redis-module-macros": Label("@cargo_vendor//:redis-module-macros-99.99.99"),
-            },
-        },
     },
     "crates/aac": {
         _REQUIRED_FEATURE: {
@@ -2337,6 +2370,10 @@ _PROC_MACRO_DEPENDENCIES = {
                 "document-features": Label("@cargo_vendor//:document-features-0.2.11"),
             },
         },
+    },
+    "crates/redis-module-ext": {
+    },
+    "crates/redis-module-ext/macros": {
     },
     "crates/rtmp": {
         _REQUIRED_FEATURE: {
@@ -2570,6 +2607,10 @@ _PROC_MACRO_ALIASES = {
     },
     "crates/pprof": {
     },
+    "crates/redis-module-ext": {
+    },
+    "crates/redis-module-ext/macros": {
+    },
     "crates/rtmp": {
     },
     "crates/settings": {
@@ -2695,6 +2736,10 @@ _PROC_MACRO_DEV_DEPENDENCIES = {
     "crates/postcompile": {
     },
     "crates/pprof": {
+    },
+    "crates/redis-module-ext": {
+    },
+    "crates/redis-module-ext/macros": {
     },
     "crates/rtmp": {
     },
@@ -2881,6 +2926,10 @@ _PROC_MACRO_DEV_ALIASES = {
             },
         },
     },
+    "crates/redis-module-ext": {
+    },
+    "crates/redis-module-ext/macros": {
+    },
     "crates/rtmp": {
         _REQUIRED_FEATURE: {
             _COMMON_CONDITION: {
@@ -3023,6 +3072,10 @@ _BUILD_DEPENDENCIES = {
     },
     "crates/pprof": {
     },
+    "crates/redis-module-ext": {
+    },
+    "crates/redis-module-ext/macros": {
+    },
     "crates/rtmp": {
     },
     "crates/settings": {
@@ -3150,6 +3203,10 @@ _BUILD_ALIASES = {
     },
     "crates/pprof": {
     },
+    "crates/redis-module-ext": {
+    },
+    "crates/redis-module-ext/macros": {
+    },
     "crates/rtmp": {
     },
     "crates/settings": {
@@ -3269,6 +3326,10 @@ _BUILD_PROC_MACRO_DEPENDENCIES = {
     },
     "crates/pprof": {
     },
+    "crates/redis-module-ext": {
+    },
+    "crates/redis-module-ext/macros": {
+    },
     "crates/rtmp": {
     },
     "crates/settings": {
@@ -3379,6 +3440,10 @@ _BUILD_PROC_MACRO_ALIASES = {
     "crates/postcompile": {
     },
     "crates/pprof": {
+    },
+    "crates/redis-module-ext": {
+    },
+    "crates/redis-module-ext/macros": {
     },
     "crates/rtmp": {
     },
@@ -3631,6 +3696,10 @@ _FEATURE_FLAGS = {
         "docs": [
         ],
     },
+    "crates/redis-module-ext": {
+    },
+    "crates/redis-module-ext/macros": {
+    },
     "crates/rtmp": {
         "docs": [
         ],
@@ -3850,6 +3919,10 @@ _RESOLVED_FEATURE_FLAGS = {
     },
     "crates/pprof": {
     },
+    "crates/redis-module-ext": {
+    },
+    "crates/redis-module-ext/macros": {
+    },
     "crates/rtmp": {
     },
     "crates/settings": {
@@ -3965,6 +4038,8 @@ _VERSIONS = {
     "crates/openapiv3_1": "0.1.3",
     "crates/postcompile": "0.3.3",
     "crates/pprof": "0.2.0",
+    "crates/redis-module-ext": "0.1.0",
+    "crates/redis-module-ext/macros": "0.1.0",
     "crates/rtmp": "0.2.3",
     "crates/settings": "0.1.4",
     "crates/signal": "0.3.3",
@@ -8279,16 +8354,6 @@ def crate_repositories():
 
     maybe(
         new_git_repository,
-        name = "cargo_vendor__redis-module-macros-99.99.99",
-        commit = "503d94e254bd167c5163c18b701f05dcb78a1270",
-        init_submodules = True,
-        remote = "https://github.com/RedisLabsModules/redismodule-rs",
-        build_file = Label("//vendor/cargo:BUILD.redis-module-macros-99.99.99.bazel"),
-        strip_prefix = "redismodule-rs-macros",
-    )
-
-    maybe(
-        new_git_repository,
         name = "cargo_vendor__redis-module-macros-internals-99.99.99",
         commit = "503d94e254bd167c5163c18b701f05dcb78a1270",
         init_submodules = True,
@@ -8854,16 +8919,6 @@ def crate_repositories():
         urls = ["https://static.crates.io/crates/serde_spanned/1.0.0/download"],
         strip_prefix = "serde_spanned-1.0.0",
         build_file = Label("//vendor/cargo:BUILD.serde_spanned-1.0.0.bazel"),
-    )
-
-    maybe(
-        http_archive,
-        name = "cargo_vendor__serde_syn-0.1.0",
-        sha256 = "0e0ca8adcbd02c69d24859f7f0c54ede988e4509c8767c8a3185ec0eb158281c",
-        type = "tar.gz",
-        urls = ["https://static.crates.io/crates/serde_syn/0.1.0/download"],
-        strip_prefix = "serde_syn-0.1.0",
-        build_file = Label("//vendor/cargo:BUILD.serde_syn-0.1.0.bazel"),
     )
 
     maybe(
@@ -10966,7 +11021,6 @@ def crate_repositories():
         struct(repo = "cargo_vendor__rand-0.8.5", is_dev_dep = False),
         struct(repo = "cargo_vendor__rand-0.9.2", is_dev_dep = False),
         struct(repo = "cargo_vendor__redis-module-2.1.1", is_dev_dep = False),
-        struct(repo = "cargo_vendor__redis-module-macros-99.99.99", is_dev_dep = False),
         struct(repo = "cargo_vendor__regex-1.11.1", is_dev_dep = False),
         struct(repo = "cargo_vendor__reqwest-0.12.23", is_dev_dep = False),
         struct(repo = "cargo_vendor__rsa-0.9.8", is_dev_dep = False),

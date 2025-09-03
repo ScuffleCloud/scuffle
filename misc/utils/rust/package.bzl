@@ -4,7 +4,7 @@ Helper scripts for setting up rust targets.
 
 load("@cargo_vendor//:defs.bzl", "all_crate_deps", "crate_features", "crate_version", dep_aliases = "aliases")
 load("@rules_rust//cargo:defs.bzl", "cargo_build_script", "cargo_toml_env_vars", "extract_cargo_lints")
-load("@rules_rust//rust:defs.bzl", "rust_binary", "rust_library", "rust_proc_macro", "rustfmt_test")
+load("@rules_rust//rust:defs.bzl", "rust_binary", "rust_library", "rust_proc_macro", "rust_shared_library", "rust_static_library", "rustfmt_test")
 load("//misc/utils/rust:clippy.bzl", "rust_clippy", "rust_clippy_test")
 load("//misc/utils/rust:rust_analyzer.bzl", "rust_analyzer_info")
 load("//misc/utils/rust:rustdoc.bzl", "rustdoc", "rustdoc_test")
@@ -76,9 +76,11 @@ def scuffle_package(
         readme = ":README.md"
 
     NAME_MAPPINGS = {
-        "rlib": "lib",
-        "bin": "bin",
-        "proc_macro": "macro",
+        "rlib": rust_library,
+        "cydlib": rust_shared_library,
+        "staticlib": rust_static_library,
+        "bin": rust_binary,
+        "proc_macro": rust_proc_macro,
     }
 
     if crate_type not in NAME_MAPPINGS:
@@ -129,12 +131,7 @@ def scuffle_package(
     )
 
     # Create the library target
-    if crate_type == "rlib":
-        rust_library(**kwargs)
-    elif crate_type == "proc_macro":
-        rust_proc_macro(**kwargs)
-    elif crate_type == "bin":
-        rust_binary(**kwargs)
+    NAME_MAPPINGS[crate_type](**kwargs)
 
     rust_targets = [colon_name]
 
@@ -232,7 +229,7 @@ def scuffle_package(
         "--enable-index-page",
     ]
 
-    if crate_type == "bin":
+    if crate_type in ["bin", "cydlib", "staticlib"]:
         rustdoc_flags.extend([
             "--document-private-items",
             "--document-hidden-items",

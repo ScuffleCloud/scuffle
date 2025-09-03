@@ -27,6 +27,8 @@ _packages = [
     "//crates/postcompile",
     "//crates/pprof",
     "//crates/rtmp",
+    "//crates/redis-module-ext",
+    "//crates/redis-module-ext/macros",
     "//crates/settings",
     "//crates/signal",
     "//crates/tinc",

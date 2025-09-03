@@ -1234,18 +1234,6 @@ transition_alias_opt(
 )
 
 transition_alias_opt(
-    name = "redis-module-macros-99.99.99",
-    actual = "@cargo_vendor__redis-module-macros-99.99.99//:redis_module_macros",
-    tags = ["manual"],
-)
-
-transition_alias_opt(
-    name = "redis-module-macros",
-    actual = "@cargo_vendor__redis-module-macros-99.99.99//:redis_module_macros",
-    tags = ["manual"],
-)
-
-transition_alias_opt(
     name = "regex-1.11.1",
     actual = "@cargo_vendor__regex-1.11.1//:regex",
     tags = ["manual"],

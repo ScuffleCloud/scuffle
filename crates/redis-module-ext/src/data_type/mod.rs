@@ -50,15 +50,14 @@ pub trait RedisDataType: Sized {
             return Err("Error: created data type is null");
         }
 
-        ctx.log_debug(&format!("Created new data type '{}'", Self::NAME).as_str());
+        ctx.log_debug(format!("Created new data type '{}'", Self::NAME).as_str());
 
         Ok(())
     }
 
     #[doc(hidden)]
     fn redis_ty(ptr: *mut raw::RedisModuleType) -> Option<redis_module::native_types::RedisType> {
-        static TYPE_REGISTRY: LazyLock<RwLock<HashMap<&'static str, RedisModuleType>>> =
-            LazyLock::new(|| Default::default());
+        static TYPE_REGISTRY: LazyLock<RwLock<HashMap<&'static str, RedisModuleType>>> = LazyLock::new(Default::default);
 
         if !ptr.is_null() {
             TYPE_REGISTRY.write().unwrap().insert(Self::NAME, RedisModuleType { ptr });

@@ -13,6 +13,10 @@ pub struct RdbSaveIo {
 }
 
 impl RdbSaveIo {
+    /// # Safety
+    ///
+    /// 1. The ptr must be valid and from redis.
+    /// 2. The ptr must be for a RDBSave Operation.
     pub unsafe fn new(ptr: NonNull<raw::RedisModuleIO>) -> Self {
         Self { ptr }
     }
@@ -61,6 +65,10 @@ pub struct RdbLoadIo {
 }
 
 impl RdbLoadIo {
+    /// # Safety
+    ///
+    /// 1. The ptr must be valid and from redis.
+    /// 2. The ptr must be for a RDBLoad Operation.
     pub unsafe fn new(ptr: NonNull<raw::RedisModuleIO>) -> Self {
         Self { ptr }
     }
@@ -169,11 +177,15 @@ impl<C> EmitAofCommandBuilder<'_, C> {
 }
 
 impl AofRewriteIo {
+    /// # Safety
+    ///
+    /// 1. The ptr must be valid and from redis.
+    /// 2. The ptr must be for a AofRewrite Operation.
     pub unsafe fn new(ptr: NonNull<raw::RedisModuleIO>) -> Self {
         Self { ptr }
     }
 
-    pub fn emit_command<C>(&mut self, cmd: C) -> EmitAofCommandBuilder<C> {
+    pub fn emit_command<C>(&mut self, cmd: C) -> EmitAofCommandBuilder<'_, C> {
         EmitAofCommandBuilder {
             io: self,
             cmd,
@@ -213,6 +225,10 @@ pub struct RedisModuleDigest {
 }
 
 impl RedisModuleDigest {
+    /// # Safety
+    ///
+    /// 1. The ptr must be valid and from redis.
+    /// 2. The ptr must be for a ModuleDigest Operation.
     pub unsafe fn new(ptr: NonNull<raw::RedisModuleDigest>) -> Self {
         Self { ptr }
     }
@@ -267,6 +283,10 @@ pub struct RedisModuleKeyOptCtx {
 }
 
 impl RedisModuleKeyOptCtx {
+    /// # Safety
+    ///
+    /// 1. The ptr must be valid and from redis.
+    /// 2. The ptr must be for a RedisKeyOpt Operation.
     pub unsafe fn new(ptr: NonNull<raw::RedisModuleKeyOptCtx>) -> Self {
         Self { ptr }
     }

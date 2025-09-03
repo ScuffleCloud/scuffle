@@ -7,16 +7,16 @@ SCRIPT_DIR="$(dirname "${SCRIPT}")"
 
 # Find the runfiles directory
 if [[ -n "${RUNFILES_DIR:-}" ]]; then
-    RUNFILES="${RUNFILES_DIR}"
+    RUNFILES_DIR="${RUNFILES_DIR}"
 elif [[ -f "${SCRIPT_DIR}/MANIFEST" ]]; then
-    RUNFILES="${SCRIPT_DIR}"
+    RUNFILES_DIR="${SCRIPT_DIR}"
 else
-    RUNFILES="${SCRIPT}.runfiles"
+    RUNFILES_DIR="${SCRIPT}.runfiles"
 fi
 
 export RUNFILES_DIR="${RUNFILES_DIR}"
 
-pwd="${RUNFILES}/_main"
+pwd="${RUNFILES_DIR}/_main"
 
 # User-specified environment variables
 %%EXPORT_ENVS%%
@@ -25,4 +25,4 @@ pwd="${RUNFILES}/_main"
 %%EXTRA_COMMANDS%%
 
 # Set up library path and execute
-exec "$RUNFILES/_main/%%BINARY%%" "$@"
+exec "${RUNFILES_DIR}/_main/%%BINARY%%" "$@"

@@ -69,7 +69,7 @@ rust_library(
     deps = [
         "@bindeps__cfg-0.0.0//:cfg",
         "@bindeps__dashmap-6.1.0//:dashmap",
-        "@bindeps__indexmap-2.10.0//:indexmap",
+        "@bindeps__indexmap-2.11.0//:indexmap",
         "@bindeps__intern-0.0.0//:intern",
         "@bindeps__la-arena-0.3.1//:la_arena",
         "@bindeps__rustc-hash-2.1.1//:rustc_hash",

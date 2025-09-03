@@ -80,7 +80,7 @@ rust_library(
         "@bindeps__hyper-1.7.0//:hyper",
         "@bindeps__ipnet-2.11.0//:ipnet",
         "@bindeps__libc-0.2.175//:libc",
-        "@bindeps__percent-encoding-2.3.1//:percent_encoding",
+        "@bindeps__percent-encoding-2.3.2//:percent_encoding",
         "@bindeps__pin-project-lite-0.2.16//:pin_project_lite",
         "@bindeps__socket2-0.6.0//:socket2",
         "@bindeps__tokio-1.47.1//:tokio",

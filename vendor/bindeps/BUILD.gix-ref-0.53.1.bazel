@@ -70,8 +70,8 @@ rust_library(
         "@bindeps__gix-tempfile-18.0.0//:gix_tempfile",
         "@bindeps__gix-utils-0.3.0//:gix_utils",
         "@bindeps__gix-validate-0.10.0//:gix_validate",
-        "@bindeps__memmap2-0.9.7//:memmap2",
-        "@bindeps__thiserror-2.0.15//:thiserror",
-        "@bindeps__winnow-0.7.12//:winnow",
+        "@bindeps__memmap2-0.9.8//:memmap2",
+        "@bindeps__thiserror-2.0.16//:thiserror",
+        "@bindeps__winnow-0.7.13//:winnow",
     ],
 )

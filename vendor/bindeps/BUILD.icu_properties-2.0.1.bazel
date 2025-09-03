@@ -70,7 +70,7 @@ rust_library(
         "@bindeps__icu_locale_core-2.0.0//:icu_locale_core",
         "@bindeps__icu_properties_data-2.0.1//:icu_properties_data",
         "@bindeps__icu_provider-2.0.0//:icu_provider",
-        "@bindeps__potential_utf-0.1.2//:potential_utf",
+        "@bindeps__potential_utf-0.1.3//:potential_utf",
         "@bindeps__zerotrie-0.2.2//:zerotrie",
         "@bindeps__zerovec-0.11.4//:zerovec",
     ],

@@ -144,6 +144,7 @@ def scuffle_package(
         rust_binary(**kwargs)
 
     rust_targets = [colon_name]
+    test_target_compatiable_with = target_compatiable_with
 
     if test != False:
         test_deps = test.get("deps", [])[:]
@@ -208,6 +209,9 @@ def scuffle_package(
                 "--cfg=bazel_runfiles",
                 "-Clink-arg=-Wl,-znostart-stop-gc",
             ],
+            # Needs to be marked as not testonly because the rust_clippy
+            # rule depends on this, which we use to generate clippy suggestions
+            testonly = False,
             target_compatible_with = test_target_compatiable_with,
         )
 
@@ -217,20 +221,20 @@ def scuffle_package(
         name = name + "_clippy",
         targets = rust_targets,
         visibility = ["//visibility:private"],
-        target_compatible_with = target_compatiable_with,
+        target_compatible_with = test_target_compatiable_with,
     )
 
     rust_clippy_test(
         name = name + "_clippy_test",
         targets = [colon_name + "_clippy"],
         visibility = ["//visibility:private"],
-        target_compatible_with = target_compatiable_with,
+        target_compatible_with = test_target_compatiable_with,
     )
 
     rustfmt_test(
         name = name + "_fmt_test",
         targets = rust_targets,
-        target_compatible_with = target_compatiable_with,
+        target_compatible_with = test_target_compatiable_with,
     )
 
     rustdoc_flags = [
@@ -280,7 +284,7 @@ def scuffle_package(
         test = (colon_name + "_test") if test != False else None,
         doc_test = (colon_name + "_doc_test") if test != False else None,
         clippy = colon_name + "_clippy",
-        target_compatible_with = target_compatiable_with,
+        target_compatible_with = test_target_compatiable_with,
     )
 
     if readme != False:

@@ -37,7 +37,7 @@ jobs:
 
       - name: Run
         run: |
-          targets=$(bazel query 'tests(set(//...))')
+          targets=$(bazel cquery 'tests(set(//...))' --output=starlark --starlark:expr='target.label')
           bazel coverage ${targets}
 
       - uses: codecov/codecov-action@v5

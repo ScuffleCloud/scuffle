@@ -64,7 +64,7 @@ rust_library(
         "@bindeps__gix-date-0.10.5//:gix_date",
         "@bindeps__gix-utils-0.3.0//:gix_utils",
         "@bindeps__itoa-1.0.15//:itoa",
-        "@bindeps__thiserror-2.0.15//:thiserror",
-        "@bindeps__winnow-0.7.12//:winnow",
+        "@bindeps__thiserror-2.0.16//:thiserror",
+        "@bindeps__winnow-0.7.13//:winnow",
     ],
 )

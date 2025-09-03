@@ -64,7 +64,7 @@ rust_library(
     }),
     version = "0.9.6",
     deps = [
-        "@bindeps__bitflags-2.9.2//:bitflags",
+        "@bindeps__bitflags-2.9.4//:bitflags",
         "@bindeps__memchr-2.7.5//:memchr",
         "@bindeps__pulldown-cmark-0.9.6//:build_script_build",
         "@bindeps__unicase-2.8.1//:unicase",

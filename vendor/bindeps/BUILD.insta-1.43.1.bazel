@@ -76,7 +76,7 @@ rust_library(
     }),
     version = "1.43.1",
     deps = [
-        "@bindeps__clap-4.5.45//:clap",
+        "@bindeps__clap-4.5.47//:clap",
         "@bindeps__console-0.15.11//:console",
         "@bindeps__once_cell-1.21.3//:once_cell",
         "@bindeps__pest-2.8.1//:pest",

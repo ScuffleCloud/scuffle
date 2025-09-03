@@ -78,7 +78,7 @@ rust_library(
     }),
     version = "1.0.8",
     deps = [
-        "@bindeps__bitflags-2.9.2//:bitflags",
+        "@bindeps__bitflags-2.9.4//:bitflags",
         "@bindeps__rustix-1.0.8//:build_script_build",
     ] + select({
         "@rules_rust//rust/platform:aarch64-apple-darwin": [

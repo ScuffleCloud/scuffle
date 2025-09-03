@@ -50,7 +50,7 @@ test *targets="//...":
 
     output_base=$(bazel info output_base)
 
-    targets=$(bazel query 'tests(set({{ targets }}))')
+    targets=$(bazel cquery 'tests(set({{ targets }}))' --output=starlark --starlark:expr='target.label')
 
     bazel --output_base="${output_base}_coverage" coverage ${targets} --//settings:test_insta_force_pass
 
@@ -85,7 +85,7 @@ grind *targets="//...":
     set -euxo pipefail
 
     output_base=$(bazel info output_base)
-    targets=$(bazel query 'kind("nextest_test rule", set({{ targets }}))')
+    targets=$(bazel cquery 'kind("nextest_test rule", set({{ targets }}))' --output=starlark --starlark:expr='target.label')
 
     bazel --output_base="${output_base}_grind" test ${targets} --//settings:test_rustc_flags="--cfg=valgrind" --//settings:test_valgrind
 

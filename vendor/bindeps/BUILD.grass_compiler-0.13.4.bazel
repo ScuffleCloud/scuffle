@@ -67,7 +67,7 @@ rust_library(
     version = "0.13.4",
     deps = [
         "@bindeps__codemap-0.1.3//:codemap",
-        "@bindeps__indexmap-2.10.0//:indexmap",
+        "@bindeps__indexmap-2.11.0//:indexmap",
         "@bindeps__lasso-0.7.3//:lasso",
         "@bindeps__once_cell-1.21.3//:once_cell",
         "@bindeps__phf-0.11.3//:phf",

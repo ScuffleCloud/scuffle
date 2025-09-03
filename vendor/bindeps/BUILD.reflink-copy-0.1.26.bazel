@@ -60,7 +60,7 @@ rust_library(
     }),
     version = "0.1.26",
     deps = [
-        "@bindeps__cfg-if-1.0.1//:cfg_if",
+        "@bindeps__cfg-if-1.0.3//:cfg_if",
     ] + select({
         "@rules_rust//rust/platform:aarch64-pc-windows-msvc": [
             "@bindeps__windows-0.61.3//:windows",  # cfg(windows)

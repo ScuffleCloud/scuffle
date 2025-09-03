@@ -144,7 +144,7 @@ crates_vendor(
         "rust-analyzer": crate.spec(
             artifact = "bin",
             git = "https://github.com/TroyKomodo/rust-analyzer.git",
-            rev = "e9ca9f8ec88a207891c32da4fc6523026ea03c6f",
+            rev = "bc2e8effd36dbfc5eba9c36b015c9299e067ec6d",
         ),
     },
     stable_as_nightly = True,

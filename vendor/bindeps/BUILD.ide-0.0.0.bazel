@@ -62,7 +62,7 @@ rust_library(
     deps = [
         "@bindeps__arrayvec-0.7.6//:arrayvec",
         "@bindeps__cfg-0.0.0//:cfg",
-        "@bindeps__cov-mark-2.0.1//:cov_mark",
+        "@bindeps__cov-mark-2.1.0//:cov_mark",
         "@bindeps__dot-0.1.4//:dot",
         "@bindeps__either-1.15.0//:either",
         "@bindeps__hir-0.0.0//:hir",
@@ -85,6 +85,6 @@ rust_library(
         "@bindeps__toolchain-0.0.0//:toolchain",  # cfg(not(any(target_arch = "wasm32", target_os = "emscripten")))
         "@bindeps__tracing-0.1.41//:tracing",
         "@bindeps__triomphe-0.1.14//:triomphe",
-        "@bindeps__url-2.5.4//:url",
+        "@bindeps__url-2.5.7//:url",
     ],
 )

@@ -63,7 +63,7 @@ rust_library(
     }),
     version = "0.2.29",
     deps = [
-        "@bindeps__clap-4.5.45//:clap",
+        "@bindeps__clap-4.5.47//:clap",
         "@bindeps__roff-0.2.2//:roff",
     ],
 )

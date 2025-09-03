@@ -67,6 +67,6 @@ rust_library(
         "@bindeps__nu-ansi-term-0.50.1//:nu_ansi_term",
         "@bindeps__tracing-core-0.1.34//:tracing_core",
         "@bindeps__tracing-log-0.2.0//:tracing_log",
-        "@bindeps__tracing-subscriber-0.3.19//:tracing_subscriber",
+        "@bindeps__tracing-subscriber-0.3.20//:tracing_subscriber",
     ],
 )

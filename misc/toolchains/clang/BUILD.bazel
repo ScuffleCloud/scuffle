@@ -167,14 +167,22 @@ cc_args(
     actions = [
         "@rules_cc//cc/toolchains/actions:link_actions",
     ],
-    args = [
-        "-stdlib=libc++",
-        "-Wl,-Bstatic",
-        "-lc++",
-        "-lc++abi",
-        "-lunwind",
-        "-Wl,-Bdynamic",
-    ],
+    args = select({
+        "@platforms//os:macos": [
+            "-Wl,-static",
+            "-lc++",
+            "-lc++abi",
+            "-Wl,-dynamic",
+        ],,
+        "@platforms//os:linux": [
+            "-stdlib=libc++",
+            "-Wl,-Bstatic",
+            "-lc++",
+            "-lc++abi",
+            "-lunwind",
+            "-Wl,-Bdynamic",
+        ],
+    }),
 )
 
 cc_args_list(

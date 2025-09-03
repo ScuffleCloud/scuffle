@@ -152,6 +152,7 @@ def scuffle_package(
         test_data = test.get("data", [])[:]
         test_insta = test.get("insta", False)
         test_tags = test.get("tags", [])[:]
+        test_target_compatiable_with = test.get("target_compatiable_with", []) + target_compatiable_with
 
         if crate_type == "proc_macro":
             test_proc_macro_deps.append(colon_name)
@@ -190,7 +191,7 @@ def scuffle_package(
             # rule depends on this, which we use to generate clippy suggestions
             testonly = False,
             visibility = ["//visibility:private"],
-            target_compatible_with = target_compatiable_with,
+            target_compatible_with = test_target_compatiable_with,
         )
 
         rustdoc_test(
@@ -306,7 +307,8 @@ def scuffle_test(
         env = None,
         data = None,
         insta = False,
-        tags = None):
+        tags = None,
+        target_compatiable_with = None):
     """Helper function to add additional typed testing values.
 
     Returns:
@@ -318,6 +320,7 @@ def scuffle_test(
         data: Additional data needed by the test.
         insta: If the test needs to work with insta snapshots.
         tags: Additional tags to add to the test.
+        target_compatiable_with: The compatability constraint of the target.
     """
     if deps == None:
         deps = []
@@ -329,6 +332,9 @@ def scuffle_test(
         data = []
     if tags == None:
         tags = []
+    if target_compatiable_with == None:
+        target_compatiable_with = []
+
     return {
         "deps": deps,
         "proc_macro_deps": proc_macro_deps,
@@ -336,6 +342,7 @@ def scuffle_test(
         "data": data,
         "insta": insta,
         "tags": tags,
+        "target_compatiable_with": target_compatiable_with,
     }
 
 def scuffle_build_script(

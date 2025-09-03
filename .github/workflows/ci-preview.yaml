@@ -1,0 +1,320 @@
+name: ci - build previews
+
+on:
+  workflow_call:
+    inputs:
+      pr_number:
+        type: string
+        required: false
+      commit_sha:
+        type: string
+        required: true
+      dashboard_deploy:
+        type: boolean
+        required: false
+        default: false
+      docs_deploy:
+        type: boolean
+        required: false
+        default: false
+      rustdoc_deploy:
+        type: boolean
+        required: false
+        default: false
+    secrets:
+      build_buddy_token:
+        required: true
+      vercel_token:
+        required: false
+      vercel_org_id:
+        required: false
+      vercel_project_id_dashboard:
+        required: false
+      vercel_project_id_docs:
+        required: false
+      vercel_project_id_rustdoc:
+        required: false
+
+defaults:
+  run:
+    shell: bash
+
+jobs:
+  dashboard:
+    if: ${{ inputs.dashboard_deploy }}
+    runs-on: ubicloud-standard-8-ubuntu-2404
+    env:
+      PR_NUMBER: ${{ inputs.pr_number }}
+      DEPLOY_DOCS: ${{ inputs.dashboard_deploy }}
+      COMMIT_SHA: ${{ inputs.commit_sha }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install zstd
+        run: sudo apt-get update && sudo apt-get install zstd -y
+
+      - uses: ./.github/actions/setup-bazel
+        with:
+          build_buddy_token: ${{ secrets.build_buddy_token }}
+
+      - name: Build
+        run: bazel build //cloud/dashboard
+
+      - name: Compress
+        run: |
+          pwd=$(pwd)
+          cd ./target-bazel/bin/cloud/dashboard/build
+          tar -cf - * | zstd -o "$pwd/app-scuffle-cloud.tar.zst"
+
+      - name: Upload
+        uses: actions/upload-artifact@v4
+        with:
+          name: ci-preview-dashboard
+          path: ./app-scuffle-cloud.tar.zst
+
+      - name: Deploy
+        if: ${{ env.DEPLOY_DOCS == 'true' }}
+        id: deploy
+        uses: amondnet/vercel-action@888da851026e0573da056b061931bcb765a915c4
+        with:
+          vercel-token: ${{ secrets.vercel_token }}
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          github-comment: false
+          vercel-args: "--archive=tgz"
+          vercel-org-id: ${{ secrets.vercel_org_id }}
+          vercel-project-id: ${{ secrets.vercel_project_id_dashboard }}
+          working-directory: ./target-bazel/bin/cloud/dashboard/build
+
+      - name: Write status file
+        if: ${{ env.DEPLOY_DOCS == 'true' && env.PR_NUMBER != '' }}
+        run: |
+          PREVIEW_NAME="${{ steps.deploy.outputs.preview-name }}"
+          PREVIEW_URL="${{ steps.deploy.outputs.preview-url }}"
+          if [ -z "$PREVIEW_URL" ]; then
+            STATUS="failed"
+          else
+            STATUS="success"
+          fi
+          cat > status.json <<EOF
+          {
+            "deployment": "dashboard",
+            "status": "$STATUS",
+            "name": "$PREVIEW_NAME",
+            "url": "$PREVIEW_URL"
+          }
+          EOF
+
+      - name: Upload status artifact
+        if: ${{ env.DEPLOY_DOCS == 'true' && env.PR_NUMBER != '' }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: deploy-status-dashboard
+          path: status.json
+
+  docs:
+    if: ${{ inputs.docs_deploy }}
+    runs-on: ubicloud-standard-8-ubuntu-2404
+    env:
+      PR_NUMBER: ${{ inputs.pr_number }}
+      DEPLOY_DOCS: ${{ inputs.docs_deploy }}
+      COMMIT_SHA: ${{ inputs.commit_sha }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install zstd
+        run: sudo apt-get update && sudo apt-get install zstd -y
+
+      - uses: ./.github/actions/setup-bazel
+        with:
+          build_buddy_token: ${{ secrets.build_buddy_token }}
+
+      - name: Build
+        run: bazel build //cloud/docs
+
+      - name: Compress
+        run: |
+          pwd=$(pwd)
+          cd ./target-bazel/bin/cloud/docs/build
+          tar -cf - * | zstd -o "$pwd/docs-scuffle-cloud.tar.zst"
+
+      - name: Upload
+        uses: actions/upload-artifact@v4
+        with:
+          name: "ci-preview-docs"
+          path: ./docs-scuffle-cloud.tar.zst
+
+      - name: Deploy
+        if: ${{ env.DEPLOY_DOCS == 'true' }}
+        id: deploy
+        uses: amondnet/vercel-action@888da851026e0573da056b061931bcb765a915c4
+        with:
+          vercel-token: ${{ secrets.vercel_token }}
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          github-comment: false
+          vercel-args: "--archive=tgz"
+          vercel-org-id: ${{ secrets.vercel_org_id }}
+          vercel-project-id: ${{ secrets.vercel_project_id_docs }}
+          working-directory: ./target-bazel/bin/cloud/docs/build
+
+      - name: Write status file
+        if: ${{ env.DEPLOY_DOCS == 'true' && env.PR_NUMBER != '' }}
+        run: |
+          PREVIEW_NAME="${{ steps.deploy.outputs.preview-name }}"
+          PREVIEW_URL="${{ steps.deploy.outputs.preview-url }}"
+          if [ -z "$PREVIEW_URL" ]; then
+            STATUS="failed"
+          else
+            STATUS="success"
+          fi
+          cat > status.json <<EOF
+          {
+            "deployment": "docs",
+            "status": "$STATUS",
+            "name": "$PREVIEW_NAME",
+            "url": "$PREVIEW_URL"
+          }
+          EOF
+
+      - name: Upload status artifact
+        if: ${{ env.DEPLOY_DOCS == 'true' && env.PR_NUMBER != '' }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: deploy-status-docs
+          path: status.json
+
+  rustdoc:
+    if: ${{ inputs.rustdoc_deploy }}
+    runs-on: ubicloud-standard-8-ubuntu-2404
+    env:
+      PR_NUMBER: ${{ inputs.pr_number }}
+      DEPLOY_DOCS: ${{ inputs.rustdoc_deploy }}
+      COMMIT_SHA: ${{ inputs.commit_sha }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install zstd
+        run: sudo apt-get update && sudo apt-get install zstd -y
+
+      - uses: ./.github/actions/setup-bazel
+        with:
+          build_buddy_token: ${{ secrets.build_buddy_token }}
+
+      - name: Build
+        run: bazel build //docs:rustdoc
+
+      - name: Compress
+        run: |
+          pwd=$(pwd)
+          cd ./target-bazel/bin/docs/rustdoc.rustdoc_merge
+          tar -cf - * | zstd -o "$pwd/rustdoc.tar.zst"
+
+      - name: Upload
+        uses: actions/upload-artifact@v4
+        with:
+          name: "ci-preview-rustdoc"
+          path: ./rustdoc.tar.zst
+
+      - name: Deploy
+        if: ${{ env.DEPLOY_DOCS == 'true' }}
+        id: deploy
+        uses: amondnet/vercel-action@888da851026e0573da056b061931bcb765a915c4
+        with:
+          vercel-token: ${{ secrets.vercel_token }}
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          github-comment: false
+          vercel-args: "--archive=tgz"
+          vercel-org-id: ${{ secrets.vercel_org_id }}
+          vercel-project-id: ${{ secrets.vercel_project_id_rustdoc }}
+          working-directory: ./target-bazel/bin/docs/rustdoc.rustdoc_merge
+
+      - name: Write status file
+        if: ${{ env.DEPLOY_DOCS == 'true' && env.PR_NUMBER != '' }}
+        run: |
+          PREVIEW_NAME="${{ steps.deploy.outputs.preview-name }}"
+          PREVIEW_URL="${{ steps.deploy.outputs.preview-url }}"
+          if [ -z "$PREVIEW_URL" ]; then
+            STATUS="failed"
+          else
+            STATUS="success"
+          fi
+          cat > status.json <<EOF
+          {
+            "deployment": "rustdoc",
+            "status": "$STATUS",
+            "name": "$PREVIEW_NAME",
+            "url": "$PREVIEW_URL"
+          }
+          EOF
+
+      - name: Upload status artifact
+        if: ${{ env.DEPLOY_DOCS == 'true' && env.PR_NUMBER != '' }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: deploy-status-rustdoc
+          path: status.json
+
+  docs-report:
+    needs: [dashboard, docs, rustdoc]
+    runs-on: ubuntu-24.04
+    if: ${{ always() && (inputs.dashboard_deploy || inputs.docs_deploy || inputs.rustdoc_deploy) }}
+    steps:
+      - name: Download all artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: ./artifacts
+
+      - name: Build comment body from status artifacts
+        id: build_body
+        env:
+          PR_NUMBER: ${{ inputs.pr_number }}
+        run: |
+          set -xeo pipefail
+          if [ -z "$PR_NUMBER" ]; then
+            echo "No PR number found in prep output; nothing to comment on. Exiting."
+            echo "PR=" >> $GITHUB_OUTPUT
+            exit 0
+          fi
+
+          MARKER="<!-- scuffle-docs-deploy -->"
+          OUT=body.md
+          echo "$MARKER" > "$OUT"
+          echo "" >> "$OUT"
+          echo "|Deployment|Status|Name|URL|" >> "$OUT"
+          echo "|---|---|---|---|" >> "$OUT"
+
+          shopt -s nullglob
+          for f in artifacts/*/status.json; do
+            dep=$(jq -r .deployment "$f" 2>/dev/null || echo "")
+            st=$(jq -r .status "$f" 2>/dev/null || echo "unknown")
+            nm=$(jq -r .name "$f" 2>/dev/null || echo "")
+            url=$(jq -r .url "$f" 2>/dev/null || echo "")
+
+            if [ -n "$dep" ]; then
+              # Title-case deployment name (simple)
+              dep_cap="$(tr '[:lower:]' '[:upper:]' <<< "${dep:0:1}")${dep:1}"
+              # map status to emoji
+              case "$st" in
+                success) st_emoji="✅" ;;
+                failed)  st_emoji="❌" ;;
+                skipped) st_emoji="⏭️" ;;
+                unknown) st_emoji="❓" ;;
+                *)       st_emoji="❓" ;;
+              esac
+
+              echo "| $dep_cap | $st_emoji | $nm | $url |" >> "$OUT"
+            fi
+          done
+
+          if [ "$(wc -l < "$OUT")" -le 3 ]; then
+            echo "| No-Deploys | ⏭️ | - | - |" >> "$OUT"
+          fi
+
+          echo "PR=$PR_NUMBER" >> $GITHUB_OUTPUT
+
+      - name: Comment
+        if: ${{ steps.build_body.outputs.PR != '' }}
+        uses: thollander/actions-comment-pull-request@v3
+        with:
+          pr-number: ${{ steps.build_body.outputs.PR }}
+          file-path: body.md
+          comment-tag: scuffle-docs-deploy

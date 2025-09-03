@@ -12,12 +12,12 @@ import sys
 def get_status_emoji(result: str) -> str:
     """Map GitHub Actions job result to emoji."""
     emoji_map = {
-        'success': '✅',
-        'failure': '❌',
-        'cancelled': '🚫',
-        'skipped': '⏭️',
+        "success": "✅",
+        "failure": "❌",
+        "cancelled": "🚫",
+        "skipped": "⏭️",
     }
-    return emoji_map.get(result, '❓')
+    return emoji_map.get(result, "❓")
 
 
 def format_url(url: str) -> str:
@@ -61,8 +61,8 @@ def generate_report(needs_json: str) -> str:
     for job_name in needs.keys():
         job_data = needs[job_name]
 
-        result = job_data.get('result', 'unknown')
-        preview_url = job_data.get('outputs', {}).get('preview-url', '')
+        result = job_data.get("result", "unknown")
+        preview_url = job_data.get("outputs", {}).get("preview-url", "")
 
         deployment_name = capitalize(job_name)
         status_emoji = get_status_emoji(result)
@@ -75,12 +75,12 @@ def generate_report(needs_json: str) -> str:
 
 def main():
     """Main function to generate report from environment variables."""
-    needs_json = os.getenv('NEEDS_JSON', '{}')
+    needs_json = os.getenv("NEEDS_JSON", "{}")
 
     content = generate_report(needs_json)
 
     # Write to body.md file
-    with open('body.md', 'w') as f:
+    with open("body.md", "w") as f:
         f.write(content)
 
     # Debug output

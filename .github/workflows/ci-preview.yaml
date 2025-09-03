@@ -181,7 +181,7 @@ jobs:
       - name: Build comment body from status artifacts
         env:
           NEEDS_JSON: ${{ toJson(needs) }}
-        run: python3 .github/scripts/report.py
+        run: python3 .github/scripts/ci-preview-report.py
 
       - name: Comment
         uses: thollander/actions-comment-pull-request@v3

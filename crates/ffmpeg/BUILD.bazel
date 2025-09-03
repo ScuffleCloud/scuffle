@@ -12,7 +12,7 @@ scuffle_package(
     proc_macro_deps = ["//crates/changelog"],
     target_compatible_with = select({
         "@platforms//os:osx": ["@platforms//:incompatible"],
-        "//conditions:default": []
+        "//conditions:default": [],
     }),
     test = scuffle_test(
         data = [

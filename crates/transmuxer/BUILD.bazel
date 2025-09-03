@@ -15,14 +15,14 @@ scuffle_package(
             "//tools/ffmpeg:ffprobe",
             "@scuffle_assets//:flv",
         ],
-        target_compatible_with = select({
-            "@platforms//os:osx": ["@platforms//:incompatible"],
-            "//conditions:default": []
-        }),
         env = {
             "FFPROBE": "$(rootpath //tools/ffmpeg:ffprobe)",
             "ASSETS_DIR": "$(rootpath @scuffle_assets//:flv)",
         },
+        target_compatible_with = select({
+            "@platforms//os:osx": ["@platforms//:incompatible"],
+            "//conditions:default": [],
+        }),
     ),
     deps = [
         "//crates/aac",

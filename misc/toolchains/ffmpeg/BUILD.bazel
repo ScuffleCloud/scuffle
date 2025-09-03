@@ -12,7 +12,7 @@ alias(
     ],
     target_compatible_with = select({
         "@platforms//os:osx": ["@platforms//:incompatible"],
-        "//conditions:default": []
+        "//conditions:default": [],
     }),
     visibility = ["//visibility:public"],
 )
@@ -31,7 +31,7 @@ alias(
     ],
     target_compatible_with = select({
         "@platforms//os:osx": ["@platforms//:incompatible"],
-        "//conditions:default": []
+        "//conditions:default": [],
     }),
     visibility = ["//visibility:public"],
 )

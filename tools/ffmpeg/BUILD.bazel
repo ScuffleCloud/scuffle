@@ -23,7 +23,7 @@ load("//misc/utils:binary_wrapper.bzl", "binary_wrapper")
         ],
         target_compatible_with = select({
             "@platforms//os:osx": ["@platforms//:incompatible"],
-            "//conditions:default": []
+            "//conditions:default": [],
         }),
         visibility = ["//visibility:public"],
     )

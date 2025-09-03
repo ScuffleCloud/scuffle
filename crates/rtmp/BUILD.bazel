@@ -15,14 +15,14 @@ scuffle_package(
             "//tools/ffmpeg",
             "@scuffle_assets//:mp4",
         ],
-        target_compatible_with = select({
-            "@platforms//os:osx": ["@platforms//:incompatible"],
-            "//conditions:default": []
-        }),
         env = {
             "FFMPEG": "$(rootpath //tools/ffmpeg)",
             "ASSETS_DIR": "$(rootpath @scuffle_assets//:mp4)",
         },
+        target_compatible_with = select({
+            "@platforms//os:osx": ["@platforms//:incompatible"],
+            "//conditions:default": [],
+        }),
         deps = ["//crates/flv"],
     ),
     deps = [

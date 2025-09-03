@@ -13,18 +13,6 @@ cc_args(
 )
 
 cc_args(
-    name = "static_on_ar",
-    actions = [
-        "@rules_cc//cc/toolchains/actions:ar_actions",
-    ],
-    args = select({
-        "@platforms//os:macos": ["-static"],
-        "//conditions:default": [],
-    }),
-)
-
-
-cc_args(
     name = "reproducibility",
     actions = [
         "@rules_cc//cc/toolchains/actions:compile_actions",
@@ -229,7 +217,6 @@ cc_toolchain(
         ":reproducibility",
         ":gc_sections",
         ":link_cxx_std",
-        ":static_on_ar",
     ],
     compiler = "clang",
     dynamic_runtime_lib = select({

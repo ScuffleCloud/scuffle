@@ -44,7 +44,6 @@ jobs:
     if: ${{ inputs.dashboard_deploy }}
     runs-on: ubicloud-standard-8-ubuntu-2404
     env:
-      ARTIFACT_NAME: "dashboard"
       PR_NUMBER: ${{ inputs.pr_number }}
       DEPLOY_DOCS: ${{ inputs.dashboard_deploy }}
       COMMIT_SHA: ${{ inputs.commit_sha }}
@@ -68,10 +67,9 @@ jobs:
           tar -cf - * | zstd -o "$pwd/app-scuffle-cloud.tar.zst"
 
       - name: Upload
-        if: ${{ env.ARTIFACT_NAME != '' }}
         uses: actions/upload-artifact@v4
         with:
-          name: ${{ env.ARTIFACT_NAME }}
+          name: ci-preview-dashboard
           path: ./app-scuffle-cloud.tar.zst
 
       - name: Deploy
@@ -117,7 +115,6 @@ jobs:
     if: ${{ inputs.docs_deploy }}
     runs-on: ubicloud-standard-8-ubuntu-2404
     env:
-      ARTIFACT_NAME: "docs"
       PR_NUMBER: ${{ inputs.pr_number }}
       DEPLOY_DOCS: ${{ inputs.docs_deploy }}
       COMMIT_SHA: ${{ inputs.commit_sha }}
@@ -141,10 +138,9 @@ jobs:
           tar -cf - * | zstd -o "$pwd/docs-scuffle-cloud.tar.zst"
 
       - name: Upload
-        if: ${{ env.ARTIFACT_NAME != '' }}
         uses: actions/upload-artifact@v4
         with:
-          name: ${{ env.ARTIFACT_NAME }}
+          name: "ci-preview-docs"
           path: ./docs-scuffle-cloud.tar.zst
 
       - name: Deploy
@@ -190,7 +186,6 @@ jobs:
     if: ${{ inputs.rustdoc_deploy }}
     runs-on: ubicloud-standard-8-ubuntu-2404
     env:
-      ARTIFACT_NAME: "rustdoc"
       PR_NUMBER: ${{ inputs.pr_number }}
       DEPLOY_DOCS: ${{ inputs.rustdoc_deploy }}
       COMMIT_SHA: ${{ inputs.commit_sha }}
@@ -214,10 +209,9 @@ jobs:
           tar -cf - * | zstd -o "$pwd/rustdoc.tar.zst"
 
       - name: Upload
-        if: ${{ env.ARTIFACT_NAME != '' }}
         uses: actions/upload-artifact@v4
         with:
-          name: ${{ env.ARTIFACT_NAME }}
+          name: "ci-preview-rustdoc"
           path: ./rustdoc.tar.zst
 
       - name: Deploy

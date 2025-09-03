@@ -84,9 +84,9 @@ jobs:
     with:
       pr_number: "${{ fromJson(needs.prep.outputs.prep).preview.pr_number }}"
       commit_sha: "${{ fromJson(needs.prep.outputs.prep).preview.commit_sha }}"
-      dashboard_deploy: "${{ fromJson(needs.prep.outputs.prep).preview.dashboard != null && fromJson(needs.prep.outputs.prep).preview.dashboard.deploy }}"
-      docs_deploy: "${{ fromJson(needs.prep.outputs.prep).preview.docs != null && fromJson(needs.prep.outputs.prep).preview.docs.deploy }}"
-      rustdoc_deploy: "${{ fromJson(needs.prep.outputs.prep).preview.rustdoc != null && fromJson(needs.prep.outputs.prep).preview.rustdoc.deploy }}"
+      dashboard_deploy: "${{ fromJson(needs.prep.outputs.prep).preview.dashboard }}"
+      docs_deploy: "${{ fromJson(needs.prep.outputs.prep).preview.docs  }}"
+      rustdoc_deploy: "${{ fromJson(needs.prep.outputs.prep).preview.rustdoc }}"
     secrets:
       build_buddy_token: ${{ secrets.BUILD_BUDDY_TOKEN }}
       vercel_token: ${{ secrets.VERCEL_TOKEN }}

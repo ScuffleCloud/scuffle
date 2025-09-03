@@ -60,18 +60,12 @@ def pr_number() -> Optional[int]:
 
 
 @dataclass
-class PreviewArtifact:
-    deploy: bool
-    artifact_name: str
-
-
-@dataclass
 class Preview:
     pr_number: Optional[int]
     commit_sha: str
-    rustdoc: Optional[PreviewArtifact]
-    docs: Optional[PreviewArtifact]
-    dashboard: Optional[PreviewArtifact]
+    rustdoc: bool
+    docs: bool
+    dashboard: bool
 
 
 @dataclass
@@ -123,20 +117,22 @@ def commit_sha() -> str:
 
 
 def create_previews() -> Optional[Preview]:
+    has_rustdoc = (
+        os.path.exists("docs")
+        or os.path.exists("target-bazel/bin/docs")
+        or os.path.exists("docs/rustdoc")
+    )
+    has_docs = os.path.exists("cloud/docs") or os.path.exists("docs")
+    has_dashboard = os.path.exists("cloud/dashboard")
+
+    deploy = deploy_docs()
+
     return Preview(
         pr_number=pr_number(),
         commit_sha=commit_sha() or "",
-        rustdoc=PreviewArtifact(deploy=deploy_docs(), artifact_name="rustdoc")
-        if os.path.exists("docs")
-        or os.path.exists("target-bazel/bin/docs")
-        or os.path.exists("docs/rustdoc")
-        else None,
-        docs=PreviewArtifact(deploy=deploy_docs(), artifact_name="docs")
-        if os.path.exists("cloud/docs") or os.path.exists("docs")
-        else None,
-        dashboard=PreviewArtifact(deploy=deploy_docs(), artifact_name="dashboard")
-        if os.path.exists("cloud/dashboard")
-        else None,
+        rustdoc=deploy and has_rustdoc,
+        docs=deploy and has_docs,
+        dashboard=deploy and has_dashboard,
     )
 
 

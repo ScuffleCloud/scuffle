@@ -55,7 +55,7 @@ jobs:
           workflow: ci.yaml
           workflow_conclusion: success
           commit: ${{ github.sha }}
-          name: rustdoc
+          name: "ci-preview-rustdoc"
           path: ./
 
       - name: Install zstd

@@ -1,6 +1,5 @@
 <!-- PasswordForm.svelte -->
 <script lang="ts">
-    import { authState } from "$lib/authState.svelte";
     import IconArrowLeft from "$lib/images/icon-arrow-left.svelte";
 
     interface Props {
@@ -27,9 +26,9 @@
     <h1 class="title">Password Login</h1>
 </div>
 
-{#if authState.error}
+<!-- {#if authState.error}
     <div class="error-message">{authState.error}</div>
-{/if}
+{/if} -->
 
 <form onsubmit={handleSubmit} class="login-form">
     <div class="form-group">

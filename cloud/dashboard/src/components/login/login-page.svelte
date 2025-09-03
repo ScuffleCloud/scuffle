@@ -4,12 +4,9 @@
         type LoginMode,
     } from "$components/streams/types";
     import TurnstileOverlay from "$components/turnstile-overlay.svelte";
-    import {
-        authAPI,
-        type AuthResult,
-        authState,
-    } from "$lib/authState.svelte";
+    import { sessionsServiceClient } from "$lib/grpcClient";
     import IconArrowDialogLink from "$lib/images/icon-arrow-dialog-link.svelte";
+    import { CaptchaProvider } from "@scufflecloud/proto/scufflecloud/core/v1/common.js";
     import ForgotPasswordForm from "./forgot-password-form.svelte";
     import MagicLinkForm from "./magic-link-form.svelte";
     import MagicLinkSent from "./magic-link-sent.svelte";
@@ -49,20 +46,26 @@
         await turnstileOverlayComponent?.getToken();
 
     let userEmail = $state<string>("");
-    let localLoading = $state<boolean>(false);
+    let isLoading = $state<boolean>(false);
 
     async function handleMagicLinkSubmit(email: string): Promise<void> {
         const token = await getToken();
         if (email && token) {
             try {
-                const result: AuthResult = await authAPI.sendMagicLink(
+                const call = sessionsServiceClient.loginWithMagicLink({
+                    captcha: {
+                        provider: CaptchaProvider.TURNSTILE,
+                        token: token,
+                    },
                     email,
-                );
-                if (result.success) {
+                });
+                const status = await call.status;
+
+                if (status.code === "0") {
                     userEmail = email;
                     loginMode = "magic-link-sent";
                 } else {
-                    console.error("Magic link failed:", result.error);
+                    console.error("Magic link failed:", status.detail);
                 }
             } catch (error) {
                 console.error("Magic link error:", error);
@@ -116,8 +119,6 @@
     function handleBack(): void {
         loginMode = "magic-link";
     }
-
-    const isLoading = $derived(authState.isLoading || localLoading);
 
     function handleContactSupport(): void {
         console.log("Contact support clicked");
@@ -206,55 +207,55 @@
 
 <style>
     .login-card {
-      border-radius: 1.25rem;
-      padding: 2.75rem;
-      width: 100%;
-      max-width: 400px;
-      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
-      border: 1px solid var(--colors-gray50);
-      background-color: var(--colors-gray20);
-      text-align: center;
+        border-radius: 1.25rem;
+        padding: 2.75rem;
+        width: 100%;
+        max-width: 400px;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+        border: 1px solid var(--colors-gray50);
+        background-color: var(--colors-gray20);
+        text-align: center;
     }
 
     .footer-links {
-      display: flex;
-      justify-content: space-between;
-      margin: 2rem 0 1.25rem 0;
-      gap: 1rem;
-      align-items: center;
+        display: flex;
+        justify-content: space-between;
+        margin: 2rem 0 1.25rem 0;
+        gap: 1rem;
+        align-items: center;
     }
 
     .link {
-      background: none;
-      border: none;
-      color: #6b7280;
-      cursor: pointer;
-      text-decoration: none;
-      display: flex;
-      align-items: center;
-      gap: 0.25rem;
-      font-size: 0.875rem;
+        background: none;
+        border: none;
+        color: #6b7280;
+        cursor: pointer;
+        text-decoration: none;
+        display: flex;
+        align-items: center;
+        gap: 0.25rem;
+        font-size: 0.875rem;
     }
 
     .link:hover:not(:disabled) {
-      color: #374151;
-      text-decoration: underline;
+        color: #374151;
+        text-decoration: underline;
     }
 
     .link:disabled {
-      color: #9ca3af;
-      cursor: not-allowed;
+        color: #9ca3af;
+        cursor: not-allowed;
     }
 
     @media (max-width: 480px) {
-      .login-card {
-        padding: 1.5rem;
-        margin: 0 1rem;
-      }
+        .login-card {
+            padding: 1.5rem;
+            margin: 0 1rem;
+        }
 
-      .footer-links {
-        flex-direction: column;
-        gap: 0.5rem;
-      }
+        .footer-links {
+            flex-direction: column;
+            gap: 0.5rem;
+        }
     }
 </style>

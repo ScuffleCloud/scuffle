@@ -1,8 +1,6 @@
 <script lang="ts">
-    import { authAPI } from "$lib/authState.svelte";
-
     async function handleDevLogin(): Promise<void> {
-        await authAPI.verifyMagicLink("1234567890");
+        // TODO
     }
 </script>
 

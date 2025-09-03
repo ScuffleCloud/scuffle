@@ -4,10 +4,22 @@ import { OrganizationInvitationsServiceClient } from "@scufflecloud/proto/scuffl
 import { OrganizationsServiceClient } from "@scufflecloud/proto/scufflecloud/core/v1/organizations_service.client.js";
 import { SessionsServiceClient } from "@scufflecloud/proto/scufflecloud/core/v1/sessions_service.client.js";
 import { UsersServiceClient } from "@scufflecloud/proto/scufflecloud/core/v1/users_service.client.js";
+import type { RpcOptions, UnaryCall } from "@protobuf-ts/runtime-rpc";
 
 const transport = new GrpcWebFetchTransport({
     baseUrl: PUBLIC_GRPC_BASE_URL,
     format: "binary",
+    interceptors: [
+        {
+            interceptUnary(next, method, input, options: RpcOptions): UnaryCall {
+                if (!options.meta) {
+                    options.meta = {};
+                }
+                options.meta['Authorization'] = 'your bearer token';
+                return next(method, input, options);
+            }
+        }
+    ],
 });
 
 export const sessionsServiceClient = new SessionsServiceClient(transport);

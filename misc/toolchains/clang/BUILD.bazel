@@ -173,7 +173,7 @@ cc_args(
             "-lc++",
             "-lc++abi",
             "-Wl,-dynamic",
-        ],,
+        ],
         "@platforms//os:linux": [
             "-stdlib=libc++",
             "-Wl,-Bstatic",

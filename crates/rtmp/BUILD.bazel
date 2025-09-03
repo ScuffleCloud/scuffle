@@ -15,7 +15,7 @@ scuffle_package(
             "//tools/ffmpeg",
             "@scuffle_assets//:mp4",
         ],
-        target_compatiable_with = select({
+        target_compatible_with = select({
             "@platforms//os:osx": ["@platforms//:incompatible"],
             "//conditions:default": []
         }),

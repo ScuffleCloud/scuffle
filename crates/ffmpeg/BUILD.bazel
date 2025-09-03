@@ -10,7 +10,7 @@ scuffle_package(
     ],
     crate_name = "scuffle-ffmpeg",
     proc_macro_deps = ["//crates/changelog"],
-    target_compatiable_with = select({
+    target_compatible_with = select({
         "@platforms//os:osx": ["@platforms//:incompatible"],
         "//conditions:default": []
     }),

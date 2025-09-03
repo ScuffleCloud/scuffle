@@ -21,6 +21,10 @@ load("//misc/utils:binary_wrapper.bzl", "binary_wrapper")
             "manual",
             "no-cache",
         ],
+        target_compatible_with = select({
+            "@platforms//os:osx": ["@platforms//:incompatible"],
+            "//conditions:default": []
+        }),
         visibility = ["//visibility:public"],
     )
     for tool in [

@@ -8,6 +8,10 @@ alias(
         "//misc/platforms:linux-x86_64": "@valgrind-linux-x86_64//:libexec",
         "//misc/platforms:linux-aarch64": "@valgrind-linux-aarch64//:libexec",
     }),
+    target_compatible_with = select({
+        "@platforms//os:linux": [],
+        "//conditions:default": ["@platforms//:incompatible"]
+    }),
     tags = [
         "manual",
         "no-cache",
@@ -19,6 +23,10 @@ binary_wrapper(
     binary = select({
         "//misc/platforms:linux-x86_64": "@valgrind-linux-x86_64//:valgrind",
         "//misc/platforms:linux-aarch64": "@valgrind-linux-aarch64//:valgrind",
+    }),
+    target_compatible_with = select({
+        "@platforms//os:linux": [],
+        "//conditions:default": ["@platforms//:incompatible"]
     }),
     data = [":libexec"],
     env = {

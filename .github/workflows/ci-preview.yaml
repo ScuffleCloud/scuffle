@@ -311,26 +311,10 @@ jobs:
 
           echo "PR=$PR_NUMBER" >> $GITHUB_OUTPUT
 
-      - name: Find existing marker comment
-        id: find_comment
-        uses: peter-evans/find-comment@v3
+      - name: Comment
+        if: ${{ steps.build_body.outputs.PR != '' }}
+        uses: thollander/actions-comment-pull-request@v3
         with:
-          issue-number: ${{ steps.build_body.outputs.PR }}
-          comment-author: "github-actions[bot]"
-          body-includes: "<!-- scuffle-docs-deploy -->"
-
-      - name: Create comment (if not found)
-        if: ${{ steps.find_comment.outputs.comment-id == '' && steps.build_body.outputs.PR != '' }}
-        uses: peter-evans/create-or-update-comment@v4
-        with:
-          issue-number: ${{ steps.build_body.outputs.PR }}
-          body-path: body.md
-
-      - name: Update comment (if found)
-        if: ${{ steps.find_comment.outputs.comment-id != '' }}
-        uses: peter-evans/create-or-update-comment@v4
-        with:
-          comment-id: ${{ steps.find_comment.outputs.comment-id }}
-          issue-number: ${{ steps.build_body.outputs.PR }}
-          body-path: body.md
-          edit-mode: replace
+          pr-number: ${{ steps.build_body.outputs.PR }}
+          file-path: body.md
+          comment-tag: scuffle-docs-deploy

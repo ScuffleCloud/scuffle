@@ -38,27 +38,7 @@ rust_library(
         "aws_lc_rs",
         "logging",
         "tls12",
-    ] + select({
-        "@rules_rust//rust/platform:aarch64-apple-darwin": [
-            "ring",
-        ],
-        "@rules_rust//rust/platform:aarch64-pc-windows-msvc": [
-            "ring",
-        ],
-        "@rules_rust//rust/platform:aarch64-unknown-linux-gnu": [
-            "ring",
-        ],
-        "@rules_rust//rust/platform:x86_64-apple-darwin": [
-            "ring",
-        ],
-        "@rules_rust//rust/platform:x86_64-pc-windows-msvc": [
-            "ring",
-        ],
-        "@rules_rust//rust/platform:x86_64-unknown-linux-gnu": [
-            "ring",
-        ],
-        "//conditions:default": [],
-    }),
+    ],
     crate_root = "src/lib.rs",
     edition = "2021",
     rustc_env_files = [

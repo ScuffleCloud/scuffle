@@ -2373,7 +2373,6 @@ dependencies = [
  "tokio",
  "tokio-rustls",
  "tower-service",
- "webpki-roots",
 ]
 
 [[package]]
@@ -4553,7 +4552,7 @@ checksum = "caf4aa5b0f434c91fe5c7f1ecb6a5ece2130b02ad2a590589dda5146df959001"
 [[package]]
 name = "reqwest"
 version = "0.12.23"
-source = "git+https://github.com/TroyKomodo/reqwest.git?rev=1b659fc2ec02363a04dcdc08d1989560ed5a5e7f#1b659fc2ec02363a04dcdc08d1989560ed5a5e7f"
+source = "git+https://github.com/TroyKomodo/reqwest.git?rev=2bf85a741c6820dfc365b0aad5b0b9c97ef25e04#2bf85a741c6820dfc365b0aad5b0b9c97ef25e04"
 dependencies = [
  "base64 0.22.1",
  "bytes",
@@ -4587,7 +4586,6 @@ dependencies = [
  "wasm-bindgen",
  "wasm-bindgen-futures",
  "web-sys",
- "webpki-roots",
 ]
 
 [[package]]
@@ -4846,7 +4844,6 @@ dependencies = [
  "aws-lc-rs",
  "log",
  "once_cell",
- "ring",
  "rustls-pki-types",
  "rustls-webpki",
  "subtle",
@@ -7459,15 +7456,6 @@ name = "webpki-root-certs"
 version = "1.0.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "4e4ffd8df1c57e87c325000a3d6ef93db75279dc3a231125aac571650f22b12a"
-dependencies = [
- "rustls-pki-types",
-]
-
-[[package]]
-name = "webpki-roots"
-version = "1.0.2"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "7e8983c3ab33d6fb807cfcdad2491c4ea8cbc8ed839181c7dfd9c67c83e261b2"
 dependencies = [
  "rustls-pki-types",
 ]

@@ -40,7 +40,10 @@ function loadUserSessionToken(): AuthState<UserSessionToken> {
     if (stored) {
         try {
             const parsedAuth = JSON.parse(stored);
-            if (!parsedAuth.state || (parsedAuth.state === "authenticated" && !parsedAuth.data) || (parsedAuth.state === "error" && !parsedAuth.error)) {
+            if (
+                !parsedAuth.state || (parsedAuth.state === "authenticated" && !parsedAuth.data)
+                || (parsedAuth.state === "error" && !parsedAuth.error)
+            ) {
                 throw new Error("invalid sementics");
             }
             return parsedAuth as AuthState<UserSessionToken>;
@@ -124,7 +127,7 @@ function saveDeviceKey(keypair: CryptoKeyPair) {
     });
 }
 
-export type DeviceKeypairState = null | { state: "loading" } | { state: "loaded", data: CryptoKeyPair | null };
+export type DeviceKeypairState = null | { state: "loading" } | { state: "loaded"; data: CryptoKeyPair | null };
 
 export function authState() {
     // Private key
@@ -164,21 +167,23 @@ export function authState() {
 
             // Decrypt the session token with the device key
             const data = new Uint8Array(newToken.encryptedToken).buffer;
-            return window.crypto.subtle.decrypt(RSA_OAEP_SHA256_ALGO, deviceKeypair.data.privateKey, data).then((decrypted) => {
-                const newUserSessionToken: AuthState<UserSessionToken> = {
-                    state: "authenticated",
-                    data: {
-                        id: newToken.id,
-                        token: arrayBufferToBase64(decrypted),
-                        expiresAt: newToken.expiresAt ? timestampToDate(newToken.expiresAt) : null,
-                    },
-                };
+            return window.crypto.subtle.decrypt(RSA_OAEP_SHA256_ALGO, deviceKeypair.data.privateKey, data).then(
+                (decrypted) => {
+                    const newUserSessionToken: AuthState<UserSessionToken> = {
+                        state: "authenticated",
+                        data: {
+                            id: newToken.id,
+                            token: arrayBufferToBase64(decrypted),
+                            expiresAt: newToken.expiresAt ? timestampToDate(newToken.expiresAt) : null,
+                        },
+                    };
 
-                userSessionToken = newUserSessionToken;
-                // Persist session token to localStorage on change
-                window.localStorage.setItem("userSessionToken", JSON.stringify(newUserSessionToken));
-                user = loadUser(newUserSessionToken);
-            });
+                    userSessionToken = newUserSessionToken;
+                    // Persist session token to localStorage on change
+                    window.localStorage.setItem("userSessionToken", JSON.stringify(newUserSessionToken));
+                    user = loadUser(newUserSessionToken);
+                },
+            );
         },
         get userSessionToken() {
             return userSessionToken;
@@ -201,7 +206,7 @@ function loadUser(state: AuthState<UserSessionToken>): AuthState<User> {
     // });
 
     return {
-        state: "loading"
+        state: "loading",
     };
 }
 

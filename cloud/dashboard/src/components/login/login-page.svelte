@@ -207,55 +207,55 @@
 
 <style>
     .login-card {
-        border-radius: 1.25rem;
-        padding: 2.75rem;
-        width: 100%;
-        max-width: 400px;
-        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
-        border: 1px solid var(--colors-gray50);
-        background-color: var(--colors-gray20);
-        text-align: center;
+      border-radius: 1.25rem;
+      padding: 2.75rem;
+      width: 100%;
+      max-width: 400px;
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+      border: 1px solid var(--colors-gray50);
+      background-color: var(--colors-gray20);
+      text-align: center;
     }
 
     .footer-links {
-        display: flex;
-        justify-content: space-between;
-        margin: 2rem 0 1.25rem 0;
-        gap: 1rem;
-        align-items: center;
+      display: flex;
+      justify-content: space-between;
+      margin: 2rem 0 1.25rem 0;
+      gap: 1rem;
+      align-items: center;
     }
 
     .link {
-        background: none;
-        border: none;
-        color: #6b7280;
-        cursor: pointer;
-        text-decoration: none;
-        display: flex;
-        align-items: center;
-        gap: 0.25rem;
-        font-size: 0.875rem;
+      background: none;
+      border: none;
+      color: #6b7280;
+      cursor: pointer;
+      text-decoration: none;
+      display: flex;
+      align-items: center;
+      gap: 0.25rem;
+      font-size: 0.875rem;
     }
 
     .link:hover:not(:disabled) {
-        color: #374151;
-        text-decoration: underline;
+      color: #374151;
+      text-decoration: underline;
     }
 
     .link:disabled {
-        color: #9ca3af;
-        cursor: not-allowed;
+      color: #9ca3af;
+      cursor: not-allowed;
     }
 
     @media (max-width: 480px) {
-        .login-card {
-            padding: 1.5rem;
-            margin: 0 1rem;
-        }
+      .login-card {
+        padding: 1.5rem;
+        margin: 0 1rem;
+      }
 
-        .footer-links {
-            flex-direction: column;
-            gap: 0.5rem;
-        }
+      .footer-links {
+        flex-direction: column;
+        gap: 0.5rem;
+      }
     }
 </style>

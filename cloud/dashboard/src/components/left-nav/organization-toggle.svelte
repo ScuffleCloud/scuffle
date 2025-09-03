@@ -1,8 +1,8 @@
 <script lang="ts">
+    import { authState } from "$lib/auth.svelte";
     import IconSwitch from "$lib/images/icon-switch.svelte";
     import { createPopover, melt } from "@melt-ui/svelte";
     import OrganizationDropdown from "./organization-dropdown.svelte";
-    import { authState } from "$lib/auth.svelte";
 
     type Props = {
         isCollapsed?: boolean;

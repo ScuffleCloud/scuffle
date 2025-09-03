@@ -1,7 +1,6 @@
 import sys
 import os
 import json
-import subprocess
 from typing import Optional
 from dataclasses import dataclass, asdict
 
@@ -63,9 +62,10 @@ def pr_number() -> Optional[int]:
 class Preview:
     pr_number: Optional[int]
     commit_sha: str
-    rustdoc: bool
-    docs: bool
-    dashboard: bool
+    rustdoc_build: bool
+    docs_build: bool
+    dashboard_build: bool
+    deploy: bool
 
 
 @dataclass
@@ -113,23 +113,17 @@ def should_deploy_docs() -> bool:
 
 
 def commit_sha() -> str:
-    return os.environ["SHA"]
+    return os.environ["SHA"] or ""
 
 
 def create_previews() -> Optional[Preview]:
-    # for now we always deploy everything on PRs, this will change in the future
-    deploy_rustdoc = True
-    deploy_docs = True
-    deploy_dashboard = True
-
-    deploy = should_deploy_docs()
-
     return Preview(
         pr_number=pr_number(),
-        commit_sha=commit_sha() or "",
-        rustdoc=deploy and deploy_rustdoc,
-        docs=deploy and deploy_docs,
-        dashboard=deploy and deploy_dashboard,
+        commit_sha=commit_sha(),
+        rustdoc_build=True,
+        dashboard_build=True,
+        docs_build=True,
+        deploy=should_deploy_docs(),
     )
 
 

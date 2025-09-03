@@ -1,9 +1,11 @@
 <script lang="ts">
     import AssetCard from "./asset-card.svelte";
     import Header from "./assets-header.svelte";
+    import SlidingToggle from "./sliding-toggle.svelte";
 
     // Search functionality
     let searchQuery = $state("");
+    let displayMode = $state(1); // 1 = grid, 2 = list
 
     // These will come from a paginated response
     const streams = [
@@ -40,6 +42,10 @@
             endTime: "May 6, 04:01:11 PM EDT",
         },
     ];
+
+    function handleDisplayModeToggle(value: number) {
+        displayMode = value;
+    }
 </script>
 
 <Header />
@@ -60,6 +66,16 @@
             <path d="m21 21-4.3-4.3"></path>
         </svg>
         <input type="text" placeholder="Search..." bind:value={searchQuery} />
+    </div>
+    <div class="view-toggle">
+        <h3>Theme Toggle</h3>
+        <SlidingToggle
+            leftLabel="Light"
+            rightLabel="Dark"
+            value={displayMode.toString()}
+            onToggle={handleDisplayModeToggle}
+        />
+        <p>Display Mode: <strong>{displayMode}</strong></p>
     </div>
 </div>
 <div class="card-container">

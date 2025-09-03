@@ -73,7 +73,7 @@
         .stream-name {
           color: white;
           font-weight: 500;
-          font-size: 14px;
+          font-size: 0.875rem;
           margin: 0;
         }
       }
@@ -82,7 +82,6 @@
     .stream-details {
       display: flex;
       flex-direction: column;
-      gap: 2px;
     }
 
     .stream-id {

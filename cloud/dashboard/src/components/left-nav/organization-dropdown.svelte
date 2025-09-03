@@ -6,7 +6,7 @@
     <h3 class="dropdown-title">Switch organization</h3>
     {#if organizations}
         <ul class="org-list">
-            {#each organizations as org}
+            {#each organizations as org (org.id)}
                 <li class="org-item">
                     <button class="org-button">
                         <div

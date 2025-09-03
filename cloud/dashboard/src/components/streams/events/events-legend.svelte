@@ -17,7 +17,7 @@
 </script>
 
 <div class="metrics">
-    {#each metrics as metric}
+    {#each metrics as metric, index (`metric-${index}`)}
         <div class="metric">
             <span class="label">{metric.label}</span>
             <span class="value">{metric.value}</span>
@@ -25,7 +25,7 @@
     {/each}
 </div>
 <div class="legend">
-    {#each legendItems as item}
+    {#each legendItems as item, index (`legend-${index}`)}
         <div class="legend-item">
             <span class="icon">
                 <svelte:component this={item.icon} />

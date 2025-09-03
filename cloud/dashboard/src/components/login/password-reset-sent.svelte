@@ -4,7 +4,7 @@
         onBack?: () => void;
     }
 
-    let { email, onBack }: Props = $props();
+    let { email }: Props = $props();
 </script>
 
 <h1 class="title">Check your email</h1>

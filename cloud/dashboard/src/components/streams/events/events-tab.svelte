@@ -25,8 +25,7 @@
         currentEventId?: string;
     };
 
-    const { events = [], eventDetails, currentEventId = "" }: Props =
-        $props();
+    const { events = [], eventDetails }: Props = $props();
 
     // It doesn't matter what we fetch, we need to reformat the events before dumping it in our chart
 

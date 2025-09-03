@@ -2,7 +2,7 @@ import { redirect } from "@sveltejs/kit";
 import type { PageLoad } from "./$types";
 
 // TODO: If a webhook connection exists on the streamId we should always redirect to that page instead
-export const load = (async ({ fetch, params, parent, url }) => {
+export const load = (async ({ parent, url }) => {
     const parentData = await parent();
 
     // Access the events from the parent layout

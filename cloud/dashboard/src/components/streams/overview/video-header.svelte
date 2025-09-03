@@ -12,10 +12,7 @@
     };
 
     const {
-        streamId,
-        streamKey,
         isConnected = true,
-        requireSignedUrls = false,
     }: Props = $props();
 </script>
 

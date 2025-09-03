@@ -162,94 +162,94 @@
     ]);
 
     // Account Settings Cards
-    const accountCards = $derived<Card[]>([
-        {
-            id: "profile",
-            title: "Profile Information",
-            description:
-                "Update your name, email, and other profile details.",
-            actions: [
-                {
-                    label: "Edit Profile",
-                    variant: "primary",
-                    onClick: () => {
-                        console.log("Edit profile clicked");
-                    },
-                },
-            ],
-        },
-        {
-            id: "preferences",
-            title: "Display Preferences",
-            description:
-                "Customize your account display settings and preferences.",
-            actions: [
-                {
-                    variant: "toggle",
-                    isToggled: userSettings.preferences.darkMode,
-                    enabledText: "Dark Mode",
-                    disabledText: "Light Mode",
-                    onClick: () => {
-                        userSettings.preferences.darkMode =
-                            !userSettings
-                                .preferences
-                                .darkMode;
-                        console.log(
-                            "Dark mode toggled:",
-                            userSettings.preferences.darkMode,
-                        );
-                    },
-                },
-            ],
-        },
-        {
-            id: "auto-save",
-            title: "Auto-save Settings",
-            description:
-                "Automatically save your work as you make changes.",
-            actions: [
-                {
-                    variant: "toggle",
-                    isToggled: userSettings.preferences.autoSave,
-                    enabledText: "Enabled",
-                    disabledText: "Disabled",
-                    onClick: () => {
-                        userSettings.preferences.autoSave =
-                            !userSettings
-                                .preferences
-                                .autoSave;
-                        console.log(
-                            "Auto-save toggled:",
-                            userSettings.preferences.autoSave,
-                        );
-                    },
-                },
-            ],
-        },
-    ]);
+    // const accountCards = $derived<Card[]>([
+    //     {
+    //         id: "profile",
+    //         title: "Profile Information",
+    //         description:
+    //             "Update your name, email, and other profile details.",
+    //         actions: [
+    //             {
+    //                 label: "Edit Profile",
+    //                 variant: "primary",
+    //                 onClick: () => {
+    //                     console.log("Edit profile clicked");
+    //                 },
+    //             },
+    //         ],
+    //     },
+    //     {
+    //         id: "preferences",
+    //         title: "Display Preferences",
+    //         description:
+    //             "Customize your account display settings and preferences.",
+    //         actions: [
+    //             {
+    //                 variant: "toggle",
+    //                 isToggled: userSettings.preferences.darkMode,
+    //                 enabledText: "Dark Mode",
+    //                 disabledText: "Light Mode",
+    //                 onClick: () => {
+    //                     userSettings.preferences.darkMode =
+    //                         !userSettings
+    //                             .preferences
+    //                             .darkMode;
+    //                     console.log(
+    //                         "Dark mode toggled:",
+    //                         userSettings.preferences.darkMode,
+    //                     );
+    //                 },
+    //             },
+    //         ],
+    //     },
+    //     {
+    //         id: "auto-save",
+    //         title: "Auto-save Settings",
+    //         description:
+    //             "Automatically save your work as you make changes.",
+    //         actions: [
+    //             {
+    //                 variant: "toggle",
+    //                 isToggled: userSettings.preferences.autoSave,
+    //                 enabledText: "Enabled",
+    //                 disabledText: "Disabled",
+    //                 onClick: () => {
+    //                     userSettings.preferences.autoSave =
+    //                         !userSettings
+    //                             .preferences
+    //                             .autoSave;
+    //                     console.log(
+    //                         "Auto-save toggled:",
+    //                         userSettings.preferences.autoSave,
+    //                     );
+    //                 },
+    //             },
+    //         ],
+    //     },
+    // ]);
 
     // Danger Zone Cards
-    const dangerCards = $derived<Card[]>([
-        {
-            id: "delete-account",
-            title: "Delete Account",
-            description:
-                "Permanently delete your account and all associated data. This action cannot be undone.",
-            status: {
-                label: "Irreversible",
-                variant: "warning",
-            },
-            actions: [
-                {
-                    label: "Delete Account",
-                    variant: "danger",
-                    onClick: () => {
-                        console.log("Delete account clicked");
-                    },
-                },
-            ],
-        },
-    ]);
+    // const dangerCards = $derived<Card[]>([
+    //     {
+    //         id: "delete-account",
+    //         title: "Delete Account",
+    //         description:
+    //             "Permanently delete your account and all associated data. This action cannot be undone.",
+    //         status: {
+    //             label: "Irreversible",
+    //             variant: "warning",
+    //         },
+    //         actions: [
+    //             {
+    //                 label: "Delete Account",
+    //                 variant: "danger",
+    //                 onClick: () => {
+    //                     console.log("Delete account clicked");
+    //                 },
+    //             },
+    //         ],
+    //     },
+    // ]);
 </script>
 
 <div class="settings-page">

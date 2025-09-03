@@ -12,7 +12,7 @@
         <h2>Events</h2>
     </div>
     <div class="events-list">
-        {#each events as event, index}
+        {#each events as event, index (event.id)}
             <!-- TODO: fix this keying. should come from the same object -->
             {@const Icon =
                 EVENT_ICONS[event.type as keyof typeof EVENT_ICONS]}

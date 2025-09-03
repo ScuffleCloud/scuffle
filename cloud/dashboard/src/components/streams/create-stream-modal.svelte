@@ -1,4 +1,6 @@
 <script lang="ts">
+    /* eslint-disable @typescript-eslint/no-explicit-any */
+
     import { goto } from "$app/navigation";
     import { melt } from "@melt-ui/svelte";
     import { createMutation } from "@tanstack/svelte-query";

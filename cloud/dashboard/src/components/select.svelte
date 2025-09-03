@@ -1,4 +1,6 @@
 <script lang="ts">
+    /* eslint-disable @typescript-eslint/no-explicit-any */
+
     import { Select } from "melt/builders";
     import type { Snippet } from "svelte";
 

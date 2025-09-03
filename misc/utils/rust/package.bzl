@@ -208,10 +208,7 @@ def scuffle_package(
                 "--cfg=bazel_runfiles",
                 "-Clink-arg=-Wl,-znostart-stop-gc",
             ],
-            # Needs to be marked as not testonly because the rust_clippy
-            # rule depends on this, which we use to generate clippy suggestions
-            testonly = False,
-            target_compatible_with = target_compatiable_with,
+            target_compatible_with = test_target_compatiable_with,
         )
 
         rust_targets.append(colon_name + "_test")

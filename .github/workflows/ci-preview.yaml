@@ -178,6 +178,8 @@ jobs:
     runs-on: ubuntu-24.04
     if: ${{ always() && inputs.deploy && inputs.pr_number }}
     steps:
+      - uses: actions/checkout@v4
+
       - name: Build comment body from status artifacts
         env:
           NEEDS_JSON: ${{ toJson(needs) }}

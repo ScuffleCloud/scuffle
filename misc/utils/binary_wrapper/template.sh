@@ -34,7 +34,8 @@ elif [[ -d "${script}.runfiles" ]]; then
     root_dir="${script}.runfiles"
     export RUNFILES_DIR="${root_dir}"
 else
-    root_dir="$(pwd)/external/"
+    echo "could not find runfiles: pwd=$(pwd)"
+    exit 1
 fi
 
 if [[ -n "${RUNFILES_DIR:-}" ]]; then

@@ -44,6 +44,8 @@ coverage --combined_report=lcov
 # This is the targets that will be compiled with coverage.
 # In our case we only want to collect coverage on `crates` and `cloud` applications.
 coverage --instrumentation_filter="^//(crates|cloud)"
+# Disable coverage on macos pending clang toolchain update.
+coverage:macos --nocollect_code_coverage
 
 ###############################################################################
 ## Common configuration

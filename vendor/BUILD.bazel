@@ -46,6 +46,14 @@ crates_vendor(
                 },
             ),
         ],
+        "psm": [
+            crate.annotation(
+                build_script_env = {
+                    "ARFLAGS_aarch64_apple_darwin": "-static",
+                    "ARFLAGS_x86_64_apple_darwin": "-static",
+                },
+            ),
+        ],
         "openssl-sys": [
             crate.annotation(
                 build_script_data = [

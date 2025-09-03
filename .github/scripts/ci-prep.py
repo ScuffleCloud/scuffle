@@ -108,7 +108,7 @@ class Jobs:
     check_fmt: Optional[CheckFmt]
 
 
-def deploy_docs() -> bool:
+def should_deploy_docs() -> bool:
     return not is_brawl("merge") and not is_fork_pr() and not is_dispatch_or_cron()
 
 
@@ -117,22 +117,19 @@ def commit_sha() -> str:
 
 
 def create_previews() -> Optional[Preview]:
-    has_rustdoc = (
-        os.path.exists("docs")
-        or os.path.exists("target-bazel/bin/docs")
-        or os.path.exists("docs/rustdoc")
-    )
-    has_docs = os.path.exists("cloud/docs") or os.path.exists("docs")
-    has_dashboard = os.path.exists("cloud/dashboard")
+    # for now we always deploy everything on PRs, this will change in the future
+    deploy_rustdoc = True
+    deploy_docs = True
+    deploy_dashboard = True
 
-    deploy = deploy_docs()
+    deploy = should_deploy_docs()
 
     return Preview(
         pr_number=pr_number(),
         commit_sha=commit_sha() or "",
-        rustdoc=deploy and has_rustdoc,
-        docs=deploy and has_docs,
-        dashboard=deploy and has_dashboard,
+        rustdoc=deploy and deploy_rustdoc,
+        docs=deploy and deploy_docs,
+        dashboard=deploy and deploy_dashboard,
     )
 
 

@@ -11,6 +11,11 @@ load("//misc/utils/rust:rustdoc.bzl", "rustdoc", "rustdoc_test")
 load("//misc/utils/rust:sync_readme.bzl", "sync_readme", "sync_readme_test")
 load("//misc/utils/rust:test.bzl", "nextest_test")
 
+gc_arg = select({
+    "@platforms//os:linux": ["-Clink-arg=-Wl,-znostart-stop-gc"],
+    "//conditions:default": [],
+})
+
 def scuffle_package(
         crate_name,
         name = None,
@@ -129,8 +134,7 @@ def scuffle_package(
         tags = tags,
         rustc_flags = [
             "--cfg=bazel_runfiles",
-            "-Clink-arg=-Wl,-znostart-stop-gc",
-        ],
+        ] + gc_arg,
         rustc_env_files = [colon_name + "_cargo_toml_env"],
         target_compatible_with = target_compatible_with,
     )
@@ -182,9 +186,8 @@ def scuffle_package(
             rustc_flags = [
                 "--cfg=bazel_runfiles",
                 "--cfg=coverage_nightly",
-                "-Clink-arg=-Wl,-znostart-stop-gc",
                 "@$(location //settings:test_rustc_flags)",
-            ],
+            ] + gc_arg,
             rustc_env = {
                 "RUSTC_BOOTSTRAP": "1",
             },
@@ -207,10 +210,7 @@ def scuffle_package(
             rustc_env_files = [colon_name + "_cargo_toml_env"],
             rustc_flags = [
                 "--cfg=bazel_runfiles",
-            ] + select({
-                "@platforms//os:linux": ["-Clink-arg=-Wl,-znostart-stop-gc"],
-                "//conditions:default": [],
-            }),
+            ] + gc_arg,
             # Needs to be marked as not testonly because the rust_clippy
             # rule depends on this, which we use to generate clippy suggestions
             testonly = False,
@@ -414,9 +414,6 @@ def scuffle_build_script(
         tools = tools,
         rustc_flags = [
             "--cfg=bazel_runfiles",
-        ] + select({
-            "@platforms//os:linux": ["-Clink-arg=-Wl,-znostart-stop-gc"],
-            "//conditions:default": [],
-        }),
+        ] + gc_arg,
         target_compatible_with = target_compatible_with,
     )

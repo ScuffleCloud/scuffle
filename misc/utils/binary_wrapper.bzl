@@ -4,6 +4,12 @@ Helper rule to wrap a binary inside a script file.
 
 load("@rules_rust//rust/private:utils.bzl", "expand_dict_value_locations")
 
+def _rlocationpath(file, workspace_name):
+    if file.short_path.startswith("../"):
+        return file.short_path[len("../"):]
+
+    return "{}/{}".format(workspace_name, file.short_path)
+
 def _binary_wrapper_impl(ctx):
     out = ctx.actions.declare_file(ctx.label.name)
     sh_toolchain = ctx.toolchains["@bazel_tools//tools/sh:toolchain_type"]
@@ -24,7 +30,8 @@ def _binary_wrapper_impl(ctx):
         template = ctx.file._template_file,
         is_executable = True,
         substitutions = {
-            "%%BINARY%%": ctx.executable.binary.short_path,
+            "%%BINARY%%": _rlocationpath(ctx.executable.binary, ctx.workspace_name),
+            "%%WORKSPACE_NAME%%": ctx.workspace_name,
             "%%EXPORT_ENVS%%": export_lines,
             "%%EXTRA_COMMANDS%%": "\n".join(ctx.attr.extra_commands),
             "#!/usr/bin/env bash": "#!{}".format(sh_toolchain.path),

@@ -16,7 +16,7 @@ fi
 
 export RUNFILES_DIR="${RUNFILES_DIR}"
 
-pwd="${RUNFILES_DIR}/_main"
+pwd="${RUNFILES_DIR}/%%WORKSPACE_NAME%%"
 
 # User-specified environment variables
 %%EXPORT_ENVS%%
@@ -25,4 +25,4 @@ pwd="${RUNFILES_DIR}/_main"
 %%EXTRA_COMMANDS%%
 
 # Set up library path and execute
-exec "${RUNFILES_DIR}/_main/%%BINARY%%" "$@"
+exec "${RUNFILES_DIR}/%%BINARY%%" "$@"

@@ -33,10 +33,6 @@ scuffle_package(
         "templates/emails/**/*.stpl",
     ]) + ["static_policies.cedar"],
     crate_name = "scufflecloud-core",
-    target_compatible_with = select({
-        "@platforms//os:osx": ["@platforms//:incompatible"],
-        "//conditions:default": [],
-    }),
     deps = deps,
 )
 
@@ -49,9 +45,5 @@ scuffle_package(
     crate_name = "scufflecloud-core-standalone",
     crate_type = "bin",
     readme = False,
-    target_compatible_with = select({
-        "@platforms//os:osx": ["@platforms//:incompatible"],
-        "//conditions:default": [],
-    }),
     deps = deps + [":core"],
 )

@@ -2,6 +2,7 @@ import { browser } from "$app/environment";
 import type { Timestamp } from "@scufflecloud/proto/google/protobuf/timestamp.js";
 import type { NewUserSessionToken } from "@scufflecloud/proto/scufflecloud/core/v1/sessions_service.js";
 import { User } from "@scufflecloud/proto/scufflecloud/core/v1/users.js";
+import { sessionsServiceClient, usersServiceClient } from "./grpcClient";
 import { arrayBufferToBase64 } from "./utils";
 
 function timestampToDate(timestmap: Timestamp): Date | null {
@@ -28,6 +29,7 @@ export type UserSessionToken = {
     id: string;
     token: ArrayBuffer;
     expiresAt: Date | null;
+    userId: string;
 };
 
 function loadUserSessionToken(): AuthState<UserSessionToken> {
@@ -128,7 +130,7 @@ export function authState() {
     // Private key
     let deviceKeypair = $state<DeviceKeypairState>(null);
     let userSessionToken = $state<AuthState<UserSessionToken>>(loadUserSessionToken());
-    let user = $state<AuthState<User>>(loadUser(userSessionToken));
+    let user = $state<AuthState<User> | null>(null);
 
     return {
         initialize() {
@@ -141,6 +143,13 @@ export function authState() {
                 }).catch((err) => {
                     console.error("Failed to load device key", err);
                     deviceKeypair = { state: "loaded", data: null };
+                });
+            }
+
+            if (!user) {
+                user = { state: "loading" };
+                loadUser(userSessionToken).then((loadedUser) => {
+                    user = loadedUser;
                 });
             }
         },
@@ -182,15 +191,35 @@ export function authState() {
                             id: newToken.id,
                             token: decrypted,
                             expiresAt: newToken.expiresAt ? timestampToDate(newToken.expiresAt) : null,
+                            userId: newToken.userId,
                         },
                     };
 
                     userSessionToken = newUserSessionToken;
                     // Persist session token to localStorage on change
                     window.localStorage.setItem("userSessionToken", JSON.stringify(newUserSessionToken));
-                    user = loadUser(newUserSessionToken);
+                    return loadUser(newUserSessionToken);
                 },
-            );
+            ).catch((err) => {
+                console.error("Failed to decrypt session token", err);
+                throw new Error("Failed to decrypt session token");
+            }).then((loadedUser) => {
+                user = loadedUser;
+            });
+        },
+        async logout() {
+            if (!browser) return;
+
+            const call = sessionsServiceClient.invalidateUserSession({});
+            const status = await call.status;
+            if (status.code === "0") {
+                userSessionToken = { state: "unauthenticated" };
+                window.localStorage.removeItem("userSessionToken");
+                user = { state: "unauthenticated" };
+            } else {
+                console.error("Failed to logout", status);
+                throw new Error("Failed to logout: " + status.detail);
+            }
         },
         get devicePublicKey(): CryptoKey | null {
             if (!deviceKeypair) return null;
@@ -204,20 +233,26 @@ export function authState() {
             return user;
         },
         get user() {
+            if (!user) throw new Error("User not initialized");
             return user.state === "authenticated" ? user.data : null;
         },
     };
 }
 
-function loadUser(state: AuthState<UserSessionToken>): AuthState<User> {
+async function loadUser(state: AuthState<UserSessionToken>): Promise<AuthState<User>> {
     if (state.state !== "authenticated") {
         return { ...state };
     }
 
-    // usersServiceClient.getUser({
-    // });
+    const call = usersServiceClient.getUser({
+        id: state.data.userId,
+    });
+    const status = await call.status;
 
-    return {
-        state: "loading",
-    };
+    if (status.code === "0") {
+        const user = await call.response;
+        return { state: "authenticated", data: user };
+    } else {
+        return { state: "error", error: status.detail };
+    }
 }

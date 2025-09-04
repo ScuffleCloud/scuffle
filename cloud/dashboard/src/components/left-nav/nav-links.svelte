@@ -2,7 +2,6 @@
     import { afterNavigate } from "$app/navigation";
     import { NAV_ITEMS } from "$components/left-nav/consts.svelte";
     import type { NavItem } from "$components/types";
-    import { useUser } from "$lib/useUser";
     import NavItemBase from "./nav-item-base.svelte";
     import NavItemDropdown from "./nav-item-dropdown.svelte";
 
@@ -21,10 +20,15 @@
         isTemporarilyExpanded = false,
     }: Props = $props();
 
-    const { currentOrganization, currentProject } = useUser();
+    const currentOrganization = {
+        slug: "org-1",
+    };
+    const currentProject = {
+        slug: "proj-1",
+    };
 
     const basePath = $derived(
-        `/organizations/${$currentOrganization?.slug}/projects/${$currentProject?.slug}`,
+        `/organizations/${currentOrganization?.slug}/projects/${currentProject?.slug}`,
     );
 
     const navItemsWithPaths = $derived(

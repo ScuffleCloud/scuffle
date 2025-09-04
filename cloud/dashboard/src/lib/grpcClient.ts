@@ -37,7 +37,10 @@ const transport = new GrpcWebFetchTransport({
 
                     const auth = authState();
                     if (auth.userSessionToken.state === "authenticated") {
-                        if (!options.skipSessionExpiryCheck && auth.userSessionToken.data.expiresAt && auth.userSessionToken.data.expiresAt.getTime() + 10 * 1000 < Date.now()) {
+                        if (
+                            !options.skipSessionExpiryCheck && auth.userSessionToken.data.expiresAt
+                            && auth.userSessionToken.data.expiresAt.getTime() + 10 * 1000 < Date.now()
+                        ) {
                             const call = sessionsServiceClient.refreshUserSession({}, { skipSessionExpiryCheck: true });
                             const status = await call.status;
                             if (status.code !== "0") {

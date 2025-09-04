@@ -32,6 +32,9 @@ importers:
       '@protobuf-ts/grpcweb-transport':
         specifier: ^2.11.1
         version: 2.11.1
+      '@protobuf-ts/runtime-rpc':
+        specifier: ^2.11.1
+        version: 2.11.1
       '@scufflecloud/proto':
         specifier: workspace:*
         version: link:../proto/ts

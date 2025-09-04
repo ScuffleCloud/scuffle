@@ -87,18 +87,26 @@ script_dir=$(dirname_shim "${BASH_SOURCE[0]}")
 resolved_binary_path=$(find_binary_path "$binary_path" "$pwd" "$script_dir")
 
 args=()
-if [[ "$1" == "cq" ]]; then
-  shift
-  if [[ "$1" == *.a ]]; then
-    out="$1"
-    shift
-    args=(-static -o "$out" "$@")
-  else
-    echo "wrapper error: expected archive after 'cq'" >&2
-    exit 1
-  fi
-else
-  args=("$@")
-fi
+while [[ $# -gt 0 ]]; do
+  case "$1" in
+    cq|-cq)
+      shift
+      if [[ -z "${1:-}" || "$1" != *.a ]]; then
+        echo "wrapper error: expected 'libtool cq <archive>.a <objects...>'" >&2
+        exit 1
+      fi
+      args+=(-static -o "$1")
+      shift
+      ;;
+    s|-s)
+      # Ignore strip
+      shift
+      ;;
+    *)
+      args+=("$1")
+      shift
+      ;;
+  esac
+done
 
 exec "$resolved_binary_path" "${args[@]}"

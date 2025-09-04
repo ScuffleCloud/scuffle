@@ -79,30 +79,26 @@ find_binary_path() {
   echo "${pwd}/external/${binary_path}"
 }
 
-binary_path="%%BINARY%%"
 pwd="$(pwd)"
 script_dir=$(dirname_shim "${BASH_SOURCE[0]}")
 
 # Find the correct binary path
-resolved_binary_path=$(find_binary_path "$binary_path" "$pwd" "$script_dir")
+resolved_libtool_path=$(find_binary_path "%%LIBTOOL%%" "$pwd" "$script_dir")
+resolved_strip_path=$(find_binary_path "%%STRIP%%" "$pwd" "$script_dir")
 
-args=()
-while [[ $# -gt 0 ]]; do
-  case "$1" in
-    s|-s|cq|-cq)
-      shift
-      if [[ -z "${1:-}" || "$1" != *.a ]]; then
-        echo "wrapper error: expected 'libtool cq <archive>.a <objects...>'" >&2
-        exit 1
-      fi
-      args+=(-static -o "$1")
-      shift
-      ;;
-    *)
-      args+=("$1")
-      shift
-      ;;
-  esac
-done
+case "$1" in
+  cq)
+    # Create archive
+    shift
+    exec "$resolved_libtool_path" -static -o $@
+    ;;
+  s)
+    # Strip
+    shift
+    exec "$resolved_strip_path" $@
+    ;;
+  *)
+    exec "$resolved_libtool_path" $@
+    ;;
+esac
 
-exec "$resolved_binary_path" "${args[@]}"

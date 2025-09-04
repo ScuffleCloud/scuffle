@@ -49,9 +49,9 @@ scuffle_package(
     crate_name = "scufflecloud-core-standalone",
     crate_type = "bin",
     readme = False,
-    deps = deps + [":core"],
     target_compatible_with = select({
         "@platforms//os:osx": ["@platforms//:incompatible"],
         "//conditions:default": [],
     }),
+    deps = deps + [":core"],
 )

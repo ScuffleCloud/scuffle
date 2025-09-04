@@ -89,17 +89,13 @@ resolved_binary_path=$(find_binary_path "$binary_path" "$pwd" "$script_dir")
 args=()
 while [[ $# -gt 0 ]]; do
   case "$1" in
-    cq|-cq)
+    s|-s|cq|-cq)
       shift
       if [[ -z "${1:-}" || "$1" != *.a ]]; then
         echo "wrapper error: expected 'libtool cq <archive>.a <objects...>'" >&2
         exit 1
       fi
       args+=(-static -o "$1")
-      shift
-      ;;
-    s|-s)
-      # Ignore strip
       shift
       ;;
     *)

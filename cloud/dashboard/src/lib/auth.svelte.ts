@@ -2,10 +2,7 @@ import { browser } from "$app/environment";
 import type { Timestamp } from "@scufflecloud/proto/google/protobuf/timestamp.js";
 import type { NewUserSessionToken } from "@scufflecloud/proto/scufflecloud/core/v1/sessions_service.js";
 import { User } from "@scufflecloud/proto/scufflecloud/core/v1/users.js";
-
-function arrayBufferToBase64(buffer: ArrayBuffer): string {
-    return btoa(String.fromCharCode(...new Uint8Array(buffer)));
-}
+import { arrayBufferToBase64 } from "./utils";
 
 function timestampToDate(timestmap: Timestamp): Date | null {
     const seconds = parseInt(timestmap.seconds);
@@ -29,7 +26,7 @@ export type AuthState<T> = {
 
 export type UserSessionToken = {
     id: string;
-    token: string;
+    token: ArrayBuffer;
     expiresAt: Date | null;
 };
 
@@ -63,13 +60,11 @@ const RSA_OAEP_SHA256_ALGO = {
     hash: "SHA-256",
 };
 
-// TODO: use IndexedDB with non-extractable keys
-
-export async function generateDeviceKeypair(): Promise<CryptoKeyPair> {
+async function generateDeviceKeypair(): Promise<CryptoKeyPair> {
     if (!browser) return Promise.reject("Not in browser");
     console.log("Generating new device keypair");
 
-    return window.crypto.subtle.generateKey(RSA_OAEP_SHA256_ALGO, false, ["encrypt", "decrypt"]);
+    return window.crypto.subtle.generateKey(RSA_OAEP_SHA256_ALGO, true, ["encrypt", "decrypt"]);
 }
 
 function openKeystoreTx(mode: IDBTransactionMode, onsuccess: (store: IDBObjectStore) => void) {
@@ -150,14 +145,26 @@ export function authState() {
             }
         },
         /**
-         * Generates a new device keypair, persists it and returns the public key
+         * Generates a new device keypair, persists it and returns the public key part as base64 encoded SPKI.
          */
-        async generateNewDeviceKey(): Promise<CryptoKey> {
+        async generateNewDeviceKey(): Promise<string> {
             return generateDeviceKeypair().then((keypair) => {
                 deviceKeypair = { state: "loaded", data: keypair };
                 saveDeviceKey(keypair);
-                return keypair.publicKey;
+                return window.crypto.subtle.exportKey("spki", keypair.publicKey);
+            }).then((spki) => {
+                return arrayBufferToBase64(spki);
             });
+        },
+        async getDevicePublicKeyOrInit(): Promise<string> {
+            const key = this.devicePublicKey;
+            if (key) {
+                return window.crypto.subtle.exportKey("spki", key).then((spki) => {
+                    return arrayBufferToBase64(spki);
+                });
+            } else {
+                return this.generateNewDeviceKey();
+            }
         },
         async handleNewUserSessionToken(newToken: NewUserSessionToken): Promise<void> {
             if (!browser) return;
@@ -173,7 +180,7 @@ export function authState() {
                         state: "authenticated",
                         data: {
                             id: newToken.id,
-                            token: arrayBufferToBase64(decrypted),
+                            token: decrypted,
                             expiresAt: newToken.expiresAt ? timestampToDate(newToken.expiresAt) : null,
                         },
                     };
@@ -184,6 +191,11 @@ export function authState() {
                     user = loadUser(newUserSessionToken);
                 },
             );
+        },
+        get devicePublicKey(): CryptoKey | null {
+            if (!deviceKeypair) return null;
+            if (deviceKeypair.state !== "loaded") return null;
+            return deviceKeypair.data?.publicKey ?? null;
         },
         get userSessionToken() {
             return userSessionToken;
@@ -209,245 +221,3 @@ function loadUser(state: AuthState<UserSessionToken>): AuthState<User> {
         state: "loading",
     };
 }
-
-// // Auth initialization - call this once on app startup
-// export const initializeAuth = async (): Promise<void> => {
-//     if (!browser) return;
-
-//     try {
-//         setLoading(true);
-//         clearError();
-
-//         // Check for stored auth state
-//         const stored = localStorage.getItem("authState");
-//         if (stored) {
-//             const parsedAuth: StoredAuthState = JSON.parse(stored);
-//             if (parsedAuth.isLoggedIn && parsedAuth.user) {
-//                 // Verify with your auth service if needed
-//                 // const isValid = await yourAuthPackage.verifyToken();
-//                 // if (isValid) {
-//                 login(parsedAuth.user);
-//                 return;
-//                 // }
-//             }
-//         }
-
-//         // No valid auth found
-//         logout();
-//     } catch (error) {
-//         console.error("Auth initialization failed:", error);
-//         setError("Failed to initialize authentication");
-//         logout();
-//     } finally {
-//         setLoading(false);
-//     }
-// };
-
-// // Auth API functions - replace with api calls but these are all that should exist
-// export const authAPI = {
-//     async sendMagicLink(email: string): Promise<AuthResult> {
-//         try {
-//             setLoading(true);
-//             clearError();
-//             setMagicLinkSent(false);
-
-//             // Your auth package magic link would go here
-//             // const result = await yourAuthPackage.sendMagicLink(email);
-
-//             console.log("Sending magic link to:", email);
-//             // await new Promise((resolve) => setTimeout(resolve, 1500));
-
-//             setMagicLinkSent(true);
-//             return {
-//                 success: true,
-//                 message: "Check your email for a magic link to continue!",
-//             };
-//         } catch (error) {
-//             console.error("Magic link failed:", error);
-//             const errorMessage = error instanceof Error
-//                 ? error.message
-//                 : "Failed to send magic link. Please try again.";
-//             setError(errorMessage);
-//             return { success: false, error: errorMessage };
-//         } finally {
-//             setLoading(false);
-//         }
-//     },
-
-//     async verifyMagicLink(token: string): Promise<AuthResult> {
-//         try {
-//             setLoading(true);
-//             clearError();
-
-//             // Your auth package verify magic link would go here
-//             // const result = await yourAuthPackage.verifyMagicLink(token);
-
-//             console.log("Verifying magic link token:", token);
-//             await new Promise((resolve) => setTimeout(resolve, 1000));
-
-//             // Mock user data - replace with actual response from your auth service
-//             const userData: User = {
-//                 id: crypto.randomUUID(),
-//                 name: "John Doe", // This would come from your auth service
-//                 email: "user@example.com", // This would come from the verified token
-//                 avatar: null,
-//                 createdAt: new Date(),
-//                 updatedAt: new Date(),
-//             };
-
-//             login(userData);
-//             return { success: true };
-//         } catch (error) {
-//             console.error("Magic link verification failed:", error);
-//             const errorMessage = error instanceof Error ? error.message : "Invalid or expired magic link.";
-//             setError(errorMessage);
-//             return { success: false, error: errorMessage };
-//         } finally {
-//             setLoading(false);
-//         }
-//     },
-
-//     async loginWithGoogle(): Promise<AuthResult> {
-//         try {
-//             setLoading(true);
-//             clearError();
-
-//             // Your auth package Google login would go here
-//             // const result = await yourAuthPackage.loginWithGoogle();
-
-//             console.log("Logging in with Google");
-//             await new Promise((resolve) => setTimeout(resolve, 1000));
-
-//             const userData: User = {
-//                 id: "456",
-//                 name: "John Doe",
-//                 email: "john@gmail.com",
-//                 avatar: "https://example.com/avatar.jpg",
-//                 createdAt: new Date(),
-//                 updatedAt: new Date(),
-//             };
-
-//             login(userData);
-//             return { success: true };
-//         } catch (error) {
-//             console.error("Google login failed:", error);
-//             const errorMessage = error instanceof Error ? error.message : "Google login failed. Please try again.";
-//             setError(errorMessage);
-//             return { success: false, error: errorMessage };
-//         } finally {
-//             setLoading(false);
-//         }
-//     },
-
-//     async loginWithPasskey(): Promise<AuthResult> {
-//         try {
-//             setLoading(true);
-//             clearError();
-
-//             // Your auth package passkey login would go here
-//             // const result = await yourAuthPackage.loginWithPasskey();
-
-//             console.log("Logging in with passkey");
-//             await new Promise((resolve) => setTimeout(resolve, 1000));
-
-//             const userData: User = {
-//                 id: "789",
-//                 name: "John Doe",
-//                 email: "john@example.com",
-//                 isAdmin: true,
-//                 avatar: null,
-//                 createdAt: new Date(),
-//                 updatedAt: new Date(),
-//             };
-
-//             login(userData);
-//             return { success: true };
-//         } catch (error) {
-//             console.error("Passkey login failed:", error);
-//             const errorMessage = error instanceof Error ? error.message : "Passkey login failed. Please try again.";
-//             setError(errorMessage);
-//             return { success: false, error: errorMessage };
-//         } finally {
-//             setLoading(false);
-//         }
-//     },
-
-//     async loginWithPassword(email: string, password: string): Promise<AuthResult> {
-//         try {
-//             setLoading(true);
-//             clearError();
-
-//             // Your auth package passkey login would go here
-//             // const result = await yourAuthPackage.loginWithPasskey();
-
-//             console.log("Logging in with passkey");
-//             await new Promise((resolve) => setTimeout(resolve, 1000));
-
-//             const userData: User = {
-//                 id: "789",
-//                 name: "John Doe",
-//                 email: "john@example.com",
-//                 isAdmin: true,
-//                 avatar: null,
-//                 createdAt: new Date(),
-//                 updatedAt: new Date(),
-//             };
-
-//             login(userData);
-//             return { success: true };
-//         } catch (error) {
-//             console.error("Passkey login failed:", error);
-//             const errorMessage = error instanceof Error ? error.message : "Passkey login failed. Please try again.";
-//             setError(errorMessage);
-//             return { success: false, error: errorMessage };
-//         } finally {
-//             setLoading(false);
-//         }
-//     },
-
-//     async logoutUser(): Promise<AuthResult> {
-//         try {
-//             setLoading(true);
-//             clearError();
-
-//             // Your auth package logout would go here
-//             // await yourAuthPackage.logout();
-
-//             console.log("Logging out");
-//             await new Promise((resolve) => setTimeout(resolve, 500));
-
-//             logout();
-//             return { success: true };
-//         } catch (error) {
-//             console.error("Logout failed:", error);
-//             const errorMessage = error instanceof Error ? error.message : "Logout failed. Please try again.";
-//             setError(errorMessage);
-//             return { success: false, error: errorMessage };
-//         } finally {
-//             setLoading(false);
-//         }
-//     },
-
-//     async updateProfile(updates: Partial<User>): Promise<AuthResult> {
-//         try {
-//             setLoading(true);
-//             clearError();
-
-//             // Your auth package update profile would go here
-//             // const result = await yourAuthPackage.updateProfile(updates);
-
-//             console.log("Updating profile:", updates);
-//             await new Promise((resolve) => setTimeout(resolve, 500));
-
-//             updateUser({ ...updates, updatedAt: new Date() });
-//             return { success: true };
-//         } catch (error) {
-//             console.error("Profile update failed:", error);
-//             const errorMessage = error instanceof Error ? error.message : "Failed to update profile.";
-//             setError(errorMessage);
-//             return { success: false, error: errorMessage };
-//         } finally {
-//             setLoading(false);
-//         }
-//     },
-// };

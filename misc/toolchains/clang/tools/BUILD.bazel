@@ -137,13 +137,13 @@ cc_tool(
 
 darwin_ar_wrapper(
     name = "llvm-ar-darwin-wrapper",
+    ar = llvm_ar_src,
     libtool = select({
         "//misc/platforms:linux-aarch64": "@clang-linux-aarch64//:bin/llvm-libtool-darwin",
         "//misc/platforms:linux-x86_64": "@clang-linux-x86_64//:bin/llvm-libtool-darwin",
         "//misc/platforms:macos-aarch64": "@clang-macos-aarch64//:bin/llvm-libtool-darwin",
         "//misc/platforms:macos-x86_64": "@clang-macos-x86_64//:bin/llvm-libtool-darwin",
     }),
-    ar = llvm_ar_src,
     tags = [
         "manual",
         "no-cache",

@@ -14,38 +14,32 @@ http_file(
     ),
 )
 
-linux_aarch64 = "ibazel_linux_arm64"
-
 http_file(
     name = "ibazel-linux-aarch64",
     executable = True,
     sha256 = "c535714662b8704a3ae55cd5b3cdf6c1939f5ba6ba82eb96cdac54b75ac28ffa",
     url = "{url}/{name}".format(
-        name = linux_aarch64,
+        name = "ibazel_linux_arm64",
         url = build_url,
     ),
 )
-
-macos_x86_64 = "ibazel_darwin_amd64"
 
 http_file(
     name = "ibazel-macos-x86_64",
     executable = True,
     sha256 = "ad30c44210bb0bf8663aaf29e2820dcfa0be75fe3bd81218bf7b70fbaba849b9",
     url = "{url}/{name}".format(
-        name = macos_x86_64,
+        name = "ibazel_darwin_amd64",
         url = build_url,
     ),
 )
 
-macos_aarch64 = "ibazel_darwin_arm64"
-
 http_file(
     name = "ibazel-macos-aarch64",
     executable = True,
-    sha256 = "c535714662b8704a3ae55cd5b3cdf6c1939f5ba6ba82eb96cdac54b75ac28ffa",
+    sha256 = "3e3e609e3447204289b36c0f279f4d155e583f3289eb1ff9dcb92eae8c3fc505",
     url = "{url}/{name}".format(
-        name = macos_aarch64,
+        name = "ibazel_darwin_arm64",
         url = build_url,
     ),
 )

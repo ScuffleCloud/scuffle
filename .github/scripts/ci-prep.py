@@ -130,6 +130,7 @@ def create_previews() -> Optional[Preview]:
 def create_test() -> Optional[Test]:
     matrix = [MatrixEntry(runner=LINUX_X86_64, os="linux", arch="x86_64")]
     if is_brawl() or is_dispatch_or_cron():
+        matrix.append(MatrixEntry(runner=MACOS_ARM64, os="darwin", arch="aarch64"))
         matrix.append(MatrixEntry(runner=LINUX_ARM64, os="linux", arch="aarch64"))
 
     return Test(

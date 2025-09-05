@@ -58,7 +58,7 @@ rust_library(
     }),
     version = "0.5.0",
     deps = [
-        "@bindeps__thiserror-2.0.15//:thiserror",
+        "@bindeps__thiserror-2.0.16//:thiserror",
         "@bindeps__zerocopy-0.8.26//:zerocopy",
     ],
 )

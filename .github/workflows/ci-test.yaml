@@ -36,11 +36,14 @@ jobs:
           build_buddy_token: ${{ secrets.build_buddy_token }}
 
       - name: Run
+        env:
+          MODE: ${{ runner.os == 'Linux' && 'coverage' || 'test' }}
         run: |
           targets=$(bazel query 'tests(set(//...))')
-          bazel coverage ${targets}
+          bazel ${MODE} ${targets} --skip_incompatible_explicit_targets
 
       - uses: codecov/codecov-action@v5
+        if: ${{ runner.os == 'Linux' }}
         with:
           fail_ci_if_error: true
           files: ./target-bazel/out/_coverage/_coverage_report.dat

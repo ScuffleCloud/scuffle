@@ -1,52 +1,52 @@
 bazel_dep(name = "rules_rust")
 git_override(
     module_name = "rules_rust",
-    commit = "94131bfa1e2455daaf477c373942ee5db9e09a0b",
+    commit = "9a78b05bec03a8801add0f96b56f5d8d79f817bc",
     remote = "https://github.com/ScuffleCloud/rules_rust.git",
 )
 
 http_archive = use_repo_rule("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive")
 
-cargo_bazel_url = "https://github.com/ScuffleCloud/rules_rust/releases/download/commit-94131bfa1e2455daaf477c373942ee5db9e09a0b/"
+cargo_bazel_url = "https://github.com/ScuffleCloud/rules_rust/releases/download/commit-9a78b05bec03a8801add0f96b56f5d8d79f817bc/"
 
 http_archive(
     name = "cargo-bazel-darwin-aarch64",
-    sha256 = "31c39e879ab341cdde2349747da5d3e0f2bf0ae8b88ef2fbba056eb48426e21a",
+    sha256 = "2fbdc164633918478bb5f43cd50d7cb2257f413c8b99a1881dbc22179f8cb799",
     strip_prefix = "cargo-bazel-darwin-aarch64",
     url = cargo_bazel_url + "cargo-bazel-darwin-aarch64.tar.zst",
 )
 
 http_archive(
     name = "cargo-bazel-darwin-x86_64",
-    sha256 = "b976f948985e7d491a70790f8a2ebf20139779b4202e31c4051e479925ac4055",
+    sha256 = "763c4ede18af68174d53737472a848d9621aab775888336f07a06b3d36ef7449",
     strip_prefix = "cargo-bazel-darwin-x86_64",
     url = cargo_bazel_url + "cargo-bazel-darwin-x86_64.tar.zst",
 )
 
 http_archive(
     name = "cargo-bazel-linux-aarch64",
-    sha256 = "bbace08361351ed754973a5f6c5bfd06c827b23cc7215bb61eca0b7073bc52b7",
+    sha256 = "6b3aefc3cbb19f7d3c75b7f5a0b185fabde6a2fa12a2ea267efd81f3101f2b3a",
     strip_prefix = "cargo-bazel-linux-aarch64",
     url = cargo_bazel_url + "cargo-bazel-linux-aarch64.tar.zst",
 )
 
 http_archive(
     name = "cargo-bazel-linux-x86_64",
-    sha256 = "a7fdc84aba3a0791988618f03886d0933e300a4d8d623a1016e553af9c6bb612",
+    sha256 = "904cfef225494e3b979136a2664e1088d88970511c852963e8eb467bd23792c3",
     strip_prefix = "cargo-bazel-linux-x86_64",
     url = cargo_bazel_url + "cargo-bazel-linux-x86_64.tar.zst",
 )
 
 http_archive(
     name = "cargo-bazel-windows-aarch64",
-    sha256 = "f9c292475bbfa5673b6d95d5aadccf5b259d753696e359645c3f8ced4abe9f05",
+    sha256 = "2ff540706432e3d95b5fafcced068fc20e3a4b35a5a50be225d30d3d025ff824",
     strip_prefix = "cargo-bazel-windows-aarch64",
     url = cargo_bazel_url + "cargo-bazel-windows-aarch64.tar.zst",
 )
 
 http_archive(
     name = "cargo-bazel-windows-x86_64",
-    sha256 = "a202a1b478271ec4d9e095155132e7675a1cd5f9f66350504aa9e5bee7e43b65",
+    sha256 = "20ce88e3c0638bc4e79a5cb9a10a3d531ba3bc89856290d0fd29f5fa00d7f575",
     strip_prefix = "cargo-bazel-windows-x86_64",
     url = cargo_bazel_url + "cargo-bazel-windows-x86_64.tar.zst",
 )
@@ -288,6 +288,9 @@ use_repo(
     bindeps,
     "bindeps",
     "bindeps__cargo-deny-0.18.4",
+    "bindeps__cargo-insta-1.43.1",
+    "bindeps__dprint-0.50.1",
     "bindeps__just-1.42.4",
+    "bindeps__miniserve-0.31.0",
     "bindeps__rust-analyzer-0.0.0",
 )

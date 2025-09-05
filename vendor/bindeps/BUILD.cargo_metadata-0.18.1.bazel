@@ -60,7 +60,7 @@ rust_library(
     }),
     version = "0.18.1",
     deps = [
-        "@bindeps__camino-1.1.11//:camino",
+        "@bindeps__camino-1.1.12//:camino",
         "@bindeps__cargo-platform-0.1.9//:cargo_platform",
         "@bindeps__semver-1.0.26//:semver",
         "@bindeps__serde-1.0.219//:serde",

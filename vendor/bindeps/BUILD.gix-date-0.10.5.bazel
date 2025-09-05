@@ -64,6 +64,6 @@ rust_library(
         "@bindeps__itoa-1.0.15//:itoa",
         "@bindeps__jiff-0.2.15//:jiff",
         "@bindeps__smallvec-1.15.1//:smallvec",
-        "@bindeps__thiserror-2.0.15//:thiserror",
+        "@bindeps__thiserror-2.0.16//:thiserror",
     ],
 )

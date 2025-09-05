@@ -71,7 +71,7 @@ rust_library(
         "@bindeps__walkdir-2.5.0//:walkdir",
     ] + select({
         "@rules_rust//rust/platform:aarch64-apple-darwin": [
-            "@bindeps__bitflags-2.9.2//:bitflags",  # cfg(target_os = "macos")
+            "@bindeps__bitflags-2.9.4//:bitflags",  # cfg(target_os = "macos")
             "@bindeps__fsevent-sys-4.1.0//:fsevent_sys",  # cfg(target_os = "macos")
         ],
         "@rules_rust//rust/platform:aarch64-pc-windows-msvc": [
@@ -82,7 +82,7 @@ rust_library(
             "@bindeps__mio-1.0.4//:mio",  # cfg(any(target_os = "linux", target_os = "android"))
         ],
         "@rules_rust//rust/platform:x86_64-apple-darwin": [
-            "@bindeps__bitflags-2.9.2//:bitflags",  # cfg(target_os = "macos")
+            "@bindeps__bitflags-2.9.4//:bitflags",  # cfg(target_os = "macos")
             "@bindeps__fsevent-sys-4.1.0//:fsevent_sys",  # cfg(target_os = "macos")
         ],
         "@rules_rust//rust/platform:x86_64-pc-windows-msvc": [

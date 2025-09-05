@@ -61,7 +61,7 @@ rust_library(
     version = "0.0.0",
     deps = [
         "@bindeps__cfg-0.0.0//:cfg",
-        "@bindeps__cov-mark-2.0.1//:cov_mark",
+        "@bindeps__cov-mark-2.1.0//:cov_mark",
         "@bindeps__either-1.15.0//:either",
         "@bindeps__hir-0.0.0//:hir",
         "@bindeps__ide-db-0.0.0//:ide_db",

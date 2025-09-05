@@ -79,6 +79,6 @@ rust_library(
         "@bindeps__gix-sec-0.12.0//:gix_sec",
         "@bindeps__gix-url-0.32.0//:gix_url",
         "@bindeps__reqwest-0.12.23//:reqwest",
-        "@bindeps__thiserror-2.0.15//:thiserror",
+        "@bindeps__thiserror-2.0.16//:thiserror",
     ],
 )

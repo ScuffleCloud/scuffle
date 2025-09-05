@@ -62,7 +62,7 @@ rust_library(
     deps = [
         "@bindeps__crossbeam-channel-0.5.15//:crossbeam_channel",
         "@bindeps__fst-0.4.7//:fst",
-        "@bindeps__indexmap-2.10.0//:indexmap",
+        "@bindeps__indexmap-2.11.0//:indexmap",
         "@bindeps__nohash-hasher-0.2.0//:nohash_hasher",
         "@bindeps__paths-0.0.0//:paths",
         "@bindeps__rustc-hash-2.1.1//:rustc_hash",

@@ -68,7 +68,7 @@ rust_library(
         "@bindeps__parking_lot-0.12.4//:parking_lot",
         "@bindeps__signal-hook-0.3.18//:signal_hook",
         "@bindeps__signal-hook-registry-1.4.6//:signal_hook_registry",
-        "@bindeps__tempfile-3.20.0//:tempfile",
+        "@bindeps__tempfile-3.21.0//:tempfile",
     ] + select({
         "@rules_rust//rust/platform:aarch64-apple-darwin": [
             "@bindeps__libc-0.2.175//:libc",  # cfg(not(windows))

@@ -64,7 +64,7 @@ rust_library(
         "@bindeps__lazy_static-1.5.0//:lazy_static",
         "@bindeps__log-0.4.27//:log",
         "@bindeps__rayon-1.11.0//:rayon",  # cfg(not(target_arch = "wasm32"))
-        "@bindeps__regex-1.11.1//:regex",
+        "@bindeps__regex-1.11.2//:regex",
         "@bindeps__rmp-serde-1.3.0//:rmp_serde",
         "@bindeps__serde-1.0.219//:serde",
         "@bindeps__unicode-normalization-0.1.24//:unicode_normalization",

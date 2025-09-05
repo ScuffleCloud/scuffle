@@ -70,8 +70,8 @@ rust_library(
         "@bindeps__memchr-2.7.5//:memchr",
         "@bindeps__once_cell-1.21.3//:once_cell",
         "@bindeps__smallvec-1.15.1//:smallvec",
-        "@bindeps__thiserror-2.0.15//:thiserror",
+        "@bindeps__thiserror-2.0.16//:thiserror",
         "@bindeps__unicode-bom-2.0.3//:unicode_bom",
-        "@bindeps__winnow-0.7.12//:winnow",
+        "@bindeps__winnow-0.7.13//:winnow",
     ],
 )

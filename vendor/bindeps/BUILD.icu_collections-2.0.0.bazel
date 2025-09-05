@@ -63,7 +63,7 @@ rust_library(
     }),
     version = "2.0.0",
     deps = [
-        "@bindeps__potential_utf-0.1.2//:potential_utf",
+        "@bindeps__potential_utf-0.1.3//:potential_utf",
         "@bindeps__yoke-0.8.0//:yoke",
         "@bindeps__zerofrom-0.1.6//:zerofrom",
         "@bindeps__zerovec-0.11.4//:zerovec",

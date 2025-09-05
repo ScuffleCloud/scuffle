@@ -52,7 +52,7 @@ test *targets="//...":
 
     targets=$(bazel query 'tests(set({{ targets }}))')
 
-    bazel --output_base="${output_base}_coverage" coverage ${targets} --//settings:test_insta_force_pass
+    bazel --output_base="${output_base}_coverage" coverage ${targets} --//settings:test_insta_force_pass --skip_incompatible_explicit_targets
 
     test_logs=$(bazel --output_base="${output_base}_coverage" info bazel-testlogs)
 
@@ -87,7 +87,7 @@ grind *targets="//...":
     output_base=$(bazel info output_base)
     targets=$(bazel query 'kind("nextest_test rule", set({{ targets }}))')
 
-    bazel --output_base="${output_base}_grind" test ${targets} --//settings:test_rustc_flags="--cfg=valgrind" --//settings:test_valgrind
+    bazel --output_base="${output_base}_grind" test ${targets} --//settings:test_rustc_flags="--cfg=valgrind" --//settings:test_valgrind --skip_incompatible_explicit_targets
 
 alias docs := doc
 

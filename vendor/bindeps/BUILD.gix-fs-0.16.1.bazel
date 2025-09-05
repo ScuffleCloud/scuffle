@@ -65,6 +65,6 @@ rust_library(
         "@bindeps__gix-features-0.43.1//:gix_features",
         "@bindeps__gix-path-0.10.20//:gix_path",
         "@bindeps__gix-utils-0.3.0//:gix_utils",
-        "@bindeps__thiserror-2.0.15//:thiserror",
+        "@bindeps__thiserror-2.0.16//:thiserror",
     ],
 )

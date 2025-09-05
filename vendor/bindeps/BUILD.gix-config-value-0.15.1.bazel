@@ -60,10 +60,10 @@ rust_library(
     }),
     version = "0.15.1",
     deps = [
-        "@bindeps__bitflags-2.9.2//:bitflags",
+        "@bindeps__bitflags-2.9.4//:bitflags",
         "@bindeps__bstr-1.12.0//:bstr",
         "@bindeps__gix-path-0.10.20//:gix_path",
-        "@bindeps__thiserror-2.0.15//:thiserror",
+        "@bindeps__thiserror-2.0.16//:thiserror",
     ] + select({
         "@rules_rust//rust/platform:aarch64-apple-darwin": [
             "@bindeps__libc-0.2.175//:libc",  # cfg(not(windows))

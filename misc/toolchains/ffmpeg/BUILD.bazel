@@ -10,6 +10,10 @@ alias(
         "manual",
         "no-cache",
     ],
+    target_compatible_with = select({
+        "@platforms//os:osx": ["@platforms//:incompatible"],
+        "//conditions:default": [],
+    }),
     visibility = ["//visibility:public"],
 )
 
@@ -25,5 +29,9 @@ alias(
         "manual",
         "no-cache",
     ],
+    target_compatible_with = select({
+        "@platforms//os:osx": ["@platforms//:incompatible"],
+        "//conditions:default": [],
+    }),
     visibility = ["//visibility:public"],
 )

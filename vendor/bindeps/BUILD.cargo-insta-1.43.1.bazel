@@ -61,7 +61,7 @@ rust_binary(
     version = "1.43.1",
     deps = [
         "@bindeps__cargo_metadata-0.18.1//:cargo_metadata",
-        "@bindeps__clap-4.5.45//:clap",
+        "@bindeps__clap-4.5.47//:clap",
         "@bindeps__console-0.15.11//:console",
         "@bindeps__ignore-0.4.23//:ignore",
         "@bindeps__insta-1.43.1//:insta",
@@ -72,7 +72,7 @@ rust_binary(
         "@bindeps__serde-1.0.219//:serde",
         "@bindeps__serde_json-1.0.143//:serde_json",
         "@bindeps__syn-2.0.106//:syn",
-        "@bindeps__tempfile-3.20.0//:tempfile",
-        "@bindeps__uuid-1.18.0//:uuid",
+        "@bindeps__tempfile-3.21.0//:tempfile",
+        "@bindeps__uuid-1.18.1//:uuid",
     ],
 )

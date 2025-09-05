@@ -65,11 +65,11 @@ rust_library(
     }),
     version = "0.22.27",
     deps = [
-        "@bindeps__indexmap-2.10.0//:indexmap",
+        "@bindeps__indexmap-2.11.0//:indexmap",
         "@bindeps__serde-1.0.219//:serde",
         "@bindeps__serde_spanned-0.6.9//:serde_spanned",
         "@bindeps__toml_datetime-0.6.11//:toml_datetime",
         "@bindeps__toml_write-0.1.2//:toml_write",
-        "@bindeps__winnow-0.7.12//:winnow",
+        "@bindeps__winnow-0.7.13//:winnow",
     ],
 )

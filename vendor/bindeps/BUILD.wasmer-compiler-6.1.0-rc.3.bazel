@@ -69,7 +69,7 @@ rust_library(
     deps = [
         "@bindeps__backtrace-0.3.75//:backtrace",
         "@bindeps__bytes-1.10.1//:bytes",
-        "@bindeps__cfg-if-1.0.1//:cfg_if",
+        "@bindeps__cfg-if-1.0.3//:cfg_if",
         "@bindeps__enum-iterator-0.7.0//:enum_iterator",
         "@bindeps__enumset-1.1.10//:enumset",
         "@bindeps__leb128-0.2.5//:leb128",

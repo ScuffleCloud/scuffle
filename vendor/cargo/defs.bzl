@@ -3949,9 +3949,6 @@ _CONDITIONS = {
     "aarch64-apple-darwin": ["@rules_rust//rust/platform:aarch64-apple-darwin"],
     "aarch64-pc-windows-msvc": ["@rules_rust//rust/platform:aarch64-pc-windows-msvc"],
     "aarch64-unknown-linux-gnu": ["@rules_rust//rust/platform:aarch64-unknown-linux-gnu"],
-    "cfg(all(all(target_arch = \"aarch64\", target_endian = \"little\"), target_os = \"windows\"))": ["@rules_rust//rust/platform:aarch64-pc-windows-msvc"],
-    "cfg(all(all(target_arch = \"aarch64\", target_endian = \"little\"), target_vendor = \"apple\", any(target_os = \"ios\", target_os = \"macos\", target_os = \"tvos\", target_os = \"visionos\", target_os = \"watchos\")))": ["@rules_rust//rust/platform:aarch64-apple-darwin"],
-    "cfg(all(any(all(target_arch = \"aarch64\", target_endian = \"little\"), all(target_arch = \"arm\", target_endian = \"little\")), any(target_os = \"android\", target_os = \"linux\")))": ["@rules_rust//rust/platform:aarch64-unknown-linux-gnu"],
     "cfg(all(any(target_arch = \"wasm32\", target_arch = \"wasm64\"), target_os = \"unknown\"))": ["@rules_rust//rust/platform:wasm32-unknown-unknown"],
     "cfg(all(any(target_arch = \"x86_64\", target_arch = \"arm64ec\"), target_env = \"msvc\", not(windows_raw_dylib)))": ["@rules_rust//rust/platform:x86_64-pc-windows-msvc"],
     "cfg(all(any(target_os = \"linux\", target_os = \"android\"), not(any(all(target_os = \"linux\", target_env = \"\"), getrandom_backend = \"custom\", getrandom_backend = \"linux_raw\", getrandom_backend = \"rdrand\", getrandom_backend = \"rndr\"))))": ["@rules_rust//rust/platform:aarch64-unknown-linux-gnu", "@rules_rust//rust/platform:x86_64-unknown-linux-gnu"],
@@ -8148,7 +8145,7 @@ def crate_repositories():
     maybe(
         new_git_repository,
         name = "cargo_vendor__reqwest-0.12.23",
-        commit = "1b659fc2ec02363a04dcdc08d1989560ed5a5e7f",
+        commit = "9cce4657b902263c762d34a3c6a5addb44988359",
         init_submodules = True,
         remote = "https://github.com/TroyKomodo/reqwest.git",
         build_file = Label("//vendor/cargo:BUILD.reqwest-0.12.23.bazel"),
@@ -10092,16 +10089,6 @@ def crate_repositories():
         urls = ["https://static.crates.io/crates/webpki-root-certs/1.0.2/download"],
         strip_prefix = "webpki-root-certs-1.0.2",
         build_file = Label("//vendor/cargo:BUILD.webpki-root-certs-1.0.2.bazel"),
-    )
-
-    maybe(
-        http_archive,
-        name = "cargo_vendor__webpki-roots-1.0.2",
-        sha256 = "7e8983c3ab33d6fb807cfcdad2491c4ea8cbc8ed839181c7dfd9c67c83e261b2",
-        type = "tar.gz",
-        urls = ["https://static.crates.io/crates/webpki-roots/1.0.2/download"],
-        strip_prefix = "webpki-roots-1.0.2",
-        build_file = Label("//vendor/cargo:BUILD.webpki-roots-1.0.2.bazel"),
     )
 
     maybe(

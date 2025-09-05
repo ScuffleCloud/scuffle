@@ -72,9 +72,9 @@ rust_library(
         "@bindeps__gix-object-0.50.2//:gix_object",
         "@bindeps__gix-path-0.10.20//:gix_path",
         "@bindeps__gix-tempfile-18.0.0//:gix_tempfile",  # cfg(not(target_arch = "wasm32"))
-        "@bindeps__memmap2-0.9.7//:memmap2",
+        "@bindeps__memmap2-0.9.8//:memmap2",
         "@bindeps__parking_lot-0.12.4//:parking_lot",
         "@bindeps__smallvec-1.15.1//:smallvec",
-        "@bindeps__thiserror-2.0.15//:thiserror",
+        "@bindeps__thiserror-2.0.16//:thiserror",
     ],
 )

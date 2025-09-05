@@ -66,7 +66,7 @@ rust_library(
     }),
     version = "0.2.16",
     deps = [
-        "@bindeps__cfg-if-1.0.1//:cfg_if",
+        "@bindeps__cfg-if-1.0.3//:cfg_if",
     ] + select({
         "@rules_rust//rust/platform:aarch64-apple-darwin": [
             "@bindeps__libc-0.2.175//:libc",  # cfg(unix)

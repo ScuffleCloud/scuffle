@@ -72,7 +72,7 @@ rust_library(
         "@bindeps__rustls-0.23.31//:rustls",
         "@bindeps__rustls-pki-types-1.12.0//:rustls_pki_types",
         "@bindeps__socks-0.3.4//:socks",
-        "@bindeps__url-2.5.4//:url",
+        "@bindeps__url-2.5.7//:url",
         "@bindeps__webpki-roots-0.26.11//:webpki_roots",
     ],
 )

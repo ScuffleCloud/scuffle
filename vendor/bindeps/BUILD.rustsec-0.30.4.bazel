@@ -61,13 +61,13 @@ rust_library(
     version = "0.30.4",
     deps = [
         "@bindeps__cargo-lock-10.1.0//:cargo_lock",
-        "@bindeps__cvss-2.1.0//:cvss",
+        "@bindeps__cvss-2.1.1//:cvss",
         "@bindeps__fs-err-3.1.1//:fs_err",
         "@bindeps__platforms-3.6.0//:platforms",
         "@bindeps__semver-1.0.26//:semver",
         "@bindeps__serde-1.0.219//:serde",
-        "@bindeps__thiserror-2.0.15//:thiserror",
+        "@bindeps__thiserror-2.0.16//:thiserror",
         "@bindeps__toml-0.8.23//:toml",
-        "@bindeps__url-2.5.4//:url",
+        "@bindeps__url-2.5.7//:url",
     ],
 )

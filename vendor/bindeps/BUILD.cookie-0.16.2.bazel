@@ -69,8 +69,8 @@ rust_library(
     version = "0.16.2",
     deps = [
         "@bindeps__cookie-0.16.2//:build_script_build",
-        "@bindeps__percent-encoding-2.3.1//:percent_encoding",
-        "@bindeps__time-0.3.41//:time",
+        "@bindeps__percent-encoding-2.3.2//:percent_encoding",
+        "@bindeps__time-0.3.43//:time",
     ],
 )
 

@@ -64,7 +64,7 @@ rust_library(
     }),
     version = "0.20.0",
     deps = [
-        "@bindeps__camino-1.1.11//:camino",
+        "@bindeps__camino-1.1.12//:camino",
         "@bindeps__cfg-expr-0.20.2//:cfg_expr",
         "@bindeps__petgraph-0.8.2//:petgraph",
         "@bindeps__semver-1.0.26//:semver",

@@ -19,6 +19,9 @@
         value = value === "left" ? "right" : "left";
         onToggle();
     }
+
+    const LeftLabel = leftLabel;
+    const RightLabel = rightLabel;
 </script>
 
 <div class="toggle-container">
@@ -34,7 +37,7 @@
             onclick={handleToggle}
             type="button"
         >
-            {@render leftLabel()}
+            <LeftLabel />
         </button>
         <button
             class="toggle-button"
@@ -42,7 +45,7 @@
             onclick={handleToggle}
             type="button"
         >
-            {@render rightLabel()}
+            <RightLabel />
         </button>
     </div>
 </div>

@@ -1,0 +1,10 @@
+http_jar = use_repo_rule("@bazel_tools//tools/build_defs/repo:http.bzl", "http_jar")
+
+http_jar(
+    name = "bazel-diff",
+    sha256 = "d542aa8be9f4855001b5dde113c03b9264493bd6009444a0f80594c7acf26abe",
+    url = "{url}/{name}".format(
+        name = "bazel-diff_deploy.jar",
+        url = "https://github.com/Tinder/bazel-diff/releases/download/10.1.0",
+    ),
+)

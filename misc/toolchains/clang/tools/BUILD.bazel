@@ -32,7 +32,7 @@ cc_tool_map(
         "@rules_cc//cc/toolchains/actions:strip": ":llvm-strip",
         "@rules_cc//cc/toolchains/actions:ar_actions": ":llvm-ar",
     },
-    visibility = ["//visibility:private"],
+    visibility = ["//visibility:public"],
 )
 
 cc_tool(

@@ -55,7 +55,10 @@ pub(crate) trait CedarEntity<G>: serde::Serialize {
         Ok(object)
     }
 
-    async fn additional_attributes(&self, global: &Arc<G>) -> Result<serde_json::value::Map<String, serde_json::Value>, tonic::Status> {
+    async fn additional_attributes(
+        &self,
+        global: &Arc<G>,
+    ) -> Result<serde_json::value::Map<String, serde_json::Value>, tonic::Status> {
         let _global = global;
         Ok(serde_json::value::Map::new())
     }

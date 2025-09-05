@@ -116,7 +116,8 @@ pub(crate) async fn get_organization_by_id<G: CoreConfig>(
     global: &Arc<G>,
     organization_id: OrganizationId,
 ) -> Result<Organization, tonic::Status> {
-    let organization = global.organization_loader()
+    let organization = global
+        .organization_loader()
         .load(organization_id)
         .await
         .ok()

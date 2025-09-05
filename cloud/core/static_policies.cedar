@@ -288,23 +288,6 @@ permit (
 )
 when
 {
-  principal.id == resource.user_id // TODO: condition for owner
-};
-
-permit (
-  principal is User,
-  action == Action::"accept_organization_invitation",
-  resource is OrganizationInvitation
-)
-when { principal.id == resource.user_id };
-
-permit (
-  principal is User,
-  action == Action::"get_organization_invitation",
-  resource is OrganizationInvitation
-)
-when
-{
   principal.id == resource.user_id ||
   principal.id == resource.organization.owner_id
 };

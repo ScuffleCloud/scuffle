@@ -7,27 +7,27 @@ use tonic_types::{ErrorDetails, StatusExt};
 use crate::cedar::{Action, Unauthenticated};
 use crate::http_ext::RequestExt;
 use crate::models::{User, UserSessionRequest, UserSessionRequestId};
-use crate::operations::Operation;
+use crate::operations::{NoopOperationDriver, Operation, TransactionOperationDriver};
 use crate::schema::user_session_requests;
 use crate::std_ext::{OptionExt, ResultExt};
 use crate::{CoreConfig, common};
 
 impl<G: CoreConfig> Operation<G> for tonic::Request<pb::scufflecloud::core::v1::CreateUserSessionRequestRequest> {
+    type Driver<'a> = NoopOperationDriver;
     type Principal = Unauthenticated;
     type Resource = UserSessionRequest;
     type Response = pb::scufflecloud::core::v1::UserSessionRequest;
 
     const ACTION: Action = Action::CreateUserSessionRequest;
-    const TRANSACTION: bool = false;
 
     async fn load_principal(
         &mut self,
-        _conn: &mut diesel_async::AsyncPgConnection,
+        _driver: &mut Self::Driver<'_>,
     ) -> Result<Self::Principal, tonic::Status> {
         Ok(Unauthenticated)
     }
 
-    async fn load_resource(&mut self, _conn: &mut diesel_async::AsyncPgConnection) -> Result<Self::Resource, tonic::Status> {
+    async fn load_resource(&mut self, _driver: &mut Self::Driver<'_>,) -> Result<Self::Resource, tonic::Status> {
         let global = &self.global::<G>()?;
         let ip_info = self.ip_address_info()?;
         let code = format!("{:06}", rand::rngs::OsRng.gen_range(0..=999999));
@@ -44,13 +44,16 @@ impl<G: CoreConfig> Operation<G> for tonic::Request<pb::scufflecloud::core::v1::
 
     async fn execute(
         self,
-        conn: &mut diesel_async::AsyncPgConnection,
+        _driver: &mut Self::Driver<'_>,
         _principal: Self::Principal,
         resource: Self::Resource,
     ) -> Result<Self::Response, tonic::Status> {
+        let global = &self.global::<G>()?;
+        let mut db = global.db().await.into_tonic_internal_err("failed to connect to database")?;
+
         diesel::insert_into(user_session_requests::dsl::user_session_requests)
             .values(&resource)
-            .execute(conn)
+            .execute(&mut db)
             .await
             .into_tonic_internal_err("failed to insert user session request")?;
 
@@ -59,21 +62,24 @@ impl<G: CoreConfig> Operation<G> for tonic::Request<pb::scufflecloud::core::v1::
 }
 
 impl<G: CoreConfig> Operation<G> for tonic::Request<pb::scufflecloud::core::v1::GetUserSessionRequestRequest> {
+    type Driver<'a> = NoopOperationDriver;
     type Principal = Unauthenticated;
     type Resource = UserSessionRequest;
     type Response = pb::scufflecloud::core::v1::UserSessionRequest;
 
     const ACTION: Action = Action::GetUserSessionRequest;
-    const TRANSACTION: bool = false;
 
     async fn load_principal(
         &mut self,
-        _conn: &mut diesel_async::AsyncPgConnection,
+        _driver: &mut Self::Driver<'_>,
     ) -> Result<Self::Principal, tonic::Status> {
         Ok(Unauthenticated)
     }
 
-    async fn load_resource(&mut self, conn: &mut diesel_async::AsyncPgConnection) -> Result<Self::Resource, tonic::Status> {
+    async fn load_resource(&mut self, _driver: &mut Self::Driver<'_>) -> Result<Self::Resource, tonic::Status> {
+        let global = &self.global::<G>()?;
+        let mut db = global.db().await.into_tonic_internal_err("failed to connect to database")?;
+
         let id: UserSessionRequestId = self
             .get_ref()
             .id
@@ -84,7 +90,7 @@ impl<G: CoreConfig> Operation<G> for tonic::Request<pb::scufflecloud::core::v1::
             .find(&id)
             .filter(user_session_requests::dsl::expires_at.gt(chrono::Utc::now()))
             .select(UserSessionRequest::as_select())
-            .first::<UserSessionRequest>(conn)
+            .first::<UserSessionRequest>(&mut db)
             .await
             .optional()
             .into_tonic_internal_err("failed to query user session request")?
@@ -101,7 +107,7 @@ impl<G: CoreConfig> Operation<G> for tonic::Request<pb::scufflecloud::core::v1::
 
     async fn execute(
         self,
-        _conn: &mut diesel_async::AsyncPgConnection,
+        _driver: &mut Self::Driver<'_>,
         _principal: Self::Principal,
         resource: Self::Resource,
     ) -> Result<Self::Response, tonic::Status> {
@@ -110,21 +116,24 @@ impl<G: CoreConfig> Operation<G> for tonic::Request<pb::scufflecloud::core::v1::
 }
 
 impl<G: CoreConfig> Operation<G> for tonic::Request<pb::scufflecloud::core::v1::GetUserSessionRequestByCodeRequest> {
+    type Driver<'a> = NoopOperationDriver;
     type Principal = Unauthenticated;
     type Resource = UserSessionRequest;
     type Response = pb::scufflecloud::core::v1::UserSessionRequest;
 
     const ACTION: Action = Action::GetUserSessionRequest;
-    const TRANSACTION: bool = false;
 
     async fn load_principal(
         &mut self,
-        _conn: &mut diesel_async::AsyncPgConnection,
+        _driver: &mut Self::Driver<'_>,
     ) -> Result<Self::Principal, tonic::Status> {
         Ok(Unauthenticated)
     }
 
-    async fn load_resource(&mut self, conn: &mut diesel_async::AsyncPgConnection) -> Result<Self::Resource, tonic::Status> {
+    async fn load_resource(&mut self, _driver: &mut Self::Driver<'_>) -> Result<Self::Resource, tonic::Status> {
+        let global = &self.global::<G>()?;
+        let mut db = global.db().await.into_tonic_internal_err("failed to connect to database")?;
+
         let Some(session_request) = user_session_requests::dsl::user_session_requests
             .filter(
                 user_session_requests::dsl::code
@@ -132,7 +141,7 @@ impl<G: CoreConfig> Operation<G> for tonic::Request<pb::scufflecloud::core::v1::
                     .and(user_session_requests::dsl::expires_at.gt(chrono::Utc::now())),
             )
             .select(UserSessionRequest::as_select())
-            .first::<UserSessionRequest>(conn)
+            .first::<UserSessionRequest>(&mut db)
             .await
             .optional()
             .into_tonic_internal_err("failed to query user session request")?
@@ -149,7 +158,7 @@ impl<G: CoreConfig> Operation<G> for tonic::Request<pb::scufflecloud::core::v1::
 
     async fn execute(
         self,
-        _conn: &mut diesel_async::AsyncPgConnection,
+        _driver: &mut Self::Driver<'_>,
         _principal: Self::Principal,
         resource: Self::Resource,
     ) -> Result<Self::Response, tonic::Status> {
@@ -158,6 +167,7 @@ impl<G: CoreConfig> Operation<G> for tonic::Request<pb::scufflecloud::core::v1::
 }
 
 impl<G: CoreConfig> Operation<G> for tonic::Request<pb::scufflecloud::core::v1::ApproveUserSessionRequestByCodeRequest> {
+    type Driver<'a> = TransactionOperationDriver<'a>;
     type Principal = User;
     type Resource = UserSessionRequest;
     type Response = pb::scufflecloud::core::v1::UserSessionRequest;
@@ -166,14 +176,14 @@ impl<G: CoreConfig> Operation<G> for tonic::Request<pb::scufflecloud::core::v1::
 
     async fn load_principal(
         &mut self,
-        _conn: &mut diesel_async::AsyncPgConnection,
+        _driver: &mut Self::Driver<'_>,
     ) -> Result<Self::Principal, tonic::Status> {
         let global = &self.global::<G>()?;
         let session = self.session_or_err()?;
         common::get_user_by_id(global, session.user_id).await
     }
 
-    async fn load_resource(&mut self, conn: &mut diesel_async::AsyncPgConnection) -> Result<Self::Resource, tonic::Status> {
+    async fn load_resource(&mut self, driver: &mut Self::Driver<'_>) -> Result<Self::Resource, tonic::Status> {
         let Some(session_request) = user_session_requests::dsl::user_session_requests
             .filter(
                 user_session_requests::dsl::code
@@ -182,7 +192,7 @@ impl<G: CoreConfig> Operation<G> for tonic::Request<pb::scufflecloud::core::v1::
                     .and(user_session_requests::dsl::expires_at.gt(chrono::Utc::now())),
             )
             .select(UserSessionRequest::as_select())
-            .first::<UserSessionRequest>(conn)
+            .first::<UserSessionRequest>(&mut driver.conn)
             .await
             .optional()
             .into_tonic_internal_err("failed to query user session request")?
@@ -199,7 +209,7 @@ impl<G: CoreConfig> Operation<G> for tonic::Request<pb::scufflecloud::core::v1::
 
     async fn execute(
         self,
-        conn: &mut diesel_async::AsyncPgConnection,
+        driver: &mut Self::Driver<'_>,
         principal: Self::Principal,
         resource: Self::Resource,
     ) -> Result<Self::Response, tonic::Status> {
@@ -207,7 +217,7 @@ impl<G: CoreConfig> Operation<G> for tonic::Request<pb::scufflecloud::core::v1::
             .filter(user_session_requests::dsl::id.eq(resource.id))
             .set(user_session_requests::dsl::approved_by.eq(&principal.id))
             .returning(UserSessionRequest::as_select())
-            .get_result::<UserSessionRequest>(conn)
+            .get_result::<UserSessionRequest>(&mut driver.conn)
             .await
             .into_tonic_internal_err("failed to update user session request")?;
 
@@ -216,6 +226,7 @@ impl<G: CoreConfig> Operation<G> for tonic::Request<pb::scufflecloud::core::v1::
 }
 
 impl<G: CoreConfig> Operation<G> for tonic::Request<pb::scufflecloud::core::v1::CompleteUserSessionRequestRequest> {
+    type Driver<'a> = TransactionOperationDriver<'a>;
     type Principal = Unauthenticated;
     type Resource = UserSessionRequest;
     type Response = pb::scufflecloud::core::v1::NewUserSessionToken;
@@ -224,12 +235,12 @@ impl<G: CoreConfig> Operation<G> for tonic::Request<pb::scufflecloud::core::v1::
 
     async fn load_principal(
         &mut self,
-        _conn: &mut diesel_async::AsyncPgConnection,
+        _driver: &mut Self::Driver<'_>,
     ) -> Result<Self::Principal, tonic::Status> {
         Ok(Unauthenticated)
     }
 
-    async fn load_resource(&mut self, conn: &mut diesel_async::AsyncPgConnection) -> Result<Self::Resource, tonic::Status> {
+    async fn load_resource(&mut self, driver: &mut Self::Driver<'_>) -> Result<Self::Resource, tonic::Status> {
         let id: UserSessionRequestId = self
             .get_ref()
             .id
@@ -240,7 +251,7 @@ impl<G: CoreConfig> Operation<G> for tonic::Request<pb::scufflecloud::core::v1::
         let Some(session_request) = diesel::delete(user_session_requests::dsl::user_session_requests)
             .filter(user_session_requests::dsl::id.eq(id))
             .returning(UserSessionRequest::as_select())
-            .get_result::<UserSessionRequest>(conn)
+            .get_result::<UserSessionRequest>(&mut driver.conn)
             .await
             .optional()
             .into_tonic_internal_err("failed to delete user session request")?
@@ -257,7 +268,7 @@ impl<G: CoreConfig> Operation<G> for tonic::Request<pb::scufflecloud::core::v1::
 
     async fn execute(
         self,
-        conn: &mut diesel_async::AsyncPgConnection,
+        driver: &mut Self::Driver<'_>,
         _principal: Self::Principal,
         resource: Self::Resource,
     ) -> Result<Self::Response, tonic::Status> {
@@ -275,7 +286,7 @@ impl<G: CoreConfig> Operation<G> for tonic::Request<pb::scufflecloud::core::v1::
             ));
         };
 
-        let new_token = common::create_session(global, conn, approved_by, device, &ip_info, false).await?;
+        let new_token = common::create_session(global, &mut driver.conn, approved_by, device, &ip_info, false).await?;
         Ok(new_token)
     }
 }

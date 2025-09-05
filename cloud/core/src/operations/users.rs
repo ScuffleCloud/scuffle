@@ -14,7 +14,7 @@ use crate::models::{
     MfaTotpCredentialId, MfaTotpRegistrationSession, MfaWebauthnAuthenticationSession, MfaWebauthnCredential,
     MfaWebauthnCredentialId, MfaWebauthnRegistrationSession, User, UserEmail, UserId,
 };
-use crate::operations::Operation;
+use crate::operations::{NoopOperationDriver, Operation, TransactionOperationDriver};
 use crate::schema::{
     email_registration_requests, mfa_recovery_codes, mfa_totp_credentials, mfa_totp_reg_sessions,
     mfa_webauthn_auth_sessions, mfa_webauthn_credentials, mfa_webauthn_reg_sessions, user_emails, users,
@@ -29,18 +29,18 @@ impl<G: CoreConfig> Operation<G> for tonic::Request<pb::scufflecloud::core::v1::
     type Response = pb::scufflecloud::core::v1::User;
 
     const ACTION: Action = Action::GetUser;
-    const TRANSACTION: bool = false;
+    type Driver<'a> = NoopOperationDriver;
 
     async fn load_principal(
         &mut self,
-        _conn: &mut diesel_async::AsyncPgConnection,
+        _driver: &mut Self::Driver<'_>,
     ) -> Result<Self::Principal, tonic::Status> {
         let global = &self.global::<G>()?;
         let session = self.session_or_err()?;
         common::get_user_by_id(global, session.user_id).await
     }
 
-    async fn load_resource(&mut self, _conn: &mut diesel_async::AsyncPgConnection) -> Result<Self::Resource, tonic::Status> {
+    async fn load_resource(&mut self, _driver: &mut Self::Driver<'_>,) -> Result<Self::Resource, tonic::Status> {
         let global = &self.global::<G>()?;
         let user_id: UserId = self
             .get_ref()
@@ -53,7 +53,7 @@ impl<G: CoreConfig> Operation<G> for tonic::Request<pb::scufflecloud::core::v1::
 
     async fn execute(
         self,
-        _conn: &mut diesel_async::AsyncPgConnection,
+        _driver: &mut Self::Driver<'_>,
         _principal: Self::Principal,
         resource: Self::Resource,
     ) -> Result<Self::Response, tonic::Status> {
@@ -62,6 +62,7 @@ impl<G: CoreConfig> Operation<G> for tonic::Request<pb::scufflecloud::core::v1::
 }
 
 impl<G: CoreConfig> Operation<G> for tonic::Request<pb::scufflecloud::core::v1::UpdateUserRequest> {
+    type Driver<'a> = TransactionOperationDriver<'a>;
     type Principal = User;
     type Resource = User;
     type Response = pb::scufflecloud::core::v1::User;
@@ -70,26 +71,26 @@ impl<G: CoreConfig> Operation<G> for tonic::Request<pb::scufflecloud::core::v1::
 
     async fn load_principal(
         &mut self,
-        _conn: &mut diesel_async::AsyncPgConnection,
+        _driver: &mut Self::Driver<'_>,
     ) -> Result<Self::Principal, tonic::Status> {
         let global = &self.global::<G>()?;
         let session = self.session_or_err()?;
         common::get_user_by_id(global, session.user_id).await
     }
 
-    async fn load_resource(&mut self, conn: &mut diesel_async::AsyncPgConnection) -> Result<Self::Resource, tonic::Status> {
+    async fn load_resource(&mut self, driver: &mut Self::Driver<'_>) -> Result<Self::Resource, tonic::Status> {
         let user_id: UserId = self
             .get_ref()
             .id
             .parse()
             .into_tonic_err_with_field_violation("id", "invalid ID")?;
 
-        common::get_user_by_id_in_tx(conn, user_id).await
+        common::get_user_by_id_in_tx(&mut driver.conn, user_id).await
     }
 
     async fn execute(
         self,
-        conn: &mut diesel_async::AsyncPgConnection,
+        driver: &mut Self::Driver<'_>,
         _principal: Self::Principal,
         mut resource: Self::Resource,
     ) -> Result<Self::Response, tonic::Status> {
@@ -111,7 +112,7 @@ impl<G: CoreConfig> Operation<G> for tonic::Request<pb::scufflecloud::core::v1::
                 .filter(users::dsl::id.eq(resource.id))
                 .set(users::dsl::password_hash.eq(&new_hash))
                 .returning(User::as_returning())
-                .get_result::<User>(conn)
+                .get_result::<User>(&mut driver.conn)
                 .await
                 .into_tonic_internal_err("failed to update user password")?;
         }
@@ -125,7 +126,7 @@ impl<G: CoreConfig> Operation<G> for tonic::Request<pb::scufflecloud::core::v1::
                     users::dsl::last_name.eq(&names_update.last_name),
                 ))
                 .returning(User::as_returning())
-                .get_result::<User>(conn)
+                .get_result::<User>(&mut driver.conn)
                 .await
                 .into_tonic_internal_err("failed to update user password")?;
         }
@@ -140,7 +141,7 @@ impl<G: CoreConfig> Operation<G> for tonic::Request<pb::scufflecloud::core::v1::
                         .and(user_emails::dsl::user_id.eq(resource.id)),
                 )
                 .select(user_emails::dsl::email)
-                .first::<String>(conn)
+                .first::<String>(&mut driver.conn)
                 .await
                 .optional()
                 .into_tonic_internal_err("failed to query user email")?
@@ -150,7 +151,7 @@ impl<G: CoreConfig> Operation<G> for tonic::Request<pb::scufflecloud::core::v1::
                 .filter(users::dsl::id.eq(resource.id))
                 .set(users::dsl::primary_email.eq(&email))
                 .returning(User::as_returning())
-                .get_result::<User>(conn)
+                .get_result::<User>(&mut driver.conn)
                 .await
                 .into_tonic_internal_err("failed to update user password")?;
         }
@@ -165,18 +166,18 @@ impl<G: CoreConfig> Operation<G> for tonic::Request<pb::scufflecloud::core::v1::
     type Response = pb::scufflecloud::core::v1::UserEmailsList;
 
     const ACTION: Action = Action::ListUserEmails;
-    const TRANSACTION: bool = false;
+    type Driver<'a> = NoopOperationDriver;
 
     async fn load_principal(
         &mut self,
-        _conn: &mut diesel_async::AsyncPgConnection,
+        _driver: &mut Self::Driver<'_>,
     ) -> Result<Self::Principal, tonic::Status> {
         let global = &self.global::<G>()?;
         let session = self.session_or_err()?;
         common::get_user_by_id(global, session.user_id).await
     }
 
-    async fn load_resource(&mut self, _conn: &mut diesel_async::AsyncPgConnection) -> Result<Self::Resource, tonic::Status> {
+    async fn load_resource(&mut self, _driver: &mut Self::Driver<'_>,) -> Result<Self::Resource, tonic::Status> {
         let global = &self.global::<G>()?;
         let user_id: UserId = self
             .get_ref()
@@ -189,14 +190,17 @@ impl<G: CoreConfig> Operation<G> for tonic::Request<pb::scufflecloud::core::v1::
 
     async fn execute(
         self,
-        conn: &mut diesel_async::AsyncPgConnection,
+        _driver: &mut Self::Driver<'_>,
         _principal: Self::Principal,
         resource: Self::Resource,
     ) -> Result<Self::Response, tonic::Status> {
+        let global = &self.global::<G>()?;
+        let mut db = global.db().await.into_tonic_internal_err("failed to connect to database")?;
+
         let emails = user_emails::dsl::user_emails
             .filter(user_emails::dsl::user_id.eq(resource.id))
             .select(UserEmail::as_select())
-            .load::<UserEmail>(conn)
+            .load::<UserEmail>(&mut db)
             .await
             .into_tonic_internal_err("failed to query user emails")?;
 
@@ -207,6 +211,7 @@ impl<G: CoreConfig> Operation<G> for tonic::Request<pb::scufflecloud::core::v1::
 }
 
 impl<G: CoreConfig> Operation<G> for tonic::Request<pb::scufflecloud::core::v1::CreateUserEmailRequest> {
+    type Driver<'a> = TransactionOperationDriver<'a>;
     type Principal = User;
     type Resource = UserEmail;
     type Response = ();
@@ -215,14 +220,14 @@ impl<G: CoreConfig> Operation<G> for tonic::Request<pb::scufflecloud::core::v1::
 
     async fn load_principal(
         &mut self,
-        _conn: &mut diesel_async::AsyncPgConnection,
+        _driver: &mut Self::Driver<'_>,
     ) -> Result<Self::Principal, tonic::Status> {
         let global = &self.global::<G>()?;
         let session = self.session_or_err()?;
         common::get_user_by_id(global, session.user_id).await
     }
 
-    async fn load_resource(&mut self, _conn: &mut diesel_async::AsyncPgConnection) -> Result<Self::Resource, tonic::Status> {
+    async fn load_resource(&mut self, _driver: &mut Self::Driver<'_>,) -> Result<Self::Resource, tonic::Status> {
         let user_id: UserId = self
             .get_ref()
             .id
@@ -238,7 +243,7 @@ impl<G: CoreConfig> Operation<G> for tonic::Request<pb::scufflecloud::core::v1::
 
     async fn execute(
         self,
-        conn: &mut diesel_async::AsyncPgConnection,
+        driver: &mut Self::Driver<'_>,
         _principal: Self::Principal,
         resource: Self::Resource,
     ) -> Result<Self::Response, tonic::Status> {
@@ -252,7 +257,7 @@ impl<G: CoreConfig> Operation<G> for tonic::Request<pb::scufflecloud::core::v1::
         if user_emails::dsl::user_emails
             .find(&resource.email)
             .select(user_emails::dsl::email)
-            .first::<String>(conn)
+            .first::<String>(&mut driver.conn)
             .await
             .optional()
             .into_tonic_internal_err("failed to query database")?
@@ -276,7 +281,7 @@ impl<G: CoreConfig> Operation<G> for tonic::Request<pb::scufflecloud::core::v1::
 
         diesel::insert_into(email_registration_requests::dsl::email_registration_requests)
             .values(registration_request)
-            .execute(conn)
+            .execute(&mut driver.conn)
             .await
             .into_tonic_internal_err("failed to insert email registration request")?;
 
@@ -295,6 +300,7 @@ impl<G: CoreConfig> Operation<G> for tonic::Request<pb::scufflecloud::core::v1::
 }
 
 impl<G: CoreConfig> Operation<G> for tonic::Request<pb::scufflecloud::core::v1::CompleteCreateUserEmailRequest> {
+    type Driver<'a> = TransactionOperationDriver<'a>;
     type Principal = User;
     type Resource = UserEmail;
     type Response = pb::scufflecloud::core::v1::UserEmail;
@@ -303,14 +309,14 @@ impl<G: CoreConfig> Operation<G> for tonic::Request<pb::scufflecloud::core::v1::
 
     async fn load_principal(
         &mut self,
-        _conn: &mut diesel_async::AsyncPgConnection,
+        _driver: &mut Self::Driver<'_>,
     ) -> Result<Self::Principal, tonic::Status> {
         let global = &self.global::<G>()?;
         let session = self.session_or_err()?;
         common::get_user_by_id(global, session.user_id).await
     }
 
-    async fn load_resource(&mut self, conn: &mut diesel_async::AsyncPgConnection) -> Result<Self::Resource, tonic::Status> {
+    async fn load_resource(&mut self, driver: &mut Self::Driver<'_>) -> Result<Self::Resource, tonic::Status> {
         let user_id: UserId = self
             .get_ref()
             .id
@@ -326,7 +332,7 @@ impl<G: CoreConfig> Operation<G> for tonic::Request<pb::scufflecloud::core::v1::
                     .and(email_registration_requests::dsl::expires_at.gt(chrono::Utc::now())),
             )
             .returning(EmailRegistrationRequest::as_select())
-            .get_result::<EmailRegistrationRequest>(conn)
+            .get_result::<EmailRegistrationRequest>(&mut driver.conn)
             .await
             .optional()
             .into_tonic_internal_err("failed to delete email registration request")?
@@ -342,7 +348,7 @@ impl<G: CoreConfig> Operation<G> for tonic::Request<pb::scufflecloud::core::v1::
         if user_emails::dsl::user_emails
             .find(&registration_request.email)
             .select(user_emails::dsl::email)
-            .first::<String>(conn)
+            .first::<String>(&mut driver.conn)
             .await
             .optional()
             .into_tonic_internal_err("failed to query user emails")?
@@ -364,13 +370,13 @@ impl<G: CoreConfig> Operation<G> for tonic::Request<pb::scufflecloud::core::v1::
 
     async fn execute(
         self,
-        conn: &mut diesel_async::AsyncPgConnection,
+        driver: &mut Self::Driver<'_>,
         _principal: Self::Principal,
         resource: Self::Resource,
     ) -> Result<Self::Response, tonic::Status> {
         diesel::insert_into(user_emails::dsl::user_emails)
             .values(&resource)
-            .execute(conn)
+            .execute(&mut driver.conn)
             .await
             .into_tonic_internal_err("failed to insert user email")?;
 
@@ -379,6 +385,7 @@ impl<G: CoreConfig> Operation<G> for tonic::Request<pb::scufflecloud::core::v1::
 }
 
 impl<G: CoreConfig> Operation<G> for tonic::Request<pb::scufflecloud::core::v1::DeleteUserEmailRequest> {
+    type Driver<'a> = TransactionOperationDriver<'a>;
     type Principal = User;
     type Resource = UserEmail;
     type Response = pb::scufflecloud::core::v1::UserEmail;
@@ -387,14 +394,14 @@ impl<G: CoreConfig> Operation<G> for tonic::Request<pb::scufflecloud::core::v1::
 
     async fn load_principal(
         &mut self,
-        _conn: &mut diesel_async::AsyncPgConnection,
+        _driver: &mut Self::Driver<'_>,
     ) -> Result<Self::Principal, tonic::Status> {
         let global = &self.global::<G>()?;
         let session = self.session_or_err()?;
         common::get_user_by_id(global, session.user_id).await
     }
 
-    async fn load_resource(&mut self, conn: &mut diesel_async::AsyncPgConnection) -> Result<Self::Resource, tonic::Status> {
+    async fn load_resource(&mut self, driver: &mut Self::Driver<'_>) -> Result<Self::Resource, tonic::Status> {
         let user_id: UserId = self
             .get_ref()
             .id
@@ -408,7 +415,7 @@ impl<G: CoreConfig> Operation<G> for tonic::Request<pb::scufflecloud::core::v1::
                     .and(user_emails::dsl::email.eq(&self.get_ref().email)),
             )
             .select(UserEmail::as_select())
-            .first::<UserEmail>(conn)
+            .first::<UserEmail>(&mut driver.conn)
             .await
             .into_tonic_internal_err("failed to delete user email")?;
 
@@ -417,13 +424,13 @@ impl<G: CoreConfig> Operation<G> for tonic::Request<pb::scufflecloud::core::v1::
 
     async fn execute(
         self,
-        conn: &mut diesel_async::AsyncPgConnection,
+        driver: &mut Self::Driver<'_>,
         _principal: Self::Principal,
         resource: Self::Resource,
     ) -> Result<Self::Response, tonic::Status> {
         diesel::delete(user_emails::dsl::user_emails)
             .filter(user_emails::dsl::email.eq(&resource.email))
-            .execute(conn)
+            .execute(&mut driver.conn)
             .await
             .into_tonic_internal_err("failed to delete user email")?;
 
@@ -432,6 +439,7 @@ impl<G: CoreConfig> Operation<G> for tonic::Request<pb::scufflecloud::core::v1::
 }
 
 impl<G: CoreConfig> Operation<G> for tonic::Request<pb::scufflecloud::core::v1::CreateWebauthnCredentialRequest> {
+    type Driver<'a> = TransactionOperationDriver<'a>;
     type Principal = User;
     type Resource = User;
     type Response = pb::scufflecloud::core::v1::CreateWebauthnCredentialResponse;
@@ -440,25 +448,25 @@ impl<G: CoreConfig> Operation<G> for tonic::Request<pb::scufflecloud::core::v1::
 
     async fn load_principal(
         &mut self,
-        _conn: &mut diesel_async::AsyncPgConnection,
+        _driver: &mut Self::Driver<'_>,
     ) -> Result<Self::Principal, tonic::Status> {
         let global = &self.global::<G>()?;
         let session = self.session_or_err()?;
         common::get_user_by_id(global, session.user_id).await
     }
 
-    async fn load_resource(&mut self, conn: &mut diesel_async::AsyncPgConnection) -> Result<Self::Resource, tonic::Status> {
+    async fn load_resource(&mut self, driver: &mut Self::Driver<'_>) -> Result<Self::Resource, tonic::Status> {
         let user_id: UserId = self
             .get_ref()
             .id
             .parse()
             .into_tonic_err_with_field_violation("id", "invalid ID")?;
-        common::get_user_by_id_in_tx(conn, user_id).await
+        common::get_user_by_id_in_tx(&mut driver.conn, user_id).await
     }
 
     async fn execute(
         self,
-        conn: &mut diesel_async::AsyncPgConnection,
+        driver: &mut Self::Driver<'_>,
         _principal: Self::Principal,
         resource: Self::Resource,
     ) -> Result<Self::Response, tonic::Status> {
@@ -467,7 +475,7 @@ impl<G: CoreConfig> Operation<G> for tonic::Request<pb::scufflecloud::core::v1::
         let exclude_credentials: Vec<_> = mfa_webauthn_credentials::dsl::mfa_webauthn_credentials
             .filter(mfa_webauthn_credentials::dsl::user_id.eq(resource.id))
             .select(mfa_webauthn_credentials::dsl::credential_id)
-            .load::<Vec<u8>>(conn)
+            .load::<Vec<u8>>(&mut driver.conn)
             .await
             .into_tonic_internal_err("failed to query webauthn credentials")?
             .into_iter()
@@ -504,7 +512,7 @@ impl<G: CoreConfig> Operation<G> for tonic::Request<pb::scufflecloud::core::v1::
 
         diesel::insert_into(mfa_webauthn_reg_sessions::dsl::mfa_webauthn_reg_sessions)
             .values(reg_session)
-            .execute(conn)
+            .execute(&mut driver.conn)
             .await
             .into_tonic_internal_err("failed to insert webauthn authentication session")?;
 
@@ -513,6 +521,7 @@ impl<G: CoreConfig> Operation<G> for tonic::Request<pb::scufflecloud::core::v1::
 }
 
 impl<G: CoreConfig> Operation<G> for tonic::Request<pb::scufflecloud::core::v1::CompleteCreateWebauthnCredentialRequest> {
+    type Driver<'a> = TransactionOperationDriver<'a>;
     type Principal = User;
     type Resource = MfaWebauthnCredential;
     type Response = pb::scufflecloud::core::v1::WebauthnCredential;
@@ -521,14 +530,14 @@ impl<G: CoreConfig> Operation<G> for tonic::Request<pb::scufflecloud::core::v1::
 
     async fn load_principal(
         &mut self,
-        _conn: &mut diesel_async::AsyncPgConnection,
+        _driver: &mut Self::Driver<'_>,
     ) -> Result<Self::Principal, tonic::Status> {
         let global = &self.global::<G>()?;
         let session = self.session_or_err()?;
         common::get_user_by_id(global, session.user_id).await
     }
 
-    async fn load_resource(&mut self, conn: &mut diesel_async::AsyncPgConnection) -> Result<Self::Resource, tonic::Status> {
+    async fn load_resource(&mut self, driver: &mut Self::Driver<'_>) -> Result<Self::Resource, tonic::Status> {
         let global = &self.global::<G>()?;
 
         let user_id: UserId = self
@@ -547,7 +556,7 @@ impl<G: CoreConfig> Operation<G> for tonic::Request<pb::scufflecloud::core::v1::
                     .and(mfa_webauthn_reg_sessions::dsl::expires_at.gt(chrono::Utc::now())),
             )
             .returning(mfa_webauthn_reg_sessions::dsl::state)
-            .get_result::<serde_json::Value>(conn)
+            .get_result::<serde_json::Value>(&mut driver.conn)
             .await
             .optional()
             .into_tonic_internal_err("failed to query webauthn registration session")?
@@ -578,13 +587,13 @@ impl<G: CoreConfig> Operation<G> for tonic::Request<pb::scufflecloud::core::v1::
 
     async fn execute(
         self,
-        conn: &mut diesel_async::AsyncPgConnection,
+        driver: &mut Self::Driver<'_>,
         _principal: Self::Principal,
         resource: Self::Resource,
     ) -> Result<Self::Response, tonic::Status> {
         diesel::insert_into(mfa_webauthn_credentials::dsl::mfa_webauthn_credentials)
             .values(&resource)
-            .execute(conn)
+            .execute(&mut driver.conn)
             .await
             .into_tonic_internal_err("failed to insert webauthn credential")?;
 
@@ -598,18 +607,18 @@ impl<G: CoreConfig> Operation<G> for tonic::Request<pb::scufflecloud::core::v1::
     type Response = pb::scufflecloud::core::v1::WebauthnCredentialsList;
 
     const ACTION: Action = Action::ListWebauthnCredentials;
-    const TRANSACTION: bool = false;
+    type Driver<'a> = NoopOperationDriver;
 
     async fn load_principal(
         &mut self,
-        _conn: &mut diesel_async::AsyncPgConnection,
+        _driver: &mut Self::Driver<'_>,
     ) -> Result<Self::Principal, tonic::Status> {
         let global = &self.global::<G>()?;
         let session = self.session_or_err()?;
         common::get_user_by_id(global, session.user_id).await
     }
 
-    async fn load_resource(&mut self, _conn: &mut diesel_async::AsyncPgConnection) -> Result<Self::Resource, tonic::Status> {
+    async fn load_resource(&mut self, _driver: &mut Self::Driver<'_>,) -> Result<Self::Resource, tonic::Status> {
         let global = &self.global::<G>()?;
         let user_id: UserId = self
             .get_ref()
@@ -621,14 +630,17 @@ impl<G: CoreConfig> Operation<G> for tonic::Request<pb::scufflecloud::core::v1::
 
     async fn execute(
         self,
-        conn: &mut diesel_async::AsyncPgConnection,
+        _driver: &mut Self::Driver<'_>,
         _principal: Self::Principal,
         resource: Self::Resource,
     ) -> Result<Self::Response, tonic::Status> {
+        let global = &self.global::<G>()?;
+        let mut db = global.db().await.into_tonic_internal_err("failed to connect to database")?;
+
         let credentials = mfa_webauthn_credentials::dsl::mfa_webauthn_credentials
             .filter(mfa_webauthn_credentials::dsl::user_id.eq(resource.id))
             .select(MfaWebauthnCredential::as_select())
-            .load::<MfaWebauthnCredential>(conn)
+            .load::<MfaWebauthnCredential>(&mut db)
             .await
             .into_tonic_internal_err("failed to query webauthn credentials")?;
 
@@ -639,6 +651,7 @@ impl<G: CoreConfig> Operation<G> for tonic::Request<pb::scufflecloud::core::v1::
 }
 
 impl<G: CoreConfig> Operation<G> for tonic::Request<pb::scufflecloud::core::v1::DeleteWebauthnCredentialRequest> {
+    type Driver<'a> = TransactionOperationDriver<'a>;
     type Principal = User;
     type Resource = MfaWebauthnCredential;
     type Response = pb::scufflecloud::core::v1::WebauthnCredential;
@@ -647,14 +660,14 @@ impl<G: CoreConfig> Operation<G> for tonic::Request<pb::scufflecloud::core::v1::
 
     async fn load_principal(
         &mut self,
-        _conn: &mut diesel_async::AsyncPgConnection,
+        _driver: &mut Self::Driver<'_>,
     ) -> Result<Self::Principal, tonic::Status> {
         let global = &self.global::<G>()?;
         let session = self.session_or_err()?;
         common::get_user_by_id(global, session.user_id).await
     }
 
-    async fn load_resource(&mut self, conn: &mut diesel_async::AsyncPgConnection) -> Result<Self::Resource, tonic::Status> {
+    async fn load_resource(&mut self, driver: &mut Self::Driver<'_>) -> Result<Self::Resource, tonic::Status> {
         let user_id: UserId = self
             .get_ref()
             .user_id
@@ -674,7 +687,7 @@ impl<G: CoreConfig> Operation<G> for tonic::Request<pb::scufflecloud::core::v1::
                     .and(mfa_webauthn_credentials::dsl::user_id.eq(user_id)),
             )
             .select(MfaWebauthnCredential::as_select())
-            .first::<MfaWebauthnCredential>(conn)
+            .first::<MfaWebauthnCredential>(&mut driver.conn)
             .await
             .into_tonic_internal_err("failed to delete webauthn credential")?;
 
@@ -683,13 +696,13 @@ impl<G: CoreConfig> Operation<G> for tonic::Request<pb::scufflecloud::core::v1::
 
     async fn execute(
         self,
-        conn: &mut diesel_async::AsyncPgConnection,
+        driver: &mut Self::Driver<'_>,
         _principal: Self::Principal,
         resource: Self::Resource,
     ) -> Result<Self::Response, tonic::Status> {
         diesel::delete(mfa_webauthn_credentials::dsl::mfa_webauthn_credentials)
             .filter(mfa_webauthn_credentials::dsl::id.eq(resource.id))
-            .execute(conn)
+            .execute(&mut driver.conn)
             .await
             .into_tonic_internal_err("failed to delete webauthn credential")?;
 
@@ -698,6 +711,7 @@ impl<G: CoreConfig> Operation<G> for tonic::Request<pb::scufflecloud::core::v1::
 }
 
 impl<G: CoreConfig> Operation<G> for tonic::Request<pb::scufflecloud::core::v1::CreateWebauthnChallengeRequest> {
+    type Driver<'a> = TransactionOperationDriver<'a>;
     type Principal = User;
     type Resource = User;
     type Response = pb::scufflecloud::core::v1::WebauthnChallenge;
@@ -706,14 +720,14 @@ impl<G: CoreConfig> Operation<G> for tonic::Request<pb::scufflecloud::core::v1::
 
     async fn load_principal(
         &mut self,
-        _conn: &mut diesel_async::AsyncPgConnection,
+        _driver: &mut Self::Driver<'_>,
     ) -> Result<Self::Principal, tonic::Status> {
         let global = &self.global::<G>()?;
         let session = self.session_or_err()?;
         common::get_user_by_id(global, session.user_id).await
     }
 
-    async fn load_resource(&mut self, _conn: &mut diesel_async::AsyncPgConnection) -> Result<Self::Resource, tonic::Status> {
+    async fn load_resource(&mut self, _driver: &mut Self::Driver<'_>,) -> Result<Self::Resource, tonic::Status> {
         let global = &self.global::<G>()?;
         let user_id: UserId = self
             .get_ref()
@@ -725,7 +739,7 @@ impl<G: CoreConfig> Operation<G> for tonic::Request<pb::scufflecloud::core::v1::
 
     async fn execute(
         self,
-        conn: &mut diesel_async::AsyncPgConnection,
+        driver: &mut Self::Driver<'_>,
         _principal: Self::Principal,
         resource: Self::Resource,
     ) -> Result<Self::Response, tonic::Status> {
@@ -734,7 +748,7 @@ impl<G: CoreConfig> Operation<G> for tonic::Request<pb::scufflecloud::core::v1::
         let credentials = mfa_webauthn_credentials::dsl::mfa_webauthn_credentials
             .filter(mfa_webauthn_credentials::dsl::user_id.eq(resource.id))
             .select(mfa_webauthn_credentials::dsl::credential)
-            .load::<serde_json::Value>(conn)
+            .load::<serde_json::Value>(&mut driver.conn)
             .await
             .into_tonic_internal_err("failed to query webauthn credentials")?
             .into_iter()
@@ -758,7 +772,7 @@ impl<G: CoreConfig> Operation<G> for tonic::Request<pb::scufflecloud::core::v1::
 
         diesel::insert_into(mfa_webauthn_auth_sessions::dsl::mfa_webauthn_auth_sessions)
             .values(auth_session)
-            .execute(conn)
+            .execute(&mut driver.conn)
             .await
             .into_tonic_internal_err("failed to insert webauthn authentication session")?;
 
@@ -767,6 +781,7 @@ impl<G: CoreConfig> Operation<G> for tonic::Request<pb::scufflecloud::core::v1::
 }
 
 impl<G: CoreConfig> Operation<G> for tonic::Request<pb::scufflecloud::core::v1::CreateTotpCredentialRequest> {
+    type Driver<'a> = TransactionOperationDriver<'a>;
     type Principal = User;
     type Resource = User;
     type Response = pb::scufflecloud::core::v1::CreateTotpCredentialResponse;
@@ -775,25 +790,25 @@ impl<G: CoreConfig> Operation<G> for tonic::Request<pb::scufflecloud::core::v1::
 
     async fn load_principal(
         &mut self,
-        _conn: &mut diesel_async::AsyncPgConnection,
+        _driver: &mut Self::Driver<'_>,
     ) -> Result<Self::Principal, tonic::Status> {
         let global = &self.global::<G>()?;
         let session = self.session_or_err()?;
         common::get_user_by_id(global, session.user_id).await
     }
 
-    async fn load_resource(&mut self, conn: &mut diesel_async::AsyncPgConnection) -> Result<Self::Resource, tonic::Status> {
+    async fn load_resource(&mut self, driver: &mut Self::Driver<'_>) -> Result<Self::Resource, tonic::Status> {
         let user_id: UserId = self
             .get_ref()
             .id
             .parse()
             .into_tonic_err_with_field_violation("id", "invalid ID")?;
-        common::get_user_by_id_in_tx(conn, user_id).await
+        common::get_user_by_id_in_tx(&mut driver.conn, user_id).await
     }
 
     async fn execute(
         self,
-        conn: &mut diesel_async::AsyncPgConnection,
+        driver: &mut Self::Driver<'_>,
         _principal: Self::Principal,
         resource: Self::Resource,
     ) -> Result<Self::Response, tonic::Status> {
@@ -813,7 +828,7 @@ impl<G: CoreConfig> Operation<G> for tonic::Request<pb::scufflecloud::core::v1::
                 secret: totp.secret,
                 expires_at: chrono::Utc::now() + global.mfa_timeout(),
             })
-            .execute(conn)
+            .execute(&mut driver.conn)
             .await
             .into_tonic_internal_err("failed to insert TOTP registration session")?;
 
@@ -822,6 +837,7 @@ impl<G: CoreConfig> Operation<G> for tonic::Request<pb::scufflecloud::core::v1::
 }
 
 impl<G: CoreConfig> Operation<G> for tonic::Request<pb::scufflecloud::core::v1::CompleteCreateTotpCredentialRequest> {
+    type Driver<'a> = TransactionOperationDriver<'a>;
     type Principal = User;
     type Resource = MfaTotpCredential;
     type Response = pb::scufflecloud::core::v1::TotpCredential;
@@ -830,14 +846,14 @@ impl<G: CoreConfig> Operation<G> for tonic::Request<pb::scufflecloud::core::v1::
 
     async fn load_principal(
         &mut self,
-        _conn: &mut diesel_async::AsyncPgConnection,
+        _driver: &mut Self::Driver<'_>,
     ) -> Result<Self::Principal, tonic::Status> {
         let global = &self.global::<G>()?;
         let session = self.session_or_err()?;
         common::get_user_by_id(global, session.user_id).await
     }
 
-    async fn load_resource(&mut self, conn: &mut diesel_async::AsyncPgConnection) -> Result<Self::Resource, tonic::Status> {
+    async fn load_resource(&mut self, driver: &mut Self::Driver<'_>) -> Result<Self::Resource, tonic::Status> {
         let user_id: UserId = self
             .get_ref()
             .id
@@ -848,7 +864,7 @@ impl<G: CoreConfig> Operation<G> for tonic::Request<pb::scufflecloud::core::v1::
             .find(user_id)
             .filter(mfa_totp_reg_sessions::dsl::expires_at.gt(chrono::Utc::now()))
             .select(mfa_totp_reg_sessions::dsl::secret)
-            .first::<Vec<u8>>(conn)
+            .first::<Vec<u8>>(&mut driver.conn)
             .await
             .optional()
             .into_tonic_internal_err("failed to query TOTP registration session")?
@@ -877,13 +893,13 @@ impl<G: CoreConfig> Operation<G> for tonic::Request<pb::scufflecloud::core::v1::
 
     async fn execute(
         self,
-        conn: &mut diesel_async::AsyncPgConnection,
+        driver: &mut Self::Driver<'_>,
         _principal: Self::Principal,
         resource: Self::Resource,
     ) -> Result<Self::Response, tonic::Status> {
         diesel::insert_into(mfa_totp_credentials::dsl::mfa_totp_credentials)
             .values(&resource)
-            .execute(conn)
+            .execute(&mut driver.conn)
             .await
             .into_tonic_internal_err("failed to insert TOTP credential")?;
 
@@ -897,18 +913,18 @@ impl<G: CoreConfig> Operation<G> for tonic::Request<pb::scufflecloud::core::v1::
     type Response = pb::scufflecloud::core::v1::TotpCredentialsList;
 
     const ACTION: Action = Action::ListTotpCredentials;
-    const TRANSACTION: bool = false;
+    type Driver<'a> = NoopOperationDriver;
 
     async fn load_principal(
         &mut self,
-        _conn: &mut diesel_async::AsyncPgConnection,
+        _driver: &mut Self::Driver<'_>,
     ) -> Result<Self::Principal, tonic::Status> {
         let global = &self.global::<G>()?;
         let session = self.session_or_err()?;
         common::get_user_by_id(global, session.user_id).await
     }
 
-    async fn load_resource(&mut self, _conn: &mut diesel_async::AsyncPgConnection) -> Result<Self::Resource, tonic::Status> {
+    async fn load_resource(&mut self, _driver: &mut Self::Driver<'_>,) -> Result<Self::Resource, tonic::Status> {
         let global = &self.global::<G>()?;
         let user_id: UserId = self
             .get_ref()
@@ -920,14 +936,17 @@ impl<G: CoreConfig> Operation<G> for tonic::Request<pb::scufflecloud::core::v1::
 
     async fn execute(
         self,
-        conn: &mut diesel_async::AsyncPgConnection,
+        _driver: &mut Self::Driver<'_>,
         _principal: Self::Principal,
         resource: Self::Resource,
     ) -> Result<Self::Response, tonic::Status> {
+        let global = &self.global::<G>()?;
+        let mut db = global.db().await.into_tonic_internal_err("failed to connect to database")?;
+
         let credentials = mfa_totp_credentials::dsl::mfa_totp_credentials
             .filter(mfa_totp_credentials::dsl::user_id.eq(resource.id))
             .select(MfaTotpCredential::as_select())
-            .load::<MfaTotpCredential>(conn)
+            .load::<MfaTotpCredential>(&mut db)
             .await
             .into_tonic_internal_err("failed to query TOTP credentials")?;
 
@@ -938,6 +957,7 @@ impl<G: CoreConfig> Operation<G> for tonic::Request<pb::scufflecloud::core::v1::
 }
 
 impl<G: CoreConfig> Operation<G> for tonic::Request<pb::scufflecloud::core::v1::DeleteTotpCredentialRequest> {
+    type Driver<'a> = TransactionOperationDriver<'a>;
     type Principal = User;
     type Resource = MfaTotpCredential;
     type Response = pb::scufflecloud::core::v1::TotpCredential;
@@ -946,14 +966,14 @@ impl<G: CoreConfig> Operation<G> for tonic::Request<pb::scufflecloud::core::v1::
 
     async fn load_principal(
         &mut self,
-        _conn: &mut diesel_async::AsyncPgConnection,
+        _driver: &mut Self::Driver<'_>,
     ) -> Result<Self::Principal, tonic::Status> {
         let global = &self.global::<G>()?;
         let session = self.session_or_err()?;
         common::get_user_by_id(global, session.user_id).await
     }
 
-    async fn load_resource(&mut self, conn: &mut diesel_async::AsyncPgConnection) -> Result<Self::Resource, tonic::Status> {
+    async fn load_resource(&mut self, driver: &mut Self::Driver<'_>) -> Result<Self::Resource, tonic::Status> {
         let user_id: UserId = self
             .get_ref()
             .user_id
@@ -973,7 +993,7 @@ impl<G: CoreConfig> Operation<G> for tonic::Request<pb::scufflecloud::core::v1::
                     .and(mfa_totp_credentials::dsl::user_id.eq(user_id)),
             )
             .select(MfaTotpCredential::as_select())
-            .first::<MfaTotpCredential>(conn)
+            .first::<MfaTotpCredential>(&mut driver.conn)
             .await
             .into_tonic_internal_err("failed to delete TOTP credential")?;
 
@@ -982,13 +1002,13 @@ impl<G: CoreConfig> Operation<G> for tonic::Request<pb::scufflecloud::core::v1::
 
     async fn execute(
         self,
-        conn: &mut diesel_async::AsyncPgConnection,
+        driver: &mut Self::Driver<'_>,
         _principal: Self::Principal,
         resource: Self::Resource,
     ) -> Result<Self::Response, tonic::Status> {
         diesel::delete(mfa_totp_credentials::dsl::mfa_totp_credentials)
             .filter(mfa_totp_credentials::dsl::id.eq(resource.id))
-            .execute(conn)
+            .execute(&mut driver.conn)
             .await
             .into_tonic_internal_err("failed to delete TOTP credential")?;
 
@@ -997,6 +1017,7 @@ impl<G: CoreConfig> Operation<G> for tonic::Request<pb::scufflecloud::core::v1::
 }
 
 impl<G: CoreConfig> Operation<G> for tonic::Request<pb::scufflecloud::core::v1::RegenerateRecoveryCodesRequest> {
+    type Driver<'a> = TransactionOperationDriver<'a>;
     type Principal = User;
     type Resource = User;
     type Response = pb::scufflecloud::core::v1::RecoveryCodes;
@@ -1005,14 +1026,14 @@ impl<G: CoreConfig> Operation<G> for tonic::Request<pb::scufflecloud::core::v1::
 
     async fn load_principal(
         &mut self,
-        _conn: &mut diesel_async::AsyncPgConnection,
+        _driver: &mut Self::Driver<'_>,
     ) -> Result<Self::Principal, tonic::Status> {
         let global = &self.global::<G>()?;
         let session = self.session_or_err()?;
         common::get_user_by_id(global, session.user_id).await
     }
 
-    async fn load_resource(&mut self, _conn: &mut diesel_async::AsyncPgConnection) -> Result<Self::Resource, tonic::Status> {
+    async fn load_resource(&mut self, _driver: &mut Self::Driver<'_>,) -> Result<Self::Resource, tonic::Status> {
         let global = &self.global::<G>()?;
         let user_id: UserId = self
             .get_ref()
@@ -1024,7 +1045,7 @@ impl<G: CoreConfig> Operation<G> for tonic::Request<pb::scufflecloud::core::v1::
 
     async fn execute(
         self,
-        conn: &mut diesel_async::AsyncPgConnection,
+        driver: &mut Self::Driver<'_>,
         _principal: Self::Principal,
         resource: Self::Resource,
     ) -> Result<Self::Response, tonic::Status> {
@@ -1052,13 +1073,13 @@ impl<G: CoreConfig> Operation<G> for tonic::Request<pb::scufflecloud::core::v1::
 
         diesel::delete(mfa_recovery_codes::dsl::mfa_recovery_codes)
             .filter(mfa_recovery_codes::dsl::user_id.eq(resource.id))
-            .execute(conn)
+            .execute(&mut driver.conn)
             .await
             .into_tonic_internal_err("failed to delete existing recovery codes")?;
 
         diesel::insert_into(mfa_recovery_codes::dsl::mfa_recovery_codes)
             .values(recovery_codes)
-            .execute(conn)
+            .execute(&mut driver.conn)
             .await
             .into_tonic_internal_err("failed to insert new recovery codes")?;
 
@@ -1067,6 +1088,7 @@ impl<G: CoreConfig> Operation<G> for tonic::Request<pb::scufflecloud::core::v1::
 }
 
 impl<G: CoreConfig> Operation<G> for tonic::Request<pb::scufflecloud::core::v1::DeleteUserRequest> {
+    type Driver<'a> = TransactionOperationDriver<'a>;
     type Principal = User;
     type Resource = User;
     type Response = pb::scufflecloud::core::v1::User;
@@ -1075,31 +1097,31 @@ impl<G: CoreConfig> Operation<G> for tonic::Request<pb::scufflecloud::core::v1::
 
     async fn load_principal(
         &mut self,
-        _conn: &mut diesel_async::AsyncPgConnection,
+        _driver: &mut Self::Driver<'_>,
     ) -> Result<Self::Principal, tonic::Status> {
         let global = &self.global::<G>()?;
         let session = self.session_or_err()?;
         common::get_user_by_id(global, session.user_id).await
     }
 
-    async fn load_resource(&mut self, conn: &mut diesel_async::AsyncPgConnection) -> Result<Self::Resource, tonic::Status> {
+    async fn load_resource(&mut self, driver: &mut Self::Driver<'_>) -> Result<Self::Resource, tonic::Status> {
         let user_id: UserId = self
             .get_ref()
             .id
             .parse()
             .into_tonic_err_with_field_violation("id", "invalid ID")?;
-        common::get_user_by_id_in_tx(conn, user_id).await
+        common::get_user_by_id_in_tx(&mut driver.conn, user_id).await
     }
 
     async fn execute(
         self,
-        conn: &mut diesel_async::AsyncPgConnection,
+        driver: &mut Self::Driver<'_>,
         _principal: Self::Principal,
         resource: Self::Resource,
     ) -> Result<Self::Response, tonic::Status> {
         diesel::delete(users::dsl::users)
             .filter(users::dsl::id.eq(resource.id))
-            .execute(conn)
+            .execute(&mut driver.conn)
             .await
             .into_tonic_internal_err("failed to delete webauthn credential")?;
 

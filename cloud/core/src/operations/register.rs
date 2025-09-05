@@ -7,12 +7,13 @@ use tonic_types::{ErrorDetails, StatusExt};
 use crate::cedar::{Action, CoreApplication, Unauthenticated};
 use crate::http_ext::RequestExt;
 use crate::models::{EmailRegistrationRequest, EmailRegistrationRequestId, User, UserId};
-use crate::operations::Operation;
+use crate::operations::{Operation, TransactionOperationDriver};
 use crate::schema::{email_registration_requests, user_emails};
 use crate::std_ext::{OptionExt, ResultExt};
 use crate::{CoreConfig, captcha, common, emails};
 
 impl<G: CoreConfig> Operation<G> for tonic::Request<pb::scufflecloud::core::v1::RegisterWithEmailRequest> {
+    type Driver<'a> = TransactionOperationDriver<'a>;
     type Principal = Unauthenticated;
     type Resource = CoreApplication;
     type Response = ();
@@ -33,17 +34,17 @@ impl<G: CoreConfig> Operation<G> for tonic::Request<pb::scufflecloud::core::v1::
         Ok(())
     }
 
-    async fn load_principal(&mut self, _tx: &mut diesel_async::AsyncPgConnection) -> Result<Self::Principal, tonic::Status> {
+    async fn load_principal(&mut self, _driver: &mut Self::Driver<'_>) -> Result<Self::Principal, tonic::Status> {
         Ok(Unauthenticated)
     }
 
-    async fn load_resource(&mut self, _tx: &mut diesel_async::AsyncPgConnection) -> Result<Self::Resource, tonic::Status> {
+    async fn load_resource(&mut self, _driver: &mut Self::Driver<'_>) -> Result<Self::Resource, tonic::Status> {
         Ok(CoreApplication)
     }
 
     async fn execute(
         self,
-        tx: &mut diesel_async::AsyncPgConnection,
+        driver: &mut Self::Driver<'_>,
         _principal: Self::Principal,
         _resource: Self::Resource,
     ) -> Result<Self::Response, tonic::Status> {
@@ -60,7 +61,7 @@ impl<G: CoreConfig> Operation<G> for tonic::Request<pb::scufflecloud::core::v1::
         if user_emails::dsl::user_emails
             .find(&email)
             .select(user_emails::dsl::email)
-            .first::<String>(tx)
+            .first::<String>(&mut driver.conn)
             .await
             .optional()
             .into_tonic_internal_err("failed to query database")?
@@ -84,7 +85,7 @@ impl<G: CoreConfig> Operation<G> for tonic::Request<pb::scufflecloud::core::v1::
 
         diesel::insert_into(email_registration_requests::dsl::email_registration_requests)
             .values(registration_request)
-            .execute(tx)
+            .execute(&mut driver.conn)
             .await
             .into_tonic_internal_err("failed to insert email registration request")?;
 
@@ -103,13 +104,14 @@ impl<G: CoreConfig> Operation<G> for tonic::Request<pb::scufflecloud::core::v1::
 }
 
 impl<G: CoreConfig> Operation<G> for tonic::Request<pb::scufflecloud::core::v1::CompleteRegisterWithEmailRequest> {
+    type Driver<'a> = TransactionOperationDriver<'a>;
     type Principal = User;
     type Resource = CoreApplication;
     type Response = pb::scufflecloud::core::v1::NewUserSessionToken;
 
     const ACTION: Action = Action::CompleteRegisterWithEmail;
 
-    async fn load_principal(&mut self, tx: &mut diesel_async::AsyncPgConnection) -> Result<Self::Principal, tonic::Status> {
+    async fn load_principal(&mut self, driver: &mut Self::Driver<'_>) -> Result<Self::Principal, tonic::Status> {
         // Delete email registration request
         let Some(registration_request) = diesel::delete(email_registration_requests::dsl::email_registration_requests)
             .filter(
@@ -119,7 +121,7 @@ impl<G: CoreConfig> Operation<G> for tonic::Request<pb::scufflecloud::core::v1::
                     .and(email_registration_requests::dsl::expires_at.gt(chrono::Utc::now())),
             )
             .returning(EmailRegistrationRequest::as_select())
-            .get_result::<EmailRegistrationRequest>(tx)
+            .get_result::<EmailRegistrationRequest>(&mut driver.conn)
             .await
             .optional()
             .into_tonic_internal_err("failed to delete email registration request")?
@@ -141,13 +143,13 @@ impl<G: CoreConfig> Operation<G> for tonic::Request<pb::scufflecloud::core::v1::
         })
     }
 
-    async fn load_resource(&mut self, _tx: &mut diesel_async::AsyncPgConnection) -> Result<Self::Resource, tonic::Status> {
+    async fn load_resource(&mut self, _driver: &mut Self::Driver<'_>) -> Result<Self::Resource, tonic::Status> {
         Ok(CoreApplication)
     }
 
     async fn execute(
         self,
-        tx: &mut diesel_async::AsyncPgConnection,
+        driver: &mut Self::Driver<'_>,
         principal: Self::Principal,
         _resource: Self::Resource,
     ) -> Result<Self::Response, tonic::Status> {
@@ -155,8 +157,8 @@ impl<G: CoreConfig> Operation<G> for tonic::Request<pb::scufflecloud::core::v1::
         let ip_info = self.ip_address_info()?;
 
         let device = self.into_inner().device.require("device")?;
-        common::create_user(tx, &principal).await?;
-        let new_token = common::create_session(global, tx, principal.id, device, &ip_info, false).await?;
+        common::create_user(&mut driver.conn, &principal).await?;
+        let new_token = common::create_session(global, &mut driver.conn, principal.id, device, &ip_info, false).await?;
 
         Ok(new_token)
     }

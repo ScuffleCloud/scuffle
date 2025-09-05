@@ -8,12 +8,13 @@ use crate::http_ext::RequestExt;
 use crate::models::{
     Organization, OrganizationId, OrganizationInvitation, OrganizationInvitationId, OrganizationMember, User, UserId,
 };
-use crate::operations::Operation;
+use crate::operations::{NoopOperationDriver, Operation, TransactionOperationDriver};
 use crate::schema::{organization_invitations, organization_members, user_emails};
 use crate::std_ext::{OptionExt, ResultExt};
 use crate::{CoreConfig, common};
 
 impl<G: CoreConfig> Operation<G> for tonic::Request<pb::scufflecloud::core::v1::CreateOrganizationInvitationRequest> {
+    type Driver<'a> = TransactionOperationDriver<'a>;
     type Principal = User;
     type Resource = OrganizationInvitation;
     type Response = pb::scufflecloud::core::v1::OrganizationInvitation;
@@ -22,14 +23,14 @@ impl<G: CoreConfig> Operation<G> for tonic::Request<pb::scufflecloud::core::v1::
 
     async fn load_principal(
         &mut self,
-        _conn: &mut diesel_async::AsyncPgConnection,
+        _driver: &mut Self::Driver<'_>,
     ) -> Result<Self::Principal, tonic::Status> {
         let global = &self.global::<G>()?;
         let session = self.session_or_err()?;
         common::get_user_by_id(global, session.user_id).await
     }
 
-    async fn load_resource(&mut self, conn: &mut diesel_async::AsyncPgConnection) -> Result<Self::Resource, tonic::Status> {
+    async fn load_resource(&mut self, driver: &mut Self::Driver<'_>) -> Result<Self::Resource, tonic::Status> {
         let session = self.session_or_err()?;
 
         let organization_id: OrganizationId = self
@@ -41,7 +42,7 @@ impl<G: CoreConfig> Operation<G> for tonic::Request<pb::scufflecloud::core::v1::
         let invited_user = user_emails::dsl::user_emails
             .find(&self.get_ref().email)
             .select(user_emails::dsl::user_id)
-            .get_result::<UserId>(conn)
+            .get_result::<UserId>(&mut driver.conn)
             .await
             .optional()
             .into_tonic_internal_err("failed to query user email")?;
@@ -61,13 +62,13 @@ impl<G: CoreConfig> Operation<G> for tonic::Request<pb::scufflecloud::core::v1::
 
     async fn execute(
         self,
-        conn: &mut diesel_async::AsyncPgConnection,
+        driver: &mut Self::Driver<'_>,
         _principal: Self::Principal,
         resource: Self::Resource,
     ) -> Result<Self::Response, tonic::Status> {
         diesel::insert_into(organization_invitations::dsl::organization_invitations)
             .values(&resource)
-            .execute(conn)
+            .execute(&mut driver.conn)
             .await
             .into_tonic_internal_err("failed to insert organization invitation")?;
 
@@ -78,23 +79,23 @@ impl<G: CoreConfig> Operation<G> for tonic::Request<pb::scufflecloud::core::v1::
 impl<G: CoreConfig> Operation<G>
     for tonic::Request<pb::scufflecloud::core::v1::ListOrganizationInvitationsByOrganizationRequest>
 {
+    type Driver<'a> = NoopOperationDriver;
     type Principal = User;
     type Resource = Organization;
     type Response = pb::scufflecloud::core::v1::OrganizationInvitationList;
 
     const ACTION: Action = Action::ListOrganizationInvitationsByOrganization;
-    const TRANSACTION: bool = false;
 
     async fn load_principal(
         &mut self,
-        _conn: &mut diesel_async::AsyncPgConnection,
+        _driver: &mut Self::Driver<'_>,
     ) -> Result<Self::Principal, tonic::Status> {
         let global = &self.global::<G>()?;
         let session = self.session_or_err()?;
         common::get_user_by_id(global, session.user_id).await
     }
 
-    async fn load_resource(&mut self, _conn: &mut diesel_async::AsyncPgConnection) -> Result<Self::Resource, tonic::Status> {
+    async fn load_resource(&mut self, _driver: &mut Self::Driver<'_>) -> Result<Self::Resource, tonic::Status> {
         let global = &self.global::<G>()?;
         let organization_id: OrganizationId = self
             .get_ref()
@@ -106,13 +107,16 @@ impl<G: CoreConfig> Operation<G>
 
     async fn execute(
         self,
-        conn: &mut diesel_async::AsyncPgConnection,
+        _driver: &mut Self::Driver<'_>,
         _principal: Self::Principal,
         resource: Self::Resource,
     ) -> Result<Self::Response, tonic::Status> {
+        let global = &self.global::<G>()?;
+        let mut db = global.db().await.into_tonic_internal_err("failed to connect to database")?;
+
         let invitations = organization_invitations::dsl::organization_invitations
             .filter(organization_invitations::dsl::organization_id.eq(resource.id))
-            .load::<OrganizationInvitation>(conn)
+            .load::<OrganizationInvitation>(&mut db)
             .await
             .into_tonic_internal_err("failed to query organization invitations")?;
 
@@ -123,23 +127,23 @@ impl<G: CoreConfig> Operation<G>
 }
 
 impl<G: CoreConfig> Operation<G> for tonic::Request<pb::scufflecloud::core::v1::ListOrgnizationInvitesByUserRequest> {
+    type Driver<'a> = NoopOperationDriver;
     type Principal = User;
     type Resource = User;
     type Response = pb::scufflecloud::core::v1::OrganizationInvitationList;
 
     const ACTION: Action = Action::ListOrganizationInvitationsByUser;
-    const TRANSACTION: bool = false;
 
     async fn load_principal(
         &mut self,
-        _conn: &mut diesel_async::AsyncPgConnection,
+        _driver: &mut Self::Driver<'_>,
     ) -> Result<Self::Principal, tonic::Status> {
         let global = &self.global::<G>()?;
         let session = self.session_or_err()?;
         common::get_user_by_id(global, session.user_id).await
     }
 
-    async fn load_resource(&mut self, _conn: &mut diesel_async::AsyncPgConnection) -> Result<Self::Resource, tonic::Status> {
+    async fn load_resource(&mut self, _driver: &mut Self::Driver<'_>,) -> Result<Self::Resource, tonic::Status> {
         let global = &self.global::<G>()?;
         let user_id: UserId = self
             .get_ref()
@@ -151,13 +155,16 @@ impl<G: CoreConfig> Operation<G> for tonic::Request<pb::scufflecloud::core::v1::
 
     async fn execute(
         self,
-        conn: &mut diesel_async::AsyncPgConnection,
+        _driver: &mut Self::Driver<'_>,
         _principal: Self::Principal,
         resource: Self::Resource,
     ) -> Result<Self::Response, tonic::Status> {
+        let global = &self.global::<G>()?;
+        let mut db = global.db().await.into_tonic_internal_err("failed to connect to database")?;
+
         let invitations = organization_invitations::dsl::organization_invitations
             .filter(organization_invitations::dsl::user_id.eq(resource.id))
-            .load::<OrganizationInvitation>(conn)
+            .load::<OrganizationInvitation>(&mut db)
             .await
             .into_tonic_internal_err("failed to query organization invitations")?;
 
@@ -168,23 +175,26 @@ impl<G: CoreConfig> Operation<G> for tonic::Request<pb::scufflecloud::core::v1::
 }
 
 impl<G: CoreConfig> Operation<G> for tonic::Request<pb::scufflecloud::core::v1::GetOrganizationInvitationRequest> {
+    type Driver<'a> = NoopOperationDriver;
     type Principal = User;
     type Resource = OrganizationInvitation;
     type Response = pb::scufflecloud::core::v1::OrganizationInvitation;
 
     const ACTION: Action = Action::GetOrganizationInvitation;
-    const TRANSACTION: bool = false;
 
     async fn load_principal(
         &mut self,
-        _conn: &mut diesel_async::AsyncPgConnection,
+        _driver: &mut Self::Driver<'_>,
     ) -> Result<Self::Principal, tonic::Status> {
         let global = &self.global::<G>()?;
         let session = self.session_or_err()?;
         common::get_user_by_id(global, session.user_id).await
     }
 
-    async fn load_resource(&mut self, conn: &mut diesel_async::AsyncPgConnection) -> Result<Self::Resource, tonic::Status> {
+    async fn load_resource(&mut self, _driver: &mut Self::Driver<'_>) -> Result<Self::Resource, tonic::Status> {
+        let global = &self.global::<G>()?;
+        let mut db = global.db().await.into_tonic_internal_err("failed to connect to database")?;
+
         let id: OrganizationInvitationId = self
             .get_ref()
             .id
@@ -192,7 +202,7 @@ impl<G: CoreConfig> Operation<G> for tonic::Request<pb::scufflecloud::core::v1::
             .into_tonic_err_with_field_violation("id", "invalid ID")?;
         organization_invitations::dsl::organization_invitations
             .find(id)
-            .first::<OrganizationInvitation>(conn)
+            .first::<OrganizationInvitation>(&mut db)
             .await
             .optional()
             .into_tonic_internal_err("failed to query organization invitation")?
@@ -201,7 +211,7 @@ impl<G: CoreConfig> Operation<G> for tonic::Request<pb::scufflecloud::core::v1::
 
     async fn execute(
         self,
-        _conn: &mut diesel_async::AsyncPgConnection,
+        _driver: &mut Self::Driver<'_>,
         _principal: Self::Principal,
         resource: Self::Resource,
     ) -> Result<Self::Response, tonic::Status> {
@@ -210,6 +220,7 @@ impl<G: CoreConfig> Operation<G> for tonic::Request<pb::scufflecloud::core::v1::
 }
 
 impl<G: CoreConfig> Operation<G> for tonic::Request<pb::scufflecloud::core::v1::AcceptOrganizationInvitationRequest> {
+    type Driver<'a> = TransactionOperationDriver<'a>;
     type Principal = User;
     type Resource = OrganizationInvitation;
     type Response = pb::scufflecloud::core::v1::OrganizationMember;
@@ -218,14 +229,14 @@ impl<G: CoreConfig> Operation<G> for tonic::Request<pb::scufflecloud::core::v1::
 
     async fn load_principal(
         &mut self,
-        _conn: &mut diesel_async::AsyncPgConnection,
+        _driver: &mut Self::Driver<'_>,
     ) -> Result<Self::Principal, tonic::Status> {
         let global = &self.global::<G>()?;
         let session = self.session_or_err()?;
         common::get_user_by_id(global, session.user_id).await
     }
 
-    async fn load_resource(&mut self, conn: &mut diesel_async::AsyncPgConnection) -> Result<Self::Resource, tonic::Status> {
+    async fn load_resource(&mut self, driver: &mut Self::Driver<'_>) -> Result<Self::Resource, tonic::Status> {
         let id: OrganizationInvitationId = self
             .get_ref()
             .id
@@ -233,7 +244,7 @@ impl<G: CoreConfig> Operation<G> for tonic::Request<pb::scufflecloud::core::v1::
             .into_tonic_err_with_field_violation("id", "invalid ID")?;
         organization_invitations::dsl::organization_invitations
             .find(id)
-            .first::<OrganizationInvitation>(conn)
+            .first::<OrganizationInvitation>(&mut driver.conn)
             .await
             .optional()
             .into_tonic_internal_err("failed to query organization invitation")?
@@ -242,7 +253,7 @@ impl<G: CoreConfig> Operation<G> for tonic::Request<pb::scufflecloud::core::v1::
 
     async fn execute(
         self,
-        conn: &mut diesel_async::AsyncPgConnection,
+        driver: &mut Self::Driver<'_>,
         _principal: Self::Principal,
         resource: Self::Resource,
     ) -> Result<Self::Response, tonic::Status> {
@@ -264,7 +275,7 @@ impl<G: CoreConfig> Operation<G> for tonic::Request<pb::scufflecloud::core::v1::
 
         diesel::insert_into(organization_members::dsl::organization_members)
             .values(&organization_member)
-            .execute(conn)
+            .execute(&mut driver.conn)
             .await
             .into_tonic_internal_err("failed to insert organization member")?;
 
@@ -273,6 +284,7 @@ impl<G: CoreConfig> Operation<G> for tonic::Request<pb::scufflecloud::core::v1::
 }
 
 impl<G: CoreConfig> Operation<G> for tonic::Request<pb::scufflecloud::core::v1::DeclineOrganizationInvitationRequest> {
+    type Driver<'a> = TransactionOperationDriver<'a>;
     type Principal = User;
     type Resource = OrganizationInvitation;
     type Response = ();
@@ -281,14 +293,14 @@ impl<G: CoreConfig> Operation<G> for tonic::Request<pb::scufflecloud::core::v1::
 
     async fn load_principal(
         &mut self,
-        _conn: &mut diesel_async::AsyncPgConnection,
+        _driver: &mut Self::Driver<'_>,
     ) -> Result<Self::Principal, tonic::Status> {
         let global = &self.global::<G>()?;
         let session = self.session_or_err()?;
         common::get_user_by_id(global, session.user_id).await
     }
 
-    async fn load_resource(&mut self, conn: &mut diesel_async::AsyncPgConnection) -> Result<Self::Resource, tonic::Status> {
+    async fn load_resource(&mut self, driver: &mut Self::Driver<'_>) -> Result<Self::Resource, tonic::Status> {
         let id: OrganizationInvitationId = self
             .get_ref()
             .id
@@ -296,7 +308,7 @@ impl<G: CoreConfig> Operation<G> for tonic::Request<pb::scufflecloud::core::v1::
             .into_tonic_err_with_field_violation("id", "invalid ID")?;
         organization_invitations::dsl::organization_invitations
             .find(id)
-            .first::<OrganizationInvitation>(conn)
+            .first::<OrganizationInvitation>(&mut driver.conn)
             .await
             .optional()
             .into_tonic_internal_err("failed to query organization invitation")?
@@ -305,13 +317,13 @@ impl<G: CoreConfig> Operation<G> for tonic::Request<pb::scufflecloud::core::v1::
 
     async fn execute(
         self,
-        conn: &mut diesel_async::AsyncPgConnection,
+        driver: &mut Self::Driver<'_>,
         _principal: Self::Principal,
         resource: Self::Resource,
     ) -> Result<Self::Response, tonic::Status> {
         diesel::delete(organization_invitations::dsl::organization_invitations)
             .filter(organization_invitations::dsl::id.eq(resource.id))
-            .execute(conn)
+            .execute(&mut driver.conn)
             .await
             .into_tonic_internal_err("failed to delete organization invitation")?;
 

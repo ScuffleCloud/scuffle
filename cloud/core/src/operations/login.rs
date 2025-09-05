@@ -12,18 +12,18 @@ use crate::models::{
     MagicLinkUserSessionRequest, MagicLinkUserSessionRequestId, Organization, OrganizationMember, User, UserGoogleAccount,
     UserId,
 };
-use crate::operations::Operation;
+use crate::operations::{NoopOperationDriver, Operation, TransactionOperationDriver};
 use crate::schema::{magic_link_user_session_requests, organization_members, organizations, user_google_accounts, users};
 use crate::std_ext::{OptionExt, ResultExt};
 use crate::{CoreConfig, captcha, common, emails, google_api};
 
 impl<G: CoreConfig> Operation<G> for tonic::Request<pb::scufflecloud::core::v1::LoginWithEmailOptionsRequest> {
+    type Driver<'a> = NoopOperationDriver;
     type Principal = Unauthenticated;
     type Resource = CoreApplication;
     type Response = pb::scufflecloud::core::v1::LoginWithEmailOptionsResponse;
 
     const ACTION: Action = Action::GetLoginWithEmailOptions;
-    const TRANSACTION: bool = false;
 
     async fn validate(&mut self) -> Result<(), tonic::Status> {
         let global = &self.global::<G>()?;
@@ -41,24 +41,26 @@ impl<G: CoreConfig> Operation<G> for tonic::Request<pb::scufflecloud::core::v1::
 
     async fn load_principal(
         &mut self,
-        _conn: &mut diesel_async::AsyncPgConnection,
+        _driver: &mut Self::Driver<'_>,
     ) -> Result<Self::Principal, tonic::Status> {
         Ok(Unauthenticated)
     }
 
-    async fn load_resource(&mut self, _conn: &mut diesel_async::AsyncPgConnection) -> Result<Self::Resource, tonic::Status> {
+    async fn load_resource(&mut self, _driver: &mut Self::Driver<'_>) -> Result<Self::Resource, tonic::Status> {
         Ok(CoreApplication)
     }
 
     async fn execute(
         self,
-        conn: &mut diesel_async::AsyncPgConnection,
+        _driver: &mut Self::Driver<'_>,
         _principal: Self::Principal,
         _resource: Self::Resource,
     ) -> Result<Self::Response, tonic::Status> {
         let global = &self.global::<G>()?;
+        let mut db = global.db().await.into_tonic_internal_err("failed to connect to database")?;
+
         let payload = self.into_inner();
-        let user = common::get_user_by_email(conn, &payload.email).await?;
+        let user = common::get_user_by_email(&mut db, &payload.email).await?;
 
         let mut options = vec![];
 
@@ -82,6 +84,7 @@ impl<G: CoreConfig> Operation<G> for tonic::Request<pb::scufflecloud::core::v1::
 }
 
 impl<G: CoreConfig> Operation<G> for tonic::Request<pb::scufflecloud::core::v1::LoginWithEmailAndPasswordRequest> {
+    type Driver<'a> = TransactionOperationDriver<'a>;
     type Principal = User;
     type Resource = CoreApplication;
     type Response = pb::scufflecloud::core::v1::NewUserSessionToken;
@@ -102,17 +105,17 @@ impl<G: CoreConfig> Operation<G> for tonic::Request<pb::scufflecloud::core::v1::
         Ok(())
     }
 
-    async fn load_principal(&mut self, tx: &mut diesel_async::AsyncPgConnection) -> Result<Self::Principal, tonic::Status> {
-        common::get_user_by_email(tx, &self.get_ref().email).await
+    async fn load_principal(&mut self, driver: &mut Self::Driver<'_>) -> Result<Self::Principal, tonic::Status> {
+        common::get_user_by_email(&mut driver.conn, &self.get_ref().email).await
     }
 
-    async fn load_resource(&mut self, _tx: &mut diesel_async::AsyncPgConnection) -> Result<Self::Resource, tonic::Status> {
+    async fn load_resource(&mut self, _driver: &mut Self::Driver<'_>) -> Result<Self::Resource, tonic::Status> {
         Ok(CoreApplication)
     }
 
     async fn execute(
         self,
-        tx: &mut diesel_async::AsyncPgConnection,
+        driver: &mut Self::Driver<'_>,
         principal: Self::Principal,
         _resource: Self::Resource,
     ) -> Result<Self::Response, tonic::Status> {
@@ -133,11 +136,12 @@ impl<G: CoreConfig> Operation<G> for tonic::Request<pb::scufflecloud::core::v1::
 
         common::verify_password(password_hash, &payload.password)?;
 
-        common::create_session(global, tx, principal.id, device, &ip_info, true).await
+        common::create_session(global, &mut driver.conn, principal.id, device, &ip_info, true).await
     }
 }
 
 impl<G: CoreConfig> Operation<G> for tonic::Request<pb::scufflecloud::core::v1::LoginWithMagicLinkRequest> {
+    type Driver<'a> = TransactionOperationDriver<'a>;
     type Principal = User;
     type Resource = CoreApplication;
     type Response = ();
@@ -158,18 +162,18 @@ impl<G: CoreConfig> Operation<G> for tonic::Request<pb::scufflecloud::core::v1::
         Ok(())
     }
 
-    async fn load_principal(&mut self, tx: &mut diesel_async::AsyncPgConnection) -> Result<Self::Principal, tonic::Status> {
-        let user = common::get_user_by_email(tx, &self.get_ref().email).await?;
+    async fn load_principal(&mut self, driver: &mut Self::Driver<'_>) -> Result<Self::Principal, tonic::Status> {
+        let user = common::get_user_by_email(&mut driver.conn, &self.get_ref().email).await?;
         Ok(user)
     }
 
-    async fn load_resource(&mut self, _tx: &mut diesel_async::AsyncPgConnection) -> Result<Self::Resource, tonic::Status> {
+    async fn load_resource(&mut self, _driver: &mut Self::Driver<'_>) -> Result<Self::Resource, tonic::Status> {
         Ok(CoreApplication)
     }
 
     async fn execute(
         self,
-        tx: &mut diesel_async::AsyncPgConnection,
+        driver: &mut Self::Driver<'_>,
         principal: Self::Principal,
         _resource: Self::Resource,
     ) -> Result<Self::Response, tonic::Status> {
@@ -193,7 +197,7 @@ impl<G: CoreConfig> Operation<G> for tonic::Request<pb::scufflecloud::core::v1::
         };
         diesel::insert_into(magic_link_user_session_requests::dsl::magic_link_user_session_requests)
             .values(session_request)
-            .execute(tx)
+            .execute(&mut driver.conn)
             .await
             .into_tonic_internal_err("failed to insert magic link user session request")?;
 
@@ -211,13 +215,14 @@ impl<G: CoreConfig> Operation<G> for tonic::Request<pb::scufflecloud::core::v1::
 }
 
 impl<G: CoreConfig> Operation<G> for tonic::Request<pb::scufflecloud::core::v1::CompleteLoginWithMagicLinkRequest> {
+    type Driver<'a> = TransactionOperationDriver<'a>;
     type Principal = User;
     type Resource = CoreApplication;
     type Response = pb::scufflecloud::core::v1::NewUserSessionToken;
 
     const ACTION: Action = Action::LoginWithMagicLink;
 
-    async fn load_principal(&mut self, tx: &mut diesel_async::AsyncPgConnection) -> Result<Self::Principal, tonic::Status> {
+    async fn load_principal(&mut self, driver: &mut Self::Driver<'_>) -> Result<Self::Principal, tonic::Status> {
         // Find and delete magic link user session request
         let Some(session_request) = diesel::delete(magic_link_user_session_requests::dsl::magic_link_user_session_requests)
             .filter(
@@ -226,7 +231,7 @@ impl<G: CoreConfig> Operation<G> for tonic::Request<pb::scufflecloud::core::v1::
                     .and(magic_link_user_session_requests::dsl::expires_at.gt(chrono::Utc::now())),
             )
             .returning(MagicLinkUserSessionRequest::as_select())
-            .get_result::<MagicLinkUserSessionRequest>(tx)
+            .get_result::<MagicLinkUserSessionRequest>(&mut driver.conn)
             .await
             .optional()
             .into_tonic_internal_err("failed to delete magic link user session request")?
@@ -241,20 +246,20 @@ impl<G: CoreConfig> Operation<G> for tonic::Request<pb::scufflecloud::core::v1::
         // Load user
         let user = users::dsl::users
             .find(session_request.user_id)
-            .first::<User>(tx)
+            .first::<User>(&mut driver.conn)
             .await
             .into_tonic_internal_err("failed to query user")?;
 
         Ok(user)
     }
 
-    async fn load_resource(&mut self, _tx: &mut diesel_async::AsyncPgConnection) -> Result<Self::Resource, tonic::Status> {
+    async fn load_resource(&mut self, _driver: &mut Self::Driver<'_>) -> Result<Self::Resource, tonic::Status> {
         Ok(CoreApplication)
     }
 
     async fn execute(
         self,
-        tx: &mut diesel_async::AsyncPgConnection,
+        driver: &mut Self::Driver<'_>,
         principal: Self::Principal,
         _resource: Self::Resource,
     ) -> Result<Self::Response, tonic::Status> {
@@ -262,7 +267,7 @@ impl<G: CoreConfig> Operation<G> for tonic::Request<pb::scufflecloud::core::v1::
         let ip_info = self.ip_address_info()?;
         let device = self.into_inner().device.require("device")?;
 
-        let new_token = common::create_session(global, tx, principal.id, device, &ip_info, true).await?;
+        let new_token = common::create_session(global, &mut driver.conn, principal.id, device, &ip_info, true).await?;
         Ok(new_token)
     }
 }
@@ -274,6 +279,7 @@ struct CompleteLoginWithGoogleState {
 }
 
 impl<G: CoreConfig> Operation<G> for tonic::Request<pb::scufflecloud::core::v1::CompleteLoginWithGoogleRequest> {
+    type Driver<'a> = TransactionOperationDriver<'a>;
     type Principal = User;
     type Resource = CoreApplication;
     type Response = pb::scufflecloud::core::v1::CompleteLoginWithGoogleResponse;
@@ -298,7 +304,7 @@ impl<G: CoreConfig> Operation<G> for tonic::Request<pb::scufflecloud::core::v1::
         Ok(())
     }
 
-    async fn load_principal(&mut self, tx: &mut diesel_async::AsyncPgConnection) -> Result<Self::Principal, tonic::Status> {
+    async fn load_principal(&mut self, driver: &mut Self::Driver<'_>) -> Result<Self::Principal, tonic::Status> {
         let global = &self.global::<G>()?;
 
         let google_token = google_api::request_tokens(global, &self.get_ref().code)
@@ -331,7 +337,7 @@ impl<G: CoreConfig> Operation<G> for tonic::Request<pb::scufflecloud::core::v1::
             let n = diesel::update(organizations::dsl::organizations)
                 .filter(organizations::dsl::google_customer_id.eq(&workspace_user.customer_id))
                 .set(organizations::dsl::google_hosted_domain.eq(&google_token.id_token.hd))
-                .execute(tx)
+                .execute(&mut driver.conn)
                 .await
                 .into_tonic_internal_err("failed to update organization")?;
 
@@ -342,7 +348,7 @@ impl<G: CoreConfig> Operation<G> for tonic::Request<pb::scufflecloud::core::v1::
 
         let google_account = user_google_accounts::dsl::user_google_accounts
             .find(&google_token.id_token.sub)
-            .first::<UserGoogleAccount>(tx)
+            .first::<UserGoogleAccount>(&mut driver.conn)
             .await
             .optional()
             .into_tonic_internal_err("failed to query google account")?;
@@ -352,7 +358,7 @@ impl<G: CoreConfig> Operation<G> for tonic::Request<pb::scufflecloud::core::v1::
                 // Load existing user
                 let user = users::dsl::users
                     .find(google_account.user_id)
-                    .first::<User>(tx)
+                    .first::<User>(&mut driver.conn)
                     .await
                     .into_tonic_internal_err("failed to query user")?;
 
@@ -373,7 +379,7 @@ impl<G: CoreConfig> Operation<G> for tonic::Request<pb::scufflecloud::core::v1::
                         .then(|| normalize_email(&google_token.id_token.email)),
                 };
 
-                common::create_user(tx, &user).await?;
+                common::create_user(&mut driver.conn, &user).await?;
 
                 let google_account = UserGoogleAccount {
                     sub: google_token.id_token.sub,
@@ -385,7 +391,7 @@ impl<G: CoreConfig> Operation<G> for tonic::Request<pb::scufflecloud::core::v1::
 
                 diesel::insert_into(user_google_accounts::dsl::user_google_accounts)
                     .values(google_account)
-                    .execute(tx)
+                    .execute(&mut driver.conn)
                     .await
                     .into_tonic_internal_err("failed to insert user google account")?;
 
@@ -393,7 +399,7 @@ impl<G: CoreConfig> Operation<G> for tonic::Request<pb::scufflecloud::core::v1::
                     // Check if the organization exists for the hosted domain
                     let organization = organizations::dsl::organizations
                         .filter(organizations::dsl::google_hosted_domain.eq(hd))
-                        .first::<Organization>(tx)
+                        .first::<Organization>(&mut driver.conn)
                         .await
                         .optional()
                         .into_tonic_internal_err("failed to query organization")?;
@@ -410,7 +416,7 @@ impl<G: CoreConfig> Operation<G> for tonic::Request<pb::scufflecloud::core::v1::
 
                         diesel::insert_into(organization_members::dsl::organization_members)
                             .values(membership)
-                            .execute(tx)
+                            .execute(&mut driver.conn)
                             .await
                             .into_tonic_internal_err("failed to insert organization membership")?;
 
@@ -430,13 +436,13 @@ impl<G: CoreConfig> Operation<G> for tonic::Request<pb::scufflecloud::core::v1::
         }
     }
 
-    async fn load_resource(&mut self, _tx: &mut diesel_async::AsyncPgConnection) -> Result<Self::Resource, tonic::Status> {
+    async fn load_resource(&mut self, _driver: &mut Self::Driver<'_>) -> Result<Self::Resource, tonic::Status> {
         Ok(CoreApplication)
     }
 
     async fn execute(
         mut self,
-        tx: &mut diesel_async::AsyncPgConnection,
+        driver: &mut Self::Driver<'_>,
         principal: Self::Principal,
         _resource: Self::Resource,
     ) -> Result<Self::Response, tonic::Status> {
@@ -451,7 +457,7 @@ impl<G: CoreConfig> Operation<G> for tonic::Request<pb::scufflecloud::core::v1::
         let device = self.into_inner().device.require("device")?;
 
         // Create session
-        let token = common::create_session(global, tx, principal.id, device, &ip_info, false).await?;
+        let token = common::create_session(global, &mut driver.conn, principal.id, device, &ip_info, false).await?;
 
         Ok(pb::scufflecloud::core::v1::CompleteLoginWithGoogleResponse {
             new_user_session_token: Some(token),
@@ -462,6 +468,7 @@ impl<G: CoreConfig> Operation<G> for tonic::Request<pb::scufflecloud::core::v1::
 }
 
 impl<G: CoreConfig> Operation<G> for tonic::Request<pb::scufflecloud::core::v1::LoginWithWebauthnRequest> {
+    type Driver<'a> = TransactionOperationDriver<'a>;
     type Principal = User;
     type Resource = CoreApplication;
     type Response = pb::scufflecloud::core::v1::NewUserSessionToken;
@@ -470,7 +477,7 @@ impl<G: CoreConfig> Operation<G> for tonic::Request<pb::scufflecloud::core::v1::
 
     async fn load_principal(
         &mut self,
-        _conn: &mut diesel_async::AsyncPgConnection,
+        _driver: &mut Self::Driver<'_>,
     ) -> Result<Self::Principal, tonic::Status> {
         let global = &self.global::<G>()?;
         let user_id: UserId = self
@@ -482,13 +489,13 @@ impl<G: CoreConfig> Operation<G> for tonic::Request<pb::scufflecloud::core::v1::
         common::get_user_by_id(global, user_id).await
     }
 
-    async fn load_resource(&mut self, _conn: &mut diesel_async::AsyncPgConnection) -> Result<Self::Resource, tonic::Status> {
+    async fn load_resource(&mut self, _driver: &mut Self::Driver<'_>,) -> Result<Self::Resource, tonic::Status> {
         Ok(CoreApplication)
     }
 
     async fn execute(
         self,
-        conn: &mut diesel_async::AsyncPgConnection,
+        driver: &mut Self::Driver<'_>,
         principal: Self::Principal,
         _resource: Self::Resource,
     ) -> Result<Self::Response, tonic::Status> {
@@ -500,10 +507,10 @@ impl<G: CoreConfig> Operation<G> for tonic::Request<pb::scufflecloud::core::v1::
             .into_tonic_err_with_field_violation("response_json", "invalid public key credential")?;
         let device = payload.device.require("device")?;
 
-        common::finish_webauthn_authentication(global, conn, principal.id, &pk_cred).await?;
+        common::finish_webauthn_authentication(global, &mut driver.conn, principal.id, &pk_cred).await?;
 
         // Create a new session for the user
-        let new_token = common::create_session(global, conn, principal.id, device, &ip_info, false).await?;
+        let new_token = common::create_session(global, &mut driver.conn, principal.id, device, &ip_info, false).await?;
         Ok(new_token)
     }
 }

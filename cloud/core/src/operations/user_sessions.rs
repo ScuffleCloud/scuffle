@@ -151,6 +151,7 @@ impl<G: CoreConfig> Operation<G> for tonic::Request<RefreshUserSessionRequest> {
             id: token_id.to_string(),
             encrypted_token,
             expires_at: Some(token_expires_at.to_prost_timestamp_utc()),
+            user_id: session.user_id.to_string(),
             session_mfa_pending: session.mfa_pending,
             mfa_options: mfa_options.into_iter().map(|o| o as i32).collect(),
         };

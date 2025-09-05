@@ -4,12 +4,9 @@
         type LoginMode,
     } from "$components/streams/types";
     import TurnstileOverlay from "$components/turnstile-overlay.svelte";
-    import {
-        authAPI,
-        type AuthResult,
-        authState,
-    } from "$lib/authState.svelte";
+    import { sessionsServiceClient } from "$lib/grpcClient";
     import IconArrowDialogLink from "$lib/images/icon-arrow-dialog-link.svelte";
+    import { CaptchaProvider } from "@scufflecloud/proto/scufflecloud/core/v1/common.js";
     import ForgotPasswordForm from "./forgot-password-form.svelte";
     import MagicLinkForm from "./magic-link-form.svelte";
     import MagicLinkSent from "./magic-link-sent.svelte";
@@ -49,20 +46,26 @@
         await turnstileOverlayComponent?.getToken();
 
     let userEmail = $state<string>("");
-    let localLoading = $state<boolean>(false);
+    let isLoading = $state<boolean>(false);
 
     async function handleMagicLinkSubmit(email: string): Promise<void> {
         const token = await getToken();
         if (email && token) {
             try {
-                const result: AuthResult = await authAPI.sendMagicLink(
+                const call = sessionsServiceClient.loginWithMagicLink({
+                    captcha: {
+                        provider: CaptchaProvider.TURNSTILE,
+                        token: token,
+                    },
                     email,
-                );
-                if (result.success) {
+                });
+                const status = await call.status;
+
+                if (status.code === "0") {
                     userEmail = email;
                     loginMode = "magic-link-sent";
                 } else {
-                    console.error("Magic link failed:", result.error);
+                    console.error("Magic link failed:", status.detail);
                 }
             } catch (error) {
                 console.error("Magic link error:", error);
@@ -116,8 +119,6 @@
     function handleBack(): void {
         loginMode = "magic-link";
     }
-
-    const isLoading = $derived(authState.isLoading || localLoading);
 
     function handleContactSupport(): void {
         console.log("Contact support clicked");

@@ -1,7 +1,6 @@
 <script lang="ts">
     import IconConfigureTab from "$lib/images/icon-configure-tab.svelte";
     import Search from "$lib/images/search.svelte";
-    import { useUser } from "$lib/useUser";
     import { onMount } from "svelte";
     import { fade } from "svelte/transition";
     import NavSwitcher from "./nav-switcher.svelte";
@@ -9,15 +8,24 @@
     let showSearchModal = $state(false);
     let searchInput = $state<HTMLInputElement | null>(null);
 
-    const { userQuery, currentOrganization, currentProject } =
-        useUser();
+    const currentOrganization = {
+        id: "org-1",
+        name: "Organization 1",
+        slug: "org-1",
+        image_url: "https://via.placeholder.com/32",
+    };
+    const currentProject = {
+        id: "proj-1",
+        name: "Project 1",
+        slug: "proj-1",
+    };
 
-    $effect(() => {
-        if ($userQuery.data?.organizations) {
-            console.log("user", $userQuery.data);
-            console.log("currentOrganization", currentOrganization);
-        }
-    });
+    // $effect(() => {
+    //     if ($userQuery.data?.organizations) {
+    //         console.log("user", $userQuery.data);
+    //         console.log("currentOrganization", currentOrganization);
+    //     }
+    // });
 
     function handleKeydown(event: KeyboardEvent) {
         if ((event.metaKey || event.ctrlKey) && event.key === "k") {
@@ -50,20 +58,29 @@
         showSearchModal = false;
     }
 
-    const organizations = $derived(
-        $userQuery.data?.organizations.map((org) => ({
-            id: org.id,
-            name: org.name,
-            imageUrl: org.image_url,
-        })),
-    );
+    // const organizations = $derived(
+    //     $userQuery.data?.organizations.map((org) => ({
+    //         id: org.id,
+    //         name: org.name,
+    //         imageUrl: org.image_url,
+    //     })),
+    // );
+    const organizations = [{
+        id: "org-1",
+        name: "Organization 1",
+        imageUrl: "https://via.placeholder.com/32",
+    }];
 
-    const projects = $derived(
-        $currentOrganization?.projects.map((project) => ({
-            id: project.id,
-            name: project.name,
-        })) ?? [],
-    );
+    // const projects = $derived(
+    //     $currentOrganization?.projects.map((project) => ({
+    //         id: project.id,
+    //         name: project.name,
+    //     })) ?? [],
+    // );
+    const projects = [{
+        id: "proj-1",
+        name: "Project 1",
+    }];
 </script>
 
 <header class="top-nav">
@@ -84,8 +101,8 @@
             {/each} -->
             <div class="breadcrumb-item">
                 <NavSwitcher
-                    name={$currentOrganization?.name ?? ""}
-                    imageUrl={$currentOrganization?.image_url}
+                    name={currentOrganization?.name ?? ""}
+                    imageUrl={currentOrganization?.image_url}
                     items={organizations ?? []}
                     onClick={(id) => {
                         console.log("clicked", id);
@@ -95,7 +112,7 @@
             <div class="slash-divider">/</div>
             <div class="breadcrumb-item">
                 <NavSwitcher
-                    name={$currentProject?.name ?? ""}
+                    name={currentProject?.name ?? ""}
                     items={projects ?? []}
                     onClick={(id) => {
                         console.log("clicked", id);

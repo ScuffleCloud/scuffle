@@ -98,8 +98,9 @@ message NewUserSessionToken {
   string id = 1 [(string_constraint).id = true];
   bytes encrypted_token = 2;
   google.protobuf.Timestamp expires_at = 3;
-  bool session_mfa_pending = 4;
-  repeated MfaOption mfa_options = 5;
+  string user_id = 4 [(string_constraint).id = true];
+  bool session_mfa_pending = 5;
+  repeated MfaOption mfa_options = 6;
 }
 
 message RegisterWithEmailRequest {

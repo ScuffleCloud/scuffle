@@ -41,18 +41,15 @@ pub(crate) trait CedarEntity<G>: serde::Serialize {
     /// Also includes additional attributes from [`additional_attributes`](Self::additional_attributes).
     async fn attributes(&self, global: &Arc<G>) -> Result<serde_json::value::Map<String, serde_json::Value>, tonic::Status> {
         let _global = global;
-        let mut object = if let serde_json::Value::Object(object) =
-            serde_json::to_value(self).into_tonic_internal_err("failed to serialize cedar entity")?
-        {
-            // Filter out null values because Cedar does not allow null values in attributes.
-            object.into_iter().filter(|(_, v)| !v.is_null()).collect()
-        } else {
-            serde_json::value::Map::new()
-        };
+        let mut object = serde_json::to_value(self)
+            .into_tonic_internal_err("failed to serialize cedar entity")?
+            .as_object()
+            .unwrap_or_else(serde_json::value::Map::new);
 
         object.append(&mut self.additional_attributes(global).await?);
 
-        Ok(object)
+        // Filter out null values because Cedar does not allow null values in attributes.
+        Ok(object.into_iter().filter(|(_, v)| !v.is_null()).collect())
     }
 
     async fn additional_attributes(

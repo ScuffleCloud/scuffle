@@ -26,7 +26,7 @@ binary_wrapper(
     }),
     data = [":libexec"],
     env = {
-        "VALGRIND_LIB": "$$RUNFILES/$(rlocationpath :libexec)/valgrind",
+        "VALGRIND_LIB": "$$RUNFILES_DIR/$(rlocationpath :libexec)/valgrind",
     },
     extra_commands = [
         "ulimit -n 4096",

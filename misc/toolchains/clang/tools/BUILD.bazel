@@ -133,13 +133,6 @@ cc_tool(
     ],
 )
 
-llvm_strip = select({
-    "//misc/platforms:linux-aarch64": "@clang-linux-aarch64//:bin/llvm-strip",
-    "//misc/platforms:linux-x86_64": "@clang-linux-x86_64//:bin/llvm-strip",
-    "//misc/platforms:macos-aarch64": "@clang-macos-aarch64//:bin/llvm-strip",
-    "//misc/platforms:macos-x86_64": "@clang-macos-x86_64//:bin/llvm-strip",
-})
-
 libtool_darwin_wrapper(
     name = "llvm-libtool-darwin-wrapper",
     libtool = select({
@@ -148,7 +141,6 @@ libtool_darwin_wrapper(
         "//misc/platforms:macos-aarch64": "@clang-macos-aarch64//:bin/llvm-libtool-darwin",
         "//misc/platforms:macos-x86_64": "@clang-macos-x86_64//:bin/llvm-libtool-darwin",
     }),
-    strip = llvm_strip,
     tags = [
         "manual",
         "no-cache",
@@ -212,7 +204,12 @@ cc_tool(
 
 cc_tool(
     name = "llvm-strip",
-    src = llvm_strip,
+    src = select({
+        "//misc/platforms:linux-aarch64": "@clang-linux-aarch64//:bin/llvm-strip",
+        "//misc/platforms:linux-x86_64": "@clang-linux-x86_64//:bin/llvm-strip",
+        "//misc/platforms:macos-aarch64": "@clang-macos-aarch64//:bin/llvm-strip",
+        "//misc/platforms:macos-x86_64": "@clang-macos-x86_64//:bin/llvm-strip",
+    }),
     data = [":exec_platform_multicall_support_files"],
     tags = [
         "manual",

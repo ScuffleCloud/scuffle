@@ -84,21 +84,19 @@ script_dir=$(dirname_shim "${BASH_SOURCE[0]}")
 
 # Find the correct binary path
 resolved_libtool_path=$(find_binary_path "%%LIBTOOL%%" "$pwd" "$script_dir")
-resolved_strip_path=$(find_binary_path "%%STRIP%%" "$pwd" "$script_dir")
 
 case "$1" in
   cq)
-    # Create archive
+    # Create archive (like `ar cq`)
     shift
-    exec "$resolved_libtool_path" -static -o $@
+    exec "$resolved_libtool_path" -static -o "$@"
     ;;
   s)
-    # Write symbol table
-    # This is ignored as it doesnt seem to work.
+    # Update symbol table (like `ranlib`)
     shift
+    exec "$resolved_libtool_path" -static -o "$1" "$1"
     ;;
   *)
-    exec "$resolved_libtool_path" $@
+    exec "$resolved_libtool_path" "$@"
     ;;
 esac
-

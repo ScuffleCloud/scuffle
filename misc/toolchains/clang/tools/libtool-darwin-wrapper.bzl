@@ -14,16 +14,14 @@ def _libtool_darwin_wrapper_impl(ctx):
         is_executable = True,
         substitutions = {
             "%%LIBTOOL%%": _rlocationpath(ctx.executable.libtool, ctx.workspace_name),
-            "%%STRIP%%": _rlocationpath(ctx.executable.strip, ctx.workspace_name),
             "%%WORKSPACE_NAME%%": ctx.workspace_name,
             "#!/usr/bin/env bash": "#!{}".format(sh_toolchain.path),
         },
     )
 
     runfiles = (
-        ctx.runfiles(files = [ctx.executable.libtool, ctx.executable.strip])
+        ctx.runfiles(files = [ctx.executable.libtool])
             .merge(ctx.attr.libtool[DefaultInfo].default_runfiles)
-            .merge(ctx.attr.strip[DefaultInfo].default_runfiles)
     )
 
     return [
@@ -34,7 +32,6 @@ libtool_darwin_wrapper = rule(
     implementation = _libtool_darwin_wrapper_impl,
     attrs = {
         "libtool": attr.label(executable = True, allow_single_file = True, cfg = "exec"),
-        "strip": attr.label(executable = True, allow_single_file = True, cfg = "exec"),
         "_wrapper": attr.label(default = ":libtool-darwin-wrapper.sh", allow_single_file = True, executable = True, cfg = "exec"),
     },
     toolchains = ["@bazel_tools//tools/sh:toolchain_type"],

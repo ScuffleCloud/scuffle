@@ -46,12 +46,18 @@ find_binary_path() {
 
   # Try going up from script directory to find execroot
   local current_dir="$script_dir"
-  while [[ "$current_dir" != "/" ]]; do
+  local prev_dir=""
+  local max_depth=50  # Safety limit to prevent infinite loops
+  local depth=0
+
+  while [[ "$current_dir" != "/" && "$current_dir" != "$prev_dir" && $depth -lt $max_depth ]]; do
     if [[ -d "${current_dir}/external" && -f "${current_dir}/external/${binary_path}" ]]; then
       echo "${current_dir}/external/${binary_path}"
       return
     fi
+    prev_dir="$current_dir"
     current_dir=$(dirname_shim "$current_dir")
+    ((depth++))
   done
 
   # If we're in runfiles, try to find the workspace root

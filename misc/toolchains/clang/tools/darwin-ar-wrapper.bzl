@@ -21,8 +21,9 @@ def _darwin_ar_wrapper_impl(ctx):
     )
 
     runfiles = (
-        ctx.runfiles(files = [ctx.executable.libtool])
+        ctx.runfiles(files = [ctx.executable.libtool, ctx.executable.ar])
             .merge(ctx.attr.libtool[DefaultInfo].default_runfiles)
+            .merge(ctx.attr.ar[DefaultInfo].default_runfiles)
     )
 
     return [

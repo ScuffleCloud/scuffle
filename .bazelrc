@@ -98,6 +98,9 @@ common --execution_log_compact_file=.bazel_compact_execution_log
 # Disable host env from polluting the build
 common --incompatible_strict_action_env
 
+# Use a hermetic JDK
+common --java_runtime_version=remotejdk_21
+
 ###############################################################################
 ## Run configuration
 ###############################################################################

@@ -70,10 +70,6 @@ impl<G> CedarEntity<G> for Project {
     fn entity_id(&self) -> cedar_policy::EntityId {
         cedar_policy::EntityId::new(self.id.to_string_unprefixed())
     }
-
-    async fn parents(&self, _global: &Arc<G>) -> Result<HashSet<cedar_policy::EntityUid>, tonic::Status> {
-        Ok(std::iter::once(CedarEntity::<G>::entity_uid(&self.organization_id)).collect())
-    }
 }
 
 impl From<Project> for pb::scufflecloud::core::v1::Project {
@@ -113,15 +109,6 @@ impl<G> CedarEntity<G> for Policy {
     fn entity_id(&self) -> cedar_policy::EntityId {
         cedar_policy::EntityId::new(self.id.to_string_unprefixed())
     }
-
-    async fn parents(&self, _global: &Arc<G>) -> Result<HashSet<cedar_policy::EntityUid>, tonic::Status> {
-        let mut parents = HashSet::new();
-        parents.insert(CedarEntity::<G>::entity_uid(&self.organization_id));
-        if let Some(project_id) = &self.project_id {
-            parents.insert(CedarEntity::<G>::entity_uid(project_id));
-        }
-        Ok(parents)
-    }
 }
 
 pub(crate) type RoleId = Id<Role>;
@@ -148,10 +135,6 @@ impl<G> CedarEntity<G> for Role {
     fn entity_id(&self) -> cedar_policy::EntityId {
         cedar_policy::EntityId::new(self.id.to_string_unprefixed())
     }
-
-    async fn parents(&self, _global: &Arc<G>) -> Result<HashSet<cedar_policy::EntityUid>, tonic::Status> {
-        Ok(std::iter::once(CedarEntity::<G>::entity_uid(&self.organization_id)).collect())
-    }
 }
 
 #[derive(Queryable, Selectable, Insertable, Identifiable, Associations, Debug)]
@@ -165,7 +148,7 @@ pub struct RolePolicy {
     pub policy_id: PolicyId,
 }
 
-#[derive(Queryable, Selectable, Insertable, Identifiable, AsChangeset, Associations, Debug, serde::Serialize)]
+#[derive(Queryable, Selectable, Insertable, Identifiable, AsChangeset, Associations, Debug, serde::Serialize, Clone)]
 #[diesel(table_name = crate::schema::organization_members)]
 #[diesel(primary_key(organization_id, user_id))]
 #[diesel(belongs_to(Organization))]
@@ -319,10 +302,6 @@ impl<G: CoreConfig> CedarEntity<G> for OrganizationInvitation {
         Ok([("organization".to_string(), serde_json::Value::Object(organization_attr))]
             .into_iter()
             .collect())
-    }
-
-    async fn parents(&self, _global: &Arc<G>) -> Result<HashSet<cedar_policy::EntityUid>, tonic::Status> {
-        Ok(std::iter::once(CedarEntity::<G>::entity_uid(&self.organization_id)).collect())
     }
 }
 

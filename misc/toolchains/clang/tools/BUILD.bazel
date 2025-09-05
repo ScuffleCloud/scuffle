@@ -59,7 +59,7 @@ cc_tool_map(
     name = "macos-tools",
     tags = ["manual"],
     tools = COMMON_TOOLS | {
-        "@rules_cc//cc/toolchains/actions:ar_actions": ":darwin-ar-wrapper",
+        "@rules_cc//cc/toolchains/actions:ar_actions": ":llvm-ar-darwin",
     },
     visibility = ["//visibility:private"],
 )
@@ -136,7 +136,7 @@ cc_tool(
 )
 
 darwin_ar_wrapper(
-    name = "darwin-ar-wrapper",
+    name = "llvm-ar-darwin-wrapper",
     libtool = select({
         "//misc/platforms:linux-aarch64": "@clang-linux-aarch64//:bin/llvm-libtool-darwin",
         "//misc/platforms:linux-x86_64": "@clang-linux-x86_64//:bin/llvm-libtool-darwin",
@@ -151,8 +151,8 @@ darwin_ar_wrapper(
 )
 
 cc_tool(
-    name = "llvm-libtool-darwin",
-    src = ":llvm-libtool-darwin-wrapper",
+    name = "llvm-ar-darwin",
+    src = ":llvm-ar-darwin-wrapper",
     data = [":exec_platform_multicall_support_files"],
     tags = [
         "manual",

@@ -93,9 +93,9 @@ case "$1" in
     exec "$resolved_libtool_path" -static -o $@
     ;;
   s)
-    # Strip
+    # Write symbol table
+    # This is ignored as it doesnt seem to work.
     shift
-    # exec "$resolved_strip_path" $@
     ;;
   *)
     exec "$resolved_libtool_path" $@

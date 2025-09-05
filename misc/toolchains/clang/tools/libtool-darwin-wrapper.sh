@@ -95,7 +95,7 @@ case "$1" in
   s)
     # Strip
     shift
-    exec "$resolved_strip_path" $@
+    # exec "$resolved_strip_path" $@
     ;;
   *)
     exec "$resolved_libtool_path" $@

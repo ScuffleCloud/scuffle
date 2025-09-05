@@ -61,6 +61,7 @@ pub trait CoreConfig:
     ) -> pb::scufflecloud::email::v1::email_service_client::EmailServiceClient<tonic::transport::Channel>;
     fn user_loader(&self) -> &DataLoader<dataloaders::UserLoader>;
     fn organization_loader(&self) -> &DataLoader<dataloaders::OrganizationLoader>;
+    fn organization_member_by_user_id_loader(&self) -> &DataLoader<dataloaders::OrganizationMemberByUserIdLoader>;
     fn swagger_ui_enabled(&self) -> bool {
         false
     }

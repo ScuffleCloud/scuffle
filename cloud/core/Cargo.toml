@@ -30,6 +30,7 @@ diesel-async = { features = ["async-connection-wrapper", "bb8", "postgres"], ver
 fred = "10.1.0"
 hmac = "0.12.1"
 ipnetwork = { features = ["serde"], version = "0.21.1" }
+itertools = "0.14.0"
 pb = { package = "scufflecloud-proto", path = "../proto" }
 pkcs8 = "0.10.2"
 prost = "0.14.1"

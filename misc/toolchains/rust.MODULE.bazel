@@ -190,6 +190,7 @@ use_repo(
     "cargo_vendor__insta-1.43.1",
     "cargo_vendor__ipnetwork-0.21.1",
     "cargo_vendor__is_empty-0.3.0",
+    "cargo_vendor__itertools-0.14.0",
     "cargo_vendor__libc-0.2.175",
     "cargo_vendor__linear-map-1.2.0",
     "cargo_vendor__linkme-0.3.33",

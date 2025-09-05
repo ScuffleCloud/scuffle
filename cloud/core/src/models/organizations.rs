@@ -8,10 +8,11 @@ use crate::cedar::CedarEntity;
 use crate::chrono_ext::ChronoDateTimeExt;
 use crate::id::{Id, PrefixedId};
 use crate::models::users::{User, UserId};
+use crate::{CoreConfig, common};
 
 pub(crate) type OrganizationId = Id<Organization>;
 
-#[derive(Queryable, Selectable, Insertable, Identifiable, AsChangeset, Associations, Debug, serde::Serialize)]
+#[derive(Queryable, Selectable, Insertable, Identifiable, AsChangeset, Associations, Debug, serde::Serialize, Clone)]
 #[diesel(table_name = crate::schema::organizations)]
 #[diesel(belongs_to(User, foreign_key = owner_id))]
 #[diesel(check_for_backend(diesel::pg::Pg))]
@@ -301,11 +302,23 @@ impl PrefixedId for OrganizationInvitation {
     const PREFIX: &'static str = "oi";
 }
 
-impl<G> CedarEntity<G> for OrganizationInvitation {
+impl<G: CoreConfig> CedarEntity<G> for OrganizationInvitation {
     const ENTITY_TYPE: &'static str = "OrganizationInvitation";
 
     fn entity_id(&self) -> cedar_policy::EntityId {
         cedar_policy::EntityId::new(self.id.to_string_unprefixed())
+    }
+
+    async fn additional_attributes(
+        &self,
+        global: &Arc<G>,
+    ) -> Result<serde_json::value::Map<String, serde_json::Value>, tonic::Status> {
+        let organization = common::get_organization_by_id(global, self.organization_id).await?;
+        let organization_attr = organization.attributes(global).await?;
+
+        Ok([("organization".to_string(), serde_json::Value::Object(organization_attr))]
+            .into_iter()
+            .collect())
     }
 
     async fn parents(&self, _global: &Arc<G>) -> Result<HashSet<cedar_policy::EntityUid>, tonic::Status> {

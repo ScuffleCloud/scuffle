@@ -94,13 +94,14 @@ impl<G: CoreConfig> Operation<G>
         common::get_user_by_id(global, session.user_id).await
     }
 
-    async fn load_resource(&mut self, conn: &mut diesel_async::AsyncPgConnection) -> Result<Self::Resource, tonic::Status> {
+    async fn load_resource(&mut self, _conn: &mut diesel_async::AsyncPgConnection) -> Result<Self::Resource, tonic::Status> {
+        let global = &self.global::<G>()?;
         let organization_id: OrganizationId = self
             .get_ref()
             .id
             .parse()
             .into_tonic_err_with_field_violation("id", "invalid ID")?;
-        common::get_organization_by_id(conn, organization_id).await
+        common::get_organization_by_id(global, organization_id).await
     }
 
     async fn execute(

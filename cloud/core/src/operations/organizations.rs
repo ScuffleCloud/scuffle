@@ -72,13 +72,14 @@ impl<G: CoreConfig> Operation<G> for tonic::Request<pb::scufflecloud::core::v1::
         common::get_user_by_id(global, session.user_id).await
     }
 
-    async fn load_resource(&mut self, conn: &mut diesel_async::AsyncPgConnection) -> Result<Self::Resource, tonic::Status> {
+    async fn load_resource(&mut self, _conn: &mut diesel_async::AsyncPgConnection) -> Result<Self::Resource, tonic::Status> {
+        let global = &self.global::<G>()?;
         let id: OrganizationId = self
             .get_ref()
             .id
             .parse()
             .into_tonic_err_with_field_violation("id", "invalid ID")?;
-        common::get_organization_by_id(conn, id).await
+        common::get_organization_by_id(global, id).await
     }
 
     async fn execute(
@@ -113,7 +114,7 @@ impl<G: CoreConfig> Operation<G> for tonic::Request<pb::scufflecloud::core::v1::
             .id
             .parse()
             .into_tonic_err_with_field_violation("id", "invalid ID")?;
-        common::get_organization_by_id(conn, id).await
+        common::get_organization_by_id_in_tx(conn, id).await
     }
 
     async fn execute(
@@ -175,13 +176,14 @@ impl<G: CoreConfig> Operation<G> for tonic::Request<pb::scufflecloud::core::v1::
         common::get_user_by_id(global, session.user_id).await
     }
 
-    async fn load_resource(&mut self, conn: &mut diesel_async::AsyncPgConnection) -> Result<Self::Resource, tonic::Status> {
+    async fn load_resource(&mut self, _conn: &mut diesel_async::AsyncPgConnection) -> Result<Self::Resource, tonic::Status> {
+        let global = &self.global::<G>()?;
         let id: OrganizationId = self
             .get_ref()
             .id
             .parse()
             .into_tonic_err_with_field_violation("id", "invalid ID")?;
-        common::get_organization_by_id(conn, id).await
+        common::get_organization_by_id(global, id).await
     }
 
     async fn execute(
@@ -311,13 +313,14 @@ impl<G: CoreConfig> Operation<G> for tonic::Request<pb::scufflecloud::core::v1::
         common::get_user_by_id(global, session.user_id).await
     }
 
-    async fn load_resource(&mut self, conn: &mut diesel_async::AsyncPgConnection) -> Result<Self::Resource, tonic::Status> {
+    async fn load_resource(&mut self, _conn: &mut diesel_async::AsyncPgConnection) -> Result<Self::Resource, tonic::Status> {
+        let global = &self.global::<G>()?;
         let id: OrganizationId = self
             .get_ref()
             .id
             .parse()
             .into_tonic_err_with_field_violation("id", "invalid ID")?;
-        common::get_organization_by_id(conn, id).await
+        common::get_organization_by_id(global, id).await
     }
 
     async fn execute(

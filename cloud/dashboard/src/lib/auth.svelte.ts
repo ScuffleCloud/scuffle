@@ -133,6 +133,9 @@ export function authState() {
     let user = $state<AuthState<User> | null>(null);
 
     return {
+        /**
+         * Call this function to initialize the auth state. This must be called prior to any other function.
+         */
         initialize() {
             if (!browser) return;
 
@@ -165,6 +168,9 @@ export function authState() {
                 return arrayBufferToBase64(spki);
             });
         },
+        /**
+         * Returns the device public key as base64 encoded SPKI. If no keypair exists, a new one is generated.
+         */
         async getDevicePublicKeyOrInit(): Promise<string> {
             const key = this.devicePublicKey;
             if (key) {
@@ -175,6 +181,11 @@ export function authState() {
                 return this.generateNewDeviceKey();
             }
         },
+        /**
+         * Handles a new user session token by decrypting it with the device key and loading the user.
+         * Call this function after a successful login or registration request.
+         * That means whenever a NewUserSessionToken is returned by the backend service.
+         */
         async handleNewUserSessionToken(newToken: NewUserSessionToken): Promise<void> {
             if (!browser) return;
             if (!deviceKeypair) throw new Error("Device key is not initialized");
@@ -207,6 +218,9 @@ export function authState() {
                 user = loadedUser;
             });
         },
+        /**
+         * Invalidates the current user session token and clears the auth state.
+         */
         async logout() {
             if (!browser) return;
 
@@ -221,17 +235,31 @@ export function authState() {
                 throw new Error("Failed to logout: " + status.detail);
             }
         },
+        /**
+         * Returns the device public key. If the keypair is not yet loaded or does not exist, null is returned.
+         */
         get devicePublicKey(): CryptoKey | null {
             if (!deviceKeypair) return null;
             if (deviceKeypair.state !== "loaded") return null;
             return deviceKeypair.data?.publicKey ?? null;
         },
+        /**
+         * Returns the current user session token state.
+         * If the state is "authenticated", the token can be found in `data`.
+         */
         get userSessionToken() {
             return userSessionToken;
         },
+        /**
+         * Returns the current user state.
+         * If the state is "authenticated", the user data can be found in `data`.
+         */
         get userState() {
             return user;
         },
+        /**
+         * Returns the current authenticated user or null if not authenticated.
+         */
         get user() {
             if (!user) throw new Error("User not initialized");
             return user.state === "authenticated" ? user.data : null;

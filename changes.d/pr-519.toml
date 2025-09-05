@@ -1,0 +1,4 @@
+[[scuffle-ffmpeg]]
+category = "feat"
+description = "added a method for accessing the raw data of a frame"
+authors = ["@timleg002"]

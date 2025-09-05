@@ -1,21 +1,23 @@
 <script lang="ts">
+    import type { Component } from "svelte";
+
     type Props = {
-        leftLabel: string;
-        rightLabel: string;
+        leftLabel: Component;
+        rightLabel: Component;
         value: "left" | "right";
-        onToggle: (side: "left" | "right") => void;
+        onToggle: () => void;
     };
 
     let {
-        leftLabel = "Option 1",
-        rightLabel = "Option 2",
+        leftLabel,
+        rightLabel,
         value = "left",
         onToggle = () => {},
     }: Props = $props();
 
-    function handleClick(side: "left" | "right") {
-        value = side;
-        onToggle(side);
+    function handleToggle() {
+        value = value === "left" ? "right" : "left";
+        onToggle();
     }
 </script>
 
@@ -29,44 +31,47 @@
         <button
             class="toggle-button"
             class:active={value === "left"}
-            onclick={() => handleClick("left")}
+            onclick={handleToggle}
             type="button"
         >
-            {leftLabel}
+            {@render leftLabel()}
         </button>
         <button
             class="toggle-button"
             class:active={value === "right"}
-            onclick={() => handleClick("right")}
+            onclick={handleToggle}
             type="button"
         >
-            {rightLabel}
+            {@render rightLabel()}
         </button>
     </div>
 </div>
-
 <style>
     .toggle-container {
       display: inline-block;
+      height: 100%;
     }
 
     .toggle-track {
       position: relative;
       display: flex;
       background: #f1f5f9;
-      border-radius: 8px;
-      padding: 4px;
+      border-radius: 0.5rem;
+      padding: 0.25rem;
       border: 1px solid #e2e8f0;
+      flex: 1;
+      height: 100%;
+      align-items: center;
     }
 
     .slider-bg {
       position: absolute;
-      top: 4px;
-      left: 4px;
-      width: calc(50% - 4px);
-      height: calc(100% - 8px);
+      top: 0.25rem;
+      left: 0.25rem;
+      width: calc(50% - 0.25rem);
+      height: calc(100% - 0.5rem);
       background: white;
-      border-radius: 6px;
+      border-radius: 0.5rem;
       box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
       transition: transform 0.2s ease-in-out;
       z-index: 1;
@@ -81,25 +86,7 @@
       z-index: 2;
       background: transparent;
       border: none;
-      padding: 8px 16px;
       cursor: pointer;
-      font-size: 14px;
-      font-weight: 500;
-      color: #64748b;
-      transition: color 0.2s ease-in-out;
-      border-radius: 6px;
-      min-width: 80px;
-    }
-
-    .toggle-button:hover {
-      color: #334155;
-    }
-
-    .toggle-button.active {
-      color: #1e293b;
-    }
-
-    .toggle-button:focus {
-      outline: none;
+      display: flex;
     }
 </style>

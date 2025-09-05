@@ -35,7 +35,6 @@
     .search-container {
       display: flex;
       justify-content: space-between;
-      margin-bottom: 1.5rem;
       position: relative;
       flex: 1;
 

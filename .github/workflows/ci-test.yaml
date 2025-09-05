@@ -35,6 +35,10 @@ jobs:
         with:
           build_buddy_token: ${{ secrets.build_buddy_token }}
 
+      - name: Setup upterm session
+        uses: owenthereal/action-upterm@v1
+        if: ${{ runner.os == 'MacOS' }}
+
       - name: Run
         env:
           MODE: ${{ runner.os == 'Linux' && 'coverage' || 'test' }}

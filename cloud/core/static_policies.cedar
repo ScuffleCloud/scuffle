@@ -264,7 +264,8 @@ permit (
   principal is User,
   action == Action::"create_organization_invitation",
   resource is OrganizationInvitation
-); // TODO: condition for owner
+)
+when { principal.id == resource.organization.owner_id };
 
 permit (
   principal is User,
@@ -299,10 +300,29 @@ when { principal.id == resource.user_id };
 
 permit (
   principal is User,
+  action == Action::"get_organization_invitation",
+  resource is OrganizationInvitation
+)
+when
+{
+  principal.id == resource.user_id ||
+  principal.id == resource.organization.owner_id
+};
+
+permit (
+  principal is User,
+  action == Action::"accept_organization_invitation",
+  resource is OrganizationInvitation
+)
+when { principal.id == resource.user_id };
+
+permit (
+  principal is User,
   action == Action::"decline_organization_invitation",
   resource is OrganizationInvitation
 )
 when
 {
-  principal.id == resource.user_id // TODO: condition for owner
+  principal.id == resource.user_id ||
+  principal.id == resource.organization.owner_id
 };

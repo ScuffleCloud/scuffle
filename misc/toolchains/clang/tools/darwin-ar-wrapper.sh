@@ -88,8 +88,7 @@ resolved_ar_path=$(find_binary_path "%%AR%%" "$pwd" "$script_dir")
 
 case "$1" in
   cq|s)
-    shift
-    exec "$resolved_ar_path" -static -o "$@"
+    exec "$resolved_ar_path" "$@"
     ;;
   *)
     exec "$resolved_libtool_path" "$@"

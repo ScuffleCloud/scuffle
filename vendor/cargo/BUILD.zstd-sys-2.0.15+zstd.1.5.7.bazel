@@ -133,7 +133,7 @@ cargo_build_script(
     version = "2.0.15+zstd.1.5.7",
     visibility = ["//visibility:private"],
     deps = [
-        "@cargo_vendor__cc-1.2.34//:cc",
+        "@cargo_vendor__cc-1.2.26//:cc",
         "@cargo_vendor__pkg-config-0.3.32//:pkg_config",
     ],
 )

@@ -1,4 +1,4 @@
-load("@rules_rust//rust:rust_common.bzl", "CrateInfo")
+load("@rules_rust//rust:rust_common.bzl", "CrateInfo", "TestCrateInfo")
 load("@rules_rust//rust/private:clippy.bzl", "ClippyFlagsInfo")
 load("@rules_rust//rust/private:providers.bzl", "LintsInfo")
 load(
@@ -53,7 +53,11 @@ def _rust_clippy_rule_impl(ctx):
         lint_files.extend(ctx.attr.lint_config[LintsInfo].rustc_lint_files)
 
     for target in ctx.attr.targets:
-        crate_info = target[CrateInfo]
+        if CrateInfo in target:
+            crate_info = target[CrateInfo]
+        elif TestCrateInfo in target:
+            crate_info = target[TestCrateInfo].crate
+
         dep_info, build_info, _ = collect_deps(
             deps = crate_info.deps,
             proc_macro_deps = crate_info.proc_macro_deps,
@@ -141,7 +145,7 @@ rust_clippy = rule(
     attrs = {
         "targets": attr.label_list(
             doc = "The targets to run clippy against.",
-            providers = [CrateInfo],
+            providers = [[CrateInfo], [TestCrateInfo]],
         ),
         "lint_config": attr.label(
             doc = "A set of lints to use for clippy.",

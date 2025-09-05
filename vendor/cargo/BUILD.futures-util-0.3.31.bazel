@@ -88,6 +88,6 @@ rust_library(
         "@cargo_vendor__memchr-2.7.5//:memchr",
         "@cargo_vendor__pin-project-lite-0.2.16//:pin_project_lite",
         "@cargo_vendor__pin-utils-0.1.0//:pin_utils",
-        "@cargo_vendor__slab-0.4.11//:slab",
+        "@cargo_vendor__slab-0.4.9//:slab",
     ],
 )

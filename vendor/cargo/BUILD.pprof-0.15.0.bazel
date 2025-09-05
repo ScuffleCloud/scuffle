@@ -87,9 +87,9 @@ rust_library(
         "@cargo_vendor__prost-0.12.6//:prost",
         "@cargo_vendor__smallvec-1.15.1//:smallvec",
         "@cargo_vendor__spin-0.10.0//:spin",
-        "@cargo_vendor__symbolic-demangle-12.16.2//:symbolic_demangle",
-        "@cargo_vendor__tempfile-3.21.0//:tempfile",
-        "@cargo_vendor__thiserror-2.0.16//:thiserror",
+        "@cargo_vendor__symbolic-demangle-12.15.5//:symbolic_demangle",
+        "@cargo_vendor__tempfile-3.20.0//:tempfile",
+        "@cargo_vendor__thiserror-2.0.12//:thiserror",
     ],
 )
 

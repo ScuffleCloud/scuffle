@@ -85,7 +85,7 @@ rust_library(
         "@cargo_vendor__serde_json-1.0.143//:serde_json",
         "@cargo_vendor__serde_with-3.14.0//:serde_with",
         "@cargo_vendor__smol_str-0.3.2//:smol_str",
-        "@cargo_vendor__thiserror-2.0.16//:thiserror",
+        "@cargo_vendor__thiserror-2.0.12//:thiserror",
     ],
 )
 

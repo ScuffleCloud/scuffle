@@ -1,0 +1,18 @@
+[package]
+name = "scufflecloud-redis-module"
+version = "0.1.0"
+edition = "2024"
+publish = false
+
+[lib]
+crate-type = ["cdylib"]
+
+[dependencies]
+bincode = "2"
+chrono = "0.4"
+deepsize = "0.2"
+fnv = "1"
+libc = "0.2"
+linkme = "0.3"
+redis-module = { git = "https://github.com/RedisLabsModules/redismodule-rs", rev = "v2.1.1" }
+redis-module-ext = { path = "../../crates/redis-module-ext" }

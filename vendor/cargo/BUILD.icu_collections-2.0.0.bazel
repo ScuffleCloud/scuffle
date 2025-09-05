@@ -64,9 +64,9 @@ rust_library(
     }),
     version = "2.0.0",
     deps = [
-        "@cargo_vendor__potential_utf-0.1.3//:potential_utf",
+        "@cargo_vendor__potential_utf-0.1.2//:potential_utf",
         "@cargo_vendor__yoke-0.8.0//:yoke",
         "@cargo_vendor__zerofrom-0.1.6//:zerofrom",
-        "@cargo_vendor__zerovec-0.11.4//:zerovec",
+        "@cargo_vendor__zerovec-0.11.2//:zerovec",
     ],
 )

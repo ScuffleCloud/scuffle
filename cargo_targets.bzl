@@ -1,6 +1,7 @@
 _packages = [
     "//cloud/core",
     "//cloud/proto",
+    "//cloud/redis-module",
     "//crates/aac",
     "//crates/amf0",
     "//crates/av1",
@@ -26,6 +27,8 @@ _packages = [
     "//crates/postcompile",
     "//crates/pprof",
     "//crates/rtmp",
+    "//crates/redis-module-ext",
+    "//crates/redis-module-ext/macros",
     "//crates/settings",
     "//crates/signal",
     "//crates/tinc",

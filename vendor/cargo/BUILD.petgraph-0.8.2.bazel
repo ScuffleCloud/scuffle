@@ -62,7 +62,7 @@ rust_library(
     version = "0.8.2",
     deps = [
         "@cargo_vendor__fixedbitset-0.5.7//:fixedbitset",
-        "@cargo_vendor__hashbrown-0.15.5//:hashbrown",
+        "@cargo_vendor__hashbrown-0.15.4//:hashbrown",
         "@cargo_vendor__indexmap-2.11.0//:indexmap",
     ],
 )

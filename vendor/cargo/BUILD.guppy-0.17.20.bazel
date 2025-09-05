@@ -62,7 +62,7 @@ rust_library(
     version = "0.17.20",
     deps = [
         "@cargo_vendor__ahash-0.8.12//:ahash",
-        "@cargo_vendor__camino-1.1.12//:camino",
+        "@cargo_vendor__camino-1.1.10//:camino",
         "@cargo_vendor__cargo_metadata-0.21.0//:cargo_metadata",
         "@cargo_vendor__cfg-if-1.0.3//:cfg_if",
         "@cargo_vendor__debug-ignore-1.0.5//:debug_ignore",

@@ -95,7 +95,7 @@ rust_library(
     ] + select({
         "@rules_rust//rust/platform:aarch64-apple-darwin": [
             "@cargo_vendor__libc-0.2.175//:libc",  # cfg(unix)
-            "@cargo_vendor__signal-hook-registry-1.4.6//:signal_hook_registry",  # cfg(unix)
+            "@cargo_vendor__signal-hook-registry-1.4.5//:signal_hook_registry",  # cfg(unix)
             "@cargo_vendor__socket2-0.6.0//:socket2",  # cfg(not(target_family = "wasm"))
         ],
         "@rules_rust//rust/platform:aarch64-pc-windows-msvc": [
@@ -104,12 +104,12 @@ rust_library(
         ],
         "@rules_rust//rust/platform:aarch64-unknown-linux-gnu": [
             "@cargo_vendor__libc-0.2.175//:libc",  # cfg(unix)
-            "@cargo_vendor__signal-hook-registry-1.4.6//:signal_hook_registry",  # cfg(unix)
+            "@cargo_vendor__signal-hook-registry-1.4.5//:signal_hook_registry",  # cfg(unix)
             "@cargo_vendor__socket2-0.6.0//:socket2",  # cfg(not(target_family = "wasm"))
         ],
         "@rules_rust//rust/platform:x86_64-apple-darwin": [
             "@cargo_vendor__libc-0.2.175//:libc",  # cfg(unix)
-            "@cargo_vendor__signal-hook-registry-1.4.6//:signal_hook_registry",  # cfg(unix)
+            "@cargo_vendor__signal-hook-registry-1.4.5//:signal_hook_registry",  # cfg(unix)
             "@cargo_vendor__socket2-0.6.0//:socket2",  # cfg(not(target_family = "wasm"))
         ],
         "@rules_rust//rust/platform:x86_64-pc-windows-msvc": [
@@ -118,7 +118,7 @@ rust_library(
         ],
         "@rules_rust//rust/platform:x86_64-unknown-linux-gnu": [
             "@cargo_vendor__libc-0.2.175//:libc",  # cfg(unix)
-            "@cargo_vendor__signal-hook-registry-1.4.6//:signal_hook_registry",  # cfg(unix)
+            "@cargo_vendor__signal-hook-registry-1.4.5//:signal_hook_registry",  # cfg(unix)
             "@cargo_vendor__socket2-0.6.0//:socket2",  # cfg(not(target_family = "wasm"))
         ],
         "//conditions:default": [],

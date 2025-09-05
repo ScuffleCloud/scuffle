@@ -120,7 +120,7 @@ cargo_build_script(
     version = "0.1.26",
     visibility = ["//visibility:private"],
     deps = [
-        "@cargo_vendor__cc-1.2.34//:cc",
+        "@cargo_vendor__cc-1.2.26//:cc",
     ],
 )
 

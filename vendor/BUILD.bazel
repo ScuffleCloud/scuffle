@@ -25,6 +25,18 @@ crates_vendor(
                 },
             ),
         ],
+        "redis-module": [
+            crate.annotation(
+                build_script_data = [
+                    "@//misc/toolchains/clang:libclang",
+                ],
+                build_script_env = {
+                    "CLANG_PATH": "$${pwd}/$(CC)",
+                    "BINDGEN_EXTRA_CLANG_ARGS": "$(CFLAGS)",
+                    "LIBCLANG_PATH": "$(execpath @//misc/toolchains/clang:libclang)",
+                },
+            ),
+        ],
         "aws-lc-sys": [
             crate.annotation(
                 build_script_env = {

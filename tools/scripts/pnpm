@@ -1,7 +1,1 @@
-#!/usr/bin/env bash
-
-set -euo pipefail
-
-export SCUFFLE_RUN_UNDER=0
-
-exec bazel run //tools/pnpm --config=wrapper -- --dir $PWD "$@"
+utils/tool.sh

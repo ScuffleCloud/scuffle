@@ -2,14 +2,11 @@
 
 set -euo pipefail
 
-export BAZEL="$(which bazelisk)"
+SCRIPT="${BASH_SOURCE[0]}"
+SCRIPT_DIR="$(dirname "${SCRIPT}")"
 
-output_base="$(bazelisk info output_base)"
+cd "${SCRIPT_DIR}/../../../../"
 
-bazelisk \
-    --output_base="${output_base}_rust_analyzer" \
-    run \
-    --config=wrapper \
-    //misc/utils/rust/analyzer/discover \
-    -- \
-    --bazel_arg=--config=wrapper --bazel_startup_option=--output_base="${output_base}_rust_analyzer" 2> /dev/null
+export PATH="$(pwd)/tools/scripts:$PATH"
+
+exec rust-analyzer-discover $@

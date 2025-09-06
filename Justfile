@@ -29,10 +29,12 @@ clean *args="--async":
 
     output_base=$(bazel info output_base)
 
+    rm -r "${output_base}/.scripts"
     bazel --output_base="${output_base}" clean {{ args }}
     bazel --output_base="${output_base}_coverage" clean {{ args }}
     bazel --output_base="${output_base}_grind" clean {{ args }}
     bazel --output_base="${output_base}_rust_analyzer" clean {{ args }}
+
 
 run core *args:
     bazel run //cloud/core:bin -- {{ args }}

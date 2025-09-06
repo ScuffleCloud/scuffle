@@ -1,6 +1,3 @@
-use std::collections::HashSet;
-use std::sync::Arc;
-
 use diesel::Selectable;
 use diesel::prelude::{AsChangeset, Associations, Identifiable, Insertable, Queryable};
 
@@ -33,10 +30,6 @@ impl<G: CoreConfig> CedarEntity<G> for MfaTotpCredential {
 
     fn entity_id(&self) -> cedar_policy::EntityId {
         cedar_policy::EntityId::new(self.id.to_string_unprefixed())
-    }
-
-    async fn parents(&self, _global: &Arc<G>) -> Result<HashSet<cedar_policy::EntityUid>, tonic::Status> {
-        Ok(std::iter::once(CedarEntity::<G>::entity_uid(&self.user_id)).collect())
     }
 }
 
@@ -87,10 +80,6 @@ impl<G: CoreConfig> CedarEntity<G> for MfaWebauthnCredential {
 
     fn entity_id(&self) -> cedar_policy::EntityId {
         cedar_policy::EntityId::new(self.id.to_string_unprefixed())
-    }
-
-    async fn parents(&self, _global: &Arc<G>) -> Result<HashSet<cedar_policy::EntityUid>, tonic::Status> {
-        Ok(std::iter::once(CedarEntity::<G>::entity_uid(&self.user_id)).collect())
     }
 }
 

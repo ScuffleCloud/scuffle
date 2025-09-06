@@ -1,18 +1,14 @@
 use std::collections::HashSet;
 use std::sync::Arc;
 
+use diesel::Selectable;
 use diesel::prelude::{AsChangeset, Associations, Identifiable, Insertable, Queryable};
-use diesel::query_dsl::methods::{FilterDsl, SelectDsl};
-use diesel::{ExpressionMethods, Selectable};
-use diesel_async::RunQueryDsl;
 
 use crate::CoreConfig;
 use crate::cedar::CedarEntity;
 use crate::chrono_ext::ChronoDateTimeExt;
 use crate::id::{Id, PrefixedId};
-use crate::models::OrganizationId;
-use crate::schema::organization_members;
-use crate::std_ext::ResultExt;
+use crate::std_ext::OptionExt;
 
 pub(crate) type UserId = Id<User>;
 
@@ -40,22 +36,19 @@ impl<G: CoreConfig> CedarEntity<G> for User {
     }
 
     async fn parents(&self, global: &Arc<G>) -> Result<HashSet<cedar_policy::EntityUid>, tonic::Status> {
-        let mut db = global
-            .db()
+        let organization_ids = global
+            .organization_member_by_user_id_loader()
+            .load(self.id)
             .await
-            .into_tonic_internal_err("failed to get database connection")?;
-
-        let organization_ids = organization_members::dsl::organization_members
-            .filter(organization_members::dsl::user_id.eq(self.id))
-            .select(organization_members::dsl::organization_id)
-            .load::<OrganizationId>(&mut db)
-            .await
-            .into_tonic_internal_err("failed to load organization members")?;
-
-        Ok(organization_ids
+            .ok()
+            .into_tonic_internal_err("failed to query organization members")?
+            .into_tonic_not_found("user not found")?
             .into_iter()
+            .map(|m| m.organization_id)
             .map(|id| CedarEntity::<G>::entity_uid(&id))
-            .collect::<HashSet<_>>())
+            .collect::<HashSet<_>>();
+
+        Ok(organization_ids)
     }
 }
 

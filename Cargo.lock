@@ -5489,6 +5489,7 @@ dependencies = [
  "fred",
  "hmac",
  "ipnetwork",
+ "itertools 0.14.0",
  "pkcs8",
  "prost 0.14.1",
  "rand 0.8.5",

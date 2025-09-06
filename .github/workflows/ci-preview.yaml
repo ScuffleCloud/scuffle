@@ -50,7 +50,7 @@ jobs:
     outputs:
       preview-url: ${{ steps.deploy.outputs.preview-url }}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
 
       - name: Install zstd
         run: sudo apt-get update && sudo apt-get install zstd -y
@@ -93,7 +93,7 @@ jobs:
     outputs:
       preview-url: ${{ steps.deploy.outputs.preview-url }}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
 
       - name: Install zstd
         run: sudo apt-get update && sudo apt-get install zstd -y
@@ -136,7 +136,7 @@ jobs:
     outputs:
       preview-url: ${{ steps.deploy.outputs.preview-url }}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
 
       - name: Install zstd
         run: sudo apt-get update && sudo apt-get install zstd -y
@@ -178,7 +178,7 @@ jobs:
     runs-on: ubuntu-24.04
     if: ${{ always() && inputs.deploy && inputs.pr_number }}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
 
       - name: Build comment body from status artifacts
         env:

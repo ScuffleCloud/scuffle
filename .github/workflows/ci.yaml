@@ -23,13 +23,44 @@ defaults:
     shell: bash
 
 jobs:
+  bazel-diff:
+    name: bazel-diff
+    runs-on: ubuntu-24.04
+    if: ${{ github.event_name == 'pull_request' }}
+    steps:
+      - uses: actions/checkout@v5
+
+      - uses: actions/checkout@v5
+        with:
+            ref: ${{ github.event.pull_request.base.sha }}
+            path: __base
+
+      - uses: ./.github/actions/setup-bazel
+        with:
+          build_buddy_token: ${{ secrets.BUILD_BUDDY_TOKEN }}
+
+      - name: Generate current hashes
+        run: ./scripts/tool/bazel-diff generate-hashes --workspacePath=$(pwd) /tmp/head-hashes.json
+
+      - name: Generate base hashes
+        run: ./scripts/tool/bazel-diff generate-hashes --workspacePath=$(pwd)/__base /tmp/base-hashes.json
+
+      - name: Get impacted targets
+        run: ./scripts/tools/bazel-diff get-impacted-targets --startingHashes=/tmp/base-hashes.json --finalHashes=/tmp/head-hashes.json --output=/tmp/impacted-targets.json
+
+      - name: Upload Results
+        uses: actions/upload-artifact@v4
+        with:
+          name: "bazel-diff-impacted-targets"
+          path: /tmp/impacted-targets.json
+
   prep:
     name: prep
     runs-on: ubuntu-24.04
     outputs:
       prep: ${{ steps.compute.outputs.prep }}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
 
       - name: Run prep
         id: compute
@@ -47,7 +78,7 @@ jobs:
       build_buddy_token: ${{ secrets.BUILD_BUDDY_TOKEN }}
 
   test:
-    needs: [prep]
+    needs: [prep,bazel-diff]
     if: ${{ fromJson(needs.prep.outputs.prep).test != null }}
     uses: ./.github/workflows/ci-test.yaml
     with:
@@ -59,14 +90,14 @@ jobs:
       build_buddy_token: "${{ secrets.BUILD_BUDDY_TOKEN }}"
 
   check_fmt:
-    needs: [prep]
+    needs: [prep,bazel-diff]
     if: ${{ fromJson(needs.prep.outputs.prep).check_fmt != null }}
     uses: ./.github/workflows/ci-check-fmt.yaml
     secrets:
       build_buddy_token: ${{ secrets.BUILD_BUDDY_TOKEN }}
 
   grind:
-    needs: [prep]
+    needs: [prep,bazel-diff]
     if: ${{ fromJson(needs.prep.outputs.prep).grind != null }}
     uses: ./.github/workflows/ci-grind.yaml
     with:
@@ -76,7 +107,7 @@ jobs:
       build_buddy_token: "${{ secrets.BUILD_BUDDY_TOKEN }}"
 
   preview:
-    needs: [prep]
+    needs: [prep,bazel-diff]
     if: ${{ fromJson(needs.prep.outputs.prep).preview != null }}
     uses: ./.github/workflows/ci-preview.yaml
     permissions:

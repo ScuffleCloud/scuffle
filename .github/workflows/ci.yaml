@@ -40,13 +40,13 @@ jobs:
           build_buddy_token: ${{ secrets.BUILD_BUDDY_TOKEN }}
 
       - name: Generate current hashes
-        run: ./scripts/tool/bazel-diff generate-hashes --workspacePath=$(pwd) /tmp/head-hashes.json
+        run: ./tools/scripts/bazel-diff generate-hashes --workspacePath=$(pwd) /tmp/head-hashes.json
 
       - name: Generate base hashes
-        run: ./scripts/tool/bazel-diff generate-hashes --workspacePath=$(pwd)/__base /tmp/base-hashes.json
+        run: ./tools/scripts/bazel-diff generate-hashes --workspacePath=$(pwd)/__base /tmp/base-hashes.json
 
       - name: Get impacted targets
-        run: ./scripts/tools/bazel-diff get-impacted-targets --startingHashes=/tmp/base-hashes.json --finalHashes=/tmp/head-hashes.json --output=/tmp/impacted-targets.json
+        run: ./tools/scripts/bazel-diff get-impacted-targets --startingHashes=/tmp/base-hashes.json --finalHashes=/tmp/head-hashes.json --output=/tmp/impacted-targets.json
 
       - name: Upload Results
         uses: actions/upload-artifact@v4

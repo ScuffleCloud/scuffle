@@ -120,18 +120,19 @@ Linting is done through bazel as well, formatting is done via `just fmt` which u
 
 ## Local Commnads
 
-| Command              | Description                                       |
-| -------------------- | ------------------------------------------------- |
-| `just test`          | Run all tests                                     |
-| `just grind`         | Run tests with valgrind                           |
-| `just lint`          | Lint the code & try auto-fix linting errors       |
-| `just fmt`           | Format the code                                   |
-| `just deny`          | Check that all dependencies have allowed licenses |
-| `just docs`          | Build the docs                                    |
-| `just docs-serve`    | Serve the docs locally                            |
-| `just vendor`        | Vendor the dependencies                           |
-| `pnpm dev`           | Start all frontends dev servers                   |
-| `pnpm dev:dashboard` | Start the dashboard dev server                    |
+| Command                 | Description                                       |
+| ----------------------- | ------------------------------------------------- |
+| `just test`             | Run all tests                                     |
+| `just grind`            | Run tests with valgrind                           |
+| `just lint`             | Lint the code & try auto-fix linting errors       |
+| `just fmt`              | Format the code                                   |
+| `just deny`             | Check that all dependencies have allowed licenses |
+| `just docs`             | Build the docs                                    |
+| `just docs-serve`       | Serve the docs locally                            |
+| `just vendor`           | Vendor the dependencies                           |
+| `just clear-tool-cache` | Clear the tool cache                              |
+| `pnpm dev`              | Start all frontends dev servers                   |
+| `pnpm dev:dashboard`    | Start the dashboard dev server                    |
 
 ## CLA
 

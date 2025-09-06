@@ -1,5 +1,8 @@
 mod? local
 
+default:
+    just --list
+
 # this should be kept in sync with
 # .github/workflows/cargo-update-pr.yaml
 
@@ -18,6 +21,7 @@ fmt:
     dprint fmt
     buf format -w --disable-symlinks --debug
     just --unstable --fmt
+    shfmt -w .
 
 lint:
     bazel run //tools/cargo/clippy:fix
@@ -29,10 +33,16 @@ clean *args="--async":
 
     output_base=$(bazel info output_base)
 
+    rm -r "${output_base}/.scripts"
     bazel --output_base="${output_base}" clean {{ args }}
     bazel --output_base="${output_base}_coverage" clean {{ args }}
     bazel --output_base="${output_base}_grind" clean {{ args }}
     bazel --output_base="${output_base}_rust_analyzer" clean {{ args }}
+
+clear-tool-cache:
+    #!/usr/bin/env bash
+    output_base=$(bazel info output_base)
+    rm -r "${output_base}/.scripts"
 
 run core *args:
     bazel run //cloud/core:bin -- {{ args }}

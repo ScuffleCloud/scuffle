@@ -13,7 +13,7 @@
 set -euo pipefail # exit immediately if any command fails.
 
 function remove_url_credentials() {
-  which perl >/dev/null && perl -pe 's#//.*?:.*?@#//#' || cat
+    which perl > /dev/null && perl -pe 's#//.*?:.*?@#//#' || cat
 }
 
 repo_url=$(git config --get remote.origin.url | remove_url_credentials)

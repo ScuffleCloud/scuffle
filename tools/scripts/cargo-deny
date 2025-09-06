@@ -1,5 +1,1 @@
-#!/usr/bin/env bash
-
-set -euo pipefail
-
-exec bazel run //tools/cargo/deny --config=wrapper -- "$@"
+utils/tool.sh

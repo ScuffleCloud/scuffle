@@ -5,9 +5,19 @@ def _transition_alias_impl(ctx):
     output = ctx.actions.declare_file("{}_{}".format(ctx.label.name, ctx.executable.actual.basename))
     ctx.actions.symlink(output = output, target_file = ctx.executable.actual, is_executable = True)
 
-    return [DefaultInfo(
-        executable = output,
-    )]
+    actual = ctx.attr.actual[0]  # type: Target
+
+    providers = [
+        DefaultInfo(
+            executable = output,
+            default_runfiles = actual[DefaultInfo].default_runfiles,
+        ),
+    ]  # type: list
+
+    if RunEnvironmentInfo in actual:
+        providers.append(actual[RunEnvironmentInfo])
+
+    return providers
 
 def _change_compilation_mode(compilation_mode):
     def _change_compilation_mode_impl(_settings, _attr):

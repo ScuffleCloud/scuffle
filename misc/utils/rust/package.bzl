@@ -138,7 +138,7 @@ def scuffle_package(
 
     rustc_flags_combined = rustc_flags + [
         "--cfg=bazel_runfiles",
-    ] + gc_arg;
+    ] + gc_arg
 
     kwargs = extra_target_kwargs | dict(
         name = name,

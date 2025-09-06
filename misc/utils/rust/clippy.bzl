@@ -112,6 +112,7 @@ def _rust_clippy_rule_impl(ctx):
         if ctx.file._config.basename not in valid_config_file_names:
             fail("The clippy config file must be named one of: {}".format(valid_config_file_names))
         env["CLIPPY_CONF_DIR"] = "${{pwd}}/{}".format(ctx.file._config.dirname)
+        env = env | ctx.attr.clippy_env
         inputs = depset([ctx.file._config], transitive = [compile_inputs])
 
         outputs.append(clippy_out)
@@ -150,6 +151,10 @@ rust_clippy = rule(
         "clippy_flags": attr.string_list(
             doc = "Additional flags to provide to clippy",
             default = ["-Dwarnings"],
+        ),
+        "clippy_env": attr.string_dict(
+            doc = "Additional env to provide to clippy",
+            default = {},
         ),
         "_clippy_flag": attr.label(
             doc = "Arguments to pass to clippy." +

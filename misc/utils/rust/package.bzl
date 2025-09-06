@@ -32,7 +32,10 @@ def scuffle_package(
         test = None,
         readme = None,
         extra_target_kwargs = None,
-        target_compatible_with = None):
+        target_compatible_with = None,
+        rustc_flags = None,
+        rustc_env = None,
+        nightly = None):
     """Creates a rust_library and corresponding rust_test target.
 
     Args:
@@ -52,6 +55,9 @@ def scuffle_package(
         readme: The readme file, if set to `False` disable sync-readme
         extra_target_kwargs: additional kwargs to pass to the target.
         target_compatible_with: The compatability constraint of the target.
+        rustc_flags: Additional rustc flags to add to the build.
+        rustc_env: Additional env vars to add to rustc.
+        nightly: If we should use nightly mode.
     """
 
     package_name = native.package_name()
@@ -83,6 +89,12 @@ def scuffle_package(
         readme = ":README.md"
     if target_compatible_with == None:
         target_compatible_with = []
+    if nightly == None:
+        nightly = False
+    if rustc_flags == None:
+        rustc_flags = []
+    if rustc_env == None:
+        rustc_env = {}
 
     NAME_MAPPINGS = {
         "rlib": "lib",
@@ -113,11 +125,20 @@ def scuffle_package(
         visibility = ["//visibility:private"],
     )
 
+    if nightly:
+        rustc_env = rustc_env | {
+            "RUSTC_BOOTSTRAP": "1",
+        }
+
     colon_name = ":" + name
 
     normal_deps = all_crate_deps(normal = True, package_name = package_name, features = features) + deps + ["@rules_rust//rust/runfiles"]
     normal_proc_macro_deps = all_crate_deps(proc_macro = True, package_name = package_name, features = features) + proc_macro_deps
     aliases = aliases | dep_aliases(package_name = package_name, features = features)
+
+    rustc_flags_combined = rustc_flags + [
+        "--cfg=bazel_runfiles",
+    ] + gc_arg;
 
     kwargs = extra_target_kwargs | dict(
         name = name,
@@ -132,9 +153,8 @@ def scuffle_package(
         compile_data = compile_data,
         version = version,
         tags = tags,
-        rustc_flags = [
-            "--cfg=bazel_runfiles",
-        ] + gc_arg,
+        rustc_flags = rustc_flags_combined,
+        rustc_env = rustc_env,
         rustc_env_files = [colon_name + "_cargo_toml_env"],
         target_compatible_with = target_compatible_with,
     )
@@ -183,12 +203,11 @@ def scuffle_package(
             proc_macro_deps = all_test_proc_macro_deps,
             crate_features = features.select(),
             rustc_env_files = [colon_name + "_cargo_toml_env"],
-            rustc_flags = [
-                "--cfg=bazel_runfiles",
+            rustc_flags = rustc_flags_combined + [
                 "--cfg=coverage_nightly",
                 "@$(location //settings:test_rustc_flags)",
-            ] + gc_arg,
-            rustc_env = {
+            ],
+            rustc_env = rustc_env | {
                 "RUSTC_BOOTSTRAP": "1",
             },
             # Needs to be marked as not testonly because the rust_clippy
@@ -208,9 +227,8 @@ def scuffle_package(
             env = test_env,
             tags = test_tags,
             rustc_env_files = [colon_name + "_cargo_toml_env"],
-            rustc_flags = [
-                "--cfg=bazel_runfiles",
-            ] + gc_arg,
+            rustc_flags = rustc_flags_combined,
+            rustc_env = rustc_env,
             # Needs to be marked as not testonly because the rust_clippy
             # rule depends on this, which we use to generate clippy suggestions
             testonly = False,
@@ -222,6 +240,8 @@ def scuffle_package(
     rust_clippy(
         name = name + "_clippy",
         targets = rust_targets,
+        clippy_flags = rustc_flags_combined,
+        clippy_env = rustc_env,
         visibility = ["//visibility:private"],
         target_compatible_with = test_target_compatible_with,
     )

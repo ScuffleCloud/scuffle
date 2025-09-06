@@ -44,8 +44,48 @@ defaults:
     shell: bash
 
 jobs:
+  prep:
+    runs-on: ubuntu-24.04
+    outputs:
+      dashboard_build: ${{ steps.builds.outputs.dashboard_build }}
+      docs_build: ${{ steps.builds.outputs.docs_build }}
+      rustdoc_build: ${{ steps.builds.outputs.rustdoc_build }}
+    steps:
+        - uses: actions/download-artifact@v5
+          if: ${{ github.event_name == 'pull_request' }}
+          with:
+              name: bazel-diff-impacted-targets
+              path: ./impacted-targets.txt
+
+        - name: Compute builds
+          id: builds
+          run: |
+            file="./impacted-targets.txt"
+
+            if [[ ! -f "$file" ]]; then
+                echo "dashboard_build=true" >> $GITHUB_OUTPUT
+                echo "docs_build=true" >> $GITHUB_OUTPUT
+                echo "rustdoc_build=true" >> $GITHUB_OUTPUT
+            else
+                check_target() {
+                    local target=$1
+                    local var_name=$2
+                    if grep -Fxq "$target" "$file"; then
+                        echo "$var_name=true" >> $GITHUB_OUTPUT
+                    else
+                        echo "$var_name=false" >> $GITHUB_OUTPUT
+                    fi
+                }
+
+                check_target "//cloud/dashboard:dashboard" "dashboard_build"
+                check_target "//cloud/docs:docs" "docs_build"
+                check_target "//docs:rustdoc" "rustdoc_build"
+            fi
+
+
   dashboard:
-    if: ${{ inputs.dashboard_build }}
+    needs: [prep]
+    if: ${{ needs.prep.outputs.dashboard_build }}
     runs-on: ubicloud-standard-8-ubuntu-2404
     outputs:
       preview-url: ${{ steps.deploy.outputs.preview-url }}
@@ -88,7 +128,8 @@ jobs:
           working-directory: ./target-bazel/bin/cloud/dashboard/build
 
   docs:
-    if: ${{ inputs.docs_build }}
+    needs: [prep]
+    if: ${{ needs.prep.outputs.docs_build }}
     runs-on: ubicloud-standard-8-ubuntu-2404
     outputs:
       preview-url: ${{ steps.deploy.outputs.preview-url }}
@@ -131,7 +172,8 @@ jobs:
           working-directory: ./target-bazel/bin/cloud/docs/build
 
   rustdoc:
-    if: ${{ inputs.rustdoc_build }}
+    needs: [prep]
+    if: ${{ needs.prep.outputs.rustdoc_build }}
     runs-on: ubicloud-standard-8-ubuntu-2404
     outputs:
       preview-url: ${{ steps.deploy.outputs.preview-url }}

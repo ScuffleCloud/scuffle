@@ -51,13 +51,13 @@ jobs:
 
       - name: Get impacted targets
         working-directory: head
-        run: ./tools/scripts/bazel-diff get-impacted-targets --startingHashes=/tmp/base-hashes.json --finalHashes=/tmp/head-hashes.json --output=/tmp/impacted-targets.json
+        run: ./tools/scripts/bazel-diff get-impacted-targets --startingHashes=/tmp/base-hashes.json --finalHashes=/tmp/head-hashes.json --output=/tmp/impacted-targets.txt
 
       - name: Upload Results
         uses: actions/upload-artifact@v4
         with:
-          name: "bazel-diff-impacted-targets"
-          path: /tmp/impacted-targets.json
+          name: bazel-diff-impacted-targets
+          path: /tmp/impacted-targets.txt
 
   prep:
     name: prep

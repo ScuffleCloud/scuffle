@@ -35,11 +35,30 @@ jobs:
         with:
           build_buddy_token: ${{ secrets.build_buddy_token }}
 
+      - uses: actions/download-artifact@v5
+        if: ${{ github.event_name == 'pull_request' }}
+        with:
+            name: bazel-diff-impacted-targets
+            path: ./impacted-targets.txt
+
       - name: Run
         env:
           MODE: ${{ runner.os == 'Linux' && 'coverage' || 'test' }}
         run: |
-          targets=$(bazel query 'tests(set(//...))')
+          bazel query 'tests(set(//...))' > all_targets.txt
+
+          if [ -f ./impacted-targets.txt ]; then
+            targets=$(python3 ./.github/scripts/ci-targets.py ./all_targets.txt ./impacted-targets.txt)
+          else
+            targets=$(cat all_targets.txt)
+          fi
+
+          # Exit early if no targets
+          if [ -z "$targets" ]; then
+            echo "No targets to test."
+            exit 0
+          fi
+
           bazel ${MODE} ${targets} --skip_incompatible_explicit_targets
 
       - uses: codecov/codecov-action@v5

@@ -39,7 +39,6 @@ jobs:
         if: ${{ github.event_name == 'pull_request' }}
         with:
             name: bazel-diff-impacted-targets
-            path: ./impacted-targets.txt
 
       - name: Run
         env:

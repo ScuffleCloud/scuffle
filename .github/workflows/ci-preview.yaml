@@ -9,18 +9,6 @@ on:
       commit_sha:
         type: string
         required: true
-      dashboard_build:
-        type: boolean
-        required: false
-        default: false
-      docs_build:
-        type: boolean
-        required: false
-        default: false
-      rustdoc_build:
-        type: boolean
-        required: false
-        default: false
       deploy:
         type: boolean
         required: false
@@ -55,7 +43,6 @@ jobs:
           if: ${{ github.event_name == 'pull_request' }}
           with:
               name: bazel-diff-impacted-targets
-              path: ./impacted-targets.txt
 
         - name: Compute builds
           id: builds
@@ -85,7 +72,7 @@ jobs:
 
   dashboard:
     needs: [prep]
-    if: ${{ needs.prep.outputs.dashboard_build }}
+    if: ${{ needs.prep.outputs.dashboard_build  == 'true' }}
     runs-on: ubicloud-standard-8-ubuntu-2404
     outputs:
       preview-url: ${{ steps.deploy.outputs.preview-url }}
@@ -129,7 +116,7 @@ jobs:
 
   docs:
     needs: [prep]
-    if: ${{ needs.prep.outputs.docs_build }}
+    if: ${{ needs.prep.outputs.docs_build == 'true' }}
     runs-on: ubicloud-standard-8-ubuntu-2404
     outputs:
       preview-url: ${{ steps.deploy.outputs.preview-url }}
@@ -173,7 +160,7 @@ jobs:
 
   rustdoc:
     needs: [prep]
-    if: ${{ needs.prep.outputs.rustdoc_build }}
+    if: ${{ needs.prep.outputs.rustdoc_build == 'true' }}
     runs-on: ubicloud-standard-8-ubuntu-2404
     outputs:
       preview-url: ${{ steps.deploy.outputs.preview-url }}

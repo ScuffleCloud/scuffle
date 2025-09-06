@@ -18,7 +18,7 @@ use crate::std_ext::{OptionExt, ResultExt};
 use crate::{CoreConfig, captcha, common, emails, google_api};
 
 impl<G: CoreConfig> Operation<G> for tonic::Request<pb::scufflecloud::core::v1::LoginWithEmailOptionsRequest> {
-    type Driver<'a> = NoopOperationDriver;
+    type Driver = NoopOperationDriver;
     type Principal = Unauthenticated;
     type Resource = CoreApplication;
     type Response = pb::scufflecloud::core::v1::LoginWithEmailOptionsResponse;
@@ -41,18 +41,18 @@ impl<G: CoreConfig> Operation<G> for tonic::Request<pb::scufflecloud::core::v1::
 
     async fn load_principal(
         &mut self,
-        _driver: &mut Self::Driver<'_>,
+        _driver: &mut Self::Driver,
     ) -> Result<Self::Principal, tonic::Status> {
         Ok(Unauthenticated)
     }
 
-    async fn load_resource(&mut self, _driver: &mut Self::Driver<'_>) -> Result<Self::Resource, tonic::Status> {
+    async fn load_resource(&mut self, _driver: &mut Self::Driver) -> Result<Self::Resource, tonic::Status> {
         Ok(CoreApplication)
     }
 
     async fn execute(
         self,
-        _driver: &mut Self::Driver<'_>,
+        _driver: &mut Self::Driver,
         _principal: Self::Principal,
         _resource: Self::Resource,
     ) -> Result<Self::Response, tonic::Status> {
@@ -84,7 +84,7 @@ impl<G: CoreConfig> Operation<G> for tonic::Request<pb::scufflecloud::core::v1::
 }
 
 impl<G: CoreConfig> Operation<G> for tonic::Request<pb::scufflecloud::core::v1::LoginWithEmailAndPasswordRequest> {
-    type Driver<'a> = TransactionOperationDriver<'a>;
+    type Driver = TransactionOperationDriver;
     type Principal = User;
     type Resource = CoreApplication;
     type Response = pb::scufflecloud::core::v1::NewUserSessionToken;
@@ -105,17 +105,17 @@ impl<G: CoreConfig> Operation<G> for tonic::Request<pb::scufflecloud::core::v1::
         Ok(())
     }
 
-    async fn load_principal(&mut self, driver: &mut Self::Driver<'_>) -> Result<Self::Principal, tonic::Status> {
+    async fn load_principal(&mut self, driver: &mut Self::Driver) -> Result<Self::Principal, tonic::Status> {
         common::get_user_by_email(&mut driver.conn, &self.get_ref().email).await
     }
 
-    async fn load_resource(&mut self, _driver: &mut Self::Driver<'_>) -> Result<Self::Resource, tonic::Status> {
+    async fn load_resource(&mut self, _driver: &mut Self::Driver) -> Result<Self::Resource, tonic::Status> {
         Ok(CoreApplication)
     }
 
     async fn execute(
         self,
-        driver: &mut Self::Driver<'_>,
+        driver: &mut Self::Driver,
         principal: Self::Principal,
         _resource: Self::Resource,
     ) -> Result<Self::Response, tonic::Status> {
@@ -141,7 +141,7 @@ impl<G: CoreConfig> Operation<G> for tonic::Request<pb::scufflecloud::core::v1::
 }
 
 impl<G: CoreConfig> Operation<G> for tonic::Request<pb::scufflecloud::core::v1::LoginWithMagicLinkRequest> {
-    type Driver<'a> = TransactionOperationDriver<'a>;
+    type Driver = TransactionOperationDriver;
     type Principal = User;
     type Resource = CoreApplication;
     type Response = ();
@@ -162,18 +162,18 @@ impl<G: CoreConfig> Operation<G> for tonic::Request<pb::scufflecloud::core::v1::
         Ok(())
     }
 
-    async fn load_principal(&mut self, driver: &mut Self::Driver<'_>) -> Result<Self::Principal, tonic::Status> {
+    async fn load_principal(&mut self, driver: &mut Self::Driver) -> Result<Self::Principal, tonic::Status> {
         let user = common::get_user_by_email(&mut driver.conn, &self.get_ref().email).await?;
         Ok(user)
     }
 
-    async fn load_resource(&mut self, _driver: &mut Self::Driver<'_>) -> Result<Self::Resource, tonic::Status> {
+    async fn load_resource(&mut self, _driver: &mut Self::Driver) -> Result<Self::Resource, tonic::Status> {
         Ok(CoreApplication)
     }
 
     async fn execute(
         self,
-        driver: &mut Self::Driver<'_>,
+        driver: &mut Self::Driver,
         principal: Self::Principal,
         _resource: Self::Resource,
     ) -> Result<Self::Response, tonic::Status> {
@@ -215,14 +215,14 @@ impl<G: CoreConfig> Operation<G> for tonic::Request<pb::scufflecloud::core::v1::
 }
 
 impl<G: CoreConfig> Operation<G> for tonic::Request<pb::scufflecloud::core::v1::CompleteLoginWithMagicLinkRequest> {
-    type Driver<'a> = TransactionOperationDriver<'a>;
+    type Driver = TransactionOperationDriver;
     type Principal = User;
     type Resource = CoreApplication;
     type Response = pb::scufflecloud::core::v1::NewUserSessionToken;
 
     const ACTION: Action = Action::LoginWithMagicLink;
 
-    async fn load_principal(&mut self, driver: &mut Self::Driver<'_>) -> Result<Self::Principal, tonic::Status> {
+    async fn load_principal(&mut self, driver: &mut Self::Driver) -> Result<Self::Principal, tonic::Status> {
         // Find and delete magic link user session request
         let Some(session_request) = diesel::delete(magic_link_user_session_requests::dsl::magic_link_user_session_requests)
             .filter(
@@ -253,13 +253,13 @@ impl<G: CoreConfig> Operation<G> for tonic::Request<pb::scufflecloud::core::v1::
         Ok(user)
     }
 
-    async fn load_resource(&mut self, _driver: &mut Self::Driver<'_>) -> Result<Self::Resource, tonic::Status> {
+    async fn load_resource(&mut self, _driver: &mut Self::Driver) -> Result<Self::Resource, tonic::Status> {
         Ok(CoreApplication)
     }
 
     async fn execute(
         self,
-        driver: &mut Self::Driver<'_>,
+        driver: &mut Self::Driver,
         principal: Self::Principal,
         _resource: Self::Resource,
     ) -> Result<Self::Response, tonic::Status> {
@@ -279,7 +279,7 @@ struct CompleteLoginWithGoogleState {
 }
 
 impl<G: CoreConfig> Operation<G> for tonic::Request<pb::scufflecloud::core::v1::CompleteLoginWithGoogleRequest> {
-    type Driver<'a> = TransactionOperationDriver<'a>;
+    type Driver = TransactionOperationDriver;
     type Principal = User;
     type Resource = CoreApplication;
     type Response = pb::scufflecloud::core::v1::CompleteLoginWithGoogleResponse;
@@ -304,7 +304,7 @@ impl<G: CoreConfig> Operation<G> for tonic::Request<pb::scufflecloud::core::v1::
         Ok(())
     }
 
-    async fn load_principal(&mut self, driver: &mut Self::Driver<'_>) -> Result<Self::Principal, tonic::Status> {
+    async fn load_principal(&mut self, driver: &mut Self::Driver) -> Result<Self::Principal, tonic::Status> {
         let global = &self.global::<G>()?;
 
         let google_token = google_api::request_tokens(global, &self.get_ref().code)
@@ -436,13 +436,13 @@ impl<G: CoreConfig> Operation<G> for tonic::Request<pb::scufflecloud::core::v1::
         }
     }
 
-    async fn load_resource(&mut self, _driver: &mut Self::Driver<'_>) -> Result<Self::Resource, tonic::Status> {
+    async fn load_resource(&mut self, _driver: &mut Self::Driver) -> Result<Self::Resource, tonic::Status> {
         Ok(CoreApplication)
     }
 
     async fn execute(
         mut self,
-        driver: &mut Self::Driver<'_>,
+        driver: &mut Self::Driver,
         principal: Self::Principal,
         _resource: Self::Resource,
     ) -> Result<Self::Response, tonic::Status> {
@@ -468,7 +468,7 @@ impl<G: CoreConfig> Operation<G> for tonic::Request<pb::scufflecloud::core::v1::
 }
 
 impl<G: CoreConfig> Operation<G> for tonic::Request<pb::scufflecloud::core::v1::LoginWithWebauthnRequest> {
-    type Driver<'a> = TransactionOperationDriver<'a>;
+    type Driver = TransactionOperationDriver;
     type Principal = User;
     type Resource = CoreApplication;
     type Response = pb::scufflecloud::core::v1::NewUserSessionToken;
@@ -477,7 +477,7 @@ impl<G: CoreConfig> Operation<G> for tonic::Request<pb::scufflecloud::core::v1::
 
     async fn load_principal(
         &mut self,
-        _driver: &mut Self::Driver<'_>,
+        _driver: &mut Self::Driver,
     ) -> Result<Self::Principal, tonic::Status> {
         let global = &self.global::<G>()?;
         let user_id: UserId = self
@@ -489,13 +489,13 @@ impl<G: CoreConfig> Operation<G> for tonic::Request<pb::scufflecloud::core::v1::
         common::get_user_by_id(global, user_id).await
     }
 
-    async fn load_resource(&mut self, _driver: &mut Self::Driver<'_>,) -> Result<Self::Resource, tonic::Status> {
+    async fn load_resource(&mut self, _driver: &mut Self::Driver,) -> Result<Self::Resource, tonic::Status> {
         Ok(CoreApplication)
     }
 
     async fn execute(
         self,
-        driver: &mut Self::Driver<'_>,
+        driver: &mut Self::Driver,
         principal: Self::Principal,
         _resource: Self::Resource,
     ) -> Result<Self::Response, tonic::Status> {

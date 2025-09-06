@@ -13,7 +13,7 @@ use crate::std_ext::{OptionExt, ResultExt};
 use crate::{CoreConfig, captcha, common, emails};
 
 impl<G: CoreConfig> Operation<G> for tonic::Request<pb::scufflecloud::core::v1::RegisterWithEmailRequest> {
-    type Driver<'a> = TransactionOperationDriver<'a>;
+    type Driver = TransactionOperationDriver;
     type Principal = Unauthenticated;
     type Resource = CoreApplication;
     type Response = ();
@@ -34,17 +34,17 @@ impl<G: CoreConfig> Operation<G> for tonic::Request<pb::scufflecloud::core::v1::
         Ok(())
     }
 
-    async fn load_principal(&mut self, _driver: &mut Self::Driver<'_>) -> Result<Self::Principal, tonic::Status> {
+    async fn load_principal(&mut self, _driver: &mut Self::Driver) -> Result<Self::Principal, tonic::Status> {
         Ok(Unauthenticated)
     }
 
-    async fn load_resource(&mut self, _driver: &mut Self::Driver<'_>) -> Result<Self::Resource, tonic::Status> {
+    async fn load_resource(&mut self, _driver: &mut Self::Driver) -> Result<Self::Resource, tonic::Status> {
         Ok(CoreApplication)
     }
 
     async fn execute(
         self,
-        driver: &mut Self::Driver<'_>,
+        driver: &mut Self::Driver,
         _principal: Self::Principal,
         _resource: Self::Resource,
     ) -> Result<Self::Response, tonic::Status> {
@@ -104,14 +104,14 @@ impl<G: CoreConfig> Operation<G> for tonic::Request<pb::scufflecloud::core::v1::
 }
 
 impl<G: CoreConfig> Operation<G> for tonic::Request<pb::scufflecloud::core::v1::CompleteRegisterWithEmailRequest> {
-    type Driver<'a> = TransactionOperationDriver<'a>;
+    type Driver = TransactionOperationDriver;
     type Principal = User;
     type Resource = CoreApplication;
     type Response = pb::scufflecloud::core::v1::NewUserSessionToken;
 
     const ACTION: Action = Action::CompleteRegisterWithEmail;
 
-    async fn load_principal(&mut self, driver: &mut Self::Driver<'_>) -> Result<Self::Principal, tonic::Status> {
+    async fn load_principal(&mut self, driver: &mut Self::Driver) -> Result<Self::Principal, tonic::Status> {
         // Delete email registration request
         let Some(registration_request) = diesel::delete(email_registration_requests::dsl::email_registration_requests)
             .filter(
@@ -143,13 +143,13 @@ impl<G: CoreConfig> Operation<G> for tonic::Request<pb::scufflecloud::core::v1::
         })
     }
 
-    async fn load_resource(&mut self, _driver: &mut Self::Driver<'_>) -> Result<Self::Resource, tonic::Status> {
+    async fn load_resource(&mut self, _driver: &mut Self::Driver) -> Result<Self::Resource, tonic::Status> {
         Ok(CoreApplication)
     }
 
     async fn execute(
         self,
-        driver: &mut Self::Driver<'_>,
+        driver: &mut Self::Driver,
         principal: Self::Principal,
         _resource: Self::Resource,
     ) -> Result<Self::Response, tonic::Status> {

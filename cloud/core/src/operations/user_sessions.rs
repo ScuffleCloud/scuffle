@@ -12,7 +12,7 @@ use crate::std_ext::{OptionExt, ResultExt};
 use crate::{CoreConfig, common, totp};
 
 impl<G: CoreConfig> Operation<G> for tonic::Request<pb::scufflecloud::core::v1::ValidateMfaForUserSessionRequest> {
-    type Driver<'a> = TransactionOperationDriver<'a>;
+    type Driver = TransactionOperationDriver;
     type Principal = User;
     type Resource = UserSession;
     type Response = pb::scufflecloud::core::v1::UserSession;
@@ -21,21 +21,21 @@ impl<G: CoreConfig> Operation<G> for tonic::Request<pb::scufflecloud::core::v1::
 
     async fn load_principal(
         &mut self,
-        _driver: &mut Self::Driver<'_>,
+        _driver: &mut Self::Driver,
     ) -> Result<Self::Principal, tonic::Status> {
         let global = &self.global::<G>()?;
         let session = self.session_or_err()?;
         common::get_user_by_id(global, session.user_id).await
     }
 
-    async fn load_resource(&mut self, _driver: &mut Self::Driver<'_>,) -> Result<Self::Resource, tonic::Status> {
+    async fn load_resource(&mut self, _driver: &mut Self::Driver,) -> Result<Self::Resource, tonic::Status> {
         let session = self.session_or_err()?;
         Ok(session.clone())
     }
 
     async fn execute(
         self,
-        driver: &mut Self::Driver<'_>,
+        driver: &mut Self::Driver,
         _principal: Self::Principal,
         resource: Self::Resource,
     ) -> Result<Self::Response, tonic::Status> {
@@ -86,7 +86,7 @@ impl<G: CoreConfig> Operation<G> for tonic::Request<pb::scufflecloud::core::v1::
 pub(crate) struct RefreshUserSessionRequest;
 
 impl<G: CoreConfig> Operation<G> for tonic::Request<RefreshUserSessionRequest> {
-    type Driver<'a> = TransactionOperationDriver<'a>;
+    type Driver = TransactionOperationDriver;
     type Principal = User;
     type Resource = UserSession;
     type Response = pb::scufflecloud::core::v1::NewUserSessionToken;
@@ -95,21 +95,21 @@ impl<G: CoreConfig> Operation<G> for tonic::Request<RefreshUserSessionRequest> {
 
     async fn load_principal(
         &mut self,
-        _driver: &mut Self::Driver<'_>,
+        _driver: &mut Self::Driver,
     ) -> Result<Self::Principal, tonic::Status> {
         let global = &self.global::<G>()?;
         let session = self.session_or_err()?;
         common::get_user_by_id(global, session.user_id).await
     }
 
-    async fn load_resource(&mut self, _driver: &mut Self::Driver<'_>,) -> Result<Self::Resource, tonic::Status> {
+    async fn load_resource(&mut self, _driver: &mut Self::Driver,) -> Result<Self::Resource, tonic::Status> {
         let session = self.expired_session_or_err()?;
         Ok(session.clone())
     }
 
     async fn execute(
         self,
-        driver: &mut Self::Driver<'_>,
+        driver: &mut Self::Driver,
         _principal: Self::Principal,
         resource: Self::Resource,
     ) -> Result<Self::Response, tonic::Status> {
@@ -165,7 +165,7 @@ impl<G: CoreConfig> Operation<G> for tonic::Request<RefreshUserSessionRequest> {
 pub(crate) struct InvalidateUserSessionRequest;
 
 impl<G: CoreConfig> Operation<G> for tonic::Request<InvalidateUserSessionRequest> {
-    type Driver<'a> = NoopOperationDriver;
+    type Driver = NoopOperationDriver;
     type Principal = User;
     type Resource = UserSession;
     type Response = ();
@@ -174,21 +174,21 @@ impl<G: CoreConfig> Operation<G> for tonic::Request<InvalidateUserSessionRequest
 
     async fn load_principal(
         &mut self,
-        _driver: &mut Self::Driver<'_>,
+        _driver: &mut Self::Driver,
     ) -> Result<Self::Principal, tonic::Status> {
         let global = &self.global::<G>()?;
         let session = self.session_or_err()?;
         common::get_user_by_id(global, session.user_id).await
     }
 
-    async fn load_resource(&mut self, _driver: &mut Self::Driver<'_>,) -> Result<Self::Resource, tonic::Status> {
+    async fn load_resource(&mut self, _driver: &mut Self::Driver,) -> Result<Self::Resource, tonic::Status> {
         let session = self.session_or_err()?;
         Ok(session.clone())
     }
 
     async fn execute(
         self,
-        _driver: &mut Self::Driver<'_>,
+        _driver: &mut Self::Driver,
         _principal: Self::Principal,
         resource: Self::Resource,
     ) -> Result<Self::Response, tonic::Status> {

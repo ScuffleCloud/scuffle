@@ -163,8 +163,8 @@ impl scufflecloud_core::CoreConfig for Global {
         self.config.bind
     }
 
-    async fn db(&self) -> anyhow::Result<bb8::PooledConnection<'_, diesel_async::AsyncPgConnection>> {
-        self.database.get().await.context("get database connection")
+    async fn db(&self) -> anyhow::Result<bb8::PooledConnection<'static, diesel_async::AsyncPgConnection>> {
+        self.database.get_owned().await.context("get database connection")
     }
 
     fn authorizer(&self) -> &cedar_policy::Authorizer {

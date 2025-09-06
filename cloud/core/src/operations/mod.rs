@@ -15,18 +15,18 @@ pub(crate) mod user_session_requests;
 pub(crate) mod user_sessions;
 pub(crate) mod users;
 
-pub(crate) trait OperationDriver<'a, G: CoreConfig>: Sized {
-    async fn start(global: &'a Arc<G>) -> Result<Self, tonic::Status>;
+pub(crate) trait OperationDriver<G: CoreConfig>: Sized {
+    async fn start(global: &Arc<G>) -> Result<Self, tonic::Status>;
     async fn abort(self) -> Result<(), tonic::Status>;
     async fn finish(self) -> Result<(), tonic::Status>;
 }
 
-pub(crate) struct TransactionOperationDriver<'a> {
-    conn: diesel_async::pooled_connection::bb8::PooledConnection<'a, diesel_async::AsyncPgConnection>,
+pub(crate) struct TransactionOperationDriver {
+    conn: diesel_async::pooled_connection::bb8::PooledConnection<'static, diesel_async::AsyncPgConnection>,
 }
 
-impl<'a, G: CoreConfig> OperationDriver<'a, G> for TransactionOperationDriver<'a> {
-    async fn start(global: &'a Arc<G>) -> Result<Self, tonic::Status> {
+impl<G: CoreConfig> OperationDriver<G> for TransactionOperationDriver {
+    async fn start(global: &Arc<G>) -> Result<Self, tonic::Status> {
         let mut db = global.db().await.into_tonic_internal_err("failed to connect to database")?;
         AnsiTransactionManager::begin_transaction(&mut *db).await.into_tonic_internal_err("failed to begin transaction")?;
 
@@ -46,8 +46,8 @@ impl<'a, G: CoreConfig> OperationDriver<'a, G> for TransactionOperationDriver<'a
 
 pub(crate) struct NoopOperationDriver;
 
-impl<'a, G: CoreConfig> OperationDriver<'a, G> for NoopOperationDriver {
-    async fn start(global: &'a Arc<G>) -> Result<Self, tonic::Status> {
+impl<G: CoreConfig> OperationDriver<G> for NoopOperationDriver {
+    async fn start(global: &Arc<G>) -> Result<Self, tonic::Status> {
         let _ = global;
         Ok(Self)
     }
@@ -75,7 +75,7 @@ impl<'a, G: CoreConfig> OperationDriver<'a, G> for NoopOperationDriver {
 /// 7. Commit the operation with [`OperationDriver::finish`] if successful,
 ///    or abort with [`OperationDriver::abort`] if an error occurred.
 pub(crate) trait Operation<G: CoreConfig>: RequestExt + Sized + Send {
-    type Driver<'a>: OperationDriver<'a, G> where Self: 'a;
+    type Driver: OperationDriver<G> + Send + Sync;
     /// The cedar principal type for the operation.
     type Principal: CedarEntity<G> + Send + Sync;
     /// The cedar resource type for the operation.
@@ -95,17 +95,17 @@ pub(crate) trait Operation<G: CoreConfig>: RequestExt + Sized + Send {
 
     fn load_principal(
         &mut self,
-        driver: &mut Self::Driver<'_>,
+        driver: &mut Self::Driver,
     ) -> impl Future<Output = Result<Self::Principal, tonic::Status>> + Send;
 
     fn load_resource(
         &mut self,
-        driver: &mut Self::Driver<'_>,
+        driver: &mut Self::Driver,
     ) -> impl Future<Output = Result<Self::Resource, tonic::Status>> + Send;
 
     fn execute(
         self,
-        driver: &mut Self::Driver<'_>,
+        driver: &mut Self::Driver,
         principal: Self::Principal,
         resource: Self::Resource,
     ) -> impl Future<Output = Result<Self::Response, tonic::Status>> + Send;

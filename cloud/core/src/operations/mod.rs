@@ -28,19 +28,23 @@ pub(crate) struct TransactionOperationDriver {
 impl<G: CoreConfig> OperationDriver<G> for TransactionOperationDriver {
     async fn start(global: &Arc<G>) -> Result<Self, tonic::Status> {
         let mut db = global.db().await.into_tonic_internal_err("failed to connect to database")?;
-        AnsiTransactionManager::begin_transaction(&mut *db).await.into_tonic_internal_err("failed to begin transaction")?;
+        AnsiTransactionManager::begin_transaction(&mut *db)
+            .await
+            .into_tonic_internal_err("failed to begin transaction")?;
 
-        Ok(Self {
-            conn: db,
-        })
+        Ok(Self { conn: db })
     }
 
     async fn abort(mut self) -> Result<(), tonic::Status> {
-        AnsiTransactionManager::rollback_transaction(&mut *self.conn).await.into_tonic_internal_err("failed to rollback transaction")
+        AnsiTransactionManager::rollback_transaction(&mut *self.conn)
+            .await
+            .into_tonic_internal_err("failed to rollback transaction")
     }
 
     async fn finish(mut self) -> Result<(), tonic::Status> {
-        AnsiTransactionManager::commit_transaction(&mut *self.conn).await.into_tonic_internal_err("failed to commit transaction")
+        AnsiTransactionManager::commit_transaction(&mut *self.conn)
+            .await
+            .into_tonic_internal_err("failed to commit transaction")
     }
 }
 

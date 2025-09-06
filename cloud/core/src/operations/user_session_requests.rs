@@ -20,14 +20,11 @@ impl<G: CoreConfig> Operation<G> for tonic::Request<pb::scufflecloud::core::v1::
 
     const ACTION: Action = Action::CreateUserSessionRequest;
 
-    async fn load_principal(
-        &mut self,
-        _driver: &mut Self::Driver,
-    ) -> Result<Self::Principal, tonic::Status> {
+    async fn load_principal(&mut self, _driver: &mut Self::Driver) -> Result<Self::Principal, tonic::Status> {
         Ok(Unauthenticated)
     }
 
-    async fn load_resource(&mut self, _driver: &mut Self::Driver,) -> Result<Self::Resource, tonic::Status> {
+    async fn load_resource(&mut self, _driver: &mut Self::Driver) -> Result<Self::Resource, tonic::Status> {
         let global = &self.global::<G>()?;
         let ip_info = self.ip_address_info()?;
         let code = format!("{:06}", rand::rngs::OsRng.gen_range(0..=999999));
@@ -69,10 +66,7 @@ impl<G: CoreConfig> Operation<G> for tonic::Request<pb::scufflecloud::core::v1::
 
     const ACTION: Action = Action::GetUserSessionRequest;
 
-    async fn load_principal(
-        &mut self,
-        _driver: &mut Self::Driver,
-    ) -> Result<Self::Principal, tonic::Status> {
+    async fn load_principal(&mut self, _driver: &mut Self::Driver) -> Result<Self::Principal, tonic::Status> {
         Ok(Unauthenticated)
     }
 
@@ -123,10 +117,7 @@ impl<G: CoreConfig> Operation<G> for tonic::Request<pb::scufflecloud::core::v1::
 
     const ACTION: Action = Action::GetUserSessionRequest;
 
-    async fn load_principal(
-        &mut self,
-        _driver: &mut Self::Driver,
-    ) -> Result<Self::Principal, tonic::Status> {
+    async fn load_principal(&mut self, _driver: &mut Self::Driver) -> Result<Self::Principal, tonic::Status> {
         Ok(Unauthenticated)
     }
 
@@ -174,10 +165,7 @@ impl<G: CoreConfig> Operation<G> for tonic::Request<pb::scufflecloud::core::v1::
 
     const ACTION: Action = Action::ApproveUserSessionRequest;
 
-    async fn load_principal(
-        &mut self,
-        _driver: &mut Self::Driver,
-    ) -> Result<Self::Principal, tonic::Status> {
+    async fn load_principal(&mut self, _driver: &mut Self::Driver) -> Result<Self::Principal, tonic::Status> {
         let global = &self.global::<G>()?;
         let session = self.session_or_err()?;
         common::get_user_by_id(global, session.user_id).await
@@ -233,10 +221,7 @@ impl<G: CoreConfig> Operation<G> for tonic::Request<pb::scufflecloud::core::v1::
 
     const ACTION: Action = Action::CompleteUserSessionRequest;
 
-    async fn load_principal(
-        &mut self,
-        _driver: &mut Self::Driver,
-    ) -> Result<Self::Principal, tonic::Status> {
+    async fn load_principal(&mut self, _driver: &mut Self::Driver) -> Result<Self::Principal, tonic::Status> {
         Ok(Unauthenticated)
     }
 

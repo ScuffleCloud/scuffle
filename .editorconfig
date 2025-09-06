@@ -10,6 +10,16 @@ indent_style = space
 indent_size = 4
 trim_trailing_whitespace = true
 
+[*.sh]
+indent_style = space
+indent_size = 4
+simplify           = true
+binary_next_line   = true
+switch_case_indent = true
+space_redirects    = true
+keep_padding       = true
+
+
 # Do not trim trailing whitespace in markdown files as it can be used for line breaks
 [*.md]
 trim_trailing_whitespace = false

@@ -25,6 +25,8 @@ include("//misc/toolchains:ffmpeg.MODULE.bazel")
 
 include("//misc/toolchains:ibazel.MODULE.bazel")
 
+include("//misc/toolchains:shfmt.MODULE.bazel")
+
 include("//misc/toolchains:bazel-diff.MODULE.bazel")
 
 include("//misc/toolchains:valgrind.MODULE.bazel")

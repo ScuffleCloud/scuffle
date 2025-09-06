@@ -2,14 +2,12 @@ http_file = use_repo_rule("@bazel_tools//tools/build_defs/repo:http.bzl", "http_
 
 build_url = "https://github.com/bazelbuild/bazel-watcher/releases/download/v0.26.10/"
 
-linux_x86_64 = "ibazel_linux_amd64"
-
 http_file(
     name = "ibazel-linux-x86_64",
     executable = True,
     sha256 = "83e7f76cbcbc721dc544b88edc25edc777faa8b95475a301d4d01fb6bed54b00",
     url = "{url}/{name}".format(
-        name = linux_x86_64,
+        name = "ibazel_linux_amd64",
         url = build_url,
     ),
 )

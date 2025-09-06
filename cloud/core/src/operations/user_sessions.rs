@@ -19,16 +19,13 @@ impl<G: CoreConfig> Operation<G> for tonic::Request<pb::scufflecloud::core::v1::
 
     const ACTION: Action = Action::ValidateMfaForUserSession;
 
-    async fn load_principal(
-        &mut self,
-        _driver: &mut Self::Driver,
-    ) -> Result<Self::Principal, tonic::Status> {
+    async fn load_principal(&mut self, _driver: &mut Self::Driver) -> Result<Self::Principal, tonic::Status> {
         let global = &self.global::<G>()?;
         let session = self.session_or_err()?;
         common::get_user_by_id(global, session.user_id).await
     }
 
-    async fn load_resource(&mut self, _driver: &mut Self::Driver,) -> Result<Self::Resource, tonic::Status> {
+    async fn load_resource(&mut self, _driver: &mut Self::Driver) -> Result<Self::Resource, tonic::Status> {
         let session = self.session_or_err()?;
         Ok(session.clone())
     }
@@ -93,16 +90,13 @@ impl<G: CoreConfig> Operation<G> for tonic::Request<RefreshUserSessionRequest> {
 
     const ACTION: Action = Action::RefreshUserSession;
 
-    async fn load_principal(
-        &mut self,
-        _driver: &mut Self::Driver,
-    ) -> Result<Self::Principal, tonic::Status> {
+    async fn load_principal(&mut self, _driver: &mut Self::Driver) -> Result<Self::Principal, tonic::Status> {
         let global = &self.global::<G>()?;
         let session = self.session_or_err()?;
         common::get_user_by_id(global, session.user_id).await
     }
 
-    async fn load_resource(&mut self, _driver: &mut Self::Driver,) -> Result<Self::Resource, tonic::Status> {
+    async fn load_resource(&mut self, _driver: &mut Self::Driver) -> Result<Self::Resource, tonic::Status> {
         let session = self.expired_session_or_err()?;
         Ok(session.clone())
     }
@@ -172,16 +166,13 @@ impl<G: CoreConfig> Operation<G> for tonic::Request<InvalidateUserSessionRequest
 
     const ACTION: Action = Action::InvalidateUserSession;
 
-    async fn load_principal(
-        &mut self,
-        _driver: &mut Self::Driver,
-    ) -> Result<Self::Principal, tonic::Status> {
+    async fn load_principal(&mut self, _driver: &mut Self::Driver) -> Result<Self::Principal, tonic::Status> {
         let global = &self.global::<G>()?;
         let session = self.session_or_err()?;
         common::get_user_by_id(global, session.user_id).await
     }
 
-    async fn load_resource(&mut self, _driver: &mut Self::Driver,) -> Result<Self::Resource, tonic::Status> {
+    async fn load_resource(&mut self, _driver: &mut Self::Driver) -> Result<Self::Resource, tonic::Status> {
         let session = self.session_or_err()?;
         Ok(session.clone())
     }

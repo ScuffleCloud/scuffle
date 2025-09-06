@@ -24,17 +24,14 @@ use crate::totp::TotpError;
 use crate::{CoreConfig, common, emails, totp};
 
 impl<G: CoreConfig> Operation<G> for tonic::Request<pb::scufflecloud::core::v1::GetUserRequest> {
+    type Driver = NoopOperationDriver;
     type Principal = User;
     type Resource = User;
     type Response = pb::scufflecloud::core::v1::User;
 
     const ACTION: Action = Action::GetUser;
-    type Driver = NoopOperationDriver;
 
-    async fn load_principal(
-        &mut self,
-        _driver: &mut Self::Driver,
-    ) -> Result<Self::Principal, tonic::Status> {
+    async fn load_principal(&mut self, _driver: &mut Self::Driver) -> Result<Self::Principal, tonic::Status> {
         let global = &self.global::<G>()?;
         let session = self.session_or_err()?;
         common::get_user_by_id(global, session.user_id).await
@@ -69,10 +66,7 @@ impl<G: CoreConfig> Operation<G> for tonic::Request<pb::scufflecloud::core::v1::
 
     const ACTION: Action = Action::UpdateUser;
 
-    async fn load_principal(
-        &mut self,
-        _driver: &mut Self::Driver,
-    ) -> Result<Self::Principal, tonic::Status> {
+    async fn load_principal(&mut self, _driver: &mut Self::Driver) -> Result<Self::Principal, tonic::Status> {
         let global = &self.global::<G>()?;
         let session = self.session_or_err()?;
         common::get_user_by_id(global, session.user_id).await
@@ -161,23 +155,20 @@ impl<G: CoreConfig> Operation<G> for tonic::Request<pb::scufflecloud::core::v1::
 }
 
 impl<G: CoreConfig> Operation<G> for tonic::Request<pb::scufflecloud::core::v1::ListUserEmailsRequest> {
+    type Driver = NoopOperationDriver;
     type Principal = User;
     type Resource = User;
     type Response = pb::scufflecloud::core::v1::UserEmailsList;
 
     const ACTION: Action = Action::ListUserEmails;
-    type Driver = NoopOperationDriver;
 
-    async fn load_principal(
-        &mut self,
-        _driver: &mut Self::Driver,
-    ) -> Result<Self::Principal, tonic::Status> {
+    async fn load_principal(&mut self, _driver: &mut Self::Driver) -> Result<Self::Principal, tonic::Status> {
         let global = &self.global::<G>()?;
         let session = self.session_or_err()?;
         common::get_user_by_id(global, session.user_id).await
     }
 
-    async fn load_resource(&mut self, _driver: &mut Self::Driver,) -> Result<Self::Resource, tonic::Status> {
+    async fn load_resource(&mut self, _driver: &mut Self::Driver) -> Result<Self::Resource, tonic::Status> {
         let global = &self.global::<G>()?;
         let user_id: UserId = self
             .get_ref()
@@ -218,16 +209,13 @@ impl<G: CoreConfig> Operation<G> for tonic::Request<pb::scufflecloud::core::v1::
 
     const ACTION: Action = Action::CreateUserEmail;
 
-    async fn load_principal(
-        &mut self,
-        _driver: &mut Self::Driver,
-    ) -> Result<Self::Principal, tonic::Status> {
+    async fn load_principal(&mut self, _driver: &mut Self::Driver) -> Result<Self::Principal, tonic::Status> {
         let global = &self.global::<G>()?;
         let session = self.session_or_err()?;
         common::get_user_by_id(global, session.user_id).await
     }
 
-    async fn load_resource(&mut self, _driver: &mut Self::Driver,) -> Result<Self::Resource, tonic::Status> {
+    async fn load_resource(&mut self, _driver: &mut Self::Driver) -> Result<Self::Resource, tonic::Status> {
         let user_id: UserId = self
             .get_ref()
             .id
@@ -307,10 +295,7 @@ impl<G: CoreConfig> Operation<G> for tonic::Request<pb::scufflecloud::core::v1::
 
     const ACTION: Action = Action::CreateUserEmail;
 
-    async fn load_principal(
-        &mut self,
-        _driver: &mut Self::Driver,
-    ) -> Result<Self::Principal, tonic::Status> {
+    async fn load_principal(&mut self, _driver: &mut Self::Driver) -> Result<Self::Principal, tonic::Status> {
         let global = &self.global::<G>()?;
         let session = self.session_or_err()?;
         common::get_user_by_id(global, session.user_id).await
@@ -392,10 +377,7 @@ impl<G: CoreConfig> Operation<G> for tonic::Request<pb::scufflecloud::core::v1::
 
     const ACTION: Action = Action::DeleteUserEmail;
 
-    async fn load_principal(
-        &mut self,
-        _driver: &mut Self::Driver,
-    ) -> Result<Self::Principal, tonic::Status> {
+    async fn load_principal(&mut self, _driver: &mut Self::Driver) -> Result<Self::Principal, tonic::Status> {
         let global = &self.global::<G>()?;
         let session = self.session_or_err()?;
         common::get_user_by_id(global, session.user_id).await
@@ -446,10 +428,7 @@ impl<G: CoreConfig> Operation<G> for tonic::Request<pb::scufflecloud::core::v1::
 
     const ACTION: Action = Action::CreateWebauthnCredential;
 
-    async fn load_principal(
-        &mut self,
-        _driver: &mut Self::Driver,
-    ) -> Result<Self::Principal, tonic::Status> {
+    async fn load_principal(&mut self, _driver: &mut Self::Driver) -> Result<Self::Principal, tonic::Status> {
         let global = &self.global::<G>()?;
         let session = self.session_or_err()?;
         common::get_user_by_id(global, session.user_id).await
@@ -528,10 +507,7 @@ impl<G: CoreConfig> Operation<G> for tonic::Request<pb::scufflecloud::core::v1::
 
     const ACTION: Action = Action::CompleteCreateWebauthnCredential;
 
-    async fn load_principal(
-        &mut self,
-        _driver: &mut Self::Driver,
-    ) -> Result<Self::Principal, tonic::Status> {
+    async fn load_principal(&mut self, _driver: &mut Self::Driver) -> Result<Self::Principal, tonic::Status> {
         let global = &self.global::<G>()?;
         let session = self.session_or_err()?;
         common::get_user_by_id(global, session.user_id).await
@@ -602,23 +578,20 @@ impl<G: CoreConfig> Operation<G> for tonic::Request<pb::scufflecloud::core::v1::
 }
 
 impl<G: CoreConfig> Operation<G> for tonic::Request<pb::scufflecloud::core::v1::ListWebauthnCredentialsRequest> {
+    type Driver = NoopOperationDriver;
     type Principal = User;
     type Resource = User;
     type Response = pb::scufflecloud::core::v1::WebauthnCredentialsList;
 
     const ACTION: Action = Action::ListWebauthnCredentials;
-    type Driver = NoopOperationDriver;
 
-    async fn load_principal(
-        &mut self,
-        _driver: &mut Self::Driver,
-    ) -> Result<Self::Principal, tonic::Status> {
+    async fn load_principal(&mut self, _driver: &mut Self::Driver) -> Result<Self::Principal, tonic::Status> {
         let global = &self.global::<G>()?;
         let session = self.session_or_err()?;
         common::get_user_by_id(global, session.user_id).await
     }
 
-    async fn load_resource(&mut self, _driver: &mut Self::Driver,) -> Result<Self::Resource, tonic::Status> {
+    async fn load_resource(&mut self, _driver: &mut Self::Driver) -> Result<Self::Resource, tonic::Status> {
         let global = &self.global::<G>()?;
         let user_id: UserId = self
             .get_ref()
@@ -658,10 +631,7 @@ impl<G: CoreConfig> Operation<G> for tonic::Request<pb::scufflecloud::core::v1::
 
     const ACTION: Action = Action::DeleteWebauthnCredential;
 
-    async fn load_principal(
-        &mut self,
-        _driver: &mut Self::Driver,
-    ) -> Result<Self::Principal, tonic::Status> {
+    async fn load_principal(&mut self, _driver: &mut Self::Driver) -> Result<Self::Principal, tonic::Status> {
         let global = &self.global::<G>()?;
         let session = self.session_or_err()?;
         common::get_user_by_id(global, session.user_id).await
@@ -718,16 +688,13 @@ impl<G: CoreConfig> Operation<G> for tonic::Request<pb::scufflecloud::core::v1::
 
     const ACTION: Action = Action::CreateWebauthnChallenge;
 
-    async fn load_principal(
-        &mut self,
-        _driver: &mut Self::Driver,
-    ) -> Result<Self::Principal, tonic::Status> {
+    async fn load_principal(&mut self, _driver: &mut Self::Driver) -> Result<Self::Principal, tonic::Status> {
         let global = &self.global::<G>()?;
         let session = self.session_or_err()?;
         common::get_user_by_id(global, session.user_id).await
     }
 
-    async fn load_resource(&mut self, _driver: &mut Self::Driver,) -> Result<Self::Resource, tonic::Status> {
+    async fn load_resource(&mut self, _driver: &mut Self::Driver) -> Result<Self::Resource, tonic::Status> {
         let global = &self.global::<G>()?;
         let user_id: UserId = self
             .get_ref()
@@ -788,10 +755,7 @@ impl<G: CoreConfig> Operation<G> for tonic::Request<pb::scufflecloud::core::v1::
 
     const ACTION: Action = Action::CreateTotpCredential;
 
-    async fn load_principal(
-        &mut self,
-        _driver: &mut Self::Driver,
-    ) -> Result<Self::Principal, tonic::Status> {
+    async fn load_principal(&mut self, _driver: &mut Self::Driver) -> Result<Self::Principal, tonic::Status> {
         let global = &self.global::<G>()?;
         let session = self.session_or_err()?;
         common::get_user_by_id(global, session.user_id).await
@@ -844,10 +808,7 @@ impl<G: CoreConfig> Operation<G> for tonic::Request<pb::scufflecloud::core::v1::
 
     const ACTION: Action = Action::CompleteCreateTotpCredential;
 
-    async fn load_principal(
-        &mut self,
-        _driver: &mut Self::Driver,
-    ) -> Result<Self::Principal, tonic::Status> {
+    async fn load_principal(&mut self, _driver: &mut Self::Driver) -> Result<Self::Principal, tonic::Status> {
         let global = &self.global::<G>()?;
         let session = self.session_or_err()?;
         common::get_user_by_id(global, session.user_id).await
@@ -908,23 +869,20 @@ impl<G: CoreConfig> Operation<G> for tonic::Request<pb::scufflecloud::core::v1::
 }
 
 impl<G: CoreConfig> Operation<G> for tonic::Request<pb::scufflecloud::core::v1::ListTotpCredentialsRequest> {
+    type Driver = NoopOperationDriver;
     type Principal = User;
     type Resource = User;
     type Response = pb::scufflecloud::core::v1::TotpCredentialsList;
 
     const ACTION: Action = Action::ListTotpCredentials;
-    type Driver = NoopOperationDriver;
 
-    async fn load_principal(
-        &mut self,
-        _driver: &mut Self::Driver,
-    ) -> Result<Self::Principal, tonic::Status> {
+    async fn load_principal(&mut self, _driver: &mut Self::Driver) -> Result<Self::Principal, tonic::Status> {
         let global = &self.global::<G>()?;
         let session = self.session_or_err()?;
         common::get_user_by_id(global, session.user_id).await
     }
 
-    async fn load_resource(&mut self, _driver: &mut Self::Driver,) -> Result<Self::Resource, tonic::Status> {
+    async fn load_resource(&mut self, _driver: &mut Self::Driver) -> Result<Self::Resource, tonic::Status> {
         let global = &self.global::<G>()?;
         let user_id: UserId = self
             .get_ref()
@@ -964,10 +922,7 @@ impl<G: CoreConfig> Operation<G> for tonic::Request<pb::scufflecloud::core::v1::
 
     const ACTION: Action = Action::DeleteTotpCredential;
 
-    async fn load_principal(
-        &mut self,
-        _driver: &mut Self::Driver,
-    ) -> Result<Self::Principal, tonic::Status> {
+    async fn load_principal(&mut self, _driver: &mut Self::Driver) -> Result<Self::Principal, tonic::Status> {
         let global = &self.global::<G>()?;
         let session = self.session_or_err()?;
         common::get_user_by_id(global, session.user_id).await
@@ -1024,16 +979,13 @@ impl<G: CoreConfig> Operation<G> for tonic::Request<pb::scufflecloud::core::v1::
 
     const ACTION: Action = Action::RegenerateRecoveryCodes;
 
-    async fn load_principal(
-        &mut self,
-        _driver: &mut Self::Driver,
-    ) -> Result<Self::Principal, tonic::Status> {
+    async fn load_principal(&mut self, _driver: &mut Self::Driver) -> Result<Self::Principal, tonic::Status> {
         let global = &self.global::<G>()?;
         let session = self.session_or_err()?;
         common::get_user_by_id(global, session.user_id).await
     }
 
-    async fn load_resource(&mut self, _driver: &mut Self::Driver,) -> Result<Self::Resource, tonic::Status> {
+    async fn load_resource(&mut self, _driver: &mut Self::Driver) -> Result<Self::Resource, tonic::Status> {
         let global = &self.global::<G>()?;
         let user_id: UserId = self
             .get_ref()
@@ -1095,10 +1047,7 @@ impl<G: CoreConfig> Operation<G> for tonic::Request<pb::scufflecloud::core::v1::
 
     const ACTION: Action = Action::DeleteUser;
 
-    async fn load_principal(
-        &mut self,
-        _driver: &mut Self::Driver,
-    ) -> Result<Self::Principal, tonic::Status> {
+    async fn load_principal(&mut self, _driver: &mut Self::Driver) -> Result<Self::Principal, tonic::Status> {
         let global = &self.global::<G>()?;
         let session = self.session_or_err()?;
         common::get_user_by_id(global, session.user_id).await

@@ -51,7 +51,9 @@ pub trait CoreConfig:
     fn bind(&self) -> SocketAddr;
     fn db(
         &self,
-    ) -> impl Future<Output = anyhow::Result<diesel_async::pooled_connection::bb8::PooledConnection<'static, AsyncPgConnection>>> + Send;
+    ) -> impl Future<
+        Output = anyhow::Result<diesel_async::pooled_connection::bb8::PooledConnection<'static, AsyncPgConnection>>,
+    > + Send;
     fn authorizer(&self) -> &cedar_policy::Authorizer;
     fn http_client(&self) -> &reqwest::Client;
     fn webauthn(&self) -> &webauthn_rs::Webauthn;

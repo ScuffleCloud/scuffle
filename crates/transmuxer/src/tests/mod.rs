@@ -333,7 +333,7 @@ fn test_transmuxer_hevc_aac() {
     assert_eq!(json["format"]["duration"], "2.026667");
     assert_eq!(json["format"]["tags"]["major_brand"], "iso5");
     assert_eq!(json["format"]["tags"]["minor_version"], "512");
-    assert_eq!(json["format"]["tags"]["compatible_brands"], "iso5iso6hev1mp41");
+    assert_eq!(json["format"]["tags"]["compatible_brands"], "iso5iso6hvc1mp41");
 
     assert_eq!(json["streams"][0]["codec_name"], "hevc");
     assert_eq!(json["streams"][0]["codec_type"], "video");

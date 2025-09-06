@@ -16,6 +16,7 @@ pub mod ftyp;
 pub mod hdlr;
 pub mod hev1;
 pub mod hmhd;
+pub mod hvc1;
 pub mod hvcc;
 pub mod mdat;
 pub mod mdhd;

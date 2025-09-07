@@ -65,6 +65,6 @@ rust_library(
     }),
     version = "0.2.21",
     deps = [
-        "@cargo_vendor__zerocopy-0.8.26//:zerocopy",
+        "@cargo_vendor__zerocopy-0.8.27//:zerocopy",
     ],
 )

@@ -90,7 +90,7 @@ rust_library(
         "@cargo_vendor__is_ci-1.2.0//:is_ci",
         "@cargo_vendor__itertools-0.14.0//:itertools",
         "@cargo_vendor__miette-7.6.0//:miette",
-        "@cargo_vendor__newtype-uuid-1.3.0//:newtype_uuid",
+        "@cargo_vendor__newtype-uuid-1.2.4//:newtype_uuid",
         "@cargo_vendor__nextest-filtering-0.16.0//:nextest_filtering",
         "@cargo_vendor__nextest-metadata-0.12.2//:nextest_metadata",
         "@cargo_vendor__nextest-workspace-hack-0.1.0//:nextest_workspace_hack",

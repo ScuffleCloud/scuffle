@@ -83,7 +83,7 @@ rust_library(
         "@cargo_vendor__thiserror-1.0.69//:thiserror",
         "@cargo_vendor__tracing-0.1.41//:tracing",
         "@cargo_vendor__url-2.5.7//:url",
-        "@cargo_vendor__uuid-1.18.0//:uuid",
+        "@cargo_vendor__uuid-1.18.1//:uuid",
         "@cargo_vendor__webauthn-attestation-ca-0.5.2//:webauthn_attestation_ca",
         "@cargo_vendor__webauthn-rs-core-0.5.2//:build_script_build",
         "@cargo_vendor__webauthn-rs-proto-0.5.2//:webauthn_rs_proto",

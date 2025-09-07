@@ -60,6 +60,6 @@ rust_library(
     }),
     version = "0.1.54",
     deps = [
-        "@cargo_vendor__cc-1.2.34//:cc",
+        "@cargo_vendor__cc-1.2.36//:cc",
     ],
 )

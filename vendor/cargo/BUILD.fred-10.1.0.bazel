@@ -83,7 +83,7 @@ rust_library(
         "@cargo_vendor__bytes-utils-0.1.4//:bytes_utils",
         "@cargo_vendor__float-cmp-0.10.0//:float_cmp",
         "@cargo_vendor__futures-0.3.31//:futures",
-        "@cargo_vendor__log-0.4.27//:log",
+        "@cargo_vendor__log-0.4.28//:log",
         "@cargo_vendor__parking_lot-0.12.4//:parking_lot",
         "@cargo_vendor__rand-0.8.5//:rand",
         "@cargo_vendor__redis-protocol-6.0.0//:redis_protocol",

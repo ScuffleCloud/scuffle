@@ -87,15 +87,15 @@ message UpdateUserPassword {
 }
 
 message UpdateUserNames {
-  string preferred_name = 1 [(tinc.field).constraint.string = {
+  optional string preferred_name = 1 [(tinc.field).constraint.string = {
     min_len: 1
     max_len: 255
   }];
-  string first_name = 2 [(tinc.field).constraint.string = {
+  optional string first_name = 2 [(tinc.field).constraint.string = {
     min_len: 1
     max_len: 255
   }];
-  string last_name = 3 [(tinc.field).constraint.string = {
+  optional string last_name = 3 [(tinc.field).constraint.string = {
     min_len: 1
     max_len: 255
   }];

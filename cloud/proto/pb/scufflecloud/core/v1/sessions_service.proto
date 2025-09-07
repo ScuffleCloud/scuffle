@@ -89,9 +89,10 @@ message Device {
 }
 
 enum MfaOption {
-  TOTP = 0;
-  WEB_AUTHN = 1;
-  RECOVERY_CODES = 2;
+  MFA_OPTION_UNSPECIFIED = 0 [(tinc.variant).visibility = SKIP];
+  MFA_OPTION_TOTP = 1;
+  MFA_OPTION_WEB_AUTHN = 2;
+  MFA_OPTION_RECOVERY_CODES = 3;
 }
 
 message NewUserSessionToken {

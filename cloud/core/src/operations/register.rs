@@ -1,6 +1,7 @@
 use base64::Engine;
 use diesel::{BoolExpressionMethods, ExpressionMethods, OptionalExtension, QueryDsl, SelectableHelper};
 use diesel_async::RunQueryDsl;
+use pb::scufflecloud::core::v1::CaptchaProvider;
 use tonic::Code;
 use tonic_types::{ErrorDetails, StatusExt};
 
@@ -26,7 +27,10 @@ impl<G: CoreConfig> Operation<G> for tonic::Request<pb::scufflecloud::core::v1::
         // Check captcha
         let captcha = self.get_ref().captcha.clone().require("captcha")?;
         match captcha.provider() {
-            pb::scufflecloud::core::v1::CaptchaProvider::Turnstile => {
+            CaptchaProvider::Unspecified => {
+                return Err(tonic::Status::invalid_argument("captcha provider must be set"));
+            }
+            CaptchaProvider::Turnstile => {
                 captcha::turnstile::verify_in_tonic(global, &captcha.token).await?;
             }
         }

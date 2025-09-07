@@ -2,14 +2,6 @@
 
 root = true
 
-[*]
-end_of_line = lf
-insert_final_newline = true
-charset = utf-8
-indent_style = space
-indent_size = 4
-trim_trailing_whitespace = true
-
 [*.sh]
 indent_style = space
 indent_size = 4
@@ -25,3 +17,11 @@ trim_trailing_whitespace = false
 [*.yaml,*.yml,*.proto]
 indent_style = space
 indent_size = 2
+
+[*]
+end_of_line = lf
+insert_final_newline = true
+charset = utf-8
+indent_style = space
+indent_size = 4
+trim_trailing_whitespace = true

@@ -32,35 +32,29 @@ jobs:
       HEAD_HASHES: /tmp/head-hashes.json
       BASE_HASHES: /tmp/base-hashes.json
       IMPACTED_TARGETS: /tmp/impacted-targets.txt
+      BASE_WORKTREE: /tmp/base
     steps:
       - uses: actions/checkout@v5
         with:
-          path: head
-
-      - uses: actions/checkout@v5
-        with:
-          ref: ${{ github.event.pull_request.base.sha }}
-          path: base
           fetch-depth: 0
 
-      - uses: ./head/.github/actions/setup-bazel
+      - name: Setup worktree
+        run: git worktree add ${{ env.BASE_WORKTREE }} ${{ github.event.pull_request.base.sha }}
+
+      - uses: ./.github/actions/setup-bazel
         with:
           build_buddy_token: ${{ secrets.BUILD_BUDDY_TOKEN }}
 
       - name: File diff
-        working-directory: head
-        run: git diff --name-only "${{ github.event.pull_request.base.sha }}" "HEAD" > ${{ env.MODIFIED_FILES }}
+        run: git diff --name-only ${{ github.event.pull_request.base.sha }}..${{ github.sha }} > ${{ env.MODIFIED_FILES }}
 
       - name: Generate current hashes
-        working-directory: head
         run: ./tools/scripts/bazel-diff generate-hashes --workspacePath=$(pwd) --keep_going --includeTargetType --no-useCquery > ${{ env.HEAD_HASHES }}
 
       - name: Generate base hashes
-        working-directory: head
-        run: ./tools/scripts/bazel-diff generate-hashes --workspacePath=$(pwd)/../base --keep_going --includeTargetType --no-useCquery > ${{ env.BASE_HASHES }}
+        run: ./tools/scripts/bazel-diff generate-hashes --workspacePath=${{ env.BASE_WORKTREE }} --keep_going --includeTargetType --no-useCquery > ${{ env.BASE_HASHES }}
 
       - name: Get impacted targets
-        working-directory: head
         run: ./tools/scripts/bazel-diff get-impacted-targets --startingHashes=${{ env.BASE_HASHES }} --finalHashes=${{ env.HEAD_HASHES }} --output=${{ env.IMPACTED_TARGETS }}
 
       - name: Upload Results

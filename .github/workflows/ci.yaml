@@ -28,10 +28,10 @@ jobs:
     runs-on: ubuntu-24.04
     if: ${{ github.event_name == 'pull_request' }}
     env:
-        MODIFIED_FILES: /tmp/modified-files.txt
-        HEAD_HASHES: /tmp/head-hashes.json
-        BASE_HASHES: /tmp/base-hashes.json
-        IMPACTED_TARGETS: /tmp/impacted-targets.txt
+      MODIFIED_FILES: /tmp/modified-files.txt
+      HEAD_HASHES: /tmp/head-hashes.json
+      BASE_HASHES: /tmp/base-hashes.json
+      IMPACTED_TARGETS: /tmp/impacted-targets.txt
     steps:
       - uses: actions/checkout@v5
         with:
@@ -48,7 +48,7 @@ jobs:
 
       - name: File diff
         working-directory: head
-        run: git diff --name-only "${{ github.event.pull_request.base.sha }}" "HEAD" > ${{ env.MODIFIED_FILES }}
+        run: git diff --name-only "${{ github.event.pull_request.base.ref }}" "HEAD" > ${{ env.MODIFIED_FILES }}
 
       - name: Generate current hashes
         working-directory: head

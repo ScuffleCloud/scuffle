@@ -17,7 +17,9 @@
 </script>
 
 <Header />
-<SearchInput bind:value={searchQuery} placeholder="Search..." />
+<div class="search-row">
+    <SearchInput bind:value={searchQuery} placeholder="Search..." />
+</div>
 {#await streamedData}
     <div>Loading...</div>
 {:then resolvedStreams}
@@ -25,3 +27,13 @@
 {:catch error}
     <p>{error.message}</p>
 {/await}
+
+<style>
+    .search-row {
+      display: flex;
+      justify-content: space-between;
+      margin-bottom: 1.5rem;
+      gap: 0.5rem;
+      height: 2.5rem;
+    }
+</style>

@@ -754,6 +754,18 @@ transition_alias_opt(
 )
 
 transition_alias_opt(
+    name = "itertools-0.14.0",
+    actual = "@cargo_vendor__itertools-0.14.0//:itertools",
+    tags = ["manual"],
+)
+
+transition_alias_opt(
+    name = "itertools",
+    actual = "@cargo_vendor__itertools-0.14.0//:itertools",
+    tags = ["manual"],
+)
+
+transition_alias_opt(
     name = "libc-0.2.175",
     actual = "@cargo_vendor__libc-0.2.175//:libc",
     tags = ["manual"],

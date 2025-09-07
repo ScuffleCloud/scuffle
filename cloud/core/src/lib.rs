@@ -51,7 +51,9 @@ pub trait CoreConfig:
     fn bind(&self) -> SocketAddr;
     fn db(
         &self,
-    ) -> impl Future<Output = anyhow::Result<diesel_async::pooled_connection::bb8::PooledConnection<'_, AsyncPgConnection>>> + Send;
+    ) -> impl Future<
+        Output = anyhow::Result<diesel_async::pooled_connection::bb8::PooledConnection<'static, AsyncPgConnection>>,
+    > + Send;
     fn authorizer(&self) -> &cedar_policy::Authorizer;
     fn http_client(&self) -> &reqwest::Client;
     fn webauthn(&self) -> &webauthn_rs::Webauthn;
@@ -60,6 +62,8 @@ pub trait CoreConfig:
         &self,
     ) -> pb::scufflecloud::email::v1::email_service_client::EmailServiceClient<tonic::transport::Channel>;
     fn user_loader(&self) -> &DataLoader<dataloaders::UserLoader>;
+    fn organization_loader(&self) -> &DataLoader<dataloaders::OrganizationLoader>;
+    fn organization_member_by_user_id_loader(&self) -> &DataLoader<dataloaders::OrganizationMemberByUserIdLoader>;
     fn swagger_ui_enabled(&self) -> bool {
         false
     }

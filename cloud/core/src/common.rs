@@ -112,7 +112,22 @@ pub(crate) async fn get_user_by_email(db: &mut diesel_async::AsyncPgConnection, 
     Ok(user)
 }
 
-pub(crate) async fn get_organization_by_id(
+pub(crate) async fn get_organization_by_id<G: CoreConfig>(
+    global: &Arc<G>,
+    organization_id: OrganizationId,
+) -> Result<Organization, tonic::Status> {
+    let organization = global
+        .organization_loader()
+        .load(organization_id)
+        .await
+        .ok()
+        .into_tonic_internal_err("failed to query organization")?
+        .into_tonic_not_found("organization not found")?;
+
+    Ok(organization)
+}
+
+pub(crate) async fn get_organization_by_id_in_tx(
     db: &mut diesel_async::AsyncPgConnection,
     organization_id: OrganizationId,
 ) -> Result<Organization, tonic::Status> {

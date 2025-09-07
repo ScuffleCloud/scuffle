@@ -9,7 +9,7 @@ use scuffle_batching::DataLoader;
 use scuffle_bootstrap_telemetry::opentelemetry;
 use scuffle_bootstrap_telemetry::opentelemetry_sdk::logs::SdkLoggerProvider;
 use scuffle_bootstrap_telemetry::opentelemetry_sdk::trace::SdkTracerProvider;
-use scufflecloud_core::dataloaders::UserLoader;
+use scufflecloud_core::dataloaders::{OrganizationLoader, OrganizationMemberByUserIdLoader, UserLoader};
 use tracing_subscriber::Layer;
 use tracing_subscriber::layer::SubscriberExt;
 use tracing_subscriber::util::SubscriberInitExt;
@@ -144,6 +144,8 @@ struct Global {
     config: Config,
     database: bb8::Pool<diesel_async::AsyncPgConnection>,
     user_loader: DataLoader<UserLoader>,
+    organization_loader: DataLoader<OrganizationLoader>,
+    organization_member_by_user_id_loader: DataLoader<OrganizationMemberByUserIdLoader>,
     authorizer: cedar_policy::Authorizer,
     http_client: reqwest::Client,
     webauthn: webauthn_rs::Webauthn,
@@ -161,8 +163,8 @@ impl scufflecloud_core::CoreConfig for Global {
         self.config.bind
     }
 
-    async fn db(&self) -> anyhow::Result<bb8::PooledConnection<'_, diesel_async::AsyncPgConnection>> {
-        self.database.get().await.context("get database connection")
+    async fn db(&self) -> anyhow::Result<bb8::PooledConnection<'static, diesel_async::AsyncPgConnection>> {
+        self.database.get_owned().await.context("get database connection")
     }
 
     fn authorizer(&self) -> &cedar_policy::Authorizer {
@@ -189,6 +191,14 @@ impl scufflecloud_core::CoreConfig for Global {
 
     fn user_loader(&self) -> &DataLoader<UserLoader> {
         &self.user_loader
+    }
+
+    fn organization_loader(&self) -> &DataLoader<OrganizationLoader> {
+        &self.organization_loader
+    }
+
+    fn organization_member_by_user_id_loader(&self) -> &DataLoader<OrganizationMemberByUserIdLoader> {
+        &self.organization_member_by_user_id_loader
     }
 
     fn swagger_ui_enabled(&self) -> bool {
@@ -275,6 +285,10 @@ impl scuffle_bootstrap::Global for Global {
             )
             .init();
 
+        if rustls::crypto::aws_lc_rs::default_provider().install_default().is_err() {
+            anyhow::bail!("failed to install aws-lc-rs as default TLS provider");
+        }
+
         let Some(db_url) = config.db_url.as_deref() else {
             anyhow::bail!("DATABASE_URL is not set");
         };
@@ -288,6 +302,10 @@ impl scuffle_bootstrap::Global for Global {
 
         let connection = database.get_owned().await.context("get database connection")?;
         let user_loader = UserLoader::new(connection);
+        let connection = database.get_owned().await.context("get database connection")?;
+        let organization_loader = OrganizationLoader::new(connection);
+        let connection = database.get_owned().await.context("get database connection")?;
+        let organization_member_by_user_id_loader = OrganizationMemberByUserIdLoader::new(connection);
 
         let http_client = reqwest::Client::builder()
             .user_agent(&config.service_name)
@@ -325,6 +343,8 @@ impl scuffle_bootstrap::Global for Global {
             config,
             database,
             user_loader,
+            organization_loader,
+            organization_member_by_user_id_loader,
             authorizer: cedar_policy::Authorizer::new(),
             http_client,
             webauthn,

@@ -111,7 +111,7 @@ build_tool() {
         die "bazel cquery failed:\n$(cat "${stderr_output}")"
     fi
 
-    echo "$result" >> "$CACHE_PATH"
+    echo "$result" > "$CACHE_PATH"
 
     rm -f "${stderr_output}"
 }

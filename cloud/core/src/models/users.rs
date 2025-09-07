@@ -22,6 +22,7 @@ pub struct User {
     pub last_name: Option<String>,
     pub password_hash: Option<String>,
     pub primary_email: Option<String>,
+    pub avatar_url: Option<String>,
 }
 
 impl PrefixedId for User {
@@ -60,6 +61,7 @@ impl From<User> for pb::scufflecloud::core::v1::User {
             first_name: value.first_name,
             last_name: value.last_name,
             primary_email: value.primary_email,
+            avatar_url: value.avatar_url,
             created_at: Some(tinc::well_known::prost::Timestamp::from(value.id.datetime())),
         }
     }

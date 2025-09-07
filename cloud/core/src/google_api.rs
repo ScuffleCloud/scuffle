@@ -18,6 +18,7 @@ pub(crate) struct GoogleToken {
     pub token_type: String,
 }
 
+/// https://developers.google.com/identity/openid-connect/openid-connect#obtainuserinfo
 #[derive(serde_derive::Deserialize, Debug, Clone)]
 pub(crate) struct GoogleIdToken {
     pub sub: String,
@@ -27,6 +28,7 @@ pub(crate) struct GoogleIdToken {
     pub given_name: Option<String>,
     pub hd: Option<String>,
     pub name: Option<String>,
+    pub picture: Option<String>,
 }
 
 fn deserialize_google_id_token<'de, D>(deserialzer: D) -> Result<GoogleIdToken, D::Error>

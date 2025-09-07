@@ -30,12 +30,12 @@ jobs:
     steps:
       - uses: actions/checkout@v5
         with:
-            path: head
+          path: head
 
       - uses: actions/checkout@v5
         with:
-            ref: ${{ github.event.pull_request.base.sha }}
-            path: base
+          ref: ${{ github.event.pull_request.base.sha }}
+          path: base
 
       - uses: ./head/.github/actions/setup-bazel
         with:
@@ -83,7 +83,7 @@ jobs:
       build_buddy_token: ${{ secrets.BUILD_BUDDY_TOKEN }}
 
   test:
-    needs: [prep,bazel-diff]
+    needs: [prep, bazel-diff]
     if: ${{ fromJson(needs.prep.outputs.prep).test != null }}
     uses: ./.github/workflows/ci-test.yaml
     with:
@@ -95,14 +95,14 @@ jobs:
       build_buddy_token: "${{ secrets.BUILD_BUDDY_TOKEN }}"
 
   check_fmt:
-    needs: [prep,bazel-diff]
+    needs: [prep, bazel-diff]
     if: ${{ fromJson(needs.prep.outputs.prep).check_fmt != null }}
     uses: ./.github/workflows/ci-check-fmt.yaml
     secrets:
       build_buddy_token: ${{ secrets.BUILD_BUDDY_TOKEN }}
 
   grind:
-    needs: [prep,bazel-diff]
+    needs: [prep, bazel-diff]
     if: ${{ fromJson(needs.prep.outputs.prep).grind != null }}
     uses: ./.github/workflows/ci-grind.yaml
     with:
@@ -112,7 +112,7 @@ jobs:
       build_buddy_token: "${{ secrets.BUILD_BUDDY_TOKEN }}"
 
   preview:
-    needs: [prep,bazel-diff]
+    needs: [prep, bazel-diff]
     if: ${{ fromJson(needs.prep.outputs.prep).preview != null }}
     uses: ./.github/workflows/ci-preview.yaml
     permissions:

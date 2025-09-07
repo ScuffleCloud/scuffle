@@ -38,9 +38,10 @@ jobs:
       - uses: actions/download-artifact@v5
         if: ${{ github.event_name == 'pull_request' }}
         with:
-            name: bazel-diff-impacted-targets
+          name: bazel-diff-impacted-targets
 
-      - name: Run
+      - name: Run Tests
+        id: run
         env:
           MODE: ${{ runner.os == 'Linux' && 'coverage' || 'test' }}
         run: |
@@ -55,13 +56,15 @@ jobs:
           # Exit early if no targets
           if [ -z "$targets" ]; then
             echo "No targets to test."
+            echo "run=false" >> $GITHUB_OUTPUT
             exit 0
           fi
 
+          echo "run=true" >> $GITHUB_OUTPUT
           bazel ${MODE} ${targets} --skip_incompatible_explicit_targets
 
       - uses: codecov/codecov-action@v5
-        if: ${{ runner.os == 'Linux' }}
+        if: ${{ runner.os == 'Linux' && steps.run.outputs.run == 'true' }}
         with:
           fail_ci_if_error: true
           files: ./target-bazel/out/_coverage/_coverage_report.dat

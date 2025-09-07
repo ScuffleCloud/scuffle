@@ -39,36 +39,35 @@ jobs:
       docs_build: ${{ steps.builds.outputs.docs_build }}
       rustdoc_build: ${{ steps.builds.outputs.rustdoc_build }}
     steps:
-        - uses: actions/download-artifact@v5
-          if: ${{ github.event_name == 'pull_request' }}
-          with:
-              name: bazel-diff-impacted-targets
+      - uses: actions/download-artifact@v5
+        if: ${{ github.event_name == 'pull_request' }}
+        with:
+          name: bazel-diff-impacted-targets
 
-        - name: Compute builds
-          id: builds
-          run: |
-            file="./impacted-targets.txt"
+      - name: Compute builds
+        id: builds
+        run: |
+          file="./impacted-targets.txt"
 
-            if [[ ! -f "$file" ]]; then
-                echo "dashboard_build=true" >> $GITHUB_OUTPUT
-                echo "docs_build=true" >> $GITHUB_OUTPUT
-                echo "rustdoc_build=true" >> $GITHUB_OUTPUT
-            else
-                check_target() {
-                    local target=$1
-                    local var_name=$2
-                    if grep -Fxq "$target" "$file"; then
-                        echo "$var_name=true" >> $GITHUB_OUTPUT
-                    else
-                        echo "$var_name=false" >> $GITHUB_OUTPUT
-                    fi
-                }
+          if [[ ! -f "$file" ]]; then
+              echo "dashboard_build=true" >> $GITHUB_OUTPUT
+              echo "docs_build=true" >> $GITHUB_OUTPUT
+              echo "rustdoc_build=true" >> $GITHUB_OUTPUT
+          else
+              check_target() {
+                  local target=$1
+                  local var_name=$2
+                  if grep -Fxq "$target" "$file"; then
+                      echo "$var_name=true" >> $GITHUB_OUTPUT
+                  else
+                      echo "$var_name=false" >> $GITHUB_OUTPUT
+                  fi
+              }
 
-                check_target "//cloud/dashboard:dashboard" "dashboard_build"
-                check_target "//cloud/docs:docs" "docs_build"
-                check_target "//docs:rustdoc" "rustdoc_build"
-            fi
-
+              check_target "//cloud/dashboard:dashboard" "dashboard_build"
+              check_target "//cloud/docs:docs" "docs_build"
+              check_target "//docs:rustdoc" "rustdoc_build"
+          fi
 
   dashboard:
     needs: [prep]

@@ -28,7 +28,7 @@ jobs:
       - uses: actions/download-artifact@v5
         if: ${{ github.event_name == 'pull_request' }}
         with:
-            name: bazel-diff-impacted-targets
+          name: bazel-diff-impacted-targets
 
       - uses: ./.github/actions/setup-bazel
         with:

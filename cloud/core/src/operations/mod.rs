@@ -1,6 +1,7 @@
 use std::sync::Arc;
 
-use diesel_async::{AnsiTransactionManager, TransactionManager};
+use diesel_async::pooled_connection::bb8::PooledConnection;
+use diesel_async::{AnsiTransactionManager, AsyncPgConnection, TransactionManager};
 
 use crate::CoreConfig;
 use crate::cedar::{self, Action, CedarEntity};
@@ -22,7 +23,7 @@ pub(crate) trait OperationDriver<G: CoreConfig>: Sized {
 }
 
 pub(crate) struct TransactionOperationDriver {
-    conn: diesel_async::pooled_connection::bb8::PooledConnection<'static, diesel_async::AsyncPgConnection>,
+    conn: PooledConnection<'static, AsyncPgConnection>,
 }
 
 impl<G: CoreConfig> OperationDriver<G> for TransactionOperationDriver {
@@ -115,10 +116,9 @@ pub(crate) trait Operation<G: CoreConfig>: RequestExt + Sized + Send {
     ) -> impl Future<Output = Result<Self::Response, tonic::Status>> + Send;
 
     async fn run(mut self) -> Result<Self::Response, tonic::Status> {
-        let global = self.global::<G>()?;
-
         self.validate().await?;
 
+        let global = self.global::<G>()?;
         let mut driver = Self::Driver::start(&global).await?;
 
         let fut = async {

@@ -48,7 +48,9 @@ jobs:
 
       - name: File diff
         working-directory: head
-        run: git diff --name-only "${{ github.event.pull_request.base.ref }}" "HEAD" > ${{ env.MODIFIED_FILES }}
+        run: |
+          git fetch origin "${{ github.event.pull_request.base.ref }}"
+          git diff --name-only "${{ github.event.pull_request.base.ref }}" "HEAD" > ${{ env.MODIFIED_FILES }}
 
       - name: Generate current hashes
         working-directory: head

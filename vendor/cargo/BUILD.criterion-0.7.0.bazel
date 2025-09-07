@@ -72,7 +72,7 @@ rust_library(
         "@cargo_vendor__anes-0.1.6//:anes",
         "@cargo_vendor__cast-0.3.0//:cast",
         "@cargo_vendor__ciborium-0.2.2//:ciborium",
-        "@cargo_vendor__clap-4.5.46//:clap",
+        "@cargo_vendor__clap-4.5.47//:clap",
         "@cargo_vendor__criterion-plot-0.6.0//:criterion_plot",
         "@cargo_vendor__itertools-0.13.0//:itertools",
         "@cargo_vendor__num-traits-0.2.19//:num_traits",

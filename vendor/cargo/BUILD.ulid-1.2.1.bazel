@@ -68,7 +68,7 @@ rust_library(
     version = "1.2.1",
     deps = [
         "@cargo_vendor__rand-0.9.2//:rand",
-        "@cargo_vendor__uuid-1.18.0//:uuid",
+        "@cargo_vendor__uuid-1.18.1//:uuid",
     ] + select({
         "@rules_rust//rust/platform:wasm32-unknown-unknown": [
             "@cargo_vendor__web-time-1.1.0//:web_time",

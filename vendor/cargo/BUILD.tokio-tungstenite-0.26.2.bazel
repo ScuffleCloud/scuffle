@@ -68,7 +68,7 @@ rust_library(
     version = "0.26.2",
     deps = [
         "@cargo_vendor__futures-util-0.3.31//:futures_util",
-        "@cargo_vendor__log-0.4.27//:log",
+        "@cargo_vendor__log-0.4.28//:log",
         "@cargo_vendor__tokio-1.47.1//:tokio",
         "@cargo_vendor__tungstenite-0.26.2//:tungstenite",
     ],

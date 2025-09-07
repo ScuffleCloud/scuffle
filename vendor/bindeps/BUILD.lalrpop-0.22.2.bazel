@@ -17,7 +17,7 @@ cargo_toml_env_vars(
 )
 
 rust_library(
-    name = "phf_shared",
+    name = "lalrpop",
     srcs = glob(
         include = ["**/*.rs"],
         allow_empty = True,
@@ -36,7 +36,9 @@ rust_library(
     ),
     crate_features = [
         "default",
-        "std",
+        "lexer",
+        "pico-args",
+        "unicode",
     ],
     crate_root = "src/lib.rs",
     edition = "2021",
@@ -48,7 +50,7 @@ rust_library(
     ],
     tags = [
         "cargo-bazel",
-        "crate-name=phf_shared",
+        "crate-name=lalrpop",
         "manual",
         "noclippy",
         "norustfmt",
@@ -62,8 +64,21 @@ rust_library(
         "@rules_rust//rust/platform:x86_64-unknown-linux-gnu": [],
         "//conditions:default": ["@platforms//:incompatible"],
     }),
-    version = "0.11.3",
+    version = "0.22.2",
     deps = [
-        "@bindeps__siphasher-1.0.1//:siphasher",
+        "@bindeps__ascii-canvas-4.0.0//:ascii_canvas",
+        "@bindeps__bit-set-0.8.0//:bit_set",
+        "@bindeps__ena-0.14.3//:ena",
+        "@bindeps__itertools-0.14.0//:itertools",
+        "@bindeps__lalrpop-util-0.22.2//:lalrpop_util",
+        "@bindeps__petgraph-0.7.1//:petgraph",
+        "@bindeps__pico-args-0.5.0//:pico_args",
+        "@bindeps__regex-1.11.2//:regex",
+        "@bindeps__regex-syntax-0.8.6//:regex_syntax",
+        "@bindeps__sha3-0.10.8//:sha3",
+        "@bindeps__string_cache-0.8.9//:string_cache",
+        "@bindeps__term-1.1.0//:term",
+        "@bindeps__unicode-xid-0.2.6//:unicode_xid",
+        "@bindeps__walkdir-2.5.0//:walkdir",
     ],
 )

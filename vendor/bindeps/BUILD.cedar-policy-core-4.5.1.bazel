@@ -21,7 +21,7 @@ cargo_toml_env_vars(
 )
 
 rust_library(
-    name = "serde_json",
+    name = "cedar_policy_core",
     srcs = glob(
         include = ["**/*.rs"],
         allow_empty = True,
@@ -39,15 +39,16 @@ rust_library(
         ],
     ),
     crate_features = [
-        "alloc",
+        "datetime",
+        "decimal",
         "default",
-        "indexmap",
-        "preserve_order",
-        "std",
-        "unbounded_depth",
+        "ipaddr",
     ],
     crate_root = "src/lib.rs",
     edition = "2021",
+    proc_macro_deps = [
+        "@bindeps__educe-0.6.0//:educe",
+    ],
     rustc_env_files = [
         ":cargo_toml_env_vars",
     ],
@@ -56,7 +57,7 @@ rust_library(
     ],
     tags = [
         "cargo-bazel",
-        "crate-name=serde_json",
+        "crate-name=cedar-policy-core",
         "manual",
         "noclippy",
         "norustfmt",
@@ -70,14 +71,26 @@ rust_library(
         "@rules_rust//rust/platform:x86_64-unknown-linux-gnu": [],
         "//conditions:default": ["@platforms//:incompatible"],
     }),
-    version = "1.0.143",
+    version = "4.5.1",
     deps = [
-        "@bindeps__indexmap-2.11.0//:indexmap",
-        "@bindeps__itoa-1.0.15//:itoa",
-        "@bindeps__memchr-2.7.5//:memchr",
-        "@bindeps__ryu-1.0.20//:ryu",
+        "@bindeps__cedar-policy-core-4.5.1//:build_script_build",
+        "@bindeps__chrono-0.4.41//:chrono",
+        "@bindeps__either-1.15.0//:either",
+        "@bindeps__itertools-0.14.0//:itertools",
+        "@bindeps__lalrpop-util-0.22.2//:lalrpop_util",
+        "@bindeps__lazy_static-1.5.0//:lazy_static",
+        "@bindeps__miette-7.6.0//:miette",
+        "@bindeps__nonempty-0.10.0//:nonempty",
+        "@bindeps__ref-cast-1.0.24//:ref_cast",
+        "@bindeps__regex-1.11.2//:regex",
+        "@bindeps__rustc_lexer-0.1.0//:rustc_lexer",
         "@bindeps__serde-1.0.219//:serde",
-        "@bindeps__serde_json-1.0.143//:build_script_build",
+        "@bindeps__serde_json-1.0.143//:serde_json",
+        "@bindeps__serde_with-3.14.0//:serde_with",
+        "@bindeps__smol_str-0.3.2//:smol_str",
+        "@bindeps__stacker-0.1.21//:stacker",
+        "@bindeps__thiserror-2.0.16//:thiserror",
+        "@bindeps__unicode-security-0.1.2//:unicode_security",
     ],
 )
 
@@ -101,12 +114,10 @@ cargo_build_script(
         ],
     ),
     crate_features = [
-        "alloc",
+        "datetime",
+        "decimal",
         "default",
-        "indexmap",
-        "preserve_order",
-        "std",
-        "unbounded_depth",
+        "ipaddr",
     ],
     crate_name = "build_script_build",
     crate_root = "build.rs",
@@ -123,7 +134,7 @@ cargo_build_script(
         ],
     ),
     edition = "2021",
-    pkg_name = "serde_json",
+    pkg_name = "cedar-policy-core",
     rustc_env_files = [
         ":cargo_toml_env_vars",
     ],
@@ -132,13 +143,16 @@ cargo_build_script(
     ],
     tags = [
         "cargo-bazel",
-        "crate-name=serde_json",
+        "crate-name=cedar-policy-core",
         "manual",
         "noclippy",
         "norustfmt",
     ],
-    version = "1.0.143",
+    version = "4.5.1",
     visibility = ["//visibility:private"],
+    deps = [
+        "@bindeps__lalrpop-0.22.2//:lalrpop",
+    ],
 )
 
 alias(

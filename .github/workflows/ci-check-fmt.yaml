@@ -21,16 +21,22 @@ jobs:
           build_buddy_token: ${{ secrets.build_buddy_token }}
 
       - name: Format bazel
-        run: bazel run //tools/buildifier -- $(git ls-files "*.bzl" "*.bazel" | xargs ls 2>/dev/null)
+        run: ./tools/scripts/buildifier $(git ls-files "*.bzl" "*.bazel" | xargs ls 2>/dev/null)
 
       - name: Format dprint
-        run: bazel run //tools/dprint -- fmt
+        run: ./tools/scripts/dprint fmt
 
       - name: Format buf
-        run: bazel run //tools/buf -- format -w --disable-symlinks --debug
+        run: ./tools/scripts/buf format -w --disable-symlinks --debug
 
       - name: Format just
-        run: bazel run //tools/just -- --unstable --fmt
+        run: ./tools/scripts/just --unstable --fmt
+
+      - name: Format shfmt
+        run: ./tools/scripts/shfmt -w .
+
+      - name: Format cedar
+        run: git ls-files "*.cedar" | xargs ls 2>/dev/null | xargs -I {} ./tools/scripts/cedar format -w -p {}
 
       - name: Exit on diff
         run: git diff --exit-code

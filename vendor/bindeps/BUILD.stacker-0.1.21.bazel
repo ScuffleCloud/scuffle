@@ -21,7 +21,7 @@ cargo_toml_env_vars(
 )
 
 rust_library(
-    name = "serde_json",
+    name = "stacker",
     srcs = glob(
         include = ["**/*.rs"],
         allow_empty = True,
@@ -38,14 +38,6 @@ rust_library(
             "WORKSPACE.bazel",
         ],
     ),
-    crate_features = [
-        "alloc",
-        "default",
-        "indexmap",
-        "preserve_order",
-        "std",
-        "unbounded_depth",
-    ],
     crate_root = "src/lib.rs",
     edition = "2021",
     rustc_env_files = [
@@ -56,7 +48,7 @@ rust_library(
     ],
     tags = [
         "cargo-bazel",
-        "crate-name=serde_json",
+        "crate-name=stacker",
         "manual",
         "noclippy",
         "norustfmt",
@@ -70,15 +62,21 @@ rust_library(
         "@rules_rust//rust/platform:x86_64-unknown-linux-gnu": [],
         "//conditions:default": ["@platforms//:incompatible"],
     }),
-    version = "1.0.143",
+    version = "0.1.21",
     deps = [
-        "@bindeps__indexmap-2.11.0//:indexmap",
-        "@bindeps__itoa-1.0.15//:itoa",
-        "@bindeps__memchr-2.7.5//:memchr",
-        "@bindeps__ryu-1.0.20//:ryu",
-        "@bindeps__serde-1.0.219//:serde",
-        "@bindeps__serde_json-1.0.143//:build_script_build",
-    ],
+        "@bindeps__cfg-if-1.0.3//:cfg_if",
+        "@bindeps__libc-0.2.175//:libc",
+        "@bindeps__psm-0.1.26//:psm",
+        "@bindeps__stacker-0.1.21//:build_script_build",
+    ] + select({
+        "@rules_rust//rust/platform:aarch64-pc-windows-msvc": [
+            "@bindeps__windows-sys-0.59.0//:windows_sys",  # cfg(windows)
+        ],
+        "@rules_rust//rust/platform:x86_64-pc-windows-msvc": [
+            "@bindeps__windows-sys-0.59.0//:windows_sys",  # cfg(windows)
+        ],
+        "//conditions:default": [],
+    }),
 )
 
 cargo_build_script(
@@ -100,14 +98,6 @@ cargo_build_script(
             "WORKSPACE.bazel",
         ],
     ),
-    crate_features = [
-        "alloc",
-        "default",
-        "indexmap",
-        "preserve_order",
-        "std",
-        "unbounded_depth",
-    ],
     crate_name = "build_script_build",
     crate_root = "build.rs",
     data = glob(
@@ -123,7 +113,7 @@ cargo_build_script(
         ],
     ),
     edition = "2021",
-    pkg_name = "serde_json",
+    pkg_name = "stacker",
     rustc_env_files = [
         ":cargo_toml_env_vars",
     ],
@@ -132,13 +122,16 @@ cargo_build_script(
     ],
     tags = [
         "cargo-bazel",
-        "crate-name=serde_json",
+        "crate-name=stacker",
         "manual",
         "noclippy",
         "norustfmt",
     ],
-    version = "1.0.143",
+    version = "0.1.21",
     visibility = ["//visibility:private"],
+    deps = [
+        "@bindeps__cc-1.2.35//:cc",
+    ],
 )
 
 alias(

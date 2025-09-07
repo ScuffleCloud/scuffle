@@ -92,6 +92,7 @@ crates_vendor(
             "just",
             "miniserve",
             "rust-analyzer",
+            "cedar-policy-cli",
         ]
     } | {
         "dprint": [
@@ -145,6 +146,10 @@ crates_vendor(
             artifact = "bin",
             git = "https://github.com/TroyKomodo/rust-analyzer.git",
             rev = "bc2e8effd36dbfc5eba9c36b015c9299e067ec6d",
+        ),
+        "cedar-policy-cli": crate.spec(
+            artifact = "bin",
+            version = "4.5.1",
         ),
     },
     stable_as_nightly = True,

@@ -17,7 +17,7 @@ cargo_toml_env_vars(
 )
 
 rust_library(
-    name = "phf_shared",
+    name = "miette",
     srcs = glob(
         include = ["**/*.rs"],
         allow_empty = True,
@@ -36,10 +36,17 @@ rust_library(
     ),
     crate_features = [
         "default",
-        "std",
+        "derive",
+        "fancy",
+        "fancy-base",
+        "fancy-no-backtrace",
+        "serde",
     ],
     crate_root = "src/lib.rs",
-    edition = "2021",
+    edition = "2018",
+    proc_macro_deps = [
+        "@bindeps__miette-derive-7.6.0//:miette_derive",
+    ],
     rustc_env_files = [
         ":cargo_toml_env_vars",
     ],
@@ -48,7 +55,7 @@ rust_library(
     ],
     tags = [
         "cargo-bazel",
-        "crate-name=phf_shared",
+        "crate-name=miette",
         "manual",
         "noclippy",
         "norustfmt",
@@ -62,8 +69,18 @@ rust_library(
         "@rules_rust//rust/platform:x86_64-unknown-linux-gnu": [],
         "//conditions:default": ["@platforms//:incompatible"],
     }),
-    version = "0.11.3",
+    version = "7.6.0",
     deps = [
-        "@bindeps__siphasher-1.0.1//:siphasher",
+        "@bindeps__backtrace-0.3.75//:backtrace",
+        "@bindeps__backtrace-ext-0.2.1//:backtrace_ext",
+        "@bindeps__cfg-if-1.0.3//:cfg_if",
+        "@bindeps__owo-colors-4.2.2//:owo_colors",
+        "@bindeps__serde-1.0.219//:serde",
+        "@bindeps__supports-color-3.0.2//:supports_color",
+        "@bindeps__supports-hyperlinks-3.1.0//:supports_hyperlinks",
+        "@bindeps__supports-unicode-3.0.0//:supports_unicode",
+        "@bindeps__terminal_size-0.4.3//:terminal_size",
+        "@bindeps__textwrap-0.16.2//:textwrap",
+        "@bindeps__unicode-width-0.1.14//:unicode_width",
     ],
 )

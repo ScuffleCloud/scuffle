@@ -22,6 +22,7 @@ fmt:
     buf format -w --disable-symlinks --debug
     just --unstable --fmt
     shfmt -w .
+    git ls-files "*.cedar" | xargs ls 2>/dev/null | xargs -I {} cedar format -w -p {}
 
 lint:
     bazel run //tools/cargo/clippy:fix

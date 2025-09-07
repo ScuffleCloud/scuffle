@@ -1,0 +1,8 @@
+load("//misc/utils:exec_alias_rules.bzl", "exec_transition_alias_opt")
+
+exec_transition_alias_opt(
+    name = "cedar",
+    actual = "@bindeps//:cedar-policy-cli__cedar",
+    tags = ["manual"],
+    visibility = ["//visibility:public"],
+)

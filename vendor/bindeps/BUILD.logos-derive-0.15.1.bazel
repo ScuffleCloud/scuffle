@@ -7,7 +7,7 @@
 ###############################################################################
 
 load("@rules_rust//cargo:defs.bzl", "cargo_toml_env_vars")
-load("@rules_rust//rust:defs.bzl", "rust_library")
+load("@rules_rust//rust:defs.bzl", "rust_proc_macro")
 
 package(default_visibility = ["//visibility:public"])
 
@@ -16,8 +16,8 @@ cargo_toml_env_vars(
     src = "Cargo.toml",
 )
 
-rust_library(
-    name = "phf_shared",
+rust_proc_macro(
+    name = "logos_derive",
     srcs = glob(
         include = ["**/*.rs"],
         allow_empty = True,
@@ -34,10 +34,6 @@ rust_library(
             "WORKSPACE.bazel",
         ],
     ),
-    crate_features = [
-        "default",
-        "std",
-    ],
     crate_root = "src/lib.rs",
     edition = "2021",
     rustc_env_files = [
@@ -48,7 +44,7 @@ rust_library(
     ],
     tags = [
         "cargo-bazel",
-        "crate-name=phf_shared",
+        "crate-name=logos-derive",
         "manual",
         "noclippy",
         "norustfmt",
@@ -62,8 +58,8 @@ rust_library(
         "@rules_rust//rust/platform:x86_64-unknown-linux-gnu": [],
         "//conditions:default": ["@platforms//:incompatible"],
     }),
-    version = "0.11.3",
+    version = "0.15.1",
     deps = [
-        "@bindeps__siphasher-1.0.1//:siphasher",
+        "@bindeps__logos-codegen-0.15.1//:logos_codegen",
     ],
 )

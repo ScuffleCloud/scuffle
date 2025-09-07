@@ -41,6 +41,7 @@ jobs:
         with:
           ref: ${{ github.event.pull_request.base.sha }}
           path: base
+          fetch-depth: 0
 
       - uses: ./head/.github/actions/setup-bazel
         with:
@@ -48,9 +49,7 @@ jobs:
 
       - name: File diff
         working-directory: head
-        run: |
-          git fetch origin "${{ github.event.pull_request.base.ref }}"
-          git diff --name-only "${{ github.event.pull_request.base.ref }}" "HEAD" > ${{ env.MODIFIED_FILES }}
+        run: git diff --name-only "${{ github.event.pull_request.base.sha }}" "HEAD" > ${{ env.MODIFIED_FILES }}
 
       - name: Generate current hashes
         working-directory: head

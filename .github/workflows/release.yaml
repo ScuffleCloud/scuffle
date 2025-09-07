@@ -17,7 +17,7 @@ jobs:
   #     contents: write
   #   steps:
   #     - name: Checkout repository
-  #       uses: actions/checkout@v4
+  #       uses: actions/checkout@v5
 
   #     - name: Setup FFmpeg
   #       uses: ./.github/actions/setup-ffmpeg
@@ -46,7 +46,7 @@ jobs:
     runs-on: ubuntu-24.04
     environment: docs.scuffle.rs
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
 
       - name: Download Artifact
         id: download-artifact
@@ -80,7 +80,7 @@ jobs:
   #   runs-on: ubuntu-24.04
   #   environment: docs.scuffle.cloud
   #   steps:
-  #     - uses: actions/checkout@v4
+  #     - uses: actions/checkout@v5
 
   #     - name: Download Artifact
   #       id: download-artifact

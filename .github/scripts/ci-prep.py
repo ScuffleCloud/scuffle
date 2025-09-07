@@ -62,9 +62,6 @@ def pr_number() -> Optional[int]:
 class Preview:
     pr_number: Optional[int]
     commit_sha: str
-    rustdoc_build: bool
-    docs_build: bool
-    dashboard_build: bool
     deploy: bool
 
 
@@ -120,9 +117,6 @@ def create_previews() -> Optional[Preview]:
     return Preview(
         pr_number=pr_number(),
         commit_sha=commit_sha(),
-        rustdoc_build=True,
-        dashboard_build=True,
-        docs_build=True,
         deploy=should_deploy_docs(),
     )
 

@@ -23,7 +23,12 @@ jobs:
       matrix:
         include: ${{ fromJson(inputs.matrix) }}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
+
+      - uses: actions/download-artifact@v5
+        if: ${{ github.event_name == 'pull_request' }}
+        with:
+          name: bazel-diff-impacted-targets
 
       - uses: ./.github/actions/setup-bazel
         with:
@@ -35,5 +40,18 @@ jobs:
 
       - name: Run tests with valgrind
         run: |
-          targets=$(bazel query 'kind("nextest_test rule", set(//...))')
+          bazel query 'kind("nextest_test rule", set(//...))' > all_targets.txt
+
+          if [ -f ./impacted-targets.txt ]; then
+            targets=$(python3 ./.github/scripts/ci-targets.py ./all_targets.txt ./impacted-targets.txt)
+          else
+            targets=$(cat all_targets.txt)
+          fi
+
+          # Exit early if no targets
+          if [ -z "$targets" ]; then
+            echo "No targets to test."
+            exit 0
+          fi
+
           bazel test ${targets} --//settings:test_rustc_flags="--cfg=valgrind" --//settings:test_valgrind --skip_incompatible_explicit_targets

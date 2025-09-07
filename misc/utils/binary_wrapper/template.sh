@@ -25,7 +25,7 @@ script="${BASH_SOURCE[0]}"
 script_dir=$(dirname_shim "${script}")
 
 # Find the runfiles directory
-if [[ -n ${RUNFILES_DIR:-}   ]]; then
+if [[ -n ${RUNFILES_DIR:-} ]]; then
     root_dir="${RUNFILES_DIR}"
 elif [[ -f "${script_dir}/MANIFEST" ]]; then
     root_dir="${script_dir}"
@@ -38,7 +38,7 @@ else
     exit 1
 fi
 
-if [[ -n ${RUNFILES_DIR:-}   ]]; then
+if [[ -n ${RUNFILES_DIR:-} ]]; then
     pwd="${RUNFILES_DIR}/%%WORKSPACE_NAME%%"
 else
     pwd="$(pwd)"

@@ -50,7 +50,7 @@ find_binary_path() {
     local max_depth=50 # Safety limit to prevent infinite loops
     local depth=0
 
-    while [[ $current_dir != "/" && $current_dir != "$prev_dir" && $depth -lt $max_depth   ]]; do
+    while [[ $current_dir != "/" && $current_dir != "$prev_dir" && $depth -lt $max_depth ]]; do
         if [[ -d "${current_dir}/external" && -f "${current_dir}/external/${binary_path}" ]]; then
             echo "${current_dir}/external/${binary_path}"
             return

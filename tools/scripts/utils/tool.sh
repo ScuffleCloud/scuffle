@@ -18,30 +18,31 @@ readonly CACHE_PATH="${CACHE_DIR}/${TOOL_NAME}.cache"
 
 # Configuration mapping tool names to their bazel labels
 declare -Ar TOOL_LABELS=(
-      ["cargo"]="//tools/cargo"
-      ["cargo-deny"]="//tools/cargo/deny"
-      ["cargo-insta"]="//tools/cargo/insta"
-      ["buf"]="//tools/buf"
-      ["buildifier"]="//tools/buildifier"
-      ["dprint"]="//tools/dprint"
-      ["ffmpeg"]="//tools/ffmpeg"
-      ["ffprobe"]="//tools/ffprobe"
-      ["protoc"]="//tools/protoc"
-      ["node"]="//tools/node"
-      ["pnpm"]="//tools/pnpm"
-      ["just"]="//tools/just"
-      ["miniserve"]="//tools/miniserve"
-      ["valgrind"]="//tools/valgrind"
-      ["ibazel"]="//tools/ibazel"
-      ["bazel-diff"]="//tools/bazel-diff"
-      ["rust-analyzer"]="//tools/rust-analyzer"
-      ["rust-analyzer-discover"]="//tools/rust-analyzer:discover"
-      ["rust-analyzer-check"]="//tools/rust-analyzer:check"
-      ["shfmt"]="//tools/shfmt"
+    ["cargo"]="//tools/cargo"
+    ["cargo-deny"]="//tools/cargo/deny"
+    ["cargo-insta"]="//tools/cargo/insta"
+    ["cedar"]="//tools/cedar"
+    ["buf"]="//tools/buf"
+    ["buildifier"]="//tools/buildifier"
+    ["dprint"]="//tools/dprint"
+    ["ffmpeg"]="//tools/ffmpeg"
+    ["ffprobe"]="//tools/ffprobe"
+    ["protoc"]="//tools/protoc"
+    ["node"]="//tools/node"
+    ["pnpm"]="//tools/pnpm"
+    ["just"]="//tools/just"
+    ["miniserve"]="//tools/miniserve"
+    ["valgrind"]="//tools/valgrind"
+    ["ibazel"]="//tools/ibazel"
+    ["bazel-diff"]="//tools/bazel-diff"
+    ["rust-analyzer"]="//tools/rust-analyzer"
+    ["rust-analyzer-discover"]="//tools/rust-analyzer:discover"
+    ["rust-analyzer-check"]="//tools/rust-analyzer:check"
+    ["shfmt"]="//tools/shfmt"
 )
 
 declare -Ar pnpm_vars=(
-      ["SCUFFLE_RUN_UNDER"]="0"
+    ["SCUFFLE_RUN_UNDER"]="0"
 )
 
 declare -a pnpm_args=(
@@ -55,7 +56,7 @@ die() {
 }
 
 is_cache_valid() {
-    [[ -f ${CACHE_PATH}   ]] || return 1
+    [[ -f ${CACHE_PATH} ]] || return 1
 
     local first_line
     read -r first_line < "$CACHE_PATH" || return 1
@@ -66,7 +67,7 @@ is_cache_valid() {
     local now="$(date +%s)"
     ((now - ts < max_age)) || return 1
 
-    [[ -n ${exec_path} && -f "${EXECUTION_ROOT}/${exec_path}"   ]]
+    [[ -n ${exec_path} && -f "${EXECUTION_ROOT}/${exec_path}" ]]
 }
 
 # Get tool configuration
@@ -125,7 +126,7 @@ invoke_bazel_exec() {
     local pwd="$(pwd)"
     local runfiles_dir="${EXECUTION_ROOT}/${exec_path}.runfiles/_main"
 
-    if [[ -d ${runfiles_dir}   ]]; then
+    if [[ -d ${runfiles_dir} ]]; then
         cd "${runfiles_dir}" || die "Failed to change to runfiles directory"
     fi
 
@@ -146,10 +147,10 @@ invoke_bazel_exec() {
 }
 
 main() {
-    [[ -n ${TOOL_NAME}   ]] || die "Tool name cannot be empty"
+    [[ -n ${TOOL_NAME} ]] || die "Tool name cannot be empty"
 
     local tool_label="${TOOL_LABELS[${TOOL_NAME}]:-}"
-    [[ -n ${tool_label}   ]] || {
+    [[ -n ${tool_label} ]] || {
         echo "Unknown tool '${TOOL_NAME}'" >&2
         echo "Available tools: ${!TOOL_LABELS[*]}" >&2
         exit 1

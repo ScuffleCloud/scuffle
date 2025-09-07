@@ -463,6 +463,7 @@ _NORMAL_DEPENDENCIES = {
                 "rand": Label("@cargo_vendor//:rand-0.8.5"),
                 "reqwest": Label("@cargo_vendor//:reqwest-0.12.23"),
                 "rsa": Label("@cargo_vendor//:rsa-0.9.8"),
+                "rustls": Label("@cargo_vendor//:rustls-0.23.31"),
                 "sailfish": Label("@cargo_vendor//:sailfish-0.10.0"),
                 "serde": Label("@cargo_vendor//:serde-1.0.219"),
                 "serde_json": Label("@cargo_vendor//:serde_json-1.0.143"),

@@ -285,6 +285,10 @@ impl scuffle_bootstrap::Global for Global {
             )
             .init();
 
+        if rustls::crypto::aws_lc_rs::default_provider().install_default().is_err() {
+            anyhow::bail!("failed to install aws-lc-rs as default TLS provider");
+        }
+
         let Some(db_url) = config.db_url.as_deref() else {
             anyhow::bail!("DATABASE_URL is not set");
         };

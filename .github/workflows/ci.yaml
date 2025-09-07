@@ -49,10 +49,10 @@ jobs:
         run: git diff --name-only ${{ github.event.pull_request.base.sha }}..${{ github.sha }} > ${{ env.MODIFIED_FILES }}
 
       - name: Generate current hashes
-        run: ./tools/scripts/bazel-diff generate-hashes --workspacePath=$(pwd) --keep_going --includeTargetType --no-useCquery -co="--enable_workspace" > ${{ env.HEAD_HASHES }}
+        run: ./tools/scripts/bazel-diff generate-hashes --workspacePath=$(pwd) --keep_going --includeTargetType -co="--enable_workspace" > ${{ env.HEAD_HASHES }}
 
       - name: Generate base hashes
-        run: ./tools/scripts/bazel-diff generate-hashes --workspacePath=${{ env.BASE_WORKTREE }} --keep_going --includeTargetType --no-useCquery -co="--enable_workspace" > ${{ env.BASE_HASHES }}
+        run: ./tools/scripts/bazel-diff generate-hashes --workspacePath=${{ env.BASE_WORKTREE }} --keep_going --includeTargetType -co="--enable_workspace" > ${{ env.BASE_HASHES }}
 
       - name: Get impacted targets
         run: ./tools/scripts/bazel-diff get-impacted-targets --startingHashes=${{ env.BASE_HASHES }} --finalHashes=${{ env.HEAD_HASHES }} --output=${{ env.IMPACTED_TARGETS }}

@@ -21,7 +21,7 @@ cargo_toml_env_vars(
 )
 
 rust_library(
-    name = "serde_json",
+    name = "ref_cast",
     srcs = glob(
         include = ["**/*.rs"],
         allow_empty = True,
@@ -38,16 +38,11 @@ rust_library(
             "WORKSPACE.bazel",
         ],
     ),
-    crate_features = [
-        "alloc",
-        "default",
-        "indexmap",
-        "preserve_order",
-        "std",
-        "unbounded_depth",
-    ],
     crate_root = "src/lib.rs",
     edition = "2021",
+    proc_macro_deps = [
+        "@bindeps__ref-cast-impl-1.0.24//:ref_cast_impl",
+    ],
     rustc_env_files = [
         ":cargo_toml_env_vars",
     ],
@@ -56,7 +51,7 @@ rust_library(
     ],
     tags = [
         "cargo-bazel",
-        "crate-name=serde_json",
+        "crate-name=ref-cast",
         "manual",
         "noclippy",
         "norustfmt",
@@ -70,14 +65,9 @@ rust_library(
         "@rules_rust//rust/platform:x86_64-unknown-linux-gnu": [],
         "//conditions:default": ["@platforms//:incompatible"],
     }),
-    version = "1.0.143",
+    version = "1.0.24",
     deps = [
-        "@bindeps__indexmap-2.11.0//:indexmap",
-        "@bindeps__itoa-1.0.15//:itoa",
-        "@bindeps__memchr-2.7.5//:memchr",
-        "@bindeps__ryu-1.0.20//:ryu",
-        "@bindeps__serde-1.0.219//:serde",
-        "@bindeps__serde_json-1.0.143//:build_script_build",
+        "@bindeps__ref-cast-1.0.24//:build_script_build",
     ],
 )
 
@@ -100,14 +90,6 @@ cargo_build_script(
             "WORKSPACE.bazel",
         ],
     ),
-    crate_features = [
-        "alloc",
-        "default",
-        "indexmap",
-        "preserve_order",
-        "std",
-        "unbounded_depth",
-    ],
     crate_name = "build_script_build",
     crate_root = "build.rs",
     data = glob(
@@ -123,7 +105,7 @@ cargo_build_script(
         ],
     ),
     edition = "2021",
-    pkg_name = "serde_json",
+    pkg_name = "ref-cast",
     rustc_env_files = [
         ":cargo_toml_env_vars",
     ],
@@ -132,12 +114,12 @@ cargo_build_script(
     ],
     tags = [
         "cargo-bazel",
-        "crate-name=serde_json",
+        "crate-name=ref-cast",
         "manual",
         "noclippy",
         "norustfmt",
     ],
-    version = "1.0.143",
+    version = "1.0.24",
     visibility = ["//visibility:private"],
 )
 

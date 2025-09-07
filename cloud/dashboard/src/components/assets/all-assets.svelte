@@ -5,6 +5,7 @@
     import AssetCard from "./asset-card.svelte";
     import Header from "./assets-header.svelte";
     import SlidingToggle from "./sliding-toggle.svelte";
+    import TimeFilterDropdown from "./time-filter-dropdown.svelte";
     import { DISPLAY_MODES } from "./types";
 
     // Search functionality
@@ -54,17 +55,36 @@
             displayMode = DISPLAY_MODES.GRID;
         }
     }
+
+    let selectedTimeFilter = $state("latest");
+
+    function handleTimeFilterChange(filterId: string) {
+        selectedTimeFilter = filterId;
+    }
+
+    function handleToggleSelection() {
+        console.log("Toggle Selection");
+    }
 </script>
 
 <Header />
-<div class="row-2">
+<div class="search-row">
     <SearchInput bind:value={searchQuery} placeholder="Search..." />
+    <TimeFilterDropdown
+        selectedFilter={selectedTimeFilter}
+        onFilterChange={handleTimeFilterChange}
+    />
     <SlidingToggle
         leftLabel={IconLayout}
         rightLabel={IconLayout_3}
         value={displayMode === DISPLAY_MODES.GRID ? "left" : "right"}
         onToggle={handleDisplayModeToggle}
     />
+</div>
+<div class="filter-row">
+    <button class="toggle-selection-button" onclick={handleToggleSelection}>
+        Toggle Selection
+    </button>
 </div>
 <div class="card-container">
     {#each streams as stream, i}
@@ -79,7 +99,22 @@
       gap: 0.5rem;
     }
 
-    .row-2 {
+    .filter-row {
+      display: flex;
+      justify-content: space-between;
+      margin-bottom: 1.5rem;
+      gap: 0.5rem;
+      height: 2.5rem;
+
+      .toggle-selection-button {
+        margin-left: auto;
+        padding: 0.5rem 1rem;
+        font-size: 0.875rem;
+        font-weight: 500;
+        cursor: pointer;
+      }
+    }
+    .search-row {
       display: flex;
       justify-content: space-between;
       margin-bottom: 1.5rem;

@@ -17,7 +17,6 @@ fn bazel_info(
     let output = bazel_command(bazel, workspace, output_base)
         .args(bazel_startup_options)
         .arg("info")
-        .args(bazel_args)
         .output()?;
 
     if !output.status.success() {

@@ -13,7 +13,7 @@ use tracing_subscriber::util::SubscriberInitExt;
 pub struct Config {
     #[default(env!("CARGO_PKG_NAME").to_string())]
     pub service_name: String,
-    #[default(SocketAddr::from(([127, 0, 0, 1], 3000)))]
+    #[default(SocketAddr::from(([127, 0, 0, 1], 3002)))]
     pub bind: SocketAddr,
     #[default = "info"]
     pub level: String,

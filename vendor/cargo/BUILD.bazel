@@ -1666,6 +1666,18 @@ transition_alias_opt(
 )
 
 transition_alias_opt(
+    name = "tonic-web-0.14.2",
+    actual = "@cargo_vendor__tonic-web-0.14.2//:tonic_web",
+    tags = ["manual"],
+)
+
+transition_alias_opt(
+    name = "tonic-web",
+    actual = "@cargo_vendor__tonic-web-0.14.2//:tonic_web",
+    tags = ["manual"],
+)
+
+transition_alias_opt(
     name = "totp-rs-5.7.0",
     actual = "@cargo_vendor__totp-rs-5.7.0//:totp_rs",
     tags = ["manual"],

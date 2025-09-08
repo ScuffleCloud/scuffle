@@ -1,15 +1,16 @@
 use std::net::SocketAddr;
 use std::sync::Arc;
 
-use axum::http::StatusCode;
+use axum::http::{HeaderName, StatusCode};
 use axum::{Extension, Json};
+use reqwest::header::CONTENT_TYPE;
 use scuffle_http::http::Method;
 use tinc::TincService;
 use tinc::openapi::Server;
-use tower_http::cors::CorsLayer;
+use tower_http::cors::{AllowHeaders, CorsLayer, ExposeHeaders};
 use tower_http::trace::TraceLayer;
 
-use crate::CoreConfig;
+use crate::{CoreConfig, middleware};
 
 mod organization_invitations;
 mod organizations;
@@ -29,6 +30,37 @@ impl<G> Default for CoreSvc<G> {
     }
 }
 
+fn rest_cors_layer() -> CorsLayer {
+    CorsLayer::new()
+        .allow_methods([Method::GET, Method::POST, Method::OPTIONS])
+        .allow_origin(tower_http::cors::Any)
+        .allow_headers(tower_http::cors::Any)
+}
+
+fn grpc_web_cors_layer() -> CorsLayer {
+    // https://github.com/timostamm/protobuf-ts/blob/main/MANUAL.md#grpc-web-transport
+    let allow_headers = [
+        CONTENT_TYPE,
+        HeaderName::from_static("x-grpc-web"),
+        HeaderName::from_static("grpc-timeout"),
+    ]
+    .into_iter()
+    .chain(middleware::auth_headers());
+
+    let expose_headers = [
+        HeaderName::from_static("grpc-encoding"),
+        HeaderName::from_static("grpc-status"),
+        HeaderName::from_static("grpc-message"),
+    ];
+
+    CorsLayer::new()
+        .allow_methods([Method::GET, Method::POST, Method::OPTIONS])
+        .allow_headers(AllowHeaders::list(allow_headers))
+        .expose_headers(ExposeHeaders::list(expose_headers))
+        .allow_origin(tower_http::cors::Any)
+        .allow_headers(tower_http::cors::Any)
+}
+
 impl<G: CoreConfig> scuffle_bootstrap::Service<G> for CoreSvc<G> {
     async fn run(self, global: Arc<G>, ctx: scuffle_context::Context) -> anyhow::Result<()> {
         // REST
@@ -41,11 +73,6 @@ impl<G: CoreConfig> scuffle_bootstrap::Service<G> for CoreSvc<G> {
         let sessions_svc_tinc =
             pb::scufflecloud::core::v1::sessions_service_tinc::SessionsServiceTinc::new(CoreSvc::<G>::default());
         let users_svc_tinc = pb::scufflecloud::core::v1::users_service_tinc::UsersServiceTinc::new(CoreSvc::<G>::default());
-
-        let cors = CorsLayer::new()
-            .allow_methods([Method::GET, Method::POST, Method::OPTIONS])
-            .allow_origin(tower_http::cors::Any)
-            .allow_headers(tower_http::cors::Any);
 
         let mut openapi_schema = organization_invitations_svc_tinc.openapi_schema();
         openapi_schema.merge(organizations_svc_tinc.openapi_schema());
@@ -61,7 +88,7 @@ impl<G: CoreConfig> scuffle_bootstrap::Service<G> for CoreSvc<G> {
             .merge(organizations_svc_tinc.into_router())
             .merge(sessions_svc_tinc.into_router())
             .merge(users_svc_tinc.into_router())
-            .layer(cors);
+            .layer(rest_cors_layer());
 
         // gRPC
         let organization_invitations_svc =
@@ -89,7 +116,13 @@ impl<G: CoreConfig> scuffle_bootstrap::Service<G> for CoreSvc<G> {
         builder.add_service(users_svc);
         builder.add_service(reflection_v1_svc);
         builder.add_service(reflection_v1alpha_svc);
-        let grpc_router = builder.routes().prepare().into_axum_router();
+
+        let grpc_router = builder
+            .routes()
+            .prepare()
+            .into_axum_router()
+            .layer(tonic_web::GrpcWebLayer::new())
+            .layer(grpc_web_cors_layer());
 
         let mut router = axum::Router::new()
             .nest("/v1", v1_rest_router)

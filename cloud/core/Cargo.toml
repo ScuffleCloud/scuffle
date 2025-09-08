@@ -59,6 +59,7 @@ tokio = { default-features = false, features = ["sync"], version = "1.47.1" }
 tonic = "0.14.1"
 tonic-reflection = "0.14.1"
 tonic-types = "0.14.1"
+tonic-web = "0.14.2"
 totp-rs = { features = ["otpauth", "qr"], version = "5.7.0" }
 tower-http = { features = ["cors", "trace"], version = "0.6.6" }
 tracing = "0.1.41"

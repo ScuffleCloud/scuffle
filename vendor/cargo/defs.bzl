@@ -474,6 +474,7 @@ _NORMAL_DEPENDENCIES = {
                 "tonic": Label("@cargo_vendor//:tonic-0.14.2"),
                 "tonic-reflection": Label("@cargo_vendor//:tonic-reflection-0.14.2"),
                 "tonic-types": Label("@cargo_vendor//:tonic-types-0.14.2"),
+                "tonic-web": Label("@cargo_vendor//:tonic-web-0.14.2"),
                 "totp-rs": Label("@cargo_vendor//:totp-rs-5.7.0"),
                 "tower-http": Label("@cargo_vendor//:tower-http-0.6.6"),
                 "tracing": Label("@cargo_vendor//:tracing-0.1.41"),
@@ -9546,6 +9547,16 @@ def crate_repositories():
 
     maybe(
         http_archive,
+        name = "cargo_vendor__tonic-web-0.14.2",
+        sha256 = "75214f6b6bd28c19aa752ac09fdf0eea546095670906c21fe3940e180a4c43f2",
+        type = "tar.gz",
+        urls = ["https://static.crates.io/crates/tonic-web/0.14.2/download"],
+        strip_prefix = "tonic-web-0.14.2",
+        build_file = Label("//vendor/cargo:BUILD.tonic-web-0.14.2.bazel"),
+    )
+
+    maybe(
+        http_archive,
         name = "cargo_vendor__totp-rs-5.7.0",
         sha256 = "f124352108f58ef88299e909f6e9470f1cdc8d2a1397963901b4a6366206bf72",
         type = "tar.gz",
@@ -10707,6 +10718,7 @@ def crate_repositories():
         struct(repo = "cargo_vendor__tonic-prost-0.14.2", is_dev_dep = False),
         struct(repo = "cargo_vendor__tonic-reflection-0.14.2", is_dev_dep = False),
         struct(repo = "cargo_vendor__tonic-types-0.14.2", is_dev_dep = False),
+        struct(repo = "cargo_vendor__tonic-web-0.14.2", is_dev_dep = False),
         struct(repo = "cargo_vendor__totp-rs-5.7.0", is_dev_dep = False),
         struct(repo = "cargo_vendor__tower-0.5.2", is_dev_dep = False),
         struct(repo = "cargo_vendor__tower-http-0.6.6", is_dev_dep = False),

@@ -1,6 +1,6 @@
 <!-- dprint-ignore-file -->
 <!-- sync-readme title [[ -->
-# scufflecloud-core
+# scufflecloud-email
 <!-- sync-readme ]] -->
 
 <!-- sync-readme badge [[ -->
@@ -11,11 +11,9 @@
 ---
 
 <!-- sync-readme rustdoc [[ -->
-Core/Authentication server for <https://scuffle.cloud/>.
+Email service for <https://scuffle.cloud/>.
 
-### Authentication
-
-TODO
+This service is only used internally.
 
 ### License
 

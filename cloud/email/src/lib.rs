@@ -1,6 +1,6 @@
-//! Internal email service for <https://scuffle.cloud/>.
+//! Email service for <https://scuffle.cloud/>.
 //!
-//! This service is only used internally to send emails to users.
+//! This service is only used internally.
 //!
 //! ## License
 //!

@@ -45,6 +45,13 @@
     const getToken = async () =>
         await turnstileOverlayComponent?.getToken();
 
+    // TODO: Fix type here
+    const turnstileLoading = $derived(
+        /* eslint-disable-next-line @typescript-eslint/no-explicit-any */
+        (turnstileOverlayComponent as any)?.showTurnstileOverlay
+            || false,
+    );
+
     let userEmail = $state<string>("");
     let isLoading = $state<boolean>(false);
 
@@ -136,7 +143,7 @@
         <PasswordForm
             onSubmit={handlePasswordSubmit}
             onBack={handleBack}
-            {isLoading}
+            isLoading={isLoading || turnstileLoading}
         />
     {:else if loginMode === "passkey"}
         <PasskeyForm

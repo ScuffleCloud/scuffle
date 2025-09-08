@@ -26,6 +26,7 @@
         && PUBLIC_VITE_MSW_ENABLED === "true";
     let mockingReady = $state(!requireMsw);
 
+    // TODO: Remove this mocking logic eventually
     $effect(() => {
         if (requireMsw && !mockingReady) {
             console.log("Loading MSW");

@@ -26,11 +26,13 @@
     <h1 class="title">Password Login</h1>
 </div>
 
-<!-- {#if authState.error}
-    <div class="error-message">{authState.error}</div>
-{/if} -->
-
 <form onsubmit={handleSubmit} class="login-form">
+    {#if isLoading}
+        <div class="error-message">
+            Logging in...
+        </div>
+    {/if}
+
     <div class="form-group">
         <label for="email" class="form-label">Email</label>
         <input

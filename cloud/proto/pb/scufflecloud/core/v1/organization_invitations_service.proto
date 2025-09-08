@@ -5,7 +5,6 @@ package scufflecloud.core.v1;
 import "google/protobuf/empty.proto";
 import "scufflecloud/core/v1/constraints.proto";
 import "scufflecloud/core/v1/organizations.proto";
-import "scufflecloud/core/v1/users.proto";
 import "tinc/annotations.proto";
 
 // Service for managing organization invitations.

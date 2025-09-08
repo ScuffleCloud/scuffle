@@ -1,6 +1,7 @@
 use base64::Engine;
 use diesel::{BoolExpressionMethods, ExpressionMethods, OptionalExtension, QueryDsl, SelectableHelper};
 use diesel_async::RunQueryDsl;
+use pb::scufflecloud::core::v1::CaptchaProvider;
 use sha2::Digest;
 use tonic::Code;
 use tonic_types::{ErrorDetails, StatusExt};
@@ -31,7 +32,14 @@ impl<G: CoreConfig> Operation<G> for tonic::Request<pb::scufflecloud::core::v1::
 
         // Check captcha
         match captcha.provider() {
-            pb::scufflecloud::core::v1::CaptchaProvider::Turnstile => {
+            CaptchaProvider::Unspecified => {
+                return Err(tonic::Status::with_error_details(
+                    Code::InvalidArgument,
+                    "captcha provider must be set",
+                    ErrorDetails::new(),
+                ));
+            }
+            CaptchaProvider::Turnstile => {
                 captcha::turnstile::verify_in_tonic(global, &captcha.token).await?;
             }
         }
@@ -94,7 +102,14 @@ impl<G: CoreConfig> Operation<G> for tonic::Request<pb::scufflecloud::core::v1::
 
         // Check captcha
         match captcha.provider() {
-            pb::scufflecloud::core::v1::CaptchaProvider::Turnstile => {
+            CaptchaProvider::Unspecified => {
+                return Err(tonic::Status::with_error_details(
+                    Code::InvalidArgument,
+                    "captcha provider must be set",
+                    ErrorDetails::new(),
+                ));
+            }
+            CaptchaProvider::Turnstile => {
                 captcha::turnstile::verify_in_tonic(global, &captcha.token).await?;
             }
         }
@@ -151,7 +166,14 @@ impl<G: CoreConfig> Operation<G> for tonic::Request<pb::scufflecloud::core::v1::
 
         // Check captcha
         match captcha.provider() {
-            pb::scufflecloud::core::v1::CaptchaProvider::Turnstile => {
+            CaptchaProvider::Unspecified => {
+                return Err(tonic::Status::with_error_details(
+                    Code::InvalidArgument,
+                    "captcha provider must be set",
+                    ErrorDetails::new(),
+                ));
+            }
+            CaptchaProvider::Turnstile => {
                 captcha::turnstile::verify_in_tonic(global, &captcha.token).await?;
             }
         }

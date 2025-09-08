@@ -13,12 +13,10 @@ fn bazel_info(
     workspace: Option<&Utf8Path>,
     output_base: Option<&Utf8Path>,
     bazel_startup_options: &[String],
-    bazel_args: &[String],
 ) -> anyhow::Result<BTreeMap<String, String>> {
     let output = bazel_command(bazel, workspace, output_base)
         .args(bazel_startup_options)
         .arg("info")
-        .args(bazel_args)
         .output()?;
 
     if !output.status.success() {
@@ -214,7 +212,7 @@ impl Config {
                 targets,
             }),
             (workspace, _, output_base) => {
-                let mut info_map = bazel_info(&bazel, workspace.as_deref(), output_base.as_deref(), &[], &bazel_args)?;
+                let mut info_map = bazel_info(&bazel, workspace.as_deref(), output_base.as_deref(), &[])?;
 
                 let config = Config {
                     workspace: info_map

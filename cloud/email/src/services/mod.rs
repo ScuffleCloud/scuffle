@@ -26,16 +26,18 @@ impl<G> Default for EmailSvc<G> {
     }
 }
 
+fn rest_cors_layer() -> CorsLayer {
+    CorsLayer::new()
+        .allow_methods([Method::GET, Method::POST, Method::OPTIONS])
+        .allow_origin(tower_http::cors::Any)
+        .allow_headers(tower_http::cors::Any)
+}
+
 impl<G: EmailConfig> scuffle_bootstrap::Service<G> for EmailSvc<G> {
     async fn run(self, global: Arc<G>, ctx: scuffle_context::Context) -> anyhow::Result<()> {
         // REST
         let email_svc_tinc =
             pb::scufflecloud::email::v1::email_service_tinc::EmailServiceTinc::new(EmailSvc::<G>::default());
-
-        let cors = CorsLayer::new()
-            .allow_methods([Method::GET, Method::POST, Method::OPTIONS])
-            .allow_origin(tower_http::cors::Any)
-            .allow_headers(tower_http::cors::Any);
 
         let mut openapi_schema = email_svc_tinc.openapi_schema();
         openapi_schema.info.title = "Scuffle Cloud Mail API".to_string();
@@ -45,7 +47,7 @@ impl<G: EmailConfig> scuffle_bootstrap::Service<G> for EmailSvc<G> {
         let v1_rest_router = axum::Router::new()
             .route("/openapi.json", axum::routing::get(Json(openapi_schema)))
             .merge(email_svc_tinc.into_router())
-            .layer(cors);
+            .layer(rest_cors_layer());
 
         // gRPC
         let email_svc = pb::scufflecloud::email::v1::email_service_server::EmailServiceServer::new(EmailSvc::<G>::default());

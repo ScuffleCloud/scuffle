@@ -36,7 +36,7 @@ tinc = { path = "../../crates/tinc" }
 tonic = "0.14.1"
 tonic-reflection = "0.14.1"
 tonic-types = "0.14.1"
-tower-http = { features = ["cors", "trace"], version = "0.6.6" }
+tower-http = { features = ["trace"], version = "0.6.6" }
 tracing = "0.1.41"
 tracing-subscriber = "0.3.19"
 

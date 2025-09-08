@@ -1,3 +1,6 @@
+use tonic::Code;
+use tonic_types::{ErrorDetails, StatusExt};
+
 use crate::EmailConfig;
 use crate::services::EmailSvc;
 
@@ -7,6 +10,10 @@ impl<G: EmailConfig> pb::scufflecloud::email::v1::email_service_server::EmailSer
         &self,
         _req: tonic::Request<pb::scufflecloud::email::v1::Email>,
     ) -> Result<tonic::Response<()>, tonic::Status> {
-        Ok(tonic::Response::new(()))
+        Err(tonic::Status::with_error_details(
+            Code::Unimplemented,
+            "this call is not implemented yet",
+            ErrorDetails::new(),
+        ))
     }
 }

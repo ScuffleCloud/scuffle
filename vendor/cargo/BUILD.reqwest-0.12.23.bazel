@@ -43,6 +43,7 @@ rust_library(
         "http3-no-provider",
         "json",
         "rustls-tls-manual-roots-no-provider",
+        "rustls-tls-native-roots-no-provider",
         "rustls-tls-no-provider",
     ],
     crate_root = "src/lib.rs",
@@ -98,6 +99,7 @@ rust_library(
             "@cargo_vendor__pin-project-lite-0.2.16//:pin_project_lite",  # cfg(not(target_arch = "wasm32"))
             "@cargo_vendor__quinn-0.11.9//:quinn",  # cfg(not(target_arch = "wasm32"))
             "@cargo_vendor__rustls-0.23.31//:rustls",  # cfg(not(target_arch = "wasm32"))
+            "@cargo_vendor__rustls-native-certs-0.8.1//:rustls_native_certs",  # cfg(not(target_arch = "wasm32"))
             "@cargo_vendor__rustls-pki-types-1.12.0//:rustls_pki_types",  # cfg(not(target_arch = "wasm32"))
             "@cargo_vendor__tokio-1.47.1//:tokio",  # cfg(not(target_arch = "wasm32"))
             "@cargo_vendor__tokio-rustls-0.26.2//:tokio_rustls",  # cfg(not(target_arch = "wasm32"))
@@ -118,6 +120,7 @@ rust_library(
             "@cargo_vendor__pin-project-lite-0.2.16//:pin_project_lite",  # cfg(not(target_arch = "wasm32"))
             "@cargo_vendor__quinn-0.11.9//:quinn",  # cfg(not(target_arch = "wasm32"))
             "@cargo_vendor__rustls-0.23.31//:rustls",  # cfg(not(target_arch = "wasm32"))
+            "@cargo_vendor__rustls-native-certs-0.8.1//:rustls_native_certs",  # cfg(not(target_arch = "wasm32"))
             "@cargo_vendor__rustls-pki-types-1.12.0//:rustls_pki_types",  # cfg(not(target_arch = "wasm32"))
             "@cargo_vendor__tokio-1.47.1//:tokio",  # cfg(not(target_arch = "wasm32"))
             "@cargo_vendor__tokio-rustls-0.26.2//:tokio_rustls",  # cfg(not(target_arch = "wasm32"))
@@ -138,6 +141,7 @@ rust_library(
             "@cargo_vendor__pin-project-lite-0.2.16//:pin_project_lite",  # cfg(not(target_arch = "wasm32"))
             "@cargo_vendor__quinn-0.11.9//:quinn",  # cfg(not(target_arch = "wasm32"))
             "@cargo_vendor__rustls-0.23.31//:rustls",  # cfg(not(target_arch = "wasm32"))
+            "@cargo_vendor__rustls-native-certs-0.8.1//:rustls_native_certs",  # cfg(not(target_arch = "wasm32"))
             "@cargo_vendor__rustls-pki-types-1.12.0//:rustls_pki_types",  # cfg(not(target_arch = "wasm32"))
             "@cargo_vendor__tokio-1.47.1//:tokio",  # cfg(not(target_arch = "wasm32"))
             "@cargo_vendor__tokio-rustls-0.26.2//:tokio_rustls",  # cfg(not(target_arch = "wasm32"))
@@ -164,6 +168,7 @@ rust_library(
             "@cargo_vendor__pin-project-lite-0.2.16//:pin_project_lite",  # cfg(not(target_arch = "wasm32"))
             "@cargo_vendor__quinn-0.11.9//:quinn",  # cfg(not(target_arch = "wasm32"))
             "@cargo_vendor__rustls-0.23.31//:rustls",  # cfg(not(target_arch = "wasm32"))
+            "@cargo_vendor__rustls-native-certs-0.8.1//:rustls_native_certs",  # cfg(not(target_arch = "wasm32"))
             "@cargo_vendor__rustls-pki-types-1.12.0//:rustls_pki_types",  # cfg(not(target_arch = "wasm32"))
             "@cargo_vendor__tokio-1.47.1//:tokio",  # cfg(not(target_arch = "wasm32"))
             "@cargo_vendor__tokio-rustls-0.26.2//:tokio_rustls",  # cfg(not(target_arch = "wasm32"))
@@ -184,6 +189,7 @@ rust_library(
             "@cargo_vendor__pin-project-lite-0.2.16//:pin_project_lite",  # cfg(not(target_arch = "wasm32"))
             "@cargo_vendor__quinn-0.11.9//:quinn",  # cfg(not(target_arch = "wasm32"))
             "@cargo_vendor__rustls-0.23.31//:rustls",  # cfg(not(target_arch = "wasm32"))
+            "@cargo_vendor__rustls-native-certs-0.8.1//:rustls_native_certs",  # cfg(not(target_arch = "wasm32"))
             "@cargo_vendor__rustls-pki-types-1.12.0//:rustls_pki_types",  # cfg(not(target_arch = "wasm32"))
             "@cargo_vendor__tokio-1.47.1//:tokio",  # cfg(not(target_arch = "wasm32"))
             "@cargo_vendor__tokio-rustls-0.26.2//:tokio_rustls",  # cfg(not(target_arch = "wasm32"))
@@ -204,6 +210,7 @@ rust_library(
             "@cargo_vendor__pin-project-lite-0.2.16//:pin_project_lite",  # cfg(not(target_arch = "wasm32"))
             "@cargo_vendor__quinn-0.11.9//:quinn",  # cfg(not(target_arch = "wasm32"))
             "@cargo_vendor__rustls-0.23.31//:rustls",  # cfg(not(target_arch = "wasm32"))
+            "@cargo_vendor__rustls-native-certs-0.8.1//:rustls_native_certs",  # cfg(not(target_arch = "wasm32"))
             "@cargo_vendor__rustls-pki-types-1.12.0//:rustls_pki_types",  # cfg(not(target_arch = "wasm32"))
             "@cargo_vendor__tokio-1.47.1//:tokio",  # cfg(not(target_arch = "wasm32"))
             "@cargo_vendor__tokio-rustls-0.26.2//:tokio_rustls",  # cfg(not(target_arch = "wasm32"))

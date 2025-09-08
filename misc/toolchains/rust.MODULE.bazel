@@ -268,6 +268,7 @@ use_repo(
     "cargo_vendor__tonic-prost-0.14.2",
     "cargo_vendor__tonic-reflection-0.14.2",
     "cargo_vendor__tonic-types-0.14.2",
+    "cargo_vendor__tonic-web-0.14.2",
     "cargo_vendor__totp-rs-5.7.0",
     "cargo_vendor__tower-0.5.2",
     "cargo_vendor__tower-http-0.6.6",

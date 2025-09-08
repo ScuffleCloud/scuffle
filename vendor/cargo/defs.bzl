@@ -474,6 +474,7 @@ _NORMAL_DEPENDENCIES = {
                 "tonic": Label("@cargo_vendor//:tonic-0.14.2"),
                 "tonic-reflection": Label("@cargo_vendor//:tonic-reflection-0.14.2"),
                 "tonic-types": Label("@cargo_vendor//:tonic-types-0.14.2"),
+                "tonic-web": Label("@cargo_vendor//:tonic-web-0.14.2"),
                 "totp-rs": Label("@cargo_vendor//:totp-rs-5.7.0"),
                 "tower-http": Label("@cargo_vendor//:tower-http-0.6.6"),
                 "tracing": Label("@cargo_vendor//:tracing-0.1.41"),
@@ -3987,6 +3988,7 @@ _CONDITIONS = {
     "cfg(not(windows))": ["@rules_rust//rust/platform:aarch64-apple-darwin", "@rules_rust//rust/platform:aarch64-unknown-linux-gnu", "@rules_rust//rust/platform:wasm32-unknown-unknown", "@rules_rust//rust/platform:x86_64-apple-darwin", "@rules_rust//rust/platform:x86_64-unknown-linux-gnu"],
     "cfg(target_arch = \"aarch64\")": ["@rules_rust//rust/platform:aarch64-apple-darwin", "@rules_rust//rust/platform:aarch64-pc-windows-msvc", "@rules_rust//rust/platform:aarch64-unknown-linux-gnu"],
     "cfg(target_arch = \"wasm32\")": ["@rules_rust//rust/platform:wasm32-unknown-unknown"],
+    "cfg(target_os = \"macos\")": ["@rules_rust//rust/platform:aarch64-apple-darwin", "@rules_rust//rust/platform:x86_64-apple-darwin"],
     "cfg(target_vendor = \"apple\")": ["@rules_rust//rust/platform:aarch64-apple-darwin", "@rules_rust//rust/platform:x86_64-apple-darwin"],
     "cfg(unix)": ["@rules_rust//rust/platform:aarch64-apple-darwin", "@rules_rust//rust/platform:aarch64-unknown-linux-gnu", "@rules_rust//rust/platform:x86_64-apple-darwin", "@rules_rust//rust/platform:x86_64-unknown-linux-gnu"],
     "cfg(windows)": ["@rules_rust//rust/platform:aarch64-pc-windows-msvc", "@rules_rust//rust/platform:x86_64-pc-windows-msvc"],
@@ -8455,6 +8457,16 @@ def crate_repositories():
 
     maybe(
         http_archive,
+        name = "cargo_vendor__schannel-0.1.27",
+        sha256 = "1f29ebaa345f945cec9fbbc532eb307f0fdad8161f281b6369539c8d84876b3d",
+        type = "tar.gz",
+        urls = ["https://static.crates.io/crates/schannel/0.1.27/download"],
+        strip_prefix = "schannel-0.1.27",
+        build_file = Label("//vendor/cargo:BUILD.schannel-0.1.27.bazel"),
+    )
+
+    maybe(
+        http_archive,
         name = "cargo_vendor__scoped-futures-0.1.4",
         sha256 = "1b24aae2d0636530f359e9d5ef0c04669d11c5e756699b27a6a6d845d8329091",
         type = "tar.gz",
@@ -9531,6 +9543,16 @@ def crate_repositories():
         urls = ["https://static.crates.io/crates/tonic-types/0.14.2/download"],
         strip_prefix = "tonic-types-0.14.2",
         build_file = Label("//vendor/cargo:BUILD.tonic-types-0.14.2.bazel"),
+    )
+
+    maybe(
+        http_archive,
+        name = "cargo_vendor__tonic-web-0.14.2",
+        sha256 = "75214f6b6bd28c19aa752ac09fdf0eea546095670906c21fe3940e180a4c43f2",
+        type = "tar.gz",
+        urls = ["https://static.crates.io/crates/tonic-web/0.14.2/download"],
+        strip_prefix = "tonic-web-0.14.2",
+        build_file = Label("//vendor/cargo:BUILD.tonic-web-0.14.2.bazel"),
     )
 
     maybe(
@@ -10696,6 +10718,7 @@ def crate_repositories():
         struct(repo = "cargo_vendor__tonic-prost-0.14.2", is_dev_dep = False),
         struct(repo = "cargo_vendor__tonic-reflection-0.14.2", is_dev_dep = False),
         struct(repo = "cargo_vendor__tonic-types-0.14.2", is_dev_dep = False),
+        struct(repo = "cargo_vendor__tonic-web-0.14.2", is_dev_dep = False),
         struct(repo = "cargo_vendor__totp-rs-5.7.0", is_dev_dep = False),
         struct(repo = "cargo_vendor__tower-0.5.2", is_dev_dep = False),
         struct(repo = "cargo_vendor__tower-http-0.6.6", is_dev_dep = False),

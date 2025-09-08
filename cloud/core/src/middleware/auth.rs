@@ -24,6 +24,16 @@ const NONCE_HEADER: HeaderName = HeaderName::from_static("scuf-nonce");
 const AUTHENTICATION_METHOD_HEADER: HeaderName = HeaderName::from_static("scuf-auth-method");
 const AUTHENTICATION_HMAC_HEADER: HeaderName = HeaderName::from_static("scuf-auth-hmac");
 
+pub(crate) const fn auth_headers() -> [HeaderName; 5] {
+    [
+        TOKEN_ID_HEADER,
+        TIMESTAMP_HEADER,
+        NONCE_HEADER,
+        AUTHENTICATION_METHOD_HEADER,
+        AUTHENTICATION_HMAC_HEADER,
+    ]
+}
+
 #[derive(Clone, Debug)]
 pub(crate) struct ExpiredSession(pub UserSession);
 

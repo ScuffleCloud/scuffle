@@ -40,14 +40,13 @@ pub(crate) async fn verify<G: CoreConfig>(global: &Arc<G>, token: &str) -> Resul
         remoteip: None, // TODO
     };
 
-    let res: TurnstileSiteVerifyResponse = global
-        .http_client()
-        .post(TURNSTILE_VERIFY_URL)
-        .json(&payload)
-        .send()
-        .await?
-        .json()
-        .await?;
+    let res = global.http_client().post(TURNSTILE_VERIFY_URL).json(&payload).send().await;
+
+    if res.is_err() {
+        tracing::warn!("failed to send turnstile verify request: {:?}", res);
+    }
+
+    let res: TurnstileSiteVerifyResponse = res?.json().await?;
 
     if !res.success {
         let Some(error_code) = res.error_codes.into_iter().next() else {

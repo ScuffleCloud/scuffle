@@ -306,6 +306,8 @@ impl scuffle_bootstrap::Global for Global {
 
         let http_client = reqwest::Client::builder()
             .user_agent(&config.service_name)
+            .tls_built_in_root_certs(true)
+            .use_rustls_tls()
             .build()
             .context("create HTTP client")?;
 

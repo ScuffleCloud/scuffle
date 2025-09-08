@@ -1,0 +1,47 @@
+[package]
+name = "scufflecloud-email"
+version = "0.1.0"
+authors = ["Scuffle <opensource@scuffle.cloud>"]
+edition = "2024"
+license = "AGPL-3.0"
+publish = false
+readme = "README.md"
+repository = "https://github.com/scufflecloud/scuffle"
+description = "Email service for scuffle.cloud"
+
+[[bin]]
+name = "scufflecloud-email-standalone"
+path = "src/bin/standalone.rs"
+
+[lints.rust]
+unexpected_cfgs = { level = "warn", check-cfg = ['cfg(coverage_nightly)'] }
+
+[dependencies]
+anyhow = "1.0.98"
+async-trait = "0.1.88"
+axum = "0.8.4"
+pb = { package = "scufflecloud-proto", path = "../proto" }
+prost = "0.14.1"
+rustls = { default-features = false, version = "0.23.31", features = ["aws_lc_rs"] }
+scuffle-bootstrap = { path = "../../crates/bootstrap" }
+scuffle-bootstrap-telemetry = { features = ["opentelemetry-logs", "opentelemetry-traces"], path = "../../crates/bootstrap-telemetry" }
+scuffle-context = { path = "../../crates/context" }
+scuffle-http = { features = ["tracing"], path = "../../crates/http" }
+scuffle-settings = { features = ["all-formats", "bootstrap"], path = "../../crates/settings" }
+scuffle-signal = { features = ["bootstrap"], path = "../../crates/signal" }
+serde = "1.0.219"
+serde_derive = "1.0.219"
+smart-default = "0.7.1"
+tinc = { path = "../../crates/tinc" }
+tonic = "0.14.1"
+tonic-reflection = "0.14.1"
+tonic-types = "0.14.1"
+tower-http = { features = ["cors", "trace"], version = "0.6.6" }
+tracing = "0.1.41"
+tracing-subscriber = "0.3.19"
+
+[package.metadata.sync-readme.badges]
+docs-rs = false
+crates-io = false
+license = true
+codecov = true

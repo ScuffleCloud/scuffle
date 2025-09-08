@@ -487,6 +487,23 @@ _NORMAL_DEPENDENCIES = {
             },
         },
     },
+    "cloud/email": {
+        _REQUIRED_FEATURE: {
+            _COMMON_CONDITION: {
+                "anyhow": Label("@cargo_vendor//:anyhow-1.0.99"),
+                "axum": Label("@cargo_vendor//:axum-0.8.4"),
+                "prost": Label("@cargo_vendor//:prost-0.14.1"),
+                "rustls": Label("@cargo_vendor//:rustls-0.23.31"),
+                "serde": Label("@cargo_vendor//:serde-1.0.219"),
+                "tonic": Label("@cargo_vendor//:tonic-0.14.2"),
+                "tonic-reflection": Label("@cargo_vendor//:tonic-reflection-0.14.2"),
+                "tonic-types": Label("@cargo_vendor//:tonic-types-0.14.2"),
+                "tower-http": Label("@cargo_vendor//:tower-http-0.6.6"),
+                "tracing": Label("@cargo_vendor//:tracing-0.1.41"),
+                "tracing-subscriber": Label("@cargo_vendor//:tracing-subscriber-0.3.20"),
+            },
+        },
+    },
     "cloud/proto": {
         _REQUIRED_FEATURE: {
             _COMMON_CONDITION: {
@@ -1224,6 +1241,12 @@ _NORMAL_ALIASES = {
             },
         },
     },
+    "cloud/email": {
+        _REQUIRED_FEATURE: {
+            _COMMON_CONDITION: {
+            },
+        },
+    },
     "cloud/proto": {
         _REQUIRED_FEATURE: {
             _COMMON_CONDITION: {
@@ -1645,6 +1668,8 @@ _NORMAL_ALIASES = {
 _NORMAL_DEV_DEPENDENCIES = {
     "cloud/core": {
     },
+    "cloud/email": {
+    },
     "cloud/proto": {
     },
     "crates/aac": {
@@ -1913,6 +1938,8 @@ _NORMAL_DEV_DEPENDENCIES = {
 _NORMAL_DEV_ALIASES = {
     "cloud/core": {
     },
+    "cloud/email": {
+    },
     "cloud/proto": {
     },
     "crates/aac": {
@@ -2119,6 +2146,15 @@ _PROC_MACRO_DEPENDENCIES = {
             _COMMON_CONDITION: {
                 "async-trait": Label("@cargo_vendor//:async-trait-0.1.89"),
                 "sailfish-macros": Label("@cargo_vendor//:sailfish-macros-0.10.0"),
+                "serde_derive": Label("@cargo_vendor//:serde_derive-1.0.219"),
+                "smart-default": Label("@cargo_vendor//:smart-default-0.7.1"),
+            },
+        },
+    },
+    "cloud/email": {
+        _REQUIRED_FEATURE: {
+            _COMMON_CONDITION: {
+                "async-trait": Label("@cargo_vendor//:async-trait-0.1.89"),
                 "serde_derive": Label("@cargo_vendor//:serde_derive-1.0.219"),
                 "smart-default": Label("@cargo_vendor//:smart-default-0.7.1"),
             },
@@ -2483,6 +2519,8 @@ _PROC_MACRO_DEPENDENCIES = {
 _PROC_MACRO_ALIASES = {
     "cloud/core": {
     },
+    "cloud/email": {
+    },
     "cloud/proto": {
     },
     "crates/aac": {
@@ -2603,6 +2641,8 @@ _PROC_MACRO_ALIASES = {
 
 _PROC_MACRO_DEV_DEPENDENCIES = {
     "cloud/core": {
+    },
+    "cloud/email": {
     },
     "cloud/proto": {
     },
@@ -2729,6 +2769,8 @@ _PROC_MACRO_DEV_DEPENDENCIES = {
 
 _PROC_MACRO_DEV_ALIASES = {
     "cloud/core": {
+    },
+    "cloud/email": {
     },
     "cloud/proto": {
     },
@@ -2933,6 +2975,8 @@ _PROC_MACRO_DEV_ALIASES = {
 _BUILD_DEPENDENCIES = {
     "cloud/core": {
     },
+    "cloud/email": {
+    },
     "cloud/proto": {
         _REQUIRED_FEATURE: {
             _COMMON_CONDITION: {
@@ -3059,6 +3103,8 @@ _BUILD_DEPENDENCIES = {
 _BUILD_ALIASES = {
     "cloud/core": {
     },
+    "cloud/email": {
+    },
     "cloud/proto": {
         _REQUIRED_FEATURE: {
             _COMMON_CONDITION: {
@@ -3180,6 +3226,8 @@ _BUILD_ALIASES = {
 _BUILD_PROC_MACRO_DEPENDENCIES = {
     "cloud/core": {
     },
+    "cloud/email": {
+    },
     "cloud/proto": {
     },
     "crates/aac": {
@@ -3289,6 +3337,8 @@ _BUILD_PROC_MACRO_DEPENDENCIES = {
 _BUILD_PROC_MACRO_ALIASES = {
     "cloud/core": {
     },
+    "cloud/email": {
+    },
     "cloud/proto": {
     },
     "crates/aac": {
@@ -3397,6 +3447,8 @@ _BUILD_PROC_MACRO_ALIASES = {
 
 _FEATURE_FLAGS = {
     "cloud/core": {
+    },
+    "cloud/email": {
     },
     "cloud/proto": {
     },
@@ -3734,6 +3786,8 @@ _FEATURE_FLAGS = {
 _RESOLVED_FEATURE_FLAGS = {
     "cloud/core": {
     },
+    "cloud/email": {
+    },
     "cloud/proto": {
     },
     "crates/aac": {
@@ -3894,6 +3948,7 @@ _RESOLVED_FEATURE_FLAGS = {
 
 _VERSIONS = {
     "cloud/core": "0.1.0",
+    "cloud/email": "0.1.0",
     "cloud/proto": "0.1.0",
     "crates/aac": "0.1.4",
     "crates/amf0": "0.2.4",

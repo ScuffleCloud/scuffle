@@ -1,0 +1,46 @@
+load("//misc/utils/rust:manifest.bzl", "cargo_toml")
+load("//misc/utils/rust:package.bzl", "scuffle_package")
+
+cargo_toml()
+
+deps = [
+    "//crates/batching",
+    "//crates/bootstrap",
+    "//crates/bootstrap-telemetry",
+    "//crates/context",
+    "//crates/http",
+    "//crates/settings",
+    "//crates/signal",
+    "//crates/tinc",
+    "//cloud/proto",
+]
+
+aliases = {
+    "//cloud/proto": "pb",
+}
+
+scuffle_package(
+    srcs = glob(
+        [
+            "src/**/*.rs",
+        ],
+        exclude = [
+            "src/bin/*.rs",
+        ],
+    ),
+    aliases = aliases,
+    crate_name = "scufflecloud-email",
+    deps = deps,
+)
+
+scuffle_package(
+    name = "bin",
+    srcs = [
+        "src/bin/standalone.rs",
+    ],
+    aliases = aliases,
+    crate_name = "scufflecloud-email-standalone",
+    crate_type = "bin",
+    readme = False,
+    deps = deps + [":email"],
+)

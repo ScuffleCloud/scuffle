@@ -45,8 +45,18 @@ clear-tool-cache:
     output_base=$(bazel info output_base)
     rm -r "${output_base}/.scripts"
 
-run core *args:
-    bazel run //cloud/core:bin -- {{ args }}
+# bin is either cloud or email
+run bin *args:
+    #!/usr/bin/env bash
+
+    if [ {{ bin }} == "cloud" ]; then
+        bazel run //cloud/core:bin -- {{ args }}
+    elif [ {{ bin }} == "email" ]; then
+        bazel run //cloud/email:bin -- {{ args }}
+    else
+        echo "Unknown binary: {{ bin }}"
+        exit 1
+    fi
 
 alias coverage := test
 

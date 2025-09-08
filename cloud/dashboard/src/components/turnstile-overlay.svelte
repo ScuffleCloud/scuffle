@@ -5,8 +5,10 @@
     import { Turnstile } from "svelte-turnstile";
     import type { TurnstileError } from "./types";
 
-    let showTurnstileOverlay = false;
-    let reset: () => void;
+    let showTurnstileOverlay = $state(false);
+    export { showTurnstileOverlay };
+    let reset: () => void = $state(() => {});
+
     let token: string | undefined = undefined;
 
     let handleTurnstileCallback = (event: CustomEvent) => {

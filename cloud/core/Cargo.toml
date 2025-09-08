@@ -35,7 +35,7 @@ pb = { package = "scufflecloud-proto", path = "../proto" }
 pkcs8 = "0.10.2"
 prost = "0.14.1"
 rand = "0.8.5"
-reqwest = { features = ["json", "rustls-tls-no-provider"], version = "0.12.20", default-features = false }
+reqwest = { features = ["json", "rustls-tls-native-roots-no-provider"], version = "0.12.20", default-features = false }
 rsa = { features = ["sha2"], version = "0.9.8" }
 rustls = { default-features = false, version = "0.23.31", features = ["aws_lc_rs"] }
 sailfish = "0.10.0"

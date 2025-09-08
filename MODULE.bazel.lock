@@ -246,7 +246,7 @@
   "moduleExtensions": {
     "//vendor:cargo_ext.bzl%bindeps": {
       "general": {
-        "bzlTransitiveDigest": "oKgmec7BB0znIoeZIFz/Lbl57fgPl6N1CLE9YIuO5Vg=",
+        "bzlTransitiveDigest": "UD3yJxc8RhZ5Z/crrf2bIP/HcMVJcPeyaj2dYn1M8nU=",
         "usagesDigest": "0vyNdgUB6Py8EFEYeVm1fABbu9FAMVvr905hmQzVjfU=",
         "recordedFileInputs": {},
         "recordedDirentsInputs": {},
@@ -9945,7 +9945,7 @@
     },
     "//vendor:cargo_ext.bzl%cargo_vendor": {
       "general": {
-        "bzlTransitiveDigest": "oKgmec7BB0znIoeZIFz/Lbl57fgPl6N1CLE9YIuO5Vg=",
+        "bzlTransitiveDigest": "UD3yJxc8RhZ5Z/crrf2bIP/HcMVJcPeyaj2dYn1M8nU=",
         "usagesDigest": "mtR+K4/VVAmhgoN1cG7MXxv6mAD1vfxRZ8SSM66EtxE=",
         "recordedFileInputs": {},
         "recordedDirentsInputs": {},
@@ -15294,6 +15294,18 @@
               ],
               "strip_prefix": "same-file-1.0.6",
               "build_file": "@@//vendor/cargo:BUILD.same-file-1.0.6.bazel"
+            }
+          },
+          "cargo_vendor__schannel-0.1.27": {
+            "repoRuleId": "@@bazel_tools//tools/build_defs/repo:http.bzl%http_archive",
+            "attributes": {
+              "sha256": "1f29ebaa345f945cec9fbbc532eb307f0fdad8161f281b6369539c8d84876b3d",
+              "type": "tar.gz",
+              "urls": [
+                "https://static.crates.io/crates/schannel/0.1.27/download"
+              ],
+              "strip_prefix": "schannel-0.1.27",
+              "build_file": "@@//vendor/cargo:BUILD.schannel-0.1.27.bazel"
             }
           },
           "cargo_vendor__scoped-futures-0.1.4": {

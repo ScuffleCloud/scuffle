@@ -164,7 +164,7 @@ impl Config {
         } = ConfigParser::parse();
 
         // We need some info from `bazel info`. Fetch it now.
-        let mut info_map = bazel_info(&bazel, workspace.as_deref(), None, &bazel_startup_options, &bazel_args)?;
+        let mut info_map = bazel_info(&bazel, workspace.as_deref(), None, &bazel_startup_options)?;
 
         let config = Config {
             workspace: info_map
@@ -256,12 +256,10 @@ pub fn bazel_info(
     workspace: Option<&Utf8Path>,
     output_base: Option<&Utf8Path>,
     bazel_startup_options: &[String],
-    bazel_args: &[String],
 ) -> anyhow::Result<BTreeMap<String, String>> {
     let output = bazel_command(bazel, workspace, output_base)
         .args(bazel_startup_options)
         .arg("info")
-        .args(bazel_args)
         .output()?;
 
     if !output.status.success() {

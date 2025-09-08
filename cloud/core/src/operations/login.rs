@@ -33,7 +33,11 @@ impl<G: CoreConfig> Operation<G> for tonic::Request<pb::scufflecloud::core::v1::
         // Check captcha
         match captcha.provider() {
             CaptchaProvider::Unspecified => {
-                return Err(tonic::Status::invalid_argument("captcha provider must be set"));
+                return Err(tonic::Status::with_error_details(
+                    Code::InvalidArgument,
+                    "captcha provider must be set",
+                    ErrorDetails::new(),
+                ));
             }
             CaptchaProvider::Turnstile => {
                 captcha::turnstile::verify_in_tonic(global, &captcha.token).await?;
@@ -99,7 +103,11 @@ impl<G: CoreConfig> Operation<G> for tonic::Request<pb::scufflecloud::core::v1::
         // Check captcha
         match captcha.provider() {
             CaptchaProvider::Unspecified => {
-                return Err(tonic::Status::invalid_argument("captcha provider must be set"));
+                return Err(tonic::Status::with_error_details(
+                    Code::InvalidArgument,
+                    "captcha provider must be set",
+                    ErrorDetails::new(),
+                ));
             }
             CaptchaProvider::Turnstile => {
                 captcha::turnstile::verify_in_tonic(global, &captcha.token).await?;
@@ -159,7 +167,11 @@ impl<G: CoreConfig> Operation<G> for tonic::Request<pb::scufflecloud::core::v1::
         // Check captcha
         match captcha.provider() {
             CaptchaProvider::Unspecified => {
-                return Err(tonic::Status::invalid_argument("captcha provider must be set"));
+                return Err(tonic::Status::with_error_details(
+                    Code::InvalidArgument,
+                    "captcha provider must be set",
+                    ErrorDetails::new(),
+                ));
             }
             CaptchaProvider::Turnstile => {
                 captcha::turnstile::verify_in_tonic(global, &captcha.token).await?;

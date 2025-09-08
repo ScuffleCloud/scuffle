@@ -246,7 +246,7 @@
   "moduleExtensions": {
     "//vendor:cargo_ext.bzl%bindeps": {
       "general": {
-        "bzlTransitiveDigest": "XsRGFhouKZWxJ1WFZRhNMgedzIZMmNPfvSnCPWnGTCs=",
+        "bzlTransitiveDigest": "YOtLBJawNF4DH/wFCJp8mYqNIaaHfys40UERZTFTdUs=",
         "usagesDigest": "0vyNdgUB6Py8EFEYeVm1fABbu9FAMVvr905hmQzVjfU=",
         "recordedFileInputs": {},
         "recordedDirentsInputs": {},
@@ -9945,7 +9945,7 @@
     },
     "//vendor:cargo_ext.bzl%cargo_vendor": {
       "general": {
-        "bzlTransitiveDigest": "XsRGFhouKZWxJ1WFZRhNMgedzIZMmNPfvSnCPWnGTCs=",
+        "bzlTransitiveDigest": "YOtLBJawNF4DH/wFCJp8mYqNIaaHfys40UERZTFTdUs=",
         "usagesDigest": "mtR+K4/VVAmhgoN1cG7MXxv6mAD1vfxRZ8SSM66EtxE=",
         "recordedFileInputs": {},
         "recordedDirentsInputs": {},

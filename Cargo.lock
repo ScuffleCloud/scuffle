@@ -5560,6 +5560,34 @@ dependencies = [
 ]
 
 [[package]]
+name = "scufflecloud-email"
+version = "0.1.0"
+dependencies = [
+ "anyhow",
+ "async-trait",
+ "axum",
+ "prost 0.14.1",
+ "rustls",
+ "scuffle-bootstrap",
+ "scuffle-bootstrap-telemetry",
+ "scuffle-context",
+ "scuffle-http",
+ "scuffle-settings",
+ "scuffle-signal",
+ "scufflecloud-proto",
+ "serde",
+ "serde_derive",
+ "smart-default",
+ "tinc",
+ "tonic",
+ "tonic-reflection",
+ "tonic-types",
+ "tower-http",
+ "tracing",
+ "tracing-subscriber",
+]
+
+[[package]]
 name = "scufflecloud-proto"
 version = "0.1.0"
 dependencies = [

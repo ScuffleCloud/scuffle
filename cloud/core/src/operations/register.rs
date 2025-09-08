@@ -2,6 +2,7 @@ use base64::Engine;
 use diesel::{BoolExpressionMethods, ExpressionMethods, OptionalExtension, QueryDsl, SelectableHelper};
 use diesel_async::RunQueryDsl;
 use pb::scufflecloud::core::v1::CaptchaProvider;
+use sha2::Digest;
 use tonic::Code;
 use tonic_types::{ErrorDetails, StatusExt};
 
@@ -141,6 +142,9 @@ impl<G: CoreConfig> Operation<G> for tonic::Request<pb::scufflecloud::core::v1::
             ));
         };
 
+        let hash = sha2::Sha256::digest(&registration_request.email);
+        let avatar_url = format!("https://gravatar.com/avatar/{:x}?s=80&d=identicon", hash);
+
         Ok(User {
             id: UserId::new(),
             preferred_name: None,
@@ -148,6 +152,7 @@ impl<G: CoreConfig> Operation<G> for tonic::Request<pb::scufflecloud::core::v1::
             last_name: None,
             password_hash: None,
             primary_email: Some(registration_request.email),
+            avatar_url: Some(avatar_url),
         })
     }
 

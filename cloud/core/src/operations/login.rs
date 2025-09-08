@@ -375,11 +375,13 @@ impl<G: CoreConfig> Operation<G> for tonic::Request<pb::scufflecloud::core::v1::
         match google_account {
             Some(google_account) => {
                 // Load existing user
-                let user = users::dsl::users
-                    .find(google_account.user_id)
-                    .first::<User>(&mut driver.conn)
+                let user = diesel::update(users::dsl::users)
+                    .filter(users::dsl::id.eq(google_account.user_id))
+                    .set(users::dsl::avatar_url.eq(google_token.id_token.picture))
+                    .returning(User::as_select())
+                    .get_result::<User>(&mut driver.conn)
                     .await
-                    .into_tonic_internal_err("failed to query user")?;
+                    .into_tonic_internal_err("failed to update user")?;
 
                 self.extensions_mut().insert(state);
 
@@ -396,6 +398,7 @@ impl<G: CoreConfig> Operation<G> for tonic::Request<pb::scufflecloud::core::v1::
                         .id_token
                         .email_verified
                         .then(|| normalize_email(&google_token.id_token.email)),
+                    avatar_url: google_token.id_token.picture,
                 };
 
                 common::create_user(&mut driver.conn, &user).await?;

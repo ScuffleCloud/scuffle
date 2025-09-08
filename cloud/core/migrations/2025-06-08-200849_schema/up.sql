@@ -7,7 +7,8 @@ CREATE TABLE "users" (
     "first_name" VARCHAR(255),
     "last_name" VARCHAR(255),
     "password_hash" VARCHAR(255), -- Nullable for users who register via external providers
-    "primary_email" VARCHAR(255)
+    "primary_email" VARCHAR(255),
+    "avatar_url" VARCHAR(255)
 );
 
 -- User emails

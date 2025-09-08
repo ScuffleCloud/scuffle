@@ -21,7 +21,8 @@ message User {
     max_len: 255
   }];
   optional string primary_email = 5 [(tinc.field).constraint.string.email = true];
-  google.protobuf.Timestamp created_at = 6;
+  optional string avatar_url = 6 [(tinc.field).constraint.string.uri = true];
+  google.protobuf.Timestamp created_at = 7;
 }
 
 message UserEmail {

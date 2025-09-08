@@ -45,11 +45,10 @@ clear-tool-cache:
     output_base=$(bazel info output_base)
     rm -r "${output_base}/.scripts"
 
-# bin is either cloud or email
 run bin *args:
     #!/usr/bin/env bash
 
-    if [ {{ bin }} == "cloud" ]; then
+    if [ {{ bin }} == "core" ]; then
         bazel run //cloud/core:bin -- {{ args }}
     elif [ {{ bin }} == "email" ]; then
         bazel run //cloud/email:bin -- {{ args }}

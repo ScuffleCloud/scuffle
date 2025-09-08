@@ -300,12 +300,9 @@ impl scuffle_bootstrap::Global for Global {
             .await
             .context("build database pool")?;
 
-        let connection = database.get_owned().await.context("get database connection")?;
-        let user_loader = UserLoader::new(connection);
-        let connection = database.get_owned().await.context("get database connection")?;
-        let organization_loader = OrganizationLoader::new(connection);
-        let connection = database.get_owned().await.context("get database connection")?;
-        let organization_member_by_user_id_loader = OrganizationMemberByUserIdLoader::new(connection);
+        let user_loader = UserLoader::new(database.clone());
+        let organization_loader = OrganizationLoader::new(database.clone());
+        let organization_member_by_user_id_loader = OrganizationMemberByUserIdLoader::new(database.clone());
 
         let http_client = reqwest::Client::builder()
             .user_agent(&config.service_name)

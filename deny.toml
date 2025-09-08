@@ -11,7 +11,6 @@ allow = [
     "CC0-1.0",
     "MPL-2.0",
     "BSL-1.0",
-    "CDLA-Permissive-2.0",
     "OpenSSL",
 ]
 
@@ -27,12 +26,13 @@ license-files = [{ path = "LICENSE", hash = 0xbd0eed23 }]
 [advisories]
 ignore = [
     # paste is unmaintained
-    # todo: remove once aws-lc-rs is updated
-    # https://github.com/aws/aws-lc-rs/issues/722
     "RUSTSEC-2024-0436",
     # This vulnerability does not affect us since we are not dealing with any private RSA keys at any time.
     # Therefore we can't leak any private information through a timing attack.
     "RUSTSEC-2023-0071",
+    # fxhash unmaintained
+    # https://github.com/servo/stylo/issues/237
+    "RUSTSEC-2025-0057",
 ]
 
 [bans]

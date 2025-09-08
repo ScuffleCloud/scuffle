@@ -1,5 +1,4 @@
 load("@rules_rust//crate_universe:defs.bzl", "crate", "crates_vendor", "render_config")
-load("//:cargo_targets.bzl", "cargo_manifests")
 
 crates_vendor(
     name = "cargo_vendor",
@@ -63,7 +62,7 @@ crates_vendor(
     cargo_bazel = "//misc/toolchains/rust:cargo-bazel",
     cargo_lockfile = "//:Cargo.lock",
     generate_build_scripts = True,
-    manifests = cargo_manifests(),
+    manifests = ["//:Cargo.toml"],
     mode = "remote",
     render_config = render_config(
         default_alias_rule = "opt",

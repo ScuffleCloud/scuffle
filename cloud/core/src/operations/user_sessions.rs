@@ -69,7 +69,7 @@ impl<G: CoreConfig> Operation<G> for tonic::Request<pb::scufflecloud::core::v1::
             )
             .set((
                 user_sessions::dsl::mfa_pending.eq(false),
-                user_sessions::dsl::expires_at.eq(chrono::Utc::now() + global.user_session_timeout()),
+                user_sessions::dsl::expires_at.eq(chrono::Utc::now() + global.timeout_config().user_session),
             ))
             .returning(UserSession::as_select())
             .get_result::<UserSession>(&mut driver.conn)
@@ -122,7 +122,7 @@ impl<G: CoreConfig> Operation<G> for tonic::Request<RefreshUserSessionRequest> {
             .set((
                 user_sessions::dsl::token_id.eq(token_id),
                 user_sessions::dsl::token.eq(token),
-                user_sessions::dsl::token_expires_at.eq(chrono::Utc::now() + global.user_session_token_timeout()),
+                user_sessions::dsl::token_expires_at.eq(chrono::Utc::now() + global.timeout_config().user_session_token),
             ))
             .returning(UserSession::as_select())
             .get_result::<UserSession>(&mut driver.conn)

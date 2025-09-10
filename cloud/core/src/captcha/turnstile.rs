@@ -1,3 +1,4 @@
+use std::net::IpAddr;
 use std::sync::Arc;
 
 use tonic_types::{ErrorDetails, StatusExt};
@@ -33,11 +34,11 @@ pub(crate) enum TrunstileVerifyError {
     MissingErrorCode,
 }
 
-pub(crate) async fn verify<G: CoreConfig>(global: &Arc<G>, token: &str) -> Result<(), TrunstileVerifyError> {
+pub(crate) async fn verify<G: CoreConfig>(global: &Arc<G>, remote_ip: IpAddr, token: &str) -> Result<(), TrunstileVerifyError> {
     let payload = TurnstileSiteVerifyPayload {
         secret: global.turnstile_secret_key().to_string(),
         response: token.to_string(),
-        remoteip: None, // TODO
+        remoteip: Some(remote_ip.to_string()),
     };
 
     let res = global.http_client().post(TURNSTILE_VERIFY_URL).json(&payload).send().await;
@@ -58,8 +59,8 @@ pub(crate) async fn verify<G: CoreConfig>(global: &Arc<G>, token: &str) -> Resul
     Ok(())
 }
 
-pub(crate) async fn verify_in_tonic<G: CoreConfig>(global: &Arc<G>, token: &str) -> Result<(), tonic::Status> {
-    match verify(global, token).await {
+pub(crate) async fn verify_in_tonic<G: CoreConfig>(global: &Arc<G>, remote_ip: IpAddr, token: &str) -> Result<(), tonic::Status> {
+    match verify(global, remote_ip, token).await {
         Ok(_) => Ok(()),
         Err(TrunstileVerifyError::TurnstileError(e)) => Err(tonic::Status::with_error_details(
             tonic::Code::Unauthenticated,

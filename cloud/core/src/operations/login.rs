@@ -39,7 +39,7 @@ impl<G: CoreConfig> Operation<G> for tonic::Request<pb::scufflecloud::core::v1::
                 ));
             }
             CaptchaProvider::Turnstile => {
-                captcha::turnstile::verify_in_tonic(global, &captcha.token).await?;
+                captcha::turnstile::verify_in_tonic(global, self.ip_address_info()?.ip_address, &captcha.token).await?;
             }
         }
 
@@ -75,7 +75,7 @@ impl<G: CoreConfig> Operation<G> for tonic::Request<pb::scufflecloud::core::v1::
             user_id,
             email: email.clone(),
             code: code.to_vec(),
-            expires_at: chrono::Utc::now() + global.magic_link_user_session_request_timeout(),
+            expires_at: chrono::Utc::now() + global.timeout_config().magic_link_user_session_request,
         };
         diesel::insert_into(magic_link_requests::dsl::magic_link_requests)
             .values(session_request)
@@ -220,7 +220,7 @@ impl<G: CoreConfig> Operation<G> for tonic::Request<pb::scufflecloud::core::v1::
                 ));
             }
             CaptchaProvider::Turnstile => {
-                captcha::turnstile::verify_in_tonic(global, &captcha.token).await?;
+                captcha::turnstile::verify_in_tonic(global, self.ip_address_info()?.ip_address, &captcha.token).await?;
             }
         }
 

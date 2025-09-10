@@ -35,7 +35,7 @@ impl<G: CoreConfig> Operation<G> for tonic::Request<pb::scufflecloud::core::v1::
             device_ip: ip_info.to_network(),
             code,
             approved_by: None,
-            expires_at: chrono::Utc::now() + global.user_session_request_timeout(),
+            expires_at: chrono::Utc::now() + global.timeout_config().user_session_request,
         })
     }
 

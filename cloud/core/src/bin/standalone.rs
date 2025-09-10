@@ -4,11 +4,11 @@ use std::sync::Arc;
 
 use anyhow::Context;
 use diesel_async::pooled_connection::bb8;
-use fred::prelude::ClientLike;
 use scuffle_batching::DataLoader;
 use scuffle_bootstrap_telemetry::opentelemetry;
 use scuffle_bootstrap_telemetry::opentelemetry_sdk::logs::SdkLoggerProvider;
 use scuffle_bootstrap_telemetry::opentelemetry_sdk::trace::SdkTracerProvider;
+use scufflecloud_core::config::{GoogleOAuth2Config, RedisConfig, ReverseProxyConfig, TelemetryConfig, TimeoutConfig};
 use scufflecloud_core::dataloaders::{OrganizationLoader, OrganizationMemberByUserIdLoader, UserLoader};
 use tracing_subscriber::Layer;
 use tracing_subscriber::layer::SubscriberExt;
@@ -41,103 +41,7 @@ pub struct Config {
     pub email_from_address: String,
     #[default("http://localhost:3002".to_string())]
     pub email_service_address: String,
-}
-
-#[derive(serde_derive::Deserialize, smart_default::SmartDefault, Debug, Clone)]
-#[serde(default)]
-pub struct TimeoutConfig {
-    #[default(chrono::Duration::minutes(2))]
-    pub max_request_lifetime: chrono::Duration,
-    #[default(chrono::Duration::days(30))]
-    pub user_session: chrono::Duration,
-    #[default(chrono::Duration::minutes(5))]
-    pub mfa: chrono::Duration,
-    #[default(chrono::Duration::hours(4))]
-    pub user_session_token: chrono::Duration,
-    #[default(chrono::Duration::hours(1))]
-    pub email_registration_request: chrono::Duration,
-    #[default(chrono::Duration::minutes(5))]
-    pub user_session_request: chrono::Duration,
-    #[default(chrono::Duration::minutes(15))]
-    pub magic_link_user_session_request: chrono::Duration,
-}
-
-#[derive(serde_derive::Deserialize, smart_default::SmartDefault, Debug, Clone)]
-pub struct GoogleOAuth2Config {
-    #[default("client_id".to_string())]
-    pub client_id: String,
-    #[default("client_secret".to_string())]
-    pub client_secret: String,
-}
-
-#[derive(serde_derive::Deserialize, smart_default::SmartDefault, Debug, Clone)]
-pub struct TelemetryConfig {
-    #[default("[::1]:4317".parse().unwrap())]
-    pub bind: SocketAddr,
-}
-
-#[derive(serde_derive::Deserialize, smart_default::SmartDefault, Debug, Clone)]
-pub struct RedisConfig {
-    #[default(vec!["localhost:6379".to_string()])]
-    pub servers: Vec<String>,
-    #[default(None)]
-    pub username: Option<String>,
-    #[default(None)]
-    pub password: Option<String>,
-    #[default(0)]
-    pub database: u8,
-    #[default(10)]
-    pub max_connections: usize,
-    #[default(10)]
-    pub pool_size: usize,
-}
-
-fn parse_server(server: &str) -> anyhow::Result<fred::types::config::Server> {
-    let port_ip = server.split(':').collect::<Vec<_>>();
-
-    if port_ip.len() == 1 {
-        Ok(fred::types::config::Server::new(port_ip[0], 6379))
-    } else {
-        Ok(fred::types::config::Server::new(
-            port_ip[0],
-            port_ip[1].parse::<u16>().context("invalid port")?,
-        ))
-    }
-}
-
-impl RedisConfig {
-    async fn setup(&self) -> anyhow::Result<fred::clients::Pool> {
-        let redis_server_config = if self.servers.len() == 1 {
-            fred::types::config::ServerConfig::Centralized {
-                server: parse_server(&self.servers[0])?,
-            }
-        } else {
-            fred::types::config::ServerConfig::Clustered {
-                hosts: self
-                    .servers
-                    .iter()
-                    .map(|s| parse_server(s))
-                    .collect::<anyhow::Result<Vec<_>>>()?,
-                policy: Default::default(),
-            }
-        };
-
-        tracing::info!(config = ?redis_server_config, "connecting to redis");
-
-        let config = fred::types::config::Config {
-            server: redis_server_config,
-            database: Some(self.database),
-            fail_fast: true,
-            password: self.password.clone(),
-            username: self.username.clone(),
-            ..Default::default()
-        };
-
-        let client = fred::clients::Pool::new(config, None, None, None, self.max_connections).context("redis pool")?;
-        client.init().await?;
-
-        Ok(client)
-    }
+    pub reverse_proxy: Option<ReverseProxyConfig>,
 }
 
 scuffle_settings::bootstrap!(Config);
@@ -215,44 +119,20 @@ impl scufflecloud_core::CoreConfig for Global {
         &self.config.turnstile_secret_key
     }
 
-    fn max_request_lifetime(&self) -> chrono::Duration {
-        self.config.timeouts.max_request_lifetime
+    fn timeout_config(&self) -> &TimeoutConfig {
+        &self.config.timeouts
     }
 
-    fn user_session_timeout(&self) -> chrono::Duration {
-        self.config.timeouts.user_session
-    }
-
-    fn mfa_timeout(&self) -> chrono::Duration {
-        self.config.timeouts.mfa
-    }
-
-    fn user_session_token_timeout(&self) -> chrono::Duration {
-        self.config.timeouts.user_session_token
-    }
-
-    fn email_registration_request_timeout(&self) -> chrono::Duration {
-        self.config.timeouts.email_registration_request
-    }
-
-    fn user_session_request_timeout(&self) -> chrono::Duration {
-        self.config.timeouts.user_session_request
-    }
-
-    fn magic_link_user_session_request_timeout(&self) -> chrono::Duration {
-        self.config.timeouts.magic_link_user_session_request
-    }
-
-    fn google_client_id(&self) -> &str {
-        &self.config.google_oauth2.client_id
-    }
-
-    fn google_client_secret(&self) -> &str {
-        &self.config.google_oauth2.client_secret
+    fn google_oauth2_config(&self) -> &GoogleOAuth2Config {
+        &self.config.google_oauth2
     }
 
     fn email_from_address(&self) -> &str {
         &self.config.email_from_address
+    }
+
+    fn reverse_proxy_config(&self) -> Option<&ReverseProxyConfig> {
+        self.config.reverse_proxy.as_ref()
     }
 }
 

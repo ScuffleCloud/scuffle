@@ -241,12 +241,12 @@ pub(crate) async fn create_session<G: CoreConfig>(
     let device_fingerprint = sha2::Sha256::digest(&device.public_key_data).to_vec();
 
     let session_expires_at = if !mfa_options.is_empty() {
-        chrono::Utc::now() + global.mfa_timeout()
+        chrono::Utc::now() + global.timeout_config().mfa
     } else {
-        chrono::Utc::now() + global.user_session_timeout()
+        chrono::Utc::now() + global.timeout_config().user_session
     };
     let token_id = Id::new();
-    let token_expires_at = chrono::Utc::now() + global.user_session_token_timeout();
+    let token_expires_at = chrono::Utc::now() + global.timeout_config().user_session_token;
 
     let token = generate_random_bytes().into_tonic_internal_err("failed to generate token")?;
     let encrypted_token = encrypt_token(device.algorithm(), &token, &device.public_key_data)?;

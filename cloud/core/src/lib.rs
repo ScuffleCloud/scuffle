@@ -14,6 +14,7 @@
 // #![deny(missing_docs)]
 #![deny(unsafe_code)]
 #![deny(unreachable_pub)]
+#![deny(clippy::mod_module_files)]
 // tonic::Status emits this warning
 #![allow(clippy::result_large_err)]
 

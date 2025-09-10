@@ -27,6 +27,7 @@
 #![deny(missing_docs)]
 #![deny(unsafe_code)]
 #![deny(unreachable_pub)]
+#![deny(clippy::mod_module_files)]
 #![cfg_attr(not(feature = "prost"), allow(unused_variables, dead_code))]
 
 use std::io::ErrorKind;

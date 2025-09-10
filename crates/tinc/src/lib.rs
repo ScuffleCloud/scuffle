@@ -218,6 +218,8 @@
 #![cfg_attr(docsrs, feature(doc_auto_cfg))]
 #![deny(missing_docs)]
 #![deny(unreachable_pub)]
+// TODO: Can't enable this because of the path attribute on private below.
+// #![deny(clippy::mod_module_files)]
 #![deny(clippy::undocumented_unsafe_blocks)]
 #![deny(clippy::multiple_unsafe_ops_per_block)]
 

@@ -57,6 +57,7 @@
 #![deny(missing_docs)]
 #![deny(unsafe_code)]
 #![deny(unreachable_pub)]
+#![deny(clippy::mod_module_files)]
 
 #[cfg(all(feature = "http3", not(feature = "tls-rustls")))]
 compile_error!("feature \"tls-rustls\" must be enabled when \"http3\" is enabled.");

@@ -13,6 +13,7 @@
 #![deny(missing_docs)]
 #![deny(unsafe_code)]
 #![deny(unreachable_pub)]
+#![deny(clippy::mod_module_files)]
 
 use enum_impl::metric_enum_impl;
 use metrics_impl::metrics_impl;

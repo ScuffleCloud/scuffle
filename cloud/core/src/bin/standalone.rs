@@ -19,7 +19,7 @@ use tracing_subscriber::util::SubscriberInitExt;
 pub struct Config {
     #[default(env!("CARGO_PKG_NAME").to_string())]
     pub service_name: String,
-    #[default(SocketAddr::from(([127, 0, 0, 1], 3000)))]
+    #[default(SocketAddr::from(([127, 0, 0, 1], 3001)))]
     pub bind: SocketAddr,
     #[default = "info"]
     pub level: String,
@@ -39,7 +39,7 @@ pub struct Config {
     pub redis: RedisConfig,
     #[default = "no-reply@scuffle.cloud"]
     pub email_from_address: String,
-    #[default("http://localhost:4000".to_string())]
+    #[default("http://localhost:3002".to_string())]
     pub email_service_address: String,
 }
 

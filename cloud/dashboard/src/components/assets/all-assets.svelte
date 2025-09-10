@@ -61,10 +61,6 @@
     function handleTimeFilterChange(filterId: string) {
         selectedTimeFilter = filterId;
     }
-
-    function handleToggleSelection() {
-        console.log("Toggle Selection");
-    }
 </script>
 
 <Header />
@@ -81,16 +77,14 @@
         onToggle={handleDisplayModeToggle}
     />
 </div>
-<div class="filter-row">
-    <button class="toggle-selection-button" onclick={handleToggleSelection}>
-        Toggle Selection
-    </button>
-</div>
+<div class="separator"></div>
 <div class="card-container">
     {#each streams as stream, i}
         <AssetCard {...stream} />
     {/each}
 </div>
+
+<div class="separator"></div>
 
 <style>
     .card-container {
@@ -99,21 +93,12 @@
       gap: 0.5rem;
     }
 
-    .filter-row {
-      display: flex;
-      justify-content: space-between;
-      margin-bottom: 1.5rem;
-      gap: 0.5rem;
-      height: 2.5rem;
-
-      .toggle-selection-button {
-        margin-left: auto;
-        padding: 0.5rem 1rem;
-        font-size: 0.875rem;
-        font-weight: 500;
-        cursor: pointer;
-      }
+    .separator {
+      height: 1px;
+      background-color: var(--colors-gray50);
+      margin: 1.5rem 0;
     }
+
     .search-row {
       display: flex;
       justify-content: space-between;

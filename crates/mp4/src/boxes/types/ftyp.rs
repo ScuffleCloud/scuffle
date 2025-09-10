@@ -77,6 +77,7 @@ pub enum FourCC {
     Avc1,
     Av01,
     Hev1,
+    Hvc1,
     Unknown([u8; 4]),
 }
 
@@ -89,6 +90,7 @@ impl FourCC {
             Self::Avc1 => *b"avc1",
             Self::Av01 => *b"av01",
             Self::Hev1 => *b"hev1",
+            Self::Hvc1 => *b"hvc1",
             Self::Unknown(bytes) => *bytes,
         }
     }

@@ -92,22 +92,18 @@ pub(crate) async fn get_user_by_id_in_tx(
     Ok(user)
 }
 
-pub(crate) async fn get_user_by_email(db: &mut diesel_async::AsyncPgConnection, email: &str) -> Result<User, tonic::Status> {
-    let Some((user, _)) = users::dsl::users
+pub(crate) async fn get_user_by_email(
+    db: &mut diesel_async::AsyncPgConnection,
+    email: &str,
+) -> Result<Option<User>, tonic::Status> {
+    let user = users::dsl::users
         .inner_join(user_emails::dsl::user_emails.on(users::dsl::primary_email.eq(user_emails::dsl::email.nullable())))
         .filter(user_emails::dsl::email.eq(&email))
-        .select((User::as_select(), user_emails::dsl::email))
-        .first::<(User, String)>(db)
+        .select(User::as_select())
+        .first::<User>(db)
         .await
         .optional()
-        .into_tonic_internal_err("failed to query user by email")?
-    else {
-        return Err(tonic::Status::with_error_details(
-            tonic::Code::NotFound,
-            "user not found",
-            ErrorDetails::new(),
-        ));
-    };
+        .into_tonic_internal_err("failed to query user by email")?;
 
     Ok(user)
 }

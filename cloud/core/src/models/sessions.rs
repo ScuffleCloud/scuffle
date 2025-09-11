@@ -66,24 +66,25 @@ impl From<UserSessionRequest> for pb::scufflecloud::core::v1::UserSessionRequest
     }
 }
 
-pub(crate) type MagicLinkUserSessionRequestId = Id<MagicLinkUserSessionRequest>;
+pub(crate) type MagicLinkRequestId = Id<MagicLinkRequest>;
 
 #[derive(Debug, Queryable, Selectable, Insertable, Identifiable, AsChangeset, serde::Serialize)]
-#[diesel(table_name = crate::schema::magic_link_user_session_requests)]
+#[diesel(table_name = crate::schema::magic_link_requests)]
 #[diesel(check_for_backend(diesel::pg::Pg))]
-pub struct MagicLinkUserSessionRequest {
-    pub id: MagicLinkUserSessionRequestId,
-    pub user_id: UserId,
+pub struct MagicLinkRequest {
+    pub id: MagicLinkRequestId,
+    pub user_id: Option<UserId>,
+    pub email: String,
     pub code: Vec<u8>,
     pub expires_at: chrono::DateTime<chrono::Utc>,
 }
 
-impl PrefixedId for MagicLinkUserSessionRequest {
+impl PrefixedId for MagicLinkRequest {
     const PREFIX: &'static str = "ml";
 }
 
-impl<G> CedarEntity<G> for MagicLinkUserSessionRequest {
-    const ENTITY_TYPE: &'static str = "MagicLinkUserSessionRequest";
+impl<G> CedarEntity<G> for MagicLinkRequest {
+    const ENTITY_TYPE: &'static str = "MagicLinkRequest";
 
     fn entity_id(&self) -> cedar_policy::EntityId {
         cedar_policy::EntityId::new(self.id.to_string_unprefixed())
@@ -153,31 +154,5 @@ impl From<UserSession> for pb::scufflecloud::core::v1::UserSession {
             expires_at: Some(value.expires_at.to_prost_timestamp_utc()),
             mfa_pending: value.mfa_pending,
         }
-    }
-}
-
-pub(crate) type EmailRegistrationRequestId = Id<EmailRegistrationRequest>;
-
-#[derive(Queryable, Selectable, Insertable, Identifiable, AsChangeset, Associations, Debug, serde::Serialize)]
-#[diesel(table_name = crate::schema::email_registration_requests)]
-#[diesel(belongs_to(User))]
-#[diesel(check_for_backend(diesel::pg::Pg))]
-pub struct EmailRegistrationRequest {
-    pub id: EmailRegistrationRequestId,
-    pub user_id: Option<UserId>,
-    pub email: String,
-    pub code: Vec<u8>,
-    pub expires_at: chrono::DateTime<chrono::Utc>,
-}
-
-impl PrefixedId for EmailRegistrationRequest {
-    const PREFIX: &'static str = "er";
-}
-
-impl<G> CedarEntity<G> for EmailRegistrationRequest {
-    const ENTITY_TYPE: &'static str = "EmailRegistrationRequest";
-
-    fn entity_id(&self) -> cedar_policy::EntityId {
-        cedar_policy::EntityId::new(self.id.to_string_unprefixed())
     }
 }

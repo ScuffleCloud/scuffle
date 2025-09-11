@@ -7,24 +7,6 @@ when { context.user_session_mfa_pending == true }
 unless { action == Action::"validate_mfa_for_user_session" };
 
 permit (
-  principal is Unauthenticated,
-  action == Action::"register_with_email",
-  resource == Application::"core"
-);
-
-permit (
-  principal is User,
-  action == Action::"complete_register_with_email",
-  resource == Application::"core"
-);
-
-permit (
-  principal is Unauthenticated,
-  action == Action::"get_login_with_email_options",
-  resource == Application::"core"
-);
-
-permit (
   principal is User,
   action == Action::"login_with_email_password",
   resource == Application::"core"

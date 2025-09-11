@@ -11,7 +11,6 @@ use crate::std_ext::ResultExt;
 pub(crate) mod login;
 pub(crate) mod organization_invitations;
 pub(crate) mod organizations;
-pub(crate) mod register;
 pub(crate) mod user_session_requests;
 pub(crate) mod user_sessions;
 pub(crate) mod users;

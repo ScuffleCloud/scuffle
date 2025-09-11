@@ -10,14 +10,14 @@ use tonic_types::{ErrorDetails, StatusExt};
 use crate::cedar::Action;
 use crate::http_ext::RequestExt;
 use crate::models::{
-    EmailRegistrationRequest, EmailRegistrationRequestId, MfaRecoveryCode, MfaRecoveryCodeId, MfaTotpCredential,
-    MfaTotpCredentialId, MfaTotpRegistrationSession, MfaWebauthnAuthenticationSession, MfaWebauthnCredential,
-    MfaWebauthnCredentialId, MfaWebauthnRegistrationSession, User, UserEmail, UserId,
+    MfaRecoveryCode, MfaRecoveryCodeId, MfaTotpCredential, MfaTotpCredentialId, MfaTotpRegistrationSession,
+    MfaWebauthnAuthenticationSession, MfaWebauthnCredential, MfaWebauthnCredentialId, MfaWebauthnRegistrationSession,
+    NewUserEmailRequest, NewUserEmailRequestId, User, UserEmail, UserId,
 };
 use crate::operations::{NoopOperationDriver, Operation, TransactionOperationDriver};
 use crate::schema::{
-    email_registration_requests, mfa_recovery_codes, mfa_totp_credentials, mfa_totp_reg_sessions,
-    mfa_webauthn_auth_sessions, mfa_webauthn_credentials, mfa_webauthn_reg_sessions, user_emails, users,
+    mfa_recovery_codes, mfa_totp_credentials, mfa_totp_reg_sessions, mfa_webauthn_auth_sessions, mfa_webauthn_credentials,
+    mfa_webauthn_reg_sessions, new_user_email_requests, user_emails, users,
 };
 use crate::std_ext::{DisplayExt, OptionExt, ResultExt};
 use crate::totp::TotpError;
@@ -259,15 +259,15 @@ impl<G: CoreConfig> Operation<G> for tonic::Request<pb::scufflecloud::core::v1::
         }
 
         // Create email registration request
-        let registration_request = EmailRegistrationRequest {
-            id: EmailRegistrationRequestId::new(),
-            user_id: Some(resource.user_id),
+        let registration_request = NewUserEmailRequest {
+            id: NewUserEmailRequestId::new(),
+            user_id: resource.user_id,
             email: resource.email.clone(),
             code: code.to_vec(),
             expires_at: chrono::Utc::now() + global.email_registration_request_timeout(),
         };
 
-        diesel::insert_into(email_registration_requests::dsl::email_registration_requests)
+        diesel::insert_into(new_user_email_requests::dsl::new_user_email_requests)
             .values(registration_request)
             .execute(&mut driver.conn)
             .await
@@ -309,15 +309,15 @@ impl<G: CoreConfig> Operation<G> for tonic::Request<pb::scufflecloud::core::v1::
             .into_tonic_err_with_field_violation("id", "invalid ID")?;
 
         // Delete email registration request
-        let Some(registration_request) = diesel::delete(email_registration_requests::dsl::email_registration_requests)
+        let Some(registration_request) = diesel::delete(new_user_email_requests::dsl::new_user_email_requests)
             .filter(
-                email_registration_requests::dsl::code
+                new_user_email_requests::dsl::code
                     .eq(&self.get_ref().code)
-                    .and(email_registration_requests::dsl::user_id.eq(user_id))
-                    .and(email_registration_requests::dsl::expires_at.gt(chrono::Utc::now())),
+                    .and(new_user_email_requests::dsl::user_id.eq(user_id))
+                    .and(new_user_email_requests::dsl::expires_at.gt(chrono::Utc::now())),
             )
-            .returning(EmailRegistrationRequest::as_select())
-            .get_result::<EmailRegistrationRequest>(&mut driver.conn)
+            .returning(NewUserEmailRequest::as_select())
+            .get_result::<NewUserEmailRequest>(&mut driver.conn)
             .await
             .optional()
             .into_tonic_internal_err("failed to delete email registration request")?

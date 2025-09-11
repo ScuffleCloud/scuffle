@@ -1,5 +1,4 @@
 DROP TABLE IF EXISTS "organization_invitations" CASCADE;
-DROP TABLE IF EXISTS "email_registration_requests" CASCADE;
 DROP TABLE IF EXISTS "service_account_policies" CASCADE;
 DROP TABLE IF EXISTS "service_account_tokens" CASCADE;
 DROP TABLE IF EXISTS "service_accounts" CASCADE;
@@ -20,8 +19,9 @@ DROP TABLE IF EXISTS "mfa_totp_reg_sessions" CASCADE;
 
 DROP TABLE IF EXISTS "user_sessions" CASCADE;
 DROP TYPE IF EXISTS "device_algorithm" CASCADE;
-DROP TABLE IF EXISTS "magic_link_user_session_requests" CASCADE;
+DROP TABLE IF EXISTS "magic_link_requests" CASCADE;
 DROP TABLE IF EXISTS "user_session_requests" CASCADE;
 DROP TABLE IF EXISTS "user_google_accounts" CASCADE;
+DROP TABLE IF EXISTS "new_user_email_requests" CASCADE;
 DROP TABLE IF EXISTS "user_emails" CASCADE;
 DROP TABLE IF EXISTS "users" CASCADE;

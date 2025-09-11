@@ -64,7 +64,9 @@ pub struct TimeoutConfig {
 
 #[derive(serde_derive::Deserialize, smart_default::SmartDefault, Debug, Clone)]
 pub struct GoogleOAuth2Config {
+    #[default("client_id".to_string())]
     pub client_id: String,
+    #[default("client_secret".to_string())]
     pub client_secret: String,
 }
 

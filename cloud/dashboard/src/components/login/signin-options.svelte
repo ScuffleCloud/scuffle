@@ -4,8 +4,7 @@
     import { sessionsServiceClient } from "$lib/grpcClient";
     import IconGoogle from "$lib/images/icon-google.svelte";
     import IconLoginKey from "$lib/images/icon-login-key.svelte";
-    import { base64ToUint8Array } from "$lib/utils";
-    import { DeviceAlgorithm } from "@scufflecloud/proto/scufflecloud/core/v1/sessions_service.js";
+
     interface Props {
         onModeChange: (mode: LoginMode) => void;
         isLoading?: boolean;
@@ -16,18 +15,9 @@
     // Probably move this to a generic function later
     async function handleGoogleLogin(): Promise<void> {
         try {
-            const devicePublicKey = await authState()
-                .getDevicePublicKeyOrInit();
-
-            const devicePublicKeyBytes = base64ToUint8Array(
-                devicePublicKey,
-            );
-
+            const device = await authState().getDeviceOrInit();
             const call = sessionsServiceClient.loginWithGoogle({
-                device: {
-                    algorithm: DeviceAlgorithm.RSA_OAEP_SHA256,
-                    publicKeyData: devicePublicKeyBytes,
-                },
+                device: device,
             });
             const status = await call.status;
 

@@ -1486,18 +1486,6 @@ transition_alias_opt(
 )
 
 transition_alias_opt(
-    name = "tar-0.4.44",
-    actual = "@cargo_vendor__tar-0.4.44//:tar",
-    tags = ["manual"],
-)
-
-transition_alias_opt(
-    name = "tar",
-    actual = "@cargo_vendor__tar-0.4.44//:tar",
-    tags = ["manual"],
-)
-
-transition_alias_opt(
     name = "target-spec-3.5.0",
     actual = "@cargo_vendor__target-spec-3.5.0//:target_spec",
     tags = ["manual"],

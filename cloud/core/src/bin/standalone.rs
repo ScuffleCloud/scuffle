@@ -1,4 +1,5 @@
 use std::net::SocketAddr;
+use std::path::PathBuf;
 use std::str::FromStr;
 use std::sync::Arc;
 
@@ -10,7 +11,7 @@ use scuffle_bootstrap_telemetry::opentelemetry_sdk::logs::SdkLoggerProvider;
 use scuffle_bootstrap_telemetry::opentelemetry_sdk::trace::SdkTracerProvider;
 use scufflecloud_core::config::{GoogleOAuth2Config, RedisConfig, ReverseProxyConfig, TelemetryConfig, TimeoutConfig};
 use scufflecloud_core::dataloaders::{OrganizationLoader, OrganizationMemberByUserIdLoader, UserLoader};
-use scufflecloud_core::geoip::{GeoIpResolver, MaxMindConfig};
+use scufflecloud_core::geoip::GeoIpResolver;
 use tracing_subscriber::Layer;
 use tracing_subscriber::layer::SubscriberExt;
 use tracing_subscriber::util::SubscriberInitExt;
@@ -43,7 +44,8 @@ pub struct Config {
     #[default("http://localhost:3002".to_string())]
     pub email_service_address: String,
     pub reverse_proxy: Option<ReverseProxyConfig>,
-    pub maxminddb: MaxMindConfig,
+    #[default("./GeoLite2-City.mmdb".parse().unwrap())]
+    pub maxminddb_path: PathBuf,
 }
 
 scuffle_settings::bootstrap!(Config);
@@ -178,7 +180,7 @@ impl scuffle_bootstrap::Global for Global {
             anyhow::bail!("failed to install aws-lc-rs as default TLS provider");
         }
 
-        let geoip_resolver = GeoIpResolver::new(&config.maxminddb).await?;
+        let geoip_resolver = GeoIpResolver::new(&config.maxminddb_path).await?;
 
         tracing::info!(address = %config.email_service_address, "connecting to email service");
         let email_service_channel = tonic::transport::Channel::from_shared(config.email_service_address.clone())

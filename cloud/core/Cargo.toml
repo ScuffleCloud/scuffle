@@ -27,7 +27,6 @@ chrono = "0.4.41"
 derive_more = { features = ["display"], version = "2.0.1" }
 diesel = { features = ["chrono", "network-address", "serde_json", "uuid"], version = "2.2.10" }
 diesel-async = { features = ["async-connection-wrapper", "bb8", "postgres"], version = "0.6.1" }
-flate2 = "1.1.2"
 fred = "10.1.0"
 hmac = "0.12.1"
 ipnetwork = { features = ["serde"], version = "0.21.1" }
@@ -55,7 +54,6 @@ serde_json = "1.0.140"
 sha2 = "0.10.9"
 smart-default = "0.7.1"
 swagger-ui-dist = "5.27.1"
-tar = "0.4.44"
 thiserror = "2.0.12"
 tinc = { path = "../../crates/tinc" }
 tokio = { default-features = false, features = ["sync"], version = "1.47.1" }

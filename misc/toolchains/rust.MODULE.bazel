@@ -252,7 +252,6 @@ use_repo(
     "cargo_vendor__smart-default-0.7.1",
     "cargo_vendor__swagger-ui-dist-5.28.1",
     "cargo_vendor__syn-2.0.106",
-    "cargo_vendor__tar-0.4.44",
     "cargo_vendor__target-spec-3.5.0",
     "cargo_vendor__target-triple-0.1.4",
     "cargo_vendor__tempfile-3.21.0",

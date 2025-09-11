@@ -1,7 +1,11 @@
 <script lang="ts">
     import type { LoginMode } from "$components/streams/types";
+    import { authState } from "$lib/auth.svelte";
+    import { sessionsServiceClient } from "$lib/grpcClient";
     import IconGoogle from "$lib/images/icon-google.svelte";
     import IconLoginKey from "$lib/images/icon-login-key.svelte";
+    import { base64ToUint8Array } from "$lib/utils";
+    import { DeviceAlgorithm } from "@scufflecloud/proto/scufflecloud/core/v1/sessions_service.js";
     interface Props {
         onModeChange: (mode: LoginMode) => void;
         isLoading?: boolean;
@@ -9,9 +13,33 @@
 
     let { onModeChange, isLoading = false }: Props = $props();
 
-    function handleGoogleLogin() {
-        // TODO: Implement Google login
-        console.log("Google login");
+    // Probably move this to a generic function later
+    async function handleGoogleLogin(): Promise<void> {
+        try {
+            const devicePublicKey = await authState()
+                .getDevicePublicKeyOrInit();
+
+            const devicePublicKeyBytes = base64ToUint8Array(
+                devicePublicKey,
+            );
+
+            const call = sessionsServiceClient.loginWithGoogle({
+                device: {
+                    algorithm: DeviceAlgorithm.RSA_OAEP_SHA256,
+                    publicKeyData: devicePublicKeyBytes,
+                },
+            });
+            const status = await call.status;
+
+            if (status.code === "OK") {
+                const response = await call.response;
+                window.location.href = response.authorizationUrl;
+            } else {
+                console.error("Google login failed:", status.detail);
+            }
+        } catch (error) {
+            console.error("Login with Google error:", error);
+        }
     }
 
     function handlePasskeyLogin() {

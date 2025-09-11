@@ -1,9 +1,12 @@
 import { browser } from "$app/environment";
 import type { Timestamp } from "@scufflecloud/proto/google/protobuf/timestamp.js";
-import type { NewUserSessionToken } from "@scufflecloud/proto/scufflecloud/core/v1/sessions_service.js";
+import {
+    type Device,
+    DeviceAlgorithm,
+    type NewUserSessionToken,
+} from "@scufflecloud/proto/scufflecloud/core/v1/sessions_service.js";
 import { User } from "@scufflecloud/proto/scufflecloud/core/v1/users.js";
 import { sessionsServiceClient, usersServiceClient } from "./grpcClient";
-import { arrayBufferToBase64 } from "./utils";
 
 function timestampToDate(timestmap: Timestamp): Date | null {
     const seconds = parseInt(timestmap.seconds);
@@ -157,28 +160,36 @@ export function authState() {
             }
         },
         /**
-         * Generates a new device keypair, persists it and returns the public key part as base64 encoded SPKI.
+         * Generates a new device, persists it and returns it.
+         *
+         * You probably want to use `getDeviceOrInit` instead of this function directly.
          */
-        async generateNewDeviceKey(): Promise<string> {
+        async generateNewDevice(): Promise<Device> {
             return generateDeviceKeypair().then((keypair) => {
                 deviceKeypair = { state: "loaded", data: keypair };
                 saveDeviceKey(keypair);
                 return window.crypto.subtle.exportKey("spki", keypair.publicKey);
             }).then((spki) => {
-                return arrayBufferToBase64(spki);
+                return {
+                    algorithm: DeviceAlgorithm.RSA_OAEP_SHA256,
+                    publicKeyData: new Uint8Array(spki),
+                };
             });
         },
         /**
-         * Returns the device public key as base64 encoded SPKI. If no keypair exists, a new one is generated.
+         * Returns the device. If no device exists, a new one is generated.
          */
-        async getDevicePublicKeyOrInit(): Promise<string> {
+        async getDeviceOrInit(): Promise<Device> {
             const key = this.devicePublicKey;
             if (key) {
                 return window.crypto.subtle.exportKey("spki", key).then((spki) => {
-                    return arrayBufferToBase64(spki);
+                    return {
+                        algorithm: DeviceAlgorithm.RSA_OAEP_SHA256,
+                        publicKeyData: new Uint8Array(spki),
+                    };
                 });
             } else {
-                return this.generateNewDeviceKey();
+                return this.generateNewDevice();
             }
         },
         /**

@@ -458,6 +458,7 @@ _NORMAL_DEPENDENCIES = {
                 "hmac": Label("@cargo_vendor//:hmac-0.12.1"),
                 "ipnetwork": Label("@cargo_vendor//:ipnetwork-0.21.1"),
                 "itertools": Label("@cargo_vendor//:itertools-0.14.0"),
+                "maxminddb": Label("@cargo_vendor//:maxminddb-0.26.0"),
                 "pkcs8": Label("@cargo_vendor//:pkcs8-0.10.2"),
                 "prost": Label("@cargo_vendor//:prost-0.14.1"),
                 "rand": Label("@cargo_vendor//:rand-0.8.5"),
@@ -6883,6 +6884,16 @@ def crate_repositories():
 
     maybe(
         http_archive,
+        name = "cargo_vendor__maxminddb-0.26.0",
+        sha256 = "2a197e44322788858682406c74b0b59bf8d9b4954fe1f224d9a25147f1880bba",
+        type = "tar.gz",
+        urls = ["https://static.crates.io/crates/maxminddb/0.26.0/download"],
+        strip_prefix = "maxminddb-0.26.0",
+        build_file = Label("//vendor/cargo:BUILD.maxminddb-0.26.0.bazel"),
+    )
+
+    maybe(
+        http_archive,
         name = "cargo_vendor__md-5-0.10.6",
         sha256 = "d89e7ee0cfbedfc4da3340218492196241d89eefb6dab27de5df917a6d2e78cf",
         type = "tar.gz",
@@ -10706,6 +10717,7 @@ def crate_repositories():
         struct(repo = "cargo_vendor__linkme-0.3.33", is_dev_dep = False),
         struct(repo = "cargo_vendor__log-0.4.28", is_dev_dep = False),
         struct(repo = "cargo_vendor__lol_html-2.6.0", is_dev_dep = False),
+        struct(repo = "cargo_vendor__maxminddb-0.26.0", is_dev_dep = False),
         struct(repo = "cargo_vendor__mediatype-0.20.0", is_dev_dep = False),
         struct(repo = "cargo_vendor__minijinja-2.12.0", is_dev_dep = False),
         struct(repo = "cargo_vendor__nextest-filtering-0.16.0", is_dev_dep = False),

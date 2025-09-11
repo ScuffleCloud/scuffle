@@ -186,7 +186,7 @@ async fn get_and_update_active_session<G: CoreConfig>(
         return Ok((None, None));
     };
 
-    if timestamp > chrono::Utc::now() || timestamp < chrono::Utc::now() - global.max_request_lifetime() {
+    if timestamp > chrono::Utc::now() || timestamp < chrono::Utc::now() - global.timeout_config().max_request_lifetime {
         tracing::debug!(timestamp = %timestamp, "invalid request timestamp");
         return Err(StatusCode::UNAUTHORIZED);
     }
@@ -262,7 +262,9 @@ async fn get_and_update_active_session<G: CoreConfig>(
         .set(
             key.as_slice(),
             true,
-            Some(fred::types::Expiration::PX(global.max_request_lifetime().num_milliseconds())),
+            Some(fred::types::Expiration::PX(
+                global.timeout_config().max_request_lifetime.num_milliseconds(),
+            )),
             Some(fred::types::SetOptions::NX),
             true,
         )

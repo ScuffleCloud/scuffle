@@ -826,6 +826,18 @@ transition_alias_opt(
 )
 
 transition_alias_opt(
+    name = "maxminddb-0.26.0",
+    actual = "@cargo_vendor__maxminddb-0.26.0//:maxminddb",
+    tags = ["manual"],
+)
+
+transition_alias_opt(
+    name = "maxminddb",
+    actual = "@cargo_vendor__maxminddb-0.26.0//:maxminddb",
+    tags = ["manual"],
+)
+
+transition_alias_opt(
     name = "mediatype-0.20.0",
     actual = "@cargo_vendor__mediatype-0.20.0//:mediatype",
     tags = ["manual"],

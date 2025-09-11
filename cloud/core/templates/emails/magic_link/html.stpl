@@ -1,2 +1,2 @@
 You requested a login link. Click the link below to log in:
-{{ url }}
+<%= self.url %>

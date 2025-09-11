@@ -137,7 +137,7 @@ impl<G: CoreConfig> scuffle_bootstrap::Service<G> for CoreSvc<G> {
             router = router.merge(swagger_ui_dist::generate_routes(swagger_ui_dist::ApiDefinition {
                 uri_prefix: "/v1/docs",
                 api_definition: swagger_ui_dist::OpenApiSource::Uri("/v1/openapi.json"),
-                title: Some("V1 Api Docs"),
+                title: Some("Scuffle Core v1 Api Docs"),
             }));
         }
 

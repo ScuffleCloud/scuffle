@@ -264,7 +264,7 @@ impl<G: CoreConfig> Operation<G> for tonic::Request<pb::scufflecloud::core::v1::
             user_id: resource.user_id,
             email: resource.email.clone(),
             code: code.to_vec(),
-            expires_at: chrono::Utc::now() + global.email_registration_request_timeout(),
+            expires_at: chrono::Utc::now() + global.timeout_config().email_registration_request,
         };
 
         diesel::insert_into(new_user_email_requests::dsl::new_user_email_requests)
@@ -483,7 +483,7 @@ impl<G: CoreConfig> Operation<G> for tonic::Request<pb::scufflecloud::core::v1::
         let reg_session = MfaWebauthnRegistrationSession {
             user_id: resource.id,
             state: serde_json::to_value(&state).into_tonic_internal_err("failed to serialize webauthn state")?,
-            expires_at: chrono::Utc::now() + global.mfa_timeout(),
+            expires_at: chrono::Utc::now() + global.timeout_config().mfa,
         };
 
         let options_json =
@@ -731,7 +731,7 @@ impl<G: CoreConfig> Operation<G> for tonic::Request<pb::scufflecloud::core::v1::
         let auth_session = MfaWebauthnAuthenticationSession {
             user_id: resource.id,
             state: serde_json::to_value(&state).into_tonic_internal_err("failed to serialize webauthn state")?,
-            expires_at: chrono::Utc::now() + global.mfa_timeout(),
+            expires_at: chrono::Utc::now() + global.timeout_config().mfa,
         };
 
         let options_json =
@@ -790,7 +790,7 @@ impl<G: CoreConfig> Operation<G> for tonic::Request<pb::scufflecloud::core::v1::
             .values(MfaTotpRegistrationSession {
                 user_id: resource.id,
                 secret: totp.secret,
-                expires_at: chrono::Utc::now() + global.mfa_timeout(),
+                expires_at: chrono::Utc::now() + global.timeout_config().mfa,
             })
             .execute(&mut driver.conn)
             .await

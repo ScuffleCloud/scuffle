@@ -65,7 +65,7 @@ fn redirect_uri<G: CoreConfig>(global: &Arc<G>) -> String {
 pub(crate) fn authorization_url<G: CoreConfig>(global: &Arc<G>, state: &str) -> String {
     format!(
         "https://accounts.google.com/o/oauth2/v2/auth?client_id={}&redirect_uri={}&response_type=code&scope={}&state={state}",
-        global.google_client_id(),
+        global.google_oauth2_config().client_id,
         urlencoding::encode(&redirect_uri(global)),
         ALL_SCOPES.join("%20"), // URL-encoded space
     )
@@ -76,8 +76,8 @@ pub(crate) async fn request_tokens<G: CoreConfig>(global: &Arc<G>, code: &str) -
         .http_client()
         .post("https://oauth2.googleapis.com/token")
         .form(&[
-            ("client_id", global.google_client_id()),
-            ("client_secret", global.google_client_secret()),
+            ("client_id", global.google_oauth2_config().client_id.as_str()),
+            ("client_secret", global.google_oauth2_config().client_secret.as_str()),
             ("code", code),
             ("grant_type", "authorization_code"),
             ("redirect_uri", &redirect_uri(global)),

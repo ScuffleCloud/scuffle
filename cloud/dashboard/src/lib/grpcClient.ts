@@ -8,7 +8,12 @@ import { OrganizationsServiceClient } from "@scufflecloud/proto/scufflecloud/cor
 import { SessionsServiceClient } from "@scufflecloud/proto/scufflecloud/core/v1/sessions_service.client.js";
 import { UsersServiceClient } from "@scufflecloud/proto/scufflecloud/core/v1/users_service.client.js";
 import { authState } from "./auth.svelte";
-import { arrayBufferToBase64 } from "./utils";
+
+// This can be replaced with Uint8Array.toBase64 in the future
+// https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Uint8Array/toBase64
+export function arrayBufferToBase64(buffer: ArrayBuffer): string {
+    return btoa(String.fromCharCode(...new Uint8Array(buffer)));
+}
 
 function generateRandomNonce(): ArrayBuffer {
     if (!browser) throw new Error("Not in browser");

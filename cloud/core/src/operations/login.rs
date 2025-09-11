@@ -6,25 +6,24 @@ use sha2::Digest;
 use tonic::Code;
 use tonic_types::{ErrorDetails, StatusExt};
 
-use crate::cedar::{self, Action, CoreApplication, Unauthenticated};
+use crate::cedar::{Action, CoreApplication, Unauthenticated};
 use crate::common::normalize_email;
 use crate::http_ext::RequestExt;
 use crate::models::{
-    MagicLinkUserSessionRequest, MagicLinkUserSessionRequestId, Organization, OrganizationMember, User, UserGoogleAccount,
-    UserId,
+    MagicLinkRequest, MagicLinkRequestId, Organization, OrganizationMember, User, UserGoogleAccount, UserId,
 };
-use crate::operations::{NoopOperationDriver, Operation, TransactionOperationDriver};
-use crate::schema::{magic_link_user_session_requests, organization_members, organizations, user_google_accounts, users};
+use crate::operations::{Operation, TransactionOperationDriver};
+use crate::schema::{magic_link_requests, organization_members, organizations, user_google_accounts, users};
 use crate::std_ext::{OptionExt, ResultExt};
 use crate::{CoreConfig, captcha, common, emails, google_api};
 
-impl<G: CoreConfig> Operation<G> for tonic::Request<pb::scufflecloud::core::v1::LoginWithEmailOptionsRequest> {
-    type Driver = NoopOperationDriver;
+impl<G: CoreConfig> Operation<G> for tonic::Request<pb::scufflecloud::core::v1::LoginWithMagicLinkRequest> {
+    type Driver = TransactionOperationDriver;
     type Principal = Unauthenticated;
     type Resource = CoreApplication;
-    type Response = pb::scufflecloud::core::v1::LoginWithEmailOptionsResponse;
+    type Response = ();
 
-    const ACTION: Action = Action::GetLoginWithEmailOptions;
+    const ACTION: Action = Action::RequestMagicLink;
 
     async fn validate(&mut self) -> Result<(), tonic::Status> {
         let global = &self.global::<G>()?;
@@ -57,34 +56,145 @@ impl<G: CoreConfig> Operation<G> for tonic::Request<pb::scufflecloud::core::v1::
 
     async fn execute(
         self,
-        _driver: &mut Self::Driver,
+        driver: &mut Self::Driver,
         _principal: Self::Principal,
         _resource: Self::Resource,
     ) -> Result<Self::Response, tonic::Status> {
         let global = &self.global::<G>()?;
-        let mut db = global.db().await.into_tonic_internal_err("failed to connect to database")?;
 
-        let payload = self.into_inner();
-        let user = common::get_user_by_email(&mut db, &payload.email).await?;
+        let email = normalize_email(&self.get_ref().email);
 
-        let mut options = vec![];
+        let user_id = common::get_user_by_email(&mut driver.conn, &email).await?.map(|u| u.id);
 
-        if user.password_hash.is_some()
-            && cedar::is_authorized(global, None, &user, Action::LoginWithEmailPassword, CoreApplication)
-                .await
-                .is_ok()
-        {
-            options.push(pb::scufflecloud::core::v1::LoginWithEmailOptions::Password as i32);
-        }
+        let code = common::generate_random_bytes().into_tonic_internal_err("failed to generate magic link code")?;
+        let code_base64 = base64::prelude::BASE64_URL_SAFE.encode(code);
 
-        if cedar::is_authorized(global, None, &user, Action::LoginWithMagicLink, CoreApplication)
+        // Insert email link user session request
+        let session_request = MagicLinkRequest {
+            id: MagicLinkRequestId::new(),
+            user_id,
+            email: email.clone(),
+            code: code.to_vec(),
+            expires_at: chrono::Utc::now() + global.magic_link_user_session_request_timeout(),
+        };
+        diesel::insert_into(magic_link_requests::dsl::magic_link_requests)
+            .values(session_request)
+            .execute(&mut driver.conn)
             .await
-            .is_ok()
-        {
-            options.push(pb::scufflecloud::core::v1::LoginWithEmailOptions::MagicLink as i32);
+            .into_tonic_internal_err("failed to insert magic link user session request")?;
+
+        // Send email
+        let email = if user_id.is_none() {
+            emails::register_with_email_email(global, email, code_base64)
+                .await
+                .into_tonic_internal_err("failed to render registration email")?
+        } else {
+            emails::magic_link_email(global, email, code_base64)
+                .await
+                .into_tonic_internal_err("failed to render magic link email")?
+        };
+
+        global
+            .email_service()
+            .send_email(email)
+            .await
+            .into_tonic_internal_err("failed to send magic link email")?;
+
+        Ok(())
+    }
+}
+
+#[derive(Clone)]
+struct CompleteLoginWithMagicLinkState {
+    create_user: bool,
+}
+
+impl<G: CoreConfig> Operation<G> for tonic::Request<pb::scufflecloud::core::v1::CompleteLoginWithMagicLinkRequest> {
+    type Driver = TransactionOperationDriver;
+    type Principal = User;
+    type Resource = CoreApplication;
+    type Response = pb::scufflecloud::core::v1::NewUserSessionToken;
+
+    const ACTION: Action = Action::LoginWithMagicLink;
+
+    async fn load_principal(&mut self, driver: &mut Self::Driver) -> Result<Self::Principal, tonic::Status> {
+        // Find and delete magic link request
+        let Some(magic_link_request) = diesel::delete(magic_link_requests::dsl::magic_link_requests)
+            .filter(
+                magic_link_requests::dsl::code
+                    .eq(&self.get_ref().code)
+                    .and(magic_link_requests::dsl::expires_at.gt(chrono::Utc::now())),
+            )
+            .returning(MagicLinkRequest::as_select())
+            .get_result::<MagicLinkRequest>(&mut driver.conn)
+            .await
+            .optional()
+            .into_tonic_internal_err("failed to delete magic link request")?
+        else {
+            return Err(tonic::Status::with_error_details(
+                Code::NotFound,
+                "unknown code",
+                ErrorDetails::new(),
+            ));
+        };
+
+        let mut state = CompleteLoginWithMagicLinkState { create_user: false };
+
+        // Load user
+        let user = if let Some(user_id) = magic_link_request.user_id {
+            users::dsl::users
+                .find(user_id)
+                .first::<User>(&mut driver.conn)
+                .await
+                .into_tonic_internal_err("failed to query user")?
+        } else {
+            state.create_user = true;
+
+            let hash = sha2::Sha256::digest(&magic_link_request.email);
+            let avatar_url = format!("https://gravatar.com/avatar/{:x}?s=80&d=identicon", hash);
+
+            User {
+                id: UserId::new(),
+                preferred_name: None,
+                first_name: None,
+                last_name: None,
+                password_hash: None,
+                primary_email: Some(magic_link_request.email),
+                avatar_url: Some(avatar_url),
+            }
+        };
+
+        self.extensions_mut().insert(state);
+
+        Ok(user)
+    }
+
+    async fn load_resource(&mut self, _driver: &mut Self::Driver) -> Result<Self::Resource, tonic::Status> {
+        Ok(CoreApplication)
+    }
+
+    async fn execute(
+        mut self,
+        driver: &mut Self::Driver,
+        principal: Self::Principal,
+        _resource: Self::Resource,
+    ) -> Result<Self::Response, tonic::Status> {
+        let global = &self.global::<G>()?;
+        let ip_info = self.ip_address_info()?;
+        let state: CompleteLoginWithMagicLinkState = self
+            .extensions_mut()
+            .remove()
+            .into_tonic_internal_err("missing CompleteLoginWithMagicLinkState state")?;
+
+        let device = self.into_inner().device.require("device")?;
+
+        if state.create_user {
+            common::create_user(&mut driver.conn, &principal).await?;
         }
 
-        Ok(pb::scufflecloud::core::v1::LoginWithEmailOptionsResponse { options })
+        let new_token =
+            common::create_session(global, &mut driver.conn, principal.id, device, &ip_info, !state.create_user).await?;
+        Ok(new_token)
     }
 }
 
@@ -118,7 +228,15 @@ impl<G: CoreConfig> Operation<G> for tonic::Request<pb::scufflecloud::core::v1::
     }
 
     async fn load_principal(&mut self, driver: &mut Self::Driver) -> Result<Self::Principal, tonic::Status> {
-        common::get_user_by_email(&mut driver.conn, &self.get_ref().email).await
+        let Some(user) = common::get_user_by_email(&mut driver.conn, &self.get_ref().email).await? else {
+            return Err(tonic::Status::with_error_details(
+                tonic::Code::NotFound,
+                "user not found",
+                ErrorDetails::new(),
+            ));
+        };
+
+        Ok(user)
     }
 
     async fn load_resource(&mut self, _driver: &mut Self::Driver) -> Result<Self::Resource, tonic::Status> {
@@ -149,145 +267,6 @@ impl<G: CoreConfig> Operation<G> for tonic::Request<pb::scufflecloud::core::v1::
         common::verify_password(password_hash, &payload.password)?;
 
         common::create_session(global, &mut driver.conn, principal.id, device, &ip_info, true).await
-    }
-}
-
-impl<G: CoreConfig> Operation<G> for tonic::Request<pb::scufflecloud::core::v1::LoginWithMagicLinkRequest> {
-    type Driver = TransactionOperationDriver;
-    type Principal = User;
-    type Resource = CoreApplication;
-    type Response = ();
-
-    const ACTION: Action = Action::RequestMagicLink;
-
-    async fn validate(&mut self) -> Result<(), tonic::Status> {
-        let global = &self.global::<G>()?;
-        let captcha = self.get_ref().captcha.clone().require("captcha")?;
-
-        // Check captcha
-        match captcha.provider() {
-            CaptchaProvider::Unspecified => {
-                return Err(tonic::Status::with_error_details(
-                    Code::InvalidArgument,
-                    "captcha provider must be set",
-                    ErrorDetails::new(),
-                ));
-            }
-            CaptchaProvider::Turnstile => {
-                captcha::turnstile::verify_in_tonic(global, &captcha.token).await?;
-            }
-        }
-
-        Ok(())
-    }
-
-    async fn load_principal(&mut self, driver: &mut Self::Driver) -> Result<Self::Principal, tonic::Status> {
-        let user = common::get_user_by_email(&mut driver.conn, &self.get_ref().email).await?;
-        Ok(user)
-    }
-
-    async fn load_resource(&mut self, _driver: &mut Self::Driver) -> Result<Self::Resource, tonic::Status> {
-        Ok(CoreApplication)
-    }
-
-    async fn execute(
-        self,
-        driver: &mut Self::Driver,
-        principal: Self::Principal,
-        _resource: Self::Resource,
-    ) -> Result<Self::Response, tonic::Status> {
-        let global = &self.global::<G>()?;
-
-        let to_address = principal.primary_email.into_tonic_err(
-            Code::FailedPrecondition,
-            "user does not have a primary email address",
-            ErrorDetails::new(),
-        )?;
-
-        let code = common::generate_random_bytes().into_tonic_internal_err("failed to generate magic link code")?;
-        let code_base64 = base64::prelude::BASE64_URL_SAFE.encode(code);
-
-        // Insert email link user session request
-        let session_request = MagicLinkUserSessionRequest {
-            id: MagicLinkUserSessionRequestId::new(),
-            user_id: principal.id,
-            code: code.to_vec(),
-            expires_at: chrono::Utc::now() + global.magic_link_user_session_request_timeout(),
-        };
-        diesel::insert_into(magic_link_user_session_requests::dsl::magic_link_user_session_requests)
-            .values(session_request)
-            .execute(&mut driver.conn)
-            .await
-            .into_tonic_internal_err("failed to insert magic link user session request")?;
-
-        let email = emails::magic_link_email(global, to_address, code_base64)
-            .await
-            .into_tonic_internal_err("failed to render magic link email")?;
-        global
-            .email_service()
-            .send_email(email)
-            .await
-            .into_tonic_internal_err("failed to send magic link email")?;
-
-        Ok(())
-    }
-}
-
-impl<G: CoreConfig> Operation<G> for tonic::Request<pb::scufflecloud::core::v1::CompleteLoginWithMagicLinkRequest> {
-    type Driver = TransactionOperationDriver;
-    type Principal = User;
-    type Resource = CoreApplication;
-    type Response = pb::scufflecloud::core::v1::NewUserSessionToken;
-
-    const ACTION: Action = Action::LoginWithMagicLink;
-
-    async fn load_principal(&mut self, driver: &mut Self::Driver) -> Result<Self::Principal, tonic::Status> {
-        // Find and delete magic link user session request
-        let Some(session_request) = diesel::delete(magic_link_user_session_requests::dsl::magic_link_user_session_requests)
-            .filter(
-                magic_link_user_session_requests::dsl::code
-                    .eq(&self.get_ref().code)
-                    .and(magic_link_user_session_requests::dsl::expires_at.gt(chrono::Utc::now())),
-            )
-            .returning(MagicLinkUserSessionRequest::as_select())
-            .get_result::<MagicLinkUserSessionRequest>(&mut driver.conn)
-            .await
-            .optional()
-            .into_tonic_internal_err("failed to delete magic link user session request")?
-        else {
-            return Err(tonic::Status::with_error_details(
-                Code::NotFound,
-                "unknown code",
-                ErrorDetails::new(),
-            ));
-        };
-
-        // Load user
-        let user = users::dsl::users
-            .find(session_request.user_id)
-            .first::<User>(&mut driver.conn)
-            .await
-            .into_tonic_internal_err("failed to query user")?;
-
-        Ok(user)
-    }
-
-    async fn load_resource(&mut self, _driver: &mut Self::Driver) -> Result<Self::Resource, tonic::Status> {
-        Ok(CoreApplication)
-    }
-
-    async fn execute(
-        self,
-        driver: &mut Self::Driver,
-        principal: Self::Principal,
-        _resource: Self::Resource,
-    ) -> Result<Self::Response, tonic::Status> {
-        let global = &self.global::<G>()?;
-        let ip_info = self.ip_address_info()?;
-        let device = self.into_inner().device.require("device")?;
-
-        let new_token = common::create_session(global, &mut driver.conn, principal.id, device, &ip_info, true).await?;
-        Ok(new_token)
     }
 }
 

@@ -95,6 +95,32 @@ impl From<UserEmail> for pb::scufflecloud::core::v1::UserEmail {
     }
 }
 
+pub(crate) type NewUserEmailRequestId = Id<NewUserEmailRequest>;
+
+#[derive(Queryable, Selectable, Insertable, Identifiable, AsChangeset, Associations, Debug, serde::Serialize)]
+#[diesel(table_name = crate::schema::new_user_email_requests)]
+#[diesel(belongs_to(User))]
+#[diesel(check_for_backend(diesel::pg::Pg))]
+pub struct NewUserEmailRequest {
+    pub id: NewUserEmailRequestId,
+    pub user_id: UserId,
+    pub email: String,
+    pub code: Vec<u8>,
+    pub expires_at: chrono::DateTime<chrono::Utc>,
+}
+
+impl PrefixedId for NewUserEmailRequest {
+    const PREFIX: &'static str = "er";
+}
+
+impl<G> CedarEntity<G> for NewUserEmailRequest {
+    const ENTITY_TYPE: &'static str = "NewUserEmailRequest";
+
+    fn entity_id(&self) -> cedar_policy::EntityId {
+        cedar_policy::EntityId::new(self.id.to_string_unprefixed())
+    }
+}
+
 #[derive(Queryable, Selectable, Insertable, Identifiable, AsChangeset, Associations, Debug, serde::Serialize)]
 #[diesel(primary_key(sub))]
 #[diesel(table_name = crate::schema::user_google_accounts)]

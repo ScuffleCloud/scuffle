@@ -12,26 +12,15 @@ import "tinc/annotations.proto";
 
 // Service for managing user sessions, including registration and login.
 service SessionsService {
-  rpc RegisterWithEmail(RegisterWithEmailRequest) returns (google.protobuf.Empty) {
-    option (tinc.method).endpoint = {post: "/users"};
-  }
-  rpc CompleteRegisterWithEmail(CompleteRegisterWithEmailRequest) returns (NewUserSessionToken) {
-    option (tinc.method).endpoint = {post: "/users/complete"};
-  }
-
-  rpc LoginWithEmailOptions(LoginWithEmailOptionsRequest) returns (LoginWithEmailOptionsResponse) {
-    option (tinc.method).endpoint = {post: "/sessions/email"};
-  }
-
-  rpc LoginWithEmailAndPassword(LoginWithEmailAndPasswordRequest) returns (NewUserSessionToken) {
-    option (tinc.method).endpoint = {post: "/sessions/email/password"};
-  }
-
   rpc LoginWithMagicLink(LoginWithMagicLinkRequest) returns (google.protobuf.Empty) {
     option (tinc.method).endpoint = {post: "/sessions/email/magic-link"};
   }
   rpc CompleteLoginWithMagicLink(CompleteLoginWithMagicLinkRequest) returns (NewUserSessionToken) {
     option (tinc.method).endpoint = {post: "/sessions/email/magic-link/complete"};
+  }
+
+  rpc LoginWithEmailAndPassword(LoginWithEmailAndPasswordRequest) returns (NewUserSessionToken) {
+    option (tinc.method).endpoint = {post: "/sessions/email/password"};
   }
 
   rpc LoginWithGoogle(LoginWithGoogleRequest) returns (LoginWithGoogleResponse) {
@@ -102,33 +91,6 @@ message NewUserSessionToken {
   string user_id = 4 [(string_constraint).id = true];
   bool session_mfa_pending = 5;
   repeated MfaOption mfa_options = 6;
-}
-
-message RegisterWithEmailRequest {
-  CaptchaChallengeResponse captcha = 1;
-  // The email address to register with.
-  string email = 2 [(tinc.field).constraint.string.email = true];
-}
-
-message CompleteRegisterWithEmailRequest {
-  // The code received via email.
-  bytes code = 1;
-  Device device = 2;
-}
-
-message LoginWithEmailOptionsRequest {
-  CaptchaChallengeResponse captcha = 1;
-  string email = 2 [(tinc.field).constraint.string.email = true];
-}
-
-enum LoginWithEmailOptions {
-  PASSWORD = 0;
-  MAGIC_LINK = 1;
-  WEBAUTHN = 2;
-}
-
-message LoginWithEmailOptionsResponse {
-  repeated LoginWithEmailOptions options = 1;
 }
 
 message LoginWithEmailAndPasswordRequest {

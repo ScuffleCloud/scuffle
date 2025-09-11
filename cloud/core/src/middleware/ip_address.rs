@@ -31,9 +31,7 @@ enum ParseIpHeaderError {
 
 fn parse_ip_header(value: &HeaderValue) -> Result<Vec<IpAddr>, ParseIpHeaderError> {
     let s = value.to_str()?;
-    let ips = s.split(',')
-        .map(|part| part.trim().parse())
-        .collect::<Result<Vec<_>, _>>()?;
+    let ips = s.split(',').map(|part| part.trim().parse()).collect::<Result<Vec<_>, _>>()?;
     Ok(ips)
 }
 
@@ -64,13 +62,10 @@ pub(crate) async fn ip_address<G: CoreConfig>(mut req: Request, next: Next) -> R
                 return Err(StatusCode::BAD_REQUEST);
             }
 
-            let ip_header = req
-                .headers()
-                .get(&reverse_proxy_config.ip_header)
-                .ok_or_else(|| {
-                    tracing::error!(headers = ?req.headers(), header = reverse_proxy_config.ip_header, "missing IP header");
-                    StatusCode::BAD_REQUEST
-                })?;
+            let ip_header = req.headers().get(&reverse_proxy_config.ip_header).ok_or_else(|| {
+                tracing::error!(headers = ?req.headers(), header = reverse_proxy_config.ip_header, "missing IP header");
+                StatusCode::BAD_REQUEST
+            })?;
             let ips = parse_ip_header(ip_header).map_err(|e| {
                 tracing::error!(err = %e, header = reverse_proxy_config.ip_header, "invalid IP header");
                 StatusCode::BAD_REQUEST

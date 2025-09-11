@@ -34,7 +34,11 @@ pub(crate) enum TrunstileVerifyError {
     MissingErrorCode,
 }
 
-pub(crate) async fn verify<G: CoreConfig>(global: &Arc<G>, remote_ip: IpAddr, token: &str) -> Result<(), TrunstileVerifyError> {
+pub(crate) async fn verify<G: CoreConfig>(
+    global: &Arc<G>,
+    remote_ip: IpAddr,
+    token: &str,
+) -> Result<(), TrunstileVerifyError> {
     let payload = TurnstileSiteVerifyPayload {
         secret: global.turnstile_secret_key().to_string(),
         response: token.to_string(),
@@ -59,7 +63,11 @@ pub(crate) async fn verify<G: CoreConfig>(global: &Arc<G>, remote_ip: IpAddr, to
     Ok(())
 }
 
-pub(crate) async fn verify_in_tonic<G: CoreConfig>(global: &Arc<G>, remote_ip: IpAddr, token: &str) -> Result<(), tonic::Status> {
+pub(crate) async fn verify_in_tonic<G: CoreConfig>(
+    global: &Arc<G>,
+    remote_ip: IpAddr,
+    token: &str,
+) -> Result<(), tonic::Status> {
     match verify(global, remote_ip, token).await {
         Ok(_) => Ok(()),
         Err(TrunstileVerifyError::TurnstileError(e)) => Err(tonic::Status::with_error_details(

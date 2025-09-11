@@ -262,7 +262,9 @@ async fn get_and_update_active_session<G: CoreConfig>(
         .set(
             key.as_slice(),
             true,
-            Some(fred::types::Expiration::PX(global.timeout_config().max_request_lifetime.num_milliseconds())),
+            Some(fred::types::Expiration::PX(
+                global.timeout_config().max_request_lifetime.num_milliseconds(),
+            )),
             Some(fred::types::SetOptions::NX),
             true,
         )

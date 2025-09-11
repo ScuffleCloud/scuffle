@@ -25,11 +25,11 @@ use scuffle_batching::DataLoader;
 
 use crate::config::{GoogleOAuth2Config, ReverseProxyConfig, TimeoutConfig};
 
-pub mod config;
 mod captcha;
 pub mod cedar;
 mod chrono_ext;
 mod common;
+pub mod config;
 pub mod dataloaders;
 mod emails;
 mod google_api;

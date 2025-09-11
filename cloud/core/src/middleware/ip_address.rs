@@ -96,8 +96,6 @@ pub(crate) async fn ip_address<G: CoreConfig>(mut req: Request, next: Next) -> R
         }
     }
 
-    // TODO: Get location from MaxMindDB
-
     req.extensions_mut().insert(IpAddressInfo { ip_address });
 
     Ok(next.run(req).await)

@@ -1,4 +1,5 @@
 use std::net::{IpAddr, SocketAddr};
+use std::sync::Arc;
 
 use axum::extract::{ConnectInfo, Request};
 use axum::http::{self, HeaderValue};
@@ -12,12 +13,18 @@ use crate::http_ext::RequestExt;
 #[derive(Debug, Clone, Copy)]
 pub(crate) struct IpAddressInfo {
     pub ip_address: IpAddr,
-    // maxminddb...
 }
 
 impl IpAddressInfo {
     pub(crate) fn to_network(self) -> ipnetwork::IpNetwork {
         self.ip_address.into()
+    }
+
+    pub(crate) fn lookup_geoip_info<'a, G: CoreConfig, T: serde::Deserialize<'a>>(
+        &self,
+        global: &'a Arc<G>,
+    ) -> Result<Option<T>, tonic::Status> {
+        global.geoip_resolver().lookup::<T>(self.ip_address)
     }
 }
 

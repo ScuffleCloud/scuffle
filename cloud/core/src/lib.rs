@@ -32,6 +32,7 @@ mod common;
 pub mod config;
 pub mod dataloaders;
 mod emails;
+pub mod geoip;
 mod google_api;
 mod http_ext;
 pub mod id;
@@ -65,6 +66,7 @@ pub trait CoreConfig:
     fn email_service(
         &self,
     ) -> pb::scufflecloud::email::v1::email_service_client::EmailServiceClient<tonic::transport::Channel>;
+    fn geoip_resolver(&self) -> &geoip::GeoIpResolver;
     fn user_loader(&self) -> &DataLoader<dataloaders::UserLoader>;
     fn organization_loader(&self) -> &DataLoader<dataloaders::OrganizationLoader>;
     fn organization_member_by_user_id_loader(&self) -> &DataLoader<dataloaders::OrganizationMemberByUserIdLoader>;

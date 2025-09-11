@@ -246,7 +246,7 @@
   "moduleExtensions": {
     "//vendor:cargo_ext.bzl%bindeps": {
       "general": {
-        "bzlTransitiveDigest": "YOtLBJawNF4DH/wFCJp8mYqNIaaHfys40UERZTFTdUs=",
+        "bzlTransitiveDigest": "ls4HOrFuX7cGMYentBhklC/x/NEJHK4upV1Ue0yAhFc=",
         "usagesDigest": "0vyNdgUB6Py8EFEYeVm1fABbu9FAMVvr905hmQzVjfU=",
         "recordedFileInputs": {},
         "recordedDirentsInputs": {},
@@ -9945,7 +9945,7 @@
     },
     "//vendor:cargo_ext.bzl%cargo_vendor": {
       "general": {
-        "bzlTransitiveDigest": "YOtLBJawNF4DH/wFCJp8mYqNIaaHfys40UERZTFTdUs=",
+        "bzlTransitiveDigest": "ls4HOrFuX7cGMYentBhklC/x/NEJHK4upV1Ue0yAhFc=",
         "usagesDigest": "mtR+K4/VVAmhgoN1cG7MXxv6mAD1vfxRZ8SSM66EtxE=",
         "recordedFileInputs": {},
         "recordedDirentsInputs": {},
@@ -13341,6 +13341,18 @@
               ],
               "strip_prefix": "matchit-0.8.4",
               "build_file": "@@//vendor/cargo:BUILD.matchit-0.8.4.bazel"
+            }
+          },
+          "cargo_vendor__maxminddb-0.26.0": {
+            "repoRuleId": "@@bazel_tools//tools/build_defs/repo:http.bzl%http_archive",
+            "attributes": {
+              "sha256": "2a197e44322788858682406c74b0b59bf8d9b4954fe1f224d9a25147f1880bba",
+              "type": "tar.gz",
+              "urls": [
+                "https://static.crates.io/crates/maxminddb/0.26.0/download"
+              ],
+              "strip_prefix": "maxminddb-0.26.0",
+              "build_file": "@@//vendor/cargo:BUILD.maxminddb-0.26.0.bazel"
             }
           },
           "cargo_vendor__md-5-0.10.6": {
@@ -17921,6 +17933,7 @@
             "cargo_vendor__linkme-0.3.33",
             "cargo_vendor__log-0.4.28",
             "cargo_vendor__lol_html-2.6.0",
+            "cargo_vendor__maxminddb-0.26.0",
             "cargo_vendor__mediatype-0.20.0",
             "cargo_vendor__minijinja-2.12.0",
             "cargo_vendor__nextest-filtering-0.16.0",
@@ -17974,6 +17987,7 @@
             "cargo_vendor__smart-default-0.7.1",
             "cargo_vendor__swagger-ui-dist-5.28.1",
             "cargo_vendor__syn-2.0.106",
+            "cargo_vendor__tar-0.4.44",
             "cargo_vendor__target-spec-3.5.0",
             "cargo_vendor__target-triple-0.1.4",
             "cargo_vendor__thiserror-2.0.16",

@@ -826,6 +826,18 @@ transition_alias_opt(
 )
 
 transition_alias_opt(
+    name = "maxminddb-0.26.0",
+    actual = "@cargo_vendor__maxminddb-0.26.0//:maxminddb",
+    tags = ["manual"],
+)
+
+transition_alias_opt(
+    name = "maxminddb",
+    actual = "@cargo_vendor__maxminddb-0.26.0//:maxminddb",
+    tags = ["manual"],
+)
+
+transition_alias_opt(
     name = "mediatype-0.20.0",
     actual = "@cargo_vendor__mediatype-0.20.0//:mediatype",
     tags = ["manual"],
@@ -1470,6 +1482,18 @@ transition_alias_opt(
 transition_alias_opt(
     name = "syn",
     actual = "@cargo_vendor__syn-2.0.106//:syn",
+    tags = ["manual"],
+)
+
+transition_alias_opt(
+    name = "tar-0.4.44",
+    actual = "@cargo_vendor__tar-0.4.44//:tar",
+    tags = ["manual"],
+)
+
+transition_alias_opt(
+    name = "tar",
+    actual = "@cargo_vendor__tar-0.4.44//:tar",
     tags = ["manual"],
 )
 

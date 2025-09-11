@@ -10,6 +10,7 @@ use scuffle_bootstrap_telemetry::opentelemetry_sdk::logs::SdkLoggerProvider;
 use scuffle_bootstrap_telemetry::opentelemetry_sdk::trace::SdkTracerProvider;
 use scufflecloud_core::config::{GoogleOAuth2Config, RedisConfig, ReverseProxyConfig, TelemetryConfig, TimeoutConfig};
 use scufflecloud_core::dataloaders::{OrganizationLoader, OrganizationMemberByUserIdLoader, UserLoader};
+use scufflecloud_core::geoip::{GeoIpResolver, MaxMindConfig};
 use tracing_subscriber::Layer;
 use tracing_subscriber::layer::SubscriberExt;
 use tracing_subscriber::util::SubscriberInitExt;
@@ -42,6 +43,7 @@ pub struct Config {
     #[default("http://localhost:3002".to_string())]
     pub email_service_address: String,
     pub reverse_proxy: Option<ReverseProxyConfig>,
+    pub maxminddb: MaxMindConfig,
 }
 
 scuffle_settings::bootstrap!(Config);
@@ -58,6 +60,7 @@ struct Global {
     open_telemetry: opentelemetry::OpenTelemetry,
     redis: fred::clients::Pool,
     email_service_client: pb::scufflecloud::email::v1::email_service_client::EmailServiceClient<tonic::transport::Channel>,
+    geoip_resolver: GeoIpResolver,
 }
 
 impl scufflecloud_core::CoreConfig for Global {
@@ -134,6 +137,10 @@ impl scufflecloud_core::CoreConfig for Global {
     fn reverse_proxy_config(&self) -> Option<&ReverseProxyConfig> {
         self.config.reverse_proxy.as_ref()
     }
+
+    fn geoip_resolver(&self) -> &GeoIpResolver {
+        &self.geoip_resolver
+    }
 }
 
 impl scuffle_signal::SignalConfig for Global {}
@@ -170,6 +177,17 @@ impl scuffle_bootstrap::Global for Global {
         if rustls::crypto::aws_lc_rs::default_provider().install_default().is_err() {
             anyhow::bail!("failed to install aws-lc-rs as default TLS provider");
         }
+
+        let geoip_resolver = GeoIpResolver::new(&config.maxminddb).await?;
+
+        tracing::info!(address = %config.email_service_address, "connecting to email service");
+        let email_service_channel = tonic::transport::Channel::from_shared(config.email_service_address.clone())
+            .context("create channel to email service")?
+            .connect()
+            .await
+            .context("create channel to email service")?;
+        let email_service_client =
+            pb::scufflecloud::email::v1::email_service_client::EmailServiceClient::new(email_service_channel);
 
         let Some(db_url) = config.db_url.as_deref() else {
             anyhow::bail!("DATABASE_URL is not set");
@@ -211,15 +229,6 @@ impl scuffle_bootstrap::Global for Global {
 
         let redis = config.redis.setup().await?;
 
-        tracing::info!(address = %config.email_service_address, "connecting to email service");
-        let email_service_channel = tonic::transport::Channel::from_shared(config.email_service_address.clone())
-            .context("create channel to email service")?
-            .connect()
-            .await
-            .context("create channel to email service")?;
-        let email_service_client =
-            pb::scufflecloud::email::v1::email_service_client::EmailServiceClient::new(email_service_channel);
-
         Ok(Arc::new(Self {
             config,
             database,
@@ -232,6 +241,7 @@ impl scuffle_bootstrap::Global for Global {
             open_telemetry,
             redis,
             email_service_client,
+            geoip_resolver,
         }))
     }
 }

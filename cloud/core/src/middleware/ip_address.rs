@@ -20,7 +20,7 @@ impl IpAddressInfo {
         self.ip_address.into()
     }
 
-    pub(crate) fn lookup_geoip_info<'a, G: CoreConfig, T: serde::Deserialize<'a>>(
+    pub(crate) fn lookup_geoip_info<'a, T: serde::Deserialize<'a>, G: CoreConfig>(
         &self,
         global: &'a Arc<G>,
     ) -> Result<Option<T>, tonic::Status> {
@@ -38,7 +38,10 @@ enum ParseIpHeaderError {
 
 fn parse_ip_header(value: &HeaderValue) -> Result<Vec<IpAddr>, ParseIpHeaderError> {
     let s = value.to_str()?;
-    let ips = s.split(',').map(|part| part.trim().parse()).collect::<Result<Vec<_>, _>>()?;
+    let ips = s
+        .split(',')
+        .map(|part| part.trim().parse::<IpAddr>().map(|ip| ip.to_canonical()))
+        .collect::<Result<Vec<_>, _>>()?;
     Ok(ips)
 }
 
@@ -50,7 +53,7 @@ pub(crate) async fn ip_address<G: CoreConfig>(mut req: Request, next: Next) -> R
         tracing::error!(err = %e, "failed to extract ConnectInfo");
         StatusCode::INTERNAL_SERVER_ERROR
     })?;
-    let mut ip_address = info.ip();
+    let mut ip_address = info.ip().to_canonical();
 
     // Extract the real IP address from the configured header if behind a reverse proxy
     if let Some(reverse_proxy_config) = global.reverse_proxy_config() {

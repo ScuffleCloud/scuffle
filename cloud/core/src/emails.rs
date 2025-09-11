@@ -3,6 +3,8 @@ use std::sync::Arc;
 use sailfish::{TemplateOnce, TemplateSimple};
 
 use crate::CoreConfig;
+use crate::middleware::IpAddressInfo;
+use crate::std_ext::ResultExt;
 
 #[derive(sailfish::TemplateSimple)]
 #[template(path = "emails/register_with_email/subject.stpl")]
@@ -10,14 +12,12 @@ struct RegisterWithEmailSubjectTemplate;
 
 #[derive(sailfish::Template)]
 #[template(path = "emails/register_with_email/text.stpl")]
-#[allow(dead_code)]
 struct RegisterWithEmailTextTemplate {
     pub url: String,
 }
 
 #[derive(sailfish::Template)]
 #[template(path = "emails/register_with_email/html.stpl")]
-#[allow(dead_code)]
 struct RegisterWithEmailHtmlTemplate {
     pub url: String,
 }
@@ -27,10 +27,14 @@ pub(crate) async fn register_with_email_email<G: CoreConfig>(
     to_address: String,
     code: String,
 ) -> Result<pb::scufflecloud::email::v1::Email, sailfish::RenderError> {
-    let url = format!("{}/register/confirm?code={}", global.dashboard_origin(), code);
+    let url = global
+        .dashboard_origin()
+        .join(&format!("/register/confirm?code={code}"))
+        .unwrap()
+        .to_string();
 
     let subject = RegisterWithEmailSubjectTemplate.render_once()?;
-    let text = RegisterWithEmailTextTemplate { url: url.to_string() }.render_once()?;
+    let text = RegisterWithEmailTextTemplate { url: url.clone() }.render_once()?;
     let html = RegisterWithEmailHtmlTemplate { url }.render_once()?;
 
     Ok(pb::scufflecloud::email::v1::Email {
@@ -48,14 +52,12 @@ struct AddNewEmailSubjectTemplate;
 
 #[derive(sailfish::Template)]
 #[template(path = "emails/add_new_email/text.stpl")]
-#[allow(dead_code)]
 struct AddNewEmailTextTemplate {
     pub url: String,
 }
 
 #[derive(sailfish::Template)]
 #[template(path = "emails/add_new_email/html.stpl")]
-#[allow(dead_code)]
 struct AddNewEmailHtmlTemplate {
     pub url: String,
 }
@@ -65,7 +67,11 @@ pub(crate) async fn add_new_email_email<G: CoreConfig>(
     to_address: String,
     code: String,
 ) -> Result<pb::scufflecloud::email::v1::Email, sailfish::RenderError> {
-    let url = format!("{}/settings/emails/confirm?code={}", global.dashboard_origin(), code);
+    let url = global
+        .dashboard_origin()
+        .join(&format!("/settings/emails/confirm?code={code}"))
+        .unwrap()
+        .to_string();
 
     let subject = AddNewEmailSubjectTemplate.render_once()?;
     let text = AddNewEmailTextTemplate { url: url.clone() }.render_once()?;
@@ -86,14 +92,12 @@ struct MagicLinkSubjectTemplate;
 
 #[derive(sailfish::Template)]
 #[template(path = "emails/magic_link/text.stpl")]
-#[allow(dead_code)]
 struct MagicLinkTextTemplate {
     pub url: String,
 }
 
 #[derive(sailfish::Template)]
 #[template(path = "emails/magic_link/html.stpl")]
-#[allow(dead_code)]
 struct MagicLinkHtmlTemplate {
     pub url: String,
 }
@@ -103,11 +107,89 @@ pub(crate) async fn magic_link_email<G: CoreConfig>(
     to_address: String,
     code: String,
 ) -> Result<pb::scufflecloud::email::v1::Email, sailfish::RenderError> {
-    let url = format!("{}/login/magic-link?code={}", global.dashboard_origin(), code);
+    let url = global
+        .dashboard_origin()
+        .join(&format!("/login/magic-link?code={code}"))
+        .unwrap()
+        .to_string();
 
     let subject = MagicLinkSubjectTemplate.render_once()?;
     let text = MagicLinkTextTemplate { url: url.clone() }.render_once()?;
     let html = MagicLinkHtmlTemplate { url }.render_once()?;
+
+    Ok(pb::scufflecloud::email::v1::Email {
+        to_address,
+        source_address: global.email_from_address().to_string(),
+        subject,
+        text,
+        html,
+    })
+}
+
+#[derive(sailfish::TemplateSimple)]
+#[template(path = "emails/new_device/subject.stpl")]
+struct NewDeviceSubjectTemplate;
+
+#[derive(Clone)]
+struct GeoInfo {
+    city: Option<String>,
+    country: Option<String>,
+}
+
+impl GeoInfo {
+    fn from_city(value: maxminddb::geoip2::City) -> Option<GeoInfo> {
+        let city = value
+            .city
+            .and_then(|c| c.names)
+            .and_then(|names| names.get("en").map(|s| s.to_string()));
+        let country = value
+            .country
+            .and_then(|c| c.names)
+            .and_then(|names| names.get("en").map(|s| s.to_string()));
+
+        match (city, country) {
+            (None, None) => None,
+            (city, country) => Some(GeoInfo { city, country }),
+        }
+    }
+}
+
+#[derive(sailfish::Template)]
+#[template(path = "emails/new_device/text.stpl")]
+struct NewDeviceTextTemplate {
+    pub ip_address: String,
+    pub geo_info: Option<GeoInfo>,
+}
+
+#[derive(sailfish::Template)]
+#[template(path = "emails/new_device/html.stpl")]
+struct NewDeviceHtmlTemplate {
+    pub ip_address: String,
+    pub geo_info: Option<GeoInfo>,
+}
+
+pub(crate) async fn new_device_email<G: CoreConfig>(
+    global: &Arc<G>,
+    to_address: String,
+    ip_info: &IpAddressInfo,
+) -> Result<pb::scufflecloud::email::v1::Email, tonic::Status> {
+    let geo_info: Option<GeoInfo> = ip_info
+        .lookup_geoip_info::<maxminddb::geoip2::City, _>(global)?
+        .and_then(GeoInfo::from_city);
+    let ip_address = ip_info.ip_address.to_string();
+
+    let subject = NewDeviceSubjectTemplate
+        .render_once()
+        .into_tonic_internal_err("failed to render email")?;
+    let text = NewDeviceTextTemplate {
+        ip_address: ip_address.clone(),
+        geo_info: geo_info.clone(),
+    }
+    .render_once()
+    .into_tonic_internal_err("failed to render email")?;
+    let html = NewDeviceHtmlTemplate { ip_address, geo_info }
+        .render_once()
+        .into_tonic_internal_err("failed to render email")?;
 
     Ok(pb::scufflecloud::email::v1::Email {
         to_address,

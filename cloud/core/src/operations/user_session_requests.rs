@@ -270,8 +270,9 @@ impl<G: CoreConfig> Operation<G> for tonic::Request<pb::scufflecloud::core::v1::
                 ErrorDetails::new(),
             ));
         };
+        let approved_by = common::get_user_by_id(global, approved_by).await?;
 
-        let new_token = common::create_session(global, &mut driver.conn, approved_by, device, &ip_info, false).await?;
+        let new_token = common::create_session(global, &mut driver.conn, &approved_by, device, &ip_info, false).await?;
         Ok(new_token)
     }
 }

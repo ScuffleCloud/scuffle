@@ -12,7 +12,6 @@ use sha2::Digest;
 use tonic::Code;
 use tonic_types::{ErrorDetails, StatusExt};
 
-use crate::CoreConfig;
 use crate::chrono_ext::ChronoDateTimeExt;
 use crate::id::Id;
 use crate::middleware::IpAddressInfo;
@@ -24,6 +23,7 @@ use crate::schema::{
     user_emails, user_sessions, users,
 };
 use crate::std_ext::{DisplayExt, OptionExt, ResultExt};
+use crate::{CoreConfig, emails};
 
 pub(crate) fn generate_random_bytes() -> Result<[u8; 32], rand::Error> {
     let mut token = [0u8; 32];
@@ -230,12 +230,12 @@ pub(crate) async fn mfa_options(
 pub(crate) async fn create_session<G: CoreConfig>(
     global: &Arc<G>,
     tx: &mut diesel_async::AsyncPgConnection,
-    user_id: UserId,
+    user: &User,
     device: pb::scufflecloud::core::v1::Device,
     ip_info: &IpAddressInfo,
     check_mfa: bool,
 ) -> Result<pb::scufflecloud::core::v1::NewUserSessionToken, tonic::Status> {
-    let mfa_options = if check_mfa { mfa_options(tx, user_id).await? } else { vec![] };
+    let mfa_options = if check_mfa { mfa_options(tx, user.id).await? } else { vec![] };
 
     // Create user session, device and token
     let device_fingerprint = sha2::Sha256::digest(&device.public_key_data).to_vec();
@@ -252,7 +252,7 @@ pub(crate) async fn create_session<G: CoreConfig>(
     let encrypted_token = encrypt_token(device.algorithm(), &token, &device.public_key_data)?;
 
     let user_session = UserSession {
-        user_id,
+        user_id: user.id,
         device_fingerprint,
         device_algorithm: device.algorithm().into(),
         device_pk_data: device.public_key_data,
@@ -275,10 +275,15 @@ pub(crate) async fn create_session<G: CoreConfig>(
         id: token_id.to_string(),
         encrypted_token,
         expires_at: Some(token_expires_at.to_prost_timestamp_utc()),
-        user_id: user_id.to_string(),
+        user_id: user.id.to_string(),
         session_mfa_pending: user_session.mfa_pending,
         mfa_options: mfa_options.into_iter().map(|o| o as i32).collect(),
     };
+
+    if let Some(primary_email) = user.primary_email.as_ref() {
+        let email = emails::new_device_email(global, primary_email.clone(), ip_info).await?;
+        global.email_service().send_email(email).await?;
+    }
 
     Ok(new_token)
 }

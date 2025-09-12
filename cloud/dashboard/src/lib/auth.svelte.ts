@@ -83,7 +83,10 @@ function loadUserSessionToken(): AuthState<UserSessionToken> {
 
             let parsedAuth;
             if (parsedStoredAuth.state === "authenticated") {
-                parsedAuth = { ...parsedStoredAuth, data: fromStoredUserSessionToken(parsedStoredAuth.data) } as AuthState<UserSessionToken>;
+                parsedAuth = {
+                    ...parsedStoredAuth,
+                    data: fromStoredUserSessionToken(parsedStoredAuth.data),
+                } as AuthState<UserSessionToken>;
             } else {
                 parsedAuth = parsedStoredAuth as AuthState<UserSessionToken>;
             }
@@ -282,7 +285,7 @@ export function createAuthState() {
 
             const call = sessionsServiceClient.invalidateUserSession({});
             const status = await call.status;
-            if (status.code === "0") {
+            if (status.code === "OK") {
                 userSessionToken = { state: "unauthenticated" };
                 window.localStorage.removeItem("userSessionToken");
                 user = { state: "unauthenticated" };
@@ -328,12 +331,14 @@ async function loadUser(state: AuthState<UserSessionToken>): Promise<AuthState<U
         return { ...state };
     }
 
+    console.log("loading user", state.data.userId);
     const call = usersServiceClient.getUser({
         id: state.data.userId,
     });
     const status = await call.status;
 
-    if (status.code === "0") {
+    console.log("status", status);
+    if (status.code === "OK") {
         const user = await call.response;
         return { state: "authenticated", data: user };
     } else {

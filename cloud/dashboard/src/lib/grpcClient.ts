@@ -40,11 +40,11 @@ const transport = new GrpcWebFetchTransport({
                     if (auth.userSessionToken.state === "authenticated") {
                         if (
                             !options.skipSessionExpiryCheck && auth.userSessionToken.data.expiresAt
-                            && auth.userSessionToken.data.expiresAt.getTime() + 10 * 1000 < Date.now()
+                            && new Date(auth.userSessionToken.data.expiresAt).getTime() + 10 * 1000 < Date.now()
                         ) {
                             const call = sessionsServiceClient.refreshUserSession({}, { skipSessionExpiryCheck: true });
                             const status = await call.status;
-                            if (status.code !== "0") {
+                            if (status.code !== "OK") {
                                 defStatus.rejectPending(new Error("Failed to refresh session: " + status.detail));
                                 defTrailer.rejectPending(new Error("Failed to refresh session: " + status.detail));
                                 defHeader.rejectPending(new Error("Failed to refresh session: " + status.detail));

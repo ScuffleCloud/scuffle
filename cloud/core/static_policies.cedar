@@ -13,7 +13,7 @@ permit (
 );
 
 permit (
-  principal is User,
+  principal is Unauthenticated,
   action == Action::"request_magic_link",
   resource == Application::"core"
 );

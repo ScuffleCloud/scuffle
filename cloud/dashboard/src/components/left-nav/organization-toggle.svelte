@@ -1,5 +1,5 @@
 <script lang="ts">
-    import { authState } from "$lib/auth.svelte";
+    import { useAuth } from "$lib/auth.svelte";
     import IconSwitch from "$lib/images/icon-switch.svelte";
     import { createPopover, melt } from "@melt-ui/svelte";
     import OrganizationDropdown from "./organization-dropdown.svelte";
@@ -9,6 +9,7 @@
     };
 
     const { isCollapsed = false }: Props = $props();
+    const auth = useAuth();
 
     const {
         elements: { trigger, content },
@@ -24,7 +25,7 @@
         {#if !isCollapsed}
             <div class="org-details">
                 <div class="org-name">TODO-ORG-NAME</div>
-                <div class="org-username">{authState().user?.primaryEmail}</div>
+                <div class="org-username">{auth.user?.primaryEmail}</div>
             </div>
             <IconSwitch />
         {/if}

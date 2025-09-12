@@ -14,11 +14,13 @@
     import LoginPage from "$components/login/login-page.svelte";
     import RightNav from "$components/right-nav/right-nav.svelte";
     import { PUBLIC_VITE_MSW_ENABLED } from "$env/static/public";
-    import { authState } from "$lib/auth.svelte";
+    import { useAuth } from "$lib/auth.svelte";
     import { onMount } from "svelte";
 
+    const auth = useAuth();
+
     onMount(() => {
-        authState().initialize();
+        auth.initialize();
     });
 
     // Maybe don't need this code since we'll mock functions in a different way but leaving it for now
@@ -27,6 +29,7 @@
     let mockingReady = $state(!requireMsw);
 
     // TODO: Remove this mocking logic eventually
+    // We can probably have an organization with sample data setup in a dev env
     $effect(() => {
         if (requireMsw && !mockingReady) {
             console.log("Loading MSW");
@@ -51,9 +54,9 @@
 
 <!-- TODO: Clean this up at some point -->
 {#if mockingReady}
-    {#if authState().userSessionToken.state === "loading"}
+    {#if auth.userSessionToken.state === "loading"}
         <div>Loading...</div>
-    {:else if authState().userSessionToken.state === "unauthenticated"}
+    {:else if auth.userSessionToken.state === "unauthenticated"}
         <div class="login-page-container">
             <!-- TODO: Add protection to routes if not logged in -->
             <LoginHeader />

@@ -39,7 +39,7 @@ export type UserSessionToken = {
     id: string;
     token: ArrayBuffer;
     expiresAt: Date | null;
-    sessionExpiresAt: Date;
+    sessionExpiresAt: Date | null;
     userId: string;
 };
 
@@ -47,7 +47,7 @@ export type StoredUserSessionToken = {
     id: string;
     token: string;
     expiresAt: string | null;
-    sessionExpiresAt: string;
+    sessionExpiresAt: string | null;
     userId: string;
 };
 
@@ -56,7 +56,7 @@ function toStoredUserSessionToken(token: UserSessionToken): StoredUserSessionTok
         id: token.id,
         token: arrayBufferToBase64(token.token),
         expiresAt: token.expiresAt ? token.expiresAt.toISOString() : null,
-        sessionExpiresAt: token.sessionExpiresAt.toISOString(),
+        sessionExpiresAt: token.sessionExpiresAt ? token.sessionExpiresAt.toISOString() : null,
         userId: token.userId,
     };
 }
@@ -66,7 +66,7 @@ function fromStoredUserSessionToken(token: StoredUserSessionToken): UserSessionT
         id: token.id,
         token: base64ToArrayBuffer(token.token),
         expiresAt: token.expiresAt ? new Date(token.expiresAt) : null,
-        sessionExpiresAt: new Date(token.sessionExpiresAt),
+        sessionExpiresAt: token.sessionExpiresAt ? new Date(token.sessionExpiresAt) : null,
         userId: token.userId,
     };
 }
@@ -262,7 +262,7 @@ export function createAuthState() {
                             id: newToken.id,
                             token: decrypted,
                             expiresAt: newToken.expiresAt ? timestampToDate(newToken.expiresAt) : null,
-                            sessionExpiresAt: timestampToDate(newToken.sessionExpiresAt),
+                            sessionExpiresAt: newToken.sessionExpiresAt ? timestampToDate(newToken.sessionExpiresAt) : null,
                             userId: newToken.userId,
                         },
                     };
@@ -309,7 +309,7 @@ export function createAuthState() {
             }
 
             // Check if session is expired
-            if (Date.now() > userSessionToken.data.sessionExpiresAt.getTime() - 10 * 1000) {
+            if (userSessionToken.data.sessionExpiresAt && Date.now() > userSessionToken.data.sessionExpiresAt.getTime() - 10 * 1000) {
                 userSessionToken = { state: "unauthenticated" };
                 window.localStorage.removeItem("userSessionToken");
                 user = { state: "unauthenticated" };

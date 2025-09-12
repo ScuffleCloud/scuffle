@@ -7,6 +7,13 @@ import {
 } from "@scufflecloud/proto/scufflecloud/core/v1/sessions_service.js";
 import { User } from "@scufflecloud/proto/scufflecloud/core/v1/users.js";
 import { sessionsServiceClient, usersServiceClient } from "./grpcClient";
+import { arrayBufferToBase64 } from "./utils";
+
+// Replace with Uint8Array.fromBase64 in the future
+// https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Uint8Array/fromBase64
+function base64ToArrayBuffer(base64: string): ArrayBuffer {
+    return Uint8Array.from(atob(base64), c => c.charCodeAt(0)).buffer;
+}
 
 function timestampToDate(timestmap: Timestamp): Date | null {
     const seconds = parseInt(timestmap.seconds);
@@ -35,20 +42,53 @@ export type UserSessionToken = {
     userId: string;
 };
 
+export type StoredUserSessionToken = {
+    id: string;
+    token: string;
+    expiresAt: string | null;
+    userId: string;
+};
+
+function toStoredUserSessionToken(token: UserSessionToken): StoredUserSessionToken {
+    return {
+        id: token.id,
+        token: arrayBufferToBase64(token.token),
+        expiresAt: token.expiresAt ? token.expiresAt.toISOString() : null,
+        userId: token.userId,
+    };
+}
+
+function fromStoredUserSessionToken(token: StoredUserSessionToken): UserSessionToken {
+    return {
+        id: token.id,
+        token: base64ToArrayBuffer(token.token),
+        expiresAt: token.expiresAt ? new Date(token.expiresAt) : null,
+        userId: token.userId,
+    };
+}
+
 function loadUserSessionToken(): AuthState<UserSessionToken> {
     if (!browser) return { state: "loading" };
 
     const stored = window.localStorage.getItem("userSessionToken");
     if (stored) {
         try {
-            const parsedAuth = JSON.parse(stored);
+            const parsedStoredAuth = JSON.parse(stored) as AuthState<StoredUserSessionToken>;
             if (
-                !parsedAuth.state || (parsedAuth.state === "authenticated" && !parsedAuth.data)
-                || (parsedAuth.state === "error" && !parsedAuth.error)
+                !parsedStoredAuth.state || (parsedStoredAuth.state === "authenticated" && !parsedStoredAuth.data)
+                || (parsedStoredAuth.state === "error" && !parsedStoredAuth.error)
             ) {
                 throw new Error("invalid sementics");
             }
-            return parsedAuth as AuthState<UserSessionToken>;
+
+            let parsedAuth;
+            if (parsedStoredAuth.state === "authenticated") {
+                parsedAuth = { ...parsedStoredAuth, data: fromStoredUserSessionToken(parsedStoredAuth.data) } as AuthState<UserSessionToken>;
+            } else {
+                parsedAuth = parsedStoredAuth as AuthState<UserSessionToken>;
+            }
+
+            return parsedAuth;
         } catch (error) {
             console.error("Failed to parse session token from local storage", error);
             return { state: "error", error: "Failed to parse session token" };
@@ -220,8 +260,11 @@ export function createAuthState() {
                     };
 
                     userSessionToken = newUserSessionToken;
+
                     // Persist session token to localStorage on change
-                    window.localStorage.setItem("userSessionToken", JSON.stringify(newUserSessionToken));
+                    const stored = { ...newUserSessionToken, data: toStoredUserSessionToken(newUserSessionToken.data) };
+                    window.localStorage.setItem("userSessionToken", JSON.stringify(stored));
+
                     return loadUser(newUserSessionToken);
                 },
             ).catch((err) => {

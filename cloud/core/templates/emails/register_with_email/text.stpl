@@ -1,2 +1,5 @@
-Thanks for singing up for Scuffle! To complete your registration, please confirm your email address by clicking the link below:
+Thanks for singing up for Scuffle! Click the link below to access your Scuffle account.
 <%= self.url %>
+The link is valid for 60 minutes.
+
+<% include!("../copyright.stpl"); %>

@@ -320,10 +320,12 @@ export function createAuthState() {
             if (userSessionToken.data.expiresAt && Date.now() > userSessionToken.data.expiresAt.getTime() - 10 * 1000) {
                 const call = sessionsServiceClient.refreshUserSession({}, { skipValidityCheck: true });
                 const status = await call.status;
+                const response = await call.response;
 
                 if (status.code !== "OK") {
                     throw new Error("Failed to refresh session: " + status.detail);
                 }
+                this.handleNewUserSessionToken(response);
             }
         },
         /**

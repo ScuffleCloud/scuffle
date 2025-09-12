@@ -23,7 +23,7 @@ export async function initiateGoogleLogin(): Promise<void> {
 /**
  * Completes Google OAuth login flow with authorization code
  */
-export async function completeGoogleLogin(code: string, state: string): Promise<void> {
+async function completeGoogleLogin(code: string, state: string): Promise<void> {
     const auth = useAuth();
 
     const device = await auth.getDeviceOrInit();
@@ -66,7 +66,7 @@ export function handleGoogleOAuthCallback(): void {
 }
 
 /**
- * Composable hook for Google authentication with reactive state
+ * Hook for Google authentication with reactive state
  */
 export function useGoogleAuth() {
     let loading = $state(false);
@@ -82,7 +82,6 @@ export function useGoogleAuth() {
                 await initiateGoogleLogin();
             } catch (err) {
                 error = err instanceof Error ? err.message : "Google login failed";
-            } finally {
                 loading = false;
             }
         },

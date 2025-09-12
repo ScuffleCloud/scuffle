@@ -92,7 +92,7 @@ impl<G: CoreConfig> Operation<G> for tonic::Request<RefreshUserSessionRequest> {
 
     async fn load_principal(&mut self, _driver: &mut Self::Driver) -> Result<Self::Principal, tonic::Status> {
         let global = &self.global::<G>()?;
-        let session = self.session_or_err()?;
+        let session = self.expired_session_or_err()?;
         common::get_user_by_id(global, session.user_id).await
     }
 
@@ -146,8 +146,9 @@ impl<G: CoreConfig> Operation<G> for tonic::Request<RefreshUserSessionRequest> {
         let new_token = pb::scufflecloud::core::v1::NewUserSessionToken {
             id: token_id.to_string(),
             encrypted_token,
-            expires_at: Some(token_expires_at.to_prost_timestamp_utc()),
             user_id: session.user_id.to_string(),
+            expires_at: Some(token_expires_at.to_prost_timestamp_utc()),
+            session_expires_at: Some(session.expires_at.to_prost_timestamp_utc()),
             session_mfa_pending: session.mfa_pending,
             mfa_options: mfa_options.into_iter().map(|o| o as i32).collect(),
         };

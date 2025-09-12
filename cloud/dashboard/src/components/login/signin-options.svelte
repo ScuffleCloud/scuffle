@@ -1,7 +1,6 @@
 <script lang="ts">
     import type { LoginMode } from "$components/streams/types";
-    import { useAuth } from "$lib/auth.svelte";
-    import { sessionsServiceClient } from "$lib/grpcClient";
+    import { useGoogleAuth } from "$lib/auth/googleAuth.svelte";
     import IconGoogle from "$lib/images/icon-google.svelte";
     import IconLoginKey from "$lib/images/icon-login-key.svelte";
 
@@ -10,86 +9,13 @@
         isLoading?: boolean;
     }
 
-    $effect(() => {
-        const urlParams = new URLSearchParams(window.location.search);
-        const code = urlParams.get("code");
-        const state = urlParams.get("state");
-
-        if (code && state) {
-            handleGoogleCallback(code, state);
-        }
-    });
-
-    const auth = useAuth();
+    const googleAuth = useGoogleAuth();
 
     let { onModeChange, isLoading = false }: Props = $props();
 
-    // Probably move this to a generic function later
-    async function handleGoogleLogin(): Promise<void> {
-        try {
-            const device = await auth.getDeviceOrInit();
-            console.log(JSON.stringify(device));
-            const call = sessionsServiceClient.loginWithGoogle({
-                device,
-            });
-            const status = await call.status;
-
-            if (status.code === "OK") {
-                const response = await call.response;
-                window.location.href = response.authorizationUrl;
-            } else {
-                console.error("Google login failed:", status.detail);
-            }
-        } catch (error) {
-            console.error("Login with Google error:", error);
-        }
-    }
-
-    async function handleGoogleCallback(
-        code: string,
-        state: string,
-    ): Promise<void> {
-        isLoading = true;
-
-        try {
-            // Get device public key again for the completion request
-            const device = await auth.getDeviceOrInit();
-            console.log(JSON.stringify(device));
-
-            const call = sessionsServiceClient.completeLoginWithGoogle({
-                code,
-                state,
-                device,
-            });
-
-            const status = await call.status;
-            console.log(status);
-
-            if (status.code === "OK") {
-                const response = await call.response;
-
-                console.log("response");
-                console.log(response);
-
-                // TODO: Revisit after "this call is not implemented yet error" resolved
-                // This might be enough to handle the login though and will reroute from layout?
-                if (response.newUserSessionToken) {
-                    await auth.handleNewUserSessionToken(
-                        response.newUserSessionToken,
-                    );
-                }
-            } else {
-                console.error(
-                    "Google login completion failed:",
-                    status.detail,
-                );
-            }
-        } catch (error) {
-            console.error("Google login completion error:", error);
-        } finally {
-            isLoading = false;
-        }
-    }
+    $effect(() => {
+        googleAuth.handleOAuthCallback();
+    });
 
     function handlePasskeyLogin() {
         onModeChange("passkey");
@@ -99,16 +25,9 @@
 <div class="divider">OR</div>
 <button
     type="button"
-    onclick={async () => console.log(JSON.stringify(await auth.getDeviceOrInit()))}
+    onclick={googleAuth.initiateLogin}
     class="btn-social google"
->
-    TEST auth
-</button>
-<button
-    type="button"
-    onclick={handleGoogleLogin}
-    class="btn-social google"
-    disabled={isLoading}
+    disabled={isLoading || googleAuth.loading()}
 >
     <IconGoogle />
     Continue with Google

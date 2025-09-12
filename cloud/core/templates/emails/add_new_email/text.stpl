@@ -1,2 +1,5 @@
-To add this email address to your account, please confirm it by clicking the link below:
+Click the link below to add this email address to your Scuffle account.
 <%= self.url %>
+The link is valid for 60 minutes.
+
+<% include!("../copyright.stpl"); %>

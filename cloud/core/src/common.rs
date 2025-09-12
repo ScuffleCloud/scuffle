@@ -299,7 +299,7 @@ pub(crate) async fn create_session<G: core_traits::Global>(
 
     if let Some(primary_email) = user.primary_email.as_ref() {
         let email = emails::new_device_email(global, primary_email.clone(), ip_info).await?;
-        global.email_service().send_email(email).await?;
+        global.email_service().send_email(email).await.into_tonic_internal_err("failed to send new device email")?;
     }
 
     Ok(new_token)

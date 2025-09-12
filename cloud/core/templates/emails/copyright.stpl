@@ -1,0 +1,2 @@
+<% use chrono::Datelike; %>
+© <%= chrono::Utc::now().year() %> Scuffle LLC. All rights reserved.

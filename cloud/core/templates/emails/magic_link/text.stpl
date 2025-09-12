@@ -1,2 +1,5 @@
-You requested a login link. Click the link below to log in:
+Click the link below to access your Scuffle account.
 <%= self.url %>
+The link is valid for 60 minutes.
+
+<% include!("../copyright.stpl"); %>

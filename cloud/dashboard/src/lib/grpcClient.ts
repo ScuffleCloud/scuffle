@@ -8,6 +8,7 @@ import { OrganizationsServiceClient } from "@scufflecloud/proto/scufflecloud/cor
 import { SessionsServiceClient } from "@scufflecloud/proto/scufflecloud/core/v1/sessions_service.client.js";
 import { UsersServiceClient } from "@scufflecloud/proto/scufflecloud/core/v1/users_service.client.js";
 import { useAuth } from "./auth.svelte";
+import { arrayBufferToBase64 } from "./utils";
 
 function generateRandomNonce(): ArrayBuffer {
     if (!browser) throw new Error("Not in browser");

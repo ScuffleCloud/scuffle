@@ -39,6 +39,7 @@ export type UserSessionToken = {
     id: string;
     token: ArrayBuffer;
     expiresAt: Date | null;
+    sessionExpiresAt: Date | null;
     userId: string;
 };
 
@@ -46,6 +47,7 @@ export type StoredUserSessionToken = {
     id: string;
     token: string;
     expiresAt: string | null;
+    sessionExpiresAt: string | null;
     userId: string;
 };
 
@@ -54,6 +56,7 @@ function toStoredUserSessionToken(token: UserSessionToken): StoredUserSessionTok
         id: token.id,
         token: arrayBufferToBase64(token.token),
         expiresAt: token.expiresAt ? token.expiresAt.toISOString() : null,
+        sessionExpiresAt: token.sessionExpiresAt ? token.sessionExpiresAt.toISOString() : null,
         userId: token.userId,
     };
 }
@@ -63,6 +66,7 @@ function fromStoredUserSessionToken(token: StoredUserSessionToken): UserSessionT
         id: token.id,
         token: base64ToArrayBuffer(token.token),
         expiresAt: token.expiresAt ? new Date(token.expiresAt) : null,
+        sessionExpiresAt: token.sessionExpiresAt ? new Date(token.sessionExpiresAt) : null,
         userId: token.userId,
     };
 }
@@ -258,6 +262,7 @@ export function createAuthState() {
                             id: newToken.id,
                             token: decrypted,
                             expiresAt: newToken.expiresAt ? timestampToDate(newToken.expiresAt) : null,
+                            sessionExpiresAt: newToken.sessionExpiresAt ? timestampToDate(newToken.sessionExpiresAt) : null,
                             userId: newToken.userId,
                         },
                     };
@@ -292,6 +297,33 @@ export function createAuthState() {
             } else {
                 console.error("Failed to logout", status);
                 throw new Error("Failed to logout: " + status.detail);
+            }
+        },
+        /**
+         * Clears the current user session token and auth state when the session is expired.
+         * When only the token is expired but the session is still valid, the token will be refreshed automatically.
+         */
+        async checkValidity(): Promise<void> {
+            if (userSessionToken.state !== "authenticated") {
+                return;
+            }
+
+            // Check if session is expired
+            if (userSessionToken.data.sessionExpiresAt && Date.now() > userSessionToken.data.sessionExpiresAt.getTime() - 10 * 1000) {
+                userSessionToken = { state: "unauthenticated" };
+                window.localStorage.removeItem("userSessionToken");
+                user = { state: "unauthenticated" };
+                return;
+            }
+
+            // Check if token is expired
+            if (userSessionToken.data.expiresAt && Date.now() > userSessionToken.data.expiresAt.getTime() - 10 * 1000) {
+                const call = sessionsServiceClient.refreshUserSession({}, { skipValidityCheck: true });
+                const status = await call.status;
+
+                if (status.code !== "OK") {
+                    throw new Error("Failed to refresh session: " + status.detail);
+                }
             }
         },
         /**

@@ -269,10 +269,7 @@ pub(crate) async fn create_session<G: CoreConfig>(
     // This is an upsert because the user might have already had a session for this device at some point
     diesel::insert_into(user_sessions::dsl::user_sessions)
         .values(&user_session)
-        .on_conflict((
-            user_sessions::dsl::user_id,
-            user_sessions::dsl::device_fingerprint,
-        ))
+        .on_conflict((user_sessions::dsl::user_id, user_sessions::dsl::device_fingerprint))
         .do_update()
         .set((
             user_sessions::dsl::last_used_at.eq(user_session.last_used_at),

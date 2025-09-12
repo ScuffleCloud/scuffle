@@ -129,7 +129,9 @@ function saveDeviceKey(keypair: CryptoKeyPair) {
 
 export type DeviceKeypairState = null | { state: "loading" } | { state: "loaded"; data: CryptoKeyPair | null };
 
-export function authState() {
+let authInstance: ReturnType<typeof createAuthState> | null = null;
+
+export function createAuthState() {
     // Private key
     let deviceKeypair = $state<DeviceKeypairState>(null);
     let userSessionToken = $state<AuthState<UserSessionToken>>(loadUserSessionToken());
@@ -294,4 +296,11 @@ async function loadUser(state: AuthState<UserSessionToken>): Promise<AuthState<U
     } else {
         return { state: "error", error: status.detail };
     }
+}
+
+export function useAuth() {
+    if (!authInstance) {
+        authInstance = createAuthState();
+    }
+    return authInstance;
 }

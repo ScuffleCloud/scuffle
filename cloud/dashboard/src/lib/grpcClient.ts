@@ -7,7 +7,7 @@ import { OrganizationInvitationsServiceClient } from "@scufflecloud/proto/scuffl
 import { OrganizationsServiceClient } from "@scufflecloud/proto/scufflecloud/core/v1/organizations_service.client.js";
 import { SessionsServiceClient } from "@scufflecloud/proto/scufflecloud/core/v1/sessions_service.client.js";
 import { UsersServiceClient } from "@scufflecloud/proto/scufflecloud/core/v1/users_service.client.js";
-import { authState } from "./auth.svelte";
+import { useAuth } from "./auth.svelte";
 
 // This can be replaced with Uint8Array.toBase64 in the future
 // https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Uint8Array/toBase64
@@ -40,7 +40,8 @@ const transport = new GrpcWebFetchTransport({
                         options.meta = {};
                     }
 
-                    const auth = authState();
+                    const auth = useAuth();
+
                     if (auth.userSessionToken.state === "authenticated") {
                         if (
                             !options.skipSessionExpiryCheck && auth.userSessionToken.data.expiresAt

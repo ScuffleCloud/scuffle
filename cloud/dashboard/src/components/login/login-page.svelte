@@ -67,8 +67,11 @@
                     email,
                 });
                 const status = await call.status;
-
-                if (status.code === "0") {
+                const response = await call.response;
+                console.log("Magic link response:", response);
+                // Magic link error: RpcError: you%20are%20not%20authorized%20to%20perform%20this%20action
+                // at @protobuf-ts_grpcweb-transport.js?v=30bff12e:424:15
+                if (status.code === "OK") {
                     userEmail = email;
                     loginMode = "magic-link-sent";
                 } else {

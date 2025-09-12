@@ -28,6 +28,7 @@ async function completeGoogleLogin(code: string, state: string): Promise<void> {
 
     const device = await auth.getDeviceOrInit();
 
+    // I think this is broken should revisit later?
     const call = sessionsServiceClient.completeLoginWithGoogle({
         code,
         state,
@@ -41,7 +42,12 @@ async function completeGoogleLogin(code: string, state: string): Promise<void> {
         const response = await call.response;
         console.log("Google completion response:", response);
 
-        // I think this is broken should revisit later
+        // if (response.newUserSessionToken?.sessionMfaPending) {
+        //     // Redirect to MFA page?
+        //     window.location.href = "/mfa";
+        //     return;
+        // }
+
         if (response.newUserSessionToken) {
             await auth.handleNewUserSessionToken(response.newUserSessionToken);
         } else {

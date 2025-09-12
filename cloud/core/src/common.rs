@@ -265,8 +265,21 @@ pub(crate) async fn create_session<G: CoreConfig>(
         mfa_pending: !mfa_options.is_empty(),
     };
 
+    // Upsert session
+    // This is an upsert because the user might have already had a session for this device at some point
     diesel::insert_into(user_sessions::dsl::user_sessions)
         .values(&user_session)
+        .on_conflict((user_sessions::dsl::user_id, user_sessions::dsl::device_fingerprint))
+        .do_update()
+        .set((
+            user_sessions::dsl::last_used_at.eq(user_session.last_used_at),
+            user_sessions::dsl::last_ip.eq(user_session.last_ip),
+            user_sessions::dsl::token_id.eq(user_session.token_id),
+            user_sessions::dsl::token.eq(token.to_vec()),
+            user_sessions::dsl::token_expires_at.eq(user_session.token_expires_at),
+            user_sessions::dsl::expires_at.eq(user_session.expires_at),
+            user_sessions::dsl::mfa_pending.eq(user_session.mfa_pending),
+        ))
         .execute(tx)
         .await
         .into_tonic_internal_err("failed to insert user session")?;
@@ -274,8 +287,9 @@ pub(crate) async fn create_session<G: CoreConfig>(
     let new_token = pb::scufflecloud::core::v1::NewUserSessionToken {
         id: token_id.to_string(),
         encrypted_token,
-        expires_at: Some(token_expires_at.to_prost_timestamp_utc()),
         user_id: user.id.to_string(),
+        expires_at: Some(token_expires_at.to_prost_timestamp_utc()),
+        session_expires_at: Some(session_expires_at.to_prost_timestamp_utc()),
         session_mfa_pending: user_session.mfa_pending,
         mfa_options: mfa_options.into_iter().map(|o| o as i32).collect(),
     };

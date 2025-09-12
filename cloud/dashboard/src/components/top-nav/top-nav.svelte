@@ -1,4 +1,5 @@
 <script lang="ts">
+    import { useAuth } from "$lib/auth.svelte";
     import IconConfigureTab from "$lib/images/icon-configure-tab.svelte";
     import Search from "$lib/images/search.svelte";
     import { onMount } from "svelte";
@@ -81,6 +82,8 @@
         id: "proj-1",
         name: "Project 1",
     }];
+
+    const auth = useAuth();
 </script>
 
 <header class="top-nav">
@@ -122,6 +125,9 @@
         </nav>
     </div>
     <div class="actions">
+        <button class="logout-button" onclick={auth.logout}>
+            Logout
+        </button>
         <button
             class="search-button"
             aria-label="Search"

@@ -45,6 +45,13 @@
     const getToken = async () =>
         await turnstileOverlayComponent?.getToken();
 
+    // TODO: Fix type here
+    const turnstileLoading = $derived(
+        /* eslint-disable-next-line @typescript-eslint/no-explicit-any */
+        (turnstileOverlayComponent as any)?.showTurnstileOverlay
+            || false,
+    );
+
     let userEmail = $state<string>("");
     let isLoading = $state<boolean>(false);
 
@@ -60,8 +67,11 @@
                     email,
                 });
                 const status = await call.status;
-
-                if (status.code === "0") {
+                const response = await call.response;
+                console.log("Magic link response:", response);
+                // Magic link error: RpcError: you%20are%20not%20authorized%20to%20perform%20this%20action
+                // at @protobuf-ts_grpcweb-transport.js?v=30bff12e:424:15
+                if (status.code === "OK") {
                     userEmail = email;
                     loginMode = "magic-link-sent";
                 } else {
@@ -136,7 +146,7 @@
         <PasswordForm
             onSubmit={handlePasswordSubmit}
             onBack={handleBack}
-            {isLoading}
+            isLoading={isLoading || turnstileLoading}
         />
     {:else if loginMode === "passkey"}
         <PasskeyForm

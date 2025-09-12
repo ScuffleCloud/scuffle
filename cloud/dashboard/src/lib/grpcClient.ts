@@ -7,7 +7,7 @@ import { OrganizationInvitationsServiceClient } from "@scufflecloud/proto/scuffl
 import { OrganizationsServiceClient } from "@scufflecloud/proto/scufflecloud/core/v1/organizations_service.client.js";
 import { SessionsServiceClient } from "@scufflecloud/proto/scufflecloud/core/v1/sessions_service.client.js";
 import { UsersServiceClient } from "@scufflecloud/proto/scufflecloud/core/v1/users_service.client.js";
-import { authState } from "./auth.svelte";
+import { useAuth } from "./auth.svelte";
 import { arrayBufferToBase64 } from "./utils";
 
 function generateRandomNonce(): ArrayBuffer {
@@ -35,23 +35,17 @@ const transport = new GrpcWebFetchTransport({
                         options.meta = {};
                     }
 
-                    const auth = authState();
-                    if (auth.userSessionToken.state === "authenticated") {
-                        if (
-                            !options.skipSessionExpiryCheck && auth.userSessionToken.data.expiresAt
-                            && auth.userSessionToken.data.expiresAt.getTime() + 10 * 1000 < Date.now()
-                        ) {
-                            const call = sessionsServiceClient.refreshUserSession({}, { skipSessionExpiryCheck: true });
-                            const status = await call.status;
-                            if (status.code !== "0") {
-                                defStatus.rejectPending(new Error("Failed to refresh session: " + status.detail));
-                                defTrailer.rejectPending(new Error("Failed to refresh session: " + status.detail));
-                                defHeader.rejectPending(new Error("Failed to refresh session: " + status.detail));
-                                defMessage.rejectPending(new Error("Failed to refresh session: " + status.detail));
-                                return;
-                            }
-                        }
+                    const auth = useAuth();
+                    if (!options.skipValidityCheck) {
+                        auth.checkValidity().catch((e) => {
+                            defStatus.rejectPending(e);
+                            defTrailer.rejectPending(e);
+                            defHeader.rejectPending(e);
+                            defMessage.rejectPending(e);
+                        });
+                    }
 
+                    if (auth.userSessionToken.state === "authenticated") {
                         const tokenId = auth.userSessionToken.data.id;
                         const timestamp = Date.now().toString();
                         const nonce = arrayBufferToBase64(generateRandomNonce());

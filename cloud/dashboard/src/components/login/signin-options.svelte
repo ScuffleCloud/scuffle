@@ -1,18 +1,21 @@
 <script lang="ts">
     import type { LoginMode } from "$components/streams/types";
+    import { useGoogleAuth } from "$lib/auth/googleAuth.svelte";
     import IconGoogle from "$lib/images/icon-google.svelte";
     import IconLoginKey from "$lib/images/icon-login-key.svelte";
+
     interface Props {
         onModeChange: (mode: LoginMode) => void;
         isLoading?: boolean;
     }
 
+    const googleAuth = useGoogleAuth();
+
     let { onModeChange, isLoading = false }: Props = $props();
 
-    function handleGoogleLogin() {
-        // TODO: Implement Google login
-        console.log("Google login");
-    }
+    $effect(() => {
+        googleAuth.handleOAuthCallback();
+    });
 
     function handlePasskeyLogin() {
         onModeChange("passkey");
@@ -22,9 +25,9 @@
 <div class="divider">OR</div>
 <button
     type="button"
-    onclick={handleGoogleLogin}
+    onclick={googleAuth.initiateLogin}
     class="btn-social google"
-    disabled={isLoading}
+    disabled={isLoading || googleAuth.loading()}
 >
     <IconGoogle />
     Continue with Google

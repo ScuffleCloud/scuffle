@@ -262,7 +262,9 @@ export function createAuthState() {
                             id: newToken.id,
                             token: decrypted,
                             expiresAt: newToken.expiresAt ? timestampToDate(newToken.expiresAt) : null,
-                            sessionExpiresAt: newToken.sessionExpiresAt ? timestampToDate(newToken.sessionExpiresAt) : null,
+                            sessionExpiresAt: newToken.sessionExpiresAt
+                                ? timestampToDate(newToken.sessionExpiresAt)
+                                : null,
                             userId: newToken.userId,
                         },
                     };
@@ -309,7 +311,10 @@ export function createAuthState() {
             }
 
             // Check if session is expired
-            if (userSessionToken.data.sessionExpiresAt && Date.now() > userSessionToken.data.sessionExpiresAt.getTime() - 10 * 1000) {
+            if (
+                userSessionToken.data.sessionExpiresAt
+                && Date.now() > userSessionToken.data.sessionExpiresAt.getTime() - 10 * 1000
+            ) {
                 userSessionToken = { state: "unauthenticated" };
                 window.localStorage.removeItem("userSessionToken");
                 user = { state: "unauthenticated" };

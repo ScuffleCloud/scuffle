@@ -19,7 +19,7 @@ pub struct TimeoutConfig {
     #[default(chrono::Duration::minutes(5))]
     pub user_session_request: chrono::Duration,
     #[default(chrono::Duration::minutes(15))]
-    pub magic_link_user_session_request: chrono::Duration,
+    pub magic_link_request: chrono::Duration,
 }
 
 #[derive(serde_derive::Deserialize, smart_default::SmartDefault, Debug, Clone)]

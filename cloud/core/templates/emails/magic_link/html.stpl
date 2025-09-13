@@ -34,9 +34,9 @@
                                         Click the button below to access your Scuffle account.</div>
                                     <div
                                         style="font-family: 'Archivo', sans-serif; margin-top: 16px; font-size: 16px; font-weight: 500; line-height: 24px; color: #45413F; color: #000000;">
-                                        This link is valid for 60 minutes.
+                                        This link is valid for <%= self.timeout_minutes %> minutes.
                                     </div>
-                                    <a href="https://example.com/" target="_blank"
+                                    <a href="<%= self.url %>" target="_blank"
                                         style="font-family: 'Archivo', sans-serif; border-radius: 8px; margin-top: 16px; padding: 8px 12px; font-size: 16px; font-weight: 700; line-height: 24px; text-decoration: none; display: block; color: #FAF5F1; background-color: #592200;">
                                         Sign in to Scuffle
                                     </a>
@@ -62,15 +62,15 @@
                                         If you are having trouble with the button above, you can copy and paste the link
                                         below into your browser:
                                         <br>
-                                        <a href="https://example.com/" target="_blank"
+                                        <a href="<%= self.url %>" target="_blank"
                                             style="font-family: 'Archivo', sans-serif; font-size: 16px; font-weight: 500; line-height: 24px; color: #573D3F;">
-                                            https://example.com/
+                                            <%= self.url %>
                                         </a>
                                     </div>
                                 </div>
                                 <div
                                     style="font-family: 'Archivo', sans-serif; font-size: 14px; font-weight: 600; line-height: 16px; color: #45413F; margin-top: 16px; text-align:center; color: #000000;">
-                                    &copy; 2025 Scuffle LLC. All rights reserved.
+                                    <% include!("../copyright.stpl"); %>
                                 </div>
                                 <div
                                     style="font-family: 'Archivo', sans-serif; font-size: 12px; font-weight: 400; line-height: 16px; color: #45413F; margin-top: 4px; text-align: center; color: #000000; text-decoration: none;">

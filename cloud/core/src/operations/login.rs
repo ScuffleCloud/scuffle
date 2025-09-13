@@ -76,7 +76,7 @@ impl<G: core_traits::Global> Operation<G> for tonic::Request<pb::scufflecloud::c
             user_id,
             email: email.clone(),
             code: code.to_vec(),
-            expires_at: chrono::Utc::now() + global.timeout_config().magic_link_user_session_request,
+            expires_at: chrono::Utc::now() + global.timeout_config().magic_link_request,
         };
         diesel::insert_into(magic_link_requests::dsl::magic_link_requests)
             .values(session_request)

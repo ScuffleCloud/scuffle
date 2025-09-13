@@ -31,7 +31,7 @@ pub struct TimeoutConfig {
     #[default(minutes(5))]
     pub user_session_request: std::time::Duration,
     #[default(minutes(15))]
-    pub magic_link_user_session_request: std::time::Duration,
+    pub magic_link_request: std::time::Duration,
 }
 
 #[derive(serde_derive::Deserialize, smart_default::SmartDefault, Debug, Clone)]

@@ -17,14 +17,11 @@ cargo_toml_env_vars(
 )
 
 rust_library(
-    name = "webpki",
+    name = "humantime",
     srcs = glob(
         include = ["**/*.rs"],
         allow_empty = True,
     ),
-    aliases = {
-        "@cargo_vendor__rustls-pki-types-1.12.0//:rustls_pki_types": "pki_types",
-    },
     compile_data = glob(
         include = ["**"],
         allow_empty = True,
@@ -37,11 +34,6 @@ rust_library(
             "WORKSPACE.bazel",
         ],
     ),
-    crate_features = [
-        "alloc",
-        "aws-lc-rs",
-        "std",
-    ],
     crate_root = "src/lib.rs",
     edition = "2021",
     rustc_env_files = [
@@ -52,7 +44,7 @@ rust_library(
     ],
     tags = [
         "cargo-bazel",
-        "crate-name=rustls-webpki",
+        "crate-name=humantime",
         "manual",
         "noclippy",
         "norustfmt",
@@ -67,10 +59,5 @@ rust_library(
         "@rules_rust//rust/platform:x86_64-unknown-linux-gnu": [],
         "//conditions:default": ["@platforms//:incompatible"],
     }),
-    version = "0.103.4",
-    deps = [
-        "@cargo_vendor__aws-lc-rs-1.13.3//:aws_lc_rs",
-        "@cargo_vendor__rustls-pki-types-1.12.0//:rustls_pki_types",
-        "@cargo_vendor__untrusted-0.9.0//:untrusted",
-    ],
+    version = "2.3.0",
 )

@@ -28,7 +28,7 @@ rust_library(
     ),
     aliases = {
         "@cargo_vendor__rustls-pki-types-1.12.0//:rustls_pki_types": "pki_types",
-        "@cargo_vendor__rustls-webpki-0.103.4//:webpki": "webpki",
+        "@cargo_vendor__rustls-webpki-0.103.5//:webpki": "webpki",
     },
     compile_data = glob(
         include = ["**"],
@@ -77,12 +77,12 @@ rust_library(
     }),
     version = "0.23.31",
     deps = [
-        "@cargo_vendor__aws-lc-rs-1.13.3//:aws_lc_rs",
+        "@cargo_vendor__aws-lc-rs-1.14.0//:aws_lc_rs",
         "@cargo_vendor__log-0.4.28//:log",
         "@cargo_vendor__once_cell-1.21.3//:once_cell",
         "@cargo_vendor__rustls-0.23.31//:build_script_build",
         "@cargo_vendor__rustls-pki-types-1.12.0//:rustls_pki_types",
-        "@cargo_vendor__rustls-webpki-0.103.4//:webpki",
+        "@cargo_vendor__rustls-webpki-0.103.5//:webpki",
         "@cargo_vendor__subtle-2.6.1//:subtle",
         "@cargo_vendor__zeroize-1.8.1//:zeroize",
     ],
@@ -131,7 +131,7 @@ cargo_build_script(
     ),
     edition = "2021",
     link_deps = [
-        "@cargo_vendor__aws-lc-rs-1.13.3//:aws_lc_rs",
+        "@cargo_vendor__aws-lc-rs-1.14.0//:aws_lc_rs",
     ],
     pkg_name = "rustls",
     rustc_env_files = [

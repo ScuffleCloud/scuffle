@@ -71,8 +71,8 @@ rust_library(
     deps = [
         "@cargo_vendor__cfg-expr-0.20.2//:cfg_expr",
         "@cargo_vendor__guppy-workspace-hack-0.1.0//:guppy_workspace_hack",
-        "@cargo_vendor__serde-1.0.219//:serde",
-        "@cargo_vendor__serde_json-1.0.143//:serde_json",
+        "@cargo_vendor__serde-1.0.220//:serde",
+        "@cargo_vendor__serde_json-1.0.144//:serde_json",
         "@cargo_vendor__target-lexicon-0.13.2//:target_lexicon",
         "@cargo_vendor__target-spec-3.5.0//:build_script_build",
     ],

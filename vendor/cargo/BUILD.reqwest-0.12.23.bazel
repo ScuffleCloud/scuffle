@@ -78,8 +78,8 @@ rust_library(
         "@cargo_vendor__bytes-1.10.1//:bytes",
         "@cargo_vendor__futures-core-0.3.31//:futures_core",
         "@cargo_vendor__http-1.3.1//:http",
-        "@cargo_vendor__serde-1.0.219//:serde",
-        "@cargo_vendor__serde_json-1.0.143//:serde_json",  # cfg(target_arch = "wasm32")
+        "@cargo_vendor__serde-1.0.220//:serde",
+        "@cargo_vendor__serde_json-1.0.144//:serde_json",  # cfg(target_arch = "wasm32")
         "@cargo_vendor__serde_urlencoded-0.7.1//:serde_urlencoded",
         "@cargo_vendor__sync_wrapper-1.0.2//:sync_wrapper",
         "@cargo_vendor__tower-service-0.3.3//:tower_service",

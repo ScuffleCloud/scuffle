@@ -21,7 +21,7 @@ cargo_toml_env_vars(
 )
 
 rust_library(
-    name = "aws_lc_sys",
+    name = "serde_json",
     srcs = glob(
         include = ["**/*.rs"],
         allow_empty = True,
@@ -39,7 +39,13 @@ rust_library(
         ],
     ),
     crate_features = [
-        "prebuilt-nasm",
+        "alloc",
+        "default",
+        "indexmap",
+        "preserve_order",
+        "raw_value",
+        "std",
+        "unbounded_depth",
     ],
     crate_root = "src/lib.rs",
     edition = "2021",
@@ -51,7 +57,7 @@ rust_library(
     ],
     tags = [
         "cargo-bazel",
-        "crate-name=aws-lc-sys",
+        "crate-name=serde_json",
         "manual",
         "noclippy",
         "norustfmt",
@@ -66,9 +72,14 @@ rust_library(
         "@rules_rust//rust/platform:x86_64-unknown-linux-gnu": [],
         "//conditions:default": ["@platforms//:incompatible"],
     }),
-    version = "0.30.0",
+    version = "1.0.144",
     deps = [
-        "@cargo_vendor__aws-lc-sys-0.30.0//:build_script_main",
+        "@cargo_vendor__indexmap-2.11.1//:indexmap",
+        "@cargo_vendor__itoa-1.0.15//:itoa",
+        "@cargo_vendor__memchr-2.7.5//:memchr",
+        "@cargo_vendor__ryu-1.0.20//:ryu",
+        "@cargo_vendor__serde_core-1.0.220//:serde_core",
+        "@cargo_vendor__serde_json-1.0.144//:build_script_build",
     ],
 )
 
@@ -78,9 +89,6 @@ cargo_build_script(
         include = ["**/*.rs"],
         allow_empty = True,
     ),
-    build_script_env = {
-        "CFLAGS": "$(CFLAGS) -fuse-ld=lld -Wno-error -w",
-    },
     compile_data = glob(
         include = ["**"],
         allow_empty = True,
@@ -95,10 +103,16 @@ cargo_build_script(
         ],
     ),
     crate_features = [
-        "prebuilt-nasm",
+        "alloc",
+        "default",
+        "indexmap",
+        "preserve_order",
+        "raw_value",
+        "std",
+        "unbounded_depth",
     ],
-    crate_name = "build_script_main",
-    crate_root = "builder/main.rs",
+    crate_name = "build_script_build",
+    crate_root = "build.rs",
     data = glob(
         include = ["**"],
         allow_empty = True,
@@ -112,8 +126,7 @@ cargo_build_script(
         ],
     ),
     edition = "2021",
-    links = "aws_lc_0_30_0",
-    pkg_name = "aws-lc-sys",
+    pkg_name = "serde_json",
     rustc_env_files = [
         ":cargo_toml_env_vars",
     ],
@@ -122,23 +135,17 @@ cargo_build_script(
     ],
     tags = [
         "cargo-bazel",
-        "crate-name=aws-lc-sys",
+        "crate-name=serde_json",
         "manual",
         "noclippy",
         "norustfmt",
     ],
-    version = "0.30.0",
+    version = "1.0.144",
     visibility = ["//visibility:private"],
-    deps = [
-        "@cargo_vendor__cc-1.2.36//:cc",
-        "@cargo_vendor__cmake-0.1.54//:cmake",
-        "@cargo_vendor__dunce-1.0.5//:dunce",
-        "@cargo_vendor__fs_extra-1.3.0//:fs_extra",
-    ],
 )
 
 alias(
-    name = "build_script_main",
+    name = "build_script_build",
     actual = ":_bs",
     tags = ["manual"],
 )

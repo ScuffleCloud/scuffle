@@ -66,19 +66,19 @@ rust_library(
         "@cargo_vendor__rustls-pki-types-1.12.0//:rustls_pki_types",
     ] + select({
         "@rules_rust//rust/platform:aarch64-apple-darwin": [
-            "@cargo_vendor__security-framework-3.3.0//:security_framework",  # cfg(target_os = "macos")
+            "@cargo_vendor__security-framework-3.4.0//:security_framework",  # cfg(target_os = "macos")
         ],
         "@rules_rust//rust/platform:aarch64-pc-windows-msvc": [
-            "@cargo_vendor__schannel-0.1.27//:schannel",  # cfg(windows)
+            "@cargo_vendor__schannel-0.1.28//:schannel",  # cfg(windows)
         ],
         "@rules_rust//rust/platform:aarch64-unknown-linux-gnu": [
             "@cargo_vendor__openssl-probe-0.1.6//:openssl_probe",  # cfg(all(unix, not(target_os = "macos")))
         ],
         "@rules_rust//rust/platform:x86_64-apple-darwin": [
-            "@cargo_vendor__security-framework-3.3.0//:security_framework",  # cfg(target_os = "macos")
+            "@cargo_vendor__security-framework-3.4.0//:security_framework",  # cfg(target_os = "macos")
         ],
         "@rules_rust//rust/platform:x86_64-pc-windows-msvc": [
-            "@cargo_vendor__schannel-0.1.27//:schannel",  # cfg(windows)
+            "@cargo_vendor__schannel-0.1.28//:schannel",  # cfg(windows)
         ],
         "@rules_rust//rust/platform:x86_64-unknown-linux-gnu": [
             "@cargo_vendor__openssl-probe-0.1.6//:openssl_probe",  # cfg(all(unix, not(target_os = "macos")))

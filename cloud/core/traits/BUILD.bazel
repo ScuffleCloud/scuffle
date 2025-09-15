@@ -4,19 +4,19 @@ load("//misc/utils/rust:package.bzl", "scuffle_package")
 cargo_toml()
 
 scuffle_package(
-    crate_name = "scufflecloud-core-traits",
     aliases = {
         "//cloud/geo-ip": "geo_ip",
         "//cloud/proto": "pb",
         "//cloud/core/db-types": "db_types",
     },
+    crate_name = "scufflecloud-core-traits",
     deps = [
         "//cloud/core/db-types",
         "//cloud/geo-ip",
         "//cloud/proto",
+        "//crates/batching",
         "//crates/bootstrap",
         "//crates/bootstrap-telemetry",
         "//crates/signal",
-        "//crates/batching",
     ],
 )

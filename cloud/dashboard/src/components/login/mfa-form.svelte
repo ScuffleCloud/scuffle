@@ -13,7 +13,7 @@
     const pinInput = new PinInput({
         maxLength: 6,
         type: "numeric",
-        placeholder: "–",
+        placeholder: "-",
         disabled: () => isLoading,
     });
 
@@ -35,7 +35,7 @@
 </p>
 
 <div {...pinInput.root} class="pin-input-root">
-    {#each pinInput.inputs as input}
+    {#each pinInput.inputs as input, index ({`pin-input-${index}`})}
         <input {...input} class="pin-input" />
     {/each}
 </div>

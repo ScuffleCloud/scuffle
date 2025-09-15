@@ -1,11 +1,4 @@
-import { useAuth } from "$lib/auth.svelte";
-import { redirect } from "@sveltejs/kit";
-
-export const load = async ({ url }) => {
-    const auth = useAuth();
-
-    console.log("userSessionToken", auth.userSessionToken);
-
+export const load = async () => {
     // So if there's already a user session token. Redirect to dashboard
 
     // If user is authed but not 2fa'd, stay here

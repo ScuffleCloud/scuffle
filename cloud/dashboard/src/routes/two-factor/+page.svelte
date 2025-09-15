@@ -1,3 +1,6 @@
+<script>
+    import MfaForm from "$components/login/mfa-form.svelte";
+</script>
 <!-- SO. Eventually we need to make a routing function that performs as follows
  - This page not be automatically routed to this page
  - If the user is currently authed but not 2fa'd, this page is a valid page
@@ -6,15 +9,7 @@
  - Maintain state based shallow routing because login flows with flickering pages looks bad
 -->
 
-<script lang="ts">
-    import { useAuth } from "$lib/auth.svelte";
-
-    const auth = useAuth();
-
-    function testToken() {
-        console.log(auth.userSessionToken);
-    }
-</script>
-<button onclick={testToken}>
-    Login
-</button>
+<MfaForm
+    onSubmit={async () => {
+    }}
+/>

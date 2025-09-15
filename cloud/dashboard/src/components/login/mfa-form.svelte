@@ -35,7 +35,7 @@
 </p>
 
 <div {...pinInput.root} class="pin-input-root">
-    {#each pinInput.inputs as input, index ({`pin-input-${index}`})}
+    {#each pinInput.inputs as input, index (`pin-input-${index}`)}
         <input {...input} class="pin-input" />
     {/each}
 </div>

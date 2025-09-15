@@ -18,7 +18,7 @@
     let turnstileOverlayComponent: TurnstileOverlay | null = null;
     let loginMode = $state<LoginMode>(DEFAULT_LOGIN_MODE);
 
-    // Manage routing here. Could add shallow routing in the future if we feel necessary
+    // Manage routing here. Will add shallow routing
     let isRestoringFromHistory = false;
     $effect(() => {
         function handlePopState(event: PopStateEvent) {
@@ -45,7 +45,6 @@
     const getToken = async () =>
         await turnstileOverlayComponent?.getToken();
 
-    // TODO: Fix type here
     const turnstileLoading = $derived(
         /* eslint-disable-next-line @typescript-eslint/no-explicit-any */
         (turnstileOverlayComponent as any)?.showTurnstileOverlay
@@ -69,8 +68,7 @@
                 const status = await call.status;
                 const response = await call.response;
                 console.log("Magic link response:", response);
-                // Magic link error: RpcError: you%20are%20not%20authorized%20to%20perform%20this%20action
-                // at @protobuf-ts_grpcweb-transport.js?v=30bff12e:424:15
+                // TODO: Verify implementation after email flow is finished
                 if (status.code === "OK") {
                     userEmail = email;
                     loginMode = "magic-link-sent";
@@ -169,14 +167,30 @@
 
 <div class="footer-links">
     {#if loginMode === "magic-link"}
-        <button
+        <!-- <button
             type="button"
             onclick={() => (loginMode = "password")}
             class="link"
             disabled={isLoading}
         >
             Login with password
-        </button>
+        </button> -->
+        <a
+            href="/password"
+            onclick={(e) => {
+                e.preventDefault();
+                loginMode = "password";
+                // history.replaceState(
+                //     { loginMode: "forgot-password" },
+                //     "",
+                //     "/login/forgot-password",
+                // );
+            }}
+            class="link"
+            class:disabled={isLoading}
+        >
+            Login with password
+        </a>
         <button
             type="button"
             onclick={handleContactSupport}
@@ -186,14 +200,14 @@
             Contact Support <IconArrowDialogLink />
         </button>
     {:else if loginMode === "password"}
-        <button
+        <!-- <button
             type="button"
             onclick={() => (loginMode = "forgot-password")}
             class="link"
             disabled={isLoading}
         >
             Forgot password?
-        </button>
+        </button> -->
         <button
             type="button"
             onclick={handleContactSupport}

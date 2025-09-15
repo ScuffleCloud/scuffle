@@ -5,3 +5,16 @@
  - User accessing this page while fully authed should route to users home page
  - Maintain state based shallow routing because login flows with flickering pages looks bad
 -->
+
+<script lang="ts">
+    import { useAuth } from "$lib/auth.svelte";
+
+    const auth = useAuth();
+
+    function testToken() {
+        console.log(auth.userSessionToken);
+    }
+</script>
+<button onclick={testToken}>
+    Login
+</button>

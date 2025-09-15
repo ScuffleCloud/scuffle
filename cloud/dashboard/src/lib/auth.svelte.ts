@@ -370,13 +370,11 @@ async function loadUser(state: AuthState<UserSessionToken>): Promise<AuthState<U
         return { ...state };
     }
 
-    console.log("loading user", state.data.userId);
     const call = usersServiceClient.getUser({
         id: state.data.userId,
     });
     const status = await call.status;
 
-    console.log("status", status);
     if (status.code === "OK") {
         const user = await call.response;
         return { state: "authenticated", data: user };

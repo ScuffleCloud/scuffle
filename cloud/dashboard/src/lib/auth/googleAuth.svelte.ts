@@ -28,7 +28,6 @@ async function completeGoogleLogin(code: string, state: string): Promise<void> {
 
     const device = await auth.getDeviceOrInit();
 
-    // I think this is broken should revisit later?
     const call = sessionsServiceClient.completeLoginWithGoogle({
         code,
         state,
@@ -42,14 +41,27 @@ async function completeGoogleLogin(code: string, state: string): Promise<void> {
         const response = await call.response;
         console.log("Google completion response:", response);
 
+        // I wonder, is it possible to persist somewhere in authState that the login validated successfully
+        // But still needs 2fa?
+        // So if you route to /two-factor you can still access the page with persisted data
+        // I want to route the user to the two-factor page here without needing to pass
+        // information from this completeLoginWithGoogle response ideally?
+        // So I can correctly manage permissioning the two-factor page
+        // It would also be nice if you refresh the two-factor page you're still "half" logged-in
+        // I guess we can do that without decrypting the token
+
         // if (response.newUserSessionToken?.sessionMfaPending) {
-        //     // Redirect to MFA page?
+        //     // Redirect to MFA page
         //     window.location.href = "/mfa";
         //     return;
         // }
 
         if (response.newUserSessionToken) {
             await auth.handleNewUserSessionToken(response.newUserSessionToken);
+
+            // This should route to whatever our base page is after logging in.
+            // Eventually some dashboard after it's made
+            // window.location.href = "/dashboard";
         } else {
             throw new Error("No session token received");
         }

@@ -274,14 +274,14 @@ transition_alias_opt(
 )
 
 transition_alias_opt(
-    name = "chrono-0.4.41",
-    actual = "@cargo_vendor__chrono-0.4.41//:chrono",
+    name = "chrono-0.4.42",
+    actual = "@cargo_vendor__chrono-0.4.42//:chrono",
     tags = ["manual"],
 )
 
 transition_alias_opt(
     name = "chrono",
-    actual = "@cargo_vendor__chrono-0.4.41//:chrono",
+    actual = "@cargo_vendor__chrono-0.4.42//:chrono",
     tags = ["manual"],
 )
 
@@ -310,14 +310,14 @@ transition_alias_opt(
 )
 
 transition_alias_opt(
-    name = "console-0.16.0",
-    actual = "@cargo_vendor__console-0.16.0//:console",
+    name = "console-0.16.1",
+    actual = "@cargo_vendor__console-0.16.1//:console",
     tags = ["manual"],
 )
 
 transition_alias_opt(
     name = "console",
-    actual = "@cargo_vendor__console-0.16.0//:console",
+    actual = "@cargo_vendor__console-0.16.1//:console",
     tags = ["manual"],
 )
 
@@ -706,14 +706,14 @@ transition_alias_opt(
 )
 
 transition_alias_opt(
-    name = "indexmap-2.11.0",
-    actual = "@cargo_vendor__indexmap-2.11.0//:indexmap",
+    name = "indexmap-2.11.1",
+    actual = "@cargo_vendor__indexmap-2.11.1//:indexmap",
     tags = ["manual"],
 )
 
 transition_alias_opt(
     name = "indexmap",
-    actual = "@cargo_vendor__indexmap-2.11.0//:indexmap",
+    actual = "@cargo_vendor__indexmap-2.11.1//:indexmap",
     tags = ["manual"],
 )
 
@@ -1354,38 +1354,38 @@ transition_alias_opt(
 )
 
 transition_alias_opt(
-    name = "serde-1.0.219",
-    actual = "@cargo_vendor__serde-1.0.219//:serde",
+    name = "serde-1.0.220",
+    actual = "@cargo_vendor__serde-1.0.220//:serde",
     tags = ["manual"],
 )
 
 transition_alias_opt(
     name = "serde",
-    actual = "@cargo_vendor__serde-1.0.219//:serde",
+    actual = "@cargo_vendor__serde-1.0.220//:serde",
     tags = ["manual"],
 )
 
 transition_alias_opt(
-    name = "serde_derive-1.0.219",
-    actual = "@cargo_vendor__serde_derive-1.0.219//:serde_derive",
+    name = "serde_derive-1.0.220",
+    actual = "@cargo_vendor__serde_derive-1.0.220//:serde_derive",
     tags = ["manual"],
 )
 
 transition_alias_opt(
     name = "serde_derive",
-    actual = "@cargo_vendor__serde_derive-1.0.219//:serde_derive",
+    actual = "@cargo_vendor__serde_derive-1.0.220//:serde_derive",
     tags = ["manual"],
 )
 
 transition_alias_opt(
-    name = "serde_json-1.0.143",
-    actual = "@cargo_vendor__serde_json-1.0.143//:serde_json",
+    name = "serde_json-1.0.144",
+    actual = "@cargo_vendor__serde_json-1.0.144//:serde_json",
     tags = ["manual"],
 )
 
 transition_alias_opt(
     name = "serde_json",
-    actual = "@cargo_vendor__serde_json-1.0.143//:serde_json",
+    actual = "@cargo_vendor__serde_json-1.0.144//:serde_json",
     tags = ["manual"],
 )
 
@@ -1462,14 +1462,14 @@ transition_alias_opt(
 )
 
 transition_alias_opt(
-    name = "swagger-ui-dist-5.28.1",
-    actual = "@cargo_vendor__swagger-ui-dist-5.28.1//:swagger_ui_dist",
+    name = "swagger-ui-dist-5.29.0",
+    actual = "@cargo_vendor__swagger-ui-dist-5.29.0//:swagger_ui_dist",
     tags = ["manual"],
 )
 
 transition_alias_opt(
     name = "swagger-ui-dist",
-    actual = "@cargo_vendor__swagger-ui-dist-5.28.1//:swagger_ui_dist",
+    actual = "@cargo_vendor__swagger-ui-dist-5.29.0//:swagger_ui_dist",
     tags = ["manual"],
 )
 
@@ -1510,14 +1510,14 @@ transition_alias_opt(
 )
 
 transition_alias_opt(
-    name = "tempfile-3.21.0",
-    actual = "@cargo_vendor__tempfile-3.21.0//:tempfile",
+    name = "tempfile-3.22.0",
+    actual = "@cargo_vendor__tempfile-3.22.0//:tempfile",
     tags = ["manual"],
 )
 
 transition_alias_opt(
     name = "tempfile",
-    actual = "@cargo_vendor__tempfile-3.21.0//:tempfile",
+    actual = "@cargo_vendor__tempfile-3.22.0//:tempfile",
     tags = ["manual"],
 )
 

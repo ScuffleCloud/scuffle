@@ -17,11 +17,15 @@ cargo_toml_env_vars(
 )
 
 rust_library(
-    name = "indexmap",
+    name = "swagger_ui_dist",
     srcs = glob(
         include = ["**/*.rs"],
         allow_empty = True,
     ),
+    aliases = {
+        "@cargo_vendor__axum-0.8.4//:axum": "axum_08",
+        "@cargo_vendor__axum-core-0.5.2//:axum_core": "axum_core_05",
+    },
     compile_data = glob(
         include = ["**"],
         allow_empty = True,
@@ -35,9 +39,10 @@ rust_library(
         ],
     ),
     crate_features = [
+        "axum-08",
+        "axum-core-05",
         "default",
-        "serde",
-        "std",
+        "with-axum-08",
     ],
     crate_root = "src/lib.rs",
     edition = "2021",
@@ -49,7 +54,7 @@ rust_library(
     ],
     tags = [
         "cargo-bazel",
-        "crate-name=indexmap",
+        "crate-name=swagger-ui-dist",
         "manual",
         "noclippy",
         "norustfmt",
@@ -64,10 +69,9 @@ rust_library(
         "@rules_rust//rust/platform:x86_64-unknown-linux-gnu": [],
         "//conditions:default": ["@platforms//:incompatible"],
     }),
-    version = "2.11.0",
+    version = "5.29.0",
     deps = [
-        "@cargo_vendor__equivalent-1.0.2//:equivalent",
-        "@cargo_vendor__hashbrown-0.15.5//:hashbrown",
-        "@cargo_vendor__serde-1.0.219//:serde",
+        "@cargo_vendor__axum-0.8.4//:axum",
+        "@cargo_vendor__axum-core-0.5.2//:axum_core",
     ],
 )

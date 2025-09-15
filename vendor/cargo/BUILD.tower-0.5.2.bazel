@@ -111,7 +111,7 @@ rust_library(
     deps = [
         "@cargo_vendor__futures-core-0.3.31//:futures_core",
         "@cargo_vendor__futures-util-0.3.31//:futures_util",
-        "@cargo_vendor__indexmap-2.11.0//:indexmap",
+        "@cargo_vendor__indexmap-2.11.1//:indexmap",
         "@cargo_vendor__pin-project-lite-0.2.16//:pin_project_lite",
         "@cargo_vendor__slab-0.4.11//:slab",
         "@cargo_vendor__sync_wrapper-1.0.2//:sync_wrapper",

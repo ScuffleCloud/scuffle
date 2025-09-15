@@ -70,7 +70,7 @@ rust_library(
     version = "7.6.0",
     deps = [
         "@cargo_vendor__cfg-if-1.0.3//:cfg_if",
-        "@cargo_vendor__serde-1.0.219//:serde",
+        "@cargo_vendor__serde-1.0.220//:serde",
         "@cargo_vendor__unicode-width-0.1.14//:unicode_width",
     ],
 )

@@ -17,7 +17,7 @@ cargo_toml_env_vars(
 )
 
 rust_library(
-    name = "term",
+    name = "schannel",
     srcs = glob(
         include = ["**/*.rs"],
         allow_empty = True,
@@ -34,11 +34,8 @@ rust_library(
             "WORKSPACE.bazel",
         ],
     ),
-    crate_features = [
-        "default",
-    ],
     crate_root = "src/lib.rs",
-    edition = "2021",
+    edition = "2018",
     rustc_env_files = [
         ":cargo_toml_env_vars",
     ],
@@ -47,28 +44,18 @@ rust_library(
     ],
     tags = [
         "cargo-bazel",
-        "crate-name=term",
+        "crate-name=schannel",
         "manual",
         "noclippy",
         "norustfmt",
     ],
     target_compatible_with = select({
-        "@rules_rust//rust/platform:aarch64-apple-darwin": [],
         "@rules_rust//rust/platform:aarch64-pc-windows-msvc": [],
-        "@rules_rust//rust/platform:aarch64-unknown-linux-gnu": [],
-        "@rules_rust//rust/platform:x86_64-apple-darwin": [],
         "@rules_rust//rust/platform:x86_64-pc-windows-msvc": [],
-        "@rules_rust//rust/platform:x86_64-unknown-linux-gnu": [],
         "//conditions:default": ["@platforms//:incompatible"],
     }),
-    version = "1.1.0",
-    deps = select({
-        "@rules_rust//rust/platform:aarch64-pc-windows-msvc": [
-            "@cargo_vendor__windows-sys-0.60.2//:windows_sys",  # cfg(windows)
-        ],
-        "@rules_rust//rust/platform:x86_64-pc-windows-msvc": [
-            "@cargo_vendor__windows-sys-0.60.2//:windows_sys",  # cfg(windows)
-        ],
-        "//conditions:default": [],
-    }),
+    version = "0.1.28",
+    deps = [
+        "@cargo_vendor__windows-sys-0.61.0//:windows_sys",
+    ],
 )

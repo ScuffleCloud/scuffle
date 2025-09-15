@@ -65,7 +65,7 @@ rust_library(
     }),
     version = "0.18.0",
     deps = [
-        "@cargo_vendor__console-0.16.0//:console",
+        "@cargo_vendor__console-0.16.1//:console",
         "@cargo_vendor__portable-atomic-1.11.1//:portable_atomic",
         "@cargo_vendor__unicode-width-0.2.1//:unicode_width",
         "@cargo_vendor__unit-prefix-0.5.1//:unit_prefix",

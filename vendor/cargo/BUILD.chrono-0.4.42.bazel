@@ -6,11 +6,7 @@
 #     bazel run @@//vendor:cargo_vendor
 ###############################################################################
 
-load(
-    "@rules_rust//cargo:defs.bzl",
-    "cargo_build_script",
-    "cargo_toml_env_vars",
-)
+load("@rules_rust//cargo:defs.bzl", "cargo_toml_env_vars")
 load("@rules_rust//rust:defs.bzl", "rust_library")
 
 package(default_visibility = ["//visibility:public"])
@@ -21,7 +17,7 @@ cargo_toml_env_vars(
 )
 
 rust_library(
-    name = "serde",
+    name = "chrono",
     srcs = glob(
         include = ["**/*.rs"],
         allow_empty = True,
@@ -40,17 +36,21 @@ rust_library(
     ),
     crate_features = [
         "alloc",
+        "clock",
         "default",
-        "derive",
-        "rc",
-        "serde_derive",
+        "iana-time-zone",
+        "js-sys",
+        "now",
+        "oldtime",
+        "serde",
         "std",
+        "wasm-bindgen",
+        "wasmbind",
+        "winapi",
+        "windows-link",
     ],
     crate_root = "src/lib.rs",
-    edition = "2018",
-    proc_macro_deps = [
-        "@cargo_vendor__serde_derive-1.0.219//:serde_derive",
-    ],
+    edition = "2021",
     rustc_env_files = [
         ":cargo_toml_env_vars",
     ],
@@ -59,7 +59,7 @@ rust_library(
     ],
     tags = [
         "cargo-bazel",
-        "crate-name=serde",
+        "crate-name=chrono",
         "manual",
         "noclippy",
         "norustfmt",
@@ -74,74 +74,33 @@ rust_library(
         "@rules_rust//rust/platform:x86_64-unknown-linux-gnu": [],
         "//conditions:default": ["@platforms//:incompatible"],
     }),
-    version = "1.0.219",
+    version = "0.4.42",
     deps = [
-        "@cargo_vendor__serde-1.0.219//:build_script_build",
-    ],
-)
-
-cargo_build_script(
-    name = "_bs",
-    srcs = glob(
-        include = ["**/*.rs"],
-        allow_empty = True,
-    ),
-    compile_data = glob(
-        include = ["**"],
-        allow_empty = True,
-        exclude = [
-            "**/* *",
-            "**/*.rs",
-            ".tmp_git_root/**/*",
-            "BUILD",
-            "BUILD.bazel",
-            "WORKSPACE",
-            "WORKSPACE.bazel",
+        "@cargo_vendor__num-traits-0.2.19//:num_traits",
+        "@cargo_vendor__serde-1.0.220//:serde",
+    ] + select({
+        "@rules_rust//rust/platform:aarch64-apple-darwin": [
+            "@cargo_vendor__iana-time-zone-0.1.64//:iana_time_zone",  # cfg(unix)
         ],
-    ),
-    crate_features = [
-        "alloc",
-        "default",
-        "derive",
-        "rc",
-        "serde_derive",
-        "std",
-    ],
-    crate_name = "build_script_build",
-    crate_root = "build.rs",
-    data = glob(
-        include = ["**"],
-        allow_empty = True,
-        exclude = [
-            "**/* *",
-            ".tmp_git_root/**/*",
-            "BUILD",
-            "BUILD.bazel",
-            "WORKSPACE",
-            "WORKSPACE.bazel",
+        "@rules_rust//rust/platform:aarch64-pc-windows-msvc": [
+            "@cargo_vendor__windows-link-0.2.0//:windows_link",  # cfg(windows)
         ],
-    ),
-    edition = "2018",
-    pkg_name = "serde",
-    rustc_env_files = [
-        ":cargo_toml_env_vars",
-    ],
-    rustc_flags = [
-        "--cap-lints=allow",
-    ],
-    tags = [
-        "cargo-bazel",
-        "crate-name=serde",
-        "manual",
-        "noclippy",
-        "norustfmt",
-    ],
-    version = "1.0.219",
-    visibility = ["//visibility:private"],
-)
-
-alias(
-    name = "build_script_build",
-    actual = ":_bs",
-    tags = ["manual"],
+        "@rules_rust//rust/platform:aarch64-unknown-linux-gnu": [
+            "@cargo_vendor__iana-time-zone-0.1.64//:iana_time_zone",  # cfg(unix)
+        ],
+        "@rules_rust//rust/platform:wasm32-unknown-unknown": [
+            "@cargo_vendor__js-sys-0.3.78//:js_sys",  # cfg(all(target_arch = "wasm32", not(any(target_os = "emscripten", target_os = "wasi"))))
+            "@cargo_vendor__wasm-bindgen-0.2.101//:wasm_bindgen",  # cfg(all(target_arch = "wasm32", not(any(target_os = "emscripten", target_os = "wasi"))))
+        ],
+        "@rules_rust//rust/platform:x86_64-apple-darwin": [
+            "@cargo_vendor__iana-time-zone-0.1.64//:iana_time_zone",  # cfg(unix)
+        ],
+        "@rules_rust//rust/platform:x86_64-pc-windows-msvc": [
+            "@cargo_vendor__windows-link-0.2.0//:windows_link",  # cfg(windows)
+        ],
+        "@rules_rust//rust/platform:x86_64-unknown-linux-gnu": [
+            "@cargo_vendor__iana-time-zone-0.1.64//:iana_time_zone",  # cfg(unix)
+        ],
+        "//conditions:default": [],
+    }),
 )

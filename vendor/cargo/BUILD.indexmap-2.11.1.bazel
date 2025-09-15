@@ -7,7 +7,7 @@
 ###############################################################################
 
 load("@rules_rust//cargo:defs.bzl", "cargo_toml_env_vars")
-load("@rules_rust//rust:defs.bzl", "rust_proc_macro")
+load("@rules_rust//rust:defs.bzl", "rust_library")
 
 package(default_visibility = ["//visibility:public"])
 
@@ -16,8 +16,8 @@ cargo_toml_env_vars(
     src = "Cargo.toml",
 )
 
-rust_proc_macro(
-    name = "pest_derive",
+rust_library(
+    name = "indexmap",
     srcs = glob(
         include = ["**/*.rs"],
         allow_empty = True,
@@ -36,6 +36,7 @@ rust_proc_macro(
     ),
     crate_features = [
         "default",
+        "serde",
         "std",
     ],
     crate_root = "src/lib.rs",
@@ -48,7 +49,7 @@ rust_proc_macro(
     ],
     tags = [
         "cargo-bazel",
-        "crate-name=pest_derive",
+        "crate-name=indexmap",
         "manual",
         "noclippy",
         "norustfmt",
@@ -57,14 +58,16 @@ rust_proc_macro(
         "@rules_rust//rust/platform:aarch64-apple-darwin": [],
         "@rules_rust//rust/platform:aarch64-pc-windows-msvc": [],
         "@rules_rust//rust/platform:aarch64-unknown-linux-gnu": [],
+        "@rules_rust//rust/platform:wasm32-unknown-unknown": [],
         "@rules_rust//rust/platform:x86_64-apple-darwin": [],
         "@rules_rust//rust/platform:x86_64-pc-windows-msvc": [],
         "@rules_rust//rust/platform:x86_64-unknown-linux-gnu": [],
         "//conditions:default": ["@platforms//:incompatible"],
     }),
-    version = "2.8.1",
+    version = "2.11.1",
     deps = [
-        "@cargo_vendor__pest-2.8.1//:pest",
-        "@cargo_vendor__pest_generator-2.8.1//:pest_generator",
+        "@cargo_vendor__equivalent-1.0.2//:equivalent",
+        "@cargo_vendor__hashbrown-0.15.5//:hashbrown",
+        "@cargo_vendor__serde-1.0.220//:serde",
     ],
 )

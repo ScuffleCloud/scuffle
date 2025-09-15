@@ -67,6 +67,6 @@ rust_library(
     version = "5.0.0",
     deps = [
         "@cargo_vendor__num-traits-0.2.19//:num_traits",
-        "@cargo_vendor__serde-1.0.219//:serde",
+        "@cargo_vendor__serde-1.0.220//:serde",
     ],
 )

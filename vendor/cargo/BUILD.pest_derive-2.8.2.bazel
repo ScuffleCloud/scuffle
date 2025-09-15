@@ -7,7 +7,7 @@
 ###############################################################################
 
 load("@rules_rust//cargo:defs.bzl", "cargo_toml_env_vars")
-load("@rules_rust//rust:defs.bzl", "rust_library")
+load("@rules_rust//rust:defs.bzl", "rust_proc_macro")
 
 package(default_visibility = ["//visibility:public"])
 
@@ -16,8 +16,8 @@ cargo_toml_env_vars(
     src = "Cargo.toml",
 )
 
-rust_library(
-    name = "iana_time_zone",
+rust_proc_macro(
+    name = "pest_derive",
     srcs = glob(
         include = ["**/*.rs"],
         allow_empty = True,
@@ -35,7 +35,8 @@ rust_library(
         ],
     ),
     crate_features = [
-        "fallback",
+        "default",
+        "std",
     ],
     crate_root = "src/lib.rs",
     edition = "2021",
@@ -47,26 +48,23 @@ rust_library(
     ],
     tags = [
         "cargo-bazel",
-        "crate-name=iana-time-zone",
+        "crate-name=pest_derive",
         "manual",
         "noclippy",
         "norustfmt",
     ],
     target_compatible_with = select({
         "@rules_rust//rust/platform:aarch64-apple-darwin": [],
+        "@rules_rust//rust/platform:aarch64-pc-windows-msvc": [],
         "@rules_rust//rust/platform:aarch64-unknown-linux-gnu": [],
         "@rules_rust//rust/platform:x86_64-apple-darwin": [],
+        "@rules_rust//rust/platform:x86_64-pc-windows-msvc": [],
         "@rules_rust//rust/platform:x86_64-unknown-linux-gnu": [],
         "//conditions:default": ["@platforms//:incompatible"],
     }),
-    version = "0.1.63",
-    deps = select({
-        "@rules_rust//rust/platform:aarch64-apple-darwin": [
-            "@cargo_vendor__core-foundation-sys-0.8.7//:core_foundation_sys",  # cfg(target_vendor = "apple")
-        ],
-        "@rules_rust//rust/platform:x86_64-apple-darwin": [
-            "@cargo_vendor__core-foundation-sys-0.8.7//:core_foundation_sys",  # cfg(target_vendor = "apple")
-        ],
-        "//conditions:default": [],
-    }),
+    version = "2.8.2",
+    deps = [
+        "@cargo_vendor__pest-2.8.2//:pest",
+        "@cargo_vendor__pest_generator-2.8.2//:pest_generator",
+    ],
 )

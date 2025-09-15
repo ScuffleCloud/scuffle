@@ -17,7 +17,7 @@ cargo_toml_env_vars(
 )
 
 rust_library(
-    name = "pest_meta",
+    name = "pest",
     srcs = glob(
         include = ["**/*.rs"],
         allow_empty = True,
@@ -36,6 +36,8 @@ rust_library(
     ),
     crate_features = [
         "default",
+        "memchr",
+        "std",
     ],
     crate_root = "src/lib.rs",
     edition = "2021",
@@ -47,7 +49,7 @@ rust_library(
     ],
     tags = [
         "cargo-bazel",
-        "crate-name=pest_meta",
+        "crate-name=pest",
         "manual",
         "noclippy",
         "norustfmt",
@@ -56,13 +58,16 @@ rust_library(
         "@rules_rust//rust/platform:aarch64-apple-darwin": [],
         "@rules_rust//rust/platform:aarch64-pc-windows-msvc": [],
         "@rules_rust//rust/platform:aarch64-unknown-linux-gnu": [],
+        "@rules_rust//rust/platform:wasm32-unknown-unknown": [],
         "@rules_rust//rust/platform:x86_64-apple-darwin": [],
         "@rules_rust//rust/platform:x86_64-pc-windows-msvc": [],
         "@rules_rust//rust/platform:x86_64-unknown-linux-gnu": [],
         "//conditions:default": ["@platforms//:incompatible"],
     }),
-    version = "2.8.1",
+    version = "2.8.2",
     deps = [
-        "@cargo_vendor__pest-2.8.1//:pest",
+        "@cargo_vendor__memchr-2.7.5//:memchr",
+        "@cargo_vendor__thiserror-2.0.16//:thiserror",
+        "@cargo_vendor__ucd-trie-0.1.7//:ucd_trie",
     ],
 )

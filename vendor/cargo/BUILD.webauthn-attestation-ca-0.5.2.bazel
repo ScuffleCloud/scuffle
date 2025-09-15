@@ -68,7 +68,7 @@ rust_library(
         "@cargo_vendor__base64urlsafedata-0.5.2//:base64urlsafedata",
         "@cargo_vendor__openssl-0.10.73//:openssl",
         "@cargo_vendor__openssl-sys-0.9.109//:openssl_sys",
-        "@cargo_vendor__serde-1.0.219//:serde",
+        "@cargo_vendor__serde-1.0.220//:serde",
         "@cargo_vendor__tracing-0.1.41//:tracing",
         "@cargo_vendor__uuid-1.18.1//:uuid",
         "@cargo_vendor__webauthn-attestation-ca-0.5.2//:build_script_build",

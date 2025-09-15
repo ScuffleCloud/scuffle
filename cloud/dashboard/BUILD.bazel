@@ -34,6 +34,7 @@ vite_bin.vite(
         "svelte.config.js",
         "tsconfig.json",
         "vite.config.ts",
+        "vercel.json",
         ":node_modules",
         ":srcs",
     ],

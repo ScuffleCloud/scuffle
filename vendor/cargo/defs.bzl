@@ -492,11 +492,11 @@ _NORMAL_DEPENDENCIES = {
             _COMMON_CONDITION: {
                 "base64": Label("@cargo_vendor//:base64-0.22.1"),
                 "cedar-policy": Label("@cargo_vendor//:cedar-policy-4.5.1"),
-                "chrono": Label("@cargo_vendor//:chrono-0.4.41"),
+                "chrono": Label("@cargo_vendor//:chrono-0.4.42"),
                 "diesel": Label("@cargo_vendor//:diesel-2.2.12"),
                 "ipnetwork": Label("@cargo_vendor//:ipnetwork-0.21.1"),
-                "serde": Label("@cargo_vendor//:serde-1.0.219"),
-                "serde_json": Label("@cargo_vendor//:serde_json-1.0.143"),
+                "serde": Label("@cargo_vendor//:serde-1.0.220"),
+                "serde_json": Label("@cargo_vendor//:serde_json-1.0.144"),
                 "thiserror": Label("@cargo_vendor//:thiserror-2.0.16"),
                 "ulid": Label("@cargo_vendor//:ulid-1.2.1"),
                 "uuid": Label("@cargo_vendor//:uuid-1.18.1"),
@@ -541,7 +541,7 @@ _NORMAL_DEPENDENCIES = {
                 "futures": Label("@cargo_vendor//:futures-0.3.31"),
                 "ipnetwork": Label("@cargo_vendor//:ipnetwork-0.21.1"),
                 "maxminddb": Label("@cargo_vendor//:maxminddb-0.26.0"),
-                "serde": Label("@cargo_vendor//:serde-1.0.219"),
+                "serde": Label("@cargo_vendor//:serde-1.0.220"),
                 "thiserror": Label("@cargo_vendor//:thiserror-2.0.16"),
                 "tower-layer": Label("@cargo_vendor//:tower-layer-0.3.3"),
                 "tower-service": Label("@cargo_vendor//:tower-service-0.3.3"),
@@ -2229,7 +2229,7 @@ _PROC_MACRO_DEPENDENCIES = {
     "cloud/core/db-types": {
         _REQUIRED_FEATURE: {
             _COMMON_CONDITION: {
-                "serde_derive": Label("@cargo_vendor//:serde_derive-1.0.219"),
+                "serde_derive": Label("@cargo_vendor//:serde_derive-1.0.220"),
             },
         },
     },

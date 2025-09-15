@@ -5510,7 +5510,6 @@ dependencies = [
  "hmac",
  "ipnetwork",
  "itertools 0.14.0",
- "maxminddb",
  "pkcs8",
  "prost 0.14.1",
  "rand 0.8.5",
@@ -5526,6 +5525,8 @@ dependencies = [
  "scuffle-http",
  "scuffle-settings",
  "scuffle-signal",
+ "scufflecloud-core-db-types",
+ "scufflecloud-core-traits",
  "scufflecloud-proto",
  "serde",
  "serde_derive",
@@ -5548,6 +5549,42 @@ dependencies = [
  "url",
  "urlencoding",
  "uuid",
+ "webauthn-rs",
+]
+
+[[package]]
+name = "scufflecloud-core-db-types"
+version = "0.1.0"
+dependencies = [
+ "base64 0.22.1",
+ "cedar-policy",
+ "chrono",
+ "diesel",
+ "ipnetwork",
+ "scufflecloud-proto",
+ "serde",
+ "serde_derive",
+ "serde_json",
+ "thiserror 2.0.16",
+ "ulid",
+ "uuid",
+]
+
+[[package]]
+name = "scufflecloud-core-traits"
+version = "0.1.0"
+dependencies = [
+ "anyhow",
+ "diesel",
+ "diesel-async",
+ "fred",
+ "reqwest",
+ "scuffle-batching",
+ "scufflecloud-core-db-types",
+ "scufflecloud-geo-ip",
+ "scufflecloud-proto",
+ "tonic",
+ "url",
  "webauthn-rs",
 ]
 
@@ -5577,6 +5614,21 @@ dependencies = [
  "tower-http",
  "tracing",
  "tracing-subscriber",
+]
+
+[[package]]
+name = "scufflecloud-geo-ip"
+version = "0.1.0"
+dependencies = [
+ "axum",
+ "futures",
+ "ipnetwork",
+ "maxminddb",
+ "serde",
+ "thiserror 2.0.16",
+ "tower-layer",
+ "tower-service",
+ "tracing",
 ]
 
 [[package]]

@@ -273,6 +273,8 @@ use_repo(
     "cargo_vendor__totp-rs-5.7.0",
     "cargo_vendor__tower-0.5.2",
     "cargo_vendor__tower-http-0.6.6",
+    "cargo_vendor__tower-layer-0.3.3",
+    "cargo_vendor__tower-service-0.3.3",
     "cargo_vendor__tracing-0.1.41",
     "cargo_vendor__tracing-opentelemetry-0.31.0",
     "cargo_vendor__tracing-subscriber-0.3.20",

@@ -6,9 +6,10 @@ pub(crate) trait ChronoDateTimeExt {
 
 impl<Z: chrono::TimeZone> ChronoDateTimeExt for chrono::DateTime<Z> {
     fn to_prost_timestamp_utc(&self) -> Timestamp {
+        let utc = self.to_utc();
         Timestamp {
-            seconds: self.to_utc().timestamp(),
-            nanos: self.to_utc().timestamp_subsec_nanos() as i32,
+            seconds: utc.timestamp(),
+            nanos: utc.timestamp_subsec_nanos() as i32,
         }
     }
 }

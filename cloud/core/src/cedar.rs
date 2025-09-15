@@ -1,13 +1,11 @@
-use std::collections::HashSet;
 use std::str::FromStr;
 use std::sync::{Arc, OnceLock};
 
-use cedar_policy::{Decision, Entities, Entity, EntityId, EntityTypeName, EntityUid, PolicySet};
+use cedar_policy::{Decision, Entities, EntityId, PolicySet};
+use core_db_types::cedar::CedarEntity;
+use core_db_types::models::UserSession;
 use tonic_types::{ErrorDetails, StatusExt};
 
-use crate::CoreConfig;
-use crate::id::{Id, PrefixedId};
-use crate::models::UserSession;
 use crate::std_ext::ResultExt;
 
 fn static_policies() -> &'static PolicySet {
@@ -17,96 +15,82 @@ fn static_policies() -> &'static PolicySet {
     STATIC_POLICIES.get_or_init(|| PolicySet::from_str(STATIC_POLICIES_STR).expect("failed to parse static policies"))
 }
 
-fn uid_to_json(uid: EntityUid) -> serde_json::Value {
-    serde_json::json!({
-        "type": uid.type_name().to_string(),
-        "id": uid.id().unescaped(),
-    })
-}
+// fn uid_to_json(uid: EntityUid) -> serde_json::Value {
+//     serde_json::json!({
+//         "type": uid.type_name().to_string(),
+//         "id": uid.id().unescaped(),
+//     })
+// }
 
-pub(crate) trait CedarEntity<G>: serde::Serialize {
-    /// MUST be a normalized cedar entity type name.
-    ///
-    /// See [`cedar_policy::EntityTypeName`] and <https://github.com/cedar-policy/rfcs/blob/main/text/0009-disallow-whitespace-in-entityuid.md>.
-    const ENTITY_TYPE: &'static str;
+// /// Returns the attributes of the entity as a map.
+// /// Also includes additional attributes from [`additional_attributes`](Self::additional_attributes).
+// async fn attributes(&self, global: &Arc<G>) -> Result<serde_json::value::Map<String, serde_json::Value>, tonic::Status> {
+//     let _global = global;
+//     let mut object = if let serde_json::Value::Object(object) =
+//         serde_json::to_value(self).into_tonic_internal_err("failed to serialize cedar entity")?
+//     {
+//         object
+//     } else {
+//         serde_json::value::Map::new()
+//     };
 
-    fn entity_id(&self) -> EntityId;
+//     object.append(&mut self.additional_attributes(global).await?);
 
-    fn entity_uid(&self) -> EntityUid {
-        let name = EntityTypeName::from_str(Self::ENTITY_TYPE).expect("invalid entity type name");
-        EntityUid::from_type_name_and_id(name, self.entity_id())
-    }
+//     // Filter out null values because Cedar does not allow null values in attributes.
+//     Ok(object.into_iter().filter(|(_, v)| !v.is_null()).collect())
+// }
 
-    /// Returns the attributes of the entity as a map.
-    /// Also includes additional attributes from [`additional_attributes`](Self::additional_attributes).
-    async fn attributes(&self, global: &Arc<G>) -> Result<serde_json::value::Map<String, serde_json::Value>, tonic::Status> {
-        let _global = global;
-        let mut object = if let serde_json::Value::Object(object) =
-            serde_json::to_value(self).into_tonic_internal_err("failed to serialize cedar entity")?
-        {
-            object
-        } else {
-            serde_json::value::Map::new()
-        };
+// async fn additional_attributes(
+//     &self,
+//     global: &Arc<G>,
+// ) -> Result<serde_json::value::Map<String, serde_json::Value>, tonic::Status> {
+//     let _global = global;
+//     Ok(serde_json::value::Map::new())
+// }
 
-        object.append(&mut self.additional_attributes(global).await?);
+// async fn parents(&self, global: &Arc<G>) -> Result<HashSet<EntityUid>, tonic::Status> {
+//     let _global = global;
+//     Ok(HashSet::new())
+// }
 
-        // Filter out null values because Cedar does not allow null values in attributes.
-        Ok(object.into_iter().filter(|(_, v)| !v.is_null()).collect())
-    }
+// async fn to_entity(&self, global: &Arc<G>) -> Result<Entity, tonic::Status> {
+//     let mut value = serde_json::value::Map::new();
+//     value.insert("uid".to_string(), uid_to_json(self.entity_uid()));
+//     value.insert("attrs".to_string(), serde_json::Value::Object(self.attributes(global).await?));
+//     value.insert(
+//         "parents".to_string(),
+//         serde_json::Value::Array(self.parents(global).await?.into_iter().map(uid_to_json).collect()),
+//     );
 
-    async fn additional_attributes(
-        &self,
-        global: &Arc<G>,
-    ) -> Result<serde_json::value::Map<String, serde_json::Value>, tonic::Status> {
-        let _global = global;
-        Ok(serde_json::value::Map::new())
-    }
+//     let entity = Entity::from_json_value(serde_json::Value::Object(value), None)
+//         .into_tonic_internal_err("failed to create cedar entity")?;
+//     Ok(entity)
+// }
 
-    async fn parents(&self, global: &Arc<G>) -> Result<HashSet<EntityUid>, tonic::Status> {
-        let _global = global;
-        Ok(HashSet::new())
-    }
+// impl<G, T: CedarEntity<G>> CedarEntity<G> for &T {
+//     const ENTITY_TYPE: &'static str = T::ENTITY_TYPE;
 
-    async fn to_entity(&self, global: &Arc<G>) -> Result<Entity, tonic::Status> {
-        let mut value = serde_json::value::Map::new();
-        value.insert("uid".to_string(), uid_to_json(self.entity_uid()));
-        value.insert("attrs".to_string(), serde_json::Value::Object(self.attributes(global).await?));
-        value.insert(
-            "parents".to_string(),
-            serde_json::Value::Array(self.parents(global).await?.into_iter().map(uid_to_json).collect()),
-        );
+//     fn entity_id(&self) -> EntityId {
+//         T::entity_id(self)
+//     }
 
-        let entity = Entity::from_json_value(serde_json::Value::Object(value), None)
-            .into_tonic_internal_err("failed to create cedar entity")?;
-        Ok(entity)
-    }
-}
+//     fn entity_uid(&self) -> EntityUid {
+//         T::entity_uid(self)
+//     }
+// }
 
-impl<G, T: CedarEntity<G>> CedarEntity<G> for &T {
-    const ENTITY_TYPE: &'static str = T::ENTITY_TYPE;
+// impl<G, T: PrefixedId + CedarEntity<G>> CedarEntity<G> for Id<T> {
+//     const ENTITY_TYPE: &'static str = T::ENTITY_TYPE;
 
-    fn entity_id(&self) -> EntityId {
-        T::entity_id(self)
-    }
-
-    fn entity_uid(&self) -> EntityUid {
-        T::entity_uid(self)
-    }
-}
-
-impl<G, T: PrefixedId + CedarEntity<G>> CedarEntity<G> for Id<T> {
-    const ENTITY_TYPE: &'static str = T::ENTITY_TYPE;
-
-    fn entity_id(&self) -> EntityId {
-        EntityId::new(self.to_string_unprefixed())
-    }
-}
+//     fn entity_id(&self) -> EntityId {
+//         EntityId::new(self.to_string_unprefixed())
+//     }
+// }
 
 #[derive(Debug, serde::Serialize)]
 pub struct Unauthenticated;
 
-impl<G> CedarEntity<G> for Unauthenticated {
+impl CedarEntity for Unauthenticated {
     const ENTITY_TYPE: &'static str = "Unauthenticated";
 
     fn entity_id(&self) -> EntityId {
@@ -221,7 +205,7 @@ pub enum Action {
     DeclineOrganizationInvitation,
 }
 
-impl<G> CedarEntity<G> for Action {
+impl CedarEntity for Action {
     const ENTITY_TYPE: &'static str = "Action";
 
     fn entity_id(&self) -> EntityId {
@@ -233,7 +217,7 @@ impl<G> CedarEntity<G> for Action {
 #[derive(serde::Serialize)]
 pub struct CoreApplication;
 
-impl<G> CedarEntity<G> for CoreApplication {
+impl CedarEntity for CoreApplication {
     const ENTITY_TYPE: &'static str = "Application";
 
     fn entity_id(&self) -> EntityId {
@@ -241,12 +225,12 @@ impl<G> CedarEntity<G> for CoreApplication {
     }
 }
 
-pub(crate) async fn is_authorized<G: CoreConfig>(
-    global: &Arc<G>,
+pub(crate) async fn is_authorized<G: core_traits::Global>(
+    _global: &Arc<G>,
     user_session: Option<&UserSession>,
-    principal: impl CedarEntity<G>,
-    action: impl CedarEntity<G>,
-    resource: impl CedarEntity<G>,
+    principal: &impl CedarEntity,
+    action: &impl CedarEntity,
+    resource: &impl CedarEntity,
 ) -> Result<(), tonic::Status> {
     let mut context = serde_json::Map::new();
     if let Some(session) = user_session {
@@ -269,16 +253,19 @@ pub(crate) async fn is_authorized<G: CoreConfig>(
     .into_tonic_internal_err("failed to validate cedar request")?;
 
     let entities = vec![
-        principal.to_entity(global).await?,
-        action.to_entity(global).await?,
-        resource.to_entity(global).await?,
+        // principal.to_entity(global).await?,
+        // action.to_entity(global).await?,
+        // resource.to_entity(global).await?,
     ];
 
     let entities = Entities::empty()
         .add_entities(entities, None)
         .into_tonic_internal_err("failed to create cedar entities")?;
 
-    match global.authorizer().is_authorized(&r, static_policies(), &entities).decision() {
+    match cedar_policy::Authorizer::new()
+        .is_authorized(&r, static_policies(), &entities)
+        .decision()
+    {
         Decision::Allow => Ok(()),
         Decision::Deny => {
             tracing::warn!(request = ?r, "authorization denied");

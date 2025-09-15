@@ -2,8 +2,6 @@ use std::sync::Arc;
 
 use base64::Engine;
 
-use crate::CoreConfig;
-
 pub(crate) const ADMIN_DIRECTORY_API_USER_SCOPE: &str = "https://www.googleapis.com/auth/admin.directory.user.readonly";
 const ALL_SCOPES: [&str; 4] = ["openid", "profile", "email", ADMIN_DIRECTORY_API_USER_SCOPE];
 const REQUIRED_SCOPES: [&str; 3] = ["openid", "profile", "email"];
@@ -58,11 +56,11 @@ pub(crate) enum GoogleTokenError {
     RequestFailed(#[from] reqwest::Error),
 }
 
-fn redirect_uri<G: CoreConfig>(global: &Arc<G>) -> String {
+fn redirect_uri<G: core_traits::Global>(global: &Arc<G>) -> String {
     global.dashboard_origin().join("/oauth2-callback/google").unwrap().to_string()
 }
 
-pub(crate) fn authorization_url<G: CoreConfig>(global: &Arc<G>, state: &str) -> String {
+pub(crate) fn authorization_url<G: core_traits::Global>(global: &Arc<G>, state: &str) -> String {
     format!(
         "https://accounts.google.com/o/oauth2/v2/auth?client_id={}&redirect_uri={}&response_type=code&scope={}&state={state}",
         global.google_oauth2_config().client_id,
@@ -71,13 +69,16 @@ pub(crate) fn authorization_url<G: CoreConfig>(global: &Arc<G>, state: &str) -> 
     )
 }
 
-pub(crate) async fn request_tokens<G: CoreConfig>(global: &Arc<G>, code: &str) -> Result<GoogleToken, GoogleTokenError> {
+pub(crate) async fn request_tokens<G: core_traits::Global>(
+    global: &Arc<G>,
+    code: &str,
+) -> Result<GoogleToken, GoogleTokenError> {
     let tokens: GoogleToken = global
-        .http_client()
+        .external_http_client()
         .post("https://oauth2.googleapis.com/token")
         .form(&[
-            ("client_id", global.google_oauth2_config().client_id.as_str()),
-            ("client_secret", global.google_oauth2_config().client_secret.as_str()),
+            ("client_id", global.google_oauth2_config().client_id.as_ref()),
+            ("client_secret", global.google_oauth2_config().client_secret.as_ref()),
             ("code", code),
             ("grant_type", "authorization_code"),
             ("redirect_uri", &redirect_uri(global)),
@@ -114,13 +115,13 @@ pub(crate) enum GoogleWorkspaceGetUserError {
     InvalidStatusCode(reqwest::StatusCode),
 }
 
-pub(crate) async fn request_google_workspace_user<G: CoreConfig>(
+pub(crate) async fn request_google_workspace_user<G: core_traits::Global>(
     global: &Arc<G>,
     access_token: &str,
     user_id: &str,
 ) -> Result<Option<GoogleWorkspaceUser>, GoogleWorkspaceGetUserError> {
     let response = global
-        .http_client()
+        .external_http_client()
         .get(format!("https://www.googleapis.com/admin/directory/v1/users/{user_id}"))
         .bearer_auth(access_token)
         .send()

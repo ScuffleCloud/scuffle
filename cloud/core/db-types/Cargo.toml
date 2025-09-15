@@ -1,0 +1,18 @@
+[package]
+name = "scufflecloud-core-db-types"
+version = "0.1.0"
+edition = "2024"
+
+[dependencies]
+base64 = "0.22"
+cedar-policy = "4.5"
+chrono = "0.4"
+diesel = { version = "2", default-features = false }
+ipnetwork = "0.21"
+pb = { path = "../../proto", package = "scufflecloud-proto" }
+serde = "1"
+serde_derive = "1"
+serde_json = "1"
+thiserror = "2"
+ulid = "1"
+uuid = "1"

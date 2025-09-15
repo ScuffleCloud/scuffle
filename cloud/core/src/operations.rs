@@ -1,10 +1,9 @@
 use std::sync::Arc;
 
-use diesel_async::pooled_connection::bb8::PooledConnection;
-use diesel_async::{AnsiTransactionManager, AsyncPgConnection, TransactionManager};
+use core_db_types::cedar::CedarEntity;
+use diesel_async::TransactionManager;
 
-use crate::CoreConfig;
-use crate::cedar::{self, Action, CedarEntity};
+use crate::cedar::{self, Action};
 use crate::http_ext::RequestExt;
 use crate::std_ext::ResultExt;
 
@@ -15,55 +14,51 @@ pub(crate) mod user_session_requests;
 pub(crate) mod user_sessions;
 pub(crate) mod users;
 
-pub(crate) trait OperationDriver<G: CoreConfig>: Sized {
-    async fn start(global: &Arc<G>) -> Result<Self, tonic::Status>;
-    async fn abort(self) -> Result<(), tonic::Status>;
-    async fn finish(self) -> Result<(), tonic::Status>;
+pub(crate) struct OperationDriver<'a, G: core_traits::Global> {
+    global: &'a Arc<G>,
+    conn: Option<G::Connection<'a>>,
 }
 
-pub(crate) struct TransactionOperationDriver {
-    conn: PooledConnection<'static, AsyncPgConnection>,
-}
-
-impl<G: CoreConfig> OperationDriver<G> for TransactionOperationDriver {
-    async fn start(global: &Arc<G>) -> Result<Self, tonic::Status> {
-        let mut db = global.db().await.into_tonic_internal_err("failed to connect to database")?;
-        AnsiTransactionManager::begin_transaction(&mut *db)
-            .await
-            .into_tonic_internal_err("failed to begin transaction")?;
-
-        Ok(Self { conn: db })
+impl<'a, G: core_traits::Global> OperationDriver<'a, G> {
+    const fn new(global: &'a Arc<G>) -> Self {
+        OperationDriver { global, conn: None }
     }
 
-    async fn abort(mut self) -> Result<(), tonic::Status> {
-        AnsiTransactionManager::rollback_transaction(&mut *self.conn)
+    pub(crate) async fn conn(&mut self) -> Result<&mut G::Connection<'a>, tonic::Status> {
+        let conn = &mut self.conn;
+        if let Some(conn) = conn {
+            return Ok(conn);
+        }
+
+        let mut db = self
+            .global
+            .db()
+            .await
+            .into_tonic_internal_err("failed to connect to database")?;
+        <G::Connection<'a> as diesel_async::AsyncConnection>::TransactionManager::begin_transaction(&mut db)
+            .await
+            .into_tonic_internal_err("failed to begin transaction")?;
+        Ok(conn.insert(db))
+    }
+
+    async fn abort(self) -> Result<(), tonic::Status> {
+        let Some(mut conn) = self.conn else {
+            return Ok(());
+        };
+
+        <G::Connection<'a> as diesel_async::AsyncConnection>::TransactionManager::rollback_transaction(&mut conn)
             .await
             .into_tonic_internal_err("failed to rollback transaction")
     }
 
-    async fn finish(mut self) -> Result<(), tonic::Status> {
-        AnsiTransactionManager::commit_transaction(&mut *self.conn)
+    async fn commit(self) -> Result<(), tonic::Status> {
+        let Some(mut conn) = self.conn else {
+            return Ok(());
+        };
+
+        <G::Connection<'a> as diesel_async::AsyncConnection>::TransactionManager::commit_transaction(&mut conn)
             .await
             .into_tonic_internal_err("failed to commit transaction")
-    }
-}
-
-pub(crate) struct NoopOperationDriver;
-
-impl<G: CoreConfig> OperationDriver<G> for NoopOperationDriver {
-    async fn start(global: &Arc<G>) -> Result<Self, tonic::Status> {
-        let _ = global;
-        Ok(Self)
-    }
-
-    async fn abort(self) -> Result<(), tonic::Status> {
-        let _ = self;
-        Ok(())
-    }
-
-    async fn finish(self) -> Result<(), tonic::Status> {
-        let _ = self;
-        Ok(())
     }
 }
 
@@ -78,12 +73,11 @@ impl<G: CoreConfig> OperationDriver<G> for NoopOperationDriver {
 /// 6. Execute the operation with [`execute`](Self::execute).
 /// 7. Commit the operation with [`OperationDriver::finish`] if successful,
 ///    or abort with [`OperationDriver::abort`] if an error occurred.
-pub(crate) trait Operation<G: CoreConfig>: RequestExt + Sized + Send {
-    type Driver: OperationDriver<G> + Send + Sync;
+pub(crate) trait Operation<G: core_traits::Global>: RequestExt + Sized + Send {
     /// The cedar principal type for the operation.
-    type Principal: CedarEntity<G> + Send + Sync;
+    type Principal: CedarEntity + Send + Sync;
     /// The cedar resource type for the operation.
-    type Resource: CedarEntity<G> + Send + Sync;
+    type Resource: CedarEntity + Send + Sync;
     /// The response type for the operation.
     type Response: Send;
 
@@ -99,17 +93,17 @@ pub(crate) trait Operation<G: CoreConfig>: RequestExt + Sized + Send {
 
     fn load_principal(
         &mut self,
-        driver: &mut Self::Driver,
+        driver: &mut OperationDriver<'_, G>,
     ) -> impl Future<Output = Result<Self::Principal, tonic::Status>> + Send;
 
     fn load_resource(
         &mut self,
-        driver: &mut Self::Driver,
+        driver: &mut OperationDriver<'_, G>,
     ) -> impl Future<Output = Result<Self::Resource, tonic::Status>> + Send;
 
     fn execute(
         self,
-        driver: &mut Self::Driver,
+        driver: &mut OperationDriver<'_, G>,
         principal: Self::Principal,
         resource: Self::Resource,
     ) -> impl Future<Output = Result<Self::Response, tonic::Status>> + Send;
@@ -118,20 +112,20 @@ pub(crate) trait Operation<G: CoreConfig>: RequestExt + Sized + Send {
         self.validate().await?;
 
         let global = self.global::<G>()?;
-        let mut driver = Self::Driver::start(&global).await?;
+        let mut driver = OperationDriver::new(&global);
 
         let fut = async {
             let principal = self.load_principal(&mut driver).await?;
             let resource = self.load_resource(&mut driver).await?;
 
-            cedar::is_authorized(&global, self.session(), &principal, Self::ACTION, &resource).await?;
+            cedar::is_authorized(&global, self.session(), &principal, &Self::ACTION, &resource).await?;
 
             self.execute(&mut driver, principal, resource).await
         };
 
         match fut.await {
             Ok(resp) => {
-                driver.finish().await?;
+                driver.commit().await?;
                 Ok(resp)
             }
             Err(e) => {

@@ -3,23 +3,35 @@ use std::net::SocketAddr;
 use anyhow::Context;
 use fred::prelude::ClientLike;
 
+const fn days(days: u64) -> std::time::Duration {
+    hours(days * 24)
+}
+
+const fn hours(hours: u64) -> std::time::Duration {
+    minutes(hours * 60)
+}
+
+const fn minutes(mins: u64) -> std::time::Duration {
+    std::time::Duration::from_secs(mins * 60)
+}
+
 #[derive(serde_derive::Deserialize, smart_default::SmartDefault, Debug, Clone)]
 #[serde(default)]
 pub struct TimeoutConfig {
-    #[default(chrono::Duration::minutes(2))]
-    pub max_request_lifetime: chrono::Duration,
-    #[default(chrono::Duration::days(30))]
-    pub user_session: chrono::Duration,
-    #[default(chrono::Duration::minutes(5))]
-    pub mfa: chrono::Duration,
-    #[default(chrono::Duration::hours(4))]
-    pub user_session_token: chrono::Duration,
-    #[default(chrono::Duration::hours(1))]
-    pub email_registration_request: chrono::Duration,
-    #[default(chrono::Duration::minutes(5))]
-    pub user_session_request: chrono::Duration,
-    #[default(chrono::Duration::minutes(15))]
-    pub magic_link_user_session_request: chrono::Duration,
+    #[default(minutes(2))]
+    pub max_request_lifetime: std::time::Duration,
+    #[default(days(30))]
+    pub user_session: std::time::Duration,
+    #[default(minutes(5))]
+    pub mfa: std::time::Duration,
+    #[default(hours(4))]
+    pub user_session_token: std::time::Duration,
+    #[default(hours(1))]
+    pub email_registration_request: std::time::Duration,
+    #[default(minutes(5))]
+    pub user_session_request: std::time::Duration,
+    #[default(minutes(15))]
+    pub magic_link_user_session_request: std::time::Duration,
 }
 
 #[derive(serde_derive::Deserialize, smart_default::SmartDefault, Debug, Clone)]

@@ -1,6 +1,8 @@
 _packages = [
     "//cloud/core",
+    "//cloud/core/traits",
     "//cloud/email",
+    "//cloud/geo-ip",
     "//cloud/proto",
     "//crates/aac",
     "//crates/amf0",

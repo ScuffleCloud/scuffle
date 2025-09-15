@@ -1,10 +1,11 @@
+use std::time::SystemTime;
+
 use base64::Engine;
 use diesel::Selectable;
 use diesel::prelude::{AsChangeset, Associations, Identifiable, Insertable, Queryable};
 
 use super::impl_enum;
 use crate::cedar::CedarEntity;
-use crate::chrono_ext::ChronoDateTimeExt;
 use crate::id::{Id, PrefixedId};
 use crate::models::users::{User, UserId};
 
@@ -28,9 +29,9 @@ impl From<pb::scufflecloud::core::v1::DeviceAlgorithm> for DeviceAlgorithm {
     }
 }
 
-pub(crate) type UserSessionRequestId = Id<UserSessionRequest>;
+pub type UserSessionRequestId = Id<UserSessionRequest>;
 
-#[derive(Debug, Queryable, Selectable, Insertable, Identifiable, AsChangeset, serde::Serialize)]
+#[derive(Debug, Queryable, Selectable, Insertable, Identifiable, AsChangeset, serde_derive::Serialize)]
 #[diesel(table_name = crate::schema::user_session_requests)]
 #[diesel(check_for_backend(diesel::pg::Pg))]
 pub struct UserSessionRequest {
@@ -46,7 +47,7 @@ impl PrefixedId for UserSessionRequest {
     const PREFIX: &'static str = "sr";
 }
 
-impl<G> CedarEntity<G> for UserSessionRequest {
+impl CedarEntity for UserSessionRequest {
     const ENTITY_TYPE: &'static str = "UserSessionRequest";
 
     fn entity_id(&self) -> cedar_policy::EntityId {
@@ -61,14 +62,14 @@ impl From<UserSessionRequest> for pb::scufflecloud::core::v1::UserSessionRequest
             name: value.device_name,
             ip: value.device_ip.to_string(),
             approved_by: value.approved_by.map(|id| id.to_string()),
-            expires_at: Some(value.expires_at.to_prost_timestamp_utc()),
+            expires_at: Some(SystemTime::from(value.expires_at).into()),
         }
     }
 }
 
-pub(crate) type MagicLinkRequestId = Id<MagicLinkRequest>;
+pub type MagicLinkRequestId = Id<MagicLinkRequest>;
 
-#[derive(Debug, Queryable, Selectable, Insertable, Identifiable, AsChangeset, serde::Serialize)]
+#[derive(Debug, Queryable, Selectable, Insertable, Identifiable, AsChangeset, serde_derive::Serialize)]
 #[diesel(table_name = crate::schema::magic_link_requests)]
 #[diesel(check_for_backend(diesel::pg::Pg))]
 pub struct MagicLinkRequest {
@@ -83,7 +84,7 @@ impl PrefixedId for MagicLinkRequest {
     const PREFIX: &'static str = "ml";
 }
 
-impl<G> CedarEntity<G> for MagicLinkRequest {
+impl CedarEntity for MagicLinkRequest {
     const ENTITY_TYPE: &'static str = "MagicLinkRequest";
 
     fn entity_id(&self) -> cedar_policy::EntityId {
@@ -91,7 +92,7 @@ impl<G> CedarEntity<G> for MagicLinkRequest {
     }
 }
 
-pub(crate) type UserSessionTokenId = Id<UserSessionToken>;
+pub type UserSessionTokenId = Id<UserSessionToken>;
 
 /// Does not represent a real database table as it is always part of a [`UserSession`].
 #[derive(Debug, serde::Serialize)]
@@ -105,7 +106,7 @@ impl PrefixedId for UserSessionToken {
     const PREFIX: &'static str = "st";
 }
 
-impl<G> CedarEntity<G> for UserSessionToken {
+impl CedarEntity for UserSessionToken {
     const ENTITY_TYPE: &'static str = "UserSessionToken";
 
     fn entity_id(&self) -> cedar_policy::EntityId {
@@ -113,7 +114,9 @@ impl<G> CedarEntity<G> for UserSessionToken {
     }
 }
 
-#[derive(Queryable, Selectable, Insertable, Identifiable, AsChangeset, Associations, Debug, Clone, serde::Serialize)]
+#[derive(
+    Queryable, Selectable, Insertable, Identifiable, AsChangeset, Associations, Debug, Clone, serde_derive::Serialize,
+)]
 #[diesel(table_name = crate::schema::user_sessions)]
 #[diesel(primary_key(user_id, device_fingerprint))]
 #[diesel(belongs_to(User))]
@@ -132,7 +135,7 @@ pub struct UserSession {
     pub mfa_pending: bool,
 }
 
-impl<G> CedarEntity<G> for UserSession {
+impl CedarEntity for UserSession {
     const ENTITY_TYPE: &'static str = "UserSession";
 
     fn entity_id(&self) -> cedar_policy::EntityId {
@@ -147,11 +150,11 @@ impl From<UserSession> for pb::scufflecloud::core::v1::UserSession {
         pb::scufflecloud::core::v1::UserSession {
             user_id: value.user_id.to_string(),
             device_fingerprint: value.device_fingerprint,
-            last_used_at: Some(value.last_used_at.to_prost_timestamp_utc()),
+            last_used_at: Some(SystemTime::from(value.last_used_at).into()),
             last_ip: value.last_ip.to_string(),
             token_id: value.token_id.map(|id| id.to_string()),
-            token_expires_at: value.token_expires_at.map(|t| t.to_prost_timestamp_utc()),
-            expires_at: Some(value.expires_at.to_prost_timestamp_utc()),
+            token_expires_at: value.token_expires_at.map(|t| SystemTime::from(t).into()),
+            expires_at: Some(SystemTime::from(value.expires_at).into()),
             mfa_pending: value.mfa_pending,
         }
     }

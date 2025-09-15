@@ -6,16 +6,15 @@ use axum::http::{HeaderMap, HeaderName, StatusCode};
 use axum::middleware::Next;
 use axum::response::Response;
 use base64::Engine;
+use core_db_types::models::{UserSession, UserSessionTokenId};
+use core_db_types::schema::user_sessions;
 use diesel::{BoolExpressionMethods, ExpressionMethods, SelectableHelper};
 use diesel_async::RunQueryDsl;
 use fred::prelude::KeysInterface;
+use geo_ip::middleware::IpAddressInfo;
 use hmac::Mac;
 
-use crate::CoreConfig;
 use crate::http_ext::RequestExt;
-use crate::middleware::IpAddressInfo;
-use crate::models::{UserSession, UserSessionTokenId};
-use crate::schema::user_sessions;
 
 const TOKEN_ID_HEADER: HeaderName = HeaderName::from_static("scuf-token-id");
 const TIMESTAMP_HEADER: HeaderName = HeaderName::from_static("scuf-timestamp");
@@ -37,7 +36,7 @@ pub(crate) const fn auth_headers() -> [HeaderName; 5] {
 #[derive(Clone, Debug)]
 pub(crate) struct ExpiredSession(pub UserSession);
 
-pub(crate) async fn auth<G: CoreConfig>(mut req: Request, next: Next) -> Result<Response, StatusCode> {
+pub(crate) async fn auth<G: core_traits::Global>(mut req: Request, next: Next) -> Result<Response, StatusCode> {
     let global = req
         .extensions()
         .global::<G>()
@@ -162,7 +161,7 @@ impl FromStr for AuthenticationHmac {
     }
 }
 
-async fn get_and_update_active_session<G: CoreConfig>(
+async fn get_and_update_active_session<G: core_traits::Global>(
     global: &Arc<G>,
     ip_info: &IpAddressInfo,
     headers: &HeaderMap,
@@ -186,7 +185,7 @@ async fn get_and_update_active_session<G: CoreConfig>(
         return Ok((None, None));
     };
 
-    if timestamp > chrono::Utc::now() || timestamp < chrono::Utc::now() - global.timeout_config().max_request_lifetime {
+    if timestamp > chrono::Utc::now() || timestamp < chrono::Utc::now() - global.timeout_config().max_request {
         tracing::debug!(timestamp = %timestamp, "invalid request timestamp");
         return Err(StatusCode::UNAUTHORIZED);
     }
@@ -263,7 +262,7 @@ async fn get_and_update_active_session<G: CoreConfig>(
             key.as_slice(),
             true,
             Some(fred::types::Expiration::PX(
-                global.timeout_config().max_request_lifetime.num_milliseconds(),
+                global.timeout_config().max_request.as_millis() as i64
             )),
             Some(fred::types::SetOptions::NX),
             true,

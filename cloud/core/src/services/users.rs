@@ -1,9 +1,8 @@
-use crate::CoreConfig;
 use crate::operations::Operation;
 use crate::services::CoreSvc;
 
 #[async_trait::async_trait]
-impl<G: CoreConfig> pb::scufflecloud::core::v1::users_service_server::UsersService for CoreSvc<G> {
+impl<G: core_traits::Global> pb::scufflecloud::core::v1::users_service_server::UsersService for CoreSvc<G> {
     async fn get_user(
         &self,
         req: tonic::Request<pb::scufflecloud::core::v1::GetUserRequest>,

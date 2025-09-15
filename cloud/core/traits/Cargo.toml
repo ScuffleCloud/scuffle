@@ -1,0 +1,18 @@
+[package]
+name = "scufflecloud-core-traits"
+version = "0.1.0"
+edition = "2024"
+
+[dependencies]
+anyhow = "1"
+core-pb = { path = "../../proto", package = "scufflecloud-proto" }
+db-types = { path = "../db-types", package = "scufflecloud-core-db-types" }
+diesel = { version = "2", default-features = false }
+diesel-async = { version = "0.6", features = ["postgres"] }
+fred = "10"
+geo-ip = { path = "../../geo-ip", package = "scufflecloud-geo-ip" }
+reqwest = { version = "0.12", default-features = false }
+scuffle-batching.path = "../../../crates/batching"
+tonic = "0.14"
+url = "2.5"
+webauthn-rs = "0.5.2"

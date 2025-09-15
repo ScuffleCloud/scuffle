@@ -1,0 +1,15 @@
+[package]
+name = "scufflecloud-geo-ip"
+version = "0.1.0"
+edition = "2024"
+
+[dependencies]
+axum = { version = "0.8", default-features = false }
+futures = "0.3"
+ipnetwork = "0.21"
+maxminddb = "0.26.0"
+serde = "1"
+thiserror = "2"
+tower-layer = "0.3"
+tower-service = "0.3"
+tracing = "0.1"

@@ -1726,6 +1726,30 @@ transition_alias_opt(
 )
 
 transition_alias_opt(
+    name = "tower-layer-0.3.3",
+    actual = "@cargo_vendor__tower-layer-0.3.3//:tower_layer",
+    tags = ["manual"],
+)
+
+transition_alias_opt(
+    name = "tower-layer",
+    actual = "@cargo_vendor__tower-layer-0.3.3//:tower_layer",
+    tags = ["manual"],
+)
+
+transition_alias_opt(
+    name = "tower-service-0.3.3",
+    actual = "@cargo_vendor__tower-service-0.3.3//:tower_service",
+    tags = ["manual"],
+)
+
+transition_alias_opt(
+    name = "tower-service",
+    actual = "@cargo_vendor__tower-service-0.3.3//:tower_service",
+    tags = ["manual"],
+)
+
+transition_alias_opt(
     name = "tracing-0.1.41",
     actual = "@cargo_vendor__tracing-0.1.41//:tracing",
     tags = ["manual"],

@@ -1,13 +1,12 @@
 use std::collections::{HashMap, HashSet};
 use std::time::Duration;
 
+use core_db_types::models::{User, UserId};
+use core_db_types::schema::users;
 use diesel::{ExpressionMethods, QueryDsl, SelectableHelper};
 use diesel_async::pooled_connection::bb8;
 use diesel_async::{AsyncPgConnection, RunQueryDsl};
 use scuffle_batching::{DataLoader, DataLoaderFetcher};
-
-use crate::models::{User, UserId};
-use crate::schema::users;
 
 pub struct UserLoader(bb8::Pool<AsyncPgConnection>);
 

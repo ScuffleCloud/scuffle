@@ -62,7 +62,7 @@ rust_binary(
         "@rules_rust//rust/platform:x86_64-unknown-linux-gnu": [],
         "//conditions:default": ["@platforms//:incompatible"],
     }),
-    version = "0.50.1",
+    version = "0.50.2",
     deps = [
         "@bindeps__anyhow-1.0.99//:anyhow",
         "@bindeps__clap-4.5.47//:clap",

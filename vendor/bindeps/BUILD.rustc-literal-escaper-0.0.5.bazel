@@ -17,16 +17,11 @@ cargo_toml_env_vars(
 )
 
 rust_library(
-    name = "ra_ap_rustc_next_trait_solver",
+    name = "rustc_literal_escaper",
     srcs = glob(
         include = ["**/*.rs"],
         allow_empty = True,
     ),
-    aliases = {
-        "@bindeps__ra-ap-rustc_index-0.123.0//:ra_ap_rustc_index": "rustc_index",
-        "@bindeps__ra-ap-rustc_type_ir-0.123.0//:ra_ap_rustc_type_ir": "rustc_type_ir",
-        "@bindeps__ra-ap-rustc_type_ir_macros-0.123.0//:ra_ap_rustc_type_ir_macros": "rustc_type_ir_macros",
-    },
     compile_data = glob(
         include = ["**"],
         allow_empty = True,
@@ -40,11 +35,7 @@ rust_library(
         ],
     ),
     crate_root = "src/lib.rs",
-    edition = "2024",
-    proc_macro_deps = [
-        "@bindeps__derive-where-1.6.0//:derive_where",
-        "@bindeps__ra-ap-rustc_type_ir_macros-0.123.0//:ra_ap_rustc_type_ir_macros",
-    ],
+    edition = "2021",
     rustc_env_files = [
         ":cargo_toml_env_vars",
     ],
@@ -53,7 +44,7 @@ rust_library(
     ],
     tags = [
         "cargo-bazel",
-        "crate-name=ra-ap-rustc_next_trait_solver",
+        "crate-name=rustc-literal-escaper",
         "manual",
         "noclippy",
         "norustfmt",
@@ -67,10 +58,5 @@ rust_library(
         "@rules_rust//rust/platform:x86_64-unknown-linux-gnu": [],
         "//conditions:default": ["@platforms//:incompatible"],
     }),
-    version = "0.123.0",
-    deps = [
-        "@bindeps__ra-ap-rustc_index-0.123.0//:ra_ap_rustc_index",
-        "@bindeps__ra-ap-rustc_type_ir-0.123.0//:ra_ap_rustc_type_ir",
-        "@bindeps__tracing-0.1.41//:tracing",
-    ],
+    version = "0.0.5",
 )

@@ -7,7 +7,7 @@
 ###############################################################################
 
 load("@rules_rust//cargo:defs.bzl", "cargo_toml_env_vars")
-load("@rules_rust//rust:defs.bzl", "rust_library")
+load("@rules_rust//rust:defs.bzl", "rust_proc_macro")
 
 package(default_visibility = ["//visibility:public"])
 
@@ -16,8 +16,8 @@ cargo_toml_env_vars(
     src = "Cargo.toml",
 )
 
-rust_library(
-    name = "ra_ap_rustc_lexer",
+rust_proc_macro(
+    name = "ra_ap_rustc_type_ir_macros",
     srcs = glob(
         include = ["**/*.rs"],
         allow_empty = True,
@@ -44,7 +44,7 @@ rust_library(
     ],
     tags = [
         "cargo-bazel",
-        "crate-name=ra-ap-rustc_lexer",
+        "crate-name=ra-ap-rustc_type_ir_macros",
         "manual",
         "noclippy",
         "norustfmt",
@@ -58,10 +58,11 @@ rust_library(
         "@rules_rust//rust/platform:x86_64-unknown-linux-gnu": [],
         "//conditions:default": ["@platforms//:incompatible"],
     }),
-    version = "0.123.0",
+    version = "0.128.0",
     deps = [
-        "@bindeps__memchr-2.7.5//:memchr",
-        "@bindeps__unicode-properties-0.1.3//:unicode_properties",
-        "@bindeps__unicode-xid-0.2.6//:unicode_xid",
+        "@bindeps__proc-macro2-1.0.101//:proc_macro2",
+        "@bindeps__quote-1.0.40//:quote",
+        "@bindeps__syn-2.0.106//:syn",
+        "@bindeps__synstructure-0.13.2//:synstructure",
     ],
 )

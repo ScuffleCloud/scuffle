@@ -100,7 +100,7 @@ alias(
 
 alias(
     name = "dprint__dprint",
-    actual = "@bindeps__dprint-0.50.1//:dprint__bin",
+    actual = "@bindeps__dprint-0.50.2//:dprint__bin",
     tags = ["manual"],
 )
 

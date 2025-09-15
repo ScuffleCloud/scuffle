@@ -17,15 +17,11 @@ cargo_toml_env_vars(
 )
 
 rust_library(
-    name = "ra_ap_rustc_abi",
+    name = "ra_ap_rustc_lexer",
     srcs = glob(
         include = ["**/*.rs"],
         allow_empty = True,
     ),
-    aliases = {
-        "@bindeps__ra-ap-rustc_hashes-0.123.0//:ra_ap_rustc_hashes": "rustc_hashes",
-        "@bindeps__ra-ap-rustc_index-0.123.0//:ra_ap_rustc_index": "rustc_index",
-    },
     compile_data = glob(
         include = ["**"],
         allow_empty = True,
@@ -48,7 +44,7 @@ rust_library(
     ],
     tags = [
         "cargo-bazel",
-        "crate-name=ra-ap-rustc_abi",
+        "crate-name=ra-ap-rustc_lexer",
         "manual",
         "noclippy",
         "norustfmt",
@@ -62,11 +58,10 @@ rust_library(
         "@rules_rust//rust/platform:x86_64-unknown-linux-gnu": [],
         "//conditions:default": ["@platforms//:incompatible"],
     }),
-    version = "0.123.0",
+    version = "0.128.0",
     deps = [
-        "@bindeps__bitflags-2.9.4//:bitflags",
-        "@bindeps__ra-ap-rustc_hashes-0.123.0//:ra_ap_rustc_hashes",
-        "@bindeps__ra-ap-rustc_index-0.123.0//:ra_ap_rustc_index",
-        "@bindeps__tracing-0.1.41//:tracing",
+        "@bindeps__memchr-2.7.5//:memchr",
+        "@bindeps__unicode-properties-0.1.3//:unicode_properties",
+        "@bindeps__unicode-xid-0.2.6//:unicode_xid",
     ],
 )

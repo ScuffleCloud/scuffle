@@ -293,7 +293,7 @@ use_repo(
     "bindeps__cargo-deny-0.18.4",
     "bindeps__cargo-insta-1.43.1",
     "bindeps__cedar-policy-cli-4.5.1",
-    "bindeps__dprint-0.50.1",
+    "bindeps__dprint-0.50.2",
     "bindeps__just-1.42.4",
     "bindeps__miniserve-0.31.0",
     "bindeps__rust-analyzer-0.0.0",

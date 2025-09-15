@@ -130,7 +130,7 @@ crates_vendor(
         "dprint": crate.spec(
             artifact = "bin",
             git = "https://github.com/TroyKomodo/dprint.git",
-            rev = "a966de1d32d43e21711e7a46197acd5645f052be",
+            rev = "7babe9ccce1edad98635256f4fe3cd71129739ec",
         ),
         "just": crate.spec(
             artifact = "bin",
@@ -144,7 +144,7 @@ crates_vendor(
         "rust-analyzer": crate.spec(
             artifact = "bin",
             git = "https://github.com/TroyKomodo/rust-analyzer.git",
-            rev = "bc2e8effd36dbfc5eba9c36b015c9299e067ec6d",
+            rev = "3e9a967c2786589ecd801a078f8687a924e46430",
         ),
         "cedar-policy-cli": crate.spec(
             artifact = "bin",

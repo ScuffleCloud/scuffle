@@ -17,14 +17,11 @@ cargo_toml_env_vars(
 )
 
 rust_library(
-    name = "ra_ap_rustc_index",
+    name = "ra_ap_rustc_ast_ir",
     srcs = glob(
         include = ["**/*.rs"],
         allow_empty = True,
     ),
-    aliases = {
-        "@bindeps__ra-ap-rustc_index_macros-0.123.0//:ra_ap_rustc_index_macros": "rustc_index_macros",
-    },
     compile_data = glob(
         include = ["**"],
         allow_empty = True,
@@ -39,9 +36,6 @@ rust_library(
     ),
     crate_root = "src/lib.rs",
     edition = "2024",
-    proc_macro_deps = [
-        "@bindeps__ra-ap-rustc_index_macros-0.123.0//:ra_ap_rustc_index_macros",
-    ],
     rustc_env_files = [
         ":cargo_toml_env_vars",
     ],
@@ -50,7 +44,7 @@ rust_library(
     ],
     tags = [
         "cargo-bazel",
-        "crate-name=ra-ap-rustc_index",
+        "crate-name=ra-ap-rustc_ast_ir",
         "manual",
         "noclippy",
         "norustfmt",
@@ -64,8 +58,5 @@ rust_library(
         "@rules_rust//rust/platform:x86_64-unknown-linux-gnu": [],
         "//conditions:default": ["@platforms//:incompatible"],
     }),
-    version = "0.123.0",
-    deps = [
-        "@bindeps__smallvec-1.15.1//:smallvec",
-    ],
+    version = "0.128.0",
 )

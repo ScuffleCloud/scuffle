@@ -627,7 +627,7 @@ dependencies = [
 [[package]]
 name = "base-db"
 version = "0.0.0"
-source = "git+https://github.com/TroyKomodo/rust-analyzer.git?rev=bc2e8effd36dbfc5eba9c36b015c9299e067ec6d#bc2e8effd36dbfc5eba9c36b015c9299e067ec6d"
+source = "git+https://github.com/TroyKomodo/rust-analyzer.git?rev=3e9a967c2786589ecd801a078f8687a924e46430#3e9a967c2786589ecd801a078f8687a924e46430"
 dependencies = [
  "cfg",
  "dashmap 6.1.0",
@@ -1165,7 +1165,7 @@ dependencies = [
 [[package]]
 name = "cfg"
 version = "0.0.0"
-source = "git+https://github.com/TroyKomodo/rust-analyzer.git?rev=bc2e8effd36dbfc5eba9c36b015c9299e067ec6d#bc2e8effd36dbfc5eba9c36b015c9299e067ec6d"
+source = "git+https://github.com/TroyKomodo/rust-analyzer.git?rev=3e9a967c2786589ecd801a078f8687a924e46430#3e9a967c2786589ecd801a078f8687a924e46430"
 dependencies = [
  "intern",
  "rustc-hash 2.1.1",
@@ -2079,8 +2079,8 @@ checksum = "1aaf95b3e5c8f23aa320147307562d361db0ae0d51242340f558153b4eb2439b"
 
 [[package]]
 name = "dprint"
-version = "0.50.1"
-source = "git+https://github.com/TroyKomodo/dprint.git?rev=a966de1d32d43e21711e7a46197acd5645f052be#a966de1d32d43e21711e7a46197acd5645f052be"
+version = "0.50.2"
+source = "git+https://github.com/TroyKomodo/dprint.git?rev=7babe9ccce1edad98635256f4fe3cd71129739ec#7babe9ccce1edad98635256f4fe3cd71129739ec"
 dependencies = [
  "anyhow",
  "clap",
@@ -2127,7 +2127,7 @@ dependencies = [
 [[package]]
 name = "dprint-core"
 version = "0.67.4"
-source = "git+https://github.com/TroyKomodo/dprint.git?rev=a966de1d32d43e21711e7a46197acd5645f052be#a966de1d32d43e21711e7a46197acd5645f052be"
+source = "git+https://github.com/TroyKomodo/dprint.git?rev=7babe9ccce1edad98635256f4fe3cd71129739ec#7babe9ccce1edad98635256f4fe3cd71129739ec"
 dependencies = [
  "anyhow",
  "async-trait",
@@ -2174,7 +2174,7 @@ checksum = "e3f497e87b038c09a155dfd169faa5ec940d0644635555ef6bd464ac20e97397"
 [[package]]
 name = "edition"
 version = "0.0.0"
-source = "git+https://github.com/TroyKomodo/rust-analyzer.git?rev=bc2e8effd36dbfc5eba9c36b015c9299e067ec6d#bc2e8effd36dbfc5eba9c36b015c9299e067ec6d"
+source = "git+https://github.com/TroyKomodo/rust-analyzer.git?rev=3e9a967c2786589ecd801a078f8687a924e46430#3e9a967c2786589ecd801a078f8687a924e46430"
 
 [[package]]
 name = "educe"
@@ -3621,7 +3621,7 @@ checksum = "7f24254aa9a54b5c858eaee2f5bccdb46aaf0e486a595ed5fd8f86ba55232a70"
 [[package]]
 name = "hir"
 version = "0.0.0"
-source = "git+https://github.com/TroyKomodo/rust-analyzer.git?rev=bc2e8effd36dbfc5eba9c36b015c9299e067ec6d#bc2e8effd36dbfc5eba9c36b015c9299e067ec6d"
+source = "git+https://github.com/TroyKomodo/rust-analyzer.git?rev=3e9a967c2786589ecd801a078f8687a924e46430#3e9a967c2786589ecd801a078f8687a924e46430"
 dependencies = [
  "arrayvec 0.7.6",
  "base-db",
@@ -3647,7 +3647,7 @@ dependencies = [
 [[package]]
 name = "hir-def"
 version = "0.0.0"
-source = "git+https://github.com/TroyKomodo/rust-analyzer.git?rev=bc2e8effd36dbfc5eba9c36b015c9299e067ec6d#bc2e8effd36dbfc5eba9c36b015c9299e067ec6d"
+source = "git+https://github.com/TroyKomodo/rust-analyzer.git?rev=3e9a967c2786589ecd801a078f8687a924e46430#3e9a967c2786589ecd801a078f8687a924e46430"
 dependencies = [
  "arrayvec 0.7.6",
  "base-db",
@@ -3684,7 +3684,7 @@ dependencies = [
 [[package]]
 name = "hir-expand"
 version = "0.0.0"
-source = "git+https://github.com/TroyKomodo/rust-analyzer.git?rev=bc2e8effd36dbfc5eba9c36b015c9299e067ec6d#bc2e8effd36dbfc5eba9c36b015c9299e067ec6d"
+source = "git+https://github.com/TroyKomodo/rust-analyzer.git?rev=3e9a967c2786589ecd801a078f8687a924e46430#3e9a967c2786589ecd801a078f8687a924e46430"
 dependencies = [
  "base-db",
  "cfg",
@@ -3711,7 +3711,7 @@ dependencies = [
 [[package]]
 name = "hir-ty"
 version = "0.0.0"
-source = "git+https://github.com/TroyKomodo/rust-analyzer.git?rev=bc2e8effd36dbfc5eba9c36b015c9299e067ec6d#bc2e8effd36dbfc5eba9c36b015c9299e067ec6d"
+source = "git+https://github.com/TroyKomodo/rust-analyzer.git?rev=3e9a967c2786589ecd801a078f8687a924e46430#3e9a967c2786589ecd801a078f8687a924e46430"
 dependencies = [
  "arrayvec 0.7.6",
  "base-db",
@@ -4018,7 +4018,7 @@ dependencies = [
 [[package]]
 name = "ide"
 version = "0.0.0"
-source = "git+https://github.com/TroyKomodo/rust-analyzer.git?rev=bc2e8effd36dbfc5eba9c36b015c9299e067ec6d#bc2e8effd36dbfc5eba9c36b015c9299e067ec6d"
+source = "git+https://github.com/TroyKomodo/rust-analyzer.git?rev=3e9a967c2786589ecd801a078f8687a924e46430#3e9a967c2786589ecd801a078f8687a924e46430"
 dependencies = [
  "arrayvec 0.7.6",
  "cfg",
@@ -4051,7 +4051,7 @@ dependencies = [
 [[package]]
 name = "ide-assists"
 version = "0.0.0"
-source = "git+https://github.com/TroyKomodo/rust-analyzer.git?rev=bc2e8effd36dbfc5eba9c36b015c9299e067ec6d#bc2e8effd36dbfc5eba9c36b015c9299e067ec6d"
+source = "git+https://github.com/TroyKomodo/rust-analyzer.git?rev=3e9a967c2786589ecd801a078f8687a924e46430#3e9a967c2786589ecd801a078f8687a924e46430"
 dependencies = [
  "cov-mark",
  "either",
@@ -4067,7 +4067,7 @@ dependencies = [
 [[package]]
 name = "ide-completion"
 version = "0.0.0"
-source = "git+https://github.com/TroyKomodo/rust-analyzer.git?rev=bc2e8effd36dbfc5eba9c36b015c9299e067ec6d#bc2e8effd36dbfc5eba9c36b015c9299e067ec6d"
+source = "git+https://github.com/TroyKomodo/rust-analyzer.git?rev=3e9a967c2786589ecd801a078f8687a924e46430#3e9a967c2786589ecd801a078f8687a924e46430"
 dependencies = [
  "base-db",
  "cov-mark",
@@ -4083,7 +4083,7 @@ dependencies = [
 [[package]]
 name = "ide-db"
 version = "0.0.0"
-source = "git+https://github.com/TroyKomodo/rust-analyzer.git?rev=bc2e8effd36dbfc5eba9c36b015c9299e067ec6d#bc2e8effd36dbfc5eba9c36b015c9299e067ec6d"
+source = "git+https://github.com/TroyKomodo/rust-analyzer.git?rev=3e9a967c2786589ecd801a078f8687a924e46430#3e9a967c2786589ecd801a078f8687a924e46430"
 dependencies = [
  "arrayvec 0.7.6",
  "base-db",
@@ -4116,7 +4116,7 @@ dependencies = [
 [[package]]
 name = "ide-diagnostics"
 version = "0.0.0"
-source = "git+https://github.com/TroyKomodo/rust-analyzer.git?rev=bc2e8effd36dbfc5eba9c36b015c9299e067ec6d#bc2e8effd36dbfc5eba9c36b015c9299e067ec6d"
+source = "git+https://github.com/TroyKomodo/rust-analyzer.git?rev=3e9a967c2786589ecd801a078f8687a924e46430#3e9a967c2786589ecd801a078f8687a924e46430"
 dependencies = [
  "cfg",
  "cov-mark",
@@ -4134,7 +4134,7 @@ dependencies = [
 [[package]]
 name = "ide-ssr"
 version = "0.0.0"
-source = "git+https://github.com/TroyKomodo/rust-analyzer.git?rev=bc2e8effd36dbfc5eba9c36b015c9299e067ec6d#bc2e8effd36dbfc5eba9c36b015c9299e067ec6d"
+source = "git+https://github.com/TroyKomodo/rust-analyzer.git?rev=3e9a967c2786589ecd801a078f8687a924e46430#3e9a967c2786589ecd801a078f8687a924e46430"
 dependencies = [
  "cov-mark",
  "hir",
@@ -4282,7 +4282,7 @@ dependencies = [
 [[package]]
 name = "intern"
 version = "0.0.0"
-source = "git+https://github.com/TroyKomodo/rust-analyzer.git?rev=bc2e8effd36dbfc5eba9c36b015c9299e067ec6d#bc2e8effd36dbfc5eba9c36b015c9299e067ec6d"
+source = "git+https://github.com/TroyKomodo/rust-analyzer.git?rev=3e9a967c2786589ecd801a078f8687a924e46430#3e9a967c2786589ecd801a078f8687a924e46430"
 dependencies = [
  "dashmap 6.1.0",
  "hashbrown 0.14.5",
@@ -4759,7 +4759,7 @@ checksum = "241eaef5fd12c88705a01fc1066c48c4b36e0dd4377dcdc7ec3942cea7a69956"
 [[package]]
 name = "load-cargo"
 version = "0.0.0"
-source = "git+https://github.com/TroyKomodo/rust-analyzer.git?rev=bc2e8effd36dbfc5eba9c36b015c9299e067ec6d#bc2e8effd36dbfc5eba9c36b015c9299e067ec6d"
+source = "git+https://github.com/TroyKomodo/rust-analyzer.git?rev=3e9a967c2786589ecd801a078f8687a924e46430#3e9a967c2786589ecd801a078f8687a924e46430"
 dependencies = [
  "anyhow",
  "crossbeam-channel",
@@ -4974,13 +4974,13 @@ dependencies = [
 [[package]]
 name = "mbe"
 version = "0.0.0"
-source = "git+https://github.com/TroyKomodo/rust-analyzer.git?rev=bc2e8effd36dbfc5eba9c36b015c9299e067ec6d#bc2e8effd36dbfc5eba9c36b015c9299e067ec6d"
+source = "git+https://github.com/TroyKomodo/rust-analyzer.git?rev=3e9a967c2786589ecd801a078f8687a924e46430#3e9a967c2786589ecd801a078f8687a924e46430"
 dependencies = [
  "arrayvec 0.7.6",
  "cov-mark",
  "intern",
  "parser",
- "ra-ap-rustc_lexer 0.123.0",
+ "ra-ap-rustc_lexer",
  "rustc-hash 2.1.1",
  "smallvec",
  "span",
@@ -5467,12 +5467,12 @@ checksum = "487f2ccd1e17ce8c1bfab3a65c89525af41cfad4c8659021a1e9a2aacd73b89b"
 [[package]]
 name = "parser"
 version = "0.0.0"
-source = "git+https://github.com/TroyKomodo/rust-analyzer.git?rev=bc2e8effd36dbfc5eba9c36b015c9299e067ec6d#bc2e8effd36dbfc5eba9c36b015c9299e067ec6d"
+source = "git+https://github.com/TroyKomodo/rust-analyzer.git?rev=3e9a967c2786589ecd801a078f8687a924e46430#3e9a967c2786589ecd801a078f8687a924e46430"
 dependencies = [
  "drop_bomb",
  "edition",
- "ra-ap-rustc_lexer 0.123.0",
- "rustc-literal-escaper",
+ "ra-ap-rustc_lexer",
+ "rustc-literal-escaper 0.0.4",
  "tracing",
 ]
 
@@ -5491,7 +5491,7 @@ checksum = "df94ce210e5bc13cb6651479fa48d14f601d9858cfe0467f43ae157023b938d3"
 [[package]]
 name = "paths"
 version = "0.0.0"
-source = "git+https://github.com/TroyKomodo/rust-analyzer.git?rev=bc2e8effd36dbfc5eba9c36b015c9299e067ec6d#bc2e8effd36dbfc5eba9c36b015c9299e067ec6d"
+source = "git+https://github.com/TroyKomodo/rust-analyzer.git?rev=3e9a967c2786589ecd801a078f8687a924e46430#3e9a967c2786589ecd801a078f8687a924e46430"
 dependencies = [
  "camino",
 ]
@@ -5793,7 +5793,7 @@ dependencies = [
 [[package]]
 name = "proc-macro-api"
 version = "0.0.0"
-source = "git+https://github.com/TroyKomodo/rust-analyzer.git?rev=bc2e8effd36dbfc5eba9c36b015c9299e067ec6d#bc2e8effd36dbfc5eba9c36b015c9299e067ec6d"
+source = "git+https://github.com/TroyKomodo/rust-analyzer.git?rev=3e9a967c2786589ecd801a078f8687a924e46430#3e9a967c2786589ecd801a078f8687a924e46430"
 dependencies = [
  "indexmap 2.11.0",
  "intern",
@@ -5875,7 +5875,7 @@ dependencies = [
 [[package]]
 name = "profile"
 version = "0.0.0"
-source = "git+https://github.com/TroyKomodo/rust-analyzer.git?rev=bc2e8effd36dbfc5eba9c36b015c9299e067ec6d#bc2e8effd36dbfc5eba9c36b015c9299e067ec6d"
+source = "git+https://github.com/TroyKomodo/rust-analyzer.git?rev=3e9a967c2786589ecd801a078f8687a924e46430#3e9a967c2786589ecd801a078f8687a924e46430"
 dependencies = [
  "cfg-if",
  "libc",
@@ -5886,7 +5886,7 @@ dependencies = [
 [[package]]
 name = "project-model"
 version = "0.0.0"
-source = "git+https://github.com/TroyKomodo/rust-analyzer.git?rev=bc2e8effd36dbfc5eba9c36b015c9299e067ec6d#bc2e8effd36dbfc5eba9c36b015c9299e067ec6d"
+source = "git+https://github.com/TroyKomodo/rust-analyzer.git?rev=3e9a967c2786589ecd801a078f8687a924e46430#3e9a967c2786589ecd801a078f8687a924e46430"
 dependencies = [
  "anyhow",
  "base-db",
@@ -6001,7 +6001,7 @@ dependencies = [
 [[package]]
 name = "query-group-macro"
 version = "0.0.0"
-source = "git+https://github.com/TroyKomodo/rust-analyzer.git?rev=bc2e8effd36dbfc5eba9c36b015c9299e067ec6d#bc2e8effd36dbfc5eba9c36b015c9299e067ec6d"
+source = "git+https://github.com/TroyKomodo/rust-analyzer.git?rev=3e9a967c2786589ecd801a078f8687a924e46430#3e9a967c2786589ecd801a078f8687a924e46430"
 dependencies = [
  "proc-macro2",
  "quote",
@@ -6080,9 +6080,9 @@ checksum = "69cdb34c158ceb288df11e18b4bd39de994f6657d83847bdffdbd7f346754b0f"
 
 [[package]]
 name = "ra-ap-rustc_abi"
-version = "0.123.0"
+version = "0.128.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "f18c877575c259d127072e9bfc41d985202262fb4d6bfdae3d1252147c2562c2"
+checksum = "8da95e732b424802b1f043ab4007c78a0fc515ab249587abbea4634bf5fdce9a"
 dependencies = [
  "bitflags 2.9.4",
  "ra-ap-rustc_hashes",
@@ -6092,24 +6092,24 @@ dependencies = [
 
 [[package]]
 name = "ra-ap-rustc_ast_ir"
-version = "0.123.0"
+version = "0.128.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "87cc17e8ce797f2a8d03b838fbf166749b876164432ce81e37d283bf69e3cf80"
+checksum = "3838d9d7a3a5cdc511cfb6ad78740ce532f75a2366d3fc3b9853ea1b5c872779"
 
 [[package]]
 name = "ra-ap-rustc_hashes"
-version = "0.123.0"
+version = "0.128.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "2439ed1df3472443133b66949f81080dff88089b42f825761455463709ee1cad"
+checksum = "bdc8995d268d3bb4ece910f575ea5a063d6003e193ec155d15703b65882d53fb"
 dependencies = [
  "rustc-stable-hash",
 ]
 
 [[package]]
 name = "ra-ap-rustc_index"
-version = "0.123.0"
+version = "0.128.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "57a24fe0be21be1f8ebc21dcb40129214fb4cefb0f2753f3d46b6dbe656a1a45"
+checksum = "ed0ccdf6e5627c6c3e54e571e52ce0bc8b94d5f0b94b7460269ca68a4706be69"
 dependencies = [
  "ra-ap-rustc_index_macros",
  "smallvec",
@@ -6117,9 +6117,9 @@ dependencies = [
 
 [[package]]
 name = "ra-ap-rustc_index_macros"
-version = "0.123.0"
+version = "0.128.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "844a27ddcad0116facae2df8e741fd788662cf93dc13029cd864f2b8013b81f9"
+checksum = "bd28f42362b5c9fb9b8766c3189df02a402b13363600c6885e11027889f03ee6"
 dependencies = [
  "proc-macro2",
  "quote",
@@ -6128,20 +6128,9 @@ dependencies = [
 
 [[package]]
 name = "ra-ap-rustc_lexer"
-version = "0.121.0"
+version = "0.128.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "22944e31fb91e9b3e75bcbc91e37d958b8c0825a6160927f2856831d2ce83b36"
-dependencies = [
- "memchr",
- "unicode-properties",
- "unicode-xid",
-]
-
-[[package]]
-name = "ra-ap-rustc_lexer"
-version = "0.123.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "2b734cfcb577d09877799a22742f1bd398be6c00bc428d9de56d48d11ece5771"
+checksum = "f1c31a82f091b910a27ee53a86a9af28a2df10c3484e2f1bbfe70633aa84dee9"
 dependencies = [
  "memchr",
  "unicode-properties",
@@ -6150,9 +6139,9 @@ dependencies = [
 
 [[package]]
 name = "ra-ap-rustc_next_trait_solver"
-version = "0.123.0"
+version = "0.128.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "14f7dfbdf1d045ff4e385e1efdfc3799379895e9c3f3b9b379a0bef4cb238441"
+checksum = "f8cac6c2b5a8924209d4ca682cbc507252c58a664911e0ef463c112882ba6f72"
 dependencies = [
  "derive-where",
  "ra-ap-rustc_index",
@@ -6163,19 +6152,19 @@ dependencies = [
 
 [[package]]
 name = "ra-ap-rustc_parse_format"
-version = "0.121.0"
+version = "0.128.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "81057891bc2063ad9e353f29462fbc47a0f5072560af34428ae9313aaa5e9d97"
+checksum = "a085a1cf902dcca8abbc537faaef154bbccbbb51850f779ce5484ae3782b5d8f"
 dependencies = [
- "ra-ap-rustc_lexer 0.121.0",
- "rustc-literal-escaper",
+ "ra-ap-rustc_lexer",
+ "rustc-literal-escaper 0.0.5",
 ]
 
 [[package]]
 name = "ra-ap-rustc_pattern_analysis"
-version = "0.123.0"
+version = "0.128.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "75b0ee1f059b9dea0818c6c7267478926eee95ba4c7dcf89c8db32fa165d3904"
+checksum = "8ba32e3985367bc34856b41c7604133649d4a367eb5d7bdf50623025731459d8"
 dependencies = [
  "ra-ap-rustc_index",
  "rustc-hash 2.1.1",
@@ -6186,10 +6175,11 @@ dependencies = [
 
 [[package]]
 name = "ra-ap-rustc_type_ir"
-version = "0.123.0"
+version = "0.128.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "0bc59fb10a922c38a24cb8a1494f799b0af30bd041acbea689378d3bf330534b"
+checksum = "9c9911d72f75d85d21fe88374d7bcec94f2200feffb7234108a24cc3da7c3591"
 dependencies = [
+ "arrayvec 0.7.6",
  "bitflags 2.9.4",
  "derive-where",
  "ena",
@@ -6205,9 +6195,9 @@ dependencies = [
 
 [[package]]
 name = "ra-ap-rustc_type_ir_macros"
-version = "0.123.0"
+version = "0.128.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "58878914b6dac7499baeecc8dbb4b9d9dda88030e4ab90cd3b4e87523fbedafe"
+checksum = "22f539b87991683ce17cc52e62600fdf2b4a8af43952db30387edc1a576d3b43"
 dependencies = [
  "proc-macro2",
  "quote",
@@ -6569,7 +6559,7 @@ dependencies = [
 [[package]]
 name = "rust-analyzer"
 version = "0.0.0"
-source = "git+https://github.com/TroyKomodo/rust-analyzer.git?rev=bc2e8effd36dbfc5eba9c36b015c9299e067ec6d#bc2e8effd36dbfc5eba9c36b015c9299e067ec6d"
+source = "git+https://github.com/TroyKomodo/rust-analyzer.git?rev=3e9a967c2786589ecd801a078f8687a924e46430#3e9a967c2786589ecd801a078f8687a924e46430"
 dependencies = [
  "anyhow",
  "base64",
@@ -6648,6 +6638,12 @@ name = "rustc-literal-escaper"
 version = "0.0.4"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "ab03008eb631b703dd16978282ae36c73282e7922fe101a4bd072a40ecea7b8b"
+
+[[package]]
+name = "rustc-literal-escaper"
+version = "0.0.5"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "e4ee29da77c5a54f42697493cd4c9b9f31b74df666a6c04dfc4fde77abe0438b"
 
 [[package]]
 name = "rustc-stable-hash"
@@ -7374,7 +7370,7 @@ dependencies = [
 [[package]]
 name = "span"
 version = "0.0.0"
-source = "git+https://github.com/TroyKomodo/rust-analyzer.git?rev=bc2e8effd36dbfc5eba9c36b015c9299e067ec6d#bc2e8effd36dbfc5eba9c36b015c9299e067ec6d"
+source = "git+https://github.com/TroyKomodo/rust-analyzer.git?rev=3e9a967c2786589ecd801a078f8687a924e46430#3e9a967c2786589ecd801a078f8687a924e46430"
 dependencies = [
  "hashbrown 0.14.5",
  "la-arena",
@@ -7423,7 +7419,7 @@ checksum = "a2eb9349b6444b326872e140eb1cf5e7c522154d69e7a0ffb0fb81c06b37543f"
 [[package]]
 name = "stdx"
 version = "0.0.0"
-source = "git+https://github.com/TroyKomodo/rust-analyzer.git?rev=bc2e8effd36dbfc5eba9c36b015c9299e067ec6d#bc2e8effd36dbfc5eba9c36b015c9299e067ec6d"
+source = "git+https://github.com/TroyKomodo/rust-analyzer.git?rev=3e9a967c2786589ecd801a078f8687a924e46430#3e9a967c2786589ecd801a078f8687a924e46430"
 dependencies = [
  "crossbeam-channel",
  "crossbeam-utils",
@@ -7546,14 +7542,14 @@ dependencies = [
 [[package]]
 name = "syntax"
 version = "0.0.0"
-source = "git+https://github.com/TroyKomodo/rust-analyzer.git?rev=bc2e8effd36dbfc5eba9c36b015c9299e067ec6d#bc2e8effd36dbfc5eba9c36b015c9299e067ec6d"
+source = "git+https://github.com/TroyKomodo/rust-analyzer.git?rev=3e9a967c2786589ecd801a078f8687a924e46430#3e9a967c2786589ecd801a078f8687a924e46430"
 dependencies = [
  "either",
  "itertools 0.14.0",
  "parser",
  "rowan",
  "rustc-hash 2.1.1",
- "rustc-literal-escaper",
+ "rustc-literal-escaper 0.0.4",
  "smol_str",
  "stdx",
  "tracing",
@@ -7563,7 +7559,7 @@ dependencies = [
 [[package]]
 name = "syntax-bridge"
 version = "0.0.0"
-source = "git+https://github.com/TroyKomodo/rust-analyzer.git?rev=bc2e8effd36dbfc5eba9c36b015c9299e067ec6d#bc2e8effd36dbfc5eba9c36b015c9299e067ec6d"
+source = "git+https://github.com/TroyKomodo/rust-analyzer.git?rev=3e9a967c2786589ecd801a078f8687a924e46430#3e9a967c2786589ecd801a078f8687a924e46430"
 dependencies = [
  "intern",
  "parser",
@@ -7961,7 +7957,7 @@ checksum = "5d99f8c9a7727884afe522e9bd5edbfc91a3312b36a77b5fb8926e4c31a41801"
 [[package]]
 name = "toolchain"
 version = "0.0.0"
-source = "git+https://github.com/TroyKomodo/rust-analyzer.git?rev=bc2e8effd36dbfc5eba9c36b015c9299e067ec6d#bc2e8effd36dbfc5eba9c36b015c9299e067ec6d"
+source = "git+https://github.com/TroyKomodo/rust-analyzer.git?rev=3e9a967c2786589ecd801a078f8687a924e46430#3e9a967c2786589ecd801a078f8687a924e46430"
 dependencies = [
  "camino",
  "home",
@@ -8144,11 +8140,11 @@ checksum = "e421abadd41a4225275504ea4d6566923418b7f05506fbc9c0fe86ba7396114b"
 [[package]]
 name = "tt"
 version = "0.0.0"
-source = "git+https://github.com/TroyKomodo/rust-analyzer.git?rev=bc2e8effd36dbfc5eba9c36b015c9299e067ec6d#bc2e8effd36dbfc5eba9c36b015c9299e067ec6d"
+source = "git+https://github.com/TroyKomodo/rust-analyzer.git?rev=3e9a967c2786589ecd801a078f8687a924e46430#3e9a967c2786589ecd801a078f8687a924e46430"
 dependencies = [
  "arrayvec 0.7.6",
  "intern",
- "ra-ap-rustc_lexer 0.123.0",
+ "ra-ap-rustc_lexer",
  "stdx",
  "text-size",
 ]
@@ -8360,7 +8356,7 @@ checksum = "0b928f33d975fc6ad9f86c8f283853ad26bdd5b10b7f1542aa2fa15e2289105a"
 [[package]]
 name = "vfs"
 version = "0.0.0"
-source = "git+https://github.com/TroyKomodo/rust-analyzer.git?rev=bc2e8effd36dbfc5eba9c36b015c9299e067ec6d#bc2e8effd36dbfc5eba9c36b015c9299e067ec6d"
+source = "git+https://github.com/TroyKomodo/rust-analyzer.git?rev=3e9a967c2786589ecd801a078f8687a924e46430#3e9a967c2786589ecd801a078f8687a924e46430"
 dependencies = [
  "crossbeam-channel",
  "fst",
@@ -8375,7 +8371,7 @@ dependencies = [
 [[package]]
 name = "vfs-notify"
 version = "0.0.0"
-source = "git+https://github.com/TroyKomodo/rust-analyzer.git?rev=bc2e8effd36dbfc5eba9c36b015c9299e067ec6d#bc2e8effd36dbfc5eba9c36b015c9299e067ec6d"
+source = "git+https://github.com/TroyKomodo/rust-analyzer.git?rev=3e9a967c2786589ecd801a078f8687a924e46430#3e9a967c2786589ecd801a078f8687a924e46430"
 dependencies = [
  "crossbeam-channel",
  "notify",

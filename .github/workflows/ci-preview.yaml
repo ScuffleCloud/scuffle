@@ -108,7 +108,7 @@ jobs:
           vercel-token: ${{ secrets.vercel_token }}
           github-token: ${{ secrets.GITHUB_TOKEN }}
           github-comment: false
-          vercel-args: "--archive=tgz"
+          vercel-args: "--archive=tgz --local-config ${{ github.workspace }}/cloud/dashboard/vercel.json"
           vercel-org-id: ${{ secrets.vercel_org_id }}
           vercel-project-id: ${{ secrets.vercel_project_id_dashboard }}
           working-directory: ./target-bazel/bin/cloud/dashboard/build

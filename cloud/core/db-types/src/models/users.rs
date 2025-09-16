@@ -12,11 +12,17 @@ pub type UserId = Id<User>;
 #[diesel(check_for_backend(diesel::pg::Pg))]
 pub struct User {
     pub id: UserId,
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub preferred_name: Option<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub first_name: Option<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub last_name: Option<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub password_hash: Option<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub primary_email: Option<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub avatar_url: Option<String>,
 }
 

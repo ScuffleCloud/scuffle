@@ -1,4 +1,5 @@
 use std::borrow::Borrow;
+use std::collections::BTreeMap;
 
 use core_traits::ResultExt;
 use serde::ser::SerializeMap;
@@ -78,7 +79,7 @@ pub trait CedarEntity: CedarIdentifiable + serde::Serialize + Send + Sync {
         global: &impl core_traits::Global,
     ) -> impl Future<Output = Result<impl serde::Serialize, tonic::Status>> + Send {
         let _ = global;
-        std::future::ready(Ok(()))
+        std::future::ready(Ok(BTreeMap::<(), ()>::new()))
     }
 
     /// Returns the attributes of the entity as a map.

@@ -16,7 +16,9 @@ pub type OrganizationId = Id<Organization>;
 #[diesel(check_for_backend(diesel::pg::Pg))]
 pub struct Organization {
     pub id: OrganizationId,
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub google_customer_id: Option<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub google_hosted_domain: Option<String>,
     pub name: String,
     pub owner_id: UserId,
@@ -75,8 +77,10 @@ pub type PolicyId = Id<Policy>;
 pub struct Policy {
     pub id: PolicyId,
     pub organization_id: OrganizationId,
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub project_id: Option<ProjectId>,
     pub name: String,
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub description: Option<String>,
     pub policy: String,
 }
@@ -95,7 +99,9 @@ pub struct Role {
     pub id: RoleId,
     pub organization_id: OrganizationId,
     pub name: String,
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub description: Option<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub inline_policy: Option<String>,
 }
 
@@ -125,7 +131,9 @@ pub struct RolePolicy {
 pub struct OrganizationMember {
     pub organization_id: OrganizationId,
     pub user_id: UserId,
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub invited_by_id: Option<UserId>,
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub inline_policy: Option<String>,
     pub created_at: chrono::DateTime<chrono::Utc>,
 }
@@ -165,7 +173,9 @@ pub struct ServiceAccount {
     pub id: ServiceAccountId,
     pub name: String,
     pub organization_id: OrganizationId,
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub project_id: Option<ProjectId>,
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub inline_policy: Option<String>,
 }
 
@@ -184,7 +194,9 @@ pub struct ServiceAccountToken {
     pub active: bool,
     pub service_account_id: ServiceAccountId,
     pub token: Vec<u8>,
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub inline_policy: Option<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub expires_at: Option<chrono::DateTime<chrono::Utc>>,
 }
 
@@ -201,10 +213,12 @@ pub type OrganizationInvitationId = Id<OrganizationInvitation>;
 #[diesel(check_for_backend(diesel::pg::Pg))]
 pub struct OrganizationInvitation {
     pub id: OrganizationInvitationId,
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub user_id: Option<UserId>,
     pub organization_id: OrganizationId,
     pub email: String,
     pub invited_by_id: UserId,
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub expires_at: Option<chrono::DateTime<chrono::Utc>>,
 }
 

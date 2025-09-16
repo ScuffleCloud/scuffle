@@ -57,7 +57,9 @@ pub struct MfaWebauthnCredential {
     pub user_id: UserId,
     pub name: String,
     pub credential_id: Vec<u8>,
+    #[serde(skip_serializing_if = "serde_json::Value::is_null")]
     pub credential: serde_json::Value,
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub counter: Option<i64>,
     pub last_used_at: chrono::DateTime<chrono::Utc>,
 }

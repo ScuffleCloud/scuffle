@@ -37,6 +37,7 @@ pub struct UserSessionRequest {
     pub device_name: String,
     pub device_ip: ipnetwork::IpNetwork,
     pub code: String,
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub approved_by: Option<UserId>,
     pub expires_at: chrono::DateTime<chrono::Utc>,
 }
@@ -64,6 +65,7 @@ pub type MagicLinkRequestId = Id<MagicLinkRequest>;
 #[diesel(check_for_backend(diesel::pg::Pg))]
 pub struct MagicLinkRequest {
     pub id: MagicLinkRequestId,
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub user_id: Option<UserId>,
     pub email: String,
     pub code: Vec<u8>,
@@ -102,8 +104,11 @@ pub struct UserSession {
     pub device_pk_data: Vec<u8>,
     pub last_used_at: chrono::DateTime<chrono::Utc>,
     pub last_ip: ipnetwork::IpNetwork,
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub token_id: Option<UserSessionTokenId>,
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub token: Option<Vec<u8>>,
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub token_expires_at: Option<chrono::DateTime<chrono::Utc>>,
     pub expires_at: chrono::DateTime<chrono::Utc>,
     pub mfa_pending: bool,

@@ -1,11 +1,10 @@
-use std::collections::HashSet;
-
 use core_db_types::models::{
     Organization, OrganizationInvitation, OrganizationMember, Policy, Project, Role, ServiceAccount, ServiceAccountToken,
 };
+use core_traits::OptionExt;
 
-use crate::CedarIdentifiable;
 use crate::macros::{cedar_entity, cedar_entity_id};
+use crate::{CedarIdentifiable, JsonEntityUid};
 
 cedar_entity!(Organization);
 
@@ -28,18 +27,16 @@ impl crate::CedarIdentifiable for OrganizationMember {
 }
 
 impl crate::CedarEntity for OrganizationMember {
-    async fn parents(&self, _: &impl core_traits::Global) -> Result<HashSet<cedar_policy::EntityUid>, tonic::Status> {
-        Ok(std::iter::once(self.organization_id.entity_uid()).collect())
+    async fn parents(&self, _: &impl core_traits::Global) -> Result<impl IntoIterator<Item = JsonEntityUid>, tonic::Status> {
+        Ok(std::iter::once(self.organization_id.entity_uid()))
     }
 }
 
 cedar_entity_id!(ServiceAccount);
 
 impl crate::CedarEntity for ServiceAccount {
-    async fn parents(&self, _global: &impl core_traits::Global) -> Result<HashSet<cedar_policy::EntityUid>, tonic::Status> {
-        Ok(std::iter::once(self.organization_id.entity_uid())
-            .chain(self.project_id.map(|id| id.entity_uid()))
-            .collect())
+    async fn parents(&self, _: &impl core_traits::Global) -> Result<impl IntoIterator<Item = JsonEntityUid>, tonic::Status> {
+        Ok(std::iter::once(self.organization_id.entity_uid()).chain(self.project_id.map(|id| id.entity_uid())))
     }
 }
 
@@ -48,15 +45,23 @@ cedar_entity!(ServiceAccountToken);
 cedar_entity_id!(OrganizationInvitation);
 
 impl crate::CedarEntity for OrganizationInvitation {
-    // async fn additional_attributes(
-    //     &self,
-    //     global: &Arc<G>,
-    // ) -> Result<serde_json::value::Map<String, serde_json::Value>, tonic::Status> {
-    //     let organization = common::get_organization_by_id(global, self.organization_id).await?;
-    //     let organization_attr = organization.attributes(global).await?;
+    async fn additional_attributes(
+        &self,
+        global: &impl core_traits::Global,
+    ) -> Result<impl serde::Serialize, tonic::Status> {
+        #[derive(serde_derive::Serialize)]
+        struct AdditionalAttrs {
+            organization: Organization,
+        }
 
-    //     Ok([("organization".to_string(), serde_json::Value::Object(organization_attr))]
-    //         .into_iter()
-    //         .collect())
-    // }
+        Ok(AdditionalAttrs {
+            organization: global
+                .organization_loader()
+                .load(self.organization_id)
+                .await
+                .ok()
+                .into_tonic_internal_err("failed to query organization")?
+                .into_tonic_not_found("organization not found")?,
+        })
+    }
 }

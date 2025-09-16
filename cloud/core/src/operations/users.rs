@@ -10,8 +10,7 @@ use core_db_types::schema::{
     mfa_recovery_codes, mfa_totp_credentials, mfa_totp_reg_sessions, mfa_webauthn_auth_sessions, mfa_webauthn_credentials,
     mfa_webauthn_reg_sessions, new_user_email_requests, user_emails, users,
 };
-use core_traits::EmailServiceClient;
-use core_traits::{DisplayExt, OptionExt, ResultExt};
+use core_traits::{DisplayExt, EmailServiceClient, OptionExt, ResultExt};
 use diesel::{BoolExpressionMethods, ExpressionMethods, OptionalExtension, QueryDsl, SelectableHelper};
 use diesel_async::RunQueryDsl;
 use rand::distributions::DistString;

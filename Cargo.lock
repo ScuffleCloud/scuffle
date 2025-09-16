@@ -5562,6 +5562,8 @@ dependencies = [
  "scufflecloud-core-traits",
  "scufflecloud-proto",
  "serde",
+ "serde_derive",
+ "serde_json",
  "tonic",
 ]
 

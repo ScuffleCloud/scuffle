@@ -493,6 +493,7 @@ _NORMAL_DEPENDENCIES = {
                 "base64": Label("@cargo_vendor//:base64-0.22.1"),
                 "cedar-policy": Label("@cargo_vendor//:cedar-policy-4.5.1"),
                 "serde": Label("@cargo_vendor//:serde-1.0.220"),
+                "serde_json": Label("@cargo_vendor//:serde_json-1.0.144"),
                 "tonic": Label("@cargo_vendor//:tonic-0.14.2"),
             },
         },
@@ -2247,6 +2248,11 @@ _PROC_MACRO_DEPENDENCIES = {
         },
     },
     "cloud/core/cedar": {
+        _REQUIRED_FEATURE: {
+            _COMMON_CONDITION: {
+                "serde_derive": Label("@cargo_vendor//:serde_derive-1.0.220"),
+            },
+        },
     },
     "cloud/core/db-types": {
         _REQUIRED_FEATURE: {

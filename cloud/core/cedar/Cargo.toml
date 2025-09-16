@@ -10,4 +10,6 @@ core-db-types = { path = "../db-types", package = "scufflecloud-core-db-types" }
 core-traits = { path = "../traits", package = "scufflecloud-core-traits" }
 pb = { path = "../../proto", package = "scufflecloud-proto" }
 serde = "1"
+serde_derive = "1"
+serde_json = "1"
 tonic = "0.14"

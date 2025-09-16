@@ -3,8 +3,7 @@ use core_db_types::models::{
     MagicLinkRequest, MagicLinkRequestId, Organization, OrganizationMember, User, UserGoogleAccount, UserId,
 };
 use core_db_types::schema::{magic_link_requests, organization_members, organizations, user_google_accounts, users};
-use core_traits::EmailServiceClient;
-use core_traits::{OptionExt, ResultExt};
+use core_traits::{EmailServiceClient, OptionExt, ResultExt};
 use diesel::{BoolExpressionMethods, ExpressionMethods, OptionalExtension, QueryDsl, SelectableHelper};
 use diesel_async::RunQueryDsl;
 use pb::scufflecloud::core::v1::CaptchaProvider;

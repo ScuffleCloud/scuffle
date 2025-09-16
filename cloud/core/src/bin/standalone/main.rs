@@ -14,7 +14,7 @@ use tracing_subscriber::Layer;
 use tracing_subscriber::layer::SubscriberExt;
 use tracing_subscriber::util::SubscriberInitExt;
 
-use crate::dataloaders::{OrganizationLoader, UserLoader};
+use crate::dataloaders::{OrganizationLoader, OrganizationMemberByUserIdLoader, UserLoader};
 
 mod config;
 mod dataloaders;
@@ -60,7 +60,7 @@ struct Global {
     database: bb8::Pool<diesel_async::AsyncPgConnection>,
     user_loader: DataLoader<UserLoader>,
     organization_loader: DataLoader<OrganizationLoader>,
-    // organization_member_by_user_id_loader: DataLoader<OrganizationMemberByUserIdLoader>,
+    organization_member_by_user_id_loader: DataLoader<OrganizationMemberByUserIdLoader>,
     external_http_client: reqwest::Client,
     webauthn: webauthn_rs::Webauthn,
     open_telemetry: opentelemetry::OpenTelemetry,
@@ -128,6 +128,10 @@ impl core_traits::DataloaderInterface for Global {
 
     fn user_loader(&self) -> &scuffle_batching::DataLoader<UserLoader> {
         &self.user_loader
+    }
+
+    fn organization_member_by_user_id_loader(&self) -> &scuffle_batching::DataLoader<OrganizationMemberByUserIdLoader> {
+        &self.organization_member_by_user_id_loader
     }
 }
 
@@ -252,7 +256,7 @@ impl scuffle_bootstrap::Global for Global {
 
         let user_loader = UserLoader::new(database.clone());
         let organization_loader = OrganizationLoader::new(database.clone());
-        // let organization_member_by_user_id_loader = OrganizationMemberByUserIdLoader::new(database.clone());
+        let organization_member_by_user_id_loader = OrganizationMemberByUserIdLoader::new(database.clone());
 
         // TODO: find someway to restrict this client to only making requests to external ips.
         // likely via dns.
@@ -286,7 +290,7 @@ impl scuffle_bootstrap::Global for Global {
             database,
             user_loader,
             organization_loader,
-            // organization_member_by_user_id_loader,
+            organization_member_by_user_id_loader,
             external_http_client,
             webauthn,
             open_telemetry,

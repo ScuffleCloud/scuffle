@@ -1,15 +1,17 @@
-use std::collections::HashSet;
-
 use core_db_types::models::{NewUserEmailRequest, User, UserEmail, UserGoogleAccount};
 use core_traits::OptionExt;
 
-use crate::CedarIdentifiable;
 use crate::macros::{cedar_entity, cedar_entity_id};
+use crate::{CedarIdentifiable, JsonEntityUid};
 
 cedar_entity_id!(User);
 
 impl crate::CedarEntity for User {
-    async fn parents(&self, global: &impl core_traits::Global) -> Result<HashSet<cedar_policy::EntityUid>, tonic::Status> {
+    #[allow(refining_impl_trait)]
+    async fn parents(
+        &self,
+        global: &impl core_traits::Global,
+    ) -> Result<impl IntoIterator<Item = JsonEntityUid>, tonic::Status> {
         Ok(global
             .organization_member_by_user_id_loader()
             .load(self.id)
@@ -19,8 +21,7 @@ impl crate::CedarEntity for User {
             .into_iter()
             .flatten()
             .map(|m| m.organization_id)
-            .map(|id| id.entity_uid())
-            .collect())
+            .map(|id| id.entity_uid()))
     }
 }
 

@@ -9,7 +9,7 @@ scuffle_package(
         "//cloud/core/traits": "core_traits",
         "//cloud/core/db-types": "core_db_types",
     },
-    crate_name = "scufflecloud-core-db-types",
+    crate_name = "scufflecloud-core-cedar",
     deps = [
         "//cloud/core/db-types",
         "//cloud/core/traits",

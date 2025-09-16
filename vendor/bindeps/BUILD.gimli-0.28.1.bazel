@@ -71,7 +71,7 @@ rust_library(
     version = "0.28.1",
     deps = [
         "@bindeps__fallible-iterator-0.3.0//:fallible_iterator",
-        "@bindeps__indexmap-2.11.0//:indexmap",
+        "@bindeps__indexmap-2.11.3//:indexmap",
         "@bindeps__stable_deref_trait-1.2.0//:stable_deref_trait",
     ],
 )

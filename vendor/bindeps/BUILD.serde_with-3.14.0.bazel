@@ -44,7 +44,7 @@ rust_library(
     crate_root = "src/lib.rs",
     edition = "2021",
     proc_macro_deps = [
-        "@bindeps__serde_derive-1.0.219//:serde_derive",
+        "@bindeps__serde_derive-1.0.225//:serde_derive",
         "@bindeps__serde_with_macros-3.14.0//:serde_with_macros",
     ],
     rustc_env_files = [
@@ -71,7 +71,7 @@ rust_library(
     }),
     version = "3.14.0",
     deps = [
-        "@bindeps__serde-1.0.219//:serde",
-        "@bindeps__serde_json-1.0.143//:serde_json",
+        "@bindeps__serde-1.0.225//:serde",
+        "@bindeps__serde_json-1.0.145//:serde_json",
     ],
 )

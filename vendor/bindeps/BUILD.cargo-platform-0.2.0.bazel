@@ -60,6 +60,6 @@ rust_library(
     }),
     version = "0.2.0",
     deps = [
-        "@bindeps__serde-1.0.219//:serde",
+        "@bindeps__serde-1.0.225//:serde",
     ],
 )

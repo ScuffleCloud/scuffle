@@ -61,6 +61,6 @@ rust_library(
     version = "0.7.1",
     deps = [
         "@bindeps__fixedbitset-0.5.7//:fixedbitset",
-        "@bindeps__indexmap-2.11.0//:indexmap",
+        "@bindeps__indexmap-2.11.3//:indexmap",
     ],
 )

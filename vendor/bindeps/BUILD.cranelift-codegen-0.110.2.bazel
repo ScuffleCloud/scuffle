@@ -82,7 +82,7 @@ rust_library(
         "@bindeps__cranelift-entity-0.110.2//:cranelift_entity",
         "@bindeps__gimli-0.28.1//:gimli",
         "@bindeps__hashbrown-0.14.5//:hashbrown",
-        "@bindeps__log-0.4.27//:log",
+        "@bindeps__log-0.4.28//:log",
         "@bindeps__regalloc2-0.9.3//:regalloc2",
         "@bindeps__rustc-hash-1.1.0//:rustc_hash",
         "@bindeps__smallvec-1.15.1//:smallvec",

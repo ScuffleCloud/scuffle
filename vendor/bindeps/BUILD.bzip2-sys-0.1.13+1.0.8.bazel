@@ -123,7 +123,7 @@ cargo_build_script(
     version = "0.1.13+1.0.8",
     visibility = ["//visibility:private"],
     deps = [
-        "@bindeps__cc-1.2.35//:cc",
+        "@bindeps__cc-1.2.37//:cc",
         "@bindeps__pkg-config-0.3.32//:pkg_config",
     ],
 )

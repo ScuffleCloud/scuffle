@@ -66,7 +66,7 @@ rust_library(
         "@bindeps__futures-sink-0.3.31//:futures_sink",
         "@bindeps__futures-util-0.3.31//:futures_util",
         "@bindeps__http-0.2.12//:http",
-        "@bindeps__indexmap-2.11.0//:indexmap",
+        "@bindeps__indexmap-2.11.3//:indexmap",
         "@bindeps__slab-0.4.11//:slab",
         "@bindeps__tokio-1.47.1//:tokio",
         "@bindeps__tokio-util-0.7.16//:tokio_util",

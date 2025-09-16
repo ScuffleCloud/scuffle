@@ -88,7 +88,7 @@ alias(
 
 alias(
     name = "cargo-insta__cargo-insta",
-    actual = "@bindeps__cargo-insta-1.43.1//:cargo-insta__bin",
+    actual = "@bindeps__cargo-insta-1.43.2//:cargo-insta__bin",
     tags = ["manual"],
 )
 

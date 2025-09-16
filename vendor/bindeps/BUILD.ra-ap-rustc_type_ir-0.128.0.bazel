@@ -72,7 +72,7 @@ rust_library(
         "@bindeps__arrayvec-0.7.6//:arrayvec",
         "@bindeps__bitflags-2.9.4//:bitflags",
         "@bindeps__ena-0.14.3//:ena",
-        "@bindeps__indexmap-2.11.0//:indexmap",
+        "@bindeps__indexmap-2.11.3//:indexmap",
         "@bindeps__ra-ap-rustc_ast_ir-0.128.0//:ra_ap_rustc_ast_ir",
         "@bindeps__ra-ap-rustc_index-0.128.0//:ra_ap_rustc_index",
         "@bindeps__rustc-hash-2.1.1//:rustc_hash",

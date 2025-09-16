@@ -99,7 +99,7 @@ rust_library(
         "@bindeps__flate2-1.1.2//:flate2",
         "@bindeps__getrandom-0.3.3//:getrandom",
         "@bindeps__hmac-0.12.1//:hmac",
-        "@bindeps__indexmap-2.11.0//:indexmap",
+        "@bindeps__indexmap-2.11.3//:indexmap",
         "@bindeps__lzma-rs-0.3.0//:lzma_rs",
         "@bindeps__memchr-2.7.5//:memchr",
         "@bindeps__pbkdf2-0.12.2//:pbkdf2",

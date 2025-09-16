@@ -67,7 +67,7 @@ rust_library(
         "@bindeps__ide-db-0.0.0//:ide_db",
         "@bindeps__itertools-0.14.0//:itertools",
         "@bindeps__paths-0.0.0//:paths",
-        "@bindeps__serde_json-1.0.143//:serde_json",
+        "@bindeps__serde_json-1.0.145//:serde_json",
         "@bindeps__stdx-0.0.0//:stdx",
         "@bindeps__syntax-0.0.0//:syntax",
         "@bindeps__tracing-0.1.41//:tracing",

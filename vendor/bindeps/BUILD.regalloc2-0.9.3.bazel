@@ -67,7 +67,7 @@ rust_library(
     version = "0.9.3",
     deps = [
         "@bindeps__hashbrown-0.13.2//:hashbrown",
-        "@bindeps__log-0.4.27//:log",
+        "@bindeps__log-0.4.28//:log",
         "@bindeps__rustc-hash-1.1.0//:rustc_hash",
         "@bindeps__slice-group-by-0.3.1//:slice_group_by",
         "@bindeps__smallvec-1.15.1//:smallvec",

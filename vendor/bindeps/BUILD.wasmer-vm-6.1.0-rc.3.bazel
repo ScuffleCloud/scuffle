@@ -74,7 +74,7 @@ rust_library(
         "@bindeps__dashmap-6.1.0//:dashmap",
         "@bindeps__enum-iterator-0.7.0//:enum_iterator",
         "@bindeps__fnv-1.0.7//:fnv",
-        "@bindeps__indexmap-2.11.0//:indexmap",
+        "@bindeps__indexmap-2.11.3//:indexmap",
         "@bindeps__libc-0.2.175//:libc",
         "@bindeps__memoffset-0.9.1//:memoffset",
         "@bindeps__more-asserts-0.2.2//:more_asserts",
@@ -165,7 +165,7 @@ cargo_build_script(
     version = "6.1.0-rc.3",
     visibility = ["//visibility:private"],
     deps = [
-        "@bindeps__cc-1.2.35//:cc",
+        "@bindeps__cc-1.2.37//:cc",
     ],
 )
 

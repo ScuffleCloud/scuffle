@@ -65,7 +65,7 @@ rust_library(
     deps = [
         "@bindeps__chalk-ir-0.104.0//:chalk_ir",
         "@bindeps__ena-0.14.3//:ena",
-        "@bindeps__indexmap-2.11.0//:indexmap",
+        "@bindeps__indexmap-2.11.3//:indexmap",
         "@bindeps__itertools-0.12.1//:itertools",
         "@bindeps__petgraph-0.6.5//:petgraph",
         "@bindeps__rustc-hash-1.1.0//:rustc_hash",

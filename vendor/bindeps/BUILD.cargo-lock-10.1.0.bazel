@@ -60,8 +60,8 @@ rust_library(
     }),
     version = "10.1.0",
     deps = [
-        "@bindeps__semver-1.0.26//:semver",
-        "@bindeps__serde-1.0.219//:serde",
+        "@bindeps__semver-1.0.27//:semver",
+        "@bindeps__serde-1.0.225//:serde",
         "@bindeps__toml-0.8.23//:toml",
         "@bindeps__url-2.5.7//:url",
     ],

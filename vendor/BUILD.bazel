@@ -120,11 +120,11 @@ crates_vendor(
     packages = {
         "cargo-deny": crate.spec(
             artifact = "bin",
-            version = "0.18.3",
+            version = "0.18.4",
         ),
         "cargo-insta": crate.spec(
             artifact = "bin",
-            version = "1.43.1",
+            version = "1.43.2",
         ),
         # Currently using a fork due to https://github.com/dprint/dprint/issues/1020
         "dprint": crate.spec(

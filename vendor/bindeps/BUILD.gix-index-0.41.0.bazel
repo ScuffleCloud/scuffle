@@ -81,19 +81,19 @@ rust_library(
     ] + select({
         "@rules_rust//rust/platform:aarch64-apple-darwin": [
             "@bindeps__libc-0.2.175//:libc",  # cfg(not(windows))
-            "@bindeps__rustix-1.0.8//:rustix",  # cfg(not(windows))
+            "@bindeps__rustix-1.1.2//:rustix",  # cfg(not(windows))
         ],
         "@rules_rust//rust/platform:aarch64-unknown-linux-gnu": [
             "@bindeps__libc-0.2.175//:libc",  # cfg(not(windows))
-            "@bindeps__rustix-1.0.8//:rustix",  # cfg(not(windows))
+            "@bindeps__rustix-1.1.2//:rustix",  # cfg(not(windows))
         ],
         "@rules_rust//rust/platform:x86_64-apple-darwin": [
             "@bindeps__libc-0.2.175//:libc",  # cfg(not(windows))
-            "@bindeps__rustix-1.0.8//:rustix",  # cfg(not(windows))
+            "@bindeps__rustix-1.1.2//:rustix",  # cfg(not(windows))
         ],
         "@rules_rust//rust/platform:x86_64-unknown-linux-gnu": [
             "@bindeps__libc-0.2.175//:libc",  # cfg(not(windows))
-            "@bindeps__rustix-1.0.8//:rustix",  # cfg(not(windows))
+            "@bindeps__rustix-1.1.2//:rustix",  # cfg(not(windows))
         ],
         "//conditions:default": [],
     }),

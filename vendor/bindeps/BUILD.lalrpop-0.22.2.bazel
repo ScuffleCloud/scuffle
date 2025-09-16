@@ -77,7 +77,7 @@ rust_library(
         "@bindeps__regex-syntax-0.8.6//:regex_syntax",
         "@bindeps__sha3-0.10.8//:sha3",
         "@bindeps__string_cache-0.8.9//:string_cache",
-        "@bindeps__term-1.1.0//:term",
+        "@bindeps__term-1.2.0//:term",
         "@bindeps__unicode-xid-0.2.6//:unicode_xid",
         "@bindeps__walkdir-2.5.0//:walkdir",
     ],

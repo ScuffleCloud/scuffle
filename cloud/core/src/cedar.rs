@@ -2,7 +2,7 @@ use std::str::FromStr;
 use std::sync::{Arc, OnceLock};
 
 use cedar_policy::{Decision, Entities, EntityId, PolicySet};
-use core_db_types::cedar::CedarEntity;
+use core_cedar::CedarEntity;
 use core_db_types::models::UserSession;
 use tonic_types::{ErrorDetails, StatusExt};
 

@@ -6,7 +6,7 @@ edition = "2024"
 [dependencies]
 anyhow = "1"
 core-pb = { path = "../../proto", package = "scufflecloud-proto" }
-db-types = { path = "../db-types", package = "scufflecloud-core-db-types" }
+core-db-types = { path = "../db-types", package = "scufflecloud-core-db-types" }
 diesel = { version = "2", default-features = false }
 diesel-async = { version = "0.6", features = ["postgres"] }
 fred = "10"

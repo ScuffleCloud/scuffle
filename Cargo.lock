@@ -5553,11 +5553,21 @@ dependencies = [
 ]
 
 [[package]]
-name = "scufflecloud-core-db-types"
+name = "scufflecloud-core-cedar"
 version = "0.1.0"
 dependencies = [
  "base64 0.22.1",
  "cedar-policy",
+ "scufflecloud-core-db-types",
+ "scufflecloud-core-traits",
+ "scufflecloud-proto",
+ "serde",
+]
+
+[[package]]
+name = "scufflecloud-core-db-types"
+version = "0.1.0"
+dependencies = [
  "chrono",
  "diesel",
  "ipnetwork",

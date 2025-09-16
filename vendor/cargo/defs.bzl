@@ -487,11 +487,18 @@ _NORMAL_DEPENDENCIES = {
             },
         },
     },
-    "cloud/core/db-types": {
+    "cloud/core/cedar": {
         _REQUIRED_FEATURE: {
             _COMMON_CONDITION: {
                 "base64": Label("@cargo_vendor//:base64-0.22.1"),
                 "cedar-policy": Label("@cargo_vendor//:cedar-policy-4.5.1"),
+                "serde": Label("@cargo_vendor//:serde-1.0.220"),
+            },
+        },
+    },
+    "cloud/core/db-types": {
+        _REQUIRED_FEATURE: {
+            _COMMON_CONDITION: {
                 "chrono": Label("@cargo_vendor//:chrono-0.4.42"),
                 "diesel": Label("@cargo_vendor//:diesel-2.2.12"),
                 "ipnetwork": Label("@cargo_vendor//:ipnetwork-0.21.1"),
@@ -1286,6 +1293,12 @@ _NORMAL_ALIASES = {
             },
         },
     },
+    "cloud/core/cedar": {
+        _REQUIRED_FEATURE: {
+            _COMMON_CONDITION: {
+            },
+        },
+    },
     "cloud/core/db-types": {
         _REQUIRED_FEATURE: {
             _COMMON_CONDITION: {
@@ -1731,6 +1744,8 @@ _NORMAL_ALIASES = {
 _NORMAL_DEV_DEPENDENCIES = {
     "cloud/core": {
     },
+    "cloud/core/cedar": {
+    },
     "cloud/core/db-types": {
     },
     "cloud/core/traits": {
@@ -2007,6 +2022,8 @@ _NORMAL_DEV_DEPENDENCIES = {
 _NORMAL_DEV_ALIASES = {
     "cloud/core": {
     },
+    "cloud/core/cedar": {
+    },
     "cloud/core/db-types": {
     },
     "cloud/core/traits": {
@@ -2225,6 +2242,8 @@ _PROC_MACRO_DEPENDENCIES = {
                 "smart-default": Label("@cargo_vendor//:smart-default-0.7.1"),
             },
         },
+    },
+    "cloud/core/cedar": {
     },
     "cloud/core/db-types": {
         _REQUIRED_FEATURE: {
@@ -2605,6 +2624,8 @@ _PROC_MACRO_DEPENDENCIES = {
 _PROC_MACRO_ALIASES = {
     "cloud/core": {
     },
+    "cloud/core/cedar": {
+    },
     "cloud/core/db-types": {
     },
     "cloud/core/traits": {
@@ -2733,6 +2754,8 @@ _PROC_MACRO_ALIASES = {
 
 _PROC_MACRO_DEV_DEPENDENCIES = {
     "cloud/core": {
+    },
+    "cloud/core/cedar": {
     },
     "cloud/core/db-types": {
     },
@@ -2867,6 +2890,8 @@ _PROC_MACRO_DEV_DEPENDENCIES = {
 
 _PROC_MACRO_DEV_ALIASES = {
     "cloud/core": {
+    },
+    "cloud/core/cedar": {
     },
     "cloud/core/db-types": {
     },
@@ -3079,6 +3104,8 @@ _PROC_MACRO_DEV_ALIASES = {
 _BUILD_DEPENDENCIES = {
     "cloud/core": {
     },
+    "cloud/core/cedar": {
+    },
     "cloud/core/db-types": {
     },
     "cloud/core/traits": {
@@ -3213,6 +3240,8 @@ _BUILD_DEPENDENCIES = {
 _BUILD_ALIASES = {
     "cloud/core": {
     },
+    "cloud/core/cedar": {
+    },
     "cloud/core/db-types": {
     },
     "cloud/core/traits": {
@@ -3342,6 +3371,8 @@ _BUILD_ALIASES = {
 _BUILD_PROC_MACRO_DEPENDENCIES = {
     "cloud/core": {
     },
+    "cloud/core/cedar": {
+    },
     "cloud/core/db-types": {
     },
     "cloud/core/traits": {
@@ -3459,6 +3490,8 @@ _BUILD_PROC_MACRO_DEPENDENCIES = {
 _BUILD_PROC_MACRO_ALIASES = {
     "cloud/core": {
     },
+    "cloud/core/cedar": {
+    },
     "cloud/core/db-types": {
     },
     "cloud/core/traits": {
@@ -3575,6 +3608,8 @@ _BUILD_PROC_MACRO_ALIASES = {
 
 _FEATURE_FLAGS = {
     "cloud/core": {
+    },
+    "cloud/core/cedar": {
     },
     "cloud/core/db-types": {
     },
@@ -3920,6 +3955,8 @@ _FEATURE_FLAGS = {
 _RESOLVED_FEATURE_FLAGS = {
     "cloud/core": {
     },
+    "cloud/core/cedar": {
+    },
     "cloud/core/db-types": {
     },
     "cloud/core/traits": {
@@ -4088,6 +4125,7 @@ _RESOLVED_FEATURE_FLAGS = {
 
 _VERSIONS = {
     "cloud/core": "0.1.0",
+    "cloud/core/cedar": "0.1.0",
     "cloud/core/db-types": "0.1.0",
     "cloud/core/traits": "0.1.0",
     "cloud/email": "0.1.0",

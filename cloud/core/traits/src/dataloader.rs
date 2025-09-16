@@ -1,6 +1,6 @@
 use std::collections::HashMap;
 
-use db_types::models::{Organization, OrganizationId, User, UserId};
+use core_db_types::models::{Organization, OrganizationId, User, UserId};
 use scuffle_batching::DataLoaderFetcher;
 
 pub trait DataloaderInterface {

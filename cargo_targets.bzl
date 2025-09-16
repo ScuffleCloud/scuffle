@@ -1,5 +1,6 @@
 _packages = [
     "//cloud/core",
+    "//cloud/core/cedar",
     "//cloud/core/traits",
     "//cloud/email",
     "//cloud/geo-ip",

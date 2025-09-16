@@ -1,6 +1,7 @@
 [workspace]
 members = [
     "cloud/core",
+    "cloud/core/cedar",
     "cloud/core/db-types",
     "cloud/core/traits",
     "cloud/email",

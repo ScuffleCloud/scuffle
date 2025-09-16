@@ -15,6 +15,7 @@ deps = [
     "//cloud/proto",
     "//cloud/core/traits",
     "//cloud/core/db-types",
+    "//cloud/core/cedar",
     "//cloud/geo-ip",
 ]
 
@@ -23,6 +24,7 @@ aliases = {
     "//cloud/geo-ip": "geo_ip",
     "//cloud/core/traits": "core_traits",
     "//cloud/core/db-types": "core_db_types",
+    "//cloud/core/cedar": "core_cedar",
 }
 
 scuffle_package(

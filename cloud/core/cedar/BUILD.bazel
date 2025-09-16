@@ -5,18 +5,14 @@ cargo_toml()
 
 scuffle_package(
     aliases = {
-        "//cloud/geo-ip": "geo_ip",
         "//cloud/proto": "pb",
+        "//cloud/core/traits": "core_traits",
         "//cloud/core/db-types": "core_db_types",
     },
-    crate_name = "scufflecloud-core-traits",
+    crate_name = "scufflecloud-core-db-types",
     deps = [
-        "//cloud/core/db-types",
-        "//cloud/geo-ip",
         "//cloud/proto",
-        "//crates/batching",
-        "//crates/bootstrap",
-        "//crates/bootstrap-telemetry",
-        "//crates/signal",
+        "//cloud/core/traits",
+        "//cloud/core/db-types",
     ],
 )

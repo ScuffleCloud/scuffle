@@ -3,7 +3,6 @@ use std::time::SystemTime;
 use diesel::Selectable;
 use diesel::prelude::{AsChangeset, Associations, Identifiable, Insertable, Queryable};
 
-use crate::cedar::CedarEntity;
 use crate::id::{Id, PrefixedId};
 use crate::models::users::{User, UserId};
 
@@ -23,14 +22,6 @@ pub struct MfaTotpCredential {
 
 impl PrefixedId for MfaTotpCredential {
     const PREFIX: &'static str = "mft";
-}
-
-impl CedarEntity for MfaTotpCredential {
-    const ENTITY_TYPE: &'static str = "MfaTotpCredential";
-
-    fn entity_id(&self) -> cedar_policy::EntityId {
-        cedar_policy::EntityId::new(self.id.to_string_unprefixed())
-    }
 }
 
 impl From<MfaTotpCredential> for pb::scufflecloud::core::v1::TotpCredential {
@@ -75,13 +66,6 @@ impl PrefixedId for MfaWebauthnCredential {
     const PREFIX: &'static str = "mfw";
 }
 
-impl CedarEntity for MfaWebauthnCredential {
-    const ENTITY_TYPE: &'static str = "MfaWebauthnCredential";
-
-    fn entity_id(&self) -> cedar_policy::EntityId {
-        cedar_policy::EntityId::new(self.id.to_string_unprefixed())
-    }
-}
 
 impl From<MfaWebauthnCredential> for pb::scufflecloud::core::v1::WebauthnCredential {
     fn from(value: MfaWebauthnCredential) -> Self {

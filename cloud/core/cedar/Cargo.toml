@@ -1,0 +1,12 @@
+[package]
+name = "scufflecloud-core-cedar"
+version = "0.1.0"
+edition = "2024"
+
+[dependencies]
+cedar-policy = "4.5"
+base64 = "0.22"
+serde = "1"
+pb = { path = "../../proto", package = "scufflecloud-proto" }
+core-db-types = { path = "../db-types", package = "scufflecloud-core-db-types" }
+core-traits = { path = "../traits", package = "scufflecloud-core-traits" }

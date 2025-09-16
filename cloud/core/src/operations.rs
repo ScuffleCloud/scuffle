@@ -1,6 +1,6 @@
 use std::sync::Arc;
 
-use core_db_types::cedar::CedarEntity;
+use core_cedar::CedarEntity;
 use diesel_async::TransactionManager;
 
 use crate::cedar::{self, Action};

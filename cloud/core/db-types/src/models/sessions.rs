@@ -1,11 +1,9 @@
 use std::time::SystemTime;
 
-use base64::Engine;
 use diesel::Selectable;
 use diesel::prelude::{AsChangeset, Associations, Identifiable, Insertable, Queryable};
 
 use super::impl_enum;
-use crate::cedar::CedarEntity;
 use crate::id::{Id, PrefixedId};
 use crate::models::users::{User, UserId};
 
@@ -47,14 +45,6 @@ impl PrefixedId for UserSessionRequest {
     const PREFIX: &'static str = "sr";
 }
 
-impl CedarEntity for UserSessionRequest {
-    const ENTITY_TYPE: &'static str = "UserSessionRequest";
-
-    fn entity_id(&self) -> cedar_policy::EntityId {
-        cedar_policy::EntityId::new(self.id.to_string_unprefixed())
-    }
-}
-
 impl From<UserSessionRequest> for pb::scufflecloud::core::v1::UserSessionRequest {
     fn from(value: UserSessionRequest) -> Self {
         pb::scufflecloud::core::v1::UserSessionRequest {
@@ -84,14 +74,6 @@ impl PrefixedId for MagicLinkRequest {
     const PREFIX: &'static str = "ml";
 }
 
-impl CedarEntity for MagicLinkRequest {
-    const ENTITY_TYPE: &'static str = "MagicLinkRequest";
-
-    fn entity_id(&self) -> cedar_policy::EntityId {
-        cedar_policy::EntityId::new(self.id.to_string_unprefixed())
-    }
-}
-
 pub type UserSessionTokenId = Id<UserSessionToken>;
 
 /// Does not represent a real database table as it is always part of a [`UserSession`].
@@ -104,14 +86,6 @@ pub struct UserSessionToken {
 
 impl PrefixedId for UserSessionToken {
     const PREFIX: &'static str = "st";
-}
-
-impl CedarEntity for UserSessionToken {
-    const ENTITY_TYPE: &'static str = "UserSessionToken";
-
-    fn entity_id(&self) -> cedar_policy::EntityId {
-        cedar_policy::EntityId::new(self.id.to_string_unprefixed())
-    }
 }
 
 #[derive(
@@ -133,16 +107,6 @@ pub struct UserSession {
     pub token_expires_at: Option<chrono::DateTime<chrono::Utc>>,
     pub expires_at: chrono::DateTime<chrono::Utc>,
     pub mfa_pending: bool,
-}
-
-impl CedarEntity for UserSession {
-    const ENTITY_TYPE: &'static str = "UserSession";
-
-    fn entity_id(&self) -> cedar_policy::EntityId {
-        let user_id = (*self.user_id).to_string();
-        let fingerprint = base64::prelude::BASE64_STANDARD.encode(&self.device_fingerprint);
-        cedar_policy::EntityId::new(format!("{user_id}:{fingerprint}"))
-    }
 }
 
 impl From<UserSession> for pb::scufflecloud::core::v1::UserSession {

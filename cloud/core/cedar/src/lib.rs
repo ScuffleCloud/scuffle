@@ -13,3 +13,6 @@ pub trait CedarEntity: serde::Serialize {
         cedar_policy::EntityUid::from_type_name_and_id(name, self.entity_id())
     }
 }
+
+mod macros;
+mod models;

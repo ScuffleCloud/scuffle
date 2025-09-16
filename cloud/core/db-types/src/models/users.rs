@@ -3,7 +3,6 @@ use std::time::SystemTime;
 use diesel::Selectable;
 use diesel::prelude::{AsChangeset, Associations, Identifiable, Insertable, Queryable};
 
-use crate::cedar::CedarEntity;
 use crate::id::{Id, PrefixedId};
 
 pub type UserId = Id<User>;
@@ -25,29 +24,7 @@ impl PrefixedId for User {
     const PREFIX: &'static str = "u";
 }
 
-impl CedarEntity for User {
-    const ENTITY_TYPE: &'static str = "User";
 
-    fn entity_id(&self) -> cedar_policy::EntityId {
-        cedar_policy::EntityId::new(self.id.to_string_unprefixed())
-    }
-
-    // async fn parents(&self, global: &Arc<G>) -> Result<HashSet<cedar_policy::EntityUid>, tonic::Status> {
-    //     let organization_ids = global
-    //         .organization_member_by_user_id_loader()
-    //         .load(self.id)
-    //         .await
-    //         .ok()
-    //         .into_tonic_internal_err("failed to query organization members")?
-    //         .into_tonic_not_found("user not found")?
-    //         .into_iter()
-    //         .map(|m| m.organization_id)
-    //         .map(|id| CedarEntity::<G>::entity_uid(&id))
-    //         .collect::<HashSet<_>>();
-
-    //     Ok(organization_ids)
-    // }
-}
 
 impl From<User> for pb::scufflecloud::core::v1::User {
     fn from(value: User) -> Self {
@@ -72,14 +49,6 @@ pub struct UserEmail {
     pub email: String,
     pub user_id: UserId,
     pub created_at: chrono::DateTime<chrono::Utc>,
-}
-
-impl CedarEntity for UserEmail {
-    const ENTITY_TYPE: &'static str = "UserEmail";
-
-    fn entity_id(&self) -> cedar_policy::EntityId {
-        cedar_policy::EntityId::new(&self.email)
-    }
 }
 
 impl From<UserEmail> for pb::scufflecloud::core::v1::UserEmail {
@@ -109,13 +78,7 @@ impl PrefixedId for NewUserEmailRequest {
     const PREFIX: &'static str = "er";
 }
 
-impl CedarEntity for NewUserEmailRequest {
-    const ENTITY_TYPE: &'static str = "NewUserEmailRequest";
 
-    fn entity_id(&self) -> cedar_policy::EntityId {
-        cedar_policy::EntityId::new(self.id.to_string_unprefixed())
-    }
-}
 
 #[derive(Queryable, Selectable, Insertable, Identifiable, AsChangeset, Associations, Debug, serde_derive::Serialize)]
 #[diesel(primary_key(sub))]
@@ -130,10 +93,3 @@ pub struct UserGoogleAccount {
     pub created_at: chrono::DateTime<chrono::Utc>,
 }
 
-impl CedarEntity for UserGoogleAccount {
-    const ENTITY_TYPE: &'static str = "UserGoogleAccount";
-
-    fn entity_id(&self) -> cedar_policy::EntityId {
-        cedar_policy::EntityId::new(&self.sub)
-    }
-}

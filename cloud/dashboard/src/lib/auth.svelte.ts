@@ -5,7 +5,7 @@ import {
     DeviceAlgorithm,
     type NewUserSessionToken,
 } from "@scufflecloud/proto/scufflecloud/core/v1/sessions_service.js";
-import { type User } from "@scufflecloud/proto/scufflecloud/core/v1/users.js";
+import { User } from "@scufflecloud/proto/scufflecloud/core/v1/users.js";
 import { sessionsServiceClient, usersServiceClient } from "./grpcClient";
 import { arrayBufferToBase64 } from "./utils";
 
@@ -290,12 +290,9 @@ export function createAuthState() {
         async logout() {
             if (!browser) return;
 
-            console.log("checkhere1");
             const call = sessionsServiceClient.invalidateUserSession({});
             const status = await call.status;
-            console.log("checkhere2");
             if (status.code === "OK") {
-                console.log("checkhere");
                 userSessionToken = { state: "unauthenticated" };
                 window.localStorage.removeItem("userSessionToken");
                 user = { state: "unauthenticated" };

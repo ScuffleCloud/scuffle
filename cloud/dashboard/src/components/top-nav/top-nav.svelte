@@ -82,8 +82,6 @@
         id: "proj-1",
         name: "Project 1",
     }];
-
-    const auth = useAuth();
 </script>
 
 <header class="top-nav">

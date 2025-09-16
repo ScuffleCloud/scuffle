@@ -1,17 +1,17 @@
 <script lang="ts">
     import type { LoginMode } from "$components/streams/types";
-    import { useGoogleAuth } from "$lib/auth/googleAuth.svelte";
+    import { type GoogleAuthProps } from "$lib/auth/googleAuth.svelte";
     import IconGoogle from "$lib/images/icon-google.svelte";
     import IconLoginKey from "$lib/images/icon-login-key.svelte";
 
     interface Props {
+        googleAuth: GoogleAuthProps;
         onModeChange: (mode: LoginMode) => void;
         isLoading?: boolean;
     }
 
-    const googleAuth = useGoogleAuth();
-
-    let { onModeChange, isLoading = false }: Props = $props();
+    let { googleAuth, onModeChange, isLoading = false }: Props =
+        $props();
 
     $effect(() => {
         googleAuth.handleOAuthCallback();
@@ -93,9 +93,5 @@
       background: white;
       color: #9ca3af;
       cursor: not-allowed;
-    }
-
-    .passkey-link {
-      text-decoration: none;
     }
 </style>

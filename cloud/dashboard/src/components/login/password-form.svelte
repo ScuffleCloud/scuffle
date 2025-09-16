@@ -1,4 +1,3 @@
-<!-- PasswordForm.svelte -->
 <script lang="ts">
     import IconArrowLeft from "$lib/images/icon-arrow-left.svelte";
 

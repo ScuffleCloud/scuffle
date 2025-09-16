@@ -4,6 +4,7 @@
         type LoginMode,
     } from "$components/streams/types";
     import TurnstileOverlay from "$components/turnstile-overlay.svelte";
+    import { useGoogleAuth } from "$lib/auth/googleAuth.svelte";
     import { sessionsServiceClient } from "$lib/grpcClient";
     import IconArrowDialogLink from "$lib/images/icon-arrow-dialog-link.svelte";
     import { CaptchaProvider } from "@scufflecloud/proto/scufflecloud/core/v1/common.js";
@@ -26,14 +27,15 @@
             if (event.state?.loginMode) {
                 loginMode = event.state.loginMode;
             } else {
-                loginMode = DEFAULT_LOGIN_MODE;
+                window.history.back();
             }
         }
 
         window.addEventListener("popstate", handlePopState);
 
         if (!isRestoringFromHistory) {
-            history.pushState({ loginMode }, "", window.location.href);
+            console.log("pushing state", loginMode);
+            history.pushState({ loginMode }, "", loginMode);
         }
         isRestoringFromHistory = false;
 
@@ -54,6 +56,7 @@
     let userEmail = $state<string>("");
     let isLoading = $state<boolean>(false);
 
+    // Let's move this to a common logic function eventually like google auth
     async function handleMagicLinkSubmit(email: string): Promise<void> {
         const token = await getToken();
         if (email && token) {
@@ -125,18 +128,27 @@
     }
 
     function handleBack(): void {
-        loginMode = "magic-link";
+        window.history.back();
     }
 
-    function handleContactSupport(): void {
-        console.log("Contact support clicked");
-    }
+    const googleAuth = useGoogleAuth();
+
+    // If googleAuth is loading, show a loading spinner
+    // Combine with other
+    $effect(() => {
+        if (googleAuth.loading()) {
+            isLoading = true;
+        } else {
+            isLoading = false;
+        }
+    });
 </script>
 
 <div class="login-card">
-    {#if loginMode === "magic-link"}
+    {#if loginMode === "login"}
         <MagicLinkForm onSubmit={handleMagicLinkSubmit} {isLoading} />
         <SigninOptions
+            {googleAuth}
             onModeChange={(mode) => (loginMode = mode)}
             {isLoading}
         />
@@ -166,65 +178,52 @@
 </div>
 
 <div class="footer-links">
-    {#if loginMode === "magic-link"}
-        <!-- <button
-            type="button"
-            onclick={() => (loginMode = "password")}
-            class="link"
-            disabled={isLoading}
-        >
-            Login with password
-        </button> -->
+    {#if loginMode === "login"}
         <a
             href="/password"
             onclick={(e) => {
                 e.preventDefault();
                 loginMode = "password";
-                // history.replaceState(
-                //     { loginMode: "forgot-password" },
-                //     "",
-                //     "/login/forgot-password",
-                // );
             }}
             class="link"
             class:disabled={isLoading}
         >
             Login with password
         </a>
-        <button
-            type="button"
-            onclick={handleContactSupport}
+        <a
+            href="/contact-support"
             class="link"
-            disabled={isLoading}
+            class:disabled={isLoading}
         >
             Contact Support <IconArrowDialogLink />
-        </button>
+        </a>
     {:else if loginMode === "password"}
-        <!-- <button
-            type="button"
-            onclick={() => (loginMode = "forgot-password")}
+        <a
+            href="/forgot-password"
+            onclick={(e) => {
+                e.preventDefault();
+                loginMode = "forgot-password";
+            }}
             class="link"
-            disabled={isLoading}
+            class:disabled={isLoading}
         >
-            Forgot password?
-        </button> -->
-        <button
-            type="button"
-            onclick={handleContactSupport}
+            Forgot Password
+        </a>
+        <a
+            href="/contact-support"
             class="link"
-            disabled={isLoading}
+            class:disabled={isLoading}
         >
             Contact Support <IconArrowDialogLink />
-        </button>
+        </a>
     {:else if loginMode === "passkey"}
-        <button
-            type="button"
-            onclick={handleContactSupport}
+        <a
+            href="/contact-support"
             class="link"
-            disabled={isLoading}
+            class:disabled={isLoading}
         >
             Contact Support <IconArrowDialogLink />
-        </button>
+        </a>
     {/if}
 </div>
 <TurnstileOverlay bind:this={turnstileOverlayComponent} />
@@ -249,7 +248,7 @@
       align-items: center;
     }
 
-    .link {
+    a {
       background: none;
       border: none;
       color: #6b7280;
@@ -261,14 +260,15 @@
       font-size: 0.875rem;
     }
 
-    .link:hover:not(:disabled) {
+    a:hover:not(.disabled) {
       color: #374151;
       text-decoration: underline;
     }
 
-    .link:disabled {
+    .link.disabled {
       color: #9ca3af;
       cursor: not-allowed;
+      pointer-events: none;
     }
 
     @media (max-width: 480px) {
@@ -278,8 +278,7 @@
       }
 
       .footer-links {
-        flex-direction: column;
-        gap: 0.5rem;
+        margin: 1rem 0 1rem 0;
       }
     }
 </style>

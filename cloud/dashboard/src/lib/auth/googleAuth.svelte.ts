@@ -60,7 +60,8 @@ async function completeGoogleLogin(code: string, state: string): Promise<void> {
             await auth.handleNewUserSessionToken(response.newUserSessionToken);
 
             // This should route to whatever our base page is after logging in.
-            // Eventually some dashboard after it's made
+            // Eventually some dashboard after it's made? Or localhost should throw
+            // redirect to localhost:5173/dashboard after logged in
             // window.location.href = "/dashboard";
         } else {
             throw new Error("No session token received");
@@ -83,10 +84,17 @@ export function handleGoogleOAuthCallback(): void {
     }
 }
 
+export interface GoogleAuthProps {
+    loading: () => boolean;
+    error: () => string | null;
+    initiateLogin: () => Promise<void>;
+    handleOAuthCallback: () => void;
+}
+
 /**
  * Hook for Google authentication with reactive state
  */
-export function useGoogleAuth() {
+export function useGoogleAuth(): GoogleAuthProps {
     let loading = $state(false);
     let error = $state<string | null>(null);
 

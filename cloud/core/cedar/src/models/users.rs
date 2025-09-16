@@ -1,33 +1,30 @@
-use core_db_types::models::{NewUserEmailRequest, User, UserEmail, UserGoogleAccount};
+use std::collections::HashSet;
 
-use crate::macros::impl_cedar_identity;
+use core_db_types::models::{NewUserEmailRequest, User, UserEmail, UserGoogleAccount};
+use core_traits::OptionExt;
+
+use crate::CedarIdentifiable;
+use crate::macros::{cedar_entity, cedar_entity_id};
+
+cedar_entity_id!(User);
 
 impl crate::CedarEntity for User {
-    const ENTITY_TYPE: &'static str = "User";
-
-    fn entity_id(&self) -> cedar_policy::EntityId {
-        cedar_policy::EntityId::new(self.id.to_string_unprefixed())
+    async fn parents(&self, global: &impl core_traits::Global) -> Result<HashSet<cedar_policy::EntityUid>, tonic::Status> {
+        Ok(global
+            .organization_member_by_user_id_loader()
+            .load(self.id)
+            .await
+            .ok()
+            .into_tonic_internal_err("failed to query organization members")?
+            .into_iter()
+            .flatten()
+            .map(|m| m.organization_id)
+            .map(|id| id.entity_uid())
+            .collect())
     }
-
-    // async fn parents(&self, global: &Arc<G>) -> Result<HashSet<cedar_policy::EntityUid>, tonic::Status> {
-    //     let organization_ids = global
-    //         .organization_member_by_user_id_loader()
-    //         .load(self.id)
-    //         .await
-    //         .ok()
-    //         .into_tonic_internal_err("failed to query organization members")?
-    //         .into_tonic_not_found("user not found")?
-    //         .into_iter()
-    //         .map(|m| m.organization_id)
-    //         .map(|id| CedarEntity::<G>::entity_uid(&id))
-    //         .collect::<HashSet<_>>();
-
-    //     Ok(organization_ids)
-    // }
 }
 
-
-impl crate::CedarEntity for UserEmail {
+impl crate::CedarIdentifiable for UserEmail {
     const ENTITY_TYPE: &'static str = "UserEmail";
 
     fn entity_id(&self) -> cedar_policy::EntityId {
@@ -35,12 +32,16 @@ impl crate::CedarEntity for UserEmail {
     }
 }
 
-impl_cedar_identity!(NewUserEmailRequest);
+impl crate::CedarEntity for UserEmail {}
 
-impl crate::CedarEntity for UserGoogleAccount {
+cedar_entity!(NewUserEmailRequest);
+
+impl crate::CedarIdentifiable for UserGoogleAccount {
     const ENTITY_TYPE: &'static str = "UserGoogleAccount";
 
     fn entity_id(&self) -> cedar_policy::EntityId {
         cedar_policy::EntityId::new(&self.sub)
     }
 }
+
+impl crate::CedarEntity for UserGoogleAccount {}

@@ -1,5 +1,6 @@
 use core_db_types::models::{User, UserSession, UserSessionTokenId};
 use core_db_types::schema::user_sessions;
+use core_traits::{OptionExt, ResultExt};
 use diesel::{BoolExpressionMethods, ExpressionMethods, SelectableHelper};
 use diesel_async::RunQueryDsl;
 use tonic_types::{ErrorDetails, StatusExt};
@@ -8,7 +9,6 @@ use crate::cedar::Action;
 use crate::chrono_ext::ChronoDateTimeExt;
 use crate::http_ext::RequestExt;
 use crate::operations::{Operation, OperationDriver};
-use crate::std_ext::{OptionExt, ResultExt};
 use crate::{common, totp};
 
 impl<G: core_traits::Global> Operation<G> for tonic::Request<pb::scufflecloud::core::v1::ValidateMfaForUserSessionRequest> {

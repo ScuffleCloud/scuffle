@@ -2,11 +2,10 @@ use std::str::FromStr;
 use std::sync::{Arc, OnceLock};
 
 use cedar_policy::{Decision, Entities, EntityId, PolicySet};
-use core_cedar::CedarEntity;
+use core_cedar::{CedarEntity, CedarIdentifiable};
 use core_db_types::models::UserSession;
+use core_traits::ResultExt;
 use tonic_types::{ErrorDetails, StatusExt};
-
-use crate::std_ext::ResultExt;
 
 fn static_policies() -> &'static PolicySet {
     const STATIC_POLICIES_STR: &str = include_str!("../static_policies.cedar");
@@ -90,13 +89,15 @@ fn static_policies() -> &'static PolicySet {
 #[derive(Debug, serde::Serialize)]
 pub struct Unauthenticated;
 
-impl CedarEntity for Unauthenticated {
+impl CedarIdentifiable for Unauthenticated {
     const ENTITY_TYPE: &'static str = "Unauthenticated";
 
     fn entity_id(&self) -> EntityId {
         EntityId::new("unauthenticated")
     }
 }
+
+impl CedarEntity for Unauthenticated {}
 
 #[derive(Debug, Clone, Copy, derive_more::Display, serde::Serialize)]
 pub enum Action {
@@ -205,7 +206,7 @@ pub enum Action {
     DeclineOrganizationInvitation,
 }
 
-impl CedarEntity for Action {
+impl CedarIdentifiable for Action {
     const ENTITY_TYPE: &'static str = "Action";
 
     fn entity_id(&self) -> EntityId {
@@ -213,17 +214,21 @@ impl CedarEntity for Action {
     }
 }
 
+impl CedarEntity for Action {}
+
 /// A general resource that is used whenever there is no specific resource for a request. (e.g. user login)
 #[derive(serde::Serialize)]
 pub struct CoreApplication;
 
-impl CedarEntity for CoreApplication {
+impl CedarIdentifiable for CoreApplication {
     const ENTITY_TYPE: &'static str = "Application";
 
     fn entity_id(&self) -> EntityId {
         EntityId::new("core")
     }
 }
+
+impl CedarEntity for CoreApplication {}
 
 pub(crate) async fn is_authorized<G: core_traits::Global>(
     _global: &Arc<G>,

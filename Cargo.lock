@@ -5562,6 +5562,7 @@ dependencies = [
  "scufflecloud-core-traits",
  "scufflecloud-proto",
  "serde",
+ "tonic",
 ]
 
 [[package]]
@@ -5594,6 +5595,8 @@ dependencies = [
  "scufflecloud-geo-ip",
  "scufflecloud-proto",
  "tonic",
+ "tonic-types",
+ "tracing",
  "url",
  "webauthn-rs",
 ]

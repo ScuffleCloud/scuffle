@@ -1,11 +1,11 @@
 use std::sync::Arc;
 
 use core_cedar::CedarEntity;
+use core_traits::ResultExt;
 use diesel_async::TransactionManager;
 
 use crate::cedar::{self, Action};
 use crate::http_ext::RequestExt;
-use crate::std_ext::ResultExt;
 
 pub(crate) mod login;
 pub(crate) mod organization_invitations;

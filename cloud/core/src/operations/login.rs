@@ -4,6 +4,7 @@ use core_db_types::models::{
 };
 use core_db_types::schema::{magic_link_requests, organization_members, organizations, user_google_accounts, users};
 use core_traits::EmailServiceClient;
+use core_traits::{OptionExt, ResultExt};
 use diesel::{BoolExpressionMethods, ExpressionMethods, OptionalExtension, QueryDsl, SelectableHelper};
 use diesel_async::RunQueryDsl;
 use pb::scufflecloud::core::v1::CaptchaProvider;
@@ -15,7 +16,6 @@ use crate::cedar::{Action, CoreApplication, Unauthenticated};
 use crate::common::normalize_email;
 use crate::http_ext::RequestExt;
 use crate::operations::{Operation, OperationDriver};
-use crate::std_ext::{OptionExt, ResultExt};
 use crate::{captcha, common, emails, google_api};
 
 impl<G: core_traits::Global> Operation<G> for tonic::Request<pb::scufflecloud::core::v1::LoginWithMagicLinkRequest> {

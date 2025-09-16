@@ -1,13 +1,32 @@
-macro_rules! impl_cedar_identity {
+macro_rules! cedar_entity {
     ($ty:ident) => {
-        impl $crate::CedarEntity for $ty {
+        $crate::macros::cedar_entity_id!($ty);
+
+        impl $crate::CedarEntity for $ty {}
+    };
+}
+
+pub(crate) use cedar_entity;
+
+macro_rules! cedar_entity_id {
+    ($ty:ident) => {
+        impl $crate::CedarIdentifiable for ::core_db_types::id::Id<$ty> {
             const ENTITY_TYPE: &'static str = stringify!($ty);
 
             fn entity_id(&self) -> cedar_policy::EntityId {
-                cedar_policy::EntityId::new(self.id.to_string_unprefixed())
+                cedar_policy::EntityId::new(self.to_string_unprefixed())
+            }
+        }
+
+        impl $crate::CedarEntityId for $ty {
+            type Id<'a> = ::core_db_types::id::Id<$ty>;
+
+            #[allow(refining_impl_trait)]
+            fn id(&self) -> &Self::Id<'_> {
+                &self.id
             }
         }
     };
 }
 
-pub(crate) use impl_cedar_identity;
+pub(crate) use cedar_entity_id;

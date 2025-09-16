@@ -2,7 +2,7 @@ use std::fmt::Display;
 
 use tonic_types::{ErrorDetails, StatusExt};
 
-pub(crate) trait DisplayExt: Sized {
+pub trait DisplayExt: Sized {
     fn into_tonic_err(self, code: tonic::Code, msg: &str, details: ErrorDetails) -> tonic::Status;
 
     fn into_tonic_internal_err(self, msg: &str) -> tonic::Status {
@@ -29,7 +29,7 @@ where
     }
 }
 
-pub(crate) trait ResultExt<T>: Sized {
+pub trait ResultExt<T>: Sized {
     fn into_tonic_err(self, code: tonic::Code, msg: &str, details: ErrorDetails) -> Result<T, tonic::Status>;
 
     fn into_tonic_internal_err(self, msg: &str) -> Result<T, tonic::Status> {
@@ -57,7 +57,7 @@ where
     }
 }
 
-pub(crate) trait OptionExt<T>: Sized {
+pub trait OptionExt<T>: Sized {
     fn into_tonic_err(self, code: tonic::Code, msg: &str, details: ErrorDetails) -> Result<T, tonic::Status>;
 
     fn into_tonic_not_found(self, msg: &str) -> Result<T, tonic::Status> {

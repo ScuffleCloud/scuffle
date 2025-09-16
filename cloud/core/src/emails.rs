@@ -1,10 +1,9 @@
 use std::sync::Arc;
 
+use core_traits::ResultExt;
 use geo_ip::maxminddb;
 use geo_ip::middleware::IpAddressInfo;
 use sailfish::{TemplateOnce, TemplateSimple};
-
-use crate::std_ext::ResultExt;
 
 #[derive(sailfish::TemplateSimple)]
 #[template(path = "emails/register_with_email/subject.stpl")]

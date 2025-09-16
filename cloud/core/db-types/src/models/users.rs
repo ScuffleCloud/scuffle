@@ -24,8 +24,6 @@ impl PrefixedId for User {
     const PREFIX: &'static str = "u";
 }
 
-
-
 impl From<User> for pb::scufflecloud::core::v1::User {
     fn from(value: User) -> Self {
         pb::scufflecloud::core::v1::User {
@@ -78,8 +76,6 @@ impl PrefixedId for NewUserEmailRequest {
     const PREFIX: &'static str = "er";
 }
 
-
-
 #[derive(Queryable, Selectable, Insertable, Identifiable, AsChangeset, Associations, Debug, serde_derive::Serialize)]
 #[diesel(primary_key(sub))]
 #[diesel(table_name = crate::schema::user_google_accounts)]
@@ -92,4 +88,3 @@ pub struct UserGoogleAccount {
     pub access_token_expires_at: chrono::DateTime<chrono::Utc>,
     pub created_at: chrono::DateTime<chrono::Utc>,
 }
-

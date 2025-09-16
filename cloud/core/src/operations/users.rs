@@ -11,6 +11,7 @@ use core_db_types::schema::{
     mfa_webauthn_reg_sessions, new_user_email_requests, user_emails, users,
 };
 use core_traits::EmailServiceClient;
+use core_traits::{DisplayExt, OptionExt, ResultExt};
 use diesel::{BoolExpressionMethods, ExpressionMethods, OptionalExtension, QueryDsl, SelectableHelper};
 use diesel_async::RunQueryDsl;
 use rand::distributions::DistString;
@@ -20,7 +21,6 @@ use tonic_types::{ErrorDetails, StatusExt};
 use crate::cedar::Action;
 use crate::http_ext::RequestExt;
 use crate::operations::{Operation, OperationDriver};
-use crate::std_ext::{DisplayExt, OptionExt, ResultExt};
 use crate::totp::TotpError;
 use crate::{common, emails, totp};
 

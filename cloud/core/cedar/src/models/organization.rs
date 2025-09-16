@@ -1,16 +1,21 @@
-use core_db_types::models::{Organization, OrganizationInvitation, OrganizationMember, Policy, Project, Role, ServiceAccount, ServiceAccountToken};
+use std::collections::HashSet;
 
-use crate::macros::impl_cedar_identity;
+use core_db_types::models::{
+    Organization, OrganizationInvitation, OrganizationMember, Policy, Project, Role, ServiceAccount, ServiceAccountToken,
+};
 
-impl_cedar_identity!(Organization);
+use crate::CedarIdentifiable;
+use crate::macros::{cedar_entity, cedar_entity_id};
 
-impl_cedar_identity!(Project);
+cedar_entity!(Organization);
 
-impl_cedar_identity!(Policy);
+cedar_entity!(Project);
 
-impl_cedar_identity!(Role);
+cedar_entity!(Policy);
 
-impl crate::CedarEntity for OrganizationMember {
+cedar_entity!(Role);
+
+impl crate::CedarIdentifiable for OrganizationMember {
     const ENTITY_TYPE: &'static str = "OrganizationMember";
 
     fn entity_id(&self) -> cedar_policy::EntityId {
@@ -20,38 +25,29 @@ impl crate::CedarEntity for OrganizationMember {
             self.user_id.to_string_unprefixed()
         ))
     }
-
-    // async fn parents(&self, _global: &Arc<G>) -> Result<HashSet<cedar_policy::EntityUid>, tonic::Status> {
-    //     Ok(std::iter::once(CedarEntity::<G>::entity_uid(&self.organization_id)).collect())
-    // }
 }
+
+impl crate::CedarEntity for OrganizationMember {
+    async fn parents(&self, _: &impl core_traits::Global) -> Result<HashSet<cedar_policy::EntityUid>, tonic::Status> {
+        Ok(std::iter::once(self.organization_id.entity_uid()).collect())
+    }
+}
+
+cedar_entity_id!(ServiceAccount);
 
 impl crate::CedarEntity for ServiceAccount {
-    const ENTITY_TYPE: &'static str = "ServiceAccount";
-
-    fn entity_id(&self) -> cedar_policy::EntityId {
-        cedar_policy::EntityId::new(self.id.to_string_unprefixed())
+    async fn parents(&self, _global: &impl core_traits::Global) -> Result<HashSet<cedar_policy::EntityUid>, tonic::Status> {
+        Ok(std::iter::once(self.organization_id.entity_uid())
+            .chain(self.project_id.map(|id| id.entity_uid()))
+            .collect())
     }
-
-    // async fn parents(&self, _global: &Arc<G>) -> Result<HashSet<cedar_policy::EntityUid>, tonic::Status> {
-    //     let mut parents = HashSet::new();
-    //     parents.insert(CedarEntity::<G>::entity_uid(&self.organization_id));
-    //     if let Some(project_id) = &self.project_id {
-    //         parents.insert(CedarEntity::<G>::entity_uid(project_id));
-    //     }
-    //     Ok(parents)
-    // }
 }
 
-impl_cedar_identity!(ServiceAccountToken);
+cedar_entity!(ServiceAccountToken);
+
+cedar_entity_id!(OrganizationInvitation);
 
 impl crate::CedarEntity for OrganizationInvitation {
-    const ENTITY_TYPE: &'static str = "OrganizationInvitation";
-
-    fn entity_id(&self) -> cedar_policy::EntityId {
-        cedar_policy::EntityId::new(self.id.to_string_unprefixed())
-    }
-
     // async fn additional_attributes(
     //     &self,
     //     global: &Arc<G>,

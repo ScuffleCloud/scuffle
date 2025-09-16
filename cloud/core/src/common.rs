@@ -10,6 +10,7 @@ use core_db_types::schema::{
     user_emails, user_sessions, users,
 };
 use core_traits::EmailServiceClient;
+use core_traits::{DisplayExt, OptionExt, ResultExt};
 use diesel::{
     BoolExpressionMethods, ExpressionMethods, JoinOnDsl, NullableExpressionMethods, OptionalExtension, QueryDsl,
     SelectableHelper,
@@ -24,7 +25,6 @@ use tonic_types::{ErrorDetails, StatusExt};
 
 use crate::chrono_ext::ChronoDateTimeExt;
 use crate::emails;
-use crate::std_ext::{DisplayExt, OptionExt, ResultExt};
 
 pub(crate) fn generate_random_bytes() -> Result<[u8; 32], rand::Error> {
     let mut token = [0u8; 32];

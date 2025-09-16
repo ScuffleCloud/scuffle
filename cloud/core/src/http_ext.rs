@@ -2,12 +2,12 @@ use std::sync::Arc;
 
 use axum::http;
 use core_db_types::models::UserSession;
+use core_traits::OptionExt;
 use geo_ip::middleware::IpAddressInfo;
 use tonic::Code;
 use tonic_types::ErrorDetails;
 
 use crate::middleware::ExpiredSession;
-use crate::std_ext::OptionExt;
 
 pub(crate) trait RequestExt {
     fn extensions(&self) -> &http::Extensions;

@@ -1,12 +1,12 @@
 use core_db_types::models::{MfaTotpCredential, UserId};
 use core_db_types::schema::mfa_totp_credentials;
+use core_traits::{DisplayExt, ResultExt};
 use diesel::{ExpressionMethods, QueryDsl, SelectableHelper};
 use diesel_async::RunQueryDsl;
 use tonic_types::{ErrorDetails, StatusExt};
 use totp_rs::{Algorithm, TOTP, TotpUrlError};
 
 use crate::common;
-use crate::std_ext::{DisplayExt, ResultExt};
 
 const ISSUER: &str = "scuffle.cloud";
 

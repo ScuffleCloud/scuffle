@@ -66,7 +66,6 @@ impl PrefixedId for MfaWebauthnCredential {
     const PREFIX: &'static str = "mfw";
 }
 
-
 impl From<MfaWebauthnCredential> for pb::scufflecloud::core::v1::WebauthnCredential {
     fn from(value: MfaWebauthnCredential) -> Self {
         Self {

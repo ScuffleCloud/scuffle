@@ -21,6 +21,9 @@ mod http;
 mod redis;
 mod webauthn;
 
+mod std_ext;
+pub use std_ext::*;
+
 pub trait Global:
     ConfigInterface
     + DatabaseInterface

@@ -2,4 +2,4 @@ Click the link below to add this email address to your Scuffle account.
 <%= self.url %>
 The link is valid for 60 minutes.
 
-<% include!("../copyright.stpl"); %>
+<% include!("../copyright_text.stpl"); %>

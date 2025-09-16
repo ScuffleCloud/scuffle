@@ -1,5 +1,5 @@
 Thanks for singing up for Scuffle! Click the link below to access your Scuffle account.
 <%= self.url %>
-The link is valid for 60 minutes.
+The link is valid for <%= self.timeout_minutes %> minutes.
 
-<% include!("../copyright.stpl"); %>
+<% include!("../copyright_text.stpl"); %>

@@ -9,42 +9,44 @@
 </head>
 
 <body style="margin: 0; padding: 0;">
-    <table width="100%" height="100%" border="0" cellspacing="0" cellpadding="0">
-        <tr height="32" style="height: 32px;">
+    <table width="100%" height="100%" border="0" cellspacing="0" cellpadding="0" style="width: 100%;">
+        <tr height="32" style="height: 64px;">
             <td></td>
         </tr>
         <tr align="center">
             <td>
-                <table border="0" cellspacing="0" cellpadding="0"
-                    style="margin-bottom: 20px; max-width: 360px; min-width: 200px;">
+                <table border="0" cellspacing="0" cellpadding="0" style="margin-bottom: 20px; width: 360px;">
                     <tr>
                         <td width="8" style="width: 8px;"></td>
                         <td>
                             <div align="center">
-                                <img src="data:image/png;base64,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"
-                                    width="240" height="72" aria-hidden="true" style="margin-bottom: 16px;"
-                                    alt="Scuffle">
+                                <img src="data:image/png;base64,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"
+                                    width="360" height="72" aria-hidden="true" alt="Scuffle"
+                                    style="display: block; border: 0;">
                                 <div
-                                    style="border-style: solid; border-width: thin; border-color: #E6DEDB; border-radius: 20px; padding: 24px; background-color: #FAF5F1;">
+                                    style="border-style: solid; border-width: thin; border-color: #E6DEDB; border-bottom-left-radius: 20px; border-bottom-right-radius: 20px; padding: 24px; background-color: #FAF5F1;">
                                     <div
-                                        style="font-family: 'Archivo', sans-serif; font-size: 24px; font-weight: 700; line-height: 32px; color: #000000;">
-                                        Sign in to Scuffle</div>
+                                        style="font-family: 'Archivo', sans-serif; font-size: 24px; font-weight: 700; line-height: 32px; color: #272626;">
+                                        Sign in to Scuffle
+                                    </div>
                                     <div
-                                        style="font-family: 'Archivo', sans-serif; margin-top: 16px; font-size: 16px; font-weight: 500; line-height: 24px; color: #000000;">
-                                        Click the button below to access your Scuffle account.</div>
+                                        style="font-family: 'Archivo', sans-serif; margin-top: 16px; font-size: 16px; font-weight: 500; line-height: 24px; color: #272626;">
+                                        Click the button below to access your Scuffle account.
+                                    </div>
                                     <div
-                                        style="font-family: 'Archivo', sans-serif; margin-top: 16px; font-size: 16px; font-weight: 500; line-height: 24px; color: #45413F; color: #000000;">
+                                        style="font-family: 'Archivo', sans-serif; margin-top: 16px; font-size: 16px; font-weight: 500; line-height: 24px; color: #45413F;">
                                         This link is valid for <%= self.timeout_minutes %> minutes.
                                     </div>
                                     <a href="<%= self.url %>" target="_blank"
-                                        style="font-family: 'Archivo', sans-serif; border-radius: 8px; margin-top: 16px; padding: 8px 12px; font-size: 16px; font-weight: 700; line-height: 24px; text-decoration: none; display: block; color: #FAF5F1; background-color: #592200;">
+                                        style="font-family: 'Archivo', sans-serif; border-radius: 8px; margin-top: 16px; padding: 8px 12px; font-size: 16px; font-weight: 700; line-height: 24px; text-decoration: none; display: block; color: #F5EFEC; background-color: #363433;">
                                         Sign in to Scuffle
                                     </a>
                                     <table width="100%" border="0" cellspacing="0" cellpadding="0"
                                         style="margin-top: 16px;">
                                         <tr>
-                                            <td width="43%" style="width: 43%;" valign="middle" style="vertical-align: middle;">
-                                                <hr style="border-width: thin; border-style: solid; border-color: #1817161F;">
+                                            <td width="43%" style="width: 43%;" valign="middle"
+                                                style="vertical-align: middle;">
+                                                <hr style="border-width: thin; border-style: solid; border-color: #DFDAD7;">
                                             </td>
                                             <td>
                                                 <div
@@ -52,8 +54,9 @@
                                                     OR
                                                 </div>
                                             </td>
-                                            <td width="43%" style="width: 43%;" valign="middle" style="vertical-align: middle;">
-                                                <hr style="border-width: thin; border-style: solid; border-color: #1817161F;">
+                                            <td width="43%" style="width: 43%;" valign="middle"
+                                                style="vertical-align: middle;">
+                                                <hr style="border-width: thin; border-style: solid; border-color: #DFDAD7;">
                                             </td>
                                         </tr>
                                     </table>
@@ -63,19 +66,12 @@
                                         below into your browser:
                                         <br>
                                         <a href="<%= self.url %>" target="_blank"
-                                            style="font-family: 'Archivo', sans-serif; font-size: 16px; font-weight: 500; line-height: 24px; color: #573D3F;">
+                                            style="font-family: 'Archivo', sans-serif; font-size: 16px; font-weight: 500; line-height: 24px;">
                                             <%= self.url %>
                                         </a>
                                     </div>
                                 </div>
-                                <div
-                                    style="font-family: 'Archivo', sans-serif; font-size: 14px; font-weight: 600; line-height: 16px; color: #45413F; margin-top: 16px; text-align:center; color: #000000;">
-                                    <% include!("../copyright.stpl"); %>
-                                </div>
-                                <div
-                                    style="font-family: 'Archivo', sans-serif; font-size: 12px; font-weight: 400; line-height: 16px; color: #45413F; margin-top: 4px; text-align: center; color: #000000; text-decoration: none;">
-                                    8 The Green, Dover, DE 19901, USA
-                                </div>
+                                <% include!("../copyright_html.stpl"); %>
                             </div>
                         </td>
                         <td width="8" style="width: 8px;"></td>
@@ -83,7 +79,7 @@
                 </table>
             </td>
         </tr>
-        <tr height="32" style="height: 32px;">
+        <tr height="32" style="height: 64px;">
             <td></td>
         </tr>
     </table>

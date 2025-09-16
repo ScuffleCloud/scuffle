@@ -5,3 +5,6 @@ IP Address: <%= self.ip_address %>
 <% if let Some(geo_info) = self.geo_info.as_ref() { %>
 Location: <% if let Some(city) = geo_info.city.as_ref() { %><%= city %><% } %><% if let Some(country) = geo_info.country.as_ref() { %>, <%= country %><% } %>
 <% } %>
+Check activity: <%= self.activity_url %>
+
+<% include!("../copyright_text.stpl"); %>

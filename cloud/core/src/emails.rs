@@ -13,12 +13,14 @@ struct RegisterWithEmailSubjectTemplate;
 #[template(path = "emails/register_with_email/text.stpl")]
 struct RegisterWithEmailTextTemplate {
     pub url: String,
+    pub timeout_minutes: u32,
 }
 
 #[derive(sailfish::Template)]
 #[template(path = "emails/register_with_email/html.stpl")]
 struct RegisterWithEmailHtmlTemplate {
     pub url: String,
+    pub timeout_minutes: u32,
 }
 
 pub(crate) async fn register_with_email_email<G: core_traits::Global>(
@@ -32,9 +34,15 @@ pub(crate) async fn register_with_email_email<G: core_traits::Global>(
         .unwrap()
         .to_string();
 
+    let timeout_minutes = global.timeout_config().email_registration_request.num_minutes().max(0) as u32;
+
     let subject = RegisterWithEmailSubjectTemplate.render_once()?;
-    let text = RegisterWithEmailTextTemplate { url: url.clone() }.render_once()?;
-    let html = RegisterWithEmailHtmlTemplate { url }.render_once()?;
+    let text = RegisterWithEmailTextTemplate {
+        url: url.clone(),
+        timeout_minutes,
+    }
+    .render_once()?;
+    let html = RegisterWithEmailHtmlTemplate { url, timeout_minutes }.render_once()?;
 
     Ok(pb::scufflecloud::email::v1::Email {
         to_address,
@@ -116,7 +124,11 @@ pub(crate) async fn magic_link_email<G: core_traits::Global>(
     let timeout_minutes = global.timeout_config().magic_link_request.num_minutes().max(0) as u32;
 
     let subject = MagicLinkSubjectTemplate.render_once()?;
-    let text = MagicLinkTextTemplate { url: url.clone(), timeout_minutes }.render_once()?;
+    let text = MagicLinkTextTemplate {
+        url: url.clone(),
+        timeout_minutes,
+    }
+    .render_once()?;
     let html = MagicLinkHtmlTemplate { url, timeout_minutes }.render_once()?;
 
     Ok(pb::scufflecloud::email::v1::Email {
@@ -159,6 +171,7 @@ impl GeoInfo {
 #[derive(sailfish::Template)]
 #[template(path = "emails/new_device/text.stpl")]
 struct NewDeviceTextTemplate {
+    pub activity_url: String,
     pub ip_address: String,
     pub geo_info: Option<GeoInfo>,
 }
@@ -166,6 +179,7 @@ struct NewDeviceTextTemplate {
 #[derive(sailfish::Template)]
 #[template(path = "emails/new_device/html.stpl")]
 struct NewDeviceHtmlTemplate {
+    pub activity_url: String,
     pub ip_address: String,
     pub geo_info: Option<GeoInfo>,
 }
@@ -180,6 +194,12 @@ pub(crate) async fn new_device_email<G: core_traits::Global>(
         .into_tonic_internal_err("failed to lookup geo location data")?
         .and_then(GeoInfo::from_city);
     let ip_address = ip_info.ip_address.to_string();
+    // TODO: replace with actual link
+    let activity_url = global
+        .dashboard_origin()
+        .join("/activity")
+        .unwrap()
+        .to_string();
 
     let subject = NewDeviceSubjectTemplate
         .render_once()
@@ -187,10 +207,11 @@ pub(crate) async fn new_device_email<G: core_traits::Global>(
     let text = NewDeviceTextTemplate {
         ip_address: ip_address.clone(),
         geo_info: geo_info.clone(),
+        activity_url: activity_url.clone(),
     }
     .render_once()
     .into_tonic_internal_err("failed to render email")?;
-    let html = NewDeviceHtmlTemplate { ip_address, geo_info }
+    let html = NewDeviceHtmlTemplate { ip_address, geo_info, activity_url }
         .render_once()
         .into_tonic_internal_err("failed to render email")?;
 

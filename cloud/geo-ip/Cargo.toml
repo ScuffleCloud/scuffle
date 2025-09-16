@@ -1,5 +1,6 @@
 [package]
 name = "scufflecloud-geo-ip"
+version = "0.1.0"
 authors = ["Scuffle <opensource@scuffle.cloud>"]
 edition = "2024"
 license = "AGPL-3.0"

@@ -17,7 +17,16 @@
     import SigninOptions from "./signin-options.svelte";
 
     let turnstileOverlayComponent: TurnstileOverlay | null = null;
-    let loginMode = $state<LoginMode>(DEFAULT_LOGIN_MODE);
+
+    function getInitialLoginModeFromUrl(): LoginMode {
+        const path = window.location.pathname;
+        if (path.includes("/password")) return "password";
+        if (path.includes("/forgot-password")) return "forgot-password";
+        if (path.includes("/passkey")) return "passkey";
+        return DEFAULT_LOGIN_MODE;
+    }
+
+    let loginMode = $state<LoginMode>(getInitialLoginModeFromUrl());
 
     // Manage routing here. Will add shallow routing
     let isRestoringFromHistory = false;

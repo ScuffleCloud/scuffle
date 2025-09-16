@@ -1,5 +1,5 @@
 clean:
-    rm generated
+    rm dist
 
 build:
     #!/usr/bin/env bash
@@ -8,8 +8,8 @@ build:
 
     exec_root="$(bazel info execution_root)"
     output="$(bazel cquery --output=files --build //cloud/proto/ts:pkg)"
-    rm -r generated || true
-    ln -s "${exec_root}/${output}/generated" generated
+    rm -r dist || true
+    ln -s "${exec_root}/${output}/dist" dist
 
 dev: build
     ibazel build //cloud/proto/ts:pkg

@@ -14,17 +14,18 @@
     },
     "exports": {
         "./*": {
-            "types": "./generated/*",
-            "import": "./generated/*",
-            "require": "./generated/*"
+            "types": "./dist/types/*",
+            "import": "./dist/esm/*"
         }
     },
     "typesVersions": {
         "*": {
-            "*": ["generated/*"]
+            "*": ["./dist/types/*"]
         }
     },
     "devDependencies": {
-        "typescript": "^5.9.2"
+        "typescript": "^5.9.2",
+        "@swc/cli": "^0.7.8",
+        "@swc/core": "^1.13.5"
     }
 }

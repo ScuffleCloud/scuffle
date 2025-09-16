@@ -1,0 +1,14 @@
+{
+    "$schema": "https://swc.rs/schema.json",
+    "module": {
+        "type": "nodenext",
+        "resolveFully": true
+    },
+    "jsc": {
+        "baseUrl": ".",
+        "parser": {
+            "syntax": "typescript"
+        },
+        "target": "esnext"
+    }
+}

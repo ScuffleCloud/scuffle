@@ -5,7 +5,7 @@ import {
     DeviceAlgorithm,
     type NewUserSessionToken,
 } from "@scufflecloud/proto/scufflecloud/core/v1/sessions_service.js";
-import { User } from "@scufflecloud/proto/scufflecloud/core/v1/users.js";
+import { type User } from "@scufflecloud/proto/scufflecloud/core/v1/users.js";
 import { sessionsServiceClient, usersServiceClient } from "./grpcClient";
 import { arrayBufferToBase64 } from "./utils";
 

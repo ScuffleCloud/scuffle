@@ -64,6 +64,6 @@ rust_library(
     version = "0.2.3",
     deps = [
         "@bindeps__equivalent-1.0.2//:equivalent",
-        "@bindeps__seize-0.5.0//:seize",
+        "@bindeps__seize-0.5.1//:seize",
     ],
 )

@@ -63,12 +63,12 @@ rust_library(
     }),
     version = "0.21.0",
     deps = [
-        "@bindeps__camino-1.1.12//:camino",
+        "@bindeps__camino-1.2.0//:camino",
         "@bindeps__cargo-platform-0.2.0//:cargo_platform",
         "@bindeps__cargo-util-schemas-0.8.2//:cargo_util_schemas",
-        "@bindeps__semver-1.0.26//:semver",
-        "@bindeps__serde-1.0.219//:serde",
-        "@bindeps__serde_json-1.0.143//:serde_json",
+        "@bindeps__semver-1.0.27//:semver",
+        "@bindeps__serde-1.0.225//:serde",
+        "@bindeps__serde_json-1.0.145//:serde_json",
         "@bindeps__thiserror-2.0.16//:thiserror",
     ],
 )

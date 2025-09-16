@@ -60,6 +60,6 @@ rust_library(
     }),
     version = "0.7.1",
     deps = [
-        "@bindeps__log-0.4.27//:log",
+        "@bindeps__log-0.4.28//:log",
     ],
 )

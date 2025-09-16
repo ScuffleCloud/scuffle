@@ -66,6 +66,6 @@ rust_library(
     version = "0.8.11",
     deps = [
         "@bindeps__libc-0.2.175//:libc",  # cfg(unix)
-        "@bindeps__log-0.4.27//:log",
+        "@bindeps__log-0.4.28//:log",
     ],
 )

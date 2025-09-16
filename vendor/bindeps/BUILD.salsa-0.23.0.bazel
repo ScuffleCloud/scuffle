@@ -74,7 +74,7 @@ rust_library(
         "@bindeps__crossbeam-utils-0.8.21//:crossbeam_utils",
         "@bindeps__hashbrown-0.15.5//:hashbrown",
         "@bindeps__hashlink-0.10.0//:hashlink",
-        "@bindeps__indexmap-2.11.0//:indexmap",
+        "@bindeps__indexmap-2.11.3//:indexmap",
         "@bindeps__intrusive-collections-0.9.7//:intrusive_collections",
         "@bindeps__papaya-0.2.3//:papaya",
         "@bindeps__parking_lot-0.12.4//:parking_lot",

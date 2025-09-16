@@ -68,7 +68,7 @@ rust_library(
     deps = [
         "@bindeps__bumpalo-3.19.0//:bumpalo",
         "@bindeps__crc32fast-1.5.0//:crc32fast",
-        "@bindeps__log-0.4.27//:log",
+        "@bindeps__log-0.4.28//:log",
         "@bindeps__simd-adler32-0.3.7//:simd_adler32",
     ],
 )

@@ -63,10 +63,10 @@ rust_library(
         "@bindeps__same-file-1.0.6//:same_file",
     ] + select({
         "@rules_rust//rust/platform:aarch64-pc-windows-msvc": [
-            "@bindeps__winapi-util-0.1.10//:winapi_util",  # cfg(windows)
+            "@bindeps__winapi-util-0.1.11//:winapi_util",  # cfg(windows)
         ],
         "@rules_rust//rust/platform:x86_64-pc-windows-msvc": [
-            "@bindeps__winapi-util-0.1.10//:winapi_util",  # cfg(windows)
+            "@bindeps__winapi-util-0.1.11//:winapi_util",  # cfg(windows)
         ],
         "//conditions:default": [],
     }),

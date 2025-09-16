@@ -542,7 +542,6 @@ _CONDITIONS = {
     "cfg(all(target_arch = \"aarch64\", target_env = \"msvc\", not(windows_raw_dylib)))": ["@rules_rust//rust/platform:aarch64-pc-windows-msvc"],
     "cfg(all(target_arch = \"aarch64\", target_os = \"linux\"))": ["@rules_rust//rust/platform:aarch64-unknown-linux-gnu"],
     "cfg(all(target_arch = \"aarch64\", target_vendor = \"apple\"))": ["@rules_rust//rust/platform:aarch64-apple-darwin"],
-    "cfg(all(target_arch = \"x86_64\", target_env = \"msvc\", not(windows_raw_dylib)))": ["@rules_rust//rust/platform:x86_64-pc-windows-msvc"],
     "cfg(all(target_os = \"linux\", not(target_env = \"ohos\")))": ["@rules_rust//rust/platform:aarch64-unknown-linux-gnu", "@rules_rust//rust/platform:x86_64-unknown-linux-gnu"],
     "cfg(all(target_os = \"linux\", target_env = \"gnu\"))": ["@rules_rust//rust/platform:aarch64-unknown-linux-gnu", "@rules_rust//rust/platform:x86_64-unknown-linux-gnu"],
     "cfg(all(target_os = \"macos\", target_arch = \"aarch64\"))": ["@rules_rust//rust/platform:aarch64-apple-darwin"],
@@ -605,12 +604,12 @@ def crate_repositories():
 
     maybe(
         http_archive,
-        name = "bindeps__actix-files-0.6.7",
-        sha256 = "22c8b5536deb14cd9c3e505bd0e3366e1a12383b659c92f2b4fa4d323d583599",
+        name = "bindeps__actix-files-0.6.8",
+        sha256 = "6c0d87f10d70e2948ad40e8edea79c8e77c6c66e0250a4c1f09b690465199576",
         type = "tar.gz",
-        urls = ["https://static.crates.io/crates/actix-files/0.6.7/download"],
-        strip_prefix = "actix-files-0.6.7",
-        build_file = Label("//vendor/bindeps:BUILD.actix-files-0.6.7.bazel"),
+        urls = ["https://static.crates.io/crates/actix-files/0.6.8/download"],
+        strip_prefix = "actix-files-0.6.8",
+        build_file = Label("//vendor/bindeps:BUILD.actix-files-0.6.8.bazel"),
     )
 
     maybe(
@@ -1005,12 +1004,12 @@ def crate_repositories():
 
     maybe(
         http_archive,
-        name = "bindeps__async-fs-2.1.3",
-        sha256 = "09f7e37c0ed80b2a977691c47dae8625cfb21e205827106c64f7c588766b2e50",
+        name = "bindeps__async-fs-2.2.0",
+        sha256 = "8034a681df4aed8b8edbd7fbe472401ecf009251c8b40556b304567052e294c5",
         type = "tar.gz",
-        urls = ["https://static.crates.io/crates/async-fs/2.1.3/download"],
-        strip_prefix = "async-fs-2.1.3",
-        build_file = Label("//vendor/bindeps:BUILD.async-fs-2.1.3.bazel"),
+        urls = ["https://static.crates.io/crates/async-fs/2.2.0/download"],
+        strip_prefix = "async-fs-2.2.0",
+        build_file = Label("//vendor/bindeps:BUILD.async-fs-2.2.0.bazel"),
     )
 
     maybe(
@@ -1106,7 +1105,7 @@ def crate_repositories():
     maybe(
         new_git_repository,
         name = "bindeps__base-db-0.0.0",
-        commit = "bc2e8effd36dbfc5eba9c36b015c9299e067ec6d",
+        commit = "3e9a967c2786589ecd801a078f8687a924e46430",
         init_submodules = True,
         remote = "https://github.com/TroyKomodo/rust-analyzer.git",
         build_file = Label("//vendor/bindeps:BUILD.base-db-0.0.0.bazel"),
@@ -1335,22 +1334,22 @@ def crate_repositories():
 
     maybe(
         http_archive,
-        name = "bindeps__bytesize-2.0.1",
-        sha256 = "a3c8f83209414aacf0eeae3cf730b18d6981697fba62f200fcfb92b9f082acba",
+        name = "bindeps__bytesize-2.1.0",
+        sha256 = "f5c434ae3cf0089ca203e9019ebe529c47ff45cefe8af7c85ecb734ef541822f",
         type = "tar.gz",
-        urls = ["https://static.crates.io/crates/bytesize/2.0.1/download"],
-        strip_prefix = "bytesize-2.0.1",
-        build_file = Label("//vendor/bindeps:BUILD.bytesize-2.0.1.bazel"),
+        urls = ["https://static.crates.io/crates/bytesize/2.1.0/download"],
+        strip_prefix = "bytesize-2.1.0",
+        build_file = Label("//vendor/bindeps:BUILD.bytesize-2.1.0.bazel"),
     )
 
     maybe(
         http_archive,
-        name = "bindeps__bytestring-1.4.0",
-        sha256 = "e465647ae23b2823b0753f50decb2d5a86d2bb2cac04788fafd1f80e45378e5f",
+        name = "bindeps__bytestring-1.5.0",
+        sha256 = "113b4343b5f6617e7ad401ced8de3cc8b012e73a594347c307b90db3e9271289",
         type = "tar.gz",
-        urls = ["https://static.crates.io/crates/bytestring/1.4.0/download"],
-        strip_prefix = "bytestring-1.4.0",
-        build_file = Label("//vendor/bindeps:BUILD.bytestring-1.4.0.bazel"),
+        urls = ["https://static.crates.io/crates/bytestring/1.5.0/download"],
+        strip_prefix = "bytestring-1.5.0",
+        build_file = Label("//vendor/bindeps:BUILD.bytestring-1.5.0.bazel"),
     )
 
     maybe(
@@ -1375,12 +1374,12 @@ def crate_repositories():
 
     maybe(
         http_archive,
-        name = "bindeps__camino-1.1.12",
-        sha256 = "dd0b03af37dad7a14518b7691d81acb0f8222604ad3d1b02f6b4bed5188c0cd5",
+        name = "bindeps__camino-1.2.0",
+        sha256 = "e1de8bc0aa9e9385ceb3bf0c152e3a9b9544f6c4a912c8ae504e80c1f0368603",
         type = "tar.gz",
-        urls = ["https://static.crates.io/crates/camino/1.1.12/download"],
-        strip_prefix = "camino-1.1.12",
-        build_file = Label("//vendor/bindeps:BUILD.camino-1.1.12.bazel"),
+        urls = ["https://static.crates.io/crates/camino/1.2.0/download"],
+        strip_prefix = "camino-1.2.0",
+        build_file = Label("//vendor/bindeps:BUILD.camino-1.2.0.bazel"),
     )
 
     maybe(
@@ -1395,12 +1394,12 @@ def crate_repositories():
 
     maybe(
         http_archive,
-        name = "bindeps__cargo-insta-1.43.1",
-        sha256 = "01219f94e4b271fe3de817c49fd17fa02dc1f653cfe003f0977c5ff6e210a638",
+        name = "bindeps__cargo-insta-1.43.2",
+        sha256 = "95fdff5830c251a7d7d3c414f0bc0a43aef796a07b725d6b43c6f533384a793b",
         type = "tar.gz",
-        urls = ["https://static.crates.io/crates/cargo-insta/1.43.1/download"],
-        strip_prefix = "cargo-insta-1.43.1",
-        build_file = Label("//vendor/bindeps:BUILD.cargo-insta-1.43.1.bazel"),
+        urls = ["https://static.crates.io/crates/cargo-insta/1.43.2/download"],
+        strip_prefix = "cargo-insta-1.43.2",
+        build_file = Label("//vendor/bindeps:BUILD.cargo-insta-1.43.2.bazel"),
     )
 
     maybe(
@@ -1475,12 +1474,12 @@ def crate_repositories():
 
     maybe(
         http_archive,
-        name = "bindeps__cc-1.2.35",
-        sha256 = "590f9024a68a8c40351881787f1934dc11afd69090f5edb6831464694d836ea3",
+        name = "bindeps__cc-1.2.37",
+        sha256 = "65193589c6404eb80b450d618eaf9a2cafaaafd57ecce47370519ef674a7bd44",
         type = "tar.gz",
-        urls = ["https://static.crates.io/crates/cc/1.2.35/download"],
-        strip_prefix = "cc-1.2.35",
-        build_file = Label("//vendor/bindeps:BUILD.cc-1.2.35.bazel"),
+        urls = ["https://static.crates.io/crates/cc/1.2.37/download"],
+        strip_prefix = "cc-1.2.37",
+        build_file = Label("//vendor/bindeps:BUILD.cc-1.2.37.bazel"),
     )
 
     maybe(
@@ -1536,7 +1535,7 @@ def crate_repositories():
     maybe(
         new_git_repository,
         name = "bindeps__cfg-0.0.0",
-        commit = "bc2e8effd36dbfc5eba9c36b015c9299e067ec6d",
+        commit = "3e9a967c2786589ecd801a078f8687a924e46430",
         init_submodules = True,
         remote = "https://github.com/TroyKomodo/rust-analyzer.git",
         build_file = Label("//vendor/bindeps:BUILD.cfg-0.0.0.bazel"),
@@ -1615,12 +1614,12 @@ def crate_repositories():
 
     maybe(
         http_archive,
-        name = "bindeps__chrono-0.4.41",
-        sha256 = "c469d952047f47f91b68d1cba3f10d63c11d73e4636f24f08daf0278abf01c4d",
+        name = "bindeps__chrono-0.4.42",
+        sha256 = "145052bdd345b87320e369255277e3fb5152762ad123a901ef5c262dd38fe8d2",
         type = "tar.gz",
-        urls = ["https://static.crates.io/crates/chrono/0.4.41/download"],
-        strip_prefix = "chrono-0.4.41",
-        build_file = Label("//vendor/bindeps:BUILD.chrono-0.4.41.bazel"),
+        urls = ["https://static.crates.io/crates/chrono/0.4.42/download"],
+        strip_prefix = "chrono-0.4.42",
+        build_file = Label("//vendor/bindeps:BUILD.chrono-0.4.42.bazel"),
     )
 
     maybe(
@@ -2155,12 +2154,12 @@ def crate_repositories():
 
     maybe(
         http_archive,
-        name = "bindeps__ctrlc-3.4.7",
-        sha256 = "46f93780a459b7d656ef7f071fe699c4d3d2cb201c4b24d085b6ddc505276e73",
+        name = "bindeps__ctrlc-3.5.0",
+        sha256 = "881c5d0a13b2f1498e2306e82cbada78390e152d4b1378fb28a84f4dcd0dc4f3",
         type = "tar.gz",
-        urls = ["https://static.crates.io/crates/ctrlc/3.4.7/download"],
-        strip_prefix = "ctrlc-3.4.7",
-        build_file = Label("//vendor/bindeps:BUILD.ctrlc-3.4.7.bazel"),
+        urls = ["https://static.crates.io/crates/ctrlc/3.5.0/download"],
+        strip_prefix = "ctrlc-3.5.0",
+        build_file = Label("//vendor/bindeps:BUILD.ctrlc-3.5.0.bazel"),
     )
 
     maybe(
@@ -2385,6 +2384,16 @@ def crate_repositories():
 
     maybe(
         http_archive,
+        name = "bindeps__dispatch-0.2.0",
+        sha256 = "bd0c93bb4b0c6d9b77f4435b0ae98c24d17f1c45b2ff844c6151a07256ca923b",
+        type = "tar.gz",
+        urls = ["https://static.crates.io/crates/dispatch/0.2.0/download"],
+        strip_prefix = "dispatch-0.2.0",
+        build_file = Label("//vendor/bindeps:BUILD.dispatch-0.2.0.bazel"),
+    )
+
+    maybe(
+        http_archive,
         name = "bindeps__displaydoc-0.2.5",
         sha256 = "97369cbbc041bc366949bc74d34658d6cda5621039731c6310521892a3a20ae0",
         type = "tar.gz",
@@ -2425,18 +2434,18 @@ def crate_repositories():
 
     maybe(
         new_git_repository,
-        name = "bindeps__dprint-0.50.1",
-        commit = "a966de1d32d43e21711e7a46197acd5645f052be",
+        name = "bindeps__dprint-0.50.2",
+        commit = "7babe9ccce1edad98635256f4fe3cd71129739ec",
         init_submodules = True,
         remote = "https://github.com/TroyKomodo/dprint.git",
-        build_file = Label("//vendor/bindeps:BUILD.dprint-0.50.1.bazel"),
+        build_file = Label("//vendor/bindeps:BUILD.dprint-0.50.2.bazel"),
         strip_prefix = "crates/dprint",
     )
 
     maybe(
         new_git_repository,
         name = "bindeps__dprint-core-0.67.4",
-        commit = "a966de1d32d43e21711e7a46197acd5645f052be",
+        commit = "7babe9ccce1edad98635256f4fe3cd71129739ec",
         init_submodules = True,
         remote = "https://github.com/TroyKomodo/dprint.git",
         build_file = Label("//vendor/bindeps:BUILD.dprint-core-0.67.4.bazel"),
@@ -2486,7 +2495,7 @@ def crate_repositories():
     maybe(
         new_git_repository,
         name = "bindeps__edition-0.0.0",
-        commit = "bc2e8effd36dbfc5eba9c36b015c9299e067ec6d",
+        commit = "3e9a967c2786589ecd801a078f8687a924e46430",
         init_submodules = True,
         remote = "https://github.com/TroyKomodo/rust-analyzer.git",
         build_file = Label("//vendor/bindeps:BUILD.edition-0.0.0.bazel"),
@@ -2625,22 +2634,22 @@ def crate_repositories():
 
     maybe(
         http_archive,
-        name = "bindeps__erased-serde-0.4.6",
-        sha256 = "e004d887f51fcb9fef17317a2f3525c887d8aa3f4f50fed920816a688284a5b7",
+        name = "bindeps__erased-serde-0.4.8",
+        sha256 = "259d404d09818dec19332e31d94558aeb442fea04c817006456c24b5460bbd4b",
         type = "tar.gz",
-        urls = ["https://static.crates.io/crates/erased-serde/0.4.6/download"],
-        strip_prefix = "erased-serde-0.4.6",
-        build_file = Label("//vendor/bindeps:BUILD.erased-serde-0.4.6.bazel"),
+        urls = ["https://static.crates.io/crates/erased-serde/0.4.8/download"],
+        strip_prefix = "erased-serde-0.4.8",
+        build_file = Label("//vendor/bindeps:BUILD.erased-serde-0.4.8.bazel"),
     )
 
     maybe(
         http_archive,
-        name = "bindeps__errno-0.3.13",
-        sha256 = "778e2ac28f6c47af28e4907f13ffd1e1ddbd400980a9abd7c8df189bf578a5ad",
+        name = "bindeps__errno-0.3.14",
+        sha256 = "39cab71617ae0d63f51a36d69f866391735b51691dbda63cf6f96d042b63efeb",
         type = "tar.gz",
-        urls = ["https://static.crates.io/crates/errno/0.3.13/download"],
-        strip_prefix = "errno-0.3.13",
-        build_file = Label("//vendor/bindeps:BUILD.errno-0.3.13.bazel"),
+        urls = ["https://static.crates.io/crates/errno/0.3.14/download"],
+        strip_prefix = "errno-0.3.14",
+        build_file = Label("//vendor/bindeps:BUILD.errno-0.3.14.bazel"),
     )
 
     maybe(
@@ -2725,12 +2734,12 @@ def crate_repositories():
 
     maybe(
         http_archive,
-        name = "bindeps__find-msvc-tools-0.1.0",
-        sha256 = "e178e4fba8a2726903f6ba98a6d221e76f9c12c650d5dc0e6afdc50677b49650",
+        name = "bindeps__find-msvc-tools-0.1.1",
+        sha256 = "7fd99930f64d146689264c637b5af2f0233a933bef0d8570e2526bf9e083192d",
         type = "tar.gz",
-        urls = ["https://static.crates.io/crates/find-msvc-tools/0.1.0/download"],
-        strip_prefix = "find-msvc-tools-0.1.0",
-        build_file = Label("//vendor/bindeps:BUILD.find-msvc-tools-0.1.0.bazel"),
+        urls = ["https://static.crates.io/crates/find-msvc-tools/0.1.1/download"],
+        strip_prefix = "find-msvc-tools-0.1.1",
+        build_file = Label("//vendor/bindeps:BUILD.find-msvc-tools-0.1.1.bazel"),
     )
 
     maybe(
@@ -2795,12 +2804,12 @@ def crate_repositories():
 
     maybe(
         http_archive,
-        name = "bindeps__fs-err-3.1.1",
-        sha256 = "88d7be93788013f265201256d58f04936a8079ad5dc898743aa20525f503b683",
+        name = "bindeps__fs-err-3.1.2",
+        sha256 = "44f150ffc8782f35521cec2b23727707cb4045706ba3c854e86bef66b3a8cdbd",
         type = "tar.gz",
-        urls = ["https://static.crates.io/crates/fs-err/3.1.1/download"],
-        strip_prefix = "fs-err-3.1.1",
-        build_file = Label("//vendor/bindeps:BUILD.fs-err-3.1.1.bazel"),
+        urls = ["https://static.crates.io/crates/fs-err/3.1.2/download"],
+        strip_prefix = "fs-err-3.1.2",
+        build_file = Label("//vendor/bindeps:BUILD.fs-err-3.1.2.bazel"),
     )
 
     maybe(
@@ -3656,7 +3665,7 @@ def crate_repositories():
     maybe(
         new_git_repository,
         name = "bindeps__hir-0.0.0",
-        commit = "bc2e8effd36dbfc5eba9c36b015c9299e067ec6d",
+        commit = "3e9a967c2786589ecd801a078f8687a924e46430",
         init_submodules = True,
         remote = "https://github.com/TroyKomodo/rust-analyzer.git",
         build_file = Label("//vendor/bindeps:BUILD.hir-0.0.0.bazel"),
@@ -3666,7 +3675,7 @@ def crate_repositories():
     maybe(
         new_git_repository,
         name = "bindeps__hir-def-0.0.0",
-        commit = "bc2e8effd36dbfc5eba9c36b015c9299e067ec6d",
+        commit = "3e9a967c2786589ecd801a078f8687a924e46430",
         init_submodules = True,
         remote = "https://github.com/TroyKomodo/rust-analyzer.git",
         build_file = Label("//vendor/bindeps:BUILD.hir-def-0.0.0.bazel"),
@@ -3676,7 +3685,7 @@ def crate_repositories():
     maybe(
         new_git_repository,
         name = "bindeps__hir-expand-0.0.0",
-        commit = "bc2e8effd36dbfc5eba9c36b015c9299e067ec6d",
+        commit = "3e9a967c2786589ecd801a078f8687a924e46430",
         init_submodules = True,
         remote = "https://github.com/TroyKomodo/rust-analyzer.git",
         build_file = Label("//vendor/bindeps:BUILD.hir-expand-0.0.0.bazel"),
@@ -3686,7 +3695,7 @@ def crate_repositories():
     maybe(
         new_git_repository,
         name = "bindeps__hir-ty-0.0.0",
-        commit = "bc2e8effd36dbfc5eba9c36b015c9299e067ec6d",
+        commit = "3e9a967c2786589ecd801a078f8687a924e46430",
         init_submodules = True,
         remote = "https://github.com/TroyKomodo/rust-analyzer.git",
         build_file = Label("//vendor/bindeps:BUILD.hir-ty-0.0.0.bazel"),
@@ -3815,22 +3824,22 @@ def crate_repositories():
 
     maybe(
         http_archive,
-        name = "bindeps__hyper-util-0.1.16",
-        sha256 = "8d9b05277c7e8da2c93a568989bb6207bef0112e8d17df7a6eda4a3cf143bc5e",
+        name = "bindeps__hyper-util-0.1.17",
+        sha256 = "3c6995591a8f1380fcb4ba966a252a4b29188d51d2b89e3a252f5305be65aea8",
         type = "tar.gz",
-        urls = ["https://static.crates.io/crates/hyper-util/0.1.16/download"],
-        strip_prefix = "hyper-util-0.1.16",
-        build_file = Label("//vendor/bindeps:BUILD.hyper-util-0.1.16.bazel"),
+        urls = ["https://static.crates.io/crates/hyper-util/0.1.17/download"],
+        strip_prefix = "hyper-util-0.1.17",
+        build_file = Label("//vendor/bindeps:BUILD.hyper-util-0.1.17.bazel"),
     )
 
     maybe(
         http_archive,
-        name = "bindeps__iana-time-zone-0.1.63",
-        sha256 = "b0c919e5debc312ad217002b8048a17b7d83f80703865bbfcfebb0458b0b27d8",
+        name = "bindeps__iana-time-zone-0.1.64",
+        sha256 = "33e57f83510bb73707521ebaffa789ec8caf86f9657cad665b092b581d40e9fb",
         type = "tar.gz",
-        urls = ["https://static.crates.io/crates/iana-time-zone/0.1.63/download"],
-        strip_prefix = "iana-time-zone-0.1.63",
-        build_file = Label("//vendor/bindeps:BUILD.iana-time-zone-0.1.63.bazel"),
+        urls = ["https://static.crates.io/crates/iana-time-zone/0.1.64/download"],
+        strip_prefix = "iana-time-zone-0.1.64",
+        build_file = Label("//vendor/bindeps:BUILD.iana-time-zone-0.1.64.bazel"),
     )
 
     maybe(
@@ -3906,7 +3915,7 @@ def crate_repositories():
     maybe(
         new_git_repository,
         name = "bindeps__ide-0.0.0",
-        commit = "bc2e8effd36dbfc5eba9c36b015c9299e067ec6d",
+        commit = "3e9a967c2786589ecd801a078f8687a924e46430",
         init_submodules = True,
         remote = "https://github.com/TroyKomodo/rust-analyzer.git",
         build_file = Label("//vendor/bindeps:BUILD.ide-0.0.0.bazel"),
@@ -3916,7 +3925,7 @@ def crate_repositories():
     maybe(
         new_git_repository,
         name = "bindeps__ide-assists-0.0.0",
-        commit = "bc2e8effd36dbfc5eba9c36b015c9299e067ec6d",
+        commit = "3e9a967c2786589ecd801a078f8687a924e46430",
         init_submodules = True,
         remote = "https://github.com/TroyKomodo/rust-analyzer.git",
         build_file = Label("//vendor/bindeps:BUILD.ide-assists-0.0.0.bazel"),
@@ -3926,7 +3935,7 @@ def crate_repositories():
     maybe(
         new_git_repository,
         name = "bindeps__ide-completion-0.0.0",
-        commit = "bc2e8effd36dbfc5eba9c36b015c9299e067ec6d",
+        commit = "3e9a967c2786589ecd801a078f8687a924e46430",
         init_submodules = True,
         remote = "https://github.com/TroyKomodo/rust-analyzer.git",
         build_file = Label("//vendor/bindeps:BUILD.ide-completion-0.0.0.bazel"),
@@ -3936,7 +3945,7 @@ def crate_repositories():
     maybe(
         new_git_repository,
         name = "bindeps__ide-db-0.0.0",
-        commit = "bc2e8effd36dbfc5eba9c36b015c9299e067ec6d",
+        commit = "3e9a967c2786589ecd801a078f8687a924e46430",
         init_submodules = True,
         remote = "https://github.com/TroyKomodo/rust-analyzer.git",
         build_file = Label("//vendor/bindeps:BUILD.ide-db-0.0.0.bazel"),
@@ -3946,7 +3955,7 @@ def crate_repositories():
     maybe(
         new_git_repository,
         name = "bindeps__ide-diagnostics-0.0.0",
-        commit = "bc2e8effd36dbfc5eba9c36b015c9299e067ec6d",
+        commit = "3e9a967c2786589ecd801a078f8687a924e46430",
         init_submodules = True,
         remote = "https://github.com/TroyKomodo/rust-analyzer.git",
         build_file = Label("//vendor/bindeps:BUILD.ide-diagnostics-0.0.0.bazel"),
@@ -3956,7 +3965,7 @@ def crate_repositories():
     maybe(
         new_git_repository,
         name = "bindeps__ide-ssr-0.0.0",
-        commit = "bc2e8effd36dbfc5eba9c36b015c9299e067ec6d",
+        commit = "3e9a967c2786589ecd801a078f8687a924e46430",
         init_submodules = True,
         remote = "https://github.com/TroyKomodo/rust-analyzer.git",
         build_file = Label("//vendor/bindeps:BUILD.ide-ssr-0.0.0.bazel"),
@@ -4035,12 +4044,12 @@ def crate_repositories():
 
     maybe(
         http_archive,
-        name = "bindeps__indexmap-2.11.0",
-        sha256 = "f2481980430f9f78649238835720ddccc57e52df14ffce1c6f37391d61b563e9",
+        name = "bindeps__indexmap-2.11.3",
+        sha256 = "92119844f513ffa41556430369ab02c295a3578af21cf945caa3e9e0c2481ac3",
         type = "tar.gz",
-        urls = ["https://static.crates.io/crates/indexmap/2.11.0/download"],
-        strip_prefix = "indexmap-2.11.0",
-        build_file = Label("//vendor/bindeps:BUILD.indexmap-2.11.0.bazel"),
+        urls = ["https://static.crates.io/crates/indexmap/2.11.3/download"],
+        strip_prefix = "indexmap-2.11.3",
+        build_file = Label("//vendor/bindeps:BUILD.indexmap-2.11.3.bazel"),
     )
 
     maybe(
@@ -4075,18 +4084,18 @@ def crate_repositories():
 
     maybe(
         http_archive,
-        name = "bindeps__insta-1.43.1",
-        sha256 = "154934ea70c58054b556dd430b99a98c2a7ff5309ac9891597e339b5c28f4371",
+        name = "bindeps__insta-1.43.2",
+        sha256 = "46fdb647ebde000f43b5b53f773c30cf9b0cb4300453208713fa38b2c70935a0",
         type = "tar.gz",
-        urls = ["https://static.crates.io/crates/insta/1.43.1/download"],
-        strip_prefix = "insta-1.43.1",
-        build_file = Label("//vendor/bindeps:BUILD.insta-1.43.1.bazel"),
+        urls = ["https://static.crates.io/crates/insta/1.43.2/download"],
+        strip_prefix = "insta-1.43.2",
+        build_file = Label("//vendor/bindeps:BUILD.insta-1.43.2.bazel"),
     )
 
     maybe(
         new_git_repository,
         name = "bindeps__intern-0.0.0",
-        commit = "bc2e8effd36dbfc5eba9c36b015c9299e067ec6d",
+        commit = "3e9a967c2786589ecd801a078f8687a924e46430",
         init_submodules = True,
         remote = "https://github.com/TroyKomodo/rust-analyzer.git",
         build_file = Label("//vendor/bindeps:BUILD.intern-0.0.0.bazel"),
@@ -4495,12 +4504,12 @@ def crate_repositories():
 
     maybe(
         http_archive,
-        name = "bindeps__linux-raw-sys-0.9.4",
-        sha256 = "cd945864f07fe9f5371a27ad7b52a172b4b499999f1d97574c9fa68373937e12",
+        name = "bindeps__linux-raw-sys-0.11.0",
+        sha256 = "df1d3c3b53da64cf5760482273a98e575c651a67eec7f77df96b5b642de8f039",
         type = "tar.gz",
-        urls = ["https://static.crates.io/crates/linux-raw-sys/0.9.4/download"],
-        strip_prefix = "linux-raw-sys-0.9.4",
-        build_file = Label("//vendor/bindeps:BUILD.linux-raw-sys-0.9.4.bazel"),
+        urls = ["https://static.crates.io/crates/linux-raw-sys/0.11.0/download"],
+        strip_prefix = "linux-raw-sys-0.11.0",
+        build_file = Label("//vendor/bindeps:BUILD.linux-raw-sys-0.11.0.bazel"),
     )
 
     maybe(
@@ -4516,7 +4525,7 @@ def crate_repositories():
     maybe(
         new_git_repository,
         name = "bindeps__load-cargo-0.0.0",
-        commit = "bc2e8effd36dbfc5eba9c36b015c9299e067ec6d",
+        commit = "3e9a967c2786589ecd801a078f8687a924e46430",
         init_submodules = True,
         remote = "https://github.com/TroyKomodo/rust-analyzer.git",
         build_file = Label("//vendor/bindeps:BUILD.load-cargo-0.0.0.bazel"),
@@ -4555,12 +4564,12 @@ def crate_repositories():
 
     maybe(
         http_archive,
-        name = "bindeps__log-0.4.27",
-        sha256 = "13dc2df351e3202783a1fe0d44375f7295ffb4049267b0f3018346dc122a1d94",
+        name = "bindeps__log-0.4.28",
+        sha256 = "34080505efa8e45a4b816c349525ebe327ceaa8559756f0356cba97ef3bf7432",
         type = "tar.gz",
-        urls = ["https://static.crates.io/crates/log/0.4.27/download"],
-        strip_prefix = "log-0.4.27",
-        build_file = Label("//vendor/bindeps:BUILD.log-0.4.27.bazel"),
+        urls = ["https://static.crates.io/crates/log/0.4.28/download"],
+        strip_prefix = "log-0.4.28",
+        build_file = Label("//vendor/bindeps:BUILD.log-0.4.28.bazel"),
     )
 
     maybe(
@@ -4706,7 +4715,7 @@ def crate_repositories():
     maybe(
         new_git_repository,
         name = "bindeps__mbe-0.0.0",
-        commit = "bc2e8effd36dbfc5eba9c36b015c9299e067ec6d",
+        commit = "3e9a967c2786589ecd801a078f8687a924e46430",
         init_submodules = True,
         remote = "https://github.com/TroyKomodo/rust-analyzer.git",
         build_file = Label("//vendor/bindeps:BUILD.mbe-0.0.0.bazel"),
@@ -4845,12 +4854,12 @@ def crate_repositories():
 
     maybe(
         http_archive,
-        name = "bindeps__miow-0.6.0",
-        sha256 = "359f76430b20a79f9e20e115b3428614e654f04fab314482fc0fda0ebd3c6044",
+        name = "bindeps__miow-0.6.1",
+        sha256 = "536bfad37a309d62069485248eeaba1e8d9853aaf951caaeaed0585a95346f08",
         type = "tar.gz",
-        urls = ["https://static.crates.io/crates/miow/0.6.0/download"],
-        strip_prefix = "miow-0.6.0",
-        build_file = Label("//vendor/bindeps:BUILD.miow-0.6.0.bazel"),
+        urls = ["https://static.crates.io/crates/miow/0.6.1/download"],
+        strip_prefix = "miow-0.6.1",
+        build_file = Label("//vendor/bindeps:BUILD.miow-0.6.1.bazel"),
     )
 
     maybe(
@@ -5196,7 +5205,7 @@ def crate_repositories():
     maybe(
         new_git_repository,
         name = "bindeps__parser-0.0.0",
-        commit = "bc2e8effd36dbfc5eba9c36b015c9299e067ec6d",
+        commit = "3e9a967c2786589ecd801a078f8687a924e46430",
         init_submodules = True,
         remote = "https://github.com/TroyKomodo/rust-analyzer.git",
         build_file = Label("//vendor/bindeps:BUILD.parser-0.0.0.bazel"),
@@ -5226,7 +5235,7 @@ def crate_repositories():
     maybe(
         new_git_repository,
         name = "bindeps__paths-0.0.0",
-        commit = "bc2e8effd36dbfc5eba9c36b015c9299e067ec6d",
+        commit = "3e9a967c2786589ecd801a078f8687a924e46430",
         init_submodules = True,
         remote = "https://github.com/TroyKomodo/rust-analyzer.git",
         build_file = Label("//vendor/bindeps:BUILD.paths-0.0.0.bazel"),
@@ -5275,42 +5284,42 @@ def crate_repositories():
 
     maybe(
         http_archive,
-        name = "bindeps__pest-2.8.1",
-        sha256 = "1db05f56d34358a8b1066f67cbb203ee3e7ed2ba674a6263a1d5ec6db2204323",
+        name = "bindeps__pest-2.8.2",
+        sha256 = "21e0a3a33733faeaf8651dfee72dd0f388f0c8e5ad496a3478fa5a922f49cfa8",
         type = "tar.gz",
-        urls = ["https://static.crates.io/crates/pest/2.8.1/download"],
-        strip_prefix = "pest-2.8.1",
-        build_file = Label("//vendor/bindeps:BUILD.pest-2.8.1.bazel"),
+        urls = ["https://static.crates.io/crates/pest/2.8.2/download"],
+        strip_prefix = "pest-2.8.2",
+        build_file = Label("//vendor/bindeps:BUILD.pest-2.8.2.bazel"),
     )
 
     maybe(
         http_archive,
-        name = "bindeps__pest_derive-2.8.1",
-        sha256 = "bb056d9e8ea77922845ec74a1c4e8fb17e7c218cc4fc11a15c5d25e189aa40bc",
+        name = "bindeps__pest_derive-2.8.2",
+        sha256 = "bc58706f770acb1dbd0973e6530a3cff4746fb721207feb3a8a6064cd0b6c663",
         type = "tar.gz",
-        urls = ["https://static.crates.io/crates/pest_derive/2.8.1/download"],
-        strip_prefix = "pest_derive-2.8.1",
-        build_file = Label("//vendor/bindeps:BUILD.pest_derive-2.8.1.bazel"),
+        urls = ["https://static.crates.io/crates/pest_derive/2.8.2/download"],
+        strip_prefix = "pest_derive-2.8.2",
+        build_file = Label("//vendor/bindeps:BUILD.pest_derive-2.8.2.bazel"),
     )
 
     maybe(
         http_archive,
-        name = "bindeps__pest_generator-2.8.1",
-        sha256 = "87e404e638f781eb3202dc82db6760c8ae8a1eeef7fb3fa8264b2ef280504966",
+        name = "bindeps__pest_generator-2.8.2",
+        sha256 = "6d4f36811dfe07f7b8573462465d5cb8965fffc2e71ae377a33aecf14c2c9a2f",
         type = "tar.gz",
-        urls = ["https://static.crates.io/crates/pest_generator/2.8.1/download"],
-        strip_prefix = "pest_generator-2.8.1",
-        build_file = Label("//vendor/bindeps:BUILD.pest_generator-2.8.1.bazel"),
+        urls = ["https://static.crates.io/crates/pest_generator/2.8.2/download"],
+        strip_prefix = "pest_generator-2.8.2",
+        build_file = Label("//vendor/bindeps:BUILD.pest_generator-2.8.2.bazel"),
     )
 
     maybe(
         http_archive,
-        name = "bindeps__pest_meta-2.8.1",
-        sha256 = "edd1101f170f5903fde0914f899bb503d9ff5271d7ba76bbb70bea63690cc0d5",
+        name = "bindeps__pest_meta-2.8.2",
+        sha256 = "42919b05089acbd0a5dcd5405fb304d17d1053847b81163d09c4ad18ce8e8420",
         type = "tar.gz",
-        urls = ["https://static.crates.io/crates/pest_meta/2.8.1/download"],
-        strip_prefix = "pest_meta-2.8.1",
-        build_file = Label("//vendor/bindeps:BUILD.pest_meta-2.8.1.bazel"),
+        urls = ["https://static.crates.io/crates/pest_meta/2.8.2/download"],
+        strip_prefix = "pest_meta-2.8.2",
+        build_file = Label("//vendor/bindeps:BUILD.pest_meta-2.8.2.bazel"),
     )
 
     maybe(
@@ -5556,7 +5565,7 @@ def crate_repositories():
     maybe(
         new_git_repository,
         name = "bindeps__proc-macro-api-0.0.0",
-        commit = "bc2e8effd36dbfc5eba9c36b015c9299e067ec6d",
+        commit = "3e9a967c2786589ecd801a078f8687a924e46430",
         init_submodules = True,
         remote = "https://github.com/TroyKomodo/rust-analyzer.git",
         build_file = Label("//vendor/bindeps:BUILD.proc-macro-api-0.0.0.bazel"),
@@ -5626,7 +5635,7 @@ def crate_repositories():
     maybe(
         new_git_repository,
         name = "bindeps__profile-0.0.0",
-        commit = "bc2e8effd36dbfc5eba9c36b015c9299e067ec6d",
+        commit = "3e9a967c2786589ecd801a078f8687a924e46430",
         init_submodules = True,
         remote = "https://github.com/TroyKomodo/rust-analyzer.git",
         build_file = Label("//vendor/bindeps:BUILD.profile-0.0.0.bazel"),
@@ -5636,7 +5645,7 @@ def crate_repositories():
     maybe(
         new_git_repository,
         name = "bindeps__project-model-0.0.0",
-        commit = "bc2e8effd36dbfc5eba9c36b015c9299e067ec6d",
+        commit = "3e9a967c2786589ecd801a078f8687a924e46430",
         init_submodules = True,
         remote = "https://github.com/TroyKomodo/rust-analyzer.git",
         build_file = Label("//vendor/bindeps:BUILD.project-model-0.0.0.bazel"),
@@ -5736,7 +5745,7 @@ def crate_repositories():
     maybe(
         new_git_repository,
         name = "bindeps__query-group-macro-0.0.0",
-        commit = "bc2e8effd36dbfc5eba9c36b015c9299e067ec6d",
+        commit = "3e9a967c2786589ecd801a078f8687a924e46430",
         init_submodules = True,
         remote = "https://github.com/TroyKomodo/rust-analyzer.git",
         build_file = Label("//vendor/bindeps:BUILD.query-group-macro-0.0.0.bazel"),
@@ -5755,122 +5764,112 @@ def crate_repositories():
 
     maybe(
         http_archive,
-        name = "bindeps__ra-ap-rustc_abi-0.123.0",
-        sha256 = "f18c877575c259d127072e9bfc41d985202262fb4d6bfdae3d1252147c2562c2",
+        name = "bindeps__ra-ap-rustc_abi-0.128.0",
+        sha256 = "8da95e732b424802b1f043ab4007c78a0fc515ab249587abbea4634bf5fdce9a",
         type = "tar.gz",
-        urls = ["https://static.crates.io/crates/ra-ap-rustc_abi/0.123.0/download"],
-        strip_prefix = "ra-ap-rustc_abi-0.123.0",
-        build_file = Label("//vendor/bindeps:BUILD.ra-ap-rustc_abi-0.123.0.bazel"),
+        urls = ["https://static.crates.io/crates/ra-ap-rustc_abi/0.128.0/download"],
+        strip_prefix = "ra-ap-rustc_abi-0.128.0",
+        build_file = Label("//vendor/bindeps:BUILD.ra-ap-rustc_abi-0.128.0.bazel"),
     )
 
     maybe(
         http_archive,
-        name = "bindeps__ra-ap-rustc_ast_ir-0.123.0",
-        sha256 = "87cc17e8ce797f2a8d03b838fbf166749b876164432ce81e37d283bf69e3cf80",
+        name = "bindeps__ra-ap-rustc_ast_ir-0.128.0",
+        sha256 = "3838d9d7a3a5cdc511cfb6ad78740ce532f75a2366d3fc3b9853ea1b5c872779",
         type = "tar.gz",
-        urls = ["https://static.crates.io/crates/ra-ap-rustc_ast_ir/0.123.0/download"],
-        strip_prefix = "ra-ap-rustc_ast_ir-0.123.0",
-        build_file = Label("//vendor/bindeps:BUILD.ra-ap-rustc_ast_ir-0.123.0.bazel"),
+        urls = ["https://static.crates.io/crates/ra-ap-rustc_ast_ir/0.128.0/download"],
+        strip_prefix = "ra-ap-rustc_ast_ir-0.128.0",
+        build_file = Label("//vendor/bindeps:BUILD.ra-ap-rustc_ast_ir-0.128.0.bazel"),
     )
 
     maybe(
         http_archive,
-        name = "bindeps__ra-ap-rustc_hashes-0.123.0",
-        sha256 = "2439ed1df3472443133b66949f81080dff88089b42f825761455463709ee1cad",
+        name = "bindeps__ra-ap-rustc_hashes-0.128.0",
+        sha256 = "bdc8995d268d3bb4ece910f575ea5a063d6003e193ec155d15703b65882d53fb",
         type = "tar.gz",
-        urls = ["https://static.crates.io/crates/ra-ap-rustc_hashes/0.123.0/download"],
-        strip_prefix = "ra-ap-rustc_hashes-0.123.0",
-        build_file = Label("//vendor/bindeps:BUILD.ra-ap-rustc_hashes-0.123.0.bazel"),
+        urls = ["https://static.crates.io/crates/ra-ap-rustc_hashes/0.128.0/download"],
+        strip_prefix = "ra-ap-rustc_hashes-0.128.0",
+        build_file = Label("//vendor/bindeps:BUILD.ra-ap-rustc_hashes-0.128.0.bazel"),
     )
 
     maybe(
         http_archive,
-        name = "bindeps__ra-ap-rustc_index-0.123.0",
-        sha256 = "57a24fe0be21be1f8ebc21dcb40129214fb4cefb0f2753f3d46b6dbe656a1a45",
+        name = "bindeps__ra-ap-rustc_index-0.128.0",
+        sha256 = "ed0ccdf6e5627c6c3e54e571e52ce0bc8b94d5f0b94b7460269ca68a4706be69",
         type = "tar.gz",
-        urls = ["https://static.crates.io/crates/ra-ap-rustc_index/0.123.0/download"],
-        strip_prefix = "ra-ap-rustc_index-0.123.0",
-        build_file = Label("//vendor/bindeps:BUILD.ra-ap-rustc_index-0.123.0.bazel"),
+        urls = ["https://static.crates.io/crates/ra-ap-rustc_index/0.128.0/download"],
+        strip_prefix = "ra-ap-rustc_index-0.128.0",
+        build_file = Label("//vendor/bindeps:BUILD.ra-ap-rustc_index-0.128.0.bazel"),
     )
 
     maybe(
         http_archive,
-        name = "bindeps__ra-ap-rustc_index_macros-0.123.0",
-        sha256 = "844a27ddcad0116facae2df8e741fd788662cf93dc13029cd864f2b8013b81f9",
+        name = "bindeps__ra-ap-rustc_index_macros-0.128.0",
+        sha256 = "bd28f42362b5c9fb9b8766c3189df02a402b13363600c6885e11027889f03ee6",
         type = "tar.gz",
-        urls = ["https://static.crates.io/crates/ra-ap-rustc_index_macros/0.123.0/download"],
-        strip_prefix = "ra-ap-rustc_index_macros-0.123.0",
-        build_file = Label("//vendor/bindeps:BUILD.ra-ap-rustc_index_macros-0.123.0.bazel"),
+        urls = ["https://static.crates.io/crates/ra-ap-rustc_index_macros/0.128.0/download"],
+        strip_prefix = "ra-ap-rustc_index_macros-0.128.0",
+        build_file = Label("//vendor/bindeps:BUILD.ra-ap-rustc_index_macros-0.128.0.bazel"),
     )
 
     maybe(
         http_archive,
-        name = "bindeps__ra-ap-rustc_lexer-0.121.0",
-        sha256 = "22944e31fb91e9b3e75bcbc91e37d958b8c0825a6160927f2856831d2ce83b36",
+        name = "bindeps__ra-ap-rustc_lexer-0.128.0",
+        sha256 = "f1c31a82f091b910a27ee53a86a9af28a2df10c3484e2f1bbfe70633aa84dee9",
         type = "tar.gz",
-        urls = ["https://static.crates.io/crates/ra-ap-rustc_lexer/0.121.0/download"],
-        strip_prefix = "ra-ap-rustc_lexer-0.121.0",
-        build_file = Label("//vendor/bindeps:BUILD.ra-ap-rustc_lexer-0.121.0.bazel"),
+        urls = ["https://static.crates.io/crates/ra-ap-rustc_lexer/0.128.0/download"],
+        strip_prefix = "ra-ap-rustc_lexer-0.128.0",
+        build_file = Label("//vendor/bindeps:BUILD.ra-ap-rustc_lexer-0.128.0.bazel"),
     )
 
     maybe(
         http_archive,
-        name = "bindeps__ra-ap-rustc_lexer-0.123.0",
-        sha256 = "2b734cfcb577d09877799a22742f1bd398be6c00bc428d9de56d48d11ece5771",
+        name = "bindeps__ra-ap-rustc_next_trait_solver-0.128.0",
+        sha256 = "f8cac6c2b5a8924209d4ca682cbc507252c58a664911e0ef463c112882ba6f72",
         type = "tar.gz",
-        urls = ["https://static.crates.io/crates/ra-ap-rustc_lexer/0.123.0/download"],
-        strip_prefix = "ra-ap-rustc_lexer-0.123.0",
-        build_file = Label("//vendor/bindeps:BUILD.ra-ap-rustc_lexer-0.123.0.bazel"),
+        urls = ["https://static.crates.io/crates/ra-ap-rustc_next_trait_solver/0.128.0/download"],
+        strip_prefix = "ra-ap-rustc_next_trait_solver-0.128.0",
+        build_file = Label("//vendor/bindeps:BUILD.ra-ap-rustc_next_trait_solver-0.128.0.bazel"),
     )
 
     maybe(
         http_archive,
-        name = "bindeps__ra-ap-rustc_next_trait_solver-0.123.0",
-        sha256 = "14f7dfbdf1d045ff4e385e1efdfc3799379895e9c3f3b9b379a0bef4cb238441",
+        name = "bindeps__ra-ap-rustc_parse_format-0.128.0",
+        sha256 = "a085a1cf902dcca8abbc537faaef154bbccbbb51850f779ce5484ae3782b5d8f",
         type = "tar.gz",
-        urls = ["https://static.crates.io/crates/ra-ap-rustc_next_trait_solver/0.123.0/download"],
-        strip_prefix = "ra-ap-rustc_next_trait_solver-0.123.0",
-        build_file = Label("//vendor/bindeps:BUILD.ra-ap-rustc_next_trait_solver-0.123.0.bazel"),
+        urls = ["https://static.crates.io/crates/ra-ap-rustc_parse_format/0.128.0/download"],
+        strip_prefix = "ra-ap-rustc_parse_format-0.128.0",
+        build_file = Label("//vendor/bindeps:BUILD.ra-ap-rustc_parse_format-0.128.0.bazel"),
     )
 
     maybe(
         http_archive,
-        name = "bindeps__ra-ap-rustc_parse_format-0.121.0",
-        sha256 = "81057891bc2063ad9e353f29462fbc47a0f5072560af34428ae9313aaa5e9d97",
+        name = "bindeps__ra-ap-rustc_pattern_analysis-0.128.0",
+        sha256 = "8ba32e3985367bc34856b41c7604133649d4a367eb5d7bdf50623025731459d8",
         type = "tar.gz",
-        urls = ["https://static.crates.io/crates/ra-ap-rustc_parse_format/0.121.0/download"],
-        strip_prefix = "ra-ap-rustc_parse_format-0.121.0",
-        build_file = Label("//vendor/bindeps:BUILD.ra-ap-rustc_parse_format-0.121.0.bazel"),
+        urls = ["https://static.crates.io/crates/ra-ap-rustc_pattern_analysis/0.128.0/download"],
+        strip_prefix = "ra-ap-rustc_pattern_analysis-0.128.0",
+        build_file = Label("//vendor/bindeps:BUILD.ra-ap-rustc_pattern_analysis-0.128.0.bazel"),
     )
 
     maybe(
         http_archive,
-        name = "bindeps__ra-ap-rustc_pattern_analysis-0.123.0",
-        sha256 = "75b0ee1f059b9dea0818c6c7267478926eee95ba4c7dcf89c8db32fa165d3904",
+        name = "bindeps__ra-ap-rustc_type_ir-0.128.0",
+        sha256 = "9c9911d72f75d85d21fe88374d7bcec94f2200feffb7234108a24cc3da7c3591",
         type = "tar.gz",
-        urls = ["https://static.crates.io/crates/ra-ap-rustc_pattern_analysis/0.123.0/download"],
-        strip_prefix = "ra-ap-rustc_pattern_analysis-0.123.0",
-        build_file = Label("//vendor/bindeps:BUILD.ra-ap-rustc_pattern_analysis-0.123.0.bazel"),
+        urls = ["https://static.crates.io/crates/ra-ap-rustc_type_ir/0.128.0/download"],
+        strip_prefix = "ra-ap-rustc_type_ir-0.128.0",
+        build_file = Label("//vendor/bindeps:BUILD.ra-ap-rustc_type_ir-0.128.0.bazel"),
     )
 
     maybe(
         http_archive,
-        name = "bindeps__ra-ap-rustc_type_ir-0.123.0",
-        sha256 = "0bc59fb10a922c38a24cb8a1494f799b0af30bd041acbea689378d3bf330534b",
+        name = "bindeps__ra-ap-rustc_type_ir_macros-0.128.0",
+        sha256 = "22f539b87991683ce17cc52e62600fdf2b4a8af43952db30387edc1a576d3b43",
         type = "tar.gz",
-        urls = ["https://static.crates.io/crates/ra-ap-rustc_type_ir/0.123.0/download"],
-        strip_prefix = "ra-ap-rustc_type_ir-0.123.0",
-        build_file = Label("//vendor/bindeps:BUILD.ra-ap-rustc_type_ir-0.123.0.bazel"),
-    )
-
-    maybe(
-        http_archive,
-        name = "bindeps__ra-ap-rustc_type_ir_macros-0.123.0",
-        sha256 = "58878914b6dac7499baeecc8dbb4b9d9dda88030e4ab90cd3b4e87523fbedafe",
-        type = "tar.gz",
-        urls = ["https://static.crates.io/crates/ra-ap-rustc_type_ir_macros/0.123.0/download"],
-        strip_prefix = "ra-ap-rustc_type_ir_macros-0.123.0",
-        build_file = Label("//vendor/bindeps:BUILD.ra-ap-rustc_type_ir_macros-0.123.0.bazel"),
+        urls = ["https://static.crates.io/crates/ra-ap-rustc_type_ir_macros/0.128.0/download"],
+        strip_prefix = "ra-ap-rustc_type_ir_macros-0.128.0",
+        build_file = Label("//vendor/bindeps:BUILD.ra-ap-rustc_type_ir_macros-0.128.0.bazel"),
     )
 
     maybe(
@@ -5995,12 +5994,12 @@ def crate_repositories():
 
     maybe(
         http_archive,
-        name = "bindeps__reflink-copy-0.1.26",
-        sha256 = "78c81d000a2c524133cc00d2f92f019d399e57906c3b7119271a2495354fe895",
+        name = "bindeps__reflink-copy-0.1.28",
+        sha256 = "23bbed272e39c47a095a5242218a67412a220006842558b03fe2935e8f3d7b92",
         type = "tar.gz",
-        urls = ["https://static.crates.io/crates/reflink-copy/0.1.26/download"],
-        strip_prefix = "reflink-copy-0.1.26",
-        build_file = Label("//vendor/bindeps:BUILD.reflink-copy-0.1.26.bazel"),
+        urls = ["https://static.crates.io/crates/reflink-copy/0.1.28/download"],
+        strip_prefix = "reflink-copy-0.1.28",
+        build_file = Label("//vendor/bindeps:BUILD.reflink-copy-0.1.28.bazel"),
     )
 
     maybe(
@@ -6166,7 +6165,7 @@ def crate_repositories():
     maybe(
         new_git_repository,
         name = "bindeps__rust-analyzer-0.0.0",
-        commit = "bc2e8effd36dbfc5eba9c36b015c9299e067ec6d",
+        commit = "3e9a967c2786589ecd801a078f8687a924e46430",
         init_submodules = True,
         remote = "https://github.com/TroyKomodo/rust-analyzer.git",
         build_file = Label("//vendor/bindeps:BUILD.rust-analyzer-0.0.0.bazel"),
@@ -6211,6 +6210,16 @@ def crate_repositories():
         urls = ["https://static.crates.io/crates/rustc-literal-escaper/0.0.4/download"],
         strip_prefix = "rustc-literal-escaper-0.0.4",
         build_file = Label("//vendor/bindeps:BUILD.rustc-literal-escaper-0.0.4.bazel"),
+    )
+
+    maybe(
+        http_archive,
+        name = "bindeps__rustc-literal-escaper-0.0.5",
+        sha256 = "e4ee29da77c5a54f42697493cd4c9b9f31b74df666a6c04dfc4fde77abe0438b",
+        type = "tar.gz",
+        urls = ["https://static.crates.io/crates/rustc-literal-escaper/0.0.5/download"],
+        strip_prefix = "rustc-literal-escaper-0.0.5",
+        build_file = Label("//vendor/bindeps:BUILD.rustc-literal-escaper-0.0.5.bazel"),
     )
 
     maybe(
@@ -6265,12 +6274,12 @@ def crate_repositories():
 
     maybe(
         http_archive,
-        name = "bindeps__rustix-1.0.8",
-        sha256 = "11181fbabf243db407ef8df94a6ce0b2f9a733bd8be4ad02b4eda9602296cac8",
+        name = "bindeps__rustix-1.1.2",
+        sha256 = "cd15f8a2c5551a84d56efdc1cd049089e409ac19a3072d5037a17fd70719ff3e",
         type = "tar.gz",
-        urls = ["https://static.crates.io/crates/rustix/1.0.8/download"],
-        strip_prefix = "rustix-1.0.8",
-        build_file = Label("//vendor/bindeps:BUILD.rustix-1.0.8.bazel"),
+        urls = ["https://static.crates.io/crates/rustix/1.1.2/download"],
+        strip_prefix = "rustix-1.1.2",
+        build_file = Label("//vendor/bindeps:BUILD.rustix-1.1.2.bazel"),
     )
 
     maybe(
@@ -6315,12 +6324,12 @@ def crate_repositories():
 
     maybe(
         http_archive,
-        name = "bindeps__rustls-webpki-0.103.4",
-        sha256 = "0a17884ae0c1b773f1ccd2bd4a8c72f16da897310a98b0e84bf349ad5ead92fc",
+        name = "bindeps__rustls-webpki-0.103.6",
+        sha256 = "8572f3c2cb9934231157b45499fc41e1f58c589fdfb81a844ba873265e80f8eb",
         type = "tar.gz",
-        urls = ["https://static.crates.io/crates/rustls-webpki/0.103.4/download"],
-        strip_prefix = "rustls-webpki-0.103.4",
-        build_file = Label("//vendor/bindeps:BUILD.rustls-webpki-0.103.4.bazel"),
+        urls = ["https://static.crates.io/crates/rustls-webpki/0.103.6/download"],
+        strip_prefix = "rustls-webpki-0.103.6",
+        build_file = Label("//vendor/bindeps:BUILD.rustls-webpki-0.103.6.bazel"),
     )
 
     maybe(
@@ -6405,12 +6414,12 @@ def crate_repositories():
 
     maybe(
         http_archive,
-        name = "bindeps__schannel-0.1.27",
-        sha256 = "1f29ebaa345f945cec9fbbc532eb307f0fdad8161f281b6369539c8d84876b3d",
+        name = "bindeps__schannel-0.1.28",
+        sha256 = "891d81b926048e76efe18581bf793546b4c0eaf8448d72be8de2bbee5fd166e1",
         type = "tar.gz",
-        urls = ["https://static.crates.io/crates/schannel/0.1.27/download"],
-        strip_prefix = "schannel-0.1.27",
-        build_file = Label("//vendor/bindeps:BUILD.schannel-0.1.27.bazel"),
+        urls = ["https://static.crates.io/crates/schannel/0.1.28/download"],
+        strip_prefix = "schannel-0.1.28",
+        build_file = Label("//vendor/bindeps:BUILD.schannel-0.1.28.bazel"),
     )
 
     maybe(
@@ -6455,12 +6464,12 @@ def crate_repositories():
 
     maybe(
         http_archive,
-        name = "bindeps__scroll_derive-0.13.0",
-        sha256 = "22fc4f90c27b57691bbaf11d8ecc7cfbfe98a4da6dbe60226115d322aa80c06e",
+        name = "bindeps__scroll_derive-0.13.1",
+        sha256 = "ed76efe62313ab6610570951494bdaa81568026e0318eaa55f167de70eeea67d",
         type = "tar.gz",
-        urls = ["https://static.crates.io/crates/scroll_derive/0.13.0/download"],
-        strip_prefix = "scroll_derive-0.13.0",
-        build_file = Label("//vendor/bindeps:BUILD.scroll_derive-0.13.0.bazel"),
+        urls = ["https://static.crates.io/crates/scroll_derive/0.13.1/download"],
+        strip_prefix = "scroll_derive-0.13.1",
+        build_file = Label("//vendor/bindeps:BUILD.scroll_derive-0.13.1.bazel"),
     )
 
     maybe(
@@ -6475,22 +6484,22 @@ def crate_repositories():
 
     maybe(
         http_archive,
-        name = "bindeps__security-framework-sys-2.14.0",
-        sha256 = "49db231d56a190491cb4aeda9527f1ad45345af50b0851622a7adb8c03b01c32",
+        name = "bindeps__security-framework-sys-2.15.0",
+        sha256 = "cc1f0cbffaac4852523ce30d8bd3c5cdc873501d96ff467ca09b6767bb8cd5c0",
         type = "tar.gz",
-        urls = ["https://static.crates.io/crates/security-framework-sys/2.14.0/download"],
-        strip_prefix = "security-framework-sys-2.14.0",
-        build_file = Label("//vendor/bindeps:BUILD.security-framework-sys-2.14.0.bazel"),
+        urls = ["https://static.crates.io/crates/security-framework-sys/2.15.0/download"],
+        strip_prefix = "security-framework-sys-2.15.0",
+        build_file = Label("//vendor/bindeps:BUILD.security-framework-sys-2.15.0.bazel"),
     )
 
     maybe(
         http_archive,
-        name = "bindeps__seize-0.5.0",
-        sha256 = "e4b8d813387d566f627f3ea1b914c068aac94c40ae27ec43f5f33bde65abefe7",
+        name = "bindeps__seize-0.5.1",
+        sha256 = "5b55fb86dfd3a2f5f76ea78310a88f96c4ea21a3031f8d212443d56123fd0521",
         type = "tar.gz",
-        urls = ["https://static.crates.io/crates/seize/0.5.0/download"],
-        strip_prefix = "seize-0.5.0",
-        build_file = Label("//vendor/bindeps:BUILD.seize-0.5.0.bazel"),
+        urls = ["https://static.crates.io/crates/seize/0.5.1/download"],
+        strip_prefix = "seize-0.5.1",
+        build_file = Label("//vendor/bindeps:BUILD.seize-0.5.1.bazel"),
     )
 
     maybe(
@@ -6515,12 +6524,12 @@ def crate_repositories():
 
     maybe(
         http_archive,
-        name = "bindeps__semver-1.0.26",
-        sha256 = "56e6fa9c48d24d85fb3de5ad847117517440f6beceb7798af16b4a87d616b8d0",
+        name = "bindeps__semver-1.0.27",
+        sha256 = "d767eb0aabc880b29956c35734170f26ed551a859dbd361d140cdbeca61ab1e2",
         type = "tar.gz",
-        urls = ["https://static.crates.io/crates/semver/1.0.26/download"],
-        strip_prefix = "semver-1.0.26",
-        build_file = Label("//vendor/bindeps:BUILD.semver-1.0.26.bazel"),
+        urls = ["https://static.crates.io/crates/semver/1.0.27/download"],
+        strip_prefix = "semver-1.0.27",
+        build_file = Label("//vendor/bindeps:BUILD.semver-1.0.27.bazel"),
     )
 
     maybe(
@@ -6535,22 +6544,22 @@ def crate_repositories():
 
     maybe(
         http_archive,
-        name = "bindeps__serde-1.0.219",
-        sha256 = "5f0e2c6ed6606019b4e29e69dbaba95b11854410e5347d525002456dbbb786b6",
+        name = "bindeps__serde-1.0.225",
+        sha256 = "fd6c24dee235d0da097043389623fb913daddf92c76e9f5a1db88607a0bcbd1d",
         type = "tar.gz",
-        urls = ["https://static.crates.io/crates/serde/1.0.219/download"],
-        strip_prefix = "serde-1.0.219",
-        build_file = Label("//vendor/bindeps:BUILD.serde-1.0.219.bazel"),
+        urls = ["https://static.crates.io/crates/serde/1.0.225/download"],
+        strip_prefix = "serde-1.0.225",
+        build_file = Label("//vendor/bindeps:BUILD.serde-1.0.225.bazel"),
     )
 
     maybe(
         http_archive,
-        name = "bindeps__serde-untagged-0.1.8",
-        sha256 = "34836a629bcbc6f1afdf0907a744870039b1e14c0561cb26094fa683b158eff3",
+        name = "bindeps__serde-untagged-0.1.9",
+        sha256 = "f9faf48a4a2d2693be24c6289dbe26552776eb7737074e6722891fadbe6c5058",
         type = "tar.gz",
-        urls = ["https://static.crates.io/crates/serde-untagged/0.1.8/download"],
-        strip_prefix = "serde-untagged-0.1.8",
-        build_file = Label("//vendor/bindeps:BUILD.serde-untagged-0.1.8.bazel"),
+        urls = ["https://static.crates.io/crates/serde-untagged/0.1.9/download"],
+        strip_prefix = "serde-untagged-0.1.9",
+        build_file = Label("//vendor/bindeps:BUILD.serde-untagged-0.1.9.bazel"),
     )
 
     maybe(
@@ -6565,22 +6574,32 @@ def crate_repositories():
 
     maybe(
         http_archive,
-        name = "bindeps__serde_derive-1.0.219",
-        sha256 = "5b0276cf7f2c73365f7157c8123c21cd9a50fbbd844757af28ca1f5925fc2a00",
+        name = "bindeps__serde_core-1.0.225",
+        sha256 = "659356f9a0cb1e529b24c01e43ad2bdf520ec4ceaf83047b83ddcc2251f96383",
         type = "tar.gz",
-        urls = ["https://static.crates.io/crates/serde_derive/1.0.219/download"],
-        strip_prefix = "serde_derive-1.0.219",
-        build_file = Label("//vendor/bindeps:BUILD.serde_derive-1.0.219.bazel"),
+        urls = ["https://static.crates.io/crates/serde_core/1.0.225/download"],
+        strip_prefix = "serde_core-1.0.225",
+        build_file = Label("//vendor/bindeps:BUILD.serde_core-1.0.225.bazel"),
     )
 
     maybe(
         http_archive,
-        name = "bindeps__serde_json-1.0.143",
-        sha256 = "d401abef1d108fbd9cbaebc3e46611f4b1021f714a0597a71f41ee463f5f4a5a",
+        name = "bindeps__serde_derive-1.0.225",
+        sha256 = "0ea936adf78b1f766949a4977b91d2f5595825bd6ec079aa9543ad2685fc4516",
         type = "tar.gz",
-        urls = ["https://static.crates.io/crates/serde_json/1.0.143/download"],
-        strip_prefix = "serde_json-1.0.143",
-        build_file = Label("//vendor/bindeps:BUILD.serde_json-1.0.143.bazel"),
+        urls = ["https://static.crates.io/crates/serde_derive/1.0.225/download"],
+        strip_prefix = "serde_derive-1.0.225",
+        build_file = Label("//vendor/bindeps:BUILD.serde_derive-1.0.225.bazel"),
+    )
+
+    maybe(
+        http_archive,
+        name = "bindeps__serde_json-1.0.145",
+        sha256 = "402a6f66d8c709116cf22f558eab210f5a50187f702eb4d7e5ef38d9a7f1c79c",
+        type = "tar.gz",
+        urls = ["https://static.crates.io/crates/serde_json/1.0.145/download"],
+        strip_prefix = "serde_json-1.0.145",
+        build_file = Label("//vendor/bindeps:BUILD.serde_json-1.0.145.bazel"),
     )
 
     maybe(
@@ -6916,7 +6935,7 @@ def crate_repositories():
     maybe(
         new_git_repository,
         name = "bindeps__span-0.0.0",
-        commit = "bc2e8effd36dbfc5eba9c36b015c9299e067ec6d",
+        commit = "3e9a967c2786589ecd801a078f8687a924e46430",
         init_submodules = True,
         remote = "https://github.com/TroyKomodo/rust-analyzer.git",
         build_file = Label("//vendor/bindeps:BUILD.span-0.0.0.bazel"),
@@ -6966,7 +6985,7 @@ def crate_repositories():
     maybe(
         new_git_repository,
         name = "bindeps__stdx-0.0.0",
-        commit = "bc2e8effd36dbfc5eba9c36b015c9299e067ec6d",
+        commit = "3e9a967c2786589ecd801a078f8687a924e46430",
         init_submodules = True,
         remote = "https://github.com/TroyKomodo/rust-analyzer.git",
         build_file = Label("//vendor/bindeps:BUILD.stdx-0.0.0.bazel"),
@@ -7096,7 +7115,7 @@ def crate_repositories():
     maybe(
         new_git_repository,
         name = "bindeps__syntax-0.0.0",
-        commit = "bc2e8effd36dbfc5eba9c36b015c9299e067ec6d",
+        commit = "3e9a967c2786589ecd801a078f8687a924e46430",
         init_submodules = True,
         remote = "https://github.com/TroyKomodo/rust-analyzer.git",
         build_file = Label("//vendor/bindeps:BUILD.syntax-0.0.0.bazel"),
@@ -7106,7 +7125,7 @@ def crate_repositories():
     maybe(
         new_git_repository,
         name = "bindeps__syntax-bridge-0.0.0",
-        commit = "bc2e8effd36dbfc5eba9c36b015c9299e067ec6d",
+        commit = "3e9a967c2786589ecd801a078f8687a924e46430",
         init_submodules = True,
         remote = "https://github.com/TroyKomodo/rust-analyzer.git",
         build_file = Label("//vendor/bindeps:BUILD.syntax-bridge-0.0.0.bazel"),
@@ -7215,12 +7234,12 @@ def crate_repositories():
 
     maybe(
         http_archive,
-        name = "bindeps__tempfile-3.21.0",
-        sha256 = "15b61f8f20e3a6f7e0649d825294eaf317edce30f82cf6026e7e4cb9222a7d1e",
+        name = "bindeps__tempfile-3.22.0",
+        sha256 = "84fa4d11fadde498443cca10fd3ac23c951f0dc59e080e9f4b93d4df4e4eea53",
         type = "tar.gz",
-        urls = ["https://static.crates.io/crates/tempfile/3.21.0/download"],
-        strip_prefix = "tempfile-3.21.0",
-        build_file = Label("//vendor/bindeps:BUILD.tempfile-3.21.0.bazel"),
+        urls = ["https://static.crates.io/crates/tempfile/3.22.0/download"],
+        strip_prefix = "tempfile-3.22.0",
+        build_file = Label("//vendor/bindeps:BUILD.tempfile-3.22.0.bazel"),
     )
 
     maybe(
@@ -7235,12 +7254,12 @@ def crate_repositories():
 
     maybe(
         http_archive,
-        name = "bindeps__term-1.1.0",
-        sha256 = "a43bddab41f8626c7bdaab872bbba75f8df5847b516d77c569c746e2ae5eb746",
+        name = "bindeps__term-1.2.0",
+        sha256 = "2111ef44dae28680ae9752bb89409e7310ca33a8c621ebe7b106cf5c928b3ac0",
         type = "tar.gz",
-        urls = ["https://static.crates.io/crates/term/1.1.0/download"],
-        strip_prefix = "term-1.1.0",
-        build_file = Label("//vendor/bindeps:BUILD.term-1.1.0.bazel"),
+        urls = ["https://static.crates.io/crates/term/1.2.0/download"],
+        strip_prefix = "term-1.2.0",
+        build_file = Label("//vendor/bindeps:BUILD.term-1.2.0.bazel"),
     )
 
     maybe(
@@ -7496,7 +7515,7 @@ def crate_repositories():
     maybe(
         new_git_repository,
         name = "bindeps__toolchain-0.0.0",
-        commit = "bc2e8effd36dbfc5eba9c36b015c9299e067ec6d",
+        commit = "3e9a967c2786589ecd801a078f8687a924e46430",
         init_submodules = True,
         remote = "https://github.com/TroyKomodo/rust-analyzer.git",
         build_file = Label("//vendor/bindeps:BUILD.toolchain-0.0.0.bazel"),
@@ -7656,7 +7675,7 @@ def crate_repositories():
     maybe(
         new_git_repository,
         name = "bindeps__tt-0.0.0",
-        commit = "bc2e8effd36dbfc5eba9c36b015c9299e067ec6d",
+        commit = "3e9a967c2786589ecd801a078f8687a924e46430",
         init_submodules = True,
         remote = "https://github.com/TroyKomodo/rust-analyzer.git",
         build_file = Label("//vendor/bindeps:BUILD.tt-0.0.0.bazel"),
@@ -7675,12 +7694,12 @@ def crate_repositories():
 
     maybe(
         http_archive,
-        name = "bindeps__twox-hash-2.1.1",
-        sha256 = "8b907da542cbced5261bd3256de1b3a1bf340a3d37f93425a07362a1d687de56",
+        name = "bindeps__twox-hash-2.1.2",
+        sha256 = "9ea3136b675547379c4bd395ca6b938e5ad3c3d20fad76e7fe85f9e0d011419c",
         type = "tar.gz",
-        urls = ["https://static.crates.io/crates/twox-hash/2.1.1/download"],
-        strip_prefix = "twox-hash-2.1.1",
-        build_file = Label("//vendor/bindeps:BUILD.twox-hash-2.1.1.bazel"),
+        urls = ["https://static.crates.io/crates/twox-hash/2.1.2/download"],
+        strip_prefix = "twox-hash-2.1.2",
+        build_file = Label("//vendor/bindeps:BUILD.twox-hash-2.1.2.bazel"),
     )
 
     maybe(
@@ -7745,12 +7764,12 @@ def crate_repositories():
 
     maybe(
         http_archive,
-        name = "bindeps__unicode-ident-1.0.18",
-        sha256 = "5a5f39404a5da50712a4c1eecf25e90dd62b613502b7e925fd4e4d19b5c96512",
+        name = "bindeps__unicode-ident-1.0.19",
+        sha256 = "f63a545481291138910575129486daeaf8ac54aee4387fe7906919f7830c7d9d",
         type = "tar.gz",
-        urls = ["https://static.crates.io/crates/unicode-ident/1.0.18/download"],
-        strip_prefix = "unicode-ident-1.0.18",
-        build_file = Label("//vendor/bindeps:BUILD.unicode-ident-1.0.18.bazel"),
+        urls = ["https://static.crates.io/crates/unicode-ident/1.0.19/download"],
+        strip_prefix = "unicode-ident-1.0.19",
+        build_file = Label("//vendor/bindeps:BUILD.unicode-ident-1.0.19.bazel"),
     )
 
     maybe(
@@ -7936,7 +7955,7 @@ def crate_repositories():
     maybe(
         new_git_repository,
         name = "bindeps__vfs-0.0.0",
-        commit = "bc2e8effd36dbfc5eba9c36b015c9299e067ec6d",
+        commit = "3e9a967c2786589ecd801a078f8687a924e46430",
         init_submodules = True,
         remote = "https://github.com/TroyKomodo/rust-analyzer.git",
         build_file = Label("//vendor/bindeps:BUILD.vfs-0.0.0.bazel"),
@@ -7946,7 +7965,7 @@ def crate_repositories():
     maybe(
         new_git_repository,
         name = "bindeps__vfs-notify-0.0.0",
-        commit = "bc2e8effd36dbfc5eba9c36b015c9299e067ec6d",
+        commit = "3e9a967c2786589ecd801a078f8687a924e46430",
         init_submodules = True,
         remote = "https://github.com/TroyKomodo/rust-analyzer.git",
         build_file = Label("//vendor/bindeps:BUILD.vfs-notify-0.0.0.bazel"),
@@ -7995,12 +8014,12 @@ def crate_repositories():
 
     maybe(
         http_archive,
-        name = "bindeps__wasm-encoder-0.238.1",
-        sha256 = "d50d48c31c615f77679b61c607b8151378a5d03159616bf3d17e8e2005afdaf5",
+        name = "bindeps__wasm-encoder-0.239.0",
+        sha256 = "5be00faa2b4950c76fe618c409d2c3ea5a3c9422013e079482d78544bb2d184c",
         type = "tar.gz",
-        urls = ["https://static.crates.io/crates/wasm-encoder/0.238.1/download"],
-        strip_prefix = "wasm-encoder-0.238.1",
-        build_file = Label("//vendor/bindeps:BUILD.wasm-encoder-0.238.1.bazel"),
+        urls = ["https://static.crates.io/crates/wasm-encoder/0.239.0/download"],
+        strip_prefix = "wasm-encoder-0.239.0",
+        build_file = Label("//vendor/bindeps:BUILD.wasm-encoder-0.239.0.bazel"),
     )
 
     maybe(
@@ -8075,22 +8094,22 @@ def crate_repositories():
 
     maybe(
         http_archive,
-        name = "bindeps__wast-238.0.1",
-        sha256 = "b0a564e7eab2abb8920c1302b90eb2c98a15efbbe30fc060d4e2d88483aa23fe",
+        name = "bindeps__wast-239.0.0",
+        sha256 = "9139176fe8a2590e0fb174cdcaf373b224cb93c3dde08e4297c1361d2ba1ea5d",
         type = "tar.gz",
-        urls = ["https://static.crates.io/crates/wast/238.0.1/download"],
-        strip_prefix = "wast-238.0.1",
-        build_file = Label("//vendor/bindeps:BUILD.wast-238.0.1.bazel"),
+        urls = ["https://static.crates.io/crates/wast/239.0.0/download"],
+        strip_prefix = "wast-239.0.0",
+        build_file = Label("//vendor/bindeps:BUILD.wast-239.0.0.bazel"),
     )
 
     maybe(
         http_archive,
-        name = "bindeps__wat-1.238.1",
-        sha256 = "0eb84e6ac2997025f80482266fdc9f60fa28ba791b674bfd33855e77fe867631",
+        name = "bindeps__wat-1.239.0",
+        sha256 = "3e1c941927d34709f255558166f8901a2005f8ab4a9650432e9281b7cc6f3b75",
         type = "tar.gz",
-        urls = ["https://static.crates.io/crates/wat/1.238.1/download"],
-        strip_prefix = "wat-1.238.1",
-        build_file = Label("//vendor/bindeps:BUILD.wat-1.238.1.bazel"),
+        urls = ["https://static.crates.io/crates/wat/1.239.0/download"],
+        strip_prefix = "wat-1.239.0",
+        build_file = Label("//vendor/bindeps:BUILD.wat-1.239.0.bazel"),
     )
 
     maybe(
@@ -8125,12 +8144,12 @@ def crate_repositories():
 
     maybe(
         http_archive,
-        name = "bindeps__winapi-util-0.1.10",
-        sha256 = "0978bf7171b3d90bac376700cb56d606feb40f251a475a5d6634613564460b22",
+        name = "bindeps__winapi-util-0.1.11",
+        sha256 = "c2a7b1c03c876122aa43f3020e6c3c3ee5c05081c9a00739faf7503aeba10d22",
         type = "tar.gz",
-        urls = ["https://static.crates.io/crates/winapi-util/0.1.10/download"],
-        strip_prefix = "winapi-util-0.1.10",
-        build_file = Label("//vendor/bindeps:BUILD.winapi-util-0.1.10.bazel"),
+        urls = ["https://static.crates.io/crates/winapi-util/0.1.11/download"],
+        strip_prefix = "winapi-util-0.1.11",
+        build_file = Label("//vendor/bindeps:BUILD.winapi-util-0.1.11.bazel"),
     )
 
     maybe(
@@ -8145,12 +8164,32 @@ def crate_repositories():
 
     maybe(
         http_archive,
+        name = "bindeps__windows-0.62.0",
+        sha256 = "9579d0e6970fd5250aa29aba5994052385ff55cf7b28a059e484bb79ea842e42",
+        type = "tar.gz",
+        urls = ["https://static.crates.io/crates/windows/0.62.0/download"],
+        strip_prefix = "windows-0.62.0",
+        build_file = Label("//vendor/bindeps:BUILD.windows-0.62.0.bazel"),
+    )
+
+    maybe(
+        http_archive,
         name = "bindeps__windows-collections-0.2.0",
         sha256 = "3beeceb5e5cfd9eb1d76b381630e82c4241ccd0d27f1a39ed41b2760b255c5e8",
         type = "tar.gz",
         urls = ["https://static.crates.io/crates/windows-collections/0.2.0/download"],
         strip_prefix = "windows-collections-0.2.0",
         build_file = Label("//vendor/bindeps:BUILD.windows-collections-0.2.0.bazel"),
+    )
+
+    maybe(
+        http_archive,
+        name = "bindeps__windows-collections-0.3.0",
+        sha256 = "a90dd7a7b86859ec4cdf864658b311545ef19dbcf17a672b52ab7cefe80c336f",
+        type = "tar.gz",
+        urls = ["https://static.crates.io/crates/windows-collections/0.3.0/download"],
+        strip_prefix = "windows-collections-0.3.0",
+        build_file = Label("//vendor/bindeps:BUILD.windows-collections-0.3.0.bazel"),
     )
 
     maybe(
@@ -8165,12 +8204,32 @@ def crate_repositories():
 
     maybe(
         http_archive,
+        name = "bindeps__windows-core-0.62.0",
+        sha256 = "57fe7168f7de578d2d8a05b07fd61870d2e73b4020e9f49aa00da8471723497c",
+        type = "tar.gz",
+        urls = ["https://static.crates.io/crates/windows-core/0.62.0/download"],
+        strip_prefix = "windows-core-0.62.0",
+        build_file = Label("//vendor/bindeps:BUILD.windows-core-0.62.0.bazel"),
+    )
+
+    maybe(
+        http_archive,
         name = "bindeps__windows-future-0.2.1",
         sha256 = "fc6a41e98427b19fe4b73c550f060b59fa592d7d686537eebf9385621bfbad8e",
         type = "tar.gz",
         urls = ["https://static.crates.io/crates/windows-future/0.2.1/download"],
         strip_prefix = "windows-future-0.2.1",
         build_file = Label("//vendor/bindeps:BUILD.windows-future-0.2.1.bazel"),
+    )
+
+    maybe(
+        http_archive,
+        name = "bindeps__windows-future-0.3.0",
+        sha256 = "b2194dee901458cb79e1148a4e9aac2b164cc95fa431891e7b296ff0b2f1d8a6",
+        type = "tar.gz",
+        urls = ["https://static.crates.io/crates/windows-future/0.3.0/download"],
+        strip_prefix = "windows-future-0.3.0",
+        build_file = Label("//vendor/bindeps:BUILD.windows-future-0.3.0.bazel"),
     )
 
     maybe(
@@ -8205,12 +8264,32 @@ def crate_repositories():
 
     maybe(
         http_archive,
+        name = "bindeps__windows-link-0.2.0",
+        sha256 = "45e46c0661abb7180e7b9c281db115305d49ca1709ab8242adf09666d2173c65",
+        type = "tar.gz",
+        urls = ["https://static.crates.io/crates/windows-link/0.2.0/download"],
+        strip_prefix = "windows-link-0.2.0",
+        build_file = Label("//vendor/bindeps:BUILD.windows-link-0.2.0.bazel"),
+    )
+
+    maybe(
+        http_archive,
         name = "bindeps__windows-numerics-0.2.0",
         sha256 = "9150af68066c4c5c07ddc0ce30421554771e528bde427614c61038bc2c92c2b1",
         type = "tar.gz",
         urls = ["https://static.crates.io/crates/windows-numerics/0.2.0/download"],
         strip_prefix = "windows-numerics-0.2.0",
         build_file = Label("//vendor/bindeps:BUILD.windows-numerics-0.2.0.bazel"),
+    )
+
+    maybe(
+        http_archive,
+        name = "bindeps__windows-numerics-0.3.0",
+        sha256 = "2ce3498fe0aba81e62e477408383196b4b0363db5e0c27646f932676283b43d8",
+        type = "tar.gz",
+        urls = ["https://static.crates.io/crates/windows-numerics/0.3.0/download"],
+        strip_prefix = "windows-numerics-0.3.0",
+        build_file = Label("//vendor/bindeps:BUILD.windows-numerics-0.3.0.bazel"),
     )
 
     maybe(
@@ -8235,6 +8314,16 @@ def crate_repositories():
 
     maybe(
         http_archive,
+        name = "bindeps__windows-result-0.4.0",
+        sha256 = "7084dcc306f89883455a206237404d3eaf961e5bd7e0f312f7c91f57eb44167f",
+        type = "tar.gz",
+        urls = ["https://static.crates.io/crates/windows-result/0.4.0/download"],
+        strip_prefix = "windows-result-0.4.0",
+        build_file = Label("//vendor/bindeps:BUILD.windows-result-0.4.0.bazel"),
+    )
+
+    maybe(
+        http_archive,
         name = "bindeps__windows-strings-0.4.2",
         sha256 = "56e6c93f3a0c3b36176cb1327a4958a0353d5d166c2a35cb268ace15e91d3b57",
         type = "tar.gz",
@@ -8245,12 +8334,12 @@ def crate_repositories():
 
     maybe(
         http_archive,
-        name = "bindeps__windows-sys-0.48.0",
-        sha256 = "677d2418bec65e3338edb076e806bc1ec15693c5d0104683f2efe857f61056a9",
+        name = "bindeps__windows-strings-0.5.0",
+        sha256 = "7218c655a553b0bed4426cf54b20d7ba363ef543b52d515b3e48d7fd55318dda",
         type = "tar.gz",
-        urls = ["https://static.crates.io/crates/windows-sys/0.48.0/download"],
-        strip_prefix = "windows-sys-0.48.0",
-        build_file = Label("//vendor/bindeps:BUILD.windows-sys-0.48.0.bazel"),
+        urls = ["https://static.crates.io/crates/windows-strings/0.5.0/download"],
+        strip_prefix = "windows-strings-0.5.0",
+        build_file = Label("//vendor/bindeps:BUILD.windows-strings-0.5.0.bazel"),
     )
 
     maybe(
@@ -8285,12 +8374,12 @@ def crate_repositories():
 
     maybe(
         http_archive,
-        name = "bindeps__windows-targets-0.48.5",
-        sha256 = "9a2fa6e2155d7247be68c096456083145c183cbbbc2764150dda45a87197940c",
+        name = "bindeps__windows-sys-0.61.0",
+        sha256 = "e201184e40b2ede64bc2ea34968b28e33622acdbbf37104f0e4a33f7abe657aa",
         type = "tar.gz",
-        urls = ["https://static.crates.io/crates/windows-targets/0.48.5/download"],
-        strip_prefix = "windows-targets-0.48.5",
-        build_file = Label("//vendor/bindeps:BUILD.windows-targets-0.48.5.bazel"),
+        urls = ["https://static.crates.io/crates/windows-sys/0.61.0/download"],
+        strip_prefix = "windows-sys-0.61.0",
+        build_file = Label("//vendor/bindeps:BUILD.windows-sys-0.61.0.bazel"),
     )
 
     maybe(
@@ -8325,12 +8414,12 @@ def crate_repositories():
 
     maybe(
         http_archive,
-        name = "bindeps__windows_aarch64_msvc-0.48.5",
-        sha256 = "dc35310971f3b2dbbf3f0690a219f40e2d9afcf64f9ab7cc1be722937c26b4bc",
+        name = "bindeps__windows-threading-0.2.0",
+        sha256 = "ab47f085ad6932defa48855254c758cdd0e2f2d48e62a34118a268d8f345e118",
         type = "tar.gz",
-        urls = ["https://static.crates.io/crates/windows_aarch64_msvc/0.48.5/download"],
-        strip_prefix = "windows_aarch64_msvc-0.48.5",
-        build_file = Label("//vendor/bindeps:BUILD.windows_aarch64_msvc-0.48.5.bazel"),
+        urls = ["https://static.crates.io/crates/windows-threading/0.2.0/download"],
+        strip_prefix = "windows-threading-0.2.0",
+        build_file = Label("//vendor/bindeps:BUILD.windows-threading-0.2.0.bazel"),
     )
 
     maybe(
@@ -8351,16 +8440,6 @@ def crate_repositories():
         urls = ["https://static.crates.io/crates/windows_aarch64_msvc/0.53.0/download"],
         strip_prefix = "windows_aarch64_msvc-0.53.0",
         build_file = Label("//vendor/bindeps:BUILD.windows_aarch64_msvc-0.53.0.bazel"),
-    )
-
-    maybe(
-        http_archive,
-        name = "bindeps__windows_x86_64_msvc-0.48.5",
-        sha256 = "ed94fce61571a4006852b7389a063ab983c02eb1bb37b47f8272ce92d06d9538",
-        type = "tar.gz",
-        urls = ["https://static.crates.io/crates/windows_x86_64_msvc/0.48.5/download"],
-        strip_prefix = "windows_x86_64_msvc-0.48.5",
-        build_file = Label("//vendor/bindeps:BUILD.windows_x86_64_msvc-0.48.5.bazel"),
     )
 
     maybe(
@@ -8515,22 +8594,22 @@ def crate_repositories():
 
     maybe(
         http_archive,
-        name = "bindeps__zerocopy-0.8.26",
-        sha256 = "1039dd0d3c310cf05de012d8a39ff557cb0d23087fd44cad61df08fc31907a2f",
+        name = "bindeps__zerocopy-0.8.27",
+        sha256 = "0894878a5fa3edfd6da3f88c4805f4c8558e2b996227a3d864f47fe11e38282c",
         type = "tar.gz",
-        urls = ["https://static.crates.io/crates/zerocopy/0.8.26/download"],
-        strip_prefix = "zerocopy-0.8.26",
-        build_file = Label("//vendor/bindeps:BUILD.zerocopy-0.8.26.bazel"),
+        urls = ["https://static.crates.io/crates/zerocopy/0.8.27/download"],
+        strip_prefix = "zerocopy-0.8.27",
+        build_file = Label("//vendor/bindeps:BUILD.zerocopy-0.8.27.bazel"),
     )
 
     maybe(
         http_archive,
-        name = "bindeps__zerocopy-derive-0.8.26",
-        sha256 = "9ecf5b4cc5364572d7f4c329661bcc82724222973f2cab6f050a4e5c22f75181",
+        name = "bindeps__zerocopy-derive-0.8.27",
+        sha256 = "88d2b8d9c68ad2b9e4340d7832716a4d21a22a1154777ad56ea55c51a9cf3831",
         type = "tar.gz",
-        urls = ["https://static.crates.io/crates/zerocopy-derive/0.8.26/download"],
-        strip_prefix = "zerocopy-derive-0.8.26",
-        build_file = Label("//vendor/bindeps:BUILD.zerocopy-derive-0.8.26.bazel"),
+        urls = ["https://static.crates.io/crates/zerocopy-derive/0.8.27/download"],
+        strip_prefix = "zerocopy-derive-0.8.27",
+        build_file = Label("//vendor/bindeps:BUILD.zerocopy-derive-0.8.27.bazel"),
     )
 
     maybe(
@@ -8665,19 +8744,19 @@ def crate_repositories():
 
     maybe(
         http_archive,
-        name = "bindeps__zstd-sys-2.0.15-zstd.1.5.7",
-        sha256 = "eb81183ddd97d0c74cedf1d50d85c8d08c1b8b68ee863bdee9e706eedba1a237",
+        name = "bindeps__zstd-sys-2.0.16-zstd.1.5.7",
+        sha256 = "91e19ebc2adc8f83e43039e79776e3fda8ca919132d68a1fed6a5faca2683748",
         type = "tar.gz",
-        urls = ["https://static.crates.io/crates/zstd-sys/2.0.15+zstd.1.5.7/download"],
-        strip_prefix = "zstd-sys-2.0.15+zstd.1.5.7",
-        build_file = Label("//vendor/bindeps:BUILD.zstd-sys-2.0.15+zstd.1.5.7.bazel"),
+        urls = ["https://static.crates.io/crates/zstd-sys/2.0.16+zstd.1.5.7/download"],
+        strip_prefix = "zstd-sys-2.0.16+zstd.1.5.7",
+        build_file = Label("//vendor/bindeps:BUILD.zstd-sys-2.0.16+zstd.1.5.7.bazel"),
     )
 
     return [
         struct(repo = "bindeps__cargo-deny-0.18.4", is_dev_dep = False),
-        struct(repo = "bindeps__cargo-insta-1.43.1", is_dev_dep = False),
+        struct(repo = "bindeps__cargo-insta-1.43.2", is_dev_dep = False),
         struct(repo = "bindeps__cedar-policy-cli-4.5.1", is_dev_dep = False),
-        struct(repo = "bindeps__dprint-0.50.1", is_dev_dep = False),
+        struct(repo = "bindeps__dprint-0.50.2", is_dev_dep = False),
         struct(repo = "bindeps__just-1.42.4", is_dev_dep = False),
         struct(repo = "bindeps__miniserve-0.31.0", is_dev_dep = False),
         struct(repo = "bindeps__rust-analyzer-0.0.0", is_dev_dep = False),

@@ -65,7 +65,7 @@ rust_library(
     }),
     version = "0.12.2",
     deps = [
-        "@bindeps__log-0.4.27//:log",
+        "@bindeps__log-0.4.28//:log",
         "@bindeps__termcolor-1.4.1//:termcolor",
         "@bindeps__time-0.3.43//:time",
     ],

@@ -61,22 +61,22 @@ rust_library(
     version = "0.4.3",
     deps = select({
         "@rules_rust//rust/platform:aarch64-apple-darwin": [
-            "@bindeps__rustix-1.0.8//:rustix",  # cfg(unix)
+            "@bindeps__rustix-1.1.2//:rustix",  # cfg(unix)
         ],
         "@rules_rust//rust/platform:aarch64-pc-windows-msvc": [
             "@bindeps__windows-sys-0.60.2//:windows_sys",  # cfg(windows)
         ],
         "@rules_rust//rust/platform:aarch64-unknown-linux-gnu": [
-            "@bindeps__rustix-1.0.8//:rustix",  # cfg(unix)
+            "@bindeps__rustix-1.1.2//:rustix",  # cfg(unix)
         ],
         "@rules_rust//rust/platform:x86_64-apple-darwin": [
-            "@bindeps__rustix-1.0.8//:rustix",  # cfg(unix)
+            "@bindeps__rustix-1.1.2//:rustix",  # cfg(unix)
         ],
         "@rules_rust//rust/platform:x86_64-pc-windows-msvc": [
             "@bindeps__windows-sys-0.60.2//:windows_sys",  # cfg(windows)
         ],
         "@rules_rust//rust/platform:x86_64-unknown-linux-gnu": [
-            "@bindeps__rustix-1.0.8//:rustix",  # cfg(unix)
+            "@bindeps__rustix-1.1.2//:rustix",  # cfg(unix)
         ],
         "//conditions:default": [],
     }),

@@ -64,12 +64,12 @@ rust_library(
     }),
     version = "0.5.3",
     deps = [
-        "@bindeps__bytestring-1.4.0//:bytestring",
+        "@bindeps__bytestring-1.5.0//:bytestring",
         "@bindeps__cfg-if-1.0.3//:cfg_if",
         "@bindeps__http-0.2.12//:http",
         "@bindeps__regex-1.11.2//:regex",
         "@bindeps__regex-lite-0.1.7//:regex_lite",
-        "@bindeps__serde-1.0.219//:serde",
+        "@bindeps__serde-1.0.225//:serde",
         "@bindeps__tracing-0.1.41//:tracing",
     ],
 )

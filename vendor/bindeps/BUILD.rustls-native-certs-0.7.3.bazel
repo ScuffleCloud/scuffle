@@ -70,7 +70,7 @@ rust_library(
             "@bindeps__security-framework-2.11.1//:security_framework",  # cfg(target_os = "macos")
         ],
         "@rules_rust//rust/platform:aarch64-pc-windows-msvc": [
-            "@bindeps__schannel-0.1.27//:schannel",  # cfg(windows)
+            "@bindeps__schannel-0.1.28//:schannel",  # cfg(windows)
         ],
         "@rules_rust//rust/platform:aarch64-unknown-linux-gnu": [
             "@bindeps__openssl-probe-0.1.6//:openssl_probe",  # cfg(all(unix, not(target_os = "macos")))
@@ -79,7 +79,7 @@ rust_library(
             "@bindeps__security-framework-2.11.1//:security_framework",  # cfg(target_os = "macos")
         ],
         "@rules_rust//rust/platform:x86_64-pc-windows-msvc": [
-            "@bindeps__schannel-0.1.27//:schannel",  # cfg(windows)
+            "@bindeps__schannel-0.1.28//:schannel",  # cfg(windows)
         ],
         "@rules_rust//rust/platform:x86_64-unknown-linux-gnu": [
             "@bindeps__openssl-probe-0.1.6//:openssl_probe",  # cfg(all(unix, not(target_os = "macos")))

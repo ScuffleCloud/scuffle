@@ -28,7 +28,7 @@ rust_library(
     ),
     aliases = {
         "@bindeps__rustls-pki-types-1.12.0//:rustls_pki_types": "pki_types",
-        "@bindeps__rustls-webpki-0.103.4//:webpki": "webpki",
+        "@bindeps__rustls-webpki-0.103.6//:webpki": "webpki",
     },
     compile_data = glob(
         include = ["**"],
@@ -75,12 +75,12 @@ rust_library(
     }),
     version = "0.23.31",
     deps = [
-        "@bindeps__log-0.4.27//:log",
+        "@bindeps__log-0.4.28//:log",
         "@bindeps__once_cell-1.21.3//:once_cell",
         "@bindeps__ring-0.17.14//:ring",
         "@bindeps__rustls-0.23.31//:build_script_build",
         "@bindeps__rustls-pki-types-1.12.0//:rustls_pki_types",
-        "@bindeps__rustls-webpki-0.103.4//:webpki",
+        "@bindeps__rustls-webpki-0.103.6//:webpki",
         "@bindeps__subtle-2.6.1//:subtle",
         "@bindeps__zeroize-1.8.1//:zeroize",
     ],

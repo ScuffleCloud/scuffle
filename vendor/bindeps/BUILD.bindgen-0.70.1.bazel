@@ -75,7 +75,7 @@ rust_library(
         "@bindeps__cexpr-0.6.0//:cexpr",
         "@bindeps__clang-sys-1.8.1//:clang_sys",
         "@bindeps__itertools-0.13.0//:itertools",
-        "@bindeps__log-0.4.27//:log",
+        "@bindeps__log-0.4.28//:log",
         "@bindeps__prettyplease-0.2.37//:prettyplease",
         "@bindeps__proc-macro2-1.0.101//:proc_macro2",
         "@bindeps__quote-1.0.40//:quote",

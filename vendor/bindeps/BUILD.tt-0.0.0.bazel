@@ -62,7 +62,7 @@ rust_library(
     deps = [
         "@bindeps__arrayvec-0.7.6//:arrayvec",
         "@bindeps__intern-0.0.0//:intern",
-        "@bindeps__ra-ap-rustc_lexer-0.123.0//:ra_ap_rustc_lexer",
+        "@bindeps__ra-ap-rustc_lexer-0.128.0//:ra_ap_rustc_lexer",
         "@bindeps__stdx-0.0.0//:stdx",
         "@bindeps__text-size-1.1.1//:text_size",
     ],

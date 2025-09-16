@@ -7,7 +7,6 @@ use crate::{CedarIdentifiable, JsonEntityUid};
 cedar_entity_id!(User);
 
 impl crate::CedarEntity for User {
-    #[allow(refining_impl_trait)]
     async fn parents(
         &self,
         global: &impl core_traits::Global,

@@ -1,8 +1,8 @@
 load("@aspect_bazel_lib//lib:output_files.bzl", "output_files")
 load("@aspect_rules_js//npm:defs.bzl", "npm_package")
 load("@npm//:defs.bzl", "npm_link_all_packages")
-load("@npm//cloud/proto/ts:typescript/package_json.bzl", typescript_bin = "bin")
 load("@npm//cloud/proto/ts:@swc/cli/package_json.bzl", swc_cli_bin = "bin")
+load("@npm//cloud/proto/ts:typescript/package_json.bzl", typescript_bin = "bin")
 load("//misc/utils/protobuf/ts:defs.bzl", "protobuf_ts_compile")
 
 npm_link_all_packages()
@@ -36,10 +36,10 @@ typescript_bin.tsc(
 swc_cli_bin.swc(
     name = "esm",
     srcs = [
+        ":.swcrc",
         ":node_modules",
         ":package.json",
         ":proto",
-        ":.swcrc",
     ],
     args = [
         "./proto",
@@ -73,8 +73,8 @@ npm_package(
     name = "pkg",
     srcs = [
         "package.json",
-        ":types_output",
         ":esm_output",
+        ":types_output",
     ],
     visibility = ["//visibility:public"],
 )

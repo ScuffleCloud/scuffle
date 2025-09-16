@@ -4,7 +4,7 @@ use core_db_types::models::{
 use core_traits::OptionExt;
 
 use crate::macros::{cedar_entity, cedar_entity_id};
-use crate::{CedarIdentifiable, JsonEntityUid};
+use crate::{CedarIdentifiable, EntityTypeName, JsonEntityUid, entity_type_name};
 
 cedar_entity!(Organization);
 
@@ -15,7 +15,7 @@ cedar_entity!(Policy);
 cedar_entity!(Role);
 
 impl crate::CedarIdentifiable for OrganizationMember {
-    const ENTITY_TYPE: &'static str = "OrganizationMember";
+    const ENTITY_TYPE: EntityTypeName = entity_type_name!("OrganizationMember");
 
     fn entity_id(&self) -> cedar_policy::EntityId {
         cedar_policy::EntityId::new(format!(

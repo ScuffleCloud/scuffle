@@ -2,13 +2,14 @@ use base64::Engine;
 use core_db_types::models::{MagicLinkRequest, UserSession, UserSessionRequest, UserSessionToken};
 
 use crate::macros::cedar_entity;
+use crate::{EntityTypeName, entity_type_name};
 
 cedar_entity!(UserSessionRequest);
 
 cedar_entity!(MagicLinkRequest);
 
 impl crate::CedarIdentifiable for UserSession {
-    const ENTITY_TYPE: &'static str = "UserSession";
+    const ENTITY_TYPE: EntityTypeName = entity_type_name!("UserSession");
 
     fn entity_id(&self) -> cedar_policy::EntityId {
         let user_id = (*self.user_id).to_string();

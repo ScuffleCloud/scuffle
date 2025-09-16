@@ -11,7 +11,7 @@ pub(crate) use cedar_entity;
 macro_rules! cedar_entity_id {
     ($ty:ident) => {
         impl $crate::CedarIdentifiable for ::core_db_types::id::Id<$ty> {
-            const ENTITY_TYPE: &'static str = stringify!($ty);
+            const ENTITY_TYPE: $crate::EntityTypeName = $crate::entity_type_name!(stringify!($ty));
 
             fn entity_id(&self) -> cedar_policy::EntityId {
                 cedar_policy::EntityId::new(self.to_string_unprefixed())

@@ -2,7 +2,7 @@ use std::str::FromStr;
 use std::sync::{Arc, OnceLock};
 
 use cedar_policy::{Decision, Entities, EntityId, PolicySet};
-use core_cedar::{CedarEntity, CedarIdentifiable};
+use core_cedar::{CedarEntity, CedarIdentifiable, EntityTypeName, entity_type_name};
 use core_db_types::models::UserSession;
 use core_traits::ResultExt;
 use tonic_types::{ErrorDetails, StatusExt};
@@ -14,25 +14,11 @@ fn static_policies() -> &'static PolicySet {
     STATIC_POLICIES.get_or_init(|| PolicySet::from_str(STATIC_POLICIES_STR).expect("failed to parse static policies"))
 }
 
-// async fn to_entity(&self, global: &Arc<G>) -> Result<Entity, tonic::Status> {
-//     let mut value = serde_json::value::Map::new();
-//     value.insert("uid".to_string(), uid_to_json(self.entity_uid()));
-//     value.insert("attrs".to_string(), serde_json::Value::Object(self.attributes(global).await?));
-//     value.insert(
-//         "parents".to_string(),
-//         serde_json::Value::Array(self.parents(global).await?.into_iter().map(uid_to_json).collect()),
-//     );
-
-//     let entity = Entity::from_json_value(serde_json::Value::Object(value), None)
-//         .into_tonic_internal_err("failed to create cedar entity")?;
-//     Ok(entity)
-// }
-
 #[derive(Debug, serde::Serialize)]
 pub struct Unauthenticated;
 
 impl CedarIdentifiable for Unauthenticated {
-    const ENTITY_TYPE: &'static str = "Unauthenticated";
+    const ENTITY_TYPE: EntityTypeName = entity_type_name!("Unauthenticated");
 
     fn entity_id(&self) -> EntityId {
         EntityId::new("unauthenticated")
@@ -149,7 +135,7 @@ pub enum Action {
 }
 
 impl CedarIdentifiable for Action {
-    const ENTITY_TYPE: &'static str = "Action";
+    const ENTITY_TYPE: EntityTypeName = entity_type_name!("Action");
 
     fn entity_id(&self) -> EntityId {
         EntityId::new(self.to_string())
@@ -163,7 +149,7 @@ impl CedarEntity for Action {}
 pub struct CoreApplication;
 
 impl CedarIdentifiable for CoreApplication {
-    const ENTITY_TYPE: &'static str = "Application";
+    const ENTITY_TYPE: EntityTypeName = entity_type_name!("Application");
 
     fn entity_id(&self) -> EntityId {
         EntityId::new("core")

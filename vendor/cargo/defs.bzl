@@ -492,6 +492,8 @@ _NORMAL_DEPENDENCIES = {
             _COMMON_CONDITION: {
                 "base64": Label("@cargo_vendor//:base64-0.22.1"),
                 "cedar-policy": Label("@cargo_vendor//:cedar-policy-4.5.1"),
+                "const_panic": Label("@cargo_vendor//:const_panic-0.2.15"),
+                "konst": Label("@cargo_vendor//:konst-0.4.2"),
                 "serde": Label("@cargo_vendor//:serde-1.0.220"),
                 "serde_json": Label("@cargo_vendor//:serde_json-1.0.144"),
                 "tonic": Label("@cargo_vendor//:tonic-0.14.2"),
@@ -5193,6 +5195,16 @@ def crate_repositories():
 
     maybe(
         http_archive,
+        name = "cargo_vendor__const_panic-0.2.15",
+        sha256 = "e262cdaac42494e3ae34c43969f9cdeb7da178bdb4b66fa6a1ea2edb4c8ae652",
+        type = "tar.gz",
+        urls = ["https://static.crates.io/crates/const_panic/0.2.15/download"],
+        strip_prefix = "const_panic-0.2.15",
+        build_file = Label("//vendor/cargo:BUILD.const_panic-0.2.15.bazel"),
+    )
+
+    maybe(
+        http_archive,
         name = "cargo_vendor__constant_time_eq-0.3.1",
         sha256 = "7c74b8349d32d297c9134b8c88677813a227df8f779daa29bfc29c183fe3dca6",
         type = "tar.gz",
@@ -6849,6 +6861,26 @@ def crate_repositories():
         urls = ["https://static.crates.io/crates/keccak/0.1.5/download"],
         strip_prefix = "keccak-0.1.5",
         build_file = Label("//vendor/cargo:BUILD.keccak-0.1.5.bazel"),
+    )
+
+    maybe(
+        http_archive,
+        name = "cargo_vendor__konst-0.4.2",
+        sha256 = "64896bdfd7906cfb0b57bc04f08bde408bcd6aaf71ff438ee471061cd16f2e86",
+        type = "tar.gz",
+        urls = ["https://static.crates.io/crates/konst/0.4.2/download"],
+        strip_prefix = "konst-0.4.2",
+        build_file = Label("//vendor/cargo:BUILD.konst-0.4.2.bazel"),
+    )
+
+    maybe(
+        http_archive,
+        name = "cargo_vendor__konst_proc_macros-0.4.0",
+        sha256 = "1bf92d396aa2df203577ebef8deaf1efc24d446366ca86be83ec8ac794b157d6",
+        type = "tar.gz",
+        urls = ["https://static.crates.io/crates/konst_proc_macros/0.4.0/download"],
+        strip_prefix = "konst_proc_macros-0.4.0",
+        build_file = Label("//vendor/cargo:BUILD.konst_proc_macros-0.4.0.bazel"),
     )
 
     maybe(
@@ -10002,6 +10034,16 @@ def crate_repositories():
 
     maybe(
         http_archive,
+        name = "cargo_vendor__typewit-1.14.2",
+        sha256 = "f8c1ae7cc0fdb8b842d65d127cb981574b0d2b249b74d1c7a2986863dc134f71",
+        type = "tar.gz",
+        urls = ["https://static.crates.io/crates/typewit/1.14.2/download"],
+        strip_prefix = "typewit-1.14.2",
+        build_file = Label("//vendor/cargo:BUILD.typewit-1.14.2.bazel"),
+    )
+
+    maybe(
+        http_archive,
         name = "cargo_vendor__ucd-trie-0.1.7",
         sha256 = "2896d95c02a80c6d6a5d6e953d479f5ddf2dfdb6a244441010e373ac0fb88971",
         type = "tar.gz",
@@ -10875,6 +10917,7 @@ def crate_repositories():
         struct(repo = "cargo_vendor__clap-4.5.47", is_dev_dep = False),
         struct(repo = "cargo_vendor__config-0.15.15", is_dev_dep = False),
         struct(repo = "cargo_vendor__console-0.16.1", is_dev_dep = False),
+        struct(repo = "cargo_vendor__const_panic-0.2.15", is_dev_dep = False),
         struct(repo = "cargo_vendor__convert_case-0.8.0", is_dev_dep = False),
         struct(repo = "cargo_vendor__copy_dir-0.1.3", is_dev_dep = False),
         struct(repo = "cargo_vendor__crossbeam-channel-0.5.15", is_dev_dep = False),
@@ -10911,6 +10954,7 @@ def crate_repositories():
         struct(repo = "cargo_vendor__ipnetwork-0.21.1", is_dev_dep = False),
         struct(repo = "cargo_vendor__is_empty-0.3.0", is_dev_dep = False),
         struct(repo = "cargo_vendor__itertools-0.14.0", is_dev_dep = False),
+        struct(repo = "cargo_vendor__konst-0.4.2", is_dev_dep = False),
         struct(repo = "cargo_vendor__libc-0.2.175", is_dev_dep = False),
         struct(repo = "cargo_vendor__linear-map-1.2.0", is_dev_dep = False),
         struct(repo = "cargo_vendor__linkme-0.3.33", is_dev_dep = False),

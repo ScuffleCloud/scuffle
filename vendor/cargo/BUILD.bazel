@@ -322,6 +322,18 @@ transition_alias_opt(
 )
 
 transition_alias_opt(
+    name = "const_panic-0.2.15",
+    actual = "@cargo_vendor__const_panic-0.2.15//:const_panic",
+    tags = ["manual"],
+)
+
+transition_alias_opt(
+    name = "const_panic",
+    actual = "@cargo_vendor__const_panic-0.2.15//:const_panic",
+    tags = ["manual"],
+)
+
+transition_alias_opt(
     name = "convert_case-0.8.0",
     actual = "@cargo_vendor__convert_case-0.8.0//:convert_case",
     tags = ["manual"],
@@ -762,6 +774,18 @@ transition_alias_opt(
 transition_alias_opt(
     name = "itertools",
     actual = "@cargo_vendor__itertools-0.14.0//:itertools",
+    tags = ["manual"],
+)
+
+transition_alias_opt(
+    name = "konst-0.4.2",
+    actual = "@cargo_vendor__konst-0.4.2//:konst",
+    tags = ["manual"],
+)
+
+transition_alias_opt(
+    name = "konst",
+    actual = "@cargo_vendor__konst-0.4.2//:konst",
     tags = ["manual"],
 )
 

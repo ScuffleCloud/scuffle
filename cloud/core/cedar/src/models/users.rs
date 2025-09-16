@@ -2,7 +2,7 @@ use core_db_types::models::{NewUserEmailRequest, User, UserEmail, UserGoogleAcco
 use core_traits::OptionExt;
 
 use crate::macros::{cedar_entity, cedar_entity_id};
-use crate::{CedarIdentifiable, JsonEntityUid};
+use crate::{CedarIdentifiable, EntityTypeName, JsonEntityUid, entity_type_name};
 
 cedar_entity_id!(User);
 
@@ -25,7 +25,7 @@ impl crate::CedarEntity for User {
 }
 
 impl crate::CedarIdentifiable for UserEmail {
-    const ENTITY_TYPE: &'static str = "UserEmail";
+    const ENTITY_TYPE: EntityTypeName = entity_type_name!("UserEmail");
 
     fn entity_id(&self) -> cedar_policy::EntityId {
         cedar_policy::EntityId::new(&self.email)
@@ -37,7 +37,7 @@ impl crate::CedarEntity for UserEmail {}
 cedar_entity!(NewUserEmailRequest);
 
 impl crate::CedarIdentifiable for UserGoogleAccount {
-    const ENTITY_TYPE: &'static str = "UserGoogleAccount";
+    const ENTITY_TYPE: EntityTypeName = entity_type_name!("UserGoogleAccount");
 
     fn entity_id(&self) -> cedar_policy::EntityId {
         cedar_policy::EntityId::new(&self.sub)

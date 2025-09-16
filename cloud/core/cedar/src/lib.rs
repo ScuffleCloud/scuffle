@@ -13,7 +13,7 @@ pub trait CedarEntityId: CedarEntity {
 }
 
 impl<T: CedarEntityId> CedarIdentifiable for T {
-    const ENTITY_TYPE: &'static str = T::Id::ENTITY_TYPE;
+    const ENTITY_TYPE: EntityTypeName = T::Id::ENTITY_TYPE;
 
     fn entity_id(&self) -> cedar_policy::EntityId {
         self.id().borrow().entity_id()
@@ -26,13 +26,13 @@ impl<T: CedarEntityId> CedarIdentifiable for T {
 
 #[derive(Clone, PartialEq, Eq, PartialOrd, Ord, Hash)]
 pub struct JsonEntityUid {
-    pub type_name: &'static str,
+    pub type_name: EntityTypeName,
     pub id: cedar_policy::EntityId,
 }
 
 impl From<JsonEntityUid> for cedar_policy::EntityUid {
     fn from(value: JsonEntityUid) -> Self {
-        cedar_policy::EntityUid::from_type_name_and_id(value.type_name.parse().unwrap(), value.id)
+        cedar_policy::EntityUid::from_type_name_and_id(value.type_name.as_str().parse().unwrap(), value.id)
     }
 }
 
@@ -42,8 +42,7 @@ impl serde::Serialize for JsonEntityUid {
         S: serde::Serializer,
     {
         let mut map = serializer.serialize_map(Some(2))?;
-
-        map.serialize_entry("type", self.type_name)?;
+        map.serialize_entry("type", self.type_name.as_str())?;
         map.serialize_entry("id", self.id.unescaped())?;
         map.end()
     }
@@ -53,7 +52,7 @@ pub trait CedarIdentifiable {
     /// MUST be a normalized cedar entity type name.
     ///
     /// See [`cedar_policy::EntityTypeName`] and <https://github.com/cedar-policy/rfcs/blob/main/text/0009-disallow-whitespace-in-entityuid.md>.
-    const ENTITY_TYPE: &'static str;
+    const ENTITY_TYPE: EntityTypeName;
 
     fn entity_id(&self) -> cedar_policy::EntityId;
 
@@ -120,5 +119,8 @@ pub trait CedarEntity: CedarIdentifiable + serde::Serialize + Send + Sync {
     }
 }
 
+pub use entity_type_name::EntityTypeName;
+
+mod entity_type_name;
 mod macros;
 mod models;

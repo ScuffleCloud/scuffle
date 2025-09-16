@@ -6,8 +6,10 @@ edition = "2024"
 [dependencies]
 base64 = "0.22"
 cedar-policy = "4.5"
+const_panic = "0.2"
 core-db-types = { path = "../db-types", package = "scufflecloud-core-db-types" }
 core-traits = { path = "../traits", package = "scufflecloud-core-traits" }
+konst = { version = "0.4", features = ["iter"] }
 pb = { path = "../../proto", package = "scufflecloud-proto" }
 serde = "1"
 serde_derive = "1"

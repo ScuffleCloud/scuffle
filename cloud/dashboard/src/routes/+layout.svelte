@@ -15,8 +15,13 @@
     import RightNav from "$components/right-nav/right-nav.svelte";
     import { PUBLIC_VITE_MSW_ENABLED } from "$env/static/public";
     import { useAuth } from "$lib/auth.svelte";
+    import { onMount } from "svelte";
 
     const auth = useAuth();
+
+    onMount(() => {
+        auth.initialize();
+    });
 
     // Maybe don't need this code since we'll mock functions in a different way but leaving it for now
     const requireMsw = dev && browser

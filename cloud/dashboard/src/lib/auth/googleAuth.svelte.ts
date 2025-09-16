@@ -1,3 +1,4 @@
+import { goto } from "$app/navigation";
 import { useAuth } from "$lib/auth.svelte";
 import { sessionsServiceClient } from "$lib/grpcClient";
 
@@ -14,7 +15,7 @@ export async function initiateGoogleLogin(): Promise<void> {
 
     if (status.code === "OK") {
         const response = await call.response;
-        window.location.href = response.authorizationUrl;
+        goto(response.authorizationUrl);
     } else {
         throw new Error(status.detail || "Google login failed");
     }
@@ -52,7 +53,7 @@ async function completeGoogleLogin(code: string, state: string): Promise<void> {
 
         // if (response.newUserSessionToken?.sessionMfaPending) {
         //     // Redirect to MFA page
-        //     window.location.href = "/mfa";
+        //     goto("/mfa");
         //     return;
         // }
 
@@ -62,7 +63,7 @@ async function completeGoogleLogin(code: string, state: string): Promise<void> {
             // This should route to whatever our base page is after logging in.
             // Eventually some dashboard after it's made? Or localhost should throw
             // redirect to localhost:5173/dashboard after logged in
-            // window.location.href = "/dashboard";
+            // goto("/dashboard");
         } else {
             throw new Error("No session token received");
         }

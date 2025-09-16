@@ -1,7 +1,12 @@
 [package]
 name = "scufflecloud-core-cedar"
 version = "0.1.0"
+authors = ["Scuffle <opensource@scuffle.cloud>"]
 edition = "2024"
+license = "AGPL-3.0"
+publish = false
+readme = "README.md"
+repository = "https://github.com/scufflecloud/scuffle"
 
 [dependencies]
 base64 = "0.22"

@@ -290,9 +290,12 @@ export function createAuthState() {
         async logout() {
             if (!browser) return;
 
+            console.log("checkhere1");
             const call = sessionsServiceClient.invalidateUserSession({});
             const status = await call.status;
+            console.log("checkhere2");
             if (status.code === "OK") {
+                console.log("checkhere");
                 userSessionToken = { state: "unauthenticated" };
                 window.localStorage.removeItem("userSessionToken");
                 user = { state: "unauthenticated" };

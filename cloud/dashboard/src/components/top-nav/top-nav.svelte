@@ -1,4 +1,5 @@
 <script lang="ts">
+    import { useAuth } from "$lib/auth.svelte";
     import IconConfigureTab from "$lib/images/icon-configure-tab.svelte";
     import Search from "$lib/images/search.svelte";
     import { onMount } from "svelte";
@@ -81,6 +82,8 @@
         id: "proj-1",
         name: "Project 1",
     }];
+
+    const auth = useAuth();
 </script>
 
 <header class="top-nav">
@@ -123,9 +126,7 @@
     </div>
     <div class="actions">
         <a href="/logout" data-sveltekit-preload-data="off">
-            <button class="logout-button">
-                Logout
-            </button>
+            Logout
         </a>
         <button
             class="search-button"

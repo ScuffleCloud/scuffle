@@ -34,7 +34,7 @@ pub(crate) async fn register_with_email_email<G: core_traits::Global>(
         .unwrap()
         .to_string();
 
-    let timeout_minutes = global.timeout_config().email_registration_request.num_minutes().max(0) as u32;
+    let timeout_minutes = global.timeout_config().magic_link_request.num_minutes().max(0) as u32;
 
     let subject = RegisterWithEmailSubjectTemplate.render_once()?;
     let text = RegisterWithEmailTextTemplate {
@@ -195,11 +195,7 @@ pub(crate) async fn new_device_email<G: core_traits::Global>(
         .and_then(GeoInfo::from_city);
     let ip_address = ip_info.ip_address.to_string();
     // TODO: replace with actual link
-    let activity_url = global
-        .dashboard_origin()
-        .join("/activity")
-        .unwrap()
-        .to_string();
+    let activity_url = global.dashboard_origin().join("/activity").unwrap().to_string();
 
     let subject = NewDeviceSubjectTemplate
         .render_once()
@@ -211,9 +207,13 @@ pub(crate) async fn new_device_email<G: core_traits::Global>(
     }
     .render_once()
     .into_tonic_internal_err("failed to render email")?;
-    let html = NewDeviceHtmlTemplate { ip_address, geo_info, activity_url }
-        .render_once()
-        .into_tonic_internal_err("failed to render email")?;
+    let html = NewDeviceHtmlTemplate {
+        ip_address,
+        geo_info,
+        activity_url,
+    }
+    .render_once()
+    .into_tonic_internal_err("failed to render email")?;
 
     Ok(pb::scufflecloud::email::v1::Email {
         to_address,

@@ -263,7 +263,7 @@ impl<G: core_traits::Global> Operation<G> for tonic::Request<pb::scufflecloud::c
             user_id: resource.user_id,
             email: resource.email.clone(),
             code: code.to_vec(),
-            expires_at: chrono::Utc::now() + global.timeout_config().email_registration_request,
+            expires_at: chrono::Utc::now() + global.timeout_config().new_user_email_request,
         };
 
         diesel::insert_into(new_user_email_requests::dsl::new_user_email_requests)

@@ -15,7 +15,7 @@ export async function initiateGoogleLogin(): Promise<void> {
 
     if (status.code === "OK") {
         const response = await call.response;
-        goto(response.authorizationUrl);
+        window.location.href = response.authorizationUrl;
     } else {
         throw new Error(status.detail || "Google login failed");
     }
@@ -59,11 +59,7 @@ async function completeGoogleLogin(code: string, state: string): Promise<void> {
 
         if (response.newUserSessionToken) {
             await auth.handleNewUserSessionToken(response.newUserSessionToken);
-
-            // This should route to whatever our base page is after logging in.
-            // Eventually some dashboard after it's made? Or localhost should throw
-            // redirect to localhost:5173/dashboard after logged in
-            // goto("/dashboard");
+            goto("/projects");
         } else {
             throw new Error("No session token received");
         }

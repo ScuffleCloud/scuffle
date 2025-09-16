@@ -6,7 +6,7 @@ export function load() {
 
     // This should say dashboard after we add one
     if (auth.userSessionToken.state === "authenticated") {
-        throw redirect(307, "/settings/user/common");
+        throw redirect(307, "/projects");
     }
 
     throw redirect(307, "/login");

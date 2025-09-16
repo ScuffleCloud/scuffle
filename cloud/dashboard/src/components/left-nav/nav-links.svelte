@@ -32,10 +32,19 @@
     );
 
     const navItemsWithPaths = $derived(
-        NAV_ITEMS.map((item) => ({
-            ...item,
-            path: `${basePath}${item.path}`,
-        })),
+        NAV_ITEMS.map((item) => {
+            // Not relative to base path
+            if (!item.path.startsWith("/")) {
+                return {
+                    ...item,
+                    path: `/${item.path}`,
+                };
+            }
+            return {
+                ...item,
+                path: `${basePath}${item.path}`,
+            };
+        }),
     );
 
     let shouldOpenDropdown = $state<string | null>(null);

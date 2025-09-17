@@ -173,26 +173,30 @@ pub(crate) async fn is_authorized<G: core_traits::Global>(
         );
     }
 
-    let context = cedar_policy::Context::from_json_value(serde_json::Value::Object(context), None)
+    let schema = static_policies_schema();
+
+    let a_euid: cedar_policy::EntityUid = action.entity_uid().into();
+
+    let context = cedar_policy::Context::from_json_value(serde_json::Value::Object(context), Some((schema, &a_euid)))
         .into_tonic_internal_err("failed to create cedar context")?;
 
     let r = cedar_policy::Request::new(
         principal.entity_uid().into(),
-        action.entity_uid().into(),
+        a_euid,
         resource.entity_uid().into(),
         context,
-        Some(static_policies_schema()),
+        Some(schema),
     )
     .into_tonic_internal_err("failed to validate cedar request")?;
 
     let entities = vec![
-        principal.to_entity(global.as_ref()).await?,
-        action.to_entity(global.as_ref()).await?,
-        resource.to_entity(global.as_ref()).await?,
+        principal.to_entity(global.as_ref(), Some(schema)).await?,
+        action.to_entity(global.as_ref(), Some(schema)).await?,
+        resource.to_entity(global.as_ref(), Some(schema)).await?,
     ];
 
     let entities = Entities::empty()
-        .add_entities(entities, None)
+        .add_entities(entities, Some(schema))
         .into_tonic_internal_err("failed to create cedar entities")?;
 
     match cedar_policy::Authorizer::new()

@@ -67,6 +67,6 @@ rust_library(
         "@bindeps__bstr-1.12.0//:bstr",
         "@bindeps__faster-hex-0.10.0//:faster_hex",
         "@bindeps__gix-trace-0.1.13//:gix_trace",
-        "@bindeps__thiserror-2.0.15//:thiserror",
+        "@bindeps__thiserror-2.0.16//:thiserror",
     ],
 )

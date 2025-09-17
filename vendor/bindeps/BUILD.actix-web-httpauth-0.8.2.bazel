@@ -65,7 +65,7 @@ rust_library(
         "@bindeps__base64-0.22.1//:base64",
         "@bindeps__futures-core-0.3.31//:futures_core",
         "@bindeps__futures-util-0.3.31//:futures_util",
-        "@bindeps__log-0.4.27//:log",
+        "@bindeps__log-0.4.28//:log",
         "@bindeps__pin-project-lite-0.2.16//:pin_project_lite",
     ],
 )

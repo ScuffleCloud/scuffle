@@ -67,12 +67,12 @@ rust_library(
     deps = [
         "@bindeps__base64-0.22.1//:base64",
         "@bindeps__flate2-1.1.2//:flate2",
-        "@bindeps__log-0.4.27//:log",
+        "@bindeps__log-0.4.28//:log",
         "@bindeps__once_cell-1.21.3//:once_cell",
         "@bindeps__rustls-0.23.31//:rustls",
         "@bindeps__rustls-pki-types-1.12.0//:rustls_pki_types",
         "@bindeps__socks-0.3.4//:socks",
-        "@bindeps__url-2.5.4//:url",
+        "@bindeps__url-2.5.7//:url",
         "@bindeps__webpki-roots-0.26.11//:webpki_roots",
     ],
 )

@@ -1,26 +1,31 @@
 <script lang="ts">
+    import IconConfigureTab from "$lib/images/icon-configure-tab.svelte";
     import Search from "$lib/images/search.svelte";
     import { onMount } from "svelte";
     import { fade } from "svelte/transition";
-    // TODO: Configure routing from root
-    import { page } from "$app/state";
-    import IconConfigureTab from "$lib/images/icon-configure-tab.svelte";
-    import IconSwitch from "$lib/images/icon-switch.svelte";
-    import { useUser } from "$lib/useUser";
     import NavSwitcher from "./nav-switcher.svelte";
 
     let showSearchModal = $state(false);
     let searchInput = $state<HTMLInputElement | null>(null);
 
-    const { userQuery, currentOrganization, currentProject } =
-        useUser();
+    const currentOrganization = {
+        id: "org-1",
+        name: "Organization 1",
+        slug: "org-1",
+        image_url: "https://via.placeholder.com/32",
+    };
+    const currentProject = {
+        id: "proj-1",
+        name: "Project 1",
+        slug: "proj-1",
+    };
 
-    $effect(() => {
-        if ($userQuery.data?.organizations) {
-            console.log("user", $userQuery.data);
-            console.log("currentOrganization", currentOrganization);
-        }
-    });
+    // $effect(() => {
+    //     if ($userQuery.data?.organizations) {
+    //         console.log("user", $userQuery.data);
+    //         console.log("currentOrganization", currentOrganization);
+    //     }
+    // });
 
     function handleKeydown(event: KeyboardEvent) {
         if ((event.metaKey || event.ctrlKey) && event.key === "k") {
@@ -53,42 +58,29 @@
         showSearchModal = false;
     }
 
-    // This breadcrumb logic is hacky I'm not sure how extensive this needs to be yet.
-    // There's very few breadcrumbs to show other than always showing organization and project.
-    let showBreadcrumbs = true;
-    let breadcrumbs = $derived(
-        page.url.pathname
-            .split("/")
-            .filter(Boolean)
-            .map((segment, index, segments) => {
-                const path = "/"
-                    + segments.slice(0, index + 1).join("/");
-                const customTitle = "test";
-                return {
-                    label: customTitle
-                        || segment.replace(/[-_]/g, " ").replace(
-                            /\b\w/g,
-                            (c) => c.toUpperCase(),
-                        ),
-                    href: path,
-                };
-            }),
-    );
+    // const organizations = $derived(
+    //     $userQuery.data?.organizations.map((org) => ({
+    //         id: org.id,
+    //         name: org.name,
+    //         imageUrl: org.image_url,
+    //     })),
+    // );
+    const organizations = [{
+        id: "org-1",
+        name: "Organization 1",
+        imageUrl: "https://via.placeholder.com/32",
+    }];
 
-    const organizations = $derived(
-        $userQuery.data?.organizations.map((org) => ({
-            id: org.id,
-            name: org.name,
-            imageUrl: org.image_url,
-        })),
-    );
-
-    const projects = $derived(
-        $currentOrganization?.projects.map((project) => ({
-            id: project.id,
-            name: project.name,
-        })) ?? [],
-    );
+    // const projects = $derived(
+    //     $currentOrganization?.projects.map((project) => ({
+    //         id: project.id,
+    //         name: project.name,
+    //     })) ?? [],
+    // );
+    const projects = [{
+        id: "proj-1",
+        name: "Project 1",
+    }];
 </script>
 
 <header class="top-nav">
@@ -109,8 +101,8 @@
             {/each} -->
             <div class="breadcrumb-item">
                 <NavSwitcher
-                    name={$currentOrganization?.name ?? ""}
-                    imageUrl={$currentOrganization?.image_url}
+                    name={currentOrganization?.name ?? ""}
+                    imageUrl={currentOrganization?.image_url}
                     items={organizations ?? []}
                     onClick={(id) => {
                         console.log("clicked", id);
@@ -120,7 +112,7 @@
             <div class="slash-divider">/</div>
             <div class="breadcrumb-item">
                 <NavSwitcher
-                    name={$currentProject?.name ?? ""}
+                    name={currentProject?.name ?? ""}
                     items={projects ?? []}
                     onClick={(id) => {
                         console.log("clicked", id);
@@ -130,6 +122,9 @@
         </nav>
     </div>
     <div class="actions">
+        <a href="/logout" data-sveltekit-preload-data="off">
+            Logout
+        </a>
         <button
             class="search-button"
             aria-label="Search"

@@ -53,13 +53,36 @@ rust_library(
         "norustfmt",
     ],
     target_compatible_with = select({
+        "@rules_rust//rust/platform:aarch64-apple-darwin": [],
+        "@rules_rust//rust/platform:aarch64-pc-windows-msvc": [],
         "@rules_rust//rust/platform:aarch64-unknown-linux-gnu": [],
+        "@rules_rust//rust/platform:x86_64-apple-darwin": [],
+        "@rules_rust//rust/platform:x86_64-pc-windows-msvc": [],
         "@rules_rust//rust/platform:x86_64-unknown-linux-gnu": [],
         "//conditions:default": ["@platforms//:incompatible"],
     }),
     version = "0.8.1",
     deps = [
-        "@cargo_vendor__openssl-probe-0.1.6//:openssl_probe",  # cfg(all(unix, not(target_os = "macos")))
         "@cargo_vendor__rustls-pki-types-1.12.0//:rustls_pki_types",
-    ],
+    ] + select({
+        "@rules_rust//rust/platform:aarch64-apple-darwin": [
+            "@cargo_vendor__security-framework-3.4.0//:security_framework",  # cfg(target_os = "macos")
+        ],
+        "@rules_rust//rust/platform:aarch64-pc-windows-msvc": [
+            "@cargo_vendor__schannel-0.1.28//:schannel",  # cfg(windows)
+        ],
+        "@rules_rust//rust/platform:aarch64-unknown-linux-gnu": [
+            "@cargo_vendor__openssl-probe-0.1.6//:openssl_probe",  # cfg(all(unix, not(target_os = "macos")))
+        ],
+        "@rules_rust//rust/platform:x86_64-apple-darwin": [
+            "@cargo_vendor__security-framework-3.4.0//:security_framework",  # cfg(target_os = "macos")
+        ],
+        "@rules_rust//rust/platform:x86_64-pc-windows-msvc": [
+            "@cargo_vendor__schannel-0.1.28//:schannel",  # cfg(windows)
+        ],
+        "@rules_rust//rust/platform:x86_64-unknown-linux-gnu": [
+            "@cargo_vendor__openssl-probe-0.1.6//:openssl_probe",  # cfg(all(unix, not(target_os = "macos")))
+        ],
+        "//conditions:default": [],
+    }),
 )

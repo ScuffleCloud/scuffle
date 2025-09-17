@@ -71,7 +71,7 @@ rust_library(
     }),
     version = "0.1.41",
     deps = [
-        "@cargo_vendor__log-0.4.27//:log",
+        "@cargo_vendor__log-0.4.28//:log",
         "@cargo_vendor__pin-project-lite-0.2.16//:pin_project_lite",
         "@cargo_vendor__tracing-core-0.1.34//:tracing_core",
     ],

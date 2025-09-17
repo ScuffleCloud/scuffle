@@ -12,7 +12,6 @@ use sha2::Digest;
 use tonic::Code;
 use tonic_types::{ErrorDetails, StatusExt};
 
-use crate::CoreConfig;
 use crate::chrono_ext::ChronoDateTimeExt;
 use crate::id::Id;
 use crate::middleware::IpAddressInfo;
@@ -24,6 +23,7 @@ use crate::schema::{
     user_emails, user_sessions, users,
 };
 use crate::std_ext::{DisplayExt, OptionExt, ResultExt};
+use crate::{CoreConfig, emails};
 
 pub(crate) fn generate_random_bytes() -> Result<[u8; 32], rand::Error> {
     let mut token = [0u8; 32];
@@ -92,27 +92,38 @@ pub(crate) async fn get_user_by_id_in_tx(
     Ok(user)
 }
 
-pub(crate) async fn get_user_by_email(db: &mut diesel_async::AsyncPgConnection, email: &str) -> Result<User, tonic::Status> {
-    let Some((user, _)) = users::dsl::users
+pub(crate) async fn get_user_by_email(
+    db: &mut diesel_async::AsyncPgConnection,
+    email: &str,
+) -> Result<Option<User>, tonic::Status> {
+    let user = users::dsl::users
         .inner_join(user_emails::dsl::user_emails.on(users::dsl::primary_email.eq(user_emails::dsl::email.nullable())))
         .filter(user_emails::dsl::email.eq(&email))
-        .select((User::as_select(), user_emails::dsl::email))
-        .first::<(User, String)>(db)
+        .select(User::as_select())
+        .first::<User>(db)
         .await
         .optional()
-        .into_tonic_internal_err("failed to query user by email")?
-    else {
-        return Err(tonic::Status::with_error_details(
-            tonic::Code::NotFound,
-            "user not found",
-            ErrorDetails::new(),
-        ));
-    };
+        .into_tonic_internal_err("failed to query user by email")?;
 
     Ok(user)
 }
 
-pub(crate) async fn get_organization_by_id(
+pub(crate) async fn get_organization_by_id<G: CoreConfig>(
+    global: &Arc<G>,
+    organization_id: OrganizationId,
+) -> Result<Organization, tonic::Status> {
+    let organization = global
+        .organization_loader()
+        .load(organization_id)
+        .await
+        .ok()
+        .into_tonic_internal_err("failed to query organization")?
+        .into_tonic_not_found("organization not found")?;
+
+    Ok(organization)
+}
+
+pub(crate) async fn get_organization_by_id_in_tx(
     db: &mut diesel_async::AsyncPgConnection,
     organization_id: OrganizationId,
 ) -> Result<Organization, tonic::Status> {
@@ -219,29 +230,29 @@ pub(crate) async fn mfa_options(
 pub(crate) async fn create_session<G: CoreConfig>(
     global: &Arc<G>,
     tx: &mut diesel_async::AsyncPgConnection,
-    user_id: UserId,
+    user: &User,
     device: pb::scufflecloud::core::v1::Device,
     ip_info: &IpAddressInfo,
     check_mfa: bool,
 ) -> Result<pb::scufflecloud::core::v1::NewUserSessionToken, tonic::Status> {
-    let mfa_options = if check_mfa { mfa_options(tx, user_id).await? } else { vec![] };
+    let mfa_options = if check_mfa { mfa_options(tx, user.id).await? } else { vec![] };
 
     // Create user session, device and token
     let device_fingerprint = sha2::Sha256::digest(&device.public_key_data).to_vec();
 
     let session_expires_at = if !mfa_options.is_empty() {
-        chrono::Utc::now() + global.mfa_timeout()
+        chrono::Utc::now() + global.timeout_config().mfa
     } else {
-        chrono::Utc::now() + global.user_session_timeout()
+        chrono::Utc::now() + global.timeout_config().user_session
     };
     let token_id = Id::new();
-    let token_expires_at = chrono::Utc::now() + global.user_session_token_timeout();
+    let token_expires_at = chrono::Utc::now() + global.timeout_config().user_session_token;
 
     let token = generate_random_bytes().into_tonic_internal_err("failed to generate token")?;
     let encrypted_token = encrypt_token(device.algorithm(), &token, &device.public_key_data)?;
 
     let user_session = UserSession {
-        user_id,
+        user_id: user.id,
         device_fingerprint,
         device_algorithm: device.algorithm().into(),
         device_pk_data: device.public_key_data,
@@ -254,8 +265,21 @@ pub(crate) async fn create_session<G: CoreConfig>(
         mfa_pending: !mfa_options.is_empty(),
     };
 
+    // Upsert session
+    // This is an upsert because the user might have already had a session for this device at some point
     diesel::insert_into(user_sessions::dsl::user_sessions)
         .values(&user_session)
+        .on_conflict((user_sessions::dsl::user_id, user_sessions::dsl::device_fingerprint))
+        .do_update()
+        .set((
+            user_sessions::dsl::last_used_at.eq(user_session.last_used_at),
+            user_sessions::dsl::last_ip.eq(user_session.last_ip),
+            user_sessions::dsl::token_id.eq(user_session.token_id),
+            user_sessions::dsl::token.eq(token.to_vec()),
+            user_sessions::dsl::token_expires_at.eq(user_session.token_expires_at),
+            user_sessions::dsl::expires_at.eq(user_session.expires_at),
+            user_sessions::dsl::mfa_pending.eq(user_session.mfa_pending),
+        ))
         .execute(tx)
         .await
         .into_tonic_internal_err("failed to insert user session")?;
@@ -263,10 +287,17 @@ pub(crate) async fn create_session<G: CoreConfig>(
     let new_token = pb::scufflecloud::core::v1::NewUserSessionToken {
         id: token_id.to_string(),
         encrypted_token,
+        user_id: user.id.to_string(),
         expires_at: Some(token_expires_at.to_prost_timestamp_utc()),
+        session_expires_at: Some(session_expires_at.to_prost_timestamp_utc()),
         session_mfa_pending: user_session.mfa_pending,
         mfa_options: mfa_options.into_iter().map(|o| o as i32).collect(),
     };
+
+    if let Some(primary_email) = user.primary_email.as_ref() {
+        let email = emails::new_device_email(global, primary_email.clone(), ip_info).await?;
+        global.email_service().send_email(email).await?;
+    }
 
     Ok(new_token)
 }

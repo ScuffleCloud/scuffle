@@ -71,7 +71,7 @@ rust_library(
         "@bindeps__gix-validate-0.10.0//:gix_validate",
         "@bindeps__itoa-1.0.15//:itoa",
         "@bindeps__smallvec-1.15.1//:smallvec",
-        "@bindeps__thiserror-2.0.15//:thiserror",
-        "@bindeps__winnow-0.7.12//:winnow",
+        "@bindeps__thiserror-2.0.16//:thiserror",
+        "@bindeps__winnow-0.7.13//:winnow",
     ],
 )

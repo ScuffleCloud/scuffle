@@ -78,7 +78,7 @@
 <div class="settings-block">
     <div class="block-header">
         <div class="block-icon">
-            {#each [icon] as IconComponent}
+            {#each [icon] as IconComponent, index (`icon-${index}`)}
                 <IconComponent />
             {/each}
         </div>
@@ -90,7 +90,7 @@
         </div>
     </div>
     <div class="cards-container">
-        {#each cards as card}
+        {#each cards as card (card.id)}
             <div class="card">
                 <div class="card-header">
                     <div
@@ -120,7 +120,7 @@
 
                 {#if card.actions && card.actions.length > 0}
                     <div class="card-actions">
-                        {#each card.actions as action}
+                        {#each card.actions as action (action.label)}
                             {#if action.variant === "toggle"}
                                 <Switch
                                     checked={action.isToggled || false}

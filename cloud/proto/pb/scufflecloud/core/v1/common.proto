@@ -2,9 +2,13 @@ syntax = "proto3";
 
 package scufflecloud.core.v1;
 
+import "tinc/annotations.proto";
+
 enum CaptchaProvider {
+  // Unspecified enum value
+  CAPTCHA_PROVIDER_UNSPECIFIED = 0 [(tinc.variant).visibility = SKIP];
   // Cloudflare Turnstile
-  TURNSTILE = 0;
+  CAPTCHA_PROVIDER_TURNSTILE = 1;
 }
 
 message CaptchaChallengeResponse {

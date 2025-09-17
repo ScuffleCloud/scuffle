@@ -66,8 +66,8 @@ rust_library(
     deps = [
         "@bindeps__aho-corasick-1.1.3//:aho_corasick",
         "@bindeps__bstr-1.12.0//:bstr",
-        "@bindeps__log-0.4.27//:log",
-        "@bindeps__regex-automata-0.4.9//:regex_automata",
-        "@bindeps__regex-syntax-0.8.5//:regex_syntax",
+        "@bindeps__log-0.4.28//:log",
+        "@bindeps__regex-automata-0.4.10//:regex_automata",
+        "@bindeps__regex-syntax-0.8.6//:regex_syntax",
     ],
 )

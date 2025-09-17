@@ -10,11 +10,11 @@ command_not_found_handler() {
     elif [ -x /usr/share/command-not-found/command-not-found ]; then
         bin="/usr/share/command-not-found/command-not-found"
     else
-        printf "%s: command not found\n" "$1" 1>&2;
-        return;
+        printf "%s: command not found\n" "$1" 1>&2
+        return
     fi
 
-    "$bin" "$1" || true;
+    "$bin" "$1" || true
 }
 
 if ! command -v bazelisk >/dev/null 2>&1; then

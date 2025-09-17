@@ -56,7 +56,7 @@ rust_library(
     }),
     version = "0.6.1",
     deps = [
-        "@bindeps__bitflags-2.9.2//:bitflags",
+        "@bindeps__bitflags-2.9.4//:bitflags",
         "@bindeps__core-foundation-0.9.4//:core_foundation",
         "@bindeps__system-configuration-sys-0.6.0//:system_configuration_sys",
     ],

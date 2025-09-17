@@ -5,7 +5,7 @@ set -euo pipefail
 SCRIPT="${BASH_SOURCE[0]}"
 SCRIPT_DIR="$(dirname "${SCRIPT}")"
 
-if [[ -n "${RUNFILES_DIR:-}" ]]; then
+if [[ -n ${RUNFILES_DIR:-} ]]; then
     RUNFILES="${RUNFILES_DIR}"
 elif [[ -f "${SCRIPT_DIR}/MANIFEST" ]]; then
     RUNFILES="${SCRIPT_DIR}"

@@ -4,6 +4,7 @@
     "scripts": {
         "dev": "turbo run dev",
         "dev:dashboard": "pnpm dev --filter=@scufflecloud/dashboard",
+        "lint:fix": "turbo run lint:fix",
         "turbo": "turbo"
     },
     "devDependencies": {
@@ -11,6 +12,7 @@
     },
     "pnpm": {
         "onlyBuiltDependencies": [
+            "@swc/core",
             "core-js",
             "core-js-pure",
             "esbuild",

@@ -24,6 +24,16 @@ const NONCE_HEADER: HeaderName = HeaderName::from_static("scuf-nonce");
 const AUTHENTICATION_METHOD_HEADER: HeaderName = HeaderName::from_static("scuf-auth-method");
 const AUTHENTICATION_HMAC_HEADER: HeaderName = HeaderName::from_static("scuf-auth-hmac");
 
+pub(crate) const fn auth_headers() -> [HeaderName; 5] {
+    [
+        TOKEN_ID_HEADER,
+        TIMESTAMP_HEADER,
+        NONCE_HEADER,
+        AUTHENTICATION_METHOD_HEADER,
+        AUTHENTICATION_HMAC_HEADER,
+    ]
+}
+
 #[derive(Clone, Debug)]
 pub(crate) struct ExpiredSession(pub UserSession);
 
@@ -176,7 +186,7 @@ async fn get_and_update_active_session<G: CoreConfig>(
         return Ok((None, None));
     };
 
-    if timestamp > chrono::Utc::now() || timestamp < chrono::Utc::now() - global.max_request_lifetime() {
+    if timestamp > chrono::Utc::now() || timestamp < chrono::Utc::now() - global.timeout_config().max_request_lifetime {
         tracing::debug!(timestamp = %timestamp, "invalid request timestamp");
         return Err(StatusCode::UNAUTHORIZED);
     }
@@ -252,7 +262,9 @@ async fn get_and_update_active_session<G: CoreConfig>(
         .set(
             key.as_slice(),
             true,
-            Some(fred::types::Expiration::PX(global.max_request_lifetime().num_milliseconds())),
+            Some(fred::types::Expiration::PX(
+                global.timeout_config().max_request_lifetime.num_milliseconds(),
+            )),
             Some(fred::types::SetOptions::NX),
             true,
         )

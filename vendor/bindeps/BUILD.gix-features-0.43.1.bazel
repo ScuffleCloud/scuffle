@@ -79,7 +79,7 @@ rust_library(
         "@bindeps__gix-utils-0.3.0//:gix_utils",
         "@bindeps__once_cell-1.21.3//:once_cell",
         "@bindeps__prodash-30.0.1//:prodash",
-        "@bindeps__thiserror-2.0.15//:thiserror",
+        "@bindeps__thiserror-2.0.16//:thiserror",
         "@bindeps__walkdir-2.5.0//:walkdir",
     ] + select({
         "@rules_rust//rust/platform:aarch64-apple-darwin": [

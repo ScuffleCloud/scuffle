@@ -1,7 +1,6 @@
 import sys
 import os
 import json
-import subprocess
 from typing import Optional
 from dataclasses import dataclass, asdict
 
@@ -60,27 +59,10 @@ def pr_number() -> Optional[int]:
 
 
 @dataclass
-class Rustdoc:
-    artifact_name: Optional[str]
+class Preview:
     pr_number: Optional[int]
     commit_sha: str
-    deploy_docs: bool
-
-
-@dataclass
-class Docs:
-    artifact_name: Optional[str]
-    pr_number: Optional[int]
-    commit_sha: str
-    deploy_docs: bool
-
-
-@dataclass
-class Dashboard:
-    artifact_name: Optional[str]
-    pr_number: Optional[int]
-    commit_sha: str
-    deploy_docs: bool
+    deploy: bool
 
 
 @dataclass
@@ -116,53 +98,33 @@ class CheckFmt:
 
 @dataclass
 class Jobs:
-    rustdoc: Optional[Rustdoc]
-    docs: Optional[Docs]
-    dashboard: Optional[Dashboard]
+    preview: Optional[Preview]
     test: Optional[Test]
     grind: Optional[Grind]
     check_vendor: Optional[CheckVendor]
     check_fmt: Optional[CheckFmt]
 
 
-def deploy_docs() -> bool:
+def should_deploy_docs() -> bool:
     return not is_brawl("merge") and not is_fork_pr() and not is_dispatch_or_cron()
 
 
-def create_rustdoc() -> Optional[Rustdoc]:
-    return Rustdoc(
-        artifact_name="rustdoc",
-        deploy_docs=deploy_docs(),
-        pr_number=pr_number(),
-        commit_sha=commit_sha(),
-    )
-
-
-def create_docs() -> Optional[Docs]:
-    return Docs(
-        artifact_name="docs",
-        deploy_docs=deploy_docs(),
-        pr_number=pr_number(),
-        commit_sha=commit_sha(),
-    )
-
-
-def create_dashboard() -> Optional[Dashboard]:
-    return Dashboard(
-        artifact_name="dashboard",
-        deploy_docs=deploy_docs(),
-        pr_number=pr_number(),
-        commit_sha=commit_sha(),
-    )
-
-
 def commit_sha() -> str:
-    return os.environ["SHA"]
+    return os.environ["SHA"] or ""
+
+
+def create_previews() -> Optional[Preview]:
+    return Preview(
+        pr_number=pr_number(),
+        commit_sha=commit_sha(),
+        deploy=should_deploy_docs(),
+    )
 
 
 def create_test() -> Optional[Test]:
     matrix = [MatrixEntry(runner=LINUX_X86_64, os="linux", arch="x86_64")]
     if is_brawl() or is_dispatch_or_cron():
+        matrix.append(MatrixEntry(runner=MACOS_ARM64, os="darwin", arch="aarch64"))
         matrix.append(MatrixEntry(runner=LINUX_ARM64, os="linux", arch="aarch64"))
 
     return Test(
@@ -198,10 +160,8 @@ def create_fmt() -> Optional[CheckFmt]:
 
 def create_jobs() -> Jobs:
     return Jobs(
-        rustdoc=create_rustdoc(),
+        preview=create_previews(),
         check_vendor=create_check_vendor(),
-        docs=create_docs(),
-        dashboard=create_dashboard(),
         grind=create_grind(),
         test=create_test(),
         check_fmt=create_fmt(),

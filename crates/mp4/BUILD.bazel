@@ -20,6 +20,10 @@ scuffle_package(
             "ASSETS_DIR": "$(rootpath @scuffle_assets//:mp4)",
         },
         insta = True,
+        target_compatible_with = select({
+            "@platforms//os:osx": ["@platforms//:incompatible"],
+            "//conditions:default": [],
+        }),
     ),
     deps = [
         "//crates/aac",

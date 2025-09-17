@@ -65,6 +65,7 @@
 #![deny(missing_docs)]
 #![deny(unsafe_code)]
 #![deny(unreachable_pub)]
+#![deny(clippy::mod_module_files)]
 
 pub mod chunk;
 pub mod command_messages;

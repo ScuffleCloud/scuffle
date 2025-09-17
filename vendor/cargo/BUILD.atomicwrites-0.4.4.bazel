@@ -61,7 +61,7 @@ rust_library(
     }),
     version = "0.4.4",
     deps = [
-        "@cargo_vendor__tempfile-3.21.0//:tempfile",
+        "@cargo_vendor__tempfile-3.22.0//:tempfile",
     ] + select({
         "@rules_rust//rust/platform:aarch64-apple-darwin": [
             "@cargo_vendor__rustix-0.38.44//:rustix",  # cfg(unix)

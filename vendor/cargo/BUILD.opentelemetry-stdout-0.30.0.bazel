@@ -67,7 +67,7 @@ rust_library(
     }),
     version = "0.30.0",
     deps = [
-        "@cargo_vendor__chrono-0.4.41//:chrono",
+        "@cargo_vendor__chrono-0.4.42//:chrono",
         "@cargo_vendor__opentelemetry-0.30.0//:opentelemetry",
         "@cargo_vendor__opentelemetry_sdk-0.30.0//:opentelemetry_sdk",
     ],

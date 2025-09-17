@@ -1,6 +1,6 @@
 <script lang="ts">
+    import { authState } from "$lib/auth.svelte";
     import IconSwitch from "$lib/images/icon-switch.svelte";
-    import { userStore } from "$lib/stores/user-store.svelte";
     import { createPopover, melt } from "@melt-ui/svelte";
     import OrganizationDropdown from "./organization-dropdown.svelte";
 
@@ -16,24 +16,23 @@
     } = createPopover({
         preventScroll: true,
     });
-
-    const user = $derived(userStore.user);
 </script>
 
 <div class="organization-info" class:collapsed={isCollapsed}>
     <button type="button" class="org-header-button" use:melt={$trigger}>
-        <div class="avatar" style:background-color={"#FFCC80"}></div>
+        <div class="avatar" style:background-color="#FFCC80"></div>
         {#if !isCollapsed}
             <div class="org-details">
-                <div class="org-name">{user?.organizations[0].name}</div>
-                <div class="org-username">{user?.email}</div>
+                <div class="org-name">TODO-ORG-NAME</div>
+                <div class="org-username">{authState().user?.primaryEmail}</div>
             </div>
             <IconSwitch />
         {/if}
     </button>
     {#if $open}
         <div use:melt={$content} class="popover-content">
-            <OrganizationDropdown organizations={user?.organizations} />
+            <!-- TODO -->
+            <OrganizationDropdown organizations={[]} />
         </div>
     {/if}
 </div>

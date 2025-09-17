@@ -71,6 +71,6 @@ rust_library(
         "@bindeps__gix-path-0.10.20//:gix_path",
         "@bindeps__gix-worktree-0.42.0//:gix_worktree",
         "@bindeps__io-close-0.3.7//:io_close",
-        "@bindeps__thiserror-2.0.15//:thiserror",
+        "@bindeps__thiserror-2.0.16//:thiserror",
     ],
 )

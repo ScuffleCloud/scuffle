@@ -106,6 +106,7 @@
 #![deny(missing_docs)]
 #![deny(unsafe_code)]
 #![deny(unreachable_pub)]
+#![deny(clippy::mod_module_files)]
 
 use anyhow::Context;
 use bytes::Bytes;

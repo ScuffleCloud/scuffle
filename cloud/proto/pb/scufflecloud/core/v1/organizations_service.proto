@@ -4,7 +4,6 @@ package scufflecloud.core.v1;
 
 import "scufflecloud/core/v1/constraints.proto";
 import "scufflecloud/core/v1/organizations.proto";
-import "scufflecloud/core/v1/users.proto";
 import "tinc/annotations.proto";
 
 // Service for managing organizations and their members.
@@ -24,6 +23,13 @@ service OrganizationsService {
 
   rpc ListOrganizationsByUser(ListOrganizationsByUserRequest) returns (OrganizationsList) {
     option (tinc.method).endpoint = {get: "/users/{id}/organizations"};
+  }
+
+  rpc CreateProject(CreateProjectRequest) returns (Project) {
+    option (tinc.method).endpoint = {post: "/organizations/{id}/projects"};
+  }
+  rpc ListProjects(ListProjectsRequest) returns (ProjectsList) {
+    option (tinc.method).endpoint = {get: "/organizations/{id}/projects"};
   }
 }
 
@@ -72,4 +78,20 @@ message ListOrganizationMembersRequest {
 
 message OrganizationMembersList {
   repeated OrganizationMember members = 1;
+}
+
+message CreateProjectRequest {
+  string id = 1 [(string_constraint).id = true];
+  string name = 2 [(tinc.field).constraint.string = {
+    min_len: 1
+    max_len: 255
+  }];
+}
+
+message ListProjectsRequest {
+  string id = 1 [(string_constraint).id = true];
+}
+
+message ProjectsList {
+  repeated Project projects = 1;
 }

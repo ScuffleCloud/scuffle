@@ -10,34 +10,6 @@ use crate::{CoreConfig, google_api};
 
 #[async_trait::async_trait]
 impl<G: CoreConfig> pb::scufflecloud::core::v1::sessions_service_server::SessionsService for CoreSvc<G> {
-    async fn register_with_email(
-        &self,
-        req: tonic::Request<pb::scufflecloud::core::v1::RegisterWithEmailRequest>,
-    ) -> Result<tonic::Response<()>, tonic::Status> {
-        Operation::<G>::run(req).await.map(tonic::Response::new)
-    }
-
-    async fn complete_register_with_email(
-        &self,
-        req: tonic::Request<pb::scufflecloud::core::v1::CompleteRegisterWithEmailRequest>,
-    ) -> Result<tonic::Response<pb::scufflecloud::core::v1::NewUserSessionToken>, tonic::Status> {
-        Operation::<G>::run(req).await.map(tonic::Response::new)
-    }
-
-    async fn login_with_email_options(
-        &self,
-        req: tonic::Request<pb::scufflecloud::core::v1::LoginWithEmailOptionsRequest>,
-    ) -> Result<tonic::Response<pb::scufflecloud::core::v1::LoginWithEmailOptionsResponse>, tonic::Status> {
-        Operation::<G>::run(req).await.map(tonic::Response::new)
-    }
-
-    async fn login_with_email_and_password(
-        &self,
-        req: tonic::Request<pb::scufflecloud::core::v1::LoginWithEmailAndPasswordRequest>,
-    ) -> Result<tonic::Response<pb::scufflecloud::core::v1::NewUserSessionToken>, tonic::Status> {
-        Operation::<G>::run(req).await.map(tonic::Response::new)
-    }
-
     async fn login_with_magic_link(
         &self,
         req: tonic::Request<pb::scufflecloud::core::v1::LoginWithMagicLinkRequest>,
@@ -48,6 +20,13 @@ impl<G: CoreConfig> pb::scufflecloud::core::v1::sessions_service_server::Session
     async fn complete_login_with_magic_link(
         &self,
         req: tonic::Request<pb::scufflecloud::core::v1::CompleteLoginWithMagicLinkRequest>,
+    ) -> Result<tonic::Response<pb::scufflecloud::core::v1::NewUserSessionToken>, tonic::Status> {
+        Operation::<G>::run(req).await.map(tonic::Response::new)
+    }
+
+    async fn login_with_email_and_password(
+        &self,
+        req: tonic::Request<pb::scufflecloud::core::v1::LoginWithEmailAndPasswordRequest>,
     ) -> Result<tonic::Response<pb::scufflecloud::core::v1::NewUserSessionToken>, tonic::Status> {
         Operation::<G>::run(req).await.map(tonic::Response::new)
     }

@@ -66,6 +66,6 @@ rust_library(
     version = "0.12.0-dev",
     deps = [
         "@cargo_vendor__half-1.8.3//:half",
-        "@cargo_vendor__serde-1.0.219//:serde",
+        "@cargo_vendor__serde-1.0.220//:serde",
     ],
 )

@@ -3,7 +3,7 @@ export const ssr = false;
 import type { UserSettings } from "$msw/mocks/settings";
 import type { LayoutLoad } from "./$types";
 
-export const load = (async ({ params, fetch, depends }) => {
+export const load = (async ({ fetch, depends }) => {
     depends(`settings:user`);
 
     const fetchSettings = async (): Promise<UserSettings> => {

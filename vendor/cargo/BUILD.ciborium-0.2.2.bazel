@@ -67,6 +67,6 @@ rust_library(
     deps = [
         "@cargo_vendor__ciborium-io-0.2.2//:ciborium_io",
         "@cargo_vendor__ciborium-ll-0.2.2//:ciborium_ll",
-        "@cargo_vendor__serde-1.0.219//:serde",
+        "@cargo_vendor__serde-1.0.220//:serde",
     ],
 )

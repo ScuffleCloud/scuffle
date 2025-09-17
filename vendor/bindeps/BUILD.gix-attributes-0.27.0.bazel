@@ -67,7 +67,7 @@ rust_library(
         "@bindeps__gix-trace-0.1.13//:gix_trace",
         "@bindeps__kstring-2.0.2//:kstring",
         "@bindeps__smallvec-1.15.1//:smallvec",
-        "@bindeps__thiserror-2.0.15//:thiserror",
+        "@bindeps__thiserror-2.0.16//:thiserror",
         "@bindeps__unicode-bom-2.0.3//:unicode_bom",
     ],
 )

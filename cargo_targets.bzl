@@ -1,5 +1,6 @@
 _packages = [
     "//cloud/core",
+    "//cloud/email",
     "//cloud/proto",
     "//crates/aac",
     "//crates/amf0",
@@ -56,9 +57,6 @@ _packages = [
 
 cargo_workspace_manifest = "//:Cargo.toml"
 cargo_lock = "//:Cargo.lock"
-
-def cargo_manifests(exclude = []):
-    return cargo_targets(target = "cargo_toml", exclude = exclude) + [cargo_workspace_manifest]
 
 def _last_part(package):
     return package.split("/")[-1]

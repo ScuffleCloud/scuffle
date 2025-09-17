@@ -63,7 +63,7 @@ rust_library(
     }),
     version = "2.6.0",
     deps = [
-        "@bindeps__actix-rt-2.10.0//:actix_rt",
+        "@bindeps__actix-rt-2.11.0//:actix_rt",
         "@bindeps__actix-service-2.0.3//:actix_service",
         "@bindeps__actix-utils-3.0.1//:actix_utils",
         "@bindeps__futures-core-0.3.31//:futures_core",

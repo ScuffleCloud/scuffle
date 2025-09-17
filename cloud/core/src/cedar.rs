@@ -37,17 +37,30 @@ pub(crate) trait CedarEntity<G>: serde::Serialize {
         EntityUid::from_type_name_and_id(name, self.entity_id())
     }
 
+    /// Returns the attributes of the entity as a map.
+    /// Also includes additional attributes from [`additional_attributes`](Self::additional_attributes).
     async fn attributes(&self, global: &Arc<G>) -> Result<serde_json::value::Map<String, serde_json::Value>, tonic::Status> {
         let _global = global;
-        if let serde_json::Value::Object(object) =
+        let mut object = if let serde_json::Value::Object(object) =
             serde_json::to_value(self).into_tonic_internal_err("failed to serialize cedar entity")?
         {
-            // Filter out null values because Cedar does not allow null values in attributes.
-            let object = object.into_iter().filter(|(_, v)| !v.is_null()).collect();
-            Ok(object)
+            object
         } else {
-            Ok(serde_json::value::Map::new())
-        }
+            serde_json::value::Map::new()
+        };
+
+        object.append(&mut self.additional_attributes(global).await?);
+
+        // Filter out null values because Cedar does not allow null values in attributes.
+        Ok(object.into_iter().filter(|(_, v)| !v.is_null()).collect())
+    }
+
+    async fn additional_attributes(
+        &self,
+        global: &Arc<G>,
+    ) -> Result<serde_json::value::Map<String, serde_json::Value>, tonic::Status> {
+        let _global = global;
+        Ok(serde_json::value::Map::new())
     }
 
     async fn parents(&self, global: &Arc<G>) -> Result<HashSet<EntityUid>, tonic::Status> {
@@ -188,6 +201,10 @@ pub enum Action {
     ListOrganizationMembers,
     #[display("list_organizations_by_user")]
     ListOrganizationsByUser,
+    #[display("create_project")]
+    CreateProject,
+    #[display("list_project")]
+    ListProjects,
 
     // OrganizationInvitation related
     #[display("create_organization_invitation")]

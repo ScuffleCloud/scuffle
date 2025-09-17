@@ -69,7 +69,7 @@ rust_library(
     }),
     version = "0.224.1",
     deps = [
-        "@bindeps__bitflags-2.9.2//:bitflags",
+        "@bindeps__bitflags-2.9.4//:bitflags",
         "@bindeps__wasmparser-0.224.1//:build_script_build",
     ],
 )

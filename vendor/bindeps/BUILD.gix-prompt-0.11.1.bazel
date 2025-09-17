@@ -62,23 +62,23 @@ rust_library(
     deps = [
         "@bindeps__gix-command-0.6.2//:gix_command",
         "@bindeps__gix-config-value-0.15.1//:gix_config_value",
-        "@bindeps__thiserror-2.0.15//:thiserror",
+        "@bindeps__thiserror-2.0.16//:thiserror",
     ] + select({
         "@rules_rust//rust/platform:aarch64-apple-darwin": [
             "@bindeps__parking_lot-0.12.4//:parking_lot",  # cfg(unix)
-            "@bindeps__rustix-1.0.8//:rustix",  # cfg(unix)
+            "@bindeps__rustix-1.1.2//:rustix",  # cfg(unix)
         ],
         "@rules_rust//rust/platform:aarch64-unknown-linux-gnu": [
             "@bindeps__parking_lot-0.12.4//:parking_lot",  # cfg(unix)
-            "@bindeps__rustix-1.0.8//:rustix",  # cfg(unix)
+            "@bindeps__rustix-1.1.2//:rustix",  # cfg(unix)
         ],
         "@rules_rust//rust/platform:x86_64-apple-darwin": [
             "@bindeps__parking_lot-0.12.4//:parking_lot",  # cfg(unix)
-            "@bindeps__rustix-1.0.8//:rustix",  # cfg(unix)
+            "@bindeps__rustix-1.1.2//:rustix",  # cfg(unix)
         ],
         "@rules_rust//rust/platform:x86_64-unknown-linux-gnu": [
             "@bindeps__parking_lot-0.12.4//:parking_lot",  # cfg(unix)
-            "@bindeps__rustix-1.0.8//:rustix",  # cfg(unix)
+            "@bindeps__rustix-1.1.2//:rustix",  # cfg(unix)
         ],
         "//conditions:default": [],
     }),

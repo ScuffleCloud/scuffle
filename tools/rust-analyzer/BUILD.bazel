@@ -5,3 +5,15 @@ exec_transition_alias_opt(
     actual = "@bindeps//:rust-analyzer__rust-analyzer",
     tags = ["manual"],
 )
+
+exec_transition_alias_opt(
+    name = "check",
+    actual = "//misc/utils/rust/analyzer/check",
+    tags = ["manual"],
+)
+
+exec_transition_alias_opt(
+    name = "discover",
+    actual = "//misc/utils/rust/analyzer/discover",
+    tags = ["manual"],
+)

@@ -128,9 +128,14 @@ def _postcompile_deps_impl(ctx):
     extra_rustc_args = [
         "-C",
         "linker={}".format(env["LD"]),
-        "-C",
-        "link-arg=-Wl,-znostart-stop-gc",
     ]
+
+    if ctx.target_platform_has_constraint(ctx.attr._linux_cond[platform_common.ConstraintValueInfo]):
+        extra_rustc_args += [
+            "-C",
+            "link-arg=-Wl,-znostart-stop-gc",
+        ]
+
     for flag in _pwd_flags(link_args):
         extra_rustc_args += ["-C", "link-arg={}".format(_transform_path(flag))]
 
@@ -245,6 +250,7 @@ postcompile_deps = rule(
             allow_single_file = True,
             cfg = "exec",
         ),
+        "_linux_cond": attr.label(default = "@platforms//os:linux", providers = [platform_common.ConstraintValueInfo]),
         "_template_file": attr.label(default = "process_wrapper_tmpl.sh", allow_single_file = True),
     },
     fragments = ["cpp"],

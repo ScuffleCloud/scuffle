@@ -40,6 +40,7 @@
 #![deny(missing_docs)]
 #![deny(unsafe_code)]
 #![deny(unreachable_pub)]
+#![deny(clippy::mod_module_files)]
 
 use std::sync::Arc;
 use std::sync::atomic::{AtomicBool, AtomicUsize};

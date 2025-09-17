@@ -44,6 +44,18 @@ alias(
 )
 
 alias(
+    name = "cedar-policy-cli-4.5.1",
+    actual = "@bindeps__cedar-policy-cli-4.5.1//:cedar_policy_cli",
+    tags = ["manual"],
+)
+
+alias(
+    name = "cedar-policy-cli",
+    actual = "@bindeps__cedar-policy-cli-4.5.1//:cedar_policy_cli",
+    tags = ["manual"],
+)
+
+alias(
     name = "just-1.42.4",
     actual = "@bindeps__just-1.42.4//:just",
     tags = ["manual"],
@@ -76,13 +88,19 @@ alias(
 
 alias(
     name = "cargo-insta__cargo-insta",
-    actual = "@bindeps__cargo-insta-1.43.1//:cargo-insta__bin",
+    actual = "@bindeps__cargo-insta-1.43.2//:cargo-insta__bin",
+    tags = ["manual"],
+)
+
+alias(
+    name = "cedar-policy-cli__cedar",
+    actual = "@bindeps__cedar-policy-cli-4.5.1//:cedar__bin",
     tags = ["manual"],
 )
 
 alias(
     name = "dprint__dprint",
-    actual = "@bindeps__dprint-0.50.1//:dprint__bin",
+    actual = "@bindeps__dprint-0.50.2//:dprint__bin",
     tags = ["manual"],
 )
 

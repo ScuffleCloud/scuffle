@@ -1,7 +1,7 @@
 <script lang="ts">
     import { afterNavigate } from "$app/navigation";
     import { NAV_ITEMS } from "$components/left-nav/consts.svelte";
-    import { useUser } from "$lib/useUser";
+    import type { NavItem } from "$components/types";
     import NavItemBase from "./nav-item-base.svelte";
     import NavItemDropdown from "./nav-item-dropdown.svelte";
 
@@ -20,22 +20,36 @@
         isTemporarilyExpanded = false,
     }: Props = $props();
 
-    const { currentOrganization, currentProject } = useUser();
+    const currentOrganization = {
+        slug: "org-1",
+    };
+    const currentProject = {
+        slug: "proj-1",
+    };
 
     const basePath = $derived(
-        `/organizations/${$currentOrganization?.slug}/projects/${$currentProject?.slug}`,
+        `/organizations/${currentOrganization?.slug}/projects/${currentProject?.slug}`,
     );
 
     const navItemsWithPaths = $derived(
-        NAV_ITEMS.map((item) => ({
-            ...item,
-            path: `${basePath}${item.path}`,
-        })),
+        NAV_ITEMS.map((item) => {
+            // Not relative to base path
+            if (!item.path.startsWith("/")) {
+                return {
+                    ...item,
+                    path: `/${item.path}`,
+                };
+            }
+            return {
+                ...item,
+                path: `${basePath}${item.path}`,
+            };
+        }),
     );
 
     let shouldOpenDropdown = $state<string | null>(null);
 
-    const handleDropdownClick = (event: MouseEvent, item: any) => {
+    const handleDropdownClick = (event: MouseEvent, item: NavItem) => {
         if (isCollapsed && item.children && handleDropdownInteraction) {
             event.preventDefault();
             shouldOpenDropdown = item.path;
@@ -52,7 +66,7 @@
 </script>
 
 <ul class="nav-links" class:collapsed={isCollapsed}>
-    {#each navItemsWithPaths as item}
+    {#each navItemsWithPaths as item (item.id)}
         {#if item.children && !isCollapsed}
             <NavItemDropdown
                 navItem={item}

@@ -1,0 +1,221 @@
+name: ci - build previews
+
+on:
+  workflow_call:
+    inputs:
+      pr_number:
+        type: string
+        required: false
+      commit_sha:
+        type: string
+        required: true
+      deploy:
+        type: boolean
+        required: false
+        default: false
+    secrets:
+      build_buddy_token:
+        required: true
+      vercel_token:
+        required: false
+      vercel_org_id:
+        required: false
+      vercel_project_id_dashboard:
+        required: false
+      vercel_project_id_docs:
+        required: false
+      vercel_project_id_rustdoc:
+        required: false
+
+defaults:
+  run:
+    shell: bash
+
+jobs:
+  prep:
+    runs-on: ubuntu-24.04
+    outputs:
+      dashboard_build: ${{ steps.builds.outputs.dashboard_build }}
+      docs_build: ${{ steps.builds.outputs.docs_build }}
+      rustdoc_build: ${{ steps.builds.outputs.rustdoc_build }}
+    steps:
+      - uses: actions/download-artifact@v5
+        if: ${{ github.event_name == 'pull_request' }}
+        with:
+          name: bazel-diff-impacted-targets
+
+      - name: Compute builds
+        id: builds
+        run: |
+          file="./impacted-targets.txt"
+
+          if [[ ! -f "$file" ]]; then
+              echo "dashboard_build=true" >> $GITHUB_OUTPUT
+              echo "docs_build=true" >> $GITHUB_OUTPUT
+              echo "rustdoc_build=true" >> $GITHUB_OUTPUT
+          else
+              check_target() {
+                  local target=$1
+                  local var_name=$2
+                  if grep -Fxq "$target" "$file"; then
+                      echo "$var_name=true" >> $GITHUB_OUTPUT
+                  else
+                      echo "$var_name=false" >> $GITHUB_OUTPUT
+                  fi
+              }
+
+              check_target "//cloud/dashboard:dashboard" "dashboard_build"
+              check_target "//cloud/docs:docs" "docs_build"
+              check_target "//docs:rustdoc" "rustdoc_build"
+          fi
+
+  dashboard:
+    needs: [prep]
+    if: ${{ needs.prep.outputs.dashboard_build  == 'true' }}
+    runs-on: ubicloud-standard-8-ubuntu-2404
+    outputs:
+      preview-url: ${{ steps.deploy.outputs.preview-url }}
+    steps:
+      - uses: actions/checkout@v5
+
+      - name: Install zstd
+        run: sudo apt-get update && sudo apt-get install zstd -y
+
+      - uses: ./.github/actions/setup-bazel
+        with:
+          build_buddy_token: ${{ secrets.build_buddy_token }}
+
+      - name: Build
+        run: bazel build //cloud/dashboard
+
+      - name: Compress
+        run: |
+          pwd=$(pwd)
+          cd ./target-bazel/bin/cloud/dashboard/build
+          tar -cf - * | zstd -o "$pwd/app-scuffle-cloud.tar.zst"
+
+      - name: Upload
+        uses: actions/upload-artifact@v4
+        with:
+          name: ci-preview-dashboard
+          path: ./app-scuffle-cloud.tar.zst
+
+      - name: Deploy
+        if: ${{ inputs.deploy }}
+        id: deploy
+        uses: amondnet/vercel-action@888da851026e0573da056b061931bcb765a915c4
+        with:
+          vercel-token: ${{ secrets.vercel_token }}
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          github-comment: false
+          vercel-args: "--archive=tgz --local-config ${{ github.workspace }}/cloud/dashboard/vercel.json"
+          vercel-org-id: ${{ secrets.vercel_org_id }}
+          vercel-project-id: ${{ secrets.vercel_project_id_dashboard }}
+          working-directory: ./target-bazel/bin/cloud/dashboard/build
+
+  docs:
+    needs: [prep]
+    if: ${{ needs.prep.outputs.docs_build == 'true' }}
+    runs-on: ubicloud-standard-8-ubuntu-2404
+    outputs:
+      preview-url: ${{ steps.deploy.outputs.preview-url }}
+    steps:
+      - uses: actions/checkout@v5
+
+      - name: Install zstd
+        run: sudo apt-get update && sudo apt-get install zstd -y
+
+      - uses: ./.github/actions/setup-bazel
+        with:
+          build_buddy_token: ${{ secrets.build_buddy_token }}
+
+      - name: Build
+        run: bazel build //cloud/docs
+
+      - name: Compress
+        run: |
+          pwd=$(pwd)
+          cd ./target-bazel/bin/cloud/docs/build
+          tar -cf - * | zstd -o "$pwd/docs-scuffle-cloud.tar.zst"
+
+      - name: Upload
+        uses: actions/upload-artifact@v4
+        with:
+          name: "ci-preview-docs"
+          path: ./docs-scuffle-cloud.tar.zst
+
+      - name: Deploy
+        if: ${{ inputs.deploy }}
+        id: deploy
+        uses: amondnet/vercel-action@888da851026e0573da056b061931bcb765a915c4
+        with:
+          vercel-token: ${{ secrets.vercel_token }}
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          github-comment: false
+          vercel-args: "--archive=tgz"
+          vercel-org-id: ${{ secrets.vercel_org_id }}
+          vercel-project-id: ${{ secrets.vercel_project_id_docs }}
+          working-directory: ./target-bazel/bin/cloud/docs/build
+
+  rustdoc:
+    needs: [prep]
+    if: ${{ needs.prep.outputs.rustdoc_build == 'true' }}
+    runs-on: ubicloud-standard-8-ubuntu-2404
+    outputs:
+      preview-url: ${{ steps.deploy.outputs.preview-url }}
+    steps:
+      - uses: actions/checkout@v5
+
+      - name: Install zstd
+        run: sudo apt-get update && sudo apt-get install zstd -y
+
+      - uses: ./.github/actions/setup-bazel
+        with:
+          build_buddy_token: ${{ secrets.build_buddy_token }}
+
+      - name: Build
+        run: bazel build //docs:rustdoc
+
+      - name: Compress
+        run: |
+          pwd=$(pwd)
+          cd ./target-bazel/bin/docs/rustdoc.rustdoc_merge
+          tar -cf - * | zstd -o "$pwd/rustdoc.tar.zst"
+
+      - name: Upload
+        uses: actions/upload-artifact@v4
+        with:
+          name: "ci-preview-rustdoc"
+          path: ./rustdoc.tar.zst
+
+      - name: Deploy
+        if: ${{ inputs.deploy }}
+        id: deploy
+        uses: amondnet/vercel-action@888da851026e0573da056b061931bcb765a915c4
+        with:
+          vercel-token: ${{ secrets.vercel_token }}
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          github-comment: false
+          vercel-args: "--archive=tgz"
+          vercel-org-id: ${{ secrets.vercel_org_id }}
+          vercel-project-id: ${{ secrets.vercel_project_id_rustdoc }}
+          working-directory: ./target-bazel/bin/docs/rustdoc.rustdoc_merge
+
+  report:
+    needs: [dashboard, docs, rustdoc]
+    runs-on: ubuntu-24.04
+    if: ${{ always() && inputs.deploy && inputs.pr_number }}
+    steps:
+      - uses: actions/checkout@v5
+
+      - name: Build comment body from status artifacts
+        env:
+          NEEDS_JSON: ${{ toJson(needs) }}
+        run: python3 .github/scripts/ci-preview-report.py
+
+      - name: Comment
+        uses: thollander/actions-comment-pull-request@v3
+        with:
+          pr-number: ${{ inputs.pr_number }}
+          file-path: body.md
+          comment-tag: scuffle-preview

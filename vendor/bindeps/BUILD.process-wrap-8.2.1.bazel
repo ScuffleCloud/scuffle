@@ -70,7 +70,7 @@ rust_library(
     }),
     version = "8.2.1",
     deps = [
-        "@bindeps__indexmap-2.10.0//:indexmap",
+        "@bindeps__indexmap-2.11.3//:indexmap",
         "@bindeps__tracing-0.1.41//:tracing",
     ] + select({
         "@rules_rust//rust/platform:aarch64-apple-darwin": [

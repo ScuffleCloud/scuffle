@@ -73,7 +73,7 @@ rust_library(
     }),
     version = "0.10.1",
     deps = [
-        "@bindeps__log-0.4.27//:log",
+        "@bindeps__log-0.4.28//:log",
         "@bindeps__plain-0.2.3//:plain",
         "@bindeps__scroll-0.13.0//:scroll",
     ],

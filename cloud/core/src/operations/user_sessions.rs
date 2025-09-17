@@ -6,35 +6,33 @@ use crate::cedar::Action;
 use crate::chrono_ext::ChronoDateTimeExt;
 use crate::http_ext::RequestExt;
 use crate::models::{User, UserSession, UserSessionTokenId};
-use crate::operations::Operation;
+use crate::operations::{NoopOperationDriver, Operation, TransactionOperationDriver};
 use crate::schema::user_sessions;
 use crate::std_ext::{OptionExt, ResultExt};
 use crate::{CoreConfig, common, totp};
 
 impl<G: CoreConfig> Operation<G> for tonic::Request<pb::scufflecloud::core::v1::ValidateMfaForUserSessionRequest> {
+    type Driver = TransactionOperationDriver;
     type Principal = User;
     type Resource = UserSession;
     type Response = pb::scufflecloud::core::v1::UserSession;
 
     const ACTION: Action = Action::ValidateMfaForUserSession;
 
-    async fn load_principal(
-        &mut self,
-        _conn: &mut diesel_async::AsyncPgConnection,
-    ) -> Result<Self::Principal, tonic::Status> {
+    async fn load_principal(&mut self, _driver: &mut Self::Driver) -> Result<Self::Principal, tonic::Status> {
         let global = &self.global::<G>()?;
         let session = self.session_or_err()?;
         common::get_user_by_id(global, session.user_id).await
     }
 
-    async fn load_resource(&mut self, _conn: &mut diesel_async::AsyncPgConnection) -> Result<Self::Resource, tonic::Status> {
+    async fn load_resource(&mut self, _driver: &mut Self::Driver) -> Result<Self::Resource, tonic::Status> {
         let session = self.session_or_err()?;
         Ok(session.clone())
     }
 
     async fn execute(
         self,
-        conn: &mut diesel_async::AsyncPgConnection,
+        driver: &mut Self::Driver,
         _principal: Self::Principal,
         resource: Self::Resource,
     ) -> Result<Self::Response, tonic::Status> {
@@ -46,19 +44,19 @@ impl<G: CoreConfig> Operation<G> for tonic::Request<pb::scufflecloud::core::v1::
             pb::scufflecloud::core::v1::validate_mfa_for_user_session_request::Response::Totp(
                 pb::scufflecloud::core::v1::ValidateMfaForUserSessionTotp { code },
             ) => {
-                totp::process_token(conn, resource.user_id, &code).await?;
+                totp::process_token(&mut driver.conn, resource.user_id, &code).await?;
             }
             pb::scufflecloud::core::v1::validate_mfa_for_user_session_request::Response::Webauthn(
                 pb::scufflecloud::core::v1::ValidateMfaForUserSessionWebauthn { response_json },
             ) => {
                 let pk_cred: webauthn_rs::prelude::PublicKeyCredential = serde_json::from_str(&response_json)
                     .into_tonic_err_with_field_violation("response_json", "invalid public key credential")?;
-                common::finish_webauthn_authentication(global, conn, resource.user_id, &pk_cred).await?;
+                common::finish_webauthn_authentication(global, &mut driver.conn, resource.user_id, &pk_cred).await?;
             }
             pb::scufflecloud::core::v1::validate_mfa_for_user_session_request::Response::RecoveryCode(
                 pb::scufflecloud::core::v1::ValidateMfaForUserSessionRecoveryCode { code },
             ) => {
-                common::process_recovery_code(conn, resource.user_id, &code).await?;
+                common::process_recovery_code(&mut driver.conn, resource.user_id, &code).await?;
             }
         }
 
@@ -71,10 +69,10 @@ impl<G: CoreConfig> Operation<G> for tonic::Request<pb::scufflecloud::core::v1::
             )
             .set((
                 user_sessions::dsl::mfa_pending.eq(false),
-                user_sessions::dsl::expires_at.eq(chrono::Utc::now() + global.user_session_timeout()),
+                user_sessions::dsl::expires_at.eq(chrono::Utc::now() + global.timeout_config().user_session),
             ))
             .returning(UserSession::as_select())
-            .get_result::<UserSession>(conn)
+            .get_result::<UserSession>(&mut driver.conn)
             .await
             .into_tonic_internal_err("failed to update user session")?;
 
@@ -85,29 +83,27 @@ impl<G: CoreConfig> Operation<G> for tonic::Request<pb::scufflecloud::core::v1::
 pub(crate) struct RefreshUserSessionRequest;
 
 impl<G: CoreConfig> Operation<G> for tonic::Request<RefreshUserSessionRequest> {
+    type Driver = TransactionOperationDriver;
     type Principal = User;
     type Resource = UserSession;
     type Response = pb::scufflecloud::core::v1::NewUserSessionToken;
 
     const ACTION: Action = Action::RefreshUserSession;
 
-    async fn load_principal(
-        &mut self,
-        _conn: &mut diesel_async::AsyncPgConnection,
-    ) -> Result<Self::Principal, tonic::Status> {
+    async fn load_principal(&mut self, _driver: &mut Self::Driver) -> Result<Self::Principal, tonic::Status> {
         let global = &self.global::<G>()?;
-        let session = self.session_or_err()?;
+        let session = self.expired_session_or_err()?;
         common::get_user_by_id(global, session.user_id).await
     }
 
-    async fn load_resource(&mut self, _conn: &mut diesel_async::AsyncPgConnection) -> Result<Self::Resource, tonic::Status> {
+    async fn load_resource(&mut self, _driver: &mut Self::Driver) -> Result<Self::Resource, tonic::Status> {
         let session = self.expired_session_or_err()?;
         Ok(session.clone())
     }
 
     async fn execute(
         self,
-        conn: &mut diesel_async::AsyncPgConnection,
+        driver: &mut Self::Driver,
         _principal: Self::Principal,
         resource: Self::Resource,
     ) -> Result<Self::Response, tonic::Status> {
@@ -126,10 +122,10 @@ impl<G: CoreConfig> Operation<G> for tonic::Request<RefreshUserSessionRequest> {
             .set((
                 user_sessions::dsl::token_id.eq(token_id),
                 user_sessions::dsl::token.eq(token),
-                user_sessions::dsl::token_expires_at.eq(chrono::Utc::now() + global.user_session_token_timeout()),
+                user_sessions::dsl::token_expires_at.eq(chrono::Utc::now() + global.timeout_config().user_session_token),
             ))
             .returning(UserSession::as_select())
-            .get_result::<UserSession>(conn)
+            .get_result::<UserSession>(&mut driver.conn)
             .await
             .into_tonic_internal_err("failed to update user session")?;
 
@@ -142,7 +138,7 @@ impl<G: CoreConfig> Operation<G> for tonic::Request<RefreshUserSessionRequest> {
         };
 
         let mfa_options = if session.mfa_pending {
-            common::mfa_options(conn, session.user_id).await?
+            common::mfa_options(&mut driver.conn, session.user_id).await?
         } else {
             vec![]
         };
@@ -150,7 +146,9 @@ impl<G: CoreConfig> Operation<G> for tonic::Request<RefreshUserSessionRequest> {
         let new_token = pb::scufflecloud::core::v1::NewUserSessionToken {
             id: token_id.to_string(),
             encrypted_token,
+            user_id: session.user_id.to_string(),
             expires_at: Some(token_expires_at.to_prost_timestamp_utc()),
+            session_expires_at: Some(session.expires_at.to_prost_timestamp_utc()),
             session_mfa_pending: session.mfa_pending,
             mfa_options: mfa_options.into_iter().map(|o| o as i32).collect(),
         };
@@ -162,40 +160,40 @@ impl<G: CoreConfig> Operation<G> for tonic::Request<RefreshUserSessionRequest> {
 pub(crate) struct InvalidateUserSessionRequest;
 
 impl<G: CoreConfig> Operation<G> for tonic::Request<InvalidateUserSessionRequest> {
+    type Driver = NoopOperationDriver;
     type Principal = User;
     type Resource = UserSession;
     type Response = ();
 
     const ACTION: Action = Action::InvalidateUserSession;
-    const TRANSACTION: bool = false;
 
-    async fn load_principal(
-        &mut self,
-        _conn: &mut diesel_async::AsyncPgConnection,
-    ) -> Result<Self::Principal, tonic::Status> {
+    async fn load_principal(&mut self, _driver: &mut Self::Driver) -> Result<Self::Principal, tonic::Status> {
         let global = &self.global::<G>()?;
         let session = self.session_or_err()?;
         common::get_user_by_id(global, session.user_id).await
     }
 
-    async fn load_resource(&mut self, _conn: &mut diesel_async::AsyncPgConnection) -> Result<Self::Resource, tonic::Status> {
+    async fn load_resource(&mut self, _driver: &mut Self::Driver) -> Result<Self::Resource, tonic::Status> {
         let session = self.session_or_err()?;
         Ok(session.clone())
     }
 
     async fn execute(
         self,
-        conn: &mut diesel_async::AsyncPgConnection,
+        _driver: &mut Self::Driver,
         _principal: Self::Principal,
         resource: Self::Resource,
     ) -> Result<Self::Response, tonic::Status> {
+        let global = &self.global::<G>()?;
+        let mut db = global.db().await.into_tonic_internal_err("failed to connect to database")?;
+
         diesel::delete(user_sessions::dsl::user_sessions)
             .filter(
                 user_sessions::dsl::user_id
                     .eq(&resource.user_id)
                     .and(user_sessions::dsl::device_fingerprint.eq(&resource.device_fingerprint)),
             )
-            .execute(conn)
+            .execute(&mut db)
             .await
             .into_tonic_internal_err("failed to delete user session")?;
 

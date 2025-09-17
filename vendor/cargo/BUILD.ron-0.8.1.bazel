@@ -40,7 +40,7 @@ rust_library(
     crate_root = "src/lib.rs",
     edition = "2021",
     proc_macro_deps = [
-        "@cargo_vendor__serde_derive-1.0.219//:serde_derive",
+        "@cargo_vendor__serde_derive-1.0.220//:serde_derive",
     ],
     rustc_env_files = [
         ":cargo_toml_env_vars",
@@ -68,7 +68,7 @@ rust_library(
     version = "0.8.1",
     deps = [
         "@cargo_vendor__base64-0.21.7//:base64",
-        "@cargo_vendor__bitflags-2.9.3//:bitflags",
-        "@cargo_vendor__serde-1.0.219//:serde",
+        "@cargo_vendor__bitflags-2.9.4//:bitflags",
+        "@cargo_vendor__serde-1.0.220//:serde",
     ],
 )

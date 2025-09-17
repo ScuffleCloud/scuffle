@@ -69,7 +69,7 @@ rust_library(
     }),
     version = "0.17.14",
     deps = [
-        "@bindeps__cfg-if-1.0.1//:cfg_if",
+        "@bindeps__cfg-if-1.0.3//:cfg_if",
         "@bindeps__getrandom-0.2.16//:getrandom",
         "@bindeps__ring-0.17.14//:build_script_build",
         "@bindeps__untrusted-0.9.0//:untrusted",
@@ -144,7 +144,7 @@ cargo_build_script(
     version = "0.17.14",
     visibility = ["//visibility:private"],
     deps = [
-        "@bindeps__cc-1.2.33//:cc",
+        "@bindeps__cc-1.2.37//:cc",
     ],
 )
 

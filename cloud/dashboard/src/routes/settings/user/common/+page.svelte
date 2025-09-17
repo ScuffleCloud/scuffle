@@ -23,8 +23,6 @@
     </div>
 {:then settings}
     <SettingsPage {settings} />
-{:catch error}
-    <h2>Failed to load settings</h2>
 {/await}
 
 <style>

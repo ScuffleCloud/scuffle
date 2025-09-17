@@ -6,9 +6,15 @@ import type { NavItem } from "../types";
 
 export const NAV_ITEMS: NavItem[] = [
     {
-        id: "overview",
-        label: "Overview",
-        path: "/overview",
+        id: "projects",
+        label: "Projects",
+        path: "projects",
+        icon: IconTest,
+    },
+    {
+        id: "analytics",
+        label: "Analytics",
+        path: "/analytics",
         icon: IconStats,
     },
     {

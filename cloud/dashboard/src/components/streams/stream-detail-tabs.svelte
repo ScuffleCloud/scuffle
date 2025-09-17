@@ -1,5 +1,5 @@
 <script lang="ts">
-    import { pushState, replaceState } from "$app/navigation";
+    import { pushState } from "$app/navigation";
     import { page } from "$app/state";
     import type { Streamed } from "$lib/types";
     import { Tabs } from "melt/builders";
@@ -34,14 +34,14 @@
         <StreamDetailsHeader {stream} />
         <div class="tabs-container">
             <div class="tabs-list-container" {...tabs.triggerList}>
-                {#each tabIds as id}
+                {#each tabIds as id (id)}
                     <button class="tab-trigger" {...tabs.getTrigger(id)}>
                         {id.charAt(0).toUpperCase() + id.slice(1)}
                     </button>
                 {/each}
             </div>
 
-            {#each tabIds as id}
+            {#each tabIds as id (id)}
                 <div class="tab-content" {...tabs.getContent(id)}>
                     {#if id === "overview"}
                         <div class="overview-content">

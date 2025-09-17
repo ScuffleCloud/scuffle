@@ -75,13 +75,13 @@ rust_library(
     }),
     version = "2.2.12",
     deps = [
-        "@cargo_vendor__bitflags-2.9.3//:bitflags",
+        "@cargo_vendor__bitflags-2.9.4//:bitflags",
         "@cargo_vendor__byteorder-1.5.0//:byteorder",
-        "@cargo_vendor__chrono-0.4.41//:chrono",
+        "@cargo_vendor__chrono-0.4.42//:chrono",
         "@cargo_vendor__ipnetwork-0.21.1//:ipnetwork",
         "@cargo_vendor__itoa-1.0.15//:itoa",
         "@cargo_vendor__libc-0.2.175//:libc",
-        "@cargo_vendor__serde_json-1.0.143//:serde_json",
-        "@cargo_vendor__uuid-1.18.0//:uuid",
+        "@cargo_vendor__serde_json-1.0.144//:serde_json",
+        "@cargo_vendor__uuid-1.18.1//:uuid",
     ],
 )

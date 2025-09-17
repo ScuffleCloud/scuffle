@@ -20,8 +20,8 @@
         }, 2000);
     }
 
-    // Function to mask sensitive information
-    function maskText(text: string) {
+    // TODO: Update this
+    function maskText() {
         return "●".repeat(9);
     }
 </script>
@@ -48,7 +48,7 @@
             <div class="label">Account ID</div>
             <div class="input-row">
                 <div class="masked-input">
-                    {maskText(credentials.accountId)}
+                    {maskText()}
                 </div>
                 <button
                     class="copy-button"
@@ -80,11 +80,7 @@
             <div class="label">Stream Token</div>
             <div class="input-row">
                 <div class="masked-input">
-                    {
-                        maskText(
-                            credentials.streamToken,
-                        )
-                    }
+                    {maskText()}
                 </div>
                 <button
                     class="copy-button"

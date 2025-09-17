@@ -60,12 +60,12 @@ rust_library(
     }),
     version = "0.12.0",
     deps = [
-        "@bindeps__bitflags-2.9.2//:bitflags",
+        "@bindeps__bitflags-2.9.4//:bitflags",
         "@bindeps__bstr-1.12.0//:bstr",
         "@bindeps__gix-attributes-0.27.0//:gix_attributes",
         "@bindeps__gix-config-value-0.15.1//:gix_config_value",
         "@bindeps__gix-glob-0.21.0//:gix_glob",
         "@bindeps__gix-path-0.10.20//:gix_path",
-        "@bindeps__thiserror-2.0.15//:thiserror",
+        "@bindeps__thiserror-2.0.16//:thiserror",
     ],
 )

@@ -66,6 +66,6 @@ rust_library(
         "@bindeps__gix-hash-0.19.0//:gix_hash",
         "@bindeps__gix-object-0.50.2//:gix_object",
         "@bindeps__gix-revwalk-0.21.0//:gix_revwalk",
-        "@bindeps__thiserror-2.0.15//:thiserror",
+        "@bindeps__thiserror-2.0.16//:thiserror",
     ],
 )

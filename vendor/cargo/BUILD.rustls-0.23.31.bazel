@@ -28,7 +28,7 @@ rust_library(
     ),
     aliases = {
         "@cargo_vendor__rustls-pki-types-1.12.0//:rustls_pki_types": "pki_types",
-        "@cargo_vendor__rustls-webpki-0.103.4//:webpki": "webpki",
+        "@cargo_vendor__rustls-webpki-0.103.5//:webpki": "webpki",
     },
     compile_data = glob(
         include = ["**"],
@@ -49,27 +49,7 @@ rust_library(
         "logging",
         "std",
         "tls12",
-    ] + select({
-        "@rules_rust//rust/platform:aarch64-apple-darwin": [
-            "ring",
-        ],
-        "@rules_rust//rust/platform:aarch64-pc-windows-msvc": [
-            "ring",
-        ],
-        "@rules_rust//rust/platform:aarch64-unknown-linux-gnu": [
-            "ring",
-        ],
-        "@rules_rust//rust/platform:x86_64-apple-darwin": [
-            "ring",
-        ],
-        "@rules_rust//rust/platform:x86_64-pc-windows-msvc": [
-            "ring",
-        ],
-        "@rules_rust//rust/platform:x86_64-unknown-linux-gnu": [
-            "ring",
-        ],
-        "//conditions:default": [],
-    }),
+    ],
     crate_root = "src/lib.rs",
     edition = "2021",
     rustc_env_files = [
@@ -97,35 +77,15 @@ rust_library(
     }),
     version = "0.23.31",
     deps = [
-        "@cargo_vendor__aws-lc-rs-1.13.3//:aws_lc_rs",
-        "@cargo_vendor__log-0.4.27//:log",
+        "@cargo_vendor__aws-lc-rs-1.14.0//:aws_lc_rs",
+        "@cargo_vendor__log-0.4.28//:log",
         "@cargo_vendor__once_cell-1.21.3//:once_cell",
         "@cargo_vendor__rustls-0.23.31//:build_script_build",
         "@cargo_vendor__rustls-pki-types-1.12.0//:rustls_pki_types",
-        "@cargo_vendor__rustls-webpki-0.103.4//:webpki",
+        "@cargo_vendor__rustls-webpki-0.103.5//:webpki",
         "@cargo_vendor__subtle-2.6.1//:subtle",
         "@cargo_vendor__zeroize-1.8.1//:zeroize",
-    ] + select({
-        "@rules_rust//rust/platform:aarch64-apple-darwin": [
-            "@cargo_vendor__ring-0.17.14//:ring",
-        ],
-        "@rules_rust//rust/platform:aarch64-pc-windows-msvc": [
-            "@cargo_vendor__ring-0.17.14//:ring",
-        ],
-        "@rules_rust//rust/platform:aarch64-unknown-linux-gnu": [
-            "@cargo_vendor__ring-0.17.14//:ring",
-        ],
-        "@rules_rust//rust/platform:x86_64-apple-darwin": [
-            "@cargo_vendor__ring-0.17.14//:ring",
-        ],
-        "@rules_rust//rust/platform:x86_64-pc-windows-msvc": [
-            "@cargo_vendor__ring-0.17.14//:ring",
-        ],
-        "@rules_rust//rust/platform:x86_64-unknown-linux-gnu": [
-            "@cargo_vendor__ring-0.17.14//:ring",
-        ],
-        "//conditions:default": [],
-    }),
+    ],
 )
 
 cargo_build_script(
@@ -154,27 +114,7 @@ cargo_build_script(
         "logging",
         "std",
         "tls12",
-    ] + select({
-        "@rules_rust//rust/platform:aarch64-apple-darwin": [
-            "ring",
-        ],
-        "@rules_rust//rust/platform:aarch64-pc-windows-msvc": [
-            "ring",
-        ],
-        "@rules_rust//rust/platform:aarch64-unknown-linux-gnu": [
-            "ring",
-        ],
-        "@rules_rust//rust/platform:x86_64-apple-darwin": [
-            "ring",
-        ],
-        "@rules_rust//rust/platform:x86_64-pc-windows-msvc": [
-            "ring",
-        ],
-        "@rules_rust//rust/platform:x86_64-unknown-linux-gnu": [
-            "ring",
-        ],
-        "//conditions:default": [],
-    }),
+    ],
     crate_name = "build_script_build",
     crate_root = "build.rs",
     data = glob(
@@ -191,28 +131,8 @@ cargo_build_script(
     ),
     edition = "2021",
     link_deps = [
-        "@cargo_vendor__aws-lc-rs-1.13.3//:aws_lc_rs",
-    ] + select({
-        "@rules_rust//rust/platform:aarch64-apple-darwin": [
-            "@cargo_vendor__ring-0.17.14//:ring",
-        ],
-        "@rules_rust//rust/platform:aarch64-pc-windows-msvc": [
-            "@cargo_vendor__ring-0.17.14//:ring",
-        ],
-        "@rules_rust//rust/platform:aarch64-unknown-linux-gnu": [
-            "@cargo_vendor__ring-0.17.14//:ring",
-        ],
-        "@rules_rust//rust/platform:x86_64-apple-darwin": [
-            "@cargo_vendor__ring-0.17.14//:ring",
-        ],
-        "@rules_rust//rust/platform:x86_64-pc-windows-msvc": [
-            "@cargo_vendor__ring-0.17.14//:ring",
-        ],
-        "@rules_rust//rust/platform:x86_64-unknown-linux-gnu": [
-            "@cargo_vendor__ring-0.17.14//:ring",
-        ],
-        "//conditions:default": [],
-    }),
+        "@cargo_vendor__aws-lc-rs-1.14.0//:aws_lc_rs",
+    ],
     pkg_name = "rustls",
     rustc_env_files = [
         ":cargo_toml_env_vars",

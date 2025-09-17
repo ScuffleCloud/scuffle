@@ -69,7 +69,7 @@ rust_library(
         "@bindeps__enumset-1.1.10//:enumset",
         "@bindeps__getrandom-0.2.16//:getrandom",
         "@bindeps__hex-0.4.3//:hex",
-        "@bindeps__indexmap-2.10.0//:indexmap",
+        "@bindeps__indexmap-2.11.3//:indexmap",
         "@bindeps__more-asserts-0.2.2//:more_asserts",
         "@bindeps__rkyv-0.8.11//:rkyv",
         "@bindeps__sha2-0.10.9//:sha2",

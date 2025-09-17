@@ -73,9 +73,9 @@ rust_library(
         "@bindeps__arrayref-0.3.9//:arrayref",
         "@bindeps__arrayvec-0.7.6//:arrayvec",
         "@bindeps__blake3-1.8.2//:build_script_build",
-        "@bindeps__cfg-if-1.0.1//:cfg_if",
+        "@bindeps__cfg-if-1.0.3//:cfg_if",
         "@bindeps__constant_time_eq-0.3.1//:constant_time_eq",
-        "@bindeps__memmap2-0.9.7//:memmap2",
+        "@bindeps__memmap2-0.9.8//:memmap2",
         "@bindeps__rayon-core-1.13.0//:rayon_core",
     ],
 )
@@ -140,7 +140,7 @@ cargo_build_script(
     version = "1.8.2",
     visibility = ["//visibility:private"],
     deps = [
-        "@bindeps__cc-1.2.33//:cc",
+        "@bindeps__cc-1.2.37//:cc",
     ],
 )
 

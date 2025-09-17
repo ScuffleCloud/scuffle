@@ -63,6 +63,6 @@ rust_library(
         "@bindeps__faster-hex-0.10.0//:faster_hex",
         "@bindeps__gix-features-0.43.1//:gix_features",
         "@bindeps__sha1-checked-0.10.0//:sha1_checked",
-        "@bindeps__thiserror-2.0.15//:thiserror",
+        "@bindeps__thiserror-2.0.16//:thiserror",
     ],
 )

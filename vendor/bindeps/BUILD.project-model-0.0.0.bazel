@@ -37,7 +37,7 @@ rust_library(
     crate_root = "src/lib.rs",
     edition = "2024",
     proc_macro_deps = [
-        "@bindeps__serde_derive-1.0.219//:serde_derive",
+        "@bindeps__serde_derive-1.0.225//:serde_derive",
     ],
     rustc_env_files = [
         ":cargo_toml_env_vars",
@@ -72,9 +72,9 @@ rust_library(
         "@bindeps__la-arena-0.3.1//:la_arena",
         "@bindeps__paths-0.0.0//:paths",
         "@bindeps__rustc-hash-2.1.1//:rustc_hash",
-        "@bindeps__semver-1.0.26//:semver",
-        "@bindeps__serde-1.0.219//:serde",
-        "@bindeps__serde_json-1.0.143//:serde_json",
+        "@bindeps__semver-1.0.27//:semver",
+        "@bindeps__serde-1.0.225//:serde",
+        "@bindeps__serde_json-1.0.145//:serde_json",
         "@bindeps__span-0.0.0//:span",
         "@bindeps__stdx-0.0.0//:stdx",
         "@bindeps__temp-dir-0.1.16//:temp_dir",

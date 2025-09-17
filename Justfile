@@ -1,5 +1,8 @@
 mod? local
 
+default:
+    just --list
+
 # this should be kept in sync with
 # .github/workflows/cargo-update-pr.yaml
 
@@ -18,9 +21,12 @@ fmt:
     dprint fmt
     buf format -w --disable-symlinks --debug
     just --unstable --fmt
+    shfmt -w .
+    git ls-files "*.cedar" | xargs ls 2>/dev/null | xargs -I {} cedar format -w -p {}
 
 lint:
     bazel run //tools/cargo/clippy:fix
+    pnpm lint:fix --ui=stream
 
 clean *args="--async":
     #!/usr/bin/env bash
@@ -28,13 +34,28 @@ clean *args="--async":
 
     output_base=$(bazel info output_base)
 
+    rm -r "${output_base}/.scripts"
     bazel --output_base="${output_base}" clean {{ args }}
     bazel --output_base="${output_base}_coverage" clean {{ args }}
     bazel --output_base="${output_base}_grind" clean {{ args }}
     bazel --output_base="${output_base}_rust_analyzer" clean {{ args }}
 
-run core *args:
-    bazel run //cloud/core:bin -- {{ args }}
+clear-tool-cache:
+    #!/usr/bin/env bash
+    output_base=$(bazel info output_base)
+    rm -r "${output_base}/.scripts"
+
+run bin *args:
+    #!/usr/bin/env bash
+
+    if [ {{ bin }} == "core" ]; then
+        bazel run //cloud/core:bin -- {{ args }}
+    elif [ {{ bin }} == "email" ]; then
+        bazel run //cloud/email:bin -- {{ args }}
+    else
+        echo "Unknown binary: {{ bin }}"
+        exit 1
+    fi
 
 alias coverage := test
 
@@ -51,7 +72,7 @@ test *targets="//...":
 
     targets=$(bazel query 'tests(set({{ targets }}))')
 
-    bazel --output_base="${output_base}_coverage" coverage ${targets} --//settings:test_insta_force_pass
+    bazel --output_base="${output_base}_coverage" coverage ${targets} --//settings:test_insta_force_pass --skip_incompatible_explicit_targets
 
     test_logs=$(bazel --output_base="${output_base}_coverage" info bazel-testlogs)
 
@@ -86,7 +107,7 @@ grind *targets="//...":
     output_base=$(bazel info output_base)
     targets=$(bazel query 'kind("nextest_test rule", set({{ targets }}))')
 
-    bazel --output_base="${output_base}_grind" test ${targets} --//settings:test_rustc_flags="--cfg=valgrind" --//settings:test_valgrind
+    bazel --output_base="${output_base}_grind" test ${targets} --//settings:test_rustc_flags="--cfg=valgrind" --//settings:test_valgrind --skip_incompatible_explicit_targets
 
 alias docs := doc
 

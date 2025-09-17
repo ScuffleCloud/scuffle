@@ -127,7 +127,9 @@
         },
         tooltip: {
             trigger: "item",
-            formatter: function(params: any) {
+            formatter: function(
+                params: { name: string; data: { value: number } },
+            ) {
                 hoveredCountry = params.name;
                 if (params.data) {
                     return `<strong>${params.name}</strong><br/>${dataLabel}: ${params.data.value}`;
@@ -258,7 +260,7 @@
         if (event.data) {
             alert(
                 `${event.name}\n${dataLabel}: ${
-                    (event.data as any).value
+                    (event.data as { value: number }).value
                 }`,
             );
         } else {

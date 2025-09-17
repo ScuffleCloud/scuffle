@@ -60,9 +60,9 @@ rust_library(
     }),
     version = "0.41.0",
     deps = [
-        "@bindeps__bitflags-2.9.2//:bitflags",
+        "@bindeps__bitflags-2.9.4//:bitflags",
         "@bindeps__bstr-1.12.0//:bstr",
-        "@bindeps__filetime-0.2.25//:filetime",
+        "@bindeps__filetime-0.2.26//:filetime",
         "@bindeps__fnv-1.0.7//:fnv",
         "@bindeps__gix-bitmap-0.2.14//:gix_bitmap",
         "@bindeps__gix-features-0.43.1//:gix_features",
@@ -75,25 +75,25 @@ rust_library(
         "@bindeps__gix-validate-0.10.0//:gix_validate",
         "@bindeps__hashbrown-0.15.5//:hashbrown",
         "@bindeps__itoa-1.0.15//:itoa",
-        "@bindeps__memmap2-0.9.7//:memmap2",
+        "@bindeps__memmap2-0.9.8//:memmap2",
         "@bindeps__smallvec-1.15.1//:smallvec",
-        "@bindeps__thiserror-2.0.15//:thiserror",
+        "@bindeps__thiserror-2.0.16//:thiserror",
     ] + select({
         "@rules_rust//rust/platform:aarch64-apple-darwin": [
             "@bindeps__libc-0.2.175//:libc",  # cfg(not(windows))
-            "@bindeps__rustix-1.0.8//:rustix",  # cfg(not(windows))
+            "@bindeps__rustix-1.1.2//:rustix",  # cfg(not(windows))
         ],
         "@rules_rust//rust/platform:aarch64-unknown-linux-gnu": [
             "@bindeps__libc-0.2.175//:libc",  # cfg(not(windows))
-            "@bindeps__rustix-1.0.8//:rustix",  # cfg(not(windows))
+            "@bindeps__rustix-1.1.2//:rustix",  # cfg(not(windows))
         ],
         "@rules_rust//rust/platform:x86_64-apple-darwin": [
             "@bindeps__libc-0.2.175//:libc",  # cfg(not(windows))
-            "@bindeps__rustix-1.0.8//:rustix",  # cfg(not(windows))
+            "@bindeps__rustix-1.1.2//:rustix",  # cfg(not(windows))
         ],
         "@rules_rust//rust/platform:x86_64-unknown-linux-gnu": [
             "@bindeps__libc-0.2.175//:libc",  # cfg(not(windows))
-            "@bindeps__rustix-1.0.8//:rustix",  # cfg(not(windows))
+            "@bindeps__rustix-1.1.2//:rustix",  # cfg(not(windows))
         ],
         "//conditions:default": [],
     }),

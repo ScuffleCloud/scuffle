@@ -64,6 +64,6 @@ rust_library(
     }),
     version = "0.8.35",
     deps = [
-        "@bindeps__cfg-if-1.0.1//:cfg_if",
+        "@bindeps__cfg-if-1.0.3//:cfg_if",
     ],
 )

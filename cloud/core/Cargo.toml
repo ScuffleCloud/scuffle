@@ -30,12 +30,15 @@ diesel-async = { features = ["async-connection-wrapper", "bb8", "postgres"], ver
 fred = "10.1.0"
 hmac = "0.12.1"
 ipnetwork = { features = ["serde"], version = "0.21.1" }
+itertools = "0.14.0"
+maxminddb = "0.26.0"
 pb = { package = "scufflecloud-proto", path = "../proto" }
 pkcs8 = "0.10.2"
 prost = "0.14.1"
 rand = "0.8.5"
-reqwest = { features = ["json", "rustls-tls"], version = "0.12.20", default-features = false }
+reqwest = { features = ["json", "rustls-tls-native-roots-no-provider"], version = "0.12.20", default-features = false }
 rsa = { features = ["sha2"], version = "0.9.8" }
+rustls = { default-features = false, version = "0.23.31", features = ["aws_lc_rs"] }
 sailfish = "0.10.0"
 sailfish-macros = "0.10.0"
 scuffle-batching = { path = "../../crates/batching" }
@@ -57,6 +60,7 @@ tokio = { default-features = false, features = ["sync"], version = "1.47.1" }
 tonic = "0.14.1"
 tonic-reflection = "0.14.1"
 tonic-types = "0.14.1"
+tonic-web = "0.14.2"
 totp-rs = { features = ["otpauth", "qr"], version = "5.7.0" }
 tower-http = { features = ["cors", "trace"], version = "0.6.6" }
 tracing = "0.1.41"

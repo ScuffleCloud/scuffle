@@ -1,0 +1,190 @@
+<script lang="ts">
+    import IconArrowLeft from "$lib/images/icon-arrow-left.svelte";
+    import { PinInput } from "melt/builders";
+
+    interface Props {
+        onSubmit: (code: string) => Promise<void>;
+        onBack?: () => void;
+        isLoading?: boolean;
+    }
+
+    let { onSubmit, onBack, isLoading = false }: Props = $props();
+
+    const pinInput = new PinInput({
+        maxLength: 6,
+        type: "numeric",
+        placeholder: "-",
+        disabled: () => isLoading,
+    });
+
+    async function handleContinue() {
+        if (pinInput.value.length === 6 && !isLoading) {
+            await onSubmit(pinInput.value);
+        }
+    }
+</script>
+
+<div class="header">
+    <button type="button" onclick={onBack} class="back-button">
+        <IconArrowLeft />
+    </button>
+    <h1 class="title">MFA Login</h1>
+</div>
+<p class="subtitle">
+    Enter the 6-digit code from your 2FA authenticator app below.
+</p>
+
+<div {...pinInput.root} class="pin-input-root">
+    {#each pinInput.inputs as input, index (`pin-input-${index}`)}
+        <input {...input} class="pin-input" />
+    {/each}
+</div>
+
+<button
+    type="button"
+    onclick={handleContinue}
+    class="continue-btn"
+    disabled={isLoading || pinInput.value.length !== 6}
+>
+    {#if isLoading}
+        <div class="spinner"></div>
+        Verifying...
+    {:else}
+        Continue
+    {/if}
+</button>
+
+<style>
+    .header {
+      display: flex;
+      align-items: center;
+      position: relative;
+      margin-bottom: 2rem;
+    }
+
+    .back-button {
+      position: absolute;
+      left: 0;
+      background: none;
+      border: none;
+      color: #6b7280;
+      cursor: pointer;
+      padding: 0.5rem;
+      border-radius: 0.5rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .back-button:hover {
+      background: #f3f4f6;
+    }
+
+    .title {
+      flex: 1;
+      font-size: 1.5rem;
+      font-weight: 600;
+      color: #1f2937;
+      margin: 0;
+    }
+
+    .subtitle {
+      color: #6b7280;
+      font-size: 0.95rem;
+      line-height: 1.5;
+      margin: 0 0 2rem 0;
+    }
+
+    .pin-input-root {
+      display: flex;
+      gap: 0.5rem;
+      justify-content: center;
+      margin-bottom: 2rem;
+    }
+
+    .pin-input {
+      width: 3rem;
+      height: 3rem;
+      border: 2px solid #e5e7eb;
+      border-radius: 0.5rem;
+      text-align: center;
+      font-size: 1.25rem;
+      font-weight: 600;
+      color: #1f2937;
+      background: white;
+      transition: all 0.2s;
+      outline: none;
+    }
+
+    .pin-input:focus {
+      border-color: #f59e0b;
+      box-shadow: 0 0 0 3px rgba(245, 158, 11, 0.1);
+    }
+
+    .pin-input:disabled {
+      background: #f9fafb;
+      color: #9ca3af;
+      cursor: not-allowed;
+    }
+
+    .continue-btn {
+      width: 100%;
+      padding: 0.875rem;
+      background: #f59e0b;
+      color: white;
+      border: none;
+      border-radius: 0.5rem;
+      font-size: 1rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background-color 0.2s;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.5rem;
+    }
+
+    .continue-btn:hover:not(:disabled) {
+      background: #d97706;
+    }
+
+    .continue-btn:disabled {
+      background: #d1d5db;
+      cursor: not-allowed;
+    }
+
+    .spinner {
+      width: 16px;
+      height: 16px;
+      border: 2px solid rgba(255, 255, 255, 0.3);
+      border-top: 2px solid white;
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+    }
+
+    @keyframes spin {
+      0% {
+        transform: rotate(0deg);
+      }
+      100% {
+        transform: rotate(360deg);
+      }
+    }
+
+    @media (max-width: 480px) {
+      .mfa-container {
+        padding: 1.5rem;
+        margin: 1rem;
+      }
+
+      .pin-input {
+        width: 2.5rem;
+        height: 2.5rem;
+        font-size: 1.1rem;
+      }
+
+      .pin-input-root {
+        gap: 0.375rem;
+      }
+    }
+</style>

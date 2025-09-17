@@ -40,7 +40,7 @@ rust_library(
     crate_root = "src/lib.rs",
     edition = "2024",
     proc_macro_deps = [
-        "@bindeps__scroll_derive-0.13.0//:scroll_derive",
+        "@bindeps__scroll_derive-0.13.1//:scroll_derive",
     ],
     rustc_env_files = [
         ":cargo_toml_env_vars",

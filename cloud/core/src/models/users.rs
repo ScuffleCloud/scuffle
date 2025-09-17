@@ -1,18 +1,14 @@
 use std::collections::HashSet;
 use std::sync::Arc;
 
+use diesel::Selectable;
 use diesel::prelude::{AsChangeset, Associations, Identifiable, Insertable, Queryable};
-use diesel::query_dsl::methods::{FilterDsl, SelectDsl};
-use diesel::{ExpressionMethods, Selectable};
-use diesel_async::RunQueryDsl;
 
 use crate::CoreConfig;
 use crate::cedar::CedarEntity;
 use crate::chrono_ext::ChronoDateTimeExt;
 use crate::id::{Id, PrefixedId};
-use crate::models::OrganizationId;
-use crate::schema::organization_members;
-use crate::std_ext::ResultExt;
+use crate::std_ext::OptionExt;
 
 pub(crate) type UserId = Id<User>;
 
@@ -26,6 +22,7 @@ pub struct User {
     pub last_name: Option<String>,
     pub password_hash: Option<String>,
     pub primary_email: Option<String>,
+    pub avatar_url: Option<String>,
 }
 
 impl PrefixedId for User {
@@ -40,22 +37,19 @@ impl<G: CoreConfig> CedarEntity<G> for User {
     }
 
     async fn parents(&self, global: &Arc<G>) -> Result<HashSet<cedar_policy::EntityUid>, tonic::Status> {
-        let mut db = global
-            .db()
+        let organization_ids = global
+            .organization_member_by_user_id_loader()
+            .load(self.id)
             .await
-            .into_tonic_internal_err("failed to get database connection")?;
-
-        let organization_ids = organization_members::dsl::organization_members
-            .filter(organization_members::dsl::user_id.eq(self.id))
-            .select(organization_members::dsl::organization_id)
-            .load::<OrganizationId>(&mut db)
-            .await
-            .into_tonic_internal_err("failed to load organization members")?;
-
-        Ok(organization_ids
+            .ok()
+            .into_tonic_internal_err("failed to query organization members")?
+            .into_tonic_not_found("user not found")?
             .into_iter()
+            .map(|m| m.organization_id)
             .map(|id| CedarEntity::<G>::entity_uid(&id))
-            .collect::<HashSet<_>>())
+            .collect::<HashSet<_>>();
+
+        Ok(organization_ids)
     }
 }
 
@@ -67,6 +61,7 @@ impl From<User> for pb::scufflecloud::core::v1::User {
             first_name: value.first_name,
             last_name: value.last_name,
             primary_email: value.primary_email,
+            avatar_url: value.avatar_url,
             created_at: Some(tinc::well_known::prost::Timestamp::from(value.id.datetime())),
         }
     }
@@ -97,6 +92,32 @@ impl From<UserEmail> for pb::scufflecloud::core::v1::UserEmail {
             email: value.email,
             created_at: Some(value.created_at.to_prost_timestamp_utc()),
         }
+    }
+}
+
+pub(crate) type NewUserEmailRequestId = Id<NewUserEmailRequest>;
+
+#[derive(Queryable, Selectable, Insertable, Identifiable, AsChangeset, Associations, Debug, serde::Serialize)]
+#[diesel(table_name = crate::schema::new_user_email_requests)]
+#[diesel(belongs_to(User))]
+#[diesel(check_for_backend(diesel::pg::Pg))]
+pub struct NewUserEmailRequest {
+    pub id: NewUserEmailRequestId,
+    pub user_id: UserId,
+    pub email: String,
+    pub code: Vec<u8>,
+    pub expires_at: chrono::DateTime<chrono::Utc>,
+}
+
+impl PrefixedId for NewUserEmailRequest {
+    const PREFIX: &'static str = "er";
+}
+
+impl<G> CedarEntity<G> for NewUserEmailRequest {
+    const ENTITY_TYPE: &'static str = "NewUserEmailRequest";
+
+    fn entity_id(&self) -> cedar_policy::EntityId {
+        cedar_policy::EntityId::new(self.id.to_string_unprefixed())
     }
 }
 

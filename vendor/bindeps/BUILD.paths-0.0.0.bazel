@@ -63,6 +63,6 @@ rust_library(
     }),
     version = "0.0.0",
     deps = [
-        "@bindeps__camino-1.1.11//:camino",
+        "@bindeps__camino-1.2.0//:camino",
     ],
 )

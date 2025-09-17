@@ -74,7 +74,7 @@ rust_library(
     }),
     version = "0.12.23",
     deps = [
-        "@bindeps__async-compression-0.4.27//:async_compression",  # cfg(not(target_arch = "wasm32"))
+        "@bindeps__async-compression-0.4.30//:async_compression",  # cfg(not(target_arch = "wasm32"))
         "@bindeps__base64-0.22.1//:base64",
         "@bindeps__bytes-1.10.1//:bytes",
         "@bindeps__encoding_rs-0.8.35//:encoding_rs",  # cfg(not(target_arch = "wasm32"))
@@ -87,14 +87,14 @@ rust_library(
         "@bindeps__http-body-util-0.1.3//:http_body_util",  # cfg(not(target_arch = "wasm32"))
         "@bindeps__hyper-1.7.0//:hyper",  # cfg(not(target_arch = "wasm32"))
         "@bindeps__hyper-rustls-0.27.7//:hyper_rustls",  # cfg(not(target_arch = "wasm32"))
-        "@bindeps__hyper-util-0.1.16//:hyper_util",  # cfg(not(target_arch = "wasm32"))
-        "@bindeps__log-0.4.27//:log",  # cfg(not(target_arch = "wasm32"))
+        "@bindeps__hyper-util-0.1.17//:hyper_util",  # cfg(not(target_arch = "wasm32"))
+        "@bindeps__log-0.4.28//:log",  # cfg(not(target_arch = "wasm32"))
         "@bindeps__mime-0.3.17//:mime",  # cfg(not(target_arch = "wasm32"))
-        "@bindeps__percent-encoding-2.3.1//:percent_encoding",  # cfg(not(target_arch = "wasm32"))
+        "@bindeps__percent-encoding-2.3.2//:percent_encoding",  # cfg(not(target_arch = "wasm32"))
         "@bindeps__pin-project-lite-0.2.16//:pin_project_lite",  # cfg(not(target_arch = "wasm32"))
         "@bindeps__rustls-0.23.31//:rustls",  # cfg(not(target_arch = "wasm32"))
         "@bindeps__rustls-pki-types-1.12.0//:rustls_pki_types",  # cfg(not(target_arch = "wasm32"))
-        "@bindeps__serde-1.0.219//:serde",
+        "@bindeps__serde-1.0.225//:serde",
         "@bindeps__serde_urlencoded-0.7.1//:serde_urlencoded",
         "@bindeps__sync_wrapper-1.0.2//:sync_wrapper",
         "@bindeps__tokio-1.47.1//:tokio",  # cfg(not(target_arch = "wasm32"))
@@ -103,7 +103,7 @@ rust_library(
         "@bindeps__tower-0.5.2//:tower",  # cfg(not(target_arch = "wasm32"))
         "@bindeps__tower-http-0.6.6//:tower_http",  # cfg(not(target_arch = "wasm32"))
         "@bindeps__tower-service-0.3.3//:tower_service",
-        "@bindeps__url-2.5.4//:url",
+        "@bindeps__url-2.5.7//:url",
         "@bindeps__webpki-roots-1.0.2//:webpki_roots",  # cfg(not(target_arch = "wasm32"))
     ],
 )

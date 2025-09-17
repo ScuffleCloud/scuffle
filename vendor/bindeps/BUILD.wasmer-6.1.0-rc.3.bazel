@@ -80,9 +80,9 @@ rust_library(
     version = "6.1.0-rc.3",
     deps = [
         "@bindeps__bytes-1.10.1//:bytes",
-        "@bindeps__cfg-if-1.0.1//:cfg_if",
+        "@bindeps__cfg-if-1.0.3//:cfg_if",
         "@bindeps__derive_more-2.0.1//:derive_more",
-        "@bindeps__indexmap-2.10.0//:indexmap",
+        "@bindeps__indexmap-2.11.3//:indexmap",
         "@bindeps__more-asserts-0.2.2//:more_asserts",
         "@bindeps__rustc-demangle-0.1.26//:rustc_demangle",
         "@bindeps__shared-buffer-0.1.4//:shared_buffer",
@@ -95,7 +95,7 @@ rust_library(
         "@bindeps__wasmer-types-6.1.0-rc.3//:wasmer_types",  # cfg(not(target_arch = "wasm32"))
         "@bindeps__wasmer-vm-6.1.0-rc.3//:wasmer_vm",  # cfg(not(target_arch = "wasm32"))
         "@bindeps__wasmparser-0.224.1//:wasmparser",  # cfg(not(target_arch = "wasm32"))
-        "@bindeps__wat-1.237.0//:wat",
+        "@bindeps__wat-1.239.0//:wat",
     ] + select({
         "@rules_rust//rust/platform:aarch64-pc-windows-msvc": [
             "@bindeps__windows-sys-0.59.0//:windows_sys",  # cfg(all(not(target_arch = "wasm32"), target_os = "windows"))

@@ -1,5 +1,1 @@
-#!/usr/bin/env bash
-
-set -euo pipefail
-
-exec bazel run //tools/valgrind --config=wrapper -- "$@"
+utils/tool.sh

@@ -30,10 +30,16 @@
             bazelisk
             stdenv
             bash
+            openssl
+            pkg-config
+            ffmpeg-full
+            llvmPackages_20.clangWithLibcAndBasicRtAndLibcxx
           ];
 
           shellHook = ''
             export LD_LIBRARY_PATH="$LD_LIBRARY_PATH:${stdenv.cc.cc.lib}/lib";
+            export PKG_CONFIG_PATH="$PKG_CONFIG_PATH:${openssl.dev}/lib/pkgconfig:${ffmpeg-full.lib}/lib/pkgconfig";
+            export LIBCLANG_PATH="${llvmPackages_20.libclang.lib}/lib"
           '';
         };
 

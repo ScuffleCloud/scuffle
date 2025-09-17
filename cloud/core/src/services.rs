@@ -10,7 +10,7 @@ use tinc::openapi::Server;
 use tower_http::cors::{AllowHeaders, CorsLayer, ExposeHeaders};
 use tower_http::trace::TraceLayer;
 
-use crate::{CoreConfig, middleware};
+use crate::middleware;
 
 mod organization_invitations;
 mod organizations;
@@ -61,7 +61,7 @@ fn grpc_web_cors_layer() -> CorsLayer {
         .allow_headers(tower_http::cors::Any)
 }
 
-impl<G: CoreConfig> scuffle_bootstrap::Service<G> for CoreSvc<G> {
+impl<G: core_traits::Global> scuffle_bootstrap::Service<G> for CoreSvc<G> {
     async fn run(self, global: Arc<G>, ctx: scuffle_context::Context) -> anyhow::Result<()> {
         // REST
         let organization_invitations_svc_tinc =
@@ -128,7 +128,7 @@ impl<G: CoreConfig> scuffle_bootstrap::Service<G> for CoreSvc<G> {
             .nest("/v1", v1_rest_router)
             .merge(grpc_router)
             .route_layer(axum::middleware::from_fn(crate::middleware::auth::<G>))
-            .layer(axum::middleware::from_fn(crate::middleware::ip_address::<G>))
+            .layer(geo_ip::middleware::middleware::<G>())
             .layer(TraceLayer::new_for_http())
             .layer(Extension(Arc::clone(&global)))
             .fallback(StatusCode::NOT_FOUND);
@@ -143,7 +143,7 @@ impl<G: CoreConfig> scuffle_bootstrap::Service<G> for CoreSvc<G> {
 
         scuffle_http::HttpServer::builder()
             .tower_make_service_with_addr(router.into_make_service_with_connect_info::<SocketAddr>())
-            .bind(global.bind())
+            .bind(global.service_bind())
             .ctx(ctx)
             .build()
             .run()

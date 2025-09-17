@@ -1,10 +1,8 @@
 use std::net::IpAddr;
 use std::sync::Arc;
 
+use core_traits::DisplayExt;
 use tonic_types::{ErrorDetails, StatusExt};
-
-use crate::CoreConfig;
-use crate::std_ext::DisplayExt;
 
 const TURNSTILE_VERIFY_URL: &str = "https://challenges.cloudflare.com/turnstile/v0/siteverify";
 
@@ -34,7 +32,7 @@ pub(crate) enum TrunstileVerifyError {
     MissingErrorCode,
 }
 
-pub(crate) async fn verify<G: CoreConfig>(
+pub(crate) async fn verify<G: core_traits::Global>(
     global: &Arc<G>,
     remote_ip: IpAddr,
     token: &str,
@@ -45,7 +43,12 @@ pub(crate) async fn verify<G: CoreConfig>(
         remoteip: Some(remote_ip.to_string()),
     };
 
-    let res = global.http_client().post(TURNSTILE_VERIFY_URL).json(&payload).send().await;
+    let res = global
+        .external_http_client()
+        .post(TURNSTILE_VERIFY_URL)
+        .json(&payload)
+        .send()
+        .await;
 
     if res.is_err() {
         tracing::warn!("failed to send turnstile verify request: {:?}", res);
@@ -63,7 +66,7 @@ pub(crate) async fn verify<G: CoreConfig>(
     Ok(())
 }
 
-pub(crate) async fn verify_in_tonic<G: CoreConfig>(
+pub(crate) async fn verify_in_tonic<G: core_traits::Global>(
     global: &Arc<G>,
     remote_ip: IpAddr,
     token: &str,

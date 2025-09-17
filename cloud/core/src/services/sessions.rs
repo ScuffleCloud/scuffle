@@ -1,15 +1,15 @@
 use base64::Engine;
+use core_traits::OptionExt;
 use sha2::Digest;
 
+use crate::google_api;
 use crate::http_ext::RequestExt;
 use crate::operations::Operation;
 use crate::operations::user_sessions::{InvalidateUserSessionRequest, RefreshUserSessionRequest};
 use crate::services::CoreSvc;
-use crate::std_ext::OptionExt;
-use crate::{CoreConfig, google_api};
 
 #[async_trait::async_trait]
-impl<G: CoreConfig> pb::scufflecloud::core::v1::sessions_service_server::SessionsService for CoreSvc<G> {
+impl<G: core_traits::Global> pb::scufflecloud::core::v1::sessions_service_server::SessionsService for CoreSvc<G> {
     async fn login_with_magic_link(
         &self,
         req: tonic::Request<pb::scufflecloud::core::v1::LoginWithMagicLinkRequest>,

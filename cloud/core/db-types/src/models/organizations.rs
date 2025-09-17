@@ -1,24 +1,24 @@
-use std::collections::HashSet;
-use std::sync::Arc;
+use std::time::SystemTime;
 
 use diesel::Selectable;
 use diesel::prelude::{AsChangeset, Associations, Identifiable, Insertable, Queryable};
 
-use crate::cedar::CedarEntity;
-use crate::chrono_ext::ChronoDateTimeExt;
 use crate::id::{Id, PrefixedId};
 use crate::models::users::{User, UserId};
-use crate::{CoreConfig, common};
 
-pub(crate) type OrganizationId = Id<Organization>;
+pub type OrganizationId = Id<Organization>;
 
-#[derive(Queryable, Selectable, Insertable, Identifiable, AsChangeset, Associations, Debug, serde::Serialize, Clone)]
+#[derive(
+    Queryable, Selectable, Insertable, Identifiable, AsChangeset, Associations, Debug, serde_derive::Serialize, Clone,
+)]
 #[diesel(table_name = crate::schema::organizations)]
 #[diesel(belongs_to(User, foreign_key = owner_id))]
 #[diesel(check_for_backend(diesel::pg::Pg))]
 pub struct Organization {
     pub id: OrganizationId,
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub google_customer_id: Option<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub google_hosted_domain: Option<String>,
     pub name: String,
     pub owner_id: UserId,
@@ -28,14 +28,6 @@ impl PrefixedId for Organization {
     const PREFIX: &'static str = "o";
 }
 
-impl<G> CedarEntity<G> for Organization {
-    const ENTITY_TYPE: &'static str = "Organization";
-
-    fn entity_id(&self) -> cedar_policy::EntityId {
-        cedar_policy::EntityId::new(self.id.to_string_unprefixed())
-    }
-}
-
 impl From<Organization> for pb::scufflecloud::core::v1::Organization {
     fn from(value: Organization) -> Self {
         pb::scufflecloud::core::v1::Organization {
@@ -43,14 +35,14 @@ impl From<Organization> for pb::scufflecloud::core::v1::Organization {
             google_hosted_domain: value.google_hosted_domain,
             name: value.name,
             owner_id: value.owner_id.to_string(),
-            created_at: Some(tinc::well_known::prost::Timestamp::from(value.id.datetime())),
+            created_at: Some(value.id.datetime().into()),
         }
     }
 }
 
-pub(crate) type ProjectId = Id<Project>;
+pub type ProjectId = Id<Project>;
 
-#[derive(Queryable, Selectable, Insertable, Identifiable, AsChangeset, Associations, Debug, serde::Serialize)]
+#[derive(Queryable, Selectable, Insertable, Identifiable, AsChangeset, Associations, Debug, serde_derive::Serialize)]
 #[diesel(table_name = crate::schema::projects)]
 #[diesel(belongs_to(Organization))]
 #[diesel(check_for_backend(diesel::pg::Pg))]
@@ -64,28 +56,20 @@ impl PrefixedId for Project {
     const PREFIX: &'static str = "p";
 }
 
-impl<G> CedarEntity<G> for Project {
-    const ENTITY_TYPE: &'static str = "Project";
-
-    fn entity_id(&self) -> cedar_policy::EntityId {
-        cedar_policy::EntityId::new(self.id.to_string_unprefixed())
-    }
-}
-
 impl From<Project> for pb::scufflecloud::core::v1::Project {
     fn from(value: Project) -> Self {
         Self {
             id: value.id.to_string(),
             name: value.name,
             organization_id: value.organization_id.to_string(),
-            created_at: Some(tinc::well_known::prost::Timestamp::from(value.id.datetime())),
+            created_at: Some(value.id.datetime().into()),
         }
     }
 }
 
-pub(crate) type PolicyId = Id<Policy>;
+pub type PolicyId = Id<Policy>;
 
-#[derive(Queryable, Selectable, Insertable, Identifiable, AsChangeset, Associations, Debug, serde::Serialize)]
+#[derive(Queryable, Selectable, Insertable, Identifiable, AsChangeset, Associations, Debug, serde_derive::Serialize)]
 #[diesel(table_name = crate::schema::policies)]
 #[diesel(belongs_to(Organization))]
 #[diesel(belongs_to(Project))]
@@ -93,8 +77,10 @@ pub(crate) type PolicyId = Id<Policy>;
 pub struct Policy {
     pub id: PolicyId,
     pub organization_id: OrganizationId,
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub project_id: Option<ProjectId>,
     pub name: String,
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub description: Option<String>,
     pub policy: String,
 }
@@ -103,17 +89,9 @@ impl PrefixedId for Policy {
     const PREFIX: &'static str = "po";
 }
 
-impl<G> CedarEntity<G> for Policy {
-    const ENTITY_TYPE: &'static str = "Policy";
+pub type RoleId = Id<Role>;
 
-    fn entity_id(&self) -> cedar_policy::EntityId {
-        cedar_policy::EntityId::new(self.id.to_string_unprefixed())
-    }
-}
-
-pub(crate) type RoleId = Id<Role>;
-
-#[derive(Queryable, Selectable, Insertable, Identifiable, AsChangeset, Associations, Debug, serde::Serialize)]
+#[derive(Queryable, Selectable, Insertable, Identifiable, AsChangeset, Associations, Debug, serde_derive::Serialize)]
 #[diesel(table_name = crate::schema::roles)]
 #[diesel(belongs_to(Organization))]
 #[diesel(check_for_backend(diesel::pg::Pg))]
@@ -121,20 +99,14 @@ pub struct Role {
     pub id: RoleId,
     pub organization_id: OrganizationId,
     pub name: String,
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub description: Option<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub inline_policy: Option<String>,
 }
 
 impl PrefixedId for Role {
     const PREFIX: &'static str = "r";
-}
-
-impl<G> CedarEntity<G> for Role {
-    const ENTITY_TYPE: &'static str = "Role";
-
-    fn entity_id(&self) -> cedar_policy::EntityId {
-        cedar_policy::EntityId::new(self.id.to_string_unprefixed())
-    }
 }
 
 #[derive(Queryable, Selectable, Insertable, Identifiable, Associations, Debug)]
@@ -148,7 +120,9 @@ pub struct RolePolicy {
     pub policy_id: PolicyId,
 }
 
-#[derive(Queryable, Selectable, Insertable, Identifiable, AsChangeset, Associations, Debug, serde::Serialize, Clone)]
+#[derive(
+    Queryable, Selectable, Insertable, Identifiable, AsChangeset, Associations, Debug, serde_derive::Serialize, Clone,
+)]
 #[diesel(table_name = crate::schema::organization_members)]
 #[diesel(primary_key(organization_id, user_id))]
 #[diesel(belongs_to(Organization))]
@@ -157,25 +131,11 @@ pub struct RolePolicy {
 pub struct OrganizationMember {
     pub organization_id: OrganizationId,
     pub user_id: UserId,
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub invited_by_id: Option<UserId>,
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub inline_policy: Option<String>,
     pub created_at: chrono::DateTime<chrono::Utc>,
-}
-
-impl<G> CedarEntity<G> for OrganizationMember {
-    const ENTITY_TYPE: &'static str = "OrganizationMember";
-
-    fn entity_id(&self) -> cedar_policy::EntityId {
-        cedar_policy::EntityId::new(format!(
-            "{}:{}",
-            self.organization_id.to_string_unprefixed(),
-            self.user_id.to_string_unprefixed()
-        ))
-    }
-
-    async fn parents(&self, _global: &Arc<G>) -> Result<HashSet<cedar_policy::EntityUid>, tonic::Status> {
-        Ok(std::iter::once(CedarEntity::<G>::entity_uid(&self.organization_id)).collect())
-    }
 }
 
 impl From<OrganizationMember> for pb::scufflecloud::core::v1::OrganizationMember {
@@ -184,7 +144,7 @@ impl From<OrganizationMember> for pb::scufflecloud::core::v1::OrganizationMember
             organization_id: value.organization_id.to_string(),
             user_id: value.user_id.to_string(),
             invited_by_id: value.invited_by_id.map(|id| id.to_string()),
-            created_at: Some(value.created_at.to_prost_timestamp_utc()),
+            created_at: Some(SystemTime::from(value.created_at).into()),
         }
     }
 }
@@ -202,9 +162,9 @@ pub struct OrganizationMemberPolicy {
     pub policy_id: PolicyId,
 }
 
-pub(crate) type ServiceAccountId = Id<ServiceAccount>;
+pub type ServiceAccountId = Id<ServiceAccount>;
 
-#[derive(Queryable, Selectable, Insertable, Identifiable, AsChangeset, Associations, Debug, serde::Serialize)]
+#[derive(Queryable, Selectable, Insertable, Identifiable, AsChangeset, Associations, Debug, serde_derive::Serialize)]
 #[diesel(table_name = crate::schema::service_accounts)]
 #[diesel(belongs_to(Organization))]
 #[diesel(belongs_to(Project))]
@@ -213,7 +173,9 @@ pub struct ServiceAccount {
     pub id: ServiceAccountId,
     pub name: String,
     pub organization_id: OrganizationId,
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub project_id: Option<ProjectId>,
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub inline_policy: Option<String>,
 }
 
@@ -221,26 +183,9 @@ impl PrefixedId for ServiceAccount {
     const PREFIX: &'static str = "sa";
 }
 
-impl<G> CedarEntity<G> for ServiceAccount {
-    const ENTITY_TYPE: &'static str = "ServiceAccount";
+pub type ServiceAccountTokenId = Id<ServiceAccountToken>;
 
-    fn entity_id(&self) -> cedar_policy::EntityId {
-        cedar_policy::EntityId::new(self.id.to_string_unprefixed())
-    }
-
-    async fn parents(&self, _global: &Arc<G>) -> Result<HashSet<cedar_policy::EntityUid>, tonic::Status> {
-        let mut parents = HashSet::new();
-        parents.insert(CedarEntity::<G>::entity_uid(&self.organization_id));
-        if let Some(project_id) = &self.project_id {
-            parents.insert(CedarEntity::<G>::entity_uid(project_id));
-        }
-        Ok(parents)
-    }
-}
-
-pub(crate) type ServiceAccountTokenId = Id<ServiceAccountToken>;
-
-#[derive(Queryable, Selectable, Insertable, Identifiable, AsChangeset, Associations, Debug, serde::Serialize)]
+#[derive(Queryable, Selectable, Insertable, Identifiable, AsChangeset, Associations, Debug, serde_derive::Serialize)]
 #[diesel(table_name = crate::schema::service_account_tokens)]
 #[diesel(belongs_to(ServiceAccount))]
 #[diesel(check_for_backend(diesel::pg::Pg))]
@@ -249,7 +194,9 @@ pub struct ServiceAccountToken {
     pub active: bool,
     pub service_account_id: ServiceAccountId,
     pub token: Vec<u8>,
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub inline_policy: Option<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub expires_at: Option<chrono::DateTime<chrono::Utc>>,
 }
 
@@ -257,52 +204,26 @@ impl PrefixedId for ServiceAccountToken {
     const PREFIX: &'static str = "sat";
 }
 
-impl<G> CedarEntity<G> for ServiceAccountToken {
-    const ENTITY_TYPE: &'static str = "ServiceAccountToken";
+pub type OrganizationInvitationId = Id<OrganizationInvitation>;
 
-    fn entity_id(&self) -> cedar_policy::EntityId {
-        cedar_policy::EntityId::new(self.id.to_string_unprefixed())
-    }
-}
-
-pub(crate) type OrganizationInvitationId = Id<OrganizationInvitation>;
-
-#[derive(Queryable, Selectable, Insertable, Identifiable, AsChangeset, Associations, Debug, serde::Serialize)]
+#[derive(Queryable, Selectable, Insertable, Identifiable, AsChangeset, Associations, Debug, serde_derive::Serialize)]
 #[diesel(table_name = crate::schema::organization_invitations)]
 #[diesel(belongs_to(Organization))]
 #[diesel(belongs_to(User))]
 #[diesel(check_for_backend(diesel::pg::Pg))]
 pub struct OrganizationInvitation {
     pub id: OrganizationInvitationId,
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub user_id: Option<UserId>,
     pub organization_id: OrganizationId,
     pub email: String,
     pub invited_by_id: UserId,
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub expires_at: Option<chrono::DateTime<chrono::Utc>>,
 }
 
 impl PrefixedId for OrganizationInvitation {
     const PREFIX: &'static str = "oi";
-}
-
-impl<G: CoreConfig> CedarEntity<G> for OrganizationInvitation {
-    const ENTITY_TYPE: &'static str = "OrganizationInvitation";
-
-    fn entity_id(&self) -> cedar_policy::EntityId {
-        cedar_policy::EntityId::new(self.id.to_string_unprefixed())
-    }
-
-    async fn additional_attributes(
-        &self,
-        global: &Arc<G>,
-    ) -> Result<serde_json::value::Map<String, serde_json::Value>, tonic::Status> {
-        let organization = common::get_organization_by_id(global, self.organization_id).await?;
-        let organization_attr = organization.attributes(global).await?;
-
-        Ok([("organization".to_string(), serde_json::Value::Object(organization_attr))]
-            .into_iter()
-            .collect())
-    }
 }
 
 impl From<OrganizationInvitation> for pb::scufflecloud::core::v1::OrganizationInvitation {
@@ -313,8 +234,8 @@ impl From<OrganizationInvitation> for pb::scufflecloud::core::v1::OrganizationIn
             organization_id: value.organization_id.to_string(),
             email: value.email,
             invited_by_id: value.invited_by_id.to_string(),
-            expires_at: value.expires_at.map(|dt| dt.to_prost_timestamp_utc()),
-            created_at: Some(tinc::well_known::prost::Timestamp::from(value.id.datetime())),
+            expires_at: value.expires_at.map(|dt| SystemTime::from(dt).into()),
+            created_at: Some(value.id.datetime().into()),
         }
     }
 }

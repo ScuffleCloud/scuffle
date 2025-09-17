@@ -1,30 +1,29 @@
+use core_db_types::models::{Organization, OrganizationId, OrganizationMember, Project, ProjectId, User, UserId};
+use core_db_types::schema::{organization_members, organizations, projects};
+use core_traits::ResultExt;
 use diesel::{ExpressionMethods, QueryDsl, SelectableHelper};
 use diesel_async::RunQueryDsl;
 
 use crate::cedar::Action;
+use crate::common;
 use crate::http_ext::RequestExt;
-use crate::models::{Organization, OrganizationId, OrganizationMember, Project, ProjectId, User, UserId};
-use crate::operations::{NoopOperationDriver, Operation, TransactionOperationDriver};
-use crate::schema::{organization_members, organizations, projects};
-use crate::std_ext::ResultExt;
-use crate::{CoreConfig, common};
+use crate::operations::{Operation, OperationDriver};
 
-impl<G: CoreConfig> Operation<G> for tonic::Request<pb::scufflecloud::core::v1::CreateOrganizationRequest> {
-    type Driver = NoopOperationDriver;
+impl<G: core_traits::Global> Operation<G> for tonic::Request<pb::scufflecloud::core::v1::CreateOrganizationRequest> {
     type Principal = User;
     type Resource = Organization;
     type Response = pb::scufflecloud::core::v1::Organization;
 
     const ACTION: Action = Action::CreateOrganization;
 
-    async fn load_principal(&mut self, _driver: &mut Self::Driver) -> Result<Self::Principal, tonic::Status> {
+    async fn load_principal(&mut self, _driver: &mut OperationDriver<'_, G>) -> Result<Self::Principal, tonic::Status> {
         let global = &self.global::<G>()?;
         let session = self.session_or_err()?;
 
         common::get_user_by_id(global, session.user_id).await
     }
 
-    async fn load_resource(&mut self, _driver: &mut Self::Driver) -> Result<Self::Resource, tonic::Status> {
+    async fn load_resource(&mut self, _driver: &mut OperationDriver<'_, G>) -> Result<Self::Resource, tonic::Status> {
         let session = self.session_or_err()?;
 
         Ok(Organization {
@@ -38,7 +37,7 @@ impl<G: CoreConfig> Operation<G> for tonic::Request<pb::scufflecloud::core::v1::
 
     async fn execute(
         self,
-        _driver: &mut Self::Driver,
+        _driver: &mut OperationDriver<'_, G>,
         _principal: Self::Principal,
         resource: Self::Resource,
     ) -> Result<Self::Response, tonic::Status> {
@@ -55,21 +54,20 @@ impl<G: CoreConfig> Operation<G> for tonic::Request<pb::scufflecloud::core::v1::
     }
 }
 
-impl<G: CoreConfig> Operation<G> for tonic::Request<pb::scufflecloud::core::v1::GetOrganizationRequest> {
-    type Driver = NoopOperationDriver;
+impl<G: core_traits::Global> Operation<G> for tonic::Request<pb::scufflecloud::core::v1::GetOrganizationRequest> {
     type Principal = User;
     type Resource = Organization;
     type Response = pb::scufflecloud::core::v1::Organization;
 
     const ACTION: Action = Action::GetOrganization;
 
-    async fn load_principal(&mut self, _driver: &mut Self::Driver) -> Result<Self::Principal, tonic::Status> {
+    async fn load_principal(&mut self, _driver: &mut OperationDriver<'_, G>) -> Result<Self::Principal, tonic::Status> {
         let global = &self.global::<G>()?;
         let session = self.session_or_err()?;
         common::get_user_by_id(global, session.user_id).await
     }
 
-    async fn load_resource(&mut self, _driver: &mut Self::Driver) -> Result<Self::Resource, tonic::Status> {
+    async fn load_resource(&mut self, _driver: &mut OperationDriver<'_, G>) -> Result<Self::Resource, tonic::Status> {
         let global = &self.global::<G>()?;
         let id: OrganizationId = self
             .get_ref()
@@ -81,7 +79,7 @@ impl<G: CoreConfig> Operation<G> for tonic::Request<pb::scufflecloud::core::v1::
 
     async fn execute(
         self,
-        _driver: &mut Self::Driver,
+        _driver: &mut OperationDriver<'_, G>,
         _principal: Self::Principal,
         resource: Self::Resource,
     ) -> Result<Self::Response, tonic::Status> {
@@ -89,32 +87,34 @@ impl<G: CoreConfig> Operation<G> for tonic::Request<pb::scufflecloud::core::v1::
     }
 }
 
-impl<G: CoreConfig> Operation<G> for tonic::Request<pb::scufflecloud::core::v1::UpdateOrganizationRequest> {
-    type Driver = TransactionOperationDriver;
+impl<G: core_traits::Global> Operation<G> for tonic::Request<pb::scufflecloud::core::v1::UpdateOrganizationRequest> {
     type Principal = User;
     type Resource = Organization;
     type Response = pb::scufflecloud::core::v1::Organization;
 
     const ACTION: Action = Action::UpdateOrganization;
 
-    async fn load_principal(&mut self, _driver: &mut Self::Driver) -> Result<Self::Principal, tonic::Status> {
+    async fn load_principal(&mut self, _driver: &mut OperationDriver<'_, G>) -> Result<Self::Principal, tonic::Status> {
         let global = &self.global::<G>()?;
         let session = self.session_or_err()?;
         common::get_user_by_id(global, session.user_id).await
     }
 
-    async fn load_resource(&mut self, driver: &mut Self::Driver) -> Result<Self::Resource, tonic::Status> {
+    async fn load_resource(&mut self, driver: &mut OperationDriver<'_, G>) -> Result<Self::Resource, tonic::Status> {
         let id: OrganizationId = self
             .get_ref()
             .id
             .parse()
             .into_tonic_err_with_field_violation("id", "invalid ID")?;
-        common::get_organization_by_id_in_tx(&mut driver.conn, id).await
+
+        let conn = driver.conn().await?;
+
+        common::get_organization_by_id_in_tx(conn, id).await
     }
 
     async fn execute(
         self,
-        driver: &mut Self::Driver,
+        driver: &mut OperationDriver<'_, G>,
         _principal: Self::Principal,
         mut resource: Self::Resource,
     ) -> Result<Self::Response, tonic::Status> {
@@ -130,12 +130,14 @@ impl<G: CoreConfig> Operation<G> for tonic::Request<pb::scufflecloud::core::v1::
             })
             .transpose()?;
 
+        let conn = driver.conn().await?;
+
         if let Some(owner_update_id) = owner_update_id {
             resource = diesel::update(organizations::dsl::organizations)
                 .filter(organizations::dsl::id.eq(resource.id))
                 .set(organizations::dsl::owner_id.eq(&owner_update_id))
                 .returning(Organization::as_returning())
-                .get_result::<Organization>(&mut driver.conn)
+                .get_result::<Organization>(conn)
                 .await
                 .into_tonic_internal_err("failed to update organization owner")?;
         }
@@ -145,7 +147,7 @@ impl<G: CoreConfig> Operation<G> for tonic::Request<pb::scufflecloud::core::v1::
                 .filter(organizations::dsl::id.eq(resource.id))
                 .set(organizations::dsl::name.eq(&name.name))
                 .returning(Organization::as_returning())
-                .get_result::<Organization>(&mut driver.conn)
+                .get_result::<Organization>(conn)
                 .await
                 .into_tonic_internal_err("failed to update organization name")?;
         }
@@ -154,21 +156,20 @@ impl<G: CoreConfig> Operation<G> for tonic::Request<pb::scufflecloud::core::v1::
     }
 }
 
-impl<G: CoreConfig> Operation<G> for tonic::Request<pb::scufflecloud::core::v1::ListOrganizationMembersRequest> {
-    type Driver = NoopOperationDriver;
+impl<G: core_traits::Global> Operation<G> for tonic::Request<pb::scufflecloud::core::v1::ListOrganizationMembersRequest> {
     type Principal = User;
     type Resource = Organization;
     type Response = pb::scufflecloud::core::v1::OrganizationMembersList;
 
     const ACTION: Action = Action::ListOrganizationMembers;
 
-    async fn load_principal(&mut self, _driver: &mut Self::Driver) -> Result<Self::Principal, tonic::Status> {
+    async fn load_principal(&mut self, _driver: &mut OperationDriver<'_, G>) -> Result<Self::Principal, tonic::Status> {
         let global = &self.global::<G>()?;
         let session = self.session_or_err()?;
         common::get_user_by_id(global, session.user_id).await
     }
 
-    async fn load_resource(&mut self, _driver: &mut Self::Driver) -> Result<Self::Resource, tonic::Status> {
+    async fn load_resource(&mut self, _driver: &mut OperationDriver<'_, G>) -> Result<Self::Resource, tonic::Status> {
         let global = &self.global::<G>()?;
         let id: OrganizationId = self
             .get_ref()
@@ -180,7 +181,7 @@ impl<G: CoreConfig> Operation<G> for tonic::Request<pb::scufflecloud::core::v1::
 
     async fn execute(
         self,
-        _driver: &mut Self::Driver,
+        _driver: &mut OperationDriver<'_, G>,
         _principal: Self::Principal,
         resource: Self::Resource,
     ) -> Result<Self::Response, tonic::Status> {
@@ -199,21 +200,20 @@ impl<G: CoreConfig> Operation<G> for tonic::Request<pb::scufflecloud::core::v1::
     }
 }
 
-impl<G: CoreConfig> Operation<G> for tonic::Request<pb::scufflecloud::core::v1::ListOrganizationsByUserRequest> {
-    type Driver = NoopOperationDriver;
+impl<G: core_traits::Global> Operation<G> for tonic::Request<pb::scufflecloud::core::v1::ListOrganizationsByUserRequest> {
     type Principal = User;
     type Resource = User;
     type Response = pb::scufflecloud::core::v1::OrganizationsList;
 
     const ACTION: Action = Action::ListOrganizationsByUser;
 
-    async fn load_principal(&mut self, _driver: &mut Self::Driver) -> Result<Self::Principal, tonic::Status> {
+    async fn load_principal(&mut self, _driver: &mut OperationDriver<'_, G>) -> Result<Self::Principal, tonic::Status> {
         let global = &self.global::<G>()?;
         let session = self.session_or_err()?;
         common::get_user_by_id(global, session.user_id).await
     }
 
-    async fn load_resource(&mut self, _driver: &mut Self::Driver) -> Result<Self::Resource, tonic::Status> {
+    async fn load_resource(&mut self, _driver: &mut OperationDriver<'_, G>) -> Result<Self::Resource, tonic::Status> {
         let global = &self.global::<G>()?;
         let id: UserId = self
             .get_ref()
@@ -225,7 +225,7 @@ impl<G: CoreConfig> Operation<G> for tonic::Request<pb::scufflecloud::core::v1::
 
     async fn execute(
         self,
-        _driver: &mut Self::Driver,
+        _driver: &mut OperationDriver<'_, G>,
         _principal: Self::Principal,
         resource: Self::Resource,
     ) -> Result<Self::Response, tonic::Status> {
@@ -246,21 +246,20 @@ impl<G: CoreConfig> Operation<G> for tonic::Request<pb::scufflecloud::core::v1::
     }
 }
 
-impl<G: CoreConfig> Operation<G> for tonic::Request<pb::scufflecloud::core::v1::CreateProjectRequest> {
-    type Driver = TransactionOperationDriver;
+impl<G: core_traits::Global> Operation<G> for tonic::Request<pb::scufflecloud::core::v1::CreateProjectRequest> {
     type Principal = User;
     type Resource = Project;
     type Response = pb::scufflecloud::core::v1::Project;
 
     const ACTION: Action = Action::CreateProject;
 
-    async fn load_principal(&mut self, _driver: &mut Self::Driver) -> Result<Self::Principal, tonic::Status> {
+    async fn load_principal(&mut self, _driver: &mut OperationDriver<'_, G>) -> Result<Self::Principal, tonic::Status> {
         let global = &self.global::<G>()?;
         let session = self.session_or_err()?;
         common::get_user_by_id(global, session.user_id).await
     }
 
-    async fn load_resource(&mut self, _driver: &mut Self::Driver) -> Result<Self::Resource, tonic::Status> {
+    async fn load_resource(&mut self, _driver: &mut OperationDriver<'_, G>) -> Result<Self::Resource, tonic::Status> {
         let organization_id: OrganizationId = self
             .get_ref()
             .id
@@ -276,13 +275,15 @@ impl<G: CoreConfig> Operation<G> for tonic::Request<pb::scufflecloud::core::v1::
 
     async fn execute(
         self,
-        driver: &mut Self::Driver,
+        driver: &mut OperationDriver<'_, G>,
         _principal: Self::Principal,
         resource: Self::Resource,
     ) -> Result<Self::Response, tonic::Status> {
+        let conn = driver.conn().await?;
+
         diesel::insert_into(projects::dsl::projects)
             .values(&resource)
-            .execute(&mut driver.conn)
+            .execute(conn)
             .await
             .into_tonic_internal_err("failed to create project")?;
 
@@ -290,21 +291,20 @@ impl<G: CoreConfig> Operation<G> for tonic::Request<pb::scufflecloud::core::v1::
     }
 }
 
-impl<G: CoreConfig> Operation<G> for tonic::Request<pb::scufflecloud::core::v1::ListProjectsRequest> {
-    type Driver = TransactionOperationDriver;
+impl<G: core_traits::Global> Operation<G> for tonic::Request<pb::scufflecloud::core::v1::ListProjectsRequest> {
     type Principal = User;
     type Resource = Organization;
     type Response = pb::scufflecloud::core::v1::ProjectsList;
 
     const ACTION: Action = Action::ListProjects;
 
-    async fn load_principal(&mut self, _driver: &mut Self::Driver) -> Result<Self::Principal, tonic::Status> {
+    async fn load_principal(&mut self, _driver: &mut OperationDriver<'_, G>) -> Result<Self::Principal, tonic::Status> {
         let global = &self.global::<G>()?;
         let session = self.session_or_err()?;
         common::get_user_by_id(global, session.user_id).await
     }
 
-    async fn load_resource(&mut self, _driver: &mut Self::Driver) -> Result<Self::Resource, tonic::Status> {
+    async fn load_resource(&mut self, _driver: &mut OperationDriver<'_, G>) -> Result<Self::Resource, tonic::Status> {
         let global = &self.global::<G>()?;
         let id: OrganizationId = self
             .get_ref()
@@ -316,13 +316,15 @@ impl<G: CoreConfig> Operation<G> for tonic::Request<pb::scufflecloud::core::v1::
 
     async fn execute(
         self,
-        driver: &mut Self::Driver,
+        driver: &mut OperationDriver<'_, G>,
         _principal: Self::Principal,
         resource: Self::Resource,
     ) -> Result<Self::Response, tonic::Status> {
+        let conn = driver.conn().await?;
+
         let projects = projects::dsl::projects
             .filter(projects::dsl::organization_id.eq(resource.id))
-            .load::<Project>(&mut driver.conn)
+            .load::<Project>(conn)
             .await
             .into_tonic_internal_err("failed to load projects")?;
 

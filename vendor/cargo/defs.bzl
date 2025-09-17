@@ -458,7 +458,6 @@ _NORMAL_DEPENDENCIES = {
                 "hmac": Label("@cargo_vendor//:hmac-0.12.1"),
                 "ipnetwork": Label("@cargo_vendor//:ipnetwork-0.21.1"),
                 "itertools": Label("@cargo_vendor//:itertools-0.14.0"),
-                "maxminddb": Label("@cargo_vendor//:maxminddb-0.26.0"),
                 "pkcs8": Label("@cargo_vendor//:pkcs8-0.10.2"),
                 "prost": Label("@cargo_vendor//:prost-0.14.1"),
                 "rand": Label("@cargo_vendor//:rand-0.8.5"),
@@ -488,6 +487,49 @@ _NORMAL_DEPENDENCIES = {
             },
         },
     },
+    "cloud/core/cedar": {
+        _REQUIRED_FEATURE: {
+            _COMMON_CONDITION: {
+                "base64": Label("@cargo_vendor//:base64-0.22.1"),
+                "cedar-policy": Label("@cargo_vendor//:cedar-policy-4.5.1"),
+                "const_panic": Label("@cargo_vendor//:const_panic-0.2.15"),
+                "konst": Label("@cargo_vendor//:konst-0.4.2"),
+                "serde": Label("@cargo_vendor//:serde-1.0.220"),
+                "serde_json": Label("@cargo_vendor//:serde_json-1.0.144"),
+                "tonic": Label("@cargo_vendor//:tonic-0.14.2"),
+            },
+        },
+    },
+    "cloud/core/db-types": {
+        _REQUIRED_FEATURE: {
+            _COMMON_CONDITION: {
+                "chrono": Label("@cargo_vendor//:chrono-0.4.42"),
+                "diesel": Label("@cargo_vendor//:diesel-2.2.12"),
+                "ipnetwork": Label("@cargo_vendor//:ipnetwork-0.21.1"),
+                "serde": Label("@cargo_vendor//:serde-1.0.220"),
+                "serde_json": Label("@cargo_vendor//:serde_json-1.0.144"),
+                "thiserror": Label("@cargo_vendor//:thiserror-2.0.16"),
+                "ulid": Label("@cargo_vendor//:ulid-1.2.1"),
+                "uuid": Label("@cargo_vendor//:uuid-1.18.1"),
+            },
+        },
+    },
+    "cloud/core/traits": {
+        _REQUIRED_FEATURE: {
+            _COMMON_CONDITION: {
+                "anyhow": Label("@cargo_vendor//:anyhow-1.0.99"),
+                "diesel": Label("@cargo_vendor//:diesel-2.2.12"),
+                "diesel-async": Label("@cargo_vendor//:diesel-async-0.6.1"),
+                "fred": Label("@cargo_vendor//:fred-10.1.0"),
+                "reqwest": Label("@cargo_vendor//:reqwest-0.12.23"),
+                "tonic": Label("@cargo_vendor//:tonic-0.14.2"),
+                "tonic-types": Label("@cargo_vendor//:tonic-types-0.14.2"),
+                "tracing": Label("@cargo_vendor//:tracing-0.1.41"),
+                "url": Label("@cargo_vendor//:url-2.5.7"),
+                "webauthn-rs": Label("@cargo_vendor//:webauthn-rs-0.5.2"),
+            },
+        },
+    },
     "cloud/email": {
         _REQUIRED_FEATURE: {
             _COMMON_CONDITION: {
@@ -502,6 +544,21 @@ _NORMAL_DEPENDENCIES = {
                 "tower-http": Label("@cargo_vendor//:tower-http-0.6.6"),
                 "tracing": Label("@cargo_vendor//:tracing-0.1.41"),
                 "tracing-subscriber": Label("@cargo_vendor//:tracing-subscriber-0.3.20"),
+            },
+        },
+    },
+    "cloud/geo-ip": {
+        _REQUIRED_FEATURE: {
+            _COMMON_CONDITION: {
+                "axum": Label("@cargo_vendor//:axum-0.8.4"),
+                "futures": Label("@cargo_vendor//:futures-0.3.31"),
+                "ipnetwork": Label("@cargo_vendor//:ipnetwork-0.21.1"),
+                "maxminddb": Label("@cargo_vendor//:maxminddb-0.26.0"),
+                "serde": Label("@cargo_vendor//:serde-1.0.220"),
+                "thiserror": Label("@cargo_vendor//:thiserror-2.0.16"),
+                "tower-layer": Label("@cargo_vendor//:tower-layer-0.3.3"),
+                "tower-service": Label("@cargo_vendor//:tower-service-0.3.3"),
+                "tracing": Label("@cargo_vendor//:tracing-0.1.41"),
             },
         },
     },
@@ -1242,7 +1299,31 @@ _NORMAL_ALIASES = {
             },
         },
     },
+    "cloud/core/cedar": {
+        _REQUIRED_FEATURE: {
+            _COMMON_CONDITION: {
+            },
+        },
+    },
+    "cloud/core/db-types": {
+        _REQUIRED_FEATURE: {
+            _COMMON_CONDITION: {
+            },
+        },
+    },
+    "cloud/core/traits": {
+        _REQUIRED_FEATURE: {
+            _COMMON_CONDITION: {
+            },
+        },
+    },
     "cloud/email": {
+        _REQUIRED_FEATURE: {
+            _COMMON_CONDITION: {
+            },
+        },
+    },
+    "cloud/geo-ip": {
         _REQUIRED_FEATURE: {
             _COMMON_CONDITION: {
             },
@@ -1669,7 +1750,15 @@ _NORMAL_ALIASES = {
 _NORMAL_DEV_DEPENDENCIES = {
     "cloud/core": {
     },
+    "cloud/core/cedar": {
+    },
+    "cloud/core/db-types": {
+    },
+    "cloud/core/traits": {
+    },
     "cloud/email": {
+    },
+    "cloud/geo-ip": {
     },
     "cloud/proto": {
     },
@@ -1939,7 +2028,15 @@ _NORMAL_DEV_DEPENDENCIES = {
 _NORMAL_DEV_ALIASES = {
     "cloud/core": {
     },
+    "cloud/core/cedar": {
+    },
+    "cloud/core/db-types": {
+    },
+    "cloud/core/traits": {
+    },
     "cloud/email": {
+    },
+    "cloud/geo-ip": {
     },
     "cloud/proto": {
     },
@@ -2152,6 +2249,22 @@ _PROC_MACRO_DEPENDENCIES = {
             },
         },
     },
+    "cloud/core/cedar": {
+        _REQUIRED_FEATURE: {
+            _COMMON_CONDITION: {
+                "serde_derive": Label("@cargo_vendor//:serde_derive-1.0.220"),
+            },
+        },
+    },
+    "cloud/core/db-types": {
+        _REQUIRED_FEATURE: {
+            _COMMON_CONDITION: {
+                "serde_derive": Label("@cargo_vendor//:serde_derive-1.0.220"),
+            },
+        },
+    },
+    "cloud/core/traits": {
+    },
     "cloud/email": {
         _REQUIRED_FEATURE: {
             _COMMON_CONDITION: {
@@ -2160,6 +2273,8 @@ _PROC_MACRO_DEPENDENCIES = {
                 "smart-default": Label("@cargo_vendor//:smart-default-0.7.1"),
             },
         },
+    },
+    "cloud/geo-ip": {
     },
     "cloud/proto": {
     },
@@ -2520,7 +2635,15 @@ _PROC_MACRO_DEPENDENCIES = {
 _PROC_MACRO_ALIASES = {
     "cloud/core": {
     },
+    "cloud/core/cedar": {
+    },
+    "cloud/core/db-types": {
+    },
+    "cloud/core/traits": {
+    },
     "cloud/email": {
+    },
+    "cloud/geo-ip": {
     },
     "cloud/proto": {
     },
@@ -2643,7 +2766,15 @@ _PROC_MACRO_ALIASES = {
 _PROC_MACRO_DEV_DEPENDENCIES = {
     "cloud/core": {
     },
+    "cloud/core/cedar": {
+    },
+    "cloud/core/db-types": {
+    },
+    "cloud/core/traits": {
+    },
     "cloud/email": {
+    },
+    "cloud/geo-ip": {
     },
     "cloud/proto": {
     },
@@ -2771,7 +2902,15 @@ _PROC_MACRO_DEV_DEPENDENCIES = {
 _PROC_MACRO_DEV_ALIASES = {
     "cloud/core": {
     },
+    "cloud/core/cedar": {
+    },
+    "cloud/core/db-types": {
+    },
+    "cloud/core/traits": {
+    },
     "cloud/email": {
+    },
+    "cloud/geo-ip": {
     },
     "cloud/proto": {
     },
@@ -2976,7 +3115,15 @@ _PROC_MACRO_DEV_ALIASES = {
 _BUILD_DEPENDENCIES = {
     "cloud/core": {
     },
+    "cloud/core/cedar": {
+    },
+    "cloud/core/db-types": {
+    },
+    "cloud/core/traits": {
+    },
     "cloud/email": {
+    },
+    "cloud/geo-ip": {
     },
     "cloud/proto": {
         _REQUIRED_FEATURE: {
@@ -3104,7 +3251,15 @@ _BUILD_DEPENDENCIES = {
 _BUILD_ALIASES = {
     "cloud/core": {
     },
+    "cloud/core/cedar": {
+    },
+    "cloud/core/db-types": {
+    },
+    "cloud/core/traits": {
+    },
     "cloud/email": {
+    },
+    "cloud/geo-ip": {
     },
     "cloud/proto": {
         _REQUIRED_FEATURE: {
@@ -3227,7 +3382,15 @@ _BUILD_ALIASES = {
 _BUILD_PROC_MACRO_DEPENDENCIES = {
     "cloud/core": {
     },
+    "cloud/core/cedar": {
+    },
+    "cloud/core/db-types": {
+    },
+    "cloud/core/traits": {
+    },
     "cloud/email": {
+    },
+    "cloud/geo-ip": {
     },
     "cloud/proto": {
     },
@@ -3338,7 +3501,15 @@ _BUILD_PROC_MACRO_DEPENDENCIES = {
 _BUILD_PROC_MACRO_ALIASES = {
     "cloud/core": {
     },
+    "cloud/core/cedar": {
+    },
+    "cloud/core/db-types": {
+    },
+    "cloud/core/traits": {
+    },
     "cloud/email": {
+    },
+    "cloud/geo-ip": {
     },
     "cloud/proto": {
     },
@@ -3449,7 +3620,15 @@ _BUILD_PROC_MACRO_ALIASES = {
 _FEATURE_FLAGS = {
     "cloud/core": {
     },
+    "cloud/core/cedar": {
+    },
+    "cloud/core/db-types": {
+    },
+    "cloud/core/traits": {
+    },
     "cloud/email": {
+    },
+    "cloud/geo-ip": {
     },
     "cloud/proto": {
     },
@@ -3787,7 +3966,15 @@ _FEATURE_FLAGS = {
 _RESOLVED_FEATURE_FLAGS = {
     "cloud/core": {
     },
+    "cloud/core/cedar": {
+    },
+    "cloud/core/db-types": {
+    },
+    "cloud/core/traits": {
+    },
     "cloud/email": {
+    },
+    "cloud/geo-ip": {
     },
     "cloud/proto": {
     },
@@ -3949,7 +4136,11 @@ _RESOLVED_FEATURE_FLAGS = {
 
 _VERSIONS = {
     "cloud/core": "0.1.0",
+    "cloud/core/cedar": "0.1.0",
+    "cloud/core/db-types": "0.1.0",
+    "cloud/core/traits": "0.1.0",
     "cloud/email": "0.1.0",
+    "cloud/geo-ip": "0.1.0",
     "cloud/proto": "0.1.0",
     "crates/aac": "0.1.4",
     "crates/amf0": "0.2.4",
@@ -5000,6 +5191,16 @@ def crate_repositories():
         urls = ["https://static.crates.io/crates/const-random-macro/0.1.16/download"],
         strip_prefix = "const-random-macro-0.1.16",
         build_file = Label("//vendor/cargo:BUILD.const-random-macro-0.1.16.bazel"),
+    )
+
+    maybe(
+        http_archive,
+        name = "cargo_vendor__const_panic-0.2.15",
+        sha256 = "e262cdaac42494e3ae34c43969f9cdeb7da178bdb4b66fa6a1ea2edb4c8ae652",
+        type = "tar.gz",
+        urls = ["https://static.crates.io/crates/const_panic/0.2.15/download"],
+        strip_prefix = "const_panic-0.2.15",
+        build_file = Label("//vendor/cargo:BUILD.const_panic-0.2.15.bazel"),
     )
 
     maybe(
@@ -6660,6 +6861,26 @@ def crate_repositories():
         urls = ["https://static.crates.io/crates/keccak/0.1.5/download"],
         strip_prefix = "keccak-0.1.5",
         build_file = Label("//vendor/cargo:BUILD.keccak-0.1.5.bazel"),
+    )
+
+    maybe(
+        http_archive,
+        name = "cargo_vendor__konst-0.4.2",
+        sha256 = "64896bdfd7906cfb0b57bc04f08bde408bcd6aaf71ff438ee471061cd16f2e86",
+        type = "tar.gz",
+        urls = ["https://static.crates.io/crates/konst/0.4.2/download"],
+        strip_prefix = "konst-0.4.2",
+        build_file = Label("//vendor/cargo:BUILD.konst-0.4.2.bazel"),
+    )
+
+    maybe(
+        http_archive,
+        name = "cargo_vendor__konst_proc_macros-0.4.0",
+        sha256 = "1bf92d396aa2df203577ebef8deaf1efc24d446366ca86be83ec8ac794b157d6",
+        type = "tar.gz",
+        urls = ["https://static.crates.io/crates/konst_proc_macros/0.4.0/download"],
+        strip_prefix = "konst_proc_macros-0.4.0",
+        build_file = Label("//vendor/cargo:BUILD.konst_proc_macros-0.4.0.bazel"),
     )
 
     maybe(
@@ -9813,6 +10034,16 @@ def crate_repositories():
 
     maybe(
         http_archive,
+        name = "cargo_vendor__typewit-1.14.2",
+        sha256 = "f8c1ae7cc0fdb8b842d65d127cb981574b0d2b249b74d1c7a2986863dc134f71",
+        type = "tar.gz",
+        urls = ["https://static.crates.io/crates/typewit/1.14.2/download"],
+        strip_prefix = "typewit-1.14.2",
+        build_file = Label("//vendor/cargo:BUILD.typewit-1.14.2.bazel"),
+    )
+
+    maybe(
+        http_archive,
         name = "cargo_vendor__ucd-trie-0.1.7",
         sha256 = "2896d95c02a80c6d6a5d6e953d479f5ddf2dfdb6a244441010e373ac0fb88971",
         type = "tar.gz",
@@ -10686,6 +10917,7 @@ def crate_repositories():
         struct(repo = "cargo_vendor__clap-4.5.47", is_dev_dep = False),
         struct(repo = "cargo_vendor__config-0.15.15", is_dev_dep = False),
         struct(repo = "cargo_vendor__console-0.16.1", is_dev_dep = False),
+        struct(repo = "cargo_vendor__const_panic-0.2.15", is_dev_dep = False),
         struct(repo = "cargo_vendor__convert_case-0.8.0", is_dev_dep = False),
         struct(repo = "cargo_vendor__copy_dir-0.1.3", is_dev_dep = False),
         struct(repo = "cargo_vendor__crossbeam-channel-0.5.15", is_dev_dep = False),
@@ -10722,6 +10954,7 @@ def crate_repositories():
         struct(repo = "cargo_vendor__ipnetwork-0.21.1", is_dev_dep = False),
         struct(repo = "cargo_vendor__is_empty-0.3.0", is_dev_dep = False),
         struct(repo = "cargo_vendor__itertools-0.14.0", is_dev_dep = False),
+        struct(repo = "cargo_vendor__konst-0.4.2", is_dev_dep = False),
         struct(repo = "cargo_vendor__libc-0.2.175", is_dev_dep = False),
         struct(repo = "cargo_vendor__linear-map-1.2.0", is_dev_dep = False),
         struct(repo = "cargo_vendor__linkme-0.3.33", is_dev_dep = False),
@@ -10799,6 +11032,8 @@ def crate_repositories():
         struct(repo = "cargo_vendor__totp-rs-5.7.0", is_dev_dep = False),
         struct(repo = "cargo_vendor__tower-0.5.2", is_dev_dep = False),
         struct(repo = "cargo_vendor__tower-http-0.6.6", is_dev_dep = False),
+        struct(repo = "cargo_vendor__tower-layer-0.3.3", is_dev_dep = False),
+        struct(repo = "cargo_vendor__tower-service-0.3.3", is_dev_dep = False),
         struct(repo = "cargo_vendor__tracing-0.1.41", is_dev_dep = False),
         struct(repo = "cargo_vendor__tracing-opentelemetry-0.31.0", is_dev_dep = False),
         struct(repo = "cargo_vendor__tracing-subscriber-0.3.20", is_dev_dep = False),

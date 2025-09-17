@@ -246,7 +246,7 @@
   "moduleExtensions": {
     "//vendor:cargo_ext.bzl%bindeps": {
       "general": {
-        "bzlTransitiveDigest": "r79hBfGAnMA0bDug+aFix79JEBEFF5nSVEoBvJNZr1Q=",
+        "bzlTransitiveDigest": "CmJMiSB5K2rWtpELR+YRvSVVhpbOXTpntz+AX8wFGvE=",
         "usagesDigest": "0vyNdgUB6Py8EFEYeVm1fABbu9FAMVvr905hmQzVjfU=",
         "recordedFileInputs": {},
         "recordedDirentsInputs": {},
@@ -10041,7 +10041,7 @@
     },
     "//vendor:cargo_ext.bzl%cargo_vendor": {
       "general": {
-        "bzlTransitiveDigest": "r79hBfGAnMA0bDug+aFix79JEBEFF5nSVEoBvJNZr1Q=",
+        "bzlTransitiveDigest": "CmJMiSB5K2rWtpELR+YRvSVVhpbOXTpntz+AX8wFGvE=",
         "usagesDigest": "mtR+K4/VVAmhgoN1cG7MXxv6mAD1vfxRZ8SSM66EtxE=",
         "recordedFileInputs": {},
         "recordedDirentsInputs": {},
@@ -11181,6 +11181,18 @@
               ],
               "strip_prefix": "const-random-macro-0.1.16",
               "build_file": "@@//vendor/cargo:BUILD.const-random-macro-0.1.16.bazel"
+            }
+          },
+          "cargo_vendor__const_panic-0.2.15": {
+            "repoRuleId": "@@bazel_tools//tools/build_defs/repo:http.bzl%http_archive",
+            "attributes": {
+              "sha256": "e262cdaac42494e3ae34c43969f9cdeb7da178bdb4b66fa6a1ea2edb4c8ae652",
+              "type": "tar.gz",
+              "urls": [
+                "https://static.crates.io/crates/const_panic/0.2.15/download"
+              ],
+              "strip_prefix": "const_panic-0.2.15",
+              "build_file": "@@//vendor/cargo:BUILD.const_panic-0.2.15.bazel"
             }
           },
           "cargo_vendor__constant_time_eq-0.3.1": {
@@ -13173,6 +13185,30 @@
               ],
               "strip_prefix": "keccak-0.1.5",
               "build_file": "@@//vendor/cargo:BUILD.keccak-0.1.5.bazel"
+            }
+          },
+          "cargo_vendor__konst-0.4.2": {
+            "repoRuleId": "@@bazel_tools//tools/build_defs/repo:http.bzl%http_archive",
+            "attributes": {
+              "sha256": "64896bdfd7906cfb0b57bc04f08bde408bcd6aaf71ff438ee471061cd16f2e86",
+              "type": "tar.gz",
+              "urls": [
+                "https://static.crates.io/crates/konst/0.4.2/download"
+              ],
+              "strip_prefix": "konst-0.4.2",
+              "build_file": "@@//vendor/cargo:BUILD.konst-0.4.2.bazel"
+            }
+          },
+          "cargo_vendor__konst_proc_macros-0.4.0": {
+            "repoRuleId": "@@bazel_tools//tools/build_defs/repo:http.bzl%http_archive",
+            "attributes": {
+              "sha256": "1bf92d396aa2df203577ebef8deaf1efc24d446366ca86be83ec8ac794b157d6",
+              "type": "tar.gz",
+              "urls": [
+                "https://static.crates.io/crates/konst_proc_macros/0.4.0/download"
+              ],
+              "strip_prefix": "konst_proc_macros-0.4.0",
+              "build_file": "@@//vendor/cargo:BUILD.konst_proc_macros-0.4.0.bazel"
             }
           },
           "cargo_vendor__lalrpop-0.22.2": {
@@ -16952,6 +16988,18 @@
               "build_file": "@@//vendor/cargo:BUILD.typenum-1.18.0.bazel"
             }
           },
+          "cargo_vendor__typewit-1.14.2": {
+            "repoRuleId": "@@bazel_tools//tools/build_defs/repo:http.bzl%http_archive",
+            "attributes": {
+              "sha256": "f8c1ae7cc0fdb8b842d65d127cb981574b0d2b249b74d1c7a2986863dc134f71",
+              "type": "tar.gz",
+              "urls": [
+                "https://static.crates.io/crates/typewit/1.14.2/download"
+              ],
+              "strip_prefix": "typewit-1.14.2",
+              "build_file": "@@//vendor/cargo:BUILD.typewit-1.14.2.bazel"
+            }
+          },
           "cargo_vendor__ucd-trie-0.1.7": {
             "repoRuleId": "@@bazel_tools//tools/build_defs/repo:http.bzl%http_archive",
             "attributes": {
@@ -18000,6 +18048,7 @@
             "cargo_vendor__clap-4.5.47",
             "cargo_vendor__config-0.15.15",
             "cargo_vendor__console-0.16.1",
+            "cargo_vendor__const_panic-0.2.15",
             "cargo_vendor__convert_case-0.8.0",
             "cargo_vendor__copy_dir-0.1.3",
             "cargo_vendor__crossbeam-channel-0.5.15",
@@ -18036,6 +18085,7 @@
             "cargo_vendor__ipnetwork-0.21.1",
             "cargo_vendor__is_empty-0.3.0",
             "cargo_vendor__itertools-0.14.0",
+            "cargo_vendor__konst-0.4.2",
             "cargo_vendor__libc-0.2.175",
             "cargo_vendor__linear-map-1.2.0",
             "cargo_vendor__linkme-0.3.33",
@@ -18113,6 +18163,8 @@
             "cargo_vendor__totp-rs-5.7.0",
             "cargo_vendor__tower-0.5.2",
             "cargo_vendor__tower-http-0.6.6",
+            "cargo_vendor__tower-layer-0.3.3",
+            "cargo_vendor__tower-service-0.3.3",
             "cargo_vendor__tracing-0.1.41",
             "cargo_vendor__tracing-opentelemetry-0.31.0",
             "cargo_vendor__tracing-subscriber-0.3.20",

@@ -1,10 +1,9 @@
 use std::sync::Arc;
 
+use core_traits::ResultExt;
+use geo_ip::maxminddb;
+use geo_ip::middleware::IpAddressInfo;
 use sailfish::{TemplateOnce, TemplateSimple};
-
-use crate::CoreConfig;
-use crate::middleware::IpAddressInfo;
-use crate::std_ext::ResultExt;
 
 #[derive(sailfish::TemplateSimple)]
 #[template(path = "emails/register_with_email/subject.stpl")]
@@ -22,7 +21,7 @@ struct RegisterWithEmailHtmlTemplate {
     pub url: String,
 }
 
-pub(crate) async fn register_with_email_email<G: CoreConfig>(
+pub(crate) async fn register_with_email_email<G: core_traits::Global>(
     global: &Arc<G>,
     to_address: String,
     code: String,
@@ -62,7 +61,7 @@ struct AddNewEmailHtmlTemplate {
     pub url: String,
 }
 
-pub(crate) async fn add_new_email_email<G: CoreConfig>(
+pub(crate) async fn add_new_email_email<G: core_traits::Global>(
     global: &Arc<G>,
     to_address: String,
     code: String,
@@ -102,7 +101,7 @@ struct MagicLinkHtmlTemplate {
     pub url: String,
 }
 
-pub(crate) async fn magic_link_email<G: CoreConfig>(
+pub(crate) async fn magic_link_email<G: core_traits::Global>(
     global: &Arc<G>,
     to_address: String,
     code: String,
@@ -168,13 +167,14 @@ struct NewDeviceHtmlTemplate {
     pub geo_info: Option<GeoInfo>,
 }
 
-pub(crate) async fn new_device_email<G: CoreConfig>(
+pub(crate) async fn new_device_email<G: core_traits::Global>(
     global: &Arc<G>,
     to_address: String,
     ip_info: &IpAddressInfo,
 ) -> Result<pb::scufflecloud::email::v1::Email, tonic::Status> {
     let geo_info: Option<GeoInfo> = ip_info
-        .lookup_geoip_info::<maxminddb::geoip2::City, _>(global)?
+        .lookup_geoip_info::<maxminddb::geoip2::City>(global.as_ref())
+        .into_tonic_internal_err("failed to lookup geo location data")?
         .and_then(GeoInfo::from_city);
     let ip_address = ip_info.ip_address.to_string();
 

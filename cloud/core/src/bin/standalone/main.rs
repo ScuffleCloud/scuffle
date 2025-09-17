@@ -5,16 +5,19 @@ use std::sync::Arc;
 
 use anyhow::Context;
 use diesel_async::pooled_connection::bb8;
+use geo_ip::resolver::GeoIpResolver;
 use scuffle_batching::DataLoader;
 use scuffle_bootstrap_telemetry::opentelemetry;
 use scuffle_bootstrap_telemetry::opentelemetry_sdk::logs::SdkLoggerProvider;
 use scuffle_bootstrap_telemetry::opentelemetry_sdk::trace::SdkTracerProvider;
-use scufflecloud_core::config::{GoogleOAuth2Config, RedisConfig, ReverseProxyConfig, TelemetryConfig, TimeoutConfig};
-use scufflecloud_core::dataloaders::{OrganizationLoader, OrganizationMemberByUserIdLoader, UserLoader};
-use scufflecloud_core::geoip::GeoIpResolver;
 use tracing_subscriber::Layer;
 use tracing_subscriber::layer::SubscriberExt;
 use tracing_subscriber::util::SubscriberInitExt;
+
+use crate::dataloaders::{OrganizationLoader, OrganizationMemberByUserIdLoader, UserLoader};
+
+mod config;
+mod dataloaders;
 
 #[derive(serde_derive::Deserialize, smart_default::SmartDefault, Debug, Clone)]
 #[serde(default)]
@@ -35,20 +38,22 @@ pub struct Config {
     pub dashboard_origin: url::Url,
     #[default = "1x0000000000000000000000000000000AA"]
     pub turnstile_secret_key: String,
-    pub timeouts: TimeoutConfig,
-    pub google_oauth2: GoogleOAuth2Config,
-    pub telemetry: Option<TelemetryConfig>,
-    pub redis: RedisConfig,
+    pub timeouts: config::TimeoutConfig,
+    pub google_oauth2: config::GoogleOAuth2Config,
+    pub telemetry: Option<config::TelemetryConfig>,
+    pub redis: config::RedisConfig,
     #[default = "no-reply@scuffle.cloud"]
     pub email_from_address: String,
     #[default("http://localhost:3002".to_string())]
     pub email_service_address: String,
-    pub reverse_proxy: Option<ReverseProxyConfig>,
+    pub reverse_proxy: Option<config::ReverseProxyConfig>,
     #[default("./GeoLite2-City.mmdb".parse().unwrap())]
     pub maxminddb_path: PathBuf,
 }
 
 scuffle_settings::bootstrap!(Config);
+
+type EmailClientPb = pb::scufflecloud::email::v1::email_service_client::EmailServiceClient<tonic::transport::Channel>;
 
 struct Global {
     config: Config,
@@ -56,94 +61,139 @@ struct Global {
     user_loader: DataLoader<UserLoader>,
     organization_loader: DataLoader<OrganizationLoader>,
     organization_member_by_user_id_loader: DataLoader<OrganizationMemberByUserIdLoader>,
-    authorizer: cedar_policy::Authorizer,
-    http_client: reqwest::Client,
+    external_http_client: reqwest::Client,
     webauthn: webauthn_rs::Webauthn,
     open_telemetry: opentelemetry::OpenTelemetry,
     redis: fred::clients::Pool,
-    email_service_client: pb::scufflecloud::email::v1::email_service_client::EmailServiceClient<tonic::transport::Channel>,
+    email_service_client: EmailClientPb,
     geoip_resolver: GeoIpResolver,
 }
 
-impl scufflecloud_core::CoreConfig for Global {
-    fn service_name(&self) -> &str {
-        &self.config.service_name
-    }
-
-    fn bind(&self) -> std::net::SocketAddr {
-        self.config.bind
-    }
-
-    async fn db(&self) -> anyhow::Result<bb8::PooledConnection<'static, diesel_async::AsyncPgConnection>> {
-        self.database.get_owned().await.context("get database connection")
-    }
-
-    fn authorizer(&self) -> &cedar_policy::Authorizer {
-        &self.authorizer
-    }
-
-    fn http_client(&self) -> &reqwest::Client {
-        &self.http_client
-    }
-
-    fn webauthn(&self) -> &webauthn_rs::Webauthn {
-        &self.webauthn
-    }
-
-    fn redis(&self) -> &fred::clients::Pool {
-        &self.redis
-    }
-
-    fn email_service(
-        &self,
-    ) -> pb::scufflecloud::email::v1::email_service_client::EmailServiceClient<tonic::transport::Channel> {
-        self.email_service_client.clone() // Cloning the client is cheap and recommended by tonic
-    }
-
-    fn user_loader(&self) -> &DataLoader<UserLoader> {
-        &self.user_loader
-    }
-
-    fn organization_loader(&self) -> &DataLoader<OrganizationLoader> {
-        &self.organization_loader
-    }
-
-    fn organization_member_by_user_id_loader(&self) -> &DataLoader<OrganizationMemberByUserIdLoader> {
-        &self.organization_member_by_user_id_loader
-    }
-
-    fn swagger_ui_enabled(&self) -> bool {
-        self.config.swagger_ui
-    }
-
+impl core_traits::ConfigInterface for Global {
     fn dashboard_origin(&self) -> &url::Url {
         &self.config.dashboard_origin
-    }
-
-    fn turnstile_secret_key(&self) -> &str {
-        &self.config.turnstile_secret_key
-    }
-
-    fn timeout_config(&self) -> &TimeoutConfig {
-        &self.config.timeouts
-    }
-
-    fn google_oauth2_config(&self) -> &GoogleOAuth2Config {
-        &self.config.google_oauth2
     }
 
     fn email_from_address(&self) -> &str {
         &self.config.email_from_address
     }
 
-    fn reverse_proxy_config(&self) -> Option<&ReverseProxyConfig> {
-        self.config.reverse_proxy.as_ref()
+    fn google_oauth2_config(&self) -> core_traits::GoogleOAuth2Config<'_> {
+        core_traits::GoogleOAuth2Config {
+            client_id: self.config.google_oauth2.client_id.as_str().into(),
+            client_secret: self.config.google_oauth2.client_secret.as_str().into(),
+        }
     }
 
-    fn geoip_resolver(&self) -> &GeoIpResolver {
-        &self.geoip_resolver
+    fn service_bind(&self) -> std::net::SocketAddr {
+        self.config.bind
+    }
+
+    fn swagger_ui_enabled(&self) -> bool {
+        self.config.swagger_ui
+    }
+
+    fn timeout_config(&self) -> core_traits::TimeoutConfig {
+        core_traits::TimeoutConfig {
+            email_registration_request: self.config.timeouts.email_registration_request,
+            magic_link_user_session_request: self.config.timeouts.magic_link_user_session_request,
+            max_request: self.config.timeouts.max_request_lifetime,
+            mfa: self.config.timeouts.mfa,
+            user_session: self.config.timeouts.user_session,
+            user_session_request: self.config.timeouts.user_session_request,
+            user_session_token: self.config.timeouts.user_session_token,
+        }
+    }
+
+    fn turnstile_secret_key(&self) -> &str {
+        &self.config.turnstile_secret_key
     }
 }
+
+impl core_traits::DatabaseInterface for Global {
+    type Connection<'a>
+        = diesel_async::pooled_connection::bb8::PooledConnection<'a, diesel_async::pg::AsyncPgConnection>
+    where
+        Self: 'a;
+
+    async fn db(&self) -> anyhow::Result<Self::Connection<'_>> {
+        self.database.get().await.context("failed to get database connection")
+    }
+}
+
+#[allow(refining_impl_trait)]
+impl core_traits::DataloaderInterface for Global {
+    fn organization_loader(&self) -> &scuffle_batching::DataLoader<OrganizationLoader> {
+        &self.organization_loader
+    }
+
+    fn user_loader(&self) -> &scuffle_batching::DataLoader<UserLoader> {
+        &self.user_loader
+    }
+
+    fn organization_member_by_user_id_loader(&self) -> &scuffle_batching::DataLoader<OrganizationMemberByUserIdLoader> {
+        &self.organization_member_by_user_id_loader
+    }
+}
+
+impl core_traits::HttpClientInterface for Global {
+    fn external_http_client(&self) -> &reqwest::Client {
+        &self.external_http_client
+    }
+}
+
+impl geo_ip::GeoIpInterface for Global {
+    fn geo_ip_resolver(&self) -> &GeoIpResolver {
+        &self.geoip_resolver
+    }
+
+    fn reverse_proxy_config(&self) -> Option<geo_ip::ReverseProxyConfig<'_>> {
+        let config = self.config.reverse_proxy.as_ref()?;
+        Some(geo_ip::ReverseProxyConfig {
+            internal_networks: config.internal_networks.as_slice().into(),
+            ip_header: config.ip_header.as_str().into(),
+            trusted_proxies: config.trusted_proxies.as_slice().into(),
+        })
+    }
+}
+
+impl core_traits::EmailInterface for Global {
+    fn email_service(&self) -> impl core_traits::EmailServiceClient {
+        struct EmailServiceClient<'a>(&'a EmailClientPb);
+
+        impl core_traits::EmailServiceClient for EmailServiceClient<'_> {
+            fn send_email(
+                &self,
+                email: impl tonic::IntoRequest<pb::scufflecloud::email::v1::Email>,
+            ) -> impl Future<Output = Result<tonic::Response<()>, tonic::Status>> + Send {
+                let email = email.into_request();
+                let mut client = self.0.clone();
+                async move { client.send_email(email).await }
+            }
+        }
+
+        EmailServiceClient(&self.email_service_client)
+    }
+}
+
+impl core_traits::RedisInterface for Global {
+    type RedisConnection<'a>
+        = fred::clients::Pool
+    where
+        Self: 'a;
+
+    fn redis(&self) -> &Self::RedisConnection<'_> {
+        &self.redis
+    }
+}
+
+impl core_traits::WebAuthnInterface for Global {
+    fn webauthn(&self) -> &webauthn_rs::Webauthn {
+        &self.webauthn
+    }
+}
+
+impl core_traits::Global for Global {}
 
 impl scuffle_signal::SignalConfig for Global {}
 
@@ -180,7 +230,10 @@ impl scuffle_bootstrap::Global for Global {
             anyhow::bail!("failed to install aws-lc-rs as default TLS provider");
         }
 
-        let geoip_resolver = GeoIpResolver::new(&config.maxminddb_path).await?;
+        let maxminddb_data = tokio::fs::read(&config.maxminddb_path)
+            .await
+            .context("failed to read maxmind db path")?;
+        let geoip_resolver = GeoIpResolver::new_from_data(maxminddb_data).context("failed to parse maxmind db")?;
 
         tracing::info!(address = %config.email_service_address, "connecting to email service");
         let email_service_channel = tonic::transport::Channel::from_shared(config.email_service_address.clone())
@@ -206,7 +259,9 @@ impl scuffle_bootstrap::Global for Global {
         let organization_loader = OrganizationLoader::new(database.clone());
         let organization_member_by_user_id_loader = OrganizationMemberByUserIdLoader::new(database.clone());
 
-        let http_client = reqwest::Client::builder()
+        // TODO: find someway to restrict this client to only making requests to external ips.
+        // likely via dns.
+        let external_http_client = reqwest::Client::builder()
             .user_agent(&config.service_name)
             .tls_built_in_root_certs(true)
             .use_rustls_tls()
@@ -216,7 +271,7 @@ impl scuffle_bootstrap::Global for Global {
         let webauthn = webauthn_rs::WebauthnBuilder::new(&config.rp_id, &config.dashboard_origin)
             .context("build webauthn")?
             .allow_subdomains(true)
-            .timeout(config.timeouts.mfa.to_std().context("convert mfa timeout to std")?)
+            .timeout(config.timeouts.mfa)
             .build()
             .context("initialize webauthn")?;
 
@@ -237,8 +292,7 @@ impl scuffle_bootstrap::Global for Global {
             user_loader,
             organization_loader,
             organization_member_by_user_id_loader,
-            authorizer: cedar_policy::Authorizer::new(),
-            http_client,
+            external_http_client,
             webauthn,
             open_telemetry,
             redis,

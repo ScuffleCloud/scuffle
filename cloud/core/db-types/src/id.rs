@@ -120,14 +120,17 @@ impl<T: PrefixedId> FromStr for Id<T> {
     fn from_str(s: &str) -> Result<Self, Self::Err> {
         if s.contains('_') {
             // get last _
-            let parts: Vec<&str> = s.rsplitn(2, '_').collect();
-            // guaranteed to contain at least two parts here because s contains '_'
+            // guaranteed to contain at least two parts here because s contains '_''
+            let mut iter = s.rsplitn(2, '_');
 
-            if parts[1] != T::PREFIX {
+            let id = iter.next().expect("there must be at least one '_'");
+            let prefix = iter.next().expect("there must be at least one '_'");
+
+            if prefix != T::PREFIX {
                 return Err(IdParseError::PrefixMismatch);
             }
 
-            let id = ulid::Ulid::from_str(parts[0])?;
+            let id = ulid::Ulid::from_str(id)?;
             Ok(Self {
                 id,
                 _phantom: std::marker::PhantomData,

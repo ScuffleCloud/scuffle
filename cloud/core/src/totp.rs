@@ -1,12 +1,12 @@
+use core_db_types::models::{MfaTotpCredential, UserId};
+use core_db_types::schema::mfa_totp_credentials;
+use core_traits::{DisplayExt, ResultExt};
 use diesel::{ExpressionMethods, QueryDsl, SelectableHelper};
 use diesel_async::RunQueryDsl;
 use tonic_types::{ErrorDetails, StatusExt};
 use totp_rs::{Algorithm, TOTP, TotpUrlError};
 
 use crate::common;
-use crate::models::{MfaTotpCredential, UserId};
-use crate::schema::mfa_totp_credentials;
-use crate::std_ext::{DisplayExt, ResultExt};
 
 const ISSUER: &str = "scuffle.cloud";
 
@@ -50,7 +50,7 @@ pub(crate) fn verify_token(secret: Vec<u8>, token: &str) -> Result<(), TotpError
 }
 
 pub(crate) async fn process_token(
-    tx: &mut diesel_async::AsyncPgConnection,
+    tx: &mut impl diesel_async::AsyncConnection<Backend = diesel::pg::Pg>,
     user_id: UserId,
     token: &str,
 ) -> Result<(), tonic::Status> {

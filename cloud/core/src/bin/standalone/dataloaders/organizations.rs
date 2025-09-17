@@ -1,14 +1,13 @@
 use std::collections::{HashMap, HashSet};
 use std::time::Duration;
 
+use core_db_types::models::{Organization, OrganizationId, OrganizationMember, UserId};
+use core_db_types::schema::{organization_members, organizations};
 use diesel::{ExpressionMethods, QueryDsl, SelectableHelper};
 use diesel_async::pooled_connection::bb8;
 use diesel_async::{AsyncPgConnection, RunQueryDsl};
 use itertools::Itertools;
 use scuffle_batching::{DataLoader, DataLoaderFetcher};
-
-use crate::models::{Organization, OrganizationId, OrganizationMember, UserId};
-use crate::schema::{organization_members, organizations};
 
 pub struct OrganizationLoader(bb8::Pool<AsyncPgConnection>);
 

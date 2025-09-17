@@ -36,6 +36,7 @@ impl CedarIdentifiable for Unauthenticated {
 impl CedarEntity for Unauthenticated {}
 
 #[derive(Debug, Clone, Copy, derive_more::Display, serde::Serialize)]
+#[serde(untagged)]
 pub enum Action {
     /// Login to an existing account with email and password.
     #[display("login_with_email_password")]

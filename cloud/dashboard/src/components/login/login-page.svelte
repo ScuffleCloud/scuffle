@@ -26,7 +26,14 @@
         return DEFAULT_LOGIN_MODE;
     }
 
+    let navigationSource = $state<"direct" | "internal">("direct");
     let loginMode = $state<LoginMode>(getInitialLoginModeFromUrl());
+
+    // Set we can set back button navigation correctly
+    function changeLoginMode(mode: LoginMode) {
+        navigationSource = "internal";
+        loginMode = mode;
+    }
 
     // Manage routing here. Will add shallow routing
     let isRestoringFromHistory = false;
@@ -43,7 +50,6 @@
         window.addEventListener("popstate", handlePopState);
 
         if (!isRestoringFromHistory) {
-            console.log("pushing state", loginMode);
             history.pushState({ loginMode }, "", loginMode);
         }
         isRestoringFromHistory = false;
@@ -136,8 +142,12 @@
         }
     }
 
-    function handleBack(): void {
-        window.history.back();
+    function handleBack(backRoute?: LoginMode): void {
+        if (navigationSource === "internal") {
+            window.history.back();
+        } else {
+            loginMode = backRoute || "login";
+        }
     }
 
     const googleAuth = useGoogleAuth();
@@ -158,19 +168,19 @@
         <MagicLinkForm onSubmit={handleMagicLinkSubmit} {isLoading} />
         <SigninOptions
             {googleAuth}
-            onModeChange={(mode) => (loginMode = mode)}
+            onModeChange={changeLoginMode}
             {isLoading}
         />
     {:else if loginMode === "password"}
         <PasswordForm
             onSubmit={handlePasswordSubmit}
-            onBack={handleBack}
+            onBack={() => handleBack()}
             isLoading={isLoading || turnstileLoading}
         />
     {:else if loginMode === "passkey"}
         <PasskeyForm
             onSubmit={handlePasskeySubmit}
-            onBack={handleBack}
+            onBack={() => handleBack()}
             {isLoading}
         />
     {:else if loginMode === "magic-link-sent"}
@@ -178,11 +188,14 @@
     {:else if loginMode === "forgot-password"}
         <ForgotPasswordForm
             onSubmit={handleForgotPasswordSubmit}
-            onBack={handleBack}
+            onBack={() => handleBack("password")}
             {isLoading}
         />
     {:else if loginMode === "password-reset-sent"}
-        <PasswordResetSent email={userEmail} onBack={handleBack} />
+        <PasswordResetSent
+            email={userEmail}
+            onBack={() => handleBack("password")}
+        />
     {/if}
 </div>
 
@@ -192,7 +205,7 @@
             href="/password"
             onclick={(e) => {
                 e.preventDefault();
-                loginMode = "password";
+                changeLoginMode("password");
             }}
             class="link"
             class:disabled={isLoading}
@@ -211,7 +224,7 @@
             href="/forgot-password"
             onclick={(e) => {
                 e.preventDefault();
-                loginMode = "forgot-password";
+                changeLoginMode("forgot-password");
             }}
             class="link"
             class:disabled={isLoading}

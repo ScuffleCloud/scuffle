@@ -5,7 +5,7 @@ import { sessionsServiceClient } from "$lib/grpcClient";
 /**
  * Initiates Google OAuth login flow
  */
-export async function initiateGoogleLogin(): Promise<void> {
+async function initiateGoogleLogin(): Promise<void> {
     const device = await authState().getDeviceOrInit();
 
     const call = sessionsServiceClient.loginWithGoogle({ device });
@@ -60,7 +60,7 @@ async function completeGoogleLogin(code: string, state: string): Promise<void> {
 /**
  * Checks URL parameters for OAuth callback. Place in $effect.
  */
-export function handleGoogleOAuthCallback(): void {
+function handleGoogleOAuthCallback(): void {
     const urlParams = new URLSearchParams(window.location.search);
     const code = urlParams.get("code");
     const state = urlParams.get("state");
@@ -78,7 +78,7 @@ export interface GoogleAuthProps {
 }
 
 /**
- * Hook for Google authentication with reactive state
+ * Access Google authentication functions and states
  */
 export function useGoogleAuth(): GoogleAuthProps {
     let loading = $state(false);

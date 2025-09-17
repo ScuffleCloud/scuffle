@@ -9,6 +9,7 @@
     import { useGoogleAuth } from "$lib/auth/googleAuth.svelte";
     import { sessionsServiceClient } from "$lib/grpcClient";
     import IconArrowDialogLink from "$lib/images/icon-arrow-dialog-link.svelte";
+    import { createSmartBack } from "$lib/navigation.svelte";
     import { CaptchaProvider } from "@scufflecloud/proto/scufflecloud/core/v1/common.js";
     import ForgotPasswordForm from "./forgot-password-form.svelte";
     import MagicLinkForm from "./magic-link-form.svelte";
@@ -43,6 +44,8 @@
             "magic-link-sent": "/magic-link-sent",
             "password-reset-sent": "/password-reset-sent",
         };
+
+        smartBack.markNavigation();
 
         pushState(urlMap[mode] || "/", { loginMode: mode });
     }
@@ -136,19 +139,11 @@
         }
     }
 
-    let hasInternalHistory = $state(false);
-
-    beforeNavigate(() => hasInternalHistory = true);
-
-    // Route correctly if no internal backroute exists
-    function handleBack(backRoute?: LoginMode): void {
-        if (!hasInternalHistory) {
-            const newRoute = backRoute || "login";
-            pushState(newRoute, { loginMode: newRoute });
-        } else {
-            history.back();
-        }
-    }
+    const smartBack = createSmartBack(
+        "login" as LoginMode,
+        changeLoginMode,
+    );
+    const handleBack = smartBack.back;
 
     const googleAuth = useGoogleAuth();
 

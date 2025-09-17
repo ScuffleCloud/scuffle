@@ -2,7 +2,7 @@ entity Unauthenticated enum ["unauthenticated"];
 entity Application enum ["core"];
 
 type GlobalContext = {
-  user_session_mfa_pending: Bool,
+  user_session_mfa_pending?: Bool,
 };
 
 entity MfaTotpCredential {

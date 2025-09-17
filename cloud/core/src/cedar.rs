@@ -1,7 +1,7 @@
 use std::str::FromStr;
 use std::sync::{Arc, OnceLock};
 
-use cedar_policy::{Decision, Entities, EntityId, PolicySet};
+use cedar_policy::{Decision, Entities, EntityId, PolicySet, Schema};
 use core_cedar::{CedarEntity, CedarIdentifiable, EntityTypeName, entity_type_name};
 use core_db_types::models::UserSession;
 use core_traits::ResultExt;
@@ -12,6 +12,14 @@ fn static_policies() -> &'static PolicySet {
     static STATIC_POLICIES: OnceLock<PolicySet> = OnceLock::new();
 
     STATIC_POLICIES.get_or_init(|| PolicySet::from_str(STATIC_POLICIES_STR).expect("failed to parse static policies"))
+}
+
+fn static_policies_schema() -> &'static Schema {
+    const STATIC_POLICIES_SCHEMA_STR: &str = include_str!("../static_policies.cedarschema");
+    static STATIC_POLICIES_SCHEMA: OnceLock<Schema> = OnceLock::new();
+
+    STATIC_POLICIES_SCHEMA
+        .get_or_init(|| Schema::from_str(STATIC_POLICIES_SCHEMA_STR).expect("failed to parse static policies schema"))
 }
 
 #[derive(Debug, serde::Serialize)]
@@ -173,7 +181,7 @@ pub(crate) async fn is_authorized<G: core_traits::Global>(
         action.entity_uid().into(),
         resource.entity_uid().into(),
         context,
-        None,
+        Some(static_policies_schema()),
     )
     .into_tonic_internal_err("failed to validate cedar request")?;
 

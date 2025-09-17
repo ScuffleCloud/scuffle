@@ -1,4 +1,6 @@
 <script lang="ts">
+    import { beforeNavigate, pushState } from "$app/navigation";
+    import { page } from "$app/state";
     import {
         DEFAULT_LOGIN_MODE,
         type LoginMode,
@@ -26,38 +28,24 @@
         return DEFAULT_LOGIN_MODE;
     }
 
-    let navigationSource = $state<"direct" | "internal">("direct");
-    let loginMode = $state<LoginMode>(getInitialLoginModeFromUrl());
+    // Use SvelteKit's page state instead of local state
+    let loginMode = $derived(
+        page.state.loginMode ?? getInitialLoginModeFromUrl(),
+    );
 
-    // Set we can set back button navigation correctly
+    // So back button navigation works as expected
     function changeLoginMode(mode: LoginMode) {
-        navigationSource = "internal";
-        loginMode = mode;
-    }
-
-    // Manage routing here. Will add shallow routing
-    let isRestoringFromHistory = false;
-    $effect(() => {
-        function handlePopState(event: PopStateEvent) {
-            isRestoringFromHistory = true;
-            if (event.state?.loginMode) {
-                loginMode = event.state.loginMode;
-            } else {
-                window.history.back();
-            }
-        }
-
-        window.addEventListener("popstate", handlePopState);
-
-        if (!isRestoringFromHistory) {
-            history.pushState({ loginMode }, "", loginMode);
-        }
-        isRestoringFromHistory = false;
-
-        return () => {
-            window.removeEventListener("popstate", handlePopState);
+        const urlMap: Record<LoginMode, string> = {
+            "login": "/",
+            "password": "/password",
+            "forgot-password": "/forgot-password",
+            "passkey": "/passkey",
+            "magic-link-sent": "/magic-link-sent",
+            "password-reset-sent": "/password-reset-sent",
         };
-    });
+
+        pushState(urlMap[mode] || "/", { loginMode: mode });
+    }
 
     const getToken = async () =>
         await turnstileOverlayComponent?.getToken();
@@ -89,7 +77,10 @@
                 // TODO: Verify implementation after email flow is finished
                 if (status.code === "OK") {
                     userEmail = email;
-                    loginMode = "magic-link-sent";
+                    pushState("/magic-link-sent", {
+                        loginMode: "magic-link-sent",
+                        userEmail: email,
+                    });
                 } else {
                     console.error("Magic link failed:", status.detail);
                 }
@@ -135,30 +126,44 @@
                 // const result: AuthResult = await authAPI.sendPasswordReset(email);
                 console.log("Password reset for:", email);
                 userEmail = email;
-                loginMode = "password-reset-sent";
+                pushState("/password-reset-sent", {
+                    loginMode: "password-reset-sent",
+                    userEmail: email,
+                });
             } catch (error) {
                 console.error("Password reset error:", error);
             }
         }
     }
 
+    let hasInternalHistory = $state(false);
+
+    beforeNavigate(() => hasInternalHistory = true);
+
+    // Route correctly if no internal backroute exists
     function handleBack(backRoute?: LoginMode): void {
-        if (navigationSource === "internal") {
-            window.history.back();
+        if (!hasInternalHistory) {
+            const newRoute = backRoute || "login";
+            pushState(newRoute, { loginMode: newRoute });
         } else {
-            loginMode = backRoute || "login";
+            history.back();
         }
     }
 
     const googleAuth = useGoogleAuth();
 
-    // If googleAuth is loading, show a loading spinner
-    // Combine with other
     $effect(() => {
         if (googleAuth.loading()) {
             isLoading = true;
         } else {
             isLoading = false;
+        }
+    });
+
+    // See if I need this later
+    $effect(() => {
+        if (page.state.userEmail) {
+            userEmail = page.state.userEmail;
         }
     });
 </script>

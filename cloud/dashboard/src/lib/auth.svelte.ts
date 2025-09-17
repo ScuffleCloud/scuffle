@@ -3,6 +3,7 @@ import type { Timestamp } from "@scufflecloud/proto/google/protobuf/timestamp.js
 import {
     type Device,
     DeviceAlgorithm,
+    MfaOption,
     type NewUserSessionToken,
 } from "@scufflecloud/proto/scufflecloud/core/v1/sessions_service.js";
 import { User } from "@scufflecloud/proto/scufflecloud/core/v1/users.js";
@@ -38,26 +39,29 @@ export type AuthState<T> = {
 export type UserSessionToken = {
     id: string;
     token: ArrayBuffer;
+    userId: string;
     expiresAt: Date | null;
     sessionExpiresAt: Date | null;
-    userId: string;
+    mfaPending: MfaOption[] | null;
 };
 
 export type StoredUserSessionToken = {
     id: string;
     token: string;
+    userId: string;
     expiresAt: string | null;
     sessionExpiresAt: string | null;
-    userId: string;
+    mfaPending: number[] | null;
 };
 
 function toStoredUserSessionToken(token: UserSessionToken): StoredUserSessionToken {
     return {
         id: token.id,
         token: arrayBufferToBase64(token.token),
+        userId: token.userId,
         expiresAt: token.expiresAt ? token.expiresAt.toISOString() : null,
         sessionExpiresAt: token.sessionExpiresAt ? token.sessionExpiresAt.toISOString() : null,
-        userId: token.userId,
+        mfaPending: token.mfaPending,
     };
 }
 
@@ -65,9 +69,10 @@ function fromStoredUserSessionToken(token: StoredUserSessionToken): UserSessionT
     return {
         id: token.id,
         token: base64ToArrayBuffer(token.token),
+        userId: token.userId,
         expiresAt: token.expiresAt ? new Date(token.expiresAt) : null,
         sessionExpiresAt: token.sessionExpiresAt ? new Date(token.sessionExpiresAt) : null,
-        userId: token.userId,
+        mfaPending: token.mfaPending ?? null,
     };
 }
 
@@ -259,11 +264,12 @@ export function authState() {
                         data: {
                             id: newToken.id,
                             token: decrypted,
+                            userId: newToken.userId,
                             expiresAt: newToken.expiresAt ? timestampToDate(newToken.expiresAt) : null,
                             sessionExpiresAt: newToken.sessionExpiresAt
                                 ? timestampToDate(newToken.sessionExpiresAt)
                                 : null,
-                            userId: newToken.userId,
+                            mfaPending: newToken.sessionMfaPending ? newToken.mfaOptions : null,
                         },
                     };
 

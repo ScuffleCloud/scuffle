@@ -1,7 +1,7 @@
 use std::str::FromStr;
 use std::sync::{Arc, OnceLock};
 
-use cedar_policy::{Decision, Entities, EntityId, PolicySet};
+use cedar_policy::{Decision, Entities, EntityId, PolicySet, Schema};
 use core_cedar::{CedarEntity, CedarIdentifiable, EntityTypeName, entity_type_name};
 use core_db_types::models::UserSession;
 use core_traits::ResultExt;
@@ -12,6 +12,14 @@ fn static_policies() -> &'static PolicySet {
     static STATIC_POLICIES: OnceLock<PolicySet> = OnceLock::new();
 
     STATIC_POLICIES.get_or_init(|| PolicySet::from_str(STATIC_POLICIES_STR).expect("failed to parse static policies"))
+}
+
+fn static_policies_schema() -> &'static Schema {
+    const STATIC_POLICIES_SCHEMA_STR: &str = include_str!("../static_policies.cedarschema");
+    static STATIC_POLICIES_SCHEMA: OnceLock<Schema> = OnceLock::new();
+
+    STATIC_POLICIES_SCHEMA
+        .get_or_init(|| Schema::from_str(STATIC_POLICIES_SCHEMA_STR).expect("failed to parse static policies schema"))
 }
 
 #[derive(Debug, serde::Serialize)]
@@ -28,15 +36,8 @@ impl CedarIdentifiable for Unauthenticated {
 impl CedarEntity for Unauthenticated {}
 
 #[derive(Debug, Clone, Copy, derive_more::Display, serde::Serialize)]
+#[serde(untagged)]
 pub enum Action {
-    // User related
-    /// Register with email and password.
-    #[display("register_with_email")]
-    RegisterWithEmail,
-    #[display("complete_register_with_email")]
-    CompleteRegisterWithEmail,
-    #[display("get_login_with_email_options")]
-    GetLoginWithEmailOptions,
     /// Login to an existing account with email and password.
     #[display("login_with_email_password")]
     LoginWithEmailPassword,
@@ -116,7 +117,7 @@ pub enum Action {
     ListOrganizationsByUser,
     #[display("create_project")]
     CreateProject,
-    #[display("list_project")]
+    #[display("list_projects")]
     ListProjects,
 
     // OrganizationInvitation related
@@ -173,26 +174,30 @@ pub(crate) async fn is_authorized<G: core_traits::Global>(
         );
     }
 
-    let context = cedar_policy::Context::from_json_value(serde_json::Value::Object(context), None)
+    let schema = static_policies_schema();
+
+    let a_euid: cedar_policy::EntityUid = action.entity_uid().into();
+
+    let context = cedar_policy::Context::from_json_value(serde_json::Value::Object(context), Some((schema, &a_euid)))
         .into_tonic_internal_err("failed to create cedar context")?;
 
     let r = cedar_policy::Request::new(
         principal.entity_uid().into(),
-        action.entity_uid().into(),
+        a_euid,
         resource.entity_uid().into(),
         context,
-        None,
+        Some(schema),
     )
     .into_tonic_internal_err("failed to validate cedar request")?;
 
     let entities = vec![
-        principal.to_entity(global.as_ref()).await?,
-        action.to_entity(global.as_ref()).await?,
-        resource.to_entity(global.as_ref()).await?,
+        principal.to_entity(global.as_ref(), Some(schema)).await?,
+        action.to_entity(global.as_ref(), Some(schema)).await?,
+        resource.to_entity(global.as_ref(), Some(schema)).await?,
     ];
 
     let entities = Entities::empty()
-        .add_entities(entities, None)
+        .add_entities(entities, Some(schema))
         .into_tonic_internal_err("failed to create cedar entities")?;
 
     match cedar_policy::Authorizer::new()

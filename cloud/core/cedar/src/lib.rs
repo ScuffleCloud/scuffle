@@ -106,6 +106,7 @@ pub trait CedarEntity: CedarIdentifiable + serde::Serialize + Send + Sync {
     fn to_entity(
         &self,
         global: &impl core_traits::Global,
+        schema: Option<&cedar_policy::Schema>,
     ) -> impl std::future::Future<Output = Result<cedar_policy::Entity, tonic::Status>> + Send {
         async move {
             let value = serde_json::json!({
@@ -114,7 +115,7 @@ pub trait CedarEntity: CedarIdentifiable + serde::Serialize + Send + Sync {
                 "parents": self.parents(global).await?.into_iter().collect::<Vec<_>>(),
             });
 
-            cedar_policy::Entity::from_json_value(value, None).into_tonic_internal_err("failed to create cedar entity")
+            cedar_policy::Entity::from_json_value(value, schema).into_tonic_internal_err("failed to create cedar entity")
         }
     }
 }

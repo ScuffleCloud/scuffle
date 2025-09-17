@@ -5,6 +5,9 @@ license = "MIT OR Apache-2.0"
 publish = false
 readme = "README.md"
 
+[lints.rust]
+unexpected_cfgs = { level = "warn", check-cfg = ['cfg(bazel_runfiles)'] }
+
 [dependencies]
 anyhow = "1"
 camino = { version = "1", features = ["serde1"] }

@@ -22,10 +22,17 @@ impl<D> DisplayExt for D
 where
     D: Display,
 {
-    fn into_tonic_err(self, code: tonic::Code, msg: &str, mut details: ErrorDetails) -> tonic::Status {
-        tracing::error!(err = %self, "{}", msg);
-        details.set_debug_info(vec![], self.to_string());
-        tonic::Status::with_error_details(code, msg, details)
+    fn into_tonic_err(self, code: tonic::Code, msg: &str, details: ErrorDetails) -> tonic::Status {
+        // This function is called extremely often in our code base. Since its generic over `D` llvm generates a lot of code.
+        // So if we take most of the function and wrap it in an inner function (with no generics), we significantly reduce the amount
+        // of codegen.
+        fn into_tonic_err_inner(err: String, code: tonic::Code, msg: &str, mut details: ErrorDetails) -> tonic::Status {
+            tracing::error!(err = %err, "{}", msg);
+            details.set_debug_info(vec![], err);
+            tonic::Status::with_error_details(code, msg, details)
+        }
+
+        into_tonic_err_inner(self.to_string(), code, msg, details)
     }
 }
 

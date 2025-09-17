@@ -14,13 +14,11 @@
     import LoginPage from "$components/login/login-page.svelte";
     import RightNav from "$components/right-nav/right-nav.svelte";
     import { PUBLIC_VITE_MSW_ENABLED } from "$env/static/public";
-    import { useAuth } from "$lib/auth.svelte";
+    import { authState } from "$lib/auth.svelte";
     import { onMount } from "svelte";
 
-    const auth = useAuth();
-
     onMount(() => {
-        auth.initialize();
+        authState().initialize();
     });
 
     // Maybe don't need this code since we'll mock functions in a different way but leaving it for now
@@ -54,9 +52,9 @@
 
 <!-- TODO: Clean this up at some point -->
 {#if mockingReady}
-    {#if auth.userSessionToken.state === "loading"}
+    {#if authState().userSessionToken.state === "loading"}
         <div>Loading...</div>
-    {:else if auth.userSessionToken.state === "unauthenticated"}
+    {:else if authState().userSessionToken.state === "unauthenticated"}
         <div class="login-page-container">
             <!-- TODO: Add protection to routes if not logged in -->
             <LoginHeader />

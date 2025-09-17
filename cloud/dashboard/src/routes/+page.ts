@@ -1,10 +1,8 @@
-import { useAuth } from "$lib/auth.svelte";
+import { authState } from "$lib/auth.svelte";
 import { redirect } from "@sveltejs/kit";
 
 export function load() {
-    const auth = useAuth();
-
-    if (auth.userSessionToken.state === "authenticated") {
+    if (authState().userSessionToken.state === "authenticated") {
         throw redirect(307, "/projects");
     }
 

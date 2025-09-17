@@ -1,14 +1,12 @@
 import { goto } from "$app/navigation";
-import { useAuth } from "$lib/auth.svelte";
+import { authState } from "$lib/auth.svelte";
 import { sessionsServiceClient } from "$lib/grpcClient";
 
 /**
  * Initiates Google OAuth login flow
  */
 export async function initiateGoogleLogin(): Promise<void> {
-    const auth = useAuth();
-
-    const device = await auth.getDeviceOrInit();
+    const device = await authState().getDeviceOrInit();
 
     const call = sessionsServiceClient.loginWithGoogle({ device });
     const status = await call.status;
@@ -25,9 +23,7 @@ export async function initiateGoogleLogin(): Promise<void> {
  * Completes Google OAuth login flow with authorization code
  */
 async function completeGoogleLogin(code: string, state: string): Promise<void> {
-    const auth = useAuth();
-
-    const device = await auth.getDeviceOrInit();
+    const device = await authState().getDeviceOrInit();
 
     const call = sessionsServiceClient.completeLoginWithGoogle({
         code,
@@ -58,7 +54,7 @@ async function completeGoogleLogin(code: string, state: string): Promise<void> {
         // }
 
         if (response.newUserSessionToken) {
-            await auth.handleNewUserSessionToken(response.newUserSessionToken);
+            await authState().handleNewUserSessionToken(response.newUserSessionToken);
             goto("/projects");
         } else {
             throw new Error("No session token received");

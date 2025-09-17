@@ -1,10 +1,8 @@
 <script>
-    import { useAuth } from "$lib/auth.svelte";
+    import { authState } from "$lib/auth.svelte";
     import { onMount } from "svelte";
 
-    const auth = useAuth();
-
     onMount(async () => {
-        await auth.logout();
+        await authState().logout();
     });
 </script>

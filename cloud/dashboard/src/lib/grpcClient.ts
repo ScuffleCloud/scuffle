@@ -7,7 +7,7 @@ import { OrganizationInvitationsServiceClient } from "@scufflecloud/proto/scuffl
 import { OrganizationsServiceClient } from "@scufflecloud/proto/scufflecloud/core/v1/organizations_service.client.js";
 import { SessionsServiceClient } from "@scufflecloud/proto/scufflecloud/core/v1/sessions_service.client.js";
 import { UsersServiceClient } from "@scufflecloud/proto/scufflecloud/core/v1/users_service.client.js";
-import { useAuth } from "./auth.svelte";
+import { authState } from "./auth.svelte";
 import { arrayBufferToBase64 } from "./utils";
 
 function generateRandomNonce(): ArrayBuffer {
@@ -34,8 +34,7 @@ const transport = new GrpcWebFetchTransport({
                     if (!options.meta) {
                         options.meta = {};
                     }
-
-                    const auth = useAuth();
+                    const auth = authState();
                     if (!options.skipValidityCheck) {
                         auth.checkValidity().catch((e) => {
                             defStatus.rejectPending(e);

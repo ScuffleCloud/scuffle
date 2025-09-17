@@ -2,12 +2,12 @@
     import ScuffleLogo from "$lib/images/scuffle-logo.svelte";
 </script>
 
-<div class="logo-container">
+<a class="logo-container" href="/">
     <div class="logo-container-image">
         <ScuffleLogo />
     </div>
     scuffle
-</div>
+</a>
 
 <style>
     .logo-container {

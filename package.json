@@ -12,6 +12,7 @@
     },
     "pnpm": {
         "onlyBuiltDependencies": [
+            "@swc/core",
             "core-js",
             "core-js-pure",
             "esbuild",

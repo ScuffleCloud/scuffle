@@ -5,7 +5,7 @@
     "compilerOptions": {
         "declaration": true,
         "target": "es2020",
-        "moduleResolution": "node",
+        "moduleResolution": "bundler",
         "module": "es2020",
         "strict": true,
         "exactOptionalPropertyTypes": true,

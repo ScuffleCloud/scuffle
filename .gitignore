@@ -22,7 +22,7 @@ local.just
 **/.svelte-kit
 cloud/dashboard/build
 cloud/docs/build
-cloud/proto/ts/generated
+cloud/proto/ts/dist
 **/vite.config.js.timestamp-*
 
 # MacOS

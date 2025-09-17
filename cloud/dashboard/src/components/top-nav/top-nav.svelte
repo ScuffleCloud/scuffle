@@ -122,6 +122,9 @@
         </nav>
     </div>
     <div class="actions">
+        <a href="/logout" data-sveltekit-preload-data="off">
+            Logout
+        </a>
         <button
             class="search-button"
             aria-label="Search"

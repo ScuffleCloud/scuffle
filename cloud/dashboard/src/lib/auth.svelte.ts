@@ -1,9 +1,20 @@
 import { browser } from "$app/environment";
 import type { Timestamp } from "@scufflecloud/proto/google/protobuf/timestamp.js";
-import type { NewUserSessionToken } from "@scufflecloud/proto/scufflecloud/core/v1/sessions_service.js";
+import {
+    type Device,
+    DeviceAlgorithm,
+    MfaOption,
+    type NewUserSessionToken,
+} from "@scufflecloud/proto/scufflecloud/core/v1/sessions_service.js";
 import { User } from "@scufflecloud/proto/scufflecloud/core/v1/users.js";
 import { sessionsServiceClient, usersServiceClient } from "./grpcClient";
 import { arrayBufferToBase64 } from "./utils";
+
+// Replace with Uint8Array.fromBase64 in the future
+// https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Uint8Array/fromBase64
+function base64ToArrayBuffer(base64: string): ArrayBuffer {
+    return Uint8Array.from(atob(base64), c => c.charCodeAt(0)).buffer;
+}
 
 function timestampToDate(timestmap: Timestamp): Date | null {
     const seconds = parseInt(timestmap.seconds);
@@ -28,9 +39,42 @@ export type AuthState<T> = {
 export type UserSessionToken = {
     id: string;
     token: ArrayBuffer;
-    expiresAt: Date | null;
     userId: string;
+    expiresAt: Date | null;
+    sessionExpiresAt: Date | null;
+    mfaPending: MfaOption[] | null;
 };
+
+export type StoredUserSessionToken = {
+    id: string;
+    token: string;
+    userId: string;
+    expiresAt: string | null;
+    sessionExpiresAt: string | null;
+    mfaPending: number[] | null;
+};
+
+function toStoredUserSessionToken(token: UserSessionToken): StoredUserSessionToken {
+    return {
+        id: token.id,
+        token: arrayBufferToBase64(token.token),
+        userId: token.userId,
+        expiresAt: token.expiresAt ? token.expiresAt.toISOString() : null,
+        sessionExpiresAt: token.sessionExpiresAt ? token.sessionExpiresAt.toISOString() : null,
+        mfaPending: token.mfaPending,
+    };
+}
+
+function fromStoredUserSessionToken(token: StoredUserSessionToken): UserSessionToken {
+    return {
+        id: token.id,
+        token: base64ToArrayBuffer(token.token),
+        userId: token.userId,
+        expiresAt: token.expiresAt ? new Date(token.expiresAt) : null,
+        sessionExpiresAt: token.sessionExpiresAt ? new Date(token.sessionExpiresAt) : null,
+        mfaPending: token.mfaPending ?? null,
+    };
+}
 
 function loadUserSessionToken(): AuthState<UserSessionToken> {
     if (!browser) return { state: "loading" };
@@ -38,14 +82,25 @@ function loadUserSessionToken(): AuthState<UserSessionToken> {
     const stored = window.localStorage.getItem("userSessionToken");
     if (stored) {
         try {
-            const parsedAuth = JSON.parse(stored);
+            const parsedStoredAuth = JSON.parse(stored) as AuthState<StoredUserSessionToken>;
             if (
-                !parsedAuth.state || (parsedAuth.state === "authenticated" && !parsedAuth.data)
-                || (parsedAuth.state === "error" && !parsedAuth.error)
+                !parsedStoredAuth.state || (parsedStoredAuth.state === "authenticated" && !parsedStoredAuth.data)
+                || (parsedStoredAuth.state === "error" && !parsedStoredAuth.error)
             ) {
                 throw new Error("invalid sementics");
             }
-            return parsedAuth as AuthState<UserSessionToken>;
+
+            let parsedAuth;
+            if (parsedStoredAuth.state === "authenticated") {
+                parsedAuth = {
+                    ...parsedStoredAuth,
+                    data: fromStoredUserSessionToken(parsedStoredAuth.data),
+                } as AuthState<UserSessionToken>;
+            } else {
+                parsedAuth = parsedStoredAuth as AuthState<UserSessionToken>;
+            }
+
+            return parsedAuth;
         } catch (error) {
             console.error("Failed to parse session token from local storage", error);
             return { state: "error", error: "Failed to parse session token" };
@@ -126,12 +181,12 @@ function saveDeviceKey(keypair: CryptoKeyPair) {
 
 export type DeviceKeypairState = null | { state: "loading" } | { state: "loaded"; data: CryptoKeyPair | null };
 
-export function authState() {
-    // Private key
-    let deviceKeypair = $state<DeviceKeypairState>(null);
-    let userSessionToken = $state<AuthState<UserSessionToken>>(loadUserSessionToken());
-    let user = $state<AuthState<User> | null>(null);
+// Private key
+let deviceKeypair = $state<DeviceKeypairState>(null);
+let userSessionToken = $state<AuthState<UserSessionToken>>(loadUserSessionToken());
+let user = $state<AuthState<User> | null>(null);
 
+export function authState() {
     return {
         /**
          * Call this function to initialize the auth state. This must be called prior to any other function.
@@ -157,28 +212,36 @@ export function authState() {
             }
         },
         /**
-         * Generates a new device keypair, persists it and returns the public key part as base64 encoded SPKI.
+         * Generates a new device, persists it and returns it.
+         *
+         * You probably want to use `getDeviceOrInit` instead of this function directly.
          */
-        async generateNewDeviceKey(): Promise<string> {
+        async generateNewDevice(): Promise<Device> {
             return generateDeviceKeypair().then((keypair) => {
                 deviceKeypair = { state: "loaded", data: keypair };
                 saveDeviceKey(keypair);
                 return window.crypto.subtle.exportKey("spki", keypair.publicKey);
             }).then((spki) => {
-                return arrayBufferToBase64(spki);
+                return {
+                    algorithm: DeviceAlgorithm.RSA_OAEP_SHA256,
+                    publicKeyData: new Uint8Array(spki),
+                };
             });
         },
         /**
-         * Returns the device public key as base64 encoded SPKI. If no keypair exists, a new one is generated.
+         * Returns the device. If no device exists, a new one is generated.
          */
-        async getDevicePublicKeyOrInit(): Promise<string> {
+        async getDeviceOrInit(): Promise<Device> {
             const key = this.devicePublicKey;
             if (key) {
                 return window.crypto.subtle.exportKey("spki", key).then((spki) => {
-                    return arrayBufferToBase64(spki);
+                    return {
+                        algorithm: DeviceAlgorithm.RSA_OAEP_SHA256,
+                        publicKeyData: new Uint8Array(spki),
+                    };
                 });
             } else {
-                return this.generateNewDeviceKey();
+                return this.generateNewDevice();
             }
         },
         /**
@@ -201,14 +264,21 @@ export function authState() {
                         data: {
                             id: newToken.id,
                             token: decrypted,
-                            expiresAt: newToken.expiresAt ? timestampToDate(newToken.expiresAt) : null,
                             userId: newToken.userId,
+                            expiresAt: newToken.expiresAt ? timestampToDate(newToken.expiresAt) : null,
+                            sessionExpiresAt: newToken.sessionExpiresAt
+                                ? timestampToDate(newToken.sessionExpiresAt)
+                                : null,
+                            mfaPending: newToken.sessionMfaPending ? newToken.mfaOptions : null,
                         },
                     };
 
                     userSessionToken = newUserSessionToken;
+
                     // Persist session token to localStorage on change
-                    window.localStorage.setItem("userSessionToken", JSON.stringify(newUserSessionToken));
+                    const stored = { ...newUserSessionToken, data: toStoredUserSessionToken(newUserSessionToken.data) };
+                    window.localStorage.setItem("userSessionToken", JSON.stringify(stored));
+
                     return loadUser(newUserSessionToken);
                 },
             ).catch((err) => {
@@ -226,13 +296,45 @@ export function authState() {
 
             const call = sessionsServiceClient.invalidateUserSession({});
             const status = await call.status;
-            if (status.code === "0") {
+            if (status.code === "OK") {
                 userSessionToken = { state: "unauthenticated" };
                 window.localStorage.removeItem("userSessionToken");
                 user = { state: "unauthenticated" };
             } else {
                 console.error("Failed to logout", status);
                 throw new Error("Failed to logout: " + status.detail);
+            }
+        },
+        /**
+         * Clears the current user session token and auth state when the session is expired.
+         * When only the token is expired but the session is still valid, the token will be refreshed automatically.
+         */
+        async checkValidity(): Promise<void> {
+            if (userSessionToken.state !== "authenticated") {
+                return;
+            }
+
+            // Check if session is expired
+            if (
+                userSessionToken.data.sessionExpiresAt
+                && Date.now() > userSessionToken.data.sessionExpiresAt.getTime() - 10 * 1000
+            ) {
+                userSessionToken = { state: "unauthenticated" };
+                window.localStorage.removeItem("userSessionToken");
+                user = { state: "unauthenticated" };
+                return;
+            }
+
+            // Check if token is expired
+            if (userSessionToken.data.expiresAt && Date.now() > userSessionToken.data.expiresAt.getTime() - 10 * 1000) {
+                const call = sessionsServiceClient.refreshUserSession({}, { skipValidityCheck: true });
+                const status = await call.status;
+                const response = await call.response;
+
+                if (status.code !== "OK") {
+                    throw new Error("Failed to refresh session: " + status.detail);
+                }
+                this.handleNewUserSessionToken(response);
             }
         },
         /**
@@ -277,7 +379,7 @@ async function loadUser(state: AuthState<UserSessionToken>): Promise<AuthState<U
     });
     const status = await call.status;
 
-    if (status.code === "0") {
+    if (status.code === "OK") {
         const user = await call.response;
         return { state: "authenticated", data: user };
     } else {

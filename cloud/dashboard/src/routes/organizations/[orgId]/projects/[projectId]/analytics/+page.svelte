@@ -3,7 +3,7 @@
 </script>
 
 <svelte:head>
-    <title>Overview | Scuffle</title>
+    <title>Analytics | Scuffle</title>
 </svelte:head>
 <div class="page-bg">
     <Map mapData={null} />

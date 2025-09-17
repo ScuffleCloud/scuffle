@@ -99,6 +99,7 @@ impl core_traits::ConfigInterface for Global {
             magic_link_user_session_request: self.config.timeouts.magic_link_user_session_request,
             max_request: self.config.timeouts.max_request_lifetime,
             mfa: self.config.timeouts.mfa,
+            user_session: self.config.timeouts.user_session,
             user_session_request: self.config.timeouts.user_session_request,
             user_session_token: self.config.timeouts.user_session_token,
         }

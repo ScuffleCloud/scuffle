@@ -12,6 +12,7 @@ pub trait ConfigInterface: Send + Sync {
 
 pub struct TimeoutConfig {
     pub max_request: std::time::Duration,
+    pub user_session: std::time::Duration,
     pub user_session_token: std::time::Duration,
     pub mfa: std::time::Duration,
     pub email_registration_request: std::time::Duration,

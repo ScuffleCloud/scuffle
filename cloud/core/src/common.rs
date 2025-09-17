@@ -246,7 +246,7 @@ pub(crate) async fn create_session<G: core_traits::Global>(
     let session_expires_at = if !mfa_options.is_empty() {
         chrono::Utc::now() + global.timeout_config().mfa
     } else {
-        chrono::Utc::now() + global.timeout_config().user_session_token
+        chrono::Utc::now() + global.timeout_config().user_session
     };
     let token_id = Id::new();
     let token_expires_at = chrono::Utc::now() + global.timeout_config().user_session_token;

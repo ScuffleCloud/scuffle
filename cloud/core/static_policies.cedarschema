@@ -1,6 +1,10 @@
 entity Unauthenticated enum ["unauthenticated"];
 entity Application enum ["core"];
 
+type GlobalContext = {
+    user_session_mfa_pending: Bool,
+};
+
 entity MfaTotpCredential {
   id: String,
   user_id: String,
@@ -154,47 +158,116 @@ entity UserGoogleAccount {
     created_at: String,
 };
 
-// "register_with_email",
-// "complete_register_with_email",
-// "get_login_with_email_options",
-// "login_with_email_password",
-// "request_magic_link",
-// "login_with_magic_link",
-// "login_with_google",
-// "login_with_webauthn",
-// "get_user",
-// "update_user",
-// "list_user_emails",
-// "create_user_email",
-// "delete_user_email",
-// "create_webauthn_credential",
-// "complete_create_webauthn_credential",
-// "create_webauthn_challenge",
-// "delete_webauthn_credential",
-// "list_webauthn_credentials",
-// "create_totp_credential",
-// "complete_create_totp_credential",
-// "delete_totp_credential",
-// "list_totp_credentials",
-// "regenerate_recovery_codes",
-// "delete_user",
-// "create_user_session_request",
-// "get_user_session_request",
-// "approve_user_session_request",
-// "complete_user_session_request",
-// "validate_mfa_for_user_session",
-// "refresh_user_session",
-// "invalidate_user_session",
-// "create_organization",
-// "get_organization",
-// "update_organization",
-// "list_organization_members",
-// "list_organizations_by_user",
-// "create_project",
-// "list_project",
-// "create_organization_invitation",
-// "list_organization_invitations_by_user",
-// "list_organization_invitations_by_organization",
-// "get_organization_invitation",
-// "accept_organization_invitation",
-// "decline_organization_invitation"
+action "login_with_email_password", "login_with_magic_link", "login_with_google", "login_with_webauthn" appliesTo {
+    principal: [User],
+    resource: [Application],
+    context: GlobalContext,
+};
+
+action "request_magic_link" appliesTo {
+    principal: [Unauthenticated],
+    resource: [Application],
+    context: GlobalContext,
+};
+
+action "create_organization_invitation", "get_organization_invitation", "accept_organization_invitation", "decline_organization_invitation" appliesTo {
+    principal: [User],
+    resource: [OrganizationInvitation],
+    context: GlobalContext,
+};
+
+action "list_organization_invitations_by_organization" appliesTo {
+    principal: [User],
+    resource: [Organization],
+    context: GlobalContext,
+};
+
+action "list_organization_invitations_by_user" appliesTo {
+    principal: [User],
+    resource: [User],
+    context: GlobalContext,
+};
+
+action "create_organization", "get_organization", "update_organization", "list_organization_members", "list_projects" appliesTo {
+    principal: [User],
+    resource: [Organization],
+    context: GlobalContext,
+};
+
+action "list_organizations_by_user" appliesTo {
+    principal: [User],
+    resource: [User],
+    context: GlobalContext,
+};
+
+action "create_project" appliesTo {
+    principal: [User],
+    resource: [Project],
+    context: GlobalContext,
+};
+
+action "create_user_session_request", "get_user_session_request", "complete_user_session_request" appliesTo {
+    principal: [Unauthenticated],
+    resource: [UserSessionRequest],
+    context: GlobalContext,
+    };
+
+action "approve_user_session_request" appliesTo {
+    principal: [User],
+    resource: [UserSessionRequest],
+    context: GlobalContext,
+};
+
+action "validate_mfa_for_user_session", "refresh_user_session", "invalidate_user_session" appliesTo {
+    principal: [User],
+    resource: [UserSession],
+    context: GlobalContext,
+};
+
+action "get_user", "update_user", "list_user_emails" appliesTo {
+    principal: [User],
+    resource: [User],
+    context: GlobalContext,
+};
+
+action "create_user_email", "delete_user_email" appliesTo {
+    principal: [User],
+    resource: [UserEmail],
+    context: GlobalContext,
+};
+
+action "create_webauthn_credential", "list_webauthn_credentials", "create_webauthn_challenge" appliesTo {
+    principal: [User],
+    resource: [User],
+    context: GlobalContext,
+};
+
+action "complete_create_webauthn_credential", "delete_webauthn_credential" appliesTo {
+    principal: [User],
+    resource: [MfaWebauthnCredential],
+    context: GlobalContext,
+};
+
+action "create_totp_credential", "list_totp_credentials" appliesTo {
+    principal: [User],
+    resource: [User],
+    context: GlobalContext,
+};
+
+action "complete_create_totp_credential", "delete_totp_credential" appliesTo {
+    principal: [User],
+    resource: [MfaTotpCredential],
+    context: GlobalContext,
+};
+
+action "regenerate_recovery_codes" appliesTo {
+    principal: [User],
+    resource: [User],
+    context: GlobalContext,
+};
+
+action "delete_user" appliesTo {
+    principal: [User],
+    resource: [User],
+    context: GlobalContext,
+};

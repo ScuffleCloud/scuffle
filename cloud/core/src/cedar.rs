@@ -29,14 +29,6 @@ impl CedarEntity for Unauthenticated {}
 
 #[derive(Debug, Clone, Copy, derive_more::Display, serde::Serialize)]
 pub enum Action {
-    // User related
-    /// Register with email and password.
-    #[display("register_with_email")]
-    RegisterWithEmail,
-    #[display("complete_register_with_email")]
-    CompleteRegisterWithEmail,
-    #[display("get_login_with_email_options")]
-    GetLoginWithEmailOptions,
     /// Login to an existing account with email and password.
     #[display("login_with_email_password")]
     LoginWithEmailPassword,
@@ -116,7 +108,7 @@ pub enum Action {
     ListOrganizationsByUser,
     #[display("create_project")]
     CreateProject,
-    #[display("list_project")]
+    #[display("list_projects")]
     ListProjects,
 
     // OrganizationInvitation related

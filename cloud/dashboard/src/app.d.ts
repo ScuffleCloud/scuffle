@@ -7,6 +7,10 @@ declare global {
         // interface PageData {}
         // interface PageState {}
         // interface Platform {}
+        interface PageState {
+            loginMode?: import("$components/streams/types").LoginMode;
+            userEmail?: string;
+        }
     }
 }
 

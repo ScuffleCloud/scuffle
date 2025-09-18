@@ -1,6 +1,6 @@
 load("//misc/utils/rust:manifest.bzl", "cargo_toml")
 load("//misc/utils/rust:package.bzl", "scuffle_package")
-load(":render_preview.bzl", "render_preview")
+load(":emails_render.bzl", "emails_render")
 
 cargo_toml()
 
@@ -22,6 +22,6 @@ scuffle_package(
     deps = [":emails"],
 )
 
-render_preview(
-    name = "render_preview",
+emails_render(
+    name = "render",
 )

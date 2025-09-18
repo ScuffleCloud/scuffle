@@ -1,25 +1,25 @@
-def _render_preview_rule_impl(ctx):
+def _emails_render_rule_impl(ctx):
     output_dir = ctx.actions.declare_directory(ctx.label.name)
     ctx.actions.run(
         outputs = [output_dir],
         inputs = [],
-        executable = ctx.executable._render_preview,
+        executable = ctx.executable._emails_render,
         arguments = [output_dir.path],
-        mnemonic = "RenderEmailPreview",
-        progress_message = "RenderEmailPreview %{label}",
+        mnemonic = "ScuffleCloudCoreEmailsRender",
+        progress_message = "ScuffleCloudCoreEmailsRender %{label}",
     )
 
     return [
         DefaultInfo(files = depset([output_dir])),
     ]
 
-render_preview = rule(
+emails_render = rule(
     attrs = {
-        "_render_preview": attr.label(
+        "_emails_render": attr.label(
             default = ":bin",
             cfg = "exec",
             executable = True,
         ),
     },
-    implementation = _render_preview_rule_impl,
+    implementation = _emails_render_rule_impl,
 )

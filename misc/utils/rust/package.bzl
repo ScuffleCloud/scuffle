@@ -35,7 +35,8 @@ def scuffle_package(
         target_compatible_with = None,
         rustc_flags = None,
         rustc_env = None,
-        nightly = None):
+        nightly = None,
+        rustc_env_files = None):
     """Creates a rust_library and corresponding rust_test target.
 
     Args:
@@ -58,6 +59,7 @@ def scuffle_package(
         rustc_flags: Additional rustc flags to add to the build.
         rustc_env: Additional env vars to add to rustc.
         nightly: If we should use nightly mode.
+        rustc_env_files: Additional rustc env files.
     """
 
     package_name = native.package_name()
@@ -95,6 +97,8 @@ def scuffle_package(
         rustc_flags = []
     if rustc_env == None:
         rustc_env = {}
+    if rustc_env_files == None:
+        rustc_env_files = []
 
     NAME_MAPPINGS = {
         "rlib": "lib",
@@ -106,6 +110,7 @@ def scuffle_package(
         fail("crate_type must be one of: %s" % [kind for kind in NAME_MAPPINGS.keys()])
 
     name = package_name.split("/")[-1] if name == None else name
+    colon_name = ":" + name
 
     cargo_toml_env_vars(
         name = name + "_cargo_toml_env",
@@ -115,6 +120,8 @@ def scuffle_package(
         target_compatible_with = target_compatible_with,
         visibility = ["//visibility:private"],
     )
+
+    rustc_env_files += [colon_name + "_cargo_toml_env"]
 
     extract_cargo_lints(
         name = name + "_cargo_toml_lints",
@@ -129,8 +136,6 @@ def scuffle_package(
         rustc_env = rustc_env | {
             "RUSTC_BOOTSTRAP": "1",
         }
-
-    colon_name = ":" + name
 
     normal_deps = all_crate_deps(normal = True, package_name = package_name, features = features) + deps + ["@rules_rust//rust/runfiles"]
     normal_proc_macro_deps = all_crate_deps(proc_macro = True, package_name = package_name, features = features) + proc_macro_deps
@@ -155,7 +160,7 @@ def scuffle_package(
         tags = tags,
         rustc_flags = rustc_flags_combined,
         rustc_env = rustc_env,
-        rustc_env_files = [colon_name + "_cargo_toml_env"],
+        rustc_env_files = rustc_env_files,
         target_compatible_with = target_compatible_with,
     )
 
@@ -202,7 +207,7 @@ def scuffle_package(
             deps = all_test_deps,
             proc_macro_deps = all_test_proc_macro_deps,
             crate_features = features.select(),
-            rustc_env_files = [colon_name + "_cargo_toml_env"],
+            rustc_env_files = rustc_env_files,
             rustc_flags = rustc_flags_combined + [
                 "--cfg=coverage_nightly",
                 "@$(location //settings:test_rustc_flags)",
@@ -226,7 +231,7 @@ def scuffle_package(
             data = test_data,
             env = test_env,
             tags = test_tags,
-            rustc_env_files = [colon_name + "_cargo_toml_env"],
+            rustc_env_files = rustc_env_files,
             rustc_flags = rustc_flags_combined,
             rustc_env = rustc_env,
             # Needs to be marked as not testonly because the rust_clippy
@@ -277,7 +282,7 @@ def scuffle_package(
     rustdoc(
         name = name + "_doc",
         crate = colon_name,
-        rustdoc_env_files = [colon_name + "_cargo_toml_env"],
+        rustdoc_env_files = rustc_env_files,
         rustdoc_flags = rustdoc_flags,
         visibility = visibility,
         target_compatible_with = target_compatible_with,
@@ -287,7 +292,7 @@ def scuffle_package(
         name = name + "_doc_json",
         crate = colon_name,
         output_format = "json",
-        rustdoc_env_files = [colon_name + "_cargo_toml_env"],
+        rustdoc_env_files = rustc_env_files,
         rustdoc_flags = [
             "-Zunstable-options",
             "--cap-lints=allow",

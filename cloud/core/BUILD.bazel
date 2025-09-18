@@ -39,7 +39,10 @@ scuffle_package(
         ],
     ),
     aliases = aliases,
-    compile_data = ["static_policies.cedar",  "static_policies.cedarschema"],
+    compile_data = [
+        "static_policies.cedar",
+        "static_policies.cedarschema",
+    ],
     crate_name = "scufflecloud-core",
     deps = deps,
 )

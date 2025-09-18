@@ -233,7 +233,7 @@ jobs:
       - name: Upload
         uses: actions/upload-artifact@v4
         with:
-          name: "ci-preview-rustdoc"
+          name: "ci-preview-cloud-emails-render"
           path: ./cloud-emails-render.tar.zst
 
       - name: Deploy
@@ -248,7 +248,6 @@ jobs:
           vercel-org-id: ${{ secrets.vercel_org_id }}
           vercel-project-id: ${{ secrets.vercel_project_id_cloud_emails_render }}
           working-directory: ./target-bazel/bin/cloud/core/emails/render
-
 
   report:
     needs: [dashboard, docs, rustdoc, cloud_emails_render]

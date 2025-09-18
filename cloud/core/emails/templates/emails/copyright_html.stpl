@@ -1,6 +1,5 @@
-<% use chrono::Datelike; %>
 <div style="font-family: 'Archivo', sans-serif; font-size: 14px; font-weight: 600; line-height: 16px; color: #45413F; margin-top: 16px; text-align:center;">
-    &copy; <%= chrono::Utc::now().year() %> Scuffle LLC. All rights reserved.
+    &copy; <%= self.copyright_year %> Scuffle LLC. All rights reserved.
 </div>
 <div style="font-family: 'Archivo', sans-serif; font-size: 12px; font-weight: 600; line-height: 16px; color: #45413F; text-align:center;">
     8 The Green, Dover, DE 19901, USA

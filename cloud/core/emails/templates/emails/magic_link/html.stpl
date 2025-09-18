@@ -15,14 +15,14 @@
         </tr>
         <tr align="center">
             <td>
-                <table border="0" cellspacing="0" cellpadding="0" style="margin-bottom: 20px; width: 360px;">
+                <table width="360px" border="0" cellspacing="0" cellpadding="0" style="margin-bottom: 20px; width: 360px;">
                     <tr>
                         <td width="8" style="width: 8px;"></td>
                         <td>
                             <div align="center">
                                 <% include!("../banner.stpl"); %>
                                 <div
-                                    style="border-style: solid; border-width: thin; border-color: #E6DEDB; border-bottom-left-radius: 20px; border-bottom-right-radius: 20px; padding: 24px; background-color: #FAF5F1;">
+                                    style="width: 310px; border-style: solid; border-width: thin; border-color: #E6DEDB; border-bottom-left-radius: 20px; border-bottom-right-radius: 20px; padding: 24px; background-color: #FAF5F1;">
                                     <div
                                         style="font-family: 'Archivo', sans-serif; font-size: 24px; font-weight: 700; line-height: 32px; color: #272626;">
                                         Sign in to Scuffle
@@ -64,7 +64,7 @@
                                         below into your browser:
                                         <br>
                                         <a href="<%= self.url %>" target="_blank"
-                                            style="font-family: 'Archivo', sans-serif; font-size: 16px; font-weight: 500; line-height: 24px;">
+                                            style="font-family: 'Archivo', sans-serif; font-size: 16px; font-weight: 500; line-height: 24px; word-break: break-word; word-wrap: break-word; overflow-wrap: break-word;">
                                             <%= self.url %>
                                         </a>
                                     </div>

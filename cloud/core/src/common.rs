@@ -15,6 +15,7 @@ use diesel::{
     SelectableHelper,
 };
 use diesel_async::RunQueryDsl;
+use geo_ip::maxminddb;
 use geo_ip::middleware::IpAddressInfo;
 use pkcs8::DecodePublicKey;
 use rand::RngCore;
@@ -23,7 +24,16 @@ use tonic::Code;
 use tonic_types::{ErrorDetails, StatusExt};
 
 use crate::chrono_ext::ChronoDateTimeExt;
-use crate::emails;
+
+pub(crate) fn email_to_pb(email: core_emails::Email) -> pb::scufflecloud::email::v1::Email {
+    pb::scufflecloud::email::v1::Email {
+        from_address: email.from_address,
+        to_address: email.to_address,
+        subject: email.subject,
+        text: email.text,
+        html: email.html,
+    }
+}
 
 pub(crate) fn generate_random_bytes() -> Result<[u8; 32], rand::Error> {
     let mut token = [0u8; 32];
@@ -298,10 +308,23 @@ pub(crate) async fn create_session<G: core_traits::Global>(
     };
 
     if let Some(primary_email) = user.primary_email.as_ref() {
-        let email = emails::new_device_email(global, primary_email.clone(), ip_info).await?;
+        let geo_info = ip_info
+            .lookup_geoip_info::<maxminddb::geoip2::City>(&**global)
+            .into_tonic_internal_err("failed to lookup geoip info")?
+            .map(Into::into)
+            .unwrap_or_default();
+        let email = core_emails::new_device_email(
+            global.email_from_address().to_string(),
+            primary_email.clone(),
+            global.dashboard_origin(),
+            ip_info.ip_address,
+            geo_info,
+        )
+        .into_tonic_internal_err("failed to render email")?;
+
         global
             .email_service()
-            .send_email(email)
+            .send_email(email_to_pb(email))
             .await
             .into_tonic_internal_err("failed to send new device email")?;
     }

@@ -21,7 +21,7 @@ use crate::cedar::Action;
 use crate::http_ext::RequestExt;
 use crate::operations::{Operation, OperationDriver};
 use crate::totp::TotpError;
-use crate::{common, emails, totp};
+use crate::{common, totp};
 
 impl<G: core_traits::Global> Operation<G> for tonic::Request<pb::scufflecloud::core::v1::GetUserRequest> {
     type Principal = User;
@@ -257,13 +257,15 @@ impl<G: core_traits::Global> Operation<G> for tonic::Request<pb::scufflecloud::c
             ));
         }
 
+        let timeout = global.timeout_config().new_user_email_request;
+
         // Create email registration request
         let registration_request = NewUserEmailRequest {
             id: NewUserEmailRequestId::new(),
             user_id: resource.user_id,
             email: resource.email.clone(),
             code: code.to_vec(),
-            expires_at: chrono::Utc::now() + global.timeout_config().new_user_email_request,
+            expires_at: chrono::Utc::now() + timeout,
         };
 
         diesel::insert_into(new_user_email_requests::dsl::new_user_email_requests)
@@ -273,12 +275,17 @@ impl<G: core_traits::Global> Operation<G> for tonic::Request<pb::scufflecloud::c
             .into_tonic_internal_err("failed to insert email registration request")?;
 
         // Send email
-        let email = emails::add_new_email_email(global, resource.email, code_base64)
-            .await
-            .into_tonic_internal_err("failed to render add new email email")?;
+        let email = core_emails::add_new_email_email(
+            global.email_from_address().to_string(),
+            resource.email,
+            global.dashboard_origin(),
+            code_base64,
+            timeout,
+        )
+        .into_tonic_internal_err("failed to render add new email email")?;
         global
             .email_service()
-            .send_email(email)
+            .send_email(common::email_to_pb(email))
             .await
             .into_tonic_internal_err("failed to send add new email email")?;
 

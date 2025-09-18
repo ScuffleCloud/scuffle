@@ -26,6 +26,7 @@ cedar-policy = "4.5.1"
 chrono = "0.4.41"
 core-cedar = { path = "./cedar", package = "scufflecloud-core-cedar" }
 core-db-types = { path = "./db-types", package = "scufflecloud-core-db-types" }
+core-emails = { path = "./emails", package = "scufflecloud-core-emails" }
 core-traits = { path = "./traits", package = "scufflecloud-core-traits" }
 derive_more = { features = ["display"], version = "2.0.1" }
 diesel = { features = ["chrono", "network-address", "serde_json", "uuid"], version = "2.2.10" }

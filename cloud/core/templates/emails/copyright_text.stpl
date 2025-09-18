@@ -1,3 +1,0 @@
-<% use chrono::Datelike; %>
-© <%= chrono::Utc::now().year() %> Scuffle LLC. All rights reserved.
-8 The Green, Dover, DE 19901, USA

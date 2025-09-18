@@ -15,7 +15,7 @@ use crate::cedar::{Action, CoreApplication, Unauthenticated};
 use crate::common::normalize_email;
 use crate::http_ext::RequestExt;
 use crate::operations::{Operation, OperationDriver};
-use crate::{captcha, common, emails, google_api};
+use crate::{captcha, common, google_api};
 
 impl<G: core_traits::Global> Operation<G> for tonic::Request<pb::scufflecloud::core::v1::LoginWithMagicLinkRequest> {
     type Principal = Unauthenticated;
@@ -70,13 +70,15 @@ impl<G: core_traits::Global> Operation<G> for tonic::Request<pb::scufflecloud::c
         let code = common::generate_random_bytes().into_tonic_internal_err("failed to generate magic link code")?;
         let code_base64 = base64::prelude::BASE64_URL_SAFE.encode(code);
 
+        let timeout = global.timeout_config().magic_link_request;
+
         // Insert email link user session request
         let session_request = MagicLinkRequest {
             id: MagicLinkRequestId::new(),
             user_id,
             email: email.clone(),
             code: code.to_vec(),
-            expires_at: chrono::Utc::now() + global.timeout_config().magic_link_request,
+            expires_at: chrono::Utc::now() + timeout,
         };
         diesel::insert_into(magic_link_requests::dsl::magic_link_requests)
             .values(session_request)
@@ -86,18 +88,28 @@ impl<G: core_traits::Global> Operation<G> for tonic::Request<pb::scufflecloud::c
 
         // Send email
         let email = if user_id.is_none() {
-            emails::register_with_email_email(global, email, code_base64)
-                .await
-                .into_tonic_internal_err("failed to render registration email")?
+            core_emails::register_with_email_email(
+                global.email_from_address().to_string(),
+                email,
+                global.dashboard_origin(),
+                code_base64,
+                timeout,
+            )
+            .into_tonic_internal_err("failed to render registration email")?
         } else {
-            emails::magic_link_email(global, email, code_base64)
-                .await
-                .into_tonic_internal_err("failed to render magic link email")?
+            core_emails::magic_link_email(
+                global.email_from_address().to_string(),
+                email,
+                global.dashboard_origin(),
+                code_base64,
+                timeout,
+            )
+            .into_tonic_internal_err("failed to render magic link email")?
         };
 
         global
             .email_service()
-            .send_email(email)
+            .send_email(common::email_to_pb(email))
             .await
             .into_tonic_internal_err("failed to send magic link email")?;
 

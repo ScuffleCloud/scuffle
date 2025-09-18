@@ -22,7 +22,6 @@ mod captcha;
 pub mod cedar;
 mod chrono_ext;
 mod common;
-mod emails;
 mod google_api;
 mod http_ext;
 mod middleware;

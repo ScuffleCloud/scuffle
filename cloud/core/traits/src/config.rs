@@ -15,7 +15,7 @@ pub struct TimeoutConfig {
     pub user_session: std::time::Duration,
     pub user_session_token: std::time::Duration,
     pub mfa: std::time::Duration,
-    pub email_registration_request: std::time::Duration,
+    pub new_user_email_request: std::time::Duration,
     pub user_session_request: std::time::Duration,
     pub magic_link_request: std::time::Duration,
 }

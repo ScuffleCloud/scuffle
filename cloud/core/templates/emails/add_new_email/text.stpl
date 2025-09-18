@@ -1,5 +1,5 @@
 Click the link below to add this email address to your Scuffle account.
 <%= self.url %>
-The link is valid for <% self.timeout_minutes %> minutes.
+The link is valid for <%= self.timeout_minutes %> minutes.
 
 <% include!("../copyright_text.stpl"); %>

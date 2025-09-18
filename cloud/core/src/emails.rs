@@ -34,7 +34,7 @@ pub(crate) async fn register_with_email_email<G: core_traits::Global>(
         .unwrap()
         .to_string();
 
-    let timeout_minutes = global.timeout_config().magic_link_request.num_minutes().max(0) as u32;
+    let timeout_minutes = global.timeout_config().magic_link_request.as_secs() as u32 / 60;
 
     let subject = RegisterWithEmailSubjectTemplate.render_once()?;
     let text = RegisterWithEmailTextTemplate {
@@ -61,12 +61,14 @@ struct AddNewEmailSubjectTemplate;
 #[template(path = "emails/add_new_email/text.stpl")]
 struct AddNewEmailTextTemplate {
     pub url: String,
+    pub timeout_minutes: u32,
 }
 
 #[derive(sailfish::Template)]
 #[template(path = "emails/add_new_email/html.stpl")]
 struct AddNewEmailHtmlTemplate {
     pub url: String,
+    pub timeout_minutes: u32,
 }
 
 pub(crate) async fn add_new_email_email<G: core_traits::Global>(
@@ -79,10 +81,15 @@ pub(crate) async fn add_new_email_email<G: core_traits::Global>(
         .join(&format!("/settings/emails/confirm?code={code}"))
         .unwrap()
         .to_string();
+    let timeout_minutes = global.timeout_config().new_user_email_request.as_secs() as u32 / 60;
 
     let subject = AddNewEmailSubjectTemplate.render_once()?;
-    let text = AddNewEmailTextTemplate { url: url.clone() }.render_once()?;
-    let html = AddNewEmailHtmlTemplate { url }.render_once()?;
+    let text = AddNewEmailTextTemplate {
+        url: url.clone(),
+        timeout_minutes,
+    }
+    .render_once()?;
+    let html = AddNewEmailHtmlTemplate { url, timeout_minutes }.render_once()?;
 
     Ok(pb::scufflecloud::email::v1::Email {
         to_address,
@@ -121,7 +128,7 @@ pub(crate) async fn magic_link_email<G: core_traits::Global>(
         .join(&format!("/login/magic-link?code={code}"))
         .unwrap()
         .to_string();
-    let timeout_minutes = global.timeout_config().magic_link_request.num_minutes().max(0) as u32;
+    let timeout_minutes = global.timeout_config().magic_link_request.as_secs() as u32 / 60;
 
     let subject = MagicLinkSubjectTemplate.render_once()?;
     let text = MagicLinkTextTemplate {

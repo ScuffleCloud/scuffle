@@ -3,6 +3,7 @@ members = [
     "cloud/core",
     "cloud/core/cedar",
     "cloud/core/db-types",
+    "cloud/core/emails",
     "cloud/core/traits",
     "cloud/email",
     "cloud/geo-ip",

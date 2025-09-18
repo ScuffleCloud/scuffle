@@ -1,0 +1,5 @@
+Click the link below to access your Scuffle account.
+<%= self.url %>
+This link is valid for <%= self.timeout_minutes %> minutes.
+
+<% include!("../copyright_text.stpl"); %>

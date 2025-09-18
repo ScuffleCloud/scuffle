@@ -132,6 +132,7 @@ jobs:
       vercel_project_id_dashboard: ${{ secrets.VERCEL_PROJECT_ID_APP_SCUFFLE_CLOUD }}
       vercel_project_id_docs: ${{ secrets.VERCEL_PROJECT_ID_DOCS_SCUFFLE_CLOUD }}
       vercel_project_id_rustdoc: ${{ secrets.VERCEL_PROJECT_ID_DOCS_SCUFFLE_RS }}
+      vercel_project_id_cloud_emails_render: ${{ secrets.VERCEL_PROJECT_ID_SCUFFLECLOUD_EMAILS_RENDER }}
 
   brawl-done:
     runs-on: ubuntu-24.04

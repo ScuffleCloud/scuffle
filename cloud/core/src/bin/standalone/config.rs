@@ -27,11 +27,11 @@ pub struct TimeoutConfig {
     #[default(hours(4))]
     pub user_session_token: std::time::Duration,
     #[default(hours(1))]
-    pub email_registration_request: std::time::Duration,
+    pub new_user_email_request: std::time::Duration,
     #[default(minutes(5))]
     pub user_session_request: std::time::Duration,
     #[default(minutes(15))]
-    pub magic_link_user_session_request: std::time::Duration,
+    pub magic_link_request: std::time::Duration,
 }
 
 #[derive(serde_derive::Deserialize, smart_default::SmartDefault, Debug, Clone)]

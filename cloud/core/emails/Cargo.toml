@@ -1,0 +1,19 @@
+[package]
+name = "scufflecloud-core-emails"
+version = "0.1.0"
+authors = ["Scuffle <opensource@scuffle.cloud>"]
+edition = "2024"
+license = "AGPL-3.0"
+publish = false
+readme = "README.md"
+repository = "https://github.com/scufflecloud/scuffle"
+
+[[bin]]
+name = "scufflecloud-core-emails-render-preview"
+path = "bin/render_preview.rs"
+
+[dependencies]
+chrono = "0.4.41"
+maxminddb = "0.26.0"
+sailfish = "0.10.0"
+url = "2.5.4"

@@ -1,2 +1,0 @@
-To add this email address to your account, please confirm it by clicking the link below:
-<%= self.url %>

@@ -20,6 +20,8 @@ on:
         required: false
       vercel_org_id:
         required: false
+      vercel_project_id_cloud_emails_render:
+        required: false
       vercel_project_id_dashboard:
         required: false
       vercel_project_id_docs:
@@ -38,6 +40,7 @@ jobs:
       dashboard_build: ${{ steps.builds.outputs.dashboard_build }}
       docs_build: ${{ steps.builds.outputs.docs_build }}
       rustdoc_build: ${{ steps.builds.outputs.rustdoc_build }}
+      cloud_emails_render_build: ${{ steps.builds.outputs.cloud_emails_render_build }}
     steps:
       - uses: actions/download-artifact@v5
         if: ${{ github.event_name == 'pull_request' }}
@@ -67,6 +70,7 @@ jobs:
               check_target "//cloud/dashboard:dashboard" "dashboard_build"
               check_target "//cloud/docs:docs" "docs_build"
               check_target "//docs:rustdoc" "rustdoc_build"
+              check_target "//cloud/core/emails:render" "cloud_emails_render_build"
           fi
 
   dashboard:
@@ -201,8 +205,52 @@ jobs:
           vercel-project-id: ${{ secrets.vercel_project_id_rustdoc }}
           working-directory: ./target-bazel/bin/docs/rustdoc.rustdoc_merge
 
+  cloud_emails_render:
+    needs: [prep]
+    if: ${{ needs.prep.outputs.cloud_emails_render_build == 'true' }}
+    runs-on: ubicloud-standard-8-ubuntu-2404
+    outputs:
+      preview-url: ${{ steps.deploy.outputs.preview-url }}
+    steps:
+      - uses: actions/checkout@v5
+
+      - name: Install zstd
+        run: sudo apt-get update && sudo apt-get install zstd -y
+
+      - uses: ./.github/actions/setup-bazel
+        with:
+          build_buddy_token: ${{ secrets.build_buddy_token }}
+
+      - name: Build
+        run: bazel build //cloud/core/emails:render
+
+      - name: Compress
+        run: |
+          pwd=$(pwd)
+          cd ./target-bazel/bin/cloud/core/emails/render
+          tar -cf - * | zstd -o "$pwd/cloud-emails-render.tar.zst"
+
+      - name: Upload
+        uses: actions/upload-artifact@v4
+        with:
+          name: "ci-preview-cloud-emails-render"
+          path: ./cloud-emails-render.tar.zst
+
+      - name: Deploy
+        if: ${{ inputs.deploy }}
+        id: deploy
+        uses: amondnet/vercel-action@888da851026e0573da056b061931bcb765a915c4
+        with:
+          vercel-token: ${{ secrets.vercel_token }}
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          github-comment: false
+          vercel-args: "--archive=tgz"
+          vercel-org-id: ${{ secrets.vercel_org_id }}
+          vercel-project-id: ${{ secrets.vercel_project_id_cloud_emails_render }}
+          working-directory: ./target-bazel/bin/cloud/core/emails/render
+
   report:
-    needs: [dashboard, docs, rustdoc]
+    needs: [dashboard, docs, rustdoc, cloud_emails_render]
     runs-on: ubuntu-24.04
     if: ${{ always() && inputs.deploy && inputs.pr_number }}
     steps:

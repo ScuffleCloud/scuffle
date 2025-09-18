@@ -95,8 +95,8 @@ impl core_traits::ConfigInterface for Global {
 
     fn timeout_config(&self) -> core_traits::TimeoutConfig {
         core_traits::TimeoutConfig {
-            email_registration_request: self.config.timeouts.email_registration_request,
-            magic_link_user_session_request: self.config.timeouts.magic_link_user_session_request,
+            new_user_email_request: self.config.timeouts.new_user_email_request,
+            magic_link_request: self.config.timeouts.magic_link_request,
             max_request: self.config.timeouts.max_request_lifetime,
             mfa: self.config.timeouts.mfa,
             user_session: self.config.timeouts.user_session,

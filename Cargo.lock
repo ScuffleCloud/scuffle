@@ -5553,6 +5553,7 @@ dependencies = [
  "scuffle-signal",
  "scufflecloud-core-cedar",
  "scufflecloud-core-db-types",
+ "scufflecloud-core-emails",
  "scufflecloud-core-traits",
  "scufflecloud-geo-ip",
  "scufflecloud-proto",
@@ -5611,6 +5612,16 @@ dependencies = [
  "thiserror 2.0.16",
  "ulid",
  "uuid",
+]
+
+[[package]]
+name = "scufflecloud-core-emails"
+version = "0.1.0"
+dependencies = [
+ "chrono",
+ "maxminddb",
+ "sailfish",
+ "url",
 ]
 
 [[package]]

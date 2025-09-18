@@ -514,6 +514,16 @@ _NORMAL_DEPENDENCIES = {
             },
         },
     },
+    "cloud/core/emails": {
+        _REQUIRED_FEATURE: {
+            _COMMON_CONDITION: {
+                "chrono": Label("@cargo_vendor//:chrono-0.4.42"),
+                "maxminddb": Label("@cargo_vendor//:maxminddb-0.26.0"),
+                "sailfish": Label("@cargo_vendor//:sailfish-0.10.0"),
+                "url": Label("@cargo_vendor//:url-2.5.7"),
+            },
+        },
+    },
     "cloud/core/traits": {
         _REQUIRED_FEATURE: {
             _COMMON_CONDITION: {
@@ -1311,6 +1321,12 @@ _NORMAL_ALIASES = {
             },
         },
     },
+    "cloud/core/emails": {
+        _REQUIRED_FEATURE: {
+            _COMMON_CONDITION: {
+            },
+        },
+    },
     "cloud/core/traits": {
         _REQUIRED_FEATURE: {
             _COMMON_CONDITION: {
@@ -1754,6 +1770,8 @@ _NORMAL_DEV_DEPENDENCIES = {
     },
     "cloud/core/db-types": {
     },
+    "cloud/core/emails": {
+    },
     "cloud/core/traits": {
     },
     "cloud/email": {
@@ -2032,6 +2050,8 @@ _NORMAL_DEV_ALIASES = {
     },
     "cloud/core/db-types": {
     },
+    "cloud/core/emails": {
+    },
     "cloud/core/traits": {
     },
     "cloud/email": {
@@ -2262,6 +2282,8 @@ _PROC_MACRO_DEPENDENCIES = {
                 "serde_derive": Label("@cargo_vendor//:serde_derive-1.0.220"),
             },
         },
+    },
+    "cloud/core/emails": {
     },
     "cloud/core/traits": {
     },
@@ -2639,6 +2661,8 @@ _PROC_MACRO_ALIASES = {
     },
     "cloud/core/db-types": {
     },
+    "cloud/core/emails": {
+    },
     "cloud/core/traits": {
     },
     "cloud/email": {
@@ -2769,6 +2793,8 @@ _PROC_MACRO_DEV_DEPENDENCIES = {
     "cloud/core/cedar": {
     },
     "cloud/core/db-types": {
+    },
+    "cloud/core/emails": {
     },
     "cloud/core/traits": {
     },
@@ -2905,6 +2931,8 @@ _PROC_MACRO_DEV_ALIASES = {
     "cloud/core/cedar": {
     },
     "cloud/core/db-types": {
+    },
+    "cloud/core/emails": {
     },
     "cloud/core/traits": {
     },
@@ -3119,6 +3147,8 @@ _BUILD_DEPENDENCIES = {
     },
     "cloud/core/db-types": {
     },
+    "cloud/core/emails": {
+    },
     "cloud/core/traits": {
     },
     "cloud/email": {
@@ -3255,6 +3285,8 @@ _BUILD_ALIASES = {
     },
     "cloud/core/db-types": {
     },
+    "cloud/core/emails": {
+    },
     "cloud/core/traits": {
     },
     "cloud/email": {
@@ -3386,6 +3418,8 @@ _BUILD_PROC_MACRO_DEPENDENCIES = {
     },
     "cloud/core/db-types": {
     },
+    "cloud/core/emails": {
+    },
     "cloud/core/traits": {
     },
     "cloud/email": {
@@ -3505,6 +3539,8 @@ _BUILD_PROC_MACRO_ALIASES = {
     },
     "cloud/core/db-types": {
     },
+    "cloud/core/emails": {
+    },
     "cloud/core/traits": {
     },
     "cloud/email": {
@@ -3623,6 +3659,8 @@ _FEATURE_FLAGS = {
     "cloud/core/cedar": {
     },
     "cloud/core/db-types": {
+    },
+    "cloud/core/emails": {
     },
     "cloud/core/traits": {
     },
@@ -3970,6 +4008,8 @@ _RESOLVED_FEATURE_FLAGS = {
     },
     "cloud/core/db-types": {
     },
+    "cloud/core/emails": {
+    },
     "cloud/core/traits": {
     },
     "cloud/email": {
@@ -4138,6 +4178,7 @@ _VERSIONS = {
     "cloud/core": "0.1.0",
     "cloud/core/cedar": "0.1.0",
     "cloud/core/db-types": "0.1.0",
+    "cloud/core/emails": "0.1.0",
     "cloud/core/traits": "0.1.0",
     "cloud/email": "0.1.0",
     "cloud/geo-ip": "0.1.0",

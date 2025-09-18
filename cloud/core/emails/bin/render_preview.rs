@@ -12,15 +12,17 @@ struct IndexTemplate {
 #[derive(sailfish::Template)]
 #[template(path = "preview/email_index.stpl")]
 struct EmailIndexTemplate {
+    name: String,
     from_address: String,
     to_address: String,
     subject: String,
     text: String,
 }
 
-impl From<scufflecloud_core_emails::Email> for EmailIndexTemplate {
-    fn from(email: scufflecloud_core_emails::Email) -> Self {
+impl EmailIndexTemplate {
+    fn from_email(name: String, email: scufflecloud_core_emails::Email) -> Self {
         Self {
+            name,
             from_address: email.from_address,
             to_address: email.to_address,
             subject: email.subject,
@@ -32,7 +34,7 @@ impl From<scufflecloud_core_emails::Email> for EmailIndexTemplate {
 fn save_email(output_path: &Path, name: &str, email: scufflecloud_core_emails::Email) {
     std::fs::create_dir_all(output_path.join(name)).expect("failed to create dir");
     std::fs::write(output_path.join(name).join("html.html"), email.html.as_bytes()).expect("failed to write");
-    let email_index = EmailIndexTemplate::from(email).render_once().expect("failed to render");
+    let email_index = EmailIndexTemplate::from_email(name.to_string(), email).render_once().expect("failed to render");
     std::fs::write(output_path.join(name).join("index.html"), email_index.as_bytes()).expect("failed to write");
 }
 

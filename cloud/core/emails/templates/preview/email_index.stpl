@@ -44,7 +44,7 @@
     <pre style="border: 1px solid black; width: 600px; white-space: pre-wrap; padding: 0.5rem;"><%- self.text %></pre>
 
     <p class="bold">HTML version:</p>
-    <iframe src="html.html" style="width: 600px; height: 800px; border: 1px solid black;"></iframe>
+    <iframe src="/<%= self.name %>/html.html" style="width: 600px; height: 800px; border: 1px solid black;"></iframe>
 </body>
 
 </html>

@@ -57,7 +57,7 @@ pub struct MfaWebauthnCredential {
     pub user_id: UserId,
     pub name: String,
     pub credential_id: Vec<u8>,
-    #[serde(skip_serializing_if = "serde_json::Value::is_null")]
+    #[serde(skip)] // cedar doesn't support json values
     pub credential: serde_json::Value,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub counter: Option<i64>,

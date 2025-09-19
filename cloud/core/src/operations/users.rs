@@ -504,10 +504,16 @@ impl<G: core_traits::Global> Operation<G> for tonic::Request<pb::scufflecloud::c
             serde_json::to_string(&response).into_tonic_internal_err("failed to serialize webauthn options")?;
 
         diesel::insert_into(mfa_webauthn_reg_sessions::dsl::mfa_webauthn_reg_sessions)
-            .values(reg_session)
+            .values(&reg_session)
+            .on_conflict(mfa_webauthn_reg_sessions::dsl::user_id)
+            .do_update()
+            .set((
+                mfa_webauthn_reg_sessions::dsl::state.eq(&reg_session.state),
+                mfa_webauthn_reg_sessions::dsl::expires_at.eq(&reg_session.expires_at),
+            ))
             .execute(conn)
             .await
-            .into_tonic_internal_err("failed to insert webauthn authentication session")?;
+            .into_tonic_internal_err("failed to insert webauthn registration session")?;
 
         Ok(pb::scufflecloud::core::v1::CreateWebauthnCredentialResponse { options_json })
     }
@@ -755,7 +761,13 @@ impl<G: core_traits::Global> Operation<G> for tonic::Request<pb::scufflecloud::c
             serde_json::to_string(&response).into_tonic_internal_err("failed to serialize webauthn options")?;
 
         diesel::insert_into(mfa_webauthn_auth_sessions::dsl::mfa_webauthn_auth_sessions)
-            .values(auth_session)
+            .values(&auth_session)
+            .on_conflict(mfa_webauthn_auth_sessions::dsl::user_id)
+            .do_update()
+            .set((
+                mfa_webauthn_auth_sessions::dsl::state.eq(&auth_session.state),
+                mfa_webauthn_auth_sessions::dsl::expires_at.eq(&auth_session.expires_at),
+            ))
             .execute(conn)
             .await
             .into_tonic_internal_err("failed to insert webauthn authentication session")?;

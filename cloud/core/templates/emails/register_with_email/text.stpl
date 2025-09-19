@@ -1,2 +1,0 @@
-Thanks for singing up for Scuffle! To complete your registration, please confirm your email address by clicking the link below:
-<%= self.url %>

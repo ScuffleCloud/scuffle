@@ -13,10 +13,20 @@ deps = [
     "//crates/signal",
     "//crates/tinc",
     "//cloud/proto",
+    "//cloud/core/traits",
+    "//cloud/core/emails",
+    "//cloud/core/db-types",
+    "//cloud/core/cedar",
+    "//cloud/geo-ip",
 ]
 
 aliases = {
     "//cloud/proto": "pb",
+    "//cloud/geo-ip": "geo_ip",
+    "//cloud/core/emails": "core_emails",
+    "//cloud/core/traits": "core_traits",
+    "//cloud/core/db-types": "core_db_types",
+    "//cloud/core/cedar": "core_cedar",
 }
 
 scuffle_package(
@@ -29,18 +39,19 @@ scuffle_package(
         ],
     ),
     aliases = aliases,
-    compile_data = glob([
-        "templates/emails/**/*.stpl",
-    ]) + ["static_policies.cedar"],
+    compile_data = [
+        "static_policies.cedar",
+        "static_policies.cedarschema",
+    ],
     crate_name = "scufflecloud-core",
     deps = deps,
 )
 
 scuffle_package(
     name = "bin",
-    srcs = [
-        "src/bin/standalone.rs",
-    ],
+    srcs = glob([
+        "src/bin/standalone/**/*.rs",
+    ]),
     aliases = aliases,
     crate_name = "scufflecloud-core-standalone",
     crate_type = "bin",

@@ -1,6 +1,10 @@
 _packages = [
     "//cloud/core",
+    "//cloud/core/cedar",
+    "//cloud/core/traits",
+    "//cloud/core/emails",
     "//cloud/email",
+    "//cloud/geo-ip",
     "//cloud/proto",
     "//crates/aac",
     "//crates/amf0",

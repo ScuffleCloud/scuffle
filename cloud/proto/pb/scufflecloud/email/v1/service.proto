@@ -10,7 +10,7 @@ service EmailService {
 }
 
 message Email {
-  string source_address = 1;
+  string from_address = 1 [(tinc.field).constraint.string.email = true];
   string to_address = 2 [(tinc.field).constraint.string.email = true];
   string subject = 3;
   string text = 4;

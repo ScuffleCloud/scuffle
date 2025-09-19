@@ -1,0 +1,27 @@
+load("//misc/utils/rust:manifest.bzl", "cargo_toml")
+load("//misc/utils/rust:package.bzl", "scuffle_package")
+load(":emails_render.bzl", "emails_render")
+
+cargo_toml()
+
+scuffle_package(
+    compile_data = glob(["templates/emails/**/*.stpl"]),
+    crate_name = "scufflecloud-core-emails",
+)
+
+scuffle_package(
+    name = "bin",
+    srcs = [
+        "bin/render_preview.rs",
+    ],
+    compile_data = glob(["templates/preview/**/*.stpl"]),
+    crate_name = "scufflecloud-core-emails-render-preview",
+    crate_type = "bin",
+    readme = False,
+    tags = ["manual"],
+    deps = [":emails"],
+)
+
+emails_render(
+    name = "render",
+)

@@ -1,0 +1,24 @@
+[package]
+name = "scufflecloud-core-db-types"
+version = "0.1.0"
+authors = ["Scuffle <opensource@scuffle.cloud>"]
+edition = "2024"
+license = "AGPL-3.0"
+publish = false
+readme = "README.md"
+repository = "https://github.com/scufflecloud/scuffle"
+
+[lints.rust]
+unexpected_cfgs = { level = "warn", check-cfg = ['cfg(coverage_nightly)'] }
+
+[dependencies]
+chrono = "0.4"
+diesel = { version = "2", default-features = false }
+ipnetwork = "0.21"
+pb = { path = "../../proto", package = "scufflecloud-proto" }
+serde = "1"
+serde_derive = "1"
+serde_json = "1"
+thiserror = "2"
+ulid = "1"
+uuid = "1"

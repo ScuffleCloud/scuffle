@@ -13,7 +13,7 @@ permit (
 );
 
 permit (
-  principal is User,
+  principal is Unauthenticated,
   action == Action::"request_magic_link",
   resource == Application::"core"
 );
@@ -231,7 +231,7 @@ when { principal.id == resource.id };
 permit (
   principal is User,
   action == Action::"create_project",
-  resource is Organization
+  resource is Project
 )
 when { principal in resource };
 
@@ -270,7 +270,7 @@ permit (
 )
 when
 {
-  principal.id == resource.user_id ||
+  (resource has user_id && principal.id == resource.user_id) ||
   principal.id == resource.organization.owner_id
 };
 
@@ -279,7 +279,7 @@ permit (
   action == Action::"accept_organization_invitation",
   resource is OrganizationInvitation
 )
-when { principal.id == resource.user_id };
+when { resource has user_id && principal.id == resource.user_id };
 
 permit (
   principal is User,
@@ -288,6 +288,6 @@ permit (
 )
 when
 {
-  principal.id == resource.user_id ||
+  (resource has user_id && principal.id == resource.user_id) ||
   principal.id == resource.organization.owner_id
 };

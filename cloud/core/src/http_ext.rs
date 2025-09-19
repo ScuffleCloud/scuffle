@@ -1,12 +1,13 @@
 use std::sync::Arc;
 
 use axum::http;
+use core_db_types::models::UserSession;
+use core_traits::OptionExt;
+use geo_ip::middleware::IpAddressInfo;
 use tonic::Code;
 use tonic_types::ErrorDetails;
 
 use crate::middleware::ExpiredSession;
-use crate::models::UserSession;
-use crate::std_ext::OptionExt;
 
 pub(crate) trait RequestExt {
     fn extensions(&self) -> &http::Extensions;
@@ -35,9 +36,9 @@ pub(crate) trait RequestExt {
         )
     }
 
-    fn ip_address_info(&self) -> Result<crate::middleware::IpAddressInfo, tonic::Status> {
+    fn ip_address_info(&self) -> Result<IpAddressInfo, tonic::Status> {
         self.extensions()
-            .get::<crate::middleware::IpAddressInfo>()
+            .get::<IpAddressInfo>()
             .copied()
             .into_tonic_internal_err("missing IpAddressInfo extension")
     }

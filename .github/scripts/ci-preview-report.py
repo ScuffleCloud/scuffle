@@ -27,11 +27,6 @@ def format_url(url: str) -> str:
     return "-"
 
 
-def capitalize(text: str) -> str:
-    """Capitalize first letter of text."""
-    return text[0].upper() + text[1:] if text else ""
-
-
 def generate_report(needs_json: str) -> str:
     """
     Generate markdown report from needs JSON.
@@ -64,7 +59,7 @@ def generate_report(needs_json: str) -> str:
         result = job_data.get("result", "unknown")
         preview_url = job_data.get("outputs", {}).get("preview-url", "")
 
-        deployment_name = capitalize(job_name)
+        deployment_name = job_name.replace("_", " ")
         status_emoji = get_status_emoji(result)
         url_formatted = format_url(preview_url)
 

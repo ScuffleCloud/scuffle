@@ -1,7 +1,12 @@
 [workspace]
 members = [
     "cloud/core",
+    "cloud/core/cedar",
+    "cloud/core/db-types",
+    "cloud/core/emails",
+    "cloud/core/traits",
     "cloud/email",
+    "cloud/geo-ip",
     "cloud/proto",
     "crates/aac",
     "crates/amf0",
@@ -78,9 +83,8 @@ scuffle-mp4 = "0.1.5"
 scuffle-bytes-util = "0.1.5"
 scuffle-expgolomb = "0.1.5"
 
-[profile.release-debug]
-inherits = "release"
-debug = true
+[profile.dev.package."*"]
+opt-level = 3
 
 [patch.crates-io]
 # removal of ring forced dependency when using http3 feature.

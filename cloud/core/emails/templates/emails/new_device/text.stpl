@@ -1,0 +1,9 @@
+We noticed a new login to your Scuffle account and want to make sure it's really you.
+
+IP Address: <%= self.ip_address %>
+<% if !self.geo_info.is_empty() { %>
+Location: <% if let Some(city) = self.geo_info.city.as_ref() { %><%= city %><% } %><% if let Some(country) = self.geo_info.country.as_ref() { %>, <%= country %><% } %>
+<% } %>
+Check activity: <%= self.activity_url %>
+
+<% include!("../copyright_text.stpl"); %>

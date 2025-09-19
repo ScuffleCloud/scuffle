@@ -14,7 +14,7 @@ space_redirects    = true
 [*.md]
 trim_trailing_whitespace = false
 
-[*.yaml,*.yml,*.proto]
+[*.yaml,*.yml,*.proto,*.cedar,*.cedarschema]
 indent_style = space
 indent_size = 2
 

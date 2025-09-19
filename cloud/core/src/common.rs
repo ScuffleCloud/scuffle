@@ -1,11 +1,22 @@
 use std::sync::Arc;
 
 use argon2::{Argon2, PasswordVerifier};
+use core_db_types::id::Id;
+use core_db_types::models::{
+    MfaRecoveryCode, MfaWebauthnCredential, Organization, OrganizationId, User, UserEmail, UserId, UserSession,
+};
+use core_db_types::schema::{
+    mfa_recovery_codes, mfa_totp_credentials, mfa_webauthn_auth_sessions, mfa_webauthn_credentials, organizations,
+    user_emails, user_sessions, users,
+};
+use core_traits::{DisplayExt, EmailServiceClient, OptionExt, ResultExt};
 use diesel::{
     BoolExpressionMethods, ExpressionMethods, JoinOnDsl, NullableExpressionMethods, OptionalExtension, QueryDsl,
     SelectableHelper,
 };
 use diesel_async::RunQueryDsl;
+use geo_ip::maxminddb;
+use geo_ip::middleware::IpAddressInfo;
 use pkcs8::DecodePublicKey;
 use rand::RngCore;
 use sha2::Digest;
@@ -13,17 +24,16 @@ use tonic::Code;
 use tonic_types::{ErrorDetails, StatusExt};
 
 use crate::chrono_ext::ChronoDateTimeExt;
-use crate::id::Id;
-use crate::middleware::IpAddressInfo;
-use crate::models::{
-    MfaRecoveryCode, MfaWebauthnCredential, Organization, OrganizationId, User, UserEmail, UserId, UserSession,
-};
-use crate::schema::{
-    mfa_recovery_codes, mfa_totp_credentials, mfa_webauthn_auth_sessions, mfa_webauthn_credentials, organizations,
-    user_emails, user_sessions, users,
-};
-use crate::std_ext::{DisplayExt, OptionExt, ResultExt};
-use crate::{CoreConfig, emails};
+
+pub(crate) fn email_to_pb(email: core_emails::Email) -> pb::scufflecloud::email::v1::Email {
+    pb::scufflecloud::email::v1::Email {
+        from_address: email.from_address,
+        to_address: email.to_address,
+        subject: email.subject,
+        text: email.text,
+        html: email.html,
+    }
+}
 
 pub(crate) fn generate_random_bytes() -> Result<[u8; 32], rand::Error> {
     let mut token = [0u8; 32];
@@ -66,7 +76,7 @@ pub(crate) fn encrypt_token(
     }
 }
 
-pub(crate) async fn get_user_by_id<G: CoreConfig>(global: &Arc<G>, user_id: UserId) -> Result<User, tonic::Status> {
+pub(crate) async fn get_user_by_id<G: core_traits::Global>(global: &Arc<G>, user_id: UserId) -> Result<User, tonic::Status> {
     global
         .user_loader()
         .load(user_id)
@@ -77,7 +87,7 @@ pub(crate) async fn get_user_by_id<G: CoreConfig>(global: &Arc<G>, user_id: User
 }
 
 pub(crate) async fn get_user_by_id_in_tx(
-    db: &mut diesel_async::AsyncPgConnection,
+    db: &mut impl diesel_async::AsyncConnection<Backend = diesel::pg::Pg>,
     user_id: UserId,
 ) -> Result<User, tonic::Status> {
     let user = users::dsl::users
@@ -93,7 +103,7 @@ pub(crate) async fn get_user_by_id_in_tx(
 }
 
 pub(crate) async fn get_user_by_email(
-    db: &mut diesel_async::AsyncPgConnection,
+    db: &mut impl diesel_async::AsyncConnection<Backend = diesel::pg::Pg>,
     email: &str,
 ) -> Result<Option<User>, tonic::Status> {
     let user = users::dsl::users
@@ -108,7 +118,7 @@ pub(crate) async fn get_user_by_email(
     Ok(user)
 }
 
-pub(crate) async fn get_organization_by_id<G: CoreConfig>(
+pub(crate) async fn get_organization_by_id<G: core_traits::Global>(
     global: &Arc<G>,
     organization_id: OrganizationId,
 ) -> Result<Organization, tonic::Status> {
@@ -124,7 +134,7 @@ pub(crate) async fn get_organization_by_id<G: CoreConfig>(
 }
 
 pub(crate) async fn get_organization_by_id_in_tx(
-    db: &mut diesel_async::AsyncPgConnection,
+    db: &mut impl diesel_async::AsyncConnection<Backend = diesel::pg::Pg>,
     organization_id: OrganizationId,
 ) -> Result<Organization, tonic::Status> {
     let organization = organizations::dsl::organizations
@@ -144,7 +154,10 @@ pub(crate) fn normalize_email(email: &str) -> String {
     email.trim().to_ascii_lowercase()
 }
 
-pub(crate) async fn create_user(tx: &mut diesel_async::AsyncPgConnection, new_user: &User) -> Result<(), tonic::Status> {
+pub(crate) async fn create_user(
+    tx: &mut impl diesel_async::AsyncConnection<Backend = diesel::pg::Pg>,
+    new_user: &User,
+) -> Result<(), tonic::Status> {
     diesel::insert_into(users::dsl::users)
         .values(new_user)
         .execute(tx)
@@ -186,7 +199,7 @@ pub(crate) async fn create_user(tx: &mut diesel_async::AsyncPgConnection, new_us
 }
 
 pub(crate) async fn mfa_options(
-    tx: &mut diesel_async::AsyncPgConnection,
+    tx: &mut impl diesel_async::AsyncConnection<Backend = diesel::pg::Pg>,
     user_id: UserId,
 ) -> Result<Vec<pb::scufflecloud::core::v1::MfaOption>, tonic::Status> {
     let mut mfa_options = vec![];
@@ -227,9 +240,9 @@ pub(crate) async fn mfa_options(
     Ok(mfa_options)
 }
 
-pub(crate) async fn create_session<G: CoreConfig>(
+pub(crate) async fn create_session<G: core_traits::Global>(
     global: &Arc<G>,
-    tx: &mut diesel_async::AsyncPgConnection,
+    tx: &mut impl diesel_async::AsyncConnection<Backend = diesel::pg::Pg>,
     user: &User,
     device: pb::scufflecloud::core::v1::Device,
     ip_info: &IpAddressInfo,
@@ -295,8 +308,25 @@ pub(crate) async fn create_session<G: CoreConfig>(
     };
 
     if let Some(primary_email) = user.primary_email.as_ref() {
-        let email = emails::new_device_email(global, primary_email.clone(), ip_info).await?;
-        global.email_service().send_email(email).await?;
+        let geo_info = ip_info
+            .lookup_geoip_info::<maxminddb::geoip2::City>(&**global)
+            .into_tonic_internal_err("failed to lookup geoip info")?
+            .map(Into::into)
+            .unwrap_or_default();
+        let email = core_emails::new_device_email(
+            global.email_from_address().to_string(),
+            primary_email.clone(),
+            global.dashboard_origin(),
+            ip_info.ip_address,
+            geo_info,
+        )
+        .into_tonic_internal_err("failed to render email")?;
+
+        global
+            .email_service()
+            .send_email(email_to_pb(email))
+            .await
+            .into_tonic_internal_err("failed to send new device email")?;
     }
 
     Ok(new_token)
@@ -320,9 +350,9 @@ pub(crate) fn verify_password(password_hash: &str, password: &str) -> Result<(),
     }
 }
 
-pub(crate) async fn finish_webauthn_authentication<G: CoreConfig>(
+pub(crate) async fn finish_webauthn_authentication<G: core_traits::Global>(
     global: &Arc<G>,
-    tx: &mut diesel_async::AsyncPgConnection,
+    tx: &mut impl diesel_async::AsyncConnection<Backend = diesel::pg::Pg>,
     user_id: UserId,
     reg: &webauthn_rs::prelude::PublicKeyCredential,
 ) -> Result<(), tonic::Status> {
@@ -389,7 +419,7 @@ pub(crate) async fn finish_webauthn_authentication<G: CoreConfig>(
 }
 
 pub(crate) async fn process_recovery_code(
-    tx: &mut diesel_async::AsyncPgConnection,
+    tx: &mut impl diesel_async::AsyncConnection<Backend = diesel::pg::Pg>,
     user_id: UserId,
     code: &str,
 ) -> Result<(), tonic::Status> {

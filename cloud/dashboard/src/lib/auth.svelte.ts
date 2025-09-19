@@ -8,13 +8,7 @@ import {
 } from "@scufflecloud/proto/scufflecloud/core/v1/sessions_service.js";
 import { User } from "@scufflecloud/proto/scufflecloud/core/v1/users.js";
 import { sessionsServiceClient, usersServiceClient } from "./grpcClient";
-import { arrayBufferToBase64 } from "./utils";
-
-// Replace with Uint8Array.fromBase64 in the future
-// https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Uint8Array/fromBase64
-function base64ToArrayBuffer(base64: string): ArrayBuffer {
-    return Uint8Array.from(atob(base64), c => c.charCodeAt(0)).buffer;
-}
+import { arrayBufferToBase64, base64ToArrayBuffer } from "./utils";
 
 function timestampToDate(timestmap: Timestamp): Date | null {
     const seconds = parseInt(timestmap.seconds);

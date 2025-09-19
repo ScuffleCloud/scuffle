@@ -1,8 +1,11 @@
 <script lang="ts">
     import SettingsBlock from "$components/settings-block.svelte";
     import type { Card } from "$components/settings-block.svelte";
+    import { authState } from "$lib/auth.svelte";
+    import { usersServiceClient } from "$lib/grpcClient";
     import IconBell from "$lib/images/icon-bell.svelte";
     import IconShield from "$lib/images/icon-shield.svelte";
+    import { useWebauthnAuth } from "$lib/two-factor/webAuthn.svelte";
     import type { UserSettings } from "$msw/mocks/settings";
 
     interface Props {
@@ -11,7 +14,24 @@
 
     const { settings }: Props = $props();
 
+    const user = authState().user;
     let userSettings = $state(settings);
+
+    // Load in user information on mfa stuff
+    async function webAuthList() {
+        const listCredentials = usersServiceClient
+            .listWebauthnCredentials({
+                id: user?.id ?? "",
+            });
+        const response = await listCredentials.response;
+        console.log("response", response);
+    }
+
+    // Do the 2fa locally without hardening code structures because I don't know where it will go
+    // Lets generate some UUID here for the name of the key. No reason to store it in the database
+    // because we can just generate it on the fly.
+
+    const webauthnAuth = useWebauthnAuth();
 
     const twoFactorCards = $derived<Card[]>([
         {
@@ -250,9 +270,36 @@
     //         ],
     //     },
     // ]);
+
+    let credentialName = $state("");
 </script>
 
 <div class="settings-page">
+    <div class="two-factor-auth">
+        Here:
+        <button onclick={() => webAuthList()}>
+            Load WebAuthn Credentials
+        </button>
+        <br>
+        2fa information here testing flows:
+        <br>
+        <input type="text" bind:value={credentialName} />
+        <br>
+        <button
+            onclick={() =>
+            webauthnAuth.createCredential(
+                credentialName,
+            )}
+        >
+            Test WebAuthn
+        </button>
+        <br>
+        Is supported: {webauthnAuth.isSupported()}
+        <br>
+        Loading: {webauthnAuth.loading()}
+        <br>
+        Error: {webauthnAuth.error()}
+    </div>
     <SettingsBlock
         title="Two-factor Authentication"
         subtitle="(2FA)"

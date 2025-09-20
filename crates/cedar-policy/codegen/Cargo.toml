@@ -1,0 +1,19 @@
+[package]
+name = "scuffle-cedar-policy-codegen"
+version = "0.1.0"
+authors = ["Scuffle <opensource@scuffle.cloud>"]
+documentation = "https://docs.rs/scuffle-cedar-policy-macro"
+edition = "2024"
+keywords = ["codgen", "cedar", "macro"]
+license = "MIT OR Apache-2.0"
+readme = "README.md"
+repository = "https://github.com/scufflecloud/scuffle"
+
+[dependencies]
+cedar-policy-core = "4.5"
+heck = "0.5"
+prettyplease = "0.2"
+proc-macro2 = "1"
+quote = "1"
+syn = "2"
+thiserror = "2"

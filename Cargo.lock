@@ -5219,6 +5219,47 @@ dependencies = [
 ]
 
 [[package]]
+name = "scuffle-cedar-policy"
+version = "0.1.0"
+dependencies = [
+ "bon",
+ "cedar-policy",
+ "cedar-policy-core",
+ "const_panic",
+ "document-features",
+ "konst",
+ "scuffle-cedar-policy-macro",
+ "scuffle-changelog",
+ "serde",
+ "serde_derive",
+ "smol_str",
+]
+
+[[package]]
+name = "scuffle-cedar-policy-codegen"
+version = "0.1.0"
+dependencies = [
+ "cedar-policy-core",
+ "heck",
+ "prettyplease",
+ "proc-macro2",
+ "quote",
+ "syn 2.0.106",
+ "thiserror 2.0.16",
+]
+
+[[package]]
+name = "scuffle-cedar-policy-macro"
+version = "0.1.0"
+dependencies = [
+ "darling 0.21.3",
+ "proc-macro2",
+ "quote",
+ "scuffle-cedar-policy-codegen",
+ "syn 2.0.106",
+]
+
+[[package]]
 name = "scuffle-changelog"
 version = "0.1.1"
 dependencies = [
@@ -5547,6 +5588,7 @@ dependencies = [
  "scuffle-batching",
  "scuffle-bootstrap",
  "scuffle-bootstrap-telemetry",
+ "scuffle-cedar-policy",
  "scuffle-context",
  "scuffle-http",
  "scuffle-settings",
@@ -5585,17 +5627,8 @@ dependencies = [
 name = "scufflecloud-core-cedar"
 version = "0.1.0"
 dependencies = [
- "base64 0.22.1",
- "cedar-policy",
- "const_panic",
- "konst",
- "scufflecloud-core-db-types",
- "scufflecloud-core-traits",
- "scufflecloud-proto",
- "serde",
- "serde_derive",
- "serde_json",
- "tonic",
+ "scuffle-cedar-policy",
+ "scuffle-cedar-policy-codegen",
 ]
 
 [[package]]

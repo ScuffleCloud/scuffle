@@ -17,7 +17,6 @@ _packages = [
     "//crates/changelog",
     "//crates/cedar-policy",
     "//crates/cedar-policy/codegen",
-    "//crates/cedar-policy/macro",
     "//crates/context",
     "//crates/expgolomb",
     "//crates/ffmpeg",

@@ -701,7 +701,9 @@ _NORMAL_DEPENDENCIES = {
                 "const_panic": Label("@cargo_vendor//:const_panic-0.2.15"),
                 "konst": Label("@cargo_vendor//:konst-0.4.2"),
                 "serde": Label("@cargo_vendor//:serde-1.0.220"),
+                "serde_json": Label("@cargo_vendor//:serde_json-1.0.144"),
                 "smol_str": Label("@cargo_vendor//:smol_str-0.3.2"),
+                "thiserror": Label("@cargo_vendor//:thiserror-2.0.16"),
             },
         },
     },
@@ -715,16 +717,6 @@ _NORMAL_DEPENDENCIES = {
                 "quote": Label("@cargo_vendor//:quote-1.0.40"),
                 "syn": Label("@cargo_vendor//:syn-2.0.106"),
                 "thiserror": Label("@cargo_vendor//:thiserror-2.0.16"),
-            },
-        },
-    },
-    "crates/cedar-policy/macro": {
-        _REQUIRED_FEATURE: {
-            _COMMON_CONDITION: {
-                "darling": Label("@cargo_vendor//:darling-0.21.3"),
-                "proc-macro2": Label("@cargo_vendor//:proc-macro2-1.0.101"),
-                "quote": Label("@cargo_vendor//:quote-1.0.40"),
-                "syn": Label("@cargo_vendor//:syn-2.0.106"),
             },
         },
     },
@@ -1468,12 +1460,6 @@ _NORMAL_ALIASES = {
             },
         },
     },
-    "crates/cedar-policy/macro": {
-        _REQUIRED_FEATURE: {
-            _COMMON_CONDITION: {
-            },
-        },
-    },
     "crates/changelog": {
         _REQUIRED_FEATURE: {
             _COMMON_CONDITION: {
@@ -1872,8 +1858,6 @@ _NORMAL_DEV_DEPENDENCIES = {
     },
     "crates/cedar-policy/codegen": {
     },
-    "crates/cedar-policy/macro": {
-    },
     "crates/changelog": {
     },
     "crates/context": {
@@ -2144,8 +2128,6 @@ _NORMAL_DEV_ALIASES = {
     "crates/cedar-policy": {
     },
     "crates/cedar-policy/codegen": {
-    },
-    "crates/cedar-policy/macro": {
     },
     "crates/changelog": {
     },
@@ -2420,8 +2402,6 @@ _PROC_MACRO_DEPENDENCIES = {
         },
     },
     "crates/cedar-policy/codegen": {
-    },
-    "crates/cedar-policy/macro": {
     },
     "crates/changelog": {
     },
@@ -2761,8 +2741,6 @@ _PROC_MACRO_ALIASES = {
     },
     "crates/cedar-policy/codegen": {
     },
-    "crates/cedar-policy/macro": {
-    },
     "crates/changelog": {
     },
     "crates/context": {
@@ -2902,8 +2880,6 @@ _PROC_MACRO_DEV_DEPENDENCIES = {
     "crates/cedar-policy": {
     },
     "crates/cedar-policy/codegen": {
-    },
-    "crates/cedar-policy/macro": {
     },
     "crates/changelog": {
     },
@@ -3055,8 +3031,6 @@ _PROC_MACRO_DEV_ALIASES = {
     "crates/cedar-policy": {
     },
     "crates/cedar-policy/codegen": {
-    },
-    "crates/cedar-policy/macro": {
     },
     "crates/changelog": {
     },
@@ -3262,8 +3236,6 @@ _BUILD_DEPENDENCIES = {
     },
     "crates/cedar-policy/codegen": {
     },
-    "crates/cedar-policy/macro": {
-    },
     "crates/changelog": {
     },
     "crates/context": {
@@ -3405,8 +3377,6 @@ _BUILD_ALIASES = {
     },
     "crates/cedar-policy/codegen": {
     },
-    "crates/cedar-policy/macro": {
-    },
     "crates/changelog": {
     },
     "crates/context": {
@@ -3540,8 +3510,6 @@ _BUILD_PROC_MACRO_DEPENDENCIES = {
     },
     "crates/cedar-policy/codegen": {
     },
-    "crates/cedar-policy/macro": {
-    },
     "crates/changelog": {
     },
     "crates/context": {
@@ -3666,8 +3634,6 @@ _BUILD_PROC_MACRO_ALIASES = {
     "crates/cedar-policy": {
     },
     "crates/cedar-policy/codegen": {
-    },
-    "crates/cedar-policy/macro": {
     },
     "crates/changelog": {
     },
@@ -3858,8 +3824,6 @@ _FEATURE_FLAGS = {
         ],
     },
     "crates/cedar-policy/codegen": {
-    },
-    "crates/cedar-policy/macro": {
     },
     "crates/changelog": {
     },
@@ -4161,8 +4125,6 @@ _RESOLVED_FEATURE_FLAGS = {
     },
     "crates/cedar-policy/codegen": {
     },
-    "crates/cedar-policy/macro": {
-    },
     "crates/changelog": {
     },
     "crates/context": {
@@ -4311,7 +4273,6 @@ _VERSIONS = {
     "crates/bytes-util": "0.1.5",
     "crates/cedar-policy": "0.1.0",
     "crates/cedar-policy/codegen": "0.1.0",
-    "crates/cedar-policy/macro": "0.1.0",
     "crates/changelog": "0.1.1",
     "crates/context": "0.1.5",
     "crates/expgolomb": "0.1.5",

@@ -5228,11 +5228,12 @@ dependencies = [
  "const_panic",
  "document-features",
  "konst",
- "scuffle-cedar-policy-macro",
  "scuffle-changelog",
  "serde",
  "serde_derive",
+ "serde_json",
  "smol_str",
+ "thiserror 2.0.16",
 ]
 
 [[package]]
@@ -5246,17 +5247,6 @@ dependencies = [
  "quote",
  "syn 2.0.106",
  "thiserror 2.0.16",
-]
-
-[[package]]
-name = "scuffle-cedar-policy-macro"
-version = "0.1.0"
-dependencies = [
- "darling 0.21.3",
- "proc-macro2",
- "quote",
- "scuffle-cedar-policy-codegen",
- "syn 2.0.106",
 ]
 
 [[package]]

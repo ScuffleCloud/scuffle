@@ -18,7 +18,6 @@ members = [
     "crates/bytes-util",
     "crates/cedar-policy",
     "crates/cedar-policy/codegen",
-    "crates/cedar-policy/macro",
     "crates/changelog",
     "crates/context",
     "crates/expgolomb",

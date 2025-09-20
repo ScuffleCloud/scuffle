@@ -19,7 +19,7 @@ impl CedarId for String {
 }
 
 /// A trait defining an entity.
-pub trait CedarEntity {
+pub trait CedarEntity: serde::Serialize {
     /// Entities can have tags attached to them.
     /// Not all entities have tags and if your entity does not have tag you should use the [crate::NoTag] type.
     type TagType: serde::Serialize;

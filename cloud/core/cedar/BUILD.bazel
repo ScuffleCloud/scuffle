@@ -1,18 +1,20 @@
 load("//misc/utils/rust:manifest.bzl", "cargo_toml")
-load("//misc/utils/rust:package.bzl", "scuffle_package")
+load("//misc/utils/rust:package.bzl", "scuffle_build_script", "scuffle_package")
 
 cargo_toml()
 
+scuffle_build_script(
+    name = "build_script",
+    data = ["//cloud/core:static_policies.cedarschema"],
+    deps = [
+        "//crates/cedar-policy/codegen",
+    ],
+)
+
 scuffle_package(
-    aliases = {
-        "//cloud/proto": "pb",
-        "//cloud/core/traits": "core_traits",
-        "//cloud/core/db-types": "core_db_types",
-    },
     crate_name = "scufflecloud-core-cedar",
     deps = [
-        "//cloud/core/db-types",
-        "//cloud/core/traits",
-        "//cloud/proto",
+        ":build_script",
+        "//crates/cedar-policy",
     ],
 )

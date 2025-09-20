@@ -246,7 +246,7 @@
   "moduleExtensions": {
     "//vendor:cargo_ext.bzl%bindeps": {
       "general": {
-        "bzlTransitiveDigest": "fxeMJtDZVNHqO0GHIqDSaYyD8xXj9QCgAkm72IgQ/Iw=",
+        "bzlTransitiveDigest": "XpEi5pjpzFGgToa8TSVEpD+TeOlJly2bTpqjXLBuXtk=",
         "usagesDigest": "0vyNdgUB6Py8EFEYeVm1fABbu9FAMVvr905hmQzVjfU=",
         "recordedFileInputs": {},
         "recordedDirentsInputs": {},
@@ -10041,7 +10041,7 @@
     },
     "//vendor:cargo_ext.bzl%cargo_vendor": {
       "general": {
-        "bzlTransitiveDigest": "fxeMJtDZVNHqO0GHIqDSaYyD8xXj9QCgAkm72IgQ/Iw=",
+        "bzlTransitiveDigest": "XpEi5pjpzFGgToa8TSVEpD+TeOlJly2bTpqjXLBuXtk=",
         "usagesDigest": "mtR+K4/VVAmhgoN1cG7MXxv6mAD1vfxRZ8SSM66EtxE=",
         "recordedFileInputs": {},
         "recordedDirentsInputs": {},
@@ -18043,6 +18043,7 @@
             "cargo_vendor__cargo_metadata-0.21.0",
             "cargo_vendor__cargo_toml-0.22.3",
             "cargo_vendor__cedar-policy-4.5.1",
+            "cargo_vendor__cedar-policy-core-4.5.1",
             "cargo_vendor__cel-parser-0.8.1",
             "cargo_vendor__chrono-0.4.42",
             "cargo_vendor__clap-4.5.47",
@@ -18143,6 +18144,7 @@
             "cargo_vendor__sha2-0.10.9",
             "cargo_vendor__similar-2.7.0",
             "cargo_vendor__smart-default-0.7.1",
+            "cargo_vendor__smol_str-0.3.2",
             "cargo_vendor__swagger-ui-dist-5.29.0",
             "cargo_vendor__syn-2.0.106",
             "cargo_vendor__target-spec-3.5.0",

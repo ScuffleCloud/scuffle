@@ -31,8 +31,18 @@ const fn validate(input: &str) {
     }
 }
 
+/// A compile time checked entity type name
 #[derive(Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash, Debug)]
 pub struct EntityTypeName(&'static str);
+
+impl serde::Serialize for EntityTypeName {
+    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+    where
+        S: serde::Serializer,
+    {
+        serializer.serialize_str(self.0)
+    }
+}
 
 impl std::fmt::Display for EntityTypeName {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
@@ -41,16 +51,22 @@ impl std::fmt::Display for EntityTypeName {
 }
 
 impl EntityTypeName {
+    #[doc(hidden)]
     pub const fn new(input: &'static str) -> Self {
         validate(input);
         EntityTypeName(input)
     }
 
+    /// Get the string value out of the entity type name.
     pub const fn as_str(&self) -> &'static str {
         self.0
     }
 }
 
+/// A macro for creating a compile time checked entity type name
+/// ```rust
+/// entity_type_name!("SomeEntityType");
+/// ```
 #[macro_export]
 macro_rules! entity_type_name {
     ($text:expr) => {

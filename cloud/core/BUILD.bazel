@@ -1,12 +1,15 @@
 load("//misc/utils/rust:manifest.bzl", "cargo_toml")
 load("//misc/utils/rust:package.bzl", "scuffle_package")
 
+exports_files(["static_policies.cedarschema"])
+
 cargo_toml()
 
 deps = [
     "//crates/batching",
     "//crates/bootstrap",
     "//crates/bootstrap-telemetry",
+    "//crates/cedar-policy",
     "//crates/context",
     "//crates/http",
     "//crates/settings",

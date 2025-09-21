@@ -12,7 +12,7 @@ clap = { version = "4.5", features = ["derive", "env"] }
 pulldown-cmark = "0.13"
 pulldown-cmark-to-cmark = "21"
 regex = "1"
-rustdoc-types = { version = "0.53", features = ["rustc-hash"] }
+rustdoc-types = { version = "0.55", features = ["rustc-hash"] }
 semver = "1"
 serde = "1"
 serde_derive = "1"

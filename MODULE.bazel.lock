@@ -246,7 +246,7 @@
   "moduleExtensions": {
     "//vendor:cargo_ext.bzl%bindeps": {
       "general": {
-        "bzlTransitiveDigest": "fxeMJtDZVNHqO0GHIqDSaYyD8xXj9QCgAkm72IgQ/Iw=",
+        "bzlTransitiveDigest": "iUH+t22/wPslow4xYeahkTc+DcIotqj5SFZNghuCr58=",
         "usagesDigest": "0vyNdgUB6Py8EFEYeVm1fABbu9FAMVvr905hmQzVjfU=",
         "recordedFileInputs": {},
         "recordedDirentsInputs": {},
@@ -10041,7 +10041,7 @@
     },
     "//vendor:cargo_ext.bzl%cargo_vendor": {
       "general": {
-        "bzlTransitiveDigest": "fxeMJtDZVNHqO0GHIqDSaYyD8xXj9QCgAkm72IgQ/Iw=",
+        "bzlTransitiveDigest": "iUH+t22/wPslow4xYeahkTc+DcIotqj5SFZNghuCr58=",
         "usagesDigest": "mtR+K4/VVAmhgoN1cG7MXxv6mAD1vfxRZ8SSM66EtxE=",
         "recordedFileInputs": {},
         "recordedDirentsInputs": {},
@@ -15224,16 +15224,16 @@
               "build_file": "@@//vendor/cargo:BUILD.rustc_version-0.4.1.bazel"
             }
           },
-          "cargo_vendor__rustdoc-types-0.53.0": {
+          "cargo_vendor__rustdoc-types-0.55.0": {
             "repoRuleId": "@@bazel_tools//tools/build_defs/repo:http.bzl%http_archive",
             "attributes": {
-              "sha256": "53175c56be456e96171b9c3efcd8e5216fbb7b40cc6355a1953090556621205b",
+              "sha256": "61f25a84ea78419de928cd82c3b2f76709a696a64a880486c567b4c4da8f2dda",
               "type": "tar.gz",
               "urls": [
-                "https://static.crates.io/crates/rustdoc-types/0.53.0/download"
+                "https://static.crates.io/crates/rustdoc-types/0.55.0/download"
               ],
-              "strip_prefix": "rustdoc-types-0.53.0",
-              "build_file": "@@//vendor/cargo:BUILD.rustdoc-types-0.53.0.bazel"
+              "strip_prefix": "rustdoc-types-0.55.0",
+              "build_file": "@@//vendor/cargo:BUILD.rustdoc-types-0.55.0.bazel"
             }
           },
           "cargo_vendor__rustfix-0.9.1": {
@@ -18127,7 +18127,7 @@
             "cargo_vendor__reqwest-0.12.23",
             "cargo_vendor__rsa-0.9.8",
             "cargo_vendor__runtime-format-0.1.3",
-            "cargo_vendor__rustdoc-types-0.53.0",
+            "cargo_vendor__rustdoc-types-0.55.0",
             "cargo_vendor__rustfix-0.9.1",
             "cargo_vendor__rustls-0.23.31",
             "cargo_vendor__rusty_ffmpeg-0.16.7-ffmpeg.8",

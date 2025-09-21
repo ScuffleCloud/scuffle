@@ -1221,7 +1221,7 @@ _NORMAL_DEPENDENCIES = {
                 "pulldown-cmark": Label("@cargo_vendor//:pulldown-cmark-0.13.0"),
                 "pulldown-cmark-to-cmark": Label("@cargo_vendor//:pulldown-cmark-to-cmark-21.0.0"),
                 "regex": Label("@cargo_vendor//:regex-1.11.2"),
-                "rustdoc-types": Label("@cargo_vendor//:rustdoc-types-0.53.0"),
+                "rustdoc-types": Label("@cargo_vendor//:rustdoc-types-0.55.0"),
                 "semver": Label("@cargo_vendor//:semver-1.0.26"),
                 "serde": Label("@cargo_vendor//:serde-1.0.220"),
                 "serde_json": Label("@cargo_vendor//:serde_json-1.0.144"),
@@ -8605,12 +8605,12 @@ def crate_repositories():
 
     maybe(
         http_archive,
-        name = "cargo_vendor__rustdoc-types-0.53.0",
-        sha256 = "53175c56be456e96171b9c3efcd8e5216fbb7b40cc6355a1953090556621205b",
+        name = "cargo_vendor__rustdoc-types-0.55.0",
+        sha256 = "61f25a84ea78419de928cd82c3b2f76709a696a64a880486c567b4c4da8f2dda",
         type = "tar.gz",
-        urls = ["https://static.crates.io/crates/rustdoc-types/0.53.0/download"],
-        strip_prefix = "rustdoc-types-0.53.0",
-        build_file = Label("//vendor/cargo:BUILD.rustdoc-types-0.53.0.bazel"),
+        urls = ["https://static.crates.io/crates/rustdoc-types/0.55.0/download"],
+        strip_prefix = "rustdoc-types-0.55.0",
+        build_file = Label("//vendor/cargo:BUILD.rustdoc-types-0.55.0.bazel"),
     )
 
     maybe(
@@ -11037,7 +11037,7 @@ def crate_repositories():
         struct(repo = "cargo_vendor__reqwest-0.12.23", is_dev_dep = False),
         struct(repo = "cargo_vendor__rsa-0.9.8", is_dev_dep = False),
         struct(repo = "cargo_vendor__runtime-format-0.1.3", is_dev_dep = False),
-        struct(repo = "cargo_vendor__rustdoc-types-0.53.0", is_dev_dep = False),
+        struct(repo = "cargo_vendor__rustdoc-types-0.55.0", is_dev_dep = False),
         struct(repo = "cargo_vendor__rustfix-0.9.1", is_dev_dep = False),
         struct(repo = "cargo_vendor__rustls-0.23.31", is_dev_dep = False),
         struct(repo = "cargo_vendor__rusty_ffmpeg-0.16.7-ffmpeg.8", is_dev_dep = False),

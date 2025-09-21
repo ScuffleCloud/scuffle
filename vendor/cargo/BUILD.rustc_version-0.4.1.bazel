@@ -60,6 +60,6 @@ rust_library(
     }),
     version = "0.4.1",
     deps = [
-        "@cargo_vendor__semver-1.0.26//:semver",
+        "@cargo_vendor__semver-1.0.27//:semver",
     ],
 )

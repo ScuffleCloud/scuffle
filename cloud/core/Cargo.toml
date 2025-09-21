@@ -11,7 +11,7 @@ description = "Authentication/Core server for scuffle.cloud"
 
 [[bin]]
 name = "scufflecloud-core-standalone"
-path = "src/bin/standalone/main.rs"
+path = "bin/standalone/main.rs"
 
 [lints.rust]
 unexpected_cfgs = { level = "warn", check-cfg = ['cfg(coverage_nightly)'] }

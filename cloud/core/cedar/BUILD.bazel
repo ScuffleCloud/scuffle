@@ -5,6 +5,7 @@ cargo_toml()
 
 scuffle_package(
     aliases = {
+        "//cloud/ext-traits": "ext_traits",
         "//cloud/proto": "pb",
         "//cloud/core/traits": "core_traits",
         "//cloud/core/db-types": "core_db_types",
@@ -13,6 +14,7 @@ scuffle_package(
     deps = [
         "//cloud/core/db-types",
         "//cloud/core/traits",
+        "//cloud/ext-traits",
         "//cloud/proto",
     ],
 )

@@ -1,4 +1,5 @@
 _packages = [
+    "//cloud/ext-traits",
     "//cloud/core",
     "//cloud/core/cedar",
     "//cloud/core/traits",

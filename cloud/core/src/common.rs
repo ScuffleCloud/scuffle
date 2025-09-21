@@ -9,12 +9,13 @@ use core_db_types::schema::{
     mfa_recovery_codes, mfa_totp_credentials, mfa_webauthn_auth_sessions, mfa_webauthn_credentials, organizations,
     user_emails, user_sessions, users,
 };
-use core_traits::{DisplayExt, EmailServiceClient, OptionExt, ResultExt};
+use core_traits::EmailServiceClient;
 use diesel::{
     BoolExpressionMethods, ExpressionMethods, JoinOnDsl, NullableExpressionMethods, OptionalExtension, QueryDsl,
     SelectableHelper,
 };
 use diesel_async::RunQueryDsl;
+use ext_traits::{DisplayExt, OptionExt, ResultExt};
 use geo_ip::maxminddb;
 use geo_ip::middleware::IpAddressInfo;
 use pkcs8::DecodePublicKey;

@@ -1,24 +1,11 @@
-use std::sync::Arc;
-
-use axum::http;
 use core_db_types::models::UserSession;
-use core_traits::OptionExt;
-use geo_ip::middleware::IpAddressInfo;
+use ext_traits::OptionExt;
 use tonic::Code;
 use tonic_types::ErrorDetails;
 
 use crate::middleware::ExpiredSession;
 
-pub(crate) trait RequestExt {
-    fn extensions(&self) -> &http::Extensions;
-
-    fn global<G: Send + Sync + 'static>(&self) -> Result<Arc<G>, tonic::Status> {
-        self.extensions()
-            .get::<Arc<G>>()
-            .map(Arc::clone)
-            .into_tonic_internal_err("missing global extension")
-    }
-
+pub(crate) trait CoreRequestExt: ext_traits::RequestExt {
     fn session(&self) -> Option<&UserSession> {
         self.extensions().get::<UserSession>()
     }
@@ -35,29 +22,6 @@ pub(crate) trait RequestExt {
             ErrorDetails::new(),
         )
     }
-
-    fn ip_address_info(&self) -> Result<IpAddressInfo, tonic::Status> {
-        self.extensions()
-            .get::<IpAddressInfo>()
-            .copied()
-            .into_tonic_internal_err("missing IpAddressInfo extension")
-    }
 }
 
-impl<T> RequestExt for tonic::Request<T> {
-    fn extensions(&self) -> &http::Extensions {
-        self.extensions()
-    }
-}
-
-impl RequestExt for tonic::Extensions {
-    fn extensions(&self) -> &http::Extensions {
-        self
-    }
-}
-
-impl<T> RequestExt for axum::http::Request<T> {
-    fn extensions(&self) -> &http::Extensions {
-        self.extensions()
-    }
-}
+impl<T> CoreRequestExt for T where T: ext_traits::RequestExt {}

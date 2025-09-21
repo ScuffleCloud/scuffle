@@ -1,9 +1,8 @@
 use base64::Engine;
-use core_traits::OptionExt;
+use ext_traits::{OptionExt, RequestExt};
 use sha2::Digest;
 
 use crate::google_api;
-use crate::http_ext::RequestExt;
 use crate::operations::Operation;
 use crate::operations::user_sessions::{InvalidateUserSessionRequest, RefreshUserSessionRequest};
 use crate::services::CoreSvc;

@@ -1,11 +1,11 @@
 use std::sync::Arc;
 
 use core_cedar::CedarEntity;
-use core_traits::ResultExt;
 use diesel_async::TransactionManager;
+use ext_traits::ResultExt;
 
 use crate::cedar::{self, Action};
-use crate::http_ext::RequestExt;
+use crate::http_ext::CoreRequestExt;
 
 pub(crate) mod login;
 pub(crate) mod organization_invitations;
@@ -73,7 +73,7 @@ impl<'a, G: core_traits::Global> OperationDriver<'a, G> {
 /// 6. Execute the operation with [`execute`](Self::execute).
 /// 7. Commit the operation with [`OperationDriver::finish`] if successful,
 ///    or abort with [`OperationDriver::abort`] if an error occurred.
-pub(crate) trait Operation<G: core_traits::Global>: RequestExt + Sized + Send {
+pub(crate) trait Operation<G: core_traits::Global>: ext_traits::RequestExt + Sized + Send {
     /// The cedar principal type for the operation.
     type Principal: CedarEntity + Send + Sync;
     /// The cedar resource type for the operation.

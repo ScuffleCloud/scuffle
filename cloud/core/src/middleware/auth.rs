@@ -10,11 +10,11 @@ use core_db_types::models::{UserSession, UserSessionTokenId};
 use core_db_types::schema::user_sessions;
 use diesel::{BoolExpressionMethods, ExpressionMethods, SelectableHelper};
 use diesel_async::RunQueryDsl;
+use ext_traits::RequestExt;
 use fred::prelude::KeysInterface;
+use geo_ip::GeoIpRequestExt;
 use geo_ip::middleware::IpAddressInfo;
 use hmac::Mac;
-
-use crate::http_ext::RequestExt;
 
 const TOKEN_ID_HEADER: HeaderName = HeaderName::from_static("scuf-token-id");
 const TIMESTAMP_HEADER: HeaderName = HeaderName::from_static("scuf-timestamp");

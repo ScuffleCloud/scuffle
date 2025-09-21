@@ -5555,6 +5555,7 @@ dependencies = [
  "scufflecloud-core-db-types",
  "scufflecloud-core-emails",
  "scufflecloud-core-traits",
+ "scufflecloud-ext-traits",
  "scufflecloud-geo-ip",
  "scufflecloud-proto",
  "serde",
@@ -5673,6 +5674,16 @@ dependencies = [
 ]
 
 [[package]]
+name = "scufflecloud-ext-traits"
+version = "0.1.0"
+dependencies = [
+ "http",
+ "tonic",
+ "tonic-types",
+ "tracing",
+]
+
+[[package]]
 name = "scufflecloud-geo-ip"
 version = "0.1.0"
 dependencies = [
@@ -5680,8 +5691,10 @@ dependencies = [
  "futures",
  "ipnetwork",
  "maxminddb",
+ "scufflecloud-ext-traits",
  "serde",
  "thiserror 2.0.16",
+ "tonic",
  "tower-layer",
  "tower-service",
  "tracing",

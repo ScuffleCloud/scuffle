@@ -1,5 +1,5 @@
 use core_db_types::models::{NewUserEmailRequest, User, UserEmail, UserGoogleAccount};
-use core_traits::OptionExt;
+use ext_traits::OptionExt;
 
 use crate::macros::{cedar_entity, cedar_entity_id};
 use crate::{CedarIdentifiable, EntityTypeName, JsonEntityUid, entity_type_name};

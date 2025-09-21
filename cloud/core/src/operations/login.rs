@@ -3,9 +3,11 @@ use core_db_types::models::{
     MagicLinkRequest, MagicLinkRequestId, Organization, OrganizationMember, User, UserGoogleAccount, UserId,
 };
 use core_db_types::schema::{magic_link_requests, organization_members, organizations, user_google_accounts, users};
-use core_traits::{EmailServiceClient, OptionExt, ResultExt};
+use core_traits::EmailServiceClient;
 use diesel::{BoolExpressionMethods, ExpressionMethods, OptionalExtension, QueryDsl, SelectableHelper};
 use diesel_async::RunQueryDsl;
+use ext_traits::{OptionExt, RequestExt, ResultExt};
+use geo_ip::GeoIpRequestExt;
 use pb::scufflecloud::core::v1::CaptchaProvider;
 use sha2::Digest;
 use tonic::Code;
@@ -13,7 +15,6 @@ use tonic_types::{ErrorDetails, StatusExt};
 
 use crate::cedar::{Action, CoreApplication, Unauthenticated};
 use crate::common::normalize_email;
-use crate::http_ext::RequestExt;
 use crate::operations::{Operation, OperationDriver};
 use crate::{captcha, common, google_api};
 

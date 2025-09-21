@@ -1,15 +1,16 @@
 use core_db_types::models::{User, UserSessionRequest, UserSessionRequestId};
 use core_db_types::schema::user_session_requests;
-use core_traits::{OptionExt, ResultExt};
 use diesel::{BoolExpressionMethods, ExpressionMethods, OptionalExtension, QueryDsl, SelectableHelper};
 use diesel_async::RunQueryDsl;
+use ext_traits::{OptionExt, RequestExt, ResultExt};
+use geo_ip::GeoIpRequestExt;
 use rand::Rng;
 use tonic::Code;
 use tonic_types::{ErrorDetails, StatusExt};
 
 use crate::cedar::{Action, Unauthenticated};
 use crate::common;
-use crate::http_ext::RequestExt;
+use crate::http_ext::CoreRequestExt;
 use crate::operations::{Operation, OperationDriver};
 
 impl<G: core_traits::Global> Operation<G> for tonic::Request<pb::scufflecloud::core::v1::CreateUserSessionRequestRequest> {

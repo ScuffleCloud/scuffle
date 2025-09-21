@@ -2,9 +2,11 @@ use std::borrow::Cow;
 
 use crate::resolver::GeoIpResolver;
 
+mod http_ext;
 pub mod middleware;
 pub mod resolver;
 
+pub use http_ext::*;
 pub use maxminddb;
 
 pub struct ReverseProxyConfig<'a> {

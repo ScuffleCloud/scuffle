@@ -1,7 +1,7 @@
 use std::net::IpAddr;
 use std::sync::Arc;
 
-use core_traits::DisplayExt;
+use ext_traits::DisplayExt;
 use tonic_types::{ErrorDetails, StatusExt};
 
 const TURNSTILE_VERIFY_URL: &str = "https://challenges.cloudflare.com/turnstile/v0/siteverify";

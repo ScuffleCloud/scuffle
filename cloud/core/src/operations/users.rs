@@ -10,15 +10,16 @@ use core_db_types::schema::{
     mfa_recovery_codes, mfa_totp_credentials, mfa_totp_reg_sessions, mfa_webauthn_auth_sessions, mfa_webauthn_credentials,
     mfa_webauthn_reg_sessions, new_user_email_requests, user_emails, users,
 };
-use core_traits::{DisplayExt, EmailServiceClient, OptionExt, ResultExt};
+use core_traits::EmailServiceClient;
 use diesel::{BoolExpressionMethods, ExpressionMethods, OptionalExtension, QueryDsl, SelectableHelper};
 use diesel_async::RunQueryDsl;
+use ext_traits::{DisplayExt, OptionExt, RequestExt, ResultExt};
 use rand::distributions::DistString;
 use tonic::Code;
 use tonic_types::{ErrorDetails, StatusExt};
 
 use crate::cedar::Action;
-use crate::http_ext::RequestExt;
+use crate::http_ext::CoreRequestExt;
 use crate::operations::{Operation, OperationDriver};
 use crate::totp::TotpError;
 use crate::{common, totp};

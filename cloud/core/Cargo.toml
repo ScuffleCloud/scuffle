@@ -31,6 +31,7 @@ core-traits = { path = "./traits", package = "scufflecloud-core-traits" }
 derive_more = { features = ["display"], version = "2.0.1" }
 diesel = { features = ["chrono", "network-address", "serde_json", "uuid"], version = "2.2.10" }
 diesel-async = { features = ["async-connection-wrapper", "bb8", "postgres"], version = "0.6.1" }
+ext-traits = { path = "../ext-traits", package = "scufflecloud-ext-traits" }
 fred = "10.1.0"
 geo-ip = { path = "../geo-ip", package = "scufflecloud-geo-ip" }
 hmac = "0.12.1"

@@ -4,5 +4,11 @@ load("//misc/utils/rust:package.bzl", "scuffle_package")
 cargo_toml()
 
 scuffle_package(
+    aliases = {
+        "//cloud/ext-traits": "ext_traits",
+    },
     crate_name = "scufflecloud-geo-ip",
+    deps = [
+        "//cloud/ext-traits",
+    ],
 )

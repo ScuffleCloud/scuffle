@@ -1,13 +1,13 @@
 use core_db_types::models::{User, UserSession, UserSessionTokenId};
 use core_db_types::schema::user_sessions;
-use core_traits::{OptionExt, ResultExt};
 use diesel::{BoolExpressionMethods, ExpressionMethods, SelectableHelper};
 use diesel_async::RunQueryDsl;
+use ext_traits::{OptionExt, RequestExt, ResultExt};
 use tonic_types::{ErrorDetails, StatusExt};
 
 use crate::cedar::Action;
 use crate::chrono_ext::ChronoDateTimeExt;
-use crate::http_ext::RequestExt;
+use crate::http_ext::CoreRequestExt;
 use crate::operations::{Operation, OperationDriver};
 use crate::{common, totp};
 

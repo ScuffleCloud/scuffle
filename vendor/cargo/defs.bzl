@@ -557,6 +557,16 @@ _NORMAL_DEPENDENCIES = {
             },
         },
     },
+    "cloud/ext-traits": {
+        _REQUIRED_FEATURE: {
+            _COMMON_CONDITION: {
+                "http": Label("@cargo_vendor//:http-1.3.1"),
+                "tonic": Label("@cargo_vendor//:tonic-0.14.2"),
+                "tonic-types": Label("@cargo_vendor//:tonic-types-0.14.2"),
+                "tracing": Label("@cargo_vendor//:tracing-0.1.41"),
+            },
+        },
+    },
     "cloud/geo-ip": {
         _REQUIRED_FEATURE: {
             _COMMON_CONDITION: {
@@ -566,6 +576,7 @@ _NORMAL_DEPENDENCIES = {
                 "maxminddb": Label("@cargo_vendor//:maxminddb-0.26.0"),
                 "serde": Label("@cargo_vendor//:serde-1.0.220"),
                 "thiserror": Label("@cargo_vendor//:thiserror-2.0.16"),
+                "tonic": Label("@cargo_vendor//:tonic-0.14.2"),
                 "tower-layer": Label("@cargo_vendor//:tower-layer-0.3.3"),
                 "tower-service": Label("@cargo_vendor//:tower-service-0.3.3"),
                 "tracing": Label("@cargo_vendor//:tracing-0.1.41"),
@@ -1339,6 +1350,12 @@ _NORMAL_ALIASES = {
             },
         },
     },
+    "cloud/ext-traits": {
+        _REQUIRED_FEATURE: {
+            _COMMON_CONDITION: {
+            },
+        },
+    },
     "cloud/geo-ip": {
         _REQUIRED_FEATURE: {
             _COMMON_CONDITION: {
@@ -1776,6 +1793,8 @@ _NORMAL_DEV_DEPENDENCIES = {
     },
     "cloud/email": {
     },
+    "cloud/ext-traits": {
+    },
     "cloud/geo-ip": {
     },
     "cloud/proto": {
@@ -2056,6 +2075,8 @@ _NORMAL_DEV_ALIASES = {
     },
     "cloud/email": {
     },
+    "cloud/ext-traits": {
+    },
     "cloud/geo-ip": {
     },
     "cloud/proto": {
@@ -2295,6 +2316,8 @@ _PROC_MACRO_DEPENDENCIES = {
                 "smart-default": Label("@cargo_vendor//:smart-default-0.7.1"),
             },
         },
+    },
+    "cloud/ext-traits": {
     },
     "cloud/geo-ip": {
     },
@@ -2667,6 +2690,8 @@ _PROC_MACRO_ALIASES = {
     },
     "cloud/email": {
     },
+    "cloud/ext-traits": {
+    },
     "cloud/geo-ip": {
     },
     "cloud/proto": {
@@ -2799,6 +2824,8 @@ _PROC_MACRO_DEV_DEPENDENCIES = {
     "cloud/core/traits": {
     },
     "cloud/email": {
+    },
+    "cloud/ext-traits": {
     },
     "cloud/geo-ip": {
     },
@@ -2937,6 +2964,8 @@ _PROC_MACRO_DEV_ALIASES = {
     "cloud/core/traits": {
     },
     "cloud/email": {
+    },
+    "cloud/ext-traits": {
     },
     "cloud/geo-ip": {
     },
@@ -3153,6 +3182,8 @@ _BUILD_DEPENDENCIES = {
     },
     "cloud/email": {
     },
+    "cloud/ext-traits": {
+    },
     "cloud/geo-ip": {
     },
     "cloud/proto": {
@@ -3291,6 +3322,8 @@ _BUILD_ALIASES = {
     },
     "cloud/email": {
     },
+    "cloud/ext-traits": {
+    },
     "cloud/geo-ip": {
     },
     "cloud/proto": {
@@ -3424,6 +3457,8 @@ _BUILD_PROC_MACRO_DEPENDENCIES = {
     },
     "cloud/email": {
     },
+    "cloud/ext-traits": {
+    },
     "cloud/geo-ip": {
     },
     "cloud/proto": {
@@ -3545,6 +3580,8 @@ _BUILD_PROC_MACRO_ALIASES = {
     },
     "cloud/email": {
     },
+    "cloud/ext-traits": {
+    },
     "cloud/geo-ip": {
     },
     "cloud/proto": {
@@ -3665,6 +3702,8 @@ _FEATURE_FLAGS = {
     "cloud/core/traits": {
     },
     "cloud/email": {
+    },
+    "cloud/ext-traits": {
     },
     "cloud/geo-ip": {
     },
@@ -4014,6 +4053,8 @@ _RESOLVED_FEATURE_FLAGS = {
     },
     "cloud/email": {
     },
+    "cloud/ext-traits": {
+    },
     "cloud/geo-ip": {
     },
     "cloud/proto": {
@@ -4181,6 +4222,7 @@ _VERSIONS = {
     "cloud/core/emails": "0.1.0",
     "cloud/core/traits": "0.1.0",
     "cloud/email": "0.1.0",
+    "cloud/ext-traits": "0.1.0",
     "cloud/geo-ip": "0.1.0",
     "cloud/proto": "0.1.0",
     "crates/aac": "0.1.4",

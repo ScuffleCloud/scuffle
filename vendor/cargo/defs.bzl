@@ -544,7 +544,11 @@ _NORMAL_DEPENDENCIES = {
         _REQUIRED_FEATURE: {
             _COMMON_CONDITION: {
                 "anyhow": Label("@cargo_vendor//:anyhow-1.0.99"),
+                "aws-config": Label("@cargo_vendor//:aws-config-1.8.6"),
+                "aws-runtime": Label("@cargo_vendor//:aws-runtime-1.5.10"),
+                "aws-sdk-sesv2": Label("@cargo_vendor//:aws-sdk-sesv2-1.98.0"),
                 "axum": Label("@cargo_vendor//:axum-0.8.4"),
+                "mail-builder": Label("@cargo_vendor//:mail-builder-0.4.4"),
                 "prost": Label("@cargo_vendor//:prost-0.14.1"),
                 "rustls": Label("@cargo_vendor//:rustls-0.23.31"),
                 "serde": Label("@cargo_vendor//:serde-1.0.220"),
@@ -554,6 +558,13 @@ _NORMAL_DEPENDENCIES = {
                 "tower-http": Label("@cargo_vendor//:tower-http-0.6.6"),
                 "tracing": Label("@cargo_vendor//:tracing-0.1.41"),
                 "tracing-subscriber": Label("@cargo_vendor//:tracing-subscriber-0.3.20"),
+            },
+        },
+    },
+    "cloud/email/traits": {
+        _REQUIRED_FEATURE: {
+            _COMMON_CONDITION: {
+                "aws-sdk-sesv2": Label("@cargo_vendor//:aws-sdk-sesv2-1.98.0"),
             },
         },
     },
@@ -1351,6 +1362,12 @@ _NORMAL_ALIASES = {
             },
         },
     },
+    "cloud/email/traits": {
+        _REQUIRED_FEATURE: {
+            _COMMON_CONDITION: {
+            },
+        },
+    },
     "cloud/ext-traits": {
         _REQUIRED_FEATURE: {
             _COMMON_CONDITION: {
@@ -1794,6 +1811,8 @@ _NORMAL_DEV_DEPENDENCIES = {
     },
     "cloud/email": {
     },
+    "cloud/email/traits": {
+    },
     "cloud/ext-traits": {
     },
     "cloud/geo-ip": {
@@ -2076,6 +2095,8 @@ _NORMAL_DEV_ALIASES = {
     },
     "cloud/email": {
     },
+    "cloud/email/traits": {
+    },
     "cloud/ext-traits": {
     },
     "cloud/geo-ip": {
@@ -2317,6 +2338,8 @@ _PROC_MACRO_DEPENDENCIES = {
                 "smart-default": Label("@cargo_vendor//:smart-default-0.7.1"),
             },
         },
+    },
+    "cloud/email/traits": {
     },
     "cloud/ext-traits": {
     },
@@ -2691,6 +2714,8 @@ _PROC_MACRO_ALIASES = {
     },
     "cloud/email": {
     },
+    "cloud/email/traits": {
+    },
     "cloud/ext-traits": {
     },
     "cloud/geo-ip": {
@@ -2825,6 +2850,8 @@ _PROC_MACRO_DEV_DEPENDENCIES = {
     "cloud/core/traits": {
     },
     "cloud/email": {
+    },
+    "cloud/email/traits": {
     },
     "cloud/ext-traits": {
     },
@@ -2965,6 +2992,8 @@ _PROC_MACRO_DEV_ALIASES = {
     "cloud/core/traits": {
     },
     "cloud/email": {
+    },
+    "cloud/email/traits": {
     },
     "cloud/ext-traits": {
     },
@@ -3183,6 +3212,8 @@ _BUILD_DEPENDENCIES = {
     },
     "cloud/email": {
     },
+    "cloud/email/traits": {
+    },
     "cloud/ext-traits": {
     },
     "cloud/geo-ip": {
@@ -3323,6 +3354,8 @@ _BUILD_ALIASES = {
     },
     "cloud/email": {
     },
+    "cloud/email/traits": {
+    },
     "cloud/ext-traits": {
     },
     "cloud/geo-ip": {
@@ -3458,6 +3491,8 @@ _BUILD_PROC_MACRO_DEPENDENCIES = {
     },
     "cloud/email": {
     },
+    "cloud/email/traits": {
+    },
     "cloud/ext-traits": {
     },
     "cloud/geo-ip": {
@@ -3581,6 +3616,8 @@ _BUILD_PROC_MACRO_ALIASES = {
     },
     "cloud/email": {
     },
+    "cloud/email/traits": {
+    },
     "cloud/ext-traits": {
     },
     "cloud/geo-ip": {
@@ -3703,6 +3740,8 @@ _FEATURE_FLAGS = {
     "cloud/core/traits": {
     },
     "cloud/email": {
+    },
+    "cloud/email/traits": {
     },
     "cloud/ext-traits": {
     },
@@ -4054,6 +4093,8 @@ _RESOLVED_FEATURE_FLAGS = {
     },
     "cloud/email": {
     },
+    "cloud/email/traits": {
+    },
     "cloud/ext-traits": {
     },
     "cloud/geo-ip": {
@@ -4223,6 +4264,7 @@ _VERSIONS = {
     "cloud/core/emails": "0.1.0",
     "cloud/core/traits": "0.1.0",
     "cloud/email": "0.1.0",
+    "cloud/email/traits": "0.1.0",
     "cloud/ext-traits": "0.1.0",
     "cloud/geo-ip": "0.1.0",
     "cloud/proto": "0.1.0",
@@ -4283,6 +4325,9 @@ _CONDITIONS = {
     "aarch64-apple-darwin": ["@rules_rust//rust/platform:aarch64-apple-darwin"],
     "aarch64-pc-windows-msvc": ["@rules_rust//rust/platform:aarch64-pc-windows-msvc"],
     "aarch64-unknown-linux-gnu": ["@rules_rust//rust/platform:aarch64-unknown-linux-gnu"],
+    "cfg(all(all(target_arch = \"aarch64\", target_endian = \"little\"), target_os = \"windows\"))": ["@rules_rust//rust/platform:aarch64-pc-windows-msvc"],
+    "cfg(all(all(target_arch = \"aarch64\", target_endian = \"little\"), target_vendor = \"apple\", any(target_os = \"ios\", target_os = \"macos\", target_os = \"tvos\", target_os = \"visionos\", target_os = \"watchos\")))": ["@rules_rust//rust/platform:aarch64-apple-darwin"],
+    "cfg(all(any(all(target_arch = \"aarch64\", target_endian = \"little\"), all(target_arch = \"arm\", target_endian = \"little\")), any(target_os = \"android\", target_os = \"linux\")))": ["@rules_rust//rust/platform:aarch64-unknown-linux-gnu"],
     "cfg(all(any(target_arch = \"wasm32\", target_arch = \"wasm64\"), target_os = \"unknown\"))": ["@rules_rust//rust/platform:wasm32-unknown-unknown"],
     "cfg(all(any(target_arch = \"x86_64\", target_arch = \"arm64ec\"), target_env = \"msvc\", not(windows_raw_dylib)))": ["@rules_rust//rust/platform:x86_64-pc-windows-msvc"],
     "cfg(all(any(target_os = \"linux\", target_os = \"android\"), not(any(all(target_os = \"linux\", target_env = \"\"), getrandom_backend = \"custom\", getrandom_backend = \"linux_raw\", getrandom_backend = \"rdrand\", getrandom_backend = \"rndr\"))))": ["@rules_rust//rust/platform:aarch64-unknown-linux-gnu", "@rules_rust//rust/platform:x86_64-unknown-linux-gnu"],
@@ -4629,6 +4674,26 @@ def crate_repositories():
 
     maybe(
         http_archive,
+        name = "cargo_vendor__aws-config-1.8.6",
+        sha256 = "8bc1b40fb26027769f16960d2f4a6bc20c4bb755d403e552c8c1a73af433c246",
+        type = "tar.gz",
+        urls = ["https://static.crates.io/crates/aws-config/1.8.6/download"],
+        strip_prefix = "aws-config-1.8.6",
+        build_file = Label("//vendor/cargo:BUILD.aws-config-1.8.6.bazel"),
+    )
+
+    maybe(
+        http_archive,
+        name = "cargo_vendor__aws-credential-types-1.2.6",
+        sha256 = "d025db5d9f52cbc413b167136afb3d8aeea708c0d8884783cf6253be5e22f6f2",
+        type = "tar.gz",
+        urls = ["https://static.crates.io/crates/aws-credential-types/1.2.6/download"],
+        strip_prefix = "aws-credential-types-1.2.6",
+        build_file = Label("//vendor/cargo:BUILD.aws-credential-types-1.2.6.bazel"),
+    )
+
+    maybe(
+        http_archive,
         name = "cargo_vendor__aws-lc-rs-1.14.0",
         sha256 = "94b8ff6c09cd57b16da53641caa860168b88c172a5ee163b0288d3d6eea12786",
         type = "tar.gz",
@@ -4645,6 +4710,176 @@ def crate_repositories():
         urls = ["https://static.crates.io/crates/aws-lc-sys/0.31.0/download"],
         strip_prefix = "aws-lc-sys-0.31.0",
         build_file = Label("//vendor/cargo:BUILD.aws-lc-sys-0.31.0.bazel"),
+    )
+
+    maybe(
+        http_archive,
+        name = "cargo_vendor__aws-runtime-1.5.10",
+        sha256 = "c034a1bc1d70e16e7f4e4caf7e9f7693e4c9c24cd91cf17c2a0b21abaebc7c8b",
+        type = "tar.gz",
+        urls = ["https://static.crates.io/crates/aws-runtime/1.5.10/download"],
+        strip_prefix = "aws-runtime-1.5.10",
+        build_file = Label("//vendor/cargo:BUILD.aws-runtime-1.5.10.bazel"),
+    )
+
+    maybe(
+        http_archive,
+        name = "cargo_vendor__aws-sdk-sesv2-1.98.0",
+        sha256 = "7677f871d3a60c30ccf94641be103d440f8db88db50f33792ec1702f1bba6c53",
+        type = "tar.gz",
+        urls = ["https://static.crates.io/crates/aws-sdk-sesv2/1.98.0/download"],
+        strip_prefix = "aws-sdk-sesv2-1.98.0",
+        build_file = Label("//vendor/cargo:BUILD.aws-sdk-sesv2-1.98.0.bazel"),
+    )
+
+    maybe(
+        http_archive,
+        name = "cargo_vendor__aws-sdk-sso-1.84.0",
+        sha256 = "357a841807f6b52cb26123878b3326921e2a25faca412fabdd32bd35b7edd5d3",
+        type = "tar.gz",
+        urls = ["https://static.crates.io/crates/aws-sdk-sso/1.84.0/download"],
+        strip_prefix = "aws-sdk-sso-1.84.0",
+        build_file = Label("//vendor/cargo:BUILD.aws-sdk-sso-1.84.0.bazel"),
+    )
+
+    maybe(
+        http_archive,
+        name = "cargo_vendor__aws-sdk-ssooidc-1.85.0",
+        sha256 = "67e05f33b6c9026fecfe9b3b6740f34d41bc6ff641a6a32dabaab60209245b75",
+        type = "tar.gz",
+        urls = ["https://static.crates.io/crates/aws-sdk-ssooidc/1.85.0/download"],
+        strip_prefix = "aws-sdk-ssooidc-1.85.0",
+        build_file = Label("//vendor/cargo:BUILD.aws-sdk-ssooidc-1.85.0.bazel"),
+    )
+
+    maybe(
+        http_archive,
+        name = "cargo_vendor__aws-sdk-sts-1.86.0",
+        sha256 = "e7d835f123f307cafffca7b9027c14979f1d403b417d8541d67cf252e8a21e35",
+        type = "tar.gz",
+        urls = ["https://static.crates.io/crates/aws-sdk-sts/1.86.0/download"],
+        strip_prefix = "aws-sdk-sts-1.86.0",
+        build_file = Label("//vendor/cargo:BUILD.aws-sdk-sts-1.86.0.bazel"),
+    )
+
+    maybe(
+        http_archive,
+        name = "cargo_vendor__aws-sigv4-1.3.4",
+        sha256 = "084c34162187d39e3740cb635acd73c4e3a551a36146ad6fe8883c929c9f876c",
+        type = "tar.gz",
+        urls = ["https://static.crates.io/crates/aws-sigv4/1.3.4/download"],
+        strip_prefix = "aws-sigv4-1.3.4",
+        build_file = Label("//vendor/cargo:BUILD.aws-sigv4-1.3.4.bazel"),
+    )
+
+    maybe(
+        http_archive,
+        name = "cargo_vendor__aws-smithy-async-1.2.5",
+        sha256 = "1e190749ea56f8c42bf15dd76c65e14f8f765233e6df9b0506d9d934ebef867c",
+        type = "tar.gz",
+        urls = ["https://static.crates.io/crates/aws-smithy-async/1.2.5/download"],
+        strip_prefix = "aws-smithy-async-1.2.5",
+        build_file = Label("//vendor/cargo:BUILD.aws-smithy-async-1.2.5.bazel"),
+    )
+
+    maybe(
+        http_archive,
+        name = "cargo_vendor__aws-smithy-http-0.62.3",
+        sha256 = "7c4dacf2d38996cf729f55e7a762b30918229917eca115de45dfa8dfb97796c9",
+        type = "tar.gz",
+        urls = ["https://static.crates.io/crates/aws-smithy-http/0.62.3/download"],
+        strip_prefix = "aws-smithy-http-0.62.3",
+        build_file = Label("//vendor/cargo:BUILD.aws-smithy-http-0.62.3.bazel"),
+    )
+
+    maybe(
+        http_archive,
+        name = "cargo_vendor__aws-smithy-http-client-1.1.1",
+        sha256 = "147e8eea63a40315d704b97bf9bc9b8c1402ae94f89d5ad6f7550d963309da1b",
+        type = "tar.gz",
+        urls = ["https://static.crates.io/crates/aws-smithy-http-client/1.1.1/download"],
+        strip_prefix = "aws-smithy-http-client-1.1.1",
+        build_file = Label("//vendor/cargo:BUILD.aws-smithy-http-client-1.1.1.bazel"),
+    )
+
+    maybe(
+        http_archive,
+        name = "cargo_vendor__aws-smithy-json-0.61.5",
+        sha256 = "eaa31b350998e703e9826b2104dd6f63be0508666e1aba88137af060e8944047",
+        type = "tar.gz",
+        urls = ["https://static.crates.io/crates/aws-smithy-json/0.61.5/download"],
+        strip_prefix = "aws-smithy-json-0.61.5",
+        build_file = Label("//vendor/cargo:BUILD.aws-smithy-json-0.61.5.bazel"),
+    )
+
+    maybe(
+        http_archive,
+        name = "cargo_vendor__aws-smithy-observability-0.1.3",
+        sha256 = "9364d5989ac4dd918e5cc4c4bdcc61c9be17dcd2586ea7f69e348fc7c6cab393",
+        type = "tar.gz",
+        urls = ["https://static.crates.io/crates/aws-smithy-observability/0.1.3/download"],
+        strip_prefix = "aws-smithy-observability-0.1.3",
+        build_file = Label("//vendor/cargo:BUILD.aws-smithy-observability-0.1.3.bazel"),
+    )
+
+    maybe(
+        http_archive,
+        name = "cargo_vendor__aws-smithy-query-0.60.7",
+        sha256 = "f2fbd61ceb3fe8a1cb7352e42689cec5335833cd9f94103a61e98f9bb61c64bb",
+        type = "tar.gz",
+        urls = ["https://static.crates.io/crates/aws-smithy-query/0.60.7/download"],
+        strip_prefix = "aws-smithy-query-0.60.7",
+        build_file = Label("//vendor/cargo:BUILD.aws-smithy-query-0.60.7.bazel"),
+    )
+
+    maybe(
+        http_archive,
+        name = "cargo_vendor__aws-smithy-runtime-1.9.2",
+        sha256 = "4fa63ad37685ceb7762fa4d73d06f1d5493feb88e3f27259b9ed277f4c01b185",
+        type = "tar.gz",
+        urls = ["https://static.crates.io/crates/aws-smithy-runtime/1.9.2/download"],
+        strip_prefix = "aws-smithy-runtime-1.9.2",
+        build_file = Label("//vendor/cargo:BUILD.aws-smithy-runtime-1.9.2.bazel"),
+    )
+
+    maybe(
+        http_archive,
+        name = "cargo_vendor__aws-smithy-runtime-api-1.9.0",
+        sha256 = "07f5e0fc8a6b3f2303f331b94504bbf754d85488f402d6f1dd7a6080f99afe56",
+        type = "tar.gz",
+        urls = ["https://static.crates.io/crates/aws-smithy-runtime-api/1.9.0/download"],
+        strip_prefix = "aws-smithy-runtime-api-1.9.0",
+        build_file = Label("//vendor/cargo:BUILD.aws-smithy-runtime-api-1.9.0.bazel"),
+    )
+
+    maybe(
+        http_archive,
+        name = "cargo_vendor__aws-smithy-types-1.3.2",
+        sha256 = "d498595448e43de7f4296b7b7a18a8a02c61ec9349128c80a368f7c3b4ab11a8",
+        type = "tar.gz",
+        urls = ["https://static.crates.io/crates/aws-smithy-types/1.3.2/download"],
+        strip_prefix = "aws-smithy-types-1.3.2",
+        build_file = Label("//vendor/cargo:BUILD.aws-smithy-types-1.3.2.bazel"),
+    )
+
+    maybe(
+        http_archive,
+        name = "cargo_vendor__aws-smithy-xml-0.60.10",
+        sha256 = "3db87b96cb1b16c024980f133968d52882ca0daaee3a086c6decc500f6c99728",
+        type = "tar.gz",
+        urls = ["https://static.crates.io/crates/aws-smithy-xml/0.60.10/download"],
+        strip_prefix = "aws-smithy-xml-0.60.10",
+        build_file = Label("//vendor/cargo:BUILD.aws-smithy-xml-0.60.10.bazel"),
+    )
+
+    maybe(
+        http_archive,
+        name = "cargo_vendor__aws-types-1.3.8",
+        sha256 = "b069d19bf01e46298eaedd7c6f283fe565a59263e53eebec945f3e6398f42390",
+        type = "tar.gz",
+        urls = ["https://static.crates.io/crates/aws-types/1.3.8/download"],
+        strip_prefix = "aws-types-1.3.8",
+        build_file = Label("//vendor/cargo:BUILD.aws-types-1.3.8.bazel"),
     )
 
     maybe(
@@ -4699,6 +4934,16 @@ def crate_repositories():
 
     maybe(
         http_archive,
+        name = "cargo_vendor__base16ct-0.1.1",
+        sha256 = "349a06037c7bf932dd7e7d1f653678b2038b9ad46a74102f1fc7bd7872678cce",
+        type = "tar.gz",
+        urls = ["https://static.crates.io/crates/base16ct/0.1.1/download"],
+        strip_prefix = "base16ct-0.1.1",
+        build_file = Label("//vendor/cargo:BUILD.base16ct-0.1.1.bazel"),
+    )
+
+    maybe(
+        http_archive,
         name = "cargo_vendor__base32-0.5.1",
         sha256 = "022dfe9eb35f19ebbcb51e0b40a5ab759f46ad60cadf7297e0bd085afb50e076",
         type = "tar.gz",
@@ -4725,6 +4970,16 @@ def crate_repositories():
         urls = ["https://static.crates.io/crates/base64/0.22.1/download"],
         strip_prefix = "base64-0.22.1",
         build_file = Label("//vendor/cargo:BUILD.base64-0.22.1.bazel"),
+    )
+
+    maybe(
+        http_archive,
+        name = "cargo_vendor__base64-simd-0.8.0",
+        sha256 = "339abbe78e73178762e23bea9dfd08e697eb3f3301cd4be981c0f78ba5859195",
+        type = "tar.gz",
+        urls = ["https://static.crates.io/crates/base64-simd/0.8.0/download"],
+        strip_prefix = "base64-simd-0.8.0",
+        build_file = Label("//vendor/cargo:BUILD.base64-simd-0.8.0.bazel"),
     )
 
     maybe(
@@ -5359,6 +5614,16 @@ def crate_repositories():
 
     maybe(
         http_archive,
+        name = "cargo_vendor__core-foundation-0.9.4",
+        sha256 = "91e195e091a93c46f7102ec7818a2aa394e1e1771c3ab4825963fa03e45afb8f",
+        type = "tar.gz",
+        urls = ["https://static.crates.io/crates/core-foundation/0.9.4/download"],
+        strip_prefix = "core-foundation-0.9.4",
+        build_file = Label("//vendor/cargo:BUILD.core-foundation-0.9.4.bazel"),
+    )
+
+    maybe(
+        http_archive,
         name = "cargo_vendor__core-foundation-sys-0.8.7",
         sha256 = "773648b94d0e5d620f64f280777445740e61fe701025087ec8b57f45c791888b",
         type = "tar.gz",
@@ -5499,6 +5764,26 @@ def crate_repositories():
 
     maybe(
         http_archive,
+        name = "cargo_vendor__crypto-bigint-0.4.9",
+        sha256 = "ef2b4b23cddf68b89b8f8069890e8c270d54e2d5fe1b143820234805e4cb17ef",
+        type = "tar.gz",
+        urls = ["https://static.crates.io/crates/crypto-bigint/0.4.9/download"],
+        strip_prefix = "crypto-bigint-0.4.9",
+        build_file = Label("//vendor/cargo:BUILD.crypto-bigint-0.4.9.bazel"),
+    )
+
+    maybe(
+        http_archive,
+        name = "cargo_vendor__crypto-bigint-0.5.5",
+        sha256 = "0dc92fb57ca44df6db8059111ab3af99a63d5d0f8375d9972e319a379c6bab76",
+        type = "tar.gz",
+        urls = ["https://static.crates.io/crates/crypto-bigint/0.5.5/download"],
+        strip_prefix = "crypto-bigint-0.5.5",
+        build_file = Label("//vendor/cargo:BUILD.crypto-bigint-0.5.5.bazel"),
+    )
+
+    maybe(
+        http_archive,
         name = "cargo_vendor__crypto-common-0.1.6",
         sha256 = "1bfb12502f3fc46cca1bb51ac28df9d618d813cdc3d2f25b9fe775a34af26bb3",
         type = "tar.gz",
@@ -5615,6 +5900,16 @@ def crate_repositories():
         urls = ["https://static.crates.io/crates/debugid/0.8.0/download"],
         strip_prefix = "debugid-0.8.0",
         build_file = Label("//vendor/cargo:BUILD.debugid-0.8.0.bazel"),
+    )
+
+    maybe(
+        http_archive,
+        name = "cargo_vendor__der-0.6.1",
+        sha256 = "f1a467a65c5e759bce6e65eaf91cc29f466cdc57cb65777bd646872a8a1fd4de",
+        type = "tar.gz",
+        urls = ["https://static.crates.io/crates/der/0.6.1/download"],
+        strip_prefix = "der-0.6.1",
+        build_file = Label("//vendor/cargo:BUILD.der-0.6.1.bazel"),
     )
 
     maybe(
@@ -5809,6 +6104,16 @@ def crate_repositories():
 
     maybe(
         http_archive,
+        name = "cargo_vendor__ecdsa-0.14.8",
+        sha256 = "413301934810f597c1d19ca71c8710e99a3f1ba28a0d2ebc01551a2daeea3c5c",
+        type = "tar.gz",
+        urls = ["https://static.crates.io/crates/ecdsa/0.14.8/download"],
+        strip_prefix = "ecdsa-0.14.8",
+        build_file = Label("//vendor/cargo:BUILD.ecdsa-0.14.8.bazel"),
+    )
+
+    maybe(
+        http_archive,
         name = "cargo_vendor__educe-0.6.0",
         sha256 = "1d7bc049e1bd8cdeb31b68bbd586a9464ecf9f3944af3958a7a9d0f8b9799417",
         type = "tar.gz",
@@ -5825,6 +6130,16 @@ def crate_repositories():
         urls = ["https://static.crates.io/crates/either/1.15.0/download"],
         strip_prefix = "either-1.15.0",
         build_file = Label("//vendor/cargo:BUILD.either-1.15.0.bazel"),
+    )
+
+    maybe(
+        http_archive,
+        name = "cargo_vendor__elliptic-curve-0.12.3",
+        sha256 = "e7bb888ab5300a19b8e5bceef25ac745ad065f3c9f7efc6de1b91958110891d3",
+        type = "tar.gz",
+        urls = ["https://static.crates.io/crates/elliptic-curve/0.12.3/download"],
+        strip_prefix = "elliptic-curve-0.12.3",
+        build_file = Label("//vendor/cargo:BUILD.elliptic-curve-0.12.3.bazel"),
     )
 
     maybe(
@@ -5995,6 +6310,16 @@ def crate_repositories():
         urls = ["https://static.crates.io/crates/fdeflate/0.3.7/download"],
         strip_prefix = "fdeflate-0.3.7",
         build_file = Label("//vendor/cargo:BUILD.fdeflate-0.3.7.bazel"),
+    )
+
+    maybe(
+        http_archive,
+        name = "cargo_vendor__ff-0.12.1",
+        sha256 = "d013fc25338cc558c5c2cfbad646908fb23591e2404481826742b651c9af7160",
+        type = "tar.gz",
+        urls = ["https://static.crates.io/crates/ff/0.12.1/download"],
+        strip_prefix = "ff-0.12.1",
+        build_file = Label("//vendor/cargo:BUILD.ff-0.12.1.bazel"),
     )
 
     maybe(
@@ -6299,6 +6624,16 @@ def crate_repositories():
 
     maybe(
         http_archive,
+        name = "cargo_vendor__gethostname-1.0.2",
+        sha256 = "fc257fdb4038301ce4b9cd1b3b51704509692bb3ff716a410cbd07925d9dae55",
+        type = "tar.gz",
+        urls = ["https://static.crates.io/crates/gethostname/1.0.2/download"],
+        strip_prefix = "gethostname-1.0.2",
+        build_file = Label("//vendor/cargo:BUILD.gethostname-1.0.2.bazel"),
+    )
+
+    maybe(
+        http_archive,
         name = "cargo_vendor__getopts-0.2.24",
         sha256 = "cfe4fbac503b8d1f88e6676011885f34b7174f46e59956bba534ba83abded4df",
         type = "tar.gz",
@@ -6359,6 +6694,16 @@ def crate_repositories():
 
     maybe(
         http_archive,
+        name = "cargo_vendor__group-0.12.1",
+        sha256 = "5dfbfb3a6cfbd390d5c9564ab283a0349b9b9fcd46a706c1eb10e0db70bfbac7",
+        type = "tar.gz",
+        urls = ["https://static.crates.io/crates/group/0.12.1/download"],
+        strip_prefix = "group-0.12.1",
+        build_file = Label("//vendor/cargo:BUILD.group-0.12.1.bazel"),
+    )
+
+    maybe(
+        http_archive,
         name = "cargo_vendor__guppy-0.17.20",
         sha256 = "7eadc0c380d2c5f421758a5838ce593687da4a47d1dcf1169bf3bad629b764e7",
         type = "tar.gz",
@@ -6375,6 +6720,16 @@ def crate_repositories():
         urls = ["https://static.crates.io/crates/guppy-workspace-hack/0.1.0/download"],
         strip_prefix = "guppy-workspace-hack-0.1.0",
         build_file = Label("//vendor/cargo:BUILD.guppy-workspace-hack-0.1.0.bazel"),
+    )
+
+    maybe(
+        http_archive,
+        name = "cargo_vendor__h2-0.3.27",
+        sha256 = "0beca50380b1fc32983fc1cb4587bfa4bb9e78fc259aad4a0032d2080309222d",
+        type = "tar.gz",
+        urls = ["https://static.crates.io/crates/h2/0.3.27/download"],
+        strip_prefix = "h2-0.3.27",
+        build_file = Label("//vendor/cargo:BUILD.h2-0.3.27.bazel"),
     )
 
     maybe(
@@ -6499,12 +6854,32 @@ def crate_repositories():
 
     maybe(
         http_archive,
+        name = "cargo_vendor__http-0.2.12",
+        sha256 = "601cbb57e577e2f5ef5be8e7b83f0f63994f25aa94d673e54a92d5c516d101f1",
+        type = "tar.gz",
+        urls = ["https://static.crates.io/crates/http/0.2.12/download"],
+        strip_prefix = "http-0.2.12",
+        build_file = Label("//vendor/cargo:BUILD.http-0.2.12.bazel"),
+    )
+
+    maybe(
+        http_archive,
         name = "cargo_vendor__http-1.3.1",
         sha256 = "f4a85d31aea989eead29a3aaf9e1115a180df8282431156e533de47660892565",
         type = "tar.gz",
         urls = ["https://static.crates.io/crates/http/1.3.1/download"],
         strip_prefix = "http-1.3.1",
         build_file = Label("//vendor/cargo:BUILD.http-1.3.1.bazel"),
+    )
+
+    maybe(
+        http_archive,
+        name = "cargo_vendor__http-body-0.4.6",
+        sha256 = "7ceab25649e9960c0311ea418d17bee82c0dcec1bd053b5f9a66e265a693bed2",
+        type = "tar.gz",
+        urls = ["https://static.crates.io/crates/http-body/0.4.6/download"],
+        strip_prefix = "http-body-0.4.6",
+        build_file = Label("//vendor/cargo:BUILD.http-body-0.4.6.bazel"),
     )
 
     maybe(
@@ -6569,12 +6944,32 @@ def crate_repositories():
 
     maybe(
         http_archive,
+        name = "cargo_vendor__hyper-0.14.32",
+        sha256 = "41dfc780fdec9373c01bae43289ea34c972e40ee3c9f6b3c8801a35f35586ce7",
+        type = "tar.gz",
+        urls = ["https://static.crates.io/crates/hyper/0.14.32/download"],
+        strip_prefix = "hyper-0.14.32",
+        build_file = Label("//vendor/cargo:BUILD.hyper-0.14.32.bazel"),
+    )
+
+    maybe(
+        http_archive,
         name = "cargo_vendor__hyper-1.7.0",
         sha256 = "eb3aa54a13a0dfe7fbe3a59e0c76093041720fdc77b110cc0fc260fafb4dc51e",
         type = "tar.gz",
         urls = ["https://static.crates.io/crates/hyper/1.7.0/download"],
         strip_prefix = "hyper-1.7.0",
         build_file = Label("//vendor/cargo:BUILD.hyper-1.7.0.bazel"),
+    )
+
+    maybe(
+        http_archive,
+        name = "cargo_vendor__hyper-rustls-0.24.2",
+        sha256 = "ec3efd23720e2049821a693cbc7e65ea87c72f1c58ff2f9522ff332b1491e590",
+        type = "tar.gz",
+        urls = ["https://static.crates.io/crates/hyper-rustls/0.24.2/download"],
+        strip_prefix = "hyper-rustls-0.24.2",
+        build_file = Label("//vendor/cargo:BUILD.hyper-rustls-0.24.2.bazel"),
     )
 
     maybe(
@@ -7179,6 +7574,16 @@ def crate_repositories():
 
     maybe(
         http_archive,
+        name = "cargo_vendor__mail-builder-0.4.4",
+        sha256 = "900998f307338c4013a28ab14d760b784067324b164448c6d98a89e44810473b",
+        type = "tar.gz",
+        urls = ["https://static.crates.io/crates/mail-builder/0.4.4/download"],
+        strip_prefix = "mail-builder-0.4.4",
+        build_file = Label("//vendor/cargo:BUILD.mail-builder-0.4.4.bazel"),
+    )
+
+    maybe(
+        http_archive,
         name = "cargo_vendor__matchers-0.2.0",
         sha256 = "d1525a2a28c7f4fa0fc98bb91ae755d1e2d1505079e05539e35bc876b5d65ae9",
         type = "tar.gz",
@@ -7709,12 +8114,32 @@ def crate_repositories():
 
     maybe(
         http_archive,
+        name = "cargo_vendor__outref-0.5.2",
+        sha256 = "1a80800c0488c3a21695ea981a54918fbb37abf04f4d0720c453632255e2ff0e",
+        type = "tar.gz",
+        urls = ["https://static.crates.io/crates/outref/0.5.2/download"],
+        strip_prefix = "outref-0.5.2",
+        build_file = Label("//vendor/cargo:BUILD.outref-0.5.2.bazel"),
+    )
+
+    maybe(
+        http_archive,
         name = "cargo_vendor__owo-colors-4.2.2",
         sha256 = "48dd4f4a2c8405440fd0462561f0e5806bd0f77e86f51c761481bdd4018b545e",
         type = "tar.gz",
         urls = ["https://static.crates.io/crates/owo-colors/4.2.2/download"],
         strip_prefix = "owo-colors-4.2.2",
         build_file = Label("//vendor/cargo:BUILD.owo-colors-4.2.2.bazel"),
+    )
+
+    maybe(
+        http_archive,
+        name = "cargo_vendor__p256-0.11.1",
+        sha256 = "51f44edd08f51e2ade572f141051021c5af22677e42b7dd28a88155151c33594",
+        type = "tar.gz",
+        urls = ["https://static.crates.io/crates/p256/0.11.1/download"],
+        strip_prefix = "p256-0.11.1",
+        build_file = Label("//vendor/cargo:BUILD.p256-0.11.1.bazel"),
     )
 
     maybe(
@@ -7995,6 +8420,16 @@ def crate_repositories():
         urls = ["https://static.crates.io/crates/pkcs8/0.10.2/download"],
         strip_prefix = "pkcs8-0.10.2",
         build_file = Label("//vendor/cargo:BUILD.pkcs8-0.10.2.bazel"),
+    )
+
+    maybe(
+        http_archive,
+        name = "cargo_vendor__pkcs8-0.9.0",
+        sha256 = "9eca2c590a5f85da82668fa685c09ce2888b9430e83299debf1f34b65fd4a4ba",
+        type = "tar.gz",
+        urls = ["https://static.crates.io/crates/pkcs8/0.9.0/download"],
+        strip_prefix = "pkcs8-0.9.0",
+        build_file = Label("//vendor/cargo:BUILD.pkcs8-0.9.0.bazel"),
     )
 
     maybe(
@@ -8549,6 +8984,16 @@ def crate_repositories():
 
     maybe(
         http_archive,
+        name = "cargo_vendor__regex-lite-0.1.7",
+        sha256 = "943f41321c63ef1c92fd763bfe054d2668f7f225a5c29f0105903dc2fc04ba30",
+        type = "tar.gz",
+        urls = ["https://static.crates.io/crates/regex-lite/0.1.7/download"],
+        strip_prefix = "regex-lite-0.1.7",
+        build_file = Label("//vendor/cargo:BUILD.regex-lite-0.1.7.bazel"),
+    )
+
+    maybe(
+        http_archive,
         name = "cargo_vendor__regex-syntax-0.8.6",
         sha256 = "caf4aa5b0f434c91fe5c7f1ecb6a5ece2130b02ad2a590589dda5146df959001",
         type = "tar.gz",
@@ -8564,6 +9009,16 @@ def crate_repositories():
         init_submodules = True,
         remote = "https://github.com/TroyKomodo/reqwest.git",
         build_file = Label("//vendor/cargo:BUILD.reqwest-0.12.23.bazel"),
+    )
+
+    maybe(
+        http_archive,
+        name = "cargo_vendor__rfc6979-0.3.1",
+        sha256 = "7743f17af12fa0b03b803ba12cd6a8d9483a587e89c69445e3909655c0b9fabb",
+        type = "tar.gz",
+        urls = ["https://static.crates.io/crates/rfc6979/0.3.1/download"],
+        strip_prefix = "rfc6979-0.3.1",
+        build_file = Label("//vendor/cargo:BUILD.rfc6979-0.3.1.bazel"),
     )
 
     maybe(
@@ -8708,6 +9163,16 @@ def crate_repositories():
 
     maybe(
         http_archive,
+        name = "cargo_vendor__rustls-0.21.12",
+        sha256 = "3f56a14d1f48b391359b22f731fd4bd7e43c97f3c50eee276f3aa09c94784d3e",
+        type = "tar.gz",
+        urls = ["https://static.crates.io/crates/rustls/0.21.12/download"],
+        strip_prefix = "rustls-0.21.12",
+        build_file = Label("//vendor/cargo:BUILD.rustls-0.21.12.bazel"),
+    )
+
+    maybe(
+        http_archive,
         name = "cargo_vendor__rustls-0.23.31",
         sha256 = "c0ebcbd2f03de0fc1122ad9bb24b127a5a6cd51d72604a3f3c50ac459762b6cc",
         type = "tar.gz",
@@ -8718,12 +9183,32 @@ def crate_repositories():
 
     maybe(
         http_archive,
+        name = "cargo_vendor__rustls-native-certs-0.6.3",
+        sha256 = "a9aace74cb666635c918e9c12bc0d348266037aa8eb599b5cba565709a8dff00",
+        type = "tar.gz",
+        urls = ["https://static.crates.io/crates/rustls-native-certs/0.6.3/download"],
+        strip_prefix = "rustls-native-certs-0.6.3",
+        build_file = Label("//vendor/cargo:BUILD.rustls-native-certs-0.6.3.bazel"),
+    )
+
+    maybe(
+        http_archive,
         name = "cargo_vendor__rustls-native-certs-0.8.1",
         sha256 = "7fcff2dd52b58a8d98a70243663a0d234c4e2b79235637849d15913394a247d3",
         type = "tar.gz",
         urls = ["https://static.crates.io/crates/rustls-native-certs/0.8.1/download"],
         strip_prefix = "rustls-native-certs-0.8.1",
         build_file = Label("//vendor/cargo:BUILD.rustls-native-certs-0.8.1.bazel"),
+    )
+
+    maybe(
+        http_archive,
+        name = "cargo_vendor__rustls-pemfile-1.0.4",
+        sha256 = "1c74cae0a4cf6ccbbf5f359f08efdf8ee7e1dc532573bf0db71968cb56b1448c",
+        type = "tar.gz",
+        urls = ["https://static.crates.io/crates/rustls-pemfile/1.0.4/download"],
+        strip_prefix = "rustls-pemfile-1.0.4",
+        build_file = Label("//vendor/cargo:BUILD.rustls-pemfile-1.0.4.bazel"),
     )
 
     maybe(
@@ -8754,6 +9239,16 @@ def crate_repositories():
         urls = ["https://static.crates.io/crates/rustls-platform-verifier/0.6.1/download"],
         strip_prefix = "rustls-platform-verifier-0.6.1",
         build_file = Label("//vendor/cargo:BUILD.rustls-platform-verifier-0.6.1.bazel"),
+    )
+
+    maybe(
+        http_archive,
+        name = "cargo_vendor__rustls-webpki-0.101.7",
+        sha256 = "8b6275d1ee7a1cd780b64aca7726599a1dbc893b1e64144529e55c3c2f745765",
+        type = "tar.gz",
+        urls = ["https://static.crates.io/crates/rustls-webpki/0.101.7/download"],
+        strip_prefix = "rustls-webpki-0.101.7",
+        build_file = Label("//vendor/cargo:BUILD.rustls-webpki-0.101.7.bazel"),
     )
 
     maybe(
@@ -8864,6 +9359,36 @@ def crate_repositories():
         urls = ["https://static.crates.io/crates/scopeguard/1.2.0/download"],
         strip_prefix = "scopeguard-1.2.0",
         build_file = Label("//vendor/cargo:BUILD.scopeguard-1.2.0.bazel"),
+    )
+
+    maybe(
+        http_archive,
+        name = "cargo_vendor__sct-0.7.1",
+        sha256 = "da046153aa2352493d6cb7da4b6e5c0c057d8a1d0a9aa8560baffdd945acd414",
+        type = "tar.gz",
+        urls = ["https://static.crates.io/crates/sct/0.7.1/download"],
+        strip_prefix = "sct-0.7.1",
+        build_file = Label("//vendor/cargo:BUILD.sct-0.7.1.bazel"),
+    )
+
+    maybe(
+        http_archive,
+        name = "cargo_vendor__sec1-0.3.0",
+        sha256 = "3be24c1842290c45df0a7bf069e0c268a747ad05a192f2fd7dcfdbc1cba40928",
+        type = "tar.gz",
+        urls = ["https://static.crates.io/crates/sec1/0.3.0/download"],
+        strip_prefix = "sec1-0.3.0",
+        build_file = Label("//vendor/cargo:BUILD.sec1-0.3.0.bazel"),
+    )
+
+    maybe(
+        http_archive,
+        name = "cargo_vendor__security-framework-2.11.1",
+        sha256 = "897b2245f0b511c87893af39b033e5ca9cce68824c4d7e7630b5a1d339658d02",
+        type = "tar.gz",
+        urls = ["https://static.crates.io/crates/security-framework/2.11.1/download"],
+        strip_prefix = "security-framework-2.11.1",
+        build_file = Label("//vendor/cargo:BUILD.security-framework-2.11.1.bazel"),
     )
 
     maybe(
@@ -9208,6 +9733,16 @@ def crate_repositories():
 
     maybe(
         http_archive,
+        name = "cargo_vendor__signature-1.6.4",
+        sha256 = "74233d3b3b2f6d4b006dc19dee745e73e2a6bfb6f93607cd3b02bd5b00797d7c",
+        type = "tar.gz",
+        urls = ["https://static.crates.io/crates/signature/1.6.4/download"],
+        strip_prefix = "signature-1.6.4",
+        build_file = Label("//vendor/cargo:BUILD.signature-1.6.4.bazel"),
+    )
+
+    maybe(
+        http_archive,
         name = "cargo_vendor__signature-2.2.0",
         sha256 = "77549399552de45a898a580c1b41d445bf730df867cc44e6c0233bbc4b8329de",
         type = "tar.gz",
@@ -9324,6 +9859,16 @@ def crate_repositories():
         urls = ["https://static.crates.io/crates/spin/0.9.8/download"],
         strip_prefix = "spin-0.9.8",
         build_file = Label("//vendor/cargo:BUILD.spin-0.9.8.bazel"),
+    )
+
+    maybe(
+        http_archive,
+        name = "cargo_vendor__spki-0.6.0",
+        sha256 = "67cf02bbac7a337dc36e4f5a693db6c21e7863f45070f7064577eb4367a3212b",
+        type = "tar.gz",
+        urls = ["https://static.crates.io/crates/spki/0.6.0/download"],
+        strip_prefix = "spki-0.6.0",
+        build_file = Label("//vendor/cargo:BUILD.spki-0.6.0.bazel"),
     )
 
     maybe(
@@ -9744,6 +10289,16 @@ def crate_repositories():
         urls = ["https://static.crates.io/crates/tokio-postgres/0.7.13/download"],
         strip_prefix = "tokio-postgres-0.7.13",
         build_file = Label("//vendor/cargo:BUILD.tokio-postgres-0.7.13.bazel"),
+    )
+
+    maybe(
+        http_archive,
+        name = "cargo_vendor__tokio-rustls-0.24.1",
+        sha256 = "c28327cf380ac148141087fbfb9de9d7bd4e84ab5d2c28fbc911d753de8a7081",
+        type = "tar.gz",
+        urls = ["https://static.crates.io/crates/tokio-rustls/0.24.1/download"],
+        strip_prefix = "tokio-rustls-0.24.1",
+        build_file = Label("//vendor/cargo:BUILD.tokio-rustls-0.24.1.bazel"),
     )
 
     maybe(
@@ -10388,6 +10943,16 @@ def crate_repositories():
 
     maybe(
         http_archive,
+        name = "cargo_vendor__vsimd-0.8.0",
+        sha256 = "5c3082ca00d5a5ef149bb8b555a72ae84c9c59f7250f013ac822ac2e49b19c64",
+        type = "tar.gz",
+        urls = ["https://static.crates.io/crates/vsimd/0.8.0/download"],
+        strip_prefix = "vsimd-0.8.0",
+        build_file = Label("//vendor/cargo:BUILD.vsimd-0.8.0.bazel"),
+    )
+
+    maybe(
+        http_archive,
         name = "cargo_vendor__vte-0.14.1",
         sha256 = "231fdcd7ef3037e8330d8e17e61011a2c244126acc0a982f4040ac3f9f0bc077",
         type = "tar.gz",
@@ -10848,6 +11413,16 @@ def crate_repositories():
 
     maybe(
         http_archive,
+        name = "cargo_vendor__xmlparser-0.13.6",
+        sha256 = "66fee0b777b0f5ac1c69bb06d361268faafa61cd4682ae064a171c16c433e9e4",
+        type = "tar.gz",
+        urls = ["https://static.crates.io/crates/xmlparser/0.13.6/download"],
+        strip_prefix = "xmlparser-0.13.6",
+        build_file = Label("//vendor/cargo:BUILD.xmlparser-0.13.6.bazel"),
+    )
+
+    maybe(
+        http_archive,
         name = "cargo_vendor__xxhash-rust-0.8.15",
         sha256 = "fdd20c5420375476fbd4394763288da7eb0cc0b8c11deed431a91562af7335d3",
         type = "tar.gz",
@@ -10992,6 +11567,9 @@ def crate_repositories():
         struct(repo = "cargo_vendor__arc-swap-1.7.1", is_dev_dep = False),
         struct(repo = "cargo_vendor__argon2-0.5.3", is_dev_dep = False),
         struct(repo = "cargo_vendor__async-trait-0.1.89", is_dev_dep = False),
+        struct(repo = "cargo_vendor__aws-config-1.8.6", is_dev_dep = False),
+        struct(repo = "cargo_vendor__aws-runtime-1.5.10", is_dev_dep = False),
+        struct(repo = "cargo_vendor__aws-sdk-sesv2-1.98.0", is_dev_dep = False),
         struct(repo = "cargo_vendor__axum-0.8.4", is_dev_dep = False),
         struct(repo = "cargo_vendor__base64-0.22.1", is_dev_dep = False),
         struct(repo = "cargo_vendor__bitflags-2.9.4", is_dev_dep = False),
@@ -11055,6 +11633,7 @@ def crate_repositories():
         struct(repo = "cargo_vendor__linkme-0.3.33", is_dev_dep = False),
         struct(repo = "cargo_vendor__log-0.4.28", is_dev_dep = False),
         struct(repo = "cargo_vendor__lol_html-2.6.0", is_dev_dep = False),
+        struct(repo = "cargo_vendor__mail-builder-0.4.4", is_dev_dep = False),
         struct(repo = "cargo_vendor__maxminddb-0.26.0", is_dev_dep = False),
         struct(repo = "cargo_vendor__mediatype-0.20.0", is_dev_dep = False),
         struct(repo = "cargo_vendor__minijinja-2.12.0", is_dev_dep = False),

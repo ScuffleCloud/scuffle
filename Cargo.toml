@@ -6,6 +6,7 @@ members = [
     "cloud/core/emails",
     "cloud/core/traits",
     "cloud/email",
+    "cloud/email/traits",
     "cloud/ext-traits",
     "cloud/geo-ip",
     "cloud/proto",

@@ -9,9 +9,14 @@ service EmailService {
   rpc SendEmail(Email) returns (google.protobuf.Empty);
 }
 
+message EmailAddress {
+  string address = 1 [(tinc.field).constraint.string.email = true];
+  optional string name = 2;
+}
+
 message Email {
-  string from_address = 1 [(tinc.field).constraint.string.email = true];
-  string to_address = 2 [(tinc.field).constraint.string.email = true];
+  EmailAddress from = 1;
+  EmailAddress to = 2;
   string subject = 3;
   string text = 4;
   string html = 5;

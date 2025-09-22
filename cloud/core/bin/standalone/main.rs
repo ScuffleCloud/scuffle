@@ -49,6 +49,8 @@ pub struct Config {
     pub google_oauth2: config::GoogleOAuth2Config,
     pub telemetry: Option<config::TelemetryConfig>,
     pub redis: config::RedisConfig,
+    #[default = "Scuffle"]
+    pub email_from_name: String,
     #[default = "no-reply@scuffle.cloud"]
     pub email_from_address: String,
     #[default("http://localhost:3002".to_string())]
@@ -79,6 +81,10 @@ struct Global {
 impl core_traits::ConfigInterface for Global {
     fn dashboard_origin(&self) -> &url::Url {
         &self.config.dashboard_origin
+    }
+
+    fn email_from_name(&self) -> &str {
+        &self.config.email_from_name
     }
 
     fn email_from_address(&self) -> &str {

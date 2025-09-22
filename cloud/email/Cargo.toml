@@ -11,7 +11,7 @@ description = "Email service for scuffle.cloud"
 
 [[bin]]
 name = "scufflecloud-email-standalone"
-path = "src/bin/standalone.rs"
+path = "bin/standalone/main.rs"
 
 [lints.rust]
 unexpected_cfgs = { level = "warn", check-cfg = ['cfg(coverage_nightly)'] }
@@ -19,7 +19,13 @@ unexpected_cfgs = { level = "warn", check-cfg = ['cfg(coverage_nightly)'] }
 [dependencies]
 anyhow = "1.0.98"
 async-trait = "0.1.88"
+aws-config = "1.8.6"
+aws-runtime = "1.5.10"
+aws-sdk-sesv2 = "1.98.0"
 axum = "0.8.4"
+email-traits = { path = "./traits", package = "scufflecloud-email-traits" }
+ext-traits = { path = "../ext-traits", package = "scufflecloud-ext-traits" }
+mail-builder = "0.4.4"
 pb = { package = "scufflecloud-proto", path = "../proto" }
 prost = "0.14.1"
 rustls = { default-features = false, version = "0.23.31", features = ["aws_lc_rs"] }

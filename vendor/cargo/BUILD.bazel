@@ -94,6 +94,42 @@ transition_alias_opt(
 )
 
 transition_alias_opt(
+    name = "aws-config-1.8.6",
+    actual = "@cargo_vendor__aws-config-1.8.6//:aws_config",
+    tags = ["manual"],
+)
+
+transition_alias_opt(
+    name = "aws-config",
+    actual = "@cargo_vendor__aws-config-1.8.6//:aws_config",
+    tags = ["manual"],
+)
+
+transition_alias_opt(
+    name = "aws-runtime-1.5.10",
+    actual = "@cargo_vendor__aws-runtime-1.5.10//:aws_runtime",
+    tags = ["manual"],
+)
+
+transition_alias_opt(
+    name = "aws-runtime",
+    actual = "@cargo_vendor__aws-runtime-1.5.10//:aws_runtime",
+    tags = ["manual"],
+)
+
+transition_alias_opt(
+    name = "aws-sdk-sesv2-1.98.0",
+    actual = "@cargo_vendor__aws-sdk-sesv2-1.98.0//:aws_sdk_sesv2",
+    tags = ["manual"],
+)
+
+transition_alias_opt(
+    name = "aws-sdk-sesv2",
+    actual = "@cargo_vendor__aws-sdk-sesv2-1.98.0//:aws_sdk_sesv2",
+    tags = ["manual"],
+)
+
+transition_alias_opt(
     name = "axum-0.8.4",
     actual = "@cargo_vendor__axum-0.8.4//:axum",
     tags = ["manual"],
@@ -858,6 +894,18 @@ transition_alias_opt(
 transition_alias_opt(
     name = "lol_html",
     actual = "@cargo_vendor__lol_html-2.6.0//:lol_html",
+    tags = ["manual"],
+)
+
+transition_alias_opt(
+    name = "mail-builder-0.4.4",
+    actual = "@cargo_vendor__mail-builder-0.4.4//:mail_builder",
+    tags = ["manual"],
+)
+
+transition_alias_opt(
+    name = "mail-builder",
+    actual = "@cargo_vendor__mail-builder-0.4.4//:mail_builder",
     tags = ["manual"],
 )
 

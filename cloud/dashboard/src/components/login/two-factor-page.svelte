@@ -1,14 +1,12 @@
 <script lang="ts">
     import IconArrowLeft from "$lib/images/icon-arrow-left.svelte";
     import { PinInput } from "melt/builders";
+    import LoginCard from "./login-card.svelte";
 
-    interface Props {
-        onSubmit: (code: string) => Promise<void>;
-        onBack?: () => void;
-        isLoading?: boolean;
+    let isLoading = $state(false);
+    function onSubmit(code: string) {
+        console.log("Submit code", code);
     }
-
-    let { onSubmit, onBack, isLoading = false }: Props = $props();
 
     const pinInput = new PinInput({
         maxLength: 6,
@@ -24,35 +22,34 @@
     }
 </script>
 
-<div class="header">
-    <button type="button" onclick={onBack} class="back-button">
-        <IconArrowLeft />
+<LoginCard>
+    <div class="header">
+        <h1 class="title">MFA Login</h1>
+    </div>
+    <p class="subtitle">
+        Enter the 6-digit code from your 2FA authenticator app below
+    </p>
+
+    <div {...pinInput.root} class="pin-input-root">
+        {#each pinInput.inputs as input, index (`pin-input-${index}`)}
+            <input {...input} class="pin-input" />
+        {/each}
+    </div>
+
+    <button
+        type="button"
+        onclick={handleContinue}
+        class="continue-btn"
+        disabled={isLoading || pinInput.value.length !== 6}
+    >
+        {#if isLoading}
+            <div class="spinner"></div>
+            Verifying...
+        {:else}
+            Continue
+        {/if}
     </button>
-    <h1 class="title">MFA Login</h1>
-</div>
-<p class="subtitle">
-    Enter the 6-digit code from your 2FA authenticator app below.
-</p>
-
-<div {...pinInput.root} class="pin-input-root">
-    {#each pinInput.inputs as input, index (`pin-input-${index}`)}
-        <input {...input} class="pin-input" />
-    {/each}
-</div>
-
-<button
-    type="button"
-    onclick={handleContinue}
-    class="continue-btn"
-    disabled={isLoading || pinInput.value.length !== 6}
->
-    {#if isLoading}
-        <div class="spinner"></div>
-        Verifying...
-    {:else}
-        Continue
-    {/if}
-</button>
+</LoginCard>
 
 <style>
     .header {

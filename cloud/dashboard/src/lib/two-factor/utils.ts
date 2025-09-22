@@ -1,17 +1,19 @@
+export const WEB_AUTHN_INVALID_STATE_ERROR = "An authenticator already exists containing one of the credentials.";
+export const WEB_AUTHN_NOT_ALLOWED_ERROR = "WebAuthn credential creation was cancelled";
+
 /**
- * Converts WebAuthn errors to user-friendly messages
+ * Reads WebAuthn errors and returns a user-friendly message
  */
 export function getWebAuthnErrorMessage(err: unknown): string {
     if (!(err instanceof Error)) {
         return "An unexpected error occurred during authentication.";
     }
 
-    // Can add more but haven't seen more yet
     switch (err.name) {
         case "InvalidStateError":
-            return "An authenticator already exists containing one of the credentials.";
+            return WEB_AUTHN_INVALID_STATE_ERROR;
         case "NotAllowedError":
-            return "Authentication was denied or cancelled.";
+            return WEB_AUTHN_NOT_ALLOWED_ERROR;
         default:
             return "Authentication failed. Please try again.";
     }

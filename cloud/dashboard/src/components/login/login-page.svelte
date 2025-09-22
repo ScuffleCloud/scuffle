@@ -1,5 +1,5 @@
 <script lang="ts">
-    import { beforeNavigate, pushState } from "$app/navigation";
+    import { pushState } from "$app/navigation";
     import { page } from "$app/state";
     import {
         DEFAULT_LOGIN_MODE,
@@ -7,11 +7,11 @@
     } from "$components/streams/types";
     import TurnstileOverlay from "$components/turnstile-overlay.svelte";
     import { useGoogleAuth } from "$lib/auth/googleAuth.svelte";
-    import { sessionsServiceClient } from "$lib/grpcClient";
+    import { useMagicLinkAuth } from "$lib/auth/magicLinkAuth.svelte";
     import IconArrowDialogLink from "$lib/images/icon-arrow-dialog-link.svelte";
     import { createSmartBack } from "$lib/navigation.svelte";
-    import { CaptchaProvider } from "@scufflecloud/proto/scufflecloud/core/v1/common.js";
     import ForgotPasswordForm from "./forgot-password-form.svelte";
+    import LoginCard from "./login-card.svelte";
     import MagicLinkForm from "./magic-link-form.svelte";
     import MagicLinkSent from "./magic-link-sent.svelte";
     import PasskeyForm from "./passkey-form.svelte";
@@ -34,7 +34,7 @@
         page.state.loginMode ?? getInitialLoginModeFromUrl(),
     );
 
-    // So back button navigation works as expected
+    // So back button navigation works as expected. Smart shallow routing.
     function changeLoginMode(mode: LoginMode) {
         const urlMap: Record<LoginMode, string> = {
             "login": "/",
@@ -50,6 +50,13 @@
         pushState(urlMap[mode] || "/", { loginMode: mode });
     }
 
+    const smartBack = createSmartBack(
+        "login" as LoginMode,
+        changeLoginMode,
+    );
+
+    const handleBack = smartBack.back;
+
     const getToken = async () =>
         await turnstileOverlayComponent?.getToken();
 
@@ -64,32 +71,23 @@
 
     // Let's move this to a common logic function eventually like google auth
     async function handleMagicLinkSubmit(email: string): Promise<void> {
+        isLoading = true;
         const token = await getToken();
-        if (email && token) {
-            try {
-                const call = sessionsServiceClient.loginWithMagicLink({
-                    captcha: {
-                        provider: CaptchaProvider.TURNSTILE,
-                        token: token,
-                    },
-                    email,
-                });
-                const status = await call.status;
-                const response = await call.response;
-                console.log("Magic link response:", response);
-                // TODO: Verify implementation after email flow is finished
-                if (status.code === "OK") {
-                    userEmail = email;
-                    pushState("/magic-link-sent", {
-                        loginMode: "magic-link-sent",
-                        userEmail: email,
-                    });
-                } else {
-                    console.error("Magic link failed:", status.detail);
-                }
-            } catch (error) {
-                console.error("Magic link error:", error);
-            }
+        if (!token) return;
+
+        try {
+            await magicLinkAuth.sendMagicLink(email, token);
+
+            isLoading = false;
+            // Magic link has successfully been sent
+            userEmail = email;
+            pushState("/magic-link-sent", {
+                loginMode: "magic-link-sent",
+                userEmail: email,
+            });
+        } catch (error) {
+            console.error("Magic link error:", error);
+            // Maybe show error message here
         }
     }
 
@@ -139,13 +137,8 @@
         }
     }
 
-    const smartBack = createSmartBack(
-        "login" as LoginMode,
-        changeLoginMode,
-    );
-    const handleBack = smartBack.back;
-
     const googleAuth = useGoogleAuth();
+    const magicLinkAuth = useMagicLinkAuth();
 
     $effect(() => {
         if (googleAuth.loading()) {
@@ -153,6 +146,12 @@
         } else {
             isLoading = false;
         }
+    });
+
+    // Handle OAuth callbacks
+    $effect(() => {
+        googleAuth.handleOAuthCallback();
+        magicLinkAuth.handleMagicLinkCallback();
     });
 
     // See if I need this later
@@ -163,11 +162,15 @@
     });
 </script>
 
-<div class="login-card">
+<svelte:head>
+    <title>Scuffle | Login</title>
+</svelte:head>
+
+<LoginCard>
     {#if loginMode === "login"}
         <MagicLinkForm onSubmit={handleMagicLinkSubmit} {isLoading} />
         <SigninOptions
-            {googleAuth}
+            onSubmit={googleAuth.initiateLogin}
             onModeChange={changeLoginMode}
             {isLoading}
         />
@@ -197,7 +200,7 @@
             onBack={() => handleBack("password")}
         />
     {/if}
-</div>
+</LoginCard>
 
 <div class="footer-links">
     {#if loginMode === "login"}
@@ -251,21 +254,10 @@
 <TurnstileOverlay bind:this={turnstileOverlayComponent} />
 
 <style>
-    .login-card {
-      border-radius: 1.25rem;
-      padding: 2.75rem;
-      width: 100%;
-      max-width: 400px;
-      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
-      border: 1px solid var(--colors-gray50);
-      background-color: var(--colors-gray20);
-      text-align: center;
-    }
-
     .footer-links {
       display: flex;
       justify-content: space-between;
-      margin: 2rem 0 1.25rem 0;
+      margin-bottom: 1.25rem;
       gap: 1rem;
       align-items: center;
     }

@@ -38,16 +38,14 @@ async function completeGoogleLogin(code: string, state: string): Promise<void> {
         const response = await call.response;
         console.log("Google completion response:", response);
 
-        // TODO: Implement /two-factor here
-
-        // if (response.newUserSessionToken?.sessionMfaPending) {
-        //     // Redirect to MFA page
-        //     goto("/mfa");
-        //     return;
-        // }
-
         if (response.newUserSessionToken) {
             await authState().handleNewUserSessionToken(response.newUserSessionToken);
+            // if (response.newUserSessionToken?.sessionMfaPending) {
+            //     // Redirect to MFA page
+            //     goto("/mfa");
+            //     return;
+            // }
+
             goto("/projects");
         } else {
             throw new Error("No session token received");

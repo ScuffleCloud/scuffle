@@ -1,7 +1,7 @@
 import { authState } from "$lib/auth.svelte";
 import { usersServiceClient } from "$lib/grpcClient";
 import { arrayBufferToBase64url, base64urlToArrayBuffer } from "$lib/utils";
-import { getWebAuthnErrorMessage } from "./utils";
+import { getWebAuthnErrorMessage, WEB_AUTHN_NOT_ALLOWED_ERROR } from "./utils";
 
 async function createWebauthnCredential(userId: string, credentialName: string): Promise<void> {
     const createCall = usersServiceClient.createWebauthnCredential({ id: userId });
@@ -28,7 +28,6 @@ async function createWebauthnCredential(userId: string, credentialName: string):
         })) || [],
     };
 
-    // TODO: Explore how to get lastpass to trigger on using the passkey
     // Create credential using browser API
     let credential: PublicKeyCredential | null = null;
     try {
@@ -36,12 +35,11 @@ async function createWebauthnCredential(userId: string, credentialName: string):
             publicKey,
         }) as PublicKeyCredential;
     } catch (err) {
-        console.log("error", err);
         throw new Error(getWebAuthnErrorMessage(err));
     }
 
     if (!credential) {
-        throw new Error("WebAuthn credential creation was cancelled");
+        throw new Error(WEB_AUTHN_NOT_ALLOWED_ERROR);
     }
 
     // Note: These properties aren't spreadable from credential object
@@ -66,7 +64,6 @@ async function createWebauthnCredential(userId: string, credentialName: string):
     });
 
     const completeStatus = await completeCall.status;
-    const completeResponse = await completeCall.response;
 
     if (completeStatus.code !== "OK") {
         throw new Error(completeStatus.detail || "Failed to complete WebAuthn credential creation");
@@ -80,6 +77,7 @@ export interface WebauthnAuthProps {
     isSupported: () => boolean;
 }
 
+// TODO: Bubble up thrown errors into toast? or somewhere
 export function useWebauthnAuth(): WebauthnAuthProps {
     let loading = $state(false);
     let error = $state<string | null>(null);

@@ -12,13 +12,20 @@
     import LoginFooter from "$components/login/login-footer.svelte";
     import LoginHeader from "$components/login/login-header.svelte";
     import LoginPage from "$components/login/login-page.svelte";
+    import TwoFactorPage from "$components/login/two-factor-page.svelte";
     import RightNav from "$components/right-nav/right-nav.svelte";
     import { PUBLIC_VITE_MSW_ENABLED } from "$env/static/public";
     import { authState } from "$lib/auth.svelte";
     import { onMount } from "svelte";
 
+    const auth = $derived(authState());
+
     onMount(() => {
-        authState().initialize();
+        auth.initialize();
+    });
+
+    $effect(() => {
+        $inspect(auth.userSessionToken);
     });
 
     // Maybe don't need this code since we'll mock functions in a different way but leaving it for now
@@ -48,17 +55,28 @@
             },
         },
     });
+
+    const hasPendingMfa = $derived(
+        auth.userSessionToken.state === "authenticated"
+            && !!auth.userSessionToken.data.mfaPending?.length,
+    );
 </script>
 
 <!-- TODO: Clean this up at some point -->
 {#if mockingReady}
-    {#if authState().userSessionToken.state === "loading"}
+    {#if auth.userSessionToken.state === "loading"}
         <div>Loading...</div>
-    {:else if authState().userSessionToken.state === "unauthenticated"}
+    {:else if auth.userSessionToken.state === "unauthenticated"}
         <div class="login-page-container">
             <!-- TODO: Add protection to routes if not logged in -->
             <LoginHeader />
             <LoginPage />
+            <LoginFooter />
+        </div>
+    {:else if hasPendingMfa}
+        <div class="login-page-container">
+            <LoginHeader />
+            <TwoFactorPage />
             <LoginFooter />
         </div>
     {:else}

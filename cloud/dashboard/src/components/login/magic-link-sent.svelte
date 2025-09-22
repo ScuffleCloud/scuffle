@@ -1,6 +1,6 @@
 <script lang="ts">
     interface Props {
-        email?: string;
+        email: string;
     }
 
     let { email }: Props = $props();
@@ -8,9 +8,8 @@
 
 <h1 class="title">Check your email for a magic link to continue!</h1>
 <p class="subtitle">
-    We've sent you an email{#if email}
-        to <strong>{email}</strong>{/if} with a magic link to verify your
-    account.
+    We've sent you an email to <strong>{email}</strong> with a magic link to
+    verify your account.
 </p>
 
 <style>

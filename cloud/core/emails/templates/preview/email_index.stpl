@@ -31,10 +31,10 @@
 
     <p>
         <span class="bold">From:</span>
-        <span><%= self.from_name %> <<%= self.from_address %>></span>
+        <span><%= self.from_name %> &lt;<%= self.from_address %>&gt;</span>
         <br>
         <span class="bold">To:</span>
-        <span><%= self.to_name %> <<%= self.to_address %>></span>
+        <span><%= self.to_name %> &lt;<%= self.to_address %>&gt;</span>
         <br>
         <span class="bold">Subject:</span>
         <span><%= self.subject %></span>

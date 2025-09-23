@@ -66,7 +66,7 @@ rust_library(
     deps = [
         "@bindeps__drop_bomb-0.1.5//:drop_bomb",
         "@bindeps__edition-0.0.0//:edition",
-        "@bindeps__ra-ap-rustc_lexer-0.128.0//:ra_ap_rustc_lexer",
+        "@bindeps__ra-ap-rustc_lexer-0.132.0//:ra_ap_rustc_lexer",
         "@bindeps__rustc-literal-escaper-0.0.4//:rustc_literal_escaper",
         "@bindeps__tracing-0.1.41//:tracing",
     ],

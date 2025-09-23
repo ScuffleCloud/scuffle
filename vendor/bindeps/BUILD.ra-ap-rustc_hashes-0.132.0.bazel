@@ -7,7 +7,7 @@
 ###############################################################################
 
 load("@rules_rust//cargo:defs.bzl", "cargo_toml_env_vars")
-load("@rules_rust//rust:defs.bzl", "rust_proc_macro")
+load("@rules_rust//rust:defs.bzl", "rust_library")
 
 package(default_visibility = ["//visibility:public"])
 
@@ -16,8 +16,8 @@ cargo_toml_env_vars(
     src = "Cargo.toml",
 )
 
-rust_proc_macro(
-    name = "ra_ap_rustc_type_ir_macros",
+rust_library(
+    name = "ra_ap_rustc_hashes",
     srcs = glob(
         include = ["**/*.rs"],
         allow_empty = True,
@@ -44,7 +44,7 @@ rust_proc_macro(
     ],
     tags = [
         "cargo-bazel",
-        "crate-name=ra-ap-rustc_type_ir_macros",
+        "crate-name=ra-ap-rustc_hashes",
         "manual",
         "noclippy",
         "norustfmt",
@@ -58,11 +58,8 @@ rust_proc_macro(
         "@rules_rust//rust/platform:x86_64-unknown-linux-gnu": [],
         "//conditions:default": ["@platforms//:incompatible"],
     }),
-    version = "0.128.0",
+    version = "0.132.0",
     deps = [
-        "@bindeps__proc-macro2-1.0.101//:proc_macro2",
-        "@bindeps__quote-1.0.40//:quote",
-        "@bindeps__syn-2.0.106//:syn",
-        "@bindeps__synstructure-0.13.2//:synstructure",
+        "@bindeps__rustc-stable-hash-0.1.2//:rustc_stable_hash",
     ],
 )

@@ -17,15 +17,14 @@ cargo_toml_env_vars(
 )
 
 rust_library(
-    name = "ra_ap_rustc_type_ir",
+    name = "ra_ap_rustc_abi",
     srcs = glob(
         include = ["**/*.rs"],
         allow_empty = True,
     ),
     aliases = {
-        "@bindeps__ra-ap-rustc_ast_ir-0.128.0//:ra_ap_rustc_ast_ir": "rustc_ast_ir",
-        "@bindeps__ra-ap-rustc_index-0.128.0//:ra_ap_rustc_index": "rustc_index",
-        "@bindeps__ra-ap-rustc_type_ir_macros-0.128.0//:ra_ap_rustc_type_ir_macros": "rustc_type_ir_macros",
+        "@bindeps__ra-ap-rustc_hashes-0.132.0//:ra_ap_rustc_hashes": "rustc_hashes",
+        "@bindeps__ra-ap-rustc_index-0.132.0//:ra_ap_rustc_index": "rustc_index",
     },
     compile_data = glob(
         include = ["**"],
@@ -41,10 +40,6 @@ rust_library(
     ),
     crate_root = "src/lib.rs",
     edition = "2024",
-    proc_macro_deps = [
-        "@bindeps__derive-where-1.6.0//:derive_where",
-        "@bindeps__ra-ap-rustc_type_ir_macros-0.128.0//:ra_ap_rustc_type_ir_macros",
-    ],
     rustc_env_files = [
         ":cargo_toml_env_vars",
     ],
@@ -53,7 +48,7 @@ rust_library(
     ],
     tags = [
         "cargo-bazel",
-        "crate-name=ra-ap-rustc_type_ir",
+        "crate-name=ra-ap-rustc_abi",
         "manual",
         "noclippy",
         "norustfmt",
@@ -67,17 +62,11 @@ rust_library(
         "@rules_rust//rust/platform:x86_64-unknown-linux-gnu": [],
         "//conditions:default": ["@platforms//:incompatible"],
     }),
-    version = "0.128.0",
+    version = "0.132.0",
     deps = [
-        "@bindeps__arrayvec-0.7.6//:arrayvec",
         "@bindeps__bitflags-2.9.4//:bitflags",
-        "@bindeps__ena-0.14.3//:ena",
-        "@bindeps__indexmap-2.11.3//:indexmap",
-        "@bindeps__ra-ap-rustc_ast_ir-0.128.0//:ra_ap_rustc_ast_ir",
-        "@bindeps__ra-ap-rustc_index-0.128.0//:ra_ap_rustc_index",
-        "@bindeps__rustc-hash-2.1.1//:rustc_hash",
-        "@bindeps__smallvec-1.15.1//:smallvec",
-        "@bindeps__thin-vec-0.2.14//:thin_vec",
+        "@bindeps__ra-ap-rustc_hashes-0.132.0//:ra_ap_rustc_hashes",
+        "@bindeps__ra-ap-rustc_index-0.132.0//:ra_ap_rustc_index",
         "@bindeps__tracing-0.1.41//:tracing",
     ],
 )

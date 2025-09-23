@@ -17,11 +17,14 @@ cargo_toml_env_vars(
 )
 
 rust_library(
-    name = "ra_ap_rustc_hashes",
+    name = "ra_ap_rustc_pattern_analysis",
     srcs = glob(
         include = ["**/*.rs"],
         allow_empty = True,
     ),
+    aliases = {
+        "@bindeps__ra-ap-rustc_index-0.132.0//:ra_ap_rustc_index": "rustc_index",
+    },
     compile_data = glob(
         include = ["**"],
         allow_empty = True,
@@ -44,7 +47,7 @@ rust_library(
     ],
     tags = [
         "cargo-bazel",
-        "crate-name=ra-ap-rustc_hashes",
+        "crate-name=ra-ap-rustc_pattern_analysis",
         "manual",
         "noclippy",
         "norustfmt",
@@ -58,8 +61,12 @@ rust_library(
         "@rules_rust//rust/platform:x86_64-unknown-linux-gnu": [],
         "//conditions:default": ["@platforms//:incompatible"],
     }),
-    version = "0.128.0",
+    version = "0.132.0",
     deps = [
-        "@bindeps__rustc-stable-hash-0.1.2//:rustc_stable_hash",
+        "@bindeps__ra-ap-rustc_index-0.132.0//:ra_ap_rustc_index",
+        "@bindeps__rustc-hash-2.1.1//:rustc_hash",
+        "@bindeps__rustc_apfloat-0.2.3-llvm-462a31f5a5ab//:rustc_apfloat",
+        "@bindeps__smallvec-1.15.1//:smallvec",
+        "@bindeps__tracing-0.1.41//:tracing",
     ],
 )

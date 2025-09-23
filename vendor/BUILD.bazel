@@ -90,10 +90,19 @@ crates_vendor(
             "cargo-insta",
             "just",
             "miniserve",
-            "rust-analyzer",
             "cedar-policy-cli",
         ]
     } | {
+        "rust-analyzer": [
+            crate.annotation(
+                gen_binaries = True,
+                rustc_env = {
+                    # This env var is used to tell RA to compile as if it
+                    # were to be released to the public, hiding some errors / warnings.
+                    "CFG_RELEASE": "1",
+                },
+            )
+        ],
         "dprint": [
             crate.annotation(
                 gen_binaries = True,
@@ -144,7 +153,7 @@ crates_vendor(
         "rust-analyzer": crate.spec(
             artifact = "bin",
             git = "https://github.com/TroyKomodo/rust-analyzer.git",
-            rev = "3e9a967c2786589ecd801a078f8687a924e46430",
+            rev = "228bb3587011f07a0979a9006262d79d71122a49",
         ),
         "cedar-policy-cli": crate.spec(
             artifact = "bin",

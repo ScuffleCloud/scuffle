@@ -17,11 +17,14 @@ cargo_toml_env_vars(
 )
 
 rust_library(
-    name = "ra_ap_rustc_ast_ir",
+    name = "ra_ap_rustc_parse_format",
     srcs = glob(
         include = ["**/*.rs"],
         allow_empty = True,
     ),
+    aliases = {
+        "@bindeps__ra-ap-rustc_lexer-0.132.0//:ra_ap_rustc_lexer": "rustc_lexer",
+    },
     compile_data = glob(
         include = ["**"],
         allow_empty = True,
@@ -44,7 +47,7 @@ rust_library(
     ],
     tags = [
         "cargo-bazel",
-        "crate-name=ra-ap-rustc_ast_ir",
+        "crate-name=ra-ap-rustc_parse_format",
         "manual",
         "noclippy",
         "norustfmt",
@@ -58,5 +61,9 @@ rust_library(
         "@rules_rust//rust/platform:x86_64-unknown-linux-gnu": [],
         "//conditions:default": ["@platforms//:incompatible"],
     }),
-    version = "0.128.0",
+    version = "0.132.0",
+    deps = [
+        "@bindeps__ra-ap-rustc_lexer-0.132.0//:ra_ap_rustc_lexer",
+        "@bindeps__rustc-literal-escaper-0.0.5//:rustc_literal_escaper",
+    ],
 )

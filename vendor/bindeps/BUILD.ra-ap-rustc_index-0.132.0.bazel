@@ -17,11 +17,14 @@ cargo_toml_env_vars(
 )
 
 rust_library(
-    name = "chalk_recursive",
+    name = "ra_ap_rustc_index",
     srcs = glob(
         include = ["**/*.rs"],
         allow_empty = True,
     ),
+    aliases = {
+        "@bindeps__ra-ap-rustc_index_macros-0.132.0//:ra_ap_rustc_index_macros": "rustc_index_macros",
+    },
     compile_data = glob(
         include = ["**"],
         allow_empty = True,
@@ -35,9 +38,9 @@ rust_library(
         ],
     ),
     crate_root = "src/lib.rs",
-    edition = "2018",
+    edition = "2024",
     proc_macro_deps = [
-        "@bindeps__chalk-derive-0.104.0//:chalk_derive",
+        "@bindeps__ra-ap-rustc_index_macros-0.132.0//:ra_ap_rustc_index_macros",
     ],
     rustc_env_files = [
         ":cargo_toml_env_vars",
@@ -47,7 +50,7 @@ rust_library(
     ],
     tags = [
         "cargo-bazel",
-        "crate-name=chalk-recursive",
+        "crate-name=ra-ap-rustc_index",
         "manual",
         "noclippy",
         "norustfmt",
@@ -61,11 +64,8 @@ rust_library(
         "@rules_rust//rust/platform:x86_64-unknown-linux-gnu": [],
         "//conditions:default": ["@platforms//:incompatible"],
     }),
-    version = "0.104.0",
+    version = "0.132.0",
     deps = [
-        "@bindeps__chalk-ir-0.104.0//:chalk_ir",
-        "@bindeps__chalk-solve-0.104.0//:chalk_solve",
-        "@bindeps__rustc-hash-1.1.0//:rustc_hash",
-        "@bindeps__tracing-0.1.41//:tracing",
+        "@bindeps__smallvec-1.15.1//:smallvec",
     ],
 )

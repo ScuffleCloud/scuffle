@@ -36,7 +36,7 @@ You should be able to build the project in a docker container with the following
 
 ```bash
 docker run --rm -it ubuntu:22.04 bash -c '
-apt update 
+apt update
 apt install wget git bash libc6-dbg locales -y
 
 locale-gen en_US.UTF-8
@@ -48,7 +48,7 @@ apt install ./bazelisk-amd64.deb
 
 git clone https://github.com/scufflecloud/scuffle -b troy/bazel
 
-cd scuffle 
+cd scuffle
 export PATH="$(pwd)/tools/scripts:$PATH"
 
 just test
@@ -75,6 +75,7 @@ If you use VSCode you can setup rust-analyzer to work by adding the following to
             "BUILD",
             "BUILD.bazel",
             "MODULE.bazel"
+            "vendor/cargo/defs.bzl",
         ]
     },
     "rust-analyzer.check.overrideCommand": [

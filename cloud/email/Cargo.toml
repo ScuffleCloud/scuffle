@@ -28,7 +28,7 @@ mail-builder = "0.4.4"
 pb = { package = "scufflecloud-proto", path = "../proto" }
 prost = "0.14.1"
 reqsign = { version = "0.17.0", default-features = false, features = ["aws"] }
-reqwest = "0.12.23"
+reqwest = { features = ["rustls-tls-native-roots-no-provider"], version = "0.12.23", default-features = false }
 rustls = { default-features = false, version = "0.23.31", features = ["aws_lc_rs"] }
 scuffle-bootstrap = { path = "../../crates/bootstrap" }
 scuffle-bootstrap-telemetry = { features = ["opentelemetry-logs", "opentelemetry-traces"], path = "../../crates/bootstrap-telemetry" }

@@ -4360,7 +4360,6 @@ _CONDITIONS = {
     "cfg(not(all(target_arch = \"wasm32\", any(target_os = \"unknown\", target_os = \"none\"))))": ["@rules_rust//rust/platform:aarch64-apple-darwin", "@rules_rust//rust/platform:aarch64-pc-windows-msvc", "@rules_rust//rust/platform:aarch64-unknown-linux-gnu", "@rules_rust//rust/platform:x86_64-apple-darwin", "@rules_rust//rust/platform:x86_64-pc-windows-msvc", "@rules_rust//rust/platform:x86_64-unknown-linux-gnu"],
     "cfg(not(all(target_family = \"wasm\", target_os = \"unknown\")))": ["@rules_rust//rust/platform:aarch64-apple-darwin", "@rules_rust//rust/platform:aarch64-pc-windows-msvc", "@rules_rust//rust/platform:aarch64-unknown-linux-gnu", "@rules_rust//rust/platform:x86_64-apple-darwin", "@rules_rust//rust/platform:x86_64-pc-windows-msvc", "@rules_rust//rust/platform:x86_64-unknown-linux-gnu"],
     "cfg(not(all(windows, target_env = \"msvc\", not(target_vendor = \"uwp\"))))": ["@rules_rust//rust/platform:aarch64-apple-darwin", "@rules_rust//rust/platform:aarch64-unknown-linux-gnu", "@rules_rust//rust/platform:wasm32-unknown-unknown", "@rules_rust//rust/platform:x86_64-apple-darwin", "@rules_rust//rust/platform:x86_64-unknown-linux-gnu"],
-    "cfg(not(any(target_os = \"windows\", target_vendor = \"apple\")))": ["@rules_rust//rust/platform:aarch64-unknown-linux-gnu", "@rules_rust//rust/platform:wasm32-unknown-unknown", "@rules_rust//rust/platform:x86_64-unknown-linux-gnu"],
     "cfg(not(target_arch = \"wasm32\"))": ["@rules_rust//rust/platform:aarch64-apple-darwin", "@rules_rust//rust/platform:aarch64-pc-windows-msvc", "@rules_rust//rust/platform:aarch64-unknown-linux-gnu", "@rules_rust//rust/platform:x86_64-apple-darwin", "@rules_rust//rust/platform:x86_64-pc-windows-msvc", "@rules_rust//rust/platform:x86_64-unknown-linux-gnu"],
     "cfg(not(target_family = \"wasm\"))": ["@rules_rust//rust/platform:aarch64-apple-darwin", "@rules_rust//rust/platform:aarch64-pc-windows-msvc", "@rules_rust//rust/platform:aarch64-unknown-linux-gnu", "@rules_rust//rust/platform:x86_64-apple-darwin", "@rules_rust//rust/platform:x86_64-pc-windows-msvc", "@rules_rust//rust/platform:x86_64-unknown-linux-gnu"],
     "cfg(not(windows))": ["@rules_rust//rust/platform:aarch64-apple-darwin", "@rules_rust//rust/platform:aarch64-unknown-linux-gnu", "@rules_rust//rust/platform:wasm32-unknown-unknown", "@rules_rust//rust/platform:x86_64-apple-darwin", "@rules_rust//rust/platform:x86_64-unknown-linux-gnu"],
@@ -5403,16 +5402,6 @@ def crate_repositories():
         urls = ["https://static.crates.io/crates/core-foundation/0.10.1/download"],
         strip_prefix = "core-foundation-0.10.1",
         build_file = Label("//vendor/cargo:BUILD.core-foundation-0.10.1.bazel"),
-    )
-
-    maybe(
-        http_archive,
-        name = "cargo_vendor__core-foundation-0.9.4",
-        sha256 = "91e195e091a93c46f7102ec7818a2aa394e1e1771c3ab4825963fa03e45afb8f",
-        type = "tar.gz",
-        urls = ["https://static.crates.io/crates/core-foundation/0.9.4/download"],
-        strip_prefix = "core-foundation-0.9.4",
-        build_file = Label("//vendor/cargo:BUILD.core-foundation-0.9.4.bazel"),
     )
 
     maybe(
@@ -6667,16 +6656,6 @@ def crate_repositories():
 
     maybe(
         http_archive,
-        name = "cargo_vendor__hyper-tls-0.6.0",
-        sha256 = "70206fc6890eaca9fde8a0bf71caa2ddfc9fe045ac9e5c70df101a7dbde866e0",
-        type = "tar.gz",
-        urls = ["https://static.crates.io/crates/hyper-tls/0.6.0/download"],
-        strip_prefix = "hyper-tls-0.6.0",
-        build_file = Label("//vendor/cargo:BUILD.hyper-tls-0.6.0.bazel"),
-    )
-
-    maybe(
-        http_archive,
         name = "cargo_vendor__hyper-util-0.1.16",
         sha256 = "8d9b05277c7e8da2c93a568989bb6207bef0112e8d17df7a6eda4a3cf143bc5e",
         type = "tar.gz",
@@ -7423,16 +7402,6 @@ def crate_repositories():
         urls = ["https://static.crates.io/crates/multimap/0.10.1/download"],
         strip_prefix = "multimap-0.10.1",
         build_file = Label("//vendor/cargo:BUILD.multimap-0.10.1.bazel"),
-    )
-
-    maybe(
-        http_archive,
-        name = "cargo_vendor__native-tls-0.2.14",
-        sha256 = "87de3442987e9dbec73158d5c715e7ad9072fda936bb03d19d7fa10e00520f0e",
-        type = "tar.gz",
-        urls = ["https://static.crates.io/crates/native-tls/0.2.14/download"],
-        strip_prefix = "native-tls-0.2.14",
-        build_file = Label("//vendor/cargo:BUILD.native-tls-0.2.14.bazel"),
     )
 
     maybe(
@@ -9006,16 +8975,6 @@ def crate_repositories():
 
     maybe(
         http_archive,
-        name = "cargo_vendor__security-framework-2.11.1",
-        sha256 = "897b2245f0b511c87893af39b033e5ca9cce68824c4d7e7630b5a1d339658d02",
-        type = "tar.gz",
-        urls = ["https://static.crates.io/crates/security-framework/2.11.1/download"],
-        strip_prefix = "security-framework-2.11.1",
-        build_file = Label("//vendor/cargo:BUILD.security-framework-2.11.1.bazel"),
-    )
-
-    maybe(
-        http_archive,
         name = "cargo_vendor__security-framework-3.4.0",
         sha256 = "60b369d18893388b345804dc0007963c99b7d665ae71d275812d828c6f089640",
         type = "tar.gz",
@@ -9656,26 +9615,6 @@ def crate_repositories():
 
     maybe(
         http_archive,
-        name = "cargo_vendor__system-configuration-0.6.1",
-        sha256 = "3c879d448e9d986b661742763247d3693ed13609438cf3d006f51f5368a5ba6b",
-        type = "tar.gz",
-        urls = ["https://static.crates.io/crates/system-configuration/0.6.1/download"],
-        strip_prefix = "system-configuration-0.6.1",
-        build_file = Label("//vendor/cargo:BUILD.system-configuration-0.6.1.bazel"),
-    )
-
-    maybe(
-        http_archive,
-        name = "cargo_vendor__system-configuration-sys-0.6.0",
-        sha256 = "8e1d1b10ced5ca923a1fcb8d03e96b8d3268065d724548c0211415ff6ac6bac4",
-        type = "tar.gz",
-        urls = ["https://static.crates.io/crates/system-configuration-sys/0.6.0/download"],
-        strip_prefix = "system-configuration-sys-0.6.0",
-        build_file = Label("//vendor/cargo:BUILD.system-configuration-sys-0.6.0.bazel"),
-    )
-
-    maybe(
-        http_archive,
         name = "cargo_vendor__tar-0.4.44",
         sha256 = "1d863878d212c87a19c1a610eb53bb01fe12951c0501cf5a0d65f724914a667a",
         type = "tar.gz",
@@ -9902,16 +9841,6 @@ def crate_repositories():
         urls = ["https://static.crates.io/crates/tokio-macros/2.5.0/download"],
         strip_prefix = "tokio-macros-2.5.0",
         build_file = Label("//vendor/cargo:BUILD.tokio-macros-2.5.0.bazel"),
-    )
-
-    maybe(
-        http_archive,
-        name = "cargo_vendor__tokio-native-tls-0.3.1",
-        sha256 = "bbae76ab933c85776efabc971569dd6119c580d8f5d448769dec1764bf796ef2",
-        type = "tar.gz",
-        urls = ["https://static.crates.io/crates/tokio-native-tls/0.3.1/download"],
-        strip_prefix = "tokio-native-tls-0.3.1",
-        build_file = Label("//vendor/cargo:BUILD.tokio-native-tls-0.3.1.bazel"),
     )
 
     maybe(
@@ -10852,16 +10781,6 @@ def crate_repositories():
         urls = ["https://static.crates.io/crates/windows-numerics/0.2.0/download"],
         strip_prefix = "windows-numerics-0.2.0",
         build_file = Label("//vendor/cargo:BUILD.windows-numerics-0.2.0.bazel"),
-    )
-
-    maybe(
-        http_archive,
-        name = "cargo_vendor__windows-registry-0.5.3",
-        sha256 = "5b8a9ed28765efc97bbc954883f4e6796c33a06546ebafacbabee9696967499e",
-        type = "tar.gz",
-        urls = ["https://static.crates.io/crates/windows-registry/0.5.3/download"],
-        strip_prefix = "windows-registry-0.5.3",
-        build_file = Label("//vendor/cargo:BUILD.windows-registry-0.5.3.bazel"),
     )
 
     maybe(

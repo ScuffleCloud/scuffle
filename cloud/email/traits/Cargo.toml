@@ -12,4 +12,5 @@ repository = "https://github.com/scufflecloud/scuffle"
 unexpected_cfgs = { level = "warn", check-cfg = ['cfg(coverage_nightly)'] }
 
 [dependencies]
-aws-sdk-sesv2 = "1.98.0"
+reqsign = { version = "0.17.0", default-features = false, features = ["aws"] }
+reqwest = "0.12.23"

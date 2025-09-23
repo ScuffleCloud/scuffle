@@ -94,42 +94,6 @@ transition_alias_opt(
 )
 
 transition_alias_opt(
-    name = "aws-config-1.8.6",
-    actual = "@cargo_vendor__aws-config-1.8.6//:aws_config",
-    tags = ["manual"],
-)
-
-transition_alias_opt(
-    name = "aws-config",
-    actual = "@cargo_vendor__aws-config-1.8.6//:aws_config",
-    tags = ["manual"],
-)
-
-transition_alias_opt(
-    name = "aws-runtime-1.5.10",
-    actual = "@cargo_vendor__aws-runtime-1.5.10//:aws_runtime",
-    tags = ["manual"],
-)
-
-transition_alias_opt(
-    name = "aws-runtime",
-    actual = "@cargo_vendor__aws-runtime-1.5.10//:aws_runtime",
-    tags = ["manual"],
-)
-
-transition_alias_opt(
-    name = "aws-sdk-sesv2-1.98.0",
-    actual = "@cargo_vendor__aws-sdk-sesv2-1.98.0//:aws_sdk_sesv2",
-    tags = ["manual"],
-)
-
-transition_alias_opt(
-    name = "aws-sdk-sesv2",
-    actual = "@cargo_vendor__aws-sdk-sesv2-1.98.0//:aws_sdk_sesv2",
-    tags = ["manual"],
-)
-
-transition_alias_opt(
     name = "axum-0.8.4",
     actual = "@cargo_vendor__axum-0.8.4//:axum",
     tags = ["manual"],
@@ -1306,6 +1270,18 @@ transition_alias_opt(
 )
 
 transition_alias_opt(
+    name = "reqsign-0.17.0",
+    actual = "@cargo_vendor__reqsign-0.17.0//:reqsign",
+    tags = ["manual"],
+)
+
+transition_alias_opt(
+    name = "reqsign",
+    actual = "@cargo_vendor__reqsign-0.17.0//:reqsign",
+    tags = ["manual"],
+)
+
+transition_alias_opt(
     name = "reqwest-0.12.23",
     actual = "@cargo_vendor__reqwest-0.12.23//:reqwest",
     tags = ["manual"],
@@ -1462,14 +1438,14 @@ transition_alias_opt(
 )
 
 transition_alias_opt(
-    name = "serde_json-1.0.144",
-    actual = "@cargo_vendor__serde_json-1.0.144//:serde_json",
+    name = "serde_json-1.0.145",
+    actual = "@cargo_vendor__serde_json-1.0.145//:serde_json",
     tags = ["manual"],
 )
 
 transition_alias_opt(
     name = "serde_json",
-    actual = "@cargo_vendor__serde_json-1.0.144//:serde_json",
+    actual = "@cargo_vendor__serde_json-1.0.145//:serde_json",
     tags = ["manual"],
 )
 

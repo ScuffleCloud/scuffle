@@ -17,7 +17,7 @@ cargo_toml_env_vars(
 )
 
 rust_library(
-    name = "ecdsa",
+    name = "quick_xml",
     srcs = glob(
         include = ["**/*.rs"],
         allow_empty = True,
@@ -35,16 +35,9 @@ rust_library(
         ],
     ),
     crate_features = [
-        "alloc",
-        "arithmetic",
-        "der",
-        "digest",
-        "hazmat",
-        "pkcs8",
-        "rfc6979",
-        "sign",
-        "std",
-        "verify",
+        "default",
+        "serde",
+        "serialize",
     ],
     crate_root = "src/lib.rs",
     edition = "2021",
@@ -56,7 +49,7 @@ rust_library(
     ],
     tags = [
         "cargo-bazel",
-        "crate-name=ecdsa",
+        "crate-name=quick-xml",
         "manual",
         "noclippy",
         "norustfmt",
@@ -71,11 +64,9 @@ rust_library(
         "@rules_rust//rust/platform:x86_64-unknown-linux-gnu": [],
         "//conditions:default": ["@platforms//:incompatible"],
     }),
-    version = "0.14.8",
+    version = "0.38.3",
     deps = [
-        "@cargo_vendor__der-0.6.1//:der",
-        "@cargo_vendor__elliptic-curve-0.12.3//:elliptic_curve",
-        "@cargo_vendor__rfc6979-0.3.1//:rfc6979",
-        "@cargo_vendor__signature-1.6.4//:signature",
+        "@cargo_vendor__memchr-2.7.5//:memchr",
+        "@cargo_vendor__serde-1.0.220//:serde",
     ],
 )

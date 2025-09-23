@@ -17,7 +17,7 @@ cargo_toml_env_vars(
 )
 
 rust_library(
-    name = "aws_smithy_observability",
+    name = "reqsign",
     srcs = glob(
         include = ["**/*.rs"],
         allow_empty = True,
@@ -34,6 +34,10 @@ rust_library(
             "WORKSPACE.bazel",
         ],
     ),
+    crate_features = [
+        "aws",
+        "default-context",
+    ],
     crate_root = "src/lib.rs",
     edition = "2021",
     rustc_env_files = [
@@ -44,7 +48,7 @@ rust_library(
     ],
     tags = [
         "cargo-bazel",
-        "crate-name=aws-smithy-observability",
+        "crate-name=reqsign",
         "manual",
         "noclippy",
         "norustfmt",
@@ -59,8 +63,12 @@ rust_library(
         "@rules_rust//rust/platform:x86_64-unknown-linux-gnu": [],
         "//conditions:default": ["@platforms//:incompatible"],
     }),
-    version = "0.1.3",
+    version = "0.17.0",
     deps = [
-        "@cargo_vendor__aws-smithy-runtime-api-1.9.0//:aws_smithy_runtime_api",
+        "@cargo_vendor__reqsign-aws-v4-1.0.0//:reqsign_aws_v4",
+        "@cargo_vendor__reqsign-command-execute-tokio-1.0.0//:reqsign_command_execute_tokio",
+        "@cargo_vendor__reqsign-core-1.0.0//:reqsign_core",
+        "@cargo_vendor__reqsign-file-read-tokio-1.0.0//:reqsign_file_read_tokio",
+        "@cargo_vendor__reqsign-http-send-reqwest-1.0.0//:reqsign_http_send_reqwest",
     ],
 )

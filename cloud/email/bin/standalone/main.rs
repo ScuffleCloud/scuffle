@@ -8,8 +8,6 @@
 use std::net::SocketAddr;
 use std::sync::Arc;
 
-use anyhow::Context;
-use aws_sdk_sesv2::config::Credentials;
 use scuffle_bootstrap_telemetry::opentelemetry;
 use scuffle_bootstrap_telemetry::opentelemetry_sdk::logs::SdkLoggerProvider;
 use scuffle_bootstrap_telemetry::opentelemetry_sdk::trace::SdkTracerProvider;
@@ -49,7 +47,8 @@ scuffle_settings::bootstrap!(Config);
 struct Global {
     config: Config,
     open_telemetry: opentelemetry::OpenTelemetry,
-    aws_ses_client: aws_sdk_sesv2::Client,
+    external_http_client: reqwest::Client,
+    aws_ses_req_signer: reqsign::Signer<reqsign::aws::Credential>,
 }
 
 impl email_traits::ConfigInterface for Global {
@@ -58,9 +57,19 @@ impl email_traits::ConfigInterface for Global {
     }
 }
 
-impl email_traits::AwsSesInterface for Global {
-    fn aws_ses_client(&self) -> &aws_sdk_sesv2::Client {
-        &self.aws_ses_client
+impl email_traits::AwsInterface for Global {
+    fn aws_region(&self) -> &str {
+        &self.config.aws.region
+    }
+
+    fn aws_ses_req_signer(&self) -> &reqsign::Signer<reqsign::aws::Credential> {
+        &self.aws_ses_req_signer
+    }
+}
+
+impl email_traits::HttpClientInterface for Global {
+    fn external_http_client(&self) -> &reqwest::Client {
+        &self.external_http_client
     }
 }
 
@@ -110,25 +119,18 @@ impl scuffle_bootstrap::Global for Global {
             .with_traces(tracer)
             .with_logs(logger);
 
-        let aws_config = aws_config::ConfigLoader::default()
-            .behavior_version(aws_config::BehaviorVersion::v2025_08_07())
-            .app_name(aws_config::AppName::new(config.service_name.clone()).context("invalid service name")?)
-            .region(aws_config::Region::new(config.aws.region.clone()))
-            .credentials_provider(Credentials::new(
-                &config.aws.access_key_id,
-                &config.aws.secret_access_key,
-                None,
-                None,
-                "aws-ses",
-            ))
-            .load()
-            .await;
-        let aws_ses_client = aws_sdk_sesv2::Client::new(&aws_config);
+        // TODO: only allow external requests
+        let external_http_client = reqwest::Client::builder().user_agent(config.service_name.clone()).build()?;
+
+        let provider = reqsign::aws::StaticCredentialProvider::new(&config.aws.access_key_id, &config.aws.secret_access_key);
+        let signer = reqsign::aws::RequestSigner::new("ses", &config.aws.region);
+        let aws_ses_req_signer = reqsign::Signer::new(reqsign::Context::new(), provider, signer);
 
         Ok(Arc::new(Self {
             config,
             open_telemetry,
-            aws_ses_client,
+            external_http_client,
+            aws_ses_req_signer,
         }))
     }
 }

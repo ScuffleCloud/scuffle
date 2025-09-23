@@ -17,7 +17,7 @@ cargo_toml_env_vars(
 )
 
 rust_library(
-    name = "pkcs8",
+    name = "reqsign_http_send_reqwest",
     srcs = glob(
         include = ["**/*.rs"],
         allow_empty = True,
@@ -34,11 +34,11 @@ rust_library(
             "WORKSPACE.bazel",
         ],
     ),
-    crate_features = [
-        "alloc",
-    ],
     crate_root = "src/lib.rs",
     edition = "2021",
+    proc_macro_deps = [
+        "@cargo_vendor__async-trait-0.1.89//:async_trait",
+    ],
     rustc_env_files = [
         ":cargo_toml_env_vars",
     ],
@@ -47,7 +47,7 @@ rust_library(
     ],
     tags = [
         "cargo-bazel",
-        "crate-name=pkcs8",
+        "crate-name=reqsign-http-send-reqwest",
         "manual",
         "noclippy",
         "norustfmt",
@@ -62,9 +62,13 @@ rust_library(
         "@rules_rust//rust/platform:x86_64-unknown-linux-gnu": [],
         "//conditions:default": ["@platforms//:incompatible"],
     }),
-    version = "0.9.0",
+    version = "1.0.0",
     deps = [
-        "@cargo_vendor__der-0.6.1//:der",
-        "@cargo_vendor__spki-0.6.0//:spki",
+        "@cargo_vendor__anyhow-1.0.99//:anyhow",
+        "@cargo_vendor__bytes-1.10.1//:bytes",
+        "@cargo_vendor__http-1.3.1//:http",
+        "@cargo_vendor__http-body-util-0.1.3//:http_body_util",
+        "@cargo_vendor__reqsign-core-1.0.0//:reqsign_core",
+        "@cargo_vendor__reqwest-0.12.23//:reqwest",
     ],
 )

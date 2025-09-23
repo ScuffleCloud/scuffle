@@ -22,6 +22,27 @@ rust_library(
         include = ["**/*.rs"],
         allow_empty = True,
     ),
+    aliases = select({
+        "@rules_rust//rust/platform:aarch64-apple-darwin": {
+            "@cargo_vendor__native-tls-0.2.14//:native_tls": "native_tls_crate",  # cfg(not(target_arch = "wasm32"))
+        },
+        "@rules_rust//rust/platform:aarch64-pc-windows-msvc": {
+            "@cargo_vendor__native-tls-0.2.14//:native_tls": "native_tls_crate",  # cfg(not(target_arch = "wasm32"))
+        },
+        "@rules_rust//rust/platform:aarch64-unknown-linux-gnu": {
+            "@cargo_vendor__native-tls-0.2.14//:native_tls": "native_tls_crate",  # cfg(not(target_arch = "wasm32"))
+        },
+        "@rules_rust//rust/platform:x86_64-apple-darwin": {
+            "@cargo_vendor__native-tls-0.2.14//:native_tls": "native_tls_crate",  # cfg(not(target_arch = "wasm32"))
+        },
+        "@rules_rust//rust/platform:x86_64-pc-windows-msvc": {
+            "@cargo_vendor__native-tls-0.2.14//:native_tls": "native_tls_crate",  # cfg(not(target_arch = "wasm32"))
+        },
+        "@rules_rust//rust/platform:x86_64-unknown-linux-gnu": {
+            "@cargo_vendor__native-tls-0.2.14//:native_tls": "native_tls_crate",  # cfg(not(target_arch = "wasm32"))
+        },
+        "//conditions:default": {},
+    }),
     compile_data = glob(
         include = ["**"],
         allow_empty = True,
@@ -37,6 +58,9 @@ rust_library(
     crate_features = [
         "__rustls",
         "__tls",
+        "charset",
+        "default",
+        "default-tls",
         "h2",
         "http2",
         "http3-aws-lc-rs",
@@ -45,6 +69,7 @@ rust_library(
         "rustls-tls-manual-roots-no-provider",
         "rustls-tls-native-roots-no-provider",
         "rustls-tls-no-provider",
+        "system-proxy",
     ],
     crate_root = "src/lib.rs",
     edition = "2021",
@@ -79,13 +104,14 @@ rust_library(
         "@cargo_vendor__futures-core-0.3.31//:futures_core",
         "@cargo_vendor__http-1.3.1//:http",
         "@cargo_vendor__serde-1.0.220//:serde",
-        "@cargo_vendor__serde_json-1.0.144//:serde_json",  # cfg(target_arch = "wasm32")
+        "@cargo_vendor__serde_json-1.0.145//:serde_json",  # cfg(target_arch = "wasm32")
         "@cargo_vendor__serde_urlencoded-0.7.1//:serde_urlencoded",
         "@cargo_vendor__sync_wrapper-1.0.2//:sync_wrapper",
         "@cargo_vendor__tower-service-0.3.3//:tower_service",
         "@cargo_vendor__url-2.5.7//:url",
     ] + select({
         "@rules_rust//rust/platform:aarch64-apple-darwin": [
+            "@cargo_vendor__encoding_rs-0.8.35//:encoding_rs",  # cfg(not(target_arch = "wasm32"))
             "@cargo_vendor__h2-0.4.12//:h2",  # cfg(not(target_arch = "wasm32"))
             "@cargo_vendor__h3-0.0.8//:h3",  # cfg(not(target_arch = "wasm32"))
             "@cargo_vendor__h3-quinn-0.0.10//:h3_quinn",  # cfg(not(target_arch = "wasm32"))
@@ -93,8 +119,11 @@ rust_library(
             "@cargo_vendor__http-body-util-0.1.3//:http_body_util",  # cfg(not(target_arch = "wasm32"))
             "@cargo_vendor__hyper-1.7.0//:hyper",  # cfg(not(target_arch = "wasm32"))
             "@cargo_vendor__hyper-rustls-0.27.7//:hyper_rustls",  # cfg(not(target_arch = "wasm32"))
+            "@cargo_vendor__hyper-tls-0.6.0//:hyper_tls",  # cfg(not(target_arch = "wasm32"))
             "@cargo_vendor__hyper-util-0.1.16//:hyper_util",  # cfg(not(target_arch = "wasm32"))
             "@cargo_vendor__log-0.4.28//:log",  # cfg(not(target_arch = "wasm32"))
+            "@cargo_vendor__mime-0.3.17//:mime",  # cfg(not(target_arch = "wasm32"))
+            "@cargo_vendor__native-tls-0.2.14//:native_tls",  # cfg(not(target_arch = "wasm32"))
             "@cargo_vendor__percent-encoding-2.3.2//:percent_encoding",  # cfg(not(target_arch = "wasm32"))
             "@cargo_vendor__pin-project-lite-0.2.16//:pin_project_lite",  # cfg(not(target_arch = "wasm32"))
             "@cargo_vendor__quinn-0.11.9//:quinn",  # cfg(not(target_arch = "wasm32"))
@@ -102,11 +131,13 @@ rust_library(
             "@cargo_vendor__rustls-native-certs-0.8.1//:rustls_native_certs",  # cfg(not(target_arch = "wasm32"))
             "@cargo_vendor__rustls-pki-types-1.12.0//:rustls_pki_types",  # cfg(not(target_arch = "wasm32"))
             "@cargo_vendor__tokio-1.47.1//:tokio",  # cfg(not(target_arch = "wasm32"))
+            "@cargo_vendor__tokio-native-tls-0.3.1//:tokio_native_tls",  # cfg(not(target_arch = "wasm32"))
             "@cargo_vendor__tokio-rustls-0.26.2//:tokio_rustls",  # cfg(not(target_arch = "wasm32"))
             "@cargo_vendor__tower-0.5.2//:tower",  # cfg(not(target_arch = "wasm32"))
             "@cargo_vendor__tower-http-0.6.6//:tower_http",  # cfg(not(target_arch = "wasm32"))
         ],
         "@rules_rust//rust/platform:aarch64-pc-windows-msvc": [
+            "@cargo_vendor__encoding_rs-0.8.35//:encoding_rs",  # cfg(not(target_arch = "wasm32"))
             "@cargo_vendor__h2-0.4.12//:h2",  # cfg(not(target_arch = "wasm32"))
             "@cargo_vendor__h3-0.0.8//:h3",  # cfg(not(target_arch = "wasm32"))
             "@cargo_vendor__h3-quinn-0.0.10//:h3_quinn",  # cfg(not(target_arch = "wasm32"))
@@ -114,8 +145,11 @@ rust_library(
             "@cargo_vendor__http-body-util-0.1.3//:http_body_util",  # cfg(not(target_arch = "wasm32"))
             "@cargo_vendor__hyper-1.7.0//:hyper",  # cfg(not(target_arch = "wasm32"))
             "@cargo_vendor__hyper-rustls-0.27.7//:hyper_rustls",  # cfg(not(target_arch = "wasm32"))
+            "@cargo_vendor__hyper-tls-0.6.0//:hyper_tls",  # cfg(not(target_arch = "wasm32"))
             "@cargo_vendor__hyper-util-0.1.16//:hyper_util",  # cfg(not(target_arch = "wasm32"))
             "@cargo_vendor__log-0.4.28//:log",  # cfg(not(target_arch = "wasm32"))
+            "@cargo_vendor__mime-0.3.17//:mime",  # cfg(not(target_arch = "wasm32"))
+            "@cargo_vendor__native-tls-0.2.14//:native_tls",  # cfg(not(target_arch = "wasm32"))
             "@cargo_vendor__percent-encoding-2.3.2//:percent_encoding",  # cfg(not(target_arch = "wasm32"))
             "@cargo_vendor__pin-project-lite-0.2.16//:pin_project_lite",  # cfg(not(target_arch = "wasm32"))
             "@cargo_vendor__quinn-0.11.9//:quinn",  # cfg(not(target_arch = "wasm32"))
@@ -123,11 +157,13 @@ rust_library(
             "@cargo_vendor__rustls-native-certs-0.8.1//:rustls_native_certs",  # cfg(not(target_arch = "wasm32"))
             "@cargo_vendor__rustls-pki-types-1.12.0//:rustls_pki_types",  # cfg(not(target_arch = "wasm32"))
             "@cargo_vendor__tokio-1.47.1//:tokio",  # cfg(not(target_arch = "wasm32"))
+            "@cargo_vendor__tokio-native-tls-0.3.1//:tokio_native_tls",  # cfg(not(target_arch = "wasm32"))
             "@cargo_vendor__tokio-rustls-0.26.2//:tokio_rustls",  # cfg(not(target_arch = "wasm32"))
             "@cargo_vendor__tower-0.5.2//:tower",  # cfg(not(target_arch = "wasm32"))
             "@cargo_vendor__tower-http-0.6.6//:tower_http",  # cfg(not(target_arch = "wasm32"))
         ],
         "@rules_rust//rust/platform:aarch64-unknown-linux-gnu": [
+            "@cargo_vendor__encoding_rs-0.8.35//:encoding_rs",  # cfg(not(target_arch = "wasm32"))
             "@cargo_vendor__h2-0.4.12//:h2",  # cfg(not(target_arch = "wasm32"))
             "@cargo_vendor__h3-0.0.8//:h3",  # cfg(not(target_arch = "wasm32"))
             "@cargo_vendor__h3-quinn-0.0.10//:h3_quinn",  # cfg(not(target_arch = "wasm32"))
@@ -135,8 +171,11 @@ rust_library(
             "@cargo_vendor__http-body-util-0.1.3//:http_body_util",  # cfg(not(target_arch = "wasm32"))
             "@cargo_vendor__hyper-1.7.0//:hyper",  # cfg(not(target_arch = "wasm32"))
             "@cargo_vendor__hyper-rustls-0.27.7//:hyper_rustls",  # cfg(not(target_arch = "wasm32"))
+            "@cargo_vendor__hyper-tls-0.6.0//:hyper_tls",  # cfg(not(target_arch = "wasm32"))
             "@cargo_vendor__hyper-util-0.1.16//:hyper_util",  # cfg(not(target_arch = "wasm32"))
             "@cargo_vendor__log-0.4.28//:log",  # cfg(not(target_arch = "wasm32"))
+            "@cargo_vendor__mime-0.3.17//:mime",  # cfg(not(target_arch = "wasm32"))
+            "@cargo_vendor__native-tls-0.2.14//:native_tls",  # cfg(not(target_arch = "wasm32"))
             "@cargo_vendor__percent-encoding-2.3.2//:percent_encoding",  # cfg(not(target_arch = "wasm32"))
             "@cargo_vendor__pin-project-lite-0.2.16//:pin_project_lite",  # cfg(not(target_arch = "wasm32"))
             "@cargo_vendor__quinn-0.11.9//:quinn",  # cfg(not(target_arch = "wasm32"))
@@ -144,6 +183,7 @@ rust_library(
             "@cargo_vendor__rustls-native-certs-0.8.1//:rustls_native_certs",  # cfg(not(target_arch = "wasm32"))
             "@cargo_vendor__rustls-pki-types-1.12.0//:rustls_pki_types",  # cfg(not(target_arch = "wasm32"))
             "@cargo_vendor__tokio-1.47.1//:tokio",  # cfg(not(target_arch = "wasm32"))
+            "@cargo_vendor__tokio-native-tls-0.3.1//:tokio_native_tls",  # cfg(not(target_arch = "wasm32"))
             "@cargo_vendor__tokio-rustls-0.26.2//:tokio_rustls",  # cfg(not(target_arch = "wasm32"))
             "@cargo_vendor__tower-0.5.2//:tower",  # cfg(not(target_arch = "wasm32"))
             "@cargo_vendor__tower-http-0.6.6//:tower_http",  # cfg(not(target_arch = "wasm32"))
@@ -155,6 +195,7 @@ rust_library(
             "@cargo_vendor__web-sys-0.3.78//:web_sys",  # cfg(target_arch = "wasm32")
         ],
         "@rules_rust//rust/platform:x86_64-apple-darwin": [
+            "@cargo_vendor__encoding_rs-0.8.35//:encoding_rs",  # cfg(not(target_arch = "wasm32"))
             "@cargo_vendor__h2-0.4.12//:h2",  # cfg(not(target_arch = "wasm32"))
             "@cargo_vendor__h3-0.0.8//:h3",  # cfg(not(target_arch = "wasm32"))
             "@cargo_vendor__h3-quinn-0.0.10//:h3_quinn",  # cfg(not(target_arch = "wasm32"))
@@ -162,8 +203,11 @@ rust_library(
             "@cargo_vendor__http-body-util-0.1.3//:http_body_util",  # cfg(not(target_arch = "wasm32"))
             "@cargo_vendor__hyper-1.7.0//:hyper",  # cfg(not(target_arch = "wasm32"))
             "@cargo_vendor__hyper-rustls-0.27.7//:hyper_rustls",  # cfg(not(target_arch = "wasm32"))
+            "@cargo_vendor__hyper-tls-0.6.0//:hyper_tls",  # cfg(not(target_arch = "wasm32"))
             "@cargo_vendor__hyper-util-0.1.16//:hyper_util",  # cfg(not(target_arch = "wasm32"))
             "@cargo_vendor__log-0.4.28//:log",  # cfg(not(target_arch = "wasm32"))
+            "@cargo_vendor__mime-0.3.17//:mime",  # cfg(not(target_arch = "wasm32"))
+            "@cargo_vendor__native-tls-0.2.14//:native_tls",  # cfg(not(target_arch = "wasm32"))
             "@cargo_vendor__percent-encoding-2.3.2//:percent_encoding",  # cfg(not(target_arch = "wasm32"))
             "@cargo_vendor__pin-project-lite-0.2.16//:pin_project_lite",  # cfg(not(target_arch = "wasm32"))
             "@cargo_vendor__quinn-0.11.9//:quinn",  # cfg(not(target_arch = "wasm32"))
@@ -171,11 +215,13 @@ rust_library(
             "@cargo_vendor__rustls-native-certs-0.8.1//:rustls_native_certs",  # cfg(not(target_arch = "wasm32"))
             "@cargo_vendor__rustls-pki-types-1.12.0//:rustls_pki_types",  # cfg(not(target_arch = "wasm32"))
             "@cargo_vendor__tokio-1.47.1//:tokio",  # cfg(not(target_arch = "wasm32"))
+            "@cargo_vendor__tokio-native-tls-0.3.1//:tokio_native_tls",  # cfg(not(target_arch = "wasm32"))
             "@cargo_vendor__tokio-rustls-0.26.2//:tokio_rustls",  # cfg(not(target_arch = "wasm32"))
             "@cargo_vendor__tower-0.5.2//:tower",  # cfg(not(target_arch = "wasm32"))
             "@cargo_vendor__tower-http-0.6.6//:tower_http",  # cfg(not(target_arch = "wasm32"))
         ],
         "@rules_rust//rust/platform:x86_64-pc-windows-msvc": [
+            "@cargo_vendor__encoding_rs-0.8.35//:encoding_rs",  # cfg(not(target_arch = "wasm32"))
             "@cargo_vendor__h2-0.4.12//:h2",  # cfg(not(target_arch = "wasm32"))
             "@cargo_vendor__h3-0.0.8//:h3",  # cfg(not(target_arch = "wasm32"))
             "@cargo_vendor__h3-quinn-0.0.10//:h3_quinn",  # cfg(not(target_arch = "wasm32"))
@@ -183,8 +229,11 @@ rust_library(
             "@cargo_vendor__http-body-util-0.1.3//:http_body_util",  # cfg(not(target_arch = "wasm32"))
             "@cargo_vendor__hyper-1.7.0//:hyper",  # cfg(not(target_arch = "wasm32"))
             "@cargo_vendor__hyper-rustls-0.27.7//:hyper_rustls",  # cfg(not(target_arch = "wasm32"))
+            "@cargo_vendor__hyper-tls-0.6.0//:hyper_tls",  # cfg(not(target_arch = "wasm32"))
             "@cargo_vendor__hyper-util-0.1.16//:hyper_util",  # cfg(not(target_arch = "wasm32"))
             "@cargo_vendor__log-0.4.28//:log",  # cfg(not(target_arch = "wasm32"))
+            "@cargo_vendor__mime-0.3.17//:mime",  # cfg(not(target_arch = "wasm32"))
+            "@cargo_vendor__native-tls-0.2.14//:native_tls",  # cfg(not(target_arch = "wasm32"))
             "@cargo_vendor__percent-encoding-2.3.2//:percent_encoding",  # cfg(not(target_arch = "wasm32"))
             "@cargo_vendor__pin-project-lite-0.2.16//:pin_project_lite",  # cfg(not(target_arch = "wasm32"))
             "@cargo_vendor__quinn-0.11.9//:quinn",  # cfg(not(target_arch = "wasm32"))
@@ -192,11 +241,13 @@ rust_library(
             "@cargo_vendor__rustls-native-certs-0.8.1//:rustls_native_certs",  # cfg(not(target_arch = "wasm32"))
             "@cargo_vendor__rustls-pki-types-1.12.0//:rustls_pki_types",  # cfg(not(target_arch = "wasm32"))
             "@cargo_vendor__tokio-1.47.1//:tokio",  # cfg(not(target_arch = "wasm32"))
+            "@cargo_vendor__tokio-native-tls-0.3.1//:tokio_native_tls",  # cfg(not(target_arch = "wasm32"))
             "@cargo_vendor__tokio-rustls-0.26.2//:tokio_rustls",  # cfg(not(target_arch = "wasm32"))
             "@cargo_vendor__tower-0.5.2//:tower",  # cfg(not(target_arch = "wasm32"))
             "@cargo_vendor__tower-http-0.6.6//:tower_http",  # cfg(not(target_arch = "wasm32"))
         ],
         "@rules_rust//rust/platform:x86_64-unknown-linux-gnu": [
+            "@cargo_vendor__encoding_rs-0.8.35//:encoding_rs",  # cfg(not(target_arch = "wasm32"))
             "@cargo_vendor__h2-0.4.12//:h2",  # cfg(not(target_arch = "wasm32"))
             "@cargo_vendor__h3-0.0.8//:h3",  # cfg(not(target_arch = "wasm32"))
             "@cargo_vendor__h3-quinn-0.0.10//:h3_quinn",  # cfg(not(target_arch = "wasm32"))
@@ -204,8 +255,11 @@ rust_library(
             "@cargo_vendor__http-body-util-0.1.3//:http_body_util",  # cfg(not(target_arch = "wasm32"))
             "@cargo_vendor__hyper-1.7.0//:hyper",  # cfg(not(target_arch = "wasm32"))
             "@cargo_vendor__hyper-rustls-0.27.7//:hyper_rustls",  # cfg(not(target_arch = "wasm32"))
+            "@cargo_vendor__hyper-tls-0.6.0//:hyper_tls",  # cfg(not(target_arch = "wasm32"))
             "@cargo_vendor__hyper-util-0.1.16//:hyper_util",  # cfg(not(target_arch = "wasm32"))
             "@cargo_vendor__log-0.4.28//:log",  # cfg(not(target_arch = "wasm32"))
+            "@cargo_vendor__mime-0.3.17//:mime",  # cfg(not(target_arch = "wasm32"))
+            "@cargo_vendor__native-tls-0.2.14//:native_tls",  # cfg(not(target_arch = "wasm32"))
             "@cargo_vendor__percent-encoding-2.3.2//:percent_encoding",  # cfg(not(target_arch = "wasm32"))
             "@cargo_vendor__pin-project-lite-0.2.16//:pin_project_lite",  # cfg(not(target_arch = "wasm32"))
             "@cargo_vendor__quinn-0.11.9//:quinn",  # cfg(not(target_arch = "wasm32"))
@@ -213,6 +267,7 @@ rust_library(
             "@cargo_vendor__rustls-native-certs-0.8.1//:rustls_native_certs",  # cfg(not(target_arch = "wasm32"))
             "@cargo_vendor__rustls-pki-types-1.12.0//:rustls_pki_types",  # cfg(not(target_arch = "wasm32"))
             "@cargo_vendor__tokio-1.47.1//:tokio",  # cfg(not(target_arch = "wasm32"))
+            "@cargo_vendor__tokio-native-tls-0.3.1//:tokio_native_tls",  # cfg(not(target_arch = "wasm32"))
             "@cargo_vendor__tokio-rustls-0.26.2//:tokio_rustls",  # cfg(not(target_arch = "wasm32"))
             "@cargo_vendor__tower-0.5.2//:tower",  # cfg(not(target_arch = "wasm32"))
             "@cargo_vendor__tower-http-0.6.6//:tower_http",  # cfg(not(target_arch = "wasm32"))

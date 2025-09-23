@@ -5,10 +5,12 @@
 #![deny(unreachable_pub)]
 #![deny(clippy::mod_module_files)]
 
-pub use aws_ses::*;
+pub use aws::*;
 pub use config::*;
+pub use http::*;
 
-mod aws_ses;
+mod aws;
 mod config;
+mod http;
 
-pub trait Global: ConfigInterface + AwsSesInterface + Send + Sync + 'static {}
+pub trait Global: ConfigInterface + HttpClientInterface + AwsInterface + Send + Sync + 'static {}

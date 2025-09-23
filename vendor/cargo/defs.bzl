@@ -442,6 +442,28 @@ def aliases(
 ###############################################################################
 
 _NORMAL_DEPENDENCIES = {
+    "cloud/big-bin": {
+        _REQUIRED_FEATURE: {
+            _COMMON_CONDITION: {
+                "anyhow": Label("@cargo_vendor//:anyhow-1.0.99"),
+                "diesel": Label("@cargo_vendor//:diesel-2.2.12"),
+                "diesel-async": Label("@cargo_vendor//:diesel-async-0.6.1"),
+                "fred": Label("@cargo_vendor//:fred-10.1.0"),
+                "ipnetwork": Label("@cargo_vendor//:ipnetwork-0.21.1"),
+                "itertools": Label("@cargo_vendor//:itertools-0.14.0"),
+                "reqsign": Label("@cargo_vendor//:reqsign-0.17.0"),
+                "reqwest": Label("@cargo_vendor//:reqwest-0.12.23"),
+                "rustls": Label("@cargo_vendor//:rustls-0.23.31"),
+                "serde": Label("@cargo_vendor//:serde-1.0.220"),
+                "tokio": Label("@cargo_vendor//:tokio-1.47.1"),
+                "tonic": Label("@cargo_vendor//:tonic-0.14.2"),
+                "tracing": Label("@cargo_vendor//:tracing-0.1.41"),
+                "tracing-subscriber": Label("@cargo_vendor//:tracing-subscriber-0.3.20"),
+                "url": Label("@cargo_vendor//:url-2.5.7"),
+                "webauthn-rs": Label("@cargo_vendor//:webauthn-rs-0.5.2"),
+            },
+        },
+    },
     "cloud/core": {
         _REQUIRED_FEATURE: {
             _COMMON_CONDITION: {
@@ -1330,6 +1352,12 @@ _NORMAL_DEPENDENCIES = {
 }
 
 _NORMAL_ALIASES = {
+    "cloud/big-bin": {
+        _REQUIRED_FEATURE: {
+            _COMMON_CONDITION: {
+            },
+        },
+    },
     "cloud/core": {
         _REQUIRED_FEATURE: {
             _COMMON_CONDITION: {
@@ -1803,6 +1831,8 @@ _NORMAL_ALIASES = {
 }
 
 _NORMAL_DEV_DEPENDENCIES = {
+    "cloud/big-bin": {
+    },
     "cloud/core": {
     },
     "cloud/core/cedar": {
@@ -2087,6 +2117,8 @@ _NORMAL_DEV_DEPENDENCIES = {
 }
 
 _NORMAL_DEV_ALIASES = {
+    "cloud/big-bin": {
+    },
     "cloud/core": {
     },
     "cloud/core/cedar": {
@@ -2306,6 +2338,14 @@ _NORMAL_DEV_ALIASES = {
 }
 
 _PROC_MACRO_DEPENDENCIES = {
+    "cloud/big-bin": {
+        _REQUIRED_FEATURE: {
+            _COMMON_CONDITION: {
+                "serde_derive": Label("@cargo_vendor//:serde_derive-1.0.220"),
+                "smart-default": Label("@cargo_vendor//:smart-default-0.7.1"),
+            },
+        },
+    },
     "cloud/core": {
         _REQUIRED_FEATURE: {
             _COMMON_CONDITION: {
@@ -2706,6 +2746,8 @@ _PROC_MACRO_DEPENDENCIES = {
 }
 
 _PROC_MACRO_ALIASES = {
+    "cloud/big-bin": {
+    },
     "cloud/core": {
     },
     "cloud/core/cedar": {
@@ -2843,6 +2885,8 @@ _PROC_MACRO_ALIASES = {
 }
 
 _PROC_MACRO_DEV_DEPENDENCIES = {
+    "cloud/big-bin": {
+    },
     "cloud/core": {
     },
     "cloud/core/cedar": {
@@ -2985,6 +3029,8 @@ _PROC_MACRO_DEV_DEPENDENCIES = {
 }
 
 _PROC_MACRO_DEV_ALIASES = {
+    "cloud/big-bin": {
+    },
     "cloud/core": {
     },
     "cloud/core/cedar": {
@@ -3204,6 +3250,8 @@ _PROC_MACRO_DEV_ALIASES = {
 }
 
 _BUILD_DEPENDENCIES = {
+    "cloud/big-bin": {
+    },
     "cloud/core": {
     },
     "cloud/core/cedar": {
@@ -3346,6 +3394,8 @@ _BUILD_DEPENDENCIES = {
 }
 
 _BUILD_ALIASES = {
+    "cloud/big-bin": {
+    },
     "cloud/core": {
     },
     "cloud/core/cedar": {
@@ -3483,6 +3533,8 @@ _BUILD_ALIASES = {
 }
 
 _BUILD_PROC_MACRO_DEPENDENCIES = {
+    "cloud/big-bin": {
+    },
     "cloud/core": {
     },
     "cloud/core/cedar": {
@@ -3608,6 +3660,8 @@ _BUILD_PROC_MACRO_DEPENDENCIES = {
 }
 
 _BUILD_PROC_MACRO_ALIASES = {
+    "cloud/big-bin": {
+    },
     "cloud/core": {
     },
     "cloud/core/cedar": {
@@ -3733,6 +3787,8 @@ _BUILD_PROC_MACRO_ALIASES = {
 }
 
 _FEATURE_FLAGS = {
+    "cloud/big-bin": {
+    },
     "cloud/core": {
     },
     "cloud/core/cedar": {
@@ -4085,6 +4141,8 @@ _FEATURE_FLAGS = {
 }
 
 _RESOLVED_FEATURE_FLAGS = {
+    "cloud/big-bin": {
+    },
     "cloud/core": {
     },
     "cloud/core/cedar": {
@@ -4262,6 +4320,7 @@ _RESOLVED_FEATURE_FLAGS = {
 }
 
 _VERSIONS = {
+    "cloud/big-bin": "0.1.0",
     "cloud/core": "0.1.0",
     "cloud/core/cedar": "0.1.0",
     "cloud/core/db-types": "0.1.0",

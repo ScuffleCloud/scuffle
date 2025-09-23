@@ -8687,42 +8687,12 @@ def crate_repositories():
 
     maybe(
         http_archive,
-        name = "cargo_vendor__reqsign-command-execute-tokio-1.0.0",
-        sha256 = "8e145d2d409f3db11aa3094b8905d69b084d4060771c12e6522dde55924bfecd",
-        type = "tar.gz",
-        urls = ["https://static.crates.io/crates/reqsign-command-execute-tokio/1.0.0/download"],
-        strip_prefix = "reqsign-command-execute-tokio-1.0.0",
-        build_file = Label("//vendor/cargo:BUILD.reqsign-command-execute-tokio-1.0.0.bazel"),
-    )
-
-    maybe(
-        http_archive,
         name = "cargo_vendor__reqsign-core-1.0.0",
         sha256 = "35fd7359352a79b293168785b9cbb239e7017b4fa0c934351518feee394f92bc",
         type = "tar.gz",
         urls = ["https://static.crates.io/crates/reqsign-core/1.0.0/download"],
         strip_prefix = "reqsign-core-1.0.0",
         build_file = Label("//vendor/cargo:BUILD.reqsign-core-1.0.0.bazel"),
-    )
-
-    maybe(
-        http_archive,
-        name = "cargo_vendor__reqsign-file-read-tokio-1.0.0",
-        sha256 = "857154204885ec746f5f221393aec7dc47cbde9216b18774eb0a0c6e966f1ee0",
-        type = "tar.gz",
-        urls = ["https://static.crates.io/crates/reqsign-file-read-tokio/1.0.0/download"],
-        strip_prefix = "reqsign-file-read-tokio-1.0.0",
-        build_file = Label("//vendor/cargo:BUILD.reqsign-file-read-tokio-1.0.0.bazel"),
-    )
-
-    maybe(
-        http_archive,
-        name = "cargo_vendor__reqsign-http-send-reqwest-1.0.0",
-        sha256 = "f388d66e254d67e570eba0a4a3fe39427ff7f1df26c73a8b7330e8ca1e639f80",
-        type = "tar.gz",
-        urls = ["https://static.crates.io/crates/reqsign-http-send-reqwest/1.0.0/download"],
-        strip_prefix = "reqsign-http-send-reqwest-1.0.0",
-        build_file = Label("//vendor/cargo:BUILD.reqsign-http-send-reqwest-1.0.0.bazel"),
     )
 
     maybe(

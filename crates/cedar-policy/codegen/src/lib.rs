@@ -1,18 +1,24 @@
 //! Cedar is a policy language used to express permisisons using a relationship model.
 //!
-//! This crate extends the [`cedar-policy`](https://docs.rs/cedar-policy) crate by adding a proc-macro to generate
-//! types for a given cedarschema.
+//! This crate extends the [`cedar-policy`](https://docs.rs/cedar-policy) crate by adding code generator for cedar schemas.
+//!
 //!
 //! You can then use this in combo with cedar to have type-safe schema evaluation.
 //!
 //! ## Example
 //!
 //! ```rust
-//! #[scuffle_cedar_policy::cedar_policy(schema = "./static_policies.cedarschema")]
-//! mod generated;
-//! ```
+//! # fn inner() {
+//! let schema = std::fs::read_to_string("./static.cedarschema").expect("failed to read");
 //!
-//! For details see [`metrics!`](metrics).
+//! let config = scuffle_cedar_policy_codegen::Config::default()
+//!     .generate_from_schema(&schema)
+//!     .expect("valid schema");
+//!
+//! let output = std::path::PathBuf::from(std::env::var_os("OUT_DIR").expect("no such env")).join("generated.rs");
+//! std::fs::write(output, config.to_string()).expect("failed to write output");
+//! # }
+//! ```
 //!
 //! ## License
 //!

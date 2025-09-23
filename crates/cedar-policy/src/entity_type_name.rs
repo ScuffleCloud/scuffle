@@ -65,7 +65,7 @@ impl EntityTypeName {
 
 /// A macro for creating a compile time checked entity type name
 /// ```rust
-/// entity_type_name!("SomeEntityType");
+/// scuffle_cedar_policy::entity_type_name!("SomeEntityType");
 /// ```
 #[macro_export]
 macro_rules! entity_type_name {

@@ -742,6 +742,7 @@ _NORMAL_DEPENDENCIES = {
     "crates/ffmpeg": {
         _REQUIRED_FEATURE: {
             _COMMON_CONDITION: {
+                "aliasable": Label("@cargo_vendor//:aliasable-0.1.3"),
                 "arc-swap": Label("@cargo_vendor//:arc-swap-1.7.1"),
                 "bon": Label("@cargo_vendor//:bon-3.7.2"),
                 "libc": Label("@cargo_vendor//:libc-0.2.175"),
@@ -4374,6 +4375,16 @@ def crate_repositories():
         urls = ["https://static.crates.io/crates/aho-corasick/1.1.3/download"],
         strip_prefix = "aho-corasick-1.1.3",
         build_file = Label("//vendor/cargo:BUILD.aho-corasick-1.1.3.bazel"),
+    )
+
+    maybe(
+        http_archive,
+        name = "cargo_vendor__aliasable-0.1.3",
+        sha256 = "250f629c0161ad8107cf89319e990051fae62832fd343083bea452d93e2205fd",
+        type = "tar.gz",
+        urls = ["https://static.crates.io/crates/aliasable/0.1.3/download"],
+        strip_prefix = "aliasable-0.1.3",
+        build_file = Label("//vendor/cargo:BUILD.aliasable-0.1.3.bazel"),
     )
 
     maybe(
@@ -10976,6 +10987,7 @@ def crate_repositories():
     )
 
     return [
+        struct(repo = "cargo_vendor__aliasable-0.1.3", is_dev_dep = False),
         struct(repo = "cargo_vendor__anyhow-1.0.99", is_dev_dep = False),
         struct(repo = "cargo_vendor__arc-swap-1.7.1", is_dev_dep = False),
         struct(repo = "cargo_vendor__argon2-0.5.3", is_dev_dep = False),

@@ -1,5 +1,6 @@
 [workspace]
 members = [
+    "cloud/big-bin",
     "cloud/core",
     "cloud/core/cedar",
     "cloud/core/db-types",

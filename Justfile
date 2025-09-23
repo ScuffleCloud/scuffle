@@ -43,6 +43,8 @@ run bin *args:
         bazel run //cloud/core:bin -- {{ args }}
     elif [ {{ bin }} == "email" ]; then
         bazel run //cloud/email:bin -- {{ args }}
+    elif [ {{ bin }} == "big-bin" ]; then
+        bazel run //cloud/big-bin -- {{ args }}
     else
         echo "Unknown binary: {{ bin }}"
         exit 1

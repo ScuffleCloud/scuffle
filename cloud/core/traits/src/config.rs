@@ -4,6 +4,7 @@ pub trait ConfigInterface: Send + Sync {
     fn service_bind(&self) -> std::net::SocketAddr;
     fn swagger_ui_enabled(&self) -> bool;
     fn turnstile_secret_key(&self) -> &str;
+    fn email_from_name(&self) -> &str;
     fn email_from_address(&self) -> &str;
     fn dashboard_origin(&self) -> &url::Url;
     fn timeout_config(&self) -> TimeoutConfig;

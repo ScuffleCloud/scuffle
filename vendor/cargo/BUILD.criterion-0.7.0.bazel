@@ -81,7 +81,7 @@ rust_library(
         "@cargo_vendor__rayon-1.11.0//:rayon",
         "@cargo_vendor__regex-1.11.2//:regex",
         "@cargo_vendor__serde-1.0.220//:serde",
-        "@cargo_vendor__serde_json-1.0.144//:serde_json",
+        "@cargo_vendor__serde_json-1.0.145//:serde_json",
         "@cargo_vendor__tinytemplate-1.2.1//:tinytemplate",
         "@cargo_vendor__tokio-1.47.1//:tokio",
         "@cargo_vendor__walkdir-2.5.0//:walkdir",

@@ -66,7 +66,8 @@ impl<G: core_traits::Global> Operation<G> for tonic::Request<pb::scufflecloud::c
 
         let conn = driver.conn().await?;
 
-        let user_id = common::get_user_by_email(conn, &email).await?.map(|u| u.id);
+        let user = common::get_user_by_email(conn, &email).await?;
+        let user_id = user.as_ref().map(|u| u.id);
 
         let code = common::generate_random_bytes().into_tonic_internal_err("failed to generate magic link code")?;
         let code_base64 = base64::prelude::BASE64_URL_SAFE.encode(code);
@@ -88,29 +89,19 @@ impl<G: core_traits::Global> Operation<G> for tonic::Request<pb::scufflecloud::c
             .into_tonic_internal_err("failed to insert magic link user session request")?;
 
         // Send email
-        let email = if user_id.is_none() {
-            core_emails::register_with_email_email(
-                global.email_from_address().to_string(),
-                email,
-                global.dashboard_origin(),
-                code_base64,
-                timeout,
-            )
-            .into_tonic_internal_err("failed to render registration email")?
+        let email_msg = if user_id.is_none() {
+            core_emails::register_with_email_email(global.dashboard_origin(), code_base64, timeout)
+                .into_tonic_internal_err("failed to render registration email")?
         } else {
-            core_emails::magic_link_email(
-                global.email_from_address().to_string(),
-                email,
-                global.dashboard_origin(),
-                code_base64,
-                timeout,
-            )
-            .into_tonic_internal_err("failed to render magic link email")?
+            core_emails::magic_link_email(global.dashboard_origin(), code_base64, timeout)
+                .into_tonic_internal_err("failed to render magic link email")?
         };
+
+        let email_msg = common::email_to_pb(global, email, user.and_then(|u| u.preferred_name), email_msg);
 
         global
             .email_service()
-            .send_email(common::email_to_pb(email))
+            .send_email(email_msg)
             .await
             .into_tonic_internal_err("failed to send magic link email")?;
 

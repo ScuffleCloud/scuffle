@@ -5,6 +5,7 @@ _packages = [
     "//cloud/core/traits",
     "//cloud/core/emails",
     "//cloud/email",
+    "//cloud/email/traits",
     "//cloud/geo-ip",
     "//cloud/proto",
     "//crates/aac",

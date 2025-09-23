@@ -73,6 +73,6 @@ rust_library(
     version = "3.14.0",
     deps = [
         "@cargo_vendor__serde-1.0.220//:serde",
-        "@cargo_vendor__serde_json-1.0.144//:serde_json",
+        "@cargo_vendor__serde_json-1.0.145//:serde_json",
     ],
 )

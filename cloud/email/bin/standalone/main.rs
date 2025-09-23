@@ -17,7 +17,7 @@ use tracing_subscriber::util::SubscriberInitExt;
 
 #[derive(serde_derive::Deserialize, smart_default::SmartDefault, Debug, Clone)]
 #[serde(default)]
-pub struct Config {
+struct Config {
     #[default(env!("CARGO_PKG_NAME").to_string())]
     pub service_name: String,
     #[default(SocketAddr::from(([127, 0, 0, 1], 3002)))]
@@ -25,12 +25,21 @@ pub struct Config {
     #[default = "info"]
     pub level: String,
     pub telemetry: Option<TelemetryConfig>,
+    pub aws: AwsConfig,
 }
 
 #[derive(serde_derive::Deserialize, smart_default::SmartDefault, Debug, Clone)]
-pub struct TelemetryConfig {
+struct TelemetryConfig {
     #[default("[::1]:4317".parse().unwrap())]
     pub bind: SocketAddr,
+}
+
+#[derive(serde_derive::Deserialize, smart_default::SmartDefault, Debug, Clone)]
+struct AwsConfig {
+    #[default = "us-east-1"]
+    pub region: String,
+    pub access_key_id: String,
+    pub secret_access_key: String,
 }
 
 scuffle_settings::bootstrap!(Config);
@@ -38,17 +47,33 @@ scuffle_settings::bootstrap!(Config);
 struct Global {
     config: Config,
     open_telemetry: opentelemetry::OpenTelemetry,
+    external_http_client: reqwest::Client,
+    aws_ses_req_signer: reqsign::Signer<reqsign::aws::Credential>,
 }
 
-impl scufflecloud_email::EmailConfig for Global {
-    fn service_name(&self) -> &str {
-        &self.config.service_name
-    }
-
-    fn bind(&self) -> std::net::SocketAddr {
+impl email_traits::ConfigInterface for Global {
+    fn service_bind(&self) -> std::net::SocketAddr {
         self.config.bind
     }
 }
+
+impl email_traits::AwsInterface for Global {
+    fn aws_region(&self) -> &str {
+        &self.config.aws.region
+    }
+
+    fn aws_ses_req_signer(&self) -> &reqsign::Signer<reqsign::aws::Credential> {
+        &self.aws_ses_req_signer
+    }
+}
+
+impl email_traits::HttpClientInterface for Global {
+    fn external_http_client(&self) -> &reqwest::Client {
+        &self.external_http_client
+    }
+}
+
+impl email_traits::Global for Global {}
 
 impl scuffle_signal::SignalConfig for Global {}
 
@@ -94,7 +119,19 @@ impl scuffle_bootstrap::Global for Global {
             .with_traces(tracer)
             .with_logs(logger);
 
-        Ok(Arc::new(Self { config, open_telemetry }))
+        // TODO: only allow external requests
+        let external_http_client = reqwest::Client::builder().user_agent(config.service_name.clone()).build()?;
+
+        let provider = reqsign::aws::StaticCredentialProvider::new(&config.aws.access_key_id, &config.aws.secret_access_key);
+        let signer = reqsign::aws::RequestSigner::new("ses", &config.aws.region);
+        let aws_ses_req_signer = reqsign::Signer::new(reqsign::Context::new(), provider, signer);
+
+        Ok(Arc::new(Self {
+            config,
+            open_telemetry,
+            external_http_client,
+            aws_ses_req_signer,
+        }))
     }
 }
 

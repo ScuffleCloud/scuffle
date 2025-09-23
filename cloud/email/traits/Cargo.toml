@@ -1,0 +1,16 @@
+[package]
+name = "scufflecloud-email-traits"
+version = "0.1.0"
+authors = ["Scuffle <opensource@scuffle.cloud>"]
+edition = "2024"
+license = "AGPL-3.0"
+publish = false
+readme = "README.md"
+repository = "https://github.com/scufflecloud/scuffle"
+
+[lints.rust]
+unexpected_cfgs = { level = "warn", check-cfg = ['cfg(coverage_nightly)'] }
+
+[dependencies]
+reqsign = { version = "0.17.0", default-features = false, features = ["aws"] }
+reqwest = { version = "0.12.23", default-features = false }

@@ -5,8 +5,6 @@ use axum::Extension;
 use axum::http::StatusCode;
 use tower_http::trace::TraceLayer;
 
-use crate::EmailConfig;
-
 mod email;
 
 #[derive(Debug)]
@@ -22,7 +20,7 @@ impl<G> Default for EmailSvc<G> {
     }
 }
 
-impl<G: EmailConfig> scuffle_bootstrap::Service<G> for EmailSvc<G> {
+impl<G: email_traits::Global> scuffle_bootstrap::Service<G> for EmailSvc<G> {
     async fn run(self, global: Arc<G>, ctx: scuffle_context::Context) -> anyhow::Result<()> {
         // gRPC
         let email_svc = pb::scufflecloud::email::v1::email_service_server::EmailServiceServer::new(EmailSvc::<G>::default());
@@ -48,7 +46,7 @@ impl<G: EmailConfig> scuffle_bootstrap::Service<G> for EmailSvc<G> {
 
         scuffle_http::HttpServer::builder()
             .tower_make_service_with_addr(router.into_make_service_with_connect_info::<SocketAddr>())
-            .bind(global.bind())
+            .bind(global.service_bind())
             .ctx(ctx)
             .build()
             .run()

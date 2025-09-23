@@ -73,7 +73,7 @@ impl<E: CedarEntity, S: entity_builder::State> EntityBuilder<E, S> {
 }
 
 impl<E: CedarEntity> Entity<E> {
-    /// Get the [EntityRef] that represents this entity.
+    /// Get the [EntityUid] that represents this entity.
     pub fn entity_uid(&self) -> EntityUid<E> {
         EntityUid::new_from_str(self.uid.id.clone())
     }

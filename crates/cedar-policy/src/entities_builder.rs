@@ -1,6 +1,6 @@
 use crate::{CedarEntity, Entity};
 
-/// A request builder used to construct [Request] types.
+/// A request builder used to construct a [cedar_policy::Entities].
 pub struct EntitiesBuilder<'a> {
     entities: Vec<cedar_policy::Entity>,
     schema: Option<&'a cedar_policy::Schema>,

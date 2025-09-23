@@ -1,0 +1,4 @@
+[[scuffle-bootstrap]]
+category = "fix"
+description = "make generated code pub(crate) instead of pub"
+authors = ["@lennartkloock"]

@@ -1,6 +1,8 @@
 use std::ffi::CString;
 use std::ptr::NonNull;
 
+use aliasable::boxed::AliasableBox;
+
 use super::internal::{Inner, InnerOptions, seek, write_packet};
 use crate::consts::DEFAULT_BUFFER_SIZE;
 use crate::dict::Dictionary;
@@ -106,7 +108,7 @@ enum OutputState {
 impl<T: Send + Sync> Output<T> {
     /// Consumes the `Output` and returns the inner data.
     pub fn into_inner(mut self) -> T {
-        *(self.inner.data.take().unwrap())
+        *(AliasableBox::into_unique(self.inner.data.take().unwrap()))
     }
 }
 

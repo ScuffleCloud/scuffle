@@ -31,6 +31,17 @@ aliases = {
     "//cloud/core/cedar": "core_cedar",
 }
 
+genrule(
+    name = "status_extract",
+    srcs = [],
+    outs = ["status_values.txt"],
+    cmd = """
+      grep -E '^(COMMIT_SHA|GIT_BRANCH)' bazel-out/volatile-status.txt \
+       | awk '{print $$1 "=" $$2}' > $@
+    """,
+    stamp = 1,
+)
+
 scuffle_package(
     aliases = aliases,
     compile_data = [
@@ -38,6 +49,7 @@ scuffle_package(
         "static_policies.cedarschema",
     ],
     crate_name = "scufflecloud-core",
+    rustc_env_files = [":status_extract"],
     deps = deps,
 )
 

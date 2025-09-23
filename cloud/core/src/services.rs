@@ -3,6 +3,8 @@ use std::sync::Arc;
 
 use axum::http::{HeaderName, StatusCode};
 use axum::{Extension, Json};
+use geo_ip::maxminddb;
+use geo_ip::middleware::IpAddressInfo;
 use reqwest::header::CONTENT_TYPE;
 use scuffle_http::http::Method;
 use tinc::TincService;
@@ -59,6 +61,53 @@ fn grpc_web_cors_layer() -> CorsLayer {
         .expose_headers(ExposeHeaders::list(expose_headers))
         .allow_origin(tower_http::cors::Any)
         .allow_headers(tower_http::cors::Any)
+}
+
+#[derive(serde::Serialize)]
+struct RootGeoResponse {
+    city: Option<String>,
+    country_code: Option<String>,
+}
+
+#[derive(serde::Serialize)]
+struct RootResponse {
+    version: &'static str,
+    ip_address: std::net::IpAddr,
+    geo_location: RootGeoResponse,
+    branch: Option<&'static str>,
+    commit: Option<&'static str>,
+}
+
+async fn root<G: geo_ip::GeoIpInterface>(
+    Extension(global): Extension<Arc<G>>,
+    Extension(ip_address_info): Extension<IpAddressInfo>,
+) -> Json<RootResponse> {
+    let geo_city = global
+        .geo_ip_resolver()
+        .lookup::<maxminddb::geoip2::City>(ip_address_info.ip_address)
+        .ok()
+        .flatten();
+
+    let city = geo_city
+        .as_ref()
+        .and_then(|c| c.city.as_ref())
+        .and_then(|c| c.names.as_ref())
+        .and_then(|c| c.get("en").map(|s| s.to_string()));
+
+    let country_code = geo_city
+        .as_ref()
+        .and_then(|c| c.country.as_ref())
+        .and_then(|c| c.iso_code.map(|s| s.to_string()));
+
+    let resp = RootResponse {
+        version: env!("CARGO_PKG_VERSION"),
+        ip_address: ip_address_info.ip_address,
+        geo_location: RootGeoResponse { city, country_code },
+        branch: option_env!("GIT_BRANCH"),
+        commit: option_env!("COMMIT_SHA"),
+    };
+
+    Json(resp)
 }
 
 impl<G: core_traits::Global> scuffle_bootstrap::Service<G> for CoreSvc<G> {
@@ -125,6 +174,7 @@ impl<G: core_traits::Global> scuffle_bootstrap::Service<G> for CoreSvc<G> {
             .layer(grpc_web_cors_layer());
 
         let mut router = axum::Router::new()
+            .route("/", axum::routing::get(root::<G>))
             .nest("/v1", v1_rest_router)
             .merge(grpc_router)
             .route_layer(axum::middleware::from_fn(crate::middleware::auth::<G>))

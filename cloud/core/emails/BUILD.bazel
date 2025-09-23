@@ -18,6 +18,7 @@ scuffle_package(
     crate_name = "scufflecloud-core-emails-render-preview",
     crate_type = "bin",
     readme = False,
+    rustc_env_files = [],
     tags = ["manual"],
     deps = [":emails"],
 )

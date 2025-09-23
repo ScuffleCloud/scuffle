@@ -1,12 +1,12 @@
 use core_db_types::models::{Organization, OrganizationId, OrganizationMember, Project, ProjectId, User, UserId};
 use core_db_types::schema::{organization_members, organizations, projects};
-use core_traits::ResultExt;
 use diesel::{ExpressionMethods, QueryDsl, SelectableHelper};
 use diesel_async::RunQueryDsl;
+use ext_traits::{RequestExt, ResultExt};
 
 use crate::cedar::Action;
 use crate::common;
-use crate::http_ext::RequestExt;
+use crate::http_ext::CoreRequestExt;
 use crate::operations::{Operation, OperationDriver};
 
 impl<G: core_traits::Global> Operation<G> for tonic::Request<pb::scufflecloud::core::v1::CreateOrganizationRequest> {

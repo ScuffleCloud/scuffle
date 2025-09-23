@@ -102,7 +102,7 @@ rust_library(
         "@cargo_vendor__semver-1.0.26//:semver",
         "@cargo_vendor__serde-1.0.220//:serde",
         "@cargo_vendor__serde_ignored-0.1.12//:serde_ignored",
-        "@cargo_vendor__serde_json-1.0.144//:serde_json",
+        "@cargo_vendor__serde_json-1.0.145//:serde_json",
         "@cargo_vendor__serde_path_to_error-0.1.17//:serde_path_to_error",
         "@cargo_vendor__shell-words-1.1.0//:shell_words",
         "@cargo_vendor__smallvec-1.15.1//:smallvec",

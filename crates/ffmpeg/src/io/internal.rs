@@ -1,3 +1,4 @@
+use aliasable::boxed::AliasableBox;
 use libc::c_void;
 
 use crate::error::{FfmpegError, FfmpegErrorCode};
@@ -93,7 +94,7 @@ pub(crate) unsafe extern "C" fn seek<T: std::io::Seek>(opaque: *mut libc::c_void
 }
 
 pub(crate) struct Inner<T: Send + Sync> {
-    pub(crate) data: Option<Box<T>>,
+    pub(crate) data: Option<AliasableBox<T>>,
     pub(crate) context: SmartPtr<AVFormatContext>,
     _io: SmartPtr<AVIOContext>,
 }
@@ -136,7 +137,7 @@ impl<T: Send + Sync> Inner<T> {
         // Safety: av_malloc gives a valid pointer & the destructor has been setup to free the buffer.
         let buffer = unsafe { SmartPtr::wrap_non_null(buffer, buffer_destructor) }.ok_or(FfmpegError::Alloc)?;
 
-        let mut data = Box::new(data);
+        let mut data = AliasableBox::from_unique(Box::new(data));
 
         // Safety: avio_alloc_context is safe to call, and all the function pointers are valid
         let destructor = |ptr: &mut *mut AVIOContext| {
@@ -225,7 +226,7 @@ impl Inner<()> {
     /// Safety: this function is marked as unsafe because it must be initialized and setup correctltly before returning it to the user.
     pub(crate) unsafe fn empty() -> Self {
         Self {
-            data: Some(Box::new(())),
+            data: Some(Box::new(()).into()),
             context: SmartPtr::null(|mut_ref| {
                 // We own this resource so we need to free it
                 let ptr = *mut_ref;

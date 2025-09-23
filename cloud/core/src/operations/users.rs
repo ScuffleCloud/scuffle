@@ -10,15 +10,16 @@ use core_db_types::schema::{
     mfa_recovery_codes, mfa_totp_credentials, mfa_totp_reg_sessions, mfa_webauthn_auth_sessions, mfa_webauthn_credentials,
     mfa_webauthn_reg_sessions, new_user_email_requests, user_emails, users,
 };
-use core_traits::{DisplayExt, EmailServiceClient, OptionExt, ResultExt};
+use core_traits::EmailServiceClient;
 use diesel::{BoolExpressionMethods, ExpressionMethods, OptionalExtension, QueryDsl, SelectableHelper};
 use diesel_async::RunQueryDsl;
+use ext_traits::{DisplayExt, OptionExt, RequestExt, ResultExt};
 use rand::distributions::DistString;
 use tonic::Code;
 use tonic_types::{ErrorDetails, StatusExt};
 
 use crate::cedar::Action;
-use crate::http_ext::RequestExt;
+use crate::http_ext::CoreRequestExt;
 use crate::operations::{Operation, OperationDriver};
 use crate::totp::TotpError;
 use crate::{common, totp};
@@ -257,6 +258,8 @@ impl<G: core_traits::Global> Operation<G> for tonic::Request<pb::scufflecloud::c
             ));
         }
 
+        let user = common::get_user_by_id(global, resource.user_id).await?;
+
         let timeout = global.timeout_config().new_user_email_request;
 
         // Create email registration request
@@ -275,17 +278,13 @@ impl<G: core_traits::Global> Operation<G> for tonic::Request<pb::scufflecloud::c
             .into_tonic_internal_err("failed to insert email registration request")?;
 
         // Send email
-        let email = core_emails::add_new_email_email(
-            global.email_from_address().to_string(),
-            resource.email,
-            global.dashboard_origin(),
-            code_base64,
-            timeout,
-        )
-        .into_tonic_internal_err("failed to render add new email email")?;
+        let email = core_emails::add_new_email_email(global.dashboard_origin(), code_base64, timeout)
+            .into_tonic_internal_err("failed to render add new email email")?;
+        let email = common::email_to_pb(global, resource.email.clone(), user.preferred_name, email);
+
         global
             .email_service()
-            .send_email(common::email_to_pb(email))
+            .send_email(email)
             .await
             .into_tonic_internal_err("failed to send add new email email")?;
 
@@ -504,10 +503,16 @@ impl<G: core_traits::Global> Operation<G> for tonic::Request<pb::scufflecloud::c
             serde_json::to_string(&response).into_tonic_internal_err("failed to serialize webauthn options")?;
 
         diesel::insert_into(mfa_webauthn_reg_sessions::dsl::mfa_webauthn_reg_sessions)
-            .values(reg_session)
+            .values(&reg_session)
+            .on_conflict(mfa_webauthn_reg_sessions::dsl::user_id)
+            .do_update()
+            .set((
+                mfa_webauthn_reg_sessions::dsl::state.eq(&reg_session.state),
+                mfa_webauthn_reg_sessions::dsl::expires_at.eq(&reg_session.expires_at),
+            ))
             .execute(conn)
             .await
-            .into_tonic_internal_err("failed to insert webauthn authentication session")?;
+            .into_tonic_internal_err("failed to insert webauthn registration session")?;
 
         Ok(pb::scufflecloud::core::v1::CreateWebauthnCredentialResponse { options_json })
     }
@@ -755,7 +760,13 @@ impl<G: core_traits::Global> Operation<G> for tonic::Request<pb::scufflecloud::c
             serde_json::to_string(&response).into_tonic_internal_err("failed to serialize webauthn options")?;
 
         diesel::insert_into(mfa_webauthn_auth_sessions::dsl::mfa_webauthn_auth_sessions)
-            .values(auth_session)
+            .values(&auth_session)
+            .on_conflict(mfa_webauthn_auth_sessions::dsl::user_id)
+            .do_update()
+            .set((
+                mfa_webauthn_auth_sessions::dsl::state.eq(&auth_session.state),
+                mfa_webauthn_auth_sessions::dsl::expires_at.eq(&auth_session.expires_at),
+            ))
             .execute(conn)
             .await
             .into_tonic_internal_err("failed to insert webauthn authentication session")?;

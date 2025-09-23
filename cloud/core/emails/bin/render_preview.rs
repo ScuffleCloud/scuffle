@@ -13,7 +13,9 @@ struct IndexTemplate {
 #[template(path = "preview/email_index.stpl")]
 struct EmailIndexTemplate {
     name: String,
+    from_name: String,
     from_address: String,
+    to_name: String,
     to_address: String,
     subject: String,
     text: String,
@@ -23,8 +25,10 @@ impl EmailIndexTemplate {
     fn from_email(name: String, email: scufflecloud_core_emails::Email) -> Self {
         Self {
             name,
-            from_address: email.from_address,
-            to_address: email.to_address,
+            from_name: "Scuffle".to_string(),
+            from_address: "no-reply@scuffle.cloud".to_string(),
+            to_name: "Test User".to_string(),
+            to_address: "test@example.com".to_string(),
             subject: email.subject,
             text: email.text,
         }
@@ -45,34 +49,18 @@ fn main() {
     let output_path = std::path::PathBuf::from(args);
     std::fs::create_dir_all(&output_path).expect("failed to create output dir");
 
-    let from_address = "no-reply@scuffle.cloud".to_string();
-    let to_address = "test@example.com".to_string();
     let dashboard_origin = url::Url::parse("https://dashboard.scuffle.cloud").unwrap();
     let timeout = std::time::Duration::from_secs(15 * 60);
 
-    let add_new_email = scufflecloud_core_emails::add_new_email_email(
-        from_address.clone(),
-        to_address.clone(),
-        &dashboard_origin,
-        "code".to_string(),
-        timeout,
-    )
-    .expect("failed to render");
+    let add_new_email = scufflecloud_core_emails::add_new_email_email(&dashboard_origin, "code".to_string(), timeout)
+        .expect("failed to render");
     save_email(&output_path, "add_new_email", add_new_email);
 
-    let magic_link = scufflecloud_core_emails::magic_link_email(
-        from_address.clone(),
-        to_address.clone(),
-        &dashboard_origin,
-        "code".to_string(),
-        timeout,
-    )
-    .expect("failed to render");
+    let magic_link = scufflecloud_core_emails::magic_link_email(&dashboard_origin, "code".to_string(), timeout)
+        .expect("failed to render");
     save_email(&output_path, "magic_link", magic_link);
 
     let new_device = scufflecloud_core_emails::new_device_email(
-        from_address.clone(),
-        to_address.clone(),
         &dashboard_origin,
         "198.200.12.0".parse().unwrap(),
         GeoInfo {
@@ -83,14 +71,9 @@ fn main() {
     .expect("failed to render");
     save_email(&output_path, "new_device", new_device);
 
-    let register_with_email = scufflecloud_core_emails::register_with_email_email(
-        from_address.clone(),
-        to_address.clone(),
-        &dashboard_origin,
-        "code".to_string(),
-        timeout,
-    )
-    .expect("failed to render");
+    let register_with_email =
+        scufflecloud_core_emails::register_with_email_email(&dashboard_origin, "code".to_string(), timeout)
+            .expect("failed to render");
     save_email(&output_path, "register_with_email", register_with_email);
 
     let index = IndexTemplate {

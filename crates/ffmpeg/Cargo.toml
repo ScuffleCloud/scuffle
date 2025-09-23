@@ -14,6 +14,7 @@ description = "FFmpeg bindings for Rust."
 unexpected_cfgs = { level = "warn", check-cfg = ['cfg(coverage_nightly)'] }
 
 [dependencies]
+aliasable = "0.1.3"
 arc-swap = { version = "1.7" }
 bon = "3.3.2"
 bytes = { optional = true, version = "1" }

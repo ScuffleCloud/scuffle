@@ -26,3 +26,9 @@ tonic-types = "0.14"
 tracing = "0.1"
 url = "2.5"
 webauthn-rs = "0.5.2"
+
+[package.metadata.sync-readme.badges]
+docs-rs = false
+crates-io = false
+license = true
+codecov = true

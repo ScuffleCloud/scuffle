@@ -5,10 +5,10 @@ expression: out
 exit status: 0
 --- expanded
 #![feature(prelude_import)]
-#[prelude_import]
-use std::prelude::rust_2024::*;
 #[macro_use]
 extern crate std;
+#[prelude_import]
+use std::prelude::rust_2024::*;
 #[allow(unused)]
 fn main() {
     let a = 1;

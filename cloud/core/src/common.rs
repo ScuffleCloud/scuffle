@@ -9,12 +9,13 @@ use core_db_types::schema::{
     mfa_recovery_codes, mfa_totp_credentials, mfa_webauthn_auth_sessions, mfa_webauthn_credentials, organizations,
     user_emails, user_sessions, users,
 };
-use core_traits::{DisplayExt, EmailServiceClient, OptionExt, ResultExt};
+use core_traits::EmailServiceClient;
 use diesel::{
     BoolExpressionMethods, ExpressionMethods, JoinOnDsl, NullableExpressionMethods, OptionalExtension, QueryDsl,
     SelectableHelper,
 };
 use diesel_async::RunQueryDsl;
+use ext_traits::{DisplayExt, OptionExt, ResultExt};
 use geo_ip::maxminddb;
 use geo_ip::middleware::IpAddressInfo;
 use pkcs8::DecodePublicKey;
@@ -25,10 +26,21 @@ use tonic_types::{ErrorDetails, StatusExt};
 
 use crate::chrono_ext::ChronoDateTimeExt;
 
-pub(crate) fn email_to_pb(email: core_emails::Email) -> pb::scufflecloud::email::v1::Email {
-    pb::scufflecloud::email::v1::Email {
-        from_address: email.from_address,
-        to_address: email.to_address,
+pub(crate) fn email_to_pb<G: core_traits::ConfigInterface>(
+    global: &Arc<G>,
+    to_address: String,
+    to_name: Option<String>,
+    email: core_emails::Email,
+) -> pb::scufflecloud::email::v1::SendEmailRequest {
+    pb::scufflecloud::email::v1::SendEmailRequest {
+        from: Some(pb::scufflecloud::email::v1::EmailAddress {
+            name: Some(global.email_from_name().to_string()),
+            address: global.email_from_address().to_string(),
+        }),
+        to: Some(pb::scufflecloud::email::v1::EmailAddress {
+            name: to_name,
+            address: to_address,
+        }),
         subject: email.subject,
         text: email.text,
         html: email.html,
@@ -313,18 +325,13 @@ pub(crate) async fn create_session<G: core_traits::Global>(
             .into_tonic_internal_err("failed to lookup geoip info")?
             .map(Into::into)
             .unwrap_or_default();
-        let email = core_emails::new_device_email(
-            global.email_from_address().to_string(),
-            primary_email.clone(),
-            global.dashboard_origin(),
-            ip_info.ip_address,
-            geo_info,
-        )
-        .into_tonic_internal_err("failed to render email")?;
+        let email = core_emails::new_device_email(global.dashboard_origin(), ip_info.ip_address, geo_info)
+            .into_tonic_internal_err("failed to render email")?;
+        let email = email_to_pb(global, primary_email.clone(), user.preferred_name.clone(), email);
 
         global
             .email_service()
-            .send_email(email_to_pb(email))
+            .send_email(email)
             .await
             .into_tonic_internal_err("failed to send new device email")?;
     }

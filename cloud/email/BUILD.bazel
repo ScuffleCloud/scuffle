@@ -12,22 +12,18 @@ deps = [
     "//crates/settings",
     "//crates/signal",
     "//crates/tinc",
+    "//cloud/ext-traits",
     "//cloud/proto",
+    "//cloud/email/traits",
 ]
 
 aliases = {
+    "//cloud/ext-traits": "ext_traits",
     "//cloud/proto": "pb",
+    "//cloud/email/traits": "email_traits",
 }
 
 scuffle_package(
-    srcs = glob(
-        [
-            "src/**/*.rs",
-        ],
-        exclude = [
-            "src/bin/*.rs",
-        ],
-    ),
     aliases = aliases,
     crate_name = "scufflecloud-email",
     deps = deps,
@@ -36,7 +32,7 @@ scuffle_package(
 scuffle_package(
     name = "bin",
     srcs = [
-        "src/bin/standalone.rs",
+        "bin/standalone/main.rs",
     ],
     aliases = aliases,
     crate_name = "scufflecloud-email-standalone",

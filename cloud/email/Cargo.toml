@@ -11,7 +11,7 @@ description = "Email service for scuffle.cloud"
 
 [[bin]]
 name = "scufflecloud-email-standalone"
-path = "src/bin/standalone.rs"
+path = "bin/standalone/main.rs"
 
 [lints.rust]
 unexpected_cfgs = { level = "warn", check-cfg = ['cfg(coverage_nightly)'] }
@@ -20,8 +20,15 @@ unexpected_cfgs = { level = "warn", check-cfg = ['cfg(coverage_nightly)'] }
 anyhow = "1.0.98"
 async-trait = "0.1.88"
 axum = "0.8.4"
+base64 = "0.22.1"
+email-traits = { path = "./traits", package = "scufflecloud-email-traits" }
+ext-traits = { path = "../ext-traits", package = "scufflecloud-ext-traits" }
+http = "1.3.1"
+mail-builder = "0.4.4"
 pb = { package = "scufflecloud-proto", path = "../proto" }
 prost = "0.14.1"
+reqsign = { version = "0.17.0", default-features = false, features = ["aws"] }
+reqwest = { features = ["rustls-tls-native-roots-no-provider"], version = "0.12.23", default-features = false }
 rustls = { default-features = false, version = "0.23.31", features = ["aws_lc_rs"] }
 scuffle-bootstrap = { path = "../../crates/bootstrap" }
 scuffle-bootstrap-telemetry = { features = ["opentelemetry-logs", "opentelemetry-traces"], path = "../../crates/bootstrap-telemetry" }
@@ -31,7 +38,9 @@ scuffle-settings = { features = ["all-formats", "bootstrap"], path = "../../crat
 scuffle-signal = { features = ["bootstrap"], path = "../../crates/signal" }
 serde = "1.0.219"
 serde_derive = "1.0.219"
+serde_json = "1.0.145"
 smart-default = "0.7.1"
+thiserror = "2.0.16"
 tinc = { path = "../../crates/tinc" }
 tonic = "0.14.1"
 tonic-reflection = "0.14.1"

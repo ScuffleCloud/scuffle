@@ -1,0 +1,10 @@
+syntax = "proto3";
+
+package scufflecloud.email.v1;
+
+import "tinc/annotations.proto";
+
+message EmailAddress {
+  string address = 1 [(tinc.field).constraint.string.email = true];
+  optional string name = 2;
+}

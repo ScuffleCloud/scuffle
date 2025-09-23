@@ -3,15 +3,15 @@ syntax = "proto3";
 package scufflecloud.email.v1;
 
 import "google/protobuf/empty.proto";
-import "tinc/annotations.proto";
+import "scufflecloud/email/v1/email.proto";
 
 service EmailService {
-  rpc SendEmail(Email) returns (google.protobuf.Empty);
+  rpc SendEmail(SendEmailRequest) returns (google.protobuf.Empty);
 }
 
-message Email {
-  string from_address = 1 [(tinc.field).constraint.string.email = true];
-  string to_address = 2 [(tinc.field).constraint.string.email = true];
+message SendEmailRequest {
+  EmailAddress from = 1;
+  EmailAddress to = 2;
   string subject = 3;
   string text = 4;
   string html = 5;

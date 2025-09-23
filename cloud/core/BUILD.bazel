@@ -12,6 +12,7 @@ deps = [
     "//crates/settings",
     "//crates/signal",
     "//crates/tinc",
+    "//cloud/ext-traits",
     "//cloud/proto",
     "//cloud/core/traits",
     "//cloud/core/emails",
@@ -21,6 +22,7 @@ deps = [
 ]
 
 aliases = {
+    "//cloud/ext-traits": "ext_traits",
     "//cloud/proto": "pb",
     "//cloud/geo-ip": "geo_ip",
     "//cloud/core/emails": "core_emails",
@@ -30,14 +32,6 @@ aliases = {
 }
 
 scuffle_package(
-    srcs = glob(
-        [
-            "src/**/*.rs",
-        ],
-        exclude = [
-            "src/bin/*.rs",
-        ],
-    ),
     aliases = aliases,
     compile_data = [
         "static_policies.cedar",
@@ -50,7 +44,7 @@ scuffle_package(
 scuffle_package(
     name = "bin",
     srcs = glob([
-        "src/bin/standalone/**/*.rs",
+        "bin/standalone/**/*.rs",
     ]),
     aliases = aliases,
     crate_name = "scufflecloud-core-standalone",

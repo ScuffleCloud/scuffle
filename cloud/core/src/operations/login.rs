@@ -3,9 +3,11 @@ use core_db_types::models::{
     MagicLinkRequest, MagicLinkRequestId, Organization, OrganizationMember, User, UserGoogleAccount, UserId,
 };
 use core_db_types::schema::{magic_link_requests, organization_members, organizations, user_google_accounts, users};
-use core_traits::{EmailServiceClient, OptionExt, ResultExt};
+use core_traits::EmailServiceClient;
 use diesel::{BoolExpressionMethods, ExpressionMethods, OptionalExtension, QueryDsl, SelectableHelper};
 use diesel_async::RunQueryDsl;
+use ext_traits::{OptionExt, RequestExt, ResultExt};
+use geo_ip::GeoIpRequestExt;
 use pb::scufflecloud::core::v1::CaptchaProvider;
 use sha2::Digest;
 use tonic::Code;
@@ -13,7 +15,6 @@ use tonic_types::{ErrorDetails, StatusExt};
 
 use crate::cedar::{Action, CoreApplication, Unauthenticated};
 use crate::common::normalize_email;
-use crate::http_ext::RequestExt;
 use crate::operations::{Operation, OperationDriver};
 use crate::{captcha, common, google_api};
 
@@ -65,7 +66,8 @@ impl<G: core_traits::Global> Operation<G> for tonic::Request<pb::scufflecloud::c
 
         let conn = driver.conn().await?;
 
-        let user_id = common::get_user_by_email(conn, &email).await?.map(|u| u.id);
+        let user = common::get_user_by_email(conn, &email).await?;
+        let user_id = user.as_ref().map(|u| u.id);
 
         let code = common::generate_random_bytes().into_tonic_internal_err("failed to generate magic link code")?;
         let code_base64 = base64::prelude::BASE64_URL_SAFE.encode(code);
@@ -87,29 +89,19 @@ impl<G: core_traits::Global> Operation<G> for tonic::Request<pb::scufflecloud::c
             .into_tonic_internal_err("failed to insert magic link user session request")?;
 
         // Send email
-        let email = if user_id.is_none() {
-            core_emails::register_with_email_email(
-                global.email_from_address().to_string(),
-                email,
-                global.dashboard_origin(),
-                code_base64,
-                timeout,
-            )
-            .into_tonic_internal_err("failed to render registration email")?
+        let email_msg = if user_id.is_none() {
+            core_emails::register_with_email_email(global.dashboard_origin(), code_base64, timeout)
+                .into_tonic_internal_err("failed to render registration email")?
         } else {
-            core_emails::magic_link_email(
-                global.email_from_address().to_string(),
-                email,
-                global.dashboard_origin(),
-                code_base64,
-                timeout,
-            )
-            .into_tonic_internal_err("failed to render magic link email")?
+            core_emails::magic_link_email(global.dashboard_origin(), code_base64, timeout)
+                .into_tonic_internal_err("failed to render magic link email")?
         };
+
+        let email_msg = common::email_to_pb(global, email, user.and_then(|u| u.preferred_name), email_msg);
 
         global
             .email_service()
-            .send_email(common::email_to_pb(email))
+            .send_email(email_msg)
             .await
             .into_tonic_internal_err("failed to send magic link email")?;
 

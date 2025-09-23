@@ -4,7 +4,7 @@ use std::sync::{Arc, OnceLock};
 use cedar_policy::{Decision, Entities, EntityId, PolicySet, Schema};
 use core_cedar::{CedarEntity, CedarIdentifiable, EntityTypeName, entity_type_name};
 use core_db_types::models::UserSession;
-use core_traits::ResultExt;
+use ext_traits::ResultExt;
 use tonic_types::{ErrorDetails, StatusExt};
 
 fn static_policies() -> &'static PolicySet {

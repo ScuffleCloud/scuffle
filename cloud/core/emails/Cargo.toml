@@ -17,3 +17,9 @@ chrono = "0.4.41"
 maxminddb = "0.26.0"
 sailfish = "0.10.0"
 url = "2.5.4"
+
+[package.metadata.sync-readme.badges]
+docs-rs = false
+crates-io = false
+license = true
+codecov = true

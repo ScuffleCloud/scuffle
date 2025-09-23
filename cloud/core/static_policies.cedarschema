@@ -18,7 +18,6 @@ entity MfaWebauthnCredential {
   user_id: String,
   name: String,
   credential_id: Set<Long>,
-  // record: ???,
   counter?: Long,
   last_used_at: String,
 };

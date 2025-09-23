@@ -2,15 +2,15 @@ use core_db_types::models::{
     Organization, OrganizationId, OrganizationInvitation, OrganizationInvitationId, OrganizationMember, User, UserId,
 };
 use core_db_types::schema::{organization_invitations, organization_members, user_emails};
-use core_traits::{OptionExt, ResultExt};
 use diesel::query_dsl::methods::{FilterDsl, FindDsl, SelectDsl};
 use diesel::{ExpressionMethods, OptionalExtension};
 use diesel_async::RunQueryDsl;
+use ext_traits::{OptionExt, RequestExt, ResultExt};
 use tonic_types::{ErrorDetails, StatusExt};
 
 use crate::cedar::Action;
 use crate::common;
-use crate::http_ext::RequestExt;
+use crate::http_ext::CoreRequestExt;
 use crate::operations::{Operation, OperationDriver};
 
 impl<G: core_traits::Global> Operation<G>

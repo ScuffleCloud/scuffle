@@ -1,7 +1,7 @@
 use std::borrow::Borrow;
 use std::collections::BTreeMap;
 
-use core_traits::ResultExt;
+use ext_traits::ResultExt;
 use serde::ser::SerializeMap;
 
 pub trait CedarEntityId: CedarEntity {

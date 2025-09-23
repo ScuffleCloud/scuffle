@@ -16,8 +16,6 @@ use chrono::Datelike;
 use sailfish::{TemplateOnce, TemplateSimple};
 
 pub struct Email {
-    pub to_address: String,
-    pub from_address: String,
     pub subject: String,
     pub text: String,
     pub html: String,
@@ -44,8 +42,6 @@ struct RegisterWithEmailHtmlTemplate {
 }
 
 pub fn register_with_email_email(
-    from_address: String,
-    to_address: String,
     dashboard_origin: &url::Url,
     code: String,
     timeout: std::time::Duration,
@@ -72,13 +68,7 @@ pub fn register_with_email_email(
     }
     .render_once()?;
 
-    Ok(Email {
-        to_address,
-        from_address,
-        subject,
-        text,
-        html,
-    })
+    Ok(Email { subject, text, html })
 }
 
 #[derive(sailfish::TemplateSimple)]
@@ -102,8 +92,6 @@ struct AddNewEmailHtmlTemplate {
 }
 
 pub fn add_new_email_email(
-    from_address: String,
-    to_address: String,
     dashboard_origin: &url::Url,
     code: String,
     timeout: std::time::Duration,
@@ -129,13 +117,7 @@ pub fn add_new_email_email(
     }
     .render_once()?;
 
-    Ok(Email {
-        to_address,
-        from_address,
-        subject,
-        text,
-        html,
-    })
+    Ok(Email { subject, text, html })
 }
 
 #[derive(sailfish::TemplateSimple)]
@@ -159,8 +141,6 @@ struct MagicLinkHtmlTemplate {
 }
 
 pub fn magic_link_email(
-    from_address: String,
-    to_address: String,
     dashboard_origin: &url::Url,
     code: String,
     timeout: std::time::Duration,
@@ -186,13 +166,7 @@ pub fn magic_link_email(
     }
     .render_once()?;
 
-    Ok(Email {
-        to_address,
-        from_address,
-        subject,
-        text,
-        html,
-    })
+    Ok(Email { subject, text, html })
 }
 
 #[derive(sailfish::TemplateSimple)]
@@ -245,8 +219,6 @@ struct NewDeviceHtmlTemplate {
 }
 
 pub fn new_device_email(
-    from_address: String,
-    to_address: String,
     dashboard_origin: &url::Url,
     ip_addr: std::net::IpAddr,
     geo_info: GeoInfo,
@@ -274,11 +246,5 @@ pub fn new_device_email(
     }
     .render_once()?;
 
-    Ok(Email {
-        to_address,
-        from_address,
-        subject,
-        text,
-        html,
-    })
+    Ok(Email { subject, text, html })
 }

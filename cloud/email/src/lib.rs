@@ -16,18 +16,6 @@
 // tonic::Status emits this warning
 #![allow(clippy::result_large_err)]
 
-use std::net::SocketAddr;
-
+mod aws_ses;
+mod email_builder;
 pub mod services;
-
-pub trait EmailConfig:
-    scuffle_bootstrap::Global
-    + scuffle_signal::SignalConfig
-    + scuffle_bootstrap_telemetry::TelemetryConfig
-    + Sync
-    + Send
-    + 'static
-{
-    fn service_name(&self) -> &str;
-    fn bind(&self) -> SocketAddr;
-}

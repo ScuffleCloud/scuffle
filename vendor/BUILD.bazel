@@ -101,7 +101,7 @@ crates_vendor(
                     # were to be released to the public, hiding some errors / warnings.
                     "CFG_RELEASE": "1",
                 },
-            )
+            ),
         ],
         "dprint": [
             crate.annotation(

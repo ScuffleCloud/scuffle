@@ -74,8 +74,8 @@ If you use VSCode you can setup rust-analyzer to work by adding the following to
         "filesToWatch": [
             "BUILD",
             "BUILD.bazel",
-            "MODULE.bazel"
-            "vendor/cargo/defs.bzl",
+            "MODULE.bazel",
+            "vendor/cargo/defs.bzl"
         ]
     },
     "rust-analyzer.check.overrideCommand": [

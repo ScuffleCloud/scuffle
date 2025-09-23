@@ -17,6 +17,8 @@ _packages = [
     "//crates/bootstrap-telemetry",
     "//crates/bytes-util",
     "//crates/changelog",
+    "//crates/cedar-policy",
+    "//crates/cedar-policy/codegen",
     "//crates/context",
     "//crates/expgolomb",
     "//crates/ffmpeg",

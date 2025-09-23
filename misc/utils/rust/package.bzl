@@ -35,7 +35,7 @@ def scuffle_package(
         target_compatible_with = None,
         rustc_flags = None,
         rustc_env = None,
-        nightly = None):
+        stable_as_nightly = None):
     """Creates a rust_library and corresponding rust_test target.
 
     Args:
@@ -57,7 +57,7 @@ def scuffle_package(
         target_compatible_with: The compatability constraint of the target.
         rustc_flags: Additional rustc flags to add to the build.
         rustc_env: Additional env vars to add to rustc.
-        nightly: If we should use nightly mode.
+        stable_as_nightly: If we should use nightly mode.
     """
 
     package_name = native.package_name()
@@ -89,8 +89,8 @@ def scuffle_package(
         readme = ":README.md"
     if target_compatible_with == None:
         target_compatible_with = []
-    if nightly == None:
-        nightly = False
+    if stable_as_nightly == None:
+        stable_as_nightly = False
     if rustc_flags == None:
         rustc_flags = []
     if rustc_env == None:
@@ -125,7 +125,7 @@ def scuffle_package(
         visibility = ["//visibility:private"],
     )
 
-    if nightly:
+    if stable_as_nightly:
         rustc_env = rustc_env | {
             "RUSTC_BOOTSTRAP": "1",
         }

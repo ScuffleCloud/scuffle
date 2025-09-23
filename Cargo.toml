@@ -18,6 +18,8 @@ members = [
     "crates/bootstrap-telemetry",
     "crates/bootstrap/derive",
     "crates/bytes-util",
+    "crates/cedar-policy",
+    "crates/cedar-policy/codegen",
     "crates/changelog",
     "crates/context",
     "crates/expgolomb",

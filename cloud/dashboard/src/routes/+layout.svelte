@@ -9,6 +9,8 @@
     } from "@tanstack/svelte-query";
     import "@fontsource-variable/archivo";
     import { browser, dev } from "$app/environment";
+    import { goto } from "$app/navigation";
+    import { page } from "$app/state";
     import LoginFooter from "$components/login/login-footer.svelte";
     import LoginHeader from "$components/login/login-header.svelte";
     import LoginPage from "$components/login/login-page.svelte";
@@ -16,6 +18,10 @@
     import RightNav from "$components/right-nav/right-nav.svelte";
     import { PUBLIC_VITE_MSW_ENABLED } from "$env/static/public";
     import { authState } from "$lib/auth.svelte";
+    import {
+        AFTER_LOGIN_LANDING_ROUTE,
+        PUBLIC_ROUTES,
+    } from "$lib/consts";
     import { onMount } from "svelte";
 
     const auth = $derived(authState());
@@ -26,6 +32,43 @@
 
     $effect(() => {
         $inspect(auth.userSessionToken);
+    });
+
+    // Let's handle routing here, or at least call it in this layout function
+    // We can't put any changes in authState in the +page.ts files because they don't have access to the authState
+    // Until after the routing has been determined so we might as well do it here
+    // Move this all elsewhere and make sure it's referenced here
+    $effect(() => {
+        const pathname = page.url.pathname;
+        const isPublicRoute = PUBLIC_ROUTES.includes(pathname);
+
+        if (pathname === "/logout") return;
+        if (auth.userSessionToken.state === "loading") return;
+
+        if (pathname === "/") {
+            if (auth.userSessionToken.state === "authenticated") {
+                goto(AFTER_LOGIN_LANDING_ROUTE, { replaceState: true });
+            } else {
+                goto("/login", { replaceState: true });
+            }
+            return;
+        }
+
+        // Protected routes logic. Ideally we add a redirect if this was caused by a session expiration
+        if (
+            !isPublicRoute
+            && auth.userSessionToken.state !== "authenticated"
+        ) {
+            goto(`/login`);
+        }
+
+        // Public routes logic
+        if (
+            isPublicRoute
+            && auth.userSessionToken.state === "authenticated"
+        ) {
+            goto(AFTER_LOGIN_LANDING_ROUTE);
+        }
     });
 
     // Maybe don't need this code since we'll mock functions in a different way but leaving it for now
@@ -69,6 +112,7 @@
     {:else if auth.userSessionToken.state === "unauthenticated"}
         <div class="login-page-container">
             <!-- TODO: Add protection to routes if not logged in -->
+            <!-- This should go on each route somewhere or here might be sufficient -->
             <LoginHeader />
             <LoginPage />
             <LoginFooter />

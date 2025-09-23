@@ -5,4 +5,5 @@
  - User accessing this page while fully authed should route to users home page
  - Maintain state based shallow routing because login flows with flickering pages looks bad
 -->
-This page shoudln't get hit. Keep here for comments.
+This page shoudln't get hit. Keep here for comments. Just implement inside
++layout.svelte

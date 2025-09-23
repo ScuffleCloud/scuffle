@@ -21,6 +21,7 @@
 
     let turnstileOverlayComponent: TurnstileOverlay | null = null;
 
+    // If ex. magic-link page is shown it should be routed outside of this window to the correct path
     function getInitialLoginModeFromUrl(): LoginMode {
         const path = window.location.pathname;
         if (path.includes("/password")) return "password";
@@ -87,7 +88,6 @@
             });
         } catch (error) {
             console.error("Magic link error:", error);
-            // Maybe show error message here
         }
     }
 

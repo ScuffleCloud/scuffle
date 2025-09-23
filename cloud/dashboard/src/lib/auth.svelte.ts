@@ -272,7 +272,6 @@ export function authState() {
                     // Persist session token to localStorage on change
                     const stored = { ...newUserSessionToken, data: toStoredUserSessionToken(newUserSessionToken.data) };
                     window.localStorage.setItem("userSessionToken", JSON.stringify(stored));
-                    console.log("Persisted session token to localStorage", newUserSessionToken);
                     return loadUser(newUserSessionToken);
                 },
             ).catch((err) => {

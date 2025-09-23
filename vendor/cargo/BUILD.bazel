@@ -34,6 +34,18 @@ filegroup(
 
 # Workspace Member Dependencies
 transition_alias_opt(
+    name = "aliasable-0.1.3",
+    actual = "@cargo_vendor__aliasable-0.1.3//:aliasable",
+    tags = ["manual"],
+)
+
+transition_alias_opt(
+    name = "aliasable",
+    actual = "@cargo_vendor__aliasable-0.1.3//:aliasable",
+    tags = ["manual"],
+)
+
+transition_alias_opt(
     name = "anyhow-1.0.99",
     actual = "@cargo_vendor__anyhow-1.0.99//:anyhow",
     tags = ["manual"],

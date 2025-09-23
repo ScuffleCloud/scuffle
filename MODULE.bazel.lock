@@ -246,7 +246,7 @@
   "moduleExtensions": {
     "//vendor:cargo_ext.bzl%bindeps": {
       "general": {
-        "bzlTransitiveDigest": "L2UCVIosgdkbf3kcMwiye5Zx+ECye8ertiqZ9lcHUJk=",
+        "bzlTransitiveDigest": "Sk1Tl5azpEpdHp/qsQZGV6zWzwpx0I8xeZ9ghiLL56U=",
         "usagesDigest": "0vyNdgUB6Py8EFEYeVm1fABbu9FAMVvr905hmQzVjfU=",
         "recordedFileInputs": {},
         "recordedDirentsInputs": {},
@@ -10041,7 +10041,7 @@
     },
     "//vendor:cargo_ext.bzl%cargo_vendor": {
       "general": {
-        "bzlTransitiveDigest": "L2UCVIosgdkbf3kcMwiye5Zx+ECye8ertiqZ9lcHUJk=",
+        "bzlTransitiveDigest": "Sk1Tl5azpEpdHp/qsQZGV6zWzwpx0I8xeZ9ghiLL56U=",
         "usagesDigest": "mtR+K4/VVAmhgoN1cG7MXxv6mAD1vfxRZ8SSM66EtxE=",
         "recordedFileInputs": {},
         "recordedDirentsInputs": {},
@@ -10101,6 +10101,18 @@
               ],
               "strip_prefix": "aho-corasick-1.1.3",
               "build_file": "@@//vendor/cargo:BUILD.aho-corasick-1.1.3.bazel"
+            }
+          },
+          "cargo_vendor__aliasable-0.1.3": {
+            "repoRuleId": "@@bazel_tools//tools/build_defs/repo:http.bzl%http_archive",
+            "attributes": {
+              "sha256": "250f629c0161ad8107cf89319e990051fae62832fd343083bea452d93e2205fd",
+              "type": "tar.gz",
+              "urls": [
+                "https://static.crates.io/crates/aliasable/0.1.3/download"
+              ],
+              "strip_prefix": "aliasable-0.1.3",
+              "build_file": "@@//vendor/cargo:BUILD.aliasable-0.1.3.bazel"
             }
           },
           "cargo_vendor__aligned-vec-0.6.4": {
@@ -18024,6 +18036,7 @@
         "moduleExtensionMetadata": {
           "explicitRootModuleDirectDeps": [
             "cargo_vendor",
+            "cargo_vendor__aliasable-0.1.3",
             "cargo_vendor__anyhow-1.0.99",
             "cargo_vendor__arc-swap-1.7.1",
             "cargo_vendor__argon2-0.5.3",

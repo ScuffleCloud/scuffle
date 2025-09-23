@@ -274,6 +274,18 @@ transition_alias_opt(
 )
 
 transition_alias_opt(
+    name = "cedar-policy-core-4.5.1",
+    actual = "@cargo_vendor__cedar-policy-core-4.5.1//:cedar_policy_core",
+    tags = ["manual"],
+)
+
+transition_alias_opt(
+    name = "cedar-policy-core",
+    actual = "@cargo_vendor__cedar-policy-core-4.5.1//:cedar_policy_core",
+    tags = ["manual"],
+)
+
+transition_alias_opt(
     name = "cel-parser-0.8.1",
     actual = "@cargo_vendor__cel-parser-0.8.1//:cel_parser",
     tags = ["manual"],
@@ -1518,6 +1530,18 @@ transition_alias_opt(
 transition_alias_opt(
     name = "smart-default",
     actual = "@cargo_vendor__smart-default-0.7.1//:smart_default",
+    tags = ["manual"],
+)
+
+transition_alias_opt(
+    name = "smol_str-0.3.2",
+    actual = "@cargo_vendor__smol_str-0.3.2//:smol_str",
+    tags = ["manual"],
+)
+
+transition_alias_opt(
+    name = "smol_str",
+    actual = "@cargo_vendor__smol_str-0.3.2//:smol_str",
     tags = ["manual"],
 )
 

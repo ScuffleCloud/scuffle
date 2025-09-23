@@ -729,6 +729,34 @@ _NORMAL_DEPENDENCIES = {
             },
         },
     },
+    "crates/cedar-policy": {
+        _REQUIRED_FEATURE: {
+            _COMMON_CONDITION: {
+                "bon": Label("@cargo_vendor//:bon-3.7.2"),
+                "cedar-policy": Label("@cargo_vendor//:cedar-policy-4.5.1"),
+                "cedar-policy-core": Label("@cargo_vendor//:cedar-policy-core-4.5.1"),
+                "const_panic": Label("@cargo_vendor//:const_panic-0.2.15"),
+                "konst": Label("@cargo_vendor//:konst-0.4.2"),
+                "serde": Label("@cargo_vendor//:serde-1.0.220"),
+                "serde_json": Label("@cargo_vendor//:serde_json-1.0.145"),
+                "smol_str": Label("@cargo_vendor//:smol_str-0.3.2"),
+                "thiserror": Label("@cargo_vendor//:thiserror-2.0.16"),
+            },
+        },
+    },
+    "crates/cedar-policy/codegen": {
+        _REQUIRED_FEATURE: {
+            _COMMON_CONDITION: {
+                "cedar-policy-core": Label("@cargo_vendor//:cedar-policy-core-4.5.1"),
+                "heck": Label("@cargo_vendor//:heck-0.5.0"),
+                "prettyplease": Label("@cargo_vendor//:prettyplease-0.2.37"),
+                "proc-macro2": Label("@cargo_vendor//:proc-macro2-1.0.101"),
+                "quote": Label("@cargo_vendor//:quote-1.0.40"),
+                "syn": Label("@cargo_vendor//:syn-2.0.106"),
+                "thiserror": Label("@cargo_vendor//:thiserror-2.0.16"),
+            },
+        },
+    },
     "crates/changelog": {
         _REQUIRED_FEATURE: {
             _COMMON_CONDITION: {
@@ -1474,6 +1502,18 @@ _NORMAL_ALIASES = {
             },
         },
     },
+    "crates/cedar-policy": {
+        _REQUIRED_FEATURE: {
+            _COMMON_CONDITION: {
+            },
+        },
+    },
+    "crates/cedar-policy/codegen": {
+        _REQUIRED_FEATURE: {
+            _COMMON_CONDITION: {
+            },
+        },
+    },
     "crates/changelog": {
         _REQUIRED_FEATURE: {
             _COMMON_CONDITION: {
@@ -1872,6 +1912,10 @@ _NORMAL_DEV_DEPENDENCIES = {
     },
     "crates/bytes-util": {
     },
+    "crates/cedar-policy": {
+    },
+    "crates/cedar-policy/codegen": {
+    },
     "crates/changelog": {
     },
     "crates/context": {
@@ -2143,6 +2187,10 @@ _NORMAL_DEV_ALIASES = {
     },
     "crates/bytes-util": {
     },
+    "crates/cedar-policy": {
+    },
+    "crates/cedar-policy/codegen": {
+    },
     "crates/changelog": {
     },
     "crates/context": {
@@ -2411,6 +2459,20 @@ _PROC_MACRO_DEPENDENCIES = {
                 "document-features": Label("@cargo_vendor//:document-features-0.2.11"),
             },
         },
+    },
+    "crates/cedar-policy": {
+        _REQUIRED_FEATURE: {
+            _COMMON_CONDITION: {
+                "serde_derive": Label("@cargo_vendor//:serde_derive-1.0.220"),
+            },
+        },
+        "docs": {
+            _COMMON_CONDITION: {
+                "document-features": Label("@cargo_vendor//:document-features-0.2.11"),
+            },
+        },
+    },
+    "crates/cedar-policy/codegen": {
     },
     "crates/changelog": {
     },
@@ -2750,6 +2812,10 @@ _PROC_MACRO_ALIASES = {
     },
     "crates/bytes-util": {
     },
+    "crates/cedar-policy": {
+    },
+    "crates/cedar-policy/codegen": {
+    },
     "crates/changelog": {
     },
     "crates/context": {
@@ -2889,6 +2955,10 @@ _PROC_MACRO_DEV_DEPENDENCIES = {
     "crates/bootstrap/derive": {
     },
     "crates/bytes-util": {
+    },
+    "crates/cedar-policy": {
+    },
+    "crates/cedar-policy/codegen": {
     },
     "crates/changelog": {
     },
@@ -3040,6 +3110,10 @@ _PROC_MACRO_DEV_ALIASES = {
         },
     },
     "crates/bytes-util": {
+    },
+    "crates/cedar-policy": {
+    },
+    "crates/cedar-policy/codegen": {
     },
     "crates/changelog": {
     },
@@ -3245,6 +3319,10 @@ _BUILD_DEPENDENCIES = {
     },
     "crates/bytes-util": {
     },
+    "crates/cedar-policy": {
+    },
+    "crates/cedar-policy/codegen": {
+    },
     "crates/changelog": {
     },
     "crates/context": {
@@ -3386,6 +3464,10 @@ _BUILD_ALIASES = {
     },
     "crates/bytes-util": {
     },
+    "crates/cedar-policy": {
+    },
+    "crates/cedar-policy/codegen": {
+    },
     "crates/changelog": {
     },
     "crates/context": {
@@ -3519,6 +3601,10 @@ _BUILD_PROC_MACRO_DEPENDENCIES = {
     },
     "crates/bytes-util": {
     },
+    "crates/cedar-policy": {
+    },
+    "crates/cedar-policy/codegen": {
+    },
     "crates/changelog": {
     },
     "crates/context": {
@@ -3643,6 +3729,10 @@ _BUILD_PROC_MACRO_ALIASES = {
     "crates/bootstrap/derive": {
     },
     "crates/bytes-util": {
+    },
+    "crates/cedar-policy": {
+    },
+    "crates/cedar-policy/codegen": {
     },
     "crates/changelog": {
     },
@@ -3831,6 +3921,12 @@ _FEATURE_FLAGS = {
         ],
         "serde": [
         ],
+    },
+    "crates/cedar-policy": {
+        "docs": [
+        ],
+    },
+    "crates/cedar-policy/codegen": {
     },
     "crates/changelog": {
     },
@@ -4132,6 +4228,10 @@ _RESOLVED_FEATURE_FLAGS = {
             "serde",
         ],
     },
+    "crates/cedar-policy": {
+    },
+    "crates/cedar-policy/codegen": {
+    },
     "crates/changelog": {
     },
     "crates/context": {
@@ -4280,6 +4380,8 @@ _VERSIONS = {
     "crates/bootstrap-telemetry": "0.3.0",
     "crates/bootstrap/derive": "0.1.7",
     "crates/bytes-util": "0.1.5",
+    "crates/cedar-policy": "0.1.0",
+    "crates/cedar-policy/codegen": "0.1.0",
     "crates/changelog": "0.1.1",
     "crates/context": "0.1.5",
     "crates/expgolomb": "0.1.5",
@@ -11114,6 +11216,7 @@ def crate_repositories():
         struct(repo = "cargo_vendor__cargo_metadata-0.21.0", is_dev_dep = False),
         struct(repo = "cargo_vendor__cargo_toml-0.22.3", is_dev_dep = False),
         struct(repo = "cargo_vendor__cedar-policy-4.5.1", is_dev_dep = False),
+        struct(repo = "cargo_vendor__cedar-policy-core-4.5.1", is_dev_dep = False),
         struct(repo = "cargo_vendor__cel-parser-0.8.1", is_dev_dep = False),
         struct(repo = "cargo_vendor__chrono-0.4.42", is_dev_dep = False),
         struct(repo = "cargo_vendor__clap-4.5.47", is_dev_dep = False),
@@ -11216,6 +11319,7 @@ def crate_repositories():
         struct(repo = "cargo_vendor__sha2-0.10.9", is_dev_dep = False),
         struct(repo = "cargo_vendor__similar-2.7.0", is_dev_dep = False),
         struct(repo = "cargo_vendor__smart-default-0.7.1", is_dev_dep = False),
+        struct(repo = "cargo_vendor__smol_str-0.3.2", is_dev_dep = False),
         struct(repo = "cargo_vendor__swagger-ui-dist-5.29.0", is_dev_dep = False),
         struct(repo = "cargo_vendor__syn-2.0.106", is_dev_dep = False),
         struct(repo = "cargo_vendor__target-spec-3.5.0", is_dev_dep = False),

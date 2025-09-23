@@ -5311,6 +5311,37 @@ dependencies = [
 ]
 
 [[package]]
+name = "scuffle-cedar-policy"
+version = "0.1.0"
+dependencies = [
+ "bon",
+ "cedar-policy",
+ "cedar-policy-core",
+ "const_panic",
+ "document-features",
+ "konst",
+ "scuffle-changelog",
+ "serde",
+ "serde_derive",
+ "serde_json",
+ "smol_str",
+ "thiserror 2.0.16",
+]
+
+[[package]]
+name = "scuffle-cedar-policy-codegen"
+version = "0.1.0"
+dependencies = [
+ "cedar-policy-core",
+ "heck",
+ "prettyplease",
+ "proc-macro2",
+ "quote",
+ "syn 2.0.106",
+ "thiserror 2.0.16",
+]
+
+[[package]]
 name = "scuffle-changelog"
 version = "0.1.1"
 dependencies = [

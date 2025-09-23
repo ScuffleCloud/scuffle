@@ -31,8 +31,8 @@ pub(crate) fn email_to_pb<G: core_traits::ConfigInterface>(
     to_address: String,
     to_name: Option<String>,
     email: core_emails::Email,
-) -> pb::scufflecloud::email::v1::Email {
-    pb::scufflecloud::email::v1::Email {
+) -> pb::scufflecloud::email::v1::SendEmailRequest {
+    pb::scufflecloud::email::v1::SendEmailRequest {
         from: Some(pb::scufflecloud::email::v1::EmailAddress {
             name: Some(global.email_from_name().to_string()),
             address: global.email_from_address().to_string(),

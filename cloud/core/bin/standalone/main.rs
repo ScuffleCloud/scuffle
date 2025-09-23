@@ -177,7 +177,7 @@ impl core_traits::EmailInterface for Global {
         impl core_traits::EmailServiceClient for EmailServiceClient<'_> {
             fn send_email(
                 &self,
-                email: impl tonic::IntoRequest<pb::scufflecloud::email::v1::Email>,
+                email: impl tonic::IntoRequest<pb::scufflecloud::email::v1::SendEmailRequest>,
             ) -> impl Future<Output = Result<tonic::Response<()>, tonic::Status>> + Send {
                 let email = email.into_request();
                 let mut client = self.0.clone();

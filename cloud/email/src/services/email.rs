@@ -7,7 +7,7 @@ use crate::{aws_ses, email_builder};
 impl<G: email_traits::Global> pb::scufflecloud::email::v1::email_service_server::EmailService for EmailSvc<G> {
     async fn send_email(
         &self,
-        req: tonic::Request<pb::scufflecloud::email::v1::Email>,
+        req: tonic::Request<pb::scufflecloud::email::v1::SendEmailRequest>,
     ) -> Result<tonic::Response<()>, tonic::Status> {
         let global = &req.global::<G>()?;
 

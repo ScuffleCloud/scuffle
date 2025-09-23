@@ -9,7 +9,7 @@ use diesel_async::{AsyncPgConnection, RunQueryDsl};
 use itertools::Itertools;
 use scuffle_batching::{DataLoader, DataLoaderFetcher};
 
-pub struct OrganizationLoader(bb8::Pool<AsyncPgConnection>);
+pub(crate) struct OrganizationLoader(bb8::Pool<AsyncPgConnection>);
 
 impl DataLoaderFetcher for OrganizationLoader {
     type Key = OrganizationId;
@@ -36,12 +36,12 @@ impl DataLoaderFetcher for OrganizationLoader {
 }
 
 impl OrganizationLoader {
-    pub fn new(pool: bb8::Pool<AsyncPgConnection>) -> DataLoader<Self> {
+    pub(crate) fn new(pool: bb8::Pool<AsyncPgConnection>) -> DataLoader<Self> {
         DataLoader::new(Self(pool), 1000, 500, Duration::from_millis(5))
     }
 }
 
-pub struct OrganizationMemberByUserIdLoader(bb8::Pool<AsyncPgConnection>);
+pub(crate) struct OrganizationMemberByUserIdLoader(bb8::Pool<AsyncPgConnection>);
 
 impl DataLoaderFetcher for OrganizationMemberByUserIdLoader {
     type Key = UserId;
@@ -68,7 +68,7 @@ impl DataLoaderFetcher for OrganizationMemberByUserIdLoader {
 }
 
 impl OrganizationMemberByUserIdLoader {
-    pub fn new(pool: bb8::Pool<AsyncPgConnection>) -> DataLoader<Self> {
+    pub(crate) fn new(pool: bb8::Pool<AsyncPgConnection>) -> DataLoader<Self> {
         DataLoader::new(Self(pool), 1000, 500, Duration::from_millis(5))
     }
 }

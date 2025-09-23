@@ -151,7 +151,7 @@ pub(crate) fn impl_main(input: TokenStream) -> Result<TokenStream, syn::Error> {
 			#(#cfg_attrs)*
 			{
 				#[doc(hidden)]
-				pub async fn spawn_service(
+				async fn spawn_service(
 					svc: impl #service_type,
 					global: &::std::sync::Arc<#entry>,
 					ctx_handle: &#crate_path::prelude::scuffle_context::Handler,
@@ -203,7 +203,7 @@ pub(crate) fn impl_main(input: TokenStream) -> Result<TokenStream, syn::Error> {
         #[automatically_derived]
         fn main() -> #crate_path::prelude::anyhow::Result<()> {
             #[doc(hidden)]
-            pub const fn impl_global<G: #crate_path::global::Global>() {}
+            const fn impl_global<G: #crate_path::global::Global>() {}
             const _: () = impl_global::<#entry>();
 
             #boilerplate

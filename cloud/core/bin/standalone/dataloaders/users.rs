@@ -8,7 +8,7 @@ use diesel_async::pooled_connection::bb8;
 use diesel_async::{AsyncPgConnection, RunQueryDsl};
 use scuffle_batching::{DataLoader, DataLoaderFetcher};
 
-pub struct UserLoader(bb8::Pool<AsyncPgConnection>);
+pub(crate) struct UserLoader(bb8::Pool<AsyncPgConnection>);
 
 impl DataLoaderFetcher for UserLoader {
     type Key = UserId;
@@ -35,7 +35,7 @@ impl DataLoaderFetcher for UserLoader {
 }
 
 impl UserLoader {
-    pub fn new(pool: bb8::Pool<AsyncPgConnection>) -> DataLoader<Self> {
+    pub(crate) fn new(pool: bb8::Pool<AsyncPgConnection>) -> DataLoader<Self> {
         DataLoader::new(Self(pool), 1000, 500, Duration::from_millis(5))
     }
 }

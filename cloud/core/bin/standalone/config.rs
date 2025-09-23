@@ -57,8 +57,6 @@ pub struct RedisConfig {
     #[default(0)]
     pub database: u8,
     #[default(10)]
-    pub max_connections: usize,
-    #[default(10)]
     pub pool_size: usize,
 }
 
@@ -103,7 +101,7 @@ impl RedisConfig {
             ..Default::default()
         };
 
-        let client = fred::clients::Pool::new(config, None, None, None, self.max_connections).context("redis pool")?;
+        let client = fred::clients::Pool::new(config, None, None, None, self.pool_size).context("redis pool")?;
         client.init().await?;
 
         Ok(client)

@@ -54,11 +54,11 @@ mod tests {
 
         let syntax_tree = prettyplease::unparse(&syn::parse_file(&output.to_string()).unwrap());
 
-        insta::assert_snapshot!(syntax_tree, @r##"
+        insta::assert_snapshot!(syntax_tree, @r#"
         #[automatically_derived]
         fn main() -> ::scuffle_bootstrap::prelude::anyhow::Result<()> {
             #[doc(hidden)]
-            pub const fn impl_global<G: ::scuffle_bootstrap::global::Global>() {}
+            const fn impl_global<G: ::scuffle_bootstrap::global::Global>() {}
             const _: () = impl_global::<MyGlobal>();
             ::scuffle_bootstrap::prelude::anyhow::Context::context(
                 <MyGlobal as ::scuffle_bootstrap::global::Global>::pre_init(),
@@ -86,7 +86,7 @@ mod tests {
                     shared_global = ::core::option::Option::Some(global.clone());
                     {
                         #[doc(hidden)]
-                        pub async fn spawn_service(
+                        async fn spawn_service(
                             svc: impl ::scuffle_bootstrap::service::Service<MyGlobal>,
                             global: &::std::sync::Arc<MyGlobal>,
                             ctx_handle: &::scuffle_bootstrap::prelude::scuffle_context::Handler,
@@ -166,6 +166,6 @@ mod tests {
                     <MyGlobal as ::scuffle_bootstrap::global::Global>::on_exit(&global, result),
                 )
         }
-        "##);
+        "#);
     }
 }

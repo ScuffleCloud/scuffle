@@ -1,0 +1,4 @@
+[[scuffle-bootstrap]]
+category = "fix"
+description = "remove useless pubs"
+authors = ["@lennartkloock"]

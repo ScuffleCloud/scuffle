@@ -95,12 +95,12 @@ crates_vendor(
     } | {
         "rust-analyzer": [
             crate.annotation(
-                gen_binaries = True,
                 build_script_rustc_env = {
                     # This env var is used to tell RA to compile as if it
                     # were to be released to the public, hiding some errors / warnings.
                     "CFG_RELEASE": "1",
                 },
+                gen_binaries = True,
             ),
         ],
         "dprint": [

@@ -1,8 +1,11 @@
 use std::net::SocketAddr;
 use std::sync::Arc;
 
+use anyhow::Context;
 use axum::Extension;
 use axum::http::StatusCode;
+use rustls::pki_types::pem::PemObject;
+use rustls::pki_types::{CertificateDer, PrivateKeyDer};
 use tower_http::trace::TraceLayer;
 
 mod email;
@@ -44,10 +47,32 @@ impl<G: email_traits::Global> scuffle_bootstrap::Service<G> for EmailSvc<G> {
             .layer(Extension(Arc::clone(&global)))
             .fallback(StatusCode::NOT_FOUND);
 
+        // Internal authentication via mTLS
+        let root_cert =
+            CertificateDer::from_pem_slice(global.mtls_root_cert_pem()).context("failed to parse mTLS root cert")?;
+        let cert = CertificateDer::from_pem_slice(global.mtls_cert_pem()).context("failed to parse mTLS cert")?;
+        let private_key =
+            PrivateKeyDer::from_pem_slice(global.mtls_private_key_pem()).context("failed to parse mTLS private key")?;
+
+        let mut root_cert_store = rustls::RootCertStore::empty();
+        root_cert_store
+            .add(root_cert.clone())
+            .context("failed to add mTLS root cert to root cert store")?;
+        let cert_chain = vec![cert, root_cert];
+
+        let rustls_client_verifier = rustls::server::WebPkiClientVerifier::builder(Arc::new(root_cert_store))
+            .build()
+            .context("failed to create client cert verifier")?;
+        let rustls_server_config = rustls::ServerConfig::builder()
+            .with_client_cert_verifier(rustls_client_verifier)
+            .with_single_cert(cert_chain, private_key)
+            .context("failed to create rustls ServerConfig")?;
+
         scuffle_http::HttpServer::builder()
             .tower_make_service_with_addr(router.into_make_service_with_connect_info::<SocketAddr>())
             .bind(global.service_bind())
             .ctx(ctx)
+            .rustls_config(rustls_server_config)
             .build()
             .run()
             .await?;

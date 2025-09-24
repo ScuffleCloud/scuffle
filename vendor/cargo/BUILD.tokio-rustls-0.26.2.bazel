@@ -35,6 +35,7 @@ rust_library(
         ],
     ),
     crate_features = [
+        "aws-lc-rs",
         "aws_lc_rs",
         "logging",
         "tls12",
@@ -66,7 +67,7 @@ rust_library(
     }),
     version = "0.26.2",
     deps = [
-        "@cargo_vendor__rustls-0.23.31//:rustls",
+        "@cargo_vendor__rustls-0.23.32//:rustls",
         "@cargo_vendor__tokio-1.47.1//:tokio",
     ],
 )

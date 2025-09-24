@@ -47,9 +47,6 @@ rust_library(
     proc_macro_deps = [
         "@bindeps__serde_derive-1.0.225//:serde_derive",
     ],
-    rustc_env = {
-        "CFG_RELEASE": "1",
-    },
     rustc_env_files = [
         ":cargo_toml_env_vars",
     ],
@@ -159,9 +156,6 @@ rust_binary(
     proc_macro_deps = [
         "@bindeps__serde_derive-1.0.225//:serde_derive",
     ],
-    rustc_env = {
-        "CFG_RELEASE": "1",
-    },
     rustc_env_files = [
         ":cargo_toml_env_vars",
     ],
@@ -284,6 +278,9 @@ cargo_build_script(
     ),
     edition = "2024",
     pkg_name = "rust-analyzer",
+    rustc_env = {
+        "CFG_RELEASE": "1",
+    },
     rustc_env_files = [
         ":cargo_toml_env_vars",
     ],

@@ -8,9 +8,11 @@
 pub use aws::*;
 pub use config::*;
 pub use http::*;
+pub use mtls::*;
 
 mod aws;
 mod config;
 mod http;
+mod mtls;
 
-pub trait Global: ConfigInterface + HttpClientInterface + AwsInterface + Send + Sync + 'static {}
+pub trait Global: ConfigInterface + HttpClientInterface + AwsInterface + MtlsInterface + Send + Sync + 'static {}

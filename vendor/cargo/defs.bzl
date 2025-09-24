@@ -463,7 +463,7 @@ _NORMAL_DEPENDENCIES = {
                 "rand": Label("@cargo_vendor//:rand-0.8.5"),
                 "reqwest": Label("@cargo_vendor//:reqwest-0.12.23"),
                 "rsa": Label("@cargo_vendor//:rsa-0.9.8"),
-                "rustls": Label("@cargo_vendor//:rustls-0.23.31"),
+                "rustls": Label("@cargo_vendor//:rustls-0.23.32"),
                 "sailfish": Label("@cargo_vendor//:sailfish-0.10.0"),
                 "serde": Label("@cargo_vendor//:serde-1.0.220"),
                 "serde_json": Label("@cargo_vendor//:serde_json-1.0.145"),
@@ -532,6 +532,7 @@ _NORMAL_DEPENDENCIES = {
                 "diesel-async": Label("@cargo_vendor//:diesel-async-0.6.1"),
                 "fred": Label("@cargo_vendor//:fred-10.1.0"),
                 "reqwest": Label("@cargo_vendor//:reqwest-0.12.23"),
+                "rustls": Label("@cargo_vendor//:rustls-0.23.32"),
                 "tonic": Label("@cargo_vendor//:tonic-0.14.2"),
                 "tonic-types": Label("@cargo_vendor//:tonic-types-0.14.2"),
                 "tracing": Label("@cargo_vendor//:tracing-0.1.41"),
@@ -551,7 +552,7 @@ _NORMAL_DEPENDENCIES = {
                 "prost": Label("@cargo_vendor//:prost-0.14.1"),
                 "reqsign": Label("@cargo_vendor//:reqsign-0.17.0"),
                 "reqwest": Label("@cargo_vendor//:reqwest-0.12.23"),
-                "rustls": Label("@cargo_vendor//:rustls-0.23.31"),
+                "rustls": Label("@cargo_vendor//:rustls-0.23.32"),
                 "serde": Label("@cargo_vendor//:serde-1.0.220"),
                 "serde_json": Label("@cargo_vendor//:serde_json-1.0.145"),
                 "thiserror": Label("@cargo_vendor//:thiserror-2.0.16"),
@@ -567,8 +568,10 @@ _NORMAL_DEPENDENCIES = {
     "cloud/email/traits": {
         _REQUIRED_FEATURE: {
             _COMMON_CONDITION: {
+                "anyhow": Label("@cargo_vendor//:anyhow-1.0.99"),
                 "reqsign": Label("@cargo_vendor//:reqsign-0.17.0"),
                 "reqwest": Label("@cargo_vendor//:reqwest-0.12.23"),
+                "rustls": Label("@cargo_vendor//:rustls-0.23.32"),
             },
         },
     },
@@ -898,7 +901,7 @@ _NORMAL_DEPENDENCIES = {
         },
         "tls-rustls": {
             _COMMON_CONDITION: {
-                "rustls": Label("@cargo_vendor//:rustls-0.23.31"),
+                "rustls": Label("@cargo_vendor//:rustls-0.23.32"),
                 "tokio-rustls": Label("@cargo_vendor//:tokio-rustls-0.26.2"),
             },
         },
@@ -1917,7 +1920,7 @@ _NORMAL_DEV_DEPENDENCIES = {
         _REQUIRED_FEATURE: {
             _COMMON_CONDITION: {
                 "reqwest": Label("@cargo_vendor//:reqwest-0.12.23"),
-                "rustls": Label("@cargo_vendor//:rustls-0.23.31"),
+                "rustls": Label("@cargo_vendor//:rustls-0.23.32"),
             },
         },
     },
@@ -8964,12 +8967,12 @@ def crate_repositories():
 
     maybe(
         http_archive,
-        name = "cargo_vendor__rustls-0.23.31",
-        sha256 = "c0ebcbd2f03de0fc1122ad9bb24b127a5a6cd51d72604a3f3c50ac459762b6cc",
+        name = "cargo_vendor__rustls-0.23.32",
+        sha256 = "cd3c25631629d034ce7cd9940adc9d45762d46de2b0f57193c4443b92c6d4d40",
         type = "tar.gz",
-        urls = ["https://static.crates.io/crates/rustls/0.23.31/download"],
-        strip_prefix = "rustls-0.23.31",
-        build_file = Label("//vendor/cargo:BUILD.rustls-0.23.31.bazel"),
+        urls = ["https://static.crates.io/crates/rustls/0.23.32/download"],
+        strip_prefix = "rustls-0.23.32",
+        build_file = Label("//vendor/cargo:BUILD.rustls-0.23.32.bazel"),
     )
 
     maybe(
@@ -11352,7 +11355,7 @@ def crate_repositories():
         struct(repo = "cargo_vendor__runtime-format-0.1.3", is_dev_dep = False),
         struct(repo = "cargo_vendor__rustdoc-types-0.55.0", is_dev_dep = False),
         struct(repo = "cargo_vendor__rustfix-0.9.1", is_dev_dep = False),
-        struct(repo = "cargo_vendor__rustls-0.23.31", is_dev_dep = False),
+        struct(repo = "cargo_vendor__rustls-0.23.32", is_dev_dep = False),
         struct(repo = "cargo_vendor__rusty_ffmpeg-0.16.7-ffmpeg.8", is_dev_dep = False),
         struct(repo = "cargo_vendor__sailfish-0.10.0", is_dev_dep = False),
         struct(repo = "cargo_vendor__sailfish-macros-0.10.0", is_dev_dep = False),

@@ -6,8 +6,10 @@
 #![deny(clippy::mod_module_files)]
 
 use std::net::SocketAddr;
+use std::path::PathBuf;
 use std::sync::Arc;
 
+use anyhow::Context;
 use scuffle_bootstrap_telemetry::opentelemetry;
 use scuffle_bootstrap_telemetry::opentelemetry_sdk::logs::SdkLoggerProvider;
 use scuffle_bootstrap_telemetry::opentelemetry_sdk::trace::SdkTracerProvider;
@@ -26,6 +28,7 @@ struct Config {
     pub level: String,
     pub telemetry: Option<TelemetryConfig>,
     pub aws: AwsConfig,
+    pub mtls: MtlsConfig,
 }
 
 #[derive(serde_derive::Deserialize, smart_default::SmartDefault, Debug, Clone)]
@@ -42,6 +45,13 @@ struct AwsConfig {
     pub secret_access_key: String,
 }
 
+#[derive(serde_derive::Deserialize, smart_default::SmartDefault, Debug, Clone)]
+struct MtlsConfig {
+    pub root_cert_path: PathBuf,
+    pub cert_path: PathBuf,
+    pub key_path: PathBuf,
+}
+
 scuffle_settings::bootstrap!(Config);
 
 struct Global {
@@ -49,6 +59,9 @@ struct Global {
     open_telemetry: opentelemetry::OpenTelemetry,
     external_http_client: reqwest::Client,
     aws_ses_req_signer: reqsign::Signer<reqsign::aws::Credential>,
+    mtls_root_cert: Vec<u8>,
+    mtls_cert: Vec<u8>,
+    mtls_private_key: Vec<u8>,
 }
 
 impl email_traits::ConfigInterface for Global {
@@ -70,6 +83,20 @@ impl email_traits::AwsInterface for Global {
 impl email_traits::HttpClientInterface for Global {
     fn external_http_client(&self) -> &reqwest::Client {
         &self.external_http_client
+    }
+}
+
+impl email_traits::MtlsInterface for Global {
+    fn mtls_root_cert_pem(&self) -> &[u8] {
+        &self.mtls_root_cert
+    }
+
+    fn mtls_cert_pem(&self) -> &[u8] {
+        &self.mtls_cert
+    }
+
+    fn mtls_private_key_pem(&self) -> &[u8] {
+        &self.mtls_private_key
     }
 }
 
@@ -126,11 +153,20 @@ impl scuffle_bootstrap::Global for Global {
         let signer = reqsign::aws::RequestSigner::new("ses", &config.aws.region);
         let aws_ses_req_signer = reqsign::Signer::new(reqsign::Context::new(), provider, signer);
 
+        // mTLS
+        let root_cert = std::fs::read(&config.mtls.root_cert_path).context("failed to read mTLS root cert file")?;
+        let server_cert = std::fs::read(&config.mtls.cert_path).context("failed to read mTLS server cert file")?;
+        let server_private_key =
+            std::fs::read(&config.mtls.key_path).context("failed to read mTLS server private key file")?;
+
         Ok(Arc::new(Self {
             config,
             open_telemetry,
             external_http_client,
             aws_ses_req_signer,
+            mtls_root_cert: root_cert,
+            mtls_cert: server_cert,
+            mtls_private_key: server_private_key,
         }))
     }
 }

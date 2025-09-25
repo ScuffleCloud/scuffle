@@ -74,7 +74,7 @@ rust_library(
     version = "0.6.1",
     deps = [
         "@cargo_vendor__log-0.4.28//:log",
-        "@cargo_vendor__rustls-0.23.31//:rustls",
+        "@cargo_vendor__rustls-0.23.32//:rustls",
     ] + select({
         "@rules_rust//rust/platform:aarch64-apple-darwin": [
             "@cargo_vendor__core-foundation-0.10.1//:core_foundation",  # cfg(any(target_vendor = "apple"))

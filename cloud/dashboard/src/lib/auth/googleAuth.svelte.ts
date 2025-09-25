@@ -54,7 +54,7 @@ async function completeGoogleLogin(code: string, state: string): Promise<void> {
 }
 
 /**
- * Checks URL parameters for OAuth callback. Place in $effect.
+ * Checks URL parameters for OAuth callback
  */
 function handleGoogleOAuthCallback(): void {
     const urlParams = new URLSearchParams(window.location.search);

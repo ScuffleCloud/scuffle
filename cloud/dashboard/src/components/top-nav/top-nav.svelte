@@ -1,4 +1,5 @@
 <script lang="ts">
+    import { authState } from "$lib/auth.svelte";
     import IconConfigureTab from "$lib/images/icon-configure-tab.svelte";
     import Search from "$lib/images/search.svelte";
     import { onMount } from "svelte";
@@ -122,9 +123,14 @@
         </nav>
     </div>
     <div class="actions">
-        <a href="/logout" data-sveltekit-preload-data="off">
+        <button
+            class="logout-button"
+            onclick={async () => {
+                await authState().logout();
+            }}
+        >
             Logout
-        </a>
+        </button>
         <button
             class="search-button"
             aria-label="Search"

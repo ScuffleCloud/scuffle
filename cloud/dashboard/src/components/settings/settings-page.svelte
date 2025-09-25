@@ -5,6 +5,7 @@
     import { usersServiceClient } from "$lib/grpcClient";
     import IconBell from "$lib/images/icon-bell.svelte";
     import IconShield from "$lib/images/icon-shield.svelte";
+    import { useTotpAuth } from "$lib/two-factor/toptAuth.svelte";
     import { useWebauthnAuth } from "$lib/two-factor/webAuthn.svelte";
     import type { UserSettings } from "$msw/mocks/settings";
 
@@ -19,9 +20,21 @@
 
     // Load in user information on mfa stuff
     async function webAuthList() {
+        if (!user) return;
+
         const listCredentials = usersServiceClient
             .listWebauthnCredentials({
-                id: user?.id ?? "",
+                id: user.id,
+            });
+        const response = await listCredentials.response;
+        console.log("response", response);
+    }
+
+    async function totpList() {
+        if (!user) return;
+        const listCredentials = usersServiceClient
+            .listTotpCredentials({
+                id: user.id,
             });
         const response = await listCredentials.response;
         console.log("response", response);
@@ -32,6 +45,8 @@
     // because we can just generate it on the fly.
 
     const webauthnAuth = useWebauthnAuth();
+
+    const totpAuth = useTotpAuth();
 
     const twoFactorCards = $derived<Card[]>([
         {
@@ -271,10 +286,15 @@
     //     },
     // ]);
 
-    let credentialName = $state("");
+    // For webauthn
+    let webauthnCredentialName = $state("");
+
+    let totpCredentialName = $state("");
+    let totpCode = $state("");
 </script>
 
 <div class="settings-page">
+    <!-- WEBAUTHN -->
     <div class="two-factor-auth">
         Here:
         <button onclick={() => webAuthList()}>
@@ -283,12 +303,12 @@
         <br>
         2fa information here testing flows:
         <br>
-        <input type="text" bind:value={credentialName} />
+        <input type="text" bind:value={webauthnCredentialName} />
         <br>
         <button
             onclick={() =>
             webauthnAuth.createCredential(
-                credentialName,
+                webauthnCredentialName,
             )}
         >
             Test WebAuthn
@@ -299,6 +319,55 @@
         Loading: {webauthnAuth.loading()}
         <br>
         Error: {webauthnAuth.error()}
+    </div>
+    <!-- TOPT -->
+    <div class="two-factor-auth">
+        <button onclick={() => totpList()}>
+            Load TOTP Credentials
+        </button>
+        <br>
+        Here:
+        <button onclick={() => totpAuth.initiateTotpSetup()}>
+            Initiate TOTP Setup
+        </button>
+        {#if totpAuth.qrCodeData()}
+            <div>
+                QR Code generated! Scan with your authenticator app.
+                <br>
+                Secret URL: {totpAuth.qrCodeData()?.secretUrl}
+            </div>
+        {/if}
+
+        <!-- Step 2: Complete setup after scanning QR -->
+        <input
+            type="text"
+            bind:value={totpCredentialName}
+            placeholder="Credential name"
+        />
+        <br>
+        <input
+            type="text"
+            bind:value={totpCode}
+            placeholder="6-digit code from app"
+        />
+        <br>
+        <button
+            onclick={() =>
+            totpAuth.completeTotpSetup(
+                totpCredentialName,
+                totpCode,
+            )}
+            disabled={!totpAuth.qrCodeData() || !totpCredentialName
+            || !totpCode}
+        >
+            Complete TOTP Setup
+        </button>
+        <br>
+
+        Loading: {totpAuth.loading()}
+        <br>
+        Error: {totpAuth.error()}
+        <br>
     </div>
     <SettingsBlock
         title="Two-factor Authentication"

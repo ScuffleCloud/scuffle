@@ -34,23 +34,34 @@
         $inspect(auth.userSessionToken);
     });
 
-    // Let's handle routing here, or at least call it in this layout function
+    // Let's handle routing here, or at least call it in this layout function. Maybe move elsewhere and reference here
     // We can't put any changes in authState in the +page.ts files because they don't have access to the authState
     // Until after the routing has been determined so we might as well do it here
-    // Move this all elsewhere and make sure it's referenced here
+    // Can see if there's a better way of doing this. Open to other options
     $effect(() => {
         const pathname = page.url.pathname;
+        const searchParams = page.url.searchParams;
+
         const isPublicRoute = PUBLIC_ROUTES.includes(pathname);
 
-        if (pathname === "/logout") return;
         if (auth.userSessionToken.state === "loading") return;
 
+        // Root redirect
         if (pathname === "/") {
             if (auth.userSessionToken.state === "authenticated") {
                 goto(AFTER_LOGIN_LANDING_ROUTE, { replaceState: true });
             } else {
                 goto("/login", { replaceState: true });
             }
+            return;
+        }
+
+        // Skip routing for oauth callbacks
+        if (
+            searchParams.has("code")
+            && (searchParams.has("state")
+                || pathname.includes("magic-link"))
+        ) {
             return;
         }
 

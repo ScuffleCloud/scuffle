@@ -77,7 +77,8 @@ function handleMagicLinkCallback(): void {
     const urlParams = new URLSearchParams(window.location.search);
     const code = urlParams.get("code");
 
-    if (code) {
+    // Avoid google oauth callback
+    if (code && !urlParams.has("state")) {
         completeMagicLinkLogin(code).catch(console.error);
     }
 }

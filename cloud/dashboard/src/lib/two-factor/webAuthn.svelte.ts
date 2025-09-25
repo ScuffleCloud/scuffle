@@ -42,7 +42,7 @@ async function createWebauthnCredential(userId: string, credentialName: string):
         throw new Error(WEB_AUTHN_NOT_ALLOWED_ERROR);
     }
 
-    // Note: These properties aren't spreadable from credential object
+    // Note: Don't spread these properties from credential object
     const responseJson = JSON.stringify({
         id: credential.id,
         rawId: arrayBufferToBase64url(credential.rawId),

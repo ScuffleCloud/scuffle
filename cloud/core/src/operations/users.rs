@@ -815,13 +815,21 @@ impl<G: core_traits::Global> Operation<G> for tonic::Request<pb::scufflecloud::c
             secret_qrcode_png: totp.get_qr_png().into_tonic_internal_err("failed to generate TOTP QR code")?,
         };
 
+        let reg_session = MfaTotpRegistrationSession {
+            user_id: resource.id,
+            secret: totp.secret,
+            expires_at: chrono::Utc::now() + global.timeout_config().mfa,
+        };
+
         let conn = driver.conn().await?;
         diesel::insert_into(mfa_totp_reg_sessions::dsl::mfa_totp_reg_sessions)
-            .values(MfaTotpRegistrationSession {
-                user_id: resource.id,
-                secret: totp.secret,
-                expires_at: chrono::Utc::now() + global.timeout_config().mfa,
-            })
+            .values(&reg_session)
+            .on_conflict(mfa_totp_reg_sessions::dsl::user_id)
+            .do_update()
+            .set((
+                mfa_totp_reg_sessions::dsl::secret.eq(&reg_session.secret),
+                mfa_totp_reg_sessions::dsl::expires_at.eq(reg_session.expires_at),
+            ))
             .execute(conn)
             .await
             .into_tonic_internal_err("failed to insert TOTP registration session")?;

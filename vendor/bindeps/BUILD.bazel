@@ -99,6 +99,12 @@ alias(
 )
 
 alias(
+    name = "diesel_cli__diesel",
+    actual = "@bindeps__diesel_cli-2.3.2//:diesel__bin",
+    tags = ["manual"],
+)
+
+alias(
     name = "dprint__dprint",
     actual = "@bindeps__dprint-0.50.2//:dprint__bin",
     tags = ["manual"],

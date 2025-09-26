@@ -39,8 +39,7 @@ jobs:
         shell: bash
         run: |
           bazel shutdown
-          bazel fetch //... --lockfile_mode=off
-          bazel fetch //... --lockfile_mode=update
+          bazel mod deps
 
       - name: Check if anything changed
         id: changed

@@ -44,6 +44,7 @@ rust_library(
         "error-context",
         "help",
         "std",
+        "string",
         "suggestions",
         "usage",
         "wrap_help",

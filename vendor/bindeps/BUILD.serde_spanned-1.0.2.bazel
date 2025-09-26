@@ -17,7 +17,7 @@ cargo_toml_env_vars(
 )
 
 rust_library(
-    name = "tracing_subscriber",
+    name = "serde_spanned",
     srcs = glob(
         include = ["**/*.rs"],
         allow_empty = True,
@@ -36,25 +36,10 @@ rust_library(
     ),
     crate_features = [
         "alloc",
-        "ansi",
-        "default",
-        "env-filter",
-        "fmt",
-        "local-time",
-        "matchers",
-        "nu-ansi-term",
-        "once_cell",
-        "registry",
-        "sharded-slab",
-        "smallvec",
-        "std",
-        "thread_local",
-        "time",
-        "tracing",
-        "tracing-log",
+        "serde",
     ],
     crate_root = "src/lib.rs",
-    edition = "2018",
+    edition = "2021",
     rustc_env_files = [
         ":cargo_toml_env_vars",
     ],
@@ -63,7 +48,7 @@ rust_library(
     ],
     tags = [
         "cargo-bazel",
-        "crate-name=tracing-subscriber",
+        "crate-name=serde_spanned",
         "manual",
         "noclippy",
         "norustfmt",
@@ -77,18 +62,8 @@ rust_library(
         "@rules_rust//rust/platform:x86_64-unknown-linux-gnu": [],
         "//conditions:default": ["@platforms//:incompatible"],
     }),
-    version = "0.3.20",
+    version = "1.0.2",
     deps = [
-        "@bindeps__matchers-0.2.0//:matchers",
-        "@bindeps__nu-ansi-term-0.50.1//:nu_ansi_term",
-        "@bindeps__once_cell-1.21.3//:once_cell",
-        "@bindeps__regex-automata-0.4.10//:regex_automata",
-        "@bindeps__sharded-slab-0.1.7//:sharded_slab",
-        "@bindeps__smallvec-1.15.1//:smallvec",
-        "@bindeps__thread_local-1.1.9//:thread_local",
-        "@bindeps__time-0.3.43//:time",
-        "@bindeps__tracing-0.1.41//:tracing",
-        "@bindeps__tracing-core-0.1.34//:tracing_core",
-        "@bindeps__tracing-log-0.2.0//:tracing_log",
+        "@bindeps__serde_core-1.0.225//:serde_core",
     ],
 )

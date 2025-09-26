@@ -9,8 +9,7 @@ default:
 bzlmod:
     # https://github.com/bazelbuild/bazel/issues/20477
     bazel shutdown
-    bazel fetch //... --lockfile_mode=off
-    bazel fetch //... --lockfile_mode=update
+    bazel mod deps
 
 # this should be kept in sync with
 # .github/workflows/ci-check-fmt.yaml

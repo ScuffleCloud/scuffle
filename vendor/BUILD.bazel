@@ -1,5 +1,17 @@
 load("@rules_rust//crate_universe:defs.bzl", "crate", "crates_vendor", "render_config")
 
+openssl_annotation = crate.annotation(
+    build_script_data = [
+        "@openssl//:gen_dir",
+    ],
+    build_script_env = {
+        "OPENSSL_NO_VENDOR": "1",
+        "OPENSSL_LIB_DIR": "$(location @openssl//:gen_dir)/lib",
+        "OPENSSL_INCLUDE_DIR": "$(location @openssl//:gen_dir)/include",
+        "OPENSSL_STATIC": "1",
+    },
+)
+
 crates_vendor(
     name = "cargo_vendor",
     annotations = {
@@ -46,17 +58,7 @@ crates_vendor(
             ),
         ],
         "openssl-sys": [
-            crate.annotation(
-                build_script_data = [
-                    "@openssl//:gen_dir",
-                ],
-                build_script_env = {
-                    "OPENSSL_NO_VENDOR": "1",
-                    "OPENSSL_LIB_DIR": "$(location @openssl//:gen_dir)/lib",
-                    "OPENSSL_INCLUDE_DIR": "$(location @openssl//:gen_dir)/include",
-                    "OPENSSL_STATIC": "1",
-                },
-            ),
+            openssl_annotation,
         ],
     },
     cargo_bazel = "//misc/toolchains/rust:cargo-bazel",
@@ -91,6 +93,7 @@ crates_vendor(
             "just",
             "miniserve",
             "cedar-policy-cli",
+            "diesel_cli",
         ]
     } | {
         "rust-analyzer": [
@@ -117,6 +120,19 @@ crates_vendor(
             crate.annotation(
                 build_script_env = {
                     "CFLAGS": "$(CFLAGS) -Wno-error -w",
+                },
+            ),
+        ],
+        "openssl-sys": [
+            openssl_annotation,
+        ],
+        "pq-src": [
+            crate.annotation(
+                build_script_data = [
+                    "@openssl//:gen_dir",
+                ],
+                build_script_env = {
+                    "BINDGEN_EXTRA_CLANG_ARGS": "$(CFLAGS) -I$(location @openssl//:gen_dir)/include",
                 },
             ),
         ],
@@ -158,6 +174,12 @@ crates_vendor(
         "cedar-policy-cli": crate.spec(
             artifact = "bin",
             version = "4.5.1",
+        ),
+        "diesel_cli": crate.spec(
+            artifact = "bin",
+            default_features = False,
+            features = ["postgres-bundled"],
+            version = "2.3.2",
         ),
     },
     stable_as_nightly = True,

@@ -5730,6 +5730,7 @@ dependencies = [
  "chrono",
  "diesel",
  "ipnetwork",
+ "scufflecloud-id",
  "scufflecloud-proto",
  "serde",
  "serde_derive",
@@ -5839,6 +5840,18 @@ dependencies = [
  "tower-layer",
  "tower-service",
  "tracing",
+]
+
+[[package]]
+name = "scufflecloud-id"
+version = "0.1.0"
+dependencies = [
+ "diesel",
+ "serde",
+ "serde_derive",
+ "thiserror 2.0.16",
+ "ulid",
+ "uuid",
 ]
 
 [[package]]

@@ -134,7 +134,7 @@ crates_vendor(
                 build_script_env = {
                     "BINDGEN_EXTRA_CLANG_ARGS": "$(CFLAGS) -I$(location @openssl//:gen_dir)/include",
                 },
-            )
+            ),
         ],
     },
     cargo_bazel = "//misc/toolchains/rust:cargo-bazel",
@@ -177,9 +177,9 @@ crates_vendor(
         ),
         "diesel_cli": crate.spec(
             artifact = "bin",
-            version = "2.3.2",
             default_features = False,
             features = ["postgres-bundled"],
+            version = "2.3.2",
         ),
     },
     stable_as_nightly = True,

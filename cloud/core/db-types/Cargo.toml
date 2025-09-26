@@ -14,9 +14,9 @@ unexpected_cfgs = { level = "warn", check-cfg = ['cfg(coverage_nightly)'] }
 [dependencies]
 chrono = "0.4"
 diesel = { version = "2", default-features = false }
+id = { path = "../../id", package = "scufflecloud-id" }
 ipnetwork = "0.21"
 pb = { path = "../../proto", package = "scufflecloud-proto" }
-id = { path = "../../id", package = "scufflecloud-id" }
 serde = "1"
 serde_derive = "1"
 serde_json = "1"

@@ -10,7 +10,7 @@ scuffle_package(
     },
     crate_name = "scufflecloud-core-db-types",
     deps = [
-        "//cloud/proto",
         "//cloud/id",
+        "//cloud/proto",
     ],
 )

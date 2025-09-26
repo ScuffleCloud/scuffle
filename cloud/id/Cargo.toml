@@ -9,12 +9,12 @@ repository = "https://github.com/scufflecloud/scuffle"
 description = "ID library for scuffle.cloud"
 
 [dependencies]
-ulid = "1"
 diesel = { version = "2", default-features = false }
-uuid = "1"
 serde = "1"
 serde_derive = "1"
 thiserror = "2"
+ulid = "1"
+uuid = "1"
 
 [package.metadata.sync-readme.badges]
 docs-rs = false

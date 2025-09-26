@@ -1,0 +1,8 @@
+load("//misc/utils:exec_alias_rules.bzl", "exec_transition_alias_opt")
+
+exec_transition_alias_opt(
+    name = "diesel",
+    actual = "@bindeps//:diesel_cli__diesel",
+    tags = ["manual"],
+    visibility = ["//visibility:public"],
+)

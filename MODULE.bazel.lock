@@ -9993,7 +9993,7 @@
     },
     "//vendor:cargo_ext.bzl%cargo_vendor": {
       "general": {
-        "bzlTransitiveDigest": "MjyLEw/+2yjD3k4n291wkAKaHtxO5I3GXUyXomu1mXc=",
+        "bzlTransitiveDigest": "/QBkWyNl2EsTrMfosD3tfO0IsEgxvkuD2O9VrKTnxDA=",
         "usagesDigest": "mtR+K4/VVAmhgoN1cG7MXxv6mAD1vfxRZ8SSM66EtxE=",
         "recordedFileInputs": {},
         "recordedDirentsInputs": {},

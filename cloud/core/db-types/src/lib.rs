@@ -5,6 +5,6 @@
 #![deny(unreachable_pub)]
 #![deny(clippy::mod_module_files)]
 
-pub mod id;
+pub use id;
 pub mod models;
 pub mod schema;

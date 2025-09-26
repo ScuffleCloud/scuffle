@@ -14,7 +14,7 @@ macro_rules! cedar_entity_id {
             const ENTITY_TYPE: $crate::EntityTypeName = $crate::entity_type_name!(stringify!($ty));
 
             fn entity_id(&self) -> cedar_policy::EntityId {
-                cedar_policy::EntityId::new(self.to_string_unprefixed())
+                cedar_policy::EntityId::new(self.unprefixed().to_string())
             }
         }
 

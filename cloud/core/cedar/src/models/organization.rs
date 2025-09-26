@@ -20,8 +20,8 @@ impl crate::CedarIdentifiable for OrganizationMember {
     fn entity_id(&self) -> cedar_policy::EntityId {
         cedar_policy::EntityId::new(format!(
             "{}:{}",
-            self.organization_id.to_string_unprefixed(),
-            self.user_id.to_string_unprefixed()
+            self.organization_id.unprefixed(),
+            self.user_id.unprefixed()
         ))
     }
 }

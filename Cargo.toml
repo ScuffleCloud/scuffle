@@ -9,6 +9,7 @@ members = [
     "cloud/email/traits",
     "cloud/ext-traits",
     "cloud/geo-ip",
+    "cloud/id",
     "cloud/proto",
     "crates/aac",
     "crates/amf0",

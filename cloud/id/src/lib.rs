@@ -20,10 +20,8 @@ pub struct Id<T: PrefixedId> {
 }
 
 impl<T: PrefixedId> Id<T> {
-    pub fn to_string_unprefixed(&self) -> String {
-        let mut id_str = self.id.to_string();
-        id_str.make_ascii_lowercase();
-        id_str
+    pub fn unprefixed(&self) -> ulid::Ulid {
+        self.id
     }
 }
 
@@ -88,7 +86,7 @@ where
 
 impl<T: PrefixedId> Display for Id<T> {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        write!(f, "{}_{}", T::PREFIX, self.to_string_unprefixed())
+        write!(f, "{}_{}", T::PREFIX, self.unprefixed())
     }
 }
 
@@ -118,31 +116,20 @@ impl<T: PrefixedId> FromStr for Id<T> {
     type Err = IdParseError;
 
     fn from_str(s: &str) -> Result<Self, Self::Err> {
-        if s.contains('_') {
-            // get last _
-            // guaranteed to contain at least two parts here because s contains '_''
-            let mut iter = s.rsplitn(2, '_');
+        let mut iter = s.rsplitn(2, '_');
 
-            let id = iter.next().expect("there must be at least one '_'");
-            let prefix = iter.next().expect("there must be at least one '_'");
+        let id = iter.next().ok_or(IdParseError::PrefixMismatch)?;
+        let prefix = iter.next().ok_or(IdParseError::PrefixMismatch)?;
 
-            if prefix != T::PREFIX {
-                return Err(IdParseError::PrefixMismatch);
-            }
-
-            let id = ulid::Ulid::from_str(id)?;
-            Ok(Self {
-                id,
-                _phantom: std::marker::PhantomData,
-            })
-        } else {
-            let id = ulid::Ulid::from_str(s)?;
-
-            Ok(Self {
-                id,
-                _phantom: std::marker::PhantomData,
-            })
+        if prefix != T::PREFIX {
+            return Err(IdParseError::PrefixMismatch);
         }
+
+        let id = ulid::Ulid::from_str(id)?;
+        Ok(Self {
+            id,
+            _phantom: std::marker::PhantomData,
+        })
     }
 }
 

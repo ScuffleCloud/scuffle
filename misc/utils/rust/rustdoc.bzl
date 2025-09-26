@@ -141,7 +141,7 @@ def _rustdoc_compile_action(
         else:
             name = crate.name
             crate_info = crate
-        external_links[name] = "https://docs.rs/{name}/{version}".format(name = name, version = crate_info.version)
+        external_links[name] = "https://docs.rs/{name}/{version}".format(name = crate_info.name, version = crate_info.version)
 
     external_links = {}
     if hasattr(ctx.attr, "rustdoc_map") and ctx.attr.rustdoc_map:

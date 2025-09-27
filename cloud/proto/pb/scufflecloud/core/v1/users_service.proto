@@ -155,11 +155,12 @@ message ListWebauthnCredentialsRequest {
 message WebauthnCredential {
   string id = 1 [(string_constraint).id = true];
   string user_id = 2 [(string_constraint).id = true];
-  string name = 3 [(tinc.field).constraint.string = {
+  optional string name = 3 [(tinc.field).constraint.string = {
     min_len: 1
     max_len: 255
   }];
   google.protobuf.Timestamp last_used_at_utc = 4;
+  google.protobuf.Timestamp created_at = 5;
 }
 
 message WebauthnCredentialsList {
@@ -179,7 +180,7 @@ message CreateWebauthnCredentialResponse {
 
 message CompleteCreateWebauthnCredentialRequest {
   string id = 1 [(string_constraint).id = true];
-  string name = 2 [(tinc.field).constraint.string = {
+  optional string name = 2 [(tinc.field).constraint.string = {
     min_len: 1
     max_len: 255
   }];

@@ -56,6 +56,49 @@ run bin *args:
         exit 1
     fi
 
+generate-mtls-certs:
+    #!/usr/bin/env bash
+    set -euo pipefail
+    mkdir -p local/mtls
+
+    # Generate root CA
+    openssl genpkey -out local/mtls/root_key.pem -algorithm ED25519
+    openssl req -x509 -new -key local/mtls/root_key.pem \
+        -subj "/CN=scufflecloud-mtls-root" \
+        -days 365 -out local/mtls/root_cert.pem
+
+    # Generate core cert signed by root CA
+    openssl genpkey -out local/mtls/scufflecloud_core_key.pem -algorithm ED25519
+    openssl req -new -key local/mtls/scufflecloud_core_key.pem \
+        -subj "/CN=scufflecloud-core-mtls" \
+        -addext "subjectAltName=DNS:localhost" \
+        -out local/mtls/scufflecloud_core_csr.pem
+
+    # Sign core cert with root CA
+    openssl x509 -req \
+        -in local/mtls/scufflecloud_core_csr.pem \
+        -CA local/mtls/root_cert.pem \
+        -CAkey local/mtls/root_key.pem \
+        -CAcreateserial -days 365 \
+        -out local/mtls/scufflecloud_core_cert.pem \
+        -copy_extensions copy
+
+    # Generate email cert signed by root CA
+    openssl genpkey -out local/mtls/scufflecloud_email_key.pem -algorithm ED25519
+    openssl req -new -key local/mtls/scufflecloud_email_key.pem \
+        -subj "/CN=scufflecloud-email-mtls" \
+        -addext "subjectAltName=DNS:localhost" \
+        -out local/mtls/scufflecloud_email_csr.pem
+
+    # Sign email cert with root CA
+    openssl x509 -req \
+        -in local/mtls/scufflecloud_email_csr.pem \
+        -CA local/mtls/root_cert.pem \
+        -CAkey local/mtls/root_key.pem \
+        -CAcreateserial -days 365 \
+        -out local/mtls/scufflecloud_email_cert.pem \
+        -copy_extensions copy
+
 alias coverage := test
 
 sync-rdme:

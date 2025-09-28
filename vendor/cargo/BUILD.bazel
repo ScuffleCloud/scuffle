@@ -1354,14 +1354,14 @@ transition_alias_opt(
 )
 
 transition_alias_opt(
-    name = "rustls-0.23.31",
-    actual = "@cargo_vendor__rustls-0.23.31//:rustls",
+    name = "rustls-0.23.32",
+    actual = "@cargo_vendor__rustls-0.23.32//:rustls",
     tags = ["manual"],
 )
 
 transition_alias_opt(
     name = "rustls",
-    actual = "@cargo_vendor__rustls-0.23.31//:rustls",
+    actual = "@cargo_vendor__rustls-0.23.32//:rustls",
     tags = ["manual"],
 )
 

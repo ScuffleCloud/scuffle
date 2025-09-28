@@ -246,7 +246,7 @@
   "moduleExtensions": {
     "//vendor:cargo_ext.bzl%bindeps": {
       "general": {
-        "bzlTransitiveDigest": "/QBkWyNl2EsTrMfosD3tfO0IsEgxvkuD2O9VrKTnxDA=",
+        "bzlTransitiveDigest": "U2aCVH25MplJZcCvq2LAJ0b149ghaZVkbUX8wfDk094=",
         "usagesDigest": "0vyNdgUB6Py8EFEYeVm1fABbu9FAMVvr905hmQzVjfU=",
         "recordedFileInputs": {},
         "recordedDirentsInputs": {},
@@ -10270,7 +10270,7 @@
     },
     "//vendor:cargo_ext.bzl%cargo_vendor": {
       "general": {
-        "bzlTransitiveDigest": "/QBkWyNl2EsTrMfosD3tfO0IsEgxvkuD2O9VrKTnxDA=",
+        "bzlTransitiveDigest": "U2aCVH25MplJZcCvq2LAJ0b149ghaZVkbUX8wfDk094=",
         "usagesDigest": "mtR+K4/VVAmhgoN1cG7MXxv6mAD1vfxRZ8SSM66EtxE=",
         "recordedFileInputs": {},
         "recordedDirentsInputs": {},
@@ -15597,16 +15597,16 @@
               "build_file": "@@//vendor/cargo:BUILD.rustix-1.1.2.bazel"
             }
           },
-          "cargo_vendor__rustls-0.23.31": {
+          "cargo_vendor__rustls-0.23.32": {
             "repoRuleId": "@@bazel_tools//tools/build_defs/repo:http.bzl%http_archive",
             "attributes": {
-              "sha256": "c0ebcbd2f03de0fc1122ad9bb24b127a5a6cd51d72604a3f3c50ac459762b6cc",
+              "sha256": "cd3c25631629d034ce7cd9940adc9d45762d46de2b0f57193c4443b92c6d4d40",
               "type": "tar.gz",
               "urls": [
-                "https://static.crates.io/crates/rustls/0.23.31/download"
+                "https://static.crates.io/crates/rustls/0.23.32/download"
               ],
-              "strip_prefix": "rustls-0.23.31",
-              "build_file": "@@//vendor/cargo:BUILD.rustls-0.23.31.bazel"
+              "strip_prefix": "rustls-0.23.32",
+              "build_file": "@@//vendor/cargo:BUILD.rustls-0.23.32.bazel"
             }
           },
           "cargo_vendor__rustls-native-certs-0.8.1": {
@@ -18446,7 +18446,7 @@
             "cargo_vendor__runtime-format-0.1.3",
             "cargo_vendor__rustdoc-types-0.55.0",
             "cargo_vendor__rustfix-0.9.1",
-            "cargo_vendor__rustls-0.23.31",
+            "cargo_vendor__rustls-0.23.32",
             "cargo_vendor__rusty_ffmpeg-0.16.7-ffmpeg.8",
             "cargo_vendor__sailfish-0.10.0",
             "cargo_vendor__sailfish-macros-0.10.0",
@@ -19188,8 +19188,8 @@
     },
     "@@rules_rust+//crate_universe/private:internal_extensions.bzl%cu_nr": {
       "general": {
-        "bzlTransitiveDigest": "fUz33YKIi4xeRSUpe+lvNbDmU7DDBiG9GwVu56wvdMg=",
-        "usagesDigest": "HYMEVvfA105lEcACgemmjHRgLBGPOFtDZWGX+G9qaYo=",
+        "bzlTransitiveDigest": "1CyEqOyyRJhM4tOV65CmP51jIu5lZ1mkJijTNj8ImWU=",
+        "usagesDigest": "MeXvypZTB9gsagEwMFK7TNYmhoy4daLQQl0GoBR/OLo=",
         "recordedFileInputs": {},
         "recordedDirentsInputs": {},
         "envVariables": {},
@@ -19217,6 +19217,7 @@
                 "@@rules_rust+//crate_universe:src/metadata/cargo_bin.rs",
                 "@@rules_rust+//crate_universe:src/metadata/cargo_resolver.rs",
                 "@@rules_rust+//crate_universe:src/metadata/metadata_annotation.rs",
+                "@@rules_rust+//crate_universe:src/metadata/workspace_discoverer.rs",
                 "@@rules_rust+//crate_universe:src/rendering.rs",
                 "@@rules_rust+//crate_universe:src/rendering/template_engine.rs",
                 "@@rules_rust+//crate_universe:src/rendering/templates/module_bzl.j2",

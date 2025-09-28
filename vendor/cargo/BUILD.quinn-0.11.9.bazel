@@ -84,7 +84,7 @@ rust_library(
         "@cargo_vendor__quinn-proto-0.11.13//:quinn_proto",
         "@cargo_vendor__quinn-udp-0.5.14//:quinn_udp",
         "@cargo_vendor__rustc-hash-2.1.1//:rustc_hash",
-        "@cargo_vendor__rustls-0.23.31//:rustls",
+        "@cargo_vendor__rustls-0.23.32//:rustls",
         "@cargo_vendor__thiserror-2.0.16//:thiserror",
         "@cargo_vendor__tokio-1.47.1//:tokio",
         "@cargo_vendor__tracing-0.1.41//:tracing",

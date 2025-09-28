@@ -17,6 +17,7 @@ use scuffle_batching::DataLoader;
 use scuffle_bootstrap_telemetry::opentelemetry;
 use scuffle_bootstrap_telemetry::opentelemetry_sdk::logs::SdkLoggerProvider;
 use scuffle_bootstrap_telemetry::opentelemetry_sdk::trace::SdkTracerProvider;
+use tonic::transport::{ClientTlsConfig, Identity};
 use tracing_subscriber::Layer;
 use tracing_subscriber::layer::SubscriberExt;
 use tracing_subscriber::util::SubscriberInitExt;
@@ -49,6 +50,7 @@ pub struct Config {
     pub google_oauth2: config::GoogleOAuth2Config,
     pub telemetry: Option<config::TelemetryConfig>,
     pub redis: config::RedisConfig,
+    pub mtls: config::MtlsConfig,
     #[default = "Scuffle"]
     pub email_from_name: String,
     #[default = "no-reply@scuffle.cloud"]
@@ -76,6 +78,9 @@ struct Global {
     redis: fred::clients::Pool,
     email_service_client: EmailClientPb,
     geoip_resolver: GeoIpResolver,
+    mtls_root_cert: Vec<u8>,
+    mtls_cert: Vec<u8>,
+    mtls_private_key: Vec<u8>,
 }
 
 impl core_traits::ConfigInterface for Global {
@@ -206,6 +211,20 @@ impl core_traits::WebAuthnInterface for Global {
     }
 }
 
+impl core_traits::MtlsInterface for Global {
+    fn mtls_root_cert_pem(&self) -> &[u8] {
+        &self.mtls_root_cert
+    }
+
+    fn mtls_cert_pem(&self) -> &[u8] {
+        &self.mtls_cert
+    }
+
+    fn mtls_private_key_pem(&self) -> &[u8] {
+        &self.mtls_private_key
+    }
+}
+
 impl core_traits::Global for Global {}
 
 impl scuffle_signal::SignalConfig for Global {}
@@ -248,9 +267,20 @@ impl scuffle_bootstrap::Global for Global {
             .context("failed to read maxmind db path")?;
         let geoip_resolver = GeoIpResolver::new_from_data(maxminddb_data).context("failed to parse maxmind db")?;
 
+        // mTLS
+        let root_cert = std::fs::read(&config.mtls.root_cert_path).context("failed to read mTLS root cert file")?;
+        let cert = std::fs::read(&config.mtls.cert_path).context("failed to read mTLS cert file")?;
+        let private_key = std::fs::read(&config.mtls.key_path).context("failed to read mTLS private key file")?;
+
+        let client_tls_config = ClientTlsConfig::new()
+            .ca_certificate(tonic::transport::Certificate::from_pem(&root_cert))
+            .identity(Identity::from_pem(&cert, &private_key));
+
         tracing::info!(address = %config.email_service_address, "connecting to email service");
-        let email_service_channel = tonic::transport::Channel::from_shared(config.email_service_address.clone())
+        let email_service_channel = tonic::transport::Endpoint::from_shared(config.email_service_address.clone())
             .context("create channel to email service")?
+            .tls_config(client_tls_config)
+            .context("configure TLS for email service channel")?
             .connect()
             .await
             .context("create channel to email service")?;
@@ -311,6 +341,9 @@ impl scuffle_bootstrap::Global for Global {
             redis,
             email_service_client,
             geoip_resolver,
+            mtls_root_cert: root_cert,
+            mtls_cert: cert,
+            mtls_private_key: private_key,
         }))
     }
 }

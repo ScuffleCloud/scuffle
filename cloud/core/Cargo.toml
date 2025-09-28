@@ -62,7 +62,7 @@ swagger-ui-dist = "5.27.1"
 thiserror = "2.0.12"
 tinc = { path = "../../crates/tinc" }
 tokio = { default-features = false, features = ["sync"], version = "1.47.1" }
-tonic = "0.14.1"
+tonic = { version = "0.14.1", features = ["tls-aws-lc"] }
 tonic-reflection = "0.14.1"
 tonic-types = "0.14.1"
 tonic-web = "0.14.2"

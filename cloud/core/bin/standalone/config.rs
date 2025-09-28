@@ -1,4 +1,5 @@
 use std::net::SocketAddr;
+use std::path::PathBuf;
 
 use anyhow::Context;
 use fred::prelude::ClientLike;
@@ -119,4 +120,11 @@ pub struct ReverseProxyConfig {
     /// List of trusted proxy networks that the server accepts connections from.
     /// These are typically the networks of the reverse proxies in front of the server, e.g. Cloudflare, etc.
     pub trusted_proxies: Vec<ipnetwork::IpNetwork>,
+}
+
+#[derive(serde_derive::Deserialize, smart_default::SmartDefault, Debug, Clone)]
+pub struct MtlsConfig {
+    pub root_cert_path: PathBuf,
+    pub cert_path: PathBuf,
+    pub key_path: PathBuf,
 }

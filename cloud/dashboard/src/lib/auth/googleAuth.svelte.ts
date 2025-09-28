@@ -1,6 +1,6 @@
 import { goto } from "$app/navigation";
 import { authState } from "$lib/auth.svelte";
-import { AFTER_LOGIN_LANDING_ROUTE } from "$lib/consts";
+import { LANDING_ROUTE } from "$lib/consts";
 import { sessionsServiceClient } from "$lib/grpcClient";
 
 /**
@@ -44,7 +44,7 @@ async function completeGoogleLogin(code: string, state: string): Promise<void> {
 
             if (response.newUserSessionToken?.sessionMfaPending) return;
 
-            goto(AFTER_LOGIN_LANDING_ROUTE);
+            goto(LANDING_ROUTE);
         } else {
             throw new Error("No session token received");
         }

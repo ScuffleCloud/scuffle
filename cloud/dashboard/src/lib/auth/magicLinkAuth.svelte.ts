@@ -1,6 +1,6 @@
 import { goto } from "$app/navigation";
 import { authState } from "$lib/auth.svelte";
-import { AFTER_LOGIN_LANDING_ROUTE } from "$lib/consts";
+import { LANDING_ROUTE } from "$lib/consts";
 import { sessionsServiceClient } from "$lib/grpcClient";
 import { base64urlToArrayBuffer } from "$lib/utils";
 import { CaptchaProvider } from "@scufflecloud/proto/scufflecloud/core/v1/common.js";
@@ -62,7 +62,7 @@ async function completeMagicLinkLogin(code: string): Promise<void> {
                 return;
             }
 
-            goto(AFTER_LOGIN_LANDING_ROUTE);
+            goto(LANDING_ROUTE);
         } else {
             throw new Error("No session token received");
         }

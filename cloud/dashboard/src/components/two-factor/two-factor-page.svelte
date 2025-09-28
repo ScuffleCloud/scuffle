@@ -7,7 +7,7 @@
         type TwoFactorMode,
     } from "$lib/types";
     import { MfaOption } from "@scufflecloud/proto/scufflecloud/core/v1/sessions_service.js";
-    import BackupCodeForm from "./backup-code-form.svelte";
+    import RecoveryCodeForm from "./recovery-code-form.svelte";
     import ToptForm from "./topt-form.svelte";
     import WebAuthnnForm from "./web-authnn-form.svelte";
 
@@ -22,14 +22,6 @@
                 "2FA page accessed without pending MFA - routing bug",
             );
 
-            return [];
-        }
-        if (
-            !auth.userSessionToken.data.mfaPending?.includes(
-                MfaOption.RECOVERY_CODES,
-            )
-        ) {
-            console.log("Recovery codes not found");
             return [];
         }
 
@@ -51,38 +43,16 @@
 
     // Use SvelteKit's page state instead of local state
     let twoFactorMode = $state(getInitialTwoFactorModeFromState());
+    let previousTwoFactorMode = $state(
+        getInitialTwoFactorModeFromState(),
+    );
 
     function changeTwoFactorMode(mode: TwoFactorMode) {
+        previousTwoFactorMode = twoFactorMode;
         twoFactorMode = mode;
     }
 
     let isLoading = $state<boolean>(false);
-
-    // async function handleMagicLinkSubmit(email: string): Promise<void> {
-    //     isLoading = true;
-
-    //     try {
-    //         await magicLinkAuth.sendMagicLink(email, token);
-
-    //         isLoading = false;
-    //         // Magic link has successfully been sent
-    //         userEmail = email;
-    //         pushState("/magic-link-sent", {
-    //             loginMode: "magic-link-sent",
-    //             userEmail: email,
-    //         });
-    //     } catch (error) {
-    //         console.error("Magic link error:", error);
-    //     }
-    // }
-
-    // $effect(() => {
-    //     if (googleAuth.loading()) {
-    //         isLoading = true;
-    //     } else {
-    //         isLoading = false;
-    //     }
-    // });
 </script>
 
 <svelte:head>
@@ -105,7 +75,9 @@
             onBackupCodeChange={() => changeTwoFactorMode("recovery-code")}
         />
     {:else if twoFactorMode === "recovery-code"}
-        <BackupCodeForm />
+        <RecoveryCodeForm
+            onBack={() => changeTwoFactorMode(previousTwoFactorMode)}
+        />
     {/if}
 </LoginCard>
 <div class="footer-links">

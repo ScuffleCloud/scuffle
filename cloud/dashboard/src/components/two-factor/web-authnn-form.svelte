@@ -1,7 +1,7 @@
 <script lang="ts">
     import LoginOrDivider from "$components/login-or-divider.svelte";
     import IconShield from "$lib/images/icon-shield.svelte";
-    import BackupCodeCollapsible from "./backup-code-collapsible.svelte";
+    import RecoveryCodeCollapsible from "./recovery-code-collapsible.svelte";
 
     interface Props {
         onToptModeChange: (() => void) | null;
@@ -41,7 +41,7 @@
 {/if}
 
 <div class="separator"></div>
-<BackupCodeCollapsible onAction={onBackupCodeChange} />
+<RecoveryCodeCollapsible onAction={onBackupCodeChange} />
 
 <style>
     .header {

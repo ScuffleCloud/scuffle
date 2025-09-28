@@ -2,7 +2,7 @@
     import LoginOrDivider from "$components/login-or-divider.svelte";
     import IconLoginKey from "$lib/images/icon-login-key.svelte";
     import { PinInput } from "melt/builders";
-    import BackupCodeCollapsible from "./backup-code-collapsible.svelte";
+    import RecoveryCodeCollapsible from "./recovery-code-collapsible.svelte";
 
     interface Props {
         onModeChange: (() => void) | null;
@@ -67,7 +67,7 @@
         Continue with Passkey
     </button>
 {/if}
-<BackupCodeCollapsible onAction={onBackupCodeChange} />
+<RecoveryCodeCollapsible onAction={onBackupCodeChange} />
 
 <style>
     .header {

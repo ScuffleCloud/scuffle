@@ -143,7 +143,7 @@ ON DELETE CASCADE;
 CREATE TABLE "mfa_totp_credentials" (
     "id" UUID PRIMARY KEY,
     "user_id" UUID NOT NULL,
-    "name" VARCHAR(255) NOT NULL,
+    "name" VARCHAR(255),
     "secret" BYTEA NOT NULL,
     "last_used_at" TIMESTAMPTZ NOT NULL
 );

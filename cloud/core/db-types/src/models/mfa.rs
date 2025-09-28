@@ -15,7 +15,7 @@ pub type MfaTotpCredentialId = Id<MfaTotpCredential>;
 pub struct MfaTotpCredential {
     pub id: MfaTotpCredentialId,
     pub user_id: UserId,
-    pub name: String,
+    pub name: Option<String>,
     pub secret: Vec<u8>,
     pub last_used_at: chrono::DateTime<chrono::Utc>,
 }

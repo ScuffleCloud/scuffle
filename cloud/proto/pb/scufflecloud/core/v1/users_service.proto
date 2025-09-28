@@ -141,7 +141,7 @@ message CreateTotpCredentialResponse {
 
 message CompleteCreateTotpCredentialRequest {
   string id = 1 [(string_constraint).id = true];
-  string name = 2 [(tinc.field).constraint.string = {
+  optional string name = 2 [(tinc.field).constraint.string = {
     min_len: 1
     max_len: 255
   }];
@@ -209,7 +209,7 @@ message CreateWebauthnChallengeRequest {
 message TotpCredential {
   string id = 1 [(string_constraint).id = true];
   string user_id = 2 [(string_constraint).id = true];
-  string name = 3 [(tinc.field).constraint.string = {
+  optional string name = 3 [(tinc.field).constraint.string = {
     min_len: 1
     max_len: 255
   }];

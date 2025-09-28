@@ -34,6 +34,10 @@ rust_library(
             "WORKSPACE.bazel",
         ],
     ),
+    crate_features = [
+        "strsim",
+        "suggestions",
+    ],
     crate_root = "src/lib.rs",
     edition = "2021",
     rustc_env_files = [
@@ -64,6 +68,7 @@ rust_library(
         "@bindeps__ident_case-1.0.1//:ident_case",
         "@bindeps__proc-macro2-1.0.101//:proc_macro2",
         "@bindeps__quote-1.0.40//:quote",
+        "@bindeps__strsim-0.11.1//:strsim",
         "@bindeps__syn-2.0.106//:syn",
     ],
 )

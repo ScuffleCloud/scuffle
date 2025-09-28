@@ -6,9 +6,11 @@ cargo_toml()
 scuffle_package(
     aliases = {
         "//cloud/proto": "pb",
+        "//cloud/id": "id",
     },
     crate_name = "scufflecloud-core-db-types",
     deps = [
+        "//cloud/id",
         "//cloud/proto",
     ],
 )

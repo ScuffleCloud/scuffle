@@ -39,6 +39,7 @@ declare -Ar TOOL_LABELS=(
     ["rust-analyzer-discover"]="//tools/rust-analyzer:discover"
     ["rust-analyzer-check"]="//tools/rust-analyzer:check"
     ["shfmt"]="//tools/shfmt"
+    ["diesel"]="//tools/diesel"
 )
 
 declare -Ar pnpm_vars=(

@@ -18,11 +18,7 @@ impl crate::CedarIdentifiable for OrganizationMember {
     const ENTITY_TYPE: EntityTypeName = entity_type_name!("OrganizationMember");
 
     fn entity_id(&self) -> cedar_policy::EntityId {
-        cedar_policy::EntityId::new(format!(
-            "{}:{}",
-            self.organization_id.to_string_unprefixed(),
-            self.user_id.to_string_unprefixed()
-        ))
+        cedar_policy::EntityId::new(format!("{}:{}", self.organization_id.unprefixed(), self.user_id.unprefixed()))
     }
 }
 

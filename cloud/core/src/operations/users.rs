@@ -644,6 +644,71 @@ impl<G: core_traits::Global> Operation<G> for tonic::Request<pb::scufflecloud::c
     }
 }
 
+impl<G: core_traits::Global> Operation<G> for tonic::Request<pb::scufflecloud::core::v1::UpdateWebauthnCredentialRequest> {
+    type Principal = User;
+    type Resource = MfaWebauthnCredential;
+    type Response = pb::scufflecloud::core::v1::WebauthnCredential;
+
+    const ACTION: Action = Action::UpdateWebauthnCredential;
+
+    async fn load_principal(&mut self, _driver: &mut OperationDriver<'_, G>) -> Result<Self::Principal, tonic::Status> {
+        let global = &self.global::<G>()?;
+        let session = self.session_or_err()?;
+        common::get_user_by_id(global, session.user_id).await
+    }
+
+    async fn load_resource(&mut self, driver: &mut OperationDriver<'_, G>) -> Result<Self::Resource, tonic::Status> {
+        let user_id: UserId = self
+            .get_ref()
+            .user_id
+            .parse()
+            .into_tonic_err_with_field_violation("user_id", "invalid ID")?;
+
+        let credential_id: MfaWebauthnCredentialId = self
+            .get_ref()
+            .id
+            .parse()
+            .into_tonic_err_with_field_violation("id", "invalid ID")?;
+
+        let conn = driver.conn().await?;
+        let credential = mfa_webauthn_credentials::dsl::mfa_webauthn_credentials
+            .filter(
+                mfa_webauthn_credentials::dsl::id
+                    .eq(credential_id)
+                    .and(mfa_webauthn_credentials::dsl::user_id.eq(user_id)),
+            )
+            .select(MfaWebauthnCredential::as_select())
+            .first::<MfaWebauthnCredential>(conn)
+            .await
+            .into_tonic_internal_err("failed to find webauthn credential")?;
+
+        Ok(credential)
+    }
+
+    async fn execute(
+        self,
+        driver: &mut OperationDriver<'_, G>,
+        _principal: Self::Principal,
+        resource: Self::Resource,
+    ) -> Result<Self::Response, tonic::Status> {
+        let conn = driver.conn().await?;
+
+        let updated_credential = if let Some(name) = &self.get_ref().name {
+            diesel::update(mfa_webauthn_credentials::dsl::mfa_webauthn_credentials)
+                .filter(mfa_webauthn_credentials::dsl::id.eq(resource.id))
+                .set(mfa_webauthn_credentials::dsl::name.eq(name))
+                .returning(MfaWebauthnCredential::as_returning())
+                .get_result::<MfaWebauthnCredential>(conn)
+                .await
+                .into_tonic_internal_err("failed to update webauthn credential")?
+        } else {
+            resource
+        };
+
+        Ok(updated_credential.into())
+    }
+}
+
 impl<G: core_traits::Global> Operation<G> for tonic::Request<pb::scufflecloud::core::v1::DeleteWebauthnCredentialRequest> {
     type Principal = User;
     type Resource = MfaWebauthnCredential;
@@ -951,6 +1016,71 @@ impl<G: core_traits::Global> Operation<G> for tonic::Request<pb::scufflecloud::c
         Ok(pb::scufflecloud::core::v1::TotpCredentialsList {
             credentials: credentials.into_iter().map(Into::into).collect(),
         })
+    }
+}
+
+impl<G: core_traits::Global> Operation<G> for tonic::Request<pb::scufflecloud::core::v1::UpdateTotpCredentialRequest> {
+    type Principal = User;
+    type Resource = MfaTotpCredential;
+    type Response = pb::scufflecloud::core::v1::TotpCredential;
+
+    const ACTION: Action = Action::UpdateTotpCredential;
+
+    async fn load_principal(&mut self, _driver: &mut OperationDriver<'_, G>) -> Result<Self::Principal, tonic::Status> {
+        let global = &self.global::<G>()?;
+        let session = self.session_or_err()?;
+        common::get_user_by_id(global, session.user_id).await
+    }
+
+    async fn load_resource(&mut self, driver: &mut OperationDriver<'_, G>) -> Result<Self::Resource, tonic::Status> {
+        let user_id: UserId = self
+            .get_ref()
+            .user_id
+            .parse()
+            .into_tonic_err_with_field_violation("user_id", "invalid ID")?;
+
+        let credential_id: MfaTotpCredentialId = self
+            .get_ref()
+            .id
+            .parse()
+            .into_tonic_err_with_field_violation("id", "invalid ID")?;
+
+        let conn = driver.conn().await?;
+        let credential = mfa_totp_credentials::dsl::mfa_totp_credentials
+            .filter(
+                mfa_totp_credentials::dsl::id
+                    .eq(credential_id)
+                    .and(mfa_totp_credentials::dsl::user_id.eq(user_id)),
+            )
+            .select(MfaTotpCredential::as_select())
+            .first::<MfaTotpCredential>(conn)
+            .await
+            .into_tonic_internal_err("failed to find webauthn credential")?;
+
+        Ok(credential)
+    }
+
+    async fn execute(
+        self,
+        driver: &mut OperationDriver<'_, G>,
+        _principal: Self::Principal,
+        resource: Self::Resource,
+    ) -> Result<Self::Response, tonic::Status> {
+        let conn = driver.conn().await?;
+
+        let updated_credential = if let Some(name) = &self.get_ref().name {
+            diesel::update(mfa_totp_credentials::dsl::mfa_totp_credentials)
+                .filter(mfa_totp_credentials::dsl::id.eq(resource.id))
+                .set(mfa_totp_credentials::dsl::name.eq(name))
+                .returning(MfaTotpCredential::as_returning())
+                .get_result::<MfaTotpCredential>(conn)
+                .await
+                .into_tonic_internal_err("failed to update webauthn credential")?
+        } else {
+            resource
+        };
+
+        Ok(updated_credential.into())
     }
 }
 

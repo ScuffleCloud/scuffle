@@ -87,6 +87,13 @@ when { principal.id == resource.user_id };
 
 permit (
   principal is User,
+  action == Action::"update_webauthn_credential",
+  resource is MfaWebauthnCredential
+)
+when { principal.id == resource.user_id };
+
+permit (
+  principal is User,
   action == Action::"create_webauthn_challenge",
   resource is User
 )
@@ -116,6 +123,13 @@ when { principal.id == resource.id };
 permit (
   principal is User,
   action == Action::"complete_create_totp_credential",
+  resource is MfaTotpCredential
+)
+when { principal.id == resource.user_id };
+
+permit (
+  principal is User,
+  action == Action::"update_totp_credential",
   resource is MfaTotpCredential
 )
 when { principal.id == resource.user_id };

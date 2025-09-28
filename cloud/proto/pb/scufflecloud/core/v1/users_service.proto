@@ -40,6 +40,9 @@ service UsersService {
   rpc ListWebauthnCredentials(ListWebauthnCredentialsRequest) returns (WebauthnCredentialsList) {
     option (tinc.method).endpoint = {get: "/users/{id}/webauthn-credentials"};
   }
+  rpc UpdateWebauthnCredential(UpdateWebauthnCredentialRequest) returns (WebauthnCredential) {
+    option (tinc.method).endpoint = {patch: "/users/{user_id}/webauthn-credentials/{id}"};
+  }
   rpc DeleteWebauthnCredential(DeleteWebauthnCredentialRequest) returns (WebauthnCredential) {
     option (tinc.method).endpoint = {delete: "/users/{user_id}/webauthn-credentials/{id}"};
   }
@@ -55,6 +58,9 @@ service UsersService {
   }
   rpc ListTotpCredentials(ListTotpCredentialsRequest) returns (TotpCredentialsList) {
     option (tinc.method).endpoint = {get: "/users/{id}/totp-credentials"};
+  }
+  rpc UpdateTotpCredential(UpdateTotpCredentialRequest) returns (TotpCredential) {
+    option (tinc.method).endpoint = {patch: "/users/{user_id}/totp-credentials/{id}"};
   }
   rpc DeleteTotpCredential(DeleteTotpCredentialRequest) returns (TotpCredential) {
     option (tinc.method).endpoint = {delete: "/users/{user_id}/totp-credentials/{id}"};
@@ -167,6 +173,15 @@ message WebauthnCredentialsList {
   repeated WebauthnCredential credentials = 1;
 }
 
+message UpdateWebauthnCredentialRequest {
+  string user_id = 1 [(string_constraint).id = true];
+  string id = 2 [(string_constraint).id = true];
+  optional string name = 3 [(tinc.field).constraint.string = {
+    min_len: 1
+    max_len: 255
+  }];
+}
+
 message CreateWebauthnCredentialRequest {
   string id = 1 [(string_constraint).id = true];
 }
@@ -188,6 +203,15 @@ message CompleteCreateWebauthnCredentialRequest {
   // https://docs.rs/webauthn-rs/latest/webauthn_rs/prelude/struct.RegisterPublicKeyCredential.html
   // https://w3c.github.io/webauthn/#iface-pkcredential
   string response_json = 3;
+}
+
+message UpdateTotpCredentialRequest {
+  string user_id = 1 [(string_constraint).id = true];
+  string id = 2 [(string_constraint).id = true];
+  optional string name = 3 [(tinc.field).constraint.string = {
+    min_len: 1
+    max_len: 255
+  }];
 }
 
 message DeleteWebauthnCredentialRequest {

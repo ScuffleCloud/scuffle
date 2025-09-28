@@ -241,7 +241,7 @@ action "create_webauthn_credential", "list_webauthn_credentials", "create_webaut
   context: GlobalContext,
 };
 
-action "complete_create_webauthn_credential", "delete_webauthn_credential" appliesTo {
+action "complete_create_webauthn_credential", "update_webauthn_credential", "delete_webauthn_credential" appliesTo {
   principal: [User],
   resource: [MfaWebauthnCredential],
   context: GlobalContext,
@@ -253,7 +253,7 @@ action "create_totp_credential", "list_totp_credentials" appliesTo {
   context: GlobalContext,
 };
 
-action "complete_create_totp_credential", "delete_totp_credential" appliesTo {
+action "complete_create_totp_credential", "update_totp_credential", "delete_totp_credential" appliesTo {
   principal: [User],
   resource: [MfaTotpCredential],
   context: GlobalContext,

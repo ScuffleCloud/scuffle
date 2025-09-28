@@ -1,7 +1,15 @@
 <script lang="ts">
-    import IconArrowLeft from "$lib/images/icon-arrow-left.svelte";
+    import LoginOrDivider from "$components/login-or-divider.svelte";
+    import IconLoginKey from "$lib/images/icon-login-key.svelte";
     import { PinInput } from "melt/builders";
-    import LoginCard from "./login-card.svelte";
+    import BackupCodeCollapsible from "./backup-code-collapsible.svelte";
+
+    interface Props {
+        onModeChange: (() => void) | null;
+        onBackupCodeChange: () => void;
+    }
+
+    let { onModeChange, onBackupCodeChange }: Props = $props();
 
     let isLoading = $state(false);
     function onSubmit(code: string) {
@@ -22,34 +30,44 @@
     }
 </script>
 
-<LoginCard>
-    <div class="header">
-        <h1 class="title">MFA Login</h1>
-    </div>
-    <p class="subtitle">
-        Enter the 6-digit code from your 2FA authenticator app below
-    </p>
+<div class="header">
+    <h1 class="title">MFA Login</h1>
+</div>
+<p class="subtitle">
+    Enter the 6-digit code from your 2FA authenticator app below
+</p>
 
-    <div {...pinInput.root} class="pin-input-root">
-        {#each pinInput.inputs as input, index (`pin-input-${index}`)}
-            <input {...input} class="pin-input" />
-        {/each}
-    </div>
+<div {...pinInput.root} class="pin-input-root">
+    {#each pinInput.inputs as input, index (`pin-input-${index}`)}
+        <input {...input} class="pin-input" />
+    {/each}
+</div>
 
+<button
+    type="button"
+    onclick={handleContinue}
+    class="continue-btn"
+    disabled={isLoading || pinInput.value.length !== 6}
+>
+    {#if isLoading}
+        <div class="spinner"></div>
+        Verifying...
+    {:else}
+        Continue
+    {/if}
+</button>
+{#if onModeChange}
+    <LoginOrDivider />
     <button
         type="button"
-        onclick={handleContinue}
+        onclick={() => onModeChange()}
         class="continue-btn"
-        disabled={isLoading || pinInput.value.length !== 6}
     >
-        {#if isLoading}
-            <div class="spinner"></div>
-            Verifying...
-        {:else}
-            Continue
-        {/if}
+        <IconLoginKey />
+        Continue with Passkey
     </button>
-</LoginCard>
+{/if}
+<BackupCodeCollapsible onAction={onBackupCodeChange} />
 
 <style>
     .header {

@@ -22,7 +22,6 @@
     .subtitle {
       font-size: 0.875rem;
       color: #6b7280;
-      margin-bottom: 2rem;
       line-height: 1.5;
     }
 </style>

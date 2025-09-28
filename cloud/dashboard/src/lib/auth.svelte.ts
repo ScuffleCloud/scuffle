@@ -359,6 +359,21 @@ export function authState() {
             if (!user) throw new Error("User not initialized");
             return user.state === "authenticated" ? user.data : null;
         },
+
+        /**
+         * Checks if the user has 2FA enabled. Not including recovery codes. If not here I can think of better spot
+         */
+        get hasTwoFactorEnabled(): boolean {
+            if (userSessionToken.state !== "authenticated" || !userSessionToken.data.mfaPending) {
+                return false;
+            }
+
+            const mfaOptions = userSessionToken.data.mfaPending;
+            const hasPrimaryMethod = mfaOptions.includes(MfaOption.TOTP)
+                || mfaOptions.includes(MfaOption.WEB_AUTHN);
+
+            return hasPrimaryMethod;
+        },
     };
 }
 

@@ -30,3 +30,8 @@ export function arrayBufferToBase64url(buffer: ArrayBuffer): string {
         "_",
     );
 }
+
+export function isOAuthCallback(pathname: string, searchParams: URLSearchParams): boolean {
+    return searchParams.has("code")
+        && (searchParams.has("state") || pathname.includes("magic-link"));
+}

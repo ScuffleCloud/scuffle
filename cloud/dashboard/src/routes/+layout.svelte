@@ -14,14 +14,15 @@
     import LoginFooter from "$components/login/login-footer.svelte";
     import LoginHeader from "$components/login/login-header.svelte";
     import LoginPage from "$components/login/login-page.svelte";
-    import TwoFactorPage from "$components/login/two-factor-page.svelte";
     import RightNav from "$components/right-nav/right-nav.svelte";
+    import TwoFactorPage from "$components/two-factor/two-factor-page.svelte";
     import { PUBLIC_VITE_MSW_ENABLED } from "$env/static/public";
     import { authState } from "$lib/auth.svelte";
     import {
         AFTER_LOGIN_LANDING_ROUTE,
         PUBLIC_ROUTES,
     } from "$lib/consts";
+    import { isOAuthCallback } from "$lib/utils";
     import { onMount } from "svelte";
 
     const auth = $derived(authState());
@@ -36,8 +37,10 @@
 
     // Let's handle routing here, or at least call it in this layout function. Maybe move elsewhere and reference here
     // We can't put any changes in authState in the +page.ts files because they don't have access to the authState
-    // Until after the routing has been determined so we might as well do it here
-    // Can see if there's a better way of doing this. Open to other options
+    // Until after the routing has been determined so we might as well do it here I'd imagine
+    // Can see if there's a better way of doing this. Open to other options.
+    // This routing all sucks though and feels so weak. I'd rather not route someone to 2fa
+    // They should be able to back out of this flow would be ideal. TBD
     $effect(() => {
         const pathname = page.url.pathname;
         const searchParams = page.url.searchParams;
@@ -56,12 +59,18 @@
             return;
         }
 
-        // Skip routing for oauth callbacks
+        // Skip routing for oauth callbacks let them manage their own routing
+        if (isOAuthCallback(pathname, searchParams)) {
+            return;
+        }
+
         if (
-            searchParams.has("code")
-            && (searchParams.has("state")
-                || pathname.includes("magic-link"))
+            auth.userSessionToken.state === "authenticated"
+            && auth.hasTwoFactorEnabled
+            && !!auth.userSessionToken.data.mfaPending?.length
+            && pathname !== "/two-factor"
         ) {
+            goto("/two-factor");
             return;
         }
 
@@ -116,18 +125,26 @@
     );
 </script>
 
+<!-- TODO: Add protection to routes if not logged in -->
+<!-- This should go on each route somewhere or here might be sufficient -->
 <!-- TODO: Clean this up at some point -->
 {#if mockingReady}
     {#if auth.userSessionToken.state === "loading"}
         <div>Loading...</div>
     {:else if auth.userSessionToken.state === "unauthenticated"}
-        <div class="login-page-container">
-            <!-- TODO: Add protection to routes if not logged in -->
-            <!-- This should go on each route somewhere or here might be sufficient -->
-            <LoginHeader />
-            <LoginPage />
-            <LoginFooter />
-        </div>
+        {#if isOAuthCallback(page.url.pathname, page.url.searchParams)}
+            <div class="login-page-container">
+                <LoginHeader />
+                {@render children()}
+                <LoginFooter />
+            </div>
+        {:else}
+            <div class="login-page-container">
+                <LoginHeader />
+                <LoginPage />
+                <LoginFooter />
+            </div>
+        {/if}
     {:else if hasPendingMfa}
         <div class="login-page-container">
             <LoginHeader />

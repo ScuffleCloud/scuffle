@@ -58,8 +58,9 @@ async function completeMagicLinkLogin(code: string): Promise<void> {
         if (newUserSessionToken) {
             await authState().handleNewUserSessionToken(newUserSessionToken);
 
-            // If MFA becomes pending parent will handle
-            if (newUserSessionToken?.sessionMfaPending) return;
+            if (newUserSessionToken?.sessionMfaPending) {
+                return;
+            }
 
             goto(AFTER_LOGIN_LANDING_ROUTE);
         } else {
@@ -77,8 +78,7 @@ function handleMagicLinkCallback(): void {
     const urlParams = new URLSearchParams(window.location.search);
     const code = urlParams.get("code");
 
-    // Avoid google oauth callback
-    if (code && !urlParams.has("state")) {
+    if (code) {
         completeMagicLinkLogin(code).catch(console.error);
     }
 }

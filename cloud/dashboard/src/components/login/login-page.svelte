@@ -1,17 +1,14 @@
 <script lang="ts">
     import { pushState } from "$app/navigation";
     import { page } from "$app/state";
-    import {
-        DEFAULT_LOGIN_MODE,
-        type LoginMode,
-    } from "$components/streams/types";
     import TurnstileOverlay from "$components/turnstile-overlay.svelte";
     import { useGoogleAuth } from "$lib/auth/googleAuth.svelte";
     import { useMagicLinkAuth } from "$lib/auth/magicLinkAuth.svelte";
     import IconArrowDialogLink from "$lib/images/icon-arrow-dialog-link.svelte";
     import { createSmartBack } from "$lib/navigation.svelte";
+    import { DEFAULT_LOGIN_MODE, type LoginMode } from "$lib/types";
+    import LoginCard from "../login-card.svelte";
     import ForgotPasswordForm from "./forgot-password-form.svelte";
-    import LoginCard from "./login-card.svelte";
     import MagicLinkForm from "./magic-link-form.svelte";
     import MagicLinkSent from "./magic-link-sent.svelte";
     import PasskeyForm from "./passkey-form.svelte";
@@ -148,12 +145,6 @@
         }
     });
 
-    // Handle OAuth callbacks
-    $effect(() => {
-        googleAuth.handleOAuthCallback();
-        magicLinkAuth.handleMagicLinkCallback();
-    });
-
     // See if I need this later
     $effect(() => {
         if (page.state.userEmail) {
@@ -286,11 +277,6 @@
     }
 
     @media (max-width: 480px) {
-      .login-card {
-        padding: 1.5rem;
-        margin: 0 1rem;
-      }
-
       .footer-links {
         margin: 1rem 0 1rem 0;
       }

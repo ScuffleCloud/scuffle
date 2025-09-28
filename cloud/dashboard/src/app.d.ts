@@ -8,7 +8,7 @@ declare global {
         // interface PageState {}
         // interface Platform {}
         interface PageState {
-            loginMode?: import("$components/streams/types").LoginMode;
+            loginMode?: import("$lib/types").LoginMode;
             userEmail?: string;
         }
     }

@@ -356,23 +356,25 @@ export function authState() {
          * Returns the current authenticated user or null if not authenticated.
          */
         get user() {
-            if (!user) throw new Error("User not initialized");
+            if (!user) return null;
             return user.state === "authenticated" ? user.data : null;
         },
 
         /**
-         * Checks if the user has 2FA enabled. Not including recovery codes. If not here I can think of better spot
+         * Checks if the user has 2FA enabled. Not including recovery codes
          */
-        get hasTwoFactorEnabled(): boolean {
-            if (userSessionToken.state !== "authenticated" || !userSessionToken.data.mfaPending) {
+        get hasPendingMfa(): boolean {
+            if (userSessionToken.state !== "authenticated") throw new Error("User not authenticated");
+
+            const mfaOptions = userSessionToken.data.mfaPending;
+
+            // No pending MFA
+            if (!mfaOptions) {
                 return false;
             }
 
-            const mfaOptions = userSessionToken.data.mfaPending;
-            const hasPrimaryMethod = mfaOptions.includes(MfaOption.TOTP)
+            return mfaOptions.includes(MfaOption.TOTP)
                 || mfaOptions.includes(MfaOption.WEB_AUTHN);
-
-            return hasPrimaryMethod;
         },
     };
 }

@@ -19,10 +19,10 @@
     import { PUBLIC_VITE_MSW_ENABLED } from "$env/static/public";
     import { authState } from "$lib/auth.svelte";
     import {
-        AFTER_LOGIN_LANDING_ROUTE,
-        PUBLIC_ROUTES,
+        LANDING_ROUTE,
+        LOGIN_ROUTES,
+        OAUTH_CALLBACK_ROUTES,
     } from "$lib/consts";
-    import { isOAuthCallback } from "$lib/utils";
     import { onMount } from "svelte";
 
     const auth = $derived(authState());
@@ -35,24 +35,31 @@
         $inspect(auth.userSessionToken);
     });
 
+    const isOAuthCallbackRoute = $derived(
+        OAUTH_CALLBACK_ROUTES.some(route =>
+            page.url.pathname.startsWith(route)
+        ),
+    );
+
     // Let's handle routing here, or at least call it in this layout function. Maybe move elsewhere and reference here
     // We can't put any changes in authState in the +page.ts files because they don't have access to the authState
     // Until after the routing has been determined so we might as well do it here I'd imagine
     // Can see if there's a better way of doing this. Open to other options.
     // This routing all sucks though and feels so weak. I'd rather not route someone to 2fa
-    // They should be able to back out of this flow would be ideal. TBD
+    // They should be able to back out of this flow would be ideal. TBD. Maybe call a few functions here
+
     $effect(() => {
         const pathname = page.url.pathname;
-        const searchParams = page.url.searchParams;
 
-        const isPublicRoute = PUBLIC_ROUTES.includes(pathname);
+        // These routes should all load the /login route unless user is authed with nonpending 2fa
+        const isLoginRoute = LOGIN_ROUTES.includes(pathname);
 
         if (auth.userSessionToken.state === "loading") return;
 
-        // Root redirect
+        // Root redirect only can redirect to login or landing
         if (pathname === "/") {
             if (auth.userSessionToken.state === "authenticated") {
-                goto(AFTER_LOGIN_LANDING_ROUTE, { replaceState: true });
+                goto(LANDING_ROUTE, { replaceState: true });
             } else {
                 goto("/login", { replaceState: true });
             }
@@ -60,34 +67,34 @@
         }
 
         // Skip routing for oauth callbacks let them manage their own routing
-        if (isOAuthCallback(pathname, searchParams)) {
+        if (isOAuthCallbackRoute) {
             return;
         }
 
+        // Don't redirect 2FA if accessed correctly
         if (
             auth.userSessionToken.state === "authenticated"
-            && auth.hasTwoFactorEnabled
-            && !!auth.userSessionToken.data.mfaPending?.length
-            && pathname !== "/two-factor"
+            && auth.hasPendingMfa
+            && pathname === "/two-factor"
         ) {
-            goto("/two-factor");
             return;
         }
 
-        // Protected routes logic. Ideally we add a redirect if this was caused by a session expiration
+        // Otherwise redirect to login
         if (
-            !isPublicRoute
+            !isLoginRoute
             && auth.userSessionToken.state !== "authenticated"
         ) {
+            // TODO: Add redirectTo logic later
             goto(`/login`);
         }
 
         // Public routes logic
         if (
-            isPublicRoute
+            isLoginRoute
             && auth.userSessionToken.state === "authenticated"
         ) {
-            goto(AFTER_LOGIN_LANDING_ROUTE);
+            goto(LANDING_ROUTE);
         }
     });
 
@@ -132,7 +139,7 @@
     {#if auth.userSessionToken.state === "loading"}
         <div>Loading...</div>
     {:else if auth.userSessionToken.state === "unauthenticated"}
-        {#if isOAuthCallback(page.url.pathname, page.url.searchParams)}
+        {#if isOAuthCallbackRoute}
             <div class="login-page-container">
                 <LoginHeader />
                 {@render children()}

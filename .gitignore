@@ -39,6 +39,7 @@ rust-project.json
 .user.bazelrc
 .direnv/
 .rust-project.bazel.json
+MODULE.bazel.lock
 
 # Turbo
 .turbo/

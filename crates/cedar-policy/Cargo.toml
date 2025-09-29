@@ -2,13 +2,13 @@
 name = "scuffle-cedar-policy"
 version = "0.1.0"
 authors = ["Scuffle <opensource@scuffle.cloud>"]
-description = "Some extensions to the cedar-policy crate."
 documentation = "https://docs.rs/scuffle-cedar-policy"
 edition = "2024"
 keywords = ["codgen", "cedar"]
 license = "MIT OR Apache-2.0"
 readme = "README.md"
 repository = "https://github.com/scufflecloud/scuffle"
+description = "Some extensions to the cedar-policy crate."
 
 [lints.rust]
 unexpected_cfgs = { level = "warn", check-cfg = ['cfg(coverage_nightly)'] }

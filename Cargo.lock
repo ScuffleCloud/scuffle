@@ -5330,7 +5330,7 @@ dependencies = [
 
 [[package]]
 name = "scuffle-cedar-policy-codegen"
-version = "0.1.0"
+version = "0.1.1"
 dependencies = [
  "cedar-policy-core",
  "heck",

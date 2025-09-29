@@ -4,14 +4,6 @@ default:
     just --list
 
 # this should be kept in sync with
-# .github/workflows/cargo-update-pr.yaml
-
-bzlmod:
-    # https://github.com/bazelbuild/bazel/issues/20477
-    bazel shutdown
-    bazel mod deps
-
-# this should be kept in sync with
 # .github/workflows/ci-check-fmt.yaml
 
 fmt:

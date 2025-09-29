@@ -4431,7 +4431,7 @@ _VERSIONS = {
     "crates/bootstrap/derive": "0.1.7",
     "crates/bytes-util": "0.1.5",
     "crates/cedar-policy": "0.1.0",
-    "crates/cedar-policy/codegen": "0.1.0",
+    "crates/cedar-policy/codegen": "0.1.1",
     "crates/changelog": "0.1.1",
     "crates/context": "0.1.5",
     "crates/expgolomb": "0.1.5",

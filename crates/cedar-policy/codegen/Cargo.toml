@@ -1,13 +1,17 @@
 [package]
 name = "scuffle-cedar-policy-codegen"
-version = "0.1.0"
+version = "0.1.1"
 authors = ["Scuffle <opensource@scuffle.cloud>"]
-documentation = "https://docs.rs/scuffle-cedar-policy-macro"
+documentation = "https://docs.rs/scuffle-cedar-policy-codegen"
 edition = "2024"
 keywords = ["codgen", "cedar", "macro"]
 license = "MIT OR Apache-2.0"
 readme = "README.md"
 repository = "https://github.com/scufflecloud/scuffle"
+description = "Code generator for scuffle-cedar-policy."
+
+[lints.rust]
+unexpected_cfgs = { level = "warn", check-cfg = ['cfg(coverage_nightly)'] }
 
 [dependencies]
 cedar-policy-core = "4.5"

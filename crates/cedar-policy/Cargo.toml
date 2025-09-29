@@ -8,6 +8,10 @@ keywords = ["codgen", "cedar"]
 license = "MIT OR Apache-2.0"
 readme = "README.md"
 repository = "https://github.com/scufflecloud/scuffle"
+description = "Some extensions to the cedar-policy crate."
+
+[lints.rust]
+unexpected_cfgs = { level = "warn", check-cfg = ['cfg(coverage_nightly)'] }
 
 [dependencies]
 bon = "3.7"

@@ -246,7 +246,7 @@
   "moduleExtensions": {
     "//vendor:cargo_ext.bzl%bindeps": {
       "general": {
-        "bzlTransitiveDigest": "U2aCVH25MplJZcCvq2LAJ0b149ghaZVkbUX8wfDk094=",
+        "bzlTransitiveDigest": "dbG6Iv1IE3V+/FHPJblM27NCWC8DhSJ1uZLf6Y+t9gs=",
         "usagesDigest": "0vyNdgUB6Py8EFEYeVm1fABbu9FAMVvr905hmQzVjfU=",
         "recordedFileInputs": {},
         "recordedDirentsInputs": {},
@@ -10270,7 +10270,7 @@
     },
     "//vendor:cargo_ext.bzl%cargo_vendor": {
       "general": {
-        "bzlTransitiveDigest": "U2aCVH25MplJZcCvq2LAJ0b149ghaZVkbUX8wfDk094=",
+        "bzlTransitiveDigest": "dbG6Iv1IE3V+/FHPJblM27NCWC8DhSJ1uZLf6Y+t9gs=",
         "usagesDigest": "mtR+K4/VVAmhgoN1cG7MXxv6mAD1vfxRZ8SSM66EtxE=",
         "recordedFileInputs": {},
         "recordedDirentsInputs": {},
@@ -19188,8 +19188,8 @@
     },
     "@@rules_rust+//crate_universe/private:internal_extensions.bzl%cu_nr": {
       "general": {
-        "bzlTransitiveDigest": "1CyEqOyyRJhM4tOV65CmP51jIu5lZ1mkJijTNj8ImWU=",
-        "usagesDigest": "MeXvypZTB9gsagEwMFK7TNYmhoy4daLQQl0GoBR/OLo=",
+        "bzlTransitiveDigest": "fUz33YKIi4xeRSUpe+lvNbDmU7DDBiG9GwVu56wvdMg=",
+        "usagesDigest": "HYMEVvfA105lEcACgemmjHRgLBGPOFtDZWGX+G9qaYo=",
         "recordedFileInputs": {},
         "recordedDirentsInputs": {},
         "envVariables": {},
@@ -19217,7 +19217,6 @@
                 "@@rules_rust+//crate_universe:src/metadata/cargo_bin.rs",
                 "@@rules_rust+//crate_universe:src/metadata/cargo_resolver.rs",
                 "@@rules_rust+//crate_universe:src/metadata/metadata_annotation.rs",
-                "@@rules_rust+//crate_universe:src/metadata/workspace_discoverer.rs",
                 "@@rules_rust+//crate_universe:src/rendering.rs",
                 "@@rules_rust+//crate_universe:src/rendering/template_engine.rs",
                 "@@rules_rust+//crate_universe:src/rendering/templates/module_bzl.j2",

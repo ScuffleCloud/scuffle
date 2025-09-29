@@ -35,12 +35,6 @@ jobs:
         shell: bash
         run: bazel run //vendor:cargo_vendor
 
-      - name: Update bzlmod lock
-        shell: bash
-        run: |
-          bazel shutdown
-          bazel mod deps
-
       - name: Check if anything changed
         id: changed
         run: |

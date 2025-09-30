@@ -40,6 +40,17 @@
         console.log("response", response);
     }
 
+    const activeMethods = $state([
+        {
+            id: "1",
+            name: "Google Authenticator",
+            type: "TOTP",
+            isPrimary: true,
+        },
+        { id: "2", name: "Passkey", type: "WEBAUTH" },
+        { id: "3", name: "Passkey", type: "WEBAUTH" },
+    ]);
+
     // Do the 2fa locally without hardening code structures because I don't know where it will go
     // Lets generate some UUID here for the name of the key. No reason to store it in the database
     // because we can just generate it on the fly.

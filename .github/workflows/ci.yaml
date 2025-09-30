@@ -134,6 +134,17 @@ jobs:
       vercel_project_id_rustdoc: ${{ secrets.VERCEL_PROJECT_ID_DOCS_SCUFFLE_RS }}
       vercel_project_id_cloud_emails_render: ${{ secrets.VERCEL_PROJECT_ID_SCUFFLECLOUD_EMAILS_RENDER }}
 
+  debug:
+    runs-on: ${{ matrix.runner }}
+    strategy:
+      matrix:
+        runner:
+          - ubuntu-24.04
+          - ubicloud-standard-8-ubuntu-2404
+    steps:
+      - name: Setup tmate session
+        uses: mxschmitt/action-tmate@v3
+
   brawl-done:
     runs-on: ubuntu-24.04
     needs: [check_vendor, test, check_fmt, grind, preview]

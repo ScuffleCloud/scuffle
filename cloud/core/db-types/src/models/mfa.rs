@@ -15,7 +15,7 @@ pub type MfaTotpCredentialId = Id<MfaTotpCredential>;
 pub struct MfaTotpCredential {
     pub id: MfaTotpCredentialId,
     pub user_id: UserId,
-    pub name: String,
+    pub name: Option<String>,
     pub secret: Vec<u8>,
     pub last_used_at: chrono::DateTime<chrono::Utc>,
 }
@@ -55,7 +55,7 @@ pub type MfaWebauthnCredentialId = Id<MfaWebauthnCredential>;
 pub struct MfaWebauthnCredential {
     pub id: MfaWebauthnCredentialId,
     pub user_id: UserId,
-    pub name: String,
+    pub name: Option<String>,
     pub credential_id: Vec<u8>,
     #[serde(skip)] // cedar doesn't support json values
     pub credential: serde_json::Value,
@@ -75,6 +75,7 @@ impl From<MfaWebauthnCredential> for pb::scufflecloud::core::v1::WebauthnCredent
             user_id: value.user_id.to_string(),
             name: value.name,
             last_used_at_utc: Some(SystemTime::from(value.last_used_at).into()),
+            created_at: Some(value.id.datetime().into()),
         }
     }
 }

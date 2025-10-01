@@ -1,9 +1,10 @@
 import { goto } from "$app/navigation";
 import { authState } from "$lib/auth.svelte";
 import { LANDING_ROUTE } from "$lib/consts";
-import { sessionsServiceClient } from "$lib/grpcClient";
+import { rpcErrorToString, sessionsServiceClient } from "$lib/grpcClient";
 import { base64urlToArrayBuffer } from "$lib/utils";
 import { CaptchaProvider } from "@scufflecloud/proto/scufflecloud/core/v1/common.js";
+import { type RpcError } from "@protobuf-ts/runtime-rpc";
 
 /**
  * Sends a magic link to the specified email address
@@ -13,26 +14,21 @@ async function sendMagicLink(email: string, captchaToken: string): Promise<void>
         throw new Error("Email and captcha token are required");
     }
 
+    const call = sessionsServiceClient.loginWithMagicLink({
+        captcha: {
+            provider: CaptchaProvider.TURNSTILE,
+            token: captchaToken,
+        },
+        email,
+    });
+
     try {
-        const call = sessionsServiceClient.loginWithMagicLink({
-            captcha: {
-                provider: CaptchaProvider.TURNSTILE,
-                token: captchaToken,
-            },
-            email,
-        });
-
-        const status = await call.status;
-
-        if (status.code === "OK") {
-            console.log("Magic link sent successfully to:", email);
-        } else {
-            console.error("Magic link failed:", status.detail);
-            throw new Error(status.detail || "Failed to send magic link");
-        }
-    } catch (error) {
-        console.error("Magic link error:", error);
-        throw error;
+        await call.status;
+        console.log("Magic link sent successfully to:", email);
+    } catch (err) {
+        const error = rpcErrorToString(err as RpcError);
+        console.error("Magic link failed:", error);
+        throw new Error(error);
     }
 }
 
@@ -48,10 +44,10 @@ async function completeMagicLinkLogin(code: string): Promise<void> {
         device,
     });
 
-    const status = await call.status;
-    console.log("Magic link completion status:", status);
+    try {
+        const status = await call.status;
+        console.log("Magic link completion status:", status);
 
-    if (status.code === "OK") {
         const newUserSessionToken = await call.response;
         console.log("Magic link completion response:", newUserSessionToken);
 
@@ -66,8 +62,8 @@ async function completeMagicLinkLogin(code: string): Promise<void> {
         } else {
             throw new Error("No session token received");
         }
-    } else {
-        throw new Error(status.detail || "Magic link login completion failed");
+    } catch (err) {
+        throw new Error(rpcErrorToString(err as RpcError));
     }
 }
 

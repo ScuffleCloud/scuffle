@@ -50,6 +50,7 @@ fn grpc_web_cors_layer() -> CorsLayer {
     let expose_headers = [
         HeaderName::from_static("grpc-encoding"),
         HeaderName::from_static("grpc-status"),
+        HeaderName::from_static("grpc-status-details-bin"),
         HeaderName::from_static("grpc-message"),
     ];
 

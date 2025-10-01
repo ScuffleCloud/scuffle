@@ -1,7 +1,8 @@
 import { goto } from "$app/navigation";
 import { authState } from "$lib/auth.svelte";
 import { LANDING_ROUTE } from "$lib/consts";
-import { sessionsServiceClient } from "$lib/grpcClient";
+import { rpcErrorToString, sessionsServiceClient } from "$lib/grpcClient";
+import { type RpcError } from "@protobuf-ts/runtime-rpc";
 
 /**
  * Initiates Google OAuth login flow
@@ -9,14 +10,13 @@ import { sessionsServiceClient } from "$lib/grpcClient";
 async function initiateGoogleLogin(): Promise<void> {
     const device = await authState().getDeviceOrInit();
 
-    const call = sessionsServiceClient.loginWithGoogle({ device });
-    const status = await call.status;
-
-    if (status.code === "OK") {
+    try {
+        const call = sessionsServiceClient.loginWithGoogle({ device });
         const response = await call.response;
+
         window.location.href = response.authorizationUrl;
-    } else {
-        throw new Error(status.detail || "Google login failed");
+    } catch (err) {
+        throw new Error(rpcErrorToString(err as RpcError));
     }
 }
 
@@ -32,10 +32,7 @@ async function completeGoogleLogin(code: string, state: string): Promise<void> {
         device,
     });
 
-    const status = await call.status;
-    console.log("Google completion status:", status);
-
-    if (status.code === "OK") {
+    try {
         const response = await call.response;
         console.log("Google completion response:", response);
 
@@ -48,8 +45,8 @@ async function completeGoogleLogin(code: string, state: string): Promise<void> {
         } else {
             throw new Error("No session token received");
         }
-    } else {
-        throw new Error(status.detail || "Google login completion failed");
+    } catch (err) {
+        throw new Error(rpcErrorToString(err as RpcError));
     }
 }
 

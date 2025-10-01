@@ -14,6 +14,7 @@
         "@melt-ui/svelte": "^0.86.4",
         "@protobuf-ts/grpcweb-transport": "^2.11.1",
         "@protobuf-ts/runtime-rpc": "^2.11.1",
+        "@protobuf-ts/runtime": "^2.11.1",
         "@scufflecloud/proto": "workspace:*",
         "@sveltejs/adapter-static": "^3.0.8",
         "@sveltejs/kit": "^2.16.0",

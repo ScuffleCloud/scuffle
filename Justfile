@@ -65,7 +65,7 @@ generate-mtls-certs:
     openssl genpkey -out local/mtls/scufflecloud_core_key.pem -algorithm ED25519
     openssl req -new -key local/mtls/scufflecloud_core_key.pem \
         -subj "/CN=scufflecloud-core-mtls" \
-        -addext "subjectAltName=DNS:localhost" \
+        -addext "subjectAltName=DNS:localhost,DNS:127.0.0.1" \
         -out local/mtls/scufflecloud_core_csr.pem
 
     # Sign core cert with root CA
@@ -81,7 +81,7 @@ generate-mtls-certs:
     openssl genpkey -out local/mtls/scufflecloud_email_key.pem -algorithm ED25519
     openssl req -new -key local/mtls/scufflecloud_email_key.pem \
         -subj "/CN=scufflecloud-email-mtls" \
-        -addext "subjectAltName=DNS:localhost" \
+        -addext "subjectAltName=DNS:localhost,DNS:127.0.0.1" \
         -out local/mtls/scufflecloud_email_csr.pem
 
     # Sign email cert with root CA

@@ -38,6 +38,7 @@ pub(crate) struct Config {
     #[default("./GeoLite2-City.mmdb".parse().unwrap())]
     pub maxminddb_path: PathBuf,
     pub aws: AwsConfig,
+    pub mtls: MtlsConfig,
 }
 
 scuffle_settings::bootstrap!(Config);
@@ -166,4 +167,14 @@ pub(crate) struct AwsConfig {
     pub region: String,
     pub access_key_id: String,
     pub secret_access_key: String,
+}
+
+// TODO: Remove mTLS from this binary once we don't use a real connection anymore.
+#[derive(serde_derive::Deserialize, smart_default::SmartDefault, Debug, Clone)]
+pub(crate) struct MtlsConfig {
+    pub root_cert_path: PathBuf,
+    pub core_cert_path: PathBuf,
+    pub core_key_path: PathBuf,
+    pub email_cert_path: PathBuf,
+    pub email_key_path: PathBuf,
 }

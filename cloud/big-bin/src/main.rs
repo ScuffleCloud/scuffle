@@ -15,6 +15,7 @@ use scuffle_batching::DataLoader;
 use scuffle_bootstrap_telemetry::opentelemetry;
 use scuffle_bootstrap_telemetry::opentelemetry_sdk::logs::SdkLoggerProvider;
 use scuffle_bootstrap_telemetry::opentelemetry_sdk::trace::SdkTracerProvider;
+use tonic::transport::ClientTlsConfig;
 use tracing_subscriber::Layer;
 use tracing_subscriber::layer::SubscriberExt;
 use tracing_subscriber::util::SubscriberInitExt;
@@ -37,6 +38,11 @@ struct Global {
     email_service_client: EmailClientPb,
     geoip_resolver: GeoIpResolver,
     aws_ses_req_signer: reqsign::Signer<reqsign::aws::Credential>,
+    mtls_root_cert: Vec<u8>,
+    mtls_core_cert: Vec<u8>,
+    mtls_core_private_key: Vec<u8>,
+    mtls_email_cert: Vec<u8>,
+    mtls_email_private_key: Vec<u8>,
 }
 
 impl scuffle_signal::SignalConfig for Global {}
@@ -169,6 +175,20 @@ impl core_traits::WebAuthnInterface for Global {
     }
 }
 
+impl core_traits::MtlsInterface for Global {
+    fn mtls_root_cert_pem(&self) -> &[u8] {
+        &self.mtls_root_cert
+    }
+
+    fn mtls_cert_pem(&self) -> &[u8] {
+        &self.mtls_core_cert
+    }
+
+    fn mtls_private_key_pem(&self) -> &[u8] {
+        &self.mtls_core_private_key
+    }
+}
+
 impl core_traits::Global for Global {}
 
 impl email_traits::ConfigInterface for Global {
@@ -190,6 +210,20 @@ impl email_traits::AwsInterface for Global {
 impl email_traits::HttpClientInterface for Global {
     fn external_http_client(&self) -> &reqwest::Client {
         &self.external_http_client
+    }
+}
+
+impl email_traits::MtlsInterface for Global {
+    fn mtls_root_cert_pem(&self) -> &[u8] {
+        &self.mtls_root_cert
+    }
+
+    fn mtls_cert_pem(&self) -> &[u8] {
+        &self.mtls_email_cert
+    }
+
+    fn mtls_private_key_pem(&self) -> &[u8] {
+        &self.mtls_email_private_key
     }
 }
 
@@ -233,10 +267,26 @@ impl scuffle_bootstrap::Global for Global {
             .context("failed to read maxmind db path")?;
         let geoip_resolver = GeoIpResolver::new_from_data(maxminddb_data).context("failed to parse maxmind db")?;
 
+        // TODO: Remove mTLS from this binary once we don't use a real connection anymore.
+        // mTLS
+        let root_cert = std::fs::read(&config.mtls.root_cert_path).context("failed to read mTLS root cert file")?;
+        let core_cert = std::fs::read(&config.mtls.core_cert_path).context("failed to read core mTLS cert file")?;
+        let core_private_key =
+            std::fs::read(&config.mtls.core_key_path).context("failed to read core mTLS private key file")?;
+        let email_cert = std::fs::read(&config.mtls.email_cert_path).context("failed to read email mTLS cert file")?;
+        let email_private_key =
+            std::fs::read(&config.mtls.email_key_path).context("failed to read email mTLS private key file")?;
+
+        let client_tls_config = ClientTlsConfig::new()
+            .ca_certificate(tonic::transport::Certificate::from_pem(&root_cert))
+            .identity(tonic::transport::Identity::from_pem(&core_cert, &core_private_key));
+
         let email_service_address = format!("http://{}", config.email_bind);
         // Connect lazily because the service isn't up yet.
-        let email_service_channel = tonic::transport::Channel::from_shared(email_service_address)
+        let email_service_channel = tonic::transport::Endpoint::from_shared(email_service_address)
             .context("create channel to email service")?
+            .tls_config(client_tls_config)
+            .context("configure TLS for email service channel")?
             .connect_lazy();
         let email_service_client =
             pb::scufflecloud::email::v1::email_service_client::EmailServiceClient::new(email_service_channel);
@@ -300,6 +350,11 @@ impl scuffle_bootstrap::Global for Global {
             email_service_client,
             geoip_resolver,
             aws_ses_req_signer,
+            mtls_root_cert: root_cert,
+            mtls_core_cert: core_cert,
+            mtls_core_private_key: core_private_key,
+            mtls_email_cert: email_cert,
+            mtls_email_private_key: email_private_key,
         }))
     }
 }

@@ -453,7 +453,7 @@ _NORMAL_DEPENDENCIES = {
                 "itertools": Label("@cargo_vendor//:itertools-0.14.0"),
                 "reqsign": Label("@cargo_vendor//:reqsign-0.17.0"),
                 "reqwest": Label("@cargo_vendor//:reqwest-0.12.23"),
-                "rustls": Label("@cargo_vendor//:rustls-0.23.31"),
+                "rustls": Label("@cargo_vendor//:rustls-0.23.32"),
                 "serde": Label("@cargo_vendor//:serde-1.0.220"),
                 "tokio": Label("@cargo_vendor//:tokio-1.47.1"),
                 "tonic": Label("@cargo_vendor//:tonic-0.14.2"),

@@ -5643,6 +5643,42 @@ dependencies = [
 ]
 
 [[package]]
+name = "scufflecloud-big-bin"
+version = "0.1.0"
+dependencies = [
+ "anyhow",
+ "diesel",
+ "diesel-async",
+ "fred",
+ "ipnetwork",
+ "itertools 0.14.0",
+ "reqsign",
+ "reqwest",
+ "rustls",
+ "scuffle-batching",
+ "scuffle-bootstrap",
+ "scuffle-bootstrap-telemetry",
+ "scuffle-settings",
+ "scuffle-signal",
+ "scufflecloud-core",
+ "scufflecloud-core-db-types",
+ "scufflecloud-core-traits",
+ "scufflecloud-email",
+ "scufflecloud-email-traits",
+ "scufflecloud-geo-ip",
+ "scufflecloud-proto",
+ "serde",
+ "serde_derive",
+ "smart-default",
+ "tokio",
+ "tonic",
+ "tracing",
+ "tracing-subscriber",
+ "url",
+ "webauthn-rs",
+]
+
+[[package]]
 name = "scufflecloud-core"
 version = "0.1.0"
 dependencies = [

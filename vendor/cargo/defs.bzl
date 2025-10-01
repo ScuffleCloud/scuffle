@@ -612,6 +612,18 @@ _NORMAL_DEPENDENCIES = {
             },
         },
     },
+    "cloud/ingest": {
+        _REQUIRED_FEATURE: {
+            _COMMON_CONDITION: {
+                "anyhow": Label("@cargo_vendor//:anyhow-1.0.99"),
+                "serde": Label("@cargo_vendor//:serde-1.0.220"),
+                "tracing": Label("@cargo_vendor//:tracing-0.1.41"),
+                "tracing-subscriber": Label("@cargo_vendor//:tracing-subscriber-0.3.20"),
+            },
+        },
+    },
+    "cloud/ingest/traits": {
+    },
     "cloud/proto": {
         _REQUIRED_FEATURE: {
             _COMMON_CONDITION: {
@@ -1432,6 +1444,14 @@ _NORMAL_ALIASES = {
             },
         },
     },
+    "cloud/ingest": {
+        _REQUIRED_FEATURE: {
+            _COMMON_CONDITION: {
+            },
+        },
+    },
+    "cloud/ingest/traits": {
+    },
     "cloud/proto": {
         _REQUIRED_FEATURE: {
             _COMMON_CONDITION: {
@@ -1883,6 +1903,10 @@ _NORMAL_DEV_DEPENDENCIES = {
     },
     "cloud/id": {
     },
+    "cloud/ingest": {
+    },
+    "cloud/ingest/traits": {
+    },
     "cloud/proto": {
     },
     "crates/aac": {
@@ -2173,6 +2197,10 @@ _NORMAL_DEV_ALIASES = {
     },
     "cloud/id": {
     },
+    "cloud/ingest": {
+    },
+    "cloud/ingest/traits": {
+    },
     "cloud/proto": {
     },
     "crates/aac": {
@@ -2427,6 +2455,16 @@ _PROC_MACRO_DEPENDENCIES = {
                 "serde_derive": Label("@cargo_vendor//:serde_derive-1.0.220"),
             },
         },
+    },
+    "cloud/ingest": {
+        _REQUIRED_FEATURE: {
+            _COMMON_CONDITION: {
+                "serde_derive": Label("@cargo_vendor//:serde_derive-1.0.220"),
+                "smart-default": Label("@cargo_vendor//:smart-default-0.7.1"),
+            },
+        },
+    },
+    "cloud/ingest/traits": {
     },
     "cloud/proto": {
     },
@@ -2819,6 +2857,10 @@ _PROC_MACRO_ALIASES = {
     },
     "cloud/id": {
     },
+    "cloud/ingest": {
+    },
+    "cloud/ingest/traits": {
+    },
     "cloud/proto": {
     },
     "crates/aac": {
@@ -2961,6 +3003,10 @@ _PROC_MACRO_DEV_DEPENDENCIES = {
     "cloud/geo-ip": {
     },
     "cloud/id": {
+    },
+    "cloud/ingest": {
+    },
+    "cloud/ingest/traits": {
     },
     "cloud/proto": {
     },
@@ -3109,6 +3155,10 @@ _PROC_MACRO_DEV_ALIASES = {
     "cloud/geo-ip": {
     },
     "cloud/id": {
+    },
+    "cloud/ingest": {
+    },
+    "cloud/ingest/traits": {
     },
     "cloud/proto": {
     },
@@ -3335,6 +3385,10 @@ _BUILD_DEPENDENCIES = {
     },
     "cloud/id": {
     },
+    "cloud/ingest": {
+    },
+    "cloud/ingest/traits": {
+    },
     "cloud/proto": {
         _REQUIRED_FEATURE: {
             _COMMON_CONDITION: {
@@ -3483,6 +3537,10 @@ _BUILD_ALIASES = {
     },
     "cloud/id": {
     },
+    "cloud/ingest": {
+    },
+    "cloud/ingest/traits": {
+    },
     "cloud/proto": {
         _REQUIRED_FEATURE: {
             _COMMON_CONDITION: {
@@ -3626,6 +3684,10 @@ _BUILD_PROC_MACRO_DEPENDENCIES = {
     },
     "cloud/id": {
     },
+    "cloud/ingest": {
+    },
+    "cloud/ingest/traits": {
+    },
     "cloud/proto": {
     },
     "crates/aac": {
@@ -3757,6 +3819,10 @@ _BUILD_PROC_MACRO_ALIASES = {
     },
     "cloud/id": {
     },
+    "cloud/ingest": {
+    },
+    "cloud/ingest/traits": {
+    },
     "cloud/proto": {
     },
     "crates/aac": {
@@ -3887,6 +3953,10 @@ _FEATURE_FLAGS = {
     "cloud/geo-ip": {
     },
     "cloud/id": {
+    },
+    "cloud/ingest": {
+    },
+    "cloud/ingest/traits": {
     },
     "cloud/proto": {
     },
@@ -4248,6 +4318,10 @@ _RESOLVED_FEATURE_FLAGS = {
     },
     "cloud/id": {
     },
+    "cloud/ingest": {
+    },
+    "cloud/ingest/traits": {
+    },
     "cloud/proto": {
     },
     "crates/aac": {
@@ -4421,6 +4495,8 @@ _VERSIONS = {
     "cloud/ext-traits": "0.1.0",
     "cloud/geo-ip": "0.1.0",
     "cloud/id": "0.1.0",
+    "cloud/ingest": "0.1.0",
+    "cloud/ingest/traits": "0.1.0",
     "cloud/proto": "0.1.0",
     "crates/aac": "0.1.4",
     "crates/amf0": "0.2.4",

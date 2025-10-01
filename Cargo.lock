@@ -5858,6 +5858,28 @@ dependencies = [
 ]
 
 [[package]]
+name = "scufflecloud-ingest"
+version = "0.1.0"
+dependencies = [
+ "anyhow",
+ "scuffle-bootstrap",
+ "scuffle-bootstrap-telemetry",
+ "scuffle-context",
+ "scuffle-settings",
+ "scuffle-signal",
+ "scufflecloud-ingest-traits",
+ "serde",
+ "serde_derive",
+ "smart-default",
+ "tracing",
+ "tracing-subscriber",
+]
+
+[[package]]
+name = "scufflecloud-ingest-traits"
+version = "0.1.0"
+
+[[package]]
 name = "scufflecloud-proto"
 version = "0.1.0"
 dependencies = [

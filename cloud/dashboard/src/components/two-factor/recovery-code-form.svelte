@@ -1,6 +1,7 @@
 <script lang="ts">
-    import { sessionsServiceClient } from "$lib/grpcClient";
+    import { rpcErrorToString, sessionsServiceClient } from "$lib/grpcClient";
     import IconArrowLeft from "$lib/images/icon-arrow-left.svelte";
+    import { type RpcError } from "@protobuf-ts/runtime-rpc";
 
     interface Props {
         onBack: () => void;
@@ -34,21 +35,11 @@
                         },
                     },
                 });
-
-            const validateStatus = await validateCall.status;
-
-            if (validateStatus.code === "OK") {
-                const userSession = await validateCall.response;
-
-                console.log(userSession);
-
-                // This returns a UserSession which I guess we need a new function to handle?
-                // Or do I just need to refetch without 2fa pending to make this work
-            } else {
-                // TODO: Remove later after UI on how we want to show errors
-                console.log(validateStatus.detail);
-            }
-        } catch (err: any) {
+            await validateCall.status;
+        } catch (err) {
+            const errorText = rpcErrorToString(err as RpcError);
+            // TODO: Remove later after UI on how we want to show errors
+            console.log(errorText);
             error = "Failed to validate recovery code";
         } finally {
             loading = false;

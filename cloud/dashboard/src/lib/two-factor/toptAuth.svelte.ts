@@ -74,7 +74,7 @@ export function useTotpAuth(): TotpAuthProps {
     let error = $state<string | null>(null);
     let qrCodeData = $state<{ secretQrcodePng: Uint8Array; secretUrl: string } | null>(null);
     let credentials = $state<any[] | null>(null);
-    let recoveryCodes = $state<string[] | null>(null);
+    const recoveryCodes = $state<string[] | null>(null);
 
     return {
         loading: () => loading,
@@ -84,7 +84,7 @@ export function useTotpAuth(): TotpAuthProps {
         recoveryCodes: () => recoveryCodes,
 
         async initiateTotpSetup() {
-            let userId = authState().user?.id;
+            const userId = authState().user?.id;
 
             if (!userId) {
                 error = "User not authenticated";

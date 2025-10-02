@@ -65,7 +65,7 @@
 
     {#if $open}
         <div class="dropdown-menu" use:melt={$menu}>
-            {#each timeFilters as filter}
+            {#each timeFilters as filter (filter.id)}
                 <div
                     class="menu-item"
                     class:selected={filter.id === selectedFilter}

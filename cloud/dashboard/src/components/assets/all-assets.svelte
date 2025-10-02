@@ -79,7 +79,7 @@
 </div>
 <div class="separator"></div>
 <div class="card-container">
-    {#each streams as stream, i}
+    {#each streams as stream, i (i)}
         <AssetCard {...stream} />
     {/each}
 </div>

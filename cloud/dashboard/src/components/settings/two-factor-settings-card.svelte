@@ -1,24 +1,67 @@
 <script lang="ts">
     import SettingsCard from "$components/settings-card.svelte";
+    import IconCheckSmall from "$lib/images/icon-check-small.svelte";
     import IconDots from "$lib/images/icon-dots.svelte";
+    import IconLoginKey from "$lib/images/icon-login-key.svelte";
     import IconOverviewKey from "$lib/images/icon-overview-key.svelte";
-
+    import { useWebauthnAuth } from "$lib/two-factor/webAuthn.svelte";
+    import Modal from "../modal.svelte";
     export interface MfaMethod {
         id: string;
         name: string;
         type: "TOTP" | "WEBAUTH";
         isPrimary?: boolean;
     }
-
+    // When something is updated we can just refetch the webauthn list. Methods will come from a tanstack query I guess
     interface Props {
         methods: MfaMethod[];
-        onAddMethod: () => void;
-        onEditMethod: (id: string) => void;
     }
 
-    let { methods, onAddMethod, onEditMethod }: Props = $props();
+    let { methods }: Props = $props();
 
     const enabled = $derived(methods.length > 0);
+
+    // Flow states. Add one for TOPT later
+    let currentStep = $state<"select" | "waiting" | "success">(
+        "select",
+    );
+    let passkeyName = $state("");
+
+    const stepToTitle = {
+        select: "New 2FA method",
+        waiting: "Waiting for results...",
+        success: "Passkey added",
+    };
+
+    let modal: Modal;
+
+    function handleReset() {
+        passkeyName = "";
+        currentStep = "select";
+    }
+
+    function handleInternalClose() {
+        handleReset();
+        modal.closeDialog();
+    }
+
+    const webauthnAuth = useWebauthnAuth();
+
+    async function handlePasskeySetup() {
+        currentStep = "waiting";
+        try {
+            await webauthnAuth.createCredential(
+                passkeyName || "My Passkey",
+            );
+            // currentStep = "success";
+        } catch (error) {
+            console.log("an error has occured. Click to retry", error);
+        }
+    }
+
+    function onEditMethod(id: string) {
+        console.log("edit method", id);
+    }
 </script>
 
 <SettingsCard
@@ -66,9 +109,79 @@
     {/if}
 
     <div class="add-method-button-container">
-        <button class="add-method-button" onclick={onAddMethod}>
-            Add a method
-        </button>
+        <Modal
+            triggerLabel="Add a method"
+            triggerClass="add-method-button"
+            title={stepToTitle[currentStep]}
+            onClose={handleReset}
+            hideCloseButton={currentStep === "waiting"}
+            bind:this={modal}
+        >
+            {#if currentStep === "select"}
+                <div class="step-content">
+                    <p class="dialog-description">
+                        Choose new method for authentication
+                    </p>
+
+                    <div class="methods">
+                        <button
+                            class="method-button primary"
+                            onclick={handlePasskeySetup}
+                        >
+                            <IconLoginKey />
+                            Continue with Passkey
+                        </button>
+
+                        <button class="method-button secondary" disabled>
+                            <svg
+                                width="20"
+                                height="20"
+                                viewBox="0 0 20 20"
+                                fill="none"
+                            >
+                                <path
+                                    d="M10 2L3 7V9C3 13.55 6.84 17.74 10 18C13.16 17.74 17 13.55 17 9V7L10 2Z"
+                                    fill="currentColor"
+                                />
+                            </svg>
+                            Continue with 2FA Code
+                        </button>
+                    </div>
+                </div>
+            {:else if currentStep === "waiting"}
+                <div class="step-content centered">
+                    <div class="spinner-container">
+                        <div class="spinner"></div>
+                    </div>
+
+                    <button class="cancel-button" onclick={handleInternalClose}>
+                        Cancel
+                    </button>
+                </div>
+            {:else if currentStep === "success"}
+                <div class="step-content">
+                    <div class="success-message">
+                        <IconCheckSmall />
+                        New passkey successfully added
+                    </div>
+
+                    <p class="optional-text">
+                        Optionally you can name the passkey.
+                    </p>
+
+                    <input
+                        type="text"
+                        bind:value={passkeyName}
+                        placeholder="passkeyname"
+                        class="passkey-input"
+                    />
+
+                    <button class="done-button" onclick={handleInternalClose}>
+                        Done
+                    </button>
+                </div>
+            {/if}
+        </Modal>
     </div>
 </SettingsCard>
 
@@ -106,13 +219,12 @@
     }
 
     .method-icon {
-      width: 48px;
-      height: 48px;
       display: flex;
       align-items: center;
       justify-content: center;
-      background: white;
+      background: var(--gray-40, #f1eae7);
       border-radius: 0.5rem;
+      padding: 0.75rem;
     }
 
     .method-info {
@@ -171,23 +283,23 @@
       justify-content: center;
       align-items: center;
       margin-top: 1rem;
+    }
 
-      .add-method-button {
-        width: 100%;
-        padding: 0.75rem;
-        background: var(--colors-gray40);
-        border: none;
-        border-radius: 0.5rem;
-        font-size: 1rem;
-        font-weight: 600;
-        color: var(--colors-brown90);
-        cursor: pointer;
-        transition: background 0.2s;
-      }
+    .add-method-button-container :global(.add-method-button) {
+      width: 100%;
+      padding: 0.75rem;
+      background: var(--colors-gray40);
+      border: none;
+      border-radius: 0.5rem;
+      font-size: 1rem;
+      font-weight: 600;
+      color: var(--colors-brown90);
+      cursor: pointer;
+      transition: background 0.2s;
+    }
 
-      .add-method-button:hover {
-        background: var(--colors-gray50);
-      }
+    .add-method-button-container :global(.add-method-button:hover) {
+      background: var(--colors-gray50);
     }
 
     .no-active-methods {
@@ -203,5 +315,149 @@
       font-style: normal;
       font-weight: 500;
       line-height: 1.5rem;
+    }
+
+    /* Modal Content Styles */
+    .step-content {
+      display: flex;
+      flex-direction: column;
+      gap: 1rem;
+    }
+
+    .step-content.centered {
+      align-items: center;
+      text-align: center;
+    }
+
+    .dialog-title {
+      font-size: 1.875rem;
+      font-weight: 700;
+      color: rgb(23, 23, 23);
+      margin: 0;
+    }
+
+    .dialog-description {
+      font-size: 1rem;
+      color: rgb(82, 82, 82);
+      margin: 0;
+    }
+
+    .methods {
+      display: flex;
+      flex-direction: column;
+      gap: 1rem;
+      margin-top: 0.5rem;
+    }
+
+    .method-button {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.75rem;
+      padding: 1rem 1.5rem;
+      border-radius: 0.75rem;
+      font-size: 1.125rem;
+      font-weight: 600;
+      border: none;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .method-button.primary {
+      background-color: rgb(255, 255, 255);
+      color: rgb(23, 23, 23);
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    }
+
+    .method-button.primary:hover {
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    }
+
+    .method-button.secondary {
+      background-color: rgb(228, 228, 231);
+      color: rgb(161, 161, 170);
+    }
+
+    .method-button:disabled {
+      cursor: not-allowed;
+    }
+
+    .spinner-container {
+      padding: 2rem 0;
+    }
+
+    .spinner {
+      width: 3rem;
+      height: 3rem;
+      border: 4px solid rgb(228, 228, 231);
+      border-top-color: rgb(23, 23, 23);
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+    }
+
+    @keyframes spin {
+      to {
+        transform: rotate(360deg);
+      }
+    }
+
+    .cancel-button {
+      padding: 0.75rem 2rem;
+      border-radius: 0.5rem;
+      background-color: rgb(228, 228, 231);
+      color: rgb(82, 82, 82);
+      font-weight: 500;
+      border: none;
+      cursor: pointer;
+    }
+
+    .cancel-button:hover {
+      background-color: rgb(212, 212, 216);
+    }
+
+    .success-message {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.75rem;
+      padding: 0.75rem 0;
+      background-color: rgb(187, 247, 208);
+      border-radius: 0.75rem;
+      color: rgb(20, 83, 45);
+      font-weight: 500;
+    }
+
+    .optional-text {
+      font-size: 0.875rem;
+      color: rgb(82, 82, 82);
+      margin: 0;
+    }
+
+    .passkey-input {
+      padding: 0.875rem 1rem;
+      border: 1px solid rgb(212, 212, 216);
+      border-radius: 0.5rem;
+      font-size: 1rem;
+      background-color: white;
+    }
+
+    .passkey-input:focus {
+      outline: none;
+      border-color: rgb(247, 177, 85);
+    }
+
+    .done-button {
+      padding: 0.875rem 1.5rem;
+      border-radius: 0.75rem;
+      background-color: rgb(252, 224, 172);
+      color: rgb(65, 28, 9);
+      font-weight: 600;
+      font-size: 1rem;
+      border: none;
+      cursor: pointer;
+    }
+
+    .done-button:hover {
+      background-color: rgb(249, 201, 120);
     }
 </style>

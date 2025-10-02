@@ -241,11 +241,7 @@
         subtitle="(2FA)"
         icon={IconShield}
     >
-        <TwoFactorSettingsCard
-            methods={activeMethods as MfaMethod[]}
-            onAddMethod={() => {}}
-            onEditMethod={() => {}}
-        />
+        <TwoFactorSettingsCard methods={activeMethods as MfaMethod[]} />
 
         <SettingsCard
             title="Recovery Codes"

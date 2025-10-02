@@ -4,15 +4,12 @@
     import StreamStatusPill from "$lib/shared-components/stream-status-pill.svelte";
 
     let {
-        status = "live",
         streamName = "unique-stream-name",
         streamId = "8a28e499d6s7987fd981293fd981293",
         startTime = "May 5, 04:01:11 PM EDT",
         duration = "1h 30min",
         endTime = "May 6, 04:01:11 PM EDT",
     } = $props();
-
-    const isLive = $derived(status === "live");
 
     // const statusIcon = {
     //     live: IconRoadmapDot,

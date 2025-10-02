@@ -49,9 +49,6 @@ fn bazel_command(bazel: &Utf8Path, workspace: Option<&Utf8Path>, output_base: Op
     cmd
 }
 
-// TODO(david): This shells out to an expected rule in the workspace root //:rust_analyzer that the user must define.
-// It would be more convenient if it could automatically discover all the rust code in the workspace if this target
-// does not exist.
 fn main() -> anyhow::Result<()> {
     let config = Config::parse()?;
 

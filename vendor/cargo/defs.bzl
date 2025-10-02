@@ -623,7 +623,6 @@ _NORMAL_DEPENDENCIES = {
     "crates/aac": {
         _REQUIRED_FEATURE: {
             _COMMON_CONDITION: {
-                "byteorder": Label("@cargo_vendor//:byteorder-1.5.0"),
                 "bytes": Label("@cargo_vendor//:bytes-1.10.1"),
                 "num-traits": Label("@cargo_vendor//:num-traits-0.2.19"),
             },
@@ -732,7 +731,6 @@ _NORMAL_DEPENDENCIES = {
     "crates/bytes-util": {
         _REQUIRED_FEATURE: {
             _COMMON_CONDITION: {
-                "byteorder": Label("@cargo_vendor//:byteorder-1.5.0"),
                 "bytes": Label("@cargo_vendor//:bytes-1.10.1"),
                 "bytestring": Label("@cargo_vendor//:bytestring-1.4.0"),
             },
@@ -803,7 +801,6 @@ _NORMAL_DEPENDENCIES = {
                 "arc-swap": Label("@cargo_vendor//:arc-swap-1.7.1"),
                 "bon": Label("@cargo_vendor//:bon-3.7.2"),
                 "libc": Label("@cargo_vendor//:libc-0.2.175"),
-                "rand": Label("@cargo_vendor//:rand-0.9.2"),
                 "rusty_ffmpeg": Label("@cargo_vendor//:rusty_ffmpeg-0.16.7+ffmpeg.8"),
                 "thiserror": Label("@cargo_vendor//:thiserror-2.0.16"),
                 "va_list": Label("@cargo_vendor//:va_list-0.2.1"),
@@ -1211,7 +1208,6 @@ _NORMAL_DEPENDENCIES = {
                 "camino": Label("@cargo_vendor//:camino-1.1.12"),
                 "clap": Label("@cargo_vendor//:clap-4.5.47"),
                 "env_logger": Label("@cargo_vendor//:env_logger-0.10.2"),
-                "fmtools": Label("@cargo_vendor//:fmtools-0.1.2"),
                 "log": Label("@cargo_vendor//:log-0.4.28"),
                 "serde": Label("@cargo_vendor//:serde-1.0.220"),
                 "serde_json": Label("@cargo_vendor//:serde_json-1.0.145"),
@@ -1232,7 +1228,6 @@ _NORMAL_DEPENDENCIES = {
         _REQUIRED_FEATURE: {
             _COMMON_CONDITION: {
                 "camino": Label("@cargo_vendor//:camino-1.1.12"),
-                "camino-tempfile": Label("@cargo_vendor//:camino-tempfile-1.4.1"),
                 "clap": Label("@cargo_vendor//:clap-4.5.47"),
                 "copy_dir": Label("@cargo_vendor//:copy_dir-0.1.3"),
                 "lol_html": Label("@cargo_vendor//:lol_html-2.6.0"),
@@ -1246,7 +1241,6 @@ _NORMAL_DEPENDENCIES = {
             _COMMON_CONDITION: {
                 "camino": Label("@cargo_vendor//:camino-1.1.12"),
                 "clap": Label("@cargo_vendor//:clap-4.5.47"),
-                "quote": Label("@cargo_vendor//:quote-1.0.40"),
                 "serde": Label("@cargo_vendor//:serde-1.0.220"),
                 "serde_json": Label("@cargo_vendor//:serde_json-1.0.145"),
             },
@@ -1257,7 +1251,6 @@ _NORMAL_DEPENDENCIES = {
             _COMMON_CONDITION: {
                 "camino": Label("@cargo_vendor//:camino-1.1.12"),
                 "serde": Label("@cargo_vendor//:serde-1.0.220"),
-                "serde_json": Label("@cargo_vendor//:serde_json-1.0.145"),
             },
         },
     },
@@ -1291,11 +1284,9 @@ _NORMAL_DEPENDENCIES = {
                 "pulldown-cmark-to-cmark": Label("@cargo_vendor//:pulldown-cmark-to-cmark-21.0.0"),
                 "regex": Label("@cargo_vendor//:regex-1.11.2"),
                 "rustdoc-types": Label("@cargo_vendor//:rustdoc-types-0.55.0"),
-                "semver": Label("@cargo_vendor//:semver-1.0.26"),
                 "serde": Label("@cargo_vendor//:serde-1.0.220"),
                 "serde_json": Label("@cargo_vendor//:serde_json-1.0.145"),
                 "toml": Label("@cargo_vendor//:toml-0.9.5"),
-                "url": Label("@cargo_vendor//:url-2.5.7"),
             },
         },
     },
@@ -1960,6 +1951,7 @@ _NORMAL_DEV_DEPENDENCIES = {
             _COMMON_CONDITION: {
                 "bytes": Label("@cargo_vendor//:bytes-1.10.1"),
                 "insta": Label("@cargo_vendor//:insta-1.43.2"),
+                "rand": Label("@cargo_vendor//:rand-0.9.2"),
                 "sha2": Label("@cargo_vendor//:sha2-0.10.9"),
                 "tempfile": Label("@cargo_vendor//:tempfile-3.22.0"),
                 "tracing-subscriber": Label("@cargo_vendor//:tracing-subscriber-0.3.20"),
@@ -4300,6 +4292,7 @@ _RESOLVED_FEATURE_FLAGS = {
     "crates/http": {
         _COMMON_CONDITION: [
             "default",
+            "tls-rustls",
             "tracing",
         ],
     },

@@ -14,6 +14,7 @@ cedar-policy = "4.5"
 const_panic = "0.2"
 core-db-types = { path = "../db-types", package = "scufflecloud-core-db-types" }
 core-traits = { path = "../traits", package = "scufflecloud-core-traits" }
+ext-traits = { path = "../../ext-traits", package = "scufflecloud-ext-traits" }
 konst = { version = "0.4", features = ["iter"] }
 pb = { path = "../../proto", package = "scufflecloud-proto" }
 serde = "1"

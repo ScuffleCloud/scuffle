@@ -4819,7 +4819,6 @@ dependencies = [
  "camino",
  "clap",
  "env_logger 0.10.2",
- "fmtools",
  "log",
  "serde",
  "serde_derive",
@@ -4832,7 +4831,6 @@ version = "0.0.0"
 dependencies = [
  "camino",
  "clap",
- "quote",
  "rust_doctest_common",
  "serde",
  "serde_derive",
@@ -4846,7 +4844,6 @@ dependencies = [
  "camino",
  "serde",
  "serde_derive",
- "serde_json",
 ]
 
 [[package]]
@@ -4908,7 +4905,6 @@ name = "rustdoc_merger"
 version = "0.0.0"
 dependencies = [
  "camino",
- "camino-tempfile",
  "clap",
  "copy_dir",
  "lol_html",
@@ -5182,7 +5178,6 @@ checksum = "94143f37725109f92c262ed2cf5e59bce7498c01bcc1502d7b9afe439a4e9f49"
 name = "scuffle-aac"
 version = "0.1.4"
 dependencies = [
- "byteorder",
  "bytes",
  "document-features",
  "num-derive",
@@ -5302,7 +5297,6 @@ dependencies = [
 name = "scuffle-bytes-util"
 version = "0.1.5"
 dependencies = [
- "byteorder",
  "bytes",
  "bytestring",
  "document-features",
@@ -5716,6 +5710,7 @@ dependencies = [
  "konst",
  "scufflecloud-core-db-types",
  "scufflecloud-core-traits",
+ "scufflecloud-ext-traits",
  "scufflecloud-proto",
  "serde",
  "serde_derive",
@@ -6484,13 +6479,11 @@ dependencies = [
  "pulldown-cmark-to-cmark",
  "regex",
  "rustdoc-types",
- "semver",
  "serde",
  "serde_derive",
  "serde_json",
  "sync_readme_common",
  "toml 0.9.5",
- "url",
 ]
 
 [[package]]

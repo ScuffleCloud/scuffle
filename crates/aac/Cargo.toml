@@ -18,7 +18,6 @@ unexpected_cfgs = { level = "warn", check-cfg = ['cfg(coverage_nightly)'] }
 docs = ["dep:scuffle-changelog", "dep:document-features"]
 
 [dependencies]
-byteorder = "1.5"
 bytes = "1.5"
 document-features = { optional = true, version = "0.2" }
 num-derive = "0.4"

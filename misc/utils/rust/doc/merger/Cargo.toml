@@ -6,7 +6,6 @@ publish = false
 
 [dependencies]
 camino = { version = "1", features = ["serde1"] }
-camino-tempfile = "1.4"
 clap = { version = "4.5", features = ["derive", "env"] }
 copy_dir = "0.1"
 lol_html = "2.6"

@@ -8,6 +8,9 @@ publish = false
 readme = "README.md"
 repository = "https://github.com/scufflecloud/scuffle"
 
+[lints.rust]
+unexpected_cfgs = { level = "warn", check-cfg = ['cfg(coverage_nightly)'] }
+
 [[bin]]
 name = "scufflecloud-core-emails-render-preview"
 path = "bin/render_preview.rs"

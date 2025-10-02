@@ -25,7 +25,7 @@ struct Args {
 async fn main() {
     let args = Args::parse();
 
-    env_logger::init();
+    env_logger::Builder::from_env(env_logger::Env::default().default_filter_or("info")).init();
 
     log::info!("running container load tool");
 

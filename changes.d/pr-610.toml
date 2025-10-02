@@ -1,0 +1,19 @@
+[[scuffle-aac]]
+category = "fix"
+description = "remove unused dependency"
+authors = ["@lennartkloock"]
+
+[[scuffle-bytes-util]]
+category = "fix"
+description = "remove unused dependency"
+authors = ["@lennartkloock"]
+
+[[scuffle-ffmpeg]]
+category = "fix"
+description = "remove unused dependency"
+authors = ["@lennartkloock"]
+
+[[scuffle-flv]]
+category = "fix"
+description = "remove unused dependency"
+authors = ["@lennartkloock"]

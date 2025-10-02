@@ -5385,6 +5385,7 @@ dependencies = [
  "insta",
  "libc",
  "nutype-enum",
+ "rand 0.9.2",
  "rusty_ffmpeg",
  "scuffle-changelog",
  "scuffle-mp4",

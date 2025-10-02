@@ -22,9 +22,12 @@ function generateRandomNonce(): ArrayBuffer {
 
 // https://github.com/timostamm/protobuf-ts/issues/628#issuecomment-1999999960
 export function rpcErrorToString(error: RpcError): string {
+    let status = null;
     const statusMeta = error.meta['grpc-status-details-bin'];
-    const b64StatusBin = typeof statusMeta === 'string' ? statusMeta : statusMeta[statusMeta.length - 1];
-    const status = Status.fromBinary(base64decode(b64StatusBin));
+    if (statusMeta) {
+        const b64StatusBin = typeof statusMeta === 'string' ? statusMeta : statusMeta[statusMeta.length - 1];
+        status = Status.fromBinary(base64decode(b64StatusBin));
+    }
 
     if (status) {
         let s = `code ${status.code}: ${status.message}`;

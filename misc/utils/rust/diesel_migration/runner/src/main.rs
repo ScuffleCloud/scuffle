@@ -35,6 +35,7 @@ async fn main() {
         .expect("failed to run database image load tool");
 
     if !output.status.success() {
+        std::io::stderr().write_all(&output.stdout).expect("failed to write stdout");
         std::io::stderr().write_all(&output.stderr).expect("failed to write stderr");
         panic!("failed to run database image load tool");
     }
@@ -74,6 +75,7 @@ async fn main() {
         .expect("failed to run diesel cli tool");
 
     if !output.status.success() {
+        std::io::stderr().write_all(&output.stdout).expect("failed to write stdout");
         std::io::stderr().write_all(&output.stderr).expect("failed to write stderr");
         panic!("failed to run diesel cli tool");
     }

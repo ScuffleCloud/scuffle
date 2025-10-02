@@ -74,12 +74,11 @@ _diesel_migration = rule(
 )
 
 def diesel_migration(
-    name,
-    data,
-    schemas,
-    database_image,
-    config_file,
-):
+        name,
+        data,
+        schemas,
+        database_image,
+        config_file):
     image_load(
         name = "{}_load".format(name),
         image = database_image,

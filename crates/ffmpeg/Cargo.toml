@@ -32,6 +32,7 @@ va_list = "0.2"
 [dev-dependencies]
 bytes = "1"
 insta = { features = ["filters"], version = "1.42" }
+rand = "0.9"
 scuffle-mp4 = { path = "../mp4" }
 sha2 = "0.10"
 tempfile = "3.15"

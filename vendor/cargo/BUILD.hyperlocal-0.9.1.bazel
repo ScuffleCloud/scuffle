@@ -17,7 +17,7 @@ cargo_toml_env_vars(
 )
 
 rust_library(
-    name = "num_iter",
+    name = "hyperlocal",
     srcs = glob(
         include = ["**/*.rs"],
         allow_empty = True,
@@ -35,11 +35,15 @@ rust_library(
         ],
     ),
     crate_features = [
-        "i128",
-        "std",
+        "client",
+        "default",
+        "http-body-util",
+        "hyper-util",
+        "server",
+        "tower-service",
     ],
     crate_root = "src/lib.rs",
-    edition = "2018",
+    edition = "2021",
     rustc_env_files = [
         ":cargo_toml_env_vars",
     ],
@@ -48,24 +52,26 @@ rust_library(
     ],
     tags = [
         "cargo-bazel",
-        "crate-name=num-iter",
+        "crate-name=hyperlocal",
         "manual",
         "noclippy",
         "norustfmt",
     ],
     target_compatible_with = select({
         "@rules_rust//rust/platform:aarch64-apple-darwin": [],
-        "@rules_rust//rust/platform:aarch64-pc-windows-msvc": [],
         "@rules_rust//rust/platform:aarch64-unknown-linux-gnu": [],
-        "@rules_rust//rust/platform:wasm32-unknown-unknown": [],
         "@rules_rust//rust/platform:x86_64-apple-darwin": [],
-        "@rules_rust//rust/platform:x86_64-pc-windows-msvc": [],
         "@rules_rust//rust/platform:x86_64-unknown-linux-gnu": [],
         "//conditions:default": ["@platforms//:incompatible"],
     }),
-    version = "0.1.45",
+    version = "0.9.1",
     deps = [
-        "@cargo_vendor__num-integer-0.1.46//:num_integer",
-        "@cargo_vendor__num-traits-0.2.19//:num_traits",
+        "@cargo_vendor__hex-0.4.3//:hex",
+        "@cargo_vendor__http-body-util-0.1.3//:http_body_util",
+        "@cargo_vendor__hyper-1.7.0//:hyper",
+        "@cargo_vendor__hyper-util-0.1.16//:hyper_util",
+        "@cargo_vendor__pin-project-lite-0.2.16//:pin_project_lite",
+        "@cargo_vendor__tokio-1.47.1//:tokio",
+        "@cargo_vendor__tower-service-0.3.3//:tower_service",
     ],
 )

@@ -1,3 +1,4 @@
+load("//misc/utils/rust:diesel_migration.bzl", "diesel_migration", "diesel_migration_test")
 load("//misc/utils/rust:manifest.bzl", "cargo_toml")
 load("//misc/utils/rust:package.bzl", "scuffle_package")
 
@@ -13,4 +14,23 @@ scuffle_package(
         "//cloud/id",
         "//cloud/proto",
     ],
+)
+
+diesel_migration(
+    name = "migration",
+    config_file = "diesel.toml",
+    data = glob([
+        "migrations/**/*.sql",
+    ]) + [
+        "src/schema.patch",
+    ],
+    database_image = "@postgres18",
+    schemas = [
+        "src/schema.rs",
+    ],
+)
+
+diesel_migration_test(
+    name = "migration_test",
+    diesel_migration = ":migration",
 )

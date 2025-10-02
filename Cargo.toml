@@ -52,6 +52,8 @@ members = [
     "misc/utils/rust/analyzer/check",
     "misc/utils/rust/analyzer/discover",
     "misc/utils/rust/clippy",
+    "misc/utils/rust/diesel_migration/runner",
+    "misc/utils/rust/diesel_migration/test",
     "misc/utils/rust/doc/merger",
     "misc/utils/rust/doc/test/builder",
     "misc/utils/rust/doc/test/common",
@@ -63,6 +65,7 @@ members = [
     "misc/utils/rust/test_runner",
     "tools/cargo/clippy",
     "tools/cargo/sync-readme",
+    "tools/diesel-schema",
 ]
 
 resolver = "3"
@@ -95,3 +98,5 @@ opt-level = 3
 # removal of ring forced dependency when using http3 feature.
 # https://github.com/seanmonstar/reqwest/pull/2796
 reqwest = { git = "https://github.com/TroyKomodo/reqwest.git", rev = "9cce4657b902263c762d34a3c6a5addb44988359" }
+# remove when https://github.com/testcontainers/testcontainers-rs/pull/847
+testcontainers = { git = "https://github.com/mbodmer/testcontainers-rs.git", rev = "6d8e248a5637a3bb8ac0bb390717f6c327ffbad1"}

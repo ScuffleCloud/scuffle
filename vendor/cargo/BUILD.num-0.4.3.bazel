@@ -17,7 +17,7 @@ cargo_toml_env_vars(
 )
 
 rust_library(
-    name = "num_iter",
+    name = "num",
     srcs = glob(
         include = ["**/*.rs"],
         allow_empty = True,
@@ -35,11 +35,12 @@ rust_library(
         ],
     ),
     crate_features = [
-        "i128",
+        "default",
+        "num-bigint",
         "std",
     ],
     crate_root = "src/lib.rs",
-    edition = "2018",
+    edition = "2021",
     rustc_env_files = [
         ":cargo_toml_env_vars",
     ],
@@ -48,7 +49,7 @@ rust_library(
     ],
     tags = [
         "cargo-bazel",
-        "crate-name=num-iter",
+        "crate-name=num",
         "manual",
         "noclippy",
         "norustfmt",
@@ -63,9 +64,13 @@ rust_library(
         "@rules_rust//rust/platform:x86_64-unknown-linux-gnu": [],
         "//conditions:default": ["@platforms//:incompatible"],
     }),
-    version = "0.1.45",
+    version = "0.4.3",
     deps = [
+        "@cargo_vendor__num-bigint-0.4.6//:num_bigint",
+        "@cargo_vendor__num-complex-0.4.6//:num_complex",
         "@cargo_vendor__num-integer-0.1.46//:num_integer",
+        "@cargo_vendor__num-iter-0.1.45//:num_iter",
+        "@cargo_vendor__num-rational-0.4.2//:num_rational",
         "@cargo_vendor__num-traits-0.2.19//:num_traits",
     ],
 )

@@ -1,0 +1,27 @@
+bazel_dep(name = "rules_img")
+archive_override(
+    module_name = "rules_img",
+    sha256 = "0e7a69e8a0f453b28e384f4483b7e47ab91ac6ae9a312924e6467ea50daefa97",
+    urls = ["https://github.com/bazel-contrib/rules_img/releases/download/v0.2.5/rules_img-v0.2.5.tar.gz"],
+)
+
+bazel_dep(name = "rules_img_tool")
+git_override(
+    module_name = "rules_img_tool",
+    commit = "d94fb826d60fe57b73870489ee06705766d8c758",
+    remote = "https://github.com/bazel-contrib/rules_img.git",
+    strip_prefix = "src/",
+)
+
+register_toolchains("@rules_img_tool//toolchain:all")
+
+pull = use_repo_rule("@rules_img//img:pull.bzl", "pull")
+
+pull(
+    name = "postgres18",
+    digest = "sha256:67a7c384da54fc55a3b5ad38e9853b76003603d12732c90af368b31bb1f2517f",
+    layer_handling = "lazy",
+    registry = "index.docker.io",
+    repository = "library/postgres",
+    tag = "18",
+)

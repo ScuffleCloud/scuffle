@@ -14,17 +14,20 @@ def _diesel_migration_impl(ctx):
     ctx.actions.run(
         executable = ctx.executable._diesel_migration_tool,
         arguments = [schema.path for schema in ctx.files.schemas],
-        inputs = ctx.files.data + [ctx.file.config_file],
+        inputs = ctx.files.data + [ctx.file.config_file, ctx.file._rustfmt_config],
         outputs = [result],
         env = {
             "DIESEL_CLI_TOOL": ctx.executable._diesel_cli_tool.path,
+            "RUSTFMT_TOOL": ctx.file._rustfmt.path,
             "DATABASE_IMAGE_LOAD_TOOL": ctx.executable.database_image_load.path,
             "DIESEL_CONFIG_FILE": ctx.file.config_file.path,
             "OUTPUT_FILE": result.path,
+            "RUSTFMT_CONFIG_PATH": ctx.file._rustfmt_config.path,
         },
         use_default_shell_env = True,
         tools = [
             ctx.executable._diesel_cli_tool,
+            ctx.file._rustfmt,
             ctx.executable.database_image_load,
         ],
     )
@@ -69,6 +72,14 @@ _diesel_migration = rule(
             default = "//misc/utils/rust/diesel_migration/runner",
             executable = True,
             cfg = "exec",
+        ),
+        "_rustfmt_config": attr.label(
+            default = "//:rustfmt.toml",
+            allow_single_file = True,
+        ),
+        "_rustfmt": attr.label(
+            default = "@rules_rust//rust/toolchain:current_rustfmt_toolchain",
+            allow_single_file = True,
         ),
     },
 )

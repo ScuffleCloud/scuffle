@@ -6916,7 +6916,7 @@ dependencies = [
 [[package]]
 name = "testcontainers"
 version = "0.25.0"
-source = "git+https://github.com/mbodmer/testcontainers-rs.git?rev=6d8e248a5637a3bb8ac0bb390717f6c327ffbad1#6d8e248a5637a3bb8ac0bb390717f6c327ffbad1"
+source = "git+https://github.com/testcontainers/testcontainers-rs.git?rev=6d8e248a5637a3bb8ac0bb390717f6c327ffbad1#6d8e248a5637a3bb8ac0bb390717f6c327ffbad1"
 dependencies = [
  "async-trait",
  "bollard",

@@ -10128,7 +10128,7 @@ def crate_repositories():
         name = "cargo_vendor__testcontainers-0.25.0",
         commit = "6d8e248a5637a3bb8ac0bb390717f6c327ffbad1",
         init_submodules = True,
-        remote = "https://github.com/mbodmer/testcontainers-rs.git",
+        remote = "https://github.com/testcontainers/testcontainers-rs.git",
         build_file = Label("//vendor/cargo:BUILD.testcontainers-0.25.0.bazel"),
         strip_prefix = "testcontainers",
     )

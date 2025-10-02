@@ -18,6 +18,12 @@ struct Args {
     #[clap(long, env = "OUTPUT_FILE")]
     output_file: Utf8PathBuf,
 
+    #[clap(long, env = "RUSTFMT_TOOL")]
+    rustfmt_tool: Utf8PathBuf,
+
+    #[clap(long, env = "RUSTFMT_CONFIG_PATH")]
+    rustfmt_config_path: Utf8PathBuf,
+
     schema_files: Vec<Utf8PathBuf>,
 }
 
@@ -83,6 +89,19 @@ async fn main() {
     let mut outputs = BTreeMap::new();
 
     for schema_file in args.schema_files {
+        let output = tokio::process::Command::new(&args.rustfmt_tool)
+            .arg("--config-path")
+            .arg(&args.rustfmt_config_path)
+            .arg(&schema_file)
+            .output()
+            .await
+            .expect("failed to run rustfmt");
+        if !output.status.success() {
+            std::io::stderr().write_all(&output.stdout).expect("failed to write stdout");
+            std::io::stderr().write_all(&output.stderr).expect("failed to write stderr");
+            panic!("failed to run rustfmt");
+        }
+
         let content = std::fs::read_to_string(&schema_file).expect("failed to read schema file");
         outputs.insert(schema_file, content);
     }

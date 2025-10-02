@@ -97,7 +97,7 @@ alias sync-rdme := sync-readme
 sync-readme:
     bazel run //tools/cargo/sync-readme:fix
 
-diesel-schema:
+sync-diesel-schema:
     bazel run //tools/diesel-schema:fix
 
 test *targets="//...":

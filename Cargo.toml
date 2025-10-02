@@ -99,4 +99,4 @@ opt-level = 3
 # https://github.com/seanmonstar/reqwest/pull/2796
 reqwest = { git = "https://github.com/TroyKomodo/reqwest.git", rev = "9cce4657b902263c762d34a3c6a5addb44988359" }
 # remove when https://github.com/testcontainers/testcontainers-rs/pull/847
-testcontainers = { git = "https://github.com/mbodmer/testcontainers-rs.git", rev = "6d8e248a5637a3bb8ac0bb390717f6c327ffbad1" }
+testcontainers = { git = "https://github.com/testcontainers/testcontainers-rs.git", rev = "6d8e248a5637a3bb8ac0bb390717f6c327ffbad1" }

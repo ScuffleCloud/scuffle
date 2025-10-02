@@ -13,7 +13,6 @@ anyhow = "1"
 camino = { version = "1", features = ["serde1"] }
 clap = { version = "4.5", features = ["derive", "env"] }
 env_logger = "0.10"
-fmtools = "0.1"
 log = "0.4"
 serde = "1"
 serde_derive = "1"

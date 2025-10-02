@@ -29,7 +29,6 @@ thiserror = "2.0"
 
 document-features = { optional = true, version = "0.2" }
 nutype-enum = { path = "../nutype-enum", version = "0.1.4" }
-scuffle-aac = { path = "../aac", version = "0.1.3" }
 scuffle-amf0 = { features = ["serde"], path = "../amf0", version = "0.2.1" }
 scuffle-av1 = { path = "../av1", version = "0.1.3" }
 scuffle-bytes-util = { features = ["serde"], path = "../bytes-util", version = "0.1.3" }
@@ -39,6 +38,7 @@ scuffle-h265 = { path = "../h265", version = "0.2.1" }
 
 [dev-dependencies]
 insta = "1.42"
+scuffle-aac = { path = "../aac", version = "0.1.3" }
 
 [package.metadata.docs.rs]
 all-features = true

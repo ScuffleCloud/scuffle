@@ -13,13 +13,11 @@ pulldown-cmark = "0.13"
 pulldown-cmark-to-cmark = "21"
 regex = "1"
 rustdoc-types = { version = "0.55", features = ["rustc-hash"] }
-semver = "1"
 serde = "1"
 serde_derive = "1"
 serde_json = "1"
 sync_readme_common.path = "common"
 toml = "0.9"
-url = "2"
 
 [package.metadata.sync-readme.badges]
 license = true

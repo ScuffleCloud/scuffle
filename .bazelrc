@@ -151,9 +151,9 @@ common --disk_cache=~/.cache/scuffle/bazel/disk
 common --repository_cache=~/.cache/scuffle/bazel/repo
 common --experimental_repository_cache_hardlinks
 
-
-# Use containerd as the load daemon for rules_img
-common --@rules_img//img/settings:load_daemon=containerd
+###############################################################################
+## Docker configuration
+###############################################################################
 common --action_env=CONTAINERD_ADDRESS
 common --action_env=DOCKER_HOST
 common --extra_toolchains=@rules_img_tool//toolchain:all

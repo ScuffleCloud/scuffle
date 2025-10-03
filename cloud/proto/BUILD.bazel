@@ -6,8 +6,8 @@ load("//misc/utils/rust:package.bzl", "scuffle_build_script", "scuffle_package")
 cargo_toml()
 
 proto_library(
-    name = "pb",
-    srcs = glob(["pb/**"], exclude = ["pb/google/rpc/**"]),
+    name = "scuffle_pb",
+    srcs = glob(["pb/scufflecloud/**"]),
     strip_import_prefix = "/cloud/proto/pb",
     visibility = ["//visibility:public"],
     deps = [
@@ -15,6 +15,15 @@ proto_library(
         "@protobuf//:descriptor_proto",
         "@protobuf//:empty_proto",
         "@protobuf//:timestamp_proto",
+    ],
+)
+
+proto_library(
+    name = "google_pb",
+    srcs = glob(["pb/google/**"]),
+    strip_import_prefix = "/cloud/proto/pb",
+    visibility = ["//visibility:public"],
+    deps = [
         "@protobuf//:any_proto",
         "@protobuf//:duration_proto",
     ],
@@ -22,7 +31,7 @@ proto_library(
 
 proto_descriptor_set(
     name = "tinc_fds",
-    deps = [":pb"],
+    deps = [":scuffle_pb"],
 )
 
 scuffle_build_script(

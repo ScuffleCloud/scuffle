@@ -8,9 +8,9 @@ archive_override(
 bazel_dep(name = "rules_img_tool")
 git_override(
     module_name = "rules_img_tool",
-    commit = "a692153132bac5ea43a63e64e158cd8722f63c32",
+    commit = "95de5ae3a538b4c4757bfdda403ab6737e8672f4",
     remote = "https://github.com/bazel-contrib/rules_img.git",
-    strip_prefix = "src/",
+    strip_prefix = "img_tool/",
 )
 
 register_toolchains("@rules_img_tool//toolchain:all")
@@ -25,3 +25,8 @@ pull(
     repository = "library/postgres",
     tag = "18",
 )
+
+docker_configure = use_extension("//misc/toolchains/docker:extensions.bzl", "docker_configure")
+use_repo(docker_configure, "local_docker_config")
+
+register_toolchains("@local_docker_config//:all")

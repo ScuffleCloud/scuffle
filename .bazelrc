@@ -154,8 +154,6 @@ common --experimental_repository_cache_hardlinks
 ###############################################################################
 ## Docker configuration
 ###############################################################################
-common --action_env=CONTAINERD_ADDRESS
-common --action_env=DOCKER_HOST
 common --extra_toolchains=@rules_img_tool//toolchain:all
 
 ###############################################################################

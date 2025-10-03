@@ -10,6 +10,7 @@ DieselMigrationInfo = provider(
 
 def _diesel_migration_impl(ctx):
     result = ctx.actions.declare_file(ctx.label.name + ".result.json")
+    docker_toolchain = ctx.toolchains["//misc/toolchains/docker:toolchain_type"]
 
     ctx.actions.run(
         executable = ctx.executable._diesel_migration_tool,
@@ -23,8 +24,7 @@ def _diesel_migration_impl(ctx):
             "DIESEL_CONFIG_FILE": ctx.file.config_file.path,
             "OUTPUT_FILE": result.path,
             "RUSTFMT_CONFIG_PATH": ctx.file._rustfmt_config.path,
-        },
-        use_default_shell_env = True,
+        } | docker_toolchain.env,
         tools = [
             ctx.executable._diesel_cli_tool,
             ctx.file._rustfmt,
@@ -82,6 +82,7 @@ _diesel_migration = rule(
             allow_single_file = True,
         ),
     },
+    toolchains = ["//misc/toolchains/docker:toolchain_type"],
 )
 
 def diesel_migration(

@@ -42,13 +42,11 @@ Adding the following to your `/etc/docker/daemon.json`:
 
 ```json
 {
-  "features": {
-    "containerd-snapshotter": true
-  }
+    "features": {
+        "containerd-snapshotter": true
+    }
 }
 ```
-
-
 
 #### Scripts / Tools
 

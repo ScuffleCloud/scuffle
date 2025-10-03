@@ -1106,9 +1106,9 @@ def crate_repositories():
     maybe(
         new_git_repository,
         name = "bindeps__base-db-0.0.0",
-        commit = "228bb3587011f07a0979a9006262d79d71122a49",
+        commit = "123f57bff97627e8a5553a5ba1d67918f877dc24",
         init_submodules = True,
-        remote = "https://github.com/TroyKomodo/rust-analyzer.git",
+        remote = "https://github.com/scufflecloud/rust-analyzer.git",
         build_file = Label("//vendor/bindeps:BUILD.base-db-0.0.0.bazel"),
         strip_prefix = "crates/base-db",
     )
@@ -1536,9 +1536,9 @@ def crate_repositories():
     maybe(
         new_git_repository,
         name = "bindeps__cfg-0.0.0",
-        commit = "228bb3587011f07a0979a9006262d79d71122a49",
+        commit = "123f57bff97627e8a5553a5ba1d67918f877dc24",
         init_submodules = True,
-        remote = "https://github.com/TroyKomodo/rust-analyzer.git",
+        remote = "https://github.com/scufflecloud/rust-analyzer.git",
         build_file = Label("//vendor/bindeps:BUILD.cfg-0.0.0.bazel"),
         strip_prefix = "crates/cfg",
     )
@@ -2556,9 +2556,9 @@ def crate_repositories():
     maybe(
         new_git_repository,
         name = "bindeps__edition-0.0.0",
-        commit = "228bb3587011f07a0979a9006262d79d71122a49",
+        commit = "123f57bff97627e8a5553a5ba1d67918f877dc24",
         init_submodules = True,
-        remote = "https://github.com/TroyKomodo/rust-analyzer.git",
+        remote = "https://github.com/scufflecloud/rust-analyzer.git",
         build_file = Label("//vendor/bindeps:BUILD.edition-0.0.0.bazel"),
         strip_prefix = "crates/edition",
     )
@@ -3726,9 +3726,9 @@ def crate_repositories():
     maybe(
         new_git_repository,
         name = "bindeps__hir-0.0.0",
-        commit = "228bb3587011f07a0979a9006262d79d71122a49",
+        commit = "123f57bff97627e8a5553a5ba1d67918f877dc24",
         init_submodules = True,
-        remote = "https://github.com/TroyKomodo/rust-analyzer.git",
+        remote = "https://github.com/scufflecloud/rust-analyzer.git",
         build_file = Label("//vendor/bindeps:BUILD.hir-0.0.0.bazel"),
         strip_prefix = "crates/hir",
     )
@@ -3736,9 +3736,9 @@ def crate_repositories():
     maybe(
         new_git_repository,
         name = "bindeps__hir-def-0.0.0",
-        commit = "228bb3587011f07a0979a9006262d79d71122a49",
+        commit = "123f57bff97627e8a5553a5ba1d67918f877dc24",
         init_submodules = True,
-        remote = "https://github.com/TroyKomodo/rust-analyzer.git",
+        remote = "https://github.com/scufflecloud/rust-analyzer.git",
         build_file = Label("//vendor/bindeps:BUILD.hir-def-0.0.0.bazel"),
         strip_prefix = "crates/hir-def",
     )
@@ -3746,9 +3746,9 @@ def crate_repositories():
     maybe(
         new_git_repository,
         name = "bindeps__hir-expand-0.0.0",
-        commit = "228bb3587011f07a0979a9006262d79d71122a49",
+        commit = "123f57bff97627e8a5553a5ba1d67918f877dc24",
         init_submodules = True,
-        remote = "https://github.com/TroyKomodo/rust-analyzer.git",
+        remote = "https://github.com/scufflecloud/rust-analyzer.git",
         build_file = Label("//vendor/bindeps:BUILD.hir-expand-0.0.0.bazel"),
         strip_prefix = "crates/hir-expand",
     )
@@ -3756,9 +3756,9 @@ def crate_repositories():
     maybe(
         new_git_repository,
         name = "bindeps__hir-ty-0.0.0",
-        commit = "228bb3587011f07a0979a9006262d79d71122a49",
+        commit = "123f57bff97627e8a5553a5ba1d67918f877dc24",
         init_submodules = True,
-        remote = "https://github.com/TroyKomodo/rust-analyzer.git",
+        remote = "https://github.com/scufflecloud/rust-analyzer.git",
         build_file = Label("//vendor/bindeps:BUILD.hir-ty-0.0.0.bazel"),
         strip_prefix = "crates/hir-ty",
     )
@@ -3976,9 +3976,9 @@ def crate_repositories():
     maybe(
         new_git_repository,
         name = "bindeps__ide-0.0.0",
-        commit = "228bb3587011f07a0979a9006262d79d71122a49",
+        commit = "123f57bff97627e8a5553a5ba1d67918f877dc24",
         init_submodules = True,
-        remote = "https://github.com/TroyKomodo/rust-analyzer.git",
+        remote = "https://github.com/scufflecloud/rust-analyzer.git",
         build_file = Label("//vendor/bindeps:BUILD.ide-0.0.0.bazel"),
         strip_prefix = "crates/ide",
     )
@@ -3986,9 +3986,9 @@ def crate_repositories():
     maybe(
         new_git_repository,
         name = "bindeps__ide-assists-0.0.0",
-        commit = "228bb3587011f07a0979a9006262d79d71122a49",
+        commit = "123f57bff97627e8a5553a5ba1d67918f877dc24",
         init_submodules = True,
-        remote = "https://github.com/TroyKomodo/rust-analyzer.git",
+        remote = "https://github.com/scufflecloud/rust-analyzer.git",
         build_file = Label("//vendor/bindeps:BUILD.ide-assists-0.0.0.bazel"),
         strip_prefix = "crates/ide-assists",
     )
@@ -3996,9 +3996,9 @@ def crate_repositories():
     maybe(
         new_git_repository,
         name = "bindeps__ide-completion-0.0.0",
-        commit = "228bb3587011f07a0979a9006262d79d71122a49",
+        commit = "123f57bff97627e8a5553a5ba1d67918f877dc24",
         init_submodules = True,
-        remote = "https://github.com/TroyKomodo/rust-analyzer.git",
+        remote = "https://github.com/scufflecloud/rust-analyzer.git",
         build_file = Label("//vendor/bindeps:BUILD.ide-completion-0.0.0.bazel"),
         strip_prefix = "crates/ide-completion",
     )
@@ -4006,9 +4006,9 @@ def crate_repositories():
     maybe(
         new_git_repository,
         name = "bindeps__ide-db-0.0.0",
-        commit = "228bb3587011f07a0979a9006262d79d71122a49",
+        commit = "123f57bff97627e8a5553a5ba1d67918f877dc24",
         init_submodules = True,
-        remote = "https://github.com/TroyKomodo/rust-analyzer.git",
+        remote = "https://github.com/scufflecloud/rust-analyzer.git",
         build_file = Label("//vendor/bindeps:BUILD.ide-db-0.0.0.bazel"),
         strip_prefix = "crates/ide-db",
     )
@@ -4016,9 +4016,9 @@ def crate_repositories():
     maybe(
         new_git_repository,
         name = "bindeps__ide-diagnostics-0.0.0",
-        commit = "228bb3587011f07a0979a9006262d79d71122a49",
+        commit = "123f57bff97627e8a5553a5ba1d67918f877dc24",
         init_submodules = True,
-        remote = "https://github.com/TroyKomodo/rust-analyzer.git",
+        remote = "https://github.com/scufflecloud/rust-analyzer.git",
         build_file = Label("//vendor/bindeps:BUILD.ide-diagnostics-0.0.0.bazel"),
         strip_prefix = "crates/ide-diagnostics",
     )
@@ -4026,9 +4026,9 @@ def crate_repositories():
     maybe(
         new_git_repository,
         name = "bindeps__ide-ssr-0.0.0",
-        commit = "228bb3587011f07a0979a9006262d79d71122a49",
+        commit = "123f57bff97627e8a5553a5ba1d67918f877dc24",
         init_submodules = True,
-        remote = "https://github.com/TroyKomodo/rust-analyzer.git",
+        remote = "https://github.com/scufflecloud/rust-analyzer.git",
         build_file = Label("//vendor/bindeps:BUILD.ide-ssr-0.0.0.bazel"),
         strip_prefix = "crates/ide-ssr",
     )
@@ -4156,9 +4156,9 @@ def crate_repositories():
     maybe(
         new_git_repository,
         name = "bindeps__intern-0.0.0",
-        commit = "228bb3587011f07a0979a9006262d79d71122a49",
+        commit = "123f57bff97627e8a5553a5ba1d67918f877dc24",
         init_submodules = True,
-        remote = "https://github.com/TroyKomodo/rust-analyzer.git",
+        remote = "https://github.com/scufflecloud/rust-analyzer.git",
         build_file = Label("//vendor/bindeps:BUILD.intern-0.0.0.bazel"),
         strip_prefix = "crates/intern",
     )
@@ -4586,9 +4586,9 @@ def crate_repositories():
     maybe(
         new_git_repository,
         name = "bindeps__load-cargo-0.0.0",
-        commit = "228bb3587011f07a0979a9006262d79d71122a49",
+        commit = "123f57bff97627e8a5553a5ba1d67918f877dc24",
         init_submodules = True,
-        remote = "https://github.com/TroyKomodo/rust-analyzer.git",
+        remote = "https://github.com/scufflecloud/rust-analyzer.git",
         build_file = Label("//vendor/bindeps:BUILD.load-cargo-0.0.0.bazel"),
         strip_prefix = "crates/load-cargo",
     )
@@ -4786,9 +4786,9 @@ def crate_repositories():
     maybe(
         new_git_repository,
         name = "bindeps__mbe-0.0.0",
-        commit = "228bb3587011f07a0979a9006262d79d71122a49",
+        commit = "123f57bff97627e8a5553a5ba1d67918f877dc24",
         init_submodules = True,
-        remote = "https://github.com/TroyKomodo/rust-analyzer.git",
+        remote = "https://github.com/scufflecloud/rust-analyzer.git",
         build_file = Label("//vendor/bindeps:BUILD.mbe-0.0.0.bazel"),
         strip_prefix = "crates/mbe",
     )
@@ -5316,9 +5316,9 @@ def crate_repositories():
     maybe(
         new_git_repository,
         name = "bindeps__parser-0.0.0",
-        commit = "228bb3587011f07a0979a9006262d79d71122a49",
+        commit = "123f57bff97627e8a5553a5ba1d67918f877dc24",
         init_submodules = True,
-        remote = "https://github.com/TroyKomodo/rust-analyzer.git",
+        remote = "https://github.com/scufflecloud/rust-analyzer.git",
         build_file = Label("//vendor/bindeps:BUILD.parser-0.0.0.bazel"),
         strip_prefix = "crates/parser",
     )
@@ -5346,9 +5346,9 @@ def crate_repositories():
     maybe(
         new_git_repository,
         name = "bindeps__paths-0.0.0",
-        commit = "228bb3587011f07a0979a9006262d79d71122a49",
+        commit = "123f57bff97627e8a5553a5ba1d67918f877dc24",
         init_submodules = True,
-        remote = "https://github.com/TroyKomodo/rust-analyzer.git",
+        remote = "https://github.com/scufflecloud/rust-analyzer.git",
         build_file = Label("//vendor/bindeps:BUILD.paths-0.0.0.bazel"),
         strip_prefix = "crates/paths",
     )
@@ -5686,9 +5686,9 @@ def crate_repositories():
     maybe(
         new_git_repository,
         name = "bindeps__proc-macro-api-0.0.0",
-        commit = "228bb3587011f07a0979a9006262d79d71122a49",
+        commit = "123f57bff97627e8a5553a5ba1d67918f877dc24",
         init_submodules = True,
-        remote = "https://github.com/TroyKomodo/rust-analyzer.git",
+        remote = "https://github.com/scufflecloud/rust-analyzer.git",
         build_file = Label("//vendor/bindeps:BUILD.proc-macro-api-0.0.0.bazel"),
         strip_prefix = "crates/proc-macro-api",
     )
@@ -5756,9 +5756,9 @@ def crate_repositories():
     maybe(
         new_git_repository,
         name = "bindeps__profile-0.0.0",
-        commit = "228bb3587011f07a0979a9006262d79d71122a49",
+        commit = "123f57bff97627e8a5553a5ba1d67918f877dc24",
         init_submodules = True,
-        remote = "https://github.com/TroyKomodo/rust-analyzer.git",
+        remote = "https://github.com/scufflecloud/rust-analyzer.git",
         build_file = Label("//vendor/bindeps:BUILD.profile-0.0.0.bazel"),
         strip_prefix = "crates/profile",
     )
@@ -5766,9 +5766,9 @@ def crate_repositories():
     maybe(
         new_git_repository,
         name = "bindeps__project-model-0.0.0",
-        commit = "228bb3587011f07a0979a9006262d79d71122a49",
+        commit = "123f57bff97627e8a5553a5ba1d67918f877dc24",
         init_submodules = True,
-        remote = "https://github.com/TroyKomodo/rust-analyzer.git",
+        remote = "https://github.com/scufflecloud/rust-analyzer.git",
         build_file = Label("//vendor/bindeps:BUILD.project-model-0.0.0.bazel"),
         strip_prefix = "crates/project-model",
     )
@@ -5866,9 +5866,9 @@ def crate_repositories():
     maybe(
         new_git_repository,
         name = "bindeps__query-group-macro-0.0.0",
-        commit = "228bb3587011f07a0979a9006262d79d71122a49",
+        commit = "123f57bff97627e8a5553a5ba1d67918f877dc24",
         init_submodules = True,
-        remote = "https://github.com/TroyKomodo/rust-analyzer.git",
+        remote = "https://github.com/scufflecloud/rust-analyzer.git",
         build_file = Label("//vendor/bindeps:BUILD.query-group-macro-0.0.0.bazel"),
         strip_prefix = "crates/query-group-macro",
     )
@@ -6286,9 +6286,9 @@ def crate_repositories():
     maybe(
         new_git_repository,
         name = "bindeps__rust-analyzer-0.0.0",
-        commit = "228bb3587011f07a0979a9006262d79d71122a49",
+        commit = "123f57bff97627e8a5553a5ba1d67918f877dc24",
         init_submodules = True,
-        remote = "https://github.com/TroyKomodo/rust-analyzer.git",
+        remote = "https://github.com/scufflecloud/rust-analyzer.git",
         build_file = Label("//vendor/bindeps:BUILD.rust-analyzer-0.0.0.bazel"),
         strip_prefix = "crates/rust-analyzer",
     )
@@ -7086,9 +7086,9 @@ def crate_repositories():
     maybe(
         new_git_repository,
         name = "bindeps__span-0.0.0",
-        commit = "228bb3587011f07a0979a9006262d79d71122a49",
+        commit = "123f57bff97627e8a5553a5ba1d67918f877dc24",
         init_submodules = True,
-        remote = "https://github.com/TroyKomodo/rust-analyzer.git",
+        remote = "https://github.com/scufflecloud/rust-analyzer.git",
         build_file = Label("//vendor/bindeps:BUILD.span-0.0.0.bazel"),
         strip_prefix = "crates/span",
     )
@@ -7136,9 +7136,9 @@ def crate_repositories():
     maybe(
         new_git_repository,
         name = "bindeps__stdx-0.0.0",
-        commit = "228bb3587011f07a0979a9006262d79d71122a49",
+        commit = "123f57bff97627e8a5553a5ba1d67918f877dc24",
         init_submodules = True,
-        remote = "https://github.com/TroyKomodo/rust-analyzer.git",
+        remote = "https://github.com/scufflecloud/rust-analyzer.git",
         build_file = Label("//vendor/bindeps:BUILD.stdx-0.0.0.bazel"),
         strip_prefix = "crates/stdx",
     )
@@ -7266,9 +7266,9 @@ def crate_repositories():
     maybe(
         new_git_repository,
         name = "bindeps__syntax-0.0.0",
-        commit = "228bb3587011f07a0979a9006262d79d71122a49",
+        commit = "123f57bff97627e8a5553a5ba1d67918f877dc24",
         init_submodules = True,
-        remote = "https://github.com/TroyKomodo/rust-analyzer.git",
+        remote = "https://github.com/scufflecloud/rust-analyzer.git",
         build_file = Label("//vendor/bindeps:BUILD.syntax-0.0.0.bazel"),
         strip_prefix = "crates/syntax",
     )
@@ -7276,9 +7276,9 @@ def crate_repositories():
     maybe(
         new_git_repository,
         name = "bindeps__syntax-bridge-0.0.0",
-        commit = "228bb3587011f07a0979a9006262d79d71122a49",
+        commit = "123f57bff97627e8a5553a5ba1d67918f877dc24",
         init_submodules = True,
-        remote = "https://github.com/TroyKomodo/rust-analyzer.git",
+        remote = "https://github.com/scufflecloud/rust-analyzer.git",
         build_file = Label("//vendor/bindeps:BUILD.syntax-bridge-0.0.0.bazel"),
         strip_prefix = "crates/syntax-bridge",
     )
@@ -7696,9 +7696,9 @@ def crate_repositories():
     maybe(
         new_git_repository,
         name = "bindeps__toolchain-0.0.0",
-        commit = "228bb3587011f07a0979a9006262d79d71122a49",
+        commit = "123f57bff97627e8a5553a5ba1d67918f877dc24",
         init_submodules = True,
-        remote = "https://github.com/TroyKomodo/rust-analyzer.git",
+        remote = "https://github.com/scufflecloud/rust-analyzer.git",
         build_file = Label("//vendor/bindeps:BUILD.toolchain-0.0.0.bazel"),
         strip_prefix = "crates/toolchain",
     )
@@ -7856,9 +7856,9 @@ def crate_repositories():
     maybe(
         new_git_repository,
         name = "bindeps__tt-0.0.0",
-        commit = "228bb3587011f07a0979a9006262d79d71122a49",
+        commit = "123f57bff97627e8a5553a5ba1d67918f877dc24",
         init_submodules = True,
-        remote = "https://github.com/TroyKomodo/rust-analyzer.git",
+        remote = "https://github.com/scufflecloud/rust-analyzer.git",
         build_file = Label("//vendor/bindeps:BUILD.tt-0.0.0.bazel"),
         strip_prefix = "crates/tt",
     )
@@ -8146,9 +8146,9 @@ def crate_repositories():
     maybe(
         new_git_repository,
         name = "bindeps__vfs-0.0.0",
-        commit = "228bb3587011f07a0979a9006262d79d71122a49",
+        commit = "123f57bff97627e8a5553a5ba1d67918f877dc24",
         init_submodules = True,
-        remote = "https://github.com/TroyKomodo/rust-analyzer.git",
+        remote = "https://github.com/scufflecloud/rust-analyzer.git",
         build_file = Label("//vendor/bindeps:BUILD.vfs-0.0.0.bazel"),
         strip_prefix = "crates/vfs",
     )
@@ -8156,9 +8156,9 @@ def crate_repositories():
     maybe(
         new_git_repository,
         name = "bindeps__vfs-notify-0.0.0",
-        commit = "228bb3587011f07a0979a9006262d79d71122a49",
+        commit = "123f57bff97627e8a5553a5ba1d67918f877dc24",
         init_submodules = True,
-        remote = "https://github.com/TroyKomodo/rust-analyzer.git",
+        remote = "https://github.com/scufflecloud/rust-analyzer.git",
         build_file = Label("//vendor/bindeps:BUILD.vfs-notify-0.0.0.bazel"),
         strip_prefix = "crates/vfs-notify",
     )

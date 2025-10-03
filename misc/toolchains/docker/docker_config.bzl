@@ -26,7 +26,9 @@ def _find_docker(ctx):
     return (
         ctx.os.environ.get("BAZEL_DOCKER") or
         ctx.which("docker") or
-        ctx.which("docker.exe")
+        ctx.which("podman") or
+        ctx.which("docker.exe") or
+        ctx.which("podman.exe")
     )
 
 docker_config = repository_rule(

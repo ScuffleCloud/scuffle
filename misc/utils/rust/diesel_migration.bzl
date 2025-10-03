@@ -24,6 +24,7 @@ def _diesel_migration_impl(ctx):
             "DIESEL_CONFIG_FILE": ctx.file.config_file.path,
             "OUTPUT_FILE": result.path,
             "RUSTFMT_CONFIG_PATH": ctx.file._rustfmt_config.path,
+            "LOADER_BINARY": docker_toolchain.docker_path,
         } | docker_toolchain.env,
         tools = [
             ctx.executable._diesel_cli_tool,

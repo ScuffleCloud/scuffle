@@ -19,11 +19,11 @@ unexpected_cfgs = { level = "warn", check-cfg = ['cfg(coverage_nightly)'] }
 [dependencies]
 anyhow = "1.0.98"
 ingest-traits = { path = "./traits", package = "scufflecloud-ingest-traits" }
-scuffle-bootstrap = { path = "../../crates/bootstrap" }
-scuffle-bootstrap-telemetry = { features = ["opentelemetry-logs", "opentelemetry-traces"], path = "../../crates/bootstrap-telemetry" }
-scuffle-context = { path = "../../crates/context" }
-scuffle-settings = { features = ["all-formats", "bootstrap"], path = "../../crates/settings" }
-scuffle-signal = { features = ["bootstrap"], path = "../../crates/signal" }
+scuffle-bootstrap = { path = "../../../crates/bootstrap" }
+scuffle-bootstrap-telemetry = { features = ["opentelemetry-logs", "opentelemetry-traces"], path = "../../../crates/bootstrap-telemetry" }
+scuffle-context = { path = "../../../crates/context" }
+scuffle-settings = { features = ["all-formats", "bootstrap"], path = "../../../crates/settings" }
+scuffle-signal = { features = ["bootstrap"], path = "../../../crates/signal" }
 serde = "1.0.219"
 serde_derive = "1.0.219"
 smart-default = "0.7.1"

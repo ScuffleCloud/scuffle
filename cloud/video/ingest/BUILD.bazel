@@ -9,11 +9,11 @@ deps = [
     "//crates/context",
     "//crates/settings",
     "//crates/signal",
-    "//cloud/ingest/traits",
+    "//cloud/video/ingest/traits",
 ]
 
 aliases = {
-    "//cloud/ingest/traits": "ingest_traits",
+    "//cloud/video/ingest/traits": "ingest_traits",
 }
 
 scuffle_package(

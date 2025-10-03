@@ -44,7 +44,7 @@ run bin *args:
     elif [ {{ bin }} == "email" ]; then
         bazel run //cloud/email:bin -- {{ args }}
     elif [ {{ bin }} == "ingest" ]; then
-        bazel run //cloud/ingest:bin -- {{ args }}
+        bazel run //cloud/video/ingest:bin -- {{ args }}
     else
         echo "Unknown binary: {{ bin }}"
         exit 1

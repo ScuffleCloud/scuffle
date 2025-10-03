@@ -8,7 +8,7 @@ _packages = [
     "//cloud/email",
     "//cloud/email/traits",
     "//cloud/geo-ip",
-    "//cloud/ingest",
+    "//cloud/video/ingest",
     "//cloud/id",
     "//cloud/proto",
     "//crates/aac",

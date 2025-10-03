@@ -8,7 +8,7 @@ archive_override(
 bazel_dep(name = "rules_img_tool")
 git_override(
     module_name = "rules_img_tool",
-    commit = "95de5ae3a538b4c4757bfdda403ab6737e8672f4",
+    commit = "afddab92b3145b09442d5adfd882a47b5049f509",
     remote = "https://github.com/bazel-contrib/rules_img.git",
     strip_prefix = "img_tool/",
 )

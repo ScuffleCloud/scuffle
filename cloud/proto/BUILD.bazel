@@ -7,7 +7,7 @@ cargo_toml()
 
 proto_library(
     name = "pb",
-    srcs = glob(["pb/**"]),
+    srcs = glob(["pb/**"], exclude = ["pb/google/rpc/**"]),
     strip_import_prefix = "/cloud/proto/pb",
     visibility = ["//visibility:public"],
     deps = [

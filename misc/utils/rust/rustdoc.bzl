@@ -5,7 +5,7 @@ load("@rules_cc//cc/common:cc_common.bzl", "cc_common")
 load("@rules_rust//rust/private:common.bzl", "rust_common")
 load("@rules_rust//rust/private:providers.bzl", "LintsInfo")
 load("@rules_rust//rust/private:rustc.bzl", "collect_deps", "collect_inputs", "construct_arguments")
-load("@rules_rust//rust/private:utils.bzl", "dedent", "expand_dict_value_locations", "find_cc_toolchain", "find_toolchain")
+load("@rules_rust//rust/private:utils.bzl", "dedent", "transform_deps", "expand_dict_value_locations", "find_cc_toolchain", "find_toolchain")
 load("//misc/utils/rust:postcompile.bzl", "PostcompilerDepsInfo")
 
 def _init_rust_doc_info(*, crate_name, crate_version, html_out = None, json_out = None, parts_out = None):
@@ -129,8 +129,8 @@ def _rustdoc_compile_action(
     cc_toolchain, feature_configuration = find_cc_toolchain(ctx)
 
     dep_info, build_info, _ = collect_deps(
-        deps = crate_info.deps if deps == None else deps,
-        proc_macro_deps = crate_info.proc_macro_deps if proc_macro_deps == None else proc_macro_deps,
+        deps = crate_info.deps.to_list() if deps == None else deps,
+        proc_macro_deps = crate_info.proc_macro_deps.to_list() if proc_macro_deps == None else proc_macro_deps,
         aliases = crate_info.aliases if aliases == None else aliases,
     )
 
@@ -469,8 +469,8 @@ def _rustc_doctest_compile_action(
         lint_files = lint_files + lints_info.rustc_lint_files
 
     dep_info, build_info, linkstamps = collect_deps(
-        deps = crate_info.deps if deps == None else deps,
-        proc_macro_deps = crate_info.proc_macro_deps if proc_macro_deps == None else proc_macro_deps,
+        deps = crate_info.deps.to_list() if deps == None else deps,
+        proc_macro_deps = crate_info.proc_macro_deps.to_list() if proc_macro_deps == None else proc_macro_deps,
         aliases = crate_info.aliases if aliases == None else aliases,
     )
 
@@ -569,8 +569,8 @@ def _rustdoc_test_impl(ctx):
         crate_info = crate_info,
         lints_info = lints_info,
         rustdoc_flags = ["-Zunstable-options"] + rust_flags + ctx.attr.rustdoc_flags,
-        deps = depset(ctx.attr.deps),
-        proc_macro_deps = depset(ctx.attr.proc_macro_deps),
+        deps = transform_deps(ctx.attr.deps),
+        proc_macro_deps = transform_deps(ctx.attr.proc_macro_deps),
         aliases = ctx.attr.aliases,
     )
 
@@ -598,8 +598,8 @@ def _rustdoc_test_impl(ctx):
         crate_info = crate_info,
         lints_info = lints_info,
         rustc_flags = rust_flags,
-        deps = depset(ctx.attr.deps),
-        proc_macro_deps = depset(ctx.attr.proc_macro_deps),
+        deps = transform_deps(ctx.attr.deps),
+        proc_macro_deps = transform_deps(ctx.attr.proc_macro_deps),
         aliases = ctx.attr.aliases,
     )
 

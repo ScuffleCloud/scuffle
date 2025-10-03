@@ -180,8 +180,8 @@ def _postcompile_deps_impl(ctx):
     })
 
     dep_info, _, _ = collect_deps(
-        deps = depset(transform_deps(ctx.attr.deps)),
-        proc_macro_deps = depset(transform_deps(ctx.attr.proc_macro_deps)),
+        deps = transform_deps(ctx.attr.deps),
+        proc_macro_deps = transform_deps(ctx.attr.proc_macro_deps),
         aliases = ctx.attr.aliases,
     )
 

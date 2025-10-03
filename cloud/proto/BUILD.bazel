@@ -5,6 +5,7 @@ load("//misc/utils/rust:package.bzl", "scuffle_build_script", "scuffle_package")
 
 cargo_toml()
 
+# Scuffle protos, used by both backend and frontend.
 proto_library(
     name = "scuffle_pb",
     srcs = glob(["pb/scufflecloud/**"]),
@@ -18,6 +19,9 @@ proto_library(
     ],
 )
 
+# Google protos used by the frontend only.
+# Those proto files are copied from Google and use the Any type.
+# The Any type is not supported by Tinc, so this is a separate library definition.
 proto_library(
     name = "google_pb",
     srcs = glob(["pb/google/**"]),

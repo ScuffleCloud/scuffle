@@ -1,0 +1,31 @@
+load("//misc/utils/rust:manifest.bzl", "cargo_toml")
+load("//misc/utils/rust:package.bzl", "scuffle_package")
+
+cargo_toml()
+
+scuffle_package(
+    aliases = {
+        "//cloud/proto": "pb",
+        "//cloud/core/db-types": "core_db_types",
+        "//cloud/geo-ip": "geo_ip",
+        "//cloud/core/traits": "core_traits",
+        "//cloud/email": "email",
+        "//cloud/email/traits": "email_traits",
+    },
+    crate_name = "scufflecloud-big-bin",
+    crate_type = "bin",
+    deps = [
+        "//cloud/core",
+        "//cloud/core/db-types",
+        "//cloud/core/traits",
+        "//cloud/email",
+        "//cloud/email/traits",
+        "//cloud/geo-ip",
+        "//cloud/proto",
+        "//crates/batching",
+        "//crates/bootstrap",
+        "//crates/bootstrap-telemetry",
+        "//crates/settings",
+        "//crates/signal",
+    ],
+)

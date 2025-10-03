@@ -1,0 +1,50 @@
+[package]
+name = "scufflecloud-big-bin"
+version = "0.1.0"
+authors = ["Scuffle <opensource@scuffle.cloud>"]
+edition = "2024"
+license = "AGPL-3.0"
+publish = false
+repository = "https://github.com/scufflecloud/scuffle"
+description = "Big binary for scuffle.cloud"
+
+[lints.rust]
+unexpected_cfgs = { level = "warn", check-cfg = ['cfg(coverage_nightly)'] }
+
+[dependencies]
+anyhow = "1.0.98"
+core-db-types = { path = "../core/db-types", package = "scufflecloud-core-db-types" }
+core-traits = { path = "../core/traits", package = "scufflecloud-core-traits" }
+diesel = "2.2.10"
+diesel-async = "0.6.1"
+email = { path = "../email", package = "scufflecloud-email" }
+email-traits = { path = "../email/traits", package = "scufflecloud-email-traits" }
+fred = "10.1.0"
+geo-ip = { path = "../geo-ip", package = "scufflecloud-geo-ip" }
+ipnetwork = { features = ["serde"], version = "0.21.1" }
+itertools = "0.14.0"
+pb = { path = "../proto", package = "scufflecloud-proto" }
+reqsign = { version = "0.17.0", default-features = false, features = ["aws"] }
+reqwest = { features = ["rustls-tls-native-roots-no-provider"], version = "0.12.23", default-features = false }
+rustls = { default-features = false, version = "0.23.31", features = ["aws_lc_rs"] }
+scuffle-batching = { path = "../../crates/batching" }
+scuffle-bootstrap = { path = "../../crates/bootstrap" }
+scuffle-bootstrap-telemetry = { features = ["opentelemetry-logs", "opentelemetry-traces"], path = "../../crates/bootstrap-telemetry" }
+scuffle-settings = { path = "../../crates/settings" }
+scuffle-signal = { features = ["bootstrap"], path = "../../crates/signal" }
+scufflecloud-core = { path = "../core", package = "scufflecloud-core" } # cannot be called core because it would override the rust core crate
+serde = "1.0.219"
+serde_derive = "1.0.219"
+smart-default = "0.7.1"
+tokio = { default-features = false, features = ["sync"], version = "1.47.1" }
+tonic = "0.14.1"
+tracing = "0.1.41"
+tracing-subscriber = { version = "0.3.20", features = ["env-filter"] }
+url = "2.5.4"
+webauthn-rs = "0.5.2"
+
+[package.metadata.sync-readme.badges]
+docs-rs = false
+crates-io = false
+license = true
+codecov = true

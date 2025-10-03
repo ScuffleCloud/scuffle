@@ -7,7 +7,7 @@
 ###############################################################################
 
 load("@rules_rust//cargo:defs.bzl", "cargo_toml_env_vars")
-load("@rules_rust//rust:defs.bzl", "rust_library")
+load("@rules_rust//rust:defs.bzl", "rust_proc_macro")
 
 package(default_visibility = ["//visibility:public"])
 
@@ -16,8 +16,8 @@ cargo_toml_env_vars(
     src = "Cargo.toml",
 )
 
-rust_library(
-    name = "num_iter",
+rust_proc_macro(
+    name = "structmeta_derive",
     srcs = glob(
         include = ["**/*.rs"],
         allow_empty = True,
@@ -34,12 +34,8 @@ rust_library(
             "WORKSPACE.bazel",
         ],
     ),
-    crate_features = [
-        "i128",
-        "std",
-    ],
     crate_root = "src/lib.rs",
-    edition = "2018",
+    edition = "2021",
     rustc_env_files = [
         ":cargo_toml_env_vars",
     ],
@@ -48,7 +44,7 @@ rust_library(
     ],
     tags = [
         "cargo-bazel",
-        "crate-name=num-iter",
+        "crate-name=structmeta-derive",
         "manual",
         "noclippy",
         "norustfmt",
@@ -57,15 +53,15 @@ rust_library(
         "@rules_rust//rust/platform:aarch64-apple-darwin": [],
         "@rules_rust//rust/platform:aarch64-pc-windows-msvc": [],
         "@rules_rust//rust/platform:aarch64-unknown-linux-gnu": [],
-        "@rules_rust//rust/platform:wasm32-unknown-unknown": [],
         "@rules_rust//rust/platform:x86_64-apple-darwin": [],
         "@rules_rust//rust/platform:x86_64-pc-windows-msvc": [],
         "@rules_rust//rust/platform:x86_64-unknown-linux-gnu": [],
         "//conditions:default": ["@platforms//:incompatible"],
     }),
-    version = "0.1.45",
+    version = "0.3.0",
     deps = [
-        "@cargo_vendor__num-integer-0.1.46//:num_integer",
-        "@cargo_vendor__num-traits-0.2.19//:num_traits",
+        "@cargo_vendor__proc-macro2-1.0.101//:proc_macro2",
+        "@cargo_vendor__quote-1.0.40//:quote",
+        "@cargo_vendor__syn-2.0.106//:syn",
     ],
 )

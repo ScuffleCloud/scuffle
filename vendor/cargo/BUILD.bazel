@@ -1606,6 +1606,18 @@ transition_alias_opt(
 )
 
 transition_alias_opt(
+    name = "testcontainers-0.25.0",
+    actual = "@cargo_vendor__testcontainers-0.25.0//:testcontainers",
+    tags = ["manual"],
+)
+
+transition_alias_opt(
+    name = "testcontainers",
+    actual = "@cargo_vendor__testcontainers-0.25.0//:testcontainers",
+    tags = ["manual"],
+)
+
+transition_alias_opt(
     name = "thiserror-2.0.16",
     actual = "@cargo_vendor__thiserror-2.0.16//:thiserror",
     tags = ["manual"],

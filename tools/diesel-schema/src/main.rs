@@ -1,5 +1,6 @@
 use std::collections::BTreeMap;
-use std::process::Command;
+use std::io::Read;
+use std::process::{Command, Stdio};
 
 use anyhow::{Context, bail};
 use camino::{Utf8Path, Utf8PathBuf};
@@ -50,49 +51,75 @@ fn bazel_command(bazel: &Utf8Path, workspace: Option<&Utf8Path>, output_base: Op
 }
 
 fn main() -> anyhow::Result<()> {
+    env_logger::Builder::from_env(env_logger::Env::default().default_filter_or("info")).init();
+
     let config = Config::parse()?;
 
-    let command = bazel_command(&config.bazel, Some(&config.workspace), Some(&config.output_base))
+    log::info!("running build query");
+
+    let mut command = bazel_command(&config.bazel, Some(&config.workspace), Some(&config.output_base))
         .arg("query")
-        .arg(format!(r#"kind("rust_clippy rule", set({}))"#, config.targets.join(" ")))
-        .output()
+        .arg(format!(r#"kind("diesel_migration rule", set({}))"#, config.targets.join(" ")))
+        .stderr(Stdio::inherit())
+        .stdout(Stdio::piped())
+        .spawn()
         .context("bazel query")?;
 
-    if !command.status.success() {
-        anyhow::bail!("failed to query targets: {}", String::from_utf8_lossy(&command.stderr))
+    let mut stdout = command.stdout.take().unwrap();
+    let mut targets = String::new();
+    stdout.read_to_string(&mut targets).context("stdout read")?;
+    if !command.wait().context("query wait")?.success() {
+        bail!("failed to run bazel query")
     }
 
-    let targets = String::from_utf8_lossy(&command.stdout);
     let items: Vec<_> = targets.lines().map(|l| l.trim()).filter(|l| !l.is_empty()).collect();
 
-    let command = bazel_command(&config.bazel, Some(&config.workspace), Some(&config.output_base))
+    let mut command = bazel_command(&config.bazel, Some(&config.workspace), Some(&config.output_base))
         .arg("cquery")
         .args(&config.bazel_args)
         .arg(format!("set({})", items.join(" ")))
         .arg("--output=starlark")
-        .arg("--keep_going")
         .arg("--starlark:expr=[file.path for file in target.files.to_list()]")
         .arg("--build")
-        .arg("--output_groups=rust_clippy")
-        .output()
+        .arg("--output_groups=diesel_schema")
+        .stderr(Stdio::inherit())
+        .stdout(Stdio::piped())
+        .spawn()
         .context("bazel cquery")?;
 
-    let targets = String::from_utf8_lossy(&command.stdout);
+    let mut stdout = command.stdout.take().unwrap();
 
-    let mut clippy_files = Vec::new();
-    for line in targets.lines().map(|l| l.trim()).filter(|l| !l.is_empty()) {
-        clippy_files.extend(serde_json::from_str::<Vec<String>>(line).context("parse line")?);
+    let mut targets = String::new();
+    stdout.read_to_string(&mut targets).context("stdout read")?;
+
+    if !command.wait().context("cquery wait")?.success() {
+        bail!("failed to run bazel cquery")
     }
 
-    for file in clippy_files {
+    let mut diesel_schema_files = Vec::new();
+
+    for line in targets.lines().map(|l| l.trim()).filter(|l| !l.is_empty()) {
+        diesel_schema_files.extend(serde_json::from_str::<Vec<String>>(line).context("parse line")?);
+    }
+
+    for file in diesel_schema_files {
         let path = config.execution_root.join(&file);
         if !path.exists() {
+            log::warn!("missing {file}");
             continue;
         }
 
-        let content = std::fs::read_to_string(path).context("read")?;
-        for line in content.lines().map(|l| l.trim()).filter(|l| !l.is_empty()) {
-            println!("{line}");
+        let file_content = std::fs::read_to_string(&path).context("read")?;
+        let files: BTreeMap<Utf8PathBuf, String> = serde_json::from_str(&file_content).context("parse line")?;
+        for (file, content) in files {
+            let path = config.execution_root.join(&file);
+            let current_content = std::fs::read_to_string(&path).context("read")?;
+            if content != current_content {
+                log::info!("Updating {}", file);
+                std::fs::write(&path, content).context("write output")?;
+            } else {
+                log::info!("{} already up-to-date", path);
+            }
         }
     }
 
@@ -134,7 +161,7 @@ impl Config {
             targets,
         } = ConfigParser::parse();
 
-        let bazel_args = config.into_iter().map(|s| format!("--config={s}")).collect();
+        let bazel_args = vec![format!("--config={config}")];
 
         match (workspace, execution_root, output_base) {
             (Some(workspace), Some(execution_root), Some(output_base)) => Ok(Config {
@@ -191,8 +218,8 @@ struct ConfigParser {
     bazel: Utf8PathBuf,
 
     /// A config to pass to Bazel invocations with `--config=<config>`.
-    #[clap(long)]
-    config: Option<String>,
+    #[clap(long, default_value = "wrapper")]
+    config: String,
 
     /// Space separated list of target patterns that comes after all other args.
     #[clap(default_value = "@//...")]

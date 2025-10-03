@@ -17,7 +17,7 @@ cargo_toml_env_vars(
 )
 
 rust_library(
-    name = "num_iter",
+    name = "etcetera",
     srcs = glob(
         include = ["**/*.rs"],
         allow_empty = True,
@@ -34,12 +34,8 @@ rust_library(
             "WORKSPACE.bazel",
         ],
     ),
-    crate_features = [
-        "i128",
-        "std",
-    ],
     crate_root = "src/lib.rs",
-    edition = "2018",
+    edition = "2021",
     rustc_env_files = [
         ":cargo_toml_env_vars",
     ],
@@ -48,7 +44,7 @@ rust_library(
     ],
     tags = [
         "cargo-bazel",
-        "crate-name=num-iter",
+        "crate-name=etcetera",
         "manual",
         "noclippy",
         "norustfmt",
@@ -63,9 +59,17 @@ rust_library(
         "@rules_rust//rust/platform:x86_64-unknown-linux-gnu": [],
         "//conditions:default": ["@platforms//:incompatible"],
     }),
-    version = "0.1.45",
+    version = "0.10.0",
     deps = [
-        "@cargo_vendor__num-integer-0.1.46//:num_integer",
-        "@cargo_vendor__num-traits-0.2.19//:num_traits",
-    ],
+        "@cargo_vendor__cfg-if-1.0.3//:cfg_if",
+        "@cargo_vendor__home-0.5.11//:home",
+    ] + select({
+        "@rules_rust//rust/platform:aarch64-pc-windows-msvc": [
+            "@cargo_vendor__windows-sys-0.59.0//:windows_sys",  # cfg(windows)
+        ],
+        "@rules_rust//rust/platform:x86_64-pc-windows-msvc": [
+            "@cargo_vendor__windows-sys-0.59.0//:windows_sys",  # cfg(windows)
+        ],
+        "//conditions:default": [],
+    }),
 )

@@ -39,11 +39,45 @@ rust_library(
     ),
     crate_features = [
         "http1",
-        "http2",
-        "native-tokio",
-        "rustls-native-certs",
-        "tls12",
-    ],
+    ] + select({
+        "@rules_rust//rust/platform:aarch64-apple-darwin": [
+            "http2",
+            "native-tokio",
+            "rustls-native-certs",
+            "tls12",
+        ],
+        "@rules_rust//rust/platform:aarch64-pc-windows-msvc": [
+            "http2",
+            "native-tokio",
+            "rustls-native-certs",
+            "tls12",
+        ],
+        "@rules_rust//rust/platform:aarch64-unknown-linux-gnu": [
+            "http2",
+            "native-tokio",
+            "rustls-native-certs",
+            "tls12",
+        ],
+        "@rules_rust//rust/platform:x86_64-apple-darwin": [
+            "http2",
+            "native-tokio",
+            "rustls-native-certs",
+            "tls12",
+        ],
+        "@rules_rust//rust/platform:x86_64-pc-windows-msvc": [
+            "http2",
+            "native-tokio",
+            "rustls-native-certs",
+            "tls12",
+        ],
+        "@rules_rust//rust/platform:x86_64-unknown-linux-gnu": [
+            "http2",
+            "native-tokio",
+            "rustls-native-certs",
+            "tls12",
+        ],
+        "//conditions:default": [],
+    }),
     crate_root = "src/lib.rs",
     edition = "2021",
     rustc_env_files = [
@@ -63,6 +97,7 @@ rust_library(
         "@rules_rust//rust/platform:aarch64-apple-darwin": [],
         "@rules_rust//rust/platform:aarch64-pc-windows-msvc": [],
         "@rules_rust//rust/platform:aarch64-unknown-linux-gnu": [],
+        "@rules_rust//rust/platform:wasm32-unknown-unknown": [],
         "@rules_rust//rust/platform:x86_64-apple-darwin": [],
         "@rules_rust//rust/platform:x86_64-pc-windows-msvc": [],
         "@rules_rust//rust/platform:x86_64-unknown-linux-gnu": [],
@@ -74,10 +109,29 @@ rust_library(
         "@cargo_vendor__hyper-1.7.0//:hyper",
         "@cargo_vendor__hyper-util-0.1.16//:hyper_util",
         "@cargo_vendor__rustls-0.23.32//:rustls",
-        "@cargo_vendor__rustls-native-certs-0.8.1//:rustls_native_certs",
         "@cargo_vendor__rustls-pki-types-1.12.0//:rustls_pki_types",
         "@cargo_vendor__tokio-1.47.1//:tokio",
         "@cargo_vendor__tokio-rustls-0.26.2//:tokio_rustls",
         "@cargo_vendor__tower-service-0.3.3//:tower_service",
-    ],
+    ] + select({
+        "@rules_rust//rust/platform:aarch64-apple-darwin": [
+            "@cargo_vendor__rustls-native-certs-0.8.1//:rustls_native_certs",
+        ],
+        "@rules_rust//rust/platform:aarch64-pc-windows-msvc": [
+            "@cargo_vendor__rustls-native-certs-0.8.1//:rustls_native_certs",
+        ],
+        "@rules_rust//rust/platform:aarch64-unknown-linux-gnu": [
+            "@cargo_vendor__rustls-native-certs-0.8.1//:rustls_native_certs",
+        ],
+        "@rules_rust//rust/platform:x86_64-apple-darwin": [
+            "@cargo_vendor__rustls-native-certs-0.8.1//:rustls_native_certs",
+        ],
+        "@rules_rust//rust/platform:x86_64-pc-windows-msvc": [
+            "@cargo_vendor__rustls-native-certs-0.8.1//:rustls_native_certs",
+        ],
+        "@rules_rust//rust/platform:x86_64-unknown-linux-gnu": [
+            "@cargo_vendor__rustls-native-certs-0.8.1//:rustls_native_certs",
+        ],
+        "//conditions:default": [],
+    }),
 )

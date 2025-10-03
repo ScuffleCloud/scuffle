@@ -92,9 +92,13 @@ generate-mtls-certs:
         -copy_extensions copy
 
 alias coverage := test
+alias sync-rdme := sync-readme
 
-sync-rdme:
+sync-readme:
     bazel run //tools/cargo/sync-readme:fix
+
+sync-diesel-schema:
+    bazel run //tools/diesel-schema:fix
 
 test *targets="//...":
     #!/usr/bin/env bash

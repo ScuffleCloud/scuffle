@@ -17,7 +17,7 @@ cargo_toml_env_vars(
 )
 
 rust_library(
-    name = "num_iter",
+    name = "parse_display",
     srcs = glob(
         include = ["**/*.rs"],
         allow_empty = True,
@@ -35,11 +35,16 @@ rust_library(
         ],
     ),
     crate_features = [
-        "i128",
+        "default",
+        "regex",
+        "regex-syntax",
         "std",
     ],
     crate_root = "src/lib.rs",
-    edition = "2018",
+    edition = "2021",
+    proc_macro_deps = [
+        "@cargo_vendor__parse-display-derive-0.9.1//:parse_display_derive",
+    ],
     rustc_env_files = [
         ":cargo_toml_env_vars",
     ],
@@ -48,7 +53,7 @@ rust_library(
     ],
     tags = [
         "cargo-bazel",
-        "crate-name=num-iter",
+        "crate-name=parse-display",
         "manual",
         "noclippy",
         "norustfmt",
@@ -63,9 +68,9 @@ rust_library(
         "@rules_rust//rust/platform:x86_64-unknown-linux-gnu": [],
         "//conditions:default": ["@platforms//:incompatible"],
     }),
-    version = "0.1.45",
+    version = "0.9.1",
     deps = [
-        "@cargo_vendor__num-integer-0.1.46//:num_integer",
-        "@cargo_vendor__num-traits-0.2.19//:num_traits",
+        "@cargo_vendor__regex-1.11.2//:regex",
+        "@cargo_vendor__regex-syntax-0.8.6//:regex_syntax",
     ],
 )

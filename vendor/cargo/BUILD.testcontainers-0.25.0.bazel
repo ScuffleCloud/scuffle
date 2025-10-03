@@ -17,7 +17,7 @@ cargo_toml_env_vars(
 )
 
 rust_library(
-    name = "num_iter",
+    name = "testcontainers",
     srcs = glob(
         include = ["**/*.rs"],
         allow_empty = True,
@@ -35,11 +35,13 @@ rust_library(
         ],
     ),
     crate_features = [
-        "i128",
-        "std",
+        "aws-lc-rs",
     ],
     crate_root = "src/lib.rs",
-    edition = "2018",
+    edition = "2021",
+    proc_macro_deps = [
+        "@cargo_vendor__async-trait-0.1.89//:async_trait",
+    ],
     rustc_env_files = [
         ":cargo_toml_env_vars",
     ],
@@ -48,7 +50,7 @@ rust_library(
     ],
     tags = [
         "cargo-bazel",
-        "crate-name=num-iter",
+        "crate-name=testcontainers",
         "manual",
         "noclippy",
         "norustfmt",
@@ -63,9 +65,27 @@ rust_library(
         "@rules_rust//rust/platform:x86_64-unknown-linux-gnu": [],
         "//conditions:default": ["@platforms//:incompatible"],
     }),
-    version = "0.1.45",
+    version = "0.25.0",
     deps = [
-        "@cargo_vendor__num-integer-0.1.46//:num_integer",
-        "@cargo_vendor__num-traits-0.2.19//:num_traits",
+        "@cargo_vendor__bollard-0.19.3//:bollard",
+        "@cargo_vendor__bytes-1.10.1//:bytes",
+        "@cargo_vendor__docker_credential-1.3.2//:docker_credential",
+        "@cargo_vendor__either-1.15.0//:either",
+        "@cargo_vendor__etcetera-0.10.0//:etcetera",
+        "@cargo_vendor__futures-0.3.31//:futures",
+        "@cargo_vendor__log-0.4.28//:log",
+        "@cargo_vendor__memchr-2.7.5//:memchr",
+        "@cargo_vendor__parse-display-0.9.1//:parse_display",
+        "@cargo_vendor__pin-project-lite-0.2.16//:pin_project_lite",
+        "@cargo_vendor__serde-1.0.220//:serde",
+        "@cargo_vendor__serde_json-1.0.145//:serde_json",
+        "@cargo_vendor__serde_with-3.14.0//:serde_with",
+        "@cargo_vendor__thiserror-2.0.16//:thiserror",
+        "@cargo_vendor__tokio-1.47.1//:tokio",
+        "@cargo_vendor__tokio-stream-0.1.17//:tokio_stream",
+        "@cargo_vendor__tokio-tar-0.3.1//:tokio_tar",
+        "@cargo_vendor__tokio-util-0.7.16//:tokio_util",
+        "@cargo_vendor__ulid-1.2.1//:ulid",
+        "@cargo_vendor__url-2.5.7//:url",
     ],
 )

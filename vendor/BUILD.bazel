@@ -168,8 +168,8 @@ crates_vendor(
         # Currently using a fork due to https://github.com/rust-lang/rust-analyzer/issues/20359
         "rust-analyzer": crate.spec(
             artifact = "bin",
-            git = "https://github.com/TroyKomodo/rust-analyzer.git",
-            rev = "228bb3587011f07a0979a9006262d79d71122a49",
+            git = "https://github.com/scufflecloud/rust-analyzer.git",
+            rev = "123f57bff97627e8a5553a5ba1d67918f877dc24",
         ),
         "cedar-policy-cli": crate.spec(
             artifact = "bin",

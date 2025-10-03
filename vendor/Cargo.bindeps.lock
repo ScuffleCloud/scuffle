@@ -621,7 +621,7 @@ dependencies = [
 [[package]]
 name = "base-db"
 version = "0.0.0"
-source = "git+https://github.com/TroyKomodo/rust-analyzer.git?rev=228bb3587011f07a0979a9006262d79d71122a49#228bb3587011f07a0979a9006262d79d71122a49"
+source = "git+https://github.com/scufflecloud/rust-analyzer.git?rev=123f57bff97627e8a5553a5ba1d67918f877dc24#123f57bff97627e8a5553a5ba1d67918f877dc24"
 dependencies = [
  "cfg",
  "dashmap 6.1.0",
@@ -1159,7 +1159,7 @@ dependencies = [
 [[package]]
 name = "cfg"
 version = "0.0.0"
-source = "git+https://github.com/TroyKomodo/rust-analyzer.git?rev=228bb3587011f07a0979a9006262d79d71122a49#228bb3587011f07a0979a9006262d79d71122a49"
+source = "git+https://github.com/scufflecloud/rust-analyzer.git?rev=123f57bff97627e8a5553a5ba1d67918f877dc24#123f57bff97627e8a5553a5ba1d67918f877dc24"
 dependencies = [
  "intern",
  "rustc-hash 2.1.1",
@@ -2253,7 +2253,7 @@ checksum = "e3f497e87b038c09a155dfd169faa5ec940d0644635555ef6bd464ac20e97397"
 [[package]]
 name = "edition"
 version = "0.0.0"
-source = "git+https://github.com/TroyKomodo/rust-analyzer.git?rev=228bb3587011f07a0979a9006262d79d71122a49#228bb3587011f07a0979a9006262d79d71122a49"
+source = "git+https://github.com/scufflecloud/rust-analyzer.git?rev=123f57bff97627e8a5553a5ba1d67918f877dc24#123f57bff97627e8a5553a5ba1d67918f877dc24"
 
 [[package]]
 name = "educe"
@@ -3706,7 +3706,7 @@ checksum = "7f24254aa9a54b5c858eaee2f5bccdb46aaf0e486a595ed5fd8f86ba55232a70"
 [[package]]
 name = "hir"
 version = "0.0.0"
-source = "git+https://github.com/TroyKomodo/rust-analyzer.git?rev=228bb3587011f07a0979a9006262d79d71122a49#228bb3587011f07a0979a9006262d79d71122a49"
+source = "git+https://github.com/scufflecloud/rust-analyzer.git?rev=123f57bff97627e8a5553a5ba1d67918f877dc24#123f57bff97627e8a5553a5ba1d67918f877dc24"
 dependencies = [
  "arrayvec 0.7.6",
  "base-db",
@@ -3732,7 +3732,7 @@ dependencies = [
 [[package]]
 name = "hir-def"
 version = "0.0.0"
-source = "git+https://github.com/TroyKomodo/rust-analyzer.git?rev=228bb3587011f07a0979a9006262d79d71122a49#228bb3587011f07a0979a9006262d79d71122a49"
+source = "git+https://github.com/scufflecloud/rust-analyzer.git?rev=123f57bff97627e8a5553a5ba1d67918f877dc24#123f57bff97627e8a5553a5ba1d67918f877dc24"
 dependencies = [
  "arrayvec 0.7.6",
  "base-db",
@@ -3769,7 +3769,7 @@ dependencies = [
 [[package]]
 name = "hir-expand"
 version = "0.0.0"
-source = "git+https://github.com/TroyKomodo/rust-analyzer.git?rev=228bb3587011f07a0979a9006262d79d71122a49#228bb3587011f07a0979a9006262d79d71122a49"
+source = "git+https://github.com/scufflecloud/rust-analyzer.git?rev=123f57bff97627e8a5553a5ba1d67918f877dc24#123f57bff97627e8a5553a5ba1d67918f877dc24"
 dependencies = [
  "base-db",
  "cfg",
@@ -3796,7 +3796,7 @@ dependencies = [
 [[package]]
 name = "hir-ty"
 version = "0.0.0"
-source = "git+https://github.com/TroyKomodo/rust-analyzer.git?rev=228bb3587011f07a0979a9006262d79d71122a49#228bb3587011f07a0979a9006262d79d71122a49"
+source = "git+https://github.com/scufflecloud/rust-analyzer.git?rev=123f57bff97627e8a5553a5ba1d67918f877dc24#123f57bff97627e8a5553a5ba1d67918f877dc24"
 dependencies = [
  "arrayvec 0.7.6",
  "base-db",
@@ -3813,6 +3813,7 @@ dependencies = [
  "itertools 0.14.0",
  "la-arena",
  "oorandom",
+ "petgraph 0.8.2",
  "query-group-macro",
  "ra-ap-rustc_abi",
  "ra-ap-rustc_ast_ir",
@@ -4101,7 +4102,7 @@ dependencies = [
 [[package]]
 name = "ide"
 version = "0.0.0"
-source = "git+https://github.com/TroyKomodo/rust-analyzer.git?rev=228bb3587011f07a0979a9006262d79d71122a49#228bb3587011f07a0979a9006262d79d71122a49"
+source = "git+https://github.com/scufflecloud/rust-analyzer.git?rev=123f57bff97627e8a5553a5ba1d67918f877dc24#123f57bff97627e8a5553a5ba1d67918f877dc24"
 dependencies = [
  "arrayvec 0.7.6",
  "cfg",
@@ -4134,7 +4135,7 @@ dependencies = [
 [[package]]
 name = "ide-assists"
 version = "0.0.0"
-source = "git+https://github.com/TroyKomodo/rust-analyzer.git?rev=228bb3587011f07a0979a9006262d79d71122a49#228bb3587011f07a0979a9006262d79d71122a49"
+source = "git+https://github.com/scufflecloud/rust-analyzer.git?rev=123f57bff97627e8a5553a5ba1d67918f877dc24#123f57bff97627e8a5553a5ba1d67918f877dc24"
 dependencies = [
  "cov-mark",
  "either",
@@ -4150,7 +4151,7 @@ dependencies = [
 [[package]]
 name = "ide-completion"
 version = "0.0.0"
-source = "git+https://github.com/TroyKomodo/rust-analyzer.git?rev=228bb3587011f07a0979a9006262d79d71122a49#228bb3587011f07a0979a9006262d79d71122a49"
+source = "git+https://github.com/scufflecloud/rust-analyzer.git?rev=123f57bff97627e8a5553a5ba1d67918f877dc24#123f57bff97627e8a5553a5ba1d67918f877dc24"
 dependencies = [
  "base-db",
  "cov-mark",
@@ -4166,7 +4167,7 @@ dependencies = [
 [[package]]
 name = "ide-db"
 version = "0.0.0"
-source = "git+https://github.com/TroyKomodo/rust-analyzer.git?rev=228bb3587011f07a0979a9006262d79d71122a49#228bb3587011f07a0979a9006262d79d71122a49"
+source = "git+https://github.com/scufflecloud/rust-analyzer.git?rev=123f57bff97627e8a5553a5ba1d67918f877dc24#123f57bff97627e8a5553a5ba1d67918f877dc24"
 dependencies = [
  "arrayvec 0.7.6",
  "base-db",
@@ -4199,7 +4200,7 @@ dependencies = [
 [[package]]
 name = "ide-diagnostics"
 version = "0.0.0"
-source = "git+https://github.com/TroyKomodo/rust-analyzer.git?rev=228bb3587011f07a0979a9006262d79d71122a49#228bb3587011f07a0979a9006262d79d71122a49"
+source = "git+https://github.com/scufflecloud/rust-analyzer.git?rev=123f57bff97627e8a5553a5ba1d67918f877dc24#123f57bff97627e8a5553a5ba1d67918f877dc24"
 dependencies = [
  "cfg",
  "cov-mark",
@@ -4217,7 +4218,7 @@ dependencies = [
 [[package]]
 name = "ide-ssr"
 version = "0.0.0"
-source = "git+https://github.com/TroyKomodo/rust-analyzer.git?rev=228bb3587011f07a0979a9006262d79d71122a49#228bb3587011f07a0979a9006262d79d71122a49"
+source = "git+https://github.com/scufflecloud/rust-analyzer.git?rev=123f57bff97627e8a5553a5ba1d67918f877dc24#123f57bff97627e8a5553a5ba1d67918f877dc24"
 dependencies = [
  "cov-mark",
  "hir",
@@ -4366,7 +4367,7 @@ dependencies = [
 [[package]]
 name = "intern"
 version = "0.0.0"
-source = "git+https://github.com/TroyKomodo/rust-analyzer.git?rev=228bb3587011f07a0979a9006262d79d71122a49#228bb3587011f07a0979a9006262d79d71122a49"
+source = "git+https://github.com/scufflecloud/rust-analyzer.git?rev=123f57bff97627e8a5553a5ba1d67918f877dc24#123f57bff97627e8a5553a5ba1d67918f877dc24"
 dependencies = [
  "dashmap 6.1.0",
  "hashbrown 0.14.5",
@@ -4843,7 +4844,7 @@ checksum = "241eaef5fd12c88705a01fc1066c48c4b36e0dd4377dcdc7ec3942cea7a69956"
 [[package]]
 name = "load-cargo"
 version = "0.0.0"
-source = "git+https://github.com/TroyKomodo/rust-analyzer.git?rev=228bb3587011f07a0979a9006262d79d71122a49#228bb3587011f07a0979a9006262d79d71122a49"
+source = "git+https://github.com/scufflecloud/rust-analyzer.git?rev=123f57bff97627e8a5553a5ba1d67918f877dc24#123f57bff97627e8a5553a5ba1d67918f877dc24"
 dependencies = [
  "anyhow",
  "crossbeam-channel",
@@ -5067,7 +5068,7 @@ dependencies = [
 [[package]]
 name = "mbe"
 version = "0.0.0"
-source = "git+https://github.com/TroyKomodo/rust-analyzer.git?rev=228bb3587011f07a0979a9006262d79d71122a49#228bb3587011f07a0979a9006262d79d71122a49"
+source = "git+https://github.com/scufflecloud/rust-analyzer.git?rev=123f57bff97627e8a5553a5ba1d67918f877dc24#123f57bff97627e8a5553a5ba1d67918f877dc24"
 dependencies = [
  "arrayvec 0.7.6",
  "cov-mark",
@@ -5603,7 +5604,7 @@ checksum = "487f2ccd1e17ce8c1bfab3a65c89525af41cfad4c8659021a1e9a2aacd73b89b"
 [[package]]
 name = "parser"
 version = "0.0.0"
-source = "git+https://github.com/TroyKomodo/rust-analyzer.git?rev=228bb3587011f07a0979a9006262d79d71122a49#228bb3587011f07a0979a9006262d79d71122a49"
+source = "git+https://github.com/scufflecloud/rust-analyzer.git?rev=123f57bff97627e8a5553a5ba1d67918f877dc24#123f57bff97627e8a5553a5ba1d67918f877dc24"
 dependencies = [
  "drop_bomb",
  "edition",
@@ -5627,7 +5628,7 @@ checksum = "df94ce210e5bc13cb6651479fa48d14f601d9858cfe0467f43ae157023b938d3"
 [[package]]
 name = "paths"
 version = "0.0.0"
-source = "git+https://github.com/TroyKomodo/rust-analyzer.git?rev=228bb3587011f07a0979a9006262d79d71122a49#228bb3587011f07a0979a9006262d79d71122a49"
+source = "git+https://github.com/scufflecloud/rust-analyzer.git?rev=123f57bff97627e8a5553a5ba1d67918f877dc24#123f57bff97627e8a5553a5ba1d67918f877dc24"
 dependencies = [
  "camino",
 ]
@@ -5940,7 +5941,7 @@ dependencies = [
 [[package]]
 name = "proc-macro-api"
 version = "0.0.0"
-source = "git+https://github.com/TroyKomodo/rust-analyzer.git?rev=228bb3587011f07a0979a9006262d79d71122a49#228bb3587011f07a0979a9006262d79d71122a49"
+source = "git+https://github.com/scufflecloud/rust-analyzer.git?rev=123f57bff97627e8a5553a5ba1d67918f877dc24#123f57bff97627e8a5553a5ba1d67918f877dc24"
 dependencies = [
  "indexmap 2.11.3",
  "intern",
@@ -6022,7 +6023,7 @@ dependencies = [
 [[package]]
 name = "profile"
 version = "0.0.0"
-source = "git+https://github.com/TroyKomodo/rust-analyzer.git?rev=228bb3587011f07a0979a9006262d79d71122a49#228bb3587011f07a0979a9006262d79d71122a49"
+source = "git+https://github.com/scufflecloud/rust-analyzer.git?rev=123f57bff97627e8a5553a5ba1d67918f877dc24#123f57bff97627e8a5553a5ba1d67918f877dc24"
 dependencies = [
  "cfg-if",
  "libc",
@@ -6033,7 +6034,7 @@ dependencies = [
 [[package]]
 name = "project-model"
 version = "0.0.0"
-source = "git+https://github.com/TroyKomodo/rust-analyzer.git?rev=228bb3587011f07a0979a9006262d79d71122a49#228bb3587011f07a0979a9006262d79d71122a49"
+source = "git+https://github.com/scufflecloud/rust-analyzer.git?rev=123f57bff97627e8a5553a5ba1d67918f877dc24#123f57bff97627e8a5553a5ba1d67918f877dc24"
 dependencies = [
  "anyhow",
  "base-db",
@@ -6148,7 +6149,7 @@ dependencies = [
 [[package]]
 name = "query-group-macro"
 version = "0.0.0"
-source = "git+https://github.com/TroyKomodo/rust-analyzer.git?rev=228bb3587011f07a0979a9006262d79d71122a49#228bb3587011f07a0979a9006262d79d71122a49"
+source = "git+https://github.com/scufflecloud/rust-analyzer.git?rev=123f57bff97627e8a5553a5ba1d67918f877dc24#123f57bff97627e8a5553a5ba1d67918f877dc24"
 dependencies = [
  "proc-macro2",
  "quote",
@@ -6706,7 +6707,7 @@ dependencies = [
 [[package]]
 name = "rust-analyzer"
 version = "0.0.0"
-source = "git+https://github.com/TroyKomodo/rust-analyzer.git?rev=228bb3587011f07a0979a9006262d79d71122a49#228bb3587011f07a0979a9006262d79d71122a49"
+source = "git+https://github.com/scufflecloud/rust-analyzer.git?rev=123f57bff97627e8a5553a5ba1d67918f877dc24#123f57bff97627e8a5553a5ba1d67918f877dc24"
 dependencies = [
  "anyhow",
  "base64",
@@ -6739,6 +6740,7 @@ dependencies = [
  "process-wrap",
  "profile",
  "project-model",
+ "ra-ap-rustc_type_ir",
  "rayon",
  "rustc-hash 2.1.1",
  "scip",
@@ -7559,7 +7561,7 @@ dependencies = [
 [[package]]
 name = "span"
 version = "0.0.0"
-source = "git+https://github.com/TroyKomodo/rust-analyzer.git?rev=228bb3587011f07a0979a9006262d79d71122a49#228bb3587011f07a0979a9006262d79d71122a49"
+source = "git+https://github.com/scufflecloud/rust-analyzer.git?rev=123f57bff97627e8a5553a5ba1d67918f877dc24#123f57bff97627e8a5553a5ba1d67918f877dc24"
 dependencies = [
  "hashbrown 0.14.5",
  "la-arena",
@@ -7608,7 +7610,7 @@ checksum = "a2eb9349b6444b326872e140eb1cf5e7c522154d69e7a0ffb0fb81c06b37543f"
 [[package]]
 name = "stdx"
 version = "0.0.0"
-source = "git+https://github.com/TroyKomodo/rust-analyzer.git?rev=228bb3587011f07a0979a9006262d79d71122a49#228bb3587011f07a0979a9006262d79d71122a49"
+source = "git+https://github.com/scufflecloud/rust-analyzer.git?rev=123f57bff97627e8a5553a5ba1d67918f877dc24#123f57bff97627e8a5553a5ba1d67918f877dc24"
 dependencies = [
  "crossbeam-channel",
  "crossbeam-utils",
@@ -7731,7 +7733,7 @@ dependencies = [
 [[package]]
 name = "syntax"
 version = "0.0.0"
-source = "git+https://github.com/TroyKomodo/rust-analyzer.git?rev=228bb3587011f07a0979a9006262d79d71122a49#228bb3587011f07a0979a9006262d79d71122a49"
+source = "git+https://github.com/scufflecloud/rust-analyzer.git?rev=123f57bff97627e8a5553a5ba1d67918f877dc24#123f57bff97627e8a5553a5ba1d67918f877dc24"
 dependencies = [
  "either",
  "itertools 0.14.0",
@@ -7748,7 +7750,7 @@ dependencies = [
 [[package]]
 name = "syntax-bridge"
 version = "0.0.0"
-source = "git+https://github.com/TroyKomodo/rust-analyzer.git?rev=228bb3587011f07a0979a9006262d79d71122a49#228bb3587011f07a0979a9006262d79d71122a49"
+source = "git+https://github.com/scufflecloud/rust-analyzer.git?rev=123f57bff97627e8a5553a5ba1d67918f877dc24#123f57bff97627e8a5553a5ba1d67918f877dc24"
 dependencies = [
  "intern",
  "parser",
@@ -8177,7 +8179,7 @@ checksum = "5d99f8c9a7727884afe522e9bd5edbfc91a3312b36a77b5fb8926e4c31a41801"
 [[package]]
 name = "toolchain"
 version = "0.0.0"
-source = "git+https://github.com/TroyKomodo/rust-analyzer.git?rev=228bb3587011f07a0979a9006262d79d71122a49#228bb3587011f07a0979a9006262d79d71122a49"
+source = "git+https://github.com/scufflecloud/rust-analyzer.git?rev=123f57bff97627e8a5553a5ba1d67918f877dc24#123f57bff97627e8a5553a5ba1d67918f877dc24"
 dependencies = [
  "camino",
  "home",
@@ -8366,7 +8368,7 @@ checksum = "e421abadd41a4225275504ea4d6566923418b7f05506fbc9c0fe86ba7396114b"
 [[package]]
 name = "tt"
 version = "0.0.0"
-source = "git+https://github.com/TroyKomodo/rust-analyzer.git?rev=228bb3587011f07a0979a9006262d79d71122a49#228bb3587011f07a0979a9006262d79d71122a49"
+source = "git+https://github.com/scufflecloud/rust-analyzer.git?rev=123f57bff97627e8a5553a5ba1d67918f877dc24#123f57bff97627e8a5553a5ba1d67918f877dc24"
 dependencies = [
  "arrayvec 0.7.6",
  "intern",
@@ -8588,7 +8590,7 @@ checksum = "0b928f33d975fc6ad9f86c8f283853ad26bdd5b10b7f1542aa2fa15e2289105a"
 [[package]]
 name = "vfs"
 version = "0.0.0"
-source = "git+https://github.com/TroyKomodo/rust-analyzer.git?rev=228bb3587011f07a0979a9006262d79d71122a49#228bb3587011f07a0979a9006262d79d71122a49"
+source = "git+https://github.com/scufflecloud/rust-analyzer.git?rev=123f57bff97627e8a5553a5ba1d67918f877dc24#123f57bff97627e8a5553a5ba1d67918f877dc24"
 dependencies = [
  "crossbeam-channel",
  "fst",
@@ -8603,7 +8605,7 @@ dependencies = [
 [[package]]
 name = "vfs-notify"
 version = "0.0.0"
-source = "git+https://github.com/TroyKomodo/rust-analyzer.git?rev=228bb3587011f07a0979a9006262d79d71122a49#228bb3587011f07a0979a9006262d79d71122a49"
+source = "git+https://github.com/scufflecloud/rust-analyzer.git?rev=123f57bff97627e8a5553a5ba1d67918f877dc24#123f57bff97627e8a5553a5ba1d67918f877dc24"
 dependencies = [
  "crossbeam-channel",
  "notify",

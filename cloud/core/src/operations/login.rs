@@ -377,20 +377,37 @@ impl<G: core_traits::Global> Operation<G> for tonic::Request<pb::scufflecloud::c
                 Ok(user)
             }
             None => {
-                let user = User {
-                    id: UserId::new(),
-                    preferred_name: google_token.id_token.name,
-                    first_name: google_token.id_token.given_name,
-                    last_name: google_token.id_token.family_name,
-                    password_hash: None,
-                    primary_email: google_token
-                        .id_token
-                        .email_verified
-                        .then(|| normalize_email(&google_token.id_token.email)),
-                    avatar_url: google_token.id_token.picture,
+                // This Google account is not associated with a Scuffle user yet
+
+                // Check if email is already registered
+                let registered_user = if google_token.id_token.email_verified {
+                    common::get_user_by_email(conn, &google_token.id_token.email).await?
+                } else {
+                    None
                 };
 
-                common::create_user(conn, &user).await?;
+                let user = match registered_user {
+                    Some(user) => user, // Use existing user
+                    None => {
+                        // Create new user
+                        let user = User {
+                            id: UserId::new(),
+                            preferred_name: google_token.id_token.name,
+                            first_name: google_token.id_token.given_name,
+                            last_name: google_token.id_token.family_name,
+                            password_hash: None,
+                            primary_email: google_token
+                                .id_token
+                                .email_verified
+                                .then(|| normalize_email(&google_token.id_token.email)),
+                            avatar_url: google_token.id_token.picture,
+                        };
+
+                        common::create_user(conn, &user).await?;
+
+                        user
+                    }
+                };
 
                 let google_account = UserGoogleAccount {
                     sub: google_token.id_token.sub,

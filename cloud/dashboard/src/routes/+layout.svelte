@@ -9,16 +9,93 @@
     } from "@tanstack/svelte-query";
     import "@fontsource-variable/archivo";
     import { browser, dev } from "$app/environment";
+    import { goto } from "$app/navigation";
+    import { page } from "$app/state";
     import LoginFooter from "$components/login/login-footer.svelte";
     import LoginHeader from "$components/login/login-header.svelte";
     import LoginPage from "$components/login/login-page.svelte";
     import RightNav from "$components/right-nav/right-nav.svelte";
+    import TwoFactorPage from "$components/two-factor/two-factor-page.svelte";
     import { PUBLIC_VITE_MSW_ENABLED } from "$env/static/public";
     import { authState } from "$lib/auth.svelte";
+    import {
+        LANDING_ROUTE,
+        LOGIN_ROUTES,
+        OAUTH_CALLBACK_ROUTES,
+    } from "$lib/consts";
     import { onMount } from "svelte";
 
+    const auth = $derived(authState());
+
     onMount(() => {
-        authState().initialize();
+        auth.initialize();
+    });
+
+    // $effect(() => {
+    //     $inspect(auth.userSessionToken);
+    // });
+
+    const isOAuthCallbackRoute = $derived(
+        OAUTH_CALLBACK_ROUTES.some(route =>
+            page.url.pathname.startsWith(route)
+        ),
+    );
+
+    // Let's handle routing here, or at least call it in this layout function. Maybe move elsewhere and reference here
+    // We can't put any changes in authState in the +page.ts files because they don't have access to the authState
+    // Until after the routing has been determined so we might as well do it here I'd imagine
+    // Can see if there's a better way of doing this. Open to other options.
+    // This routing all sucks though and feels so weak. I'd rather not route someone to 2fa
+    // They should be able to back out of this flow would be ideal. TBD. Maybe call a few functions here
+
+    $effect(() => {
+        const pathname = page.url.pathname;
+
+        // These routes should all load the /login route unless user is authed with nonpending 2fa
+        const isLoginRoute = LOGIN_ROUTES.includes(pathname);
+
+        if (auth.userSessionToken.state === "loading") return;
+
+        // Root redirect only can redirect to login or landing
+        if (pathname === "/") {
+            if (auth.userSessionToken.state === "authenticated") {
+                goto(LANDING_ROUTE, { replaceState: true });
+            } else {
+                goto("/login", { replaceState: true });
+            }
+            return;
+        }
+
+        // Skip routing for oauth callbacks let them manage their own routing
+        if (isOAuthCallbackRoute) {
+            return;
+        }
+
+        // Don't redirect 2FA if accessed correctly
+        if (
+            auth.userSessionToken.state === "authenticated"
+            && auth.hasPendingMfa
+            && pathname === "/two-factor"
+        ) {
+            return;
+        }
+
+        // Otherwise redirect to login
+        if (
+            !isLoginRoute
+            && auth.userSessionToken.state !== "authenticated"
+        ) {
+            // TODO: Add redirectTo logic later
+            goto(`/login`);
+        }
+
+        // Public routes logic
+        if (
+            isLoginRoute
+            && auth.userSessionToken.state === "authenticated"
+        ) {
+            goto(LANDING_ROUTE);
+        }
     });
 
     // Maybe don't need this code since we'll mock functions in a different way but leaving it for now
@@ -48,17 +125,37 @@
             },
         },
     });
+
+    const hasPendingMfa = $derived(
+        auth.userSessionToken.state === "authenticated"
+            && !!auth.userSessionToken.data.mfaPending?.length,
+    );
 </script>
 
+<!-- TODO: Add protection to routes if not logged in -->
+<!-- This should go on each route somewhere or here might be sufficient -->
 <!-- TODO: Clean this up at some point -->
 {#if mockingReady}
-    {#if authState().userSessionToken.state === "loading"}
+    {#if auth.userSessionToken.state === "loading"}
         <div>Loading...</div>
-    {:else if authState().userSessionToken.state === "unauthenticated"}
+    {:else if auth.userSessionToken.state === "unauthenticated"}
+        {#if isOAuthCallbackRoute}
+            <div class="login-page-container">
+                <LoginHeader />
+                {@render children()}
+                <LoginFooter />
+            </div>
+        {:else}
+            <div class="login-page-container">
+                <LoginHeader />
+                <LoginPage />
+                <LoginFooter />
+            </div>
+        {/if}
+    {:else if hasPendingMfa}
         <div class="login-page-container">
-            <!-- TODO: Add protection to routes if not logged in -->
             <LoginHeader />
-            <LoginPage />
+            <TwoFactorPage />
             <LoginFooter />
         </div>
     {:else}

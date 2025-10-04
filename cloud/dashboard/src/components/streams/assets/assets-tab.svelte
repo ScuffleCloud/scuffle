@@ -1,30 +1,27 @@
 <script lang="ts">
     import SettingsBlock from "$components/settings-block.svelte";
-    import type { Card } from "$components/settings-block.svelte";
+    import SettingsCard from "$components/settings-card.svelte";
+    import Switch from "$components/switch.svelte";
     import IconShield from "$lib/images/icon-shield.svelte";
 
-    const VodCard = $derived<Card[]>([
-        {
-            id: "asset-management",
-            title: "VOD Asset recording",
-            description:
-                "Manage your assets and their associated metadata.",
-            actions: [
-                {
-                    variant: "toggle",
-                    isToggled: true,
-                    onClick: () => {
-                        console.log("VOD Asset recording toggled");
-                    },
-                },
-            ],
-        },
-    ]);
+    let vodRecordingEnabled = $state(true);
 </script>
 
 <div class="assets-page">
-    <SettingsBlock title="Assets" cards={VodCard} icon={IconShield} />
+    <SettingsBlock title="Assets" icon={IconShield}>
+        <SettingsCard
+            title="VOD Asset recording"
+            description="Manage your assets and their associated metadata."
+        >
+            <Switch
+                checked={vodRecordingEnabled}
+                onchange={(checked) => {
+                    vodRecordingEnabled = checked;
+                    console.log("VOD Asset recording toggled");
+                }}
+                showStateText={true}
+                size="medium"
+            />
+        </SettingsCard>
+    </SettingsBlock>
 </div>
-
-<style>
-</style>

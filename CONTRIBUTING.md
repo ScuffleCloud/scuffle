@@ -96,7 +96,7 @@ for a Bazel LSP you can use the Bazel extension for VSCode and download [starpls
 
 ### Environment Variables
 
-We advice you to use [direnv](https://direnv.net/) to load the `.envrc` file, which sets up a few environment variables needed for development.
+We advise you to use [direnv](https://direnv.net/) to load the `.envrc` file, which sets up a few environment variables needed for development.
 
 ### Nix
 

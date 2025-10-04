@@ -1,14 +1,20 @@
 <script lang="ts">
-    import IconArrowLeft from "$lib/images/icon-arrow-left.svelte";
+    import LoginOrDivider from "$components/login-or-divider.svelte";
+    import IconLoginKey from "$lib/images/icon-login-key.svelte";
     import { PinInput } from "melt/builders";
+    import RecoveryCodeCollapsible from "./recovery-code-collapsible.svelte";
 
     interface Props {
-        onSubmit: (code: string) => Promise<void>;
-        onBack?: () => void;
-        isLoading?: boolean;
+        onModeChange: (() => void) | null;
+        onBackupCodeChange: () => void;
     }
 
-    let { onSubmit, onBack, isLoading = false }: Props = $props();
+    let { onModeChange, onBackupCodeChange }: Props = $props();
+
+    let isLoading = $state(false);
+    function onSubmit(code: string) {
+        console.log("Submit code", code);
+    }
 
     const pinInput = new PinInput({
         maxLength: 6,
@@ -25,13 +31,10 @@
 </script>
 
 <div class="header">
-    <button type="button" onclick={onBack} class="back-button">
-        <IconArrowLeft />
-    </button>
     <h1 class="title">MFA Login</h1>
 </div>
 <p class="subtitle">
-    Enter the 6-digit code from your 2FA authenticator app below.
+    Enter the 6-digit code from your 2FA authenticator app below
 </p>
 
 <div {...pinInput.root} class="pin-input-root">
@@ -53,6 +56,18 @@
         Continue
     {/if}
 </button>
+{#if onModeChange}
+    <LoginOrDivider />
+    <button
+        type="button"
+        onclick={() => onModeChange()}
+        class="continue-btn"
+    >
+        <IconLoginKey />
+        Continue with Passkey
+    </button>
+{/if}
+<RecoveryCodeCollapsible onAction={onBackupCodeChange} />
 
 <style>
     .header {

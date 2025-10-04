@@ -1,9 +1,9 @@
 <script lang="ts">
-    import ApiInformation from "./api-information.svelte";
 </script>
 
+<!-- TODO: Likely implement on a per-page basis -->
 <nav class="right-nav">
-    <ApiInformation />
+    <!-- <ApiInformation /> -->
 </nav>
 
 <style>

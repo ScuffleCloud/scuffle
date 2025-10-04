@@ -7,14 +7,9 @@ import {
     type NewUserSessionToken,
 } from "@scufflecloud/proto/scufflecloud/core/v1/sessions_service.js";
 import { User } from "@scufflecloud/proto/scufflecloud/core/v1/users.js";
-import { sessionsServiceClient, usersServiceClient } from "./grpcClient";
-import { arrayBufferToBase64 } from "./utils";
-
-// Replace with Uint8Array.fromBase64 in the future
-// https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Uint8Array/fromBase64
-function base64ToArrayBuffer(base64: string): ArrayBuffer {
-    return Uint8Array.from(atob(base64), c => c.charCodeAt(0)).buffer;
-}
+import { rpcErrorToString, sessionsServiceClient, usersServiceClient } from "./grpcClient";
+import { arrayBufferToBase64, base64ToArrayBuffer } from "./utils";
+import { type RpcError } from "@protobuf-ts/runtime-rpc";
 
 function timestampToDate(timestmap: Timestamp): Date | null {
     const seconds = parseInt(timestmap.seconds);
@@ -278,7 +273,6 @@ export function authState() {
                     // Persist session token to localStorage on change
                     const stored = { ...newUserSessionToken, data: toStoredUserSessionToken(newUserSessionToken.data) };
                     window.localStorage.setItem("userSessionToken", JSON.stringify(stored));
-
                     return loadUser(newUserSessionToken);
                 },
             ).catch((err) => {
@@ -294,15 +288,15 @@ export function authState() {
         async logout() {
             if (!browser) return;
 
-            const call = sessionsServiceClient.invalidateUserSession({});
-            const status = await call.status;
-            if (status.code === "OK") {
+            try {
+                const call = sessionsServiceClient.invalidateUserSession({});
+                await call.status;
+
                 userSessionToken = { state: "unauthenticated" };
                 window.localStorage.removeItem("userSessionToken");
                 user = { state: "unauthenticated" };
-            } else {
-                console.error("Failed to logout", status);
-                throw new Error("Failed to logout: " + status.detail);
+            } catch (err) {
+                throw new Error(rpcErrorToString(err as RpcError));
             }
         },
         /**
@@ -363,8 +357,25 @@ export function authState() {
          * Returns the current authenticated user or null if not authenticated.
          */
         get user() {
-            if (!user) throw new Error("User not initialized");
+            if (!user) return null;
             return user.state === "authenticated" ? user.data : null;
+        },
+
+        /**
+         * Checks if the user has 2FA enabled. Not including recovery codes
+         */
+        get hasPendingMfa(): boolean {
+            if (userSessionToken.state !== "authenticated") throw new Error("User not authenticated");
+
+            const mfaOptions = userSessionToken.data.mfaPending;
+
+            // No pending MFA
+            if (!mfaOptions) {
+                return false;
+            }
+
+            return mfaOptions.includes(MfaOption.TOTP)
+                || mfaOptions.includes(MfaOption.WEB_AUTHN);
         },
     };
 }
@@ -374,15 +385,15 @@ async function loadUser(state: AuthState<UserSessionToken>): Promise<AuthState<U
         return { ...state };
     }
 
-    const call = usersServiceClient.getUser({
-        id: state.data.userId,
-    });
-    const status = await call.status;
+    try {
+        const call = usersServiceClient.getUser({
+            id: state.data.userId,
+        });
+        await call.status;
 
-    if (status.code === "OK") {
         const user = await call.response;
         return { state: "authenticated", data: user };
-    } else {
-        return { state: "error", error: status.detail };
+    } catch (err) {
+        return { state: "error", error: rpcErrorToString(err as RpcError) };
     }
 }

@@ -132,6 +132,7 @@
 #![deny(missing_docs)]
 #![deny(unsafe_code)]
 #![deny(unreachable_pub)]
+#![deny(clippy::mod_module_files)]
 
 use darling::FromDeriveInput;
 use quote::{ToTokens, quote};
@@ -246,13 +247,13 @@ fn into_fields_checked(data: darling::ast::Data<(), IsoBoxField>) -> syn::Result
         ));
     }
 
-    if fields.iter().any(|f| f.repeated) {
-        if let Some(field) = fields.iter().find(|f| f.nested_box.is_some()) {
-            return Err(syn::Error::new_spanned(
-                field.ident.as_ref().expect("unreachable: only named fields supported"),
-                "Cannot combine repeated and nested_box in the same struct",
-            ));
-        }
+    if fields.iter().any(|f| f.repeated)
+        && let Some(field) = fields.iter().find(|f| f.nested_box.is_some())
+    {
+        return Err(syn::Error::new_spanned(
+            field.ident.as_ref().expect("unreachable: only named fields supported"),
+            "Cannot combine repeated and nested_box in the same struct",
+        ));
     }
 
     Ok(fields)

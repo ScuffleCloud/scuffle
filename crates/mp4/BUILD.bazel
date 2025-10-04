@@ -9,27 +9,17 @@ scuffle_package(
         ":Cargo.toml",
     ],
     crate_name = "scuffle-mp4",
-    proc_macro_deps = ["//crates/changelog"],
-    test = scuffle_test(
-        data = [
-            "//tools/ffmpeg:ffprobe",
-            "@scuffle_assets//:mp4",
-        ],
-        env = {
-            "FFPROBE": "$(rootpath //tools/ffmpeg:ffprobe)",
-            "ASSETS_DIR": "$(rootpath @scuffle_assets//:mp4)",
-        },
-        insta = True,
-        target_compatible_with = select({
-            "@platforms//os:osx": ["@platforms//:incompatible"],
-            "//conditions:default": [],
-        }),
-    ),
+    proc_macro_deps = [
+        "//crates/changelog",
+        "//crates/isobmff/derive",
+    ],
     deps = [
         "//crates/aac",
         "//crates/av1",
         "//crates/bytes-util",
         "//crates/h264",
         "//crates/h265",
+        "//crates/isobmff",
+        "//crates/nutype-enum",
     ],
 )

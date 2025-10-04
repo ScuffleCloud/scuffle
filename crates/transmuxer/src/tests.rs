@@ -18,8 +18,7 @@ fn file_path(item: &str) -> PathBuf {
 
 #[test]
 fn test_transmuxer_avc_aac() {
-    let dir = PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("../../assets");
-    let data = std::fs::read(dir.join("avc_aac.flv")).unwrap();
+    let data = std::fs::read(file_path("avc_aac.flv")).unwrap();
 
     let mut transmuxer = Transmuxer::new();
 
@@ -125,8 +124,7 @@ fn test_transmuxer_avc_aac() {
 
 #[test]
 fn test_transmuxer_av1_aac() {
-    let dir = PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("../../assets");
-    let data = std::fs::read(dir.join("av1_aac.flv")).unwrap();
+    let data = std::fs::read(file_path("av1_aac.flv")).unwrap();
 
     let mut transmuxer = Transmuxer::new();
 
@@ -238,8 +236,7 @@ fn test_transmuxer_av1_aac() {
 
 #[test]
 fn test_transmuxer_hevc_aac() {
-    let dir = PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("../../assets");
-    let data = std::fs::read(dir.join("hevc_aac.flv")).unwrap();
+    let data = std::fs::read(file_path("hevc_aac.flv")).unwrap();
 
     let mut transmuxer = Transmuxer::new();
 

@@ -118,11 +118,18 @@ mod tests {
     use super::IsobmffFile;
     use crate::IsoSized;
 
+    fn file_path(item: &str) -> PathBuf {
+        if let Some(env) = std::env::var_os("ASSETS_DIR") {
+            PathBuf::from(env).join(item)
+        } else {
+            PathBuf::from(env!("CARGO_MANIFEST_DIR")).join(format!("../../assets/{item}"))
+        }
+    }
+
     fn transmux_sample(sample_name: &str, skip_insta: bool) -> io::Result<()> {
         let test_name = sample_name.split('.').next().unwrap();
 
-        let dir = PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("../../assets");
-        let data = std::fs::read(dir.join(sample_name))?;
+        let data = std::fs::read(file_path(sample_name))?;
         let mut reader = scuffle_bytes_util::zero_copy::Slice::from(&data[..]);
         let og_file = IsobmffFile::deserialize(&mut reader)?;
         if !skip_insta {

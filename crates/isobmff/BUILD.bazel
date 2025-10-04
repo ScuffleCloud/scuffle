@@ -8,18 +8,19 @@ scuffle_package(
         ":CHANGELOG.md",
         ":Cargo.toml",
     ],
-    crate_name = "scuffle-h264",
-    proc_macro_deps = [
-        "//crates/changelog",
-        "//crates/isobmff/derive",
-    ],
+    crate_name = "isobmff",
     test = scuffle_test(
+        data = [
+            "@scuffle_assets//:mp4",
+        ],
+        env = {
+            "ASSETS_DIR": "$(rootpath @scuffle_assets//:mp4)",
+        },
         insta = True,
     ),
+    proc_macro_deps = ["//crates/changelog", "//crates/isobmff/derive"],
     deps = [
         "//crates/bytes-util",
-        "//crates/expgolomb",
-        "//crates/isobmff",
         "//crates/nutype-enum",
     ],
 )

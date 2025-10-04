@@ -24,7 +24,7 @@ syn = "2.0.100"
 
 [dev-dependencies]
 isobmff = { path = "..", version = "0.1.0" }
-scuffle-bytes-util = { path = "../../bytes-util", version = "0.1.4" }
+scuffle-bytes-util = { path = "../../bytes-util", version = "0.1.5" }
 
 [package.metadata.docs.rs]
 all-features = true
@@ -35,14 +35,10 @@ rustdoc-args = [
     "--generate-link-to-definition",
 ]
 
-[package.metadata.cargo-sync-rdme.badge]
-style = "flat-square"
-
-[package.metadata.cargo-sync-rdme.badge.badges]
+[package.metadata.sync-readme.badges]
 license = true
 docs-rs = true
 crates-io = true
-github-actions = { workflows = "ci.yaml" }
 codecov = true
 
 [package.metadata.xtask.release]

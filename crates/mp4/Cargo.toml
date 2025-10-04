@@ -1,6 +1,6 @@
 [package]
 name = "scuffle-mp4"
-version = "0.1.4"
+version = "0.1.5"
 authors = ["Scuffle <opensource@scuffle.cloud>"]
 documentation = "https://docs.rs/scuffle-mp4"
 edition = "2024"
@@ -22,7 +22,7 @@ document-features = { optional = true, version = "0.2" }
 isobmff = { path = "../isobmff", version = "0.1.0" }
 isobmff-derive = { path = "../isobmff/derive", version = "0.1.0" }
 nutype-enum = { path = "../nutype-enum", version = "0.1.5" }
-scuffle-bytes-util = { path = "../bytes-util", version = "0.1.4" }
+scuffle-bytes-util = { path = "../bytes-util", version = "0.1.5" }
 scuffle-changelog = { optional = true, path = "../changelog", version = "0.1.1" }
 
 [dev-dependencies]

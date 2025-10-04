@@ -5628,8 +5628,9 @@ dependencies = [
 
 [[package]]
 name = "scuffle-bytes-util"
-version = "0.1.4"
+version = "0.1.5"
 dependencies = [
+ "byteorder",
  "bytes",
  "bytestring",
  "document-features",
@@ -5697,7 +5698,7 @@ dependencies = [
 
 [[package]]
 name = "scuffle-expgolomb"
-version = "0.1.4"
+version = "0.1.5"
 dependencies = [
  "bytes",
  "document-features",
@@ -5860,7 +5861,7 @@ dependencies = [
 
 [[package]]
 name = "scuffle-mp4"
-version = "0.1.4"
+version = "0.1.5"
 dependencies = [
  "document-features",
  "isobmff",

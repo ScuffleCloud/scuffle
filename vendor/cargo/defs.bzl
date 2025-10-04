@@ -731,6 +731,7 @@ _NORMAL_DEPENDENCIES = {
     "crates/bytes-util": {
         _REQUIRED_FEATURE: {
             _COMMON_CONDITION: {
+                "byteorder": Label("@cargo_vendor//:byteorder-1.5.0"),
                 "bytes": Label("@cargo_vendor//:bytes-1.10.1"),
                 "bytestring": Label("@cargo_vendor//:bytestring-1.4.0"),
             },
@@ -4134,6 +4135,8 @@ _FEATURE_FLAGS = {
     "crates/av1": {
         "docs": [
         ],
+        "isobmff": [
+        ],
     },
     "crates/batching": {
         "docs": [
@@ -4248,9 +4251,13 @@ _FEATURE_FLAGS = {
     "crates/h264": {
         "docs": [
         ],
+        "isobmff": [
+        ],
     },
     "crates/h265": {
         "docs": [
+        ],
+        "isobmff": [
         ],
     },
     "crates/http": {
@@ -4315,6 +4322,8 @@ _FEATURE_FLAGS = {
     },
     "crates/opus": {
         "docs": [
+        ],
+        "isobmff": [
         ],
     },
     "crates/postcompile": {
@@ -4505,6 +4514,9 @@ _RESOLVED_FEATURE_FLAGS = {
         ],
     },
     "crates/av1": {
+        _COMMON_CONDITION: [
+            "isobmff",
+        ],
     },
     "crates/batching": {
     },
@@ -4541,8 +4553,14 @@ _RESOLVED_FEATURE_FLAGS = {
     "crates/future-ext": {
     },
     "crates/h264": {
+        _COMMON_CONDITION: [
+            "isobmff",
+        ],
     },
     "crates/h265": {
+        _COMMON_CONDITION: [
+            "isobmff",
+        ],
     },
     "crates/http": {
         _COMMON_CONDITION: [
@@ -4689,12 +4707,12 @@ _VERSIONS = {
     "crates/bootstrap": "0.1.7",
     "crates/bootstrap-telemetry": "0.3.0",
     "crates/bootstrap/derive": "0.1.7",
-    "crates/bytes-util": "0.1.4",
+    "crates/bytes-util": "0.1.5",
     "crates/cedar-policy": "0.1.0",
     "crates/cedar-policy/codegen": "0.1.1",
     "crates/changelog": "0.1.1",
     "crates/context": "0.1.5",
-    "crates/expgolomb": "0.1.4",
+    "crates/expgolomb": "0.1.5",
     "crates/ffmpeg": "0.3.5",
     "crates/flv": "0.2.2",
     "crates/future-ext": "0.1.4",
@@ -4705,7 +4723,7 @@ _VERSIONS = {
     "crates/isobmff/derive": "0.1.0",
     "crates/metrics": "0.4.2",
     "crates/metrics/derive": "0.4.2",
-    "crates/mp4": "0.1.4",
+    "crates/mp4": "0.1.5",
     "crates/nutype-enum": "0.1.5",
     "crates/openapiv3_1": "0.1.3",
     "crates/opus": "0.1.0",

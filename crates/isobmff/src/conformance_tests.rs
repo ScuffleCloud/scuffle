@@ -9,6 +9,16 @@ use scuffle_bytes_util::zero_copy::{Deserialize, Serialize};
 
 use crate::{IsoSized, IsobmffFile};
 
+fn file_path(item: &str) -> PathBuf {
+    if let Some(env) = std::env::var_os("ASSETS_DIR") {
+        let path = PathBuf::from(env).join("iso_conformance").join(item);
+        println!("Using asset path: {}, pwd: {}", path.display());
+        path
+    } else {
+        PathBuf::from(env!("CARGO_MANIFEST_DIR")).join(format!("../../assets/isobmff_conformance/{item}"))
+    }
+}
+
 #[derive(Debug, serde_derive::Deserialize)]
 struct MetadataFile {
     file_metadata: BTreeMap<String, FileMetadata>,
@@ -21,12 +31,8 @@ struct FileMetadata {
 
 #[test]
 fn conformance_files() {
-    let dir = PathBuf::from(env!("CARGO_MANIFEST_DIR"))
-        .join("../../assets")
-        .join("isobmff_conformance");
-
     let metadata_file: MetadataFile =
-        serde_json::from_reader(std::fs::File::open(dir.join("files.json")).expect("failed to open metadata file"))
+        serde_json::from_reader(std::fs::File::open(file_path("files.json")).expect("failed to open metadata file"))
             .expect("failed to deserialize metadata file");
 
     for (file_name, _) in metadata_file
@@ -37,7 +43,7 @@ fn conformance_files() {
         println!("testing {file_name}");
         let test_name = file_name.split('/').next_back().unwrap_or(&file_name);
 
-        let mut file = std::fs::File::open(dir.join("files").join(&file_name)).expect("failed to open file");
+        let mut file = std::fs::File::open(file_path("files").join(&file_name)).expect("failed to open file");
         let reader = scuffle_bytes_util::zero_copy::IoRead::from(BufReader::new(&mut file));
 
         let isobmff_file = IsobmffFile::deserialize(reader).expect("failed to deserialize file");

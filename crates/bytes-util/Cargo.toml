@@ -1,6 +1,6 @@
 [package]
 name = "scuffle-bytes-util"
-version = "0.1.4"
+version = "0.1.5"
 authors = ["Scuffle <opensource@scuffle.cloud>"]
 documentation = "https://docs.rs/scuffle-bytes-util"
 edition = "2024"
@@ -14,10 +14,11 @@ description = "A utility crate for working with bytes."
 unexpected_cfgs = { level = "warn", check-cfg = ['cfg(coverage_nightly)'] }
 
 [dependencies]
+byteorder = "1.5"
 bytes = "1.5"
 bytestring = "1.4.0"
 document-features = { optional = true, version = "0.2" }
-scuffle-changelog = { optional = true, path = "../changelog", version = "0.1.0" }
+scuffle-changelog = { optional = true, path = "../changelog", version = "0.1.1" }
 serde = { optional = true, version = "1.0.129" }
 
 [features]

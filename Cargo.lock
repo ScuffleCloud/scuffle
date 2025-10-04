@@ -6059,6 +6059,7 @@ dependencies = [
  "tonic",
  "tonic-types",
  "tracing",
+ "url",
 ]
 
 [[package]]

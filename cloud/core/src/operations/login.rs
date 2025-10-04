@@ -15,6 +15,7 @@ use tonic_types::{ErrorDetails, StatusExt};
 
 use crate::cedar::{Action, CoreApplication, Unauthenticated};
 use crate::common::normalize_email;
+use crate::http_ext::CoreRequestExt;
 use crate::operations::{Operation, OperationDriver};
 use crate::{captcha, common, google_api};
 
@@ -90,10 +91,10 @@ impl<G: core_traits::Global> Operation<G> for tonic::Request<pb::scufflecloud::c
 
         // Send email
         let email_msg = if user_id.is_none() {
-            core_emails::register_with_email_email(global.dashboard_origin(), code_base64, timeout)
+            core_emails::register_with_email_email(&self.dashboard_origin::<G>()?, code_base64, timeout)
                 .into_tonic_internal_err("failed to render registration email")?
         } else {
-            core_emails::magic_link_email(global.dashboard_origin(), code_base64, timeout)
+            core_emails::magic_link_email(&self.dashboard_origin::<G>()?, code_base64, timeout)
                 .into_tonic_internal_err("failed to render magic link email")?
         };
 
@@ -187,6 +188,7 @@ impl<G: core_traits::Global> Operation<G> for tonic::Request<pb::scufflecloud::c
     ) -> Result<Self::Response, tonic::Status> {
         let global = &self.global::<G>()?;
         let ip_info = self.ip_address_info()?;
+        let dashboard_origin = self.dashboard_origin::<G>()?;
         let state: CompleteLoginWithMagicLinkState = self
             .extensions_mut()
             .remove()
@@ -200,7 +202,16 @@ impl<G: core_traits::Global> Operation<G> for tonic::Request<pb::scufflecloud::c
             common::create_user(conn, &principal).await?;
         }
 
-        let new_token = common::create_session(global, conn, &principal, device, &ip_info, !state.create_user).await?;
+        let new_token = common::create_session(
+            global,
+            conn,
+            &dashboard_origin,
+            &principal,
+            device,
+            &ip_info,
+            !state.create_user,
+        )
+        .await?;
         Ok(new_token)
     }
 }
@@ -258,6 +269,7 @@ impl<G: core_traits::Global> Operation<G> for tonic::Request<pb::scufflecloud::c
     ) -> Result<Self::Response, tonic::Status> {
         let global = &self.global::<G>()?;
         let ip_info = self.ip_address_info()?;
+        let dashboard_origin = self.dashboard_origin::<G>()?;
         let payload = self.into_inner();
 
         let conn = driver.conn().await?;
@@ -275,7 +287,7 @@ impl<G: core_traits::Global> Operation<G> for tonic::Request<pb::scufflecloud::c
 
         common::verify_password(password_hash, &payload.password)?;
 
-        common::create_session(global, conn, &principal, device, &ip_info, true).await
+        common::create_session(global, conn, &dashboard_origin, &principal, device, &ip_info, true).await
     }
 }
 
@@ -313,7 +325,7 @@ impl<G: core_traits::Global> Operation<G> for tonic::Request<pb::scufflecloud::c
     async fn load_principal(&mut self, driver: &mut OperationDriver<'_, G>) -> Result<Self::Principal, tonic::Status> {
         let global = &self.global::<G>()?;
 
-        let google_token = google_api::request_tokens(global, &self.get_ref().code)
+        let google_token = google_api::request_tokens(global, &self.dashboard_origin::<G>()?, &self.get_ref().code)
             .await
             .into_tonic_err_with_field_violation("code", "failed to request google token")?;
 
@@ -476,6 +488,7 @@ impl<G: core_traits::Global> Operation<G> for tonic::Request<pb::scufflecloud::c
     ) -> Result<Self::Response, tonic::Status> {
         let global = &self.global::<G>()?;
         let ip_info = self.ip_address_info()?;
+        let dashboard_origin = self.dashboard_origin::<G>()?;
 
         let state = self
             .extensions_mut()
@@ -487,7 +500,7 @@ impl<G: core_traits::Global> Operation<G> for tonic::Request<pb::scufflecloud::c
         let conn = driver.conn().await?;
 
         // Create session
-        let token = common::create_session(global, conn, &principal, device, &ip_info, false).await?;
+        let token = common::create_session(global, conn, &dashboard_origin, &principal, device, &ip_info, false).await?;
 
         Ok(pb::scufflecloud::core::v1::CompleteLoginWithGoogleResponse {
             new_user_session_token: Some(token),
@@ -527,6 +540,7 @@ impl<G: core_traits::Global> Operation<G> for tonic::Request<pb::scufflecloud::c
     ) -> Result<Self::Response, tonic::Status> {
         let global = &self.global::<G>()?;
         let ip_info = self.ip_address_info()?;
+        let dashboard_origin = self.dashboard_origin::<G>()?;
         let payload = self.into_inner();
 
         let pk_cred: webauthn_rs::prelude::PublicKeyCredential = serde_json::from_str(&payload.response_json)
@@ -538,7 +552,7 @@ impl<G: core_traits::Global> Operation<G> for tonic::Request<pb::scufflecloud::c
         common::finish_webauthn_authentication(global, conn, principal.id, &pk_cred).await?;
 
         // Create a new session for the user
-        let new_token = common::create_session(global, conn, &principal, device, &ip_info, false).await?;
+        let new_token = common::create_session(global, conn, &dashboard_origin, &principal, device, &ip_info, false).await?;
         Ok(new_token)
     }
 }

@@ -11,6 +11,7 @@ members = [
     "cloud/geo-ip",
     "cloud/id",
     "cloud/proto",
+    "cloud/video/ingest",
     "crates/aac",
     "crates/amf0",
     "crates/av1",
